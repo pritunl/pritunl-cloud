@@ -74,8 +74,6 @@ export interface Settings {
 	auth_secondary_providers: SecondaryProviders;
 	auth_admin_expire: number;
 	auth_admin_max_duration: number;
-	auth_proxy_expire: number;
-	auth_proxy_max_duration: number;
 	auth_user_expire: number;
 	auth_user_max_duration: number;
 	elastic_address: string;
