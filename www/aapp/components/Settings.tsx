@@ -244,26 +244,6 @@ export default class Settings extends React.Component<{}, State> {
 						}}
 					/>
 					<PageInput
-						label="Service Session Expire Minutes"
-						help="Number of inactive minutes before a service session expires"
-						type="text"
-						placeholder="Session expire"
-						value={this.state.settings.auth_proxy_expire}
-						onChange={(val): void => {
-							this.set('auth_proxy_expire', parseInt(val, 10));
-						}}
-					/>
-					<PageInput
-						label="Service Session Max Duration Minutes"
-						help="Number of minutes from start of a service session until expiration"
-						type="text"
-						placeholder="Session max duration"
-						value={this.state.settings.auth_proxy_max_duration}
-						onChange={(val): void => {
-							this.set('auth_proxy_max_duration', parseInt(val, 10));
-						}}
-					/>
-					<PageInput
 						label="User Session Expire Minutes"
 						help="Number of inactive minutes before a user session expires"
 						type="text"
