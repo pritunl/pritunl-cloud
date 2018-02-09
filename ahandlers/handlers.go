@@ -104,7 +104,7 @@ func Register(engine *gin.Engine) {
 		fileServer = http.FileServer(fs)
 
 		pushFiles = []string{}
-		walk := path.Join(config.StaticTestingRoot, "app")
+		walk := path.Join(config.StaticTestingRoot, "aapp")
 		err := filepath.Walk(walk, func(
 			pth string, _ os.FileInfo, e error) (err error) {
 
@@ -116,7 +116,7 @@ func Register(engine *gin.Engine) {
 			if strings.HasSuffix(pth, ".js") ||
 				strings.HasSuffix(pth, ".js.map") {
 
-				pth = strings.Replace(pth, walk, "/app", 1)
+				pth = strings.Replace(pth, walk, "/aapp", 1)
 				pushFiles = append(pushFiles, pth)
 			}
 
@@ -131,7 +131,7 @@ func Register(engine *gin.Engine) {
 		engine.GET("/logo.png", staticTestingGet)
 		authGroup.GET("/config.js", staticTestingGet)
 		authGroup.GET("/build.js", staticTestingGet)
-		authGroup.GET("/app/*path", staticTestingGet)
+		authGroup.GET("/aapp/*path", staticTestingGet)
 		authGroup.GET("/dist/*path", staticTestingGet)
 		authGroup.GET("/styles/*path", staticTestingGet)
 		authGroup.GET("/node_modules/*path", staticTestingGet)
