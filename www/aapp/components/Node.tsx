@@ -315,11 +315,11 @@ export default class Node extends React.Component<Props, State> {
 						}}
 					/>
 					<PageSwitch
-						label="Management"
+						label="Admin"
 						help="Provides access to the admin console."
-						checked={node.type.indexOf('management') !== -1}
+						checked={node.type.indexOf('admin') !== -1}
 						onToggle={(): void => {
-							this.toggleType('management');
+							this.toggleType('admin');
 						}}
 					/>
 					<PageSwitch
@@ -330,24 +330,16 @@ export default class Node extends React.Component<Props, State> {
 							this.toggleType('user');
 						}}
 					/>
-					<PageSwitch
-						label="Proxy"
-						help="Provides access to the services added to the node."
-						checked={node.type.indexOf('proxy') !== -1}
-						onToggle={(): void => {
-							this.toggleType('proxy');
-						}}
-					/>
 					<PageInput
 						hidden={node.type.indexOf('_') === -1 ||
-							node.type.indexOf('management') === -1}
-						label="Management Domain"
-						help="Domain that will be used to access the management interface."
+							node.type.indexOf('admin') === -1}
+						label="Admin Domain"
+						help="Domain that will be used to access the admin interface."
 						type="text"
-						placeholder="Enter management domain"
-						value={node.management_domain}
+						placeholder="Enter admin domain"
+						value={node.admin_domain}
 						onChange={(val): void => {
-							this.set('management_domain', val);
+							this.set('admin_domain', val);
 						}}
 					/>
 					<PageInput
