@@ -42,11 +42,6 @@ func (d *Database) Users() (coll *Collection) {
 	return
 }
 
-func (d *Database) Services() (coll *Collection) {
-	coll = d.getCollection("services")
-	return
-}
-
 func (d *Database) Policies() (coll *Collection) {
 	coll = d.getCollection("policies")
 	return
@@ -99,26 +94,6 @@ func (d *Database) Nodes() (coll *Collection) {
 
 func (d *Database) Certificates() (coll *Collection) {
 	coll = d.getCollection("certificates")
-	return
-}
-
-func (d *Database) Authorities() (coll *Collection) {
-	coll = d.getCollection("authorities")
-	return
-}
-
-func (d *Database) SshChallenges() (coll *Collection) {
-	coll = d.getCollection("ssh_challenges")
-	return
-}
-
-func (d *Database) SshCertificates() (coll *Collection) {
-	coll = d.getCollection("ssh_certificates")
-	return
-}
-
-func (d *Database) KeybaseChallenges() (coll *Collection) {
-	coll = d.getCollection("keybase_challenges")
 	return
 }
 
@@ -374,53 +349,6 @@ func addIndexes() (err error) {
 	err = coll.EnsureIndex(mgo.Index{
 		Key:         []string{"timestamp"},
 		ExpireAfter: 24 * time.Hour,
-		Background:  true,
-	})
-	if err != nil {
-		err = &IndexError{
-			errors.Wrap(err, "database: Index error"),
-		}
-	}
-
-	coll = db.Authorities()
-	err = coll.EnsureIndex(mgo.Index{
-		Key:        []string{"host_tokens"},
-		Background: true,
-	})
-	if err != nil {
-		err = &IndexError{
-			errors.Wrap(err, "database: Index error"),
-		}
-	}
-
-	coll = db.SshChallenges()
-	err = coll.EnsureIndex(mgo.Index{
-		Key:         []string{"timestamp"},
-		ExpireAfter: 6 * time.Minute,
-		Background:  true,
-	})
-	if err != nil {
-		err = &IndexError{
-			errors.Wrap(err, "database: Index error"),
-		}
-	}
-
-	coll = db.SshCertificates()
-	err = coll.EnsureIndex(mgo.Index{
-		Key:         []string{"timestamp"},
-		ExpireAfter: 168 * time.Hour,
-		Background:  true,
-	})
-	if err != nil {
-		err = &IndexError{
-			errors.Wrap(err, "database: Index error"),
-		}
-	}
-
-	coll = db.KeybaseChallenges()
-	err = coll.EnsureIndex(mgo.Index{
-		Key:         []string{"timestamp"},
-		ExpireAfter: 6 * time.Minute,
 		Background:  true,
 	})
 	if err != nil {
