@@ -23,7 +23,6 @@ func SyncUser(db *database.Database, usr *user.User) (
 		return
 	}
 
-	// TODO Use Google Admin api here
 	if usr.Type == user.Google {
 		reqVals := url.Values{}
 		reqVals.Set("user", usr.Username)
