@@ -11,15 +11,10 @@ export interface Rule {
 export interface Policy {
 	id: string;
 	name?: string;
-	services?: string[];
-	authorities?: string[];
 	roles?: string[];
 	rules?: {[key: string]: Rule};
-	keybase_mode?: string;
 	admin_secondary?: string;
 	user_secondary?: string;
-	proxy_secondary?: string;
-	authority_secondary?: string;
 }
 
 export type Policies = Policy[];
