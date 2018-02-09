@@ -9,7 +9,7 @@ export interface Node {
 	port?: number;
 	protocol?: string;
 	timestamp?: string;
-	management_domain?: string;
+	admin_domain?: string;
 	user_domain?: string;
 	certificates?: string[];
 	requests_min?: number;
@@ -17,7 +17,6 @@ export interface Node {
 	load1?: number;
 	load5?: number;
 	load15?: number;
-	services?: string[];
 	forwarded_for_header?: string;
 }
 
