@@ -31,7 +31,7 @@ type Node struct {
 	Protocol           string                     `bson:"protocol" json:"protocol"`
 	Certificate        bson.ObjectId              `bson:"certificate" json:"certificate"`
 	Certificates       []bson.ObjectId            `bson:"certificates" json:"certificates"`
-	AdminDomain        string                     `bson:"management_domain" json:"admin_domain"`
+	AdminDomain        string                     `bson:"admin_domain" json:"admin_domain"`
 	UserDomain         string                     `bson:"user_domain" json:"user_domain"`
 	RequestsMin        int64                      `bson:"requests_min" json:"requests_min"`
 	ForwardedForHeader string                     `bson:"forwarded_for_header" json:"forwarded_for_header"`
