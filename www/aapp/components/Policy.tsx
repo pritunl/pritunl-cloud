@@ -295,8 +295,6 @@ export default class Policy extends React.Component<Props, State> {
 		let providerIds: string[] = [];
 		let adminProviders: JSX.Element[] = [];
 		let userProviders: JSX.Element[] = [];
-		let proxyProviders: JSX.Element[] = [];
-		let authorityProviders: JSX.Element[] = [];
 		if (this.props.providers.length) {
 			for (let provider of this.props.providers) {
 				providerIds.push(provider.id);
@@ -308,14 +306,6 @@ export default class Policy extends React.Component<Props, State> {
 					key={provider.id}
 					value={provider.id}
 				>{provider.name}</option>);
-				proxyProviders.push(<option
-					key={provider.id}
-					value={provider.id}
-				>{provider.name}</option>);
-				authorityProviders.push(<option
-					key={provider.id}
-					value={provider.id}
-				>{provider.name}</option>);
 			}
 		} else {
 			adminProviders.push(<option
@@ -323,14 +313,6 @@ export default class Policy extends React.Component<Props, State> {
 				value=""
 			>None</option>);
 			userProviders.push(<option
-				key="null"
-				value=""
-			>None</option>);
-			proxyProviders.push(<option
-				key="null"
-				value=""
-			>None</option>);
-			authorityProviders.push(<option
 				key="null"
 				value=""
 			>None</option>);
