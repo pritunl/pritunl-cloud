@@ -17,6 +17,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
+	"github.com/pritunl/pritunl-cloud/uhandlers"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"io"
 	"math/rand"
@@ -169,7 +170,7 @@ func (r *Router) initWeb() (err error) {
 			r.uRouter.Use(gin.Logger())
 		}
 
-		ahandlers.Register(r.uRouter)
+		uhandlers.Register(r.uRouter)
 	}
 
 	readTimeout := time.Duration(settings.Router.ReadTimeout) * time.Second
