@@ -44,13 +44,36 @@ export function sync(): Promise<void> {
 				Dispatcher.dispatch({
 					type: NodeTypes.SYNC,
 					data: {
-						nodes: res.body,
+						nodes: res.body.nodes,
+						count: res.body.count,
 					},
 				});
 
 				resolve();
 			});
 	});
+}
+
+export function traverse(page: number): Promise<void> {
+	Dispatcher.dispatch({
+		type: NodeTypes.TRAVERSE,
+		data: {
+			page: page,
+		},
+	});
+
+	return sync();
+}
+
+export function filter(filt: NodeTypes.Filter): Promise<void> {
+	Dispatcher.dispatch({
+		type: NodeTypes.FILTER,
+		data: {
+			filter: filt,
+		},
+	});
+
+	return sync();
 }
 
 export function commit(node: NodeTypes.Node): Promise<void> {
