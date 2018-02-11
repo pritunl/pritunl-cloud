@@ -7,16 +7,35 @@ import CertificatesStore from '../stores/CertificatesStore';
 import * as NodeActions from '../actions/NodeActions';
 import * as CertificateActions from '../actions/CertificateActions';
 import Node from './Node';
+import NodesPage from './NodesPage';
 import Page from './Page';
 import PageHeader from './PageHeader';
+import * as UserTypes from "../types/UserTypes";
+import UsersStore from "../stores/UsersStore";
+
+interface Selected {
+	[key: string]: boolean;
+}
 
 interface State {
 	nodes: NodeTypes.NodesRo;
 	certificates: CertificateTypes.CertificatesRo;
+	selected: Selected;
+	lastSelected: string;
 	disabled: boolean;
 }
 
 const css = {
+	items: {
+		width: '100%',
+		marginTop: '-5px',
+		display: 'table',
+		borderSpacing: '0 5px',
+	} as React.CSSProperties,
+	itemsBox: {
+		width: '100%',
+		overflowY: 'auto',
+	} as React.CSSProperties,
 	header: {
 		marginTop: '-19px',
 	} as React.CSSProperties,
@@ -31,8 +50,19 @@ export default class Nodes extends React.Component<{}, State> {
 		this.state = {
 			nodes: NodesStore.nodes,
 			certificates: CertificatesStore.certificates,
+			selected: {},
+			lastSelected: null,
 			disabled: false,
 		};
+	}
+
+	get selected(): boolean {
+		for (let key in this.state.selected) {
+			if (this.state.selected[key]) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	componentDidMount(): void {
@@ -48,10 +78,20 @@ export default class Nodes extends React.Component<{}, State> {
 	}
 
 	onChange = (): void => {
+		let selected: Selected = {};
+		let curSelected = this.state.selected;
+
+		this.state.nodes.forEach((node: NodeTypes.Node): void => {
+			if (curSelected[node.id]) {
+				selected[node.id] = true;
+			}
+		});
+
 		this.setState({
 			...this.state,
 			nodes: NodesStore.nodes,
 			certificates: CertificatesStore.certificates,
+			selected: selected,
 		});
 	}
 
@@ -62,6 +102,7 @@ export default class Nodes extends React.Component<{}, State> {
 			nodesDom.push(<Node
 				key={node.id}
 				node={node}
+				selected={!!this.state.selected[node.id]}
 				certificates={this.state.certificates}
 			/>);
 		});
@@ -73,9 +114,18 @@ export default class Nodes extends React.Component<{}, State> {
 					<div className="flex"/>
 				</div>
 			</PageHeader>
-			<div>
-				{nodesDom}
+			<div style={css.itemsBox}>
+				<div style={css.items}>
+					{nodesDom}
+				</div>
 			</div>
+			<NodesPage
+				onPage={(): void => {
+					this.setState({
+						lastSelected: null,
+					});
+				}}
+			/>
 		</Page>;
 	}
 }
