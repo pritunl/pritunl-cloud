@@ -42,7 +42,7 @@ const css = {
 	nameSpan: {
 		margin: '0 5px 0 0',
 	} as React.CSSProperties,
-	timestamp: {
+	item: {
 		verticalAlign: 'top',
 		display: 'table-cell',
 		padding: '9px',
@@ -52,7 +52,7 @@ const css = {
 		verticalAlign: 'top',
 		display: 'table-cell',
 		padding: '8px',
-		width: '70px',
+		width: '30px',
 	} as React.CSSProperties,
 	bar: {
 		height: '6px',
@@ -136,7 +136,10 @@ export default class Node extends React.Component<Props, {}> {
 					</div>
 				</div>
 			</div>
-			<div className="pt-cell" style={css.timestamp}>
+			<div className="pt-cell" style={css.item}>
+				{node.requests_min + '/min'}
+			</div>
+			<div className="pt-cell" style={css.item}>
 				{MiscUtils.formatDateShortTime(node.timestamp) || 'Inactive'}
 			</div>
 			<div className="pt-cell" style={css.bars}>
