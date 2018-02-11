@@ -84,7 +84,13 @@ export default class Node extends React.Component<Props, State> {
 			>
 				<NodeDetailed
 					node={this.props.node}
-				certificates={this.props.certificates}
+					certificates={this.props.certificates}
+					onClose={(): void => {
+						this.setState({
+							...this.state,
+							open: false,
+						});
+					}}
 				/>
 			</div>;
 		}
@@ -102,7 +108,13 @@ export default class Node extends React.Component<Props, State> {
 		return <div
 			className="pt-card pt-row"
 			style={cardStyle}
-			onClick={(): void => {
+			onClick={(evt): void => {
+				let target = evt.target as HTMLElement;
+
+				if (target.className.indexOf('open-ignore') !== -1) {
+					return;
+				}
+
 				this.setState({
 					...this.state,
 					open: true,
@@ -111,15 +123,19 @@ export default class Node extends React.Component<Props, State> {
 		>
 			<div className="pt-cell" style={css.name}>
 				<div className="layout horizontal">
-					<label className="pt-control pt-checkbox" style={css.select}>
+					<label
+						className="pt-control pt-checkbox open-ignore"
+						style={css.select}
+					>
 						<input
 							type="checkbox"
+							className="open-ignore"
 							checked={this.props.selected}
 							onClick={(evt): void => {
 								this.props.onSelect(evt.shiftKey);
 							}}
 						/>
-						<span className="pt-control-indicator"/>
+						<span className="pt-control-indicator open-ignore"/>
 					</label>
 					<div style={css.nameSpan}>
 						{node.name}
