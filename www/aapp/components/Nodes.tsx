@@ -39,6 +39,10 @@ const css = {
 		width: '100%',
 		overflowY: 'auto',
 	} as React.CSSProperties,
+	placeholder: {
+		opacity: 0,
+		width: '100%',
+	} as React.CSSProperties,
 	header: {
 		marginTop: '-19px',
 	} as React.CSSProperties,
@@ -195,6 +199,9 @@ export default class Nodes extends React.Component<{}, State> {
 			<div style={css.itemsBox}>
 				<div style={css.items}>
 					{nodesDom}
+					<tr className="pt-card pt-row" style={css.placeholder}>
+						<td colSpan={4} style={css.placeholder}/>
+					</tr>
 				</div>
 			</div>
 			<NodesPage

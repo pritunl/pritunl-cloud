@@ -293,7 +293,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 
 		return <td
 			className="pt-cell"
-			colSpan={3}
+			colSpan={4}
 			style={css.card}
 		>
 			<div className="layout horizontal wrap">
