@@ -15,10 +15,15 @@ interface Selected {
 	[key: string]: boolean;
 }
 
+interface Opened {
+	[key: string]: boolean;
+}
+
 interface State {
 	nodes: NodeTypes.NodesRo;
 	certificates: CertificateTypes.CertificatesRo;
 	selected: Selected;
+	opened: Opened;
 	lastSelected: string;
 	disabled: boolean;
 }
@@ -49,6 +54,7 @@ export default class Nodes extends React.Component<{}, State> {
 			nodes: NodesStore.nodes,
 			certificates: CertificatesStore.certificates,
 			selected: {},
+			opened: {},
 			lastSelected: null,
 			disabled: false,
 		};
@@ -78,10 +84,15 @@ export default class Nodes extends React.Component<{}, State> {
 	onChange = (): void => {
 		let selected: Selected = {};
 		let curSelected = this.state.selected;
+		let opened: Opened = {};
+		let curOpened = this.state.opened;
 
 		this.state.nodes.forEach((node: NodeTypes.Node): void => {
 			if (curSelected[node.id]) {
 				selected[node.id] = true;
+			}
+			if (curOpened[node.id]) {
+				opened[node.id] = true;
 			}
 		});
 
@@ -90,6 +101,7 @@ export default class Nodes extends React.Component<{}, State> {
 			nodes: NodesStore.nodes,
 			certificates: CertificatesStore.certificates,
 			selected: selected,
+			opened: opened,
 		});
 	}
 
@@ -102,6 +114,7 @@ export default class Nodes extends React.Component<{}, State> {
 				node={node}
 				certificates={this.state.certificates}
 				selected={!!this.state.selected[node.id]}
+				open={!!this.state.opened[node.id]}
 				onSelect={(shift: boolean): void => {
 					let selected = {
 						...this.state.selected,
@@ -151,6 +164,22 @@ export default class Nodes extends React.Component<{}, State> {
 						...this.state,
 						lastSelected: node.id,
 						selected: selected,
+					});
+				}}
+				onOpen={(): void => {
+					let opened = {
+						...this.state.opened,
+					};
+
+					if (opened[node.id]) {
+						delete opened[node.id];
+					} else {
+						opened[node.id] = true;
+					}
+
+					this.setState({
+						...this.state,
+						opened: opened,
 					});
 				}}
 			/>);

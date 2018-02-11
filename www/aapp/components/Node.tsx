@@ -9,11 +9,9 @@ interface Props {
 	node: NodeTypes.NodeRo;
 	certificates: CertificateTypes.CertificatesRo;
 	selected: boolean;
-	onSelect: (shift: boolean) => void;
-}
-
-interface State {
 	open: boolean;
+	onSelect: (shift: boolean) => void;
+	onOpen: () => void;
 }
 
 const css = {
@@ -65,18 +63,11 @@ const css = {
 	} as React.CSSProperties,
 };
 
-export default class Node extends React.Component<Props, State> {
-	constructor(props: any, context: any) {
-		super(props, context);
-		this.state = {
-			open: false,
-		};
-	}
-
+export default class Node extends React.Component<Props, {}> {
 	render(): JSX.Element {
 		let node = this.props.node;
 
-		if (this.state.open) {
+		if (this.props.open) {
 			return <div
 				className="pt-card pt-row"
 				style={css.cardOpen}
@@ -85,10 +76,7 @@ export default class Node extends React.Component<Props, State> {
 					node={this.props.node}
 					certificates={this.props.certificates}
 					onClose={(): void => {
-						this.setState({
-							...this.state,
-							open: false,
-						});
+						this.props.onOpen();
 					}}
 				/>
 			</div>;
@@ -124,10 +112,7 @@ export default class Node extends React.Component<Props, State> {
 					return;
 				}
 
-				this.setState({
-					...this.state,
-					open: true,
-				});
+				this.props.onOpen();
 			}}
 		>
 			<div className="pt-cell" style={css.name}>
