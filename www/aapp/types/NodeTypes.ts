@@ -1,5 +1,7 @@
 /// <reference path="../References.d.ts"/>
 export const SYNC = 'node.sync';
+export const TRAVERSE = 'user.traverse';
+export const FILTER = 'user.filter';
 export const CHANGE = 'node.change';
 
 export interface Node {
@@ -20,6 +22,10 @@ export interface Node {
 	forwarded_for_header?: string;
 }
 
+export interface Filter {
+	name?: string;
+}
+
 export type Nodes = Node[];
 
 export type NodeRo = Readonly<Node>;
@@ -31,5 +37,9 @@ export interface NodeDispatch {
 		id?: string;
 		node?: Node;
 		nodes?: Nodes;
+		page?: number;
+		pageCount?: number;
+		filter?: Filter;
+		count?: number;
 	};
 }
