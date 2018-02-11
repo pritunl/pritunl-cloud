@@ -2,6 +2,7 @@ package node
 
 import (
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/utils"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -20,11 +21,44 @@ func Get(db *database.Database, nodeId bson.ObjectId) (
 }
 
 func GetAll(db *database.Database) (nodes []*Node, err error) {
-
 	coll := db.Nodes()
 	nodes = []*Node{}
 
 	cursor := coll.Find(bson.M{}).Iter()
+
+	nde := &Node{}
+	for cursor.Next(nde) {
+		nde.SetActive()
+		nodes = append(nodes, nde)
+		nde = &Node{}
+	}
+
+	err = cursor.Close()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func GetAllPaged(db *database.Database, query *bson.M, page, pageCount int) (
+	nodes []*Node, count int, err error) {
+
+	coll := db.Nodes()
+	nodes = []*Node{}
+
+	qury := coll.Find(query)
+
+	count, err = qury.Count()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	skip := utils.Min(page*pageCount, utils.Max(0, count-pageCount))
+
+	cursor := qury.Sort("name").Skip(skip).Limit(pageCount).Iter()
 
 	nde := &Node{}
 	for cursor.Next(nde) {
