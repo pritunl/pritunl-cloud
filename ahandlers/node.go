@@ -166,21 +166,11 @@ func nodesGet(c *gin.Context) {
 		}
 	}
 
-	ndes := []*node.Node{}
-	for i := 0; i < 50; i++ {
-		nodes, _, err := node.GetAllPaged(db, &query, page, pageCount)
-		if err != nil {
-			utils.AbortWithError(c, 500, err)
-			return
-		}
-
-		for _, nde := range nodes {
-			nde.Id = bson.NewObjectId()
-			ndes = append(ndes, nde)
-		}
+	nodes, count, err := node.GetAllPaged(db, &query, page, pageCount)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
 	}
-
-	nodes := ndes
 
 	if demo.IsDemo() {
 		for _, nde := range nodes {
@@ -191,8 +181,6 @@ func nodesGet(c *gin.Context) {
 			nde.Load15 = 20.0
 		}
 	}
-
-	count := 1000
 
 	data := &nodesData{
 		Nodes: nodes,
