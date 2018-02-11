@@ -49,6 +49,9 @@ const css = {
 	heading: {
 		margin: '19px 0 0 0',
 	} as React.CSSProperties,
+	button: {
+		margin: '10px 0 0 10px',
+	} as React.CSSProperties,
 };
 
 export default class Nodes extends React.Component<{}, State> {
@@ -194,6 +197,22 @@ export default class Nodes extends React.Component<{}, State> {
 				<div className="layout horizontal wrap" style={css.header}>
 					<h2 style={css.heading}>Nodes</h2>
 					<div className="flex"/>
+					<div>
+						<button
+							className="pt-button pt-intent-warning pt-icon-chevron-up"
+							style={css.button}
+							hidden={!Object.keys(this.state.opened).length}
+							type="button"
+							onClick={(): void => {
+								this.setState({
+									...this.state,
+									opened: {},
+								});
+							}}
+						>
+							Collapse All
+						</button>
+					</div>
 				</div>
 			</PageHeader>
 			<div style={css.itemsBox}>
