@@ -1,13 +1,19 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
-import * as ReactRouter from 'react-router-dom';
 import * as MiscUtils from '../utils/MiscUtils';
 import * as NodeTypes from '../types/NodeTypes';
+import * as CertificateTypes from "../types/CertificateTypes";
+import NodeDetailed from './NodeDetailed';
 
 interface Props {
 	node: NodeTypes.NodeRo;
+	certificates: CertificateTypes.CertificatesRo;
 	selected: boolean;
 	onSelect: (shift: boolean) => void;
+}
+
+interface State {
+	open: boolean;
 }
 
 const css = {
@@ -16,6 +22,14 @@ const css = {
 		width: '100%',
 		padding: 0,
 		boxShadow: 'none',
+		cursor: 'pointer',
+	} as React.CSSProperties,
+	cardOpen: {
+		display: 'table-row',
+		width: '100%',
+		padding: 0,
+		boxShadow: 'none',
+		position: 'relative',
 	} as React.CSSProperties,
 	select: {
 		margin: '2px 0 0 0',
@@ -52,10 +66,29 @@ const css = {
 	} as React.CSSProperties,
 };
 
-export default class Node extends React.Component<Props, {}> {
+export default class Node extends React.Component<Props, State> {
+	constructor(props: any, context: any) {
+		super(props, context);
+		this.state = {
+			open: false,
+		};
+	}
+
 	render(): JSX.Element {
 		let node = this.props.node;
-		let roles: JSX.Element[] = [];
+
+		if (this.state.open) {
+			return <div
+				className="pt-card pt-row"
+				style={css.cardOpen}
+			>
+				<NodeDetailed
+					node={this.props.node}
+				certificates={this.props.certificates}
+				/>
+			</div>;
+		}
+
 		let active = node.requests_min !== 0 || node.memory !== 0 ||
 			node.load1 !== 0 || node.load5 !== 0 || node.load15 !== 0;
 
@@ -69,6 +102,12 @@ export default class Node extends React.Component<Props, {}> {
 		return <div
 			className="pt-card pt-row"
 			style={cardStyle}
+			onClick={(): void => {
+				this.setState({
+					...this.state,
+					open: true,
+				});
+			}}
 		>
 			<div className="pt-cell" style={css.name}>
 				<div className="layout horizontal">
@@ -82,9 +121,6 @@ export default class Node extends React.Component<Props, {}> {
 						/>
 						<span className="pt-control-indicator"/>
 					</label>
-					<ReactRouter.Link to={'/node/' + node.id} style={css.nameLink}>
-						{node.name}
-					</ReactRouter.Link>
 				</div>
 			</div>
 			<div className="pt-cell" style={css.lastActivity}>
