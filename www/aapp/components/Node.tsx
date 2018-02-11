@@ -41,6 +41,9 @@ const css = {
 		display: 'table-cell',
 		padding: '8px',
 	} as React.CSSProperties,
+	nameSpan: {
+		margin: '0 5px 0 0',
+	} as React.CSSProperties,
 	type: {
 		verticalAlign: 'top',
 		display: 'table-cell',
@@ -60,9 +63,6 @@ const css = {
 	tag: {
 		margin: '8px 5px 0 5px',
 		height: '20px',
-	} as React.CSSProperties,
-	nameLink: {
-		margin: '0 5px 0 0',
 	} as React.CSSProperties,
 };
 
@@ -121,6 +121,9 @@ export default class Node extends React.Component<Props, State> {
 						/>
 						<span className="pt-control-indicator"/>
 					</label>
+					<div style={css.nameSpan}>
+						{node.name}
+					</div>
 				</div>
 			</div>
 			<div className="pt-cell" style={css.lastActivity}>
