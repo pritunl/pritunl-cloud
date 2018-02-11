@@ -13,10 +13,12 @@ import PageInfo from './PageInfo';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
 import Help from './Help';
+import * as Constants from "../Constants";
 
 interface Props {
 	node: NodeTypes.NodeRo;
 	certificates: CertificateTypes.CertificatesRo;
+	onClose: () => void;
 }
 
 interface State {
@@ -30,10 +32,11 @@ interface State {
 
 const css = {
 	card: {
+		position: 'relative',
 		padding: '10px 10px 0 10px',
 		width: '100%',
 	} as React.CSSProperties,
-	remove: {
+	buttons: {
 		position: 'absolute',
 		top: '5px',
 		right: '5px',
@@ -295,7 +298,14 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		>
 			<div className="layout horizontal wrap">
 				<div style={css.group}>
-					<div style={css.remove}>
+					<div style={css.buttons}>
+						<button
+							className="pt-button pt-minimal pt-intent-warning pt-icon-chevron-up"
+							type="button"
+							onClick={(): void => {
+								this.props.onClose();
+							}}
+						/>
 						<ConfirmButton
 							className="pt-minimal pt-intent-danger pt-icon-cross"
 							progressClassName="pt-intent-danger"
