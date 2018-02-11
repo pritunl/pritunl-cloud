@@ -10,8 +10,6 @@ import Node from './Node';
 import NodesPage from './NodesPage';
 import Page from './Page';
 import PageHeader from './PageHeader';
-import * as UserTypes from "../types/UserTypes";
-import UsersStore from "../stores/UsersStore";
 
 interface Selected {
 	[key: string]: boolean;
@@ -102,8 +100,59 @@ export default class Nodes extends React.Component<{}, State> {
 			nodesDom.push(<Node
 				key={node.id}
 				node={node}
-				selected={!!this.state.selected[node.id]}
 				certificates={this.state.certificates}
+				selected={!!this.state.selected[node.id]}
+				onSelect={(shift: boolean): void => {
+					let selected = {
+						...this.state.selected,
+					};
+
+					if (shift) {
+						let nodes = this.state.nodes;
+						let start: number;
+						let end: number;
+
+						for (let i = 0; i < nodes.length; i++) {
+							let usr = nodes[i];
+
+							if (usr.id === node.id) {
+								start = i;
+							} else if (usr.id === this.state.lastSelected) {
+								end = i;
+							}
+						}
+
+						if (start !== undefined && end !== undefined) {
+							if (start > end) {
+								end = [start, start = end][0];
+							}
+
+							for (let i = start; i <= end; i++) {
+								selected[nodes[i].id] = true;
+							}
+
+							this.setState({
+								...this.state,
+								lastSelected: node.id,
+								selected: selected,
+							});
+
+							return;
+						}
+					}
+
+					if (selected[node.id]) {
+						delete selected[node.id];
+					} else {
+						selected[node.id] = true;
+					}
+
+					this.setState({
+						...this.state,
+						lastSelected: node.id,
+						selected: selected,
+					});
+				}}
 			/>);
 		});
 
