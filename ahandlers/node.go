@@ -1,6 +1,7 @@
 package ahandlers
 
 import (
+	"fmt"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -9,6 +10,8 @@ import (
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"gopkg.in/mgo.v2/bson"
+	"strconv"
+	"strings"
 )
 
 type nodeData struct {
@@ -22,6 +25,11 @@ type nodeData struct {
 	UserDomain         string          `json:"user_domain"`
 	Services           []bson.ObjectId `json:"services"`
 	ForwardedForHeader string          `json:"forwarded_for_header"`
+}
+
+type nodesData struct {
+	Nodes []*node.Node `json:"nodes"`
+	Count int          `json:"count"`
 }
 
 func nodePut(c *gin.Context) {
@@ -145,11 +153,34 @@ func nodeGet(c *gin.Context) {
 func nodesGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 
-	nodes, err := node.GetAll(db)
-	if err != nil {
-		utils.AbortWithError(c, 500, err)
-		return
+	page, _ := strconv.Atoi(c.Query("page"))
+	pageCount, _ := strconv.Atoi(c.Query("page_count"))
+
+	query := bson.M{}
+
+	name := strings.TrimSpace(c.Query("name"))
+	if name != "" {
+		query["name"] = &bson.M{
+			"$regex":   fmt.Sprintf(".*%s.*", name),
+			"$options": "i",
+		}
 	}
+
+	ndes := []*node.Node{}
+	for i := 0; i < 50; i++ {
+		nodes, _, err := node.GetAllPaged(db, &query, page, pageCount)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		for _, nde := range nodes {
+			nde.Id = bson.NewObjectId()
+			ndes = append(ndes, nde)
+		}
+	}
+
+	nodes := ndes
 
 	if demo.IsDemo() {
 		for _, nde := range nodes {
@@ -161,5 +192,12 @@ func nodesGet(c *gin.Context) {
 		}
 	}
 
-	c.JSON(200, nodes)
+	count := 1000
+
+	data := &nodesData{
+		Nodes: nodes,
+		Count: count,
+	}
+
+	c.JSON(200, data)
 }
