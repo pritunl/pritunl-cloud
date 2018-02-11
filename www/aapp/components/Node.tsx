@@ -44,25 +44,24 @@ const css = {
 	nameSpan: {
 		margin: '0 5px 0 0',
 	} as React.CSSProperties,
-	type: {
-		verticalAlign: 'top',
-		display: 'table-cell',
-		padding: '9px',
-	} as React.CSSProperties,
-	lastActivity: {
+	timestamp: {
 		verticalAlign: 'top',
 		display: 'table-cell',
 		padding: '9px',
 		whiteSpace: 'nowrap',
 	} as React.CSSProperties,
-	roles: {
+	bars: {
 		verticalAlign: 'top',
 		display: 'table-cell',
-		padding: '0 8px 8px 8px',
+		padding: '8px',
+		width: '70px',
 	} as React.CSSProperties,
-	tag: {
-		margin: '8px 5px 0 5px',
-		height: '20px',
+	bar: {
+		height: '6px',
+		marginBottom: '1px',
+	} as React.CSSProperties,
+	barLast: {
+		height: '6px',
 	} as React.CSSProperties,
 };
 
@@ -105,6 +104,16 @@ export default class Node extends React.Component<Props, State> {
 			cardStyle.opacity = 0.6;
 		}
 
+		let memoryStyle: React.CSSProperties = {
+			width: (node.memory || 0) + '%',
+		};
+		let load1Style: React.CSSProperties = {
+			width: (node.load1 || 0) + '%',
+		};
+		let load5Style: React.CSSProperties = {
+			width: (node.load5 || 0) + '%',
+		};
+
 		return <div
 			className="pt-card pt-row"
 			style={cardStyle}
@@ -142,8 +151,28 @@ export default class Node extends React.Component<Props, State> {
 					</div>
 				</div>
 			</div>
-			<div className="pt-cell" style={css.lastActivity}>
+			<div className="pt-cell" style={css.timestamp}>
 				{MiscUtils.formatDateShortTime(node.timestamp) || 'Inactive'}
+			</div>
+			<div className="pt-cell" style={css.bars}>
+				<div
+					className="pt-progress-bar pt-no-stripes pt-intent-primary"
+					style={css.bar}
+				>
+					<div className="pt-progress-meter" style={memoryStyle}/>
+				</div>
+				<div
+					className="pt-progress-bar pt-no-stripes pt-intent-success"
+					style={css.bar}
+				>
+					<div className="pt-progress-meter" style={load1Style}/>
+				</div>
+				<div
+					className="pt-progress-bar pt-no-stripes pt-intent-warning"
+					style={css.barLast}
+				>
+					<div className="pt-progress-meter" style={load5Style}/>
+				</div>
 			</div>
 		</div>;
 	}
