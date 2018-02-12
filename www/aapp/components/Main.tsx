@@ -11,6 +11,10 @@ import UserDetailed from './UserDetailed';
 import Nodes from './Nodes';
 import Policies from './Policies';
 import Certificates from './Certificates';
+import Organizations from './Organizations';
+import Datacenters from './Datacenters';
+import Zones from './Zones';
+import Instances from './Instances';
 import Logs from './Logs';
 import Settings from './Settings';
 import * as UserActions from '../actions/UserActions';
@@ -19,6 +23,10 @@ import * as AuditActions from '../actions/AuditActions';
 import * as NodeActions from '../actions/NodeActions';
 import * as PolicyActions from '../actions/PolicyActions';
 import * as CertificateActions from '../actions/CertificateActions';
+import * as OrganizationActions from '../actions/OrganizationActions';
+import * as DatacenterActions from '../actions/DatacenterActions';
+import * as ZoneActions from '../actions/ZoneActions';
+import * as InstanceActions from '../actions/InstanceActions';
 import * as LogActions from '../actions/LogActions';
 import * as SettingsActions from '../actions/SettingsActions';
 import * as SubscriptionActions from '../actions/SubscriptionActions';
@@ -122,6 +130,34 @@ export default class Main extends React.Component<{}, State> {
 							to="/certificates"
 						>
 							Certificates
+						</ReactRouter.Link>
+						<ReactRouter.Link
+							className="pt-button pt-minimal pt-icon-endorsed"
+							style={css.link}
+							to="/organizations"
+						>
+							Organizations
+						</ReactRouter.Link>
+						<ReactRouter.Link
+							className="pt-button pt-minimal pt-icon-endorsed"
+							style={css.link}
+							to="/datacenters"
+						>
+							Datacenters
+						</ReactRouter.Link>
+						<ReactRouter.Link
+							className="pt-button pt-minimal pt-icon-endorsed"
+							style={css.link}
+							to="/zones"
+						>
+							Zones
+						</ReactRouter.Link>
+						<ReactRouter.Link
+							className="pt-button pt-minimal pt-icon-endorsed"
+							style={css.link}
+							to="/instances"
+						>
+							Instances
 						</ReactRouter.Link>
 						<ReactRouter.Link
 							className="pt-button pt-minimal pt-icon-history"
@@ -244,6 +280,54 @@ export default class Main extends React.Component<{}, State> {
 												disabled: false,
 											});
 										});
+									} else if (pathname === '/organizations') {
+										OrganizationActions.sync().then((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										}).catch((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										});
+									} else if (pathname === '/datacenters') {
+										DatacenterActions.sync().then((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										}).catch((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										});
+									} else if (pathname === '/zones') {
+										ZoneActions.sync().then((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										}).catch((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										});
+									} else if (pathname === '/instances') {
+										InstanceActions.sync().then((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										}).catch((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										});
 									} else if (pathname === '/logs') {
 										LogActions.sync().then((): void => {
 											this.setState({
@@ -324,6 +408,18 @@ export default class Main extends React.Component<{}, State> {
 				)}/>
 				<ReactRouter.Route path="/certificates" render={() => (
 					<Certificates/>
+				)}/>
+				<ReactRouter.Route path="/organizations" render={() => (
+					<Organizations/>
+				)}/>
+				<ReactRouter.Route path="/datacenters" render={() => (
+					<Datacenters/>
+				)}/>
+				<ReactRouter.Route path="/zones" render={() => (
+					<Zones/>
+				)}/>
+				<ReactRouter.Route path="/instances" render={() => (
+					<Instances/>
 				)}/>
 				<ReactRouter.Route path="/logs" render={() => (
 					<Logs/>
