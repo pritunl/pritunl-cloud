@@ -1,7 +1,7 @@
 /// <reference path="../References.d.ts"/>
 export const SYNC = 'node.sync';
-export const TRAVERSE = 'user.traverse';
-export const FILTER = 'user.filter';
+export const TRAVERSE = 'node.traverse';
+export const FILTER = 'node.filter';
 export const CHANGE = 'node.change';
 
 export interface Node {
