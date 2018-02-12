@@ -6,6 +6,7 @@ import * as Alert from '../Alert';
 import * as Csrf from '../Csrf';
 import Loader from '../Loader';
 import * as NodeTypes from '../types/NodeTypes';
+import NodesStore from '../stores/NodesStore';
 import * as MiscUtils from '../utils/MiscUtils';
 
 let syncId: string;
@@ -19,6 +20,11 @@ export function sync(): Promise<void> {
 	return new Promise<void>((resolve, reject): void => {
 		SuperAgent
 			.get('/node')
+			.query({
+				...NodesStore.filter,
+				page: NodesStore.page,
+				page_count: NodesStore.pageCount,
+			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.end((err: any, res: SuperAgent.Response): void => {
