@@ -92,6 +92,26 @@ func (d *Database) Nodes() (coll *Collection) {
 	return
 }
 
+func (d *Database) Organizations() (coll *Collection) {
+	coll = d.getCollection("organizations")
+	return
+}
+
+func (d *Database) Datacenters() (coll *Collection) {
+	coll = d.getCollection("datacenters")
+	return
+}
+
+func (d *Database) Zones() (coll *Collection) {
+	coll = d.getCollection("zones")
+	return
+}
+
+func (d *Database) Instances() (coll *Collection) {
+	coll = d.getCollection("instances")
+	return
+}
+
 func (d *Database) Certificates() (coll *Collection) {
 	coll = d.getCollection("certificates")
 	return
