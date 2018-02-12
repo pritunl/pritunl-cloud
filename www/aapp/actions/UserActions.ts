@@ -36,6 +36,11 @@ export function load(userId: string): Promise<void> {
 	return new Promise<void>((resolve, reject): void => {
 		SuperAgent
 			.get('/user/' + userId)
+			.query({
+				...UsersStore.filter,
+				page: UsersStore.page,
+				page_count: UsersStore.pageCount,
+			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.end((err: any, res: SuperAgent.Response): void => {
