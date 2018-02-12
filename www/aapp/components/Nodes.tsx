@@ -68,17 +68,15 @@ export default class Nodes extends React.Component<{}, State> {
 	}
 
 	get selected(): boolean {
-		for (let key in this.state.selected) {
-			if (this.state.selected[key]) {
-				return true;
-			}
-		}
-		return false;
+		return !!Object.keys(this.state.selected).length;
+	}
+
+	get opened(): boolean {
+		return !!Object.keys(this.state.opened).length;
 	}
 
 	componentDidMount(): void {
 		NodesStore.addChangeListener(this.onChange);
-		CertificatesStore.addChangeListener(this.onChange);
 		NodeActions.sync();
 		CertificateActions.sync();
 	}
@@ -89,12 +87,13 @@ export default class Nodes extends React.Component<{}, State> {
 	}
 
 	onChange = (): void => {
+		let nodes = NodesStore.nodes;
 		let selected: Selected = {};
 		let curSelected = this.state.selected;
 		let opened: Opened = {};
 		let curOpened = this.state.opened;
 
-		this.state.nodes.forEach((node: NodeTypes.Node): void => {
+		nodes.forEach((node: NodeTypes.Node): void => {
 			if (curSelected[node.id]) {
 				selected[node.id] = true;
 			}
@@ -105,7 +104,7 @@ export default class Nodes extends React.Component<{}, State> {
 
 		this.setState({
 			...this.state,
-			nodes: NodesStore.nodes,
+			nodes: nodes,
 			certificates: CertificatesStore.certificates,
 			selected: selected,
 			opened: opened,
@@ -201,7 +200,7 @@ export default class Nodes extends React.Component<{}, State> {
 						<button
 							className="pt-button pt-intent-warning pt-icon-chevron-up"
 							style={css.button}
-							hidden={!Object.keys(this.state.opened).length}
+							hidden={!this.opened}
 							type="button"
 							onClick={(): void => {
 								this.setState({

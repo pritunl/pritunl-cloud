@@ -13,7 +13,6 @@ import PageInfo from './PageInfo';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
 import Help from './Help';
-import * as Constants from "../Constants";
 
 interface Props {
 	node: NodeTypes.NodeRo;
