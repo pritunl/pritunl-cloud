@@ -10,7 +10,8 @@ import Instance from './Instance';
 import InstancesPage from './InstancesPage';
 import Page from './Page';
 import PageHeader from './PageHeader';
-import UsersStore from "../stores/UsersStore";
+import NonState from './NonState';
+import ConfirmButton from './ConfirmButton';
 
 interface Selected {
 	[key: string]: boolean;
@@ -110,6 +111,26 @@ export default class Instances extends React.Component<{}, State> {
 			certificates: CertificatesStore.certificates,
 			selected: selected,
 			opened: opened,
+		});
+	}
+
+	onDelete = (): void => {
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+		InstanceActions.removeMulti(
+				Object.keys(this.state.selected)).then((): void => {
+			this.setState({
+				...this.state,
+				selected: {},
+				disabled: false,
+			});
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
 		});
 	}
 
@@ -213,6 +234,14 @@ export default class Instances extends React.Component<{}, State> {
 						>
 							Collapse All
 						</button>
+						<ConfirmButton
+							label="Delete Selected"
+							className="pt-intent-danger pt-icon-delete"
+							progressClassName="pt-intent-danger"
+							style={css.button}
+							disabled={!this.selected || this.state.disabled}
+							onConfirm={this.onDelete}
+						/>
 						<button
 							className="pt-button pt-intent-success pt-icon-add"
 							style={css.button}
