@@ -330,6 +330,10 @@ export default class Zone extends React.Component<Props, State> {
 								label: 'ID',
 								value: zone.id || 'None',
 							},
+							{
+								label: 'Datacenter',
+								value: zone.datacenter || 'None',
+							},
 						]}
 					/>
 				</div>
