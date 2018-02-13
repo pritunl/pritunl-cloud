@@ -6,6 +6,7 @@ interface Props {
 	message: string;
 	changed: boolean;
 	disabled: boolean;
+	closed?: boolean;
 	hidden?: boolean;
 	light?: boolean;
 	onCancel: () => void;
@@ -38,6 +39,18 @@ export default class PageCreate extends React.Component<Props, {}> {
 			};
 		}
 
+		let closedDom: JSX.Element;
+		if (this.props.closed) {
+			closedDom = <button
+				className="pt-button pt-intent-success pt-icon-cross"
+				style={css.button}
+				type="button"
+				onClick={this.props.onCancel}
+			>
+				Close
+			</button>;
+		}
+
 		return <div
 			className="layout horizontal"
 			style={style}
@@ -53,6 +66,7 @@ export default class PageCreate extends React.Component<Props, {}> {
 						className="pt-button pt-icon-cross"
 						style={css.button}
 						type="button"
+						hidden={this.props.closed}
 						disabled={this.props.disabled}
 						onClick={this.props.onCancel}
 					>
@@ -62,11 +76,13 @@ export default class PageCreate extends React.Component<Props, {}> {
 						className="pt-button pt-intent-success pt-icon-tick"
 						style={css.button}
 						type="button"
+						hidden={this.props.closed}
 						disabled={!this.props.changed || this.props.disabled}
 						onClick={this.props.onCreate}
 					>
 						Create
 					</button>
+					{closedDom}
 				</div>
 			</div>
 		</div>;

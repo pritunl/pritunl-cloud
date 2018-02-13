@@ -20,6 +20,7 @@ interface Props {
 }
 
 interface State {
+	closed: boolean;
 	disabled: boolean;
 	changed: boolean;
 	message: string;
@@ -81,6 +82,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 	constructor(props: any, context: any) {
 		super(props, context);
 		this.state = {
+			closed: false,
 			disabled: false,
 			changed: false,
 			message: '',
@@ -133,8 +135,8 @@ export default class InstanceNew extends React.Component<Props, State> {
 			this.setState({
 				...this.state,
 				message: 'Instance created successfully',
+				closed: true,
 				changed: false,
-				disabled: false,
 			});
 		}).catch((): void => {
 			this.setState({
@@ -215,6 +217,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 							help="Name of instance"
 							type="text"
 							placeholder="Enter name"
+							disabled={this.state.disabled}
 							value={instance.name}
 							onChange={(val): void => {
 								this.set('name', val);
@@ -294,6 +297,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 					message={this.state.message}
 					changed={this.state.changed}
 					disabled={this.state.disabled}
+					closed={this.state.closed}
 					light={true}
 					onCancel={this.props.onClose}
 					onCreate={this.onCreate}
