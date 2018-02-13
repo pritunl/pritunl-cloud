@@ -38,21 +38,21 @@ func zonePut(c *gin.Context) {
 		return
 	}
 
-	zone, err := zone.Get(db, zoneId)
+	zne, err := zone.Get(db, zoneId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	zone.Name = data.Name
-	zone.Organizations = data.Organizations
+	zne.Name = data.Name
+	zne.Organizations = data.Organizations
 
 	fields := set.NewSet(
 		"name",
 		"organizations",
 	)
 
-	errData, err := zone.Validate(db)
+	errData, err := zne.Validate(db)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -63,7 +63,7 @@ func zonePut(c *gin.Context) {
 		return
 	}
 
-	err = zone.CommitFields(db, fields)
+	err = zne.CommitFields(db, fields)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -71,7 +71,7 @@ func zonePut(c *gin.Context) {
 
 	event.PublishDispatch(db, "zone.change")
 
-	c.JSON(200, zone)
+	c.JSON(200, zne)
 }
 
 func zonePost(c *gin.Context) {
@@ -90,13 +90,13 @@ func zonePost(c *gin.Context) {
 		return
 	}
 
-	zone := &zone.Zone{
+	zne := &zone.Zone{
 		Datacenter:    data.Datacenter,
 		Organizations: data.Organizations,
 		Name:          data.Name,
 	}
 
-	errData, err := zone.Validate(db)
+	errData, err := zne.Validate(db)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -107,7 +107,7 @@ func zonePost(c *gin.Context) {
 		return
 	}
 
-	err = zone.Insert(db)
+	err = zne.Insert(db)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -115,7 +115,7 @@ func zonePost(c *gin.Context) {
 
 	event.PublishDispatch(db, "zone.change")
 
-	c.JSON(200, zone)
+	c.JSON(200, zne)
 }
 
 func zoneDelete(c *gin.Context) {
@@ -151,13 +151,13 @@ func zoneGet(c *gin.Context) {
 		return
 	}
 
-	zone, err := zone.Get(db, zoneId)
+	zne, err := zone.Get(db, zoneId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	c.JSON(200, zone)
+	c.JSON(200, zne)
 }
 
 func zonesGet(c *gin.Context) {
