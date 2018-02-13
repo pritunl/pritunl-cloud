@@ -158,6 +158,35 @@ export function remove(instanceId: string): Promise<void> {
 				}
 
 				if (err) {
+					Alert.errorRes(res, 'Failed to delete instance');
+					reject(err);
+					return;
+				}
+
+				resolve();
+			});
+	});
+}
+
+export function removeMulti(instanceIds: string[]): Promise<void> {
+	let loader = new Loader().loading();
+
+	return new Promise<void>((resolve, reject): void => {
+		SuperAgent
+			.delete('/instance')
+			.send(instanceIds)
+			.set('Accept', 'application/json')
+			.set('Csrf-Token', Csrf.token)
+			.end((err: any, res: SuperAgent.Response): void => {
+				loader.done();
+
+				if (res && res.status === 401) {
+					window.location.href = '/login';
+					resolve();
+					return;
+				}
+
+				if (err) {
 					Alert.errorRes(res, 'Failed to delete instances');
 					reject(err);
 					return;
