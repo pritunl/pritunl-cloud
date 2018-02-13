@@ -132,7 +132,7 @@ export default class Main extends React.Component<{}, State> {
 							Certificates
 						</ReactRouter.Link>
 						<ReactRouter.Link
-							className="pt-button pt-minimal pt-icon-endorsed"
+							className="pt-button pt-minimal pt-icon-people"
 							style={css.link}
 							to="/organizations"
 						>
@@ -146,14 +146,14 @@ export default class Main extends React.Component<{}, State> {
 							Datacenters
 						</ReactRouter.Link>
 						<ReactRouter.Link
-							className="pt-button pt-minimal pt-icon-endorsed"
+							className="pt-button pt-minimal pt-icon-layers"
 							style={css.link}
 							to="/zones"
 						>
 							Zones
 						</ReactRouter.Link>
 						<ReactRouter.Link
-							className="pt-button pt-minimal pt-icon-endorsed"
+							className="pt-button pt-minimal pt-icon-dashboard"
 							style={css.link}
 							to="/instances"
 						>

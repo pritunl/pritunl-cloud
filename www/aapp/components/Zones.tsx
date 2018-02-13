@@ -111,7 +111,7 @@ export default class Zones extends React.Component<{}, State> {
 			</div>
 			<NonState
 				hidden={!!zonesDom.length}
-				iconClass="pt-icon-endorsed"
+				iconClass="pt-icon-layers"
 				title="No zones"
 				description="Add a new zone to get started."
 			/>

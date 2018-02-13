@@ -247,6 +247,12 @@ export default class Instances extends React.Component<{}, State> {
 					</tr>
 				</div>
 			</div>
+			<NonState
+				hidden={!!instancesDom.length}
+				iconClass="pt-icon-dashboard"
+				title="No instances"
+				description="Add a new instance to get started."
+			/>
 			<InstancesPage
 				onPage={(): void => {
 					this.setState({
