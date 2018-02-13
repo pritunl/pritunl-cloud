@@ -19,6 +19,8 @@ type instanceData struct {
 	Organization bson.ObjectId `json:"organization"`
 	Zone         bson.ObjectId `json:"zone"`
 	Name         string        `json:"name"`
+	Memory       int           `json:"memory"`
+	Processors   int           `json:"processors"`
 }
 
 type instancesData struct {
@@ -53,9 +55,13 @@ func instancePut(c *gin.Context) {
 	}
 
 	nde.Name = data.Name
+	nde.Memory = data.Memory
+	nde.Processors = data.Processors
 
 	fields := set.NewSet(
 		"name",
+		"memory",
+		"processors",
 	)
 
 	errData, err := nde.Validate(db)
@@ -98,7 +104,10 @@ func instancePost(c *gin.Context) {
 
 	dc := &instance.Instance{
 		Organization: data.Organization,
+		Zone:         data.Zone,
 		Name:         data.Name,
+		Memory:       data.Memory,
+		Processors:   data.Processors,
 	}
 
 	errData, err := dc.Validate(db)
@@ -137,6 +146,31 @@ func instanceDelete(c *gin.Context) {
 	}
 
 	err := instance.Remove(db, instanceId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	event.PublishDispatch(db, "instance.change")
+
+	c.JSON(200, nil)
+}
+
+func instancesDelete(c *gin.Context) {
+	if demo.Blocked(c) {
+		return
+	}
+
+	db := c.MustGet("db").(*database.Database)
+	data := []bson.ObjectId{}
+
+	err := c.Bind(&data)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	err = instance.RemoveMulti(db, data)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
