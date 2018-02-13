@@ -1,11 +1,8 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
 import * as DatacenterTypes from '../types/DatacenterTypes';
-import * as OrganizationTypes from '../types/OrganizationTypes';
 import DatacentersStore from '../stores/DatacentersStore';
-import OrganizationsStore from "../stores/OrganizationsStore";
 import * as DatacenterActions from '../actions/DatacenterActions';
-import * as OrganizationActions from '../actions/OrganizationActions';
 import NonState from './NonState';
 import Datacenter from './Datacenter';
 import Page from './Page';
@@ -13,7 +10,6 @@ import PageHeader from './PageHeader';
 
 interface State {
 	datacenters: DatacenterTypes.DatacentersRo;
-	organizations: OrganizationTypes.OrganizationsRo;
 	disabled: boolean;
 }
 
@@ -37,28 +33,23 @@ export default class Datacenters extends React.Component<{}, State> {
 		super(props, context);
 		this.state = {
 			datacenters: DatacentersStore.datacenters,
-			organizations: OrganizationsStore.organizations,
 			disabled: false,
 		};
 	}
 
 	componentDidMount(): void {
 		DatacentersStore.addChangeListener(this.onChange);
-		OrganizationsStore.addChangeListener(this.onChange);
 		DatacenterActions.sync();
-		OrganizationActions.sync();
 	}
 
 	componentWillUnmount(): void {
 		DatacentersStore.removeChangeListener(this.onChange);
-		OrganizationsStore.removeChangeListener(this.onChange);
 	}
 
 	onChange = (): void => {
 		this.setState({
 			...this.state,
 			datacenters: DatacentersStore.datacenters,
-			organizations: OrganizationsStore.organizations,
 		});
 	}
 
@@ -70,7 +61,6 @@ export default class Datacenters extends React.Component<{}, State> {
 			datacentersDom.push(<Datacenter
 				key={datacenter.id}
 				datacenter={datacenter}
-				organizations={this.state.organizations}
 			/>);
 		});
 

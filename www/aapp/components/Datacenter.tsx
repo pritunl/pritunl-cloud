@@ -1,19 +1,14 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
 import * as DatacenterTypes from '../types/DatacenterTypes';
-import * as OrganizationTypes from '../types/OrganizationTypes';
 import * as DatacenterActions from '../actions/DatacenterActions';
-import OrganizationsStore from '../stores/OrganizationsStore';
 import PageInput from './PageInput';
-import PageSelectButton from './PageSelectButton';
 import PageInfo from './PageInfo';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
-import Help from './Help';
 
 interface Props {
 	datacenter: DatacenterTypes.DatacenterRo;
-	organizations: OrganizationTypes.OrganizationsRo;
 }
 
 interface State {
@@ -21,9 +16,6 @@ interface State {
 	changed: boolean;
 	message: string;
 	datacenter: DatacenterTypes.Datacenter;
-	addOrganization: string;
-	addCert: string;
-	forwardedChecked: boolean;
 }
 
 const css = {
@@ -77,9 +69,6 @@ export default class Datacenter extends React.Component<Props, State> {
 			changed: false,
 			message: '',
 			datacenter: null,
-			addOrganization: null,
-			addCert: null,
-			forwardedChecked: false,
 		};
 	}
 
@@ -155,119 +144,9 @@ export default class Datacenter extends React.Component<Props, State> {
 		});
 	}
 
-	onAddOrganization = (): void => {
-		let datacenter: DatacenterTypes.Datacenter;
-
-		if (!this.state.addOrganization && !this.props.organizations.length) {
-			return;
-		}
-
-		let organizationId = this.state.addOrganization ||
-			this.props.organizations[0].id;
-
-		if (this.state.changed) {
-			datacenter = {
-				...this.state.datacenter,
-			};
-		} else {
-			datacenter = {
-				...this.props.datacenter,
-			};
-		}
-
-		let organizations = [
-			...(datacenter.organizations || []),
-		];
-
-		if (organizations.indexOf(organizationId) === -1) {
-			organizations.push(organizationId);
-		}
-
-		organizations.sort();
-
-		datacenter.organizations = organizations;
-
-		this.setState({
-			...this.state,
-			changed: true,
-			datacenter: datacenter,
-		});
-	}
-
-	onRemoveOrganization = (organization: string): void => {
-		let datacenter: DatacenterTypes.Datacenter;
-
-		if (this.state.changed) {
-			datacenter = {
-				...this.state.datacenter,
-			};
-		} else {
-			datacenter = {
-				...this.props.datacenter,
-			};
-		}
-
-		let organizations = [
-			...(datacenter.organizations || []),
-		];
-
-		let i = organizations.indexOf(organization);
-		if (i === -1) {
-			return;
-		}
-
-		organizations.splice(i, 1);
-
-		datacenter.organizations = organizations;
-
-		this.setState({
-			...this.state,
-			changed: true,
-			datacenter: datacenter,
-		});
-	}
-
 	render(): JSX.Element {
 		let datacenter: DatacenterTypes.Datacenter = this.state.datacenter ||
 			this.props.datacenter;
-
-		let organizations: JSX.Element[] = [];
-		for (let organizationId of (datacenter.organizations || [])) {
-			let organization = OrganizationsStore.organization(organizationId);
-			if (!organization) {
-				continue;
-			}
-
-			organizations.push(
-				<div
-					className="pt-tag pt-tag-removable pt-intent-primary"
-					style={css.item}
-					key={organization.id}
-				>
-					{organization.name}
-					<button
-						className="pt-tag-remove"
-						onMouseUp={(): void => {
-							this.onRemoveOrganization(organization.id);
-						}}
-					/>
-				</div>,
-			);
-		}
-
-		let organizationsSelect: JSX.Element[] = [];
-		if (this.props.organizations.length) {
-			for (let organization of this.props.organizations) {
-				organizationsSelect.push(
-					<option
-						key={organization.id}
-						value={organization.id}
-					>{organization.name}</option>,
-				);
-			}
-		} else {
-			organizationsSelect.push(<option key="null" value="">None</option>);
-		}
 
 		return <div
 			className="pt-card"
@@ -294,34 +173,6 @@ export default class Datacenter extends React.Component<Props, State> {
 							this.set('name', val);
 						}}
 					/>
-					<label
-						className="pt-label"
-						style={css.label}
-					>
-						Organizations
-						<Help
-							title="Organizations"
-							content="Organizations that can access this datacenter."
-						/>
-						<div>
-							{organizations}
-						</div>
-					</label>
-					<PageSelectButton
-						label="Add Organization"
-						value={this.state.addOrganization}
-						disabled={!this.props.organizations.length}
-						buttonClass="pt-intent-success"
-						onChange={(val: string): void => {
-							this.setState({
-								...this.state,
-								addOrganization: val,
-							});
-						}}
-						onSubmit={this.onAddOrganization}
-					>
-						{organizationsSelect}
-					</PageSelectButton>
 				</div>
 				<div style={css.group}>
 					<PageInfo
