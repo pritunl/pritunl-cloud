@@ -8,7 +8,9 @@ export interface Instance {
 	id: string;
 	organization?: string;
 	zone?: string;
-	name?: number;
+	name?: string;
+	memory?: number;
+	processors?: number;
 }
 
 export interface Filter {
