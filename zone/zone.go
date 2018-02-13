@@ -22,6 +22,13 @@ func (z *Zone) Validate(db *database.Database) (
 		z.Organizations = []bson.ObjectId{}
 	}
 
+	if z.Datacenter == "" {
+		errData = &errortypes.ErrorData{
+			Error:   "datacenter_required",
+			Message: "Missing required datacenter",
+		}
+	}
+
 	return
 }
 
