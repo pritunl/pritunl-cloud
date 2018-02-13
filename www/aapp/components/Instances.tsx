@@ -1,12 +1,22 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
 import * as InstanceTypes from '../types/InstanceTypes';
+import * as OrganizationTypes from '../types/OrganizationTypes';
+import * as DatacenterTypes from '../types/DatacenterTypes';
+import * as ZoneTypes from '../types/ZoneTypes';
 import * as CertificateTypes from '../types/CertificateTypes';
 import InstancesStore from '../stores/InstancesStore';
+import OrganizationsStore from '../stores/OrganizationsStore';
+import DatacentersStore from '../stores/DatacentersStore';
+import ZonesStore from '../stores/ZonesStore';
 import CertificatesStore from '../stores/CertificatesStore';
 import * as InstanceActions from '../actions/InstanceActions';
+import * as OrganizationActions from '../actions/OrganizationActions';
+import * as DatacenterActions from '../actions/DatacenterActions';
+import * as ZoneActions from '../actions/ZoneActions';
 import * as CertificateActions from '../actions/CertificateActions';
 import Instance from './Instance';
+import InstanceNew from './InstanceNew';
 import InstancesPage from './InstancesPage';
 import Page from './Page';
 import PageHeader from './PageHeader';
@@ -23,9 +33,13 @@ interface Opened {
 
 interface State {
 	instances: InstanceTypes.InstancesRo;
+	organizations: OrganizationTypes.OrganizationsRo;
+	datacenters: DatacenterTypes.DatacentersRo;
+	zones: ZoneTypes.ZonesRo;
 	certificates: CertificateTypes.CertificatesRo;
 	selected: Selected;
 	opened: Opened;
+	newOpened: boolean;
 	lastSelected: string;
 	disabled: boolean;
 }
@@ -61,9 +75,13 @@ export default class Instances extends React.Component<{}, State> {
 		super(props, context);
 		this.state = {
 			instances: InstancesStore.instances,
+			organizations: OrganizationsStore.organizations,
+			datacenters: DatacentersStore.datacenters,
+			zones: ZonesStore.zones,
 			certificates: CertificatesStore.certificates,
 			selected: {},
 			opened: {},
+			newOpened: false,
 			lastSelected: null,
 			disabled: false,
 		};
@@ -79,13 +97,22 @@ export default class Instances extends React.Component<{}, State> {
 
 	componentDidMount(): void {
 		InstancesStore.addChangeListener(this.onChange);
+		OrganizationsStore.addChangeListener(this.onChange);
+		DatacentersStore.addChangeListener(this.onChange);
+		ZonesStore.addChangeListener(this.onChange);
 		CertificatesStore.addChangeListener(this.onChange);
 		InstanceActions.sync();
+		OrganizationActions.sync();
+		DatacenterActions.sync();
+		ZoneActions.sync();
 		CertificateActions.sync();
 	}
 
 	componentWillUnmount(): void {
 		InstancesStore.removeChangeListener(this.onChange);
+		OrganizationsStore.removeChangeListener(this.onChange);
+		DatacentersStore.removeChangeListener(this.onChange);
+		ZonesStore.removeChangeListener(this.onChange);
 		CertificatesStore.removeChangeListener(this.onChange);
 	}
 
@@ -108,7 +135,10 @@ export default class Instances extends React.Component<{}, State> {
 		this.setState({
 			...this.state,
 			instances: instances,
+			organizations: OrganizationsStore.organizations,
 			certificates: CertificatesStore.certificates,
+			datacenters: DatacentersStore.datacenters,
+			zones: ZonesStore.zones,
 			selected: selected,
 			opened: opened,
 		});
@@ -214,6 +244,21 @@ export default class Instances extends React.Component<{}, State> {
 			/>);
 		});
 
+		let newInstanceDom: JSX.Element;
+		if (this.state.newOpened) {
+			newInstanceDom = <InstanceNew
+				organizations={this.state.organizations}
+				datacenters={this.state.datacenters}
+				zones={this.state.zones}
+				onClose={(): void => {
+					this.setState({
+						...this.state,
+						newOpened: false,
+					});
+				}}
+			/>;
+		}
+
 		return <Page>
 			<PageHeader>
 				<div className="layout horizontal wrap" style={css.header}>
@@ -250,18 +295,7 @@ export default class Instances extends React.Component<{}, State> {
 							onClick={(): void => {
 								this.setState({
 									...this.state,
-									disabled: true,
-								});
-								InstanceActions.create(null).then((): void => {
-									this.setState({
-										...this.state,
-										disabled: false,
-									});
-								}).catch((): void => {
-									this.setState({
-										...this.state,
-										disabled: false,
-									});
+									newOpened: true,
 								});
 							}}
 						>New</button>
@@ -270,6 +304,7 @@ export default class Instances extends React.Component<{}, State> {
 			</PageHeader>
 			<div style={css.itemsBox}>
 				<div style={css.items}>
+					{newInstanceDom}
 					{instancesDom}
 					<tr className="pt-card pt-row" style={css.placeholder}>
 						<td colSpan={4} style={css.placeholder}/>
