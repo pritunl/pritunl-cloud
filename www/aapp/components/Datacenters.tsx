@@ -101,7 +101,7 @@ export default class Datacenters extends React.Component<{}, State> {
 			</div>
 			<NonState
 				hidden={!!datacentersDom.length}
-				iconClass="pt-icon-endorsed"
+				iconClass="pt-icon-cloud"
 				title="No datacenters"
 				description="Add a new datacenter to get started."
 			/>

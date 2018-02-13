@@ -139,7 +139,7 @@ export default class Main extends React.Component<{}, State> {
 							Organizations
 						</ReactRouter.Link>
 						<ReactRouter.Link
-							className="pt-button pt-minimal pt-icon-endorsed"
+							className="pt-button pt-minimal pt-icon-cloud"
 							style={css.link}
 							to="/datacenters"
 						>
