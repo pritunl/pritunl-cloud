@@ -13,10 +13,34 @@ type Instance struct {
 	Organization bson.ObjectId `bson:"organization,omitempty" json:"organization"`
 	Zone         bson.ObjectId `bson:"zone,omitempty" json:"zone"`
 	Name         string        `bson:"name" json:"name"`
+	Memory       int           `bson:"memory" json:"memory"`
+	Processors   int           `bson:"processors" json:"processors"`
 }
 
 func (i *Instance) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
+
+	if i.Organization == "" {
+		errData = &errortypes.ErrorData{
+			Error:   "organization_required",
+			Message: "Missing required organization",
+		}
+	}
+
+	if i.Zone == "" {
+		errData = &errortypes.ErrorData{
+			Error:   "zone_required",
+			Message: "Missing required zone",
+		}
+	}
+
+	if i.Memory < 256 {
+		i.Memory = 256
+	}
+
+	if i.Processors < 1 {
+		i.Processors = 1
+	}
 
 	return
 }
