@@ -5,6 +5,7 @@ import * as InstanceActions from '../actions/InstanceActions';
 import PageInput from './PageInput';
 import PageInfo from './PageInfo';
 import PageSave from './PageSave';
+import PageNumInput from './PageNumInput';
 import ConfirmButton from './ConfirmButton';
 
 interface Props {
@@ -187,6 +188,34 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						onChange={(val): void => {
 							this.set('name', val);
 						}}
+					/>
+					<PageNumInput
+						label="Memory Size"
+						help="Instance memory size in megabytes."
+						min={256}
+						minorStepSize={256}
+						stepSize={512}
+						majorStepSize={1024}
+						disabled={this.state.disabled}
+						selectAllOnFocus={true}
+						onChange={(val: number): void => {
+							this.set('memory', val);
+						}}
+						value={instance.memory}
+					/>
+					<PageNumInput
+						label="Processors"
+						help="Number of instance processors."
+						min={1}
+						minorStepSize={1}
+						stepSize={1}
+						majorStepSize={2}
+						disabled={this.state.disabled}
+						selectAllOnFocus={true}
+						onChange={(val: number): void => {
+							this.set('processors', val);
+						}}
+						value={instance.processors}
 					/>
 				</div>
 				<div style={css.group}>
