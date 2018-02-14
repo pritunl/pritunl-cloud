@@ -71,6 +71,7 @@ func nodePut(c *gin.Context) {
 
 	fields := set.NewSet(
 		"name",
+		"zone",
 		"type",
 		"port",
 		"protocol",
@@ -90,7 +91,6 @@ func nodePut(c *gin.Context) {
 			return
 		}
 		nde.Zone = data.Zone
-		fields.Add("zone")
 	}
 
 	errData, err := nde.Validate(db)
