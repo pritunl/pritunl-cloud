@@ -2,12 +2,15 @@
 import * as React from 'react';
 import * as NodeTypes from '../types/NodeTypes';
 import * as CertificateTypes from '../types/CertificateTypes';
+import * as DatacenterTypes from "../types/DatacenterTypes";
+import * as ZoneTypes from '../types/ZoneTypes';
 import * as NodeActions from '../actions/NodeActions';
 import * as MiscUtils from '../utils/MiscUtils';
 import CertificatesStore from '../stores/CertificatesStore';
 import PageInput from './PageInput';
 import PageSwitch from './PageSwitch';
 import PageInputSwitch from './PageInputSwitch';
+import PageSelect from './PageSelect';
 import PageSelectButton from './PageSelectButton';
 import PageInfo from './PageInfo';
 import PageSave from './PageSave';
@@ -17,11 +20,15 @@ import Help from './Help';
 interface Props {
 	node: NodeTypes.NodeRo;
 	certificates: CertificateTypes.CertificatesRo;
+	datacenters: DatacenterTypes.DatacentersRo;
+	zones: ZoneTypes.ZonesRo;
 	onClose: () => void;
 }
 
 interface State {
 	disabled: boolean;
+	datacenter: string;
+	zone: string;
 	changed: boolean;
 	message: string;
 	node: NodeTypes.Node;
@@ -77,6 +84,8 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		super(props, context);
 		this.state = {
 			disabled: false,
+			datacenter: '',
+			zone: '',
 			changed: false,
 			message: '',
 			node: null,
@@ -134,7 +143,30 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			...this.state,
 			disabled: true,
 		});
-		NodeActions.commit(this.state.node).then((): void => {
+
+		let node = {
+			...this.state.node,
+		};
+
+		if (!this.props.node.zone) {
+			let zone = this.state.zone;
+			if (!zone && this.props.datacenters.length &&
+					this.props.zones.length) {
+				let datacenter = this.state.datacenter ||
+					this.props.datacenters[0].id;
+				for (let zne of this.props.zones) {
+					if (zne.datacenter === datacenter) {
+						zone = zne.id;
+					}
+				}
+			}
+
+			if (zone) {
+				node.zone = zone;
+			}
+		}
+
+		NodeActions.commit(node).then((): void => {
 			this.setState({
 				...this.state,
 				message: 'Your changes have been saved',
@@ -290,6 +322,46 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			}
 		}
 
+		let defaultDatacenter = '';
+		let datacentersSelect: JSX.Element[] = [];
+		if (this.props.datacenters.length) {
+			defaultDatacenter = this.props.datacenters[0].id;
+			for (let datacenter of this.props.datacenters) {
+				datacentersSelect.push(
+					<option
+						key={datacenter.id}
+						value={datacenter.id}
+					>{datacenter.name}</option>,
+				);
+			}
+		}
+
+		let datacenter = this.state.datacenter || defaultDatacenter;
+		let hasZones = false;
+		let zonesSelect: JSX.Element[] = [];
+		if (this.props.zones.length) {
+			hasZones = true;
+
+			zonesSelect.push(<option key="null" value="">Select Zone</option>);
+
+			for (let zone of this.props.zones) {
+				if (!this.props.node.zone && zone.datacenter !== datacenter) {
+					continue;
+				}
+
+				zonesSelect.push(
+					<option
+						key={zone.id}
+						value={zone.id}
+					>{zone.name}</option>,
+				);
+			}
+		}
+
+		if (zonesSelect.length === 0) {
+			zonesSelect = [<option key="null" value="">No Zones</option>];
+		}
+
 		return <td
 			className="pt-cell"
 			colSpan={4}
@@ -391,6 +463,62 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							/>
 						</div>
 					</label>
+					<PageSelect
+						disabled={this.state.disabled}
+						hidden={!!this.props.node.zone}
+						label="Datacenter"
+						help="Node datacenter, cannot be changed once set."
+						value={this.state.datacenter}
+						onChange={(val): void => {
+							if (this.state.changed) {
+								node = {
+									...this.state.node,
+								};
+							} else {
+								node = {
+									...this.props.node,
+								};
+							}
+
+							this.setState({
+								...this.state,
+								changed: true,
+								node: node,
+								datacenter: val,
+								zone: '',
+							});
+						}}
+					>
+						{datacentersSelect}
+					</PageSelect>
+					<PageSelect
+						disabled={!!this.props.node.zone || this.state.disabled ||
+							!hasZones}
+						label="Zone"
+						help="Node zone, cannot be changed once set."
+						value={this.props.node.zone ? this.props.node.zone :
+							this.state.zone}
+						onChange={(val): void => {
+							if (this.state.changed) {
+								node = {
+									...this.state.node,
+								};
+							} else {
+								node = {
+									...this.props.node,
+								};
+							}
+
+							this.setState({
+								...this.state,
+								changed: true,
+								node: node,
+								zone: val,
+							});
+						}}
+					>
+						{zonesSelect}
+					</PageSelect>
 				</div>
 				<div style={css.group}>
 					<PageInfo
