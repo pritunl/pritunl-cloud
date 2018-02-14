@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -16,6 +17,7 @@ import (
 
 type nodeData struct {
 	Id                 bson.ObjectId   `json:"id"`
+	Zone               bson.ObjectId   `json:"zone"`
 	Name               string          `json:"name"`
 	Type               string          `json:"type"`
 	Port               int             `json:"port"`
@@ -77,6 +79,19 @@ func nodePut(c *gin.Context) {
 		"user_domain",
 		"forwarded_for_header",
 	)
+
+	if data.Zone != "" && data.Zone != nde.Zone {
+		if nde.Zone != "" {
+			errData := &errortypes.ErrorData{
+				Error:   "zone_modified",
+				Message: "Cannot modify zone once set",
+			}
+			c.JSON(400, errData)
+			return
+		}
+		nde.Zone = data.Zone
+		fields.Add("zone")
+	}
 
 	errData, err := nde.Validate(db)
 	if err != nil {
