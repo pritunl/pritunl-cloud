@@ -18,6 +18,7 @@ type instanceData struct {
 	Id           bson.ObjectId `json:"id"`
 	Organization bson.ObjectId `json:"organization"`
 	Zone         bson.ObjectId `json:"zone"`
+	Node         bson.ObjectId `json:"node"`
 	Name         string        `json:"name"`
 	Memory       int           `json:"memory"`
 	Processors   int           `json:"processors"`
@@ -105,6 +106,7 @@ func instancePost(c *gin.Context) {
 	dc := &instance.Instance{
 		Organization: data.Organization,
 		Zone:         data.Zone,
+		Node:         data.Node,
 		Name:         data.Name,
 		Memory:       data.Memory,
 		Processors:   data.Processors,
