@@ -154,8 +154,6 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		let instance: InstanceTypes.Instance = this.state.instance ||
 			this.props.instance;
 
-		let active = true;
-
 		return <td
 			className="pt-cell"
 			colSpan={4}
@@ -175,7 +173,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 							className="pt-minimal pt-intent-danger pt-icon-cross"
 							progressClassName="pt-intent-danger"
 							confirmMsg="Confirm instance remove"
-							disabled={active || this.state.disabled}
+							disabled={this.state.disabled}
 							onConfirm={this.onDelete}
 						/>
 					</div>
