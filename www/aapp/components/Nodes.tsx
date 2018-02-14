@@ -2,10 +2,16 @@
 import * as React from 'react';
 import * as NodeTypes from '../types/NodeTypes';
 import * as CertificateTypes from '../types/CertificateTypes';
+import * as DatacenterTypes from "../types/DatacenterTypes";
+import * as ZoneTypes from '../types/ZoneTypes';
 import NodesStore from '../stores/NodesStore';
 import CertificatesStore from '../stores/CertificatesStore';
+import DatacentersStore from '../stores/DatacentersStore';
+import ZonesStore from '../stores/ZonesStore';
 import * as NodeActions from '../actions/NodeActions';
 import * as CertificateActions from '../actions/CertificateActions';
+import * as DatacenterActions from '../actions/DatacenterActions';
+import * as ZoneActions from '../actions/ZoneActions';
 import Node from './Node';
 import NodesPage from './NodesPage';
 import Page from './Page';
@@ -22,6 +28,8 @@ interface Opened {
 interface State {
 	nodes: NodeTypes.NodesRo;
 	certificates: CertificateTypes.CertificatesRo;
+	datacenters: DatacenterTypes.DatacentersRo;
+	zones: ZoneTypes.ZonesRo;
 	selected: Selected;
 	opened: Opened;
 	lastSelected: string;
@@ -60,6 +68,8 @@ export default class Nodes extends React.Component<{}, State> {
 		this.state = {
 			nodes: NodesStore.nodes,
 			certificates: CertificatesStore.certificates,
+			datacenters: DatacentersStore.datacenters,
+			zones: ZonesStore.zones,
 			selected: {},
 			opened: {},
 			lastSelected: null,
@@ -77,13 +87,20 @@ export default class Nodes extends React.Component<{}, State> {
 
 	componentDidMount(): void {
 		NodesStore.addChangeListener(this.onChange);
+		CertificatesStore.addChangeListener(this.onChange);
+		DatacentersStore.addChangeListener(this.onChange);
+		ZonesStore.addChangeListener(this.onChange);
 		NodeActions.sync();
 		CertificateActions.sync();
+		DatacenterActions.sync();
+		ZoneActions.sync();
 	}
 
 	componentWillUnmount(): void {
 		NodesStore.removeChangeListener(this.onChange);
 		CertificatesStore.removeChangeListener(this.onChange);
+		DatacentersStore.removeChangeListener(this.onChange);
+		ZonesStore.removeChangeListener(this.onChange);
 	}
 
 	onChange = (): void => {
@@ -106,6 +123,8 @@ export default class Nodes extends React.Component<{}, State> {
 			...this.state,
 			nodes: nodes,
 			certificates: CertificatesStore.certificates,
+			datacenters: DatacentersStore.datacenters,
+			zones: ZonesStore.zones,
 			selected: selected,
 			opened: opened,
 		});
@@ -119,6 +138,8 @@ export default class Nodes extends React.Component<{}, State> {
 				key={node.id}
 				node={node}
 				certificates={this.state.certificates}
+				datacenters={this.state.datacenters}
+				zones={this.state.zones}
 				selected={!!this.state.selected[node.id]}
 				open={!!this.state.opened[node.id]}
 				onSelect={(shift: boolean): void => {
