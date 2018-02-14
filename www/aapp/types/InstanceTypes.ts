@@ -8,6 +8,7 @@ export interface Instance {
 	id: string;
 	organization?: string;
 	zone?: string;
+	node?: string;
 	name?: string;
 	memory?: number;
 	processors?: number;
