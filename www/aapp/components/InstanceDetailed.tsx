@@ -227,6 +227,10 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 								label: 'Zone',
 								value: instance.zone || 'None',
 							},
+							{
+								label: 'Node',
+								value: instance.node || 'None',
+							},
 						]}
 					/>
 				</div>
