@@ -3,14 +3,15 @@ import * as React from 'react';
 import * as InstanceTypes from '../types/InstanceTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import * as DatacenterTypes from '../types/DatacenterTypes';
+import * as NodeTypes from '../types/NodeTypes';
 import * as ZoneTypes from '../types/ZoneTypes';
 import * as InstanceActions from '../actions/InstanceActions';
+import * as NodeActions from '../actions/NodeActions';
+import NodesZoneStore from '../stores/NodesZoneStore';
 import PageInput from './PageInput';
-import PageInfo from './PageInfo';
 import PageCreate from './PageCreate';
 import PageSelect from './PageSelect';
 import PageNumInput from './PageNumInput';
-import ConfirmButton from './ConfirmButton';
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -26,6 +27,7 @@ interface State {
 	message: string;
 	instance: InstanceTypes.Instance;
 	datacenter: string;
+	nodes: NodeTypes.NodesRo;
 }
 
 const css = {
@@ -88,7 +90,23 @@ export default class InstanceNew extends React.Component<Props, State> {
 			message: '',
 			instance: this.default,
 			datacenter: '',
+			nodes: [],
 		};
+	}
+
+	componentDidMount(): void {
+		NodesZoneStore.addChangeListener(this.onChange);
+	}
+
+	componentWillUnmount(): void {
+		NodesZoneStore.removeChangeListener(this.onChange);
+	}
+
+	onChange = (): void => {
+		this.setState({
+			...this.state,
+			nodes: NodesZoneStore.nodes,
+		});
 	}
 
 	get default(): InstanceTypes.Instance {
@@ -126,16 +144,6 @@ export default class InstanceNew extends React.Component<Props, State> {
 
 		if (this.props.organizations.length && !instance.organization) {
 			instance.organization = this.props.organizations[0].id;
-		}
-		if (!instance.zone && this.props.datacenters.length &&
-			this.props.zones.length) {
-
-			let datacenter = this.state.datacenter || this.props.datacenters[0].id;
-			for (let zone of this.props.zones) {
-				if (zone.datacenter === datacenter) {
-					instance.zone = zone.id;
-				}
-			}
 		}
 
 		InstanceActions.create(instance).then((): void => {
@@ -194,6 +202,8 @@ export default class InstanceNew extends React.Component<Props, State> {
 		let hasZones = false;
 		let zonesSelect: JSX.Element[] = [];
 		if (this.props.zones.length) {
+			zonesSelect.push(<option key="null" value="">Select Zone</option>);
+
 			for (let zone of this.props.zones) {
 				if (zone.datacenter !== datacenter) {
 					continue;
@@ -210,7 +220,27 @@ export default class InstanceNew extends React.Component<Props, State> {
 		}
 
 		if (!hasZones) {
-			zonesSelect.push(<option key="null" value="">No Zones</option>);
+			zonesSelect = [<option key="null" value="">No Zones</option>];
+		}
+
+		let hasNodes = false;
+		let nodesSelect: JSX.Element[] = [];
+		if (this.state.nodes.length) {
+			nodesSelect.push(<option key="null" value="">Select Node</option>);
+
+			hasNodes = true;
+			for (let node of this.state.nodes) {
+				nodesSelect.push(
+					<option
+						key={node.id}
+						value={node.id}
+					>{node.name}</option>,
+				);
+			}
+		}
+
+		if (!hasNodes) {
+			nodesSelect = [<option key="null" value="">No Nodes</option>];
 		}
 
 		return <div
@@ -259,9 +289,11 @@ export default class InstanceNew extends React.Component<Props, State> {
 									datacenter: val,
 									instance: {
 										...this.state.instance,
+										node: '',
 										zone: '',
 									},
 								});
+								NodeActions.syncZone('');
 							}}
 						>
 							{datacentersSelect}
@@ -272,10 +304,29 @@ export default class InstanceNew extends React.Component<Props, State> {
 							help="Zone for instance."
 							value={instance.zone}
 							onChange={(val): void => {
-								this.set('zone', val);
+								this.setState({
+									...this.state,
+									instance: {
+										...this.state.instance,
+										node: '',
+										zone: val,
+									},
+								});
+								NodeActions.syncZone(val);
 							}}
 						>
 							{zonesSelect}
+						</PageSelect>
+						<PageSelect
+							disabled={this.state.disabled || !hasNodes}
+							label="Node"
+							help="Node to run instance on."
+							value={instance.node}
+							onChange={(val): void => {
+								this.set('node', val);
+							}}
+						>
+							{nodesSelect}
 						</PageSelect>
 					</div>
 					<div style={css.group}>
