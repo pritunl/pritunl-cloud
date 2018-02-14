@@ -127,8 +127,15 @@ export default class InstanceNew extends React.Component<Props, State> {
 		if (this.props.organizations.length && !instance.organization) {
 			instance.organization = this.props.organizations[0].id;
 		}
-		if (this.props.zones.length && !instance.zone) {
-			instance.zone = this.props.zones[0].id;
+		if (!instance.zone && this.props.datacenters.length &&
+			this.props.zones.length) {
+
+			let datacenter = this.state.datacenter || this.props.datacenters[0].id;
+			for (let zone of this.props.zones) {
+				if (zone.datacenter === datacenter) {
+					instance.zone = zone.id;
+				}
+			}
 		}
 
 		InstanceActions.create(instance).then((): void => {
@@ -243,6 +250,10 @@ export default class InstanceNew extends React.Component<Props, State> {
 								this.setState({
 									...this.state,
 									datacenter: val,
+									instance: {
+										...this.state.instance,
+										zone: '',
+									},
 								});
 							}}
 						>
