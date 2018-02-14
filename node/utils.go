@@ -42,6 +42,32 @@ func GetAll(db *database.Database) (nodes []*Node, err error) {
 	return
 }
 
+func GetAllNames(db *database.Database, query *bson.M) (
+	nodes []*Node, err error) {
+
+	coll := db.Nodes()
+	nodes = []*Node{}
+
+	cursor := coll.Find(query).Select(&bson.M{
+		"name": 1,
+	}).Iter()
+
+	nde := &Node{}
+	for cursor.Next(nde) {
+		nde.SetActive()
+		nodes = append(nodes, nde)
+		nde = &Node{}
+	}
+
+	err = cursor.Close()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetAllPaged(db *database.Database, query *bson.M, page, pageCount int) (
 	nodes []*Node, count int, err error) {
 
