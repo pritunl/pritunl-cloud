@@ -168,39 +168,54 @@ func nodeGet(c *gin.Context) {
 func nodesGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 
-	page, _ := strconv.Atoi(c.Query("page"))
-	pageCount, _ := strconv.Atoi(c.Query("page_count"))
-
-	query := bson.M{}
-
-	name := strings.TrimSpace(c.Query("name"))
-	if name != "" {
-		query["name"] = &bson.M{
-			"$regex":   fmt.Sprintf(".*%s.*", name),
-			"$options": "i",
+	zone, _ := utils.ParseObjectId(c.Query("zone"))
+	if zone != "" {
+		query := &bson.M{
+			"zone": zone,
 		}
-	}
 
-	nodes, count, err := node.GetAllPaged(db, &query, page, pageCount)
-	if err != nil {
-		utils.AbortWithError(c, 500, err)
-		return
-	}
-
-	if demo.IsDemo() {
-		for _, nde := range nodes {
-			nde.RequestsMin = 32
-			nde.Memory = 25.0
-			nde.Load1 = 10.0
-			nde.Load5 = 15.0
-			nde.Load15 = 20.0
+		nodes, err := node.GetAllNames(db, query)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
 		}
-	}
 
-	data := &nodesData{
-		Nodes: nodes,
-		Count: count,
-	}
+		c.JSON(200, nodes)
+	} else {
+		page, _ := strconv.Atoi(c.Query("page"))
+		pageCount, _ := strconv.Atoi(c.Query("page_count"))
 
-	c.JSON(200, data)
+		query := bson.M{}
+
+		name := strings.TrimSpace(c.Query("name"))
+		if name != "" {
+			query["name"] = &bson.M{
+				"$regex":   fmt.Sprintf(".*%s.*", name),
+				"$options": "i",
+			}
+		}
+
+		nodes, count, err := node.GetAllPaged(db, &query, page, pageCount)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		if demo.IsDemo() {
+			for _, nde := range nodes {
+				nde.RequestsMin = 32
+				nde.Memory = 25.0
+				nde.Load1 = 10.0
+				nde.Load5 = 15.0
+				nde.Load15 = 20.0
+			}
+		}
+
+		data := &nodesData{
+			Nodes: nodes,
+			Count: count,
+		}
+
+		c.JSON(200, data)
+	}
 }
