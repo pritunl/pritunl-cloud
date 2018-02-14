@@ -24,6 +24,7 @@ var (
 
 type Node struct {
 	Id                 bson.ObjectId              `bson:"_id" json:"id"`
+	Zone               bson.ObjectId              `bson:"zone,omitempty" json:"zone"`
 	Name               string                     `bson:"name" json:"name"`
 	Type               string                     `bson:"type" json:"type"`
 	Timestamp          time.Time                  `bson:"timestamp" json:"timestamp"`
