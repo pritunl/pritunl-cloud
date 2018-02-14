@@ -505,6 +505,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						value={this.props.node.zone ? this.props.node.zone :
 							this.state.zone}
 						onChange={(val): void => {
+							let node: NodeTypes.Node;
 							if (this.state.changed) {
 								node = {
 									...this.state.node,
