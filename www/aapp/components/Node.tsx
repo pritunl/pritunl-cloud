@@ -3,11 +3,16 @@ import * as React from 'react';
 import * as MiscUtils from '../utils/MiscUtils';
 import * as NodeTypes from '../types/NodeTypes';
 import * as CertificateTypes from "../types/CertificateTypes";
+import * as DatacenterTypes from "../types/DatacenterTypes";
+import * as ZoneTypes from "../types/ZoneTypes";
+import ZonesStore from '../stores/ZonesStore';
 import NodeDetailed from './NodeDetailed';
 
 interface Props {
 	node: NodeTypes.NodeRo;
 	certificates: CertificateTypes.CertificatesRo;
+	datacenters: DatacenterTypes.DatacentersRo;
+	zones: ZoneTypes.ZonesRo;
 	selected: boolean;
 	open: boolean;
 	onSelect: (shift: boolean) => void;
@@ -75,6 +80,8 @@ export default class Node extends React.Component<Props, {}> {
 				<NodeDetailed
 					node={this.props.node}
 					certificates={this.props.certificates}
+					datacenters={this.props.datacenters}
+					zones={this.props.zones}
 					onClose={(): void => {
 						this.props.onOpen();
 					}}
