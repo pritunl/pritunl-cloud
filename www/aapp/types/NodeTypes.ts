@@ -7,6 +7,7 @@ export const CHANGE = 'node.change';
 export interface Node {
 	id: string;
 	type?: string;
+	zone?: string;
 	name?: string;
 	port?: number;
 	protocol?: string;
