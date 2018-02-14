@@ -170,8 +170,10 @@ export default class InstanceNew extends React.Component<Props, State> {
 		}
 
 		let defaultDatacenter = '';
+		let hasDatacenters = false;
 		let datacentersSelect: JSX.Element[] = [];
 		if (this.props.datacenters.length) {
+			hasDatacenters = true;
 			defaultDatacenter = this.props.datacenters[0].id;
 			for (let datacenter of this.props.datacenters) {
 				datacentersSelect.push(
@@ -183,15 +185,20 @@ export default class InstanceNew extends React.Component<Props, State> {
 			}
 		}
 
+		if (!hasDatacenters) {
+			datacentersSelect.push(
+				<option key="null" value="">No Datacenters</option>);
+		}
+
 		let datacenter = this.state.datacenter || defaultDatacenter;
 		let hasZones = false;
 		let zonesSelect: JSX.Element[] = [];
 		if (this.props.zones.length) {
-			hasZones = true;
 			for (let zone of this.props.zones) {
 				if (zone.datacenter !== datacenter) {
 					continue;
 				}
+				hasZones = true;
 
 				zonesSelect.push(
 					<option
@@ -202,7 +209,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 			}
 		}
 
-		if (zonesSelect.length === 0) {
+		if (!hasZones) {
 			zonesSelect.push(<option key="null" value="">No Zones</option>);
 		}
 
@@ -242,7 +249,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 							{organizationsSelect}
 						</PageSelect>
 						<PageSelect
-							disabled={this.state.disabled}
+							disabled={this.state.disabled || !hasDatacenters}
 							label="Datacenter"
 							help="Datacenter for instance."
 							value={this.state.datacenter}
