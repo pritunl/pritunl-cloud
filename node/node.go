@@ -92,6 +92,19 @@ func (n *Node) Validate(db *database.Database) (
 		}
 	}
 
+	if n.Zone != "" {
+		coll := db.Zones()
+		count, e := coll.FindId(n.Zone).Count()
+		if e != nil {
+			err = database.ParseError(e)
+			return
+		}
+
+		if count == 0 {
+			n.Zone = ""
+		}
+	}
+
 	n.Format()
 
 	return
