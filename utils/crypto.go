@@ -3,12 +3,14 @@ package utils
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"fmt"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"math"
 	"math/big"
 	mathrand "math/rand"
 	"regexp"
+	"strings"
 )
 
 var (
@@ -53,6 +55,21 @@ func RandBytes(size int) (bytes []byte, err error) {
 		}
 		return
 	}
+
+	return
+}
+
+func RandMacAddr() (addr string, err error) {
+	bytes := make([]byte, 4)
+	_, err = rand.Read(bytes)
+	if err != nil {
+		err = &errortypes.UnknownError{
+			errors.Wrap(err, "utils: Random read error"),
+		}
+		return
+	}
+
+	addr = strings.ToUpper(fmt.Sprintf("0800%x", bytes))
 
 	return
 }
