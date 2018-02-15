@@ -131,10 +131,6 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		vals.sort();
 
 		let val = vals.join('_');
-		if (val === '') {
-			val = 'management';
-		}
-
 		this.set('type', val);
 	}
 
