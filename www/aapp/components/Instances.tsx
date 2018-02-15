@@ -290,7 +290,7 @@ export default class Instances extends React.Component<{}, State> {
 						<button
 							className="pt-button pt-intent-success pt-icon-add"
 							style={css.button}
-							disabled={this.state.disabled}
+							disabled={this.state.disabled || this.state.newOpened}
 							type="button"
 							onClick={(): void => {
 								this.setState({
