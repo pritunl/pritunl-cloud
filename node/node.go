@@ -76,10 +76,6 @@ func (n *Node) Validate(db *database.Database) (
 		n.Certificates = []bson.ObjectId{}
 	}
 
-	if n.Type == "" {
-		n.Type = Admin
-	}
-
 	if n.Type == Admin {
 		n.AdminDomain = ""
 		n.UserDomain = ""
