@@ -450,6 +450,11 @@ func (r *Router) Run() (err error) {
 	go r.watchNode()
 
 	for {
+		if node.Self.Type == "" {
+			time.Sleep(500 * time.Millisecond)
+			continue
+		}
+
 		err = r.initServers()
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
