@@ -5,6 +5,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/vm"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -92,6 +93,27 @@ func (i *Instance) Insert(db *database.Database) (err error) {
 	if err != nil {
 		err = database.ParseError(err)
 		return
+	}
+
+	return
+}
+
+func (i *Instance) GetVm() (virt *vm.VirtualMachine) {
+	virt = &vm.VirtualMachine{
+		Id:         i.Id,
+		Processors: i.Processors,
+		Memory:     i.Memory,
+		Disks: []*vm.Disk{
+			&vm.Disk{
+				Path: vm.GetDiskPath(i.Id, 0),
+			},
+		},
+		NetworkAdapters: []*vm.NetworkAdapter{
+			&vm.NetworkAdapter{
+				MacAddress:       vm.GetMacAddr(i.Id),
+				BridgedInterface: vm.BridgedInterface,
+			},
+		},
 	}
 
 	return
