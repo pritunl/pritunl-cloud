@@ -1,11 +1,17 @@
 package vm
 
+import (
+	"gopkg.in/mgo.v2/bson"
+)
+
 type VirtualMachine struct {
-	Name            string
+	Id              bson.ObjectId
+	Uuid            string
+	State           string
 	Processors      int
 	Memory          int
-	Disks           []Disk
-	NetworkAdapters []NetworkAdapter
+	Disks           []*Disk
+	NetworkAdapters []*NetworkAdapter
 }
 
 type Disk struct {
