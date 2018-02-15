@@ -20,11 +20,13 @@ func Get(db *database.Database, instId bson.ObjectId) (
 	return
 }
 
-func GetAll(db *database.Database) (insts []*Instance, err error) {
+func GetAll(db *database.Database, query *bson.M) (
+	insts []*Instance, err error) {
+
 	coll := db.Instances()
 	insts = []*Instance{}
 
-	cursor := coll.Find(bson.M{}).Iter()
+	cursor := coll.Find(query).Iter()
 
 	nde := &Instance{}
 	for cursor.Next(nde) {
