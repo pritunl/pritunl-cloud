@@ -56,3 +56,29 @@ func SetUuid(diskPath string, diskUuid string) (err error) {
 
 	return
 }
+
+func GetUuid(diskPath string) (diskUuid string, err error) {
+	diskFile, err := os.Open(diskPath)
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "vmdk: Failed to open file"),
+		}
+		return
+	}
+	defer diskFile.Close()
+
+	buffer := make([]byte, 10000)
+	_, err = diskFile.Read(buffer)
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "vmdk: Failed to read file"),
+		}
+		return
+	}
+
+	i := bytes.Index(buffer, []byte("ddb.uuid.image="))
+
+	diskUuid = string(buffer[i+16 : i+52])
+
+	return
+}
