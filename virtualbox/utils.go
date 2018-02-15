@@ -8,20 +8,25 @@ import (
 	"time"
 )
 
-func NewVirtualBox(v vm.VirtualMachine) (vbox VirtualBox, err error) {
+func NewVirtualBox(v *vm.VirtualMachine) (vbox VirtualBox, err error) {
 	now := time.Now()
 
-	vboxUuid, err := uuid.NewV4()
-	if err != nil {
-		return
+	if v.Uuid == "" {
+		vboxUuid, e := uuid.NewV4()
+		if e != nil {
+			err = e
+			return
+		}
+
+		v.Uuid = fmt.Sprintf("{%s}", vboxUuid)
 	}
 
 	vbox = VirtualBox{
 		XmlNs:   "http://www.virtualbox.org/",
 		Version: "1.16-linux",
 		Machine: Machine{
-			Uuid:            fmt.Sprintf("{%s}", vboxUuid),
-			Name:            v.Name,
+			Uuid:            v.Uuid,
+			Name:            v.Id.Hex(),
 			OsType:          "RedHat_64",
 			SnapshotFolder:  "Snapshots",
 			LastStateChange: now.UTC().Format("2006-01-02T15:04:05Z"),
