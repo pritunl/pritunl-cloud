@@ -6,6 +6,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/router"
+	"github.com/pritunl/pritunl-cloud/state"
 	"gopkg.in/mgo.v2/bson"
 	"os"
 	"os/signal"
@@ -16,6 +17,8 @@ import (
 func Node() (err error) {
 	sig := make(chan os.Signal, 2)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
+
+	state.Init()
 
 	nde := &node.Node{
 		Id: bson.ObjectIdHex(config.Config.NodeId),
