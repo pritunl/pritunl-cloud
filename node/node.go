@@ -314,6 +314,10 @@ func (n *Node) Init() (err error) {
 
 	coll := db.Nodes()
 
+	if n.Type == "" {
+		n.Type = Admin
+	}
+
 	err = coll.FindOneId(n.Id, n)
 	if err != nil {
 		switch err.(type) {
@@ -326,10 +330,6 @@ func (n *Node) Init() (err error) {
 
 	if n.Name == "" {
 		n.Name = utils.RandName()
-	}
-
-	if n.Type == "" {
-		n.Type = Admin
 	}
 
 	if n.Protocol == "" {
