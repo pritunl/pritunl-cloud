@@ -47,10 +47,10 @@ func update() (err error) {
 	for _, inst := range instances {
 		newIds.Add(inst.Id)
 		if !curIds.Contains(inst.Id) && !busy.Contains(inst.Id) {
+			busyLock.Lock()
+			busy.Add(inst.Id)
+			busyLock.Unlock()
 			go func(inst *instance.Instance) {
-				busyLock.Lock()
-				busy.Add(inst.Id)
-				busyLock.Unlock()
 				defer func() {
 					busyLock.Lock()
 					busy.Remove(inst.Id)
@@ -72,10 +72,10 @@ func update() (err error) {
 	for idInf := range curIds.Iter() {
 		virt := virtsMap[idInf.(bson.ObjectId)]
 		if !busy.Contains(virt.Id) {
+			busyLock.Lock()
+			busy.Add(virt.Id)
+			busyLock.Unlock()
 			go func(virt *vm.VirtualMachine) {
-				busyLock.Lock()
-				busy.Add(virt.Id)
-				busyLock.Unlock()
 				defer func() {
 					busyLock.Lock()
 					busy.Remove(virt.Id)
@@ -102,46 +102,125 @@ func update() (err error) {
 		switch inst.Status {
 		case instance.Running:
 			if virt.State == "poweroff" && !busy.Contains(inst.Id) {
+				busyLock.Lock()
+				busy.Add(virt.Id)
+				busyLock.Unlock()
 				go func(virt *vm.VirtualMachine) {
-					busyLock.Lock()
-					busy.Add(virt.Id)
-					busyLock.Unlock()
 					defer func() {
 						busyLock.Lock()
 						busy.Remove(virt.Id)
 						busyLock.Unlock()
 					}()
 					e := virtualbox.PowerOn(virt)
-					time.Sleep(3 * time.Second)
 					if e != nil {
 						logrus.WithFields(logrus.Fields{
 							"error": e,
 						}).Error("state: Failed to power on instance")
 						return
 					}
+
+					time.Sleep(3 * time.Second)
 				}(virt)
+				continue
 			}
 			break
 		case instance.Stopped:
 			if virt.State == "running" && !busy.Contains(inst.Id) {
+				busyLock.Lock()
+				busy.Add(virt.Id)
+				busyLock.Unlock()
 				go func(virt *vm.VirtualMachine) {
-					busyLock.Lock()
-					busy.Add(virt.Id)
-					busyLock.Unlock()
 					defer func() {
 						busyLock.Lock()
 						busy.Remove(virt.Id)
 						busyLock.Unlock()
 					}()
+
 					e := virtualbox.PowerOff(virt)
-					time.Sleep(5 * time.Second)
 					if e != nil {
 						logrus.WithFields(logrus.Fields{
 							"error": e,
 						}).Error("state: Failed to power off instance")
 						return
 					}
+
+					time.Sleep(10 * time.Second)
 				}(virt)
+				continue
+			}
+			break
+		case instance.Updating:
+			if !busy.Contains(inst.Id) {
+				if virt.State != vm.PowerOff {
+					busyLock.Lock()
+					busy.Add(virt.Id)
+					busyLock.Unlock()
+					go func(virt *vm.VirtualMachine) {
+						defer func() {
+							busyLock.Lock()
+							busy.Remove(virt.Id)
+							busyLock.Unlock()
+						}()
+
+						e := virtualbox.PowerOff(virt)
+						if e != nil {
+							logrus.WithFields(logrus.Fields{
+								"error": e,
+							}).Error("state: Failed to power off instance")
+							return
+						}
+
+						time.Sleep(10 * time.Second)
+					}(virt)
+					continue
+				}
+
+				if inst.Changed(virt) {
+					busyLock.Lock()
+					busy.Add(virt.Id)
+					busyLock.Unlock()
+
+					logrus.WithFields(logrus.Fields{
+						"id":             virt.Id.Hex(),
+						"memory_old":     virt.Memory,
+						"memory":         inst.Memory,
+						"processors_old": virt.Processors,
+						"processors":     inst.Processors,
+					}).Info("virtualbox: Resizing virtual machine")
+
+					go func(inst *instance.Instance, virt *vm.VirtualMachine) {
+						defer func() {
+							busyLock.Lock()
+							busy.Remove(virt.Id)
+							busyLock.Unlock()
+						}()
+						db := database.GetDatabase()
+						defer db.Close()
+
+						e := virtualbox.Update(db, inst.GetVm())
+						if e != nil {
+							logrus.WithFields(logrus.Fields{
+								"error": e,
+							}).Error("state: Failed to power off instance")
+							return
+						}
+
+						time.Sleep(5 * time.Second)
+
+						inst.Status = instance.Stopped
+						err = inst.CommitFields(db, set.NewSet("status"))
+						if err != nil {
+							return
+						}
+					}(inst, virt)
+				} else {
+					inst.Status = instance.Stopped
+					err = inst.CommitFields(db, set.NewSet("status"))
+					if err != nil {
+						return
+					}
+				}
+				continue
 			}
 			break
 		}
