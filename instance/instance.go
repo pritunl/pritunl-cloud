@@ -14,6 +14,8 @@ type Instance struct {
 	Organization bson.ObjectId `bson:"organization,omitempty" json:"organization"`
 	Zone         bson.ObjectId `bson:"zone,omitempty" json:"zone"`
 	Status       string        `bson:"status" json:"status"`
+	PublicIp     string        `bson:"public_ip" json:"public_ip"`
+	PublicIp6    string        `bson:"public_ip6" json:"public_ip6"`
 	Node         bson.ObjectId `bson:"node,omitempty" json:"node"`
 	Name         string        `bson:"name" json:"name"`
 	Memory       int           `bson:"memory" json:"memory"`
