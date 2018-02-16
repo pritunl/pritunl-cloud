@@ -450,7 +450,9 @@ func (r *Router) Run() (err error) {
 	go r.watchNode()
 
 	for {
-		if node.Self.Type == "" {
+		if !strings.Contains(node.Self.Type, node.Admin) &&
+			!strings.Contains(node.Self.Type, node.User) {
+
 			time.Sleep(500 * time.Millisecond)
 			continue
 		}
