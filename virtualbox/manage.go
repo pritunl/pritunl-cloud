@@ -277,6 +277,70 @@ func Create(virt *vm.VirtualMachine) (err error) {
 	return
 }
 
+func Update(db *database.Database, virt *vm.VirtualMachine) (err error) {
+	curVirt, err := GetVmInfo(virt.Id)
+	if err != nil {
+		return
+	}
+
+	if curVirt == nil {
+		err = &errortypes.NotFoundError{
+			errors.Wrapf(err, "virtualbox: Failed to get VM info"),
+		}
+		return
+	}
+
+	if curVirt.State != vm.PowerOff {
+		err = &errortypes.WriteError{
+			errors.Wrapf(err, "virtualbox: Cannot update running VM"),
+		}
+		return
+	}
+
+	vmPath := vm.GetVmPath(virt.Id)
+
+	virt.State = "updating"
+	err = virt.Commit(db)
+	if err != nil {
+		return
+	}
+
+	_, err = utils.ExecOutput("",
+		ManageBin, "unregistervm", virt.Id.Hex())
+	if err != nil {
+		return
+	}
+
+	vbox, err := NewVirtualBox(virt)
+	if err != nil {
+		return
+	}
+
+	output, err := vbox.Marshal()
+	if err != nil {
+		return
+	}
+
+	vboxPath := path.Join(vmPath, "vm.vbox")
+	err = utils.CreateWrite(vboxPath, output, 0644)
+	if err != nil {
+		return
+	}
+
+	output, err = utils.ExecOutput("", ManageBin, "registervm", vboxPath)
+	if err != nil {
+		return
+	}
+
+	virt.State = vm.PowerOff
+	err = virt.Commit(db)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func Destroy(virt *vm.VirtualMachine) (err error) {
 	logrus.WithFields(logrus.Fields{
 		"id": virt.Id.Hex(),
