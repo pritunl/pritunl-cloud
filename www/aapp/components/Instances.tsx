@@ -307,7 +307,7 @@ export default class Instances extends React.Component<{}, State> {
 					{newInstanceDom}
 					{instancesDom}
 					<tr className="pt-card pt-row" style={css.placeholder}>
-						<td colSpan={4} style={css.placeholder}/>
+						<td colSpan={5} style={css.placeholder}/>
 					</tr>
 				</div>
 			</div>

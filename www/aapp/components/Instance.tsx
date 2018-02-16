@@ -122,6 +122,18 @@ export default class Instance extends React.Component<Props, {}> {
 					</div>
 				</div>
 			</div>
+			<div className="pt-cell" style={css.item}>
+				{instance.status}
+			</div>
+			<div className="pt-cell" style={css.item}>
+				{instance.state}
+			</div>
+			<div className="pt-cell" style={css.item}>
+				{instance.public_ip}
+			</div>
+			<div className="pt-cell" style={css.item}>
+				{instance.public_ip6}
+			</div>
 		</div>;
 	}
 }
