@@ -231,6 +231,14 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 								label: 'Node',
 								value: instance.node || 'None',
 							},
+							{
+								label: 'Status',
+								value: instance.status || 'None',
+							},
+							{
+								label: 'Public IP',
+								value: instance.public_ip || 'None',
+							},
 						]}
 					/>
 				</div>
