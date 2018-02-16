@@ -19,6 +19,8 @@ var (
 	listReg = regexp.MustCompile("\"([a-z0-9]+)\" \\{(.*?)\\}")
 	ipReg   = regexp.MustCompile(
 		"Name: /VirtualBox/GuestInfo/Net/0/V4/IP, value: ([0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+)")
+	ip6Reg = regexp.MustCompile(
+		"Name: /Pritunl/GuestInfo/Net/0/V6/IP, value: ([a-f0-9:]+:[a-f0-9:]+)")
 )
 
 func GetVms() (vms []*vm.VirtualMachine, err error) {
@@ -170,6 +172,11 @@ func GetVms() (vms []*vm.VirtualMachine, err error) {
 		match = ipReg.FindStringSubmatch(output)
 		if match != nil || len(match) == 2 && len(v.NetworkAdapters) > 0 {
 			v.NetworkAdapters[0].IpAddress = match[1]
+		}
+
+		match = ip6Reg.FindStringSubmatch(output)
+		if match != nil || len(match) == 2 && len(v.NetworkAdapters) > 0 {
+			v.NetworkAdapters[0].IpAddress6 = match[1]
 		}
 
 		vms = append(vms, v)
