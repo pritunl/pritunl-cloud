@@ -3,6 +3,7 @@ package virtualbox
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
@@ -186,11 +187,20 @@ func GetVms() (vms []*vm.VirtualMachine, err error) {
 }
 
 func Create(virt *vm.VirtualMachine) (err error) {
+	db := database.GetDatabase()
+	defer db.Close()
+
 	logrus.WithFields(logrus.Fields{
 		"id": virt.Id.Hex(),
 	}).Info("virtualbox: Creating virtual machine")
 
 	vmPath := vm.GetVmPath(virt.Id)
+
+	virt.State = "provisioning_disk"
+	err = virt.Commit(db)
+	if err != nil {
+		return
+	}
 
 	err = utils.ExistsMkdir(vmPath, 0755)
 	if err != nil {
@@ -219,6 +229,12 @@ func Create(virt *vm.VirtualMachine) (err error) {
 
 	vboxPath := path.Join(vmPath, "vm.vbox")
 	err = utils.CreateWrite(vboxPath, output, 0644)
+	if err != nil {
+		return
+	}
+
+	virt.State = "starting"
+	err = virt.Commit(db)
 	if err != nil {
 		return
 	}
