@@ -38,14 +38,17 @@ func update() (err error) {
 		virtsMap[virt.Id] = virt
 
 		addr := ""
+		addr6 := ""
 		if len(virt.NetworkAdapters) > 0 {
 			addr = virt.NetworkAdapters[0].IpAddress
+			addr6 = virt.NetworkAdapters[0].IpAddress6
 		}
 
 		err = coll.UpdateId(virt.Id, &bson.M{
 			"$set": &bson.M{
-				"status":    virt.State,
-				"public_ip": addr,
+				"status":     virt.State,
+				"public_ip":  addr,
+				"public_ip6": addr6,
 			},
 		})
 		if err != nil {
