@@ -28,6 +28,11 @@ func Node() (err error) {
 		return
 	}
 
+	logrus.WithFields(logrus.Fields{
+		"production": constants.Production,
+		"type":       nde.Type,
+	}).Info("router: Starting node")
+
 	routr := &router.Router{}
 
 	routr.Init()
