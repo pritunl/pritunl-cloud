@@ -22,6 +22,7 @@ type instanceData struct {
 	Name         string        `json:"name"`
 	Memory       int           `json:"memory"`
 	Processors   int           `json:"processors"`
+	Count        int           `json:"count"`
 }
 
 type instancesData struct {
@@ -49,15 +50,15 @@ func instancePut(c *gin.Context) {
 		return
 	}
 
-	nde, err := instance.Get(db, instanceId)
+	inst, err := instance.Get(db, instanceId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	nde.Name = data.Name
-	nde.Memory = data.Memory
-	nde.Processors = data.Processors
+	inst.Name = data.Name
+	inst.Memory = data.Memory
+	inst.Processors = data.Processors
 
 	fields := set.NewSet(
 		"name",
@@ -65,7 +66,7 @@ func instancePut(c *gin.Context) {
 		"processors",
 	)
 
-	errData, err := nde.Validate(db)
+	errData, err := inst.Validate(db)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -76,7 +77,7 @@ func instancePut(c *gin.Context) {
 		return
 	}
 
-	err = nde.CommitFields(db, fields)
+	err = inst.CommitFields(db, fields)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -84,7 +85,7 @@ func instancePut(c *gin.Context) {
 
 	event.PublishDispatch(db, "instance.change")
 
-	c.JSON(200, nde)
+	c.JSON(200, inst)
 }
 
 func instancePost(c *gin.Context) {
@@ -103,35 +104,49 @@ func instancePost(c *gin.Context) {
 		return
 	}
 
-	dc := &instance.Instance{
-		Organization: data.Organization,
-		Zone:         data.Zone,
-		Node:         data.Node,
-		Name:         data.Name,
-		Memory:       data.Memory,
-		Processors:   data.Processors,
+	insts := []*instance.Instance{}
+
+	if data.Count == 0 {
+		data.Count = 1
 	}
 
-	errData, err := dc.Validate(db)
-	if err != nil {
-		utils.AbortWithError(c, 500, err)
-		return
-	}
+	for i := 0; i < data.Count; i++ {
+		inst := &instance.Instance{
+			Organization: data.Organization,
+			Zone:         data.Zone,
+			Node:         data.Node,
+			Name:         data.Name,
+			Memory:       data.Memory,
+			Processors:   data.Processors,
+		}
 
-	if errData != nil {
-		c.JSON(400, errData)
-		return
-	}
+		errData, err := inst.Validate(db)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
 
-	err = dc.Insert(db)
-	if err != nil {
-		utils.AbortWithError(c, 500, err)
-		return
+		if errData != nil {
+			c.JSON(400, errData)
+			return
+		}
+
+		err = inst.Insert(db)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		insts = append(insts, inst)
 	}
 
 	event.PublishDispatch(db, "instance.change")
 
-	c.JSON(200, dc)
+	if len(insts) == 1 {
+		c.JSON(200, insts[0])
+	} else {
+		c.JSON(200, insts)
+	}
 }
 
 func instanceDelete(c *gin.Context) {
@@ -192,13 +207,13 @@ func instanceGet(c *gin.Context) {
 		return
 	}
 
-	nde, err := instance.Get(db, instanceId)
+	inst, err := instance.Get(db, instanceId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	c.JSON(200, nde)
+	c.JSON(200, inst)
 }
 
 func instancesGet(c *gin.Context) {
