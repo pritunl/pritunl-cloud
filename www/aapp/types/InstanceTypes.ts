@@ -9,6 +9,8 @@ export interface Instance {
 	organization?: string;
 	zone?: string;
 	node?: string;
+	status?: string;
+	public_ip?: string;
 	name?: string;
 	memory?: number;
 	processors?: number;
