@@ -278,3 +278,31 @@ func Destroy(virt *vm.VirtualMachine) (err error) {
 
 	return
 }
+
+func PowerOn(virt *vm.VirtualMachine) (err error) {
+	logrus.WithFields(logrus.Fields{
+		"id": virt.Id.Hex(),
+	}).Info("virtualbox: Power on virtual machine")
+
+	_, err = utils.ExecOutput("",
+		ManageBin, "startvm", virt.Id.Hex(), "--type", "headless")
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func PowerOff(virt *vm.VirtualMachine) (err error) {
+	logrus.WithFields(logrus.Fields{
+		"id": virt.Id.Hex(),
+	}).Info("virtualbox: Power off virtual machine")
+
+	_, err = utils.ExecOutput("",
+		ManageBin, "controlvm", virt.Id.Hex(), "acpipowerbutton")
+	if err != nil {
+		return
+	}
+
+	return
+}
