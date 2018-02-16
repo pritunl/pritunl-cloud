@@ -14,17 +14,13 @@ import (
 )
 
 var (
-	creating       = set.NewSet()
-	creatingLock   = sync.Mutex{}
-	destroying     = set.NewSet()
-	destroyingLock = sync.Mutex{}
+	busy     = set.NewSet()
+	busyLock = sync.Mutex{}
 )
 
 func update() (err error) {
 	db := database.GetDatabase()
 	defer db.Close()
-
-	coll := db.Instances()
 
 	virts, err := virtualbox.GetVms()
 	if err != nil {
@@ -37,27 +33,9 @@ func update() (err error) {
 		curIds.Add(virt.Id)
 		virtsMap[virt.Id] = virt
 
-		addr := ""
-		addr6 := ""
-		if len(virt.NetworkAdapters) > 0 {
-			addr = virt.NetworkAdapters[0].IpAddress
-			addr6 = virt.NetworkAdapters[0].IpAddress6
-		}
-
-		err = coll.UpdateId(virt.Id, &bson.M{
-			"$set": &bson.M{
-				"status":     virt.State,
-				"public_ip":  addr,
-				"public_ip6": addr6,
-			},
-		})
+		err = virt.Commit(db)
 		if err != nil {
-			err = database.ParseError(err)
-			if _, ok := err.(*database.NotFoundError); ok {
-				err = nil
-			} else {
-				return
-			}
+			return
 		}
 	}
 
@@ -68,15 +46,15 @@ func update() (err error) {
 	newIds := set.NewSet()
 	for _, inst := range instances {
 		newIds.Add(inst.Id)
-		if !curIds.Contains(inst.Id) && !creating.Contains(inst.Id) {
+		if !curIds.Contains(inst.Id) && !busy.Contains(inst.Id) {
 			go func(inst *instance.Instance) {
-				creatingLock.Lock()
-				creating.Add(inst.Id)
-				creatingLock.Unlock()
+				busyLock.Lock()
+				busy.Add(inst.Id)
+				busyLock.Unlock()
 				defer func() {
-					creatingLock.Lock()
-					creating.Remove(inst.Id)
-					creatingLock.Unlock()
+					busyLock.Lock()
+					busy.Remove(inst.Id)
+					busyLock.Unlock()
 				}()
 				e := virtualbox.Create(inst.GetVm())
 				time.Sleep(5 * time.Second)
@@ -93,15 +71,15 @@ func update() (err error) {
 	curIds.Subtract(newIds)
 	for idInf := range curIds.Iter() {
 		virt := virtsMap[idInf.(bson.ObjectId)]
-		if !destroying.Contains(virt.Id) {
+		if !busy.Contains(virt.Id) {
 			go func(virt *vm.VirtualMachine) {
-				destroyingLock.Lock()
-				destroying.Add(virt.Id)
-				destroyingLock.Unlock()
+				busyLock.Lock()
+				busy.Add(virt.Id)
+				busyLock.Unlock()
 				defer func() {
-					destroyingLock.Lock()
-					destroying.Remove(virt.Id)
-					destroyingLock.Unlock()
+					busyLock.Lock()
+					busy.Remove(virt.Id)
+					busyLock.Unlock()
 				}()
 				e := virtualbox.Destroy(virt)
 				time.Sleep(3 * time.Second)
@@ -112,6 +90,60 @@ func update() (err error) {
 					return
 				}
 			}(virt)
+		}
+	}
+
+	for _, inst := range instances {
+		virt := virtsMap[inst.Id]
+		if virt == nil {
+			continue
+		}
+
+		switch inst.Status {
+		case instance.Running:
+			if virt.State == "poweroff" && !busy.Contains(inst.Id) {
+				go func(virt *vm.VirtualMachine) {
+					busyLock.Lock()
+					busy.Add(virt.Id)
+					busyLock.Unlock()
+					defer func() {
+						busyLock.Lock()
+						busy.Remove(virt.Id)
+						busyLock.Unlock()
+					}()
+					e := virtualbox.PowerOn(virt)
+					time.Sleep(3 * time.Second)
+					if e != nil {
+						logrus.WithFields(logrus.Fields{
+							"error": e,
+						}).Error("state: Failed to power on instance")
+						return
+					}
+				}(virt)
+			}
+			break
+		case instance.Stopped:
+			if virt.State == "running" && !busy.Contains(inst.Id) {
+				go func(virt *vm.VirtualMachine) {
+					busyLock.Lock()
+					busy.Add(virt.Id)
+					busyLock.Unlock()
+					defer func() {
+						busyLock.Lock()
+						busy.Remove(virt.Id)
+						busyLock.Unlock()
+					}()
+					e := virtualbox.PowerOff(virt)
+					time.Sleep(5 * time.Second)
+					if e != nil {
+						logrus.WithFields(logrus.Fields{
+							"error": e,
+						}).Error("state: Failed to power off instance")
+						return
+					}
+				}(virt)
+			}
+			break
 		}
 	}
 
