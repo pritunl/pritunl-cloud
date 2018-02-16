@@ -10,11 +10,13 @@ export interface Instance {
 	zone?: string;
 	node?: string;
 	status?: string;
+	state?: string;
 	public_ip?: string;
 	public_ip6?: string;
 	name?: string;
 	memory?: number;
 	processors?: number;
+	count?: number;
 }
 
 export interface Filter {
