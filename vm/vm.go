@@ -21,4 +21,6 @@ type Disk struct {
 type NetworkAdapter struct {
 	MacAddress       string
 	BridgedInterface string
+	IpAddress        string
+	IpAddress6       string
 }
