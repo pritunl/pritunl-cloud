@@ -17,6 +17,8 @@ import (
 
 var (
 	listReg = regexp.MustCompile("\"([a-z0-9]+)\" \\{(.*?)\\}")
+	ipReg   = regexp.MustCompile(
+		"Name: /VirtualBox/GuestInfo/Net/0/V4/IP, value: ([0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+)")
 )
 
 func GetVms() (vms []*vm.VirtualMachine, err error) {
@@ -41,7 +43,7 @@ func GetVms() (vms []*vm.VirtualMachine, err error) {
 		}
 
 		output, e := utils.ExecOutput("",
-			ManageBin, "showvminfo", "--machinereadable", v.Uuid)
+			ManageBin, "showvminfo", "--machinereadable", v.Id.Hex())
 		if e != nil {
 			err = e
 			return
@@ -158,6 +160,18 @@ func GetVms() (vms []*vm.VirtualMachine, err error) {
 			}
 		}
 
+		output, e = utils.ExecOutput("",
+			ManageBin, "guestproperty", "enumerate", v.Id.Hex())
+		if e != nil {
+			err = e
+			return
+		}
+
+		match = ipReg.FindStringSubmatch(output)
+		if match != nil || len(match) == 2 && len(v.NetworkAdapters) > 0 {
+			v.NetworkAdapters[0].IpAddress = match[1]
+		}
+
 		vms = append(vms, v)
 	}
 
@@ -207,15 +221,11 @@ func Create(virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	go func() {
-		output, err = utils.ExecOutput("",
-			ManageBin, "startvm", virt.Id.Hex(), "--type", "headless")
-		if err != nil {
-			return
-		}
-	}()
-
-	time.Sleep(1 * time.Second)
+	output, err = utils.ExecOutput("",
+		ManageBin, "startvm", virt.Id.Hex(), "--type", "headless")
+	if err != nil {
+		return
+	}
 
 	return
 }
