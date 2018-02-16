@@ -115,6 +115,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 			name: 'New instance',
 			memory: 1024,
 			processors: 1,
+			count: 1,
 		};
 	}
 
@@ -357,6 +358,20 @@ export default class InstanceNew extends React.Component<Props, State> {
 								this.set('processors', val);
 							}}
 							value={instance.processors}
+						/>
+						<PageNumInput
+							label="Count"
+							help="Number of instances to create."
+							min={1}
+							minorStepSize={1}
+							stepSize={1}
+							majorStepSize={1}
+							disabled={this.state.disabled}
+							selectAllOnFocus={true}
+							onChange={(val: number): void => {
+								this.set('count', val);
+							}}
+							value={instance.count}
 						/>
 					</div>
 				</div>
