@@ -5,6 +5,7 @@ import * as InstanceActions from '../actions/InstanceActions';
 import PageInput from './PageInput';
 import PageInfo from './PageInfo';
 import PageSave from './PageSave';
+import PageSwitch from './PageSwitch';
 import PageNumInput from './PageNumInput';
 import ConfirmButton from './ConfirmButton';
 
@@ -215,6 +216,18 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						}}
 						value={instance.processors}
 					/>
+					<PageSwitch
+						label="Power On"
+						help="Power on instance."
+						checked={instance.status === 'running'}
+						onToggle={(): void => {
+							if (instance.status === 'running') {
+								this.set('status', 'stopped');
+							} else {
+								this.set('status', 'running');
+							}
+						}}
+					/>
 				</div>
 				<div style={css.group}>
 					<PageInfo
@@ -234,6 +247,10 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 							{
 								label: 'Status',
 								value: instance.status || 'None',
+							},
+							{
+								label: 'State',
+								value: instance.state || 'None',
 							},
 							{
 								label: 'Public IPv4',
