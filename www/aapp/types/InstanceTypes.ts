@@ -11,6 +11,7 @@ export interface Instance {
 	node?: string;
 	status?: string;
 	public_ip?: string;
+	public_ip6?: string;
 	name?: string;
 	memory?: number;
 	processors?: number;
