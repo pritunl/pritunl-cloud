@@ -20,6 +20,7 @@ type instanceData struct {
 	Zone         bson.ObjectId `json:"zone"`
 	Node         bson.ObjectId `json:"node"`
 	Name         string        `json:"name"`
+	Status       string        `json:"status"`
 	Memory       int           `json:"memory"`
 	Processors   int           `json:"processors"`
 	Count        int           `json:"count"`
@@ -56,11 +57,13 @@ func instancePut(c *gin.Context) {
 		return
 	}
 
+	inst.Status = data.Status
 	inst.Name = data.Name
 	inst.Memory = data.Memory
 	inst.Processors = data.Processors
 
 	fields := set.NewSet(
+		"status",
 		"name",
 		"memory",
 		"processors",
@@ -110,8 +113,13 @@ func instancePost(c *gin.Context) {
 		data.Count = 1
 	}
 
+	if data.Status == "" {
+		data.Status = instance.Running
+	}
+
 	for i := 0; i < data.Count; i++ {
 		inst := &instance.Instance{
+			Status:       data.Status,
 			Organization: data.Organization,
 			Zone:         data.Zone,
 			Node:         data.Node,
