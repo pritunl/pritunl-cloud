@@ -24,8 +24,160 @@ var (
 		"Name: /Pritunl/GuestInfo/Net/0/V6/IP, value: ([a-f0-9:]+:[a-f0-9:]+)")
 )
 
-func GetVms() (vms []*vm.VirtualMachine, err error) {
-	vms = []*vm.VirtualMachine{}
+func GetVmInfo(vmId bson.ObjectId) (virt *vm.VirtualMachine, err error) {
+	virt = &vm.VirtualMachine{
+		Id:              vmId,
+		Disks:           []*vm.Disk{},
+		NetworkAdapters: []*vm.NetworkAdapter{},
+	}
+
+	output, err := utils.ExecOutput("",
+		ManageBin, "showvminfo", "--machinereadable", virt.Id.Hex())
+	if err != nil {
+		if strings.Contains(
+			output, "Could not find a registered machine") {
+
+			virt = nil
+			err = nil
+		}
+		return
+	}
+
+	for _, line := range strings.Split(output, "\n") {
+		lineSplt := strings.SplitN(line, "=", 2)
+		if len(lineSplt) != 2 {
+			continue
+		}
+
+		key := lineSplt[0]
+		value := lineSplt[1]
+		if strings.HasPrefix(value, "\"") &&
+			strings.HasSuffix(value, "\"") {
+
+			value = value[1 : len(value)-1]
+		}
+
+		if strings.HasPrefix(key, "bridgeadapter") {
+			n, _ := strconv.Atoi(key[13:])
+			if n < 1 {
+				err = &errortypes.ParseError{
+					errors.Newf(
+						"virtualbox: Failed to get nic num %s",
+						key,
+					),
+				}
+				return
+			}
+
+			n -= 1
+
+			if len(virt.NetworkAdapters) < n+1 {
+				for i := 0; i < n+1-len(virt.NetworkAdapters); i++ {
+					virt.NetworkAdapters = append(
+						virt.NetworkAdapters,
+						&vm.NetworkAdapter{},
+					)
+				}
+			}
+
+			virt.NetworkAdapters[n].BridgedInterface = value
+		} else if strings.HasPrefix(key, "macaddress") {
+			n, _ := strconv.Atoi(key[10:])
+			if n < 1 {
+				err = &errortypes.ParseError{
+					errors.Newf(
+						"virtualbox: Failed to get nic num %s",
+						key,
+					),
+				}
+				return
+			}
+
+			n -= 1
+
+			if len(virt.NetworkAdapters) < n+1 {
+				for i := 0; i < n+1-len(virt.NetworkAdapters); i++ {
+					virt.NetworkAdapters = append(
+						virt.NetworkAdapters,
+						&vm.NetworkAdapter{},
+					)
+				}
+			}
+
+			virt.NetworkAdapters[n].MacAddress = value
+		} else if strings.HasPrefix(key, "\"SATA-") &&
+			strings.HasSuffix(key, "-0\"") {
+
+			if value == "none" {
+				continue
+			}
+
+			n, e := strconv.Atoi(key[6 : len(key)-3])
+			if e != nil {
+				continue
+			}
+
+			if n < 0 {
+				err = &errortypes.ParseError{
+					errors.Newf(
+						"virtualbox: Failed to get disk num %s",
+						key,
+					),
+				}
+				return
+			}
+
+			if len(virt.Disks) < n+1 {
+				for i := 0; i < n+1-len(virt.Disks); i++ {
+					virt.Disks = append(
+						virt.Disks,
+						&vm.Disk{},
+					)
+				}
+			}
+
+			virt.Disks[n].Path = value
+		} else {
+			switch key {
+			case "UUID":
+				virt.Uuid = value
+				break
+			case "VMState":
+				virt.State = value
+				break
+			case "cpus":
+				cpus, _ := strconv.Atoi(value)
+				virt.Processors = cpus
+				break
+			case "memory":
+				memory, _ := strconv.Atoi(value)
+				virt.Memory = memory
+				break
+			}
+		}
+	}
+
+	output, err = utils.ExecOutput("",
+		ManageBin, "guestproperty", "enumerate", virt.Id.Hex())
+	if err != nil {
+		return
+	}
+
+	match := ipReg.FindStringSubmatch(output)
+	if match != nil || len(match) == 2 && len(virt.NetworkAdapters) > 0 {
+		virt.NetworkAdapters[0].IpAddress = match[1]
+	}
+
+	match = ip6Reg.FindStringSubmatch(output)
+	if match != nil || len(match) == 2 && len(virt.NetworkAdapters) > 0 {
+		virt.NetworkAdapters[0].IpAddress6 = match[1]
+	}
+
+	return
+}
+
+func GetVms() (virts []*vm.VirtualMachine, err error) {
+	virts = []*vm.VirtualMachine{}
 
 	output, err := utils.ExecOutput("", ManageBin, "list", "vms")
 	if err != nil {
@@ -38,149 +190,15 @@ func GetVms() (vms []*vm.VirtualMachine, err error) {
 			continue
 		}
 
-		v := &vm.VirtualMachine{
-			Id:              bson.ObjectIdHex(match[1]),
-			Uuid:            match[2],
-			Disks:           []*vm.Disk{},
-			NetworkAdapters: []*vm.NetworkAdapter{},
-		}
-
-		output, e := utils.ExecOutput("",
-			ManageBin, "showvminfo", "--machinereadable", v.Id.Hex())
+		virt, e := GetVmInfo(bson.ObjectIdHex(match[1]))
 		if e != nil {
 			err = e
 			return
 		}
 
-		for _, line := range strings.Split(output, "\n") {
-			lineSplt := strings.SplitN(line, "=", 2)
-			if len(lineSplt) != 2 {
-				continue
-			}
-
-			key := lineSplt[0]
-			value := lineSplt[1]
-			if strings.HasPrefix(value, "\"") &&
-				strings.HasSuffix(value, "\"") {
-
-				value = value[1 : len(value)-1]
-			}
-
-			if strings.HasPrefix(key, "bridgeadapter") {
-				n, _ := strconv.Atoi(key[13:])
-				if n < 1 {
-					err = &errortypes.ParseError{
-						errors.Newf(
-							"virtualbox: Failed to get nic num %s",
-							key,
-						),
-					}
-					return
-				}
-
-				n -= 1
-
-				if len(v.NetworkAdapters) < n+1 {
-					for i := 0; i < n+1-len(v.NetworkAdapters); i++ {
-						v.NetworkAdapters = append(
-							v.NetworkAdapters,
-							&vm.NetworkAdapter{},
-						)
-					}
-				}
-
-				v.NetworkAdapters[n].BridgedInterface = value
-			} else if strings.HasPrefix(key, "macaddress") {
-				n, _ := strconv.Atoi(key[10:])
-				if n < 1 {
-					err = &errortypes.ParseError{
-						errors.Newf(
-							"virtualbox: Failed to get nic num %s",
-							key,
-						),
-					}
-					return
-				}
-
-				n -= 1
-
-				if len(v.NetworkAdapters) < n+1 {
-					for i := 0; i < n+1-len(v.NetworkAdapters); i++ {
-						v.NetworkAdapters = append(
-							v.NetworkAdapters,
-							&vm.NetworkAdapter{},
-						)
-					}
-				}
-
-				v.NetworkAdapters[n].MacAddress = value
-			} else if strings.HasPrefix(key, "\"SATA-") &&
-				strings.HasSuffix(key, "-0\"") {
-
-				if value == "none" {
-					continue
-				}
-
-				n, e := strconv.Atoi(key[6 : len(key)-3])
-				if e != nil {
-					continue
-				}
-
-				if n < 0 {
-					err = &errortypes.ParseError{
-						errors.Newf(
-							"virtualbox: Failed to get disk num %s",
-							key,
-						),
-					}
-					return
-				}
-
-				if len(v.Disks) < n+1 {
-					for i := 0; i < n+1-len(v.Disks); i++ {
-						v.Disks = append(
-							v.Disks,
-							&vm.Disk{},
-						)
-					}
-				}
-
-				v.Disks[n].Path = value
-			} else {
-				switch key {
-				case "VMState":
-					v.State = value
-					break
-				case "cpus":
-					cpus, _ := strconv.Atoi(value)
-					v.Processors = cpus
-					break
-				case "memory":
-					memory, _ := strconv.Atoi(value)
-					v.Memory = memory
-					break
-				}
-			}
+		if virt != nil {
+			virts = append(virts, virt)
 		}
-
-		output, e = utils.ExecOutput("",
-			ManageBin, "guestproperty", "enumerate", v.Id.Hex())
-		if e != nil {
-			err = e
-			return
-		}
-
-		match = ipReg.FindStringSubmatch(output)
-		if match != nil || len(match) == 2 && len(v.NetworkAdapters) > 0 {
-			v.NetworkAdapters[0].IpAddress = match[1]
-		}
-
-		match = ip6Reg.FindStringSubmatch(output)
-		if match != nil || len(match) == 2 && len(v.NetworkAdapters) > 0 {
-			v.NetworkAdapters[0].IpAddress6 = match[1]
-		}
-
-		vms = append(vms, v)
 	}
 
 	return
@@ -233,13 +251,19 @@ func Create(virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	virt.State = "starting"
+	virt.State = "registering"
 	err = virt.Commit(db)
 	if err != nil {
 		return
 	}
 
 	output, err = utils.ExecOutput("", ManageBin, "registervm", vboxPath)
+	if err != nil {
+		return
+	}
+
+	virt.State = "starting"
+	err = virt.Commit(db)
 	if err != nil {
 		return
 	}
