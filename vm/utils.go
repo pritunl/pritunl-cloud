@@ -15,5 +15,5 @@ func GetDiskPath(id bson.ObjectId, num int) string {
 }
 
 func GetMacAddr(id bson.ObjectId) string {
-	return "0800" + id.Hex()[16:]
+	return "08" + id.Hex()[14:]
 }
