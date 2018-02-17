@@ -24,6 +24,7 @@ const css = {
 		margin: '0 0 0 0',
 	} as React.CSSProperties,
 	link: {
+		cursor: 'pointer',
 		userSelect: 'none',
 		margin: '5px 5px 0 0',
 	} as React.CSSProperties,
@@ -32,7 +33,7 @@ const css = {
 	} as React.CSSProperties,
 };
 
-export default class Instances extends React.Component<Props, State> {
+export default class InstancesPage extends React.Component<Props, State> {
 	constructor(props: any, context: any) {
 		super(props, context);
 		this.state = {
@@ -79,7 +80,7 @@ export default class Instances extends React.Component<Props, State> {
 		let end = Math.min(pages - offset, start + 15);
 
 		for (let i = start; i < end; i++) {
-			links.push(<a
+			links.push(<span
 				key={i}
 				style={page === i ? {
 					...css.link,
@@ -93,17 +94,14 @@ export default class Instances extends React.Component<Props, State> {
 				}}
 			>
 				{i + 1}
-			</a>);
+			</span>);
 		}
 
 		return <div className="layout horizontal center-justified">
 			<button
-				className="pt-button"
+				className="pt-button pt-minimal pt-icon-chevron-backward"
 				hidden={!offset}
-				style={page === 0 ? {
-					...css.button,
-					...css.current,
-				} : css.button}
+				disabled={page === 0}
 				type="button"
 				onClick={(): void => {
 					InstanceActions.traverse(0);
@@ -111,27 +109,45 @@ export default class Instances extends React.Component<Props, State> {
 						this.props.onPage();
 					}
 				}}
-			>
-				First
-			</button>
-			{links}
+			/>
 			<button
-				className="pt-button"
-				hidden={!offset}
-				style={page === pages ? {
-					...css.buttonLast,
-					...css.current,
-				} : css.buttonLast}
+				className="pt-button pt-minimal pt-icon-chevron-left"
+				style={css.button}
+				disabled={page === 0}
 				type="button"
 				onClick={(): void => {
-					InstanceActions.traverse(this.state.pages);
+					InstanceActions.traverse(Math.max(0, this.state.page - 1));
 					if (this.props.onPage) {
 						this.props.onPage();
 					}
 				}}
-			>
-				Last
-			</button>
+			/>
+			{links}
+			<button
+				className="pt-button pt-minimal pt-icon-chevron-right"
+				style={css.button}
+				disabled={page === pages - 1}
+				type="button"
+				onClick={(): void => {
+					InstanceActions.traverse(Math.min(
+						this.state.pages - 1, this.state.page + 1));
+					if (this.props.onPage) {
+						this.props.onPage();
+					}
+				}}
+			/>
+			<button
+				className="pt-button pt-minimal pt-icon-chevron-forward"
+				hidden={!offset}
+				disabled={page === pages - 1}
+				type="button"
+				onClick={(): void => {
+					InstanceActions.traverse(this.state.pages - 1);
+					if (this.props.onPage) {
+						this.props.onPage();
+					}
+				}}
+			/>
 		</div>;
 	}
 }
