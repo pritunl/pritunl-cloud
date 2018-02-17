@@ -1,7 +1,7 @@
 /// <reference path="../References.d.ts"/>
 export const SYNC = 'instance.sync';
-export const TRAVERSE = 'user.traverse';
-export const FILTER = 'user.filter';
+export const TRAVERSE = 'instance.traverse';
+export const FILTER = 'instance.filter';
 export const CHANGE = 'instance.change';
 
 export interface Instance {
@@ -11,6 +11,7 @@ export interface Instance {
 	node?: string;
 	status?: string;
 	state?: string;
+	vm_state?: string;
 	public_ip?: string;
 	public_ip6?: string;
 	name?: string;

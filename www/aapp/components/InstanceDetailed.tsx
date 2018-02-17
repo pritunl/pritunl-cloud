@@ -236,12 +236,12 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					<PageSwitch
 						label="Power On"
 						help="Power on instance."
-						checked={instance.status === 'running'}
+						checked={instance.state === 'running'}
 						onToggle={(): void => {
-							if (instance.status === 'running') {
-								this.set('status', 'stopped');
+							if (instance.state === 'running') {
+								this.set('state', 'stopped');
 							} else {
-								this.set('status', 'running');
+								this.set('state', 'running');
 							}
 						}}
 					/>
@@ -251,35 +251,36 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						fields={[
 							{
 								label: 'ID',
-								value: instance.id || 'None',
+								value: this.props.instance.id || 'None',
 							},
 							{
 								label: 'Organization',
-								value: org ? org.name : instance.organization || 'None',
+								value: org ? org.name :
+									this.props.instance.organization || 'None',
 							},
 							{
 								label: 'Zone',
-								value: zone ? zone.name : instance.zone || 'None',
+								value: zone ? zone.name : this.props.instance.zone || 'None',
 							},
 							{
 								label: 'Node',
-								value: node ? node.name : instance.node || 'None',
-							},
-							{
-								label: 'Status',
-								value: instance.status || 'None',
+								value: node ? node.name : this.props.instance.node || 'None',
 							},
 							{
 								label: 'State',
-								value: instance.state || 'None',
+								value: this.props.instance.state || 'None',
+							},
+							{
+								label: 'VM State',
+								value: this.props.instance.vm_state || 'None',
 							},
 							{
 								label: 'Public IPv4',
-								value: instance.public_ip || 'None',
+								value: this.props.instance.public_ip || 'None',
 							},
 							{
 								label: 'Public IPv6',
-								value: instance.public_ip6 || 'None',
+								value: this.props.instance.public_ip6 || 'None',
 							},
 						]}
 					/>

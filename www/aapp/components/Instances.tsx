@@ -8,11 +8,13 @@ import * as CertificateTypes from '../types/CertificateTypes';
 import InstancesStore from '../stores/InstancesStore';
 import OrganizationsStore from '../stores/OrganizationsStore';
 import DatacentersStore from '../stores/DatacentersStore';
+import NodesStore from '../stores/NodesStore';
 import ZonesStore from '../stores/ZonesStore';
 import CertificatesStore from '../stores/CertificatesStore';
 import * as InstanceActions from '../actions/InstanceActions';
 import * as OrganizationActions from '../actions/OrganizationActions';
 import * as DatacenterActions from '../actions/DatacenterActions';
+import * as NodeActions from '../actions/NodeActions';
 import * as ZoneActions from '../actions/ZoneActions';
 import * as CertificateActions from '../actions/CertificateActions';
 import Instance from './Instance';
@@ -71,6 +73,8 @@ const css = {
 };
 
 export default class Instances extends React.Component<{}, State> {
+	interval: NodeJS.Timer;
+
 	constructor(props: any, context: any) {
 		super(props, context);
 		this.state = {
@@ -99,21 +103,29 @@ export default class Instances extends React.Component<{}, State> {
 		InstancesStore.addChangeListener(this.onChange);
 		OrganizationsStore.addChangeListener(this.onChange);
 		DatacentersStore.addChangeListener(this.onChange);
+		NodesStore.addChangeListener(this.onChange);
 		ZonesStore.addChangeListener(this.onChange);
 		CertificatesStore.addChangeListener(this.onChange);
 		InstanceActions.sync();
 		OrganizationActions.sync();
 		DatacenterActions.sync();
+		NodeActions.sync();
 		ZoneActions.sync();
 		CertificateActions.sync();
+
+		this.interval = setInterval(() => {
+			InstanceActions.sync();
+		}, 500);
 	}
 
 	componentWillUnmount(): void {
 		InstancesStore.removeChangeListener(this.onChange);
 		OrganizationsStore.removeChangeListener(this.onChange);
 		DatacentersStore.removeChangeListener(this.onChange);
+		NodesStore.removeChangeListener(this.onChange);
 		ZonesStore.removeChangeListener(this.onChange);
 		CertificatesStore.removeChangeListener(this.onChange);
+		clearInterval(this.interval);
 	}
 
 	onChange = (): void => {
