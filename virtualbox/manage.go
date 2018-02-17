@@ -404,13 +404,40 @@ func PowerOn(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	return
 }
 
-func PowerOff(virt *vm.VirtualMachine) (err error) {
+func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	logrus.WithFields(logrus.Fields{
 		"id": virt.Id.Hex(),
 	}).Info("virtualbox: Power off virtual machine")
 
 	_, err = utils.ExecOutput("",
 		ManageBin, "controlvm", virt.Id.Hex(), "acpipowerbutton")
+	if err != nil {
+		return
+	}
+
+	for i := 0; i < 180; i++ {
+		virt, e := GetVmInfo(virt.Id)
+		if e != nil {
+			err = e
+			return
+		}
+
+		if virt == nil || virt.State == vm.PowerOff {
+			if virt != nil {
+				err = virt.Commit(db)
+				if err != nil {
+					return
+				}
+			}
+
+			return
+		}
+
+		time.Sleep(1 * time.Second)
+	}
+
+	_, err = utils.ExecOutput("",
+		ManageBin, "controlvm", virt.Id.Hex(), "poweroff")
 	if err != nil {
 		return
 	}
