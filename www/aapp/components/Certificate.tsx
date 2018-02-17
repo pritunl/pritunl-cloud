@@ -332,7 +332,7 @@ export default class Certificate extends React.Component<Props, State> {
 						fields={[
 							{
 								label: 'ID',
-								value: cert.id || 'None',
+								value: this.props.certificate.id || 'None',
 							},
 							{
 								label: 'Signature Algorithm',

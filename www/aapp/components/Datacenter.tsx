@@ -179,7 +179,7 @@ export default class Datacenter extends React.Component<Props, State> {
 						fields={[
 							{
 								label: 'ID',
-								value: datacenter.id || 'None',
+								value: this.props.datacenter.id || 'None',
 							},
 						]}
 					/>

@@ -282,7 +282,7 @@ export default class Organization extends React.Component<Props, State> {
 						fields={[
 							{
 								label: 'ID',
-								value: org.id || 'None',
+								value: this.props.organization.id || 'None',
 							},
 						]}
 					/>

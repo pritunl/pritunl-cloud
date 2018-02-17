@@ -269,6 +269,9 @@ export default class Zone extends React.Component<Props, State> {
 			organizationsSelect.push(<option key="null" value="">None</option>);
 		}
 
+		let datacenter = DatacentersStore.datacenter(
+			this.props.zone.datacenter);
+
 		return <div
 			className="pt-card"
 			style={css.card}
@@ -328,11 +331,12 @@ export default class Zone extends React.Component<Props, State> {
 						fields={[
 							{
 								label: 'ID',
-								value: zone.id || 'None',
+								value: this.props.zone.id || 'None',
 							},
 							{
 								label: 'Datacenter',
-								value: zone.datacenter || 'None',
+								value: datacenter ? datacenter.name :
+									this.props.zone.datacenter || 'None',
 							},
 						]}
 					/>

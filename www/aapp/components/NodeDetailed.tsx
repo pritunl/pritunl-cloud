@@ -528,38 +528,39 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						fields={[
 							{
 								label: 'ID',
-								value: node.id || 'None',
+								value: this.props.node.id || 'None',
 							},
 							{
 								valueClass: active ? '' : 'pt-text-intent-danger',
 								label: 'Timestamp',
-								value: MiscUtils.formatDate(node.timestamp) || 'Inactive',
+								value: MiscUtils.formatDate(
+									this.props.node.timestamp) || 'Inactive',
 							},
 							{
 								label: 'Requests',
-								value: node.requests_min + '/min',
+								value: this.props.node.requests_min + '/min',
 							},
 						]}
 						bars={[
 							{
 								progressClass: 'pt-no-stripes pt-intent-primary',
 								label: 'Memory',
-								value: node.memory,
+								value: this.props.node.memory,
 							},
 							{
 								progressClass: 'pt-no-stripes pt-intent-success',
 								label: 'Load1',
-								value: node.load1,
+								value: this.props.node.load1,
 							},
 							{
 								progressClass: 'pt-no-stripes pt-intent-warning',
 								label: 'Load5',
-								value: node.load5,
+								value: this.props.node.load5,
 							},
 							{
 								progressClass: 'pt-no-stripes pt-intent-danger',
 								label: 'Load15',
-								value: node.load15,
+								value: this.props.node.load15,
 							},
 						]}
 					/>

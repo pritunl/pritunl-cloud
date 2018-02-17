@@ -168,9 +168,9 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		let instance: InstanceTypes.Instance = this.state.instance ||
 			this.props.instance;
 
-		let org = OrganizationsStore.organization(instance.organization);
-		let zone = ZonesStore.zone(instance.zone);
-		let node = NodesStore.node(instance.node);
+		let org = OrganizationsStore.organization(this.props.instance.organization);
+		let zone = ZonesStore.zone(this.props.instance.zone);
+		let node = NodesStore.node(this.props.instance.node);
 
 		return <td
 			className="pt-cell"

@@ -435,7 +435,7 @@ export default class Policy extends React.Component<Props, State> {
 						fields={[
 							{
 								label: 'ID',
-								value: policy.id || 'None',
+								value: this.props.policy.id || 'None',
 							},
 						]}
 					/>
