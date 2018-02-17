@@ -5,6 +5,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -114,7 +115,7 @@ func (i *Instance) GetVm() (virt *vm.VirtualMachine) {
 		NetworkAdapters: []*vm.NetworkAdapter{
 			&vm.NetworkAdapter{
 				MacAddress:       vm.GetMacAddr(i.Id),
-				BridgedInterface: vm.BridgedInterface,
+				BridgedInterface: node.Self.GetDefaultInterface(),
 			},
 		},
 	}
