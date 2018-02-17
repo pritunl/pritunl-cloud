@@ -24,6 +24,7 @@ import Page from './Page';
 import PageHeader from './PageHeader';
 import NonState from './NonState';
 import ConfirmButton from './ConfirmButton';
+import * as UserActions from "../actions/UserActions";
 
 interface Selected {
 	[key: string]: boolean;
@@ -176,6 +177,26 @@ export default class Instances extends React.Component<{}, State> {
 		});
 	}
 
+	updateSelected(state: string): void {
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+		InstanceActions.updateMulti(
+			Object.keys(this.state.selected), state).then((): void => {
+			this.setState({
+				...this.state,
+				selected: {},
+				disabled: false,
+			});
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		});
+	}
+
 	render(): JSX.Element {
 		let instancesDom: JSX.Element[] = [];
 
@@ -291,6 +312,26 @@ export default class Instances extends React.Component<{}, State> {
 						>
 							Collapse All
 						</button>
+						<ConfirmButton
+							label="Start Selected"
+							className="pt-intent-success pt-icon-power"
+							progressClassName="pt-intent-success"
+							style={css.button}
+							disabled={!this.selected || this.state.disabled}
+							onConfirm={(): void => {
+								this.updateSelected('running');
+							}}
+						/>
+						<ConfirmButton
+							label="Stop Selected"
+							className="pt-intent-danger pt-icon-power"
+							progressClassName="pt-intent-danger"
+							style={css.button}
+							disabled={!this.selected || this.state.disabled}
+							onConfirm={(): void => {
+								this.updateSelected('stopped');
+							}}
+						/>
 						<ConfirmButton
 							label="Delete Selected"
 							className="pt-intent-danger pt-icon-delete"
