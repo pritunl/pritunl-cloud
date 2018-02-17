@@ -14,6 +14,7 @@ type Instance struct {
 	Id           bson.ObjectId `bson:"_id,omitempty" json:"id"`
 	Organization bson.ObjectId `bson:"organization,omitempty" json:"organization"`
 	Zone         bson.ObjectId `bson:"zone,omitempty" json:"zone"`
+	Status       string        `bson:"-" json:"status"`
 	State        string        `bson:"state" json:"state"`
 	VmState      string        `bson:"vm_state" json:"vm_state"`
 	PublicIp     string        `bson:"public_ip" json:"public_ip"`
@@ -61,6 +62,73 @@ func (i *Instance) Validate(db *database.Database) (
 	}
 
 	return
+}
+
+func (i *Instance) Json() {
+	switch i.State {
+	case Running:
+		switch i.VmState {
+		case vm.Stuck:
+			i.Status = "Stuck"
+			break
+		case vm.PowerOff:
+			i.Status = "Starting"
+			break
+		case vm.Aborted:
+			i.Status = "Starting"
+			break
+		case vm.Starting:
+			i.Status = "Starting"
+			break
+		case vm.Running:
+			i.Status = "Running"
+			break
+		case vm.Paused:
+			i.Status = "Paused"
+			break
+		case vm.Saving:
+			i.Status = "Saving"
+			break
+		case vm.Saved:
+			i.Status = "Saved"
+			break
+		case vm.Restoring:
+			i.Status = "Restoring"
+			break
+		}
+		break
+	case Stopped:
+		switch i.VmState {
+		case vm.Stuck:
+			i.Status = "Stuck"
+			break
+		case vm.PowerOff:
+			i.Status = "Powered Off"
+			break
+		case vm.Aborted:
+			i.Status = "Powered Off"
+			break
+		case vm.Starting:
+			i.Status = "Shutting Down"
+			break
+		case vm.Running:
+			i.Status = "Shutting Down"
+			break
+		case vm.Paused:
+			i.Status = "Paused"
+			break
+		case vm.Saving:
+			i.Status = "Saving"
+			break
+		case vm.Saved:
+			i.Status = "Saved"
+			break
+		case vm.Restoring:
+			i.Status = "Restoring"
+			break
+		}
+		break
+	}
 }
 
 func (i *Instance) Commit(db *database.Database) (err error) {
