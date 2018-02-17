@@ -1,4 +1,4 @@
-package state
+package sync
 
 import (
 	"github.com/Sirupsen/logrus"
@@ -179,8 +179,6 @@ func update() (err error) {
 							}).Error("state: Failed to power off instance")
 							return
 						}
-
-						time.Sleep(10 * time.Second)
 					}(virt)
 					continue
 				}
