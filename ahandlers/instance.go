@@ -57,7 +57,12 @@ func instancePut(c *gin.Context) {
 		return
 	}
 
-	inst.Status = data.Status
+	if inst.Memory != data.Memory || inst.Processors != data.Processors {
+		inst.Status = instance.Updating
+	} else {
+		inst.Status = data.Status
+	}
+
 	inst.Name = data.Name
 	inst.Memory = data.Memory
 	inst.Processors = data.Processors
