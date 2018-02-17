@@ -26,6 +26,11 @@ type instanceData struct {
 	Count        int           `json:"count"`
 }
 
+type instanceMultiData struct {
+	Ids   []bson.ObjectId `json:"ids"`
+	State string          `json:"state"`
+}
+
 type instancesData struct {
 	Instances []*instance.Instance `json:"instances"`
 	Count     int                  `json:"count"`
@@ -158,6 +163,35 @@ func instancePost(c *gin.Context) {
 	}
 }
 
+func instancesPut(c *gin.Context) {
+	if demo.Blocked(c) {
+		return
+	}
+
+	db := c.MustGet("db").(*database.Database)
+	data := &instanceMultiData{}
+
+	err := c.Bind(data)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	doc := &bson.M{
+		"state": data.State,
+	}
+
+	err = instance.UpdateMulti(db, data.Ids, doc)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	event.PublishDispatch(db, "instance.change")
+
+	c.JSON(200, nil)
+}
+
 func instanceDelete(c *gin.Context) {
 	if demo.Blocked(c) {
 		return
@@ -245,6 +279,10 @@ func instancesGet(c *gin.Context) {
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
+	}
+
+	for _, inst := range instances {
+		inst.Json()
 	}
 
 	data := &instancesData{
