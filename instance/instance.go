@@ -14,8 +14,8 @@ type Instance struct {
 	Id           bson.ObjectId `bson:"_id,omitempty" json:"id"`
 	Organization bson.ObjectId `bson:"organization,omitempty" json:"organization"`
 	Zone         bson.ObjectId `bson:"zone,omitempty" json:"zone"`
-	Status       string        `bson:"status" json:"status"`
 	State        string        `bson:"state" json:"state"`
+	VmState      string        `bson:"vm_state" json:"vm_state"`
 	PublicIp     string        `bson:"public_ip" json:"public_ip"`
 	PublicIp6    string        `bson:"public_ip6" json:"public_ip6"`
 	Node         bson.ObjectId `bson:"node,omitempty" json:"node"`
@@ -26,6 +26,10 @@ type Instance struct {
 
 func (i *Instance) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
+
+	if i.State == "" {
+		i.State = Running
+	}
 
 	if i.Organization == "" {
 		errData = &errortypes.ErrorData{

@@ -27,10 +27,6 @@ func vmUpdate() (err error) {
 		return
 	}
 
-	println("***************************************************")
-	println(node.DefaultInterface)
-	println("***************************************************")
-
 	curIds := set.NewSet()
 	virtsMap := map[bson.ObjectId]*vm.VirtualMachine{}
 	for _, virt := range virts {
@@ -104,7 +100,7 @@ func vmUpdate() (err error) {
 			continue
 		}
 
-		switch inst.Status {
+		switch inst.State {
 		case instance.Running:
 			if (virt.State == vm.PowerOff || virt.State == vm.Aborted) &&
 				!busy.Contains(inst.Id) {
@@ -219,14 +215,14 @@ func vmUpdate() (err error) {
 
 						time.Sleep(5 * time.Second)
 
-						inst.Status = instance.Stopped
+						inst.State = instance.Stopped
 						err = inst.CommitFields(db, set.NewSet("status"))
 						if err != nil {
 							return
 						}
 					}(inst, virt)
 				} else {
-					inst.Status = instance.Stopped
+					inst.State = instance.Stopped
 					err = inst.CommitFields(db, set.NewSet("status"))
 					if err != nil {
 						return

@@ -38,7 +38,7 @@ func (v *VirtualMachine) Commit(db *database.Database) (err error) {
 
 	err = coll.UpdateId(v.Id, &bson.M{
 		"$set": &bson.M{
-			"state":      v.State,
+			"vm_state":   v.State,
 			"public_ip":  addr,
 			"public_ip6": addr6,
 		},
