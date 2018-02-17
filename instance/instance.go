@@ -121,3 +121,7 @@ func (i *Instance) GetVm() (virt *vm.VirtualMachine) {
 
 	return
 }
+
+func (i *Instance) Changed(virt *vm.VirtualMachine) bool {
+	return i.Memory != virt.Memory || i.Processors != virt.Processors
+}
