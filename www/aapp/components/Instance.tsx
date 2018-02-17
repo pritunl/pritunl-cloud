@@ -46,6 +46,9 @@ const css = {
 		padding: '9px',
 		whiteSpace: 'nowrap',
 	} as React.CSSProperties,
+	icon: {
+		marginRight: '3px',
+	} as React.CSSProperties,
 	bars: {
 		verticalAlign: 'top',
 		display: 'table-cell',
@@ -88,6 +91,13 @@ export default class Instance extends React.Component<Props, {}> {
 			cardStyle.opacity = 0.6;
 		}
 
+		let statusClass = 'pt-cell';
+		if (instance.status === 'Running') {
+			statusClass += ' pt-text-intent-success';
+		} else if (instance.status === 'Powered Off') {
+			statusClass += ' pt-text-intent-danger';
+		}
+
 		return <div
 			className="pt-card pt-row"
 			style={cardStyle}
@@ -122,16 +132,27 @@ export default class Instance extends React.Component<Props, {}> {
 					</div>
 				</div>
 			</div>
-			<div className="pt-cell" style={css.item}>
+			<div className={statusClass} style={css.item}>
+				<span
+					style={css.icon}
+					className="pt-icon-standard pt-icon-power"
+				/>
 				{instance.status}
 			</div>
 			<div className="pt-cell" style={css.item}>
-				{instance.state}
 			</div>
 			<div className="pt-cell" style={css.item}>
+				<span
+					style={css.icon}
+					className="pt-icon-standard pt-icon-ip-address"
+				/>
 				{instance.public_ip}
 			</div>
 			<div className="pt-cell" style={css.item}>
+				<span
+					style={css.icon}
+					className="pt-icon-standard pt-icon-ip-address"
+				/>
 				{instance.public_ip6}
 			</div>
 		</div>;
