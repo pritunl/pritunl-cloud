@@ -279,19 +279,13 @@ func Create(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	virt.State = "registering"
+	virt.State = vm.Starting
 	err = virt.Commit(db)
 	if err != nil {
 		return
 	}
 
 	output, err = utils.ExecOutput("", managePath, "registervm", vboxPath)
-	if err != nil {
-		return
-	}
-
-	virt.State = "starting"
-	err = virt.Commit(db)
 	if err != nil {
 		return
 	}
@@ -422,6 +416,15 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"id": virt.Id.Hex(),
 	}).Info("virtualbox: Power off virtual machine")
 
+	output, err := utils.ExecCombinedOutput("",
+		managePath, "controlvm", virt.Id.Hex(), "acpipowerbutton")
+	if err != nil {
+		if strings.Contains(output, "not currently running") {
+			err = nil
+		}
+		return
+	}
+
 	_, err = utils.ExecOutput("",
 		managePath, "controlvm", virt.Id.Hex(), "acpipowerbutton")
 	if err != nil {
@@ -451,9 +454,12 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		time.Sleep(1 * time.Second)
 	}
 
-	_, err = utils.ExecOutput("",
+	output, err = utils.ExecCombinedOutput("",
 		managePath, "controlvm", virt.Id.Hex(), "poweroff")
 	if err != nil {
+		if strings.Contains(output, "not currently running") {
+			err = nil
+		}
 		return
 	}
 
