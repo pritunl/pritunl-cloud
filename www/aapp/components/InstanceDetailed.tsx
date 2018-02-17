@@ -2,6 +2,11 @@
 import * as React from 'react';
 import * as InstanceTypes from '../types/InstanceTypes';
 import * as InstanceActions from '../actions/InstanceActions';
+import InstancesStore from '../stores/InstancesStore';
+import OrganizationsStore from '../stores/OrganizationsStore';
+import DatacentersStore from '../stores/DatacentersStore';
+import NodesStore from '../stores/NodesStore';
+import ZonesStore from '../stores/ZonesStore';
 import PageInput from './PageInput';
 import PageInfo from './PageInfo';
 import PageSave from './PageSave';
@@ -118,9 +123,17 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				if (!this.state.changed) {
 					this.setState({
 						...this.state,
-						message: '',
-						changed: false,
 						instance: null,
+						changed: false,
+					});
+				}
+			}, 1000);
+
+			setTimeout((): void => {
+				if (!this.state.changed) {
+					this.setState({
+						...this.state,
+						message: '',
 					});
 				}
 			}, 3000);
@@ -154,6 +167,10 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 	render(): JSX.Element {
 		let instance: InstanceTypes.Instance = this.state.instance ||
 			this.props.instance;
+
+		let org = OrganizationsStore.organization(instance.organization);
+		let zone = ZonesStore.zone(instance.zone);
+		let node = NodesStore.node(instance.node);
 
 		return <td
 			className="pt-cell"
@@ -237,12 +254,16 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 								value: instance.id || 'None',
 							},
 							{
+								label: 'Organization',
+								value: org ? org.name : instance.organization || 'None',
+							},
+							{
 								label: 'Zone',
-								value: instance.zone || 'None',
+								value: zone ? zone.name : instance.zone || 'None',
 							},
 							{
 								label: 'Node',
-								value: instance.node || 'None',
+								value: node ? node.name : instance.node || 'None',
 							},
 							{
 								label: 'Status',
@@ -266,7 +287,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			</div>
 			<PageSave
 				style={css.save}
-				hidden={!this.state.instance}
+				hidden={!this.state.instance && !this.state.message}
 				message={this.state.message}
 				changed={this.state.changed}
 				disabled={this.state.disabled}
