@@ -19,7 +19,9 @@ import (
 )
 
 var (
-	Self *Node
+	Self             *Node
+	DefaultInterface string
+	DefaultGateway   string
 )
 
 type Node struct {
@@ -36,6 +38,7 @@ type Node struct {
 	UserDomain         string                     `bson:"user_domain" json:"user_domain"`
 	RequestsMin        int64                      `bson:"requests_min" json:"requests_min"`
 	ForwardedForHeader string                     `bson:"forwarded_for_header" json:"forwarded_for_header"`
+	DefaultInterface   string                     `bson:"default_interface" json:"default_interface"`
 	Memory             float64                    `bson:"memory" json:"memory"`
 	Load1              float64                    `bson:"load1" json:"load1"`
 	Load5              float64                    `bson:"load5" json:"load5"`
@@ -306,6 +309,13 @@ func (n *Node) reqSync() {
 
 		n.reqLock.Unlock()
 	}
+}
+
+func (n *Node) GetDefaultInterface() string {
+	if n.DefaultInterface != "" {
+		return n.DefaultInterface
+	}
+	return DefaultInterface
 }
 
 func (n *Node) Init() (err error) {

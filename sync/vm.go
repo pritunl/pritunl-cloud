@@ -18,7 +18,7 @@ var (
 	busyLock = sync.Mutex{}
 )
 
-func update() (err error) {
+func vmUpdate() (err error) {
 	db := database.GetDatabase()
 	defer db.Close()
 
@@ -26,6 +26,10 @@ func update() (err error) {
 	if err != nil {
 		return
 	}
+
+	println("***************************************************")
+	println(node.DefaultInterface)
+	println("***************************************************")
 
 	curIds := set.NewSet()
 	virtsMap := map[bson.ObjectId]*vm.VirtualMachine{}
@@ -59,7 +63,7 @@ func update() (err error) {
 				if e != nil {
 					logrus.WithFields(logrus.Fields{
 						"error": e,
-					}).Error("state: Failed to create instance")
+					}).Error("sync: Failed to create instance")
 					return
 				}
 			}(inst)
@@ -87,7 +91,7 @@ func update() (err error) {
 				if e != nil {
 					logrus.WithFields(logrus.Fields{
 						"error": e,
-					}).Error("state: Failed to destroy instance")
+					}).Error("sync: Failed to destroy instance")
 					return
 				}
 			}(virt)
@@ -121,7 +125,7 @@ func update() (err error) {
 					if e != nil {
 						logrus.WithFields(logrus.Fields{
 							"error": e,
-						}).Error("state: Failed to power on instance")
+						}).Error("sync: Failed to power on instance")
 						return
 					}
 
@@ -148,7 +152,7 @@ func update() (err error) {
 					if e != nil {
 						logrus.WithFields(logrus.Fields{
 							"error": e,
-						}).Error("state: Failed to power off instance")
+						}).Error("sync: Failed to power off instance")
 						return
 					}
 
@@ -176,7 +180,7 @@ func update() (err error) {
 						if e != nil {
 							logrus.WithFields(logrus.Fields{
 								"error": e,
-							}).Error("state: Failed to power off instance")
+							}).Error("sync: Failed to power off instance")
 							return
 						}
 					}(virt)
@@ -209,7 +213,7 @@ func update() (err error) {
 						if e != nil {
 							logrus.WithFields(logrus.Fields{
 								"error": e,
-							}).Error("state: Failed to power off instance")
+							}).Error("sync: Failed to power off instance")
 							return
 						}
 
@@ -237,25 +241,22 @@ func update() (err error) {
 	return
 }
 
-func runner() (err error) {
+func vmRunner() {
+	time.Sleep(1 * time.Second)
+
 	for {
 		time.Sleep(1 * time.Second)
 
-		err = update()
+		err := vmUpdate()
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
-			}).Error("state: Failed to update")
+			}).Error("sync: Failed to update vm")
 			continue
 		}
 	}
 }
 
-func Init() {
-	go func() {
-		err := runner()
-		if err != nil {
-			panic(err)
-		}
-	}()
+func initVm() {
+	go vmRunner()
 }
