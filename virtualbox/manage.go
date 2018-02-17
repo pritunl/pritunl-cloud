@@ -13,6 +13,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -31,7 +32,7 @@ func GetVmInfo(vmId bson.ObjectId) (virt *vm.VirtualMachine, err error) {
 		NetworkAdapters: []*vm.NetworkAdapter{},
 	}
 
-	output, err := utils.ExecOutput("",
+	output, err := utils.ExecCombinedOutput("",
 		ManageBin, "showvminfo", "--machinereadable", virt.Id.Hex())
 	if err != nil {
 		if strings.Contains(
@@ -176,7 +177,7 @@ func GetVmInfo(vmId bson.ObjectId) (virt *vm.VirtualMachine, err error) {
 	return
 }
 
-func GetVms() (virts []*vm.VirtualMachine, err error) {
+func GetVms(db *database.Database) (virts []*vm.VirtualMachine, err error) {
 	virts = []*vm.VirtualMachine{}
 
 	output, err := utils.ExecOutput("", ManageBin, "list", "vms")
@@ -184,30 +185,52 @@ func GetVms() (virts []*vm.VirtualMachine, err error) {
 		return
 	}
 
+	waiter := sync.WaitGroup{}
+	virtsLock := sync.Mutex{}
+
 	for _, line := range strings.Split(output, "\n") {
 		match := listReg.FindStringSubmatch(line)
 		if match == nil || len(match) != 3 || !bson.IsObjectIdHex(match[1]) {
 			continue
 		}
 
-		virt, e := GetVmInfo(bson.ObjectIdHex(match[1]))
-		if e != nil {
-			err = e
-			return
-		}
+		vmId := bson.ObjectIdHex(match[1])
 
-		if virt != nil {
-			virts = append(virts, virt)
-		}
+		waiter.Add(1)
+		go func() {
+			defer waiter.Done()
+
+			virt, e := GetVmInfo(vmId)
+			if e != nil {
+				err = e
+				return
+			}
+
+			if virt != nil {
+				e = virt.Commit(db)
+				if e != nil {
+					logrus.WithFields(logrus.Fields{
+						"error": e,
+					}).Error("state: Failed to commit VM state")
+				}
+
+				virtsLock.Lock()
+				virts = append(virts, virt)
+				virtsLock.Unlock()
+			}
+		}()
 	}
+
+	if err != nil {
+		return
+	}
+
+	waiter.Wait()
 
 	return
 }
 
-func Create(virt *vm.VirtualMachine) (err error) {
-	db := database.GetDatabase()
-	defer db.Close()
-
+func Create(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	logrus.WithFields(logrus.Fields{
 		"id": virt.Id.Hex(),
 	}).Info("virtualbox: Creating virtual machine")
@@ -341,7 +364,7 @@ func Update(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	return
 }
 
-func Destroy(virt *vm.VirtualMachine) (err error) {
+func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	logrus.WithFields(logrus.Fields{
 		"id": virt.Id.Hex(),
 	}).Info("virtualbox: Destroying virtual machine")
@@ -367,7 +390,7 @@ func Destroy(virt *vm.VirtualMachine) (err error) {
 	return
 }
 
-func PowerOn(virt *vm.VirtualMachine) (err error) {
+func PowerOn(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	logrus.WithFields(logrus.Fields{
 		"id": virt.Id.Hex(),
 	}).Info("virtualbox: Power on virtual machine")
