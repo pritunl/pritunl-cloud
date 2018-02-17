@@ -83,13 +83,38 @@ func ExecOutput(dir, name string, arg ...string) (output string, err error) {
 	}
 
 	outputByt, err := cmd.Output()
+	if outputByt != nil {
+		output = string(outputByt)
+	}
 	if err != nil {
 		err = &errortypes.RequestError{
 			errors.Wrapf(err, "utils: Failed to exec '%s'", name),
 		}
 		return
 	}
-	output = string(outputByt)
+
+	return
+}
+
+func ExecCombinedOutput(dir, name string, arg ...string) (
+	output string, err error) {
+
+	cmd := exec.Command(name, arg...)
+
+	if dir != "" {
+		cmd.Dir = dir
+	}
+
+	outputByt, err := cmd.CombinedOutput()
+	if outputByt != nil {
+		output = string(outputByt)
+	}
+	if err != nil {
+		err = &errortypes.ExecError{
+			errors.Wrapf(err, "utils: Failed to exec '%s'", name),
+		}
+		return
+	}
 
 	return
 }
