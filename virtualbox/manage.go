@@ -5,6 +5,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vmdk"
@@ -26,6 +27,8 @@ var (
 )
 
 func GetVmInfo(vmId bson.ObjectId) (virt *vm.VirtualMachine, err error) {
+	managePath := settings.VirtualBox.ManagePath
+
 	virt = &vm.VirtualMachine{
 		Id:              vmId,
 		Disks:           []*vm.Disk{},
@@ -33,7 +36,7 @@ func GetVmInfo(vmId bson.ObjectId) (virt *vm.VirtualMachine, err error) {
 	}
 
 	output, err := utils.ExecCombinedOutput("",
-		ManageBin, "showvminfo", "--machinereadable", virt.Id.Hex())
+		managePath, "showvminfo", "--machinereadable", virt.Id.Hex())
 	if err != nil {
 		if strings.Contains(
 			output, "Could not find a registered machine") {
@@ -159,7 +162,7 @@ func GetVmInfo(vmId bson.ObjectId) (virt *vm.VirtualMachine, err error) {
 	}
 
 	output, err = utils.ExecOutput("",
-		ManageBin, "guestproperty", "enumerate", virt.Id.Hex())
+		managePath, "guestproperty", "enumerate", virt.Id.Hex())
 	if err != nil {
 		return
 	}
@@ -178,9 +181,10 @@ func GetVmInfo(vmId bson.ObjectId) (virt *vm.VirtualMachine, err error) {
 }
 
 func GetVms(db *database.Database) (virts []*vm.VirtualMachine, err error) {
+	managePath := settings.VirtualBox.ManagePath
 	virts = []*vm.VirtualMachine{}
 
-	output, err := utils.ExecOutput("", ManageBin, "list", "vms")
+	output, err := utils.ExecOutput("", managePath, "list", "vms")
 	if err != nil {
 		return
 	}
@@ -231,11 +235,12 @@ func GetVms(db *database.Database) (virts []*vm.VirtualMachine, err error) {
 }
 
 func Create(db *database.Database, virt *vm.VirtualMachine) (err error) {
+	managePath := settings.VirtualBox.ManagePath
+	vmPath := vm.GetVmPath(virt.Id)
+
 	logrus.WithFields(logrus.Fields{
 		"id": virt.Id.Hex(),
 	}).Info("virtualbox: Creating virtual machine")
-
-	vmPath := vm.GetVmPath(virt.Id)
 
 	virt.State = "provisioning_disk"
 	err = virt.Commit(db)
@@ -280,7 +285,7 @@ func Create(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	output, err = utils.ExecOutput("", ManageBin, "registervm", vboxPath)
+	output, err = utils.ExecOutput("", managePath, "registervm", vboxPath)
 	if err != nil {
 		return
 	}
@@ -292,7 +297,7 @@ func Create(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	}
 
 	output, err = utils.ExecOutput("",
-		ManageBin, "startvm", virt.Id.Hex(), "--type", "headless")
+		managePath, "startvm", virt.Id.Hex(), "--type", "headless")
 	if err != nil {
 		return
 	}
@@ -301,6 +306,8 @@ func Create(db *database.Database, virt *vm.VirtualMachine) (err error) {
 }
 
 func Update(db *database.Database, virt *vm.VirtualMachine) (err error) {
+	managePath := settings.VirtualBox.ManagePath
+
 	curVirt, err := GetVmInfo(virt.Id)
 	if err != nil {
 		return
@@ -329,7 +336,7 @@ func Update(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	}
 
 	_, err = utils.ExecOutput("",
-		ManageBin, "unregistervm", virt.Id.Hex())
+		managePath, "unregistervm", virt.Id.Hex())
 	if err != nil {
 		return
 	}
@@ -350,7 +357,7 @@ func Update(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	output, err = utils.ExecOutput("", ManageBin, "registervm", vboxPath)
+	output, err = utils.ExecOutput("", managePath, "registervm", vboxPath)
 	if err != nil {
 		return
 	}
@@ -365,6 +372,8 @@ func Update(db *database.Database, virt *vm.VirtualMachine) (err error) {
 }
 
 func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
+	managePath := settings.VirtualBox.ManagePath
+
 	logrus.WithFields(logrus.Fields{
 		"id": virt.Id.Hex(),
 	}).Info("virtualbox: Destroying virtual machine")
@@ -372,7 +381,7 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	vmPath := vm.GetVmPath(virt.Id)
 
 	_, err = utils.ExecOutput("",
-		ManageBin, "controlvm", virt.Id.Hex(), "poweroff")
+		managePath, "controlvm", virt.Id.Hex(), "poweroff")
 	if err != nil {
 		return
 	}
@@ -380,7 +389,7 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	time.Sleep(1500 * time.Millisecond)
 
 	_, err = utils.ExecOutput("",
-		ManageBin, "unregistervm", virt.Id.Hex(), "--delete")
+		managePath, "unregistervm", virt.Id.Hex(), "--delete")
 	if err != nil {
 		return
 	}
@@ -391,12 +400,14 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 }
 
 func PowerOn(db *database.Database, virt *vm.VirtualMachine) (err error) {
+	managePath := settings.VirtualBox.ManagePath
+
 	logrus.WithFields(logrus.Fields{
 		"id": virt.Id.Hex(),
 	}).Info("virtualbox: Power on virtual machine")
 
 	_, err = utils.ExecOutput("",
-		ManageBin, "startvm", virt.Id.Hex(), "--type", "headless")
+		managePath, "startvm", virt.Id.Hex(), "--type", "headless")
 	if err != nil {
 		return
 	}
@@ -405,17 +416,21 @@ func PowerOn(db *database.Database, virt *vm.VirtualMachine) (err error) {
 }
 
 func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
+	managePath := settings.VirtualBox.ManagePath
+
 	logrus.WithFields(logrus.Fields{
 		"id": virt.Id.Hex(),
 	}).Info("virtualbox: Power off virtual machine")
 
 	_, err = utils.ExecOutput("",
-		ManageBin, "controlvm", virt.Id.Hex(), "acpipowerbutton")
+		managePath, "controlvm", virt.Id.Hex(), "acpipowerbutton")
 	if err != nil {
 		return
 	}
 
-	for i := 0; i < 180; i++ {
+	timeout := settings.VirtualBox.PowerOffTimeout
+
+	for i := 0; i < timeout; i++ {
 		virt, e := GetVmInfo(virt.Id)
 		if e != nil {
 			err = e
@@ -437,7 +452,7 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	}
 
 	_, err = utils.ExecOutput("",
-		ManageBin, "controlvm", virt.Id.Hex(), "poweroff")
+		managePath, "controlvm", virt.Id.Hex(), "poweroff")
 	if err != nil {
 		return
 	}
