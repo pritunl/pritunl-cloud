@@ -22,7 +22,7 @@ func update() (err error) {
 	db := database.GetDatabase()
 	defer db.Close()
 
-	virts, err := virtualbox.GetVms()
+	virts, err := virtualbox.GetVms(db)
 	if err != nil {
 		return
 	}
@@ -32,11 +32,6 @@ func update() (err error) {
 	for _, virt := range virts {
 		curIds.Add(virt.Id)
 		virtsMap[virt.Id] = virt
-
-		err = virt.Commit(db)
-		if err != nil {
-			return
-		}
 	}
 
 	instances, err := instance.GetAll(db, &bson.M{
@@ -56,7 +51,10 @@ func update() (err error) {
 					busy.Remove(inst.Id)
 					busyLock.Unlock()
 				}()
-				e := virtualbox.Create(inst.GetVm())
+				db := database.GetDatabase()
+				defer db.Close()
+
+				e := virtualbox.Create(db, inst.GetVm())
 				time.Sleep(5 * time.Second)
 				if e != nil {
 					logrus.WithFields(logrus.Fields{
@@ -81,7 +79,10 @@ func update() (err error) {
 					busy.Remove(virt.Id)
 					busyLock.Unlock()
 				}()
-				e := virtualbox.Destroy(virt)
+				db := database.GetDatabase()
+				defer db.Close()
+
+				e := virtualbox.Destroy(db, virt)
 				time.Sleep(3 * time.Second)
 				if e != nil {
 					logrus.WithFields(logrus.Fields{
@@ -101,7 +102,9 @@ func update() (err error) {
 
 		switch inst.Status {
 		case instance.Running:
-			if virt.State == "poweroff" && !busy.Contains(inst.Id) {
+			if (virt.State == vm.PowerOff || virt.State == vm.Aborted) &&
+				!busy.Contains(inst.Id) {
+
 				busyLock.Lock()
 				busy.Add(virt.Id)
 				busyLock.Unlock()
@@ -111,7 +114,10 @@ func update() (err error) {
 						busy.Remove(virt.Id)
 						busyLock.Unlock()
 					}()
-					e := virtualbox.PowerOn(virt)
+					db := database.GetDatabase()
+					defer db.Close()
+
+					e := virtualbox.PowerOn(db, virt)
 					if e != nil {
 						logrus.WithFields(logrus.Fields{
 							"error": e,
@@ -125,7 +131,7 @@ func update() (err error) {
 			}
 			break
 		case instance.Stopped:
-			if virt.State == "running" && !busy.Contains(inst.Id) {
+			if virt.State == vm.Running && !busy.Contains(inst.Id) {
 				busyLock.Lock()
 				busy.Add(virt.Id)
 				busyLock.Unlock()
@@ -135,8 +141,10 @@ func update() (err error) {
 						busy.Remove(virt.Id)
 						busyLock.Unlock()
 					}()
+					db := database.GetDatabase()
+					defer db.Close()
 
-					e := virtualbox.PowerOff(virt)
+					e := virtualbox.PowerOff(db, virt)
 					if e != nil {
 						logrus.WithFields(logrus.Fields{
 							"error": e,
@@ -161,8 +169,10 @@ func update() (err error) {
 							busy.Remove(virt.Id)
 							busyLock.Unlock()
 						}()
+						db := database.GetDatabase()
+						defer db.Close()
 
-						e := virtualbox.PowerOff(virt)
+						e := virtualbox.PowerOff(db, virt)
 						if e != nil {
 							logrus.WithFields(logrus.Fields{
 								"error": e,
