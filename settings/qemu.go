@@ -3,10 +3,11 @@ package settings
 var Qemu *qemu
 
 type qemu struct {
-	Id              string `bson:"_id"`
-	SystemdPath     string `bson:"systemd_path" default:"/etc/systemd/system"`
-	LibPath         string `bson:"systemd_path" default:"/var/lib/pritunl-cloud"`
-	PowerOffTimeout int    `bson:"power_off_timeout" default:"120"`
+	Id           string `bson:"_id"`
+	SystemdPath  string `bson:"systemd_path" default:"/etc/systemd/system"`
+	LibPath      string `bson:"systemd_path" default:"/var/lib/pritunl-cloud"`
+	StartTimeout int    `bson:"start_timeout" default:"30"`
+	StopTimeout  int    `bson:"stop_timeout" default:"120"`
 }
 
 func newQemu() interface{} {
