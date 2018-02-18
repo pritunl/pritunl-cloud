@@ -68,65 +68,56 @@ func (i *Instance) Json() {
 	switch i.State {
 	case Running:
 		switch i.VmState {
-		case vm.Stuck:
-			i.Status = "Stuck"
-			break
-		case vm.PowerOff:
-			i.Status = "Starting"
-			break
-		case vm.Aborted:
-			i.Status = "Starting"
-			break
 		case vm.Starting:
 			i.Status = "Starting"
 			break
 		case vm.Running:
 			i.Status = "Running"
 			break
-		case vm.Paused:
-			i.Status = "Paused"
+		case vm.Stopped:
+			i.Status = "Starting"
 			break
-		case vm.Saving:
-			i.Status = "Saving"
+		case vm.Failed:
+			i.Status = "Starting"
 			break
-		case vm.Saved:
-			i.Status = "Saved"
+		case vm.Updating:
+			i.Status = "Updating"
 			break
-		case vm.Restoring:
-			i.Status = "Restoring"
+		case vm.ProvisioningDisk:
+			i.Status = "Provisioning Disk"
+			break
+		case "":
+			i.Status = "Provisioning"
 			break
 		}
 		break
 	case Stopped:
 		switch i.VmState {
-		case vm.Stuck:
-			i.Status = "Stuck"
-			break
-		case vm.PowerOff:
-			i.Status = "Powered Off"
-			break
-		case vm.Aborted:
-			i.Status = "Powered Off"
-			break
 		case vm.Starting:
-			i.Status = "Shutting Down"
+			i.Status = "Stopping"
 			break
 		case vm.Running:
-			i.Status = "Shutting Down"
+			i.Status = "Stopping"
 			break
-		case vm.Paused:
-			i.Status = "Paused"
+		case vm.Stopped:
+			i.Status = "Stopped"
 			break
-		case vm.Saving:
-			i.Status = "Saving"
+		case vm.Failed:
+			i.Status = "Stopped"
 			break
-		case vm.Saved:
-			i.Status = "Saved"
+		case vm.Updating:
+			i.Status = "Updating"
 			break
-		case vm.Restoring:
-			i.Status = "Restoring"
+		case vm.ProvisioningDisk:
+			i.Status = "Provisioning Disk"
+			break
+		case "":
+			i.Status = "Provisioning"
 			break
 		}
+		break
+	case Updating:
+		i.Status = "Updating"
 		break
 	}
 }
