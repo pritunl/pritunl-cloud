@@ -94,7 +94,7 @@ export default class Instance extends React.Component<Props, {}> {
 		let statusClass = 'pt-cell';
 		if (instance.status === 'Running') {
 			statusClass += ' pt-text-intent-success';
-		} else if (instance.status === 'Powered Off') {
+		} else if (instance.status === 'Stopped') {
 			statusClass += ' pt-text-intent-danger';
 		}
 
@@ -135,6 +135,7 @@ export default class Instance extends React.Component<Props, {}> {
 			<div className={statusClass} style={css.item}>
 				<span
 					style={css.icon}
+					hidden={!instance.status}
 					className="pt-icon-standard pt-icon-power"
 				/>
 				{instance.status}
@@ -144,6 +145,7 @@ export default class Instance extends React.Component<Props, {}> {
 			<div className="pt-cell" style={css.item}>
 				<span
 					style={css.icon}
+					hidden={!instance.public_ip}
 					className="pt-icon-standard pt-icon-ip-address"
 				/>
 				{instance.public_ip}
@@ -151,6 +153,7 @@ export default class Instance extends React.Component<Props, {}> {
 			<div className="pt-cell" style={css.item}>
 				<span
 					style={css.icon}
+					hidden={!instance.public_ip6}
 					className="pt-icon-standard pt-icon-ip-address"
 				/>
 				{instance.public_ip6}
