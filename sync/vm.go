@@ -6,7 +6,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
-	"github.com/pritunl/pritunl-cloud/virtualbox"
+	"github.com/pritunl/pritunl-cloud/qemu"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"gopkg.in/mgo.v2/bson"
 	"sync"
@@ -22,7 +22,7 @@ func vmUpdate() (err error) {
 	db := database.GetDatabase()
 	defer db.Close()
 
-	virts, err := virtualbox.GetVms(db)
+	virts, err := qemu.GetVms(db)
 	if err != nil {
 		return
 	}
@@ -54,7 +54,7 @@ func vmUpdate() (err error) {
 				db := database.GetDatabase()
 				defer db.Close()
 
-				e := virtualbox.Create(db, inst.GetVm())
+				e := qemu.Create(db, inst.GetVm())
 				time.Sleep(5 * time.Second)
 				if e != nil {
 					logrus.WithFields(logrus.Fields{
@@ -82,7 +82,7 @@ func vmUpdate() (err error) {
 				db := database.GetDatabase()
 				defer db.Close()
 
-				e := virtualbox.Destroy(db, virt)
+				e := qemu.Destroy(db, virt)
 				time.Sleep(3 * time.Second)
 				if e != nil {
 					logrus.WithFields(logrus.Fields{
@@ -102,9 +102,7 @@ func vmUpdate() (err error) {
 
 		switch inst.State {
 		case instance.Running:
-			if (virt.State == vm.PowerOff || virt.State == vm.Aborted) &&
-				!busy.Contains(inst.Id) {
-
+			if virt.State == vm.Stopped && !busy.Contains(inst.Id) {
 				busyLock.Lock()
 				busy.Add(virt.Id)
 				busyLock.Unlock()
@@ -117,7 +115,7 @@ func vmUpdate() (err error) {
 					db := database.GetDatabase()
 					defer db.Close()
 
-					e := virtualbox.PowerOn(db, virt)
+					e := qemu.PowerOn(db, virt)
 					if e != nil {
 						logrus.WithFields(logrus.Fields{
 							"error": e,
@@ -144,7 +142,7 @@ func vmUpdate() (err error) {
 					db := database.GetDatabase()
 					defer db.Close()
 
-					e := virtualbox.PowerOff(db, virt)
+					e := qemu.PowerOff(db, virt)
 					if e != nil {
 						logrus.WithFields(logrus.Fields{
 							"error": e,
@@ -152,14 +150,14 @@ func vmUpdate() (err error) {
 						return
 					}
 
-					time.Sleep(10 * time.Second)
+					time.Sleep(5 * time.Second)
 				}(virt)
 				continue
 			}
 			break
 		case instance.Updating:
 			if !busy.Contains(inst.Id) {
-				if virt.State != vm.PowerOff {
+				if virt.State != vm.Stopped {
 					busyLock.Lock()
 					busy.Add(virt.Id)
 					busyLock.Unlock()
@@ -172,7 +170,7 @@ func vmUpdate() (err error) {
 						db := database.GetDatabase()
 						defer db.Close()
 
-						e := virtualbox.PowerOff(db, virt)
+						e := qemu.PowerOff(db, virt)
 						if e != nil {
 							logrus.WithFields(logrus.Fields{
 								"error": e,
@@ -194,7 +192,7 @@ func vmUpdate() (err error) {
 						"memory":         inst.Memory,
 						"processors_old": virt.Processors,
 						"processors":     inst.Processors,
-					}).Info("virtualbox: Resizing virtual machine")
+					}).Info("sync: Resizing virtual machine")
 
 					go func(inst *instance.Instance, virt *vm.VirtualMachine) {
 						defer func() {
@@ -205,25 +203,25 @@ func vmUpdate() (err error) {
 						db := database.GetDatabase()
 						defer db.Close()
 
-						e := virtualbox.Update(db, inst.GetVm())
+						e := qemu.Update(db, inst.GetVm())
 						if e != nil {
 							logrus.WithFields(logrus.Fields{
 								"error": e,
-							}).Error("sync: Failed to power off instance")
+							}).Error("sync: Failed to update instance")
 							return
 						}
 
 						time.Sleep(5 * time.Second)
 
 						inst.State = instance.Stopped
-						err = inst.CommitFields(db, set.NewSet("status"))
+						err = inst.CommitFields(db, set.NewSet("state"))
 						if err != nil {
 							return
 						}
 					}(inst, virt)
 				} else {
 					inst.State = instance.Stopped
-					err = inst.CommitFields(db, set.NewSet("status"))
+					err = inst.CommitFields(db, set.NewSet("state"))
 					if err != nil {
 						return
 					}
