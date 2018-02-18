@@ -104,18 +104,18 @@ func vmUpdate() (err error) {
 		case instance.Running:
 			if virt.State == vm.Stopped && !busy.Contains(inst.Id) {
 				busyLock.Lock()
-				busy.Add(virt.Id)
+				busy.Add(inst.Id)
 				busyLock.Unlock()
-				go func(virt *vm.VirtualMachine) {
+				go func(inst *instance.Instance) {
 					defer func() {
 						busyLock.Lock()
-						busy.Remove(virt.Id)
+						busy.Remove(inst.Id)
 						busyLock.Unlock()
 					}()
 					db := database.GetDatabase()
 					defer db.Close()
 
-					e := qemu.PowerOn(db, virt)
+					e := qemu.PowerOn(db, inst.GetVm())
 					if e != nil {
 						logrus.WithFields(logrus.Fields{
 							"error": e,
@@ -124,34 +124,32 @@ func vmUpdate() (err error) {
 					}
 
 					time.Sleep(3 * time.Second)
-				}(virt)
+				}(inst)
 				continue
 			}
 			break
 		case instance.Stopped:
 			if virt.State == vm.Running && !busy.Contains(inst.Id) {
 				busyLock.Lock()
-				busy.Add(virt.Id)
+				busy.Add(inst.Id)
 				busyLock.Unlock()
-				go func(virt *vm.VirtualMachine) {
+				go func(inst *instance.Instance) {
 					defer func() {
 						busyLock.Lock()
-						busy.Remove(virt.Id)
+						busy.Remove(inst.Id)
 						busyLock.Unlock()
 					}()
 					db := database.GetDatabase()
 					defer db.Close()
 
-					e := qemu.PowerOff(db, virt)
+					e := qemu.PowerOff(db, inst.GetVm())
 					if e != nil {
 						logrus.WithFields(logrus.Fields{
 							"error": e,
 						}).Error("sync: Failed to power off instance")
 						return
 					}
-
-					time.Sleep(5 * time.Second)
-				}(virt)
+				}(inst)
 				continue
 			}
 			break
@@ -159,31 +157,31 @@ func vmUpdate() (err error) {
 			if !busy.Contains(inst.Id) {
 				if virt.State != vm.Stopped {
 					busyLock.Lock()
-					busy.Add(virt.Id)
+					busy.Add(inst.Id)
 					busyLock.Unlock()
-					go func(virt *vm.VirtualMachine) {
+					go func(inst *instance.Instance) {
 						defer func() {
 							busyLock.Lock()
-							busy.Remove(virt.Id)
+							busy.Remove(inst.Id)
 							busyLock.Unlock()
 						}()
 						db := database.GetDatabase()
 						defer db.Close()
 
-						e := qemu.PowerOff(db, virt)
+						e := qemu.PowerOff(db, inst.GetVm())
 						if e != nil {
 							logrus.WithFields(logrus.Fields{
 								"error": e,
 							}).Error("sync: Failed to power off instance")
 							return
 						}
-					}(virt)
+					}(inst)
 					continue
 				}
 
 				if inst.Changed(virt) {
 					busyLock.Lock()
-					busy.Add(virt.Id)
+					busy.Add(inst.Id)
 					busyLock.Unlock()
 
 					logrus.WithFields(logrus.Fields{
@@ -194,10 +192,10 @@ func vmUpdate() (err error) {
 						"processors":     inst.Processors,
 					}).Info("sync: Resizing virtual machine")
 
-					go func(inst *instance.Instance, virt *vm.VirtualMachine) {
+					go func(inst *instance.Instance) {
 						defer func() {
 							busyLock.Lock()
-							busy.Remove(virt.Id)
+							busy.Remove(inst.Id)
 							busyLock.Unlock()
 						}()
 						db := database.GetDatabase()
@@ -218,7 +216,7 @@ func vmUpdate() (err error) {
 						if err != nil {
 							return
 						}
-					}(inst, virt)
+					}(inst)
 				} else {
 					inst.State = instance.Stopped
 					err = inst.CommitFields(db, set.NewSet("state"))
