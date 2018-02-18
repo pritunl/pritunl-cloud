@@ -124,12 +124,19 @@ func instancePost(c *gin.Context) {
 	}
 
 	for i := 0; i < data.Count; i++ {
+		name := ""
+		if strings.Contains(data.Name, "%") {
+			name = fmt.Sprintf(data.Name, i)
+		} else {
+			name = data.Name
+		}
+
 		inst := &instance.Instance{
 			State:        data.State,
 			Organization: data.Organization,
 			Zone:         data.Zone,
 			Node:         data.Node,
-			Name:         data.Name,
+			Name:         name,
 			Memory:       data.Memory,
 			Processors:   data.Processors,
 		}
