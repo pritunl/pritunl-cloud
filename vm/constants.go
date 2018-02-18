@@ -1,17 +1,12 @@
 package vm
 
 const (
-	Root               = "/vms"
-	ImagePath          = "/vms/centos7.vmdk"
-	Stuck              = "stuck"
-	PowerOff           = "poweroff"
-	Aborted            = "aborted"
-	Starting           = "starting"
-	Running            = "running"
-	Paused             = "paused"
-	Saving             = "saving"
-	Saved              = "saved"
-	Restoring          = "restoring"
-	OnlineSnapshotting = "onlinesnapshotting"
-	//PoweredOff         = "poweredoff"
+	Root             = "/vms"
+	ImagePath        = "/vms/centos7.img"
+	Starting         = "starting"
+	Running          = "running"
+	Stopped          = "stopped"
+	Failed           = "failed"
+	Updating         = "updating"
+	ProvisioningDisk = "provisioning_disk"
 )
