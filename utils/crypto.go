@@ -60,7 +60,7 @@ func RandBytes(size int) (bytes []byte, err error) {
 }
 
 func RandMacAddr() (addr string, err error) {
-	bytes := make([]byte, 4)
+	bytes := make([]byte, 6)
 	_, err = rand.Read(bytes)
 	if err != nil {
 		err = &errortypes.UnknownError{
@@ -69,8 +69,7 @@ func RandMacAddr() (addr string, err error) {
 		return
 	}
 
-	addr = strings.ToUpper(fmt.Sprintf("0800%x", bytes))
-
+	addr = strings.ToUpper(fmt.Sprintf("%x", bytes))
 	return
 }
 
