@@ -6,6 +6,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
@@ -69,6 +70,9 @@ func GetVmInfo(vmId bson.ObjectId) (virt *vm.VirtualMachine, err error) {
 	case "active":
 		virt.State = vm.Running
 		break
+	case "deactivating":
+		virt.State = vm.Running
+		break
 	case "inactive":
 		virt.State = vm.Stopped
 		break
@@ -85,6 +89,41 @@ func GetVmInfo(vmId bson.ObjectId) (virt *vm.VirtualMachine, err error) {
 		}).Info("qemu: Unknown virtual machine state")
 		virt.State = vm.Failed
 		break
+	}
+
+	serialPath := GetSerialPath(virt.Id)
+	serialData, _ := ioutil.ReadFile(serialPath)
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "qemu: Failed to read service"),
+		}
+		return
+	}
+
+	if serialData != nil {
+		ipAddr := ""
+		ipAddr6 := ""
+		for _, line := range strings.Split(string(serialData), "\n") {
+			lineSpl := strings.Split(strings.TrimSpace(line), "/")
+			addr := net.ParseIP(lineSpl[0])
+			if addr != nil {
+				addrStr := addr.String()
+				if strings.Contains(addrStr, ":") {
+					ipAddr6 = addrStr
+				} else {
+					ipAddr = addrStr
+				}
+			}
+		}
+
+		if ipAddr != "" {
+			virt.NetworkAdapters = []*vm.NetworkAdapter{
+				&vm.NetworkAdapter{
+					IpAddress:  ipAddr,
+					IpAddress6: ipAddr6,
+				},
+			}
+		}
 	}
 
 	return
@@ -153,10 +192,94 @@ func GetVms(db *database.Database) (virts []*vm.VirtualMachine, err error) {
 	return
 }
 
+func Wait(db *database.Database, virt *vm.VirtualMachine) (err error) {
+	unitName := GetUnitName(virt.Id)
+
+	var vrt *vm.VirtualMachine
+	for i := 0; i < settings.Qemu.StartTimeout; i++ {
+		vrt, err = GetVmInfo(virt.Id)
+		if err != nil {
+			return
+		}
+
+		if vrt.State == vm.Running {
+			break
+		}
+	}
+
+	if vrt == nil || vrt.State != vm.Running {
+		err = utils.Exec("", "systemctl", "stop", unitName)
+		if err != nil {
+			return
+		}
+
+		err = &errortypes.TimeoutError{
+			errors.New("qemu: Power on timeout"),
+		}
+
+		return
+	}
+
+	time.Sleep(3 * time.Second)
+
+	return
+}
+
+func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
+	for i, _ := range virt.NetworkAdapters {
+		iface := vm.GetIface(virt.Id, i)
+
+		err = utils.Exec("", "ip", "link", "set", iface, "up")
+		if err != nil {
+			PowerOff(db, virt)
+			return
+		}
+
+		//if adapter.BridgedInterface != "" {
+		output, e := utils.ExecCombinedOutput(
+			"", "brctl", "addif", "br0", iface)
+		if e != nil {
+			if !strings.Contains(output, "already a member of a bridge") {
+				err = e
+				PowerOff(db, virt)
+				return
+			}
+		}
+		//}
+	}
+
+	return
+}
+
+func writeService(virt *vm.VirtualMachine) (err error) {
+	unitPath := GetUnitPath(virt.Id)
+
+	qm, err := NewQemu(virt)
+	if err != nil {
+		return
+	}
+
+	output, err := qm.Marshal()
+	if err != nil {
+		return
+	}
+
+	err = utils.CreateWrite(unitPath, output, 0644)
+	if err != nil {
+		return
+	}
+
+	_, err = utils.ExecOutput("", "systemctl", "daemon-reload")
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func Create(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	vmPath := vm.GetVmPath(virt.Id)
 	unitName := GetUnitName(virt.Id)
-	unitPath := GetUnitPath(virt.Id)
 
 	logrus.WithFields(logrus.Fields{
 		"id": virt.Id.Hex(),
@@ -178,17 +301,7 @@ func Create(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	qm, err := NewQemu(virt)
-	if err != nil {
-		return
-	}
-
-	output, err := qm.Marshal()
-	if err != nil {
-		return
-	}
-
-	err = utils.CreateWrite(unitPath, output, 0644)
+	err = writeService(virt)
 	if err != nil {
 		return
 	}
@@ -199,12 +312,17 @@ func Create(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	_, err = utils.ExecOutput("", "systemctl", "daemon-reload")
+	err = utils.Exec("", "systemctl", "start", unitName)
 	if err != nil {
 		return
 	}
 
-	output, err = utils.ExecOutput("", "systemctl", "start", unitName)
+	err = Wait(db, virt)
+	if err != nil {
+		return
+	}
+
+	err = NetworkConf(db, virt)
 	if err != nil {
 		return
 	}
@@ -213,8 +331,6 @@ func Create(db *database.Database, virt *vm.VirtualMachine) (err error) {
 }
 
 func Update(db *database.Database, virt *vm.VirtualMachine) (err error) {
-	unitPath := GetUnitPath(virt.Id)
-
 	vrt, err := GetVmInfo(virt.Id)
 	if err != nil {
 		return
@@ -227,22 +343,7 @@ func Update(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	qm, err := NewQemu(virt)
-	if err != nil {
-		return
-	}
-
-	output, err := qm.Marshal()
-	if err != nil {
-		return
-	}
-
-	err = utils.CreateWrite(unitPath, output, 0644)
-	if err != nil {
-		return
-	}
-
-	_, err = utils.ExecOutput("", "systemctl", "daemon-reload")
+	err = writeService(virt)
 	if err != nil {
 		return
 	}
@@ -255,7 +356,24 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	unitName := GetUnitName(virt.Id)
 	unitPath := GetUnitPath(virt.Id)
 	sockPath := GetSockPath(virt.Id)
+	serialPath := GetSerialPath(virt.Id)
 	pidPath := GetPidPath(virt.Id)
+
+	inst, err := instance.Get(db, virt.Id)
+	if err != nil {
+		if _, ok := err.(*database.NotFoundError); ok {
+			err = nil
+		} else {
+			return
+		}
+	}
+
+	if inst != nil {
+		logrus.WithFields(logrus.Fields{
+			"id": virt.Id.Hex(),
+		}).Error("qemu: Blocking invalid virtual machine destroy")
+		return
+	}
 
 	logrus.WithFields(logrus.Fields{
 		"id": virt.Id.Hex(),
@@ -283,6 +401,11 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
+	err = utils.RemoveAll(serialPath)
+	if err != nil {
+		return
+	}
+
 	err = utils.RemoveAll(pidPath)
 	if err != nil {
 		return
@@ -303,12 +426,25 @@ func PowerOn(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"id": virt.Id.Hex(),
 	}).Info("qemu: Power on virtual machine")
 
+	err = writeService(virt)
+	if err != nil {
+		return
+	}
+
 	_, err = utils.ExecOutput("", "systemctl", "start", unitName)
 	if err != nil {
 		return
 	}
 
-	time.Sleep(3 * time.Second)
+	err = Wait(db, virt)
+	if err != nil {
+		return
+	}
+
+	err = NetworkConf(db, virt)
+	if err != nil {
+		return
+	}
 
 	return
 }
@@ -374,7 +510,7 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		}).Error("qemu: Power off virtual machine error")
 		err = nil
 	} else {
-		for i := 0; i < settings.Qemu.PowerOffTimeout; i++ {
+		for i := 0; i < settings.Qemu.StopTimeout; i++ {
 			vrt, e := GetVmInfo(virt.Id)
 			if e != nil {
 				err = e
@@ -392,6 +528,10 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 				}
 
 				return
+			}
+
+			if i != 0 && i%3 == 0 {
+				sockPowerOff(virt)
 			}
 
 			time.Sleep(1 * time.Second)
