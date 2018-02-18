@@ -45,13 +45,14 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 		})
 	}
 
-	for _, net := range virt.NetworkAdapters {
+	for i, net := range virt.NetworkAdapters {
 		qm.Networks = append(qm.Networks, &Network{
 			Type:       "nic",
 			MacAddress: net.MacAddress,
 		})
 		qm.Networks = append(qm.Networks, &Network{
 			Type:   "bridge",
+			Iface:  vm.GetIface(virt.Id, i),
 			Bridge: "br0",
 		})
 	}
@@ -70,6 +71,11 @@ func GetUnitPath(virtId bson.ObjectId) string {
 func GetPidPath(virtId bson.ObjectId) string {
 	return path.Join(settings.Qemu.LibPath,
 		fmt.Sprintf("%s.pid", virtId.Hex()))
+}
+
+func GetSerialPath(virtId bson.ObjectId) string {
+	return path.Join(settings.Qemu.LibPath,
+		fmt.Sprintf("%s.serial", virtId.Hex()))
 }
 
 func GetSockPath(virtId bson.ObjectId) string {

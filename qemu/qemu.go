@@ -15,6 +15,7 @@ type Disk struct {
 
 type Network struct {
 	Type       string
+	Iface      string
 	MacAddress string
 	Bridge     string
 }
@@ -44,6 +45,9 @@ func (q *Qemu) Marshal() (output string, err error) {
 	if q.Kvm {
 		cmd = append(cmd, "-enable-kvm")
 	}
+
+	cmd = append(cmd, "-name")
+	cmd = append(cmd, fmt.Sprintf("pritunl_%s", q.Id.Hex()))
 
 	cmd = append(cmd, "-machine")
 	accel := ""
@@ -95,14 +99,14 @@ func (q *Qemu) Marshal() (output string, err error) {
 		}
 
 		if network.Bridge != "" {
-			net += fmt.Sprintf(",br=%s", network.Bridge)
+			net = fmt.Sprintf(
+				"tap,vlan=0,ifname=%s,script=no",
+				network.Iface,
+			)
 		}
 
 		cmd = append(cmd, net)
 	}
-
-	cmd = append(cmd, "-vnc")
-	cmd = append(cmd, ":1")
 
 	cmd = append(cmd, "-monitor")
 	cmd = append(cmd, fmt.Sprintf(
@@ -113,10 +117,19 @@ func (q *Qemu) Marshal() (output string, err error) {
 	cmd = append(cmd, "-pidfile")
 	cmd = append(cmd, GetPidPath(q.Id))
 
+	serialPath := GetSerialPath(q.Id)
+	cmd = append(cmd, "-serial")
+	cmd = append(cmd, fmt.Sprintf("file:%s", serialPath))
+
+	//cmd = append(cmd, "-vnc")
+	//cmd = append(cmd, ":1")
+
 	output = fmt.Sprintf(
 		systemdTemplate,
 		q.Data,
+		serialPath,
 		strings.Join(cmd, " "),
+		serialPath,
 	)
 	return
 }
