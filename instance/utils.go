@@ -110,3 +110,23 @@ func RemoveMulti(db *database.Database, instIds []bson.ObjectId) (err error) {
 
 	return
 }
+
+func UpdateMulti(db *database.Database, instIds []bson.ObjectId,
+	doc *bson.M) (err error) {
+
+	coll := db.Instances()
+
+	_, err = coll.UpdateAll(&bson.M{
+		"_id": &bson.M{
+			"$in": instIds,
+		},
+	}, &bson.M{
+		"$set": doc,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
