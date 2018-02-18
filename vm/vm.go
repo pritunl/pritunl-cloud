@@ -6,24 +6,24 @@ import (
 )
 
 type VirtualMachine struct {
-	Id              bson.ObjectId
-	Uuid            string
-	State           string
-	Processors      int
-	Memory          int
-	Disks           []*Disk
-	NetworkAdapters []*NetworkAdapter
+	Id              bson.ObjectId     `json:"id"`
+	Uuid            string            `json:"uuid"`
+	State           string            `json:"state"`
+	Processors      int               `json:"processors"`
+	Memory          int               `json:"memory"`
+	Disks           []*Disk           `json:"disks"`
+	NetworkAdapters []*NetworkAdapter `json:"network_adapters"`
 }
 
 type Disk struct {
-	Path string
+	Path string `json:"path"`
 }
 
 type NetworkAdapter struct {
-	MacAddress       string
-	BridgedInterface string
-	IpAddress        string
-	IpAddress6       string
+	MacAddress       string `json:"mac_address"`
+	BridgedInterface string `json:"bridged_interface"`
+	IpAddress        string `json:"ip_address"`
+	IpAddress6       string `json:"ip_address6"`
 }
 
 func (v *VirtualMachine) Commit(db *database.Database) (err error) {
