@@ -13,11 +13,12 @@ var (
 )
 
 type Task struct {
-	Name    string
-	Hours   []int
-	Mins    []int
-	Retry   bool
-	Handler func(*database.Database) error
+	Name       string
+	Hours      []int
+	Mins       []int
+	Retry      bool
+	Handler    func(*database.Database) error
+	RunOnStart bool
 }
 
 func (t *Task) scheduled(hour, min int) bool {
@@ -77,6 +78,12 @@ func runScheduler() {
 	now := time.Now()
 	curHour := now.Hour()
 	curMin := now.Minute()
+
+	for _, task := range registry {
+		if task.RunOnStart {
+			go task.run(now)
+		}
+	}
 
 	for {
 		time.Sleep(1 * time.Second)
