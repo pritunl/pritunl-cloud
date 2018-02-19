@@ -117,9 +117,15 @@ func (q *Qemu) Marshal() (output string, err error) {
 	cmd = append(cmd, "-pidfile")
 	cmd = append(cmd, GetPidPath(q.Id))
 
-	serialPath := GetSerialPath(q.Id)
-	cmd = append(cmd, "-serial")
-	cmd = append(cmd, fmt.Sprintf("file:%s", serialPath))
+	guestPath := GetGuestPath(q.Id)
+	cmd = append(cmd, "-chardev")
+	cmd = append(cmd, fmt.Sprintf(
+		"socket,path=%s,server,nowait,id=guest", guestPath))
+	cmd = append(cmd, "-device")
+	cmd = append(cmd, "virtio-serial")
+	cmd = append(cmd, "-device")
+	cmd = append(cmd,
+		"virtserialport,chardev=guest,name=org.qemu.guest_agent.0")
 
 	//cmd = append(cmd, "-vnc")
 	//cmd = append(cmd, ":1")
@@ -127,9 +133,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 	output = fmt.Sprintf(
 		systemdTemplate,
 		q.Data,
-		serialPath,
 		strings.Join(cmd, " "),
-		serialPath,
 	)
 	return
 }

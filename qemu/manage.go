@@ -7,6 +7,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/qga"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
@@ -27,7 +28,7 @@ var (
 func GetVmInfo(vmId bson.ObjectId) (virt *vm.VirtualMachine, err error) {
 	unitPath := GetUnitPath(vmId)
 
-	data, err := ioutil.ReadFile(unitPath)
+	unitData, err := ioutil.ReadFile(unitPath)
 	if err != nil {
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "qemu: Failed to read service"),
@@ -36,7 +37,7 @@ func GetVmInfo(vmId bson.ObjectId) (virt *vm.VirtualMachine, err error) {
 	}
 
 	virt = &vm.VirtualMachine{}
-	for _, line := range strings.Split(string(data), "\n") {
+	for _, line := range strings.Split(string(unitData), "\n") {
 		if !strings.HasPrefix(line, "PritunlData=") {
 			continue
 		}
@@ -91,39 +92,18 @@ func GetVmInfo(vmId bson.ObjectId) (virt *vm.VirtualMachine, err error) {
 		break
 	}
 
-	serialPath := GetSerialPath(virt.Id)
-	serialData, _ := ioutil.ReadFile(serialPath)
-	if err != nil {
-		err = &errortypes.ReadError{
-			errors.Wrap(err, "qemu: Failed to read service"),
-		}
-		return
-	}
-
-	if serialData != nil {
-		ipAddr := ""
-		ipAddr6 := ""
-		for _, line := range strings.Split(string(serialData), "\n") {
-			lineSpl := strings.Split(strings.TrimSpace(line), "/")
-			addr := net.ParseIP(lineSpl[0])
-			if addr != nil {
-				addrStr := addr.String()
-				if strings.Contains(addrStr, ":") {
-					ipAddr6 = addrStr
-				} else {
-					ipAddr = addrStr
-				}
+	guestPath := GetGuestPath(virt.Id)
+	ifaces, err := qga.GetInterfaces(guestPath)
+	if err == nil {
+		for _, adapter := range virt.NetworkAdapters {
+			ipAddr, ipAddr6 := ifaces.GetAddr(adapter.MacAddress)
+			if ipAddr != "" {
+				adapter.IpAddress = ipAddr
+				adapter.IpAddress6 = ipAddr6
 			}
 		}
-
-		if ipAddr != "" {
-			virt.NetworkAdapters = []*vm.NetworkAdapter{
-				&vm.NetworkAdapter{
-					IpAddress:  ipAddr,
-					IpAddress6: ipAddr6,
-				},
-			}
-		}
+	} else {
+		err = nil
 	}
 
 	return
@@ -356,7 +336,7 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	unitName := GetUnitName(virt.Id)
 	unitPath := GetUnitPath(virt.Id)
 	sockPath := GetSockPath(virt.Id)
-	serialPath := GetSerialPath(virt.Id)
+	guestPath := GetGuestPath(virt.Id)
 	pidPath := GetPidPath(virt.Id)
 
 	logrus.WithFields(logrus.Fields{
@@ -385,7 +365,7 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	err = utils.RemoveAll(serialPath)
+	err = utils.RemoveAll(guestPath)
 	if err != nil {
 		return
 	}
