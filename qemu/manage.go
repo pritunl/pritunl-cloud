@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
@@ -296,7 +296,7 @@ func Create(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	err = utils.Exec("", "cp", vm.ImagePath, virt.Disks[0].Path)
+	err = data.WriteImage(db, virt.Image, virt.Disks[0].Path)
 	if err != nil {
 		return
 	}
@@ -358,22 +358,6 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	sockPath := GetSockPath(virt.Id)
 	serialPath := GetSerialPath(virt.Id)
 	pidPath := GetPidPath(virt.Id)
-
-	inst, err := instance.Get(db, virt.Id)
-	if err != nil {
-		if _, ok := err.(*database.NotFoundError); ok {
-			err = nil
-		} else {
-			return
-		}
-	}
-
-	if inst != nil {
-		logrus.WithFields(logrus.Fields{
-			"id": virt.Id.Hex(),
-		}).Error("qemu: Blocking invalid virtual machine destroy")
-		return
-	}
 
 	logrus.WithFields(logrus.Fields{
 		"id": virt.Id.Hex(),
