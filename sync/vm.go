@@ -68,30 +68,9 @@ func vmUpdate() (err error) {
 
 	curIds.Subtract(newIds)
 	for idInf := range curIds.Iter() {
-		virt := virtsMap[idInf.(bson.ObjectId)]
-		if !busy.Contains(virt.Id) {
-			busyLock.Lock()
-			busy.Add(virt.Id)
-			busyLock.Unlock()
-			go func(virt *vm.VirtualMachine) {
-				defer func() {
-					busyLock.Lock()
-					busy.Remove(virt.Id)
-					busyLock.Unlock()
-				}()
-				db := database.GetDatabase()
-				defer db.Close()
-
-				e := qemu.Destroy(db, virt)
-				time.Sleep(3 * time.Second)
-				if e != nil {
-					logrus.WithFields(logrus.Fields{
-						"error": e,
-					}).Error("sync: Failed to destroy instance")
-					return
-				}
-			}(virt)
-		}
+		logrus.WithFields(logrus.Fields{
+			"id": idInf.(bson.ObjectId),
+		}).Info("sync: Unknown instance")
 	}
 
 	for _, inst := range instances {
@@ -224,6 +203,36 @@ func vmUpdate() (err error) {
 						return
 					}
 				}
+				continue
+			}
+			break
+		case instance.Deleting:
+			if !busy.Contains(inst.Id) {
+				busyLock.Lock()
+				busy.Add(inst.Id)
+				busyLock.Unlock()
+				go func(inst *instance.Instance) {
+					defer func() {
+						busyLock.Lock()
+						busy.Remove(inst.Id)
+						busyLock.Unlock()
+					}()
+					db := database.GetDatabase()
+					defer db.Close()
+
+					e := qemu.Destroy(db, inst.GetVm())
+					if e != nil {
+						logrus.WithFields(logrus.Fields{
+							"error": e,
+						}).Error("sync: Failed to power off instance")
+						return
+					}
+
+					err = instance.Remove(db, inst.Id)
+					if err != nil {
+						return
+					}
+				}(inst)
 				continue
 			}
 			break
