@@ -6,12 +6,12 @@ import (
 )
 
 func Get(db *database.Database, zoneId bson.ObjectId) (
-	zone *Zone, err error) {
+	zne *Zone, err error) {
 
 	coll := db.Zones()
-	zone = &Zone{}
+	zne = &Zone{}
 
-	err = coll.FindOneId(zoneId, zone)
+	err = coll.FindOneId(zoneId, zne)
 	if err != nil {
 		return
 	}
@@ -25,10 +25,10 @@ func GetAll(db *database.Database) (zones []*Zone, err error) {
 
 	cursor := coll.Find(bson.M{}).Iter()
 
-	nde := &Zone{}
-	for cursor.Next(nde) {
-		zones = append(zones, nde)
-		nde = &Zone{}
+	zne := &Zone{}
+	for cursor.Next(zne) {
+		zones = append(zones, zne)
+		zne = &Zone{}
 	}
 
 	err = cursor.Close()
