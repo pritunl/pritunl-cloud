@@ -16,6 +16,7 @@ type Storage struct {
 	Bucket    string        `bson:"bucket" json:"bucket"`
 	AccessKey string        `bson:"access_key" json:"access_key"`
 	SecretKey string        `bson:"secret_key" json:"secret_key"`
+	Insecure  bool          `bson:"insecure" json:"insecure"`
 }
 
 func (s *Storage) Validate(db *database.Database) (

@@ -19,6 +19,7 @@ type storageData struct {
 	Bucket    string        `json:"bucket"`
 	AccessKey string        `json:"access_key"`
 	SecretKey string        `json:"secret_key"`
+	Insecure  bool          `json:"insecure"`
 }
 
 func storagePut(c *gin.Context) {
@@ -53,6 +54,7 @@ func storagePut(c *gin.Context) {
 	store.Bucket = data.Bucket
 	store.AccessKey = data.AccessKey
 	store.SecretKey = data.SecretKey
+	store.Insecure = data.Insecure
 
 	fields := set.NewSet(
 		"name",
@@ -61,6 +63,7 @@ func storagePut(c *gin.Context) {
 		"bucket",
 		"access_key",
 		"secret_key",
+		"insecure",
 	)
 
 	errData, err := store.Validate(db)
@@ -108,6 +111,7 @@ func storagePost(c *gin.Context) {
 		Bucket:    data.Bucket,
 		AccessKey: data.AccessKey,
 		SecretKey: data.SecretKey,
+		Insecure:  data.Insecure,
 	}
 
 	errData, err := store.Validate(db)
