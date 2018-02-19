@@ -9,6 +9,7 @@ type VirtualMachine struct {
 	Id              bson.ObjectId     `json:"id"`
 	Uuid            string            `json:"uuid"`
 	State           string            `json:"state"`
+	Image           bson.ObjectId     `json:"image"`
 	Processors      int               `json:"processors"`
 	Memory          int               `json:"memory"`
 	Disks           []*Disk           `json:"disks"`

@@ -5,13 +5,14 @@ import (
 	"crypto/md5"
 	"encoding/base32"
 	"fmt"
+	"github.com/pritunl/pritunl-cloud/node"
 	"gopkg.in/mgo.v2/bson"
 	"path"
 	"strings"
 )
 
 func GetVmPath(id bson.ObjectId) string {
-	return path.Join(Root, id.Hex())
+	return path.Join(node.Self.GetVirtPath(), id.Hex())
 }
 
 func GetDiskPath(id bson.ObjectId, num int) string {
