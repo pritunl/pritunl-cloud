@@ -5,7 +5,6 @@ import * as NodeTypes from '../types/NodeTypes';
 import * as CertificateTypes from "../types/CertificateTypes";
 import * as DatacenterTypes from "../types/DatacenterTypes";
 import * as ZoneTypes from "../types/ZoneTypes";
-import ZonesStore from '../stores/ZonesStore';
 import NodeDetailed from './NodeDetailed';
 
 interface Props {
@@ -45,7 +44,7 @@ const css = {
 		padding: '8px',
 	} as React.CSSProperties,
 	nameSpan: {
-		margin: '0 5px 0 0',
+		margin: '1px 5px 0 0',
 	} as React.CSSProperties,
 	item: {
 		verticalAlign: 'top',
@@ -82,6 +81,8 @@ export default class Node extends React.Component<Props, {}> {
 					certificates={this.props.certificates}
 					datacenters={this.props.datacenters}
 					zones={this.props.zones}
+					selected={this.props.selected}
+					onSelect={this.props.onSelect}
 					onClose={(): void => {
 						this.props.onOpen();
 					}}

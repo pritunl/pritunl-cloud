@@ -22,6 +22,8 @@ interface Props {
 	certificates: CertificateTypes.CertificatesRo;
 	datacenters: DatacenterTypes.DatacentersRo;
 	zones: ZoneTypes.ZonesRo;
+	selected: boolean;
+	onSelect: (shift: boolean) => void;
 	onClose: () => void;
 }
 
@@ -39,13 +41,21 @@ interface State {
 const css = {
 	card: {
 		position: 'relative',
-		padding: '10px 10px 0 10px',
+		padding: '48px 10px 0 10px',
 		width: '100%',
 	} as React.CSSProperties,
+	button: {
+		height: '30px',
+	} as React.CSSProperties,
 	buttons: {
+		cursor: 'pointer',
 		position: 'absolute',
-		top: '5px',
-		right: '5px',
+		top: 0,
+		left: 0,
+		right: 0,
+		padding: '4px',
+		height: '39px',
+		backgroundColor: 'rgba(0, 0, 0, 0.13)',
 	} as React.CSSProperties,
 	item: {
 		margin: '9px 5px 0 5px',
@@ -76,6 +86,9 @@ const css = {
 	} as React.CSSProperties,
 	port: {
 		flex: '1',
+	} as React.CSSProperties,
+	select: {
+		margin: '7px 0px 0px 6px',
 	} as React.CSSProperties,
 };
 
@@ -371,16 +384,22 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		>
 			<div className="layout horizontal wrap">
 				<div style={css.group}>
-					<div style={css.buttons}>
-						<button
-							className="pt-button pt-minimal pt-intent-warning pt-icon-chevron-up"
-							type="button"
-							onClick={(): void => {
-								this.props.onClose();
-							}}
-						/>
+					<div
+						className="layout horizontal"
+						style={css.buttons}
+						onClick={(evt): void => {
+							let target = evt.target as HTMLElement;
+
+							if (target.className.indexOf('open-ignore') !== -1) {
+								return;
+							}
+
+							this.props.onClose();
+						}}
+					>
+						<div className="flex"/>
 						<ConfirmButton
-							className="pt-minimal pt-intent-danger pt-icon-cross"
+							className="pt-minimal pt-intent-danger pt-icon-cross open-ignore"
 							progressClassName="pt-intent-danger"
 							confirmMsg="Confirm node remove"
 							disabled={active || this.state.disabled}
