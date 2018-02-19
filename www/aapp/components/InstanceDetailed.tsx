@@ -16,6 +16,8 @@ import ConfirmButton from './ConfirmButton';
 
 interface Props {
 	instance: InstanceTypes.InstanceRo;
+	selected: boolean;
+	onSelect: (shift: boolean) => void;
 	onClose: () => void;
 }
 
@@ -31,13 +33,21 @@ interface State {
 const css = {
 	card: {
 		position: 'relative',
-		padding: '10px 10px 0 10px',
+		padding: '48px 10px 0 10px',
 		width: '100%',
 	} as React.CSSProperties,
+	button: {
+		height: '30px',
+	} as React.CSSProperties,
 	buttons: {
+		cursor: 'pointer',
 		position: 'absolute',
-		top: '5px',
-		right: '5px',
+		top: 0,
+		left: 0,
+		right: 0,
+		padding: '4px',
+		height: '39px',
+		backgroundColor: 'rgba(0, 0, 0, 0.13)',
 	} as React.CSSProperties,
 	item: {
 		margin: '9px 5px 0 5px',
@@ -60,6 +70,12 @@ const css = {
 		width: '100%',
 		maxWidth: '280px',
 	} as React.CSSProperties,
+	status: {
+		margin: '6px 0 0 1px',
+	} as React.CSSProperties,
+	icon: {
+		marginRight: '3px',
+	} as React.CSSProperties,
 	inputGroup: {
 		width: '100%',
 	} as React.CSSProperties,
@@ -68,6 +84,9 @@ const css = {
 	} as React.CSSProperties,
 	port: {
 		flex: '1',
+	} as React.CSSProperties,
+	select: {
+		margin: '7px 0px 0px 6px',
 	} as React.CSSProperties,
 };
 
@@ -172,6 +191,13 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		let zone = ZonesStore.zone(this.props.instance.zone);
 		let node = NodesStore.node(this.props.instance.node);
 
+		let statusClass = '';
+		if (instance.status === 'Running') {
+			statusClass += 'pt-text-intent-success';
+		} else if (instance.status === 'Stopped') {
+			statusClass += 'pt-text-intent-danger';
+		}
+
 		return <td
 			className="pt-cell"
 			colSpan={5}
@@ -179,16 +205,47 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		>
 			<div className="layout horizontal wrap">
 				<div style={css.group}>
-					<div style={css.buttons}>
-						<button
-							className="pt-button pt-minimal pt-intent-warning pt-icon-chevron-up"
-							type="button"
-							onClick={(): void => {
-								this.props.onClose();
-							}}
-						/>
+					<div
+						className="layout horizontal"
+						style={css.buttons}
+						onClick={(evt): void => {
+							let target = evt.target as HTMLElement;
+
+							if (target.className.indexOf('open-ignore') !== -1) {
+								return;
+							}
+
+							this.props.onClose();
+						}}
+					>
+            <div>
+              <label
+                className="pt-control pt-checkbox open-ignore"
+                style={css.select}
+              >
+                <input
+                  type="checkbox"
+                  className="open-ignore"
+                  checked={this.props.selected}
+                  onClick={(evt): void => {
+										this.props.onSelect(evt.shiftKey);
+									}}
+                />
+                <span className="pt-control-indicator open-ignore"/>
+              </label>
+            </div>
+						<div className={statusClass} style={css.status}>
+							<span
+								style={css.icon}
+								hidden={!instance.status}
+								className="pt-icon-standard pt-icon-power"
+							/>
+							{instance.status}
+						</div>
+						<div className="flex"/>
 						<ConfirmButton
-							className="pt-minimal pt-intent-danger pt-icon-cross"
+							className="pt-minimal pt-intent-danger pt-icon-cross open-ignore"
+							style={css.button}
 							progressClassName="pt-intent-danger"
 							confirmMsg="Confirm instance remove"
 							disabled={this.state.disabled}

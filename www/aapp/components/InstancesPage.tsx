@@ -70,14 +70,9 @@ export default class InstancesPage extends React.Component<Props, State> {
 			return <div/>;
 		}
 
-		let offset = 1;
-		if (pages < 5) {
-			offset = 0;
-		}
-
 		let links: JSX.Element[] = [];
-		let start = Math.max(offset, page - 7);
-		let end = Math.min(pages - offset, start + 15);
+		let start = Math.max(0, page - 7);
+		let end = Math.min(pages, start + 15);
 
 		for (let i = start; i < end; i++) {
 			links.push(<span
@@ -100,7 +95,7 @@ export default class InstancesPage extends React.Component<Props, State> {
 		return <div className="layout horizontal center-justified">
 			<button
 				className="pt-button pt-minimal pt-icon-chevron-backward"
-				hidden={!offset}
+				hidden={pages < 5}
 				disabled={page === 0}
 				type="button"
 				onClick={(): void => {
@@ -138,7 +133,7 @@ export default class InstancesPage extends React.Component<Props, State> {
 			/>
 			<button
 				className="pt-button pt-minimal pt-icon-chevron-forward"
-				hidden={!offset}
+				hidden={pages < 5}
 				disabled={page === pages - 1}
 				type="button"
 				onClick={(): void => {

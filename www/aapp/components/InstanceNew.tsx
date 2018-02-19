@@ -4,9 +4,12 @@ import * as InstanceTypes from '../types/InstanceTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import * as DatacenterTypes from '../types/DatacenterTypes';
 import * as NodeTypes from '../types/NodeTypes';
+import * as ImageTypes from '../types/ImageTypes';
 import * as ZoneTypes from '../types/ZoneTypes';
 import * as InstanceActions from '../actions/InstanceActions';
+import * as ImageActions from '../actions/ImageActions';
 import * as NodeActions from '../actions/NodeActions';
+import ImagesDatacenterStore from '../stores/ImagesDatacenterStore';
 import NodesZoneStore from '../stores/NodesZoneStore';
 import PageInput from './PageInput';
 import PageCreate from './PageCreate';
@@ -27,6 +30,7 @@ interface State {
 	message: string;
 	instance: InstanceTypes.Instance;
 	datacenter: string;
+	images: ImageTypes.ImagesRo;
 	nodes: NodeTypes.NodesRo;
 }
 
@@ -90,21 +94,25 @@ export default class InstanceNew extends React.Component<Props, State> {
 			message: '',
 			instance: this.default,
 			datacenter: '',
+			images: [],
 			nodes: [],
 		};
 	}
 
 	componentDidMount(): void {
+		ImagesDatacenterStore.addChangeListener(this.onChange);
 		NodesZoneStore.addChangeListener(this.onChange);
 	}
 
 	componentWillUnmount(): void {
+		ImagesDatacenterStore.removeChangeListener(this.onChange);
 		NodesZoneStore.removeChangeListener(this.onChange);
 	}
 
 	onChange = (): void => {
 		this.setState({
 			...this.state,
+			images: ImagesDatacenterStore.images,
 			nodes: NodesZoneStore.nodes,
 		});
 	}
@@ -182,6 +190,9 @@ export default class InstanceNew extends React.Component<Props, State> {
 		let hasDatacenters = false;
 		let datacentersSelect: JSX.Element[] = [];
 		if (this.props.datacenters.length) {
+			datacentersSelect.push(
+				<option key="null" value="">Select Datacenter</option>);
+
 			hasDatacenters = true;
 			defaultDatacenter = this.props.datacenters[0].id;
 			for (let datacenter of this.props.datacenters) {
@@ -244,6 +255,26 @@ export default class InstanceNew extends React.Component<Props, State> {
 			nodesSelect = [<option key="null" value="">No Nodes</option>];
 		}
 
+		let hasImages = false;
+		let imagesSelect: JSX.Element[] = [];
+		if (this.state.images.length) {
+			imagesSelect.push(<option key="null" value="">Select Image</option>);
+
+			hasImages = true;
+			for (let image of this.state.images) {
+				imagesSelect.push(
+					<option
+						key={image.id}
+						value={image.id}
+					>{image.name}</option>,
+				);
+			}
+		}
+
+		if (!hasImages) {
+			imagesSelect = [<option key="null" value="">No Images</option>];
+		}
+
 		return <div
 			className="pt-card pt-row"
 			style={css.row}
@@ -292,8 +323,10 @@ export default class InstanceNew extends React.Component<Props, State> {
 										...this.state.instance,
 										node: '',
 										zone: '',
+										image: '',
 									},
 								});
+								ImageActions.syncDatacenter(val);
 								NodeActions.syncZone('');
 							}}
 						>
@@ -328,6 +361,17 @@ export default class InstanceNew extends React.Component<Props, State> {
 							}}
 						>
 							{nodesSelect}
+						</PageSelect>
+						<PageSelect
+							disabled={this.state.disabled || !hasImages}
+							label="Image"
+							help="Starting image for node."
+							value={instance.image}
+							onChange={(val): void => {
+								this.set('image', val);
+							}}
+						>
+							{imagesSelect}
 						</PageSelect>
 					</div>
 					<div style={css.group}>

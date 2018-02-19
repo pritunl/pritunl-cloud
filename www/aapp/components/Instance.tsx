@@ -7,8 +7,8 @@ import InstanceDetailed from './InstanceDetailed';
 interface Props {
 	instance: InstanceTypes.InstanceRo;
 	selected: boolean;
-	open: boolean;
 	onSelect: (shift: boolean) => void;
+	open: boolean;
 	onOpen: () => void;
 }
 
@@ -38,7 +38,7 @@ const css = {
 		padding: '8px',
 	} as React.CSSProperties,
 	nameSpan: {
-		margin: '0 5px 0 0',
+		margin: '1px 5px 0 0',
 	} as React.CSSProperties,
 	item: {
 		verticalAlign: 'top',
@@ -75,6 +75,8 @@ export default class Instance extends React.Component<Props, {}> {
 			>
 				<InstanceDetailed
 					instance={this.props.instance}
+					selected={this.props.selected}
+					onSelect={this.props.onSelect}
 					onClose={(): void => {
 						this.props.onOpen();
 					}}
