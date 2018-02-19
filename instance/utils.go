@@ -111,6 +111,42 @@ func RemoveMulti(db *database.Database, instIds []bson.ObjectId) (err error) {
 	return
 }
 
+func Delete(db *database.Database, instId bson.ObjectId) (err error) {
+	coll := db.Instances()
+
+	err = coll.UpdateId(instId, &bson.M{
+		"$set": &bson.M{
+			"state": Deleting,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func DeleteMulti(db *database.Database, instIds []bson.ObjectId) (err error) {
+	coll := db.Instances()
+
+	_, err = coll.UpdateAll(&bson.M{
+		"_id": &bson.M{
+			"$in": instIds,
+		},
+	}, &bson.M{
+		"$set": &bson.M{
+			"state": Deleting,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func UpdateMulti(db *database.Database, instIds []bson.ObjectId,
 	doc *bson.M) (err error) {
 

@@ -14,6 +14,7 @@ type Instance struct {
 	Id           bson.ObjectId `bson:"_id,omitempty" json:"id"`
 	Organization bson.ObjectId `bson:"organization,omitempty" json:"organization"`
 	Zone         bson.ObjectId `bson:"zone,omitempty" json:"zone"`
+	Image        bson.ObjectId `bson:"image,omitempty" json:"image"`
 	Status       string        `bson:"-" json:"status"`
 	State        string        `bson:"state" json:"state"`
 	VmState      string        `bson:"vm_state" json:"vm_state"`
@@ -50,6 +51,13 @@ func (i *Instance) Validate(db *database.Database) (
 		errData = &errortypes.ErrorData{
 			Error:   "node_required",
 			Message: "Missing required node",
+		}
+	}
+
+	if i.Image == "" {
+		errData = &errortypes.ErrorData{
+			Error:   "image_required",
+			Message: "Missing required image",
 		}
 	}
 
@@ -119,6 +127,9 @@ func (i *Instance) Json() {
 	case Updating:
 		i.Status = "Updating"
 		break
+	case Deleting:
+		i.Status = "Deleting"
+		break
 	}
 }
 
@@ -168,6 +179,7 @@ func (i *Instance) Insert(db *database.Database) (err error) {
 func (i *Instance) GetVm() (virt *vm.VirtualMachine) {
 	virt = &vm.VirtualMachine{
 		Id:         i.Id,
+		Image:      i.Image,
 		Processors: i.Processors,
 		Memory:     i.Memory,
 		Disks: []*vm.Disk{
