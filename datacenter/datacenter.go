@@ -9,12 +9,17 @@ import (
 )
 
 type Datacenter struct {
-	Id            bson.ObjectId   `bson:"_id,omitempty" json:"id"`
-	Name          string          `bson:"name" json:"name"`
+	Id       bson.ObjectId   `bson:"_id,omitempty" json:"id"`
+	Name     string          `bson:"name" json:"name"`
+	Storages []bson.ObjectId `bson:"storages" json:"storages"`
 }
 
 func (d *Datacenter) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
+
+	if d.Storages == nil {
+		d.Storages = []bson.ObjectId{}
+	}
 
 	return
 }
