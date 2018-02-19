@@ -100,6 +100,12 @@ func Register(engine *gin.Engine) {
 	csrfGroup.GET("/settings", settingsGet)
 	csrfGroup.PUT("/settings", settingsPut)
 
+	csrfGroup.GET("/storage", storagesGet)
+	csrfGroup.GET("/storage/:store_id", storageGet)
+	csrfGroup.PUT("/storage/:store_id", storagePut)
+	csrfGroup.POST("/storage", storagePost)
+	csrfGroup.DELETE("/storage/:store_id", storageDelete)
+
 	csrfGroup.GET("/subscription", subscriptionGet)
 	csrfGroup.GET("/subscription/update", subscriptionUpdateGet)
 	csrfGroup.POST("/subscription", subscriptionPost)
