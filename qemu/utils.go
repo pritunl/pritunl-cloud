@@ -73,12 +73,12 @@ func GetPidPath(virtId bson.ObjectId) string {
 		fmt.Sprintf("%s.pid", virtId.Hex()))
 }
 
-func GetSerialPath(virtId bson.ObjectId) string {
-	return path.Join(settings.Qemu.LibPath,
-		fmt.Sprintf("%s.serial", virtId.Hex()))
-}
-
 func GetSockPath(virtId bson.ObjectId) string {
 	return path.Join(settings.Qemu.LibPath,
 		fmt.Sprintf("%s.sock", virtId.Hex()))
+}
+
+func GetGuestPath(virtId bson.ObjectId) string {
+	return path.Join(settings.Qemu.LibPath,
+		fmt.Sprintf("%s.guest", virtId.Hex()))
 }

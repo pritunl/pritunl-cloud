@@ -10,7 +10,5 @@ PritunlData=%s
 [Service]
 Type=simple
 User=root
-ExecStartPre=/usr/bin/rm -f %s
 ExecStart=%s
-ExecStartPost=/usr/bin/rm -f %s
 `
