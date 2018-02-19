@@ -218,7 +218,7 @@ export default class UserDetailed extends React.Component<Props, State> {
 		}
 
 		let roles: JSX.Element[] = [];
-		for (let role of user.roles) {
+		for (let role of (user.roles || [])) {
 			roles.push(
 				<div
 					className="pt-tag pt-tag-removable pt-intent-primary"
@@ -309,7 +309,7 @@ export default class UserDetailed extends React.Component<Props, State> {
 						disabled={this.state.locked}
 						checked={user.generate_secret}
 						onToggle={(): void => {
-							this.set('generate_secret', !this.state.user.generate_secret);
+							this.set('generate_secret', !user.generate_secret);
 						}}
 					/>
 					<PageSelect

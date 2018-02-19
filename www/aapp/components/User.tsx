@@ -57,7 +57,7 @@ export default class User extends React.Component<Props, {}> {
 		let user = this.props.user;
 		let roles: JSX.Element[] = [];
 
-		for (let role of user.roles) {
+		for (let role of (user.roles || [])) {
 			roles.push(
 				<div
 					className="pt-tag pt-intent-primary"
