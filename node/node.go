@@ -44,6 +44,8 @@ type Node struct {
 	Load5              float64                    `bson:"load5" json:"load5"`
 	Load15             float64                    `bson:"load15" json:"load15"`
 	Version            int                        `bson:"version" json:"-"`
+	VirtPath           string                     `bson:"virt_path" json:"virt_path"`
+	CachePath          string                     `bson:"cache_path" json:"cache_path"`
 	CertificateObjs    []*certificate.Certificate `bson:"-" json:"-"`
 	reqLock            sync.Mutex                 `bson:"-" json:"-"`
 	reqCount           *list.List                 `bson:"-" json:"-"`
@@ -54,6 +56,20 @@ func (n *Node) AddRequest() {
 	back := n.reqCount.Back()
 	back.Value = back.Value.(int) + 1
 	n.reqLock.Unlock()
+}
+
+func (n *Node) GetVirtPath() string {
+	if n.VirtPath == "" {
+		return DefaultRoot
+	}
+	return n.VirtPath
+}
+
+func (n *Node) GetCachePath() string {
+	if n.CachePath == "" {
+		return DefaultCache
+	}
+	return n.CachePath
 }
 
 func (n *Node) Validate(db *database.Database) (
@@ -102,6 +118,13 @@ func (n *Node) Validate(db *database.Database) (
 		if count == 0 {
 			n.Zone = ""
 		}
+	}
+
+	if n.VirtPath == "" {
+		n.VirtPath = DefaultRoot
+	}
+	if n.CachePath == "" {
+		n.CachePath = DefaultCache
 	}
 
 	n.Format()
