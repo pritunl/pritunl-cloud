@@ -97,6 +97,16 @@ func (d *Database) Organizations() (coll *Collection) {
 	return
 }
 
+func (d *Database) Storages() (coll *Collection) {
+	coll = d.getCollection("storages")
+	return
+}
+
+func (d *Database) Images() (coll *Collection) {
+	coll = d.getCollection("images")
+	return
+}
+
 func (d *Database) Datacenters() (coll *Collection) {
 	coll = d.getCollection("datacenters")
 	return
@@ -370,6 +380,18 @@ func addIndexes() (err error) {
 		Key:         []string{"timestamp"},
 		ExpireAfter: 24 * time.Hour,
 		Background:  true,
+	})
+	if err != nil {
+		err = &IndexError{
+			errors.Wrap(err, "database: Index error"),
+		}
+	}
+
+	coll = db.Images()
+	err = coll.EnsureIndex(mgo.Index{
+		Key:        []string{"storage", "key"},
+		Unique:     true,
+		Background: true,
 	})
 	if err != nil {
 		err = &IndexError{
