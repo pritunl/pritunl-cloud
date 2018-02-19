@@ -12,8 +12,9 @@ import (
 )
 
 type datacenterData struct {
-	Id   bson.ObjectId `json:"id"`
-	Name string        `json:"name"`
+	Id       bson.ObjectId   `json:"id"`
+	Name     string          `json:"name"`
+	Storages []bson.ObjectId `json:"storages"`
 }
 
 func datacenterPut(c *gin.Context) {
@@ -43,9 +44,11 @@ func datacenterPut(c *gin.Context) {
 	}
 
 	dc.Name = data.Name
+	dc.Storages = data.Storages
 
 	fields := set.NewSet(
 		"name",
+		"storages",
 	)
 
 	errData, err := dc.Validate(db)

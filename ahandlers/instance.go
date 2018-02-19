@@ -19,6 +19,7 @@ type instanceData struct {
 	Organization bson.ObjectId `json:"organization"`
 	Zone         bson.ObjectId `json:"zone"`
 	Node         bson.ObjectId `json:"node"`
+	Image        bson.ObjectId `json:"image"`
 	Name         string        `json:"name"`
 	State        string        `json:"state"`
 	Memory       int           `json:"memory"`
@@ -136,6 +137,7 @@ func instancePost(c *gin.Context) {
 			Organization: data.Organization,
 			Zone:         data.Zone,
 			Node:         data.Node,
+			Image:        data.Image,
 			Name:         name,
 			Memory:       data.Memory,
 			Processors:   data.Processors,
@@ -212,7 +214,7 @@ func instanceDelete(c *gin.Context) {
 		return
 	}
 
-	err := instance.Remove(db, instanceId)
+	err := instance.Delete(db, instanceId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -237,7 +239,7 @@ func instancesDelete(c *gin.Context) {
 		return
 	}
 
-	err = instance.RemoveMulti(db, data)
+	err = instance.DeleteMulti(db, data)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
