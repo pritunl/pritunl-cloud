@@ -7,6 +7,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/router"
 	"github.com/pritunl/pritunl-cloud/sync"
+	"github.com/pritunl/pritunl-cloud/task"
 	"gopkg.in/mgo.v2/bson"
 	"os"
 	"os/signal"
@@ -34,8 +35,9 @@ func Node() (err error) {
 	}).Info("router: Starting node")
 
 	routr := &router.Router{}
-
 	routr.Init()
+
+	task.Init()
 
 	go func() {
 		err = routr.Run()
