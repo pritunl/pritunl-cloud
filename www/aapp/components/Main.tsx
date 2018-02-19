@@ -14,6 +14,8 @@ import Certificates from './Certificates';
 import Organizations from './Organizations';
 import Datacenters from './Datacenters';
 import Zones from './Zones';
+import Storages from './Storages';
+import Images from './Images';
 import Instances from './Instances';
 import Logs from './Logs';
 import Settings from './Settings';
@@ -26,6 +28,8 @@ import * as CertificateActions from '../actions/CertificateActions';
 import * as OrganizationActions from '../actions/OrganizationActions';
 import * as DatacenterActions from '../actions/DatacenterActions';
 import * as ZoneActions from '../actions/ZoneActions';
+import * as StorageActions from '../actions/StorageActions';
+import * as ImageActions from '../actions/ImageActions';
 import * as InstanceActions from '../actions/InstanceActions';
 import * as LogActions from '../actions/LogActions';
 import * as SettingsActions from '../actions/SettingsActions';
@@ -163,6 +167,20 @@ export default class Main extends React.Component<{}, State> {
 							to="/zones"
 						>
 							Zones
+						</ReactRouter.Link>
+						<ReactRouter.Link
+							className="pt-button pt-minimal pt-icon-database"
+							style={css.link}
+							to="/storages"
+						>
+							Storages
+						</ReactRouter.Link>
+						<ReactRouter.Link
+							className="pt-button pt-minimal pt-icon-floppy-disk"
+							style={css.link}
+							to="/images"
+						>
+							Images
 						</ReactRouter.Link>
 						<ReactRouter.Link
 							className="pt-button pt-minimal pt-icon-dashboard"
@@ -328,6 +346,30 @@ export default class Main extends React.Component<{}, State> {
 												disabled: false,
 											});
 										});
+									} else if (pathname === '/storages') {
+										StorageActions.sync().then((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										}).catch((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										});
+									} else if (pathname === '/images') {
+										ImageActions.sync().then((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										}).catch((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										});
 									} else if (pathname === '/instances') {
 										InstanceActions.sync().then((): void => {
 											this.setState({
@@ -429,6 +471,12 @@ export default class Main extends React.Component<{}, State> {
 				)}/>
 				<ReactRouter.Route path="/zones" render={() => (
 					<Zones/>
+				)}/>
+				<ReactRouter.Route path="/storages" render={() => (
+					<Storages/>
+				)}/>
+				<ReactRouter.Route path="/images" render={() => (
+					<Images/>
 				)}/>
 				<ReactRouter.Route path="/instances" render={() => (
 					<Instances/>
