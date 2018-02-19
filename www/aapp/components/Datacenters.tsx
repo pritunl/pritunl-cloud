@@ -1,8 +1,11 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
 import * as DatacenterTypes from '../types/DatacenterTypes';
+import * as StorageTypes from '../types/StorageTypes';
 import DatacentersStore from '../stores/DatacentersStore';
+import StoragesStore from '../stores/StoragesStore';
 import * as DatacenterActions from '../actions/DatacenterActions';
+import * as StorageActions from '../actions/StorageActions';
 import NonState from './NonState';
 import Datacenter from './Datacenter';
 import Page from './Page';
@@ -10,6 +13,7 @@ import PageHeader from './PageHeader';
 
 interface State {
 	datacenters: DatacenterTypes.DatacentersRo;
+	storages: StorageTypes.StoragesRo;
 	disabled: boolean;
 }
 
@@ -33,23 +37,28 @@ export default class Datacenters extends React.Component<{}, State> {
 		super(props, context);
 		this.state = {
 			datacenters: DatacentersStore.datacenters,
+			storages: StoragesStore.storages,
 			disabled: false,
 		};
 	}
 
 	componentDidMount(): void {
 		DatacentersStore.addChangeListener(this.onChange);
+		StoragesStore.addChangeListener(this.onChange);
 		DatacenterActions.sync();
+		StorageActions.sync();
 	}
 
 	componentWillUnmount(): void {
 		DatacentersStore.removeChangeListener(this.onChange);
+		StoragesStore.removeChangeListener(this.onChange);
 	}
 
 	onChange = (): void => {
 		this.setState({
 			...this.state,
 			datacenters: DatacentersStore.datacenters,
+			storages: StoragesStore.storages,
 		});
 	}
 
@@ -61,6 +70,7 @@ export default class Datacenters extends React.Component<{}, State> {
 			datacentersDom.push(<Datacenter
 				key={datacenter.id}
 				datacenter={datacenter}
+				storages={this.state.storages}
 			/>);
 		});
 

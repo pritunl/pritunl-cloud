@@ -1,14 +1,19 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
 import * as DatacenterTypes from '../types/DatacenterTypes';
+import * as StorageTypes from '../types/StorageTypes';
 import * as DatacenterActions from '../actions/DatacenterActions';
+import StoragesStore from '../stores/StoragesStore';
 import PageInput from './PageInput';
 import PageInfo from './PageInfo';
+import PageSelectButton from './PageSelectButton';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
+import Help from './Help';
 
 interface Props {
 	datacenter: DatacenterTypes.DatacenterRo;
+	storages: StorageTypes.StoragesRo;
 }
 
 interface State {
@@ -16,6 +21,7 @@ interface State {
 	changed: boolean;
 	message: string;
 	datacenter: DatacenterTypes.Datacenter;
+	addStorage: string;
 }
 
 const css = {
@@ -69,6 +75,7 @@ export default class Datacenter extends React.Component<Props, State> {
 			changed: false,
 			message: '',
 			datacenter: null,
+			addStorage: '',
 		};
 	}
 
@@ -144,9 +151,120 @@ export default class Datacenter extends React.Component<Props, State> {
 		});
 	}
 
+	onAddStorage = (): void => {
+		let datacenter: DatacenterTypes.Datacenter;
+
+		if (!this.state.addStorage && !this.props.storages.length) {
+			return;
+		}
+
+		let storageId = this.state.addStorage ||
+			this.props.storages[0].id;
+
+		if (this.state.changed) {
+			datacenter = {
+				...this.state.datacenter,
+			};
+		} else {
+			datacenter = {
+				...this.props.datacenter,
+			};
+		}
+
+		let storages = [
+			...(datacenter.storages || []),
+		];
+
+		if (storages.indexOf(storageId) === -1) {
+			storages.push(storageId);
+		}
+
+		storages.sort();
+
+		datacenter.storages = storages;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			datacenter: datacenter,
+		});
+	}
+
+	onRemoveStorage = (storage: string): void => {
+		let datacenter: DatacenterTypes.Datacenter;
+
+		if (this.state.changed) {
+			datacenter = {
+				...this.state.datacenter,
+			};
+		} else {
+			datacenter = {
+				...this.props.datacenter,
+			};
+		}
+
+		let storages = [
+			...(datacenter.storages || []),
+		];
+
+		let i = storages.indexOf(storage);
+		if (i === -1) {
+			return;
+		}
+
+		storages.splice(i, 1);
+
+		datacenter.storages = storages;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			datacenter: datacenter,
+		});
+	}
+
 	render(): JSX.Element {
 		let datacenter: DatacenterTypes.Datacenter = this.state.datacenter ||
 			this.props.datacenter;
+
+		let storages: JSX.Element[] = [];
+		for (let storageId of (datacenter.storages || [])) {
+			let storage = StoragesStore.storage(storageId);
+			if (!storage) {
+				continue;
+			}
+
+			storages.push(
+				<div
+					className="pt-tag pt-tag-removable pt-intent-primary"
+					style={css.item}
+					key={storage.id}
+				>
+					{storage.name}
+					<button
+						className="pt-tag-remove"
+						onMouseUp={(): void => {
+							this.onRemoveStorage(storage.id);
+						}}
+					/>
+				</div>,
+			);
+		}
+
+		let storagesSelect: JSX.Element[] = [];
+		if (this.props.storages.length) {
+			for (let storage of this.props.storages) {
+				storagesSelect.push(
+					<option
+						key={storage.id}
+						value={storage.id}
+					>{storage.name}</option>,
+				);
+			}
+		} else {
+			storagesSelect.push(<option key="null" value="">None</option>);
+		}
+
 
 		return <div
 			className="pt-card"
@@ -173,6 +291,34 @@ export default class Datacenter extends React.Component<Props, State> {
 							this.set('name', val);
 						}}
 					/>
+					<label
+						className="pt-label"
+						style={css.label}
+					>
+						Storages
+						<Help
+							title="Storages"
+							content="Storages that can access this zone."
+						/>
+						<div>
+							{storages}
+						</div>
+					</label>
+					<PageSelectButton
+						label="Add Storage"
+						value={this.state.addStorage}
+						disabled={!this.props.storages.length}
+						buttonClass="pt-intent-success"
+						onChange={(val: string): void => {
+							this.setState({
+								...this.state,
+								addStorage: val,
+							});
+						}}
+						onSubmit={this.onAddStorage}
+					>
+						{storagesSelect}
+					</PageSelectButton>
 				</div>
 				<div style={css.group}>
 					<PageInfo
