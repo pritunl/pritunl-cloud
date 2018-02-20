@@ -9,16 +9,17 @@ import (
 )
 
 type Datacenter struct {
-	Id       bson.ObjectId   `bson:"_id,omitempty" json:"id"`
-	Name     string          `bson:"name" json:"name"`
-	Storages []bson.ObjectId `bson:"storages" json:"storages"`
+	Id             bson.ObjectId   `bson:"_id,omitempty" json:"id"`
+	Name           string          `bson:"name" json:"name"`
+	PublicStorages []bson.ObjectId `bson:"public_storages" json:"public_storages"`
+	PrivateStorage bson.ObjectId   `bson:"private_storage" json:"private_storage"`
 }
 
 func (d *Datacenter) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
-	if d.Storages == nil {
-		d.Storages = []bson.ObjectId{}
+	if d.PublicStorages == nil {
+		d.PublicStorages = []bson.ObjectId{}
 	}
 
 	return
