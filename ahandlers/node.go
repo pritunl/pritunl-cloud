@@ -26,6 +26,7 @@ type nodeData struct {
 	AdminDomain        string          `json:"admin_domain"`
 	UserDomain         string          `json:"user_domain"`
 	Services           []bson.ObjectId `json:"services"`
+	DefaultInterface   string          `json:"default_interface"`
 	ForwardedForHeader string          `json:"forwarded_for_header"`
 }
 
@@ -67,6 +68,7 @@ func nodePut(c *gin.Context) {
 	nde.Certificates = data.Certificates
 	nde.AdminDomain = data.AdminDomain
 	nde.UserDomain = data.UserDomain
+	nde.DefaultInterface = data.DefaultInterface
 	nde.ForwardedForHeader = data.ForwardedForHeader
 
 	fields := set.NewSet(
@@ -78,6 +80,7 @@ func nodePut(c *gin.Context) {
 		"certificates",
 		"admin_domain",
 		"user_domain",
+		"default_interface",
 		"forwarded_for_header",
 	)
 
@@ -174,7 +177,7 @@ func nodesGet(c *gin.Context) {
 			"zone": zone,
 		}
 
-		nodes, err := node.GetAllNames(db, query)
+		nodes, err := node.GetAllHypervisors(db, query)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
 			return
