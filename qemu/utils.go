@@ -53,7 +53,7 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 		qm.Networks = append(qm.Networks, &Network{
 			Type:   "bridge",
 			Iface:  vm.GetIface(virt.Id, i),
-			Bridge: "br0",
+			Bridge: net.HostInterface,
 		})
 	}
 
@@ -65,20 +65,20 @@ func GetUnitName(virtId bson.ObjectId) string {
 }
 
 func GetUnitPath(virtId bson.ObjectId) string {
-	return path.Join(settings.Qemu.SystemdPath, GetUnitName(virtId))
+	return path.Join(settings.Hypervisor.SystemdPath, GetUnitName(virtId))
 }
 
 func GetPidPath(virtId bson.ObjectId) string {
-	return path.Join(settings.Qemu.LibPath,
+	return path.Join(settings.Hypervisor.LibPath,
 		fmt.Sprintf("%s.pid", virtId.Hex()))
 }
 
 func GetSockPath(virtId bson.ObjectId) string {
-	return path.Join(settings.Qemu.LibPath,
+	return path.Join(settings.Hypervisor.LibPath,
 		fmt.Sprintf("%s.sock", virtId.Hex()))
 }
 
 func GetGuestPath(virtId bson.ObjectId) string {
-	return path.Join(settings.Qemu.LibPath,
+	return path.Join(settings.Hypervisor.LibPath,
 		fmt.Sprintf("%s.guest", virtId.Hex()))
 }

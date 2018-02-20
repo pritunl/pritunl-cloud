@@ -9,6 +9,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/qga"
 	"github.com/pritunl/pritunl-cloud/settings"
+	"github.com/pritunl/pritunl-cloud/systemd"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"gopkg.in/mgo.v2/bson"
@@ -64,8 +65,10 @@ func GetVmInfo(vmId bson.ObjectId) (virt *vm.VirtualMachine, err error) {
 	}
 
 	unitName := GetUnitName(virt.Id)
-	output, _ := utils.ExecOutput("", "systemctl", "is-active", unitName)
-	state := strings.TrimSpace(output)
+	state, err := systemd.GetState(unitName)
+	if err != nil {
+		return
+	}
 
 	switch state {
 	case "active":
@@ -110,7 +113,7 @@ func GetVmInfo(vmId bson.ObjectId) (virt *vm.VirtualMachine, err error) {
 }
 
 func GetVms(db *database.Database) (virts []*vm.VirtualMachine, err error) {
-	systemdPath := settings.Qemu.SystemdPath
+	systemdPath := settings.Hypervisor.SystemdPath
 	virts = []*vm.VirtualMachine{}
 
 	items, err := ioutil.ReadDir(systemdPath)
@@ -176,7 +179,7 @@ func Wait(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	unitName := GetUnitName(virt.Id)
 
 	var vrt *vm.VirtualMachine
-	for i := 0; i < settings.Qemu.StartTimeout; i++ {
+	for i := 0; i < settings.Hypervisor.StartTimeout; i++ {
 		vrt, err = GetVmInfo(virt.Id)
 		if err != nil {
 			return
@@ -188,7 +191,7 @@ func Wait(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	}
 
 	if vrt == nil || vrt.State != vm.Running {
-		err = utils.Exec("", "systemctl", "stop", unitName)
+		err = systemd.Stop(unitName)
 		if err != nil {
 			return
 		}
@@ -206,7 +209,7 @@ func Wait(db *database.Database, virt *vm.VirtualMachine) (err error) {
 }
 
 func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
-	for i, _ := range virt.NetworkAdapters {
+	for i, adapter := range virt.NetworkAdapters {
 		iface := vm.GetIface(virt.Id, i)
 
 		err = utils.Exec("", "ip", "link", "set", iface, "up")
@@ -215,9 +218,8 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			return
 		}
 
-		//if adapter.BridgedInterface != "" {
 		output, e := utils.ExecCombinedOutput(
-			"", "brctl", "addif", "br0", iface)
+			"", "brctl", "addif", adapter.HostInterface, iface)
 		if e != nil {
 			if !strings.Contains(output, "already a member of a bridge") {
 				err = e
@@ -225,7 +227,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 				return
 			}
 		}
-		//}
 	}
 
 	return
@@ -249,7 +250,7 @@ func writeService(virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	_, err = utils.ExecOutput("", "systemctl", "daemon-reload")
+	err = systemd.Reload()
 	if err != nil {
 		return
 	}
@@ -292,7 +293,7 @@ func Create(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	err = utils.Exec("", "systemctl", "start", unitName)
+	err = systemd.Start(unitName)
 	if err != nil {
 		return
 	}
@@ -343,7 +344,7 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"id": virt.Id.Hex(),
 	}).Info("qemu: Destroying virtual machine")
 
-	_, err = utils.ExecOutput("", "systemctl", "stop", unitName)
+	err = systemd.Stop(unitName)
 	if err != nil {
 		return
 	}
@@ -395,7 +396,7 @@ func PowerOn(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	_, err = utils.ExecOutput("", "systemctl", "start", unitName)
+	err = systemd.Start(unitName)
 	if err != nil {
 		return
 	}
@@ -474,7 +475,7 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		}).Error("qemu: Power off virtual machine error")
 		err = nil
 	} else {
-		for i := 0; i < settings.Qemu.StopTimeout; i++ {
+		for i := 0; i < settings.Hypervisor.StopTimeout; i++ {
 			vrt, e := GetVmInfo(virt.Id)
 			if e != nil {
 				err = e
@@ -506,7 +507,7 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"id": virt.Id.Hex(),
 	}).Warning("qemu: Force power off virtual machine")
 
-	_, err = utils.ExecOutput("", "systemctl", "stop", unitName)
+	err = systemd.Stop(unitName)
 	if err != nil {
 		return
 	}
