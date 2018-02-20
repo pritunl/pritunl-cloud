@@ -141,6 +141,10 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			vals.splice(i, 1);
 		}
 
+		vals = vals.filter((val): boolean => {
+			return !!val;
+		});
+
 		vals.sort();
 
 		let val = vals.join('_');
@@ -311,6 +315,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 				>
 					{cert.name}
 					<button
+						disabled={this.state.disabled}
 						className="pt-tag-remove"
 						onMouseUp={(): void => {
 							this.onRemoveCert(cert.id);
@@ -407,6 +412,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						/>
 					</div>
 					<PageInput
+						disabled={this.state.disabled}
 						label="Name"
 						help="Name of node"
 						type="text"
@@ -417,22 +423,34 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						}}
 					/>
 					<PageSwitch
+						disabled={this.state.disabled}
 						label="Admin"
-						help="Provides access to the admin console."
+						help="Provides access to the admin console on this node."
 						checked={node.type.indexOf('admin') !== -1}
 						onToggle={(): void => {
 							this.toggleType('admin');
 						}}
 					/>
 					<PageSwitch
+						disabled={this.state.disabled}
 						label="User"
-						help="Provides access to the user console for SSH certificates."
+						help="Provides access to the user console on this node for SSH certificates."
 						checked={node.type.indexOf('user') !== -1}
 						onToggle={(): void => {
 							this.toggleType('user');
 						}}
 					/>
+					<PageSwitch
+						disabled={this.state.disabled}
+						label="Hypervisor"
+						help="Run instances with hypervisor on this node."
+						checked={node.type.indexOf('hypervisor') !== -1}
+						onToggle={(): void => {
+							this.toggleType('hypervisor');
+						}}
+					/>
 					<PageInput
+						disabled={this.state.disabled}
 						hidden={node.type.indexOf('_') === -1 ||
 							node.type.indexOf('admin') === -1}
 						label="Admin Domain"
@@ -445,6 +463,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						}}
 					/>
 					<PageInput
+						disabled={this.state.disabled}
 						hidden={node.type.indexOf('_') === -1 ||
 							node.type.indexOf('user') === -1}
 						label="User Domain"
@@ -461,6 +480,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						<div className="pt-control-group" style={css.inputGroup}>
 							<div className="pt-select" style={css.protocol}>
 								<select
+									disabled={this.state.disabled}
 									value={node.protocol || 'https'}
 									onChange={(evt): void => {
 										this.set('protocol', evt.target.value);
@@ -472,6 +492,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							</div>
 							<input
 								className="pt-input"
+								disabled={this.state.disabled}
 								style={css.port}
 								type="text"
 								autoCapitalize="off"
@@ -512,6 +533,17 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					>
 						{datacentersSelect}
 					</PageSelect>
+					<PageInput
+						disabled={this.state.disabled}
+						label="Default Interface"
+						help="Default interface for hypervisor bridge, leave blank for automatic."
+						type="text"
+						placeholder="Automatic"
+						value={node.default_interface}
+						onChange={(val): void => {
+							this.set('default_interface', val);
+						}}
+					/>
 					<PageSelect
 						disabled={!!this.props.node.zone || this.state.disabled ||
 							!hasZones}
@@ -601,7 +633,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						hidden={node.protocol === 'http'}
 						label="Add Certificate"
 						value={this.state.addCert}
-						disabled={!this.props.certificates.length}
+						disabled={!this.props.certificates.length || this.state.disabled}
 						buttonClass="pt-intent-success"
 						onChange={(val: string): void => {
 							this.setState({
@@ -614,6 +646,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						{certificatesSelect}
 					</PageSelectButton>
 					<PageInputSwitch
+						disabled={this.state.disabled}
 						label="Forwarded for header"
 						help="Enable when using a load balancer. This header value will be used to get the users IP address. It is important to only enable this when a load balancer is used. If it is enabled without a load balancer users can spoof their IP address by providing a value for the header that will not be overwritten by a load balancer. Additionally the nodes firewall should be configured to only accept requests from the load balancer to prevent requests being sent directly to the node bypassing the load balancer."
 						type="text"

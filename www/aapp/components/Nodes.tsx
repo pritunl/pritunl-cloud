@@ -221,7 +221,7 @@ export default class Nodes extends React.Component<{}, State> {
 						<button
 							className="pt-button pt-intent-warning pt-icon-chevron-up"
 							style={css.button}
-							hidden={!this.opened}
+							disabled={!this.opened}
 							type="button"
 							onClick={(): void => {
 								this.setState({
