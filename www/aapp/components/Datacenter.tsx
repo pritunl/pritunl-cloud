@@ -6,6 +6,7 @@ import * as DatacenterActions from '../actions/DatacenterActions';
 import StoragesStore from '../stores/StoragesStore';
 import PageInput from './PageInput';
 import PageInfo from './PageInfo';
+import PageSelect from './PageSelect';
 import PageSelectButton from './PageSelectButton';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
@@ -171,17 +172,17 @@ export default class Datacenter extends React.Component<Props, State> {
 			};
 		}
 
-		let storages = [
-			...(datacenter.storages || []),
+		let publicStorages = [
+			...(datacenter.public_storages || []),
 		];
 
-		if (storages.indexOf(storageId) === -1) {
-			storages.push(storageId);
+		if (publicStorages.indexOf(storageId) === -1) {
+			publicStorages.push(storageId);
 		}
 
-		storages.sort();
+		publicStorages.sort();
 
-		datacenter.storages = storages;
+		datacenter.public_storages = publicStorages;
 
 		this.setState({
 			...this.state,
@@ -203,18 +204,18 @@ export default class Datacenter extends React.Component<Props, State> {
 			};
 		}
 
-		let storages = [
-			...(datacenter.storages || []),
+		let publicStorages = [
+			...(datacenter.public_storages || []),
 		];
 
-		let i = storages.indexOf(storage);
+		let i = publicStorages.indexOf(storage);
 		if (i === -1) {
 			return;
 		}
 
-		storages.splice(i, 1);
+		publicStorages.splice(i, 1);
 
-		datacenter.storages = storages;
+		datacenter.public_storages = publicStorages;
 
 		this.setState({
 			...this.state,
@@ -227,14 +228,14 @@ export default class Datacenter extends React.Component<Props, State> {
 		let datacenter: DatacenterTypes.Datacenter = this.state.datacenter ||
 			this.props.datacenter;
 
-		let storages: JSX.Element[] = [];
-		for (let storageId of (datacenter.storages || [])) {
+		let publicStorages: JSX.Element[] = [];
+		for (let storageId of (datacenter.public_storages || [])) {
 			let storage = StoragesStore.storage(storageId);
 			if (!storage) {
 				continue;
 			}
 
-			storages.push(
+			publicStorages.push(
 				<div
 					className="pt-tag pt-tag-removable pt-intent-primary"
 					style={css.item}
@@ -242,6 +243,7 @@ export default class Datacenter extends React.Component<Props, State> {
 				>
 					{storage.name}
 					<button
+						disabled={this.state.disabled}
 						className="pt-tag-remove"
 						onMouseUp={(): void => {
 							this.onRemoveStorage(storage.id);
@@ -251,10 +253,19 @@ export default class Datacenter extends React.Component<Props, State> {
 			);
 		}
 
-		let storagesSelect: JSX.Element[] = [];
+		let privateStoragesSelect: JSX.Element[] = [];
+		let publicStoragesSelect: JSX.Element[] = [];
 		if (this.props.storages.length) {
+			privateStoragesSelect.push(<option key="null" value="">None</option>);
+
 			for (let storage of this.props.storages) {
-				storagesSelect.push(
+				privateStoragesSelect.push(
+					<option
+						key={storage.id}
+						value={storage.id}
+					>{storage.name}</option>,
+				);
+				publicStoragesSelect.push(
 					<option
 						key={storage.id}
 						value={storage.id}
@@ -262,9 +273,8 @@ export default class Datacenter extends React.Component<Props, State> {
 				);
 			}
 		} else {
-			storagesSelect.push(<option key="null" value="">None</option>);
+			publicStoragesSelect.push(<option key="null" value="">None</option>);
 		}
-
 
 		return <div
 			className="pt-card"
@@ -282,6 +292,7 @@ export default class Datacenter extends React.Component<Props, State> {
 						/>
 					</div>
 					<PageInput
+						disabled={this.state.disabled}
 						label="Name"
 						help="Name of datacenter"
 						type="text"
@@ -291,23 +302,34 @@ export default class Datacenter extends React.Component<Props, State> {
 							this.set('name', val);
 						}}
 					/>
+					<PageSelect
+						disabled={this.state.disabled}
+						label="Private Storage"
+						help="Private storage that will store instance snapshots."
+						value={datacenter.private_storage}
+						onChange={(val): void => {
+							this.set('private_storage', val);
+						}}
+					>
+						{privateStoragesSelect}
+					</PageSelect>
 					<label
 						className="pt-label"
 						style={css.label}
 					>
-						Storages
+						Public Storages
 						<Help
-							title="Storages"
-							content="Storages that can access this zone."
+							title="Public Storages"
+							content="Public storages that can be used for new instance images."
 						/>
 						<div>
-							{storages}
+							{publicStorages}
 						</div>
 					</label>
 					<PageSelectButton
 						label="Add Storage"
 						value={this.state.addStorage}
-						disabled={!this.props.storages.length}
+						disabled={!this.props.storages.length || this.state.disabled}
 						buttonClass="pt-intent-success"
 						onChange={(val: string): void => {
 							this.setState({
@@ -317,7 +339,7 @@ export default class Datacenter extends React.Component<Props, State> {
 						}}
 						onSubmit={this.onAddStorage}
 					>
-						{storagesSelect}
+						{publicStoragesSelect}
 					</PageSelectButton>
 				</div>
 				<div style={css.group}>

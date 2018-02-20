@@ -4,8 +4,9 @@ export const CHANGE = 'datacenter.change';
 
 export interface Datacenter {
 	id: string;
-	organizations?: string[];
 	name?: string;
+	public_storages?: string[];
+	private_storage?: string;
 }
 
 export type Datacenters = Datacenter[];
