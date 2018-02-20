@@ -40,6 +40,14 @@ type RequestError struct {
 	errors.DropboxError
 }
 
+type ConnectionError struct {
+	errors.DropboxError
+}
+
+type TimeoutError struct {
+	errors.DropboxError
+}
+
 type ExecError struct {
 	errors.DropboxError
 }
