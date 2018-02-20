@@ -115,7 +115,7 @@ export default class Instances extends React.Component<{}, State> {
 		CertificateActions.sync();
 
 		this.interval = setInterval(() => {
-			InstanceActions.sync();
+			InstanceActions.sync(true);
 		}, 500);
 	}
 
@@ -301,7 +301,7 @@ export default class Instances extends React.Component<{}, State> {
 						<button
 							className="pt-button pt-intent-warning pt-icon-chevron-up"
 							style={css.button}
-							hidden={!this.opened}
+							disabled={!this.opened}
 							type="button"
 							onClick={(): void => {
 								this.setState({
@@ -330,6 +330,16 @@ export default class Instances extends React.Component<{}, State> {
 							disabled={!this.selected || this.state.disabled}
 							onConfirm={(): void => {
 								this.updateSelected('stopped');
+							}}
+						/>
+						<ConfirmButton
+							label="Snapshot Selected"
+							className="pt-intent-primary pt-icon-floppy-disk"
+							progressClassName="pt-intent-primary"
+							style={css.button}
+							disabled={!this.selected || this.state.disabled}
+							onConfirm={(): void => {
+								this.updateSelected('snapshot');
 							}}
 						/>
 						<ConfirmButton

@@ -39,6 +39,9 @@ const css = {
 	button: {
 		height: '30px',
 	} as React.CSSProperties,
+	controlButton: {
+		marginRight: '10px',
+	} as React.CSSProperties,
 	buttons: {
 		cursor: 'pointer',
 		position: 'absolute',
@@ -183,19 +186,47 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		});
 	}
 
+	update(state: string): void {
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+		InstanceActions.updateMulti([this.props.instance.id],
+				state).then((): void => {
+			setTimeout((): void => {
+				this.setState({
+					...this.state,
+					disabled: false,
+				});
+			}, 250);
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		});
+	}
+
 	render(): JSX.Element {
 		let instance: InstanceTypes.Instance = this.state.instance ||
 			this.props.instance;
 
-		let org = OrganizationsStore.organization(this.props.instance.organization);
+		let org = OrganizationsStore.organization(
+			this.props.instance.organization);
 		let zone = ZonesStore.zone(this.props.instance.zone);
 		let node = NodesStore.node(this.props.instance.node);
 
 		let statusClass = '';
-		if (instance.status === 'Running') {
-			statusClass += 'pt-text-intent-success';
-		} else if (instance.status === 'Stopped') {
-			statusClass += 'pt-text-intent-danger';
+		switch (instance.status) {
+			case 'Running':
+				statusClass += 'pt-text-intent-success';
+				break;
+			case 'Stopped':
+				statusClass += 'pt-text-intent-danger';
+				break;
+			case 'Snapshotting':
+				statusClass += 'pt-text-intent-primary';
+				break;
 		}
 
 		return <td
@@ -290,18 +321,6 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						}}
 						value={instance.processors}
 					/>
-					<PageSwitch
-						label="Power On"
-						help="Power on instance."
-						checked={instance.state === 'running'}
-						onToggle={(): void => {
-							if (instance.state === 'running') {
-								this.set('state', 'stopped');
-							} else {
-								this.set('state', 'running');
-							}
-						}}
-					/>
 				</div>
 				<div style={css.group}>
 					<PageInfo
@@ -359,7 +378,42 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					});
 				}}
 				onSave={this.onSave}
-			/>
+			>
+				<ConfirmButton
+					label="Start"
+					className="pt-intent-success pt-icon-power"
+					progressClassName="pt-intent-success"
+					style={css.controlButton}
+					hidden={this.props.instance.state !== 'stopped'}
+					disabled={this.state.disabled}
+					onConfirm={(): void => {
+						this.update('running');
+					}}
+				/>
+				<ConfirmButton
+					label="Stop"
+					className="pt-intent-danger pt-icon-power"
+					progressClassName="pt-intent-danger"
+					style={css.controlButton}
+					hidden={this.props.instance.state !== 'running'}
+					disabled={this.state.disabled}
+					onConfirm={(): void => {
+						this.update('stopped');
+					}}
+				/>
+				<ConfirmButton
+					label="Snapshot"
+					className="pt-intent-primary pt-icon-floppy-disk"
+					progressClassName="pt-intent-primary"
+					hidden={this.props.instance.state !== 'running' &&
+					this.props.instance.state !== 'stopped'}
+					style={css.controlButton}
+					disabled={this.state.disabled}
+					onConfirm={(): void => {
+						this.update('snapshot');
+					}}
+				/>
+			</PageSave>
 		</td>;
 	}
 }

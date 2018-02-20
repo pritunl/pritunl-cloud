@@ -362,6 +362,8 @@ export default class InstanceNew extends React.Component<Props, State> {
 						>
 							{nodesSelect}
 						</PageSelect>
+					</div>
+					<div style={css.group}>
 						<PageSelect
 							disabled={this.state.disabled || !hasImages}
 							label="Image"
@@ -373,8 +375,6 @@ export default class InstanceNew extends React.Component<Props, State> {
 						>
 							{imagesSelect}
 						</PageSelect>
-					</div>
-					<div style={css.group}>
 						<PageNumInput
 							label="Memory Size"
 							help="Instance memory size in megabytes."

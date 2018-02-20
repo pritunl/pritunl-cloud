@@ -94,10 +94,16 @@ export default class Instance extends React.Component<Props, {}> {
 		}
 
 		let statusClass = 'pt-cell';
-		if (instance.status === 'Running') {
-			statusClass += ' pt-text-intent-success';
-		} else if (instance.status === 'Stopped') {
-			statusClass += ' pt-text-intent-danger';
+		switch (instance.status) {
+			case 'Running':
+				statusClass += ' pt-text-intent-success';
+				break;
+			case 'Stopped':
+				statusClass += ' pt-text-intent-danger';
+				break;
+			case 'Snapshotting':
+				statusClass += ' pt-text-intent-primary';
+				break;
 		}
 
 		return <div
