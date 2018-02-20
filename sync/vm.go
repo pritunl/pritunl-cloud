@@ -3,6 +3,8 @@ package sync
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/pritunl/pritunl-cloud/bridge"
+	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -11,6 +13,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"sync"
 	"time"
+	"github.com/pritunl/pritunl-cloud/data"
 )
 
 var (
@@ -191,8 +194,11 @@ func vmUpdate() (err error) {
 						time.Sleep(5 * time.Second)
 
 						inst.State = instance.Stopped
-						err = inst.CommitFields(db, set.NewSet("state"))
-						if err != nil {
+						e = inst.CommitFields(db, set.NewSet("state"))
+						if e != nil {
+							logrus.WithFields(logrus.Fields{
+								"error": e,
+							}).Error("sync: Failed to update instance")
 							return
 						}
 					}(inst)
@@ -228,8 +234,49 @@ func vmUpdate() (err error) {
 						return
 					}
 
-					err = instance.Remove(db, inst.Id)
-					if err != nil {
+					e = instance.Remove(db, inst.Id)
+					if e != nil {
+						logrus.WithFields(logrus.Fields{
+							"error": e,
+						}).Error("sync: Failed to remove instance")
+						return
+					}
+				}(inst)
+				continue
+			}
+			break
+		case instance.Snapshot:
+			if !busy.Contains(inst.Id) {
+				busyLock.Lock()
+				busy.Add(inst.Id)
+				busyLock.Unlock()
+				go func(inst *instance.Instance) {
+					defer func() {
+						busyLock.Lock()
+						busy.Remove(inst.Id)
+						busyLock.Unlock()
+					}()
+					db := database.GetDatabase()
+					defer db.Close()
+
+					e := data.CreateSnapshot(db, inst.GetVm())
+					if e != nil {
+						logrus.WithFields(logrus.Fields{
+							"error": e,
+						}).Error("sync: Failed to snapshot instance")
+						return
+					}
+
+					if virt.State == vm.Running {
+						inst.State = instance.Running
+					} else {
+						inst.State = instance.Stopped
+					}
+					e = inst.CommitFields(db, set.NewSet("state"))
+					if e != nil {
+						logrus.WithFields(logrus.Fields{
+							"error": e,
+						}).Error("sync: Failed to update instance")
 						return
 					}
 				}(inst)
@@ -247,6 +294,34 @@ func vmRunner() {
 
 	for {
 		time.Sleep(1 * time.Second)
+		if !node.Self.IsHypervisor() {
+			continue
+		}
+
+		err := bridge.Configure()
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("sync: Failed to configure bridge")
+
+			time.Sleep(1 * time.Second)
+
+			continue
+		}
+
+		break
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"production": constants.Production,
+		"bridge":     bridge.BridgeName,
+	}).Info("bridge: Starting hypervisor")
+
+	for {
+		time.Sleep(1 * time.Second)
+		if !node.Self.IsHypervisor() {
+			continue
+		}
 
 		err := vmUpdate()
 		if err != nil {
