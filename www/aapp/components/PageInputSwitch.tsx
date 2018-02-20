@@ -4,6 +4,7 @@ import Help from './Help';
 
 interface Props {
 	hidden?: boolean;
+	disabled?: boolean;
 	label: string;
 	help: string;
 	type: string;
@@ -34,6 +35,7 @@ export default class PageInputSwitch extends React.Component<Props, {}> {
 			<label className="pt-control pt-switch" style={css.switchLabel}>
 				<input
 					type="checkbox"
+					disabled={this.props.disabled}
 					checked={!!this.props.value || this.props.checked}
 					onChange={(): void => {
 						if (!!this.props.value || this.props.checked) {
@@ -54,6 +56,7 @@ export default class PageInputSwitch extends React.Component<Props, {}> {
 				<input
 					className="pt-input"
 					style={css.input}
+					disabled={this.props.disabled}
 					hidden={!this.props.value && !this.props.checked}
 					type={this.props.type}
 					autoCapitalize="off"
