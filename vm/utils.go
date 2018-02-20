@@ -16,7 +16,7 @@ func GetVmPath(id bson.ObjectId) string {
 }
 
 func GetDiskPath(id bson.ObjectId, num int) string {
-	return path.Join(GetVmPath(id), fmt.Sprintf("disk%d.img", num))
+	return path.Join(GetVmPath(id), fmt.Sprintf("disk%d.qcow2", num))
 }
 
 func GetMacAddr(id bson.ObjectId) string {

@@ -7,7 +7,6 @@ import (
 
 type VirtualMachine struct {
 	Id              bson.ObjectId     `json:"id"`
-	Uuid            string            `json:"uuid"`
 	State           string            `json:"state"`
 	Image           bson.ObjectId     `json:"image"`
 	Processors      int               `json:"processors"`
@@ -22,9 +21,11 @@ type Disk struct {
 
 type NetworkAdapter struct {
 	MacAddress       string `json:"mac_address"`
-	BridgedInterface string `json:"bridged_interface"`
-	IpAddress        string `json:"ip_address"`
-	IpAddress6       string `json:"ip_address6"`
+	HostInterface    string `json:"host_interface"`
+	IpAddress        string `json:"ip_address,omitempty"`
+	IpAddress6       string `json:"ip_address6,omitempty"`
+	StaticIpAddress  string `json:"static_ip_address,omitempty"`
+	StaticIpAddress6 string `json:"static_ip_address6,omitempty"`
 }
 
 func (v *VirtualMachine) Commit(db *database.Database) (err error) {
