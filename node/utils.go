@@ -42,7 +42,7 @@ func GetAll(db *database.Database) (nodes []*Node, err error) {
 	return
 }
 
-func GetAllNames(db *database.Database, query *bson.M) (
+func GetAllHypervisors(db *database.Database, query *bson.M) (
 	nodes []*Node, err error) {
 
 	coll := db.Nodes()
@@ -50,13 +50,17 @@ func GetAllNames(db *database.Database, query *bson.M) (
 
 	cursor := coll.Find(query).Select(&bson.M{
 		"name": 1,
+		"type": 1,
 	}).Iter()
 
 	nde := &Node{}
 	for cursor.Next(nde) {
-		nde.SetActive()
-		nodes = append(nodes, nde)
-		nde = &Node{}
+		if !nde.IsHypervisor() {
+			nde = &Node{}
+		} else {
+			nodes = append(nodes, nde)
+			nde = &Node{}
+		}
 	}
 
 	err = cursor.Close()

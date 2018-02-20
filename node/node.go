@@ -2,6 +2,7 @@ package node
 
 import (
 	"container/list"
+	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/certificate"
@@ -19,9 +20,7 @@ import (
 )
 
 var (
-	Self             *Node
-	DefaultInterface string
-	DefaultGateway   string
+	Self *Node
 )
 
 type Node struct {
@@ -70,6 +69,18 @@ func (n *Node) GetCachePath() string {
 		return DefaultCache
 	}
 	return n.CachePath
+}
+
+func (n *Node) IsAdmin() bool {
+	return strings.Contains(n.Type, Admin)
+}
+
+func (n *Node) IsUser() bool {
+	return strings.Contains(n.Type, User)
+}
+
+func (n *Node) IsHypervisor() bool {
+	return strings.Contains(n.Type, Hypervisor)
 }
 
 func (n *Node) Validate(db *database.Database) (
@@ -334,13 +345,6 @@ func (n *Node) reqSync() {
 	}
 }
 
-func (n *Node) GetDefaultInterface() string {
-	if n.DefaultInterface != "" {
-		return n.DefaultInterface
-	}
-	return DefaultInterface
-}
-
 func (n *Node) Init() (err error) {
 	db := database.GetDatabase()
 	defer db.Close()
@@ -348,7 +352,7 @@ func (n *Node) Init() (err error) {
 	coll := db.Nodes()
 
 	if n.Type == "" {
-		n.Type = Admin
+		n.Type = fmt.Sprintf("%s_%s", Admin, Hypervisor)
 	}
 
 	err = coll.FindOneId(n.Id, n)
