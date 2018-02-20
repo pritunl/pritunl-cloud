@@ -41,8 +41,9 @@ export default class PageSave extends React.Component<Props, {}> {
 		return <div
 			className="layout horizontal"
 			style={style}
-			hidden={this.props.hidden}
+			hidden={this.props.hidden && !this.props.children}
 		>
+			{this.props.children}
 			<div className="flex"/>
 			<div className="layout horizontal">
 				<span style={css.message} hidden={!this.props.message}>
@@ -52,6 +53,7 @@ export default class PageSave extends React.Component<Props, {}> {
 					<button
 						className="pt-button pt-icon-cross"
 						style={css.button}
+						hidden={this.props.hidden}
 						type="button"
 						disabled={!this.props.changed || this.props.disabled}
 						onClick={this.props.onCancel}
@@ -61,6 +63,7 @@ export default class PageSave extends React.Component<Props, {}> {
 					<button
 						className="pt-button pt-intent-success pt-icon-tick"
 						style={css.button}
+						hidden={this.props.hidden}
 						type="button"
 						disabled={!this.props.changed || this.props.disabled}
 						onClick={this.props.onSave}
