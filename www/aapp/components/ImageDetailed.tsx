@@ -2,6 +2,7 @@
 import * as React from 'react';
 import * as ImageTypes from '../types/ImageTypes';
 import * as ImageActions from '../actions/ImageActions';
+import * as MiscUtils from '../utils/MiscUtils';
 import PageInput from './PageInput';
 import PageInfo from './PageInfo';
 import PageSave from './PageSave';
@@ -223,7 +224,8 @@ export default class ImageDetailed extends React.Component<Props, State> {
 							style={css.button}
 							progressClassName="pt-intent-danger"
 							confirmMsg="Confirm image remove"
-							disabled={this.state.disabled}
+							disabled={this.props.image.type === 'public' ||
+								this.state.disabled}
 							onConfirm={this.onDelete}
 						/>
 					</div>
@@ -243,19 +245,24 @@ export default class ImageDetailed extends React.Component<Props, State> {
 						fields={[
 							{
 								label: 'ID',
-								value: this.props.image.id || 'None',
+								value: this.props.image.id || 'Unknown',
 							},
 							{
 								label: 'Type',
-								value: imgType || 'None',
+								value: imgType || 'Unknown',
 							},
 							{
 								label: 'Key',
-								value: this.props.image.key || 'None',
+								value: this.props.image.key || 'Unknown',
+							},
+							{
+								label: 'Last Modified',
+								value: MiscUtils.formatDate(
+									this.props.image.last_modified) || 'Unknown',
 							},
 							{
 								label: 'ETag',
-								value: this.props.image.etag || 'None',
+								value: this.props.image.etag || 'Unknown',
 							},
 						]}
 					/>

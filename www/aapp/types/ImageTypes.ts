@@ -13,6 +13,7 @@ export interface Image {
 	key?: string;
 	type?: string;
 	etag?: string;
+	last_modified?: string;
 }
 
 export interface Filter {

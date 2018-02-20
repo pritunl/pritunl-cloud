@@ -121,19 +121,19 @@ export default class Images extends React.Component<{}, State> {
 			...this.state,
 			disabled: true,
 		});
-		// ImageActions.removeMulti(
-		// 		Object.keys(this.state.selected)).then((): void => {
-		// 	this.setState({
-		// 		...this.state,
-		// 		selected: {},
-		// 		disabled: false,
-		// 	});
-		// }).catch((): void => {
-		// 	this.setState({
-		// 		...this.state,
-		// 		disabled: false,
-		// 	});
-		// });
+		ImageActions.removeMulti(
+				Object.keys(this.state.selected)).then((): void => {
+			this.setState({
+				...this.state,
+				selected: {},
+				disabled: false,
+			});
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		});
 	}
 
 	render(): JSX.Element {
@@ -225,7 +225,7 @@ export default class Images extends React.Component<{}, State> {
 						<button
 							className="pt-button pt-intent-warning pt-icon-chevron-up"
 							style={css.button}
-							hidden={!this.opened}
+							disabled={!this.opened}
 							type="button"
 							onClick={(): void => {
 								this.setState({
