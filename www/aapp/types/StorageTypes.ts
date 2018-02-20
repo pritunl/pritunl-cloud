@@ -10,6 +10,7 @@ export interface Storage {
 	bucket?: string;
 	access_key?: string;
 	secret_key?: string;
+	insecure?: boolean;
 }
 
 export type Storages = Storage[];

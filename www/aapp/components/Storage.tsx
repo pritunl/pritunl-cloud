@@ -6,6 +6,7 @@ import PageInput from './PageInput';
 import PageInfo from './PageInfo';
 import PageSave from './PageSave';
 import PageSelect from './PageSelect';
+import PageSwitch from './PageSwitch';
 import ConfirmButton from './ConfirmButton';
 
 interface Props {
@@ -229,6 +230,15 @@ export default class Storage extends React.Component<Props, State> {
 						value={storage.secret_key}
 						onChange={(val): void => {
 							this.set('secret_key', val);
+						}}
+					/>
+					<PageSwitch
+						label="SSL Connection"
+						help="Use secure SSL connection."
+						disabled={this.state.disabled}
+						checked={!storage.insecure}
+						onToggle={(): void => {
+							this.set('insecure', !storage.insecure);
 						}}
 					/>
 				</div>
