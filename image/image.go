@@ -2,10 +2,10 @@ package image
 
 import (
 	"github.com/dropbox/godropbox/container/set"
-	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"gopkg.in/mgo.v2/bson"
+	"time"
 )
 
 type Image struct {
@@ -15,6 +15,7 @@ type Image struct {
 	Type         string        `bson:"type" json:"type"`
 	Storage      bson.ObjectId `bson:"storage" json:"storage"`
 	Key          string        `bson:"key" json:"key"`
+	LastModified time.Time     `bson:"last_modified" json:"last_modified"`
 	Etag         string        `bson:"etag" json:"etag"`
 }
 
@@ -57,13 +58,6 @@ func (i *Image) CommitFields(db *database.Database, fields set.Set) (
 func (i *Image) Insert(db *database.Database) (err error) {
 	coll := db.Images()
 
-	if i.Id != "" {
-		err = &errortypes.DatabaseError{
-			errors.New("image: Image already exists"),
-		}
-		return
-	}
-
 	err = coll.Insert(i)
 	if err != nil {
 		err = database.ParseError(err)
@@ -81,10 +75,11 @@ func (i *Image) Upsert(db *database.Database) (err error) {
 		"key":     i.Key,
 	}, &bson.M{
 		"$set": &bson.M{
-			"storage": i.Storage,
-			"key":     i.Key,
-			"etag":    i.Etag,
-			"type":    i.Type,
+			"storage":       i.Storage,
+			"key":           i.Key,
+			"type":          i.Type,
+			"etag":          i.Etag,
+			"last_modified": i.LastModified,
 		},
 	})
 	if err != nil {

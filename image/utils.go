@@ -1,10 +1,30 @@
 package image
 
 import (
+	"crypto/md5"
+	"fmt"
+	"github.com/minio/minio-go"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"gopkg.in/mgo.v2/bson"
+	"regexp"
+	"time"
 )
+
+var (
+	etagReg = regexp.MustCompile("[^a-zA-Z0-9]+")
+)
+
+func GetEtag(info minio.ObjectInfo) string {
+	etag := info.ETag
+	if etag == "" {
+		modifiedHash := md5.New()
+		modifiedHash.Write(
+			[]byte(info.LastModified.Format(time.RFC3339)))
+		etag = fmt.Sprintf("%x", modifiedHash.Sum(nil))
+	}
+	return etagReg.ReplaceAllString(etag, "")
+}
 
 func Get(db *database.Database, imgId bson.ObjectId) (
 	img *Image, err error) {
