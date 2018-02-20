@@ -69,6 +69,7 @@ func Register(engine *gin.Engine) {
 	csrfGroup.GET("/image", imagesGet)
 	csrfGroup.GET("/image/:image_id", imageGet)
 	csrfGroup.PUT("/image/:image_id", imagePut)
+	csrfGroup.DELETE("/image", imagesDelete)
 	csrfGroup.DELETE("/image/:image_id", imageDelete)
 
 	csrfGroup.GET("/instance", instancesGet)

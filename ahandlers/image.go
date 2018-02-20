@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/demo"
@@ -32,7 +33,7 @@ func imagePut(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	data := &imageData{}
+	dta := &imageData{}
 
 	imageId, ok := utils.ParseObjectId(c.Param("image_id"))
 	if !ok {
@@ -40,7 +41,7 @@ func imagePut(c *gin.Context) {
 		return
 	}
 
-	err := c.Bind(data)
+	err := c.Bind(dta)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -52,8 +53,8 @@ func imagePut(c *gin.Context) {
 		return
 	}
 
-	img.Name = data.Name
-	img.Organization = data.Organization
+	img.Name = dta.Name
+	img.Organization = dta.Organization
 
 	fields := set.NewSet(
 		"name",
@@ -95,7 +96,32 @@ func imageDelete(c *gin.Context) {
 		return
 	}
 
-	err := image.Remove(db, imageId)
+	err := data.DeleteImage(db, imageId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	event.PublishDispatch(db, "image.change")
+
+	c.JSON(200, nil)
+}
+
+func imagesDelete(c *gin.Context) {
+	if demo.Blocked(c) {
+		return
+	}
+
+	db := c.MustGet("db").(*database.Database)
+	dta := []bson.ObjectId{}
+
+	err := c.Bind(&dta)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	err = data.DeleteImages(db, dta)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -136,9 +162,23 @@ func imagesGet(c *gin.Context) {
 			return
 		}
 
+		storages := dc.PublicStorages
+		if storages == nil {
+			storages = []bson.ObjectId{}
+		}
+
+		if dc.PrivateStorage != "" {
+			storages = append(storages, dc.PrivateStorage)
+		}
+
+		if len(storages) == 0 {
+			c.JSON(200, []bson.ObjectId{})
+			return
+		}
+
 		query := &bson.M{
 			"storage": &bson.M{
-				"$in": dc.Storages,
+				"$in": storages,
 			},
 		}
 
@@ -177,11 +217,11 @@ func imagesGet(c *gin.Context) {
 			img.Json()
 		}
 
-		data := &imagesData{
+		dta := &imagesData{
 			Images: images,
 			Count:  count,
 		}
 
-		c.JSON(200, data)
+		c.JSON(200, dta)
 	}
 }
