@@ -5,4 +5,5 @@ const (
 	Stopped  = "stopped"
 	Updating = "updating"
 	Deleting = "deleting"
+	Snapshot = "snapshot"
 )

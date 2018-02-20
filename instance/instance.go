@@ -3,9 +3,9 @@ package instance
 import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/bridge"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -130,6 +130,9 @@ func (i *Instance) Json() {
 	case Deleting:
 		i.Status = "Deleting"
 		break
+	case Snapshot:
+		i.Status = "Snapshotting"
+		break
 	}
 }
 
@@ -189,8 +192,8 @@ func (i *Instance) GetVm() (virt *vm.VirtualMachine) {
 		},
 		NetworkAdapters: []*vm.NetworkAdapter{
 			&vm.NetworkAdapter{
-				MacAddress:       vm.GetMacAddr(i.Id),
-				BridgedInterface: node.Self.GetDefaultInterface(),
+				MacAddress:    vm.GetMacAddr(i.Id),
+				HostInterface: bridge.BridgeName,
 			},
 		},
 	}
