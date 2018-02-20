@@ -220,13 +220,13 @@ export default class Subscription extends React.Component<{}, State> {
 						}}
 					>Activate License</button>
 					<ReactStripeCheckout
-						label="Pritunl Zero"
+						label="Pritunl Cloud"
 						image="//s3.amazonaws.com/pritunl-static/logo_stripe.png"
 						allowRememberMe={false}
 						zipCode={true}
 						amount={5000}
-						name="Pritunl Zero - 7 Day Trial"
-						description="Subscribe to Zero ($50/month)"
+						name="Pritunl Cloud - 7 Day Trial"
+						description="Subscribe to Cloud ($50/month)"
 						panelLabel="Subscribe"
 						token={(token): void => {
 							this.setState({
@@ -234,7 +234,7 @@ export default class Subscription extends React.Component<{}, State> {
 								disabled: true,
 							});
 							SubscriptionActions.checkout(
-								'zero',
+								'cloud',
 								token.id,
 								token.email,
 							).then((message: string): void => {
@@ -369,12 +369,12 @@ export default class Subscription extends React.Component<{}, State> {
 						}}
 					/>
 					<ReactStripeCheckout
-						label="Pritunl Zero"
+						label="Pritunl Cloud"
 						image="//s3.amazonaws.com/pritunl-static/logo_stripe.png"
 						allowRememberMe={false}
 						zipCode={true}
 						amount={canceling && sub.status !== 'active' ? 5000 : 0}
-						name="Pritunl Zero"
+						name="Pritunl Cloud"
 						description={canceling ?
 							'Reactivate Subscription ($50/month)' :
 							'Update Payment Information'
@@ -387,7 +387,7 @@ export default class Subscription extends React.Component<{}, State> {
 							});
 							SubscriptionActions.payment(
 								this.state.subscription.url_key,
-								'zero',
+								'cloud',
 								token.id,
 								token.email,
 							).then((): void => {
