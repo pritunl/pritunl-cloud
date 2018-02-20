@@ -6,15 +6,19 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/minio/minio-go"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/image"
+	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/storage"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/pritunl-cloud/vm"
+	"github.com/pritunl/pritunl-cloud/zone"
 	"gopkg.in/mgo.v2/bson"
-	"io"
-	"os"
 	"path"
+	"time"
 )
 
 func getImage(db *database.Database, img *image.Image,
@@ -29,6 +33,7 @@ func getImage(db *database.Database, img *image.Image,
 		"id":         img.Id.Hex(),
 		"storage_id": store.Id.Hex(),
 		"key":        img.Key,
+		"path":       pth,
 	}).Info("data: Downloading image")
 
 	client, err := minio.New(
@@ -40,38 +45,11 @@ func getImage(db *database.Database, img *image.Image,
 		return
 	}
 
-	object, err := client.GetObject(store.Bucket,
-		img.Key, minio.GetObjectOptions{})
+	err = client.FGetObject(store.Bucket,
+		img.Key, pth, minio.GetObjectOptions{})
 	if err != nil {
 		err = &errortypes.ReadError{
-			errors.Wrap(err, "data: Failed to read image"),
-		}
-		return
-	}
-	defer object.Close()
-
-	cacheFile, err := os.OpenFile(pth,
-		os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
-	if err != nil {
-		err = &errortypes.WriteError{
-			errors.Wrap(err, "data: Failed to create image cache file"),
-		}
-		return
-	}
-	defer cacheFile.Close()
-
-	stat, err := object.Stat()
-	if err != nil {
-		err = &errortypes.ReadError{
-			errors.Wrap(err, "data: Failed to stat image"),
-		}
-		return
-	}
-
-	_, err = io.CopyN(cacheFile, object, stat.Size)
-	if err != nil {
-		err = &errortypes.WriteError{
-			errors.Wrap(err, "data: Failed to copy image cache file"),
+			errors.Wrap(err, "data: Failed to download image"),
 		}
 		return
 	}
@@ -87,34 +65,226 @@ func WriteImage(db *database.Database, imgId bson.ObjectId, pth string) (
 		return
 	}
 
-	cacheDir := node.Self.GetCachePath()
+	if img.Type == storage.Public {
+		cacheDir := node.Self.GetCachePath()
 
-	cachePth := path.Join(
-		cacheDir,
-		fmt.Sprintf("%s_%s", img.Id.Hex(), img.Etag),
-	)
+		imagePth := path.Join(
+			cacheDir,
+			fmt.Sprintf("image-%s-%s", img.Id.Hex(), img.Etag),
+		)
 
-	err = utils.ExistsMkdir(cacheDir, 0755)
-	if err != nil {
-		return
-	}
+		err = utils.ExistsMkdir(cacheDir, 0755)
+		if err != nil {
+			return
+		}
 
-	exists, err := utils.Exists(cachePth)
-	if err != nil {
-		return
-	}
+		exists, e := utils.Exists(imagePth)
+		if e != nil {
+			err = e
+			return
+		}
 
-	if !exists {
-		err = getImage(db, img, cachePth)
+		if !exists {
+			err = getImage(db, img, imagePth)
+			if err != nil {
+				return
+			}
+		}
+
+		exists, err = utils.Exists(pth)
+		if err != nil {
+			return
+		}
+
+		if exists {
+			logrus.WithFields(logrus.Fields{
+				"image_id": img.Id.Hex(),
+				"key":      img.Key,
+				"path":     pth,
+			}).Error("data: Blocking disk image overwrite")
+
+			err = &errortypes.WriteError{
+				errors.Wrap(err, "data: Image already exists"),
+			}
+			return
+		}
+
+		err = utils.Exec("", "cp", imagePth, pth)
+		if err != nil {
+			return
+		}
+	} else {
+		exists, e := utils.Exists(pth)
+		if e != nil {
+			err = e
+			return
+		}
+
+		if exists {
+			logrus.WithFields(logrus.Fields{
+				"image_id": img.Id.Hex(),
+				"key":      img.Key,
+				"path":     pth,
+			}).Error("data: Blocking disk image overwrite")
+
+			err = &errortypes.WriteError{
+				errors.Wrap(err, "data: Image already exists"),
+			}
+			return
+		}
+
+		err = getImage(db, img, pth)
 		if err != nil {
 			return
 		}
 	}
 
-	err = utils.Exec("", "cp", cachePth, pth)
+	return
+}
+
+func DeleteImage(db *database.Database, imgId bson.ObjectId) (err error) {
+	img, err := image.Get(db, imgId)
 	if err != nil {
 		return
 	}
+
+	if img.Type == storage.Public {
+		return
+	}
+
+	store, err := storage.Get(db, img.Storage)
+	if err != nil {
+		return
+	}
+
+	client, err := minio.New(
+		store.Endpoint, store.AccessKey, store.SecretKey, !store.Insecure)
+	if err != nil {
+		err = &errortypes.ConnectionError{
+			errors.Wrap(err, "data: Failed to connect to storage"),
+		}
+		return
+	}
+
+	err = client.RemoveObject(store.Bucket, img.Key)
+	if err != nil {
+		return
+	}
+
+	err = image.Remove(db, img.Id)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func DeleteImages(db *database.Database, imgIds []bson.ObjectId) (err error) {
+	for _, imgId := range imgIds {
+		err = DeleteImage(db, imgId)
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
+func CreateSnapshot(db *database.Database,
+	virt *vm.VirtualMachine) (err error) {
+
+	disk := virt.Disks[0]
+	cacheDir := node.Self.GetCachePath()
+
+	logrus.WithFields(logrus.Fields{
+		"instance_id": virt.Id.Hex(),
+		"source_path": disk.Path,
+	}).Info("data: Creating instance snapshot")
+
+	inst, err := instance.Get(db, virt.Id)
+	if err != nil {
+		return
+	}
+
+	zne, err := zone.Get(db, inst.Zone)
+	if err != nil {
+		return
+	}
+
+	dc, err := datacenter.Get(db, zne.Datacenter)
+	if err != nil {
+		return
+	}
+
+	store, err := storage.Get(db, dc.PrivateStorage)
+	if err != nil {
+		return
+	}
+
+	imgId := bson.NewObjectId()
+	tmpPath := path.Join(cacheDir,
+		fmt.Sprintf("snapshot-%s", imgId.Hex()))
+	img := &image.Image{
+		Id: imgId,
+		Name: fmt.Sprintf("%s-%s", inst.Name,
+			time.Now().Format("2006-01-02T15:04:05")),
+		Organization: inst.Organization,
+		Type:         storage.Private,
+		Storage:      store.Id,
+		Key:          fmt.Sprintf("snapshot/%s.qcow2", imgId.Hex()),
+	}
+
+	defer utils.Remove(tmpPath)
+	err = utils.Exec("", "qemu-img", "convert", "-f", "qcow2",
+		"-O", "qcow2", "-c", disk.Path, tmpPath)
+	if err != nil {
+		return
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"instance_id": virt.Id.Hex(),
+		"source_path": disk.Path,
+		"storage_id":  store.Id.Hex(),
+		"object_key":  img.Key,
+	}).Info("data: Uploading instance snapshot")
+
+	client, err := minio.New(
+		store.Endpoint, store.AccessKey, store.SecretKey, !store.Insecure)
+	if err != nil {
+		err = &errortypes.ConnectionError{
+			errors.Wrap(err, "data: Failed to connect to storage"),
+		}
+		return
+	}
+
+	_, err = client.FPutObject(store.Bucket, img.Key, tmpPath,
+		minio.PutObjectOptions{})
+	if err != nil {
+		err = &errortypes.WriteError{
+			errors.Wrap(err, "data: Failed to write object"),
+		}
+		return
+	}
+
+	obj, err := client.StatObject(store.Bucket, img.Key,
+		minio.StatObjectOptions{})
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "data: Failed to stat object"),
+		}
+		return
+	}
+
+	img.Etag = image.GetEtag(obj)
+	img.LastModified = obj.LastModified
+
+	err = img.Insert(db)
+	if err != nil {
+		client.RemoveObject(store.Bucket, img.Key)
+		return
+	}
+
+	event.PublishDispatch(db, "image.change")
 
 	return
 }

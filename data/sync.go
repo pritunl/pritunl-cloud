@@ -1,8 +1,6 @@
 package data
 
 import (
-	"crypto/md5"
-	"fmt"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/minio/minio-go"
@@ -10,11 +8,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/storage"
-	"regexp"
-	"time"
 )
-
-var etagReg = regexp.MustCompile("[^a-zA-Z0-9]+")
 
 func Sync(db *database.Database, store *storage.Storage) (err error) {
 	client, err := minio.New(
@@ -38,23 +32,15 @@ func Sync(db *database.Database, store *storage.Storage) (err error) {
 			return
 		}
 
-		etag := object.ETag
-		if etag == "" {
-			modifiedHash := md5.New()
-			modifiedHash.Write(
-				[]byte(object.LastModified.Format(time.RFC3339)))
-			etag = fmt.Sprintf("%x", modifiedHash.Sum(nil))
-		}
-
-		etag = etagReg.ReplaceAllString(etag, "")
-
+		etag := image.GetEtag(object)
 		remoteKeys.Add(object.Key)
 
 		img := &image.Image{
-			Storage: store.Id,
-			Key:     object.Key,
-			Etag:    etag,
-			Type:    store.Type,
+			Storage:      store.Id,
+			Key:          object.Key,
+			Etag:         etag,
+			Type:         store.Type,
+			LastModified: object.LastModified,
 		}
 		err = img.Upsert(db)
 		if err != nil {
