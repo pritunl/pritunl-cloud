@@ -28,6 +28,8 @@ type nodeData struct {
 	Services           []bson.ObjectId `json:"services"`
 	DefaultInterface   string          `json:"default_interface"`
 	ForwardedForHeader string          `json:"forwarded_for_header"`
+	Firewall           bool            `json:"firewall"`
+	NetworkRoles       []string        `json:"network_roles"`
 }
 
 type nodesData struct {
@@ -70,6 +72,8 @@ func nodePut(c *gin.Context) {
 	nde.UserDomain = data.UserDomain
 	nde.DefaultInterface = data.DefaultInterface
 	nde.ForwardedForHeader = data.ForwardedForHeader
+	nde.Firewall = data.Firewall
+	nde.NetworkRoles = data.NetworkRoles
 
 	fields := set.NewSet(
 		"name",
@@ -82,6 +86,8 @@ func nodePut(c *gin.Context) {
 		"user_domain",
 		"default_interface",
 		"forwarded_for_header",
+		"firewall",
+		"network_roles",
 	)
 
 	if data.Zone != "" && data.Zone != nde.Zone {

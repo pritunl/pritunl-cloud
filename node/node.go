@@ -38,6 +38,8 @@ type Node struct {
 	RequestsMin        int64                      `bson:"requests_min" json:"requests_min"`
 	ForwardedForHeader string                     `bson:"forwarded_for_header" json:"forwarded_for_header"`
 	DefaultInterface   string                     `bson:"default_interface" json:"default_interface"`
+	Firewall           bool                       `bson:"firewall" json:"firewall"`
+	NetworkRoles       []string                   `bson:"network_roles" json:"network_roles"`
 	Memory             float64                    `bson:"memory" json:"memory"`
 	Load1              float64                    `bson:"load1" json:"load1"`
 	Load5              float64                    `bson:"load5" json:"load5"`
@@ -136,6 +138,18 @@ func (n *Node) Validate(db *database.Database) (
 	}
 	if n.CachePath == "" {
 		n.CachePath = DefaultCache
+	}
+
+	if n.NetworkRoles == nil || !n.Firewall {
+		n.NetworkRoles = []string{}
+	}
+
+	if n.Firewall && len(n.NetworkRoles) == 0 {
+		errData = &errortypes.ErrorData{
+			Error:   "firewall_empty_roles",
+			Message: "Cannot enable firewall without network roles",
+		}
+		return
 	}
 
 	n.Format()
