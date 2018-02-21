@@ -3,6 +3,7 @@ import * as React from 'react';
 import * as MiscUtils from '../utils/MiscUtils';
 import * as ImageTypes from '../types/ImageTypes';
 import ImageDetailed from './ImageDetailed';
+import OrganizationsStore from "../stores/OrganizationsStore";
 
 interface Props {
 	image: ImageTypes.ImageRo;
@@ -93,6 +94,14 @@ export default class Image extends React.Component<Props, {}> {
 			cardStyle.opacity = 0.6;
 		}
 
+		let orgName = '';
+		if (image.organization) {
+			let org = OrganizationsStore.organization(image.organization);
+			orgName = org ? org.name : image.organization;
+		} else {
+			orgName = 'Public Image';
+		}
+
 		return <div
 			className="pt-card pt-row"
 			style={cardStyle}
@@ -130,16 +139,16 @@ export default class Image extends React.Component<Props, {}> {
 			<div className="pt-cell" style={css.item}>
 				<span
 					style={css.icon}
-					hidden={!image.organization}
-					className="pt-icon-standard pt-icon-people"
+					className={'pt-icon-standard ' + (image.organization ?
+						'pt-icon-people' : 'pt-icon-globe')}
 				/>
-				{image.organization}
+				{orgName}
 			</div>
 			<div className="pt-cell" style={css.item}>
 				<span
 					style={css.icon}
 					hidden={!image.key}
-					className="pt-icon-standard pt-icon-projects"
+					className="pt-icon-standard pt-icon-floppy-disk"
 				/>
 				{image.key}
 			</div>
