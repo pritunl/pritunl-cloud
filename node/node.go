@@ -244,6 +244,11 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.AdminDomain = nde.AdminDomain
 	n.UserDomain = nde.UserDomain
 	n.ForwardedForHeader = nde.ForwardedForHeader
+	n.DefaultInterface = nde.DefaultInterface
+	n.Firewall = nde.Firewall
+	n.NetworkRoles = nde.NetworkRoles
+	n.VirtPath = nde.VirtPath
+	n.CachePath = nde.CachePath
 
 	return
 }
