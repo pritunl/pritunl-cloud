@@ -3,6 +3,8 @@ import * as React from 'react';
 import * as ImageTypes from '../types/ImageTypes';
 import * as ImageActions from '../actions/ImageActions';
 import * as MiscUtils from '../utils/MiscUtils';
+import OrganizationsStore from "../stores/OrganizationsStore";
+import StoragesStore from "../stores/StoragesStore";
 import PageInput from './PageInput';
 import PageInfo from './PageInfo';
 import PageSave from './PageSave';
@@ -177,6 +179,9 @@ export default class ImageDetailed extends React.Component<Props, State> {
 		let image: ImageTypes.Image = this.state.image ||
 			this.props.image;
 
+		let org = OrganizationsStore.organization(this.props.image.organization);
+		let store = StoragesStore.storage(this.props.image.storage);
+
 		let imgType = image.type;
 		if (imgType) {
 			imgType = imgType.charAt(0).toUpperCase() + imgType.slice(1);
@@ -246,6 +251,16 @@ export default class ImageDetailed extends React.Component<Props, State> {
 							{
 								label: 'ID',
 								value: this.props.image.id || 'Unknown',
+							},
+							{
+								label: 'Storage',
+								value: store ? store.name :
+									this.props.image.storage || 'Unknown',
+							},
+							{
+								label: 'Organization',
+								value: org ? org.name :
+									this.props.image.organization || 'Public Image',
 							},
 							{
 								label: 'Type',
