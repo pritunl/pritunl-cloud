@@ -24,6 +24,7 @@ type instanceData struct {
 	State        string        `json:"state"`
 	Memory       int           `json:"memory"`
 	Processors   int           `json:"processors"`
+	NetworkRoles []string      `json:"network_roles"`
 	Count        int           `json:"count"`
 }
 
@@ -72,12 +73,14 @@ func instancePut(c *gin.Context) {
 	inst.Name = data.Name
 	inst.Memory = data.Memory
 	inst.Processors = data.Processors
+	inst.NetworkRoles = data.NetworkRoles
 
 	fields := set.NewSet(
 		"state",
 		"name",
 		"memory",
 		"processors",
+		"network_roles",
 	)
 
 	errData, err := inst.Validate(db)
@@ -127,7 +130,7 @@ func instancePost(c *gin.Context) {
 	for i := 0; i < data.Count; i++ {
 		name := ""
 		if strings.Contains(data.Name, "%") {
-			name = fmt.Sprintf(data.Name, i)
+			name = fmt.Sprintf(data.Name, i+1)
 		} else {
 			name = data.Name
 		}
@@ -141,6 +144,7 @@ func instancePost(c *gin.Context) {
 			Name:         name,
 			Memory:       data.Memory,
 			Processors:   data.Processors,
+			NetworkRoles: data.NetworkRoles,
 		}
 
 		errData, err := inst.Validate(db)

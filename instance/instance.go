@@ -24,6 +24,7 @@ type Instance struct {
 	Name         string        `bson:"name" json:"name"`
 	Memory       int           `bson:"memory" json:"memory"`
 	Processors   int           `bson:"processors" json:"processors"`
+	NetworkRoles []string      `bson:"network_roles" json:"network_roles"`
 }
 
 func (i *Instance) Validate(db *database.Database) (
@@ -67,6 +68,10 @@ func (i *Instance) Validate(db *database.Database) (
 
 	if i.Processors < 1 {
 		i.Processors = 1
+	}
+
+	if i.NetworkRoles == nil {
+		i.NetworkRoles = []string{}
 	}
 
 	return
