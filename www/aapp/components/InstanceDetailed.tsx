@@ -12,6 +12,14 @@ import PageSave from './PageSave';
 import PageNumInput from './PageNumInput';
 import ConfirmButton from './ConfirmButton';
 import Help from './Help';
+import * as DatacenterActions from "../actions/DatacenterActions";
+import DatacentersStore from "../stores/DatacentersStore";
+import CertificatesStore from "../stores/CertificatesStore";
+import * as NodeActions from "../actions/NodeActions";
+import InstancesStore from "../stores/InstancesStore";
+import * as CertificateActions from "../actions/CertificateActions";
+import * as OrganizationActions from "../actions/OrganizationActions";
+import * as ZoneActions from "../actions/ZoneActions";
 
 interface Props {
 	instance: InstanceTypes.InstanceRo;
@@ -25,6 +33,7 @@ interface State {
 	changed: boolean;
 	message: string;
 	instance: InstanceTypes.Instance;
+	info: InstanceTypes.Info;
 	addCert: string;
 	addNetworkRole: string;
 	forwardedChecked: boolean;
@@ -105,10 +114,29 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			changed: false,
 			message: '',
 			instance: null,
+			info: {},
 			addCert: null,
 			addNetworkRole: '',
 			forwardedChecked: false,
 		};
+	}
+
+	componentDidMount(): void {
+		InstancesStore.addChangeListener(this.syncInfo);
+		this.syncInfo();
+	}
+
+	componentWillUnmount(): void {
+		InstancesStore.removeChangeListener(this.syncInfo);
+	}
+
+	syncInfo = (): void => {
+		InstanceActions.info(this.props.instance.id).then((info): void => {
+			this.setState({
+				...this.state,
+				info: info,
+			});
+		});
 	}
 
 	set(name: string, val: any): void {
@@ -478,6 +506,10 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 							{
 								label: 'Public IPv6',
 								value: this.props.instance.public_ip6 || 'None',
+							},
+							{
+								label: 'Firewall Rules',
+								value: this.state.info.firewall_rules || '',
 							},
 						]}
 					/>

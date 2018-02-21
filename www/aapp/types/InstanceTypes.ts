@@ -26,6 +26,11 @@ export interface Filter {
 	name?: string;
 }
 
+export interface Info {
+	instance?: string;
+	firewall_rules?: string[];
+}
+
 export type Instances = Instance[];
 
 export type InstanceRo = Readonly<Instance>;

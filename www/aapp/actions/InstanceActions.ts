@@ -235,6 +235,34 @@ export function updateMulti(instanceIds: string[],
 	});
 }
 
+export function info(instId: string): Promise<InstanceTypes.Info> {
+	let loader = new Loader().loading();
+
+	return new Promise<InstanceTypes.Info>((resolve, reject): void => {
+		SuperAgent
+			.get('/instance/' + instId + '/info')
+			.set('Accept', 'application/json')
+			.set('Csrf-Token', Csrf.token)
+			.end((err: any, res: SuperAgent.Response): void => {
+				loader.done();
+
+				if (res && res.status === 401) {
+					window.location.href = '/login';
+					resolve();
+					return;
+				}
+
+				if (err) {
+					Alert.errorRes(res, 'Failed to load instances');
+					reject(err);
+					return;
+				}
+
+				resolve(res.body);
+			});
+	});
+}
+
 EventDispatcher.register((action: InstanceTypes.InstanceDispatch) => {
 	switch (action.type) {
 		case InstanceTypes.CHANGE:
