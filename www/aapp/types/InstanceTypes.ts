@@ -18,6 +18,7 @@ export interface Instance {
 	name?: string;
 	memory?: number;
 	processors?: number;
+	network_roles?: string[];
 	count?: number;
 }
 
