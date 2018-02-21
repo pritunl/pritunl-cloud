@@ -210,6 +210,16 @@ export default class Storage extends React.Component<Props, State> {
 						<option value="public">Public</option>
 						<option value="private">Private</option>
 					</PageSelect>
+				</div>
+				<div style={css.group}>
+					<PageInfo
+						fields={[
+							{
+								label: 'ID',
+								value: this.props.storage.id || 'None',
+							},
+						]}
+					/>
 					<PageInput
 						disabled={this.state.disabled}
 						label="Access Key"
@@ -240,16 +250,6 @@ export default class Storage extends React.Component<Props, State> {
 						onToggle={(): void => {
 							this.set('insecure', !storage.insecure);
 						}}
-					/>
-				</div>
-				<div style={css.group}>
-					<PageInfo
-						fields={[
-							{
-								label: 'ID',
-								value: this.props.storage.id || 'None',
-							},
-						]}
 					/>
 				</div>
 			</div>
