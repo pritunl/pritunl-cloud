@@ -4,6 +4,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/pritunl/pritunl-cloud/config"
 	"github.com/pritunl/pritunl-cloud/constants"
+	"github.com/pritunl/pritunl-cloud/iptables"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/router"
 	"github.com/pritunl/pritunl-cloud/sync"
@@ -25,6 +26,11 @@ func Node() (err error) {
 		Id: bson.ObjectIdHex(config.Config.NodeId),
 	}
 	err = nde.Init()
+	if err != nil {
+		return
+	}
+
+	err = iptables.Init()
 	if err != nil {
 		return
 	}
