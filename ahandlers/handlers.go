@@ -66,6 +66,13 @@ func Register(engine *gin.Engine) {
 
 	csrfGroup.GET("/event", eventGet)
 
+	csrfGroup.GET("/firewall", firewallsGet)
+	csrfGroup.GET("/firewall/:firewall_id", firewallGet)
+	csrfGroup.PUT("/firewall/:firewall_id", firewallPut)
+	csrfGroup.POST("/firewall", firewallPost)
+	csrfGroup.DELETE("/firewall", firewallsDelete)
+	csrfGroup.DELETE("/firewall/:firewall_id", firewallDelete)
+
 	csrfGroup.GET("/image", imagesGet)
 	csrfGroup.GET("/image/:image_id", imageGet)
 	csrfGroup.PUT("/image/:image_id", imagePut)
