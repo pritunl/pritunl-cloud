@@ -122,6 +122,11 @@ func (d *Database) Instances() (coll *Collection) {
 	return
 }
 
+func (d *Database) Firewalls() (coll *Collection) {
+	coll = d.getCollection("firewalls")
+	return
+}
+
 func (d *Database) Certificates() (coll *Collection) {
 	coll = d.getCollection("certificates")
 	return
