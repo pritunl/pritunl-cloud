@@ -31,9 +31,9 @@ func diffCmd(a, b []string) bool {
 }
 
 func diffRules(a, b *Rules) bool {
-	if len(a.Ingress) != len(b.Ingress) &&
-		len(a.Ingress6) != len(b.Ingress6) &&
-		len(a.Holds) != len(b.Holds) &&
+	if len(a.Ingress) != len(b.Ingress) ||
+		len(a.Ingress6) != len(b.Ingress6) ||
+		len(a.Holds) != len(b.Holds) ||
 		len(a.Holds6) != len(b.Holds6) {
 
 		return true
@@ -258,43 +258,55 @@ func UpdateState(db *database.Database, instances []*instance.Instance) (
 		Interfaces: map[string]*Rules{},
 	}
 
-	fires, err := firewall.GetRoles(db, node.Self.NetworkRoles)
-	if err != nil {
-		return
+	if node.Self.Firewall {
+		fires, e := firewall.GetRoles(db, node.Self.NetworkRoles)
+		if e != nil {
+			err = e
+			return
+		}
+
+		ingress := []*firewall.Rule{}
+		for _, fire := range fires {
+			ingress = append(ingress, fire.Ingress...)
+		}
+
+		rules := generate("host", ingress)
+		newState.Interfaces["host"] = rules
 	}
 
-	ingress := []*firewall.Rule{}
-	for _, fire := range fires {
-		ingress = append(ingress, fire.Ingress...)
+	for _, inst := range instances {
+		virt := inst.GetVm()
+
+		for i := range virt.NetworkAdapters {
+			iface := vm.GetIface(virt.Id, i)
+
+			_, ok := newState.Interfaces[iface]
+			if ok {
+				logrus.WithFields(logrus.Fields{
+					"interface": iface,
+				}).Error("iptables: Virtual interface conflict")
+
+				err = &errortypes.ParseError{
+					errors.New("iptables: Virtual interface conflict"),
+				}
+				panic(err)
+			}
+
+			fires, e := firewall.GetRoles(db, inst.NetworkRoles)
+			if e != nil {
+				err = e
+				return
+			}
+
+			ingress := []*firewall.Rule{}
+			for _, fire := range fires {
+				ingress = append(ingress, fire.Ingress...)
+			}
+
+			rules := generate(iface, ingress)
+			newState.Interfaces[iface] = rules
+		}
 	}
-
-	rules := generate("host", ingress)
-	newState.Interfaces["host"] = rules
-
-	_ = vm.Running
-
-	//for _, inst := range instances {
-	//	virt := inst.GetVm()
-	//
-	//	for i := range virt.NetworkAdapters {
-	//		iface := vm.GetIface(virt.Id, i)
-	//
-	//		_, ok := newState.Interfaces[iface]
-	//		if ok {
-	//			logrus.WithFields(logrus.Fields{
-	//				"interface": iface,
-	//			}).Error("iptables: Virtual interface conflict")
-	//
-	//			err = &errortypes.ParseError{
-	//				errors.New("iptables: Virtual interface conflict"),
-	//			}
-	//			panic(err)
-	//		}
-	//
-	//		rules := generate(iface, ingress)
-	//		newState.Interfaces[iface] = rules
-	//	}
-	//}
 
 	err = applyState(curState, newState)
 	if err != nil {
