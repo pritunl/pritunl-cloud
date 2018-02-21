@@ -17,6 +17,8 @@ export interface Node {
 	user_domain?: string;
 	certificates?: string[];
 	default_interface?: string;
+	firewall?: boolean;
+	network_roles?: string[];
 	requests_min?: number;
 	memory?: number;
 	load1?: number;
