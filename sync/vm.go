@@ -5,15 +5,16 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/bridge"
 	"github.com/pritunl/pritunl-cloud/constants"
+	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/pritunl/pritunl-cloud/iptables"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/qemu"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"gopkg.in/mgo.v2/bson"
 	"sync"
 	"time"
-	"github.com/pritunl/pritunl-cloud/data"
 )
 
 var (
@@ -40,6 +41,25 @@ func vmUpdate() (err error) {
 	instances, err := instance.GetAll(db, &bson.M{
 		"node": node.Self.Id,
 	})
+
+	err = iptables.UpdateState(db, instances)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"error": err,
+		}).Error("sync: Failed to update iptables, resetting state")
+		for {
+			err = iptables.Recover()
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"error": err,
+				}).Error("sync: Failed to recover iptables, retrying")
+				continue
+			}
+			break
+		}
+		err = nil
+		return
+	}
 
 	newIds := set.NewSet()
 	for _, inst := range instances {
