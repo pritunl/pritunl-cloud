@@ -12,6 +12,7 @@ import PageSwitch from './PageSwitch';
 import PageInputSwitch from './PageInputSwitch';
 import PageSelect from './PageSelect';
 import PageSelectButton from './PageSelectButton';
+import PageInputButton from './PageInputButton';
 import PageInfo from './PageInfo';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
@@ -35,6 +36,7 @@ interface State {
 	message: string;
 	node: NodeTypes.Node;
 	addCert: string;
+	addNetworkRole: string;
 	forwardedChecked: boolean;
 }
 
@@ -90,6 +92,10 @@ const css = {
 	select: {
 		margin: '7px 0px 0px 6px',
 	} as React.CSSProperties,
+	role: {
+		margin: '9px 5px 0 5px',
+		height: '20px',
+	} as React.CSSProperties,
 };
 
 export default class NodeDetailed extends React.Component<Props, State> {
@@ -103,6 +109,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			message: '',
 			node: null,
 			addCert: null,
+			addNetworkRole: null,
 			forwardedChecked: false,
 		};
 	}
@@ -121,6 +128,31 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		}
 
 		node[name] = val;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			node: node,
+		});
+	}
+
+	toggleFirewall(): void {
+		let node: NodeTypes.Node;
+
+		if (this.state.changed) {
+			node = {
+				...this.state.node,
+			};
+		} else {
+			node = {
+				...this.props.node,
+			};
+		}
+
+		node.firewall = !node.firewall;
+		if (!node.firewall) {
+			node.network_roles = [];
+		}
 
 		this.setState({
 			...this.state,
@@ -149,6 +181,77 @@ export default class NodeDetailed extends React.Component<Props, State> {
 
 		let val = vals.join('_');
 		this.set('type', val);
+	}
+
+	onAddNetworkRole = (): void => {
+		let node: NodeTypes.Node;
+
+		if (!this.state.addNetworkRole) {
+			return;
+		}
+
+		if (this.state.changed) {
+			node = {
+				...this.state.node,
+			};
+		} else {
+			node = {
+				...this.props.node,
+			};
+		}
+
+		let networkRoles = [
+			...(node.network_roles || []),
+		];
+
+		if (networkRoles.indexOf(this.state.addNetworkRole) === -1) {
+			networkRoles.push(this.state.addNetworkRole);
+		}
+
+		networkRoles.sort();
+		node.network_roles = networkRoles;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			addNetworkRole: '',
+			node: node,
+		});
+	}
+
+	onRemoveNetworkRole = (networkRole: string): void => {
+		let node: NodeTypes.Node;
+
+		if (this.state.changed) {
+			node = {
+				...this.state.node,
+			};
+		} else {
+			node = {
+				...this.props.node,
+			};
+		}
+
+		let networkRoles = [
+			...(node.network_roles || []),
+		];
+
+		let i = networkRoles.indexOf(networkRole);
+		if (i === -1) {
+			return;
+		}
+
+		networkRoles.splice(i, 1);
+		node.network_roles = networkRoles;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			addNetworkRole: '',
+			node: node,
+		});
 	}
 
 	onSave = (): void => {
@@ -382,6 +485,26 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			zonesSelect = [<option key="null" value="">No Zones</option>];
 		}
 
+		let networkRoles: JSX.Element[] = [];
+		for (let networkRole of (node.network_roles || [])) {
+			networkRoles.push(
+				<div
+					className="pt-tag pt-tag-removable pt-intent-primary"
+					style={css.role}
+					key={networkRole}
+				>
+					{networkRole}
+					<button
+						className="pt-tag-remove"
+						disabled={this.state.disabled}
+						onMouseUp={(): void => {
+							this.onRemoveNetworkRole(networkRole);
+						}}
+					/>
+				</div>,
+			);
+		}
+
 		return <td
 			className="pt-cell"
 			colSpan={4}
@@ -544,35 +667,40 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							this.set('default_interface', val);
 						}}
 					/>
-					<PageSelect
-						disabled={!!this.props.node.zone || this.state.disabled ||
-							!hasZones}
-						label="Zone"
-						help="Node zone, cannot be changed once set."
-						value={this.props.node.zone ? this.props.node.zone :
-							this.state.zone}
+					<PageSwitch
+						disabled={this.state.disabled}
+						label="Firewall"
+						help="Configure firewall on node. Incorrectly configuring the firewall can block access to the node."
+						checked={node.firewall}
+						onToggle={(): void => {
+							this.toggleFirewall();
+						}}
+					/>
+					<label className="pt-label">
+						Network Roles
+						<Help
+							title="Network Roles"
+							content="Network roles that will be matched with firewall rules. Network roles are case-sensitive. Only firewall roles without an organization will match."
+						/>
+						<div>
+							{networkRoles}
+						</div>
+					</label>
+					<PageInputButton
+						disabled={this.state.disabled}
+						buttonClass="pt-intent-success pt-icon-add"
+						label="Add"
+						type="text"
+						placeholder="Add role"
+						value={this.state.addNetworkRole}
 						onChange={(val): void => {
-							let node: NodeTypes.Node;
-							if (this.state.changed) {
-								node = {
-									...this.state.node,
-								};
-							} else {
-								node = {
-									...this.props.node,
-								};
-							}
-
 							this.setState({
 								...this.state,
-								changed: true,
-								node: node,
-								zone: val,
+								addNetworkRole: val,
 							});
 						}}
-					>
-						{zonesSelect}
-					</PageSelect>
+						onSubmit={this.onAddNetworkRole}
+					/>
 				</div>
 				<div style={css.group}>
 					<PageInfo
@@ -615,6 +743,35 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							},
 						]}
 					/>
+					<PageSelect
+						disabled={!!this.props.node.zone || this.state.disabled ||
+							!hasZones}
+						label="Zone"
+						help="Node zone, cannot be changed once set."
+						value={this.props.node.zone ? this.props.node.zone :
+							this.state.zone}
+						onChange={(val): void => {
+							let node: NodeTypes.Node;
+							if (this.state.changed) {
+								node = {
+									...this.state.node,
+								};
+							} else {
+								node = {
+									...this.props.node,
+								};
+							}
+
+							this.setState({
+								...this.state,
+								changed: true,
+								node: node,
+								zone: val,
+							});
+						}}
+					>
+						{zonesSelect}
+					</PageSelect>
 					<label
 						className="pt-label"
 						style={css.label}
