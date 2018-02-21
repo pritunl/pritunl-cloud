@@ -43,6 +43,33 @@ func GetAll(db *database.Database, query *bson.M) (
 	return
 }
 
+func GetRoles(db *database.Database, roles []string) (
+	fires []*Firewall, err error) {
+
+	coll := db.Firewalls()
+	fires = []*Firewall{}
+
+	cursor := coll.Find(&bson.M{
+		"network_roles": &bson.M{
+			"$in": roles,
+		},
+	}).Sort("_id").Iter()
+
+	nde := &Firewall{}
+	for cursor.Next(nde) {
+		fires = append(fires, nde)
+		nde = &Firewall{}
+	}
+
+	err = cursor.Close()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetAllPaged(db *database.Database, query *bson.M, page, pageCount int) (
 	fires []*Firewall, count int, err error) {
 
