@@ -184,22 +184,6 @@ func loadIptables(state *State, ipv6 bool) (err error) {
 	return
 }
 
-func getIngress(db *database.Database, roles []string) (
-	ingress []*firewall.Rule, err error) {
-
-	fires, err := firewall.GetRoles(db, node.Self.NetworkRoles)
-	if err != nil {
-		return
-	}
-
-	ingress = []*firewall.Rule{}
-	for _, fire := range fires {
-		ingress = append(ingress, fire.Ingress...)
-	}
-
-	return
-}
-
 func applyState(oldState, newState *State) (err error) {
 	oldIfaces := set.NewSet()
 	newIfaces := set.NewSet()
@@ -292,7 +276,8 @@ func UpdateState(db *database.Database, instances []*instance.Instance) (
 				panic(err)
 			}
 
-			fires, e := firewall.GetRoles(db, inst.NetworkRoles)
+			fires, e := firewall.GetOrgRoles(db,
+				inst.Organization, inst.NetworkRoles)
 			if e != nil {
 				err = e
 				return
