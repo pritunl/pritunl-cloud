@@ -12,9 +12,11 @@ import * as NodeActions from '../actions/NodeActions';
 import ImagesDatacenterStore from '../stores/ImagesDatacenterStore';
 import NodesZoneStore from '../stores/NodesZoneStore';
 import PageInput from './PageInput';
+import PageInputButton from './PageInputButton';
 import PageCreate from './PageCreate';
 import PageSelect from './PageSelect';
 import PageNumInput from './PageNumInput';
+import Help from './Help';
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -32,6 +34,7 @@ interface State {
 	datacenter: string;
 	images: ImageTypes.ImagesRo;
 	nodes: NodeTypes.NodesRo;
+	addNetworkRole: string;
 }
 
 const css = {
@@ -82,6 +85,10 @@ const css = {
 	port: {
 		flex: '1',
 	} as React.CSSProperties,
+	role: {
+		margin: '9px 5px 0 5px',
+		height: '20px',
+	} as React.CSSProperties,
 };
 
 export default class InstanceNew extends React.Component<Props, State> {
@@ -96,6 +103,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 			datacenter: '',
 			images: [],
 			nodes: [],
+			addNetworkRole: '',
 		};
 	}
 
@@ -168,6 +176,61 @@ export default class InstanceNew extends React.Component<Props, State> {
 				message: '',
 				disabled: false,
 			});
+		});
+	}
+
+	onAddNetworkRole = (): void => {
+		if (!this.state.addNetworkRole) {
+			return;
+		}
+
+		let instance = {
+			...this.state.instance,
+		};
+
+		let networkRoles = [
+			...(instance.network_roles || []),
+		];
+
+		if (networkRoles.indexOf(this.state.addNetworkRole) === -1) {
+			networkRoles.push(this.state.addNetworkRole);
+		}
+
+		networkRoles.sort();
+		instance.network_roles = networkRoles;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			addNetworkRole: '',
+			instance: instance,
+		});
+	}
+
+	onRemoveNetworkRole = (networkRole: string): void => {
+		let instance = {
+			...this.state.instance,
+		};
+
+		let networkRoles = [
+			...(instance.network_roles || []),
+		];
+
+		let i = networkRoles.indexOf(networkRole);
+		if (i === -1) {
+			return;
+		}
+
+		networkRoles.splice(i, 1);
+		instance.network_roles = networkRoles;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			addNetworkRole: '',
+			instance: instance,
 		});
 	}
 
@@ -271,6 +334,26 @@ export default class InstanceNew extends React.Component<Props, State> {
 			}
 		}
 
+		let networkRoles: JSX.Element[] = [];
+		for (let networkRole of (instance.network_roles || [])) {
+			networkRoles.push(
+				<div
+					className="pt-tag pt-tag-removable pt-intent-primary"
+					style={css.role}
+					key={networkRole}
+				>
+					{networkRole}
+					<button
+						className="pt-tag-remove"
+						disabled={this.state.disabled}
+						onMouseUp={(): void => {
+							this.onRemoveNetworkRole(networkRole);
+						}}
+					/>
+				</div>,
+			);
+		}
+
 		if (!hasImages) {
 			imagesSelect = [<option key="null" value="">No Images</option>];
 		}
@@ -362,6 +445,31 @@ export default class InstanceNew extends React.Component<Props, State> {
 						>
 							{nodesSelect}
 						</PageSelect>
+						<label className="pt-label">
+							Network Roles
+							<Help
+								title="Network Roles"
+								content="Network roles that will be matched with firewall rules. Network roles are case-sensitive."
+							/>
+							<div>
+								{networkRoles}
+							</div>
+						</label>
+						<PageInputButton
+							disabled={this.state.disabled}
+							buttonClass="pt-intent-success pt-icon-add"
+							label="Add"
+							type="text"
+							placeholder="Add role"
+							value={this.state.addNetworkRole}
+							onChange={(val): void => {
+								this.setState({
+									...this.state,
+									addNetworkRole: val,
+								});
+							}}
+							onSubmit={this.onAddNetworkRole}
+						/>
 					</div>
 					<div style={css.group}>
 						<PageSelect

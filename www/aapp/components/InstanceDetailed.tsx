@@ -2,17 +2,16 @@
 import * as React from 'react';
 import * as InstanceTypes from '../types/InstanceTypes';
 import * as InstanceActions from '../actions/InstanceActions';
-import InstancesStore from '../stores/InstancesStore';
 import OrganizationsStore from '../stores/OrganizationsStore';
-import DatacentersStore from '../stores/DatacentersStore';
 import NodesStore from '../stores/NodesStore';
 import ZonesStore from '../stores/ZonesStore';
 import PageInput from './PageInput';
+import PageInputButton from './PageInputButton';
 import PageInfo from './PageInfo';
 import PageSave from './PageSave';
-import PageSwitch from './PageSwitch';
 import PageNumInput from './PageNumInput';
 import ConfirmButton from './ConfirmButton';
+import Help from './Help';
 
 interface Props {
 	instance: InstanceTypes.InstanceRo;
@@ -27,6 +26,7 @@ interface State {
 	message: string;
 	instance: InstanceTypes.Instance;
 	addCert: string;
+	addNetworkRole: string;
 	forwardedChecked: boolean;
 }
 
@@ -91,6 +91,10 @@ const css = {
 	select: {
 		margin: '7px 0px 0px 6px',
 	} as React.CSSProperties,
+	role: {
+		margin: '9px 5px 0 5px',
+		height: '20px',
+	} as React.CSSProperties,
 };
 
 export default class InstanceDetailed extends React.Component<Props, State> {
@@ -102,6 +106,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			message: '',
 			instance: null,
 			addCert: null,
+			addNetworkRole: '',
 			forwardedChecked: false,
 		};
 	}
@@ -124,6 +129,77 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		this.setState({
 			...this.state,
 			changed: true,
+			instance: instance,
+		});
+	}
+
+	onAddNetworkRole = (): void => {
+		let instance: InstanceTypes.Instance;
+
+		if (!this.state.addNetworkRole) {
+			return;
+		}
+
+		if (this.state.changed) {
+			instance = {
+				...this.state.instance,
+			};
+		} else {
+			instance = {
+				...this.props.instance,
+			};
+		}
+
+		let networkRoles = [
+			...(instance.network_roles || []),
+		];
+
+		if (networkRoles.indexOf(this.state.addNetworkRole) === -1) {
+			networkRoles.push(this.state.addNetworkRole);
+		}
+
+		networkRoles.sort();
+		instance.network_roles = networkRoles;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			addNetworkRole: '',
+			instance: instance,
+		});
+	}
+
+	onRemoveNetworkRole = (networkRole: string): void => {
+		let instance: InstanceTypes.Instance;
+
+		if (this.state.changed) {
+			instance = {
+				...this.state.instance,
+			};
+		} else {
+			instance = {
+				...this.props.instance,
+			};
+		}
+
+		let networkRoles = [
+			...(instance.network_roles || []),
+		];
+
+		let i = networkRoles.indexOf(networkRole);
+		if (i === -1) {
+			return;
+		}
+
+		networkRoles.splice(i, 1);
+		instance.network_roles = networkRoles;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			addNetworkRole: '',
 			instance: instance,
 		});
 	}
@@ -229,6 +305,26 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				break;
 		}
 
+		let networkRoles: JSX.Element[] = [];
+		for (let networkRole of (instance.network_roles || [])) {
+			networkRoles.push(
+				<div
+					className="pt-tag pt-tag-removable pt-intent-primary"
+					style={css.role}
+					key={networkRole}
+				>
+					{networkRole}
+					<button
+						className="pt-tag-remove"
+						disabled={this.state.disabled}
+						onMouseUp={(): void => {
+							this.onRemoveNetworkRole(networkRole);
+						}}
+					/>
+				</div>,
+			);
+		}
+
 		return <td
 			className="pt-cell"
 			colSpan={5}
@@ -320,6 +416,31 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 							this.set('processors', val);
 						}}
 						value={instance.processors}
+					/>
+					<label className="pt-label">
+						Network Roles
+						<Help
+							title="Network Roles"
+							content="Network roles that will be matched with firewall rules. Network roles are case-sensitive."
+						/>
+						<div>
+							{networkRoles}
+						</div>
+					</label>
+					<PageInputButton
+						disabled={this.state.disabled}
+						buttonClass="pt-intent-success pt-icon-add"
+						label="Add"
+						type="text"
+						placeholder="Add role"
+						value={this.state.addNetworkRole}
+						onChange={(val): void => {
+							this.setState({
+								...this.state,
+								addNetworkRole: val,
+							});
+						}}
+						onSubmit={this.onAddNetworkRole}
 					/>
 				</div>
 				<div style={css.group}>
