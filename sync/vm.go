@@ -309,12 +309,35 @@ func vmUpdate() (err error) {
 	return
 }
 
+func syncNodeFirewall() {
+	db := database.GetDatabase()
+	defer db.Close()
+
+	err := iptables.UpdateState(db, []*instance.Instance{})
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"error": err,
+		}).Error("sync: Failed to update iptables, resetting state")
+		for {
+			err = iptables.Recover()
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"error": err,
+				}).Error("sync: Failed to recover iptables, retrying")
+				continue
+			}
+			break
+		}
+	}
+}
+
 func vmRunner() {
 	time.Sleep(1 * time.Second)
 
 	for {
 		time.Sleep(1 * time.Second)
 		if !node.Self.IsHypervisor() {
+			syncNodeFirewall()
 			continue
 		}
 
@@ -340,6 +363,7 @@ func vmRunner() {
 	for {
 		time.Sleep(1 * time.Second)
 		if !node.Self.IsHypervisor() {
+			syncNodeFirewall()
 			continue
 		}
 
