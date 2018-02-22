@@ -64,13 +64,22 @@ export function syncDatacenter(datacenter: string): Promise<void> {
 	let curSyncId = MiscUtils.uuid();
 	syncId = curSyncId;
 
+	if (!datacenter) {
+		Dispatcher.dispatch({
+			type: ImageTypes.SYNC_DATACENTER,
+			data: {
+				images: [],
+			},
+		});
+		return Promise.resolve();
+	}
+
 	let loader = new Loader().loading();
 
 	return new Promise<void>((resolve, reject): void => {
 		SuperAgent
 			.get('/image')
 			.query({
-				...ImagesStore.filter,
 				datacenter: datacenter,
 			})
 			.set('Accept', 'application/json')
