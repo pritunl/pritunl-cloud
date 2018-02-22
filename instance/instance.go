@@ -5,9 +5,11 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/bridge"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"gopkg.in/mgo.v2/bson"
+	"strconv"
 )
 
 type Instance struct {
@@ -170,7 +172,7 @@ func (i *Instance) Insert(db *database.Database) (err error) {
 
 	if i.Id != "" {
 		err = &errortypes.DatabaseError{
-			errors.New("datecenter: Instance already exists"),
+			errors.New("instance: Instance already exists"),
 		}
 		return
 	}
@@ -184,23 +186,33 @@ func (i *Instance) Insert(db *database.Database) (err error) {
 	return
 }
 
-func (i *Instance) GetVm() (virt *vm.VirtualMachine) {
+func (i *Instance) GetVm(disks []*disk.Disk) (virt *vm.VirtualMachine) {
 	virt = &vm.VirtualMachine{
 		Id:         i.Id,
 		Image:      i.Image,
 		Processors: i.Processors,
 		Memory:     i.Memory,
-		Disks: []*vm.Disk{
-			&vm.Disk{
-				Path: vm.GetDiskPath(i.Id, 0),
-			},
-		},
+		Disks:      []*vm.Disk{},
 		NetworkAdapters: []*vm.NetworkAdapter{
 			&vm.NetworkAdapter{
 				MacAddress:    vm.GetMacAddr(i.Id),
 				HostInterface: bridge.BridgeName,
 			},
 		},
+	}
+
+	if disks != nil {
+		for _, dsk := range disks {
+			index, err := strconv.Atoi(dsk.Index)
+			if err != nil {
+				continue
+			}
+
+			virt.Disks = append(virt.Disks, &vm.Disk{
+				Index: index,
+				Path:  vm.GetDiskPath(dsk.Id),
+			})
+		}
 	}
 
 	return
