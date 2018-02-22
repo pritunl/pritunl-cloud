@@ -43,6 +43,31 @@ func GetAll(db *database.Database, query *bson.M) (
 	return
 }
 
+func GetAllName(db *database.Database, query *bson.M) (
+	instances []*Instance, err error) {
+
+	coll := db.Instances()
+	instances = []*Instance{}
+
+	cursor := coll.Find(query).Select(&bson.M{
+		"name": 1,
+	}).Iter()
+
+	inst := &Instance{}
+	for cursor.Next(inst) {
+		instances = append(instances, inst)
+		inst = &Instance{}
+	}
+
+	err = cursor.Close()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetAllPaged(db *database.Database, query *bson.M, page, pageCount int) (
 	insts []*Instance, count int, err error) {
 
