@@ -1,0 +1,162 @@
+package disk
+
+import (
+	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/utils"
+	"gopkg.in/mgo.v2/bson"
+)
+
+func Get(db *database.Database, diskId bson.ObjectId) (
+	disk *Disk, err error) {
+
+	coll := db.Disks()
+	disk = &Disk{}
+
+	err = coll.FindOneId(diskId, disk)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func GetAll(db *database.Database, query *bson.M) (
+	disks []*Disk, err error) {
+
+	coll := db.Disks()
+	disks = []*Disk{}
+
+	cursor := coll.Find(query).Iter()
+
+	nde := &Disk{}
+	for cursor.Next(nde) {
+		disks = append(disks, nde)
+		nde = &Disk{}
+	}
+
+	err = cursor.Close()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func GetAllPaged(db *database.Database, query *bson.M, page, pageCount int) (
+	disks []*Disk, count int, err error) {
+
+	coll := db.Disks()
+	disks = []*Disk{}
+
+	qury := coll.Find(query)
+
+	count, err = qury.Count()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	skip := utils.Min(page*pageCount, utils.Max(0, count-pageCount))
+
+	cursor := qury.Sort("name").Skip(skip).Limit(pageCount).Iter()
+
+	disk := &Disk{}
+	for cursor.Next(disk) {
+		disks = append(disks, disk)
+		disk = &Disk{}
+	}
+
+	err = cursor.Close()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func GetInstance(db *database.Database, instId bson.ObjectId) (
+	disks []*Disk, err error) {
+
+	coll := db.Disks()
+	disks = []*Disk{}
+
+	cursor := coll.Find(&bson.M{
+		"instance": instId,
+	}).Sort("index").Iter()
+
+	nde := &Disk{}
+	for cursor.Next(nde) {
+		disks = append(disks, nde)
+		nde = &Disk{}
+	}
+
+	err = cursor.Close()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func GetNode(db *database.Database, nodeId bson.ObjectId) (
+	disks []*Disk, err error) {
+
+	coll := db.Disks()
+	disks = []*Disk{}
+
+	cursor := coll.Find(&bson.M{
+		"node": nodeId,
+	}).Iter()
+
+	nde := &Disk{}
+	for cursor.Next(nde) {
+		disks = append(disks, nde)
+		nde = &Disk{}
+	}
+
+	err = cursor.Close()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func Remove(db *database.Database, diskId bson.ObjectId) (err error) {
+	coll := db.Disks()
+
+	err = coll.Remove(&bson.M{
+		"_id": diskId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		switch err.(type) {
+		case *database.NotFoundError:
+			err = nil
+		default:
+			return
+		}
+	}
+
+	return
+}
+
+func RemoveMulti(db *database.Database, diskIds []bson.ObjectId) (err error) {
+	coll := db.Disks()
+
+	_, err = coll.RemoveAll(&bson.M{
+		"_id": &bson.M{
+			"$in": diskIds,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
