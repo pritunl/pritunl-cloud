@@ -16,6 +16,7 @@ import Datacenters from './Datacenters';
 import Zones from './Zones';
 import Storages from './Storages';
 import Images from './Images';
+import Disks from './Disks';
 import Instances from './Instances';
 import Firewalls from './Firewalls';
 import Logs from './Logs';
@@ -31,6 +32,7 @@ import * as DatacenterActions from '../actions/DatacenterActions';
 import * as ZoneActions from '../actions/ZoneActions';
 import * as StorageActions from '../actions/StorageActions';
 import * as ImageActions from '../actions/ImageActions';
+import * as DiskActions from '../actions/DiskActions';
 import * as InstanceActions from '../actions/InstanceActions';
 import * as FirewallActions from '../actions/FirewallActions';
 import * as LogActions from '../actions/LogActions';
@@ -179,6 +181,13 @@ export default class Main extends React.Component<{}, State> {
 							to="/images"
 						>
 							Images
+						</ReactRouter.Link>
+						<ReactRouter.Link
+							className="pt-button pt-minimal pt-icon-floppy-disk"
+							style={css.link}
+							to="/disks"
+						>
+							Disks
 						</ReactRouter.Link>
 						<ReactRouter.Link
 							className="pt-button pt-minimal pt-icon-dashboard"
@@ -375,6 +384,18 @@ export default class Main extends React.Component<{}, State> {
 												disabled: false,
 											});
 										});
+									} else if (pathname === '/disks') {
+										DiskActions.sync().then((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										}).catch((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										});
 									} else if (pathname === '/instances') {
 										InstanceActions.sync().then((): void => {
 											this.setState({
@@ -494,6 +515,9 @@ export default class Main extends React.Component<{}, State> {
 				)}/>
 				<ReactRouter.Route path="/images" render={() => (
 					<Images/>
+				)}/>
+				<ReactRouter.Route path="/disks" render={() => (
+					<Disks/>
 				)}/>
 				<ReactRouter.Route path="/instances" render={() => (
 					<Instances/>
