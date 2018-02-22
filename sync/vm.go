@@ -7,6 +7,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/iptables"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -25,6 +26,41 @@ var (
 func vmUpdate() (err error) {
 	db := database.GetDatabase()
 	defer db.Close()
+
+	instanceDisks := map[bson.ObjectId][]*disk.Disk{}
+
+	disks, err := disk.GetNode(db, node.Self.Id)
+	if err != nil {
+		return
+	}
+
+	for _, dsk := range disks {
+		if dsk.State == disk.Provisioning {
+			// Run in go
+			err = data.CreateDisk(db, dsk)
+			if err != nil {
+				return
+			}
+
+			dsk.State = disk.Available
+			err = dsk.CommitFields(db, set.NewSet("state"))
+			if err != nil {
+				return
+			}
+
+			continue
+		}
+
+		if dsk.Instance == "" {
+			continue
+		}
+
+		dsks := instanceDisks[dsk.Instance]
+		if dsks == nil {
+			dsks = []*disk.Disk{}
+		}
+		instanceDisks[dsk.Instance] = append(dsks, dsk)
+	}
 
 	virts, err := qemu.GetVms(db)
 	if err != nil {
@@ -77,7 +113,7 @@ func vmUpdate() (err error) {
 				db := database.GetDatabase()
 				defer db.Close()
 
-				e := qemu.Create(db, inst.GetVm())
+				e := qemu.Create(db, inst, inst.GetVm(instanceDisks[inst.Id]))
 				time.Sleep(5 * time.Second)
 				if e != nil {
 					logrus.WithFields(logrus.Fields{
@@ -117,7 +153,8 @@ func vmUpdate() (err error) {
 					db := database.GetDatabase()
 					defer db.Close()
 
-					e := qemu.PowerOn(db, inst.GetVm())
+					e := qemu.PowerOn(db,
+						inst.GetVm(instanceDisks[inst.Id]))
 					if e != nil {
 						logrus.WithFields(logrus.Fields{
 							"error": e,
@@ -144,7 +181,8 @@ func vmUpdate() (err error) {
 					db := database.GetDatabase()
 					defer db.Close()
 
-					e := qemu.PowerOff(db, inst.GetVm())
+					e := qemu.PowerOff(db,
+						inst.GetVm(instanceDisks[inst.Id]))
 					if e != nil {
 						logrus.WithFields(logrus.Fields{
 							"error": e,
@@ -170,7 +208,8 @@ func vmUpdate() (err error) {
 						db := database.GetDatabase()
 						defer db.Close()
 
-						e := qemu.PowerOff(db, inst.GetVm())
+						e := qemu.PowerOff(db,
+							inst.GetVm(instanceDisks[inst.Id]))
 						if e != nil {
 							logrus.WithFields(logrus.Fields{
 								"error": e,
@@ -203,7 +242,8 @@ func vmUpdate() (err error) {
 						db := database.GetDatabase()
 						defer db.Close()
 
-						e := qemu.Update(db, inst.GetVm())
+						e := qemu.Update(db,
+							inst.GetVm(instanceDisks[inst.Id]))
 						if e != nil {
 							logrus.WithFields(logrus.Fields{
 								"error": e,
@@ -246,7 +286,8 @@ func vmUpdate() (err error) {
 					db := database.GetDatabase()
 					defer db.Close()
 
-					e := qemu.Destroy(db, inst.GetVm())
+					e := qemu.Destroy(db,
+						inst.GetVm(instanceDisks[inst.Id]))
 					if e != nil {
 						logrus.WithFields(logrus.Fields{
 							"error": e,
@@ -279,7 +320,8 @@ func vmUpdate() (err error) {
 					db := database.GetDatabase()
 					defer db.Close()
 
-					e := data.CreateSnapshot(db, inst.GetVm())
+					e := data.CreateSnapshot(db,
+						inst.GetVm(instanceDisks[inst.Id]))
 					if e != nil {
 						logrus.WithFields(logrus.Fields{
 							"error": e,
