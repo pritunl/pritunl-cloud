@@ -3,6 +3,7 @@ package instanceinfo
 import (
 	"fmt"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"gopkg.in/mgo.v2/bson"
@@ -11,6 +12,7 @@ import (
 type Info struct {
 	Instance      bson.ObjectId `json:"instance"`
 	FirewallRules []string      `json:"firewall_rules"`
+	Disks         []string      `json:"disks"`
 }
 
 func Get(db *database.Database, instId bson.ObjectId) (
@@ -19,6 +21,7 @@ func Get(db *database.Database, instId bson.ObjectId) (
 	info = &Info{
 		Instance:      instId,
 		FirewallRules: []string{},
+		Disks:         []string{},
 	}
 
 	inst, err := instance.Get(db, instId)
@@ -57,6 +60,16 @@ func Get(db *database.Database, instId bson.ObjectId) (
 				}
 			}
 		}
+	}
+
+	disks, err := disk.GetInstance(db, inst.Id)
+	if err != nil {
+		return
+	}
+
+	for _, dsk := range disks {
+		info.Disks = append(info.Disks,
+			fmt.Sprintf("%s: %s", dsk.Index, dsk.Name))
 	}
 
 	return
