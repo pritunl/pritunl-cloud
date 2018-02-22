@@ -259,7 +259,7 @@ func UpdateState(db *database.Database, instances []*instance.Instance) (
 	}
 
 	for _, inst := range instances {
-		virt := inst.GetVm()
+		virt := inst.GetVm(nil)
 
 		for i := range virt.NetworkAdapters {
 			iface := vm.GetIface(virt.Id, i)
