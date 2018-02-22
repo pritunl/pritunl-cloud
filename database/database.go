@@ -122,6 +122,11 @@ func (d *Database) Instances() (coll *Collection) {
 	return
 }
 
+func (d *Database) Disks() (coll *Collection) {
+	coll = d.getCollection("disks")
+	return
+}
+
 func (d *Database) Firewalls() (coll *Collection) {
 	coll = d.getCollection("firewalls")
 	return
@@ -395,6 +400,18 @@ func addIndexes() (err error) {
 	coll = db.Images()
 	err = coll.EnsureIndex(mgo.Index{
 		Key:        []string{"storage", "key"},
+		Unique:     true,
+		Background: true,
+	})
+	if err != nil {
+		err = &IndexError{
+			errors.Wrap(err, "database: Index error"),
+		}
+	}
+
+	coll = db.Disks()
+	err = coll.EnsureIndex(mgo.Index{
+		Key:        []string{"instance", "index"},
 		Unique:     true,
 		Background: true,
 	})
