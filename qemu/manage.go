@@ -6,7 +6,10 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/qga"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/systemd"
@@ -258,7 +261,9 @@ func writeService(virt *vm.VirtualMachine) (err error) {
 	return
 }
 
-func Create(db *database.Database, virt *vm.VirtualMachine) (err error) {
+func Create(db *database.Database, inst *instance.Instance,
+	virt *vm.VirtualMachine) (err error) {
+
 	vmPath := vm.GetVmPath(virt.Id)
 	unitName := GetUnitName(virt.Id)
 
@@ -277,10 +282,32 @@ func Create(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	err = data.WriteImage(db, virt.Image, virt.Disks[0].Path)
+	dsk := &disk.Disk{
+		Id:           bson.NewObjectId(),
+		Name:         inst.Name,
+		State:        disk.Available,
+		Node:         node.Self.Id,
+		Organization: inst.Organization,
+		Instance:     inst.Id,
+		Image:        virt.Image,
+		Index:        "0",
+		Size:         10, // TODO
+	}
+
+	err = data.WriteImage(db, virt.Image, vm.GetDiskPath(dsk.Id))
 	if err != nil {
 		return
 	}
+
+	err = dsk.Insert(db)
+	if err != nil {
+		return
+	}
+
+	virt.Disks = append(virt.Disks, &vm.Disk{
+		Index: 0,
+		Path:  vm.GetDiskPath(dsk.Id),
+	})
 
 	err = writeService(virt)
 	if err != nil {
