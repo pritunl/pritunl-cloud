@@ -11,12 +11,18 @@ import (
 	"strings"
 )
 
-func GetVmPath(id bson.ObjectId) string {
-	return path.Join(node.Self.GetVirtPath(), id.Hex())
+func GetVmPath(instId bson.ObjectId) string {
+	return path.Join(node.Self.GetVirtPath(),
+		"instances", instId.Hex())
 }
 
-func GetDiskPath(id bson.ObjectId, num int) string {
-	return path.Join(GetVmPath(id), fmt.Sprintf("disk%d.qcow2", num))
+func GetDisksPath() string {
+	return path.Join(node.Self.GetVirtPath(), "disks")
+}
+
+func GetDiskPath(diskId bson.ObjectId) string {
+	return path.Join(GetDisksPath(),
+		fmt.Sprintf("%s.qcow2", diskId.Hex()))
 }
 
 func GetMacAddr(id bson.ObjectId) string {
@@ -28,7 +34,7 @@ func GetMacAddr(id bson.ObjectId) string {
 
 	for i, run := range macHash {
 		macBuf.WriteRune(run)
-		if i%2 == 1 && i != 9 {
+		if i%2 == 1 && i != len(macHash)-1 {
 			macBuf.WriteRune(':')
 		}
 	}

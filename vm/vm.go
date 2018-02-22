@@ -16,7 +16,8 @@ type VirtualMachine struct {
 }
 
 type Disk struct {
-	Path string `json:"path"`
+	Index int    `json:"index"`
+	Path  string `json:"path"`
 }
 
 type NetworkAdapter struct {
