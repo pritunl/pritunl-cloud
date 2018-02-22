@@ -249,7 +249,6 @@ export default class InstanceNew extends React.Component<Props, State> {
 			}
 		}
 
-		let defaultDatacenter = '';
 		let hasDatacenters = false;
 		let datacentersSelect: JSX.Element[] = [];
 		if (this.props.datacenters.length) {
@@ -257,7 +256,6 @@ export default class InstanceNew extends React.Component<Props, State> {
 				<option key="null" value="">Select Datacenter</option>);
 
 			hasDatacenters = true;
-			defaultDatacenter = this.props.datacenters[0].id;
 			for (let datacenter of this.props.datacenters) {
 				datacentersSelect.push(
 					<option
@@ -273,7 +271,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 				<option key="null" value="">No Datacenters</option>);
 		}
 
-		let datacenter = this.state.datacenter || defaultDatacenter;
+		let datacenter = this.state.datacenter;
 		let hasZones = false;
 		let zonesSelect: JSX.Element[] = [];
 		if (this.props.zones.length) {

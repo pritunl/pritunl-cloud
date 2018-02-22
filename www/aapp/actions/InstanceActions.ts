@@ -8,6 +8,8 @@ import Loader from '../Loader';
 import * as InstanceTypes from '../types/InstanceTypes';
 import InstancesStore from '../stores/InstancesStore';
 import * as MiscUtils from '../utils/MiscUtils';
+import * as ImageTypes from "../types/ImageTypes";
+import ImagesStore from "../stores/ImagesStore";
 
 let syncId: string;
 
@@ -229,6 +231,57 @@ export function updateMulti(instanceIds: string[],
 					reject(err);
 					return;
 				}
+
+				resolve();
+			});
+	});
+}
+
+export function syncNode(node: string): Promise<void> {
+	let curSyncId = MiscUtils.uuid();
+	syncId = curSyncId;
+
+	if (!node) {
+		return Promise.resolve();
+	}
+
+	let loader = new Loader().loading();
+
+	return new Promise<void>((resolve, reject): void => {
+		SuperAgent
+			.get('/instance')
+			.query({
+				node: node,
+			})
+			.set('Accept', 'application/json')
+			.set('Csrf-Token', Csrf.token)
+			.end((err: any, res: SuperAgent.Response): void => {
+				loader.done();
+
+				if (res && res.status === 401) {
+					window.location.href = '/login';
+					resolve();
+					return;
+				}
+
+				if (curSyncId !== syncId) {
+					resolve();
+					return;
+				}
+
+				if (err) {
+					Alert.errorRes(res, 'Failed to load images names');
+					reject(err);
+					return;
+				}
+
+				Dispatcher.dispatch({
+					type: InstanceTypes.SYNC_NODE,
+					data: {
+						node: node,
+						instances: res.body,
+					},
+				});
 
 				resolve();
 			});
