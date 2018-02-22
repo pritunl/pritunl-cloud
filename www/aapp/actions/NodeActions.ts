@@ -64,13 +64,22 @@ export function syncZone(zone: string): Promise<void> {
 	let curSyncId = MiscUtils.uuid();
 	syncId = curSyncId;
 
+	if (!zone) {
+		Dispatcher.dispatch({
+			type: NodeTypes.SYNC_ZONE,
+			data: {
+				nodes: [],
+			},
+		});
+		return Promise.resolve();
+	}
+
 	let loader = new Loader().loading();
 
 	return new Promise<void>((resolve, reject): void => {
 		SuperAgent
 			.get('/node')
 			.query({
-				...NodesStore.filter,
 				zone: zone,
 			})
 			.set('Accept', 'application/json')
