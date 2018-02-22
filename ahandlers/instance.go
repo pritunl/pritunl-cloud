@@ -294,33 +294,49 @@ func instanceInfoGet(c *gin.Context) {
 func instancesGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 
-	page, _ := strconv.Atoi(c.Query("page"))
-	pageCount, _ := strconv.Atoi(c.Query("page_count"))
-
-	query := bson.M{}
-
-	name := strings.TrimSpace(c.Query("name"))
-	if name != "" {
-		query["name"] = &bson.M{
-			"$regex":   fmt.Sprintf(".*%s.*", name),
-			"$options": "i",
+	nde, _ := utils.ParseObjectId(c.Query("node"))
+	if nde != "" {
+		query := &bson.M{
+			"node": nde,
 		}
-	}
 
-	instances, count, err := instance.GetAllPaged(db, &query, page, pageCount)
-	if err != nil {
-		utils.AbortWithError(c, 500, err)
-		return
-	}
+		insts, err := instance.GetAllName(db, query)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
 
-	for _, inst := range instances {
-		inst.Json()
-	}
+		c.JSON(200, insts)
+	} else {
+		page, _ := strconv.Atoi(c.Query("page"))
+		pageCount, _ := strconv.Atoi(c.Query("page_count"))
 
-	data := &instancesData{
-		Instances: instances,
-		Count:     count,
-	}
+		query := bson.M{}
 
-	c.JSON(200, data)
+		name := strings.TrimSpace(c.Query("name"))
+		if name != "" {
+			query["name"] = &bson.M{
+				"$regex":   fmt.Sprintf(".*%s.*", name),
+				"$options": "i",
+			}
+		}
+
+		instances, count, err := instance.GetAllPaged(
+			db, &query, page, pageCount)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		for _, inst := range instances {
+			inst.Json()
+		}
+
+		data := &instancesData{
+			Instances: instances,
+			Count:     count,
+		}
+
+		c.JSON(200, data)
+	}
 }
