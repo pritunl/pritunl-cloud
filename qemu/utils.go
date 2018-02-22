@@ -39,6 +39,7 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 	for _, disk := range virt.Disks {
 		qm.Disks = append(qm.Disks, &Disk{
 			Media:   "disk",
+			Index:   disk.Index,
 			File:    disk.Path,
 			Format:  "qcow2",
 			Discard: true,

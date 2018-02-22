@@ -8,6 +8,7 @@ import (
 
 type Disk struct {
 	Media   string
+	Index   int
 	File    string
 	Format  string
 	Discard bool
@@ -73,7 +74,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 	cmd = append(cmd, "-m")
 	cmd = append(cmd, fmt.Sprintf("%dM", q.Memory))
 
-	for i, disk := range q.Disks {
+	for _, disk := range q.Disks {
 		discard := ""
 		if disk.Discard {
 			discard = ",discard=on"
@@ -83,7 +84,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 		cmd = append(cmd, fmt.Sprintf(
 			"file=%s,index=%d,media=%s,format=%s%s",
 			disk.File,
-			i,
+			disk.Index,
 			disk.Media,
 			disk.Format,
 			discard,
