@@ -11,16 +11,14 @@ sed -i 's|lib/node/index.js|lib/client.js|g' jspm_packages/npm/superagent@*.js
 #### lint
 
 ```
-tslint -c tslint.json aapp/**/*.ts*
-tslint -c tslint.json uapp/**/*.ts*
+tslint -c tslint.json app/**/*.ts*
 ```
 
 ### development
 
 ```
 tsc
-jspm depcache aapp/App.js
-jspm depcache uapp/App.js
+jspm depcache app/App.js
 tsc --watch
 ```
 

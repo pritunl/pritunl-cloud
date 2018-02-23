@@ -560,7 +560,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						help="Provides access to the user console on this node for SSH certificates."
 						checked={node.type.indexOf('user') !== -1}
 						onToggle={(): void => {
-							this.toggleType('user');
+							//this.toggleType('user');
 						}}
 					/>
 					<PageSwitch
@@ -574,8 +574,8 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					/>
 					<PageInput
 						disabled={this.state.disabled}
-						hidden={node.type.indexOf('_') === -1 ||
-							node.type.indexOf('admin') === -1}
+						hidden={node.type.indexOf('admin') === -1 ||
+							node.type.indexOf('user') === -1}
 						label="Admin Domain"
 						help="Domain that will be used to access the admin interface."
 						type="text"
@@ -587,7 +587,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					/>
 					<PageInput
 						disabled={this.state.disabled}
-						hidden={node.type.indexOf('_') === -1 ||
+						hidden={node.type.indexOf('admin') === -1 ||
 							node.type.indexOf('user') === -1}
 						label="User Domain"
 						help="Domain that will be used to access the user interface."

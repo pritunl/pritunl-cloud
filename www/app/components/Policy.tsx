@@ -264,7 +264,7 @@ export default class Policy extends React.Component<Props, State> {
 			this.props.policy;
 
 		let roles: JSX.Element[] = [];
-		for (let role of policy.roles) {
+		for (let role of (policy.roles || [])) {
 			roles.push(
 				<div
 					className="pt-tag pt-tag-removable pt-intent-primary"
