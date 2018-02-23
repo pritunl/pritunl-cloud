@@ -27,6 +27,7 @@ var (
 			build.Default.GOPATH,
 			"src/github.com/pritunl/pritunl-cloud/www/dist",
 		),
+		"/home/cloud/go/src/github.com/pritunl/pritunl-cloud/www/dist",
 	}
 	StaticTestingRoot = []string{
 		"www",
@@ -35,5 +36,6 @@ var (
 			build.Default.GOPATH,
 			"src/github.com/pritunl/pritunl-cloud/www",
 		),
+		"/home/cloud/go/src/github.com/pritunl/pritunl-cloud/www",
 	}
 )
