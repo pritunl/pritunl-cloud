@@ -256,6 +256,27 @@ export default class DiskDetailed extends React.Component<Props, State> {
 			}
 		}
 
+		let statusText = 'Unknown';
+		let statusClass = 'pt-cell';
+		switch (this.props.disk.state) {
+			case 'provision':
+				statusText = 'Provisioning';
+				statusClass += ' pt-text-intent-primary';
+				break;
+			case 'available':
+				if (this.props.disk.instance !== "") {
+					statusText = 'Connected';
+				} else {
+					statusText = 'Available';
+				}
+				statusClass += ' pt-text-intent-success';
+				break;
+			case 'destroy':
+				statusText = 'Destroying';
+				statusClass += ' pt-text-intent-danger';
+				break;
+		}
+
 		return <td
 			className="pt-cell"
 			colSpan={5}
@@ -292,6 +313,13 @@ export default class DiskDetailed extends React.Component<Props, State> {
                 <span className="pt-control-indicator open-ignore"/>
               </label>
             </div>
+						<div className={statusClass} style={css.status}>
+							<span
+								style={css.icon}
+								className="pt-icon-standard pt-icon-pulse"
+							/>
+							{statusText}
+						</div>
 						<div className="flex"/>
 						<ConfirmButton
 							className="pt-minimal pt-intent-danger pt-icon-cross open-ignore"

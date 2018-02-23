@@ -105,6 +105,27 @@ export default class Disk extends React.Component<Props, {}> {
 			orgName = 'Node Disk';
 		}
 
+		let statusText = 'Unknown';
+		let statusClass = 'pt-cell';
+		switch (disk.state) {
+			case 'provision':
+				statusText = 'Provisioning';
+				statusClass += ' pt-text-intent-primary';
+				break;
+			case 'available':
+				if (disk.instance !== "") {
+					statusText = 'Connected';
+				} else {
+					statusText = 'Available';
+				}
+				statusClass += ' pt-text-intent-success';
+				break;
+			case 'destroy':
+				statusText = 'Destroying';
+				statusClass += ' pt-text-intent-danger';
+				break;
+		}
+
 		return <div
 			className="pt-card pt-row"
 			style={css.card}
@@ -138,6 +159,13 @@ export default class Disk extends React.Component<Props, {}> {
 						{disk.name}
 					</div>
 				</div>
+			</div>
+			<div className={statusClass} style={css.item}>
+				<span
+					style={css.icon}
+					className="pt-icon-standard pt-icon-pulse"
+				/>
+				{statusText}
 			</div>
 			<div className="pt-cell" style={css.item}>
 				<span
