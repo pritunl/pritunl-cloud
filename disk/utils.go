@@ -1,6 +1,7 @@
 package disk
 
 import (
+	"fmt"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"gopkg.in/mgo.v2/bson"
@@ -145,12 +146,49 @@ func Remove(db *database.Database, diskId bson.ObjectId) (err error) {
 	return
 }
 
-func RemoveMulti(db *database.Database, diskIds []bson.ObjectId) (err error) {
+func Detach(db *database.Database, dskIds bson.ObjectId) (err error) {
 	coll := db.Disks()
 
-	_, err = coll.RemoveAll(&bson.M{
+	err = coll.UpdateId(dskIds, &bson.M{
+		"$set": &bson.M{
+			"instance": "",
+			"index":    fmt.Sprintf("hold_%s", bson.NewObjectId().Hex()),
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func Delete(db *database.Database, dskId bson.ObjectId) (err error) {
+	coll := db.Disks()
+
+	err = coll.UpdateId(dskId, &bson.M{
+		"$set": &bson.M{
+			"state": Destroy,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func DeleteMulti(db *database.Database, dskIds []bson.ObjectId) (err error) {
+	coll := db.Disks()
+
+	_, err = coll.UpdateAll(&bson.M{
 		"_id": &bson.M{
-			"$in": diskIds,
+			"$in": dskIds,
+		},
+	}, &bson.M{
+		"$set": &bson.M{
+			"state": Destroy,
 		},
 	})
 	if err != nil {

@@ -2,9 +2,12 @@ package disk
 
 import (
 	"fmt"
+	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/pritunl-cloud/vm"
 	"gopkg.in/mgo.v2/bson"
 	"strconv"
 	"strings"
@@ -51,7 +54,7 @@ func (d *Disk) Validate(db *database.Database) (
 	}
 
 	if d.State == "" {
-		d.State = Provisioning
+		d.State = Provision
 	}
 
 	if d.Size < 10 {
@@ -91,6 +94,27 @@ func (d *Disk) Insert(db *database.Database) (err error) {
 	err = coll.Insert(d)
 	if err != nil {
 		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func (d *Disk) Destroy(db *database.Database) (err error) {
+	dskPath := vm.GetDiskPath(d.Id)
+
+	logrus.WithFields(logrus.Fields{
+		"disk_id":   d.Id.Hex(),
+		"disk_path": dskPath,
+	}).Info("qemu: Destroying disk")
+
+	err = utils.RemoveAll(dskPath)
+	if err != nil {
+		return
+	}
+
+	err = Remove(db, d.Id)
+	if err != nil {
 		return
 	}
 

@@ -1,6 +1,7 @@
 package disk
 
 const (
-	Provisioning = "provisioning"
-	Available    = "available"
+	Provision = "provision"
+	Available = "available"
+	Destroy   = "destroy"
 )
