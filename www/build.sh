@@ -26,8 +26,8 @@ cp login.html dist/login.html
 AAPP_HASH=`md5sum dist/static/aapp.js | cut -c1-6`
 UAPP_HASH=`md5sum dist/static/uapp.js | cut -c1-6`
 
-mv dist/static/app.js dist/static/aapp.${AAPP_HASH}.js
-mv dist/static/app.js.map dist/static/aapp.${AAPP_HASH}.js.map
+mv dist/static/aapp.js dist/static/aapp.${AAPP_HASH}.js
+mv dist/static/aapp.js.map dist/static/aapp.${AAPP_HASH}.js.map
 
 mv dist/static/uapp.js dist/static/uapp.${UAPP_HASH}.js
 mv dist/static/uapp.js.map dist/static/uapp.${UAPP_HASH}.js.map
