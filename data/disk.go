@@ -9,16 +9,10 @@ import (
 )
 
 func CreateDisk(db *database.Database, dsk *disk.Disk) (err error) {
-	disksPath := vm.GetDisksPath()
-	err = utils.ExistsMkdir(disksPath, 0755)
-	if err != nil {
-		return
-	}
-
 	diskPath := vm.GetDiskPath(dsk.Id)
 
 	if dsk.Image != "" {
-		err = WriteImage(db, dsk.Image, diskPath)
+		err = WriteImage(db, dsk.Image, dsk.Id)
 		if err != nil {
 			return
 		}

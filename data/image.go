@@ -57,8 +57,16 @@ func getImage(db *database.Database, img *image.Image,
 	return
 }
 
-func WriteImage(db *database.Database, imgId bson.ObjectId, pth string) (
+func WriteImage(db *database.Database, imgId, dskId bson.ObjectId) (
 	err error) {
+
+	diskPath := vm.GetDiskPath(dskId)
+	disksPath := vm.GetDisksPath()
+
+	err = utils.ExistsMkdir(disksPath, 0755)
+	if err != nil {
+		return
+	}
 
 	img, err := image.Get(db, imgId)
 	if err != nil {
@@ -91,7 +99,7 @@ func WriteImage(db *database.Database, imgId bson.ObjectId, pth string) (
 			}
 		}
 
-		exists, err = utils.Exists(pth)
+		exists, err = utils.Exists(diskPath)
 		if err != nil {
 			return
 		}
@@ -99,8 +107,9 @@ func WriteImage(db *database.Database, imgId bson.ObjectId, pth string) (
 		if exists {
 			logrus.WithFields(logrus.Fields{
 				"image_id": img.Id.Hex(),
+				"disk_id":  dskId.Hex(),
 				"key":      img.Key,
-				"path":     pth,
+				"path":     diskPath,
 			}).Error("data: Blocking disk image overwrite")
 
 			err = &errortypes.WriteError{
@@ -109,12 +118,12 @@ func WriteImage(db *database.Database, imgId bson.ObjectId, pth string) (
 			return
 		}
 
-		err = utils.Exec("", "cp", imagePth, pth)
+		err = utils.Exec("", "cp", imagePth, diskPath)
 		if err != nil {
 			return
 		}
 	} else {
-		exists, e := utils.Exists(pth)
+		exists, e := utils.Exists(diskPath)
 		if e != nil {
 			err = e
 			return
@@ -123,8 +132,9 @@ func WriteImage(db *database.Database, imgId bson.ObjectId, pth string) (
 		if exists {
 			logrus.WithFields(logrus.Fields{
 				"image_id": img.Id.Hex(),
+				"disk_id":  dskId.Hex(),
 				"key":      img.Key,
-				"path":     pth,
+				"path":     diskPath,
 			}).Error("data: Blocking disk image overwrite")
 
 			err = &errortypes.WriteError{
@@ -133,7 +143,7 @@ func WriteImage(db *database.Database, imgId bson.ObjectId, pth string) (
 			return
 		}
 
-		err = getImage(db, img, pth)
+		err = getImage(db, img, diskPath)
 		if err != nil {
 			return
 		}
