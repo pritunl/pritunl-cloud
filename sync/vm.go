@@ -8,6 +8,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
+	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/iptables"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -17,7 +18,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/vm"
 	"gopkg.in/mgo.v2/bson"
 	"time"
-	"github.com/pritunl/pritunl-cloud/event"
 )
 
 var (
@@ -169,7 +169,9 @@ func vmUpdate() (err error) {
 
 		switch inst.State {
 		case instance.Start:
-			if curVirt.State == vm.Stopped && !busy.Locked(inst.Id.Hex()) {
+			if (curVirt.State == vm.Stopped || curVirt.State == vm.Failed) &&
+				!busy.Locked(inst.Id.Hex()) {
+
 				busy.Lock(inst.Id.Hex())
 				go func(inst *instance.Instance) {
 					defer func() {

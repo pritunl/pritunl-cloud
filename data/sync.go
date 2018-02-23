@@ -11,6 +11,10 @@ import (
 )
 
 func Sync(db *database.Database, store *storage.Storage) (err error) {
+	if store.Endpoint == "" {
+		return
+	}
+
 	client, err := minio.New(
 		store.Endpoint, store.AccessKey, store.SecretKey, !store.Insecure)
 	if err != nil {

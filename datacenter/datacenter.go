@@ -12,7 +12,7 @@ type Datacenter struct {
 	Id             bson.ObjectId   `bson:"_id,omitempty" json:"id"`
 	Name           string          `bson:"name" json:"name"`
 	PublicStorages []bson.ObjectId `bson:"public_storages" json:"public_storages"`
-	PrivateStorage bson.ObjectId   `bson:"private_storage" json:"private_storage"`
+	PrivateStorage bson.ObjectId   `bson:"private_storage,omitempty" json:"private_storage"`
 }
 
 func (d *Datacenter) Validate(db *database.Database) (

@@ -28,7 +28,9 @@ var (
 	serviceReg = regexp.MustCompile("pritunl_cloud_([a-z0-9]+).service")
 )
 
-func GetVmInfo(vmId bson.ObjectId) (virt *vm.VirtualMachine, err error) {
+func GetVmInfo(vmId bson.ObjectId, getDisks bool) (
+	virt *vm.VirtualMachine, err error) {
+
 	unitPath := GetUnitPath(vmId)
 
 	unitData, err := ioutil.ReadFile(unitPath)
@@ -97,7 +99,7 @@ func GetVmInfo(vmId bson.ObjectId) (virt *vm.VirtualMachine, err error) {
 		break
 	}
 
-	if virt.State == vm.Running {
+	if virt.State == vm.Running && getDisks {
 		disks, e := qms.GetDisks(vmId)
 		if e != nil {
 			err = e
@@ -156,7 +158,7 @@ func GetVms(db *database.Database) (virts []*vm.VirtualMachine, err error) {
 		go func() {
 			defer waiter.Done()
 
-			virt, e := GetVmInfo(vmId)
+			virt, e := GetVmInfo(vmId, true)
 			if e != nil {
 				err = e
 				return
@@ -191,7 +193,7 @@ func Wait(db *database.Database, virt *vm.VirtualMachine) (err error) {
 
 	var vrt *vm.VirtualMachine
 	for i := 0; i < settings.Hypervisor.StartTimeout; i++ {
-		vrt, err = GetVmInfo(virt.Id)
+		vrt, err = GetVmInfo(virt.Id, false)
 		if err != nil {
 			return
 		}
@@ -285,6 +287,11 @@ func Create(db *database.Database, inst *instance.Instance,
 		return
 	}
 
+	err = utils.ExistsMkdir(settings.Hypervisor.LibPath, 0755)
+	if err != nil {
+		return
+	}
+
 	err = utils.ExistsMkdir(vmPath, 0755)
 	if err != nil {
 		return
@@ -347,7 +354,7 @@ func Create(db *database.Database, inst *instance.Instance,
 }
 
 func Update(db *database.Database, virt *vm.VirtualMachine) (err error) {
-	vrt, err := GetVmInfo(virt.Id)
+	vrt, err := GetVmInfo(virt.Id, false)
 	if err != nil {
 		return
 	}
@@ -480,7 +487,7 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		err = nil
 	} else {
 		for i := 0; i < settings.Hypervisor.StopTimeout; i++ {
-			vrt, e := GetVmInfo(virt.Id)
+			vrt, e := GetVmInfo(virt.Id, false)
 			if e != nil {
 				err = e
 				return

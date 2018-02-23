@@ -3,6 +3,7 @@ package ahandlers
 import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/event"
@@ -28,7 +29,7 @@ func storagePut(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	data := &storageData{}
+	dta := &storageData{}
 
 	storeId, ok := utils.ParseObjectId(c.Param("store_id"))
 	if !ok {
@@ -36,7 +37,7 @@ func storagePut(c *gin.Context) {
 		return
 	}
 
-	err := c.Bind(data)
+	err := c.Bind(dta)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -48,13 +49,13 @@ func storagePut(c *gin.Context) {
 		return
 	}
 
-	store.Name = data.Name
-	store.Type = data.Type
-	store.Endpoint = data.Endpoint
-	store.Bucket = data.Bucket
-	store.AccessKey = data.AccessKey
-	store.SecretKey = data.SecretKey
-	store.Insecure = data.Insecure
+	store.Name = dta.Name
+	store.Type = dta.Type
+	store.Endpoint = dta.Endpoint
+	store.Bucket = dta.Bucket
+	store.AccessKey = dta.AccessKey
+	store.SecretKey = dta.SecretKey
+	store.Insecure = dta.Insecure
 
 	fields := set.NewSet(
 		"name",
@@ -82,6 +83,8 @@ func storagePut(c *gin.Context) {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
+
+	data.Sync(db, store)
 
 	event.PublishDispatch(db, "storage.change")
 
