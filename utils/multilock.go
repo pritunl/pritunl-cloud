@@ -43,6 +43,13 @@ func (m *MultiLock) Unlock(id string) {
 	}
 }
 
+func (m *MultiLock) Locked(id string) bool {
+	m.lock.Lock()
+	_, ok := m.locks[id]
+	m.lock.Unlock()
+	return ok
+}
+
 func NewMultiLock() *MultiLock {
 	return &MultiLock{
 		counts: map[string]int{},
