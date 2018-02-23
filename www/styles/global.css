@@ -341,3 +341,9 @@ body.fullbleed {
   bottom: 0;
   left: 0;
 }
+
+/* FIXES */
+
+label.pt-label .pt-button-group {
+  margin-top: 5px;
+}
