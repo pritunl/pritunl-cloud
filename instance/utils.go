@@ -2,6 +2,7 @@ package instance
 
 import (
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -28,10 +29,43 @@ func GetAll(db *database.Database, query *bson.M) (
 
 	cursor := coll.Find(query).Iter()
 
-	nde := &Instance{}
-	for cursor.Next(nde) {
-		insts = append(insts, nde)
-		nde = &Instance{}
+	inst := &Instance{}
+	for cursor.Next(inst) {
+		insts = append(insts, inst)
+		inst = &Instance{}
+	}
+
+	err = cursor.Close()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func GetAllVirt(db *database.Database, query *bson.M, disks []*disk.Disk) (
+	insts []*Instance, err error) {
+
+	instanceDisks := map[bson.ObjectId][]*disk.Disk{}
+	for _, dsk := range disks {
+		dsks := instanceDisks[dsk.Instance]
+		if dsks == nil {
+			dsks = []*disk.Disk{}
+		}
+		instanceDisks[dsk.Instance] = append(dsks, dsk)
+	}
+
+	coll := db.Instances()
+	insts = []*Instance{}
+
+	cursor := coll.Find(query).Iter()
+
+	inst := &Instance{}
+	for cursor.Next(inst) {
+		inst.LoadVirt(instanceDisks[inst.Id])
+		insts = append(insts, inst)
+		inst = &Instance{}
 	}
 
 	err = cursor.Close()
@@ -141,7 +175,7 @@ func Delete(db *database.Database, instId bson.ObjectId) (err error) {
 
 	err = coll.UpdateId(instId, &bson.M{
 		"$set": &bson.M{
-			"state": Deleting,
+			"state": Destroy,
 		},
 	})
 	if err != nil {
@@ -161,7 +195,7 @@ func DeleteMulti(db *database.Database, instIds []bson.ObjectId) (err error) {
 		},
 	}, &bson.M{
 		"$set": &bson.M{
-			"state": Deleting,
+			"state": Destroy,
 		},
 	})
 	if err != nil {

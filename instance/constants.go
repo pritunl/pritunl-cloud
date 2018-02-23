@@ -1,9 +1,9 @@
 package instance
 
 const (
-	Running  = "running"
-	Stopped  = "stopped"
-	Updating = "updating"
-	Deleting = "deleting"
+	Start    = "start"
+	Stop     = "stop"
+	Restart  = "restart"
+	Destroy  = "destroy"
 	Snapshot = "snapshot"
 )
