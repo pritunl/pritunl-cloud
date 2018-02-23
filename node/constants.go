@@ -4,6 +4,6 @@ const (
 	Admin        = "admin"
 	User         = "user"
 	Hypervisor   = "hypervisor"
-	DefaultRoot  = "/vms"
-	DefaultCache = "/vms/cache"
+	DefaultRoot  = "/cloud"
+	DefaultCache = "/cloud/cache"
 )
