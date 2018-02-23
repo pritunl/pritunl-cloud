@@ -319,7 +319,7 @@ export default class Instances extends React.Component<{}, State> {
 							style={css.button}
 							disabled={!this.selected || this.state.disabled}
 							onConfirm={(): void => {
-								this.updateSelected('running');
+								this.updateSelected('start');
 							}}
 						/>
 						<ConfirmButton
@@ -329,7 +329,7 @@ export default class Instances extends React.Component<{}, State> {
 							style={css.button}
 							disabled={!this.selected || this.state.disabled}
 							onConfirm={(): void => {
-								this.updateSelected('stopped');
+								this.updateSelected('stop');
 							}}
 						/>
 						<ConfirmButton

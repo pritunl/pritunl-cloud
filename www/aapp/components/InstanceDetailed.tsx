@@ -318,14 +318,18 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		let org = OrganizationsStore.organization(
 			this.props.instance.organization);
 		let zone = ZonesStore.zone(this.props.instance.zone);
-		let node = NodesStore.node(this.props.instance.node);
+		let node = NodesStore.node(this.props.instance.node); // TODO Paged
 
 		let statusClass = '';
 		switch (instance.status) {
 			case 'Running':
 				statusClass += 'pt-text-intent-success';
 				break;
+			case 'Restart Required':
+				statusClass += ' pt-text-intent-warning';
+				break;
 			case 'Stopped':
+			case 'Destroying':
 				statusClass += 'pt-text-intent-danger';
 				break;
 			case 'Snapshotting':
@@ -508,6 +512,10 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 								value: this.props.instance.public_ip6 || 'None',
 							},
 							{
+								label: 'Disks',
+								value: this.state.info.disks || '',
+							},
+							{
 								label: 'Firewall Rules',
 								value: this.state.info.firewall_rules || '',
 							},
@@ -537,10 +545,10 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					className="pt-intent-success pt-icon-power"
 					progressClassName="pt-intent-success"
 					style={css.controlButton}
-					hidden={this.props.instance.state !== 'stopped'}
+					hidden={this.props.instance.state !== 'stop'}
 					disabled={this.state.disabled}
 					onConfirm={(): void => {
-						this.update('running');
+						this.update('start');
 					}}
 				/>
 				<ConfirmButton
@@ -548,10 +556,10 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					className="pt-intent-danger pt-icon-power"
 					progressClassName="pt-intent-danger"
 					style={css.controlButton}
-					hidden={this.props.instance.state !== 'running'}
+					hidden={this.props.instance.state !== 'start'}
 					disabled={this.state.disabled}
 					onConfirm={(): void => {
-						this.update('stopped');
+						this.update('stop');
 					}}
 				/>
 				<ConfirmButton
@@ -559,7 +567,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					className="pt-intent-primary pt-icon-floppy-disk"
 					progressClassName="pt-intent-primary"
 					hidden={this.props.instance.state !== 'running' &&
-					this.props.instance.state !== 'stopped'}
+					this.props.instance.state !== 'stop'}
 					style={css.controlButton}
 					disabled={this.state.disabled}
 					onConfirm={(): void => {
