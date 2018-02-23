@@ -5,6 +5,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/instance"
@@ -259,10 +260,8 @@ func UpdateState(db *database.Database, instances []*instance.Instance) (
 	}
 
 	for _, inst := range instances {
-		virt := inst.GetVm(nil)
-
-		for i := range virt.NetworkAdapters {
-			iface := vm.GetIface(virt.Id, i)
+		for i := range inst.Virt.NetworkAdapters {
+			iface := vm.GetIface(inst.Virt.Id, i)
 
 			_, ok := newState.Interfaces[iface]
 			if ok {
@@ -384,9 +383,14 @@ func Init() (err error) {
 
 	curState = state
 
-	instances, err := instance.GetAll(db, &bson.M{
+	disks, err := disk.GetNode(db, node.Self.Id)
+	if err != nil {
+		return
+	}
+
+	instances, err := instance.GetAllVirt(db, &bson.M{
 		"node": node.Self.Id,
-	})
+	}, disks)
 
 	err = UpdateState(db, instances)
 	if err != nil {
