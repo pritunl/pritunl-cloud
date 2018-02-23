@@ -27,7 +27,7 @@ func (d *Disk) GetId() bson.ObjectId {
 	if bson.IsObjectIdHex(idStr) {
 		return bson.ObjectIdHex(idStr)
 	}
-
+	return  ""
 }
 
 type NetworkAdapter struct {
