@@ -12,31 +12,43 @@ import (
 	"github.com/pritunl/pritunl-cloud/iptables"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/qemu"
+	"github.com/pritunl/pritunl-cloud/qms"
+	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"gopkg.in/mgo.v2/bson"
-	"sync"
 	"time"
+	"github.com/pritunl/pritunl-cloud/event"
 )
 
 var (
-	busy     = set.NewSet()
-	busyLock = sync.Mutex{}
+	busy = utils.NewMultiLock()
 )
 
 func vmUpdate() (err error) {
 	db := database.GetDatabase()
 	defer db.Close()
 
-	instanceDisks := map[bson.ObjectId][]*disk.Disk{}
-
 	disks, err := disk.GetNode(db, node.Self.Id)
 	if err != nil {
 		return
 	}
 
+	curVirts, err := qemu.GetVms(db)
+	if err != nil {
+		return
+	}
+
+	curIds := set.NewSet()
+	curVirtsMap := map[bson.ObjectId]*vm.VirtualMachine{}
+	for _, virt := range curVirts {
+		curIds.Add(virt.Id)
+		curVirtsMap[virt.Id] = virt
+	}
+
+	availableDisks := []*disk.Disk{}
 	for _, dsk := range disks {
-		if dsk.State == disk.Provisioning {
-			// Run in go
+		switch dsk.State {
+		case disk.Provision:
 			err = data.CreateDisk(db, dsk)
 			if err != nil {
 				return
@@ -48,35 +60,56 @@ func vmUpdate() (err error) {
 				return
 			}
 
-			continue
-		}
+			break
+		case disk.Available:
+			availableDisks = append(availableDisks, dsk)
+			break
+		case disk.Destroy:
+			var curVirt *vm.VirtualMachine
+			if dsk.Instance != "" {
+				curVirt = curVirtsMap[dsk.Instance]
+			}
 
-		if dsk.Instance == "" {
-			continue
-		}
+			inUse := false
+			if curVirt != nil {
+				for _, vmDsk := range curVirt.Disks {
+					if vmDsk.GetId() == dsk.Id {
+						inUse = true
+						break
+					}
+				}
+			}
 
-		dsks := instanceDisks[dsk.Instance]
-		if dsks == nil {
-			dsks = []*disk.Disk{}
+			if !inUse && !busy.Locked(dsk.Id.Hex()) {
+				busy.Lock(dsk.Id.Hex())
+				go func(dsk *disk.Disk) {
+					defer func() {
+						busy.Unlock(dsk.Id.Hex())
+					}()
+
+					db := database.GetDatabase()
+					defer db.Close()
+
+					e := dsk.Destroy(db)
+					if e != nil {
+						logrus.WithFields(logrus.Fields{
+							"error": e,
+						}).Error("sync: Failed to destroy disk")
+						return
+					}
+
+					event.PublishDispatch(db, "disk.change")
+				}(dsk)
+			}
+
+			break
+
 		}
-		instanceDisks[dsk.Instance] = append(dsks, dsk)
 	}
 
-	virts, err := qemu.GetVms(db)
-	if err != nil {
-		return
-	}
-
-	curIds := set.NewSet()
-	virtsMap := map[bson.ObjectId]*vm.VirtualMachine{}
-	for _, virt := range virts {
-		curIds.Add(virt.Id)
-		virtsMap[virt.Id] = virt
-	}
-
-	instances, err := instance.GetAll(db, &bson.M{
+	instances, err := instance.GetAllVirt(db, &bson.M{
 		"node": node.Self.Id,
-	})
+	}, availableDisks)
 
 	err = iptables.UpdateState(db, instances)
 	if err != nil {
@@ -100,21 +133,17 @@ func vmUpdate() (err error) {
 	newIds := set.NewSet()
 	for _, inst := range instances {
 		newIds.Add(inst.Id)
-		if !curIds.Contains(inst.Id) && !busy.Contains(inst.Id) {
-			busyLock.Lock()
-			busy.Add(inst.Id)
-			busyLock.Unlock()
+		if !curIds.Contains(inst.Id) && !busy.Locked(inst.Id.Hex()) {
+			busy.Lock(inst.Id.Hex())
 			go func(inst *instance.Instance) {
 				defer func() {
-					busyLock.Lock()
-					busy.Remove(inst.Id)
-					busyLock.Unlock()
+					time.Sleep(5 * time.Second)
+					busy.Unlock(inst.Id.Hex())
 				}()
 				db := database.GetDatabase()
 				defer db.Close()
 
-				e := qemu.Create(db, inst, inst.GetVm(instanceDisks[inst.Id]))
-				time.Sleep(5 * time.Second)
+				e := qemu.Create(db, inst, inst.Virt)
 				if e != nil {
 					logrus.WithFields(logrus.Fields{
 						"error": e,
@@ -133,56 +162,85 @@ func vmUpdate() (err error) {
 	}
 
 	for _, inst := range instances {
-		virt := virtsMap[inst.Id]
-		if virt == nil {
+		curVirt := curVirtsMap[inst.Id]
+		if curVirt == nil {
 			continue
 		}
 
 		switch inst.State {
-		case instance.Running:
-			if virt.State == vm.Stopped && !busy.Contains(inst.Id) {
-				busyLock.Lock()
-				busy.Add(inst.Id)
-				busyLock.Unlock()
+		case instance.Start:
+			if curVirt.State == vm.Stopped && !busy.Locked(inst.Id.Hex()) {
+				busy.Lock(inst.Id.Hex())
 				go func(inst *instance.Instance) {
 					defer func() {
-						busyLock.Lock()
-						busy.Remove(inst.Id)
-						busyLock.Unlock()
+						time.Sleep(3 * time.Second)
+						busy.Unlock(inst.Id.Hex())
 					}()
 					db := database.GetDatabase()
 					defer db.Close()
 
-					e := qemu.PowerOn(db,
-						inst.GetVm(instanceDisks[inst.Id]))
+					e := qemu.PowerOn(db, inst.Virt)
 					if e != nil {
 						logrus.WithFields(logrus.Fields{
 							"error": e,
 						}).Error("sync: Failed to power on instance")
 						return
 					}
+				}(inst)
+				continue
+			} else if inst.Changed(curVirt) && !inst.Restart {
+				inst.Restart = true
+				err = inst.CommitFields(db, set.NewSet("restart"))
+				if err != nil {
+					return
+				}
+			} else if !inst.Changed(curVirt) && inst.Restart {
+				inst.Restart = false
+				err = inst.CommitFields(db, set.NewSet("restart"))
+				if err != nil {
+					return
+				}
+			}
 
-					time.Sleep(3 * time.Second)
+			addDisks, remDisks := inst.DiskChanged(curVirt)
+			if len(addDisks) > 0 && !inst.Restart {
+				inst.Restart = true
+				err = inst.CommitFields(db, set.NewSet("restart"))
+				if err != nil {
+					return
+				}
+			}
+
+			if len(remDisks) > 0 && !busy.Locked(inst.Id.Hex()) {
+				busy.Lock(inst.Id.Hex())
+				go func(inst *instance.Instance) {
+					defer func() {
+						time.Sleep(3 * time.Second)
+						busy.Unlock(inst.Id.Hex())
+					}()
+
+					for _, dsk := range remDisks {
+						e := qms.RemoveDisk(inst.Id, dsk)
+						if e != nil {
+							logrus.WithFields(logrus.Fields{
+								"error": e,
+							}).Error("sync: Failed to remove disk")
+							return
+						}
+					}
 				}(inst)
 				continue
 			}
 			break
-		case instance.Stopped:
-			if virt.State == vm.Running && !busy.Contains(inst.Id) {
-				busyLock.Lock()
-				busy.Add(inst.Id)
-				busyLock.Unlock()
+		case instance.Stop:
+			if curVirt.State == vm.Running && !busy.Locked(inst.Id.Hex()) {
+				busy.Lock(inst.Id.Hex())
 				go func(inst *instance.Instance) {
-					defer func() {
-						busyLock.Lock()
-						busy.Remove(inst.Id)
-						busyLock.Unlock()
-					}()
+					defer busy.Unlock(inst.Id.Hex())
 					db := database.GetDatabase()
 					defer db.Close()
 
-					e := qemu.PowerOff(db,
-						inst.GetVm(instanceDisks[inst.Id]))
+					e := qemu.PowerOff(db, inst.Virt)
 					if e != nil {
 						logrus.WithFields(logrus.Fields{
 							"error": e,
@@ -193,101 +251,52 @@ func vmUpdate() (err error) {
 				continue
 			}
 			break
-		case instance.Updating:
-			if !busy.Contains(inst.Id) {
-				if virt.State != vm.Stopped {
-					busyLock.Lock()
-					busy.Add(inst.Id)
-					busyLock.Unlock()
-					go func(inst *instance.Instance) {
-						defer func() {
-							busyLock.Lock()
-							busy.Remove(inst.Id)
-							busyLock.Unlock()
-						}()
-						db := database.GetDatabase()
-						defer db.Close()
+		case instance.Restart:
+			if !busy.Locked(inst.Id.Hex()) {
+				busy.Lock(inst.Id.Hex())
+				go func(inst *instance.Instance) {
+					defer busy.Unlock(inst.Id.Hex())
 
-						e := qemu.PowerOff(db,
-							inst.GetVm(instanceDisks[inst.Id]))
-						if e != nil {
-							logrus.WithFields(logrus.Fields{
-								"error": e,
-							}).Error("sync: Failed to power off instance")
-							return
-						}
-					}(inst)
-					continue
-				}
+					db := database.GetDatabase()
+					defer db.Close()
 
-				if inst.Changed(virt) {
-					busyLock.Lock()
-					busy.Add(inst.Id)
-					busyLock.Unlock()
+					e := qemu.PowerOff(db, inst.Virt)
+					if e != nil {
+						logrus.WithFields(logrus.Fields{
+							"error": e,
+						}).Error("sync: Failed to power off instance")
+						return
+					}
 
-					logrus.WithFields(logrus.Fields{
-						"id":             virt.Id.Hex(),
-						"memory_old":     virt.Memory,
-						"memory":         inst.Memory,
-						"processors_old": virt.Processors,
-						"processors":     inst.Processors,
-					}).Info("sync: Resizing virtual machine")
+					time.Sleep(1 * time.Second)
 
-					go func(inst *instance.Instance) {
-						defer func() {
-							busyLock.Lock()
-							busy.Remove(inst.Id)
-							busyLock.Unlock()
-						}()
-						db := database.GetDatabase()
-						defer db.Close()
+					e = qemu.PowerOn(db, inst.Virt)
+					if e != nil {
+						logrus.WithFields(logrus.Fields{
+							"error": e,
+						}).Error("sync: Failed to power on instance")
+						return
+					}
 
-						e := qemu.Update(db,
-							inst.GetVm(instanceDisks[inst.Id]))
-						if e != nil {
-							logrus.WithFields(logrus.Fields{
-								"error": e,
-							}).Error("sync: Failed to update instance")
-							return
-						}
-
-						time.Sleep(5 * time.Second)
-
-						inst.State = instance.Stopped
-						e = inst.CommitFields(db, set.NewSet("state"))
-						if e != nil {
-							logrus.WithFields(logrus.Fields{
-								"error": e,
-							}).Error("sync: Failed to update instance")
-							return
-						}
-					}(inst)
-				} else {
-					inst.State = instance.Stopped
+					inst.State = instance.Start
 					err = inst.CommitFields(db, set.NewSet("state"))
 					if err != nil {
 						return
 					}
-				}
+				}(inst)
 				continue
 			}
 			break
-		case instance.Deleting:
-			if !busy.Contains(inst.Id) {
-				busyLock.Lock()
-				busy.Add(inst.Id)
-				busyLock.Unlock()
+		case instance.Destroy:
+			if !busy.Locked(inst.Id.Hex()) {
+				busy.Lock(inst.Id.Hex())
 				go func(inst *instance.Instance) {
-					defer func() {
-						busyLock.Lock()
-						busy.Remove(inst.Id)
-						busyLock.Unlock()
-					}()
+					defer busy.Unlock(inst.Id.Hex())
+
 					db := database.GetDatabase()
 					defer db.Close()
 
-					e := qemu.Destroy(db,
-						inst.GetVm(instanceDisks[inst.Id]))
+					e := qemu.Destroy(db, inst.Virt)
 					if e != nil {
 						logrus.WithFields(logrus.Fields{
 							"error": e,
@@ -302,26 +311,22 @@ func vmUpdate() (err error) {
 						}).Error("sync: Failed to remove instance")
 						return
 					}
+
+					event.PublishDispatch(db, "disk.change")
 				}(inst)
 				continue
 			}
 			break
 		case instance.Snapshot:
-			if !busy.Contains(inst.Id) {
-				busyLock.Lock()
-				busy.Add(inst.Id)
-				busyLock.Unlock()
+			if !busy.Locked(inst.Id.Hex()) {
+				busy.Lock(inst.Id.Hex())
 				go func(inst *instance.Instance) {
-					defer func() {
-						busyLock.Lock()
-						busy.Remove(inst.Id)
-						busyLock.Unlock()
-					}()
+					defer busy.Unlock(inst.Id.Hex())
+
 					db := database.GetDatabase()
 					defer db.Close()
 
-					e := data.CreateSnapshot(db,
-						inst.GetVm(instanceDisks[inst.Id]))
+					e := data.CreateSnapshot(db, inst.Virt)
 					if e != nil {
 						logrus.WithFields(logrus.Fields{
 							"error": e,
@@ -329,10 +334,10 @@ func vmUpdate() (err error) {
 						return
 					}
 
-					if virt.State == vm.Running {
-						inst.State = instance.Running
+					if curVirt.State == vm.Running {
+						inst.State = instance.Start
 					} else {
-						inst.State = instance.Stopped
+						inst.State = instance.Stop
 					}
 					e = inst.CommitFields(db, set.NewSet("state"))
 					if e != nil {
