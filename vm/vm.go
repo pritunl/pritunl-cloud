@@ -3,6 +3,8 @@ package vm
 import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"gopkg.in/mgo.v2/bson"
+	"path"
+	"strings"
 )
 
 type VirtualMachine struct {
@@ -18,6 +20,14 @@ type VirtualMachine struct {
 type Disk struct {
 	Index int    `json:"index"`
 	Path  string `json:"path"`
+}
+
+func (d *Disk) GetId() bson.ObjectId {
+	idStr := strings.Split(path.Base(d.Path), ".")[0]
+	if bson.IsObjectIdHex(idStr) {
+		return bson.ObjectIdHex(idStr)
+	}
+
 }
 
 type NetworkAdapter struct {
