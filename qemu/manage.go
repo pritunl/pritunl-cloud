@@ -11,13 +11,13 @@ import (
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/qga"
+	"github.com/pritunl/pritunl-cloud/qms"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/systemd"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"gopkg.in/mgo.v2/bson"
 	"io/ioutil"
-	"net"
 	"regexp"
 	"strings"
 	"sync"
@@ -25,8 +25,7 @@ import (
 )
 
 var (
-	serviceReg  = regexp.MustCompile("pritunl_cloud_([a-z0-9]+).service")
-	socketsLock = utils.NewMultiLock()
+	serviceReg = regexp.MustCompile("pritunl_cloud_([a-z0-9]+).service")
 )
 
 func GetVmInfo(vmId bson.ObjectId) (virt *vm.VirtualMachine, err error) {
@@ -78,7 +77,7 @@ func GetVmInfo(vmId bson.ObjectId) (virt *vm.VirtualMachine, err error) {
 		virt.State = vm.Running
 		break
 	case "deactivating":
-		virt.State = vm.Running
+		virt.State = vm.Stopped
 		break
 	case "inactive":
 		virt.State = vm.Stopped
@@ -96,6 +95,15 @@ func GetVmInfo(vmId bson.ObjectId) (virt *vm.VirtualMachine, err error) {
 		}).Info("qemu: Unknown virtual machine state")
 		virt.State = vm.Failed
 		break
+	}
+
+	if virt.State == vm.Running {
+		disks, e := qms.GetDisks(vmId)
+		if e != nil {
+			err = e
+			return
+		}
+		virt.Disks = disks
 	}
 
 	guestPath := GetGuestPath(virt.Id)
@@ -271,7 +279,7 @@ func Create(db *database.Database, inst *instance.Instance,
 		"id": virt.Id.Hex(),
 	}).Info("qemu: Creating virtual machine")
 
-	virt.State = "provisioning_disk"
+	virt.State = vm.Provisioning
 	err = virt.Commit(db)
 	if err != nil {
 		return
@@ -294,7 +302,7 @@ func Create(db *database.Database, inst *instance.Instance,
 		Size:         10, // TODO
 	}
 
-	err = data.WriteImage(db, virt.Image, vm.GetDiskPath(dsk.Id))
+	err = data.WriteImage(db, virt.Image, dsk.Id)
 	if err != nil {
 		return
 	}
@@ -378,6 +386,13 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 
 	time.Sleep(3 * time.Second)
 
+	for _, dsk := range virt.Disks {
+		err = disk.Detach(db, dsk.GetId())
+		if err != nil {
+			return
+		}
+	}
+
 	err = utils.RemoveAll(vmPath)
 	if err != nil {
 		return
@@ -441,44 +456,6 @@ func PowerOn(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	return
 }
 
-func sockPowerOff(virt *vm.VirtualMachine) (err error) {
-	sockPath := GetSockPath(virt.Id)
-
-	socketsLock.Lock(virt.Id.Hex())
-	defer socketsLock.Unlock(virt.Id.Hex())
-
-	conn, err := net.DialTimeout(
-		"unix",
-		sockPath,
-		1*time.Second,
-	)
-	if err != nil {
-		err = &errortypes.ReadError{
-			errors.Wrap(err, "qemu: Failed to open socket"),
-		}
-		return
-	}
-	defer conn.Close()
-
-	err = conn.SetDeadline(time.Now().Add(1 * time.Second))
-	if err != nil {
-		err = &errortypes.ReadError{
-			errors.Wrap(err, "qemu: Failed set deadline"),
-		}
-		return
-	}
-
-	_, err = conn.Write([]byte("system_powerdown\n"))
-	if err != nil {
-		err = &errortypes.ReadError{
-			errors.Wrap(err, "qemu: Failed to write socket"),
-		}
-		return
-	}
-
-	return
-}
-
 func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	unitName := GetUnitName(virt.Id)
 
@@ -487,7 +464,7 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	}).Info("qemu: Power off virtual machine")
 
 	for i := 0; i < 10; i++ {
-		err = sockPowerOff(virt)
+		err = qms.Shutdown(virt.Id)
 		if err == nil {
 			break
 		}
@@ -523,7 +500,7 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			}
 
 			if i != 0 && i%3 == 0 {
-				sockPowerOff(virt)
+				qms.Shutdown(virt.Id)
 			}
 
 			time.Sleep(1 * time.Second)

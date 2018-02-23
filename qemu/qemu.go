@@ -75,9 +75,12 @@ func (q *Qemu) Marshal() (output string, err error) {
 	cmd = append(cmd, fmt.Sprintf("%dM", q.Memory))
 
 	for _, disk := range q.Disks {
-		discard := ""
+		additional := ""
 		if disk.Discard {
-			discard = ",discard=on"
+			additional += ",discard=on"
+		}
+		if disk.Media == "disk" {
+			additional += ",if=virtio"
 		}
 
 		cmd = append(cmd, "-drive")
@@ -87,7 +90,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 			disk.Index,
 			disk.Media,
 			disk.Format,
-			discard,
+			additional,
 		))
 	}
 
