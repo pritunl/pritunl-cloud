@@ -36,7 +36,7 @@ func diskPut(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	data := &diskData{}
+	dta := &diskData{}
 
 	diskId, ok := utils.ParseObjectId(c.Param("disk_id"))
 	if !ok {
@@ -44,7 +44,7 @@ func diskPut(c *gin.Context) {
 		return
 	}
 
-	err := c.Bind(data)
+	err := c.Bind(dta)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -56,10 +56,10 @@ func diskPut(c *gin.Context) {
 		return
 	}
 
-	dsk.Name = data.Name
-	dsk.Organization = data.Organization
-	dsk.Instance = data.Instance
-	dsk.Index = data.Index
+	dsk.Name = dta.Name
+	dsk.Organization = dta.Organization
+	dsk.Instance = dta.Instance
+	dsk.Index = dta.Index
 
 	fields := set.NewSet(
 		"state",
@@ -97,24 +97,24 @@ func diskPost(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	data := &diskData{
+	dta := &diskData{
 		Name: "New Disk",
 	}
 
-	err := c.Bind(data)
+	err := c.Bind(dta)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
 	dsk := &disk.Disk{
-		Name:         data.Name,
-		Organization: data.Organization,
-		Instance:     data.Instance,
-		Index:        data.Index,
-		Node:         data.Node,
-		Image:        data.Image,
-		Size:         data.Size,
+		Name:         dta.Name,
+		Organization: dta.Organization,
+		Instance:     dta.Instance,
+		Index:        dta.Index,
+		Node:         dta.Node,
+		Image:        dta.Image,
+		Size:         dta.Size,
 	}
 
 	errData, err := dsk.Validate(db)
@@ -152,7 +152,7 @@ func diskDelete(c *gin.Context) {
 		return
 	}
 
-	err := disk.Remove(db, diskId)
+	err := disk.Delete(db, diskId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -169,15 +169,15 @@ func disksDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	data := []bson.ObjectId{}
+	dta := []bson.ObjectId{}
 
-	err := c.Bind(&data)
+	err := c.Bind(&dta)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	err = disk.RemoveMulti(db, data)
+	err = disk.DeleteMulti(db, dta)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -228,10 +228,10 @@ func disksGet(c *gin.Context) {
 		return
 	}
 
-	data := &disksData{
+	dta := &disksData{
 		Disks: disks,
 		Count: count,
 	}
 
-	c.JSON(200, data)
+	c.JSON(200, dta)
 }

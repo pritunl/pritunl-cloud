@@ -65,20 +65,16 @@ func instancePut(c *gin.Context) {
 		return
 	}
 
-	if inst.Memory != data.Memory || inst.Processors != data.Processors {
-		inst.State = instance.Updating
-	} else {
-		inst.State = data.State
-	}
-
 	inst.Name = data.Name
+	inst.State = data.State
 	inst.Memory = data.Memory
 	inst.Processors = data.Processors
 	inst.NetworkRoles = data.NetworkRoles
 
 	fields := set.NewSet(
-		"state",
 		"name",
+		"state",
+		"restart",
 		"memory",
 		"processors",
 		"network_roles",
@@ -191,11 +187,15 @@ func instancesPut(c *gin.Context) {
 		return
 	}
 
-	doc := &bson.M{
+	doc := bson.M{
 		"state": data.State,
 	}
 
-	err = instance.UpdateMulti(db, data.Ids, doc)
+	if data.State != instance.Start {
+		doc["restart"] = false
+	}
+
+	err = instance.UpdateMulti(db, data.Ids, &doc)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
