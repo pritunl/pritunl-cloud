@@ -108,7 +108,11 @@ func (n *Node) Validate(db *database.Database) (
 		n.Certificates = []bson.ObjectId{}
 	}
 
-	if n.Type == Admin {
+	if (strings.Contains(n.Type, Admin) &&
+		!strings.Contains(n.Type, User)) ||
+		(strings.Contains(n.Type, User) &&
+			!strings.Contains(n.Type, Admin)) {
+
 		n.AdminDomain = ""
 		n.UserDomain = ""
 	} else {

@@ -47,10 +47,14 @@ type Router struct {
 
 func (r *Router) ServeHTTP(w http.ResponseWriter, re *http.Request) {
 	hst := utils.StripPort(re.Host)
-	if r.typ == node.Admin {
+	if strings.Contains(r.typ, node.Admin) &&
+		!strings.Contains(r.typ, node.User) {
+
 		r.aRouter.ServeHTTP(w, re)
 		return
-	} else if r.typ == node.User {
+	} else if strings.Contains(r.typ, node.User) &&
+		!strings.Contains(r.typ, node.Admin) {
+
 		r.uRouter.ServeHTTP(w, re)
 		return
 	} else if strings.Contains(r.typ, node.Admin) && hst == r.adminDomain {
