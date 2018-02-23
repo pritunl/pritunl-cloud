@@ -30,6 +30,7 @@ export interface Filter {
 export interface Info {
 	instance?: string;
 	firewall_rules?: string[];
+	disks?: string[];
 }
 
 export type Instances = Instance[];

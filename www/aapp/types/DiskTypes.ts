@@ -9,6 +9,7 @@ export interface Disk {
 	name?: string;
 	node?: string;
 	organization?: string;
+	state?: string;
 	instance?: string;
 	image?: string;
 	index?: string;
