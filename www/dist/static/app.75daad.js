@@ -28394,7 +28394,7 @@ System.registerDynamic("app/components/DiskDetailed.js", ["npm:react@15.6.1.js",
     exports.default = DiskDetailed;
     
 });
-System.registerDynamic("app/components/Disk.js", ["npm:react@15.6.1.js", "app/stores/OrganizationsStore.js", "app/components/DiskDetailed.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/Disk.js", ["npm:react@15.6.1.js", "app/stores/OrganizationsStore.js", "app/components/DiskDetailed.js", "app/stores/NodesStore.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -28403,6 +28403,7 @@ System.registerDynamic("app/components/Disk.js", ["npm:react@15.6.1.js", "app/st
     const React = $__require("npm:react@15.6.1.js");
     const OrganizationsStore_1 = $__require("app/stores/OrganizationsStore.js");
     const DiskDetailed_1 = $__require("app/components/DiskDetailed.js");
+    const NodesStore_1 = $__require("app/stores/NodesStore.js");
     const css = {
         card: {
             display: 'table-row',
@@ -28466,6 +28467,7 @@ System.registerDynamic("app/components/Disk.js", ["npm:react@15.6.1.js", "app/st
     class Disk extends React.Component {
         render() {
             let disk = this.props.disk;
+            let node = NodesStore_1.default.node(this.props.disk.node);
             if (this.props.open) {
                 return React.createElement("div", { className: "pt-card pt-row", style: css.cardOpen }, React.createElement(DiskDetailed_1.default, { organizations: this.props.organizations, disk: this.props.disk, selected: this.props.selected, onSelect: this.props.onSelect, onClose: () => {
                         this.props.onOpen();
@@ -28510,7 +28512,7 @@ System.registerDynamic("app/components/Disk.js", ["npm:react@15.6.1.js", "app/st
                     this.props.onOpen();
                 } }, React.createElement("div", { className: "pt-cell", style: css.name }, React.createElement("div", { className: "layout horizontal" }, React.createElement("label", { className: "pt-control pt-checkbox open-ignore", style: css.select }, React.createElement("input", { type: "checkbox", className: "open-ignore", checked: this.props.selected, onClick: evt => {
                     this.props.onSelect(evt.shiftKey);
-                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" })), React.createElement("div", { style: css.nameSpan }, disk.name))), React.createElement("div", { className: statusClass, style: css.item }, React.createElement("span", { style: css.icon, className: "pt-icon-standard pt-icon-pulse" }), statusText), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, className: 'pt-icon-standard ' + (disk.organization ? 'pt-icon-people' : 'pt-icon-layers') }), orgName), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, className: "pt-icon-standard pt-icon-database" }), disk.size, "GB"));
+                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" })), React.createElement("div", { style: css.nameSpan }, disk.name))), React.createElement("div", { className: statusClass, style: css.item }, React.createElement("span", { style: css.icon, className: "pt-icon-standard pt-icon-pulse" }), statusText), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, className: 'pt-icon-standard ' + (disk.organization ? 'pt-icon-people' : 'pt-icon-layers') }), orgName), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, className: "pt-icon-standard pt-icon-layers" }), node ? node.name : this.props.disk.node), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, className: "pt-icon-standard pt-icon-database" }), disk.size, "GB"));
         }
     }
     exports.default = Disk;
@@ -30245,7 +30247,7 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@15.6.1.js", "a
             CertificateActions.sync();
             this.interval = setInterval(() => {
                 InstanceActions.sync(true);
-            }, 500);
+            }, 1000);
         }
         componentWillUnmount() {
             InstancesStore_1.default.removeChangeListener(this.onChange);
