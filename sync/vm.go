@@ -64,6 +64,39 @@ func vmUpdate() (err error) {
 		case disk.Available:
 			availableDisks = append(availableDisks, dsk)
 			break
+		case disk.Snapshot:
+			if !busy.Locked(dsk.Id.Hex()) {
+				busy.Lock(dsk.Id.Hex())
+				go func(dsk *disk.Disk) {
+					defer func() {
+						busy.Unlock(dsk.Id.Hex())
+					}()
+
+					db := database.GetDatabase()
+					defer db.Close()
+
+					e := data.CreateSnapshot(db, dsk)
+					if e != nil {
+						logrus.WithFields(logrus.Fields{
+							"error": e,
+						}).Error("sync: Failed to snapshot disk")
+						return
+					}
+
+					dsk.State = disk.Available
+					e = dsk.CommitFields(db, set.NewSet("state"))
+					if e != nil {
+						logrus.WithFields(logrus.Fields{
+							"error": e,
+						}).Error("sync: Failed update disk state")
+						return
+					}
+
+					event.PublishDispatch(db, "disk.change")
+				}(dsk)
+				continue
+			}
+			break
 		case disk.Destroy:
 			var curVirt *vm.VirtualMachine
 			if dsk.Instance != "" {
@@ -315,39 +348,6 @@ func vmUpdate() (err error) {
 					}
 
 					event.PublishDispatch(db, "disk.change")
-				}(inst)
-				continue
-			}
-			break
-		case instance.Snapshot:
-			if !busy.Locked(inst.Id.Hex()) {
-				busy.Lock(inst.Id.Hex())
-				go func(inst *instance.Instance) {
-					defer busy.Unlock(inst.Id.Hex())
-
-					db := database.GetDatabase()
-					defer db.Close()
-
-					e := data.CreateSnapshot(db, inst.Virt)
-					if e != nil {
-						logrus.WithFields(logrus.Fields{
-							"error": e,
-						}).Error("sync: Failed to snapshot instance")
-						return
-					}
-
-					if curVirt.State == vm.Running {
-						inst.State = instance.Start
-					} else {
-						inst.State = instance.Stop
-					}
-					e = inst.CommitFields(db, set.NewSet("state"))
-					if e != nil {
-						logrus.WithFields(logrus.Fields{
-							"error": e,
-						}).Error("sync: Failed to update instance")
-						return
-					}
 				}(inst)
 				continue
 			}
