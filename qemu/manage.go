@@ -297,26 +297,37 @@ func Create(db *database.Database, inst *instance.Instance,
 		return
 	}
 
-	dsk := &disk.Disk{
-		Id:           bson.NewObjectId(),
-		Name:         inst.Name,
-		State:        disk.Available,
-		Node:         node.Self.Id,
-		Organization: inst.Organization,
-		Instance:     inst.Id,
-		Image:        virt.Image,
-		Index:        "0",
-		Size:         10, // TODO
+	dsk, err := disk.GetInstanceIndex(db, inst.Id, "0")
+	if err != nil {
+		if _, ok := err.(*database.NotFoundError); ok {
+			err = nil
+		} else {
+			return
+		}
 	}
 
-	err = data.WriteImage(db, virt.Image, dsk.Id)
-	if err != nil {
-		return
-	}
+	if dsk == nil {
+		dsk := &disk.Disk{
+			Id:           bson.NewObjectId(),
+			Name:         inst.Name,
+			State:        disk.Available,
+			Node:         node.Self.Id,
+			Organization: inst.Organization,
+			Instance:     inst.Id,
+			Image:        virt.Image,
+			Index:        "0",
+			Size:         10, // TODO Custom size
+		}
 
-	err = dsk.Insert(db)
-	if err != nil {
-		return
+		err = data.WriteImage(db, virt.Image, dsk.Id)
+		if err != nil {
+			return
+		}
+
+		err = dsk.Insert(db)
+		if err != nil {
+			return
+		}
 	}
 
 	virt.Disks = append(virt.Disks, &vm.Disk{

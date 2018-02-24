@@ -27,7 +27,7 @@ func GetDiskPath(diskId bson.ObjectId) string {
 
 func GetMacAddr(id bson.ObjectId) string {
 	hash := md5.New()
-	hash.Write([]byte(id))
+	hash.Write([]byte(id.Hex()))
 	macHash := fmt.Sprintf("%x", hash.Sum(nil))
 	macHash = macHash[:10]
 	macBuf := bytes.Buffer{}
@@ -44,7 +44,7 @@ func GetMacAddr(id bson.ObjectId) string {
 
 func GetIface(id bson.ObjectId, n int) string {
 	hash := md5.New()
-	hash.Write([]byte(id))
+	hash.Write([]byte(id.Hex()))
 	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
 	return fmt.Sprintf("p%s%d", strings.ToLower(hashSum), n)
 }
