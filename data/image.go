@@ -7,11 +7,12 @@ import (
 	"github.com/minio/minio-go"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
+	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/image"
-	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/storage"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
@@ -200,29 +201,34 @@ func DeleteImages(db *database.Database, imgIds []bson.ObjectId) (err error) {
 	return
 }
 
-func CreateSnapshot(db *database.Database,
-	virt *vm.VirtualMachine) (err error) {
-
-	disk := virt.Disks[0]
+func CreateSnapshot(db *database.Database, dsk *disk.Disk) (err error) {
+	dskPth := paths.GetDiskPath(dsk.Id)
 	cacheDir := node.Self.GetCachePath()
 
 	logrus.WithFields(logrus.Fields{
-		"instance_id": virt.Id.Hex(),
-		"source_path": disk.Path,
-	}).Info("data: Creating instance snapshot")
+		"disk_id":     dsk.Id,
+		"source_path": dskPth,
+	}).Info("data: Creating disk snapshot")
 
-	inst, err := instance.Get(db, virt.Id)
+	nde, err := node.Get(db, dsk.Node)
 	if err != nil {
 		return
 	}
 
-	zne, err := zone.Get(db, inst.Zone)
+	zne, err := zone.Get(db, nde.Zone)
 	if err != nil {
 		return
 	}
 
 	dc, err := datacenter.Get(db, zne.Datacenter)
 	if err != nil {
+		return
+	}
+
+	if dc.PrivateStorage == "" {
+		logrus.WithFields(logrus.Fields{
+			"disk_id": dsk.Id,
+		}).Error("data: Cannot snapshot disk without private storage")
 		return
 	}
 
@@ -236,9 +242,9 @@ func CreateSnapshot(db *database.Database,
 		fmt.Sprintf("snapshot-%s", imgId.Hex()))
 	img := &image.Image{
 		Id: imgId,
-		Name: fmt.Sprintf("%s-%s", inst.Name,
+		Name: fmt.Sprintf("%s-%s", dsk.Name,
 			time.Now().Format("2006-01-02T15:04:05")),
-		Organization: inst.Organization,
+		Organization: dsk.Organization,
 		Type:         storage.Private,
 		Storage:      store.Id,
 		Key:          fmt.Sprintf("snapshot/%s.qcow2", imgId.Hex()),
@@ -246,17 +252,17 @@ func CreateSnapshot(db *database.Database,
 
 	defer utils.Remove(tmpPath)
 	err = utils.Exec("", "qemu-img", "convert", "-f", "qcow2",
-		"-O", "qcow2", "-c", disk.Path, tmpPath)
+		"-O", "qcow2", "-c", dskPth, tmpPath)
 	if err != nil {
 		return
 	}
 
 	logrus.WithFields(logrus.Fields{
-		"instance_id": virt.Id.Hex(),
-		"source_path": disk.Path,
+		"disk_id":     dsk.Id,
+		"source_path": dskPth,
 		"storage_id":  store.Id.Hex(),
 		"object_key":  img.Key,
-	}).Info("data: Uploading instance snapshot")
+	}).Info("data: Uploading disk snapshot")
 
 	client, err := minio.New(
 		store.Endpoint, store.AccessKey, store.SecretKey, !store.Insecure)
