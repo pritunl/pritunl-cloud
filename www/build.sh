@@ -17,6 +17,7 @@ jspm bundle app/App.js
 mv build.js dist/static/app.js
 mv build.js.map dist/static/app.js.map
 cp index_dist.html dist/index.html
+cp login.html dist/login.html
 
 APP_HASH=`md5sum dist/static/app.js | cut -c1-6`
 

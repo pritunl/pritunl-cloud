@@ -11909,7 +11909,7 @@ System.registerDynamic("app/components/Subscription.js", ["npm:react@15.6.1.js",
         update() {
             return React.createElement("div", null, React.createElement("div", { className: "pt-card pt-elevation-2", style: css.card }, React.createElement("div", { className: "pt-callout pt-intent-success", style: css.message, hidden: !this.state.message }, this.state.message), React.createElement("textarea", { className: "pt-input", style: css.license, disabled: this.state.disabled, placeholder: "New License Key", value: this.state.license, onChange: evt => {
                     this.setState(Object.assign({}, this.state, { license: evt.target.value }));
-                } }), React.createElement("div", { className: "layout horizontal center-justified" }, React.createElement("button", { className: "pt-button pt-intent-danger pt-icon-cross", style: css.button, disabled: this.state.disabled, onClick: () => {
+                } }), React.createElement("div", { className: "layout horizontal center-justified" }, React.createElement("button", { className: "pt-button pt-intent-danger pt-icon-trash", style: css.button, disabled: this.state.disabled, onClick: () => {
                     this.setState(Object.assign({}, this.state, { update: false, license: '' }));
                 } }, "Cancel"), React.createElement("button", { className: "pt-button pt-intent-primary pt-icon-endorsed", style: css.button, disabled: this.state.disabled, onClick: () => {
                     this.setState(Object.assign({}, this.state, { disabled: true }));
@@ -16742,7 +16742,7 @@ System.registerDynamic("app/components/Session.js", ["npm:react@15.6.1.js", "app
             if (session.removed) {
                 cardStyle.opacity = 0.6;
             }
-            return React.createElement("div", { className: "pt-card", style: cardStyle }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { style: css.remove }, React.createElement("button", { className: "pt-button pt-minimal pt-intent-danger pt-icon-cross", type: "button", hidden: session.removed, disabled: this.state.disabled, onClick: this.onDelete })), React.createElement(PageInfo_1.default, { style: css.info, fields: [{
+            return React.createElement("div", { className: "pt-card", style: cardStyle }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { style: css.remove }, React.createElement("button", { className: "pt-button pt-minimal pt-intent-danger pt-icon-trash", type: "button", hidden: session.removed, disabled: this.state.disabled, onClick: this.onDelete })), React.createElement(PageInfo_1.default, { style: css.info, fields: [{
                     label: 'ID',
                     value: session.id || 'None'
                 }, {
@@ -25179,7 +25179,7 @@ System.registerDynamic("app/components/UserDetailed.js", ["npm:react@15.6.1.js",
                     this.set('password', val);
                 } }), React.createElement(PageInput_1.default, { hidden: user.type !== 'api', disabled: this.state.locked, readOnly: true, autoSelect: true, label: "Token", help: "API token", type: "text", placeholder: "Save to generate token", value: user.token }), React.createElement(PageInput_1.default, { hidden: user.type !== 'api' || !user.token || !user.secret, disabled: this.state.locked, readOnly: true, autoSelect: true, label: "Secret", help: "API secret, will only be shown once", type: "text", placeholder: "", value: user.secret }), React.createElement(PageSwitch_1.default, { hidden: user.type !== 'api' || !user.token || !!user.secret, label: "Generate new token and secret", help: "Enable to generate a new token and secret on save. Secret can only be shown by generating new credentials.", disabled: this.state.locked, checked: user.generate_secret, onToggle: () => {
                     this.set('generate_secret', !user.generate_secret);
-                } }), React.createElement(PageSelect_1.default, { disabled: this.state.locked, label: "Type", help: "A local user is a user that is created on the Pritunl Zero database that has a username and password. The other user types can be used to create users for single sign-on services. Generally single sign-on users will be created automatically when the user authenticates for the first time. It can sometimes be desired to manaully create a single sign-on user to provide roles in advanced of the first login.", value: user.type, onChange: val => {
+                } }), React.createElement(PageSelect_1.default, { disabled: this.state.locked, label: "Type", help: "A local user is a user that is created on the Pritunl Cloud database that has a username and password. The other user types can be used to create users for single sign-on services. Generally single sign-on users will be created automatically when the user authenticates for the first time. It can sometimes be desired to manaully create a single sign-on user to provide roles in advanced of the first login.", value: user.type, onChange: val => {
                     this.set('type', val);
                 } }, React.createElement("option", { value: "local" }, "Local"), React.createElement("option", { value: "azure" }, "Azure"), React.createElement("option", { value: "google" }, "Google"), React.createElement("option", { value: "onelogin" }, "OneLogin"), React.createElement("option", { value: "okta" }, "Okta"), React.createElement("option", { value: "api" }, "API")), React.createElement("label", { className: "pt-label" }, "Roles", React.createElement(Help_1.default, { title: "Roles", content: "User roles will be used to match with service roles. A user must have a matching role to access a service." }), React.createElement("div", null, roles)), React.createElement(PageInputButton_1.default, { disabled: this.state.locked, buttonClass: "pt-intent-success pt-icon-add", label: "Add", type: "text", placeholder: "Add role", value: this.state.addRole, onChange: val => {
                     this.setState(Object.assign({}, this.state, { addRole: val }));
@@ -25540,7 +25540,7 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@15.6.1.js",
                         return;
                     }
                     this.props.onClose();
-                } }, React.createElement("div", { className: "flex" }), React.createElement(ConfirmButton_1.default, { className: "pt-minimal pt-intent-danger pt-icon-cross open-ignore", progressClassName: "pt-intent-danger", confirmMsg: "Confirm node remove", disabled: active || this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { disabled: this.state.disabled, label: "Name", help: "Name of node", type: "text", placeholder: "Enter name", value: node.name, onChange: val => {
+                } }, React.createElement("div", { className: "flex" }), React.createElement(ConfirmButton_1.default, { className: "pt-minimal pt-intent-danger pt-icon-trash open-ignore", progressClassName: "pt-intent-danger", confirmMsg: "Confirm node remove", disabled: active || this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { disabled: this.state.disabled, label: "Name", help: "Name of node", type: "text", placeholder: "Enter name", value: node.name, onChange: val => {
                     this.set('name', val);
                 } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Admin", help: "Provides access to the admin console on this node.", checked: node.type.indexOf('admin') !== -1, onToggle: () => {
                     this.toggleType('admin');
@@ -26307,7 +26307,7 @@ System.registerDynamic("app/components/Policy.js", ["npm:react@15.6.1.js", "app/
             }
             let adminProvider = policy.admin_secondary && providerIds.indexOf(policy.admin_secondary) !== -1;
             let userProvider = policy.user_secondary && providerIds.indexOf(policy.user_secondary) !== -1;
-            return React.createElement("div", { className: "pt-card", style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { style: css.remove }, React.createElement(ConfirmButton_1.default, { className: "pt-minimal pt-intent-danger pt-icon-cross", progressClassName: "pt-intent-danger", confirmMsg: "Confirm policy remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { label: "Name", help: "Name of policy", type: "text", placeholder: "Enter name", value: policy.name, onChange: val => {
+            return React.createElement("div", { className: "pt-card", style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { style: css.remove }, React.createElement(ConfirmButton_1.default, { className: "pt-minimal pt-intent-danger pt-icon-trash", progressClassName: "pt-intent-danger", confirmMsg: "Confirm policy remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { label: "Name", help: "Name of policy", type: "text", placeholder: "Enter name", value: policy.name, onChange: val => {
                     this.set('name', val);
                 } }), React.createElement("label", { className: "pt-label" }, "Roles", React.createElement(Help_1.default, { title: "Roles", content: "Roles associated with this policy. All requests from users with associated roles must pass this policy check." }), React.createElement("div", null, roles)), React.createElement(PageInputButton_1.default, { buttonClass: "pt-intent-success pt-icon-add", label: "Add", type: "text", placeholder: "Add role", value: this.state.addRole, onChange: val => {
                     this.setState(Object.assign({}, this.state, { addRole: val }));
@@ -26593,13 +26593,13 @@ System.registerDynamic("app/components/Certificate.js", ["npm:react@15.6.1.js", 
                         this.onRemoveDomain(index);
                     } }));
             }
-            return React.createElement("div", { className: "pt-card", style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { style: css.remove }, React.createElement(ConfirmButton_1.default, { className: "pt-minimal pt-intent-danger pt-icon-cross", progressClassName: "pt-intent-danger", confirmMsg: "Confirm certificate remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { label: "Name", help: "Name of certificate", type: "text", placeholder: "Name", value: cert.name, onChange: val => {
+            return React.createElement("div", { className: "pt-card", style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { style: css.remove }, React.createElement(ConfirmButton_1.default, { className: "pt-minimal pt-intent-danger pt-icon-trash", progressClassName: "pt-intent-danger", confirmMsg: "Confirm certificate remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { label: "Name", help: "Name of certificate", type: "text", placeholder: "Name", value: cert.name, onChange: val => {
                     this.set('name', val);
                 } }), React.createElement(PageTextArea_1.default, { readOnly: cert.type !== 'text', label: "Private Key", help: "Certificate private key in PEM format", placeholder: "Private key", rows: 6, value: cert.key, onChange: val => {
                     this.set('key', val);
                 } }), React.createElement(PageTextArea_1.default, { readOnly: cert.type !== 'text', label: "Certificate Chain", help: "Certificate followed by certificate chain in PEM format", placeholder: "Certificate chain", rows: 6, value: cert.certificate, onChange: val => {
                     this.set('certificate', val);
-                } }), React.createElement("label", { style: css.itemsLabel, hidden: cert.type !== 'lets_encrypt' }, "LetsEncrypt Domains", React.createElement(Help_1.default, { title: "LetsEncrypt Domains", content: "Enter domain names for the certificate. All domains names must point to a Pritunl Zero server in the cluster. The servers must also have port 80 publicy open. The port will need to stay open to renew the certificate." })), React.createElement("div", { hidden: cert.type !== 'lets_encrypt' }, domains), React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", style: css.itemsAdd, hidden: cert.type !== 'lets_encrypt', type: "button", onClick: this.onAddDomain }, "Add Domain")), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
+                } }), React.createElement("label", { style: css.itemsLabel, hidden: cert.type !== 'lets_encrypt' }, "LetsEncrypt Domains", React.createElement(Help_1.default, { title: "LetsEncrypt Domains", content: "Enter domain names for the certificate. All domains names must point to a Pritunl Cloud server in the cluster. The servers must also have port 80 publicy open. The port will need to stay open to renew the certificate." })), React.createElement("div", { hidden: cert.type !== 'lets_encrypt' }, domains), React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", style: css.itemsAdd, hidden: cert.type !== 'lets_encrypt', type: "button", onClick: this.onAddDomain }, "Add Domain")), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
                     label: 'ID',
                     value: this.props.certificate.id || 'None'
                 }, {
@@ -26814,7 +26814,7 @@ System.registerDynamic("app/components/Organization.js", ["npm:react@15.6.1.js",
                         this.onRemoveRole(role);
                     } })));
             }
-            return React.createElement("div", { className: "pt-card", style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { style: css.remove }, React.createElement(ConfirmButton_1.default, { className: "pt-minimal pt-intent-danger pt-icon-cross", progressClassName: "pt-intent-danger", confirmMsg: "Confirm organization remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { label: "Name", help: "Name of organization", type: "text", placeholder: "Name", value: org.name, onChange: val => {
+            return React.createElement("div", { className: "pt-card", style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { style: css.remove }, React.createElement(ConfirmButton_1.default, { className: "pt-minimal pt-intent-danger pt-icon-trash", progressClassName: "pt-intent-danger", confirmMsg: "Confirm organization remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { label: "Name", help: "Name of organization", type: "text", placeholder: "Name", value: org.name, onChange: val => {
                     this.set('name', val);
                 } }), React.createElement("label", { className: "pt-label" }, "Roles", React.createElement(Help_1.default, { title: "Roles", content: "User roles will be used to match with organization roles. A user must have a matching role to access an organization." }), React.createElement("div", null, roles)), React.createElement(PageInputButton_1.default, { disabled: this.state.disabled, buttonClass: "pt-intent-success pt-icon-add", label: "Add", type: "text", placeholder: "Add role", value: this.state.addRole, onChange: val => {
                     this.setState(Object.assign({}, this.state, { addRole: val }));
@@ -27039,22 +27039,27 @@ System.registerDynamic("app/components/Datacenter.js", ["npm:react@15.6.1.js", "
                         this.onRemoveStorage(storage.id);
                     } })));
             }
-            let privateStoragesSelect = [];
+            let hasStorages = false;
+            let privateStoragesSelect = [React.createElement("option", { key: "null", value: "" }, "None")];
             let publicStoragesSelect = [];
             if (this.props.storages.length) {
-                privateStoragesSelect.push(React.createElement("option", { key: "null", value: "" }, "None"));
                 for (let storage of this.props.storages) {
-                    privateStoragesSelect.push(React.createElement("option", { key: storage.id, value: storage.id }, storage.name));
-                    publicStoragesSelect.push(React.createElement("option", { key: storage.id, value: storage.id }, storage.name));
+                    if (storage.type === 'public') {
+                        hasStorages = true;
+                        publicStoragesSelect.push(React.createElement("option", { key: storage.id, value: storage.id }, storage.name));
+                    } else if (storage.type === 'private') {
+                        privateStoragesSelect.push(React.createElement("option", { key: storage.id, value: storage.id }, storage.name));
+                    }
                 }
-            } else {
-                publicStoragesSelect.push(React.createElement("option", { key: "null", value: "" }, "None"));
             }
-            return React.createElement("div", { className: "pt-card", style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { style: css.remove }, React.createElement(ConfirmButton_1.default, { className: "pt-minimal pt-intent-danger pt-icon-cross", progressClassName: "pt-intent-danger", confirmMsg: "Confirm datacenter remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { disabled: this.state.disabled, label: "Name", help: "Name of datacenter", type: "text", placeholder: "Enter name", value: datacenter.name, onChange: val => {
+            if (!hasStorages) {
+                publicStoragesSelect.push(React.createElement("option", { key: "null", value: "" }, "No Storages"));
+            }
+            return React.createElement("div", { className: "pt-card", style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { style: css.remove }, React.createElement(ConfirmButton_1.default, { className: "pt-minimal pt-intent-danger pt-icon-trash", progressClassName: "pt-intent-danger", confirmMsg: "Confirm datacenter remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { disabled: this.state.disabled, label: "Name", help: "Name of datacenter", type: "text", placeholder: "Enter name", value: datacenter.name, onChange: val => {
                     this.set('name', val);
                 } }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "Private Storage", help: "Private storage that will store instance snapshots.", value: datacenter.private_storage, onChange: val => {
                     this.set('private_storage', val);
-                } }, privateStoragesSelect), React.createElement("label", { className: "pt-label", style: css.label }, "Public Storages", React.createElement(Help_1.default, { title: "Public Storages", content: "Public storages that can be used for new instance images." }), React.createElement("div", null, publicStorages)), React.createElement(PageSelectButton_1.default, { label: "Add Storage", value: this.state.addStorage, disabled: !this.props.storages.length || this.state.disabled, buttonClass: "pt-intent-success", onChange: val => {
+                } }, privateStoragesSelect), React.createElement("label", { className: "pt-label", style: css.label }, "Public Storages", React.createElement(Help_1.default, { title: "Public Storages", content: "Public storages that can be used for new instance images." }), React.createElement("div", null, publicStorages)), React.createElement(PageSelectButton_1.default, { label: "Add Storage", value: this.state.addStorage, disabled: !hasStorages || this.state.disabled, buttonClass: "pt-intent-success", onChange: val => {
                     this.setState(Object.assign({}, this.state, { addStorage: val }));
                 }, onSubmit: this.onAddStorage }, publicStoragesSelect)), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
                     label: 'ID',
@@ -27294,7 +27299,7 @@ System.registerDynamic("app/components/Zone.js", ["npm:react@15.6.1.js", "app/ac
                 organizationsSelect.push(React.createElement("option", { key: "null", value: "" }, "None"));
             }
             let datacenter = DatacentersStore_1.default.datacenter(this.props.zone.datacenter);
-            return React.createElement("div", { className: "pt-card", style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { style: css.remove }, React.createElement(ConfirmButton_1.default, { className: "pt-minimal pt-intent-danger pt-icon-cross", progressClassName: "pt-intent-danger", confirmMsg: "Confirm zone remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { label: "Name", help: "Name of zone", type: "text", placeholder: "Enter name", value: zone.name, onChange: val => {
+            return React.createElement("div", { className: "pt-card", style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { style: css.remove }, React.createElement(ConfirmButton_1.default, { className: "pt-minimal pt-intent-danger pt-icon-trash", progressClassName: "pt-intent-danger", confirmMsg: "Confirm zone remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { label: "Name", help: "Name of zone", type: "text", placeholder: "Enter name", value: zone.name, onChange: val => {
                     this.set('name', val);
                 } }), React.createElement("label", { className: "pt-label", style: css.label }, "Organizations", React.createElement(Help_1.default, { title: "Organizations", content: "Organizations that can access this zone." }), React.createElement("div", null, organizations)), React.createElement(PageSelectButton_1.default, { label: "Add Organization", value: this.state.addOrganization, disabled: !this.props.organizations.length, buttonClass: "pt-intent-success", onChange: val => {
                     this.setState(Object.assign({}, this.state, { addOrganization: val }));
@@ -27512,7 +27517,7 @@ System.registerDynamic("app/components/Storage.js", ["npm:react@15.6.1.js", "app
         }
         render() {
             let storage = this.state.storage || this.props.storage;
-            return React.createElement("div", { className: "pt-card", style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { style: css.remove }, React.createElement(ConfirmButton_1.default, { className: "pt-minimal pt-intent-danger pt-icon-cross", progressClassName: "pt-intent-danger", confirmMsg: "Confirm storage remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { disabled: this.state.disabled, label: "Name", help: "Name of storage", type: "text", placeholder: "Enter name", value: storage.name, onChange: val => {
+            return React.createElement("div", { className: "pt-card", style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { style: css.remove }, React.createElement(ConfirmButton_1.default, { className: "pt-minimal pt-intent-danger pt-icon-trash", progressClassName: "pt-intent-danger", confirmMsg: "Confirm storage remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { disabled: this.state.disabled, label: "Name", help: "Name of storage", type: "text", placeholder: "Enter name", value: storage.name, onChange: val => {
                     this.set('name', val);
                 } }), React.createElement(PageInput_1.default, { disabled: this.state.disabled, label: "Endpoint", help: "Storage endpoint domain and port", type: "text", placeholder: "Enter endpoint", value: storage.endpoint, onChange: val => {
                     this.set('endpoint', val);
@@ -27799,7 +27804,7 @@ System.registerDynamic("app/components/ImageDetailed.js", ["npm:react@15.6.1.js"
                     this.props.onClose();
                 } }, React.createElement("div", null, React.createElement("label", { className: "pt-control pt-checkbox open-ignore", style: css.select }, React.createElement("input", { type: "checkbox", className: "open-ignore", checked: this.props.selected, onClick: evt => {
                     this.props.onSelect(evt.shiftKey);
-                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" }))), React.createElement("div", { className: "flex" }), React.createElement(ConfirmButton_1.default, { className: "pt-minimal pt-intent-danger pt-icon-cross open-ignore", style: css.button, progressClassName: "pt-intent-danger", confirmMsg: "Confirm image remove", disabled: this.props.image.type === 'public' || this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { label: "Name", help: "Name of image", type: "text", placeholder: "Enter name", value: image.name, onChange: val => {
+                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" }))), React.createElement("div", { className: "flex" }), React.createElement(ConfirmButton_1.default, { className: "pt-minimal pt-intent-danger pt-icon-trash open-ignore", style: css.button, progressClassName: "pt-intent-danger", confirmMsg: "Confirm image remove", disabled: this.props.image.type === 'public' || this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { label: "Name", help: "Name of image", type: "text", placeholder: "Enter name", value: image.name, onChange: val => {
                     this.set('name', val);
                 } })), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
                     label: 'ID',
@@ -28333,7 +28338,7 @@ System.registerDynamic("app/components/DiskDetailed.js", ["npm:react@15.6.1.js",
                 }
             }
             let statusText = 'Unknown';
-            let statusClass = 'pt-cell';
+            let statusClass = '';
             switch (this.props.disk.state) {
                 case 'provision':
                     statusText = 'Provisioning';
@@ -28351,6 +28356,10 @@ System.registerDynamic("app/components/DiskDetailed.js", ["npm:react@15.6.1.js",
                     statusText = 'Destroying';
                     statusClass += ' pt-text-intent-danger';
                     break;
+                case 'snapshot':
+                    statusText = 'Snapshotting';
+                    statusClass += ' pt-text-intent-primary';
+                    break;
             }
             return React.createElement("td", { className: "pt-cell", colSpan: 5, style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { className: "layout horizontal", style: css.buttons, onClick: evt => {
                     let target = evt.target;
@@ -28360,7 +28369,7 @@ System.registerDynamic("app/components/DiskDetailed.js", ["npm:react@15.6.1.js",
                     this.props.onClose();
                 } }, React.createElement("div", null, React.createElement("label", { className: "pt-control pt-checkbox open-ignore", style: css.select }, React.createElement("input", { type: "checkbox", className: "open-ignore", checked: this.props.selected, onClick: evt => {
                     this.props.onSelect(evt.shiftKey);
-                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" }))), React.createElement("div", { className: statusClass, style: css.status }, React.createElement("span", { style: css.icon, className: "pt-icon-standard pt-icon-pulse" }), statusText), React.createElement("div", { className: "flex" }), React.createElement(ConfirmButton_1.default, { className: "pt-minimal pt-intent-danger pt-icon-cross open-ignore", style: css.button, progressClassName: "pt-intent-danger", confirmMsg: "Confirm disk remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { label: "Name", help: "Name of disk.", type: "text", placeholder: "Enter name", value: disk.name, onChange: val => {
+                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" }))), React.createElement("div", { className: statusClass, style: css.status }, React.createElement("span", { style: css.icon, className: "pt-icon-standard pt-icon-pulse" }), statusText), React.createElement("div", { className: "flex" }), React.createElement(ConfirmButton_1.default, { className: "pt-minimal pt-intent-danger pt-icon-trash open-ignore", style: css.button, progressClassName: "pt-intent-danger", confirmMsg: "Confirm disk remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { label: "Name", help: "Name of disk.", type: "text", placeholder: "Enter name", value: disk.name, onChange: val => {
                     this.set('name', val);
                 } }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "Organization", help: "Organization for disk.", value: disk.organization, onChange: val => {
                     this.set('organization', val);
@@ -28487,6 +28496,10 @@ System.registerDynamic("app/components/Disk.js", ["npm:react@15.6.1.js", "app/st
                 case 'destroy':
                     statusText = 'Destroying';
                     statusClass += ' pt-text-intent-danger';
+                    break;
+                case 'snapshot':
+                    statusText = 'Snapshotting';
+                    statusClass += ' pt-text-intent-primary';
                     break;
             }
             return React.createElement("div", { className: "pt-card pt-row", style: css.card, onClick: evt => {
@@ -28948,6 +28961,14 @@ System.registerDynamic("app/components/Disks.js", ["npm:react@15.6.1.js", "app/s
                     this.setState(Object.assign({}, this.state, { disabled: false }));
                 });
             };
+            this.onSnapshot = () => {
+                this.setState(Object.assign({}, this.state, { disabled: true }));
+                DiskActions.updateMulti(Object.keys(this.state.selected), 'snapshot').then(() => {
+                    this.setState(Object.assign({}, this.state, { selected: {}, disabled: false }));
+                }).catch(() => {
+                    this.setState(Object.assign({}, this.state, { disabled: false }));
+                });
+            };
             this.state = {
                 disks: DisksStore_1.default.disks,
                 organizations: OrganizationsStore_1.default.organizations,
@@ -29039,7 +29060,7 @@ System.registerDynamic("app/components/Disks.js", ["npm:react@15.6.1.js", "app/s
             }
             return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Disks"), React.createElement("div", { className: "flex" }), React.createElement("div", null, React.createElement("button", { className: "pt-button pt-intent-warning pt-icon-chevron-up", style: css.button, disabled: !this.opened, type: "button", onClick: () => {
                     this.setState(Object.assign({}, this.state, { opened: {} }));
-                } }, "Collapse All"), React.createElement(ConfirmButton_1.default, { label: "Delete Selected", className: "pt-intent-danger pt-icon-delete", progressClassName: "pt-intent-danger", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onDelete }), React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", style: css.button, disabled: this.state.disabled || this.state.newOpened, type: "button", onClick: () => {
+                } }, "Collapse All"), React.createElement(ConfirmButton_1.default, { label: "Snapshot Selected", className: "pt-intent-primary pt-icon-floppy-disk", progressClassName: "pt-intent-primary", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onSnapshot }), React.createElement(ConfirmButton_1.default, { label: "Delete Selected", className: "pt-intent-danger pt-icon-delete", progressClassName: "pt-intent-danger", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onDelete }), React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", style: css.button, disabled: this.state.disabled || this.state.newOpened, type: "button", onClick: () => {
                     this.setState(Object.assign({}, this.state, { newOpened: true }));
                 } }, "New")))), React.createElement("div", { style: css.itemsBox }, React.createElement("div", { style: css.items }, newDiskDom, disksDom, React.createElement("tr", { className: "pt-card pt-row", style: css.placeholder }, React.createElement("td", { colSpan: 5, style: css.placeholder })))), React.createElement(NonState_1.default, { hidden: !!disksDom.length, iconClass: "pt-icon-key", title: "No disks", description: "Add a new disk to get started." }), React.createElement(DisksPage_1.default, { onPage: () => {
                     this.setState({
@@ -29240,7 +29261,7 @@ System.registerDynamic("app/stores/ZonesStore.js", ["app/dispatcher/Dispatcher.j
     exports.default = new ZonesStore();
     
 });
-System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@15.6.1.js", "app/actions/InstanceActions.js", "app/stores/OrganizationsStore.js", "app/stores/NodesStore.js", "app/stores/ZonesStore.js", "app/components/PageInput.js", "app/components/PageInputButton.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/PageNumInput.js", "app/components/ConfirmButton.js", "app/components/Help.js", "app/stores/InstancesStore.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@15.6.1.js", "app/actions/InstanceActions.js", "app/stores/OrganizationsStore.js", "app/stores/ZonesStore.js", "app/components/PageInput.js", "app/components/PageInputButton.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/PageNumInput.js", "app/components/ConfirmButton.js", "app/components/Help.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -29249,7 +29270,6 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@15.6.1.
     const React = $__require("npm:react@15.6.1.js");
     const InstanceActions = $__require("app/actions/InstanceActions.js");
     const OrganizationsStore_1 = $__require("app/stores/OrganizationsStore.js");
-    const NodesStore_1 = $__require("app/stores/NodesStore.js");
     const ZonesStore_1 = $__require("app/stores/ZonesStore.js");
     const PageInput_1 = $__require("app/components/PageInput.js");
     const PageInputButton_1 = $__require("app/components/PageInputButton.js");
@@ -29258,7 +29278,6 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@15.6.1.
     const PageNumInput_1 = $__require("app/components/PageNumInput.js");
     const ConfirmButton_1 = $__require("app/components/ConfirmButton.js");
     const Help_1 = $__require("app/components/Help.js");
-    const InstancesStore_1 = $__require("app/stores/InstancesStore.js");
     const css = {
         card: {
             position: 'relative',
@@ -29328,11 +29347,6 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@15.6.1.
     class InstanceDetailed extends React.Component {
         constructor(props, context) {
             super(props, context);
-            this.syncInfo = () => {
-                InstanceActions.info(this.props.instance.id).then(info => {
-                    this.setState(Object.assign({}, this.state, { info: info }));
-                });
-            };
             this.onAddNetworkRole = () => {
                 let instance;
                 if (!this.state.addNetworkRole) {
@@ -29398,18 +29412,10 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@15.6.1.
                 changed: false,
                 message: '',
                 instance: null,
-                info: {},
                 addCert: null,
                 addNetworkRole: '',
                 forwardedChecked: false
             };
-        }
-        componentDidMount() {
-            InstancesStore_1.default.addChangeListener(this.syncInfo);
-            this.syncInfo();
-        }
-        componentWillUnmount() {
-            InstancesStore_1.default.removeChangeListener(this.syncInfo);
         }
         set(name, val) {
             let instance;
@@ -29433,9 +29439,9 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@15.6.1.
         }
         render() {
             let instance = this.state.instance || this.props.instance;
+            let info = this.props.instance.info || {};
             let org = OrganizationsStore_1.default.organization(this.props.instance.organization);
             let zone = ZonesStore_1.default.zone(this.props.instance.zone);
-            let node = NodesStore_1.default.node(this.props.instance.node);
             let statusClass = '';
             switch (instance.status) {
                 case 'Running':
@@ -29447,9 +29453,6 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@15.6.1.
                 case 'Stopped':
                 case 'Destroying':
                     statusClass += 'pt-text-intent-danger';
-                    break;
-                case 'Snapshotting':
-                    statusClass += 'pt-text-intent-primary';
                     break;
             }
             let networkRoles = [];
@@ -29466,7 +29469,7 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@15.6.1.
                     this.props.onClose();
                 } }, React.createElement("div", null, React.createElement("label", { className: "pt-control pt-checkbox open-ignore", style: css.select }, React.createElement("input", { type: "checkbox", className: "open-ignore", checked: this.props.selected, onClick: evt => {
                     this.props.onSelect(evt.shiftKey);
-                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" }))), React.createElement("div", { className: statusClass, style: css.status }, React.createElement("span", { style: css.icon, hidden: !instance.status, className: "pt-icon-standard pt-icon-power" }), instance.status), React.createElement("div", { className: "flex" }), React.createElement(ConfirmButton_1.default, { className: "pt-minimal pt-intent-danger pt-icon-cross open-ignore", style: css.button, progressClassName: "pt-intent-danger", confirmMsg: "Confirm instance remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { label: "Name", help: "Name of instance", type: "text", placeholder: "Enter name", value: instance.name, onChange: val => {
+                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" }))), React.createElement("div", { className: statusClass, style: css.status }, React.createElement("span", { style: css.icon, hidden: !instance.status, className: "pt-icon-standard pt-icon-power" }), instance.status), React.createElement("div", { className: "flex" }), React.createElement(ConfirmButton_1.default, { className: "pt-minimal pt-intent-danger pt-icon-trash open-ignore", style: css.button, progressClassName: "pt-intent-danger", confirmMsg: "Confirm instance remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { label: "Name", help: "Name of instance", type: "text", placeholder: "Enter name", value: instance.name, onChange: val => {
                     this.set('name', val);
                 } }), React.createElement(PageNumInput_1.default, { label: "Memory Size", help: "Instance memory size in megabytes.", min: 256, minorStepSize: 256, stepSize: 512, majorStepSize: 1024, disabled: this.state.disabled, selectAllOnFocus: true, onChange: val => {
                     this.set('memory', val);
@@ -29485,13 +29488,10 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@15.6.1.
                     value: zone ? zone.name : this.props.instance.zone || 'None'
                 }, {
                     label: 'Node',
-                    value: node ? node.name : this.props.instance.node || 'None'
+                    value: info.node || 'None'
                 }, {
                     label: 'State',
-                    value: this.props.instance.state || 'None'
-                }, {
-                    label: 'VM State',
-                    value: this.props.instance.vm_state || 'None'
+                    value: (this.props.instance.state || 'None') + ':' + (this.props.instance.vm_state || 'None')
                 }, {
                     label: 'Public IPv4',
                     value: this.props.instance.public_ip || 'None'
@@ -29500,10 +29500,10 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@15.6.1.
                     value: this.props.instance.public_ip6 || 'None'
                 }, {
                     label: 'Disks',
-                    value: this.state.info.disks || ''
+                    value: info.disks || ''
                 }, {
                     label: 'Firewall Rules',
-                    value: this.state.info.firewall_rules || ''
+                    value: this.props.instance.info.firewall_rules || ''
                 }] }))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.instance && !this.state.message, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
                     this.setState(Object.assign({}, this.state, { changed: false, forwardedChecked: false, instance: null }));
                 }, onSave: this.onSave }, React.createElement(ConfirmButton_1.default, { label: "Start", className: "pt-intent-success pt-icon-power", progressClassName: "pt-intent-success", style: css.controlButton, hidden: this.props.instance.state !== 'stop', disabled: this.state.disabled, onConfirm: () => {
@@ -29601,9 +29601,6 @@ System.registerDynamic("app/components/Instance.js", ["npm:react@15.6.1.js", "ap
                 case 'Stopped':
                 case 'Destroying':
                     statusClass += ' pt-text-intent-danger';
-                    break;
-                case 'Snapshotting':
-                    statusClass += ' pt-text-intent-primary';
                     break;
             }
             return React.createElement("div", { className: "pt-card pt-row", style: cardStyle, onClick: evt => {
@@ -30323,8 +30320,6 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@15.6.1.js", "a
                     this.updateSelected('start');
                 } }), React.createElement(ConfirmButton_1.default, { label: "Stop Selected", className: "pt-intent-danger pt-icon-power", progressClassName: "pt-intent-danger", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: () => {
                     this.updateSelected('stop');
-                } }), React.createElement(ConfirmButton_1.default, { label: "Snapshot Selected", className: "pt-intent-primary pt-icon-floppy-disk", progressClassName: "pt-intent-primary", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: () => {
-                    this.updateSelected('snapshot');
                 } }), React.createElement(ConfirmButton_1.default, { label: "Delete Selected", className: "pt-intent-danger pt-icon-delete", progressClassName: "pt-intent-danger", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onDelete }), React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", style: css.button, disabled: this.state.disabled || this.state.newOpened, type: "button", onClick: () => {
                     this.setState(Object.assign({}, this.state, { newOpened: true }));
                 } }, "New")))), React.createElement("div", { style: css.itemsBox }, React.createElement("div", { style: css.items }, newInstanceDom, instancesDom, React.createElement("tr", { className: "pt-card pt-row", style: css.placeholder }, React.createElement("td", { colSpan: 5, style: css.placeholder })))), React.createElement(NonState_1.default, { hidden: !!instancesDom.length, iconClass: "pt-icon-dashboard", title: "No instances", description: "Add a new instance to get started." }), React.createElement(InstancesPage_1.default, { onPage: () => {
@@ -30750,7 +30745,7 @@ System.registerDynamic("app/components/FirewallDetailed.js", ["npm:react@15.6.1.
                     this.props.onClose();
                 } }, React.createElement("div", null, React.createElement("label", { className: "pt-control pt-checkbox open-ignore", style: css.select }, React.createElement("input", { type: "checkbox", className: "open-ignore", checked: this.props.selected, onClick: evt => {
                     this.props.onSelect(evt.shiftKey);
-                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" }))), React.createElement("div", { className: "flex" }), React.createElement(ConfirmButton_1.default, { className: "pt-minimal pt-intent-danger pt-icon-cross open-ignore", style: css.button, progressClassName: "pt-intent-danger", confirmMsg: "Confirm firewall remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { label: "Name", help: "Name of firewall", type: "text", placeholder: "Enter name", value: firewall.name, onChange: val => {
+                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" }))), React.createElement("div", { className: "flex" }), React.createElement(ConfirmButton_1.default, { className: "pt-minimal pt-intent-danger pt-icon-trash open-ignore", style: css.button, progressClassName: "pt-intent-danger", confirmMsg: "Confirm firewall remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { label: "Name", help: "Name of firewall", type: "text", placeholder: "Enter name", value: firewall.name, onChange: val => {
                     this.set('name', val);
                 } }), React.createElement("label", { style: css.itemsLabel }, "Ingress Rules", React.createElement(Help_1.default, { title: "Ingress Rules", content: "Firewall rules." })), React.createElement("div", { style: css.rules }, rules)), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
                     label: 'ID',
@@ -33344,7 +33339,7 @@ System.registerDynamic("app/components/SettingsProvider.js", ["npm:react@15.6.1.
                     let state = this.clone();
                     state.google_email = val;
                     this.props.onChange(state);
-                } }), React.createElement(PageTextArea_1.default, { label: "Google JSON Private Key", help: "Optional, private key for service account in JSON format. This will copy the Google users groups to Pritunl Zero. Also requires Google admin email.", placeholder: "Google JSON private key", rows: 6, value: provider.google_key, onChange: val => {
+                } }), React.createElement(PageTextArea_1.default, { label: "Google JSON Private Key", help: "Optional, private key for service account in JSON format. This will copy the Google users groups to Pritunl Cloud. Also requires Google admin email.", placeholder: "Google JSON private key", rows: 6, value: provider.google_key, onChange: val => {
                     let state = this.clone();
                     state.google_key = val;
                     this.props.onChange(state);
@@ -38902,6 +38897,29 @@ System.registerDynamic("app/actions/DiskActions.js", ["npm:superagent@3.8.1.js",
         });
     }
     exports.removeMulti = removeMulti;
+    function updateMulti(diskIds, state) {
+        let loader = new Loader_1.default().loading();
+        return new Promise((resolve, reject) => {
+            SuperAgent.put('/disk').send({
+                "ids": diskIds,
+                "state": state
+            }).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
+                loader.done();
+                if (res && res.status === 401) {
+                    window.location.href = '/login';
+                    resolve();
+                    return;
+                }
+                if (err) {
+                    Alert.errorRes(res, 'Failed to update disks');
+                    reject(err);
+                    return;
+                }
+                resolve();
+            });
+        });
+    }
+    exports.updateMulti = updateMulti;
     EventDispatcher_1.default.register(action => {
         switch (action.type) {
             case DiskTypes.CHANGE:
@@ -39236,26 +39254,6 @@ System.registerDynamic("app/actions/InstanceActions.js", ["npm:superagent@3.8.1.
         });
     }
     exports.syncNode = syncNode;
-    function info(instId) {
-        let loader = new Loader_1.default().loading();
-        return new Promise((resolve, reject) => {
-            SuperAgent.get('/instance/' + instId + '/info').set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
-                loader.done();
-                if (res && res.status === 401) {
-                    window.location.href = '/login';
-                    resolve();
-                    return;
-                }
-                if (err) {
-                    Alert.errorRes(res, 'Failed to load instances');
-                    reject(err);
-                    return;
-                }
-                resolve(res.body);
-            });
-        });
-    }
-    exports.info = info;
     EventDispatcher_1.default.register(action => {
         switch (action.type) {
             case InstanceTypes.CHANGE:
