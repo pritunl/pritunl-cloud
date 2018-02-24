@@ -61,6 +61,7 @@ func Register(engine *gin.Engine) {
 
 	csrfGroup.GET("/disk", disksGet)
 	csrfGroup.GET("/disk/:disk_id", diskGet)
+	csrfGroup.PUT("/disk", disksPut)
 	csrfGroup.PUT("/disk/:disk_id", diskPut)
 	csrfGroup.POST("/disk", diskPost)
 	csrfGroup.DELETE("/disk", disksDelete)
@@ -85,7 +86,6 @@ func Register(engine *gin.Engine) {
 	csrfGroup.PUT("/instance", instancesPut)
 	csrfGroup.GET("/instance/:instance_id", instanceGet)
 	csrfGroup.PUT("/instance/:instance_id", instancePut)
-	csrfGroup.GET("/instance/:instance_id/info", instanceInfoGet)
 	csrfGroup.POST("/instance", instancePost)
 	csrfGroup.DELETE("/instance", instancesDelete)
 	csrfGroup.DELETE("/instance/:instance_id", instanceDelete)

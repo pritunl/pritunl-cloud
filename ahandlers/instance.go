@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/pritunl-cloud/aggregate"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/instance"
-	"github.com/pritunl/pritunl-cloud/instanceinfo"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"gopkg.in/mgo.v2/bson"
 	"strconv"
@@ -35,8 +35,8 @@ type instanceMultiData struct {
 }
 
 type instancesData struct {
-	Instances []*instance.Instance `json:"instances"`
-	Count     int                  `json:"count"`
+	Instances []*aggregate.InstanceAggregate `json:"instances"`
+	Count     int                            `json:"count"`
 }
 
 func instancePut(c *gin.Context) {
@@ -273,24 +273,6 @@ func instanceGet(c *gin.Context) {
 	c.JSON(200, inst)
 }
 
-func instanceInfoGet(c *gin.Context) {
-	db := c.MustGet("db").(*database.Database)
-
-	instanceId, ok := utils.ParseObjectId(c.Param("instance_id"))
-	if !ok {
-		utils.AbortWithStatus(c, 400)
-		return
-	}
-
-	info, err := instanceinfo.Get(db, instanceId)
-	if err != nil {
-		utils.AbortWithError(c, 500, err)
-		return
-	}
-
-	c.JSON(200, info)
-}
-
 func instancesGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 
@@ -321,7 +303,7 @@ func instancesGet(c *gin.Context) {
 			}
 		}
 
-		instances, count, err := instance.GetAllPaged(
+		instances, count, err := aggregate.GetInstancePaged(
 			db, &query, page, pageCount)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)

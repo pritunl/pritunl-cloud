@@ -7,6 +7,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/disk"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"gopkg.in/mgo.v2/bson"
@@ -22,7 +23,13 @@ type diskData struct {
 	Index        string        `json:"index"`
 	Node         bson.ObjectId `json:"node"`
 	Image        bson.ObjectId `json:"image"`
+	State        string        `json:"state"`
 	Size         int           `json:"size"`
+}
+
+type disksMultiData struct {
+	Ids   []bson.ObjectId `json:"ids"`
+	State string          `json:"state"`
 }
 
 type disksData struct {
@@ -60,6 +67,10 @@ func diskPut(c *gin.Context) {
 	dsk.Organization = dta.Organization
 	dsk.Instance = dta.Instance
 	dsk.Index = dta.Index
+
+	if dsk.State == disk.Available && dta.State == disk.Snapshot {
+		dsk.State = disk.Snapshot
+	}
 
 	fields := set.NewSet(
 		"state",
@@ -137,6 +148,45 @@ func diskPost(c *gin.Context) {
 	event.PublishDispatch(db, "disk.change")
 
 	c.JSON(200, dsk)
+}
+
+func disksPut(c *gin.Context) {
+	if demo.Blocked(c) {
+		return
+	}
+
+	db := c.MustGet("db").(*database.Database)
+	data := &disksMultiData{}
+
+	err := c.Bind(data)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if data.State != disk.Snapshot {
+		errData := &errortypes.ErrorData{
+			Error:   "invalid_state",
+			Message: "Invalid disk state",
+		}
+
+		c.JSON(400, errData)
+		return
+	}
+
+	doc := bson.M{
+		"state": data.State,
+	}
+
+	err = disk.UpdateMulti(db, data.Ids, &doc)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	event.PublishDispatch(db, "instance.change")
+
+	c.JSON(200, nil)
 }
 
 func diskDelete(c *gin.Context) {
