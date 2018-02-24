@@ -3,6 +3,7 @@ package qemu
 import (
 	"encoding/json"
 	"github.com/Sirupsen/logrus"
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -18,6 +19,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/vm"
 	"gopkg.in/mgo.v2/bson"
 	"io/ioutil"
+	"net"
 	"regexp"
 	"strings"
 	"sync"
@@ -216,12 +218,44 @@ func Wait(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	time.Sleep(3 * time.Second)
-
 	return
 }
 
 func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
+	ifaceNames := set.NewSet()
+	for i := range virt.NetworkAdapters {
+		ifaceNames.Add(vm.GetIface(virt.Id, i))
+	}
+
+	for i := 0; i < 40; i++ {
+		ifaces, e := net.Interfaces()
+		if e != nil {
+			err = &errortypes.ReadError{
+				errors.Wrap(e, "qemu: Failed to get network interfaces"),
+			}
+			return
+		}
+
+		for _, iface := range ifaces {
+			if ifaceNames.Contains(iface.Name) {
+				ifaceNames.Remove(iface.Name)
+			}
+		}
+
+		if ifaceNames.Len() == 0 {
+			break
+		}
+
+		time.Sleep(250 * time.Millisecond)
+	}
+
+	if ifaceNames.Len() != 0 {
+		err = &errortypes.ReadError{
+			errors.New("qemu: Failed to find network interfaces"),
+		}
+		return
+	}
+
 	for i, adapter := range virt.NetworkAdapters {
 		iface := vm.GetIface(virt.Id, i)
 
@@ -300,6 +334,7 @@ func Create(db *database.Database, inst *instance.Instance,
 	dsk, err := disk.GetInstanceIndex(db, inst.Id, "0")
 	if err != nil {
 		if _, ok := err.(*database.NotFoundError); ok {
+			dsk = nil
 			err = nil
 		} else {
 			return
@@ -307,7 +342,7 @@ func Create(db *database.Database, inst *instance.Instance,
 	}
 
 	if dsk == nil {
-		dsk := &disk.Disk{
+		dsk = &disk.Disk{
 			Id:           bson.NewObjectId(),
 			Name:         inst.Name,
 			State:        disk.Available,

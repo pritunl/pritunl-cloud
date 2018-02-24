@@ -223,13 +223,18 @@ func vmUpdate() (err error) {
 					}
 				}(inst)
 				continue
-			} else if inst.Changed(curVirt) && !inst.Restart {
+			} else if inst.Changed(curVirt) && !inst.Restart &&
+				!busy.Locked(inst.Id.Hex()) {
+
 				inst.Restart = true
 				err = inst.CommitFields(db, set.NewSet("restart"))
 				if err != nil {
 					return
 				}
-			} else if !inst.Changed(curVirt) && inst.Restart {
+			} else if !inst.Changed(curVirt) && inst.Restart &&
+				!busy.Locked(inst.Id.Hex()) {
+
+
 				inst.Restart = false
 				err = inst.CommitFields(db, set.NewSet("restart"))
 				if err != nil {
@@ -238,7 +243,9 @@ func vmUpdate() (err error) {
 			}
 
 			addDisks, remDisks := inst.DiskChanged(curVirt)
-			if len(addDisks) > 0 && !inst.Restart {
+			if len(addDisks) > 0 && !inst.Restart &&
+				!busy.Locked(inst.Id.Hex()) {
+
 				inst.Restart = true
 				err = inst.CommitFields(db, set.NewSet("restart"))
 				if err != nil {
