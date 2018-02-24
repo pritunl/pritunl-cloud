@@ -124,6 +124,10 @@ export default class Disk extends React.Component<Props, {}> {
 				statusText = 'Destroying';
 				statusClass += ' pt-text-intent-danger';
 				break;
+			case 'snapshot':
+				statusText = 'Snapshotting';
+				statusClass += ' pt-text-intent-primary';
+				break;
 		}
 
 		return <div

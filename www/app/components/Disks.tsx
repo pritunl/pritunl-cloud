@@ -164,6 +164,26 @@ export default class Disks extends React.Component<{}, State> {
 		});
 	}
 
+	onSnapshot = (): void => {
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+		DiskActions.updateMulti(
+			Object.keys(this.state.selected), 'snapshot').then((): void => {
+			this.setState({
+				...this.state,
+				selected: {},
+				disabled: false,
+			});
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		});
+	}
+
 	render(): JSX.Element {
 		let disksDom: JSX.Element[] = [];
 
@@ -280,6 +300,14 @@ export default class Disks extends React.Component<{}, State> {
 						>
 							Collapse All
 						</button>
+						<ConfirmButton
+							label="Snapshot Selected"
+							className="pt-intent-primary pt-icon-floppy-disk"
+							progressClassName="pt-intent-primary"
+							style={css.button}
+							disabled={!this.selected || this.state.disabled}
+							onConfirm={this.onSnapshot}
+						/>
 						<ConfirmButton
 							label="Delete Selected"
 							className="pt-intent-danger pt-icon-delete"

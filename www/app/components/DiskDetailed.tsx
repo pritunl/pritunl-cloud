@@ -257,7 +257,7 @@ export default class DiskDetailed extends React.Component<Props, State> {
 		}
 
 		let statusText = 'Unknown';
-		let statusClass = 'pt-cell';
+		let statusClass = '';
 		switch (this.props.disk.state) {
 			case 'provision':
 				statusText = 'Provisioning';
@@ -274,6 +274,10 @@ export default class DiskDetailed extends React.Component<Props, State> {
 			case 'destroy':
 				statusText = 'Destroying';
 				statusClass += ' pt-text-intent-danger';
+				break;
+			case 'snapshot':
+				statusText = 'Snapshotting';
+				statusClass += ' pt-text-intent-primary';
 				break;
 		}
 
@@ -322,7 +326,7 @@ export default class DiskDetailed extends React.Component<Props, State> {
 						</div>
 						<div className="flex"/>
 						<ConfirmButton
-							className="pt-minimal pt-intent-danger pt-icon-cross open-ignore"
+							className="pt-minimal pt-intent-danger pt-icon-trash open-ignore"
 							style={css.button}
 							progressClassName="pt-intent-danger"
 							confirmMsg="Confirm disk remove"
