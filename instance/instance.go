@@ -147,9 +147,6 @@ func (i *Instance) Json() {
 	case Destroy:
 		i.Status = "Destroying"
 		break
-	case Snapshot:
-		i.Status = "Snapshotting"
-		break
 	}
 }
 
