@@ -432,9 +432,16 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"id": virt.Id.Hex(),
 	}).Info("qemu: Destroying virtual machine")
 
-	err = systemd.Stop(unitName)
+	exists, err := utils.Exists(unitPath)
 	if err != nil {
 		return
+	}
+
+	if exists {
+		err = systemd.Stop(unitName)
+		if err != nil {
+			return
+		}
 	}
 
 	time.Sleep(3 * time.Second)
