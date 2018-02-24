@@ -3,7 +3,6 @@ import * as React from 'react';
 import * as InstanceTypes from '../types/InstanceTypes';
 import * as InstanceActions from '../actions/InstanceActions';
 import OrganizationsStore from '../stores/OrganizationsStore';
-import NodesStore from '../stores/NodesStore';
 import ZonesStore from '../stores/ZonesStore';
 import PageInput from './PageInput';
 import PageInputButton from './PageInputButton';
@@ -12,14 +11,6 @@ import PageSave from './PageSave';
 import PageNumInput from './PageNumInput';
 import ConfirmButton from './ConfirmButton';
 import Help from './Help';
-import * as DatacenterActions from "../actions/DatacenterActions";
-import DatacentersStore from "../stores/DatacentersStore";
-import CertificatesStore from "../stores/CertificatesStore";
-import * as NodeActions from "../actions/NodeActions";
-import InstancesStore from "../stores/InstancesStore";
-import * as CertificateActions from "../actions/CertificateActions";
-import * as OrganizationActions from "../actions/OrganizationActions";
-import * as ZoneActions from "../actions/ZoneActions";
 
 interface Props {
 	instance: InstanceTypes.InstanceRo;
@@ -33,7 +24,6 @@ interface State {
 	changed: boolean;
 	message: string;
 	instance: InstanceTypes.Instance;
-	info: InstanceTypes.Info;
 	addCert: string;
 	addNetworkRole: string;
 	forwardedChecked: boolean;
@@ -114,29 +104,10 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			changed: false,
 			message: '',
 			instance: null,
-			info: {},
 			addCert: null,
 			addNetworkRole: '',
 			forwardedChecked: false,
 		};
-	}
-
-	componentDidMount(): void {
-		InstancesStore.addChangeListener(this.syncInfo);
-		this.syncInfo();
-	}
-
-	componentWillUnmount(): void {
-		InstancesStore.removeChangeListener(this.syncInfo);
-	}
-
-	syncInfo = (): void => {
-		InstanceActions.info(this.props.instance.id).then((info): void => {
-			this.setState({
-				...this.state,
-				info: info,
-			});
-		});
 	}
 
 	set(name: string, val: any): void {
@@ -314,11 +285,11 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 	render(): JSX.Element {
 		let instance: InstanceTypes.Instance = this.state.instance ||
 			this.props.instance;
+		let info: InstanceTypes.Info = this.props.instance.info || {};
 
 		let org = OrganizationsStore.organization(
 			this.props.instance.organization);
 		let zone = ZonesStore.zone(this.props.instance.zone);
-		let node = NodesStore.node(this.props.instance.node); // TODO Paged
 
 		let statusClass = '';
 		switch (instance.status) {
@@ -331,9 +302,6 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			case 'Stopped':
 			case 'Destroying':
 				statusClass += 'pt-text-intent-danger';
-				break;
-			case 'Snapshotting':
-				statusClass += 'pt-text-intent-primary';
 				break;
 		}
 
@@ -403,7 +371,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						</div>
 						<div className="flex"/>
 						<ConfirmButton
-							className="pt-minimal pt-intent-danger pt-icon-cross open-ignore"
+							className="pt-minimal pt-intent-danger pt-icon-trash open-ignore"
 							style={css.button}
 							progressClassName="pt-intent-danger"
 							confirmMsg="Confirm instance remove"
@@ -493,15 +461,12 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 							},
 							{
 								label: 'Node',
-								value: node ? node.name : this.props.instance.node || 'None',
+								value: info.node || 'None',
 							},
 							{
 								label: 'State',
-								value: this.props.instance.state || 'None',
-							},
-							{
-								label: 'VM State',
-								value: this.props.instance.vm_state || 'None',
+								value: (this.props.instance.state || 'None') + ':' + (
+									this.props.instance.vm_state || 'None'),
 							},
 							{
 								label: 'Public IPv4',
@@ -513,11 +478,11 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 							},
 							{
 								label: 'Disks',
-								value: this.state.info.disks || '',
+								value: info.disks || '',
 							},
 							{
 								label: 'Firewall Rules',
-								value: this.state.info.firewall_rules || '',
+								value: this.props.instance.info.firewall_rules || '',
 							},
 						]}
 					/>

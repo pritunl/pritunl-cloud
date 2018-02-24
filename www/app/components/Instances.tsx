@@ -24,7 +24,6 @@ import Page from './Page';
 import PageHeader from './PageHeader';
 import NonState from './NonState';
 import ConfirmButton from './ConfirmButton';
-import * as UserActions from "../actions/UserActions";
 
 interface Selected {
 	[key: string]: boolean;
@@ -330,16 +329,6 @@ export default class Instances extends React.Component<{}, State> {
 							disabled={!this.selected || this.state.disabled}
 							onConfirm={(): void => {
 								this.updateSelected('stop');
-							}}
-						/>
-						<ConfirmButton
-							label="Snapshot Selected"
-							className="pt-intent-primary pt-icon-floppy-disk"
-							progressClassName="pt-intent-primary"
-							style={css.button}
-							disabled={!this.selected || this.state.disabled}
-							onConfirm={(): void => {
-								this.updateSelected('snapshot');
 							}}
 						/>
 						<ConfirmButton

@@ -1,6 +1,5 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
-import * as MiscUtils from '../utils/MiscUtils';
 import * as InstanceTypes from '../types/InstanceTypes';
 import InstanceDetailed from './InstanceDetailed';
 
@@ -104,9 +103,6 @@ export default class Instance extends React.Component<Props, {}> {
 			case 'Stopped':
 			case 'Destroying':
 				statusClass += ' pt-text-intent-danger';
-				break;
-			case 'Snapshotting':
-				statusClass += ' pt-text-intent-primary';
 				break;
 		}
 

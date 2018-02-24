@@ -21,6 +21,7 @@ export interface Instance {
 	processors?: number;
 	network_roles?: string[];
 	count?: number;
+	info?: Info;
 }
 
 export interface Filter {
@@ -28,7 +29,7 @@ export interface Filter {
 }
 
 export interface Info {
-	instance?: string;
+	node?: string;
 	firewall_rules?: string[];
 	disks?: string[];
 }
