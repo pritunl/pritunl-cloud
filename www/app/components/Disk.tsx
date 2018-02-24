@@ -5,6 +5,7 @@ import * as DiskTypes from '../types/DiskTypes';
 import * as OrganizationTypes from "../types/OrganizationTypes";
 import OrganizationsStore from '../stores/OrganizationsStore';
 import DiskDetailed from './DiskDetailed';
+import NodesStore from "../stores/NodesStore";
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -79,6 +80,7 @@ const css = {
 export default class Disk extends React.Component<Props, {}> {
 	render(): JSX.Element {
 		let disk = this.props.disk;
+		let node = NodesStore.node(this.props.disk.node);
 
 		if (this.props.open) {
 			return <div
@@ -178,6 +180,13 @@ export default class Disk extends React.Component<Props, {}> {
 						'pt-icon-people' : 'pt-icon-layers')}
 				/>
 				{orgName}
+			</div>
+			<div className="pt-cell" style={css.item}>
+				<span
+					style={css.icon}
+					className="pt-icon-standard pt-icon-layers"
+				/>
+				{node ? node.name : this.props.disk.node}
 			</div>
 			<div className="pt-cell" style={css.item}>
 				<span
