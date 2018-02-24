@@ -253,27 +253,35 @@ export default class Datacenter extends React.Component<Props, State> {
 			);
 		}
 
-		let privateStoragesSelect: JSX.Element[] = [];
+		let hasStorages = false;
+		let privateStoragesSelect: JSX.Element[] = [
+			<option key="null" value="">None</option>,
+		];
 		let publicStoragesSelect: JSX.Element[] = [];
 		if (this.props.storages.length) {
-			privateStoragesSelect.push(<option key="null" value="">None</option>);
-
 			for (let storage of this.props.storages) {
-				privateStoragesSelect.push(
-					<option
-						key={storage.id}
-						value={storage.id}
-					>{storage.name}</option>,
-				);
-				publicStoragesSelect.push(
-					<option
-						key={storage.id}
-						value={storage.id}
-					>{storage.name}</option>,
-				);
+				if (storage.type === 'public') {
+					hasStorages = true;
+					publicStoragesSelect.push(
+						<option
+							key={storage.id}
+							value={storage.id}
+						>{storage.name}</option>,
+					);
+				} else if (storage.type === 'private') {
+					privateStoragesSelect.push(
+						<option
+							key={storage.id}
+							value={storage.id}
+						>{storage.name}</option>,
+					);
+				}
 			}
-		} else {
-			publicStoragesSelect.push(<option key="null" value="">None</option>);
+		}
+
+		if (!hasStorages) {
+			publicStoragesSelect.push(
+				<option key="null" value="">No Storages</option>);
 		}
 
 		return <div
@@ -329,7 +337,7 @@ export default class Datacenter extends React.Component<Props, State> {
 					<PageSelectButton
 						label="Add Storage"
 						value={this.state.addStorage}
-						disabled={!this.props.storages.length || this.state.disabled}
+						disabled={!hasStorages|| this.state.disabled}
 						buttonClass="pt-intent-success"
 						onChange={(val: string): void => {
 							this.setState({
