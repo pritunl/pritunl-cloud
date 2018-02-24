@@ -163,34 +163,64 @@ func vmUpdate() (err error) {
 		return
 	}
 
+	println("sync-done")
+
 	newIds := set.NewSet()
 	for _, inst := range instances {
 		newIds.Add(inst.Id)
 		if !curIds.Contains(inst.Id) && !busy.Locked(inst.Id.Hex()) {
-			busy.Lock(inst.Id.Hex())
-			go func(inst *instance.Instance) {
-				defer func() {
-					time.Sleep(5 * time.Second)
-					busy.Unlock(inst.Id.Hex())
-				}()
-				db := database.GetDatabase()
-				defer db.Close()
+			if inst.State == instance.Destroy {
+				busy.Lock(inst.Id.Hex())
+				go func(inst *instance.Instance) {
+					defer busy.Unlock(inst.Id.Hex())
 
-				e := qemu.Create(db, inst, inst.Virt)
-				if e != nil {
-					logrus.WithFields(logrus.Fields{
-						"error": e,
-					}).Error("sync: Failed to create instance")
-					return
-				}
-			}(inst)
+					db := database.GetDatabase()
+					defer db.Close()
+
+					e := qemu.Destroy(db, inst.Virt)
+					if e != nil {
+						logrus.WithFields(logrus.Fields{
+							"error": e,
+						}).Error("sync: Failed to power off instance")
+						return
+					}
+
+					e = instance.Remove(db, inst.Id)
+					if e != nil {
+						logrus.WithFields(logrus.Fields{
+							"error": e,
+						}).Error("sync: Failed to remove instance")
+						return
+					}
+
+					event.PublishDispatch(db, "disk.change")
+				}(inst)
+			} else {
+				busy.Lock(inst.Id.Hex())
+				go func(inst *instance.Instance) {
+					defer func() {
+						time.Sleep(5 * time.Second)
+						busy.Unlock(inst.Id.Hex())
+					}()
+					db := database.GetDatabase()
+					defer db.Close()
+
+					e := qemu.Create(db, inst, inst.Virt)
+					if e != nil {
+						logrus.WithFields(logrus.Fields{
+							"error": e,
+						}).Error("sync: Failed to create instance")
+						return
+					}
+				}(inst)
+			}
 		}
 	}
 
 	curIds.Subtract(newIds)
 	for idInf := range curIds.Iter() {
 		logrus.WithFields(logrus.Fields{
-			"id": idInf.(bson.ObjectId),
+			"id": idInf.(bson.ObjectId).Hex(),
 		}).Info("sync: Unknown instance")
 	}
 
@@ -233,7 +263,6 @@ func vmUpdate() (err error) {
 				}
 			} else if !inst.Changed(curVirt) && inst.Restart &&
 				!busy.Locked(inst.Id.Hex()) {
-
 
 				inst.Restart = false
 				err = inst.CommitFields(db, set.NewSet("restart"))
