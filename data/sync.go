@@ -8,12 +8,20 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/storage"
+	"github.com/pritunl/pritunl-cloud/utils"
+)
+
+var (
+	syncLock = utils.NewMultiLock()
 )
 
 func Sync(db *database.Database, store *storage.Storage) (err error) {
 	if store.Endpoint == "" {
 		return
 	}
+
+	syncLock.Lock(store.Id.Hex())
+	defer syncLock.Unlock(store.Id.Hex())
 
 	client, err := minio.New(
 		store.Endpoint, store.AccessKey, store.SecretKey, !store.Insecure)
