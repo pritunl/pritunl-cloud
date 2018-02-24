@@ -70,6 +70,37 @@ func GetRoles(db *database.Database, roles []string) (
 	return
 }
 
+func GetOrgMapRoles(db *database.Database, orgId bson.ObjectId) (
+	fires map[string][]*Firewall, err error) {
+
+	coll := db.Firewalls()
+	fires = map[string][]*Firewall{}
+
+	cursor := coll.Find(&bson.M{
+		"organization": orgId,
+	}).Sort("_id").Iter()
+
+	fire := &Firewall{}
+	for cursor.Next(fire) {
+		for _, role := range fire.NetworkRoles {
+			roleFires := fires[role]
+			if roleFires == nil {
+				roleFires = []*Firewall{}
+			}
+			fires[role] = append(roleFires, fire)
+		}
+		fire = &Firewall{}
+	}
+
+	err = cursor.Close()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetOrgRoles(db *database.Database, orgId bson.ObjectId,
 	roles []string) (fires []*Firewall, err error) {
 
