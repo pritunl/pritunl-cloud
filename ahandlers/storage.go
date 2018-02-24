@@ -84,7 +84,7 @@ func storagePut(c *gin.Context) {
 		return
 	}
 
-	data.Sync(db, store)
+	go data.Sync(db, store)
 
 	event.PublishDispatch(db, "storage.change")
 
