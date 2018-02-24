@@ -7,13 +7,11 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-func Get(db *database.Database, diskId bson.ObjectId) (
-	disk *Disk, err error) {
-
+func Get(db *database.Database, diskId bson.ObjectId) (dsk *Disk, err error) {
 	coll := db.Disks()
-	disk = &Disk{}
+	dsk = &Disk{}
 
-	err = coll.FindOneId(diskId, disk)
+	err = coll.FindOneId(diskId, dsk)
 	if err != nil {
 		return
 	}
@@ -87,15 +85,32 @@ func GetInstance(db *database.Database, instId bson.ObjectId) (
 		"instance": instId,
 	}).Sort("index").Iter()
 
-	nde := &Disk{}
-	for cursor.Next(nde) {
-		disks = append(disks, nde)
-		nde = &Disk{}
+	dsk := &Disk{}
+	for cursor.Next(dsk) {
+		disks = append(disks, dsk)
+		dsk = &Disk{}
 	}
 
 	err = cursor.Close()
 	if err != nil {
 		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func GetInstanceIndex(db *database.Database, instId bson.ObjectId,
+	index string) (dsk *Disk, err error) {
+
+	coll := db.Disks()
+	dsk = &Disk{}
+
+	err = coll.FindOne(&bson.M{
+		"instance": instId,
+		"index":    index,
+	}, dsk)
+	if err != nil {
 		return
 	}
 
@@ -112,10 +127,10 @@ func GetNode(db *database.Database, nodeId bson.ObjectId) (
 		"node": nodeId,
 	}).Iter()
 
-	nde := &Disk{}
-	for cursor.Next(nde) {
-		disks = append(disks, nde)
-		nde = &Disk{}
+	dsk := &Disk{}
+	for cursor.Next(dsk) {
+		disks = append(disks, dsk)
+		dsk = &Disk{}
 	}
 
 	err = cursor.Close()
@@ -190,6 +205,26 @@ func DeleteMulti(db *database.Database, dskIds []bson.ObjectId) (err error) {
 		"$set": &bson.M{
 			"state": Destroy,
 		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func UpdateMulti(db *database.Database, dskIds []bson.ObjectId,
+	doc *bson.M) (err error) {
+
+	coll := db.Disks()
+
+	_, err = coll.UpdateAll(&bson.M{
+		"_id": &bson.M{
+			"$in": dskIds,
+		},
+	}, &bson.M{
+		"$set": doc,
 	})
 	if err != nil {
 		err = database.ParseError(err)
