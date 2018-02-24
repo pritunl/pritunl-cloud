@@ -129,7 +129,7 @@ export default class Subscription extends React.Component<{}, State> {
 				/>
 				<div className="layout horizontal center-justified">
 					<button
-						className="pt-button pt-intent-danger pt-icon-cross"
+						className="pt-button pt-intent-danger pt-icon-trash"
 						style={css.button}
 						disabled={this.state.disabled}
 						onClick={(): void => {

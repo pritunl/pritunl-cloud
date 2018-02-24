@@ -225,7 +225,7 @@ export default class ImageDetailed extends React.Component<Props, State> {
             </div>
 						<div className="flex"/>
 						<ConfirmButton
-							className="pt-minimal pt-intent-danger pt-icon-cross open-ignore"
+							className="pt-minimal pt-intent-danger pt-icon-trash open-ignore"
 							style={css.button}
 							progressClassName="pt-intent-danger"
 							confirmMsg="Confirm image remove"

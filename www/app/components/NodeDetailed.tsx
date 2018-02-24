@@ -527,7 +527,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					>
 						<div className="flex"/>
 						<ConfirmButton
-							className="pt-minimal pt-intent-danger pt-icon-cross open-ignore"
+							className="pt-minimal pt-intent-danger pt-icon-trash open-ignore"
 							progressClassName="pt-intent-danger"
 							confirmMsg="Confirm node remove"
 							disabled={active || this.state.disabled}
