@@ -207,22 +207,6 @@ func (s *Instances) diskRemove(inst *instance.Instance, remDisks []*vm.Disk) {
 			}
 		}
 
-		err := qemu.Destroy(db, inst.Virt)
-		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"error": err,
-			}).Error("deploy: Failed to power off instance")
-			return
-		}
-
-		err = instance.Remove(db, inst.Id)
-		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"error": err,
-			}).Error("deploy: Failed to remove instance")
-			return
-		}
-
 		event.PublishDispatch(db, "instance.change")
 		event.PublishDispatch(db, "disk.change")
 	}()
