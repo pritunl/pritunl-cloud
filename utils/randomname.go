@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bytes"
 	"fmt"
 	"math/rand"
 )
@@ -51,5 +52,23 @@ var (
 func RandName() (name string) {
 	name = fmt.Sprintf("%s-%s-%d", randOne[rand.Intn(18)],
 		randTwo[rand.Intn(18)], rand.Intn(8999)+1000)
+	return
+}
+
+func RandIpv6() (addr string) {
+	addr = "2604:4080"
+	randByt, _ := RandBytes(12)
+	randHex := fmt.Sprintf("%x", randByt)
+
+	buf := bytes.Buffer{}
+	for i, run := range randHex {
+		if i%4 == 0 && i != len(randHex)-1 {
+			buf.WriteRune(':')
+		}
+		buf.WriteRune(run)
+	}
+
+	addr += buf.String()
+
 	return
 }
