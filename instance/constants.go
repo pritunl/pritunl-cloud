@@ -1,8 +1,9 @@
 package instance
 
 const (
-	Start   = "start"
-	Stop    = "stop"
-	Restart = "restart"
-	Destroy = "destroy"
+	Provision = "provision"
+	Start     = "start"
+	Stop      = "stop"
+	Restart   = "restart"
+	Destroy   = "destroy"
 )
