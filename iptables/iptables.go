@@ -5,13 +5,12 @@ import (
 	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"strings"
-	"sync"
 	"time"
 )
 
 var (
 	curState  *State
-	stateLock = sync.Mutex{}
+	stateLock = utils.NewTimeoutLock(1 * time.Minute)
 )
 
 type Rules struct {

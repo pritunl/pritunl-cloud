@@ -236,8 +236,8 @@ func applyState(oldState, newState *State) (err error) {
 func UpdateState(db *database.Database, instances []*instance.Instance) (
 	err error) {
 
-	stateLock.Lock()
-	defer stateLock.Unlock()
+	lockId := stateLock.Lock()
+	defer stateLock.Unlock(lockId)
 
 	newState := &State{
 		Interfaces: map[string]*Rules{},
