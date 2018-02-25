@@ -27,20 +27,15 @@ func (m *MultiLock) Lock(id string) {
 func (m *MultiLock) Unlock(id string) {
 	m.lock.Lock()
 	val := m.counts[id]
-	lock, ok := m.locks[id]
-	if ok {
-		if val <= 1 {
-			delete(m.counts, id)
-			delete(m.locks, id)
-		} else {
-			m.counts[id] = val - 1
-		}
-	}
-	m.lock.Unlock()
-
-	if lock != nil {
+	lock := m.locks[id]
+	if val <= 1 {
+		delete(m.counts, id)
+		delete(m.locks, id)
+	} else {
+		m.counts[id] = val - 1
 		lock.Unlock()
 	}
+	m.lock.Unlock()
 }
 
 func (m *MultiLock) Locked(id string) bool {
