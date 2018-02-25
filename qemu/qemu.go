@@ -2,6 +2,7 @@ package qemu
 
 import (
 	"fmt"
+	"github.com/pritunl/pritunl-cloud/paths"
 	"gopkg.in/mgo.v2/bson"
 	"strings"
 )
@@ -115,13 +116,13 @@ func (q *Qemu) Marshal() (output string, err error) {
 	cmd = append(cmd, "-monitor")
 	cmd = append(cmd, fmt.Sprintf(
 		"unix:%s,server,nowait",
-		GetSockPath(q.Id),
+		paths.GetSockPath(q.Id),
 	))
 
 	cmd = append(cmd, "-pidfile")
-	cmd = append(cmd, GetPidPath(q.Id))
+	cmd = append(cmd, paths.GetPidPath(q.Id))
 
-	guestPath := GetGuestPath(q.Id)
+	guestPath := paths.GetGuestPath(q.Id)
 	cmd = append(cmd, "-chardev")
 	cmd = append(cmd, fmt.Sprintf(
 		"socket,path=%s,server,nowait,id=guest", guestPath))

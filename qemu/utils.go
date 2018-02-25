@@ -2,13 +2,9 @@ package qemu
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/vm"
-	"gopkg.in/mgo.v2/bson"
-	"path"
 )
 
 func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
@@ -59,27 +55,4 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 	}
 
 	return
-}
-
-func GetUnitName(virtId bson.ObjectId) string {
-	return fmt.Sprintf("pritunl_cloud_%s.service", virtId.Hex())
-}
-
-func GetUnitPath(virtId bson.ObjectId) string {
-	return path.Join(settings.Hypervisor.SystemdPath, GetUnitName(virtId))
-}
-
-func GetPidPath(virtId bson.ObjectId) string {
-	return path.Join(settings.Hypervisor.LibPath,
-		fmt.Sprintf("%s.pid", virtId.Hex()))
-}
-
-func GetSockPath(virtId bson.ObjectId) string {
-	return path.Join(settings.Hypervisor.LibPath,
-		fmt.Sprintf("%s.sock", virtId.Hex()))
-}
-
-func GetGuestPath(virtId bson.ObjectId) string {
-	return path.Join(settings.Hypervisor.LibPath,
-		fmt.Sprintf("%s.guest", virtId.Hex()))
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/qga"
 	"github.com/pritunl/pritunl-cloud/qms"
 	"github.com/pritunl/pritunl-cloud/settings"
@@ -33,7 +34,7 @@ var (
 func GetVmInfo(vmId bson.ObjectId, getDisks bool) (
 	virt *vm.VirtualMachine, err error) {
 
-	unitPath := GetUnitPath(vmId)
+	unitPath := paths.GetUnitPath(vmId)
 
 	unitData, err := ioutil.ReadFile(unitPath)
 	if err != nil {
@@ -70,7 +71,7 @@ func GetVmInfo(vmId bson.ObjectId, getDisks bool) (
 		return
 	}
 
-	unitName := GetUnitName(virt.Id)
+	unitName := paths.GetUnitName(virt.Id)
 	state, err := systemd.GetState(unitName)
 	if err != nil {
 		return
@@ -110,7 +111,7 @@ func GetVmInfo(vmId bson.ObjectId, getDisks bool) (
 		virt.Disks = disks
 	}
 
-	guestPath := GetGuestPath(virt.Id)
+	guestPath := paths.GetGuestPath(virt.Id)
 	ifaces, err := qga.GetInterfaces(guestPath)
 	if err == nil {
 		for _, adapter := range virt.NetworkAdapters {
@@ -191,7 +192,7 @@ func GetVms(db *database.Database) (virts []*vm.VirtualMachine, err error) {
 }
 
 func Wait(db *database.Database, virt *vm.VirtualMachine) (err error) {
-	unitName := GetUnitName(virt.Id)
+	unitName := paths.GetUnitName(virt.Id)
 
 	var vrt *vm.VirtualMachine
 	for i := 0; i < settings.Hypervisor.StartTimeout; i++ {
@@ -280,7 +281,7 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 }
 
 func writeService(virt *vm.VirtualMachine) (err error) {
-	unitPath := GetUnitPath(virt.Id)
+	unitPath := paths.GetUnitPath(virt.Id)
 
 	qm, err := NewQemu(virt)
 	if err != nil {
@@ -308,8 +309,8 @@ func writeService(virt *vm.VirtualMachine) (err error) {
 func Create(db *database.Database, inst *instance.Instance,
 	virt *vm.VirtualMachine) (err error) {
 
-	vmPath := vm.GetVmPath(virt.Id)
-	unitName := GetUnitName(virt.Id)
+	vmPath := paths.GetVmPath(virt.Id)
+	unitName := paths.GetUnitName(virt.Id)
 
 	logrus.WithFields(logrus.Fields{
 		"id": virt.Id.Hex(),
@@ -367,7 +368,7 @@ func Create(db *database.Database, inst *instance.Instance,
 
 	virt.Disks = append(virt.Disks, &vm.Disk{
 		Index: 0,
-		Path:  vm.GetDiskPath(dsk.Id),
+		Path:  paths.GetDiskPath(dsk.Id),
 	})
 
 	err = writeService(virt)
@@ -421,12 +422,12 @@ func Update(db *database.Database, virt *vm.VirtualMachine) (err error) {
 }
 
 func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
-	vmPath := vm.GetVmPath(virt.Id)
-	unitName := GetUnitName(virt.Id)
-	unitPath := GetUnitPath(virt.Id)
-	sockPath := GetSockPath(virt.Id)
-	guestPath := GetGuestPath(virt.Id)
-	pidPath := GetPidPath(virt.Id)
+	vmPath := paths.GetVmPath(virt.Id)
+	unitName := paths.GetUnitName(virt.Id)
+	unitPath := paths.GetUnitPath(virt.Id)
+	sockPath := paths.GetSockPath(virt.Id)
+	guestPath := paths.GetGuestPath(virt.Id)
+	pidPath := paths.GetPidPath(virt.Id)
 
 	logrus.WithFields(logrus.Fields{
 		"id": virt.Id.Hex(),
@@ -487,7 +488,7 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 }
 
 func PowerOn(db *database.Database, virt *vm.VirtualMachine) (err error) {
-	unitName := GetUnitName(virt.Id)
+	unitName := paths.GetUnitName(virt.Id)
 
 	logrus.WithFields(logrus.Fields{
 		"id": virt.Id.Hex(),
@@ -517,7 +518,7 @@ func PowerOn(db *database.Database, virt *vm.VirtualMachine) (err error) {
 }
 
 func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
-	unitName := GetUnitName(virt.Id)
+	unitName := paths.GetUnitName(virt.Id)
 
 	logrus.WithFields(logrus.Fields{
 		"id": virt.Id.Hex(),

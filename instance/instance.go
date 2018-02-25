@@ -7,6 +7,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"gopkg.in/mgo.v2/bson"
 	"strconv"
@@ -217,7 +218,7 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 
 			i.Virt.Disks = append(i.Virt.Disks, &vm.Disk{
 				Index: index,
-				Path:  vm.GetDiskPath(dsk.Id),
+				Path:  paths.GetDiskPath(dsk.Id),
 			})
 		}
 	}

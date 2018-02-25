@@ -163,8 +163,6 @@ func vmUpdate() (err error) {
 		return
 	}
 
-	println("sync-done")
-
 	newIds := set.NewSet()
 	for _, inst := range instances {
 		newIds.Add(inst.Id)

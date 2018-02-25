@@ -6,8 +6,8 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"github.com/pritunl/pritunl-cloud/vm"
 	"gopkg.in/mgo.v2/bson"
 	"strconv"
 	"strings"
@@ -101,7 +101,7 @@ func (d *Disk) Insert(db *database.Database) (err error) {
 }
 
 func (d *Disk) Destroy(db *database.Database) (err error) {
-	dskPath := vm.GetDiskPath(d.Id)
+	dskPath := paths.GetDiskPath(d.Id)
 
 	logrus.WithFields(logrus.Fields{
 		"disk_id":   d.Id.Hex(),

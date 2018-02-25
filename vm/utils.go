@@ -5,25 +5,9 @@ import (
 	"crypto/md5"
 	"encoding/base32"
 	"fmt"
-	"github.com/pritunl/pritunl-cloud/node"
 	"gopkg.in/mgo.v2/bson"
-	"path"
 	"strings"
 )
-
-func GetVmPath(instId bson.ObjectId) string {
-	return path.Join(node.Self.GetVirtPath(),
-		"instances", instId.Hex())
-}
-
-func GetDisksPath() string {
-	return path.Join(node.Self.GetVirtPath(), "disks")
-}
-
-func GetDiskPath(diskId bson.ObjectId) string {
-	return path.Join(GetDisksPath(),
-		fmt.Sprintf("%s.qcow2", diskId.Hex()))
-}
 
 func GetMacAddr(id bson.ObjectId) string {
 	hash := md5.New()

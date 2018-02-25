@@ -15,7 +15,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/storage"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/zone"
 	"gopkg.in/mgo.v2/bson"
 	"path"
@@ -61,8 +60,8 @@ func getImage(db *database.Database, img *image.Image,
 func WriteImage(db *database.Database, imgId, dskId bson.ObjectId) (
 	err error) {
 
-	diskPath := vm.GetDiskPath(dskId)
-	disksPath := vm.GetDisksPath()
+	diskPath := paths.GetDiskPath(dskId)
+	disksPath := paths.GetDisksPath()
 
 	err = utils.ExistsMkdir(disksPath, 0755)
 	if err != nil {
