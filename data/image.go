@@ -106,10 +106,11 @@ func WriteImage(db *database.Database, imgId, dskId bson.ObjectId) (
 
 		if exists {
 			logrus.WithFields(logrus.Fields{
-				"image_id": img.Id.Hex(),
-				"disk_id":  dskId.Hex(),
-				"key":      img.Key,
-				"path":     diskPath,
+				"image_id":   img.Id.Hex(),
+				"image_type": img.Type,
+				"disk_id":    dskId.Hex(),
+				"key":        img.Key,
+				"path":       diskPath,
 			}).Error("data: Blocking disk image overwrite")
 
 			err = &errortypes.WriteError{
@@ -131,10 +132,11 @@ func WriteImage(db *database.Database, imgId, dskId bson.ObjectId) (
 
 		if exists {
 			logrus.WithFields(logrus.Fields{
-				"image_id": img.Id.Hex(),
-				"disk_id":  dskId.Hex(),
-				"key":      img.Key,
-				"path":     diskPath,
+				"image_id":   img.Id.Hex(),
+				"image_type": img.Type,
+				"disk_id":    dskId.Hex(),
+				"key":        img.Key,
+				"path":       diskPath,
 			}).Error("data: Blocking disk image overwrite")
 
 			err = &errortypes.WriteError{
