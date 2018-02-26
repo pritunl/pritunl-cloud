@@ -259,7 +259,7 @@ export default class Images extends React.Component<{}, State> {
 			</div>
 			<NonState
 				hidden={!!imagesDom.length}
-				iconClass="pt-icon-floppy-disk"
+				iconClass="pt-icon-compressed"
 				title="No images"
 				description="Add a new image to get started."
 			/>

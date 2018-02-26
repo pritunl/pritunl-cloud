@@ -180,7 +180,7 @@ export default class Zones extends React.Component<{}, State> {
 			</div>
 			<NonState
 				hidden={!!zonesDom.length}
-				iconClass="pt-icon-layers"
+				iconClass="pt-icon-layout-circle"
 				title="No zones"
 				description="Add a new zone to get started."
 			/>

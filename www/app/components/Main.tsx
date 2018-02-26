@@ -162,7 +162,7 @@ export default class Main extends React.Component<{}, State> {
 							Datacenters
 						</ReactRouter.Link>
 						<ReactRouter.Link
-							className="pt-button pt-minimal pt-icon-layers"
+							className="pt-button pt-minimal pt-icon-layout-circle"
 							style={css.link}
 							to="/zones"
 						>
@@ -176,7 +176,7 @@ export default class Main extends React.Component<{}, State> {
 							Storages
 						</ReactRouter.Link>
 						<ReactRouter.Link
-							className="pt-button pt-minimal pt-icon-floppy-disk"
+							className="pt-button pt-minimal pt-icon-compressed"
 							style={css.link}
 							to="/images"
 						>
