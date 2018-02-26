@@ -115,7 +115,7 @@ export default class Instances extends React.Component<{}, State> {
 
 		this.interval = setInterval(() => {
 			InstanceActions.sync(true);
-		}, 500);
+		}, 1000);
 	}
 
 	componentWillUnmount(): void {
