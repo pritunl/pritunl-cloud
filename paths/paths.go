@@ -17,9 +17,18 @@ func GetDisksPath() string {
 	return path.Join(node.Self.GetVirtPath(), "disks")
 }
 
+func GetTempPath() string {
+	return path.Join(node.Self.GetVirtPath(), "temp")
+}
+
 func GetDiskPath(diskId bson.ObjectId) string {
 	return path.Join(GetDisksPath(),
 		fmt.Sprintf("%s.qcow2", diskId.Hex()))
+}
+
+func GetDiskTempPath() string {
+	return path.Join(GetTempPath(),
+		fmt.Sprintf("%s.qcow2", bson.NewObjectId().Hex()))
 }
 
 func GetUnitName(virtId bson.ObjectId) string {
