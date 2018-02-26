@@ -148,7 +148,7 @@ export default class Image extends React.Component<Props, {}> {
 				<span
 					style={css.icon}
 					hidden={!image.key}
-					className="pt-icon-standard pt-icon-floppy-disk"
+					className="pt-icon-standard pt-icon-compressed"
 				/>
 				{image.key}
 			</div>
