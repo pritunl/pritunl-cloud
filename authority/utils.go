@@ -174,7 +174,9 @@ func Remove(db *database.Database, authrId bson.ObjectId) (err error) {
 	return
 }
 
-func RemoveMulti(db *database.Database, authrIds []bson.ObjectId) (err error) {
+func RemoveMulti(db *database.Database,
+	authrIds []bson.ObjectId) (err error) {
+
 	coll := db.Authorities()
 
 	_, err = coll.RemoveAll(&bson.M{
