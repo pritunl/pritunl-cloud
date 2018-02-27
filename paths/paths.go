@@ -31,6 +31,10 @@ func GetDiskTempPath() string {
 		fmt.Sprintf("%s.qcow2", bson.NewObjectId().Hex()))
 }
 
+func GetDiskMountPath() string {
+	return path.Join(GetTempPath(), bson.NewObjectId().Hex())
+}
+
 func GetUnitName(virtId bson.ObjectId) string {
 	return fmt.Sprintf("pritunl_cloud_%s.service", virtId.Hex())
 }
