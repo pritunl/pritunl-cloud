@@ -61,6 +61,7 @@ func WriteImage(db *database.Database, imgId, dskId bson.ObjectId) (
 	err error) {
 
 	diskPath := paths.GetDiskPath(dskId)
+	diskTempPath := paths.GetDiskTempPath()
 	disksPath := paths.GetDisksPath()
 
 	err = utils.ExistsMkdir(disksPath, 0755)
@@ -119,7 +120,12 @@ func WriteImage(db *database.Database, imgId, dskId bson.ObjectId) (
 			return
 		}
 
-		err = utils.Exec("", "cp", imagePth, diskPath)
+		err = utils.Exec("", "cp", imagePth, diskTempPath)
+		if err != nil {
+			return
+		}
+
+		err = utils.Exec("", "mv", diskTempPath, diskPath)
 		if err != nil {
 			return
 		}
