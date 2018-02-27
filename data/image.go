@@ -241,6 +241,8 @@ func WriteAuthority(db *database.Database, instId, dskId bson.ObjectId) (
 		return
 	}
 
+	time.Sleep(3 * time.Second)
+
 	if authorizedKeys != "" {
 		sshDir := path.Join(diskMountPath, "home", "cloud", ".ssh")
 		sshPath := path.Join(sshDir, "authorized_keys")
