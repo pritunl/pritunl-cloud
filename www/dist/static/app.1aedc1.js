@@ -29953,11 +29953,15 @@ System.registerDynamic("app/components/InstanceNew.js", ["npm:react@15.6.1.js", 
         }
         render() {
             let instance = this.state.instance;
+            let hasOrganizations = !!this.props.organizations.length;
             let organizationsSelect = [];
             if (this.props.organizations.length) {
                 for (let organization of this.props.organizations) {
                     organizationsSelect.push(React.createElement("option", { key: organization.id, value: organization.id }, organization.name));
                 }
+            }
+            if (!hasOrganizations) {
+                organizationsSelect.push(React.createElement("option", { key: "null", value: "" }, "No Organizations"));
             }
             let hasDatacenters = false;
             let datacentersSelect = [];
@@ -30019,7 +30023,7 @@ System.registerDynamic("app/components/InstanceNew.js", ["npm:react@15.6.1.js", 
             }
             return React.createElement("div", { className: "pt-card pt-row", style: css.row }, React.createElement("td", { className: "pt-cell", colSpan: 5, style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { style: css.buttons }), React.createElement(PageInput_1.default, { label: "Name", help: "Name of instance", type: "text", placeholder: "Enter name", disabled: this.state.disabled, value: instance.name, onChange: val => {
                     this.set('name', val);
-                } }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "Organization", help: "Organization for instance.", value: instance.organization, onChange: val => {
+                } }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasOrganizations, label: "Organization", help: "Organization for instance.", value: instance.organization, onChange: val => {
                     this.set('organization', val);
                 } }, organizationsSelect), React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasDatacenters, label: "Datacenter", help: "Datacenter for instance.", value: this.state.datacenter, onChange: val => {
                     this.setState(Object.assign({}, this.state, { datacenter: val, instance: Object.assign({}, this.state.instance, { node: '', zone: '', image: '' }) }));
@@ -30334,69 +30338,6 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@15.6.1.js", "a
     exports.default = Instances;
     
 });
-System.registerDynamic("app/stores/OrganizationsStore.js", ["app/dispatcher/Dispatcher.js", "app/EventEmitter.js", "app/types/OrganizationTypes.js", "app/types/GlobalTypes.js"], true, function ($__require, exports, module) {
-    "use strict";
-
-    var global = this || self,
-        GLOBAL = global;
-    Object.defineProperty(exports, "__esModule", { value: true });
-    const Dispatcher_1 = $__require("app/dispatcher/Dispatcher.js");
-    const EventEmitter_1 = $__require("app/EventEmitter.js");
-    const OrganizationTypes = $__require("app/types/OrganizationTypes.js");
-    const GlobalTypes = $__require("app/types/GlobalTypes.js");
-    class OrganizationsStore extends EventEmitter_1.default {
-        constructor() {
-            super(...arguments);
-            this._organizations = Object.freeze([]);
-            this._map = {};
-            this._token = Dispatcher_1.default.register(this._callback.bind(this));
-        }
-        get organizations() {
-            return this._organizations;
-        }
-        get organizationsM() {
-            let organizations = [];
-            this._organizations.forEach(organization => {
-                organizations.push(Object.assign({}, organization));
-            });
-            return organizations;
-        }
-        organization(id) {
-            let i = this._map[id];
-            if (i === undefined) {
-                return null;
-            }
-            return this._organizations[i];
-        }
-        emitChange() {
-            this.emitDefer(GlobalTypes.CHANGE);
-        }
-        addChangeListener(callback) {
-            this.on(GlobalTypes.CHANGE, callback);
-        }
-        removeChangeListener(callback) {
-            this.removeListener(GlobalTypes.CHANGE, callback);
-        }
-        _sync(organizations) {
-            this._map = {};
-            for (let i = 0; i < organizations.length; i++) {
-                organizations[i] = Object.freeze(organizations[i]);
-                this._map[organizations[i].id] = i;
-            }
-            this._organizations = Object.freeze(organizations);
-            this.emitChange();
-        }
-        _callback(action) {
-            switch (action.type) {
-                case OrganizationTypes.SYNC:
-                    this._sync(action.data.organizations);
-                    break;
-            }
-        }
-    }
-    exports.default = new OrganizationsStore();
-    
-});
 System.registerDynamic("app/components/FirewallRule.js", ["npm:react@15.6.1.js"], true, function ($__require, exports, module) {
     "use strict";
 
@@ -30612,9 +30553,6 @@ System.registerDynamic("app/components/FirewallDetailed.js", ["npm:react@15.6.1.
             };
             this.onRemoveNetworkRole = networkRole => {
                 let firewall;
-                if (!this.state.addNetworkRole) {
-                    return;
-                }
                 if (this.state.changed) {
                     firewall = Object.assign({}, this.state.firewall);
                 } else {
@@ -30960,47 +30898,6 @@ System.registerDynamic("app/components/FirewallsPage.js", ["npm:react@15.6.1.js"
     exports.default = FirewallsPage;
     
 });
-System.registerDynamic("app/components/NonState.js", ["npm:react@15.6.1.js", "app/Constants.js"], true, function ($__require, exports, module) {
-    "use strict";
-
-    var global = this || self,
-        GLOBAL = global;
-    Object.defineProperty(exports, "__esModule", { value: true });
-    const React = $__require("npm:react@15.6.1.js");
-    const Constants = $__require("app/Constants.js");
-    const css = {
-        state: {
-            height: 'auto'
-        }
-    };
-    class NonState extends React.Component {
-        constructor(props, context) {
-            super(props, context);
-            this.state = {
-                initialized: false
-            };
-        }
-        componentDidMount() {
-            this.timeout = window.setTimeout(() => {
-                this.setState(Object.assign({}, this.state, { initialized: true }));
-            }, Constants.loadDelay);
-        }
-        componentWillUnmount() {
-            if (this.timeout) {
-                window.clearTimeout(this.timeout);
-            }
-        }
-        render() {
-            let description;
-            if (this.props.description) {
-                description = React.createElement("div", { className: "pt-non-ideal-state-description" }, this.props.description);
-            }
-            return React.createElement("div", { className: "pt-non-ideal-state", style: css.state, hidden: this.props.hidden || !this.state.initialized }, React.createElement("div", { className: "pt-non-ideal-state-visual pt-non-ideal-state-icon" }, React.createElement("span", { className: 'pt-icon ' + this.props.iconClass })), React.createElement("h4", { className: "pt-non-ideal-state-title" }, this.props.title), description);
-        }
-    }
-    exports.default = NonState;
-    
-});
 System.registerDynamic("app/components/Firewalls.js", ["npm:react@15.6.1.js", "app/stores/FirewallsStore.js", "app/stores/OrganizationsStore.js", "app/actions/FirewallActions.js", "app/actions/OrganizationActions.js", "app/components/Firewall.js", "app/components/FirewallsPage.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/NonState.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
     "use strict";
 
@@ -31166,6 +31063,725 @@ System.registerDynamic("app/components/Firewalls.js", ["npm:react@15.6.1.js", "a
         }
     }
     exports.default = Firewalls;
+    
+});
+System.registerDynamic("app/stores/OrganizationsStore.js", ["app/dispatcher/Dispatcher.js", "app/EventEmitter.js", "app/types/OrganizationTypes.js", "app/types/GlobalTypes.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const Dispatcher_1 = $__require("app/dispatcher/Dispatcher.js");
+    const EventEmitter_1 = $__require("app/EventEmitter.js");
+    const OrganizationTypes = $__require("app/types/OrganizationTypes.js");
+    const GlobalTypes = $__require("app/types/GlobalTypes.js");
+    class OrganizationsStore extends EventEmitter_1.default {
+        constructor() {
+            super(...arguments);
+            this._organizations = Object.freeze([]);
+            this._map = {};
+            this._token = Dispatcher_1.default.register(this._callback.bind(this));
+        }
+        get organizations() {
+            return this._organizations;
+        }
+        get organizationsM() {
+            let organizations = [];
+            this._organizations.forEach(organization => {
+                organizations.push(Object.assign({}, organization));
+            });
+            return organizations;
+        }
+        organization(id) {
+            let i = this._map[id];
+            if (i === undefined) {
+                return null;
+            }
+            return this._organizations[i];
+        }
+        emitChange() {
+            this.emitDefer(GlobalTypes.CHANGE);
+        }
+        addChangeListener(callback) {
+            this.on(GlobalTypes.CHANGE, callback);
+        }
+        removeChangeListener(callback) {
+            this.removeListener(GlobalTypes.CHANGE, callback);
+        }
+        _sync(organizations) {
+            this._map = {};
+            for (let i = 0; i < organizations.length; i++) {
+                organizations[i] = Object.freeze(organizations[i]);
+                this._map[organizations[i].id] = i;
+            }
+            this._organizations = Object.freeze(organizations);
+            this.emitChange();
+        }
+        _callback(action) {
+            switch (action.type) {
+                case OrganizationTypes.SYNC:
+                    this._sync(action.data.organizations);
+                    break;
+            }
+        }
+    }
+    exports.default = new OrganizationsStore();
+    
+});
+System.registerDynamic("app/components/AuthorityDetailed.js", ["npm:react@15.6.1.js", "app/actions/AuthorityActions.js", "app/components/PageInput.js", "app/components/PageSelect.js", "app/components/PageInfo.js", "app/components/PageInputButton.js", "app/components/PageTextArea.js", "app/components/PageSave.js", "app/components/ConfirmButton.js", "app/components/Help.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@15.6.1.js");
+    const AuthorityActions = $__require("app/actions/AuthorityActions.js");
+    const PageInput_1 = $__require("app/components/PageInput.js");
+    const PageSelect_1 = $__require("app/components/PageSelect.js");
+    const PageInfo_1 = $__require("app/components/PageInfo.js");
+    const PageInputButton_1 = $__require("app/components/PageInputButton.js");
+    const PageTextArea_1 = $__require("app/components/PageTextArea.js");
+    const PageSave_1 = $__require("app/components/PageSave.js");
+    const ConfirmButton_1 = $__require("app/components/ConfirmButton.js");
+    const Help_1 = $__require("app/components/Help.js");
+    const css = {
+        card: {
+            position: 'relative',
+            padding: '48px 10px 0 10px',
+            width: '100%'
+        },
+        button: {
+            height: '30px'
+        },
+        buttons: {
+            cursor: 'pointer',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            padding: '4px',
+            height: '39px',
+            backgroundColor: 'rgba(0, 0, 0, 0.13)'
+        },
+        item: {
+            margin: '9px 5px 0 5px',
+            height: '20px'
+        },
+        itemsLabel: {
+            display: 'block'
+        },
+        itemsAdd: {
+            margin: '8px 0 15px 0'
+        },
+        group: {
+            flex: 1,
+            minWidth: '250px'
+        },
+        save: {
+            paddingBottom: '10px'
+        },
+        label: {
+            width: '100%',
+            maxWidth: '280px'
+        },
+        status: {
+            margin: '6px 0 0 1px'
+        },
+        icon: {
+            marginRight: '3px'
+        },
+        inputGroup: {
+            width: '100%'
+        },
+        protocol: {
+            flex: '0 1 auto'
+        },
+        port: {
+            flex: '1'
+        },
+        select: {
+            margin: '7px 0px 0px 6px'
+        },
+        role: {
+            margin: '9px 5px 0 5px',
+            height: '20px'
+        },
+        rules: {
+            marginBottom: '15px'
+        }
+    };
+    class AuthorityDetailed extends React.Component {
+        constructor(props, context) {
+            super(props, context);
+            this.onAddRole = () => {
+                let authority;
+                if (!this.state.addRole) {
+                    return;
+                }
+                if (this.state.changed) {
+                    authority = Object.assign({}, this.state.authority);
+                } else {
+                    authority = Object.assign({}, this.props.authority);
+                }
+                let roles = [...(authority.roles || [])];
+                if (roles.indexOf(this.state.addRole) === -1) {
+                    roles.push(this.state.addRole);
+                }
+                roles.sort();
+                authority.roles = roles;
+                this.setState(Object.assign({}, this.state, { changed: true, message: '', addRole: '', authority: authority }));
+            };
+            this.onRemoveRole = role => {
+                let authority;
+                if (this.state.changed) {
+                    authority = Object.assign({}, this.state.authority);
+                } else {
+                    authority = Object.assign({}, this.props.authority);
+                }
+                let roles = [...(authority.roles || [])];
+                let i = roles.indexOf(role);
+                if (i === -1) {
+                    return;
+                }
+                roles.splice(i, 1);
+                authority.roles = roles;
+                this.setState(Object.assign({}, this.state, { changed: true, message: '', addRole: '', authority: authority }));
+            };
+            this.onAddNetworkRole = () => {
+                let authority;
+                if (!this.state.addNetworkRole) {
+                    return;
+                }
+                if (this.state.changed) {
+                    authority = Object.assign({}, this.state.authority);
+                } else {
+                    authority = Object.assign({}, this.props.authority);
+                }
+                let networkRoles = [...(authority.network_roles || [])];
+                if (networkRoles.indexOf(this.state.addNetworkRole) === -1) {
+                    networkRoles.push(this.state.addNetworkRole);
+                }
+                networkRoles.sort();
+                authority.network_roles = networkRoles;
+                this.setState(Object.assign({}, this.state, { changed: true, message: '', addNetworkRole: '', authority: authority }));
+            };
+            this.onRemoveNetworkRole = networkRole => {
+                let authority;
+                if (this.state.changed) {
+                    authority = Object.assign({}, this.state.authority);
+                } else {
+                    authority = Object.assign({}, this.props.authority);
+                }
+                let networkRoles = [...(authority.network_roles || [])];
+                let i = networkRoles.indexOf(networkRole);
+                if (i === -1) {
+                    return;
+                }
+                networkRoles.splice(i, 1);
+                authority.network_roles = networkRoles;
+                this.setState(Object.assign({}, this.state, { changed: true, message: '', addNetworkRole: '', authority: authority }));
+            };
+            this.onSave = () => {
+                this.setState(Object.assign({}, this.state, { disabled: true }));
+                let authority = Object.assign({}, this.state.authority);
+                if (this.props.organizations.length && !authority.organization) {
+                    authority.organization = this.props.organizations[0].id;
+                }
+                AuthorityActions.commit(this.state.authority).then(() => {
+                    this.setState(Object.assign({}, this.state, { message: 'Your changes have been saved', changed: false, disabled: false }));
+                    setTimeout(() => {
+                        if (!this.state.changed) {
+                            this.setState(Object.assign({}, this.state, { authority: null, changed: false }));
+                        }
+                    }, 1000);
+                    setTimeout(() => {
+                        if (!this.state.changed) {
+                            this.setState(Object.assign({}, this.state, { message: '' }));
+                        }
+                    }, 3000);
+                }).catch(() => {
+                    this.setState(Object.assign({}, this.state, { message: '', disabled: false }));
+                });
+            };
+            this.onDelete = () => {
+                this.setState(Object.assign({}, this.state, { disabled: true }));
+                AuthorityActions.remove(this.props.authority.id).then(() => {
+                    this.setState(Object.assign({}, this.state, { disabled: false }));
+                }).catch(() => {
+                    this.setState(Object.assign({}, this.state, { disabled: false }));
+                });
+            };
+            this.state = {
+                disabled: false,
+                changed: false,
+                message: '',
+                addRole: null,
+                addNetworkRole: null,
+                authority: null
+            };
+        }
+        set(name, val) {
+            let authority;
+            if (this.state.changed) {
+                authority = Object.assign({}, this.state.authority);
+            } else {
+                authority = Object.assign({}, this.props.authority);
+            }
+            authority[name] = val;
+            this.setState(Object.assign({}, this.state, { changed: true, authority: authority }));
+        }
+        render() {
+            let authority = this.state.authority || this.props.authority;
+            let hasOrganizations = !!this.props.organizations.length;
+            let organizationsSelect = [];
+            if (this.props.organizations.length) {
+                for (let organization of this.props.organizations) {
+                    organizationsSelect.push(React.createElement("option", { key: organization.id, value: organization.id }, organization.name));
+                }
+            }
+            if (!hasOrganizations) {
+                organizationsSelect.push(React.createElement("option", { key: "null", value: "" }, "No Organizations"));
+            }
+            let roles = [];
+            for (let role of authority.roles || []) {
+                roles.push(React.createElement("div", { className: "pt-tag pt-tag-removable pt-intent-primary", style: css.role, key: role }, role, React.createElement("button", { className: "pt-tag-remove", disabled: this.state.disabled, onMouseUp: () => {
+                        this.onRemoveRole(role);
+                    } })));
+            }
+            let networkRoles = [];
+            for (let networkRole of authority.network_roles || []) {
+                networkRoles.push(React.createElement("div", { className: "pt-tag pt-tag-removable pt-intent-primary", style: css.role, key: networkRole }, networkRole, React.createElement("button", { className: "pt-tag-remove", disabled: this.state.disabled, onMouseUp: () => {
+                        this.onRemoveNetworkRole(networkRole);
+                    } })));
+            }
+            return React.createElement("td", { className: "pt-cell", colSpan: 5, style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { className: "layout horizontal", style: css.buttons, onClick: evt => {
+                    let target = evt.target;
+                    if (target.className.indexOf('open-ignore') !== -1) {
+                        return;
+                    }
+                    this.props.onClose();
+                } }, React.createElement("div", null, React.createElement("label", { className: "pt-control pt-checkbox open-ignore", style: css.select }, React.createElement("input", { type: "checkbox", className: "open-ignore", checked: this.props.selected, onClick: evt => {
+                    this.props.onSelect(evt.shiftKey);
+                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" }))), React.createElement("div", { className: "flex" }), React.createElement(ConfirmButton_1.default, { className: "pt-minimal pt-intent-danger pt-icon-trash open-ignore", style: css.button, progressClassName: "pt-intent-danger", confirmMsg: "Confirm authority remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { label: "Name", help: "Name of authority", type: "text", placeholder: "Enter name", value: authority.name, onChange: val => {
+                    this.set('name', val);
+                } }), React.createElement(PageSelect_1.default, { label: "Type", help: "Authority type. SSH keys will be saved to ~/.ssh/authorized_keys. SSH certificates will be saved to the SSH server configuration.", value: authority.type, onChange: val => {
+                    this.set('type', val);
+                } }, React.createElement("option", { value: "ssh_key" }, "SSH Key"), React.createElement("option", { value: "ssh_certificate" }, "SSH Certificate")), React.createElement(PageTextArea_1.default, { hidden: authority.type !== 'ssh_key', label: "SSH Key", help: "SSH authorized public key in PEM format.", placeholder: "Public key", rows: 6, value: authority.key, onChange: val => {
+                    this.set('key', val);
+                } }), React.createElement(PageTextArea_1.default, { hidden: authority.type !== 'ssh_certificate', label: "SSH Certificate", help: "SSH certificate authority in PEM format.", placeholder: "Certificate authority", rows: 6, value: authority.certificate, onChange: val => {
+                    this.set('certificate', val);
+                } }), React.createElement("label", { className: "pt-label", hidden: authority.type !== 'ssh_certificate' }, "Roles", React.createElement(Help_1.default, { title: "Roles", content: "Roles that will be matched with authority principles. Roles are case-sensitive." }), React.createElement("div", null, roles)), React.createElement(PageInputButton_1.default, { disabled: this.state.disabled, buttonClass: "pt-intent-success pt-icon-add", hidden: authority.type !== 'ssh_certificate', label: "Add", type: "text", placeholder: "Add role", value: this.state.addRole, onChange: val => {
+                    this.setState(Object.assign({}, this.state, { addRole: val }));
+                }, onSubmit: this.onAddRole })), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
+                    label: 'ID',
+                    value: this.props.authority.id || 'Unknown'
+                }] }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasOrganizations, label: "Organization", help: "Organization for authority, both the organaization and role must match. Select node authority to match node network roles.", value: authority.organization, onChange: val => {
+                    this.set('organization', val);
+                } }, organizationsSelect), React.createElement("label", { className: "pt-label" }, "Network Roles", React.createElement(Help_1.default, { title: "Network Roles", content: "Network roles that will be matched with authorities. Network roles are case-sensitive." }), React.createElement("div", null, networkRoles)), React.createElement(PageInputButton_1.default, { disabled: this.state.disabled, buttonClass: "pt-intent-success pt-icon-add", label: "Add", type: "text", placeholder: "Add role", value: this.state.addNetworkRole, onChange: val => {
+                    this.setState(Object.assign({}, this.state, { addNetworkRole: val }));
+                }, onSubmit: this.onAddNetworkRole }))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.authority && !this.state.message, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
+                    this.setState(Object.assign({}, this.state, { changed: false, authority: null }));
+                }, onSave: this.onSave }));
+        }
+    }
+    exports.default = AuthorityDetailed;
+    
+});
+System.registerDynamic("app/components/Authority.js", ["npm:react@15.6.1.js", "app/stores/OrganizationsStore.js", "app/components/AuthorityDetailed.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@15.6.1.js");
+    const OrganizationsStore_1 = $__require("app/stores/OrganizationsStore.js");
+    const AuthorityDetailed_1 = $__require("app/components/AuthorityDetailed.js");
+    const css = {
+        card: {
+            display: 'table-row',
+            width: '100%',
+            padding: 0,
+            boxShadow: 'none',
+            cursor: 'pointer'
+        },
+        cardOpen: {
+            display: 'table-row',
+            width: '100%',
+            padding: 0,
+            boxShadow: 'none',
+            position: 'relative'
+        },
+        select: {
+            margin: '2px 0 0 0',
+            paddingTop: '1px',
+            minHeight: '18px'
+        },
+        name: {
+            verticalAlign: 'top',
+            display: 'table-cell',
+            padding: '8px'
+        },
+        nameSpan: {
+            margin: '1px 5px 0 0'
+        },
+        item: {
+            verticalAlign: 'top',
+            display: 'table-cell',
+            padding: '9px',
+            whiteSpace: 'nowrap'
+        },
+        icon: {
+            marginRight: '3px'
+        },
+        bars: {
+            verticalAlign: 'top',
+            display: 'table-cell',
+            padding: '8px',
+            width: '30px'
+        },
+        bar: {
+            height: '6px',
+            marginBottom: '1px'
+        },
+        barLast: {
+            height: '6px'
+        },
+        roles: {
+            verticalAlign: 'top',
+            display: 'table-cell',
+            padding: '0 8px 8px 8px'
+        },
+        tag: {
+            margin: '8px 5px 0 5px',
+            height: '20px'
+        }
+    };
+    class Authority extends React.Component {
+        render() {
+            let authority = this.props.authority;
+            if (this.props.open) {
+                return React.createElement("div", { className: "pt-card pt-row", style: css.cardOpen }, React.createElement(AuthorityDetailed_1.default, { organizations: this.props.organizations, authority: this.props.authority, selected: this.props.selected, onSelect: this.props.onSelect, onClose: () => {
+                        this.props.onOpen();
+                    } }));
+            }
+            let active = true;
+            let cardStyle = Object.assign({}, css.card);
+            if (!active) {
+                cardStyle.opacity = 0.6;
+            }
+            let networkRoles = [];
+            for (let networkRole of authority.network_roles || []) {
+                networkRoles.push(React.createElement("div", { className: "pt-tag pt-intent-primary", style: css.tag, key: networkRole }, networkRole));
+            }
+            let orgName = '';
+            if (authority.organization) {
+                let org = OrganizationsStore_1.default.organization(authority.organization);
+                orgName = org ? org.name : authority.organization;
+            } else {
+                orgName = 'No Organization';
+            }
+            return React.createElement("div", { className: "pt-card pt-row", style: cardStyle, onClick: evt => {
+                    let target = evt.target;
+                    if (target.className.indexOf('open-ignore') !== -1) {
+                        return;
+                    }
+                    this.props.onOpen();
+                } }, React.createElement("div", { className: "pt-cell", style: css.name }, React.createElement("div", { className: "layout horizontal" }, React.createElement("label", { className: "pt-control pt-checkbox open-ignore", style: css.select }, React.createElement("input", { type: "checkbox", className: "open-ignore", checked: this.props.selected, onClick: evt => {
+                    this.props.onSelect(evt.shiftKey);
+                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" })), React.createElement("div", { style: css.nameSpan }, authority.name))), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, className: "pt-icon-standard pt-icon-people" }), orgName), React.createElement("div", { className: "flex pt-cell", style: css.roles }, networkRoles));
+        }
+    }
+    exports.default = Authority;
+    
+});
+System.registerDynamic("app/components/AuthoritiesPage.js", ["npm:react@15.6.1.js", "app/stores/AuthoritiesStore.js", "app/actions/AuthorityActions.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@15.6.1.js");
+    const AuthoritiesStore_1 = $__require("app/stores/AuthoritiesStore.js");
+    const AuthorityActions = $__require("app/actions/AuthorityActions.js");
+    const css = {
+        button: {
+            userSelect: 'none',
+            margin: '0 5px 0 0'
+        },
+        buttonLast: {
+            userSelect: 'none',
+            margin: '0 0 0 0'
+        },
+        link: {
+            cursor: 'pointer',
+            userSelect: 'none',
+            margin: '5px 5px 0 0'
+        },
+        current: {
+            opacity: 0.5
+        }
+    };
+    class AuthoritiesPage extends React.Component {
+        constructor(props, context) {
+            super(props, context);
+            this.onChange = () => {
+                this.setState(Object.assign({}, this.state, { page: AuthoritiesStore_1.default.page, pageCount: AuthoritiesStore_1.default.pageCount, pages: AuthoritiesStore_1.default.pages, count: AuthoritiesStore_1.default.count }));
+            };
+            this.state = {
+                page: AuthoritiesStore_1.default.page,
+                pageCount: AuthoritiesStore_1.default.pageCount,
+                pages: AuthoritiesStore_1.default.pages,
+                count: AuthoritiesStore_1.default.count
+            };
+        }
+        componentDidMount() {
+            AuthoritiesStore_1.default.addChangeListener(this.onChange);
+        }
+        componentWillUnmount() {
+            AuthoritiesStore_1.default.removeChangeListener(this.onChange);
+        }
+        render() {
+            let page = this.state.page;
+            let pages = this.state.pages;
+            if (pages <= 1) {
+                return React.createElement("div", null);
+            }
+            let links = [];
+            let start = Math.max(0, page - 7);
+            let end = Math.min(pages, start + 15);
+            for (let i = start; i < end; i++) {
+                links.push(React.createElement("span", { key: i, style: page === i ? Object.assign({}, css.link, css.current) : css.link, onClick: () => {
+                        AuthorityActions.traverse(i);
+                        if (this.props.onPage) {
+                            this.props.onPage();
+                        }
+                    } }, i + 1));
+            }
+            return React.createElement("div", { className: "layout horizontal center-justified" }, React.createElement("button", { className: "pt-button pt-minimal pt-icon-chevron-backward", hidden: pages < 5, disabled: page === 0, type: "button", onClick: () => {
+                    AuthorityActions.traverse(0);
+                    if (this.props.onPage) {
+                        this.props.onPage();
+                    }
+                } }), React.createElement("button", { className: "pt-button pt-minimal pt-icon-chevron-left", style: css.button, disabled: page === 0, type: "button", onClick: () => {
+                    AuthorityActions.traverse(Math.max(0, this.state.page - 1));
+                    if (this.props.onPage) {
+                        this.props.onPage();
+                    }
+                } }), links, React.createElement("button", { className: "pt-button pt-minimal pt-icon-chevron-right", style: css.button, disabled: page === pages - 1, type: "button", onClick: () => {
+                    AuthorityActions.traverse(Math.min(this.state.pages - 1, this.state.page + 1));
+                    if (this.props.onPage) {
+                        this.props.onPage();
+                    }
+                } }), React.createElement("button", { className: "pt-button pt-minimal pt-icon-chevron-forward", hidden: pages < 5, disabled: page === pages - 1, type: "button", onClick: () => {
+                    AuthorityActions.traverse(this.state.pages - 1);
+                    if (this.props.onPage) {
+                        this.props.onPage();
+                    }
+                } }));
+        }
+    }
+    exports.default = AuthoritiesPage;
+    
+});
+System.registerDynamic("app/components/NonState.js", ["npm:react@15.6.1.js", "app/Constants.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@15.6.1.js");
+    const Constants = $__require("app/Constants.js");
+    const css = {
+        state: {
+            height: 'auto'
+        }
+    };
+    class NonState extends React.Component {
+        constructor(props, context) {
+            super(props, context);
+            this.state = {
+                initialized: false
+            };
+        }
+        componentDidMount() {
+            this.timeout = window.setTimeout(() => {
+                this.setState(Object.assign({}, this.state, { initialized: true }));
+            }, Constants.loadDelay);
+        }
+        componentWillUnmount() {
+            if (this.timeout) {
+                window.clearTimeout(this.timeout);
+            }
+        }
+        render() {
+            let description;
+            if (this.props.description) {
+                description = React.createElement("div", { className: "pt-non-ideal-state-description" }, this.props.description);
+            }
+            return React.createElement("div", { className: "pt-non-ideal-state", style: css.state, hidden: this.props.hidden || !this.state.initialized }, React.createElement("div", { className: "pt-non-ideal-state-visual pt-non-ideal-state-icon" }, React.createElement("span", { className: 'pt-icon ' + this.props.iconClass })), React.createElement("h4", { className: "pt-non-ideal-state-title" }, this.props.title), description);
+        }
+    }
+    exports.default = NonState;
+    
+});
+System.registerDynamic("app/components/Authorities.js", ["npm:react@15.6.1.js", "app/stores/AuthoritiesStore.js", "app/stores/OrganizationsStore.js", "app/actions/AuthorityActions.js", "app/actions/OrganizationActions.js", "app/components/Authority.js", "app/components/AuthoritiesPage.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/NonState.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@15.6.1.js");
+    const AuthoritiesStore_1 = $__require("app/stores/AuthoritiesStore.js");
+    const OrganizationsStore_1 = $__require("app/stores/OrganizationsStore.js");
+    const AuthorityActions = $__require("app/actions/AuthorityActions.js");
+    const OrganizationActions = $__require("app/actions/OrganizationActions.js");
+    const Authority_1 = $__require("app/components/Authority.js");
+    const AuthoritiesPage_1 = $__require("app/components/AuthoritiesPage.js");
+    const Page_1 = $__require("app/components/Page.js");
+    const PageHeader_1 = $__require("app/components/PageHeader.js");
+    const NonState_1 = $__require("app/components/NonState.js");
+    const ConfirmButton_1 = $__require("app/components/ConfirmButton.js");
+    const css = {
+        items: {
+            width: '100%',
+            marginTop: '-5px',
+            display: 'table',
+            borderSpacing: '0 5px'
+        },
+        itemsBox: {
+            width: '100%',
+            overflowY: 'auto'
+        },
+        placeholder: {
+            opacity: 0,
+            width: '100%'
+        },
+        header: {
+            marginTop: '-19px'
+        },
+        heading: {
+            margin: '19px 0 0 0'
+        },
+        button: {
+            margin: '10px 0 0 10px'
+        }
+    };
+    class Authorities extends React.Component {
+        constructor(props, context) {
+            super(props, context);
+            this.onChange = () => {
+                let authorities = AuthoritiesStore_1.default.authorities;
+                let selected = {};
+                let curSelected = this.state.selected;
+                let opened = {};
+                let curOpened = this.state.opened;
+                authorities.forEach(authority => {
+                    if (curSelected[authority.id]) {
+                        selected[authority.id] = true;
+                    }
+                    if (curOpened[authority.id]) {
+                        opened[authority.id] = true;
+                    }
+                });
+                this.setState(Object.assign({}, this.state, { authorities: authorities, organizations: OrganizationsStore_1.default.organizations, selected: selected, opened: opened }));
+            };
+            this.onDelete = () => {
+                this.setState(Object.assign({}, this.state, { disabled: true }));
+                AuthorityActions.removeMulti(Object.keys(this.state.selected)).then(() => {
+                    this.setState(Object.assign({}, this.state, { selected: {}, disabled: false }));
+                }).catch(() => {
+                    this.setState(Object.assign({}, this.state, { disabled: false }));
+                });
+            };
+            this.state = {
+                authorities: AuthoritiesStore_1.default.authorities,
+                organizations: OrganizationsStore_1.default.organizations,
+                selected: {},
+                opened: {},
+                newOpened: false,
+                lastSelected: null,
+                disabled: false
+            };
+        }
+        get selected() {
+            return !!Object.keys(this.state.selected).length;
+        }
+        get opened() {
+            return !!Object.keys(this.state.opened).length;
+        }
+        componentDidMount() {
+            AuthoritiesStore_1.default.addChangeListener(this.onChange);
+            OrganizationsStore_1.default.addChangeListener(this.onChange);
+            AuthorityActions.sync();
+            OrganizationActions.sync();
+        }
+        componentWillUnmount() {
+            AuthoritiesStore_1.default.removeChangeListener(this.onChange);
+            OrganizationsStore_1.default.removeChangeListener(this.onChange);
+        }
+        render() {
+            let authoritiesDom = [];
+            this.state.authorities.forEach(authority => {
+                authoritiesDom.push(React.createElement(Authority_1.default, { key: authority.id, authority: authority, organizations: this.state.organizations, selected: !!this.state.selected[authority.id], open: !!this.state.opened[authority.id], onSelect: shift => {
+                        let selected = Object.assign({}, this.state.selected);
+                        if (shift) {
+                            let authorities = this.state.authorities;
+                            let start;
+                            let end;
+                            for (let i = 0; i < authorities.length; i++) {
+                                let usr = authorities[i];
+                                if (usr.id === authority.id) {
+                                    start = i;
+                                } else if (usr.id === this.state.lastSelected) {
+                                    end = i;
+                                }
+                            }
+                            if (start !== undefined && end !== undefined) {
+                                if (start > end) {
+                                    end = [start, start = end][0];
+                                }
+                                for (let i = start; i <= end; i++) {
+                                    selected[authorities[i].id] = true;
+                                }
+                                this.setState(Object.assign({}, this.state, { lastSelected: authority.id, selected: selected }));
+                                return;
+                            }
+                        }
+                        if (selected[authority.id]) {
+                            delete selected[authority.id];
+                        } else {
+                            selected[authority.id] = true;
+                        }
+                        this.setState(Object.assign({}, this.state, { lastSelected: authority.id, selected: selected }));
+                    }, onOpen: () => {
+                        let opened = Object.assign({}, this.state.opened);
+                        if (opened[authority.id]) {
+                            delete opened[authority.id];
+                        } else {
+                            opened[authority.id] = true;
+                        }
+                        this.setState(Object.assign({}, this.state, { opened: opened }));
+                    } }));
+            });
+            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Authorities"), React.createElement("div", { className: "flex" }), React.createElement("div", null, React.createElement("button", { className: "pt-button pt-intent-warning pt-icon-chevron-up", style: css.button, disabled: !this.opened, type: "button", onClick: () => {
+                    this.setState(Object.assign({}, this.state, { opened: {} }));
+                } }, "Collapse All"), React.createElement(ConfirmButton_1.default, { label: "Delete Selected", className: "pt-intent-danger pt-icon-delete", progressClassName: "pt-intent-danger", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onDelete }), React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", style: css.button, disabled: this.state.disabled, type: "button", onClick: () => {
+                    this.setState(Object.assign({}, this.state, { disabled: true }));
+                    AuthorityActions.create({
+                        name: 'New Authority'
+                    }).then(() => {
+                        this.setState(Object.assign({}, this.state, { disabled: false }));
+                    }).catch(() => {
+                        this.setState(Object.assign({}, this.state, { disabled: false }));
+                    });
+                } }, "New")))), React.createElement("div", { style: css.itemsBox }, React.createElement("div", { style: css.items }, authoritiesDom, React.createElement("tr", { className: "pt-card pt-row", style: css.placeholder }, React.createElement("td", { colSpan: 5, style: css.placeholder })))), React.createElement(NonState_1.default, { hidden: !!authoritiesDom.length, iconClass: "pt-icon-office", title: "No authorities", description: "Add a new authority to get started." }), React.createElement(AuthoritiesPage_1.default, { onPage: () => {
+                    this.setState({
+                        lastSelected: null
+                    });
+                } }));
+        }
+    }
+    exports.default = Authorities;
     
 });
 System.registerDynamic("app/components/Log.js", ["npm:react@15.6.1.js", "npm:@blueprintjs/core@1.33.0.js", "app/utils/MiscUtils.js"], true, function ($__require, exports, module) {
@@ -39537,6 +40153,278 @@ System.registerDynamic("app/actions/FirewallActions.js", ["npm:superagent@3.8.1.
     });
     
 });
+System.registerDynamic("app/types/AuthorityTypes.js", [], true, function ($__require, exports, module) {
+  "use strict";
+
+  var global = this || self,
+      GLOBAL = global;
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.SYNC = 'authority.sync';
+  exports.TRAVERSE = 'authority.traverse';
+  exports.FILTER = 'authority.filter';
+  exports.CHANGE = 'authority.change';
+  
+});
+System.registerDynamic("app/stores/AuthoritiesStore.js", ["app/dispatcher/Dispatcher.js", "app/EventEmitter.js", "app/types/AuthorityTypes.js", "app/types/GlobalTypes.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const Dispatcher_1 = $__require("app/dispatcher/Dispatcher.js");
+    const EventEmitter_1 = $__require("app/EventEmitter.js");
+    const AuthorityTypes = $__require("app/types/AuthorityTypes.js");
+    const GlobalTypes = $__require("app/types/GlobalTypes.js");
+    class AuthoritiesStore extends EventEmitter_1.default {
+        constructor() {
+            super(...arguments);
+            this._authorities = Object.freeze([]);
+            this._filter = null;
+            this._map = {};
+            this._token = Dispatcher_1.default.register(this._callback.bind(this));
+        }
+        get authorities() {
+            return this._authorities;
+        }
+        get authoritiesM() {
+            let authorities = [];
+            this._authorities.forEach(authority => {
+                authorities.push(Object.assign({}, authority));
+            });
+            return authorities;
+        }
+        get page() {
+            return this._page || 0;
+        }
+        get pageCount() {
+            return this._pageCount || 20;
+        }
+        get pages() {
+            return Math.ceil(this.count / this.pageCount);
+        }
+        get filter() {
+            return this._filter;
+        }
+        get count() {
+            return this._count || 0;
+        }
+        authority(id) {
+            let i = this._map[id];
+            if (i === undefined) {
+                return null;
+            }
+            return this._authorities[i];
+        }
+        emitChange() {
+            this.emitDefer(GlobalTypes.CHANGE);
+        }
+        addChangeListener(callback) {
+            this.on(GlobalTypes.CHANGE, callback);
+        }
+        removeChangeListener(callback) {
+            this.removeListener(GlobalTypes.CHANGE, callback);
+        }
+        _traverse(page) {
+            this._page = Math.min(this.pages, page);
+        }
+        _filterCallback(filter) {
+            if (this._filter !== null && filter === null || this._filter === {} && filter !== null || filter && this._filter && filter.name !== this._filter.name) {
+                this._traverse(0);
+            }
+            this._filter = filter;
+            this.emitChange();
+        }
+        _sync(authorities, count) {
+            this._map = {};
+            for (let i = 0; i < authorities.length; i++) {
+                authorities[i] = Object.freeze(authorities[i]);
+                this._map[authorities[i].id] = i;
+            }
+            this._count = count;
+            this._authorities = Object.freeze(authorities);
+            this._page = Math.min(this.pages, this.page);
+            this.emitChange();
+        }
+        _callback(action) {
+            switch (action.type) {
+                case AuthorityTypes.TRAVERSE:
+                    this._traverse(action.data.page);
+                    break;
+                case AuthorityTypes.FILTER:
+                    this._filterCallback(action.data.filter);
+                    break;
+                case AuthorityTypes.SYNC:
+                    this._sync(action.data.authorities, action.data.count);
+                    break;
+            }
+        }
+    }
+    exports.default = new AuthoritiesStore();
+    
+});
+System.registerDynamic("app/actions/AuthorityActions.js", ["npm:superagent@3.8.1.js", "app/dispatcher/Dispatcher.js", "app/dispatcher/EventDispatcher.js", "app/Alert.js", "app/Csrf.js", "app/Loader.js", "app/types/AuthorityTypes.js", "app/stores/AuthoritiesStore.js", "app/utils/MiscUtils.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const SuperAgent = $__require("npm:superagent@3.8.1.js");
+    const Dispatcher_1 = $__require("app/dispatcher/Dispatcher.js");
+    const EventDispatcher_1 = $__require("app/dispatcher/EventDispatcher.js");
+    const Alert = $__require("app/Alert.js");
+    const Csrf = $__require("app/Csrf.js");
+    const Loader_1 = $__require("app/Loader.js");
+    const AuthorityTypes = $__require("app/types/AuthorityTypes.js");
+    const AuthoritiesStore_1 = $__require("app/stores/AuthoritiesStore.js");
+    const MiscUtils = $__require("app/utils/MiscUtils.js");
+    let syncId;
+    function sync(noLoading) {
+        let curSyncId = MiscUtils.uuid();
+        syncId = curSyncId;
+        let loader;
+        if (!noLoading) {
+            loader = new Loader_1.default().loading();
+        }
+        return new Promise((resolve, reject) => {
+            SuperAgent.get('/authority').query(Object.assign({}, AuthoritiesStore_1.default.filter, { page: AuthoritiesStore_1.default.page, page_count: AuthoritiesStore_1.default.pageCount })).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
+                if (loader) {
+                    loader.done();
+                }
+                if (res && res.status === 401) {
+                    window.location.href = '/login';
+                    resolve();
+                    return;
+                }
+                if (curSyncId !== syncId) {
+                    resolve();
+                    return;
+                }
+                if (err) {
+                    Alert.errorRes(res, 'Failed to load authorities');
+                    reject(err);
+                    return;
+                }
+                Dispatcher_1.default.dispatch({
+                    type: AuthorityTypes.SYNC,
+                    data: {
+                        authorities: res.body.authorities,
+                        count: res.body.count
+                    }
+                });
+                resolve();
+            });
+        });
+    }
+    exports.sync = sync;
+    function traverse(page) {
+        Dispatcher_1.default.dispatch({
+            type: AuthorityTypes.TRAVERSE,
+            data: {
+                page: page
+            }
+        });
+        return sync();
+    }
+    exports.traverse = traverse;
+    function filter(filt) {
+        Dispatcher_1.default.dispatch({
+            type: AuthorityTypes.FILTER,
+            data: {
+                filter: filt
+            }
+        });
+        return sync();
+    }
+    exports.filter = filter;
+    function commit(authority) {
+        let loader = new Loader_1.default().loading();
+        return new Promise((resolve, reject) => {
+            SuperAgent.put('/authority/' + authority.id).send(authority).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
+                loader.done();
+                if (res && res.status === 401) {
+                    window.location.href = '/login';
+                    resolve();
+                    return;
+                }
+                if (err) {
+                    Alert.errorRes(res, 'Failed to save authority');
+                    reject(err);
+                    return;
+                }
+                resolve();
+            });
+        });
+    }
+    exports.commit = commit;
+    function create(authority) {
+        let loader = new Loader_1.default().loading();
+        return new Promise((resolve, reject) => {
+            SuperAgent.post('/authority').send(authority).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
+                loader.done();
+                if (res && res.status === 401) {
+                    window.location.href = '/login';
+                    resolve();
+                    return;
+                }
+                if (err) {
+                    Alert.errorRes(res, 'Failed to create authority');
+                    reject(err);
+                    return;
+                }
+                resolve();
+            });
+        });
+    }
+    exports.create = create;
+    function remove(authorityId) {
+        let loader = new Loader_1.default().loading();
+        return new Promise((resolve, reject) => {
+            SuperAgent.delete('/authority/' + authorityId).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
+                loader.done();
+                if (res && res.status === 401) {
+                    window.location.href = '/login';
+                    resolve();
+                    return;
+                }
+                if (err) {
+                    Alert.errorRes(res, 'Failed to delete authority');
+                    reject(err);
+                    return;
+                }
+                resolve();
+            });
+        });
+    }
+    exports.remove = remove;
+    function removeMulti(authorityIds) {
+        let loader = new Loader_1.default().loading();
+        return new Promise((resolve, reject) => {
+            SuperAgent.delete('/authority').send(authorityIds).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
+                loader.done();
+                if (res && res.status === 401) {
+                    window.location.href = '/login';
+                    resolve();
+                    return;
+                }
+                if (err) {
+                    Alert.errorRes(res, 'Failed to delete authorities');
+                    reject(err);
+                    return;
+                }
+                resolve();
+            });
+        });
+    }
+    exports.removeMulti = removeMulti;
+    EventDispatcher_1.default.register(action => {
+        switch (action.type) {
+            case AuthorityTypes.CHANGE:
+                sync();
+                break;
+        }
+    });
+    
+});
 System.registerDynamic('npm:events@1.1.1/events.js', [], true, function ($__require, exports, module) {
   var global = this || self,
       GLOBAL = global;
@@ -40561,7 +41449,7 @@ System.registerDynamic("app/actions/SubscriptionActions.js", ["npm:superagent@3.
     });
     
 });
-System.registerDynamic("app/components/Main.js", ["npm:react@15.6.1.js", "npm:react-router-dom@4.2.2.js", "app/Theme.js", "app/stores/SubscriptionStore.js", "app/components/Loading.js", "app/components/Subscription.js", "app/components/Users.js", "app/components/UserDetailed.js", "app/components/Nodes.js", "app/components/Policies.js", "app/components/Certificates.js", "app/components/Organizations.js", "app/components/Datacenters.js", "app/components/Zones.js", "app/components/Storages.js", "app/components/Images.js", "app/components/Disks.js", "app/components/Instances.js", "app/components/Firewalls.js", "app/components/Logs.js", "app/components/Settings.js", "app/actions/UserActions.js", "app/actions/SessionActions.js", "app/actions/AuditActions.js", "app/actions/NodeActions.js", "app/actions/PolicyActions.js", "app/actions/CertificateActions.js", "app/actions/OrganizationActions.js", "app/actions/DatacenterActions.js", "app/actions/ZoneActions.js", "app/actions/StorageActions.js", "app/actions/ImageActions.js", "app/actions/DiskActions.js", "app/actions/InstanceActions.js", "app/actions/FirewallActions.js", "app/actions/LogActions.js", "app/actions/SettingsActions.js", "app/actions/SubscriptionActions.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/Main.js", ["npm:react@15.6.1.js", "npm:react-router-dom@4.2.2.js", "app/Theme.js", "app/stores/SubscriptionStore.js", "app/components/Loading.js", "app/components/Subscription.js", "app/components/Users.js", "app/components/UserDetailed.js", "app/components/Nodes.js", "app/components/Policies.js", "app/components/Certificates.js", "app/components/Organizations.js", "app/components/Datacenters.js", "app/components/Zones.js", "app/components/Storages.js", "app/components/Images.js", "app/components/Disks.js", "app/components/Instances.js", "app/components/Firewalls.js", "app/components/Authorities.js", "app/components/Logs.js", "app/components/Settings.js", "app/actions/UserActions.js", "app/actions/SessionActions.js", "app/actions/AuditActions.js", "app/actions/NodeActions.js", "app/actions/PolicyActions.js", "app/actions/CertificateActions.js", "app/actions/OrganizationActions.js", "app/actions/DatacenterActions.js", "app/actions/ZoneActions.js", "app/actions/StorageActions.js", "app/actions/ImageActions.js", "app/actions/DiskActions.js", "app/actions/InstanceActions.js", "app/actions/FirewallActions.js", "app/actions/AuthorityActions.js", "app/actions/LogActions.js", "app/actions/SettingsActions.js", "app/actions/SubscriptionActions.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -40586,6 +41474,7 @@ System.registerDynamic("app/components/Main.js", ["npm:react@15.6.1.js", "npm:re
     const Disks_1 = $__require("app/components/Disks.js");
     const Instances_1 = $__require("app/components/Instances.js");
     const Firewalls_1 = $__require("app/components/Firewalls.js");
+    const Authorities_1 = $__require("app/components/Authorities.js");
     const Logs_1 = $__require("app/components/Logs.js");
     const Settings_1 = $__require("app/components/Settings.js");
     const UserActions = $__require("app/actions/UserActions.js");
@@ -40602,6 +41491,7 @@ System.registerDynamic("app/components/Main.js", ["npm:react@15.6.1.js", "npm:re
     const DiskActions = $__require("app/actions/DiskActions.js");
     const InstanceActions = $__require("app/actions/InstanceActions.js");
     const FirewallActions = $__require("app/actions/FirewallActions.js");
+    const AuthorityActions = $__require("app/actions/AuthorityActions.js");
     const LogActions = $__require("app/actions/LogActions.js");
     const SettingsActions = $__require("app/actions/SettingsActions.js");
     const SubscriptionActions = $__require("app/actions/SubscriptionActions.js");
@@ -40658,7 +41548,7 @@ System.registerDynamic("app/components/Main.js", ["npm:react@15.6.1.js", "npm:re
             if (!this.state.subscription) {
                 return React.createElement("div", null);
             }
-            return React.createElement(ReactRouter.HashRouter, null, React.createElement("div", null, React.createElement("nav", { className: "pt-navbar layout horizontal", style: css.nav }, React.createElement("div", { className: "pt-navbar-group pt-align-left flex", style: css.navTitle }, React.createElement("div", { className: "pt-navbar-heading", style: css.heading }, "Pritunl Cloud"), React.createElement(Loading_1.default, { style: css.loading, size: "small" })), React.createElement("div", { className: "pt-navbar-group pt-align-right", style: css.navGroup }, React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-people", style: css.link, to: "/users" }, "Users"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-layers", style: css.link, to: "/nodes" }, "Nodes"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-filter", style: css.link, to: "/policies" }, "Policies"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-endorsed", style: css.link, to: "/certificates" }, "Certificates"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-people", style: css.link, to: "/organizations" }, "Organizations"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-cloud", style: css.link, to: "/datacenters" }, "Datacenters"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-layout-circle", style: css.link, to: "/zones" }, "Zones"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-database", style: css.link, to: "/storages" }, "Storages"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-compressed", style: css.link, to: "/images" }, "Images"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-floppy-disk", style: css.link, to: "/disks" }, "Disks"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-dashboard", style: css.link, to: "/instances" }, "Instances"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-key", style: css.link, to: "/firewalls" }, "Firewalls"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-history", style: css.link, to: "/logs" }, "Logs"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-cog", style: css.link, to: "/settings" }, "Settings"), React.createElement(ReactRouter.Link, { to: "/subscription", style: css.sub }, React.createElement("button", { className: "pt-button pt-minimal pt-icon-credit-card", style: css.link, onClick: () => {
+            return React.createElement(ReactRouter.HashRouter, null, React.createElement("div", null, React.createElement("nav", { className: "pt-navbar layout horizontal", style: css.nav }, React.createElement("div", { className: "pt-navbar-group pt-align-left flex", style: css.navTitle }, React.createElement("div", { className: "pt-navbar-heading", style: css.heading }, "Pritunl Cloud"), React.createElement(Loading_1.default, { style: css.loading, size: "small" })), React.createElement("div", { className: "pt-navbar-group pt-align-right", style: css.navGroup }, React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-people", style: css.link, to: "/users" }, "Users"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-layers", style: css.link, to: "/nodes" }, "Nodes"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-filter", style: css.link, to: "/policies" }, "Policies"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-endorsed", style: css.link, to: "/certificates" }, "Certificates"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-people", style: css.link, to: "/organizations" }, "Organizations"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-cloud", style: css.link, to: "/datacenters" }, "Datacenters"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-layout-circle", style: css.link, to: "/zones" }, "Zones"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-database", style: css.link, to: "/storages" }, "Storages"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-compressed", style: css.link, to: "/images" }, "Images"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-floppy-disk", style: css.link, to: "/disks" }, "Disks"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-dashboard", style: css.link, to: "/instances" }, "Instances"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-key", style: css.link, to: "/firewalls" }, "Firewalls"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-office", style: css.link, to: "/authorities" }, "Authorities"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-history", style: css.link, to: "/logs" }, "Logs"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-cog", style: css.link, to: "/settings" }, "Settings"), React.createElement(ReactRouter.Link, { to: "/subscription", style: css.sub }, React.createElement("button", { className: "pt-button pt-minimal pt-icon-credit-card", style: css.link, onClick: () => {
                     SubscriptionActions.sync(true);
                 } }, "Subscription")), React.createElement(ReactRouter.Route, { render: props => React.createElement("button", { className: "pt-button pt-minimal pt-icon-refresh", disabled: this.state.disabled, onClick: () => {
                         let pathname = props.location.pathname;
@@ -40752,6 +41642,12 @@ System.registerDynamic("app/components/Main.js", ["npm:react@15.6.1.js", "npm:re
                             }).catch(() => {
                                 this.setState(Object.assign({}, this.state, { disabled: false }));
                             });
+                        } else if (pathname === '/authorities') {
+                            AuthorityActions.sync().then(() => {
+                                this.setState(Object.assign({}, this.state, { disabled: false }));
+                            }).catch(() => {
+                                this.setState(Object.assign({}, this.state, { disabled: false }));
+                            });
                         } else if (pathname === '/logs') {
                             LogActions.sync().then(() => {
                                 this.setState(Object.assign({}, this.state, { disabled: false }));
@@ -40778,7 +41674,7 @@ System.registerDynamic("app/components/Main.js", ["npm:react@15.6.1.js", "npm:re
                 } }, "Logout"), React.createElement("button", { className: "pt-button pt-minimal pt-icon-moon", onClick: () => {
                     Theme.toggle();
                     Theme.save();
-                } }))), React.createElement(ReactRouter.Route, { path: "/", exact: true, render: () => React.createElement(Users_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/users", render: () => React.createElement(Users_1.default, null) }), React.createElement(ReactRouter.Route, { exact: true, path: "/user", render: () => React.createElement(UserDetailed_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/user/:userId", render: props => React.createElement(UserDetailed_1.default, { userId: props.match.params.userId }) }), React.createElement(ReactRouter.Route, { path: "/nodes", render: () => React.createElement(Nodes_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/policies", render: () => React.createElement(Policies_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/certificates", render: () => React.createElement(Certificates_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/organizations", render: () => React.createElement(Organizations_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/datacenters", render: () => React.createElement(Datacenters_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/zones", render: () => React.createElement(Zones_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/storages", render: () => React.createElement(Storages_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/images", render: () => React.createElement(Images_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/disks", render: () => React.createElement(Disks_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/instances", render: () => React.createElement(Instances_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/firewalls", render: () => React.createElement(Firewalls_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/logs", render: () => React.createElement(Logs_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/settings", render: () => React.createElement(Settings_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/subscription", render: () => React.createElement(Subscription_1.default, null) })));
+                } }))), React.createElement(ReactRouter.Route, { path: "/", exact: true, render: () => React.createElement(Users_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/users", render: () => React.createElement(Users_1.default, null) }), React.createElement(ReactRouter.Route, { exact: true, path: "/user", render: () => React.createElement(UserDetailed_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/user/:userId", render: props => React.createElement(UserDetailed_1.default, { userId: props.match.params.userId }) }), React.createElement(ReactRouter.Route, { path: "/nodes", render: () => React.createElement(Nodes_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/policies", render: () => React.createElement(Policies_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/certificates", render: () => React.createElement(Certificates_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/organizations", render: () => React.createElement(Organizations_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/datacenters", render: () => React.createElement(Datacenters_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/zones", render: () => React.createElement(Zones_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/storages", render: () => React.createElement(Storages_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/images", render: () => React.createElement(Images_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/disks", render: () => React.createElement(Disks_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/instances", render: () => React.createElement(Instances_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/firewalls", render: () => React.createElement(Firewalls_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/authorities", render: () => React.createElement(Authorities_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/logs", render: () => React.createElement(Logs_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/settings", render: () => React.createElement(Settings_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/subscription", render: () => React.createElement(Subscription_1.default, null) })));
         }
     }
     exports.default = Main;
