@@ -19,6 +19,8 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/zone"
 	"gopkg.in/mgo.v2/bson"
+	"os"
+	"os/exec"
 	"path"
 	"strings"
 	"time"
@@ -195,7 +197,6 @@ func WriteAuthority(db *database.Database, instId, dskId bson.ObjectId) (
 	principals := ""
 
 	for _, authr := range authrs {
-
 		switch authr.Type {
 		case authority.SshKey:
 			authorizedKeys += authr.Key + "\n"
@@ -215,17 +216,28 @@ func WriteAuthority(db *database.Database, instId, dskId bson.ObjectId) (
 		return
 	}
 
-	err = utils.Exec("",
+	cmd := exec.Command(
 		"guestmount",
+		"--no-fork",
 		"-a", diskPath,
 		"-m", "/dev/ol_centos/root", // TODO
 		diskMountPath,
 	)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	err = cmd.Start()
 	defer func() {
 		utils.Exec("", "sync")
 		utils.Exec("", "guestunmount", diskMountPath)
+		cmd.Wait()
+		utils.Exec("", "sync")
+		time.Sleep(1 * time.Second)
 	}()
 	if err != nil {
+		err = &errortypes.RequestError{
+			errors.Wrapf(err, "data: Failed start guest mount"),
+		}
 		return
 	}
 
