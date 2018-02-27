@@ -172,10 +172,6 @@ export default class FirewallDetailed extends React.Component<Props, State> {
 	onRemoveNetworkRole = (networkRole: string): void => {
 		let firewall: FirewallTypes.Firewall;
 
-		if (!this.state.addNetworkRole) {
-			return;
-		}
-
 		if (this.state.changed) {
 			firewall = {
 				...this.state.firewall,
