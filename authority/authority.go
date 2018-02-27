@@ -11,12 +11,34 @@ import (
 type Authority struct {
 	Id           bson.ObjectId `bson:"_id,omitempty" json:"id"`
 	Name         string        `bson:"name" json:"name"`
+	Type         string        `bson:"type" json:"type"`
 	Organization bson.ObjectId `bson:"organization,omitempty" json:"organization"`
 	NetworkRoles []string      `bson:"network_roles" json:"network_roles"`
+	Key          string        `bson:"key" json:"key"`
+	Roles        []string      `bson:"roles" json:"roles"`
+	Certificate  string        `bson:"certificate" json:"certificate"`
 }
 
 func (f *Authority) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
+
+	if f.Roles == nil {
+		f.Roles = []string{}
+	}
+
+	if f.Type == "" {
+		f.Type = SshKey
+	}
+
+	switch f.Type {
+	case SshKey:
+		f.Roles = []string{}
+		f.Certificate = ""
+		break
+	case SshCertificate:
+		f.Key = ""
+		break
+	}
 
 	return
 }
