@@ -220,7 +220,7 @@ func WriteAuthority(db *database.Database, instId, dskId bson.ObjectId) (
 		"guestmount",
 		"--no-fork",
 		"-a", diskPath,
-		"-m", "/dev/ol_centos/root", // TODO
+		"-m", "/dev/sda2",
 		diskMountPath,
 	)
 	cmd.Stdout = os.Stdout
