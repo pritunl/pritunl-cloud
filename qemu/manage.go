@@ -376,6 +376,13 @@ func Create(db *database.Database, inst *instance.Instance,
 		return
 	}
 
+	if len(virt.Disks) > 0 {
+		err = data.WriteAuthority(db, virt.Id, virt.Disks[0].GetId())
+		if err != nil {
+			return
+		}
+	}
+
 	virt.State = vm.Starting
 	err = virt.Commit(db)
 	if err != nil {
@@ -497,6 +504,13 @@ func PowerOn(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	err = writeService(virt)
 	if err != nil {
 		return
+	}
+
+	if len(virt.Disks) > 0 {
+		err = data.WriteAuthority(db, virt.Id, virt.Disks[0].GetId())
+		if err != nil {
+			return
+		}
 	}
 
 	err = systemd.Start(unitName)
