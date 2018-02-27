@@ -5,12 +5,14 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/minio/minio-go"
+	"github.com/pritunl/pritunl-cloud/authority"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/image"
+	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/storage"
@@ -18,6 +20,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/zone"
 	"gopkg.in/mgo.v2/bson"
 	"path"
+	"strings"
 	"time"
 )
 
@@ -162,6 +165,95 @@ func WriteImage(db *database.Database, imgId, dskId bson.ObjectId) (
 		}
 
 		err = utils.Exec("", "mv", diskTempPath, diskPath)
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
+func WriteAuthority(db *database.Database, instId, dskId bson.ObjectId) (
+	err error) {
+
+	inst, err := instance.Get(db, instId)
+	if err != nil {
+		return
+	}
+
+	authrs, err := authority.GetRoles(db, inst.NetworkRoles)
+	if err != nil {
+		return
+	}
+
+	if len(authrs) == 0 {
+		return
+	}
+
+	authorizedKeys := ""
+	trusted := ""
+	principals := ""
+
+	for _, authr := range authrs {
+
+		switch authr.Type {
+		case authority.SshKey:
+			authorizedKeys += authr.Key + "\n"
+			break
+		case authority.SshCertificate:
+			trusted += authr.Certificate + "\n"
+			principals += strings.Join(authr.Roles, "\n") + "\n"
+			break
+		}
+	}
+
+	diskPath := paths.GetDiskPath(dskId)
+	diskMountPath := paths.GetDiskMountPath()
+
+	err = utils.ExistsMkdir(diskMountPath, 0755)
+	if err != nil {
+		return
+	}
+
+	err = utils.Exec("",
+		"guestmount",
+		"-a", diskPath,
+		"-m", "/dev/ol_centos/root", // TODO
+		diskMountPath,
+	)
+	defer utils.Exec("",
+		"guestunmount",
+		diskMountPath,
+	)
+	if err != nil {
+		return
+	}
+
+	if authorizedKeys != "" {
+		sshDir := path.Join(diskMountPath, "home", "cloud", ".ssh")
+		sshPath := path.Join(sshDir, "authorized_keys")
+
+		err = utils.ExistsMkdir(sshDir, 0755)
+		if err != nil {
+			return
+		}
+
+		err = utils.CreateWrite(sshPath, authorizedKeys, 0644)
+		if err != nil {
+			return
+		}
+	}
+
+	if trusted != "" {
+		trustedPath := path.Join(diskMountPath, "etc", "ssh", "trusted")
+		principalsPath := path.Join(diskMountPath, "etc", "ssh", "principals")
+
+		err = utils.CreateWrite(trustedPath, trusted, 0644)
+		if err != nil {
+			return
+		}
+
+		err = utils.CreateWrite(principalsPath, principals, 0644)
 		if err != nil {
 			return
 		}
