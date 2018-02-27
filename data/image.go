@@ -69,6 +69,11 @@ func WriteImage(db *database.Database, imgId, dskId bson.ObjectId) (
 		return
 	}
 
+	err = utils.ExistsMkdir(paths.GetTempPath(), 0755)
+	if err != nil {
+		return
+	}
+
 	img, err := image.Get(db, imgId)
 	if err != nil {
 		return
