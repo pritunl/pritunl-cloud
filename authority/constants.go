@@ -2,5 +2,5 @@ package authority
 
 const (
 	SshKey         = "ssh_key"
-	SshCertificate = "certificate"
+	SshCertificate = "ssh_certificate"
 )
