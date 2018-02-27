@@ -19,6 +19,7 @@ import Images from './Images';
 import Disks from './Disks';
 import Instances from './Instances';
 import Firewalls from './Firewalls';
+import Authorities from './Authorities';
 import Logs from './Logs';
 import Settings from './Settings';
 import * as UserActions from '../actions/UserActions';
@@ -35,6 +36,7 @@ import * as ImageActions from '../actions/ImageActions';
 import * as DiskActions from '../actions/DiskActions';
 import * as InstanceActions from '../actions/InstanceActions';
 import * as FirewallActions from '../actions/FirewallActions';
+import * as AuthorityActions from '../actions/AuthorityActions';
 import * as LogActions from '../actions/LogActions';
 import * as SettingsActions from '../actions/SettingsActions';
 import * as SubscriptionActions from '../actions/SubscriptionActions';
@@ -202,6 +204,13 @@ export default class Main extends React.Component<{}, State> {
 							to="/firewalls"
 						>
 							Firewalls
+						</ReactRouter.Link>
+						<ReactRouter.Link
+							className="pt-button pt-minimal pt-icon-office"
+							style={css.link}
+							to="/authorities"
+						>
+							Authorities
 						</ReactRouter.Link>
 						<ReactRouter.Link
 							className="pt-button pt-minimal pt-icon-history"
@@ -420,6 +429,18 @@ export default class Main extends React.Component<{}, State> {
 												disabled: false,
 											});
 										});
+									} else if (pathname === '/authorities') {
+										AuthorityActions.sync().then((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										}).catch((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										});
 									} else if (pathname === '/logs') {
 										LogActions.sync().then((): void => {
 											this.setState({
@@ -524,6 +545,9 @@ export default class Main extends React.Component<{}, State> {
 				)}/>
 				<ReactRouter.Route path="/firewalls" render={() => (
 					<Firewalls/>
+				)}/>
+				<ReactRouter.Route path="/authorities" render={() => (
+					<Authorities/>
 				)}/>
 				<ReactRouter.Route path="/logs" render={() => (
 					<Logs/>
