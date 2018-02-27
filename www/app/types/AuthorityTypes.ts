@@ -7,8 +7,12 @@ export const CHANGE = 'authority.change';
 export interface Authority {
 	id?: string;
 	name?: string;
+	type?: string;
 	organization?: string;
 	network_roles?: string[];
+	key?: string;
+	roles?: string[];
+	certificate?: string;
 }
 
 export interface Filter {
