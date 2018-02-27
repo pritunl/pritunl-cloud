@@ -17,8 +17,12 @@ import (
 type authorityData struct {
 	Id           bson.ObjectId `json:"id"`
 	Name         string        `json:"name"`
+	Type         string        `json:"type"`
 	Organization bson.ObjectId `json:"organization"`
 	NetworkRoles []string      `json:"network_roles"`
+	Key          string        `json:"key"`
+	Roles        []string      `json:"roles"`
+	Certificate  string        `json:"certificate"`
 }
 
 type authoritiesData struct {
@@ -53,14 +57,22 @@ func authorityPut(c *gin.Context) {
 	}
 
 	fire.Name = data.Name
+	fire.Type = data.Type
 	fire.Organization = data.Organization
 	fire.NetworkRoles = data.NetworkRoles
+	fire.Key = data.Key
+	fire.Roles = data.Roles
+	fire.Certificate = data.Certificate
 
 	fields := set.NewSet(
 		"state",
 		"name",
+		"type",
 		"organization",
 		"network_roles",
+		"key",
+		"roles",
+		"certificate",
 	)
 
 	errData, err := fire.Validate(db)
@@ -103,8 +115,12 @@ func authorityPost(c *gin.Context) {
 
 	fire := &authority.Authority{
 		Name:         data.Name,
+		Type:         data.Type,
 		Organization: data.Organization,
 		NetworkRoles: data.NetworkRoles,
+		Key:          data.Key,
+		Roles:        data.Roles,
+		Certificate:  data.Certificate,
 	}
 
 	errData, err := fire.Validate(db)
