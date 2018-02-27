@@ -12,7 +12,6 @@ import Page from './Page';
 import PageHeader from './PageHeader';
 import NonState from './NonState';
 import ConfirmButton from './ConfirmButton';
-import * as DatacenterActions from "../actions/DatacenterActions";
 
 interface Selected {
 	[key: string]: boolean;
