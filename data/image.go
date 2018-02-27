@@ -156,7 +156,12 @@ func WriteImage(db *database.Database, imgId, dskId bson.ObjectId) (
 			return
 		}
 
-		err = getImage(db, img, diskPath)
+		err = getImage(db, img, diskTempPath)
+		if err != nil {
+			return
+		}
+
+		err = utils.Exec("", "mv", diskTempPath, diskPath)
 		if err != nil {
 			return
 		}
