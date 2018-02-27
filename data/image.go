@@ -221,10 +221,10 @@ func WriteAuthority(db *database.Database, instId, dskId bson.ObjectId) (
 		"-m", "/dev/ol_centos/root", // TODO
 		diskMountPath,
 	)
-	defer utils.Exec("",
-		"guestunmount",
-		diskMountPath,
-	)
+	defer func() {
+		utils.Exec("", "sync")
+		utils.Exec("", "guestunmount", diskMountPath)
+	}()
 	if err != nil {
 		return
 	}
