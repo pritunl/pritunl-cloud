@@ -12,7 +12,7 @@ type Authority struct {
 	Id             bson.ObjectId `bson:"_id,omitempty" json:"id"`
 	Name           string        `bson:"name" json:"name"`
 	Organization   bson.ObjectId `bson:"organization,omitempty" json:"organization"`
-	AuthorityRoles []string      `bson:"network_roles" json:"network_roles"`
+	AuthorityRoles []string      `bson:"authority_roles" json:"authority_roles"`
 }
 
 func (f *Authority) Validate(db *database.Database) (
