@@ -4,7 +4,6 @@ import * as FirewallTypes from '../types/FirewallTypes';
 import * as FirewallActions from '../actions/FirewallActions';
 import * as OrganizationTypes from "../types/OrganizationTypes";
 import FirewallRule from './FirewallRule';
-import * as MiscUtils from '../utils/MiscUtils';
 import PageInput from './PageInput';
 import PageSelect from './PageSelect';
 import PageInfo from './PageInfo';
