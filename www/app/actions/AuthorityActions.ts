@@ -5,8 +5,8 @@ import EventDispatcher from '../dispatcher/EventDispatcher';
 import * as Alert from '../Alert';
 import * as Csrf from '../Csrf';
 import Loader from '../Loader';
-import * as FirewallTypes from '../types/FirewallTypes';
-import FirewallsStore from '../stores/FirewallsStore';
+import * as AuthorityTypes from '../types/AuthorityTypes';
+import AuthoritiesStore from '../stores/AuthoritiesStore';
 import * as MiscUtils from '../utils/MiscUtils';
 
 let syncId: string;
@@ -24,9 +24,9 @@ export function sync(noLoading?: boolean): Promise<void> {
 		SuperAgent
 			.get('/authority')
 			.query({
-				...FirewallsStore.filter,
-				page: FirewallsStore.page,
-				page_count: FirewallsStore.pageCount,
+				...AuthoritiesStore.filter,
+				page: AuthoritiesStore.page,
+				page_count: AuthoritiesStore.pageCount,
 			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
@@ -53,7 +53,7 @@ export function sync(noLoading?: boolean): Promise<void> {
 				}
 
 				Dispatcher.dispatch({
-					type: FirewallTypes.SYNC,
+					type: AuthorityTypes.SYNC,
 					data: {
 						authorities: res.body.authorities,
 						count: res.body.count,
@@ -67,7 +67,7 @@ export function sync(noLoading?: boolean): Promise<void> {
 
 export function traverse(page: number): Promise<void> {
 	Dispatcher.dispatch({
-		type: FirewallTypes.TRAVERSE,
+		type: AuthorityTypes.TRAVERSE,
 		data: {
 			page: page,
 		},
@@ -76,9 +76,9 @@ export function traverse(page: number): Promise<void> {
 	return sync();
 }
 
-export function filter(filt: FirewallTypes.Filter): Promise<void> {
+export function filter(filt: AuthorityTypes.Filter): Promise<void> {
 	Dispatcher.dispatch({
-		type: FirewallTypes.FILTER,
+		type: AuthorityTypes.FILTER,
 		data: {
 			filter: filt,
 		},
@@ -87,7 +87,7 @@ export function filter(filt: FirewallTypes.Filter): Promise<void> {
 	return sync();
 }
 
-export function commit(authority: FirewallTypes.Firewall): Promise<void> {
+export function commit(authority: AuthorityTypes.Authority): Promise<void> {
 	let loader = new Loader().loading();
 
 	return new Promise<void>((resolve, reject): void => {
@@ -116,7 +116,7 @@ export function commit(authority: FirewallTypes.Firewall): Promise<void> {
 	});
 }
 
-export function create(authority: FirewallTypes.Firewall): Promise<void> {
+export function create(authority: AuthorityTypes.Authority): Promise<void> {
 	let loader = new Loader().loading();
 
 	return new Promise<void>((resolve, reject): void => {
@@ -202,9 +202,9 @@ export function removeMulti(authorityIds: string[]): Promise<void> {
 	});
 }
 
-EventDispatcher.register((action: FirewallTypes.FirewallDispatch) => {
+EventDispatcher.register((action: AuthorityTypes.AuthorityDispatch) => {
 	switch (action.type) {
-		case FirewallTypes.CHANGE:
+		case AuthorityTypes.CHANGE:
 			sync();
 			break;
 	}
