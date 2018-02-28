@@ -56,7 +56,8 @@ func getUserData(db *database.Database, instId bson.ObjectId) (
 		return
 	}
 
-	authrs, err := authority.GetRoles(db, inst.NetworkRoles)
+	authrs, err := authority.GetOrgRoles(db, inst.Organization,
+		inst.NetworkRoles)
 	if err != nil {
 		return
 	}
