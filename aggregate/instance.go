@@ -3,6 +3,7 @@ package aggregate
 import (
 	"fmt"
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/pritunl/pritunl-cloud/authority"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/firewall"
@@ -24,6 +25,7 @@ type InstanceInfo struct {
 	Node          string   `json:"node"`
 	Disks         []string `json:"disks"`
 	FirewallRules []string `json:"firewall_rules"`
+	Authorities   []string `json:"authorities"`
 }
 
 type InstanceAggregate struct {
@@ -31,8 +33,8 @@ type InstanceAggregate struct {
 	Info *InstanceInfo `json:"info"`
 }
 
-func GetInstancePaged(db *database.Database, query *bson.M, page, pageCount int) (
-	insts []*InstanceAggregate, count int, err error) {
+func GetInstancePaged(db *database.Database, query *bson.M, page,
+	pageCount int) (insts []*InstanceAggregate, count int, err error) {
 
 	coll := db.Instances()
 	insts = []*InstanceAggregate{}
@@ -105,6 +107,8 @@ func GetInstancePaged(db *database.Database, query *bson.M, page, pageCount int)
 
 	firesOrg := map[bson.ObjectId]map[string][]*firewall.Firewall{}
 	firesRoles := map[bson.ObjectId]set.Set{}
+	authrsOrg := map[bson.ObjectId]map[string][]*authority.Authority{}
+	authrsRoles := map[bson.ObjectId]set.Set{}
 
 	resp := []*InstancePipe{}
 	err = pipe.All(&resp)
@@ -117,6 +121,7 @@ func GetInstancePaged(db *database.Database, query *bson.M, page, pageCount int)
 			Node:          "Unknown",
 			Disks:         []string{},
 			FirewallRules: []string{},
+			Authorities:   []string{},
 		}
 
 		if len(doc.NodeDocs) > 0 {
@@ -154,46 +159,76 @@ func GetInstancePaged(db *database.Database, query *bson.M, page, pageCount int)
 			firesOrg[doc.Organization] = fires
 		}
 
+		authrs := authrsOrg[doc.Organization]
+		if authrs == nil {
+			authrs, err = authority.GetOrgMapRoles(db, doc.Organization)
+			if err != nil {
+				return
+			}
+
+			for _, roleAuthrs := range authrs {
+				for _, authr := range roleAuthrs {
+					if _, ok := authrsRoles[authr.Id]; ok {
+						continue
+					}
+
+					roles := set.NewSet()
+					for _, role := range authr.NetworkRoles {
+						roles.Add(role)
+					}
+					authrsRoles[authr.Id] = roles
+				}
+			}
+
+			authrsOrg[doc.Organization] = authrs
+		}
+
 		curFires := set.NewSet()
 
 		firewallRules := map[string]set.Set{}
 		firewallRulesKeys := []string{}
+		authrNames := set.NewSet()
 		for _, role := range doc.NetworkRoles {
 			roleFires := fires[role]
-			if roleFires == nil {
-				continue
+			if roleFires != nil {
+				for _, fire := range roleFires {
+					if curFires.Contains(fire.Id) {
+						continue
+					}
+					curFires.Add(fire.Id)
+
+					for _, rule := range fire.Ingress {
+						key := rule.Protocol
+						if rule.Port != "" {
+							key += ":" + rule.Port
+						}
+
+						rules := firewallRules[key]
+						if rules == nil {
+							rules = set.NewSet()
+							firewallRules[key] = rules
+							firewallRulesKeys = append(
+								firewallRulesKeys,
+								key,
+							)
+						}
+
+						for _, sourceIp := range rule.SourceIps {
+							rules.Add(sourceIp)
+						}
+					}
+				}
 			}
 
-			for _, fire := range roleFires {
-				if curFires.Contains(fire.Id) {
-					continue
-				}
-				curFires.Add(fire.Id)
-
-				for _, rule := range fire.Ingress {
-					key := rule.Protocol
-					if rule.Port != "" {
-						key += ":" + rule.Port
-					}
-
-					rules := firewallRules[key]
-					if rules == nil {
-						rules = set.NewSet()
-						firewallRules[key] = rules
-						firewallRulesKeys = append(
-							firewallRulesKeys,
-							key,
-						)
-					}
-
-					for _, sourceIp := range rule.SourceIps {
-						rules.Add(sourceIp)
-					}
+			roleAuthrs := authrs[role]
+			if roleAuthrs != nil {
+				for _, authr := range roleAuthrs {
+					authrNames.Add(authr.Name)
 				}
 			}
 		}
-		sort.Strings(firewallRulesKeys)
 
+		sort.Strings(firewallRulesKeys)
 		for _, key := range firewallRulesKeys {
 			rules := firewallRules[key]
 
@@ -208,6 +243,11 @@ func GetInstancePaged(db *database.Database, query *bson.M, page, pageCount int)
 				key+" - "+strings.Join(vals, ", "),
 			)
 		}
+
+		for authr := range authrNames.Iter() {
+			info.Authorities = append(info.Authorities, authr.(string))
+		}
+		sort.Strings(info.Authorities)
 
 		inst := &InstanceAggregate{
 			Instance: doc.Instance,
