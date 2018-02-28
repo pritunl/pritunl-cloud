@@ -78,10 +78,17 @@ func GetOrgMapRoles(db *database.Database, orgId bson.ObjectId) (
 
 	cursor := coll.Find(&bson.M{
 		"organization": orgId,
-	}).Sort("_id").Iter()
+	}).Iter()
 
 	authr := &Authority{}
 	for cursor.Next(authr) {
+		for _, role := range authr.NetworkRoles {
+			roleAuthrs := authrs[role]
+			if roleAuthrs == nil {
+				roleAuthrs = []*Authority{}
+			}
+			authrs[role] = append(roleAuthrs, authr)
+		}
 		authr = &Authority{}
 	}
 
