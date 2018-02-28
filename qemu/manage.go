@@ -406,27 +406,6 @@ func Create(db *database.Database, inst *instance.Instance,
 	return
 }
 
-func Update(db *database.Database, virt *vm.VirtualMachine) (err error) {
-	vrt, err := GetVmInfo(virt.Id, false)
-	if err != nil {
-		return
-	}
-
-	if vrt != nil && vrt.State != vm.Stopped && vrt.State != vm.Failed {
-		err = &errortypes.WriteError{
-			errors.Wrapf(err, "qemu: Cannot update running virtual machine"),
-		}
-		return
-	}
-
-	err = writeService(virt)
-	if err != nil {
-		return
-	}
-
-	return
-}
-
 func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	vmPath := paths.GetVmPath(virt.Id)
 	unitName := paths.GetUnitName(virt.Id)
