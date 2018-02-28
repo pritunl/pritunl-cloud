@@ -39,6 +39,15 @@ func GetDiskMountPath() string {
 	return path.Join(GetTempPath(), bson.NewObjectId().Hex())
 }
 
+func GetInitsPath() string {
+	return path.Join(node.Self.GetVirtPath(), "inits")
+}
+
+func GetInitPath(instId bson.ObjectId) string {
+	return path.Join(GetInitsPath(),
+		fmt.Sprintf("%s.iso", instId.Hex()))
+}
+
 func GetUnitName(virtId bson.ObjectId) string {
 	return fmt.Sprintf("pritunl_cloud_%s.service", virtId.Hex())
 }
