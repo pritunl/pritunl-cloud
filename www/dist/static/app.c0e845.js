@@ -29506,6 +29506,9 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@15.6.1.
                 }, {
                     label: 'Firewall Rules',
                     value: this.props.instance.info.firewall_rules || ''
+                }, {
+                    label: 'Authorities',
+                    value: this.props.instance.info.authorities || ''
                 }] }))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.instance && !this.state.message, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
                     this.setState(Object.assign({}, this.state, { changed: false, forwardedChecked: false, instance: null }));
                 }, onSave: this.onSave }, React.createElement(ConfirmButton_1.default, { label: "Start", className: "pt-intent-success pt-icon-power", progressClassName: "pt-intent-success", style: css.controlButton, hidden: this.props.instance.state !== 'stop', disabled: this.state.disabled, onConfirm: () => {
@@ -31287,7 +31290,7 @@ System.registerDynamic("app/components/AuthorityDetailed.js", ["npm:react@15.6.1
                 if (this.props.organizations.length && !authority.organization) {
                     authority.organization = this.props.organizations[0].id;
                 }
-                AuthorityActions.commit(this.state.authority).then(() => {
+                AuthorityActions.commit(authority).then(() => {
                     this.setState(Object.assign({}, this.state, { message: 'Your changes have been saved', changed: false, disabled: false }));
                     setTimeout(() => {
                         if (!this.state.changed) {
