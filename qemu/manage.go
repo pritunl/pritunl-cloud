@@ -5,6 +5,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/cloudinit"
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
@@ -371,16 +372,14 @@ func Create(db *database.Database, inst *instance.Instance,
 		Path:  paths.GetDiskPath(dsk.Id),
 	})
 
-	err = writeService(virt)
+	err = cloudinit.Write(db, virt.Id)
 	if err != nil {
 		return
 	}
 
-	if len(virt.Disks) > 0 {
-		err = data.WriteAuthority(db, virt.Id, virt.Disks[0].GetId())
-		if err != nil {
-			return
-		}
+	err = writeService(virt)
+	if err != nil {
+		return
 	}
 
 	virt.State = vm.Starting
@@ -466,6 +465,11 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
+	err = utils.RemoveAll(paths.GetInitPath(virt.Id))
+	if err != nil {
+		return
+	}
+
 	err = utils.RemoveAll(unitPath)
 	if err != nil {
 		return
@@ -501,16 +505,14 @@ func PowerOn(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"id": virt.Id.Hex(),
 	}).Info("qemu: Power on virtual machine")
 
-	err = writeService(virt)
+	err = cloudinit.Write(db, virt.Id)
 	if err != nil {
 		return
 	}
 
-	if len(virt.Disks) > 0 {
-		err = data.WriteAuthority(db, virt.Id, virt.Disks[0].GetId())
-		if err != nil {
-			return
-		}
+	err = writeService(virt)
+	if err != nil {
+		return
 	}
 
 	err = systemd.Start(unitName)
