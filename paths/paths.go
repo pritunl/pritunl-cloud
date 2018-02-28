@@ -21,6 +21,10 @@ func GetTempPath() string {
 	return path.Join(node.Self.GetVirtPath(), "temp")
 }
 
+func GetTempDir() string {
+	return path.Join(GetTempPath(), bson.NewObjectId().Hex())
+}
+
 func GetDiskPath(diskId bson.ObjectId) string {
 	return path.Join(GetDisksPath(),
 		fmt.Sprintf("%s.qcow2", diskId.Hex()))
