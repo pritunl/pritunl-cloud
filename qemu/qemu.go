@@ -113,6 +113,9 @@ func (q *Qemu) Marshal() (output string, err error) {
 		cmd = append(cmd, net)
 	}
 
+	cmd = append(cmd, "-cdrom")
+	cmd = append(cmd, paths.GetInitPath(q.Id))
+
 	cmd = append(cmd, "-monitor")
 	cmd = append(cmd, fmt.Sprintf(
 		"unix:%s,server,nowait",
