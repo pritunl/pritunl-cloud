@@ -290,7 +290,7 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
 			authority.organization = this.props.organizations[0].id;
 		}
 
-		AuthorityActions.commit(this.state.authority).then((): void => {
+		AuthorityActions.commit(authority).then((): void => {
 			this.setState({
 				...this.state,
 				message: 'Your changes have been saved',
