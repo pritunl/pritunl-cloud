@@ -433,10 +433,23 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 
 	time.Sleep(3 * time.Second)
 
-	for _, dsk := range virt.Disks {
-		err = disk.Detach(db, dsk.GetId())
-		if err != nil {
+	for i, dsk := range virt.Disks {
+		ds, e := disk.Get(db, dsk.GetId())
+		if e != nil {
+			err = e
 			return
+		}
+
+		if i == 0 && ds.SourceInstance == virt.Id {
+			err = disk.Delete(db, ds.Id)
+			if err != nil {
+				return
+			}
+		} else {
+			err = disk.Detach(db, dsk.GetId())
+			if err != nil {
+				return
+			}
 		}
 	}
 
