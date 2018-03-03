@@ -72,7 +72,7 @@ func GetAll(db *database.Database, query *bson.M, page, pageCount int) (
 
 	skip := utils.Min(page*pageCount, utils.Max(0, count-pageCount))
 
-	cursor := qury.Sort("name").Skip(skip).Limit(pageCount).Iter()
+	cursor := qury.Sort("key").Skip(skip).Limit(pageCount).Iter()
 
 	img := &Image{}
 	for cursor.Next(img) {
@@ -95,7 +95,7 @@ func GetAllNames(db *database.Database, query *bson.M) (
 	coll := db.Images()
 	images = []*Image{}
 
-	cursor := coll.Find(query).Select(&bson.M{
+	cursor := coll.Find(query).Sort("key").Select(&bson.M{
 		"name": 1,
 		"key":  1,
 	}).Iter()
