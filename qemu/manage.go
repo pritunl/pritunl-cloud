@@ -345,15 +345,16 @@ func Create(db *database.Database, inst *instance.Instance,
 
 	if dsk == nil {
 		dsk = &disk.Disk{
-			Id:           bson.NewObjectId(),
-			Name:         inst.Name,
-			State:        disk.Available,
-			Node:         node.Self.Id,
-			Organization: inst.Organization,
-			Instance:     inst.Id,
-			Image:        virt.Image,
-			Index:        "0",
-			Size:         10, // TODO Custom size
+			Id:             bson.NewObjectId(),
+			Name:           inst.Name,
+			State:          disk.Available,
+			Node:           node.Self.Id,
+			Organization:   inst.Organization,
+			Instance:       inst.Id,
+			SourceInstance: inst.Id,
+			Image:          virt.Image,
+			Index:          "0",
+			Size:           10,
 		}
 
 		err = data.WriteImage(db, virt.Image, dsk.Id)
