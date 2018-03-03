@@ -78,7 +78,7 @@ func GetOrgMapRoles(db *database.Database, orgId bson.ObjectId) (
 
 	cursor := coll.Find(&bson.M{
 		"organization": orgId,
-	}).Sort("_id").Iter()
+	}).Iter()
 
 	fire := &Firewall{}
 	for cursor.Next(fire) {
