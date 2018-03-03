@@ -305,6 +305,10 @@ func UpdateState(db *database.Database, instances []*instance.Instance) (
 func Recover() (err error) {
 	cmds := [][]string{}
 
+	if !node.Self.Firewall {
+		return
+	}
+
 	cmds = append(cmds, []string{
 		"-I", "INPUT", "1",
 		"-m", "comment",
