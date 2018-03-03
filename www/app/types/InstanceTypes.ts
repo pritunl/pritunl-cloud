@@ -31,6 +31,7 @@ export interface Filter {
 export interface Info {
 	node?: string;
 	firewall_rules?: string[];
+	authorities?: string[];
 	disks?: string[];
 }
 
