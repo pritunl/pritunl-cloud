@@ -237,6 +237,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 	render(): JSX.Element {
 		let instance = this.state.instance;
 
+		let hasOrganizations = !!this.props.organizations.length;
 		let organizationsSelect: JSX.Element[] = [];
 		if (this.props.organizations.length) {
 			for (let organization of this.props.organizations) {
@@ -247,6 +248,11 @@ export default class InstanceNew extends React.Component<Props, State> {
 					>{organization.name}</option>,
 				);
 			}
+		}
+
+		if (!hasOrganizations) {
+			organizationsSelect.push(
+				<option key="null" value="">No Organizations</option>);
 		}
 
 		let hasDatacenters = false;
@@ -381,7 +387,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 							}}
 						/>
 						<PageSelect
-							disabled={this.state.disabled}
+							disabled={this.state.disabled || !hasOrganizations}
 							label="Organization"
 							help="Organization for instance."
 							value={instance.organization}
