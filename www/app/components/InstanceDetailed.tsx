@@ -484,6 +484,10 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 								label: 'Firewall Rules',
 								value: this.props.instance.info.firewall_rules || '',
 							},
+							{
+								label: 'Authorities',
+								value: this.props.instance.info.authorities || '',
+							},
 						]}
 					/>
 				</div>
