@@ -322,22 +322,6 @@ func generate(iface string, ingress []*firewall.Rule) (rules *Rules) {
 	)
 	rules.Ingress6 = append(rules.Ingress6, cmd)
 
-	//cmd = rules.newCommand()
-	//cmd = append(cmd,
-	//	"-p", "icmp",
-	//)
-	//if rules.Interface != "host" {
-	//	cmd = append(cmd,
-	//		"-m", "physdev",
-	//		"--physdev-out", rules.Interface,
-	//	)
-	//}
-	//cmd = rules.commentCommand(cmd, false)
-	//cmd = append(cmd,
-	//	"-j", "ACCEPT",
-	//)
-	//rules.Ingress = append(rules.Ingress, cmd)
-
 	cmd = rules.newCommand()
 	cmd = append(cmd,
 		"-p", "ipv6-icmp",
