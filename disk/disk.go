@@ -14,15 +14,16 @@ import (
 )
 
 type Disk struct {
-	Id           bson.ObjectId `bson:"_id,omitempty" json:"id"`
-	Name         string        `bson:"name" json:"name"`
-	State        string        `bson:"state" json:"state"`
-	Node         bson.ObjectId `bson:"node" json:"node"`
-	Organization bson.ObjectId `bson:"organization,omitempty" json:"organization"`
-	Instance     bson.ObjectId `bson:"instance,omitempty" json:"instance"`
-	Image        bson.ObjectId `bson:"image,omitempty" json:"image"`
-	Index        string        `bson:"index" json:"index"`
-	Size         int           `bson:"size" json:"size"`
+	Id             bson.ObjectId `bson:"_id,omitempty" json:"id"`
+	Name           string        `bson:"name" json:"name"`
+	State          string        `bson:"state" json:"state"`
+	Node           bson.ObjectId `bson:"node" json:"node"`
+	Organization   bson.ObjectId `bson:"organization,omitempty" json:"organization"`
+	Instance       bson.ObjectId `bson:"instance,omitempty" json:"instance"`
+	SourceInstance bson.ObjectId `bson:"source_instance,omitempty" json:"source_instance"`
+	Image          bson.ObjectId `bson:"image,omitempty" json:"image"`
+	Index          string        `bson:"index" json:"index"`
+	Size           int           `bson:"size" json:"size"`
 }
 
 func (d *Disk) Validate(db *database.Database) (
