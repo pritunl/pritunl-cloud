@@ -62,23 +62,23 @@ func (r *Rules) run(cmds [][]string, ipCmd string, ipv6 bool) (err error) {
 	for _, cmd := range cmds {
 		cmd = append([]string{ipCmd}, cmd...)
 
-		for i := 0; i < 10; i++ {
+		for i := 0; i < 3; i++ {
 			output, e := utils.ExecCombinedOutput("", iptablesCmd, cmd...)
 			if e != nil && !strings.Contains(output, "matching rule exist") {
-				if i < 9 {
+				if i < 2 {
 					time.Sleep(500 * time.Millisecond)
 					continue
 				} else if cmd[len(cmd)-1] == "ACCEPT" {
 					logrus.WithFields(logrus.Fields{
 						"ipv6":    ipv6,
 						"command": cmd,
-						"error":   e,
+						"output":  output,
 					}).Error("iptables: Ignoring invalid iptables command")
 				} else {
 					logrus.WithFields(logrus.Fields{
 						"ipv6":    ipv6,
 						"command": cmd,
-						"error":   e,
+						"output":  output,
 					}).Warn("iptables: Failed to run iptables command")
 					err = e
 					return
