@@ -7,6 +7,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"gopkg.in/mgo.v2/bson"
 	"net"
+	"strconv"
 	"strings"
 )
 
@@ -43,9 +44,50 @@ func (f *Firewall) Validate(db *database.Database) (
 		case Icmp:
 			rule.Port = ""
 			break
-		case Tcp:
-			break
-		case Udp:
+		case Tcp, Udp:
+			ports := strings.Split(rule.Port, "-")
+
+			portInt, e := strconv.Atoi(ports[0])
+			if e != nil {
+				errData = &errortypes.ErrorData{
+					Error:   "invalid_ingress_rule_port",
+					Message: "Invalid ingress rule port",
+				}
+				return
+			}
+
+			if portInt < 1 || portInt > 65535 {
+				errData = &errortypes.ErrorData{
+					Error:   "invalid_ingress_rule_port",
+					Message: "Invalid ingress rule port",
+				}
+				return
+			}
+
+			parsedPort := strconv.Itoa(portInt)
+			if len(ports) > 1 {
+				portInt2, e := strconv.Atoi(ports[1])
+				if e != nil {
+					errData = &errortypes.ErrorData{
+						Error:   "invalid_ingress_rule_port",
+						Message: "Invalid ingress rule port",
+					}
+					return
+				}
+
+				if portInt < 1 || portInt > 65535 || portInt2 <= portInt {
+					errData = &errortypes.ErrorData{
+						Error:   "invalid_ingress_rule_port",
+						Message: "Invalid ingress rule port",
+					}
+					return
+				}
+
+				parsedPort += "-" + strconv.Itoa(portInt2)
+			}
+
+			rule.Port = parsedPort
+
 			break
 		default:
 			errData = &errortypes.ErrorData{
