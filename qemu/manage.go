@@ -496,7 +496,7 @@ func PowerOn(db *database.Database, virt *vm.VirtualMachine) (err error) {
 
 	logrus.WithFields(logrus.Fields{
 		"id": virt.Id.Hex(),
-	}).Info("qemu: Power on virtual machine")
+	}).Info("qemu: Stopping virtual machine")
 
 	err = cloudinit.Write(db, virt.Id)
 	if err != nil {
@@ -531,7 +531,7 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 
 	logrus.WithFields(logrus.Fields{
 		"id": virt.Id.Hex(),
-	}).Info("qemu: Power off virtual machine")
+	}).Info("qemu: Starting virtual machine")
 
 	for i := 0; i < 10; i++ {
 		err = qms.Shutdown(virt.Id)
