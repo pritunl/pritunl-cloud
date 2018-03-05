@@ -36,8 +36,6 @@ type NetworkAdapter struct {
 	HostInterface    string `json:"host_interface"`
 	IpAddress        string `json:"ip_address,omitempty"`
 	IpAddress6       string `json:"ip_address6,omitempty"`
-	StaticIpAddress  string `json:"static_ip_address,omitempty"`
-	StaticIpAddress6 string `json:"static_ip_address6,omitempty"`
 }
 
 func (v *VirtualMachine) Commit(db *database.Database) (err error) {
