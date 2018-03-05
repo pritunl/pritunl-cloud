@@ -7,4 +7,6 @@ const (
 	Failed       = "failed"
 	Updating     = "updating"
 	Provisioning = "provisioning"
+	Bridge       = "bridge"
+	Vxlan        = "vxlan"
 )
