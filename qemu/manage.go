@@ -258,8 +258,9 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	for i, adapter := range virt.NetworkAdapters {
-		iface := vm.GetIface(virt.Id, i)
+	if len(virt.NetworkAdapters) > 0 {
+		iface := vm.GetIface(virt.Id, 0)
+		adapter := virt.NetworkAdapters[0]
 
 		err = utils.Exec("", "ip", "link", "set", iface, "up")
 		if err != nil {
