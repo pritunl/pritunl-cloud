@@ -132,6 +132,11 @@ func (d *Database) Firewalls() (coll *Collection) {
 	return
 }
 
+func (d *Database) Vpcs() (coll *Collection) {
+	coll = d.getCollection("vpcs")
+	return
+}
+
 func (d *Database) Authorities() (coll *Collection) {
 	coll = d.getCollection("authorities")
 	return
