@@ -57,6 +57,12 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 			break
 		case vm.Vxlan:
 			break
+		default:
+			err = &errortypes.ParseError{
+				errors.Newf("qemu: Unknown network adapter type %s",
+					net.Type),
+			}
+			return
 		}
 	}
 
