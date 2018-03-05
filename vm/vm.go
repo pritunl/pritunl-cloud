@@ -31,6 +31,7 @@ func (d *Disk) GetId() bson.ObjectId {
 }
 
 type NetworkAdapter struct {
+	Type             string `json:"type"`
 	MacAddress       string `json:"mac_address"`
 	HostInterface    string `json:"host_interface"`
 	IpAddress        string `json:"ip_address,omitempty"`
