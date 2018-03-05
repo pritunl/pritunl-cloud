@@ -6,12 +6,13 @@ import (
 	"encoding/base32"
 	"fmt"
 	"gopkg.in/mgo.v2/bson"
+	"strconv"
 	"strings"
 )
 
-func GetMacAddr(id bson.ObjectId) string {
+func GetMacAddr(id bson.ObjectId, index int) string {
 	hash := md5.New()
-	hash.Write([]byte(id.Hex()))
+	hash.Write([]byte(id.Hex() + strconv.Itoa(index)))
 	macHash := fmt.Sprintf("%x", hash.Sum(nil))
 	macHash = macHash[:10]
 	macBuf := bytes.Buffer{}
