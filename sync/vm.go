@@ -76,7 +76,7 @@ func vmRunner() {
 	logrus.WithFields(logrus.Fields{
 		"production": constants.Production,
 		"bridge":     bridge.BridgeName,
-	}).Info("bridge: Starting hypervisor")
+	}).Info("sync: Starting hypervisor")
 
 	for {
 		time.Sleep(1 * time.Second)
