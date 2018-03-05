@@ -229,7 +229,7 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		ifaceNames.Add(vm.GetIface(virt.Id, i))
 	}
 
-	for i := 0; i < 40; i++ {
+	for i := 0; i < 60; i++ {
 		ifaces, e := net.Interfaces()
 		if e != nil {
 			err = &errortypes.ReadError{
