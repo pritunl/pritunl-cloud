@@ -43,15 +43,21 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 	}
 
 	for i, net := range virt.NetworkAdapters {
-		qm.Networks = append(qm.Networks, &Network{
-			Type:       "nic",
-			MacAddress: net.MacAddress,
-		})
-		qm.Networks = append(qm.Networks, &Network{
-			Type:   "bridge",
-			Iface:  vm.GetIface(virt.Id, i),
-			Bridge: net.HostInterface,
-		})
+		switch net.Type {
+		case vm.Bridge:
+			qm.Networks = append(qm.Networks, &Network{
+				Type:       "nic",
+				MacAddress: net.MacAddress,
+			})
+			qm.Networks = append(qm.Networks, &Network{
+				Type:   "bridge",
+				Iface:  vm.GetIface(virt.Id, i),
+				Bridge: net.HostInterface,
+			})
+			break
+		case vm.Vxlan:
+			break
+		}
 	}
 
 	return
