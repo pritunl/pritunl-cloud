@@ -141,6 +141,13 @@ func Register(engine *gin.Engine) {
 	csrfGroup.POST("/user", userPost)
 	csrfGroup.DELETE("/user", usersDelete)
 
+	csrfGroup.GET("/vpc", vpcsGet)
+	csrfGroup.GET("/vpc/:vpc_id", vpcGet)
+	csrfGroup.PUT("/vpc/:vpc_id", vpcPut)
+	csrfGroup.POST("/vpc", vpcPost)
+	csrfGroup.DELETE("/vpc", vpcsDelete)
+	csrfGroup.DELETE("/vpc/:vpc_id", vpcDelete)
+
 	csrfGroup.GET("/zone", zonesGet)
 	csrfGroup.GET("/zone/:zone_id", zoneGet)
 	csrfGroup.PUT("/zone/:zone_id", zonePut)
