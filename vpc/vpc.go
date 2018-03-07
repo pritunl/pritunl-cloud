@@ -11,6 +11,7 @@ import (
 type Vpc struct {
 	Id           bson.ObjectId `bson:"_id,omitempty" json:"id"`
 	Name         string        `bson:"name" json:"name"`
+	VpcId        int           `bson:"vpc_id" json:"vpc_id"`
 	Network      string        `bson:"network" json:"network"`
 	Organization bson.ObjectId `bson:"organization" json:"organization"`
 	Datacenter   bson.ObjectId `bson:"datacenter" json:"datacenter"`
