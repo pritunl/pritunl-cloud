@@ -4,22 +4,28 @@ import * as InstanceTypes from '../types/InstanceTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import * as DatacenterTypes from '../types/DatacenterTypes';
 import * as NodeTypes from '../types/NodeTypes';
+import * as VpcTypes from '../types/VpcTypes';
 import * as ImageTypes from '../types/ImageTypes';
 import * as ZoneTypes from '../types/ZoneTypes';
 import * as InstanceActions from '../actions/InstanceActions';
 import * as ImageActions from '../actions/ImageActions';
 import * as NodeActions from '../actions/NodeActions';
+import * as VpcActions from '../actions/VpcActions';
 import ImagesDatacenterStore from '../stores/ImagesDatacenterStore';
 import NodesZoneStore from '../stores/NodesZoneStore';
+import VpcsNameStore from '../stores/VpcsNameStore';
 import PageInput from './PageInput';
 import PageInputButton from './PageInputButton';
 import PageCreate from './PageCreate';
 import PageSelect from './PageSelect';
+import PageSelectButton from './PageSelectButton';
 import PageNumInput from './PageNumInput';
 import Help from './Help';
+import OrganizationsStore from "../stores/OrganizationsStore";
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
+	vpcs: VpcTypes.VpcsRo;
 	datacenters: DatacenterTypes.DatacentersRo;
 	zones: ZoneTypes.ZonesRo;
 	onClose: () => void;
@@ -35,6 +41,7 @@ interface State {
 	images: ImageTypes.ImagesRo;
 	nodes: NodeTypes.NodesRo;
 	addNetworkRole: string;
+	addVpc: string;
 }
 
 const css = {
@@ -104,6 +111,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 			images: [],
 			nodes: [],
 			addNetworkRole: '',
+			addVpc: '',
 		};
 	}
 
@@ -179,6 +187,61 @@ export default class InstanceNew extends React.Component<Props, State> {
 		});
 	}
 
+	onAddVpc = (): void => {
+		if (!this.state.addVpc) {
+			return;
+		}
+
+		let vpcId = this.state.addVpc;
+
+		let instance = {
+			...this.state.instance,
+		};
+
+		let vpcs = [
+			...(instance.vpcs || []),
+		];
+
+		if (vpcs.indexOf(vpcId) === -1) {
+			vpcs.push(vpcId);
+		}
+
+		vpcs.sort();
+
+		instance.vpcs = vpcs;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			instance: instance,
+		});
+	}
+
+	onRemoveVpc = (vpc: string): void => {
+		let instance = {
+			...this.state.instance,
+		};
+
+		let vpcs = [
+			...(instance.vpcs || []),
+		];
+
+		let i = vpcs.indexOf(vpc);
+		if (i === -1) {
+			return;
+		}
+
+		vpcs.splice(i, 1);
+
+		instance.vpcs = vpcs;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			instance: instance,
+		});
+	}
+
 	onAddNetworkRole = (): void => {
 		if (!this.state.addNetworkRole) {
 			return;
@@ -239,7 +302,10 @@ export default class InstanceNew extends React.Component<Props, State> {
 
 		let hasOrganizations = !!this.props.organizations.length;
 		let organizationsSelect: JSX.Element[] = [];
-		if (this.props.organizations.length) {
+		if (this.props.organizations && this.props.organizations.length) {
+			organizationsSelect.push(
+				<option key="null" value="">Select Organization</option>);
+
 			for (let organization of this.props.organizations) {
 				organizationsSelect.push(
 					<option
@@ -257,7 +323,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 
 		let hasDatacenters = false;
 		let datacentersSelect: JSX.Element[] = [];
-		if (this.props.datacenters.length) {
+		if (this.props.datacenters && this.props.datacenters.length) {
 			datacentersSelect.push(
 				<option key="null" value="">Select Datacenter</option>);
 
@@ -280,7 +346,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 		let datacenter = this.state.datacenter;
 		let hasZones = false;
 		let zonesSelect: JSX.Element[] = [];
-		if (this.props.zones.length) {
+		if (this.props.zones && this.props.zones.length) {
 			zonesSelect.push(<option key="null" value="">Select Zone</option>);
 
 			for (let zone of this.props.zones) {
@@ -304,7 +370,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 
 		let hasNodes = false;
 		let nodesSelect: JSX.Element[] = [];
-		if (this.state.nodes.length) {
+		if (this.state.nodes && this.state.nodes.length) {
 			nodesSelect.push(<option key="null" value="">Select Node</option>);
 
 			hasNodes = true;
@@ -320,6 +386,54 @@ export default class InstanceNew extends React.Component<Props, State> {
 
 		if (!hasNodes) {
 			nodesSelect = [<option key="null" value="">No Nodes</option>];
+		}
+
+		let vpcs: JSX.Element[] = [];
+		for (let vpcId of (instance.vpcs || [])) {
+			let vpc = VpcsNameStore.vpc(vpcId);
+			if (!vpc) {
+				continue;
+			}
+
+			vpcs.push(
+				<div
+					className="pt-tag pt-tag-removable pt-intent-primary"
+					style={css.item}
+					key={vpc.id}
+				>
+					{vpc.name}
+					<button
+						className="pt-tag-remove"
+						onMouseUp={(): void => {
+							this.onRemoveVpc(vpc.id);
+						}}
+					/>
+				</div>,
+			);
+		}
+
+		let hasVpcs = false;
+		let vpcsSelect: JSX.Element[] = [];
+		if (this.props.vpcs && this.props.vpcs.length) {
+			vpcsSelect.push(<option key="null" value="">Select Vpc</option>);
+
+			for (let vpc of this.props.vpcs) {
+				if (vpc.organization !== instance.organization) {
+					continue;
+				}
+
+				hasVpcs = true;
+				vpcsSelect.push(
+					<option
+						key={vpc.id}
+						value={vpc.id}
+					>{vpc.name}</option>,
+				);
+			}
+		}
+
+		if (!hasVpcs) {
+			vpcsSelect = [<option key="null" value="">No Vpcs</option>];
 		}
 
 		let hasImages = false;
@@ -438,6 +552,36 @@ export default class InstanceNew extends React.Component<Props, State> {
 						>
 							{zonesSelect}
 						</PageSelect>
+						<label
+							className="pt-label"
+							style={css.label}
+						>
+							Vpcs
+							<Help
+								title="Vpcs"
+								content="Vpcs attached to this instance."
+							/>
+							<div>
+								{vpcs}
+							</div>
+						</label>
+						<PageSelectButton
+							label="Add Vpc"
+							value={this.state.addVpc}
+							disabled={!hasVpcs}
+							buttonClass="pt-intent-success"
+							onChange={(val: string): void => {
+								this.setState({
+									...this.state,
+									addVpc: val,
+								});
+							}}
+							onSubmit={this.onAddVpc}
+						>
+							{vpcsSelect}
+						</PageSelectButton>
+					</div>
+					<div style={css.group}>
 						<PageSelect
 							disabled={this.state.disabled || !hasNodes}
 							label="Node"
@@ -474,8 +618,6 @@ export default class InstanceNew extends React.Component<Props, State> {
 							}}
 							onSubmit={this.onAddNetworkRole}
 						/>
-					</div>
-					<div style={css.group}>
 						<PageSelect
 							disabled={this.state.disabled || !hasImages}
 							label="Image"
