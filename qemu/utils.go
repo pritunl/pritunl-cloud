@@ -56,6 +56,15 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 			})
 			break
 		case vm.Vxlan:
+			qm.Networks = append(qm.Networks, &Network{
+				Type:       "nic",
+				MacAddress: net.MacAddress,
+			})
+			qm.Networks = append(qm.Networks, &Network{
+				Type:   "bridge",
+				Iface:  vm.GetIface(virt.Id, i),
+				Bridge: net.HostInterface,
+			})
 			break
 		default:
 			err = &errortypes.ParseError{
