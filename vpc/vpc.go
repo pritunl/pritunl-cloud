@@ -6,6 +6,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"gopkg.in/mgo.v2/bson"
+	"net"
 )
 
 type Vpc struct {
@@ -19,6 +20,42 @@ type Vpc struct {
 
 func (v *Vpc) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
+
+	if v.VpcId == 0 {
+		errData = &errortypes.ErrorData{
+			Error:   "vpc_id_invalid",
+			Message: "Vpc ID invalid",
+		}
+		return
+	}
+
+	if v.Organization == "" {
+		errData = &errortypes.ErrorData{
+			Error:   "organization_required",
+			Message: "Missing required organization",
+		}
+		return
+	}
+
+	if v.Datacenter == "" {
+		errData = &errortypes.ErrorData{
+			Error:   "datacenter_required",
+			Message: "Missing required datacenter",
+		}
+		return
+	}
+
+	if v.Network != "" {
+		_, network, e := net.ParseCIDR(v.Network)
+		if e != nil {
+			errData = &errortypes.ErrorData{
+				Error:   "network_invalid",
+				Message: "Network address invalid",
+			}
+			return
+		}
+		v.Network = network.String()
+	}
 
 	return
 }
