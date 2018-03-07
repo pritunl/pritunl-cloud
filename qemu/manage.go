@@ -19,10 +19,12 @@ import (
 	"github.com/pritunl/pritunl-cloud/systemd"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
+	"github.com/pritunl/pritunl-cloud/vpc"
 	"gopkg.in/mgo.v2/bson"
 	"io/ioutil"
 	"net"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -262,20 +264,110 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		iface := vm.GetIface(virt.Id, 0)
 		adapter := virt.NetworkAdapters[0]
 
-		err = utils.Exec("", "ip", "link", "set", iface, "up")
+		_, err = utils.ExecCombinedOutputLogged(
+			nil, "ip", "link", "set", iface, "up")
 		if err != nil {
 			PowerOff(db, virt)
 			return
 		}
 
-		output, e := utils.ExecCombinedOutput(
-			"", "brctl", "addif", adapter.HostInterface, iface)
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{"already a member of a bridge"},
+			"brctl", "addif", adapter.HostInterface, iface)
+		if err != nil {
+			PowerOff(db, virt)
+			return
+		}
+	}
+
+	for i, adapter := range virt.NetworkAdapters {
+		if i == 0 || adapter.Type != vm.Vxlan {
+			continue
+		}
+		iface := vm.GetIface(virt.Id, i)
+
+		vc, e := vpc.Get(db, adapter.VpcId)
 		if e != nil {
-			if !strings.Contains(output, "already a member of a bridge") {
-				err = e
-				PowerOff(db, virt)
-				return
-			}
+			err = e
+			PowerOff(db, virt)
+			return
+		}
+
+		ifaceVxlan := vm.GetIfaceVxlan(vc.Id)
+		ifaceBridge := vm.GetIfaceVxlanBridge(vc.Id)
+
+		_, err = utils.ExecCombinedOutputLogged(
+			nil, "ip", "link", "set", iface, "up")
+		if err != nil {
+			PowerOff(db, virt)
+			return
+		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{"File exists"},
+			"ip",
+			"link",
+			"add",
+			ifaceVxlan,
+			"type",
+			"vxlan",
+			"id",
+			strconv.Itoa(vc.VpcId),
+			"dstport",
+			"4789",
+			"dev",
+			adapter.HostInterface,
+			"nolearning",
+		)
+		if e != nil {
+			err = e
+			PowerOff(db, virt)
+			return
+		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			nil, "ip", "link", "set", ifaceVxlan, "up")
+		if err != nil {
+			PowerOff(db, virt)
+			return
+		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{"already exists"},
+			"brctl", "addbr", ifaceBridge)
+		if err != nil {
+			PowerOff(db, virt)
+			return
+		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			nil, "brctl", "stp", ifaceBridge, "on")
+		if err != nil {
+			PowerOff(db, virt)
+			return
+		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{"already a member"},
+			"brctl", "addif", ifaceBridge, ifaceVxlan)
+		if err != nil {
+			PowerOff(db, virt)
+			return
+		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{"already a member"},
+			"brctl", "addif", ifaceBridge, iface)
+		if err != nil {
+			PowerOff(db, virt)
+			return
+		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			nil, "ip", "link", "set", ifaceBridge, "up")
+		if err != nil {
+			PowerOff(db, virt)
+			return
 		}
 	}
 
