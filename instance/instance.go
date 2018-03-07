@@ -9,6 +9,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/vm"
+	"github.com/pritunl/pritunl-cloud/vpc"
 	"gopkg.in/mgo.v2/bson"
 	"strconv"
 )
@@ -17,6 +18,7 @@ type Instance struct {
 	Id           bson.ObjectId      `bson:"_id,omitempty" json:"id"`
 	Organization bson.ObjectId      `bson:"organization,omitempty" json:"organization"`
 	Zone         bson.ObjectId      `bson:"zone,omitempty" json:"zone"`
+	Vpcs         []bson.ObjectId    `bson:"vpcs" json:"vpcs"`
 	Image        bson.ObjectId      `bson:"image,omitempty" json:"image"`
 	Status       string             `bson:"-" json:"status"`
 	State        string             `bson:"state" json:"state"`
@@ -54,6 +56,23 @@ func (i *Instance) Validate(db *database.Database) (
 		errData = &errortypes.ErrorData{
 			Error:   "zone_required",
 			Message: "Missing required zone",
+		}
+	}
+
+	if i.Vpcs == nil {
+		i.Vpcs = []bson.ObjectId{}
+	} else {
+		vcIds, e := vpc.DistinctIds(db, i.Vpcs)
+		if e != nil {
+			err = e
+			return
+		}
+
+		vpcs := []bson.ObjectId{}
+		for _, vcId := range i.Vpcs {
+			if vcIds.Contains(vcId) {
+				vpcs = append(vpcs, vcId)
+			}
 		}
 	}
 
@@ -203,7 +222,8 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 		Disks:      []*vm.Disk{},
 		NetworkAdapters: []*vm.NetworkAdapter{
 			&vm.NetworkAdapter{
-				MacAddress:    vm.GetMacAddr(i.Id, 0),
+				Type:          vm.Bridge,
+				MacAddress:    vm.GetMacAddr(i.Id, i.Id),
 				HostInterface: bridge.BridgeName,
 			},
 		},
@@ -221,6 +241,18 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 				Path:  paths.GetDiskPath(dsk.Id),
 			})
 		}
+	}
+
+	for _, vcId := range i.Vpcs {
+		i.Virt.NetworkAdapters = append(
+			i.Virt.NetworkAdapters,
+			&vm.NetworkAdapter{
+				Type:          vm.Vxlan,
+				MacAddress:    vm.GetMacAddr(i.Id, vcId),
+				HostInterface: bridge.BridgeName,
+				VpcId:         vcId,
+			},
+		)
 	}
 
 	return
