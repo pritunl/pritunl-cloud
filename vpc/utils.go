@@ -43,6 +43,33 @@ func GetAll(db *database.Database, query *bson.M) (
 	return
 }
 
+func GetAllNames(db *database.Database, query *bson.M) (
+	vpcs []*Vpc, err error) {
+
+	coll := db.Vpcs()
+	vpcs = []*Vpc{}
+
+	cursor := coll.Find(query).Sort("name").Select(&bson.M{
+		"name":         1,
+		"organization": 1,
+		"type":         1,
+	}).Iter()
+
+	vc := &Vpc{}
+	for cursor.Next(vc) {
+		vpcs = append(vpcs, vc)
+		vc = &Vpc{}
+	}
+
+	err = cursor.Close()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetAllPaged(db *database.Database, query *bson.M, page, pageCount int) (
 	vcs []*Vpc, count int, err error) {
 
