@@ -1,9 +1,11 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
 import * as InstanceTypes from '../types/InstanceTypes';
+import * as VpcTypes from "../types/VpcTypes";
 import InstanceDetailed from './InstanceDetailed';
 
 interface Props {
+	vpcs: VpcTypes.VpcsRo;
 	instance: InstanceTypes.InstanceRo;
 	selected: boolean;
 	onSelect: (shift: boolean) => void;
@@ -74,6 +76,7 @@ export default class Instance extends React.Component<Props, {}> {
 			>
 				<InstanceDetailed
 					instance={this.props.instance}
+					vpcs={this.props.vpcs}
 					selected={this.props.selected}
 					onSelect={this.props.onSelect}
 					onClose={(): void => {
