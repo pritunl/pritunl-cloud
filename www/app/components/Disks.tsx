@@ -342,7 +342,7 @@ export default class Disks extends React.Component<{}, State> {
 			</div>
 			<NonState
 				hidden={!!disksDom.length}
-				iconClass="pt-icon-key"
+				iconClass="pt-icon-floppy-disk"
 				title="No disks"
 				description="Add a new disk to get started."
 			/>
