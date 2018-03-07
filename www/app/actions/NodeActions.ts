@@ -10,6 +10,7 @@ import NodesStore from '../stores/NodesStore';
 import * as MiscUtils from '../utils/MiscUtils';
 
 let syncId: string;
+let syncZonesId: string;
 
 export function sync(): Promise<void> {
 	let curSyncId = MiscUtils.uuid();
@@ -62,7 +63,7 @@ export function sync(): Promise<void> {
 
 export function syncZone(zone: string): Promise<void> {
 	let curSyncId = MiscUtils.uuid();
-	syncId = curSyncId;
+	syncZonesId = curSyncId;
 
 	if (!zone) {
 		Dispatcher.dispatch({
@@ -93,7 +94,7 @@ export function syncZone(zone: string): Promise<void> {
 					return;
 				}
 
-				if (curSyncId !== syncId) {
+				if (curSyncId !== syncZonesId) {
 					resolve();
 					return;
 				}
