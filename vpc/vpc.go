@@ -47,7 +47,7 @@ func (v *Vpc) Validate(db *database.Database) (
 	}
 
 	if v.Network != "" {
-		_, network, e := net.ParseCIDR(v.Network)
+		network, e := v.GetNetwork()
 		if e != nil {
 			errData = &errortypes.ErrorData{
 				Error:   "network_invalid",
@@ -58,6 +58,17 @@ func (v *Vpc) Validate(db *database.Database) (
 		v.Network = network.String()
 	}
 
+	return
+}
+
+func (v *Vpc) GetNetwork() (network *net.IPNet, err error) {
+	_, network, err = net.ParseCIDR(v.Network)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "vpc: Failed to parse network"),
+		}
+		return
+	}
 	return
 }
 
