@@ -1,6 +1,7 @@
 package vpc
 
 import (
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"gopkg.in/mgo.v2/bson"
@@ -98,6 +99,30 @@ func GetAllPaged(db *database.Database, query *bson.M, page, pageCount int) (
 	if err != nil {
 		err = database.ParseError(err)
 		return
+	}
+
+	return
+}
+
+func DistinctIds(db *database.Database, matchIds []bson.ObjectId) (
+	idsSet set.Set, err error) {
+
+	coll := db.Images()
+
+	idsSet = set.NewSet()
+
+	ids := []bson.ObjectId{}
+	err = coll.Find(&bson.M{
+		"_id": &bson.M{
+			"$in": matchIds,
+		},
+	}).Distinct("_id", &ids)
+	if err != nil {
+		return
+	}
+
+	for _, id := range ids {
+		idsSet.Add(id)
 	}
 
 	return
