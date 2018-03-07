@@ -111,6 +111,8 @@ func vpcPost(c *gin.Context) {
 		Datacenter:   data.Datacenter,
 	}
 
+	vc.GenerateVpcId()
+
 	errData, err := vc.Validate(db)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
