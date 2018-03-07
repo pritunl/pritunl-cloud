@@ -6,6 +6,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"gopkg.in/mgo.v2/bson"
+	"math/rand"
 	"net"
 )
 
@@ -58,6 +59,10 @@ func (v *Vpc) Validate(db *database.Database) (
 	}
 
 	return
+}
+
+func (v *Vpc) GenerateVpcId() {
+	v.VpcId = rand.Intn(16777100) + 110
 }
 
 func (v *Vpc) Commit(db *database.Database) (err error) {
