@@ -130,7 +130,7 @@ func ExecCombinedOutputLogged(ignores []string, name string, arg ...string) (
 	if outputByt != nil {
 		output = string(outputByt)
 	}
-	if err != nil {
+	if err != nil && ignores != nil {
 		for _, ignore := range ignores {
 			if strings.Contains(output, ignore) {
 				err = nil
