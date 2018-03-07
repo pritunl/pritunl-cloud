@@ -27,6 +27,7 @@ func (z *Zone) Validate(db *database.Database) (
 			Error:   "datacenter_required",
 			Message: "Missing required datacenter",
 		}
+		return
 	}
 
 	return
