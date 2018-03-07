@@ -16,17 +16,18 @@ import (
 )
 
 type instanceData struct {
-	Id           bson.ObjectId `json:"id"`
-	Organization bson.ObjectId `json:"organization"`
-	Zone         bson.ObjectId `json:"zone"`
-	Node         bson.ObjectId `json:"node"`
-	Image        bson.ObjectId `json:"image"`
-	Name         string        `json:"name"`
-	State        string        `json:"state"`
-	Memory       int           `json:"memory"`
-	Processors   int           `json:"processors"`
-	NetworkRoles []string      `json:"network_roles"`
-	Count        int           `json:"count"`
+	Id           bson.ObjectId   `json:"id"`
+	Organization bson.ObjectId   `json:"organization"`
+	Zone         bson.ObjectId   `json:"zone"`
+	Vpcs         []bson.ObjectId `json:"vpcs"`
+	Node         bson.ObjectId   `json:"node"`
+	Image        bson.ObjectId   `json:"image"`
+	Name         string          `json:"name"`
+	State        string          `json:"state"`
+	Memory       int             `json:"memory"`
+	Processors   int             `json:"processors"`
+	NetworkRoles []string        `json:"network_roles"`
+	Count        int             `json:"count"`
 }
 
 type instanceMultiData struct {
@@ -66,6 +67,7 @@ func instancePut(c *gin.Context) {
 	}
 
 	inst.Name = data.Name
+	inst.Vpcs = data.Vpcs
 	inst.State = data.State
 	inst.Memory = data.Memory
 	inst.Processors = data.Processors
@@ -73,6 +75,7 @@ func instancePut(c *gin.Context) {
 
 	fields := set.NewSet(
 		"name",
+		"vpcs",
 		"state",
 		"restart",
 		"memory",
@@ -136,6 +139,7 @@ func instancePost(c *gin.Context) {
 			State:        data.State,
 			Organization: data.Organization,
 			Zone:         data.Zone,
+			Vpcs:         data.Vpcs,
 			Node:         data.Node,
 			Image:        data.Image,
 			Name:         name,
