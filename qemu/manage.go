@@ -466,7 +466,7 @@ func Create(db *database.Database, inst *instance.Instance,
 		Path:  paths.GetDiskPath(dsk.Id),
 	})
 
-	err = cloudinit.Write(db, virt.Id)
+	err = cloudinit.Write(db, inst, virt)
 	if err != nil {
 		return
 	}
@@ -584,14 +584,15 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	return
 }
 
-func PowerOn(db *database.Database, virt *vm.VirtualMachine) (err error) {
+func PowerOn(db *database.Database, inst *instance.Instance,
+	virt *vm.VirtualMachine) (err error) {
 	unitName := paths.GetUnitName(virt.Id)
 
 	logrus.WithFields(logrus.Fields{
 		"id": virt.Id.Hex(),
 	}).Info("qemu: Starting virtual machine")
 
-	err = cloudinit.Write(db, virt.Id)
+	err = cloudinit.Write(db, inst, virt)
 	if err != nil {
 		return
 	}
