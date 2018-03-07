@@ -27418,6 +27418,585 @@ System.registerDynamic("app/components/Zones.js", ["npm:react@15.6.1.js", "app/s
     exports.default = Zones;
     
 });
+System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@15.6.1.js", "app/actions/VpcActions.js", "app/components/PageInput.js", "app/components/PageSelect.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@15.6.1.js");
+    const VpcActions = $__require("app/actions/VpcActions.js");
+    const PageInput_1 = $__require("app/components/PageInput.js");
+    const PageSelect_1 = $__require("app/components/PageSelect.js");
+    const PageInfo_1 = $__require("app/components/PageInfo.js");
+    const PageSave_1 = $__require("app/components/PageSave.js");
+    const ConfirmButton_1 = $__require("app/components/ConfirmButton.js");
+    const css = {
+        card: {
+            position: 'relative',
+            padding: '48px 10px 0 10px',
+            width: '100%'
+        },
+        button: {
+            height: '30px'
+        },
+        buttons: {
+            cursor: 'pointer',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            padding: '4px',
+            height: '39px',
+            backgroundColor: 'rgba(0, 0, 0, 0.13)'
+        },
+        item: {
+            margin: '9px 5px 0 5px',
+            height: '20px'
+        },
+        itemsLabel: {
+            display: 'block'
+        },
+        itemsAdd: {
+            margin: '8px 0 15px 0'
+        },
+        group: {
+            flex: 1,
+            minWidth: '250px'
+        },
+        save: {
+            paddingBottom: '10px'
+        },
+        label: {
+            width: '100%',
+            maxWidth: '280px'
+        },
+        status: {
+            margin: '6px 0 0 1px'
+        },
+        icon: {
+            marginRight: '3px'
+        },
+        inputGroup: {
+            width: '100%'
+        },
+        protocol: {
+            flex: '0 1 auto'
+        },
+        port: {
+            flex: '1'
+        },
+        select: {
+            margin: '7px 0px 0px 6px'
+        },
+        role: {
+            margin: '9px 5px 0 5px',
+            height: '20px'
+        },
+        rules: {
+            marginBottom: '15px'
+        }
+    };
+    class VpcDetailed extends React.Component {
+        constructor(props, context) {
+            super(props, context);
+            this.onSave = () => {
+                this.setState(Object.assign({}, this.state, { disabled: true }));
+                VpcActions.commit(this.state.vpc).then(() => {
+                    this.setState(Object.assign({}, this.state, { message: 'Your changes have been saved', changed: false, disabled: false }));
+                    setTimeout(() => {
+                        if (!this.state.changed) {
+                            this.setState(Object.assign({}, this.state, { vpc: null, changed: false }));
+                        }
+                    }, 1000);
+                    setTimeout(() => {
+                        if (!this.state.changed) {
+                            this.setState(Object.assign({}, this.state, { message: '' }));
+                        }
+                    }, 3000);
+                }).catch(() => {
+                    this.setState(Object.assign({}, this.state, { message: '', disabled: false }));
+                });
+            };
+            this.onDelete = () => {
+                this.setState(Object.assign({}, this.state, { disabled: true }));
+                VpcActions.remove(this.props.vpc.id).then(() => {
+                    this.setState(Object.assign({}, this.state, { disabled: false }));
+                }).catch(() => {
+                    this.setState(Object.assign({}, this.state, { disabled: false }));
+                });
+            };
+            this.state = {
+                disabled: false,
+                changed: false,
+                message: '',
+                addNetworkRole: null,
+                addVpc: null,
+                vpc: null
+            };
+        }
+        set(name, val) {
+            let vpc;
+            if (this.state.changed) {
+                vpc = Object.assign({}, this.state.vpc);
+            } else {
+                vpc = Object.assign({}, this.props.vpc);
+            }
+            vpc[name] = val;
+            this.setState(Object.assign({}, this.state, { changed: true, vpc: vpc }));
+        }
+        render() {
+            let vpc = this.state.vpc || this.props.vpc;
+            let datacentersSelect = [];
+            if (this.props.datacenters.length) {
+                datacentersSelect.push(React.createElement("option", { key: "null", value: "" }, "Node Vpc"));
+                for (let datacenter of this.props.datacenters) {
+                    datacentersSelect.push(React.createElement("option", { key: datacenter.id, value: datacenter.id }, datacenter.name));
+                }
+            }
+            let organizationsSelect = [];
+            if (this.props.organizations.length) {
+                organizationsSelect.push(React.createElement("option", { key: "null", value: "" }, "Node Vpc"));
+                for (let organization of this.props.organizations) {
+                    organizationsSelect.push(React.createElement("option", { key: organization.id, value: organization.id }, organization.name));
+                }
+            }
+            return React.createElement("td", { className: "pt-cell", colSpan: 5, style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { className: "layout horizontal", style: css.buttons, onClick: evt => {
+                    let target = evt.target;
+                    if (target.className.indexOf('open-ignore') !== -1) {
+                        return;
+                    }
+                    this.props.onClose();
+                } }, React.createElement("div", null, React.createElement("label", { className: "pt-control pt-checkbox open-ignore", style: css.select }, React.createElement("input", { type: "checkbox", className: "open-ignore", checked: this.props.selected, onClick: evt => {
+                    this.props.onSelect(evt.shiftKey);
+                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" }))), React.createElement("div", { className: "flex" }), React.createElement(ConfirmButton_1.default, { className: "pt-minimal pt-intent-danger pt-icon-trash open-ignore", style: css.button, progressClassName: "pt-intent-danger", confirmMsg: "Confirm vpc remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { label: "Name", help: "Name of vpc", type: "text", placeholder: "Enter name", value: vpc.name, onChange: val => {
+                    this.set('name', val);
+                } }), React.createElement(PageInput_1.default, { label: "Network", help: "Network address of vpc with cidr.", type: "text", placeholder: "Enter network", value: vpc.network, onChange: val => {
+                    this.set('network', val);
+                } })), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
+                    label: 'ID',
+                    value: this.props.vpc.id || 'Unknown'
+                }] }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "Organization", help: "Organization for vpc.", value: vpc.organization, onChange: val => {
+                    this.set('organization', val);
+                } }, organizationsSelect), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "Datacenter", help: "Datacenter for vpc.", value: vpc.datacenter, onChange: val => {
+                    this.set('datacenter', val);
+                } }, datacentersSelect))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.vpc && !this.state.message, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
+                    this.setState(Object.assign({}, this.state, { changed: false, vpc: null }));
+                }, onSave: this.onSave }));
+        }
+    }
+    exports.default = VpcDetailed;
+    
+});
+System.registerDynamic("app/components/Vpc.js", ["npm:react@15.6.1.js", "app/stores/OrganizationsStore.js", "app/stores/DatacentersStore.js", "app/components/VpcDetailed.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@15.6.1.js");
+    const OrganizationsStore_1 = $__require("app/stores/OrganizationsStore.js");
+    const DatacentersStore_1 = $__require("app/stores/DatacentersStore.js");
+    const VpcDetailed_1 = $__require("app/components/VpcDetailed.js");
+    const css = {
+        card: {
+            display: 'table-row',
+            width: '100%',
+            padding: 0,
+            boxShadow: 'none',
+            cursor: 'pointer'
+        },
+        cardOpen: {
+            display: 'table-row',
+            width: '100%',
+            padding: 0,
+            boxShadow: 'none',
+            position: 'relative'
+        },
+        select: {
+            margin: '2px 0 0 0',
+            paddingTop: '1px',
+            minHeight: '18px'
+        },
+        name: {
+            verticalAlign: 'top',
+            display: 'table-cell',
+            padding: '8px'
+        },
+        nameSpan: {
+            margin: '1px 5px 0 0'
+        },
+        item: {
+            verticalAlign: 'top',
+            display: 'table-cell',
+            padding: '9px',
+            whiteSpace: 'nowrap'
+        },
+        icon: {
+            marginRight: '3px'
+        },
+        bars: {
+            verticalAlign: 'top',
+            display: 'table-cell',
+            padding: '8px',
+            width: '30px'
+        },
+        bar: {
+            height: '6px',
+            marginBottom: '1px'
+        },
+        barLast: {
+            height: '6px'
+        },
+        roles: {
+            verticalAlign: 'top',
+            display: 'table-cell',
+            padding: '0 8px 8px 8px'
+        },
+        tag: {
+            margin: '8px 5px 0 5px',
+            height: '20px'
+        }
+    };
+    class Vpc extends React.Component {
+        render() {
+            let vpc = this.props.vpc;
+            if (this.props.open) {
+                return React.createElement("div", { className: "pt-card pt-row", style: css.cardOpen }, React.createElement(VpcDetailed_1.default, { organizations: this.props.organizations, datacenters: this.props.datacenters, vpc: this.props.vpc, selected: this.props.selected, onSelect: this.props.onSelect, onClose: () => {
+                        this.props.onOpen();
+                    } }));
+            }
+            let active = true;
+            let cardStyle = Object.assign({}, css.card);
+            if (!active) {
+                cardStyle.opacity = 0.6;
+            }
+            let orgName = '';
+            if (vpc.organization) {
+                let org = OrganizationsStore_1.default.organization(vpc.organization);
+                orgName = org ? org.name : vpc.organization;
+            } else {
+                orgName = 'Node Vpc';
+            }
+            let datacenterName = '';
+            if (vpc.datacenter) {
+                let datacenter = DatacentersStore_1.default.datacenter(vpc.datacenter);
+                datacenterName = datacenter ? datacenter.name : vpc.datacenter;
+            } else {
+                datacenterName = 'Node Vpc';
+            }
+            return React.createElement("div", { className: "pt-card pt-row", style: cardStyle, onClick: evt => {
+                    let target = evt.target;
+                    if (target.className.indexOf('open-ignore') !== -1) {
+                        return;
+                    }
+                    this.props.onOpen();
+                } }, React.createElement("div", { className: "pt-cell", style: css.name }, React.createElement("div", { className: "layout horizontal" }, React.createElement("label", { className: "pt-control pt-checkbox open-ignore", style: css.select }, React.createElement("input", { type: "checkbox", className: "open-ignore", checked: this.props.selected, onClick: evt => {
+                    this.props.onSelect(evt.shiftKey);
+                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" })), React.createElement("div", { style: css.nameSpan }, vpc.name))), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, className: 'pt-icon-standard ' + (vpc.organization ? 'pt-icon-people' : 'pt-icon-layers') }), orgName), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, className: "pt-icon-standard pt-icon-cloud" }), datacenterName));
+        }
+    }
+    exports.default = Vpc;
+    
+});
+System.registerDynamic("app/components/VpcsPage.js", ["npm:react@15.6.1.js", "app/stores/VpcsStore.js", "app/actions/VpcActions.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@15.6.1.js");
+    const VpcsStore_1 = $__require("app/stores/VpcsStore.js");
+    const VpcActions = $__require("app/actions/VpcActions.js");
+    const css = {
+        button: {
+            userSelect: 'none',
+            margin: '0 5px 0 0'
+        },
+        buttonLast: {
+            userSelect: 'none',
+            margin: '0 0 0 0'
+        },
+        link: {
+            cursor: 'pointer',
+            userSelect: 'none',
+            margin: '5px 5px 0 0'
+        },
+        current: {
+            opacity: 0.5
+        }
+    };
+    class VpcsPage extends React.Component {
+        constructor(props, context) {
+            super(props, context);
+            this.onChange = () => {
+                this.setState(Object.assign({}, this.state, { page: VpcsStore_1.default.page, pageCount: VpcsStore_1.default.pageCount, pages: VpcsStore_1.default.pages, count: VpcsStore_1.default.count }));
+            };
+            this.state = {
+                page: VpcsStore_1.default.page,
+                pageCount: VpcsStore_1.default.pageCount,
+                pages: VpcsStore_1.default.pages,
+                count: VpcsStore_1.default.count
+            };
+        }
+        componentDidMount() {
+            VpcsStore_1.default.addChangeListener(this.onChange);
+        }
+        componentWillUnmount() {
+            VpcsStore_1.default.removeChangeListener(this.onChange);
+        }
+        render() {
+            let page = this.state.page;
+            let pages = this.state.pages;
+            if (pages <= 1) {
+                return React.createElement("div", null);
+            }
+            let links = [];
+            let start = Math.max(0, page - 7);
+            let end = Math.min(pages, start + 15);
+            for (let i = start; i < end; i++) {
+                links.push(React.createElement("span", { key: i, style: page === i ? Object.assign({}, css.link, css.current) : css.link, onClick: () => {
+                        VpcActions.traverse(i);
+                        if (this.props.onPage) {
+                            this.props.onPage();
+                        }
+                    } }, i + 1));
+            }
+            return React.createElement("div", { className: "layout horizontal center-justified" }, React.createElement("button", { className: "pt-button pt-minimal pt-icon-chevron-backward", hidden: pages < 5, disabled: page === 0, type: "button", onClick: () => {
+                    VpcActions.traverse(0);
+                    if (this.props.onPage) {
+                        this.props.onPage();
+                    }
+                } }), React.createElement("button", { className: "pt-button pt-minimal pt-icon-chevron-left", style: css.button, disabled: page === 0, type: "button", onClick: () => {
+                    VpcActions.traverse(Math.max(0, this.state.page - 1));
+                    if (this.props.onPage) {
+                        this.props.onPage();
+                    }
+                } }), links, React.createElement("button", { className: "pt-button pt-minimal pt-icon-chevron-right", style: css.button, disabled: page === pages - 1, type: "button", onClick: () => {
+                    VpcActions.traverse(Math.min(this.state.pages - 1, this.state.page + 1));
+                    if (this.props.onPage) {
+                        this.props.onPage();
+                    }
+                } }), React.createElement("button", { className: "pt-button pt-minimal pt-icon-chevron-forward", hidden: pages < 5, disabled: page === pages - 1, type: "button", onClick: () => {
+                    VpcActions.traverse(this.state.pages - 1);
+                    if (this.props.onPage) {
+                        this.props.onPage();
+                    }
+                } }));
+        }
+    }
+    exports.default = VpcsPage;
+    
+});
+System.registerDynamic("app/components/Vpcs.js", ["npm:react@15.6.1.js", "app/stores/VpcsStore.js", "app/stores/OrganizationsStore.js", "app/actions/VpcActions.js", "app/actions/OrganizationActions.js", "app/components/Vpc.js", "app/components/VpcsPage.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/NonState.js", "app/stores/DatacentersStore.js", "app/actions/DatacenterActions.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@15.6.1.js");
+    const VpcsStore_1 = $__require("app/stores/VpcsStore.js");
+    const OrganizationsStore_1 = $__require("app/stores/OrganizationsStore.js");
+    const VpcActions = $__require("app/actions/VpcActions.js");
+    const OrganizationActions = $__require("app/actions/OrganizationActions.js");
+    const Vpc_1 = $__require("app/components/Vpc.js");
+    const VpcsPage_1 = $__require("app/components/VpcsPage.js");
+    const Page_1 = $__require("app/components/Page.js");
+    const PageHeader_1 = $__require("app/components/PageHeader.js");
+    const NonState_1 = $__require("app/components/NonState.js");
+    const DatacentersStore_1 = $__require("app/stores/DatacentersStore.js");
+    const DatacenterActions = $__require("app/actions/DatacenterActions.js");
+    const css = {
+        items: {
+            width: '100%',
+            marginTop: '-5px',
+            display: 'table',
+            borderSpacing: '0 5px'
+        },
+        itemsBox: {
+            width: '100%',
+            overflowY: 'auto'
+        },
+        group: {
+            margin: '10px 0 0 0',
+            width: '320px'
+        },
+        placeholder: {
+            opacity: 0,
+            width: '100%'
+        },
+        header: {
+            marginTop: '-19px'
+        },
+        heading: {
+            margin: '19px 0 0 0'
+        },
+        button: {
+            margin: '10px 0 0 10px'
+        },
+        select: {
+            width: '100%'
+        },
+        selectFirst: {
+            width: '100%',
+            borderTopLeftRadius: '3px',
+            borderBottomLeftRadius: '3px'
+        },
+        selectInner: {
+            width: '100%'
+        },
+        selectBox: {
+            flex: '1'
+        }
+    };
+    class Vpcs extends React.Component {
+        constructor(props, context) {
+            super(props, context);
+            this.onChange = () => {
+                let vpcs = VpcsStore_1.default.vpcs;
+                let selected = {};
+                let curSelected = this.state.selected;
+                let opened = {};
+                let curOpened = this.state.opened;
+                vpcs.forEach(vpc => {
+                    if (curSelected[vpc.id]) {
+                        selected[vpc.id] = true;
+                    }
+                    if (curOpened[vpc.id]) {
+                        opened[vpc.id] = true;
+                    }
+                });
+                this.setState(Object.assign({}, this.state, { vpcs: vpcs, datacenters: DatacentersStore_1.default.datacenters, organizations: OrganizationsStore_1.default.organizations, selected: selected, opened: opened }));
+            };
+            this.onDelete = () => {
+                this.setState(Object.assign({}, this.state, { disabled: true }));
+                VpcActions.removeMulti(Object.keys(this.state.selected)).then(() => {
+                    this.setState(Object.assign({}, this.state, { selected: {}, disabled: false }));
+                }).catch(() => {
+                    this.setState(Object.assign({}, this.state, { disabled: false }));
+                });
+            };
+            this.state = {
+                vpcs: VpcsStore_1.default.vpcs,
+                datacenters: DatacentersStore_1.default.datacenters,
+                organizations: OrganizationsStore_1.default.organizations,
+                organization: '',
+                datacenter: '',
+                selected: {},
+                opened: {},
+                newOpened: false,
+                lastSelected: null,
+                disabled: false
+            };
+        }
+        get selected() {
+            return !!Object.keys(this.state.selected).length;
+        }
+        get opened() {
+            return !!Object.keys(this.state.opened).length;
+        }
+        componentDidMount() {
+            VpcsStore_1.default.addChangeListener(this.onChange);
+            DatacentersStore_1.default.addChangeListener(this.onChange);
+            OrganizationsStore_1.default.addChangeListener(this.onChange);
+            VpcActions.sync();
+            DatacenterActions.sync();
+            OrganizationActions.sync();
+        }
+        componentWillUnmount() {
+            VpcsStore_1.default.removeChangeListener(this.onChange);
+            DatacentersStore_1.default.removeChangeListener(this.onChange);
+            OrganizationsStore_1.default.removeChangeListener(this.onChange);
+        }
+        render() {
+            let vpcsDom = [];
+            let hasOrganizations = false;
+            let organizationsSelect = [];
+            if (this.state.organizations.length) {
+                hasOrganizations = true;
+                for (let organization of this.state.organizations) {
+                    organizationsSelect.push(React.createElement("option", { key: organization.id, value: organization.id }, organization.name));
+                }
+            } else {
+                organizationsSelect.push(React.createElement("option", { key: "null", value: "" }, "No Organizations"));
+            }
+            let hasDatacenters = false;
+            let datacentersSelect = [];
+            if (this.state.datacenters.length) {
+                hasDatacenters = true;
+                for (let datacenter of this.state.datacenters) {
+                    datacentersSelect.push(React.createElement("option", { key: datacenter.id, value: datacenter.id }, datacenter.name));
+                }
+            } else {
+                datacentersSelect.push(React.createElement("option", { key: "null", value: "" }, "No Datacenters"));
+            }
+            this.state.vpcs.forEach(vpc => {
+                vpcsDom.push(React.createElement(Vpc_1.default, { key: vpc.id, vpc: vpc, datacenters: this.state.datacenters, organizations: this.state.organizations, selected: !!this.state.selected[vpc.id], open: !!this.state.opened[vpc.id], onSelect: shift => {
+                        let selected = Object.assign({}, this.state.selected);
+                        if (shift) {
+                            let vpcs = this.state.vpcs;
+                            let start;
+                            let end;
+                            for (let i = 0; i < vpcs.length; i++) {
+                                let usr = vpcs[i];
+                                if (usr.id === vpc.id) {
+                                    start = i;
+                                } else if (usr.id === this.state.lastSelected) {
+                                    end = i;
+                                }
+                            }
+                            if (start !== undefined && end !== undefined) {
+                                if (start > end) {
+                                    end = [start, start = end][0];
+                                }
+                                for (let i = start; i <= end; i++) {
+                                    selected[vpcs[i].id] = true;
+                                }
+                                this.setState(Object.assign({}, this.state, { lastSelected: vpc.id, selected: selected }));
+                                return;
+                            }
+                        }
+                        if (selected[vpc.id]) {
+                            delete selected[vpc.id];
+                        } else {
+                            selected[vpc.id] = true;
+                        }
+                        this.setState(Object.assign({}, this.state, { lastSelected: vpc.id, selected: selected }));
+                    }, onOpen: () => {
+                        let opened = Object.assign({}, this.state.opened);
+                        if (opened[vpc.id]) {
+                            delete opened[vpc.id];
+                        } else {
+                            opened[vpc.id] = true;
+                        }
+                        this.setState(Object.assign({}, this.state, { opened: opened }));
+                    } }));
+            });
+            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Vpcs"), React.createElement("div", { className: "flex" }), React.createElement("div", null, React.createElement("div", { className: "pt-control-group", style: css.group }, React.createElement("div", { style: css.selectBox }, React.createElement("div", { className: "pt-select", style: css.selectFirst }, React.createElement("select", { style: css.selectInner, disabled: !hasOrganizations || this.state.disabled, value: this.state.organization, onChange: evt => {
+                    this.setState(Object.assign({}, this.state, { organization: evt.target.value }));
+                } }, organizationsSelect))), React.createElement("div", { style: css.selectBox }, React.createElement("div", { className: "pt-select", style: css.select }, React.createElement("select", { style: css.selectInner, disabled: !hasDatacenters || this.state.disabled, value: this.state.datacenter, onChange: evt => {
+                    this.setState(Object.assign({}, this.state, { datacenter: evt.target.value }));
+                } }, datacentersSelect))), React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", disabled: !hasDatacenters || !hasOrganizations || this.state.disabled, type: "button", onClick: () => {
+                    this.setState(Object.assign({}, this.state, { disabled: true }));
+                    VpcActions.create({
+                        id: null,
+                        organization: this.state.organization || this.state.organizations[0].id,
+                        datacenter: this.state.datacenter || this.state.datacenters[0].id
+                    }).then(() => {
+                        this.setState(Object.assign({}, this.state, { disabled: false }));
+                    }).catch(() => {
+                        this.setState(Object.assign({}, this.state, { disabled: false }));
+                    });
+                } }, "New"))))), React.createElement("div", { style: css.itemsBox }, React.createElement("div", { style: css.items }, vpcsDom, React.createElement("tr", { className: "pt-card pt-row", style: css.placeholder }, React.createElement("td", { colSpan: 5, style: css.placeholder })))), React.createElement(NonState_1.default, { hidden: !!vpcsDom.length, iconClass: "pt-icon-layout-auto", title: "No vpcs", description: "Add a new vpc to get started." }), React.createElement(VpcsPage_1.default, { onPage: () => {
+                    this.setState({
+                        lastSelected: null
+                    });
+                } }));
+        }
+    }
+    exports.default = Vpcs;
+    
+});
 System.registerDynamic("app/components/Storage.js", ["npm:react@15.6.1.js", "app/actions/StorageActions.js", "app/components/PageInput.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/PageSelect.js", "app/components/PageSwitch.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
     "use strict";
 
@@ -29064,7 +29643,7 @@ System.registerDynamic("app/components/Disks.js", ["npm:react@15.6.1.js", "app/s
                     this.setState(Object.assign({}, this.state, { opened: {} }));
                 } }, "Collapse All"), React.createElement(ConfirmButton_1.default, { label: "Snapshot Selected", className: "pt-intent-primary pt-icon-floppy-disk", progressClassName: "pt-intent-primary", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onSnapshot }), React.createElement(ConfirmButton_1.default, { label: "Delete Selected", className: "pt-intent-danger pt-icon-delete", progressClassName: "pt-intent-danger", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onDelete }), React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", style: css.button, disabled: this.state.disabled || this.state.newOpened, type: "button", onClick: () => {
                     this.setState(Object.assign({}, this.state, { newOpened: true }));
-                } }, "New")))), React.createElement("div", { style: css.itemsBox }, React.createElement("div", { style: css.items }, newDiskDom, disksDom, React.createElement("tr", { className: "pt-card pt-row", style: css.placeholder }, React.createElement("td", { colSpan: 5, style: css.placeholder })))), React.createElement(NonState_1.default, { hidden: !!disksDom.length, iconClass: "pt-icon-key", title: "No disks", description: "Add a new disk to get started." }), React.createElement(DisksPage_1.default, { onPage: () => {
+                } }, "New")))), React.createElement("div", { style: css.itemsBox }, React.createElement("div", { style: css.items }, newDiskDom, disksDom, React.createElement("tr", { className: "pt-card pt-row", style: css.placeholder }, React.createElement("td", { colSpan: 5, style: css.placeholder })))), React.createElement(NonState_1.default, { hidden: !!disksDom.length, iconClass: "pt-icon-floppy-disk", title: "No disks", description: "Add a new disk to get started." }), React.createElement(DisksPage_1.default, { onPage: () => {
                     this.setState({
                         lastSelected: null
                     });
@@ -29263,7 +29842,7 @@ System.registerDynamic("app/stores/ZonesStore.js", ["app/dispatcher/Dispatcher.j
     exports.default = new ZonesStore();
     
 });
-System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@15.6.1.js", "app/actions/InstanceActions.js", "app/stores/OrganizationsStore.js", "app/stores/ZonesStore.js", "app/components/PageInput.js", "app/components/PageInputButton.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/PageNumInput.js", "app/components/ConfirmButton.js", "app/components/Help.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@15.6.1.js", "app/actions/InstanceActions.js", "app/stores/OrganizationsStore.js", "app/stores/ZonesStore.js", "app/components/PageInput.js", "app/components/PageInputButton.js", "app/components/PageInfo.js", "app/components/PageSelectButton.js", "app/components/PageSave.js", "app/components/PageNumInput.js", "app/components/ConfirmButton.js", "app/components/Help.js", "app/stores/VpcsNameStore.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -29276,10 +29855,12 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@15.6.1.
     const PageInput_1 = $__require("app/components/PageInput.js");
     const PageInputButton_1 = $__require("app/components/PageInputButton.js");
     const PageInfo_1 = $__require("app/components/PageInfo.js");
+    const PageSelectButton_1 = $__require("app/components/PageSelectButton.js");
     const PageSave_1 = $__require("app/components/PageSave.js");
     const PageNumInput_1 = $__require("app/components/PageNumInput.js");
     const ConfirmButton_1 = $__require("app/components/ConfirmButton.js");
     const Help_1 = $__require("app/components/Help.js");
+    const VpcsNameStore_1 = $__require("app/stores/VpcsNameStore.js");
     const css = {
         card: {
             position: 'relative',
@@ -29349,6 +29930,41 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@15.6.1.
     class InstanceDetailed extends React.Component {
         constructor(props, context) {
             super(props, context);
+            this.onAddVpc = () => {
+                let instance;
+                if (!this.state.addVpc) {
+                    return;
+                }
+                let vpcId = this.state.addVpc;
+                if (this.state.changed) {
+                    instance = Object.assign({}, this.state.instance);
+                } else {
+                    instance = Object.assign({}, this.props.instance);
+                }
+                let vpcs = [...(instance.vpcs || [])];
+                if (vpcs.indexOf(vpcId) === -1) {
+                    vpcs.push(vpcId);
+                }
+                vpcs.sort();
+                instance.vpcs = vpcs;
+                this.setState(Object.assign({}, this.state, { changed: true, instance: instance }));
+            };
+            this.onRemoveVpc = vpc => {
+                let instance;
+                if (this.state.changed) {
+                    instance = Object.assign({}, this.state.instance);
+                } else {
+                    instance = Object.assign({}, this.props.instance);
+                }
+                let vpcs = [...(instance.vpcs || [])];
+                let i = vpcs.indexOf(vpc);
+                if (i === -1) {
+                    return;
+                }
+                vpcs.splice(i, 1);
+                instance.vpcs = vpcs;
+                this.setState(Object.assign({}, this.state, { changed: true, instance: instance }));
+            };
             this.onAddNetworkRole = () => {
                 let instance;
                 if (!this.state.addNetworkRole) {
@@ -29416,6 +30032,7 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@15.6.1.
                 instance: null,
                 addCert: null,
                 addNetworkRole: '',
+                addVpc: '',
                 forwardedChecked: false
             };
         }
@@ -29463,6 +30080,31 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@15.6.1.
                         this.onRemoveNetworkRole(networkRole);
                     } })));
             }
+            let vpcs = [];
+            for (let vpcId of instance.vpcs || []) {
+                let vpc = VpcsNameStore_1.default.vpc(vpcId);
+                if (!vpc) {
+                    continue;
+                }
+                vpcs.push(React.createElement("div", { className: "pt-tag pt-tag-removable pt-intent-primary", style: css.item, key: vpc.id }, vpc.name, React.createElement("button", { className: "pt-tag-remove", onMouseUp: () => {
+                        this.onRemoveVpc(vpc.id);
+                    } })));
+            }
+            let hasVpcs = false;
+            let vpcsSelect = [];
+            if (this.props.vpcs && this.props.vpcs.length) {
+                vpcsSelect.push(React.createElement("option", { key: "null", value: "" }, "Select Vpc"));
+                for (let vpc of this.props.vpcs) {
+                    if (vpc.organization !== instance.organization) {
+                        continue;
+                    }
+                    hasVpcs = true;
+                    vpcsSelect.push(React.createElement("option", { key: vpc.id, value: vpc.id }, vpc.name));
+                }
+            }
+            if (!hasVpcs) {
+                vpcsSelect = [React.createElement("option", { key: "null", value: "" }, "No Vpcs")];
+            }
             return React.createElement("td", { className: "pt-cell", colSpan: 5, style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { className: "layout horizontal", style: css.buttons, onClick: evt => {
                     let target = evt.target;
                     if (target.className.indexOf('open-ignore') !== -1) {
@@ -29479,7 +30121,9 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@15.6.1.
                     this.set('processors', val);
                 }, value: instance.processors }), React.createElement("label", { className: "pt-label" }, "Network Roles", React.createElement(Help_1.default, { title: "Network Roles", content: "Network roles that will be matched with firewall rules. Network roles are case-sensitive." }), React.createElement("div", null, networkRoles)), React.createElement(PageInputButton_1.default, { disabled: this.state.disabled, buttonClass: "pt-intent-success pt-icon-add", label: "Add", type: "text", placeholder: "Add role", value: this.state.addNetworkRole, onChange: val => {
                     this.setState(Object.assign({}, this.state, { addNetworkRole: val }));
-                }, onSubmit: this.onAddNetworkRole })), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
+                }, onSubmit: this.onAddNetworkRole }), React.createElement("label", { className: "pt-label", style: css.label }, "Vpcs", React.createElement(Help_1.default, { title: "Vpcs", content: "Vpcs attached to this instance." }), React.createElement("div", null, vpcs)), React.createElement(PageSelectButton_1.default, { label: "Add Vpc", value: this.state.addVpc, disabled: !hasVpcs, buttonClass: "pt-intent-success", onChange: val => {
+                    this.setState(Object.assign({}, this.state, { addVpc: val }));
+                }, onSubmit: this.onAddVpc }, vpcsSelect)), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
                     label: 'ID',
                     value: this.props.instance.id || 'None'
                 }, {
@@ -29586,7 +30230,7 @@ System.registerDynamic("app/components/Instance.js", ["npm:react@15.6.1.js", "ap
         render() {
             let instance = this.props.instance;
             if (this.props.open) {
-                return React.createElement("div", { className: "pt-card pt-row", style: css.cardOpen }, React.createElement(InstanceDetailed_1.default, { instance: this.props.instance, selected: this.props.selected, onSelect: this.props.onSelect, onClose: () => {
+                return React.createElement("div", { className: "pt-card pt-row", style: css.cardOpen }, React.createElement(InstanceDetailed_1.default, { instance: this.props.instance, vpcs: this.props.vpcs, selected: this.props.selected, onSelect: this.props.onSelect, onClose: () => {
                         this.props.onOpen();
                     } }));
             }
@@ -29748,6 +30392,69 @@ System.registerDynamic("app/stores/NodesZoneStore.js", ["app/dispatcher/Dispatch
     exports.default = new NodesZoneStore();
     
 });
+System.registerDynamic("app/stores/VpcsNameStore.js", ["app/dispatcher/Dispatcher.js", "app/EventEmitter.js", "app/types/VpcTypes.js", "app/types/GlobalTypes.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const Dispatcher_1 = $__require("app/dispatcher/Dispatcher.js");
+    const EventEmitter_1 = $__require("app/EventEmitter.js");
+    const VpcTypes = $__require("app/types/VpcTypes.js");
+    const GlobalTypes = $__require("app/types/GlobalTypes.js");
+    class VpcsZoneStore extends EventEmitter_1.default {
+        constructor() {
+            super(...arguments);
+            this._vpcs = Object.freeze([]);
+            this._map = {};
+            this._token = Dispatcher_1.default.register(this._callback.bind(this));
+        }
+        get vpcs() {
+            return this._vpcs;
+        }
+        get vpcsM() {
+            let vpcs = [];
+            this._vpcs.forEach(vpc => {
+                vpcs.push(Object.assign({}, vpc));
+            });
+            return vpcs;
+        }
+        vpc(id) {
+            let i = this._map[id];
+            if (i === undefined) {
+                return null;
+            }
+            return this._vpcs[i];
+        }
+        emitChange() {
+            this.emitDefer(GlobalTypes.CHANGE);
+        }
+        addChangeListener(callback) {
+            this.on(GlobalTypes.CHANGE, callback);
+        }
+        removeChangeListener(callback) {
+            this.removeListener(GlobalTypes.CHANGE, callback);
+        }
+        _sync(vpcs) {
+            this._map = {};
+            for (let i = 0; i < vpcs.length; i++) {
+                vpcs[i] = Object.freeze(vpcs[i]);
+                this._map[vpcs[i].id] = i;
+            }
+            this._vpcs = Object.freeze(vpcs);
+            this.emitChange();
+        }
+        _callback(action) {
+            switch (action.type) {
+                case VpcTypes.SYNC_NAMES:
+                    this._sync(action.data.vpcs);
+                    break;
+            }
+        }
+    }
+    exports.default = new VpcsZoneStore();
+    
+});
 System.registerDynamic("app/components/PageCreate.js", ["npm:react@15.6.1.js"], true, function ($__require, exports, module) {
     "use strict";
 
@@ -29807,7 +30514,7 @@ System.registerDynamic("app/components/PageNumInput.js", ["npm:react@15.6.1.js",
     exports.default = PageNumInput;
     
 });
-System.registerDynamic("app/components/InstanceNew.js", ["npm:react@15.6.1.js", "app/actions/InstanceActions.js", "app/actions/ImageActions.js", "app/actions/NodeActions.js", "app/stores/ImagesDatacenterStore.js", "app/stores/NodesZoneStore.js", "app/components/PageInput.js", "app/components/PageInputButton.js", "app/components/PageCreate.js", "app/components/PageSelect.js", "app/components/PageNumInput.js", "app/components/Help.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/InstanceNew.js", ["npm:react@15.6.1.js", "app/actions/InstanceActions.js", "app/actions/ImageActions.js", "app/actions/NodeActions.js", "app/stores/ImagesDatacenterStore.js", "app/stores/NodesZoneStore.js", "app/stores/VpcsNameStore.js", "app/components/PageInput.js", "app/components/PageInputButton.js", "app/components/PageCreate.js", "app/components/PageSelect.js", "app/components/PageSelectButton.js", "app/components/PageNumInput.js", "app/components/Help.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -29819,10 +30526,12 @@ System.registerDynamic("app/components/InstanceNew.js", ["npm:react@15.6.1.js", 
     const NodeActions = $__require("app/actions/NodeActions.js");
     const ImagesDatacenterStore_1 = $__require("app/stores/ImagesDatacenterStore.js");
     const NodesZoneStore_1 = $__require("app/stores/NodesZoneStore.js");
+    const VpcsNameStore_1 = $__require("app/stores/VpcsNameStore.js");
     const PageInput_1 = $__require("app/components/PageInput.js");
     const PageInputButton_1 = $__require("app/components/PageInputButton.js");
     const PageCreate_1 = $__require("app/components/PageCreate.js");
     const PageSelect_1 = $__require("app/components/PageSelect.js");
+    const PageSelectButton_1 = $__require("app/components/PageSelectButton.js");
     const PageNumInput_1 = $__require("app/components/PageNumInput.js");
     const Help_1 = $__require("app/components/Help.js");
     const css = {
@@ -29896,6 +30605,31 @@ System.registerDynamic("app/components/InstanceNew.js", ["npm:react@15.6.1.js", 
                     this.setState(Object.assign({}, this.state, { message: '', disabled: false }));
                 });
             };
+            this.onAddVpc = () => {
+                if (!this.state.addVpc) {
+                    return;
+                }
+                let vpcId = this.state.addVpc;
+                let instance = Object.assign({}, this.state.instance);
+                let vpcs = [...(instance.vpcs || [])];
+                if (vpcs.indexOf(vpcId) === -1) {
+                    vpcs.push(vpcId);
+                }
+                vpcs.sort();
+                instance.vpcs = vpcs;
+                this.setState(Object.assign({}, this.state, { changed: true, instance: instance }));
+            };
+            this.onRemoveVpc = vpc => {
+                let instance = Object.assign({}, this.state.instance);
+                let vpcs = [...(instance.vpcs || [])];
+                let i = vpcs.indexOf(vpc);
+                if (i === -1) {
+                    return;
+                }
+                vpcs.splice(i, 1);
+                instance.vpcs = vpcs;
+                this.setState(Object.assign({}, this.state, { changed: true, instance: instance }));
+            };
             this.onAddNetworkRole = () => {
                 if (!this.state.addNetworkRole) {
                     return;
@@ -29929,7 +30663,8 @@ System.registerDynamic("app/components/InstanceNew.js", ["npm:react@15.6.1.js", 
                 datacenter: '',
                 images: [],
                 nodes: [],
-                addNetworkRole: ''
+                addNetworkRole: '',
+                addVpc: ''
             };
         }
         componentDidMount() {
@@ -29958,7 +30693,8 @@ System.registerDynamic("app/components/InstanceNew.js", ["npm:react@15.6.1.js", 
             let instance = this.state.instance;
             let hasOrganizations = !!this.props.organizations.length;
             let organizationsSelect = [];
-            if (this.props.organizations.length) {
+            if (this.props.organizations && this.props.organizations.length) {
+                organizationsSelect.push(React.createElement("option", { key: "null", value: "" }, "Select Organization"));
                 for (let organization of this.props.organizations) {
                     organizationsSelect.push(React.createElement("option", { key: organization.id, value: organization.id }, organization.name));
                 }
@@ -29968,7 +30704,7 @@ System.registerDynamic("app/components/InstanceNew.js", ["npm:react@15.6.1.js", 
             }
             let hasDatacenters = false;
             let datacentersSelect = [];
-            if (this.props.datacenters.length) {
+            if (this.props.datacenters && this.props.datacenters.length) {
                 datacentersSelect.push(React.createElement("option", { key: "null", value: "" }, "Select Datacenter"));
                 hasDatacenters = true;
                 for (let datacenter of this.props.datacenters) {
@@ -29981,7 +30717,7 @@ System.registerDynamic("app/components/InstanceNew.js", ["npm:react@15.6.1.js", 
             let datacenter = this.state.datacenter;
             let hasZones = false;
             let zonesSelect = [];
-            if (this.props.zones.length) {
+            if (this.props.zones && this.props.zones.length) {
                 zonesSelect.push(React.createElement("option", { key: "null", value: "" }, "Select Zone"));
                 for (let zone of this.props.zones) {
                     if (zone.datacenter !== datacenter) {
@@ -29996,7 +30732,7 @@ System.registerDynamic("app/components/InstanceNew.js", ["npm:react@15.6.1.js", 
             }
             let hasNodes = false;
             let nodesSelect = [];
-            if (this.state.nodes.length) {
+            if (this.state.nodes && this.state.nodes.length) {
                 nodesSelect.push(React.createElement("option", { key: "null", value: "" }, "Select Node"));
                 hasNodes = true;
                 for (let node of this.state.nodes) {
@@ -30005,6 +30741,31 @@ System.registerDynamic("app/components/InstanceNew.js", ["npm:react@15.6.1.js", 
             }
             if (!hasNodes) {
                 nodesSelect = [React.createElement("option", { key: "null", value: "" }, "No Nodes")];
+            }
+            let vpcs = [];
+            for (let vpcId of instance.vpcs || []) {
+                let vpc = VpcsNameStore_1.default.vpc(vpcId);
+                if (!vpc) {
+                    continue;
+                }
+                vpcs.push(React.createElement("div", { className: "pt-tag pt-tag-removable pt-intent-primary", style: css.item, key: vpc.id }, vpc.name, React.createElement("button", { className: "pt-tag-remove", onMouseUp: () => {
+                        this.onRemoveVpc(vpc.id);
+                    } })));
+            }
+            let hasVpcs = false;
+            let vpcsSelect = [];
+            if (this.props.vpcs && this.props.vpcs.length) {
+                vpcsSelect.push(React.createElement("option", { key: "null", value: "" }, "Select Vpc"));
+                for (let vpc of this.props.vpcs) {
+                    if (vpc.organization !== instance.organization) {
+                        continue;
+                    }
+                    hasVpcs = true;
+                    vpcsSelect.push(React.createElement("option", { key: vpc.id, value: vpc.id }, vpc.name));
+                }
+            }
+            if (!hasVpcs) {
+                vpcsSelect = [React.createElement("option", { key: "null", value: "" }, "No Vpcs")];
             }
             let hasImages = false;
             let imagesSelect = [];
@@ -30035,11 +30796,13 @@ System.registerDynamic("app/components/InstanceNew.js", ["npm:react@15.6.1.js", 
                 } }, datacentersSelect), React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasZones, label: "Zone", help: "Zone for instance.", value: instance.zone, onChange: val => {
                     this.setState(Object.assign({}, this.state, { instance: Object.assign({}, this.state.instance, { node: '', zone: val }) }));
                     NodeActions.syncZone(val);
-                } }, zonesSelect), React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasNodes, label: "Node", help: "Node to run instance on.", value: instance.node, onChange: val => {
+                } }, zonesSelect), React.createElement("label", { className: "pt-label", style: css.label }, "Vpcs", React.createElement(Help_1.default, { title: "Vpcs", content: "Vpcs attached to this instance." }), React.createElement("div", null, vpcs)), React.createElement(PageSelectButton_1.default, { label: "Add Vpc", value: this.state.addVpc, disabled: !hasVpcs, buttonClass: "pt-intent-success", onChange: val => {
+                    this.setState(Object.assign({}, this.state, { addVpc: val }));
+                }, onSubmit: this.onAddVpc }, vpcsSelect)), React.createElement("div", { style: css.group }, React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasNodes, label: "Node", help: "Node to run instance on.", value: instance.node, onChange: val => {
                     this.set('node', val);
                 } }, nodesSelect), React.createElement("label", { className: "pt-label" }, "Network Roles", React.createElement(Help_1.default, { title: "Network Roles", content: "Network roles that will be matched with firewall rules. Network roles are case-sensitive." }), React.createElement("div", null, networkRoles)), React.createElement(PageInputButton_1.default, { disabled: this.state.disabled, buttonClass: "pt-intent-success pt-icon-add", label: "Add", type: "text", placeholder: "Add role", value: this.state.addNetworkRole, onChange: val => {
                     this.setState(Object.assign({}, this.state, { addNetworkRole: val }));
-                }, onSubmit: this.onAddNetworkRole })), React.createElement("div", { style: css.group }, React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasImages, label: "Image", help: "Starting image for node.", value: instance.image, onChange: val => {
+                }, onSubmit: this.onAddNetworkRole }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasImages, label: "Image", help: "Starting image for node.", value: instance.image, onChange: val => {
                     this.set('image', val);
                 } }, imagesSelect), React.createElement(PageNumInput_1.default, { label: "Memory Size", help: "Instance memory size in megabytes.", min: 256, minorStepSize: 256, stepSize: 512, majorStepSize: 1024, disabled: this.state.disabled, selectAllOnFocus: true, onChange: val => {
                     this.set('memory', val);
@@ -30142,7 +30905,7 @@ System.registerDynamic("app/components/InstancesPage.js", ["npm:react@15.6.1.js"
     exports.default = InstancesPage;
     
 });
-System.registerDynamic("app/components/Instances.js", ["npm:react@15.6.1.js", "app/stores/InstancesStore.js", "app/stores/OrganizationsStore.js", "app/stores/DatacentersStore.js", "app/stores/NodesStore.js", "app/stores/ZonesStore.js", "app/stores/CertificatesStore.js", "app/actions/InstanceActions.js", "app/actions/OrganizationActions.js", "app/actions/DatacenterActions.js", "app/actions/NodeActions.js", "app/actions/ZoneActions.js", "app/actions/CertificateActions.js", "app/components/Instance.js", "app/components/InstanceNew.js", "app/components/InstancesPage.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/NonState.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/Instances.js", ["npm:react@15.6.1.js", "app/stores/InstancesStore.js", "app/stores/OrganizationsStore.js", "app/stores/VpcsNameStore.js", "app/stores/DatacentersStore.js", "app/stores/NodesStore.js", "app/stores/ZonesStore.js", "app/stores/CertificatesStore.js", "app/actions/InstanceActions.js", "app/actions/OrganizationActions.js", "app/actions/VpcActions.js", "app/actions/DatacenterActions.js", "app/actions/NodeActions.js", "app/actions/ZoneActions.js", "app/actions/CertificateActions.js", "app/components/Instance.js", "app/components/InstanceNew.js", "app/components/InstancesPage.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/NonState.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -30151,12 +30914,14 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@15.6.1.js", "a
     const React = $__require("npm:react@15.6.1.js");
     const InstancesStore_1 = $__require("app/stores/InstancesStore.js");
     const OrganizationsStore_1 = $__require("app/stores/OrganizationsStore.js");
+    const VpcsNameStore_1 = $__require("app/stores/VpcsNameStore.js");
     const DatacentersStore_1 = $__require("app/stores/DatacentersStore.js");
     const NodesStore_1 = $__require("app/stores/NodesStore.js");
     const ZonesStore_1 = $__require("app/stores/ZonesStore.js");
     const CertificatesStore_1 = $__require("app/stores/CertificatesStore.js");
     const InstanceActions = $__require("app/actions/InstanceActions.js");
     const OrganizationActions = $__require("app/actions/OrganizationActions.js");
+    const VpcActions = $__require("app/actions/VpcActions.js");
     const DatacenterActions = $__require("app/actions/DatacenterActions.js");
     const NodeActions = $__require("app/actions/NodeActions.js");
     const ZoneActions = $__require("app/actions/ZoneActions.js");
@@ -30210,7 +30975,7 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@15.6.1.js", "a
                         opened[instance.id] = true;
                     }
                 });
-                this.setState(Object.assign({}, this.state, { instances: instances, organizations: OrganizationsStore_1.default.organizations, certificates: CertificatesStore_1.default.certificates, datacenters: DatacentersStore_1.default.datacenters, zones: ZonesStore_1.default.zones, selected: selected, opened: opened }));
+                this.setState(Object.assign({}, this.state, { instances: instances, organizations: OrganizationsStore_1.default.organizations, vpcs: VpcsNameStore_1.default.vpcs, certificates: CertificatesStore_1.default.certificates, datacenters: DatacentersStore_1.default.datacenters, zones: ZonesStore_1.default.zones, selected: selected, opened: opened }));
             };
             this.onDelete = () => {
                 this.setState(Object.assign({}, this.state, { disabled: true }));
@@ -30223,6 +30988,7 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@15.6.1.js", "a
             this.state = {
                 instances: InstancesStore_1.default.instances,
                 organizations: OrganizationsStore_1.default.organizations,
+                vpcs: VpcsNameStore_1.default.vpcs,
                 datacenters: DatacentersStore_1.default.datacenters,
                 zones: ZonesStore_1.default.zones,
                 certificates: CertificatesStore_1.default.certificates,
@@ -30242,12 +31008,14 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@15.6.1.js", "a
         componentDidMount() {
             InstancesStore_1.default.addChangeListener(this.onChange);
             OrganizationsStore_1.default.addChangeListener(this.onChange);
+            VpcsNameStore_1.default.addChangeListener(this.onChange);
             DatacentersStore_1.default.addChangeListener(this.onChange);
             NodesStore_1.default.addChangeListener(this.onChange);
             ZonesStore_1.default.addChangeListener(this.onChange);
             CertificatesStore_1.default.addChangeListener(this.onChange);
             InstanceActions.sync();
             OrganizationActions.sync();
+            VpcActions.syncNames();
             DatacenterActions.sync();
             NodeActions.sync();
             ZoneActions.sync();
@@ -30259,6 +31027,7 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@15.6.1.js", "a
         componentWillUnmount() {
             InstancesStore_1.default.removeChangeListener(this.onChange);
             OrganizationsStore_1.default.removeChangeListener(this.onChange);
+            VpcsNameStore_1.default.removeChangeListener(this.onChange);
             DatacentersStore_1.default.removeChangeListener(this.onChange);
             NodesStore_1.default.removeChangeListener(this.onChange);
             ZonesStore_1.default.removeChangeListener(this.onChange);
@@ -30276,7 +31045,7 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@15.6.1.js", "a
         render() {
             let instancesDom = [];
             this.state.instances.forEach(instance => {
-                instancesDom.push(React.createElement(Instance_1.default, { key: instance.id, instance: instance, selected: !!this.state.selected[instance.id], open: !!this.state.opened[instance.id], onSelect: shift => {
+                instancesDom.push(React.createElement(Instance_1.default, { key: instance.id, instance: instance, vpcs: this.state.vpcs, selected: !!this.state.selected[instance.id], open: !!this.state.opened[instance.id], onSelect: shift => {
                         let selected = Object.assign({}, this.state.selected);
                         if (shift) {
                             let instances = this.state.instances;
@@ -30319,7 +31088,7 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@15.6.1.js", "a
             });
             let newInstanceDom;
             if (this.state.newOpened) {
-                newInstanceDom = React.createElement(InstanceNew_1.default, { organizations: this.state.organizations, datacenters: this.state.datacenters, zones: this.state.zones, onClose: () => {
+                newInstanceDom = React.createElement(InstanceNew_1.default, { organizations: this.state.organizations, vpcs: this.state.vpcs, datacenters: this.state.datacenters, zones: this.state.zones, onClose: () => {
                         this.setState(Object.assign({}, this.state, { newOpened: false }));
                     } });
             }
@@ -38023,6 +38792,7 @@ System.registerDynamic("app/actions/NodeActions.js", ["npm:superagent@3.8.1.js",
     const NodesStore_1 = $__require("app/stores/NodesStore.js");
     const MiscUtils = $__require("app/utils/MiscUtils.js");
     let syncId;
+    let syncZonesId;
     function sync() {
         let curSyncId = MiscUtils.uuid();
         syncId = curSyncId;
@@ -38058,7 +38828,7 @@ System.registerDynamic("app/actions/NodeActions.js", ["npm:superagent@3.8.1.js",
     exports.sync = sync;
     function syncZone(zone) {
         let curSyncId = MiscUtils.uuid();
-        syncId = curSyncId;
+        syncZonesId = curSyncId;
         if (!zone) {
             Dispatcher_1.default.dispatch({
                 type: NodeTypes.SYNC_ZONE,
@@ -38079,7 +38849,7 @@ System.registerDynamic("app/actions/NodeActions.js", ["npm:superagent@3.8.1.js",
                     resolve();
                     return;
                 }
-                if (curSyncId !== syncId) {
+                if (curSyncId !== syncZonesId) {
                     resolve();
                     return;
                 }
@@ -38812,6 +39582,314 @@ System.registerDynamic("app/actions/ZoneActions.js", ["npm:superagent@3.8.1.js",
     EventDispatcher_1.default.register(action => {
         switch (action.type) {
             case ZoneTypes.CHANGE:
+                sync();
+                break;
+        }
+    });
+    
+});
+System.registerDynamic("app/types/VpcTypes.js", [], true, function ($__require, exports, module) {
+  "use strict";
+
+  var global = this || self,
+      GLOBAL = global;
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.SYNC = 'vpc.sync';
+  exports.SYNC_NAMES = 'vpc.sync_names';
+  exports.TRAVERSE = 'vpc.traverse';
+  exports.FILTER = 'vpc.filter';
+  exports.CHANGE = 'vpc.change';
+  
+});
+System.registerDynamic("app/stores/VpcsStore.js", ["app/dispatcher/Dispatcher.js", "app/EventEmitter.js", "app/types/VpcTypes.js", "app/types/GlobalTypes.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const Dispatcher_1 = $__require("app/dispatcher/Dispatcher.js");
+    const EventEmitter_1 = $__require("app/EventEmitter.js");
+    const VpcTypes = $__require("app/types/VpcTypes.js");
+    const GlobalTypes = $__require("app/types/GlobalTypes.js");
+    class VpcsStore extends EventEmitter_1.default {
+        constructor() {
+            super(...arguments);
+            this._vpcs = Object.freeze([]);
+            this._filter = null;
+            this._map = {};
+            this._token = Dispatcher_1.default.register(this._callback.bind(this));
+        }
+        get vpcs() {
+            return this._vpcs;
+        }
+        get vpcsM() {
+            let vpcs = [];
+            this._vpcs.forEach(vpc => {
+                vpcs.push(Object.assign({}, vpc));
+            });
+            return vpcs;
+        }
+        get page() {
+            return this._page || 0;
+        }
+        get pageCount() {
+            return this._pageCount || 20;
+        }
+        get pages() {
+            return Math.ceil(this.count / this.pageCount);
+        }
+        get filter() {
+            return this._filter;
+        }
+        get count() {
+            return this._count || 0;
+        }
+        vpc(id) {
+            let i = this._map[id];
+            if (i === undefined) {
+                return null;
+            }
+            return this._vpcs[i];
+        }
+        emitChange() {
+            this.emitDefer(GlobalTypes.CHANGE);
+        }
+        addChangeListener(callback) {
+            this.on(GlobalTypes.CHANGE, callback);
+        }
+        removeChangeListener(callback) {
+            this.removeListener(GlobalTypes.CHANGE, callback);
+        }
+        _traverse(page) {
+            this._page = Math.min(this.pages, page);
+        }
+        _filterCallback(filter) {
+            if (this._filter !== null && filter === null || this._filter === {} && filter !== null || filter && this._filter && filter.name !== this._filter.name) {
+                this._traverse(0);
+            }
+            this._filter = filter;
+            this.emitChange();
+        }
+        _sync(vpcs, count) {
+            this._map = {};
+            for (let i = 0; i < vpcs.length; i++) {
+                vpcs[i] = Object.freeze(vpcs[i]);
+                this._map[vpcs[i].id] = i;
+            }
+            this._count = count;
+            this._vpcs = Object.freeze(vpcs);
+            this._page = Math.min(this.pages, this.page);
+            this.emitChange();
+        }
+        _callback(action) {
+            switch (action.type) {
+                case VpcTypes.TRAVERSE:
+                    this._traverse(action.data.page);
+                    break;
+                case VpcTypes.FILTER:
+                    this._filterCallback(action.data.filter);
+                    break;
+                case VpcTypes.SYNC:
+                    this._sync(action.data.vpcs, action.data.count);
+                    break;
+            }
+        }
+    }
+    exports.default = new VpcsStore();
+    
+});
+System.registerDynamic("app/actions/VpcActions.js", ["npm:superagent@3.8.1.js", "app/dispatcher/Dispatcher.js", "app/dispatcher/EventDispatcher.js", "app/Alert.js", "app/Csrf.js", "app/Loader.js", "app/types/VpcTypes.js", "app/stores/VpcsStore.js", "app/utils/MiscUtils.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const SuperAgent = $__require("npm:superagent@3.8.1.js");
+    const Dispatcher_1 = $__require("app/dispatcher/Dispatcher.js");
+    const EventDispatcher_1 = $__require("app/dispatcher/EventDispatcher.js");
+    const Alert = $__require("app/Alert.js");
+    const Csrf = $__require("app/Csrf.js");
+    const Loader_1 = $__require("app/Loader.js");
+    const VpcTypes = $__require("app/types/VpcTypes.js");
+    const VpcsStore_1 = $__require("app/stores/VpcsStore.js");
+    const MiscUtils = $__require("app/utils/MiscUtils.js");
+    let syncId;
+    let syncNamesId;
+    function sync(noLoading) {
+        let curSyncId = MiscUtils.uuid();
+        syncId = curSyncId;
+        let loader;
+        if (!noLoading) {
+            loader = new Loader_1.default().loading();
+        }
+        return new Promise((resolve, reject) => {
+            SuperAgent.get('/vpc').query(Object.assign({}, VpcsStore_1.default.filter, { page: VpcsStore_1.default.page, page_count: VpcsStore_1.default.pageCount })).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
+                if (loader) {
+                    loader.done();
+                }
+                if (res && res.status === 401) {
+                    window.location.href = '/login';
+                    resolve();
+                    return;
+                }
+                if (curSyncId !== syncId) {
+                    resolve();
+                    return;
+                }
+                if (err) {
+                    Alert.errorRes(res, 'Failed to load vpcs');
+                    reject(err);
+                    return;
+                }
+                Dispatcher_1.default.dispatch({
+                    type: VpcTypes.SYNC,
+                    data: {
+                        vpcs: res.body.vpcs,
+                        count: res.body.count
+                    }
+                });
+                resolve();
+            });
+        });
+    }
+    exports.sync = sync;
+    function syncNames() {
+        let curSyncId = MiscUtils.uuid();
+        syncNamesId = curSyncId;
+        let loader = new Loader_1.default().loading();
+        return new Promise((resolve, reject) => {
+            SuperAgent.get('/vpc').query({
+                names: "true"
+            }).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
+                loader.done();
+                if (res && res.status === 401) {
+                    window.location.href = '/login';
+                    resolve();
+                    return;
+                }
+                if (curSyncId !== syncNamesId) {
+                    resolve();
+                    return;
+                }
+                if (err) {
+                    Alert.errorRes(res, 'Failed to load vpcs names');
+                    reject(err);
+                    return;
+                }
+                Dispatcher_1.default.dispatch({
+                    type: VpcTypes.SYNC_NAMES,
+                    data: {
+                        vpcs: res.body
+                    }
+                });
+                resolve();
+            });
+        });
+    }
+    exports.syncNames = syncNames;
+    function traverse(page) {
+        Dispatcher_1.default.dispatch({
+            type: VpcTypes.TRAVERSE,
+            data: {
+                page: page
+            }
+        });
+        return sync();
+    }
+    exports.traverse = traverse;
+    function filter(filt) {
+        Dispatcher_1.default.dispatch({
+            type: VpcTypes.FILTER,
+            data: {
+                filter: filt
+            }
+        });
+        return sync();
+    }
+    exports.filter = filter;
+    function commit(vpc) {
+        let loader = new Loader_1.default().loading();
+        return new Promise((resolve, reject) => {
+            SuperAgent.put('/vpc/' + vpc.id).send(vpc).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
+                loader.done();
+                if (res && res.status === 401) {
+                    window.location.href = '/login';
+                    resolve();
+                    return;
+                }
+                if (err) {
+                    Alert.errorRes(res, 'Failed to save vpc');
+                    reject(err);
+                    return;
+                }
+                resolve();
+            });
+        });
+    }
+    exports.commit = commit;
+    function create(vpc) {
+        let loader = new Loader_1.default().loading();
+        return new Promise((resolve, reject) => {
+            SuperAgent.post('/vpc').send(vpc).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
+                loader.done();
+                if (res && res.status === 401) {
+                    window.location.href = '/login';
+                    resolve();
+                    return;
+                }
+                if (err) {
+                    Alert.errorRes(res, 'Failed to create vpc');
+                    reject(err);
+                    return;
+                }
+                resolve();
+            });
+        });
+    }
+    exports.create = create;
+    function remove(vpcId) {
+        let loader = new Loader_1.default().loading();
+        return new Promise((resolve, reject) => {
+            SuperAgent.delete('/vpc/' + vpcId).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
+                loader.done();
+                if (res && res.status === 401) {
+                    window.location.href = '/login';
+                    resolve();
+                    return;
+                }
+                if (err) {
+                    Alert.errorRes(res, 'Failed to delete vpc');
+                    reject(err);
+                    return;
+                }
+                resolve();
+            });
+        });
+    }
+    exports.remove = remove;
+    function removeMulti(vpcIds) {
+        let loader = new Loader_1.default().loading();
+        return new Promise((resolve, reject) => {
+            SuperAgent.delete('/vpc').send(vpcIds).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
+                loader.done();
+                if (res && res.status === 401) {
+                    window.location.href = '/login';
+                    resolve();
+                    return;
+                }
+                if (err) {
+                    Alert.errorRes(res, 'Failed to delete vpcs');
+                    reject(err);
+                    return;
+                }
+                resolve();
+            });
+        });
+    }
+    exports.removeMulti = removeMulti;
+    EventDispatcher_1.default.register(action => {
+        switch (action.type) {
+            case VpcTypes.CHANGE:
                 sync();
                 break;
         }
@@ -41452,7 +42530,7 @@ System.registerDynamic("app/actions/SubscriptionActions.js", ["npm:superagent@3.
     });
     
 });
-System.registerDynamic("app/components/Main.js", ["npm:react@15.6.1.js", "npm:react-router-dom@4.2.2.js", "app/Theme.js", "app/stores/SubscriptionStore.js", "app/components/Loading.js", "app/components/Subscription.js", "app/components/Users.js", "app/components/UserDetailed.js", "app/components/Nodes.js", "app/components/Policies.js", "app/components/Certificates.js", "app/components/Organizations.js", "app/components/Datacenters.js", "app/components/Zones.js", "app/components/Storages.js", "app/components/Images.js", "app/components/Disks.js", "app/components/Instances.js", "app/components/Firewalls.js", "app/components/Authorities.js", "app/components/Logs.js", "app/components/Settings.js", "app/actions/UserActions.js", "app/actions/SessionActions.js", "app/actions/AuditActions.js", "app/actions/NodeActions.js", "app/actions/PolicyActions.js", "app/actions/CertificateActions.js", "app/actions/OrganizationActions.js", "app/actions/DatacenterActions.js", "app/actions/ZoneActions.js", "app/actions/StorageActions.js", "app/actions/ImageActions.js", "app/actions/DiskActions.js", "app/actions/InstanceActions.js", "app/actions/FirewallActions.js", "app/actions/AuthorityActions.js", "app/actions/LogActions.js", "app/actions/SettingsActions.js", "app/actions/SubscriptionActions.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/Main.js", ["npm:react@15.6.1.js", "npm:react-router-dom@4.2.2.js", "app/Theme.js", "app/stores/SubscriptionStore.js", "app/components/Loading.js", "app/components/Subscription.js", "app/components/Users.js", "app/components/UserDetailed.js", "app/components/Nodes.js", "app/components/Policies.js", "app/components/Certificates.js", "app/components/Organizations.js", "app/components/Datacenters.js", "app/components/Zones.js", "app/components/Vpcs.js", "app/components/Storages.js", "app/components/Images.js", "app/components/Disks.js", "app/components/Instances.js", "app/components/Firewalls.js", "app/components/Authorities.js", "app/components/Logs.js", "app/components/Settings.js", "app/actions/UserActions.js", "app/actions/SessionActions.js", "app/actions/AuditActions.js", "app/actions/NodeActions.js", "app/actions/PolicyActions.js", "app/actions/CertificateActions.js", "app/actions/OrganizationActions.js", "app/actions/DatacenterActions.js", "app/actions/ZoneActions.js", "app/actions/VpcActions.js", "app/actions/StorageActions.js", "app/actions/ImageActions.js", "app/actions/DiskActions.js", "app/actions/InstanceActions.js", "app/actions/FirewallActions.js", "app/actions/AuthorityActions.js", "app/actions/LogActions.js", "app/actions/SettingsActions.js", "app/actions/SubscriptionActions.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -41472,6 +42550,7 @@ System.registerDynamic("app/components/Main.js", ["npm:react@15.6.1.js", "npm:re
     const Organizations_1 = $__require("app/components/Organizations.js");
     const Datacenters_1 = $__require("app/components/Datacenters.js");
     const Zones_1 = $__require("app/components/Zones.js");
+    const Vpcs_1 = $__require("app/components/Vpcs.js");
     const Storages_1 = $__require("app/components/Storages.js");
     const Images_1 = $__require("app/components/Images.js");
     const Disks_1 = $__require("app/components/Disks.js");
@@ -41489,6 +42568,7 @@ System.registerDynamic("app/components/Main.js", ["npm:react@15.6.1.js", "npm:re
     const OrganizationActions = $__require("app/actions/OrganizationActions.js");
     const DatacenterActions = $__require("app/actions/DatacenterActions.js");
     const ZoneActions = $__require("app/actions/ZoneActions.js");
+    const VpcActions = $__require("app/actions/VpcActions.js");
     const StorageActions = $__require("app/actions/StorageActions.js");
     const ImageActions = $__require("app/actions/ImageActions.js");
     const DiskActions = $__require("app/actions/DiskActions.js");
@@ -41551,7 +42631,7 @@ System.registerDynamic("app/components/Main.js", ["npm:react@15.6.1.js", "npm:re
             if (!this.state.subscription) {
                 return React.createElement("div", null);
             }
-            return React.createElement(ReactRouter.HashRouter, null, React.createElement("div", null, React.createElement("nav", { className: "pt-navbar layout horizontal", style: css.nav }, React.createElement("div", { className: "pt-navbar-group pt-align-left flex", style: css.navTitle }, React.createElement("div", { className: "pt-navbar-heading", style: css.heading }, "Pritunl Cloud"), React.createElement(Loading_1.default, { style: css.loading, size: "small" })), React.createElement("div", { className: "pt-navbar-group pt-align-right", style: css.navGroup }, React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-people", style: css.link, to: "/users" }, "Users"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-layers", style: css.link, to: "/nodes" }, "Nodes"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-filter", style: css.link, to: "/policies" }, "Policies"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-endorsed", style: css.link, to: "/certificates" }, "Certificates"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-people", style: css.link, to: "/organizations" }, "Organizations"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-cloud", style: css.link, to: "/datacenters" }, "Datacenters"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-layout-circle", style: css.link, to: "/zones" }, "Zones"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-database", style: css.link, to: "/storages" }, "Storages"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-compressed", style: css.link, to: "/images" }, "Images"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-floppy-disk", style: css.link, to: "/disks" }, "Disks"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-dashboard", style: css.link, to: "/instances" }, "Instances"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-key", style: css.link, to: "/firewalls" }, "Firewalls"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-office", style: css.link, to: "/authorities" }, "Authorities"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-history", style: css.link, to: "/logs" }, "Logs"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-cog", style: css.link, to: "/settings" }, "Settings"), React.createElement(ReactRouter.Link, { to: "/subscription", style: css.sub }, React.createElement("button", { className: "pt-button pt-minimal pt-icon-credit-card", style: css.link, onClick: () => {
+            return React.createElement(ReactRouter.HashRouter, null, React.createElement("div", null, React.createElement("nav", { className: "pt-navbar layout horizontal", style: css.nav }, React.createElement("div", { className: "pt-navbar-group pt-align-left flex", style: css.navTitle }, React.createElement("div", { className: "pt-navbar-heading", style: css.heading }, "Pritunl Cloud"), React.createElement(Loading_1.default, { style: css.loading, size: "small" })), React.createElement("div", { className: "pt-navbar-group pt-align-right", style: css.navGroup }, React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-people", style: css.link, to: "/users" }, "Users"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-layers", style: css.link, to: "/nodes" }, "Nodes"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-filter", style: css.link, to: "/policies" }, "Policies"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-endorsed", style: css.link, to: "/certificates" }, "Certificates"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-people", style: css.link, to: "/organizations" }, "Organizations"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-cloud", style: css.link, to: "/datacenters" }, "Datacenters"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-layout-circle", style: css.link, to: "/zones" }, "Zones"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-layout-auto", style: css.link, to: "/vpcs" }, "Vpcs"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-database", style: css.link, to: "/storages" }, "Storages"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-compressed", style: css.link, to: "/images" }, "Images"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-floppy-disk", style: css.link, to: "/disks" }, "Disks"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-dashboard", style: css.link, to: "/instances" }, "Instances"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-key", style: css.link, to: "/firewalls" }, "Firewalls"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-office", style: css.link, to: "/authorities" }, "Authorities"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-history", style: css.link, to: "/logs" }, "Logs"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-cog", style: css.link, to: "/settings" }, "Settings"), React.createElement(ReactRouter.Link, { to: "/subscription", style: css.sub }, React.createElement("button", { className: "pt-button pt-minimal pt-icon-credit-card", style: css.link, onClick: () => {
                     SubscriptionActions.sync(true);
                 } }, "Subscription")), React.createElement(ReactRouter.Route, { render: props => React.createElement("button", { className: "pt-button pt-minimal pt-icon-refresh", disabled: this.state.disabled, onClick: () => {
                         let pathname = props.location.pathname;
@@ -41611,6 +42691,12 @@ System.registerDynamic("app/components/Main.js", ["npm:react@15.6.1.js", "npm:re
                             });
                         } else if (pathname === '/zones') {
                             ZoneActions.sync().then(() => {
+                                this.setState(Object.assign({}, this.state, { disabled: false }));
+                            }).catch(() => {
+                                this.setState(Object.assign({}, this.state, { disabled: false }));
+                            });
+                        } else if (pathname === '/vpcs') {
+                            VpcActions.sync().then(() => {
                                 this.setState(Object.assign({}, this.state, { disabled: false }));
                             }).catch(() => {
                                 this.setState(Object.assign({}, this.state, { disabled: false }));
@@ -41677,7 +42763,7 @@ System.registerDynamic("app/components/Main.js", ["npm:react@15.6.1.js", "npm:re
                 } }, "Logout"), React.createElement("button", { className: "pt-button pt-minimal pt-icon-moon", onClick: () => {
                     Theme.toggle();
                     Theme.save();
-                } }))), React.createElement(ReactRouter.Route, { path: "/", exact: true, render: () => React.createElement(Users_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/users", render: () => React.createElement(Users_1.default, null) }), React.createElement(ReactRouter.Route, { exact: true, path: "/user", render: () => React.createElement(UserDetailed_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/user/:userId", render: props => React.createElement(UserDetailed_1.default, { userId: props.match.params.userId }) }), React.createElement(ReactRouter.Route, { path: "/nodes", render: () => React.createElement(Nodes_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/policies", render: () => React.createElement(Policies_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/certificates", render: () => React.createElement(Certificates_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/organizations", render: () => React.createElement(Organizations_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/datacenters", render: () => React.createElement(Datacenters_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/zones", render: () => React.createElement(Zones_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/storages", render: () => React.createElement(Storages_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/images", render: () => React.createElement(Images_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/disks", render: () => React.createElement(Disks_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/instances", render: () => React.createElement(Instances_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/firewalls", render: () => React.createElement(Firewalls_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/authorities", render: () => React.createElement(Authorities_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/logs", render: () => React.createElement(Logs_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/settings", render: () => React.createElement(Settings_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/subscription", render: () => React.createElement(Subscription_1.default, null) })));
+                } }))), React.createElement(ReactRouter.Route, { path: "/", exact: true, render: () => React.createElement(Users_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/users", render: () => React.createElement(Users_1.default, null) }), React.createElement(ReactRouter.Route, { exact: true, path: "/user", render: () => React.createElement(UserDetailed_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/user/:userId", render: props => React.createElement(UserDetailed_1.default, { userId: props.match.params.userId }) }), React.createElement(ReactRouter.Route, { path: "/nodes", render: () => React.createElement(Nodes_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/policies", render: () => React.createElement(Policies_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/certificates", render: () => React.createElement(Certificates_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/organizations", render: () => React.createElement(Organizations_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/datacenters", render: () => React.createElement(Datacenters_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/zones", render: () => React.createElement(Zones_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/vpcs", render: () => React.createElement(Vpcs_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/storages", render: () => React.createElement(Storages_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/images", render: () => React.createElement(Images_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/disks", render: () => React.createElement(Disks_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/instances", render: () => React.createElement(Instances_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/firewalls", render: () => React.createElement(Firewalls_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/authorities", render: () => React.createElement(Authorities_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/logs", render: () => React.createElement(Logs_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/settings", render: () => React.createElement(Settings_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/subscription", render: () => React.createElement(Subscription_1.default, null) })));
         }
     }
     exports.default = Main;
