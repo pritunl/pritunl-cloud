@@ -14,6 +14,7 @@ import Certificates from './Certificates';
 import Organizations from './Organizations';
 import Datacenters from './Datacenters';
 import Zones from './Zones';
+import Vpcs from './Vpcs';
 import Storages from './Storages';
 import Images from './Images';
 import Disks from './Disks';
@@ -31,6 +32,7 @@ import * as CertificateActions from '../actions/CertificateActions';
 import * as OrganizationActions from '../actions/OrganizationActions';
 import * as DatacenterActions from '../actions/DatacenterActions';
 import * as ZoneActions from '../actions/ZoneActions';
+import * as VpcActions from '../actions/VpcActions';
 import * as StorageActions from '../actions/StorageActions';
 import * as ImageActions from '../actions/ImageActions';
 import * as DiskActions from '../actions/DiskActions';
@@ -169,6 +171,13 @@ export default class Main extends React.Component<{}, State> {
 							to="/zones"
 						>
 							Zones
+						</ReactRouter.Link>
+						<ReactRouter.Link
+							className="pt-button pt-minimal pt-icon-layout-auto"
+							style={css.link}
+							to="/vpcs"
+						>
+							Vpcs
 						</ReactRouter.Link>
 						<ReactRouter.Link
 							className="pt-button pt-minimal pt-icon-database"
@@ -369,6 +378,18 @@ export default class Main extends React.Component<{}, State> {
 												disabled: false,
 											});
 										});
+									} else if (pathname === '/vpcs') {
+										VpcActions.sync().then((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										}).catch((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										});
 									} else if (pathname === '/storages') {
 										StorageActions.sync().then((): void => {
 											this.setState({
@@ -530,6 +551,9 @@ export default class Main extends React.Component<{}, State> {
 				)}/>
 				<ReactRouter.Route path="/zones" render={() => (
 					<Zones/>
+				)}/>
+				<ReactRouter.Route path="/vpcs" render={() => (
+					<Vpcs/>
 				)}/>
 				<ReactRouter.Route path="/storages" render={() => (
 					<Storages/>
