@@ -20,6 +20,7 @@ export interface Instance {
 	memory?: number;
 	processors?: number;
 	network_roles?: string[];
+	vpcs?: string[];
 	count?: number;
 	info?: Info;
 }
