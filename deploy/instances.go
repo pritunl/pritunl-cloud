@@ -64,7 +64,7 @@ func (s *Instances) start(inst *instance.Instance) {
 		db := database.GetDatabase()
 		defer db.Close()
 
-		err := qemu.PowerOn(db, inst.Virt)
+		err := qemu.PowerOn(db, inst, inst.Virt)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
@@ -118,7 +118,7 @@ func (s *Instances) restart(inst *instance.Instance) {
 		db := database.GetDatabase()
 		defer db.Close()
 
-		err := qemu.PowerOn(db, inst.Virt)
+		err := qemu.PowerOn(db, inst, inst.Virt)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
