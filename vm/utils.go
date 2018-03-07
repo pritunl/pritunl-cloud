@@ -6,13 +6,13 @@ import (
 	"encoding/base32"
 	"fmt"
 	"gopkg.in/mgo.v2/bson"
-	"strconv"
 	"strings"
 )
 
-func GetMacAddr(id bson.ObjectId, index int) string {
+func GetMacAddr(id bson.ObjectId, secondId bson.ObjectId) string {
 	hash := md5.New()
-	hash.Write([]byte(id.Hex() + strconv.Itoa(index)))
+	hash.Write([]byte(id.Hex()))
+	hash.Write([]byte(secondId.Hex()))
 	macHash := fmt.Sprintf("%x", hash.Sum(nil))
 	macHash = macHash[:10]
 	macBuf := bytes.Buffer{}
@@ -32,4 +32,18 @@ func GetIface(id bson.ObjectId, n int) string {
 	hash.Write([]byte(id.Hex()))
 	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
 	return fmt.Sprintf("p%s%d", strings.ToLower(hashSum), n)
+}
+
+func GetIfaceVxlan(id bson.ObjectId) string {
+	hash := md5.New()
+	hash.Write([]byte(id.Hex()))
+	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
+	return fmt.Sprintf("xf%s", strings.ToLower(hashSum))
+}
+
+func GetIfaceVxlanBridge(id bson.ObjectId) string {
+	hash := md5.New()
+	hash.Write([]byte(id.Hex()))
+	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
+	return fmt.Sprintf("xb%s", strings.ToLower(hashSum))
 }
