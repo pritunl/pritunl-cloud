@@ -205,29 +205,41 @@ func vpcGet(c *gin.Context) {
 func vpcsGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 
-	page, _ := strconv.Atoi(c.Query("page"))
-	pageCount, _ := strconv.Atoi(c.Query("page_count"))
+	if c.Query("names") == "true" {
+		query := &bson.M{}
 
-	query := bson.M{}
-
-	name := strings.TrimSpace(c.Query("name"))
-	if name != "" {
-		query["name"] = &bson.M{
-			"$regex":   fmt.Sprintf(".*%s.*", name),
-			"$options": "i",
+		vpcs, err := vpc.GetAllNames(db, query)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
 		}
-	}
 
-	vpcs, count, err := vpc.GetAllPaged(db, &query, page, pageCount)
-	if err != nil {
-		utils.AbortWithError(c, 500, err)
-		return
-	}
+		c.JSON(200, vpcs)
+	} else {
+		page, _ := strconv.Atoi(c.Query("page"))
+		pageCount, _ := strconv.Atoi(c.Query("page_count"))
 
-	data := &vpcsData{
-		Vpcs:  vpcs,
-		Count: count,
-	}
+		query := bson.M{}
 
-	c.JSON(200, data)
+		name := strings.TrimSpace(c.Query("name"))
+		if name != "" {
+			query["name"] = &bson.M{
+				"$regex":   fmt.Sprintf(".*%s.*", name),
+				"$options": "i",
+			}
+		}
+
+		vpcs, count, err := vpc.GetAllPaged(db, &query, page, pageCount)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		data := &vpcsData{
+			Vpcs:  vpcs,
+			Count: count,
+		}
+
+		c.JSON(200, data)
+	}
 }
