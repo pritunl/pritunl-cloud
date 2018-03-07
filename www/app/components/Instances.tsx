@@ -2,17 +2,20 @@
 import * as React from 'react';
 import * as InstanceTypes from '../types/InstanceTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
+import * as VpcTypes from '../types/VpcTypes';
 import * as DatacenterTypes from '../types/DatacenterTypes';
 import * as ZoneTypes from '../types/ZoneTypes';
 import * as CertificateTypes from '../types/CertificateTypes';
 import InstancesStore from '../stores/InstancesStore';
 import OrganizationsStore from '../stores/OrganizationsStore';
+import VpcsNameStore from '../stores/VpcsNameStore';
 import DatacentersStore from '../stores/DatacentersStore';
 import NodesStore from '../stores/NodesStore';
 import ZonesStore from '../stores/ZonesStore';
 import CertificatesStore from '../stores/CertificatesStore';
 import * as InstanceActions from '../actions/InstanceActions';
 import * as OrganizationActions from '../actions/OrganizationActions';
+import * as VpcActions from '../actions/VpcActions';
 import * as DatacenterActions from '../actions/DatacenterActions';
 import * as NodeActions from '../actions/NodeActions';
 import * as ZoneActions from '../actions/ZoneActions';
@@ -36,6 +39,7 @@ interface Opened {
 interface State {
 	instances: InstanceTypes.InstancesRo;
 	organizations: OrganizationTypes.OrganizationsRo;
+	vpcs: VpcTypes.VpcsRo;
 	datacenters: DatacenterTypes.DatacentersRo;
 	zones: ZoneTypes.ZonesRo;
 	certificates: CertificateTypes.CertificatesRo;
@@ -80,6 +84,7 @@ export default class Instances extends React.Component<{}, State> {
 		this.state = {
 			instances: InstancesStore.instances,
 			organizations: OrganizationsStore.organizations,
+			vpcs: VpcsNameStore.vpcs,
 			datacenters: DatacentersStore.datacenters,
 			zones: ZonesStore.zones,
 			certificates: CertificatesStore.certificates,
@@ -102,12 +107,14 @@ export default class Instances extends React.Component<{}, State> {
 	componentDidMount(): void {
 		InstancesStore.addChangeListener(this.onChange);
 		OrganizationsStore.addChangeListener(this.onChange);
+		VpcsNameStore.addChangeListener(this.onChange);
 		DatacentersStore.addChangeListener(this.onChange);
 		NodesStore.addChangeListener(this.onChange);
 		ZonesStore.addChangeListener(this.onChange);
 		CertificatesStore.addChangeListener(this.onChange);
 		InstanceActions.sync();
 		OrganizationActions.sync();
+		VpcActions.syncNames();
 		DatacenterActions.sync();
 		NodeActions.sync();
 		ZoneActions.sync();
@@ -121,6 +128,7 @@ export default class Instances extends React.Component<{}, State> {
 	componentWillUnmount(): void {
 		InstancesStore.removeChangeListener(this.onChange);
 		OrganizationsStore.removeChangeListener(this.onChange);
+		VpcsNameStore.removeChangeListener(this.onChange);
 		DatacentersStore.removeChangeListener(this.onChange);
 		NodesStore.removeChangeListener(this.onChange);
 		ZonesStore.removeChangeListener(this.onChange);
@@ -148,6 +156,7 @@ export default class Instances extends React.Component<{}, State> {
 			...this.state,
 			instances: instances,
 			organizations: OrganizationsStore.organizations,
+			vpcs: VpcsNameStore.vpcs,
 			certificates: CertificatesStore.certificates,
 			datacenters: DatacentersStore.datacenters,
 			zones: ZonesStore.zones,
@@ -204,6 +213,7 @@ export default class Instances extends React.Component<{}, State> {
 			instancesDom.push(<Instance
 				key={instance.id}
 				instance={instance}
+				vpcs={this.state.vpcs}
 				selected={!!this.state.selected[instance.id]}
 				open={!!this.state.opened[instance.id]}
 				onSelect={(shift: boolean): void => {
@@ -280,6 +290,7 @@ export default class Instances extends React.Component<{}, State> {
 		if (this.state.newOpened) {
 			newInstanceDom = <InstanceNew
 				organizations={this.state.organizations}
+				vpcs={this.state.vpcs}
 				datacenters={this.state.datacenters}
 				zones={this.state.zones}
 				onClose={(): void => {
