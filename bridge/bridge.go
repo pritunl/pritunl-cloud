@@ -121,5 +121,7 @@ func Configure() (err error) {
 		errors.Wrap(err, "bridge: Bridge dhcp timeout"),
 	}
 
+	configured = true
+
 	return
 }
