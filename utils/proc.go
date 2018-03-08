@@ -38,7 +38,8 @@ func ExecInput(dir, input, name string, arg ...string) (err error) {
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
 		err = &errortypes.RequestError{
-			errors.Wrapf(err, "utils: Failed to get stdin in exec '%s'", name),
+			errors.Wrapf(err,
+				"utils: Failed to get stdin in exec '%s'", name),
 		}
 		return
 	}
