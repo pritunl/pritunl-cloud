@@ -33,7 +33,9 @@ func (l *TimeoutLock) Lock() (id bson.ObjectId) {
 		for {
 			time.Sleep(1 * time.Second)
 
+			l.stateLock.Lock()
 			state := l.state[id]
+			l.stateLock.Unlock()
 			if !state {
 				return
 			}
