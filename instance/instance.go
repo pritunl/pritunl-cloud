@@ -26,6 +26,8 @@ type Instance struct {
 	Restart      bool               `bson:"restart" json:"restart"`
 	PublicIp     string             `bson:"public_ip" json:"public_ip"`
 	PublicIp6    string             `bson:"public_ip6" json:"public_ip6"`
+	LocalIps     []string           `bson:"local_ips" json:"local_ips"`
+	LocalIps6    []string           `bson:"local_ips6" json:"local_ips6"`
 	Node         bson.ObjectId      `bson:"node,omitempty" json:"node"`
 	Name         string             `bson:"name" json:"name"`
 	Memory       int                `bson:"memory" json:"memory"`
