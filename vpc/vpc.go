@@ -105,7 +105,7 @@ func (v *Vpc) Insert(db *database.Database) (err error) {
 
 	if v.Id != "" {
 		err = &errortypes.DatabaseError{
-			errors.New("firewall: Vpc already exists"),
+			errors.New("vpc: Vpc already exists"),
 		}
 		return
 	}
