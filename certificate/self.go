@@ -49,7 +49,7 @@ func selfCert(parent *x509.Certificate, parentKey *ecdsa.PrivateKey) (
 	certTempl := &x509.Certificate{
 		SerialNumber: serial,
 		Subject: pkix.Name{
-			Organization: []string{"Pritunl Zero"},
+			Organization: []string{"Pritunl Cloud"},
 		},
 		NotBefore: time.Now().Add(-24 * time.Hour),
 		NotAfter:  time.Now().Add(26280 * time.Hour),
