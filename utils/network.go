@@ -12,3 +12,9 @@ func IncIpAddress(ip net.IP) {
 		}
 	}
 }
+
+func CopyIpAddress(src net.IP) net.IP {
+	dst := make(net.IP, len(src))
+	copy(dst, src)
+	return dst
+}
