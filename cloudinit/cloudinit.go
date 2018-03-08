@@ -19,7 +19,6 @@ import (
 	"net/textproto"
 	"os"
 	"path"
-	"strconv"
 	"strings"
 	"text/template"
 )
@@ -31,6 +30,22 @@ const userDataTmpl = `Content-Type: multipart/mixed; boundary="%s"
 MIME-Version: 1.0
 
 %s`
+
+const netConfigTmpl = `version: 1
+config:
+  - type: physical
+    name: eth0
+    mac_address: {{.HostMac}}
+    subnets:
+      - type: dhcp{{range .Interfaces}}
+  - type: physical
+    name: eth{{.Num}}
+    mac_address: {{.Mac}}
+    subnets:
+      - type: static
+        address: {{.Address}}
+        netmask: {{.Netmask}}
+        network: {{.Network}}{{end}}`
 
 const cloudConfigTmpl = `#cloud-config
 ssh_deletekeys: true
@@ -44,54 +59,36 @@ users:
     lock-passwd: true
     ssh-authorized-keys:
 {{range .Keys}}      - {{.}}
-{{end}}network:
-  version: 2
-  ethernets:
-    ens3:
-      match:
-        macaddress: {{.HostMac}}
-      dhcp4: true{{range .Networks}}
-    ens{{.Num}}:
-      match:
-        macaddress: {{.Mac}}
-      addresses:
-        - {{.Address}}{{end}}
-`
+{{end}}`
 
 const cloudScriptTmpl = `#!/bin/bash
-%s
-sudo systemctl restart network`
+%s`
 
 const teeTmpl = `sudo tee %s << EOF
 %s
 EOF
 `
 
-const networkTmpl = `sudo tee /etc/sysconfig/network-scripts/ifcfg-ens%d << EOF
-DEVICE=ens%d
-HWADDR=%s
-ONBOOT=yes
-TYPE=Ethernet
-USERCTL=no
-IPADDR="%s"
-NETMASK="%s"
-EOF
-`
-
 var (
 	cloudConfig = template.Must(template.New("cloud").Parse(cloudConfigTmpl))
+	netConfig   = template.Must(template.New("net").Parse(netConfigTmpl))
 )
 
-type cloudNetworkData struct {
+type netInterfaceData struct {
 	Num     int
 	Mac     string
 	Address string
+	Netmask string
+	Network string
+}
+
+type netConfigData struct {
+	HostMac    string
+	Interfaces []netInterfaceData
 }
 
 type cloudConfigData struct {
-	Keys     []string
-	HostMac  string
-	Networks []cloudNetworkData
+	Keys []string
 }
 
 func getUserData(db *database.Database, inst *instance.Instance,
@@ -112,44 +109,7 @@ func getUserData(db *database.Database, inst *instance.Instance,
 	cloudScript := ""
 
 	data := cloudConfigData{
-		Keys:     []string{},
-		HostMac:  virt.NetworkAdapters[0].MacAddress,
-		Networks: []cloudNetworkData{},
-	}
-
-	for i, adapter := range virt.NetworkAdapters {
-		if i == 0 || adapter.Type != vm.Vxlan {
-			continue
-		}
-
-		vc, e := vpc.Get(db, adapter.VpcId)
-		if e != nil {
-			err = e
-			return
-		}
-
-		vcNet, e := vc.GetNetwork()
-		if e != nil {
-			err = e
-			return
-		}
-
-		ip := vcNet.IP
-		n := rand.Intn(250) + 2
-		for x := 0; x < n; x++ {
-			utils.IncIpAddress(ip)
-		}
-
-		cidr, _ := vcNet.Mask.Size()
-
-		data.Networks = append(data.Networks, cloudNetworkData{
-			Num:     i + 3,
-			Mac:     adapter.MacAddress,
-			Address: ip.String() + "/" + strconv.Itoa(cidr),
-		})
-
-		cloudScript += fmt.Sprintf(networkTmpl, i+3, i+3,
-			adapter.MacAddress, ip.String(), net.IP(vcNet.Mask).String())
+		Keys: []string{},
 	}
 
 	for _, authr := range authrs {
@@ -169,7 +129,6 @@ func getUserData(db *database.Database, inst *instance.Instance,
 	items := []string{}
 
 	output := &bytes.Buffer{}
-
 	err = cloudConfig.Execute(output, data)
 	if err != nil {
 		err = &errortypes.ParseError{
@@ -177,7 +136,6 @@ func getUserData(db *database.Database, inst *instance.Instance,
 		}
 		return
 	}
-
 	items = append(items, output.String())
 
 	if trusted != "" {
@@ -242,12 +200,67 @@ func getUserData(db *database.Database, inst *instance.Instance,
 	return
 }
 
+func getNetData(db *database.Database, inst *instance.Instance,
+	virt *vm.VirtualMachine) (netData string, err error) {
+
+	data := netConfigData{
+		HostMac:    virt.NetworkAdapters[0].MacAddress,
+		Interfaces: []netInterfaceData{},
+	}
+
+	for i, adapter := range virt.NetworkAdapters {
+		if i == 0 || adapter.Type != vm.Vxlan {
+			continue
+		}
+
+		vc, e := vpc.Get(db, adapter.VpcId)
+		if e != nil {
+			err = e
+			return
+		}
+
+		vcNet, e := vc.GetNetwork()
+		if e != nil {
+			err = e
+			return
+		}
+
+		ip := utils.CopyIpAddress(vcNet.IP)
+		n := rand.Intn(250) + 2
+		for x := 0; x < n; x++ {
+			utils.IncIpAddress(ip)
+		}
+
+		data.Interfaces = append(data.Interfaces, netInterfaceData{
+			Num:     i,
+			Mac:     adapter.MacAddress,
+			Address: ip.String(),
+			Netmask: net.IP(vcNet.Mask).String(),
+			Network: vcNet.IP.String(),
+		})
+	}
+
+	output := &bytes.Buffer{}
+	err = netConfig.Execute(output, data)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "cloudinit: Failed to exec cloud template"),
+		}
+		return
+	}
+
+	netData = output.String()
+
+	return
+}
+
 func Write(db *database.Database, inst *instance.Instance,
 	virt *vm.VirtualMachine) (err error) {
 
 	tempDir := paths.GetTempDir()
 	metaPath := path.Join(tempDir, "meta-data")
 	userPath := path.Join(tempDir, "user-data")
+	netPath := path.Join(tempDir, "network-config")
 	initPath := paths.GetInitPath(inst.Id)
 
 	defer os.RemoveAll(tempDir)
@@ -274,6 +287,16 @@ func Write(db *database.Database, inst *instance.Instance,
 		return
 	}
 
+	netData, err := getNetData(db, inst, virt)
+	if err != nil {
+		return
+	}
+
+	err = utils.CreateWrite(netPath, netData, 0644)
+	if err != nil {
+		return
+	}
+
 	err = utils.CreateWrite(userPath, usrData, 0644)
 	if err != nil {
 		return
@@ -287,6 +310,7 @@ func Write(db *database.Database, inst *instance.Instance,
 		"-rock",
 		"user-data",
 		"meta-data",
+		"network-config",
 	)
 
 	return
