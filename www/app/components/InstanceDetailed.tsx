@@ -368,6 +368,11 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			this.props.instance.organization);
 		let zone = ZonesStore.zone(this.props.instance.zone);
 
+		let localIps: any = this.props.instance.local_ips;
+		if (!localIps || !localIps.length) {
+			localIps = 'None';
+		}
+
 		let statusClass = '';
 		switch (instance.status) {
 			case 'Running':
@@ -628,6 +633,10 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 							{
 								label: 'Public IPv6',
 								value: this.props.instance.public_ip6 || 'None',
+							},
+							{
+								label: 'Local IPv4',
+								value: localIps,
 							},
 							{
 								label: 'Disks',
