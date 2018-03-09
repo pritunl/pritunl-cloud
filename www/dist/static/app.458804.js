@@ -27819,7 +27819,8 @@ System.registerDynamic("app/components/Vpcs.js", ["npm:react@15.6.1.js", "app/st
         },
         group: {
             margin: '10px 0 0 0',
-            width: '320px'
+            width: '100%',
+            maxWidth: '420px'
         },
         placeholder: {
             opacity: 0,
@@ -27833,6 +27834,9 @@ System.registerDynamic("app/components/Vpcs.js", ["npm:react@15.6.1.js", "app/st
         },
         button: {
             margin: '10px 0 0 10px'
+        },
+        input: {
+            width: '107px'
         },
         select: {
             width: '100%'
@@ -27880,6 +27884,7 @@ System.registerDynamic("app/components/Vpcs.js", ["npm:react@15.6.1.js", "app/st
                 vpcs: VpcsStore_1.default.vpcs,
                 datacenters: DatacentersStore_1.default.datacenters,
                 organizations: OrganizationsStore_1.default.organizations,
+                network: '',
                 organization: '',
                 datacenter: '',
                 selected: {},
@@ -27972,7 +27977,9 @@ System.registerDynamic("app/components/Vpcs.js", ["npm:react@15.6.1.js", "app/st
                         this.setState(Object.assign({}, this.state, { opened: opened }));
                     } }));
             });
-            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Vpcs"), React.createElement("div", { className: "flex" }), React.createElement("div", null, React.createElement("div", { className: "pt-control-group", style: css.group }, React.createElement("div", { style: css.selectBox }, React.createElement("div", { className: "pt-select", style: css.selectFirst }, React.createElement("select", { style: css.selectInner, disabled: !hasOrganizations || this.state.disabled, value: this.state.organization, onChange: evt => {
+            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Vpcs"), React.createElement("div", { className: "flex" }), React.createElement("div", { className: "pt-control-group", style: css.group }, React.createElement("input", { className: "pt-input", style: css.input, type: "text", disabled: !hasOrganizations || this.state.disabled, autoCapitalize: "off", spellCheck: false, placeholder: "Enter network", value: this.state.network, onChange: evt => {
+                    this.setState(Object.assign({}, this.state, { network: evt.target.value }));
+                } }), React.createElement("div", { style: css.selectBox }, React.createElement("div", { className: "pt-select", style: css.selectFirst }, React.createElement("select", { style: css.selectInner, disabled: !hasOrganizations || this.state.disabled, value: this.state.organization, onChange: evt => {
                     this.setState(Object.assign({}, this.state, { organization: evt.target.value }));
                 } }, organizationsSelect))), React.createElement("div", { style: css.selectBox }, React.createElement("div", { className: "pt-select", style: css.select }, React.createElement("select", { style: css.selectInner, disabled: !hasDatacenters || this.state.disabled, value: this.state.datacenter, onChange: evt => {
                     this.setState(Object.assign({}, this.state, { datacenter: evt.target.value }));
@@ -27980,14 +27987,15 @@ System.registerDynamic("app/components/Vpcs.js", ["npm:react@15.6.1.js", "app/st
                     this.setState(Object.assign({}, this.state, { disabled: true }));
                     VpcActions.create({
                         id: null,
+                        network: this.state.network,
                         organization: this.state.organization || this.state.organizations[0].id,
                         datacenter: this.state.datacenter || this.state.datacenters[0].id
                     }).then(() => {
-                        this.setState(Object.assign({}, this.state, { disabled: false }));
+                        this.setState(Object.assign({}, this.state, { network: '', disabled: false }));
                     }).catch(() => {
                         this.setState(Object.assign({}, this.state, { disabled: false }));
                     });
-                } }, "New"))))), React.createElement("div", { style: css.itemsBox }, React.createElement("div", { style: css.items }, vpcsDom, React.createElement("tr", { className: "pt-card pt-row", style: css.placeholder }, React.createElement("td", { colSpan: 5, style: css.placeholder })))), React.createElement(NonState_1.default, { hidden: !!vpcsDom.length, iconClass: "pt-icon-layout-auto", title: "No vpcs", description: "Add a new vpc to get started." }), React.createElement(VpcsPage_1.default, { onPage: () => {
+                } }, "New")))), React.createElement("div", { style: css.itemsBox }, React.createElement("div", { style: css.items }, vpcsDom, React.createElement("tr", { className: "pt-card pt-row", style: css.placeholder }, React.createElement("td", { colSpan: 5, style: css.placeholder })))), React.createElement(NonState_1.default, { hidden: !!vpcsDom.length, iconClass: "pt-icon-layout-auto", title: "No vpcs", description: "Add a new vpc to get started." }), React.createElement(VpcsPage_1.default, { onPage: () => {
                     this.setState({
                         lastSelected: null
                     });
@@ -30061,6 +30069,10 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@15.6.1.
             let info = this.props.instance.info || {};
             let org = OrganizationsStore_1.default.organization(this.props.instance.organization);
             let zone = ZonesStore_1.default.zone(this.props.instance.zone);
+            let localIps = this.props.instance.local_ips;
+            if (!localIps || !localIps.length) {
+                localIps = 'None';
+            }
             let statusClass = '';
             switch (instance.status) {
                 case 'Running':
@@ -30144,6 +30156,9 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@15.6.1.
                 }, {
                     label: 'Public IPv6',
                     value: this.props.instance.public_ip6 || 'None'
+                }, {
+                    label: 'Local IPv4',
+                    value: localIps
                 }, {
                     label: 'Disks',
                     value: info.disks || ''
@@ -30600,7 +30615,10 @@ System.registerDynamic("app/components/InstanceNew.js", ["npm:react@15.6.1.js", 
                     instance.organization = this.props.organizations[0].id;
                 }
                 InstanceActions.create(instance).then(() => {
-                    this.setState(Object.assign({}, this.state, { message: 'Instance created successfully', closed: true, changed: false }));
+                    this.setState(Object.assign({}, this.state, { message: 'Instance created successfully', changed: false }));
+                    setTimeout(() => {
+                        this.setState(Object.assign({}, this.state, { disabled: false, changed: true }));
+                    }, 2000);
                 }).catch(() => {
                     this.setState(Object.assign({}, this.state, { message: '', disabled: false }));
                 });
