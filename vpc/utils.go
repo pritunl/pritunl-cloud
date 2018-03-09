@@ -129,7 +129,17 @@ func DistinctIds(db *database.Database, matchIds []bson.ObjectId) (
 }
 
 func Remove(db *database.Database, vcId bson.ObjectId) (err error) {
-	coll := db.Vpcs()
+	coll := db.VpcsIp()
+
+	_, err = coll.RemoveAll(&bson.M{
+		"vpc": vcId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	coll = db.Vpcs()
 
 	err = coll.Remove(&bson.M{
 		"_id": vcId,
@@ -148,7 +158,19 @@ func Remove(db *database.Database, vcId bson.ObjectId) (err error) {
 }
 
 func RemoveMulti(db *database.Database, vcIds []bson.ObjectId) (err error) {
-	coll := db.Vpcs()
+	coll := db.VpcsIp()
+
+	_, err = coll.RemoveAll(&bson.M{
+		"vpc": &bson.M{
+			"$in": vcIds,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	coll = db.Vpcs()
 
 	_, err = coll.RemoveAll(&bson.M{
 		"_id": &bson.M{
