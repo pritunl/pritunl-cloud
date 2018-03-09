@@ -13,7 +13,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
-	"math/rand"
+	"gopkg.in/mgo.v2/bson"
 	"mime/multipart"
 	"net"
 	"net/textproto"
@@ -280,7 +280,10 @@ func Write(db *database.Database, inst *instance.Instance,
 		return
 	}
 
-	metaData := fmt.Sprintf(metaDataTmpl, inst.Id.Hex(), inst.Id.Hex())
+	metaData := fmt.Sprintf(metaDataTmpl,
+		bson.NewObjectId().Hex(),
+		inst.Id.Hex(),
+	)
 
 	err = utils.CreateWrite(metaPath, metaData, 0644)
 	if err != nil {
