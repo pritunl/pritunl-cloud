@@ -52,8 +52,12 @@ func (v *VirtualMachine) Commit(db *database.Database) (err error) {
 		addr6 = v.NetworkAdapters[0].IpAddress6
 
 		for _, adapter := range v.NetworkAdapters[1:] {
-			localAddrs = append(localAddrs, adapter.IpAddress)
-			localAddrs6 = append(localAddrs, adapter.IpAddress6)
+			if adapter.IpAddress != "" {
+				localAddrs = append(localAddrs, adapter.IpAddress)
+			}
+			if adapter.IpAddress6 != "" {
+				localAddrs6 = append(localAddrs, adapter.IpAddress6)
+			}
 		}
 	}
 
