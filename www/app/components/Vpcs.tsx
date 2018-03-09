@@ -29,6 +29,7 @@ interface State {
 	vpcs: VpcTypes.VpcsRo;
 	datacenters: DatacenterTypes.DatacentersRo;
 	organizations: OrganizationTypes.OrganizationsRo;
+	network: string;
 	datacenter: string;
 	organization: string;
 	selected: Selected;
@@ -51,7 +52,8 @@ const css = {
 	} as React.CSSProperties,
 	group: {
 		margin: '10px 0 0 0',
-		width: '320px',
+		width: '100%',
+		maxWidth: '420px',
 	} as React.CSSProperties,
 	placeholder: {
 		opacity: 0,
@@ -65,6 +67,9 @@ const css = {
 	} as React.CSSProperties,
 	button: {
 		margin: '10px 0 0 10px',
+	} as React.CSSProperties,
+	input: {
+		width: '107px',
 	} as React.CSSProperties,
 	select: {
 		width: '100%',
@@ -89,6 +94,7 @@ export default class Vpcs extends React.Component<{}, State> {
 			vpcs: VpcsStore.vpcs,
 			datacenters: DatacentersStore.datacenters,
 			organizations: OrganizationsStore.organizations,
+			network: '',
 			organization: '',
 			datacenter: '',
 			selected: {},
@@ -297,75 +303,91 @@ export default class Vpcs extends React.Component<{}, State> {
 				<div className="layout horizontal wrap" style={css.header}>
 					<h2 style={css.heading}>Vpcs</h2>
 					<div className="flex"/>
-					<div>
-						<div
-							className="pt-control-group"
-							style={css.group}
-						>
-							<div style={css.selectBox}>
-								<div className="pt-select" style={css.selectFirst}>
-									<select
-										style={css.selectInner}
-										disabled={!hasOrganizations || this.state.disabled}
-										value={this.state.organization}
-										onChange={(evt): void => {
-											this.setState({
-												...this.state,
-												organization: evt.target.value,
-											});
-										}}
-									>
-										{organizationsSelect}
-									</select>
-								</div>
+					<div
+						className="pt-control-group"
+						style={css.group}
+					>
+						<input
+							className="pt-input"
+							style={css.input}
+							type="text"
+							disabled={!hasOrganizations || this.state.disabled}
+							autoCapitalize="off"
+							spellCheck={false}
+							placeholder="Enter network"
+							value={this.state.network}
+							onChange={(evt): void => {
+								this.setState({
+									...this.state,
+									network: evt.target.value,
+								});
+							}}
+						/>
+						<div style={css.selectBox}>
+							<div className="pt-select" style={css.selectFirst}>
+								<select
+									style={css.selectInner}
+									disabled={!hasOrganizations || this.state.disabled}
+									value={this.state.organization}
+									onChange={(evt): void => {
+										this.setState({
+											...this.state,
+											organization: evt.target.value,
+										});
+									}}
+								>
+									{organizationsSelect}
+								</select>
 							</div>
-							<div style={css.selectBox}>
-								<div className="pt-select" style={css.select}>
-									<select
-										style={css.selectInner}
-										disabled={!hasDatacenters || this.state.disabled}
-										value={this.state.datacenter}
-										onChange={(evt): void => {
-											this.setState({
-												...this.state,
-												datacenter: evt.target.value,
-											});
-										}}
-									>
-										{datacentersSelect}
-									</select>
-								</div>
+						</div>
+						<div style={css.selectBox}>
+							<div className="pt-select" style={css.select}>
+								<select
+									style={css.selectInner}
+									disabled={!hasDatacenters || this.state.disabled}
+									value={this.state.datacenter}
+									onChange={(evt): void => {
+										this.setState({
+											...this.state,
+											datacenter: evt.target.value,
+										});
+									}}
+								>
+									{datacentersSelect}
+								</select>
 							</div>
-							<button
-								className="pt-button pt-intent-success pt-icon-add"
-								disabled={!hasDatacenters || !hasOrganizations ||
-									this.state.disabled}
-								type="button"
-								onClick={(): void => {
+						</div>
+						<button
+							className="pt-button pt-intent-success pt-icon-add"
+							disabled={!hasDatacenters || !hasOrganizations ||
+								this.state.disabled}
+							type="button"
+							onClick={(): void => {
+								this.setState({
+									...this.state,
+									disabled: true,
+								});
+								VpcActions.create({
+									id: null,
+									network: this.state.network,
+									organization: this.state.organization ||
+										this.state.organizations[0].id,
+									datacenter: this.state.datacenter ||
+										this.state.datacenters[0].id,
+								}).then((): void => {
 									this.setState({
 										...this.state,
-										disabled: true,
+										network: '',
+										disabled: false,
 									});
-									VpcActions.create({
-										id: null,
-										organization: this.state.organization ||
-											this.state.organizations[0].id,
-										datacenter: this.state.datacenter ||
-											this.state.datacenters[0].id,
-									}).then((): void => {
-										this.setState({
-											...this.state,
-											disabled: false,
-										});
-									}).catch((): void => {
-										this.setState({
-											...this.state,
-											disabled: false,
-										});
+								}).catch((): void => {
+									this.setState({
+										...this.state,
+										disabled: false,
 									});
-								}}
-							>New</button>
-						</div>
+								});
+							}}
+						>New</button>
 					</div>
 				</div>
 			</PageHeader>
