@@ -158,22 +158,6 @@ func Remove(db *database.Database, instId bson.ObjectId) (err error) {
 	return
 }
 
-func RemoveMulti(db *database.Database, instIds []bson.ObjectId) (err error) {
-	coll := db.Instances()
-
-	_, err = coll.RemoveAll(&bson.M{
-		"_id": &bson.M{
-			"$in": instIds,
-		},
-	})
-	if err != nil {
-		err = database.ParseError(err)
-		return
-	}
-
-	return
-}
-
 func Delete(db *database.Database, instId bson.ObjectId) (err error) {
 	coll := db.Instances()
 
