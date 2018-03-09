@@ -184,3 +184,54 @@ func RemoveMulti(db *database.Database, vcIds []bson.ObjectId) (err error) {
 
 	return
 }
+
+func RemoveInstanceIps(db *database.Database, instId bson.ObjectId) (
+	err error) {
+
+	coll := db.VpcsIp()
+
+	_, err = coll.UpdateAll(&bson.M{
+		"instance": instId,
+	}, &bson.M{
+		"$set": &bson.M{
+			"instance": nil,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		switch err.(type) {
+		case *database.NotFoundError:
+			err = nil
+		default:
+			return
+		}
+	}
+
+	return
+}
+
+func RemoveInstanceIp(db *database.Database, instId, vpcId bson.ObjectId) (
+	err error) {
+
+	coll := db.VpcsIp()
+
+	err = coll.Update(&bson.M{
+		"vpc":      vpcId,
+		"instance": instId,
+	}, &bson.M{
+		"$set": &bson.M{
+			"instance": nil,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		switch err.(type) {
+		case *database.NotFoundError:
+			err = nil
+		default:
+			return
+		}
+	}
+
+	return
+}
