@@ -4,6 +4,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/pritunl-cloud/vpc"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -141,6 +142,11 @@ func GetAllPaged(db *database.Database, query *bson.M, page, pageCount int) (
 
 func Remove(db *database.Database, instId bson.ObjectId) (err error) {
 	coll := db.Instances()
+
+	err = vpc.RemoveInstanceIps(db, instId)
+	if err != nil {
+		return
+	}
 
 	err = coll.Remove(&bson.M{
 		"_id": instId,
