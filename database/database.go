@@ -448,6 +448,18 @@ func addIndexes() (err error) {
 		}
 	}
 
+	coll = db.VpcsIp()
+	err = coll.EnsureIndex(mgo.Index{
+		Key:        []string{"vpc", "ip"},
+		Unique:     true,
+		Background: true,
+	})
+	if err != nil {
+		err = &IndexError{
+			errors.Wrap(err, "database: Index error"),
+		}
+	}
+
 	coll = db.Sessions()
 	err = coll.EnsureIndex(mgo.Index{
 		Key:        []string{"user"},
