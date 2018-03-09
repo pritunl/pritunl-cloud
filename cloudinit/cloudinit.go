@@ -48,7 +48,7 @@ config:
         network: {{.Network}}{{end}}`
 
 const cloudConfigTmpl = `#cloud-config
-ssh_deletekeys: true
+ssh_deletekeys: false
 disable_root: true
 ssh_pwauth: no
 users:
