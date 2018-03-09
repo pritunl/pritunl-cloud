@@ -137,6 +137,11 @@ func (d *Database) Vpcs() (coll *Collection) {
 	return
 }
 
+func (d *Database) VpcsIp() (coll *Collection) {
+	coll = d.getCollection("vpcs_ip")
+	return
+}
+
 func (d *Database) Authorities() (coll *Collection) {
 	coll = d.getCollection("authorities")
 	return
