@@ -34,6 +34,7 @@ type Instance struct {
 	Processors   int                `bson:"processors" json:"processors"`
 	NetworkRoles []string           `bson:"network_roles" json:"network_roles"`
 	Virt         *vm.VirtualMachine `bson:"-" json:"-"`
+	curVps       set.Set            `bson:"-" json:"-"`
 }
 
 func (i *Instance) Validate(db *database.Database) (
@@ -170,6 +171,39 @@ func (i *Instance) Json() {
 		i.Status = "Destroying"
 		break
 	}
+}
+
+func (i *Instance) PreCommit() {
+	curVps := set.NewSet()
+
+	if i.Vpcs != nil {
+		for _, vpcId := range i.Vpcs {
+			curVps.Add(vpcId)
+		}
+	}
+
+	i.curVps = curVps
+}
+
+func (i *Instance) PostCommit(db *database.Database) (err error) {
+	newVpcs := set.NewSet()
+
+	for _, vpcId := range i.Vpcs {
+		newVpcs.Add(vpcId)
+	}
+
+	i.curVps.Subtract(newVpcs)
+
+	for vpcIdInf := range i.curVps.Iter() {
+		vpcId := vpcIdInf.(bson.ObjectId)
+
+		err = vpc.RemoveInstanceIp(db, i.Id, vpcId)
+		if err != nil {
+			return
+		}
+	}
+
+	return
 }
 
 func (i *Instance) Commit(db *database.Database) (err error) {
