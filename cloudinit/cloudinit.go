@@ -225,16 +225,16 @@ func getNetData(db *database.Database, inst *instance.Instance,
 			return
 		}
 
-		ip := utils.CopyIpAddress(vcNet.IP)
-		n := rand.Intn(250) + 2
-		for x := 0; x < n; x++ {
-			utils.IncIpAddress(ip)
+		addr, e := vc.GetIp(db, inst.Id)
+		if e != nil {
+			err = e
+			return
 		}
 
 		data.Interfaces = append(data.Interfaces, netInterfaceData{
 			Num:     i,
 			Mac:     adapter.MacAddress,
-			Address: ip.String(),
+			Address: addr.String(),
 			Netmask: net.IP(vcNet.Mask).String(),
 			Network: vcNet.IP.String(),
 		})
