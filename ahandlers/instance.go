@@ -66,6 +66,8 @@ func instancePut(c *gin.Context) {
 		return
 	}
 
+	inst.PreCommit()
+
 	inst.Name = data.Name
 	inst.Vpcs = data.Vpcs
 	inst.State = data.State
@@ -91,6 +93,12 @@ func instancePut(c *gin.Context) {
 
 	if errData != nil {
 		c.JSON(400, errData)
+		return
+	}
+
+	err = inst.PostCommit(db)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
 		return
 	}
 
