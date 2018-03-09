@@ -48,17 +48,15 @@ func (v *Vpc) Validate(db *database.Database) (
 		return
 	}
 
-	if v.Network != "" {
-		network, e := v.GetNetwork()
-		if e != nil {
-			errData = &errortypes.ErrorData{
-				Error:   "network_invalid",
-				Message: "Network address invalid",
-			}
-			return
+	network, e := v.GetNetwork()
+	if e != nil {
+		errData = &errortypes.ErrorData{
+			Error:   "network_invalid",
+			Message: "Network address invalid",
 		}
-		v.Network = network.String()
+		return
 	}
+	v.Network = network.String()
 
 	return
 }
