@@ -396,14 +396,35 @@ func Init() (err error) {
 		Interfaces: map[string]*Rules{},
 	}
 
-	err = loadIptables(state, false)
-	if err != nil {
-		return
+	namespaces := []string{"0"}
+
+	output, err := utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "list",
+	)
+
+	for _, line := range strings.Split(output, "\n") {
+		fields := strings.Fields(line)
+		if len(fields) == 0 {
+			continue
+		}
+
+		namespaces = append(
+			namespaces,
+			fields[0],
+		)
 	}
 
-	err = loadIptables(state, true)
-	if err != nil {
-		return
+	for _, namespace := range namespaces {
+		err = loadIptables(namespace, state, false)
+		if err != nil {
+			return
+		}
+
+		err = loadIptables(namespace, state, true)
+		if err != nil {
+			return
+		}
 	}
 
 	curState = state

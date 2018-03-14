@@ -78,8 +78,6 @@ func (r *Rules) run(cmds [][]string, ipCmd string, ipv6 bool) (err error) {
 					[]string{"matching rule exist"}, "ip", cmd...)
 			}
 
-			fmt.Println(cmd)
-
 			if err != nil {
 				if i < 2 {
 					err = nil
