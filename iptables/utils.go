@@ -72,12 +72,21 @@ func getIptablesCmd(ipv6 bool) string {
 	}
 }
 
-func loadIptables(state *State, ipv6 bool) (err error) {
+func loadIptables(namespace string, state *State, ipv6 bool) (err error) {
 	iptablesCmd := getIptablesCmd(ipv6)
 
-	output, err := utils.ExecOutput("", iptablesCmd, "-S")
-	if err != nil {
-		return
+	output := ""
+	if namespace == "0" {
+		output, err = utils.ExecOutput("", iptablesCmd, "-S")
+		if err != nil {
+			return
+		}
+	} else {
+		output, err = utils.ExecOutput("",
+			"ip", "netns", "exec", namespace, iptablesCmd, "-S")
+		if err != nil {
+			return
+		}
 	}
 
 	for _, line := range strings.Split(output, "\n") {
@@ -101,7 +110,7 @@ func loadIptables(state *State, ipv6 bool) (err error) {
 		cmd = cmd[1:]
 
 		iface := ""
-		if strings.Contains(line, "--physdev-out") {
+		if namespace != "0" {
 			if cmd[0] != "FORWARD" {
 				logrus.WithFields(logrus.Fields{
 					"iptables_rule": line,
@@ -114,7 +123,7 @@ func loadIptables(state *State, ipv6 bool) (err error) {
 			}
 
 			for i, item := range cmd {
-				if item == "--physdev-out" {
+				if item == "--physdev-out" || item == "-o" {
 					if len(cmd) < i+2 {
 						logrus.WithFields(logrus.Fields{
 							"iptables_rule": line,
@@ -155,16 +164,17 @@ func loadIptables(state *State, ipv6 bool) (err error) {
 			return
 		}
 
-		rules := state.Interfaces[iface]
+		rules := state.Interfaces[namespace+"-"+iface]
 		if rules == nil {
 			rules = &Rules{
+				Namespace: namespace,
 				Interface: iface,
 				Ingress:   [][]string{},
 				Ingress6:  [][]string{},
 				Holds:     [][]string{},
 				Holds6:    [][]string{},
 			}
-			state.Interfaces[iface] = rules
+			state.Interfaces[namespace+"-"+iface] = rules
 		}
 
 		if strings.Contains(line, "pritunl_cloud_hold") {
@@ -205,7 +215,16 @@ func applyState(oldState, newState *State) (err error) {
 	}
 
 	for _, rules := range newState.Interfaces {
-		oldRules := oldState.Interfaces[rules.Interface]
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{"File exists"},
+			"ip", "netns",
+			"add", rules.Namespace,
+		)
+		if err != nil {
+			return
+		}
+
+		oldRules := oldState.Interfaces[rules.Namespace+"-"+rules.Interface]
 		if oldRules != nil {
 			if !diffRules(oldRules, rules) {
 				continue
@@ -255,17 +274,19 @@ func UpdateState(db *database.Database, instances []*instance.Instance) (
 			ingress = append(ingress, fire.Ingress...)
 		}
 
-		rules := generate("host", ingress)
-		newState.Interfaces["host"] = rules
+		newState.Interfaces["0-host"] = generate("0", "host", ingress)
 	}
 
 	for _, inst := range instances {
 		for i := range inst.Virt.NetworkAdapters {
-			iface := vm.GetIface(inst.Virt.Id, i)
+			namespace := vm.GetNamespace(inst.Id, i)
+			iface := vm.GetIface(inst.Id, i)
+			//iface := vm.GetIfaceInternal(inst.Id, i)
 
-			_, ok := newState.Interfaces[iface]
+			_, ok := newState.Interfaces[namespace+"-"+iface]
 			if ok {
 				logrus.WithFields(logrus.Fields{
+					"namespace": namespace,
 					"interface": iface,
 				}).Error("iptables: Virtual interface conflict")
 
@@ -287,8 +308,8 @@ func UpdateState(db *database.Database, instances []*instance.Instance) (
 				ingress = append(ingress, fire.Ingress...)
 			}
 
-			rules := generate(iface, ingress)
-			newState.Interfaces[iface] = rules
+			rules := generate(namespace, "br0", ingress)
+			newState.Interfaces[namespace+"-"+"br0"] = rules
 		}
 	}
 

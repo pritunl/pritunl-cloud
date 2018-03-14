@@ -14,6 +14,7 @@ var (
 )
 
 type Rules struct {
+	Namespace string
 	Interface string
 	Ingress   [][]string
 	Ingress6  [][]string
@@ -63,12 +64,29 @@ func (r *Rules) run(cmds [][]string, ipCmd string, ipv6 bool) (err error) {
 		cmd = append([]string{ipCmd}, cmd...)
 
 		for i := 0; i < 3; i++ {
-			output, e := utils.ExecCombinedOutput("", iptablesCmd, cmd...)
-			if e != nil && !strings.Contains(output, "matching rule exist") {
+			output := "'"
+			if r.Namespace == "0" {
+				output, err = utils.ExecCombinedOutputLogged(
+					[]string{"matching rule exist"}, iptablesCmd, cmd...)
+			} else {
+				cmd = append([]string{
+					"netns", "exec", r.Namespace,
+					iptablesCmd,
+				}, cmd...)
+
+				output, err = utils.ExecCombinedOutputLogged(
+					[]string{"matching rule exist"}, "ip", cmd...)
+			}
+
+			fmt.Println(cmd)
+
+			if err != nil {
 				if i < 2 {
+					err = nil
 					time.Sleep(500 * time.Millisecond)
 					continue
 				} else if cmd[len(cmd)-1] == "ACCEPT" {
+					err = nil
 					logrus.WithFields(logrus.Fields{
 						"ipv6":    ipv6,
 						"command": cmd,
@@ -80,7 +98,6 @@ func (r *Rules) run(cmds [][]string, ipCmd string, ipv6 bool) (err error) {
 						"command": cmd,
 						"output":  output,
 					}).Warn("iptables: Failed to run iptables command")
-					err = e
 					return
 				}
 			}
@@ -185,8 +202,11 @@ func (r *Rules) Remove() (err error) {
 	return
 }
 
-func generate(iface string, ingress []*firewall.Rule) (rules *Rules) {
+func generate(namespace, iface string, ingress []*firewall.Rule) (
+	rules *Rules) {
+
 	rules = &Rules{
+		Namespace: namespace,
 		Interface: iface,
 		Ingress:   [][]string{},
 		Ingress6:  [][]string{},
@@ -196,9 +216,12 @@ func generate(iface string, ingress []*firewall.Rule) (rules *Rules) {
 
 	cmd := rules.newCommand()
 	if rules.Interface != "host" {
+		//cmd = append(cmd,
+		//	"-m", "physdev",
+		//	"--physdev-out", rules.Interface,
+		//)
 		cmd = append(cmd,
-			"-m", "physdev",
-			"--physdev-out", rules.Interface,
+			"-o", rules.Interface,
 		)
 	}
 	cmd = append(cmd,
@@ -213,9 +236,12 @@ func generate(iface string, ingress []*firewall.Rule) (rules *Rules) {
 
 	cmd = rules.newCommand()
 	if rules.Interface != "host" {
+		//cmd = append(cmd,
+		//	"-m", "physdev",
+		//	"--physdev-out", rules.Interface,
+		//)
 		cmd = append(cmd,
-			"-m", "physdev",
-			"--physdev-out", rules.Interface,
+			"-o", rules.Interface,
 		)
 	}
 	cmd = append(cmd,
@@ -230,9 +256,12 @@ func generate(iface string, ingress []*firewall.Rule) (rules *Rules) {
 
 	cmd = rules.newCommand()
 	if rules.Interface != "host" {
+		//cmd = append(cmd,
+		//	"-m", "physdev",
+		//	"--physdev-out", rules.Interface,
+		//)
 		cmd = append(cmd,
-			"-m", "physdev",
-			"--physdev-out", rules.Interface,
+			"-o", rules.Interface,
 		)
 	}
 	cmd = append(cmd,
@@ -247,9 +276,12 @@ func generate(iface string, ingress []*firewall.Rule) (rules *Rules) {
 
 	cmd = rules.newCommand()
 	if rules.Interface != "host" {
+		//cmd = append(cmd,
+		//	"-m", "physdev",
+		//	"--physdev-out", rules.Interface,
+		//)
 		cmd = append(cmd,
-			"-m", "physdev",
-			"--physdev-out", rules.Interface,
+			"-o", rules.Interface,
 		)
 	}
 	cmd = append(cmd,
@@ -262,91 +294,99 @@ func generate(iface string, ingress []*firewall.Rule) (rules *Rules) {
 	)
 	rules.Ingress6 = append(rules.Ingress6, cmd)
 
-	cmd = rules.newCommand()
 	if rules.Interface != "host" {
+		cmd = rules.newCommand()
 		cmd = append(cmd,
-			"-m", "physdev",
-			"--physdev-out", rules.Interface,
+			//"-m", "physdev",
+			//"--physdev-out", rules.Interface,
+			"-o", rules.Interface,
 			"-m", "pkttype",
 			"--pkt-type", "multicast",
 		)
-	}
-	cmd = rules.commentCommand(cmd, false)
-	cmd = append(cmd,
-		"-j", "ACCEPT",
-	)
-	rules.Ingress = append(rules.Ingress, cmd)
-
-	cmd = rules.newCommand()
-	if rules.Interface != "host" {
+		cmd = rules.commentCommand(cmd, false)
 		cmd = append(cmd,
-			"-m", "physdev",
-			"--physdev-out", rules.Interface,
+			"-j", "ACCEPT",
+		)
+		rules.Ingress = append(rules.Ingress, cmd)
+	}
+
+	if rules.Interface != "host" {
+		cmd = rules.newCommand()
+		cmd = append(cmd,
+			//"-m", "physdev",
+			//"--physdev-out", rules.Interface,
+			"-o", rules.Interface,
 			"-m", "pkttype",
 			"--pkt-type", "broadcast",
 		)
-	}
-	cmd = rules.commentCommand(cmd, false)
-	cmd = append(cmd,
-		"-j", "ACCEPT",
-	)
-	rules.Ingress = append(rules.Ingress, cmd)
-
-	cmd = rules.newCommand()
-	if rules.Interface != "host" {
+		cmd = rules.commentCommand(cmd, false)
 		cmd = append(cmd,
-			"-m", "physdev",
-			"--physdev-out", rules.Interface,
+			"-j", "ACCEPT",
+		)
+		rules.Ingress = append(rules.Ingress, cmd)
+	}
+
+	if rules.Interface != "host" {
+		cmd = rules.newCommand()
+		cmd = append(cmd,
+			//"-m", "physdev",
+			//"--physdev-out", rules.Interface,
+			"-o", rules.Interface,
 			"-m", "pkttype",
 			"--pkt-type", "multicast",
 		)
-	}
-	cmd = rules.commentCommand(cmd, false)
-	cmd = append(cmd,
-		"-j", "ACCEPT",
-	)
-	rules.Ingress6 = append(rules.Ingress6, cmd)
-
-	cmd = rules.newCommand()
-	if rules.Interface != "host" {
+		cmd = rules.commentCommand(cmd, false)
 		cmd = append(cmd,
-			"-m", "physdev",
-			"--physdev-out", rules.Interface,
+			"-j", "ACCEPT",
+		)
+		rules.Ingress6 = append(rules.Ingress6, cmd)
+	}
+
+	if rules.Interface != "host" {
+		cmd = rules.newCommand()
+		cmd = append(cmd,
+			//"-m", "physdev",
+			//"--physdev-out", rules.Interface,
+			"-o", rules.Interface,
 			"-m", "pkttype",
 			"--pkt-type", "broadcast",
 		)
+		cmd = rules.commentCommand(cmd, false)
+		cmd = append(cmd,
+			"-j", "ACCEPT",
+		)
+		rules.Ingress6 = append(rules.Ingress6, cmd)
 	}
-	cmd = rules.commentCommand(cmd, false)
-	cmd = append(cmd,
-		"-j", "ACCEPT",
-	)
-	rules.Ingress6 = append(rules.Ingress6, cmd)
+
+	if rules.Interface != "host" {
+		cmd = rules.newCommand()
+		cmd = append(cmd,
+			"-o", rules.Interface,
+			"-p", "ipv6-icmp",
+			//"-m", "physdev",
+			//"--physdev-out", rules.Interface,
+		)
+		cmd = rules.commentCommand(cmd, false)
+		cmd = append(cmd,
+			"-j", "ACCEPT",
+		)
+		rules.Ingress6 = append(rules.Ingress6, cmd)
+	}
 
 	cmd = rules.newCommand()
-	cmd = append(cmd,
-		"-p", "ipv6-icmp",
-	)
 	if rules.Interface != "host" {
 		cmd = append(cmd,
-			"-m", "physdev",
-			"--physdev-out", rules.Interface,
+			"-o", rules.Interface,
 		)
 	}
-	cmd = rules.commentCommand(cmd, false)
-	cmd = append(cmd,
-		"-j", "ACCEPT",
-	)
-	rules.Ingress6 = append(rules.Ingress6, cmd)
-
-	cmd = rules.newCommand()
 	cmd = append(cmd,
 		"-p", "udp",
 	)
 	if rules.Interface != "host" {
-		cmd = append(cmd,
-			"-m", "physdev",
-			"--physdev-out", rules.Interface,
-		)
+		//cmd = append(cmd,
+		//	"-m", "physdev",
+		//	"--physdev-out", rules.Interface,
+		//)
 	}
 	cmd = append(cmd,
 		"-m", "udp",
@@ -366,6 +406,12 @@ func generate(iface string, ingress []*firewall.Rule) (rules *Rules) {
 			if sourceIp != "0.0.0.0/0" && sourceIp != "::/0" {
 				cmd = append(cmd,
 					"-s", sourceIp,
+				)
+			}
+
+			if rules.Interface != "host" {
+				cmd = append(cmd,
+					"-o", rules.Interface,
 				)
 			}
 
@@ -393,10 +439,10 @@ func generate(iface string, ingress []*firewall.Rule) (rules *Rules) {
 			}
 
 			if rules.Interface != "host" {
-				cmd = append(cmd,
-					"-m", "physdev",
-					"--physdev-out", rules.Interface,
-				)
+				//cmd = append(cmd,
+				//	"-m", "physdev",
+				//	"--physdev-out", rules.Interface,
+				//)
 			}
 
 			switch rule.Protocol {
@@ -423,9 +469,12 @@ func generate(iface string, ingress []*firewall.Rule) (rules *Rules) {
 
 	cmd = rules.newCommand()
 	if rules.Interface != "host" {
+		//cmd = append(cmd,
+		//	"-m", "physdev",
+		//	"--physdev-out", rules.Interface,
+		//)
 		cmd = append(cmd,
-			"-m", "physdev",
-			"--physdev-out", rules.Interface,
+			"-o", rules.Interface,
 		)
 	}
 	cmd = rules.commentCommand(cmd, false)
@@ -436,9 +485,12 @@ func generate(iface string, ingress []*firewall.Rule) (rules *Rules) {
 
 	cmd = rules.newCommand()
 	if rules.Interface != "host" {
+		//cmd = append(cmd,
+		//	"-m", "physdev",
+		//	"--physdev-out", rules.Interface,
+		//)
 		cmd = append(cmd,
-			"-m", "physdev",
-			"--physdev-out", rules.Interface,
+			"-o", rules.Interface,
 		)
 	}
 	cmd = rules.commentCommand(cmd, false)
