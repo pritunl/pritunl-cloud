@@ -2,6 +2,7 @@ package qemu
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
@@ -13,7 +14,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
-	"github.com/pritunl/pritunl-cloud/qga"
 	"github.com/pritunl/pritunl-cloud/qms"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/systemd"
@@ -24,7 +24,6 @@ import (
 	"io/ioutil"
 	"net"
 	"regexp"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -114,19 +113,43 @@ func GetVmInfo(vmId bson.ObjectId, getDisks bool) (
 		virt.Disks = disks
 	}
 
-	guestPath := paths.GetGuestPath(virt.Id)
-	ifaces, err := qga.GetInterfaces(guestPath)
-	if err == nil {
-		for _, adapter := range virt.NetworkAdapters {
-			ipAddr, ipAddr6 := ifaces.GetAddr(adapter.MacAddress)
-			if ipAddr != "" {
-				adapter.IpAddress = ipAddr
-				adapter.IpAddress6 = ipAddr6
-			}
-		}
-	} else {
-		err = nil
+	namespace := vm.GetNamespace(virt.Id, 0)
+	ifaceInternal := vm.GetIfaceInternal(virt.Id, 0)
+
+	ipData, err := utils.ExecCombinedOutputLogged(
+		[]string{
+			"No such file or directory",
+			"does not exist",
+		},
+		"ip", "netns", "exec", namespace,
+		"ip", "-f", "inet", "-o", "addr",
+		"show", "dev", ifaceInternal,
+	)
+	if err != nil {
+		return
 	}
+
+	fields := strings.Fields(ipData)
+	if len(fields) > 3 {
+		ipAddr := net.ParseIP(strings.Split(fields[3], "/")[0])
+		if ipAddr != nil && len(ipAddr) > 0 && len(virt.NetworkAdapters) > 0 {
+			virt.NetworkAdapters[0].IpAddress = ipAddr.String()
+		}
+	}
+
+	//guestPath := paths.GetGuestPath(virt.Id)
+	//ifaces, err := qga.GetInterfaces(guestPath)
+	//if err == nil {
+	//	for _, adapter := range virt.NetworkAdapters {
+	//		ipAddr, ipAddr6 := ifaces.GetAddr(adapter.MacAddress)
+	//		if ipAddr != "" {
+	//			adapter.IpAddress = ipAddr
+	//			adapter.IpAddress6 = ipAddr6
+	//		}
+	//	}
+	//} else {
+	//	err = nil
+	//}
 
 	return
 }
@@ -227,6 +250,14 @@ func Wait(db *database.Database, virt *vm.VirtualMachine) (err error) {
 
 func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	ifaceNames := set.NewSet()
+
+	if len(virt.NetworkAdapters) == 0 {
+		err = &errortypes.NotFoundError{
+			errors.New("qemu: Missing network interfaces"),
+		}
+		return
+	}
+
 	for i := range virt.NetworkAdapters {
 		ifaceNames.Add(vm.GetIface(virt.Id, i))
 	}
@@ -260,116 +291,352 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	if len(virt.NetworkAdapters) > 0 {
-		iface := vm.GetIface(virt.Id, 0)
-		adapter := virt.NetworkAdapters[0]
+	iface := vm.GetIface(virt.Id, 0)
+	ifaceVirt := vm.GetIfaceVirt(virt.Id, 0)
+	ifaceInternal := vm.GetIfaceInternal(virt.Id, 0)
+	ifaceVlan := vm.GetIfaceVlan(virt.Id, 0)
+	namespace := vm.GetNamespace(virt.Id, 0)
+	pidPath := fmt.Sprintf("/var/run/dhclient-%s.pid", ifaceInternal)
+	adapter := virt.NetworkAdapters[0]
+	vlanId := "150"
 
-		_, err = utils.ExecCombinedOutputLogged(
-			nil, "ip", "link", "set", iface, "up")
-		if err != nil {
-			PowerOff(db, virt)
-			return
-		}
+	vc, err := vpc.Get(db, adapter.VpcId)
+	if err != nil {
+		return
+	}
 
-		_, err = utils.ExecCombinedOutputLogged(
-			[]string{"already a member of a bridge"},
-			"brctl", "addif", adapter.HostInterface, iface)
-		if err != nil {
-			PowerOff(db, virt)
-			return
+	vcNet, err := vc.GetNetwork()
+	if err != nil {
+		return
+	}
+
+	gateway, err := vc.GetGateway()
+	if err != nil {
+		return
+	}
+
+	cidr, _ := vcNet.Mask.Size()
+	gatewayCidr := fmt.Sprintf("%s/%d", gateway, cidr)
+
+	_, err = utils.ExecCombinedOutputLogged(
+		[]string{"File exists"},
+		"ip", "netns",
+		"add", namespace,
+	)
+	if err != nil {
+		PowerOff(db, virt)
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		[]string{"File exists"},
+		"ip", "link",
+		"add", ifaceVirt,
+		"type", "veth",
+		"peer", "name", ifaceInternal,
+	)
+	if err != nil {
+		PowerOff(db, virt)
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "link",
+		"set", "dev", ifaceVirt, "up",
+	)
+	if err != nil {
+		PowerOff(db, virt)
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		[]string{"already a member of a bridge"},
+		"brctl", "addif", adapter.HostInterface, ifaceVirt)
+	if err != nil {
+		PowerOff(db, virt)
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		[]string{"File exists"},
+		"ip", "link",
+		"set", "dev", ifaceInternal,
+		"netns", namespace,
+	)
+	if err != nil {
+		PowerOff(db, virt)
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		[]string{"File exists"},
+		"ip", "link",
+		"set", "dev", iface,
+		"netns", namespace,
+	)
+	if err != nil {
+		PowerOff(db, virt)
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", namespace,
+		"ip", "link",
+		"set", "dev", "lo", "up",
+	)
+	if err != nil {
+		PowerOff(db, virt)
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", namespace,
+		"ip", "link",
+		"set", "dev", ifaceInternal, "up",
+	)
+	if err != nil {
+		PowerOff(db, virt)
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", namespace,
+		"ip", "link",
+		"set", "dev", iface, "up",
+	)
+	if err != nil {
+		PowerOff(db, virt)
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		[]string{"File exists"},
+		"ip", "netns", "exec", namespace,
+		"ip", "link",
+		"add", "link", ifaceInternal,
+		"name", ifaceVlan,
+		"type", "vlan",
+		"id", vlanId,
+	)
+	if err != nil {
+		PowerOff(db, virt)
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", namespace,
+		"ip", "link",
+		"set", "dev", ifaceVlan, "up",
+	)
+	if err != nil {
+		PowerOff(db, virt)
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		[]string{"already exists"},
+		"ip", "netns", "exec", namespace,
+		"brctl", "addbr", "br0",
+	)
+	if err != nil {
+		PowerOff(db, virt)
+		return
+	}
+
+	//_, err = utils.ExecCombinedOutputLogged(
+	//	nil,
+	//	"ip", "netns", "exec", namespace,
+	//	"brctl", "stp", "br0", "on",
+	//)
+	//if err != nil {
+	//	PowerOff(db, virt)
+	//	return
+	//}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		[]string{"already a member of a bridge"},
+		"ip", "netns", "exec", namespace,
+		"brctl", "addif", "br0", ifaceVlan,
+	)
+	if err != nil {
+		PowerOff(db, virt)
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		[]string{"already a member of a bridge"},
+		"ip", "netns", "exec", namespace,
+		"brctl", "addif", "br0", iface,
+	)
+	if err != nil {
+		PowerOff(db, virt)
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		[]string{"File exists"},
+		"ip", "netns", "exec", namespace,
+		"ip", "addr",
+		"add", gatewayCidr,
+		"dev", "br0",
+	)
+	if err != nil {
+		PowerOff(db, virt)
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", namespace,
+		"ip", "link",
+		"set", "dev", "br0", "up",
+	)
+	if err != nil {
+		PowerOff(db, virt)
+		return
+	}
+
+	networkStopDhClient(db, virt)
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", namespace,
+		"dhclient", "-pf", pidPath,
+		ifaceInternal,
+	)
+	if err != nil {
+		PowerOff(db, virt)
+		return
+	}
+
+	// TODO
+	time.Sleep(2 * time.Second)
+
+	ipData, err := utils.ExecCombinedOutputLogged(
+		[]string{
+			"No such file or directory",
+			"does not exist",
+		},
+		"ip", "netns", "exec", namespace,
+		"ip", "-f", "inet", "-o", "addr",
+		"show", "dev", ifaceInternal,
+	)
+	if err != nil {
+		return
+	}
+
+	addr := ""
+	fields := strings.Fields(ipData)
+	if len(fields) > 3 {
+		ipAddr := net.ParseIP(strings.Split(fields[3], "/")[0])
+		if ipAddr != nil && len(ipAddr) > 0 && len(virt.NetworkAdapters) > 0 {
+			addr = ipAddr.String()
 		}
 	}
 
-	for i, adapter := range virt.NetworkAdapters {
-		if i == 0 || adapter.Type != vm.Vxlan {
-			continue
-		}
-		iface := vm.GetIface(virt.Id, i)
-
-		vc, e := vpc.Get(db, adapter.VpcId)
-		if e != nil {
-			err = e
-			PowerOff(db, virt)
-			return
-		}
-
-		ifaceVxlan := vm.GetIfaceVxlan(vc.Id)
-		ifaceBridge := vm.GetIfaceVxlanBridge(vc.Id)
-
-		_, err = utils.ExecCombinedOutputLogged(
-			nil, "ip", "link", "set", iface, "up")
-		if err != nil {
-			PowerOff(db, virt)
-			return
-		}
-
-		_, err = utils.ExecCombinedOutputLogged(
-			[]string{"File exists"},
-			"ip",
-			"link",
-			"add",
-			ifaceVxlan,
-			"type",
-			"vxlan",
-			"id",
-			strconv.Itoa(vc.VpcId),
-			"dstport",
-			"4789",
-			"dev",
-			adapter.HostInterface,
-			"nolearning",
-		)
-		if e != nil {
-			err = e
-			PowerOff(db, virt)
-			return
-		}
-
-		_, err = utils.ExecCombinedOutputLogged(
-			nil, "ip", "link", "set", ifaceVxlan, "up")
-		if err != nil {
-			PowerOff(db, virt)
-			return
-		}
-
-		_, err = utils.ExecCombinedOutputLogged(
-			[]string{"already exists"},
-			"brctl", "addbr", ifaceBridge)
-		if err != nil {
-			PowerOff(db, virt)
-			return
-		}
-
-		_, err = utils.ExecCombinedOutputLogged(
-			nil, "brctl", "stp", ifaceBridge, "on")
-		if err != nil {
-			PowerOff(db, virt)
-			return
-		}
-
-		_, err = utils.ExecCombinedOutputLogged(
-			[]string{"already a member"},
-			"brctl", "addif", ifaceBridge, ifaceVxlan)
-		if err != nil {
-			PowerOff(db, virt)
-			return
-		}
-
-		_, err = utils.ExecCombinedOutputLogged(
-			[]string{"already a member"},
-			"brctl", "addif", ifaceBridge, iface)
-		if err != nil {
-			PowerOff(db, virt)
-			return
-		}
-
-		_, err = utils.ExecCombinedOutputLogged(
-			nil, "ip", "link", "set", ifaceBridge, "up")
-		if err != nil {
-			PowerOff(db, virt)
-			return
-		}
+	vcAddr, err := vc.GetIp(db, virt.Id)
+	if err != nil {
+		return
 	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", namespace,
+		"iptables", "-t", "nat",
+		"-A", "POSTROUTING",
+		"-o", ifaceInternal,
+		"-j", "MASQUERADE",
+	)
+	if err != nil {
+		PowerOff(db, virt)
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", namespace,
+		"iptables", "-t", "nat",
+		"-A", "PREROUTING",
+		"-d", addr,
+		"-j", "DNAT",
+		"--to-destination", vcAddr.String(),
+	)
+	if err != nil {
+		PowerOff(db, virt)
+		return
+	}
+
+	//_, err = utils.ExecCombinedOutputLogged(
+	//	nil,
+	//	"ip", "netns", "exec", namespace,
+	//	"iptables", "-t", "nat",
+	//	"-A", "POSTROUTING",
+	//	"-s", vcAddr.String(),
+	//	"-j", "SNAT",
+	//	"--to-source", addr,
+	//)
+	//if err != nil {
+	//	PowerOff(db, virt)
+	//	return
+	//}
+
+	return
+}
+
+func networkStopDhClient(db *database.Database,
+	virt *vm.VirtualMachine) (err error) {
+
+	if len(virt.NetworkAdapters) == 0 {
+		err = &errortypes.NotFoundError{
+			errors.New("qemu: Missing network interfaces"),
+		}
+		return
+	}
+
+	ifaceInternal := vm.GetIfaceInternal(virt.Id, 0)
+	pidPath := fmt.Sprintf("/var/run/dhclient-%s.pid", ifaceInternal)
+
+	pid := ""
+	pidData, _ := ioutil.ReadFile(pidPath)
+	if pidData != nil {
+		pid = strings.TrimSpace(string(pidData))
+	}
+
+	if pid != "" {
+		utils.ExecCombinedOutput("kill", pid)
+	}
+
+	utils.RemoveAll(pidPath)
+
+	return
+}
+
+func NetworkConfClear(db *database.Database,
+	virt *vm.VirtualMachine) (err error) {
+
+	if len(virt.NetworkAdapters) == 0 {
+		err = &errortypes.NotFoundError{
+			errors.New("qemu: Missing network interfaces"),
+		}
+		return
+	}
+
+	err = networkStopDhClient(db, virt)
+	if err != nil {
+		return
+	}
+
+	ifaceVirt := vm.GetIfaceVirt(virt.Id, 0)
+	namespace := vm.GetNamespace(virt.Id, 0)
+
+	utils.ExecCombinedOutput("ip", "netns", "del", namespace)
+	utils.ExecCombinedOutput("ip", "link", "set", ifaceVirt, "down")
+	utils.ExecCombinedOutput("ip", "link", "del", ifaceVirt)
 
 	return
 }
@@ -526,6 +793,11 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 
 	time.Sleep(3 * time.Second)
 
+	err = NetworkConfClear(db, virt)
+	if err != nil {
+		return
+	}
+
 	for i, dsk := range virt.Disks {
 		ds, e := disk.Get(db, dsk.GetId())
 		if e != nil {
@@ -676,6 +948,11 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	}).Warning("qemu: Force power off virtual machine")
 
 	err = systemd.Stop(unitName)
+	if err != nil {
+		return
+	}
+
+	err = NetworkConfClear(db, virt)
 	if err != nil {
 		return
 	}

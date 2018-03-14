@@ -19,7 +19,6 @@ type Network struct {
 	Type       string
 	Iface      string
 	MacAddress string
-	Bridge     string
 }
 
 type Qemu struct {
@@ -97,20 +96,19 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 	for _, network := range q.Networks {
 		cmd = append(cmd, "-net")
-		net := network.Type
 
-		if network.MacAddress != "" {
-			net += fmt.Sprintf(",macaddr=%s", network.MacAddress)
-		}
-
-		if network.Bridge != "" {
-			net = fmt.Sprintf(
+		switch network.Type {
+		case "nic":
+			cmd = append(cmd, fmt.Sprintf(
+				"nic,model=virtio,macaddr=%s", network.MacAddress))
+			break
+		case "bridge":
+			cmd = append(cmd, fmt.Sprintf(
 				"tap,vlan=0,ifname=%s,script=no",
 				network.Iface,
-			)
+			))
+			break
 		}
-
-		cmd = append(cmd, net)
 	}
 
 	cmd = append(cmd, "-cdrom")
