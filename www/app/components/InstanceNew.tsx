@@ -187,61 +187,6 @@ export default class InstanceNew extends React.Component<Props, State> {
 		});
 	}
 
-	onAddVpc = (): void => {
-		if (!this.state.addVpc) {
-			return;
-		}
-
-		let vpcId = this.state.addVpc;
-
-		let instance = {
-			...this.state.instance,
-		};
-
-		let vpcs = [
-			...(instance.vpcs || []),
-		];
-
-		if (vpcs.indexOf(vpcId) === -1) {
-			vpcs.push(vpcId);
-		}
-
-		vpcs.sort();
-
-		instance.vpcs = vpcs;
-
-		this.setState({
-			...this.state,
-			changed: true,
-			instance: instance,
-		});
-	}
-
-	onRemoveVpc = (vpc: string): void => {
-		let instance = {
-			...this.state.instance,
-		};
-
-		let vpcs = [
-			...(instance.vpcs || []),
-		];
-
-		let i = vpcs.indexOf(vpc);
-		if (i === -1) {
-			return;
-		}
-
-		vpcs.splice(i, 1);
-
-		instance.vpcs = vpcs;
-
-		this.setState({
-			...this.state,
-			changed: true,
-			instance: instance,
-		});
-	}
-
 	onAddNetworkRole = (): void => {
 		if (!this.state.addNetworkRole) {
 			return;
@@ -388,30 +333,6 @@ export default class InstanceNew extends React.Component<Props, State> {
 			nodesSelect = [<option key="null" value="">No Nodes</option>];
 		}
 
-		let vpcs: JSX.Element[] = [];
-		for (let vpcId of (instance.vpcs || [])) {
-			let vpc = VpcsNameStore.vpc(vpcId);
-			if (!vpc) {
-				continue;
-			}
-
-			vpcs.push(
-				<div
-					className="pt-tag pt-tag-removable pt-intent-primary"
-					style={css.item}
-					key={vpc.id}
-				>
-					{vpc.name}
-					<button
-						className="pt-tag-remove"
-						onMouseUp={(): void => {
-							this.onRemoveVpc(vpc.id);
-						}}
-					/>
-				</div>,
-			);
-		}
-
 		let hasVpcs = false;
 		let vpcsSelect: JSX.Element[] = [];
 		if (this.props.vpcs && this.props.vpcs.length) {
@@ -552,34 +473,23 @@ export default class InstanceNew extends React.Component<Props, State> {
 						>
 							{zonesSelect}
 						</PageSelect>
-						<label
-							className="pt-label"
-							style={css.label}
-						>
-							Vpcs
-							<Help
-								title="Vpcs"
-								content="Vpcs attached to this instance."
-							/>
-							<div>
-								{vpcs}
-							</div>
-						</label>
-						<PageSelectButton
-							label="Add Vpc"
-							value={this.state.addVpc}
-							disabled={!hasVpcs}
-							buttonClass="pt-intent-success"
-							onChange={(val: string): void => {
+						<PageSelect
+							disabled={this.state.disabled || !hasVpcs}
+							label="VPC"
+							help="VPC for instance."
+							value={instance.vpc}
+							onChange={(val): void => {
 								this.setState({
 									...this.state,
-									addVpc: val,
+									instance: {
+										...this.state.instance,
+										vpc: val,
+									},
 								});
 							}}
-							onSubmit={this.onAddVpc}
 						>
 							{vpcsSelect}
-						</PageSelectButton>
+						</PageSelect>
 					</div>
 					<div style={css.group}>
 						<PageSelect
