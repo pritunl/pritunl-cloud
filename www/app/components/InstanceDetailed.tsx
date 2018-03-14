@@ -7,6 +7,7 @@ import ZonesStore from '../stores/ZonesStore';
 import PageInput from './PageInput';
 import PageInputButton from './PageInputButton';
 import PageInfo from './PageInfo';
+import PageSelect from './PageSelect';
 import PageSelectButton from './PageSelectButton';
 import PageSave from './PageSave';
 import PageNumInput from './PageNumInput';
@@ -14,6 +15,7 @@ import ConfirmButton from './ConfirmButton';
 import Help from './Help';
 import VpcsNameStore from "../stores/VpcsNameStore";
 import * as VpcTypes from "../types/VpcTypes";
+import * as NodeActions from "../actions/NodeActions";
 
 interface Props {
 	vpcs: VpcTypes.VpcsRo;
@@ -130,77 +132,6 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		}
 
 		instance[name] = val;
-
-		this.setState({
-			...this.state,
-			changed: true,
-			instance: instance,
-		});
-	}
-
-	onAddVpc = (): void => {
-		let instance: InstanceTypes.Instance;
-
-		if (!this.state.addVpc) {
-			return;
-		}
-
-		let vpcId = this.state.addVpc;
-
-		if (this.state.changed) {
-			instance = {
-				...this.state.instance,
-			};
-		} else {
-			instance = {
-				...this.props.instance,
-			};
-		}
-
-		let vpcs = [
-			...(instance.vpcs || []),
-		];
-
-		if (vpcs.indexOf(vpcId) === -1) {
-			vpcs.push(vpcId);
-		}
-
-		vpcs.sort();
-
-		instance.vpcs = vpcs;
-
-		this.setState({
-			...this.state,
-			changed: true,
-			instance: instance,
-		});
-	}
-
-	onRemoveVpc = (vpc: string): void => {
-		let instance: InstanceTypes.Instance;
-
-		if (this.state.changed) {
-			instance = {
-				...this.state.instance,
-			};
-		} else {
-			instance = {
-				...this.props.instance,
-			};
-		}
-
-		let vpcs = [
-			...(instance.vpcs || []),
-		];
-
-		let i = vpcs.indexOf(vpc);
-		if (i === -1) {
-			return;
-		}
-
-		vpcs.splice(i, 1);
-
-		instance.vpcs = vpcs;
 
 		this.setState({
 			...this.state,
@@ -407,30 +338,6 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			);
 		}
 
-		let vpcs: JSX.Element[] = [];
-		for (let vpcId of (instance.vpcs || [])) {
-			let vpc = VpcsNameStore.vpc(vpcId);
-			if (!vpc) {
-				continue;
-			}
-
-			vpcs.push(
-				<div
-					className="pt-tag pt-tag-removable pt-intent-primary"
-					style={css.item}
-					key={vpc.id}
-				>
-					{vpc.name}
-					<button
-						className="pt-tag-remove"
-						onMouseUp={(): void => {
-							this.onRemoveVpc(vpc.id);
-						}}
-					/>
-				</div>,
-			);
-		}
-
 		let hasVpcs = false;
 		let vpcsSelect: JSX.Element[] = [];
 		if (this.props.vpcs && this.props.vpcs.length) {
@@ -572,34 +479,17 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						}}
 						onSubmit={this.onAddNetworkRole}
 					/>
-					<label
-						className="pt-label"
-						style={css.label}
-					>
-						Vpcs
-						<Help
-							title="Vpcs"
-							content="Vpcs attached to this instance."
-						/>
-						<div>
-							{vpcs}
-						</div>
-					</label>
-					<PageSelectButton
-						label="Add Vpc"
-						value={this.state.addVpc}
-						disabled={!hasVpcs}
-						buttonClass="pt-intent-success"
-						onChange={(val: string): void => {
-							this.setState({
-								...this.state,
-								addVpc: val,
-							});
+					<PageSelect
+						disabled={this.state.disabled || !hasVpcs}
+						label="VPC"
+						help="VPC for instance."
+						value={instance.vpc}
+						onChange={(val): void => {
+							this.set('vpc', val);
 						}}
-						onSubmit={this.onAddVpc}
 					>
 						{vpcsSelect}
-					</PageSelectButton>
+					</PageSelect>
 				</div>
 				<div style={css.group}>
 					<PageInfo
