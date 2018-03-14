@@ -35,17 +35,14 @@ const netConfigTmpl = `version: 1
 config:
   - type: physical
     name: eth0
-    mac_address: {{.HostMac}}
-    subnets:
-      - type: dhcp{{range .Interfaces}}
-  - type: physical
-    name: eth{{.Num}}
     mac_address: {{.Mac}}
     subnets:
       - type: static
         address: {{.Address}}
         netmask: {{.Netmask}}
-        network: {{.Network}}{{end}}`
+        network: {{.Network}}
+        gateway: {{.Gateway}}
+`
 
 const cloudConfigTmpl = `#cloud-config
 ssh_deletekeys: false
@@ -74,17 +71,12 @@ var (
 	netConfig   = template.Must(template.New("net").Parse(netConfigTmpl))
 )
 
-type netInterfaceData struct {
-	Num     int
+type netConfigData struct {
 	Mac     string
 	Address string
 	Netmask string
 	Network string
-}
-
-type netConfigData struct {
-	HostMac    string
-	Interfaces []netInterfaceData
+	Gateway string
 }
 
 type cloudConfigData struct {
@@ -203,41 +195,48 @@ func getUserData(db *database.Database, inst *instance.Instance,
 func getNetData(db *database.Database, inst *instance.Instance,
 	virt *vm.VirtualMachine) (netData string, err error) {
 
-	data := netConfigData{
-		HostMac:    virt.NetworkAdapters[0].MacAddress,
-		Interfaces: []netInterfaceData{},
+	if len(virt.NetworkAdapters) == 0 {
+		err = &errortypes.NotFoundError{
+			errors.Wrap(err, "cloudinit: Instance missing network adapters"),
+		}
+		return
 	}
 
-	for i, adapter := range virt.NetworkAdapters {
-		if i == 0 || adapter.Type != vm.Vxlan {
-			continue
-		}
+	adapter := virt.NetworkAdapters[0]
 
-		vc, e := vpc.Get(db, adapter.VpcId)
-		if e != nil {
-			err = e
-			return
+	if adapter.VpcId == "" {
+		err = &errortypes.NotFoundError{
+			errors.Wrap(err, "cloudinit: Instance missing VPC"),
 		}
+		return
+	}
 
-		vcNet, e := vc.GetNetwork()
-		if e != nil {
-			err = e
-			return
-		}
+	vc, err := vpc.Get(db, adapter.VpcId)
+	if err != nil {
+		return
+	}
 
-		addr, e := vc.GetIp(db, inst.Id)
-		if e != nil {
-			err = e
-			return
-		}
+	vcNet, err := vc.GetNetwork()
+	if err != nil {
+		return
+	}
 
-		data.Interfaces = append(data.Interfaces, netInterfaceData{
-			Num:     i,
-			Mac:     adapter.MacAddress,
-			Address: addr.String(),
-			Netmask: net.IP(vcNet.Mask).String(),
-			Network: vcNet.IP.String(),
-		})
+	addr, err := vc.GetIp(db, inst.Id)
+	if err != nil {
+		return
+	}
+
+	gateway, err := vc.GetGateway()
+	if err != nil {
+		return
+	}
+
+	data := netConfigData{
+		Mac:     adapter.MacAddress,
+		Address: addr.String(),
+		Netmask: net.IP(vcNet.Mask).String(),
+		Network: vcNet.IP.String(),
+		Gateway: gateway.String(),
 	}
 
 	output := &bytes.Buffer{}
