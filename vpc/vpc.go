@@ -76,6 +76,18 @@ func (v *Vpc) GenerateVpcId() {
 	v.VpcId = rand.Intn(16777100) + 110
 }
 
+func (v *Vpc) GetGateway() (ip net.IP, err error) {
+	network, err := v.GetNetwork()
+	if err != nil {
+		return
+	}
+
+	ip = network.IP
+	utils.IncIpAddress(ip)
+
+	return
+}
+
 func (v *Vpc) GetIp(db *database.Database, instId bson.ObjectId) (
 	ip net.IP, err error) {
 
