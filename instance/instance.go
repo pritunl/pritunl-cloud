@@ -18,7 +18,7 @@ type Instance struct {
 	Id           bson.ObjectId      `bson:"_id,omitempty" json:"id"`
 	Organization bson.ObjectId      `bson:"organization,omitempty" json:"organization"`
 	Zone         bson.ObjectId      `bson:"zone,omitempty" json:"zone"`
-	Vpcs         []bson.ObjectId    `bson:"vpcs" json:"vpcs"`
+	Vpc          bson.ObjectId      `bson:"vpc" json:"vpc"`
 	Image        bson.ObjectId      `bson:"image,omitempty" json:"image"`
 	Status       string             `bson:"-" json:"status"`
 	State        string             `bson:"state" json:"state"`
@@ -34,7 +34,7 @@ type Instance struct {
 	Processors   int                `bson:"processors" json:"processors"`
 	NetworkRoles []string           `bson:"network_roles" json:"network_roles"`
 	Virt         *vm.VirtualMachine `bson:"-" json:"-"`
-	curVps       set.Set            `bson:"-" json:"-"`
+	curVpc       bson.ObjectId      `bson:"-" json:"-"`
 }
 
 func (i *Instance) Validate(db *database.Database) (
@@ -59,23 +59,6 @@ func (i *Instance) Validate(db *database.Database) (
 		errData = &errortypes.ErrorData{
 			Error:   "zone_required",
 			Message: "Missing required zone",
-		}
-	}
-
-	if i.Vpcs == nil {
-		i.Vpcs = []bson.ObjectId{}
-	} else {
-		vcIds, e := vpc.DistinctIds(db, i.Vpcs)
-		if e != nil {
-			err = e
-			return
-		}
-
-		vpcs := []bson.ObjectId{}
-		for _, vcId := range i.Vpcs {
-			if vcIds.Contains(vcId) {
-				vpcs = append(vpcs, vcId)
-			}
 		}
 	}
 
@@ -106,6 +89,10 @@ func (i *Instance) Validate(db *database.Database) (
 	}
 
 	return
+}
+
+func (i *Instance) Format() {
+	// TODO Sort VPC IDs
 }
 
 func (i *Instance) Json() {
@@ -174,30 +161,12 @@ func (i *Instance) Json() {
 }
 
 func (i *Instance) PreCommit() {
-	curVps := set.NewSet()
-
-	if i.Vpcs != nil {
-		for _, vpcId := range i.Vpcs {
-			curVps.Add(vpcId)
-		}
-	}
-
-	i.curVps = curVps
+	i.curVpc = i.Vpc
 }
 
 func (i *Instance) PostCommit(db *database.Database) (err error) {
-	newVpcs := set.NewSet()
-
-	for _, vpcId := range i.Vpcs {
-		newVpcs.Add(vpcId)
-	}
-
-	i.curVps.Subtract(newVpcs)
-
-	for vpcIdInf := range i.curVps.Iter() {
-		vpcId := vpcIdInf.(bson.ObjectId)
-
-		err = vpc.RemoveInstanceIp(db, i.Id, vpcId)
+	if i.curVpc != "" && i.curVpc != i.Vpc {
+		err = vpc.RemoveInstanceIp(db, i.Id, i.curVpc)
 		if err != nil {
 			return
 		}
@@ -261,6 +230,7 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 				Type:          vm.Bridge,
 				MacAddress:    vm.GetMacAddr(i.Id, i.Id),
 				HostInterface: bridge.BridgeName,
+				VpcId:         i.Vpc,
 			},
 		},
 	}
@@ -277,18 +247,6 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 				Path:  paths.GetDiskPath(dsk.Id),
 			})
 		}
-	}
-
-	for _, vcId := range i.Vpcs {
-		i.Virt.NetworkAdapters = append(
-			i.Virt.NetworkAdapters,
-			&vm.NetworkAdapter{
-				Type:          vm.Vxlan,
-				MacAddress:    vm.GetMacAddr(i.Id, vcId),
-				HostInterface: bridge.BridgeName,
-				VpcId:         vcId,
-			},
-		)
 	}
 
 	return
