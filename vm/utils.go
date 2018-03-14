@@ -34,6 +34,34 @@ func GetIface(id bson.ObjectId, n int) string {
 	return fmt.Sprintf("p%s%d", strings.ToLower(hashSum), n)
 }
 
+func GetIfaceVirt(id bson.ObjectId, n int) string {
+	hash := md5.New()
+	hash.Write([]byte(id.Hex()))
+	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
+	return fmt.Sprintf("v%s%d", strings.ToLower(hashSum), n)
+}
+
+func GetIfaceInternal(id bson.ObjectId, n int) string {
+	hash := md5.New()
+	hash.Write([]byte(id.Hex()))
+	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
+	return fmt.Sprintf("i%s%d", strings.ToLower(hashSum), n)
+}
+
+func GetIfaceVlan(id bson.ObjectId, n int) string {
+	hash := md5.New()
+	hash.Write([]byte(id.Hex()))
+	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
+	return fmt.Sprintf("x%s%d", strings.ToLower(hashSum), n)
+}
+
+func GetNamespace(id bson.ObjectId, n int) string {
+	hash := md5.New()
+	hash.Write([]byte(id.Hex()))
+	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
+	return fmt.Sprintf("n%s%d", strings.ToLower(hashSum), n)
+}
+
 func GetIfaceVxlan(id bson.ObjectId) string {
 	hash := md5.New()
 	hash.Write([]byte(id.Hex()))
