@@ -88,7 +88,7 @@ func (v *Vpc) GetGateway() (ip net.IP, err error) {
 	return
 }
 
-func (v *Vpc) GetIp(db *database.Database, instId bson.ObjectId) (
+func (v *Vpc) GetIp(db *database.Database, typ string, instId bson.ObjectId) (
 	ip net.IP, err error) {
 
 	coll := db.VpcsIp()
@@ -96,6 +96,7 @@ func (v *Vpc) GetIp(db *database.Database, instId bson.ObjectId) (
 
 	err = coll.FindOne(&bson.M{
 		"vpc":      v.Id,
+		"type":     typ,
 		"instance": instId,
 	}, vpcIp)
 	if err != nil {
@@ -120,6 +121,7 @@ func (v *Vpc) GetIp(db *database.Database, instId bson.ObjectId) (
 
 		info, e := coll.Find(&bson.M{
 			"vpc":      v.Id,
+			"type":     typ,
 			"instance": nil,
 		}).Apply(change, vpcIp)
 		if e != nil {
@@ -138,9 +140,17 @@ func (v *Vpc) GetIp(db *database.Database, instId bson.ObjectId) (
 	if vpcIp == nil {
 		vpcIp = &VpcIp{}
 
+		sort := ""
+		if typ == Gateway {
+			sort = "ip"
+		} else {
+			sort = "-ip"
+		}
+
 		err = coll.Find(&bson.M{
-			"vpc": v.Id,
-		}).Sort("-ip").One(vpcIp)
+			"vpc":  v.Id,
+			"type": typ,
+		}).Sort(sort).One(vpcIp)
 		if err != nil {
 			vpcIp = nil
 			err = database.ParseError(err)
@@ -158,18 +168,32 @@ func (v *Vpc) GetIp(db *database.Database, instId bson.ObjectId) (
 		}
 
 		var curIp net.IP
-		if vpcIp == nil {
-			curIp = utils.CopyIpAddress(network.IP)
-			utils.IncIpAddress(curIp)
+		if typ == Gateway {
+			if vpcIp == nil {
+				curIp = utils.GetLastIpAddress(network)
+				utils.DecIpAddress(curIp)
+			} else {
+				curIp = utils.Int2IpAddress(vpcIp.Ip)
+			}
 		} else {
-			curIp = utils.Int2IpAddress(vpcIp.Ip)
+			if vpcIp == nil {
+				curIp = utils.CopyIpAddress(network.IP)
+				utils.IncIpAddress(curIp)
+			} else {
+				curIp = utils.Int2IpAddress(vpcIp.Ip)
+			}
 		}
 
 		for {
-			utils.IncIpAddress(curIp)
+			if typ == Gateway {
+				utils.DecIpAddress(curIp)
+			} else {
+				utils.IncIpAddress(curIp)
+			}
 
 			vpcIp = &VpcIp{
 				Vpc:      v.Id,
+				Type:     typ,
 				Ip:       utils.IpAddress2Int(curIp),
 				Instance: instId,
 			}
