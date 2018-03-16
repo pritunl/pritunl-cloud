@@ -571,6 +571,21 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
+	coll := db.Instances()
+	err = coll.UpdateId(virt.Id, &bson.M{
+		"$set": &bson.M{
+			"local_ips": []string{vcAddr.String()},
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		if _, ok := err.(*database.NotFoundError); ok {
+			err = nil
+		} else {
+			return
+		}
+	}
+
 	//_, err = utils.ExecCombinedOutputLogged(
 	//	nil,
 	//	"ip", "netns", "exec", namespace,
