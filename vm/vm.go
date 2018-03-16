@@ -44,21 +44,10 @@ func (v *VirtualMachine) Commit(db *database.Database) (err error) {
 
 	addr := ""
 	addr6 := ""
-	localAddrs := []string{}
-	localAddrs6 := []string{}
 
-	if len(v.NetworkAdapters) > 0 {
-		addr = v.NetworkAdapters[0].IpAddress
-		addr6 = v.NetworkAdapters[0].IpAddress6
-
-		for _, adapter := range v.NetworkAdapters[1:] {
-			if adapter.IpAddress != "" {
-				localAddrs = append(localAddrs, adapter.IpAddress)
-			}
-			if adapter.IpAddress6 != "" {
-				localAddrs6 = append(localAddrs, adapter.IpAddress6)
-			}
-		}
+	for _, adapter := range v.NetworkAdapters {
+		addr = adapter.IpAddress
+		addr6 = adapter.IpAddress6
 	}
 
 	err = coll.UpdateId(v.Id, &bson.M{
@@ -66,8 +55,6 @@ func (v *VirtualMachine) Commit(db *database.Database) (err error) {
 			"vm_state":   v.State,
 			"public_ip":  addr,
 			"public_ip6": addr6,
-			"local_ips":  localAddrs,
-			"local_ips6": localAddrs6,
 		},
 	})
 	if err != nil {
