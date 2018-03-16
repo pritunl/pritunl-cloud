@@ -221,12 +221,12 @@ func getNetData(db *database.Database, inst *instance.Instance,
 		return
 	}
 
-	addr, err := vc.GetIp(db, inst.Id)
+	addr, err := vc.GetIp(db, vpc.Instance, inst.Id)
 	if err != nil {
 		return
 	}
 
-	gateway, err := vc.GetGateway()
+	gatewayAddr, err := vc.GetIp(db, vpc.Gateway, inst.Id)
 	if err != nil {
 		return
 	}
@@ -236,7 +236,7 @@ func getNetData(db *database.Database, inst *instance.Instance,
 		Address: addr.String(),
 		Netmask: net.IP(vcNet.Mask).String(),
 		Network: vcNet.IP.String(),
-		Gateway: gateway.String(),
+		Gateway: gatewayAddr.String(),
 	}
 
 	output := &bytes.Buffer{}
