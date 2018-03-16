@@ -310,13 +310,13 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	gateway, err := vc.GetGateway()
+	gatewayAddr, err := vc.GetIp(db, vpc.Gateway, virt.Id)
 	if err != nil {
 		return
 	}
 
 	cidr, _ := vcNet.Mask.Size()
-	gatewayCidr := fmt.Sprintf("%s/%d", gateway, cidr)
+	gatewayCidr := fmt.Sprintf("%s/%d", gatewayAddr.String(), cidr)
 
 	_, err = utils.ExecCombinedOutputLogged(
 		[]string{"File exists"},
@@ -539,7 +539,7 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		}
 	}
 
-	vcAddr, err := vc.GetIp(db, virt.Id)
+	vcAddr, err := vc.GetIp(db, vpc.Instance, virt.Id)
 	if err != nil {
 		return
 	}
