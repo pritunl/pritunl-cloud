@@ -137,6 +137,27 @@ func GetVmInfo(vmId bson.ObjectId, getDisks bool) (
 		}
 	}
 
+	ipData, err = utils.ExecCombinedOutputLogged(
+		[]string{
+			"No such file or directory",
+			"does not exist",
+		},
+		"ip", "netns", "exec", namespace,
+		"ip", "-f", "inet6", "-o", "addr",
+		"show", "dev", ifaceInternal,
+	)
+	if err != nil {
+		return
+	}
+
+	fields = strings.Fields(ipData)
+	if len(fields) > 3 {
+		ipAddr := net.ParseIP(strings.Split(fields[3], "/")[0])
+		if ipAddr != nil && len(ipAddr) > 0 && len(virt.NetworkAdapters) > 0 {
+			virt.NetworkAdapters[0].IpAddress6 = ipAddr.String()
+		}
+	}
+
 	//guestPath := paths.GetGuestPath(virt.Id)
 	//ifaces, err := qga.GetInterfaces(guestPath)
 	//if err == nil {
@@ -310,7 +331,22 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
+	addr, err := vc.GetIp(db, vpc.Instance, virt.Id)
+	if err != nil {
+		return
+	}
+
 	gatewayAddr, err := vc.GetIp(db, vpc.Gateway, virt.Id)
+	if err != nil {
+		return
+	}
+
+	addr6 := vc.GetIp6(addr)
+	if err != nil {
+		return
+	}
+
+	gatewayAddr6 := vc.GetIp6(gatewayAddr)
 	if err != nil {
 		return
 	}
@@ -541,6 +577,18 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 
 	vcAddr, err := vc.GetIp(db, vpc.Instance, virt.Id)
 	if err != nil {
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		[]string{"File exists"},
+		"ip", "netns", "exec", namespace,
+		"ip", "-6", "addr",
+		"add", gatewayAddr6.String()+"/64",
+		"dev", "br0",
+	)
+	if err != nil {
+		PowerOff(db, virt)
 		return
 	}
 
