@@ -578,6 +578,18 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	}
 
 	_, err = utils.ExecCombinedOutputLogged(
+		[]string{"File exists"},
+		"ip", "netns", "exec", namespace,
+		"ip", "-6", "addr",
+		"add", gatewayAddr6.String()+"/64",
+		"dev", "br0",
+	)
+	if err != nil {
+		PowerOff(db, virt)
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
 		nil,
 		"ip", "netns", "exec", namespace,
 		"ip", "link",
@@ -617,30 +629,35 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	addr := ""
+	pubAddr := ""
 	fields := strings.Fields(ipData)
 	if len(fields) > 3 {
 		ipAddr := net.ParseIP(strings.Split(fields[3], "/")[0])
 		if ipAddr != nil && len(ipAddr) > 0 && len(virt.NetworkAdapters) > 0 {
-			addr = ipAddr.String()
+			pubAddr = ipAddr.String()
 		}
 	}
 
-	vcAddr, err := vc.GetIp(db, vpc.Instance, virt.Id)
+	ipData, err = utils.ExecCombinedOutputLogged(
+		[]string{
+			"No such file or directory",
+			"does not exist",
+		},
+		"ip", "netns", "exec", namespace,
+		"ip", "-f", "inet6", "-o", "addr",
+		"show", "dev", ifaceInternal,
+	)
 	if err != nil {
 		return
 	}
 
-	_, err = utils.ExecCombinedOutputLogged(
-		[]string{"File exists"},
-		"ip", "netns", "exec", namespace,
-		"ip", "-6", "addr",
-		"add", gatewayAddr6.String()+"/64",
-		"dev", "br0",
-	)
-	if err != nil {
-		PowerOff(db, virt)
-		return
+	pubAddr6 := ""
+	fields = strings.Fields(ipData)
+	if len(fields) > 3 {
+		ipAddr := net.ParseIP(strings.Split(fields[3], "/")[0])
+		if ipAddr != nil && len(ipAddr) > 0 && len(virt.NetworkAdapters) > 0 {
+			pubAddr6 = ipAddr.String()
+		}
 	}
 
 	_, err = utils.ExecCombinedOutputLogged(
@@ -661,9 +678,36 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"ip", "netns", "exec", namespace,
 		"iptables", "-t", "nat",
 		"-A", "PREROUTING",
-		"-d", addr,
+		"-d", pubAddr,
 		"-j", "DNAT",
-		"--to-destination", vcAddr.String(),
+		"--to-destination", addr.String(),
+	)
+	if err != nil {
+		PowerOff(db, virt)
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", namespace,
+		"ip6tables", "-t", "nat",
+		"-A", "POSTROUTING",
+		"-o", ifaceInternal,
+		"-j", "MASQUERADE",
+	)
+	if err != nil {
+		PowerOff(db, virt)
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", namespace,
+		"ip6tables", "-t", "nat",
+		"-A", "PREROUTING",
+		"-d", pubAddr6,
+		"-j", "DNAT",
+		"--to-destination", addr6.String(),
 	)
 	if err != nil {
 		PowerOff(db, virt)
