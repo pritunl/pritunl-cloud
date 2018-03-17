@@ -42,6 +42,12 @@ config:
         netmask: {{.Netmask}}
         network: {{.Network}}
         gateway: {{.Gateway}}
+        dns_nameservers:
+          - 8.8.8.8
+          - 8.8.4.4
+      - type: static
+        address: {{.Address6}}
+        gateway: {{.Gateway6}}
 `
 
 const cloudConfigTmpl = `#cloud-config
@@ -72,11 +78,13 @@ var (
 )
 
 type netConfigData struct {
-	Mac     string
-	Address string
-	Netmask string
-	Network string
-	Gateway string
+	Mac      string
+	Address  string
+	Netmask  string
+	Network  string
+	Gateway  string
+	Address6 string
+	Gateway6 string
 }
 
 type cloudConfigData struct {
@@ -231,12 +239,24 @@ func getNetData(db *database.Database, inst *instance.Instance,
 		return
 	}
 
+	addr6 := vc.GetIp6(addr)
+	if err != nil {
+		return
+	}
+
+	gatewayAddr6 := vc.GetIp6(gatewayAddr)
+	if err != nil {
+		return
+	}
+
 	data := netConfigData{
-		Mac:     adapter.MacAddress,
-		Address: addr.String(),
-		Netmask: net.IP(vcNet.Mask).String(),
-		Network: vcNet.IP.String(),
-		Gateway: gatewayAddr.String(),
+		Mac:      adapter.MacAddress,
+		Address:  addr.String(),
+		Netmask:  net.IP(vcNet.Mask).String(),
+		Network:  vcNet.IP.String(),
+		Gateway:  gatewayAddr.String(),
+		Address6: addr6.String(),
+		Gateway6: gatewayAddr6.String(),
 	}
 
 	output := &bytes.Buffer{}
