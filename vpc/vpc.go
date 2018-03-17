@@ -1,6 +1,9 @@
 package vpc
 
 import (
+	"bytes"
+	"crypto/md5"
+	"fmt"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -231,6 +234,28 @@ func (v *Vpc) GetIp(db *database.Database, typ string, instId bson.ObjectId) (
 	ip = utils.Int2IpAddress(vpcIp.Ip)
 
 	return
+}
+
+func (v *Vpc) GetIp6(addr net.IP) net.IP {
+	netHash := md5.New()
+	netHash.Write([]byte(v.Id))
+	netHashSum := fmt.Sprintf("%x", netHash.Sum(nil))[:12]
+
+	macHash := md5.New()
+	macHash.Write(addr)
+	macHashSum := fmt.Sprintf("%x", macHash.Sum(nil))[:16]
+
+	ip := fmt.Sprintf("fd97%s%s", netHashSum, macHashSum)
+	ipBuf := bytes.Buffer{}
+
+	for i, run := range ip {
+		if i%4 == 0 && i != 0 && i != len(ip)-1 {
+			ipBuf.WriteRune(':')
+		}
+		ipBuf.WriteRune(run)
+	}
+
+	return net.ParseIP(ipBuf.String())
 }
 
 func (v *Vpc) Commit(db *database.Database) (err error) {
