@@ -447,7 +447,7 @@ func Init() (err error) {
 
 	namespaces := []string{"0"}
 
-	output, err = utils.ExecCombinedOutputLogged(
+	output, err = utils.ExecOutputLogged(
 		nil,
 		"ip", "netns", "list",
 	)
