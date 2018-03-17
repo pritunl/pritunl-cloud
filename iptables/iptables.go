@@ -136,8 +136,9 @@ func (r *Rules) Hold() (err error) {
 	cmd := r.newCommand()
 	if r.Interface != "host" {
 		cmd = append(cmd,
-			"-m", "physdev",
-			"--physdev-out", r.Interface,
+			//"-m", "physdev",
+			//"--physdev-out", r.Interface,
+			"-o", r.Interface,
 		)
 	}
 	cmd = r.commentCommand(cmd, true)
@@ -149,8 +150,9 @@ func (r *Rules) Hold() (err error) {
 	cmd = r.newCommand()
 	if r.Interface != "host" {
 		cmd = append(cmd,
-			"-m", "physdev",
-			"--physdev-out", r.Interface,
+			//"-m", "physdev",
+			//"--physdev-out", r.Interface,
+			"-o", r.Interface,
 		)
 	}
 	cmd = r.commentCommand(cmd, true)
@@ -370,31 +372,6 @@ func generate(namespace, iface string, ingress []*firewall.Rule) (
 		)
 		rules.Ingress6 = append(rules.Ingress6, cmd)
 	}
-
-	cmd = rules.newCommand()
-	if rules.Interface != "host" {
-		cmd = append(cmd,
-			"-o", rules.Interface,
-		)
-	}
-	cmd = append(cmd,
-		"-p", "udp",
-	)
-	if rules.Interface != "host" {
-		//cmd = append(cmd,
-		//	"-m", "physdev",
-		//	"--physdev-out", rules.Interface,
-		//)
-	}
-	cmd = append(cmd,
-		"-m", "udp",
-		"--dport", "67:68",
-	)
-	cmd = rules.commentCommand(cmd, false)
-	cmd = append(cmd,
-		"-j", "ACCEPT",
-	)
-	rules.Ingress = append(rules.Ingress, cmd)
 
 	for _, rule := range ingress {
 		for _, sourceIp := range rule.SourceIps {
