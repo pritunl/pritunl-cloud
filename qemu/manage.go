@@ -648,12 +648,22 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	}
 
 	pubAddr6 := ""
-	fields = strings.Fields(ipData)
-	if len(fields) > 3 {
-		ipAddr := net.ParseIP(strings.Split(fields[3], "/")[0])
-		if ipAddr != nil && len(ipAddr) > 0 && len(virt.NetworkAdapters) > 0 {
-			pubAddr6 = ipAddr.String()
+	for _, line := range strings.Split(ipData, "\n") {
+		if !strings.Contains(line, "global") {
+			continue
 		}
+
+		fields = strings.Fields(ipData)
+		if len(fields) > 3 {
+			ipAddr := net.ParseIP(strings.Split(fields[3], "/")[0])
+			if ipAddr != nil && len(ipAddr) > 0 &&
+				len(virt.NetworkAdapters) > 0 {
+
+				pubAddr6 = ipAddr.String()
+			}
+		}
+
+		break
 	}
 
 	_, err = utils.ExecCombinedOutputLogged(
@@ -683,31 +693,33 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	_, err = utils.ExecCombinedOutputLogged(
-		nil,
-		"ip", "netns", "exec", namespace,
-		"ip6tables", "-t", "nat",
-		"-A", "POSTROUTING",
-		"-o", ifaceInternal,
-		"-j", "MASQUERADE",
-	)
-	if err != nil {
-		PowerOff(db, virt)
-		return
-	}
+	if pubAddr6 != "" {
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", namespace,
+			"ip6tables", "-t", "nat",
+			"-A", "POSTROUTING",
+			"-o", ifaceInternal,
+			"-j", "MASQUERADE",
+		)
+		if err != nil {
+			PowerOff(db, virt)
+			return
+		}
 
-	_, err = utils.ExecCombinedOutputLogged(
-		nil,
-		"ip", "netns", "exec", namespace,
-		"ip6tables", "-t", "nat",
-		"-A", "PREROUTING",
-		"-d", pubAddr6,
-		"-j", "DNAT",
-		"--to-destination", addr6.String(),
-	)
-	if err != nil {
-		PowerOff(db, virt)
-		return
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", namespace,
+			"ip6tables", "-t", "nat",
+			"-A", "PREROUTING",
+			"-d", pubAddr6,
+			"-j", "DNAT",
+			"--to-destination", addr6.String(),
+		)
+		if err != nil {
+			PowerOff(db, virt)
+			return
+		}
 	}
 
 	coll := db.Instances()
