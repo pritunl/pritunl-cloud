@@ -42,19 +42,23 @@ type NetworkAdapter struct {
 func (v *VirtualMachine) Commit(db *database.Database) (err error) {
 	coll := db.Instances()
 
-	addr := ""
-	addr6 := ""
+	addrs := []string{}
+	addrs6 := []string{}
 
 	for _, adapter := range v.NetworkAdapters {
-		addr = adapter.IpAddress
-		addr6 = adapter.IpAddress6
+		if adapter.IpAddress != "" {
+			addrs = append(addrs, adapter.IpAddress)
+		}
+		if adapter.IpAddress6 != "" {
+			addrs6 = append(addrs6, adapter.IpAddress6)
+		}
 	}
 
 	err = coll.UpdateId(v.Id, &bson.M{
 		"$set": &bson.M{
-			"vm_state":   v.State,
-			"public_ip":  addr,
-			"public_ip6": addr6,
+			"vm_state":    v.State,
+			"public_ips":  addrs,
+			"public_ips6": addrs6,
 		},
 	})
 	if err != nil {
