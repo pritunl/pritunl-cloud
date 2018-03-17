@@ -41,10 +41,12 @@ func (n *Namespace) Deploy() (err error) {
 			continue
 		}
 
-		utils.ExecCombinedOutputLogged(
-			nil,
-			"ip", "link", "del", iface,
-		)
+		if !curVirtIfaces.Contains(iface) {
+			utils.ExecCombinedOutputLogged(
+				nil,
+				"ip", "link", "del", iface,
+			)
+		}
 	}
 
 	output, err = utils.ExecOutputLogged(
