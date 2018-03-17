@@ -24,6 +24,7 @@ import (
 	"io/ioutil"
 	"net"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -315,7 +316,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	namespace := vm.GetNamespace(virt.Id, 0)
 	pidPath := fmt.Sprintf("/var/run/dhclient-%s.pid", ifaceInternal)
 	adapter := virt.NetworkAdapters[0]
-	vlanId := "150"
 
 	vc, err := vpc.Get(db, adapter.VpcId)
 	if err != nil {
@@ -503,7 +503,7 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"add", "link", ifaceInternal,
 		"name", ifaceVlan,
 		"type", "vlan",
-		"id", vlanId,
+		"id", strconv.Itoa(vc.VpcId),
 	)
 	if err != nil {
 		PowerOff(db, virt)
