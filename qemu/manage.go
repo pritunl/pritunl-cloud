@@ -720,6 +720,11 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			PowerOff(db, virt)
 			return
 		}
+	} else {
+		logrus.WithFields(logrus.Fields{
+			"instance_id":   virt.Id.Hex(),
+			"net_namespace": namespace,
+		}).Warning("qemu: Instance missing IPv6 address")
 	}
 
 	coll := db.Instances()
