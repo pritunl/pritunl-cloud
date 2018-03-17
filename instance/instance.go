@@ -244,7 +244,7 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 		NetworkAdapters: []*vm.NetworkAdapter{
 			&vm.NetworkAdapter{
 				Type:          vm.Bridge,
-				MacAddress:    vm.GetMacAddr(i.Id, i.Id),
+				MacAddress:    vm.GetMacAddr(i.Id, i.Vpc),
 				HostInterface: bridge.BridgeName,
 				VpcId:         i.Vpc,
 			},
