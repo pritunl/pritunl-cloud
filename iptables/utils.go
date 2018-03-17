@@ -1,6 +1,7 @@
 package iptables
 
 import (
+	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
@@ -392,13 +393,61 @@ func Init() (err error) {
 	db := database.GetDatabase()
 	defer db.Close()
 
+	_, err = utils.ExecCombinedOutputLogged(
+		nil, "sysctl", "-w", "net.ipv6.conf.all.accept_ra=2",
+	)
+	if err != nil {
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil, "sysctl", "-w", "net.ipv6.conf.default.accept_ra=2",
+	)
+	if err != nil {
+		return
+	}
+
+	output, err := utils.ExecOutputLogged(
+		nil, "ip", "-o", "link", "show",
+	)
+	if err != nil {
+		return
+	}
+
+	for _, line := range strings.Split(output, "\n") {
+		fields := strings.Fields(line)
+		if len(fields) < 2 || len(fields[1]) < 2 {
+			continue
+		}
+		iface := strings.Split(fields[1][:len(fields[1])-1], "@")[0]
+
+		utils.ExecCombinedOutput("",
+			"sysctl", "-w",
+			fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", iface),
+		)
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil, "sysctl", "-w", "net.ipv4.ip_forward=1",
+	)
+	if err != nil {
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil, "sysctl", "-w", "net.ipv6.conf.all.forwarding=1",
+	)
+	if err != nil {
+		return
+	}
+
 	state := &State{
 		Interfaces: map[string]*Rules{},
 	}
 
 	namespaces := []string{"0"}
 
-	output, err := utils.ExecCombinedOutputLogged(
+	output, err = utils.ExecCombinedOutputLogged(
 		nil,
 		"ip", "netns", "list",
 	)
