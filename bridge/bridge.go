@@ -1,6 +1,7 @@
 package bridge
 
 import (
+	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -37,8 +38,20 @@ func Configure() (err error) {
 
 			BridgeName = iface.Name
 			configured = true
+			break
+		}
+	}
+
+	if configured {
+		_, err = utils.ExecCombinedOutputLogged(
+			nil, "sysctl", "-w",
+			fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", BridgeName),
+		)
+		if err != nil {
 			return
 		}
+
+		return
 	}
 
 	defaultIface, err := getDefault()
@@ -52,6 +65,14 @@ func Configure() (err error) {
 	}).Info("bridge: Creating bridge interface")
 
 	err = utils.Exec("", "brctl", "addbr", bridgeName)
+	if err != nil {
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil, "sysctl", "-w",
+		fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", bridgeName),
+	)
 	if err != nil {
 		return
 	}
