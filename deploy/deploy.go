@@ -23,5 +23,11 @@ func Deploy(stat *state.State) (err error) {
 		return
 	}
 
+	namespaces := NewNamespace(stat)
+	err = namespaces.Deploy()
+	if err != nil {
+		return
+	}
+
 	return
 }
