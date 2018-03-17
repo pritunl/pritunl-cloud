@@ -88,6 +88,22 @@ func (i *Instance) Validate(db *database.Database) (
 		i.NetworkRoles = []string{}
 	}
 
+	if i.PublicIps == nil {
+		i.PublicIps = []string{}
+	}
+
+	if i.PublicIps6 == nil {
+		i.PublicIps6 = []string{}
+	}
+
+	if i.LocalIps == nil {
+		i.LocalIps = []string{}
+	}
+
+	if i.LocalIps6 == nil {
+		i.LocalIps6 = []string{}
+	}
+
 	return
 }
 
