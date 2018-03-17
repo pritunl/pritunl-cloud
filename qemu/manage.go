@@ -150,27 +150,23 @@ func GetVmInfo(vmId bson.ObjectId, getDisks bool) (
 		return
 	}
 
-	fields = strings.Fields(ipData)
-	if len(fields) > 3 {
-		ipAddr := net.ParseIP(strings.Split(fields[3], "/")[0])
-		if ipAddr != nil && len(ipAddr) > 0 && len(virt.NetworkAdapters) > 0 {
-			virt.NetworkAdapters[0].IpAddress6 = ipAddr.String()
+	for _, line := range strings.Split(ipData, "\n") {
+		if !strings.Contains(line, "global") {
+			continue
 		}
-	}
 
-	//guestPath := paths.GetGuestPath(virt.Id)
-	//ifaces, err := qga.GetInterfaces(guestPath)
-	//if err == nil {
-	//	for _, adapter := range virt.NetworkAdapters {
-	//		ipAddr, ipAddr6 := ifaces.GetAddr(adapter.MacAddress)
-	//		if ipAddr != "" {
-	//			adapter.IpAddress = ipAddr
-	//			adapter.IpAddress6 = ipAddr6
-	//		}
-	//	}
-	//} else {
-	//	err = nil
-	//}
+		fields = strings.Fields(ipData)
+		if len(fields) > 3 {
+			ipAddr := net.ParseIP(strings.Split(fields[3], "/")[0])
+			if ipAddr != nil && len(ipAddr) > 0 &&
+				len(virt.NetworkAdapters) > 0 {
+
+				virt.NetworkAdapters[0].IpAddress6 = ipAddr.String()
+			}
+		}
+
+		break
+	}
 
 	return
 }
