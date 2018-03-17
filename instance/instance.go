@@ -24,8 +24,8 @@ type Instance struct {
 	State        string             `bson:"state" json:"state"`
 	VmState      string             `bson:"vm_state" json:"vm_state"`
 	Restart      bool               `bson:"restart" json:"restart"`
-	PublicIp     string             `bson:"public_ip" json:"public_ip"`
-	PublicIp6    string             `bson:"public_ip6" json:"public_ip6"`
+	PublicIps    []string           `bson:"public_ips" json:"public_ips"`
+	PublicIps6   []string           `bson:"public_ips6" json:"public_ips6"`
 	LocalIps     []string           `bson:"local_ips" json:"local_ips"`
 	LocalIps6    []string           `bson:"local_ips6" json:"local_ips6"`
 	Node         bson.ObjectId      `bson:"node,omitempty" json:"node"`
