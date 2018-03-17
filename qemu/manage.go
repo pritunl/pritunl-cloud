@@ -406,6 +406,57 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	}
 
 	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", namespace,
+		"sysctl", "-w", "net.ipv6.conf.all.accept_ra=2",
+	)
+	if err != nil {
+		PowerOff(db, virt)
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", namespace,
+		"sysctl", "-w", "net.ipv6.conf.default.accept_ra=2",
+	)
+	if err != nil {
+		PowerOff(db, virt)
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", namespace,
+		"sysctl", "-w",
+		fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", ifaceInternal),
+	)
+	if err != nil {
+		PowerOff(db, virt)
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", namespace,
+		"sysctl", "-w", "net.ipv4.ip_forward=1",
+	)
+	if err != nil {
+		PowerOff(db, virt)
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", namespace,
+		"sysctl", "-w", "net.ipv6.conf.all.forwarding=1",
+	)
+	if err != nil {
+		PowerOff(db, virt)
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
 		[]string{"File exists"},
 		"ip", "link",
 		"set", "dev", iface,
