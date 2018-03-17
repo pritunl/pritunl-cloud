@@ -76,7 +76,7 @@ func (v *Vpc) GetNetwork() (network *net.IPNet, err error) {
 }
 
 func (v *Vpc) GenerateVpcId() {
-	v.VpcId = rand.Intn(16777100) + 110
+	v.VpcId = rand.Intn(4085) + 10
 }
 
 func (v *Vpc) GetGateway() (ip net.IP, err error) {
