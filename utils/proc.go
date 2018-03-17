@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bytes"
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -145,6 +146,49 @@ func ExecCombinedOutputLogged(ignores []string, name string, arg ...string) (
 			"cmd":    name,
 			"arg":    arg,
 			"error":  err,
+		}).Error("utils: Process exec error")
+
+		err = &errortypes.ExecError{
+			errors.Wrapf(err, "utils: Failed to exec '%s'", name),
+		}
+		return
+	}
+
+	return
+}
+
+func ExecOutputLogged(ignores []string, name string, arg ...string) (
+	output string, err error) {
+
+	cmd := exec.Command(name, arg...)
+
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+
+	cmd.Stdout = stdout
+	cmd.Stderr = stderr
+
+	err = cmd.Run()
+	output = stdout.String()
+	errOutput := stderr.String()
+
+	if err != nil && ignores != nil {
+		for _, ignore := range ignores {
+			if strings.Contains(output, ignore) ||
+				strings.Contains(errOutput, ignore) {
+
+				err = nil
+				break
+			}
+		}
+	}
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"output":       output,
+			"error_output": errOutput,
+			"cmd":          name,
+			"arg":          arg,
+			"error":        err,
 		}).Error("utils: Process exec error")
 
 		err = &errortypes.ExecError{
