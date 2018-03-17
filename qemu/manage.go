@@ -717,7 +717,8 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	coll := db.Instances()
 	err = coll.UpdateId(virt.Id, &bson.M{
 		"$set": &bson.M{
-			"local_ips": []string{vcAddr.String()},
+			"local_ips":  []string{addr.String()},
+			"local_ips6": []string{addr6.String()},
 		},
 	})
 	if err != nil {
