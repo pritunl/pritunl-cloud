@@ -175,9 +175,16 @@ export default class InstanceNew extends React.Component<Props, State> {
 			this.setState({
 				...this.state,
 				message: 'Instance created successfully',
-				closed: true,
 				changed: false,
 			});
+
+			setTimeout((): void => {
+				this.setState({
+					...this.state,
+					disabled: false,
+					changed: true,
+				});
+			}, 2000);
 		}).catch((): void => {
 			this.setState({
 				...this.state,
