@@ -282,7 +282,6 @@ func UpdateState(db *database.Database, instances []*instance.Instance) (
 		for i := range inst.Virt.NetworkAdapters {
 			namespace := vm.GetNamespace(inst.Id, i)
 			iface := vm.GetIface(inst.Id, i)
-			//iface := vm.GetIfaceInternal(inst.Id, i)
 
 			_, ok := newState.Interfaces[namespace+"-"+iface]
 			if ok {
