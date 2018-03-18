@@ -95,6 +95,15 @@ export default class Instance extends React.Component<Props, {}> {
 			cardStyle.opacity = 0.6;
 		}
 
+		let publicIp = '';
+		let localIp = '';
+		if (instance.public_ips && instance.public_ips.length > 0) {
+			publicIp = instance.public_ips[0];
+		}
+		if (instance.local_ips && instance.local_ips.length > 0) {
+			localIp = instance.local_ips[0];
+		}
+
 		let statusClass = 'pt-cell';
 		switch (instance.status) {
 			case 'Running':
@@ -156,18 +165,18 @@ export default class Instance extends React.Component<Props, {}> {
 			<div className="pt-cell" style={css.item}>
 				<span
 					style={css.icon}
-					hidden={!instance.public_ip}
+					hidden={!publicIp}
 					className="pt-icon-standard pt-icon-ip-address"
 				/>
-				{instance.public_ip}
+				{publicIp}
 			</div>
 			<div className="pt-cell" style={css.item}>
 				<span
 					style={css.icon}
-					hidden={!instance.public_ip6}
+					hidden={!localIp}
 					className="pt-icon-standard pt-icon-ip-address"
 				/>
-				{instance.public_ip6}
+				{localIp}
 			</div>
 		</div>;
 	}
