@@ -76,6 +76,13 @@ func (i *Instance) Validate(db *database.Database) (
 		}
 	}
 
+	if i.Vpc == "" {
+		errData = &errortypes.ErrorData{
+			Error:   "vpc_required",
+			Message: "Missing required VPC",
+		}
+	}
+
 	if i.Memory < 256 {
 		i.Memory = 256
 	}
