@@ -14,8 +14,8 @@ export interface Instance {
 	status?: string;
 	state?: string;
 	vm_state?: string;
-	public_ip?: string;
-	public_ip6?: string;
+	public_ips?: string[];
+	public_ips6?: string[];
 	local_ips?: string[];
 	local_ips6?: string[];
 	name?: string;
