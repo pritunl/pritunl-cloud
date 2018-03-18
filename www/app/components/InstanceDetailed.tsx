@@ -304,6 +304,21 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			localIps = 'None';
 		}
 
+		let localIps6: any = this.props.instance.local_ips6;
+		if (!localIps6 || !localIps6.length) {
+			localIps6 = 'None';
+		}
+
+		let publicIps: any = this.props.instance.public_ips;
+		if (!publicIps || !publicIps.length) {
+			publicIps = 'None';
+		}
+
+		let publicIps6: any = this.props.instance.public_ips6;
+		if (!publicIps6 || !publicIps6.length) {
+			publicIps6 = 'None';
+		}
+
 		let statusClass = '';
 		switch (instance.status) {
 			case 'Running':
@@ -518,15 +533,19 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 							},
 							{
 								label: 'Public IPv4',
-								value: this.props.instance.public_ip || 'None',
+								value: publicIps,
 							},
 							{
 								label: 'Public IPv6',
-								value: this.props.instance.public_ip6 || 'None',
+								value: publicIps6,
 							},
 							{
 								label: 'Local IPv4',
 								value: localIps,
+							},
+							{
+								label: 'Local IPv6',
+								value: localIps6,
 							},
 							{
 								label: 'Disks',
