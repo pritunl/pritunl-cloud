@@ -61,17 +61,3 @@ func GetNamespace(id bson.ObjectId, n int) string {
 	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
 	return fmt.Sprintf("n%s%d", strings.ToLower(hashSum), n)
 }
-
-func GetIfaceVxlan(id bson.ObjectId) string {
-	hash := md5.New()
-	hash.Write([]byte(id.Hex()))
-	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
-	return fmt.Sprintf("xf%s", strings.ToLower(hashSum))
-}
-
-func GetIfaceVxlanBridge(id bson.ObjectId) string {
-	hash := md5.New()
-	hash.Write([]byte(id.Hex()))
-	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
-	return fmt.Sprintf("xb%s", strings.ToLower(hashSum))
-}
