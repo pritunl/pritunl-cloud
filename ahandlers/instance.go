@@ -70,7 +70,9 @@ func instancePut(c *gin.Context) {
 
 	inst.Name = data.Name
 	inst.Vpc = data.Vpc
-	inst.State = data.State
+	if data.State != "" {
+		inst.State = data.State
+	}
 	inst.Memory = data.Memory
 	inst.Processors = data.Processors
 	inst.NetworkRoles = data.NetworkRoles
