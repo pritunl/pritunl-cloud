@@ -30036,7 +30036,7 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@15.6.1.
             };
             this.onSave = () => {
                 this.setState(Object.assign({}, this.state, { disabled: true }));
-                InstanceActions.commit(this.state.instance).then(() => {
+                InstanceActions.commit(Object.assign({}, this.state.instance, { state: null })).then(() => {
                     this.setState(Object.assign({}, this.state, { message: 'Your changes have been saved', changed: false, disabled: false }));
                     setTimeout(() => {
                         if (!this.state.changed) {
@@ -32720,6 +32720,7 @@ System.registerDynamic("app/components/LogsPage.js", ["npm:react@15.6.1.js", "ap
             margin: '0 0 0 0'
         },
         link: {
+            cursor: 'pointer',
             userSelect: 'none',
             margin: '5px 5px 0 0'
         },
@@ -32752,32 +32753,38 @@ System.registerDynamic("app/components/LogsPage.js", ["npm:react@15.6.1.js", "ap
             if (pages <= 1) {
                 return React.createElement("div", null);
             }
-            let offset = 1;
-            if (pages < 5) {
-                offset = 0;
-            }
             let links = [];
-            let start = Math.max(offset, page - 7);
-            let end = Math.min(pages - offset, start + 15);
+            let start = Math.max(0, page - 7);
+            let end = Math.min(pages, start + 15);
             for (let i = start; i < end; i++) {
-                links.push(React.createElement("a", { key: i, style: page === i ? Object.assign({}, css.link, css.current) : css.link, onClick: () => {
+                links.push(React.createElement("span", { key: i, style: page === i ? Object.assign({}, css.link, css.current) : css.link, onClick: () => {
                         LogActions.traverse(i);
                         if (this.props.onPage) {
                             this.props.onPage();
                         }
                     } }, i + 1));
             }
-            return React.createElement("div", { className: "layout horizontal center-justified" }, React.createElement("button", { className: "pt-button", hidden: !offset, style: page === 0 ? Object.assign({}, css.button, css.current) : css.button, type: "button", onClick: () => {
+            return React.createElement("div", { className: "layout horizontal center-justified" }, React.createElement("button", { className: "pt-button pt-minimal pt-icon-chevron-backward", hidden: pages < 5, disabled: page === 0, type: "button", onClick: () => {
                     LogActions.traverse(0);
                     if (this.props.onPage) {
                         this.props.onPage();
                     }
-                } }, "First"), links, React.createElement("button", { className: "pt-button", hidden: !offset, style: page === pages ? Object.assign({}, css.buttonLast, css.current) : css.buttonLast, type: "button", onClick: () => {
-                    LogActions.traverse(this.state.pages);
+                } }), React.createElement("button", { className: "pt-button pt-minimal pt-icon-chevron-left", style: css.button, disabled: page === 0, type: "button", onClick: () => {
+                    LogActions.traverse(Math.max(0, this.state.page - 1));
                     if (this.props.onPage) {
                         this.props.onPage();
                     }
-                } }, "Last"));
+                } }), links, React.createElement("button", { className: "pt-button pt-minimal pt-icon-chevron-right", style: css.button, disabled: page === pages - 1, type: "button", onClick: () => {
+                    LogActions.traverse(Math.min(this.state.pages - 1, this.state.page + 1));
+                    if (this.props.onPage) {
+                        this.props.onPage();
+                    }
+                } }), React.createElement("button", { className: "pt-button pt-minimal pt-icon-chevron-forward", hidden: pages < 5, disabled: page === pages - 1, type: "button", onClick: () => {
+                    LogActions.traverse(this.state.pages - 1);
+                    if (this.props.onPage) {
+                        this.props.onPage();
+                    }
+                } }));
         }
     }
     exports.default = LogsPage;
