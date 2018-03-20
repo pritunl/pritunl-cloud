@@ -279,12 +279,18 @@ func (i *Instance) Changed(curVirt *vm.VirtualMachine) bool {
 	if i.Virt.Memory != curVirt.Memory ||
 		i.Virt.Processors != curVirt.Processors ||
 		len(i.Virt.Disks) != len(curVirt.Disks) {
+
 		return true
 	}
 
 	for i, dsk := range i.Virt.Disks {
+		if len(curVirt.Disks) <= i {
+			return true
+		}
+
 		if dsk.Index != curVirt.Disks[i].Index ||
 			dsk.Path != curVirt.Disks[i].Path {
+
 			return true
 		}
 	}
