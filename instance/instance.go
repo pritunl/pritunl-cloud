@@ -295,6 +295,16 @@ func (i *Instance) Changed(curVirt *vm.VirtualMachine) bool {
 		}
 	}
 
+	for i, adapter := range i.Virt.NetworkAdapters {
+		if len(curVirt.NetworkAdapters) <= i {
+			return true
+		}
+
+		if adapter.VpcId != curVirt.NetworkAdapters[i].VpcId {
+			return true
+		}
+	}
+
 	return false
 }
 
