@@ -780,7 +780,7 @@ func networkStopDhClient(db *database.Database,
 	}
 
 	if pid != "" {
-		utils.ExecCombinedOutput("kill", pid)
+		utils.ExecCombinedOutput("", "kill", pid)
 	}
 
 	utils.RemoveAll(pidPath)
@@ -806,9 +806,9 @@ func NetworkConfClear(db *database.Database,
 	ifaceVirt := vm.GetIfaceVirt(virt.Id, 0)
 	namespace := vm.GetNamespace(virt.Id, 0)
 
-	utils.ExecCombinedOutput("ip", "netns", "del", namespace)
-	utils.ExecCombinedOutput("ip", "link", "set", ifaceVirt, "down")
-	utils.ExecCombinedOutput("ip", "link", "del", ifaceVirt)
+	utils.ExecCombinedOutput("", "ip", "netns", "del", namespace)
+	utils.ExecCombinedOutput("", "ip", "link", "set", ifaceVirt, "down")
+	utils.ExecCombinedOutput("", "ip", "link", "del", ifaceVirt)
 
 	return
 }
