@@ -360,8 +360,11 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
+	utils.ExecCombinedOutput("", "ip", "link", "set", ifaceVirt, "down")
+	utils.ExecCombinedOutput("", "ip", "link", "del", ifaceVirt)
+
 	_, err = utils.ExecCombinedOutputLogged(
-		[]string{"File exists"},
+		nil,
 		"ip", "link",
 		"add", ifaceVirt,
 		"type", "veth",
