@@ -216,7 +216,10 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			...this.state,
 			disabled: true,
 		});
-		InstanceActions.commit(this.state.instance).then((): void => {
+		InstanceActions.commit({
+			...this.state.instance,
+			state: null,
+		}).then((): void => {
 			this.setState({
 				...this.state,
 				message: 'Your changes have been saved',
