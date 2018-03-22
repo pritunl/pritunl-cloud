@@ -122,6 +122,7 @@ func GetVmInfo(vmId bson.ObjectId, getDisks bool) (
 		[]string{
 			"No such file or directory",
 			"does not exist",
+			"setting the network namespace",
 		},
 		"ip", "netns", "exec", namespace,
 		"ip", "-f", "inet", "-o", "addr",
@@ -143,6 +144,7 @@ func GetVmInfo(vmId bson.ObjectId, getDisks bool) (
 		[]string{
 			"No such file or directory",
 			"does not exist",
+			"setting the network namespace",
 		},
 		"ip", "netns", "exec", namespace,
 		"ip", "-f", "inet6", "-o", "addr",
