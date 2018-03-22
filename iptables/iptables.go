@@ -66,21 +66,25 @@ func (r *Rules) run(cmds [][]string, ipCmd string, ipv6 bool) (err error) {
 		for i := 0; i < 3; i++ {
 			output := "'"
 			if r.Namespace == "0" {
+				Lock()
 				output, err = utils.ExecCombinedOutputLogged(
 					[]string{
 						"matching rule exist",
 					}, iptablesCmd, cmd...)
+				Unlock()
 			} else {
 				cmd = append([]string{
 					"netns", "exec", r.Namespace,
 					iptablesCmd,
 				}, cmd...)
 
+				Lock()
 				output, err = utils.ExecCombinedOutputLogged(
 					[]string{
 						"matching rule exist",
 						"Cannot open network namespace",
 					}, "ip", cmd...)
+				Unlock()
 			}
 
 			if err != nil {

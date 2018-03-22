@@ -74,6 +74,9 @@ func getIptablesCmd(ipv6 bool) string {
 }
 
 func loadIptables(namespace string, state *State, ipv6 bool) (err error) {
+	Lock()
+	defer Unlock()
+
 	iptablesCmd := getIptablesCmd(ipv6)
 
 	output := ""
@@ -353,7 +356,9 @@ func Recover() (err error) {
 	})
 
 	for _, cmd := range cmds {
+		Lock()
 		output, e := utils.ExecCombinedOutput("", "iptables", cmd...)
+		Unlock()
 		if e != nil {
 			err = e
 			logrus.WithFields(logrus.Fields{
@@ -366,7 +371,9 @@ func Recover() (err error) {
 	}
 
 	for _, cmd := range cmds {
+		Lock()
 		output, e := utils.ExecCombinedOutput("", "ip6tables", cmd...)
+		Unlock()
 		if e != nil {
 			err = e
 			logrus.WithFields(logrus.Fields{
