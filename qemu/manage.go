@@ -12,6 +12,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/pritunl/pritunl-cloud/iptables"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/qms"
@@ -669,6 +670,7 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		break
 	}
 
+	iptables.Lock()
 	_, err = utils.ExecCombinedOutputLogged(
 		nil,
 		"ip", "netns", "exec", namespace,
@@ -677,11 +679,13 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"-o", ifaceInternal,
 		"-j", "MASQUERADE",
 	)
+	iptables.Unlock()
 	if err != nil {
 		PowerOff(db, virt)
 		return
 	}
 
+	iptables.Lock()
 	_, err = utils.ExecCombinedOutputLogged(
 		nil,
 		"ip", "netns", "exec", namespace,
@@ -691,12 +695,14 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"-j", "DNAT",
 		"--to-destination", addr.String(),
 	)
+	iptables.Unlock()
 	if err != nil {
 		PowerOff(db, virt)
 		return
 	}
 
 	if pubAddr6 != "" {
+		iptables.Lock()
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
 			"ip", "netns", "exec", namespace,
@@ -705,11 +711,13 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			"-o", ifaceInternal,
 			"-j", "MASQUERADE",
 		)
+		iptables.Unlock()
 		if err != nil {
 			PowerOff(db, virt)
 			return
 		}
 
+		iptables.Lock()
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
 			"ip", "netns", "exec", namespace,
@@ -719,6 +727,7 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			"-j", "DNAT",
 			"--to-destination", addr6.String(),
 		)
+		iptables.Unlock()
 		if err != nil {
 			PowerOff(db, virt)
 			return
