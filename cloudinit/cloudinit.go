@@ -324,7 +324,8 @@ func Write(db *database.Database, inst *instance.Instance,
 		return
 	}
 
-	err = utils.Exec(tempDir,
+	_, err = utils.ExecCombinedOutputLoggedDir(
+		nil, tempDir,
 		"genisoimage",
 		"-output", initPath,
 		"-volid", "cidata",
