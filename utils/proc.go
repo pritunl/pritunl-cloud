@@ -132,6 +132,46 @@ func ExecCombinedOutputLogged(ignores []string, name string, arg ...string) (
 	if outputByt != nil {
 		output = string(outputByt)
 	}
+
+	if err != nil && ignores != nil {
+		for _, ignore := range ignores {
+			if strings.Contains(output, ignore) {
+				err = nil
+				break
+			}
+		}
+	}
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"output": output,
+			"cmd":    name,
+			"arg":    arg,
+			"error":  err,
+		}).Error("utils: Process exec error")
+
+		err = &errortypes.ExecError{
+			errors.Wrapf(err, "utils: Failed to exec '%s'", name),
+		}
+		return
+	}
+
+	return
+}
+
+func ExecCombinedOutputLoggedDir(ignores []string,
+	dir, name string, arg ...string) (
+	output string, err error) {
+
+	cmd := exec.Command(name, arg...)
+	if dir != "" {
+		cmd.Dir = dir
+	}
+
+	outputByt, err := cmd.CombinedOutput()
+	if outputByt != nil {
+		output = string(outputByt)
+	}
+
 	if err != nil && ignores != nil {
 		for _, ignore := range ignores {
 			if strings.Contains(output, ignore) {
