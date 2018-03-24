@@ -37,7 +37,7 @@ func Node() (err error) {
 
 	logrus.WithFields(logrus.Fields{
 		"production": constants.Production,
-		"type":       nde.Type,
+		"types":      nde.Types,
 	}).Info("router: Starting node")
 
 	routr := &router.Router{}
