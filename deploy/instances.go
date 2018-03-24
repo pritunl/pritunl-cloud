@@ -27,7 +27,7 @@ func (s *Instances) create(inst *instance.Instance) {
 		return
 	}
 
-	lockId := instancesLock.Lock(inst.Id.Hex())
+	lockId := instancesLock.LockTimeout(inst.Id.Hex(), 10*time.Minute)
 	go func() {
 		defer func() {
 			time.Sleep(3 * time.Second)
