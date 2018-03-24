@@ -20,8 +20,6 @@ func Node() (err error) {
 	sig := make(chan os.Signal, 2)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 
-	sync.Init()
-
 	nde := &node.Node{
 		Id: bson.ObjectIdHex(config.Config.NodeId),
 	}
@@ -34,6 +32,8 @@ func Node() (err error) {
 	if err != nil {
 		return
 	}
+
+	sync.Init()
 
 	logrus.WithFields(logrus.Fields{
 		"production": constants.Production,
