@@ -81,6 +81,7 @@ export function syncZone(zone: string): Promise<void> {
 		SuperAgent
 			.get('/node')
 			.query({
+				names: true,
 				zone: zone,
 			})
 			.set('Accept', 'application/json')
