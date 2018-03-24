@@ -164,7 +164,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 	toggleType(typ: string): void {
 		let node: NodeTypes.Node = this.state.node || this.props.node;
 
-		let vals = (node.type || '').split('_');
+		let vals = node.types;
 
 		let i = vals.indexOf(typ);
 		if (i === -1) {
@@ -179,8 +179,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 
 		vals.sort();
 
-		let val = vals.join('_');
-		this.set('type', val);
+		this.set('types', vals);
 	}
 
 	onAddNetworkRole = (): void => {
@@ -402,6 +401,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		let node: NodeTypes.Node = this.state.node || this.props.node;
 		let active = node.requests_min !== 0 || node.memory !== 0 ||
 				node.load1 !== 0 || node.load5 !== 0 || node.load15 !== 0;
+		let types = node.types || [];
 
 		let certificates: JSX.Element[] = [];
 		for (let certId of (node.certificates || [])) {
@@ -549,7 +549,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						disabled={this.state.disabled}
 						label="Admin"
 						help="Provides access to the admin console on this node."
-						checked={node.type.indexOf('admin') !== -1}
+						checked={types.indexOf('admin') !== -1}
 						onToggle={(): void => {
 							this.toggleType('admin');
 						}}
@@ -558,7 +558,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						disabled={this.state.disabled}
 						label="User"
 						help="Provides access to the user console on this node for SSH certificates."
-						checked={node.type.indexOf('user') !== -1}
+						checked={types.indexOf('user') !== -1}
 						onToggle={(): void => {
 							//this.toggleType('user');
 						}}
@@ -567,15 +567,15 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						disabled={this.state.disabled}
 						label="Hypervisor"
 						help="Run instances with hypervisor on this node."
-						checked={node.type.indexOf('hypervisor') !== -1}
+						checked={types.indexOf('hypervisor') !== -1}
 						onToggle={(): void => {
 							this.toggleType('hypervisor');
 						}}
 					/>
 					<PageInput
 						disabled={this.state.disabled}
-						hidden={node.type.indexOf('admin') === -1 ||
-							node.type.indexOf('user') === -1}
+						hidden={types.indexOf('admin') === -1 ||
+							types.indexOf('user') === -1}
 						label="Admin Domain"
 						help="Domain that will be used to access the admin interface."
 						type="text"
@@ -587,8 +587,8 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					/>
 					<PageInput
 						disabled={this.state.disabled}
-						hidden={node.type.indexOf('admin') === -1 ||
-							node.type.indexOf('user') === -1}
+						hidden={types.indexOf('admin') === -1 ||
+							types.indexOf('user') === -1}
 						label="User Domain"
 						help="Domain that will be used to access the user interface."
 						type="text"
