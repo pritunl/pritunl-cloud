@@ -177,8 +177,9 @@ func nodeGet(c *gin.Context) {
 func nodesGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 
-	zone, _ := utils.ParseObjectId(c.Query("zone"))
-	if zone != "" {
+	if c.Query("names") == "true" {
+		zone, _ := utils.ParseObjectId(c.Query("zone"))
+
 		query := &bson.M{
 			"zone": zone,
 		}
