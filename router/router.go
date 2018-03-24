@@ -30,7 +30,8 @@ import (
 
 type Router struct {
 	nodeHash       []byte
-	typ            string
+	adminType      bool
+	userType       bool
 	port           int
 	protocol       string
 	certificates   []*certificate.Certificate
@@ -47,20 +48,16 @@ type Router struct {
 
 func (r *Router) ServeHTTP(w http.ResponseWriter, re *http.Request) {
 	hst := utils.StripPort(re.Host)
-	if strings.Contains(r.typ, node.Admin) &&
-		!strings.Contains(r.typ, node.User) {
-
+	if r.adminType && !r.userType {
 		r.aRouter.ServeHTTP(w, re)
 		return
-	} else if strings.Contains(r.typ, node.User) &&
-		!strings.Contains(r.typ, node.Admin) {
-
+	} else if r.userType && !r.adminType {
 		r.uRouter.ServeHTTP(w, re)
 		return
-	} else if strings.Contains(r.typ, node.Admin) && hst == r.adminDomain {
+	} else if r.adminType && hst == r.adminDomain {
 		r.aRouter.ServeHTTP(w, re)
 		return
-	} else if strings.Contains(r.typ, node.User) && hst == r.userDomain {
+	} else if r.userType && hst == r.userDomain {
 		r.uRouter.ServeHTTP(w, re)
 		return
 	}
@@ -142,7 +139,8 @@ func (r *Router) startRedirect() {
 }
 
 func (r *Router) initWeb() (err error) {
-	r.typ = node.Self.Type
+	r.adminType = node.Self.IsAdmin()
+	r.userType = node.Self.IsUser()
 	r.adminDomain = node.Self.AdminDomain
 	r.userDomain = node.Self.UserDomain
 	r.certificates = node.Self.CertificateObjs
@@ -157,7 +155,7 @@ func (r *Router) initWeb() (err error) {
 		r.protocol = "https"
 	}
 
-	if strings.Contains(r.typ, node.Admin) {
+	if r.adminType {
 		r.aRouter = gin.New()
 
 		if !constants.Production {
@@ -167,7 +165,7 @@ func (r *Router) initWeb() (err error) {
 		ahandlers.Register(r.aRouter)
 	}
 
-	if strings.Contains(r.typ, node.User) {
+	if r.userType {
 		r.uRouter = gin.New()
 
 		if !constants.Production {
@@ -412,7 +410,9 @@ func (r *Router) Shutdown() {
 
 func (r *Router) hashNode() []byte {
 	hash := md5.New()
-	io.WriteString(hash, node.Self.Type)
+	for _, typ := range node.Self.Types {
+		io.WriteString(hash, typ)
+	}
 	io.WriteString(hash, node.Self.AdminDomain)
 	io.WriteString(hash, node.Self.UserDomain)
 	io.WriteString(hash, strconv.Itoa(node.Self.Port))
@@ -454,9 +454,7 @@ func (r *Router) Run() (err error) {
 	go r.watchNode()
 
 	for {
-		if !strings.Contains(node.Self.Type, node.Admin) &&
-			!strings.Contains(node.Self.Type, node.User) {
-
+		if !node.Self.IsAdmin() && !node.Self.IsUser() {
 			time.Sleep(500 * time.Millisecond)
 			continue
 		}
