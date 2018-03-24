@@ -53,7 +53,7 @@ const css = {
 		margin: '19px 0 0 0',
 	} as React.CSSProperties,
 	button: {
-		margin: '10px 0 0 10px',
+		margin: '15px 0 0 10px',
 	} as React.CSSProperties,
 };
 

@@ -32,7 +32,7 @@ const css = {
 	button: {
 	} as React.CSSProperties,
 	group: {
-		margin: '10px 0 0 0',
+		margin: '15px 0 0 0',
 		width: '220px',
 	} as React.CSSProperties,
 	select: {

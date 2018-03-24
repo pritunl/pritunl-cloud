@@ -51,7 +51,7 @@ const css = {
 		overflowY: 'auto',
 	} as React.CSSProperties,
 	group: {
-		margin: '10px 0 0 0',
+		margin: '15px 0 0 0',
 		width: '100%',
 		maxWidth: '420px',
 	} as React.CSSProperties,
@@ -66,7 +66,7 @@ const css = {
 		margin: '19px 0 0 0',
 	} as React.CSSProperties,
 	button: {
-		margin: '10px 0 0 10px',
+		margin: '15px 0 0 10px',
 	} as React.CSSProperties,
 	input: {
 		width: '107px',
