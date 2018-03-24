@@ -51,7 +51,6 @@ const css = {
 		overflowY: 'auto',
 	} as React.CSSProperties,
 	group: {
-		margin: '15px 0 0 0',
 		width: '100%',
 	} as React.CSSProperties,
 	groupBox: {
