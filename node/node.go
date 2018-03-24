@@ -2,7 +2,6 @@ package node
 
 import (
 	"container/list"
-	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/certificate"
@@ -14,6 +13,7 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"net/http"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -27,7 +27,7 @@ type Node struct {
 	Id                 bson.ObjectId              `bson:"_id" json:"id"`
 	Zone               bson.ObjectId              `bson:"zone,omitempty" json:"zone"`
 	Name               string                     `bson:"name" json:"name"`
-	Type               string                     `bson:"type" json:"type"`
+	Types              []string                   `bson:"types" json:"types"`
 	Timestamp          time.Time                  `bson:"timestamp" json:"timestamp"`
 	Port               int                        `bson:"port" json:"port"`
 	Protocol           string                     `bson:"protocol" json:"protocol"`
@@ -74,15 +74,30 @@ func (n *Node) GetCachePath() string {
 }
 
 func (n *Node) IsAdmin() bool {
-	return strings.Contains(n.Type, Admin)
+	for _, typ := range n.Types {
+		if typ == Admin {
+			return true
+		}
+	}
+	return false
 }
 
 func (n *Node) IsUser() bool {
-	return strings.Contains(n.Type, User)
+	for _, typ := range n.Types {
+		if typ == User {
+			return true
+		}
+	}
+	return false
 }
 
 func (n *Node) IsHypervisor() bool {
-	return strings.Contains(n.Type, Hypervisor)
+	for _, typ := range n.Types {
+		if typ == Hypervisor {
+			return true
+		}
+	}
+	return false
 }
 
 func (n *Node) Validate(db *database.Database) (
@@ -108,18 +123,18 @@ func (n *Node) Validate(db *database.Database) (
 		n.Certificates = []bson.ObjectId{}
 	}
 
-	if (strings.Contains(n.Type, Admin) &&
-		!strings.Contains(n.Type, User)) ||
-		(strings.Contains(n.Type, User) &&
-			!strings.Contains(n.Type, Admin)) {
+	if n.Types == nil {
+		n.Types = []string{}
+	}
 
+	if (n.IsAdmin() && !n.IsUser()) || (n.IsUser() && !n.IsAdmin()) {
 		n.AdminDomain = ""
 		n.UserDomain = ""
 	} else {
-		if !strings.Contains(n.Type, Admin) {
+		if !n.IsAdmin() {
 			n.AdminDomain = ""
 		}
-		if !strings.Contains(n.Type, User) {
+		if !n.IsUser() {
 			n.UserDomain = ""
 		}
 	}
@@ -162,6 +177,7 @@ func (n *Node) Validate(db *database.Database) (
 }
 
 func (n *Node) Format() {
+	sort.Strings(n.Types)
 	utils.SortObjectIds(n.Certificates)
 }
 
@@ -241,7 +257,7 @@ func (n *Node) update(db *database.Database) (err error) {
 
 	n.Id = nde.Id
 	n.Name = nde.Name
-	n.Type = nde.Type
+	n.Types = nde.Types
 	n.Port = nde.Port
 	n.Protocol = nde.Protocol
 	n.Certificates = nde.Certificates
@@ -374,10 +390,6 @@ func (n *Node) Init() (err error) {
 
 	coll := db.Nodes()
 
-	if n.Type == "" {
-		n.Type = fmt.Sprintf("%s_%s", Admin, Hypervisor)
-	}
-
 	err = coll.FindOneId(n.Id, n)
 	if err != nil {
 		switch err.(type) {
@@ -392,6 +404,10 @@ func (n *Node) Init() (err error) {
 		n.Name = utils.RandName()
 	}
 
+	if n.Types == nil {
+		n.Types = []string{Admin, Hypervisor}
+	}
+
 	if n.Protocol == "" {
 		n.Protocol = "https"
 	}
@@ -404,7 +420,7 @@ func (n *Node) Init() (err error) {
 		"$set": &bson.M{
 			"_id":       n.Id,
 			"name":      n.Name,
-			"type":      n.Type,
+			"types":     n.Types,
 			"timestamp": time.Now(),
 			"protocol":  n.Protocol,
 			"port":      n.Port,
