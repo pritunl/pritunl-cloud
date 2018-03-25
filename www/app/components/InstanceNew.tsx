@@ -419,7 +419,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 						</div>
 						<PageInput
 							label="Name"
-							help="Name of instance"
+							help="Name of instance. String formatting such as %d or %02d can be used to add the instance number or zero padded number."
 							type="text"
 							placeholder="Enter name"
 							disabled={this.state.disabled}
