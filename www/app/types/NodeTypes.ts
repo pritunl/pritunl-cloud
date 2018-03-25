@@ -29,6 +29,11 @@ export interface Node {
 
 export interface Filter {
 	name?: string;
+	zone?: string;
+	network_role?: string;
+	admin?: boolean;
+	user?: boolean;
+	hypervisor?: boolean;
 }
 
 export type Nodes = Node[];
