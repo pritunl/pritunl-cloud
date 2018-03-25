@@ -205,6 +205,60 @@ func nodesGet(c *gin.Context) {
 			}
 		}
 
+		zone, _ := utils.ParseObjectId(c.Query("zone"))
+		if zone != "" {
+			query["zone"] = zone
+		}
+
+		networkRole := c.Query("network_role")
+		if networkRole != "" {
+			query["network_roles"] = networkRole
+		}
+
+		types := []string{}
+		notTypes := []string{}
+
+		adminType := c.Query(node.Admin)
+		switch adminType {
+		case "true":
+			types = append(types, node.Admin)
+			break
+		case "false":
+			notTypes = append(notTypes, node.Admin)
+			break
+		}
+
+		userType := c.Query(node.User)
+		switch userType {
+		case "true":
+			types = append(types, node.User)
+			break
+		case "false":
+			notTypes = append(notTypes, node.User)
+			break
+		}
+
+		hypervisorType := c.Query(node.Hypervisor)
+		switch hypervisorType {
+		case "true":
+			types = append(types, node.Hypervisor)
+			break
+		case "false":
+			notTypes = append(notTypes, node.Hypervisor)
+			break
+		}
+
+		typesQuery := bson.M{}
+		if len(types) > 0 {
+			typesQuery["$all"] = types
+		}
+		if len(notTypes) > 0 {
+			typesQuery["$nin"] = notTypes
+		}
+		if len(types) > 0 || len(notTypes) > 0 {
+			query["types"] = &typesQuery
+		}
+
 		nodes, count, err := node.GetAllPaged(db, &query, page, pageCount)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
