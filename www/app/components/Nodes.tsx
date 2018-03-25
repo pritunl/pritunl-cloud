@@ -13,6 +13,7 @@ import * as CertificateActions from '../actions/CertificateActions';
 import * as DatacenterActions from '../actions/DatacenterActions';
 import * as ZoneActions from '../actions/ZoneActions';
 import Node from './Node';
+import NodesFilter from './NodesFilter';
 import NodesPage from './NodesPage';
 import Page from './Page';
 import PageHeader from './PageHeader';
@@ -27,6 +28,7 @@ interface Opened {
 
 interface State {
 	nodes: NodeTypes.NodesRo;
+	filter: NodeTypes.Filter;
 	certificates: CertificateTypes.CertificatesRo;
 	datacenters: DatacenterTypes.DatacentersRo;
 	zones: ZoneTypes.ZonesRo;
@@ -60,6 +62,9 @@ const css = {
 	button: {
 		margin: '15px 0 0 10px',
 	} as React.CSSProperties,
+	buttonFirst: {
+		margin: '15px 0 0 0',
+	} as React.CSSProperties,
 };
 
 export default class Nodes extends React.Component<{}, State> {
@@ -67,6 +72,7 @@ export default class Nodes extends React.Component<{}, State> {
 		super(props, context);
 		this.state = {
 			nodes: NodesStore.nodes,
+			filter: NodesStore.filter,
 			certificates: CertificatesStore.certificates,
 			datacenters: DatacentersStore.datacenters,
 			zones: ZonesStore.zones,
@@ -122,6 +128,7 @@ export default class Nodes extends React.Component<{}, State> {
 		this.setState({
 			...this.state,
 			nodes: nodes,
+			filter: NodesStore.filter,
 			certificates: CertificatesStore.certificates,
 			datacenters: DatacentersStore.datacenters,
 			zones: ZonesStore.zones,
@@ -212,12 +219,31 @@ export default class Nodes extends React.Component<{}, State> {
 			/>);
 		});
 
+		let filterClass = 'pt-button pt-intent-primary pt-icon-filter ';
+		if (this.state.filter) {
+			filterClass += 'pt-active';
+		}
+
 		return <Page>
 			<PageHeader>
 				<div className="layout horizontal wrap" style={css.header}>
 					<h2 style={css.heading}>Nodes</h2>
 					<div className="flex"/>
 					<div>
+						<button
+							className={filterClass}
+							style={css.buttonFirst}
+							type="button"
+							onClick={(): void => {
+								if (this.state.filter === null) {
+									NodeActions.filter({});
+								} else {
+									NodeActions.filter(null);
+								}
+							}}
+						>
+							Filters
+						</button>
 						<button
 							className="pt-button pt-intent-warning pt-icon-chevron-up"
 							style={css.button}
@@ -235,6 +261,13 @@ export default class Nodes extends React.Component<{}, State> {
 					</div>
 				</div>
 			</PageHeader>
+			<NodesFilter
+				filter={this.state.filter}
+				onFilter={(filter): void => {
+					NodeActions.filter(filter);
+				}}
+				zones={this.state.zones}
+			/>
 			<div style={css.itemsBox}>
 				<div style={css.items}>
 					{nodesDom}
