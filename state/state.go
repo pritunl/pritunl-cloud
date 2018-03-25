@@ -44,11 +44,6 @@ func (s *State) DiskInUse(instId, dskId bson.ObjectId) bool {
 	return false
 }
 
-//func (s *State) InstanceExists(instId bson.ObjectId) bool {
-//	_, ok := s.virtsMap[instId]
-//	return ok
-//}
-
 func (s *State) GetVirt(instId bson.ObjectId) *vm.VirtualMachine {
 	return s.virtsMap[instId]
 }
