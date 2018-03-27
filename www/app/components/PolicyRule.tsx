@@ -3,6 +3,7 @@ import * as React from 'react';
 import * as PolicyTypes from '../types/PolicyTypes';
 import * as Constants from '../Constants';
 import PageSwitch from './PageSwitch';
+import PageInputButton from './PageInputButton';
 import PageSelectButton from './PageSelectButton';
 import Help from './Help';
 
@@ -37,6 +38,10 @@ export default class PolicyRule extends React.Component<Props, State> {
 	}
 
 	onAddValue = (value: string): void => {
+		if (!value) {
+			return;
+		}
+
 		let rule = this.clone();
 
 		let values = [
@@ -52,10 +57,6 @@ export default class PolicyRule extends React.Component<Props, State> {
 		rule.values = values;
 
 		this.props.onChange(rule);
-
-		this.setState({
-			...this.state,
-		});
 	}
 
 	onRemoveValue(value: string): void {
@@ -83,6 +84,7 @@ export default class PolicyRule extends React.Component<Props, State> {
 
 		let label: string;
 		let selectLabel: string;
+		let selectPlaceholder: string;
 		let options: {[key: string]: string};
 		switch (this.props.rule.type) {
 			case 'operating_system':
@@ -99,6 +101,16 @@ export default class PolicyRule extends React.Component<Props, State> {
 				label = 'Permitted Locations';
 				selectLabel = 'Location policies';
 				options = Constants.locations;
+				break;
+			case 'whitelist_networks':
+				label = 'Whitelisted Networks';
+				selectLabel = 'Whitelisted network policies';
+				selectPlaceholder = 'Add network';
+				break;
+			case 'blacklist_networks':
+				label = 'Blacklisted Networks';
+				selectLabel = 'Blacklisted network policies';
+				selectPlaceholder = 'Add network';
 				break;
 		}
 
@@ -124,7 +136,7 @@ export default class PolicyRule extends React.Component<Props, State> {
 					style={css.item}
 					key={value}
 				>
-					{options[value] || value}
+					{options ? options[value] || value : value}
 					<button
 						className="pt-tag-remove"
 						onMouseUp={(): void => {
@@ -133,6 +145,49 @@ export default class PolicyRule extends React.Component<Props, State> {
 					/>
 				</div>,
 			);
+		}
+
+		let inputElem: JSX.Element;
+		if (options) {
+			inputElem = <PageSelectButton
+				hidden={rule.values == null}
+				buttonClass="pt-intent-success pt-icon-add"
+				label="Add"
+				value={this.state.addValue}
+				onChange={(val): void => {
+					this.setState({
+						...this.state,
+						addValue: val,
+					});
+				}}
+				onSubmit={(): void => {
+					this.onAddValue(this.state.addValue || defaultOption);
+				}}
+			>
+				{optionsSelect}
+			</PageSelectButton>;
+		} else {
+			inputElem = <PageInputButton
+				hidden={rule.values == null}
+				buttonClass="pt-intent-success pt-icon-add"
+				label="Add"
+				type="text"
+				placeholder={selectPlaceholder}
+				value={this.state.addValue}
+				onChange={(val): void => {
+					this.setState({
+						...this.state,
+						addValue: val,
+					});
+				}}
+				onSubmit={(): void => {
+					this.onAddValue(this.state.addValue);
+					this.setState({
+						...this.state,
+						addValue: null,
+					});
+				}}
+			/>;
 		}
 
 		return <div>
@@ -170,23 +225,7 @@ export default class PolicyRule extends React.Component<Props, State> {
 					{values}
 				</div>
 			</label>
-			<PageSelectButton
-				hidden={rule.values == null}
-				buttonClass="pt-intent-success pt-icon-add"
-				label="Add"
-				value={this.state.addValue}
-				onChange={(val): void => {
-					this.setState({
-						...this.state,
-						addValue: val,
-					});
-				}}
-				onSubmit={(): void => {
-					this.onAddValue(this.state.addValue || defaultOption);
-				}}
-			>
-				{optionsSelect}
-			</PageSelectButton>
+			{inputElem}
 		</div>;
 	}
 }
