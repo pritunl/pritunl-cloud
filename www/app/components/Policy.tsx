@@ -291,6 +291,12 @@ export default class Policy extends React.Component<Props, State> {
 		let location = policy.rules.location || {
 			type: 'location',
 		};
+		let whitelistNetworks = policy.rules.whitelist_networks || {
+			type: 'whitelist_networks',
+		};
+		let blacklistNetworks = policy.rules.blacklist_networks || {
+			type: 'blacklist_networks',
+		};
 
 		let providerIds: string[] = [];
 		let adminProviders: JSX.Element[] = [];
@@ -429,6 +435,18 @@ export default class Policy extends React.Component<Props, State> {
 					>
 						{userProviders}
 					</PageSelect>
+					<PolicyRule
+						rule={whitelistNetworks}
+						onChange={(val): void => {
+							this.setRule('whitelist_networks', val);
+						}}
+					/>
+					<PolicyRule
+						rule={blacklistNetworks}
+						onChange={(val): void => {
+							this.setRule('blacklist_networks', val);
+						}}
+					/>
 				</div>
 				<div style={css.group}>
 					<PageInfo
