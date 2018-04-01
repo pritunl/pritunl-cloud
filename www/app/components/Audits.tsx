@@ -24,9 +24,6 @@ const css = {
 	heading: {
 		margin: '19px 0 0 0',
 	} as React.CSSProperties,
-	button: {
-		margin: '15px 0 0 0',
-	} as React.CSSProperties,
 };
 
 export default class Audits extends React.Component<Props, State> {

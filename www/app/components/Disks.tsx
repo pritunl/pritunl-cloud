@@ -66,7 +66,10 @@ const css = {
 		margin: '19px 0 0 0',
 	} as React.CSSProperties,
 	button: {
-		margin: '15px 0 0 10px',
+		margin: '8px 0 0 8px',
+	} as React.CSSProperties,
+	buttons: {
+		marginTop: '8px',
 	} as React.CSSProperties,
 };
 
@@ -285,7 +288,7 @@ export default class Disks extends React.Component<{}, State> {
 				<div className="layout horizontal wrap" style={css.header}>
 					<h2 style={css.heading}>Disks</h2>
 					<div className="flex"/>
-					<div>
+					<div style={css.buttons}>
 						<button
 							className="pt-button pt-intent-warning pt-icon-chevron-up"
 							style={css.button}

@@ -29,8 +29,6 @@ const css = {
 	heading: {
 		margin: '19px 0 0 0',
 	} as React.CSSProperties,
-	button: {
-	} as React.CSSProperties,
 	group: {
 		margin: '15px 0 0 0',
 		width: '220px',
@@ -146,7 +144,6 @@ export default class Zones extends React.Component<{}, State> {
 							</div>
 							<button
 								className="pt-button pt-intent-success pt-icon-add"
-								style={css.button}
 								disabled={!hasDatacenters || this.state.disabled}
 								type="button"
 								onClick={(): void => {
