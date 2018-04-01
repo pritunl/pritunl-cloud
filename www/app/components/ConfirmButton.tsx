@@ -22,6 +22,9 @@ interface State {
 }
 
 const css = {
+	box: {
+		display: 'inline-flex',
+	} as React.CSSProperties,
 	actionProgress: {
 		position: 'absolute',
 		bottom: 0,
@@ -192,19 +195,21 @@ export default class ConfirmButton extends React.Component<Props, State> {
 			className += ' pt-button-empty';
 		}
 
-		return <button
-			className={'pt-button ' + className}
-			style={style}
-			type="button"
-			hidden={this.props.hidden}
-			disabled={this.props.disabled}
-			onMouseDown={Constants.mobile ? undefined : this.confirm}
-			onMouseUp={Constants.mobile ? undefined : this.clearConfirm}
-			onMouseLeave={Constants.mobile ? undefined : this.clearConfirm}
-			onClick={Constants.mobile ? this.openDialog : undefined}
-		>
-			{this.props.label}
+		return <div style={css.box}>
+			<button
+				className={'pt-button ' + className}
+				style={style}
+				type="button"
+				hidden={this.props.hidden}
+				disabled={this.props.disabled}
+				onMouseDown={Constants.mobile ? undefined : this.confirm}
+				onMouseUp={Constants.mobile ? undefined : this.clearConfirm}
+				onMouseLeave={Constants.mobile ? undefined : this.clearConfirm}
+				onClick={Constants.mobile ? this.openDialog : undefined}
+			>
+				{this.props.label}
+			</button>
 			{confirmElem}
-		</button>;
+		</div>;
 	}
 }
