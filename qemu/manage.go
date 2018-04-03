@@ -107,12 +107,20 @@ func GetVmInfo(vmId bson.ObjectId, getDisks bool) (
 	}
 
 	if virt.State == vm.Running && getDisks {
-		disks, e := qms.GetDisks(vmId)
-		if e != nil {
-			err = e
-			return
+		for i := 0; i < 10; i++ {
+			disks, e := qms.GetDisks(vmId)
+			if e != nil {
+				if i < 9 {
+					time.Sleep(250 * time.Millisecond)
+					continue
+				}
+				err = e
+				return
+			}
+			virt.Disks = disks
+
+			break
 		}
-		virt.Disks = disks
 	}
 
 	namespace := vm.GetNamespace(virt.Id, 0)
