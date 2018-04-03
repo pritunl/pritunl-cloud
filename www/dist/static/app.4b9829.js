@@ -506,54 +506,6 @@ System.registerDynamic("npm:react-stripe-checkout@2.6.3.js", ["npm:react-stripe-
       GLOBAL = global;
   module.exports = $__require("npm:react-stripe-checkout@2.6.3/dist/main.js");
 });
-System.registerDynamic("app/stores/SubscriptionStore.js", ["app/dispatcher/Dispatcher.js", "app/EventEmitter.js", "app/types/SubscriptionTypes.js", "app/types/GlobalTypes.js"], true, function ($__require, exports, module) {
-    "use strict";
-
-    var global = this || self,
-        GLOBAL = global;
-    Object.defineProperty(exports, "__esModule", { value: true });
-    const Dispatcher_1 = $__require("app/dispatcher/Dispatcher.js");
-    const EventEmitter_1 = $__require("app/EventEmitter.js");
-    const SubscriptionTypes = $__require("app/types/SubscriptionTypes.js");
-    const GlobalTypes = $__require("app/types/GlobalTypes.js");
-    class SubscriptionStore extends EventEmitter_1.default {
-        constructor() {
-            super(...arguments);
-            this._token = Dispatcher_1.default.register(this._callback.bind(this));
-        }
-        get subscription() {
-            return this._subscription;
-        }
-        get subscriptionM() {
-            if (this._subscription) {
-                return Object.assign({}, this._subscription);
-            }
-            return undefined;
-        }
-        emitChange() {
-            this.emitDefer(GlobalTypes.CHANGE);
-        }
-        addChangeListener(callback) {
-            this.on(GlobalTypes.CHANGE, callback);
-        }
-        removeChangeListener(callback) {
-            this.removeListener(GlobalTypes.CHANGE, callback);
-        }
-        _sync(subscription) {
-            this._subscription = Object.freeze(subscription);
-            this.emitChange();
-        }
-        _callback(action) {
-            switch (action.type) {
-                case SubscriptionTypes.SYNC:
-                    this._sync(action.data);
-                    break;
-            }
-        }
-    }
-    exports.default = new SubscriptionStore();
-    
-});
 System.registerDynamic("app/components/Subscription.js", ["npm:react@16.2.0.js", "npm:react-stripe-checkout@2.6.3.js", "app/actions/SubscriptionActions.js", "app/stores/SubscriptionStore.js", "app/Alert.js", "app/utils/MiscUtils.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
     "use strict";
 
@@ -573,22 +525,14 @@ System.registerDynamic("app/components/Subscription.js", ["npm:react@16.2.0.js",
             minWidth: '310px',
             maxWidth: '350px',
             width: 'calc(100% - 20px)',
-            margin: '0',
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)'
+            margin: '30px auto'
         },
         card2: {
             padding: '5px',
             minWidth: '310px',
             maxWidth: '380px',
             width: 'calc(100% - 20px)',
-            margin: '0',
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)'
+            margin: '30px auto'
         },
         status: {
             width: '180px',
@@ -650,7 +594,7 @@ System.registerDynamic("app/components/Subscription.js", ["npm:react@16.2.0.js",
         update() {
             return React.createElement("div", null, React.createElement("div", { className: "pt-card pt-elevation-2", style: css.card }, React.createElement("div", { className: "pt-callout pt-intent-success", style: css.message, hidden: !this.state.message }, this.state.message), React.createElement("textarea", { className: "pt-input", style: css.license, disabled: this.state.disabled, placeholder: "New License Key", value: this.state.license, onChange: evt => {
                     this.setState(Object.assign({}, this.state, { license: evt.target.value }));
-                } }), React.createElement("div", { className: "layout horizontal center-justified" }, React.createElement("button", { className: "pt-button pt-intent-danger pt-icon-trash", style: css.button, disabled: this.state.disabled, onClick: () => {
+                } }), React.createElement("div", { className: "layout horizontal center-justified" }, React.createElement("button", { className: "pt-button pt-intent-danger pt-icon-cross", style: css.button, disabled: this.state.disabled, onClick: () => {
                     this.setState(Object.assign({}, this.state, { update: false, license: '' }));
                 } }, "Cancel"), React.createElement("button", { className: "pt-button pt-intent-primary pt-icon-endorsed", style: css.button, disabled: this.state.disabled, onClick: () => {
                     this.setState(Object.assign({}, this.state, { disabled: true }));
@@ -4145,25 +4089,6 @@ System.registerDynamic("app/components/User.js", ["npm:react@16.2.0.js", "npm:re
     exports.default = User;
     
 });
-System.registerDynamic("app/components/SwitchNull.js", ["npm:react@16.2.0.js"], true, function ($__require, exports, module) {
-    "use strict";
-
-    var global = this || self,
-        GLOBAL = global;
-    Object.defineProperty(exports, "__esModule", { value: true });
-    const React = $__require("npm:react@16.2.0.js");
-    class SwitchNull extends React.Component {
-        render() {
-            let style = Object.assign({}, this.props.style);
-            if (this.props.checked === null || this.props.checked === undefined) {
-                style.opacity = 0.5;
-            }
-            return React.createElement("label", { className: "pt-control pt-switch", style: style }, React.createElement("input", { type: "checkbox", checked: !!this.props.checked, onChange: this.props.onToggle }), React.createElement("span", { className: "pt-control-indicator" }), this.props.label);
-        }
-    }
-    exports.default = SwitchNull;
-    
-});
 System.registerDynamic("app/components/UsersFilter.js", ["npm:react@16.2.0.js", "app/components/SearchInput.js", "app/components/SwitchNull.js"], true, function ($__require, exports, module) {
     "use strict";
 
@@ -4382,10 +4307,10 @@ System.registerDynamic("app/components/Users.js", ["npm:react@16.2.0.js", "npm:r
             margin: '19px 0 0 0'
         },
         button: {
-            margin: '15px 0 0 10px'
+            margin: '8px 0 0 8px'
         },
-        buttonFirst: {
-            margin: '15px 0 0 0'
+        buttons: {
+            marginTop: '8px'
         }
     };
     class Users extends React.Component {
@@ -4474,7 +4399,7 @@ System.registerDynamic("app/components/Users.js", ["npm:react@16.2.0.js", "npm:r
             if (this.state.filter) {
                 filterClass += 'pt-active';
             }
-            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Users"), React.createElement("div", { className: "flex" }), React.createElement("div", null, React.createElement("button", { className: filterClass, style: css.buttonFirst, type: "button", onClick: () => {
+            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Users"), React.createElement("div", { className: "flex" }), React.createElement("div", { style: css.buttons }, React.createElement("button", { className: filterClass, style: css.button, type: "button", onClick: () => {
                     if (this.state.filter === null) {
                         UserActions.filter({});
                     } else {
@@ -4839,9 +4764,6 @@ System.registerDynamic("app/components/Audits.js", ["npm:react@16.2.0.js", "app/
         },
         heading: {
             margin: '19px 0 0 0'
-        },
-        button: {
-            margin: '15px 0 0 0'
         }
     };
     class Audits extends React.Component {
@@ -10406,7 +10328,7 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.2.0.js",
         }
         toggleType(typ) {
             let node = this.state.node || this.props.node;
-            let vals = (node.type || '').split('_');
+            let vals = node.types;
             let i = vals.indexOf(typ);
             if (i === -1) {
                 vals.push(typ);
@@ -10417,12 +10339,12 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.2.0.js",
                 return !!val;
             });
             vals.sort();
-            let val = vals.join('_');
-            this.set('type', val);
+            this.set('types', vals);
         }
         render() {
             let node = this.state.node || this.props.node;
             let active = node.requests_min !== 0 || node.memory !== 0 || node.load1 !== 0 || node.load5 !== 0 || node.load15 !== 0;
+            let types = node.types || [];
             let certificates = [];
             for (let certId of node.certificates || []) {
                 let cert = CertificatesStore_1.default.certificate(certId);
@@ -10482,13 +10404,13 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.2.0.js",
                     this.props.onClose();
                 } }, React.createElement("div", { className: "flex" }), React.createElement(ConfirmButton_1.default, { className: "pt-minimal pt-intent-danger pt-icon-trash open-ignore", progressClassName: "pt-intent-danger", confirmMsg: "Confirm node remove", disabled: active || this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { disabled: this.state.disabled, label: "Name", help: "Name of node", type: "text", placeholder: "Enter name", value: node.name, onChange: val => {
                     this.set('name', val);
-                } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Admin", help: "Provides access to the admin console on this node.", checked: node.type.indexOf('admin') !== -1, onToggle: () => {
+                } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Admin", help: "Provides access to the admin console on this node.", checked: types.indexOf('admin') !== -1, onToggle: () => {
                     this.toggleType('admin');
-                } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "User", help: "Provides access to the user console on this node for SSH certificates.", checked: node.type.indexOf('user') !== -1, onToggle: () => {} }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Hypervisor", help: "Run instances with hypervisor on this node.", checked: node.type.indexOf('hypervisor') !== -1, onToggle: () => {
+                } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "User", help: "Provides access to the user console on this node for SSH certificates.", checked: types.indexOf('user') !== -1, onToggle: () => {} }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Hypervisor", help: "Run instances with hypervisor on this node.", checked: types.indexOf('hypervisor') !== -1, onToggle: () => {
                     this.toggleType('hypervisor');
-                } }), React.createElement(PageInput_1.default, { disabled: this.state.disabled, hidden: node.type.indexOf('admin') === -1 || node.type.indexOf('user') === -1, label: "Admin Domain", help: "Domain that will be used to access the admin interface.", type: "text", placeholder: "Enter admin domain", value: node.admin_domain, onChange: val => {
+                } }), React.createElement(PageInput_1.default, { disabled: this.state.disabled, hidden: types.indexOf('admin') === -1 || types.indexOf('user') === -1, label: "Admin Domain", help: "Domain that will be used to access the admin interface.", type: "text", placeholder: "Enter admin domain", value: node.admin_domain, onChange: val => {
                     this.set('admin_domain', val);
-                } }), React.createElement(PageInput_1.default, { disabled: this.state.disabled, hidden: node.type.indexOf('admin') === -1 || node.type.indexOf('user') === -1, label: "User Domain", help: "Domain that will be used to access the user interface.", type: "text", placeholder: "Enter user domain", value: node.user_domain, onChange: val => {
+                } }), React.createElement(PageInput_1.default, { disabled: this.state.disabled, hidden: types.indexOf('admin') === -1 || types.indexOf('user') === -1, label: "User Domain", help: "Domain that will be used to access the user interface.", type: "text", placeholder: "Enter user domain", value: node.user_domain, onChange: val => {
                     this.set('user_domain', val);
                 } }), React.createElement("label", { className: "pt-label", style: css.label }, "Protocol and Port", React.createElement("div", { className: "pt-control-group", style: css.inputGroup }, React.createElement("div", { className: "pt-select", style: css.protocol }, React.createElement("select", { disabled: this.state.disabled, value: node.protocol || 'https', onChange: evt => {
                     this.set('protocol', evt.target.value);
@@ -10653,6 +10575,135 @@ System.registerDynamic("app/components/Node.js", ["npm:react@16.2.0.js", "app/ut
     exports.default = Node;
     
 });
+System.registerDynamic("app/components/SwitchNull.js", ["npm:react@16.2.0.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@16.2.0.js");
+    class SwitchNull extends React.Component {
+        render() {
+            let style = Object.assign({}, this.props.style);
+            if (this.props.checked === null || this.props.checked === undefined) {
+                style.opacity = 0.5;
+            }
+            return React.createElement("label", { className: "pt-control pt-switch", style: style }, React.createElement("input", { type: "checkbox", checked: !!this.props.checked, onChange: this.props.onToggle }), React.createElement("span", { className: "pt-control-indicator" }), this.props.label);
+        }
+    }
+    exports.default = SwitchNull;
+    
+});
+System.registerDynamic("app/components/NodesFilter.js", ["npm:react@16.2.0.js", "app/components/SearchInput.js", "app/components/SwitchNull.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@16.2.0.js");
+    const SearchInput_1 = $__require("app/components/SearchInput.js");
+    const SwitchNull_1 = $__require("app/components/SwitchNull.js");
+    const css = {
+        filters: {
+            margin: '-15px 0 5px 0'
+        },
+        input: {
+            width: '200px',
+            margin: '5px'
+        },
+        keybase: {
+            width: '175px',
+            margin: '5px'
+        },
+        role: {
+            width: '150px',
+            margin: '5px'
+        },
+        type: {
+            margin: '5px'
+        },
+        check: {
+            margin: '12px 5px 8px 5px'
+        }
+    };
+    class NodesFilter extends React.Component {
+        constructor(props, context) {
+            super(props, context);
+            this.state = {
+                menu: false
+            };
+        }
+        render() {
+            if (this.props.filter === null) {
+                return React.createElement("div", null);
+            }
+            let zonesSelect = [React.createElement("option", { value: "any" }, "Any")];
+            if (this.props.zones && this.props.zones.length) {
+                for (let zone of this.props.zones) {
+                    zonesSelect.push(React.createElement("option", { key: zone.id, value: zone.id }, zone.name));
+                }
+            }
+            return React.createElement("div", { className: "layout horizontal wrap", style: css.filters }, React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Name", value: this.props.filter.name, onChange: val => {
+                    let filter = Object.assign({}, this.props.filter);
+                    if (val) {
+                        filter.name = val;
+                    } else {
+                        delete filter.name;
+                    }
+                    this.props.onFilter(filter);
+                } }), React.createElement(SearchInput_1.default, { style: css.role, placeholder: "Network Role", value: this.props.filter.network_role, onChange: val => {
+                    let filter = Object.assign({}, this.props.filter);
+                    if (val) {
+                        filter.network_role = val;
+                    } else {
+                        delete filter.network_role;
+                    }
+                    this.props.onFilter(filter);
+                } }), React.createElement("div", { className: "pt-select", style: css.type }, React.createElement("select", { value: this.props.filter.zone || 'any', onChange: evt => {
+                    let filter = Object.assign({}, this.props.filter);
+                    let val = evt.target.value;
+                    if (val === 'any') {
+                        delete filter.zone;
+                    } else {
+                        filter.zone = val;
+                    }
+                    this.props.onFilter(filter);
+                } }, zonesSelect)), React.createElement(SwitchNull_1.default, { style: css.check, label: "Admin", checked: this.props.filter.admin, onToggle: () => {
+                    let filter = Object.assign({}, this.props.filter);
+                    if (filter.admin === undefined) {
+                        filter.admin = true;
+                    } else if (filter.admin === true) {
+                        filter.admin = false;
+                    } else {
+                        delete filter.admin;
+                    }
+                    this.props.onFilter(filter);
+                } }), React.createElement(SwitchNull_1.default, { style: css.check, label: "User", checked: this.props.filter.user, onToggle: () => {
+                    let filter = Object.assign({}, this.props.filter);
+                    if (filter.user === undefined) {
+                        filter.user = true;
+                    } else if (filter.user === true) {
+                        filter.user = false;
+                    } else {
+                        delete filter.user;
+                    }
+                    this.props.onFilter(filter);
+                } }), React.createElement(SwitchNull_1.default, { style: css.check, label: "Hypervisor", checked: this.props.filter.hypervisor, onToggle: () => {
+                    let filter = Object.assign({}, this.props.filter);
+                    if (filter.hypervisor === undefined) {
+                        filter.hypervisor = true;
+                    } else if (filter.hypervisor === true) {
+                        filter.hypervisor = false;
+                    } else {
+                        delete filter.hypervisor;
+                    }
+                    this.props.onFilter(filter);
+                } }));
+        }
+    }
+    exports.default = NodesFilter;
+    
+});
 System.registerDynamic("app/components/NodesPage.js", ["npm:react@16.2.0.js", "app/stores/NodesStore.js", "app/actions/NodeActions.js"], true, function ($__require, exports, module) {
     "use strict";
 
@@ -10742,7 +10793,7 @@ System.registerDynamic("app/components/NodesPage.js", ["npm:react@16.2.0.js", "a
     exports.default = NodesPages;
     
 });
-System.registerDynamic("app/components/Nodes.js", ["npm:react@16.2.0.js", "app/stores/NodesStore.js", "app/stores/CertificatesStore.js", "app/stores/DatacentersStore.js", "app/stores/ZonesStore.js", "app/actions/NodeActions.js", "app/actions/CertificateActions.js", "app/actions/DatacenterActions.js", "app/actions/ZoneActions.js", "app/components/Node.js", "app/components/NodesPage.js", "app/components/Page.js", "app/components/PageHeader.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/Nodes.js", ["npm:react@16.2.0.js", "app/stores/NodesStore.js", "app/stores/CertificatesStore.js", "app/stores/DatacentersStore.js", "app/stores/ZonesStore.js", "app/actions/NodeActions.js", "app/actions/CertificateActions.js", "app/actions/DatacenterActions.js", "app/actions/ZoneActions.js", "app/components/Node.js", "app/components/NodesFilter.js", "app/components/NodesPage.js", "app/components/Page.js", "app/components/PageHeader.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -10758,6 +10809,7 @@ System.registerDynamic("app/components/Nodes.js", ["npm:react@16.2.0.js", "app/s
     const DatacenterActions = $__require("app/actions/DatacenterActions.js");
     const ZoneActions = $__require("app/actions/ZoneActions.js");
     const Node_1 = $__require("app/components/Node.js");
+    const NodesFilter_1 = $__require("app/components/NodesFilter.js");
     const NodesPage_1 = $__require("app/components/NodesPage.js");
     const Page_1 = $__require("app/components/Page.js");
     const PageHeader_1 = $__require("app/components/PageHeader.js");
@@ -10783,7 +10835,10 @@ System.registerDynamic("app/components/Nodes.js", ["npm:react@16.2.0.js", "app/s
             margin: '19px 0 0 0'
         },
         button: {
-            margin: '15px 0 0 10px'
+            margin: '8px 0 0 8px'
+        },
+        buttons: {
+            marginTop: '8px'
         }
     };
     class Nodes extends React.Component {
@@ -10803,10 +10858,11 @@ System.registerDynamic("app/components/Nodes.js", ["npm:react@16.2.0.js", "app/s
                         opened[node.id] = true;
                     }
                 });
-                this.setState(Object.assign({}, this.state, { nodes: nodes, certificates: CertificatesStore_1.default.certificates, datacenters: DatacentersStore_1.default.datacenters, zones: ZonesStore_1.default.zones, selected: selected, opened: opened }));
+                this.setState(Object.assign({}, this.state, { nodes: nodes, filter: NodesStore_1.default.filter, certificates: CertificatesStore_1.default.certificates, datacenters: DatacentersStore_1.default.datacenters, zones: ZonesStore_1.default.zones, selected: selected, opened: opened }));
             };
             this.state = {
                 nodes: NodesStore_1.default.nodes,
+                filter: NodesStore_1.default.filter,
                 certificates: CertificatesStore_1.default.certificates,
                 datacenters: DatacentersStore_1.default.datacenters,
                 zones: ZonesStore_1.default.zones,
@@ -10882,9 +10938,21 @@ System.registerDynamic("app/components/Nodes.js", ["npm:react@16.2.0.js", "app/s
                         this.setState(Object.assign({}, this.state, { opened: opened }));
                     } }));
             });
-            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Nodes"), React.createElement("div", { className: "flex" }), React.createElement("div", null, React.createElement("button", { className: "pt-button pt-intent-warning pt-icon-chevron-up", style: css.button, disabled: !this.opened, type: "button", onClick: () => {
+            let filterClass = 'pt-button pt-intent-primary pt-icon-filter ';
+            if (this.state.filter) {
+                filterClass += 'pt-active';
+            }
+            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Nodes"), React.createElement("div", { className: "flex" }), React.createElement("div", { style: css.buttons }, React.createElement("button", { className: filterClass, style: css.button, type: "button", onClick: () => {
+                    if (this.state.filter === null) {
+                        NodeActions.filter({});
+                    } else {
+                        NodeActions.filter(null);
+                    }
+                } }, "Filters"), React.createElement("button", { className: "pt-button pt-intent-warning pt-icon-chevron-up", style: css.button, disabled: !this.opened, type: "button", onClick: () => {
                     this.setState(Object.assign({}, this.state, { opened: {} }));
-                } }, "Collapse All")))), React.createElement("div", { style: css.itemsBox }, React.createElement("div", { style: css.items }, nodesDom, React.createElement("tr", { className: "pt-card pt-row", style: css.placeholder }, React.createElement("td", { colSpan: 4, style: css.placeholder })))), React.createElement(NodesPage_1.default, { onPage: () => {
+                } }, "Collapse All")))), React.createElement(NodesFilter_1.default, { filter: this.state.filter, onFilter: filter => {
+                    NodeActions.filter(filter);
+                }, zones: this.state.zones }), React.createElement("div", { style: css.itemsBox }, React.createElement("div", { style: css.items }, nodesDom, React.createElement("tr", { className: "pt-card pt-row", style: css.placeholder }, React.createElement("td", { colSpan: 4, style: css.placeholder })))), React.createElement(NodesPage_1.default, { onPage: () => {
                     this.setState({
                         lastSelected: null
                     });
@@ -10957,7 +11025,7 @@ System.registerDynamic("app/stores/PoliciesStore.js", ["app/dispatcher/Dispatche
     exports.default = new PoliciesStore();
     
 });
-System.registerDynamic("app/components/PolicyRule.js", ["npm:react@16.2.0.js", "app/Constants.js", "app/components/PageSwitch.js", "app/components/PageSelectButton.js", "app/components/Help.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/PolicyRule.js", ["npm:react@16.2.0.js", "app/Constants.js", "app/components/PageSwitch.js", "app/components/PageInputButton.js", "app/components/PageSelectButton.js", "app/components/Help.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -10966,6 +11034,7 @@ System.registerDynamic("app/components/PolicyRule.js", ["npm:react@16.2.0.js", "
     const React = $__require("npm:react@16.2.0.js");
     const Constants = $__require("app/Constants.js");
     const PageSwitch_1 = $__require("app/components/PageSwitch.js");
+    const PageInputButton_1 = $__require("app/components/PageInputButton.js");
     const PageSelectButton_1 = $__require("app/components/PageSelectButton.js");
     const Help_1 = $__require("app/components/Help.js");
     const css = {
@@ -10978,6 +11047,9 @@ System.registerDynamic("app/components/PolicyRule.js", ["npm:react@16.2.0.js", "
         constructor(props, context) {
             super(props, context);
             this.onAddValue = value => {
+                if (!value) {
+                    return;
+                }
                 let rule = this.clone();
                 let values = [...rule.values];
                 if (values.indexOf(value) === -1) {
@@ -10986,7 +11058,6 @@ System.registerDynamic("app/components/PolicyRule.js", ["npm:react@16.2.0.js", "
                 values.sort();
                 rule.values = values;
                 this.props.onChange(rule);
-                this.setState(Object.assign({}, this.state));
             };
             this.state = {
                 addValue: ''
@@ -11011,6 +11082,7 @@ System.registerDynamic("app/components/PolicyRule.js", ["npm:react@16.2.0.js", "
             let defaultOption;
             let label;
             let selectLabel;
+            let selectPlaceholder;
             let options;
             switch (this.props.rule.type) {
                 case 'operating_system':
@@ -11028,6 +11100,16 @@ System.registerDynamic("app/components/PolicyRule.js", ["npm:react@16.2.0.js", "
                     selectLabel = 'Location policies';
                     options = Constants.locations;
                     break;
+                case 'whitelist_networks':
+                    label = 'Whitelisted Networks';
+                    selectLabel = 'Whitelisted network policies';
+                    selectPlaceholder = 'Add network';
+                    break;
+                case 'blacklist_networks':
+                    label = 'Blacklisted Networks';
+                    selectLabel = 'Blacklisted network policies';
+                    selectPlaceholder = 'Add network';
+                    break;
             }
             let optionsSelect = [];
             for (let option in options) {
@@ -11041,9 +11123,24 @@ System.registerDynamic("app/components/PolicyRule.js", ["npm:react@16.2.0.js", "
             }
             let values = [];
             for (let value of rule.values || []) {
-                values.push(React.createElement("div", { className: "pt-tag pt-tag-removable pt-intent-primary", style: css.item, key: value }, options[value] || value, React.createElement("button", { className: "pt-tag-remove", onMouseUp: () => {
+                values.push(React.createElement("div", { className: "pt-tag pt-tag-removable pt-intent-primary", style: css.item, key: value }, options ? options[value] || value : value, React.createElement("button", { className: "pt-tag-remove", onMouseUp: () => {
                         this.onRemoveValue(value);
                     } })));
+            }
+            let inputElem;
+            if (options) {
+                inputElem = React.createElement(PageSelectButton_1.default, { hidden: rule.values == null, buttonClass: "pt-intent-success pt-icon-add", label: "Add", value: this.state.addValue, onChange: val => {
+                        this.setState(Object.assign({}, this.state, { addValue: val }));
+                    }, onSubmit: () => {
+                        this.onAddValue(this.state.addValue || defaultOption);
+                    } }, optionsSelect);
+            } else {
+                inputElem = React.createElement(PageInputButton_1.default, { hidden: rule.values == null, buttonClass: "pt-intent-success pt-icon-add", label: "Add", type: "text", placeholder: selectPlaceholder, value: this.state.addValue, onChange: val => {
+                        this.setState(Object.assign({}, this.state, { addValue: val }));
+                    }, onSubmit: () => {
+                        this.onAddValue(this.state.addValue);
+                        this.setState(Object.assign({}, this.state, { addValue: null }));
+                    } });
             }
             return React.createElement("div", null, React.createElement(PageSwitch_1.default, { label: selectLabel, help: "Turn on to enable policy.", checked: rule.values != null, onToggle: () => {
                     let state = this.clone();
@@ -11053,11 +11150,7 @@ System.registerDynamic("app/components/PolicyRule.js", ["npm:react@16.2.0.js", "
                     let state = this.clone();
                     state.disable = !state.disable;
                     this.props.onChange(state);
-                } }), React.createElement("label", { className: "pt-label", hidden: rule.values == null }, label, React.createElement(Help_1.default, { title: label, content: "One of the values must match for the check to pass." }), React.createElement("div", null, values)), React.createElement(PageSelectButton_1.default, { hidden: rule.values == null, buttonClass: "pt-intent-success pt-icon-add", label: "Add", value: this.state.addValue, onChange: val => {
-                    this.setState(Object.assign({}, this.state, { addValue: val }));
-                }, onSubmit: () => {
-                    this.onAddValue(this.state.addValue || defaultOption);
-                } }, optionsSelect));
+                } }), React.createElement("label", { className: "pt-label", hidden: rule.values == null }, label, React.createElement(Help_1.default, { title: label, content: "One of the values must match for the check to pass." }), React.createElement("div", null, values)), inputElem);
         }
     }
     exports.default = PolicyRule;
@@ -11232,6 +11325,12 @@ System.registerDynamic("app/components/Policy.js", ["npm:react@16.2.0.js", "app/
             let location = policy.rules.location || {
                 type: 'location'
             };
+            let whitelistNetworks = policy.rules.whitelist_networks || {
+                type: 'whitelist_networks'
+            };
+            let blacklistNetworks = policy.rules.blacklist_networks || {
+                type: 'blacklist_networks'
+            };
             let providerIds = [];
             let adminProviders = [];
             let userProviders = [];
@@ -11275,7 +11374,11 @@ System.registerDynamic("app/components/Policy.js", ["npm:react@16.2.0.js", "app/
                     }
                 } }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "User Two-Factor Provider", help: "Two-factor authentication provider that will be used. For users matching multiple policies the first provider will be used.", hidden: !userProvider, value: policy.user_secondary, onChange: val => {
                     this.set('user_secondary', val);
-                } }, userProviders)), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
+                } }, userProviders), React.createElement(PolicyRule_1.default, { rule: whitelistNetworks, onChange: val => {
+                    this.setRule('whitelist_networks', val);
+                } }), React.createElement(PolicyRule_1.default, { rule: blacklistNetworks, onChange: val => {
+                    this.setRule('blacklist_networks', val);
+                } })), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
                     label: 'ID',
                     value: this.props.policy.id || 'None'
                 }] }), React.createElement(PolicyRule_1.default, { rule: location, onChange: val => {
@@ -11315,7 +11418,10 @@ System.registerDynamic("app/components/Policies.js", ["npm:react@16.2.0.js", "ap
             margin: '19px 0 0 0'
         },
         button: {
-            margin: '15px 0 0 0'
+            margin: '8px 0 0 8px'
+        },
+        buttons: {
+            marginTop: '8px'
         }
     };
     class Policies extends React.Component {
@@ -11345,7 +11451,7 @@ System.registerDynamic("app/components/Policies.js", ["npm:react@16.2.0.js", "ap
             this.state.policies.forEach(policy => {
                 policiesDom.push(React.createElement(Policy_1.default, { key: policy.id, policy: policy, providers: this.state.providers }));
             });
-            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Policies"), React.createElement("div", { className: "flex" }), React.createElement("div", null, React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", style: css.button, disabled: this.state.disabled, type: "button", onClick: () => {
+            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Policies"), React.createElement("div", { className: "flex" }), React.createElement("div", { style: css.buttons }, React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", style: css.button, disabled: this.state.disabled, type: "button", onClick: () => {
                     this.setState(Object.assign({}, this.state, { disabled: true }));
                     PolicyActions.create(null).then(() => {
                         this.setState(Object.assign({}, this.state, { disabled: false }));
@@ -11591,7 +11697,10 @@ System.registerDynamic("app/components/Certificates.js", ["npm:react@16.2.0.js",
             margin: '19px 0 0 0'
         },
         button: {
-            margin: '15px 0 0 0'
+            margin: '8px 0 0 8px'
+        },
+        buttons: {
+            marginTop: '8px'
         },
         noCerts: {
             height: 'auto'
@@ -11620,7 +11729,7 @@ System.registerDynamic("app/components/Certificates.js", ["npm:react@16.2.0.js",
             this.state.certificates.forEach(cert => {
                 certsDom.push(React.createElement(Certificate_1.default, { key: cert.id, certificate: cert }));
             });
-            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Certificates"), React.createElement("div", { className: "flex" }), React.createElement("div", null, React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", style: css.button, disabled: this.state.disabled, type: "button", onClick: () => {
+            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Certificates"), React.createElement("div", { className: "flex" }), React.createElement("div", { style: css.buttons }, React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", style: css.button, disabled: this.state.disabled, type: "button", onClick: () => {
                     this.setState(Object.assign({}, this.state, { disabled: true }));
                     CertificateActions.create(null).then(() => {
                         this.setState(Object.assign({}, this.state, { disabled: false }));
@@ -11790,7 +11899,10 @@ System.registerDynamic("app/components/Organizations.js", ["npm:react@16.2.0.js"
             margin: '19px 0 0 0'
         },
         button: {
-            margin: '15px 0 0 0'
+            margin: '8px 0 0 8px'
+        },
+        buttons: {
+            marginTop: '8px'
         },
         noCerts: {
             height: 'auto'
@@ -11819,7 +11931,7 @@ System.registerDynamic("app/components/Organizations.js", ["npm:react@16.2.0.js"
             this.state.organizations.forEach(org => {
                 orgsDom.push(React.createElement(Organization_1.default, { key: org.id, organization: org }));
             });
-            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Organizations"), React.createElement("div", { className: "flex" }), React.createElement("div", null, React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", style: css.button, disabled: this.state.disabled, type: "button", onClick: () => {
+            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Organizations"), React.createElement("div", { className: "flex" }), React.createElement("div", { style: css.buttons }, React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", style: css.button, disabled: this.state.disabled, type: "button", onClick: () => {
                     this.setState(Object.assign({}, this.state, { disabled: true }));
                     OrganizationActions.create(null).then(() => {
                         this.setState(Object.assign({}, this.state, { disabled: false }));
@@ -12035,7 +12147,10 @@ System.registerDynamic("app/components/Datacenters.js", ["npm:react@16.2.0.js", 
             margin: '19px 0 0 0'
         },
         button: {
-            margin: '15px 0 0 0'
+            margin: '8px 0 0 8px'
+        },
+        buttons: {
+            marginTop: '8px'
         },
         noCerts: {
             height: 'auto'
@@ -12068,7 +12183,7 @@ System.registerDynamic("app/components/Datacenters.js", ["npm:react@16.2.0.js", 
             this.state.datacenters.forEach(datacenter => {
                 datacentersDom.push(React.createElement(Datacenter_1.default, { key: datacenter.id, datacenter: datacenter, storages: this.state.storages }));
             });
-            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Datacenters"), React.createElement("div", { className: "flex" }), React.createElement("div", null, React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", style: css.button, disabled: this.state.disabled, type: "button", onClick: () => {
+            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Datacenters"), React.createElement("div", { className: "flex" }), React.createElement("div", { style: css.buttons }, React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", style: css.button, disabled: this.state.disabled, type: "button", onClick: () => {
                     this.setState(Object.assign({}, this.state, { disabled: true }));
                     DatacenterActions.create(null).then(() => {
                         this.setState(Object.assign({}, this.state, { disabled: false }));
@@ -12281,7 +12396,6 @@ System.registerDynamic("app/components/Zones.js", ["npm:react@16.2.0.js", "app/s
         heading: {
             margin: '19px 0 0 0'
         },
-        button: {},
         group: {
             margin: '15px 0 0 0',
             width: '220px'
@@ -12342,7 +12456,7 @@ System.registerDynamic("app/components/Zones.js", ["npm:react@16.2.0.js", "app/s
             }
             return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Zones"), React.createElement("div", { className: "flex" }), React.createElement("div", null, React.createElement("div", { className: "pt-control-group", style: css.group }, React.createElement("div", { style: css.selectBox }, React.createElement("div", { className: "pt-select", style: css.select }, React.createElement("select", { style: css.selectInner, disabled: !hasDatacenters || this.state.disabled, value: this.state.datacenter, onChange: evt => {
                     this.setState(Object.assign({}, this.state, { datacenter: evt.target.value }));
-                } }, datacentersSelect))), React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", style: css.button, disabled: !hasDatacenters || this.state.disabled, type: "button", onClick: () => {
+                } }, datacentersSelect))), React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", disabled: !hasDatacenters || this.state.disabled, type: "button", onClick: () => {
                     this.setState(Object.assign({}, this.state, { disabled: true }));
                     ZoneActions.create({
                         id: null,
@@ -12775,9 +12889,6 @@ System.registerDynamic("app/components/Vpcs.js", ["npm:react@16.2.0.js", "app/st
         heading: {
             margin: '19px 0 0 0'
         },
-        button: {
-            margin: '15px 0 0 10px'
-        },
         input: {
             width: '107px'
         },
@@ -13093,7 +13204,10 @@ System.registerDynamic("app/components/Storages.js", ["npm:react@16.2.0.js", "ap
             margin: '19px 0 0 0'
         },
         button: {
-            margin: '10px 0 0 0'
+            margin: '8px 0 0 8px'
+        },
+        buttons: {
+            marginTop: '8px'
         },
         noCerts: {
             height: 'auto'
@@ -13122,7 +13236,7 @@ System.registerDynamic("app/components/Storages.js", ["npm:react@16.2.0.js", "ap
             this.state.storages.forEach(storage => {
                 storagesDom.push(React.createElement(Storage_1.default, { key: storage.id, storage: storage }));
             });
-            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Storages"), React.createElement("div", { className: "flex" }), React.createElement("div", null, React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", style: css.button, disabled: this.state.disabled, type: "button", onClick: () => {
+            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Storages"), React.createElement("div", { className: "flex" }), React.createElement("div", { style: css.buttons }, React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", style: css.button, disabled: this.state.disabled, type: "button", onClick: () => {
                     this.setState(Object.assign({}, this.state, { disabled: true }));
                     StorageActions.create(null).then(() => {
                         this.setState(Object.assign({}, this.state, { disabled: false }));
@@ -13588,7 +13702,10 @@ System.registerDynamic("app/components/Images.js", ["npm:react@16.2.0.js", "app/
             margin: '19px 0 0 0'
         },
         button: {
-            margin: '15px 0 0 10px'
+            margin: '8px 0 0 8px'
+        },
+        buttons: {
+            marginTop: '8px'
         }
     };
     class Images extends React.Component {
@@ -13689,7 +13806,7 @@ System.registerDynamic("app/components/Images.js", ["npm:react@16.2.0.js", "app/
                         this.setState(Object.assign({}, this.state, { opened: opened }));
                     } }));
             });
-            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Images"), React.createElement("div", { className: "flex" }), React.createElement("div", null, React.createElement("button", { className: "pt-button pt-intent-warning pt-icon-chevron-up", style: css.button, disabled: !this.opened, type: "button", onClick: () => {
+            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Images"), React.createElement("div", { className: "flex" }), React.createElement("div", { style: css.buttons }, React.createElement("button", { className: "pt-button pt-intent-warning pt-icon-chevron-up", style: css.button, disabled: !this.opened, type: "button", onClick: () => {
                     this.setState(Object.assign({}, this.state, { opened: {} }));
                 } }, "Collapse All"), React.createElement(ConfirmButton_1.default, { label: "Delete Selected", className: "pt-intent-danger pt-icon-delete", progressClassName: "pt-intent-danger", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onDelete })))), React.createElement("div", { style: css.itemsBox }, React.createElement("div", { style: css.items }, imagesDom, React.createElement("tr", { className: "pt-card pt-row", style: css.placeholder }, React.createElement("td", { colSpan: 5, style: css.placeholder })))), React.createElement(NonState_1.default, { hidden: !!imagesDom.length, iconClass: "pt-icon-compressed", title: "No images", description: "Add a new image to get started." }), React.createElement(ImagesPage_1.default, { onPage: () => {
                     this.setState({
@@ -13910,6 +14027,9 @@ System.registerDynamic("app/components/DiskDetailed.js", ["npm:react@16.2.0.js",
                 } })), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
                     label: 'ID',
                     value: this.props.disk.id || 'Unknown'
+                }, {
+                    label: 'Image',
+                    value: this.props.disk.image || 'Unknown'
                 }, {
                     label: 'Node',
                     value: node ? node.name : this.props.disk.node
@@ -14463,7 +14583,10 @@ System.registerDynamic("app/components/Disks.js", ["npm:react@16.2.0.js", "app/s
             margin: '19px 0 0 0'
         },
         button: {
-            margin: '15px 0 0 10px'
+            margin: '8px 0 0 8px'
+        },
+        buttons: {
+            marginTop: '8px'
         }
     };
     class Disks extends React.Component {
@@ -14590,7 +14713,7 @@ System.registerDynamic("app/components/Disks.js", ["npm:react@16.2.0.js", "app/s
                         this.setState(Object.assign({}, this.state, { newOpened: false }));
                     } });
             }
-            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Disks"), React.createElement("div", { className: "flex" }), React.createElement("div", null, React.createElement("button", { className: "pt-button pt-intent-warning pt-icon-chevron-up", style: css.button, disabled: !this.opened, type: "button", onClick: () => {
+            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Disks"), React.createElement("div", { className: "flex" }), React.createElement("div", { style: css.buttons }, React.createElement("button", { className: "pt-button pt-intent-warning pt-icon-chevron-up", style: css.button, disabled: !this.opened, type: "button", onClick: () => {
                     this.setState(Object.assign({}, this.state, { opened: {} }));
                 } }, "Collapse All"), React.createElement(ConfirmButton_1.default, { label: "Snapshot Selected", className: "pt-intent-primary pt-icon-floppy-disk", progressClassName: "pt-intent-primary", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onSnapshot }), React.createElement(ConfirmButton_1.default, { label: "Delete Selected", className: "pt-intent-danger pt-icon-delete", progressClassName: "pt-intent-danger", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onDelete }), React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", style: css.button, disabled: this.state.disabled || this.state.newOpened, type: "button", onClick: () => {
                     this.setState(Object.assign({}, this.state, { newOpened: true }));
@@ -15686,7 +15809,7 @@ System.registerDynamic("app/components/InstanceNew.js", ["npm:react@16.2.0.js", 
             if (!hasImages) {
                 imagesSelect = [React.createElement("option", { key: "null", value: "" }, "No Images")];
             }
-            return React.createElement("div", { className: "pt-card pt-row", style: css.row }, React.createElement("td", { className: "pt-cell", colSpan: 5, style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { style: css.buttons }), React.createElement(PageInput_1.default, { label: "Name", help: "Name of instance", type: "text", placeholder: "Enter name", disabled: this.state.disabled, value: instance.name, onChange: val => {
+            return React.createElement("div", { className: "pt-card pt-row", style: css.row }, React.createElement("td", { className: "pt-cell", colSpan: 5, style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { style: css.buttons }), React.createElement(PageInput_1.default, { label: "Name", help: "Name of instance. String formatting such as %d or %02d can be used to add the instance number or zero padded number.", type: "text", placeholder: "Enter name", disabled: this.state.disabled, value: instance.name, onChange: val => {
                     this.set('name', val);
                 } }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasOrganizations, label: "Organization", help: "Organization for instance.", value: instance.organization, onChange: val => {
                     this.set('organization', val);
@@ -15856,7 +15979,10 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.2.0.js", "a
             margin: '19px 0 0 0'
         },
         button: {
-            margin: '15px 0 0 10px'
+            margin: '8px 0 0 8px'
+        },
+        buttons: {
+            marginTop: '8px'
         }
     };
     class Instances extends React.Component {
@@ -15993,7 +16119,7 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.2.0.js", "a
                         this.setState(Object.assign({}, this.state, { newOpened: false }));
                     } });
             }
-            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Instances"), React.createElement("div", { className: "flex" }), React.createElement("div", null, React.createElement("button", { className: "pt-button pt-intent-warning pt-icon-chevron-up", style: css.button, disabled: !this.opened, type: "button", onClick: () => {
+            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Instances"), React.createElement("div", { className: "flex" }), React.createElement("div", { style: css.buttons }, React.createElement("button", { className: "pt-button pt-intent-warning pt-icon-chevron-up", style: css.button, disabled: !this.opened, type: "button", onClick: () => {
                     this.setState(Object.assign({}, this.state, { opened: {} }));
                 } }, "Collapse All"), React.createElement(ConfirmButton_1.default, { label: "Start Selected", className: "pt-intent-success pt-icon-power", progressClassName: "pt-intent-success", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: () => {
                     this.updateSelected('start');
@@ -16610,7 +16736,10 @@ System.registerDynamic("app/components/Firewalls.js", ["npm:react@16.2.0.js", "a
             margin: '19px 0 0 0'
         },
         button: {
-            margin: '15px 0 0 10px'
+            margin: '8px 0 0 8px'
+        },
+        buttons: {
+            marginTop: '8px'
         }
     };
     class Firewalls extends React.Component {
@@ -16710,7 +16839,7 @@ System.registerDynamic("app/components/Firewalls.js", ["npm:react@16.2.0.js", "a
                         this.setState(Object.assign({}, this.state, { opened: opened }));
                     } }));
             });
-            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Firewalls"), React.createElement("div", { className: "flex" }), React.createElement("div", null, React.createElement("button", { className: "pt-button pt-intent-warning pt-icon-chevron-up", style: css.button, disabled: !this.opened, type: "button", onClick: () => {
+            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Firewalls"), React.createElement("div", { className: "flex" }), React.createElement("div", { style: css.buttons }, React.createElement("button", { className: "pt-button pt-intent-warning pt-icon-chevron-up", style: css.button, disabled: !this.opened, type: "button", onClick: () => {
                     this.setState(Object.assign({}, this.state, { opened: {} }));
                 } }, "Collapse All"), React.createElement(ConfirmButton_1.default, { label: "Delete Selected", className: "pt-intent-danger pt-icon-delete", progressClassName: "pt-intent-danger", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onDelete }), React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", style: css.button, disabled: this.state.disabled, type: "button", onClick: () => {
                     this.setState(Object.assign({}, this.state, { disabled: true }));
@@ -17256,47 +17385,6 @@ System.registerDynamic("app/components/AuthoritiesPage.js", ["npm:react@16.2.0.j
     exports.default = AuthoritiesPage;
     
 });
-System.registerDynamic("app/components/NonState.js", ["npm:react@16.2.0.js", "app/Constants.js"], true, function ($__require, exports, module) {
-    "use strict";
-
-    var global = this || self,
-        GLOBAL = global;
-    Object.defineProperty(exports, "__esModule", { value: true });
-    const React = $__require("npm:react@16.2.0.js");
-    const Constants = $__require("app/Constants.js");
-    const css = {
-        state: {
-            height: 'auto'
-        }
-    };
-    class NonState extends React.Component {
-        constructor(props, context) {
-            super(props, context);
-            this.state = {
-                initialized: false
-            };
-        }
-        componentDidMount() {
-            this.timeout = window.setTimeout(() => {
-                this.setState(Object.assign({}, this.state, { initialized: true }));
-            }, Constants.loadDelay);
-        }
-        componentWillUnmount() {
-            if (this.timeout) {
-                window.clearTimeout(this.timeout);
-            }
-        }
-        render() {
-            let description;
-            if (this.props.description) {
-                description = React.createElement("div", { className: "pt-non-ideal-state-description" }, this.props.description);
-            }
-            return React.createElement("div", { className: "pt-non-ideal-state", style: css.state, hidden: this.props.hidden || !this.state.initialized }, React.createElement("div", { className: "pt-non-ideal-state-visual pt-non-ideal-state-icon" }, React.createElement("span", { className: 'pt-icon ' + this.props.iconClass })), React.createElement("h4", { className: "pt-non-ideal-state-title" }, this.props.title), description);
-        }
-    }
-    exports.default = NonState;
-    
-});
 System.registerDynamic("app/components/Authorities.js", ["npm:react@16.2.0.js", "app/stores/AuthoritiesStore.js", "app/stores/OrganizationsStore.js", "app/actions/AuthorityActions.js", "app/actions/OrganizationActions.js", "app/components/Authority.js", "app/components/AuthoritiesPage.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/NonState.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
     "use strict";
 
@@ -17336,7 +17424,10 @@ System.registerDynamic("app/components/Authorities.js", ["npm:react@16.2.0.js", 
             margin: '19px 0 0 0'
         },
         button: {
-            margin: '15px 0 0 10px'
+            margin: '8px 0 0 8px'
+        },
+        buttons: {
+            marginTop: '8px'
         }
     };
     class Authorities extends React.Component {
@@ -17436,7 +17527,7 @@ System.registerDynamic("app/components/Authorities.js", ["npm:react@16.2.0.js", 
                         this.setState(Object.assign({}, this.state, { opened: opened }));
                     } }));
             });
-            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Authorities"), React.createElement("div", { className: "flex" }), React.createElement("div", null, React.createElement("button", { className: "pt-button pt-intent-warning pt-icon-chevron-up", style: css.button, disabled: !this.opened, type: "button", onClick: () => {
+            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Authorities"), React.createElement("div", { className: "flex" }), React.createElement("div", { style: css.buttons }, React.createElement("button", { className: "pt-button pt-intent-warning pt-icon-chevron-up", style: css.button, disabled: !this.opened, type: "button", onClick: () => {
                     this.setState(Object.assign({}, this.state, { opened: {} }));
                 } }, "Collapse All"), React.createElement(ConfirmButton_1.default, { label: "Delete Selected", className: "pt-intent-danger pt-icon-delete", progressClassName: "pt-intent-danger", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onDelete }), React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", style: css.button, disabled: this.state.disabled, type: "button", onClick: () => {
                     this.setState(Object.assign({}, this.state, { disabled: true }));
@@ -17765,10 +17856,10 @@ System.registerDynamic("app/components/Logs.js", ["npm:react@16.2.0.js", "app/st
             margin: '19px 0 0 0'
         },
         button: {
-            margin: '15px 0 0 10px'
+            margin: '8px 0 0 8px'
         },
-        buttonFirst: {
-            margin: '15px 0 0 0'
+        buttons: {
+            marginTop: '8px'
         }
     };
     class Logs extends React.Component {
@@ -17798,7 +17889,7 @@ System.registerDynamic("app/components/Logs.js", ["npm:react@16.2.0.js", "app/st
             if (this.state.filter) {
                 filterClass += 'pt-active';
             }
-            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Logs"), React.createElement("div", { className: "flex" }), React.createElement("div", null, React.createElement("button", { className: filterClass, style: css.buttonFirst, type: "button", onClick: () => {
+            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Logs"), React.createElement("div", { className: "flex" }), React.createElement("div", { style: css.buttons }, React.createElement("button", { className: filterClass, style: css.button, type: "button", onClick: () => {
                     if (this.state.filter === null) {
                         LogActions.filter({});
                     } else {
@@ -17858,6 +17949,54 @@ System.registerDynamic("app/stores/SettingsStore.js", ["app/dispatcher/Dispatche
         }
     }
     exports.default = new SettingsStore();
+    
+});
+System.registerDynamic("app/stores/SubscriptionStore.js", ["app/dispatcher/Dispatcher.js", "app/EventEmitter.js", "app/types/SubscriptionTypes.js", "app/types/GlobalTypes.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const Dispatcher_1 = $__require("app/dispatcher/Dispatcher.js");
+    const EventEmitter_1 = $__require("app/EventEmitter.js");
+    const SubscriptionTypes = $__require("app/types/SubscriptionTypes.js");
+    const GlobalTypes = $__require("app/types/GlobalTypes.js");
+    class SubscriptionStore extends EventEmitter_1.default {
+        constructor() {
+            super(...arguments);
+            this._token = Dispatcher_1.default.register(this._callback.bind(this));
+        }
+        get subscription() {
+            return this._subscription;
+        }
+        get subscriptionM() {
+            if (this._subscription) {
+                return Object.assign({}, this._subscription);
+            }
+            return undefined;
+        }
+        emitChange() {
+            this.emitDefer(GlobalTypes.CHANGE);
+        }
+        addChangeListener(callback) {
+            this.on(GlobalTypes.CHANGE, callback);
+        }
+        removeChangeListener(callback) {
+            this.removeListener(GlobalTypes.CHANGE, callback);
+        }
+        _sync(subscription) {
+            this._subscription = Object.freeze(subscription);
+            this.emitChange();
+        }
+        _callback(action) {
+            switch (action.type) {
+                case SubscriptionTypes.SYNC:
+                    this._sync(action.data);
+                    break;
+            }
+        }
+    }
+    exports.default = new SubscriptionStore();
     
 });
 System.registerDynamic("app/components/Page.js", ["npm:react@16.2.0.js"], true, function ($__require, exports, module) {
@@ -17929,7 +18068,7 @@ System.registerDynamic("app/components/PagePanel.js", ["npm:react@16.2.0.js"], t
     };
     class PagePanel extends React.Component {
         render() {
-            return React.createElement("div", { className: this.props.className, style: css.panel }, this.props.children);
+            return React.createElement("div", { className: this.props.className, style: css.panel, hidden: this.props.hidden }, this.props.children);
         }
     }
     exports.default = PagePanel;
@@ -18020,6 +18159,764 @@ System.registerDynamic("app/components/PageSave.js", ["npm:react@16.2.0.js"], tr
         }
     }
     exports.default = PageSave;
+    
+});
+System.registerDynamic("app/components/ConfirmButton.js", ["npm:react@16.2.0.js", "npm:@blueprintjs/core@2.0.0.js", "app/Constants.js", "app/utils/MiscUtils.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@16.2.0.js");
+    const Blueprint = $__require("npm:@blueprintjs/core@2.0.0.js");
+    const Constants = $__require("app/Constants.js");
+    const MiscUtils = $__require("app/utils/MiscUtils.js");
+    const css = {
+        box: {
+            display: 'inline-flex'
+        },
+        actionProgress: {
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            borderRadius: 0,
+            borderBottomLeftRadius: '3px',
+            borderBottomRightRadius: '3px',
+            width: '100%',
+            height: '4px'
+        },
+        squareActionProgress: {
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            borderRadius: 0,
+            borderBottomLeftRadius: '1px',
+            borderBottomRightRadius: '3px',
+            width: '100%',
+            height: '4px'
+        },
+        dialog: {
+            width: '180px'
+        }
+    };
+    class ConfirmButton extends React.Component {
+        constructor(props, context) {
+            super(props, context);
+            this.openDialog = () => {
+                this.setState(Object.assign({}, this.state, { dialog: true }));
+            };
+            this.closeDialog = () => {
+                this.setState(Object.assign({}, this.state, { dialog: false }));
+            };
+            this.closeDialogConfirm = () => {
+                this.setState(Object.assign({}, this.state, { dialog: false }));
+                if (this.props.onConfirm) {
+                    this.props.onConfirm();
+                }
+            };
+            this.confirm = evt => {
+                let confirmId = MiscUtils.uuid();
+                if (evt.shiftKey) {
+                    if (this.props.onConfirm) {
+                        this.props.onConfirm();
+                    }
+                    return;
+                }
+                this.setState(Object.assign({}, this.state, { confirming: confirmId }));
+                let i = 10;
+                let id = setInterval(() => {
+                    if (i > 100) {
+                        clearInterval(id);
+                        setTimeout(() => {
+                            if (this.state.confirming === confirmId) {
+                                this.setState(Object.assign({}, this.state, { confirm: 0, confirming: null }));
+                                if (this.props.onConfirm) {
+                                    this.props.onConfirm();
+                                }
+                            }
+                        }, 250);
+                        return;
+                    } else if (!this.state.confirming) {
+                        clearInterval(id);
+                        this.setState(Object.assign({}, this.state, { confirm: 0, confirming: null }));
+                        return;
+                    }
+                    if (i % 10 === 0) {
+                        this.setState(Object.assign({}, this.state, { confirm: i / 10 }));
+                    }
+                    i += 1;
+                }, 3);
+            };
+            this.clearConfirm = () => {
+                this.setState(Object.assign({}, this.state, { confirm: 0, confirming: null }));
+            };
+            this.state = {
+                dialog: false,
+                confirm: 0,
+                confirming: null
+            };
+        }
+        render() {
+            let style = Object.assign({}, this.props.style);
+            style.position = 'relative';
+            let className = this.props.className || '';
+            if (!this.props.label) {
+                className += ' pt-button-empty';
+            }
+            if (Constants.mobile) {
+                let confirmMsg = this.props.confirmMsg ? this.props.confirmMsg : 'Confirm ' + (this.props.label || '');
+                return React.createElement("div", { style: css.box }, React.createElement("button", { className: 'pt-button ' + className, style: style, type: "button", hidden: this.props.hidden, disabled: this.props.disabled, onMouseDown: Constants.mobile ? undefined : this.confirm, onMouseUp: Constants.mobile ? undefined : this.clearConfirm, onMouseLeave: Constants.mobile ? undefined : this.clearConfirm, onClick: Constants.mobile ? this.openDialog : undefined }, this.props.label), React.createElement(Blueprint.Dialog, { title: "Confirm", style: css.dialog, isOpen: this.state.dialog, onClose: this.closeDialog }, React.createElement("div", { className: "pt-dialog-body" }, confirmMsg), React.createElement("div", { className: "pt-dialog-footer" }, React.createElement("div", { className: "pt-dialog-footer-actions" }, React.createElement("button", { className: "pt-button", type: "button", onClick: this.closeDialog }, "Cancel"), React.createElement("button", { className: "pt-button pt-intent-primary", type: "button", onClick: this.closeDialogConfirm }, "Ok")))));
+            } else {
+                let confirmElem;
+                if (this.state.confirming) {
+                    let confirmStyle = {
+                        width: this.state.confirm * 10 + '%',
+                        backgroundColor: style.color,
+                        borderRadius: 0,
+                        left: 0
+                    };
+                    let progressStyle;
+                    if (this.props.grouped) {
+                        progressStyle = css.squareActionProgress;
+                    } else {
+                        progressStyle = css.actionProgress;
+                    }
+                    confirmElem = React.createElement("div", { className: 'pt-progress-bar pt-no-stripes ' + (this.props.progressClassName || ''), style: progressStyle }, React.createElement("div", { className: "pt-progress-meter", style: confirmStyle }));
+                }
+                return React.createElement("button", { className: 'pt-button ' + className, style: style, type: "button", hidden: this.props.hidden, disabled: this.props.disabled, onMouseDown: Constants.mobile ? undefined : this.confirm, onMouseUp: Constants.mobile ? undefined : this.clearConfirm, onMouseLeave: Constants.mobile ? undefined : this.clearConfirm, onClick: Constants.mobile ? this.openDialog : undefined }, this.props.label, confirmElem);
+            }
+        }
+    }
+    exports.default = ConfirmButton;
+    
+});
+System.registerDynamic("app/components/PageInputButton.js", ["npm:react@16.2.0.js", "app/components/Help.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@16.2.0.js");
+    const Help_1 = $__require("app/components/Help.js");
+    const ConfirmButton_1 = $__require("app/components/ConfirmButton.js");
+    const css = {
+        group: {
+            marginBottom: '15px',
+            width: '100%',
+            maxWidth: '280px'
+        },
+        groupList: {
+            marginTop: '5px',
+            width: '100%',
+            maxWidth: '280px'
+        },
+        groupTop: {
+            width: '100%',
+            maxWidth: '280px'
+        },
+        label: {
+            width: '100%',
+            maxWidth: '280px'
+        },
+        input: {
+            width: '100%'
+        },
+        inputBox: {
+            flex: '1'
+        },
+        buttonTop: {
+            marginTop: '5px'
+        }
+    };
+    class PageInputButton extends React.Component {
+        constructor() {
+            super(...arguments);
+            this.autoSelect = evt => {
+                evt.currentTarget.select();
+            };
+        }
+        render() {
+            let buttonClass = 'pt-button';
+            if (this.props.buttonClass) {
+                buttonClass += ' ' + this.props.buttonClass;
+            }
+            let buttonLabel = '';
+            let buttonStyle;
+            if (this.props.labelTop) {
+                buttonStyle = css.buttonTop;
+            } else {
+                buttonLabel = this.props.label || '';
+            }
+            let button;
+            if (this.props.buttonConfirm) {
+                button = React.createElement(ConfirmButton_1.default, { className: buttonClass, style: buttonStyle, disabled: this.props.disabled || this.props.buttonDisabled, onConfirm: this.props.onSubmit, label: buttonLabel });
+            } else {
+                button = React.createElement("button", { className: buttonClass, style: buttonStyle, disabled: this.props.disabled || this.props.buttonDisabled, onClick: this.props.onSubmit }, buttonLabel);
+            }
+            if (this.props.labelTop) {
+                return React.createElement("label", { className: "pt-label", style: css.label, hidden: this.props.hidden }, this.props.label, React.createElement(Help_1.default, { title: this.props.label, content: this.props.help }), React.createElement("div", { className: "pt-control-group", style: css.groupTop, hidden: this.props.hidden }, React.createElement("div", { style: css.inputBox }, React.createElement("input", { className: "pt-input", style: css.input, type: this.props.type, disabled: this.props.disabled, readOnly: this.props.readOnly, autoCapitalize: "off", spellCheck: false, placeholder: this.props.placeholder, value: this.props.value || '', onClick: this.props.autoSelect ? this.autoSelect : null, onChange: evt => {
+                        if (this.props.onChange) {
+                            this.props.onChange(evt.target.value);
+                        }
+                    }, onKeyPress: evt => {
+                        if (evt.key === 'Enter') {
+                            this.props.onSubmit();
+                        }
+                    } })), React.createElement("div", null, button)));
+            } else {
+                return React.createElement("div", { className: "pt-control-group", style: this.props.listStyle ? css.groupList : css.group, hidden: this.props.hidden }, React.createElement("div", { style: css.inputBox }, React.createElement("input", { className: "pt-input", style: css.input, type: this.props.type, disabled: this.props.disabled, readOnly: this.props.readOnly, autoCapitalize: "off", spellCheck: false, placeholder: this.props.placeholder || '', value: this.props.value || '', onChange: evt => {
+                        if (this.props.onChange) {
+                            this.props.onChange(evt.target.value);
+                        }
+                    }, onKeyPress: evt => {
+                        if (evt.key === 'Enter') {
+                            this.props.onSubmit();
+                        }
+                    } })), React.createElement("div", null, button));
+            }
+        }
+    }
+    exports.default = PageInputButton;
+    
+});
+System.registerDynamic("app/components/PageTextArea.js", ["npm:react@16.2.0.js", "app/components/Help.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@16.2.0.js");
+    const Help_1 = $__require("app/components/Help.js");
+    const css = {
+        label: {
+            width: '100%',
+            maxWidth: '280px'
+        },
+        textarea: {
+            width: '100%',
+            resize: 'none',
+            fontSize: '12px',
+            fontFamily: '"Lucida Console", Monaco, monospace'
+        }
+    };
+    class PageTextArea extends React.Component {
+        render() {
+            return React.createElement("label", { className: "pt-label", style: css.label, hidden: this.props.hidden }, this.props.label, React.createElement(Help_1.default, { title: this.props.label, content: this.props.help }), React.createElement("textarea", { className: "pt-input", style: css.textarea, disabled: this.props.disabled, readOnly: this.props.readOnly, autoCapitalize: "off", spellCheck: false, placeholder: this.props.placeholder, rows: this.props.rows, value: this.props.value || '', onChange: evt => {
+                    this.props.onChange(evt.target.value);
+                } }));
+        }
+    }
+    exports.default = PageTextArea;
+    
+});
+System.registerDynamic("app/components/SettingsProvider.js", ["npm:react@16.2.0.js", "app/components/PageInput.js", "app/components/PageInputButton.js", "app/components/PageTextArea.js", "app/components/PageSwitch.js", "app/components/PageInfo.js", "app/components/PageSelect.js", "app/components/Help.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@16.2.0.js");
+    const PageInput_1 = $__require("app/components/PageInput.js");
+    const PageInputButton_1 = $__require("app/components/PageInputButton.js");
+    const PageTextArea_1 = $__require("app/components/PageTextArea.js");
+    const PageSwitch_1 = $__require("app/components/PageSwitch.js");
+    const PageInfo_1 = $__require("app/components/PageInfo.js");
+    const PageSelect_1 = $__require("app/components/PageSelect.js");
+    const Help_1 = $__require("app/components/Help.js");
+    const css = {
+        card: {
+            marginBottom: '5px'
+        },
+        role: {
+            margin: '9px 5px 0 5px',
+            height: '20px'
+        }
+    };
+    class SettingsProvider extends React.Component {
+        constructor(props, context) {
+            super(props, context);
+            this.state = {
+                addRole: ''
+            };
+        }
+        clone() {
+            return Object.assign({}, this.props.provider);
+        }
+        azure() {
+            let provider = this.props.provider;
+            return React.createElement("div", null, React.createElement(PageInput_1.default, { label: "Directory ID", help: "Azure active directory ID", type: "text", placeholder: "Azure directory ID", value: provider.tenant, onChange: val => {
+                    let state = this.clone();
+                    state.tenant = val;
+                    this.props.onChange(state);
+                } }), React.createElement(PageInput_1.default, { label: "Application ID", help: "Azure application ID", type: "text", placeholder: "Azure application ID", value: provider.client_id, onChange: val => {
+                    let state = this.clone();
+                    state.client_id = val;
+                    this.props.onChange(state);
+                } }), React.createElement(PageInput_1.default, { label: "Application Secret", help: "Azure application secret", type: "text", placeholder: "Azure application secret", value: provider.client_secret, onChange: val => {
+                    let state = this.clone();
+                    state.client_secret = val;
+                    this.props.onChange(state);
+                } }));
+        }
+        google() {
+            let provider = this.props.provider;
+            return React.createElement("div", null, React.createElement(PageInput_1.default, { label: "Domain", help: "Domain segment of email address to match", type: "text", placeholder: "Google domain to match", value: provider.domain, onChange: val => {
+                    let state = this.clone();
+                    state.domain = val;
+                    this.props.onChange(state);
+                } }), React.createElement(PageInput_1.default, { label: "Google Admin Email", help: "Optional, the email address of an administrator user in the Google G Suite to delegate API access to. This user will be used to get the groups of Google users. Only needed when providing the Google JSON private key.", type: "text", placeholder: "Google admin email", value: provider.google_email, onChange: val => {
+                    let state = this.clone();
+                    state.google_email = val;
+                    this.props.onChange(state);
+                } }), React.createElement(PageTextArea_1.default, { label: "Google JSON Private Key", help: "Optional, private key for service account in JSON format. This will copy the Google users groups to Pritunl Cloud. Also requires Google admin email.", placeholder: "Google JSON private key", rows: 6, value: provider.google_key, onChange: val => {
+                    let state = this.clone();
+                    state.google_key = val;
+                    this.props.onChange(state);
+                } }));
+        }
+        onelogin() {
+            let provider = this.props.provider;
+            return React.createElement("div", null, React.createElement(PageInput_1.default, { label: "Issuer URL", help: "Single sign-on URL found in OneLogin app settings", type: "text", placeholder: "OneLogin issuer URL", value: provider.issuer_url, onChange: val => {
+                    let state = this.clone();
+                    state.issuer_url = val;
+                    this.props.onChange(state);
+                } }), React.createElement(PageInput_1.default, { label: "SAML 2.0 Endpoint (HTTP)", help: "SAML 2.0 endpoint found in OneLogin app settings", type: "text", placeholder: "OneLogin SAML endpoint", value: provider.saml_url, onChange: val => {
+                    let state = this.clone();
+                    state.saml_url = val;
+                    this.props.onChange(state);
+                } }), React.createElement(PageTextArea_1.default, { label: "X.509 Certificate", help: "X.509 certificate found in OneLogin app settings", placeholder: "OneLogin X.509 certificate", rows: 6, value: provider.saml_cert, onChange: val => {
+                    let state = this.clone();
+                    state.saml_cert = val;
+                    this.props.onChange(state);
+                } }));
+        }
+        okta() {
+            let provider = this.props.provider;
+            return React.createElement("div", null, React.createElement(PageInput_1.default, { label: "Identity Provider Single Sign-On URL", help: "Single sign-on URL found in Okta app settings", type: "text", placeholder: "Okta single sign-on URL", value: provider.saml_url, onChange: val => {
+                    let state = this.clone();
+                    state.saml_url = val;
+                    this.props.onChange(state);
+                } }), React.createElement(PageInput_1.default, { label: "Identity Provider Issuer URL", help: "Issuer URL found in Okta app settings", type: "text", placeholder: "Okta issuer URL", value: provider.issuer_url, onChange: val => {
+                    let state = this.clone();
+                    state.issuer_url = val;
+                    this.props.onChange(state);
+                } }), React.createElement(PageTextArea_1.default, { label: "X.509 Certificate", help: "X.509 certificate found in Okta app settings", placeholder: "Okta X.509 certificate", rows: 6, value: provider.saml_cert, onChange: val => {
+                    let state = this.clone();
+                    state.saml_cert = val;
+                    this.props.onChange(state);
+                } }));
+        }
+        render() {
+            let provider = this.props.provider;
+            let label = '';
+            let options;
+            switch (provider.type) {
+                case 'azure':
+                    label = 'Azure';
+                    options = this.azure();
+                    break;
+                case 'google':
+                    label = 'Google';
+                    options = this.google();
+                    break;
+                case 'onelogin':
+                    label = 'OneLogin';
+                    options = this.onelogin();
+                    break;
+                case 'okta':
+                    label = 'Okta';
+                    options = this.okta();
+                    break;
+            }
+            let roles = [];
+            for (let role of provider.default_roles) {
+                roles.push(React.createElement("div", { className: "pt-tag pt-tag-removable pt-intent-primary", style: css.role, key: role }, role, React.createElement("button", { className: "pt-tag-remove", onMouseUp: () => {
+                        let rls = [...this.props.provider.default_roles];
+                        let i = rls.indexOf(role);
+                        if (i === -1) {
+                            return;
+                        }
+                        rls.splice(i, 1);
+                        let state = this.clone();
+                        state.default_roles = rls;
+                        this.props.onChange(state);
+                    } })));
+            }
+            return React.createElement("div", { className: "pt-card", style: css.card }, React.createElement("h6", null, label), React.createElement(PageInfo_1.default, { fields: [{
+                    label: 'ID',
+                    value: provider.id || 'None'
+                }] }), React.createElement(PageInput_1.default, { label: "Label", help: "Provider label that will be shown to users on the login page", type: "text", placeholder: "Provider label", value: provider.label, onChange: val => {
+                    let state = this.clone();
+                    state.label = val;
+                    this.props.onChange(state);
+                } }), React.createElement("label", { className: "pt-label", hidden: !provider.auto_create }, "Default Roles", React.createElement(Help_1.default, { title: "Default Roles", content: "When the user has authenticated for the first time these roles will be given to the user. These roles may also be used to update the users roles depending on the role management option." }), React.createElement("div", null, roles)), React.createElement(PageInputButton_1.default, { buttonClass: "pt-intent-success pt-icon-add", label: "Add", type: "text", placeholder: "Add default role", hidden: !provider.auto_create, value: this.state.addRole, onChange: val => {
+                    this.setState(Object.assign({}, this.state, { addRole: val }));
+                }, onSubmit: () => {
+                    let rls = [...this.props.provider.default_roles];
+                    if (!this.state.addRole) {
+                        return;
+                    }
+                    if (rls.indexOf(this.state.addRole) === -1) {
+                        rls.push(this.state.addRole);
+                    }
+                    rls.sort();
+                    let state = this.clone();
+                    state.default_roles = rls;
+                    this.props.onChange(state);
+                    this.setState(Object.assign({}, this.state, { addRole: '' }));
+                } }), React.createElement(PageSwitch_1.default, { label: "Create user on authentication", help: "Create the user on first authentication. If this is disabled all users must be manually created before they are able to authenticate.", checked: provider.auto_create, onToggle: () => {
+                    let state = this.clone();
+                    state.auto_create = !state.auto_create;
+                    if (!state.auto_create && state.role_management === 'set_on_insert') {
+                        state.role_management = 'merge';
+                    }
+                    this.props.onChange(state);
+                } }), React.createElement(PageSelect_1.default, { label: "Role Management", help: "When the user authenticates for the first time a user will be created and the users roles will be set to the roles configured above. This is referenced as set on insert. It may be desired to update the roles on subsequent authentications. For this the merge mode can be used which will take the users current roles and merge them with the roles configured above using all the roles from both sets. Overwrite mode will replace the users roles on every authentication with the roles configured above. It is important to consider that if a users roles are modified those modifications will be lost when the overwrite mode is used.", value: provider.role_management, onChange: val => {
+                    let state = this.clone();
+                    state.role_management = val;
+                    this.props.onChange(state);
+                } }, React.createElement("option", { value: "set_on_insert", hidden: !provider.auto_create }, "Set on insert"), React.createElement("option", { value: "merge" }, "Merge"), React.createElement("option", { value: "overwrite" }, "Overwrite")), options, React.createElement("button", { className: "pt-button pt-intent-danger", onClick: () => {
+                    this.props.onRemove();
+                } }, "Remove"));
+        }
+    }
+    exports.default = SettingsProvider;
+    
+});
+System.registerDynamic("app/components/PageInput.js", ["npm:react@16.2.0.js", "app/components/Help.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@16.2.0.js");
+    const Help_1 = $__require("app/components/Help.js");
+    const css = {
+        label: {
+            width: '100%',
+            maxWidth: '280px'
+        },
+        input: {
+            width: '100%'
+        }
+    };
+    class PageInput extends React.Component {
+        constructor() {
+            super(...arguments);
+            this.autoSelect = evt => {
+                evt.currentTarget.select();
+            };
+        }
+        render() {
+            let value = this.props.value;
+            value = isNaN(value) ? this.props.value || '' : this.props.value;
+            return React.createElement("label", { className: "pt-label", style: css.label, hidden: this.props.hidden }, this.props.label, React.createElement(Help_1.default, { title: this.props.label, content: this.props.help }), React.createElement("input", { className: "pt-input", style: css.input, type: this.props.type, disabled: this.props.disabled, readOnly: this.props.readOnly, autoCapitalize: "off", spellCheck: false, placeholder: this.props.placeholder, value: value, onClick: this.props.autoSelect ? this.autoSelect : null, onChange: evt => {
+                    if (this.props.onChange) {
+                        this.props.onChange(evt.target.value);
+                    }
+                } }));
+        }
+    }
+    exports.default = PageInput;
+    
+});
+System.registerDynamic("app/components/PageSelect.js", ["npm:react@16.2.0.js", "app/components/Help.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@16.2.0.js");
+    const Help_1 = $__require("app/components/Help.js");
+    const css = {
+        label: {
+            display: 'inline-block'
+        }
+    };
+    class PageSelect extends React.Component {
+        render() {
+            return React.createElement("div", { hidden: this.props.hidden }, React.createElement("label", { className: "pt-label", style: css.label }, this.props.label, React.createElement(Help_1.default, { title: this.props.label, content: this.props.help }), React.createElement("div", { className: "pt-select" }, React.createElement("select", { disabled: this.props.disabled, value: this.props.value || '', onChange: evt => {
+                    this.props.onChange(evt.target.value);
+                } }, this.props.children))));
+        }
+    }
+    exports.default = PageSelect;
+    
+});
+System.registerDynamic("app/components/Help.js", ["npm:react@16.2.0.js", "npm:@blueprintjs/core@2.0.0.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@16.2.0.js");
+    const Blueprint = $__require("npm:@blueprintjs/core@2.0.0.js");
+    const css = {
+        box: {
+            position: 'relative',
+            display: 'inline'
+        },
+        content: {
+            padding: '20px'
+        },
+        button: {
+            position: 'absolute',
+            top: '-7px',
+            left: '-2px',
+            padding: '7px',
+            background: 'none',
+            opacity: 0.3
+        },
+        popover: {
+            width: '230px'
+        },
+        popoverTarget: {
+            top: '9px',
+            left: '18px'
+        },
+        dialog: {
+            maxWidth: '400px',
+            margin: '30px 20px'
+        }
+    };
+    let dialog = true;
+    class Help extends React.Component {
+        constructor(props, context) {
+            super(props, context);
+            this.state = {
+                popover: false
+            };
+        }
+        render() {
+            let helpElm;
+            if (this.state.popover) {
+                if (dialog) {
+                    helpElm = React.createElement(Blueprint.Dialog, { title: this.props.title, style: css.dialog, isOpen: this.state.popover, onClose: () => {
+                            this.setState(Object.assign({}, this.state, { popover: false }));
+                        } }, React.createElement("div", { className: "pt-dialog-body" }, this.props.content), React.createElement("div", { className: "pt-dialog-footer" }, React.createElement("div", { className: "pt-dialog-footer-actions" }, React.createElement("button", { className: "pt-button", type: "button", onClick: () => {
+                            this.setState(Object.assign({}, this.state, { popover: !this.state.popover }));
+                        } }, "Close"))));
+                } else {
+                    helpElm = React.createElement("span", { className: "pt-popover-target", style: css.popoverTarget }, React.createElement("span", { className: "pt-overlay pt-overlay-inline" }, React.createElement("span", null, React.createElement("div", { className: 'pt-transition-container ' + 'pt-tether-element-attached-middle ' + 'pt-tether-element-attached-left ' + 'pt-tether-target-attached-middle ' + 'pt-tether-target-attached-right pt-overlay-content', style: css.popover }, React.createElement("div", { className: "pt-popover" }, React.createElement("div", { className: "pt-popover-arrow" }, React.createElement("svg", { viewBox: "0 0 30 30" }, React.createElement("path", { className: "pt-popover-arrow-border", d: 'M8.11 6.302c1.015-.936 1.887-2.922 ' + '1.887-4.297v26c0-1.378-' + '.868-3.357-1.888-4.297L.925 ' + '17.09c-1.237-1.14-1.233-3.034 0-4.17L8.11 6.302z' }), React.createElement("path", { className: "pt-popover-arrow-fill", d: 'M8.787 7.036c1.22-1.125 2.21-3.376 ' + '2.21-5.03V0v30-2.005c0-1.654-' + '.983-3.9-2.21-5.03l-7.183-6.616c-' + '.81-.746-.802-1.96 0-2.7l7.183-6.614z' }))), React.createElement("div", { className: "pt-popover-content", style: css.content }, React.createElement("h5", null, this.props.title), React.createElement("div", null, this.props.content)))))));
+                }
+            }
+            return React.createElement("div", { style: css.box }, React.createElement("div", { className: "pt-button pt-minimal pt-icon-help", style: css.button, onClick: () => {
+                    this.setState(Object.assign({}, this.state, { popover: !this.state.popover }));
+                } }), helpElm);
+        }
+    }
+    exports.default = Help;
+    
+});
+System.registerDynamic("app/components/PageSwitch.js", ["npm:react@16.2.0.js", "app/components/Help.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@16.2.0.js");
+    const Help_1 = $__require("app/components/Help.js");
+    const css = {
+        label: {
+            display: 'inline-block'
+        }
+    };
+    class PageSwitch extends React.Component {
+        render() {
+            return React.createElement("div", { hidden: this.props.hidden }, React.createElement("label", { className: "pt-control pt-switch", style: css.label }, React.createElement("input", { type: "checkbox", disabled: this.props.disabled, checked: !!this.props.checked, onChange: this.props.onToggle }), React.createElement("span", { className: "pt-control-indicator" }), this.props.label), React.createElement(Help_1.default, { title: this.props.label, content: this.props.help }));
+        }
+    }
+    exports.default = PageSwitch;
+    
+});
+System.registerDynamic("app/components/PageInfo.js", ["npm:react@16.2.0.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@16.2.0.js");
+    const css = {
+        label: {
+            width: '100%',
+            maxWidth: '280px'
+        },
+        value: {
+            wordWrap: 'break-word'
+        },
+        item: {
+            marginBottom: '5px'
+        }
+    };
+    class PageInfo extends React.Component {
+        render() {
+            let fields = [];
+            let bars = [];
+            for (let field of this.props.fields || []) {
+                let value;
+                if (typeof field.value === 'string') {
+                    value = field.value;
+                } else {
+                    value = [];
+                    for (let i = 0; i < field.value.length; i++) {
+                        value.push(React.createElement("div", { key: i }, field.value[i]));
+                    }
+                }
+                fields.push(React.createElement("div", { key: field.label, style: css.item }, field.label, React.createElement("div", { className: field.valueClass || 'pt-text-muted', style: css.value }, value)));
+            }
+            for (let bar of this.props.bars || []) {
+                let style = {
+                    width: (bar.value || 0) + '%'
+                };
+                bars.push(React.createElement("div", { key: bar.label, style: css.item }, bar.label, React.createElement("div", { className: 'pt-progress-bar ' + (bar.progressClass || '') }, React.createElement("div", { className: "pt-progress-meter", style: style }))));
+            }
+            let labelStyle;
+            if (this.props.style) {
+                labelStyle = Object.assign({}, css.label, this.props.style);
+            } else {
+                labelStyle = css.label;
+            }
+            return React.createElement("label", { className: "pt-label", style: labelStyle, hidden: this.props.hidden }, fields, bars);
+        }
+    }
+    exports.default = PageInfo;
+    
+});
+System.registerDynamic("app/components/SettingsSecondaryProvider.js", ["npm:react@16.2.0.js", "app/components/PageInput.js", "app/components/PageSelect.js", "app/components/PageSwitch.js", "app/components/PageInfo.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@16.2.0.js");
+    const PageInput_1 = $__require("app/components/PageInput.js");
+    const PageSelect_1 = $__require("app/components/PageSelect.js");
+    const PageSwitch_1 = $__require("app/components/PageSwitch.js");
+    const PageInfo_1 = $__require("app/components/PageInfo.js");
+    const css = {
+        card: {
+            marginBottom: '5px'
+        },
+        role: {
+            margin: '9px 5px 0 5px',
+            height: '20px'
+        }
+    };
+    class SettingsSecondaryProvider extends React.Component {
+        clone() {
+            return Object.assign({}, this.props.provider);
+        }
+        duo() {
+            let provider = this.props.provider;
+            return React.createElement("div", null, React.createElement(PageInput_1.default, { label: "Duo API Hostname", help: "Duo API hostname found in Duo admin console.", type: "text", placeholder: "Duo API hostname", value: provider.duo_hostname, onChange: val => {
+                    let state = this.clone();
+                    state.duo_hostname = val;
+                    this.props.onChange(state);
+                } }), React.createElement(PageInput_1.default, { label: "Duo Integration Key", help: "Duo integration key found in Duo admin console.", type: "text", placeholder: "Duo integration key", value: provider.duo_key, onChange: val => {
+                    let state = this.clone();
+                    state.duo_key = val;
+                    this.props.onChange(state);
+                } }), React.createElement(PageInput_1.default, { label: "Duo Secret Key", help: "Duo secret key found in Duo admin console.", type: "text", placeholder: "Duo secret key", value: provider.duo_secret, onChange: val => {
+                    let state = this.clone();
+                    state.duo_secret = val;
+                    this.props.onChange(state);
+                } }), React.createElement(PageSwitch_1.default, { label: "Push authentication", help: "Allow push authentication.", checked: provider.push_factor, onToggle: () => {
+                    let state = this.clone();
+                    state.push_factor = !state.push_factor;
+                    this.props.onChange(state);
+                } }), React.createElement(PageSwitch_1.default, { label: "Phone authentication", help: "Allow phone authentication.", checked: provider.phone_factor, onToggle: () => {
+                    let state = this.clone();
+                    state.phone_factor = !state.phone_factor;
+                    this.props.onChange(state);
+                } }), React.createElement(PageSwitch_1.default, { label: "Passcode authentication", help: "Allow passcode authentication.", checked: provider.passcode_factor, onToggle: () => {
+                    let state = this.clone();
+                    state.passcode_factor = !state.passcode_factor;
+                    this.props.onChange(state);
+                } }), React.createElement(PageSwitch_1.default, { label: "SMS authentication", help: "Allow SMS authentication.", checked: provider.sms_factor, onToggle: () => {
+                    let state = this.clone();
+                    state.sms_factor = !state.sms_factor;
+                    this.props.onChange(state);
+                } }));
+        }
+        onelogin() {
+            let provider = this.props.provider;
+            return React.createElement("div", null, React.createElement(PageInput_1.default, { label: "OneLogin API Client ID", help: "OneLogin API client ID found in OneLogin admin console.", type: "text", placeholder: "OneLogin API client ID", value: provider.one_login_id, onChange: val => {
+                    let state = this.clone();
+                    state.one_login_id = val;
+                    this.props.onChange(state);
+                } }), React.createElement(PageInput_1.default, { label: "OneLogin API Client Secret", help: "OneLogin API client secret found in OneLogin admin console.", type: "text", placeholder: "OneLogin API client secret", value: provider.one_login_secret, onChange: val => {
+                    let state = this.clone();
+                    state.one_login_secret = val;
+                    this.props.onChange(state);
+                } }), React.createElement(PageSelect_1.default, { label: "OneLogin API Region", help: "OneLogin region for API requests.", value: provider.one_login_region, onChange: val => {
+                    let state = this.clone();
+                    state.one_login_region = val;
+                    this.props.onChange(state);
+                } }, React.createElement("option", { value: "us" }, "United States"), React.createElement("option", { value: "eu" }, "Europe")), React.createElement(PageSwitch_1.default, { label: "Push authentication", help: "Allow push authentication.", checked: provider.push_factor, onToggle: () => {
+                    let state = this.clone();
+                    state.push_factor = !state.push_factor;
+                    this.props.onChange(state);
+                } }), React.createElement(PageSwitch_1.default, { label: "Passcode authentication", help: "Allow passcode authentication.", checked: provider.passcode_factor, onToggle: () => {
+                    let state = this.clone();
+                    state.passcode_factor = !state.passcode_factor;
+                    this.props.onChange(state);
+                } }));
+        }
+        okta() {
+            let provider = this.props.provider;
+            return React.createElement("div", null, React.createElement(PageInput_1.default, { label: "Okta Domain", help: "Okta domain used to login to Okta such as 'pritunl.okta.com'.", type: "text", placeholder: "Okta domain", value: provider.okta_domain, onChange: val => {
+                    let state = this.clone();
+                    state.okta_domain = val;
+                    this.props.onChange(state);
+                } }), React.createElement(PageInput_1.default, { label: "Okta API Token", help: "Okta API token found in Okta admin console.", type: "text", placeholder: "Okta API token", value: provider.okta_token, onChange: val => {
+                    let state = this.clone();
+                    state.okta_token = val;
+                    this.props.onChange(state);
+                } }), React.createElement(PageSwitch_1.default, { label: "Push authentication", help: "Allow push authentication.", checked: provider.push_factor, onToggle: () => {
+                    let state = this.clone();
+                    state.push_factor = !state.push_factor;
+                    this.props.onChange(state);
+                } }), React.createElement(PageSwitch_1.default, { label: "Passcode authentication", help: "Allow passcode authentication.", checked: provider.passcode_factor, onToggle: () => {
+                    let state = this.clone();
+                    state.passcode_factor = !state.passcode_factor;
+                    this.props.onChange(state);
+                } }));
+        }
+        render() {
+            let provider = this.props.provider;
+            let label = '';
+            let options;
+            switch (provider.type) {
+                case 'duo':
+                    label = 'Duo';
+                    options = this.duo();
+                    break;
+                case 'one_login':
+                    label = 'OneLogin';
+                    options = this.onelogin();
+                    break;
+                case 'okta':
+                    label = 'Okta';
+                    options = this.okta();
+                    break;
+            }
+            return React.createElement("div", { className: "pt-card", style: css.card }, React.createElement("h6", null, label), React.createElement(PageInfo_1.default, { fields: [{
+                    label: 'ID',
+                    value: provider.id || 'None'
+                }] }), React.createElement(PageInput_1.default, { label: "Name", help: "Two-factor provider name.", type: "text", placeholder: "Two-factor provider name", value: provider.name, onChange: val => {
+                    let state = this.clone();
+                    state.name = val;
+                    this.props.onChange(state);
+                } }), React.createElement(PageInput_1.default, { label: "Label", help: "Two-factor provider label that will be shown to users on the login page.", type: "text", placeholder: "Two-factor provider label", value: provider.label, onChange: val => {
+                    let state = this.clone();
+                    state.label = val;
+                    this.props.onChange(state);
+                } }), options, React.createElement("button", { className: "pt-button pt-intent-danger", onClick: () => {
+                    this.props.onRemove();
+                } }, "Remove"));
+        }
+    }
+    exports.default = SettingsSecondaryProvider;
     
 });
 System.registerDynamic("npm:mobile-detect@1.4.1/mobile-detect.js", [], true, function ($__require, exports, module) {
@@ -19354,746 +20251,48 @@ System.registerDynamic("app/Constants.js", ["npm:mobile-detect@1.4.1.js"], true,
     };
     
 });
-System.registerDynamic("app/components/ConfirmButton.js", ["npm:react@16.2.0.js", "npm:@blueprintjs/core@2.0.0.js", "app/Constants.js", "app/utils/MiscUtils.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/NonState.js", ["npm:react@16.2.0.js", "app/Constants.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
         GLOBAL = global;
     Object.defineProperty(exports, "__esModule", { value: true });
     const React = $__require("npm:react@16.2.0.js");
-    const Blueprint = $__require("npm:@blueprintjs/core@2.0.0.js");
     const Constants = $__require("app/Constants.js");
-    const MiscUtils = $__require("app/utils/MiscUtils.js");
     const css = {
-        actionProgress: {
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            borderRadius: 0,
-            borderBottomLeftRadius: '3px',
-            borderBottomRightRadius: '3px',
-            width: '100%',
-            height: '4px'
-        },
-        dialog: {
-            width: '180px'
+        state: {
+            height: 'auto'
         }
     };
-    class ConfirmButton extends React.Component {
-        constructor(props, context) {
-            super(props, context);
-            this.openDialog = () => {
-                this.setState(Object.assign({}, this.state, { dialog: true }));
-            };
-            this.closeDialog = () => {
-                this.setState(Object.assign({}, this.state, { dialog: false }));
-            };
-            this.closeDialogConfirm = () => {
-                this.setState(Object.assign({}, this.state, { dialog: false }));
-                if (this.props.onConfirm) {
-                    this.props.onConfirm();
-                }
-            };
-            this.confirm = evt => {
-                let confirmId = MiscUtils.uuid();
-                if (evt.shiftKey) {
-                    if (this.props.onConfirm) {
-                        this.props.onConfirm();
-                    }
-                    return;
-                }
-                this.setState(Object.assign({}, this.state, { confirming: confirmId }));
-                let i = 10;
-                let id = setInterval(() => {
-                    if (i > 100) {
-                        clearInterval(id);
-                        setTimeout(() => {
-                            if (this.state.confirming === confirmId) {
-                                this.setState(Object.assign({}, this.state, { confirm: 0, confirming: null }));
-                                if (this.props.onConfirm) {
-                                    this.props.onConfirm();
-                                }
-                            }
-                        }, 250);
-                        return;
-                    } else if (!this.state.confirming) {
-                        clearInterval(id);
-                        this.setState(Object.assign({}, this.state, { confirm: 0, confirming: null }));
-                        return;
-                    }
-                    if (i % 10 === 0) {
-                        this.setState(Object.assign({}, this.state, { confirm: i / 10 }));
-                    }
-                    i += 1;
-                }, 3);
-            };
-            this.clearConfirm = () => {
-                this.setState(Object.assign({}, this.state, { confirm: 0, confirming: null }));
-            };
-            this.state = {
-                dialog: false,
-                confirm: 0,
-                confirming: null
-            };
-        }
-        render() {
-            let confirmElem;
-            let style = Object.assign({}, this.props.style);
-            style.position = 'relative';
-            if (Constants.mobile) {
-                let confirmMsg = this.props.confirmMsg ? this.props.confirmMsg : 'Confirm ' + (this.props.label || '');
-                confirmElem = React.createElement(Blueprint.Dialog, { title: "Confirm", style: css.dialog, isOpen: this.state.dialog, onClose: this.closeDialog }, React.createElement("div", { className: "pt-dialog-body" }, confirmMsg), React.createElement("div", { className: "pt-dialog-footer" }, React.createElement("div", { className: "pt-dialog-footer-actions" }, React.createElement("button", { className: "pt-button", type: "button", onClick: this.closeDialog }, "Cancel"), React.createElement("button", { className: "pt-button pt-intent-primary", type: "button", onClick: this.closeDialogConfirm }, "Ok"))));
-            } else {
-                if (this.state.confirming) {
-                    let confirmStyle = {
-                        width: this.state.confirm * 10 + '%',
-                        backgroundColor: style.color,
-                        borderRadius: 0,
-                        left: 0
-                    };
-                    confirmElem = React.createElement("div", { className: 'pt-progress-bar pt-no-stripes ' + (this.props.progressClassName || ''), style: css.actionProgress }, React.createElement("div", { className: "pt-progress-meter", style: confirmStyle }));
-                }
-            }
-            let className = this.props.className || '';
-            if (!this.props.label) {
-                className += ' pt-button-empty';
-            }
-            return React.createElement("button", { className: 'pt-button ' + className, style: style, type: "button", hidden: this.props.hidden, disabled: this.props.disabled, onMouseDown: Constants.mobile ? undefined : this.confirm, onMouseUp: Constants.mobile ? undefined : this.clearConfirm, onMouseLeave: Constants.mobile ? undefined : this.clearConfirm, onClick: Constants.mobile ? this.openDialog : undefined }, this.props.label, confirmElem);
-        }
-    }
-    exports.default = ConfirmButton;
-    
-});
-System.registerDynamic("app/components/PageInputButton.js", ["npm:react@16.2.0.js", "app/components/Help.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
-    "use strict";
-
-    var global = this || self,
-        GLOBAL = global;
-    Object.defineProperty(exports, "__esModule", { value: true });
-    const React = $__require("npm:react@16.2.0.js");
-    const Help_1 = $__require("app/components/Help.js");
-    const ConfirmButton_1 = $__require("app/components/ConfirmButton.js");
-    const css = {
-        group: {
-            marginBottom: '15px',
-            width: '100%',
-            maxWidth: '280px'
-        },
-        groupList: {
-            marginTop: '5px',
-            width: '100%',
-            maxWidth: '280px'
-        },
-        groupTop: {
-            width: '100%',
-            maxWidth: '280px'
-        },
-        label: {
-            width: '100%',
-            maxWidth: '280px'
-        },
-        input: {
-            width: '100%'
-        },
-        inputBox: {
-            flex: '1'
-        },
-        buttonTop: {
-            marginTop: '5px'
-        }
-    };
-    class PageInputButton extends React.Component {
-        constructor() {
-            super(...arguments);
-            this.autoSelect = evt => {
-                evt.currentTarget.select();
-            };
-        }
-        render() {
-            let buttonClass = 'pt-button';
-            if (this.props.buttonClass) {
-                buttonClass += ' ' + this.props.buttonClass;
-            }
-            let buttonLabel = '';
-            let buttonStyle;
-            if (this.props.labelTop) {
-                buttonStyle = css.buttonTop;
-            } else {
-                buttonLabel = this.props.label || '';
-            }
-            let button;
-            if (this.props.buttonConfirm) {
-                button = React.createElement(ConfirmButton_1.default, { className: buttonClass, style: buttonStyle, disabled: this.props.disabled || this.props.buttonDisabled, onConfirm: this.props.onSubmit, label: buttonLabel });
-            } else {
-                button = React.createElement("button", { className: buttonClass, style: buttonStyle, disabled: this.props.disabled || this.props.buttonDisabled, onClick: this.props.onSubmit }, buttonLabel);
-            }
-            if (this.props.labelTop) {
-                return React.createElement("label", { className: "pt-label", style: css.label, hidden: this.props.hidden }, this.props.label, React.createElement(Help_1.default, { title: this.props.label, content: this.props.help }), React.createElement("div", { className: "pt-control-group", style: css.groupTop, hidden: this.props.hidden }, React.createElement("div", { style: css.inputBox }, React.createElement("input", { className: "pt-input", style: css.input, type: this.props.type, disabled: this.props.disabled, readOnly: this.props.readOnly, autoCapitalize: "off", spellCheck: false, placeholder: this.props.placeholder, value: this.props.value || '', onClick: this.props.autoSelect ? this.autoSelect : null, onChange: evt => {
-                        if (this.props.onChange) {
-                            this.props.onChange(evt.target.value);
-                        }
-                    }, onKeyPress: evt => {
-                        if (evt.key === 'Enter') {
-                            this.props.onSubmit();
-                        }
-                    } })), React.createElement("div", null, button)));
-            } else {
-                return React.createElement("div", { className: "pt-control-group", style: this.props.listStyle ? css.groupList : css.group, hidden: this.props.hidden }, React.createElement("div", { style: css.inputBox }, React.createElement("input", { className: "pt-input", style: css.input, type: this.props.type, disabled: this.props.disabled, readOnly: this.props.readOnly, autoCapitalize: "off", spellCheck: false, placeholder: this.props.placeholder || '', value: this.props.value || '', onChange: evt => {
-                        if (this.props.onChange) {
-                            this.props.onChange(evt.target.value);
-                        }
-                    }, onKeyPress: evt => {
-                        if (evt.key === 'Enter') {
-                            this.props.onSubmit();
-                        }
-                    } })), React.createElement("div", null, button));
-            }
-        }
-    }
-    exports.default = PageInputButton;
-    
-});
-System.registerDynamic("app/components/PageTextArea.js", ["npm:react@16.2.0.js", "app/components/Help.js"], true, function ($__require, exports, module) {
-    "use strict";
-
-    var global = this || self,
-        GLOBAL = global;
-    Object.defineProperty(exports, "__esModule", { value: true });
-    const React = $__require("npm:react@16.2.0.js");
-    const Help_1 = $__require("app/components/Help.js");
-    const css = {
-        label: {
-            width: '100%',
-            maxWidth: '280px'
-        },
-        textarea: {
-            width: '100%',
-            resize: 'none',
-            fontSize: '12px',
-            fontFamily: '"Lucida Console", Monaco, monospace'
-        }
-    };
-    class PageTextArea extends React.Component {
-        render() {
-            return React.createElement("label", { className: "pt-label", style: css.label, hidden: this.props.hidden }, this.props.label, React.createElement(Help_1.default, { title: this.props.label, content: this.props.help }), React.createElement("textarea", { className: "pt-input", style: css.textarea, disabled: this.props.disabled, readOnly: this.props.readOnly, autoCapitalize: "off", spellCheck: false, placeholder: this.props.placeholder, rows: this.props.rows, value: this.props.value || '', onChange: evt => {
-                    this.props.onChange(evt.target.value);
-                } }));
-        }
-    }
-    exports.default = PageTextArea;
-    
-});
-System.registerDynamic("app/components/SettingsProvider.js", ["npm:react@16.2.0.js", "app/components/PageInput.js", "app/components/PageInputButton.js", "app/components/PageTextArea.js", "app/components/PageSwitch.js", "app/components/PageInfo.js", "app/components/PageSelect.js", "app/components/Help.js"], true, function ($__require, exports, module) {
-    "use strict";
-
-    var global = this || self,
-        GLOBAL = global;
-    Object.defineProperty(exports, "__esModule", { value: true });
-    const React = $__require("npm:react@16.2.0.js");
-    const PageInput_1 = $__require("app/components/PageInput.js");
-    const PageInputButton_1 = $__require("app/components/PageInputButton.js");
-    const PageTextArea_1 = $__require("app/components/PageTextArea.js");
-    const PageSwitch_1 = $__require("app/components/PageSwitch.js");
-    const PageInfo_1 = $__require("app/components/PageInfo.js");
-    const PageSelect_1 = $__require("app/components/PageSelect.js");
-    const Help_1 = $__require("app/components/Help.js");
-    const css = {
-        card: {
-            marginBottom: '5px'
-        },
-        role: {
-            margin: '9px 5px 0 5px',
-            height: '20px'
-        }
-    };
-    class SettingsProvider extends React.Component {
+    class NonState extends React.Component {
         constructor(props, context) {
             super(props, context);
             this.state = {
-                addRole: ''
+                initialized: false
             };
         }
-        clone() {
-            return Object.assign({}, this.props.provider);
+        componentDidMount() {
+            this.timeout = window.setTimeout(() => {
+                this.setState(Object.assign({}, this.state, { initialized: true }));
+            }, Constants.loadDelay);
         }
-        azure() {
-            let provider = this.props.provider;
-            return React.createElement("div", null, React.createElement(PageInput_1.default, { label: "Directory ID", help: "Azure active directory ID", type: "text", placeholder: "Azure directory ID", value: provider.tenant, onChange: val => {
-                    let state = this.clone();
-                    state.tenant = val;
-                    this.props.onChange(state);
-                } }), React.createElement(PageInput_1.default, { label: "Application ID", help: "Azure application ID", type: "text", placeholder: "Azure application ID", value: provider.client_id, onChange: val => {
-                    let state = this.clone();
-                    state.client_id = val;
-                    this.props.onChange(state);
-                } }), React.createElement(PageInput_1.default, { label: "Application Secret", help: "Azure application secret", type: "text", placeholder: "Azure application secret", value: provider.client_secret, onChange: val => {
-                    let state = this.clone();
-                    state.client_secret = val;
-                    this.props.onChange(state);
-                } }));
-        }
-        google() {
-            let provider = this.props.provider;
-            return React.createElement("div", null, React.createElement(PageInput_1.default, { label: "Domain", help: "Domain segment of email address to match", type: "text", placeholder: "Google domain to match", value: provider.domain, onChange: val => {
-                    let state = this.clone();
-                    state.domain = val;
-                    this.props.onChange(state);
-                } }), React.createElement(PageInput_1.default, { label: "Google Admin Email", help: "Optional, the email address of an administrator user in the Google G Suite to delegate API access to. This user will be used to get the groups of Google users. Only needed when providing the Google JSON private key.", type: "text", placeholder: "Google admin email", value: provider.google_email, onChange: val => {
-                    let state = this.clone();
-                    state.google_email = val;
-                    this.props.onChange(state);
-                } }), React.createElement(PageTextArea_1.default, { label: "Google JSON Private Key", help: "Optional, private key for service account in JSON format. This will copy the Google users groups to Pritunl Cloud. Also requires Google admin email.", placeholder: "Google JSON private key", rows: 6, value: provider.google_key, onChange: val => {
-                    let state = this.clone();
-                    state.google_key = val;
-                    this.props.onChange(state);
-                } }));
-        }
-        onelogin() {
-            let provider = this.props.provider;
-            return React.createElement("div", null, React.createElement(PageInput_1.default, { label: "Issuer URL", help: "Single sign-on URL found in OneLogin app settings", type: "text", placeholder: "OneLogin issuer URL", value: provider.issuer_url, onChange: val => {
-                    let state = this.clone();
-                    state.issuer_url = val;
-                    this.props.onChange(state);
-                } }), React.createElement(PageInput_1.default, { label: "SAML 2.0 Endpoint (HTTP)", help: "SAML 2.0 endpoint found in OneLogin app settings", type: "text", placeholder: "OneLogin SAML endpoint", value: provider.saml_url, onChange: val => {
-                    let state = this.clone();
-                    state.saml_url = val;
-                    this.props.onChange(state);
-                } }), React.createElement(PageTextArea_1.default, { label: "X.509 Certificate", help: "X.509 certificate found in OneLogin app settings", placeholder: "OneLogin X.509 certificate", rows: 6, value: provider.saml_cert, onChange: val => {
-                    let state = this.clone();
-                    state.saml_cert = val;
-                    this.props.onChange(state);
-                } }));
-        }
-        okta() {
-            let provider = this.props.provider;
-            return React.createElement("div", null, React.createElement(PageInput_1.default, { label: "Identity Provider Single Sign-On URL", help: "Single sign-on URL found in Okta app settings", type: "text", placeholder: "Okta single sign-on URL", value: provider.saml_url, onChange: val => {
-                    let state = this.clone();
-                    state.saml_url = val;
-                    this.props.onChange(state);
-                } }), React.createElement(PageInput_1.default, { label: "Identity Provider Issuer URL", help: "Issuer URL found in Okta app settings", type: "text", placeholder: "Okta issuer URL", value: provider.issuer_url, onChange: val => {
-                    let state = this.clone();
-                    state.issuer_url = val;
-                    this.props.onChange(state);
-                } }), React.createElement(PageTextArea_1.default, { label: "X.509 Certificate", help: "X.509 certificate found in Okta app settings", placeholder: "Okta X.509 certificate", rows: 6, value: provider.saml_cert, onChange: val => {
-                    let state = this.clone();
-                    state.saml_cert = val;
-                    this.props.onChange(state);
-                } }));
+        componentWillUnmount() {
+            if (this.timeout) {
+                window.clearTimeout(this.timeout);
+            }
         }
         render() {
-            let provider = this.props.provider;
-            let label = '';
-            let options;
-            switch (provider.type) {
-                case 'azure':
-                    label = 'Azure';
-                    options = this.azure();
-                    break;
-                case 'google':
-                    label = 'Google';
-                    options = this.google();
-                    break;
-                case 'onelogin':
-                    label = 'OneLogin';
-                    options = this.onelogin();
-                    break;
-                case 'okta':
-                    label = 'Okta';
-                    options = this.okta();
-                    break;
+            let description;
+            if (this.props.description) {
+                description = React.createElement("div", { className: "pt-non-ideal-state-description" }, this.props.description);
             }
-            let roles = [];
-            for (let role of provider.default_roles) {
-                roles.push(React.createElement("div", { className: "pt-tag pt-tag-removable pt-intent-primary", style: css.role, key: role }, role, React.createElement("button", { className: "pt-tag-remove", onMouseUp: () => {
-                        let rls = [...this.props.provider.default_roles];
-                        let i = rls.indexOf(role);
-                        if (i === -1) {
-                            return;
-                        }
-                        rls.splice(i, 1);
-                        let state = this.clone();
-                        state.default_roles = rls;
-                        this.props.onChange(state);
-                    } })));
-            }
-            return React.createElement("div", { className: "pt-card", style: css.card }, React.createElement("h6", null, label), React.createElement(PageInfo_1.default, { fields: [{
-                    label: 'ID',
-                    value: provider.id || 'None'
-                }] }), React.createElement(PageInput_1.default, { label: "Label", help: "Provider label that will be shown to users on the login page", type: "text", placeholder: "Provider label", value: provider.label, onChange: val => {
-                    let state = this.clone();
-                    state.label = val;
-                    this.props.onChange(state);
-                } }), React.createElement("label", { className: "pt-label", hidden: !provider.auto_create }, "Default Roles", React.createElement(Help_1.default, { title: "Default Roles", content: "When the user has authenticated for the first time these roles will be given to the user. These roles may also be used to update the users roles depending on the role management option." }), React.createElement("div", null, roles)), React.createElement(PageInputButton_1.default, { buttonClass: "pt-intent-success pt-icon-add", label: "Add", type: "text", placeholder: "Add default role", hidden: !provider.auto_create, value: this.state.addRole, onChange: val => {
-                    this.setState(Object.assign({}, this.state, { addRole: val }));
-                }, onSubmit: () => {
-                    let rls = [...this.props.provider.default_roles];
-                    if (!this.state.addRole) {
-                        return;
-                    }
-                    if (rls.indexOf(this.state.addRole) === -1) {
-                        rls.push(this.state.addRole);
-                    }
-                    rls.sort();
-                    let state = this.clone();
-                    state.default_roles = rls;
-                    this.props.onChange(state);
-                    this.setState(Object.assign({}, this.state, { addRole: '' }));
-                } }), React.createElement(PageSwitch_1.default, { label: "Create user on authentication", help: "Create the user on first authentication. If this is disabled all users must be manually created before they are able to authenticate.", checked: provider.auto_create, onToggle: () => {
-                    let state = this.clone();
-                    state.auto_create = !state.auto_create;
-                    if (!state.auto_create && state.role_management === 'set_on_insert') {
-                        state.role_management = 'merge';
-                    }
-                    this.props.onChange(state);
-                } }), React.createElement(PageSelect_1.default, { label: "Role Management", help: "When the user authenticates for the first time a user will be created and the users roles will be set to the roles configured above. This is referenced as set on insert. It may be desired to update the roles on subsequent authentications. For this the merge mode can be used which will take the users current roles and merge them with the roles configured above using all the roles from both sets. Overwrite mode will replace the users roles on every authentication with the roles configured above. It is important to consider that if a users roles are modified those modifications will be lost when the overwrite mode is used.", value: provider.role_management, onChange: val => {
-                    let state = this.clone();
-                    state.role_management = val;
-                    this.props.onChange(state);
-                } }, React.createElement("option", { value: "set_on_insert", hidden: !provider.auto_create }, "Set on insert"), React.createElement("option", { value: "merge" }, "Merge"), React.createElement("option", { value: "overwrite" }, "Overwrite")), options, React.createElement("button", { className: "pt-button pt-intent-danger", onClick: () => {
-                    this.props.onRemove();
-                } }, "Remove"));
+            return React.createElement("div", { className: "pt-non-ideal-state", style: css.state, hidden: this.props.hidden || !this.state.initialized }, React.createElement("div", { className: "pt-non-ideal-state-visual pt-non-ideal-state-icon" }, React.createElement("span", { className: 'pt-icon ' + this.props.iconClass })), React.createElement("h4", { className: "pt-non-ideal-state-title" }, this.props.title), description);
         }
     }
-    exports.default = SettingsProvider;
+    exports.default = NonState;
     
 });
-System.registerDynamic("app/components/PageInput.js", ["npm:react@16.2.0.js", "app/components/Help.js"], true, function ($__require, exports, module) {
-    "use strict";
-
-    var global = this || self,
-        GLOBAL = global;
-    Object.defineProperty(exports, "__esModule", { value: true });
-    const React = $__require("npm:react@16.2.0.js");
-    const Help_1 = $__require("app/components/Help.js");
-    const css = {
-        label: {
-            width: '100%',
-            maxWidth: '280px'
-        },
-        input: {
-            width: '100%'
-        }
-    };
-    class PageInput extends React.Component {
-        constructor() {
-            super(...arguments);
-            this.autoSelect = evt => {
-                evt.currentTarget.select();
-            };
-        }
-        render() {
-            let value = this.props.value;
-            value = isNaN(value) ? this.props.value || '' : this.props.value;
-            return React.createElement("label", { className: "pt-label", style: css.label, hidden: this.props.hidden }, this.props.label, React.createElement(Help_1.default, { title: this.props.label, content: this.props.help }), React.createElement("input", { className: "pt-input", style: css.input, type: this.props.type, disabled: this.props.disabled, readOnly: this.props.readOnly, autoCapitalize: "off", spellCheck: false, placeholder: this.props.placeholder, value: value, onClick: this.props.autoSelect ? this.autoSelect : null, onChange: evt => {
-                    if (this.props.onChange) {
-                        this.props.onChange(evt.target.value);
-                    }
-                } }));
-        }
-    }
-    exports.default = PageInput;
-    
-});
-System.registerDynamic("app/components/PageSelect.js", ["npm:react@16.2.0.js", "app/components/Help.js"], true, function ($__require, exports, module) {
-    "use strict";
-
-    var global = this || self,
-        GLOBAL = global;
-    Object.defineProperty(exports, "__esModule", { value: true });
-    const React = $__require("npm:react@16.2.0.js");
-    const Help_1 = $__require("app/components/Help.js");
-    const css = {
-        label: {
-            display: 'inline-block'
-        }
-    };
-    class PageSelect extends React.Component {
-        render() {
-            return React.createElement("div", { hidden: this.props.hidden }, React.createElement("label", { className: "pt-label", style: css.label }, this.props.label, React.createElement(Help_1.default, { title: this.props.label, content: this.props.help }), React.createElement("div", { className: "pt-select" }, React.createElement("select", { disabled: this.props.disabled, value: this.props.value || '', onChange: evt => {
-                    this.props.onChange(evt.target.value);
-                } }, this.props.children))));
-        }
-    }
-    exports.default = PageSelect;
-    
-});
-System.registerDynamic("app/components/Help.js", ["npm:react@16.2.0.js", "npm:@blueprintjs/core@2.0.0.js"], true, function ($__require, exports, module) {
-    "use strict";
-
-    var global = this || self,
-        GLOBAL = global;
-    Object.defineProperty(exports, "__esModule", { value: true });
-    const React = $__require("npm:react@16.2.0.js");
-    const Blueprint = $__require("npm:@blueprintjs/core@2.0.0.js");
-    const css = {
-        box: {
-            position: 'relative',
-            display: 'inline'
-        },
-        content: {
-            padding: '20px'
-        },
-        button: {
-            position: 'absolute',
-            top: '-7px',
-            left: '-2px',
-            padding: '7px',
-            background: 'none',
-            opacity: 0.3
-        },
-        popover: {
-            width: '230px'
-        },
-        popoverTarget: {
-            top: '9px',
-            left: '18px'
-        },
-        dialog: {
-            maxWidth: '400px',
-            margin: '30px 20px'
-        }
-    };
-    let dialog = true;
-    class Help extends React.Component {
-        constructor(props, context) {
-            super(props, context);
-            this.state = {
-                popover: false
-            };
-        }
-        render() {
-            let helpElm;
-            if (this.state.popover) {
-                if (dialog) {
-                    helpElm = React.createElement(Blueprint.Dialog, { title: this.props.title, style: css.dialog, isOpen: this.state.popover, onClose: () => {
-                            this.setState(Object.assign({}, this.state, { popover: false }));
-                        } }, React.createElement("div", { className: "pt-dialog-body" }, this.props.content), React.createElement("div", { className: "pt-dialog-footer" }, React.createElement("div", { className: "pt-dialog-footer-actions" }, React.createElement("button", { className: "pt-button", type: "button", onClick: () => {
-                            this.setState(Object.assign({}, this.state, { popover: !this.state.popover }));
-                        } }, "Close"))));
-                } else {
-                    helpElm = React.createElement("span", { className: "pt-popover-target", style: css.popoverTarget }, React.createElement("span", { className: "pt-overlay pt-overlay-inline" }, React.createElement("span", null, React.createElement("div", { className: 'pt-transition-container ' + 'pt-tether-element-attached-middle ' + 'pt-tether-element-attached-left ' + 'pt-tether-target-attached-middle ' + 'pt-tether-target-attached-right pt-overlay-content', style: css.popover }, React.createElement("div", { className: "pt-popover" }, React.createElement("div", { className: "pt-popover-arrow" }, React.createElement("svg", { viewBox: "0 0 30 30" }, React.createElement("path", { className: "pt-popover-arrow-border", d: 'M8.11 6.302c1.015-.936 1.887-2.922 ' + '1.887-4.297v26c0-1.378-' + '.868-3.357-1.888-4.297L.925 ' + '17.09c-1.237-1.14-1.233-3.034 0-4.17L8.11 6.302z' }), React.createElement("path", { className: "pt-popover-arrow-fill", d: 'M8.787 7.036c1.22-1.125 2.21-3.376 ' + '2.21-5.03V0v30-2.005c0-1.654-' + '.983-3.9-2.21-5.03l-7.183-6.616c-' + '.81-.746-.802-1.96 0-2.7l7.183-6.614z' }))), React.createElement("div", { className: "pt-popover-content", style: css.content }, React.createElement("h5", null, this.props.title), React.createElement("div", null, this.props.content)))))));
-                }
-            }
-            return React.createElement("div", { style: css.box }, React.createElement("div", { className: "pt-button pt-minimal pt-icon-help", style: css.button, onClick: () => {
-                    this.setState(Object.assign({}, this.state, { popover: !this.state.popover }));
-                } }), helpElm);
-        }
-    }
-    exports.default = Help;
-    
-});
-System.registerDynamic("app/components/PageSwitch.js", ["npm:react@16.2.0.js", "app/components/Help.js"], true, function ($__require, exports, module) {
-    "use strict";
-
-    var global = this || self,
-        GLOBAL = global;
-    Object.defineProperty(exports, "__esModule", { value: true });
-    const React = $__require("npm:react@16.2.0.js");
-    const Help_1 = $__require("app/components/Help.js");
-    const css = {
-        label: {
-            display: 'inline-block'
-        }
-    };
-    class PageSwitch extends React.Component {
-        render() {
-            return React.createElement("div", { hidden: this.props.hidden }, React.createElement("label", { className: "pt-control pt-switch", style: css.label }, React.createElement("input", { type: "checkbox", disabled: this.props.disabled, checked: !!this.props.checked, onChange: this.props.onToggle }), React.createElement("span", { className: "pt-control-indicator" }), this.props.label), React.createElement(Help_1.default, { title: this.props.label, content: this.props.help }));
-        }
-    }
-    exports.default = PageSwitch;
-    
-});
-System.registerDynamic("app/components/PageInfo.js", ["npm:react@16.2.0.js"], true, function ($__require, exports, module) {
-    "use strict";
-
-    var global = this || self,
-        GLOBAL = global;
-    Object.defineProperty(exports, "__esModule", { value: true });
-    const React = $__require("npm:react@16.2.0.js");
-    const css = {
-        label: {
-            width: '100%',
-            maxWidth: '280px'
-        },
-        value: {
-            wordWrap: 'break-word'
-        },
-        item: {
-            marginBottom: '5px'
-        }
-    };
-    class PageInfo extends React.Component {
-        render() {
-            let fields = [];
-            let bars = [];
-            for (let field of this.props.fields || []) {
-                let value;
-                if (typeof field.value === 'string') {
-                    value = field.value;
-                } else {
-                    value = [];
-                    for (let i = 0; i < field.value.length; i++) {
-                        value.push(React.createElement("div", { key: i }, field.value[i]));
-                    }
-                }
-                fields.push(React.createElement("div", { key: field.label, style: css.item }, field.label, React.createElement("div", { className: field.valueClass || 'pt-text-muted', style: css.value }, value)));
-            }
-            for (let bar of this.props.bars || []) {
-                let style = {
-                    width: (bar.value || 0) + '%'
-                };
-                bars.push(React.createElement("div", { key: bar.label, style: css.item }, bar.label, React.createElement("div", { className: 'pt-progress-bar ' + (bar.progressClass || '') }, React.createElement("div", { className: "pt-progress-meter", style: style }))));
-            }
-            let labelStyle;
-            if (this.props.style) {
-                labelStyle = Object.assign({}, css.label, this.props.style);
-            } else {
-                labelStyle = css.label;
-            }
-            return React.createElement("label", { className: "pt-label", style: labelStyle, hidden: this.props.hidden }, fields, bars);
-        }
-    }
-    exports.default = PageInfo;
-    
-});
-System.registerDynamic("app/components/SettingsSecondaryProvider.js", ["npm:react@16.2.0.js", "app/components/PageInput.js", "app/components/PageSelect.js", "app/components/PageSwitch.js", "app/components/PageInfo.js"], true, function ($__require, exports, module) {
-    "use strict";
-
-    var global = this || self,
-        GLOBAL = global;
-    Object.defineProperty(exports, "__esModule", { value: true });
-    const React = $__require("npm:react@16.2.0.js");
-    const PageInput_1 = $__require("app/components/PageInput.js");
-    const PageSelect_1 = $__require("app/components/PageSelect.js");
-    const PageSwitch_1 = $__require("app/components/PageSwitch.js");
-    const PageInfo_1 = $__require("app/components/PageInfo.js");
-    const css = {
-        card: {
-            marginBottom: '5px'
-        },
-        role: {
-            margin: '9px 5px 0 5px',
-            height: '20px'
-        }
-    };
-    class SettingsSecondaryProvider extends React.Component {
-        clone() {
-            return Object.assign({}, this.props.provider);
-        }
-        duo() {
-            let provider = this.props.provider;
-            return React.createElement("div", null, React.createElement(PageInput_1.default, { label: "Duo API Hostname", help: "Duo API hostname found in Duo admin console.", type: "text", placeholder: "Duo API hostname", value: provider.duo_hostname, onChange: val => {
-                    let state = this.clone();
-                    state.duo_hostname = val;
-                    this.props.onChange(state);
-                } }), React.createElement(PageInput_1.default, { label: "Duo Integration Key", help: "Duo integration key found in Duo admin console.", type: "text", placeholder: "Duo integration key", value: provider.duo_key, onChange: val => {
-                    let state = this.clone();
-                    state.duo_key = val;
-                    this.props.onChange(state);
-                } }), React.createElement(PageInput_1.default, { label: "Duo Secret Key", help: "Duo secret key found in Duo admin console.", type: "text", placeholder: "Duo secret key", value: provider.duo_secret, onChange: val => {
-                    let state = this.clone();
-                    state.duo_secret = val;
-                    this.props.onChange(state);
-                } }), React.createElement(PageSwitch_1.default, { label: "Push authentication", help: "Allow push authentication.", checked: provider.push_factor, onToggle: () => {
-                    let state = this.clone();
-                    state.push_factor = !state.push_factor;
-                    this.props.onChange(state);
-                } }), React.createElement(PageSwitch_1.default, { label: "Phone authentication", help: "Allow phone authentication.", checked: provider.phone_factor, onToggle: () => {
-                    let state = this.clone();
-                    state.phone_factor = !state.phone_factor;
-                    this.props.onChange(state);
-                } }), React.createElement(PageSwitch_1.default, { label: "Passcode authentication", help: "Allow passcode authentication.", checked: provider.passcode_factor, onToggle: () => {
-                    let state = this.clone();
-                    state.passcode_factor = !state.passcode_factor;
-                    this.props.onChange(state);
-                } }), React.createElement(PageSwitch_1.default, { label: "SMS authentication", help: "Allow SMS authentication.", checked: provider.sms_factor, onToggle: () => {
-                    let state = this.clone();
-                    state.sms_factor = !state.sms_factor;
-                    this.props.onChange(state);
-                } }));
-        }
-        onelogin() {
-            let provider = this.props.provider;
-            return React.createElement("div", null, React.createElement(PageInput_1.default, { label: "OneLogin API Client ID", help: "OneLogin API client ID found in OneLogin admin console.", type: "text", placeholder: "OneLogin API client ID", value: provider.one_login_id, onChange: val => {
-                    let state = this.clone();
-                    state.one_login_id = val;
-                    this.props.onChange(state);
-                } }), React.createElement(PageInput_1.default, { label: "OneLogin API Client Secret", help: "OneLogin API client secret found in OneLogin admin console.", type: "text", placeholder: "OneLogin API client secret", value: provider.one_login_secret, onChange: val => {
-                    let state = this.clone();
-                    state.one_login_secret = val;
-                    this.props.onChange(state);
-                } }), React.createElement(PageSelect_1.default, { label: "OneLogin API Region", help: "OneLogin region for API requests.", value: provider.one_login_region, onChange: val => {
-                    let state = this.clone();
-                    state.one_login_region = val;
-                    this.props.onChange(state);
-                } }, React.createElement("option", { value: "us" }, "United States"), React.createElement("option", { value: "eu" }, "Europe")), React.createElement(PageSwitch_1.default, { label: "Push authentication", help: "Allow push authentication.", checked: provider.push_factor, onToggle: () => {
-                    let state = this.clone();
-                    state.push_factor = !state.push_factor;
-                    this.props.onChange(state);
-                } }), React.createElement(PageSwitch_1.default, { label: "Passcode authentication", help: "Allow passcode authentication.", checked: provider.passcode_factor, onToggle: () => {
-                    let state = this.clone();
-                    state.passcode_factor = !state.passcode_factor;
-                    this.props.onChange(state);
-                } }));
-        }
-        okta() {
-            let provider = this.props.provider;
-            return React.createElement("div", null, React.createElement(PageInput_1.default, { label: "Okta Domain", help: "Okta domain used to login to Okta such as 'pritunl.okta.com'.", type: "text", placeholder: "Okta domain", value: provider.okta_domain, onChange: val => {
-                    let state = this.clone();
-                    state.okta_domain = val;
-                    this.props.onChange(state);
-                } }), React.createElement(PageInput_1.default, { label: "Okta API Token", help: "Okta API token found in Okta admin console.", type: "text", placeholder: "Okta API token", value: provider.okta_token, onChange: val => {
-                    let state = this.clone();
-                    state.okta_token = val;
-                    this.props.onChange(state);
-                } }), React.createElement(PageSwitch_1.default, { label: "Push authentication", help: "Allow push authentication.", checked: provider.push_factor, onToggle: () => {
-                    let state = this.clone();
-                    state.push_factor = !state.push_factor;
-                    this.props.onChange(state);
-                } }), React.createElement(PageSwitch_1.default, { label: "Passcode authentication", help: "Allow passcode authentication.", checked: provider.passcode_factor, onToggle: () => {
-                    let state = this.clone();
-                    state.passcode_factor = !state.passcode_factor;
-                    this.props.onChange(state);
-                } }));
-        }
-        render() {
-            let provider = this.props.provider;
-            let label = '';
-            let options;
-            switch (provider.type) {
-                case 'duo':
-                    label = 'Duo';
-                    options = this.duo();
-                    break;
-                case 'one_login':
-                    label = 'OneLogin';
-                    options = this.onelogin();
-                    break;
-                case 'okta':
-                    label = 'Okta';
-                    options = this.okta();
-                    break;
-            }
-            return React.createElement("div", { className: "pt-card", style: css.card }, React.createElement("h6", null, label), React.createElement(PageInfo_1.default, { fields: [{
-                    label: 'ID',
-                    value: provider.id || 'None'
-                }] }), React.createElement(PageInput_1.default, { label: "Name", help: "Two-factor provider name.", type: "text", placeholder: "Two-factor provider name", value: provider.name, onChange: val => {
-                    let state = this.clone();
-                    state.name = val;
-                    this.props.onChange(state);
-                } }), React.createElement(PageInput_1.default, { label: "Label", help: "Two-factor provider label that will be shown to users on the login page.", type: "text", placeholder: "Two-factor provider label", value: provider.label, onChange: val => {
-                    let state = this.clone();
-                    state.label = val;
-                    this.props.onChange(state);
-                } }), options, React.createElement("button", { className: "pt-button pt-intent-danger", onClick: () => {
-                    this.props.onRemove();
-                } }, "Remove"));
-        }
-    }
-    exports.default = SettingsSecondaryProvider;
-    
-});
-System.registerDynamic("app/components/Settings.js", ["npm:react@16.2.0.js", "app/stores/SettingsStore.js", "app/actions/SettingsActions.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/PagePanel.js", "app/components/PageSplit.js", "app/components/PageInput.js", "app/components/PageSwitch.js", "app/components/PageSelectButton.js", "app/components/PageSave.js", "app/components/SettingsProvider.js", "app/components/SettingsSecondaryProvider.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/Settings.js", ["npm:react@16.2.0.js", "app/stores/SettingsStore.js", "app/stores/SubscriptionStore.js", "app/actions/SettingsActions.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/PagePanel.js", "app/components/PageSplit.js", "app/components/PageInput.js", "app/components/PageSwitch.js", "app/components/PageSelectButton.js", "app/components/PageSave.js", "app/components/SettingsProvider.js", "app/components/SettingsSecondaryProvider.js", "app/components/NonState.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -20101,6 +20300,7 @@ System.registerDynamic("app/components/Settings.js", ["npm:react@16.2.0.js", "ap
     Object.defineProperty(exports, "__esModule", { value: true });
     const React = $__require("npm:react@16.2.0.js");
     const SettingsStore_1 = $__require("app/stores/SettingsStore.js");
+    const SubscriptionStore_1 = $__require("app/stores/SubscriptionStore.js");
     const SettingsActions = $__require("app/actions/SettingsActions.js");
     const Page_1 = $__require("app/components/Page.js");
     const PageHeader_1 = $__require("app/components/PageHeader.js");
@@ -20112,6 +20312,7 @@ System.registerDynamic("app/components/Settings.js", ["npm:react@16.2.0.js", "ap
     const PageSave_1 = $__require("app/components/PageSave.js");
     const SettingsProvider_1 = $__require("app/components/SettingsProvider.js");
     const SettingsSecondaryProvider_1 = $__require("app/components/SettingsSecondaryProvider.js");
+    const NonState_1 = $__require("app/components/NonState.js");
     const css = {
         providers: {
             paddingBottom: '6px',
@@ -20168,6 +20369,7 @@ System.registerDynamic("app/components/Settings.js", ["npm:react@16.2.0.js", "ap
             if (!settings) {
                 return React.createElement("div", null);
             }
+            let subscriptionActive = SubscriptionStore_1.default.subscription ? SubscriptionStore_1.default.subscription.active : false;
             let providers = [];
             for (let i = 0; i < settings.auth_providers.length; i++) {
                 providers.push(React.createElement(SettingsProvider_1.default, { key: i, provider: settings.auth_providers[i], onChange: state => {
@@ -20192,7 +20394,7 @@ System.registerDynamic("app/components/Settings.js", ["npm:react@16.2.0.js", "ap
                         this.set('auth_secondary_providers', prvdrs);
                     } }));
             }
-            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, { label: "Settings" }), React.createElement(PageSplit_1.default, null, React.createElement(PagePanel_1.default, null, React.createElement("div", { className: "pt-border", style: css.providers }, React.createElement("h5", { style: css.providersLabel }, "Authentication Providers")), providers, React.createElement(PageSelectButton_1.default, { label: "Add Provider", value: this.state.provider, buttonClass: "pt-intent-success", onChange: val => {
+            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, { label: "Settings" }), React.createElement(PageSplit_1.default, null, React.createElement(PagePanel_1.default, { hidden: subscriptionActive }, React.createElement(NonState_1.default, { hidden: false, iconClass: "pt-icon-credit-card", title: "Subscription Required", description: "Subscription required for single sign-on." })), React.createElement(PagePanel_1.default, { hidden: !subscriptionActive }, React.createElement("div", { className: "pt-border", style: css.providers }, React.createElement("h5", { style: css.providersLabel }, "Authentication Providers")), providers, React.createElement(PageSelectButton_1.default, { label: "Add Provider", value: this.state.provider, buttonClass: "pt-intent-success", onChange: val => {
                     this.setState(Object.assign({}, this.state, { provider: val }));
                 }, onSubmit: () => {
                     let authProviders = [...settings.auth_providers, {
@@ -21108,6 +21310,7 @@ System.registerDynamic("app/actions/NodeActions.js", ["npm:superagent@3.8.2.js",
         let loader = new Loader_1.default().loading();
         return new Promise((resolve, reject) => {
             SuperAgent.get('/node').query({
+                names: true,
                 zone: zone
             }).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
                 loader.done();
