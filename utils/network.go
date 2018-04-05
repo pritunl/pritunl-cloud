@@ -76,3 +76,11 @@ func GetLastIpAddress(network *net.IPNet) net.IP {
 	end.Or(end, start)
 	return BigInt2IpAddress(end, bits)
 }
+
+func ParseIpMask(mask string) net.IPMask {
+	maskIp := net.ParseIP(mask)
+	if maskIp == nil {
+		return nil
+	}
+	return net.IPv4Mask(maskIp[12], maskIp[13], maskIp[14], maskIp[15])
+}
