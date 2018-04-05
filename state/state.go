@@ -9,6 +9,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/qemu"
 	"github.com/pritunl/pritunl-cloud/vm"
+	"github.com/pritunl/pritunl-cloud/vpc"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -17,6 +18,7 @@ type State struct {
 
 	virtsMap     map[bson.ObjectId]*vm.VirtualMachine
 	instances    []*instance.Instance
+	vpcsMap      map[bson.ObjectId]*vpc.Vpc
 	instancesMap map[bson.ObjectId]*instance.Instance
 	addInstances set.Set
 	remInstances set.Set
@@ -28,6 +30,10 @@ func (s *State) Instances() []*instance.Instance {
 
 func (s *State) Disks() []*disk.Disk {
 	return s.disks
+}
+
+func (s *State) Vpc(vpcId bson.ObjectId) *vpc.Vpc {
+	return s.vpcsMap[vpcId]
 }
 
 func (s *State) DiskInUse(instId, dskId bson.ObjectId) bool {
@@ -76,8 +82,15 @@ func (s *State) init() (err error) {
 	}, disks)
 	s.instances = instances
 
+	vpcIdsSet := set.NewSet()
 	for _, inst := range instances {
 		virtsId.Remove(inst.Id)
+		vpcIdsSet.Add(inst.Vpc)
+	}
+
+	vpcIds := []bson.ObjectId{}
+	for vpcIdInf := range vpcIdsSet.Iter() {
+		vpcIds = append(vpcIds, vpcIdInf.(bson.ObjectId))
 	}
 
 	for virtId := range virtsId.Iter() {
@@ -85,6 +98,18 @@ func (s *State) init() (err error) {
 			"id": virtId.(bson.ObjectId).Hex(),
 		}).Info("sync: Unknown instance")
 	}
+	s.instances = instances
+
+	vpcs, err := vpc.GetIds(db, vpcIds)
+	if err != nil {
+		return
+	}
+
+	vpcsMap := map[bson.ObjectId]*vpc.Vpc{}
+	for _, vc := range vpcs {
+		vpcsMap[vc.Id] = vc
+	}
+	s.vpcsMap = vpcsMap
 
 	return
 }
