@@ -4,10 +4,10 @@ import * as VpcTypes from '../types/VpcTypes';
 import * as VpcActions from '../actions/VpcActions';
 import * as DatacenterTypes from "../types/DatacenterTypes";
 import * as OrganizationTypes from "../types/OrganizationTypes";
+import VpcRoute from './VpcRoute';
 import PageInput from './PageInput';
 import PageSelect from './PageSelect';
 import PageInfo from './PageInfo';
-import PageInputButton from './PageInputButton';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
 import Help from './Help';
@@ -92,7 +92,7 @@ const css = {
 		margin: '9px 5px 0 5px',
 		height: '20px',
 	} as React.CSSProperties,
-	rules: {
+	routes: {
 		marginBottom: '15px',
 	} as React.CSSProperties,
 };
@@ -128,6 +128,92 @@ export default class VpcDetailed extends React.Component<Props, State> {
 		this.setState({
 			...this.state,
 			changed: true,
+			vpc: vpc,
+		});
+	}
+
+	onAddRoute = (i: number): void => {
+		let vpc: VpcTypes.Vpc;
+
+		if (this.state.changed) {
+			vpc = {
+				...this.state.vpc,
+			};
+		} else {
+			vpc = {
+				...this.props.vpc,
+			};
+		}
+
+		let routes = [
+			...(vpc.routes || []),
+		];
+
+		routes.splice(i + 1, 0, {} as VpcTypes.Route);
+		vpc.routes = routes;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			vpc: vpc,
+		});
+	}
+
+	onChangeRoute(i: number, route: VpcTypes.Route): void {
+		let vpc: VpcTypes.Vpc;
+
+		if (this.state.changed) {
+			vpc = {
+				...this.state.vpc,
+			};
+		} else {
+			vpc = {
+				...this.props.vpc,
+			};
+		}
+
+		let routes = [
+			...vpc.routes,
+		];
+
+		routes[i] = route;
+
+		vpc.routes = routes;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			vpc: vpc,
+		});
+	}
+
+	onRemoveRoute(i: number): void {
+		let vpc: VpcTypes.Vpc;
+
+		if (this.state.changed) {
+			vpc = {
+				...this.state.vpc,
+			};
+		} else {
+			vpc = {
+				...this.props.vpc,
+			};
+		}
+
+		let routes = [
+			...vpc.routes,
+		];
+
+		routes.splice(i, 1);
+
+		vpc.routes = routes;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
 			vpc: vpc,
 		});
 	}
@@ -224,6 +310,43 @@ export default class VpcDetailed extends React.Component<Props, State> {
 			}
 		}
 
+		let routes: JSX.Element[] = [
+			<VpcRoute
+				disabled={true}
+				key={-1}
+				route={{
+					destination: '0.0.0.0/0',
+					target: '0.0.0.0',
+				} as VpcTypes.Route}
+				onChange={(state: VpcTypes.Route): void => {}}
+				onAdd={(): void => {
+					this.onAddRoute(-1);
+				}}
+				onRemove={(): void => {}}
+			/>,
+		];
+		if (vpc.routes) {
+			for (let i = 0; i < vpc.routes.length; i++) {
+				let index = i;
+
+				routes.push(
+					<VpcRoute
+						key={index}
+						route={vpc.routes[index]}
+						onChange={(state: VpcTypes.Route): void => {
+							this.onChangeRoute(index, state);
+						}}
+						onAdd={(): void => {
+							this.onAddRoute(index);
+						}}
+						onRemove={(): void => {
+							this.onRemoveRoute(index);
+						}}
+					/>,
+				);
+			}
+		}
+
 		return <td
 			className="pt-cell"
 			colSpan={5}
@@ -290,6 +413,16 @@ export default class VpcDetailed extends React.Component<Props, State> {
 							this.set('network', val);
 						}}
 					/>
+					<label style={css.itemsLabel}>
+						Route Table
+						<Help
+							title="Route Table"
+							content="VPC routing table, enter a CIDR network for the desitnation and IP address for taget."
+						/>
+					</label>
+					<div style={css.routes}>
+						{routes}
+					</div>
 				</div>
 				<div style={css.group}>
 					<PageInfo
