@@ -15,6 +15,11 @@ import (
 	"net"
 )
 
+type Route struct {
+	Destination string `bson:"destination" json:"destination"`
+	Target      string `bson:"target" json:"target"`
+}
+
 type Vpc struct {
 	Id           bson.ObjectId `bson:"_id,omitempty" json:"id"`
 	Name         string        `bson:"name" json:"name"`
@@ -22,6 +27,7 @@ type Vpc struct {
 	Network      string        `bson:"network" json:"network"`
 	Organization bson.ObjectId `bson:"organization" json:"organization"`
 	Datacenter   bson.ObjectId `bson:"datacenter" json:"datacenter"`
+	Routes       []*Route      `bson:"routes" json:"routes"`
 }
 
 func (v *Vpc) Validate(db *database.Database) (
