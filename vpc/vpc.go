@@ -67,6 +67,48 @@ func (v *Vpc) Validate(db *database.Database) (
 	}
 	v.Network = network.String()
 
+	if v.Routes == nil {
+		v.Routes = []*Route{}
+	}
+
+	for _, route := range v.Routes {
+		_, destination, e := net.ParseCIDR(route.Destination)
+		if e != nil {
+			errData = &errortypes.ErrorData{
+				Error:   "route_destination_invalid",
+				Message: "Route destination invalid",
+			}
+			return
+		}
+		route.Destination = destination.String()
+
+		if route.Destination == "0.0.0.0/0" {
+			errData = &errortypes.ErrorData{
+				Error:   "route_destination_invalid",
+				Message: "Route destination invalid",
+			}
+			return
+		}
+
+		target := net.ParseIP(route.Target)
+		if target == nil {
+			errData = &errortypes.ErrorData{
+				Error:   "route_target_invalid",
+				Message: "Route target invalid",
+			}
+			return
+		}
+		route.Target = target.String()
+
+		if route.Target == "0.0.0.0" || !network.Contains(target) {
+			errData = &errortypes.ErrorData{
+				Error:   "route_target_invalid_network",
+				Message: "Route target not in VPC network",
+			}
+			return
+		}
+	}
+
 	return
 }
 
