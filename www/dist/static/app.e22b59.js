@@ -12472,7 +12472,51 @@ System.registerDynamic("app/components/Zones.js", ["npm:react@16.2.0.js", "app/s
     exports.default = Zones;
     
 });
-System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.2.0.js", "app/actions/VpcActions.js", "app/components/PageInput.js", "app/components/PageSelect.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/VpcRoute.js", ["npm:react@16.2.0.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@16.2.0.js");
+    const css = {
+        group: {
+            width: '100%',
+            maxWidth: '310px',
+            marginTop: '5px'
+        },
+        input: {
+            width: '100%'
+        },
+        inputBox: {
+            flex: '1'
+        }
+    };
+    class VpcRoute extends React.Component {
+        clone() {
+            return Object.assign({}, this.props.route);
+        }
+        render() {
+            let route = this.props.route;
+            return React.createElement("div", null, React.createElement("div", { className: "pt-control-group", style: css.group }, React.createElement("div", { style: css.inputBox }, React.createElement("input", { className: "pt-input", style: css.input, disabled: this.props.disabled, type: "text", autoCapitalize: "off", spellCheck: false, placeholder: "Destination", value: route.destination || '', onChange: evt => {
+                    let state = this.clone();
+                    state.destination = evt.target.value;
+                    this.props.onChange(state);
+                } })), React.createElement("div", { style: css.inputBox }, React.createElement("input", { className: "pt-input", style: css.input, disabled: this.props.disabled, type: "text", autoCapitalize: "off", spellCheck: false, placeholder: "Target", value: route.target || '', onChange: evt => {
+                    let state = this.clone();
+                    state.target = evt.target.value;
+                    this.props.onChange(state);
+                } })), React.createElement("button", { className: "pt-button pt-minimal pt-intent-danger pt-icon-remove", disabled: this.props.disabled, onClick: () => {
+                    this.props.onRemove();
+                } }), React.createElement("button", { className: "pt-button pt-minimal pt-intent-success pt-icon-add", onClick: () => {
+                    this.props.onAdd();
+                } })));
+        }
+    }
+    exports.default = VpcRoute;
+    
+});
+System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.2.0.js", "app/actions/VpcActions.js", "app/components/VpcRoute.js", "app/components/PageInput.js", "app/components/PageSelect.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/ConfirmButton.js", "app/components/Help.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -12480,11 +12524,13 @@ System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.2.0.js", 
     Object.defineProperty(exports, "__esModule", { value: true });
     const React = $__require("npm:react@16.2.0.js");
     const VpcActions = $__require("app/actions/VpcActions.js");
+    const VpcRoute_1 = $__require("app/components/VpcRoute.js");
     const PageInput_1 = $__require("app/components/PageInput.js");
     const PageSelect_1 = $__require("app/components/PageSelect.js");
     const PageInfo_1 = $__require("app/components/PageInfo.js");
     const PageSave_1 = $__require("app/components/PageSave.js");
     const ConfirmButton_1 = $__require("app/components/ConfirmButton.js");
+    const Help_1 = $__require("app/components/Help.js");
     const css = {
         card: {
             position: 'relative',
@@ -12547,13 +12593,25 @@ System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.2.0.js", 
             margin: '9px 5px 0 5px',
             height: '20px'
         },
-        rules: {
+        routes: {
             marginBottom: '15px'
         }
     };
     class VpcDetailed extends React.Component {
         constructor(props, context) {
             super(props, context);
+            this.onAddRoute = i => {
+                let vpc;
+                if (this.state.changed) {
+                    vpc = Object.assign({}, this.state.vpc);
+                } else {
+                    vpc = Object.assign({}, this.props.vpc);
+                }
+                let routes = [...(vpc.routes || [])];
+                routes.splice(i + 1, 0, {});
+                vpc.routes = routes;
+                this.setState(Object.assign({}, this.state, { changed: true, message: '', vpc: vpc }));
+            };
             this.onSave = () => {
                 this.setState(Object.assign({}, this.state, { disabled: true }));
                 VpcActions.commit(this.state.vpc).then(() => {
@@ -12599,6 +12657,30 @@ System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.2.0.js", 
             vpc[name] = val;
             this.setState(Object.assign({}, this.state, { changed: true, vpc: vpc }));
         }
+        onChangeRoute(i, route) {
+            let vpc;
+            if (this.state.changed) {
+                vpc = Object.assign({}, this.state.vpc);
+            } else {
+                vpc = Object.assign({}, this.props.vpc);
+            }
+            let routes = [...vpc.routes];
+            routes[i] = route;
+            vpc.routes = routes;
+            this.setState(Object.assign({}, this.state, { changed: true, message: '', vpc: vpc }));
+        }
+        onRemoveRoute(i) {
+            let vpc;
+            if (this.state.changed) {
+                vpc = Object.assign({}, this.state.vpc);
+            } else {
+                vpc = Object.assign({}, this.props.vpc);
+            }
+            let routes = [...vpc.routes];
+            routes.splice(i, 1);
+            vpc.routes = routes;
+            this.setState(Object.assign({}, this.state, { changed: true, message: '', vpc: vpc }));
+        }
         render() {
             let vpc = this.state.vpc || this.props.vpc;
             let datacentersSelect = [];
@@ -12615,6 +12697,24 @@ System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.2.0.js", 
                     organizationsSelect.push(React.createElement("option", { key: organization.id, value: organization.id }, organization.name));
                 }
             }
+            let routes = [React.createElement(VpcRoute_1.default, { disabled: true, key: -1, route: {
+                    destination: '0.0.0.0/0',
+                    target: '0.0.0.0'
+                }, onChange: state => {}, onAdd: () => {
+                    this.onAddRoute(-1);
+                }, onRemove: () => {} })];
+            if (vpc.routes) {
+                for (let i = 0; i < vpc.routes.length; i++) {
+                    let index = i;
+                    routes.push(React.createElement(VpcRoute_1.default, { key: index, route: vpc.routes[index], onChange: state => {
+                            this.onChangeRoute(index, state);
+                        }, onAdd: () => {
+                            this.onAddRoute(index);
+                        }, onRemove: () => {
+                            this.onRemoveRoute(index);
+                        } }));
+                }
+            }
             return React.createElement("td", { className: "pt-cell", colSpan: 5, style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { className: "layout horizontal", style: css.buttons, onClick: evt => {
                     let target = evt.target;
                     if (target.className.indexOf('open-ignore') !== -1) {
@@ -12627,7 +12727,7 @@ System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.2.0.js", 
                     this.set('name', val);
                 } }), React.createElement(PageInput_1.default, { label: "Network", help: "Network address of vpc with cidr.", type: "text", placeholder: "Enter network", value: vpc.network, onChange: val => {
                     this.set('network', val);
-                } })), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
+                } }), React.createElement("label", { style: css.itemsLabel }, "Route Table", React.createElement(Help_1.default, { title: "Route Table", content: "VPC routing table, enter a CIDR network for the desitnation and IP address for taget." })), React.createElement("div", { style: css.routes }, routes)), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
                     label: 'ID',
                     value: this.props.vpc.id || 'Unknown'
                 }] }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "Organization", help: "Organization for vpc.", value: vpc.organization, onChange: val => {
@@ -16447,6 +16547,12 @@ System.registerDynamic("app/components/FirewallDetailed.js", ["npm:react@16.2.0.
             }
             let ingress = [...firewall.ingress];
             ingress.splice(i, 1);
+            if (!ingress.length) {
+                ingress = [{
+                    protocol: 'all',
+                    source_ips: ['0.0.0.0/0', '::/0']
+                }];
+            }
             firewall.ingress = ingress;
             this.setState(Object.assign({}, this.state, { changed: true, message: '', firewall: firewall }));
         }
