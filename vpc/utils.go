@@ -104,6 +104,33 @@ func GetAllPaged(db *database.Database, query *bson.M, page, pageCount int) (
 	return
 }
 
+func GetIds(db *database.Database, ids []bson.ObjectId) (
+	vcs []*Vpc, err error) {
+
+	coll := db.Vpcs()
+	vcs = []*Vpc{}
+
+	cursor := coll.Find(&bson.M{
+		"_id": &bson.M{
+			"$in": ids,
+		},
+	}).Iter()
+
+	nde := &Vpc{}
+	for cursor.Next(nde) {
+		vcs = append(vcs, nde)
+		nde = &Vpc{}
+	}
+
+	err = cursor.Close()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func DistinctIds(db *database.Database, matchIds []bson.ObjectId) (
 	idsSet set.Set, err error) {
 
