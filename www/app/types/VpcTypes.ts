@@ -11,6 +11,12 @@ export interface Vpc {
 	network?: string;
 	organization?: string;
 	datacenter?: string;
+	routes?: Route[];
+}
+
+export interface Route {
+	destination?: string;
+	target?: string;
 }
 
 export interface Filter {
