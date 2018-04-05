@@ -13,6 +13,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"math/rand"
 	"net"
+	"strings"
 )
 
 type Route struct {
@@ -72,6 +73,16 @@ func (v *Vpc) Validate(db *database.Database) (
 	}
 
 	for _, route := range v.Routes {
+		if strings.Contains(route.Destination, ":") ||
+			strings.Contains(route.Target, ":") {
+
+			errData = &errortypes.ErrorData{
+				Error:   "route_ipv6_not_supported",
+				Message: "Route IPv6 currently unsupported",
+			}
+			return
+		}
+
 		_, destination, e := net.ParseCIDR(route.Destination)
 		if e != nil {
 			errData = &errortypes.ErrorData{
