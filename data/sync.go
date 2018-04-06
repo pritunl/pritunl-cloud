@@ -9,10 +9,11 @@ import (
 	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/storage"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"time"
 )
 
 var (
-	syncLock = utils.NewMultiLock()
+	syncLock = utils.NewMultiTimeoutLock(1 * time.Minute)
 )
 
 func Sync(db *database.Database, store *storage.Storage) (err error) {
@@ -20,8 +21,8 @@ func Sync(db *database.Database, store *storage.Storage) (err error) {
 		return
 	}
 
-	syncLock.Lock(store.Id.Hex())
-	defer syncLock.Unlock(store.Id.Hex())
+	lockId := syncLock.Lock(store.Id.Hex())
+	defer syncLock.Unlock(store.Id.Hex(), lockId)
 
 	client, err := minio.New(
 		store.Endpoint, store.AccessKey, store.SecretKey, !store.Insecure)
