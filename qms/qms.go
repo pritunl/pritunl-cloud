@@ -16,15 +16,15 @@ import (
 )
 
 var (
-	socketsLock = utils.NewMultiLock()
+	socketsLock = utils.NewMultiTimeoutLock(1 * time.Minute)
 )
 
 func GetDisks(vmId bson.ObjectId) (disks []*vm.Disk, err error) {
 	sockPath := GetSockPath(vmId)
 	disks = []*vm.Disk{}
 
-	socketsLock.Lock(vmId.Hex())
-	defer socketsLock.Unlock(vmId.Hex())
+	lockId := socketsLock.Lock(vmId.Hex())
+	defer socketsLock.Unlock(vmId.Hex(), lockId)
 
 	conn, err := net.DialTimeout(
 		"unix",
@@ -129,11 +129,11 @@ func AddDisk(vmId bson.ObjectId, dsk *vm.Disk) (err error) {
 
 	logrus.WithFields(logrus.Fields{
 		"instance_id": vmId.Hex(),
-		"disk_path": dsk.Path,
+		"disk_path":   dsk.Path,
 	}).Info("qemu: Adding virtual machine disk")
 
-	socketsLock.Lock(vmId.Hex())
-	defer socketsLock.Unlock(vmId.Hex())
+	lockId := socketsLock.Lock(vmId.Hex())
+	defer socketsLock.Unlock(vmId.Hex(), lockId)
 
 	conn, err := net.DialTimeout(
 		"unix",
@@ -180,11 +180,11 @@ func RemoveDisk(vmId bson.ObjectId, dsk *vm.Disk) (err error) {
 
 	logrus.WithFields(logrus.Fields{
 		"instance_id": vmId.Hex(),
-		"disk_path": dsk.Path,
+		"disk_path":   dsk.Path,
 	}).Info("qemu: Removing virtual machine disk")
 
-	socketsLock.Lock(vmId.Hex())
-	defer socketsLock.Unlock(vmId.Hex())
+	lockId := socketsLock.Lock(vmId.Hex())
+	defer socketsLock.Unlock(vmId.Hex(), lockId)
 
 	conn, err := net.DialTimeout(
 		"unix",
@@ -224,8 +224,8 @@ func RemoveDisk(vmId bson.ObjectId, dsk *vm.Disk) (err error) {
 func Shutdown(vmId bson.ObjectId) (err error) {
 	sockPath := GetSockPath(vmId)
 
-	socketsLock.Lock(vmId.Hex())
-	defer socketsLock.Unlock(vmId.Hex())
+	lockId := socketsLock.Lock(vmId.Hex())
+	defer socketsLock.Unlock(vmId.Hex(), lockId)
 
 	conn, err := net.DialTimeout(
 		"unix",
