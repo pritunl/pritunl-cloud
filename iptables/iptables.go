@@ -57,7 +57,6 @@ func (r *Rules) commentCommand(inCmd []string, hold bool) (cmd []string) {
 	return
 }
 
-// TODO Merge overlapping rules
 func (r *Rules) run(cmds [][]string, ipCmd string, ipv6 bool) (err error) {
 	iptablesCmd := getIptablesCmd(ipv6)
 
