@@ -72,7 +72,17 @@ func (v *Vpc) Validate(db *database.Database) (
 		v.Routes = []*Route{}
 	}
 
+	destinations := set.NewSet()
 	for _, route := range v.Routes {
+		if destinations.Contains(route.Destination) {
+			errData = &errortypes.ErrorData{
+				Error:   "duplicate_destination",
+				Message: "Duplicate route destinations",
+			}
+			return
+		}
+		destinations.Add(route.Destination)
+
 		if strings.Contains(route.Destination, ":") ||
 			strings.Contains(route.Target, ":") {
 
