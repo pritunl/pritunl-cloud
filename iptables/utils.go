@@ -127,7 +127,7 @@ func loadIptables(namespace string, state *State, ipv6 bool) (err error) {
 			}
 
 			for i, item := range cmd {
-				if item == "--physdev-out" || item == "-o" {
+				if item == "--physdev-out" || item == "-o" || item == "-i" {
 					if len(cmd) < i+2 {
 						logrus.WithFields(logrus.Fields{
 							"iptables_rule": line,
