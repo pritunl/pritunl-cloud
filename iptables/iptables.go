@@ -57,11 +57,19 @@ func (r *Rules) commentCommand(inCmd []string, hold bool) (cmd []string) {
 	return
 }
 
+// TODO Merge overlapping rules
 func (r *Rules) run(cmds [][]string, ipCmd string, ipv6 bool) (err error) {
 	iptablesCmd := getIptablesCmd(ipv6)
 
 	for _, cmd := range cmds {
 		cmd = append([]string{ipCmd}, cmd...)
+
+		if r.Namespace != "0" {
+			cmd = append([]string{
+				"netns", "exec", r.Namespace,
+				iptablesCmd,
+			}, cmd...)
+		}
 
 		for i := 0; i < 3; i++ {
 			output := "'"
@@ -73,11 +81,6 @@ func (r *Rules) run(cmds [][]string, ipCmd string, ipv6 bool) (err error) {
 					}, iptablesCmd, cmd...)
 				Unlock()
 			} else {
-				cmd = append([]string{
-					"netns", "exec", r.Namespace,
-					iptablesCmd,
-				}, cmd...)
-
 				Lock()
 				output, err = utils.ExecCombinedOutputLogged(
 					[]string{
