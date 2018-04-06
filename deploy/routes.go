@@ -31,12 +31,12 @@ func (n *Routes) update(inst *instance.Instance) (err error) {
 	curRoutes := set.NewSet()
 	newRoutes := set.NewSet()
 
-	output, err := utils.ExecCombinedOutputLogged(
-		nil,
+	output, err := utils.ExecCombinedOutput(
 		"ip", "netns", "exec", namespace,
 		"route", "-n",
 	)
 	if err != nil {
+		err = nil
 		return
 	}
 
