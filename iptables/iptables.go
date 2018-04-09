@@ -110,6 +110,7 @@ func (r *Rules) run(cmds [][]string, ipCmd string, ipv6 bool) (err error) {
 					return
 				}
 			}
+
 			break
 		}
 	}
