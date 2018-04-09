@@ -46,7 +46,9 @@ func (m *MultiTimeoutLock) Lock(id string) (lockId bson.ObjectId) {
 		for {
 			time.Sleep(1 * time.Second)
 
+			m.stateLock.Lock()
 			state := m.state[lockId]
+			m.stateLock.Unlock()
 			if !state {
 				return
 			}
@@ -93,7 +95,9 @@ func (m *MultiTimeoutLock) LockTimeout(id string,
 		for {
 			time.Sleep(1 * time.Second)
 
+			m.stateLock.Lock()
 			state := m.state[lockId]
+			m.stateLock.Unlock()
 			if !state {
 				return
 			}
