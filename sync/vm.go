@@ -31,21 +31,31 @@ func syncNodeFirewall() {
 	db := database.GetDatabase()
 	defer db.Close()
 
-	err := iptables.UpdateState(db, []*instance.Instance{})
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"error": err,
-		}).Error("sync: Failed to update iptables, resetting state")
-		for {
-			err = iptables.Recover()
-			if err != nil {
+	for i := 0; i < 2; i++ {
+		err := iptables.UpdateState(db, []*instance.Instance{})
+		if err != nil {
+			if i < 1 {
+				err = nil
+				time.Sleep(300 * time.Millisecond)
+				continue
+			} else {
 				logrus.WithFields(logrus.Fields{
 					"error": err,
-				}).Error("sync: Failed to recover iptables, retrying")
-				continue
+				}).Error("sync: Failed to update iptables, resetting state")
+				for {
+					err = iptables.Recover()
+					if err != nil {
+						logrus.WithFields(logrus.Fields{
+							"error": err,
+						}).Error("sync: Failed to recover iptables, retrying")
+						continue
+					}
+					break
+				}
 			}
-			break
 		}
+
+		break
 	}
 }
 
