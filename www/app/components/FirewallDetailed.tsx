@@ -285,6 +285,18 @@ export default class FirewallDetailed extends React.Component<Props, State> {
 
 		ingress.splice(i, 1);
 
+		if (!ingress.length) {
+			ingress = [
+				{
+					protocol: 'all',
+					source_ips: [
+						'0.0.0.0/0',
+						'::/0',
+					],
+				} as FirewallTypes.Rule,
+			];
+		}
+
 		firewall.ingress = ingress;
 
 		this.setState({
