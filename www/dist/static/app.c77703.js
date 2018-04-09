@@ -10433,6 +10433,9 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.2.0.js",
                     label: 'ID',
                     value: this.props.node.id || 'None'
                 }, {
+                    label: 'Version',
+                    value: node.software_version || 'Unknown'
+                }, {
                     valueClass: active ? '' : 'pt-text-intent-danger',
                     label: 'Timestamp',
                     value: MiscUtils.formatDate(this.props.node.timestamp) || 'Inactive'
