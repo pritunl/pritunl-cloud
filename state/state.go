@@ -14,8 +14,7 @@ import (
 )
 
 type State struct {
-	disks []*disk.Disk
-
+	disks        []*disk.Disk
 	virtsMap     map[bson.ObjectId]*vm.VirtualMachine
 	instances    []*instance.Instance
 	vpcsMap      map[bson.ObjectId]*vpc.Vpc
