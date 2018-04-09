@@ -22,22 +22,14 @@ const css = {
 		minWidth: '310px',
 		maxWidth: '350px',
 		width: 'calc(100% - 20px)',
-		margin: '0',
-		position: 'absolute',
-		top: '50%',
-		left: '50%',
-		transform: 'translate(-50%, -50%)',
+		margin: '30px auto',
 	} as React.CSSProperties,
 	card2: {
 		padding: '5px',
 		minWidth: '310px',
 		maxWidth: '380px',
 		width: 'calc(100% - 20px)',
-		margin: '0',
-		position: 'absolute',
-		top: '50%',
-		left: '50%',
-		transform: 'translate(-50%, -50%)',
+		margin: '30px auto',
 	} as React.CSSProperties,
 	status: {
 		width: '180px',
@@ -129,7 +121,7 @@ export default class Subscription extends React.Component<{}, State> {
 				/>
 				<div className="layout horizontal center-justified">
 					<button
-						className="pt-button pt-intent-danger pt-icon-trash"
+						className="pt-button pt-intent-danger pt-icon-cross"
 						style={css.button}
 						disabled={this.state.disabled}
 						onClick={(): void => {
@@ -356,10 +348,10 @@ export default class Subscription extends React.Component<{}, State> {
 							SubscriptionActions.cancel(
 								this.state.subscription.url_key,
 							).then((): void => {
-									this.setState({
-										...this.state,
-										disabled: false,
-									});
+								this.setState({
+									...this.state,
+									disabled: false,
+								});
 							}).catch((): void => {
 								this.setState({
 									...this.state,
