@@ -9,7 +9,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
-	"github.com/pritunl/pritunl-cloud/requires"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -451,46 +450,4 @@ func (n *Node) Init() (err error) {
 	go n.reqSync()
 
 	return
-}
-
-func init() {
-	module := requires.New("node")
-	module.After("settings")
-
-	module.Handler = func() (err error) {
-		db := database.GetDatabase()
-		defer db.Close()
-
-		nodes, err := GetAll(db)
-		if err != nil {
-			return
-		}
-
-		for _, node := range nodes {
-			if node.Version < 1 {
-				changed := set.NewSet("version")
-				node.Version = 1
-
-				if node.Certificate != "" &&
-					(node.Certificates == nil ||
-						len(node.Certificates) == 0) {
-
-					node.Certificates = []bson.ObjectId{
-						node.Certificate,
-					}
-					changed.Add("certificates")
-				}
-
-				err = node.CommitFields(
-					db,
-					changed,
-				)
-				if err != nil {
-					return
-				}
-			}
-		}
-
-		return
-	}
 }
