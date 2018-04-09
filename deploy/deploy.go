@@ -29,11 +29,5 @@ func Deploy(stat *state.State) (err error) {
 		return
 	}
 
-	routes := NewRoutes(stat)
-	err = routes.Deploy()
-	if err != nil {
-		return
-	}
-
 	return
 }
