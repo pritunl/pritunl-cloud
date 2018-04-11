@@ -54,6 +54,10 @@ const cloudConfigTmpl = `#cloud-config
 ssh_deletekeys: false
 disable_root: true
 ssh_pwauth: no
+growpart:
+    mode: auto
+    devices: ["/"]
+    ignore_growroot_disabled: false
 users:
   - name: cloud
     groups: adm, video, wheel, systemd-journal
