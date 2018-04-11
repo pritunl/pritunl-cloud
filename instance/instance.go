@@ -30,6 +30,7 @@ type Instance struct {
 	LocalIps6    []string           `bson:"local_ips6" json:"local_ips6"`
 	Node         bson.ObjectId      `bson:"node,omitempty" json:"node"`
 	Name         string             `bson:"name" json:"name"`
+	InitDiskSize int                `bson:"init_disk_size" json:"init_disk_size"`
 	Memory       int                `bson:"memory" json:"memory"`
 	Processors   int                `bson:"processors" json:"processors"`
 	NetworkRoles []string           `bson:"network_roles" json:"network_roles"`
