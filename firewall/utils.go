@@ -1,9 +1,12 @@
 package firewall
 
 import (
+	"fmt"
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"gopkg.in/mgo.v2/bson"
+	"sort"
 )
 
 func Get(db *database.Database, fireId bson.ObjectId) (
@@ -192,6 +195,48 @@ func RemoveMulti(db *database.Database, fireIds []bson.ObjectId) (err error) {
 	if err != nil {
 		err = database.ParseError(err)
 		return
+	}
+
+	return
+}
+
+func MergeIngress(fires []*Firewall) (rules []*Rule) {
+	rules = []*Rule{}
+	rulesMap := map[string]*Rule{}
+	rulesKey := []string{}
+
+	for _, fire := range fires {
+		for _, ingress := range fire.Ingress {
+			key := fmt.Sprintf("%s-%s", ingress.Protocol, ingress.Port)
+			rule := rulesMap[key]
+			if rule == nil {
+				rule = &Rule{
+					Protocol:  ingress.Protocol,
+					Port:      ingress.Port,
+					SourceIps: ingress.SourceIps,
+				}
+				rulesMap[key] = rule
+				rulesKey = append(rulesKey, key)
+			} else {
+				sourceIps := set.NewSet()
+				for _, sourceIp := range rule.SourceIps {
+					sourceIps.Add(sourceIp)
+				}
+
+				for _, sourceIp := range ingress.SourceIps {
+					if sourceIps.Contains(sourceIp) {
+						continue
+					}
+					sourceIps.Add(sourceIp)
+					rule.SourceIps = append(rule.SourceIps, sourceIp)
+				}
+			}
+		}
+	}
+
+	sort.Strings(rulesKey)
+	for _, key := range rulesKey {
+		rules = append(rules, rulesMap[key])
 	}
 
 	return
