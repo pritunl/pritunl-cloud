@@ -57,8 +57,8 @@ func getImage(db *database.Database, img *image.Image,
 	return
 }
 
-func WriteImage(db *database.Database, imgId, dskId bson.ObjectId) (
-	err error) {
+func WriteImage(db *database.Database, imgId, dskId bson.ObjectId,
+	size int) (err error) {
 
 	diskPath := paths.GetDiskPath(dskId)
 	diskTempPath := paths.GetDiskTempPath()
@@ -130,6 +130,14 @@ func WriteImage(db *database.Database, imgId, dskId bson.ObjectId) (
 			return
 		}
 
+		if size > 10 {
+			_, err = utils.ExecCombinedOutputLogged(nil, "qemu-img",
+				"resize", diskTempPath, fmt.Sprintf("%dG", size))
+			if err != nil {
+				return
+			}
+		}
+
 		err = utils.Exec("", "mv", diskTempPath, diskPath)
 		if err != nil {
 			return
@@ -159,6 +167,14 @@ func WriteImage(db *database.Database, imgId, dskId bson.ObjectId) (
 		err = getImage(db, img, diskTempPath)
 		if err != nil {
 			return
+		}
+
+		if size > 10 {
+			_, err = utils.ExecCombinedOutputLogged(nil, "qemu-img",
+				"resize", diskTempPath, fmt.Sprintf("%dG", size))
+			if err != nil {
+				return
+			}
 		}
 
 		err = utils.Exec("", "mv", diskTempPath, diskPath)

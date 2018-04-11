@@ -12,7 +12,7 @@ func CreateDisk(db *database.Database, dsk *disk.Disk) (err error) {
 	diskPath := paths.GetDiskPath(dsk.Id)
 
 	if dsk.Image != "" {
-		err = WriteImage(db, dsk.Image, dsk.Id)
+		err = WriteImage(db, dsk.Image, dsk.Id, dsk.Size)
 		if err != nil {
 			return
 		}

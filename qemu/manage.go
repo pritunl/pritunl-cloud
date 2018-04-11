@@ -908,10 +908,10 @@ func Create(db *database.Database, inst *instance.Instance,
 			SourceInstance: inst.Id,
 			Image:          virt.Image,
 			Index:          "0",
-			Size:           10,
+			Size:           inst.InitDiskSize,
 		}
 
-		err = data.WriteImage(db, virt.Image, dsk.Id)
+		err = data.WriteImage(db, virt.Image, dsk.Id, inst.InitDiskSize)
 		if err != nil {
 			return
 		}
