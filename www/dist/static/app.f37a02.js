@@ -15816,6 +15816,7 @@ System.registerDynamic("app/components/InstanceNew.js", ["npm:react@16.2.0.js", 
             return {
                 id: null,
                 name: 'New instance',
+                init_disk_size: 10,
                 memory: 1024,
                 processors: 1,
                 count: 1
@@ -15925,13 +15926,15 @@ System.registerDynamic("app/components/InstanceNew.js", ["npm:react@16.2.0.js", 
                     NodeActions.syncZone(val);
                 } }, zonesSelect), React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasVpcs, label: "VPC", help: "VPC for instance.", value: instance.vpc, onChange: val => {
                     this.setState(Object.assign({}, this.state, { instance: Object.assign({}, this.state.instance, { vpc: val }) }));
-                } }, vpcsSelect)), React.createElement("div", { style: css.group }, React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasNodes, label: "Node", help: "Node to run instance on.", value: instance.node, onChange: val => {
+                } }, vpcsSelect), React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasNodes, label: "Node", help: "Node to run instance on.", value: instance.node, onChange: val => {
                     this.set('node', val);
-                } }, nodesSelect), React.createElement("label", { className: "pt-label" }, "Network Roles", React.createElement(Help_1.default, { title: "Network Roles", content: "Network roles that will be matched with firewall rules. Network roles are case-sensitive." }), React.createElement("div", null, networkRoles)), React.createElement(PageInputButton_1.default, { disabled: this.state.disabled, buttonClass: "pt-intent-success pt-icon-add", label: "Add", type: "text", placeholder: "Add role", value: this.state.addNetworkRole, onChange: val => {
-                    this.setState(Object.assign({}, this.state, { addNetworkRole: val }));
-                }, onSubmit: this.onAddNetworkRole }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasImages, label: "Image", help: "Starting image for node.", value: instance.image, onChange: val => {
+                } }, nodesSelect)), React.createElement("div", { style: css.group }, React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasImages, label: "Image", help: "Starting image for node.", value: instance.image, onChange: val => {
                     this.set('image', val);
-                } }, imagesSelect), React.createElement(PageNumInput_1.default, { label: "Memory Size", help: "Instance memory size in megabytes.", min: 256, minorStepSize: 256, stepSize: 512, majorStepSize: 1024, disabled: this.state.disabled, selectAllOnFocus: true, onChange: val => {
+                } }, imagesSelect), React.createElement("label", { className: "pt-label" }, "Network Roles", React.createElement(Help_1.default, { title: "Network Roles", content: "Network roles that will be matched with firewall rules. Network roles are case-sensitive." }), React.createElement("div", null, networkRoles)), React.createElement(PageInputButton_1.default, { disabled: this.state.disabled, buttonClass: "pt-intent-success pt-icon-add", label: "Add", type: "text", placeholder: "Add role", value: this.state.addNetworkRole, onChange: val => {
+                    this.setState(Object.assign({}, this.state, { addNetworkRole: val }));
+                }, onSubmit: this.onAddNetworkRole }), React.createElement(PageNumInput_1.default, { label: "Disk Size", help: "Instance memory size in megabytes.", min: 10, minorStepSize: 1, stepSize: 2, majorStepSize: 5, disabled: this.state.disabled, selectAllOnFocus: true, onChange: val => {
+                    this.set('init_disk_size', val);
+                }, value: instance.init_disk_size }), React.createElement(PageNumInput_1.default, { label: "Memory Size", help: "Instance memory size in megabytes.", min: 256, minorStepSize: 256, stepSize: 512, majorStepSize: 1024, disabled: this.state.disabled, selectAllOnFocus: true, onChange: val => {
                     this.set('memory', val);
                 }, value: instance.memory }), React.createElement(PageNumInput_1.default, { label: "Processors", help: "Number of instance processors.", min: 1, minorStepSize: 1, stepSize: 1, majorStepSize: 2, disabled: this.state.disabled, selectAllOnFocus: true, onChange: val => {
                     this.set('processors', val);
