@@ -497,8 +497,6 @@ export default class InstanceNew extends React.Component<Props, State> {
 						>
 							{vpcsSelect}
 						</PageSelect>
-					</div>
-					<div style={css.group}>
 						<PageSelect
 							disabled={this.state.disabled || !hasNodes}
 							label="Node"
@@ -510,6 +508,8 @@ export default class InstanceNew extends React.Component<Props, State> {
 						>
 							{nodesSelect}
 						</PageSelect>
+					</div>
+					<div style={css.group}>
 						<label className="pt-label">
 							Network Roles
 							<Help
