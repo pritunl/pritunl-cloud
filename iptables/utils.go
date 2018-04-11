@@ -273,11 +273,7 @@ func UpdateState(db *database.Database, instances []*instance.Instance) (
 			return
 		}
 
-		ingress := []*firewall.Rule{}
-		for _, fire := range fires {
-			ingress = append(ingress, fire.Ingress...)
-		}
-
+		ingress := firewall.MergeIngress(fires)
 		newState.Interfaces["0-host"] = generate("0", "host", ingress)
 	}
 
@@ -307,10 +303,7 @@ func UpdateState(db *database.Database, instances []*instance.Instance) (
 				return
 			}
 
-			ingress := []*firewall.Rule{}
-			for _, fire := range fires {
-				ingress = append(ingress, fire.Ingress...)
-			}
+			ingress := firewall.MergeIngress(fires)
 
 			rules := generateInternal(namespace, ifaceInternal, ingress)
 			newState.Interfaces[namespace+"-"+ifaceInternal] = rules
