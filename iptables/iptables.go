@@ -2,6 +2,8 @@ package iptables
 
 import (
 	"github.com/Sirupsen/logrus"
+	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"strings"
@@ -147,11 +149,22 @@ func (r *Rules) Apply() (err error) {
 func (r *Rules) Hold() (err error) {
 	cmd := r.newCommand()
 	if r.Interface != "host" {
-		cmd = append(cmd,
-			//"-m", "physdev",
-			//"--physdev-out", r.Interface,
-			"-o", r.Interface,
-		)
+		if strings.HasPrefix(r.Interface, "i") {
+			cmd = append(cmd,
+				"-i", r.Interface,
+			)
+		} else if strings.HasPrefix(r.Interface, "p") {
+			cmd = append(cmd,
+				"-m", "physdev",
+				"--physdev-out", r.Interface,
+			)
+		} else {
+			err = &errortypes.ParseError{
+				errors.Newf("iptables: Unknown interface type %s",
+					r.Interface),
+			}
+			return
+		}
 	}
 	cmd = r.commentCommand(cmd, true)
 	cmd = append(cmd,
@@ -161,11 +174,22 @@ func (r *Rules) Hold() (err error) {
 
 	cmd = r.newCommand()
 	if r.Interface != "host" {
-		cmd = append(cmd,
-			//"-m", "physdev",
-			//"--physdev-out", r.Interface,
-			"-o", r.Interface,
-		)
+		if strings.HasPrefix(r.Interface, "i") {
+			cmd = append(cmd,
+				"-i", r.Interface,
+			)
+		} else if strings.HasPrefix(r.Interface, "p") {
+			cmd = append(cmd,
+				"-m", "physdev",
+				"--physdev-out", r.Interface,
+			)
+		} else {
+			err = &errortypes.ParseError{
+				errors.Newf("iptables: Unknown interface type %s",
+					r.Interface),
+			}
+			return
+		}
 	}
 	cmd = r.commentCommand(cmd, true)
 	cmd = append(cmd,
