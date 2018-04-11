@@ -84,6 +84,13 @@ func (i *Instance) Validate(db *database.Database) (
 		}
 	}
 
+	if i.InitDiskSize != 0 && i.InitDiskSize < 10 {
+		errData = &errortypes.ErrorData{
+			Error:   "init_disk_size_invalid",
+			Message: "Disk size below minimum",
+		}
+	}
+
 	if i.Memory < 256 {
 		i.Memory = 256
 	}
