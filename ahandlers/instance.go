@@ -24,6 +24,7 @@ type instanceData struct {
 	Image        bson.ObjectId `json:"image"`
 	Name         string        `json:"name"`
 	State        string        `json:"state"`
+	InitDiskSize int           `json:"init_disk_size"`
 	Memory       int           `json:"memory"`
 	Processors   int           `json:"processors"`
 	NetworkRoles []string      `json:"network_roles"`
@@ -153,6 +154,7 @@ func instancePost(c *gin.Context) {
 			Node:         data.Node,
 			Image:        data.Image,
 			Name:         name,
+			InitDiskSize: data.InitDiskSize,
 			Memory:       data.Memory,
 			Processors:   data.Processors,
 			NetworkRoles: data.NetworkRoles,
