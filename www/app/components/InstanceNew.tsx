@@ -547,6 +547,20 @@ export default class InstanceNew extends React.Component<Props, State> {
 							{imagesSelect}
 						</PageSelect>
 						<PageNumInput
+							label="Disk Size"
+							help="Instance memory size in megabytes."
+							min={10}
+							minorStepSize={1}
+							stepSize={2}
+							majorStepSize={5}
+							disabled={this.state.disabled}
+							selectAllOnFocus={true}
+							onChange={(val: number): void => {
+								this.set('init_disk_size', val);
+							}}
+							value={instance.init_disk_size}
+						/>
+						<PageNumInput
 							label="Memory Size"
 							help="Instance memory size in megabytes."
 							min={256}
