@@ -297,7 +297,7 @@ func UpdateState(db *database.Database, instances []*instance.Instance) (
 				err = &errortypes.ParseError{
 					errors.New("iptables: Virtual interface conflict"),
 				}
-				panic(err)
+				return
 			}
 
 			fires, e := firewall.GetOrgRoles(db,
