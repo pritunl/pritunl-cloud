@@ -433,18 +433,18 @@ func generateVirt(namespace, iface string, ingress []*firewall.Rule) (
 	)
 	rules.Ingress6 = append(rules.Ingress6, cmd)
 
-	cmd = rules.newCommand()
-	if rules.Interface != "host" {
-		cmd = append(cmd,
-			"-m", "physdev",
-			"--physdev-out", rules.Interface,
-		)
-	}
-	cmd = rules.commentCommand(cmd, false)
-	cmd = append(cmd,
-		"-j", "NFLOG",
-	)
-	rules.Ingress = append(rules.Ingress, cmd)
+	//cmd = rules.newCommand()
+	//if rules.Interface != "host" {
+	//	cmd = append(cmd,
+	//		"-m", "physdev",
+	//		"--physdev-out", rules.Interface,
+	//	)
+	//}
+	//cmd = rules.commentCommand(cmd, false)
+	//cmd = append(cmd,
+	//	"-j", "NFLOG",
+	//)
+	//rules.Ingress = append(rules.Ingress, cmd)
 
 	cmd = rules.newCommand()
 	if rules.Interface != "host" {
@@ -684,17 +684,17 @@ func generateInternal(namespace, iface string, ingress []*firewall.Rule) (
 	//)
 	//rules.Ingress6 = append(rules.Ingress6, cmd)
 
-	cmd = rules.newCommand()
-	if rules.Interface != "host" {
-		cmd = append(cmd,
-			"-i", rules.Interface,
-		)
-	}
-	cmd = rules.commentCommand(cmd, false)
-	cmd = append(cmd,
-		"-j", "NFLOG",
-	)
-	rules.Ingress = append(rules.Ingress, cmd)
+	//cmd = rules.newCommand()
+	//if rules.Interface != "host" {
+	//	cmd = append(cmd,
+	//		"-i", rules.Interface,
+	//	)
+	//}
+	//cmd = rules.commentCommand(cmd, false)
+	//cmd = append(cmd,
+	//	"-j", "NFLOG",
+	//)
+	//rules.Ingress = append(rules.Ingress, cmd)
 
 	cmd = rules.newCommand()
 	if rules.Interface != "host" {
@@ -932,17 +932,17 @@ func generate(namespace, iface string, ingress []*firewall.Rule) (
 	//)
 	//rules.Ingress6 = append(rules.Ingress6, cmd)
 
-	cmd = rules.newCommand()
-	if rules.Interface != "host" {
-		cmd = append(cmd,
-			"-o", rules.Interface,
-		)
-	}
-	cmd = rules.commentCommand(cmd, false)
-	cmd = append(cmd,
-		"-j", "NFLOG",
-	)
-	rules.Ingress = append(rules.Ingress, cmd)
+	//cmd = rules.newCommand()
+	//if rules.Interface != "host" {
+	//	cmd = append(cmd,
+	//		"-o", rules.Interface,
+	//	)
+	//}
+	//cmd = rules.commentCommand(cmd, false)
+	//cmd = append(cmd,
+	//	"-j", "NFLOG",
+	//)
+	//rules.Ingress = append(rules.Ingress, cmd)
 
 	cmd = rules.newCommand()
 	if rules.Interface != "host" {
