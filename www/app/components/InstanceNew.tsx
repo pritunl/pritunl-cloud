@@ -10,18 +10,14 @@ import * as ZoneTypes from '../types/ZoneTypes';
 import * as InstanceActions from '../actions/InstanceActions';
 import * as ImageActions from '../actions/ImageActions';
 import * as NodeActions from '../actions/NodeActions';
-import * as VpcActions from '../actions/VpcActions';
 import ImagesDatacenterStore from '../stores/ImagesDatacenterStore';
 import NodesZoneStore from '../stores/NodesZoneStore';
-import VpcsNameStore from '../stores/VpcsNameStore';
 import PageInput from './PageInput';
 import PageInputButton from './PageInputButton';
 import PageCreate from './PageCreate';
 import PageSelect from './PageSelect';
-import PageSelectButton from './PageSelectButton';
 import PageNumInput from './PageNumInput';
 import Help from './Help';
-import OrganizationsStore from "../stores/OrganizationsStore";
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
