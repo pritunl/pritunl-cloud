@@ -506,6 +506,17 @@ export default class InstanceNew extends React.Component<Props, State> {
 						</PageSelect>
 					</div>
 					<div style={css.group}>
+						<PageSelect
+							disabled={this.state.disabled || !hasImages}
+							label="Image"
+							help="Starting image for node."
+							value={instance.image}
+							onChange={(val): void => {
+								this.set('image', val);
+							}}
+						>
+							{imagesSelect}
+						</PageSelect>
 						<label className="pt-label">
 							Network Roles
 							<Help
@@ -531,17 +542,6 @@ export default class InstanceNew extends React.Component<Props, State> {
 							}}
 							onSubmit={this.onAddNetworkRole}
 						/>
-						<PageSelect
-							disabled={this.state.disabled || !hasImages}
-							label="Image"
-							help="Starting image for node."
-							value={instance.image}
-							onChange={(val): void => {
-								this.set('image', val);
-							}}
-						>
-							{imagesSelect}
-						</PageSelect>
 						<PageNumInput
 							label="Disk Size"
 							help="Instance memory size in megabytes."
