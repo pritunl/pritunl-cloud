@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	disksLock = utils.NewMultiTimeoutLock(3 * time.Minute)
+	disksLock = utils.NewMultiTimeoutLock(10 * time.Minute)
 )
 
 type Disks struct {
