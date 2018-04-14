@@ -100,7 +100,7 @@ func runScheduler() {
 
 		for _, task := range registry {
 			if task.scheduled(hour, min) {
-				go func(tsk *Task, now time.Time) {
+				go func(task *Task, now time.Time) {
 					task.run(now)
 				}(task, now)
 			}
