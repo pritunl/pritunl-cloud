@@ -269,6 +269,12 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk) (err error) {
 
 	store, err := storage.Get(db, dc.PrivateStorage)
 	if err != nil {
+		if _, ok := err.(*database.NotFoundError); ok {
+			err = nil
+			logrus.WithFields(logrus.Fields{
+				"disk_id": dsk.Id,
+			}).Error("data: Cannot snapshot disk without private storage")
+		}
 		return
 	}
 
