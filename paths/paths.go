@@ -35,6 +35,11 @@ func GetDiskTempPath() string {
 		fmt.Sprintf("disk-%s", bson.NewObjectId().Hex()))
 }
 
+func GetImageTempPath() string {
+	return path.Join(GetTempPath(),
+		fmt.Sprintf("image-%s", bson.NewObjectId().Hex()))
+}
+
 func GetDiskMountPath() string {
 	return path.Join(GetTempPath(), bson.NewObjectId().Hex())
 }
