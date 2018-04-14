@@ -123,21 +123,14 @@ func WriteImage(db *database.Database, imgId, dskId bson.ObjectId,
 			return
 		}
 
-		exists, e := utils.Exists(imagePth)
-		if e != nil {
-			err = e
+		err = getImage(db, img, imagePth)
+		if err != nil {
 			return
 		}
 
-		if !exists {
-			err = getImage(db, img, imagePth)
-			if err != nil {
-				return
-			}
-		}
-
-		exists, err = utils.Exists(diskPath)
-		if err != nil {
+		exists, e := utils.Exists(diskPath)
+		if e != nil {
+			err = e
 			return
 		}
 
