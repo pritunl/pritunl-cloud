@@ -21,10 +21,34 @@ import (
 	"time"
 )
 
+var (
+	imageLock = utils.NewMultiTimeoutLock(10 * time.Minute)
+)
+
 func getImage(db *database.Database, img *image.Image,
 	pth string) (err error) {
 
-	tmpPth := paths.GetImageDownloadTempPath()
+	if imageLock.Locked(pth) {
+		logrus.WithFields(logrus.Fields{
+			"id":   img.Id.Hex(),
+			"key":  img.Key,
+			"path": pth,
+		}).Info("data: Waiting for image")
+	}
+
+	lockId := imageLock.Lock(pth)
+	defer imageLock.Unlock(pth, lockId)
+
+	exists, err := utils.Exists(pth)
+	if err != nil {
+		return
+	}
+
+	if exists {
+		return
+	}
+
+	tmpPth := paths.GetImageTempPath()
 
 	store, err := storage.Get(db, img.Storage)
 	if err != nil {
