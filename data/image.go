@@ -125,6 +125,8 @@ func WriteImage(db *database.Database, imgId, dskId bson.ObjectId,
 			return
 		}
 
+		utils.Exec("", "touch", imagePth)
+
 		err = utils.Exec("", "cp", imagePth, diskTempPath)
 		if err != nil {
 			return
