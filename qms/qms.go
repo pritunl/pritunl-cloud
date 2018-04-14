@@ -130,7 +130,7 @@ func AddDisk(vmId bson.ObjectId, dsk *vm.Disk) (err error) {
 	logrus.WithFields(logrus.Fields{
 		"instance_id": vmId.Hex(),
 		"disk_path":   dsk.Path,
-	}).Info("qemu: Adding virtual machine disk")
+	}).Info("qemu: Connecting virtual machine disk")
 
 	lockId := socketsLock.Lock(vmId.Hex())
 	defer socketsLock.Unlock(vmId.Hex(), lockId)
@@ -181,7 +181,7 @@ func RemoveDisk(vmId bson.ObjectId, dsk *vm.Disk) (err error) {
 	logrus.WithFields(logrus.Fields{
 		"instance_id": vmId.Hex(),
 		"disk_path":   dsk.Path,
-	}).Info("qemu: Removing virtual machine disk")
+	}).Info("qemu: Disconnecting virtual machine disk")
 
 	lockId := socketsLock.Lock(vmId.Hex())
 	defer socketsLock.Unlock(vmId.Hex(), lockId)
