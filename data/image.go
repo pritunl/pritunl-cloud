@@ -24,6 +24,8 @@ import (
 func getImage(db *database.Database, img *image.Image,
 	pth string) (err error) {
 
+	tmpPth := paths.GetImageDownloadTempPath()
+
 	store, err := storage.Get(db, img.Storage)
 	if err != nil {
 		return
@@ -46,11 +48,16 @@ func getImage(db *database.Database, img *image.Image,
 	}
 
 	err = client.FGetObject(store.Bucket,
-		img.Key, pth, minio.GetObjectOptions{})
+		img.Key, tmpPth, minio.GetObjectOptions{})
 	if err != nil {
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "data: Failed to download image"),
 		}
+		return
+	}
+
+	err = utils.Exec("", "mv", tmpPth, pth)
+	if err != nil {
 		return
 	}
 
