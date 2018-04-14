@@ -32,7 +32,7 @@ func GetDiskPath(diskId bson.ObjectId) string {
 
 func GetDiskTempPath() string {
 	return path.Join(GetTempPath(),
-		fmt.Sprintf("%s.qcow2", bson.NewObjectId().Hex()))
+		fmt.Sprintf("disk-%s", bson.NewObjectId().Hex()))
 }
 
 func GetDiskMountPath() string {
