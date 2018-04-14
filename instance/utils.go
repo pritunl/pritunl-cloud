@@ -50,7 +50,7 @@ func GetAllVirt(db *database.Database, query *bson.M, disks []*disk.Disk) (
 
 	instanceDisks := map[bson.ObjectId][]*disk.Disk{}
 	for _, dsk := range disks {
-		if dsk.State != disk.Available {
+		if dsk.State != disk.Available && dsk.State != disk.Snapshot {
 			continue
 		}
 
