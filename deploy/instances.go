@@ -263,8 +263,6 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
 		}()
 
-		fmt.Println(inst.Name)
-
 		vc := s.stat.Vpc(inst.Vpc)
 		if vc == nil {
 			err = &errortypes.NotFoundError{
