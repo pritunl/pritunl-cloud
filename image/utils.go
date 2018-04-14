@@ -3,6 +3,7 @@ package image
 import (
 	"crypto/md5"
 	"fmt"
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/minio/minio-go"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -104,6 +105,29 @@ func GetAllNames(db *database.Database, query *bson.M) (
 	for cursor.Next(img) {
 		images = append(images, img)
 		img = &Image{}
+	}
+
+	err = cursor.Close()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func GetAllKeys(db *database.Database) (keys set.Set, err error) {
+	coll := db.Images()
+	keys = set.NewSet()
+
+	cursor := coll.Find(&bson.M{}).Select(&bson.M{
+		"_id":  1,
+		"etag": 1,
+	}).Iter()
+
+	img := &Image{}
+	for cursor.Next(img) {
+		keys.Add(fmt.Sprintf("%s-%s", img.Id.Hex(), img.Etag))
 	}
 
 	err = cursor.Close()
