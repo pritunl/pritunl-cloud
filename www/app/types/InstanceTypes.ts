@@ -19,6 +19,7 @@ export interface Instance {
 	local_ips?: string[];
 	local_ips6?: string[];
 	name?: string;
+	init_disk_size?: number;
 	memory?: number;
 	processors?: number;
 	network_roles?: string[];
