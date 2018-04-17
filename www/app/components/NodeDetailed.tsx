@@ -710,6 +710,10 @@ export default class NodeDetailed extends React.Component<Props, State> {
 								value: this.props.node.id || 'None',
 							},
 							{
+								label: 'Version',
+								value: node.software_version || 'Unknown',
+							},
+							{
 								valueClass: active ? '' : 'pt-text-intent-danger',
 								label: 'Timestamp',
 								value: MiscUtils.formatDate(
