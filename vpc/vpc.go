@@ -163,6 +163,32 @@ func (v *Vpc) GetNetwork() (network *net.IPNet, err error) {
 	return
 }
 
+func (v *Vpc) GetNetwork6() (network *net.IPNet, err error) {
+	netHash := md5.New()
+	netHash.Write([]byte(v.Id))
+	netHashSum := fmt.Sprintf("%x", netHash.Sum(nil))[:12]
+
+	ip := fmt.Sprintf("fd97%s", netHashSum)
+	ipBuf := bytes.Buffer{}
+
+	for i, run := range ip {
+		if i%4 == 0 && i != 0 && i != len(ip)-1 {
+			ipBuf.WriteRune(':')
+		}
+		ipBuf.WriteRune(run)
+	}
+
+	_, network, err = net.ParseCIDR(ipBuf.String() + "::/64")
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "vpc: Failed to parse network"),
+		}
+		return
+	}
+
+	return
+}
+
 func (v *Vpc) GenerateVpcId() {
 	v.VpcId = rand.Intn(4085) + 10
 }
