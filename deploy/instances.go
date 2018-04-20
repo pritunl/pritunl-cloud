@@ -15,6 +15,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
+	"net"
 	"strings"
 	"time"
 )
@@ -274,7 +275,9 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 		namespace := vm.GetNamespace(inst.Id, 0)
 
 		curRoutes := set.NewSet()
+		curRoutes6 := set.NewSet()
 		newRoutes := set.NewSet()
+		newRoutes6 := set.NewSet()
 
 		output, err := utils.ExecCombinedOutputLogged(
 			[]string{
@@ -328,17 +331,73 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 			}
 		}
 
+		output, err = utils.ExecCombinedOutputLogged(
+			[]string{
+				"not configured for this system",
+			},
+			"ip", "netns", "exec", namespace,
+			"route", "-6", "-n",
+		)
+		if err != nil {
+			err = nil
+			return
+		}
+
+		lines = strings.Split(output, "\n")
+		if len(lines) > 2 {
+			for _, line := range lines[2:] {
+				if line == "" {
+					continue
+				}
+
+				fields := strings.Fields(line)
+				if len(fields) < 7 {
+					continue
+				}
+
+				if fields[3] != "97" {
+					continue
+				}
+
+				_, destination, e := net.ParseCIDR(fields[0])
+				if e != nil || destination == nil {
+					continue
+				}
+
+				target := net.ParseIP(fields[1])
+				if target == nil {
+					continue
+				}
+
+				route := vpc.Route{
+					Destination: destination.String(),
+					Target:      target.String(),
+				}
+
+				curRoutes6.Add(route)
+
+			}
+		}
+
 		if vc.Routes != nil {
 			for _, route := range vc.Routes {
-				newRoutes.Add(*route)
+				if !strings.Contains(route.Destination, ":") {
+					newRoutes.Add(*route)
+				} else {
+					newRoutes6.Add(*route)
+				}
 			}
 		}
 
 		addRoutes := newRoutes.Copy()
+		addRoutes6 := newRoutes6.Copy()
 		remRoutes := curRoutes.Copy()
+		remRoutes6 := curRoutes6.Copy()
 
 		addRoutes.Subtract(curRoutes)
+		addRoutes6.Subtract(curRoutes6)
 		remRoutes.Subtract(newRoutes)
+		remRoutes6.Subtract(newRoutes6)
 
 		for routeInf := range remRoutes.Iter() {
 			route := routeInf.(vpc.Route)
@@ -353,6 +412,19 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 			)
 		}
 
+		for routeInf := range remRoutes6.Iter() {
+			route := routeInf.(vpc.Route)
+
+			utils.ExecCombinedOutputLogged(
+				nil,
+				"ip", "netns", "exec", namespace,
+				"ip", "-6", "route",
+				"del", route.Destination,
+				"via", route.Target,
+				"metric", "97",
+			)
+		}
+
 		for routeInf := range addRoutes.Iter() {
 			route := routeInf.(vpc.Route)
 
@@ -360,6 +432,19 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 				nil,
 				"ip", "netns", "exec", namespace,
 				"ip", "route",
+				"add", route.Destination,
+				"via", route.Target,
+				"metric", "97",
+			)
+		}
+
+		for routeInf := range addRoutes6.Iter() {
+			route := routeInf.(vpc.Route)
+
+			utils.ExecCombinedOutputLogged(
+				nil,
+				"ip", "netns", "exec", namespace,
+				"ip", "-6", "route",
 				"add", route.Destination,
 				"via", route.Target,
 				"metric", "97",
