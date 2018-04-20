@@ -26,8 +26,8 @@ type Instance struct {
 	Restart      bool               `bson:"restart" json:"restart"`
 	PublicIps    []string           `bson:"public_ips" json:"public_ips"`
 	PublicIps6   []string           `bson:"public_ips6" json:"public_ips6"`
-	LocalIps     []string           `bson:"local_ips" json:"local_ips"`
-	LocalIps6    []string           `bson:"local_ips6" json:"local_ips6"`
+	PrivateIps   []string           `bson:"private_ips" json:"private_ips"`
+	PrivateIps6  []string           `bson:"private_ips6" json:"private_ips6"`
 	Node         bson.ObjectId      `bson:"node,omitempty" json:"node"`
 	Name         string             `bson:"name" json:"name"`
 	InitDiskSize int                `bson:"init_disk_size" json:"init_disk_size"`
@@ -111,12 +111,12 @@ func (i *Instance) Validate(db *database.Database) (
 		i.PublicIps6 = []string{}
 	}
 
-	if i.LocalIps == nil {
-		i.LocalIps = []string{}
+	if i.PrivateIps == nil {
+		i.PrivateIps = []string{}
 	}
 
-	if i.LocalIps6 == nil {
-		i.LocalIps6 = []string{}
+	if i.PrivateIps6 == nil {
+		i.PrivateIps6 = []string{}
 	}
 
 	return
