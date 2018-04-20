@@ -277,7 +277,9 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 		newRoutes := set.NewSet()
 
 		output, err := utils.ExecCombinedOutputLogged(
-			nil,
+			[]string{
+				"not configured for this system",
+			},
 			"ip", "netns", "exec", namespace,
 			"route", "-n",
 		)
