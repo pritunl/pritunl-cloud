@@ -16,8 +16,8 @@ export interface Instance {
 	vm_state?: string;
 	public_ips?: string[];
 	public_ips6?: string[];
-	local_ips?: string[];
-	local_ips6?: string[];
+	private_ips?: string[];
+	private_ips6?: string[];
 	name?: string;
 	init_disk_size?: number;
 	memory?: number;

@@ -302,14 +302,14 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			this.props.instance.organization);
 		let zone = ZonesStore.zone(this.props.instance.zone);
 
-		let localIps: any = this.props.instance.local_ips;
-		if (!localIps || !localIps.length) {
-			localIps = 'None';
+		let privateIps: any = this.props.instance.private_ips;
+		if (!privateIps || !privateIps.length) {
+			privateIps = 'None';
 		}
 
-		let localIps6: any = this.props.instance.local_ips6;
-		if (!localIps6 || !localIps6.length) {
-			localIps6 = 'None';
+		let privateIps6: any = this.props.instance.private_ips6;
+		if (!privateIps6 || !privateIps6.length) {
+			privateIps6 = 'None';
 		}
 
 		let publicIps: any = this.props.instance.public_ips;
@@ -543,12 +543,12 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 								value: publicIps6,
 							},
 							{
-								label: 'Local IPv4',
-								value: localIps,
+								label: 'Private IPv4',
+								value: privateIps,
 							},
 							{
-								label: 'Local IPv6',
-								value: localIps6,
+								label: 'Private IPv6',
+								value: privateIps6,
 							},
 							{
 								label: 'Disks',

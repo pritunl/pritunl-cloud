@@ -96,12 +96,12 @@ export default class Instance extends React.Component<Props, {}> {
 		}
 
 		let publicIp = '';
-		let localIp = '';
+		let privateIp = '';
 		if (instance.public_ips && instance.public_ips.length > 0) {
 			publicIp = instance.public_ips[0];
 		}
-		if (instance.local_ips && instance.local_ips.length > 0) {
-			localIp = instance.local_ips[0];
+		if (instance.private_ips && instance.private_ips.length > 0) {
+			privateIp = instance.private_ips[0];
 		}
 
 		let statusClass = 'pt-cell';
@@ -173,10 +173,10 @@ export default class Instance extends React.Component<Props, {}> {
 			<div className="pt-cell" style={css.item}>
 				<span
 					style={css.icon}
-					hidden={!localIp}
+					hidden={!privateIp}
 					className="pt-icon-standard pt-icon-ip-address"
 				/>
-				{localIp}
+				{privateIp}
 			</div>
 		</div>;
 	}
