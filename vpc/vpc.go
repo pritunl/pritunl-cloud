@@ -84,12 +84,12 @@ func (v *Vpc) Validate(db *database.Database) (
 		}
 		destinations.Add(route.Destination)
 
-		if strings.Contains(route.Destination, ":") ||
+		if strings.Contains(route.Destination, ":") !=
 			strings.Contains(route.Target, ":") {
 
 			errData = &errortypes.ErrorData{
-				Error:   "route_ipv6_not_supported",
-				Message: "Route IPv6 currently unsupported",
+				Error:   "route_target_destination_invalid",
+				Message: "Route target/destination invalid",
 			}
 			return
 		}
@@ -104,7 +104,7 @@ func (v *Vpc) Validate(db *database.Database) (
 		}
 		route.Destination = destination.String()
 
-		if route.Destination == "0.0.0.0/0" {
+		if route.Destination == "0.0.0.0/0" || route.Destination == "::/0" {
 			errData = &errortypes.ErrorData{
 				Error:   "route_destination_invalid",
 				Message: "Route destination invalid",
