@@ -86,6 +86,8 @@ func vpcPut(c *gin.Context) {
 
 	event.PublishDispatch(db, "vpc.change")
 
+	vc.Json()
+
 	c.JSON(200, vc)
 }
 
@@ -133,6 +135,8 @@ func vpcPost(c *gin.Context) {
 	}
 
 	event.PublishDispatch(db, "vpc.change")
+
+	vc.Json()
 
 	c.JSON(200, vc)
 }
@@ -201,6 +205,8 @@ func vpcGet(c *gin.Context) {
 		return
 	}
 
+	vc.Json()
+
 	c.JSON(200, vc)
 }
 
@@ -235,6 +241,10 @@ func vpcsGet(c *gin.Context) {
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
 			return
+		}
+
+		for _, vc := range vpcs {
+			vc.Json()
 		}
 
 		data := &vpcsData{
