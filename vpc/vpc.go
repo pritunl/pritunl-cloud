@@ -67,6 +67,16 @@ func (v *Vpc) Validate(db *database.Database) (
 		}
 		return
 	}
+
+	network6, e := v.GetNetwork6()
+	if e != nil {
+		errData = &errortypes.ErrorData{
+			Error:   "network_invalid6",
+			Message: "IPv6 network address invalid",
+		}
+		return
+	}
+
 	v.Network = network.String()
 
 	if v.Routes == nil {
@@ -122,12 +132,30 @@ func (v *Vpc) Validate(db *database.Database) (
 		}
 		route.Target = target.String()
 
-		if route.Target == "0.0.0.0" || !network.Contains(target) {
+		if route.Target == "0.0.0.0" {
 			errData = &errortypes.ErrorData{
-				Error:   "route_target_invalid_network",
-				Message: "Route target not in VPC network",
+				Error:   "route_target_invalid",
+				Message: "Route target invalid",
 			}
 			return
+		}
+
+		if !strings.Contains(route.Target, ":") {
+			if !network.Contains(target) {
+				errData = &errortypes.ErrorData{
+					Error:   "route_target_invalid_network",
+					Message: "Route target not in VPC network",
+				}
+				return
+			}
+		} else {
+			if !network6.Contains(target) {
+				errData = &errortypes.ErrorData{
+					Error:   "route_target_invalid_network6",
+					Message: "Route target not in VPC IPv6 network",
+				}
+				return
+			}
 		}
 	}
 
