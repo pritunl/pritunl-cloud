@@ -26,6 +26,7 @@ type Vpc struct {
 	Name         string        `bson:"name" json:"name"`
 	VpcId        int           `bson:"vpc_id" json:"vpc_id"`
 	Network      string        `bson:"network" json:"network"`
+	Network6     string        `bson:"-" json:"network6"`
 	Organization bson.ObjectId `bson:"organization" json:"organization"`
 	Datacenter   bson.ObjectId `bson:"datacenter" json:"datacenter"`
 	Routes       []*Route      `bson:"routes" json:"routes"`
@@ -131,6 +132,24 @@ func (v *Vpc) Validate(db *database.Database) (
 	}
 
 	return
+}
+
+func (v *Vpc) Json() {
+	netHash := md5.New()
+	netHash.Write([]byte(v.Id))
+	netHashSum := fmt.Sprintf("%x", netHash.Sum(nil))[:12]
+
+	ip := fmt.Sprintf("fd97%s", netHashSum)
+	ipBuf := bytes.Buffer{}
+
+	for i, run := range ip {
+		if i%4 == 0 && i != 0 && i != len(ip)-1 {
+			ipBuf.WriteRune(':')
+		}
+		ipBuf.WriteRune(run)
+	}
+
+	v.Network6 = ipBuf.String() + "::/64"
 }
 
 func (v *Vpc) GetNetwork() (network *net.IPNet, err error) {
