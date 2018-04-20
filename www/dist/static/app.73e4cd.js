@@ -12733,6 +12733,9 @@ System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.2.0.js", 
                 } }), React.createElement("label", { style: css.itemsLabel }, "Route Table", React.createElement(Help_1.default, { title: "Route Table", content: "VPC routing table, enter a CIDR network for the desitnation and IP address for taget." })), React.createElement("div", { style: css.routes }, routes)), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
                     label: 'ID',
                     value: this.props.vpc.id || 'Unknown'
+                }, {
+                    label: 'Private IPv6 Network',
+                    value: this.props.vpc.network6 || 'Unknown'
                 }] }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "Organization", help: "Organization for vpc.", value: vpc.organization, onChange: val => {
                     this.set('organization', val);
                 } }, organizationsSelect), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "Datacenter", help: "Datacenter for vpc.", value: vpc.datacenter, onChange: val => {
@@ -15265,13 +15268,13 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@16.2.0.
             let info = this.props.instance.info || {};
             let org = OrganizationsStore_1.default.organization(this.props.instance.organization);
             let zone = ZonesStore_1.default.zone(this.props.instance.zone);
-            let localIps = this.props.instance.local_ips;
-            if (!localIps || !localIps.length) {
-                localIps = 'None';
+            let privateIps = this.props.instance.private_ips;
+            if (!privateIps || !privateIps.length) {
+                privateIps = 'None';
             }
-            let localIps6 = this.props.instance.local_ips6;
-            if (!localIps6 || !localIps6.length) {
-                localIps6 = 'None';
+            let privateIps6 = this.props.instance.private_ips6;
+            if (!privateIps6 || !privateIps6.length) {
+                privateIps6 = 'None';
             }
             let publicIps = this.props.instance.public_ips;
             if (!publicIps || !publicIps.length) {
@@ -15355,11 +15358,11 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@16.2.0.
                     label: 'Public IPv6',
                     value: publicIps6
                 }, {
-                    label: 'Local IPv4',
-                    value: localIps
+                    label: 'Private IPv4',
+                    value: privateIps
                 }, {
-                    label: 'Local IPv6',
-                    value: localIps6
+                    label: 'Private IPv6',
+                    value: privateIps6
                 }, {
                     label: 'Disks',
                     value: info.disks || ''
@@ -15456,12 +15459,12 @@ System.registerDynamic("app/components/Instance.js", ["npm:react@16.2.0.js", "ap
                 cardStyle.opacity = 0.6;
             }
             let publicIp = '';
-            let localIp = '';
+            let privateIp = '';
             if (instance.public_ips && instance.public_ips.length > 0) {
                 publicIp = instance.public_ips[0];
             }
-            if (instance.local_ips && instance.local_ips.length > 0) {
-                localIp = instance.local_ips[0];
+            if (instance.private_ips && instance.private_ips.length > 0) {
+                privateIp = instance.private_ips[0];
             }
             let statusClass = 'pt-cell';
             switch (instance.status) {
@@ -15484,7 +15487,7 @@ System.registerDynamic("app/components/Instance.js", ["npm:react@16.2.0.js", "ap
                     this.props.onOpen();
                 } }, React.createElement("div", { className: "pt-cell", style: css.name }, React.createElement("div", { className: "layout horizontal" }, React.createElement("label", { className: "pt-control pt-checkbox open-ignore", style: css.select }, React.createElement("input", { type: "checkbox", className: "open-ignore", checked: this.props.selected, onClick: evt => {
                     this.props.onSelect(evt.shiftKey);
-                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" })), React.createElement("div", { style: css.nameSpan }, instance.name))), React.createElement("div", { className: statusClass, style: css.item }, React.createElement("span", { style: css.icon, hidden: !instance.status, className: "pt-icon-standard pt-icon-power" }), instance.status), React.createElement("div", { className: "pt-cell", style: css.item }), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, hidden: !publicIp, className: "pt-icon-standard pt-icon-ip-address" }), publicIp), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, hidden: !localIp, className: "pt-icon-standard pt-icon-ip-address" }), localIp));
+                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" })), React.createElement("div", { style: css.nameSpan }, instance.name))), React.createElement("div", { className: statusClass, style: css.item }, React.createElement("span", { style: css.icon, hidden: !instance.status, className: "pt-icon-standard pt-icon-power" }), instance.status), React.createElement("div", { className: "pt-cell", style: css.item }), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, hidden: !publicIp, className: "pt-icon-standard pt-icon-ip-address" }), publicIp), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, hidden: !privateIp, className: "pt-icon-standard pt-icon-ip-address" }), privateIp));
         }
     }
     exports.default = Instance;
