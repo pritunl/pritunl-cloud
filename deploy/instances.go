@@ -288,6 +288,10 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 			return
 		}
 
+		if output == "" {
+			return
+		}
+
 		lines := strings.Split(output, "\n")
 		if len(lines) > 2 {
 			for _, line := range lines[2:] {
