@@ -374,12 +374,15 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	utils.ExecCombinedOutput("", "ip", "link", "set", ifaceVirt, "down")
 	utils.ExecCombinedOutput("", "ip", "link", "del", ifaceVirt)
 
+	virtMacAddr := vm.GetMacAddrVirt(virt.Id, vc.Id)
+
 	_, err = utils.ExecCombinedOutputLogged(
 		nil,
 		"ip", "link",
 		"add", ifaceVirt,
 		"type", "veth",
 		"peer", "name", ifaceInternal,
+		"addr", virtMacAddr,
 	)
 	if err != nil {
 		PowerOff(db, virt)
