@@ -27,6 +27,24 @@ func GetMacAddr(id bson.ObjectId, secondId bson.ObjectId) string {
 	return "00:" + macBuf.String()
 }
 
+func GetMacAddrVirt(id bson.ObjectId, secondId bson.ObjectId) string {
+	hash := md5.New()
+	hash.Write([]byte(id.Hex()))
+	hash.Write([]byte(secondId.Hex()))
+	macHash := fmt.Sprintf("%x", hash.Sum(nil))
+	macHash = macHash[:10]
+	macBuf := bytes.Buffer{}
+
+	for i, run := range macHash {
+		macBuf.WriteRune(run)
+		if i%2 == 1 && i != len(macHash)-1 {
+			macBuf.WriteRune(':')
+		}
+	}
+
+	return "02:" + macBuf.String()
+}
+
 func GetIface(id bson.ObjectId, n int) string {
 	hash := md5.New()
 	hash.Write([]byte(id.Hex()))
