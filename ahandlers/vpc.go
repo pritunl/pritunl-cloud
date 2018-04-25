@@ -237,6 +237,21 @@ func vpcsGet(c *gin.Context) {
 			}
 		}
 
+		network := strings.TrimSpace(c.Query("network"))
+		if network != "" {
+			query["network"] = network
+		}
+
+		organization, ok := utils.ParseObjectId(c.Query("organization"))
+		if ok {
+			query["organization"] = organization
+		}
+
+		datacenter, ok := utils.ParseObjectId(c.Query("datacenter"))
+		if ok {
+			query["datacenter"] = datacenter
+		}
+
 		vpcs, count, err := vpc.GetAllPaged(db, &query, page, pageCount)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
