@@ -177,7 +177,7 @@ export default class Main extends React.Component<{}, State> {
 							style={css.link}
 							to="/vpcs"
 						>
-							Vpcs
+							VPCs
 						</ReactRouter.Link>
 						<ReactRouter.Link
 							className="pt-button pt-minimal pt-icon-database"
