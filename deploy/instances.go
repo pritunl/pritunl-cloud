@@ -327,7 +327,6 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 				}
 
 				curRoutes.Add(route)
-
 			}
 		}
 
@@ -375,7 +374,6 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 				}
 
 				curRoutes6.Add(route)
-
 			}
 		}
 
