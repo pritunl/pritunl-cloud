@@ -333,7 +333,7 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 
 		output, err = utils.ExecCombinedOutputLogged(
 			[]string{
-				"not configured for this system",
+				"not configured in this system",
 			},
 			"ip", "netns", "exec", namespace,
 			"route", "-6", "-n",
