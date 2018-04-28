@@ -207,6 +207,24 @@ func imagesGet(c *gin.Context) {
 			}
 		}
 
+		key := strings.TrimSpace(c.Query("key"))
+		if key != "" {
+			query["key"] = &bson.M{
+				"$regex":   fmt.Sprintf(".*%s.*", key),
+				"$options": "i",
+			}
+		}
+
+		typ := strings.TrimSpace(c.Query("type"))
+		if typ != "" {
+			query["type"] = typ
+		}
+
+		organization, ok := utils.ParseObjectId(c.Query("organization"))
+		if ok {
+			query["organization"] = organization
+		}
+
 		images, count, err := image.GetAll(db, &query, page, pageCount)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
