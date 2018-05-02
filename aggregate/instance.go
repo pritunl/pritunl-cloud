@@ -51,6 +51,9 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 
 	pipe := coll.Pipe([]*bson.M{
 		&bson.M{
+			"$match": query,
+		},
+		&bson.M{
 			"$sort": &bson.M{
 				"name": 1,
 			},
