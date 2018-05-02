@@ -12859,6 +12859,100 @@ System.registerDynamic("app/components/Vpc.js", ["npm:react@16.2.0.js", "app/sto
     exports.default = Vpc;
     
 });
+System.registerDynamic("app/components/VpcsFilter.js", ["npm:react@16.2.0.js", "app/components/SearchInput.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@16.2.0.js");
+    const SearchInput_1 = $__require("app/components/SearchInput.js");
+    const css = {
+        filters: {
+            margin: '-15px 0 5px 0'
+        },
+        input: {
+            width: '200px',
+            margin: '5px'
+        },
+        keybase: {
+            width: '175px',
+            margin: '5px'
+        },
+        role: {
+            width: '150px',
+            margin: '5px'
+        },
+        type: {
+            margin: '5px'
+        },
+        check: {
+            margin: '12px 5px 8px 5px'
+        }
+    };
+    class VpcsFilter extends React.Component {
+        constructor(props, context) {
+            super(props, context);
+            this.state = {
+                menu: false
+            };
+        }
+        render() {
+            if (this.props.filter === null) {
+                return React.createElement("div", null);
+            }
+            let datacentersSelect = [React.createElement("option", { value: "any" }, "Any")];
+            if (this.props.datacenters && this.props.datacenters.length) {
+                for (let datacenter of this.props.datacenters) {
+                    datacentersSelect.push(React.createElement("option", { key: datacenter.id, value: datacenter.id }, datacenter.name));
+                }
+            }
+            let organizationsSelect = [React.createElement("option", { value: "any" }, "Any")];
+            if (this.props.organizations && this.props.organizations.length) {
+                for (let organization of this.props.organizations) {
+                    organizationsSelect.push(React.createElement("option", { key: organization.id, value: organization.id }, organization.name));
+                }
+            }
+            return React.createElement("div", { className: "layout horizontal wrap", style: css.filters }, React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Name", value: this.props.filter.name, onChange: val => {
+                    let filter = Object.assign({}, this.props.filter);
+                    if (val) {
+                        filter.name = val;
+                    } else {
+                        delete filter.name;
+                    }
+                    this.props.onFilter(filter);
+                } }), React.createElement(SearchInput_1.default, { style: css.role, placeholder: "Network", value: this.props.filter.network, onChange: val => {
+                    let filter = Object.assign({}, this.props.filter);
+                    if (val) {
+                        filter.network = val;
+                    } else {
+                        delete filter.network;
+                    }
+                    this.props.onFilter(filter);
+                } }), React.createElement("div", { className: "pt-select", style: css.type }, React.createElement("select", { value: this.props.filter.datacenter || 'any', onChange: evt => {
+                    let filter = Object.assign({}, this.props.filter);
+                    let val = evt.target.value;
+                    if (val === 'any') {
+                        delete filter.datacenter;
+                    } else {
+                        filter.datacenter = val;
+                    }
+                    this.props.onFilter(filter);
+                } }, datacentersSelect)), React.createElement("div", { className: "pt-select", style: css.type }, React.createElement("select", { value: this.props.filter.organization || 'any', onChange: evt => {
+                    let filter = Object.assign({}, this.props.filter);
+                    let val = evt.target.value;
+                    if (val === 'any') {
+                        delete filter.organization;
+                    } else {
+                        filter.organization = val;
+                    }
+                    this.props.onFilter(filter);
+                } }, organizationsSelect)));
+        }
+    }
+    exports.default = VpcsFilter;
+    
+});
 System.registerDynamic("app/components/VpcsPage.js", ["npm:react@16.2.0.js", "app/stores/VpcsStore.js", "app/actions/VpcActions.js"], true, function ($__require, exports, module) {
     "use strict";
 
@@ -12948,7 +13042,7 @@ System.registerDynamic("app/components/VpcsPage.js", ["npm:react@16.2.0.js", "ap
     exports.default = VpcsPage;
     
 });
-System.registerDynamic("app/components/Vpcs.js", ["npm:react@16.2.0.js", "app/stores/VpcsStore.js", "app/stores/OrganizationsStore.js", "app/actions/VpcActions.js", "app/actions/OrganizationActions.js", "app/components/Vpc.js", "app/components/VpcsPage.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/NonState.js", "app/stores/DatacentersStore.js", "app/actions/DatacenterActions.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/Vpcs.js", ["npm:react@16.2.0.js", "app/stores/VpcsStore.js", "app/stores/OrganizationsStore.js", "app/actions/VpcActions.js", "app/actions/OrganizationActions.js", "app/components/Vpc.js", "app/components/VpcsFilter.js", "app/components/VpcsPage.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/NonState.js", "app/stores/DatacentersStore.js", "app/actions/DatacenterActions.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -12960,6 +13054,7 @@ System.registerDynamic("app/components/Vpcs.js", ["npm:react@16.2.0.js", "app/st
     const VpcActions = $__require("app/actions/VpcActions.js");
     const OrganizationActions = $__require("app/actions/OrganizationActions.js");
     const Vpc_1 = $__require("app/components/Vpc.js");
+    const VpcsFilter_1 = $__require("app/components/VpcsFilter.js");
     const VpcsPage_1 = $__require("app/components/VpcsPage.js");
     const Page_1 = $__require("app/components/Page.js");
     const PageHeader_1 = $__require("app/components/PageHeader.js");
@@ -12981,7 +13076,7 @@ System.registerDynamic("app/components/Vpcs.js", ["npm:react@16.2.0.js", "app/st
             width: '100%'
         },
         groupBox: {
-            margin: '15px 0 0 0',
+            margin: '16px 0 0 0',
             width: '100%',
             maxWidth: '420px'
         },
@@ -13011,6 +13106,12 @@ System.registerDynamic("app/components/Vpcs.js", ["npm:react@16.2.0.js", "app/st
         },
         selectBox: {
             flex: '1'
+        },
+        button: {
+            margin: '8px 0 0 8px'
+        },
+        buttons: {
+            margin: '8px 8px 0 0'
         }
     };
     class Vpcs extends React.Component {
@@ -13030,7 +13131,7 @@ System.registerDynamic("app/components/Vpcs.js", ["npm:react@16.2.0.js", "app/st
                         opened[vpc.id] = true;
                     }
                 });
-                this.setState(Object.assign({}, this.state, { vpcs: vpcs, datacenters: DatacentersStore_1.default.datacenters, organizations: OrganizationsStore_1.default.organizations, selected: selected, opened: opened }));
+                this.setState(Object.assign({}, this.state, { vpcs: vpcs, filter: VpcsStore_1.default.filter, datacenters: DatacentersStore_1.default.datacenters, organizations: OrganizationsStore_1.default.organizations, selected: selected, opened: opened }));
             };
             this.onDelete = () => {
                 this.setState(Object.assign({}, this.state, { disabled: true }));
@@ -13042,6 +13143,7 @@ System.registerDynamic("app/components/Vpcs.js", ["npm:react@16.2.0.js", "app/st
             };
             this.state = {
                 vpcs: VpcsStore_1.default.vpcs,
+                filter: VpcsStore_1.default.filter,
                 datacenters: DatacentersStore_1.default.datacenters,
                 organizations: OrganizationsStore_1.default.organizations,
                 network: '',
@@ -13137,7 +13239,17 @@ System.registerDynamic("app/components/Vpcs.js", ["npm:react@16.2.0.js", "app/st
                         this.setState(Object.assign({}, this.state, { opened: opened }));
                     } }));
             });
-            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Vpcs"), React.createElement("div", { className: "flex" }), React.createElement("div", { style: css.groupBox }, React.createElement("div", { className: "pt-control-group", style: css.group }, React.createElement("input", { className: "pt-input", style: css.input, type: "text", disabled: !hasOrganizations || this.state.disabled, autoCapitalize: "off", spellCheck: false, placeholder: "Enter network", value: this.state.network, onChange: evt => {
+            let filterClass = 'pt-button pt-intent-primary pt-icon-filter ';
+            if (this.state.filter) {
+                filterClass += 'pt-active';
+            }
+            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "VPCs"), React.createElement("div", { className: "flex" }), React.createElement("div", { style: css.buttons }, React.createElement("button", { className: filterClass, style: css.button, type: "button", onClick: () => {
+                    if (this.state.filter === null) {
+                        VpcActions.filter({});
+                    } else {
+                        VpcActions.filter(null);
+                    }
+                } }, "Filters")), React.createElement("div", { style: css.groupBox }, React.createElement("div", { className: "pt-control-group", style: css.group }, React.createElement("input", { className: "pt-input", style: css.input, type: "text", disabled: !hasOrganizations || this.state.disabled, autoCapitalize: "off", spellCheck: false, placeholder: "Enter network", value: this.state.network, onChange: evt => {
                     this.setState(Object.assign({}, this.state, { network: evt.target.value }));
                 } }), React.createElement("div", { style: css.selectBox }, React.createElement("div", { className: "pt-select", style: css.selectFirst }, React.createElement("select", { style: css.selectInner, disabled: !hasOrganizations || this.state.disabled, value: this.state.organization, onChange: evt => {
                     this.setState(Object.assign({}, this.state, { organization: evt.target.value }));
@@ -13155,7 +13267,9 @@ System.registerDynamic("app/components/Vpcs.js", ["npm:react@16.2.0.js", "app/st
                     }).catch(() => {
                         this.setState(Object.assign({}, this.state, { disabled: false }));
                     });
-                } }, "New"))))), React.createElement("div", { style: css.itemsBox }, React.createElement("div", { style: css.items }, vpcsDom, React.createElement("tr", { className: "pt-card pt-row", style: css.placeholder }, React.createElement("td", { colSpan: 5, style: css.placeholder })))), React.createElement(NonState_1.default, { hidden: !!vpcsDom.length, iconClass: "pt-icon-layout-auto", title: "No vpcs", description: "Add a new vpc to get started." }), React.createElement(VpcsPage_1.default, { onPage: () => {
+                } }, "New"))))), React.createElement(VpcsFilter_1.default, { filter: this.state.filter, onFilter: filter => {
+                    VpcActions.filter(filter);
+                }, organizations: this.state.organizations, datacenters: this.state.datacenters }), React.createElement("div", { style: css.itemsBox }, React.createElement("div", { style: css.items }, vpcsDom, React.createElement("tr", { className: "pt-card pt-row", style: css.placeholder }, React.createElement("td", { colSpan: 5, style: css.placeholder })))), React.createElement(NonState_1.default, { hidden: !!vpcsDom.length, iconClass: "pt-icon-layout-auto", title: "No vpcs", description: "Add a new vpc to get started." }), React.createElement(VpcsPage_1.default, { onPage: () => {
                     this.setState({
                         lastSelected: null
                     });
@@ -13679,6 +13793,94 @@ System.registerDynamic("app/components/Image.js", ["npm:react@16.2.0.js", "app/c
     exports.default = Image;
     
 });
+System.registerDynamic("app/components/ImagesFilter.js", ["npm:react@16.2.0.js", "app/components/SearchInput.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@16.2.0.js");
+    const SearchInput_1 = $__require("app/components/SearchInput.js");
+    const css = {
+        filters: {
+            margin: '-15px 0 5px 0'
+        },
+        input: {
+            width: '200px',
+            margin: '5px'
+        },
+        keybase: {
+            width: '175px',
+            margin: '5px'
+        },
+        role: {
+            width: '150px',
+            margin: '5px'
+        },
+        type: {
+            margin: '5px'
+        },
+        check: {
+            margin: '12px 5px 8px 5px'
+        }
+    };
+    class ImagesFilter extends React.Component {
+        constructor(props, context) {
+            super(props, context);
+            this.state = {
+                menu: false
+            };
+        }
+        render() {
+            if (this.props.filter === null) {
+                return React.createElement("div", null);
+            }
+            let organizationsSelect = [React.createElement("option", { value: "any" }, "Any")];
+            if (this.props.organizations && this.props.organizations.length) {
+                for (let organization of this.props.organizations) {
+                    organizationsSelect.push(React.createElement("option", { key: organization.id, value: organization.id }, organization.name));
+                }
+            }
+            return React.createElement("div", { className: "layout horizontal wrap", style: css.filters }, React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Name", value: this.props.filter.name, onChange: val => {
+                    let filter = Object.assign({}, this.props.filter);
+                    if (val) {
+                        filter.name = val;
+                    } else {
+                        delete filter.name;
+                    }
+                    this.props.onFilter(filter);
+                } }), React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Key", value: this.props.filter.key, onChange: val => {
+                    let filter = Object.assign({}, this.props.filter);
+                    if (val) {
+                        filter.key = val;
+                    } else {
+                        delete filter.key;
+                    }
+                    this.props.onFilter(filter);
+                } }), React.createElement("div", { className: "pt-select", style: css.type }, React.createElement("select", { value: this.props.filter.type || 'any', onChange: evt => {
+                    let filter = Object.assign({}, this.props.filter);
+                    let val = evt.target.value;
+                    if (val === 'any') {
+                        delete filter.type;
+                    } else {
+                        filter.type = val;
+                    }
+                    this.props.onFilter(filter);
+                } }, React.createElement("option", { value: "any" }, "Any"), React.createElement("option", { value: "private" }, "Private"), React.createElement("option", { value: "public" }, "Public"))), React.createElement("div", { className: "pt-select", style: css.type }, React.createElement("select", { value: this.props.filter.organization || 'any', onChange: evt => {
+                    let filter = Object.assign({}, this.props.filter);
+                    let val = evt.target.value;
+                    if (val === 'any') {
+                        delete filter.organization;
+                    } else {
+                        filter.organization = val;
+                    }
+                    this.props.onFilter(filter);
+                } }, organizationsSelect)));
+        }
+    }
+    exports.default = ImagesFilter;
+    
+});
 System.registerDynamic("app/components/ImagesPage.js", ["npm:react@16.2.0.js", "app/stores/ImagesStore.js", "app/actions/ImageActions.js"], true, function ($__require, exports, module) {
     "use strict";
 
@@ -13768,7 +13970,7 @@ System.registerDynamic("app/components/ImagesPage.js", ["npm:react@16.2.0.js", "
     exports.default = ImagesPage;
     
 });
-System.registerDynamic("app/components/Images.js", ["npm:react@16.2.0.js", "app/stores/ImagesStore.js", "app/stores/OrganizationsStore.js", "app/actions/ImageActions.js", "app/actions/StorageActions.js", "app/actions/OrganizationActions.js", "app/components/Image.js", "app/components/ImagesPage.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/NonState.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/Images.js", ["npm:react@16.2.0.js", "app/stores/ImagesStore.js", "app/stores/OrganizationsStore.js", "app/actions/ImageActions.js", "app/actions/StorageActions.js", "app/actions/OrganizationActions.js", "app/components/Image.js", "app/components/ImagesFilter.js", "app/components/ImagesPage.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/NonState.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -13781,6 +13983,7 @@ System.registerDynamic("app/components/Images.js", ["npm:react@16.2.0.js", "app/
     const StorageActions = $__require("app/actions/StorageActions.js");
     const OrganizationActions = $__require("app/actions/OrganizationActions.js");
     const Image_1 = $__require("app/components/Image.js");
+    const ImagesFilter_1 = $__require("app/components/ImagesFilter.js");
     const ImagesPage_1 = $__require("app/components/ImagesPage.js");
     const Page_1 = $__require("app/components/Page.js");
     const PageHeader_1 = $__require("app/components/PageHeader.js");
@@ -13831,7 +14034,7 @@ System.registerDynamic("app/components/Images.js", ["npm:react@16.2.0.js", "app/
                         opened[image.id] = true;
                     }
                 });
-                this.setState(Object.assign({}, this.state, { images: images, organizations: OrganizationsStore_1.default.organizations, selected: selected, opened: opened }));
+                this.setState(Object.assign({}, this.state, { images: images, filter: ImagesStore_1.default.filter, organizations: OrganizationsStore_1.default.organizations, selected: selected, opened: opened }));
             };
             this.onDelete = () => {
                 this.setState(Object.assign({}, this.state, { disabled: true }));
@@ -13843,6 +14046,7 @@ System.registerDynamic("app/components/Images.js", ["npm:react@16.2.0.js", "app/
             };
             this.state = {
                 images: ImagesStore_1.default.images,
+                filter: ImagesStore_1.default.filter,
                 organizations: OrganizationsStore_1.default.organizations,
                 selected: {},
                 opened: {},
@@ -13912,9 +14116,21 @@ System.registerDynamic("app/components/Images.js", ["npm:react@16.2.0.js", "app/
                         this.setState(Object.assign({}, this.state, { opened: opened }));
                     } }));
             });
-            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Images"), React.createElement("div", { className: "flex" }), React.createElement("div", { style: css.buttons }, React.createElement("button", { className: "pt-button pt-intent-warning pt-icon-chevron-up", style: css.button, disabled: !this.opened, type: "button", onClick: () => {
+            let filterClass = 'pt-button pt-intent-primary pt-icon-filter ';
+            if (this.state.filter) {
+                filterClass += 'pt-active';
+            }
+            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Images"), React.createElement("div", { className: "flex" }), React.createElement("div", { style: css.buttons }, React.createElement("button", { className: filterClass, style: css.button, type: "button", onClick: () => {
+                    if (this.state.filter === null) {
+                        ImageActions.filter({});
+                    } else {
+                        ImageActions.filter(null);
+                    }
+                } }, "Filters"), React.createElement("button", { className: "pt-button pt-intent-warning pt-icon-chevron-up", style: css.button, disabled: !this.opened, type: "button", onClick: () => {
                     this.setState(Object.assign({}, this.state, { opened: {} }));
-                } }, "Collapse All"), React.createElement(ConfirmButton_1.default, { label: "Delete Selected", className: "pt-intent-danger pt-icon-delete", progressClassName: "pt-intent-danger", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onDelete })))), React.createElement("div", { style: css.itemsBox }, React.createElement("div", { style: css.items }, imagesDom, React.createElement("tr", { className: "pt-card pt-row", style: css.placeholder }, React.createElement("td", { colSpan: 5, style: css.placeholder })))), React.createElement(NonState_1.default, { hidden: !!imagesDom.length, iconClass: "pt-icon-compressed", title: "No images", description: "Add a new image to get started." }), React.createElement(ImagesPage_1.default, { onPage: () => {
+                } }, "Collapse All"), React.createElement(ConfirmButton_1.default, { label: "Delete Selected", className: "pt-intent-danger pt-icon-delete", progressClassName: "pt-intent-danger", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onDelete })))), React.createElement(ImagesFilter_1.default, { filter: this.state.filter, onFilter: filter => {
+                    ImageActions.filter(filter);
+                }, organizations: this.state.organizations }), React.createElement("div", { style: css.itemsBox }, React.createElement("div", { style: css.items }, imagesDom, React.createElement("tr", { className: "pt-card pt-row", style: css.placeholder }, React.createElement("td", { colSpan: 5, style: css.placeholder })))), React.createElement(NonState_1.default, { hidden: !!imagesDom.length, iconClass: "pt-icon-compressed", title: "No images", description: "Add a new image to get started." }), React.createElement(ImagesPage_1.default, { onPage: () => {
                     this.setState({
                         lastSelected: null
                     });
@@ -14272,6 +14488,85 @@ System.registerDynamic("app/components/Disk.js", ["npm:react@16.2.0.js", "app/st
         }
     }
     exports.default = Disk;
+    
+});
+System.registerDynamic("app/components/DisksFilter.js", ["npm:react@16.2.0.js", "app/components/SearchInput.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@16.2.0.js");
+    const SearchInput_1 = $__require("app/components/SearchInput.js");
+    const css = {
+        filters: {
+            margin: '-15px 0 5px 0'
+        },
+        input: {
+            width: '200px',
+            margin: '5px'
+        },
+        keybase: {
+            width: '175px',
+            margin: '5px'
+        },
+        role: {
+            width: '150px',
+            margin: '5px'
+        },
+        type: {
+            margin: '5px'
+        },
+        check: {
+            margin: '12px 5px 8px 5px'
+        }
+    };
+    class DisksFilter extends React.Component {
+        constructor(props, context) {
+            super(props, context);
+            this.state = {
+                menu: false
+            };
+        }
+        render() {
+            if (this.props.filter === null) {
+                return React.createElement("div", null);
+            }
+            let organizationsSelect = [React.createElement("option", { value: "any" }, "Any")];
+            if (this.props.organizations && this.props.organizations.length) {
+                for (let organization of this.props.organizations) {
+                    organizationsSelect.push(React.createElement("option", { key: organization.id, value: organization.id }, organization.name));
+                }
+            }
+            return React.createElement("div", { className: "layout horizontal wrap", style: css.filters }, React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Name", value: this.props.filter.name, onChange: val => {
+                    let filter = Object.assign({}, this.props.filter);
+                    if (val) {
+                        filter.name = val;
+                    } else {
+                        delete filter.name;
+                    }
+                    this.props.onFilter(filter);
+                } }), React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Instance ID", value: this.props.filter.instance, onChange: val => {
+                    let filter = Object.assign({}, this.props.filter);
+                    if (val) {
+                        filter.instance = val;
+                    } else {
+                        delete filter.instance;
+                    }
+                    this.props.onFilter(filter);
+                } }), React.createElement("div", { className: "pt-select", style: css.type }, React.createElement("select", { value: this.props.filter.organization || 'any', onChange: evt => {
+                    let filter = Object.assign({}, this.props.filter);
+                    let val = evt.target.value;
+                    if (val === 'any') {
+                        delete filter.organization;
+                    } else {
+                        filter.organization = val;
+                    }
+                    this.props.onFilter(filter);
+                } }, organizationsSelect)));
+        }
+    }
+    exports.default = DisksFilter;
     
 });
 System.registerDynamic("app/components/DisksPage.js", ["npm:react@16.2.0.js", "app/stores/DisksStore.js", "app/actions/DiskActions.js"], true, function ($__require, exports, module) {
@@ -14641,7 +14936,7 @@ System.registerDynamic("app/components/DiskNew.js", ["npm:react@16.2.0.js", "app
     exports.default = DiskNew;
     
 });
-System.registerDynamic("app/components/Disks.js", ["npm:react@16.2.0.js", "app/stores/DisksStore.js", "app/stores/OrganizationsStore.js", "app/actions/DiskActions.js", "app/actions/OrganizationActions.js", "app/components/Disk.js", "app/components/DisksPage.js", "app/components/DiskNew.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/NonState.js", "app/components/ConfirmButton.js", "app/stores/ZonesStore.js", "app/stores/DatacentersStore.js", "app/stores/NodesStore.js", "app/stores/InstancesStore.js", "app/actions/InstanceActions.js", "app/actions/DatacenterActions.js", "app/actions/ZoneActions.js", "app/actions/NodeActions.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/Disks.js", ["npm:react@16.2.0.js", "app/stores/DisksStore.js", "app/stores/OrganizationsStore.js", "app/actions/DiskActions.js", "app/actions/OrganizationActions.js", "app/components/Disk.js", "app/components/DisksFilter.js", "app/components/DisksPage.js", "app/components/DiskNew.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/NonState.js", "app/components/ConfirmButton.js", "app/stores/ZonesStore.js", "app/stores/DatacentersStore.js", "app/stores/NodesStore.js", "app/stores/InstancesStore.js", "app/actions/InstanceActions.js", "app/actions/DatacenterActions.js", "app/actions/ZoneActions.js", "app/actions/NodeActions.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -14653,6 +14948,7 @@ System.registerDynamic("app/components/Disks.js", ["npm:react@16.2.0.js", "app/s
     const DiskActions = $__require("app/actions/DiskActions.js");
     const OrganizationActions = $__require("app/actions/OrganizationActions.js");
     const Disk_1 = $__require("app/components/Disk.js");
+    const DisksFilter_1 = $__require("app/components/DisksFilter.js");
     const DisksPage_1 = $__require("app/components/DisksPage.js");
     const DiskNew_1 = $__require("app/components/DiskNew.js");
     const Page_1 = $__require("app/components/Page.js");
@@ -14712,7 +15008,7 @@ System.registerDynamic("app/components/Disks.js", ["npm:react@16.2.0.js", "app/s
                         opened[disk.id] = true;
                     }
                 });
-                this.setState(Object.assign({}, this.state, { disks: disks, organizations: OrganizationsStore_1.default.organizations, datacenters: DatacentersStore_1.default.datacenters, zones: ZonesStore_1.default.zones, selected: selected, opened: opened }));
+                this.setState(Object.assign({}, this.state, { disks: disks, filter: DisksStore_1.default.filter, organizations: OrganizationsStore_1.default.organizations, datacenters: DatacentersStore_1.default.datacenters, zones: ZonesStore_1.default.zones, selected: selected, opened: opened }));
             };
             this.onDelete = () => {
                 this.setState(Object.assign({}, this.state, { disabled: true }));
@@ -14732,6 +15028,7 @@ System.registerDynamic("app/components/Disks.js", ["npm:react@16.2.0.js", "app/s
             };
             this.state = {
                 disks: DisksStore_1.default.disks,
+                filter: DisksStore_1.default.filter,
                 organizations: OrganizationsStore_1.default.organizations,
                 datacenters: DatacentersStore_1.default.datacenters,
                 zones: ZonesStore_1.default.zones,
@@ -14819,11 +15116,23 @@ System.registerDynamic("app/components/Disks.js", ["npm:react@16.2.0.js", "app/s
                         this.setState(Object.assign({}, this.state, { newOpened: false }));
                     } });
             }
-            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Disks"), React.createElement("div", { className: "flex" }), React.createElement("div", { style: css.buttons }, React.createElement("button", { className: "pt-button pt-intent-warning pt-icon-chevron-up", style: css.button, disabled: !this.opened, type: "button", onClick: () => {
+            let filterClass = 'pt-button pt-intent-primary pt-icon-filter ';
+            if (this.state.filter) {
+                filterClass += 'pt-active';
+            }
+            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Disks"), React.createElement("div", { className: "flex" }), React.createElement("div", { style: css.buttons }, React.createElement("button", { className: filterClass, style: css.button, type: "button", onClick: () => {
+                    if (this.state.filter === null) {
+                        DiskActions.filter({});
+                    } else {
+                        DiskActions.filter(null);
+                    }
+                } }, "Filters"), React.createElement("button", { className: "pt-button pt-intent-warning pt-icon-chevron-up", style: css.button, disabled: !this.opened, type: "button", onClick: () => {
                     this.setState(Object.assign({}, this.state, { opened: {} }));
                 } }, "Collapse All"), React.createElement(ConfirmButton_1.default, { label: "Snapshot Selected", className: "pt-intent-primary pt-icon-floppy-disk", progressClassName: "pt-intent-primary", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onSnapshot }), React.createElement(ConfirmButton_1.default, { label: "Delete Selected", className: "pt-intent-danger pt-icon-delete", progressClassName: "pt-intent-danger", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onDelete }), React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", style: css.button, disabled: this.state.disabled || this.state.newOpened, type: "button", onClick: () => {
                     this.setState(Object.assign({}, this.state, { newOpened: true }));
-                } }, "New")))), React.createElement("div", { style: css.itemsBox }, React.createElement("div", { style: css.items }, newDiskDom, disksDom, React.createElement("tr", { className: "pt-card pt-row", style: css.placeholder }, React.createElement("td", { colSpan: 5, style: css.placeholder })))), React.createElement(NonState_1.default, { hidden: !!disksDom.length, iconClass: "pt-icon-floppy-disk", title: "No disks", description: "Add a new disk to get started." }), React.createElement(DisksPage_1.default, { onPage: () => {
+                } }, "New")))), React.createElement(DisksFilter_1.default, { filter: this.state.filter, onFilter: filter => {
+                    DiskActions.filter(filter);
+                }, organizations: this.state.organizations }), React.createElement("div", { style: css.itemsBox }, React.createElement("div", { style: css.items }, newDiskDom, disksDom, React.createElement("tr", { className: "pt-card pt-row", style: css.placeholder }, React.createElement("td", { colSpan: 5, style: css.placeholder })))), React.createElement(NonState_1.default, { hidden: !!disksDom.length, iconClass: "pt-icon-floppy-disk", title: "No disks", description: "Add a new disk to get started." }), React.createElement(DisksPage_1.default, { onPage: () => {
                     this.setState({
                         lastSelected: null
                     });
@@ -15020,69 +15329,6 @@ System.registerDynamic("app/stores/CertificatesStore.js", ["app/dispatcher/Dispa
         }
     }
     exports.default = new CertificatesStore();
-    
-});
-System.registerDynamic("app/stores/ZonesStore.js", ["app/dispatcher/Dispatcher.js", "app/EventEmitter.js", "app/types/ZoneTypes.js", "app/types/GlobalTypes.js"], true, function ($__require, exports, module) {
-    "use strict";
-
-    var global = this || self,
-        GLOBAL = global;
-    Object.defineProperty(exports, "__esModule", { value: true });
-    const Dispatcher_1 = $__require("app/dispatcher/Dispatcher.js");
-    const EventEmitter_1 = $__require("app/EventEmitter.js");
-    const ZoneTypes = $__require("app/types/ZoneTypes.js");
-    const GlobalTypes = $__require("app/types/GlobalTypes.js");
-    class ZonesStore extends EventEmitter_1.default {
-        constructor() {
-            super(...arguments);
-            this._zones = Object.freeze([]);
-            this._map = {};
-            this._token = Dispatcher_1.default.register(this._callback.bind(this));
-        }
-        get zones() {
-            return this._zones;
-        }
-        get zonesM() {
-            let zones = [];
-            this._zones.forEach(zone => {
-                zones.push(Object.assign({}, zone));
-            });
-            return zones;
-        }
-        zone(id) {
-            let i = this._map[id];
-            if (i === undefined) {
-                return null;
-            }
-            return this._zones[i];
-        }
-        emitChange() {
-            this.emitDefer(GlobalTypes.CHANGE);
-        }
-        addChangeListener(callback) {
-            this.on(GlobalTypes.CHANGE, callback);
-        }
-        removeChangeListener(callback) {
-            this.removeListener(GlobalTypes.CHANGE, callback);
-        }
-        _sync(zones) {
-            this._map = {};
-            for (let i = 0; i < zones.length; i++) {
-                zones[i] = Object.freeze(zones[i]);
-                this._map[zones[i].id] = i;
-            }
-            this._zones = Object.freeze(zones);
-            this.emitChange();
-        }
-        _callback(action) {
-            switch (action.type) {
-                case ZoneTypes.SYNC:
-                    this._sync(action.data.zones);
-                    break;
-            }
-        }
-    }
-    exports.default = new ZonesStore();
     
 });
 System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@16.2.0.js", "app/actions/InstanceActions.js", "app/stores/OrganizationsStore.js", "app/stores/ZonesStore.js", "app/components/PageInput.js", "app/components/PageInputButton.js", "app/components/PageInfo.js", "app/components/PageSelect.js", "app/components/PageSave.js", "app/components/PageNumInput.js", "app/components/ConfirmButton.js", "app/components/Help.js"], true, function ($__require, exports, module) {
@@ -15386,7 +15632,70 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@16.2.0.
     exports.default = InstanceDetailed;
     
 });
-System.registerDynamic("app/components/Instance.js", ["npm:react@16.2.0.js", "app/components/InstanceDetailed.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/stores/ZonesStore.js", ["app/dispatcher/Dispatcher.js", "app/EventEmitter.js", "app/types/ZoneTypes.js", "app/types/GlobalTypes.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const Dispatcher_1 = $__require("app/dispatcher/Dispatcher.js");
+    const EventEmitter_1 = $__require("app/EventEmitter.js");
+    const ZoneTypes = $__require("app/types/ZoneTypes.js");
+    const GlobalTypes = $__require("app/types/GlobalTypes.js");
+    class ZonesStore extends EventEmitter_1.default {
+        constructor() {
+            super(...arguments);
+            this._zones = Object.freeze([]);
+            this._map = {};
+            this._token = Dispatcher_1.default.register(this._callback.bind(this));
+        }
+        get zones() {
+            return this._zones;
+        }
+        get zonesM() {
+            let zones = [];
+            this._zones.forEach(zone => {
+                zones.push(Object.assign({}, zone));
+            });
+            return zones;
+        }
+        zone(id) {
+            let i = this._map[id];
+            if (i === undefined) {
+                return null;
+            }
+            return this._zones[i];
+        }
+        emitChange() {
+            this.emitDefer(GlobalTypes.CHANGE);
+        }
+        addChangeListener(callback) {
+            this.on(GlobalTypes.CHANGE, callback);
+        }
+        removeChangeListener(callback) {
+            this.removeListener(GlobalTypes.CHANGE, callback);
+        }
+        _sync(zones) {
+            this._map = {};
+            for (let i = 0; i < zones.length; i++) {
+                zones[i] = Object.freeze(zones[i]);
+                this._map[zones[i].id] = i;
+            }
+            this._zones = Object.freeze(zones);
+            this.emitChange();
+        }
+        _callback(action) {
+            switch (action.type) {
+                case ZoneTypes.SYNC:
+                    this._sync(action.data.zones);
+                    break;
+            }
+        }
+    }
+    exports.default = new ZonesStore();
+    
+});
+System.registerDynamic("app/components/Instance.js", ["npm:react@16.2.0.js", "app/components/InstanceDetailed.js", "app/stores/ZonesStore.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -15394,6 +15703,7 @@ System.registerDynamic("app/components/Instance.js", ["npm:react@16.2.0.js", "ap
     Object.defineProperty(exports, "__esModule", { value: true });
     const React = $__require("npm:react@16.2.0.js");
     const InstanceDetailed_1 = $__require("app/components/InstanceDetailed.js");
+    const ZonesStore_1 = $__require("app/stores/ZonesStore.js");
     const css = {
         card: {
             display: 'table-row',
@@ -15454,6 +15764,8 @@ System.registerDynamic("app/components/Instance.js", ["npm:react@16.2.0.js", "ap
                     } }));
             }
             let active = true;
+            let zone = ZonesStore_1.default.zone(this.props.instance.zone);
+            let zoneName = zone ? zone.name : null;
             let cardStyle = Object.assign({}, css.card);
             if (!active) {
                 cardStyle.opacity = 0.6;
@@ -15487,7 +15799,7 @@ System.registerDynamic("app/components/Instance.js", ["npm:react@16.2.0.js", "ap
                     this.props.onOpen();
                 } }, React.createElement("div", { className: "pt-cell", style: css.name }, React.createElement("div", { className: "layout horizontal" }, React.createElement("label", { className: "pt-control pt-checkbox open-ignore", style: css.select }, React.createElement("input", { type: "checkbox", className: "open-ignore", checked: this.props.selected, onClick: evt => {
                     this.props.onSelect(evt.shiftKey);
-                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" })), React.createElement("div", { style: css.nameSpan }, instance.name))), React.createElement("div", { className: statusClass, style: css.item }, React.createElement("span", { style: css.icon, hidden: !instance.status, className: "pt-icon-standard pt-icon-power" }), instance.status), React.createElement("div", { className: "pt-cell", style: css.item }), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, hidden: !publicIp, className: "pt-icon-standard pt-icon-ip-address" }), publicIp), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, hidden: !privateIp, className: "pt-icon-standard pt-icon-ip-address" }), privateIp));
+                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" })), React.createElement("div", { style: css.nameSpan }, instance.name))), React.createElement("div", { className: statusClass, style: css.item }, React.createElement("span", { style: css.icon, hidden: !instance.status, className: "pt-icon-standard pt-icon-power" }), instance.status), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, hidden: !zoneName, className: "pt-icon-standard pt-icon-layout-circle" }), zoneName), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, hidden: !publicIp, className: "pt-icon-standard pt-icon-ip-address" }), publicIp), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, hidden: !privateIp, className: "pt-icon-standard pt-icon-ip-address" }), privateIp));
         }
     }
     exports.default = Instance;
@@ -15949,6 +16261,85 @@ System.registerDynamic("app/components/InstanceNew.js", ["npm:react@16.2.0.js", 
     exports.default = InstanceNew;
     
 });
+System.registerDynamic("app/components/InstancesFilter.js", ["npm:react@16.2.0.js", "app/components/SearchInput.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@16.2.0.js");
+    const SearchInput_1 = $__require("app/components/SearchInput.js");
+    const css = {
+        filters: {
+            margin: '-15px 0 5px 0'
+        },
+        input: {
+            width: '200px',
+            margin: '5px'
+        },
+        keybase: {
+            width: '175px',
+            margin: '5px'
+        },
+        role: {
+            width: '150px',
+            margin: '5px'
+        },
+        type: {
+            margin: '5px'
+        },
+        check: {
+            margin: '12px 5px 8px 5px'
+        }
+    };
+    class InstancesFilter extends React.Component {
+        constructor(props, context) {
+            super(props, context);
+            this.state = {
+                menu: false
+            };
+        }
+        render() {
+            if (this.props.filter === null) {
+                return React.createElement("div", null);
+            }
+            let organizationsSelect = [React.createElement("option", { value: "any" }, "Any")];
+            if (this.props.organizations && this.props.organizations.length) {
+                for (let organization of this.props.organizations) {
+                    organizationsSelect.push(React.createElement("option", { key: organization.id, value: organization.id }, organization.name));
+                }
+            }
+            return React.createElement("div", { className: "layout horizontal wrap", style: css.filters }, React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Name", value: this.props.filter.name, onChange: val => {
+                    let filter = Object.assign({}, this.props.filter);
+                    if (val) {
+                        filter.name = val;
+                    } else {
+                        delete filter.name;
+                    }
+                    this.props.onFilter(filter);
+                } }), React.createElement(SearchInput_1.default, { style: css.role, placeholder: "Role", value: this.props.filter.network_role, onChange: val => {
+                    let filter = Object.assign({}, this.props.filter);
+                    if (val) {
+                        filter.network_role = val;
+                    } else {
+                        delete filter.network_role;
+                    }
+                    this.props.onFilter(filter);
+                } }), React.createElement("div", { className: "pt-select", style: css.type }, React.createElement("select", { value: this.props.filter.organization || 'any', onChange: evt => {
+                    let filter = Object.assign({}, this.props.filter);
+                    let val = evt.target.value;
+                    if (val === 'any') {
+                        delete filter.organization;
+                    } else {
+                        filter.organization = val;
+                    }
+                    this.props.onFilter(filter);
+                } }, organizationsSelect)));
+        }
+    }
+    exports.default = InstancesFilter;
+    
+});
 System.registerDynamic("app/components/InstancesPage.js", ["npm:react@16.2.0.js", "app/stores/InstancesStore.js", "app/actions/InstanceActions.js"], true, function ($__require, exports, module) {
     "use strict";
 
@@ -16038,7 +16429,7 @@ System.registerDynamic("app/components/InstancesPage.js", ["npm:react@16.2.0.js"
     exports.default = InstancesPage;
     
 });
-System.registerDynamic("app/components/Instances.js", ["npm:react@16.2.0.js", "app/stores/InstancesStore.js", "app/stores/OrganizationsStore.js", "app/stores/VpcsNameStore.js", "app/stores/DatacentersStore.js", "app/stores/NodesStore.js", "app/stores/ZonesStore.js", "app/stores/CertificatesStore.js", "app/actions/InstanceActions.js", "app/actions/OrganizationActions.js", "app/actions/VpcActions.js", "app/actions/DatacenterActions.js", "app/actions/NodeActions.js", "app/actions/ZoneActions.js", "app/actions/CertificateActions.js", "app/components/Instance.js", "app/components/InstanceNew.js", "app/components/InstancesPage.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/NonState.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/Instances.js", ["npm:react@16.2.0.js", "app/stores/InstancesStore.js", "app/stores/OrganizationsStore.js", "app/stores/VpcsNameStore.js", "app/stores/DatacentersStore.js", "app/stores/NodesStore.js", "app/stores/ZonesStore.js", "app/stores/CertificatesStore.js", "app/actions/InstanceActions.js", "app/actions/OrganizationActions.js", "app/actions/VpcActions.js", "app/actions/DatacenterActions.js", "app/actions/NodeActions.js", "app/actions/ZoneActions.js", "app/actions/CertificateActions.js", "app/components/Instance.js", "app/components/InstanceNew.js", "app/components/InstancesFilter.js", "app/components/InstancesPage.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/NonState.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -16061,6 +16452,7 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.2.0.js", "a
     const CertificateActions = $__require("app/actions/CertificateActions.js");
     const Instance_1 = $__require("app/components/Instance.js");
     const InstanceNew_1 = $__require("app/components/InstanceNew.js");
+    const InstancesFilter_1 = $__require("app/components/InstancesFilter.js");
     const InstancesPage_1 = $__require("app/components/InstancesPage.js");
     const Page_1 = $__require("app/components/Page.js");
     const PageHeader_1 = $__require("app/components/PageHeader.js");
@@ -16111,7 +16503,7 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.2.0.js", "a
                         opened[instance.id] = true;
                     }
                 });
-                this.setState(Object.assign({}, this.state, { instances: instances, organizations: OrganizationsStore_1.default.organizations, vpcs: VpcsNameStore_1.default.vpcs, certificates: CertificatesStore_1.default.certificates, datacenters: DatacentersStore_1.default.datacenters, zones: ZonesStore_1.default.zones, selected: selected, opened: opened }));
+                this.setState(Object.assign({}, this.state, { instances: instances, filter: InstancesStore_1.default.filter, organizations: OrganizationsStore_1.default.organizations, vpcs: VpcsNameStore_1.default.vpcs, certificates: CertificatesStore_1.default.certificates, datacenters: DatacentersStore_1.default.datacenters, zones: ZonesStore_1.default.zones, selected: selected, opened: opened }));
             };
             this.onDelete = () => {
                 this.setState(Object.assign({}, this.state, { disabled: true }));
@@ -16123,6 +16515,7 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.2.0.js", "a
             };
             this.state = {
                 instances: InstancesStore_1.default.instances,
+                filter: InstancesStore_1.default.filter,
                 organizations: OrganizationsStore_1.default.organizations,
                 vpcs: VpcsNameStore_1.default.vpcs,
                 datacenters: DatacentersStore_1.default.datacenters,
@@ -16228,7 +16621,17 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.2.0.js", "a
                         this.setState(Object.assign({}, this.state, { newOpened: false }));
                     } });
             }
-            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Instances"), React.createElement("div", { className: "flex" }), React.createElement("div", { style: css.buttons }, React.createElement("button", { className: "pt-button pt-intent-warning pt-icon-chevron-up", style: css.button, disabled: !this.opened, type: "button", onClick: () => {
+            let filterClass = 'pt-button pt-intent-primary pt-icon-filter ';
+            if (this.state.filter) {
+                filterClass += 'pt-active';
+            }
+            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Instances"), React.createElement("div", { className: "flex" }), React.createElement("div", { style: css.buttons }, React.createElement("button", { className: filterClass, style: css.button, type: "button", onClick: () => {
+                    if (this.state.filter === null) {
+                        InstanceActions.filter({});
+                    } else {
+                        InstanceActions.filter(null);
+                    }
+                } }, "Filters"), React.createElement("button", { className: "pt-button pt-intent-warning pt-icon-chevron-up", style: css.button, disabled: !this.opened, type: "button", onClick: () => {
                     this.setState(Object.assign({}, this.state, { opened: {} }));
                 } }, "Collapse All"), React.createElement(ConfirmButton_1.default, { label: "Start Selected", className: "pt-intent-success pt-icon-power", progressClassName: "pt-intent-success", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: () => {
                     this.updateSelected('start');
@@ -16236,7 +16639,9 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.2.0.js", "a
                     this.updateSelected('stop');
                 } }), React.createElement(ConfirmButton_1.default, { label: "Delete Selected", className: "pt-intent-danger pt-icon-delete", progressClassName: "pt-intent-danger", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onDelete }), React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", style: css.button, disabled: this.state.disabled || this.state.newOpened, type: "button", onClick: () => {
                     this.setState(Object.assign({}, this.state, { newOpened: true }));
-                } }, "New")))), React.createElement("div", { style: css.itemsBox }, React.createElement("div", { style: css.items }, newInstanceDom, instancesDom, React.createElement("tr", { className: "pt-card pt-row", style: css.placeholder }, React.createElement("td", { colSpan: 5, style: css.placeholder })))), React.createElement(NonState_1.default, { hidden: !!instancesDom.length, iconClass: "pt-icon-dashboard", title: "No instances", description: "Add a new instance to get started." }), React.createElement(InstancesPage_1.default, { onPage: () => {
+                } }, "New")))), React.createElement(InstancesFilter_1.default, { filter: this.state.filter, onFilter: filter => {
+                    InstanceActions.filter(filter);
+                }, organizations: this.state.organizations }), React.createElement("div", { style: css.itemsBox }, React.createElement("div", { style: css.items }, newInstanceDom, instancesDom, React.createElement("tr", { className: "pt-card pt-row", style: css.placeholder }, React.createElement("td", { colSpan: 5, style: css.placeholder })))), React.createElement(NonState_1.default, { hidden: !!instancesDom.length, iconClass: "pt-icon-dashboard", title: "No instances", description: "Add a new instance to get started." }), React.createElement(InstancesPage_1.default, { onPage: () => {
                     this.setState({
                         lastSelected: null
                     });
@@ -25409,7 +25814,7 @@ System.registerDynamic("app/components/Main.js", ["npm:react@16.2.0.js", "npm:re
             if (!this.state.subscription) {
                 return React.createElement("div", null);
             }
-            return React.createElement(ReactRouter.HashRouter, null, React.createElement("div", null, React.createElement("nav", { className: "pt-navbar layout horizontal", style: css.nav }, React.createElement("div", { className: "pt-navbar-group pt-align-left flex", style: css.navTitle }, React.createElement("div", { className: "pt-navbar-heading", style: css.heading }, "Pritunl Cloud"), React.createElement(Loading_1.default, { style: css.loading, size: "small" })), React.createElement("div", { className: "pt-navbar-group pt-align-right", style: css.navGroup }, React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-people", style: css.link, to: "/users" }, "Users"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-layers", style: css.link, to: "/nodes" }, "Nodes"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-filter", style: css.link, to: "/policies" }, "Policies"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-endorsed", style: css.link, to: "/certificates" }, "Certificates"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-people", style: css.link, to: "/organizations" }, "Organizations"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-cloud", style: css.link, to: "/datacenters" }, "Datacenters"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-layout-circle", style: css.link, to: "/zones" }, "Zones"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-layout-auto", style: css.link, to: "/vpcs" }, "Vpcs"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-database", style: css.link, to: "/storages" }, "Storages"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-compressed", style: css.link, to: "/images" }, "Images"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-floppy-disk", style: css.link, to: "/disks" }, "Disks"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-dashboard", style: css.link, to: "/instances" }, "Instances"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-key", style: css.link, to: "/firewalls" }, "Firewalls"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-office", style: css.link, to: "/authorities" }, "Authorities"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-history", style: css.link, to: "/logs" }, "Logs"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-cog", style: css.link, to: "/settings" }, "Settings"), React.createElement(ReactRouter.Link, { to: "/subscription", style: css.sub }, React.createElement("button", { className: "pt-button pt-minimal pt-icon-credit-card", style: css.link, onClick: () => {
+            return React.createElement(ReactRouter.HashRouter, null, React.createElement("div", null, React.createElement("nav", { className: "pt-navbar layout horizontal", style: css.nav }, React.createElement("div", { className: "pt-navbar-group pt-align-left flex", style: css.navTitle }, React.createElement("div", { className: "pt-navbar-heading", style: css.heading }, "Pritunl Cloud"), React.createElement(Loading_1.default, { style: css.loading, size: "small" })), React.createElement("div", { className: "pt-navbar-group pt-align-right", style: css.navGroup }, React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-people", style: css.link, to: "/users" }, "Users"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-layers", style: css.link, to: "/nodes" }, "Nodes"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-filter", style: css.link, to: "/policies" }, "Policies"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-endorsed", style: css.link, to: "/certificates" }, "Certificates"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-people", style: css.link, to: "/organizations" }, "Organizations"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-cloud", style: css.link, to: "/datacenters" }, "Datacenters"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-layout-circle", style: css.link, to: "/zones" }, "Zones"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-layout-auto", style: css.link, to: "/vpcs" }, "VPCs"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-database", style: css.link, to: "/storages" }, "Storages"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-compressed", style: css.link, to: "/images" }, "Images"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-floppy-disk", style: css.link, to: "/disks" }, "Disks"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-dashboard", style: css.link, to: "/instances" }, "Instances"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-key", style: css.link, to: "/firewalls" }, "Firewalls"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-office", style: css.link, to: "/authorities" }, "Authorities"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-history", style: css.link, to: "/logs" }, "Logs"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-cog", style: css.link, to: "/settings" }, "Settings"), React.createElement(ReactRouter.Link, { to: "/subscription", style: css.sub }, React.createElement("button", { className: "pt-button pt-minimal pt-icon-credit-card", style: css.link, onClick: () => {
                     SubscriptionActions.sync(true);
                 } }, "Subscription")), React.createElement(ReactRouter.Route, { render: props => React.createElement("button", { className: "pt-button pt-minimal pt-icon-refresh", disabled: this.state.disabled, onClick: () => {
                         let pathname = props.location.pathname;
