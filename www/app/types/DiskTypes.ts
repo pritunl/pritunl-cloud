@@ -18,6 +18,9 @@ export interface Disk {
 
 export interface Filter {
 	name?: string;
+	organization?: string;
+	datacenter?: string;
+	instance?: string;
 }
 
 export type Disks = Disk[];
