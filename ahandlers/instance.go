@@ -319,6 +319,16 @@ func instancesGet(c *gin.Context) {
 			}
 		}
 
+		networkRole := strings.TrimSpace(c.Query("network_role"))
+		if networkRole != "" {
+			query["network_roles"] = networkRole
+		}
+
+		organization, ok := utils.ParseObjectId(c.Query("organization"))
+		if ok {
+			query["organization"] = organization
+		}
+
 		instances, count, err := aggregate.GetInstancePaged(
 			db, &query, page, pageCount)
 		if err != nil {
