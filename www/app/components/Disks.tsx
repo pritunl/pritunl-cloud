@@ -7,6 +7,7 @@ import OrganizationsStore from '../stores/OrganizationsStore';
 import * as DiskActions from '../actions/DiskActions';
 import * as OrganizationActions from '../actions/OrganizationActions';
 import Disk from './Disk';
+import DisksFilter from './DisksFilter';
 import DisksPage from './DisksPage';
 import DiskNew from './DiskNew';
 import Page from './Page';
@@ -34,6 +35,7 @@ interface Opened {
 
 interface State {
 	disks: DiskTypes.DisksRo;
+	filter: DiskTypes.Filter;
 	organizations: OrganizationTypes.OrganizationsRo;
 	datacenters: DatacenterTypes.DatacentersRo;
 	zones: ZoneTypes.ZonesRo;
@@ -78,6 +80,7 @@ export default class Disks extends React.Component<{}, State> {
 		super(props, context);
 		this.state = {
 			disks: DisksStore.disks,
+			filter: DisksStore.filter,
 			organizations: OrganizationsStore.organizations,
 			datacenters: DatacentersStore.datacenters,
 			zones: ZonesStore.zones,
@@ -139,6 +142,7 @@ export default class Disks extends React.Component<{}, State> {
 		this.setState({
 			...this.state,
 			disks: disks,
+			filter: DisksStore.filter,
 			organizations: OrganizationsStore.organizations,
 			datacenters: DatacentersStore.datacenters,
 			zones: ZonesStore.zones,
@@ -283,12 +287,31 @@ export default class Disks extends React.Component<{}, State> {
 			/>;
 		}
 
+		let filterClass = 'pt-button pt-intent-primary pt-icon-filter ';
+		if (this.state.filter) {
+			filterClass += 'pt-active';
+		}
+
 		return <Page>
 			<PageHeader>
 				<div className="layout horizontal wrap" style={css.header}>
 					<h2 style={css.heading}>Disks</h2>
 					<div className="flex"/>
 					<div style={css.buttons}>
+						<button
+							className={filterClass}
+							style={css.button}
+							type="button"
+							onClick={(): void => {
+								if (this.state.filter === null) {
+									DiskActions.filter({});
+								} else {
+									DiskActions.filter(null);
+								}
+							}}
+						>
+							Filters
+						</button>
 						<button
 							className="pt-button pt-intent-warning pt-icon-chevron-up"
 							style={css.button}
@@ -334,6 +357,13 @@ export default class Disks extends React.Component<{}, State> {
 					</div>
 				</div>
 			</PageHeader>
+			<DisksFilter
+				filter={this.state.filter}
+				onFilter={(filter): void => {
+					DiskActions.filter(filter);
+				}}
+				organizations={this.state.organizations}
+			/>
 			<div style={css.itemsBox}>
 				<div style={css.items}>
 					{newDiskDom}
