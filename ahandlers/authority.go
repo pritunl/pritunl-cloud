@@ -228,6 +228,21 @@ func authoritiesGet(c *gin.Context) {
 		}
 	}
 
+	role := strings.TrimSpace(c.Query("role"))
+	if role != "" {
+		query["roles"] = role
+	}
+
+	networkRole := strings.TrimSpace(c.Query("network_role"))
+	if networkRole != "" {
+		query["network_roles"] = networkRole
+	}
+
+	organization, ok := utils.ParseObjectId(c.Query("organization"))
+	if ok {
+		query["organization"] = organization
+	}
+
 	authorities, count, err := authority.GetAllPaged(
 		db, &query, page, pageCount)
 	if err != nil {
