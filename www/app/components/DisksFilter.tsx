@@ -3,7 +3,6 @@ import * as React from 'react';
 import * as DiskTypes from '../types/DiskTypes';
 import SearchInput from './SearchInput';
 import * as OrganizationTypes from "../types/OrganizationTypes";
-import * as DatacenterTypes from "../types/DatacenterTypes";
 
 interface Props {
 	filter: DiskTypes.Filter;
