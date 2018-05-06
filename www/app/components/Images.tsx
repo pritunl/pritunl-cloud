@@ -8,6 +8,7 @@ import * as ImageActions from '../actions/ImageActions';
 import * as StorageActions from '../actions/StorageActions';
 import * as OrganizationActions from '../actions/OrganizationActions';
 import Image from './Image';
+import ImagesFilter from './ImagesFilter';
 import ImagesPage from './ImagesPage';
 import Page from './Page';
 import PageHeader from './PageHeader';
@@ -24,6 +25,7 @@ interface Opened {
 
 interface State {
 	images: ImageTypes.ImagesRo;
+	filter: ImageTypes.Filter;
 	organizations: OrganizationTypes.OrganizationsRo;
 	selected: Selected;
 	opened: Opened;
@@ -66,6 +68,7 @@ export default class Images extends React.Component<{}, State> {
 		super(props, context);
 		this.state = {
 			images: ImagesStore.images,
+			filter: ImagesStore.filter,
 			organizations: OrganizationsStore.organizations,
 			selected: {},
 			opened: {},
@@ -115,6 +118,7 @@ export default class Images extends React.Component<{}, State> {
 		this.setState({
 			...this.state,
 			images: images,
+			filter: ImagesStore.filter,
 			organizations: OrganizationsStore.organizations,
 			selected: selected,
 			opened: opened,
@@ -221,12 +225,31 @@ export default class Images extends React.Component<{}, State> {
 			/>);
 		});
 
+		let filterClass = 'pt-button pt-intent-primary pt-icon-filter ';
+		if (this.state.filter) {
+			filterClass += 'pt-active';
+		}
+
 		return <Page>
 			<PageHeader>
 				<div className="layout horizontal wrap" style={css.header}>
 					<h2 style={css.heading}>Images</h2>
 					<div className="flex"/>
 					<div style={css.buttons}>
+						<button
+							className={filterClass}
+							style={css.button}
+							type="button"
+							onClick={(): void => {
+								if (this.state.filter === null) {
+									ImageActions.filter({});
+								} else {
+									ImageActions.filter(null);
+								}
+							}}
+						>
+							Filters
+						</button>
 						<button
 							className="pt-button pt-intent-warning pt-icon-chevron-up"
 							style={css.button}
@@ -252,6 +275,13 @@ export default class Images extends React.Component<{}, State> {
 					</div>
 				</div>
 			</PageHeader>
+			<ImagesFilter
+				filter={this.state.filter}
+				onFilter={(filter): void => {
+					ImageActions.filter(filter);
+				}}
+				organizations={this.state.organizations}
+			/>
 			<div style={css.itemsBox}>
 				<div style={css.items}>
 					{imagesDom}
