@@ -7,6 +7,7 @@ import OrganizationsStore from '../stores/OrganizationsStore';
 import * as AuthorityActions from '../actions/AuthorityActions';
 import * as OrganizationActions from '../actions/OrganizationActions';
 import Authority from './Authority';
+import AuthoritiesFilter from './AuthoritiesFilter';
 import AuthoritiesPage from './AuthoritiesPage';
 import Page from './Page';
 import PageHeader from './PageHeader';
@@ -23,6 +24,7 @@ interface Opened {
 
 interface State {
 	authorities: AuthorityTypes.AuthoritiesRo;
+	filter: AuthorityTypes.Filter;
 	organizations: OrganizationTypes.OrganizationsRo;
 	selected: Selected;
 	opened: Opened;
@@ -65,6 +67,7 @@ export default class Authorities extends React.Component<{}, State> {
 		super(props, context);
 		this.state = {
 			authorities: AuthoritiesStore.authorities,
+			filter: AuthoritiesStore.filter,
 			organizations: OrganizationsStore.organizations,
 			selected: {},
 			opened: {},
@@ -113,6 +116,7 @@ export default class Authorities extends React.Component<{}, State> {
 		this.setState({
 			...this.state,
 			authorities: authorities,
+			filter: AuthoritiesStore.filter,
 			organizations: OrganizationsStore.organizations,
 			selected: selected,
 			opened: opened,
@@ -220,12 +224,31 @@ export default class Authorities extends React.Component<{}, State> {
 			/>);
 		});
 
+		let filterClass = 'pt-button pt-intent-primary pt-icon-filter ';
+		if (this.state.filter) {
+			filterClass += 'pt-active';
+		}
+
 		return <Page>
 			<PageHeader>
 				<div className="layout horizontal wrap" style={css.header}>
 					<h2 style={css.heading}>Authorities</h2>
 					<div className="flex"/>
 					<div style={css.buttons}>
+						<button
+							className={filterClass}
+							style={css.button}
+							type="button"
+							onClick={(): void => {
+								if (this.state.filter === null) {
+									AuthorityActions.filter({});
+								} else {
+									AuthorityActions.filter(null);
+								}
+							}}
+						>
+							Filters
+						</button>
 						<button
 							className="pt-button pt-intent-warning pt-icon-chevron-up"
 							style={css.button}
@@ -276,6 +299,13 @@ export default class Authorities extends React.Component<{}, State> {
 					</div>
 				</div>
 			</PageHeader>
+			<AuthoritiesFilter
+				filter={this.state.filter}
+				onFilter={(filter): void => {
+					AuthorityActions.filter(filter);
+				}}
+				organizations={this.state.organizations}
+			/>
 			<div style={css.itemsBox}>
 				<div style={css.items}>
 					{authoritiesDom}
