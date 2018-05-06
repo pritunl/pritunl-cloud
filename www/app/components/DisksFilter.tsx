@@ -48,7 +48,7 @@ export default class DisksFilter extends React.Component<Props, {}> {
 		}
 
 		let organizationsSelect: JSX.Element[] = [
-			<option value="any">Any</option>,
+			<option key="key" value="any">Any</option>,
 		];
 		if (this.props.organizations && this.props.organizations.length) {
 			for (let organization of this.props.organizations) {
