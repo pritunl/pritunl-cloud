@@ -216,6 +216,16 @@ func firewallsGet(c *gin.Context) {
 		}
 	}
 
+	networkRole := strings.TrimSpace(c.Query("network_role"))
+	if networkRole != "" {
+		query["network_roles"] = networkRole
+	}
+
+	organization, ok := utils.ParseObjectId(c.Query("organization"))
+	if ok {
+		query["organization"] = organization
+	}
+
 	firewalls, count, err := firewall.GetAllPaged(db, &query, page, pageCount)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
