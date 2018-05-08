@@ -3,6 +3,7 @@ import * as React from 'react';
 import * as InstanceTypes from '../types/InstanceTypes';
 import * as VpcTypes from "../types/VpcTypes";
 import InstanceDetailed from './InstanceDetailed';
+import ZonesStore from "../stores/ZonesStore";
 
 interface Props {
 	vpcs: VpcTypes.VpcsRo;
@@ -87,6 +88,8 @@ export default class Instance extends React.Component<Props, {}> {
 		}
 
 		let active = true;
+		let zone = ZonesStore.zone(this.props.instance.zone);
+		let zoneName = zone ? zone.name : null;
 
 		let cardStyle = {
 			...css.card,
@@ -161,6 +164,12 @@ export default class Instance extends React.Component<Props, {}> {
 				{instance.status}
 			</div>
 			<div className="pt-cell" style={css.item}>
+				<span
+					style={css.icon}
+					hidden={!zoneName}
+					className="pt-icon-standard pt-icon-layout-circle"
+				/>
+				{zoneName}
 			</div>
 			<div className="pt-cell" style={css.item}>
 				<span
