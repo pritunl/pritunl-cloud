@@ -22,6 +22,7 @@ import * as ZoneActions from '../actions/ZoneActions';
 import * as CertificateActions from '../actions/CertificateActions';
 import Instance from './Instance';
 import InstanceNew from './InstanceNew';
+import InstancesFilter from './InstancesFilter';
 import InstancesPage from './InstancesPage';
 import Page from './Page';
 import PageHeader from './PageHeader';
@@ -38,6 +39,7 @@ interface Opened {
 
 interface State {
 	instances: InstanceTypes.InstancesRo;
+	filter: InstanceTypes.Filter;
 	organizations: OrganizationTypes.OrganizationsRo;
 	vpcs: VpcTypes.VpcsRo;
 	datacenters: DatacenterTypes.DatacentersRo;
@@ -86,6 +88,7 @@ export default class Instances extends React.Component<{}, State> {
 		super(props, context);
 		this.state = {
 			instances: InstancesStore.instances,
+			filter: InstancesStore.filter,
 			organizations: OrganizationsStore.organizations,
 			vpcs: VpcsNameStore.vpcs,
 			datacenters: DatacentersStore.datacenters,
@@ -158,6 +161,7 @@ export default class Instances extends React.Component<{}, State> {
 		this.setState({
 			...this.state,
 			instances: instances,
+			filter: InstancesStore.filter,
 			organizations: OrganizationsStore.organizations,
 			vpcs: VpcsNameStore.vpcs,
 			certificates: CertificatesStore.certificates,
@@ -305,12 +309,31 @@ export default class Instances extends React.Component<{}, State> {
 			/>;
 		}
 
+		let filterClass = 'pt-button pt-intent-primary pt-icon-filter ';
+		if (this.state.filter) {
+			filterClass += 'pt-active';
+		}
+
 		return <Page>
 			<PageHeader>
 				<div className="layout horizontal wrap" style={css.header}>
 					<h2 style={css.heading}>Instances</h2>
 					<div className="flex"/>
 					<div style={css.buttons}>
+						<button
+							className={filterClass}
+							style={css.button}
+							type="button"
+							onClick={(): void => {
+								if (this.state.filter === null) {
+									InstanceActions.filter({});
+								} else {
+									InstanceActions.filter(null);
+								}
+							}}
+						>
+							Filters
+						</button>
 						<button
 							className="pt-button pt-intent-warning pt-icon-chevron-up"
 							style={css.button}
@@ -368,6 +391,13 @@ export default class Instances extends React.Component<{}, State> {
 					</div>
 				</div>
 			</PageHeader>
+			<InstancesFilter
+				filter={this.state.filter}
+				onFilter={(filter): void => {
+					InstanceActions.filter(filter);
+				}}
+				organizations={this.state.organizations}
+			/>
 			<div style={css.itemsBox}>
 				<div style={css.items}>
 					{newInstanceDom}
