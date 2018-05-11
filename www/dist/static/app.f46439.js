@@ -10640,7 +10640,7 @@ System.registerDynamic("app/components/NodesFilter.js", ["npm:react@16.2.0.js", 
             if (this.props.filter === null) {
                 return React.createElement("div", null);
             }
-            let zonesSelect = [React.createElement("option", { value: "any" }, "Any")];
+            let zonesSelect = [React.createElement("option", { key: "key", value: "any" }, "Any")];
             if (this.props.zones && this.props.zones.length) {
                 for (let zone of this.props.zones) {
                     zonesSelect.push(React.createElement("option", { key: zone.id, value: zone.id }, zone.name));
@@ -12901,13 +12901,13 @@ System.registerDynamic("app/components/VpcsFilter.js", ["npm:react@16.2.0.js", "
             if (this.props.filter === null) {
                 return React.createElement("div", null);
             }
-            let datacentersSelect = [React.createElement("option", { value: "any" }, "Any")];
+            let datacentersSelect = [React.createElement("option", { key: "key", value: "any" }, "Any")];
             if (this.props.datacenters && this.props.datacenters.length) {
                 for (let datacenter of this.props.datacenters) {
                     datacentersSelect.push(React.createElement("option", { key: datacenter.id, value: datacenter.id }, datacenter.name));
                 }
             }
-            let organizationsSelect = [React.createElement("option", { value: "any" }, "Any")];
+            let organizationsSelect = [React.createElement("option", { key: "key", value: "any" }, "Any")];
             if (this.props.organizations && this.props.organizations.length) {
                 for (let organization of this.props.organizations) {
                     organizationsSelect.push(React.createElement("option", { key: organization.id, value: organization.id }, organization.name));
@@ -13835,7 +13835,7 @@ System.registerDynamic("app/components/ImagesFilter.js", ["npm:react@16.2.0.js",
             if (this.props.filter === null) {
                 return React.createElement("div", null);
             }
-            let organizationsSelect = [React.createElement("option", { value: "any" }, "Any")];
+            let organizationsSelect = [React.createElement("option", { key: "key", value: "any" }, "Any")];
             if (this.props.organizations && this.props.organizations.length) {
                 for (let organization of this.props.organizations) {
                     organizationsSelect.push(React.createElement("option", { key: organization.id, value: organization.id }, organization.name));
@@ -14532,7 +14532,7 @@ System.registerDynamic("app/components/DisksFilter.js", ["npm:react@16.2.0.js", 
             if (this.props.filter === null) {
                 return React.createElement("div", null);
             }
-            let organizationsSelect = [React.createElement("option", { value: "any" }, "Any")];
+            let organizationsSelect = [React.createElement("option", { key: "key", value: "any" }, "Any")];
             if (this.props.organizations && this.props.organizations.length) {
                 for (let organization of this.props.organizations) {
                     organizationsSelect.push(React.createElement("option", { key: organization.id, value: organization.id }, organization.name));
@@ -16303,7 +16303,7 @@ System.registerDynamic("app/components/InstancesFilter.js", ["npm:react@16.2.0.j
             if (this.props.filter === null) {
                 return React.createElement("div", null);
             }
-            let organizationsSelect = [React.createElement("option", { value: "any" }, "Any")];
+            let organizationsSelect = [React.createElement("option", { key: "key", value: "any" }, "Any")];
             if (this.props.organizations && this.props.organizations.length) {
                 for (let organization of this.props.organizations) {
                     organizationsSelect.push(React.createElement("option", { key: organization.id, value: organization.id }, organization.name));
@@ -16317,7 +16317,7 @@ System.registerDynamic("app/components/InstancesFilter.js", ["npm:react@16.2.0.j
                         delete filter.name;
                     }
                     this.props.onFilter(filter);
-                } }), React.createElement(SearchInput_1.default, { style: css.role, placeholder: "Role", value: this.props.filter.network_role, onChange: val => {
+                } }), React.createElement(SearchInput_1.default, { style: css.role, placeholder: "Network Role", value: this.props.filter.network_role, onChange: val => {
                     let filter = Object.assign({}, this.props.filter);
                     if (val) {
                         filter.network_role = val;
@@ -17128,6 +17128,85 @@ System.registerDynamic("app/components/Firewall.js", ["npm:react@16.2.0.js", "ap
     exports.default = Firewall;
     
 });
+System.registerDynamic("app/components/FirewallsFilter.js", ["npm:react@16.2.0.js", "app/components/SearchInput.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@16.2.0.js");
+    const SearchInput_1 = $__require("app/components/SearchInput.js");
+    const css = {
+        filters: {
+            margin: '-15px 0 5px 0'
+        },
+        input: {
+            width: '200px',
+            margin: '5px'
+        },
+        keybase: {
+            width: '175px',
+            margin: '5px'
+        },
+        role: {
+            width: '150px',
+            margin: '5px'
+        },
+        type: {
+            margin: '5px'
+        },
+        check: {
+            margin: '12px 5px 8px 5px'
+        }
+    };
+    class FirewallsFilter extends React.Component {
+        constructor(props, context) {
+            super(props, context);
+            this.state = {
+                menu: false
+            };
+        }
+        render() {
+            if (this.props.filter === null) {
+                return React.createElement("div", null);
+            }
+            let organizationsSelect = [React.createElement("option", { key: "key", value: "any" }, "Any")];
+            if (this.props.organizations && this.props.organizations.length) {
+                for (let organization of this.props.organizations) {
+                    organizationsSelect.push(React.createElement("option", { key: organization.id, value: organization.id }, organization.name));
+                }
+            }
+            return React.createElement("div", { className: "layout horizontal wrap", style: css.filters }, React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Name", value: this.props.filter.name, onChange: val => {
+                    let filter = Object.assign({}, this.props.filter);
+                    if (val) {
+                        filter.name = val;
+                    } else {
+                        delete filter.name;
+                    }
+                    this.props.onFilter(filter);
+                } }), React.createElement(SearchInput_1.default, { style: css.role, placeholder: "Network Role", value: this.props.filter.network_role, onChange: val => {
+                    let filter = Object.assign({}, this.props.filter);
+                    if (val) {
+                        filter.network_role = val;
+                    } else {
+                        delete filter.network_role;
+                    }
+                    this.props.onFilter(filter);
+                } }), React.createElement("div", { className: "pt-select", style: css.type }, React.createElement("select", { value: this.props.filter.organization || 'any', onChange: evt => {
+                    let filter = Object.assign({}, this.props.filter);
+                    let val = evt.target.value;
+                    if (val === 'any') {
+                        delete filter.organization;
+                    } else {
+                        filter.organization = val;
+                    }
+                    this.props.onFilter(filter);
+                } }, organizationsSelect)));
+        }
+    }
+    exports.default = FirewallsFilter;
+    
+});
 System.registerDynamic("app/components/FirewallsPage.js", ["npm:react@16.2.0.js", "app/stores/FirewallsStore.js", "app/actions/FirewallActions.js"], true, function ($__require, exports, module) {
     "use strict";
 
@@ -17217,7 +17296,7 @@ System.registerDynamic("app/components/FirewallsPage.js", ["npm:react@16.2.0.js"
     exports.default = FirewallsPage;
     
 });
-System.registerDynamic("app/components/Firewalls.js", ["npm:react@16.2.0.js", "app/stores/FirewallsStore.js", "app/stores/OrganizationsStore.js", "app/actions/FirewallActions.js", "app/actions/OrganizationActions.js", "app/components/Firewall.js", "app/components/FirewallsPage.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/NonState.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/Firewalls.js", ["npm:react@16.2.0.js", "app/stores/FirewallsStore.js", "app/stores/OrganizationsStore.js", "app/actions/FirewallActions.js", "app/actions/OrganizationActions.js", "app/components/Firewall.js", "app/components/FirewallsFilter.js", "app/components/FirewallsPage.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/NonState.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -17229,6 +17308,7 @@ System.registerDynamic("app/components/Firewalls.js", ["npm:react@16.2.0.js", "a
     const FirewallActions = $__require("app/actions/FirewallActions.js");
     const OrganizationActions = $__require("app/actions/OrganizationActions.js");
     const Firewall_1 = $__require("app/components/Firewall.js");
+    const FirewallsFilter_1 = $__require("app/components/FirewallsFilter.js");
     const FirewallsPage_1 = $__require("app/components/FirewallsPage.js");
     const Page_1 = $__require("app/components/Page.js");
     const PageHeader_1 = $__require("app/components/PageHeader.js");
@@ -17279,7 +17359,7 @@ System.registerDynamic("app/components/Firewalls.js", ["npm:react@16.2.0.js", "a
                         opened[firewall.id] = true;
                     }
                 });
-                this.setState(Object.assign({}, this.state, { firewalls: firewalls, organizations: OrganizationsStore_1.default.organizations, selected: selected, opened: opened }));
+                this.setState(Object.assign({}, this.state, { firewalls: firewalls, filter: FirewallsStore_1.default.filter, organizations: OrganizationsStore_1.default.organizations, selected: selected, opened: opened }));
             };
             this.onDelete = () => {
                 this.setState(Object.assign({}, this.state, { disabled: true }));
@@ -17291,6 +17371,7 @@ System.registerDynamic("app/components/Firewalls.js", ["npm:react@16.2.0.js", "a
             };
             this.state = {
                 firewalls: FirewallsStore_1.default.firewalls,
+                filter: FirewallsStore_1.default.filter,
                 organizations: OrganizationsStore_1.default.organizations,
                 selected: {},
                 opened: {},
@@ -17359,7 +17440,17 @@ System.registerDynamic("app/components/Firewalls.js", ["npm:react@16.2.0.js", "a
                         this.setState(Object.assign({}, this.state, { opened: opened }));
                     } }));
             });
-            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Firewalls"), React.createElement("div", { className: "flex" }), React.createElement("div", { style: css.buttons }, React.createElement("button", { className: "pt-button pt-intent-warning pt-icon-chevron-up", style: css.button, disabled: !this.opened, type: "button", onClick: () => {
+            let filterClass = 'pt-button pt-intent-primary pt-icon-filter ';
+            if (this.state.filter) {
+                filterClass += 'pt-active';
+            }
+            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Firewalls"), React.createElement("div", { className: "flex" }), React.createElement("div", { style: css.buttons }, React.createElement("button", { className: filterClass, style: css.button, type: "button", onClick: () => {
+                    if (this.state.filter === null) {
+                        FirewallActions.filter({});
+                    } else {
+                        FirewallActions.filter(null);
+                    }
+                } }, "Filters"), React.createElement("button", { className: "pt-button pt-intent-warning pt-icon-chevron-up", style: css.button, disabled: !this.opened, type: "button", onClick: () => {
                     this.setState(Object.assign({}, this.state, { opened: {} }));
                 } }, "Collapse All"), React.createElement(ConfirmButton_1.default, { label: "Delete Selected", className: "pt-intent-danger pt-icon-delete", progressClassName: "pt-intent-danger", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onDelete }), React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", style: css.button, disabled: this.state.disabled, type: "button", onClick: () => {
                     this.setState(Object.assign({}, this.state, { disabled: true }));
@@ -17377,7 +17468,9 @@ System.registerDynamic("app/components/Firewalls.js", ["npm:react@16.2.0.js", "a
                     }).catch(() => {
                         this.setState(Object.assign({}, this.state, { disabled: false }));
                     });
-                } }, "New")))), React.createElement("div", { style: css.itemsBox }, React.createElement("div", { style: css.items }, firewallsDom, React.createElement("tr", { className: "pt-card pt-row", style: css.placeholder }, React.createElement("td", { colSpan: 5, style: css.placeholder })))), React.createElement(NonState_1.default, { hidden: !!firewallsDom.length, iconClass: "pt-icon-key", title: "No firewalls", description: "Add a new firewall to get started." }), React.createElement(FirewallsPage_1.default, { onPage: () => {
+                } }, "New")))), React.createElement(FirewallsFilter_1.default, { filter: this.state.filter, onFilter: filter => {
+                    FirewallActions.filter(filter);
+                }, organizations: this.state.organizations }), React.createElement("div", { style: css.itemsBox }, React.createElement("div", { style: css.items }, firewallsDom, React.createElement("tr", { className: "pt-card pt-row", style: css.placeholder }, React.createElement("td", { colSpan: 5, style: css.placeholder })))), React.createElement(NonState_1.default, { hidden: !!firewallsDom.length, iconClass: "pt-icon-key", title: "No firewalls", description: "Add a new firewall to get started." }), React.createElement(FirewallsPage_1.default, { onPage: () => {
                     this.setState({
                         lastSelected: null
                     });
@@ -17816,6 +17909,93 @@ System.registerDynamic("app/components/Authority.js", ["npm:react@16.2.0.js", "a
     exports.default = Authority;
     
 });
+System.registerDynamic("app/components/AuthoritiesFilter.js", ["npm:react@16.2.0.js", "app/components/SearchInput.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@16.2.0.js");
+    const SearchInput_1 = $__require("app/components/SearchInput.js");
+    const css = {
+        filters: {
+            margin: '-15px 0 5px 0'
+        },
+        input: {
+            width: '200px',
+            margin: '5px'
+        },
+        keybase: {
+            width: '175px',
+            margin: '5px'
+        },
+        role: {
+            width: '150px',
+            margin: '5px'
+        },
+        type: {
+            margin: '5px'
+        },
+        check: {
+            margin: '12px 5px 8px 5px'
+        }
+    };
+    class AuthoritiesFilter extends React.Component {
+        constructor(props, context) {
+            super(props, context);
+            this.state = {
+                menu: false
+            };
+        }
+        render() {
+            if (this.props.filter === null) {
+                return React.createElement("div", null);
+            }
+            let organizationsSelect = [React.createElement("option", { key: "key", value: "any" }, "Any")];
+            if (this.props.organizations && this.props.organizations.length) {
+                for (let organization of this.props.organizations) {
+                    organizationsSelect.push(React.createElement("option", { key: organization.id, value: organization.id }, organization.name));
+                }
+            }
+            return React.createElement("div", { className: "layout horizontal wrap", style: css.filters }, React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Name", value: this.props.filter.name, onChange: val => {
+                    let filter = Object.assign({}, this.props.filter);
+                    if (val) {
+                        filter.name = val;
+                    } else {
+                        delete filter.name;
+                    }
+                    this.props.onFilter(filter);
+                } }), React.createElement(SearchInput_1.default, { style: css.role, placeholder: "Role", value: this.props.filter.role, onChange: val => {
+                    let filter = Object.assign({}, this.props.filter);
+                    if (val) {
+                        filter.role = val;
+                    } else {
+                        delete filter.role;
+                    }
+                    this.props.onFilter(filter);
+                } }), React.createElement(SearchInput_1.default, { style: css.role, placeholder: "Network Role", value: this.props.filter.network_role, onChange: val => {
+                    let filter = Object.assign({}, this.props.filter);
+                    if (val) {
+                        filter.network_role = val;
+                    } else {
+                        delete filter.network_role;
+                    }
+                    this.props.onFilter(filter);
+                } }), React.createElement("div", { className: "pt-select", style: css.type }, React.createElement("select", { value: this.props.filter.organization || 'any', onChange: evt => {
+                    let filter = Object.assign({}, this.props.filter);
+                    let val = evt.target.value;
+                    if (val === 'any') {
+                        delete filter.organization;
+                    } else {
+                        filter.organization = val;
+                    }
+                    this.props.onFilter(filter);
+                } }, organizationsSelect)));
+        }
+    }
+    exports.default = AuthoritiesFilter;
+    
+});
 System.registerDynamic("app/components/AuthoritiesPage.js", ["npm:react@16.2.0.js", "app/stores/AuthoritiesStore.js", "app/actions/AuthorityActions.js"], true, function ($__require, exports, module) {
     "use strict";
 
@@ -17905,7 +18085,7 @@ System.registerDynamic("app/components/AuthoritiesPage.js", ["npm:react@16.2.0.j
     exports.default = AuthoritiesPage;
     
 });
-System.registerDynamic("app/components/Authorities.js", ["npm:react@16.2.0.js", "app/stores/AuthoritiesStore.js", "app/stores/OrganizationsStore.js", "app/actions/AuthorityActions.js", "app/actions/OrganizationActions.js", "app/components/Authority.js", "app/components/AuthoritiesPage.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/NonState.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/Authorities.js", ["npm:react@16.2.0.js", "app/stores/AuthoritiesStore.js", "app/stores/OrganizationsStore.js", "app/actions/AuthorityActions.js", "app/actions/OrganizationActions.js", "app/components/Authority.js", "app/components/AuthoritiesFilter.js", "app/components/AuthoritiesPage.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/NonState.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -17917,6 +18097,7 @@ System.registerDynamic("app/components/Authorities.js", ["npm:react@16.2.0.js", 
     const AuthorityActions = $__require("app/actions/AuthorityActions.js");
     const OrganizationActions = $__require("app/actions/OrganizationActions.js");
     const Authority_1 = $__require("app/components/Authority.js");
+    const AuthoritiesFilter_1 = $__require("app/components/AuthoritiesFilter.js");
     const AuthoritiesPage_1 = $__require("app/components/AuthoritiesPage.js");
     const Page_1 = $__require("app/components/Page.js");
     const PageHeader_1 = $__require("app/components/PageHeader.js");
@@ -17967,7 +18148,7 @@ System.registerDynamic("app/components/Authorities.js", ["npm:react@16.2.0.js", 
                         opened[authority.id] = true;
                     }
                 });
-                this.setState(Object.assign({}, this.state, { authorities: authorities, organizations: OrganizationsStore_1.default.organizations, selected: selected, opened: opened }));
+                this.setState(Object.assign({}, this.state, { authorities: authorities, filter: AuthoritiesStore_1.default.filter, organizations: OrganizationsStore_1.default.organizations, selected: selected, opened: opened }));
             };
             this.onDelete = () => {
                 this.setState(Object.assign({}, this.state, { disabled: true }));
@@ -17979,6 +18160,7 @@ System.registerDynamic("app/components/Authorities.js", ["npm:react@16.2.0.js", 
             };
             this.state = {
                 authorities: AuthoritiesStore_1.default.authorities,
+                filter: AuthoritiesStore_1.default.filter,
                 organizations: OrganizationsStore_1.default.organizations,
                 selected: {},
                 opened: {},
@@ -18047,7 +18229,17 @@ System.registerDynamic("app/components/Authorities.js", ["npm:react@16.2.0.js", 
                         this.setState(Object.assign({}, this.state, { opened: opened }));
                     } }));
             });
-            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Authorities"), React.createElement("div", { className: "flex" }), React.createElement("div", { style: css.buttons }, React.createElement("button", { className: "pt-button pt-intent-warning pt-icon-chevron-up", style: css.button, disabled: !this.opened, type: "button", onClick: () => {
+            let filterClass = 'pt-button pt-intent-primary pt-icon-filter ';
+            if (this.state.filter) {
+                filterClass += 'pt-active';
+            }
+            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Authorities"), React.createElement("div", { className: "flex" }), React.createElement("div", { style: css.buttons }, React.createElement("button", { className: filterClass, style: css.button, type: "button", onClick: () => {
+                    if (this.state.filter === null) {
+                        AuthorityActions.filter({});
+                    } else {
+                        AuthorityActions.filter(null);
+                    }
+                } }, "Filters"), React.createElement("button", { className: "pt-button pt-intent-warning pt-icon-chevron-up", style: css.button, disabled: !this.opened, type: "button", onClick: () => {
                     this.setState(Object.assign({}, this.state, { opened: {} }));
                 } }, "Collapse All"), React.createElement(ConfirmButton_1.default, { label: "Delete Selected", className: "pt-intent-danger pt-icon-delete", progressClassName: "pt-intent-danger", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onDelete }), React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", style: css.button, disabled: this.state.disabled, type: "button", onClick: () => {
                     this.setState(Object.assign({}, this.state, { disabled: true }));
@@ -18058,7 +18250,9 @@ System.registerDynamic("app/components/Authorities.js", ["npm:react@16.2.0.js", 
                     }).catch(() => {
                         this.setState(Object.assign({}, this.state, { disabled: false }));
                     });
-                } }, "New")))), React.createElement("div", { style: css.itemsBox }, React.createElement("div", { style: css.items }, authoritiesDom, React.createElement("tr", { className: "pt-card pt-row", style: css.placeholder }, React.createElement("td", { colSpan: 5, style: css.placeholder })))), React.createElement(NonState_1.default, { hidden: !!authoritiesDom.length, iconClass: "pt-icon-office", title: "No authorities", description: "Add a new authority to get started." }), React.createElement(AuthoritiesPage_1.default, { onPage: () => {
+                } }, "New")))), React.createElement(AuthoritiesFilter_1.default, { filter: this.state.filter, onFilter: filter => {
+                    AuthorityActions.filter(filter);
+                }, organizations: this.state.organizations }), React.createElement("div", { style: css.itemsBox }, React.createElement("div", { style: css.items }, authoritiesDom, React.createElement("tr", { className: "pt-card pt-row", style: css.placeholder }, React.createElement("td", { colSpan: 5, style: css.placeholder })))), React.createElement(NonState_1.default, { hidden: !!authoritiesDom.length, iconClass: "pt-icon-office", title: "No authorities", description: "Add a new authority to get started." }), React.createElement(AuthoritiesPage_1.default, { onPage: () => {
                     this.setState({
                         lastSelected: null
                     });
