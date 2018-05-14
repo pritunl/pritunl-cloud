@@ -82,7 +82,7 @@ export default class InstancesFilter extends React.Component<Props, {}> {
 			/>
 			<SearchInput
 				style={css.role}
-				placeholder="Role"
+				placeholder="Network Role"
 				value={this.props.filter.network_role}
 				onChange={(val: string): void => {
 					let filter = {
