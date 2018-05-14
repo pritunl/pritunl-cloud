@@ -427,7 +427,9 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 			route := routeInf.(vpc.Route)
 
 			utils.ExecCombinedOutputLogged(
-				nil,
+				[]string{
+					"File exists",
+				},
 				"ip", "netns", "exec", namespace,
 				"ip", "route",
 				"add", route.Destination,
@@ -440,7 +442,9 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 			route := routeInf.(vpc.Route)
 
 			utils.ExecCombinedOutputLogged(
-				nil,
+				[]string{
+					"File exists",
+				},
 				"ip", "netns", "exec", namespace,
 				"ip", "-6", "route",
 				"add", route.Destination,
