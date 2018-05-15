@@ -49,7 +49,7 @@ export default class NodesFilter extends React.Component<Props, {}> {
 		}
 
 		let zonesSelect: JSX.Element[] = [
-			<option value="any">Any</option>,
+			<option key="key" value="any">Any</option>,
 		];
 		if (this.props.zones && this.props.zones.length) {
 			for (let zone of this.props.zones) {
