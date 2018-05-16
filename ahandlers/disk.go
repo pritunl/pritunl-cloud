@@ -227,10 +227,21 @@ func disksDelete(c *gin.Context) {
 		return
 	}
 
-	err = disk.DeleteMulti(db, dta)
-	if err != nil {
-		utils.AbortWithError(c, 500, err)
-		return
+	force := c.Query("force")
+	if force == "true" {
+		for _, diskId := range dta {
+			err = disk.Remove(db, diskId)
+			if err != nil {
+				utils.AbortWithError(c, 500, err)
+				return
+			}
+		}
+	} else {
+		err = disk.DeleteMulti(db, dta)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
 	}
 
 	event.PublishDispatch(db, "disk.change")
