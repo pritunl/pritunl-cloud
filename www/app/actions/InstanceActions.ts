@@ -202,6 +202,38 @@ export function removeMulti(instanceIds: string[]): Promise<void> {
 	});
 }
 
+export function forceRemoveMulti(instanceIds: string[]): Promise<void> {
+	let loader = new Loader().loading();
+
+	return new Promise<void>((resolve, reject): void => {
+		SuperAgent
+			.delete('/instance')
+			.query({
+				force: true,
+			})
+			.send(instanceIds)
+			.set('Accept', 'application/json')
+			.set('Csrf-Token', Csrf.token)
+			.end((err: any, res: SuperAgent.Response): void => {
+				loader.done();
+
+				if (res && res.status === 401) {
+					window.location.href = '/login';
+					resolve();
+					return;
+				}
+
+				if (err) {
+					Alert.errorRes(res, 'Failed to force delete instances');
+					reject(err);
+					return;
+				}
+
+				resolve();
+			});
+	});
+}
+
 export function updateMulti(instanceIds: string[],
 		state: string): Promise<void> {
 	let loader = new Loader().loading();
