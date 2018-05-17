@@ -14989,6 +14989,12 @@ System.registerDynamic("app/components/Disks.js", ["npm:react@16.2.0.js", "app/s
         },
         buttons: {
             marginTop: '8px'
+        },
+        debug: {
+            margin: '0 0 4px 0'
+        },
+        debugButton: {
+            margin: '8px 0 0 8px'
         }
     };
     class Disks extends React.Component {
@@ -15018,6 +15024,14 @@ System.registerDynamic("app/components/Disks.js", ["npm:react@16.2.0.js", "app/s
                     this.setState(Object.assign({}, this.state, { disabled: false }));
                 });
             };
+            this.onForceDelete = () => {
+                this.setState(Object.assign({}, this.state, { disabled: true }));
+                DiskActions.forceRemoveMulti(Object.keys(this.state.selected)).then(() => {
+                    this.setState(Object.assign({}, this.state, { selected: {}, disabled: false }));
+                }).catch(() => {
+                    this.setState(Object.assign({}, this.state, { disabled: false }));
+                });
+            };
             this.onSnapshot = () => {
                 this.setState(Object.assign({}, this.state, { disabled: true }));
                 DiskActions.updateMulti(Object.keys(this.state.selected), 'snapshot').then(() => {
@@ -15029,6 +15043,7 @@ System.registerDynamic("app/components/Disks.js", ["npm:react@16.2.0.js", "app/s
             this.state = {
                 disks: DisksStore_1.default.disks,
                 filter: DisksStore_1.default.filter,
+                debug: false,
                 organizations: OrganizationsStore_1.default.organizations,
                 datacenters: DatacentersStore_1.default.datacenters,
                 zones: ZonesStore_1.default.zones,
@@ -15116,11 +15131,17 @@ System.registerDynamic("app/components/Disks.js", ["npm:react@16.2.0.js", "app/s
                         this.setState(Object.assign({}, this.state, { newOpened: false }));
                     } });
             }
+            let debugClass = 'pt-button pt-icon-console ';
+            if (this.state.debug) {
+                debugClass += 'pt-active';
+            }
             let filterClass = 'pt-button pt-intent-primary pt-icon-filter ';
             if (this.state.filter) {
                 filterClass += 'pt-active';
             }
-            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Disks"), React.createElement("div", { className: "flex" }), React.createElement("div", { style: css.buttons }, React.createElement("button", { className: filterClass, style: css.button, type: "button", onClick: () => {
+            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Disks"), React.createElement("div", { className: "flex" }), React.createElement("div", { style: css.buttons }, React.createElement("button", { className: debugClass, style: css.debugButton, type: "button", onClick: () => {
+                    this.setState(Object.assign({}, this.state, { debug: !this.state.debug }));
+                } }, "Debug"), React.createElement("button", { className: filterClass, style: css.button, type: "button", onClick: () => {
                     if (this.state.filter === null) {
                         DiskActions.filter({});
                     } else {
@@ -15130,7 +15151,7 @@ System.registerDynamic("app/components/Disks.js", ["npm:react@16.2.0.js", "app/s
                     this.setState(Object.assign({}, this.state, { opened: {} }));
                 } }, "Collapse All"), React.createElement(ConfirmButton_1.default, { label: "Snapshot Selected", className: "pt-intent-primary pt-icon-floppy-disk", progressClassName: "pt-intent-primary", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onSnapshot }), React.createElement(ConfirmButton_1.default, { label: "Delete Selected", className: "pt-intent-danger pt-icon-delete", progressClassName: "pt-intent-danger", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onDelete }), React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", style: css.button, disabled: this.state.disabled || this.state.newOpened, type: "button", onClick: () => {
                     this.setState(Object.assign({}, this.state, { newOpened: true }));
-                } }, "New")))), React.createElement(DisksFilter_1.default, { filter: this.state.filter, onFilter: filter => {
+                } }, "New"))), React.createElement("div", { className: "layout horizontal wrap", style: css.debug, hidden: !this.state.debug }, React.createElement(ConfirmButton_1.default, { label: "Force Delete Selected", className: "pt-intent-danger pt-icon-warning-sign", progressClassName: "pt-intent-danger", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onForceDelete }))), React.createElement(DisksFilter_1.default, { filter: this.state.filter, onFilter: filter => {
                     DiskActions.filter(filter);
                 }, organizations: this.state.organizations }), React.createElement("div", { style: css.itemsBox }, React.createElement("div", { style: css.items }, newDiskDom, disksDom, React.createElement("tr", { className: "pt-card pt-row", style: css.placeholder }, React.createElement("td", { colSpan: 5, style: css.placeholder })))), React.createElement(NonState_1.default, { hidden: !!disksDom.length, iconClass: "pt-icon-floppy-disk", title: "No disks", description: "Add a new disk to get started." }), React.createElement(DisksPage_1.default, { onPage: () => {
                     this.setState({
@@ -16484,6 +16505,13 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.2.0.js", "a
         },
         buttons: {
             marginTop: '8px'
+        },
+        debug: {
+            margin: '0 0 4px 0'
+        },
+        debugButton: {
+            opacity: 0.85,
+            margin: '8px 0 0 8px'
         }
     };
     class Instances extends React.Component {
@@ -16513,9 +16541,18 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.2.0.js", "a
                     this.setState(Object.assign({}, this.state, { disabled: false }));
                 });
             };
+            this.onForceDelete = () => {
+                this.setState(Object.assign({}, this.state, { disabled: true }));
+                InstanceActions.forceRemoveMulti(Object.keys(this.state.selected)).then(() => {
+                    this.setState(Object.assign({}, this.state, { selected: {}, disabled: false }));
+                }).catch(() => {
+                    this.setState(Object.assign({}, this.state, { disabled: false }));
+                });
+            };
             this.state = {
                 instances: InstancesStore_1.default.instances,
                 filter: InstancesStore_1.default.filter,
+                debug: false,
                 organizations: OrganizationsStore_1.default.organizations,
                 vpcs: VpcsNameStore_1.default.vpcs,
                 datacenters: DatacentersStore_1.default.datacenters,
@@ -16621,11 +16658,17 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.2.0.js", "a
                         this.setState(Object.assign({}, this.state, { newOpened: false }));
                     } });
             }
+            let debugClass = 'pt-button pt-intent-danger pt-icon-console ';
+            if (this.state.debug) {
+                debugClass += 'pt-active';
+            }
             let filterClass = 'pt-button pt-intent-primary pt-icon-filter ';
             if (this.state.filter) {
                 filterClass += 'pt-active';
             }
-            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Instances"), React.createElement("div", { className: "flex" }), React.createElement("div", { style: css.buttons }, React.createElement("button", { className: filterClass, style: css.button, type: "button", onClick: () => {
+            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Instances"), React.createElement("div", { className: "flex" }), React.createElement("div", { style: css.buttons }, React.createElement("button", { className: debugClass, style: css.debugButton, type: "button", onClick: () => {
+                    this.setState(Object.assign({}, this.state, { debug: !this.state.debug }));
+                } }, "Debug"), React.createElement("button", { className: filterClass, style: css.button, type: "button", onClick: () => {
                     if (this.state.filter === null) {
                         InstanceActions.filter({});
                     } else {
@@ -16639,7 +16682,7 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.2.0.js", "a
                     this.updateSelected('stop');
                 } }), React.createElement(ConfirmButton_1.default, { label: "Delete Selected", className: "pt-intent-danger pt-icon-delete", progressClassName: "pt-intent-danger", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onDelete }), React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", style: css.button, disabled: this.state.disabled || this.state.newOpened, type: "button", onClick: () => {
                     this.setState(Object.assign({}, this.state, { newOpened: true }));
-                } }, "New")))), React.createElement(InstancesFilter_1.default, { filter: this.state.filter, onFilter: filter => {
+                } }, "New"))), React.createElement("div", { className: "layout horizontal wrap", style: css.debug, hidden: !this.state.debug }, React.createElement(ConfirmButton_1.default, { label: "Force Delete Selected", className: "pt-intent-danger pt-icon-warning-sign", progressClassName: "pt-intent-danger", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onForceDelete }))), React.createElement(InstancesFilter_1.default, { filter: this.state.filter, onFilter: filter => {
                     InstanceActions.filter(filter);
                 }, organizations: this.state.organizations }), React.createElement("div", { style: css.itemsBox }, React.createElement("div", { style: css.items }, newInstanceDom, instancesDom, React.createElement("tr", { className: "pt-card pt-row", style: css.placeholder }, React.createElement("td", { colSpan: 5, style: css.placeholder })))), React.createElement(NonState_1.default, { hidden: !!instancesDom.length, iconClass: "pt-icon-dashboard", title: "No instances", description: "Add a new instance to get started." }), React.createElement(InstancesPage_1.default, { onPage: () => {
                     this.setState({
@@ -23780,6 +23823,28 @@ System.registerDynamic("app/actions/DiskActions.js", ["npm:superagent@3.8.2.js",
         });
     }
     exports.removeMulti = removeMulti;
+    function forceRemoveMulti(diskIds) {
+        let loader = new Loader_1.default().loading();
+        return new Promise((resolve, reject) => {
+            SuperAgent.delete('/disk').query({
+                force: true
+            }).send(diskIds).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
+                loader.done();
+                if (res && res.status === 401) {
+                    window.location.href = '/login';
+                    resolve();
+                    return;
+                }
+                if (err) {
+                    Alert.errorRes(res, 'Failed to delete disks');
+                    reject(err);
+                    return;
+                }
+                resolve();
+            });
+        });
+    }
+    exports.forceRemoveMulti = forceRemoveMulti;
     function updateMulti(diskIds, state) {
         let loader = new Loader_1.default().loading();
         return new Promise((resolve, reject) => {
@@ -24076,6 +24141,28 @@ System.registerDynamic("app/actions/InstanceActions.js", ["npm:superagent@3.8.2.
         });
     }
     exports.removeMulti = removeMulti;
+    function forceRemoveMulti(instanceIds) {
+        let loader = new Loader_1.default().loading();
+        return new Promise((resolve, reject) => {
+            SuperAgent.delete('/instance').query({
+                force: true
+            }).send(instanceIds).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
+                loader.done();
+                if (res && res.status === 401) {
+                    window.location.href = '/login';
+                    resolve();
+                    return;
+                }
+                if (err) {
+                    Alert.errorRes(res, 'Failed to force delete instances');
+                    reject(err);
+                    return;
+                }
+                resolve();
+            });
+        });
+    }
+    exports.forceRemoveMulti = forceRemoveMulti;
     function updateMulti(instanceIds, state) {
         let loader = new Loader_1.default().loading();
         return new Promise((resolve, reject) => {
