@@ -202,6 +202,38 @@ export function removeMulti(diskIds: string[]): Promise<void> {
 	});
 }
 
+export function forceRemoveMulti(diskIds: string[]): Promise<void> {
+	let loader = new Loader().loading();
+
+	return new Promise<void>((resolve, reject): void => {
+		SuperAgent
+			.delete('/disk')
+			.query({
+				force: true,
+			})
+			.send(diskIds)
+			.set('Accept', 'application/json')
+			.set('Csrf-Token', Csrf.token)
+			.end((err: any, res: SuperAgent.Response): void => {
+				loader.done();
+
+				if (res && res.status === 401) {
+					window.location.href = '/login';
+					resolve();
+					return;
+				}
+
+				if (err) {
+					Alert.errorRes(res, 'Failed to delete disks');
+					reject(err);
+					return;
+				}
+
+				resolve();
+			});
+	});
+}
+
 export function updateMulti(diskIds: string[],
 		state: string): Promise<void> {
 	let loader = new Loader().loading();
