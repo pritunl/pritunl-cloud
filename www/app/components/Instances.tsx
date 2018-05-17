@@ -40,6 +40,7 @@ interface Opened {
 interface State {
 	instances: InstanceTypes.InstancesRo;
 	filter: InstanceTypes.Filter;
+	debug: boolean;
 	organizations: OrganizationTypes.OrganizationsRo;
 	vpcs: VpcTypes.VpcsRo;
 	datacenters: DatacenterTypes.DatacentersRo;
@@ -79,6 +80,13 @@ const css = {
 	buttons: {
 		marginTop: '8px',
 	} as React.CSSProperties,
+	debug: {
+		margin: '0 0 4px 0',
+	} as React.CSSProperties,
+	debugButton: {
+		opacity: 0.85,
+		margin: '8px 0 0 8px',
+	} as React.CSSProperties,
 };
 
 export default class Instances extends React.Component<{}, State> {
@@ -89,6 +97,7 @@ export default class Instances extends React.Component<{}, State> {
 		this.state = {
 			instances: InstancesStore.instances,
 			filter: InstancesStore.filter,
+			debug: false,
 			organizations: OrganizationsStore.organizations,
 			vpcs: VpcsNameStore.vpcs,
 			datacenters: DatacentersStore.datacenters,
@@ -178,6 +187,26 @@ export default class Instances extends React.Component<{}, State> {
 			disabled: true,
 		});
 		InstanceActions.removeMulti(
+				Object.keys(this.state.selected)).then((): void => {
+			this.setState({
+				...this.state,
+				selected: {},
+				disabled: false,
+			});
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		});
+	}
+
+	onForceDelete = (): void => {
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+		InstanceActions.forceRemoveMulti(
 				Object.keys(this.state.selected)).then((): void => {
 			this.setState({
 				...this.state,
@@ -309,6 +338,11 @@ export default class Instances extends React.Component<{}, State> {
 			/>;
 		}
 
+		let debugClass = 'pt-button pt-intent-danger pt-icon-console ';
+		if (this.state.debug) {
+			debugClass += 'pt-active';
+		}
+
 		let filterClass = 'pt-button pt-intent-primary pt-icon-filter ';
 		if (this.state.filter) {
 			filterClass += 'pt-active';
@@ -320,6 +354,19 @@ export default class Instances extends React.Component<{}, State> {
 					<h2 style={css.heading}>Instances</h2>
 					<div className="flex"/>
 					<div style={css.buttons}>
+						<button
+							className={debugClass}
+							style={css.debugButton}
+							type="button"
+							onClick={(): void => {
+								this.setState({
+									...this.state,
+									debug: !this.state.debug,
+								});
+							}}
+						>
+							Debug
+						</button>
 						<button
 							className={filterClass}
 							style={css.button}
@@ -389,6 +436,20 @@ export default class Instances extends React.Component<{}, State> {
 							}}
 						>New</button>
 					</div>
+				</div>
+				<div
+					className="layout horizontal wrap"
+					style={css.debug}
+					hidden={!this.state.debug}
+				>
+					<ConfirmButton
+						label="Force Delete Selected"
+						className="pt-intent-danger pt-icon-warning-sign"
+						progressClassName="pt-intent-danger"
+						style={css.button}
+						disabled={!this.selected || this.state.disabled}
+						onConfirm={this.onForceDelete}
+					/>
 				</div>
 			</PageHeader>
 			<InstancesFilter
