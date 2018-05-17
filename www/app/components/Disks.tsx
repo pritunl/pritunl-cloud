@@ -36,6 +36,7 @@ interface Opened {
 interface State {
 	disks: DiskTypes.DisksRo;
 	filter: DiskTypes.Filter;
+	debug: boolean;
 	organizations: OrganizationTypes.OrganizationsRo;
 	datacenters: DatacenterTypes.DatacentersRo;
 	zones: ZoneTypes.ZonesRo;
@@ -73,6 +74,12 @@ const css = {
 	buttons: {
 		marginTop: '8px',
 	} as React.CSSProperties,
+	debug: {
+		margin: '0 0 4px 0',
+	} as React.CSSProperties,
+	debugButton: {
+		margin: '8px 0 0 8px',
+	} as React.CSSProperties,
 };
 
 export default class Disks extends React.Component<{}, State> {
@@ -81,6 +88,7 @@ export default class Disks extends React.Component<{}, State> {
 		this.state = {
 			disks: DisksStore.disks,
 			filter: DisksStore.filter,
+			debug: false,
 			organizations: OrganizationsStore.organizations,
 			datacenters: DatacentersStore.datacenters,
 			zones: ZonesStore.zones,
@@ -158,6 +166,26 @@ export default class Disks extends React.Component<{}, State> {
 		});
 		DiskActions.removeMulti(
 			Object.keys(this.state.selected)).then((): void => {
+			this.setState({
+				...this.state,
+				selected: {},
+				disabled: false,
+			});
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		});
+	}
+
+	onForceDelete = (): void => {
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+		DiskActions.forceRemoveMulti(
+				Object.keys(this.state.selected)).then((): void => {
 			this.setState({
 				...this.state,
 				selected: {},
@@ -287,6 +315,11 @@ export default class Disks extends React.Component<{}, State> {
 			/>;
 		}
 
+		let debugClass = 'pt-button pt-icon-console ';
+		if (this.state.debug) {
+			debugClass += 'pt-active';
+		}
+
 		let filterClass = 'pt-button pt-intent-primary pt-icon-filter ';
 		if (this.state.filter) {
 			filterClass += 'pt-active';
@@ -298,6 +331,19 @@ export default class Disks extends React.Component<{}, State> {
 					<h2 style={css.heading}>Disks</h2>
 					<div className="flex"/>
 					<div style={css.buttons}>
+						<button
+							className={debugClass}
+							style={css.debugButton}
+							type="button"
+							onClick={(): void => {
+								this.setState({
+									...this.state,
+									debug: !this.state.debug,
+								});
+							}}
+						>
+							Debug
+						</button>
 						<button
 							className={filterClass}
 							style={css.button}
@@ -355,6 +401,20 @@ export default class Disks extends React.Component<{}, State> {
 							}}
 						>New</button>
 					</div>
+				</div>
+				<div
+					className="layout horizontal wrap"
+					style={css.debug}
+					hidden={!this.state.debug}
+				>
+					<ConfirmButton
+						label="Force Delete Selected"
+						className="pt-intent-danger pt-icon-warning-sign"
+						progressClassName="pt-intent-danger"
+						style={css.button}
+						disabled={!this.selected || this.state.disabled}
+						onConfirm={this.onForceDelete}
+					/>
 				</div>
 			</PageHeader>
 			<DisksFilter
