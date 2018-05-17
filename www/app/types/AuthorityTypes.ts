@@ -17,6 +17,9 @@ export interface Authority {
 
 export interface Filter {
 	name?: string;
+	role?: string;
+	network_role?: string;
+	organization?: string;
 }
 
 export type Authorities = Authority[];
