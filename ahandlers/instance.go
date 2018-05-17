@@ -260,10 +260,21 @@ func instancesDelete(c *gin.Context) {
 		return
 	}
 
-	err = instance.DeleteMulti(db, data)
-	if err != nil {
-		utils.AbortWithError(c, 500, err)
-		return
+	force := c.Query("force")
+	if force == "true" {
+		for _, instId := range data {
+			err = instance.Remove(db, instId)
+			if err != nil {
+				utils.AbortWithError(c, 500, err)
+				return
+			}
+		}
+	} else {
+		err = instance.DeleteMulti(db, data)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
 	}
 
 	event.PublishDispatch(db, "instance.change")
