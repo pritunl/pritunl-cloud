@@ -56,6 +56,7 @@ const css = {
 		height: 'auto',
 	} as React.CSSProperties,
 	navTitle: {
+		flexWrap: 'wrap',
 		height: 'auto',
 	} as React.CSSProperties,
 	navGroup: {
