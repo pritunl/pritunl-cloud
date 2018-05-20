@@ -7,14 +7,13 @@ import OrganizationsStore from '../stores/OrganizationsStore';
 import * as VpcActions from '../actions/VpcActions';
 import * as OrganizationActions from '../actions/OrganizationActions';
 import Vpc from './Vpc';
+import VpcsFilter from './VpcsFilter';
 import VpcsPage from './VpcsPage';
 import Page from './Page';
 import PageHeader from './PageHeader';
 import NonState from './NonState';
-import ConfirmButton from './ConfirmButton';
 import DatacentersStore from "../stores/DatacentersStore";
 import * as DatacenterActions from "../actions/DatacenterActions";
-import * as ZoneActions from "../actions/ZoneActions";
 import * as DatacenterTypes from "../types/DatacenterTypes";
 
 interface Selected {
