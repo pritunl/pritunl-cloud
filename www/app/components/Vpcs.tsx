@@ -54,7 +54,7 @@ const css = {
 		width: '100%',
 	} as React.CSSProperties,
 	groupBox: {
-		margin: '15px 0 0 0',
+		margin: '16px 0 0 0',
 		width: '100%',
 		maxWidth: '420px',
 	} as React.CSSProperties,
