@@ -18,6 +18,9 @@ export interface Image {
 
 export interface Filter {
 	name?: string;
+	key?: string;
+	type?: string;
+	organization?: string;
 }
 
 export type Images = Image[];
