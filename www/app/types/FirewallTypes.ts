@@ -20,6 +20,8 @@ export interface Firewall {
 
 export interface Filter {
 	name?: string;
+	network_role?: string;
+	organization?: string;
 }
 
 export type Firewalls = Firewall[];
