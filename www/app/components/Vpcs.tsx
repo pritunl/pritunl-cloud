@@ -26,6 +26,7 @@ interface Opened {
 
 interface State {
 	vpcs: VpcTypes.VpcsRo;
+	filter: VpcTypes.Filter;
 	datacenters: DatacenterTypes.DatacentersRo;
 	organizations: OrganizationTypes.OrganizationsRo;
 	network: string;
@@ -84,6 +85,12 @@ const css = {
 	selectBox: {
 		flex: '1',
 	} as React.CSSProperties,
+	button: {
+		margin: '8px 0 0 8px',
+	} as React.CSSProperties,
+	buttons: {
+		margin: '8px 8px 0 0',
+	} as React.CSSProperties,
 };
 
 export default class Vpcs extends React.Component<{}, State> {
@@ -91,6 +98,7 @@ export default class Vpcs extends React.Component<{}, State> {
 		super(props, context);
 		this.state = {
 			vpcs: VpcsStore.vpcs,
+			filter: VpcsStore.filter,
 			datacenters: DatacentersStore.datacenters,
 			organizations: OrganizationsStore.organizations,
 			network: '',
@@ -146,6 +154,7 @@ export default class Vpcs extends React.Component<{}, State> {
 		this.setState({
 			...this.state,
 			vpcs: vpcs,
+			filter: VpcsStore.filter,
 			datacenters: DatacentersStore.datacenters,
 			organizations: OrganizationsStore.organizations,
 			selected: selected,
@@ -297,12 +306,33 @@ export default class Vpcs extends React.Component<{}, State> {
 			/>);
 		});
 
+		let filterClass = 'pt-button pt-intent-primary pt-icon-filter ';
+		if (this.state.filter) {
+			filterClass += 'pt-active';
+		}
+
 		return <Page>
 			<PageHeader>
 				<div className="layout horizontal wrap" style={css.header}>
-					<h2 style={css.heading}>Vpcs</h2>
+					<h2 style={css.heading}>VPCs</h2>
 					<div className="flex"/>
-					<div style={css.groupBox}>
+					<div style={css.buttons}>
+						<button
+							className={filterClass}
+							style={css.button}
+							type="button"
+							onClick={(): void => {
+								if (this.state.filter === null) {
+									VpcActions.filter({});
+								} else {
+									VpcActions.filter(null);
+								}
+							}}
+						>
+							Filters
+						</button>
+					</div>
+					<div style={Constants.user ? css.groupBoxUser : css.groupBox}>
 						<div
 							className="pt-control-group"
 							style={css.group}
@@ -392,6 +422,14 @@ export default class Vpcs extends React.Component<{}, State> {
 					</div>
 				</div>
 			</PageHeader>
+			<VpcsFilter
+				filter={this.state.filter}
+				onFilter={(filter): void => {
+					VpcActions.filter(filter);
+				}}
+				organizations={this.state.organizations}
+				datacenters={this.state.datacenters}
+			/>
 			<div style={css.itemsBox}>
 				<div style={css.items}>
 					{vpcsDom}
