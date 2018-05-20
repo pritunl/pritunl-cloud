@@ -30,6 +30,9 @@ export interface Instance {
 
 export interface Filter {
 	name?: string;
+	state?: string;
+	network_role?: string;
+	organization?: string;
 }
 
 export interface Info {
