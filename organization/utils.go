@@ -40,6 +40,58 @@ func GetAll(db *database.Database) (dcs []*Organization, err error) {
 	return
 }
 
+func GetAllName(db *database.Database) (dcs []*Organization, err error) {
+	coll := db.Organizations()
+	dcs = []*Organization{}
+
+	cursor := coll.Find(bson.M{}).Select(&bson.M{
+		"name": 1,
+	}).Iter()
+
+	nde := &Organization{}
+	for cursor.Next(nde) {
+		dcs = append(dcs, nde)
+		nde = &Organization{}
+	}
+
+	err = cursor.Close()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func GetAllNameRoles(db *database.Database, roles []string) (
+	dcs []*Organization, err error) {
+
+	coll := db.Organizations()
+	dcs = []*Organization{}
+
+	cursor := coll.Find(bson.M{
+		"roles": &bson.M{
+			"$in": roles,
+		},
+	}).Select(&bson.M{
+		"name": 1,
+	}).Iter()
+
+	nde := &Organization{}
+	for cursor.Next(nde) {
+		dcs = append(dcs, nde)
+		nde = &Organization{}
+	}
+
+	err = cursor.Close()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func Remove(db *database.Database, dcId bson.ObjectId) (err error) {
 	coll := db.Organizations()
 
