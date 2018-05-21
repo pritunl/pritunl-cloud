@@ -64,7 +64,6 @@ func diskPut(c *gin.Context) {
 	}
 
 	dsk.Name = dta.Name
-	dsk.Organization = dta.Organization
 	dsk.Instance = dta.Instance
 	dsk.Index = dta.Index
 
@@ -75,7 +74,6 @@ func diskPut(c *gin.Context) {
 	fields := set.NewSet(
 		"state",
 		"name",
-		"organization",
 		"instance",
 		"index",
 	)
