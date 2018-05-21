@@ -25,6 +25,7 @@ export interface Node {
 	load5?: number;
 	load15?: number;
 	forwarded_for_header?: string;
+	software_version?: string;
 }
 
 export interface Filter {
