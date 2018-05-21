@@ -22,6 +22,43 @@ func Get(db *database.Database, instId bson.ObjectId) (
 	return
 }
 
+func GetOrg(db *database.Database, orgId, instId bson.ObjectId) (
+	inst *Instance, err error) {
+
+	coll := db.Instances()
+	inst = &Instance{}
+
+	err = coll.FindOne(&bson.M{
+		"_id":          instId,
+		"organization": orgId,
+	}, inst)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func ExistsOrg(db *database.Database, orgId, instId bson.ObjectId) (
+	exists bool, err error) {
+
+	coll := db.Instances()
+
+	n, err := coll.Find(&bson.M{
+		"_id":          instId,
+		"organization": orgId,
+	}).Count()
+	if err != nil {
+		return
+	}
+
+	if n > 0 {
+		exists = true
+	}
+
+	return
+}
+
 func GetAll(db *database.Database, query *bson.M) (
 	insts []*Instance, err error) {
 
