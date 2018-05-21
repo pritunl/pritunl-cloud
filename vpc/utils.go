@@ -21,6 +21,43 @@ func Get(db *database.Database, vcId bson.ObjectId) (
 	return
 }
 
+func GetOrg(db *database.Database, orgId, vcId bson.ObjectId) (
+	vc *Vpc, err error) {
+
+	coll := db.Vpcs()
+	vc = &Vpc{}
+
+	err = coll.FindOne(&bson.M{
+		"_id":          vcId,
+		"organization": orgId,
+	}, vc)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func ExistsOrg(db *database.Database, orgId, vcId bson.ObjectId) (
+	exists bool, err error) {
+
+	coll := db.Vpcs()
+
+	n, err := coll.Find(&bson.M{
+		"_id":          vcId,
+		"organization": orgId,
+	}).Count()
+	if err != nil {
+		return
+	}
+
+	if n > 0 {
+		exists = true
+	}
+
+	return
+}
+
 func GetAll(db *database.Database, query *bson.M) (
 	vcs []*Vpc, err error) {
 
@@ -170,6 +207,36 @@ func Remove(db *database.Database, vcId bson.ObjectId) (err error) {
 
 	err = coll.Remove(&bson.M{
 		"_id": vcId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		switch err.(type) {
+		case *database.NotFoundError:
+			err = nil
+		default:
+			return
+		}
+	}
+
+	return
+}
+
+func RemoveOrg(db *database.Database, orgId, vcId bson.ObjectId) (err error) {
+	coll := db.VpcsIp()
+
+	_, err = coll.RemoveAll(&bson.M{
+		"vpc": vcId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	coll = db.Vpcs()
+
+	err = coll.Remove(&bson.M{
+		"organization": orgId,
+		"_id":          vcId,
 	})
 	if err != nil {
 		err = database.ParseError(err)
