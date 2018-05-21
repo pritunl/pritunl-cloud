@@ -3,17 +3,21 @@ import * as React from 'react';
 import * as DatacenterTypes from '../types/DatacenterTypes';
 import * as StorageTypes from '../types/StorageTypes';
 import * as DatacenterActions from '../actions/DatacenterActions';
+import * as OrganizationTypes from "../types/OrganizationTypes";
 import StoragesStore from '../stores/StoragesStore';
+import OrganizationsStore from '../stores/OrganizationsStore';
 import PageInput from './PageInput';
 import PageInfo from './PageInfo';
 import PageSelect from './PageSelect';
 import PageSelectButton from './PageSelectButton';
+import PageSwitch from './PageSwitch';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
 import Help from './Help';
 
 interface Props {
 	datacenter: DatacenterTypes.DatacenterRo;
+	organizations: OrganizationTypes.OrganizationsRo;
 	storages: StorageTypes.StoragesRo;
 }
 
@@ -23,6 +27,7 @@ interface State {
 	message: string;
 	datacenter: DatacenterTypes.Datacenter;
 	addStorage: string;
+	addOrganization: string;
 }
 
 const css = {
@@ -77,6 +82,7 @@ export default class Datacenter extends React.Component<Props, State> {
 			message: '',
 			datacenter: null,
 			addStorage: '',
+			addOrganization: null,
 		};
 	}
 
@@ -94,6 +100,28 @@ export default class Datacenter extends React.Component<Props, State> {
 		}
 
 		datacenter[name] = val;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			datacenter: datacenter,
+		});
+	}
+
+	toggle(name: string): void {
+		let datacenter: any;
+
+		if (this.state.changed) {
+			datacenter = {
+				...this.state.datacenter,
+			};
+		} else {
+			datacenter = {
+				...this.props.datacenter,
+			};
+		}
+
+		datacenter[name] = !datacenter[name];
 
 		this.setState({
 			...this.state,
@@ -224,9 +252,119 @@ export default class Datacenter extends React.Component<Props, State> {
 		});
 	}
 
+	onAddOrganization = (): void => {
+		let datacenter: DatacenterTypes.Datacenter;
+
+		if (!this.state.addOrganization && !this.props.organizations.length) {
+			return;
+		}
+
+		let organizationId = this.state.addOrganization ||
+			this.props.organizations[0].id;
+
+		if (this.state.changed) {
+			datacenter = {
+				...this.state.datacenter,
+			};
+		} else {
+			datacenter = {
+				...this.props.datacenter,
+			};
+		}
+
+		let organizations = [
+			...(datacenter.organizations || []),
+		];
+
+		if (organizations.indexOf(organizationId) === -1) {
+			organizations.push(organizationId);
+		}
+
+		organizations.sort();
+
+		datacenter.organizations = organizations;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			datacenter: datacenter,
+		});
+	}
+
+	onRemoveOrganization = (organization: string): void => {
+		let datacenter: DatacenterTypes.Datacenter;
+
+		if (this.state.changed) {
+			datacenter = {
+				...this.state.datacenter,
+			};
+		} else {
+			datacenter = {
+				...this.props.datacenter,
+			};
+		}
+
+		let organizations = [
+			...(datacenter.organizations || []),
+		];
+
+		let i = organizations.indexOf(organization);
+		if (i === -1) {
+			return;
+		}
+
+		organizations.splice(i, 1);
+
+		datacenter.organizations = organizations;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			datacenter: datacenter,
+		});
+	}
+
 	render(): JSX.Element {
 		let datacenter: DatacenterTypes.Datacenter = this.state.datacenter ||
 			this.props.datacenter;
+
+		let organizations: JSX.Element[] = [];
+		for (let organizationId of (datacenter.organizations || [])) {
+			let organization = OrganizationsStore.organization(organizationId);
+			if (!organization) {
+				continue;
+			}
+
+			organizations.push(
+				<div
+					className="pt-tag pt-tag-removable pt-intent-primary"
+					style={css.item}
+					key={organization.id}
+				>
+					{organization.name}
+					<button
+						className="pt-tag-remove"
+						onMouseUp={(): void => {
+							this.onRemoveOrganization(organization.id);
+						}}
+					/>
+				</div>,
+			);
+		}
+
+		let organizationsSelect: JSX.Element[] = [];
+		if (this.props.organizations.length) {
+			for (let organization of this.props.organizations) {
+				organizationsSelect.push(
+					<option
+						key={organization.id}
+						value={organization.id}
+					>{organization.name}</option>,
+				);
+			}
+		} else {
+			organizationsSelect.push(<option key="null" value="">None</option>);
+		}
 
 		let publicStorages: JSX.Element[] = [];
 		for (let storageId of (datacenter.public_storages || [])) {
@@ -359,6 +497,44 @@ export default class Datacenter extends React.Component<Props, State> {
 							},
 						]}
 					/>
+					<PageSwitch
+						label="Match organizations"
+						help="Limit what organizations can access this datacenter, by default all organizations will have access."
+						checked={datacenter.match_organizations}
+						onToggle={(): void => {
+							this.toggle('match_organizations');
+						}}
+					/>
+					<label
+						className="pt-label"
+						style={css.label}
+						hidden={!datacenter.match_organizations}
+					>
+						Organizations
+						<Help
+							title="Organizations"
+							content="Organizations that can access this zone."
+						/>
+						<div>
+							{organizations}
+						</div>
+					</label>
+					<PageSelectButton
+						label="Add Organization"
+						value={this.state.addOrganization}
+						disabled={!this.props.organizations.length}
+						hidden={!datacenter.match_organizations}
+						buttonClass="pt-intent-success"
+						onChange={(val: string): void => {
+							this.setState({
+								...this.state,
+								addOrganization: val,
+							});
+						}}
+						onSubmit={this.onAddOrganization}
+					>
+						{organizationsSelect}
+					</PageSelectButton>
 				</div>
 			</div>
 			<PageSave
