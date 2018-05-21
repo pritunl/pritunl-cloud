@@ -182,7 +182,7 @@ func disksPut(c *gin.Context) {
 		return
 	}
 
-	event.PublishDispatch(db, "instance.change")
+	event.PublishDispatch(db, "disk.change")
 
 	c.JSON(200, nil)
 }
