@@ -250,6 +250,29 @@ func DeleteMulti(db *database.Database, dskIds []bson.ObjectId) (err error) {
 	return
 }
 
+func DeleteMultiOrg(db *database.Database, orgId bson.ObjectId,
+	dskIds []bson.ObjectId) (err error) {
+
+	coll := db.Disks()
+
+	_, err = coll.UpdateAll(&bson.M{
+		"_id": &bson.M{
+			"$in": dskIds,
+		},
+		"organization": orgId,
+	}, &bson.M{
+		"$set": &bson.M{
+			"state": Destroy,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func UpdateMulti(db *database.Database, dskIds []bson.ObjectId,
 	doc *bson.M) (err error) {
 
@@ -259,6 +282,27 @@ func UpdateMulti(db *database.Database, dskIds []bson.ObjectId,
 		"_id": &bson.M{
 			"$in": dskIds,
 		},
+	}, &bson.M{
+		"$set": doc,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func UpdateMultiOrg(db *database.Database, orgId bson.ObjectId,
+	dskIds []bson.ObjectId, doc *bson.M) (err error) {
+
+	coll := db.Disks()
+
+	_, err = coll.UpdateAll(&bson.M{
+		"_id": &bson.M{
+			"$in": dskIds,
+		},
+		"organization": orgId,
 	}, &bson.M{
 		"$set": doc,
 	})
