@@ -286,9 +286,9 @@ func disksGet(c *gin.Context) {
 		query["organization"] = organization
 	}
 
-	instance, ok := utils.ParseObjectId(c.Query("instance"))
+	inst, ok := utils.ParseObjectId(c.Query("instance"))
 	if ok {
-		query["instance"] = instance
+		query["instance"] = inst
 	}
 
 	disks, count, err := disk.GetAllPaged(db, &query, page, pageCount)
