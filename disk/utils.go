@@ -211,6 +211,25 @@ func Delete(db *database.Database, dskId bson.ObjectId) (err error) {
 	return
 }
 
+func DeleteOrg(db *database.Database, orgId, dskId bson.ObjectId) (err error) {
+	coll := db.Disks()
+
+	err = coll.Update(&bson.M{
+		"_id":          dskId,
+		"organization": orgId,
+	}, &bson.M{
+		"$set": &bson.M{
+			"state": Destroy,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func DeleteMulti(db *database.Database, dskIds []bson.ObjectId) (err error) {
 	coll := db.Disks()
 
