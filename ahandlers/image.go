@@ -214,17 +214,19 @@ func imagesGet(c *gin.Context) {
 
 		name := strings.TrimSpace(c.Query("name"))
 		if name != "" {
-			query["name"] = &bson.M{
-				"$regex":   fmt.Sprintf(".*%s.*", name),
-				"$options": "i",
-			}
-		}
-
-		key := strings.TrimSpace(c.Query("key"))
-		if key != "" {
-			query["key"] = &bson.M{
-				"$regex":   fmt.Sprintf(".*%s.*", key),
-				"$options": "i",
+			query["$or"] = []*bson.M{
+				&bson.M{
+					"name": &bson.M{
+						"$regex":   fmt.Sprintf(".*%s.*", name),
+						"$options": "i",
+					},
+				},
+				&bson.M{
+					"key": &bson.M{
+						"$regex":   fmt.Sprintf(".*%s.*", name),
+						"$options": "i",
+					},
+				},
 			}
 		}
 
