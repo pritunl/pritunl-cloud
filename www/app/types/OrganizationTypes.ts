@@ -1,6 +1,7 @@
 /// <reference path="../References.d.ts"/>
 export const SYNC = 'organization.sync';
 export const CHANGE = 'organization.change';
+export const CURRENT = 'organization.current';
 
 export interface Organization {
 	id: string;
@@ -19,5 +20,6 @@ export interface OrganizationDispatch {
 		id?: string;
 		organization?: Organization;
 		organizations?: Organizations;
+		current?: string;
 	};
 }
