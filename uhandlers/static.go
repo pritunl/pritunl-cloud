@@ -44,7 +44,7 @@ func staticIndexGet(c *gin.Context) {
 		return
 	}
 
-	staticPath(c, "/index.html")
+	staticPath(c, "/uindex.html")
 }
 
 func staticLoginGet(c *gin.Context) {
@@ -78,7 +78,7 @@ func staticTestingGet(c *gin.Context) {
 				return
 			}
 
-			pth = "index.html"
+			pth = "uindex.html"
 		}
 	}
 
@@ -91,6 +91,10 @@ func staticTestingGet(c *gin.Context) {
 			"no-cache, no-store, must-revalidate")
 		c.Writer.Header().Add("Pragma", "no-cache")
 		c.Writer.Header().Add("Expires", "0")
+	}
+
+	if c.Request.URL.Path == "/" {
+		c.Request.URL.Path = "/uindex.html"
 	}
 
 	c.Writer.Header().Add("Content-Type", static.GetMimeType(pth))
