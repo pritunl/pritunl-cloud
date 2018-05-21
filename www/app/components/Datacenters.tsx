@@ -1,11 +1,14 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
 import * as DatacenterTypes from '../types/DatacenterTypes';
+import * as OrganizationTypes from "../types/OrganizationTypes";
 import * as StorageTypes from '../types/StorageTypes';
 import DatacentersStore from '../stores/DatacentersStore';
 import StoragesStore from '../stores/StoragesStore';
+import OrganizationsStore from "../stores/OrganizationsStore";
 import * as DatacenterActions from '../actions/DatacenterActions';
 import * as StorageActions from '../actions/StorageActions';
+import * as OrganizationActions from '../actions/OrganizationActions';
 import NonState from './NonState';
 import Datacenter from './Datacenter';
 import Page from './Page';
@@ -13,6 +16,7 @@ import PageHeader from './PageHeader';
 
 interface State {
 	datacenters: DatacenterTypes.DatacentersRo;
+	organizations: OrganizationTypes.OrganizationsRo;
 	storages: StorageTypes.StoragesRo;
 	disabled: boolean;
 }
@@ -41,6 +45,7 @@ export default class Datacenters extends React.Component<{}, State> {
 		this.state = {
 			datacenters: DatacentersStore.datacenters,
 			storages: StoragesStore.storages,
+			organizations: OrganizationsStore.organizations,
 			disabled: false,
 		};
 	}
@@ -48,13 +53,16 @@ export default class Datacenters extends React.Component<{}, State> {
 	componentDidMount(): void {
 		DatacentersStore.addChangeListener(this.onChange);
 		StoragesStore.addChangeListener(this.onChange);
+		OrganizationsStore.addChangeListener(this.onChange);
 		DatacenterActions.sync();
 		StorageActions.sync();
+		OrganizationActions.sync();
 	}
 
 	componentWillUnmount(): void {
 		DatacentersStore.removeChangeListener(this.onChange);
 		StoragesStore.removeChangeListener(this.onChange);
+		OrganizationsStore.removeChangeListener(this.onChange);
 	}
 
 	onChange = (): void => {
@@ -62,6 +70,7 @@ export default class Datacenters extends React.Component<{}, State> {
 			...this.state,
 			datacenters: DatacentersStore.datacenters,
 			storages: StoragesStore.storages,
+			organizations: OrganizationsStore.organizations,
 		});
 	}
 
@@ -74,6 +83,7 @@ export default class Datacenters extends React.Component<{}, State> {
 				key={datacenter.id}
 				datacenter={datacenter}
 				storages={this.state.storages}
+				organizations={this.state.organizations}
 			/>);
 		});
 
