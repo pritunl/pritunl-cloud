@@ -9,6 +9,7 @@ export interface Vpc {
 	id?: string;
 	name?: string;
 	network?: string;
+	network6?: string;
 	organization?: string;
 	datacenter?: string;
 	routes?: Route[];
@@ -21,6 +22,9 @@ export interface Route {
 
 export interface Filter {
 	name?: string;
+	network?: string;
+	organization?: string;
+	datacenter?: string;
 }
 
 export type Vpcs = Vpc[];
