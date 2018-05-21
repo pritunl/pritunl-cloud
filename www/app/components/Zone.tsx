@@ -1,9 +1,7 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
 import * as ZoneTypes from '../types/ZoneTypes';
-import * as OrganizationTypes from '../types/OrganizationTypes';
 import * as ZoneActions from '../actions/ZoneActions';
-import OrganizationsStore from '../stores/OrganizationsStore';
 import DatacentersStore from '../stores/DatacentersStore';
 import PageInput from './PageInput';
 import PageSelectButton from './PageSelectButton';
@@ -14,7 +12,6 @@ import Help from './Help';
 
 interface Props {
 	zone: ZoneTypes.ZoneRo;
-	organizations: OrganizationTypes.OrganizationsRo;
 }
 
 interface State {
@@ -22,7 +19,6 @@ interface State {
 	changed: boolean;
 	message: string;
 	zone: ZoneTypes.Zone;
-	addOrganization: string;
 	addCert: string;
 	forwardedChecked: boolean;
 }
@@ -78,7 +74,6 @@ export default class Zone extends React.Component<Props, State> {
 			changed: false,
 			message: '',
 			zone: null,
-			addOrganization: null,
 			addCert: null,
 			forwardedChecked: false,
 		};
@@ -156,119 +151,9 @@ export default class Zone extends React.Component<Props, State> {
 		});
 	}
 
-	onAddOrganization = (): void => {
-		let zone: ZoneTypes.Zone;
-
-		if (!this.state.addOrganization && !this.props.organizations.length) {
-			return;
-		}
-
-		let organizationId = this.state.addOrganization ||
-			this.props.organizations[0].id;
-
-		if (this.state.changed) {
-			zone = {
-				...this.state.zone,
-			};
-		} else {
-			zone = {
-				...this.props.zone,
-			};
-		}
-
-		let organizations = [
-			...(zone.organizations || []),
-		];
-
-		if (organizations.indexOf(organizationId) === -1) {
-			organizations.push(organizationId);
-		}
-
-		organizations.sort();
-
-		zone.organizations = organizations;
-
-		this.setState({
-			...this.state,
-			changed: true,
-			zone: zone,
-		});
-	}
-
-	onRemoveOrganization = (organization: string): void => {
-		let zone: ZoneTypes.Zone;
-
-		if (this.state.changed) {
-			zone = {
-				...this.state.zone,
-			};
-		} else {
-			zone = {
-				...this.props.zone,
-			};
-		}
-
-		let organizations = [
-			...(zone.organizations || []),
-		];
-
-		let i = organizations.indexOf(organization);
-		if (i === -1) {
-			return;
-		}
-
-		organizations.splice(i, 1);
-
-		zone.organizations = organizations;
-
-		this.setState({
-			...this.state,
-			changed: true,
-			zone: zone,
-		});
-	}
-
 	render(): JSX.Element {
 		let zone: ZoneTypes.Zone = this.state.zone ||
 			this.props.zone;
-
-		let organizations: JSX.Element[] = [];
-		for (let organizationId of (zone.organizations || [])) {
-			let organization = OrganizationsStore.organization(organizationId);
-			if (!organization) {
-				continue;
-			}
-
-			organizations.push(
-				<div
-					className="pt-tag pt-tag-removable pt-intent-primary"
-					style={css.item}
-					key={organization.id}
-				>
-					{organization.name}
-					<button
-						className="pt-tag-remove"
-						onMouseUp={(): void => {
-							this.onRemoveOrganization(organization.id);
-						}}
-					/>
-				</div>,
-			);
-		}
-
-		let organizationsSelect: JSX.Element[] = [];
-		if (this.props.organizations.length) {
-			for (let organization of this.props.organizations) {
-				organizationsSelect.push(
-					<option
-						key={organization.id}
-						value={organization.id}
-					>{organization.name}</option>,
-				);
-			}
-		} else {
-			organizationsSelect.push(<option key="null" value="">None</option>);
-		}
 
 		let datacenter = DatacentersStore.datacenter(
 			this.props.zone.datacenter);
@@ -298,34 +183,6 @@ export default class Zone extends React.Component<Props, State> {
 							this.set('name', val);
 						}}
 					/>
-					<label
-						className="pt-label"
-						style={css.label}
-					>
-						Organizations
-						<Help
-							title="Organizations"
-							content="Organizations that can access this zone."
-						/>
-						<div>
-							{organizations}
-						</div>
-					</label>
-					<PageSelectButton
-						label="Add Organization"
-						value={this.state.addOrganization}
-						disabled={!this.props.organizations.length}
-						buttonClass="pt-intent-success"
-						onChange={(val: string): void => {
-							this.setState({
-								...this.state,
-								addOrganization: val,
-							});
-						}}
-						onSubmit={this.onAddOrganization}
-					>
-						{organizationsSelect}
-					</PageSelectButton>
 				</div>
 				<div style={css.group}>
 					<PageInfo
