@@ -5,7 +5,6 @@ export const CHANGE = 'zone.change';
 export interface Zone {
 	id: string;
 	datacenter?: string;
-	organizations?: string[];
 	name?: string;
 }
 
