@@ -247,9 +247,9 @@ func vpcsGet(c *gin.Context) {
 			query["organization"] = organization
 		}
 
-		datacenter, ok := utils.ParseObjectId(c.Query("datacenter"))
+		dc, ok := utils.ParseObjectId(c.Query("datacenter"))
 		if ok {
-			query["datacenter"] = datacenter
+			query["datacenter"] = dc
 		}
 
 		vpcs, count, err := vpc.GetAllPaged(db, &query, page, pageCount)
