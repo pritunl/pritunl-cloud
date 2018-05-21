@@ -39,9 +39,11 @@ func (s *State) DiskInUse(instId, dskId bson.ObjectId) bool {
 	curVirt := s.virtsMap[instId]
 
 	if curVirt != nil {
-		for _, vmDsk := range curVirt.Disks {
-			if vmDsk.GetId() == dskId {
-				return true
+		if curVirt.State != vm.Stopped && curVirt.State != vm.Failed {
+			for _, vmDsk := range curVirt.Disks {
+				if vmDsk.GetId() == dskId {
+					return true
+				}
 			}
 		}
 	}
