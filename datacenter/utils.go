@@ -19,6 +19,33 @@ func Get(db *database.Database, dcId bson.ObjectId) (
 	return
 }
 
+func ExistsOrg(db *database.Database, orgId, dcId bson.ObjectId) (
+	exists bool, err error) {
+
+	coll := db.Datacenters()
+
+	n, err := coll.Find(&bson.M{
+		"_id": dcId,
+		"$or": []*bson.M{
+			&bson.M{
+				"match_organizations": false,
+			},
+			&bson.M{
+				"organizations": orgId,
+			},
+		},
+	}).Count()
+	if err != nil {
+		return
+	}
+
+	if n > 0 {
+		exists = true
+	}
+
+	return
+}
+
 func GetAll(db *database.Database) (dcs []*Datacenter, err error) {
 	coll := db.Datacenters()
 	dcs = []*Datacenter{}
