@@ -14,7 +14,6 @@ import (
 type zoneData struct {
 	Id            bson.ObjectId   `json:"id"`
 	Datacenter    bson.ObjectId   `json:"datacenter"`
-	Organizations []bson.ObjectId `json:"organizations"`
 	Name          string          `json:"name"`
 }
 
@@ -45,11 +44,9 @@ func zonePut(c *gin.Context) {
 	}
 
 	zne.Name = data.Name
-	zne.Organizations = data.Organizations
 
 	fields := set.NewSet(
 		"name",
-		"organizations",
 	)
 
 	errData, err := zne.Validate(db)
@@ -92,7 +89,6 @@ func zonePost(c *gin.Context) {
 
 	zne := &zone.Zone{
 		Datacenter:    data.Datacenter,
-		Organizations: data.Organizations,
 		Name:          data.Name,
 	}
 
