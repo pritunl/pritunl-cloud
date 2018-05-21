@@ -215,21 +215,7 @@ export default class DiskDetailed extends React.Component<Props, State> {
 			this.props.disk;
 
 		let node = NodesStore.node(this.props.disk.node);
-
-		let organizationsSelect: JSX.Element[] = [];
-		if (this.props.organizations.length) {
-			organizationsSelect.push(
-				<option key="null" value="">Node Disk</option>);
-
-			for (let organization of this.props.organizations) {
-				organizationsSelect.push(
-					<option
-						key={organization.id}
-						value={organization.id}
-					>{organization.name}</option>,
-				);
-			}
-		}
+		let org = OrganizationsStore.organization(this.props.disk.organization);
 
 		let hasInstances = false;
 		let instancesSelect: JSX.Element[] = [];
@@ -345,17 +331,6 @@ export default class DiskDetailed extends React.Component<Props, State> {
 						}}
 					/>
 					<PageSelect
-						disabled={this.state.disabled}
-						label="Organization"
-						help="Organization for disk."
-						value={disk.organization}
-						onChange={(val): void => {
-							this.set('organization', val);
-						}}
-					>
-						{organizationsSelect}
-					</PageSelect>
-					<PageSelect
 						disabled={this.state.disabled || !hasInstances}
 						label="Instance"
 						help="Instance to attach disk to."
@@ -389,6 +364,10 @@ export default class DiskDetailed extends React.Component<Props, State> {
 							{
 								label: 'ID',
 								value: this.props.disk.id || 'Unknown',
+							},
+							{
+								label: 'Organization',
+								value: org ? org.name : this.props.disk.organization,
 							},
 							{
 								label: 'Node',
