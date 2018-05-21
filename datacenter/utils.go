@@ -67,6 +67,38 @@ func GetAll(db *database.Database) (dcs []*Datacenter, err error) {
 	return
 }
 
+func GetAllNamesOrg(db *database.Database, orgId bson.ObjectId) (
+	dcs []*Datacenter, err error) {
+
+	coll := db.Datacenters()
+	dcs = []*Datacenter{}
+
+	cursor := coll.Find(bson.M{
+		"$or": []*bson.M{
+			&bson.M{
+				"match_organizations": false,
+			},
+			&bson.M{
+				"organizations": orgId,
+			},
+		},
+	}).Iter()
+
+	nde := &Datacenter{}
+	for cursor.Next(nde) {
+		dcs = append(dcs, nde)
+		nde = &Datacenter{}
+	}
+
+	err = cursor.Close()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func Remove(db *database.Database, dcId bson.ObjectId) (err error) {
 	coll := db.Datacenters()
 
