@@ -12,10 +12,12 @@ import (
 )
 
 type datacenterData struct {
-	Id             bson.ObjectId   `json:"id"`
-	Name           string          `json:"name"`
-	PublicStorages []bson.ObjectId `json:"public_storages"`
-	PrivateStorage bson.ObjectId   `json:"private_storage"`
+	Id                 bson.ObjectId   `json:"id"`
+	Name               string          `json:"name"`
+	MatchOrganizations bool            `json:"match_organizations"`
+	Organizations      []bson.ObjectId `json:"organizations"`
+	PublicStorages     []bson.ObjectId `json:"public_storages"`
+	PrivateStorage     bson.ObjectId   `json:"private_storage"`
 }
 
 func datacenterPut(c *gin.Context) {
@@ -45,11 +47,15 @@ func datacenterPut(c *gin.Context) {
 	}
 
 	dc.Name = data.Name
+	dc.MatchOrganizations = data.MatchOrganizations
+	dc.Organizations = data.Organizations
 	dc.PublicStorages = data.PublicStorages
 	dc.PrivateStorage = data.PrivateStorage
 
 	fields := set.NewSet(
 		"name",
+		"match_organizations",
+		"organizations",
 		"public_storages",
 		"private_storage",
 	)
@@ -93,9 +99,11 @@ func datacenterPost(c *gin.Context) {
 	}
 
 	dc := &datacenter.Datacenter{
-		Name:           data.Name,
-		PublicStorages: data.PublicStorages,
-		PrivateStorage: data.PrivateStorage,
+		Name:               data.Name,
+		MatchOrganizations: data.MatchOrganizations,
+		Organizations:      data.Organizations,
+		PublicStorages:     data.PublicStorages,
+		PrivateStorage:     data.PrivateStorage,
 	}
 
 	errData, err := dc.Validate(db)
