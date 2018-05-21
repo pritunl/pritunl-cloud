@@ -11,6 +11,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/organization"
 	"github.com/pritunl/pritunl-cloud/session"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/validator"
@@ -207,6 +208,48 @@ func AuthUser(c *gin.Context) {
 		utils.AbortWithStatus(c, 401)
 		return
 	}
+}
+
+func UserOrg(c *gin.Context) {
+	db := c.MustGet("db").(*database.Database)
+	authr := c.MustGet("authorizer").(*authorizer.Authorizer)
+
+	if !authr.IsValid() {
+		utils.AbortWithStatus(c, 401)
+		return
+	}
+
+	usr, err := authr.GetUser(db)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	orgIdStr := c.GetHeader("Organization")
+	if orgIdStr == "" {
+		utils.AbortWithStatus(c, 401)
+		return
+	}
+
+	orgId, ok := utils.ParseObjectId(orgIdStr)
+	if orgId == "" || !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	org, err := organization.Get(db, orgId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	match := usr.RolesMatch(org.Roles)
+	if !match {
+		utils.AbortWithStatus(c, 401)
+		return
+	}
+
+	c.Set("organization", org.Id)
 }
 
 func CsrfToken(c *gin.Context) {
