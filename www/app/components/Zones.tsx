@@ -5,10 +5,8 @@ import * as DatacenterTypes from '../types/DatacenterTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import ZonesStore from '../stores/ZonesStore';
 import DatacentersStore from "../stores/DatacentersStore";
-import OrganizationsStore from "../stores/OrganizationsStore";
 import * as ZoneActions from '../actions/ZoneActions';
 import * as DatacenterActions from '../actions/DatacenterActions';
-import * as OrganizationActions from '../actions/OrganizationActions';
 import NonState from './NonState';
 import Zone from './Zone';
 import Page from './Page';
@@ -17,7 +15,6 @@ import PageHeader from './PageHeader';
 interface State {
 	zones: ZoneTypes.ZonesRo;
 	datacenters: DatacenterTypes.DatacentersRo;
-	organizations: OrganizationTypes.OrganizationsRo;
 	datacenter: string;
 	disabled: boolean;
 }
@@ -52,7 +49,6 @@ export default class Zones extends React.Component<{}, State> {
 		this.state = {
 			zones: ZonesStore.zones,
 			datacenters: DatacentersStore.datacenters,
-			organizations: OrganizationsStore.organizations,
 			datacenter: '',
 			disabled: false,
 		};
@@ -61,16 +57,13 @@ export default class Zones extends React.Component<{}, State> {
 	componentDidMount(): void {
 		ZonesStore.addChangeListener(this.onChange);
 		DatacentersStore.addChangeListener(this.onChange);
-		OrganizationsStore.addChangeListener(this.onChange);
 		ZoneActions.sync();
 		DatacenterActions.sync();
-		OrganizationActions.sync();
 	}
 
 	componentWillUnmount(): void {
 		ZonesStore.removeChangeListener(this.onChange);
 		DatacentersStore.removeChangeListener(this.onChange);
-		OrganizationsStore.removeChangeListener(this.onChange);
 	}
 
 	onChange = (): void => {
@@ -78,7 +71,6 @@ export default class Zones extends React.Component<{}, State> {
 			...this.state,
 			zones: ZonesStore.zones,
 			datacenters: DatacentersStore.datacenters,
-			organizations: OrganizationsStore.organizations,
 		});
 	}
 
@@ -90,7 +82,6 @@ export default class Zones extends React.Component<{}, State> {
 			zonesDom.push(<Zone
 				key={zone.id}
 				zone={zone}
-				organizations={this.state.organizations}
 			/>);
 		});
 
