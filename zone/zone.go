@@ -9,18 +9,13 @@ import (
 )
 
 type Zone struct {
-	Id            bson.ObjectId   `bson:"_id,omitempty" json:"id"`
-	Organizations []bson.ObjectId `bson:"organizations" json:"organizations"`
-	Datacenter    bson.ObjectId   `bson:"datacenter,omitempty" json:"datacenter"`
-	Name          string          `bson:"name" json:"name"`
+	Id         bson.ObjectId `bson:"_id,omitempty" json:"id"`
+	Datacenter bson.ObjectId `bson:"datacenter,omitempty" json:"datacenter"`
+	Name       string        `bson:"name" json:"name"`
 }
 
 func (z *Zone) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
-
-	if z.Organizations == nil {
-		z.Organizations = []bson.ObjectId{}
-	}
 
 	if z.Datacenter == "" {
 		errData = &errortypes.ErrorData{
