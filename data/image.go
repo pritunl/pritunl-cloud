@@ -260,6 +260,58 @@ func DeleteImages(db *database.Database, imgIds []bson.ObjectId) (err error) {
 	return
 }
 
+func DeleteImageOrg(db *database.Database, orgId, imgId bson.ObjectId) (
+	err error) {
+
+	img, err := image.GetOrg(db, orgId, imgId)
+	if err != nil {
+		return
+	}
+
+	if img.Type == storage.Public {
+		return
+	}
+
+	store, err := storage.Get(db, img.Storage)
+	if err != nil {
+		return
+	}
+
+	client, err := minio.New(
+		store.Endpoint, store.AccessKey, store.SecretKey, !store.Insecure)
+	if err != nil {
+		err = &errortypes.ConnectionError{
+			errors.Wrap(err, "data: Failed to connect to storage"),
+		}
+		return
+	}
+
+	err = client.RemoveObject(store.Bucket, img.Key)
+	if err != nil {
+		return
+	}
+
+	err = image.Remove(db, img.Id)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func DeleteImagesOrg(db *database.Database, orgId bson.ObjectId,
+	imgIds []bson.ObjectId) (err error) {
+
+	for _, imgId := range imgIds {
+		err = DeleteImageOrg(db, orgId, imgId)
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
 func CreateSnapshot(db *database.Database, dsk *disk.Disk) (err error) {
 	dskPth := paths.GetDiskPath(dsk.Id)
 	cacheDir := node.Self.GetCachePath()
