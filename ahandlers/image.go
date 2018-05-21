@@ -167,10 +167,6 @@ func imagesGet(c *gin.Context) {
 			storages = []bson.ObjectId{}
 		}
 
-		if dc.PrivateStorage != "" {
-			storages = append(storages, dc.PrivateStorage)
-		}
-
 		if len(storages) == 0 {
 			c.JSON(200, []bson.ObjectId{})
 			return
@@ -190,6 +186,23 @@ func imagesGet(c *gin.Context) {
 
 		for _, img := range images {
 			img.Json()
+		}
+
+		if dc.PrivateStorage != "" {
+			query = &bson.M{
+				"storage": dc.PrivateStorage,
+			}
+
+			images2, err := image.GetAllNames(db, query)
+			if err != nil {
+				utils.AbortWithError(c, 500, err)
+				return
+			}
+
+			for _, img := range images2 {
+				img.Json()
+				images = append(images, img)
+			}
 		}
 
 		c.JSON(200, images)
