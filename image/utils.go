@@ -41,6 +41,23 @@ func Get(db *database.Database, imgId bson.ObjectId) (
 	return
 }
 
+func GetOrg(db *database.Database, orgId, imgId bson.ObjectId) (
+	img *Image, err error) {
+
+	coll := db.Images()
+	img = &Image{}
+
+	err = coll.FindOne(&bson.M{
+		"_id":          imgId,
+		"organization": orgId,
+	}, img)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func Distinct(db *database.Database, storeId bson.ObjectId) (
 	keys []string, err error) {
 
@@ -57,6 +74,34 @@ func Distinct(db *database.Database, storeId bson.ObjectId) (
 	return
 }
 
+func ExistsOrg(db *database.Database, orgId, imgId bson.ObjectId) (
+	exists bool, err error) {
+
+	coll := db.Images()
+
+	n, err := coll.Find(&bson.M{
+		"_id": imgId,
+		"$or": []*bson.M{
+			&bson.M{
+				"organization": orgId,
+			},
+			&bson.M{
+				"organization": &bson.M{
+					"$exists": false,
+				},
+			},
+		},
+	}).Count()
+	if err != nil {
+		return
+	}
+
+	if n > 0 {
+		exists = true
+	}
+
+	return
+}
 func GetAll(db *database.Database, query *bson.M, page, pageCount int) (
 	imgs []*Image, count int, err error) {
 
