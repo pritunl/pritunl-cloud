@@ -19,6 +19,23 @@ func Get(db *database.Database, diskId bson.ObjectId) (dsk *Disk, err error) {
 	return
 }
 
+func GetOrg(db *database.Database, orgId, diskId bson.ObjectId) (
+	dsk *Disk, err error) {
+
+	coll := db.Disks()
+	dsk = &Disk{}
+
+	err = coll.FindOne(&bson.M{
+		"_id":          diskId,
+		"organization": orgId,
+	}, dsk)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func GetAll(db *database.Database, query *bson.M) (
 	disks []*Disk, err error) {
 
