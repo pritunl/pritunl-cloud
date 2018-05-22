@@ -575,7 +575,10 @@ export default class Main extends React.Component<{}, State> {
 				</nav>
 				<LoadingBar style={css.loading} intent="primary"/>
 				<ReactRouter.Route path="/" exact={true} render={() => (
-					<Users/>
+					Constants.user ? <Vpcs/> : <Users/>
+				)}/>
+				<ReactRouter.Route path="/reload" render={() => (
+					<ReactRouter.Redirect to="/"/>
 				)}/>
 				<ReactRouter.Route path="/users" render={() => (
 					<Users/>
