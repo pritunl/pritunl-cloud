@@ -20,6 +20,23 @@ func Get(db *database.Database, authrId bson.ObjectId) (
 	return
 }
 
+func GetOrg(db *database.Database, orgId, authrId bson.ObjectId) (
+	authr *Authority, err error) {
+
+	coll := db.Authorities()
+	authr = &Authority{}
+
+	err = coll.FindOne(&bson.M{
+		"_id":          authrId,
+		"organization": orgId,
+	}, authr)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func GetAll(db *database.Database, query *bson.M) (
 	authrs []*Authority, err error) {
 
@@ -191,6 +208,26 @@ func Remove(db *database.Database, authrId bson.ObjectId) (err error) {
 	return
 }
 
+func RemoveOrg(db *database.Database, orgId, authrId bson.ObjectId) (err error) {
+	coll := db.Authorities()
+
+	err = coll.Remove(&bson.M{
+		"_id":          authrId,
+		"organization": orgId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		switch err.(type) {
+		case *database.NotFoundError:
+			err = nil
+		default:
+			return
+		}
+	}
+
+	return
+}
+
 func RemoveMulti(db *database.Database,
 	authrIds []bson.ObjectId) (err error) {
 
@@ -200,6 +237,25 @@ func RemoveMulti(db *database.Database,
 		"_id": &bson.M{
 			"$in": authrIds,
 		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func RemoveMultiOrg(db *database.Database, orgId bson.ObjectId,
+	authrIds []bson.ObjectId) (err error) {
+
+	coll := db.Authorities()
+
+	_, err = coll.RemoveAll(&bson.M{
+		"_id": &bson.M{
+			"$in": authrIds,
+		},
+		"organization": orgId,
 	})
 	if err != nil {
 		err = database.ParseError(err)
