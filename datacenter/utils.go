@@ -99,6 +99,29 @@ func GetAllNamesOrg(db *database.Database, orgId bson.ObjectId) (
 	return
 }
 
+func DistinctOrg(db *database.Database, orgId bson.ObjectId) (
+	ids []bson.ObjectId, err error) {
+
+	coll := db.Datacenters()
+	ids = []bson.ObjectId{}
+
+	err = coll.Find(&bson.M{
+		"$or": []*bson.M{
+			&bson.M{
+				"match_organizations": false,
+			},
+			&bson.M{
+				"organizations": orgId,
+			},
+		},
+	}).Distinct("_id", &ids)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func Remove(db *database.Database, dcId bson.ObjectId) (err error) {
 	coll := db.Datacenters()
 
