@@ -16,10 +16,10 @@ import (
 
 type Instance struct {
 	Id           bson.ObjectId      `bson:"_id,omitempty" json:"id"`
-	Organization bson.ObjectId      `bson:"organization,omitempty" json:"organization"`
-	Zone         bson.ObjectId      `bson:"zone,omitempty" json:"zone"`
+	Organization bson.ObjectId      `bson:"organization" json:"organization"`
+	Zone         bson.ObjectId      `bson:"zone" json:"zone"`
 	Vpc          bson.ObjectId      `bson:"vpc" json:"vpc"`
-	Image        bson.ObjectId      `bson:"image,omitempty" json:"image"`
+	Image        bson.ObjectId      `bson:"image" json:"image"`
 	Status       string             `bson:"-" json:"status"`
 	State        string             `bson:"state" json:"state"`
 	VmState      string             `bson:"vm_state" json:"vm_state"`
@@ -28,7 +28,7 @@ type Instance struct {
 	PublicIps6   []string           `bson:"public_ips6" json:"public_ips6"`
 	PrivateIps   []string           `bson:"private_ips" json:"private_ips"`
 	PrivateIps6  []string           `bson:"private_ips6" json:"private_ips6"`
-	Node         bson.ObjectId      `bson:"node,omitempty" json:"node"`
+	Node         bson.ObjectId      `bson:"node" json:"node"`
 	Name         string             `bson:"name" json:"name"`
 	InitDiskSize int                `bson:"init_disk_size" json:"init_disk_size"`
 	Memory       int                `bson:"memory" json:"memory"`
