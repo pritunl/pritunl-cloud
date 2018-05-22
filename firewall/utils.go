@@ -23,6 +23,23 @@ func Get(db *database.Database, fireId bson.ObjectId) (
 	return
 }
 
+func GetOrg(db *database.Database, orgId, fireId bson.ObjectId) (
+	fire *Firewall, err error) {
+
+	coll := db.Firewalls()
+	fire = &Firewall{}
+
+	err = coll.FindOne(&bson.M{
+		"_id":          fireId,
+		"organization": orgId,
+	}, fire)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func GetAll(db *database.Database, query *bson.M) (
 	fires []*Firewall, err error) {
 
@@ -194,6 +211,28 @@ func Remove(db *database.Database, fireId bson.ObjectId) (err error) {
 	return
 }
 
+func RemoveOrg(db *database.Database, orgId, fireId bson.ObjectId) (
+	err error) {
+
+	coll := db.Firewalls()
+
+	err = coll.Remove(&bson.M{
+		"_id":          fireId,
+		"organization": orgId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		switch err.(type) {
+		case *database.NotFoundError:
+			err = nil
+		default:
+			return
+		}
+	}
+
+	return
+}
+
 func RemoveMulti(db *database.Database, fireIds []bson.ObjectId) (err error) {
 	coll := db.Firewalls()
 
@@ -201,6 +240,25 @@ func RemoveMulti(db *database.Database, fireIds []bson.ObjectId) (err error) {
 		"_id": &bson.M{
 			"$in": fireIds,
 		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func RemoveMultiOrg(db *database.Database, orgId bson.ObjectId,
+	fireIds []bson.ObjectId) (err error) {
+
+	coll := db.Firewalls()
+
+	_, err = coll.RemoveAll(&bson.M{
+		"_id": &bson.M{
+			"$in": fireIds,
+		},
+		"organization": orgId,
 	})
 	if err != nil {
 		err = database.ParseError(err)
