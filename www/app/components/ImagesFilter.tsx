@@ -4,7 +4,6 @@ import * as Constants from '../Constants';
 import * as ImageTypes from '../types/ImageTypes';
 import SearchInput from './SearchInput';
 import * as OrganizationTypes from "../types/OrganizationTypes";
-import * as DatacenterTypes from "../types/DatacenterTypes";
 
 interface Props {
 	filter: ImageTypes.Filter;
@@ -77,24 +76,6 @@ export default class ImagesFilter extends React.Component<Props, {}> {
 						filter.name = val;
 					} else {
 						delete filter.name;
-					}
-
-					this.props.onFilter(filter);
-				}}
-			/>
-			<SearchInput
-				style={css.input}
-				placeholder="Key"
-				value={this.props.filter.key}
-				onChange={(val: string): void => {
-					let filter = {
-						...this.props.filter,
-					};
-
-					if (val) {
-						filter.key = val;
-					} else {
-						delete filter.key;
 					}
 
 					this.props.onFilter(filter);
