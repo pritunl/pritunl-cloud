@@ -59,6 +59,11 @@ const css = {
 		width: '100%',
 		maxWidth: '420px',
 	} as React.CSSProperties,
+	groupBoxUser: {
+		margin: '16px 0 0 0',
+		width: '100%',
+		maxWidth: '310px',
+	} as React.CSSProperties,
 	placeholder: {
 		opacity: 0,
 		width: '100%',
