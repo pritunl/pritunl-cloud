@@ -272,6 +272,7 @@ export default class Main extends React.Component<{}, State> {
 						<ReactRouter.Link
 							className="pt-button pt-minimal pt-icon-history"
 							style={css.link}
+							hidden={Constants.user}
 							to="/logs"
 						>
 							Logs
