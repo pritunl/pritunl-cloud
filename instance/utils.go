@@ -217,6 +217,25 @@ func Delete(db *database.Database, instId bson.ObjectId) (err error) {
 	return
 }
 
+func DeleteOrg(db *database.Database, orgId, instId bson.ObjectId) (
+	err error) {
+
+	coll := db.Instances()
+
+	err = coll.UpdateId(instId, &bson.M{
+		"$set": &bson.M{
+			"state": Destroy,
+		},
+		"organization": orgId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func DeleteMulti(db *database.Database, instIds []bson.ObjectId) (err error) {
 	coll := db.Instances()
 
@@ -224,6 +243,29 @@ func DeleteMulti(db *database.Database, instIds []bson.ObjectId) (err error) {
 		"_id": &bson.M{
 			"$in": instIds,
 		},
+	}, &bson.M{
+		"$set": &bson.M{
+			"state": Destroy,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func DeleteMultiOrg(db *database.Database, orgId bson.ObjectId,
+	instIds []bson.ObjectId) (err error) {
+
+	coll := db.Instances()
+
+	_, err = coll.UpdateAll(&bson.M{
+		"_id": &bson.M{
+			"$in": instIds,
+		},
+		"organization": orgId,
 	}, &bson.M{
 		"$set": &bson.M{
 			"state": Destroy,
@@ -246,6 +288,27 @@ func UpdateMulti(db *database.Database, instIds []bson.ObjectId,
 		"_id": &bson.M{
 			"$in": instIds,
 		},
+	}, &bson.M{
+		"$set": doc,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func UpdateMultiOrg(db *database.Database, orgId bson.ObjectId,
+	instIds []bson.ObjectId, doc *bson.M) (err error) {
+
+	coll := db.Instances()
+
+	_, err = coll.UpdateAll(&bson.M{
+		"_id": &bson.M{
+			"$in": instIds,
+		},
+		"organization": orgId,
 	}, &bson.M{
 		"$set": doc,
 	})
