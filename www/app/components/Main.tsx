@@ -53,6 +53,12 @@ interface State {
 }
 
 const css = {
+	card: {
+		minWidth: '310px',
+		maxWidth: '380px',
+		width: 'calc(100% - 20px)',
+		margin: '60px auto',
+	} as React.CSSProperties,
 	nav: {
 		overflowX: 'auto',
 		overflowY: 'auto',
