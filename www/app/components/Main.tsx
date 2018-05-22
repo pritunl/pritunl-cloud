@@ -87,7 +87,6 @@ const css = {
 		fontWeight: 'bold',
 	} as React.CSSProperties,
 	loading: {
-		margin: '0 5px 0 1px',
 	} as React.CSSProperties,
 };
 
@@ -573,6 +572,7 @@ export default class Main extends React.Component<{}, State> {
 						/>
 					</div>
 				</nav>
+				<LoadingBar style={css.loading} intent="primary"/>
 				<ReactRouter.Route path="/" exact={true} render={() => (
 					<Users/>
 				)}/>
