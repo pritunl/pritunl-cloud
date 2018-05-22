@@ -7,6 +7,7 @@ import * as Csrf from '../Csrf';
 import Loader from '../Loader';
 import * as DiskTypes from '../types/DiskTypes';
 import DisksStore from '../stores/DisksStore';
+import OrganizationsStore from '../stores/OrganizationsStore';
 import * as MiscUtils from '../utils/MiscUtils';
 
 let syncId: string;
@@ -30,6 +31,7 @@ export function sync(noLoading?: boolean): Promise<void> {
 			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				if (loader) {
 					loader.done();
@@ -96,6 +98,7 @@ export function commit(disk: DiskTypes.Disk): Promise<void> {
 			.send(disk)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -125,6 +128,7 @@ export function create(disk: DiskTypes.Disk): Promise<void> {
 			.send(disk)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -153,6 +157,7 @@ export function remove(diskId: string): Promise<void> {
 			.delete('/disk/' + diskId)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -182,6 +187,7 @@ export function removeMulti(diskIds: string[]): Promise<void> {
 			.send(diskIds)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -214,6 +220,7 @@ export function forceRemoveMulti(diskIds: string[]): Promise<void> {
 			.send(diskIds)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -247,6 +254,7 @@ export function updateMulti(diskIds: string[],
 			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 

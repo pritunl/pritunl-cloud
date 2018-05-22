@@ -7,6 +7,7 @@ import * as Csrf from '../Csrf';
 import Loader from '../Loader';
 import * as AuthorityTypes from '../types/AuthorityTypes';
 import AuthoritiesStore from '../stores/AuthoritiesStore';
+import OrganizationsStore from '../stores/OrganizationsStore';
 import * as MiscUtils from '../utils/MiscUtils';
 
 let syncId: string;
@@ -30,6 +31,7 @@ export function sync(noLoading?: boolean): Promise<void> {
 			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				if (loader) {
 					loader.done();
@@ -96,6 +98,7 @@ export function commit(authority: AuthorityTypes.Authority): Promise<void> {
 			.send(authority)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -125,6 +128,7 @@ export function create(authority: AuthorityTypes.Authority): Promise<void> {
 			.send(authority)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -153,6 +157,7 @@ export function remove(authorityId: string): Promise<void> {
 			.delete('/authority/' + authorityId)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -182,6 +187,7 @@ export function removeMulti(authorityIds: string[]): Promise<void> {
 			.send(authorityIds)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
