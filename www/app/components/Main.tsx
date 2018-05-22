@@ -2,6 +2,7 @@
 import * as React from 'react';
 import * as ReactRouter from 'react-router-dom';
 import * as Theme from '../Theme';
+import * as Constants from '../Constants';
 import * as SubscriptionTypes from '../types/SubscriptionTypes';
 import SubscriptionStore from '../stores/SubscriptionStore';
 import Loading from './Loading';
@@ -127,6 +128,7 @@ export default class Main extends React.Component<{}, State> {
 						<ReactRouter.Link
 							className="pt-button pt-minimal pt-icon-people"
 							style={css.link}
+							hidden={Constants.user}
 							to="/users"
 						>
 							Users
@@ -134,6 +136,7 @@ export default class Main extends React.Component<{}, State> {
 						<ReactRouter.Link
 							className="pt-button pt-minimal pt-icon-layers"
 							style={css.link}
+							hidden={Constants.user}
 							to="/nodes"
 						>
 							Nodes
@@ -141,6 +144,7 @@ export default class Main extends React.Component<{}, State> {
 						<ReactRouter.Link
 							className="pt-button pt-minimal pt-icon-filter"
 							style={css.link}
+							hidden={Constants.user}
 							to="/policies"
 						>
 							Policies
@@ -148,6 +152,7 @@ export default class Main extends React.Component<{}, State> {
 						<ReactRouter.Link
 							className="pt-button pt-minimal pt-icon-endorsed"
 							style={css.link}
+							hidden={Constants.user}
 							to="/certificates"
 						>
 							Certificates
@@ -155,6 +160,7 @@ export default class Main extends React.Component<{}, State> {
 						<ReactRouter.Link
 							className="pt-button pt-minimal pt-icon-people"
 							style={css.link}
+							hidden={Constants.user}
 							to="/organizations"
 						>
 							Organizations
@@ -162,6 +168,7 @@ export default class Main extends React.Component<{}, State> {
 						<ReactRouter.Link
 							className="pt-button pt-minimal pt-icon-cloud"
 							style={css.link}
+							hidden={Constants.user}
 							to="/datacenters"
 						>
 							Datacenters
@@ -169,6 +176,7 @@ export default class Main extends React.Component<{}, State> {
 						<ReactRouter.Link
 							className="pt-button pt-minimal pt-icon-layout-circle"
 							style={css.link}
+							hidden={Constants.user}
 							to="/zones"
 						>
 							Zones
@@ -183,6 +191,7 @@ export default class Main extends React.Component<{}, State> {
 						<ReactRouter.Link
 							className="pt-button pt-minimal pt-icon-database"
 							style={css.link}
+							hidden={Constants.user}
 							to="/storages"
 						>
 							Storages
@@ -232,6 +241,7 @@ export default class Main extends React.Component<{}, State> {
 						<ReactRouter.Link
 							className="pt-button pt-minimal pt-icon-cog"
 							style={css.link}
+							hidden={Constants.user}
 							to="/settings"
 						>
 							Settings
@@ -239,6 +249,7 @@ export default class Main extends React.Component<{}, State> {
 						<ReactRouter.Link
 							to="/subscription"
 							style={css.sub}
+							hidden={Constants.user}
 						>
 							<button
 								className="pt-button pt-minimal pt-icon-credit-card"

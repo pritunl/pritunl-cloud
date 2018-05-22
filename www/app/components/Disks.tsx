@@ -1,5 +1,6 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
+import * as Constants from "../Constants";
 import * as DiskTypes from '../types/DiskTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import DisksStore from '../stores/DisksStore';
@@ -334,6 +335,7 @@ export default class Disks extends React.Component<{}, State> {
 						<button
 							className={debugClass}
 							style={css.debugButton}
+							hidden={Constants.user}
 							type="button"
 							onClick={(): void => {
 								this.setState({

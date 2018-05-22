@@ -1,5 +1,6 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
+import * as Constants from '../Constants';
 import * as DiskTypes from '../types/DiskTypes';
 import SearchInput from './SearchInput';
 import * as OrganizationTypes from "../types/OrganizationTypes";
@@ -98,7 +99,7 @@ export default class DisksFilter extends React.Component<Props, {}> {
 					this.props.onFilter(filter);
 				}}
 			/>
-			<div className="pt-select" style={css.type}>
+			<div className="pt-select" style={css.type} hidden={Constants.user}>
 				<select
 					value={this.props.filter.organization || 'any'}
 					onChange={(evt): void => {

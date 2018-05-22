@@ -11,6 +11,7 @@ import PageTextArea from './PageTextArea';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
 import Help from './Help';
+import * as Constants from "../Constants";
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -535,6 +536,7 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
 					/>
 					<PageSelect
 						disabled={this.state.disabled || !hasOrganizations}
+						hidden={Constants.user}
 						label="Organization"
 						help="Organization for authority, both the organaization and role must match. Select node authority to match node network roles."
 						value={authority.organization}

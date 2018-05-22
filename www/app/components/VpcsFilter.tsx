@@ -1,5 +1,6 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
+import * as Constants from '../Constants';
 import * as VpcTypes from '../types/VpcTypes';
 import SearchInput from './SearchInput';
 import * as OrganizationTypes from "../types/OrganizationTypes";
@@ -136,7 +137,7 @@ export default class VpcsFilter extends React.Component<Props, {}> {
 					{datacentersSelect}
 				</select>
 			</div>
-			<div className="pt-select" style={css.type}>
+			<div className="pt-select" style={css.type} hidden={Constants.user}>
 				<select
 					value={this.props.filter.organization || 'any'}
 					onChange={(evt): void => {

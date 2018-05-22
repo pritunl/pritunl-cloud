@@ -1,5 +1,6 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
+import * as Constants from '../Constants';
 import * as VpcTypes from '../types/VpcTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import VpcsStore from '../stores/VpcsStore';
@@ -353,7 +354,7 @@ export default class Vpcs extends React.Component<{}, State> {
 									});
 								}}
 							/>
-							<div style={css.selectBox}>
+							<div style={css.selectBox} hidden={Constants.user}>
 								<div className="pt-select" style={css.selectFirst}>
 									<select
 										style={css.selectInner}

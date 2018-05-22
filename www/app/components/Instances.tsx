@@ -1,5 +1,6 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
+import * as Constants from '../Constants';
 import * as InstanceTypes from '../types/InstanceTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import * as VpcTypes from '../types/VpcTypes';
@@ -357,6 +358,7 @@ export default class Instances extends React.Component<{}, State> {
 						<button
 							className={debugClass}
 							style={css.debugButton}
+							hidden={Constants.user}
 							type="button"
 							onClick={(): void => {
 								this.setState({

@@ -1,5 +1,6 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
+import * as Constants from '../Constants';
 import * as FirewallTypes from '../types/FirewallTypes';
 import * as FirewallActions from '../actions/FirewallActions';
 import * as OrganizationTypes from "../types/OrganizationTypes";
@@ -503,6 +504,7 @@ export default class FirewallDetailed extends React.Component<Props, State> {
 					/>
 					<PageSelect
 						disabled={this.state.disabled}
+						hidden={Constants.user}
 						label="Organization"
 						help="Organization for firewall, both the organaization and role must match. Select node firewall to match node network roles."
 						value={firewall.organization}

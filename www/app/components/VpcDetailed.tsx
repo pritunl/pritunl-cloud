@@ -1,5 +1,6 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
+import * as Constants from '../Constants';
 import * as VpcTypes from '../types/VpcTypes';
 import * as VpcActions from '../actions/VpcActions';
 import * as DatacenterTypes from "../types/DatacenterTypes";
@@ -435,6 +436,7 @@ export default class VpcDetailed extends React.Component<Props, State> {
 					/>
 					<PageSelect
 						disabled={this.state.disabled}
+						hidden={Constants.user}
 						label="Organization"
 						help="Organization for vpc."
 						value={vpc.organization}

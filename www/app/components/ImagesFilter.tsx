@@ -1,5 +1,6 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
+import * as Constants from '../Constants';
 import * as ImageTypes from '../types/ImageTypes';
 import SearchInput from './SearchInput';
 import * as OrganizationTypes from "../types/OrganizationTypes";
@@ -123,7 +124,7 @@ export default class ImagesFilter extends React.Component<Props, {}> {
 					<option value="public">Public</option>
 				</select>
 			</div>
-			<div className="pt-select" style={css.type}>
+			<div className="pt-select" style={css.type} hidden={Constants.user}>
 				<select
 					value={this.props.filter.organization || 'any'}
 					onChange={(evt): void => {
