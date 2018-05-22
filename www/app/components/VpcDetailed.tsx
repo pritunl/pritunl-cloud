@@ -283,9 +283,6 @@ export default class VpcDetailed extends React.Component<Props, State> {
 
 		let datacentersSelect: JSX.Element[] = [];
 		if (this.props.datacenters.length) {
-			datacentersSelect.push(
-				<option key="null" value="">Node Vpc</option>);
-
 			for (let datacenter of this.props.datacenters) {
 				datacentersSelect.push(
 					<option
@@ -298,9 +295,6 @@ export default class VpcDetailed extends React.Component<Props, State> {
 
 		let organizationsSelect: JSX.Element[] = [];
 		if (this.props.organizations.length) {
-			organizationsSelect.push(
-				<option key="null" value="">Node Vpc</option>);
-
 			for (let organization of this.props.organizations) {
 				organizationsSelect.push(
 					<option
