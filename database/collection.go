@@ -102,3 +102,60 @@ func SelectFields(obj interface{}, fields set.Set) (data bson.M) {
 
 	return
 }
+
+func SelectFieldsAll(obj interface{}, fields set.Set) (data bson.M) {
+	val := reflect.ValueOf(obj).Elem()
+
+	dataSet := bson.M{}
+	dataUnset := bson.M{}
+	dataUnseted := false
+
+	n := val.NumField()
+	for i := 0; i < n; i++ {
+		typ := val.Type().Field(i)
+
+		if typ.PkgPath != "" {
+			continue
+		}
+
+		tag := typ.Tag.Get("bson")
+		if tag == "" || tag == "-" {
+			continue
+		}
+
+		omitempty := strings.Contains(tag, "omitempty")
+
+		tag = strings.Split(tag, ",")[0]
+		if !fields.Contains(tag) {
+			continue
+		}
+
+		val := val.Field(i).Interface()
+
+		switch valTyp := val.(type) {
+		case bson.ObjectId:
+			if valTyp == "" {
+				if omitempty {
+					dataUnset[tag] = 1
+					dataUnseted = true
+				} else {
+					dataSet[tag] = nil
+				}
+			} else {
+				dataSet[tag] = val
+			}
+			break
+		default:
+			dataSet[tag] = val
+		}
+	}
+
+	data = bson.M{
+		"$set": dataSet,
+	}
+	if dataUnseted {
+		data["$unset"] = dataUnset
+	}
+
+	return
+}
