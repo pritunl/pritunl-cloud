@@ -5,7 +5,8 @@ import * as Theme from '../Theme';
 import * as Constants from '../Constants';
 import * as SubscriptionTypes from '../types/SubscriptionTypes';
 import SubscriptionStore from '../stores/SubscriptionStore';
-import Loading from './Loading';
+import OrganizationsStore from '../stores/OrganizationsStore';
+import LoadingBar from './LoadingBar';
 import Subscription from './Subscription';
 import Users from './Users';
 import UserDetailed from './UserDetailed';
@@ -24,6 +25,7 @@ import Firewalls from './Firewalls';
 import Authorities from './Authorities';
 import Logs from './Logs';
 import Settings from './Settings';
+import OrganizationSelect from './OrganizationSelect';
 import * as UserActions from '../actions/UserActions';
 import * as SessionActions from '../actions/SessionActions';
 import * as AuditActions from '../actions/AuditActions';
@@ -46,6 +48,7 @@ import * as SubscriptionActions from '../actions/SubscriptionActions';
 
 interface State {
 	subscription: SubscriptionTypes.SubscriptionRo;
+	current: string;
 	disabled: boolean;
 }
 
@@ -87,29 +90,59 @@ export default class Main extends React.Component<{}, State> {
 		super(props, context);
 		this.state = {
 			subscription: SubscriptionStore.subscription,
+			current: OrganizationsStore.current,
 			disabled: false,
 		};
 	}
 
 	componentDidMount(): void {
-		SubscriptionStore.addChangeListener(this.onChange);
-		SubscriptionActions.sync(false);
+		if (!Constants.user) {
+			SubscriptionStore.addChangeListener(this.onChange);
+			SubscriptionActions.sync(false);
+		} else {
+			OrganizationsStore.addChangeListener(this.onChange);
+			OrganizationActions.sync();
+		}
 	}
 
 	componentWillUnmount(): void {
-		SubscriptionStore.removeChangeListener(this.onChange);
+		if (!Constants.user) {
+			SubscriptionStore.removeChangeListener(this.onChange);
+		} else {
+			OrganizationsStore.removeChangeListener(this.onChange);
+		}
 	}
 
 	onChange = (): void => {
 		this.setState({
 			...this.state,
 			subscription: SubscriptionStore.subscription,
+			current: OrganizationsStore.current,
 		});
 	}
 
 	render(): JSX.Element {
-		if (!this.state.subscription) {
+		if ((!Constants.user && !this.state.subscription) ||
+				(Constants.user && this.state.current === undefined)) {
 			return <div/>;
+		}
+
+		if (Constants.user && !this.state.current) {
+			return <div>
+				<div
+					className="pt-callout pt-intent-danger pt-icon-error"
+					style={css.card}
+				>
+					<h4 className="pt-callout-title">No Organization</h4>
+					Account does not have access to any organizations
+					<button
+						className="pt-button pt-minimal pt-icon-log-out"
+						onClick={() => {
+							window.location.href = '/logout';
+						}}
+					>Logout</button>
+				</div>
+			</div>;
 		}
 
 		return <ReactRouter.HashRouter>
@@ -122,7 +155,7 @@ export default class Main extends React.Component<{}, State> {
 						<div className="pt-navbar-heading"
 							style={css.heading}
 						>Pritunl Cloud</div>
-						<Loading style={css.loading} size="small"/>
+						<OrganizationSelect hidden={!Constants.user}/>
 					</div>
 					<div className="pt-navbar-group pt-align-right" style={css.navGroup}>
 						<ReactRouter.Link
