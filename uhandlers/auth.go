@@ -253,6 +253,7 @@ func logoutAllGet(c *gin.Context) {
 
 	usr, err := authr.GetUser(db)
 	if err != nil {
+		utils.AbortWithError(c, 500, err)
 		return
 	}
 
