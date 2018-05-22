@@ -5,6 +5,7 @@ import EventDispatcher from '../dispatcher/EventDispatcher';
 import * as Alert from '../Alert';
 import * as Csrf from '../Csrf';
 import Loader from '../Loader';
+import * as GlobalTypes from '../types/GlobalTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import * as MiscUtils from '../utils/MiscUtils';
 
@@ -136,6 +137,21 @@ export function remove(orgId: string): Promise<void> {
 
 				resolve();
 			});
+	});
+}
+
+export function setCurrent(current: string): void {
+	Dispatcher.dispatch({
+		type: GlobalTypes.RESET,
+		data: {
+			current: current,
+		},
+	});
+	Dispatcher.dispatch({
+		type: GlobalTypes.RELOAD,
+		data: {
+			current: current,
+		},
 	});
 }
 
