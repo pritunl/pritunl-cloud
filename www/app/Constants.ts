@@ -3,6 +3,8 @@ import * as MobileDetect from 'mobile-detect';
 
 let md = new MobileDetect(window.navigator.userAgent);
 
+export const user: boolean = !!(window as any).user;
+
 export const mobile = !!md.mobile();
 
 export const loadDelay = 500;
