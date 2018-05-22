@@ -11,6 +11,11 @@ class OrganizationsStore extends EventEmitter {
 	_map: {[key: string]: number} = {};
 	_token = Dispatcher.register((this._callback).bind(this));
 
+	_reset(current: string): void {
+		this._current = current;
+		this.emitChange();
+	}
+
 	get current(): string {
 		return this._current;
 	}
@@ -69,18 +74,18 @@ class OrganizationsStore extends EventEmitter {
 		this.emitChange();
 	}
 
-	_setCurrent(current: string): void {
-		this._current = current;
-		this.emitChange();
-	}
-
 	_callback(action: OrganizationTypes.OrganizationDispatch): void {
 		switch (action.type) {
+			case GlobalTypes.RESET:
+				this._reset(action.data.current);
+				break;
+
+			case GlobalTypes.RELOAD:
+				window.location.hash = '#/reload';
+				break;
+
 			case OrganizationTypes.SYNC:
 				this._sync(action.data.organizations);
-				break;
-			case OrganizationTypes.CURRENT:
-				this._setCurrent(action.data.current);
 				break;
 		}
 	}
