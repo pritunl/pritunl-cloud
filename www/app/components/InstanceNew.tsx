@@ -1,5 +1,7 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
+import * as Constants from '../Constants';
+import * as License from '../License';
 import * as InstanceTypes from '../types/InstanceTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import * as DatacenterTypes from '../types/DatacenterTypes';
@@ -12,12 +14,14 @@ import * as ImageActions from '../actions/ImageActions';
 import * as NodeActions from '../actions/NodeActions';
 import ImagesDatacenterStore from '../stores/ImagesDatacenterStore';
 import NodesZoneStore from '../stores/NodesZoneStore';
+import InstanceLicense from './InstanceLicense';
 import PageInput from './PageInput';
 import PageInputButton from './PageInputButton';
 import PageCreate from './PageCreate';
 import PageSelect from './PageSelect';
 import PageNumInput from './PageNumInput';
 import Help from './Help';
+import OrganizationsStore from "../stores/OrganizationsStore";
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -32,6 +36,7 @@ interface State {
 	disabled: boolean;
 	changed: boolean;
 	message: string;
+	licenseOpen: boolean;
 	instance: InstanceTypes.Instance;
 	datacenter: string;
 	images: ImageTypes.ImagesRo;
@@ -102,6 +107,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 			disabled: false,
 			changed: false,
 			message: '',
+			licenseOpen: false,
 			instance: this.default,
 			datacenter: '',
 			images: [],
@@ -155,6 +161,16 @@ export default class InstanceNew extends React.Component<Props, State> {
 	}
 
 	onCreate = (): void => {
+		if (this.state.instance.image &&
+				this.state.instance.image.indexOf('oracle') &&
+				!License.oracle) {
+			this.setState({
+				...this.state,
+				licenseOpen: true,
+			});
+			return
+		}
+
 		this.setState({
 			...this.state,
 			disabled: true,
@@ -411,6 +427,15 @@ export default class InstanceNew extends React.Component<Props, State> {
 				style={css.card}
 			>
 				<div className="layout horizontal wrap">
+					<InstanceLicense
+						open={this.state.licenseOpen}
+						onClose={(): void => {
+							this.setState({
+								...this.state,
+								licenseOpen: false,
+							});
+						}}
+					/>
 					<div style={css.group}>
 						<div style={css.buttons}>
 						</div>
