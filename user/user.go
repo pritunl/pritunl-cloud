@@ -30,6 +30,7 @@ type User struct {
 	Disabled      bool          `bson:"disabled" json:"disabled"`
 	ActiveUntil   time.Time     `bson:"active_until" json:"active_until"`
 	Permissions   []string      `bson:"permissions" json:"permissions"`
+	OracleLicense bool          `bson:"oracle_licese" json:"oracle_license"`
 }
 
 func (u *User) Validate(db *database.Database) (
