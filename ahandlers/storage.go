@@ -101,24 +101,24 @@ func storagePost(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	data := &storageData{
+	dta := &storageData{
 		Name: "New Storage",
 	}
 
-	err := c.Bind(data)
+	err := c.Bind(dta)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
 	store := &storage.Storage{
-		Name:      data.Name,
-		Type:      data.Type,
-		Endpoint:  data.Endpoint,
-		Bucket:    data.Bucket,
-		AccessKey: data.AccessKey,
-		SecretKey: data.SecretKey,
-		Insecure:  data.Insecure,
+		Name:      dta.Name,
+		Type:      dta.Type,
+		Endpoint:  dta.Endpoint,
+		Bucket:    dta.Bucket,
+		AccessKey: dta.AccessKey,
+		SecretKey: dta.SecretKey,
+		Insecure:  dta.Insecure,
 	}
 
 	errData, err := store.Validate(db)
@@ -182,6 +182,15 @@ func storageGet(c *gin.Context) {
 		return
 	}
 
+	if demo.IsDemo() {
+		if store.AccessKey != "" {
+			store.AccessKey = "demo"
+		}
+		if store.SecretKey != "" {
+			store.SecretKey = "demo"
+		}
+	}
+
 	c.JSON(200, store)
 }
 
@@ -192,6 +201,17 @@ func storagesGet(c *gin.Context) {
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
+	}
+
+	if demo.IsDemo() {
+		for _, store := range stores {
+			if store.AccessKey != "" {
+				store.AccessKey = "demo"
+			}
+			if store.SecretKey != "" {
+				store.SecretKey = "demo"
+			}
+		}
 	}
 
 	c.JSON(200, stores)
