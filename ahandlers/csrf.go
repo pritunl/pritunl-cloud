@@ -5,12 +5,14 @@ import (
 	"github.com/pritunl/pritunl-cloud/authorizer"
 	"github.com/pritunl/pritunl-cloud/csrf"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type csrfData struct {
-	Token string `json:"token"`
-	Theme string `json:"theme"`
+	Token         string `json:"token"`
+	Theme         string `json:"theme"`
+	OracleLicense bool   `json:"oracle_license"`
 }
 
 func csrfGet(c *gin.Context) {
@@ -29,9 +31,15 @@ func csrfGet(c *gin.Context) {
 		return
 	}
 
+	oracleLicense := usr.OracleLicense
+	if demo.IsDemo() {
+		oracleLicense = true
+	}
+
 	data := &csrfData{
-		Token: token,
-		Theme: usr.Theme,
+		Token:         token,
+		Theme:         usr.Theme,
+		OracleLicense: oracleLicense,
 	}
 	c.JSON(200, data)
 }
