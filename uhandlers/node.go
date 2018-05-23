@@ -14,7 +14,13 @@ func nodesGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(bson.ObjectId)
 
-	zneId, _ := utils.ParseObjectId(c.Query("zone"))
+	zoneStr := c.Query("zone")
+	if zoneStr == "" {
+		c.JSON(200, []interface{}{})
+		return
+	}
+
+	zneId, _ := utils.ParseObjectId(zoneStr)
 
 	zne, err := zone.Get(db, zneId)
 	if err != nil {
