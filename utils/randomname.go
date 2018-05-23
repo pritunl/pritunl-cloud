@@ -55,7 +55,11 @@ func RandName() (name string) {
 	return
 }
 
-func RandIpv6() (addr string) {
+func RandIp() string {
+	return fmt.Sprintf("26.197.%d.%d", rand.Intn(250)+4, rand.Intn(250)+4)
+}
+
+func RandIp6() (addr string) {
 	addr = "2604:4080"
 	randByt, _ := RandBytes(12)
 	randHex := fmt.Sprintf("%x", randByt)
