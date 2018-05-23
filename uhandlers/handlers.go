@@ -89,6 +89,8 @@ func Register(engine *gin.Engine) {
 	orgGroup.DELETE("/instance", instancesDelete)
 	orgGroup.DELETE("/instance/:instance_id", instanceDelete)
 
+	csrfGroup.PUT("/license", licensePut)
+
 	orgGroup.GET("/node", nodesGet)
 
 	csrfGroup.GET("/organization", organizationsGet)
