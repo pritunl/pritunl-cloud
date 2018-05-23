@@ -10,6 +10,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/pritunl-cloud/vm"
 	"gopkg.in/mgo.v2/bson"
 	"strconv"
 	"strings"
@@ -297,6 +298,18 @@ func instanceGet(c *gin.Context) {
 		return
 	}
 
+	if demo.IsDemo() {
+		inst.State = instance.Start
+		inst.VmState = vm.Running
+		inst.Status = "Running"
+		inst.PublicIps = []string{
+			demo.RandIp(inst.Id),
+		}
+		inst.PublicIps6 = []string{
+			demo.RandIp6(inst.Id),
+		}
+	}
+
 	c.JSON(200, inst)
 }
 
@@ -349,6 +362,18 @@ func instancesGet(c *gin.Context) {
 
 		for _, inst := range instances {
 			inst.Json()
+
+			if demo.IsDemo() {
+				inst.State = instance.Start
+				inst.VmState = vm.Running
+				inst.Status = "Running"
+				inst.PublicIps = []string{
+					demo.RandIp(inst.Id),
+				}
+				inst.PublicIps6 = []string{
+					demo.RandIp6(inst.Id),
+				}
+			}
 		}
 
 		data := &instancesData{
