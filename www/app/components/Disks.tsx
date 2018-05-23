@@ -19,12 +19,10 @@ import ZonesStore from "../stores/ZonesStore";
 import DatacentersStore from "../stores/DatacentersStore";
 import * as ZoneTypes from "../types/ZoneTypes";
 import * as DatacenterTypes from "../types/DatacenterTypes";
-import NodesStore from "../stores/NodesStore";
 import InstancesStore from "../stores/InstancesStore";
 import * as InstanceActions from "../actions/InstanceActions";
 import * as DatacenterActions from "../actions/DatacenterActions";
 import * as ZoneActions from "../actions/ZoneActions";
-import * as NodeActions from "../actions/NodeActions";
 
 interface Selected {
 	[key: string]: boolean;
@@ -114,12 +112,10 @@ export default class Disks extends React.Component<{}, State> {
 		DisksStore.addChangeListener(this.onChange);
 		OrganizationsStore.addChangeListener(this.onChange);
 		DatacentersStore.addChangeListener(this.onChange);
-		NodesStore.addChangeListener(this.onChange);
 		InstanceActions.sync();
 		DiskActions.sync();
 		OrganizationActions.sync();
 		DatacenterActions.sync();
-		NodeActions.sync();
 		ZoneActions.sync();
 	}
 
@@ -128,7 +124,6 @@ export default class Disks extends React.Component<{}, State> {
 		DisksStore.removeChangeListener(this.onChange);
 		OrganizationsStore.removeChangeListener(this.onChange);
 		DatacentersStore.removeChangeListener(this.onChange);
-		NodesStore.removeChangeListener(this.onChange);
 		ZonesStore.removeChangeListener(this.onChange);
 	}
 
