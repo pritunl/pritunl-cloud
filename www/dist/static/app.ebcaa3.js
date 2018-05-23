@@ -11511,6 +11511,77 @@ System.registerDynamic("app/components/Policies.js", ["npm:react@16.3.2.js", "ap
     exports.default = Policies;
     
 });
+System.registerDynamic("app/stores/CertificatesStore.js", ["app/dispatcher/Dispatcher.js", "app/EventEmitter.js", "app/types/CertificateTypes.js", "app/types/GlobalTypes.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const Dispatcher_1 = $__require("app/dispatcher/Dispatcher.js");
+    const EventEmitter_1 = $__require("app/EventEmitter.js");
+    const CertificateTypes = $__require("app/types/CertificateTypes.js");
+    const GlobalTypes = $__require("app/types/GlobalTypes.js");
+    class CertificatesStore extends EventEmitter_1.default {
+        constructor() {
+            super(...arguments);
+            this._certificates = Object.freeze([]);
+            this._map = {};
+            this._token = Dispatcher_1.default.register(this._callback.bind(this));
+        }
+        _reset() {
+            this._certificates = Object.freeze([]);
+            this._map = {};
+            this.emitChange();
+        }
+        get certificates() {
+            return this._certificates;
+        }
+        get certificatesM() {
+            let certificates = [];
+            this._certificates.forEach(certificate => {
+                certificates.push(Object.assign({}, certificate));
+            });
+            return certificates;
+        }
+        certificate(id) {
+            let i = this._map[id];
+            if (i === undefined) {
+                return null;
+            }
+            return this._certificates[i];
+        }
+        emitChange() {
+            this.emitDefer(GlobalTypes.CHANGE);
+        }
+        addChangeListener(callback) {
+            this.on(GlobalTypes.CHANGE, callback);
+        }
+        removeChangeListener(callback) {
+            this.removeListener(GlobalTypes.CHANGE, callback);
+        }
+        _sync(certificates) {
+            this._map = {};
+            for (let i = 0; i < certificates.length; i++) {
+                certificates[i] = Object.freeze(certificates[i]);
+                this._map[certificates[i].id] = i;
+            }
+            this._certificates = Object.freeze(certificates);
+            this.emitChange();
+        }
+        _callback(action) {
+            switch (action.type) {
+                case GlobalTypes.RESET:
+                    this._reset();
+                    break;
+                case CertificateTypes.SYNC:
+                    this._sync(action.data.certificates);
+                    break;
+            }
+        }
+    }
+    exports.default = new CertificatesStore();
+    
+});
 System.registerDynamic("app/components/CertificateDomain.js", ["npm:react@16.3.2.js"], true, function ($__require, exports, module) {
     "use strict";
 
@@ -14032,7 +14103,7 @@ System.registerDynamic("app/components/ImagesPage.js", ["npm:react@16.3.2.js", "
     exports.default = ImagesPage;
     
 });
-System.registerDynamic("app/components/Images.js", ["npm:react@16.3.2.js", "app/stores/ImagesStore.js", "app/stores/OrganizationsStore.js", "app/actions/ImageActions.js", "app/actions/StorageActions.js", "app/actions/OrganizationActions.js", "app/components/Image.js", "app/components/ImagesFilter.js", "app/components/ImagesPage.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/NonState.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/Images.js", ["npm:react@16.3.2.js", "app/stores/ImagesStore.js", "app/stores/OrganizationsStore.js", "app/actions/ImageActions.js", "app/actions/OrganizationActions.js", "app/components/Image.js", "app/components/ImagesFilter.js", "app/components/ImagesPage.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/NonState.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -14042,7 +14113,6 @@ System.registerDynamic("app/components/Images.js", ["npm:react@16.3.2.js", "app/
     const ImagesStore_1 = $__require("app/stores/ImagesStore.js");
     const OrganizationsStore_1 = $__require("app/stores/OrganizationsStore.js");
     const ImageActions = $__require("app/actions/ImageActions.js");
-    const StorageActions = $__require("app/actions/StorageActions.js");
     const OrganizationActions = $__require("app/actions/OrganizationActions.js");
     const Image_1 = $__require("app/components/Image.js");
     const ImagesFilter_1 = $__require("app/components/ImagesFilter.js");
@@ -14128,7 +14198,6 @@ System.registerDynamic("app/components/Images.js", ["npm:react@16.3.2.js", "app/
             OrganizationsStore_1.default.addChangeListener(this.onChange);
             ImageActions.sync();
             OrganizationActions.sync();
-            StorageActions.sync();
         }
         componentWillUnmount() {
             ImagesStore_1.default.removeChangeListener(this.onChange);
@@ -15003,7 +15072,7 @@ System.registerDynamic("app/components/DiskNew.js", ["npm:react@16.3.2.js", "app
     exports.default = DiskNew;
     
 });
-System.registerDynamic("app/components/Disks.js", ["npm:react@16.3.2.js", "app/Constants.js", "app/stores/DisksStore.js", "app/stores/OrganizationsStore.js", "app/actions/DiskActions.js", "app/actions/OrganizationActions.js", "app/components/Disk.js", "app/components/DisksFilter.js", "app/components/DisksPage.js", "app/components/DiskNew.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/NonState.js", "app/components/ConfirmButton.js", "app/stores/ZonesStore.js", "app/stores/DatacentersStore.js", "app/stores/NodesStore.js", "app/stores/InstancesStore.js", "app/actions/InstanceActions.js", "app/actions/DatacenterActions.js", "app/actions/ZoneActions.js", "app/actions/NodeActions.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/Disks.js", ["npm:react@16.3.2.js", "app/Constants.js", "app/stores/DisksStore.js", "app/stores/OrganizationsStore.js", "app/actions/DiskActions.js", "app/actions/OrganizationActions.js", "app/components/Disk.js", "app/components/DisksFilter.js", "app/components/DisksPage.js", "app/components/DiskNew.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/NonState.js", "app/components/ConfirmButton.js", "app/stores/ZonesStore.js", "app/stores/DatacentersStore.js", "app/stores/InstancesStore.js", "app/actions/InstanceActions.js", "app/actions/DatacenterActions.js", "app/actions/ZoneActions.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -15025,12 +15094,10 @@ System.registerDynamic("app/components/Disks.js", ["npm:react@16.3.2.js", "app/C
     const ConfirmButton_1 = $__require("app/components/ConfirmButton.js");
     const ZonesStore_1 = $__require("app/stores/ZonesStore.js");
     const DatacentersStore_1 = $__require("app/stores/DatacentersStore.js");
-    const NodesStore_1 = $__require("app/stores/NodesStore.js");
     const InstancesStore_1 = $__require("app/stores/InstancesStore.js");
     const InstanceActions = $__require("app/actions/InstanceActions.js");
     const DatacenterActions = $__require("app/actions/DatacenterActions.js");
     const ZoneActions = $__require("app/actions/ZoneActions.js");
-    const NodeActions = $__require("app/actions/NodeActions.js");
     const css = {
         items: {
             width: '100%',
@@ -15133,12 +15200,10 @@ System.registerDynamic("app/components/Disks.js", ["npm:react@16.3.2.js", "app/C
             DisksStore_1.default.addChangeListener(this.onChange);
             OrganizationsStore_1.default.addChangeListener(this.onChange);
             DatacentersStore_1.default.addChangeListener(this.onChange);
-            NodesStore_1.default.addChangeListener(this.onChange);
             InstanceActions.sync();
             DiskActions.sync();
             OrganizationActions.sync();
             DatacenterActions.sync();
-            NodeActions.sync();
             ZoneActions.sync();
         }
         componentWillUnmount() {
@@ -15146,7 +15211,6 @@ System.registerDynamic("app/components/Disks.js", ["npm:react@16.3.2.js", "app/C
             DisksStore_1.default.removeChangeListener(this.onChange);
             OrganizationsStore_1.default.removeChangeListener(this.onChange);
             DatacentersStore_1.default.removeChangeListener(this.onChange);
-            NodesStore_1.default.removeChangeListener(this.onChange);
             ZonesStore_1.default.removeChangeListener(this.onChange);
         }
         render() {
@@ -15371,77 +15435,6 @@ System.registerDynamic("app/stores/DatacentersStore.js", ["app/dispatcher/Dispat
         }
     }
     exports.default = new DatacentersStore();
-    
-});
-System.registerDynamic("app/stores/CertificatesStore.js", ["app/dispatcher/Dispatcher.js", "app/EventEmitter.js", "app/types/CertificateTypes.js", "app/types/GlobalTypes.js"], true, function ($__require, exports, module) {
-    "use strict";
-
-    var global = this || self,
-        GLOBAL = global;
-    Object.defineProperty(exports, "__esModule", { value: true });
-    const Dispatcher_1 = $__require("app/dispatcher/Dispatcher.js");
-    const EventEmitter_1 = $__require("app/EventEmitter.js");
-    const CertificateTypes = $__require("app/types/CertificateTypes.js");
-    const GlobalTypes = $__require("app/types/GlobalTypes.js");
-    class CertificatesStore extends EventEmitter_1.default {
-        constructor() {
-            super(...arguments);
-            this._certificates = Object.freeze([]);
-            this._map = {};
-            this._token = Dispatcher_1.default.register(this._callback.bind(this));
-        }
-        _reset() {
-            this._certificates = Object.freeze([]);
-            this._map = {};
-            this.emitChange();
-        }
-        get certificates() {
-            return this._certificates;
-        }
-        get certificatesM() {
-            let certificates = [];
-            this._certificates.forEach(certificate => {
-                certificates.push(Object.assign({}, certificate));
-            });
-            return certificates;
-        }
-        certificate(id) {
-            let i = this._map[id];
-            if (i === undefined) {
-                return null;
-            }
-            return this._certificates[i];
-        }
-        emitChange() {
-            this.emitDefer(GlobalTypes.CHANGE);
-        }
-        addChangeListener(callback) {
-            this.on(GlobalTypes.CHANGE, callback);
-        }
-        removeChangeListener(callback) {
-            this.removeListener(GlobalTypes.CHANGE, callback);
-        }
-        _sync(certificates) {
-            this._map = {};
-            for (let i = 0; i < certificates.length; i++) {
-                certificates[i] = Object.freeze(certificates[i]);
-                this._map[certificates[i].id] = i;
-            }
-            this._certificates = Object.freeze(certificates);
-            this.emitChange();
-        }
-        _callback(action) {
-            switch (action.type) {
-                case GlobalTypes.RESET:
-                    this._reset();
-                    break;
-                case CertificateTypes.SYNC:
-                    this._sync(action.data.certificates);
-                    break;
-            }
-        }
-    }
-    exports.default = new CertificatesStore();
     
 });
 System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@16.3.2.js", "app/actions/InstanceActions.js", "app/stores/OrganizationsStore.js", "app/stores/ZonesStore.js", "app/components/PageInput.js", "app/components/PageInputButton.js", "app/components/PageInfo.js", "app/components/PageSelect.js", "app/components/PageSave.js", "app/components/PageNumInput.js", "app/components/ConfirmButton.js", "app/components/Help.js"], true, function ($__require, exports, module) {
@@ -16127,13 +16120,14 @@ System.registerDynamic("app/components/PageNumInput.js", ["npm:react@16.3.2.js",
     exports.default = PageNumInput;
     
 });
-System.registerDynamic("app/components/InstanceNew.js", ["npm:react@16.3.2.js", "app/actions/InstanceActions.js", "app/actions/ImageActions.js", "app/actions/NodeActions.js", "app/stores/ImagesDatacenterStore.js", "app/stores/NodesZoneStore.js", "app/components/PageInput.js", "app/components/PageInputButton.js", "app/components/PageCreate.js", "app/components/PageSelect.js", "app/components/PageNumInput.js", "app/components/Help.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/InstanceNew.js", ["npm:react@16.3.2.js", "app/Constants.js", "app/actions/InstanceActions.js", "app/actions/ImageActions.js", "app/actions/NodeActions.js", "app/stores/ImagesDatacenterStore.js", "app/stores/NodesZoneStore.js", "app/components/PageInput.js", "app/components/PageInputButton.js", "app/components/PageCreate.js", "app/components/PageSelect.js", "app/components/PageNumInput.js", "app/components/Help.js", "app/stores/OrganizationsStore.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
         GLOBAL = global;
     Object.defineProperty(exports, "__esModule", { value: true });
     const React = $__require("npm:react@16.3.2.js");
+    const Constants = $__require("app/Constants.js");
     const InstanceActions = $__require("app/actions/InstanceActions.js");
     const ImageActions = $__require("app/actions/ImageActions.js");
     const NodeActions = $__require("app/actions/NodeActions.js");
@@ -16145,6 +16139,7 @@ System.registerDynamic("app/components/InstanceNew.js", ["npm:react@16.3.2.js", 
     const PageSelect_1 = $__require("app/components/PageSelect.js");
     const PageNumInput_1 = $__require("app/components/PageNumInput.js");
     const Help_1 = $__require("app/components/Help.js");
+    const OrganizationsStore_1 = $__require("app/stores/OrganizationsStore.js");
     const css = {
         row: {
             display: 'table-row',
@@ -16337,8 +16332,14 @@ System.registerDynamic("app/components/InstanceNew.js", ["npm:react@16.3.2.js", 
             if (this.props.vpcs && this.props.vpcs.length) {
                 vpcsSelect.push(React.createElement("option", { key: "null", value: "" }, "Select Vpc"));
                 for (let vpc of this.props.vpcs) {
-                    if (vpc.organization !== instance.organization) {
-                        continue;
+                    if (Constants.user) {
+                        if (vpc.organization !== OrganizationsStore_1.default.current) {
+                            continue;
+                        }
+                    } else {
+                        if (vpc.organization !== instance.organization) {
+                            continue;
+                        }
                     }
                     hasVpcs = true;
                     vpcsSelect.push(React.createElement("option", { key: vpc.id, value: vpc.id }, vpc.name));
@@ -16367,7 +16368,7 @@ System.registerDynamic("app/components/InstanceNew.js", ["npm:react@16.3.2.js", 
             }
             return React.createElement("div", { className: "pt-card pt-row", style: css.row }, React.createElement("td", { className: "pt-cell", colSpan: 5, style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { style: css.buttons }), React.createElement(PageInput_1.default, { label: "Name", help: "Name of instance. String formatting such as %d or %02d can be used to add the instance number or zero padded number.", type: "text", placeholder: "Enter name", disabled: this.state.disabled, value: instance.name, onChange: val => {
                     this.set('name', val);
-                } }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasOrganizations, label: "Organization", help: "Organization for instance.", value: instance.organization, onChange: val => {
+                } }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasOrganizations, hidden: Constants.user, label: "Organization", help: "Organization for instance.", value: instance.organization, onChange: val => {
                     this.set('organization', val);
                 } }, organizationsSelect), React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasDatacenters, label: "Datacenter", help: "Datacenter for instance.", value: this.state.datacenter, onChange: val => {
                     this.setState(Object.assign({}, this.state, { datacenter: val, instance: Object.assign({}, this.state.instance, { node: '', zone: '', image: '' }) }));
@@ -16567,7 +16568,7 @@ System.registerDynamic("app/components/InstancesPage.js", ["npm:react@16.3.2.js"
     exports.default = InstancesPage;
     
 });
-System.registerDynamic("app/components/Instances.js", ["npm:react@16.3.2.js", "app/Constants.js", "app/stores/InstancesStore.js", "app/stores/OrganizationsStore.js", "app/stores/VpcsNameStore.js", "app/stores/DatacentersStore.js", "app/stores/NodesStore.js", "app/stores/ZonesStore.js", "app/stores/CertificatesStore.js", "app/actions/InstanceActions.js", "app/actions/OrganizationActions.js", "app/actions/VpcActions.js", "app/actions/DatacenterActions.js", "app/actions/NodeActions.js", "app/actions/ZoneActions.js", "app/actions/CertificateActions.js", "app/components/Instance.js", "app/components/InstanceNew.js", "app/components/InstancesFilter.js", "app/components/InstancesPage.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/NonState.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/Instances.js", ["npm:react@16.3.2.js", "app/Constants.js", "app/stores/InstancesStore.js", "app/stores/OrganizationsStore.js", "app/stores/VpcsNameStore.js", "app/stores/DatacentersStore.js", "app/stores/ZonesStore.js", "app/actions/InstanceActions.js", "app/actions/OrganizationActions.js", "app/actions/VpcActions.js", "app/actions/DatacenterActions.js", "app/actions/ZoneActions.js", "app/components/Instance.js", "app/components/InstanceNew.js", "app/components/InstancesFilter.js", "app/components/InstancesPage.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/NonState.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -16579,16 +16580,12 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.3.2.js", "a
     const OrganizationsStore_1 = $__require("app/stores/OrganizationsStore.js");
     const VpcsNameStore_1 = $__require("app/stores/VpcsNameStore.js");
     const DatacentersStore_1 = $__require("app/stores/DatacentersStore.js");
-    const NodesStore_1 = $__require("app/stores/NodesStore.js");
     const ZonesStore_1 = $__require("app/stores/ZonesStore.js");
-    const CertificatesStore_1 = $__require("app/stores/CertificatesStore.js");
     const InstanceActions = $__require("app/actions/InstanceActions.js");
     const OrganizationActions = $__require("app/actions/OrganizationActions.js");
     const VpcActions = $__require("app/actions/VpcActions.js");
     const DatacenterActions = $__require("app/actions/DatacenterActions.js");
-    const NodeActions = $__require("app/actions/NodeActions.js");
     const ZoneActions = $__require("app/actions/ZoneActions.js");
-    const CertificateActions = $__require("app/actions/CertificateActions.js");
     const Instance_1 = $__require("app/components/Instance.js");
     const InstanceNew_1 = $__require("app/components/InstanceNew.js");
     const InstancesFilter_1 = $__require("app/components/InstancesFilter.js");
@@ -16649,7 +16646,7 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.3.2.js", "a
                         opened[instance.id] = true;
                     }
                 });
-                this.setState(Object.assign({}, this.state, { instances: instances, filter: InstancesStore_1.default.filter, organizations: OrganizationsStore_1.default.organizations, vpcs: VpcsNameStore_1.default.vpcs, certificates: CertificatesStore_1.default.certificates, datacenters: DatacentersStore_1.default.datacenters, zones: ZonesStore_1.default.zones, selected: selected, opened: opened }));
+                this.setState(Object.assign({}, this.state, { instances: instances, filter: InstancesStore_1.default.filter, organizations: OrganizationsStore_1.default.organizations, vpcs: VpcsNameStore_1.default.vpcs, datacenters: DatacentersStore_1.default.datacenters, zones: ZonesStore_1.default.zones, selected: selected, opened: opened }));
             };
             this.onDelete = () => {
                 this.setState(Object.assign({}, this.state, { disabled: true }));
@@ -16675,7 +16672,6 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.3.2.js", "a
                 vpcs: VpcsNameStore_1.default.vpcs,
                 datacenters: DatacentersStore_1.default.datacenters,
                 zones: ZonesStore_1.default.zones,
-                certificates: CertificatesStore_1.default.certificates,
                 selected: {},
                 opened: {},
                 newOpened: false,
@@ -16694,16 +16690,12 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.3.2.js", "a
             OrganizationsStore_1.default.addChangeListener(this.onChange);
             VpcsNameStore_1.default.addChangeListener(this.onChange);
             DatacentersStore_1.default.addChangeListener(this.onChange);
-            NodesStore_1.default.addChangeListener(this.onChange);
             ZonesStore_1.default.addChangeListener(this.onChange);
-            CertificatesStore_1.default.addChangeListener(this.onChange);
             InstanceActions.sync();
             OrganizationActions.sync();
             VpcActions.syncNames();
             DatacenterActions.sync();
-            NodeActions.sync();
             ZoneActions.sync();
-            CertificateActions.sync();
             this.interval = setInterval(() => {
                 InstanceActions.sync(true);
             }, 1000);
@@ -16713,9 +16705,7 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.3.2.js", "a
             OrganizationsStore_1.default.removeChangeListener(this.onChange);
             VpcsNameStore_1.default.removeChangeListener(this.onChange);
             DatacentersStore_1.default.removeChangeListener(this.onChange);
-            NodesStore_1.default.removeChangeListener(this.onChange);
             ZonesStore_1.default.removeChangeListener(this.onChange);
-            CertificatesStore_1.default.removeChangeListener(this.onChange);
             clearInterval(this.interval);
         }
         updateSelected(state) {
@@ -20140,7 +20130,7 @@ System.registerDynamic("app/stores/UsersStore.js", ["app/dispatcher/Dispatcher.j
     exports.default = new UsersStore();
     
 });
-System.registerDynamic("app/actions/UserActions.js", ["npm:superagent@3.8.3.js", "app/dispatcher/Dispatcher.js", "app/dispatcher/EventDispatcher.js", "app/Alert.js", "app/Csrf.js", "app/Loader.js", "app/types/UserTypes.js", "app/stores/UserStore.js", "app/stores/UsersStore.js", "app/utils/MiscUtils.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/actions/UserActions.js", ["npm:superagent@3.8.3.js", "app/dispatcher/Dispatcher.js", "app/dispatcher/EventDispatcher.js", "app/Alert.js", "app/Csrf.js", "app/Loader.js", "app/types/UserTypes.js", "app/stores/UserStore.js", "app/stores/UsersStore.js", "app/utils/MiscUtils.js", "app/Constants.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -20156,6 +20146,7 @@ System.registerDynamic("app/actions/UserActions.js", ["npm:superagent@3.8.3.js",
     const UserStore_1 = $__require("app/stores/UserStore.js");
     const UsersStore_1 = $__require("app/stores/UsersStore.js");
     const MiscUtils = $__require("app/utils/MiscUtils.js");
+    const Constants = $__require("app/Constants.js");
     let syncId;
     function load(userId) {
         if (!userId) {
@@ -20330,7 +20321,9 @@ System.registerDynamic("app/actions/UserActions.js", ["npm:superagent@3.8.3.js",
     EventDispatcher_1.default.register(action => {
         switch (action.type) {
             case UserTypes.CHANGE:
-                sync();
+                if (!Constants.user) {
+                    sync();
+                }
                 break;
         }
     });
@@ -20423,7 +20416,7 @@ System.registerDynamic("app/stores/SessionsStore.js", ["app/dispatcher/Dispatche
     exports.default = new SessionsStore();
     
 });
-System.registerDynamic("app/actions/SessionActions.js", ["npm:superagent@3.8.3.js", "app/dispatcher/Dispatcher.js", "app/dispatcher/EventDispatcher.js", "app/Alert.js", "app/Csrf.js", "app/Loader.js", "app/types/SessionTypes.js", "app/utils/MiscUtils.js", "app/stores/SessionsStore.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/actions/SessionActions.js", ["npm:superagent@3.8.3.js", "app/dispatcher/Dispatcher.js", "app/dispatcher/EventDispatcher.js", "app/Alert.js", "app/Csrf.js", "app/Loader.js", "app/types/SessionTypes.js", "app/utils/MiscUtils.js", "app/stores/SessionsStore.js", "app/actions/LogActions.js", "app/Constants.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -20438,6 +20431,8 @@ System.registerDynamic("app/actions/SessionActions.js", ["npm:superagent@3.8.3.j
     const SessionTypes = $__require("app/types/SessionTypes.js");
     const MiscUtils = $__require("app/utils/MiscUtils.js");
     const SessionsStore_1 = $__require("app/stores/SessionsStore.js");
+    const LogActions_1 = $__require("app/actions/LogActions.js");
+    const Constants = $__require("app/Constants.js");
     let syncId;
     function _load(userId) {
         if (!userId) {
@@ -20524,7 +20519,9 @@ System.registerDynamic("app/actions/SessionActions.js", ["npm:superagent@3.8.3.j
     EventDispatcher_1.default.register(action => {
         switch (action.type) {
             case SessionTypes.CHANGE:
-                reload();
+                if (!Constants.user) {
+                    LogActions_1.sync();
+                }
                 break;
         }
     });
@@ -20629,13 +20626,14 @@ System.registerDynamic("app/stores/AuditsStore.js", ["app/dispatcher/Dispatcher.
     exports.default = new AuditsStore();
     
 });
-System.registerDynamic("app/actions/AuditActions.js", ["npm:superagent@3.8.3.js", "app/dispatcher/Dispatcher.js", "app/dispatcher/EventDispatcher.js", "app/Alert.js", "app/Csrf.js", "app/Loader.js", "app/types/AuditTypes.js", "app/utils/MiscUtils.js", "app/stores/AuditsStore.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/actions/AuditActions.js", ["npm:superagent@3.8.3.js", "app/Constants.js", "app/dispatcher/Dispatcher.js", "app/dispatcher/EventDispatcher.js", "app/Alert.js", "app/Csrf.js", "app/Loader.js", "app/types/AuditTypes.js", "app/utils/MiscUtils.js", "app/stores/AuditsStore.js", "app/actions/LogActions.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
         GLOBAL = global;
     Object.defineProperty(exports, "__esModule", { value: true });
     const SuperAgent = $__require("npm:superagent@3.8.3.js");
+    const Constants = $__require("app/Constants.js");
     const Dispatcher_1 = $__require("app/dispatcher/Dispatcher.js");
     const EventDispatcher_1 = $__require("app/dispatcher/EventDispatcher.js");
     const Alert = $__require("app/Alert.js");
@@ -20644,6 +20642,7 @@ System.registerDynamic("app/actions/AuditActions.js", ["npm:superagent@3.8.3.js"
     const AuditTypes = $__require("app/types/AuditTypes.js");
     const MiscUtils = $__require("app/utils/MiscUtils.js");
     const AuditsStore_1 = $__require("app/stores/AuditsStore.js");
+    const LogActions_1 = $__require("app/actions/LogActions.js");
     let syncId;
     function load(userId) {
         if (!userId) {
@@ -20702,7 +20701,9 @@ System.registerDynamic("app/actions/AuditActions.js", ["npm:superagent@3.8.3.js"
     EventDispatcher_1.default.register(action => {
         switch (action.type) {
             case AuditTypes.CHANGE:
-                reload();
+                if (!Constants.user) {
+                    LogActions_1.sync();
+                }
                 break;
         }
     });
@@ -20830,7 +20831,7 @@ System.registerDynamic("app/stores/NodesStore.js", ["app/dispatcher/Dispatcher.j
     exports.default = new NodesStore();
     
 });
-System.registerDynamic("app/actions/NodeActions.js", ["npm:superagent@3.8.3.js", "app/dispatcher/Dispatcher.js", "app/dispatcher/EventDispatcher.js", "app/Alert.js", "app/Csrf.js", "app/Loader.js", "app/types/NodeTypes.js", "app/stores/NodesStore.js", "app/utils/MiscUtils.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/actions/NodeActions.js", ["npm:superagent@3.8.3.js", "app/dispatcher/Dispatcher.js", "app/dispatcher/EventDispatcher.js", "app/Alert.js", "app/Csrf.js", "app/Loader.js", "app/types/NodeTypes.js", "app/stores/NodesStore.js", "app/stores/OrganizationsStore.js", "app/utils/MiscUtils.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -20844,6 +20845,7 @@ System.registerDynamic("app/actions/NodeActions.js", ["npm:superagent@3.8.3.js",
     const Loader_1 = $__require("app/Loader.js");
     const NodeTypes = $__require("app/types/NodeTypes.js");
     const NodesStore_1 = $__require("app/stores/NodesStore.js");
+    const OrganizationsStore_1 = $__require("app/stores/OrganizationsStore.js");
     const MiscUtils = $__require("app/utils/MiscUtils.js");
     let syncId;
     let syncZonesId;
@@ -20852,7 +20854,7 @@ System.registerDynamic("app/actions/NodeActions.js", ["npm:superagent@3.8.3.js",
         syncId = curSyncId;
         let loader = new Loader_1.default().loading();
         return new Promise((resolve, reject) => {
-            SuperAgent.get('/node').query(Object.assign({}, NodesStore_1.default.filter, { page: NodesStore_1.default.page, page_count: NodesStore_1.default.pageCount })).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
+            SuperAgent.get('/node').query(Object.assign({}, NodesStore_1.default.filter, { page: NodesStore_1.default.page, page_count: NodesStore_1.default.pageCount })).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).set('Organization', OrganizationsStore_1.default.current).end((err, res) => {
                 loader.done();
                 if (res && res.status === 401) {
                     window.location.href = '/login';
@@ -20897,7 +20899,7 @@ System.registerDynamic("app/actions/NodeActions.js", ["npm:superagent@3.8.3.js",
             SuperAgent.get('/node').query({
                 names: true,
                 zone: zone
-            }).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
+            }).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).set('Organization', OrganizationsStore_1.default.current).end((err, res) => {
                 loader.done();
                 if (res && res.status === 401) {
                     window.location.href = '/login';
@@ -20947,7 +20949,7 @@ System.registerDynamic("app/actions/NodeActions.js", ["npm:superagent@3.8.3.js",
     function commit(node) {
         let loader = new Loader_1.default().loading();
         return new Promise((resolve, reject) => {
-            SuperAgent.put('/node/' + node.id).send(node).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
+            SuperAgent.put('/node/' + node.id).send(node).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).set('Organization', OrganizationsStore_1.default.current).end((err, res) => {
                 loader.done();
                 if (res && res.status === 401) {
                     window.location.href = '/login';
@@ -20967,7 +20969,7 @@ System.registerDynamic("app/actions/NodeActions.js", ["npm:superagent@3.8.3.js",
     function create(node) {
         let loader = new Loader_1.default().loading();
         return new Promise((resolve, reject) => {
-            SuperAgent.post('/node').send(node).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
+            SuperAgent.post('/node').send(node).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).set('Organization', OrganizationsStore_1.default.current).end((err, res) => {
                 loader.done();
                 if (res && res.status === 401) {
                     window.location.href = '/login';
@@ -20987,7 +20989,7 @@ System.registerDynamic("app/actions/NodeActions.js", ["npm:superagent@3.8.3.js",
     function remove(nodeId) {
         let loader = new Loader_1.default().loading();
         return new Promise((resolve, reject) => {
-            SuperAgent.delete('/node/' + nodeId).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
+            SuperAgent.delete('/node/' + nodeId).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).set('Organization', OrganizationsStore_1.default.current).end((err, res) => {
                 loader.done();
                 if (res && res.status === 401) {
                     window.location.href = '/login';
@@ -21023,7 +21025,7 @@ System.registerDynamic("app/types/PolicyTypes.js", [], true, function ($__requir
   exports.CHANGE = 'policy.change';
   
 });
-System.registerDynamic("app/actions/PolicyActions.js", ["npm:superagent@3.8.3.js", "app/dispatcher/Dispatcher.js", "app/dispatcher/EventDispatcher.js", "app/Alert.js", "app/Csrf.js", "app/Loader.js", "app/types/PolicyTypes.js", "app/utils/MiscUtils.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/actions/PolicyActions.js", ["npm:superagent@3.8.3.js", "app/dispatcher/Dispatcher.js", "app/dispatcher/EventDispatcher.js", "app/Alert.js", "app/Csrf.js", "app/Loader.js", "app/types/PolicyTypes.js", "app/utils/MiscUtils.js", "app/Constants.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -21037,6 +21039,7 @@ System.registerDynamic("app/actions/PolicyActions.js", ["npm:superagent@3.8.3.js
     const Loader_1 = $__require("app/Loader.js");
     const PolicyTypes = $__require("app/types/PolicyTypes.js");
     const MiscUtils = $__require("app/utils/MiscUtils.js");
+    const Constants = $__require("app/Constants.js");
     let syncId;
     function sync() {
         let curSyncId = MiscUtils.uuid();
@@ -21133,7 +21136,9 @@ System.registerDynamic("app/actions/PolicyActions.js", ["npm:superagent@3.8.3.js
     EventDispatcher_1.default.register(action => {
         switch (action.type) {
             case PolicyTypes.CHANGE:
-                sync();
+                if (!Constants.user) {
+                    sync();
+                }
                 break;
         }
     });
@@ -21149,7 +21154,7 @@ System.registerDynamic("app/types/CertificateTypes.js", [], true, function ($__r
   exports.CHANGE = 'certificate.change';
   
 });
-System.registerDynamic("app/actions/CertificateActions.js", ["npm:superagent@3.8.3.js", "app/dispatcher/Dispatcher.js", "app/dispatcher/EventDispatcher.js", "app/Alert.js", "app/Csrf.js", "app/Loader.js", "app/types/CertificateTypes.js", "app/utils/MiscUtils.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/actions/CertificateActions.js", ["npm:superagent@3.8.3.js", "app/dispatcher/Dispatcher.js", "app/dispatcher/EventDispatcher.js", "app/Alert.js", "app/Csrf.js", "app/Loader.js", "app/types/CertificateTypes.js", "app/utils/MiscUtils.js", "app/Constants.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -21163,6 +21168,7 @@ System.registerDynamic("app/actions/CertificateActions.js", ["npm:superagent@3.8
     const Loader_1 = $__require("app/Loader.js");
     const CertificateTypes = $__require("app/types/CertificateTypes.js");
     const MiscUtils = $__require("app/utils/MiscUtils.js");
+    const Constants = $__require("app/Constants.js");
     let syncId;
     function sync() {
         let curSyncId = MiscUtils.uuid();
@@ -21259,7 +21265,9 @@ System.registerDynamic("app/actions/CertificateActions.js", ["npm:superagent@3.8
     EventDispatcher_1.default.register(action => {
         switch (action.type) {
             case CertificateTypes.CHANGE:
-                sync();
+                if (!Constants.user) {
+                    sync();
+                }
                 break;
         }
     });
@@ -21534,7 +21542,7 @@ System.registerDynamic("app/types/ZoneTypes.js", [], true, function ($__require,
   exports.CHANGE = 'zone.change';
   
 });
-System.registerDynamic("app/actions/ZoneActions.js", ["npm:superagent@3.8.3.js", "app/dispatcher/Dispatcher.js", "app/dispatcher/EventDispatcher.js", "app/Alert.js", "app/Csrf.js", "app/Loader.js", "app/types/ZoneTypes.js", "app/utils/MiscUtils.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/actions/ZoneActions.js", ["npm:superagent@3.8.3.js", "app/dispatcher/Dispatcher.js", "app/dispatcher/EventDispatcher.js", "app/Alert.js", "app/Csrf.js", "app/Loader.js", "app/types/ZoneTypes.js", "app/stores/OrganizationsStore.js", "app/utils/MiscUtils.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -21547,6 +21555,7 @@ System.registerDynamic("app/actions/ZoneActions.js", ["npm:superagent@3.8.3.js",
     const Csrf = $__require("app/Csrf.js");
     const Loader_1 = $__require("app/Loader.js");
     const ZoneTypes = $__require("app/types/ZoneTypes.js");
+    const OrganizationsStore_1 = $__require("app/stores/OrganizationsStore.js");
     const MiscUtils = $__require("app/utils/MiscUtils.js");
     let syncId;
     function sync() {
@@ -21554,7 +21563,7 @@ System.registerDynamic("app/actions/ZoneActions.js", ["npm:superagent@3.8.3.js",
         syncId = curSyncId;
         let loader = new Loader_1.default().loading();
         return new Promise((resolve, reject) => {
-            SuperAgent.get('/zone').set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
+            SuperAgent.get('/zone').set('Accept', 'application/json').set('Csrf-Token', Csrf.token).set('Organization', OrganizationsStore_1.default.current).end((err, res) => {
                 loader.done();
                 if (res && res.status === 401) {
                     window.location.href = '/login';
@@ -21584,7 +21593,7 @@ System.registerDynamic("app/actions/ZoneActions.js", ["npm:superagent@3.8.3.js",
     function commit(zone) {
         let loader = new Loader_1.default().loading();
         return new Promise((resolve, reject) => {
-            SuperAgent.put('/zone/' + zone.id).send(zone).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
+            SuperAgent.put('/zone/' + zone.id).send(zone).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).set('Organization', OrganizationsStore_1.default.current).end((err, res) => {
                 loader.done();
                 if (res && res.status === 401) {
                     window.location.href = '/login';
@@ -21604,7 +21613,7 @@ System.registerDynamic("app/actions/ZoneActions.js", ["npm:superagent@3.8.3.js",
     function create(zone) {
         let loader = new Loader_1.default().loading();
         return new Promise((resolve, reject) => {
-            SuperAgent.post('/zone').send(zone).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
+            SuperAgent.post('/zone').send(zone).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).set('Organization', OrganizationsStore_1.default.current).end((err, res) => {
                 loader.done();
                 if (res && res.status === 401) {
                     window.location.href = '/login';
@@ -21624,7 +21633,7 @@ System.registerDynamic("app/actions/ZoneActions.js", ["npm:superagent@3.8.3.js",
     function remove(zoneId) {
         let loader = new Loader_1.default().loading();
         return new Promise((resolve, reject) => {
-            SuperAgent.delete('/zone/' + zoneId).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
+            SuperAgent.delete('/zone/' + zoneId).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).set('Organization', OrganizationsStore_1.default.current).end((err, res) => {
                 loader.done();
                 if (res && res.status === 401) {
                     window.location.href = '/login';
@@ -21981,7 +21990,7 @@ System.registerDynamic("app/types/StorageTypes.js", [], true, function ($__requi
   exports.CHANGE = 'storage.change';
   
 });
-System.registerDynamic("app/actions/StorageActions.js", ["npm:superagent@3.8.3.js", "app/dispatcher/Dispatcher.js", "app/dispatcher/EventDispatcher.js", "app/Alert.js", "app/Csrf.js", "app/Loader.js", "app/types/StorageTypes.js", "app/utils/MiscUtils.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/actions/StorageActions.js", ["npm:superagent@3.8.3.js", "app/dispatcher/Dispatcher.js", "app/dispatcher/EventDispatcher.js", "app/Alert.js", "app/Csrf.js", "app/Loader.js", "app/types/StorageTypes.js", "app/utils/MiscUtils.js", "app/Constants.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -21995,6 +22004,7 @@ System.registerDynamic("app/actions/StorageActions.js", ["npm:superagent@3.8.3.j
     const Loader_1 = $__require("app/Loader.js");
     const StorageTypes = $__require("app/types/StorageTypes.js");
     const MiscUtils = $__require("app/utils/MiscUtils.js");
+    const Constants = $__require("app/Constants.js");
     let syncId;
     function sync() {
         let curSyncId = MiscUtils.uuid();
@@ -22091,7 +22101,9 @@ System.registerDynamic("app/actions/StorageActions.js", ["npm:superagent@3.8.3.j
     EventDispatcher_1.default.register(action => {
         switch (action.type) {
             case StorageTypes.CHANGE:
-                sync();
+                if (!Constants.user) {
+                    sync();
+                }
                 break;
         }
     });
@@ -23526,6 +23538,1346 @@ System.registerDynamic("app/stores/AuthoritiesStore.js", ["app/dispatcher/Dispat
     exports.default = new AuthoritiesStore();
     
 });
+System.registerDynamic("app/types/OrganizationTypes.js", [], true, function ($__require, exports, module) {
+  "use strict";
+
+  var global = this || self,
+      GLOBAL = global;
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.SYNC = 'organization.sync';
+  exports.CHANGE = 'organization.change';
+  exports.CURRENT = 'organization.current';
+  
+});
+System.registerDynamic("app/stores/OrganizationsStore.js", ["app/dispatcher/Dispatcher.js", "app/EventEmitter.js", "app/Constants.js", "app/types/OrganizationTypes.js", "app/types/GlobalTypes.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const Dispatcher_1 = $__require("app/dispatcher/Dispatcher.js");
+    const EventEmitter_1 = $__require("app/EventEmitter.js");
+    const Constants = $__require("app/Constants.js");
+    const OrganizationTypes = $__require("app/types/OrganizationTypes.js");
+    const GlobalTypes = $__require("app/types/GlobalTypes.js");
+    class OrganizationsStore extends EventEmitter_1.default {
+        constructor() {
+            super(...arguments);
+            this._organizations = Object.freeze([]);
+            this._map = {};
+            this._token = Dispatcher_1.default.register(this._callback.bind(this));
+        }
+        _reset(current) {
+            this._current = current;
+            this.emitChange();
+        }
+        get current() {
+            return this._current;
+        }
+        get organizations() {
+            return this._organizations;
+        }
+        get organizationsM() {
+            let organizations = [];
+            this._organizations.forEach(organization => {
+                organizations.push(Object.assign({}, organization));
+            });
+            return organizations;
+        }
+        organization(id) {
+            let i = this._map[id];
+            if (i === undefined) {
+                return null;
+            }
+            return this._organizations[i];
+        }
+        emitChange() {
+            this.emitDefer(GlobalTypes.CHANGE);
+        }
+        addChangeListener(callback) {
+            this.on(GlobalTypes.CHANGE, callback);
+        }
+        removeChangeListener(callback) {
+            this.removeListener(GlobalTypes.CHANGE, callback);
+        }
+        _sync(organizations) {
+            if (Constants.user && !this._current) {
+                if (organizations.length) {
+                    this._current = organizations[0].id;
+                } else {
+                    this._current = null;
+                }
+            }
+            this._map = {};
+            for (let i = 0; i < organizations.length; i++) {
+                organizations[i] = Object.freeze(organizations[i]);
+                this._map[organizations[i].id] = i;
+            }
+            this._organizations = Object.freeze(organizations);
+            this.emitChange();
+        }
+        _callback(action) {
+            switch (action.type) {
+                case GlobalTypes.RESET:
+                    this._reset(action.data.current);
+                    break;
+                case GlobalTypes.RELOAD:
+                    window.location.hash = '#/reload';
+                    break;
+                case OrganizationTypes.SYNC:
+                    this._sync(action.data.organizations);
+                    break;
+            }
+        }
+    }
+    exports.default = new OrganizationsStore();
+    
+});
+System.registerDynamic("app/actions/AuthorityActions.js", ["npm:superagent@3.8.3.js", "app/dispatcher/Dispatcher.js", "app/dispatcher/EventDispatcher.js", "app/Alert.js", "app/Csrf.js", "app/Loader.js", "app/types/AuthorityTypes.js", "app/stores/AuthoritiesStore.js", "app/stores/OrganizationsStore.js", "app/utils/MiscUtils.js", "app/Constants.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const SuperAgent = $__require("npm:superagent@3.8.3.js");
+    const Dispatcher_1 = $__require("app/dispatcher/Dispatcher.js");
+    const EventDispatcher_1 = $__require("app/dispatcher/EventDispatcher.js");
+    const Alert = $__require("app/Alert.js");
+    const Csrf = $__require("app/Csrf.js");
+    const Loader_1 = $__require("app/Loader.js");
+    const AuthorityTypes = $__require("app/types/AuthorityTypes.js");
+    const AuthoritiesStore_1 = $__require("app/stores/AuthoritiesStore.js");
+    const OrganizationsStore_1 = $__require("app/stores/OrganizationsStore.js");
+    const MiscUtils = $__require("app/utils/MiscUtils.js");
+    const Constants = $__require("app/Constants.js");
+    let syncId;
+    function sync(noLoading) {
+        let curSyncId = MiscUtils.uuid();
+        syncId = curSyncId;
+        let loader;
+        if (!noLoading) {
+            loader = new Loader_1.default().loading();
+        }
+        return new Promise((resolve, reject) => {
+            SuperAgent.get('/authority').query(Object.assign({}, AuthoritiesStore_1.default.filter, { page: AuthoritiesStore_1.default.page, page_count: AuthoritiesStore_1.default.pageCount })).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).set('Organization', OrganizationsStore_1.default.current).end((err, res) => {
+                if (loader) {
+                    loader.done();
+                }
+                if (res && res.status === 401) {
+                    window.location.href = '/login';
+                    resolve();
+                    return;
+                }
+                if (curSyncId !== syncId) {
+                    resolve();
+                    return;
+                }
+                if (err) {
+                    Alert.errorRes(res, 'Failed to load authorities');
+                    reject(err);
+                    return;
+                }
+                Dispatcher_1.default.dispatch({
+                    type: AuthorityTypes.SYNC,
+                    data: {
+                        authorities: res.body.authorities,
+                        count: res.body.count
+                    }
+                });
+                resolve();
+            });
+        });
+    }
+    exports.sync = sync;
+    function traverse(page) {
+        Dispatcher_1.default.dispatch({
+            type: AuthorityTypes.TRAVERSE,
+            data: {
+                page: page
+            }
+        });
+        return sync();
+    }
+    exports.traverse = traverse;
+    function filter(filt) {
+        Dispatcher_1.default.dispatch({
+            type: AuthorityTypes.FILTER,
+            data: {
+                filter: filt
+            }
+        });
+        return sync();
+    }
+    exports.filter = filter;
+    function commit(authority) {
+        let loader = new Loader_1.default().loading();
+        return new Promise((resolve, reject) => {
+            SuperAgent.put('/authority/' + authority.id).send(authority).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).set('Organization', OrganizationsStore_1.default.current).end((err, res) => {
+                loader.done();
+                if (res && res.status === 401) {
+                    window.location.href = '/login';
+                    resolve();
+                    return;
+                }
+                if (err) {
+                    Alert.errorRes(res, 'Failed to save authority');
+                    reject(err);
+                    return;
+                }
+                resolve();
+            });
+        });
+    }
+    exports.commit = commit;
+    function create(authority) {
+        let loader = new Loader_1.default().loading();
+        return new Promise((resolve, reject) => {
+            SuperAgent.post('/authority').send(authority).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).set('Organization', OrganizationsStore_1.default.current).end((err, res) => {
+                loader.done();
+                if (res && res.status === 401) {
+                    window.location.href = '/login';
+                    resolve();
+                    return;
+                }
+                if (err) {
+                    Alert.errorRes(res, 'Failed to create authority');
+                    reject(err);
+                    return;
+                }
+                resolve();
+            });
+        });
+    }
+    exports.create = create;
+    function remove(authorityId) {
+        let loader = new Loader_1.default().loading();
+        return new Promise((resolve, reject) => {
+            SuperAgent.delete('/authority/' + authorityId).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).set('Organization', OrganizationsStore_1.default.current).end((err, res) => {
+                loader.done();
+                if (res && res.status === 401) {
+                    window.location.href = '/login';
+                    resolve();
+                    return;
+                }
+                if (err) {
+                    Alert.errorRes(res, 'Failed to delete authority');
+                    reject(err);
+                    return;
+                }
+                resolve();
+            });
+        });
+    }
+    exports.remove = remove;
+    function removeMulti(authorityIds) {
+        let loader = new Loader_1.default().loading();
+        return new Promise((resolve, reject) => {
+            SuperAgent.delete('/authority').send(authorityIds).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).set('Organization', OrganizationsStore_1.default.current).end((err, res) => {
+                loader.done();
+                if (res && res.status === 401) {
+                    window.location.href = '/login';
+                    resolve();
+                    return;
+                }
+                if (err) {
+                    Alert.errorRes(res, 'Failed to delete authorities');
+                    reject(err);
+                    return;
+                }
+                resolve();
+            });
+        });
+    }
+    exports.removeMulti = removeMulti;
+    EventDispatcher_1.default.register(action => {
+        switch (action.type) {
+            case AuthorityTypes.CHANGE:
+                if (!Constants.user) {
+                    sync();
+                }
+                break;
+        }
+    });
+    
+});
+System.registerDynamic('npm:events@2.0.0/events.js', [], true, function ($__require, exports, module) {
+  var global = this || self,
+      GLOBAL = global;
+  // Copyright Joyent, Inc. and other Node contributors.
+  //
+  // Permission is hereby granted, free of charge, to any person obtaining a
+  // copy of this software and associated documentation files (the
+  // "Software"), to deal in the Software without restriction, including
+  // without limitation the rights to use, copy, modify, merge, publish,
+  // distribute, sublicense, and/or sell copies of the Software, and to permit
+  // persons to whom the Software is furnished to do so, subject to the
+  // following conditions:
+  //
+  // The above copyright notice and this permission notice shall be included
+  // in all copies or substantial portions of the Software.
+  //
+  // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+  // OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+  // NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+  // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+  // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+  // USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+  var objectCreate = Object.create || objectCreatePolyfill;
+  var objectKeys = Object.keys || objectKeysPolyfill;
+  var bind = Function.prototype.bind || functionBindPolyfill;
+
+  function EventEmitter() {
+    if (!this._events || !Object.prototype.hasOwnProperty.call(this, '_events')) {
+      this._events = objectCreate(null);
+      this._eventsCount = 0;
+    }
+
+    this._maxListeners = this._maxListeners || undefined;
+  }
+  module.exports = EventEmitter;
+
+  // Backwards-compat with node 0.10.x
+  EventEmitter.EventEmitter = EventEmitter;
+
+  EventEmitter.prototype._events = undefined;
+  EventEmitter.prototype._maxListeners = undefined;
+
+  // By default EventEmitters will print a warning if more than 10 listeners are
+  // added to it. This is a useful default which helps finding memory leaks.
+  var defaultMaxListeners = 10;
+
+  var hasDefineProperty;
+  try {
+    var o = {};
+    if (Object.defineProperty) Object.defineProperty(o, 'x', { value: 0 });
+    hasDefineProperty = o.x === 0;
+  } catch (err) {
+    hasDefineProperty = false;
+  }
+  if (hasDefineProperty) {
+    Object.defineProperty(EventEmitter, 'defaultMaxListeners', {
+      enumerable: true,
+      get: function () {
+        return defaultMaxListeners;
+      },
+      set: function (arg) {
+        // check whether the input is a positive number (whose value is zero or
+        // greater and not a NaN).
+        if (typeof arg !== 'number' || arg < 0 || arg !== arg) throw new TypeError('"defaultMaxListeners" must be a positive number');
+        defaultMaxListeners = arg;
+      }
+    });
+  } else {
+    EventEmitter.defaultMaxListeners = defaultMaxListeners;
+  }
+
+  // Obviously not all Emitters should be limited to 10. This function allows
+  // that to be increased. Set to zero for unlimited.
+  EventEmitter.prototype.setMaxListeners = function setMaxListeners(n) {
+    if (typeof n !== 'number' || n < 0 || isNaN(n)) throw new TypeError('"n" argument must be a positive number');
+    this._maxListeners = n;
+    return this;
+  };
+
+  function $getMaxListeners(that) {
+    if (that._maxListeners === undefined) return EventEmitter.defaultMaxListeners;
+    return that._maxListeners;
+  }
+
+  EventEmitter.prototype.getMaxListeners = function getMaxListeners() {
+    return $getMaxListeners(this);
+  };
+
+  // These standalone emit* functions are used to optimize calling of event
+  // handlers for fast cases because emit() itself often has a variable number of
+  // arguments and can be deoptimized because of that. These functions always have
+  // the same number of arguments and thus do not get deoptimized, so the code
+  // inside them can execute faster.
+  function emitNone(handler, isFn, self) {
+    if (isFn) handler.call(self);else {
+      var len = handler.length;
+      var listeners = arrayClone(handler, len);
+      for (var i = 0; i < len; ++i) listeners[i].call(self);
+    }
+  }
+  function emitOne(handler, isFn, self, arg1) {
+    if (isFn) handler.call(self, arg1);else {
+      var len = handler.length;
+      var listeners = arrayClone(handler, len);
+      for (var i = 0; i < len; ++i) listeners[i].call(self, arg1);
+    }
+  }
+  function emitTwo(handler, isFn, self, arg1, arg2) {
+    if (isFn) handler.call(self, arg1, arg2);else {
+      var len = handler.length;
+      var listeners = arrayClone(handler, len);
+      for (var i = 0; i < len; ++i) listeners[i].call(self, arg1, arg2);
+    }
+  }
+  function emitThree(handler, isFn, self, arg1, arg2, arg3) {
+    if (isFn) handler.call(self, arg1, arg2, arg3);else {
+      var len = handler.length;
+      var listeners = arrayClone(handler, len);
+      for (var i = 0; i < len; ++i) listeners[i].call(self, arg1, arg2, arg3);
+    }
+  }
+
+  function emitMany(handler, isFn, self, args) {
+    if (isFn) handler.apply(self, args);else {
+      var len = handler.length;
+      var listeners = arrayClone(handler, len);
+      for (var i = 0; i < len; ++i) listeners[i].apply(self, args);
+    }
+  }
+
+  EventEmitter.prototype.emit = function emit(type) {
+    var er, handler, len, args, i, events;
+    var doError = type === 'error';
+
+    events = this._events;
+    if (events) doError = doError && events.error == null;else if (!doError) return false;
+
+    // If there is no 'error' event listener then throw.
+    if (doError) {
+      if (arguments.length > 1) er = arguments[1];
+      if (er instanceof Error) {
+        throw er; // Unhandled 'error' event
+      } else {
+        // At least give some kind of context to the user
+        var err = new Error('Unhandled "error" event. (' + er + ')');
+        err.context = er;
+        throw err;
+      }
+      return false;
+    }
+
+    handler = events[type];
+
+    if (!handler) return false;
+
+    var isFn = typeof handler === 'function';
+    len = arguments.length;
+    switch (len) {
+      // fast cases
+      case 1:
+        emitNone(handler, isFn, this);
+        break;
+      case 2:
+        emitOne(handler, isFn, this, arguments[1]);
+        break;
+      case 3:
+        emitTwo(handler, isFn, this, arguments[1], arguments[2]);
+        break;
+      case 4:
+        emitThree(handler, isFn, this, arguments[1], arguments[2], arguments[3]);
+        break;
+      // slower
+      default:
+        args = new Array(len - 1);
+        for (i = 1; i < len; i++) args[i - 1] = arguments[i];
+        emitMany(handler, isFn, this, args);
+    }
+
+    return true;
+  };
+
+  function _addListener(target, type, listener, prepend) {
+    var m;
+    var events;
+    var existing;
+
+    if (typeof listener !== 'function') throw new TypeError('"listener" argument must be a function');
+
+    events = target._events;
+    if (!events) {
+      events = target._events = objectCreate(null);
+      target._eventsCount = 0;
+    } else {
+      // To avoid recursion in the case that type === "newListener"! Before
+      // adding it to the listeners, first emit "newListener".
+      if (events.newListener) {
+        target.emit('newListener', type, listener.listener ? listener.listener : listener);
+
+        // Re-assign `events` because a newListener handler could have caused the
+        // this._events to be assigned to a new object
+        events = target._events;
+      }
+      existing = events[type];
+    }
+
+    if (!existing) {
+      // Optimize the case of one listener. Don't need the extra array object.
+      existing = events[type] = listener;
+      ++target._eventsCount;
+    } else {
+      if (typeof existing === 'function') {
+        // Adding the second element, need to change to array.
+        existing = events[type] = prepend ? [listener, existing] : [existing, listener];
+      } else {
+        // If we've already got an array, just append.
+        if (prepend) {
+          existing.unshift(listener);
+        } else {
+          existing.push(listener);
+        }
+      }
+
+      // Check for listener leak
+      if (!existing.warned) {
+        m = $getMaxListeners(target);
+        if (m && m > 0 && existing.length > m) {
+          existing.warned = true;
+          var w = new Error('Possible EventEmitter memory leak detected. ' + existing.length + ' "' + String(type) + '" listeners ' + 'added. Use emitter.setMaxListeners() to ' + 'increase limit.');
+          w.name = 'MaxListenersExceededWarning';
+          w.emitter = target;
+          w.type = type;
+          w.count = existing.length;
+          if (typeof console === 'object' && console.warn) {
+            console.warn('%s: %s', w.name, w.message);
+          }
+        }
+      }
+    }
+
+    return target;
+  }
+
+  EventEmitter.prototype.addListener = function addListener(type, listener) {
+    return _addListener(this, type, listener, false);
+  };
+
+  EventEmitter.prototype.on = EventEmitter.prototype.addListener;
+
+  EventEmitter.prototype.prependListener = function prependListener(type, listener) {
+    return _addListener(this, type, listener, true);
+  };
+
+  function onceWrapper() {
+    if (!this.fired) {
+      this.target.removeListener(this.type, this.wrapFn);
+      this.fired = true;
+      switch (arguments.length) {
+        case 0:
+          return this.listener.call(this.target);
+        case 1:
+          return this.listener.call(this.target, arguments[0]);
+        case 2:
+          return this.listener.call(this.target, arguments[0], arguments[1]);
+        case 3:
+          return this.listener.call(this.target, arguments[0], arguments[1], arguments[2]);
+        default:
+          var args = new Array(arguments.length);
+          for (var i = 0; i < args.length; ++i) args[i] = arguments[i];
+          this.listener.apply(this.target, args);
+      }
+    }
+  }
+
+  function _onceWrap(target, type, listener) {
+    var state = { fired: false, wrapFn: undefined, target: target, type: type, listener: listener };
+    var wrapped = bind.call(onceWrapper, state);
+    wrapped.listener = listener;
+    state.wrapFn = wrapped;
+    return wrapped;
+  }
+
+  EventEmitter.prototype.once = function once(type, listener) {
+    if (typeof listener !== 'function') throw new TypeError('"listener" argument must be a function');
+    this.on(type, _onceWrap(this, type, listener));
+    return this;
+  };
+
+  EventEmitter.prototype.prependOnceListener = function prependOnceListener(type, listener) {
+    if (typeof listener !== 'function') throw new TypeError('"listener" argument must be a function');
+    this.prependListener(type, _onceWrap(this, type, listener));
+    return this;
+  };
+
+  // Emits a 'removeListener' event if and only if the listener was removed.
+  EventEmitter.prototype.removeListener = function removeListener(type, listener) {
+    var list, events, position, i, originalListener;
+
+    if (typeof listener !== 'function') throw new TypeError('"listener" argument must be a function');
+
+    events = this._events;
+    if (!events) return this;
+
+    list = events[type];
+    if (!list) return this;
+
+    if (list === listener || list.listener === listener) {
+      if (--this._eventsCount === 0) this._events = objectCreate(null);else {
+        delete events[type];
+        if (events.removeListener) this.emit('removeListener', type, list.listener || listener);
+      }
+    } else if (typeof list !== 'function') {
+      position = -1;
+
+      for (i = list.length - 1; i >= 0; i--) {
+        if (list[i] === listener || list[i].listener === listener) {
+          originalListener = list[i].listener;
+          position = i;
+          break;
+        }
+      }
+
+      if (position < 0) return this;
+
+      if (position === 0) list.shift();else spliceOne(list, position);
+
+      if (list.length === 1) events[type] = list[0];
+
+      if (events.removeListener) this.emit('removeListener', type, originalListener || listener);
+    }
+
+    return this;
+  };
+
+  EventEmitter.prototype.removeAllListeners = function removeAllListeners(type) {
+    var listeners, events, i;
+
+    events = this._events;
+    if (!events) return this;
+
+    // not listening for removeListener, no need to emit
+    if (!events.removeListener) {
+      if (arguments.length === 0) {
+        this._events = objectCreate(null);
+        this._eventsCount = 0;
+      } else if (events[type]) {
+        if (--this._eventsCount === 0) this._events = objectCreate(null);else delete events[type];
+      }
+      return this;
+    }
+
+    // emit removeListener for all listeners on all events
+    if (arguments.length === 0) {
+      var keys = objectKeys(events);
+      var key;
+      for (i = 0; i < keys.length; ++i) {
+        key = keys[i];
+        if (key === 'removeListener') continue;
+        this.removeAllListeners(key);
+      }
+      this.removeAllListeners('removeListener');
+      this._events = objectCreate(null);
+      this._eventsCount = 0;
+      return this;
+    }
+
+    listeners = events[type];
+
+    if (typeof listeners === 'function') {
+      this.removeListener(type, listeners);
+    } else if (listeners) {
+      // LIFO order
+      for (i = listeners.length - 1; i >= 0; i--) {
+        this.removeListener(type, listeners[i]);
+      }
+    }
+
+    return this;
+  };
+
+  EventEmitter.prototype.listeners = function listeners(type) {
+    var evlistener;
+    var ret;
+    var events = this._events;
+
+    if (!events) ret = [];else {
+      evlistener = events[type];
+      if (!evlistener) ret = [];else if (typeof evlistener === 'function') ret = [evlistener.listener || evlistener];else ret = unwrapListeners(evlistener);
+    }
+
+    return ret;
+  };
+
+  EventEmitter.listenerCount = function (emitter, type) {
+    if (typeof emitter.listenerCount === 'function') {
+      return emitter.listenerCount(type);
+    } else {
+      return listenerCount.call(emitter, type);
+    }
+  };
+
+  EventEmitter.prototype.listenerCount = listenerCount;
+  function listenerCount(type) {
+    var events = this._events;
+
+    if (events) {
+      var evlistener = events[type];
+
+      if (typeof evlistener === 'function') {
+        return 1;
+      } else if (evlistener) {
+        return evlistener.length;
+      }
+    }
+
+    return 0;
+  }
+
+  EventEmitter.prototype.eventNames = function eventNames() {
+    return this._eventsCount > 0 ? Reflect.ownKeys(this._events) : [];
+  };
+
+  // About 1.5x faster than the two-arg version of Array#splice().
+  function spliceOne(list, index) {
+    for (var i = index, k = i + 1, n = list.length; k < n; i += 1, k += 1) list[i] = list[k];
+    list.pop();
+  }
+
+  function arrayClone(arr, n) {
+    var copy = new Array(n);
+    for (var i = 0; i < n; ++i) copy[i] = arr[i];
+    return copy;
+  }
+
+  function unwrapListeners(arr) {
+    var ret = new Array(arr.length);
+    for (var i = 0; i < ret.length; ++i) {
+      ret[i] = arr[i].listener || arr[i];
+    }
+    return ret;
+  }
+
+  function objectCreatePolyfill(proto) {
+    var F = function () {};
+    F.prototype = proto;
+    return new F();
+  }
+  function objectKeysPolyfill(obj) {
+    var keys = [];
+    for (var k in obj) if (Object.prototype.hasOwnProperty.call(obj, k)) {
+      keys.push(k);
+    }
+    return k;
+  }
+  function functionBindPolyfill(context) {
+    var fn = this;
+    return function () {
+      return fn.apply(context, arguments);
+    };
+  }
+});
+System.registerDynamic("npm:events@2.0.0.js", ["npm:events@2.0.0/events.js"], true, function ($__require, exports, module) {
+  var global = this || self,
+      GLOBAL = global;
+  module.exports = $__require("npm:events@2.0.0/events.js");
+});
+System.registerDynamic("app/EventEmitter.js", ["npm:events@2.0.0.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const Events = $__require("npm:events@2.0.0.js");
+    class EventEmitter extends Events.EventEmitter {
+        emitDefer(event, ...args) {
+            setTimeout(() => {
+                this.emit(event, ...args);
+            });
+        }
+    }
+    exports.default = EventEmitter;
+    
+});
+System.registerDynamic("app/types/LogTypes.js", [], true, function ($__require, exports, module) {
+  "use strict";
+
+  var global = this || self,
+      GLOBAL = global;
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.SYNC = 'log.sync';
+  exports.TRAVERSE = 'log.traverse';
+  exports.FILTER = 'log.filter';
+  exports.CHANGE = 'log.change';
+  
+});
+System.registerDynamic("app/types/GlobalTypes.js", [], true, function ($__require, exports, module) {
+  "use strict";
+
+  var global = this || self,
+      GLOBAL = global;
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.CHANGE = 'change';
+  exports.RESET = 'reset';
+  exports.RELOAD = 'reload';
+  
+});
+System.registerDynamic("app/stores/LogsStore.js", ["app/dispatcher/Dispatcher.js", "app/EventEmitter.js", "app/types/LogTypes.js", "app/types/GlobalTypes.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const Dispatcher_1 = $__require("app/dispatcher/Dispatcher.js");
+    const EventEmitter_1 = $__require("app/EventEmitter.js");
+    const LogTypes = $__require("app/types/LogTypes.js");
+    const GlobalTypes = $__require("app/types/GlobalTypes.js");
+    class LogsStore extends EventEmitter_1.default {
+        constructor() {
+            super(...arguments);
+            this._logs = Object.freeze([]);
+            this._filter = null;
+            this._token = Dispatcher_1.default.register(this._callback.bind(this));
+        }
+        _reset() {
+            this._logs = Object.freeze([]);
+            this._page = undefined;
+            this._pageCount = undefined;
+            this._filter = null;
+            this._count = undefined;
+            this.emitChange();
+        }
+        get logs() {
+            return this._logs;
+        }
+        get logsM() {
+            let logs = [];
+            this._logs.forEach(log => {
+                logs.push(Object.assign({}, log));
+            });
+            return logs;
+        }
+        get page() {
+            return this._page || 0;
+        }
+        get pageCount() {
+            return this._pageCount || 50;
+        }
+        get pages() {
+            return Math.ceil(this.count / this.pageCount);
+        }
+        get filter() {
+            return this._filter;
+        }
+        get count() {
+            return this._count || 0;
+        }
+        emitChange() {
+            this.emitDefer(GlobalTypes.CHANGE);
+        }
+        addChangeListener(callback) {
+            this.on(GlobalTypes.CHANGE, callback);
+        }
+        removeChangeListener(callback) {
+            this.removeListener(GlobalTypes.CHANGE, callback);
+        }
+        _traverse(page) {
+            this._page = Math.min(this.pages, page);
+        }
+        _filterCallback(filter) {
+            if (this._filter !== null && filter === null || this._filter === {} && filter !== null || filter && this._filter && filter.level !== this._filter.level) {
+                this._traverse(0);
+            }
+            this._filter = filter;
+            this.emitChange();
+        }
+        _sync(logs, count) {
+            for (let i = 0; i < logs.length; i++) {
+                logs[i] = Object.freeze(logs[i]);
+            }
+            this._count = count;
+            this._logs = Object.freeze(logs);
+            this._page = Math.min(this.pages, this.page);
+            this.emitChange();
+        }
+        _callback(action) {
+            switch (action.type) {
+                case GlobalTypes.RESET:
+                    this._reset();
+                    break;
+                case LogTypes.TRAVERSE:
+                    this._traverse(action.data.page);
+                    break;
+                case LogTypes.FILTER:
+                    this._filterCallback(action.data.filter);
+                    break;
+                case LogTypes.SYNC:
+                    this._sync(action.data.logs, action.data.count);
+                    break;
+            }
+        }
+    }
+    exports.default = new LogsStore();
+    
+});
+System.registerDynamic("app/actions/LogActions.js", ["npm:superagent@3.8.3.js", "app/Constants.js", "app/dispatcher/Dispatcher.js", "app/dispatcher/EventDispatcher.js", "app/Alert.js", "app/Csrf.js", "app/Loader.js", "app/types/LogTypes.js", "app/stores/LogsStore.js", "app/utils/MiscUtils.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const SuperAgent = $__require("npm:superagent@3.8.3.js");
+    const Constants = $__require("app/Constants.js");
+    const Dispatcher_1 = $__require("app/dispatcher/Dispatcher.js");
+    const EventDispatcher_1 = $__require("app/dispatcher/EventDispatcher.js");
+    const Alert = $__require("app/Alert.js");
+    const Csrf = $__require("app/Csrf.js");
+    const Loader_1 = $__require("app/Loader.js");
+    const LogTypes = $__require("app/types/LogTypes.js");
+    const LogsStore_1 = $__require("app/stores/LogsStore.js");
+    const MiscUtils = $__require("app/utils/MiscUtils.js");
+    let syncId;
+    function sync() {
+        let curSyncId = MiscUtils.uuid();
+        syncId = curSyncId;
+        let loader = new Loader_1.default().loading();
+        return new Promise((resolve, reject) => {
+            SuperAgent.get('/log').query(Object.assign({}, LogsStore_1.default.filter, { page: LogsStore_1.default.page, page_count: LogsStore_1.default.pageCount })).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
+                loader.done();
+                if (res && res.status === 401) {
+                    window.location.href = '/login';
+                    resolve();
+                    return;
+                }
+                if (curSyncId !== syncId) {
+                    resolve();
+                    return;
+                }
+                if (err) {
+                    Alert.errorRes(res, 'Failed to load logs');
+                    reject(err);
+                    return;
+                }
+                Dispatcher_1.default.dispatch({
+                    type: LogTypes.SYNC,
+                    data: {
+                        logs: res.body.logs,
+                        count: res.body.count
+                    }
+                });
+                resolve();
+            });
+        });
+    }
+    exports.sync = sync;
+    function traverse(page) {
+        Dispatcher_1.default.dispatch({
+            type: LogTypes.TRAVERSE,
+            data: {
+                page: page
+            }
+        });
+        return sync();
+    }
+    exports.traverse = traverse;
+    function filter(filt) {
+        Dispatcher_1.default.dispatch({
+            type: LogTypes.FILTER,
+            data: {
+                filter: filt
+            }
+        });
+        return sync();
+    }
+    exports.filter = filter;
+    EventDispatcher_1.default.register(action => {
+        switch (action.type) {
+            case LogTypes.CHANGE:
+                if (!Constants.user) {
+                    sync();
+                }
+                break;
+        }
+    });
+    
+});
+System.registerDynamic("app/types/SettingsTypes.js", [], true, function ($__require, exports, module) {
+  "use strict";
+
+  var global = this || self,
+      GLOBAL = global;
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.SYNC = 'settings.sync';
+  exports.CHANGE = 'settings.change';
+  
+});
+System.registerDynamic("app/actions/SettingsActions.js", ["npm:superagent@3.8.3.js", "app/dispatcher/Dispatcher.js", "app/dispatcher/EventDispatcher.js", "app/Alert.js", "app/Csrf.js", "app/Loader.js", "app/types/SettingsTypes.js", "app/utils/MiscUtils.js", "app/Constants.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const SuperAgent = $__require("npm:superagent@3.8.3.js");
+    const Dispatcher_1 = $__require("app/dispatcher/Dispatcher.js");
+    const EventDispatcher_1 = $__require("app/dispatcher/EventDispatcher.js");
+    const Alert = $__require("app/Alert.js");
+    const Csrf = $__require("app/Csrf.js");
+    const Loader_1 = $__require("app/Loader.js");
+    const SettingsTypes = $__require("app/types/SettingsTypes.js");
+    const MiscUtils = $__require("app/utils/MiscUtils.js");
+    const Constants = $__require("app/Constants.js");
+    let syncId;
+    function sync() {
+        let curSyncId = MiscUtils.uuid();
+        syncId = curSyncId;
+        let loader = new Loader_1.default().loading();
+        return new Promise((resolve, reject) => {
+            SuperAgent.get('/settings').set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
+                loader.done();
+                if (res && res.status === 401) {
+                    window.location.href = '/login';
+                    resolve();
+                    return;
+                }
+                if (curSyncId !== syncId) {
+                    resolve();
+                    return;
+                }
+                if (err) {
+                    Alert.errorRes(res, 'Failed to sync builds');
+                    reject(err);
+                    return;
+                }
+                Dispatcher_1.default.dispatch({
+                    type: SettingsTypes.SYNC,
+                    data: res.body
+                });
+                resolve();
+            });
+        });
+    }
+    exports.sync = sync;
+    function commit(settings) {
+        let loader = new Loader_1.default().loading();
+        return new Promise((resolve, reject) => {
+            SuperAgent.put('/settings').send(settings).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
+                loader.done();
+                if (res && res.status === 401) {
+                    window.location.href = '/login';
+                    resolve();
+                    return;
+                }
+                if (err) {
+                    Alert.errorRes(res, 'Failed to commit settings');
+                    reject(err);
+                    return;
+                }
+                Dispatcher_1.default.dispatch({
+                    type: SettingsTypes.SYNC,
+                    data: res.body
+                });
+                resolve();
+            });
+        });
+    }
+    exports.commit = commit;
+    EventDispatcher_1.default.register(action => {
+        switch (action.type) {
+            case SettingsTypes.CHANGE:
+                if (!Constants.user) {
+                    sync();
+                }
+                break;
+        }
+    });
+    
+});
+System.registerDynamic("app/dispatcher/Dispatcher.js", ["npm:flux@3.1.3.js"], true, function ($__require, exports, module) {
+  "use strict";
+
+  var global = this || self,
+      GLOBAL = global;
+  Object.defineProperty(exports, "__esModule", { value: true });
+  const Flux = $__require("npm:flux@3.1.3.js");
+  class Dispatcher extends Flux.Dispatcher {}
+  exports.default = new Dispatcher();
+  
+});
+System.registerDynamic("app/types/LoadingTypes.js", [], true, function ($__require, exports, module) {
+  "use strict";
+
+  var global = this || self,
+      GLOBAL = global;
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.ADD = 'loading.add';
+  exports.DONE = 'loading.done';
+  
+});
+System.registerDynamic("app/Loader.js", ["app/dispatcher/Dispatcher.js", "app/types/LoadingTypes.js", "app/utils/MiscUtils.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const Dispatcher_1 = $__require("app/dispatcher/Dispatcher.js");
+    const LoadingTypes = $__require("app/types/LoadingTypes.js");
+    const MiscUtils = $__require("app/utils/MiscUtils.js");
+    class Loader {
+        constructor() {
+            this._id = MiscUtils.uuid();
+        }
+        loading() {
+            Dispatcher_1.default.dispatch({
+                type: LoadingTypes.ADD,
+                data: {
+                    id: this._id
+                }
+            });
+            return this;
+        }
+        done() {
+            Dispatcher_1.default.dispatch({
+                type: LoadingTypes.DONE,
+                data: {
+                    id: this._id
+                }
+            });
+            return this;
+        }
+    }
+    exports.default = Loader;
+    
+});
+System.registerDynamic("app/types/SubscriptionTypes.js", [], true, function ($__require, exports, module) {
+  "use strict";
+
+  var global = this || self,
+      GLOBAL = global;
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.SYNC = 'subscription.sync';
+  exports.CHANGE = 'subscription.change';
+  
+});
+System.registerDynamic("app/utils/MiscUtils.js", [], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    function uuid() {
+        return (+new Date() + Math.floor(Math.random() * 999999)).toString(36);
+    }
+    exports.uuid = uuid;
+    function zeroPad(num, width) {
+        if (num < Math.pow(10, width)) {
+            return ('0'.repeat(width - 1) + num).slice(-width);
+        }
+        return num.toString();
+    }
+    exports.zeroPad = zeroPad;
+    function capitalize(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+    exports.capitalize = capitalize;
+    function formatAmount(amount) {
+        if (!amount) {
+            return '-';
+        }
+        return '$' + (amount / 100).toFixed(2);
+    }
+    exports.formatAmount = formatAmount;
+    function formatDate(dateStr) {
+        if (!dateStr || dateStr === '0001-01-01T00:00:00Z') {
+            return '';
+        }
+        let date = new Date(dateStr);
+        let str = '';
+        let hours = date.getHours();
+        let period = 'AM';
+        if (hours > 12) {
+            period = 'PM';
+            hours -= 12;
+        } else if (hours === 0) {
+            hours = 12;
+        }
+        let day;
+        switch (date.getDay()) {
+            case 0:
+                day = 'Sun';
+                break;
+            case 1:
+                day = 'Mon';
+                break;
+            case 2:
+                day = 'Tue';
+                break;
+            case 3:
+                day = 'Wed';
+                break;
+            case 4:
+                day = 'Thu';
+                break;
+            case 5:
+                day = 'Fri';
+                break;
+            case 6:
+                day = 'Sat';
+                break;
+        }
+        let month;
+        switch (date.getMonth()) {
+            case 0:
+                month = 'Jan';
+                break;
+            case 1:
+                month = 'Feb';
+                break;
+            case 2:
+                month = 'Mar';
+                break;
+            case 3:
+                month = 'Apr';
+                break;
+            case 4:
+                month = 'May';
+                break;
+            case 5:
+                month = 'Jun';
+                break;
+            case 6:
+                month = 'Jul';
+                break;
+            case 7:
+                month = 'Aug';
+                break;
+            case 8:
+                month = 'Sep';
+                break;
+            case 9:
+                month = 'Oct';
+                break;
+            case 10:
+                month = 'Nov';
+                break;
+            case 11:
+                month = 'Dec';
+                break;
+        }
+        str += day + ' ';
+        str += date.getDate() + ' ';
+        str += month + ' ';
+        str += date.getFullYear() + ', ';
+        str += hours + ':';
+        str += zeroPad(date.getMinutes(), 2) + ':';
+        str += zeroPad(date.getSeconds(), 2) + ' ';
+        str += period;
+        return str;
+    }
+    exports.formatDate = formatDate;
+    function formatDateShort(dateStr) {
+        if (!dateStr || dateStr === '0001-01-01T00:00:00Z') {
+            return '';
+        }
+        let date = new Date(dateStr);
+        let curDate = new Date();
+        let month;
+        switch (date.getMonth()) {
+            case 0:
+                month = 'Jan';
+                break;
+            case 1:
+                month = 'Feb';
+                break;
+            case 2:
+                month = 'Mar';
+                break;
+            case 3:
+                month = 'Apr';
+                break;
+            case 4:
+                month = 'May';
+                break;
+            case 5:
+                month = 'Jun';
+                break;
+            case 6:
+                month = 'Jul';
+                break;
+            case 7:
+                month = 'Aug';
+                break;
+            case 8:
+                month = 'Sep';
+                break;
+            case 9:
+                month = 'Oct';
+                break;
+            case 10:
+                month = 'Nov';
+                break;
+            case 11:
+                month = 'Dec';
+                break;
+        }
+        let str = month + ' ' + date.getDate();
+        if (date.getFullYear() !== curDate.getFullYear()) {
+            str += ' ' + date.getFullYear();
+        }
+        return str;
+    }
+    exports.formatDateShort = formatDateShort;
+    function formatDateShortTime(dateStr) {
+        if (!dateStr || dateStr === '0001-01-01T00:00:00Z') {
+            return '';
+        }
+        let date = new Date(dateStr);
+        let curDate = new Date();
+        let month;
+        switch (date.getMonth()) {
+            case 0:
+                month = 'Jan';
+                break;
+            case 1:
+                month = 'Feb';
+                break;
+            case 2:
+                month = 'Mar';
+                break;
+            case 3:
+                month = 'Apr';
+                break;
+            case 4:
+                month = 'May';
+                break;
+            case 5:
+                month = 'Jun';
+                break;
+            case 6:
+                month = 'Jul';
+                break;
+            case 7:
+                month = 'Aug';
+                break;
+            case 8:
+                month = 'Sep';
+                break;
+            case 9:
+                month = 'Oct';
+                break;
+            case 10:
+                month = 'Nov';
+                break;
+            case 11:
+                month = 'Dec';
+                break;
+        }
+        let str = month + ' ' + date.getDate();
+        if (date.getFullYear() !== curDate.getFullYear()) {
+            str += ' ' + date.getFullYear();
+        } else if (date.getMonth() === curDate.getMonth() && date.getDate() === curDate.getDate()) {
+            let hours = date.getHours();
+            let period = 'AM';
+            if (hours > 12) {
+                period = 'PM';
+                hours -= 12;
+            } else if (hours === 0) {
+                hours = 12;
+            }
+            str = hours + ':';
+            str += zeroPad(date.getMinutes(), 2) + ':';
+            str += zeroPad(date.getSeconds(), 2) + ' ';
+            str += period;
+        }
+        return str;
+    }
+    exports.formatDateShortTime = formatDateShortTime;
+    
+});
 System.registerDynamic("npm:mobile-detect@1.4.1/mobile-detect.js", [], true, function ($__require, exports, module) {
     /* */
     "format cjs";
@@ -24859,1338 +26211,7 @@ System.registerDynamic("app/Constants.js", ["npm:mobile-detect@1.4.1.js"], true,
     };
     
 });
-System.registerDynamic("app/types/OrganizationTypes.js", [], true, function ($__require, exports, module) {
-  "use strict";
-
-  var global = this || self,
-      GLOBAL = global;
-  Object.defineProperty(exports, "__esModule", { value: true });
-  exports.SYNC = 'organization.sync';
-  exports.CHANGE = 'organization.change';
-  exports.CURRENT = 'organization.current';
-  
-});
-System.registerDynamic("app/stores/OrganizationsStore.js", ["app/dispatcher/Dispatcher.js", "app/EventEmitter.js", "app/Constants.js", "app/types/OrganizationTypes.js", "app/types/GlobalTypes.js"], true, function ($__require, exports, module) {
-    "use strict";
-
-    var global = this || self,
-        GLOBAL = global;
-    Object.defineProperty(exports, "__esModule", { value: true });
-    const Dispatcher_1 = $__require("app/dispatcher/Dispatcher.js");
-    const EventEmitter_1 = $__require("app/EventEmitter.js");
-    const Constants = $__require("app/Constants.js");
-    const OrganizationTypes = $__require("app/types/OrganizationTypes.js");
-    const GlobalTypes = $__require("app/types/GlobalTypes.js");
-    class OrganizationsStore extends EventEmitter_1.default {
-        constructor() {
-            super(...arguments);
-            this._organizations = Object.freeze([]);
-            this._map = {};
-            this._token = Dispatcher_1.default.register(this._callback.bind(this));
-        }
-        _reset(current) {
-            this._current = current;
-            this.emitChange();
-        }
-        get current() {
-            return this._current;
-        }
-        get organizations() {
-            return this._organizations;
-        }
-        get organizationsM() {
-            let organizations = [];
-            this._organizations.forEach(organization => {
-                organizations.push(Object.assign({}, organization));
-            });
-            return organizations;
-        }
-        organization(id) {
-            let i = this._map[id];
-            if (i === undefined) {
-                return null;
-            }
-            return this._organizations[i];
-        }
-        emitChange() {
-            this.emitDefer(GlobalTypes.CHANGE);
-        }
-        addChangeListener(callback) {
-            this.on(GlobalTypes.CHANGE, callback);
-        }
-        removeChangeListener(callback) {
-            this.removeListener(GlobalTypes.CHANGE, callback);
-        }
-        _sync(organizations) {
-            if (Constants.user && !this._current) {
-                if (organizations.length) {
-                    this._current = organizations[0].id;
-                } else {
-                    this._current = null;
-                }
-            }
-            this._map = {};
-            for (let i = 0; i < organizations.length; i++) {
-                organizations[i] = Object.freeze(organizations[i]);
-                this._map[organizations[i].id] = i;
-            }
-            this._organizations = Object.freeze(organizations);
-            this.emitChange();
-        }
-        _callback(action) {
-            switch (action.type) {
-                case GlobalTypes.RESET:
-                    this._reset(action.data.current);
-                    break;
-                case GlobalTypes.RELOAD:
-                    window.location.hash = '#/reload';
-                    break;
-                case OrganizationTypes.SYNC:
-                    this._sync(action.data.organizations);
-                    break;
-            }
-        }
-    }
-    exports.default = new OrganizationsStore();
-    
-});
-System.registerDynamic("app/actions/AuthorityActions.js", ["npm:superagent@3.8.3.js", "app/dispatcher/Dispatcher.js", "app/dispatcher/EventDispatcher.js", "app/Alert.js", "app/Csrf.js", "app/Loader.js", "app/types/AuthorityTypes.js", "app/stores/AuthoritiesStore.js", "app/stores/OrganizationsStore.js", "app/utils/MiscUtils.js"], true, function ($__require, exports, module) {
-    "use strict";
-
-    var global = this || self,
-        GLOBAL = global;
-    Object.defineProperty(exports, "__esModule", { value: true });
-    const SuperAgent = $__require("npm:superagent@3.8.3.js");
-    const Dispatcher_1 = $__require("app/dispatcher/Dispatcher.js");
-    const EventDispatcher_1 = $__require("app/dispatcher/EventDispatcher.js");
-    const Alert = $__require("app/Alert.js");
-    const Csrf = $__require("app/Csrf.js");
-    const Loader_1 = $__require("app/Loader.js");
-    const AuthorityTypes = $__require("app/types/AuthorityTypes.js");
-    const AuthoritiesStore_1 = $__require("app/stores/AuthoritiesStore.js");
-    const OrganizationsStore_1 = $__require("app/stores/OrganizationsStore.js");
-    const MiscUtils = $__require("app/utils/MiscUtils.js");
-    let syncId;
-    function sync(noLoading) {
-        let curSyncId = MiscUtils.uuid();
-        syncId = curSyncId;
-        let loader;
-        if (!noLoading) {
-            loader = new Loader_1.default().loading();
-        }
-        return new Promise((resolve, reject) => {
-            SuperAgent.get('/authority').query(Object.assign({}, AuthoritiesStore_1.default.filter, { page: AuthoritiesStore_1.default.page, page_count: AuthoritiesStore_1.default.pageCount })).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).set('Organization', OrganizationsStore_1.default.current).end((err, res) => {
-                if (loader) {
-                    loader.done();
-                }
-                if (res && res.status === 401) {
-                    window.location.href = '/login';
-                    resolve();
-                    return;
-                }
-                if (curSyncId !== syncId) {
-                    resolve();
-                    return;
-                }
-                if (err) {
-                    Alert.errorRes(res, 'Failed to load authorities');
-                    reject(err);
-                    return;
-                }
-                Dispatcher_1.default.dispatch({
-                    type: AuthorityTypes.SYNC,
-                    data: {
-                        authorities: res.body.authorities,
-                        count: res.body.count
-                    }
-                });
-                resolve();
-            });
-        });
-    }
-    exports.sync = sync;
-    function traverse(page) {
-        Dispatcher_1.default.dispatch({
-            type: AuthorityTypes.TRAVERSE,
-            data: {
-                page: page
-            }
-        });
-        return sync();
-    }
-    exports.traverse = traverse;
-    function filter(filt) {
-        Dispatcher_1.default.dispatch({
-            type: AuthorityTypes.FILTER,
-            data: {
-                filter: filt
-            }
-        });
-        return sync();
-    }
-    exports.filter = filter;
-    function commit(authority) {
-        let loader = new Loader_1.default().loading();
-        return new Promise((resolve, reject) => {
-            SuperAgent.put('/authority/' + authority.id).send(authority).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).set('Organization', OrganizationsStore_1.default.current).end((err, res) => {
-                loader.done();
-                if (res && res.status === 401) {
-                    window.location.href = '/login';
-                    resolve();
-                    return;
-                }
-                if (err) {
-                    Alert.errorRes(res, 'Failed to save authority');
-                    reject(err);
-                    return;
-                }
-                resolve();
-            });
-        });
-    }
-    exports.commit = commit;
-    function create(authority) {
-        let loader = new Loader_1.default().loading();
-        return new Promise((resolve, reject) => {
-            SuperAgent.post('/authority').send(authority).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).set('Organization', OrganizationsStore_1.default.current).end((err, res) => {
-                loader.done();
-                if (res && res.status === 401) {
-                    window.location.href = '/login';
-                    resolve();
-                    return;
-                }
-                if (err) {
-                    Alert.errorRes(res, 'Failed to create authority');
-                    reject(err);
-                    return;
-                }
-                resolve();
-            });
-        });
-    }
-    exports.create = create;
-    function remove(authorityId) {
-        let loader = new Loader_1.default().loading();
-        return new Promise((resolve, reject) => {
-            SuperAgent.delete('/authority/' + authorityId).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).set('Organization', OrganizationsStore_1.default.current).end((err, res) => {
-                loader.done();
-                if (res && res.status === 401) {
-                    window.location.href = '/login';
-                    resolve();
-                    return;
-                }
-                if (err) {
-                    Alert.errorRes(res, 'Failed to delete authority');
-                    reject(err);
-                    return;
-                }
-                resolve();
-            });
-        });
-    }
-    exports.remove = remove;
-    function removeMulti(authorityIds) {
-        let loader = new Loader_1.default().loading();
-        return new Promise((resolve, reject) => {
-            SuperAgent.delete('/authority').send(authorityIds).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).set('Organization', OrganizationsStore_1.default.current).end((err, res) => {
-                loader.done();
-                if (res && res.status === 401) {
-                    window.location.href = '/login';
-                    resolve();
-                    return;
-                }
-                if (err) {
-                    Alert.errorRes(res, 'Failed to delete authorities');
-                    reject(err);
-                    return;
-                }
-                resolve();
-            });
-        });
-    }
-    exports.removeMulti = removeMulti;
-    EventDispatcher_1.default.register(action => {
-        switch (action.type) {
-            case AuthorityTypes.CHANGE:
-                sync();
-                break;
-        }
-    });
-    
-});
-System.registerDynamic('npm:events@2.0.0/events.js', [], true, function ($__require, exports, module) {
-  var global = this || self,
-      GLOBAL = global;
-  // Copyright Joyent, Inc. and other Node contributors.
-  //
-  // Permission is hereby granted, free of charge, to any person obtaining a
-  // copy of this software and associated documentation files (the
-  // "Software"), to deal in the Software without restriction, including
-  // without limitation the rights to use, copy, modify, merge, publish,
-  // distribute, sublicense, and/or sell copies of the Software, and to permit
-  // persons to whom the Software is furnished to do so, subject to the
-  // following conditions:
-  //
-  // The above copyright notice and this permission notice shall be included
-  // in all copies or substantial portions of the Software.
-  //
-  // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-  // OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-  // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-  // NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-  // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-  // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-  // USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-  var objectCreate = Object.create || objectCreatePolyfill;
-  var objectKeys = Object.keys || objectKeysPolyfill;
-  var bind = Function.prototype.bind || functionBindPolyfill;
-
-  function EventEmitter() {
-    if (!this._events || !Object.prototype.hasOwnProperty.call(this, '_events')) {
-      this._events = objectCreate(null);
-      this._eventsCount = 0;
-    }
-
-    this._maxListeners = this._maxListeners || undefined;
-  }
-  module.exports = EventEmitter;
-
-  // Backwards-compat with node 0.10.x
-  EventEmitter.EventEmitter = EventEmitter;
-
-  EventEmitter.prototype._events = undefined;
-  EventEmitter.prototype._maxListeners = undefined;
-
-  // By default EventEmitters will print a warning if more than 10 listeners are
-  // added to it. This is a useful default which helps finding memory leaks.
-  var defaultMaxListeners = 10;
-
-  var hasDefineProperty;
-  try {
-    var o = {};
-    if (Object.defineProperty) Object.defineProperty(o, 'x', { value: 0 });
-    hasDefineProperty = o.x === 0;
-  } catch (err) {
-    hasDefineProperty = false;
-  }
-  if (hasDefineProperty) {
-    Object.defineProperty(EventEmitter, 'defaultMaxListeners', {
-      enumerable: true,
-      get: function () {
-        return defaultMaxListeners;
-      },
-      set: function (arg) {
-        // check whether the input is a positive number (whose value is zero or
-        // greater and not a NaN).
-        if (typeof arg !== 'number' || arg < 0 || arg !== arg) throw new TypeError('"defaultMaxListeners" must be a positive number');
-        defaultMaxListeners = arg;
-      }
-    });
-  } else {
-    EventEmitter.defaultMaxListeners = defaultMaxListeners;
-  }
-
-  // Obviously not all Emitters should be limited to 10. This function allows
-  // that to be increased. Set to zero for unlimited.
-  EventEmitter.prototype.setMaxListeners = function setMaxListeners(n) {
-    if (typeof n !== 'number' || n < 0 || isNaN(n)) throw new TypeError('"n" argument must be a positive number');
-    this._maxListeners = n;
-    return this;
-  };
-
-  function $getMaxListeners(that) {
-    if (that._maxListeners === undefined) return EventEmitter.defaultMaxListeners;
-    return that._maxListeners;
-  }
-
-  EventEmitter.prototype.getMaxListeners = function getMaxListeners() {
-    return $getMaxListeners(this);
-  };
-
-  // These standalone emit* functions are used to optimize calling of event
-  // handlers for fast cases because emit() itself often has a variable number of
-  // arguments and can be deoptimized because of that. These functions always have
-  // the same number of arguments and thus do not get deoptimized, so the code
-  // inside them can execute faster.
-  function emitNone(handler, isFn, self) {
-    if (isFn) handler.call(self);else {
-      var len = handler.length;
-      var listeners = arrayClone(handler, len);
-      for (var i = 0; i < len; ++i) listeners[i].call(self);
-    }
-  }
-  function emitOne(handler, isFn, self, arg1) {
-    if (isFn) handler.call(self, arg1);else {
-      var len = handler.length;
-      var listeners = arrayClone(handler, len);
-      for (var i = 0; i < len; ++i) listeners[i].call(self, arg1);
-    }
-  }
-  function emitTwo(handler, isFn, self, arg1, arg2) {
-    if (isFn) handler.call(self, arg1, arg2);else {
-      var len = handler.length;
-      var listeners = arrayClone(handler, len);
-      for (var i = 0; i < len; ++i) listeners[i].call(self, arg1, arg2);
-    }
-  }
-  function emitThree(handler, isFn, self, arg1, arg2, arg3) {
-    if (isFn) handler.call(self, arg1, arg2, arg3);else {
-      var len = handler.length;
-      var listeners = arrayClone(handler, len);
-      for (var i = 0; i < len; ++i) listeners[i].call(self, arg1, arg2, arg3);
-    }
-  }
-
-  function emitMany(handler, isFn, self, args) {
-    if (isFn) handler.apply(self, args);else {
-      var len = handler.length;
-      var listeners = arrayClone(handler, len);
-      for (var i = 0; i < len; ++i) listeners[i].apply(self, args);
-    }
-  }
-
-  EventEmitter.prototype.emit = function emit(type) {
-    var er, handler, len, args, i, events;
-    var doError = type === 'error';
-
-    events = this._events;
-    if (events) doError = doError && events.error == null;else if (!doError) return false;
-
-    // If there is no 'error' event listener then throw.
-    if (doError) {
-      if (arguments.length > 1) er = arguments[1];
-      if (er instanceof Error) {
-        throw er; // Unhandled 'error' event
-      } else {
-        // At least give some kind of context to the user
-        var err = new Error('Unhandled "error" event. (' + er + ')');
-        err.context = er;
-        throw err;
-      }
-      return false;
-    }
-
-    handler = events[type];
-
-    if (!handler) return false;
-
-    var isFn = typeof handler === 'function';
-    len = arguments.length;
-    switch (len) {
-      // fast cases
-      case 1:
-        emitNone(handler, isFn, this);
-        break;
-      case 2:
-        emitOne(handler, isFn, this, arguments[1]);
-        break;
-      case 3:
-        emitTwo(handler, isFn, this, arguments[1], arguments[2]);
-        break;
-      case 4:
-        emitThree(handler, isFn, this, arguments[1], arguments[2], arguments[3]);
-        break;
-      // slower
-      default:
-        args = new Array(len - 1);
-        for (i = 1; i < len; i++) args[i - 1] = arguments[i];
-        emitMany(handler, isFn, this, args);
-    }
-
-    return true;
-  };
-
-  function _addListener(target, type, listener, prepend) {
-    var m;
-    var events;
-    var existing;
-
-    if (typeof listener !== 'function') throw new TypeError('"listener" argument must be a function');
-
-    events = target._events;
-    if (!events) {
-      events = target._events = objectCreate(null);
-      target._eventsCount = 0;
-    } else {
-      // To avoid recursion in the case that type === "newListener"! Before
-      // adding it to the listeners, first emit "newListener".
-      if (events.newListener) {
-        target.emit('newListener', type, listener.listener ? listener.listener : listener);
-
-        // Re-assign `events` because a newListener handler could have caused the
-        // this._events to be assigned to a new object
-        events = target._events;
-      }
-      existing = events[type];
-    }
-
-    if (!existing) {
-      // Optimize the case of one listener. Don't need the extra array object.
-      existing = events[type] = listener;
-      ++target._eventsCount;
-    } else {
-      if (typeof existing === 'function') {
-        // Adding the second element, need to change to array.
-        existing = events[type] = prepend ? [listener, existing] : [existing, listener];
-      } else {
-        // If we've already got an array, just append.
-        if (prepend) {
-          existing.unshift(listener);
-        } else {
-          existing.push(listener);
-        }
-      }
-
-      // Check for listener leak
-      if (!existing.warned) {
-        m = $getMaxListeners(target);
-        if (m && m > 0 && existing.length > m) {
-          existing.warned = true;
-          var w = new Error('Possible EventEmitter memory leak detected. ' + existing.length + ' "' + String(type) + '" listeners ' + 'added. Use emitter.setMaxListeners() to ' + 'increase limit.');
-          w.name = 'MaxListenersExceededWarning';
-          w.emitter = target;
-          w.type = type;
-          w.count = existing.length;
-          if (typeof console === 'object' && console.warn) {
-            console.warn('%s: %s', w.name, w.message);
-          }
-        }
-      }
-    }
-
-    return target;
-  }
-
-  EventEmitter.prototype.addListener = function addListener(type, listener) {
-    return _addListener(this, type, listener, false);
-  };
-
-  EventEmitter.prototype.on = EventEmitter.prototype.addListener;
-
-  EventEmitter.prototype.prependListener = function prependListener(type, listener) {
-    return _addListener(this, type, listener, true);
-  };
-
-  function onceWrapper() {
-    if (!this.fired) {
-      this.target.removeListener(this.type, this.wrapFn);
-      this.fired = true;
-      switch (arguments.length) {
-        case 0:
-          return this.listener.call(this.target);
-        case 1:
-          return this.listener.call(this.target, arguments[0]);
-        case 2:
-          return this.listener.call(this.target, arguments[0], arguments[1]);
-        case 3:
-          return this.listener.call(this.target, arguments[0], arguments[1], arguments[2]);
-        default:
-          var args = new Array(arguments.length);
-          for (var i = 0; i < args.length; ++i) args[i] = arguments[i];
-          this.listener.apply(this.target, args);
-      }
-    }
-  }
-
-  function _onceWrap(target, type, listener) {
-    var state = { fired: false, wrapFn: undefined, target: target, type: type, listener: listener };
-    var wrapped = bind.call(onceWrapper, state);
-    wrapped.listener = listener;
-    state.wrapFn = wrapped;
-    return wrapped;
-  }
-
-  EventEmitter.prototype.once = function once(type, listener) {
-    if (typeof listener !== 'function') throw new TypeError('"listener" argument must be a function');
-    this.on(type, _onceWrap(this, type, listener));
-    return this;
-  };
-
-  EventEmitter.prototype.prependOnceListener = function prependOnceListener(type, listener) {
-    if (typeof listener !== 'function') throw new TypeError('"listener" argument must be a function');
-    this.prependListener(type, _onceWrap(this, type, listener));
-    return this;
-  };
-
-  // Emits a 'removeListener' event if and only if the listener was removed.
-  EventEmitter.prototype.removeListener = function removeListener(type, listener) {
-    var list, events, position, i, originalListener;
-
-    if (typeof listener !== 'function') throw new TypeError('"listener" argument must be a function');
-
-    events = this._events;
-    if (!events) return this;
-
-    list = events[type];
-    if (!list) return this;
-
-    if (list === listener || list.listener === listener) {
-      if (--this._eventsCount === 0) this._events = objectCreate(null);else {
-        delete events[type];
-        if (events.removeListener) this.emit('removeListener', type, list.listener || listener);
-      }
-    } else if (typeof list !== 'function') {
-      position = -1;
-
-      for (i = list.length - 1; i >= 0; i--) {
-        if (list[i] === listener || list[i].listener === listener) {
-          originalListener = list[i].listener;
-          position = i;
-          break;
-        }
-      }
-
-      if (position < 0) return this;
-
-      if (position === 0) list.shift();else spliceOne(list, position);
-
-      if (list.length === 1) events[type] = list[0];
-
-      if (events.removeListener) this.emit('removeListener', type, originalListener || listener);
-    }
-
-    return this;
-  };
-
-  EventEmitter.prototype.removeAllListeners = function removeAllListeners(type) {
-    var listeners, events, i;
-
-    events = this._events;
-    if (!events) return this;
-
-    // not listening for removeListener, no need to emit
-    if (!events.removeListener) {
-      if (arguments.length === 0) {
-        this._events = objectCreate(null);
-        this._eventsCount = 0;
-      } else if (events[type]) {
-        if (--this._eventsCount === 0) this._events = objectCreate(null);else delete events[type];
-      }
-      return this;
-    }
-
-    // emit removeListener for all listeners on all events
-    if (arguments.length === 0) {
-      var keys = objectKeys(events);
-      var key;
-      for (i = 0; i < keys.length; ++i) {
-        key = keys[i];
-        if (key === 'removeListener') continue;
-        this.removeAllListeners(key);
-      }
-      this.removeAllListeners('removeListener');
-      this._events = objectCreate(null);
-      this._eventsCount = 0;
-      return this;
-    }
-
-    listeners = events[type];
-
-    if (typeof listeners === 'function') {
-      this.removeListener(type, listeners);
-    } else if (listeners) {
-      // LIFO order
-      for (i = listeners.length - 1; i >= 0; i--) {
-        this.removeListener(type, listeners[i]);
-      }
-    }
-
-    return this;
-  };
-
-  EventEmitter.prototype.listeners = function listeners(type) {
-    var evlistener;
-    var ret;
-    var events = this._events;
-
-    if (!events) ret = [];else {
-      evlistener = events[type];
-      if (!evlistener) ret = [];else if (typeof evlistener === 'function') ret = [evlistener.listener || evlistener];else ret = unwrapListeners(evlistener);
-    }
-
-    return ret;
-  };
-
-  EventEmitter.listenerCount = function (emitter, type) {
-    if (typeof emitter.listenerCount === 'function') {
-      return emitter.listenerCount(type);
-    } else {
-      return listenerCount.call(emitter, type);
-    }
-  };
-
-  EventEmitter.prototype.listenerCount = listenerCount;
-  function listenerCount(type) {
-    var events = this._events;
-
-    if (events) {
-      var evlistener = events[type];
-
-      if (typeof evlistener === 'function') {
-        return 1;
-      } else if (evlistener) {
-        return evlistener.length;
-      }
-    }
-
-    return 0;
-  }
-
-  EventEmitter.prototype.eventNames = function eventNames() {
-    return this._eventsCount > 0 ? Reflect.ownKeys(this._events) : [];
-  };
-
-  // About 1.5x faster than the two-arg version of Array#splice().
-  function spliceOne(list, index) {
-    for (var i = index, k = i + 1, n = list.length; k < n; i += 1, k += 1) list[i] = list[k];
-    list.pop();
-  }
-
-  function arrayClone(arr, n) {
-    var copy = new Array(n);
-    for (var i = 0; i < n; ++i) copy[i] = arr[i];
-    return copy;
-  }
-
-  function unwrapListeners(arr) {
-    var ret = new Array(arr.length);
-    for (var i = 0; i < ret.length; ++i) {
-      ret[i] = arr[i].listener || arr[i];
-    }
-    return ret;
-  }
-
-  function objectCreatePolyfill(proto) {
-    var F = function () {};
-    F.prototype = proto;
-    return new F();
-  }
-  function objectKeysPolyfill(obj) {
-    var keys = [];
-    for (var k in obj) if (Object.prototype.hasOwnProperty.call(obj, k)) {
-      keys.push(k);
-    }
-    return k;
-  }
-  function functionBindPolyfill(context) {
-    var fn = this;
-    return function () {
-      return fn.apply(context, arguments);
-    };
-  }
-});
-System.registerDynamic("npm:events@2.0.0.js", ["npm:events@2.0.0/events.js"], true, function ($__require, exports, module) {
-  var global = this || self,
-      GLOBAL = global;
-  module.exports = $__require("npm:events@2.0.0/events.js");
-});
-System.registerDynamic("app/EventEmitter.js", ["npm:events@2.0.0.js"], true, function ($__require, exports, module) {
-    "use strict";
-
-    var global = this || self,
-        GLOBAL = global;
-    Object.defineProperty(exports, "__esModule", { value: true });
-    const Events = $__require("npm:events@2.0.0.js");
-    class EventEmitter extends Events.EventEmitter {
-        emitDefer(event, ...args) {
-            setTimeout(() => {
-                this.emit(event, ...args);
-            });
-        }
-    }
-    exports.default = EventEmitter;
-    
-});
-System.registerDynamic("app/types/LogTypes.js", [], true, function ($__require, exports, module) {
-  "use strict";
-
-  var global = this || self,
-      GLOBAL = global;
-  Object.defineProperty(exports, "__esModule", { value: true });
-  exports.SYNC = 'log.sync';
-  exports.TRAVERSE = 'log.traverse';
-  exports.FILTER = 'log.filter';
-  exports.CHANGE = 'log.change';
-  
-});
-System.registerDynamic("app/types/GlobalTypes.js", [], true, function ($__require, exports, module) {
-  "use strict";
-
-  var global = this || self,
-      GLOBAL = global;
-  Object.defineProperty(exports, "__esModule", { value: true });
-  exports.CHANGE = 'change';
-  exports.RESET = 'reset';
-  exports.RELOAD = 'reload';
-  
-});
-System.registerDynamic("app/stores/LogsStore.js", ["app/dispatcher/Dispatcher.js", "app/EventEmitter.js", "app/types/LogTypes.js", "app/types/GlobalTypes.js"], true, function ($__require, exports, module) {
-    "use strict";
-
-    var global = this || self,
-        GLOBAL = global;
-    Object.defineProperty(exports, "__esModule", { value: true });
-    const Dispatcher_1 = $__require("app/dispatcher/Dispatcher.js");
-    const EventEmitter_1 = $__require("app/EventEmitter.js");
-    const LogTypes = $__require("app/types/LogTypes.js");
-    const GlobalTypes = $__require("app/types/GlobalTypes.js");
-    class LogsStore extends EventEmitter_1.default {
-        constructor() {
-            super(...arguments);
-            this._logs = Object.freeze([]);
-            this._filter = null;
-            this._token = Dispatcher_1.default.register(this._callback.bind(this));
-        }
-        _reset() {
-            this._logs = Object.freeze([]);
-            this._page = undefined;
-            this._pageCount = undefined;
-            this._filter = null;
-            this._count = undefined;
-            this.emitChange();
-        }
-        get logs() {
-            return this._logs;
-        }
-        get logsM() {
-            let logs = [];
-            this._logs.forEach(log => {
-                logs.push(Object.assign({}, log));
-            });
-            return logs;
-        }
-        get page() {
-            return this._page || 0;
-        }
-        get pageCount() {
-            return this._pageCount || 50;
-        }
-        get pages() {
-            return Math.ceil(this.count / this.pageCount);
-        }
-        get filter() {
-            return this._filter;
-        }
-        get count() {
-            return this._count || 0;
-        }
-        emitChange() {
-            this.emitDefer(GlobalTypes.CHANGE);
-        }
-        addChangeListener(callback) {
-            this.on(GlobalTypes.CHANGE, callback);
-        }
-        removeChangeListener(callback) {
-            this.removeListener(GlobalTypes.CHANGE, callback);
-        }
-        _traverse(page) {
-            this._page = Math.min(this.pages, page);
-        }
-        _filterCallback(filter) {
-            if (this._filter !== null && filter === null || this._filter === {} && filter !== null || filter && this._filter && filter.level !== this._filter.level) {
-                this._traverse(0);
-            }
-            this._filter = filter;
-            this.emitChange();
-        }
-        _sync(logs, count) {
-            for (let i = 0; i < logs.length; i++) {
-                logs[i] = Object.freeze(logs[i]);
-            }
-            this._count = count;
-            this._logs = Object.freeze(logs);
-            this._page = Math.min(this.pages, this.page);
-            this.emitChange();
-        }
-        _callback(action) {
-            switch (action.type) {
-                case GlobalTypes.RESET:
-                    this._reset();
-                    break;
-                case LogTypes.TRAVERSE:
-                    this._traverse(action.data.page);
-                    break;
-                case LogTypes.FILTER:
-                    this._filterCallback(action.data.filter);
-                    break;
-                case LogTypes.SYNC:
-                    this._sync(action.data.logs, action.data.count);
-                    break;
-            }
-        }
-    }
-    exports.default = new LogsStore();
-    
-});
-System.registerDynamic("app/actions/LogActions.js", ["npm:superagent@3.8.3.js", "app/dispatcher/Dispatcher.js", "app/dispatcher/EventDispatcher.js", "app/Alert.js", "app/Csrf.js", "app/Loader.js", "app/types/LogTypes.js", "app/stores/LogsStore.js", "app/utils/MiscUtils.js"], true, function ($__require, exports, module) {
-    "use strict";
-
-    var global = this || self,
-        GLOBAL = global;
-    Object.defineProperty(exports, "__esModule", { value: true });
-    const SuperAgent = $__require("npm:superagent@3.8.3.js");
-    const Dispatcher_1 = $__require("app/dispatcher/Dispatcher.js");
-    const EventDispatcher_1 = $__require("app/dispatcher/EventDispatcher.js");
-    const Alert = $__require("app/Alert.js");
-    const Csrf = $__require("app/Csrf.js");
-    const Loader_1 = $__require("app/Loader.js");
-    const LogTypes = $__require("app/types/LogTypes.js");
-    const LogsStore_1 = $__require("app/stores/LogsStore.js");
-    const MiscUtils = $__require("app/utils/MiscUtils.js");
-    let syncId;
-    function sync() {
-        let curSyncId = MiscUtils.uuid();
-        syncId = curSyncId;
-        let loader = new Loader_1.default().loading();
-        return new Promise((resolve, reject) => {
-            SuperAgent.get('/log').query(Object.assign({}, LogsStore_1.default.filter, { page: LogsStore_1.default.page, page_count: LogsStore_1.default.pageCount })).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
-                loader.done();
-                if (res && res.status === 401) {
-                    window.location.href = '/login';
-                    resolve();
-                    return;
-                }
-                if (curSyncId !== syncId) {
-                    resolve();
-                    return;
-                }
-                if (err) {
-                    Alert.errorRes(res, 'Failed to load logs');
-                    reject(err);
-                    return;
-                }
-                Dispatcher_1.default.dispatch({
-                    type: LogTypes.SYNC,
-                    data: {
-                        logs: res.body.logs,
-                        count: res.body.count
-                    }
-                });
-                resolve();
-            });
-        });
-    }
-    exports.sync = sync;
-    function traverse(page) {
-        Dispatcher_1.default.dispatch({
-            type: LogTypes.TRAVERSE,
-            data: {
-                page: page
-            }
-        });
-        return sync();
-    }
-    exports.traverse = traverse;
-    function filter(filt) {
-        Dispatcher_1.default.dispatch({
-            type: LogTypes.FILTER,
-            data: {
-                filter: filt
-            }
-        });
-        return sync();
-    }
-    exports.filter = filter;
-    EventDispatcher_1.default.register(action => {
-        switch (action.type) {
-            case LogTypes.CHANGE:
-                sync();
-                break;
-        }
-    });
-    
-});
-System.registerDynamic("app/types/SettingsTypes.js", [], true, function ($__require, exports, module) {
-  "use strict";
-
-  var global = this || self,
-      GLOBAL = global;
-  Object.defineProperty(exports, "__esModule", { value: true });
-  exports.SYNC = 'settings.sync';
-  exports.CHANGE = 'settings.change';
-  
-});
-System.registerDynamic("app/actions/SettingsActions.js", ["npm:superagent@3.8.3.js", "app/dispatcher/Dispatcher.js", "app/dispatcher/EventDispatcher.js", "app/Alert.js", "app/Csrf.js", "app/Loader.js", "app/types/SettingsTypes.js", "app/utils/MiscUtils.js"], true, function ($__require, exports, module) {
-    "use strict";
-
-    var global = this || self,
-        GLOBAL = global;
-    Object.defineProperty(exports, "__esModule", { value: true });
-    const SuperAgent = $__require("npm:superagent@3.8.3.js");
-    const Dispatcher_1 = $__require("app/dispatcher/Dispatcher.js");
-    const EventDispatcher_1 = $__require("app/dispatcher/EventDispatcher.js");
-    const Alert = $__require("app/Alert.js");
-    const Csrf = $__require("app/Csrf.js");
-    const Loader_1 = $__require("app/Loader.js");
-    const SettingsTypes = $__require("app/types/SettingsTypes.js");
-    const MiscUtils = $__require("app/utils/MiscUtils.js");
-    let syncId;
-    function sync() {
-        let curSyncId = MiscUtils.uuid();
-        syncId = curSyncId;
-        let loader = new Loader_1.default().loading();
-        return new Promise((resolve, reject) => {
-            SuperAgent.get('/settings').set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
-                loader.done();
-                if (res && res.status === 401) {
-                    window.location.href = '/login';
-                    resolve();
-                    return;
-                }
-                if (curSyncId !== syncId) {
-                    resolve();
-                    return;
-                }
-                if (err) {
-                    Alert.errorRes(res, 'Failed to sync builds');
-                    reject(err);
-                    return;
-                }
-                Dispatcher_1.default.dispatch({
-                    type: SettingsTypes.SYNC,
-                    data: res.body
-                });
-                resolve();
-            });
-        });
-    }
-    exports.sync = sync;
-    function commit(settings) {
-        let loader = new Loader_1.default().loading();
-        return new Promise((resolve, reject) => {
-            SuperAgent.put('/settings').send(settings).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
-                loader.done();
-                if (res && res.status === 401) {
-                    window.location.href = '/login';
-                    resolve();
-                    return;
-                }
-                if (err) {
-                    Alert.errorRes(res, 'Failed to commit settings');
-                    reject(err);
-                    return;
-                }
-                Dispatcher_1.default.dispatch({
-                    type: SettingsTypes.SYNC,
-                    data: res.body
-                });
-                resolve();
-            });
-        });
-    }
-    exports.commit = commit;
-    EventDispatcher_1.default.register(action => {
-        switch (action.type) {
-            case SettingsTypes.CHANGE:
-                sync();
-                break;
-        }
-    });
-    
-});
-System.registerDynamic("app/dispatcher/Dispatcher.js", ["npm:flux@3.1.3.js"], true, function ($__require, exports, module) {
-  "use strict";
-
-  var global = this || self,
-      GLOBAL = global;
-  Object.defineProperty(exports, "__esModule", { value: true });
-  const Flux = $__require("npm:flux@3.1.3.js");
-  class Dispatcher extends Flux.Dispatcher {}
-  exports.default = new Dispatcher();
-  
-});
-System.registerDynamic("app/types/LoadingTypes.js", [], true, function ($__require, exports, module) {
-  "use strict";
-
-  var global = this || self,
-      GLOBAL = global;
-  Object.defineProperty(exports, "__esModule", { value: true });
-  exports.ADD = 'loading.add';
-  exports.DONE = 'loading.done';
-  
-});
-System.registerDynamic("app/Loader.js", ["app/dispatcher/Dispatcher.js", "app/types/LoadingTypes.js", "app/utils/MiscUtils.js"], true, function ($__require, exports, module) {
-    "use strict";
-
-    var global = this || self,
-        GLOBAL = global;
-    Object.defineProperty(exports, "__esModule", { value: true });
-    const Dispatcher_1 = $__require("app/dispatcher/Dispatcher.js");
-    const LoadingTypes = $__require("app/types/LoadingTypes.js");
-    const MiscUtils = $__require("app/utils/MiscUtils.js");
-    class Loader {
-        constructor() {
-            this._id = MiscUtils.uuid();
-        }
-        loading() {
-            Dispatcher_1.default.dispatch({
-                type: LoadingTypes.ADD,
-                data: {
-                    id: this._id
-                }
-            });
-            return this;
-        }
-        done() {
-            Dispatcher_1.default.dispatch({
-                type: LoadingTypes.DONE,
-                data: {
-                    id: this._id
-                }
-            });
-            return this;
-        }
-    }
-    exports.default = Loader;
-    
-});
-System.registerDynamic("app/types/SubscriptionTypes.js", [], true, function ($__require, exports, module) {
-  "use strict";
-
-  var global = this || self,
-      GLOBAL = global;
-  Object.defineProperty(exports, "__esModule", { value: true });
-  exports.SYNC = 'subscription.sync';
-  exports.CHANGE = 'subscription.change';
-  
-});
-System.registerDynamic("app/utils/MiscUtils.js", [], true, function ($__require, exports, module) {
-    "use strict";
-
-    var global = this || self,
-        GLOBAL = global;
-    Object.defineProperty(exports, "__esModule", { value: true });
-    function uuid() {
-        return (+new Date() + Math.floor(Math.random() * 999999)).toString(36);
-    }
-    exports.uuid = uuid;
-    function zeroPad(num, width) {
-        if (num < Math.pow(10, width)) {
-            return ('0'.repeat(width - 1) + num).slice(-width);
-        }
-        return num.toString();
-    }
-    exports.zeroPad = zeroPad;
-    function capitalize(str) {
-        return str.charAt(0).toUpperCase() + str.slice(1);
-    }
-    exports.capitalize = capitalize;
-    function formatAmount(amount) {
-        if (!amount) {
-            return '-';
-        }
-        return '$' + (amount / 100).toFixed(2);
-    }
-    exports.formatAmount = formatAmount;
-    function formatDate(dateStr) {
-        if (!dateStr || dateStr === '0001-01-01T00:00:00Z') {
-            return '';
-        }
-        let date = new Date(dateStr);
-        let str = '';
-        let hours = date.getHours();
-        let period = 'AM';
-        if (hours > 12) {
-            period = 'PM';
-            hours -= 12;
-        } else if (hours === 0) {
-            hours = 12;
-        }
-        let day;
-        switch (date.getDay()) {
-            case 0:
-                day = 'Sun';
-                break;
-            case 1:
-                day = 'Mon';
-                break;
-            case 2:
-                day = 'Tue';
-                break;
-            case 3:
-                day = 'Wed';
-                break;
-            case 4:
-                day = 'Thu';
-                break;
-            case 5:
-                day = 'Fri';
-                break;
-            case 6:
-                day = 'Sat';
-                break;
-        }
-        let month;
-        switch (date.getMonth()) {
-            case 0:
-                month = 'Jan';
-                break;
-            case 1:
-                month = 'Feb';
-                break;
-            case 2:
-                month = 'Mar';
-                break;
-            case 3:
-                month = 'Apr';
-                break;
-            case 4:
-                month = 'May';
-                break;
-            case 5:
-                month = 'Jun';
-                break;
-            case 6:
-                month = 'Jul';
-                break;
-            case 7:
-                month = 'Aug';
-                break;
-            case 8:
-                month = 'Sep';
-                break;
-            case 9:
-                month = 'Oct';
-                break;
-            case 10:
-                month = 'Nov';
-                break;
-            case 11:
-                month = 'Dec';
-                break;
-        }
-        str += day + ' ';
-        str += date.getDate() + ' ';
-        str += month + ' ';
-        str += date.getFullYear() + ', ';
-        str += hours + ':';
-        str += zeroPad(date.getMinutes(), 2) + ':';
-        str += zeroPad(date.getSeconds(), 2) + ' ';
-        str += period;
-        return str;
-    }
-    exports.formatDate = formatDate;
-    function formatDateShort(dateStr) {
-        if (!dateStr || dateStr === '0001-01-01T00:00:00Z') {
-            return '';
-        }
-        let date = new Date(dateStr);
-        let curDate = new Date();
-        let month;
-        switch (date.getMonth()) {
-            case 0:
-                month = 'Jan';
-                break;
-            case 1:
-                month = 'Feb';
-                break;
-            case 2:
-                month = 'Mar';
-                break;
-            case 3:
-                month = 'Apr';
-                break;
-            case 4:
-                month = 'May';
-                break;
-            case 5:
-                month = 'Jun';
-                break;
-            case 6:
-                month = 'Jul';
-                break;
-            case 7:
-                month = 'Aug';
-                break;
-            case 8:
-                month = 'Sep';
-                break;
-            case 9:
-                month = 'Oct';
-                break;
-            case 10:
-                month = 'Nov';
-                break;
-            case 11:
-                month = 'Dec';
-                break;
-        }
-        let str = month + ' ' + date.getDate();
-        if (date.getFullYear() !== curDate.getFullYear()) {
-            str += ' ' + date.getFullYear();
-        }
-        return str;
-    }
-    exports.formatDateShort = formatDateShort;
-    function formatDateShortTime(dateStr) {
-        if (!dateStr || dateStr === '0001-01-01T00:00:00Z') {
-            return '';
-        }
-        let date = new Date(dateStr);
-        let curDate = new Date();
-        let month;
-        switch (date.getMonth()) {
-            case 0:
-                month = 'Jan';
-                break;
-            case 1:
-                month = 'Feb';
-                break;
-            case 2:
-                month = 'Mar';
-                break;
-            case 3:
-                month = 'Apr';
-                break;
-            case 4:
-                month = 'May';
-                break;
-            case 5:
-                month = 'Jun';
-                break;
-            case 6:
-                month = 'Jul';
-                break;
-            case 7:
-                month = 'Aug';
-                break;
-            case 8:
-                month = 'Sep';
-                break;
-            case 9:
-                month = 'Oct';
-                break;
-            case 10:
-                month = 'Nov';
-                break;
-            case 11:
-                month = 'Dec';
-                break;
-        }
-        let str = month + ' ' + date.getDate();
-        if (date.getFullYear() !== curDate.getFullYear()) {
-            str += ' ' + date.getFullYear();
-        } else if (date.getMonth() === curDate.getMonth() && date.getDate() === curDate.getDate()) {
-            let hours = date.getHours();
-            let period = 'AM';
-            if (hours > 12) {
-                period = 'PM';
-                hours -= 12;
-            } else if (hours === 0) {
-                hours = 12;
-            }
-            str = hours + ':';
-            str += zeroPad(date.getMinutes(), 2) + ':';
-            str += zeroPad(date.getSeconds(), 2) + ' ';
-            str += period;
-        }
-        return str;
-    }
-    exports.formatDateShortTime = formatDateShortTime;
-    
-});
-System.registerDynamic("app/actions/SubscriptionActions.js", ["npm:superagent@3.8.3.js", "app/dispatcher/Dispatcher.js", "app/dispatcher/EventDispatcher.js", "app/Alert.js", "app/Csrf.js", "app/Loader.js", "app/types/SubscriptionTypes.js", "app/utils/MiscUtils.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/actions/SubscriptionActions.js", ["npm:superagent@3.8.3.js", "app/dispatcher/Dispatcher.js", "app/dispatcher/EventDispatcher.js", "app/Alert.js", "app/Csrf.js", "app/Loader.js", "app/types/SubscriptionTypes.js", "app/utils/MiscUtils.js", "app/Constants.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -26204,6 +26225,7 @@ System.registerDynamic("app/actions/SubscriptionActions.js", ["npm:superagent@3.
     const Loader_1 = $__require("app/Loader.js");
     const SubscriptionTypes = $__require("app/types/SubscriptionTypes.js");
     const MiscUtils = $__require("app/utils/MiscUtils.js");
+    const Constants = $__require("app/Constants.js");
     let syncId;
     function sync(update) {
         let curSyncId = MiscUtils.uuid();
@@ -26342,7 +26364,9 @@ System.registerDynamic("app/actions/SubscriptionActions.js", ["npm:superagent@3.
     EventDispatcher_1.default.register(action => {
         switch (action.type) {
             case SubscriptionTypes.CHANGE:
-                sync(false);
+                if (!Constants.user) {
+                    sync(false);
+                }
                 break;
         }
     });
