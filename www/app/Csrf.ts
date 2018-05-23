@@ -1,5 +1,6 @@
 /// <reference path="./References.d.ts"/>
 import * as SuperAgent from 'superagent';
+import * as License from './License';
 import * as Theme from './Theme';
 
 export let token = '';
@@ -22,6 +23,8 @@ export function load(): Promise<void> {
 				}
 
 				token = res.body.token;
+
+				License.setOracle(!!res.body.oracle_license);
 
 				if (res.body.theme === 'light') {
 					Theme.light();
