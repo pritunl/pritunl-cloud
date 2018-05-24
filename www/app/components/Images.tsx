@@ -5,7 +5,6 @@ import * as OrganizationTypes from '../types/OrganizationTypes';
 import ImagesStore from '../stores/ImagesStore';
 import OrganizationsStore from '../stores/OrganizationsStore';
 import * as ImageActions from '../actions/ImageActions';
-import * as StorageActions from '../actions/StorageActions';
 import * as OrganizationActions from '../actions/OrganizationActions';
 import Image from './Image';
 import ImagesFilter from './ImagesFilter';
@@ -91,7 +90,6 @@ export default class Images extends React.Component<{}, State> {
 		OrganizationsStore.addChangeListener(this.onChange);
 		ImageActions.sync();
 		OrganizationActions.sync();
-		StorageActions.sync();
 	}
 
 	componentWillUnmount(): void {
