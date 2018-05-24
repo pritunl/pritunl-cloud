@@ -6,6 +6,7 @@ import * as Alert from '../Alert';
 import * as Csrf from '../Csrf';
 import Loader from '../Loader';
 import * as ZoneTypes from '../types/ZoneTypes';
+import OrganizationsStore from '../stores/OrganizationsStore';
 import * as MiscUtils from '../utils/MiscUtils';
 
 let syncId: string;
@@ -21,6 +22,7 @@ export function sync(): Promise<void> {
 			.get('/zone')
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -62,6 +64,7 @@ export function commit(zone: ZoneTypes.Zone): Promise<void> {
 			.send(zone)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -91,6 +94,7 @@ export function create(zone: ZoneTypes.Zone): Promise<void> {
 			.send(zone)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -119,6 +123,7 @@ export function remove(zoneId: string): Promise<void> {
 			.delete('/zone/' + zoneId)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
