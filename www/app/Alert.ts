@@ -2,9 +2,7 @@
 import * as SuperAgent from 'superagent';
 import * as Blueprint from '@blueprintjs/core';
 
-let toaster = Blueprint.Toaster.create({
-	position: Blueprint.Position.BOTTOM,
-});
+let toaster: Blueprint.IToaster;
 
 export function success(message: string, timeout?: number): void {
 	if (timeout === undefined) {
@@ -70,4 +68,14 @@ export function errorRes(res: SuperAgent.Response, message: string,
 		message: message,
 		timeout: timeout,
 	});
+}
+
+export function init() {
+	if (Blueprint.Toaster) {
+		toaster = Blueprint.Toaster.create({
+			position: Blueprint.Position.BOTTOM,
+		});
+	} else {
+		console.error('Failed to load toaster')
+	}
 }
