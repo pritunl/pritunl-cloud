@@ -11,6 +11,7 @@ sed -i 's|lib/node/index.js|lib/client.js|g' jspm_packages/npm/superagent@*.js
 #### lint
 
 ```
+tslint -c tslint.json app/*.ts*
 tslint -c tslint.json app/**/*.ts*
 ```
 
@@ -26,4 +27,11 @@ tsc --watch
 
 ```
 sh build.sh
+```
+
+### clean
+
+```
+rm -rf app/*.js*
+rm -rf app/**/*.js*
 ```
