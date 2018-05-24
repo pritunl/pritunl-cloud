@@ -8,14 +8,11 @@ import PageInput from './PageInput';
 import PageInputButton from './PageInputButton';
 import PageInfo from './PageInfo';
 import PageSelect from './PageSelect';
-import PageSelectButton from './PageSelectButton';
 import PageSave from './PageSave';
 import PageNumInput from './PageNumInput';
 import ConfirmButton from './ConfirmButton';
 import Help from './Help';
-import VpcsNameStore from "../stores/VpcsNameStore";
 import * as VpcTypes from "../types/VpcTypes";
-import * as NodeActions from "../actions/NodeActions";
 
 interface Props {
 	vpcs: VpcTypes.VpcsRo;
