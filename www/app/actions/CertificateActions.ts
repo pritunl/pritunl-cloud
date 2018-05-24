@@ -7,6 +7,7 @@ import * as Csrf from '../Csrf';
 import Loader from '../Loader';
 import * as CertificateTypes from '../types/CertificateTypes';
 import * as MiscUtils from '../utils/MiscUtils';
+import * as Constants from "../Constants";
 
 let syncId: string;
 
@@ -142,7 +143,9 @@ export function remove(certId: string): Promise<void> {
 EventDispatcher.register((action: CertificateTypes.CertificateDispatch) => {
 	switch (action.type) {
 		case CertificateTypes.CHANGE:
-			sync();
+			if (!Constants.user) {
+				sync();
+			}
 			break;
 	}
 });

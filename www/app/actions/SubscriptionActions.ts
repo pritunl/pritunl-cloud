@@ -7,6 +7,7 @@ import * as Csrf from '../Csrf';
 import Loader from '../Loader';
 import * as SubscriptionTypes from '../types/SubscriptionTypes';
 import * as MiscUtils from '../utils/MiscUtils';
+import * as Constants from "../Constants";
 
 let syncId: string;
 
@@ -199,7 +200,9 @@ export function cancel(key: string): Promise<void> {
 EventDispatcher.register((action: SubscriptionTypes.SubscriptionDispatch) => {
 	switch (action.type) {
 		case SubscriptionTypes.CHANGE:
-			sync(false);
+			if (!Constants.user) {
+				sync(false);
+			}
 			break;
 	}
 });

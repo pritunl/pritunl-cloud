@@ -1,5 +1,6 @@
 /// <reference path="../References.d.ts"/>
 import * as SuperAgent from 'superagent';
+import * as Constants from '../Constants';
 import Dispatcher from '../dispatcher/Dispatcher';
 import EventDispatcher from '../dispatcher/EventDispatcher';
 import * as Alert from '../Alert';
@@ -82,7 +83,9 @@ export function traverse(page: number): Promise<void> {
 EventDispatcher.register((action: AuditTypes.AuditDispatch) => {
 	switch (action.type) {
 		case AuditTypes.CHANGE:
-			reload();
+			if (!Constants.user) {
+				reload();
+			}
 			break;
 	}
 });

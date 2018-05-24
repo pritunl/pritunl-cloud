@@ -1,5 +1,6 @@
 /// <reference path="../References.d.ts"/>
 import * as SuperAgent from 'superagent';
+import * as Constants from '../Constants';
 import Dispatcher from '../dispatcher/Dispatcher';
 import EventDispatcher from '../dispatcher/EventDispatcher';
 import * as Alert from '../Alert';
@@ -85,7 +86,9 @@ export function filter(filt: LogTypes.Filter): Promise<void> {
 EventDispatcher.register((action: LogTypes.LogDispatch) => {
 	switch (action.type) {
 		case LogTypes.CHANGE:
-			sync();
+			if (!Constants.user) {
+				sync();
+			}
 			break;
 	}
 });

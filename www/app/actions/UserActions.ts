@@ -9,6 +9,7 @@ import * as UserTypes from '../types/UserTypes';
 import UserStore from '../stores/UserStore';
 import UsersStore from '../stores/UsersStore';
 import * as MiscUtils from '../utils/MiscUtils';
+import * as Constants from "../Constants";
 
 let syncId: string;
 
@@ -243,7 +244,9 @@ export function remove(userIds: string[]): Promise<void> {
 EventDispatcher.register((action: UserTypes.UserDispatch) => {
 	switch (action.type) {
 		case UserTypes.CHANGE:
-			sync();
+			if (!Constants.user) {
+				sync();
+			}
 			break;
 	}
 });

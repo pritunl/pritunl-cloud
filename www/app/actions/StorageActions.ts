@@ -7,6 +7,7 @@ import * as Csrf from '../Csrf';
 import Loader from '../Loader';
 import * as StorageTypes from '../types/StorageTypes';
 import * as MiscUtils from '../utils/MiscUtils';
+import * as Constants from "../Constants";
 
 let syncId: string;
 
@@ -142,7 +143,9 @@ export function remove(storageId: string): Promise<void> {
 EventDispatcher.register((action: StorageTypes.StorageDispatch) => {
 	switch (action.type) {
 		case StorageTypes.CHANGE:
-			sync();
+			if (!Constants.user) {
+				sync();
+			}
 			break;
 	}
 });

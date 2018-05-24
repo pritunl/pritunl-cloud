@@ -9,6 +9,7 @@ import * as AuthorityTypes from '../types/AuthorityTypes';
 import AuthoritiesStore from '../stores/AuthoritiesStore';
 import OrganizationsStore from '../stores/OrganizationsStore';
 import * as MiscUtils from '../utils/MiscUtils';
+import * as Constants from "../Constants";
 
 let syncId: string;
 
@@ -211,7 +212,9 @@ export function removeMulti(authorityIds: string[]): Promise<void> {
 EventDispatcher.register((action: AuthorityTypes.AuthorityDispatch) => {
 	switch (action.type) {
 		case AuthorityTypes.CHANGE:
-			sync();
+			if (!Constants.user) {
+				sync();
+			}
 			break;
 	}
 });

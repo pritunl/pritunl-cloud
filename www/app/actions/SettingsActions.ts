@@ -7,6 +7,7 @@ import * as Csrf from '../Csrf';
 import Loader from '../Loader';
 import * as SettingsTypes from '../types/SettingsTypes';
 import * as MiscUtils from '../utils/MiscUtils';
+import * as Constants from "../Constants";
 
 let syncId: string;
 
@@ -89,7 +90,9 @@ export function commit(
 EventDispatcher.register((action: SettingsTypes.SettingsDispatch) => {
 	switch (action.type) {
 		case SettingsTypes.CHANGE:
-			sync();
+			if (!Constants.user) {
+				sync();
+			}
 			break;
 	}
 });

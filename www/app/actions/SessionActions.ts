@@ -1,5 +1,6 @@
 /// <reference path="../References.d.ts"/>
 import * as SuperAgent from 'superagent';
+import * as Constants from "../Constants";
 import Dispatcher from '../dispatcher/Dispatcher';
 import EventDispatcher from '../dispatcher/EventDispatcher';
 import * as Alert from '../Alert';
@@ -119,7 +120,9 @@ export function remove(sessionId: string): Promise<void> {
 EventDispatcher.register((action: SessionTypes.SessionDispatch) => {
 	switch (action.type) {
 		case SessionTypes.CHANGE:
-			reload();
+			if (!Constants.user) {
+				reload();
+			}
 			break;
 	}
 });
