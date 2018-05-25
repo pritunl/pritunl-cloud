@@ -30,6 +30,7 @@ type Vpc struct {
 	Organization bson.ObjectId `bson:"organization" json:"organization"`
 	Datacenter   bson.ObjectId `bson:"datacenter" json:"datacenter"`
 	Routes       []*Route      `bson:"routes" json:"routes"`
+	LinkUris     []string      `bson:"link_uris" json:"link_uris"`
 }
 
 func (v *Vpc) Validate(db *database.Database) (
