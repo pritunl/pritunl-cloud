@@ -44,6 +44,8 @@ type Node struct {
 	Load1              float64                    `bson:"load1" json:"load1"`
 	Load5              float64                    `bson:"load5" json:"load5"`
 	Load15             float64                    `bson:"load15" json:"load15"`
+	PublicIps          []string                   `bson:"public_ips" json:"public_ips"`
+	PublicIps6         []string                   `bson:"public_ips6" json:"public_ips6"`
 	SoftwareVersion    string                     `bson:"software_version" json:"software_version"`
 	Version            int                        `bson:"version" json:"-"`
 	VirtPath           string                     `bson:"virt_path" json:"virt_path"`
@@ -241,6 +243,8 @@ func (n *Node) update(db *database.Database) (err error) {
 				"load1":        n.Load1,
 				"load5":        n.Load5,
 				"load15":       n.Load15,
+				"public_ips":   n.PublicIps,
+				"public_ips6":  n.PublicIps6,
 			},
 		},
 		Upsert:    false,
