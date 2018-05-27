@@ -362,6 +362,10 @@ export default class DiskDetailed extends React.Component<Props, State> {
 								value: this.props.disk.id || 'Unknown',
 							},
 							{
+								label: 'Image',
+								value: this.props.disk.image || 'Unknown',
+							},
+							{
 								label: 'Organization',
 								value: org ? org.name : this.props.disk.organization,
 							},
