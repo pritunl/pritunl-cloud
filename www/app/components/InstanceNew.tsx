@@ -458,6 +458,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 						/>
 						<PageSelect
 							disabled={this.state.disabled || !hasOrganizations}
+							hidden={Constants.user}
 							label="Organization"
 							help="Organization for instance."
 							value={instance.organization}
