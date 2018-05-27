@@ -359,8 +359,14 @@ export default class InstanceNew extends React.Component<Props, State> {
 			vpcsSelect.push(<option key="null" value="">Select Vpc</option>);
 
 			for (let vpc of this.props.vpcs) {
-				if (vpc.organization !== instance.organization) {
-					continue;
+				if (Constants.user) {
+					if (vpc.organization !== OrganizationsStore.current) {
+						continue;
+					}
+				} else {
+					if (vpc.organization !== instance.organization) {
+						continue;
+					}
 				}
 
 				hasVpcs = true;
