@@ -6,21 +6,16 @@ import * as OrganizationTypes from '../types/OrganizationTypes';
 import * as VpcTypes from '../types/VpcTypes';
 import * as DatacenterTypes from '../types/DatacenterTypes';
 import * as ZoneTypes from '../types/ZoneTypes';
-import * as CertificateTypes from '../types/CertificateTypes';
 import InstancesStore from '../stores/InstancesStore';
 import OrganizationsStore from '../stores/OrganizationsStore';
 import VpcsNameStore from '../stores/VpcsNameStore';
 import DatacentersStore from '../stores/DatacentersStore';
-import NodesStore from '../stores/NodesStore';
 import ZonesStore from '../stores/ZonesStore';
-import CertificatesStore from '../stores/CertificatesStore';
 import * as InstanceActions from '../actions/InstanceActions';
 import * as OrganizationActions from '../actions/OrganizationActions';
 import * as VpcActions from '../actions/VpcActions';
 import * as DatacenterActions from '../actions/DatacenterActions';
-import * as NodeActions from '../actions/NodeActions';
 import * as ZoneActions from '../actions/ZoneActions';
-import * as CertificateActions from '../actions/CertificateActions';
 import Instance from './Instance';
 import InstanceNew from './InstanceNew';
 import InstancesFilter from './InstancesFilter';
@@ -46,7 +41,6 @@ interface State {
 	vpcs: VpcTypes.VpcsRo;
 	datacenters: DatacenterTypes.DatacentersRo;
 	zones: ZoneTypes.ZonesRo;
-	certificates: CertificateTypes.CertificatesRo;
 	selected: Selected;
 	opened: Opened;
 	newOpened: boolean;
@@ -103,7 +97,6 @@ export default class Instances extends React.Component<{}, State> {
 			vpcs: VpcsNameStore.vpcs,
 			datacenters: DatacentersStore.datacenters,
 			zones: ZonesStore.zones,
-			certificates: CertificatesStore.certificates,
 			selected: {},
 			opened: {},
 			newOpened: false,
@@ -125,16 +118,12 @@ export default class Instances extends React.Component<{}, State> {
 		OrganizationsStore.addChangeListener(this.onChange);
 		VpcsNameStore.addChangeListener(this.onChange);
 		DatacentersStore.addChangeListener(this.onChange);
-		NodesStore.addChangeListener(this.onChange);
 		ZonesStore.addChangeListener(this.onChange);
-		CertificatesStore.addChangeListener(this.onChange);
 		InstanceActions.sync();
 		OrganizationActions.sync();
 		VpcActions.syncNames();
 		DatacenterActions.sync();
-		NodeActions.sync();
 		ZoneActions.sync();
-		CertificateActions.sync();
 
 		this.interval = setInterval(() => {
 			InstanceActions.sync(true);
@@ -146,9 +135,7 @@ export default class Instances extends React.Component<{}, State> {
 		OrganizationsStore.removeChangeListener(this.onChange);
 		VpcsNameStore.removeChangeListener(this.onChange);
 		DatacentersStore.removeChangeListener(this.onChange);
-		NodesStore.removeChangeListener(this.onChange);
 		ZonesStore.removeChangeListener(this.onChange);
-		CertificatesStore.removeChangeListener(this.onChange);
 		clearInterval(this.interval);
 	}
 
@@ -174,7 +161,6 @@ export default class Instances extends React.Component<{}, State> {
 			filter: InstancesStore.filter,
 			organizations: OrganizationsStore.organizations,
 			vpcs: VpcsNameStore.vpcs,
-			certificates: CertificatesStore.certificates,
 			datacenters: DatacentersStore.datacenters,
 			zones: ZonesStore.zones,
 			selected: selected,
