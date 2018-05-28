@@ -86,8 +86,6 @@ const css = {
 		fontSize: '18px',
 		fontWeight: 'bold',
 	} as React.CSSProperties,
-	loading: {
-	} as React.CSSProperties,
 };
 
 export default class Main extends React.Component<{}, State> {
@@ -573,7 +571,7 @@ export default class Main extends React.Component<{}, State> {
 						/>
 					</div>
 				</nav>
-				<LoadingBar style={css.loading} intent="primary"/>
+				<LoadingBar intent="primary"/>
 				<ReactRouter.Route path="/" exact={true} render={() => (
 					Constants.user ? <Vpcs/> : <Users/>
 				)}/>
