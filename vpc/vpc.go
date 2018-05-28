@@ -19,6 +19,7 @@ import (
 type Route struct {
 	Destination string `bson:"destination" json:"destination"`
 	Target      string `bson:"target" json:"target"`
+	Link        bool   `bson:"link" json:"link"`
 }
 
 type Vpc struct {
@@ -399,6 +400,32 @@ func (v *Vpc) GetIp6(addr net.IP) net.IP {
 	}
 
 	return net.ParseIP(ipBuf.String())
+}
+
+func (v *Vpc) AddLinkRoutes(db *database.Database, routes []*Route) (
+	err error) {
+
+	vc, err := Get(db, v.Id)
+	if err != nil {
+		return
+	}
+
+	for _, route := range vc.Routes {
+		if route.Link {
+			continue
+		}
+
+		routes = append(routes, route)
+	}
+
+	vc.Routes = routes
+
+	err = vc.CommitFields(db, set.NewSet("routes"))
+	if err != nil {
+		return
+	}
+
+	return
 }
 
 func (v *Vpc) Commit(db *database.Database) (err error) {
