@@ -560,7 +560,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						help="Provides access to the user console on this node for SSH certificates."
 						checked={types.indexOf('user') !== -1}
 						onToggle={(): void => {
-							//this.toggleType('user');
+							this.toggleType('user');
 						}}
 					/>
 					<PageSwitch
