@@ -17,9 +17,6 @@ import (
 )
 
 func Node() (err error) {
-	sig := make(chan os.Signal, 2)
-	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
-
 	nde := &node.Node{
 		Id: bson.ObjectIdHex(config.Config.NodeId),
 	}
@@ -52,7 +49,12 @@ func Node() (err error) {
 		}
 	}()
 
+	sig := make(chan os.Signal, 2)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 	<-sig
+
+	constants.Interrupt = true
+
 	logrus.Info("cmd.node: Shutting down")
 	go routr.Shutdown()
 	if constants.Production {
