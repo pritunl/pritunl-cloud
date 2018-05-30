@@ -219,13 +219,15 @@ func applyState(oldState, newState *State) (err error) {
 	}
 
 	for _, rules := range newState.Interfaces {
-		_, err = utils.ExecCombinedOutputLogged(
-			[]string{"File exists"},
-			"ip", "netns",
-			"add", rules.Namespace,
-		)
-		if err != nil {
-			return
+		if rules.Namespace != "0" {
+			_, err = utils.ExecCombinedOutputLogged(
+				[]string{"File exists"},
+				"ip", "netns",
+				"add", rules.Namespace,
+			)
+			if err != nil {
+				return
+			}
 		}
 
 		oldRules := oldState.Interfaces[rules.Namespace+"-"+rules.Interface]
