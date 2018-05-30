@@ -1,10 +1,17 @@
 package deploy
 
 import (
+	"fmt"
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -17,10 +24,12 @@ func (n *Namespace) Deploy() (err error) {
 
 	curNamespaces := set.NewSet()
 	curVirtIfaces := set.NewSet()
+	curInternalIfaces := set.NewSet()
 
 	for _, inst := range instances {
 		curNamespaces.Add(vm.GetNamespace(inst.Id, 0))
 		curVirtIfaces.Add(vm.GetIfaceVirt(inst.Id, 0))
+		curInternalIfaces.Add(vm.GetIfaceInternal(inst.Id, 0))
 	}
 
 	output, err := utils.ExecOutputLogged(
@@ -75,6 +84,53 @@ func (n *Namespace) Deploy() (err error) {
 			)
 			if err != nil {
 				return
+			}
+		}
+	}
+
+	items, err := ioutil.ReadDir("/var/run")
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "deploy: Failed to read run directory"),
+		}
+		return
+	}
+
+	for _, item := range items {
+		name := item.Name()
+
+		if item.IsDir() || len(name) != 27 ||
+			!strings.HasPrefix(name, "dhclient-i") {
+
+			continue
+		}
+
+		iface := name[9:23]
+
+		if !curInternalIfaces.Contains(iface) {
+			pth := filepath.Join("/var/run", item.Name())
+
+			pidByt, e := ioutil.ReadFile(pth)
+			if e != nil {
+				err = &errortypes.ReadError{
+					errors.Wrap(e, "ipsec: Failed to read dhclient pid"),
+				}
+				return
+			}
+
+			pid, e := strconv.Atoi(strings.TrimSpace(string(pidByt)))
+			if e != nil {
+				err = &errortypes.ParseError{
+					errors.Wrap(e, "ipsec: Failed to parse dhclient pid"),
+				}
+				return
+			}
+
+			exists, _ := utils.Exists(fmt.Sprintf("/proc/%d/status", pid))
+			if exists {
+				utils.ExecCombinedOutput("", "kill", "-9", strconv.Itoa(pid))
+			} else {
+				os.Remove(pth)
 			}
 		}
 	}
