@@ -21,6 +21,7 @@ type vpcData struct {
 	Organization bson.ObjectId `json:"organization"`
 	Datacenter   bson.ObjectId `json:"datacenter"`
 	Routes       []*vpc.Route  `json:"routes"`
+	LinkUris     []string      `json:"link_uris"`
 }
 
 type vpcsData struct {
@@ -58,6 +59,7 @@ func vpcPut(c *gin.Context) {
 	vc.Organization = data.Organization
 	vc.Datacenter = data.Datacenter
 	vc.Routes = data.Routes
+	vc.LinkUris = data.LinkUris
 
 	fields := set.NewSet(
 		"state",
@@ -65,6 +67,7 @@ func vpcPut(c *gin.Context) {
 		"organization",
 		"datacenter",
 		"routes",
+		"link_uris",
 	)
 
 	errData, err := vc.Validate(db)
@@ -113,6 +116,7 @@ func vpcPost(c *gin.Context) {
 		Organization: data.Organization,
 		Datacenter:   data.Datacenter,
 		Routes:       data.Routes,
+		LinkUris:     data.LinkUris,
 	}
 
 	vc.GenerateVpcId()
