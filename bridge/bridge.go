@@ -23,7 +23,6 @@ BRIDGE="%s"
 
 var (
 	configured = false
-	BridgeName = ""
 )
 
 func Configure() (err error) {
@@ -45,7 +44,7 @@ func Configure() (err error) {
 		if iface.Name == settings.Hypervisor.BridgeName ||
 			iface.Name == "br0" {
 
-			BridgeName = iface.Name
+			settings.Local.BridgeName = iface.Name
 			configured = true
 			break
 		}
@@ -54,7 +53,9 @@ func Configure() (err error) {
 	if configured {
 		_, err = utils.ExecCombinedOutputLogged(
 			nil, "sysctl", "-w",
-			fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", BridgeName),
+			fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2",
+				settings.Local.BridgeName,
+			),
 		)
 		if err != nil {
 			return

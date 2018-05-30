@@ -3,11 +3,11 @@ package instance
 import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/pritunl-cloud/bridge"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/paths"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
 	"gopkg.in/mgo.v2/bson"
@@ -260,7 +260,7 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 			&vm.NetworkAdapter{
 				Type:          vm.Bridge,
 				MacAddress:    vm.GetMacAddr(i.Id, i.Vpc),
-				HostInterface: bridge.BridgeName,
+				HostInterface: settings.Local.BridgeName,
 				VpcId:         i.Vpc,
 			},
 		},

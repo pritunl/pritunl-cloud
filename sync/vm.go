@@ -9,6 +9,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/iptables"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/state"
 	"time"
 )
@@ -85,7 +86,7 @@ func vmRunner() {
 
 	logrus.WithFields(logrus.Fields{
 		"production": constants.Production,
-		"bridge":     bridge.BridgeName,
+		"bridge":     settings.Local.BridgeName,
 	}).Info("sync: Starting hypervisor")
 
 	for {
