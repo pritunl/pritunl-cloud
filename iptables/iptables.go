@@ -250,81 +250,89 @@ func generateVirt(namespace, iface string, ingress []*firewall.Rule) (
 		Holds6:    [][]string{},
 	}
 
-	var cmd []string
-
+	cmd := rules.newCommand()
 	if rules.Interface != "host" {
-		cmd = rules.newCommand()
 		cmd = append(cmd,
 			"-m", "physdev",
 			"--physdev-out", rules.Interface,
-			"-m", "pkttype",
-			"--pkt-type", "multicast",
 		)
-		cmd = rules.commentCommand(cmd, false)
-		cmd = append(cmd,
-			"-j", "ACCEPT",
-		)
-		rules.Ingress = append(rules.Ingress, cmd)
 	}
+	cmd = append(cmd,
+		"-m", "pkttype",
+		"--pkt-type", "multicast",
+	)
+	cmd = rules.commentCommand(cmd, false)
+	cmd = append(cmd,
+		"-j", "ACCEPT",
+	)
+	rules.Ingress = append(rules.Ingress, cmd)
 
+	cmd = rules.newCommand()
 	if rules.Interface != "host" {
-		cmd = rules.newCommand()
 		cmd = append(cmd,
 			"-m", "physdev",
 			"--physdev-out", rules.Interface,
-			"-m", "pkttype",
-			"--pkt-type", "broadcast",
 		)
-		cmd = rules.commentCommand(cmd, false)
-		cmd = append(cmd,
-			"-j", "ACCEPT",
-		)
-		rules.Ingress = append(rules.Ingress, cmd)
 	}
+	cmd = append(cmd,
+		"-m", "pkttype",
+		"--pkt-type", "broadcast",
+	)
+	cmd = rules.commentCommand(cmd, false)
+	cmd = append(cmd,
+		"-j", "ACCEPT",
+	)
+	rules.Ingress = append(rules.Ingress, cmd)
 
+	cmd = rules.newCommand()
 	if rules.Interface != "host" {
-		cmd = rules.newCommand()
 		cmd = append(cmd,
 			"-m", "physdev",
 			"--physdev-out", rules.Interface,
-			"-m", "pkttype",
-			"--pkt-type", "multicast",
 		)
-		cmd = rules.commentCommand(cmd, false)
-		cmd = append(cmd,
-			"-j", "ACCEPT",
-		)
-		rules.Ingress6 = append(rules.Ingress6, cmd)
 	}
+	cmd = append(cmd,
+		"-m", "pkttype",
+		"--pkt-type", "multicast",
+	)
+	cmd = rules.commentCommand(cmd, false)
+	cmd = append(cmd,
+		"-j", "ACCEPT",
+	)
+	rules.Ingress6 = append(rules.Ingress6, cmd)
 
+	cmd = rules.newCommand()
 	if rules.Interface != "host" {
-		cmd = rules.newCommand()
 		cmd = append(cmd,
 			"-m", "physdev",
 			"--physdev-out", rules.Interface,
-			"-m", "pkttype",
-			"--pkt-type", "broadcast",
 		)
-		cmd = rules.commentCommand(cmd, false)
-		cmd = append(cmd,
-			"-j", "ACCEPT",
-		)
-		rules.Ingress6 = append(rules.Ingress6, cmd)
 	}
+	cmd = append(cmd,
+		"-m", "pkttype",
+		"--pkt-type", "broadcast",
+	)
+	cmd = rules.commentCommand(cmd, false)
+	cmd = append(cmd,
+		"-j", "ACCEPT",
+	)
+	rules.Ingress6 = append(rules.Ingress6, cmd)
 
+	cmd = rules.newCommand()
+	cmd = append(cmd,
+		"-p", "ipv6-icmp",
+	)
 	if rules.Interface != "host" {
-		cmd = rules.newCommand()
 		cmd = append(cmd,
-			"-p", "ipv6-icmp",
 			"-m", "physdev",
 			"--physdev-out", rules.Interface,
 		)
-		cmd = rules.commentCommand(cmd, false)
-		cmd = append(cmd,
-			"-j", "ACCEPT",
-		)
-		rules.Ingress6 = append(rules.Ingress6, cmd)
 	}
+	cmd = rules.commentCommand(cmd, false)
+	cmd = append(cmd,
+		"-j", "ACCEPT",
+	)
+	rules.Ingress6 = append(rules.Ingress6, cmd)
 
 	for _, rule := range ingress {
 		for _, sourceIp := range rule.SourceIps {
@@ -511,76 +519,84 @@ func generateInternal(namespace, iface string, ingress []*firewall.Rule) (
 		Holds6:    [][]string{},
 	}
 
-	var cmd []string
-
+	cmd := rules.newCommand()
 	if rules.Interface != "host" {
-		cmd = rules.newCommand()
 		cmd = append(cmd,
 			"-i", rules.Interface,
-			"-m", "pkttype",
-			"--pkt-type", "multicast",
 		)
-		cmd = rules.commentCommand(cmd, false)
-		cmd = append(cmd,
-			"-j", "ACCEPT",
-		)
-		rules.Ingress = append(rules.Ingress, cmd)
 	}
+	cmd = append(cmd,
+		"-m", "pkttype",
+		"--pkt-type", "multicast",
+	)
+	cmd = rules.commentCommand(cmd, false)
+	cmd = append(cmd,
+		"-j", "ACCEPT",
+	)
+	rules.Ingress = append(rules.Ingress, cmd)
 
+	cmd = rules.newCommand()
 	if rules.Interface != "host" {
-		cmd = rules.newCommand()
 		cmd = append(cmd,
 			"-i", rules.Interface,
-			"-m", "pkttype",
-			"--pkt-type", "broadcast",
 		)
-		cmd = rules.commentCommand(cmd, false)
-		cmd = append(cmd,
-			"-j", "ACCEPT",
-		)
-		rules.Ingress = append(rules.Ingress, cmd)
 	}
+	cmd = append(cmd,
+		"-m", "pkttype",
+		"--pkt-type", "broadcast",
+	)
+	cmd = rules.commentCommand(cmd, false)
+	cmd = append(cmd,
+		"-j", "ACCEPT",
+	)
+	rules.Ingress = append(rules.Ingress, cmd)
 
+	cmd = rules.newCommand()
 	if rules.Interface != "host" {
-		cmd = rules.newCommand()
 		cmd = append(cmd,
 			"-i", rules.Interface,
-			"-m", "pkttype",
-			"--pkt-type", "multicast",
 		)
-		cmd = rules.commentCommand(cmd, false)
-		cmd = append(cmd,
-			"-j", "ACCEPT",
-		)
-		rules.Ingress6 = append(rules.Ingress6, cmd)
 	}
+	cmd = append(cmd,
+		"-m", "pkttype",
+		"--pkt-type", "multicast",
+	)
+	cmd = rules.commentCommand(cmd, false)
+	cmd = append(cmd,
+		"-j", "ACCEPT",
+	)
+	rules.Ingress6 = append(rules.Ingress6, cmd)
 
+	cmd = rules.newCommand()
 	if rules.Interface != "host" {
-		cmd = rules.newCommand()
 		cmd = append(cmd,
 			"-i", rules.Interface,
-			"-m", "pkttype",
-			"--pkt-type", "broadcast",
 		)
-		cmd = rules.commentCommand(cmd, false)
-		cmd = append(cmd,
-			"-j", "ACCEPT",
-		)
-		rules.Ingress6 = append(rules.Ingress6, cmd)
 	}
+	cmd = append(cmd,
+		"-m", "pkttype",
+		"--pkt-type", "broadcast",
+	)
+	cmd = rules.commentCommand(cmd, false)
+	cmd = append(cmd,
+		"-j", "ACCEPT",
+	)
+	rules.Ingress6 = append(rules.Ingress6, cmd)
 
+	cmd = rules.newCommand()
 	if rules.Interface != "host" {
-		cmd = rules.newCommand()
 		cmd = append(cmd,
 			"-i", rules.Interface,
-			"-p", "ipv6-icmp",
 		)
-		cmd = rules.commentCommand(cmd, false)
-		cmd = append(cmd,
-			"-j", "ACCEPT",
-		)
-		rules.Ingress6 = append(rules.Ingress6, cmd)
 	}
+	cmd = append(cmd,
+		"-p", "ipv6-icmp",
+	)
+	cmd = rules.commentCommand(cmd, false)
+	cmd = append(cmd,
+		"-j", "ACCEPT",
+	)
+	rules.Ingress6 = append(rules.Ingress6, cmd)
 
 	for _, rule := range ingress {
 		for _, sourceIp := range rule.SourceIps {
@@ -759,76 +775,84 @@ func generate(namespace, iface string, ingress []*firewall.Rule) (
 		Holds6:    [][]string{},
 	}
 
-	var cmd []string
-
+	cmd := rules.newCommand()
 	if rules.Interface != "host" {
-		cmd = rules.newCommand()
 		cmd = append(cmd,
 			"-o", rules.Interface,
-			"-m", "pkttype",
-			"--pkt-type", "multicast",
 		)
-		cmd = rules.commentCommand(cmd, false)
-		cmd = append(cmd,
-			"-j", "ACCEPT",
-		)
-		rules.Ingress = append(rules.Ingress, cmd)
 	}
+	cmd = append(cmd,
+		"-m", "pkttype",
+		"--pkt-type", "multicast",
+	)
+	cmd = rules.commentCommand(cmd, false)
+	cmd = append(cmd,
+		"-j", "ACCEPT",
+	)
+	rules.Ingress = append(rules.Ingress, cmd)
 
+	cmd = rules.newCommand()
 	if rules.Interface != "host" {
-		cmd = rules.newCommand()
 		cmd = append(cmd,
 			"-o", rules.Interface,
-			"-m", "pkttype",
-			"--pkt-type", "broadcast",
 		)
-		cmd = rules.commentCommand(cmd, false)
-		cmd = append(cmd,
-			"-j", "ACCEPT",
-		)
-		rules.Ingress = append(rules.Ingress, cmd)
 	}
+	cmd = append(cmd,
+		"-m", "pkttype",
+		"--pkt-type", "broadcast",
+	)
+	cmd = rules.commentCommand(cmd, false)
+	cmd = append(cmd,
+		"-j", "ACCEPT",
+	)
+	rules.Ingress = append(rules.Ingress, cmd)
 
+	cmd = rules.newCommand()
 	if rules.Interface != "host" {
-		cmd = rules.newCommand()
 		cmd = append(cmd,
 			"-o", rules.Interface,
-			"-m", "pkttype",
-			"--pkt-type", "multicast",
 		)
-		cmd = rules.commentCommand(cmd, false)
-		cmd = append(cmd,
-			"-j", "ACCEPT",
-		)
-		rules.Ingress6 = append(rules.Ingress6, cmd)
 	}
+	cmd = append(cmd,
+		"-m", "pkttype",
+		"--pkt-type", "multicast",
+	)
+	cmd = rules.commentCommand(cmd, false)
+	cmd = append(cmd,
+		"-j", "ACCEPT",
+	)
+	rules.Ingress6 = append(rules.Ingress6, cmd)
 
+	cmd = rules.newCommand()
 	if rules.Interface != "host" {
-		cmd = rules.newCommand()
 		cmd = append(cmd,
 			"-o", rules.Interface,
-			"-m", "pkttype",
-			"--pkt-type", "broadcast",
 		)
-		cmd = rules.commentCommand(cmd, false)
-		cmd = append(cmd,
-			"-j", "ACCEPT",
-		)
-		rules.Ingress6 = append(rules.Ingress6, cmd)
 	}
+	cmd = append(cmd,
+		"-m", "pkttype",
+		"--pkt-type", "broadcast",
+	)
+	cmd = rules.commentCommand(cmd, false)
+	cmd = append(cmd,
+		"-j", "ACCEPT",
+	)
+	rules.Ingress6 = append(rules.Ingress6, cmd)
 
+	cmd = rules.newCommand()
 	if rules.Interface != "host" {
-		cmd = rules.newCommand()
 		cmd = append(cmd,
 			"-o", rules.Interface,
-			"-p", "ipv6-icmp",
 		)
-		cmd = rules.commentCommand(cmd, false)
-		cmd = append(cmd,
-			"-j", "ACCEPT",
-		)
-		rules.Ingress6 = append(rules.Ingress6, cmd)
 	}
+	cmd = append(cmd,
+		"-p", "ipv6-icmp",
+	)
+	cmd = rules.commentCommand(cmd, false)
+	cmd = append(cmd,
+		"-j", "ACCEPT",
+	)
+	rules.Ingress6 = append(rules.Ingress6, cmd)
 
 	for _, rule := range ingress {
 		for _, sourceIp := range rule.SourceIps {
