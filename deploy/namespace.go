@@ -64,6 +64,9 @@ func (n *Namespace) Deploy() (err error) {
 		}
 
 		namespace := fields[0]
+		if len(namespace) != 14 || !strings.HasPrefix(namespace, "n") {
+			continue
+		}
 
 		if !curNamespaces.Contains(namespace) {
 			_, err = utils.ExecCombinedOutputLogged(
