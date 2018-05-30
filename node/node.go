@@ -9,9 +9,11 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"net"
 	"net/http"
 	"sort"
 	"strings"
@@ -337,6 +339,54 @@ func (n *Node) sync() {
 		n.Load1 = load.Load1
 		n.Load5 = load.Load5
 		n.Load15 = load.Load15
+	}
+
+	ipData, err := utils.ExecCombinedOutputLogged(
+		[]string{
+			"No such file or directory",
+			"does not exist",
+		},
+		"ip", "-f", "inet", "-o", "addr",
+		"show", "dev", settings.Local.BridgeName,
+	)
+	if err != nil {
+		return
+	}
+
+	fields := strings.Fields(ipData)
+	if len(fields) > 3 {
+		ipAddr := net.ParseIP(strings.Split(fields[3], "/")[0])
+		n.PublicIps = []string{
+			ipAddr.String(),
+		}
+	}
+
+	ipData, err = utils.ExecCombinedOutputLogged(
+		[]string{
+			"No such file or directory",
+			"does not exist",
+		},
+		"ip", "-f", "inet6", "-o", "addr",
+		"show", "dev", settings.Local.BridgeName,
+	)
+	if err != nil {
+		return
+	}
+
+	for _, line := range strings.Split(ipData, "\n") {
+		if !strings.Contains(line, "global") {
+			continue
+		}
+
+		fields = strings.Fields(ipData)
+		if len(fields) > 3 {
+			ipAddr := net.ParseIP(strings.Split(fields[3], "/")[0])
+			n.PublicIps6 = []string{
+				ipAddr.String(),
+			}
+		}
+
+		break
 	}
 
 	err = n.update(db)
