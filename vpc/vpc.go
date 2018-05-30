@@ -88,6 +88,18 @@ func (v *Vpc) Validate(db *database.Database) (
 		v.Routes = []*Route{}
 	}
 
+	if v.LinkUris == nil {
+		v.LinkUris = []string{}
+	}
+
+	linkUris := []string{}
+	for _, linkUri := range v.LinkUris {
+		if linkUri != "" {
+			linkUris = append(linkUris, linkUri)
+		}
+	}
+	v.LinkUris = linkUris
+
 	destinations := set.NewSet()
 	for _, route := range v.Routes {
 		if destinations.Contains(route.Destination) {
