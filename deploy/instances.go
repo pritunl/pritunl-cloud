@@ -253,6 +253,23 @@ func (s *Instances) diff(db *database.Database,
 	return
 }
 
+func (s *Instances) check(inst *instance.Instance, namespaces set.Set) (
+	valid bool, err error) {
+
+	namespace := vm.GetNamespace(inst.Id, 0)
+	if !namespaces.Contains(namespace) {
+		logrus.WithFields(logrus.Fields{
+			"instance_id":   inst.Id.Hex(),
+			"net_namespace": namespace,
+		}).Error("deploy: Instance missing namespace")
+		return
+	}
+
+	valid = true
+
+	return
+}
+
 func (s *Instances) routes(inst *instance.Instance) (err error) {
 	if instancesLock.Locked(inst.Id.Hex()) {
 		return
@@ -463,6 +480,29 @@ func (s *Instances) Deploy() (err error) {
 	db := database.GetDatabase()
 	defer db.Close()
 
+	namespaces := set.NewSet()
+	output, err := utils.ExecOutputLogged(
+		nil,
+		"ip", "netns", "list",
+	)
+	if err != nil {
+		return
+	}
+
+	for _, line := range strings.Split(output, "\n") {
+		fields := strings.Fields(line)
+		if len(fields) == 0 {
+			continue
+		}
+
+		namespace := fields[0]
+		if len(namespace) != 14 || !strings.HasPrefix(namespace, "n") {
+			continue
+		}
+
+		namespaces.Add(namespace)
+	}
+
 	for _, inst := range instances {
 		curVirt := s.stat.GetVirt(inst.Id)
 
@@ -483,8 +523,18 @@ func (s *Instances) Deploy() (err error) {
 				continue
 			}
 
+			valid, e := s.check(inst, namespaces)
+			if e != nil {
+				err = e
+				return
+			}
+			if !valid {
+				continue
+			}
+
 			err = s.diff(db, inst)
 			if err != nil {
+				s.restart(inst)
 				return
 			}
 
