@@ -14,6 +14,7 @@ import (
 	"math/rand"
 	"net"
 	"strings"
+	"time"
 )
 
 type Route struct {
@@ -23,15 +24,17 @@ type Route struct {
 }
 
 type Vpc struct {
-	Id           bson.ObjectId `bson:"_id,omitempty" json:"id"`
-	Name         string        `bson:"name" json:"name"`
-	VpcId        int           `bson:"vpc_id" json:"vpc_id"`
-	Network      string        `bson:"network" json:"network"`
-	Network6     string        `bson:"-" json:"network6"`
-	Organization bson.ObjectId `bson:"organization" json:"organization"`
-	Datacenter   bson.ObjectId `bson:"datacenter" json:"datacenter"`
-	Routes       []*Route      `bson:"routes" json:"routes"`
-	LinkUris     []string      `bson:"link_uris" json:"link_uris"`
+	Id            bson.ObjectId `bson:"_id,omitempty" json:"id"`
+	Name          string        `bson:"name" json:"name"`
+	VpcId         int           `bson:"vpc_id" json:"vpc_id"`
+	Network       string        `bson:"network" json:"network"`
+	Network6      string        `bson:"-" json:"network6"`
+	Organization  bson.ObjectId `bson:"organization" json:"organization"`
+	Datacenter    bson.ObjectId `bson:"datacenter" json:"datacenter"`
+	Routes        []*Route      `bson:"routes" json:"routes"`
+	LinkUris      []string      `bson:"link_uris" json:"link_uris"`
+	LinkNode      bson.ObjectId `bson:"link_node,omitempty" json:"link_node"`
+	LinkTimestamp time.Time     `bson:"link_timestamp" json:"link_timestamp"`
 }
 
 func (v *Vpc) Validate(db *database.Database) (
