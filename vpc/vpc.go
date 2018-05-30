@@ -8,6 +8,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -415,6 +416,38 @@ func (v *Vpc) GetIp6(addr net.IP) net.IP {
 	}
 
 	return net.ParseIP(ipBuf.String())
+}
+
+func (v *Vpc) PingLink(db *database.Database) (held bool, err error) {
+	coll := db.Vpcs()
+
+	query := bson.M{
+		"_id":            v.Id,
+		"link_timestamp": v.LinkTimestamp,
+	}
+
+	if v.LinkNode != "" {
+		query["link_node"] = v.LinkNode
+	}
+
+	err = coll.Update(query, &bson.M{
+		"$set": &bson.M{
+			"link_node":      node.Self.Id,
+			"link_timestamp": time.Now(),
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		if _, ok := err.(*database.NotFoundError); ok {
+			err = nil
+		} else {
+			return
+		}
+	} else {
+		held = true
+	}
+
+	return
 }
 
 func (v *Vpc) AddLinkRoutes(db *database.Database, routes []*Route) (
