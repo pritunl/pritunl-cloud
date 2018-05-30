@@ -458,8 +458,13 @@ func (v *Vpc) AddLinkRoutes(db *database.Database, routes []*Route) (
 		return
 	}
 
+	linkDsts := set.NewSet()
+	for _, route := range routes {
+		linkDsts.Add(route.Destination)
+	}
+
 	for _, route := range vc.Routes {
-		if route.Link {
+		if route.Link || linkDsts.Contains(route.Destination) {
 			continue
 		}
 
