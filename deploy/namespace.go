@@ -53,6 +53,9 @@ func (n *Namespace) Deploy() (err error) {
 		nil,
 		"ip", "netns", "list",
 	)
+	if err != nil {
+		return
+	}
 
 	for _, line := range strings.Split(output, "\n") {
 		fields := strings.Fields(line)
