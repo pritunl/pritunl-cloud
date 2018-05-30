@@ -79,3 +79,24 @@ func GetNamespace(id bson.ObjectId, n int) string {
 	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
 	return fmt.Sprintf("n%s%d", strings.ToLower(hashSum), n)
 }
+
+func GetLinkIfaceInternal(id bson.ObjectId, n int) string {
+	hash := md5.New()
+	hash.Write([]byte(id.Hex()))
+	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
+	return fmt.Sprintf("z%s%d", strings.ToLower(hashSum), n)
+}
+
+func GetLinkIfaceVirt(id bson.ObjectId, n int) string {
+	hash := md5.New()
+	hash.Write([]byte(id.Hex()))
+	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
+	return fmt.Sprintf("y%s%d", strings.ToLower(hashSum), n)
+}
+
+func GetLinkNamespace(id bson.ObjectId, n int) string {
+	hash := md5.New()
+	hash.Write([]byte(id.Hex()))
+	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
+	return fmt.Sprintf("x%s%d", strings.ToLower(hashSum), n)
+}
