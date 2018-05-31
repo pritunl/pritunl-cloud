@@ -25,6 +25,10 @@ var (
 	configured = false
 )
 
+func Configured() bool {
+	return configured
+}
+
 func Configure() (err error) {
 	if configured {
 		return
