@@ -4,6 +4,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/link"
 	"github.com/pritunl/pritunl-cloud/vpc"
+	"strings"
 )
 
 func addRoutes(db *database.Database, vc *vpc.Vpc, states []*link.State,
@@ -14,11 +15,19 @@ func addRoutes(db *database.Database, vc *vpc.Vpc, states []*link.State,
 	for _, state := range states {
 		for _, lnk := range state.Links {
 			for _, dst := range lnk.RightSubnets {
-				routes = append(routes, &vpc.Route{
-					Destination: dst,
-					Target:      addr,
-					Link:        true,
-				})
+				if strings.Contains(dst, ":") {
+					routes = append(routes, &vpc.Route{
+						Destination: dst,
+						Target:      addr6,
+						Link:        true,
+					})
+				} else {
+					routes = append(routes, &vpc.Route{
+						Destination: dst,
+						Target:      addr,
+						Link:        true,
+					})
+				}
 			}
 		}
 	}
