@@ -10379,6 +10379,14 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.3.2.js",
             let node = this.state.node || this.props.node;
             let active = node.requests_min !== 0 || node.memory !== 0 || node.load1 !== 0 || node.load5 !== 0 || node.load15 !== 0;
             let types = node.types || [];
+            let publicIps = this.props.node.public_ips;
+            if (!publicIps || !publicIps.length) {
+                publicIps = 'None';
+            }
+            let publicIps6 = this.props.node.public_ips6;
+            if (!publicIps6 || !publicIps6.length) {
+                publicIps6 = 'None';
+            }
             let certificates = [];
             for (let certId of node.certificates || []) {
                 let cert = CertificatesStore_1.default.certificate(certId);
@@ -10475,6 +10483,12 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.3.2.js",
                     valueClass: active ? '' : 'pt-text-intent-danger',
                     label: 'Timestamp',
                     value: MiscUtils.formatDate(this.props.node.timestamp) || 'Inactive'
+                }, {
+                    label: 'Public IPv4',
+                    value: publicIps
+                }, {
+                    label: 'Public IPv6',
+                    value: publicIps6
                 }, {
                     label: 'Requests',
                     value: this.props.node.requests_min + '/min'
@@ -12645,7 +12659,41 @@ System.registerDynamic("app/components/VpcRoute.js", ["npm:react@16.3.2.js"], tr
     exports.default = VpcRoute;
     
 });
-System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.3.2.js", "app/Constants.js", "app/actions/VpcActions.js", "app/components/VpcRoute.js", "app/components/PageInput.js", "app/components/PageSelect.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/ConfirmButton.js", "app/components/Help.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/VpcLinkUri.js", ["npm:react@16.3.2.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@16.3.2.js");
+    const css = {
+        group: {
+            width: '100%',
+            maxWidth: '310px',
+            marginTop: '5px'
+        },
+        input: {
+            width: '100%'
+        },
+        inputBox: {
+            flex: '1'
+        }
+    };
+    class VpcUriLink extends React.Component {
+        render() {
+            return React.createElement("div", null, React.createElement("div", { className: "pt-control-group", style: css.group }, React.createElement("div", { style: css.inputBox }, React.createElement("input", { className: "pt-input", style: css.input, disabled: this.props.disabled, type: "text", autoCapitalize: "off", spellCheck: false, placeholder: "Link URI", value: this.props.linkUri || '', onChange: evt => {
+                    this.props.onChange(evt.target.value);
+                } })), React.createElement("button", { className: "pt-button pt-minimal pt-intent-danger pt-icon-remove", disabled: this.props.disabled, onClick: () => {
+                    this.props.onRemove();
+                } }), React.createElement("button", { className: "pt-button pt-minimal pt-intent-success pt-icon-add", onClick: () => {
+                    this.props.onAdd();
+                } })));
+        }
+    }
+    exports.default = VpcUriLink;
+    
+});
+System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.3.2.js", "app/Constants.js", "app/actions/VpcActions.js", "app/components/VpcRoute.js", "app/components/VpcLinkUri.js", "app/components/PageInput.js", "app/components/PageSelect.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/ConfirmButton.js", "app/components/Help.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -12655,6 +12703,7 @@ System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.3.2.js", 
     const Constants = $__require("app/Constants.js");
     const VpcActions = $__require("app/actions/VpcActions.js");
     const VpcRoute_1 = $__require("app/components/VpcRoute.js");
+    const VpcLinkUri_1 = $__require("app/components/VpcLinkUri.js");
     const PageInput_1 = $__require("app/components/PageInput.js");
     const PageSelect_1 = $__require("app/components/PageSelect.js");
     const PageInfo_1 = $__require("app/components/PageInfo.js");
@@ -12723,7 +12772,7 @@ System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.3.2.js", 
             margin: '9px 5px 0 5px',
             height: '20px'
         },
-        routes: {
+        list: {
             marginBottom: '15px'
         }
     };
@@ -12740,6 +12789,21 @@ System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.3.2.js", 
                 let routes = [...(vpc.routes || [])];
                 routes.splice(i + 1, 0, {});
                 vpc.routes = routes;
+                this.setState(Object.assign({}, this.state, { changed: true, message: '', vpc: vpc }));
+            };
+            this.onAddLinkUri = i => {
+                let vpc;
+                if (this.state.changed) {
+                    vpc = Object.assign({}, this.state.vpc);
+                } else {
+                    vpc = Object.assign({}, this.props.vpc);
+                }
+                let linkUris = [...(vpc.link_uris || [])];
+                if (!linkUris.length) {
+                    linkUris = [''];
+                }
+                linkUris.splice(i + 1, 0, '');
+                vpc.link_uris = linkUris;
                 this.setState(Object.assign({}, this.state, { changed: true, message: '', vpc: vpc }));
             };
             this.onSave = () => {
@@ -12811,6 +12875,36 @@ System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.3.2.js", 
             vpc.routes = routes;
             this.setState(Object.assign({}, this.state, { changed: true, message: '', vpc: vpc }));
         }
+        onChangeLinkUri(i, linkUri) {
+            let vpc;
+            if (this.state.changed) {
+                vpc = Object.assign({}, this.state.vpc);
+            } else {
+                vpc = Object.assign({}, this.props.vpc);
+            }
+            let linkUris = [...(vpc.link_uris || [])];
+            if (!linkUris.length) {
+                linkUris = [''];
+            }
+            linkUris[i] = linkUri;
+            vpc.link_uris = linkUris;
+            this.setState(Object.assign({}, this.state, { changed: true, message: '', vpc: vpc }));
+        }
+        onRemoveLinkUri(i) {
+            let vpc;
+            if (this.state.changed) {
+                vpc = Object.assign({}, this.state.vpc);
+            } else {
+                vpc = Object.assign({}, this.props.vpc);
+            }
+            let linkUris = [...(vpc.link_uris || [])];
+            if (!linkUris.length) {
+                linkUris = [''];
+            }
+            linkUris.splice(i, 1);
+            vpc.link_uris = linkUris;
+            this.setState(Object.assign({}, this.state, { changed: true, message: '', vpc: vpc }));
+        }
         render() {
             let vpc = this.state.vpc || this.props.vpc;
             let datacentersSelect = [];
@@ -12843,6 +12937,28 @@ System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.3.2.js", 
                         } }));
                 }
             }
+            let linkUris = [];
+            if (vpc.link_uris) {
+                for (let i = 0; i < vpc.link_uris.length; i++) {
+                    let index = i;
+                    linkUris.push(React.createElement(VpcLinkUri_1.default, { key: index, linkUri: vpc.link_uris[index], onChange: linkUri => {
+                            this.onChangeLinkUri(index, linkUri);
+                        }, onAdd: () => {
+                            this.onAddLinkUri(index);
+                        }, onRemove: () => {
+                            this.onRemoveLinkUri(index);
+                        } }));
+                }
+            }
+            if (!linkUris.length) {
+                linkUris.push(React.createElement(VpcLinkUri_1.default, { key: 0, linkUri: "", onChange: linkUri => {
+                        this.onChangeLinkUri(0, linkUri);
+                    }, onAdd: () => {
+                        this.onAddLinkUri(0);
+                    }, onRemove: () => {
+                        this.onRemoveLinkUri(0);
+                    } }));
+            }
             return React.createElement("td", { className: "pt-cell", colSpan: 5, style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { className: "layout horizontal", style: css.buttons, onClick: evt => {
                     let target = evt.target;
                     if (target.className.indexOf('open-ignore') !== -1) {
@@ -12855,7 +12971,7 @@ System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.3.2.js", 
                     this.set('name', val);
                 } }), React.createElement(PageInput_1.default, { label: "Network", help: "Network address of vpc with cidr.", type: "text", placeholder: "Enter network", value: vpc.network, onChange: val => {
                     this.set('network', val);
-                } }), React.createElement("label", { style: css.itemsLabel }, "Route Table", React.createElement(Help_1.default, { title: "Route Table", content: "VPC routing table, enter a CIDR network for the desitnation and IP address for taget." })), React.createElement("div", { style: css.routes }, routes)), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
+                } }), React.createElement("label", { style: css.itemsLabel }, "Route Table", React.createElement(Help_1.default, { title: "Route Table", content: "VPC routing table, enter a CIDR network for the desitnation and IP address for taget." })), React.createElement("div", { style: css.list }, routes), React.createElement("label", { style: css.itemsLabel }, "Pritunl Link URIs", React.createElement(Help_1.default, { title: "Pritunl Link URIs", content: "Pritunl Link URIs for automated IPsec linking with a Pritunl server." })), React.createElement("div", { style: css.list }, linkUris)), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
                     label: 'ID',
                     value: this.props.vpc.id || 'Unknown'
                 }, {
@@ -26631,8 +26747,7 @@ System.registerDynamic("app/components/Main.js", ["npm:react@16.3.2.js", "npm:re
             marginRight: '11px',
             fontSize: '18px',
             fontWeight: 'bold'
-        },
-        loading: {}
+        }
     };
     class Main extends React.Component {
         constructor(props, context) {
@@ -26803,7 +26918,7 @@ System.registerDynamic("app/components/Main.js", ["npm:react@16.3.2.js", "npm:re
                 } }, "Logout"), React.createElement("button", { className: "pt-button pt-minimal pt-icon-moon", onClick: () => {
                     Theme.toggle();
                     Theme.save();
-                } }))), React.createElement(LoadingBar_1.default, { style: css.loading, intent: "primary" }), React.createElement(ReactRouter.Route, { path: "/", exact: true, render: () => Constants.user ? React.createElement(Vpcs_1.default, null) : React.createElement(Users_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/reload", render: () => React.createElement(ReactRouter.Redirect, { to: "/" }) }), React.createElement(ReactRouter.Route, { path: "/users", render: () => React.createElement(Users_1.default, null) }), React.createElement(ReactRouter.Route, { exact: true, path: "/user", render: () => React.createElement(UserDetailed_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/user/:userId", render: props => React.createElement(UserDetailed_1.default, { userId: props.match.params.userId }) }), React.createElement(ReactRouter.Route, { path: "/nodes", render: () => React.createElement(Nodes_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/policies", render: () => React.createElement(Policies_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/certificates", render: () => React.createElement(Certificates_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/organizations", render: () => React.createElement(Organizations_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/datacenters", render: () => React.createElement(Datacenters_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/zones", render: () => React.createElement(Zones_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/vpcs", render: () => React.createElement(Vpcs_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/storages", render: () => React.createElement(Storages_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/images", render: () => React.createElement(Images_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/disks", render: () => React.createElement(Disks_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/instances", render: () => React.createElement(Instances_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/firewalls", render: () => React.createElement(Firewalls_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/authorities", render: () => React.createElement(Authorities_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/logs", render: () => React.createElement(Logs_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/settings", render: () => React.createElement(Settings_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/subscription", render: () => React.createElement(Subscription_1.default, null) })));
+                } }))), React.createElement(LoadingBar_1.default, { intent: "primary" }), React.createElement(ReactRouter.Route, { path: "/", exact: true, render: () => Constants.user ? React.createElement(Vpcs_1.default, null) : React.createElement(Users_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/reload", render: () => React.createElement(ReactRouter.Redirect, { to: "/" }) }), React.createElement(ReactRouter.Route, { path: "/users", render: () => React.createElement(Users_1.default, null) }), React.createElement(ReactRouter.Route, { exact: true, path: "/user", render: () => React.createElement(UserDetailed_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/user/:userId", render: props => React.createElement(UserDetailed_1.default, { userId: props.match.params.userId }) }), React.createElement(ReactRouter.Route, { path: "/nodes", render: () => React.createElement(Nodes_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/policies", render: () => React.createElement(Policies_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/certificates", render: () => React.createElement(Certificates_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/organizations", render: () => React.createElement(Organizations_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/datacenters", render: () => React.createElement(Datacenters_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/zones", render: () => React.createElement(Zones_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/vpcs", render: () => React.createElement(Vpcs_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/storages", render: () => React.createElement(Storages_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/images", render: () => React.createElement(Images_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/disks", render: () => React.createElement(Disks_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/instances", render: () => React.createElement(Instances_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/firewalls", render: () => React.createElement(Firewalls_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/authorities", render: () => React.createElement(Authorities_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/logs", render: () => React.createElement(Logs_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/settings", render: () => React.createElement(Settings_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/subscription", render: () => React.createElement(Subscription_1.default, null) })));
         }
     }
     exports.default = Main;
@@ -63201,9 +63316,7 @@ System.registerDynamic("app/Alert.js", ["npm:@blueprintjs/core@2.3.1.js"], true,
         GLOBAL = global;
     Object.defineProperty(exports, "__esModule", { value: true });
     const Blueprint = $__require("npm:@blueprintjs/core@2.3.1.js");
-    let toaster = Blueprint.Toaster.create({
-        position: Blueprint.Position.BOTTOM
-    });
+    let toaster;
     function success(message, timeout) {
         if (timeout === undefined) {
             timeout = 5000;
@@ -63262,6 +63375,16 @@ System.registerDynamic("app/Alert.js", ["npm:@blueprintjs/core@2.3.1.js"], true,
         });
     }
     exports.errorRes = errorRes;
+    function init() {
+        if (Blueprint.Toaster) {
+            toaster = Blueprint.Toaster.create({
+                position: Blueprint.Position.BOTTOM
+            });
+        } else {
+            console.error('Failed to load toaster');
+        }
+    }
+    exports.init = init;
     
 });
 System.registerDynamic("app/Theme.js", ["npm:superagent@3.8.3.js", "app/Alert.js", "app/Csrf.js"], true, function ($__require, exports, module) {
@@ -63350,7 +63473,7 @@ System.registerDynamic("app/Csrf.js", ["npm:superagent@3.8.3.js", "app/License.j
     exports.load = load;
     
 });
-System.registerDynamic("app/App.js", ["npm:react@16.3.2.js", "npm:react-dom@16.3.2.js", "npm:@blueprintjs/core@2.3.1.js", "app/components/Main.js", "app/Event.js", "app/Csrf.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/App.js", ["npm:react@16.3.2.js", "npm:react-dom@16.3.2.js", "npm:@blueprintjs/core@2.3.1.js", "app/components/Main.js", "app/Alert.js", "app/Event.js", "app/Csrf.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -63360,10 +63483,12 @@ System.registerDynamic("app/App.js", ["npm:react@16.3.2.js", "npm:react-dom@16.3
     const ReactDOM = $__require("npm:react-dom@16.3.2.js");
     const Blueprint = $__require("npm:@blueprintjs/core@2.3.1.js");
     const Main_1 = $__require("app/components/Main.js");
+    const Alert = $__require("app/Alert.js");
     const Event = $__require("app/Event.js");
     const Csrf = $__require("app/Csrf.js");
     Csrf.load().then(() => {
         Blueprint.FocusStyleManager.onlyShowFocusOnTabs();
+        Alert.init();
         Event.init();
         ReactDOM.render(React.createElement("div", null, React.createElement(Main_1.default, null)), document.getElementById('app'));
     });
