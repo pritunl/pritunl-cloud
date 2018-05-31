@@ -87,7 +87,9 @@ func Redeploy(vcId bson.ObjectId) {
 	deployLock.Unlock()
 }
 
-func runDeploy() {
+func RunSync() {
+	time.Sleep(5 * time.Second)
+
 	for {
 		deploying := map[bson.ObjectId][]*link.State{}
 		deployLock.Lock()
@@ -127,12 +129,4 @@ func runDeploy() {
 
 		time.Sleep(10 * time.Millisecond)
 	}
-}
-
-func init() {
-	go func() {
-		time.Sleep(6 * time.Second)
-
-		go runDeploy()
-	}()
 }
