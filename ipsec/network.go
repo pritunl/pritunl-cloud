@@ -3,6 +3,7 @@ package ipsec
 import (
 	"fmt"
 	"github.com/Sirupsen/logrus"
+	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
@@ -42,7 +43,7 @@ func networkConf(vc *vpc.Vpc,
 	ifaceVirt := vm.GetLinkIfaceVirt(vc.Id, 0)
 	ifaceVlan := vm.GetIfaceVlan(vc.Id, 0)
 	ifaceInternal := vm.GetLinkIfaceInternal(vc.Id, 0)
-	virtMacAddr := vm.GetMacAddrVirt(vc.Id, vc.Id)
+	virtMacAddr := vm.GetMacAddrVirt(vc.Id, node.Self.Id)
 	pidPath := fmt.Sprintf("/var/run/dhclient-%s.pid", ifaceInternal)
 
 	_, err = utils.ExecCombinedOutputLogged(
