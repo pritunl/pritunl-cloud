@@ -8,7 +8,8 @@ import (
 var (
 	Hashes     = map[bson.ObjectId]string{}
 	HashesLock = sync.Mutex{}
-	LinkStatus = map[bson.ObjectId]*Status{}
+	LinkStatus = map[bson.ObjectId]Status{}
+	LinkStatusLock = sync.Mutex{}
 )
 
 type Status map[string]map[string]string

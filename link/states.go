@@ -79,12 +79,21 @@ func getState(vpcId bson.ObjectId, uri, localAddr, pubAddr, pubAddr6 string) (
 		return
 	}
 
+	LinkStatusLock.Lock()
+	status := LinkStatus[vpcId]
+	LinkStatusLock.Unlock()
+
+	var linkStatus map[string]string
+	if status != nil {
+		linkStatus = status[uriData.User.Username()]
+	}
+
 	data := &stateData{
 		Version:       Version,
 		PublicAddress: pubAddr,
 		LocalAddress:  localAddr,
 		Address6:      pubAddr6,
-		//Status:        Status[uriData.User.Username()],
+		Status:        linkStatus,
 	}
 	dataBuf := &bytes.Buffer{}
 

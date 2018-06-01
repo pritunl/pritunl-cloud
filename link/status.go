@@ -5,26 +5,29 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"time"
+	"github.com/pritunl/pritunl-cloud/vm"
+	"gopkg.in/mgo.v2/bson"
 	"strings"
+	"time"
 )
 
 var (
 	offlineTime time.Time
 )
 
-func GetStatus() (status Status, err error) {
+func GetStatus(vpcId bson.ObjectId) (status Status, err error) {
 	status = Status{}
+	namespace := vm.GetLinkNamespace(vpcId, 0)
 
-	// TODO Exit status 3
-	output, err := utils.ExecOutput("", "ipsec", "status")
+	output, err := utils.ExecOutput(
+		"",
+		"ip", "netns", "exec", namespace,
+		"ipsec", "status",
+	)
 	if err != nil {
 		err = nil
 		return
 	}
-
-	isIkeState := false
-	ikeState := ""
 
 	for _, line := range strings.Split(output, "\n") {
 		lines := strings.SplitN(line, ":", 2)
@@ -32,64 +35,59 @@ func GetStatus() (status Status, err error) {
 			continue
 		}
 
-		isIkeState = strings.HasSuffix(lines[0], "]")
+		if !strings.HasSuffix(lines[0], "]") {
+			continue
+		}
 
-		if isIkeState {
-			ikeState = strings.SplitN(
-				strings.TrimSpace(lines[1]), " ", 2)[0]
-		} else {
-			if !strings.Contains(lines[1], "reqid") {
-				continue
-			}
+		connId := strings.SplitN(strings.SplitN(lines[0], "[", 2)[0], "-", 2)
+		connState := strings.SplitN(
+			strings.TrimSpace(lines[1]), " ", 2)[0]
 
-			connId := strings.SplitN(strings.SplitN(
-				lines[0], "{", 2)[0], "-", 2)
-			connState := strings.SplitN(
-				strings.TrimSpace(lines[1]), ",", 2)[0]
+		if len(connId) != 2 {
+			continue
+		}
 
-			if len(connId) != 2 {
-				continue
-			}
+		switch connState {
+		case "ESTABLISHED":
+			connState = "connected"
+			break
+		case "CONNECTING":
+			connState = "connecting"
+			break
+		default:
+			connState = "disconnected"
+		}
 
-			switch ikeState {
-			case "ESTABLISHED":
-				if connState == "INSTALLED" {
-					connState = "connected"
-				} else {
-					connState = "disconnected"
-				}
-				break
-			case "CONNECTING":
-				connState = "connecting"
-			default:
-				connState = "disconnected"
-			}
+		if _, ok := status[connId[0]]; !ok {
+			status[connId[0]] = map[string]string{}
+		}
 
-			if _, ok := status[connId[0]]; !ok {
-				status[connId[0]] = map[string]string{}
-			}
+		if _, ok := status[connId[0]][connId[1]]; !ok {
+			status[connId[0]][connId[1]] = connState
+		} else if (status[connId[0]][connId[1]] == "disconnected") ||
+			(status[connId[0]][connId[1]] == "connecting" &&
+				connState == "connected") {
 
-			if _, ok := status[connId[0]][connId[1]]; !ok {
-				status[connId[0]][connId[1]] = connState
-			} else if (status[connId[0]][connId[1]] == "disconnected") ||
-				(status[connId[0]][connId[1]] == "connecting" &&
-					connState == "connected") {
-
-				status[connId[0]][connId[1]] = connState
-			}
+			status[connId[0]][connId[1]] = connState
 		}
 	}
 
 	return
 }
 
-func Update(names set.Set) (resetLinks []string, err error) {
+func Update(vpcId bson.ObjectId, names set.Set) (
+	resetLinks []string, err error) {
+
 	resetLinks = []string{}
 
-	stats, err := GetStatus()
+	stats, err := GetStatus(vpcId)
 	if err != nil {
 		return
 	}
+
+	LinkStatusLock.Lock()
+	LinkStatus[vpcId] = stats
+	LinkStatusLock.Unlock()
 
 	unknown := set.NewSet()
 	for stateId, conns := range stats {
