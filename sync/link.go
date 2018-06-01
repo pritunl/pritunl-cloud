@@ -8,7 +8,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/vpc"
 	"gopkg.in/mgo.v2/bson"
-	"time"
 )
 
 func linkSync() (err error) {
@@ -27,7 +26,6 @@ func linkSync() (err error) {
 
 func linkRunner() {
 	for {
-		time.Sleep(2 * time.Second)
 		if !node.Self.IsHypervisor() || !bridge.Configured() {
 			continue
 		}
