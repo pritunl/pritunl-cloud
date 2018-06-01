@@ -111,19 +111,22 @@ func syncStates(vc *vpc.Vpc) {
 		link.HashesLock.Unlock()
 	}
 
-	//resetLinks, err := state.Update(names)
-	//if err != nil {
-	//	logrus.WithFields(logrus.Fields{
-	//		"public_address":  settings.Local.PublicAddr,
-	//		"public_address6": settings.Local.PublicAddr6,
-	//	}).Info("sync: Failed to get status")
-	//}
-	//
-	//if resetLinks != nil && len(resetLinks) != 0 {
-	//	logrus.Warn("sync: Disconnected timeout restarting")
-	//
-	//	ipsec.Redeploy()
-	//}
+	resetLinks, err := link.Update(vc.Id, names)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"vpc_id":          vc.Id.Hex(),
+			"local_address":   netAddr.String(),
+			"public_address":  pubAddr,
+			"public_address6": pubAddr6,
+		}).Info("sync: Failed to get status")
+	}
+
+	if resetLinks != nil && len(resetLinks) != 0 {
+		logrus.WithFields(logrus.Fields{
+			"vpc_id": vc.Id.Hex(),
+		}).Warning("sync: Disconnected timeout restarting")
+		Redeploy(vc.Id)
+	}
 }
 
 func SyncStates(vpcs []*vpc.Vpc) {
