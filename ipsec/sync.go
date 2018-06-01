@@ -118,13 +118,13 @@ func syncStates(vc *vpc.Vpc) {
 			"local_address":   netAddr.String(),
 			"public_address":  pubAddr,
 			"public_address6": pubAddr6,
-		}).Info("sync: Failed to get status")
+		}).Info("ipsec: Failed to get status")
 	}
 
 	if resetLinks != nil && len(resetLinks) != 0 {
 		logrus.WithFields(logrus.Fields{
 			"vpc_id": vc.Id.Hex(),
-		}).Warning("sync: Disconnected timeout restarting")
+		}).Warning("ipsec: Disconnected timeout restarting")
 		Redeploy(vc.Id)
 	}
 }
