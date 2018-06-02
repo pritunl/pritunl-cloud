@@ -403,6 +403,16 @@ export default class NodeDetailed extends React.Component<Props, State> {
 				node.load1 !== 0 || node.load5 !== 0 || node.load15 !== 0;
 		let types = node.types || [];
 
+		let publicIps: any = this.props.node.public_ips;
+		if (!publicIps || !publicIps.length) {
+			publicIps = 'None';
+		}
+
+		let publicIps6: any = this.props.node.public_ips6;
+		if (!publicIps6 || !publicIps6.length) {
+			publicIps6 = 'None';
+		}
+
 		let certificates: JSX.Element[] = [];
 		for (let certId of (node.certificates || [])) {
 			let cert = CertificatesStore.certificate(certId);
@@ -718,6 +728,14 @@ export default class NodeDetailed extends React.Component<Props, State> {
 								label: 'Timestamp',
 								value: MiscUtils.formatDate(
 									this.props.node.timestamp) || 'Inactive',
+							},
+							{
+								label: 'Public IPv4',
+								value: publicIps,
+							},
+							{
+								label: 'Public IPv6',
+								value: publicIps6,
 							},
 							{
 								label: 'Requests',
