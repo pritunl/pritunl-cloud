@@ -409,11 +409,9 @@ export default class VpcDetailed extends React.Component<Props, State> {
 					destination: '0.0.0.0/0',
 					target: '0.0.0.0',
 				} as VpcTypes.Route}
-				onChange={(state: VpcTypes.Route): void => {}}
 				onAdd={(): void => {
 					this.onAddRoute(-1);
 				}}
-				onRemove={(): void => {}}
 			/>,
 		];
 		if (vpc.routes) {
