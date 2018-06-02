@@ -12,7 +12,6 @@ const (
 	ConfPath        = "/cloud/pritunl-cloud.json"
 	LogPath         = "/var/log/pritunl-cloud.log"
 	LogPath2        = "/var/log/pritunl-cloud.log.1"
-	TempPath        = "/tmp/pritunl-cloud"
 	StaticCache     = true
 	RetryDelay      = 3 * time.Second
 )
