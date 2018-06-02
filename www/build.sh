@@ -18,6 +18,7 @@ jspm bundle app/App.js
 mv build.js dist/static/app.js
 mv build.js.map dist/static/app.js.map
 cp index_dist.html dist/index.html
+cp uindex_dist.html dist/uindex.html
 cp login.html dist/login.html
 
 APP_HASH=`md5sum dist/static/app.js | cut -c1-6`
@@ -26,3 +27,4 @@ mv dist/static/app.js dist/static/app.${APP_HASH}.js
 mv dist/static/app.js.map dist/static/app.${APP_HASH}.js.map
 
 sed -i -e "s|static/app.js|static/app.${APP_HASH}.js|g" dist/index.html
+sed -i -e "s|static/app.js|static/app.${APP_HASH}.js|g" dist/uindex.html
