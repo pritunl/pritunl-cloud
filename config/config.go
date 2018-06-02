@@ -147,11 +147,6 @@ func init() {
 				constants.StaticTestingRoot)-1]
 		}
 
-		err = utils.ExistsMkdir(constants.TempPath, 0700)
-		if err != nil {
-			return
-		}
-
 		err = Load()
 		if err != nil {
 			return
