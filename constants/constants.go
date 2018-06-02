@@ -9,7 +9,7 @@ import (
 const (
 	Version         = "1.0.800.79"
 	DatabaseVersion = 1
-	ConfPath        = "/etc/pritunl-cloud.json"
+	ConfPath        = "/cloud/pritunl-cloud.json"
 	LogPath         = "/var/log/pritunl-cloud.log"
 	LogPath2        = "/var/log/pritunl-cloud.log.1"
 	TempPath        = "/tmp/pritunl-cloud"
