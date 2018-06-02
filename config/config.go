@@ -10,6 +10,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -39,6 +40,11 @@ func (c *ConfigData) Save() (err error) {
 		err = &errortypes.WriteError{
 			errors.Wrap(err, "config: File marshal error"),
 		}
+		return
+	}
+
+	err = utils.ExistsMkdir(filepath.Dir(constants.ConfPath), 0755)
+	if err != nil {
 		return
 	}
 
