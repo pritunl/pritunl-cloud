@@ -130,6 +130,10 @@ func syncStates(vc *vpc.Vpc) {
 }
 
 func SyncStates(vpcs []*vpc.Vpc) {
+	if settings.Local.BridgeName == "" {
+		return
+	}
+
 	db := database.GetDatabase()
 	defer db.Close()
 
