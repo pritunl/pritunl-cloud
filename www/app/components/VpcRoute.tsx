@@ -5,9 +5,9 @@ import * as VpcTypes from '../types/VpcTypes';
 interface Props {
 	disabled?: boolean;
 	route: VpcTypes.Route;
-	onChange: (state: VpcTypes.Route) => void;
+	onChange?: (state: VpcTypes.Route) => void;
 	onAdd: () => void;
-	onRemove: () => void;
+	onRemove?: () => void;
 }
 
 const css = {
