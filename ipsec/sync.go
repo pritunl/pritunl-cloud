@@ -174,20 +174,12 @@ func SyncStates(vpcs []*vpc.Vpc) {
 		go syncStates(vc)
 	}
 
-	output, err := utils.ExecOutputLogged(
-		nil, "ip", "-o", "link", "show",
-	)
+	iterfaces, err := utils.GetInterfaces()
 	if err != nil {
 		return
 	}
 
-	for _, line := range strings.Split(output, "\n") {
-		fields := strings.Fields(line)
-		if len(fields) < 2 || len(fields[1]) < 2 {
-			continue
-		}
-		iface := strings.Split(fields[1][:len(fields[1])-1], "@")[0]
-
+	for _, iface := range iterfaces {
 		if len(iface) != 14 || !strings.HasPrefix(iface, "y") {
 			continue
 		}
@@ -200,21 +192,12 @@ func SyncStates(vpcs []*vpc.Vpc) {
 		}
 	}
 
-	output, err = utils.ExecOutputLogged(
-		nil,
-		"ip", "netns", "list",
-	)
+	namespaces, err := utils.GetNamespaces()
 	if err != nil {
 		return
 	}
 
-	for _, line := range strings.Split(output, "\n") {
-		fields := strings.Fields(line)
-		if len(fields) == 0 {
-			continue
-		}
-
-		namespace := fields[0]
+	for _, namespace := range namespaces {
 		if len(namespace) != 14 || !strings.HasPrefix(namespace, "x") {
 			continue
 		}
