@@ -46,6 +46,8 @@ type Node struct {
 	Load1              float64                    `bson:"load1" json:"load1"`
 	Load5              float64                    `bson:"load5" json:"load5"`
 	Load15             float64                    `bson:"load15" json:"load15"`
+	CpuUnits           int                        `bson:"cpu_units" json:"cpu_units"`
+	MemoryUnits        float64                    `bson:"memory_units" json:"memory_units"`
 	PublicIps          []string                   `bson:"public_ips" json:"public_ips"`
 	PublicIps6         []string                   `bson:"public_ips6" json:"public_ips6"`
 	SoftwareVersion    string                     `bson:"software_version" json:"software_version"`
