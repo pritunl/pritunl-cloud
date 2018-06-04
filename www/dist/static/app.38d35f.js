@@ -10484,6 +10484,12 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.3.2.js",
                     label: 'Timestamp',
                     value: MiscUtils.formatDate(this.props.node.timestamp) || 'Inactive'
                 }, {
+                    label: 'CPU Units',
+                    value: (this.props.node.cpu_units || 'Unknown').toString()
+                }, {
+                    label: 'Memory Units',
+                    value: (this.props.node.memory_units || 'Unknown').toString()
+                }, {
                     label: 'Public IPv4',
                     value: publicIps
                 }, {
@@ -15605,7 +15611,8 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@16.3.2.
         },
         group: {
             flex: 1,
-            minWidth: '250px'
+            minWidth: '280px',
+            margin: '0 10px'
         },
         save: {
             paddingBottom: '10px'
@@ -16741,7 +16748,15 @@ System.registerDynamic("app/components/InstancesFilter.js", ["npm:react@16.3.2.j
                     organizationsSelect.push(React.createElement("option", { key: organization.id, value: organization.id }, organization.name));
                 }
             }
-            return React.createElement("div", { className: "layout horizontal wrap", style: css.filters }, React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Name", value: this.props.filter.name, onChange: val => {
+            return React.createElement("div", { className: "layout horizontal wrap", style: css.filters }, React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Instance ID", value: this.props.filter.id, onChange: val => {
+                    let filter = Object.assign({}, this.props.filter);
+                    if (val) {
+                        filter.id = val;
+                    } else {
+                        delete filter.id;
+                    }
+                    this.props.onFilter(filter);
+                } }), React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Name", value: this.props.filter.name, onChange: val => {
                     let filter = Object.assign({}, this.props.filter);
                     if (val) {
                         filter.name = val;
