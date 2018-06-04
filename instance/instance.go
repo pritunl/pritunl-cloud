@@ -285,22 +285,9 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 
 func (i *Instance) Changed(curVirt *vm.VirtualMachine) bool {
 	if i.Virt.Memory != curVirt.Memory ||
-		i.Virt.Processors != curVirt.Processors ||
-		len(i.Virt.Disks) != len(curVirt.Disks) {
+		i.Virt.Processors != curVirt.Processors {
 
 		return true
-	}
-
-	for i, dsk := range i.Virt.Disks {
-		if len(curVirt.Disks) <= i {
-			return true
-		}
-
-		if dsk.Index != curVirt.Disks[i].Index ||
-			dsk.Path != curVirt.Disks[i].Path {
-
-			return true
-		}
 	}
 
 	for i, adapter := range i.Virt.NetworkAdapters {
