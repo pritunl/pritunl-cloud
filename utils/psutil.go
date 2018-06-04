@@ -8,7 +8,7 @@ import (
 	"runtime"
 )
 
-func MemoryUsed() (used float64, err error) {
+func MemoryUsed() (used, total float64, err error) {
 	virt, err := mem.VirtualMemory()
 	if err != nil {
 		err = &errortypes.ReadError{
@@ -18,6 +18,7 @@ func MemoryUsed() (used float64, err error) {
 	}
 
 	used = ToFixed(virt.UsedPercent, 2)
+	total = ToFixed(float64(virt.Total)/float64(1073741824), 2)
 
 	return
 }
