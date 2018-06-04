@@ -22,6 +22,7 @@ type Namespace struct {
 func (n *Namespace) Deploy() (err error) {
 	instances := n.stat.Instances()
 	namespaces := n.stat.Namespaces()
+	interfaces := n.stat.Interfaces()
 
 	curNamespaces := set.NewSet()
 	curVirtIfaces := set.NewSet()
@@ -33,20 +34,7 @@ func (n *Namespace) Deploy() (err error) {
 		curInternalIfaces.Add(vm.GetIfaceInternal(inst.Id, 0))
 	}
 
-	output, err := utils.ExecOutputLogged(
-		nil, "ip", "-o", "link", "show",
-	)
-	if err != nil {
-		return
-	}
-
-	for _, line := range strings.Split(output, "\n") {
-		fields := strings.Fields(line)
-		if len(fields) < 2 || len(fields[1]) < 2 {
-			continue
-		}
-		iface := strings.Split(fields[1][:len(fields[1])-1], "@")[0]
-
+	for _, iface := range interfaces {
 		if len(iface) != 14 || !strings.HasPrefix(iface, "v") {
 			continue
 		}
