@@ -17,6 +17,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/qms"
 	"github.com/pritunl/pritunl-cloud/settings"
+	"github.com/pritunl/pritunl-cloud/store"
 	"github.com/pritunl/pritunl-cloud/systemd"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
@@ -35,46 +36,173 @@ var (
 	serviceReg = regexp.MustCompile("pritunl_cloud_([a-z0-9]+).service")
 )
 
+type InfoCache struct {
+	Timestamp time.Time
+	Virt      *vm.VirtualMachine
+}
+
 func GetVmInfo(vmId bson.ObjectId, getDisks bool) (
 	virt *vm.VirtualMachine, err error) {
 
-	unitPath := paths.GetUnitPath(vmId)
+	virtStore, ok := store.GetVirt(vmId)
+	if !ok {
+		unitPath := paths.GetUnitPath(vmId)
 
-	unitData, err := ioutil.ReadFile(unitPath)
-	if err != nil {
-		err = &errortypes.ReadError{
-			errors.Wrap(err, "qemu: Failed to read service"),
-		}
-		return
-	}
-
-	virt = &vm.VirtualMachine{}
-	for _, line := range strings.Split(string(unitData), "\n") {
-		if !strings.HasPrefix(line, "PritunlData=") {
-			continue
-		}
-
-		lineSpl := strings.SplitN(line, "=", 2)
-		if len(lineSpl) != 2 || len(lineSpl[1]) < 6 {
-			continue
-		}
-
-		err = json.Unmarshal([]byte(lineSpl[1]), virt)
-		if err != nil {
-			err = &errortypes.ParseError{
-				errors.Wrap(err, "qemu: Failed to parse service data"),
+		unitData, e := ioutil.ReadFile(unitPath)
+		if e != nil {
+			// TODO if err.(*os.PathError).Error == os.ErrNotExist {
+			err = &errortypes.ReadError{
+				errors.Wrap(e, "qemu: Failed to read service"),
 			}
 			return
 		}
 
-		break
+		virt = &vm.VirtualMachine{}
+		for _, line := range strings.Split(string(unitData), "\n") {
+			if !strings.HasPrefix(line, "PritunlData=") {
+				continue
+			}
+
+			lineSpl := strings.SplitN(line, "=", 2)
+			if len(lineSpl) != 2 || len(lineSpl[1]) < 6 {
+				continue
+			}
+
+			err = json.Unmarshal([]byte(lineSpl[1]), virt)
+			if err != nil {
+				err = &errortypes.ParseError{
+					errors.Wrap(err, "qemu: Failed to parse service data"),
+				}
+				return
+			}
+
+			break
+		}
+
+		if virt.Id == "" {
+			virt = nil
+			return
+		}
+
+		UpdateVmState(virt)
+	} else {
+		virt = &virtStore.Virt
+
+		if virt.State != vm.Running ||
+			time.Since(virtStore.Timestamp) > 30*time.Second {
+
+			UpdateVmState(virt)
+		}
 	}
 
-	if virt.Id == "" {
-		virt = nil
-		return
+	if virt.State == vm.Running && getDisks {
+		disksStore, ok := store.GetDisks(vmId)
+		if !ok || time.Since(disksStore.Timestamp) > 30*time.Second {
+			for i := 0; i < 20; i++ {
+				disks, e := qms.GetDisks(vmId)
+				if e != nil {
+					if i < 19 {
+						time.Sleep(100 * time.Millisecond)
+						continue
+					}
+					err = e
+					return
+				}
+				virt.Disks = disks
+
+				store.SetDisks(vmId, disks)
+
+				break
+			}
+		} else {
+			disks := []*vm.Disk{}
+			for _, dsk := range disksStore.Disks {
+				disks = append(disks, &dsk)
+			}
+			virt.Disks = disks
+		}
 	}
 
+	addrStore, ok := store.GetAddress(virt.Id)
+	if !ok {
+		addr := ""
+		addr6 := ""
+
+		namespace := vm.GetNamespace(virt.Id, 0)
+		ifaceInternal := vm.GetIfaceInternal(virt.Id, 0)
+
+		ipData, e := utils.ExecCombinedOutputLogged(
+			[]string{
+				"No such file or directory",
+				"does not exist",
+				"setting the network namespace",
+			},
+			"ip", "netns", "exec", namespace,
+			"ip", "-f", "inet", "-o", "addr",
+			"show", "dev", ifaceInternal,
+		)
+		if e != nil {
+			err = e
+			return
+		}
+
+		fields := strings.Fields(ipData)
+		if len(fields) > 3 {
+			ipAddr := net.ParseIP(strings.Split(fields[3], "/")[0])
+			if ipAddr != nil && len(ipAddr) > 0 &&
+				len(virt.NetworkAdapters) > 0 {
+
+				addr = ipAddr.String()
+			}
+		}
+
+		ipData, e = utils.ExecCombinedOutputLogged(
+			[]string{
+				"No such file or directory",
+				"does not exist",
+				"setting the network namespace",
+			},
+			"ip", "netns", "exec", namespace,
+			"ip", "-f", "inet6", "-o", "addr",
+			"show", "dev", ifaceInternal,
+		)
+		if e != nil {
+			err = e
+			return
+		}
+
+		for _, line := range strings.Split(ipData, "\n") {
+			if !strings.Contains(line, "global") {
+				continue
+			}
+
+			fields = strings.Fields(ipData)
+			if len(fields) > 3 {
+				ipAddr := net.ParseIP(strings.Split(fields[3], "/")[0])
+				if ipAddr != nil && len(ipAddr) > 0 {
+					addr6 = ipAddr.String()
+				}
+			}
+
+			break
+		}
+
+		if len(virt.NetworkAdapters) > 0 {
+			virt.NetworkAdapters[0].IpAddress = addr
+			virt.NetworkAdapters[0].IpAddress6 = addr6
+		}
+		store.SetAddress(virt.Id, addr, addr6)
+	} else {
+		if len(virt.NetworkAdapters) > 0 {
+			virt.NetworkAdapters[0].IpAddress = addrStore.Addr
+			virt.NetworkAdapters[0].IpAddress6 = addrStore.Addr6
+		}
+	}
+
+	return
+}
+
+func UpdateVmState(virt *vm.VirtualMachine) (err error) {
 	unitName := paths.GetUnitName(virt.Id)
 	state, err := systemd.GetState(unitName)
 	if err != nil {
@@ -106,79 +234,7 @@ func GetVmInfo(vmId bson.ObjectId, getDisks bool) (
 		break
 	}
 
-	if virt.State == vm.Running && getDisks {
-		for i := 0; i < 10; i++ {
-			disks, e := qms.GetDisks(vmId)
-			if e != nil {
-				if i < 9 {
-					time.Sleep(250 * time.Millisecond)
-					continue
-				}
-				err = e
-				return
-			}
-			virt.Disks = disks
-
-			break
-		}
-	}
-
-	namespace := vm.GetNamespace(virt.Id, 0)
-	ifaceInternal := vm.GetIfaceInternal(virt.Id, 0)
-
-	ipData, err := utils.ExecCombinedOutputLogged(
-		[]string{
-			"No such file or directory",
-			"does not exist",
-			"setting the network namespace",
-		},
-		"ip", "netns", "exec", namespace,
-		"ip", "-f", "inet", "-o", "addr",
-		"show", "dev", ifaceInternal,
-	)
-	if err != nil {
-		return
-	}
-
-	fields := strings.Fields(ipData)
-	if len(fields) > 3 {
-		ipAddr := net.ParseIP(strings.Split(fields[3], "/")[0])
-		if ipAddr != nil && len(ipAddr) > 0 && len(virt.NetworkAdapters) > 0 {
-			virt.NetworkAdapters[0].IpAddress = ipAddr.String()
-		}
-	}
-
-	ipData, err = utils.ExecCombinedOutputLogged(
-		[]string{
-			"No such file or directory",
-			"does not exist",
-			"setting the network namespace",
-		},
-		"ip", "netns", "exec", namespace,
-		"ip", "-f", "inet6", "-o", "addr",
-		"show", "dev", ifaceInternal,
-	)
-	if err != nil {
-		return
-	}
-
-	for _, line := range strings.Split(ipData, "\n") {
-		if !strings.Contains(line, "global") {
-			continue
-		}
-
-		fields = strings.Fields(ipData)
-		if len(fields) > 3 {
-			ipAddr := net.ParseIP(strings.Split(fields[3], "/")[0])
-			if ipAddr != nil && len(ipAddr) > 0 &&
-				len(virt.NetworkAdapters) > 0 {
-
-				virt.NetworkAdapters[0].IpAddress6 = ipAddr.String()
-			}
-		}
-
-		break
-	}
+	store.SetVirt(virt.Id, virt)
 
 	return
 }
@@ -249,19 +305,18 @@ func GetVms(db *database.Database) (virts []*vm.VirtualMachine, err error) {
 func Wait(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	unitName := paths.GetUnitName(virt.Id)
 
-	var vrt *vm.VirtualMachine
 	for i := 0; i < settings.Hypervisor.StartTimeout; i++ {
-		vrt, err = GetVmInfo(virt.Id, false)
+		err = UpdateVmState(virt)
 		if err != nil {
 			return
 		}
 
-		if vrt.State == vm.Running {
+		if virt.State == vm.Running {
 			break
 		}
 	}
 
-	if vrt == nil || vrt.State != vm.Running {
+	if virt.State != vm.Running {
 		err = systemd.Stop(unitName)
 		if err != nil {
 			return
@@ -626,61 +681,80 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	// TODO
 	time.Sleep(2 * time.Second)
 
-	ipData, err := utils.ExecCombinedOutputLogged(
-		[]string{
-			"No such file or directory",
-			"does not exist",
-		},
-		"ip", "netns", "exec", namespace,
-		"ip", "-f", "inet", "-o", "addr",
-		"show", "dev", ifaceInternal,
-	)
-	if err != nil {
-		return
-	}
-
 	pubAddr := ""
-	fields := strings.Fields(ipData)
-	if len(fields) > 3 {
-		ipAddr := net.ParseIP(strings.Split(fields[3], "/")[0])
-		if ipAddr != nil && len(ipAddr) > 0 && len(virt.NetworkAdapters) > 0 {
-			pubAddr = ipAddr.String()
-		}
-	}
-
-	ipData, err = utils.ExecCombinedOutputLogged(
-		[]string{
-			"No such file or directory",
-			"does not exist",
-		},
-		"ip", "netns", "exec", namespace,
-		"ip", "-f", "inet6", "-o", "addr",
-		"show", "dev", ifaceInternal,
-	)
-	if err != nil {
-		return
-	}
-
 	pubAddr6 := ""
-	for _, line := range strings.Split(ipData, "\n") {
-		if !strings.Contains(line, "global") {
-			continue
+	for i := 0; i < 40; i++ {
+		ipData, e := utils.ExecCombinedOutputLogged(
+			[]string{
+				"No such file or directory",
+				"does not exist",
+			},
+			"ip", "netns", "exec", namespace,
+			"ip", "-f", "inet", "-o", "addr",
+			"show", "dev", ifaceInternal,
+		)
+		if e != nil {
+			err = e
+			return
 		}
 
-		fields = strings.Fields(ipData)
+		fields := strings.Fields(ipData)
 		if len(fields) > 3 {
 			ipAddr := net.ParseIP(strings.Split(fields[3], "/")[0])
 			if ipAddr != nil && len(ipAddr) > 0 &&
 				len(virt.NetworkAdapters) > 0 {
 
-				pubAddr6 = ipAddr.String()
+				pubAddr = ipAddr.String()
 			}
 		}
 
-		break
+		ipData, e = utils.ExecCombinedOutputLogged(
+			[]string{
+				"No such file or directory",
+				"does not exist",
+			},
+			"ip", "netns", "exec", namespace,
+			"ip", "-f", "inet6", "-o", "addr",
+			"show", "dev", ifaceInternal,
+		)
+		if e != nil {
+			err = e
+			return
+		}
+
+		for _, line := range strings.Split(ipData, "\n") {
+			if !strings.Contains(line, "global") {
+				continue
+			}
+
+			fields = strings.Fields(ipData)
+			if len(fields) > 3 {
+				ipAddr := net.ParseIP(strings.Split(fields[3], "/")[0])
+				if ipAddr != nil && len(ipAddr) > 0 &&
+					len(virt.NetworkAdapters) > 0 {
+
+					pubAddr6 = ipAddr.String()
+				}
+			}
+
+			break
+		}
+
+		if pubAddr != "" {
+			break
+		}
+
+		time.Sleep(250 * time.Millisecond)
+	}
+
+	if pubAddr == "" {
+		err = &errortypes.NetworkError{
+			errors.New("qemu: Instance missing IPv4 address"),
+		}
+		PowerOff(db, virt)
+		return
 	}
 
 	iptables.Lock()
@@ -751,6 +825,9 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			"net_namespace": namespace,
 		}).Warning("qemu: Instance missing IPv6 address")
 	}
+
+	store.RemAddress(virt.Id)
+	store.RemRoutes(virt.Id)
 
 	coll := db.Instances()
 	err = coll.UpdateId(virt.Id, &bson.M{
@@ -834,6 +911,9 @@ func NetworkConfClear(db *database.Database,
 	utils.ExecCombinedOutput("", "ip", "netns", "del", namespace)
 	utils.ExecCombinedOutput("", "ip", "link", "set", ifaceVirt, "down")
 	utils.ExecCombinedOutput("", "ip", "link", "del", ifaceVirt)
+
+	store.RemAddress(virt.Id)
+	store.RemRoutes(virt.Id)
 
 	return
 }
@@ -961,6 +1041,9 @@ func Create(db *database.Database, inst *instance.Instance,
 		return
 	}
 
+	store.RemVirt(virt.Id)
+	store.RemDisks(virt.Id)
+
 	return
 }
 
@@ -1050,6 +1133,11 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
+	store.RemVirt(virt.Id)
+	store.RemDisks(virt.Id)
+	store.RemAddress(virt.Id)
+	store.RemRoutes(virt.Id)
+
 	return
 }
 
@@ -1085,6 +1173,9 @@ func PowerOn(db *database.Database, inst *instance.Instance,
 	if err != nil {
 		return
 	}
+
+	store.RemVirt(virt.Id)
+	store.RemDisks(virt.Id)
 
 	return
 }
@@ -1155,6 +1246,9 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	}
 
 	time.Sleep(3 * time.Second)
+
+	store.RemVirt(virt.Id)
+	store.RemDisks(virt.Id)
 
 	return
 }
