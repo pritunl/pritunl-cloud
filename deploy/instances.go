@@ -475,32 +475,15 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 }
 
 func (s *Instances) Deploy() (err error) {
-	instances := s.stat.Instances()
-
 	db := database.GetDatabase()
 	defer db.Close()
 
-	namespaces := set.NewSet()
-	output, err := utils.ExecOutputLogged(
-		nil,
-		"ip", "netns", "list",
-	)
-	if err != nil {
-		return
-	}
+	instances := s.stat.Instances()
+	namespaces := s.stat.Namespaces()
 
-	for _, line := range strings.Split(output, "\n") {
-		fields := strings.Fields(line)
-		if len(fields) == 0 {
-			continue
-		}
-
-		namespace := fields[0]
-		if len(namespace) != 14 || !strings.HasPrefix(namespace, "n") {
-			continue
-		}
-
-		namespaces.Add(namespace)
+	namespacesSet := set.NewSet()
+	for _, namespace := range namespaces {
+		namespacesSet.Add(namespace)
 	}
 
 	for _, inst := range instances {
@@ -523,7 +506,7 @@ func (s *Instances) Deploy() (err error) {
 				continue
 			}
 
-			valid, e := s.check(inst, namespaces)
+			valid, e := s.check(inst, namespacesSet)
 			if e != nil {
 				err = e
 				return
