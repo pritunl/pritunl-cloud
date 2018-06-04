@@ -16,6 +16,7 @@ import (
 
 type State struct {
 	namespaces   []string
+	interfaces   []string
 	disks        []*disk.Disk
 	virtsMap     map[bson.ObjectId]*vm.VirtualMachine
 	instances    []*instance.Instance
@@ -27,6 +28,10 @@ type State struct {
 
 func (s *State) Namespaces() []string {
 	return s.namespaces
+}
+
+func (s *State) Interfaces() []string {
+	return s.interfaces
 }
 
 func (s *State) Instances() []*instance.Instance {
@@ -70,6 +75,12 @@ func (s *State) init() (err error) {
 		return
 	}
 	s.namespaces = namespaces
+
+	interfaces, err := utils.GetInterfaces()
+	if err != nil {
+		return
+	}
+	s.interfaces = interfaces
 
 	disks, err := disk.GetNode(db, node.Self.Id)
 	if err != nil {
