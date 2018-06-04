@@ -199,9 +199,14 @@ func loadIptables(namespace string, state *State, ipv6 bool) (err error) {
 	return
 }
 
-func applyState(oldState, newState *State) (err error) {
+func applyState(oldState, newState *State, namespaces []string) (err error) {
 	oldIfaces := set.NewSet()
 	newIfaces := set.NewSet()
+
+	namespacesSet := set.NewSet()
+	for _, namespace := range namespaces {
+		namespacesSet.Add(namespace)
+	}
 
 	for iface := range oldState.Interfaces {
 		oldIfaces.Add(iface)
@@ -219,7 +224,7 @@ func applyState(oldState, newState *State) (err error) {
 	}
 
 	for _, rules := range newState.Interfaces {
-		if rules.Namespace != "0" {
+		if rules.Namespace != "0" && !namespacesSet.Contains(rules.Namespace) {
 			_, err = utils.ExecCombinedOutputLogged(
 				[]string{"File exists"},
 				"ip", "netns",
@@ -258,8 +263,8 @@ func applyState(oldState, newState *State) (err error) {
 	return
 }
 
-func UpdateState(db *database.Database, instances []*instance.Instance) (
-	err error) {
+func UpdateState(db *database.Database, instances []*instance.Instance,
+	namespaces []string) (err error) {
 
 	lockId := stateLock.Lock()
 	defer stateLock.Unlock(lockId)
@@ -315,7 +320,7 @@ func UpdateState(db *database.Database, instances []*instance.Instance) (
 		}
 	}
 
-	err = applyState(curState, newState)
+	err = applyState(curState, newState, namespaces)
 	if err != nil {
 		return
 	}
@@ -450,23 +455,19 @@ func Init() (err error) {
 		Interfaces: map[string]*Rules{},
 	}
 
-	namespaces := []string{"0"}
+	err = loadIptables("0", state, false)
+	if err != nil {
+		return
+	}
 
-	output, err = utils.ExecOutputLogged(
-		nil,
-		"ip", "netns", "list",
-	)
+	err = loadIptables("0", state, true)
+	if err != nil {
+		return
+	}
 
-	for _, line := range strings.Split(output, "\n") {
-		fields := strings.Fields(line)
-		if len(fields) == 0 {
-			continue
-		}
-
-		namespaces = append(
-			namespaces,
-			fields[0],
-		)
+	namespaces, err := utils.GetNamespaces()
+	if err != nil {
+		return
 	}
 
 	for _, namespace := range namespaces {
@@ -492,7 +493,7 @@ func Init() (err error) {
 		"node": node.Self.Id,
 	}, disks)
 
-	err = UpdateState(db, instances)
+	err = UpdateState(db, instances, namespaces)
 	if err != nil {
 		return
 	}
