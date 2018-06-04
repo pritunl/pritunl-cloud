@@ -16,8 +16,9 @@ func (t *Iptables) Deploy() (err error) {
 	defer db.Close()
 
 	instaces := t.stat.Instances()
+	namespaces := t.stat.Namespaces()
 
-	err = iptables.UpdateState(db, instaces)
+	err = iptables.UpdateState(db, instaces, namespaces)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"error": err,
