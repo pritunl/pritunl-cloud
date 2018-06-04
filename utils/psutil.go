@@ -24,13 +24,15 @@ func MemoryUsed() (used, total float64, err error) {
 }
 
 type LoadStat struct {
-	Load1  float64
-	Load5  float64
-	Load15 float64
+	CpuUnits int
+	Load1    float64
+	Load5    float64
+	Load15   float64
 }
 
 func LoadAverage() (ld *LoadStat, err error) {
-	count := float64(runtime.NumCPU())
+	count := runtime.NumCPU()
+	countFloat := float64(count)
 
 	avg, err := load.Avg()
 	if err != nil {
@@ -41,9 +43,10 @@ func LoadAverage() (ld *LoadStat, err error) {
 	}
 
 	ld = &LoadStat{
-		Load1:  ToFixed(avg.Load1/count*100, 2),
-		Load5:  ToFixed(avg.Load5/count*100, 2),
-		Load15: ToFixed(avg.Load15/count*100, 2),
+		CpuUnits: count,
+		Load1:    ToFixed(avg.Load1/countFloat*100, 2),
+		Load5:    ToFixed(avg.Load5/countFloat*100, 2),
+		Load15:   ToFixed(avg.Load15/countFloat*100, 2),
 	}
 
 	return
