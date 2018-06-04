@@ -21,6 +21,7 @@ type Namespace struct {
 
 func (n *Namespace) Deploy() (err error) {
 	instances := n.stat.Instances()
+	namespaces := n.stat.Namespaces()
 
 	curNamespaces := set.NewSet()
 	curVirtIfaces := set.NewSet()
@@ -58,21 +59,7 @@ func (n *Namespace) Deploy() (err error) {
 		}
 	}
 
-	output, err = utils.ExecOutputLogged(
-		nil,
-		"ip", "netns", "list",
-	)
-	if err != nil {
-		return
-	}
-
-	for _, line := range strings.Split(output, "\n") {
-		fields := strings.Fields(line)
-		if len(fields) == 0 {
-			continue
-		}
-
-		namespace := fields[0]
+	for _, namespace := range namespaces {
 		if len(namespace) != 14 || !strings.HasPrefix(namespace, "n") {
 			continue
 		}
