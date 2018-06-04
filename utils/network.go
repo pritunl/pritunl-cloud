@@ -2,8 +2,12 @@ package utils
 
 import (
 	"encoding/binary"
+	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/errortypes"
+	"io/ioutil"
 	"math/big"
 	"net"
+	"os"
 )
 
 func IncIpAddress(ip net.IP) {
@@ -83,4 +87,26 @@ func ParseIpMask(mask string) net.IPMask {
 		return nil
 	}
 	return net.IPv4Mask(maskIp[12], maskIp[13], maskIp[14], maskIp[15])
+}
+
+func GetNamespaces() (namespaces []string, err error) {
+	items, err := ioutil.ReadDir("/var/run/netns")
+	if err != nil {
+		if os.IsNotExist(os.ErrNotExist) {
+			namespaces = []string{}
+			err = nil
+		} else {
+			err = &errortypes.ReadError{
+				errors.Wrap(err, "utils: Failed to read network namespaces"),
+			}
+		}
+		return
+	}
+
+	namespaces = []string{}
+	for _, item := range items {
+		namespaces = append(namespaces, item.Name())
+	}
+
+	return
 }
