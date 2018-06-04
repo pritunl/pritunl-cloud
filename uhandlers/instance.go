@@ -406,6 +406,11 @@ func instancesGet(c *gin.Context) {
 			"organization": userOrg,
 		}
 
+		instId, ok := utils.ParseObjectId(c.Query("id"))
+		if ok {
+			query["_id"] = instId
+		}
+
 		name := strings.TrimSpace(c.Query("name"))
 		if name != "" {
 			query["name"] = &bson.M{
