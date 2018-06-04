@@ -110,3 +110,20 @@ func GetNamespaces() (namespaces []string, err error) {
 
 	return
 }
+
+func GetInterfaces() (ifaces []string, err error) {
+	items, err := ioutil.ReadDir("/sys/class/net")
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "utils: Failed to read network interfaces"),
+		}
+		return
+	}
+
+	ifaces = []string{}
+	for _, item := range items {
+		ifaces = append(ifaces, item.Name())
+	}
+
+	return
+}
