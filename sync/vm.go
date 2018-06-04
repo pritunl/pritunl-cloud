@@ -33,7 +33,7 @@ func syncNodeFirewall() {
 	defer db.Close()
 
 	for i := 0; i < 2; i++ {
-		err := iptables.UpdateState(db, []*instance.Instance{})
+		err := iptables.UpdateState(db, []*instance.Instance{}, []string{})
 		if err != nil {
 			if i < 1 {
 				err = nil
