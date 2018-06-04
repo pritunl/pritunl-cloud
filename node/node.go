@@ -245,6 +245,8 @@ func (n *Node) update(db *database.Database) (err error) {
 				"load1":        n.Load1,
 				"load5":        n.Load5,
 				"load15":       n.Load15,
+				"cpu_units":    n.CpuUnits,
+				"memory_units": n.MemoryUnits,
 				"public_ips":   n.PublicIps,
 				"public_ips6":  n.PublicIps6,
 			},
@@ -315,7 +317,7 @@ func (n *Node) sync() {
 
 	n.Timestamp = time.Now()
 
-	mem, err := utils.MemoryUsed()
+	mem, total, err := utils.MemoryUsed()
 	if err != nil {
 		n.Memory = 0
 
@@ -328,6 +330,8 @@ func (n *Node) sync() {
 
 	load, err := utils.LoadAverage()
 	if err != nil {
+		n.CpuUnits = 0
+		n.MemoryUnits = 0
 		n.Load1 = 0
 		n.Load5 = 0
 		n.Load15 = 0
@@ -336,6 +340,8 @@ func (n *Node) sync() {
 			"error": err,
 		}).Error("node: Failed to get load")
 	} else {
+		n.CpuUnits = load.CpuUnits
+		n.MemoryUnits = total
 		n.Load1 = load.Load1
 		n.Load5 = load.Load5
 		n.Load15 = load.Load15
