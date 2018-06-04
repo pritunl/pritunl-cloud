@@ -8,12 +8,14 @@ import (
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/qemu"
+	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
 	"gopkg.in/mgo.v2/bson"
 )
 
 type State struct {
+	namespaces   []string
 	disks        []*disk.Disk
 	virtsMap     map[bson.ObjectId]*vm.VirtualMachine
 	instances    []*instance.Instance
@@ -21,6 +23,10 @@ type State struct {
 	instancesMap map[bson.ObjectId]*instance.Instance
 	addInstances set.Set
 	remInstances set.Set
+}
+
+func (s *State) Namespaces() []string {
+	return s.namespaces
 }
 
 func (s *State) Instances() []*instance.Instance {
@@ -58,6 +64,12 @@ func (s *State) GetVirt(instId bson.ObjectId) *vm.VirtualMachine {
 func (s *State) init() (err error) {
 	db := database.GetDatabase()
 	defer db.Close()
+
+	namespaces, err := utils.GetNamespaces()
+	if err != nil {
+		return
+	}
+	s.namespaces = namespaces
 
 	disks, err := disk.GetNode(db, node.Self.Id)
 	if err != nil {
