@@ -417,19 +417,17 @@ func Init() (err error) {
 		return
 	}
 
-	output, err := utils.ExecOutputLogged(
-		nil, "ip", "-o", "link", "show",
-	)
+	interfaces, err := utils.GetInterfaces()
 	if err != nil {
 		return
 	}
 
-	for _, line := range strings.Split(output, "\n") {
-		fields := strings.Fields(line)
-		if len(fields) < 2 || len(fields[1]) < 2 {
+	for _, iface := range interfaces {
+		if len(iface) == 14 && (strings.HasPrefix(iface, "v") ||
+			strings.HasPrefix(iface, "x")) {
+
 			continue
 		}
-		iface := strings.Split(fields[1][:len(fields[1])-1], "@")[0]
 
 		utils.ExecCombinedOutput("",
 			"sysctl", "-w",
