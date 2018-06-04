@@ -1,7 +1,6 @@
 package deploy
 
 import (
-	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
@@ -12,10 +11,10 @@ import (
 	"github.com/pritunl/pritunl-cloud/qemu"
 	"github.com/pritunl/pritunl-cloud/qms"
 	"github.com/pritunl/pritunl-cloud/state"
+	"github.com/pritunl/pritunl-cloud/store"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
-	"net"
 	"strings"
 	"time"
 )
@@ -286,6 +285,9 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 			err = &errortypes.NotFoundError{
 				errors.New("deploy: Instance vpc not found"),
 			}
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("deploy: Failed to deploy instance routes")
 			return
 		}
 
@@ -296,102 +298,35 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 		newRoutes := set.NewSet()
 		newRoutes6 := set.NewSet()
 
-		output, err := utils.ExecCombinedOutputLogged(
-			[]string{
-				"not configured in this system",
-			},
-			"ip", "netns", "exec", namespace,
-			"route", "-n",
-		)
-		if err != nil {
-			err = nil
-			return
-		}
+		var routes []vpc.Route
+		var routes6 []vpc.Route
 
-		if output == "" {
-			return
-		}
-
-		lines := strings.Split(output, "\n")
-		if len(lines) > 2 {
-			for _, line := range lines[2:] {
-				if line == "" {
-					continue
-				}
-
-				fields := strings.Fields(line)
-				if len(fields) < 8 {
-					continue
-				}
-
-				if fields[4] != "97" {
-					continue
-				}
-
-				if fields[0] == "0.0.0.0" || fields[1] == "0.0.0.0" {
-					continue
-				}
-
-				mask := utils.ParseIpMask(fields[2])
-				if mask == nil {
-					continue
-				}
-				cidr, _ := mask.Size()
-
-				route := vpc.Route{
-					Destination: fmt.Sprintf("%s/%d", fields[0], cidr),
-					Target:      fields[1],
-				}
-
-				curRoutes.Add(route)
+		routesStore, ok := store.GetRoutes(inst.Id)
+		if !ok {
+			routes, routes6, err = qemu.GetRoutes(inst.Id)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"error": err,
+				}).Error("deploy: Failed to deploy instance routes")
+				return
 			}
-		}
 
-		output, err = utils.ExecCombinedOutputLogged(
-			[]string{
-				"not configured in this system",
-			},
-			"ip", "netns", "exec", namespace,
-			"route", "-6", "-n",
-		)
-		if err != nil {
-			err = nil
-			return
-		}
-
-		lines = strings.Split(output, "\n")
-		if len(lines) > 2 {
-			for _, line := range lines[2:] {
-				if line == "" {
-					continue
-				}
-
-				fields := strings.Fields(line)
-				if len(fields) < 7 {
-					continue
-				}
-
-				if fields[3] != "97" {
-					continue
-				}
-
-				_, destination, e := net.ParseCIDR(fields[0])
-				if e != nil || destination == nil {
-					continue
-				}
-
-				target := net.ParseIP(fields[1])
-				if target == nil {
-					continue
-				}
-
-				route := vpc.Route{
-					Destination: destination.String(),
-					Target:      target.String(),
-				}
-
-				curRoutes6.Add(route)
+			if routes == nil || routes6 == nil {
+				return
 			}
+
+			store.SetRoutes(inst.Id, routes, routes6)
+		} else {
+			routes = routesStore.Routes
+			routes6 = routesStore.Routes6
+		}
+
+		for _, route := range routes {
+			curRoutes.Add(route)
+		}
+
+		for _, route := range routes6 {
+			curRoutes6.Add(route)
 		}
 
 		if vc.Routes != nil {
@@ -404,6 +339,7 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 			}
 		}
 
+		changed := false
 		addRoutes := newRoutes.Copy()
 		addRoutes6 := newRoutes6.Copy()
 		remRoutes := curRoutes.Copy()
@@ -416,6 +352,7 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 
 		for routeInf := range remRoutes.Iter() {
 			route := routeInf.(vpc.Route)
+			changed = true
 
 			utils.ExecCombinedOutputLogged(
 				nil,
@@ -429,6 +366,7 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 
 		for routeInf := range remRoutes6.Iter() {
 			route := routeInf.(vpc.Route)
+			changed = true
 
 			utils.ExecCombinedOutputLogged(
 				nil,
@@ -442,6 +380,7 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 
 		for routeInf := range addRoutes.Iter() {
 			route := routeInf.(vpc.Route)
+			changed = true
 
 			utils.ExecCombinedOutputLogged(
 				[]string{
@@ -457,6 +396,7 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 
 		for routeInf := range addRoutes6.Iter() {
 			route := routeInf.(vpc.Route)
+			changed = true
 
 			utils.ExecCombinedOutputLogged(
 				[]string{
@@ -468,6 +408,10 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 				"via", route.Target,
 				"metric", "97",
 			)
+		}
+
+		if changed {
+			store.RemRoutes(inst.Id)
 		}
 	}()
 
