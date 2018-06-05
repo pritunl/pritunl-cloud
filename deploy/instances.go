@@ -461,7 +461,6 @@ func (s *Instances) Deploy() (err error) {
 
 			err = s.diff(db, inst)
 			if err != nil {
-				s.restart(inst)
 				return
 			}
 
