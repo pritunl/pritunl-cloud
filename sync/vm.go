@@ -90,7 +90,7 @@ func vmRunner() {
 	}).Info("sync: Starting hypervisor")
 
 	for {
-		time.Sleep(1 * time.Second)
+		time.Sleep(2500 * time.Millisecond)
 		if !node.Self.IsHypervisor() {
 			syncNodeFirewall()
 			continue
