@@ -685,7 +685,7 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 
 	pubAddr := ""
 	pubAddr6 := ""
-	for i := 0; i < 40; i++ {
+	for i := 0; i < 60; i++ {
 		ipData, e := utils.ExecCombinedOutputLogged(
 			[]string{
 				"No such file or directory",
