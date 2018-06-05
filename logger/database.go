@@ -3,8 +3,14 @@ package logger
 import (
 	"fmt"
 	"github.com/Sirupsen/logrus"
+	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/log"
+	"strings"
+)
+
+var (
+	databaseBuffer = make(chan *logrus.Entry, 128)
 )
 
 type databaseSender struct{}
@@ -12,15 +18,12 @@ type databaseSender struct{}
 func (s *databaseSender) Init() {}
 
 func (s *databaseSender) Parse(entry *logrus.Entry) {
-	err := s.send(entry)
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"error": err,
-		}).Error("logger: Database send error")
+	if len(buffer) <= 32 {
+		databaseBuffer <- entry
 	}
 }
 
-func (s *databaseSender) send(entry *logrus.Entry) (err error) {
+func databaseSend(entry *logrus.Entry) (err error) {
 	level := ""
 
 	db := database.GetDatabase()
@@ -73,6 +76,29 @@ func (s *databaseSender) send(entry *logrus.Entry) (err error) {
 	}
 
 	return
+}
+
+func initDatabaseSender() {
+	go func() {
+		for {
+			entry := <-databaseBuffer
+
+			if constants.Interrupt {
+				return
+			}
+
+			if strings.HasPrefix(entry.Message, "logger:") {
+				continue
+			}
+
+			err := databaseSend(entry)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"error": err,
+				}).Error("logger: Database send error")
+			}
+		}
+	}()
 }
 
 func init() {
