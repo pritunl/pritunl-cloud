@@ -197,6 +197,11 @@ func nodesGet(c *gin.Context) {
 
 		query := bson.M{}
 
+		nodeId, ok := utils.ParseObjectId(c.Query("id"))
+		if ok {
+			query["_id"] = nodeId
+		}
+
 		name := strings.TrimSpace(c.Query("name"))
 		if name != "" {
 			query["name"] = &bson.M{

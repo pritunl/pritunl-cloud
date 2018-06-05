@@ -237,6 +237,11 @@ func usersGet(c *gin.Context) {
 
 	query := bson.M{}
 
+	userId, ok := utils.ParseObjectId(c.Query("id"))
+	if ok {
+		query["_id"] = userId
+	}
+
 	username := strings.TrimSpace(c.Query("username"))
 	if username != "" {
 		query["username"] = &bson.M{

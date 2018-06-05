@@ -220,6 +220,11 @@ func authoritiesGet(c *gin.Context) {
 
 	query := bson.M{}
 
+	authrId, ok := utils.ParseObjectId(c.Query("id"))
+	if ok {
+		query["_id"] = authrId
+	}
+
 	name := strings.TrimSpace(c.Query("name"))
 	if name != "" {
 		query["name"] = &bson.M{

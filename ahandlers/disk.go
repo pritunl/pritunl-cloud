@@ -273,6 +273,11 @@ func disksGet(c *gin.Context) {
 
 	query := bson.M{}
 
+	diskId, ok := utils.ParseObjectId(c.Query("id"))
+	if ok {
+		query["_id"] = diskId
+	}
+
 	name := strings.TrimSpace(c.Query("name"))
 	if name != "" {
 		query["name"] = &bson.M{
