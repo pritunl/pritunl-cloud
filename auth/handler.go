@@ -30,7 +30,7 @@ func Local(db *database.Database, username, password string) (
 			err = nil
 			errData = &errortypes.ErrorData{
 				Error:   "auth_invalid",
-				Message: "Authencation credentials are invalid",
+				Message: "Authentication credentials are invalid",
 			}
 			break
 		}
@@ -41,7 +41,7 @@ func Local(db *database.Database, username, password string) (
 	if !valid {
 		errData = &errortypes.ErrorData{
 			Error:   "auth_invalid",
-			Message: "Authencation credentials are invalid",
+			Message: "Authentication credentials are invalid",
 		}
 		return
 	}
