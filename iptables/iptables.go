@@ -94,7 +94,7 @@ func (r *Rules) run(cmds [][]string, ipCmd string, ipv6 bool) (err error) {
 			if err != nil {
 				if i < 2 {
 					err = nil
-					time.Sleep(500 * time.Millisecond)
+					time.Sleep(250 * time.Millisecond)
 					continue
 				} else if cmd[len(cmd)-1] == "ACCEPT" {
 					err = nil
