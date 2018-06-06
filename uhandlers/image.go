@@ -226,6 +226,11 @@ func imagesGet(c *gin.Context) {
 			},
 		}
 
+		imageId, ok := utils.ParseObjectId(c.Query("id"))
+		if ok {
+			query["_id"] = imageId
+		}
+
 		name := strings.TrimSpace(c.Query("name"))
 		if name != "" {
 			query = bson.M{

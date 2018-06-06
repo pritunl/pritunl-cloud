@@ -213,6 +213,11 @@ func firewallsGet(c *gin.Context) {
 		"organization": userOrg,
 	}
 
+	firewallId, ok := utils.ParseObjectId(c.Query("id"))
+	if ok {
+		query["_id"] = firewallId
+	}
+
 	name := strings.TrimSpace(c.Query("name"))
 	if name != "" {
 		query["name"] = &bson.M{
