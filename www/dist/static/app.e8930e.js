@@ -4127,7 +4127,15 @@ System.registerDynamic("app/components/UsersFilter.js", ["npm:react@16.3.2.js", 
             if (this.props.filter === null) {
                 return React.createElement("div", null);
             }
-            return React.createElement("div", { className: "layout horizontal wrap", style: css.filters }, React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Username", value: this.props.filter.username, onChange: val => {
+            return React.createElement("div", { className: "layout horizontal wrap", style: css.filters }, React.createElement(SearchInput_1.default, { style: css.input, placeholder: "User ID", value: this.props.filter.id, onChange: val => {
+                    let filter = Object.assign({}, this.props.filter);
+                    if (val) {
+                        filter.id = val;
+                    } else {
+                        delete filter.id;
+                    }
+                    this.props.onFilter(filter);
+                } }), React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Username", value: this.props.filter.username, onChange: val => {
                     let filter = Object.assign({}, this.props.filter);
                     if (val) {
                         filter.username = val;
@@ -10702,7 +10710,15 @@ System.registerDynamic("app/components/NodesFilter.js", ["npm:react@16.3.2.js", 
                     zonesSelect.push(React.createElement("option", { key: zone.id, value: zone.id }, zone.name));
                 }
             }
-            return React.createElement("div", { className: "layout horizontal wrap", style: css.filters }, React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Name", value: this.props.filter.name, onChange: val => {
+            return React.createElement("div", { className: "layout horizontal wrap", style: css.filters }, React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Node ID", value: this.props.filter.id, onChange: val => {
+                    let filter = Object.assign({}, this.props.filter);
+                    if (val) {
+                        filter.id = val;
+                    } else {
+                        delete filter.id;
+                    }
+                    this.props.onFilter(filter);
+                } }), React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Name", value: this.props.filter.name, onChange: val => {
                     let filter = Object.assign({}, this.props.filter);
                     if (val) {
                         filter.name = val;
@@ -13161,7 +13177,15 @@ System.registerDynamic("app/components/VpcsFilter.js", ["npm:react@16.3.2.js", "
                     organizationsSelect.push(React.createElement("option", { key: organization.id, value: organization.id }, organization.name));
                 }
             }
-            return React.createElement("div", { className: "layout horizontal wrap", style: css.filters }, React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Name", value: this.props.filter.name, onChange: val => {
+            return React.createElement("div", { className: "layout horizontal wrap", style: css.filters }, React.createElement(SearchInput_1.default, { style: css.input, placeholder: "VPC ID", value: this.props.filter.id, onChange: val => {
+                    let filter = Object.assign({}, this.props.filter);
+                    if (val) {
+                        filter.id = val;
+                    } else {
+                        delete filter.id;
+                    }
+                    this.props.onFilter(filter);
+                } }), React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Name", value: this.props.filter.name, onChange: val => {
                     let filter = Object.assign({}, this.props.filter);
                     if (val) {
                         filter.name = val;
@@ -14104,7 +14128,15 @@ System.registerDynamic("app/components/ImagesFilter.js", ["npm:react@16.3.2.js",
                     organizationsSelect.push(React.createElement("option", { key: organization.id, value: organization.id }, organization.name));
                 }
             }
-            return React.createElement("div", { className: "layout horizontal wrap", style: css.filters }, React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Name", value: this.props.filter.name, onChange: val => {
+            return React.createElement("div", { className: "layout horizontal wrap", style: css.filters }, React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Image ID", value: this.props.filter.id, onChange: val => {
+                    let filter = Object.assign({}, this.props.filter);
+                    if (val) {
+                        filter.id = val;
+                    } else {
+                        delete filter.id;
+                    }
+                    this.props.onFilter(filter);
+                } }), React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Name", value: this.props.filter.name, onChange: val => {
                     let filter = Object.assign({}, this.props.filter);
                     if (val) {
                         filter.name = val;
@@ -14788,7 +14820,15 @@ System.registerDynamic("app/components/DisksFilter.js", ["npm:react@16.3.2.js", 
                     organizationsSelect.push(React.createElement("option", { key: organization.id, value: organization.id }, organization.name));
                 }
             }
-            return React.createElement("div", { className: "layout horizontal wrap", style: css.filters }, React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Name", value: this.props.filter.name, onChange: val => {
+            return React.createElement("div", { className: "layout horizontal wrap", style: css.filters }, React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Disk ID", value: this.props.filter.id, onChange: val => {
+                    let filter = Object.assign({}, this.props.filter);
+                    if (val) {
+                        filter.id = val;
+                    } else {
+                        delete filter.id;
+                    }
+                    this.props.onFilter(filter);
+                } }), React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Name", value: this.props.filter.name, onChange: val => {
                     let filter = Object.assign({}, this.props.filter);
                     if (val) {
                         filter.name = val;
@@ -17637,7 +17677,15 @@ System.registerDynamic("app/components/FirewallsFilter.js", ["npm:react@16.3.2.j
                     organizationsSelect.push(React.createElement("option", { key: organization.id, value: organization.id }, organization.name));
                 }
             }
-            return React.createElement("div", { className: "layout horizontal wrap", style: css.filters }, React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Name", value: this.props.filter.name, onChange: val => {
+            return React.createElement("div", { className: "layout horizontal wrap", style: css.filters }, React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Firewall ID", value: this.props.filter.id, onChange: val => {
+                    let filter = Object.assign({}, this.props.filter);
+                    if (val) {
+                        filter.id = val;
+                    } else {
+                        delete filter.id;
+                    }
+                    this.props.onFilter(filter);
+                } }), React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Name", value: this.props.filter.name, onChange: val => {
                     let filter = Object.assign({}, this.props.filter);
                     if (val) {
                         filter.name = val;
@@ -18357,7 +18405,15 @@ System.registerDynamic("app/components/AuthoritiesFilter.js", ["npm:react@16.3.2
                     organizationsSelect.push(React.createElement("option", { key: organization.id, value: organization.id }, organization.name));
                 }
             }
-            return React.createElement("div", { className: "layout horizontal wrap", style: css.filters }, React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Name", value: this.props.filter.name, onChange: val => {
+            return React.createElement("div", { className: "layout horizontal wrap", style: css.filters }, React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Authority ID", value: this.props.filter.id, onChange: val => {
+                    let filter = Object.assign({}, this.props.filter);
+                    if (val) {
+                        filter.id = val;
+                    } else {
+                        delete filter.id;
+                    }
+                    this.props.onFilter(filter);
+                } }), React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Name", value: this.props.filter.name, onChange: val => {
                     let filter = Object.assign({}, this.props.filter);
                     if (val) {
                         filter.name = val;
