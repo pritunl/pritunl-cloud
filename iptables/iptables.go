@@ -12,7 +12,7 @@ import (
 
 var (
 	curState  *State
-	stateLock = utils.NewTimeoutLock(1 * time.Minute)
+	stateLock = utils.NewTimeoutLock(3 * time.Minute)
 )
 
 type Rules struct {
