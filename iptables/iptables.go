@@ -73,7 +73,7 @@ func (r *Rules) run(cmds [][]string, ipCmd string, ipv6 bool) (err error) {
 		}
 
 		for i := 0; i < 3; i++ {
-			output := "'"
+			output := ""
 			if r.Namespace == "0" {
 				Lock()
 				output, err = utils.ExecCombinedOutputLogged(
