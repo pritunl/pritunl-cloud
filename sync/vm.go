@@ -93,7 +93,7 @@ func vmRunner() {
 		time.Sleep(2500 * time.Millisecond)
 		if !node.Self.IsHypervisor() {
 			syncNodeFirewall()
-			continue
+			break
 		}
 
 		err := deployState()
