@@ -256,6 +256,10 @@ func Connect() (err error) {
 		return
 	}
 
+	logrus.WithFields(logrus.Fields{
+		"mongodb_host": mgoUrl.Host,
+	}).Info("database: Connected to MongoDB server")
+
 	return
 }
 
