@@ -226,7 +226,7 @@ func authSecondaryPost(c *gin.Context) {
 		usr.Id,
 		audit.UserLogin,
 		audit.Fields{
-			"method": "local",
+			"method": "secondary",
 		},
 	)
 	if err != nil {
