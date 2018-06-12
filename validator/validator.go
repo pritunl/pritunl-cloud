@@ -10,7 +10,7 @@ import (
 )
 
 func ValidateAdmin(db *database.Database, usr *user.User,
-	isApi bool, r *http.Request) (deviceAuth bool, secProvider bson.ObjectId,
+	isApi bool, r *http.Request) (secProvider bson.ObjectId,
 	errData *errortypes.ErrorData, err error) {
 
 	if usr.Disabled || usr.Administrator != "super" {
@@ -29,10 +29,6 @@ func ValidateAdmin(db *database.Database, usr *user.User,
 		}
 
 		for _, polcy := range policies {
-			if polcy.AdminDevice {
-				deviceAuth = true
-			}
-
 			if polcy.AdminSecondary != "" {
 				secProvider = polcy.AdminSecondary
 				break
@@ -44,7 +40,7 @@ func ValidateAdmin(db *database.Database, usr *user.User,
 }
 
 func ValidateUser(db *database.Database, usr *user.User,
-	isApi bool, r *http.Request) (deviceAuth bool, secProvider bson.ObjectId,
+	isApi bool, r *http.Request) (secProvider bson.ObjectId,
 	errData *errortypes.ErrorData, err error) {
 
 	if usr.Disabled {
@@ -70,10 +66,6 @@ func ValidateUser(db *database.Database, usr *user.User,
 		}
 
 		for _, polcy := range policies {
-			if polcy.UserDevice {
-				deviceAuth = true
-			}
-
 			if polcy.UserSecondary != "" {
 				secProvider = polcy.UserSecondary
 				break
