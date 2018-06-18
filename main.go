@@ -14,12 +14,13 @@ const help = `
 Usage: pritunl-cloud COMMAND
 
 Commands:
-  version     Show version
-  mongo       Set MongoDB URI
-  set         Set a setting
-  unset       Unset a setting
-  start       Start node
-  clear-logs  Clear logs
+  version         Show version
+  mongo           Set MongoDB URI
+  set             Set a setting
+  unset           Unset a setting
+  start           Start node
+  clear-logs      Clear logs
+  reset-password  Reset administrator password
 `
 
 func Init() {
