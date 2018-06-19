@@ -29,7 +29,7 @@ func Mongo() (err error) {
 
 	logrus.WithFields(logrus.Fields{
 		"mongo_uri": config.Config.MongoUri,
-	}).Info("cmd.settings: Set MongoDB URI")
+	}).Info("cmd: Set MongoDB URI")
 
 	return
 }
