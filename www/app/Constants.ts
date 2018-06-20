@@ -7,7 +7,7 @@ export const user: boolean = !!(window as any).user;
 
 export const mobile = !!md.mobile();
 
-export const loadDelay = 500;
+export const loadDelay = 700;
 
 export const sessionTypes: {[key: string]: string} = {
 	admin: 'Admin',
