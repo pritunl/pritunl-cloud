@@ -138,7 +138,7 @@ func PublishDispatch(db *database.Database, typ string) (
 }
 
 func Subscribe(channels []string, duration time.Duration,
-	onMsg func(*Event) bool) {
+	onMsg func(*Event, error) bool) {
 
 	db := database.GetDatabase()
 	defer db.Close()
@@ -176,7 +176,7 @@ func Subscribe(channels []string, duration time.Duration,
 				continue
 			}
 
-			if !onMsg(msg) {
+			if !onMsg(msg, nil) {
 				return
 			}
 		}
@@ -223,8 +223,8 @@ func Register(channel string, callback func(*Event)) {
 
 func subscribe(channels []string) {
 	Subscribe(channels, 10*time.Second,
-		func(msg *Event) bool {
-			if msg == nil {
+		func(msg *Event, err error) bool {
+			if msg == nil || err != nil {
 				return true
 			}
 
