@@ -9,6 +9,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/settings"
+	"github.com/pritunl/pritunl-cloud/user"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -49,7 +50,48 @@ func ResetId() (err error) {
 
 	logrus.WithFields(logrus.Fields{
 		"node_id": config.Config.NodeId,
-	}).Info("cmd.settings: Reset node ID")
+	}).Info("cmd: Reset node ID")
+
+	return
+}
+
+func ResetPassword() (err error) {
+	db := database.GetDatabase()
+	defer db.Close()
+
+	coll := db.Users()
+
+	err = coll.Remove(&bson.M{
+		"username": "pritunl",
+	})
+	if err != nil {
+		if _, ok := err.(*database.NotFoundError); ok {
+			err = nil
+		} else {
+			return
+		}
+	}
+
+	usr := user.User{
+		Type:          user.Local,
+		Username:      "pritunl",
+		Administrator: "super",
+	}
+
+	err = usr.SetPassword("pritunl")
+	if err != nil {
+		return
+	}
+
+	err = usr.Insert(db)
+	if err != nil {
+		return
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"username": "pritunl",
+		"password": "pritunl",
+	}).Info("cmd: Password reset")
 
 	return
 }
