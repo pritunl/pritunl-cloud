@@ -1,7 +1,9 @@
 package event
 
 import (
+	"fmt"
 	"github.com/Sirupsen/logrus"
+	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
 	"gopkg.in/mgo.v2/bson"
@@ -21,6 +23,7 @@ func (l *Listener) Listen() chan *Event {
 
 func (l *Listener) Close() {
 	l.state = false
+	close(l.stream)
 }
 
 func (l *Listener) sub(db *database.Database, cursorId bson.ObjectId) {
@@ -114,7 +117,14 @@ func (l *Listener) init() (err error) {
 
 	l.state = true
 
-	go l.sub(db, cursorId)
+	go func() {
+		if r := recover(); r != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": errors.New(fmt.Sprintf("%s", r)),
+			}).Error("event: Listener panic")
+		}
+		l.sub(db, cursorId)
+	}()
 
 	return
 }
@@ -122,7 +132,7 @@ func (l *Listener) init() (err error) {
 func SubscribeListener(channels []string) (lst *Listener, err error) {
 	lst = &Listener{
 		channels: channels,
-		stream:   make(chan *Event),
+		stream:   make(chan *Event, 10),
 	}
 
 	err = lst.init()
