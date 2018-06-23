@@ -2,6 +2,7 @@ package secondary
 
 import (
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"gopkg.in/mgo.v2/bson"
 	"time"
@@ -37,9 +38,15 @@ func Get(db *database.Database, token string, typ string) (
 	coll := db.SecondaryTokens()
 	secd = &Secondary{}
 
+	timestamp := time.Now().Add(
+		-time.Duration(settings.Auth.SecondaryExpire) * time.Second)
+
 	err = coll.FindOne(&bson.M{
 		"_id":  token,
 		"type": typ,
+		"timestamp": &bson.M{
+			"$gte": timestamp,
+		},
 	}, secd)
 	if err != nil {
 		return
