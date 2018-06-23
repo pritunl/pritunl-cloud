@@ -20249,7 +20249,7 @@ System.registerDynamic("app/components/Settings.js", ["npm:react@16.3.2.js", "ap
                         role_management: 'set_on_insert'
                     }];
                     this.set('auth_providers', authProviders);
-                } }, React.createElement("option", { value: "azure" }, "Azure"), React.createElement("option", { value: "google" }, "Google"), React.createElement("option", { value: "onelogin" }, "OneLogin"), React.createElement("option", { value: "okta" }, "Okta"))), React.createElement(PagePanel_1.default, null, React.createElement("div", { className: "pt-border", style: css.secondaryProviders }, React.createElement("h5", { style: css.providersLabel }, "Two-Factor Providers")), secondaryProviders, React.createElement(PageSelectButton_1.default, { label: "Add Two-Factor Provider", value: this.state.secondaryProvider, buttonClass: "pt-intent-success", onChange: val => {
+                } }, React.createElement("option", { value: "azure" }, "Azure"), React.createElement("option", { value: "google" }, "Google"), React.createElement("option", { value: "onelogin" }, "OneLogin"), React.createElement("option", { value: "okta" }, "Okta"))), React.createElement(PagePanel_1.default, null, React.createElement("div", { className: "pt-border", style: css.secondaryProviders }, React.createElement("h5", { style: css.providersLabel }, "Two-Factor Providers")), secondaryProviders, React.createElement(PageSelectButton_1.default, { label: "Add Secondary Provider", value: this.state.secondaryProvider, buttonClass: "pt-intent-success", onChange: val => {
                     this.setState(Object.assign({}, this.state, { secondaryProvider: val }));
                 }, onSubmit: () => {
                     let authProviders = [...settings.auth_secondary_providers, {
@@ -26221,7 +26221,7 @@ System.registerDynamic("app/Constants.js", ["npm:mobile-detect@1.4.1.js"], true,
     let md = new MobileDetect(window.navigator.userAgent);
     exports.user = !!window.user;
     exports.mobile = !!md.mobile();
-    exports.loadDelay = 500;
+    exports.loadDelay = 700;
     exports.sessionTypes = {
         admin: 'Admin',
         proxy: 'Service',
@@ -63392,7 +63392,7 @@ System.registerDynamic("app/Alert.js", ["npm:@blueprintjs/core@2.3.1.js"], true,
         if (timeout === undefined) {
             timeout = 5000;
         }
-        toaster.show({
+        return toaster.show({
             intent: Blueprint.Intent.SUCCESS,
             message: message,
             timeout: timeout
@@ -63403,7 +63403,7 @@ System.registerDynamic("app/Alert.js", ["npm:@blueprintjs/core@2.3.1.js"], true,
         if (timeout === undefined) {
             timeout = 5000;
         }
-        toaster.show({
+        return toaster.show({
             intent: Blueprint.Intent.PRIMARY,
             message: message,
             timeout: timeout
@@ -63414,7 +63414,7 @@ System.registerDynamic("app/Alert.js", ["npm:@blueprintjs/core@2.3.1.js"], true,
         if (timeout === undefined) {
             timeout = 5000;
         }
-        toaster.show({
+        return toaster.show({
             intent: Blueprint.Intent.WARNING,
             message: message,
             timeout: timeout
@@ -63425,7 +63425,7 @@ System.registerDynamic("app/Alert.js", ["npm:@blueprintjs/core@2.3.1.js"], true,
         if (timeout === undefined) {
             timeout = 5000;
         }
-        toaster.show({
+        return toaster.show({
             intent: Blueprint.Intent.DANGER,
             message: message,
             timeout: timeout
@@ -63439,14 +63439,21 @@ System.registerDynamic("app/Alert.js", ["npm:@blueprintjs/core@2.3.1.js"], true,
         try {
             message = res.body.error_msg || message;
         } catch (err) {}
-        toaster.show({
+        return toaster.show({
             intent: Blueprint.Intent.DANGER,
             message: message,
             timeout: timeout
         });
     }
     exports.errorRes = errorRes;
+    function dismiss(key) {
+        toaster.dismiss(key);
+    }
+    exports.dismiss = dismiss;
     function init() {
+        if (toaster) {
+            return;
+        }
         if (Blueprint.Toaster) {
             toaster = Blueprint.Toaster.create({
                 position: Blueprint.Position.BOTTOM
