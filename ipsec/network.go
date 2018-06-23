@@ -256,7 +256,68 @@ func networkConf(vc *vpc.Vpc,
 		return
 	}
 
-	time.Sleep(6 * time.Second)
+	time.Sleep(2 * time.Second)
+	start := time.Now()
+
+	pubAddr := ""
+	pubAddr6 := ""
+	for i := 0; i < 60; i++ {
+		ipData, e := utils.ExecCombinedOutputLogged(
+			[]string{
+				"No such file or directory",
+				"does not exist",
+			},
+			"ip", "netns", "exec", namespace,
+			"ip", "-f", "inet", "-o", "addr",
+			"show", "dev", ifaceInternal,
+		)
+		if e != nil {
+			err = e
+			return
+		}
+
+		fields := strings.Fields(ipData)
+		if len(fields) > 3 {
+			ipAddr := net.ParseIP(strings.Split(fields[3], "/")[0])
+			pubAddr = ipAddr.String()
+		}
+
+		ipData, e = utils.ExecCombinedOutputLogged(
+			[]string{
+				"No such file or directory",
+				"does not exist",
+			},
+			"ip", "netns", "exec", namespace,
+			"ip", "-f", "inet6", "-o", "addr",
+			"show", "dev", ifaceInternal,
+		)
+		if e != nil {
+			err = e
+			return
+		}
+
+		for _, line := range strings.Split(ipData, "\n") {
+			if !strings.Contains(line, "global") {
+				continue
+			}
+
+			fields = strings.Fields(ipData)
+			if len(fields) > 3 {
+				ipAddr := net.ParseIP(strings.Split(fields[3], "/")[0])
+				pubAddr6 = ipAddr.String()
+			}
+
+			break
+		}
+
+		if pubAddr != "" && (pubAddr6 != "" ||
+			time.Since(start) > 8*time.Second) {
+
+			break
+		}
+
+		time.Sleep(250 * time.Millisecond)
+	}
 
 	networkStatesLock.Lock()
 	networkStates[vc.Id] = true
