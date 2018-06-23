@@ -57,6 +57,20 @@ func authSessionPost(c *gin.Context) {
 		return
 	}
 
+	err = audit.New(
+		db,
+		c.Request,
+		usr.Id,
+		audit.UserPrimaryApprove,
+		audit.Fields{
+			"method": "local",
+		},
+	)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
 	secProviderId, errData, err := validator.ValidateUser(
 		db, usr, false, c.Request)
 	if err != nil {
@@ -147,12 +161,18 @@ func authSecondaryPost(c *gin.Context) {
 		if _, ok := err.(*database.NotFoundError); ok {
 			errData := &errortypes.ErrorData{
 				Error:   "secondary_expired",
-				Message: "Two-factor authentication has expired",
+				Message: "Secondary authentication has expired",
 			}
 			c.JSON(401, errData)
 		} else {
 			utils.AbortWithError(c, 500, err)
 		}
+		return
+	}
+
+	usr, err := secd.GetUser(db)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
 		return
 	}
 
@@ -167,11 +187,36 @@ func authSecondaryPost(c *gin.Context) {
 	}
 
 	if errData != nil {
+		err = audit.New(
+			db,
+			c.Request,
+			usr.Id,
+			audit.UserLoginFailed,
+			audit.Fields{
+				"method":      "secondary",
+				"provider_id": secd.ProviderId,
+				"error":       errData.Error,
+				"message":     errData.Message,
+			},
+		)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
 		c.JSON(401, errData)
 		return
 	}
 
-	usr, err := secd.GetUser(db)
+	err = audit.New(
+		db,
+		c.Request,
+		usr.Id,
+		audit.UserSecondaryApprove,
+		audit.Fields{
+			"provider_id": secd.ProviderId,
+		},
+	)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -190,8 +235,10 @@ func authSecondaryPost(c *gin.Context) {
 			usr.Id,
 			audit.UserLoginFailed,
 			audit.Fields{
-				"error":   errData.Error,
-				"message": errData.Message,
+				"method":      "secondary",
+				"provider_id": secd.ProviderId,
+				"error":       errData.Error,
+				"message":     errData.Message,
 			},
 		)
 		if err != nil {
@@ -209,7 +256,8 @@ func authSecondaryPost(c *gin.Context) {
 		usr.Id,
 		audit.UserLogin,
 		audit.Fields{
-			"method": "secondary",
+			"method":      "secondary",
+			"provider_id": secd.ProviderId,
 		},
 	)
 	if err != nil {
@@ -234,6 +282,21 @@ func logoutGet(c *gin.Context) {
 
 	if authr.IsValid() {
 		err := authr.Remove(db)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+	}
+
+	usr, _ := authr.GetUser(db)
+	if usr != nil {
+		err := audit.New(
+			db,
+			c.Request,
+			usr.Id,
+			audit.UserLogout,
+			audit.Fields{},
+		)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
 			return
@@ -280,6 +343,18 @@ func logoutAllGet(c *gin.Context) {
 		}
 	}
 
+	err = audit.New(
+		db,
+		c.Request,
+		usr.Id,
+		audit.UserLogoutAll,
+		audit.Fields{},
+	)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
 	c.Redirect(302, "/")
 }
 
@@ -309,6 +384,20 @@ func authCallbackGet(c *gin.Context) {
 		return
 	}
 
+	err = audit.New(
+		db,
+		c.Request,
+		usr.Id,
+		audit.UserPrimaryApprove,
+		audit.Fields{
+			"method": "callback",
+		},
+	)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
 	secProviderId, errData, err := validator.ValidateUser(
 		db, usr, false, c.Request)
 	if err != nil {
@@ -323,6 +412,7 @@ func authCallbackGet(c *gin.Context) {
 			usr.Id,
 			audit.UserLoginFailed,
 			audit.Fields{
+				"method":  "callback",
 				"error":   errData.Error,
 				"message": errData.Message,
 			},
@@ -363,7 +453,7 @@ func authCallbackGet(c *gin.Context) {
 		usr.Id,
 		audit.UserLogin,
 		audit.Fields{
-			"method": "sso",
+			"method": "callback",
 		},
 	)
 	if err != nil {
