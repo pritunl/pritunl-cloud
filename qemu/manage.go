@@ -682,6 +682,7 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	}
 
 	time.Sleep(2 * time.Second)
+	start := time.Now()
 
 	pubAddr := ""
 	pubAddr6 := ""
@@ -742,7 +743,9 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			break
 		}
 
-		if pubAddr != "" {
+		if pubAddr != "" && (pubAddr6 != "" ||
+			time.Since(start) > 8*time.Second) {
+
 			break
 		}
 
