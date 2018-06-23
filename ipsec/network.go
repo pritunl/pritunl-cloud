@@ -145,6 +145,15 @@ func networkConf(vc *vpc.Vpc,
 	_, err = utils.ExecCombinedOutputLogged(
 		nil,
 		"ip", "netns", "exec", namespace,
+		"sysctl", "-w", "net.ipv6.conf.default.forwarding=1",
+	)
+	if err != nil {
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", namespace,
 		"ip", "link",
 		"set", "dev", "lo", "up",
 	)
