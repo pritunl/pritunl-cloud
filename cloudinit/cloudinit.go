@@ -58,6 +58,8 @@ growpart:
     mode: auto
     devices: ["/"]
     ignore_growroot_disabled: false
+runcmd:
+  - [ sysctl, -w, net.ipv4.conf.eth0.send_redirects=0 ]
 users:
   - name: cloud
     groups: adm, video, wheel, systemd-journal
