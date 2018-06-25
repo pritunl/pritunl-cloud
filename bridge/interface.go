@@ -1,16 +1,11 @@
 package bridge
 
 import (
-	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"strings"
 )
 
 func getDefault() (iface string, err error) {
-	if node.Self.DefaultInterface != "" {
-		iface = node.Self.DefaultInterface
-	}
-
 	output, err := utils.ExecCombinedOutput("", "route", "-n")
 	if err != nil {
 		return
