@@ -39,7 +39,8 @@ type Node struct {
 	UserDomain         string                     `bson:"user_domain" json:"user_domain"`
 	RequestsMin        int64                      `bson:"requests_min" json:"requests_min"`
 	ForwardedForHeader string                     `bson:"forwarded_for_header" json:"forwarded_for_header"`
-	DefaultInterface   string                     `bson:"default_interface" json:"default_interface"`
+	ExternalInterface  string                     `bson:"external_interface" json:"external_interface"`
+	InternalInterface  string                     `bson:"internal_interface" json:"internal_interface"`
 	Firewall           bool                       `bson:"firewall" json:"firewall"`
 	NetworkRoles       []string                   `bson:"network_roles" json:"network_roles"`
 	Memory             float64                    `bson:"memory" json:"memory"`
@@ -275,7 +276,8 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.AdminDomain = nde.AdminDomain
 	n.UserDomain = nde.UserDomain
 	n.ForwardedForHeader = nde.ForwardedForHeader
-	n.DefaultInterface = nde.DefaultInterface
+	n.ExternalInterface = nde.ExternalInterface
+	n.InternalInterface = nde.InternalInterface
 	n.Firewall = nde.Firewall
 	n.NetworkRoles = nde.NetworkRoles
 	n.VirtPath = nde.VirtPath
