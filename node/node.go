@@ -33,6 +33,7 @@ type Node struct {
 	Timestamp          time.Time                  `bson:"timestamp" json:"timestamp"`
 	Port               int                        `bson:"port" json:"port"`
 	Protocol           string                     `bson:"protocol" json:"protocol"`
+	Hypervisor         string                     `bson:"hypervisor" json:"hypervisor"`
 	Certificate        bson.ObjectId              `bson:"certificate" json:"certificate"`
 	Certificates       []bson.ObjectId            `bson:"certificates" json:"certificates"`
 	AdminDomain        string                     `bson:"admin_domain" json:"admin_domain"`
@@ -110,6 +111,10 @@ func (n *Node) IsHypervisor() bool {
 
 func (n *Node) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
+
+	if n.Hypervisor == "" {
+		n.Hypervisor = Kvm
+	}
 
 	if n.Protocol != "http" && n.Protocol != "https" {
 		errData = &errortypes.ErrorData{
@@ -272,6 +277,7 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.Types = nde.Types
 	n.Port = nde.Port
 	n.Protocol = nde.Protocol
+	n.Hypervisor = nde.Hypervisor
 	n.Certificates = nde.Certificates
 	n.AdminDomain = nde.AdminDomain
 	n.UserDomain = nde.UserDomain
