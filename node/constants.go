@@ -6,4 +6,6 @@ const (
 	Hypervisor   = "hypervisor"
 	DefaultRoot  = "/cloud"
 	DefaultCache = "/cloud/cache"
+	Qemu         = "qemu"
+	Kvm          = "kvm"
 )
