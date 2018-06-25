@@ -129,7 +129,7 @@ func GetVmInfo(vmId bson.ObjectId, getDisks bool) (
 		addr6 := ""
 
 		namespace := vm.GetNamespace(virt.Id, 0)
-		ifaceInternal := vm.GetIfaceInternal(virt.Id, 0)
+		ifaceExternal := vm.GetIfaceExternal(virt.Id, 0)
 
 		ipData, e := utils.ExecCombinedOutputLogged(
 			[]string{
@@ -139,7 +139,7 @@ func GetVmInfo(vmId bson.ObjectId, getDisks bool) (
 			},
 			"ip", "netns", "exec", namespace,
 			"ip", "-f", "inet", "-o", "addr",
-			"show", "dev", ifaceInternal,
+			"show", "dev", ifaceExternal,
 		)
 		if e != nil {
 			err = e
@@ -164,7 +164,7 @@ func GetVmInfo(vmId bson.ObjectId, getDisks bool) (
 			},
 			"ip", "netns", "exec", namespace,
 			"ip", "-f", "inet6", "-o", "addr",
-			"show", "dev", ifaceInternal,
+			"show", "dev", ifaceExternal,
 		)
 		if e != nil {
 			err = e
@@ -376,12 +376,23 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	}
 
 	iface := vm.GetIface(virt.Id, 0)
-	ifaceVirt := vm.GetIfaceVirt(virt.Id, 0)
+	ifaceExternalVirt := vm.GetIfaceVirt(virt.Id, 0)
+	ifaceInternalVirt := vm.GetIfaceVirt(virt.Id, 1)
+	ifaceExternal := vm.GetIfaceExternal(virt.Id, 0)
 	ifaceInternal := vm.GetIfaceInternal(virt.Id, 0)
 	ifaceVlan := vm.GetIfaceVlan(virt.Id, 0)
 	namespace := vm.GetNamespace(virt.Id, 0)
-	pidPath := fmt.Sprintf("/var/run/dhclient-%s.pid", ifaceInternal)
+	pidPath := fmt.Sprintf("/var/run/dhclient-%s.pid", ifaceExternal)
 	adapter := virt.NetworkAdapters[0]
+
+	externalIface := node.Self.ExternalInterface
+	internalIface := node.Self.InternalInterface
+	if externalIface == "" {
+		externalIface = settings.Local.BridgeName
+	}
+	if internalIface == "" {
+		internalIface = externalIface
+	}
 
 	vc, err := vpc.Get(db, adapter.VpcId)
 	if err != nil {
@@ -426,18 +437,23 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	utils.ExecCombinedOutput("", "ip", "link", "set", ifaceVirt, "down")
-	utils.ExecCombinedOutput("", "ip", "link", "del", ifaceVirt)
+	utils.ExecCombinedOutput("", "ip", "link",
+		"set", ifaceExternalVirt, "down")
+	utils.ExecCombinedOutput("", "ip", "link", "del", ifaceExternalVirt)
+	utils.ExecCombinedOutput("", "ip", "link",
+		"set", ifaceInternalVirt, "down")
+	utils.ExecCombinedOutput("", "ip", "link", "del", ifaceInternalVirt)
 
-	virtMacAddr := vm.GetMacAddrVirt(virt.Id, vc.Id)
+	macAddrExternal := vm.GetMacAddrExternal(virt.Id, vc.Id)
+	macAddrInternal := vm.GetMacAddrInternal(virt.Id, vc.Id)
 
 	_, err = utils.ExecCombinedOutputLogged(
 		nil,
 		"ip", "link",
-		"add", ifaceVirt,
+		"add", ifaceExternalVirt,
 		"type", "veth",
-		"peer", "name", ifaceInternal,
-		"addr", virtMacAddr,
+		"peer", "name", ifaceExternal,
+		"addr", macAddrExternal,
 	)
 	if err != nil {
 		PowerOff(db, virt)
@@ -447,7 +463,30 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	_, err = utils.ExecCombinedOutputLogged(
 		nil,
 		"ip", "link",
-		"set", "dev", ifaceVirt, "up",
+		"add", ifaceInternalVirt,
+		"type", "veth",
+		"peer", "name", ifaceInternal,
+		"addr", macAddrInternal,
+	)
+	if err != nil {
+		PowerOff(db, virt)
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "link",
+		"set", "dev", ifaceExternalVirt, "up",
+	)
+	if err != nil {
+		PowerOff(db, virt)
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "link",
+		"set", "dev", ifaceInternalVirt, "up",
 	)
 	if err != nil {
 		PowerOff(db, virt)
@@ -456,7 +495,26 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 
 	_, err = utils.ExecCombinedOutputLogged(
 		[]string{"already a member of a bridge"},
-		"brctl", "addif", adapter.HostInterface, ifaceVirt)
+		"brctl", "addif", externalIface, ifaceExternalVirt)
+	if err != nil {
+		PowerOff(db, virt)
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		[]string{"already a member of a bridge"},
+		"brctl", "addif", internalIface, ifaceInternalVirt)
+	if err != nil {
+		PowerOff(db, virt)
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		[]string{"File exists"},
+		"ip", "link",
+		"set", "dev", ifaceExternal,
+		"netns", namespace,
+	)
 	if err != nil {
 		PowerOff(db, virt)
 		return
@@ -476,7 +534,7 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	_, err = utils.ExecCombinedOutputLogged(
 		nil,
 		"ip", "netns", "exec", namespace,
-		"sysctl", "-w", "net.ipv6.conf.all.accept_ra=2",
+		"sysctl", "-w", "net.ipv6.conf.all.accept_ra=0",
 	)
 	if err != nil {
 		PowerOff(db, virt)
@@ -486,7 +544,7 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	_, err = utils.ExecCombinedOutputLogged(
 		nil,
 		"ip", "netns", "exec", namespace,
-		"sysctl", "-w", "net.ipv6.conf.default.accept_ra=2",
+		"sysctl", "-w", "net.ipv6.conf.default.accept_ra=0",
 	)
 	if err != nil {
 		PowerOff(db, virt)
@@ -497,7 +555,7 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		nil,
 		"ip", "netns", "exec", namespace,
 		"sysctl", "-w",
-		fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", ifaceInternal),
+		fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", ifaceExternal),
 	)
 	if err != nil {
 		PowerOff(db, virt)
@@ -540,6 +598,17 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"ip", "netns", "exec", namespace,
 		"ip", "link",
 		"set", "dev", "lo", "up",
+	)
+	if err != nil {
+		PowerOff(db, virt)
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", namespace,
+		"ip", "link",
+		"set", "dev", ifaceExternal, "up",
 	)
 	if err != nil {
 		PowerOff(db, virt)
@@ -674,7 +743,7 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		nil,
 		"ip", "netns", "exec", namespace,
 		"dhclient", "-pf", pidPath,
-		ifaceInternal,
+		ifaceExternal,
 	)
 	if err != nil {
 		PowerOff(db, virt)
@@ -694,7 +763,7 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			},
 			"ip", "netns", "exec", namespace,
 			"ip", "-f", "inet", "-o", "addr",
-			"show", "dev", ifaceInternal,
+			"show", "dev", ifaceExternal,
 		)
 		if e != nil {
 			err = e
@@ -718,7 +787,7 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			},
 			"ip", "netns", "exec", namespace,
 			"ip", "-f", "inet6", "-o", "addr",
-			"show", "dev", ifaceInternal,
+			"show", "dev", ifaceExternal,
 		)
 		if e != nil {
 			err = e
@@ -766,7 +835,7 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"ip", "netns", "exec", namespace,
 		"iptables", "-t", "nat",
 		"-A", "POSTROUTING",
-		"-o", ifaceInternal,
+		"-o", ifaceExternal,
 		"-j", "MASQUERADE",
 	)
 	iptables.Unlock()
@@ -798,7 +867,7 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			"ip", "netns", "exec", namespace,
 			"ip6tables", "-t", "nat",
 			"-A", "POSTROUTING",
-			"-o", ifaceInternal,
+			"-o", ifaceExternal,
 			"-j", "MASQUERADE",
 		)
 		iptables.Unlock()
@@ -848,20 +917,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		}
 	}
 
-	//_, err = utils.ExecCombinedOutputLogged(
-	//	nil,
-	//	"ip", "netns", "exec", namespace,
-	//	"iptables", "-t", "nat",
-	//	"-A", "POSTROUTING",
-	//	"-s", vcAddr.String(),
-	//	"-j", "SNAT",
-	//	"--to-source", addr,
-	//)
-	//if err != nil {
-	//	PowerOff(db, virt)
-	//	return
-	//}
-
 	return
 }
 
@@ -875,8 +930,8 @@ func networkStopDhClient(db *database.Database,
 		return
 	}
 
-	ifaceInternal := vm.GetIfaceInternal(virt.Id, 0)
-	pidPath := fmt.Sprintf("/var/run/dhclient-%s.pid", ifaceInternal)
+	ifaceExternal := vm.GetIfaceExternal(virt.Id, 0)
+	pidPath := fmt.Sprintf("/var/run/dhclient-%s.pid", ifaceExternal)
 
 	pid := ""
 	pidData, _ := ioutil.ReadFile(pidPath)
@@ -908,12 +963,17 @@ func NetworkConfClear(db *database.Database,
 		return
 	}
 
-	ifaceVirt := vm.GetIfaceVirt(virt.Id, 0)
+	ifaceExternalVirt := vm.GetIfaceVirt(virt.Id, 0)
+	ifaceInternalVirt := vm.GetIfaceVirt(virt.Id, 1)
 	namespace := vm.GetNamespace(virt.Id, 0)
 
 	utils.ExecCombinedOutput("", "ip", "netns", "del", namespace)
-	utils.ExecCombinedOutput("", "ip", "link", "set", ifaceVirt, "down")
-	utils.ExecCombinedOutput("", "ip", "link", "del", ifaceVirt)
+	utils.ExecCombinedOutput("", "ip", "link",
+		"set", ifaceExternalVirt, "down")
+	utils.ExecCombinedOutput("", "ip", "link", "del", ifaceExternalVirt)
+	utils.ExecCombinedOutput("", "ip", "link",
+		"set", ifaceInternalVirt, "down")
+	utils.ExecCombinedOutput("", "ip", "link", "del", ifaceInternalVirt)
 
 	store.RemAddress(virt.Id)
 	store.RemRoutes(virt.Id)
