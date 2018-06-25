@@ -285,10 +285,14 @@ func UpdateState(db *database.Database, instances []*instance.Instance,
 	}
 
 	for _, inst := range instances {
+		if !inst.IsActive() {
+			continue
+		}
+
 		for i := range inst.Virt.NetworkAdapters {
 			namespace := vm.GetNamespace(inst.Id, i)
 			iface := vm.GetIface(inst.Id, i)
-			ifaceInternal := vm.GetIfaceInternal(inst.Id, i)
+			ifaceExternal := vm.GetIfaceExternal(inst.Id, i)
 
 			_, ok := newState.Interfaces[namespace+"-"+iface]
 			if ok {
@@ -312,8 +316,8 @@ func UpdateState(db *database.Database, instances []*instance.Instance,
 
 			ingress := firewall.MergeIngress(fires)
 
-			rules := generateInternal(namespace, ifaceInternal, ingress)
-			newState.Interfaces[namespace+"-"+ifaceInternal] = rules
+			rules := generateInternal(namespace, ifaceExternal, ingress)
+			newState.Interfaces[namespace+"-"+ifaceExternal] = rules
 
 			rules = generateVirt(namespace, iface, ingress)
 			newState.Interfaces[namespace+"-"+iface] = rules
