@@ -56,8 +56,10 @@ func (q *Qemu) Marshal() (output string, err error) {
 	}
 	cmd = append(cmd, fmt.Sprintf("type=%s%s", q.Machine, accel))
 
-	cmd = append(cmd, "-cpu")
-	cmd = append(cmd, q.Cpu)
+	if q.Kvm {
+		cmd = append(cmd, "-cpu")
+		cmd = append(cmd, q.Cpu)
+	}
 
 	cmd = append(cmd, "-smp")
 	cmd = append(cmd, fmt.Sprintf(
