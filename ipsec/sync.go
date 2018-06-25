@@ -140,7 +140,7 @@ func SyncStates(vpcs []*vpc.Vpc) {
 	curLinks := set.NewSet()
 	curNamespaces := set.NewSet()
 	curVirtIfaces := set.NewSet()
-	curInternalIfaces := set.NewSet()
+	curExternalIfaces := set.NewSet()
 
 	for _, vc := range vpcs {
 		if vc.LinkUris == nil || len(vc.LinkUris) == 0 {
@@ -169,7 +169,8 @@ func SyncStates(vpcs []*vpc.Vpc) {
 		curLinks.Add(vc.Id)
 		curNamespaces.Add(vm.GetLinkNamespace(vc.Id, 0))
 		curVirtIfaces.Add(vm.GetLinkIfaceVirt(vc.Id, 0))
-		curInternalIfaces.Add(vm.GetLinkIfaceInternal(vc.Id, 0))
+		curVirtIfaces.Add(vm.GetLinkIfaceVirt(vc.Id, 1))
+		curExternalIfaces.Add(vm.GetLinkIfaceExternal(vc.Id, 0))
 
 		go syncStates(vc)
 	}
@@ -254,7 +255,7 @@ func SyncStates(vpcs []*vpc.Vpc) {
 
 		iface := name[9:23]
 
-		if !curInternalIfaces.Contains(iface) {
+		if !curExternalIfaces.Contains(iface) {
 			pth := filepath.Join("/var/run", item.Name())
 
 			pidByt, e := ioutil.ReadFile(pth)
