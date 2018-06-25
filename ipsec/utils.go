@@ -10,8 +10,8 @@ import (
 )
 
 func networkStopDhClient(vpcId bson.ObjectId) (err error) {
-	ifaceInternal := vm.GetLinkIfaceInternal(vpcId, 0)
-	pidPath := fmt.Sprintf("/var/run/dhclient-%s.pid", ifaceInternal)
+	ifaceExternal := vm.GetLinkIfaceExternal(vpcId, 0)
+	pidPath := fmt.Sprintf("/var/run/dhclient-%s.pid", ifaceExternal)
 
 	pid := ""
 	pidData, _ := ioutil.ReadFile(pidPath)
