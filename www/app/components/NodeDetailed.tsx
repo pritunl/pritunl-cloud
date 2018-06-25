@@ -741,6 +741,14 @@ export default class NodeDetailed extends React.Component<Props, State> {
 									this.props.node.timestamp) || 'Inactive',
 							},
 							{
+								label: 'CPU Units',
+								value: (this.props.node.cpu_units || 'Unknown').toString(),
+							},
+							{
+								label: 'Memory Units',
+								value: (this.props.node.memory_units || 'Unknown').toString(),
+							},
+							{
 								label: 'Public IPv4',
 								value: publicIps,
 							},
