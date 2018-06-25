@@ -10589,9 +10589,13 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.4.1.js",
                         node = Object.assign({}, this.props.node);
                     }
                     this.setState(Object.assign({}, this.state, { changed: true, node: node, datacenter: val, zone: '' }));
-                } }, datacentersSelect), React.createElement(PageInput_1.default, { disabled: this.state.disabled, label: "Default Interface", help: "Default interface for hypervisor bridge, leave blank for automatic.", type: "text", placeholder: "Automatic", value: node.default_interface, onChange: val => {
-                    this.set('default_interface', val);
-                } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Firewall", help: "Configure firewall on node. Incorrectly configuring the firewall can block access to the node.", checked: node.firewall, onToggle: () => {
+                } }, datacentersSelect), React.createElement(PageInput_1.default, { disabled: this.state.disabled, label: "External Interface", help: "External interface for instance public interface, must be a bridge interface. Leave blank for automatic configuration.", type: "text", placeholder: "Automatic", value: node.external_interface, onChange: val => {
+                    this.set('external_interface', val);
+                } }), React.createElement(PageInput_1.default, { disabled: this.state.disabled, label: "Internal Interface", help: "Internal interface for instance private VPC interface, must be a bridge interface. Leave blank for to use external interface.", type: "text", placeholder: "Automatic", value: node.internal_interface, onChange: val => {
+                    this.set('internal_interface', val);
+                } }), React.createElement(PageSelect_1.default, { hidden: types.indexOf('hypervisor') === -1, disabled: this.state.disabled, label: "Hypervisor Mode", help: "Hypervisor mode, select KVM if CPU has hardware virtualization support.", value: node.hypervisor, onChange: val => {
+                    this.set('hypervisor', val);
+                } }, React.createElement("option", { value: "qemu" }, "QEMU"), React.createElement("option", { value: "kvm" }, "KVM")), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Firewall", help: "Configure firewall on node. Incorrectly configuring the firewall can block access to the node.", checked: node.firewall, onToggle: () => {
                     this.toggleFirewall();
                 } }), React.createElement("label", { className: "pt-label" }, "Network Roles", React.createElement(Help_1.default, { title: "Network Roles", content: "Network roles that will be matched with firewall rules. Network roles are case-sensitive. Only firewall roles without an organization will match." }), React.createElement("div", null, networkRoles)), React.createElement(PageInputButton_1.default, { disabled: this.state.disabled, buttonClass: "pt-intent-success pt-icon-add", label: "Add", type: "text", placeholder: "Add role", value: this.state.addNetworkRole, onChange: val => {
                     this.setState(Object.assign({}, this.state, { addNetworkRole: val }));
