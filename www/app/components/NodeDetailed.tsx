@@ -668,13 +668,24 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					</PageSelect>
 					<PageInput
 						disabled={this.state.disabled}
-						label="Default Interface"
-						help="Default interface for hypervisor bridge, leave blank for automatic."
+						label="External Interface"
+						help="External interface for instance public interface, must be a bridge interface. Leave blank for automatic configuration."
 						type="text"
 						placeholder="Automatic"
-						value={node.default_interface}
+						value={node.external_interface}
 						onChange={(val): void => {
-							this.set('default_interface', val);
+							this.set('external_interface', val);
+						}}
+					/>
+					<PageInput
+						disabled={this.state.disabled}
+						label="Internal Interface"
+						help="Internal interface for instance private VPC interface, must be a bridge interface. Leave blank for to use external interface."
+						type="text"
+						placeholder="Automatic"
+						value={node.internal_interface}
+						onChange={(val): void => {
+							this.set('internal_interface', val);
 						}}
 					/>
 					<PageSwitch
