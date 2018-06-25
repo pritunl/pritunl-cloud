@@ -26,7 +26,6 @@ type Qemu struct {
 	Data     string
 	Kvm      bool
 	Machine  string
-	Accel    string
 	Cpu      string
 	Cpus     int
 	Cores    int
@@ -52,7 +51,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 	cmd = append(cmd, "-machine")
 	accel := ""
-	if q.Accel != "" {
+	if q.Kvm {
 		accel = ",accel=kvm"
 	}
 	cmd = append(cmd, fmt.Sprintf("type=%s%s", q.Machine, accel))

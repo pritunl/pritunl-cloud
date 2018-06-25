@@ -5,6 +5,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/vm"
+	"github.com/pritunl/pritunl-cloud/node"
 )
 
 func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
@@ -19,9 +20,8 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 	qm = &Qemu{
 		Id:       virt.Id,
 		Data:     string(data),
-		Kvm:      true,
+		Kvm:      node.Self.Hypervisor == node.Kvm,
 		Machine:  "pc",
-		Accel:    "kvm",
 		Cpu:      "host",
 		Cpus:     1,
 		Cores:    virt.Processors,
