@@ -20,15 +20,20 @@ export interface Node {
 	firewall?: boolean;
 	network_roles?: string[];
 	requests_min?: number;
+	cpu_units?: number;
+	memory_units?: number;
 	memory?: number;
 	load1?: number;
 	load5?: number;
 	load15?: number;
+	public_ips?: string[];
+	public_ips6?: string[];
 	forwarded_for_header?: string;
 	software_version?: string;
 }
 
 export interface Filter {
+	id?: string;
 	name?: string;
 	zone?: string;
 	network_role?: string;
