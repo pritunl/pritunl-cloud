@@ -7,7 +7,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/paths"
-	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
 	"gopkg.in/mgo.v2/bson"
@@ -189,6 +188,11 @@ func (i *Instance) Json() {
 		i.Status = "Destroying"
 		break
 	}
+}
+
+func (i *Instance) IsActive() bool {
+	return i.State == Start || i.VmState == vm.Running ||
+		i.VmState == vm.Starting || i.VmState == vm.Provisioning
 }
 
 func (i *Instance) PreCommit() {
