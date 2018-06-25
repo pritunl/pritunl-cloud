@@ -40,11 +40,21 @@ func networkConf(vc *vpc.Vpc,
 	}).Info("ipsec: Configuring IPsec network namespace")
 
 	namespace := vm.GetLinkNamespace(vc.Id, 0)
-	ifaceVirt := vm.GetLinkIfaceVirt(vc.Id, 0)
+	ifaceExternalVirt := vm.GetLinkIfaceVirt(vc.Id, 0)
+	ifaceInternalVirt := vm.GetLinkIfaceVirt(vc.Id, 1)
 	ifaceVlan := vm.GetIfaceVlan(vc.Id, 0)
+	ifaceExternal := vm.GetLinkIfaceExternal(vc.Id, 0)
 	ifaceInternal := vm.GetLinkIfaceInternal(vc.Id, 0)
-	virtMacAddr := vm.GetMacAddrVirt(vc.Id, node.Self.Id)
-	pidPath := fmt.Sprintf("/var/run/dhclient-%s.pid", ifaceInternal)
+	pidPath := fmt.Sprintf("/var/run/dhclient-%s.pid", ifaceExternal)
+
+	externalIface := node.Self.ExternalInterface
+	internalIface := node.Self.InternalInterface
+	if externalIface == "" {
+		externalIface = settings.Local.BridgeName
+	}
+	if internalIface == "" {
+		internalIface = externalIface
+	}
 
 	_, err = utils.ExecCombinedOutputLogged(
 		[]string{"File exists"},
@@ -55,16 +65,23 @@ func networkConf(vc *vpc.Vpc,
 		return
 	}
 
-	utils.ExecCombinedOutput("", "ip", "link", "set", ifaceVirt, "down")
-	utils.ExecCombinedOutput("", "ip", "link", "del", ifaceVirt)
+	utils.ExecCombinedOutput("", "ip", "link",
+		"set", ifaceExternalVirt, "down")
+	utils.ExecCombinedOutput("", "ip", "link", "del", ifaceExternalVirt)
+	utils.ExecCombinedOutput("", "ip", "link",
+		"set", ifaceInternalVirt, "down")
+	utils.ExecCombinedOutput("", "ip", "link", "del", ifaceInternalVirt)
+
+	macAddrExternal := vm.GetMacAddrExternal(vc.Id, node.Self.Id)
+	macAddrInternal := vm.GetMacAddrInternal(vc.Id, node.Self.Id)
 
 	_, err = utils.ExecCombinedOutputLogged(
 		nil,
 		"ip", "link",
-		"add", ifaceVirt,
+		"add", ifaceExternalVirt,
 		"type", "veth",
-		"peer", "name", ifaceInternal,
-		"addr", virtMacAddr,
+		"peer", "name", ifaceExternal,
+		"addr", macAddrExternal,
 	)
 	if err != nil {
 		return
@@ -73,7 +90,28 @@ func networkConf(vc *vpc.Vpc,
 	_, err = utils.ExecCombinedOutputLogged(
 		nil,
 		"ip", "link",
-		"set", "dev", ifaceVirt, "up",
+		"add", ifaceInternalVirt,
+		"type", "veth",
+		"peer", "name", ifaceInternal,
+		"addr", macAddrInternal,
+	)
+	if err != nil {
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "link",
+		"set", "dev", ifaceExternalVirt, "up",
+	)
+	if err != nil {
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "link",
+		"set", "dev", ifaceInternalVirt, "up",
 	)
 	if err != nil {
 		return
@@ -81,7 +119,24 @@ func networkConf(vc *vpc.Vpc,
 
 	_, err = utils.ExecCombinedOutputLogged(
 		[]string{"already a member of a bridge"},
-		"brctl", "addif", settings.Local.BridgeName, ifaceVirt)
+		"brctl", "addif", externalIface, ifaceExternalVirt)
+	if err != nil {
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		[]string{"already a member of a bridge"},
+		"brctl", "addif", internalIface, ifaceInternalVirt)
+	if err != nil {
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		[]string{"File exists"},
+		"ip", "link",
+		"set", "dev", ifaceExternal,
+		"netns", namespace,
+	)
 	if err != nil {
 		return
 	}
@@ -99,7 +154,7 @@ func networkConf(vc *vpc.Vpc,
 	_, err = utils.ExecCombinedOutputLogged(
 		nil,
 		"ip", "netns", "exec", namespace,
-		"sysctl", "-w", "net.ipv6.conf.all.accept_ra=2",
+		"sysctl", "-w", "net.ipv6.conf.all.accept_ra=0",
 	)
 	if err != nil {
 		return
@@ -108,7 +163,7 @@ func networkConf(vc *vpc.Vpc,
 	_, err = utils.ExecCombinedOutputLogged(
 		nil,
 		"ip", "netns", "exec", namespace,
-		"sysctl", "-w", "net.ipv6.conf.default.accept_ra=2",
+		"sysctl", "-w", "net.ipv6.conf.default.accept_ra=0",
 	)
 	if err != nil {
 		return
@@ -118,7 +173,7 @@ func networkConf(vc *vpc.Vpc,
 		nil,
 		"ip", "netns", "exec", namespace,
 		"sysctl", "-w",
-		fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", ifaceInternal),
+		fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", ifaceExternal),
 	)
 	if err != nil {
 		return
@@ -156,6 +211,16 @@ func networkConf(vc *vpc.Vpc,
 		"ip", "netns", "exec", namespace,
 		"ip", "link",
 		"set", "dev", "lo", "up",
+	)
+	if err != nil {
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", namespace,
+		"ip", "link",
+		"set", "dev", ifaceExternal, "up",
 	)
 	if err != nil {
 		return
@@ -250,7 +315,7 @@ func networkConf(vc *vpc.Vpc,
 		nil,
 		"ip", "netns", "exec", namespace,
 		"dhclient", "-pf", pidPath,
-		ifaceInternal,
+		ifaceExternal,
 	)
 	if err != nil {
 		return
@@ -269,7 +334,7 @@ func networkConf(vc *vpc.Vpc,
 			},
 			"ip", "netns", "exec", namespace,
 			"ip", "-f", "inet", "-o", "addr",
-			"show", "dev", ifaceInternal,
+			"show", "dev", ifaceExternal,
 		)
 		if e != nil {
 			err = e
@@ -289,7 +354,7 @@ func networkConf(vc *vpc.Vpc,
 			},
 			"ip", "netns", "exec", namespace,
 			"ip", "-f", "inet6", "-o", "addr",
-			"show", "dev", ifaceInternal,
+			"show", "dev", ifaceExternal,
 		)
 		if e != nil {
 			err = e
@@ -328,7 +393,7 @@ func networkConf(vc *vpc.Vpc,
 
 func syncAddr(vc *vpc.Vpc) (addr, addr6 string, err error) {
 	namespace := vm.GetLinkNamespace(vc.Id, 0)
-	ifaceInternal := vm.GetLinkIfaceInternal(vc.Id, 0)
+	ifaceExternal := vm.GetLinkIfaceExternal(vc.Id, 0)
 
 	ipData, err := utils.ExecCombinedOutputLogged(
 		[]string{
@@ -338,7 +403,7 @@ func syncAddr(vc *vpc.Vpc) (addr, addr6 string, err error) {
 		},
 		"ip", "netns", "exec", namespace,
 		"ip", "-f", "inet", "-o", "addr",
-		"show", "dev", ifaceInternal,
+		"show", "dev", ifaceExternal,
 	)
 	if err != nil {
 		return
@@ -360,7 +425,7 @@ func syncAddr(vc *vpc.Vpc) (addr, addr6 string, err error) {
 		},
 		"ip", "netns", "exec", namespace,
 		"ip", "-f", "inet6", "-o", "addr",
-		"show", "dev", ifaceInternal,
+		"show", "dev", ifaceExternal,
 	)
 	if err != nil {
 		return
