@@ -26,12 +26,17 @@ func (n *Namespace) Deploy() (err error) {
 
 	curNamespaces := set.NewSet()
 	curVirtIfaces := set.NewSet()
-	curInternalIfaces := set.NewSet()
+	curExternalIfaces := set.NewSet()
 
 	for _, inst := range instances {
+		if !inst.IsActive() {
+			continue
+		}
+
 		curNamespaces.Add(vm.GetNamespace(inst.Id, 0))
 		curVirtIfaces.Add(vm.GetIfaceVirt(inst.Id, 0))
-		curInternalIfaces.Add(vm.GetIfaceInternal(inst.Id, 0))
+		curVirtIfaces.Add(vm.GetIfaceVirt(inst.Id, 1))
+		curExternalIfaces.Add(vm.GetIfaceExternal(inst.Id, 0))
 	}
 
 	for _, iface := range interfaces {
@@ -82,7 +87,7 @@ func (n *Namespace) Deploy() (err error) {
 
 		iface := name[9:23]
 
-		if !curInternalIfaces.Contains(iface) {
+		if !curExternalIfaces.Contains(iface) {
 			pth := filepath.Join("/var/run", item.Name())
 
 			pidByt, e := ioutil.ReadFile(pth)
