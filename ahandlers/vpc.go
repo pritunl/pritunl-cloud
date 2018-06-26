@@ -57,7 +57,6 @@ func vpcPut(c *gin.Context) {
 
 	vc.Name = data.Name
 	vc.Organization = data.Organization
-	vc.Datacenter = data.Datacenter
 	vc.Routes = data.Routes
 	vc.LinkUris = data.LinkUris
 
@@ -65,7 +64,6 @@ func vpcPut(c *gin.Context) {
 		"state",
 		"name",
 		"organization",
-		"datacenter",
 		"routes",
 		"link_uris",
 	)
