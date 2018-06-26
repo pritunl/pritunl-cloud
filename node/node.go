@@ -489,6 +489,10 @@ func (n *Node) Init() (err error) {
 		n.Port = 443
 	}
 
+	if n.Hypervisor == "" {
+		n.Hypervisor = Kvm
+	}
+
 	_, err = coll.UpsertId(n.Id, &bson.M{
 		"$set": &bson.M{
 			"_id":              n.Id,
@@ -497,6 +501,7 @@ func (n *Node) Init() (err error) {
 			"timestamp":        time.Now(),
 			"protocol":         n.Protocol,
 			"port":             n.Port,
+			"hypervisor":       n.Hypervisor,
 			"software_version": n.SoftwareVersion,
 		},
 	})
