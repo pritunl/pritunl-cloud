@@ -12833,7 +12833,7 @@ System.registerDynamic("app/components/VpcLinkUri.js", ["npm:react@16.4.1.js"], 
     exports.default = VpcUriLink;
     
 });
-System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.4.1.js", "app/Constants.js", "app/actions/VpcActions.js", "app/components/VpcRoute.js", "app/components/VpcLinkUri.js", "app/components/PageInput.js", "app/components/PageSelect.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/ConfirmButton.js", "app/components/Help.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.4.1.js", "app/Constants.js", "app/actions/VpcActions.js", "app/stores/DatacentersStore.js", "app/components/VpcRoute.js", "app/components/VpcLinkUri.js", "app/components/PageInput.js", "app/components/PageSelect.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/ConfirmButton.js", "app/components/Help.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -12842,6 +12842,7 @@ System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.4.1.js", 
     const React = $__require("npm:react@16.4.1.js");
     const Constants = $__require("app/Constants.js");
     const VpcActions = $__require("app/actions/VpcActions.js");
+    const DatacentersStore_1 = $__require("app/stores/DatacentersStore.js");
     const VpcRoute_1 = $__require("app/components/VpcRoute.js");
     const VpcLinkUri_1 = $__require("app/components/VpcLinkUri.js");
     const PageInput_1 = $__require("app/components/PageInput.js");
@@ -13047,12 +13048,8 @@ System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.4.1.js", 
         }
         render() {
             let vpc = this.state.vpc || this.props.vpc;
-            let datacentersSelect = [];
-            if (this.props.datacenters.length) {
-                for (let datacenter of this.props.datacenters) {
-                    datacentersSelect.push(React.createElement("option", { key: datacenter.id, value: datacenter.id }, datacenter.name));
-                }
-            }
+            let datacenter = DatacentersStore_1.default.datacenter(vpc.datacenter);
+            let datacenterName = datacenter ? datacenter.name : vpc.datacenter;
             let organizationsSelect = [];
             if (this.props.organizations.length) {
                 for (let organization of this.props.organizations) {
@@ -13115,13 +13112,14 @@ System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.4.1.js", 
                     label: 'ID',
                     value: this.props.vpc.id || 'Unknown'
                 }, {
+                    label: 'Datacenter',
+                    value: datacenterName
+                }, {
                     label: 'Private IPv6 Network',
                     value: this.props.vpc.network6 || 'Unknown'
                 }] }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, hidden: Constants.user, label: "Organization", help: "Organization for vpc.", value: vpc.organization, onChange: val => {
                     this.set('organization', val);
-                } }, organizationsSelect), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "Datacenter", help: "Datacenter for vpc.", value: vpc.datacenter, onChange: val => {
-                    this.set('datacenter', val);
-                } }, datacentersSelect))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.vpc && !this.state.message, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
+                } }, organizationsSelect))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.vpc && !this.state.message, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
                     this.setState(Object.assign({}, this.state, { changed: false, vpc: null }));
                 }, onSave: this.onSave }));
         }
@@ -13203,7 +13201,7 @@ System.registerDynamic("app/components/Vpc.js", ["npm:react@16.4.1.js", "app/sto
         render() {
             let vpc = this.props.vpc;
             if (this.props.open) {
-                return React.createElement("div", { className: "pt-card pt-row", style: css.cardOpen }, React.createElement(VpcDetailed_1.default, { organizations: this.props.organizations, datacenters: this.props.datacenters, vpc: this.props.vpc, selected: this.props.selected, onSelect: this.props.onSelect, onClose: () => {
+                return React.createElement("div", { className: "pt-card pt-row", style: css.cardOpen }, React.createElement(VpcDetailed_1.default, { organizations: this.props.organizations, vpc: this.props.vpc, selected: this.props.selected, onSelect: this.props.onSelect, onClose: () => {
                         this.props.onOpen();
                     } }));
             }
@@ -13217,15 +13215,10 @@ System.registerDynamic("app/components/Vpc.js", ["npm:react@16.4.1.js", "app/sto
                 let org = OrganizationsStore_1.default.organization(vpc.organization);
                 orgName = org ? org.name : vpc.organization;
             } else {
-                orgName = 'Node Vpc';
+                orgName = 'Unknown';
             }
-            let datacenterName = '';
-            if (vpc.datacenter) {
-                let datacenter = DatacentersStore_1.default.datacenter(vpc.datacenter);
-                datacenterName = datacenter ? datacenter.name : vpc.datacenter;
-            } else {
-                datacenterName = 'Node Vpc';
-            }
+            let datacenter = DatacentersStore_1.default.datacenter(vpc.datacenter);
+            let datacenterName = datacenter ? datacenter.name : vpc.datacenter;
             return React.createElement("div", { className: "pt-card pt-row", style: cardStyle, onClick: evt => {
                     let target = evt.target;
                     if (target.className.indexOf('open-ignore') !== -1) {
@@ -13594,7 +13587,7 @@ System.registerDynamic("app/components/Vpcs.js", ["npm:react@16.4.1.js", "app/Co
                 datacentersSelect.push(React.createElement("option", { key: "null", value: "" }, "No Datacenters"));
             }
             this.state.vpcs.forEach(vpc => {
-                vpcsDom.push(React.createElement(Vpc_1.default, { key: vpc.id, vpc: vpc, datacenters: this.state.datacenters, organizations: this.state.organizations, selected: !!this.state.selected[vpc.id], open: !!this.state.opened[vpc.id], onSelect: shift => {
+                vpcsDom.push(React.createElement(Vpc_1.default, { key: vpc.id, vpc: vpc, organizations: this.state.organizations, selected: !!this.state.selected[vpc.id], open: !!this.state.opened[vpc.id], onSelect: shift => {
                         let selected = Object.assign({}, this.state.selected);
                         if (shift) {
                             let vpcs = this.state.vpcs;
