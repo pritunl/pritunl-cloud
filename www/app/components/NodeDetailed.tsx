@@ -688,6 +688,19 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							this.set('internal_interface', val);
 						}}
 					/>
+					<PageSelect
+						hidden={types.indexOf('hypervisor') === -1}
+						disabled={this.state.disabled}
+						label="Hypervisor Mode"
+						help="Hypervisor mode, select KVM if CPU has hardware virtualization support."
+						value={node.hypervisor}
+						onChange={(val): void => {
+							this.set('hypervisor', val);
+						}}
+					>
+						<option value="qemu">QEMU</option>
+						<option value="kvm">KVM</option>
+					</PageSelect>
 					<PageSwitch
 						disabled={this.state.disabled}
 						label="Firewall"
