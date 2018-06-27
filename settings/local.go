@@ -3,7 +3,7 @@ package settings
 var Local *local
 
 type local struct {
-	BridgeName  string
+	BridgeName string
 }
 
 func init() {
