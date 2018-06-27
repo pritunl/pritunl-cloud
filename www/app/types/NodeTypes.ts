@@ -12,6 +12,7 @@ export interface Node {
 	name?: string;
 	port?: number;
 	protocol?: string;
+	hypervisor?: string;
 	timestamp?: string;
 	admin_domain?: string;
 	user_domain?: string;
