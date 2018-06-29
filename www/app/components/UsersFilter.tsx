@@ -49,6 +49,24 @@ export default class UsersFilter extends React.Component<Props, {}> {
 		return <div className="layout horizontal wrap" style={css.filters}>
 			<SearchInput
 				style={css.input}
+				placeholder="User ID"
+				value={this.props.filter.id}
+				onChange={(val: string): void => {
+					let filter = {
+						...this.props.filter,
+					};
+
+					if (val) {
+						filter.id = val;
+					} else {
+						delete filter.id;
+					}
+
+					this.props.onFilter(filter);
+				}}
+			/>
+			<SearchInput
+				style={css.input}
 				placeholder="Username"
 				value={this.props.filter.username}
 				onChange={(val: string): void => {
