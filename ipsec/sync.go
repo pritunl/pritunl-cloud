@@ -137,10 +137,11 @@ func SyncStates(vpcs []*vpc.Vpc) {
 	db := database.GetDatabase()
 	defer db.Close()
 
-	curLinks := set.NewSet()
+	curVpcs := set.NewSet()
 	curNamespaces := set.NewSet()
 	curVirtIfaces := set.NewSet()
 	curExternalIfaces := set.NewSet()
+	sync := []*vpc.Vpc{}
 
 	for _, vc := range vpcs {
 		if vc.LinkUris == nil || len(vc.LinkUris) == 0 {
@@ -166,12 +167,18 @@ func SyncStates(vpcs []*vpc.Vpc) {
 			continue
 		}
 
-		curLinks.Add(vc.Id)
+		curVpcs.Add(vc.Id)
 		curNamespaces.Add(vm.GetLinkNamespace(vc.Id, 0))
 		curVirtIfaces.Add(vm.GetLinkIfaceVirt(vc.Id, 0))
 		curVirtIfaces.Add(vm.GetLinkIfaceVirt(vc.Id, 1))
 		curExternalIfaces.Add(vm.GetLinkIfaceExternal(vc.Id, 0))
 
+		sync = append(sync, vc)
+	}
+
+	currentVpcs = curVpcs
+
+	for _, vc := range sync {
 		go syncStates(vc)
 	}
 
