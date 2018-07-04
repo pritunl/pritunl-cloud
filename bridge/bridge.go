@@ -73,6 +73,10 @@ func Configure() (err error) {
 		return
 	}
 
+	if strings.Contains(defaultIface, "br") {
+		return
+	}
+
 	logrus.WithFields(logrus.Fields{
 		"bridge":  bridgeName,
 		"gateway": defaultIface,
