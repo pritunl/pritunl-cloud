@@ -12,7 +12,7 @@ import (
 func New(db *database.Database, userId bson.ObjectId, typ string,
 	proivderId bson.ObjectId) (secd *Secondary, err error) {
 
-	token, err := utils.RandStr(48)
+	token, err := utils.RandStr(64)
 	if err != nil {
 		return
 	}
