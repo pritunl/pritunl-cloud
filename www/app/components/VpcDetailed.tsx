@@ -3,8 +3,8 @@ import * as React from 'react';
 import * as Constants from '../Constants';
 import * as VpcTypes from '../types/VpcTypes';
 import * as VpcActions from '../actions/VpcActions';
-import * as DatacenterTypes from "../types/DatacenterTypes";
 import * as OrganizationTypes from "../types/OrganizationTypes";
+import DatacentersStore from "../stores/DatacentersStore";
 import VpcRoute from './VpcRoute';
 import VpcLinkUri from './VpcLinkUri';
 import PageInput from './PageInput';
@@ -16,7 +16,6 @@ import Help from './Help';
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
-	datacenters: DatacenterTypes.DatacentersRo;
 	vpc: VpcTypes.VpcRo;
 	selected: boolean;
 	onSelect: (shift: boolean) => void;
@@ -377,17 +376,8 @@ export default class VpcDetailed extends React.Component<Props, State> {
 		let vpc: VpcTypes.Vpc = this.state.vpc ||
 			this.props.vpc;
 
-		let datacentersSelect: JSX.Element[] = [];
-		if (this.props.datacenters.length) {
-			for (let datacenter of this.props.datacenters) {
-				datacentersSelect.push(
-					<option
-						key={datacenter.id}
-						value={datacenter.id}
-					>{datacenter.name}</option>,
-				);
-			}
-		}
+		let datacenter = DatacentersStore.datacenter(vpc.datacenter);
+		let datacenterName = datacenter ? datacenter.name : vpc.datacenter;
 
 		let organizationsSelect: JSX.Element[] = [];
 		if (this.props.organizations.length) {
@@ -570,6 +560,14 @@ export default class VpcDetailed extends React.Component<Props, State> {
 								label: 'ID',
 								value: this.props.vpc.id || 'Unknown',
 							},
+							{
+								label: 'Datacenter',
+								value: datacenterName,
+							},
+							{
+								label: 'Private IPv6 Network',
+								value: this.props.vpc.network6 || 'Unknown',
+							},
 						]}
 					/>
 					<PageSelect
@@ -583,17 +581,6 @@ export default class VpcDetailed extends React.Component<Props, State> {
 						}}
 					>
 						{organizationsSelect}
-					</PageSelect>
-					<PageSelect
-						disabled={this.state.disabled}
-						label="Datacenter"
-						help="Datacenter for vpc."
-						value={vpc.datacenter}
-						onChange={(val): void => {
-							this.set('datacenter', val);
-						}}
-					>
-						{datacentersSelect}
 					</PageSelect>
 				</div>
 			</div>
