@@ -1,15 +1,12 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
-import * as MiscUtils from '../utils/MiscUtils';
 import * as VpcTypes from '../types/VpcTypes';
 import * as OrganizationTypes from "../types/OrganizationTypes";
-import * as DatacenterTypes from "../types/DatacenterTypes";
 import OrganizationsStore from '../stores/OrganizationsStore';
 import DatacentersStore from '../stores/DatacentersStore';
 import VpcDetailed from './VpcDetailed';
 
 interface Props {
-	datacenters: DatacenterTypes.DatacentersRo;
 	organizations: OrganizationTypes.OrganizationsRo;
 	vpc: VpcTypes.VpcRo;
 	selected: boolean;
@@ -90,7 +87,6 @@ export default class Vpc extends React.Component<Props, {}> {
 			>
 				<VpcDetailed
 					organizations={this.props.organizations}
-					datacenters={this.props.datacenters}
 					vpc={this.props.vpc}
 					selected={this.props.selected}
 					onSelect={this.props.onSelect}
@@ -115,16 +111,11 @@ export default class Vpc extends React.Component<Props, {}> {
 			let org = OrganizationsStore.organization(vpc.organization);
 			orgName = org ? org.name : vpc.organization;
 		} else {
-			orgName = 'Node Vpc';
+			orgName = 'Unknown';
 		}
 
-		let datacenterName = '';
-		if (vpc.datacenter) {
-			let datacenter = DatacentersStore.datacenter(vpc.datacenter);
-			datacenterName = datacenter ? datacenter.name : vpc.datacenter;
-		} else {
-			datacenterName = 'Node Vpc';
-		}
+		let datacenter = DatacentersStore.datacenter(vpc.datacenter);
+		let datacenterName = datacenter ? datacenter.name : vpc.datacenter;
 
 		return <div
 			className="pt-card pt-row"
