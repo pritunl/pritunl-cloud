@@ -9,6 +9,12 @@ class CertificatesStore extends EventEmitter {
 	_map: {[key: string]: number} = {};
 	_token = Dispatcher.register((this._callback).bind(this));
 
+	_reset(): void {
+		this._certificates = Object.freeze([]);
+		this._map = {};
+		this.emitChange();
+	}
+
 	get certificates(): CertificateTypes.CertificatesRo {
 		return this._certificates;
 	}
@@ -57,6 +63,10 @@ class CertificatesStore extends EventEmitter {
 
 	_callback(action: CertificateTypes.CertificateDispatch): void {
 		switch (action.type) {
+			case GlobalTypes.RESET:
+				this._reset();
+				break;
+
 			case CertificateTypes.SYNC:
 				this._sync(action.data.certificates);
 				break;
