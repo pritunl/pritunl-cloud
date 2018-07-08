@@ -81,6 +81,24 @@ export default class VpcsFilter extends React.Component<Props, {}> {
 		return <div className="layout horizontal wrap" style={css.filters}>
 			<SearchInput
 				style={css.input}
+				placeholder="VPC ID"
+				value={this.props.filter.id}
+				onChange={(val: string): void => {
+					let filter = {
+						...this.props.filter,
+					};
+
+					if (val) {
+						filter.id = val;
+					} else {
+						delete filter.id;
+					}
+
+					this.props.onFilter(filter);
+				}}
+			/>
+			<SearchInput
+				style={css.input}
 				placeholder="Name"
 				value={this.props.filter.name}
 				onChange={(val: string): void => {
