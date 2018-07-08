@@ -17,6 +17,7 @@ export interface Image {
 }
 
 export interface Filter {
+	id?: string;
 	name?: string;
 	type?: string;
 	organization?: string;
