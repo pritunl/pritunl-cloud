@@ -29,6 +29,7 @@ export interface Instance {
 }
 
 export interface Filter {
+	id?: string;
 	name?: string;
 	state?: string;
 	network_role?: string;
