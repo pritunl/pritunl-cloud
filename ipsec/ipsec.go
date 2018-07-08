@@ -2,6 +2,7 @@ package ipsec
 
 import (
 	"github.com/Sirupsen/logrus"
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/link"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -16,11 +17,18 @@ import (
 var (
 	deployStates = map[bson.ObjectId][]*link.State{}
 	curStates    = map[bson.ObjectId][]*link.State{}
+	currentVpcs  = set.NewSet()
 	deployLock   = sync.Mutex{}
 	ipsecLock    = utils.NewMultiTimeoutLock(2 * time.Minute)
 )
 
 func deploy(vpcId bson.ObjectId, states []*link.State) (err error) {
+	curVpcs := currentVpcs
+
+	if !curVpcs.Contains(vpcId) {
+		return
+	}
+
 	db := database.GetDatabase()
 	defer db.Close()
 
