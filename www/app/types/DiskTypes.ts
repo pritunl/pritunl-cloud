@@ -17,6 +17,7 @@ export interface Disk {
 }
 
 export interface Filter {
+	id?: string;
 	name?: string;
 	organization?: string;
 	datacenter?: string;
