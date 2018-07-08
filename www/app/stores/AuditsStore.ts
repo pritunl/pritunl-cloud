@@ -12,6 +12,15 @@ class AuditsStore extends EventEmitter {
 	_count: number;
 	_token = Dispatcher.register((this._callback).bind(this));
 
+	_reset(): void {
+		this._userId = undefined;
+		this._audits = Object.freeze([]);
+		this._page = undefined;
+		this._pageCount = undefined;
+		this._count = undefined;
+		this.emitChange();
+	}
+
 	get userId(): string {
 		return this._userId;
 	}
@@ -78,6 +87,10 @@ class AuditsStore extends EventEmitter {
 
 	_callback(action: AuditTypes.AuditDispatch): void {
 		switch (action.type) {
+			case GlobalTypes.RESET:
+				this._reset();
+				break;
+
 			case AuditTypes.TRAVERSE:
 				this._traverse(action.data.page);
 				break;
