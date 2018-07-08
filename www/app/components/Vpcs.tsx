@@ -238,7 +238,6 @@ export default class Vpcs extends React.Component<{}, State> {
 			vpcsDom.push(<Vpc
 				key={vpc.id}
 				vpc={vpc}
-				datacenters={this.state.datacenters}
 				organizations={this.state.organizations}
 				selected={!!this.state.selected[vpc.id]}
 				open={!!this.state.opened[vpc.id]}
