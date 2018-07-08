@@ -16,6 +16,7 @@ export interface Authority {
 }
 
 export interface Filter {
+	id?: string;
 	name?: string;
 	role?: string;
 	network_role?: string;
