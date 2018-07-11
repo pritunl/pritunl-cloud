@@ -166,23 +166,7 @@
         }
       }
 
-      if (secondaryToken) {
-        secondaryLabel.innerText = secondaryLabl;
-        secondaryPush.style.display = secondaryFactors.push ?
-          'block' : 'none';
-        secondaryPhone.style.display = secondaryFactors.phone ?
-          'block' : 'none';
-        secondarySms.style.display = secondaryFactors.sms ?
-          'block' : 'none';
-        secondaryPasscode.style.display = secondaryFactors.passcode ?
-          'block' : 'none';
-        secondarySubmit.style.display = secondaryFactors.passcode ?
-          'block' : 'none';
-        authButtons.style.display = 'none';
-        secondaryAuth.style.display = 'block';
-      }
-
-      var loadState = function() {
+      var loadState = function(redirect) {
         var xmlhttp = new XMLHttpRequest();
 
         xmlhttp.onreadystatechange = function() {
@@ -212,6 +196,16 @@
               authButtons.innerHTML = buttons;
 
               bindState();
+
+              // if (redirect && state.providers.length === 1) {
+              //   provider = state.providers[0];
+              //
+              //   if (provider.type === 'local') {
+              //     onAuthLocal();
+              //   } else {
+              //     onAuthProvider(provider.id);
+              //   }
+              // }
             } else {
               var errorMsg;
 
@@ -232,30 +226,37 @@
         return false;
       };
 
+      var onAuthLocal = function () {
+        authButtons.style.display = 'none';
+        authLocal.style.display = 'block';
+      };
+
+      var onAuthProvider = function (providerId) {
+        var location = '/auth/request';
+
+        if (window.location.search !== '') {
+          location += window.location.search + '&';
+        } else {
+          location += '?';
+        }
+
+        location += 'id=' + providerId;
+
+        window.location = location;
+      };
+
       var bindState = function() {
-        document.getElementById('auth-local-btn').onclick = function() {
-          authButtons.style.display = 'none';
-          authLocal.style.display = 'block';
-        };
-
         state.providers.forEach(function(provider) {
+          if (state.providers[i].type === 'local') {
+            document.getElementById('auth-local-btn').onclick = onAuthLocal;
+            return;
+          }
+
           document.getElementById(provider.id).onclick = function() {
-            var location = '/auth/request';
-
-            if (window.location.search !== '') {
-              location += window.location.search + '&';
-            } else {
-              location += '?';
-            }
-
-            location += 'id=' + provider.id;
-
-            window.location = location;
+            onAuthProvider(provider.id);
           };
         });
       };
-
-      loadState();
 
       var flashAlert = function() {
         var alertClass = alertElm.className;
@@ -367,14 +368,6 @@
 
         return false;
       };
-
-      var authCancels = document.getElementsByClassName('auth-cancel');
-      for (i = 0; i < authCancels.length; i++) {
-        authCancels[i].onclick = function() {
-          authLocal.style.display = 'none';
-          authButtons.style.display = 'block';
-        };
-      }
 
       var flashSecondaryAlert = function() {
         var alertClass = secondaryAlert.className;
@@ -495,6 +488,34 @@
         }
       };
       secondarySubmit.onclick = secondarySub;
+
+      var authCancels = document.getElementsByClassName('auth-cancel');
+      for (i = 0; i < authCancels.length; i++) {
+        authCancels[i].onclick = function() {
+          authLocal.style.display = 'none';
+          authButtons.style.display = 'block';
+        };
+      }
+
+      if (secondaryToken) {
+        secondaryLabel.innerText = secondaryLabl;
+        secondaryPush.style.display = secondaryFactors.push ?
+          'block' : 'none';
+        secondaryPhone.style.display = secondaryFactors.phone ?
+          'block' : 'none';
+        secondarySms.style.display = secondaryFactors.sms ?
+          'block' : 'none';
+        secondaryPasscode.style.display = secondaryFactors.passcode ?
+          'block' : 'none';
+        secondarySubmit.style.display = secondaryFactors.passcode ?
+          'block' : 'none';
+        authButtons.style.display = 'none';
+        secondaryAuth.style.display = 'block';
+
+        loadState(false);
+      } else {
+        loadState(true);
+      }
     </script>
   </body>
 </html>
