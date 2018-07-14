@@ -13,6 +13,16 @@ class InstancesStore extends EventEmitter {
 	_map: {[key: string]: number} = {};
 	_token = Dispatcher.register((this._callback).bind(this));
 
+	_reset(): void {
+		this._instances = Object.freeze([]);
+		this._page = undefined;
+		this._pageCount = undefined;
+		this._filter = null;
+		this._count = undefined;
+		this._map = {};
+		this.emitChange();
+	}
+
 	get instances(): InstanceTypes.InstancesRo {
 		return this._instances;
 	}
@@ -99,6 +109,10 @@ class InstancesStore extends EventEmitter {
 
 	_callback(action: InstanceTypes.InstanceDispatch): void {
 		switch (action.type) {
+			case GlobalTypes.RESET:
+				this._reset();
+				break;
+
 			case InstanceTypes.TRAVERSE:
 				this._traverse(action.data.page);
 				break;
