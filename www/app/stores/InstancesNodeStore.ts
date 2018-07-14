@@ -9,6 +9,13 @@ class InstancesNodeStore extends EventEmitter {
 	_map: {[key: string]: [string, number]} = {};
 	_token = Dispatcher.register((this._callback).bind(this));
 
+	_reset(): void {
+		this._instances = new Map<string, InstanceTypes.InstancesRo>(
+			Object.freeze([]));
+		this._map = {};
+		this.emitChange();
+	}
+
 	instances(node: string): InstanceTypes.InstancesRo {
 		return this._instances.get(node) || [];
 	}
@@ -53,6 +60,10 @@ class InstancesNodeStore extends EventEmitter {
 
 	_callback(action: InstanceTypes.InstanceDispatch): void {
 		switch (action.type) {
+			case GlobalTypes.RESET:
+				this._reset();
+				break;
+
 			case InstanceTypes.SYNC_NODE:
 				this._sync(action.data.node, action.data.instances);
 				break;
