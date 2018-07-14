@@ -175,9 +175,6 @@
               state = JSON.parse(xmlhttp.responseText);
 
               var buttons = '';
-              buttons += '<button id="auth-local-btn" ' +
-                'class="pt-button auth-button">Username/Password</button>';
-
               var provider;
               for (i = 0; i < state.providers.length; i++) {
                 provider = state.providers[i];
@@ -185,6 +182,12 @@
                 if (provider.id === 'demo') {
                   usernameElm.value = 'demo';
                   passwordElm.value = 'demo';
+                  continue;
+                }
+
+                if (provider.type === 'local') {
+                  buttons += '<button id="auth-local-btn" ' +
+                    'class="pt-button auth-button">Username/Password</button>';
                   continue;
                 }
 
