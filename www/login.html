@@ -247,7 +247,7 @@
 
       var bindState = function() {
         state.providers.forEach(function(provider) {
-          if (state.providers[i].type === 'local') {
+          if (provider.type === 'local') {
             document.getElementById('auth-local-btn').onclick = onAuthLocal;
             return;
           }
