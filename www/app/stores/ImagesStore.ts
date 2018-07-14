@@ -13,6 +13,16 @@ class ImagesStore extends EventEmitter {
 	_map: {[key: string]: number} = {};
 	_token = Dispatcher.register((this._callback).bind(this));
 
+	_reset(): void {
+		this._images = Object.freeze([]);
+		this._page = undefined;
+		this._pageCount = undefined;
+		this._filter = null;
+		this._count = undefined;
+		this._map = {};
+		this.emitChange();
+	}
+
 	get images(): ImageTypes.ImagesRo {
 		return this._images;
 	}
@@ -99,6 +109,10 @@ class ImagesStore extends EventEmitter {
 
 	_callback(action: ImageTypes.ImageDispatch): void {
 		switch (action.type) {
+			case GlobalTypes.RESET:
+				this._reset();
+				break;
+
 			case ImageTypes.TRAVERSE:
 				this._traverse(action.data.page);
 				break;
