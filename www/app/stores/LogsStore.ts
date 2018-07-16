@@ -12,6 +12,15 @@ class LogsStore extends EventEmitter {
 	_count: number;
 	_token = Dispatcher.register((this._callback).bind(this));
 
+	_reset(): void {
+		this._logs = Object.freeze([]);
+		this._page = undefined;
+		this._pageCount = undefined;
+		this._filter = null;
+		this._count = undefined;
+		this.emitChange();
+	}
+
 	get logs(): LogTypes.LogsRo {
 		return this._logs;
 	}
@@ -88,6 +97,10 @@ class LogsStore extends EventEmitter {
 
 	_callback(action: LogTypes.LogDispatch): void {
 		switch (action.type) {
+			case GlobalTypes.RESET:
+				this._reset();
+				break;
+
 			case LogTypes.TRAVERSE:
 				this._traverse(action.data.page);
 				break;
