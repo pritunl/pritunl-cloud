@@ -13,6 +13,7 @@ export interface Vpc {
 	organization?: string;
 	datacenter?: string;
 	routes?: Route[];
+	link_uris?: string[];
 }
 
 export interface Route {
@@ -21,6 +22,7 @@ export interface Route {
 }
 
 export interface Filter {
+	id?: string;
 	name?: string;
 	network?: string;
 	organization?: string;
