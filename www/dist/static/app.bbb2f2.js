@@ -5224,7 +5224,7 @@ System.registerDynamic("npm:@blueprintjs/datetime@2.0.3/lib/cjs/dateInput.js", [
   }(core_1.AbstractPureComponent);
   exports.DateInput = DateInput;
 });
-System.registerDynamic("npm:@blueprintjs/datetime@2.0.3/lib/cjs/datePicker.js", ["npm:tslib@1.9.3.js", "npm:@blueprintjs/core@2.3.1.js", "npm:classnames@2.2.6.js", "npm:react@16.4.1.js", "npm:react-day-picker@7.1.9.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/common/classes.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/common/dateUtils.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/common/errors.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/datePickerCaption.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/datePickerCore.js"], true, function ($__require, exports, module) {
+System.registerDynamic("npm:@blueprintjs/datetime@2.0.3/lib/cjs/datePicker.js", ["npm:tslib@1.9.3.js", "npm:@blueprintjs/core@2.3.1.js", "npm:classnames@2.2.6.js", "npm:react@16.4.1.js", "npm:react-day-picker@7.1.10.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/common/classes.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/common/dateUtils.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/common/errors.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/datePickerCaption.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/datePickerCore.js"], true, function ($__require, exports, module) {
   /* */
   "use strict";
 
@@ -5235,7 +5235,7 @@ System.registerDynamic("npm:@blueprintjs/datetime@2.0.3/lib/cjs/datePicker.js", 
   var core_1 = $__require("npm:@blueprintjs/core@2.3.1.js");
   var classnames_1 = tslib_1.__importDefault($__require("npm:classnames@2.2.6.js"));
   var React = tslib_1.__importStar($__require("npm:react@16.4.1.js"));
-  var react_day_picker_1 = tslib_1.__importDefault($__require("npm:react-day-picker@7.1.9.js"));
+  var react_day_picker_1 = tslib_1.__importDefault($__require("npm:react-day-picker@7.1.10.js"));
   var Classes = tslib_1.__importStar($__require("npm:@blueprintjs/datetime@2.0.3/lib/cjs/common/classes.js"));
   var DateUtils = tslib_1.__importStar($__require("npm:@blueprintjs/datetime@2.0.3/lib/cjs/common/dateUtils.js"));
   var Errors = tslib_1.__importStar($__require("npm:@blueprintjs/datetime@2.0.3/lib/cjs/common/errors.js"));
@@ -5613,7 +5613,7 @@ System.registerDynamic("npm:@blueprintjs/datetime@2.0.3/lib/cjs/dateFormat.js", 
   }
   exports.getFormattedDateString = getFormattedDateString;
 });
-System.registerDynamic("npm:@blueprintjs/datetime@2.0.3/lib/cjs/dateRangeInput.js", ["npm:tslib@1.9.3.js", "npm:classnames@2.2.6.js", "npm:react@16.4.1.js", "npm:react-day-picker@7.1.9.js", "npm:@blueprintjs/core@2.3.1.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/common/dateUtils.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/common/errors.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/dateFormat.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/datePickerCore.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/dateRangePicker.js"], true, function ($__require, exports, module) {
+System.registerDynamic("npm:@blueprintjs/datetime@2.0.3/lib/cjs/dateRangeInput.js", ["npm:tslib@1.9.3.js", "npm:classnames@2.2.6.js", "npm:react@16.4.1.js", "npm:react-day-picker@7.1.10.js", "npm:@blueprintjs/core@2.3.1.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/common/dateUtils.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/common/errors.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/dateFormat.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/datePickerCore.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/dateRangePicker.js"], true, function ($__require, exports, module) {
   /* */
   "use strict";
 
@@ -5623,7 +5623,7 @@ System.registerDynamic("npm:@blueprintjs/datetime@2.0.3/lib/cjs/dateRangeInput.j
   var tslib_1 = $__require("npm:tslib@1.9.3.js");
   var classnames_1 = tslib_1.__importDefault($__require("npm:classnames@2.2.6.js"));
   var React = tslib_1.__importStar($__require("npm:react@16.4.1.js"));
-  var react_day_picker_1 = tslib_1.__importDefault($__require("npm:react-day-picker@7.1.9.js"));
+  var react_day_picker_1 = tslib_1.__importDefault($__require("npm:react-day-picker@7.1.10.js"));
   var core_1 = $__require("npm:@blueprintjs/core@2.3.1.js");
   var dateUtils_1 = $__require("npm:@blueprintjs/datetime@2.0.3/lib/cjs/common/dateUtils.js");
   var Errors = tslib_1.__importStar($__require("npm:@blueprintjs/datetime@2.0.3/lib/cjs/common/errors.js"));
@@ -6196,7 +6196,7 @@ System.registerDynamic("npm:@blueprintjs/datetime@2.0.3/lib/cjs/dateRangeInput.j
   }(core_1.AbstractPureComponent);
   exports.DateRangeInput = DateRangeInput;
 });
-System.registerDynamic("npm:react-day-picker@7.1.9/lib/src/Caption.js", ["npm:react@16.4.1.js", "npm:prop-types@15.6.2.js", "npm:react-day-picker@7.1.9/lib/src/LocaleUtils.js", "npm:react-day-picker@7.1.9/lib/src/keys.js", "github:jspm/nodelibs-process@0.1.2.js"], true, function ($__require, exports, module) {
+System.registerDynamic("npm:react-day-picker@7.1.10/lib/src/Caption.js", ["npm:react@16.4.1.js", "npm:prop-types@15.6.2.js", "npm:react-day-picker@7.1.10/lib/src/LocaleUtils.js", "npm:react-day-picker@7.1.10/lib/src/keys.js", "github:jspm/nodelibs-process@0.1.2.js"], true, function ($__require, exports, module) {
   var global = this || self,
       GLOBAL = global;
   /* */
@@ -6224,9 +6224,9 @@ System.registerDynamic("npm:react-day-picker@7.1.9/lib/src/Caption.js", ["npm:re
     var _react2 = _interopRequireDefault(_react);
     var _propTypes = $__require("npm:prop-types@15.6.2.js");
     var _propTypes2 = _interopRequireDefault(_propTypes);
-    var _LocaleUtils = $__require("npm:react-day-picker@7.1.9/lib/src/LocaleUtils.js");
+    var _LocaleUtils = $__require("npm:react-day-picker@7.1.10/lib/src/LocaleUtils.js");
     var _LocaleUtils2 = _interopRequireDefault(_LocaleUtils);
-    var _keys = $__require("npm:react-day-picker@7.1.9/lib/src/keys.js");
+    var _keys = $__require("npm:react-day-picker@7.1.10/lib/src/keys.js");
     function _interopRequireDefault(obj) {
       return obj && obj.__esModule ? obj : { default: obj };
     }
@@ -6306,7 +6306,7 @@ System.registerDynamic("npm:react-day-picker@7.1.9/lib/src/Caption.js", ["npm:re
     } : {};
   })($__require("github:jspm/nodelibs-process@0.1.2.js"));
 });
-System.registerDynamic("npm:react-day-picker@7.1.9/lib/src/Weekdays.js", ["npm:react@16.4.1.js", "npm:prop-types@15.6.2.js", "github:jspm/nodelibs-process@0.1.2.js"], true, function ($__require, exports, module) {
+System.registerDynamic("npm:react-day-picker@7.1.10/lib/src/Weekdays.js", ["npm:react@16.4.1.js", "npm:prop-types@15.6.2.js", "github:jspm/nodelibs-process@0.1.2.js"], true, function ($__require, exports, module) {
   var global = this || self,
       GLOBAL = global;
   /* */
@@ -6426,7 +6426,7 @@ System.registerDynamic("npm:react-day-picker@7.1.9/lib/src/Weekdays.js", ["npm:r
     } : {};
   })($__require("github:jspm/nodelibs-process@0.1.2.js"));
 });
-System.registerDynamic("npm:react-day-picker@7.1.9/lib/src/Day.js", ["npm:react@16.4.1.js", "npm:prop-types@15.6.2.js", "npm:react-day-picker@7.1.9/lib/src/DateUtils.js", "npm:react-day-picker@7.1.9/lib/src/Helpers.js", "npm:react-day-picker@7.1.9/lib/src/classNames.js", "github:jspm/nodelibs-process@0.1.2.js"], true, function ($__require, exports, module) {
+System.registerDynamic("npm:react-day-picker@7.1.10/lib/src/Day.js", ["npm:react@16.4.1.js", "npm:prop-types@15.6.2.js", "npm:react-day-picker@7.1.10/lib/src/DateUtils.js", "npm:react-day-picker@7.1.10/lib/src/Helpers.js", "npm:react-day-picker@7.1.10/lib/src/classNames.js", "github:jspm/nodelibs-process@0.1.2.js"], true, function ($__require, exports, module) {
   var global = this || self,
       GLOBAL = global;
   /* */
@@ -6465,9 +6465,9 @@ System.registerDynamic("npm:react-day-picker@7.1.9/lib/src/Day.js", ["npm:react@
     var _react2 = _interopRequireDefault(_react);
     var _propTypes = $__require("npm:prop-types@15.6.2.js");
     var _propTypes2 = _interopRequireDefault(_propTypes);
-    var _DateUtils = $__require("npm:react-day-picker@7.1.9/lib/src/DateUtils.js");
-    var _Helpers = $__require("npm:react-day-picker@7.1.9/lib/src/Helpers.js");
-    var _classNames = $__require("npm:react-day-picker@7.1.9/lib/src/classNames.js");
+    var _DateUtils = $__require("npm:react-day-picker@7.1.10/lib/src/DateUtils.js");
+    var _Helpers = $__require("npm:react-day-picker@7.1.10/lib/src/Helpers.js");
+    var _classNames = $__require("npm:react-day-picker@7.1.10/lib/src/classNames.js");
     var _classNames2 = _interopRequireDefault(_classNames);
     function _interopRequireDefault(obj) {
       return obj && obj.__esModule ? obj : { default: obj };
@@ -6636,7 +6636,7 @@ System.registerDynamic("npm:react-day-picker@7.1.9/lib/src/Day.js", ["npm:react@
     } : {};
   })($__require("github:jspm/nodelibs-process@0.1.2.js"));
 });
-System.registerDynamic("npm:react-day-picker@7.1.9/lib/src/Month.js", ["npm:react@16.4.1.js", "npm:prop-types@15.6.2.js", "npm:react-day-picker@7.1.9/lib/src/Weekdays.js", "npm:react-day-picker@7.1.9/lib/src/Day.js", "npm:react-day-picker@7.1.9/lib/src/keys.js", "npm:react-day-picker@7.1.9/lib/src/ModifiersUtils.js", "npm:react-day-picker@7.1.9/lib/src/Helpers.js", "npm:react-day-picker@7.1.9/lib/src/DateUtils.js", "github:jspm/nodelibs-process@0.1.2.js"], true, function ($__require, exports, module) {
+System.registerDynamic("npm:react-day-picker@7.1.10/lib/src/Month.js", ["npm:react@16.4.1.js", "npm:prop-types@15.6.2.js", "npm:react-day-picker@7.1.10/lib/src/Weekdays.js", "npm:react-day-picker@7.1.10/lib/src/Day.js", "npm:react-day-picker@7.1.10/lib/src/keys.js", "npm:react-day-picker@7.1.10/lib/src/ModifiersUtils.js", "npm:react-day-picker@7.1.10/lib/src/Helpers.js", "npm:react-day-picker@7.1.10/lib/src/DateUtils.js", "github:jspm/nodelibs-process@0.1.2.js"], true, function ($__require, exports, module) {
   var global = this || self,
       GLOBAL = global;
   /* */
@@ -6664,16 +6664,16 @@ System.registerDynamic("npm:react-day-picker@7.1.9/lib/src/Month.js", ["npm:reac
     var _react2 = _interopRequireDefault(_react);
     var _propTypes = $__require("npm:prop-types@15.6.2.js");
     var _propTypes2 = _interopRequireDefault(_propTypes);
-    var _Weekdays = $__require("npm:react-day-picker@7.1.9/lib/src/Weekdays.js");
+    var _Weekdays = $__require("npm:react-day-picker@7.1.10/lib/src/Weekdays.js");
     var _Weekdays2 = _interopRequireDefault(_Weekdays);
-    var _Day = $__require("npm:react-day-picker@7.1.9/lib/src/Day.js");
+    var _Day = $__require("npm:react-day-picker@7.1.10/lib/src/Day.js");
     var _Day2 = _interopRequireDefault(_Day);
-    var _keys = $__require("npm:react-day-picker@7.1.9/lib/src/keys.js");
-    var _ModifiersUtils = $__require("npm:react-day-picker@7.1.9/lib/src/ModifiersUtils.js");
+    var _keys = $__require("npm:react-day-picker@7.1.10/lib/src/keys.js");
+    var _ModifiersUtils = $__require("npm:react-day-picker@7.1.10/lib/src/ModifiersUtils.js");
     var ModifiersUtils = _interopRequireWildcard(_ModifiersUtils);
-    var _Helpers = $__require("npm:react-day-picker@7.1.9/lib/src/Helpers.js");
+    var _Helpers = $__require("npm:react-day-picker@7.1.10/lib/src/Helpers.js");
     var Helpers = _interopRequireWildcard(_Helpers);
-    var _DateUtils = $__require("npm:react-day-picker@7.1.9/lib/src/DateUtils.js");
+    var _DateUtils = $__require("npm:react-day-picker@7.1.10/lib/src/DateUtils.js");
     var DateUtils = _interopRequireWildcard(_DateUtils);
     function _interopRequireWildcard(obj) {
       if (obj && obj.__esModule) {
@@ -6879,7 +6879,7 @@ System.registerDynamic("npm:react-day-picker@7.1.9/lib/src/Month.js", ["npm:reac
     } : {};
   })($__require("github:jspm/nodelibs-process@0.1.2.js"));
 });
-System.registerDynamic("npm:react-day-picker@7.1.9/lib/src/DayPicker.js", ["npm:react@16.4.1.js", "npm:prop-types@15.6.2.js", "npm:react-day-picker@7.1.9/lib/src/Caption.js", "npm:react-day-picker@7.1.9/lib/src/Navbar.js", "npm:react-day-picker@7.1.9/lib/src/Month.js", "npm:react-day-picker@7.1.9/lib/src/Weekday.js", "npm:react-day-picker@7.1.9/lib/src/Helpers.js", "npm:react-day-picker@7.1.9/lib/src/DateUtils.js", "npm:react-day-picker@7.1.9/lib/src/LocaleUtils.js", "npm:react-day-picker@7.1.9/lib/src/ModifiersUtils.js", "npm:react-day-picker@7.1.9/lib/src/classNames.js", "npm:react-day-picker@7.1.9/lib/src/keys.js", "github:jspm/nodelibs-process@0.1.2.js"], true, function ($__require, exports, module) {
+System.registerDynamic("npm:react-day-picker@7.1.10/lib/src/DayPicker.js", ["npm:react@16.4.1.js", "npm:prop-types@15.6.2.js", "npm:react-day-picker@7.1.10/lib/src/Caption.js", "npm:react-day-picker@7.1.10/lib/src/Navbar.js", "npm:react-day-picker@7.1.10/lib/src/Month.js", "npm:react-day-picker@7.1.10/lib/src/Weekday.js", "npm:react-day-picker@7.1.10/lib/src/Helpers.js", "npm:react-day-picker@7.1.10/lib/src/DateUtils.js", "npm:react-day-picker@7.1.10/lib/src/LocaleUtils.js", "npm:react-day-picker@7.1.10/lib/src/ModifiersUtils.js", "npm:react-day-picker@7.1.10/lib/src/classNames.js", "npm:react-day-picker@7.1.10/lib/src/keys.js", "github:jspm/nodelibs-process@0.1.2.js"], true, function ($__require, exports, module) {
   var global = this || self,
       GLOBAL = global;
   /* */
@@ -6919,25 +6919,25 @@ System.registerDynamic("npm:react-day-picker@7.1.9/lib/src/DayPicker.js", ["npm:
     var _react2 = _interopRequireDefault(_react);
     var _propTypes = $__require("npm:prop-types@15.6.2.js");
     var _propTypes2 = _interopRequireDefault(_propTypes);
-    var _Caption = $__require("npm:react-day-picker@7.1.9/lib/src/Caption.js");
+    var _Caption = $__require("npm:react-day-picker@7.1.10/lib/src/Caption.js");
     var _Caption2 = _interopRequireDefault(_Caption);
-    var _Navbar = $__require("npm:react-day-picker@7.1.9/lib/src/Navbar.js");
+    var _Navbar = $__require("npm:react-day-picker@7.1.10/lib/src/Navbar.js");
     var _Navbar2 = _interopRequireDefault(_Navbar);
-    var _Month = $__require("npm:react-day-picker@7.1.9/lib/src/Month.js");
+    var _Month = $__require("npm:react-day-picker@7.1.10/lib/src/Month.js");
     var _Month2 = _interopRequireDefault(_Month);
-    var _Weekday = $__require("npm:react-day-picker@7.1.9/lib/src/Weekday.js");
+    var _Weekday = $__require("npm:react-day-picker@7.1.10/lib/src/Weekday.js");
     var _Weekday2 = _interopRequireDefault(_Weekday);
-    var _Helpers = $__require("npm:react-day-picker@7.1.9/lib/src/Helpers.js");
+    var _Helpers = $__require("npm:react-day-picker@7.1.10/lib/src/Helpers.js");
     var Helpers = _interopRequireWildcard(_Helpers);
-    var _DateUtils = $__require("npm:react-day-picker@7.1.9/lib/src/DateUtils.js");
+    var _DateUtils = $__require("npm:react-day-picker@7.1.10/lib/src/DateUtils.js");
     var DateUtils = _interopRequireWildcard(_DateUtils);
-    var _LocaleUtils = $__require("npm:react-day-picker@7.1.9/lib/src/LocaleUtils.js");
+    var _LocaleUtils = $__require("npm:react-day-picker@7.1.10/lib/src/LocaleUtils.js");
     var LocaleUtils = _interopRequireWildcard(_LocaleUtils);
-    var _ModifiersUtils = $__require("npm:react-day-picker@7.1.9/lib/src/ModifiersUtils.js");
+    var _ModifiersUtils = $__require("npm:react-day-picker@7.1.10/lib/src/ModifiersUtils.js");
     var ModifiersUtils = _interopRequireWildcard(_ModifiersUtils);
-    var _classNames = $__require("npm:react-day-picker@7.1.9/lib/src/classNames.js");
+    var _classNames = $__require("npm:react-day-picker@7.1.10/lib/src/classNames.js");
     var _classNames2 = _interopRequireDefault(_classNames);
-    var _keys = $__require("npm:react-day-picker@7.1.9/lib/src/keys.js");
+    var _keys = $__require("npm:react-day-picker@7.1.10/lib/src/keys.js");
     function _interopRequireWildcard(obj) {
       if (obj && obj.__esModule) {
         return obj;
@@ -7363,7 +7363,7 @@ System.registerDynamic("npm:react-day-picker@7.1.9/lib/src/DayPicker.js", ["npm:
       }]);
       return DayPicker;
     }(_react.Component);
-    DayPicker.VERSION = '7.1.9';
+    DayPicker.VERSION = '7.1.10';
     DayPicker.defaultProps = {
       classNames: _classNames2.default,
       tabIndex: 0,
@@ -7479,7 +7479,7 @@ System.registerDynamic("npm:react-day-picker@7.1.9/lib/src/DayPicker.js", ["npm:
     exports.default = DayPicker;
   })($__require("github:jspm/nodelibs-process@0.1.2.js"));
 });
-System.registerDynamic("npm:react-day-picker@7.1.9/lib/src/DateUtils.js", [], true, function ($__require, exports, module) {
+System.registerDynamic("npm:react-day-picker@7.1.10/lib/src/DateUtils.js", [], true, function ($__require, exports, module) {
   /* */
   "use strict";
 
@@ -7720,7 +7720,7 @@ System.registerDynamic("npm:react-day-picker@7.1.9/lib/src/DateUtils.js", [], tr
   };
   
 });
-System.registerDynamic('npm:react-day-picker@7.1.9/lib/src/LocaleUtils.js', [], true, function ($__require, exports, module) {
+System.registerDynamic('npm:react-day-picker@7.1.10/lib/src/LocaleUtils.js', [], true, function ($__require, exports, module) {
   /* */
   'use strict';
 
@@ -7775,7 +7775,7 @@ System.registerDynamic('npm:react-day-picker@7.1.9/lib/src/LocaleUtils.js', [], 
   };
   
 });
-System.registerDynamic('npm:react-day-picker@7.1.9/lib/src/Helpers.js', ['npm:react-day-picker@7.1.9/lib/src/DateUtils.js', 'npm:react-day-picker@7.1.9/lib/src/LocaleUtils.js', 'npm:react-day-picker@7.1.9/lib/src/classNames.js'], true, function ($__require, exports, module) {
+System.registerDynamic('npm:react-day-picker@7.1.10/lib/src/Helpers.js', ['npm:react-day-picker@7.1.10/lib/src/DateUtils.js', 'npm:react-day-picker@7.1.10/lib/src/LocaleUtils.js', 'npm:react-day-picker@7.1.10/lib/src/classNames.js'], true, function ($__require, exports, module) {
   /* */
   'use strict';
 
@@ -7805,9 +7805,9 @@ System.registerDynamic('npm:react-day-picker@7.1.9/lib/src/Helpers.js', ['npm:re
   exports.getDayNodes = getDayNodes;
   exports.nodeListToArray = nodeListToArray;
   exports.hasOwnProp = hasOwnProp;
-  var _DateUtils = $__require('npm:react-day-picker@7.1.9/lib/src/DateUtils.js');
-  var _LocaleUtils = $__require('npm:react-day-picker@7.1.9/lib/src/LocaleUtils.js');
-  var _classNames = $__require('npm:react-day-picker@7.1.9/lib/src/classNames.js');
+  var _DateUtils = $__require('npm:react-day-picker@7.1.10/lib/src/DateUtils.js');
+  var _LocaleUtils = $__require('npm:react-day-picker@7.1.10/lib/src/LocaleUtils.js');
+  var _classNames = $__require('npm:react-day-picker@7.1.10/lib/src/classNames.js');
   var _classNames2 = _interopRequireDefault(_classNames);
   function _interopRequireDefault(obj) {
     return obj && obj.__esModule ? obj : { default: obj };
@@ -7928,7 +7928,7 @@ System.registerDynamic('npm:react-day-picker@7.1.9/lib/src/Helpers.js', ['npm:re
     return Object.prototype.hasOwnProperty.call(obj, prop);
   }
 });
-System.registerDynamic('npm:react-day-picker@7.1.9/lib/src/ModifiersUtils.js', ['npm:react-day-picker@7.1.9/lib/src/DateUtils.js', 'npm:react-day-picker@7.1.9/lib/src/Helpers.js'], true, function ($__require, exports, module) {
+System.registerDynamic('npm:react-day-picker@7.1.10/lib/src/ModifiersUtils.js', ['npm:react-day-picker@7.1.10/lib/src/DateUtils.js', 'npm:react-day-picker@7.1.10/lib/src/Helpers.js'], true, function ($__require, exports, module) {
   /* */
   'use strict';
 
@@ -7937,8 +7937,8 @@ System.registerDynamic('npm:react-day-picker@7.1.9/lib/src/ModifiersUtils.js', [
   Object.defineProperty(exports, "__esModule", { value: true });
   exports.dayMatchesModifier = dayMatchesModifier;
   exports.getModifiersForDay = getModifiersForDay;
-  var _DateUtils = $__require('npm:react-day-picker@7.1.9/lib/src/DateUtils.js');
-  var _Helpers = $__require('npm:react-day-picker@7.1.9/lib/src/Helpers.js');
+  var _DateUtils = $__require('npm:react-day-picker@7.1.10/lib/src/DateUtils.js');
+  var _Helpers = $__require('npm:react-day-picker@7.1.10/lib/src/Helpers.js');
   function dayMatchesModifier(day, modifier) {
     if (!modifier) {
       return false;
@@ -7992,7 +7992,7 @@ System.registerDynamic('npm:react-day-picker@7.1.9/lib/src/ModifiersUtils.js', [
     getModifiersForDay: getModifiersForDay
   };
 });
-System.registerDynamic("npm:react-day-picker@7.1.9/lib/src/Weekday.js", ["npm:react@16.4.1.js", "npm:prop-types@15.6.2.js", "github:jspm/nodelibs-process@0.1.2.js"], true, function ($__require, exports, module) {
+System.registerDynamic("npm:react-day-picker@7.1.10/lib/src/Weekday.js", ["npm:react@16.4.1.js", "npm:prop-types@15.6.2.js", "github:jspm/nodelibs-process@0.1.2.js"], true, function ($__require, exports, module) {
   var global = this || self,
       GLOBAL = global;
   /* */
@@ -8098,7 +8098,7 @@ System.registerDynamic("npm:react-day-picker@7.1.9/lib/src/Weekday.js", ["npm:re
     } : {};
   })($__require("github:jspm/nodelibs-process@0.1.2.js"));
 });
-System.registerDynamic('npm:react-day-picker@7.1.9/lib/src/classNames.js', [], true, function ($__require, exports, module) {
+System.registerDynamic('npm:react-day-picker@7.1.10/lib/src/classNames.js', [], true, function ($__require, exports, module) {
   /* */
   'use strict';
 
@@ -8140,7 +8140,7 @@ System.registerDynamic('npm:react-day-picker@7.1.9/lib/src/classNames.js', [], t
   };
   
 });
-System.registerDynamic("npm:react-day-picker@7.1.9/lib/src/keys.js", [], true, function ($__require, exports, module) {
+System.registerDynamic("npm:react-day-picker@7.1.10/lib/src/keys.js", [], true, function ($__require, exports, module) {
   /* */
   "use strict";
 
@@ -8159,7 +8159,7 @@ System.registerDynamic("npm:react-day-picker@7.1.9/lib/src/keys.js", [], true, f
   var TAB = exports.TAB = 9;
   
 });
-System.registerDynamic("npm:react-day-picker@7.1.9/lib/src/Navbar.js", ["npm:react@16.4.1.js", "npm:prop-types@15.6.2.js", "npm:react-day-picker@7.1.9/lib/src/classNames.js", "npm:react-day-picker@7.1.9/lib/src/keys.js", "github:jspm/nodelibs-process@0.1.2.js"], true, function ($__require, exports, module) {
+System.registerDynamic("npm:react-day-picker@7.1.10/lib/src/Navbar.js", ["npm:react@16.4.1.js", "npm:prop-types@15.6.2.js", "npm:react-day-picker@7.1.10/lib/src/classNames.js", "npm:react-day-picker@7.1.10/lib/src/keys.js", "github:jspm/nodelibs-process@0.1.2.js"], true, function ($__require, exports, module) {
   var global = this || self,
       GLOBAL = global;
   /* */
@@ -8187,9 +8187,9 @@ System.registerDynamic("npm:react-day-picker@7.1.9/lib/src/Navbar.js", ["npm:rea
     var _react2 = _interopRequireDefault(_react);
     var _propTypes = $__require("npm:prop-types@15.6.2.js");
     var _propTypes2 = _interopRequireDefault(_propTypes);
-    var _classNames = $__require("npm:react-day-picker@7.1.9/lib/src/classNames.js");
+    var _classNames = $__require("npm:react-day-picker@7.1.10/lib/src/classNames.js");
     var _classNames2 = _interopRequireDefault(_classNames);
-    var _keys = $__require("npm:react-day-picker@7.1.9/lib/src/keys.js");
+    var _keys = $__require("npm:react-day-picker@7.1.10/lib/src/keys.js");
     function _interopRequireDefault(obj) {
       return obj && obj.__esModule ? obj : { default: obj };
     }
@@ -8338,7 +8338,7 @@ System.registerDynamic("npm:react-day-picker@7.1.9/lib/src/Navbar.js", ["npm:rea
     } : {};
   })($__require("github:jspm/nodelibs-process@0.1.2.js"));
 });
-System.registerDynamic('npm:react-day-picker@7.1.9/lib/src/PropTypes.js', ['npm:prop-types@15.6.2.js'], true, function ($__require, exports, module) {
+System.registerDynamic('npm:react-day-picker@7.1.10/lib/src/PropTypes.js', ['npm:prop-types@15.6.2.js'], true, function ($__require, exports, module) {
   /* */
   'use strict';
 
@@ -8381,17 +8381,17 @@ System.registerDynamic('npm:react-day-picker@7.1.9/lib/src/PropTypes.js', ['npm:
   exports.default = PrimitiveTypes;
   
 });
-System.registerDynamic('npm:react-day-picker@7.1.9/DayPicker.js', ['npm:react-day-picker@7.1.9/lib/src/DayPicker.js', 'npm:react-day-picker@7.1.9/lib/src/DateUtils.js', 'npm:react-day-picker@7.1.9/lib/src/LocaleUtils.js', 'npm:react-day-picker@7.1.9/lib/src/ModifiersUtils.js', 'npm:react-day-picker@7.1.9/lib/src/Weekday.js', 'npm:react-day-picker@7.1.9/lib/src/Navbar.js', 'npm:react-day-picker@7.1.9/lib/src/PropTypes.js'], true, function ($__require, exports, module) {
+System.registerDynamic('npm:react-day-picker@7.1.10/DayPicker.js', ['npm:react-day-picker@7.1.10/lib/src/DayPicker.js', 'npm:react-day-picker@7.1.10/lib/src/DateUtils.js', 'npm:react-day-picker@7.1.10/lib/src/LocaleUtils.js', 'npm:react-day-picker@7.1.10/lib/src/ModifiersUtils.js', 'npm:react-day-picker@7.1.10/lib/src/Weekday.js', 'npm:react-day-picker@7.1.10/lib/src/Navbar.js', 'npm:react-day-picker@7.1.10/lib/src/PropTypes.js'], true, function ($__require, exports, module) {
   var global = this || self,
       GLOBAL = global;
   /* */
-  var DayPicker = $__require('npm:react-day-picker@7.1.9/lib/src/DayPicker.js');
-  var DateUtils = $__require('npm:react-day-picker@7.1.9/lib/src/DateUtils.js');
-  var LocaleUtils = $__require('npm:react-day-picker@7.1.9/lib/src/LocaleUtils.js');
-  var ModifiersUtils = $__require('npm:react-day-picker@7.1.9/lib/src/ModifiersUtils.js');
-  var Weekday = $__require('npm:react-day-picker@7.1.9/lib/src/Weekday.js');
-  var Navbar = $__require('npm:react-day-picker@7.1.9/lib/src/Navbar.js');
-  var PropTypes = $__require('npm:react-day-picker@7.1.9/lib/src/PropTypes.js');
+  var DayPicker = $__require('npm:react-day-picker@7.1.10/lib/src/DayPicker.js');
+  var DateUtils = $__require('npm:react-day-picker@7.1.10/lib/src/DateUtils.js');
+  var LocaleUtils = $__require('npm:react-day-picker@7.1.10/lib/src/LocaleUtils.js');
+  var ModifiersUtils = $__require('npm:react-day-picker@7.1.10/lib/src/ModifiersUtils.js');
+  var Weekday = $__require('npm:react-day-picker@7.1.10/lib/src/Weekday.js');
+  var Navbar = $__require('npm:react-day-picker@7.1.10/lib/src/Navbar.js');
+  var PropTypes = $__require('npm:react-day-picker@7.1.10/lib/src/PropTypes.js');
   module.exports = DayPicker;
   module.exports.DateUtils = DateUtils;
   module.exports.LocaleUtils = LocaleUtils;
@@ -8400,10 +8400,10 @@ System.registerDynamic('npm:react-day-picker@7.1.9/DayPicker.js', ['npm:react-da
   module.exports.NavbarPropTypes = Navbar.propTypes;
   module.exports.PropTypes = PropTypes;
 });
-System.registerDynamic("npm:react-day-picker@7.1.9.js", ["npm:react-day-picker@7.1.9/DayPicker.js"], true, function ($__require, exports, module) {
+System.registerDynamic("npm:react-day-picker@7.1.10.js", ["npm:react-day-picker@7.1.10/DayPicker.js"], true, function ($__require, exports, module) {
   var global = this || self,
       GLOBAL = global;
-  module.exports = $__require("npm:react-day-picker@7.1.9/DayPicker.js");
+  module.exports = $__require("npm:react-day-picker@7.1.10/DayPicker.js");
 });
 System.registerDynamic("npm:@blueprintjs/datetime@2.0.3/lib/cjs/common/errors.js", [], true, function ($__require, exports, module) {
   /* */
@@ -8778,7 +8778,7 @@ System.registerDynamic("npm:@blueprintjs/datetime@2.0.3/lib/cjs/dateRangeSelecti
   }();
   exports.DateRangeSelectionStrategy = DateRangeSelectionStrategy;
 });
-System.registerDynamic("npm:@blueprintjs/datetime@2.0.3/lib/cjs/dateRangePicker.js", ["npm:tslib@1.9.3.js", "npm:@blueprintjs/core@2.3.1.js", "npm:classnames@2.2.6.js", "npm:react@16.4.1.js", "npm:react-day-picker@7.1.9.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/common/classes.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/common/dateUtils.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/common/errors.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/common/monthAndYear.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/datePickerCaption.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/datePickerCore.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/dateRangeSelectionStrategy.js"], true, function ($__require, exports, module) {
+System.registerDynamic("npm:@blueprintjs/datetime@2.0.3/lib/cjs/dateRangePicker.js", ["npm:tslib@1.9.3.js", "npm:@blueprintjs/core@2.3.1.js", "npm:classnames@2.2.6.js", "npm:react@16.4.1.js", "npm:react-day-picker@7.1.10.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/common/classes.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/common/dateUtils.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/common/errors.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/common/monthAndYear.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/datePickerCaption.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/datePickerCore.js", "npm:@blueprintjs/datetime@2.0.3/lib/cjs/dateRangeSelectionStrategy.js"], true, function ($__require, exports, module) {
   /* */
   "use strict";
 
@@ -8789,7 +8789,7 @@ System.registerDynamic("npm:@blueprintjs/datetime@2.0.3/lib/cjs/dateRangePicker.
   var core_1 = $__require("npm:@blueprintjs/core@2.3.1.js");
   var classnames_1 = tslib_1.__importDefault($__require("npm:classnames@2.2.6.js"));
   var React = tslib_1.__importStar($__require("npm:react@16.4.1.js"));
-  var react_day_picker_1 = tslib_1.__importDefault($__require("npm:react-day-picker@7.1.9.js"));
+  var react_day_picker_1 = tslib_1.__importDefault($__require("npm:react-day-picker@7.1.10.js"));
   var DateClasses = tslib_1.__importStar($__require("npm:@blueprintjs/datetime@2.0.3/lib/cjs/common/classes.js"));
   var DateUtils = tslib_1.__importStar($__require("npm:@blueprintjs/datetime@2.0.3/lib/cjs/common/dateUtils.js"));
   var DateRangeBoundary = DateUtils.DateRangeBoundary;
@@ -30381,7 +30381,7 @@ System.registerDynamic("npm:@blueprintjs/core@2.3.1/lib/cjs/accessibility/index.
   var tslib_1 = $__require("npm:tslib@1.9.3.js");
   tslib_1.__exportStar($__require("npm:@blueprintjs/core@2.3.1/lib/cjs/accessibility/focusStyleManager.js"), exports);
 });
-System.registerDynamic('npm:dom4@2.1.0/build/dom4.max.js', [], true, function ($__require, exports, module) {
+System.registerDynamic('npm:dom4@2.1.3/build/dom4.max.js', [], true, function ($__require, exports, module) {
   /* */
   "format cjs";
   /*!
@@ -31191,10 +31191,10 @@ System.registerDynamic('npm:dom4@2.1.0/build/dom4.max.js', [], true, function ($
     }
   })(self);
 });
-System.registerDynamic("npm:dom4@2.1.0.js", ["npm:dom4@2.1.0/build/dom4.max.js"], true, function ($__require, exports, module) {
+System.registerDynamic("npm:dom4@2.1.3.js", ["npm:dom4@2.1.3/build/dom4.max.js"], true, function ($__require, exports, module) {
   var global = this || self,
       GLOBAL = global;
-  module.exports = $__require("npm:dom4@2.1.0/build/dom4.max.js");
+  module.exports = $__require("npm:dom4@2.1.3/build/dom4.max.js");
 });
 System.registerDynamic("npm:@blueprintjs/core@2.3.1/lib/cjs/components/alert/alert.js", ["npm:tslib@1.9.3.js", "npm:classnames@2.2.6.js", "npm:react@16.4.1.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/common/index.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/common/errors.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/common/utils.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/button/buttons.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/dialog/dialog.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/icon/icon.js"], true, function ($__require, exports, module) {
   /* */
@@ -60918,7 +60918,7 @@ System.registerDynamic("npm:@blueprintjs/core@2.3.1/lib/cjs/components/tree/tree
   }(React.Component);
   exports.TreeNode = TreeNode;
 });
-System.registerDynamic("npm:@blueprintjs/core@2.3.1/lib/cjs/components/index.js", ["npm:tslib@1.9.3.js", "npm:dom4@2.1.0.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/context-menu/contextMenu.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/alert/alert.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/breadcrumbs/breadcrumb.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/button/buttons.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/button/buttonGroup.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/callout/callout.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/card/card.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/collapse/collapse.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/collapsible-list/collapsibleList.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/context-menu/contextMenuTarget.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/dialog/dialog.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/editable-text/editableText.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/forms/controlGroup.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/forms/controls.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/forms/fileInput.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/forms/formGroup.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/forms/inputGroup.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/forms/label.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/forms/numericInput.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/forms/radioGroup.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/forms/textArea.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/hotkeys/hotkeys.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/icon/icon.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/menu/menu.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/menu/menuDivider.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/menu/menuItem.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/navbar/navbar.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/navbar/navbarDivider.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/navbar/navbarGroup.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/navbar/navbarHeading.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/non-ideal-state/nonIdealState.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/overlay/overlay.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/text/text.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/popover/popover.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/portal/portal.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/progress-bar/progressBar.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/slider/rangeSlider.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/slider/slider.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/spinner/spinner.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/spinner/svgSpinner.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/tabs/tab.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/tabs/tabs.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/tag/tag.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/tag-input/tagInput.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/toast/toast.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/toast/toaster.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/tooltip/tooltip.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/tree/tree.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/tree/treeNode.js"], true, function ($__require, exports, module) {
+System.registerDynamic("npm:@blueprintjs/core@2.3.1/lib/cjs/components/index.js", ["npm:tslib@1.9.3.js", "npm:dom4@2.1.3.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/context-menu/contextMenu.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/alert/alert.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/breadcrumbs/breadcrumb.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/button/buttons.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/button/buttonGroup.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/callout/callout.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/card/card.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/collapse/collapse.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/collapsible-list/collapsibleList.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/context-menu/contextMenuTarget.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/dialog/dialog.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/editable-text/editableText.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/forms/controlGroup.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/forms/controls.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/forms/fileInput.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/forms/formGroup.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/forms/inputGroup.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/forms/label.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/forms/numericInput.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/forms/radioGroup.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/forms/textArea.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/hotkeys/hotkeys.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/icon/icon.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/menu/menu.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/menu/menuDivider.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/menu/menuItem.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/navbar/navbar.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/navbar/navbarDivider.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/navbar/navbarGroup.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/navbar/navbarHeading.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/non-ideal-state/nonIdealState.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/overlay/overlay.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/text/text.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/popover/popover.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/portal/portal.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/progress-bar/progressBar.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/slider/rangeSlider.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/slider/slider.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/spinner/spinner.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/spinner/svgSpinner.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/tabs/tab.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/tabs/tabs.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/tag/tag.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/tag-input/tagInput.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/toast/toast.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/toast/toaster.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/tooltip/tooltip.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/tree/tree.js", "npm:@blueprintjs/core@2.3.1/lib/cjs/components/tree/treeNode.js"], true, function ($__require, exports, module) {
   /* */
   "use strict";
 
@@ -60927,7 +60927,7 @@ System.registerDynamic("npm:@blueprintjs/core@2.3.1/lib/cjs/components/index.js"
   Object.defineProperty(exports, "__esModule", { value: true });
   var tslib_1 = $__require("npm:tslib@1.9.3.js");
   if (typeof window !== "undefined" && typeof document !== "undefined") {
-    $__require("npm:dom4@2.1.0.js");
+    $__require("npm:dom4@2.1.3.js");
   }
   var contextMenu = tslib_1.__importStar($__require("npm:@blueprintjs/core@2.3.1/lib/cjs/components/context-menu/contextMenu.js"));
   exports.ContextMenu = contextMenu;
