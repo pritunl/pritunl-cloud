@@ -8,7 +8,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
-	"github.com/ericchiang/letsencrypt"
+	"github.com/pritunl/pritunl-cloud/letsencrypt"
 	"github.com/pritunl/pritunl-cloud/certificate"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
