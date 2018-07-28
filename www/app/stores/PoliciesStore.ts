@@ -9,6 +9,12 @@ class PoliciesStore extends EventEmitter {
 	_map: {[key: string]: number} = {};
 	_token = Dispatcher.register((this._callback).bind(this));
 
+	_reset(): void {
+		this._policies = Object.freeze([]);
+		this._map = {};
+		this.emitChange();
+	}
+
 	get policies(): PolicyTypes.PoliciesRo {
 		return this._policies;
 	}
@@ -57,6 +63,10 @@ class PoliciesStore extends EventEmitter {
 
 	_callback(action: PolicyTypes.PolicyDispatch): void {
 		switch (action.type) {
+			case GlobalTypes.RESET:
+				this._reset();
+				break;
+
 			case PolicyTypes.SYNC:
 				this._sync(action.data.policies);
 				break;
