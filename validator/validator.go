@@ -1,19 +1,60 @@
 package validator
 
 import (
+	"github.com/dropbox/godropbox/container/set"
+	"github.com/pritunl/pritunl-cloud/audit"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/policy"
 	"github.com/pritunl/pritunl-cloud/user"
 	"gopkg.in/mgo.v2/bson"
 	"net/http"
+	"time"
 )
 
 func ValidateAdmin(db *database.Database, usr *user.User,
 	isApi bool, r *http.Request) (secProvider bson.ObjectId,
-	errData *errortypes.ErrorData, err error) {
+	errAudit audit.Fields, errData *errortypes.ErrorData, err error) {
 
-	if usr.Disabled || usr.Administrator != "super" {
+	if !usr.ActiveUntil.IsZero() && usr.ActiveUntil.Before(time.Now()) {
+		usr.ActiveUntil = time.Time{}
+		usr.Disabled = true
+		err = usr.CommitFields(db, set.NewSet("active_until", "disabled"))
+		if err != nil {
+			return
+		}
+
+		event.PublishDispatch(db, "user.change")
+
+		errAudit = audit.Fields{
+			"error":   "user_disabled",
+			"message": "User is disabled from expired active time",
+		}
+		errData = &errortypes.ErrorData{
+			Error:   "unauthorized",
+			Message: "Not authorized",
+		}
+		return
+	}
+
+	if usr.Disabled {
+		errAudit = audit.Fields{
+			"error":   "user_disabled",
+			"message": "User is disabled",
+		}
+		errData = &errortypes.ErrorData{
+			Error:   "unauthorized",
+			Message: "Not authorized",
+		}
+		return
+	}
+
+	if usr.Administrator != "super" {
+		errAudit = audit.Fields{
+			"error":   "user_not_super",
+			"message": "User is not super user",
+		}
 		errData = &errortypes.ErrorData{
 			Error:   "unauthorized",
 			Message: "Not authorized",
@@ -41,9 +82,34 @@ func ValidateAdmin(db *database.Database, usr *user.User,
 
 func ValidateUser(db *database.Database, usr *user.User,
 	isApi bool, r *http.Request) (secProvider bson.ObjectId,
-	errData *errortypes.ErrorData, err error) {
+	errAudit audit.Fields, errData *errortypes.ErrorData, err error) {
+
+	if !usr.ActiveUntil.IsZero() && usr.ActiveUntil.Before(time.Now()) {
+		usr.ActiveUntil = time.Time{}
+		usr.Disabled = true
+		err = usr.CommitFields(db, set.NewSet("active_until", "disabled"))
+		if err != nil {
+			return
+		}
+
+		event.PublishDispatch(db, "user.change")
+
+		errAudit = audit.Fields{
+			"error":   "user_disabled",
+			"message": "User is disabled from expired active time",
+		}
+		errData = &errortypes.ErrorData{
+			Error:   "unauthorized",
+			Message: "Not authorized",
+		}
+		return
+	}
 
 	if usr.Disabled {
+		errAudit = audit.Fields{
+			"error":   "user_disabled",
+			"message": "User is disabled",
+		}
 		errData = &errortypes.ErrorData{
 			Error:   "unauthorized",
 			Message: "Not authorized",
