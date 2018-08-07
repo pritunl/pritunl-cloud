@@ -10,6 +10,13 @@ class SessionsStore extends EventEmitter {
 	_sessions: SessionTypes.SessionsRo = Object.freeze([]);
 	_token = Dispatcher.register((this._callback).bind(this));
 
+	_reset(): void {
+		this._userId = undefined;
+		this._showRemoved = undefined;
+		this._sessions = Object.freeze([]);
+		this.emitChange();
+	}
+
 	get userId(): string {
 		return this._userId;
 	}
@@ -62,6 +69,10 @@ class SessionsStore extends EventEmitter {
 
 	_callback(action: SessionTypes.SessionDispatch): void {
 		switch (action.type) {
+			case GlobalTypes.RESET:
+				this._reset();
+				break;
+
 			case SessionTypes.SYNC:
 				this._sync(action.data.userId, action.data.sessions);
 				break;
