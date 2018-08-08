@@ -152,6 +152,11 @@ func (d *Database) Certificates() (coll *Collection) {
 	return
 }
 
+func (d *Database) Domains() (coll *Collection) {
+	coll = d.getCollection("domains")
+	return
+}
+
 func (d *Database) AcmeChallenges() (coll *Collection) {
 	coll = d.getCollection("acme_challenges")
 	return
