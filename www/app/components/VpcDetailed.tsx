@@ -1,14 +1,13 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
-import * as Constants from '../Constants';
 import * as VpcTypes from '../types/VpcTypes';
 import * as VpcActions from '../actions/VpcActions';
 import * as OrganizationTypes from "../types/OrganizationTypes";
 import DatacentersStore from "../stores/DatacentersStore";
+import OrganizationsStore from "../stores/OrganizationsStore";
 import VpcRoute from './VpcRoute';
 import VpcLinkUri from './VpcLinkUri';
 import PageInput from './PageInput';
-import PageSelect from './PageSelect';
 import PageInfo from './PageInfo';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
@@ -378,18 +377,7 @@ export default class VpcDetailed extends React.Component<Props, State> {
 
 		let datacenter = DatacentersStore.datacenter(vpc.datacenter);
 		let datacenterName = datacenter ? datacenter.name : vpc.datacenter;
-
-		let organizationsSelect: JSX.Element[] = [];
-		if (this.props.organizations.length) {
-			for (let organization of this.props.organizations) {
-				organizationsSelect.push(
-					<option
-						key={organization.id}
-						value={organization.id}
-					>{organization.name}</option>,
-				);
-			}
-		}
+		let org = OrganizationsStore.organization(this.props.vpc.organization);
 
 		let routes: JSX.Element[] = [
 			<VpcRoute
@@ -565,23 +553,15 @@ export default class VpcDetailed extends React.Component<Props, State> {
 								value: datacenterName,
 							},
 							{
+								label: 'Organization',
+								value: org ? org.name : this.props.vpc.organization,
+							},
+							{
 								label: 'Private IPv6 Network',
 								value: this.props.vpc.network6 || 'Unknown',
 							},
 						]}
 					/>
-					<PageSelect
-						disabled={this.state.disabled}
-						hidden={Constants.user}
-						label="Organization"
-						help="Organization for vpc."
-						value={vpc.organization}
-						onChange={(val): void => {
-							this.set('organization', val);
-						}}
-					>
-						{organizationsSelect}
-					</PageSelect>
 				</div>
 			</div>
 			<PageSave
