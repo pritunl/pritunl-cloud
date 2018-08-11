@@ -4,6 +4,7 @@ import * as Constants from '../Constants';
 import * as License from '../License';
 import * as InstanceTypes from '../types/InstanceTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
+import * as DomainTypes from '../types/DomainTypes';
 import * as DatacenterTypes from '../types/DatacenterTypes';
 import * as NodeTypes from '../types/NodeTypes';
 import * as VpcTypes from '../types/VpcTypes';
@@ -26,6 +27,7 @@ import OrganizationsStore from "../stores/OrganizationsStore";
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
 	vpcs: VpcTypes.VpcsRo;
+	domains: DomainTypes.DomainsRo;
 	datacenters: DatacenterTypes.DatacentersRo;
 	zones: ZoneTypes.ZonesRo;
 	onClose: () => void;
@@ -383,6 +385,24 @@ export default class InstanceNew extends React.Component<Props, State> {
 			vpcsSelect = [<option key="null" value="">No Vpcs</option>];
 		}
 
+		let domainsSelect: JSX.Element[] = [
+			<option key="null" value="">No Domain</option>,
+		];
+		if (this.props.domains && this.props.domains.length) {
+			for (let domain of this.props.domains) {
+				if (domain.organization !== this.state.instance.organization) {
+					continue;
+				}
+
+				domainsSelect.push(
+					<option
+						key={domain.id}
+						value={domain.id}
+					>{domain.name}</option>,
+				);
+			}
+		}
+
 		let hasImages = false;
 		let imagesSelect: JSX.Element[] = [];
 		if (this.state.images.length) {
@@ -536,6 +556,17 @@ export default class InstanceNew extends React.Component<Props, State> {
 							}}
 						>
 							{nodesSelect}
+						</PageSelect>
+						<PageSelect
+							disabled={this.state.disabled}
+							label="DNS Domain"
+							help="Domain to create DNS name using instance name."
+							value={instance.domain}
+							onChange={(val): void => {
+								this.set('domain', val);
+							}}
+						>
+							{domainsSelect}
 						</PageSelect>
 					</div>
 					<div style={css.group}>
