@@ -1,0 +1,280 @@
+/// <reference path="../References.d.ts"/>
+import * as React from 'react';
+import * as DomainTypes from '../types/DomainTypes';
+import * as DomainActions from '../actions/DomainActions';
+import * as OrganizationTypes from "../types/OrganizationTypes";
+import OrganizationsStore from "../stores/OrganizationsStore";
+import PageInput from './PageInput';
+import PageInfo from './PageInfo';
+import PageSave from './PageSave';
+import ConfirmButton from './ConfirmButton';
+
+interface Props {
+	organizations: OrganizationTypes.OrganizationsRo;
+	domain: DomainTypes.DomainRo;
+	selected: boolean;
+	onSelect: (shift: boolean) => void;
+	onClose: () => void;
+}
+
+interface State {
+	disabled: boolean;
+	changed: boolean;
+	message: string;
+	domain: DomainTypes.Domain;
+}
+
+const css = {
+	card: {
+		position: 'relative',
+		padding: '48px 10px 0 10px',
+		width: '100%',
+	} as React.CSSProperties,
+	button: {
+		height: '30px',
+	} as React.CSSProperties,
+	buttons: {
+		cursor: 'pointer',
+		position: 'absolute',
+		top: 0,
+		left: 0,
+		right: 0,
+		padding: '4px',
+		height: '39px',
+		backgroundColor: 'rgba(0, 0, 0, 0.13)',
+	} as React.CSSProperties,
+	item: {
+		margin: '9px 5px 0 5px',
+		height: '20px',
+	} as React.CSSProperties,
+	itemsLabel: {
+		display: 'block',
+	} as React.CSSProperties,
+	itemsAdd: {
+		margin: '8px 0 15px 0',
+	} as React.CSSProperties,
+	group: {
+		flex: 1,
+		minWidth: '250px',
+	} as React.CSSProperties,
+	save: {
+		paddingBottom: '10px',
+	} as React.CSSProperties,
+	label: {
+		width: '100%',
+		maxWidth: '280px',
+	} as React.CSSProperties,
+	status: {
+		margin: '6px 0 0 1px',
+	} as React.CSSProperties,
+	icon: {
+		marginRight: '3px',
+	} as React.CSSProperties,
+	inputGroup: {
+		width: '100%',
+	} as React.CSSProperties,
+	protocol: {
+		flex: '0 1 auto',
+	} as React.CSSProperties,
+	port: {
+		flex: '1',
+	} as React.CSSProperties,
+	select: {
+		margin: '7px 0px 0px 6px',
+	} as React.CSSProperties,
+	role: {
+		margin: '9px 5px 0 5px',
+		height: '20px',
+	} as React.CSSProperties,
+	rules: {
+		marginBottom: '15px',
+	} as React.CSSProperties,
+};
+
+export default class DomainDetailed extends React.Component<Props, State> {
+	constructor(props: any, context: any) {
+		super(props, context);
+		this.state = {
+			disabled: false,
+			changed: false,
+			message: '',
+			domain: null,
+		};
+	}
+
+	set(name: string, val: any): void {
+		let domain: any;
+
+		if (this.state.changed) {
+			domain = {
+				...this.state.domain,
+			};
+		} else {
+			domain = {
+				...this.props.domain,
+			};
+		}
+
+		domain[name] = val;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			domain: domain,
+		});
+	}
+
+	onSave = (): void => {
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+		DomainActions.commit(this.state.domain).then((): void => {
+			this.setState({
+				...this.state,
+				message: 'Your changes have been saved',
+				changed: false,
+				disabled: false,
+			});
+
+			setTimeout((): void => {
+				if (!this.state.changed) {
+					this.setState({
+						...this.state,
+						domain: null,
+						changed: false,
+					});
+				}
+			}, 1000);
+
+			setTimeout((): void => {
+				if (!this.state.changed) {
+					this.setState({
+						...this.state,
+						message: '',
+					});
+				}
+			}, 3000);
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				message: '',
+				disabled: false,
+			});
+		});
+	}
+
+	onDelete = (): void => {
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+		DomainActions.remove(this.props.domain.id).then((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		});
+	}
+
+	render(): JSX.Element {
+		let domain: DomainTypes.Domain = this.state.domain ||
+			this.props.domain;
+		let org = OrganizationsStore.organization(this.props.domain.organization);
+
+		return <td
+			className="pt-cell"
+			colSpan={5}
+			style={css.card}
+		>
+			<div className="layout horizontal wrap">
+				<div style={css.group}>
+					<div
+						className="layout horizontal"
+						style={css.buttons}
+						onClick={(evt): void => {
+							let target = evt.target as HTMLElement;
+
+							if (target.className.indexOf('open-ignore') !== -1) {
+								return;
+							}
+
+							this.props.onClose();
+						}}
+					>
+            <div>
+              <label
+                className="pt-control pt-checkbox open-ignore"
+                style={css.select}
+              >
+                <input
+                  type="checkbox"
+                  className="open-ignore"
+                  checked={this.props.selected}
+                  onClick={(evt): void => {
+										this.props.onSelect(evt.shiftKey);
+									}}
+                />
+                <span className="pt-control-indicator open-ignore"/>
+              </label>
+            </div>
+						<div className="flex"/>
+						<ConfirmButton
+							className="pt-minimal pt-intent-danger pt-icon-trash open-ignore"
+							style={css.button}
+							progressClassName="pt-intent-danger"
+							confirmMsg="Confirm domain remove"
+							disabled={this.state.disabled}
+							onConfirm={this.onDelete}
+						/>
+					</div>
+					<PageInput
+						label="Domain"
+						help="Domain name."
+						type="text"
+						placeholder="Enter domain"
+						value={domain.name}
+						onChange={(val): void => {
+							this.set('name', val);
+						}}
+					/>
+				</div>
+				<div style={css.group}>
+					<PageInfo
+						fields={[
+							{
+								label: 'ID',
+								value: this.props.domain.id || 'Unknown',
+							},
+							{
+								label: 'Organization',
+								value: org ? org.name : this.props.domain.organization,
+							},
+						]}
+					/>
+				</div>
+			</div>
+			<PageSave
+				style={css.save}
+				hidden={!this.state.domain && !this.state.message}
+				message={this.state.message}
+				changed={this.state.changed}
+				disabled={this.state.disabled}
+				light={true}
+				onCancel={(): void => {
+					this.setState({
+						...this.state,
+						changed: false,
+						domain: null,
+					});
+				}}
+				onSave={this.onSave}
+			/>
+		</td>;
+	}
+}
