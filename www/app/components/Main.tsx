@@ -17,6 +17,7 @@ import Organizations from './Organizations';
 import Datacenters from './Datacenters';
 import Zones from './Zones';
 import Vpcs from './Vpcs';
+import Domains from './Domains';
 import Storages from './Storages';
 import Images from './Images';
 import Disks from './Disks';
@@ -36,6 +37,7 @@ import * as OrganizationActions from '../actions/OrganizationActions';
 import * as DatacenterActions from '../actions/DatacenterActions';
 import * as ZoneActions from '../actions/ZoneActions';
 import * as VpcActions from '../actions/VpcActions';
+import * as DomainActions from '../actions/DomainActions';
 import * as StorageActions from '../actions/StorageActions';
 import * as ImageActions from '../actions/ImageActions';
 import * as DiskActions from '../actions/DiskActions';
@@ -223,6 +225,13 @@ export default class Main extends React.Component<{}, State> {
 							to="/vpcs"
 						>
 							VPCs
+						</ReactRouter.Link>
+						<ReactRouter.Link
+							className="pt-button pt-minimal pt-icon-map-marker"
+							style={css.link}
+							to="/domains"
+						>
+							Domains
 						</ReactRouter.Link>
 						<ReactRouter.Link
 							className="pt-button pt-minimal pt-icon-database"
@@ -439,6 +448,18 @@ export default class Main extends React.Component<{}, State> {
 												disabled: false,
 											});
 										});
+									} else if (pathname === '/domains') {
+										DomainActions.sync().then((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										}).catch((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										});
 									} else if (pathname === '/storages') {
 										StorageActions.sync().then((): void => {
 											this.setState({
@@ -607,6 +628,9 @@ export default class Main extends React.Component<{}, State> {
 				)}/>
 				<ReactRouter.Route path="/vpcs" render={() => (
 					<Vpcs/>
+				)}/>
+				<ReactRouter.Route path="/domains" render={() => (
+					<Domains/>
 				)}/>
 				<ReactRouter.Route path="/storages" render={() => (
 					<Storages/>
