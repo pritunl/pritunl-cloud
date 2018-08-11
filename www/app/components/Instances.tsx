@@ -245,6 +245,7 @@ export default class Instances extends React.Component<{}, State> {
 			instancesDom.push(<Instance
 				key={instance.id}
 				instance={instance}
+				domains={this.state.domains}
 				vpcs={this.state.vpcs}
 				selected={!!this.state.selected[instance.id]}
 				open={!!this.state.opened[instance.id]}
