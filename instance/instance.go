@@ -28,6 +28,7 @@ type Instance struct {
 	PrivateIps   []string           `bson:"private_ips" json:"private_ips"`
 	PrivateIps6  []string           `bson:"private_ips6" json:"private_ips6"`
 	Node         bson.ObjectId      `bson:"node" json:"node"`
+	Domain       bson.ObjectId      `bson:"domain,omitempty" json:"domain"`
 	Name         string             `bson:"name" json:"name"`
 	InitDiskSize int                `bson:"init_disk_size" json:"init_disk_size"`
 	Memory       int                `bson:"memory" json:"memory"`
