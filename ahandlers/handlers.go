@@ -74,6 +74,13 @@ func Register(engine *gin.Engine) {
 	csrfGroup.DELETE("/disk", disksDelete)
 	csrfGroup.DELETE("/disk/:disk_id", diskDelete)
 
+	csrfGroup.GET("/domain", domainsGet)
+	csrfGroup.GET("/domain/:domain_id", domainGet)
+	csrfGroup.PUT("/domain/:domain_id", domainPut)
+	csrfGroup.POST("/domain", domainPost)
+	csrfGroup.DELETE("/domain", domainsDelete)
+	csrfGroup.DELETE("/domain/:domain_id", domainDelete)
+
 	csrfGroup.GET("/event", eventGet)
 
 	csrfGroup.GET("/firewall", firewallsGet)
