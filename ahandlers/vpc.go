@@ -56,14 +56,12 @@ func vpcPut(c *gin.Context) {
 	}
 
 	vc.Name = data.Name
-	vc.Organization = data.Organization
 	vc.Routes = data.Routes
 	vc.LinkUris = data.LinkUris
 
 	fields := set.NewSet(
 		"state",
 		"name",
-		"organization",
 		"routes",
 		"link_uris",
 	)
