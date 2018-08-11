@@ -1,12 +1,14 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
 import * as InstanceTypes from '../types/InstanceTypes';
-import * as VpcTypes from "../types/VpcTypes";
+import * as VpcTypes from '../types/VpcTypes';
+import * as DomainTypes from '../types/DomainTypes'
 import InstanceDetailed from './InstanceDetailed';
 import ZonesStore from "../stores/ZonesStore";
 
 interface Props {
 	vpcs: VpcTypes.VpcsRo;
+	domains: DomainTypes.DomainsRo;
 	instance: InstanceTypes.InstanceRo;
 	selected: boolean;
 	onSelect: (shift: boolean) => void;
@@ -78,6 +80,7 @@ export default class Instance extends React.Component<Props, {}> {
 				<InstanceDetailed
 					instance={this.props.instance}
 					vpcs={this.props.vpcs}
+					domains={this.props.domains}
 					selected={this.props.selected}
 					onSelect={this.props.onSelect}
 					onClose={(): void => {
