@@ -3,16 +3,19 @@ import * as React from 'react';
 import * as Constants from '../Constants';
 import * as InstanceTypes from '../types/InstanceTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
+import * as DomainTypes from '../types/DomainTypes';
 import * as VpcTypes from '../types/VpcTypes';
 import * as DatacenterTypes from '../types/DatacenterTypes';
 import * as ZoneTypes from '../types/ZoneTypes';
 import InstancesStore from '../stores/InstancesStore';
 import OrganizationsStore from '../stores/OrganizationsStore';
+import DomainsStore from '../stores/DomainsStore';
 import VpcsNameStore from '../stores/VpcsNameStore';
 import DatacentersStore from '../stores/DatacentersStore';
 import ZonesStore from '../stores/ZonesStore';
 import * as InstanceActions from '../actions/InstanceActions';
 import * as OrganizationActions from '../actions/OrganizationActions';
+import * as DomainActions from '../actions/DomainActions';
 import * as VpcActions from '../actions/VpcActions';
 import * as DatacenterActions from '../actions/DatacenterActions';
 import * as ZoneActions from '../actions/ZoneActions';
@@ -35,6 +38,7 @@ interface Opened {
 
 interface State {
 	instances: InstanceTypes.InstancesRo;
+	domains: DomainTypes.DomainsRo;
 	filter: InstanceTypes.Filter;
 	debug: boolean;
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -94,6 +98,7 @@ export default class Instances extends React.Component<{}, State> {
 			filter: InstancesStore.filter,
 			debug: false,
 			organizations: OrganizationsStore.organizations,
+			domains: DomainsStore.domains,
 			vpcs: VpcsNameStore.vpcs,
 			datacenters: DatacentersStore.datacenters,
 			zones: ZonesStore.zones,
@@ -116,11 +121,13 @@ export default class Instances extends React.Component<{}, State> {
 	componentDidMount(): void {
 		InstancesStore.addChangeListener(this.onChange);
 		OrganizationsStore.addChangeListener(this.onChange);
+		DomainsStore.addChangeListener(this.onChange);
 		VpcsNameStore.addChangeListener(this.onChange);
 		DatacentersStore.addChangeListener(this.onChange);
 		ZonesStore.addChangeListener(this.onChange);
 		InstanceActions.sync();
 		OrganizationActions.sync();
+		DomainActions.sync();
 		VpcActions.syncNames();
 		DatacenterActions.sync();
 		ZoneActions.sync();
@@ -133,6 +140,7 @@ export default class Instances extends React.Component<{}, State> {
 	componentWillUnmount(): void {
 		InstancesStore.removeChangeListener(this.onChange);
 		OrganizationsStore.removeChangeListener(this.onChange);
+		DomainsStore.removeChangeListener(this.onChange);
 		VpcsNameStore.removeChangeListener(this.onChange);
 		DatacentersStore.removeChangeListener(this.onChange);
 		ZonesStore.removeChangeListener(this.onChange);
@@ -160,6 +168,7 @@ export default class Instances extends React.Component<{}, State> {
 			instances: instances,
 			filter: InstancesStore.filter,
 			organizations: OrganizationsStore.organizations,
+			domains: DomainsStore.domains,
 			vpcs: VpcsNameStore.vpcs,
 			datacenters: DatacentersStore.datacenters,
 			zones: ZonesStore.zones,
@@ -314,6 +323,7 @@ export default class Instances extends React.Component<{}, State> {
 			newInstanceDom = <InstanceNew
 				organizations={this.state.organizations}
 				vpcs={this.state.vpcs}
+				domains={this.state.domains}
 				datacenters={this.state.datacenters}
 				zones={this.state.zones}
 				onClose={(): void => {
