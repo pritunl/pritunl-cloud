@@ -23,6 +23,7 @@ type instanceData struct {
 	Vpc          bson.ObjectId `json:"vpc"`
 	Node         bson.ObjectId `json:"node"`
 	Image        bson.ObjectId `json:"image"`
+	Domain       bson.ObjectId `json:"domain"`
 	Name         string        `json:"name"`
 	State        string        `json:"state"`
 	InitDiskSize int           `json:"init_disk_size"`
@@ -78,6 +79,7 @@ func instancePut(c *gin.Context) {
 	inst.Memory = data.Memory
 	inst.Processors = data.Processors
 	inst.NetworkRoles = data.NetworkRoles
+	inst.Domain = data.Domain
 
 	fields := set.NewSet(
 		"name",
@@ -87,6 +89,7 @@ func instancePut(c *gin.Context) {
 		"memory",
 		"processors",
 		"network_roles",
+		"domain",
 	)
 
 	errData, err := inst.Validate(db)
@@ -159,6 +162,7 @@ func instancePost(c *gin.Context) {
 			Memory:       data.Memory,
 			Processors:   data.Processors,
 			NetworkRoles: data.NetworkRoles,
+			Domain:       data.Domain,
 		}
 
 		errData, err := inst.Validate(db)
