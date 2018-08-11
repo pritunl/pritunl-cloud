@@ -2,6 +2,8 @@
 import * as React from 'react';
 import * as InstanceTypes from '../types/InstanceTypes';
 import * as InstanceActions from '../actions/InstanceActions';
+import * as VpcTypes from '../types/VpcTypes';
+import * as DomainTypes from '../types/DomainTypes';
 import OrganizationsStore from '../stores/OrganizationsStore';
 import ZonesStore from '../stores/ZonesStore';
 import PageInput from './PageInput';
@@ -12,10 +14,10 @@ import PageSave from './PageSave';
 import PageNumInput from './PageNumInput';
 import ConfirmButton from './ConfirmButton';
 import Help from './Help';
-import * as VpcTypes from "../types/VpcTypes";
 
 interface Props {
 	vpcs: VpcTypes.VpcsRo;
+	domains: DomainTypes.DomainsRo;
 	instance: InstanceTypes.InstanceRo;
 	selected: boolean;
 	onSelect: (shift: boolean) => void;
@@ -377,6 +379,24 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			vpcsSelect = [<option key="null" value="">No Vpcs</option>];
 		}
 
+		let domainsSelect: JSX.Element[] = [
+			<option key="null" value="">No Domain</option>,
+		];
+		if (this.props.domains && this.props.domains.length) {
+			for (let domain of this.props.domains) {
+				if (domain.organization !== this.state.instance.organization) {
+					continue;
+				}
+
+				domainsSelect.push(
+					<option
+						key={domain.id}
+						value={domain.id}
+					>{domain.name}</option>,
+				);
+			}
+		}
+
 		return <td
 			className="pt-cell"
 			colSpan={5}
@@ -504,6 +524,17 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						}}
 					>
 						{vpcsSelect}
+					</PageSelect>
+					<PageSelect
+						disabled={this.state.disabled}
+						label="DNS Domain"
+						help="Domain to create DNS name using instance name."
+						value={instance.domain}
+						onChange={(val): void => {
+							this.set('domain', val);
+						}}
+					>
+						{domainsSelect}
 					</PageSelect>
 				</div>
 				<div style={css.group}>
