@@ -285,7 +285,7 @@ export default class Main extends React.Component<{}, State> {
 							Logs
 						</ReactRouter.Link>
 						<ReactRouter.Link
-							className="pt-button pt-minimal pt-icon-cog"
+							className="pt-button pt-minimal pt-icon-settings"
 							style={css.link}
 							hidden={Constants.user}
 							to="/settings"
