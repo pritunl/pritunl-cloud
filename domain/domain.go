@@ -12,6 +12,9 @@ type Domain struct {
 	Id           bson.ObjectId `bson:"_id,omitempty" json:"id"`
 	Name         string        `bson:"name" json:"name"`
 	Organization bson.ObjectId `bson:"organization,omitempty" json:"organization"`
+	Type         string        `bson:"type" json:"type"`
+	AwsId        string        `bson:"aws_id" json:"aws_id"`
+	AwsSecret    string        `bson:"aws_secret" json:"aws_secret"`
 }
 
 func (d *Domain) Validate(db *database.Database) (
