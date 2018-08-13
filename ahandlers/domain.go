@@ -18,6 +18,9 @@ type domainData struct {
 	Id           bson.ObjectId `json:"id"`
 	Name         string        `json:"name"`
 	Organization bson.ObjectId `json:"organization"`
+	Type         string        `json:"type"`
+	AwsId        string        `json:"aws_id"`
+	AwsSecret    string        `json:"aws_secret"`
 }
 
 type domainsData struct {
@@ -53,10 +56,16 @@ func domainPut(c *gin.Context) {
 
 	domn.Name = data.Name
 	domn.Organization = data.Organization
+	domn.Type = data.Type
+	domn.AwsId = data.AwsId
+	domn.AwsSecret = data.AwsSecret
 
 	fields := set.NewSet(
 		"name",
 		"organization",
+		"type",
+		"aws_id",
+		"aws_secret",
 	)
 
 	errData, err := domn.Validate(db)
@@ -98,8 +107,11 @@ func domainPost(c *gin.Context) {
 	}
 
 	domn := &domain.Domain{
-		Name:       data.Name,
+		Name:         data.Name,
 		Organization: data.Organization,
+		Type:         data.Type,
+		AwsId:        data.AwsId,
+		AwsSecret:    data.AwsSecret,
 	}
 
 	errData, err := domn.Validate(db)
