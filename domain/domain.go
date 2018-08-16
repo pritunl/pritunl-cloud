@@ -28,6 +28,11 @@ func (d *Domain) Validate(db *database.Database) (
 		return
 	}
 
+	if d.Type != Route53 {
+		d.AwsId = ""
+		d.AwsSecret = ""
+	}
+
 	return
 }
 
