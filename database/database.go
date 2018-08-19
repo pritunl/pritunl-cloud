@@ -157,6 +157,11 @@ func (d *Database) Domains() (coll *Collection) {
 	return
 }
 
+func (d *Database) DomainsRecord() (coll *Collection) {
+	coll = d.getCollection("domains_record")
+	return
+}
+
 func (d *Database) AcmeChallenges() (coll *Collection) {
 	coll = d.getCollection("acme_challenges")
 	return
