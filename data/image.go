@@ -317,7 +317,7 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk) (err error) {
 	cacheDir := node.Self.GetCachePath()
 
 	logrus.WithFields(logrus.Fields{
-		"disk_id":     dsk.Id,
+		"disk_id":     dsk.Id.Hex(),
 		"source_path": dskPth,
 	}).Info("data: Creating disk snapshot")
 
@@ -338,7 +338,7 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk) (err error) {
 
 	if dc.PrivateStorage == "" {
 		logrus.WithFields(logrus.Fields{
-			"disk_id": dsk.Id,
+			"disk_id": dsk.Id.Hex(),
 		}).Error("data: Cannot snapshot disk without private storage")
 		return
 	}
@@ -348,7 +348,7 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk) (err error) {
 		if _, ok := err.(*database.NotFoundError); ok {
 			err = nil
 			logrus.WithFields(logrus.Fields{
-				"disk_id": dsk.Id,
+				"disk_id": dsk.Id.Hex(),
 			}).Error("data: Cannot snapshot disk without private storage")
 		}
 		return
@@ -375,7 +375,7 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk) (err error) {
 	}
 
 	logrus.WithFields(logrus.Fields{
-		"disk_id":     dsk.Id,
+		"disk_id":     dsk.Id.Hex(),
 		"source_path": dskPth,
 		"storage_id":  store.Id.Hex(),
 		"object_key":  img.Key,
