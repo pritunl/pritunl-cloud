@@ -5,6 +5,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
+	"github.com/pritunl/pritunl-cloud/domain"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/qemu"
@@ -15,15 +16,16 @@ import (
 )
 
 type State struct {
-	namespaces   []string
-	interfaces   []string
-	disks        []*disk.Disk
-	virtsMap     map[bson.ObjectId]*vm.VirtualMachine
-	instances    []*instance.Instance
-	vpcsMap      map[bson.ObjectId]*vpc.Vpc
-	instancesMap map[bson.ObjectId]*instance.Instance
-	addInstances set.Set
-	remInstances set.Set
+	namespaces       []string
+	interfaces       []string
+	disks            []*disk.Disk
+	virtsMap         map[bson.ObjectId]*vm.VirtualMachine
+	instances        []*instance.Instance
+	domainRecordsMap map[bson.ObjectId][]*domain.Record
+	vpcsMap          map[bson.ObjectId]*vpc.Vpc
+	instancesMap     map[bson.ObjectId]*instance.Instance
+	addInstances     set.Set
+	remInstances     set.Set
 }
 
 func (s *State) Namespaces() []string {
@@ -36,6 +38,10 @@ func (s *State) Interfaces() []string {
 
 func (s *State) Instances() []*instance.Instance {
 	return s.instances
+}
+
+func (s *State) DomainRecords(instId bson.ObjectId) []*domain.Record {
+	return s.domainRecordsMap[instId]
 }
 
 func (s *State) Disks() []*disk.Disk {
@@ -134,6 +140,22 @@ func (s *State) init() (err error) {
 		vpcsMap[vc.Id] = vc
 	}
 	s.vpcsMap = vpcsMap
+
+	recrds, err := domain.GetRecordAll(db, &bson.M{
+		"node": node.Self.Id,
+	})
+
+	domainRecordsMap := map[bson.ObjectId][]*domain.Record{}
+	for _, recrd := range recrds {
+		instRecrds := domainRecordsMap[recrd.Instance]
+		if instRecrds == nil {
+			instRecrds = []*domain.Record{}
+		}
+
+		instRecrds = append(instRecrds, recrd)
+		domainRecordsMap[recrd.Instance] = instRecrds
+	}
+	s.domainRecordsMap = domainRecordsMap
 
 	return
 }
