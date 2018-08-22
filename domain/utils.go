@@ -168,3 +168,45 @@ func RemoveMultiOrg(db *database.Database, orgId bson.ObjectId,
 
 	return
 }
+
+func GetRecordAll(db *database.Database, query *bson.M) (
+	recrds []*Record, err error) {
+
+	coll := db.DomainsRecord()
+	recrds = []*Record{}
+
+	cursor := coll.Find(query).Iter()
+
+	recrd := &Record{}
+	for cursor.Next(recrd) {
+		recrds = append(recrds, recrd)
+		recrd = &Record{}
+	}
+
+	err = cursor.Close()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func RemoveRecord(db *database.Database, recrdId bson.ObjectId) (err error) {
+	coll := db.DomainsRecord()
+
+	err = coll.Remove(&bson.M{
+		"_id": recrdId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		switch err.(type) {
+		case *database.NotFoundError:
+			err = nil
+		default:
+			return
+		}
+	}
+
+	return
+}
