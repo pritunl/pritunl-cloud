@@ -29,5 +29,11 @@ func Deploy(stat *state.State) (err error) {
 		return
 	}
 
+	domains := NewDomains(stat)
+	err = domains.Deploy()
+	if err != nil {
+		return
+	}
+
 	return
 }
