@@ -44,7 +44,7 @@ func storageSyncHandler(db *database.Database) (err error) {
 		err = data.Sync(db, store)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"storage_id":   store.Id,
+				"storage_id":   store.Id.Hex(),
 				"storage_name": store.Name,
 				"error":        err,
 			}).Error("task: Failed to sync storage")
