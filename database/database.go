@@ -454,6 +454,27 @@ func addIndexes() (err error) {
 		}
 	}
 
+	coll = db.DomainsRecord()
+	err = coll.EnsureIndex(mgo.Index{
+		Key:        []string{"domain"},
+		Background: true,
+	})
+	if err != nil {
+		err = &IndexError{
+			errors.Wrap(err, "database: Index error"),
+		}
+	}
+
+	err = coll.EnsureIndex(mgo.Index{
+		Key:        []string{"node"},
+		Background: true,
+	})
+	if err != nil {
+		err = &IndexError{
+			errors.Wrap(err, "database: Index error"),
+		}
+	}
+
 	coll = db.Vpcs()
 	err = coll.EnsureIndex(mgo.Index{
 		Key:        []string{"vpc_id"},
