@@ -12836,20 +12836,19 @@ System.registerDynamic("app/components/VpcLinkUri.js", ["npm:react@16.4.1.js"], 
     exports.default = VpcUriLink;
     
 });
-System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.4.1.js", "app/Constants.js", "app/actions/VpcActions.js", "app/stores/DatacentersStore.js", "app/components/VpcRoute.js", "app/components/VpcLinkUri.js", "app/components/PageInput.js", "app/components/PageSelect.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/ConfirmButton.js", "app/components/Help.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.4.1.js", "app/actions/VpcActions.js", "app/stores/DatacentersStore.js", "app/stores/OrganizationsStore.js", "app/components/VpcRoute.js", "app/components/VpcLinkUri.js", "app/components/PageInput.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/ConfirmButton.js", "app/components/Help.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
         GLOBAL = global;
     Object.defineProperty(exports, "__esModule", { value: true });
     const React = $__require("npm:react@16.4.1.js");
-    const Constants = $__require("app/Constants.js");
     const VpcActions = $__require("app/actions/VpcActions.js");
     const DatacentersStore_1 = $__require("app/stores/DatacentersStore.js");
+    const OrganizationsStore_1 = $__require("app/stores/OrganizationsStore.js");
     const VpcRoute_1 = $__require("app/components/VpcRoute.js");
     const VpcLinkUri_1 = $__require("app/components/VpcLinkUri.js");
     const PageInput_1 = $__require("app/components/PageInput.js");
-    const PageSelect_1 = $__require("app/components/PageSelect.js");
     const PageInfo_1 = $__require("app/components/PageInfo.js");
     const PageSave_1 = $__require("app/components/PageSave.js");
     const ConfirmButton_1 = $__require("app/components/ConfirmButton.js");
@@ -13053,12 +13052,7 @@ System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.4.1.js", 
             let vpc = this.state.vpc || this.props.vpc;
             let datacenter = DatacentersStore_1.default.datacenter(vpc.datacenter);
             let datacenterName = datacenter ? datacenter.name : vpc.datacenter;
-            let organizationsSelect = [];
-            if (this.props.organizations.length) {
-                for (let organization of this.props.organizations) {
-                    organizationsSelect.push(React.createElement("option", { key: organization.id, value: organization.id }, organization.name));
-                }
-            }
+            let org = OrganizationsStore_1.default.organization(this.props.vpc.organization);
             let routes = [React.createElement(VpcRoute_1.default, { disabled: true, key: -1, route: {
                     destination: '0.0.0.0/0',
                     target: '0.0.0.0'
@@ -13118,11 +13112,12 @@ System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.4.1.js", 
                     label: 'Datacenter',
                     value: datacenterName
                 }, {
+                    label: 'Organization',
+                    value: org ? org.name : this.props.vpc.organization
+                }, {
                     label: 'Private IPv6 Network',
                     value: this.props.vpc.network6 || 'Unknown'
-                }] }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, hidden: Constants.user, label: "Organization", help: "Organization for vpc.", value: vpc.organization, onChange: val => {
-                    this.set('organization', val);
-                } }, organizationsSelect))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.vpc && !this.state.message, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
+                }] }))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.vpc && !this.state.message, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
                     this.setState(Object.assign({}, this.state, { changed: false, vpc: null }));
                 }, onSave: this.onSave }));
         }
@@ -13669,6 +13664,657 @@ System.registerDynamic("app/components/Vpcs.js", ["npm:react@16.4.1.js", "app/Co
         }
     }
     exports.default = Vpcs;
+    
+});
+System.registerDynamic("app/components/DomainDetailed.js", ["npm:react@16.4.1.js", "app/actions/DomainActions.js", "app/stores/OrganizationsStore.js", "app/components/PageInput.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/ConfirmButton.js", "app/components/PageSelect.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@16.4.1.js");
+    const DomainActions = $__require("app/actions/DomainActions.js");
+    const OrganizationsStore_1 = $__require("app/stores/OrganizationsStore.js");
+    const PageInput_1 = $__require("app/components/PageInput.js");
+    const PageInfo_1 = $__require("app/components/PageInfo.js");
+    const PageSave_1 = $__require("app/components/PageSave.js");
+    const ConfirmButton_1 = $__require("app/components/ConfirmButton.js");
+    const PageSelect_1 = $__require("app/components/PageSelect.js");
+    const css = {
+        card: {
+            position: 'relative',
+            padding: '48px 10px 0 10px',
+            width: '100%'
+        },
+        button: {
+            height: '30px'
+        },
+        buttons: {
+            cursor: 'pointer',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            padding: '4px',
+            height: '39px',
+            backgroundColor: 'rgba(0, 0, 0, 0.13)'
+        },
+        item: {
+            margin: '9px 5px 0 5px',
+            height: '20px'
+        },
+        itemsLabel: {
+            display: 'block'
+        },
+        itemsAdd: {
+            margin: '8px 0 15px 0'
+        },
+        group: {
+            flex: 1,
+            minWidth: '250px'
+        },
+        save: {
+            paddingBottom: '10px'
+        },
+        label: {
+            width: '100%',
+            maxWidth: '280px'
+        },
+        status: {
+            margin: '6px 0 0 1px'
+        },
+        icon: {
+            marginRight: '3px'
+        },
+        inputGroup: {
+            width: '100%'
+        },
+        protocol: {
+            flex: '0 1 auto'
+        },
+        port: {
+            flex: '1'
+        },
+        select: {
+            margin: '7px 0px 0px 6px'
+        },
+        role: {
+            margin: '9px 5px 0 5px',
+            height: '20px'
+        },
+        rules: {
+            marginBottom: '15px'
+        }
+    };
+    class DomainDetailed extends React.Component {
+        constructor(props, context) {
+            super(props, context);
+            this.onSave = () => {
+                this.setState(Object.assign({}, this.state, { disabled: true }));
+                DomainActions.commit(this.state.domain).then(() => {
+                    this.setState(Object.assign({}, this.state, { message: 'Your changes have been saved', changed: false, disabled: false }));
+                    setTimeout(() => {
+                        if (!this.state.changed) {
+                            this.setState(Object.assign({}, this.state, { domain: null, changed: false }));
+                        }
+                    }, 1000);
+                    setTimeout(() => {
+                        if (!this.state.changed) {
+                            this.setState(Object.assign({}, this.state, { message: '' }));
+                        }
+                    }, 3000);
+                }).catch(() => {
+                    this.setState(Object.assign({}, this.state, { message: '', disabled: false }));
+                });
+            };
+            this.onDelete = () => {
+                this.setState(Object.assign({}, this.state, { disabled: true }));
+                DomainActions.remove(this.props.domain.id).then(() => {
+                    this.setState(Object.assign({}, this.state, { disabled: false }));
+                }).catch(() => {
+                    this.setState(Object.assign({}, this.state, { disabled: false }));
+                });
+            };
+            this.state = {
+                disabled: false,
+                changed: false,
+                message: '',
+                domain: null
+            };
+        }
+        set(name, val) {
+            let domain;
+            if (this.state.changed) {
+                domain = Object.assign({}, this.state.domain);
+            } else {
+                domain = Object.assign({}, this.props.domain);
+            }
+            domain[name] = val;
+            this.setState(Object.assign({}, this.state, { changed: true, domain: domain }));
+        }
+        render() {
+            let domain = this.state.domain || this.props.domain;
+            let org = OrganizationsStore_1.default.organization(this.props.domain.organization);
+            return React.createElement("td", { className: "pt-cell", colSpan: 5, style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { className: "layout horizontal", style: css.buttons, onClick: evt => {
+                    let target = evt.target;
+                    if (target.className.indexOf('open-ignore') !== -1) {
+                        return;
+                    }
+                    this.props.onClose();
+                } }, React.createElement("div", null, React.createElement("label", { className: "pt-control pt-checkbox open-ignore", style: css.select }, React.createElement("input", { type: "checkbox", className: "open-ignore", checked: this.props.selected, onClick: evt => {
+                    this.props.onSelect(evt.shiftKey);
+                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" }))), React.createElement("div", { className: "flex" }), React.createElement(ConfirmButton_1.default, { className: "pt-minimal pt-intent-danger pt-icon-trash open-ignore", style: css.button, progressClassName: "pt-intent-danger", confirmMsg: "Confirm domain remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { label: "Domain", help: "Domain name.", type: "text", placeholder: "Enter domain", value: domain.name, onChange: val => {
+                    this.set('name', val);
+                } }), React.createElement(PageSelect_1.default, { label: "Type", help: "Domain type.", value: domain.type, onChange: val => {
+                    this.set('type', val);
+                } }, React.createElement("option", { value: "" }, "Select Type"), React.createElement("option", { value: "route_53" }, "AWS Route53")), React.createElement(PageInput_1.default, { hidden: domain.type !== 'route_53', label: "AWS Access Key ID", help: "AWS access key ID.", type: "text", placeholder: "Enter access key ID", value: domain.aws_id, onChange: val => {
+                    this.set('aws_id', val);
+                } }), React.createElement(PageInput_1.default, { hidden: domain.type !== 'route_53', label: "AWS Secret Access Key", help: "AWS secret access key.", type: "text", placeholder: "Enter secret access key", value: domain.aws_secret, onChange: val => {
+                    this.set('aws_secret', val);
+                } })), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
+                    label: 'ID',
+                    value: this.props.domain.id || 'Unknown'
+                }, {
+                    label: 'Organization',
+                    value: org ? org.name : this.props.domain.organization
+                }] }))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.domain && !this.state.message, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
+                    this.setState(Object.assign({}, this.state, { changed: false, domain: null }));
+                }, onSave: this.onSave }));
+        }
+    }
+    exports.default = DomainDetailed;
+    
+});
+System.registerDynamic("app/components/Domain.js", ["npm:react@16.4.1.js", "app/stores/OrganizationsStore.js", "app/components/DomainDetailed.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@16.4.1.js");
+    const OrganizationsStore_1 = $__require("app/stores/OrganizationsStore.js");
+    const DomainDetailed_1 = $__require("app/components/DomainDetailed.js");
+    const css = {
+        card: {
+            display: 'table-row',
+            width: '100%',
+            padding: 0,
+            boxShadow: 'none',
+            cursor: 'pointer'
+        },
+        cardOpen: {
+            display: 'table-row',
+            width: '100%',
+            padding: 0,
+            boxShadow: 'none',
+            position: 'relative'
+        },
+        select: {
+            margin: '2px 0 0 0',
+            paddingTop: '1px',
+            minHeight: '18px'
+        },
+        name: {
+            verticalAlign: 'top',
+            display: 'table-cell',
+            padding: '8px'
+        },
+        nameSpan: {
+            margin: '1px 5px 0 0'
+        },
+        item: {
+            verticalAlign: 'top',
+            display: 'table-cell',
+            padding: '9px',
+            whiteSpace: 'nowrap'
+        },
+        icon: {
+            marginRight: '3px'
+        },
+        bars: {
+            verticalAlign: 'top',
+            display: 'table-cell',
+            padding: '8px',
+            width: '30px'
+        },
+        bar: {
+            height: '6px',
+            marginBottom: '1px'
+        },
+        barLast: {
+            height: '6px'
+        },
+        roles: {
+            verticalAlign: 'top',
+            display: 'table-cell',
+            padding: '0 8px 8px 8px'
+        },
+        tag: {
+            margin: '8px 5px 0 5px',
+            height: '20px'
+        }
+    };
+    class Domain extends React.Component {
+        render() {
+            let domain = this.props.domain;
+            if (this.props.open) {
+                return React.createElement("div", { className: "pt-card pt-row", style: css.cardOpen }, React.createElement(DomainDetailed_1.default, { organizations: this.props.organizations, domain: this.props.domain, selected: this.props.selected, onSelect: this.props.onSelect, onClose: () => {
+                        this.props.onOpen();
+                    } }));
+            }
+            let active = true;
+            let cardStyle = Object.assign({}, css.card);
+            if (!active) {
+                cardStyle.opacity = 0.6;
+            }
+            let orgName = '';
+            if (domain.organization) {
+                let org = OrganizationsStore_1.default.organization(domain.organization);
+                orgName = org ? org.name : domain.organization;
+            } else {
+                orgName = 'Node Domain';
+            }
+            return React.createElement("div", { className: "pt-card pt-row", style: cardStyle, onClick: evt => {
+                    let target = evt.target;
+                    if (target.className.indexOf('open-ignore') !== -1) {
+                        return;
+                    }
+                    this.props.onOpen();
+                } }, React.createElement("div", { className: "pt-cell", style: css.name }, React.createElement("div", { className: "layout horizontal" }, React.createElement("label", { className: "pt-control pt-checkbox open-ignore", style: css.select }, React.createElement("input", { type: "checkbox", className: "open-ignore", checked: this.props.selected, onClick: evt => {
+                    this.props.onSelect(evt.shiftKey);
+                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" })), React.createElement("div", { style: css.nameSpan }, domain.name))), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, className: 'pt-icon-standard ' + (domain.organization ? 'pt-icon-people' : 'pt-icon-layers') }), orgName));
+        }
+    }
+    exports.default = Domain;
+    
+});
+System.registerDynamic("app/components/DomainsFilter.js", ["npm:react@16.4.1.js", "app/Constants.js", "app/components/SearchInput.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@16.4.1.js");
+    const Constants = $__require("app/Constants.js");
+    const SearchInput_1 = $__require("app/components/SearchInput.js");
+    const css = {
+        filters: {
+            margin: '-15px 0 5px 0'
+        },
+        input: {
+            width: '200px',
+            margin: '5px'
+        },
+        keybase: {
+            width: '175px',
+            margin: '5px'
+        },
+        role: {
+            width: '150px',
+            margin: '5px'
+        },
+        type: {
+            margin: '5px'
+        },
+        check: {
+            margin: '12px 5px 8px 5px'
+        }
+    };
+    class DomainsFilter extends React.Component {
+        constructor(props, context) {
+            super(props, context);
+            this.state = {
+                menu: false
+            };
+        }
+        render() {
+            if (this.props.filter === null) {
+                return React.createElement("div", null);
+            }
+            let organizationsSelect = [React.createElement("option", { key: "key", value: "any" }, "Any")];
+            if (this.props.organizations && this.props.organizations.length) {
+                for (let organization of this.props.organizations) {
+                    organizationsSelect.push(React.createElement("option", { key: organization.id, value: organization.id }, organization.name));
+                }
+            }
+            return React.createElement("div", { className: "layout horizontal wrap", style: css.filters }, React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Domain ID", value: this.props.filter.id, onChange: val => {
+                    let filter = Object.assign({}, this.props.filter);
+                    if (val) {
+                        filter.id = val;
+                    } else {
+                        delete filter.id;
+                    }
+                    this.props.onFilter(filter);
+                } }), React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Name", value: this.props.filter.name, onChange: val => {
+                    let filter = Object.assign({}, this.props.filter);
+                    if (val) {
+                        filter.name = val;
+                    } else {
+                        delete filter.name;
+                    }
+                    this.props.onFilter(filter);
+                } }), React.createElement("div", { className: "pt-select", style: css.type, hidden: Constants.user }, React.createElement("select", { value: this.props.filter.organization || 'any', onChange: evt => {
+                    let filter = Object.assign({}, this.props.filter);
+                    let val = evt.target.value;
+                    if (val === 'any') {
+                        delete filter.organization;
+                    } else {
+                        filter.organization = val;
+                    }
+                    this.props.onFilter(filter);
+                } }, organizationsSelect)));
+        }
+    }
+    exports.default = DomainsFilter;
+    
+});
+System.registerDynamic("app/components/DomainsPage.js", ["npm:react@16.4.1.js", "app/stores/DomainsStore.js", "app/actions/DomainActions.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@16.4.1.js");
+    const DomainsStore_1 = $__require("app/stores/DomainsStore.js");
+    const DomainActions = $__require("app/actions/DomainActions.js");
+    const css = {
+        button: {
+            userSelect: 'none',
+            margin: '0 5px 0 0'
+        },
+        buttonLast: {
+            userSelect: 'none',
+            margin: '0 0 0 0'
+        },
+        link: {
+            cursor: 'pointer',
+            userSelect: 'none',
+            margin: '5px 5px 0 0'
+        },
+        current: {
+            opacity: 0.5
+        }
+    };
+    class DomainsPage extends React.Component {
+        constructor(props, context) {
+            super(props, context);
+            this.onChange = () => {
+                this.setState(Object.assign({}, this.state, { page: DomainsStore_1.default.page, pageCount: DomainsStore_1.default.pageCount, pages: DomainsStore_1.default.pages, count: DomainsStore_1.default.count }));
+            };
+            this.state = {
+                page: DomainsStore_1.default.page,
+                pageCount: DomainsStore_1.default.pageCount,
+                pages: DomainsStore_1.default.pages,
+                count: DomainsStore_1.default.count
+            };
+        }
+        componentDidMount() {
+            DomainsStore_1.default.addChangeListener(this.onChange);
+        }
+        componentWillUnmount() {
+            DomainsStore_1.default.removeChangeListener(this.onChange);
+        }
+        render() {
+            let page = this.state.page;
+            let pages = this.state.pages;
+            if (pages <= 1) {
+                return React.createElement("div", null);
+            }
+            let links = [];
+            let start = Math.max(0, page - 7);
+            let end = Math.min(pages, start + 15);
+            for (let i = start; i < end; i++) {
+                links.push(React.createElement("span", { key: i, style: page === i ? Object.assign({}, css.link, css.current) : css.link, onClick: () => {
+                        DomainActions.traverse(i);
+                        if (this.props.onPage) {
+                            this.props.onPage();
+                        }
+                    } }, i + 1));
+            }
+            return React.createElement("div", { className: "layout horizontal center-justified" }, React.createElement("button", { className: "pt-button pt-minimal pt-icon-chevron-backward", hidden: pages < 5, disabled: page === 0, type: "button", onClick: () => {
+                    DomainActions.traverse(0);
+                    if (this.props.onPage) {
+                        this.props.onPage();
+                    }
+                } }), React.createElement("button", { className: "pt-button pt-minimal pt-icon-chevron-left", style: css.button, disabled: page === 0, type: "button", onClick: () => {
+                    DomainActions.traverse(Math.max(0, this.state.page - 1));
+                    if (this.props.onPage) {
+                        this.props.onPage();
+                    }
+                } }), links, React.createElement("button", { className: "pt-button pt-minimal pt-icon-chevron-right", style: css.button, disabled: page === pages - 1, type: "button", onClick: () => {
+                    DomainActions.traverse(Math.min(this.state.pages - 1, this.state.page + 1));
+                    if (this.props.onPage) {
+                        this.props.onPage();
+                    }
+                } }), React.createElement("button", { className: "pt-button pt-minimal pt-icon-chevron-forward", hidden: pages < 5, disabled: page === pages - 1, type: "button", onClick: () => {
+                    DomainActions.traverse(this.state.pages - 1);
+                    if (this.props.onPage) {
+                        this.props.onPage();
+                    }
+                } }));
+        }
+    }
+    exports.default = DomainsPage;
+    
+});
+System.registerDynamic("app/components/Domains.js", ["npm:react@16.4.1.js", "app/Constants.js", "app/stores/DomainsStore.js", "app/stores/OrganizationsStore.js", "app/actions/DomainActions.js", "app/actions/OrganizationActions.js", "app/components/Domain.js", "app/components/DomainsFilter.js", "app/components/DomainsPage.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/NonState.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@16.4.1.js");
+    const Constants = $__require("app/Constants.js");
+    const DomainsStore_1 = $__require("app/stores/DomainsStore.js");
+    const OrganizationsStore_1 = $__require("app/stores/OrganizationsStore.js");
+    const DomainActions = $__require("app/actions/DomainActions.js");
+    const OrganizationActions = $__require("app/actions/OrganizationActions.js");
+    const Domain_1 = $__require("app/components/Domain.js");
+    const DomainsFilter_1 = $__require("app/components/DomainsFilter.js");
+    const DomainsPage_1 = $__require("app/components/DomainsPage.js");
+    const Page_1 = $__require("app/components/Page.js");
+    const PageHeader_1 = $__require("app/components/PageHeader.js");
+    const NonState_1 = $__require("app/components/NonState.js");
+    const ConfirmButton_1 = $__require("app/components/ConfirmButton.js");
+    const css = {
+        items: {
+            width: '100%',
+            marginTop: '-5px',
+            display: 'table',
+            borderSpacing: '0 5px'
+        },
+        itemsBox: {
+            width: '100%',
+            overflowY: 'auto'
+        },
+        group: {
+            width: '100%'
+        },
+        groupBox: {
+            margin: '16px 0 0 8px',
+            width: '100%',
+            maxWidth: '200px'
+        },
+        placeholder: {
+            opacity: 0,
+            width: '100%'
+        },
+        header: {
+            marginTop: '-19px'
+        },
+        heading: {
+            margin: '19px 0 0 0'
+        },
+        selectFirst: {
+            width: '100%',
+            borderTopLeftRadius: '3px',
+            borderBottomLeftRadius: '3px'
+        },
+        selectInner: {
+            width: '100%'
+        },
+        selectBox: {
+            flex: '1'
+        },
+        button: {
+            margin: '8px 0 0 8px'
+        },
+        buttons: {
+            marginTop: '8px'
+        }
+    };
+    class Domains extends React.Component {
+        constructor(props, context) {
+            super(props, context);
+            this.onChange = () => {
+                let domains = DomainsStore_1.default.domains;
+                let selected = {};
+                let curSelected = this.state.selected;
+                let opened = {};
+                let curOpened = this.state.opened;
+                domains.forEach(domain => {
+                    if (curSelected[domain.id]) {
+                        selected[domain.id] = true;
+                    }
+                    if (curOpened[domain.id]) {
+                        opened[domain.id] = true;
+                    }
+                });
+                this.setState(Object.assign({}, this.state, { domains: domains, filter: DomainsStore_1.default.filter, organizations: OrganizationsStore_1.default.organizations, selected: selected, opened: opened }));
+            };
+            this.onDelete = () => {
+                this.setState(Object.assign({}, this.state, { disabled: true }));
+                DomainActions.removeMulti(Object.keys(this.state.selected)).then(() => {
+                    this.setState(Object.assign({}, this.state, { selected: {}, disabled: false }));
+                }).catch(() => {
+                    this.setState(Object.assign({}, this.state, { disabled: false }));
+                });
+            };
+            this.state = {
+                domains: DomainsStore_1.default.domains,
+                filter: DomainsStore_1.default.filter,
+                organizations: OrganizationsStore_1.default.organizations,
+                organization: '',
+                selected: {},
+                opened: {},
+                newOpened: false,
+                lastSelected: null,
+                disabled: false
+            };
+        }
+        get selected() {
+            return !!Object.keys(this.state.selected).length;
+        }
+        get opened() {
+            return !!Object.keys(this.state.opened).length;
+        }
+        componentDidMount() {
+            DomainsStore_1.default.addChangeListener(this.onChange);
+            OrganizationsStore_1.default.addChangeListener(this.onChange);
+            DomainActions.sync();
+            OrganizationActions.sync();
+        }
+        componentWillUnmount() {
+            DomainsStore_1.default.removeChangeListener(this.onChange);
+            OrganizationsStore_1.default.removeChangeListener(this.onChange);
+        }
+        render() {
+            let domainsDom = [];
+            let hasOrganizations = false;
+            let organizationsSelect = [];
+            if (this.state.organizations.length) {
+                hasOrganizations = true;
+                for (let organization of this.state.organizations) {
+                    organizationsSelect.push(React.createElement("option", { key: organization.id, value: organization.id }, organization.name));
+                }
+            } else {
+                organizationsSelect.push(React.createElement("option", { key: "null", value: "" }, "No Organizations"));
+            }
+            this.state.domains.forEach(domain => {
+                domainsDom.push(React.createElement(Domain_1.default, { key: domain.id, domain: domain, organizations: this.state.organizations, selected: !!this.state.selected[domain.id], open: !!this.state.opened[domain.id], onSelect: shift => {
+                        let selected = Object.assign({}, this.state.selected);
+                        if (shift) {
+                            let domains = this.state.domains;
+                            let start;
+                            let end;
+                            for (let i = 0; i < domains.length; i++) {
+                                let usr = domains[i];
+                                if (usr.id === domain.id) {
+                                    start = i;
+                                } else if (usr.id === this.state.lastSelected) {
+                                    end = i;
+                                }
+                            }
+                            if (start !== undefined && end !== undefined) {
+                                if (start > end) {
+                                    end = [start, start = end][0];
+                                }
+                                for (let i = start; i <= end; i++) {
+                                    selected[domains[i].id] = true;
+                                }
+                                this.setState(Object.assign({}, this.state, { lastSelected: domain.id, selected: selected }));
+                                return;
+                            }
+                        }
+                        if (selected[domain.id]) {
+                            delete selected[domain.id];
+                        } else {
+                            selected[domain.id] = true;
+                        }
+                        this.setState(Object.assign({}, this.state, { lastSelected: domain.id, selected: selected }));
+                    }, onOpen: () => {
+                        let opened = Object.assign({}, this.state.opened);
+                        if (opened[domain.id]) {
+                            delete opened[domain.id];
+                        } else {
+                            opened[domain.id] = true;
+                        }
+                        this.setState(Object.assign({}, this.state, { opened: opened }));
+                    } }));
+            });
+            let filterClass = 'pt-button pt-intent-primary pt-icon-filter ';
+            if (this.state.filter) {
+                filterClass += 'pt-active';
+            }
+            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Domains"), React.createElement("div", { className: "flex" }), React.createElement("div", { style: css.buttons }, React.createElement("button", { className: filterClass, style: css.button, type: "button", onClick: () => {
+                    if (this.state.filter === null) {
+                        DomainActions.filter({});
+                    } else {
+                        DomainActions.filter(null);
+                    }
+                } }, "Filters"), React.createElement("button", { className: "pt-button pt-intent-warning pt-icon-chevron-up", style: css.button, disabled: !this.opened, type: "button", onClick: () => {
+                    this.setState(Object.assign({}, this.state, { opened: {} }));
+                } }, "Collapse All"), React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", hidden: !Constants.user, disabled: this.state.disabled, style: css.button, type: "button", onClick: () => {
+                    this.setState(Object.assign({}, this.state, { disabled: true }));
+                    DomainActions.create({
+                        id: null
+                    }).then(() => {
+                        this.setState(Object.assign({}, this.state, { disabled: false }));
+                    }).catch(() => {
+                        this.setState(Object.assign({}, this.state, { disabled: false }));
+                    });
+                } }, "New"), React.createElement(ConfirmButton_1.default, { label: "Delete Selected", className: "pt-intent-danger pt-icon-delete", progressClassName: "pt-intent-danger", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onDelete })), React.createElement("div", { style: css.groupBox, hidden: Constants.user }, React.createElement("div", { className: "pt-control-group", style: css.group }, React.createElement("div", { style: css.selectBox }, React.createElement("div", { className: "pt-select", style: css.selectFirst }, React.createElement("select", { style: css.selectInner, disabled: !hasOrganizations || this.state.disabled, value: this.state.organization, onChange: evt => {
+                    this.setState(Object.assign({}, this.state, { organization: evt.target.value }));
+                } }, organizationsSelect))), React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", disabled: !hasOrganizations || this.state.disabled, type: "button", onClick: () => {
+                    this.setState(Object.assign({}, this.state, { disabled: true }));
+                    DomainActions.create({
+                        id: null,
+                        organization: this.state.organization || this.state.organizations[0].id
+                    }).then(() => {
+                        this.setState(Object.assign({}, this.state, { disabled: false }));
+                    }).catch(() => {
+                        this.setState(Object.assign({}, this.state, { disabled: false }));
+                    });
+                } }, "New"))))), React.createElement(DomainsFilter_1.default, { filter: this.state.filter, onFilter: filter => {
+                    DomainActions.filter(filter);
+                }, organizations: this.state.organizations }), React.createElement("div", { style: css.itemsBox }, React.createElement("div", { style: css.items }, domainsDom, React.createElement("tr", { className: "pt-card pt-row", style: css.placeholder }, React.createElement("td", { colSpan: 5, style: css.placeholder })))), React.createElement(NonState_1.default, { hidden: !!domainsDom.length, iconClass: "pt-icon-map-marker", title: "No domains", description: "Add a new domain to get started." }), React.createElement(DomainsPage_1.default, { onPage: () => {
+                    this.setState({
+                        lastSelected: null
+                    });
+                } }));
+        }
+    }
+    exports.default = Domains;
     
 });
 System.registerDynamic("app/components/Storage.js", ["npm:react@16.4.1.js", "app/actions/StorageActions.js", "app/components/PageInput.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/PageSelect.js", "app/components/PageSwitch.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
@@ -15947,6 +16593,15 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@16.4.1.
             if (!hasVpcs) {
                 vpcsSelect = [React.createElement("option", { key: "null", value: "" }, "No Vpcs")];
             }
+            let domainsSelect = [React.createElement("option", { key: "null", value: "" }, "No Domain")];
+            if (this.props.domains && this.props.domains.length) {
+                for (let domain of this.props.domains) {
+                    if (domain.organization !== instance.organization) {
+                        continue;
+                    }
+                    domainsSelect.push(React.createElement("option", { key: domain.id, value: domain.id }, domain.name));
+                }
+            }
             return React.createElement("td", { className: "pt-cell", colSpan: 5, style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { className: "layout horizontal", style: css.buttons, onClick: evt => {
                     let target = evt.target;
                     if (target.className.indexOf('open-ignore') !== -1) {
@@ -15965,7 +16620,9 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@16.4.1.
                     this.setState(Object.assign({}, this.state, { addNetworkRole: val }));
                 }, onSubmit: this.onAddNetworkRole }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasVpcs, label: "VPC", help: "VPC for instance.", value: instance.vpc, onChange: val => {
                     this.set('vpc', val);
-                } }, vpcsSelect)), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
+                } }, vpcsSelect), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "DNS Domain", help: "Domain to create DNS name using instance name.", value: instance.domain, onChange: val => {
+                    this.set('domain', val);
+                } }, domainsSelect)), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
                     label: 'ID',
                     value: this.props.instance.id || 'None'
                 }, {
@@ -16150,7 +16807,7 @@ System.registerDynamic("app/components/Instance.js", ["npm:react@16.4.1.js", "ap
         render() {
             let instance = this.props.instance;
             if (this.props.open) {
-                return React.createElement("div", { className: "pt-card pt-row", style: css.cardOpen }, React.createElement(InstanceDetailed_1.default, { instance: this.props.instance, vpcs: this.props.vpcs, selected: this.props.selected, onSelect: this.props.onSelect, onClose: () => {
+                return React.createElement("div", { className: "pt-card pt-row", style: css.cardOpen }, React.createElement(InstanceDetailed_1.default, { instance: this.props.instance, vpcs: this.props.vpcs, domains: this.props.domains, selected: this.props.selected, onSelect: this.props.onSelect, onClose: () => {
                         this.props.onOpen();
                     } }));
             }
@@ -16800,6 +17457,15 @@ System.registerDynamic("app/components/InstanceNew.js", ["npm:react@16.4.1.js", 
             if (!hasVpcs) {
                 vpcsSelect = [React.createElement("option", { key: "null", value: "" }, "No Vpcs")];
             }
+            let domainsSelect = [React.createElement("option", { key: "null", value: "" }, "No Domain")];
+            if (this.props.domains && this.props.domains.length) {
+                for (let domain of this.props.domains) {
+                    if (domain.organization !== instance.organization) {
+                        continue;
+                    }
+                    domainsSelect.push(React.createElement("option", { key: domain.id, value: domain.id }, domain.name));
+                }
+            }
             let hasImages = false;
             let imagesSelect = [];
             if (this.state.images.length) {
@@ -16835,7 +17501,9 @@ System.registerDynamic("app/components/InstanceNew.js", ["npm:react@16.4.1.js", 
                     this.setState(Object.assign({}, this.state, { instance: Object.assign({}, this.state.instance, { vpc: val }) }));
                 } }, vpcsSelect), React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasNodes, label: "Node", help: "Node to run instance on.", value: instance.node, onChange: val => {
                     this.set('node', val);
-                } }, nodesSelect)), React.createElement("div", { style: css.group }, React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasImages, label: "Image", help: "Starting image for node.", value: instance.image, onChange: val => {
+                } }, nodesSelect), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "DNS Domain", help: "Domain to create DNS name using instance name.", value: instance.domain, onChange: val => {
+                    this.set('domain', val);
+                } }, domainsSelect)), React.createElement("div", { style: css.group }, React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasImages, label: "Image", help: "Starting image for node.", value: instance.image, onChange: val => {
                     this.set('image', val);
                 } }, imagesSelect), React.createElement("label", { className: "pt-label" }, "Network Roles", React.createElement(Help_1.default, { title: "Network Roles", content: "Network roles that will be matched with firewall rules. Network roles are case-sensitive." }), React.createElement("div", null, networkRoles)), React.createElement(PageInputButton_1.default, { disabled: this.state.disabled, buttonClass: "pt-intent-success pt-icon-add", label: "Add", type: "text", placeholder: "Add role", value: this.state.addNetworkRole, onChange: val => {
                     this.setState(Object.assign({}, this.state, { addNetworkRole: val }));
@@ -17030,7 +17698,7 @@ System.registerDynamic("app/components/InstancesPage.js", ["npm:react@16.4.1.js"
     exports.default = InstancesPage;
     
 });
-System.registerDynamic("app/components/Instances.js", ["npm:react@16.4.1.js", "app/Constants.js", "app/stores/InstancesStore.js", "app/stores/OrganizationsStore.js", "app/stores/VpcsNameStore.js", "app/stores/DatacentersStore.js", "app/stores/ZonesStore.js", "app/actions/InstanceActions.js", "app/actions/OrganizationActions.js", "app/actions/VpcActions.js", "app/actions/DatacenterActions.js", "app/actions/ZoneActions.js", "app/components/Instance.js", "app/components/InstanceNew.js", "app/components/InstancesFilter.js", "app/components/InstancesPage.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/NonState.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/Instances.js", ["npm:react@16.4.1.js", "app/Constants.js", "app/stores/InstancesStore.js", "app/stores/OrganizationsStore.js", "app/stores/DomainsStore.js", "app/stores/VpcsNameStore.js", "app/stores/DatacentersStore.js", "app/stores/ZonesStore.js", "app/actions/InstanceActions.js", "app/actions/OrganizationActions.js", "app/actions/DomainActions.js", "app/actions/VpcActions.js", "app/actions/DatacenterActions.js", "app/actions/ZoneActions.js", "app/components/Instance.js", "app/components/InstanceNew.js", "app/components/InstancesFilter.js", "app/components/InstancesPage.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/NonState.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -17040,11 +17708,13 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.4.1.js", "a
     const Constants = $__require("app/Constants.js");
     const InstancesStore_1 = $__require("app/stores/InstancesStore.js");
     const OrganizationsStore_1 = $__require("app/stores/OrganizationsStore.js");
+    const DomainsStore_1 = $__require("app/stores/DomainsStore.js");
     const VpcsNameStore_1 = $__require("app/stores/VpcsNameStore.js");
     const DatacentersStore_1 = $__require("app/stores/DatacentersStore.js");
     const ZonesStore_1 = $__require("app/stores/ZonesStore.js");
     const InstanceActions = $__require("app/actions/InstanceActions.js");
     const OrganizationActions = $__require("app/actions/OrganizationActions.js");
+    const DomainActions = $__require("app/actions/DomainActions.js");
     const VpcActions = $__require("app/actions/VpcActions.js");
     const DatacenterActions = $__require("app/actions/DatacenterActions.js");
     const ZoneActions = $__require("app/actions/ZoneActions.js");
@@ -17108,7 +17778,7 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.4.1.js", "a
                         opened[instance.id] = true;
                     }
                 });
-                this.setState(Object.assign({}, this.state, { instances: instances, filter: InstancesStore_1.default.filter, organizations: OrganizationsStore_1.default.organizations, vpcs: VpcsNameStore_1.default.vpcs, datacenters: DatacentersStore_1.default.datacenters, zones: ZonesStore_1.default.zones, selected: selected, opened: opened }));
+                this.setState(Object.assign({}, this.state, { instances: instances, filter: InstancesStore_1.default.filter, organizations: OrganizationsStore_1.default.organizations, domains: DomainsStore_1.default.domains, vpcs: VpcsNameStore_1.default.vpcs, datacenters: DatacentersStore_1.default.datacenters, zones: ZonesStore_1.default.zones, selected: selected, opened: opened }));
             };
             this.onDelete = () => {
                 this.setState(Object.assign({}, this.state, { disabled: true }));
@@ -17131,6 +17801,7 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.4.1.js", "a
                 filter: InstancesStore_1.default.filter,
                 debug: false,
                 organizations: OrganizationsStore_1.default.organizations,
+                domains: DomainsStore_1.default.domains,
                 vpcs: VpcsNameStore_1.default.vpcs,
                 datacenters: DatacentersStore_1.default.datacenters,
                 zones: ZonesStore_1.default.zones,
@@ -17150,11 +17821,13 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.4.1.js", "a
         componentDidMount() {
             InstancesStore_1.default.addChangeListener(this.onChange);
             OrganizationsStore_1.default.addChangeListener(this.onChange);
+            DomainsStore_1.default.addChangeListener(this.onChange);
             VpcsNameStore_1.default.addChangeListener(this.onChange);
             DatacentersStore_1.default.addChangeListener(this.onChange);
             ZonesStore_1.default.addChangeListener(this.onChange);
             InstanceActions.sync();
             OrganizationActions.sync();
+            DomainActions.sync();
             VpcActions.syncNames();
             DatacenterActions.sync();
             ZoneActions.sync();
@@ -17165,6 +17838,7 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.4.1.js", "a
         componentWillUnmount() {
             InstancesStore_1.default.removeChangeListener(this.onChange);
             OrganizationsStore_1.default.removeChangeListener(this.onChange);
+            DomainsStore_1.default.removeChangeListener(this.onChange);
             VpcsNameStore_1.default.removeChangeListener(this.onChange);
             DatacentersStore_1.default.removeChangeListener(this.onChange);
             ZonesStore_1.default.removeChangeListener(this.onChange);
@@ -17181,7 +17855,7 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.4.1.js", "a
         render() {
             let instancesDom = [];
             this.state.instances.forEach(instance => {
-                instancesDom.push(React.createElement(Instance_1.default, { key: instance.id, instance: instance, vpcs: this.state.vpcs, selected: !!this.state.selected[instance.id], open: !!this.state.opened[instance.id], onSelect: shift => {
+                instancesDom.push(React.createElement(Instance_1.default, { key: instance.id, instance: instance, domains: this.state.domains, vpcs: this.state.vpcs, selected: !!this.state.selected[instance.id], open: !!this.state.opened[instance.id], onSelect: shift => {
                         let selected = Object.assign({}, this.state.selected);
                         if (shift) {
                             let instances = this.state.instances;
@@ -17224,7 +17898,7 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.4.1.js", "a
             });
             let newInstanceDom;
             if (this.state.newOpened) {
-                newInstanceDom = React.createElement(InstanceNew_1.default, { organizations: this.state.organizations, vpcs: this.state.vpcs, datacenters: this.state.datacenters, zones: this.state.zones, onClose: () => {
+                newInstanceDom = React.createElement(InstanceNew_1.default, { organizations: this.state.organizations, vpcs: this.state.vpcs, domains: this.state.domains, datacenters: this.state.datacenters, zones: this.state.zones, onClose: () => {
                         this.setState(Object.assign({}, this.state, { newOpened: false }));
                     } });
             }
@@ -22476,6 +23150,291 @@ System.registerDynamic("app/actions/VpcActions.js", ["npm:superagent@3.8.3.js", 
     });
     
 });
+System.registerDynamic("app/types/DomainTypes.js", [], true, function ($__require, exports, module) {
+  "use strict";
+
+  var global = this || self,
+      GLOBAL = global;
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.SYNC = 'domain.sync';
+  exports.TRAVERSE = 'domain.traverse';
+  exports.FILTER = 'domain.filter';
+  exports.CHANGE = 'domain.change';
+  
+});
+System.registerDynamic("app/stores/DomainsStore.js", ["app/dispatcher/Dispatcher.js", "app/EventEmitter.js", "app/types/DomainTypes.js", "app/types/GlobalTypes.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const Dispatcher_1 = $__require("app/dispatcher/Dispatcher.js");
+    const EventEmitter_1 = $__require("app/EventEmitter.js");
+    const DomainTypes = $__require("app/types/DomainTypes.js");
+    const GlobalTypes = $__require("app/types/GlobalTypes.js");
+    class DomainsStore extends EventEmitter_1.default {
+        constructor() {
+            super(...arguments);
+            this._domains = Object.freeze([]);
+            this._filter = null;
+            this._map = {};
+            this._token = Dispatcher_1.default.register(this._callback.bind(this));
+        }
+        _reset() {
+            this._domains = Object.freeze([]);
+            this._page = undefined;
+            this._pageCount = undefined;
+            this._filter = null;
+            this._count = undefined;
+            this._map = {};
+            this.emitChange();
+        }
+        get domains() {
+            return this._domains;
+        }
+        get domainsM() {
+            let domains = [];
+            this._domains.forEach(domain => {
+                domains.push(Object.assign({}, domain));
+            });
+            return domains;
+        }
+        get page() {
+            return this._page || 0;
+        }
+        get pageCount() {
+            return this._pageCount || 20;
+        }
+        get pages() {
+            return Math.ceil(this.count / this.pageCount);
+        }
+        get filter() {
+            return this._filter;
+        }
+        get count() {
+            return this._count || 0;
+        }
+        domain(id) {
+            let i = this._map[id];
+            if (i === undefined) {
+                return null;
+            }
+            return this._domains[i];
+        }
+        emitChange() {
+            this.emitDefer(GlobalTypes.CHANGE);
+        }
+        addChangeListener(callback) {
+            this.on(GlobalTypes.CHANGE, callback);
+        }
+        removeChangeListener(callback) {
+            this.removeListener(GlobalTypes.CHANGE, callback);
+        }
+        _traverse(page) {
+            this._page = Math.min(this.pages, page);
+        }
+        _filterCallback(filter) {
+            if (this._filter !== null && filter === null || this._filter === {} && filter !== null || filter && this._filter && filter.name !== this._filter.name) {
+                this._traverse(0);
+            }
+            this._filter = filter;
+            this.emitChange();
+        }
+        _sync(domains, count) {
+            this._map = {};
+            for (let i = 0; i < domains.length; i++) {
+                domains[i] = Object.freeze(domains[i]);
+                this._map[domains[i].id] = i;
+            }
+            this._count = count;
+            this._domains = Object.freeze(domains);
+            this._page = Math.min(this.pages, this.page);
+            this.emitChange();
+        }
+        _callback(action) {
+            switch (action.type) {
+                case GlobalTypes.RESET:
+                    this._reset();
+                    break;
+                case DomainTypes.TRAVERSE:
+                    this._traverse(action.data.page);
+                    break;
+                case DomainTypes.FILTER:
+                    this._filterCallback(action.data.filter);
+                    break;
+                case DomainTypes.SYNC:
+                    this._sync(action.data.domains, action.data.count);
+                    break;
+            }
+        }
+    }
+    exports.default = new DomainsStore();
+    
+});
+System.registerDynamic("app/actions/DomainActions.js", ["npm:superagent@3.8.3.js", "app/dispatcher/Dispatcher.js", "app/dispatcher/EventDispatcher.js", "app/Alert.js", "app/Csrf.js", "app/Loader.js", "app/types/DomainTypes.js", "app/stores/DomainsStore.js", "app/stores/OrganizationsStore.js", "app/utils/MiscUtils.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const SuperAgent = $__require("npm:superagent@3.8.3.js");
+    const Dispatcher_1 = $__require("app/dispatcher/Dispatcher.js");
+    const EventDispatcher_1 = $__require("app/dispatcher/EventDispatcher.js");
+    const Alert = $__require("app/Alert.js");
+    const Csrf = $__require("app/Csrf.js");
+    const Loader_1 = $__require("app/Loader.js");
+    const DomainTypes = $__require("app/types/DomainTypes.js");
+    const DomainsStore_1 = $__require("app/stores/DomainsStore.js");
+    const OrganizationsStore_1 = $__require("app/stores/OrganizationsStore.js");
+    const MiscUtils = $__require("app/utils/MiscUtils.js");
+    let syncId;
+    function sync(noLoading) {
+        let curSyncId = MiscUtils.uuid();
+        syncId = curSyncId;
+        let loader;
+        if (!noLoading) {
+            loader = new Loader_1.default().loading();
+        }
+        return new Promise((resolve, reject) => {
+            SuperAgent.get('/domain').query(Object.assign({}, DomainsStore_1.default.filter, { page: DomainsStore_1.default.page, page_count: DomainsStore_1.default.pageCount })).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).set('Organization', OrganizationsStore_1.default.current).end((err, res) => {
+                if (loader) {
+                    loader.done();
+                }
+                if (res && res.status === 401) {
+                    window.location.href = '/login';
+                    resolve();
+                    return;
+                }
+                if (curSyncId !== syncId) {
+                    resolve();
+                    return;
+                }
+                if (err) {
+                    Alert.errorRes(res, 'Failed to load domains');
+                    reject(err);
+                    return;
+                }
+                Dispatcher_1.default.dispatch({
+                    type: DomainTypes.SYNC,
+                    data: {
+                        domains: res.body.domains,
+                        count: res.body.count
+                    }
+                });
+                resolve();
+            });
+        });
+    }
+    exports.sync = sync;
+    function traverse(page) {
+        Dispatcher_1.default.dispatch({
+            type: DomainTypes.TRAVERSE,
+            data: {
+                page: page
+            }
+        });
+        return sync();
+    }
+    exports.traverse = traverse;
+    function filter(filt) {
+        Dispatcher_1.default.dispatch({
+            type: DomainTypes.FILTER,
+            data: {
+                filter: filt
+            }
+        });
+        return sync();
+    }
+    exports.filter = filter;
+    function commit(domain) {
+        let loader = new Loader_1.default().loading();
+        return new Promise((resolve, reject) => {
+            SuperAgent.put('/domain/' + domain.id).send(domain).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).set('Organization', OrganizationsStore_1.default.current).end((err, res) => {
+                loader.done();
+                if (res && res.status === 401) {
+                    window.location.href = '/login';
+                    resolve();
+                    return;
+                }
+                if (err) {
+                    Alert.errorRes(res, 'Failed to save domain');
+                    reject(err);
+                    return;
+                }
+                resolve();
+            });
+        });
+    }
+    exports.commit = commit;
+    function create(domain) {
+        let loader = new Loader_1.default().loading();
+        return new Promise((resolve, reject) => {
+            SuperAgent.post('/domain').send(domain).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).set('Organization', OrganizationsStore_1.default.current).end((err, res) => {
+                loader.done();
+                if (res && res.status === 401) {
+                    window.location.href = '/login';
+                    resolve();
+                    return;
+                }
+                if (err) {
+                    Alert.errorRes(res, 'Failed to create domain');
+                    reject(err);
+                    return;
+                }
+                resolve();
+            });
+        });
+    }
+    exports.create = create;
+    function remove(domainId) {
+        let loader = new Loader_1.default().loading();
+        return new Promise((resolve, reject) => {
+            SuperAgent.delete('/domain/' + domainId).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).set('Organization', OrganizationsStore_1.default.current).end((err, res) => {
+                loader.done();
+                if (res && res.status === 401) {
+                    window.location.href = '/login';
+                    resolve();
+                    return;
+                }
+                if (err) {
+                    Alert.errorRes(res, 'Failed to delete domain');
+                    reject(err);
+                    return;
+                }
+                resolve();
+            });
+        });
+    }
+    exports.remove = remove;
+    function removeMulti(domainIds) {
+        let loader = new Loader_1.default().loading();
+        return new Promise((resolve, reject) => {
+            SuperAgent.delete('/domain').send(domainIds).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).set('Organization', OrganizationsStore_1.default.current).end((err, res) => {
+                loader.done();
+                if (res && res.status === 401) {
+                    window.location.href = '/login';
+                    resolve();
+                    return;
+                }
+                if (err) {
+                    Alert.errorRes(res, 'Failed to delete domains');
+                    reject(err);
+                    return;
+                }
+                resolve();
+            });
+        });
+    }
+    exports.removeMulti = removeMulti;
+    EventDispatcher_1.default.register(action => {
+        switch (action.type) {
+            case DomainTypes.CHANGE:
+                sync();
+                break;
+        }
+    });
+    
+});
 System.registerDynamic("app/types/StorageTypes.js", [], true, function ($__require, exports, module) {
   "use strict";
 
@@ -26821,7 +27780,7 @@ System.registerDynamic("app/actions/SubscriptionActions.js", ["npm:superagent@3.
     });
     
 });
-System.registerDynamic("app/components/Main.js", ["npm:react@16.4.1.js", "npm:react-router-dom@4.3.1.js", "app/Theme.js", "app/Constants.js", "app/stores/SubscriptionStore.js", "app/stores/OrganizationsStore.js", "app/components/LoadingBar.js", "app/components/Subscription.js", "app/components/Users.js", "app/components/UserDetailed.js", "app/components/Nodes.js", "app/components/Policies.js", "app/components/Certificates.js", "app/components/Organizations.js", "app/components/Datacenters.js", "app/components/Zones.js", "app/components/Vpcs.js", "app/components/Storages.js", "app/components/Images.js", "app/components/Disks.js", "app/components/Instances.js", "app/components/Firewalls.js", "app/components/Authorities.js", "app/components/Logs.js", "app/components/Settings.js", "app/components/OrganizationSelect.js", "app/actions/UserActions.js", "app/actions/SessionActions.js", "app/actions/AuditActions.js", "app/actions/NodeActions.js", "app/actions/PolicyActions.js", "app/actions/CertificateActions.js", "app/actions/OrganizationActions.js", "app/actions/DatacenterActions.js", "app/actions/ZoneActions.js", "app/actions/VpcActions.js", "app/actions/StorageActions.js", "app/actions/ImageActions.js", "app/actions/DiskActions.js", "app/actions/InstanceActions.js", "app/actions/FirewallActions.js", "app/actions/AuthorityActions.js", "app/actions/LogActions.js", "app/actions/SettingsActions.js", "app/actions/SubscriptionActions.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/Main.js", ["npm:react@16.4.1.js", "npm:react-router-dom@4.3.1.js", "app/Theme.js", "app/Constants.js", "app/stores/SubscriptionStore.js", "app/stores/OrganizationsStore.js", "app/components/LoadingBar.js", "app/components/Subscription.js", "app/components/Users.js", "app/components/UserDetailed.js", "app/components/Nodes.js", "app/components/Policies.js", "app/components/Certificates.js", "app/components/Organizations.js", "app/components/Datacenters.js", "app/components/Zones.js", "app/components/Vpcs.js", "app/components/Domains.js", "app/components/Storages.js", "app/components/Images.js", "app/components/Disks.js", "app/components/Instances.js", "app/components/Firewalls.js", "app/components/Authorities.js", "app/components/Logs.js", "app/components/Settings.js", "app/components/OrganizationSelect.js", "app/actions/UserActions.js", "app/actions/SessionActions.js", "app/actions/AuditActions.js", "app/actions/NodeActions.js", "app/actions/PolicyActions.js", "app/actions/CertificateActions.js", "app/actions/OrganizationActions.js", "app/actions/DatacenterActions.js", "app/actions/ZoneActions.js", "app/actions/VpcActions.js", "app/actions/DomainActions.js", "app/actions/StorageActions.js", "app/actions/ImageActions.js", "app/actions/DiskActions.js", "app/actions/InstanceActions.js", "app/actions/FirewallActions.js", "app/actions/AuthorityActions.js", "app/actions/LogActions.js", "app/actions/SettingsActions.js", "app/actions/SubscriptionActions.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -26844,6 +27803,7 @@ System.registerDynamic("app/components/Main.js", ["npm:react@16.4.1.js", "npm:re
     const Datacenters_1 = $__require("app/components/Datacenters.js");
     const Zones_1 = $__require("app/components/Zones.js");
     const Vpcs_1 = $__require("app/components/Vpcs.js");
+    const Domains_1 = $__require("app/components/Domains.js");
     const Storages_1 = $__require("app/components/Storages.js");
     const Images_1 = $__require("app/components/Images.js");
     const Disks_1 = $__require("app/components/Disks.js");
@@ -26863,6 +27823,7 @@ System.registerDynamic("app/components/Main.js", ["npm:react@16.4.1.js", "npm:re
     const DatacenterActions = $__require("app/actions/DatacenterActions.js");
     const ZoneActions = $__require("app/actions/ZoneActions.js");
     const VpcActions = $__require("app/actions/VpcActions.js");
+    const DomainActions = $__require("app/actions/DomainActions.js");
     const StorageActions = $__require("app/actions/StorageActions.js");
     const ImageActions = $__require("app/actions/ImageActions.js");
     const DiskActions = $__require("app/actions/DiskActions.js");
@@ -26944,7 +27905,7 @@ System.registerDynamic("app/components/Main.js", ["npm:react@16.4.1.js", "npm:re
                         window.location.href = '/logout';
                     } }, "Logout")));
             }
-            return React.createElement(ReactRouter.HashRouter, null, React.createElement("div", null, React.createElement("nav", { className: "pt-navbar layout horizontal", style: css.nav }, React.createElement("div", { className: "pt-navbar-group pt-align-left flex", style: css.navTitle }, React.createElement("div", { className: "pt-navbar-heading", style: css.heading }, "Pritunl Cloud"), React.createElement(OrganizationSelect_1.default, { hidden: !Constants.user })), React.createElement("div", { className: "pt-navbar-group pt-align-right", style: css.navGroup }, React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-people", style: css.link, hidden: Constants.user, to: "/users" }, "Users"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-layers", style: css.link, hidden: Constants.user, to: "/nodes" }, "Nodes"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-filter", style: css.link, hidden: Constants.user, to: "/policies" }, "Policies"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-endorsed", style: css.link, hidden: Constants.user, to: "/certificates" }, "Certificates"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-people", style: css.link, hidden: Constants.user, to: "/organizations" }, "Organizations"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-cloud", style: css.link, hidden: Constants.user, to: "/datacenters" }, "Datacenters"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-layout-circle", style: css.link, hidden: Constants.user, to: "/zones" }, "Zones"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-layout-auto", style: css.link, to: "/vpcs" }, "VPCs"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-database", style: css.link, hidden: Constants.user, to: "/storages" }, "Storages"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-compressed", style: css.link, to: "/images" }, "Images"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-floppy-disk", style: css.link, to: "/disks" }, "Disks"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-dashboard", style: css.link, to: "/instances" }, "Instances"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-key", style: css.link, to: "/firewalls" }, "Firewalls"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-office", style: css.link, to: "/authorities" }, "Authorities"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-history", style: css.link, hidden: Constants.user, to: "/logs" }, "Logs"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-cog", style: css.link, hidden: Constants.user, to: "/settings" }, "Settings"), React.createElement(ReactRouter.Link, { to: "/subscription", style: css.sub, hidden: Constants.user }, React.createElement("button", { className: "pt-button pt-minimal pt-icon-credit-card", style: css.link, onClick: () => {
+            return React.createElement(ReactRouter.HashRouter, null, React.createElement("div", null, React.createElement("nav", { className: "pt-navbar layout horizontal", style: css.nav }, React.createElement("div", { className: "pt-navbar-group pt-align-left flex", style: css.navTitle }, React.createElement("div", { className: "pt-navbar-heading", style: css.heading }, "Pritunl Cloud"), React.createElement(OrganizationSelect_1.default, { hidden: !Constants.user })), React.createElement("div", { className: "pt-navbar-group pt-align-right", style: css.navGroup }, React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-people", style: css.link, hidden: Constants.user, to: "/users" }, "Users"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-layers", style: css.link, hidden: Constants.user, to: "/nodes" }, "Nodes"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-filter", style: css.link, hidden: Constants.user, to: "/policies" }, "Policies"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-endorsed", style: css.link, hidden: Constants.user, to: "/certificates" }, "Certificates"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-people", style: css.link, hidden: Constants.user, to: "/organizations" }, "Organizations"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-cloud", style: css.link, hidden: Constants.user, to: "/datacenters" }, "Datacenters"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-layout-circle", style: css.link, hidden: Constants.user, to: "/zones" }, "Zones"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-layout-auto", style: css.link, to: "/vpcs" }, "VPCs"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-map-marker", style: css.link, to: "/domains" }, "Domains"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-database", style: css.link, hidden: Constants.user, to: "/storages" }, "Storages"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-compressed", style: css.link, to: "/images" }, "Images"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-floppy-disk", style: css.link, to: "/disks" }, "Disks"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-dashboard", style: css.link, to: "/instances" }, "Instances"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-key", style: css.link, to: "/firewalls" }, "Firewalls"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-office", style: css.link, to: "/authorities" }, "Authorities"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-history", style: css.link, hidden: Constants.user, to: "/logs" }, "Logs"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-settings", style: css.link, hidden: Constants.user, to: "/settings" }, "Settings"), React.createElement(ReactRouter.Link, { to: "/subscription", style: css.sub, hidden: Constants.user }, React.createElement("button", { className: "pt-button pt-minimal pt-icon-credit-card", style: css.link, onClick: () => {
                     SubscriptionActions.sync(true);
                 } }, "Subscription")), React.createElement(ReactRouter.Route, { render: props => React.createElement("button", { className: "pt-button pt-minimal pt-icon-refresh", disabled: this.state.disabled, onClick: () => {
                         let pathname = props.location.pathname;
@@ -27014,6 +27975,12 @@ System.registerDynamic("app/components/Main.js", ["npm:react@16.4.1.js", "npm:re
                             }).catch(() => {
                                 this.setState(Object.assign({}, this.state, { disabled: false }));
                             });
+                        } else if (pathname === '/domains') {
+                            DomainActions.sync().then(() => {
+                                this.setState(Object.assign({}, this.state, { disabled: false }));
+                            }).catch(() => {
+                                this.setState(Object.assign({}, this.state, { disabled: false }));
+                            });
                         } else if (pathname === '/storages') {
                             StorageActions.sync().then(() => {
                                 this.setState(Object.assign({}, this.state, { disabled: false }));
@@ -27076,7 +28043,7 @@ System.registerDynamic("app/components/Main.js", ["npm:react@16.4.1.js", "npm:re
                 } }, "Logout"), React.createElement("button", { className: "pt-button pt-minimal pt-icon-moon", onClick: () => {
                     Theme.toggle();
                     Theme.save();
-                } }))), React.createElement(LoadingBar_1.default, { intent: "primary" }), React.createElement(ReactRouter.Route, { path: "/", exact: true, render: () => Constants.user ? React.createElement(Vpcs_1.default, null) : React.createElement(Users_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/reload", render: () => React.createElement(ReactRouter.Redirect, { to: "/" }) }), React.createElement(ReactRouter.Route, { path: "/users", render: () => React.createElement(Users_1.default, null) }), React.createElement(ReactRouter.Route, { exact: true, path: "/user", render: () => React.createElement(UserDetailed_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/user/:userId", render: props => React.createElement(UserDetailed_1.default, { userId: props.match.params.userId }) }), React.createElement(ReactRouter.Route, { path: "/nodes", render: () => React.createElement(Nodes_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/policies", render: () => React.createElement(Policies_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/certificates", render: () => React.createElement(Certificates_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/organizations", render: () => React.createElement(Organizations_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/datacenters", render: () => React.createElement(Datacenters_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/zones", render: () => React.createElement(Zones_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/vpcs", render: () => React.createElement(Vpcs_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/storages", render: () => React.createElement(Storages_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/images", render: () => React.createElement(Images_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/disks", render: () => React.createElement(Disks_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/instances", render: () => React.createElement(Instances_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/firewalls", render: () => React.createElement(Firewalls_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/authorities", render: () => React.createElement(Authorities_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/logs", render: () => React.createElement(Logs_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/settings", render: () => React.createElement(Settings_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/subscription", render: () => React.createElement(Subscription_1.default, null) })));
+                } }))), React.createElement(LoadingBar_1.default, { intent: "primary" }), React.createElement(ReactRouter.Route, { path: "/", exact: true, render: () => Constants.user ? React.createElement(Vpcs_1.default, null) : React.createElement(Users_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/reload", render: () => React.createElement(ReactRouter.Redirect, { to: "/" }) }), React.createElement(ReactRouter.Route, { path: "/users", render: () => React.createElement(Users_1.default, null) }), React.createElement(ReactRouter.Route, { exact: true, path: "/user", render: () => React.createElement(UserDetailed_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/user/:userId", render: props => React.createElement(UserDetailed_1.default, { userId: props.match.params.userId }) }), React.createElement(ReactRouter.Route, { path: "/nodes", render: () => React.createElement(Nodes_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/policies", render: () => React.createElement(Policies_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/certificates", render: () => React.createElement(Certificates_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/organizations", render: () => React.createElement(Organizations_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/datacenters", render: () => React.createElement(Datacenters_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/zones", render: () => React.createElement(Zones_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/vpcs", render: () => React.createElement(Vpcs_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/domains", render: () => React.createElement(Domains_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/storages", render: () => React.createElement(Storages_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/images", render: () => React.createElement(Images_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/disks", render: () => React.createElement(Disks_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/instances", render: () => React.createElement(Instances_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/firewalls", render: () => React.createElement(Firewalls_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/authorities", render: () => React.createElement(Authorities_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/logs", render: () => React.createElement(Logs_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/settings", render: () => React.createElement(Settings_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/subscription", render: () => React.createElement(Subscription_1.default, null) })));
         }
     }
     exports.default = Main;
