@@ -8,6 +8,7 @@ import PageInput from './PageInput';
 import PageInfo from './PageInfo';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
+import PageSelect from "./PageSelect";
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -241,6 +242,39 @@ export default class DomainDetailed extends React.Component<Props, State> {
 						value={domain.name}
 						onChange={(val): void => {
 							this.set('name', val);
+						}}
+					/>
+					<PageSelect
+						label="Type"
+						help="Domain type."
+						value={domain.type}
+						onChange={(val): void => {
+							this.set('type', val);
+						}}
+					>
+						<option value="">Select Type</option>
+						<option value="route_53">AWS Route53</option>
+					</PageSelect>
+					<PageInput
+						hidden={domain.type !== 'route_53'}
+						label="AWS Access Key ID"
+						help="AWS access key ID."
+						type="text"
+						placeholder="Enter access key ID"
+						value={domain.aws_id}
+						onChange={(val): void => {
+							this.set('aws_id', val);
+						}}
+					/>
+					<PageInput
+						hidden={domain.type !== 'route_53'}
+						label="AWS Secret Access Key"
+						help="AWS secret access key."
+						type="text"
+						placeholder="Enter secret access key"
+						value={domain.aws_secret}
+						onChange={(val): void => {
+							this.set('aws_secret', val);
 						}}
 					/>
 				</div>
