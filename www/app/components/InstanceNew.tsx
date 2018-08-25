@@ -390,7 +390,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 		];
 		if (this.props.domains && this.props.domains.length) {
 			for (let domain of this.props.domains) {
-				if (domain.organization !== this.state.instance.organization) {
+				if (domain.organization !== instance.organization) {
 					continue;
 				}
 
