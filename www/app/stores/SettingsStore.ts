@@ -8,6 +8,11 @@ class SettingsStore extends EventEmitter {
 	_settings: SettingsTypes.SettingsRo;
 	_token = Dispatcher.register((this._callback).bind(this));
 
+	_reset(): void {
+		this._settings = undefined;
+		this.emitChange();
+	}
+
 	get settings(): SettingsTypes.SettingsRo {
 		return this._settings;
 	}
@@ -40,6 +45,10 @@ class SettingsStore extends EventEmitter {
 
 	_callback(action: SettingsTypes.SettingsDispatch): void {
 		switch (action.type) {
+			case GlobalTypes.RESET:
+				this._reset();
+				break;
+
 			case SettingsTypes.SYNC:
 				this._sync(action.data);
 				break;
