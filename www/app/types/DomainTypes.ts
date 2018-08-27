@@ -8,6 +8,9 @@ export interface Domain {
 	id?: string;
 	name?: string;
 	organization?: string;
+	type?: string;
+	aws_id?: string;
+	aws_secret?: string;
 }
 
 export interface Filter {
