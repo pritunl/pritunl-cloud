@@ -9,6 +9,12 @@ class StoragesStore extends EventEmitter {
 	_map: {[key: string]: number} = {};
 	_token = Dispatcher.register((this._callback).bind(this));
 
+	_reset(): void {
+		this._storages = Object.freeze([]);
+		this._map = {};
+		this.emitChange();
+	}
+
 	get storages(): StorageTypes.StoragesRo {
 		return this._storages;
 	}
@@ -57,6 +63,10 @@ class StoragesStore extends EventEmitter {
 
 	_callback(action: StorageTypes.StorageDispatch): void {
 		switch (action.type) {
+			case GlobalTypes.RESET:
+				this._reset();
+				break;
+
 			case StorageTypes.SYNC:
 				this._sync(action.data.storages);
 				break;
