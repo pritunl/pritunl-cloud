@@ -8,6 +8,11 @@ class UserStore extends EventEmitter {
 	_user: UserTypes.UserRo;
 	_token = Dispatcher.register((this._callback).bind(this));
 
+	_reset(): void {
+		this._user = undefined;
+		this.emitChange();
+	}
+
 	get user(): UserTypes.UserRo {
 		return this._user;
 	}
@@ -45,9 +50,14 @@ class UserStore extends EventEmitter {
 
 	_callback(action: UserTypes.UserDispatch): void {
 		switch (action.type) {
+			case GlobalTypes.RESET:
+				this._reset();
+				break;
+
 			case UserTypes.LOAD:
 				this._load(action.data.user);
 				break;
+
 			case UserTypes.UNLOAD:
 				this._unload();
 				break;
