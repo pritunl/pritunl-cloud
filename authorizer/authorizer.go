@@ -14,6 +14,7 @@ type Authorizer struct {
 	cook *cookie.Cookie
 	sess *session.Session
 	sig  *signature.Signature
+	usr  *user.User
 }
 
 func (a *Authorizer) IsApi() bool {
@@ -61,6 +62,11 @@ func (a *Authorizer) GetUser(db *database.Database) (
 	usr *user.User, err error) {
 
 	if a.sess != nil {
+		if a.usr != nil {
+			usr = a.usr
+			return
+		}
+
 		if db != nil {
 			usr, err = a.sess.GetUser(db)
 			if err != nil {
@@ -77,8 +83,15 @@ func (a *Authorizer) GetUser(db *database.Database) (
 
 		if usr == nil {
 			a.sess = nil
+		} else {
+			a.usr = usr
 		}
 	} else if a.sig != nil {
+		if a.usr != nil {
+			usr = a.usr
+			return
+		}
+
 		if db != nil {
 			usr, err = a.sig.GetUser(db)
 			if err != nil {
@@ -95,6 +108,8 @@ func (a *Authorizer) GetUser(db *database.Database) (
 
 		if usr == nil {
 			a.sig = nil
+		} else {
+			a.usr = usr
 		}
 	}
 
