@@ -58,6 +58,8 @@ func Register(engine *gin.Engine) {
 
 	orgGroup.GET("/datacenter", datacentersGet)
 
+	orgGroup.GET("/domain", domainsGet)
+
 	orgGroup.GET("/disk", disksGet)
 	orgGroup.GET("/disk/:disk_id", diskGet)
 	orgGroup.PUT("/disk", disksPut)
