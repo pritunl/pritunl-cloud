@@ -113,6 +113,32 @@ func GetAllPaged(db *database.Database, query *bson.M, page, pageCount int) (
 	return
 }
 
+func GetAllName(db *database.Database, query *bson.M) (
+	domns []*Domain, err error) {
+
+	coll := db.Domains()
+	domns = []*Domain{}
+
+	cursor := coll.Find(query).Select(&bson.M{
+		"name":         1,
+		"organization": 1,
+	}).Iter()
+
+	inst := &Domain{}
+	for cursor.Next(inst) {
+		domns = append(domns, inst)
+		inst = &Domain{}
+	}
+
+	err = cursor.Close()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func Remove(db *database.Database, domnId bson.ObjectId) (err error) {
 	coll := db.Domains()
 
