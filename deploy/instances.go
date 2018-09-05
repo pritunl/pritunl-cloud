@@ -8,6 +8,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/qemu"
 	"github.com/pritunl/pritunl-cloud/qms"
 	"github.com/pritunl/pritunl-cloud/state"
@@ -430,6 +431,9 @@ func (s *Instances) Deploy() (err error) {
 		namespacesSet.Add(namespace)
 	}
 
+	cpuUnits := 0
+	memoryUnits := 0.0
+
 	for _, inst := range instances {
 		curVirt := s.stat.GetVirt(inst.Id)
 
@@ -437,6 +441,9 @@ func (s *Instances) Deploy() (err error) {
 			s.destroy(inst)
 			continue
 		}
+
+		cpuUnits += inst.Processors
+		memoryUnits += float64(inst.Memory) / float64(1024)
 
 		if curVirt == nil {
 			s.create(inst)
@@ -484,6 +491,9 @@ func (s *Instances) Deploy() (err error) {
 			break
 		}
 	}
+
+	node.Self.CpuUnitsRes = cpuUnits
+	node.Self.MemoryUnitsRes = memoryUnits
 
 	return
 }
