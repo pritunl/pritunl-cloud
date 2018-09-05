@@ -37,6 +37,26 @@ func GetOrg(db *database.Database, orgId, domnId bson.ObjectId) (
 	return
 }
 
+func ExistsOrg(db *database.Database, orgId, domnId bson.ObjectId) (
+	exists bool, err error) {
+
+	coll := db.Domains()
+
+	n, err := coll.Find(&bson.M{
+		"_id":          domnId,
+		"organization": orgId,
+	}).Count()
+	if err != nil {
+		return
+	}
+
+	if n > 0 {
+		exists = true
+	}
+
+	return
+}
+
 func GetAll(db *database.Database, query *bson.M) (
 	domns []*Domain, err error) {
 
