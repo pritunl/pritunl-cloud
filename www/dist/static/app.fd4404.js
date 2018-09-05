@@ -16217,6 +16217,77 @@ System.registerDynamic("app/components/Disks.js", ["npm:react@16.4.1.js", "app/C
     exports.default = Disks;
     
 });
+System.registerDynamic("app/stores/DomainsNameStore.js", ["app/dispatcher/Dispatcher.js", "app/EventEmitter.js", "app/types/DomainTypes.js", "app/types/GlobalTypes.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const Dispatcher_1 = $__require("app/dispatcher/Dispatcher.js");
+    const EventEmitter_1 = $__require("app/EventEmitter.js");
+    const DomainTypes = $__require("app/types/DomainTypes.js");
+    const GlobalTypes = $__require("app/types/GlobalTypes.js");
+    class DomainsNameStore extends EventEmitter_1.default {
+        constructor() {
+            super(...arguments);
+            this._domains = Object.freeze([]);
+            this._map = {};
+            this._token = Dispatcher_1.default.register(this._callback.bind(this));
+        }
+        _reset() {
+            this._domains = Object.freeze([]);
+            this._map = {};
+            this.emitChange();
+        }
+        get domains() {
+            return this._domains;
+        }
+        get domainsM() {
+            let domains = [];
+            this._domains.forEach(domain => {
+                domains.push(Object.assign({}, domain));
+            });
+            return domains;
+        }
+        domain(id) {
+            let i = this._map[id];
+            if (i === undefined) {
+                return null;
+            }
+            return this._domains[i];
+        }
+        emitChange() {
+            this.emitDefer(GlobalTypes.CHANGE);
+        }
+        addChangeListener(callback) {
+            this.on(GlobalTypes.CHANGE, callback);
+        }
+        removeChangeListener(callback) {
+            this.removeListener(GlobalTypes.CHANGE, callback);
+        }
+        _sync(domains) {
+            this._map = {};
+            for (let i = 0; i < domains.length; i++) {
+                domains[i] = Object.freeze(domains[i]);
+                this._map[domains[i].id] = i;
+            }
+            this._domains = Object.freeze(domains);
+            this.emitChange();
+        }
+        _callback(action) {
+            switch (action.type) {
+                case GlobalTypes.RESET:
+                    this._reset();
+                    break;
+                case DomainTypes.SYNC_NAME:
+                    this._sync(action.data.domains);
+                    break;
+            }
+        }
+    }
+    exports.default = new DomainsNameStore();
+    
+});
 System.registerDynamic("app/stores/VpcsNameStore.js", ["app/dispatcher/Dispatcher.js", "app/EventEmitter.js", "app/types/VpcTypes.js", "app/types/GlobalTypes.js"], true, function ($__require, exports, module) {
     "use strict";
 
@@ -17460,7 +17531,7 @@ System.registerDynamic("app/components/InstanceNew.js", ["npm:react@16.4.1.js", 
             let domainsSelect = [React.createElement("option", { key: "null", value: "" }, "No Domain")];
             if (this.props.domains && this.props.domains.length) {
                 for (let domain of this.props.domains) {
-                    if (domain.organization !== instance.organization) {
+                    if (!Constants.user && domain.organization !== instance.organization) {
                         continue;
                     }
                     domainsSelect.push(React.createElement("option", { key: domain.id, value: domain.id }, domain.name));
@@ -17698,7 +17769,7 @@ System.registerDynamic("app/components/InstancesPage.js", ["npm:react@16.4.1.js"
     exports.default = InstancesPage;
     
 });
-System.registerDynamic("app/components/Instances.js", ["npm:react@16.4.1.js", "app/Constants.js", "app/stores/InstancesStore.js", "app/stores/OrganizationsStore.js", "app/stores/DomainsStore.js", "app/stores/VpcsNameStore.js", "app/stores/DatacentersStore.js", "app/stores/ZonesStore.js", "app/actions/InstanceActions.js", "app/actions/OrganizationActions.js", "app/actions/DomainActions.js", "app/actions/VpcActions.js", "app/actions/DatacenterActions.js", "app/actions/ZoneActions.js", "app/components/Instance.js", "app/components/InstanceNew.js", "app/components/InstancesFilter.js", "app/components/InstancesPage.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/NonState.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/Instances.js", ["npm:react@16.4.1.js", "app/Constants.js", "app/stores/InstancesStore.js", "app/stores/OrganizationsStore.js", "app/stores/DomainsNameStore.js", "app/stores/VpcsNameStore.js", "app/stores/DatacentersStore.js", "app/stores/ZonesStore.js", "app/actions/InstanceActions.js", "app/actions/OrganizationActions.js", "app/actions/DomainActions.js", "app/actions/VpcActions.js", "app/actions/DatacenterActions.js", "app/actions/ZoneActions.js", "app/components/Instance.js", "app/components/InstanceNew.js", "app/components/InstancesFilter.js", "app/components/InstancesPage.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/NonState.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -17708,7 +17779,7 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.4.1.js", "a
     const Constants = $__require("app/Constants.js");
     const InstancesStore_1 = $__require("app/stores/InstancesStore.js");
     const OrganizationsStore_1 = $__require("app/stores/OrganizationsStore.js");
-    const DomainsStore_1 = $__require("app/stores/DomainsStore.js");
+    const DomainsNameStore_1 = $__require("app/stores/DomainsNameStore.js");
     const VpcsNameStore_1 = $__require("app/stores/VpcsNameStore.js");
     const DatacentersStore_1 = $__require("app/stores/DatacentersStore.js");
     const ZonesStore_1 = $__require("app/stores/ZonesStore.js");
@@ -17778,7 +17849,7 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.4.1.js", "a
                         opened[instance.id] = true;
                     }
                 });
-                this.setState(Object.assign({}, this.state, { instances: instances, filter: InstancesStore_1.default.filter, organizations: OrganizationsStore_1.default.organizations, domains: DomainsStore_1.default.domains, vpcs: VpcsNameStore_1.default.vpcs, datacenters: DatacentersStore_1.default.datacenters, zones: ZonesStore_1.default.zones, selected: selected, opened: opened }));
+                this.setState(Object.assign({}, this.state, { instances: instances, filter: InstancesStore_1.default.filter, organizations: OrganizationsStore_1.default.organizations, domains: DomainsNameStore_1.default.domains, vpcs: VpcsNameStore_1.default.vpcs, datacenters: DatacentersStore_1.default.datacenters, zones: ZonesStore_1.default.zones, selected: selected, opened: opened }));
             };
             this.onDelete = () => {
                 this.setState(Object.assign({}, this.state, { disabled: true }));
@@ -17801,7 +17872,7 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.4.1.js", "a
                 filter: InstancesStore_1.default.filter,
                 debug: false,
                 organizations: OrganizationsStore_1.default.organizations,
-                domains: DomainsStore_1.default.domains,
+                domains: DomainsNameStore_1.default.domains,
                 vpcs: VpcsNameStore_1.default.vpcs,
                 datacenters: DatacentersStore_1.default.datacenters,
                 zones: ZonesStore_1.default.zones,
@@ -17821,13 +17892,13 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.4.1.js", "a
         componentDidMount() {
             InstancesStore_1.default.addChangeListener(this.onChange);
             OrganizationsStore_1.default.addChangeListener(this.onChange);
-            DomainsStore_1.default.addChangeListener(this.onChange);
+            DomainsNameStore_1.default.addChangeListener(this.onChange);
             VpcsNameStore_1.default.addChangeListener(this.onChange);
             DatacentersStore_1.default.addChangeListener(this.onChange);
             ZonesStore_1.default.addChangeListener(this.onChange);
             InstanceActions.sync();
             OrganizationActions.sync();
-            DomainActions.sync();
+            DomainActions.syncName();
             VpcActions.syncNames();
             DatacenterActions.sync();
             ZoneActions.sync();
@@ -17838,7 +17909,7 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.4.1.js", "a
         componentWillUnmount() {
             InstancesStore_1.default.removeChangeListener(this.onChange);
             OrganizationsStore_1.default.removeChangeListener(this.onChange);
-            DomainsStore_1.default.removeChangeListener(this.onChange);
+            DomainsNameStore_1.default.removeChangeListener(this.onChange);
             VpcsNameStore_1.default.removeChangeListener(this.onChange);
             DatacentersStore_1.default.removeChangeListener(this.onChange);
             ZonesStore_1.default.removeChangeListener(this.onChange);
@@ -23157,6 +23228,7 @@ System.registerDynamic("app/types/DomainTypes.js", [], true, function ($__requir
       GLOBAL = global;
   Object.defineProperty(exports, "__esModule", { value: true });
   exports.SYNC = 'domain.sync';
+  exports.SYNC_NAME = 'domain.sync_name';
   exports.TRAVERSE = 'domain.traverse';
   exports.FILTER = 'domain.filter';
   exports.CHANGE = 'domain.change';
@@ -23288,6 +23360,7 @@ System.registerDynamic("app/actions/DomainActions.js", ["npm:superagent@3.8.3.js
     const OrganizationsStore_1 = $__require("app/stores/OrganizationsStore.js");
     const MiscUtils = $__require("app/utils/MiscUtils.js");
     let syncId;
+    let syncNamesId;
     function sync(noLoading) {
         let curSyncId = MiscUtils.uuid();
         syncId = curSyncId;
@@ -23326,6 +23399,40 @@ System.registerDynamic("app/actions/DomainActions.js", ["npm:superagent@3.8.3.js
         });
     }
     exports.sync = sync;
+    function syncName() {
+        let curSyncId = MiscUtils.uuid();
+        syncNamesId = curSyncId;
+        let loader = new Loader_1.default().loading();
+        return new Promise((resolve, reject) => {
+            SuperAgent.get('/domain').query({
+                names: true
+            }).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).set('Organization', OrganizationsStore_1.default.current).end((err, res) => {
+                loader.done();
+                if (res && res.status === 401) {
+                    window.location.href = '/login';
+                    resolve();
+                    return;
+                }
+                if (curSyncId !== syncNamesId) {
+                    resolve();
+                    return;
+                }
+                if (err) {
+                    Alert.errorRes(res, 'Failed to load domain names');
+                    reject(err);
+                    return;
+                }
+                Dispatcher_1.default.dispatch({
+                    type: DomainTypes.SYNC_NAME,
+                    data: {
+                        domains: res.body
+                    }
+                });
+                resolve();
+            });
+        });
+    }
+    exports.syncName = syncName;
     function traverse(page) {
         Dispatcher_1.default.dispatch({
             type: DomainTypes.TRAVERSE,
@@ -27905,7 +28012,7 @@ System.registerDynamic("app/components/Main.js", ["npm:react@16.4.1.js", "npm:re
                         window.location.href = '/logout';
                     } }, "Logout")));
             }
-            return React.createElement(ReactRouter.HashRouter, null, React.createElement("div", null, React.createElement("nav", { className: "pt-navbar layout horizontal", style: css.nav }, React.createElement("div", { className: "pt-navbar-group pt-align-left flex", style: css.navTitle }, React.createElement("div", { className: "pt-navbar-heading", style: css.heading }, "Pritunl Cloud"), React.createElement(OrganizationSelect_1.default, { hidden: !Constants.user })), React.createElement("div", { className: "pt-navbar-group pt-align-right", style: css.navGroup }, React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-people", style: css.link, hidden: Constants.user, to: "/users" }, "Users"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-layers", style: css.link, hidden: Constants.user, to: "/nodes" }, "Nodes"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-filter", style: css.link, hidden: Constants.user, to: "/policies" }, "Policies"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-endorsed", style: css.link, hidden: Constants.user, to: "/certificates" }, "Certificates"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-people", style: css.link, hidden: Constants.user, to: "/organizations" }, "Organizations"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-cloud", style: css.link, hidden: Constants.user, to: "/datacenters" }, "Datacenters"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-layout-circle", style: css.link, hidden: Constants.user, to: "/zones" }, "Zones"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-layout-auto", style: css.link, to: "/vpcs" }, "VPCs"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-map-marker", style: css.link, to: "/domains" }, "Domains"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-database", style: css.link, hidden: Constants.user, to: "/storages" }, "Storages"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-compressed", style: css.link, to: "/images" }, "Images"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-floppy-disk", style: css.link, to: "/disks" }, "Disks"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-dashboard", style: css.link, to: "/instances" }, "Instances"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-key", style: css.link, to: "/firewalls" }, "Firewalls"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-office", style: css.link, to: "/authorities" }, "Authorities"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-history", style: css.link, hidden: Constants.user, to: "/logs" }, "Logs"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-settings", style: css.link, hidden: Constants.user, to: "/settings" }, "Settings"), React.createElement(ReactRouter.Link, { to: "/subscription", style: css.sub, hidden: Constants.user }, React.createElement("button", { className: "pt-button pt-minimal pt-icon-credit-card", style: css.link, onClick: () => {
+            return React.createElement(ReactRouter.HashRouter, null, React.createElement("div", null, React.createElement("nav", { className: "pt-navbar layout horizontal", style: css.nav }, React.createElement("div", { className: "pt-navbar-group pt-align-left flex", style: css.navTitle }, React.createElement("div", { className: "pt-navbar-heading", style: css.heading }, "Pritunl Cloud"), React.createElement(OrganizationSelect_1.default, { hidden: !Constants.user })), React.createElement("div", { className: "pt-navbar-group pt-align-right", style: css.navGroup }, React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-people", style: css.link, hidden: Constants.user, to: "/users" }, "Users"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-layers", style: css.link, hidden: Constants.user, to: "/nodes" }, "Nodes"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-filter", style: css.link, hidden: Constants.user, to: "/policies" }, "Policies"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-endorsed", style: css.link, hidden: Constants.user, to: "/certificates" }, "Certificates"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-people", style: css.link, hidden: Constants.user, to: "/organizations" }, "Organizations"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-cloud", style: css.link, hidden: Constants.user, to: "/datacenters" }, "Datacenters"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-layout-circle", style: css.link, hidden: Constants.user, to: "/zones" }, "Zones"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-layout-auto", style: css.link, to: "/vpcs" }, "VPCs"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-map-marker", style: css.link, hidden: Constants.user, to: "/domains" }, "Domains"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-database", style: css.link, hidden: Constants.user, to: "/storages" }, "Storages"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-compressed", style: css.link, to: "/images" }, "Images"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-floppy-disk", style: css.link, to: "/disks" }, "Disks"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-dashboard", style: css.link, to: "/instances" }, "Instances"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-key", style: css.link, to: "/firewalls" }, "Firewalls"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-office", style: css.link, to: "/authorities" }, "Authorities"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-history", style: css.link, hidden: Constants.user, to: "/logs" }, "Logs"), React.createElement(ReactRouter.Link, { className: "pt-button pt-minimal pt-icon-settings", style: css.link, hidden: Constants.user, to: "/settings" }, "Settings"), React.createElement(ReactRouter.Link, { to: "/subscription", style: css.sub, hidden: Constants.user }, React.createElement("button", { className: "pt-button pt-minimal pt-icon-credit-card", style: css.link, onClick: () => {
                     SubscriptionActions.sync(true);
                 } }, "Subscription")), React.createElement(ReactRouter.Route, { render: props => React.createElement("button", { className: "pt-button pt-minimal pt-icon-refresh", disabled: this.state.disabled, onClick: () => {
                         let pathname = props.location.pathname;
