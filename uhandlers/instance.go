@@ -8,6 +8,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/demo"
+	"github.com/pritunl/pritunl-cloud/domain"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/instance"
@@ -82,6 +83,18 @@ func instancePut(c *gin.Context) {
 	if !exists {
 		utils.AbortWithStatus(c, 405)
 		return
+	}
+
+	if data.Domain != "" {
+		exists, err := domain.ExistsOrg(db, userOrg, data.Domain)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+		if !exists {
+			utils.AbortWithStatus(c, 405)
+			return
+		}
 	}
 
 	inst.PreCommit()
@@ -187,6 +200,18 @@ func instancePost(c *gin.Context) {
 	if !exists {
 		utils.AbortWithStatus(c, 405)
 		return
+	}
+
+	if data.Domain != "" {
+		exists, err := domain.ExistsOrg(db, userOrg, data.Domain)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+		if !exists {
+			utils.AbortWithStatus(c, 405)
+			return
+		}
 	}
 
 	exists, err = image.ExistsOrg(db, userOrg, data.Image)
