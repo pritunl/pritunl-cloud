@@ -206,39 +206,51 @@ func domainGet(c *gin.Context) {
 func domainsGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 
-	page, _ := strconv.Atoi(c.Query("page"))
-	pageCount, _ := strconv.Atoi(c.Query("page_count"))
+	if c.Query("names") == "true" {
+		query := &bson.M{}
 
-	query := bson.M{}
-
-	domainId, ok := utils.ParseObjectId(c.Query("id"))
-	if ok {
-		query["_id"] = domainId
-	}
-
-	name := strings.TrimSpace(c.Query("name"))
-	if name != "" {
-		query["name"] = &bson.M{
-			"$regex":   fmt.Sprintf(".*%s.*", name),
-			"$options": "i",
+		domns, err := domain.GetAllName(db, query)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
 		}
-	}
 
-	organization, ok := utils.ParseObjectId(c.Query("organization"))
-	if ok {
-		query["organization"] = organization
-	}
+		c.JSON(200, domns)
+	} else {
+		page, _ := strconv.Atoi(c.Query("page"))
+		pageCount, _ := strconv.Atoi(c.Query("page_count"))
 
-	domains, count, err := domain.GetAllPaged(db, &query, page, pageCount)
-	if err != nil {
-		utils.AbortWithError(c, 500, err)
-		return
-	}
+		query := bson.M{}
 
-	data := &domainsData{
-		Domains: domains,
-		Count:   count,
-	}
+		domainId, ok := utils.ParseObjectId(c.Query("id"))
+		if ok {
+			query["_id"] = domainId
+		}
 
-	c.JSON(200, data)
+		name := strings.TrimSpace(c.Query("name"))
+		if name != "" {
+			query["name"] = &bson.M{
+				"$regex":   fmt.Sprintf(".*%s.*", name),
+				"$options": "i",
+			}
+		}
+
+		organization, ok := utils.ParseObjectId(c.Query("organization"))
+		if ok {
+			query["organization"] = organization
+		}
+
+		domains, count, err := domain.GetAllPaged(db, &query, page, pageCount)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		data := &domainsData{
+			Domains: domains,
+			Count:   count,
+		}
+
+		c.JSON(200, data)
+	}
 }
