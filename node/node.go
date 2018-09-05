@@ -203,6 +203,10 @@ func (n *Node) SetActive() {
 		n.Load1 = 0
 		n.Load5 = 0
 		n.Load15 = 0
+		n.CpuUnits = 0
+		n.CpuUnitsRes = 0
+		n.MemoryUnits = 0
+		n.MemoryUnitsRes = 0
 	}
 }
 
@@ -249,16 +253,18 @@ func (n *Node) update(db *database.Database) (err error) {
 	change := mgo.Change{
 		Update: &bson.M{
 			"$set": &bson.M{
-				"timestamp":    n.Timestamp,
-				"requests_min": n.RequestsMin,
-				"memory":       n.Memory,
-				"load1":        n.Load1,
-				"load5":        n.Load5,
-				"load15":       n.Load15,
-				"cpu_units":    n.CpuUnits,
-				"memory_units": n.MemoryUnits,
-				"public_ips":   n.PublicIps,
-				"public_ips6":  n.PublicIps6,
+				"timestamp":        n.Timestamp,
+				"requests_min":     n.RequestsMin,
+				"memory":           n.Memory,
+				"load1":            n.Load1,
+				"load5":            n.Load5,
+				"load15":           n.Load15,
+				"cpu_units":        n.CpuUnits,
+				"memory_units":     n.MemoryUnits,
+				"cpu_units_res":    n.CpuUnitsRes,
+				"memory_units_res": n.MemoryUnitsRes,
+				"public_ips":       n.PublicIps,
+				"public_ips6":      n.PublicIps6,
 			},
 		},
 		Upsert:    false,
