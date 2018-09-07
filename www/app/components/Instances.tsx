@@ -9,7 +9,7 @@ import * as DatacenterTypes from '../types/DatacenterTypes';
 import * as ZoneTypes from '../types/ZoneTypes';
 import InstancesStore from '../stores/InstancesStore';
 import OrganizationsStore from '../stores/OrganizationsStore';
-import DomainsStore from '../stores/DomainsStore';
+import DomainsNameStore from '../stores/DomainsNameStore';
 import VpcsNameStore from '../stores/VpcsNameStore';
 import DatacentersStore from '../stores/DatacentersStore';
 import ZonesStore from '../stores/ZonesStore';
@@ -98,7 +98,7 @@ export default class Instances extends React.Component<{}, State> {
 			filter: InstancesStore.filter,
 			debug: false,
 			organizations: OrganizationsStore.organizations,
-			domains: DomainsStore.domains,
+			domains: DomainsNameStore.domains,
 			vpcs: VpcsNameStore.vpcs,
 			datacenters: DatacentersStore.datacenters,
 			zones: ZonesStore.zones,
@@ -121,13 +121,13 @@ export default class Instances extends React.Component<{}, State> {
 	componentDidMount(): void {
 		InstancesStore.addChangeListener(this.onChange);
 		OrganizationsStore.addChangeListener(this.onChange);
-		DomainsStore.addChangeListener(this.onChange);
+		DomainsNameStore.addChangeListener(this.onChange);
 		VpcsNameStore.addChangeListener(this.onChange);
 		DatacentersStore.addChangeListener(this.onChange);
 		ZonesStore.addChangeListener(this.onChange);
 		InstanceActions.sync();
 		OrganizationActions.sync();
-		DomainActions.sync();
+		DomainActions.syncName();
 		VpcActions.syncNames();
 		DatacenterActions.sync();
 		ZoneActions.sync();
@@ -140,7 +140,7 @@ export default class Instances extends React.Component<{}, State> {
 	componentWillUnmount(): void {
 		InstancesStore.removeChangeListener(this.onChange);
 		OrganizationsStore.removeChangeListener(this.onChange);
-		DomainsStore.removeChangeListener(this.onChange);
+		DomainsNameStore.removeChangeListener(this.onChange);
 		VpcsNameStore.removeChangeListener(this.onChange);
 		DatacentersStore.removeChangeListener(this.onChange);
 		ZonesStore.removeChangeListener(this.onChange);
@@ -168,7 +168,7 @@ export default class Instances extends React.Component<{}, State> {
 			instances: instances,
 			filter: InstancesStore.filter,
 			organizations: OrganizationsStore.organizations,
-			domains: DomainsStore.domains,
+			domains: DomainsNameStore.domains,
 			vpcs: VpcsNameStore.vpcs,
 			datacenters: DatacentersStore.datacenters,
 			zones: ZonesStore.zones,
