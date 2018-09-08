@@ -229,6 +229,7 @@ export default class Main extends React.Component<{}, State> {
 						<ReactRouter.Link
 							className="pt-button pt-minimal pt-icon-map-marker"
 							style={css.link}
+							hidden={Constants.user}
 							to="/domains"
 						>
 							Domains
