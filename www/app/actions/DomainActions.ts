@@ -9,7 +9,6 @@ import * as DomainTypes from '../types/DomainTypes';
 import DomainsStore from '../stores/DomainsStore';
 import OrganizationsStore from '../stores/OrganizationsStore';
 import * as MiscUtils from '../utils/MiscUtils';
-import * as NodeTypes from "../types/NodeTypes";
 
 let syncId: string;
 let syncNamesId: string;
