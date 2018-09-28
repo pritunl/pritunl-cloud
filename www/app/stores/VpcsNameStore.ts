@@ -9,6 +9,12 @@ class VpcsZoneStore extends EventEmitter {
 	_map: {[key: string]: number} = {};
 	_token = Dispatcher.register((this._callback).bind(this));
 
+	_reset(): void {
+		this._vpcs = Object.freeze([]);
+		this._map = {};
+		this.emitChange();
+	}
+
 	get vpcs(): VpcTypes.VpcsRo {
 		return this._vpcs;
 	}
@@ -57,6 +63,10 @@ class VpcsZoneStore extends EventEmitter {
 
 	_callback(action: VpcTypes.VpcDispatch): void {
 		switch (action.type) {
+			case GlobalTypes.RESET:
+				this._reset();
+				break;
+
 			case VpcTypes.SYNC_NAMES:
 				this._sync(action.data.vpcs);
 				break;
