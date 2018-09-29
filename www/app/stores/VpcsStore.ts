@@ -13,6 +13,16 @@ class VpcsStore extends EventEmitter {
 	_map: {[key: string]: number} = {};
 	_token = Dispatcher.register((this._callback).bind(this));
 
+	_reset(): void {
+		this._vpcs = Object.freeze([]);
+		this._page = undefined;
+		this._pageCount = undefined;
+		this._filter = null;
+		this._count = undefined;
+		this._map = {};
+		this.emitChange();
+	}
+
 	get vpcs(): VpcTypes.VpcsRo {
 		return this._vpcs;
 	}
@@ -99,6 +109,10 @@ class VpcsStore extends EventEmitter {
 
 	_callback(action: VpcTypes.VpcDispatch): void {
 		switch (action.type) {
+			case GlobalTypes.RESET:
+				this._reset();
+				break;
+
 			case VpcTypes.TRAVERSE:
 				this._traverse(action.data.page);
 				break;
