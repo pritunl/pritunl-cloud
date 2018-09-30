@@ -9,6 +9,12 @@ class ZonesStore extends EventEmitter {
 	_map: {[key: string]: number} = {};
 	_token = Dispatcher.register((this._callback).bind(this));
 
+	_reset(): void {
+		this._zones = Object.freeze([]);
+		this._map = {};
+		this.emitChange();
+	}
+
 	get zones(): ZoneTypes.ZonesRo {
 		return this._zones;
 	}
@@ -57,6 +63,10 @@ class ZonesStore extends EventEmitter {
 
 	_callback(action: ZoneTypes.ZoneDispatch): void {
 		switch (action.type) {
+			case GlobalTypes.RESET:
+				this._reset();
+				break;
+
 			case ZoneTypes.SYNC:
 				this._sync(action.data.zones);
 				break;
