@@ -1,5 +1,6 @@
 /// <reference path="../References.d.ts"/>
 export const SYNC = 'domain.sync';
+export const SYNC_NAME = 'domain.sync_name';
 export const TRAVERSE = 'domain.traverse';
 export const FILTER = 'domain.filter';
 export const CHANGE = 'domain.change';
