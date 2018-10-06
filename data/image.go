@@ -110,7 +110,7 @@ func getImage(db *database.Database, img *image.Image,
 		}
 		defer signature.Close()
 
-		img, e := os.Open(tmpPth)
+		tmpImg, e := os.Open(tmpPth)
 		if e != nil {
 			os.Remove(tmpPth)
 
@@ -119,7 +119,7 @@ func getImage(db *database.Database, img *image.Image,
 			}
 			return
 		}
-		defer img.Close()
+		defer tmpImg.Close()
 
 		keyring, e := openpgp.ReadArmoredKeyRing(
 			strings.NewReader(constants.PritunlKeyring))
@@ -133,7 +133,7 @@ func getImage(db *database.Database, img *image.Image,
 		}
 
 		entity, e := openpgp.CheckArmoredDetachedSignature(
-			keyring, img, signature)
+			keyring, tmpImg, signature)
 		if e != nil || entity == nil {
 			os.Remove(tmpPth)
 
@@ -142,6 +142,12 @@ func getImage(db *database.Database, img *image.Image,
 			}
 			return
 		}
+
+		logrus.WithFields(logrus.Fields{
+			"id":         img.Id.Hex(),
+			"storage_id": store.Id.Hex(),
+			"key":        img.Key,
+		}).Info("data: Pritunl image signature validated")
 	}
 
 	err = utils.Exec("", "mv", tmpPth, pth)
