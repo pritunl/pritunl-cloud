@@ -28,6 +28,10 @@ type AuthenticationError struct {
 	errors.DropboxError
 }
 
+type VerificationError struct {
+	errors.DropboxError
+}
+
 type ApiError struct {
 	errors.DropboxError
 }
