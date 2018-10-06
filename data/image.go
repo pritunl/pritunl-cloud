@@ -5,6 +5,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/minio/minio-go"
+	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/disk"
@@ -16,8 +17,11 @@ import (
 	"github.com/pritunl/pritunl-cloud/storage"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/zone"
+	"golang.org/x/crypto/openpgp"
 	"gopkg.in/mgo.v2/bson"
+	"os"
 	"path"
+	"strings"
 	"time"
 )
 
@@ -78,6 +82,66 @@ func getImage(db *database.Database, img *image.Image,
 			errors.Wrap(err, "data: Failed to download image"),
 		}
 		return
+	}
+
+	if strings.Contains(store.Endpoint, "images.pritunl.com") {
+		sigPth := tmpPth + ".sig"
+		defer os.Remove(sigPth)
+
+		err = client.FGetObject(store.Bucket,
+			img.Key+".sig", sigPth, minio.GetObjectOptions{})
+		if err != nil {
+			os.Remove(tmpPth)
+
+			err = &errortypes.ReadError{
+				errors.Wrap(err, "data: Failed to download image signature"),
+			}
+			return
+		}
+
+		signature, e := os.Open(sigPth)
+		if e != nil {
+			os.Remove(tmpPth)
+
+			err = &errortypes.ReadError{
+				errors.Wrap(e, "data: Failed to open image signature"),
+			}
+			return
+		}
+		defer signature.Close()
+
+		img, e := os.Open(tmpPth)
+		if e != nil {
+			os.Remove(tmpPth)
+
+			err = &errortypes.ReadError{
+				errors.Wrap(e, "data: Failed to open image"),
+			}
+			return
+		}
+		defer img.Close()
+
+		keyring, e := openpgp.ReadArmoredKeyRing(
+			strings.NewReader(constants.PritunlKeyring))
+		if e != nil {
+			os.Remove(tmpPth)
+
+			err = &errortypes.ParseError{
+				errors.Wrap(e, "data: Failed to parse Pritunl keyring"),
+			}
+			return
+		}
+
+		entity, e := openpgp.CheckArmoredDetachedSignature(
+			keyring, img, signature)
+		if e != nil || entity == nil {
+			os.Remove(tmpPth)
+
+			err = &errortypes.VerificationError{
+				errors.Wrap(e, "data: Image signature verification failed"),
+			}
+			return
+		}
 	}
 
 	err = utils.Exec("", "mv", tmpPth, pth)
