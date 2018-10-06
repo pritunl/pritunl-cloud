@@ -78,6 +78,8 @@ func getImage(db *database.Database, img *image.Image,
 	err = client.FGetObject(store.Bucket,
 		img.Key, tmpPth, minio.GetObjectOptions{})
 	if err != nil {
+		os.Remove(tmpPth)
+
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "data: Failed to download image"),
 		}
