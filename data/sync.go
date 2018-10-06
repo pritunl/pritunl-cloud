@@ -9,6 +9,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/storage"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"strings"
 	"time"
 )
 
@@ -43,6 +44,10 @@ func Sync(db *database.Database, store *storage.Storage) (err error) {
 				errors.New("storage: Failed to list objects"),
 			}
 			return
+		}
+
+		if !strings.HasSuffix(object.Key, ".qcow2") {
+			continue
 		}
 
 		etag := image.GetEtag(object)
