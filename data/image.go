@@ -149,7 +149,7 @@ func getImage(db *database.Database, img *image.Image,
 			"id":         img.Id.Hex(),
 			"storage_id": store.Id.Hex(),
 			"key":        img.Key,
-		}).Info("data: Pritunl image signature validated")
+		}).Info("data: Image signature successfully validated")
 	}
 
 	err = utils.Exec("", "mv", tmpPth, pth)
