@@ -12,6 +12,7 @@ type Image struct {
 	Id           bson.ObjectId `bson:"_id,omitempty" json:"id"`
 	Name         string        `bson:"name" json:"name"`
 	Organization bson.ObjectId `bson:"organization" json:"organization"`
+	Signed       bool          `bson:"signed" json:"signed"`
 	Type         string        `bson:"type" json:"type"`
 	Storage      bson.ObjectId `bson:"storage" json:"storage"`
 	Key          string        `bson:"key" json:"key"`
