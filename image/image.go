@@ -78,6 +78,7 @@ func (i *Image) Upsert(db *database.Database) (err error) {
 		"$set": &bson.M{
 			"storage":       i.Storage,
 			"key":           i.Key,
+			"signed":        i.Signed,
 			"type":          i.Type,
 			"etag":          i.Etag,
 			"last_modified": i.LastModified,
