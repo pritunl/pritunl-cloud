@@ -14818,12 +14818,21 @@ System.registerDynamic("app/components/Image.js", ["npm:react@16.4.1.js", "app/c
             if (!active) {
                 cardStyle.opacity = 0.6;
             }
+            let orgClass = '';
+            let orgIcon = '';
             let orgName = '';
             if (image.organization) {
                 let org = OrganizationsStore_1.default.organization(image.organization);
+                orgIcon = 'pt-icon-people';
                 orgName = org ? org.name : image.organization;
             } else {
+                orgIcon = 'pt-icon-globe';
                 orgName = 'Public Image';
+            }
+            if (image.signed) {
+                orgClass = 'pt-text-intent-success';
+                orgIcon = 'pt-icon-endorsed';
+                orgName = 'Signed Public Image';
             }
             return React.createElement("div", { className: "pt-card pt-row", style: cardStyle, onClick: evt => {
                     let target = evt.target;
@@ -14833,7 +14842,7 @@ System.registerDynamic("app/components/Image.js", ["npm:react@16.4.1.js", "app/c
                     this.props.onOpen();
                 } }, React.createElement("div", { className: "pt-cell", style: css.name }, React.createElement("div", { className: "layout horizontal" }, React.createElement("label", { className: "pt-control pt-checkbox open-ignore", style: css.select }, React.createElement("input", { type: "checkbox", className: "open-ignore", checked: this.props.selected, onClick: evt => {
                     this.props.onSelect(evt.shiftKey);
-                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" })), React.createElement("div", { style: css.nameSpan }, image.name))), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, className: 'pt-icon-standard ' + (image.organization ? 'pt-icon-people' : 'pt-icon-globe') }), orgName), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, hidden: !image.key, className: "pt-icon-standard pt-icon-compressed" }), image.key));
+                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" })), React.createElement("div", { style: css.nameSpan }, image.name))), React.createElement("div", { className: 'pt-cell ' + orgClass, style: css.item }, React.createElement("span", { style: css.icon, className: 'pt-icon-standard ' + orgIcon }), orgName), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, hidden: !image.key, className: "pt-icon-standard pt-icon-compressed" }), image.key));
         }
     }
     exports.default = Image;
