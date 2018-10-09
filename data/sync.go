@@ -37,6 +37,8 @@ func Sync(db *database.Database, store *storage.Storage) (err error) {
 	done := make(chan struct{})
 	defer close(done)
 
+	images := []*image.Image{}
+	signedKeys := set.NewSet()
 	remoteKeys := set.NewSet()
 	for object := range client.ListObjects(store.Bucket, "", true, done) {
 		if object.Err != nil {
@@ -46,20 +48,27 @@ func Sync(db *database.Database, store *storage.Storage) (err error) {
 			return
 		}
 
-		if !strings.HasSuffix(object.Key, ".qcow2") {
-			continue
-		}
+		if strings.HasSuffix(object.Key, ".qcow2.sig") {
+			signedKeys.Add(strings.TrimRight(object.Key, ".sig"))
+		} else if strings.HasSuffix(object.Key, ".qcow2") {
+			etag := image.GetEtag(object)
+			remoteKeys.Add(object.Key)
 
-		etag := image.GetEtag(object)
-		remoteKeys.Add(object.Key)
+			img := &image.Image{
+				Storage:      store.Id,
+				Key:          object.Key,
+				Etag:         etag,
+				Type:         store.Type,
+				LastModified: object.LastModified,
+			}
 
-		img := &image.Image{
-			Storage:      store.Id,
-			Key:          object.Key,
-			Etag:         etag,
-			Type:         store.Type,
-			LastModified: object.LastModified,
+			images = append(images, img)
 		}
+	}
+
+	for _, img := range images {
+		img.Signed = signedKeys.Contains(img.Key)
+
 		err = img.Upsert(db)
 		if err != nil {
 			return
