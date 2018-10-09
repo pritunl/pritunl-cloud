@@ -64,8 +64,6 @@ func (d *Disks) snapshot(dsk *disk.Disk) {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
 			}).Error("deploy: Failed to snapshot disk")
-			time.Sleep(5 * time.Second)
-			return
 		}
 
 		dsk.State = disk.Available
