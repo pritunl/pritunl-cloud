@@ -10,6 +10,7 @@ export interface Image {
 	name?: string;
 	organization?: string;
 	storage?: string;
+	signed?: boolean;
 	key?: string;
 	type?: string;
 	etag?: string;
