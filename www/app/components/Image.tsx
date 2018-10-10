@@ -94,12 +94,22 @@ export default class Image extends React.Component<Props, {}> {
 			cardStyle.opacity = 0.6;
 		}
 
+		let orgClass = '';
+		let orgIcon = '';
 		let orgName = '';
 		if (image.organization) {
 			let org = OrganizationsStore.organization(image.organization);
+			orgIcon = 'pt-icon-people';
 			orgName = org ? org.name : image.organization;
 		} else {
+			orgIcon = 'pt-icon-globe';
 			orgName = 'Public Image';
+		}
+
+		if (image.signed) {
+			orgClass = 'pt-text-intent-success';
+			orgIcon = 'pt-icon-endorsed';
+			orgName = 'Signed Public Image';
 		}
 
 		return <div
@@ -136,11 +146,10 @@ export default class Image extends React.Component<Props, {}> {
 					</div>
 				</div>
 			</div>
-			<div className="pt-cell" style={css.item}>
+			<div className={'pt-cell ' + orgClass} style={css.item}>
 				<span
 					style={css.icon}
-					className={'pt-icon-standard ' + (image.organization ?
-						'pt-icon-people' : 'pt-icon-globe')}
+					className={'pt-icon-standard ' + orgIcon}
 				/>
 				{orgName}
 			</div>
