@@ -14706,6 +14706,16 @@ System.registerDynamic("app/components/ImageDetailed.js", ["npm:react@16.4.1.js"
             if (imgType) {
                 imgType = imgType.charAt(0).toUpperCase() + imgType.slice(1);
             }
+            let orgName = '';
+            if (image.organization) {
+                let org = OrganizationsStore_1.default.organization(image.organization);
+                orgName = org ? org.name : image.organization;
+            } else {
+                orgName = 'Public Image';
+            }
+            if (image.signed) {
+                orgName = 'Signed Public Image';
+            }
             return React.createElement("td", { className: "pt-cell", colSpan: 5, style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { className: "layout horizontal", style: css.buttons, onClick: evt => {
                     let target = evt.target;
                     if (target.className.indexOf('open-ignore') !== -1) {
@@ -14724,7 +14734,7 @@ System.registerDynamic("app/components/ImageDetailed.js", ["npm:react@16.4.1.js"
                     value: store ? store.name : this.props.image.storage || 'Unknown'
                 }, {
                     label: 'Organization',
-                    value: org ? org.name : this.props.image.organization || 'Public Image'
+                    value: orgName
                 }, {
                     label: 'Type',
                     value: imgType || 'Unknown'
