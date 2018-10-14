@@ -187,6 +187,18 @@ export default class ImageDetailed extends React.Component<Props, State> {
 			imgType = imgType.charAt(0).toUpperCase() + imgType.slice(1);
 		}
 
+		let orgName = '';
+		if (image.organization) {
+			let org = OrganizationsStore.organization(image.organization);
+			orgName = org ? org.name : image.organization;
+		} else {
+			orgName = 'Public Image';
+		}
+
+		if (image.signed) {
+			orgName = 'Signed Public Image';
+		}
+
 		return <td
 			className="pt-cell"
 			colSpan={5}
@@ -259,8 +271,7 @@ export default class ImageDetailed extends React.Component<Props, State> {
 							},
 							{
 								label: 'Organization',
-								value: org ? org.name :
-									this.props.image.organization || 'Public Image',
+								value: orgName,
 							},
 							{
 								label: 'Type',
