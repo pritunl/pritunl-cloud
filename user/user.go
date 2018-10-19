@@ -68,22 +68,6 @@ func (u *User) Validate(db *database.Database) (
 		return
 	}
 
-	if u.Administrator != "super" && u.Id != "" {
-		exists, e := hasSuperSkip(db, u.Id)
-		if e != nil {
-			err = e
-			return
-		}
-
-		if !exists {
-			errData = &errortypes.ErrorData{
-				Error:   "user_missing_super",
-				Message: "Missing super administrator",
-			}
-			return
-		}
-	}
-
 	u.Format()
 
 	return
@@ -104,6 +88,28 @@ func (u *User) Format() {
 	sort.Strings(roles)
 
 	u.Roles = roles
+}
+
+func (u *User) SuperExists(db *database.Database) (
+	errData *errortypes.ErrorData, err error) {
+
+	if u.Administrator != "super" && u.Id != "" {
+		exists, e := hasSuperSkip(db, u.Id)
+		if e != nil {
+			err = e
+			return
+		}
+
+		if !exists {
+			errData = &errortypes.ErrorData{
+				Error:   "user_missing_super",
+				Message: "Missing super administrator",
+			}
+			return
+		}
+	}
+
+	return
 }
 
 func (u *User) Commit(db *database.Database) (err error) {
