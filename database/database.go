@@ -418,6 +418,17 @@ func addIndexes() (err error) {
 		return
 	}
 
+	coll = db.Nodes()
+	err = coll.EnsureIndex(mgo.Index{
+		Key:        []string{"name"},
+		Background: true,
+	})
+	if err != nil {
+		err = &IndexError{
+			errors.Wrap(err, "database: Index error"),
+		}
+	}
+
 	coll = db.Nonces()
 	err = coll.EnsureIndex(mgo.Index{
 		Key:         []string{"timestamp"},
