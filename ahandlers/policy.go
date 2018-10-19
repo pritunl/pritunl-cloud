@@ -18,7 +18,6 @@ type policyData struct {
 	Authorities        []bson.ObjectId         `json:"authorities"`
 	Roles              []string                `json:"roles"`
 	Rules              map[string]*policy.Rule `json:"rules"`
-	KeybaseMode        string                  `json:"keybase_mode"`
 	AdminSecondary     bson.ObjectId           `json:"admin_secondary"`
 	UserSecondary      bson.ObjectId           `json:"user_secondary"`
 	ProxySecondary     bson.ObjectId           `json:"proxy_secondary"`
