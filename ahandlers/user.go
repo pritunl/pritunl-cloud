@@ -20,7 +20,6 @@ type userData struct {
 	Type           string        `json:"type"`
 	Username       string        `json:"username"`
 	Password       string        `json:"password"`
-	Keybase        string        `json:"keybase"`
 	Roles          []string      `json:"roles"`
 	Administrator  string        `json:"administrator"`
 	Permissions    []string      `json:"permissions"`
