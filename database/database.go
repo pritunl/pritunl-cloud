@@ -463,6 +463,15 @@ func addIndexes() (err error) {
 
 	coll = db.Images()
 	err = coll.EnsureIndex(mgo.Index{
+		Key:        []string{"organization"},
+		Background: true,
+	})
+	if err != nil {
+		err = &IndexError{
+			errors.Wrap(err, "database: Index error"),
+		}
+	}
+	err = coll.EnsureIndex(mgo.Index{
 		Key:        []string{"storage", "key"},
 		Unique:     true,
 		Background: true,
