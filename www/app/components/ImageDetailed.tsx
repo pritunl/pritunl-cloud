@@ -189,7 +189,6 @@ export default class ImageDetailed extends React.Component<Props, State> {
 
 		let orgName = '';
 		if (image.organization) {
-			let org = OrganizationsStore.organization(image.organization);
 			orgName = org ? org.name : image.organization;
 		} else {
 			orgName = 'Public Image';
