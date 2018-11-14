@@ -4218,10 +4218,6 @@ System.registerDynamic("app/components/UsersFilter.js", ["npm:react@16.4.1.js", 
             width: '200px',
             margin: '5px'
         },
-        keybase: {
-            width: '175px',
-            margin: '5px'
-        },
         role: {
             width: '150px',
             margin: '5px'
@@ -10329,9 +10325,11 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.4.1.js",
             width: '100%'
         },
         protocol: {
+            minWidth: '90px',
             flex: '0 1 auto'
         },
         port: {
+            minWidth: '120px',
             flex: '1'
         },
         select: {
@@ -10459,7 +10457,8 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.4.1.js",
                 node: null,
                 addCert: null,
                 addNetworkRole: null,
-                forwardedChecked: false
+                forwardedChecked: false,
+                forwardedProtoChecked: false
             };
         }
         set(name, val) {
@@ -10662,8 +10661,17 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.4.1.js",
                     }
                     nde.forwarded_for_header = val;
                     this.setState(Object.assign({}, this.state, { changed: true, forwardedChecked: state, node: nde }));
+                } }), React.createElement(PageInputSwitch_1.default, { label: "Forwarded proto header", help: "Enable when using a load balancer. This header value will be used to get the users protocol. This will redirect users to https when the forwarded protocol is http.", type: "text", placeholder: "Forwarded proto header", value: node.forwarded_proto_header, checked: this.state.forwardedProtoChecked, defaultValue: "X-Forwarded-Proto", onChange: (state, val) => {
+                    let nde;
+                    if (this.state.changed) {
+                        nde = Object.assign({}, this.state.node);
+                    } else {
+                        nde = Object.assign({}, this.props.node);
+                    }
+                    nde.forwarded_proto_header = val;
+                    this.setState(Object.assign({}, this.state, { changed: true, forwardedProtoChecked: state, node: nde }));
                 } }))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.node, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
-                    this.setState(Object.assign({}, this.state, { changed: false, forwardedChecked: false, node: null }));
+                    this.setState(Object.assign({}, this.state, { changed: false, forwardedChecked: false, forwardedProtoChecked: false, node: null }));
                 }, onSave: this.onSave }));
         }
     }
@@ -10797,10 +10805,6 @@ System.registerDynamic("app/components/NodesFilter.js", ["npm:react@16.4.1.js", 
         },
         input: {
             width: '200px',
-            margin: '5px'
-        },
-        keybase: {
-            width: '175px',
             margin: '5px'
         },
         role: {
@@ -13115,6 +13119,9 @@ System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.4.1.js", 
                     label: 'Organization',
                     value: org ? org.name : this.props.vpc.organization
                 }, {
+                    label: 'VLAN Number',
+                    value: this.props.vpc.vpc_id || 'Unknown'
+                }, {
                     label: 'Private IPv6 Network',
                     value: this.props.vpc.network6 || 'Unknown'
                 }] }))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.vpc && !this.state.message, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
@@ -13246,10 +13253,6 @@ System.registerDynamic("app/components/VpcsFilter.js", ["npm:react@16.4.1.js", "
         },
         input: {
             width: '200px',
-            margin: '5px'
-        },
-        keybase: {
-            width: '175px',
             margin: '5px'
         },
         role: {
@@ -13943,10 +13946,6 @@ System.registerDynamic("app/components/DomainsFilter.js", ["npm:react@16.4.1.js"
         },
         input: {
             width: '200px',
-            margin: '5px'
-        },
-        keybase: {
-            width: '175px',
             margin: '5px'
         },
         role: {
@@ -14708,7 +14707,6 @@ System.registerDynamic("app/components/ImageDetailed.js", ["npm:react@16.4.1.js"
             }
             let orgName = '';
             if (image.organization) {
-                let org = OrganizationsStore_1.default.organization(image.organization);
                 orgName = org ? org.name : image.organization;
             } else {
                 orgName = 'Public Image';
@@ -14873,10 +14871,6 @@ System.registerDynamic("app/components/ImagesFilter.js", ["npm:react@16.4.1.js",
         },
         input: {
             width: '200px',
-            margin: '5px'
-        },
-        keybase: {
-            width: '175px',
             margin: '5px'
         },
         role: {
@@ -15565,10 +15559,6 @@ System.registerDynamic("app/components/DisksFilter.js", ["npm:react@16.4.1.js", 
         },
         input: {
             width: '200px',
-            margin: '5px'
-        },
-        keybase: {
-            width: '175px',
             margin: '5px'
         },
         role: {
@@ -17628,10 +17618,6 @@ System.registerDynamic("app/components/InstancesFilter.js", ["npm:react@16.4.1.j
             width: '200px',
             margin: '5px'
         },
-        keybase: {
-            width: '175px',
-            margin: '5px'
-        },
         role: {
             width: '150px',
             margin: '5px'
@@ -18523,10 +18509,6 @@ System.registerDynamic("app/components/FirewallsFilter.js", ["npm:react@16.4.1.j
             width: '200px',
             margin: '5px'
         },
-        keybase: {
-            width: '175px',
-            margin: '5px'
-        },
         role: {
             width: '150px',
             margin: '5px'
@@ -19249,10 +19231,6 @@ System.registerDynamic("app/components/AuthoritiesFilter.js", ["npm:react@16.4.1
         },
         input: {
             width: '200px',
-            margin: '5px'
-        },
-        keybase: {
-            width: '175px',
             margin: '5px'
         },
         role: {
@@ -20831,6 +20809,8 @@ System.registerDynamic("app/components/PageInfo.js", ["npm:react@16.4.1.js"], tr
                 let value;
                 if (typeof field.value === 'string') {
                     value = field.value;
+                } else if (typeof field.value === 'number') {
+                    value = field.value.toString();
                 } else {
                     value = [];
                     for (let i = 0; i < field.value.length; i++) {
