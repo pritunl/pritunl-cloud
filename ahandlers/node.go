@@ -16,22 +16,23 @@ import (
 )
 
 type nodeData struct {
-	Id                 bson.ObjectId   `json:"id"`
-	Zone               bson.ObjectId   `json:"zone"`
-	Name               string          `json:"name"`
-	Types              []string        `json:"types"`
-	Port               int             `json:"port"`
-	Protocol           string          `json:"protocol"`
-	Hypervisor         string          `json:"hypervisor"`
-	Certificates       []bson.ObjectId `json:"certificates"`
-	AdminDomain        string          `json:"admin_domain"`
-	UserDomain         string          `json:"user_domain"`
-	Services           []bson.ObjectId `json:"services"`
-	ExternalInterface  string          `json:"external_interface"`
-	InternalInterface  string          `json:"internal_interface"`
-	ForwardedForHeader string          `json:"forwarded_for_header"`
-	Firewall           bool            `json:"firewall"`
-	NetworkRoles       []string        `json:"network_roles"`
+	Id                   bson.ObjectId   `json:"id"`
+	Zone                 bson.ObjectId   `json:"zone"`
+	Name                 string          `json:"name"`
+	Types                []string        `json:"types"`
+	Port                 int             `json:"port"`
+	Protocol             string          `json:"protocol"`
+	Hypervisor           string          `json:"hypervisor"`
+	Certificates         []bson.ObjectId `json:"certificates"`
+	AdminDomain          string          `json:"admin_domain"`
+	UserDomain           string          `json:"user_domain"`
+	Services             []bson.ObjectId `json:"services"`
+	ExternalInterface    string          `json:"external_interface"`
+	InternalInterface    string          `json:"internal_interface"`
+	ForwardedForHeader   string          `json:"forwarded_for_header"`
+	ForwardedProtoHeader string          `json:"forwarded_proto_header"`
+	Firewall             bool            `json:"firewall"`
+	NetworkRoles         []string        `json:"network_roles"`
 }
 
 type nodesData struct {
@@ -76,6 +77,7 @@ func nodePut(c *gin.Context) {
 	nde.ExternalInterface = data.ExternalInterface
 	nde.InternalInterface = data.InternalInterface
 	nde.ForwardedForHeader = data.ForwardedForHeader
+	nde.ForwardedProtoHeader = data.ForwardedProtoHeader
 	nde.Firewall = data.Firewall
 	nde.NetworkRoles = data.NetworkRoles
 
@@ -92,6 +94,7 @@ func nodePut(c *gin.Context) {
 		"external_interface",
 		"internal_interface",
 		"forwarded_for_header",
+		"forwarded_proto_header",
 		"firewall",
 		"network_roles",
 	)
