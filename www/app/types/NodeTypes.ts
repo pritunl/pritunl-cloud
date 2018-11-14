@@ -31,6 +31,7 @@ export interface Node {
 	public_ips?: string[];
 	public_ips6?: string[];
 	forwarded_for_header?: string;
+	forwarded_proto_header?: string;
 	software_version?: string;
 }
 
