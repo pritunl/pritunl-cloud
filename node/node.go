@@ -26,41 +26,42 @@ var (
 )
 
 type Node struct {
-	Id                 bson.ObjectId              `bson:"_id" json:"id"`
-	Zone               bson.ObjectId              `bson:"zone,omitempty" json:"zone"`
-	Name               string                     `bson:"name" json:"name"`
-	Types              []string                   `bson:"types" json:"types"`
-	Timestamp          time.Time                  `bson:"timestamp" json:"timestamp"`
-	Port               int                        `bson:"port" json:"port"`
-	Protocol           string                     `bson:"protocol" json:"protocol"`
-	Hypervisor         string                     `bson:"hypervisor" json:"hypervisor"`
-	Certificate        bson.ObjectId              `bson:"certificate" json:"certificate"`
-	Certificates       []bson.ObjectId            `bson:"certificates" json:"certificates"`
-	AdminDomain        string                     `bson:"admin_domain" json:"admin_domain"`
-	UserDomain         string                     `bson:"user_domain" json:"user_domain"`
-	RequestsMin        int64                      `bson:"requests_min" json:"requests_min"`
-	ForwardedForHeader string                     `bson:"forwarded_for_header" json:"forwarded_for_header"`
-	ExternalInterface  string                     `bson:"external_interface" json:"external_interface"`
-	InternalInterface  string                     `bson:"internal_interface" json:"internal_interface"`
-	Firewall           bool                       `bson:"firewall" json:"firewall"`
-	NetworkRoles       []string                   `bson:"network_roles" json:"network_roles"`
-	Memory             float64                    `bson:"memory" json:"memory"`
-	Load1              float64                    `bson:"load1" json:"load1"`
-	Load5              float64                    `bson:"load5" json:"load5"`
-	Load15             float64                    `bson:"load15" json:"load15"`
-	CpuUnits           int                        `bson:"cpu_units" json:"cpu_units"`
-	MemoryUnits        float64                    `bson:"memory_units" json:"memory_units"`
-	CpuUnitsRes        int                        `bson:"cpu_units_res" json:"cpu_units_res"`
-	MemoryUnitsRes     float64                    `bson:"memory_units_res" json:"memory_units_res"`
-	PublicIps          []string                   `bson:"public_ips" json:"public_ips"`
-	PublicIps6         []string                   `bson:"public_ips6" json:"public_ips6"`
-	SoftwareVersion    string                     `bson:"software_version" json:"software_version"`
-	Version            int                        `bson:"version" json:"-"`
-	VirtPath           string                     `bson:"virt_path" json:"virt_path"`
-	CachePath          string                     `bson:"cache_path" json:"cache_path"`
-	CertificateObjs    []*certificate.Certificate `bson:"-" json:"-"`
-	reqLock            sync.Mutex                 `bson:"-" json:"-"`
-	reqCount           *list.List                 `bson:"-" json:"-"`
+	Id                   bson.ObjectId              `bson:"_id" json:"id"`
+	Zone                 bson.ObjectId              `bson:"zone,omitempty" json:"zone"`
+	Name                 string                     `bson:"name" json:"name"`
+	Types                []string                   `bson:"types" json:"types"`
+	Timestamp            time.Time                  `bson:"timestamp" json:"timestamp"`
+	Port                 int                        `bson:"port" json:"port"`
+	Protocol             string                     `bson:"protocol" json:"protocol"`
+	Hypervisor           string                     `bson:"hypervisor" json:"hypervisor"`
+	Certificate          bson.ObjectId              `bson:"certificate" json:"certificate"`
+	Certificates         []bson.ObjectId            `bson:"certificates" json:"certificates"`
+	AdminDomain          string                     `bson:"admin_domain" json:"admin_domain"`
+	UserDomain           string                     `bson:"user_domain" json:"user_domain"`
+	RequestsMin          int64                      `bson:"requests_min" json:"requests_min"`
+	ForwardedForHeader   string                     `bson:"forwarded_for_header" json:"forwarded_for_header"`
+	ForwardedProtoHeader string                     `bson:"forwarded_proto_header" json:"forwarded_proto_header"`
+	ExternalInterface    string                     `bson:"external_interface" json:"external_interface"`
+	InternalInterface    string                     `bson:"internal_interface" json:"internal_interface"`
+	Firewall             bool                       `bson:"firewall" json:"firewall"`
+	NetworkRoles         []string                   `bson:"network_roles" json:"network_roles"`
+	Memory               float64                    `bson:"memory" json:"memory"`
+	Load1                float64                    `bson:"load1" json:"load1"`
+	Load5                float64                    `bson:"load5" json:"load5"`
+	Load15               float64                    `bson:"load15" json:"load15"`
+	CpuUnits             int                        `bson:"cpu_units" json:"cpu_units"`
+	MemoryUnits          float64                    `bson:"memory_units" json:"memory_units"`
+	CpuUnitsRes          int                        `bson:"cpu_units_res" json:"cpu_units_res"`
+	MemoryUnitsRes       float64                    `bson:"memory_units_res" json:"memory_units_res"`
+	PublicIps            []string                   `bson:"public_ips" json:"public_ips"`
+	PublicIps6           []string                   `bson:"public_ips6" json:"public_ips6"`
+	SoftwareVersion      string                     `bson:"software_version" json:"software_version"`
+	Version              int                        `bson:"version" json:"-"`
+	VirtPath             string                     `bson:"virt_path" json:"virt_path"`
+	CachePath            string                     `bson:"cache_path" json:"cache_path"`
+	CertificateObjs      []*certificate.Certificate `bson:"-" json:"-"`
+	reqLock              sync.Mutex                 `bson:"-" json:"-"`
+	reqCount             *list.List                 `bson:"-" json:"-"`
 }
 
 func (n *Node) AddRequest() {
@@ -290,6 +291,7 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.AdminDomain = nde.AdminDomain
 	n.UserDomain = nde.UserDomain
 	n.ForwardedForHeader = nde.ForwardedForHeader
+	n.ForwardedProtoHeader = nde.ForwardedProtoHeader
 	n.ExternalInterface = nde.ExternalInterface
 	n.InternalInterface = nde.InternalInterface
 	n.Firewall = nde.Firewall
