@@ -33,10 +33,12 @@ const (
 	UserDeviceRegister        = "user_device_register"
 	UserAccountDisable        = "user_account_disable"
 
-	DuoApprove      = "duo_approve"
-	DuoDeny         = "duo_deny"
-	OneLoginApprove = "one_login_approve"
-	OneLoginDeny    = "one_login_deny"
-	OktaApprove     = "okta_approve"
-	OktaDeny        = "okta_deny"
+	DeviceRegister       = "device_register"
+	DeviceRegisterFailed = "device_register_failed"
+	DuoApprove           = "duo_approve"
+	DuoDeny              = "duo_deny"
+	OneLoginApprove      = "one_login_approve"
+	OneLoginDeny         = "one_login_deny"
+	OktaApprove          = "okta_approve"
+	OktaDeny             = "okta_deny"
 )
