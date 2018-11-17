@@ -8,6 +8,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/agent"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/user"
 	"gopkg.in/mgo.v2/bson"
@@ -22,12 +23,14 @@ type Rule struct {
 }
 
 type Policy struct {
-	Id             bson.ObjectId    `bson:"_id,omitempty" json:"id"`
-	Name           string           `bson:"name" json:"name"`
-	Roles          []string         `bson:"roles" json:"roles"`
-	Rules          map[string]*Rule `bson:"rules" json:"rules"`
-	AdminSecondary bson.ObjectId    `bson:"admin_secondary,omitempty" json:"admin_secondary"`
-	UserSecondary  bson.ObjectId    `bson:"user_secondary,omitempty" json:"user_secondary"`
+	Id                   bson.ObjectId    `bson:"_id,omitempty" json:"id"`
+	Name                 string           `bson:"name" json:"name"`
+	Roles                []string         `bson:"roles" json:"roles"`
+	Rules                map[string]*Rule `bson:"rules" json:"rules"`
+	AdminSecondary       bson.ObjectId    `bson:"admin_secondary,omitempty" json:"admin_secondary"`
+	UserSecondary        bson.ObjectId    `bson:"user_secondary,omitempty" json:"user_secondary"`
+	AdminDeviceSecondary bool             `bson:"admin_device_secondary" json:"admin_device_secondary"`
+	UserDeviceSecondary  bool             `bson:"user_device_secondary" json:"user_device_secondary"`
 }
 
 func (p *Policy) Validate(db *database.Database) (
@@ -42,6 +45,28 @@ func (p *Policy) Validate(db *database.Database) (
 		settings.Auth.GetSecondaryProvider(p.UserSecondary) == nil {
 
 		p.UserSecondary = ""
+	}
+
+	hasUserNode := false
+	nodes, err := node.GetAll(db)
+	if err != nil {
+		return
+	}
+
+	for _, nde := range nodes {
+		if nde.AdminDomain != "" {
+			hasUserNode = true
+			break
+		}
+	}
+
+	if (p.AdminDeviceSecondary || p.UserDeviceSecondary) && !hasUserNode {
+		errData = &errortypes.ErrorData{
+			Error: "user_node_unavailable",
+			Message: "At least one node must have a user domain configured " +
+				"to use secondary device authentication",
+		}
+		return
 	}
 
 	return
