@@ -42,6 +42,11 @@ func Register(engine *gin.Engine) {
 	dbGroup.POST("/auth/secondary", authSecondaryPost)
 	dbGroup.GET("/auth/request", authRequestGet)
 	dbGroup.GET("/auth/callback", authCallbackGet)
+	engine.GET("/auth/u2f/app.json", authU2fAppGet)
+	dbGroup.GET("/auth/u2f/register", authU2fRegisterGet)
+	dbGroup.POST("/auth/u2f/register", authU2fRegisterPost)
+	dbGroup.GET("/auth/u2f/sign", authU2fSignGet)
+	dbGroup.POST("/auth/u2f/sign", authU2fSignPost)
 	sessGroup.GET("/logout", logoutGet)
 	sessGroup.GET("/logout_all", logoutAllGet)
 
@@ -57,6 +62,15 @@ func Register(engine *gin.Engine) {
 	authGroup.GET("/csrf", csrfGet)
 
 	orgGroup.GET("/datacenter", datacentersGet)
+
+	csrfGroup.GET("/device", devicesGet)
+	csrfGroup.PUT("/device/:device_id", devicePut)
+	csrfGroup.DELETE("/device/:device_id", deviceDelete)
+	csrfGroup.PUT("/device/:device_id/secondary", deviceU2fSecondaryPut)
+	csrfGroup.GET("/device/:device_id/sign", deviceU2fSignGet)
+	csrfGroup.POST("/device/:device_id/sign", deviceU2fSignPost)
+	csrfGroup.GET("/device/:device_id/register", deviceU2fRegisterGet)
+	csrfGroup.POST("/device/:device_id/register", deviceU2fRegisterPost)
 
 	orgGroup.GET("/domain", domainsGet)
 
