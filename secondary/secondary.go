@@ -592,23 +592,71 @@ func (s *Secondary) DeviceSignResponse(db *database.Database,
 }
 
 func (s *Secondary) GetData() (data *SecondaryData, err error) {
+	if s.ProviderId == DeviceProvider {
+		label := ""
+		register := false
+
+		if strings.Contains(s.Type, "register") {
+			label = "Register U2F Device"
+			register = true
+		} else {
+			label = "U2F Device"
+			register = false
+		}
+
+		data = &SecondaryData{
+			Token:          s.Id,
+			Label:          label,
+			Push:           false,
+			Phone:          false,
+			Passcode:       false,
+			Sms:            false,
+			Device:         !register,
+			DeviceRegister: register,
+		}
+		return
+	}
+
 	provider, err := s.GetProvider()
 	if err != nil {
 		return
 	}
 
 	data = &SecondaryData{
-		Token:    s.Id,
-		Label:    provider.Label,
-		Push:     provider.PushFactor,
-		Phone:    provider.PhoneFactor,
-		Passcode: provider.PasscodeFactor || provider.SmsFactor,
-		Sms:      provider.SmsFactor,
+		Token:          s.Id,
+		Label:          provider.Label,
+		Push:           provider.PushFactor,
+		Phone:          provider.PhoneFactor,
+		Passcode:       provider.PasscodeFactor || provider.SmsFactor,
+		Sms:            provider.SmsFactor,
+		Device:         false,
+		DeviceRegister: false,
 	}
 	return
 }
 
 func (s *Secondary) GetQuery() (query string, err error) {
+	if s.ProviderId == DeviceProvider {
+		label := ""
+		factor := ""
+
+		if strings.Contains(s.Type, "register") {
+			label = "Register U2F Device"
+			factor = "device_register"
+		} else {
+			label = "U2F Device"
+			factor = "device"
+		}
+
+		query = fmt.Sprintf(
+			"secondary=%s&label=%s&factors=%s",
+			s.Id,
+			url.PathEscape(label),
+			factor,
+		)
+		return
+	}
+
 	provider, err := s.GetProvider()
 	if err != nil {
 		return
