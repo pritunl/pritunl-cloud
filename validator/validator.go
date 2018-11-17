@@ -14,7 +14,7 @@ import (
 )
 
 func ValidateAdmin(db *database.Database, usr *user.User,
-	isApi bool, r *http.Request) (secProvider bson.ObjectId,
+	isApi bool, r *http.Request) (deviceAuth bool, secProvider bson.ObjectId,
 	errAudit audit.Fields, errData *errortypes.ErrorData, err error) {
 
 	if !usr.ActiveUntil.IsZero() && usr.ActiveUntil.Before(time.Now()) {
@@ -70,9 +70,12 @@ func ValidateAdmin(db *database.Database, usr *user.User,
 		}
 
 		for _, polcy := range policies {
-			if polcy.AdminSecondary != "" {
+			if polcy.AdminDeviceSecondary {
+				deviceAuth = true
+			}
+
+			if polcy.AdminSecondary != "" && secProvider == "" {
 				secProvider = polcy.AdminSecondary
-				break
 			}
 		}
 	}
@@ -81,7 +84,7 @@ func ValidateAdmin(db *database.Database, usr *user.User,
 }
 
 func ValidateUser(db *database.Database, usr *user.User,
-	isApi bool, r *http.Request) (secProvider bson.ObjectId,
+	isApi bool, r *http.Request) (deviceAuth bool, secProvider bson.ObjectId,
 	errAudit audit.Fields, errData *errortypes.ErrorData, err error) {
 
 	if !usr.ActiveUntil.IsZero() && usr.ActiveUntil.Before(time.Now()) {
@@ -132,9 +135,12 @@ func ValidateUser(db *database.Database, usr *user.User,
 		}
 
 		for _, polcy := range policies {
-			if polcy.UserSecondary != "" {
+			if polcy.UserDeviceSecondary {
+				deviceAuth = true
+			}
+
+			if polcy.UserSecondary != "" && secProvider == "" {
 				secProvider = polcy.UserSecondary
-				break
 			}
 		}
 	}
