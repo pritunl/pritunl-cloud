@@ -12,16 +12,18 @@ import (
 )
 
 type policyData struct {
-	Id                 bson.ObjectId           `json:"id"`
-	Name               string                  `json:"name"`
-	Services           []bson.ObjectId         `json:"services"`
-	Authorities        []bson.ObjectId         `json:"authorities"`
-	Roles              []string                `json:"roles"`
-	Rules              map[string]*policy.Rule `json:"rules"`
-	AdminSecondary     bson.ObjectId           `json:"admin_secondary"`
-	UserSecondary      bson.ObjectId           `json:"user_secondary"`
-	ProxySecondary     bson.ObjectId           `json:"proxy_secondary"`
-	AuthoritySecondary bson.ObjectId           `json:"authority_secondary"`
+	Id                   bson.ObjectId           `json:"id"`
+	Name                 string                  `json:"name"`
+	Services             []bson.ObjectId         `json:"services"`
+	Authorities          []bson.ObjectId         `json:"authorities"`
+	Roles                []string                `json:"roles"`
+	Rules                map[string]*policy.Rule `json:"rules"`
+	AdminSecondary       bson.ObjectId           `json:"admin_secondary"`
+	UserSecondary        bson.ObjectId           `json:"user_secondary"`
+	ProxySecondary       bson.ObjectId           `json:"proxy_secondary"`
+	AuthoritySecondary   bson.ObjectId           `json:"authority_secondary"`
+	AdminDeviceSecondary bool                    `json:"admin_device_secondary"`
+	UserDeviceSecondary  bool                    `json:"user_device_secondary"`
 }
 
 func policyPut(c *gin.Context) {
@@ -55,6 +57,8 @@ func policyPut(c *gin.Context) {
 	polcy.Rules = data.Rules
 	polcy.AdminSecondary = data.AdminSecondary
 	polcy.UserSecondary = data.UserSecondary
+	polcy.AdminDeviceSecondary = data.AdminDeviceSecondary
+	polcy.UserDeviceSecondary = data.UserDeviceSecondary
 
 	fields := set.NewSet(
 		"name",
@@ -62,6 +66,8 @@ func policyPut(c *gin.Context) {
 		"rules",
 		"admin_secondary",
 		"user_secondary",
+		"admin_device_secondary",
+		"user_device_secondary",
 	)
 
 	errData, err := polcy.Validate(db)
@@ -103,11 +109,13 @@ func policyPost(c *gin.Context) {
 	}
 
 	polcy := &policy.Policy{
-		Name:               data.Name,
-		Roles:              data.Roles,
-		Rules:              data.Rules,
-		AdminSecondary:     data.AdminSecondary,
-		UserSecondary:      data.UserSecondary,
+		Name:                 data.Name,
+		Roles:                data.Roles,
+		Rules:                data.Rules,
+		AdminSecondary:       data.AdminSecondary,
+		UserSecondary:        data.UserSecondary,
+		AdminDeviceSecondary: data.AdminDeviceSecondary,
+		UserDeviceSecondary:  data.UserDeviceSecondary,
 	}
 
 	errData, err := polcy.Validate(db)
