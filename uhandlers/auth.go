@@ -8,11 +8,15 @@ import (
 	"github.com/pritunl/pritunl-cloud/cookie"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
+	"github.com/pritunl/pritunl-cloud/device"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/secondary"
 	"github.com/pritunl/pritunl-cloud/session"
+	"github.com/pritunl/pritunl-cloud/u2flib"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/validator"
+	"gopkg.in/mgo.v2/bson"
 	"strings"
 )
 
@@ -71,7 +75,7 @@ func authSessionPost(c *gin.Context) {
 		return
 	}
 
-	secProviderId, errAudit, errData, err := validator.ValidateUser(
+	devAuth, secProviderId, errAudit, errData, err := validator.ValidateUser(
 		db, usr, false, c.Request)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
@@ -103,7 +107,43 @@ func authSessionPost(c *gin.Context) {
 		return
 	}
 
-	if secProviderId != "" {
+	if devAuth {
+		deviceCount, err := device.Count(db, usr.Id)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		secType := ""
+		var secProvider bson.ObjectId
+		if deviceCount == 0 {
+			if secProviderId == "" {
+				secType = secondary.UserDeviceRegister
+				secProvider = secondary.DeviceProvider
+			} else {
+				secType = secondary.User
+				secProvider = secProviderId
+			}
+		} else {
+			secType = secondary.UserDevice
+			secProvider = secondary.DeviceProvider
+		}
+
+		secd, err := secondary.New(db, usr.Id, secType, secProvider)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		data, err := secd.GetData()
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		c.JSON(201, data)
+		return
+	} else if secProviderId != "" {
 		secd, err := secondary.New(db, usr.Id, secondary.User, secProviderId)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
@@ -184,7 +224,7 @@ func authSecondaryPost(c *gin.Context) {
 	errData, err := secd.Handle(db, c.Request, data.Factor, data.Passcode)
 	if err != nil {
 		if _, ok := err.(*secondary.IncompleteError); ok {
-			c.Status(201)
+			c.Status(206)
 		} else {
 			utils.AbortWithError(c, 500, err)
 		}
@@ -227,7 +267,7 @@ func authSecondaryPost(c *gin.Context) {
 		return
 	}
 
-	_, errAudit, errData, err := validator.ValidateUser(
+	deviceAuth, _, errAudit, errData, err := validator.ValidateUser(
 		db, usr, false, c.Request)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
@@ -258,6 +298,32 @@ func authSecondaryPost(c *gin.Context) {
 
 		c.JSON(401, errData)
 		return
+	}
+
+	if deviceAuth {
+		deviceCount, err := device.Count(db, usr.Id)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		if deviceCount == 0 {
+			secd, err := secondary.New(db, usr.Id,
+				secondary.UserDeviceRegister, secondary.DeviceProvider)
+			if err != nil {
+				utils.AbortWithError(c, 500, err)
+				return
+			}
+
+			data, err := secd.GetData()
+			if err != nil {
+				utils.AbortWithError(c, 500, err)
+				return
+			}
+
+			c.JSON(201, data)
+			return
+		}
 	}
 
 	err = audit.New(
@@ -337,7 +403,6 @@ func logoutAllGet(c *gin.Context) {
 	}
 
 	for _, sess := range sessions {
-		println(sess.Id)
 		err = sess.Remove(db)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
@@ -430,7 +495,7 @@ func authCallbackGet(c *gin.Context) {
 		return
 	}
 
-	secProviderId, errAudit, errData, err := validator.ValidateUser(
+	devAuth, secProviderId, errAudit, errData, err := validator.ValidateUser(
 		db, usr, false, c.Request)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
@@ -462,7 +527,47 @@ func authCallbackGet(c *gin.Context) {
 		return
 	}
 
-	if secProviderId != "" {
+	if devAuth {
+		deviceCount, err := device.Count(db, usr.Id)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		secType := ""
+		var secProvider bson.ObjectId
+		if deviceCount == 0 {
+			if secProviderId == "" {
+				secType = secondary.UserDeviceRegister
+				secProvider = secondary.DeviceProvider
+			} else {
+				secType = secondary.User
+				secProvider = secProviderId
+			}
+		} else {
+			secType = secondary.UserDevice
+			secProvider = secondary.DeviceProvider
+		}
+
+		secd, err := secondary.New(db, usr.Id, secType, secProvider)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		urlQuery, err := secd.GetQuery()
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		if tokn.Query != "" {
+			urlQuery += "&" + tokn.Query
+		}
+
+		c.Redirect(302, "/login?"+urlQuery)
+		return
+	} else if secProviderId != "" {
 		secd, err := secondary.New(db, usr.Id, secondary.User, secProviderId)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
@@ -506,4 +611,421 @@ func authCallbackGet(c *gin.Context) {
 	}
 
 	redirectQuery(c, tokn.Query)
+}
+
+func authU2fAppGet(c *gin.Context) {
+	c.JSON(200, device.GetFacets())
+}
+
+func authU2fRegisterGet(c *gin.Context) {
+	if demo.Blocked(c) {
+		return
+	}
+
+	db := c.MustGet("db").(*database.Database)
+	token := c.Query("token")
+
+	secd, err := secondary.Get(db, token, secondary.UserDeviceRegister)
+	if err != nil {
+		if _, ok := err.(*database.NotFoundError); ok {
+			errData := &errortypes.ErrorData{
+				Error:   "secondary_expired",
+				Message: "Secondary authentication has expired",
+			}
+			c.JSON(401, errData)
+		} else {
+			utils.AbortWithError(c, 500, err)
+		}
+		return
+	}
+
+	usr, err := secd.GetUser(db)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	resp, errData, err := secd.DeviceRegisterRequest(db)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		err = audit.New(
+			db,
+			c.Request,
+			usr.Id,
+			audit.UserLoginFailed,
+			audit.Fields{
+				"method":  "device_register",
+				"error":   errData.Error,
+				"message": errData.Message,
+			},
+		)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		c.JSON(401, errData)
+		return
+	}
+
+	c.JSON(200, resp)
+}
+
+type u2fRegisterData struct {
+	Token    string                   `json:"token"`
+	Name     string                   `json:"name"`
+	Response *u2flib.RegisterResponse `json:"response"`
+}
+
+func authU2fRegisterPost(c *gin.Context) {
+	if demo.Blocked(c) {
+		return
+	}
+
+	db := c.MustGet("db").(*database.Database)
+
+	data := &u2fRegisterData{}
+
+	err := c.Bind(data)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	secd, err := secondary.Get(db, data.Token, secondary.UserDeviceRegister)
+	if err != nil {
+		if _, ok := err.(*database.NotFoundError); ok {
+			errData := &errortypes.ErrorData{
+				Error:   "secondary_expired",
+				Message: "Secondary authentication has expired",
+			}
+			c.JSON(401, errData)
+		} else {
+			utils.AbortWithError(c, 500, err)
+		}
+		return
+	}
+
+	usr, err := secd.GetUser(db)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	err = audit.New(
+		db,
+		c.Request,
+		usr.Id,
+		audit.UserDeviceRegisterRequest,
+		audit.Fields{},
+	)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	_, _, errAudit, errData, err := validator.ValidateUser(
+		db, usr, false, c.Request)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		if errAudit == nil {
+			errAudit = audit.Fields{
+				"error":   errData.Error,
+				"message": errData.Message,
+			}
+		}
+		errAudit["method"] = "device_register"
+
+		err = audit.New(
+			db,
+			c.Request,
+			usr.Id,
+			audit.UserLoginFailed,
+			errAudit,
+		)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		c.JSON(401, errData)
+		return
+	}
+
+	devc, errData, err := secd.DeviceRegisterResponse(
+		db, data.Response, data.Name)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		err = audit.New(
+			db,
+			c.Request,
+			usr.Id,
+			audit.DeviceRegisterFailed,
+			audit.Fields{
+				"error":   errData.Error,
+				"message": errData.Message,
+			},
+		)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		c.JSON(401, errData)
+		return
+	}
+
+	err = audit.New(
+		db,
+		c.Request,
+		usr.Id,
+		audit.UserDeviceRegister,
+		audit.Fields{
+			"device_id": devc.Id,
+		},
+	)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	event.PublishDispatch(db, "device.change")
+
+	err = audit.New(
+		db,
+		c.Request,
+		usr.Id,
+		audit.UserLogin,
+		audit.Fields{
+			"method": "device_register",
+		},
+	)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	cook := cookie.NewUser(c.Writer, c.Request)
+
+	_, err = cook.NewSession(db, c.Request, usr.Id, true, session.User)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	redirectQueryJson(c, c.Request.URL.RawQuery)
+}
+
+func authU2fSignGet(c *gin.Context) {
+	db := c.MustGet("db").(*database.Database)
+	token := c.Query("token")
+
+	secd, err := secondary.Get(db, token, secondary.UserDevice)
+	if err != nil {
+		if _, ok := err.(*database.NotFoundError); ok {
+			errData := &errortypes.ErrorData{
+				Error:   "secondary_expired",
+				Message: "Secondary authentication has expired",
+			}
+			c.JSON(401, errData)
+		} else {
+			utils.AbortWithError(c, 500, err)
+		}
+		return
+	}
+
+	usr, err := secd.GetUser(db)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	resp, errData, err := secd.DeviceSignRequest(db)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		err = audit.New(
+			db,
+			c.Request,
+			usr.Id,
+			audit.UserLoginFailed,
+			audit.Fields{
+				"method":  "device",
+				"error":   errData.Error,
+				"message": errData.Message,
+			},
+		)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		c.JSON(401, errData)
+		return
+	}
+
+	c.JSON(200, resp)
+}
+
+type u2fSignData struct {
+	Token    string               `json:"token"`
+	Response *u2flib.SignResponse `json:"response"`
+}
+
+func authU2fSignPost(c *gin.Context) {
+	db := c.MustGet("db").(*database.Database)
+	data := &u2fSignData{}
+
+	err := c.Bind(data)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	secd, err := secondary.Get(db, data.Token, secondary.UserDevice)
+	if err != nil {
+		if _, ok := err.(*database.NotFoundError); ok {
+			errData := &errortypes.ErrorData{
+				Error:   "secondary_expired",
+				Message: "Secondary authentication has expired",
+			}
+			c.JSON(401, errData)
+		} else {
+			utils.AbortWithError(c, 500, err)
+		}
+		return
+	}
+
+	usr, err := secd.GetUser(db)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	_, secProviderId, errAudit, errData, err := validator.ValidateUser(
+		db, usr, false, c.Request)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		if errAudit == nil {
+			errAudit = audit.Fields{
+				"error":   errData.Error,
+				"message": errData.Message,
+			}
+		}
+		errAudit["method"] = "device"
+
+		err = audit.New(
+			db,
+			c.Request,
+			usr.Id,
+			audit.UserLoginFailed,
+			errAudit,
+		)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		c.JSON(401, errData)
+		return
+	}
+
+	errData, err = secd.DeviceSignResponse(db, data.Response)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		err = audit.New(
+			db,
+			c.Request,
+			usr.Id,
+			audit.UserLoginFailed,
+			audit.Fields{
+				"method":  "device",
+				"error":   errData.Error,
+				"message": errData.Message,
+			},
+		)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		c.JSON(401, errData)
+		return
+	}
+
+	err = audit.New(
+		db,
+		c.Request,
+		usr.Id,
+		audit.UserDeviceApprove,
+		audit.Fields{},
+	)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if secProviderId != "" {
+		secd, err := secondary.New(db, usr.Id, secondary.User, secProviderId)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		data, err := secd.GetData()
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		c.JSON(201, data)
+		return
+	}
+
+	err = audit.New(
+		db,
+		c.Request,
+		usr.Id,
+		audit.UserLogin,
+		audit.Fields{
+			"method": "device",
+		},
+	)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	cook := cookie.NewUser(c.Writer, c.Request)
+
+	_, err = cook.NewSession(db, c.Request, usr.Id, true, session.User)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	redirectQueryJson(c, c.Request.URL.RawQuery)
 }
