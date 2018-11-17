@@ -679,7 +679,7 @@ func (s *Secondary) GetQuery() (query string, err error) {
 	query = fmt.Sprintf(
 		"secondary=%s&label=%s&factors=%s",
 		s.Id,
-		provider.Label,
+		url.PathEscape(provider.Label),
 		strings.Join(factors, ","),
 	)
 
