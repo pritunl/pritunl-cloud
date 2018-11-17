@@ -47,6 +47,11 @@ func (d *Database) Policies() (coll *Collection) {
 	return
 }
 
+func (d *Database) Devices() (coll *Collection) {
+	coll = d.getCollection("devices")
+	return
+}
+
 func (d *Database) Sessions() (coll *Collection) {
 	coll = d.getCollection("sessions")
 	return
@@ -434,6 +439,29 @@ func addIndexes() (err error) {
 		Key:         []string{"timestamp"},
 		ExpireAfter: 24 * time.Hour,
 		Background:  true,
+	})
+	if err != nil {
+		err = &IndexError{
+			errors.Wrap(err, "database: Index error"),
+		}
+	}
+
+	coll = db.Devices()
+	err = coll.EnsureIndex(mgo.Index{
+		Key: []string{
+			"user",
+			"mode",
+		},
+		Background: true,
+	})
+	if err != nil {
+		err = &IndexError{
+			errors.Wrap(err, "database: Index error"),
+		}
+	}
+	err = coll.EnsureIndex(mgo.Index{
+		Key:        []string{"provider"},
+		Background: true,
 	})
 	if err != nil {
 		err = &IndexError{
