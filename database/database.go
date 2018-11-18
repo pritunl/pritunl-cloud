@@ -609,6 +609,27 @@ func addIndexes() (err error) {
 
 	coll = db.Vpcs()
 	err = coll.EnsureIndex(mgo.Index{
+		Key:        []string{"name"},
+		Background: true,
+	})
+	if err != nil {
+		err = &IndexError{
+			errors.Wrap(err, "database: Index error"),
+		}
+	}
+	err = coll.EnsureIndex(mgo.Index{
+		Key: []string{
+			"organization",
+			"name",
+		},
+		Background: true,
+	})
+	if err != nil {
+		err = &IndexError{
+			errors.Wrap(err, "database: Index error"),
+		}
+	}
+	err = coll.EnsureIndex(mgo.Index{
 		Key:        []string{"vpc_id"},
 		Unique:     true,
 		Background: true,
