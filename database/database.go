@@ -598,6 +598,17 @@ func addIndexes() (err error) {
 		}
 	}
 
+	coll = db.Zones()
+	err = coll.EnsureIndex(mgo.Index{
+		Key:        []string{"datacenter"},
+		Background: true,
+	})
+	if err != nil {
+		err = &IndexError{
+			errors.Wrap(err, "database: Index error"),
+		}
+	}
+
 	coll = db.Tasks()
 	err = coll.EnsureIndex(mgo.Index{
 		Key:         []string{"timestamp"},
