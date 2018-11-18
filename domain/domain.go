@@ -29,14 +29,7 @@ func (d *Domain) Validate(db *database.Database) (
 	}
 
 	if d.Type != Route53 {
-		d.AwsId = ""
-		d.AwsSecret = ""
-
-		errData = &errortypes.ErrorData{
-			Error:   "unknown_type",
-			Message: "Unknown domain type",
-		}
-		return
+		d.Type = Route53
 	}
 
 	return
