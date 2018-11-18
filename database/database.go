@@ -663,6 +663,50 @@ func addIndexes() (err error) {
 		}
 	}
 
+	coll = db.Firewalls()
+	err = coll.EnsureIndex(mgo.Index{
+		Key:        []string{"name"},
+		Background: true,
+	})
+	if err != nil {
+		err = &IndexError{
+			errors.Wrap(err, "database: Index error"),
+		}
+	}
+	err = coll.EnsureIndex(mgo.Index{
+		Key: []string{
+			"organization",
+			"name",
+		},
+		Background: true,
+	})
+	if err != nil {
+		err = &IndexError{
+			errors.Wrap(err, "database: Index error"),
+		}
+	}
+	err = coll.EnsureIndex(mgo.Index{
+		Key:        []string{"network_roles"},
+		Background: true,
+	})
+	if err != nil {
+		err = &IndexError{
+			errors.Wrap(err, "database: Index error"),
+		}
+	}
+	err = coll.EnsureIndex(mgo.Index{
+		Key: []string{
+			"organization",
+			"network_roles",
+		},
+		Background: true,
+	})
+	if err != nil {
+		err = &IndexError{
+			errors.Wrap(err, "database: Index error"),
+		}
+	}
+
 	coll = db.Zones()
 	err = coll.EnsureIndex(mgo.Index{
 		Key:        []string{"datacenter"},
