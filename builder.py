@@ -404,7 +404,7 @@ if cmd == 'set-version':
 
     # Create gitlab release
     response = requests.post(
-        'https://git.pritunl.com/api/v3/projects' + \
+        'https://git.pritunl.com/api/v4/projects' + \
         '/%s%%2F%s/repository/tags/%s/release' % (
             github_owner, REPO_NAME, new_version),
         headers={
