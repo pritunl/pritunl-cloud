@@ -11054,7 +11054,15 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.4.1.js",
                         node = Object.assign({}, this.props.node);
                     }
                     this.setState(Object.assign({}, this.state, { changed: true, node: node, datacenter: val, zone: '' }));
-                } }, datacentersSelect), React.createElement(PageInput_1.default, { disabled: this.state.disabled, label: "External Interface", help: "External interface for instance public interface, must be a bridge interface. Leave blank for automatic configuration.", type: "text", placeholder: "Automatic", value: node.external_interface, onChange: val => {
+                } }, datacentersSelect), React.createElement(PageSelect_1.default, { disabled: !!this.props.node.zone || this.state.disabled || !hasZones, label: "Zone", help: "Node zone, cannot be changed once set.", value: this.props.node.zone ? this.props.node.zone : this.state.zone, onChange: val => {
+                    let node;
+                    if (this.state.changed) {
+                        node = Object.assign({}, this.state.node);
+                    } else {
+                        node = Object.assign({}, this.props.node);
+                    }
+                    this.setState(Object.assign({}, this.state, { changed: true, node: node, zone: val }));
+                } }, zonesSelect), React.createElement(PageInput_1.default, { disabled: this.state.disabled, label: "External Interface", help: "External interface for instance public interface, must be a bridge interface. Leave blank for automatic configuration.", type: "text", placeholder: "Automatic", value: node.external_interface, onChange: val => {
                     this.set('external_interface', val);
                 } }), React.createElement(PageInput_1.default, { disabled: this.state.disabled, label: "Internal Interface", help: "Internal interface for instance private VPC interface, must be a bridge interface. Leave blank for to use external interface.", type: "text", placeholder: "Automatic", value: node.internal_interface, onChange: val => {
                     this.set('internal_interface', val);
@@ -11105,15 +11113,7 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.4.1.js",
                     progressClass: 'pt-no-stripes pt-intent-danger',
                     label: 'Load15',
                     value: this.props.node.load15
-                }] }), React.createElement(PageSelect_1.default, { disabled: !!this.props.node.zone || this.state.disabled || !hasZones, label: "Zone", help: "Node zone, cannot be changed once set.", value: this.props.node.zone ? this.props.node.zone : this.state.zone, onChange: val => {
-                    let node;
-                    if (this.state.changed) {
-                        node = Object.assign({}, this.state.node);
-                    } else {
-                        node = Object.assign({}, this.props.node);
-                    }
-                    this.setState(Object.assign({}, this.state, { changed: true, node: node, zone: val }));
-                } }, zonesSelect), React.createElement("label", { className: "pt-label", style: css.label, hidden: node.protocol === 'http' }, "Certificates", React.createElement(Help_1.default, { title: "Certificates", content: "The certificates to use for this nodes web server. The certificates must be valid for all the domains that this node provides access to. This includes the management domain and any service domains." }), React.createElement("div", null, certificates)), React.createElement(PageSelectButton_1.default, { hidden: node.protocol === 'http', label: "Add Certificate", value: this.state.addCert, disabled: !this.props.certificates.length || this.state.disabled, buttonClass: "pt-intent-success", onChange: val => {
+                }] }), React.createElement("label", { className: "pt-label", style: css.label, hidden: node.protocol === 'http' }, "Certificates", React.createElement(Help_1.default, { title: "Certificates", content: "The certificates to use for this nodes web server. The certificates must be valid for all the domains that this node provides access to. This includes the management domain and any service domains." }), React.createElement("div", null, certificates)), React.createElement(PageSelectButton_1.default, { hidden: node.protocol === 'http', label: "Add Certificate", value: this.state.addCert, disabled: !this.props.certificates.length || this.state.disabled, buttonClass: "pt-intent-success", onChange: val => {
                     this.setState(Object.assign({}, this.state, { addCert: val }));
                 }, onSubmit: this.onAddCert }, certificatesSelect), React.createElement(PageInputSwitch_1.default, { disabled: this.state.disabled, label: "Forwarded for header", help: "Enable when using a load balancer. This header value will be used to get the users IP address. It is important to only enable this when a load balancer is used. If it is enabled without a load balancer users can spoof their IP address by providing a value for the header that will not be overwritten by a load balancer. Additionally the nodes firewall should be configured to only accept requests from the load balancer to prevent requests being sent directly to the node bypassing the load balancer.", type: "text", placeholder: "Forwarded for header", value: node.forwarded_for_header, checked: this.state.forwardedChecked, defaultValue: "X-Forwarded-For", onChange: (state, val) => {
                     let nde;
