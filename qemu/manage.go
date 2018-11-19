@@ -394,6 +394,23 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		internalIface = externalIface
 	}
 
+	_, err = utils.ExecCombinedOutputLogged(
+		nil, "sysctl", "-w",
+		fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", externalIface),
+	)
+	if err != nil {
+		return
+	}
+	if internalIface != externalIface {
+		_, err = utils.ExecCombinedOutputLogged(
+			nil, "sysctl", "-w",
+			fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", internalIface),
+		)
+		if err != nil {
+			return
+		}
+	}
+
 	vc, err := vpc.Get(db, adapter.VpcId)
 	if err != nil {
 		return
