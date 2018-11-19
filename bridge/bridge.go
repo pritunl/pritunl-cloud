@@ -146,6 +146,8 @@ func Configure() (err error) {
 		return
 	}
 
+	settings.Local.BridgeName = bridgeName
+
 	time.Sleep(5 * time.Second)
 
 	//err = utils.Exec("", "brctl", "addbr", bridgeName)
