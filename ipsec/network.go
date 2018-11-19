@@ -57,6 +57,23 @@ func networkConf(vc *vpc.Vpc,
 	}
 
 	_, err = utils.ExecCombinedOutputLogged(
+		nil, "sysctl", "-w",
+		fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", externalIface),
+	)
+	if err != nil {
+		return
+	}
+	if internalIface != externalIface {
+		_, err = utils.ExecCombinedOutputLogged(
+			nil, "sysctl", "-w",
+			fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", internalIface),
+		)
+		if err != nil {
+			return
+		}
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
 		[]string{"File exists"},
 		"ip", "netns",
 		"add", namespace,
