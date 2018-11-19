@@ -9,6 +9,15 @@ export const mobile = !!md.mobile();
 
 export const loadDelay = 700;
 
+export const u2fErrorCodes: {[index: number]: string} = {
+	0: 'ok',
+	1: 'other',
+	2: 'bad request',
+	3: 'configuration unsupported',
+	4: 'device ineligible',
+	5: 'timed out',
+};
+
 export const sessionTypes: {[key: string]: string} = {
 	admin: 'Admin',
 	proxy: 'Service',
