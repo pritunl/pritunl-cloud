@@ -38,6 +38,7 @@ interface State {
 	addCert: string;
 	addNetworkRole: string;
 	forwardedChecked: boolean;
+	forwardedProtoChecked: boolean;
 }
 
 const css = {
@@ -84,9 +85,11 @@ const css = {
 		width: '100%',
 	} as React.CSSProperties,
 	protocol: {
+		minWidth: '90px',
 		flex: '0 1 auto',
 	} as React.CSSProperties,
 	port: {
+		minWidth: '120px',
 		flex: '1',
 	} as React.CSSProperties,
 	select: {
@@ -111,6 +114,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			addCert: null,
 			addNetworkRole: null,
 			forwardedChecked: false,
+			forwardedProtoChecked: false,
 		};
 	}
 
@@ -888,6 +892,37 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							});
 						}}
 					/>
+					<PageInputSwitch
+						label="Forwarded proto header"
+						help="Enable when using a load balancer. This header value will be used to get the users protocol. This will redirect users to https when the forwarded protocol is http."
+						type="text"
+						placeholder="Forwarded proto header"
+						value={node.forwarded_proto_header}
+						checked={this.state.forwardedProtoChecked}
+						defaultValue="X-Forwarded-Proto"
+						onChange={(state: boolean, val: string): void => {
+							let nde: NodeTypes.Node;
+
+							if (this.state.changed) {
+								nde = {
+									...this.state.node,
+								};
+							} else {
+								nde = {
+									...this.props.node,
+								};
+							}
+
+							nde.forwarded_proto_header = val;
+
+							this.setState({
+								...this.state,
+								changed: true,
+								forwardedProtoChecked: state,
+								node: nde,
+							});
+						}}
+					/>
 				</div>
 			</div>
 			<PageSave
@@ -902,6 +937,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						...this.state,
 						changed: false,
 						forwardedChecked: false,
+						forwardedProtoChecked: false,
 						node: null,
 					});
 				}}
