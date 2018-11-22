@@ -670,6 +670,35 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					>
 						{datacentersSelect}
 					</PageSelect>
+					<PageSelect
+						disabled={!!this.props.node.zone || this.state.disabled ||
+							!hasZones}
+						label="Zone"
+						help="Node zone, cannot be changed once set."
+						value={this.props.node.zone ? this.props.node.zone :
+							this.state.zone}
+						onChange={(val): void => {
+							let node: NodeTypes.Node;
+							if (this.state.changed) {
+								node = {
+									...this.state.node,
+								};
+							} else {
+								node = {
+									...this.props.node,
+								};
+							}
+
+							this.setState({
+								...this.state,
+								changed: true,
+								node: node,
+								zone: val,
+							});
+						}}
+					>
+						{zonesSelect}
+					</PageSelect>
 					<PageInput
 						disabled={this.state.disabled}
 						label="External Interface"
@@ -801,35 +830,6 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							},
 						]}
 					/>
-					<PageSelect
-						disabled={!!this.props.node.zone || this.state.disabled ||
-							!hasZones}
-						label="Zone"
-						help="Node zone, cannot be changed once set."
-						value={this.props.node.zone ? this.props.node.zone :
-							this.state.zone}
-						onChange={(val): void => {
-							let node: NodeTypes.Node;
-							if (this.state.changed) {
-								node = {
-									...this.state.node,
-								};
-							} else {
-								node = {
-									...this.props.node,
-								};
-							}
-
-							this.setState({
-								...this.state,
-								changed: true,
-								node: node,
-								zone: val,
-							});
-						}}
-					>
-						{zonesSelect}
-					</PageSelect>
 					<label
 						className="pt-label"
 						style={css.label}
