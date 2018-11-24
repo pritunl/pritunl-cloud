@@ -1,19 +1,19 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
 
-interface Field {
+export interface Field {
 	valueClass?: string;
 	label: string;
-	value: string | string[];
+	value: string | number | string[];
 }
 
-interface Bar {
+export interface Bar {
 	progressClass?: string;
 	label: string;
 	value: number;
 }
 
-interface Props {
+export interface Props {
 	style?: React.CSSProperties;
 	hidden?: boolean;
 	fields?: Field[];
@@ -39,10 +39,16 @@ export default class PageInfo extends React.Component<Props, {}> {
 		let bars: JSX.Element[] = [];
 
 		for (let field of this.props.fields || []) {
+			if (field == null) {
+				continue;
+			}
+
 			let value: string | JSX.Element[];
 
 			if (typeof field.value === 'string') {
 				value = field.value;
+			} else if (typeof field.value === 'number') {
+				value = field.value.toString();
 			} else {
 				value = [];
 				for (let i = 0; i < field.value.length; i++) {
