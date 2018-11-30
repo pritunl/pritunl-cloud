@@ -475,6 +475,24 @@ export default class Policy extends React.Component<Props, State> {
 							this.setRule('browser', val);
 						}}
 					/>
+					<PageSwitch
+						label="Admin U2F device authentication"
+						help="Require admins to use U2F device authentication."
+						checked={policy.admin_device_secondary}
+						onToggle={(): void => {
+							this.set('admin_device_secondary',
+								!policy.admin_device_secondary)
+						}}
+					/>
+					<PageSwitch
+						label="User U2F device authentication"
+						help="Require users to use U2F device authentication."
+						checked={policy.user_device_secondary}
+						onToggle={(): void => {
+							this.set('user_device_secondary',
+								!policy.user_device_secondary)
+						}}
+					/>
 				</div>
 			</div>
 			<PageSave
