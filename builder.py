@@ -32,7 +32,6 @@ TEST_PACUR_PATH = '../pritunl-pacur-test'
 BUILD_KEYS_PATH = 'build_keys.json'
 BUILD_TARGETS = ('pritunl-cloud',)
 REPO_NAME = 'pritunl-cloud'
-RELEASE_NAME = 'Pritunl Cloud'
 
 cur_date = datetime.datetime.utcnow()
 pacur_path = None
