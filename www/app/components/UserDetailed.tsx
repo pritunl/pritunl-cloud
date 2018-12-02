@@ -5,6 +5,7 @@ import * as UserTypes from '../types/UserTypes';
 import * as MiscUtils from '../utils/MiscUtils';
 import UserStore from '../stores/UserStore';
 import Sessions from './Sessions';
+import Devices from './Devices';
 import Audits from './Audits';
 import Page from './Page';
 import PageHeader from './PageHeader';
@@ -422,6 +423,7 @@ export default class UserDetailed extends React.Component<Props, State> {
 				onSave={this.onNew}
 			/>}
 			{this.state.locked ? null : <Sessions userId={userId}/>}
+			{this.state.locked ? null : <Devices userId={userId}/>}
 			{this.state.locked ? null : <Audits userId={userId}/>}
 		</Page>;
 	}
