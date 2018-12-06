@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Fix issue with Azure single sign-on
+
 Version 1.0.1091.33 2018-11-19
 ------------------------------
 
