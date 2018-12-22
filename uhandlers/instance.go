@@ -453,6 +453,16 @@ func instancesGet(c *gin.Context) {
 			query["network_roles"] = networkRole
 		}
 
+		nodeId, ok := utils.ParseObjectId(c.Query("node"))
+		if ok {
+			query["node"] = nodeId
+		}
+
+		zoneId, ok := utils.ParseObjectId(c.Query("zone"))
+		if ok {
+			query["zone"] = zoneId
+		}
+
 		instances, count, err := aggregate.GetInstancePaged(
 			db, &query, page, pageCount)
 		if err != nil {
