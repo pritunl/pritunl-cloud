@@ -5,6 +5,7 @@ import * as VpcTypes from '../types/VpcTypes';
 import * as DomainTypes from '../types/DomainTypes'
 import InstanceDetailed from './InstanceDetailed';
 import ZonesStore from "../stores/ZonesStore";
+import NodesStore from "../stores/NodesStore";
 
 interface Props {
 	vpcs: VpcTypes.VpcsRo;
@@ -91,6 +92,8 @@ export default class Instance extends React.Component<Props, {}> {
 		}
 
 		let active = true;
+		let node = NodesStore.node(this.props.instance.node);
+		let nodeName = node ? node.name : null;
 		let zone = ZonesStore.zone(this.props.instance.zone);
 		let zoneName = zone ? zone.name : null;
 
@@ -165,6 +168,14 @@ export default class Instance extends React.Component<Props, {}> {
 					className="pt-icon-standard pt-icon-power"
 				/>
 				{instance.status}
+			</div>
+			<div className="pt-cell" style={css.item}>
+				<span
+					style={css.icon}
+					hidden={!nodeName}
+					className="pt-icon-standard pt-icon-layers"
+				/>
+				{nodeName}
 			</div>
 			<div className="pt-cell" style={css.item}>
 				<span
