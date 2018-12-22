@@ -6,18 +6,21 @@ import * as OrganizationTypes from '../types/OrganizationTypes';
 import * as DomainTypes from '../types/DomainTypes';
 import * as VpcTypes from '../types/VpcTypes';
 import * as DatacenterTypes from '../types/DatacenterTypes';
+import * as NodeTypes from '../types/NodeTypes';
 import * as ZoneTypes from '../types/ZoneTypes';
 import InstancesStore from '../stores/InstancesStore';
 import OrganizationsStore from '../stores/OrganizationsStore';
 import DomainsNameStore from '../stores/DomainsNameStore';
 import VpcsNameStore from '../stores/VpcsNameStore';
 import DatacentersStore from '../stores/DatacentersStore';
+import NodesStore from '../stores/NodesStore';
 import ZonesStore from '../stores/ZonesStore';
 import * as InstanceActions from '../actions/InstanceActions';
 import * as OrganizationActions from '../actions/OrganizationActions';
 import * as DomainActions from '../actions/DomainActions';
 import * as VpcActions from '../actions/VpcActions';
 import * as DatacenterActions from '../actions/DatacenterActions';
+import * as NodeActions from '../actions/NodeActions';
 import * as ZoneActions from '../actions/ZoneActions';
 import Instance from './Instance';
 import InstanceNew from './InstanceNew';
@@ -44,6 +47,7 @@ interface State {
 	organizations: OrganizationTypes.OrganizationsRo;
 	vpcs: VpcTypes.VpcsRo;
 	datacenters: DatacenterTypes.DatacentersRo;
+	nodes: NodeTypes.NodesRo;
 	zones: ZoneTypes.ZonesRo;
 	selected: Selected;
 	opened: Opened;
@@ -101,6 +105,7 @@ export default class Instances extends React.Component<{}, State> {
 			domains: DomainsNameStore.domains,
 			vpcs: VpcsNameStore.vpcs,
 			datacenters: DatacentersStore.datacenters,
+			nodes: NodesStore.nodes,
 			zones: ZonesStore.zones,
 			selected: {},
 			opened: {},
@@ -124,12 +129,14 @@ export default class Instances extends React.Component<{}, State> {
 		DomainsNameStore.addChangeListener(this.onChange);
 		VpcsNameStore.addChangeListener(this.onChange);
 		DatacentersStore.addChangeListener(this.onChange);
+		NodesStore.addChangeListener(this.onChange);
 		ZonesStore.addChangeListener(this.onChange);
 		InstanceActions.sync();
 		OrganizationActions.sync();
 		DomainActions.syncName();
 		VpcActions.syncNames();
 		DatacenterActions.sync();
+		NodeActions.sync();
 		ZoneActions.sync();
 
 		this.interval = setInterval(() => {
@@ -143,6 +150,7 @@ export default class Instances extends React.Component<{}, State> {
 		DomainsNameStore.removeChangeListener(this.onChange);
 		VpcsNameStore.removeChangeListener(this.onChange);
 		DatacentersStore.removeChangeListener(this.onChange);
+		NodesStore.removeChangeListener(this.onChange);
 		ZonesStore.removeChangeListener(this.onChange);
 		clearInterval(this.interval);
 	}
@@ -171,6 +179,7 @@ export default class Instances extends React.Component<{}, State> {
 			domains: DomainsNameStore.domains,
 			vpcs: VpcsNameStore.vpcs,
 			datacenters: DatacentersStore.datacenters,
+			nodes: NodesStore.nodes,
 			zones: ZonesStore.zones,
 			selected: selected,
 			opened: opened,
@@ -456,6 +465,8 @@ export default class Instances extends React.Component<{}, State> {
 				onFilter={(filter): void => {
 					InstanceActions.filter(filter);
 				}}
+				nodes={this.state.nodes}
+				zones={this.state.zones}
 				organizations={this.state.organizations}
 			/>
 			<div style={css.itemsBox}>
@@ -463,7 +474,7 @@ export default class Instances extends React.Component<{}, State> {
 					{newInstanceDom}
 					{instancesDom}
 					<tr className="pt-card pt-row" style={css.placeholder}>
-						<td colSpan={5} style={css.placeholder}/>
+						<td colSpan={6} style={css.placeholder}/>
 					</tr>
 				</div>
 			</div>
