@@ -413,7 +413,7 @@ func instancesGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(bson.ObjectId)
 
-	nde, _ := utils.ParseObjectId(c.Query("node"))
+	nde, _ := utils.ParseObjectId(c.Query("node_names"))
 	if nde != "" {
 		query := &bson.M{
 			"node":         nde,
