@@ -289,7 +289,7 @@ export function syncNode(node: string): Promise<void> {
 		SuperAgent
 			.get('/instance')
 			.query({
-				node: node,
+				node_names: node,
 			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
