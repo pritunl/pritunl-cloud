@@ -450,7 +450,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 		>
 			<td
 				className="pt-cell"
-				colSpan={5}
+				colSpan={6}
 				style={css.card}
 			>
 				<div className="layout horizontal wrap">
