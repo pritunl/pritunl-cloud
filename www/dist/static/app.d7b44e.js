@@ -17149,7 +17149,7 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@16.4.1.
                     domainsSelect.push(React.createElement("option", { key: domain.id, value: domain.id }, domain.name));
                 }
             }
-            return React.createElement("td", { className: "pt-cell", colSpan: 5, style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { className: "layout horizontal", style: css.buttons, onClick: evt => {
+            return React.createElement("td", { className: "pt-cell", colSpan: 6, style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { className: "layout horizontal", style: css.buttons, onClick: evt => {
                     let target = evt.target;
                     if (target.className.indexOf('open-ignore') !== -1) {
                         return;
@@ -17290,7 +17290,7 @@ System.registerDynamic("app/stores/ZonesStore.js", ["app/dispatcher/Dispatcher.j
     exports.default = new ZonesStore();
     
 });
-System.registerDynamic("app/components/Instance.js", ["npm:react@16.4.1.js", "app/components/InstanceDetailed.js", "app/stores/ZonesStore.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/Instance.js", ["npm:react@16.4.1.js", "app/components/InstanceDetailed.js", "app/stores/ZonesStore.js", "app/stores/NodesStore.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -17299,6 +17299,7 @@ System.registerDynamic("app/components/Instance.js", ["npm:react@16.4.1.js", "ap
     const React = $__require("npm:react@16.4.1.js");
     const InstanceDetailed_1 = $__require("app/components/InstanceDetailed.js");
     const ZonesStore_1 = $__require("app/stores/ZonesStore.js");
+    const NodesStore_1 = $__require("app/stores/NodesStore.js");
     const css = {
         card: {
             display: 'table-row',
@@ -17359,6 +17360,8 @@ System.registerDynamic("app/components/Instance.js", ["npm:react@16.4.1.js", "ap
                     } }));
             }
             let active = true;
+            let node = NodesStore_1.default.node(this.props.instance.node);
+            let nodeName = node ? node.name : null;
             let zone = ZonesStore_1.default.zone(this.props.instance.zone);
             let zoneName = zone ? zone.name : null;
             let cardStyle = Object.assign({}, css.card);
@@ -17394,7 +17397,7 @@ System.registerDynamic("app/components/Instance.js", ["npm:react@16.4.1.js", "ap
                     this.props.onOpen();
                 } }, React.createElement("div", { className: "pt-cell", style: css.name }, React.createElement("div", { className: "layout horizontal" }, React.createElement("label", { className: "pt-control pt-checkbox open-ignore", style: css.select }, React.createElement("input", { type: "checkbox", className: "open-ignore", checked: this.props.selected, onClick: evt => {
                     this.props.onSelect(evt.shiftKey);
-                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" })), React.createElement("div", { style: css.nameSpan }, instance.name))), React.createElement("div", { className: statusClass, style: css.item }, React.createElement("span", { style: css.icon, hidden: !instance.status, className: "pt-icon-standard pt-icon-power" }), instance.status), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, hidden: !zoneName, className: "pt-icon-standard pt-icon-layout-circle" }), zoneName), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, hidden: !publicIp, className: "pt-icon-standard pt-icon-ip-address" }), publicIp), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, hidden: !privateIp, className: "pt-icon-standard pt-icon-ip-address" }), privateIp));
+                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" })), React.createElement("div", { style: css.nameSpan }, instance.name))), React.createElement("div", { className: statusClass, style: css.item }, React.createElement("span", { style: css.icon, hidden: !instance.status, className: "pt-icon-standard pt-icon-power" }), instance.status), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, hidden: !nodeName, className: "pt-icon-standard pt-icon-layers" }), nodeName), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, hidden: !zoneName, className: "pt-icon-standard pt-icon-layout-circle" }), zoneName), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, hidden: !publicIp, className: "pt-icon-standard pt-icon-ip-address" }), publicIp), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, hidden: !privateIp, className: "pt-icon-standard pt-icon-ip-address" }), privateIp));
         }
     }
     exports.default = Instance;
@@ -18031,7 +18034,7 @@ System.registerDynamic("app/components/InstanceNew.js", ["npm:react@16.4.1.js", 
             if (!hasImages) {
                 imagesSelect = [React.createElement("option", { key: "null", value: "" }, "No Images")];
             }
-            return React.createElement("div", { className: "pt-card pt-row", style: css.row }, React.createElement("td", { className: "pt-cell", colSpan: 5, style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement(InstanceLicense_1.default, { open: this.state.licenseOpen, onClose: () => {
+            return React.createElement("div", { className: "pt-card pt-row", style: css.row }, React.createElement("td", { className: "pt-cell", colSpan: 6, style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement(InstanceLicense_1.default, { open: this.state.licenseOpen, onClose: () => {
                     this.setState(Object.assign({}, this.state, { licenseOpen: false }));
                 } }), React.createElement("div", { style: css.group }, React.createElement("div", { style: css.buttons }), React.createElement(PageInput_1.default, { label: "Name", help: "Name of instance. String formatting such as %d or %02d can be used to add the instance number or zero padded number.", type: "text", placeholder: "Enter name", disabled: this.state.disabled, value: instance.name, onChange: val => {
                     this.set('name', val);
@@ -18107,10 +18110,22 @@ System.registerDynamic("app/components/InstancesFilter.js", ["npm:react@16.4.1.j
             if (this.props.filter === null) {
                 return React.createElement("div", null);
             }
-            let organizationsSelect = [React.createElement("option", { key: "key", value: "any" }, "Any")];
+            let organizationsSelect = [React.createElement("option", { key: "key", value: "any" }, "Any Organization")];
             if (this.props.organizations && this.props.organizations.length) {
                 for (let organization of this.props.organizations) {
                     organizationsSelect.push(React.createElement("option", { key: organization.id, value: organization.id }, organization.name));
+                }
+            }
+            let nodesSelect = [React.createElement("option", { key: "key", value: "any" }, "Any Node")];
+            if (this.props.nodes && this.props.nodes.length) {
+                for (let node of this.props.nodes) {
+                    nodesSelect.push(React.createElement("option", { key: node.id, value: node.id }, node.name));
+                }
+            }
+            let zonesSelect = [React.createElement("option", { key: "key", value: "any" }, "Any Zone")];
+            if (this.props.zones && this.props.zones.length) {
+                for (let zone of this.props.zones) {
+                    zonesSelect.push(React.createElement("option", { key: zone.id, value: zone.id }, zone.name));
                 }
             }
             return React.createElement("div", { className: "layout horizontal wrap", style: css.filters }, React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Instance ID", value: this.props.filter.id, onChange: val => {
@@ -18137,7 +18152,25 @@ System.registerDynamic("app/components/InstancesFilter.js", ["npm:react@16.4.1.j
                         delete filter.network_role;
                     }
                     this.props.onFilter(filter);
-                } }), React.createElement("div", { className: "pt-select", style: css.type, hidden: Constants.user }, React.createElement("select", { value: this.props.filter.organization || 'any', onChange: evt => {
+                } }), React.createElement("div", { className: "pt-select", style: css.type, hidden: Constants.user }, React.createElement("select", { value: this.props.filter.node || 'any', onChange: evt => {
+                    let filter = Object.assign({}, this.props.filter);
+                    let val = evt.target.value;
+                    if (val === 'any') {
+                        delete filter.node;
+                    } else {
+                        filter.node = val;
+                    }
+                    this.props.onFilter(filter);
+                } }, nodesSelect)), React.createElement("div", { className: "pt-select", style: css.type, hidden: Constants.user }, React.createElement("select", { value: this.props.filter.zone || 'any', onChange: evt => {
+                    let filter = Object.assign({}, this.props.filter);
+                    let val = evt.target.value;
+                    if (val === 'any') {
+                        delete filter.zone;
+                    } else {
+                        filter.zone = val;
+                    }
+                    this.props.onFilter(filter);
+                } }, zonesSelect)), React.createElement("div", { className: "pt-select", style: css.type, hidden: Constants.user }, React.createElement("select", { value: this.props.filter.organization || 'any', onChange: evt => {
                     let filter = Object.assign({}, this.props.filter);
                     let val = evt.target.value;
                     if (val === 'any') {
@@ -18241,7 +18274,7 @@ System.registerDynamic("app/components/InstancesPage.js", ["npm:react@16.4.1.js"
     exports.default = InstancesPage;
     
 });
-System.registerDynamic("app/components/Instances.js", ["npm:react@16.4.1.js", "app/Constants.js", "app/stores/InstancesStore.js", "app/stores/OrganizationsStore.js", "app/stores/DomainsNameStore.js", "app/stores/VpcsNameStore.js", "app/stores/DatacentersStore.js", "app/stores/ZonesStore.js", "app/actions/InstanceActions.js", "app/actions/OrganizationActions.js", "app/actions/DomainActions.js", "app/actions/VpcActions.js", "app/actions/DatacenterActions.js", "app/actions/ZoneActions.js", "app/components/Instance.js", "app/components/InstanceNew.js", "app/components/InstancesFilter.js", "app/components/InstancesPage.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/NonState.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/Instances.js", ["npm:react@16.4.1.js", "app/Constants.js", "app/stores/InstancesStore.js", "app/stores/OrganizationsStore.js", "app/stores/DomainsNameStore.js", "app/stores/VpcsNameStore.js", "app/stores/DatacentersStore.js", "app/stores/NodesStore.js", "app/stores/ZonesStore.js", "app/actions/InstanceActions.js", "app/actions/OrganizationActions.js", "app/actions/DomainActions.js", "app/actions/VpcActions.js", "app/actions/DatacenterActions.js", "app/actions/NodeActions.js", "app/actions/ZoneActions.js", "app/components/Instance.js", "app/components/InstanceNew.js", "app/components/InstancesFilter.js", "app/components/InstancesPage.js", "app/components/Page.js", "app/components/PageHeader.js", "app/components/NonState.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -18254,12 +18287,14 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.4.1.js", "a
     const DomainsNameStore_1 = $__require("app/stores/DomainsNameStore.js");
     const VpcsNameStore_1 = $__require("app/stores/VpcsNameStore.js");
     const DatacentersStore_1 = $__require("app/stores/DatacentersStore.js");
+    const NodesStore_1 = $__require("app/stores/NodesStore.js");
     const ZonesStore_1 = $__require("app/stores/ZonesStore.js");
     const InstanceActions = $__require("app/actions/InstanceActions.js");
     const OrganizationActions = $__require("app/actions/OrganizationActions.js");
     const DomainActions = $__require("app/actions/DomainActions.js");
     const VpcActions = $__require("app/actions/VpcActions.js");
     const DatacenterActions = $__require("app/actions/DatacenterActions.js");
+    const NodeActions = $__require("app/actions/NodeActions.js");
     const ZoneActions = $__require("app/actions/ZoneActions.js");
     const Instance_1 = $__require("app/components/Instance.js");
     const InstanceNew_1 = $__require("app/components/InstanceNew.js");
@@ -18321,7 +18356,7 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.4.1.js", "a
                         opened[instance.id] = true;
                     }
                 });
-                this.setState(Object.assign({}, this.state, { instances: instances, filter: InstancesStore_1.default.filter, organizations: OrganizationsStore_1.default.organizations, domains: DomainsNameStore_1.default.domains, vpcs: VpcsNameStore_1.default.vpcs, datacenters: DatacentersStore_1.default.datacenters, zones: ZonesStore_1.default.zones, selected: selected, opened: opened }));
+                this.setState(Object.assign({}, this.state, { instances: instances, filter: InstancesStore_1.default.filter, organizations: OrganizationsStore_1.default.organizations, domains: DomainsNameStore_1.default.domains, vpcs: VpcsNameStore_1.default.vpcs, datacenters: DatacentersStore_1.default.datacenters, nodes: NodesStore_1.default.nodes, zones: ZonesStore_1.default.zones, selected: selected, opened: opened }));
             };
             this.onDelete = () => {
                 this.setState(Object.assign({}, this.state, { disabled: true }));
@@ -18347,6 +18382,7 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.4.1.js", "a
                 domains: DomainsNameStore_1.default.domains,
                 vpcs: VpcsNameStore_1.default.vpcs,
                 datacenters: DatacentersStore_1.default.datacenters,
+                nodes: NodesStore_1.default.nodes,
                 zones: ZonesStore_1.default.zones,
                 selected: {},
                 opened: {},
@@ -18367,12 +18403,14 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.4.1.js", "a
             DomainsNameStore_1.default.addChangeListener(this.onChange);
             VpcsNameStore_1.default.addChangeListener(this.onChange);
             DatacentersStore_1.default.addChangeListener(this.onChange);
+            NodesStore_1.default.addChangeListener(this.onChange);
             ZonesStore_1.default.addChangeListener(this.onChange);
             InstanceActions.sync();
             OrganizationActions.sync();
             DomainActions.syncName();
             VpcActions.syncNames();
             DatacenterActions.sync();
+            NodeActions.sync();
             ZoneActions.sync();
             this.interval = setInterval(() => {
                 InstanceActions.sync(true);
@@ -18384,6 +18422,7 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.4.1.js", "a
             DomainsNameStore_1.default.removeChangeListener(this.onChange);
             VpcsNameStore_1.default.removeChangeListener(this.onChange);
             DatacentersStore_1.default.removeChangeListener(this.onChange);
+            NodesStore_1.default.removeChangeListener(this.onChange);
             ZonesStore_1.default.removeChangeListener(this.onChange);
             clearInterval(this.interval);
         }
@@ -18471,7 +18510,7 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.4.1.js", "a
                     this.setState(Object.assign({}, this.state, { newOpened: true }));
                 } }, "New"))), React.createElement("div", { className: "layout horizontal wrap", style: css.debug, hidden: !this.state.debug }, React.createElement(ConfirmButton_1.default, { label: "Force Delete Selected", className: "pt-intent-danger pt-icon-warning-sign", progressClassName: "pt-intent-danger", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onForceDelete }))), React.createElement(InstancesFilter_1.default, { filter: this.state.filter, onFilter: filter => {
                     InstanceActions.filter(filter);
-                }, organizations: this.state.organizations }), React.createElement("div", { style: css.itemsBox }, React.createElement("div", { style: css.items }, newInstanceDom, instancesDom, React.createElement("tr", { className: "pt-card pt-row", style: css.placeholder }, React.createElement("td", { colSpan: 5, style: css.placeholder })))), React.createElement(NonState_1.default, { hidden: !!instancesDom.length, iconClass: "pt-icon-dashboard", title: "No instances", description: "Add a new instance to get started." }), React.createElement(InstancesPage_1.default, { onPage: () => {
+                }, nodes: this.state.nodes, zones: this.state.zones, organizations: this.state.organizations }), React.createElement("div", { style: css.itemsBox }, React.createElement("div", { style: css.items }, newInstanceDom, instancesDom, React.createElement("tr", { className: "pt-card pt-row", style: css.placeholder }, React.createElement("td", { colSpan: 6, style: css.placeholder })))), React.createElement(NonState_1.default, { hidden: !!instancesDom.length, iconClass: "pt-icon-dashboard", title: "No instances", description: "Add a new instance to get started." }), React.createElement(InstancesPage_1.default, { onPage: () => {
                     this.setState({
                         lastSelected: null
                     });
@@ -25125,7 +25164,7 @@ System.registerDynamic("app/actions/InstanceActions.js", ["npm:superagent@3.8.3.
         let loader = new Loader_1.default().loading();
         return new Promise((resolve, reject) => {
             SuperAgent.get('/instance').query({
-                node: node
+                node_names: node
             }).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).set('Organization', OrganizationsStore_1.default.current).end((err, res) => {
                 loader.done();
                 if (res && res.status === 401) {
