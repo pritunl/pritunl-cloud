@@ -4,11 +4,15 @@ import * as Constants from '../Constants';
 import * as InstanceTypes from '../types/InstanceTypes';
 import SearchInput from './SearchInput';
 import * as OrganizationTypes from "../types/OrganizationTypes";
+import * as NodeTypes from '../types/NodeTypes';
+import * as ZoneTypes from '../types/ZoneTypes';
 
 interface Props {
 	filter: InstanceTypes.Filter;
 	onFilter: (filter: InstanceTypes.Filter) => void;
 	organizations: OrganizationTypes.OrganizationsRo;
+	nodes: NodeTypes.NodesRo;
+	zones: ZoneTypes.ZonesRo;
 }
 
 const css = {
@@ -45,7 +49,7 @@ export default class InstancesFilter extends React.Component<Props, {}> {
 		}
 
 		let organizationsSelect: JSX.Element[] = [
-			<option key="key" value="any">Any</option>,
+			<option key="key" value="any">Any Organization</option>,
 		];
 		if (this.props.organizations && this.props.organizations.length) {
 			for (let organization of this.props.organizations) {
@@ -54,6 +58,34 @@ export default class InstancesFilter extends React.Component<Props, {}> {
 						key={organization.id}
 						value={organization.id}
 					>{organization.name}</option>,
+				);
+			}
+		}
+
+		let nodesSelect: JSX.Element[] = [
+			<option key="key" value="any">Any Node</option>,
+		];
+		if (this.props.nodes && this.props.nodes.length) {
+			for (let node of this.props.nodes) {
+				nodesSelect.push(
+					<option
+						key={node.id}
+						value={node.id}
+					>{node.name}</option>,
+				);
+			}
+		}
+
+		let zonesSelect: JSX.Element[] = [
+			<option key="key" value="any">Any Zone</option>,
+		];
+		if (this.props.zones && this.props.zones.length) {
+			for (let zone of this.props.zones) {
+				zonesSelect.push(
+					<option
+						key={zone.id}
+						value={zone.id}
+					>{zone.name}</option>,
 				);
 			}
 		}
@@ -113,6 +145,50 @@ export default class InstancesFilter extends React.Component<Props, {}> {
 					this.props.onFilter(filter);
 				}}
 			/>
+			<div className="pt-select" style={css.type} hidden={Constants.user}>
+				<select
+					value={this.props.filter.node || 'any'}
+					onChange={(evt): void => {
+						let filter = {
+							...this.props.filter,
+						};
+
+						let val = evt.target.value;
+
+						if (val === 'any') {
+							delete filter.node;
+						} else {
+							filter.node = val;
+						}
+
+						this.props.onFilter(filter);
+					}}
+				>
+					{nodesSelect}
+				</select>
+			</div>
+			<div className="pt-select" style={css.type} hidden={Constants.user}>
+				<select
+					value={this.props.filter.zone || 'any'}
+					onChange={(evt): void => {
+						let filter = {
+							...this.props.filter,
+						};
+
+						let val = evt.target.value;
+
+						if (val === 'any') {
+							delete filter.zone;
+						} else {
+							filter.zone = val;
+						}
+
+						this.props.onFilter(filter);
+					}}
+				>
+					{zonesSelect}
+				</select>
+			</div>
 			<div className="pt-select" style={css.type} hidden={Constants.user}>
 				<select
 					value={this.props.filter.organization || 'any'}
