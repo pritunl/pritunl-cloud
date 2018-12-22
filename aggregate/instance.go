@@ -47,7 +47,11 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 		return
 	}
 
-	skip := utils.Min(page*pageCount, utils.Max(0, count-pageCount))
+	if page*pageCount == count && page > 0 {
+		page -= 1
+	}
+
+	skip := utils.Min(page*pageCount, count)
 
 	pipe := coll.Pipe([]*bson.M{
 		&bson.M{
