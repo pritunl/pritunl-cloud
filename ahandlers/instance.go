@@ -357,6 +357,16 @@ func instancesGet(c *gin.Context) {
 			query["network_roles"] = networkRole
 		}
 
+		nodeId, ok := utils.ParseObjectId(c.Query("node"))
+		if ok {
+			query["node"] = nodeId
+		}
+
+		zoneId, ok := utils.ParseObjectId(c.Query("zone"))
+		if ok {
+			query["zone"] = zoneId
+		}
+
 		organization, ok := utils.ParseObjectId(c.Query("organization"))
 		if ok {
 			query["organization"] = organization
