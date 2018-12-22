@@ -1,8 +1,7 @@
 pritunl-cloud changelog
 =======================
 
-Version 1.0.1124.30 2018-12-22
-------------------------------
+<%= version %>
 
 Improve instances interface in web console
 
