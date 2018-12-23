@@ -35,6 +35,8 @@ export interface Filter {
 	state?: string;
 	network_role?: string;
 	organization?: string;
+	node?: string;
+	zone?: string;
 }
 
 export interface Info {
