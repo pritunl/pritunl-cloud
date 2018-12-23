@@ -49,7 +49,7 @@ func GetAllHypervisors(db *database.Database, query *bson.M) (
 	nodes = []*Node{}
 
 	cursor := coll.Find(query).Sort("name").Select(&bson.M{
-		"name": 1,
+		"name":  1,
 		"types": 1,
 	}).Iter()
 
