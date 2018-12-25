@@ -66,5 +66,7 @@ func nodeRunner() {
 }
 
 func initNode() {
+	interfaces.SyncIfaces(true)
+
 	go nodeRunner()
 }
