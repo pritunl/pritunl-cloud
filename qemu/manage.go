@@ -12,6 +12,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/pritunl/pritunl-cloud/interfaces"
 	"github.com/pritunl/pritunl-cloud/iptables"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
@@ -385,32 +386,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	pidPath := fmt.Sprintf("/var/run/dhclient-%s.pid", ifaceExternal)
 	adapter := virt.NetworkAdapters[0]
 
-	externalIface := node.Self.ExternalInterface
-	internalIface := node.Self.InternalInterface
-	if externalIface == "" {
-		externalIface = settings.Local.BridgeName
-	}
-	if internalIface == "" {
-		internalIface = externalIface
-	}
-
-	_, err = utils.ExecCombinedOutputLogged(
-		nil, "sysctl", "-w",
-		fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", externalIface),
-	)
-	if err != nil {
-		return
-	}
-	if internalIface != externalIface {
-		_, err = utils.ExecCombinedOutputLogged(
-			nil, "sysctl", "-w",
-			fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", internalIface),
-		)
-		if err != nil {
-			return
-		}
-	}
-
 	vc, err := vpc.Get(db, adapter.VpcId)
 	if err != nil {
 		return
@@ -508,6 +483,26 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	if err != nil {
 		PowerOff(db, virt)
 		return
+	}
+
+	externalIface := interfaces.GetExternal(ifaceExternalVirt)
+	internalIface := interfaces.GetInternal(ifaceInternalVirt)
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil, "sysctl", "-w",
+		fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", externalIface),
+	)
+	if err != nil {
+		return
+	}
+	if internalIface != externalIface {
+		_, err = utils.ExecCombinedOutputLogged(
+			nil, "sysctl", "-w",
+			fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", internalIface),
+		)
+		if err != nil {
+			return
+		}
 	}
 
 	_, err = utils.ExecCombinedOutputLogged(
