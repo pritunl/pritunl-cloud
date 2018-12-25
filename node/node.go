@@ -297,6 +297,8 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.ForwardedProtoHeader = nde.ForwardedProtoHeader
 	n.ExternalInterface = nde.ExternalInterface
 	n.InternalInterface = nde.InternalInterface
+	n.ExternalInterfaces = nde.ExternalInterfaces
+	n.InternalInterfaces = nde.InternalInterfaces
 	n.Firewall = nde.Firewall
 	n.NetworkRoles = nde.NetworkRoles
 	n.VirtPath = nde.VirtPath
