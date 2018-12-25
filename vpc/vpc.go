@@ -251,6 +251,18 @@ func (v *Vpc) GetGateway() (ip net.IP, err error) {
 	return
 }
 
+func (v *Vpc) GetGateway6() (ip net.IP, err error) {
+	network, err := v.GetNetwork6()
+	if err != nil {
+		return
+	}
+
+	ip = network.IP
+	utils.IncIpAddress(ip)
+
+	return
+}
+
 func (v *Vpc) GetIp(db *database.Database, typ string, instId bson.ObjectId) (
 	ip net.IP, err error) {
 
