@@ -50,7 +50,7 @@ func getIfaces(bridge string) (ifacesSet set.Set, err error) {
 func SyncIfaces(force bool) {
 	nde := node.Self
 
-	if !force && time.Since(lastChange) < 15*time.Second {
+	if !force && time.Since(lastChange) < 30*time.Second {
 		return
 	}
 
