@@ -436,6 +436,9 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"set", ifaceInternalVirt, "down")
 	utils.ExecCombinedOutput("", "ip", "link", "del", ifaceInternalVirt)
 
+	interfaces.RemoveVirtIface(ifaceExternalVirt)
+	interfaces.RemoveVirtIface(ifaceInternalVirt)
+
 	macAddrExternal := vm.GetMacAddrExternal(virt.Id, vc.Id)
 	macAddrInternal := vm.GetMacAddrInternal(virt.Id, vc.Id)
 
