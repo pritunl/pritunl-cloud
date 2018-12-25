@@ -15,6 +15,8 @@ export interface Policy {
 	rules?: {[key: string]: Rule};
 	admin_secondary?: string;
 	user_secondary?: string;
+	admin_device_secondary?: boolean;
+	user_device_secondary?: boolean;
 }
 
 export type Policies = Policy[];
