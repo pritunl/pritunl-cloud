@@ -3,8 +3,8 @@ package ipsec
 import (
 	"fmt"
 	"github.com/Sirupsen/logrus"
+	"github.com/pritunl/pritunl-cloud/interfaces"
 	"github.com/pritunl/pritunl-cloud/node"
-	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
@@ -47,32 +47,6 @@ func networkConf(vc *vpc.Vpc,
 	ifaceInternal := vm.GetLinkIfaceInternal(vc.Id, 0)
 	pidPath := fmt.Sprintf("/var/run/dhclient-%s.pid", ifaceExternal)
 
-	externalIface := node.Self.ExternalInterface
-	internalIface := node.Self.InternalInterface
-	if externalIface == "" {
-		externalIface = settings.Local.BridgeName
-	}
-	if internalIface == "" {
-		internalIface = externalIface
-	}
-
-	_, err = utils.ExecCombinedOutputLogged(
-		nil, "sysctl", "-w",
-		fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", externalIface),
-	)
-	if err != nil {
-		return
-	}
-	if internalIface != externalIface {
-		_, err = utils.ExecCombinedOutputLogged(
-			nil, "sysctl", "-w",
-			fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", internalIface),
-		)
-		if err != nil {
-			return
-		}
-	}
-
 	_, err = utils.ExecCombinedOutputLogged(
 		[]string{"File exists"},
 		"ip", "netns",
@@ -88,6 +62,9 @@ func networkConf(vc *vpc.Vpc,
 	utils.ExecCombinedOutput("", "ip", "link",
 		"set", ifaceInternalVirt, "down")
 	utils.ExecCombinedOutput("", "ip", "link", "del", ifaceInternalVirt)
+
+	interfaces.RemoveVirtIface(ifaceExternalVirt)
+	interfaces.RemoveVirtIface(ifaceInternalVirt)
 
 	macAddrExternal := vm.GetMacAddrExternal(vc.Id, node.Self.Id)
 	macAddrInternal := vm.GetMacAddrInternal(vc.Id, node.Self.Id)
@@ -132,6 +109,26 @@ func networkConf(vc *vpc.Vpc,
 	)
 	if err != nil {
 		return
+	}
+
+	externalIface := interfaces.GetExternal(ifaceExternalVirt)
+	internalIface := interfaces.GetInternal(ifaceInternalVirt)
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil, "sysctl", "-w",
+		fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", externalIface),
+	)
+	if err != nil {
+		return
+	}
+	if internalIface != externalIface {
+		_, err = utils.ExecCombinedOutputLogged(
+			nil, "sysctl", "-w",
+			fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", internalIface),
+		)
+		if err != nil {
+			return
+		}
 	}
 
 	_, err = utils.ExecCombinedOutputLogged(
