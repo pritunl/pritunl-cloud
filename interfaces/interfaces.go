@@ -192,3 +192,13 @@ func GetInternal(virtIface string) (internalIface string) {
 
 	return
 }
+
+func RemoveVirtIface(virtIface string) {
+	ifacesLock.Lock()
+	lastChange = time.Now()
+	for iface, ifaceSet := range ifaces {
+		ifaceSet.Remove(virtIface)
+		ifaces[iface] = ifaceSet
+	}
+	ifacesLock.Unlock()
+}
