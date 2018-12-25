@@ -9,6 +9,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/interfaces"
 	"github.com/pritunl/pritunl-cloud/link"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
@@ -197,6 +198,7 @@ func SyncStates(vpcs []*vpc.Vpc) {
 				nil,
 				"ip", "link", "del", iface,
 			)
+			interfaces.RemoveVirtIface(iface)
 		}
 	}
 
