@@ -990,6 +990,9 @@ func NetworkConfClear(db *database.Database,
 		"set", ifaceInternalVirt, "down")
 	utils.ExecCombinedOutput("", "ip", "link", "del", ifaceInternalVirt)
 
+	interfaces.RemoveVirtIface(ifaceExternalVirt)
+	interfaces.RemoveVirtIface(ifaceInternalVirt)
+
 	store.RemAddress(virt.Id)
 	store.RemRoutes(virt.Id)
 
