@@ -5,6 +5,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/interfaces"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
@@ -22,7 +23,7 @@ type Namespace struct {
 func (n *Namespace) Deploy() (err error) {
 	instances := n.stat.Instances()
 	namespaces := n.stat.Namespaces()
-	interfaces := n.stat.Interfaces()
+	ifaces := n.stat.Interfaces()
 
 	curNamespaces := set.NewSet()
 	curVirtIfaces := set.NewSet()
@@ -39,7 +40,7 @@ func (n *Namespace) Deploy() (err error) {
 		curExternalIfaces.Add(vm.GetIfaceExternal(inst.Id, 0))
 	}
 
-	for _, iface := range interfaces {
+	for _, iface := range ifaces {
 		if len(iface) != 14 || !strings.HasPrefix(iface, "v") {
 			continue
 		}
@@ -49,6 +50,7 @@ func (n *Namespace) Deploy() (err error) {
 				nil,
 				"ip", "link", "del", iface,
 			)
+			interfaces.RemoveVirtIface(iface)
 		}
 	}
 
