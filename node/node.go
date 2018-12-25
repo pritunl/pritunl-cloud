@@ -506,17 +506,41 @@ func (n *Node) Init() (err error) {
 		n.Hypervisor = Kvm
 	}
 
+	bsonSet := bson.M{
+		"_id":              n.Id,
+		"name":             n.Name,
+		"types":            n.Types,
+		"timestamp":        time.Now(),
+		"protocol":         n.Protocol,
+		"port":             n.Port,
+		"hypervisor":       n.Hypervisor,
+		"software_version": n.SoftwareVersion,
+	}
+
+	// Database upgrade
+	if n.InternalInterfaces == nil {
+		ifaces := []string{}
+		iface := n.InternalInterface
+		if iface != "" {
+			ifaces = append(ifaces, iface)
+		}
+		n.InternalInterfaces = ifaces
+		bsonSet["internal_interfaces"] = ifaces
+	}
+
+	// Database upgrade
+	if n.ExternalInterfaces == nil {
+		ifaces := []string{}
+		iface := n.ExternalInterface
+		if iface != "" {
+			ifaces = append(ifaces, iface)
+		}
+		n.ExternalInterfaces = ifaces
+		bsonSet["external_interfaces"] = ifaces
+	}
+
 	_, err = coll.UpsertId(n.Id, &bson.M{
-		"$set": &bson.M{
-			"_id":              n.Id,
-			"name":             n.Name,
-			"types":            n.Types,
-			"timestamp":        time.Now(),
-			"protocol":         n.Protocol,
-			"port":             n.Port,
-			"hypervisor":       n.Hypervisor,
-			"software_version": n.SoftwareVersion,
-		},
+		"$set": bsonSet,
 	})
 	if err != nil {
 		err = database.ParseError(err)
