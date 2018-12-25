@@ -43,6 +43,8 @@ type Node struct {
 	ForwardedProtoHeader string                     `bson:"forwarded_proto_header" json:"forwarded_proto_header"`
 	ExternalInterface    string                     `bson:"external_interface" json:"external_interface"`
 	InternalInterface    string                     `bson:"internal_interface" json:"internal_interface"`
+	ExternalInterfaces   []string                   `bson:"external_interfaces" json:"external_interfaces"`
+	InternalInterfaces   []string                   `bson:"internal_interfaces" json:"internal_interfaces"`
 	Firewall             bool                       `bson:"firewall" json:"firewall"`
 	NetworkRoles         []string                   `bson:"network_roles" json:"network_roles"`
 	Memory               float64                    `bson:"memory" json:"memory"`
