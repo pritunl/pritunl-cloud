@@ -183,13 +183,19 @@ func copyBackingImage(imagePth, backingImagePth string) (err error) {
 }
 
 func WriteImage(db *database.Database, imgId, dskId bson.ObjectId,
-	size int) (err error) {
+	size int, backingImage bool) (backingImageName string, err error) {
 
 	diskPath := paths.GetDiskPath(dskId)
 	diskTempPath := paths.GetDiskTempPath()
 	disksPath := paths.GetDisksPath()
+	backingPath := paths.GetBackingPath()
 
 	err = utils.ExistsMkdir(disksPath, 0755)
+	if err != nil {
+		return
+	}
+
+	err = utils.ExistsMkdir(backingPath, 0755)
 	if err != nil {
 		return
 	}
@@ -202,6 +208,21 @@ func WriteImage(db *database.Database, imgId, dskId bson.ObjectId,
 	img, err := image.Get(db, imgId)
 	if err != nil {
 		return
+	}
+
+	backingImagePth := path.Join(
+		backingPath,
+		fmt.Sprintf("image-%s-%s", img.Id.Hex(), img.Etag),
+	)
+
+	backingImageExists := false
+	if backingImage {
+		backingImageName = fmt.Sprintf("%s-%s", img.Id.Hex(), img.Etag)
+
+		backingImageExists, err = utils.Exists(backingImagePth)
+		if err != nil {
+			return
+		}
 	}
 
 	if img.Type == storage.Public {
@@ -217,9 +238,11 @@ func WriteImage(db *database.Database, imgId, dskId bson.ObjectId,
 			return
 		}
 
-		err = getImage(db, img, imagePth)
-		if err != nil {
-			return
+		if !backingImageExists {
+			err = getImage(db, img, imagePth)
+			if err != nil {
+				return
+			}
 		}
 
 		exists, e := utils.Exists(diskPath)
@@ -245,17 +268,44 @@ func WriteImage(db *database.Database, imgId, dskId bson.ObjectId,
 
 		utils.Exec("", "touch", imagePth)
 
-		err = utils.Exec("", "cp", imagePth, diskTempPath)
-		if err != nil {
-			return
-		}
-
-		if size > 10 {
-			_, err = utils.ExecCombinedOutputLogged(nil, "qemu-img",
-				"resize", diskTempPath, fmt.Sprintf("%dG", size))
+		if backingImage {
+			err = copyBackingImage(imagePth, backingImagePth)
 			if err != nil {
 				return
 			}
+
+			utils.Exec("", "touch", backingImagePth)
+
+			if size < 10 {
+				size = 10
+			}
+
+			_, err = utils.ExecCombinedOutputLogged(nil, "qemu-img",
+				"create", "-f", "qcow2",
+				"-o", fmt.Sprintf("backing_file=%s", backingImagePth),
+				diskTempPath,
+				fmt.Sprintf("%dG", size))
+			if err != nil {
+				return
+			}
+		} else {
+			err = utils.Exec("", "cp", imagePth, diskTempPath)
+			if err != nil {
+				return
+			}
+
+			if size > 10 {
+				_, err = utils.ExecCombinedOutputLogged(nil, "qemu-img",
+					"resize", diskTempPath, fmt.Sprintf("%dG", size))
+				if err != nil {
+					return
+				}
+			}
+		}
+
+		err = utils.Chmod(diskTempPath, 0600)
+		if err != nil {
+			return
 		}
 
 		err = utils.Exec("", "mv", diskTempPath, diskPath)
@@ -263,6 +313,18 @@ func WriteImage(db *database.Database, imgId, dskId bson.ObjectId,
 			return
 		}
 	} else {
+		if backingImage {
+			err = getImage(db, img, backingImagePth)
+			if err != nil {
+				return
+			}
+		} else {
+			err = getImage(db, img, diskTempPath)
+			if err != nil {
+				return
+			}
+		}
+
 		exists, e := utils.Exists(diskPath)
 		if e != nil {
 			err = e
@@ -284,16 +346,28 @@ func WriteImage(db *database.Database, imgId, dskId bson.ObjectId,
 			return
 		}
 
-		err = getImage(db, img, diskTempPath)
-		if err != nil {
-			return
-		}
+		if backingImage {
+			utils.Exec("", "touch", backingImagePth)
 
-		if size > 10 {
+			if size < 10 {
+				size = 10
+			}
+
 			_, err = utils.ExecCombinedOutputLogged(nil, "qemu-img",
-				"resize", diskTempPath, fmt.Sprintf("%dG", size))
+				"create", "-f", "qcow2",
+				"-o", fmt.Sprintf("backing_file=%s", backingImagePth),
+				diskTempPath,
+				fmt.Sprintf("%dG", size))
 			if err != nil {
 				return
+			}
+		} else {
+			if size > 10 {
+				_, err = utils.ExecCombinedOutputLogged(nil, "qemu-img",
+					"resize", diskTempPath, fmt.Sprintf("%dG", size))
+				if err != nil {
+					return
+				}
 			}
 		}
 
@@ -464,6 +538,11 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk) (err error) {
 	defer utils.Remove(tmpPath)
 	err = utils.Exec("", "qemu-img", "convert", "-f", "qcow2",
 		"-O", "qcow2", "-c", dskPth, tmpPath)
+	if err != nil {
+		return
+	}
+
+	err = utils.Chmod(tmpPath, 0600)
 	if err != nil {
 		return
 	}
