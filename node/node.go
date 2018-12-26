@@ -4,6 +4,7 @@ import (
 	"container/list"
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/pritunl/pritunl-cloud/bridges"
 	"github.com/pritunl/pritunl-cloud/certificate"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -45,6 +46,7 @@ type Node struct {
 	InternalInterface    string                     `bson:"internal_interface" json:"internal_interface"`
 	ExternalInterfaces   []string                   `bson:"external_interfaces" json:"external_interfaces"`
 	InternalInterfaces   []string                   `bson:"internal_interfaces" json:"internal_interfaces"`
+	AvailableInterfaces  []string                   `bson:"available_interfaces" json:"available_interfaces"`
 	Firewall             bool                       `bson:"firewall" json:"firewall"`
 	NetworkRoles         []string                   `bson:"network_roles" json:"network_roles"`
 	Memory               float64                    `bson:"memory" json:"memory"`
@@ -256,18 +258,19 @@ func (n *Node) update(db *database.Database) (err error) {
 	change := mgo.Change{
 		Update: &bson.M{
 			"$set": &bson.M{
-				"timestamp":        n.Timestamp,
-				"requests_min":     n.RequestsMin,
-				"memory":           n.Memory,
-				"load1":            n.Load1,
-				"load5":            n.Load5,
-				"load15":           n.Load15,
-				"cpu_units":        n.CpuUnits,
-				"memory_units":     n.MemoryUnits,
-				"cpu_units_res":    n.CpuUnitsRes,
-				"memory_units_res": n.MemoryUnitsRes,
-				"public_ips":       n.PublicIps,
-				"public_ips6":      n.PublicIps6,
+				"timestamp":            n.Timestamp,
+				"requests_min":         n.RequestsMin,
+				"memory":               n.Memory,
+				"load1":                n.Load1,
+				"load5":                n.Load5,
+				"load15":               n.Load15,
+				"cpu_units":            n.CpuUnits,
+				"memory_units":         n.MemoryUnits,
+				"cpu_units_res":        n.CpuUnitsRes,
+				"memory_units_res":     n.MemoryUnitsRes,
+				"public_ips":           n.PublicIps,
+				"public_ips6":          n.PublicIps6,
+				"available_interfaces": n.AvailableInterfaces,
 			},
 		},
 		Upsert:    false,
