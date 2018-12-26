@@ -35,6 +35,8 @@ interface State {
 	changed: boolean;
 	message: string;
 	node: NodeTypes.Node;
+	addExternalIface: string;
+	addInternalIface: string;
 	addCert: string;
 	addNetworkRole: string;
 	forwardedChecked: boolean;
@@ -111,6 +113,8 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			changed: false,
 			message: '',
 			node: null,
+			addExternalIface: null,
+			addInternalIface: null,
 			addCert: null,
 			addNetworkRole: null,
 			forwardedChecked: false,
@@ -330,6 +334,152 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		});
 	}
 
+	onAddExternalIface = (): void => {
+		let node: NodeTypes.Node;
+
+		if (!this.state.addExternalIface &&
+			!this.props.node.available_interfaces.length) {
+			return;
+		}
+
+		let certId = this.state.addExternalIface ||
+			this.props.node.available_interfaces[0];
+
+		if (this.state.changed) {
+			node = {
+				...this.state.node,
+			};
+		} else {
+			node = {
+				...this.props.node,
+			};
+		}
+
+		let ifaces = [
+			...(node.external_interfaces || []),
+		];
+
+		if (ifaces.indexOf(certId) === -1) {
+			ifaces.push(certId);
+		}
+
+		ifaces.sort();
+
+		node.external_interfaces = ifaces;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			node: node,
+		});
+	}
+
+	onRemoveExternalIface = (iface: string): void => {
+		let node: NodeTypes.Node;
+
+		if (this.state.changed) {
+			node = {
+				...this.state.node,
+			};
+		} else {
+			node = {
+				...this.props.node,
+			};
+		}
+
+		let ifaces = [
+			...(node.external_interfaces || []),
+		];
+
+		let i = ifaces.indexOf(iface);
+		if (i === -1) {
+			return;
+		}
+
+		ifaces.splice(i, 1);
+
+		node.external_interfaces = ifaces;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			node: node,
+		});
+	}
+
+	onAddInternalIface = (): void => {
+		let node: NodeTypes.Node;
+
+		if (!this.state.addInternalIface &&
+				!this.props.node.available_interfaces.length) {
+			return;
+		}
+
+		let certId = this.state.addInternalIface ||
+			this.props.node.available_interfaces[0];
+
+		if (this.state.changed) {
+			node = {
+				...this.state.node,
+			};
+		} else {
+			node = {
+				...this.props.node,
+			};
+		}
+
+		let ifaces = [
+			...(node.internal_interfaces || []),
+		];
+
+		if (ifaces.indexOf(certId) === -1) {
+			ifaces.push(certId);
+		}
+
+		ifaces.sort();
+
+		node.internal_interfaces = ifaces;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			node: node,
+		});
+	}
+
+	onRemoveInternalIface = (iface: string): void => {
+		let node: NodeTypes.Node;
+
+		if (this.state.changed) {
+			node = {
+				...this.state.node,
+			};
+		} else {
+			node = {
+				...this.props.node,
+			};
+		}
+
+		let ifaces = [
+			...(node.internal_interfaces || []),
+		];
+
+		let i = ifaces.indexOf(iface);
+		if (i === -1) {
+			return;
+		}
+
+		ifaces.splice(i, 1);
+
+		node.internal_interfaces = ifaces;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			node: node,
+		});
+	}
+
 	onAddCert = (): void => {
 		let node: NodeTypes.Node;
 
@@ -415,6 +565,61 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		let publicIps6: any = this.props.node.public_ips6;
 		if (!publicIps6 || !publicIps6.length) {
 			publicIps6 = 'None';
+		}
+
+		let externalIfaces: JSX.Element[] = [];
+		for (let iface of (node.external_interfaces || [])) {
+			externalIfaces.push(
+				<div
+					className="pt-tag pt-tag-removable pt-intent-primary"
+					style={css.item}
+					key={iface}
+				>
+					{iface}
+					<button
+						disabled={this.state.disabled}
+						className="pt-tag-remove"
+						onMouseUp={(): void => {
+							this.onRemoveExternalIface(iface);
+						}}
+					/>
+				</div>,
+			);
+		}
+
+		let internalIfaces: JSX.Element[] = [];
+		for (let iface of (node.internal_interfaces || [])) {
+			internalIfaces.push(
+				<div
+					className="pt-tag pt-tag-removable pt-intent-primary"
+					style={css.item}
+					key={iface}
+				>
+					{iface}
+					<button
+						disabled={this.state.disabled}
+						className="pt-tag-remove"
+						onMouseUp={(): void => {
+							this.onRemoveInternalIface(iface);
+						}}
+					/>
+				</div>,
+			);
+		}
+
+		let externalIfacesSelect: JSX.Element[] = [];
+		let internalIfacesSelect: JSX.Element[] = [];
+		for (let iface of (this.props.node.available_interfaces || [])) {
+			externalIfacesSelect.push(
+				<option key={iface} value={iface}>
+					{iface}
+				</option>,
+			);
+			internalIfacesSelect.push(
+				<option key={iface} value={iface}>
+					{iface}
+				</option>,
+			);
 		}
 
 		let certificates: JSX.Element[] = [];
@@ -699,6 +904,66 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					>
 						{zonesSelect}
 					</PageSelect>
+					<label
+						className="pt-label"
+						style={css.label}
+						hidden={node.protocol === 'http'}
+					>
+						External Interfaces
+						<Help
+							title="External Interfaces"
+							content="External interfaces for instance public interface, must be a bridge interface. Leave blank for automatic configuration."
+						/>
+						<div>
+							{externalIfaces}
+						</div>
+					</label>
+					<PageSelectButton
+						hidden={node.protocol === 'http'}
+						label="Add Interface"
+						value={this.state.addCert}
+						disabled={!externalIfacesSelect.length || this.state.disabled}
+						buttonClass="pt-intent-success"
+						onChange={(val: string): void => {
+							this.setState({
+								...this.state,
+								addExternalIface: val,
+							});
+						}}
+						onSubmit={this.onAddExternalIface}
+					>
+						{externalIfacesSelect}
+					</PageSelectButton>
+					<label
+						className="pt-label"
+						style={css.label}
+						hidden={node.protocol === 'http'}
+					>
+						Internal Interfaces
+						<Help
+							title="Internal Interfaces"
+							content="Internal interfaces for instance private VPC interface, must be a bridge interface. Leave blank for to use external interface."
+						/>
+						<div>
+							{internalIfaces}
+						</div>
+					</label>
+					<PageSelectButton
+						hidden={node.protocol === 'http'}
+						label="Add Interface"
+						value={this.state.addCert}
+						disabled={!internalIfacesSelect.length || this.state.disabled}
+						buttonClass="pt-intent-success"
+						onChange={(val: string): void => {
+							this.setState({
+								...this.state,
+								addInternalIface: val,
+							});
+						}}
+						onSubmit={this.onAddInternalIface}
+					>
+						{internalIfacesSelect}
+					</PageSelectButton>
 					<PageInput
 						disabled={this.state.disabled}
 						label="External Interface"
