@@ -8,11 +8,14 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
-func CreateDisk(db *database.Database, dsk *disk.Disk) (err error) {
+func CreateDisk(db *database.Database, dsk *disk.Disk) (
+	backingImage string, err error) {
+
 	diskPath := paths.GetDiskPath(dsk.Id)
 
 	if dsk.Image != "" {
-		err = WriteImage(db, dsk.Image, dsk.Id, dsk.Size)
+		backingImage, err = WriteImage(
+			db, dsk.Image, dsk.Id, dsk.Size, dsk.Backing)
 		if err != nil {
 			return
 		}
