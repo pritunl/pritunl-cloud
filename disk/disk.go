@@ -22,6 +22,8 @@ type Disk struct {
 	Instance       bson.ObjectId `bson:"instance,omitempty" json:"instance"`
 	SourceInstance bson.ObjectId `bson:"source_instance,omitempty" json:"source_instance"`
 	Image          bson.ObjectId `bson:"image,omitempty" json:"image"`
+	Backing        bool          `bson:"backing" json:"backing"`
+	BackingImage   string        `bson:"backing_image" json:"backing_image"`
 	Index          string        `bson:"index" json:"index"`
 	Size           int           `bson:"size" json:"size"`
 }
