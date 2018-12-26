@@ -32,13 +32,18 @@ func (d *Disks) provision(dsk *disk.Disk) {
 		db := database.GetDatabase()
 		defer db.Close()
 
-		err := data.CreateDisk(db, dsk)
+		backingImage, err := data.CreateDisk(db, dsk)
 		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("deploy: Failed to provision disk")
 			return
 		}
 
 		dsk.State = disk.Available
-		err = dsk.CommitFields(db, set.NewSet("state"))
+		dsk.BackingImage = backingImage
+
+		err = dsk.CommitFields(db, set.NewSet("state", "backing_image"))
 		if err != nil {
 			return
 		}
