@@ -19,6 +19,7 @@ type Instance struct {
 	Zone         bson.ObjectId      `bson:"zone" json:"zone"`
 	Vpc          bson.ObjectId      `bson:"vpc" json:"vpc"`
 	Image        bson.ObjectId      `bson:"image" json:"image"`
+	ImageBacking bool               `bson:"image_backing" json:"image_backing"`
 	Status       string             `bson:"-" json:"status"`
 	State        string             `bson:"state" json:"state"`
 	VmState      string             `bson:"vm_state" json:"vm_state"`
