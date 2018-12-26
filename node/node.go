@@ -423,6 +423,19 @@ func (n *Node) sync() {
 		break
 	}
 
+	brdgs, err := bridges.GetBridges()
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"error": err,
+		}).Error("node: Failed to get bridge interfaces")
+	}
+
+	if brdgs != nil {
+		n.AvailableInterfaces = brdgs
+	} else {
+		n.AvailableInterfaces = []string{}
+	}
+
 	err = n.update(db)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
