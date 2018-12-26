@@ -26,7 +26,8 @@ import (
 )
 
 var (
-	imageLock = utils.NewMultiTimeoutLock(10 * time.Minute)
+	imageLock        = utils.NewMultiTimeoutLock(10 * time.Minute)
+	backingImageLock = utils.NewMultiTimeoutLock(5 * time.Minute)
 )
 
 func getImage(db *database.Database, img *image.Image,
@@ -153,6 +154,27 @@ func getImage(db *database.Database, img *image.Image,
 	}
 
 	err = utils.Exec("", "mv", tmpPth, pth)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func copyBackingImage(imagePth, backingImagePth string) (err error) {
+	lockId := backingImageLock.Lock(backingImagePth)
+	defer backingImageLock.Unlock(backingImagePth, lockId)
+
+	exists, err := utils.Exists(backingImagePth)
+	if err != nil {
+		return
+	}
+
+	if exists {
+		return
+	}
+
+	err = utils.Exec("", "cp", imagePth, backingImagePth)
 	if err != nil {
 		return
 	}
