@@ -17,6 +17,10 @@ func GetDisksPath() string {
 	return path.Join(node.Self.GetVirtPath(), "disks")
 }
 
+func GetBackingPath() string {
+	return path.Join(node.Self.GetVirtPath(), "backing")
+}
+
 func GetTempPath() string {
 	return path.Join(node.Self.GetVirtPath(), "temp")
 }
