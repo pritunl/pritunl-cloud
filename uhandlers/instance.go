@@ -28,6 +28,7 @@ type instanceData struct {
 	Vpc          bson.ObjectId `json:"vpc"`
 	Node         bson.ObjectId `json:"node"`
 	Image        bson.ObjectId `json:"image"`
+	ImageBacking bool          `json:"image_backing"`
 	Domain       bson.ObjectId `json:"domain"`
 	Name         string        `json:"name"`
 	State        string        `json:"state"`
@@ -245,6 +246,7 @@ func instancePost(c *gin.Context) {
 			Vpc:          data.Vpc,
 			Node:         data.Node,
 			Image:        data.Image,
+			ImageBacking: data.ImageBacking,
 			Name:         name,
 			InitDiskSize: data.InitDiskSize,
 			Memory:       data.Memory,
