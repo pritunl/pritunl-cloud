@@ -23,6 +23,7 @@ type diskData struct {
 	Index        string        `json:"index"`
 	Node         bson.ObjectId `json:"node"`
 	Image        bson.ObjectId `json:"image"`
+	Backing      bool          `json:"backing"`
 	State        string        `json:"state"`
 	Size         int           `json:"size"`
 }
@@ -123,6 +124,7 @@ func diskPost(c *gin.Context) {
 		Index:        dta.Index,
 		Node:         dta.Node,
 		Image:        dta.Image,
+		Backing:      dta.Backing,
 		Size:         dta.Size,
 	}
 
