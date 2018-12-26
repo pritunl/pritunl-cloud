@@ -7,6 +7,18 @@ import (
 	"os"
 )
 
+func Chmod(pth string, mode os.FileMode) (err error) {
+	err = os.Chmod(pth, mode)
+	if err != nil {
+		err = &errortypes.WriteError{
+			errors.Wrapf(err, "utils: Failed to chmod %s", pth),
+		}
+		return
+	}
+
+	return
+}
+
 func Exists(pth string) (exists bool, err error) {
 	_, err = os.Stat(pth)
 	if err == nil {
