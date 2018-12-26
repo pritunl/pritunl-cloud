@@ -25,6 +25,11 @@ func CreateDisk(db *database.Database, dsk *disk.Disk) (
 		if err != nil {
 			return
 		}
+
+		err = utils.Chmod(diskPath, 0600)
+		if err != nil {
+			return
+		}
 	}
 
 	return
