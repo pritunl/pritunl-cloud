@@ -1071,14 +1071,19 @@ func Create(db *database.Database, inst *instance.Instance,
 			Instance:       inst.Id,
 			SourceInstance: inst.Id,
 			Image:          virt.Image,
+			Backing:        inst.ImageBacking,
 			Index:          "0",
 			Size:           inst.InitDiskSize,
 		}
 
-		err = data.WriteImage(db, virt.Image, dsk.Id, inst.InitDiskSize)
-		if err != nil {
+		backingImage, e := data.WriteImage(db, virt.Image, dsk.Id,
+			inst.InitDiskSize, inst.ImageBacking)
+		if e != nil {
+			err = e
 			return
 		}
+
+		dsk.BackingImage = backingImage
 
 		err = dsk.Insert(db)
 		if err != nil {
