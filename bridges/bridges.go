@@ -12,7 +12,7 @@ var (
 )
 
 func GetBridges() (brdgs []string, err error) {
-	if time.Since(lastSync) < 60*time.Second {
+	if time.Since(lastSync) < 300*time.Second {
 		brdgs = bridges
 		return
 	}
