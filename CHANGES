@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Add support for multiple network interfaces
+
 Version 1.0.1124.31 2018-12-22
 ------------------------------
 
