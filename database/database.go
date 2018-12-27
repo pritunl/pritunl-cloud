@@ -554,6 +554,15 @@ func addIndexes() (err error) {
 			errors.Wrap(err, "database: Index error"),
 		}
 	}
+	err = coll.EnsureIndex(mgo.Index{
+		Key:        []string{"backing_image"},
+		Background: true,
+	})
+	if err != nil {
+		err = &IndexError{
+			errors.Wrap(err, "database: Index error"),
+		}
+	}
 
 	coll = db.Domains()
 	err = coll.EnsureIndex(mgo.Index{
