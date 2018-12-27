@@ -555,7 +555,7 @@ func addIndexes() (err error) {
 		}
 	}
 	err = coll.EnsureIndex(mgo.Index{
-		Key:        []string{"backing_image"},
+		Key:        []string{"node"},
 		Background: true,
 	})
 	if err != nil {
