@@ -1,7 +1,8 @@
 pritunl-cloud changelog
 =======================
 
-<%= version %>
+Version 1.0.1129.93 2018-12-27
+------------------------------
 
 Linked disk improvements
 
