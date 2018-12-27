@@ -10876,6 +10876,76 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.4.1.js",
                     this.setState(Object.assign({}, this.state, { disabled: false }));
                 });
             };
+            this.onAddExternalIface = () => {
+                let node;
+                if (!this.state.addExternalIface && !this.props.node.available_interfaces.length) {
+                    return;
+                }
+                let certId = this.state.addExternalIface || this.props.node.available_interfaces[0];
+                if (this.state.changed) {
+                    node = Object.assign({}, this.state.node);
+                } else {
+                    node = Object.assign({}, this.props.node);
+                }
+                let ifaces = [...(node.external_interfaces || [])];
+                if (ifaces.indexOf(certId) === -1) {
+                    ifaces.push(certId);
+                }
+                ifaces.sort();
+                node.external_interfaces = ifaces;
+                this.setState(Object.assign({}, this.state, { changed: true, node: node }));
+            };
+            this.onRemoveExternalIface = iface => {
+                let node;
+                if (this.state.changed) {
+                    node = Object.assign({}, this.state.node);
+                } else {
+                    node = Object.assign({}, this.props.node);
+                }
+                let ifaces = [...(node.external_interfaces || [])];
+                let i = ifaces.indexOf(iface);
+                if (i === -1) {
+                    return;
+                }
+                ifaces.splice(i, 1);
+                node.external_interfaces = ifaces;
+                this.setState(Object.assign({}, this.state, { changed: true, node: node }));
+            };
+            this.onAddInternalIface = () => {
+                let node;
+                if (!this.state.addInternalIface && !this.props.node.available_interfaces.length) {
+                    return;
+                }
+                let certId = this.state.addInternalIface || this.props.node.available_interfaces[0];
+                if (this.state.changed) {
+                    node = Object.assign({}, this.state.node);
+                } else {
+                    node = Object.assign({}, this.props.node);
+                }
+                let ifaces = [...(node.internal_interfaces || [])];
+                if (ifaces.indexOf(certId) === -1) {
+                    ifaces.push(certId);
+                }
+                ifaces.sort();
+                node.internal_interfaces = ifaces;
+                this.setState(Object.assign({}, this.state, { changed: true, node: node }));
+            };
+            this.onRemoveInternalIface = iface => {
+                let node;
+                if (this.state.changed) {
+                    node = Object.assign({}, this.state.node);
+                } else {
+                    node = Object.assign({}, this.props.node);
+                }
+                let ifaces = [...(node.internal_interfaces || [])];
+                let i = ifaces.indexOf(iface);
+                if (i === -1) {
+                    return;
+                }
+                ifaces.splice(i, 1);
+                node.internal_interfaces = ifaces;
+                this.setState(Object.assign({}, this.state, { changed: true, node: node }));
+            };
             this.onAddCert = () => {
                 let node;
                 if (!this.state.addCert && !this.props.certificates.length) {
@@ -10918,6 +10988,8 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.4.1.js",
                 changed: false,
                 message: '',
                 node: null,
+                addExternalIface: null,
+                addInternalIface: null,
                 addCert: null,
                 addNetworkRole: null,
                 forwardedChecked: false,
@@ -10973,6 +11045,24 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.4.1.js",
             let publicIps6 = this.props.node.public_ips6;
             if (!publicIps6 || !publicIps6.length) {
                 publicIps6 = 'None';
+            }
+            let externalIfaces = [];
+            for (let iface of node.external_interfaces || []) {
+                externalIfaces.push(React.createElement("div", { className: "pt-tag pt-tag-removable pt-intent-primary", style: css.item, key: iface }, iface, React.createElement("button", { disabled: this.state.disabled, className: "pt-tag-remove", onMouseUp: () => {
+                        this.onRemoveExternalIface(iface);
+                    } })));
+            }
+            let internalIfaces = [];
+            for (let iface of node.internal_interfaces || []) {
+                internalIfaces.push(React.createElement("div", { className: "pt-tag pt-tag-removable pt-intent-primary", style: css.item, key: iface }, iface, React.createElement("button", { disabled: this.state.disabled, className: "pt-tag-remove", onMouseUp: () => {
+                        this.onRemoveInternalIface(iface);
+                    } })));
+            }
+            let externalIfacesSelect = [];
+            let internalIfacesSelect = [];
+            for (let iface of this.props.node.available_interfaces || []) {
+                externalIfacesSelect.push(React.createElement("option", { key: iface, value: iface }, iface));
+                internalIfacesSelect.push(React.createElement("option", { key: iface, value: iface }, iface));
             }
             let certificates = [];
             for (let certId of node.certificates || []) {
@@ -11062,11 +11152,11 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.4.1.js",
                         node = Object.assign({}, this.props.node);
                     }
                     this.setState(Object.assign({}, this.state, { changed: true, node: node, zone: val }));
-                } }, zonesSelect), React.createElement(PageInput_1.default, { disabled: this.state.disabled, label: "External Interface", help: "External interface for instance public interface, must be a bridge interface. Leave blank for automatic configuration.", type: "text", placeholder: "Automatic", value: node.external_interface, onChange: val => {
-                    this.set('external_interface', val);
-                } }), React.createElement(PageInput_1.default, { disabled: this.state.disabled, label: "Internal Interface", help: "Internal interface for instance private VPC interface, must be a bridge interface. Leave blank for to use external interface.", type: "text", placeholder: "Automatic", value: node.internal_interface, onChange: val => {
-                    this.set('internal_interface', val);
-                } }), React.createElement(PageSelect_1.default, { hidden: types.indexOf('hypervisor') === -1, disabled: this.state.disabled, label: "Hypervisor Mode", help: "Hypervisor mode, select KVM if CPU has hardware virtualization support.", value: node.hypervisor, onChange: val => {
+                } }, zonesSelect), React.createElement("label", { className: "pt-label", style: css.label, hidden: node.protocol === 'http' }, "External Interfaces", React.createElement(Help_1.default, { title: "External Interfaces", content: "External interfaces for instance public interface, must be a bridge interface. Leave blank for automatic configuration." }), React.createElement("div", null, externalIfaces)), React.createElement(PageSelectButton_1.default, { hidden: node.protocol === 'http', label: "Add Interface", value: this.state.addCert, disabled: !externalIfacesSelect.length || this.state.disabled, buttonClass: "pt-intent-success", onChange: val => {
+                    this.setState(Object.assign({}, this.state, { addExternalIface: val }));
+                }, onSubmit: this.onAddExternalIface }, externalIfacesSelect), React.createElement("label", { className: "pt-label", style: css.label, hidden: node.protocol === 'http' }, "Internal Interfaces", React.createElement(Help_1.default, { title: "Internal Interfaces", content: "Internal interfaces for instance private VPC interface, must be a bridge interface. Leave blank for to use external interface." }), React.createElement("div", null, internalIfaces)), React.createElement(PageSelectButton_1.default, { hidden: node.protocol === 'http', label: "Add Interface", value: this.state.addCert, disabled: !internalIfacesSelect.length || this.state.disabled, buttonClass: "pt-intent-success", onChange: val => {
+                    this.setState(Object.assign({}, this.state, { addInternalIface: val }));
+                }, onSubmit: this.onAddInternalIface }, internalIfacesSelect), React.createElement(PageSelect_1.default, { hidden: types.indexOf('hypervisor') === -1, disabled: this.state.disabled, label: "Hypervisor Mode", help: "Hypervisor mode, select KVM if CPU has hardware virtualization support.", value: node.hypervisor, onChange: val => {
                     this.set('hypervisor', val);
                 } }, React.createElement("option", { value: "qemu" }, "QEMU"), React.createElement("option", { value: "kvm" }, "KVM")), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Firewall", help: "Configure firewall on node. Incorrectly configuring the firewall can block access to the node.", checked: node.firewall, onToggle: () => {
                     this.toggleFirewall();
@@ -15850,6 +15940,30 @@ System.registerDynamic("app/components/DiskDetailed.js", ["npm:react@16.4.1.js",
                     statusClass += ' pt-text-intent-primary';
                     break;
             }
+            let fields = [{
+                label: 'ID',
+                value: this.props.disk.id || 'Unknown'
+            }, {
+                label: 'Image',
+                value: this.props.disk.image || 'Unknown'
+            }, {
+                label: 'Organization',
+                value: org ? org.name : this.props.disk.organization
+            }, {
+                label: 'Node',
+                value: node ? node.name : this.props.disk.node
+            }, {
+                label: 'Size',
+                value: this.props.disk.size + 'GB'
+            }];
+            let backingImage = this.props.disk.backing_image;
+            if (backingImage) {
+                backingImage = backingImage.replace('-', '\n');
+                fields.splice(2, 0, {
+                    label: 'Backing Image',
+                    value: backingImage
+                });
+            }
             return React.createElement("td", { className: "pt-cell", colSpan: 5, style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { className: "layout horizontal", style: css.buttons, onClick: evt => {
                     let target = evt.target;
                     if (target.className.indexOf('open-ignore') !== -1) {
@@ -15864,22 +15978,7 @@ System.registerDynamic("app/components/DiskDetailed.js", ["npm:react@16.4.1.js",
                     this.set('instance', val);
                 } }, instancesSelect), React.createElement(PageNumInput_1.default, { label: "Index", help: "Index to attach disk.", hidden: !disk.instance, min: 0, max: 8, minorStepSize: 1, stepSize: 1, majorStepSize: 1, disabled: this.state.disabled, selectAllOnFocus: true, value: Number(disk.index), onChange: val => {
                     this.set('index', String(val));
-                } })), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
-                    label: 'ID',
-                    value: this.props.disk.id || 'Unknown'
-                }, {
-                    label: 'Image',
-                    value: this.props.disk.image || 'Unknown'
-                }, {
-                    label: 'Organization',
-                    value: org ? org.name : this.props.disk.organization
-                }, {
-                    label: 'Node',
-                    value: node ? node.name : this.props.disk.node
-                }, {
-                    label: 'Size',
-                    value: this.props.disk.size + 'GB'
-                }] }))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.disk && !this.state.message, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
+                } })), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: fields }))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.disk && !this.state.message, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
                     this.setState(Object.assign({}, this.state, { changed: false, disk: null }));
                 }, onSave: this.onSave }));
         }
@@ -16253,7 +16352,7 @@ System.registerDynamic("app/stores/InstancesNodeStore.js", ["app/dispatcher/Disp
     exports.default = new InstancesNodeStore();
     
 });
-System.registerDynamic("app/components/DiskNew.js", ["npm:react@16.4.1.js", "app/actions/DiskActions.js", "app/actions/ImageActions.js", "app/actions/InstanceActions.js", "app/actions/NodeActions.js", "app/stores/ImagesDatacenterStore.js", "app/stores/InstancesNodeStore.js", "app/stores/NodesZoneStore.js", "app/components/PageInput.js", "app/components/PageCreate.js", "app/components/PageSelect.js", "app/components/PageNumInput.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/DiskNew.js", ["npm:react@16.4.1.js", "app/actions/DiskActions.js", "app/actions/ImageActions.js", "app/actions/InstanceActions.js", "app/actions/NodeActions.js", "app/stores/ImagesDatacenterStore.js", "app/stores/InstancesNodeStore.js", "app/stores/NodesZoneStore.js", "app/components/PageInput.js", "app/components/PageCreate.js", "app/components/PageSelect.js", "app/components/PageNumInput.js", "app/components/PageSwitch.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -16271,6 +16370,7 @@ System.registerDynamic("app/components/DiskNew.js", ["npm:react@16.4.1.js", "app
     const PageCreate_1 = $__require("app/components/PageCreate.js");
     const PageSelect_1 = $__require("app/components/PageSelect.js");
     const PageNumInput_1 = $__require("app/components/PageNumInput.js");
+    const PageSwitch_1 = $__require("app/components/PageSwitch.js");
     const css = {
         row: {
             display: 'table-row',
@@ -16460,9 +16560,11 @@ System.registerDynamic("app/components/DiskNew.js", ["npm:react@16.4.1.js", "app
                     this.set('instance', val);
                 } }, instancesSelect), React.createElement(PageNumInput_1.default, { label: "Index", help: "Index to attach disk.", hidden: !disk.instance, min: 0, max: 8, minorStepSize: 1, stepSize: 1, majorStepSize: 1, disabled: this.state.disabled, selectAllOnFocus: true, value: Number(disk.index), onChange: val => {
                     this.set('index', String(val));
-                } }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "Image", help: "Starting image for node.", value: disk.image, onChange: val => {
+                } }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "Image", help: "Starting image for disk.", value: disk.image, onChange: val => {
                     this.set('image', val);
-                } }, imagesSelect), React.createElement(PageNumInput_1.default, { label: "Size", help: "Disk size in gigabytes.", min: 10, minorStepSize: 1, stepSize: 1, majorStepSize: 2, disabled: this.state.disabled, selectAllOnFocus: true, value: disk.size, onChange: val => {
+                } }, imagesSelect), React.createElement(PageSwitch_1.default, { label: "Linked disk image", help: "Link to source disk image instead of creating full copy. This will reduce disk size and provide faster creation.", checked: disk.backing, onToggle: () => {
+                    this.set('backing', !disk.backing);
+                } }), React.createElement(PageNumInput_1.default, { label: "Size", help: "Disk size in gigabytes.", min: 10, minorStepSize: 1, stepSize: 1, majorStepSize: 2, disabled: this.state.disabled, selectAllOnFocus: true, value: disk.size, onChange: val => {
                     this.set('size', val);
                 } }))), React.createElement(PageCreate_1.default, { style: css.save, hidden: !this.state.disk, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, closed: this.state.closed, light: true, onCancel: this.props.onClose, onCreate: this.onCreate })));
         }
@@ -17211,8 +17313,6 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@16.4.1.
                     this.update('start');
                 } }), React.createElement(ConfirmButton_1.default, { label: "Stop", className: "pt-intent-danger pt-icon-power", progressClassName: "pt-intent-danger", style: css.controlButton, hidden: this.props.instance.state !== 'start', disabled: this.state.disabled, onConfirm: () => {
                     this.update('stop');
-                } }), React.createElement(ConfirmButton_1.default, { label: "Snapshot", className: "pt-intent-primary pt-icon-floppy-disk", progressClassName: "pt-intent-primary", hidden: this.props.instance.state !== 'running' && this.props.instance.state !== 'stop', style: css.controlButton, disabled: this.state.disabled, onConfirm: () => {
-                    this.update('snapshot');
                 } })));
         }
     }
@@ -17772,7 +17872,7 @@ System.registerDynamic("app/components/PageNumInput.js", ["npm:react@16.4.1.js",
     exports.default = PageNumInput;
     
 });
-System.registerDynamic("app/components/InstanceNew.js", ["npm:react@16.4.1.js", "app/Constants.js", "app/License.js", "app/actions/InstanceActions.js", "app/actions/ImageActions.js", "app/actions/NodeActions.js", "app/stores/ImagesDatacenterStore.js", "app/stores/NodesZoneStore.js", "app/components/InstanceLicense.js", "app/components/PageInput.js", "app/components/PageInputButton.js", "app/components/PageCreate.js", "app/components/PageSelect.js", "app/components/PageNumInput.js", "app/components/Help.js", "app/stores/OrganizationsStore.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/InstanceNew.js", ["npm:react@16.4.1.js", "app/Constants.js", "app/License.js", "app/actions/InstanceActions.js", "app/actions/ImageActions.js", "app/actions/NodeActions.js", "app/stores/ImagesDatacenterStore.js", "app/stores/NodesZoneStore.js", "app/components/InstanceLicense.js", "app/components/PageInput.js", "app/components/PageInputButton.js", "app/components/PageCreate.js", "app/components/PageSelect.js", "app/components/PageNumInput.js", "app/components/Help.js", "app/stores/OrganizationsStore.js", "app/components/PageSwitch.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -17794,6 +17894,7 @@ System.registerDynamic("app/components/InstanceNew.js", ["npm:react@16.4.1.js", 
     const PageNumInput_1 = $__require("app/components/PageNumInput.js");
     const Help_1 = $__require("app/components/Help.js");
     const OrganizationsStore_1 = $__require("app/stores/OrganizationsStore.js");
+    const PageSwitch_1 = $__require("app/components/PageSwitch.js");
     const css = {
         row: {
             display: 'table-row',
@@ -18055,7 +18156,9 @@ System.registerDynamic("app/components/InstanceNew.js", ["npm:react@16.4.1.js", 
                     this.set('domain', val);
                 } }, domainsSelect)), React.createElement("div", { style: css.group }, React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasImages, label: "Image", help: "Starting image for node.", value: instance.image, onChange: val => {
                     this.set('image', val);
-                } }, imagesSelect), React.createElement("label", { className: "pt-label" }, "Network Roles", React.createElement(Help_1.default, { title: "Network Roles", content: "Network roles that will be matched with firewall rules. Network roles are case-sensitive." }), React.createElement("div", null, networkRoles)), React.createElement(PageInputButton_1.default, { disabled: this.state.disabled, buttonClass: "pt-intent-success pt-icon-add", label: "Add", type: "text", placeholder: "Add role", value: this.state.addNetworkRole, onChange: val => {
+                } }, imagesSelect), React.createElement(PageSwitch_1.default, { label: "Linked disk image", help: "Link to source disk image instead of creating full copy. This will reduce disk size and provide faster startup.", checked: instance.image_backing, onToggle: () => {
+                    this.set('image_backing', !instance.image_backing);
+                } }), React.createElement("label", { className: "pt-label" }, "Network Roles", React.createElement(Help_1.default, { title: "Network Roles", content: "Network roles that will be matched with firewall rules. Network roles are case-sensitive." }), React.createElement("div", null, networkRoles)), React.createElement(PageInputButton_1.default, { disabled: this.state.disabled, buttonClass: "pt-intent-success pt-icon-add", label: "Add", type: "text", placeholder: "Add role", value: this.state.addNetworkRole, onChange: val => {
                     this.setState(Object.assign({}, this.state, { addNetworkRole: val }));
                 }, onSubmit: this.onAddNetworkRole }), React.createElement(PageNumInput_1.default, { label: "Disk Size", help: "Instance memory size in megabytes.", min: 10, minorStepSize: 1, stepSize: 2, majorStepSize: 5, disabled: this.state.disabled, selectAllOnFocus: true, onChange: val => {
                     this.set('init_disk_size', val);
