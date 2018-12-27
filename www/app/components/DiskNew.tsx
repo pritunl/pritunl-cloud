@@ -18,6 +18,7 @@ import PageInput from './PageInput';
 import PageInputButton from './PageInputButton';
 import PageCreate from './PageCreate';
 import PageSelect from './PageSelect';
+import PageSwitch from "./PageSwitch";
 import PageNumInput from './PageNumInput';
 import Help from './Help';
 
@@ -435,6 +436,14 @@ export default class DiskNew extends React.Component<Props, State> {
 						>
 							{imagesSelect}
 						</PageSelect>
+						<PageSwitch
+							label="Linked disk image"
+							help="Link to source disk image instead of creating full copy. This will reduce disk size and provide faster creation."
+							checked={disk.backing}
+							onToggle={(): void => {
+								this.set('backing', !disk.backing);
+							}}
+						/>
 						<PageNumInput
 							label="Size"
 							help="Disk size in gigabytes."
