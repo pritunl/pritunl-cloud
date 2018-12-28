@@ -7,6 +7,7 @@ import PageInput from './PageInput';
 import PageSelect from './PageSelect';
 import PageNumInput from './PageNumInput';
 import PageInfo from './PageInfo';
+import * as PageInfos from './PageInfo';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
 import NodesStore from "../stores/NodesStore";
@@ -263,6 +264,39 @@ export default class DiskDetailed extends React.Component<Props, State> {
 				break;
 		}
 
+		let fields: PageInfos.Field[] = [
+			{
+				label: 'ID',
+				value: this.props.disk.id || 'Unknown',
+			},
+			{
+				label: 'Image',
+				value: this.props.disk.image || 'Unknown',
+			},
+			{
+				label: 'Organization',
+				value: org ? org.name : this.props.disk.organization,
+			},
+			{
+				label: 'Node',
+				value: node ? node.name : this.props.disk.node,
+			},
+			{
+				label: 'Size',
+				value: this.props.disk.size + 'GB',
+			},
+		];
+
+		let backingImage = this.props.disk.backing_image;
+		if (backingImage) {
+			backingImage = backingImage.replace('-', '\n');
+
+			fields.splice(2, 0, {
+				label: 'Backing Image',
+				value: backingImage,
+			});
+		}
+
 		return <td
 			className="pt-cell"
 			colSpan={5}
@@ -356,28 +390,7 @@ export default class DiskDetailed extends React.Component<Props, State> {
 				</div>
 				<div style={css.group}>
 					<PageInfo
-						fields={[
-							{
-								label: 'ID',
-								value: this.props.disk.id || 'Unknown',
-							},
-							{
-								label: 'Image',
-								value: this.props.disk.image || 'Unknown',
-							},
-							{
-								label: 'Organization',
-								value: org ? org.name : this.props.disk.organization,
-							},
-							{
-								label: 'Node',
-								value: node ? node.name : this.props.disk.node,
-							},
-							{
-								label: 'Size',
-								value: this.props.disk.size + 'GB',
-							},
-						]}
+						fields={fields}
 					/>
 				</div>
 			</div>
