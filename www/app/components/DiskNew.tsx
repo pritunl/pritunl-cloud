@@ -428,7 +428,7 @@ export default class DiskNew extends React.Component<Props, State> {
 						<PageSelect
 							disabled={this.state.disabled}
 							label="Image"
-							help="Starting image for node."
+							help="Starting image for disk."
 							value={disk.image}
 							onChange={(val): void => {
 								this.set('image', val);
