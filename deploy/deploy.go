@@ -5,8 +5,19 @@ import (
 )
 
 func Deploy(stat *state.State) (err error) {
+	ipset := NewIpset(stat)
+	err = ipset.Deploy()
+	if err != nil {
+		return
+	}
+
 	iptables := NewIptables(stat)
 	err = iptables.Deploy()
+	if err != nil {
+		return
+	}
+
+	err = ipset.Clean()
 	if err != nil {
 		return
 	}
