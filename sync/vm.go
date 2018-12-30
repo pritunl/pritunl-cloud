@@ -6,6 +6,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deploy"
+	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/iptables"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -33,7 +34,18 @@ func syncNodeFirewall() {
 	defer db.Close()
 
 	for i := 0; i < 2; i++ {
-		err := iptables.UpdateState(db, []*instance.Instance{}, []string{})
+		fires, err := firewall.GetRoles(db, node.Self.NetworkRoles)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("sync: Failed to get node firewall rules")
+			return
+		}
+
+		ingress := firewall.MergeIngress(fires)
+
+		err = iptables.UpdateState([]*instance.Instance{}, []string{},
+			ingress, map[string][]*firewall.Rule{})
 		if err != nil {
 			if i < 1 {
 				err = nil
