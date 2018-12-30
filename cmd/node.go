@@ -4,6 +4,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/pritunl/pritunl-cloud/config"
 	"github.com/pritunl/pritunl-cloud/constants"
+	"github.com/pritunl/pritunl-cloud/ipset"
 	"github.com/pritunl/pritunl-cloud/iptables"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/router"
@@ -25,7 +26,17 @@ func Node() (err error) {
 		return
 	}
 
+	err = ipset.Init()
+	if err != nil {
+		return
+	}
+
 	err = iptables.Init()
+	if err != nil {
+		return
+	}
+
+	err = ipset.InitNames()
 	if err != nil {
 		return
 	}
