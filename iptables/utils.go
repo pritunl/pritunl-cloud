@@ -263,8 +263,9 @@ func applyState(oldState, newState *State, namespaces []string) (err error) {
 	return
 }
 
-func UpdateState(db *database.Database, instances []*instance.Instance,
-	namespaces []string) (err error) {
+func UpdateState(instances []*instance.Instance, namespaces []string,
+	nodeFirewall []*firewall.Rule, firewalls map[string][]*firewall.Rule) (
+	err error) {
 
 	lockId := stateLock.Lock()
 	defer stateLock.Unlock(lockId)
@@ -273,15 +274,8 @@ func UpdateState(db *database.Database, instances []*instance.Instance,
 		Interfaces: map[string]*Rules{},
 	}
 
-	if node.Self.Firewall {
-		fires, e := firewall.GetRoles(db, node.Self.NetworkRoles)
-		if e != nil {
-			err = e
-			return
-		}
-
-		ingress := firewall.MergeIngress(fires)
-		newState.Interfaces["0-host"] = generate("0", "host", ingress)
+	if nodeFirewall != nil {
+		newState.Interfaces["0-host"] = generate("0", "host", nodeFirewall)
 	}
 
 	for _, inst := range instances {
@@ -307,14 +301,14 @@ func UpdateState(db *database.Database, instances []*instance.Instance,
 				return
 			}
 
-			fires, e := firewall.GetOrgRoles(db,
-				inst.Organization, inst.NetworkRoles)
-			if e != nil {
-				err = e
-				return
+			ingress := firewalls[namespace]
+			if ingress == nil {
+				logrus.WithFields(logrus.Fields{
+					"instance_id": inst.Id.Hex(),
+					"namespace":   namespace,
+				}).Warn("iptables: Failed to load instance firewall rules")
+				continue
 			}
-
-			ingress := firewall.MergeIngress(fires)
 
 			rules := generateInternal(namespace, ifaceExternal, ingress)
 			newState.Interfaces[namespace+"-"+ifaceExternal] = rules
@@ -495,7 +489,12 @@ func Init() (err error) {
 		"node": node.Self.Id,
 	}, disks)
 
-	err = UpdateState(db, instances, namespaces)
+	nodeFirewall, firewalls, err := firewall.GetAllIngress(db, instances)
+	if err != nil {
+		return
+	}
+
+	err = UpdateState(instances, namespaces, nodeFirewall, firewalls)
 	if err != nil {
 		return
 	}
