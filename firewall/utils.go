@@ -2,9 +2,15 @@ package firewall
 
 import (
 	"fmt"
+	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/pritunl-cloud/vm"
 	"gopkg.in/mgo.v2/bson"
 	"sort"
 )
@@ -309,6 +315,58 @@ func MergeIngress(fires []*Firewall) (rules []*Rule) {
 	sort.Strings(rulesKey)
 	for _, key := range rulesKey {
 		rules = append(rules, rulesMap[key])
+	}
+
+	return
+}
+
+func GetAllIngress(db *database.Database, instances []*instance.Instance) (
+	nodeFirewall []*Rule, firewalls map[string][]*Rule, err error) {
+
+	if node.Self.Firewall {
+		fires, e := GetRoles(db, node.Self.NetworkRoles)
+		if e != nil {
+			err = e
+			return
+		}
+
+		ingress := MergeIngress(fires)
+		nodeFirewall = ingress
+	}
+
+	firewalls = map[string][]*Rule{}
+	for _, inst := range instances {
+		if !inst.IsActive() {
+			continue
+		}
+
+		for i := range inst.Virt.NetworkAdapters {
+			namespace := vm.GetNamespace(inst.Id, i)
+
+			fires, e := GetOrgRoles(db,
+				inst.Organization, inst.NetworkRoles)
+			if e != nil {
+				err = e
+				return
+			}
+
+			_, ok := firewalls[namespace]
+			if ok {
+				logrus.WithFields(logrus.Fields{
+					"instance_id": inst.Id.Hex(),
+					"index":       i,
+					"namespace":   namespace,
+				}).Error("firewall: Namespace conflict")
+
+				err = &errortypes.ParseError{
+					errors.New("firewall: Namespace conflict"),
+				}
+				return
+			}
+
+			ingress := MergeIngress(fires)
+			firewalls[namespace] = ingress
+		}
 	}
 
 	return
