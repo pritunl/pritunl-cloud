@@ -17,6 +17,44 @@ type Rule struct {
 	Port      string   `bson:"port" json:"port"`
 }
 
+func (r *Rule) SetName(ipv6 bool) (name string) {
+	switch r.Protocol {
+	case All:
+		if ipv6 {
+			name = "pr6_all"
+		} else {
+			name = "pr4_all"
+		}
+		break
+	case Icmp:
+		if ipv6 {
+			name = "pr6_icmp"
+		} else {
+			name = "pr4_icmp"
+		}
+		break
+	case Tcp, Udp:
+		if ipv6 {
+			name = fmt.Sprintf(
+				"pr6_%s_%s",
+				r.Protocol,
+				strings.Replace(r.Port, "-", "_", 1),
+			)
+		} else {
+			name = fmt.Sprintf(
+				"pr4_%s_%s",
+				r.Protocol,
+				strings.Replace(r.Port, "-", "_", 1),
+			)
+		}
+		break
+	default:
+		break
+	}
+
+	return
+}
+
 type Firewall struct {
 	Id           bson.ObjectId `bson:"_id,omitempty" json:"id"`
 	Name         string        `bson:"name" json:"name"`
