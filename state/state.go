@@ -6,6 +6,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/domain"
+	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/qemu"
@@ -18,6 +19,8 @@ import (
 type State struct {
 	namespaces       []string
 	interfaces       []string
+	nodeFirewall     []*firewall.Rule
+	firewalls        map[string][]*firewall.Rule
 	disks            []*disk.Disk
 	virtsMap         map[bson.ObjectId]*vm.VirtualMachine
 	instances        []*instance.Instance
@@ -38,6 +41,14 @@ func (s *State) Interfaces() []string {
 
 func (s *State) Instances() []*instance.Instance {
 	return s.instances
+}
+
+func (s *State) NodeFirewall() []*firewall.Rule {
+	return s.nodeFirewall
+}
+
+func (s *State) Firewalls() map[string][]*firewall.Rule {
+	return s.firewalls
 }
 
 func (s *State) DomainRecords(instId bson.ObjectId) []*domain.Record {
@@ -129,6 +140,13 @@ func (s *State) init() (err error) {
 		}).Info("sync: Unknown instance")
 	}
 	s.instances = instances
+
+	nodeFirewall, firewalls, err := firewall.GetAllIngress(db, instances)
+	if err != nil {
+		return
+	}
+	s.nodeFirewall = nodeFirewall
+	s.firewalls = firewalls
 
 	vpcs, err := vpc.GetIds(db, vpcIds)
 	if err != nil {
