@@ -3,14 +3,10 @@ package ipset
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
-	"github.com/pritunl/pritunl-cloud/database"
-	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/instance"
-	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
-	"gopkg.in/mgo.v2/bson"
 	"strings"
 	"time"
 )
@@ -196,9 +192,9 @@ func loadIpset(namespace string, state *State, namesState *NamesState) (
 	return
 }
 
-func Init() (err error) {
-	db := database.GetDatabase()
-	defer db.Close()
+func Init(namespaces []string, instances []*instance.Instance,
+	nodeFirewall []*firewall.Rule, firewalls map[string][]*firewall.Rule) (
+	err error) {
 
 	state := &State{
 		Namespaces: map[string]*Sets{},
@@ -208,11 +204,6 @@ func Init() (err error) {
 	}
 
 	err = loadIpset("0", state, namesState)
-	if err != nil {
-		return
-	}
-
-	namespaces, err := utils.GetNamespaces()
 	if err != nil {
 		return
 	}
@@ -227,20 +218,6 @@ func Init() (err error) {
 	curState = state
 	curNamesState = namesState
 
-	disks, err := disk.GetNode(db, node.Self.Id)
-	if err != nil {
-		return
-	}
-
-	instances, err := instance.GetAllVirt(db, &bson.M{
-		"node": node.Self.Id,
-	}, disks)
-
-	nodeFirewall, firewalls, err := firewall.GetAllIngress(db, instances)
-	if err != nil {
-		return
-	}
-
 	err = UpdateState(instances, namespaces, nodeFirewall, firewalls)
 	if err != nil {
 		return
@@ -249,23 +226,9 @@ func Init() (err error) {
 	return
 }
 
-func InitNames() (err error) {
-	db := database.GetDatabase()
-	defer db.Close()
-
-	disks, err := disk.GetNode(db, node.Self.Id)
-	if err != nil {
-		return
-	}
-
-	instances, err := instance.GetAllVirt(db, &bson.M{
-		"node": node.Self.Id,
-	}, disks)
-
-	nodeFirewall, firewalls, err := firewall.GetAllIngress(db, instances)
-	if err != nil {
-		return
-	}
+func InitNames(namespaces []string, instances []*instance.Instance,
+	nodeFirewall []*firewall.Rule, firewalls map[string][]*firewall.Rule) (
+	err error) {
 
 	err = UpdateNamesState(instances, nodeFirewall, firewalls)
 	if err != nil {
