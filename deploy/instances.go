@@ -29,11 +29,12 @@ type Instances struct {
 }
 
 func (s *Instances) create(inst *instance.Instance) {
-	if instancesLock.Locked(inst.Id.Hex()) {
+	acquired, lockId := instancesLock.LockOpenTimeout(
+		inst.Id.Hex(), 10*time.Minute)
+	if !acquired {
 		return
 	}
 
-	lockId := instancesLock.LockTimeout(inst.Id.Hex(), 10*time.Minute)
 	go func() {
 		defer func() {
 			time.Sleep(3 * time.Second)
@@ -56,11 +57,11 @@ func (s *Instances) create(inst *instance.Instance) {
 }
 
 func (s *Instances) start(inst *instance.Instance) {
-	if instancesLock.Locked(inst.Id.Hex()) {
+	acquired, lockId := instancesLock.LockOpen(inst.Id.Hex())
+	if !acquired {
 		return
 	}
 
-	lockId := instancesLock.Lock(inst.Id.Hex())
 	go func() {
 		defer func() {
 			time.Sleep(3 * time.Second)
@@ -83,11 +84,11 @@ func (s *Instances) start(inst *instance.Instance) {
 }
 
 func (s *Instances) stop(inst *instance.Instance) {
-	if instancesLock.Locked(inst.Id.Hex()) {
+	acquired, lockId := instancesLock.LockOpen(inst.Id.Hex())
+	if !acquired {
 		return
 	}
 
-	lockId := instancesLock.Lock(inst.Id.Hex())
 	go func() {
 		defer func() {
 			time.Sleep(3 * time.Second)
@@ -110,11 +111,11 @@ func (s *Instances) stop(inst *instance.Instance) {
 }
 
 func (s *Instances) restart(inst *instance.Instance) {
-	if instancesLock.Locked(inst.Id.Hex()) {
+	acquired, lockId := instancesLock.LockOpen(inst.Id.Hex())
+	if !acquired {
 		return
 	}
 
-	lockId := instancesLock.Lock(inst.Id.Hex())
 	go func() {
 		defer func() {
 			time.Sleep(3 * time.Second)
@@ -153,11 +154,11 @@ func (s *Instances) restart(inst *instance.Instance) {
 }
 
 func (s *Instances) destroy(inst *instance.Instance) {
-	if instancesLock.Locked(inst.Id.Hex()) {
+	acquired, lockId := instancesLock.LockOpen(inst.Id.Hex())
+	if !acquired {
 		return
 	}
 
-	lockId := instancesLock.Lock(inst.Id.Hex())
 	go func() {
 		defer func() {
 			time.Sleep(3 * time.Second)
@@ -189,11 +190,11 @@ func (s *Instances) destroy(inst *instance.Instance) {
 }
 
 func (s *Instances) diskRemove(inst *instance.Instance, remDisks []*vm.Disk) {
-	if instancesLock.Locked(inst.Id.Hex()) {
+	acquired, lockId := instancesLock.LockOpen(inst.Id.Hex())
+	if !acquired {
 		return
 	}
 
-	lockId := instancesLock.Lock(inst.Id.Hex())
 	go func() {
 		defer func() {
 			time.Sleep(3 * time.Second)
@@ -271,11 +272,11 @@ func (s *Instances) check(inst *instance.Instance, namespaces set.Set) (
 }
 
 func (s *Instances) routes(inst *instance.Instance) (err error) {
-	if instancesLock.Locked(inst.Id.Hex()) {
+	acquired, lockId := instancesLock.LockOpen(inst.Id.Hex())
+	if !acquired {
 		return
 	}
 
-	lockId := instancesLock.Lock(inst.Id.Hex())
 	go func() {
 		defer func() {
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
