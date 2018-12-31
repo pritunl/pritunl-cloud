@@ -21,7 +21,7 @@ import (
 )
 
 var (
-	instancesLock = utils.NewMultiTimeoutLock(3 * time.Minute)
+	instancesLock = utils.NewMultiTimeoutLock(5 * time.Minute)
 )
 
 type Instances struct {
