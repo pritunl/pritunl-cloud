@@ -389,7 +389,32 @@ func Recover() (err error) {
 
 	time.Sleep(10 * time.Second)
 
-	err = Init()
+	db := database.GetDatabase()
+	defer db.Close()
+
+	namespaces, err := utils.GetNamespaces()
+	if err != nil {
+		return
+	}
+
+	disks, err := disk.GetNode(db, node.Self.Id)
+	if err != nil {
+		return
+	}
+
+	instances, err := instance.GetAllVirt(db, &bson.M{
+		"node": node.Self.Id,
+	}, disks)
+	if err != nil {
+		return
+	}
+
+	nodeFirewall, firewalls, err := firewall.GetAllIngress(db, instances)
+	if err != nil {
+		return
+	}
+
+	err = Init(namespaces, instances, nodeFirewall, firewalls)
 	if err != nil {
 		return
 	}
@@ -397,9 +422,9 @@ func Recover() (err error) {
 	return
 }
 
-func Init() (err error) {
-	db := database.GetDatabase()
-	defer db.Close()
+func Init(namespaces []string, instances []*instance.Instance,
+	nodeFirewall []*firewall.Rule, firewalls map[string][]*firewall.Rule) (
+	err error) {
 
 	_, err = utils.ExecCombinedOutputLogged(
 		nil, "sysctl", "-w", "net.ipv6.conf.all.accept_ra=2",
@@ -461,11 +486,6 @@ func Init() (err error) {
 		return
 	}
 
-	namespaces, err := utils.GetNamespaces()
-	if err != nil {
-		return
-	}
-
 	for _, namespace := range namespaces {
 		err = loadIptables(namespace, state, false)
 		if err != nil {
@@ -479,20 +499,6 @@ func Init() (err error) {
 	}
 
 	curState = state
-
-	disks, err := disk.GetNode(db, node.Self.Id)
-	if err != nil {
-		return
-	}
-
-	instances, err := instance.GetAllVirt(db, &bson.M{
-		"node": node.Self.Id,
-	}, disks)
-
-	nodeFirewall, firewalls, err := firewall.GetAllIngress(db, instances)
-	if err != nil {
-		return
-	}
 
 	err = UpdateState(instances, namespaces, nodeFirewall, firewalls)
 	if err != nil {
