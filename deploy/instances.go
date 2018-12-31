@@ -22,6 +22,7 @@ import (
 
 var (
 	instancesLock = utils.NewMultiTimeoutLock(5 * time.Minute)
+	limiter       = utils.NewLimiter(5)
 )
 
 type Instances struct {
@@ -29,9 +30,14 @@ type Instances struct {
 }
 
 func (s *Instances) create(inst *instance.Instance) {
+	if !limiter.Acquire() {
+		return
+	}
+
 	acquired, lockId := instancesLock.LockOpenTimeout(
 		inst.Id.Hex(), 10*time.Minute)
 	if !acquired {
+		limiter.Release()
 		return
 	}
 
@@ -39,6 +45,7 @@ func (s *Instances) create(inst *instance.Instance) {
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
+			limiter.Release()
 		}()
 
 		db := database.GetDatabase()
@@ -57,8 +64,13 @@ func (s *Instances) create(inst *instance.Instance) {
 }
 
 func (s *Instances) start(inst *instance.Instance) {
+	if !limiter.Acquire() {
+		return
+	}
+
 	acquired, lockId := instancesLock.LockOpen(inst.Id.Hex())
 	if !acquired {
+		limiter.Release()
 		return
 	}
 
@@ -66,6 +78,7 @@ func (s *Instances) start(inst *instance.Instance) {
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
+			limiter.Release()
 		}()
 
 		db := database.GetDatabase()
@@ -84,8 +97,13 @@ func (s *Instances) start(inst *instance.Instance) {
 }
 
 func (s *Instances) stop(inst *instance.Instance) {
+	if !limiter.Acquire() {
+		return
+	}
+
 	acquired, lockId := instancesLock.LockOpen(inst.Id.Hex())
 	if !acquired {
+		limiter.Release()
 		return
 	}
 
@@ -93,6 +111,7 @@ func (s *Instances) stop(inst *instance.Instance) {
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
+			limiter.Release()
 		}()
 
 		db := database.GetDatabase()
@@ -111,8 +130,13 @@ func (s *Instances) stop(inst *instance.Instance) {
 }
 
 func (s *Instances) restart(inst *instance.Instance) {
+	if !limiter.Acquire() {
+		return
+	}
+
 	acquired, lockId := instancesLock.LockOpen(inst.Id.Hex())
 	if !acquired {
+		limiter.Release()
 		return
 	}
 
@@ -120,6 +144,7 @@ func (s *Instances) restart(inst *instance.Instance) {
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
+			limiter.Release()
 		}()
 
 		db := database.GetDatabase()
@@ -154,8 +179,13 @@ func (s *Instances) restart(inst *instance.Instance) {
 }
 
 func (s *Instances) destroy(inst *instance.Instance) {
+	if !limiter.Acquire() {
+		return
+	}
+
 	acquired, lockId := instancesLock.LockOpen(inst.Id.Hex())
 	if !acquired {
+		limiter.Release()
 		return
 	}
 
@@ -163,6 +193,7 @@ func (s *Instances) destroy(inst *instance.Instance) {
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
+			limiter.Release()
 		}()
 
 		db := database.GetDatabase()
