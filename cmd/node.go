@@ -4,10 +4,9 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/pritunl/pritunl-cloud/config"
 	"github.com/pritunl/pritunl-cloud/constants"
-	"github.com/pritunl/pritunl-cloud/ipset"
-	"github.com/pritunl/pritunl-cloud/iptables"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/router"
+	"github.com/pritunl/pritunl-cloud/setup"
 	"github.com/pritunl/pritunl-cloud/sync"
 	"github.com/pritunl/pritunl-cloud/task"
 	"gopkg.in/mgo.v2/bson"
@@ -26,17 +25,7 @@ func Node() (err error) {
 		return
 	}
 
-	err = ipset.Init()
-	if err != nil {
-		return
-	}
-
-	err = iptables.Init()
-	if err != nil {
-		return
-	}
-
-	err = ipset.InitNames()
+	err = setup.Iptables()
 	if err != nil {
 		return
 	}
