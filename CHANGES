@@ -3,6 +3,7 @@ pritunl-cloud changelog
 
 <%= version %>
 
+Improve node scalability
 Improve firewall performance
 
 Version 1.0.1129.93 2018-12-27
