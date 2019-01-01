@@ -16352,7 +16352,7 @@ System.registerDynamic("app/stores/InstancesNodeStore.js", ["app/dispatcher/Disp
     exports.default = new InstancesNodeStore();
     
 });
-System.registerDynamic("app/components/DiskNew.js", ["npm:react@16.4.1.js", "app/actions/DiskActions.js", "app/actions/ImageActions.js", "app/actions/InstanceActions.js", "app/actions/NodeActions.js", "app/stores/ImagesDatacenterStore.js", "app/stores/InstancesNodeStore.js", "app/stores/NodesZoneStore.js", "app/components/PageInput.js", "app/components/PageCreate.js", "app/components/PageSelect.js", "app/components/PageNumInput.js", "app/components/PageSwitch.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/DiskNew.js", ["npm:react@16.4.1.js", "app/actions/DiskActions.js", "app/actions/ImageActions.js", "app/actions/InstanceActions.js", "app/actions/NodeActions.js", "app/stores/ImagesDatacenterStore.js", "app/stores/InstancesNodeStore.js", "app/stores/NodesZoneStore.js", "app/components/PageInput.js", "app/components/PageCreate.js", "app/components/PageSelect.js", "app/components/PageSwitch.js", "app/components/PageNumInput.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -16369,8 +16369,8 @@ System.registerDynamic("app/components/DiskNew.js", ["npm:react@16.4.1.js", "app
     const PageInput_1 = $__require("app/components/PageInput.js");
     const PageCreate_1 = $__require("app/components/PageCreate.js");
     const PageSelect_1 = $__require("app/components/PageSelect.js");
-    const PageNumInput_1 = $__require("app/components/PageNumInput.js");
     const PageSwitch_1 = $__require("app/components/PageSwitch.js");
+    const PageNumInput_1 = $__require("app/components/PageNumInput.js");
     const css = {
         row: {
             display: 'table-row',
@@ -17872,7 +17872,7 @@ System.registerDynamic("app/components/PageNumInput.js", ["npm:react@16.4.1.js",
     exports.default = PageNumInput;
     
 });
-System.registerDynamic("app/components/InstanceNew.js", ["npm:react@16.4.1.js", "app/Constants.js", "app/License.js", "app/actions/InstanceActions.js", "app/actions/ImageActions.js", "app/actions/NodeActions.js", "app/stores/ImagesDatacenterStore.js", "app/stores/NodesZoneStore.js", "app/components/InstanceLicense.js", "app/components/PageInput.js", "app/components/PageInputButton.js", "app/components/PageCreate.js", "app/components/PageSelect.js", "app/components/PageNumInput.js", "app/components/Help.js", "app/stores/OrganizationsStore.js", "app/components/PageSwitch.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/InstanceNew.js", ["npm:react@16.4.1.js", "app/Constants.js", "app/License.js", "app/actions/InstanceActions.js", "app/actions/ImageActions.js", "app/actions/NodeActions.js", "app/stores/ImagesDatacenterStore.js", "app/stores/NodesZoneStore.js", "app/components/InstanceLicense.js", "app/components/PageInput.js", "app/components/PageInputButton.js", "app/components/PageCreate.js", "app/components/PageSelect.js", "app/components/PageSwitch.js", "app/components/PageNumInput.js", "app/components/Help.js", "app/stores/OrganizationsStore.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -17891,10 +17891,10 @@ System.registerDynamic("app/components/InstanceNew.js", ["npm:react@16.4.1.js", 
     const PageInputButton_1 = $__require("app/components/PageInputButton.js");
     const PageCreate_1 = $__require("app/components/PageCreate.js");
     const PageSelect_1 = $__require("app/components/PageSelect.js");
+    const PageSwitch_1 = $__require("app/components/PageSwitch.js");
     const PageNumInput_1 = $__require("app/components/PageNumInput.js");
     const Help_1 = $__require("app/components/Help.js");
     const OrganizationsStore_1 = $__require("app/stores/OrganizationsStore.js");
-    const PageSwitch_1 = $__require("app/components/PageSwitch.js");
     const css = {
         row: {
             display: 'table-row',
