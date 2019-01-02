@@ -14,7 +14,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"net"
 	"net/http"
 	"sort"
 	"strings"
@@ -375,52 +374,34 @@ func (n *Node) sync() {
 		n.Load15 = load.Load15
 	}
 
-	ipData, err := utils.ExecCombinedOutputLogged(
-		[]string{
-			"No such file or directory",
-			"does not exist",
-		},
-		"ip", "-f", "inet", "-o", "addr",
-		"show", "dev", settings.Local.BridgeName,
-	)
-	if err != nil {
-		return
+	externalIface := ""
+	externalIfaces := n.ExternalInterfaces
+	if externalIfaces != nil && len(externalIfaces) > 0 {
+		externalIface = externalIfaces[0]
+	} else {
+		externalIface = n.ExternalInterface
+	}
+	if externalIface == "" {
+		externalIface = settings.Local.BridgeName
 	}
 
-	fields := strings.Fields(ipData)
-	if len(fields) > 3 {
-		ipAddr := net.ParseIP(strings.Split(fields[3], "/")[0])
+	pubAddr, pubAddr6, err := bridges.GetIpAddrs(externalIface)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"error": err,
+		}).Error("node: Failed to get public address")
+	}
+
+	if pubAddr != "" {
 		n.PublicIps = []string{
-			ipAddr.String(),
+			pubAddr,
 		}
 	}
 
-	ipData, err = utils.ExecCombinedOutputLogged(
-		[]string{
-			"No such file or directory",
-			"does not exist",
-		},
-		"ip", "-f", "inet6", "-o", "addr",
-		"show", "dev", settings.Local.BridgeName,
-	)
-	if err != nil {
-		return
-	}
-
-	for _, line := range strings.Split(ipData, "\n") {
-		if !strings.Contains(line, "global") {
-			continue
+	if pubAddr6 != "" {
+		n.PublicIps6 = []string{
+			pubAddr6,
 		}
-
-		fields = strings.Fields(ipData)
-		if len(fields) > 3 {
-			ipAddr := net.ParseIP(strings.Split(fields[3], "/")[0])
-			n.PublicIps6 = []string{
-				ipAddr.String(),
-			}
-		}
-
-		break
 	}
 
 	brdgs, err := bridges.GetBridges()
