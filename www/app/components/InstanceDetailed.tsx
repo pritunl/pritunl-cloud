@@ -633,18 +633,6 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						this.update('stop');
 					}}
 				/>
-				<ConfirmButton
-					label="Snapshot"
-					className="pt-intent-primary pt-icon-floppy-disk"
-					progressClassName="pt-intent-primary"
-					hidden={this.props.instance.state !== 'running' &&
-					this.props.instance.state !== 'stop'}
-					style={css.controlButton}
-					disabled={this.state.disabled}
-					onConfirm={(): void => {
-						this.update('snapshot');
-					}}
-				/>
 			</PageSave>
 		</td>;
 	}
