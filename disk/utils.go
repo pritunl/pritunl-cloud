@@ -371,3 +371,23 @@ func GetAllKeys(db *database.Database, ndeId bson.ObjectId) (
 
 	return
 }
+
+func SetDeleteProtection(db *database.Database, instId bson.ObjectId,
+	protection bool) (err error) {
+
+	coll := db.Disks()
+
+	_, err = coll.UpdateAll(&bson.M{
+		"instance": instId,
+	}, &bson.M{
+		"$set": &bson.M{
+			"delete_protection": protection,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
