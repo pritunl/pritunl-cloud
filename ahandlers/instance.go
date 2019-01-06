@@ -7,6 +7,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/aggregate"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -246,7 +247,22 @@ func instanceDelete(c *gin.Context) {
 		return
 	}
 
-	err := instance.Delete(db, instanceId)
+	inst, err := instance.Get(db, instanceId)
+	if err != nil {
+		return
+	}
+
+	if inst.DeleteProtection {
+		errData := &errortypes.ErrorData{
+			Error:   "delete_protection",
+			Message: "Cannot delete instance with delete protection",
+		}
+
+		c.JSON(400, errData)
+		return
+	}
+
+	err = instance.Delete(db, instanceId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
