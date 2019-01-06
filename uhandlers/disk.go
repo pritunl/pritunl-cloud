@@ -269,7 +269,22 @@ func diskDelete(c *gin.Context) {
 		return
 	}
 
-	err := disk.DeleteOrg(db, userOrg, diskId)
+	dsk, err := disk.Get(db, diskId)
+	if err != nil {
+		return
+	}
+
+	if dsk.DeleteProtection {
+		errData := &errortypes.ErrorData{
+			Error:   "delete_protection",
+			Message: "Cannot delete disk with delete protection",
+		}
+
+		c.JSON(400, errData)
+		return
+	}
+
+	err = disk.DeleteOrg(db, userOrg, diskId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
