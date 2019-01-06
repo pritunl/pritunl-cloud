@@ -470,7 +470,25 @@ func (s *Instances) Deploy() (err error) {
 		curVirt := s.stat.GetVirt(inst.Id)
 
 		if inst.State == instance.Destroy {
-			s.destroy(inst)
+			if inst.DeleteProtection {
+				logrus.WithFields(logrus.Fields{
+					"instance_id": inst.Id.Hex(),
+				}).Info("deploy: Delete protection ignore instance destroy")
+
+				if curVirt.State == vm.Running {
+					inst.State = instance.Start
+				} else {
+					inst.State = instance.Stop
+				}
+				err = inst.CommitFields(db, set.NewSet("state"))
+				if err != nil {
+					return
+				}
+
+				event.PublishDispatch(db, "instance.change")
+			} else {
+				s.destroy(inst)
+			}
 			continue
 		}
 
