@@ -14,29 +14,30 @@ import (
 )
 
 type Instance struct {
-	Id           bson.ObjectId      `bson:"_id,omitempty" json:"id"`
-	Organization bson.ObjectId      `bson:"organization" json:"organization"`
-	Zone         bson.ObjectId      `bson:"zone" json:"zone"`
-	Vpc          bson.ObjectId      `bson:"vpc" json:"vpc"`
-	Image        bson.ObjectId      `bson:"image" json:"image"`
-	ImageBacking bool               `bson:"image_backing" json:"image_backing"`
-	Status       string             `bson:"-" json:"status"`
-	State        string             `bson:"state" json:"state"`
-	VmState      string             `bson:"vm_state" json:"vm_state"`
-	Restart      bool               `bson:"restart" json:"restart"`
-	PublicIps    []string           `bson:"public_ips" json:"public_ips"`
-	PublicIps6   []string           `bson:"public_ips6" json:"public_ips6"`
-	PrivateIps   []string           `bson:"private_ips" json:"private_ips"`
-	PrivateIps6  []string           `bson:"private_ips6" json:"private_ips6"`
-	Node         bson.ObjectId      `bson:"node" json:"node"`
-	Domain       bson.ObjectId      `bson:"domain,omitempty" json:"domain"`
-	Name         string             `bson:"name" json:"name"`
-	InitDiskSize int                `bson:"init_disk_size" json:"init_disk_size"`
-	Memory       int                `bson:"memory" json:"memory"`
-	Processors   int                `bson:"processors" json:"processors"`
-	NetworkRoles []string           `bson:"network_roles" json:"network_roles"`
-	Virt         *vm.VirtualMachine `bson:"-" json:"-"`
-	curVpc       bson.ObjectId      `bson:"-" json:"-"`
+	Id               bson.ObjectId      `bson:"_id,omitempty" json:"id"`
+	Organization     bson.ObjectId      `bson:"organization" json:"organization"`
+	Zone             bson.ObjectId      `bson:"zone" json:"zone"`
+	Vpc              bson.ObjectId      `bson:"vpc" json:"vpc"`
+	Image            bson.ObjectId      `bson:"image" json:"image"`
+	ImageBacking     bool               `bson:"image_backing" json:"image_backing"`
+	Status           string             `bson:"-" json:"status"`
+	State            string             `bson:"state" json:"state"`
+	VmState          string             `bson:"vm_state" json:"vm_state"`
+	Restart          bool               `bson:"restart" json:"restart"`
+	DeleteProtection bool               `bson:"delete_protection" json:"delete_protection"`
+	PublicIps        []string           `bson:"public_ips" json:"public_ips"`
+	PublicIps6       []string           `bson:"public_ips6" json:"public_ips6"`
+	PrivateIps       []string           `bson:"private_ips" json:"private_ips"`
+	PrivateIps6      []string           `bson:"private_ips6" json:"private_ips6"`
+	Node             bson.ObjectId      `bson:"node" json:"node"`
+	Domain           bson.ObjectId      `bson:"domain,omitempty" json:"domain"`
+	Name             string             `bson:"name" json:"name"`
+	InitDiskSize     int                `bson:"init_disk_size" json:"init_disk_size"`
+	Memory           int                `bson:"memory" json:"memory"`
+	Processors       int                `bson:"processors" json:"processors"`
+	NetworkRoles     []string           `bson:"network_roles" json:"network_roles"`
+	Virt             *vm.VirtualMachine `bson:"-" json:"-"`
+	curVpc           bson.ObjectId      `bson:"-" json:"-"`
 }
 
 func (i *Instance) Validate(db *database.Database) (
