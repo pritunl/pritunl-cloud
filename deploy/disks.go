@@ -86,13 +86,31 @@ func (d *Disks) snapshot(dsk *disk.Disk) {
 }
 
 func (d *Disks) destroy(dsk *disk.Disk) {
-	if d.stat.DiskInUse(dsk.Instance, dsk.Id) ||
-		disksLock.Locked(dsk.Id.Hex()) {
+	if dsk.DeleteProtection {
+		db := database.GetDatabase()
+		defer db.Close()
+
+		logrus.WithFields(logrus.Fields{
+			"disk_id": dsk.Id.Hex(),
+		}).Info("deploy: Delete protection ignore disk destroy")
+
+		dsk.State = disk.Available
+		dsk.CommitFields(db, set.NewSet("state"))
+
+		event.PublishDispatch(db, "disk.change")
 
 		return
 	}
 
-	lockId := disksLock.Lock(dsk.Id.Hex())
+	if d.stat.DiskInUse(dsk.Instance, dsk.Id) {
+		return
+	}
+
+	acquired, lockId := disksLock.LockOpen(dsk.Id.Hex())
+	if !acquired {
+		return
+	}
+
 	go func() {
 		defer disksLock.Unlock(dsk.Id.Hex(), lockId)
 
