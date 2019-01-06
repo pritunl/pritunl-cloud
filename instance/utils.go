@@ -194,7 +194,7 @@ func Remove(db *database.Database, instId bson.ObjectId) (err error) {
 	if inst.DeleteProtection {
 		logrus.WithFields(logrus.Fields{
 			"instance_id": instId.Hex(),
-		}).Info("instance: Delete protection ignore remove")
+		}).Info("instance: Delete protection ignore instance remove")
 		return
 	}
 
