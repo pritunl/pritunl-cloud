@@ -9,6 +9,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/domain"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/instance"
@@ -336,7 +337,22 @@ func instanceDelete(c *gin.Context) {
 		return
 	}
 
-	err := instance.DeleteOrg(db, userOrg, instanceId)
+	inst, err := instance.Get(db, instanceId)
+	if err != nil {
+		return
+	}
+
+	if inst.DeleteProtection {
+		errData := &errortypes.ErrorData{
+			Error:   "delete_protection",
+			Message: "Cannot delete instance with delete protection",
+		}
+
+		c.JSON(400, errData)
+		return
+	}
+
+	err = instance.DeleteOrg(db, userOrg, instanceId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -362,21 +378,10 @@ func instancesDelete(c *gin.Context) {
 		return
 	}
 
-	force := c.Query("force")
-	if force == "true" {
-		for _, instId := range data {
-			err = instance.Remove(db, instId)
-			if err != nil {
-				utils.AbortWithError(c, 500, err)
-				return
-			}
-		}
-	} else {
-		err = instance.DeleteMultiOrg(db, userOrg, data)
-		if err != nil {
-			utils.AbortWithError(c, 500, err)
-			return
-		}
+	err = instance.DeleteMultiOrg(db, userOrg, data)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
 	}
 
 	event.PublishDispatch(db, "instance.change")
