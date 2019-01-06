@@ -11,6 +11,7 @@ export interface Instance {
 	zone?: string;
 	node?: string;
 	image?: string;
+	image_backing?: boolean;
 	status?: string;
 	state?: string;
 	vm_state?: string;
