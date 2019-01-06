@@ -239,6 +239,9 @@ func DeleteMulti(db *database.Database, dskIds []bson.ObjectId) (err error) {
 		"_id": &bson.M{
 			"$in": dskIds,
 		},
+		"delete_protection": &bson.M{
+			"$ne": true,
+		},
 	}, &bson.M{
 		"$set": &bson.M{
 			"state": Destroy,
@@ -262,6 +265,9 @@ func DeleteMultiOrg(db *database.Database, orgId bson.ObjectId,
 			"$in": dskIds,
 		},
 		"organization": orgId,
+		"delete_protection": &bson.M{
+			"$ne": true,
+		},
 	}, &bson.M{
 		"$set": &bson.M{
 			"state": Destroy,
