@@ -74,7 +74,7 @@ func GetAllPaged(db *database.Database, query *bson.M, page, pageCount int) (
 		return
 	}
 
-	page = utils.Min(page, count / pageCount)
+	page = utils.Min(page, count/pageCount)
 	skip := utils.Min(page*pageCount, count)
 
 	cursor := qury.Sort("name").Skip(skip).Limit(pageCount).Iter()
@@ -280,11 +280,19 @@ func UpdateMulti(db *database.Database, dskIds []bson.ObjectId,
 
 	coll := db.Disks()
 
-	_, err = coll.UpdateAll(&bson.M{
+	query := &bson.M{
 		"_id": &bson.M{
 			"$in": dskIds,
 		},
-	}, &bson.M{
+	}
+
+	if (*doc)["state"] == Destroy {
+		(*query)["delete_protection"] = &bson.M{
+			"$ne": true,
+		}
+	}
+
+	_, err = coll.UpdateAll(query, &bson.M{
 		"$set": doc,
 	})
 	if err != nil {
@@ -299,6 +307,19 @@ func UpdateMultiOrg(db *database.Database, orgId bson.ObjectId,
 	dskIds []bson.ObjectId, doc *bson.M) (err error) {
 
 	coll := db.Disks()
+
+	query := &bson.M{
+		"_id": &bson.M{
+			"$in": dskIds,
+		},
+		"organization": orgId,
+	}
+
+	if (*doc)["state"] == Destroy {
+		(*query)["delete_protection"] = &bson.M{
+			"$ne": true,
+		}
+	}
 
 	_, err = coll.UpdateAll(&bson.M{
 		"_id": &bson.M{
