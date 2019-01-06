@@ -6,6 +6,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"gopkg.in/mgo.v2/bson"
@@ -106,6 +107,22 @@ func (d *Disk) Insert(db *database.Database) (err error) {
 
 func (d *Disk) Destroy(db *database.Database) (err error) {
 	dskPath := paths.GetDiskPath(d.Id)
+
+	if d.DeleteProtection {
+		logrus.WithFields(logrus.Fields{
+			"disk_id": d.Id.Hex(),
+		}).Info("disk: Delete protection ignore disk destroy")
+
+		d.State = Available
+		err = d.CommitFields(db, set.NewSet("state"))
+		if err != nil {
+			return
+		}
+
+		event.PublishDispatch(db, "disk.change")
+
+		return
+	}
 
 	logrus.WithFields(logrus.Fields{
 		"disk_id":   d.Id.Hex(),
