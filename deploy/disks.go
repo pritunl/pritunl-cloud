@@ -21,11 +21,11 @@ type Disks struct {
 }
 
 func (d *Disks) provision(dsk *disk.Disk) {
-	if disksLock.Locked(dsk.Id.Hex()) {
+	acquired, lockId := disksLock.LockOpen(dsk.Id.Hex())
+	if !acquired {
 		return
 	}
 
-	lockId := disksLock.Lock(dsk.Id.Hex())
 	go func() {
 		defer disksLock.Unlock(dsk.Id.Hex(), lockId)
 
@@ -53,11 +53,11 @@ func (d *Disks) provision(dsk *disk.Disk) {
 }
 
 func (d *Disks) snapshot(dsk *disk.Disk) {
-	if disksLock.Locked(dsk.Id.Hex()) {
+	acquired, lockId := disksLock.LockOpen(dsk.Id.Hex())
+	if !acquired {
 		return
 	}
 
-	lockId := disksLock.Lock(dsk.Id.Hex())
 	go func() {
 		defer disksLock.Unlock(dsk.Id.Hex(), lockId)
 
