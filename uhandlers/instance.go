@@ -23,20 +23,21 @@ import (
 )
 
 type instanceData struct {
-	Id           bson.ObjectId `json:"id"`
-	Zone         bson.ObjectId `json:"zone"`
-	Vpc          bson.ObjectId `json:"vpc"`
-	Node         bson.ObjectId `json:"node"`
-	Image        bson.ObjectId `json:"image"`
-	ImageBacking bool          `json:"image_backing"`
-	Domain       bson.ObjectId `json:"domain"`
-	Name         string        `json:"name"`
-	State        string        `json:"state"`
-	InitDiskSize int           `json:"init_disk_size"`
-	Memory       int           `json:"memory"`
-	Processors   int           `json:"processors"`
-	NetworkRoles []string      `json:"network_roles"`
-	Count        int           `json:"count"`
+	Id               bson.ObjectId `json:"id"`
+	Zone             bson.ObjectId `json:"zone"`
+	Vpc              bson.ObjectId `json:"vpc"`
+	Node             bson.ObjectId `json:"node"`
+	Image            bson.ObjectId `json:"image"`
+	ImageBacking     bool          `json:"image_backing"`
+	Domain           bson.ObjectId `json:"domain"`
+	Name             string        `json:"name"`
+	State            string        `json:"state"`
+	DeleteProtection bool          `json:"delete_protection"`
+	InitDiskSize     int           `json:"init_disk_size"`
+	Memory           int           `json:"memory"`
+	Processors       int           `json:"processors"`
+	NetworkRoles     []string      `json:"network_roles"`
+	Count            int           `json:"count"`
 }
 
 type instanceMultiData struct {
@@ -105,6 +106,7 @@ func instancePut(c *gin.Context) {
 	if data.State != "" {
 		inst.State = data.State
 	}
+	inst.DeleteProtection = data.DeleteProtection
 	inst.Memory = data.Memory
 	inst.Processors = data.Processors
 	inst.NetworkRoles = data.NetworkRoles
@@ -115,6 +117,7 @@ func instancePut(c *gin.Context) {
 		"vpc",
 		"state",
 		"restart",
+		"delete_protection",
 		"memory",
 		"processors",
 		"network_roles",
@@ -240,19 +243,20 @@ func instancePost(c *gin.Context) {
 		}
 
 		inst := &instance.Instance{
-			State:        data.State,
-			Organization: userOrg,
-			Zone:         data.Zone,
-			Vpc:          data.Vpc,
-			Node:         data.Node,
-			Image:        data.Image,
-			ImageBacking: data.ImageBacking,
-			Name:         name,
-			InitDiskSize: data.InitDiskSize,
-			Memory:       data.Memory,
-			Processors:   data.Processors,
-			NetworkRoles: data.NetworkRoles,
-			Domain:       data.Domain,
+			State:            data.State,
+			Organization:     userOrg,
+			Zone:             data.Zone,
+			Vpc:              data.Vpc,
+			Node:             data.Node,
+			Image:            data.Image,
+			ImageBacking:     data.ImageBacking,
+			DeleteProtection: data.DeleteProtection,
+			Name:             name,
+			InitDiskSize:     data.InitDiskSize,
+			Memory:           data.Memory,
+			Processors:       data.Processors,
+			NetworkRoles:     data.NetworkRoles,
+			Domain:           data.Domain,
 		}
 
 		errData, err := inst.Validate(db)
