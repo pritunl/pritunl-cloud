@@ -11,6 +11,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/interfaces"
 	"github.com/pritunl/pritunl-cloud/iptables"
@@ -1090,6 +1091,8 @@ func Create(db *database.Database, inst *instance.Instance,
 		if err != nil {
 			return
 		}
+
+		event.PublishDispatch(db, "disk.change")
 	}
 
 	virt.Disks = append(virt.Disks, &vm.Disk{
