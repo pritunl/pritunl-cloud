@@ -1,6 +1,7 @@
 package instance
 
 import (
+	"github.com/Sirupsen/logrus"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -158,7 +159,7 @@ func GetAllPaged(db *database.Database, query *bson.M, page, pageCount int) (
 		return
 	}
 
-	page = utils.Min(page, count / pageCount)
+	page = utils.Min(page, count/pageCount)
 	skip := utils.Min(page*pageCount, count)
 
 	cursor := qury.Sort("name").Skip(skip).Limit(pageCount).Iter()
@@ -180,6 +181,18 @@ func GetAllPaged(db *database.Database, query *bson.M, page, pageCount int) (
 
 func Remove(db *database.Database, instId bson.ObjectId) (err error) {
 	coll := db.Instances()
+
+	inst, err := Get(db, instId)
+	if err != nil {
+		return
+	}
+
+	if inst.DeleteProtection {
+		logrus.WithFields(logrus.Fields{
+			"instance_id": instId.Hex(),
+		}).Info("instance: Delete protection ignore remove")
+		return
+	}
 
 	err = vpc.RemoveInstanceIps(db, instId)
 	if err != nil {
