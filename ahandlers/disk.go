@@ -16,16 +16,17 @@ import (
 )
 
 type diskData struct {
-	Id           bson.ObjectId `json:"id"`
-	Name         string        `json:"name"`
-	Organization bson.ObjectId `json:"organization"`
-	Instance     bson.ObjectId `json:"instance"`
-	Index        string        `json:"index"`
-	Node         bson.ObjectId `json:"node"`
-	Image        bson.ObjectId `json:"image"`
-	Backing      bool          `json:"backing"`
-	State        string        `json:"state"`
-	Size         int           `json:"size"`
+	Id               bson.ObjectId `json:"id"`
+	Name             string        `json:"name"`
+	Organization     bson.ObjectId `json:"organization"`
+	Instance         bson.ObjectId `json:"instance"`
+	Index            string        `json:"index"`
+	Node             bson.ObjectId `json:"node"`
+	DeleteProtection bool          `json:"delete_protection"`
+	Image            bson.ObjectId `json:"image"`
+	Backing          bool          `json:"backing"`
+	State            string        `json:"state"`
+	Size             int           `json:"size"`
 }
 
 type disksMultiData struct {
@@ -66,6 +67,7 @@ func diskPut(c *gin.Context) {
 
 	dsk.Name = dta.Name
 	dsk.Instance = dta.Instance
+	dsk.DeleteProtection = dta.DeleteProtection
 	dsk.Index = dta.Index
 
 	if dsk.State == disk.Available && dta.State == disk.Snapshot {
@@ -76,6 +78,7 @@ func diskPut(c *gin.Context) {
 		"state",
 		"name",
 		"instance",
+		"delete_protection",
 		"index",
 	)
 
@@ -118,14 +121,15 @@ func diskPost(c *gin.Context) {
 	}
 
 	dsk := &disk.Disk{
-		Name:         dta.Name,
-		Organization: dta.Organization,
-		Instance:     dta.Instance,
-		Index:        dta.Index,
-		Node:         dta.Node,
-		Image:        dta.Image,
-		Backing:      dta.Backing,
-		Size:         dta.Size,
+		Name:             dta.Name,
+		Organization:     dta.Organization,
+		Instance:         dta.Instance,
+		Index:            dta.Index,
+		Node:             dta.Node,
+		Image:            dta.Image,
+		DeleteProtection: dta.DeleteProtection,
+		Backing:          dta.Backing,
+		Size:             dta.Size,
 	}
 
 	errData, err := dsk.Validate(db)
