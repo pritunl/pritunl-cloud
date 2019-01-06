@@ -88,7 +88,11 @@ func GetAllVirt(db *database.Database, query *bson.M, disks []*disk.Disk) (
 
 	instanceDisks := map[bson.ObjectId][]*disk.Disk{}
 	for _, dsk := range disks {
-		if dsk.State != disk.Available && dsk.State != disk.Snapshot {
+		if dsk.State == disk.Destroy && dsk.DeleteProtection {
+			logrus.WithFields(logrus.Fields{
+				"disk_id": dsk.Id.Hex(),
+			}).Info("instance: Delete protection ignore disk detach")
+		} else if dsk.State != disk.Available && dsk.State != disk.Snapshot {
 			continue
 		}
 
