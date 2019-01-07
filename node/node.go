@@ -388,7 +388,8 @@ func (n *Node) sync() {
 	pubAddr, pubAddr6, err := bridges.GetIpAddrs(externalIface)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"error": err,
+			"external_interface": externalIface,
+			"error":              err,
 		}).Error("node: Failed to get public address")
 	}
 
