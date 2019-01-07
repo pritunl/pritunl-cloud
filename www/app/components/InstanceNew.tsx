@@ -570,6 +570,15 @@ export default class InstanceNew extends React.Component<Props, State> {
 						>
 							{domainsSelect}
 						</PageSelect>
+						<PageSwitch
+							disabled={this.state.disabled}
+							label="Delete Protection"
+							help="Block instance and any attached disks from being deleted."
+							checked={instance.delete_protection}
+							onToggle={(): void => {
+								this.set('delete_protection', !instance.delete_protection);
+							}}
+						/>
 					</div>
 					<div style={css.group}>
 						<PageSelect
