@@ -9,6 +9,7 @@ import ZonesStore from '../stores/ZonesStore';
 import PageInput from './PageInput';
 import PageInputButton from './PageInputButton';
 import PageInfo from './PageInfo';
+import PageSwitch from './PageSwitch';
 import PageSelect from './PageSelect';
 import PageSave from './PageSave';
 import PageNumInput from './PageNumInput';
@@ -536,6 +537,15 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					>
 						{domainsSelect}
 					</PageSelect>
+					<PageSwitch
+						disabled={this.state.disabled}
+						label="Delete Protection"
+						help="Block instance and any attached disks from being deleted."
+						checked={instance.delete_protection}
+						onToggle={(): void => {
+							this.set('delete_protection', !instance.delete_protection);
+						}}
+					/>
 				</div>
 				<div style={css.group}>
 					<PageInfo
