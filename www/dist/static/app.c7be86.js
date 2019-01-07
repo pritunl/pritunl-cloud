@@ -15755,7 +15755,7 @@ System.registerDynamic("app/components/Images.js", ["npm:react@16.4.1.js", "app/
     exports.default = Images;
     
 });
-System.registerDynamic("app/components/DiskDetailed.js", ["npm:react@16.4.1.js", "app/actions/DiskActions.js", "app/components/PageInput.js", "app/components/PageSelect.js", "app/components/PageNumInput.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/ConfirmButton.js", "app/stores/NodesStore.js", "app/stores/OrganizationsStore.js", "app/actions/InstanceActions.js", "app/stores/InstancesNodeStore.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/DiskDetailed.js", ["npm:react@16.4.1.js", "app/actions/DiskActions.js", "app/components/PageInput.js", "app/components/PageSelect.js", "app/components/PageSwitch.js", "app/components/PageNumInput.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/ConfirmButton.js", "app/stores/NodesStore.js", "app/stores/OrganizationsStore.js", "app/actions/InstanceActions.js", "app/stores/InstancesNodeStore.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -15765,6 +15765,7 @@ System.registerDynamic("app/components/DiskDetailed.js", ["npm:react@16.4.1.js",
     const DiskActions = $__require("app/actions/DiskActions.js");
     const PageInput_1 = $__require("app/components/PageInput.js");
     const PageSelect_1 = $__require("app/components/PageSelect.js");
+    const PageSwitch_1 = $__require("app/components/PageSwitch.js");
     const PageNumInput_1 = $__require("app/components/PageNumInput.js");
     const PageInfo_1 = $__require("app/components/PageInfo.js");
     const PageSave_1 = $__require("app/components/PageSave.js");
@@ -15978,6 +15979,8 @@ System.registerDynamic("app/components/DiskDetailed.js", ["npm:react@16.4.1.js",
                     this.set('instance', val);
                 } }, instancesSelect), React.createElement(PageNumInput_1.default, { label: "Index", help: "Index to attach disk.", hidden: !disk.instance, min: 0, max: 8, minorStepSize: 1, stepSize: 1, majorStepSize: 1, disabled: this.state.disabled, selectAllOnFocus: true, value: Number(disk.index), onChange: val => {
                     this.set('index', String(val));
+                } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Delete Protection", help: "Block disk from being deleted.", checked: disk.delete_protection, onToggle: () => {
+                    this.set('delete_protection', !disk.delete_protection);
                 } })), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: fields }))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.disk && !this.state.message, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
                     this.setState(Object.assign({}, this.state, { changed: false, disk: null }));
                 }, onSave: this.onSave }));
@@ -16556,7 +16559,9 @@ System.registerDynamic("app/components/DiskNew.js", ["npm:react@16.4.1.js", "app
                 } }, zonesSelect), React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasNodes, label: "Node", help: "Node to run disk on.", value: disk.node, onChange: val => {
                     this.setState(Object.assign({}, this.state, { disk: Object.assign({}, this.state.disk, { node: val, instance: '' }) }));
                     InstanceActions.syncNode(val);
-                } }, nodesSelect)), React.createElement("div", { style: css.group }, React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasInstances, label: "Instance", help: "Instance to attach disk to.", value: disk.instance, onChange: val => {
+                } }, nodesSelect), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Delete Protection", help: "Block disk from being deleted.", checked: disk.delete_protection, onToggle: () => {
+                    this.set('delete_protection', !disk.delete_protection);
+                } })), React.createElement("div", { style: css.group }, React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasInstances, label: "Instance", help: "Instance to attach disk to.", value: disk.instance, onChange: val => {
                     this.set('instance', val);
                 } }, instancesSelect), React.createElement(PageNumInput_1.default, { label: "Index", help: "Index to attach disk.", hidden: !disk.instance, min: 0, max: 8, minorStepSize: 1, stepSize: 1, majorStepSize: 1, disabled: this.state.disabled, selectAllOnFocus: true, value: Number(disk.index), onChange: val => {
                     this.set('index', String(val));
@@ -16629,6 +16634,7 @@ System.registerDynamic("app/components/Disks.js", ["npm:react@16.4.1.js", "app/C
             margin: '0 0 4px 0'
         },
         debugButton: {
+            opacity: 0.5,
             margin: '8px 0 0 8px'
         }
     };
@@ -17008,7 +17014,7 @@ System.registerDynamic("app/stores/DatacentersStore.js", ["app/dispatcher/Dispat
     exports.default = new DatacentersStore();
     
 });
-System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@16.4.1.js", "app/actions/InstanceActions.js", "app/stores/OrganizationsStore.js", "app/stores/ZonesStore.js", "app/components/PageInput.js", "app/components/PageInputButton.js", "app/components/PageInfo.js", "app/components/PageSelect.js", "app/components/PageSave.js", "app/components/PageNumInput.js", "app/components/ConfirmButton.js", "app/components/Help.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@16.4.1.js", "app/actions/InstanceActions.js", "app/stores/OrganizationsStore.js", "app/stores/ZonesStore.js", "app/components/PageInput.js", "app/components/PageInputButton.js", "app/components/PageInfo.js", "app/components/PageSwitch.js", "app/components/PageSelect.js", "app/components/PageSave.js", "app/components/PageNumInput.js", "app/components/ConfirmButton.js", "app/components/Help.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -17021,6 +17027,7 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@16.4.1.
     const PageInput_1 = $__require("app/components/PageInput.js");
     const PageInputButton_1 = $__require("app/components/PageInputButton.js");
     const PageInfo_1 = $__require("app/components/PageInfo.js");
+    const PageSwitch_1 = $__require("app/components/PageSwitch.js");
     const PageSelect_1 = $__require("app/components/PageSelect.js");
     const PageSave_1 = $__require("app/components/PageSave.js");
     const PageNumInput_1 = $__require("app/components/PageNumInput.js");
@@ -17271,7 +17278,9 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@16.4.1.
                     this.set('vpc', val);
                 } }, vpcsSelect), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "DNS Domain", help: "Domain to create DNS name using instance name.", value: instance.domain, onChange: val => {
                     this.set('domain', val);
-                } }, domainsSelect)), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
+                } }, domainsSelect), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Delete Protection", help: "Block instance and any attached disks from being deleted.", checked: instance.delete_protection, onToggle: () => {
+                    this.set('delete_protection', !instance.delete_protection);
+                } })), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
                     label: 'ID',
                     value: this.props.instance.id || 'None'
                 }, {
@@ -18154,7 +18163,9 @@ System.registerDynamic("app/components/InstanceNew.js", ["npm:react@16.4.1.js", 
                     this.set('node', val);
                 } }, nodesSelect), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "DNS Domain", help: "Domain to create DNS name using instance name.", value: instance.domain, onChange: val => {
                     this.set('domain', val);
-                } }, domainsSelect)), React.createElement("div", { style: css.group }, React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasImages, label: "Image", help: "Starting image for node.", value: instance.image, onChange: val => {
+                } }, domainsSelect), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Delete Protection", help: "Block instance and any attached disks from being deleted.", checked: instance.delete_protection, onToggle: () => {
+                    this.set('delete_protection', !instance.delete_protection);
+                } })), React.createElement("div", { style: css.group }, React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasImages, label: "Image", help: "Starting image for node.", value: instance.image, onChange: val => {
                     this.set('image', val);
                 } }, imagesSelect), React.createElement(PageSwitch_1.default, { label: "Linked disk image", help: "Link to source disk image instead of creating full copy. This will reduce disk size and provide faster startup.", checked: instance.image_backing, onToggle: () => {
                     this.set('image_backing', !instance.image_backing);
@@ -18438,7 +18449,7 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.4.1.js", "a
             margin: '0 0 4px 0'
         },
         debugButton: {
-            opacity: 0.85,
+            opacity: 0.5,
             margin: '8px 0 0 8px'
         }
     };
@@ -18587,7 +18598,7 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.4.1.js", "a
                         this.setState(Object.assign({}, this.state, { newOpened: false }));
                     } });
             }
-            let debugClass = 'pt-button pt-intent-danger pt-icon-console ';
+            let debugClass = 'pt-button pt-icon-console ';
             if (this.state.debug) {
                 debugClass += 'pt-active';
             }
