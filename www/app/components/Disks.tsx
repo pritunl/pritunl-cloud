@@ -77,6 +77,7 @@ const css = {
 		margin: '0 0 4px 0',
 	} as React.CSSProperties,
 	debugButton: {
+		opacity: 0.5,
 		margin: '8px 0 0 8px',
 	} as React.CSSProperties,
 };
