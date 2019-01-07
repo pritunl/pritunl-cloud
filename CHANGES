@@ -4,6 +4,7 @@ pritunl-cloud changelog
 <%= version %>
 
 Add instance and disk delete protection
+Web interface improvements
 
 Version 1.0.1135.30 2019-01-02
 ------------------------------
