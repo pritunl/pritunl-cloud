@@ -2,19 +2,20 @@
 import * as React from 'react';
 import * as DiskTypes from '../types/DiskTypes';
 import * as DiskActions from '../actions/DiskActions';
-import * as OrganizationTypes from "../types/OrganizationTypes";
+import * as OrganizationTypes from '../types/OrganizationTypes';
 import PageInput from './PageInput';
 import PageSelect from './PageSelect';
+import PageSwitch from './PageSwitch';
 import PageNumInput from './PageNumInput';
 import PageInfo from './PageInfo';
 import * as PageInfos from './PageInfo';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
-import NodesStore from "../stores/NodesStore";
-import OrganizationsStore from "../stores/OrganizationsStore";
+import NodesStore from '../stores/NodesStore';
+import OrganizationsStore from '../stores/OrganizationsStore';
 import * as InstanceActions from '../actions/InstanceActions';
-import InstancesNodeStore from "../stores/InstancesNodeStore";
-import * as InstanceTypes from "../types/InstanceTypes";
+import InstancesNodeStore from '../stores/InstancesNodeStore';
+import * as InstanceTypes from '../types/InstanceTypes';
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -385,6 +386,15 @@ export default class DiskDetailed extends React.Component<Props, State> {
 						value={Number(disk.index)}
 						onChange={(val: number): void => {
 							this.set('index', String(val));
+						}}
+					/>
+					<PageSwitch
+						disabled={this.state.disabled}
+						label="Delete Protection"
+						help="Block disk from being deleted."
+						checked={disk.delete_protection}
+						onToggle={(): void => {
+							this.set('delete_protection', !disk.delete_protection);
 						}}
 					/>
 				</div>
