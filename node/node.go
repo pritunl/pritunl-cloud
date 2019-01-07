@@ -385,23 +385,25 @@ func (n *Node) sync() {
 		externalIface = settings.Local.BridgeName
 	}
 
-	pubAddr, pubAddr6, err := bridges.GetIpAddrs(externalIface)
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"external_interface": externalIface,
-			"error":              err,
-		}).Error("node: Failed to get public address")
-	}
-
-	if pubAddr != "" {
-		n.PublicIps = []string{
-			pubAddr,
+	if externalIface != "" {
+		pubAddr, pubAddr6, err := bridges.GetIpAddrs(externalIface)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"external_interface": externalIface,
+				"error":              err,
+			}).Error("node: Failed to get public address")
 		}
-	}
 
-	if pubAddr6 != "" {
-		n.PublicIps6 = []string{
-			pubAddr6,
+		if pubAddr != "" {
+			n.PublicIps = []string{
+				pubAddr,
+			}
+		}
+
+		if pubAddr6 != "" {
+			n.PublicIps6 = []string{
+				pubAddr6,
+			}
 		}
 	}
 
