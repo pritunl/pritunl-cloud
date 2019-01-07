@@ -204,7 +204,9 @@ func (i *Instance) PreCommit() {
 	i.curDeleteProtection = i.DeleteProtection
 }
 
-func (i *Instance) PostCommit(db *database.Database) (err error) {
+func (i *Instance) PostCommit(db *database.Database) (
+	dskChange bool, err error) {
+
 	if i.curVpc != "" && i.curVpc != i.Vpc {
 		err = vpc.RemoveInstanceIp(db, i.Id, i.curVpc)
 		if err != nil {
@@ -213,6 +215,8 @@ func (i *Instance) PostCommit(db *database.Database) (err error) {
 	}
 
 	if i.curDeleteProtection != i.DeleteProtection {
+		dskChange = true
+
 		err = disk.SetDeleteProtection(db, i.Id, i.DeleteProtection)
 		if err != nil {
 			return
