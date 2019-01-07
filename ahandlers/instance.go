@@ -108,7 +108,7 @@ func instancePut(c *gin.Context) {
 		return
 	}
 
-	err = inst.PostCommit(db)
+	dskChange, err := inst.PostCommit(db)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -121,6 +121,9 @@ func instancePut(c *gin.Context) {
 	}
 
 	event.PublishDispatch(db, "instance.change")
+	if dskChange {
+		event.PublishDispatch(db, "disk.change")
+	}
 
 	c.JSON(200, inst)
 }
