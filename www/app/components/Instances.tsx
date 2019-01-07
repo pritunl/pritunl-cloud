@@ -345,7 +345,7 @@ export default class Instances extends React.Component<{}, State> {
 			/>;
 		}
 
-		let debugClass = 'pt-button pt-intent-danger pt-icon-console ';
+		let debugClass = 'pt-button pt-icon-console ';
 		if (this.state.debug) {
 			debugClass += 'pt-active';
 		}
