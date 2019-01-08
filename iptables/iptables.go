@@ -161,6 +161,7 @@ func (r *Rules) Hold() (err error) {
 			cmd = append(cmd,
 				"-m", "physdev",
 				"--physdev-out", r.Interface,
+				"--physdev-is-bridged",
 			)
 		} else {
 			err = &errortypes.ParseError{
@@ -190,6 +191,7 @@ func (r *Rules) Hold() (err error) {
 			cmd = append(cmd,
 				"-m", "physdev",
 				"--physdev-out", r.Interface,
+				"--physdev-is-bridged",
 			)
 		} else {
 			err = &errortypes.ParseError{
@@ -263,6 +265,7 @@ func generateVirt(namespace, iface string, ingress []*firewall.Rule) (
 		cmd = append(cmd,
 			"-m", "physdev",
 			"--physdev-out", rules.Interface,
+			"--physdev-is-bridged",
 		)
 	}
 	cmd = append(cmd,
@@ -280,6 +283,7 @@ func generateVirt(namespace, iface string, ingress []*firewall.Rule) (
 		cmd = append(cmd,
 			"-m", "physdev",
 			"--physdev-out", rules.Interface,
+			"--physdev-is-bridged",
 		)
 	}
 	cmd = append(cmd,
@@ -297,6 +301,7 @@ func generateVirt(namespace, iface string, ingress []*firewall.Rule) (
 		cmd = append(cmd,
 			"-m", "physdev",
 			"--physdev-out", rules.Interface,
+			"--physdev-is-bridged",
 		)
 	}
 	cmd = append(cmd,
@@ -314,6 +319,7 @@ func generateVirt(namespace, iface string, ingress []*firewall.Rule) (
 		cmd = append(cmd,
 			"-m", "physdev",
 			"--physdev-out", rules.Interface,
+			"--physdev-is-bridged",
 		)
 	}
 	cmd = append(cmd,
@@ -334,6 +340,7 @@ func generateVirt(namespace, iface string, ingress []*firewall.Rule) (
 		cmd = append(cmd,
 			"-m", "physdev",
 			"--physdev-out", rules.Interface,
+			"--physdev-is-bridged",
 		)
 	}
 	cmd = rules.commentCommand(cmd, false)
@@ -424,6 +431,7 @@ func generateVirt(namespace, iface string, ingress []*firewall.Rule) (
 				cmd = append(cmd,
 					"-m", "physdev",
 					"--physdev-out", rules.Interface,
+					"--physdev-is-bridged",
 				)
 			}
 
@@ -454,6 +462,7 @@ func generateVirt(namespace, iface string, ingress []*firewall.Rule) (
 		cmd = append(cmd,
 			"-m", "physdev",
 			"--physdev-out", rules.Interface,
+			"--physdev-is-bridged",
 		)
 	}
 	cmd = append(cmd,
@@ -471,6 +480,7 @@ func generateVirt(namespace, iface string, ingress []*firewall.Rule) (
 		cmd = append(cmd,
 			"-m", "physdev",
 			"--physdev-out", rules.Interface,
+			"--physdev-is-bridged",
 		)
 	}
 	cmd = append(cmd,
@@ -488,6 +498,7 @@ func generateVirt(namespace, iface string, ingress []*firewall.Rule) (
 		cmd = append(cmd,
 			"-m", "physdev",
 			"--physdev-out", rules.Interface,
+			"--physdev-is-bridged",
 		)
 	}
 	cmd = append(cmd,
@@ -505,6 +516,7 @@ func generateVirt(namespace, iface string, ingress []*firewall.Rule) (
 		cmd = append(cmd,
 			"-m", "physdev",
 			"--physdev-out", rules.Interface,
+			"--physdev-is-bridged",
 		)
 	}
 	cmd = append(cmd,
@@ -522,6 +534,7 @@ func generateVirt(namespace, iface string, ingress []*firewall.Rule) (
 	//	cmd = append(cmd,
 	//		"-m", "physdev",
 	//		"--physdev-out", rules.Interface,
+	//      "--physdev-is-bridged",
 	//	)
 	//}
 	//cmd = rules.commentCommand(cmd, false)
@@ -535,6 +548,7 @@ func generateVirt(namespace, iface string, ingress []*firewall.Rule) (
 		cmd = append(cmd,
 			"-m", "physdev",
 			"--physdev-out", rules.Interface,
+			"--physdev-is-bridged",
 		)
 	}
 	cmd = rules.commentCommand(cmd, false)
@@ -548,6 +562,7 @@ func generateVirt(namespace, iface string, ingress []*firewall.Rule) (
 		cmd = append(cmd,
 			"-m", "physdev",
 			"--physdev-out", rules.Interface,
+			"--physdev-is-bridged",
 		)
 	}
 	cmd = rules.commentCommand(cmd, false)
