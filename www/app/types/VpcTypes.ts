@@ -8,6 +8,7 @@ export const CHANGE = 'vpc.change';
 export interface Vpc {
 	id?: string;
 	name?: string;
+	vpc_id?: number;
 	network?: string;
 	network6?: string;
 	organization?: string;
