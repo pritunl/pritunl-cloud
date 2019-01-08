@@ -101,18 +101,21 @@ func GetVmInfo(vmId bson.ObjectId, getDisks bool) (
 		disksStore, ok := store.GetDisks(vmId)
 		if !ok || time.Since(disksStore.Timestamp) > 30*time.Second {
 			for i := 0; i < 20; i++ {
-				disks, e := qms.GetDisks(vmId)
-				if e != nil {
-					if i < 19 {
-						time.Sleep(100 * time.Millisecond)
-						continue
+				if virt.State == vm.Running {
+					disks, e := qms.GetDisks(vmId)
+					if e != nil {
+						if i < 19 {
+							time.Sleep(100 * time.Millisecond)
+							UpdateVmState(virt)
+							continue
+						}
+						err = e
+						return
 					}
-					err = e
-					return
-				}
-				virt.Disks = disks
+					virt.Disks = disks
 
-				store.SetDisks(vmId, disks)
+					store.SetDisks(vmId, disks)
+				}
 
 				break
 			}
