@@ -47,7 +47,9 @@ func (n *Namespace) Deploy() (err error) {
 
 		if !curVirtIfaces.Contains(iface) {
 			utils.ExecCombinedOutputLogged(
-				nil,
+				[]string{
+					"Cannot find device",
+				},
 				"ip", "link", "del", iface,
 			)
 			interfaces.RemoveVirtIface(iface)
@@ -61,7 +63,9 @@ func (n *Namespace) Deploy() (err error) {
 
 		if !curNamespaces.Contains(namespace) {
 			_, err = utils.ExecCombinedOutputLogged(
-				nil,
+				[]string{
+					"No such file",
+				},
 				"ip", "netns", "del", namespace,
 			)
 			if err != nil {
