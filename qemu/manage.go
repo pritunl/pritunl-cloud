@@ -1155,6 +1155,62 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	}
 
 	if exists {
+		vrt, e := GetVmInfo(virt.Id, false)
+		if e != nil {
+			err = e
+			return
+		}
+
+		if vrt.State == vm.Running {
+			shutdown := false
+
+			for i := 0; i < 10; i++ {
+				err = qms.Shutdown(virt.Id)
+				if err == nil {
+					break
+				}
+
+				time.Sleep(500 * time.Millisecond)
+			}
+
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"id":    virt.Id.Hex(),
+					"error": err,
+				}).Error("qemu: Power off virtual machine error")
+				err = nil
+			} else {
+				for i := 0; i < settings.Hypervisor.StopTimeout; i++ {
+					vrt, err = GetVmInfo(virt.Id, false)
+					if err != nil {
+						return
+					}
+
+					if vrt == nil || vrt.State == vm.Stopped ||
+						vrt.State == vm.Failed {
+
+						if vrt != nil {
+							err = vrt.Commit(db)
+							if err != nil {
+								return
+							}
+						}
+
+						shutdown = true
+						break
+					}
+
+					time.Sleep(1 * time.Second)
+				}
+			}
+
+			if !shutdown {
+				logrus.WithFields(logrus.Fields{
+					"id": virt.Id.Hex(),
+				}).Warning("qemu: Force power off virtual machine")
+			}
+		}
+
 		err = systemd.Stop(unitName)
 		if err != nil {
 			return
