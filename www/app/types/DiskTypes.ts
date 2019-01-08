@@ -12,6 +12,8 @@ export interface Disk {
 	state?: string;
 	instance?: string;
 	image?: string;
+	backing?: boolean;
+	backing_image?: string;
 	index?: string;
 	size?: number;
 }
