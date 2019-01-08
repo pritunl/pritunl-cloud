@@ -11,6 +11,7 @@ export interface Disk {
 	organization?: string;
 	state?: string;
 	instance?: string;
+	delete_protection?: boolean;
 	image?: string;
 	backing?: boolean;
 	backing_image?: string;
