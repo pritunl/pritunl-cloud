@@ -390,20 +390,6 @@ func generateVirt(namespace, iface string, ingress []*firewall.Rule) (
 
 			cmd = rules.newCommand()
 
-			if sourceIp != "0.0.0.0/0" && sourceIp != "::/0" {
-				if ipv6 {
-					cmd = append(cmd,
-						"-m", "set",
-						"--match-set", setName6, "src",
-					)
-				} else {
-					cmd = append(cmd,
-						"-m", "set",
-						"--match-set", setName, "src",
-					)
-				}
-			}
-
 			switch rule.Protocol {
 			case firewall.All:
 				break
@@ -425,6 +411,20 @@ func generateVirt(namespace, iface string, ingress []*firewall.Rule) (
 				break
 			default:
 				continue
+			}
+
+			if sourceIp != "0.0.0.0/0" && sourceIp != "::/0" {
+				if ipv6 {
+					cmd = append(cmd,
+						"-m", "set",
+						"--match-set", setName6, "src",
+					)
+				} else {
+					cmd = append(cmd,
+						"-m", "set",
+						"--match-set", setName, "src",
+					)
+				}
 			}
 
 			if rules.Interface != "host" {
@@ -712,20 +712,6 @@ func generateInternal(namespace, iface string, ingress []*firewall.Rule) (
 				)
 			}
 
-			if sourceIp != "0.0.0.0/0" && sourceIp != "::/0" {
-				if ipv6 {
-					cmd = append(cmd,
-						"-m", "set",
-						"--match-set", setName6, "src",
-					)
-				} else {
-					cmd = append(cmd,
-						"-m", "set",
-						"--match-set", setName, "src",
-					)
-				}
-			}
-
 			switch rule.Protocol {
 			case firewall.All:
 				break
@@ -747,6 +733,20 @@ func generateInternal(namespace, iface string, ingress []*firewall.Rule) (
 				break
 			default:
 				continue
+			}
+
+			if sourceIp != "0.0.0.0/0" && sourceIp != "::/0" {
+				if ipv6 {
+					cmd = append(cmd,
+						"-m", "set",
+						"--match-set", setName6, "src",
+					)
+				} else {
+					cmd = append(cmd,
+						"-m", "set",
+						"--match-set", setName, "src",
+					)
+				}
 			}
 
 			switch rule.Protocol {
@@ -1006,20 +1006,6 @@ func generate(namespace, iface string, ingress []*firewall.Rule) (
 
 			cmd = rules.newCommand()
 
-			if sourceIp != "0.0.0.0/0" && sourceIp != "::/0" {
-				if ipv6 {
-					cmd = append(cmd,
-						"-m", "set",
-						"--match-set", setName6, "src",
-					)
-				} else {
-					cmd = append(cmd,
-						"-m", "set",
-						"--match-set", setName, "src",
-					)
-				}
-			}
-
 			if rules.Interface != "host" {
 				cmd = append(cmd,
 					"-o", rules.Interface,
@@ -1047,6 +1033,20 @@ func generate(namespace, iface string, ingress []*firewall.Rule) (
 				break
 			default:
 				continue
+			}
+
+			if sourceIp != "0.0.0.0/0" && sourceIp != "::/0" {
+				if ipv6 {
+					cmd = append(cmd,
+						"-m", "set",
+						"--match-set", setName6, "src",
+					)
+				} else {
+					cmd = append(cmd,
+						"-m", "set",
+						"--match-set", setName, "src",
+					)
+				}
 			}
 
 			switch rule.Protocol {
