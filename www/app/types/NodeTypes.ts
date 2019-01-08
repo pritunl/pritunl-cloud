@@ -19,6 +19,9 @@ export interface Node {
 	certificates?: string[];
 	external_interface?: string;
 	internal_interface?: string;
+	external_interfaces?: string[];
+	internal_interfaces?: string[];
+	available_interfaces?: string[];
 	firewall?: boolean;
 	network_roles?: string[];
 	requests_min?: number;
