@@ -15,6 +15,7 @@ export interface Instance {
 	status?: string;
 	state?: string;
 	vm_state?: string;
+	delete_protection?: boolean;
 	public_ips?: string[];
 	public_ips6?: string[];
 	private_ips?: string[];
