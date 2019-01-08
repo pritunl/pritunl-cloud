@@ -200,6 +200,7 @@ func loadIptables(namespace string, state *State, ipv6 bool) (err error) {
 }
 
 func applyState(oldState, newState *State, namespaces []string) (err error) {
+	changed := false
 	oldIfaces := set.NewSet()
 	newIfaces := set.NewSet()
 
@@ -241,6 +242,11 @@ func applyState(oldState, newState *State, namespaces []string) (err error) {
 				continue
 			}
 
+			if !changed {
+				changed = true
+				logrus.Info("iptables: Updating iptables")
+			}
+
 			if rules.Interface != "host" {
 				err = rules.Hold()
 				if err != nil {
@@ -252,6 +258,11 @@ func applyState(oldState, newState *State, namespaces []string) (err error) {
 			if err != nil {
 				return
 			}
+		}
+
+		if !changed {
+			changed = true
+			logrus.Info("iptables: Updating iptables")
 		}
 
 		err = rules.Apply()
