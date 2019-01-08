@@ -1342,6 +1342,7 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		time.Sleep(500 * time.Millisecond)
 	}
 
+	shutdown := false
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"id":    virt.Id.Hex(),
@@ -1366,24 +1367,23 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 					}
 				}
 
-				return
-			}
-
-			if i != 0 && i%3 == 0 {
-				qms.Shutdown(virt.Id)
+				shutdown = true
+				break
 			}
 
 			time.Sleep(1 * time.Second)
 		}
 	}
 
-	logrus.WithFields(logrus.Fields{
-		"id": virt.Id.Hex(),
-	}).Warning("qemu: Force power off virtual machine")
+	if !shutdown {
+		logrus.WithFields(logrus.Fields{
+			"id": virt.Id.Hex(),
+		}).Warning("qemu: Force power off virtual machine")
 
-	err = systemd.Stop(unitName)
-	if err != nil {
-		return
+		err = systemd.Stop(unitName)
+		if err != nil {
+			return
+		}
 	}
 
 	err = NetworkConfClear(db, virt)
