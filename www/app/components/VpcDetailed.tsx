@@ -557,6 +557,10 @@ export default class VpcDetailed extends React.Component<Props, State> {
 								value: org ? org.name : this.props.vpc.organization,
 							},
 							{
+								label: 'VLAN Number',
+								value: this.props.vpc.vpc_id || 'Unknown',
+							},
+							{
 								label: 'Private IPv6 Network',
 								value: this.props.vpc.network6 || 'Unknown',
 							},
