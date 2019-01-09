@@ -9,6 +9,7 @@ type hypervisor struct {
 	BridgeName   string `bson:"bridge_name" default:"pritunlbr0"`
 	StartTimeout int    `bson:"start_timeout" default:"30"`
 	StopTimeout  int    `bson:"stop_timeout" default:"60"`
+	RefreshRate  int    `bson:"refresh_rate" default:"90"`
 }
 
 func newHypervisor() interface{} {
