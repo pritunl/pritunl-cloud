@@ -8,7 +8,7 @@ type hypervisor struct {
 	LibPath      string `bson:"systemd_path" default:"/var/lib/pritunl-cloud"`
 	BridgeName   string `bson:"bridge_name" default:"pritunlbr0"`
 	StartTimeout int    `bson:"start_timeout" default:"30"`
-	StopTimeout  int    `bson:"stop_timeout" default:"60"`
+	StopTimeout  int    `bson:"stop_timeout" default:"90"`
 	RefreshRate  int    `bson:"refresh_rate" default:"90"`
 }
 
