@@ -1206,7 +1206,9 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 
 					time.Sleep(1 * time.Second)
 
-					qms.Shutdown(virt.Id)
+					if (i + 1) % 15 == 0 {
+						qms.Shutdown(virt.Id)
+					}
 				}
 			}
 
@@ -1379,7 +1381,9 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 
 			time.Sleep(1 * time.Second)
 
-			qms.Shutdown(virt.Id)
+			if (i + 1) % 15 == 0 {
+				qms.Shutdown(virt.Id)
+			}
 		}
 	}
 
