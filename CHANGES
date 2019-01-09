@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Reliability improvements
+
 Version 1.0.1141.35 2019-01-08
 ------------------------------
 
