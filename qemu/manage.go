@@ -46,6 +46,9 @@ type InfoCache struct {
 func GetVmInfo(vmId bson.ObjectId, getDisks bool) (
 	virt *vm.VirtualMachine, err error) {
 
+	refreshRate := time.Duration(
+		settings.Hypervisor.RefreshRate) * time.Second
+
 	virtStore, ok := store.GetVirt(vmId)
 	if !ok {
 		unitPath := paths.GetUnitPath(vmId)
@@ -91,7 +94,7 @@ func GetVmInfo(vmId bson.ObjectId, getDisks bool) (
 		virt = &virtStore.Virt
 
 		if virt.State != vm.Running ||
-			time.Since(virtStore.Timestamp) > 30*time.Second {
+			time.Since(virtStore.Timestamp) > refreshRate {
 
 			UpdateVmState(virt)
 		}
@@ -99,7 +102,7 @@ func GetVmInfo(vmId bson.ObjectId, getDisks bool) (
 
 	if virt.State == vm.Running && getDisks {
 		disksStore, ok := store.GetDisks(vmId)
-		if !ok || time.Since(disksStore.Timestamp) > 30*time.Second {
+		if !ok || time.Since(disksStore.Timestamp) > refreshRate {
 			for i := 0; i < 20; i++ {
 				if virt.State == vm.Running {
 					disks, e := qms.GetDisks(vmId)
