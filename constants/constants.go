@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	Version         = "1.0.1141.35"
+	Version         = "1.0.1142.87"
 	DatabaseVersion = 1
 	ConfPath        = "/cloud/pritunl-cloud.json"
 	LogPath         = "/var/log/pritunl-cloud.log"
