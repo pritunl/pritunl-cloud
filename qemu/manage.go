@@ -987,9 +987,7 @@ func NetworkConfClear(db *database.Database,
 
 	ifaceExternalVirt := vm.GetIfaceVirt(virt.Id, 0)
 	ifaceInternalVirt := vm.GetIfaceVirt(virt.Id, 1)
-	namespace := vm.GetNamespace(virt.Id, 0)
 
-	utils.ExecCombinedOutput("", "ip", "netns", "del", namespace)
 	utils.ExecCombinedOutput("", "ip", "link",
 		"set", ifaceExternalVirt, "down")
 	utils.ExecCombinedOutput("", "ip", "link", "del", ifaceExternalVirt)
