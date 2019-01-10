@@ -216,6 +216,41 @@ func GetInternal(virtIface string) (internalIface string) {
 	return
 }
 
+func GetBridges() (bridges set.Set) {
+	bridges = set.NewSet()
+
+	externalIfaces := node.Self.ExternalInterfaces
+	if externalIfaces != nil {
+		for _, iface := range externalIfaces {
+			bridges.Add(iface)
+		}
+	} else {
+		externalIface := node.Self.ExternalInterface
+		if externalIface != "" {
+			bridges.Add(externalIface)
+		}
+	}
+
+	internalIfaces := node.Self.InternalInterfaces
+	if internalIfaces != nil {
+		for _, iface := range internalIfaces {
+			bridges.Add(iface)
+		}
+	} else {
+		internalIface := node.Self.InternalInterface
+		if internalIface != "" {
+			bridges.Add(internalIface)
+		}
+	}
+
+	bridge := settings.Local.BridgeName
+	if bridge != "" {
+		bridges.Add(bridge)
+	}
+
+	return
+}
+
 func RemoveVirtIface(virtIface string) {
 	ifacesLock.Lock()
 	lastChange = time.Now()
