@@ -10,7 +10,7 @@ type hypervisor struct {
 	NormalMtu    int    `bson:"normal_mtu" default:"1500"`
 	JumboMtu     int    `bson:"jumbo_mtu" default:"9000"`
 	StartTimeout int    `bson:"start_timeout" default:"30"`
-	StopTimeout  int    `bson:"stop_timeout" default:"90"`
+	StopTimeout  int    `bson:"stop_timeout" default:"120"`
 	RefreshRate  int    `bson:"refresh_rate" default:"90"`
 }
 
