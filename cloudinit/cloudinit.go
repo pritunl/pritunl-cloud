@@ -9,7 +9,9 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
@@ -35,7 +37,7 @@ const netConfigTmpl = `version: 1
 config:
   - type: physical
     name: eth0
-    mac_address: {{.Mac}}
+    mac_address: {{.Mac}}{{.Mtu}}
     subnets:
       - type: static
         address: {{.Address}}
@@ -49,6 +51,9 @@ config:
         address: {{.Address6}}
         gateway: {{.Gateway6}}
 `
+
+const netMtu = `
+    mtu: %d`
 
 const cloudConfigTmpl = `#cloud-config
 ssh_deletekeys: false
@@ -85,6 +90,7 @@ var (
 
 type netConfigData struct {
 	Mac      string
+	Mtu      string
 	Address  string
 	Netmask  string
 	Network  string
@@ -263,6 +269,10 @@ func getNetData(db *database.Database, inst *instance.Instance,
 		Gateway:  gatewayAddr.String(),
 		Address6: addr6.String(),
 		Gateway6: gatewayAddr6.String(),
+	}
+
+	if node.Self.JumboFrames {
+		data.Mtu = fmt.Sprintf(netMtu, settings.Hypervisor.JumboMtu)
 	}
 
 	output := &bytes.Buffer{}
