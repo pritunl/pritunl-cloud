@@ -29,11 +29,7 @@ func Configured() bool {
 	return configured
 }
 
-func Configure() (err error) {
-	if configured {
-		return
-	}
-
+func configureBridge() (err error) {
 	bridgeName := settings.Hypervisor.BridgeName
 
 	ifaces, err := net.Interfaces()
@@ -49,23 +45,8 @@ func Configure() (err error) {
 			iface.Name == "br0" {
 
 			settings.Local.BridgeName = iface.Name
-			configured = true
-			break
-		}
-	}
-
-	if configured {
-		_, err = utils.ExecCombinedOutputLogged(
-			nil, "sysctl", "-w",
-			fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2",
-				settings.Local.BridgeName,
-			),
-		)
-		if err != nil {
 			return
 		}
-
-		return
 	}
 
 	defaultIface, err := getDefault()
@@ -74,6 +55,7 @@ func Configure() (err error) {
 	}
 
 	if strings.Contains(defaultIface, "br") {
+		settings.Local.BridgeName = defaultIface
 		return
 	}
 
@@ -147,7 +129,6 @@ func Configure() (err error) {
 	}
 
 	settings.Local.BridgeName = bridgeName
-
 	time.Sleep(5 * time.Second)
 
 	//err = utils.Exec("", "brctl", "addbr", bridgeName)
@@ -228,7 +209,19 @@ func Configure() (err error) {
 	//	errors.Wrap(err, "bridge: Bridge dhcp timeout"),
 	//}
 
-	configured = true
+	return
+}
 
+func Configure() (err error) {
+	if configured {
+		return
+	}
+
+	err = configureBridge()
+	if err != nil {
+		return
+	}
+
+	configured = true
 	return
 }
