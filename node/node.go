@@ -302,6 +302,7 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.InternalInterface = nde.InternalInterface
 	n.ExternalInterfaces = nde.ExternalInterfaces
 	n.InternalInterfaces = nde.InternalInterfaces
+	n.JumboFrames = nde.JumboFrames
 	n.Firewall = nde.Firewall
 	n.NetworkRoles = nde.NetworkRoles
 	n.VirtPath = nde.VirtPath
