@@ -147,6 +147,29 @@ func GetExternal(virtIface string) (externalIface string) {
 	return
 }
 
+func HasExternal() (exists bool) {
+	externalIfaces := node.Self.ExternalInterfaces
+	externalIface := ""
+
+	if externalIfaces != nil {
+		if len(externalIfaces) > 0 {
+			externalIface = externalIfaces[0]
+		}
+	} else {
+		externalIface = node.Self.ExternalInterface
+	}
+
+	if externalIface == "" {
+		externalIface = settings.Local.BridgeName
+	}
+
+	if externalIface != "" {
+		exists = true
+	}
+
+	return
+}
+
 func GetInternal(virtIface string) (internalIface string) {
 	internalIfaces := node.Self.InternalInterfaces
 
