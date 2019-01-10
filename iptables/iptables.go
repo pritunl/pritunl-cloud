@@ -803,49 +803,37 @@ func generateInternal(namespace, iface string, ingress []*firewall.Rule) (
 	)
 	rules.Ingress6 = append(rules.Ingress6, cmd)
 
-	//cmd = rules.newCommand()
-	//if rules.Interface != "host" {
-	//	cmd = append(cmd,
-	//		"-i", rules.Interface,
-	//	)
-	//}
-	//cmd = append(cmd,
-	//	"-m", "conntrack",
-	//	"--ctstate", "INVALID",
-	//)
-	//cmd = rules.commentCommand(cmd, false)
-	//cmd = append(cmd,
-	//	"-j", "DROP",
-	//)
-	//rules.Ingress = append(rules.Ingress, cmd)
-	//
-	//cmd = rules.newCommand()
-	//if rules.Interface != "host" {
-	//	cmd = append(cmd,
-	//		"-i", rules.Interface,
-	//	)
-	//}
-	//cmd = append(cmd,
-	//	"-m", "conntrack",
-	//	"--ctstate", "INVALID",
-	//)
-	//cmd = rules.commentCommand(cmd, false)
-	//cmd = append(cmd,
-	//	"-j", "DROP",
-	//)
-	//rules.Ingress6 = append(rules.Ingress6, cmd)
+	cmd = rules.newCommand()
+	if rules.Interface != "host" {
+		cmd = append(cmd,
+			"-i", rules.Interface,
+		)
+	}
+	cmd = append(cmd,
+		"-m", "conntrack",
+		"--ctstate", "INVALID",
+	)
+	cmd = rules.commentCommand(cmd, false)
+	cmd = append(cmd,
+		"-j", "DROP",
+	)
+	rules.Ingress = append(rules.Ingress, cmd)
 
-	//cmd = rules.newCommand()
-	//if rules.Interface != "host" {
-	//	cmd = append(cmd,
-	//		"-i", rules.Interface,
-	//	)
-	//}
-	//cmd = rules.commentCommand(cmd, false)
-	//cmd = append(cmd,
-	//	"-j", "NFLOG",
-	//)
-	//rules.Ingress = append(rules.Ingress, cmd)
+	cmd = rules.newCommand()
+	if rules.Interface != "host" {
+		cmd = append(cmd,
+			"-i", rules.Interface,
+		)
+	}
+	cmd = append(cmd,
+		"-m", "conntrack",
+		"--ctstate", "INVALID",
+	)
+	cmd = rules.commentCommand(cmd, false)
+	cmd = append(cmd,
+		"-j", "DROP",
+	)
+	rules.Ingress6 = append(rules.Ingress6, cmd)
 
 	cmd = rules.newCommand()
 	if rules.Interface != "host" {
@@ -1103,49 +1091,37 @@ func generate(namespace, iface string, ingress []*firewall.Rule) (
 	)
 	rules.Ingress6 = append(rules.Ingress6, cmd)
 
-	//cmd = rules.newCommand()
-	//if rules.Interface != "host" {
-	//	cmd = append(cmd,
-	//		"-o", rules.Interface,
-	//	)
-	//}
-	//cmd = append(cmd,
-	//	"-m", "conntrack",
-	//	"--ctstate", "INVALID",
-	//)
-	//cmd = rules.commentCommand(cmd, false)
-	//cmd = append(cmd,
-	//	"-j", "DROP",
-	//)
-	//rules.Ingress = append(rules.Ingress, cmd)
-	//
-	//cmd = rules.newCommand()
-	//if rules.Interface != "host" {
-	//	cmd = append(cmd,
-	//		"-o", rules.Interface,
-	//	)
-	//}
-	//cmd = append(cmd,
-	//	"-m", "conntrack",
-	//	"--ctstate", "INVALID",
-	//)
-	//cmd = rules.commentCommand(cmd, false)
-	//cmd = append(cmd,
-	//	"-j", "DROP",
-	//)
-	//rules.Ingress6 = append(rules.Ingress6, cmd)
+	cmd = rules.newCommand()
+	if rules.Interface != "host" {
+		cmd = append(cmd,
+			"-o", rules.Interface,
+		)
+	}
+	cmd = append(cmd,
+		"-m", "conntrack",
+		"--ctstate", "INVALID",
+	)
+	cmd = rules.commentCommand(cmd, false)
+	cmd = append(cmd,
+		"-j", "DROP",
+	)
+	rules.Ingress = append(rules.Ingress, cmd)
 
-	//cmd = rules.newCommand()
-	//if rules.Interface != "host" {
-	//	cmd = append(cmd,
-	//		"-o", rules.Interface,
-	//	)
-	//}
-	//cmd = rules.commentCommand(cmd, false)
-	//cmd = append(cmd,
-	//	"-j", "NFLOG",
-	//)
-	//rules.Ingress = append(rules.Ingress, cmd)
+	cmd = rules.newCommand()
+	if rules.Interface != "host" {
+		cmd = append(cmd,
+			"-o", rules.Interface,
+		)
+	}
+	cmd = append(cmd,
+		"-m", "conntrack",
+		"--ctstate", "INVALID",
+	)
+	cmd = rules.commentCommand(cmd, false)
+	cmd = append(cmd,
+		"-j", "DROP",
+	)
+	rules.Ingress6 = append(rules.Ingress6, cmd)
 
 	cmd = rules.newCommand()
 	if rules.Interface != "host" {
