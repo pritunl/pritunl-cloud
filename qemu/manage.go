@@ -1244,10 +1244,20 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		if vrt.State == vm.Running {
 			shutdown := false
 
+			logged := false
 			for i := 0; i < 10; i++ {
 				err = qms.Shutdown(virt.Id)
 				if err == nil {
 					break
+				}
+
+				if !logged {
+					logged = true
+					logrus.WithFields(logrus.Fields{
+						"instance_id": virt.Id.Hex(),
+						"error":       err,
+					}).Warn(
+						"qemu: Failed to send shutdown to virtual machine")
 				}
 
 				time.Sleep(500 * time.Millisecond)
@@ -1417,10 +1427,19 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"id": virt.Id.Hex(),
 	}).Info("qemu: Stopping virtual machine")
 
+	logged := false
 	for i := 0; i < 10; i++ {
 		err = qms.Shutdown(virt.Id)
 		if err == nil {
 			break
+		}
+
+		if !logged {
+			logged = true
+			logrus.WithFields(logrus.Fields{
+				"instance_id": virt.Id.Hex(),
+				"error":       err,
+			}).Warn("qemu: Failed to send shutdown to virtual machine")
 		}
 
 		time.Sleep(500 * time.Millisecond)
