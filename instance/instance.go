@@ -22,6 +22,7 @@ type Instance struct {
 	ImageBacking        bool               `bson:"image_backing" json:"image_backing"`
 	Status              string             `bson:"-" json:"status"`
 	State               string             `bson:"state" json:"state"`
+	PublicMac           string             `bson:"-" json:"public_mac"`
 	VmState             string             `bson:"vm_state" json:"vm_state"`
 	Restart             bool               `bson:"restart" json:"restart"`
 	DeleteProtection    bool               `bson:"delete_protection" json:"delete_protection"`
