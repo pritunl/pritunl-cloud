@@ -5,6 +5,12 @@ import (
 )
 
 func Deploy(stat *state.State) (err error) {
+	network := NewNetwork(stat)
+	err = network.Deploy()
+	if err != nil {
+		return
+	}
+
 	ipset := NewIpset(stat)
 	err = ipset.Deploy()
 	if err != nil {
