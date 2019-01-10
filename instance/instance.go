@@ -193,6 +193,8 @@ func (i *Instance) Json() {
 		i.Status = "Destroying"
 		break
 	}
+
+	i.PublicMac = vm.GetMacAddrExternal(i.Id, i.Vpc)
 }
 
 func (i *Instance) IsActive() bool {
