@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"net"
 	"os"
+	"strings"
 )
 
 func IncIpAddress(ip net.IP) {
@@ -123,6 +124,29 @@ func GetInterfaces() (ifaces []string, err error) {
 	ifaces = []string{}
 	for _, item := range items {
 		ifaces = append(ifaces, item.Name())
+	}
+
+	return
+}
+
+func GetInterfaceUpper(iface string) (upper string, err error) {
+	items, err := ioutil.ReadDir("/sys/class/net/" + iface)
+	if err != nil {
+		if os.IsNotExist(os.ErrNotExist) {
+			err = nil
+		} else {
+			err = &errortypes.ReadError{
+				errors.Wrap(err, "utils: Failed to read network interface"),
+			}
+		}
+		return
+	}
+
+	for _, item := range items {
+		name := item.Name()
+		if strings.HasPrefix(name, "upper_") {
+			upper = name[6:]
+		}
 	}
 
 	return
