@@ -383,6 +383,8 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
+	jumboFrames := node.Self.JumboFrames
+	jumboMtu := strconv.Itoa(settings.Hypervisor.JumboMtu)
 	iface := vm.GetIface(virt.Id, 0)
 	ifaceExternalVirt := vm.GetIfaceVirt(virt.Id, 0)
 	ifaceInternalVirt := vm.GetIfaceVirt(virt.Id, 1)
@@ -473,6 +475,52 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	if err != nil {
 		PowerOff(db, virt)
 		return
+	}
+
+	if jumboFrames {
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "link",
+			"set", "dev", ifaceExternalVirt,
+			"mtu", jumboMtu,
+		)
+		if err != nil {
+			PowerOff(db, virt)
+			return
+		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "link",
+			"set", "dev", ifaceExternal,
+			"mtu", jumboMtu,
+		)
+		if err != nil {
+			PowerOff(db, virt)
+			return
+		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "link",
+			"set", "dev", ifaceInternalVirt,
+			"mtu", jumboMtu,
+		)
+		if err != nil {
+			PowerOff(db, virt)
+			return
+		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "link",
+			"set", "dev", ifaceInternal,
+			"mtu", jumboMtu,
+		)
+		if err != nil {
+			PowerOff(db, virt)
+			return
+		}
 	}
 
 	_, err = utils.ExecCombinedOutputLogged(
@@ -648,6 +696,20 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
+	if jumboFrames {
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", namespace,
+			"ip", "link",
+			"set", "dev", iface,
+			"mtu", jumboMtu,
+		)
+		if err != nil {
+			PowerOff(db, virt)
+			return
+		}
+	}
+
 	_, err = utils.ExecCombinedOutputLogged(
 		nil,
 		"ip", "netns", "exec", namespace,
@@ -671,6 +733,20 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	if err != nil {
 		PowerOff(db, virt)
 		return
+	}
+
+	if jumboFrames {
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", namespace,
+			"ip", "link",
+			"set", "dev", ifaceVlan,
+			"mtu", jumboMtu,
+		)
+		if err != nil {
+			PowerOff(db, virt)
+			return
+		}
 	}
 
 	_, err = utils.ExecCombinedOutputLogged(
