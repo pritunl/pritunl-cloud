@@ -29,6 +29,7 @@ type nodeData struct {
 	Services             []bson.ObjectId `json:"services"`
 	ExternalInterfaces   []string        `json:"external_interfaces"`
 	InternalInterfaces   []string        `json:"internal_interfaces"`
+	JumboFrames          bool            `json:"jumbo_frames"`
 	ForwardedForHeader   string          `json:"forwarded_for_header"`
 	ForwardedProtoHeader string          `json:"forwarded_proto_header"`
 	Firewall             bool            `json:"firewall"`
@@ -76,6 +77,7 @@ func nodePut(c *gin.Context) {
 	nde.UserDomain = data.UserDomain
 	nde.ExternalInterfaces = data.ExternalInterfaces
 	nde.InternalInterfaces = data.InternalInterfaces
+	nde.JumboFrames = data.JumboFrames
 	nde.ForwardedForHeader = data.ForwardedForHeader
 	nde.ForwardedProtoHeader = data.ForwardedProtoHeader
 	nde.Firewall = data.Firewall
@@ -93,6 +95,7 @@ func nodePut(c *gin.Context) {
 		"user_domain",
 		"external_interfaces",
 		"internal_interfaces",
+		"jumbo_frames",
 		"forwarded_for_header",
 		"forwarded_proto_header",
 		"firewall",
