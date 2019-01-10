@@ -131,7 +131,7 @@ func syncStates(vc *vpc.Vpc) {
 }
 
 func SyncStates(vpcs []*vpc.Vpc) {
-	if settings.Local.BridgeName == "" {
+	if interfaces.HasExternal() {
 		return
 	}
 
