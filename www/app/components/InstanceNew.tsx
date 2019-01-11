@@ -572,7 +572,20 @@ export default class InstanceNew extends React.Component<Props, State> {
 						</PageSelect>
 						<PageSwitch
 							disabled={this.state.disabled}
-							label="Delete Protection"
+							label="Start instance"
+							help="Automatically start instance. Disable to get the public MAC address before instance is started for first time."
+							checked={!instance.state}
+							onToggle={(): void => {
+								if (instance.state === 'stop') {
+									this.set('state', '');
+								} else {
+									this.set('state', 'stop');
+								}
+							}}
+						/>
+						<PageSwitch
+							disabled={this.state.disabled}
+							label="Delete protection"
 							help="Block instance and any attached disks from being deleted."
 							checked={instance.delete_protection}
 							onToggle={(): void => {
