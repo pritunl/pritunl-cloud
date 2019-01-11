@@ -11156,7 +11156,9 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.4.1.js",
                     this.setState(Object.assign({}, this.state, { addExternalIface: val }));
                 }, onSubmit: this.onAddExternalIface }, externalIfacesSelect), React.createElement("label", { className: "pt-label", style: css.label, hidden: node.protocol === 'http' }, "Internal Interfaces", React.createElement(Help_1.default, { title: "Internal Interfaces", content: "Internal interfaces for instance private VPC interface, must be a bridge interface. Leave blank for to use external interface." }), React.createElement("div", null, internalIfaces)), React.createElement(PageSelectButton_1.default, { hidden: node.protocol === 'http', label: "Add Interface", value: this.state.addInternalIface, disabled: !internalIfacesSelect.length || this.state.disabled, buttonClass: "pt-intent-success", onChange: val => {
                     this.setState(Object.assign({}, this.state, { addInternalIface: val }));
-                }, onSubmit: this.onAddInternalIface }, internalIfacesSelect), React.createElement(PageSelect_1.default, { hidden: types.indexOf('hypervisor') === -1, disabled: this.state.disabled, label: "Hypervisor Mode", help: "Hypervisor mode, select KVM if CPU has hardware virtualization support.", value: node.hypervisor, onChange: val => {
+                }, onSubmit: this.onAddInternalIface }, internalIfacesSelect), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Jumbo frames", help: "Enable jumbo frames on all interfaces, requires node restart when changed.", checked: node.jumbo_frames, onToggle: () => {
+                    this.set('jumbo_frames', !node.jumbo_frames);
+                } }), React.createElement(PageSelect_1.default, { hidden: types.indexOf('hypervisor') === -1, disabled: this.state.disabled, label: "Hypervisor Mode", help: "Hypervisor mode, select KVM if CPU has hardware virtualization support.", value: node.hypervisor, onChange: val => {
                     this.set('hypervisor', val);
                 } }, React.createElement("option", { value: "qemu" }, "QEMU"), React.createElement("option", { value: "kvm" }, "KVM")), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Firewall", help: "Configure firewall on node. Incorrectly configuring the firewall can block access to the node.", checked: node.firewall, onToggle: () => {
                     this.toggleFirewall();
@@ -15979,7 +15981,7 @@ System.registerDynamic("app/components/DiskDetailed.js", ["npm:react@16.4.1.js",
                     this.set('instance', val);
                 } }, instancesSelect), React.createElement(PageNumInput_1.default, { label: "Index", help: "Index to attach disk.", hidden: !disk.instance, min: 0, max: 8, minorStepSize: 1, stepSize: 1, majorStepSize: 1, disabled: this.state.disabled, selectAllOnFocus: true, value: Number(disk.index), onChange: val => {
                     this.set('index', String(val));
-                } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Delete Protection", help: "Block disk from being deleted.", checked: disk.delete_protection, onToggle: () => {
+                } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Delete protection", help: "Block disk from being deleted.", checked: disk.delete_protection, onToggle: () => {
                     this.set('delete_protection', !disk.delete_protection);
                 } })), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: fields }))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.disk && !this.state.message, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
                     this.setState(Object.assign({}, this.state, { changed: false, disk: null }));
@@ -16559,7 +16561,7 @@ System.registerDynamic("app/components/DiskNew.js", ["npm:react@16.4.1.js", "app
                 } }, zonesSelect), React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasNodes, label: "Node", help: "Node to run disk on.", value: disk.node, onChange: val => {
                     this.setState(Object.assign({}, this.state, { disk: Object.assign({}, this.state.disk, { node: val, instance: '' }) }));
                     InstanceActions.syncNode(val);
-                } }, nodesSelect), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Delete Protection", help: "Block disk from being deleted.", checked: disk.delete_protection, onToggle: () => {
+                } }, nodesSelect), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Delete protection", help: "Block disk from being deleted.", checked: disk.delete_protection, onToggle: () => {
                     this.set('delete_protection', !disk.delete_protection);
                 } })), React.createElement("div", { style: css.group }, React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasInstances, label: "Instance", help: "Instance to attach disk to.", value: disk.instance, onChange: val => {
                     this.set('instance', val);
@@ -17278,7 +17280,7 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@16.4.1.
                     this.set('vpc', val);
                 } }, vpcsSelect), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "DNS Domain", help: "Domain to create DNS name using instance name.", value: instance.domain, onChange: val => {
                     this.set('domain', val);
-                } }, domainsSelect), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Delete Protection", help: "Block instance and any attached disks from being deleted.", checked: instance.delete_protection, onToggle: () => {
+                } }, domainsSelect), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Delete protection", help: "Block instance and any attached disks from being deleted.", checked: instance.delete_protection, onToggle: () => {
                     this.set('delete_protection', !instance.delete_protection);
                 } })), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
                     label: 'ID',
@@ -17295,6 +17297,9 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@16.4.1.
                 }, {
                     label: 'State',
                     value: (this.props.instance.state || 'None') + ':' + (this.props.instance.vm_state || 'None')
+                }, {
+                    label: 'Public MAC Address',
+                    value: this.props.instance.public_mac || 'Unknown'
                 }, {
                     label: 'Public IPv4',
                     value: publicIps
@@ -18163,7 +18168,13 @@ System.registerDynamic("app/components/InstanceNew.js", ["npm:react@16.4.1.js", 
                     this.set('node', val);
                 } }, nodesSelect), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "DNS Domain", help: "Domain to create DNS name using instance name.", value: instance.domain, onChange: val => {
                     this.set('domain', val);
-                } }, domainsSelect), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Delete Protection", help: "Block instance and any attached disks from being deleted.", checked: instance.delete_protection, onToggle: () => {
+                } }, domainsSelect), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Start instance", help: "Automatically start instance. Disable to get the public MAC address before instance is started for first time.", checked: !instance.state, onToggle: () => {
+                    if (instance.state === 'stop') {
+                        this.set('state', '');
+                    } else {
+                        this.set('state', 'stop');
+                    }
+                } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Delete protection", help: "Block instance and any attached disks from being deleted.", checked: instance.delete_protection, onToggle: () => {
                     this.set('delete_protection', !instance.delete_protection);
                 } })), React.createElement("div", { style: css.group }, React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasImages, label: "Image", help: "Starting image for node.", value: instance.image, onChange: val => {
                     this.set('image', val);
