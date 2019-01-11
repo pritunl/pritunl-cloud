@@ -964,6 +964,15 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					>
 						{internalIfacesSelect}
 					</PageSelectButton>
+					<PageSwitch
+						disabled={this.state.disabled}
+						label="Jumbo frames"
+						help="Enable jumbo frames on all interfaces, requires node restart when changed."
+						checked={node.jumbo_frames}
+						onToggle={(): void => {
+							this.set('jumbo_frames', !node.jumbo_frames);
+						}}
+					/>
 					<PageSelect
 						hidden={types.indexOf('hypervisor') === -1}
 						disabled={this.state.disabled}
