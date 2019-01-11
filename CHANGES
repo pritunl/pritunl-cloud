@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Jumbo frames support
+
 Version 1.0.1142.87 2019-01-09
 ------------------------------
 
