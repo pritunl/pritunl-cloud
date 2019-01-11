@@ -179,10 +179,10 @@ func (i *Instance) Json() {
 			i.Status = "Updating"
 			break
 		case vm.Provisioning:
-			i.Status = "Provisioning"
+			i.Status = "Stopped"
 			break
 		case "":
-			i.Status = "Provisioning"
+			i.Status = "Stopped"
 			break
 		}
 		break
