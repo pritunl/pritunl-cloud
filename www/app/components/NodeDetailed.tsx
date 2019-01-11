@@ -921,7 +921,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					<PageSelectButton
 						hidden={node.protocol === 'http'}
 						label="Add Interface"
-						value={this.state.addCert}
+						value={this.state.addExternalIface}
 						disabled={!externalIfacesSelect.length || this.state.disabled}
 						buttonClass="pt-intent-success"
 						onChange={(val: string): void => {
@@ -951,7 +951,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					<PageSelectButton
 						hidden={node.protocol === 'http'}
 						label="Add Interface"
-						value={this.state.addCert}
+						value={this.state.addInternalIface}
 						disabled={!internalIfacesSelect.length || this.state.disabled}
 						buttonClass="pt-intent-success"
 						onChange={(val: string): void => {
