@@ -496,7 +496,10 @@ func (s *Instances) Deploy() (err error) {
 		memoryUnits += float64(inst.Memory) / float64(1024)
 
 		if curVirt == nil {
-			s.create(inst)
+			if inst.State == instance.Start {
+				s.create(inst)
+			}
+
 			continue
 		}
 
