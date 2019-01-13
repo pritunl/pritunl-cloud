@@ -216,6 +216,26 @@ export default class Disks extends React.Component<{}, State> {
 		});
 	}
 
+	onBackup = (): void => {
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+		DiskActions.updateMulti(
+			Object.keys(this.state.selected), 'backup').then((): void => {
+			this.setState({
+				...this.state,
+				selected: {},
+				disabled: false,
+			});
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		});
+	}
+
 	render(): JSX.Element {
 		let disksDom: JSX.Element[] = [];
 
@@ -377,6 +397,14 @@ export default class Disks extends React.Component<{}, State> {
 							style={css.button}
 							disabled={!this.selected || this.state.disabled}
 							onConfirm={this.onSnapshot}
+						/>
+						<ConfirmButton
+							label="Backup Selected"
+							className="pt-intent-primary pt-icon-compressed"
+							progressClassName="pt-intent-primary"
+							style={css.button}
+							disabled={!this.selected || this.state.disabled}
+							onConfirm={this.onBackup}
 						/>
 						<ConfirmButton
 							label="Delete Selected"
