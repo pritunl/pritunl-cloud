@@ -3,6 +3,7 @@ package data
 import (
 	"fmt"
 	"github.com/Sirupsen/logrus"
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/minio/minio-go"
 	"github.com/pritunl/pritunl-cloud/constants"
@@ -35,9 +36,9 @@ func getImage(db *database.Database, img *image.Image,
 
 	if imageLock.Locked(pth) {
 		logrus.WithFields(logrus.Fields{
-			"id":   img.Id.Hex(),
-			"key":  img.Key,
-			"path": pth,
+			"image_id": img.Id.Hex(),
+			"key":      img.Key,
+			"path":     pth,
 		}).Info("data: Waiting for image")
 	}
 
@@ -61,7 +62,7 @@ func getImage(db *database.Database, img *image.Image,
 	}
 
 	logrus.WithFields(logrus.Fields{
-		"id":         img.Id.Hex(),
+		"image_id":   img.Id.Hex(),
 		"storage_id": store.Id.Hex(),
 		"key":        img.Key,
 		"path":       pth,
@@ -484,11 +485,6 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk) (err error) {
 	dskPth := paths.GetDiskPath(dsk.Id)
 	cacheDir := node.Self.GetCachePath()
 
-	logrus.WithFields(logrus.Fields{
-		"disk_id":     dsk.Id.Hex(),
-		"source_path": dskPth,
-	}).Info("data: Creating disk snapshot")
-
 	nde, err := node.Get(db, dsk.Node)
 	if err != nil {
 		return
@@ -521,6 +517,12 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk) (err error) {
 		}
 		return
 	}
+
+	logrus.WithFields(logrus.Fields{
+		"disk_id":     dsk.Id.Hex(),
+		"storage_id":  store.Id.Hex(),
+		"source_path": dskPth,
+	}).Info("data: Creating disk snapshot")
 
 	imgId := bson.NewObjectId()
 	tmpPath := path.Join(cacheDir,
@@ -563,12 +565,20 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk) (err error) {
 		return
 	}
 
+	err = img.Insert(db)
+	if err != nil {
+		return
+	}
+
 	_, err = client.FPutObject(store.Bucket, img.Key, tmpPath,
 		minio.PutObjectOptions{})
 	if err != nil {
 		err = &errortypes.WriteError{
 			errors.Wrap(err, "data: Failed to write object"),
 		}
+
+		image.Remove(db, img.Id)
+
 		return
 	}
 
