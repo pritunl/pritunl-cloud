@@ -72,6 +72,10 @@ func diskPut(c *gin.Context) {
 
 	if dsk.State == disk.Available && dta.State == disk.Snapshot {
 		dsk.State = disk.Snapshot
+	} else if dsk.State == disk.Available && dta.State == disk.Backup {
+		dsk.State = disk.Backup
+	} else if dsk.State == disk.Available && dta.State == disk.Restore {
+		dsk.State = disk.Restore
 	}
 
 	fields := set.NewSet(
@@ -168,7 +172,9 @@ func disksPut(c *gin.Context) {
 		return
 	}
 
-	if data.State != disk.Snapshot {
+	if data.State != disk.Snapshot && data.State != disk.Backup &&
+		data.State != disk.Restore {
+
 		errData := &errortypes.ErrorData{
 			Error:   "invalid_state",
 			Message: "Invalid disk state",
