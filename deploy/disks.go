@@ -85,6 +85,39 @@ func (d *Disks) snapshot(dsk *disk.Disk) {
 	}()
 }
 
+func (d *Disks) backup(dsk *disk.Disk) {
+	acquired, lockId := disksLock.LockOpen(dsk.Id.Hex())
+	if !acquired {
+		return
+	}
+
+	go func() {
+		defer disksLock.Unlock(dsk.Id.Hex(), lockId)
+
+		db := database.GetDatabase()
+		defer db.Close()
+
+		err := data.CreateBackup(db, dsk)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("deploy: Failed to backup disk")
+		}
+
+		dsk.State = disk.Available
+		err = dsk.CommitFields(db, set.NewSet("state"))
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("deploy: Failed update disk state")
+			time.Sleep(5 * time.Second)
+			return
+		}
+
+		event.PublishDispatch(db, "disk.change")
+	}()
+}
+
 func (d *Disks) destroy(dsk *disk.Disk) {
 	if dsk.DeleteProtection {
 		db := database.GetDatabase()
@@ -140,6 +173,9 @@ func (d *Disks) Deploy() (err error) {
 			break
 		case disk.Snapshot:
 			d.snapshot(dsk)
+			break
+		case disk.Backup:
+			d.backup(dsk)
 			break
 		case disk.Destroy:
 			d.destroy(dsk)
