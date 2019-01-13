@@ -594,9 +594,132 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk) (err error) {
 	img.Etag = image.GetEtag(obj)
 	img.LastModified = obj.LastModified
 
+	err = img.CommitFields(db, set.NewSet("etag", "last_modified"))
+	if err != nil {
+		return
+	}
+
+	event.PublishDispatch(db, "image.change")
+
+	return
+}
+
+func CreateBackup(db *database.Database, dsk *disk.Disk) (err error) {
+	dskPth := paths.GetDiskPath(dsk.Id)
+	cacheDir := node.Self.GetCachePath()
+
+	nde, err := node.Get(db, dsk.Node)
+	if err != nil {
+		return
+	}
+
+	zne, err := zone.Get(db, nde.Zone)
+	if err != nil {
+		return
+	}
+
+	dc, err := datacenter.Get(db, zne.Datacenter)
+	if err != nil {
+		return
+	}
+
+	if dc.BackupStorage == "" {
+		logrus.WithFields(logrus.Fields{
+			"disk_id": dsk.Id.Hex(),
+		}).Error("data: Cannot backup disk without backup storage")
+		return
+	}
+
+	store, err := storage.Get(db, dc.BackupStorage)
+	if err != nil {
+		if _, ok := err.(*database.NotFoundError); ok {
+			err = nil
+			logrus.WithFields(logrus.Fields{
+				"disk_id": dsk.Id.Hex(),
+			}).Error("data: Cannot backup disk without backup storage")
+		}
+		return
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"disk_id":     dsk.Id.Hex(),
+		"storage_id":  store.Id.Hex(),
+		"source_path": dskPth,
+	}).Info("data: Creating disk backup")
+
+	imgId := bson.NewObjectId()
+	tmpPath := path.Join(cacheDir,
+		fmt.Sprintf("backup-%s", imgId.Hex()))
+	img := &image.Image{
+		Id:     imgId,
+		DiskId: dsk.Id,
+		Name: fmt.Sprintf("%s-%s", dsk.Name,
+			time.Now().Format("2006-01-02T15:04:05")),
+		Organization: dsk.Organization,
+		Type:         storage.Private,
+		Storage:      store.Id,
+		Key:          fmt.Sprintf("backup/%s.qcow2", imgId.Hex()),
+	}
+
+	defer utils.Remove(tmpPath)
+	err = utils.Exec("", "qemu-img", "convert", "-f", "qcow2",
+		"-O", "qcow2", "-c", dskPth, tmpPath)
+	if err != nil {
+		return
+	}
+
+	err = utils.Chmod(tmpPath, 0600)
+	if err != nil {
+		return
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"disk_id":     dsk.Id.Hex(),
+		"source_path": dskPth,
+		"storage_id":  store.Id.Hex(),
+		"object_key":  img.Key,
+	}).Info("data: Uploading disk backup")
+
+	client, err := minio.New(
+		store.Endpoint, store.AccessKey, store.SecretKey, !store.Insecure)
+	if err != nil {
+		err = &errortypes.ConnectionError{
+			errors.Wrap(err, "data: Failed to connect to storage"),
+		}
+		return
+	}
+
 	err = img.Insert(db)
 	if err != nil {
-		client.RemoveObject(store.Bucket, img.Key)
+		return
+	}
+
+	_, err = client.FPutObject(store.Bucket, img.Key, tmpPath,
+		minio.PutObjectOptions{})
+	if err != nil {
+		err = &errortypes.WriteError{
+			errors.Wrap(err, "data: Failed to write object"),
+		}
+
+		image.Remove(db, img.Id)
+
+		return
+	}
+
+	obj, err := client.StatObject(store.Bucket, img.Key,
+		minio.StatObjectOptions{})
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "data: Failed to stat object"),
+		}
+		return
+	}
+
+	img.Etag = image.GetEtag(obj)
+	img.LastModified = obj.LastModified
+
+	err = img.CommitFields(db, set.NewSet("etag", "last_modified"))
+	if err != nil {
 		return
 	}
 
