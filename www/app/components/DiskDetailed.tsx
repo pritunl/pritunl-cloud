@@ -8,7 +8,7 @@ import PageSelect from './PageSelect';
 import PageSwitch from './PageSwitch';
 import PageNumInput from './PageNumInput';
 import PageInfo from './PageInfo';
-import PageSelectButton from './PageSelectButton';
+import PageSelectButtonConfirm from './PageSelectButtonConfirm';
 import Help from './Help';
 import * as PageInfos from './PageInfo';
 import PageSave from './PageSave';
@@ -474,11 +474,13 @@ export default class DiskDetailed extends React.Component<Props, State> {
 							content="Select a backup to restore and replace the existing disk with the backup image."
 						/>
 					</label>
-					<PageSelectButton
+					<PageSelectButtonConfirm
 						label="Restore"
 						value={this.state.restoreImage}
 						disabled={!hasBackups || this.state.disabled}
-						buttonClass="pt-intent-success"
+						confirmMsg="Confirm disk restore"
+						buttonClass="pt-intent-success pt-icon-box"
+						progressClassName="pt-intent-success"
 						onChange={(val: string): void => {
 							this.setState({
 								...this.state,
@@ -488,7 +490,7 @@ export default class DiskDetailed extends React.Component<Props, State> {
 						onSubmit={this.onRestoreBackup}
 					>
 						{backupsSelect}
-					</PageSelectButton>
+					</PageSelectButtonConfirm>
 				</div>
 				<div style={css.group}>
 					<PageInfo
