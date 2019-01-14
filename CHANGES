@@ -1,7 +1,8 @@
 pritunl-cloud changelog
 =======================
 
-<%= version %>
+Version 1.0.1147.30 2019-01-14
+------------------------------
 
 Add disk backup and restore
 
