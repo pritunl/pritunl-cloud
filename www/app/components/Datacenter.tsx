@@ -395,6 +395,9 @@ export default class Datacenter extends React.Component<Props, State> {
 		let privateStoragesSelect: JSX.Element[] = [
 			<option key="null" value="">None</option>,
 		];
+		let backupStoragesSelect: JSX.Element[] = [
+			<option key="null" value="">None</option>,
+		];
 		let publicStoragesSelect: JSX.Element[] = [];
 		if (this.props.storages.length) {
 			for (let storage of this.props.storages) {
@@ -408,6 +411,12 @@ export default class Datacenter extends React.Component<Props, State> {
 					);
 				} else if (storage.type === 'private') {
 					privateStoragesSelect.push(
+						<option
+							key={storage.id}
+							value={storage.id}
+						>{storage.name}</option>,
+					);
+					backupStoragesSelect.push(
 						<option
 							key={storage.id}
 							value={storage.id}
@@ -458,6 +467,17 @@ export default class Datacenter extends React.Component<Props, State> {
 						}}
 					>
 						{privateStoragesSelect}
+					</PageSelect>
+					<PageSelect
+						disabled={this.state.disabled}
+						label="Backup Storage"
+						help="Backup storage that will store instance backups."
+						value={datacenter.backup_storage}
+						onChange={(val): void => {
+							this.set('backup_storage', val);
+						}}
+					>
+						{backupStoragesSelect}
 					</PageSelect>
 					<label
 						className="pt-label"
