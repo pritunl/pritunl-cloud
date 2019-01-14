@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/pritunl-cloud/aggregate"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
+	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"gopkg.in/mgo.v2/bson"
 	"strconv"
@@ -35,8 +37,8 @@ type disksMultiData struct {
 }
 
 type disksData struct {
-	Disks []*disk.Disk `json:"disks"`
-	Count int          `json:"count"`
+	Disks []*aggregate.DiskAggregate `json:"disks"`
+	Count int                        `json:"count"`
 }
 
 func diskPut(c *gin.Context) {
@@ -323,7 +325,7 @@ func disksGet(c *gin.Context) {
 		query["instance"] = inst
 	}
 
-	disks, count, err := disk.GetAllPaged(db, &query, page, pageCount)
+	disks, count, err := aggregate.GetDiskPaged(db, &query, page, pageCount)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
