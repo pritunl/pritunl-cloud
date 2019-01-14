@@ -7,8 +7,10 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/event"
+	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/pritunl-cloud/vm"
 	"time"
 )
 
@@ -118,6 +120,72 @@ func (d *Disks) backup(dsk *disk.Disk) {
 	}()
 }
 
+func (d *Disks) restore(dsk *disk.Disk) {
+	acquired, lockId := disksLock.LockOpen(dsk.Id.Hex())
+	if !acquired {
+		return
+	}
+
+	go func() {
+		defer disksLock.Unlock(dsk.Id.Hex(), lockId)
+
+		db := database.GetDatabase()
+		defer db.Close()
+
+		inst := d.stat.GetInstace(dsk.Instance)
+		if inst != nil {
+			if inst.State != instance.Stop {
+				inst.State = instance.Stop
+
+				logrus.WithFields(logrus.Fields{
+					"instance_id": inst.Id.Hex(),
+					"disk_id":     dsk.Id.Hex(),
+				}).Info("deploy: Stopping instance for restore")
+
+				err := inst.CommitFields(db, set.NewSet("state"))
+				if err != nil {
+					logrus.WithFields(logrus.Fields{
+						"error": err,
+					}).Error("deploy: Failed to commit instance state")
+					return
+				}
+
+				return
+			}
+
+			virt := d.stat.GetVirt(inst.Id)
+			if virt != nil && virt.State != vm.Stopped &&
+				virt.State != vm.Failed {
+
+				return
+			}
+		}
+
+		err := data.RestoreBackup(db, dsk)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"instance_id": inst.Id.Hex(),
+				"disk_id":     dsk.Id.Hex(),
+				"error":       err,
+			}).Error("deploy: Failed to restore disk")
+		}
+
+		dsk.State = disk.Available
+		err = dsk.CommitFields(db, set.NewSet("state"))
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"instance_id": inst.Id.Hex(),
+				"disk_id":     dsk.Id.Hex(),
+				"error":       err,
+			}).Error("deploy: Failed update disk state")
+			time.Sleep(5 * time.Second)
+			return
+		}
+
+		event.PublishDispatch(db, "disk.change")
+	}()
+}
+
 func (d *Disks) destroy(dsk *disk.Disk) {
 	if dsk.DeleteProtection {
 		db := database.GetDatabase()
@@ -176,6 +244,9 @@ func (d *Disks) Deploy() (err error) {
 			break
 		case disk.Backup:
 			d.backup(dsk)
+			break
+		case disk.Restore:
+			d.restore(dsk)
 			break
 		case disk.Destroy:
 			d.destroy(dsk)
