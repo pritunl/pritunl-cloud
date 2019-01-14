@@ -12997,6 +12997,7 @@ System.registerDynamic("app/components/Datacenter.js", ["npm:react@16.4.1.js", "
             }
             let hasStorages = false;
             let privateStoragesSelect = [React.createElement("option", { key: "null", value: "" }, "None")];
+            let backupStoragesSelect = [React.createElement("option", { key: "null", value: "" }, "None")];
             let publicStoragesSelect = [];
             if (this.props.storages.length) {
                 for (let storage of this.props.storages) {
@@ -13005,6 +13006,7 @@ System.registerDynamic("app/components/Datacenter.js", ["npm:react@16.4.1.js", "
                         publicStoragesSelect.push(React.createElement("option", { key: storage.id, value: storage.id }, storage.name));
                     } else if (storage.type === 'private') {
                         privateStoragesSelect.push(React.createElement("option", { key: storage.id, value: storage.id }, storage.name));
+                        backupStoragesSelect.push(React.createElement("option", { key: storage.id, value: storage.id }, storage.name));
                     }
                 }
             }
@@ -13015,7 +13017,9 @@ System.registerDynamic("app/components/Datacenter.js", ["npm:react@16.4.1.js", "
                     this.set('name', val);
                 } }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "Private Storage", help: "Private storage that will store instance snapshots.", value: datacenter.private_storage, onChange: val => {
                     this.set('private_storage', val);
-                } }, privateStoragesSelect), React.createElement("label", { className: "pt-label", style: css.label }, "Public Storages", React.createElement(Help_1.default, { title: "Public Storages", content: "Public storages that can be used for new instance images." }), React.createElement("div", null, publicStorages)), React.createElement(PageSelectButton_1.default, { label: "Add Storage", value: this.state.addStorage, disabled: !hasStorages || this.state.disabled, buttonClass: "pt-intent-success", onChange: val => {
+                } }, privateStoragesSelect), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "Backup Storage", help: "Backup storage that will store instance backups.", value: datacenter.backup_storage, onChange: val => {
+                    this.set('backup_storage', val);
+                } }, backupStoragesSelect), React.createElement("label", { className: "pt-label", style: css.label }, "Public Storages", React.createElement(Help_1.default, { title: "Public Storages", content: "Public storages that can be used for new instance images." }), React.createElement("div", null, publicStorages)), React.createElement(PageSelectButton_1.default, { label: "Add Storage", value: this.state.addStorage, disabled: !hasStorages || this.state.disabled, buttonClass: "pt-intent-success", onChange: val => {
                     this.setState(Object.assign({}, this.state, { addStorage: val }));
                 }, onSubmit: this.onAddStorage }, publicStoragesSelect)), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
                     label: 'ID',
@@ -14982,7 +14986,7 @@ System.registerDynamic("app/components/Storage.js", ["npm:react@16.4.1.js", "app
                     this.set('bucket', val);
                 } }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "Type", help: "Select public for read only storages with virtual machine images. Select private for read-write storages for snapshots.", value: storage.type, onChange: val => {
                     this.set('type', val);
-                } }, React.createElement("option", { value: "public" }, "Public"), React.createElement("option", { value: "private" }, "Private"))), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
+                } }, React.createElement("option", { value: "public" }, "Public"), React.createElement("option", { value: "private" }, "Private"), React.createElement("option", { value: "backup" }, "Backup"))), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
                     label: 'ID',
                     value: this.props.storage.id || 'None'
                 }] }), React.createElement(PageInput_1.default, { disabled: this.state.disabled, label: "Access Key", help: "Storage access key", type: "text", placeholder: "Enter access key", value: storage.access_key, onChange: val => {
@@ -15757,7 +15761,47 @@ System.registerDynamic("app/components/Images.js", ["npm:react@16.4.1.js", "app/
     exports.default = Images;
     
 });
-System.registerDynamic("app/components/DiskDetailed.js", ["npm:react@16.4.1.js", "app/actions/DiskActions.js", "app/components/PageInput.js", "app/components/PageSelect.js", "app/components/PageSwitch.js", "app/components/PageNumInput.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/ConfirmButton.js", "app/stores/NodesStore.js", "app/stores/OrganizationsStore.js", "app/actions/InstanceActions.js", "app/stores/InstancesNodeStore.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/PageSelectButtonConfirm.js", ["npm:react@16.4.1.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@16.4.1.js");
+    const ConfirmButton_1 = $__require("app/components/ConfirmButton.js");
+    const css = {
+        group: {
+            marginBottom: '15px',
+            width: '100%',
+            maxWidth: '280px'
+        },
+        select: {
+            width: '100%',
+            borderTopLeftRadius: '3px',
+            borderBottomLeftRadius: '3px'
+        },
+        selectInner: {
+            width: '100%'
+        },
+        selectBox: {
+            flex: '1'
+        }
+    };
+    class PageSelectButton extends React.Component {
+        render() {
+            let buttonClass = 'pt-button';
+            if (this.props.buttonClass) {
+                buttonClass += ' ' + this.props.buttonClass;
+            }
+            return React.createElement("div", { className: "pt-control-group", style: css.group, hidden: this.props.hidden }, React.createElement("div", { style: css.selectBox }, React.createElement("div", { className: "pt-select", style: css.select }, React.createElement("select", { style: css.selectInner, disabled: this.props.disabled, value: this.props.value || '', onChange: evt => {
+                    this.props.onChange(evt.target.value);
+                } }, this.props.children))), React.createElement(ConfirmButton_1.default, { label: this.props.label, className: buttonClass, progressClassName: this.props.progressClassName, confirmMsg: this.props.confirmMsg, disabled: this.props.disabled, onConfirm: this.props.onSubmit }));
+        }
+    }
+    exports.default = PageSelectButton;
+    
+});
+System.registerDynamic("app/components/DiskDetailed.js", ["npm:react@16.4.1.js", "app/actions/DiskActions.js", "app/components/PageInput.js", "app/components/PageSelect.js", "app/components/PageSwitch.js", "app/components/PageNumInput.js", "app/components/PageInfo.js", "app/components/PageSelectButtonConfirm.js", "app/components/Help.js", "app/components/PageSave.js", "app/components/ConfirmButton.js", "app/stores/NodesStore.js", "app/stores/OrganizationsStore.js", "app/actions/InstanceActions.js", "app/stores/InstancesNodeStore.js", "app/Alert.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -15770,12 +15814,15 @@ System.registerDynamic("app/components/DiskDetailed.js", ["npm:react@16.4.1.js",
     const PageSwitch_1 = $__require("app/components/PageSwitch.js");
     const PageNumInput_1 = $__require("app/components/PageNumInput.js");
     const PageInfo_1 = $__require("app/components/PageInfo.js");
+    const PageSelectButtonConfirm_1 = $__require("app/components/PageSelectButtonConfirm.js");
+    const Help_1 = $__require("app/components/Help.js");
     const PageSave_1 = $__require("app/components/PageSave.js");
     const ConfirmButton_1 = $__require("app/components/ConfirmButton.js");
     const NodesStore_1 = $__require("app/stores/NodesStore.js");
     const OrganizationsStore_1 = $__require("app/stores/OrganizationsStore.js");
     const InstanceActions = $__require("app/actions/InstanceActions.js");
     const InstancesNodeStore_1 = $__require("app/stores/InstancesNodeStore.js");
+    const Alert = $__require("app/Alert.js");
     const css = {
         card: {
             position: 'relative',
@@ -15874,12 +15921,38 @@ System.registerDynamic("app/components/DiskDetailed.js", ["npm:react@16.4.1.js",
                     this.setState(Object.assign({}, this.state, { disabled: false }));
                 });
             };
+            this.onRestoreBackup = () => {
+                let restoreImage;
+                if (this.state.restoreImage) {
+                    restoreImage = this.state.restoreImage;
+                } else if (this.props.disk.backups && this.props.disk.backups.length) {
+                    restoreImage = this.props.disk.backups[0].image;
+                } else {
+                    return;
+                }
+                this.setState(Object.assign({}, this.state, { disabled: true }));
+                let disk;
+                if (this.state.changed) {
+                    disk = Object.assign({}, this.state.disk);
+                } else {
+                    disk = Object.assign({}, this.props.disk);
+                }
+                disk.state = 'restore';
+                disk.restore_image = restoreImage;
+                DiskActions.commit(disk).then(() => {
+                    Alert.success('Disk restore started');
+                    this.setState(Object.assign({}, this.state, { disabled: false }));
+                }).catch(() => {
+                    this.setState(Object.assign({}, this.state, { disabled: false }));
+                });
+            };
             this.state = {
                 disabled: false,
                 changed: false,
                 message: '',
                 disk: null,
-                instances: null
+                instances: null,
+                restoreImage: null
             };
         }
         componentDidMount() {
@@ -15919,6 +15992,16 @@ System.registerDynamic("app/components/DiskDetailed.js", ["npm:react@16.4.1.js",
                     instancesSelect = [React.createElement("option", { key: "null", value: "" }, "No Instances")];
                 }
             }
+            let backupsSelect = [];
+            for (let backup of disk.backups || []) {
+                backupsSelect.push(React.createElement("option", { key: backup.image, value: backup.image }, backup.name));
+            }
+            let hasBackups = false;
+            if (!backupsSelect.length) {
+                backupsSelect = [React.createElement("option", { key: "null", value: "" }, "No Backups")];
+            } else {
+                hasBackups = true;
+            }
             let statusText = 'Unknown';
             let statusClass = '';
             switch (this.props.disk.state) {
@@ -15940,6 +16023,14 @@ System.registerDynamic("app/components/DiskDetailed.js", ["npm:react@16.4.1.js",
                     break;
                 case 'snapshot':
                     statusText = 'Snapshotting';
+                    statusClass += ' pt-text-intent-primary';
+                    break;
+                case 'backup':
+                    statusText = 'Backing Up';
+                    statusClass += ' pt-text-intent-primary';
+                    break;
+                case 'restore':
+                    statusText = 'Restoring';
                     statusClass += ' pt-text-intent-primary';
                     break;
             }
@@ -15983,7 +16074,9 @@ System.registerDynamic("app/components/DiskDetailed.js", ["npm:react@16.4.1.js",
                     this.set('index', String(val));
                 } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Delete protection", help: "Block disk from being deleted.", checked: disk.delete_protection, onToggle: () => {
                     this.set('delete_protection', !disk.delete_protection);
-                } })), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: fields }))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.disk && !this.state.message, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
+                } }), React.createElement("label", { className: "pt-label", style: css.label }, "Restore Backup", React.createElement(Help_1.default, { title: "Restore Backup", content: "Select a backup to restore and replace the existing disk with the backup image." })), React.createElement(PageSelectButtonConfirm_1.default, { label: "Restore", value: this.state.restoreImage, disabled: !hasBackups || this.state.disabled, confirmMsg: "Confirm disk restore", buttonClass: "pt-intent-success pt-icon-box", progressClassName: "pt-intent-success", onChange: val => {
+                    this.setState(Object.assign({}, this.state, { restoreImage: val }));
+                }, onSubmit: this.onRestoreBackup }, backupsSelect)), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: fields }))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.disk && !this.state.message, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
                     this.setState(Object.assign({}, this.state, { changed: false, disk: null }));
                 }, onSave: this.onSave }));
         }
@@ -16098,6 +16191,14 @@ System.registerDynamic("app/components/Disk.js", ["npm:react@16.4.1.js", "app/st
                     break;
                 case 'snapshot':
                     statusText = 'Snapshotting';
+                    statusClass += ' pt-text-intent-primary';
+                    break;
+                case 'backup':
+                    statusText = 'Backing Up';
+                    statusClass += ' pt-text-intent-primary';
+                    break;
+                case 'restore':
+                    statusText = 'Restoring';
                     statusClass += ' pt-text-intent-primary';
                     break;
             }
@@ -16683,6 +16784,14 @@ System.registerDynamic("app/components/Disks.js", ["npm:react@16.4.1.js", "app/C
                     this.setState(Object.assign({}, this.state, { disabled: false }));
                 });
             };
+            this.onBackup = () => {
+                this.setState(Object.assign({}, this.state, { disabled: true }));
+                DiskActions.updateMulti(Object.keys(this.state.selected), 'backup').then(() => {
+                    this.setState(Object.assign({}, this.state, { selected: {}, disabled: false }));
+                }).catch(() => {
+                    this.setState(Object.assign({}, this.state, { disabled: false }));
+                });
+            };
             this.state = {
                 disks: DisksStore_1.default.disks,
                 filter: DisksStore_1.default.filter,
@@ -16789,7 +16898,7 @@ System.registerDynamic("app/components/Disks.js", ["npm:react@16.4.1.js", "app/C
                     }
                 } }, "Filters"), React.createElement("button", { className: "pt-button pt-intent-warning pt-icon-chevron-up", style: css.button, disabled: !this.opened, type: "button", onClick: () => {
                     this.setState(Object.assign({}, this.state, { opened: {} }));
-                } }, "Collapse All"), React.createElement(ConfirmButton_1.default, { label: "Snapshot Selected", className: "pt-intent-primary pt-icon-floppy-disk", progressClassName: "pt-intent-primary", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onSnapshot }), React.createElement(ConfirmButton_1.default, { label: "Delete Selected", className: "pt-intent-danger pt-icon-delete", progressClassName: "pt-intent-danger", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onDelete }), React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", style: css.button, disabled: this.state.disabled || this.state.newOpened, type: "button", onClick: () => {
+                } }, "Collapse All"), React.createElement(ConfirmButton_1.default, { label: "Snapshot Selected", className: "pt-intent-primary pt-icon-floppy-disk", progressClassName: "pt-intent-primary", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onSnapshot }), React.createElement(ConfirmButton_1.default, { label: "Backup Selected", className: "pt-intent-primary pt-icon-compressed", progressClassName: "pt-intent-primary", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onBackup }), React.createElement(ConfirmButton_1.default, { label: "Delete Selected", className: "pt-intent-danger pt-icon-delete", progressClassName: "pt-intent-danger", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onDelete }), React.createElement("button", { className: "pt-button pt-intent-success pt-icon-add", style: css.button, disabled: this.state.disabled || this.state.newOpened, type: "button", onClick: () => {
                     this.setState(Object.assign({}, this.state, { newOpened: true }));
                 } }, "New"))), React.createElement("div", { className: "layout horizontal wrap", style: css.debug, hidden: !this.state.debug }, React.createElement(ConfirmButton_1.default, { label: "Force Delete Selected", className: "pt-intent-danger pt-icon-warning-sign", progressClassName: "pt-intent-danger", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onForceDelete }))), React.createElement(DisksFilter_1.default, { filter: this.state.filter, onFilter: filter => {
                     DiskActions.filter(filter);
