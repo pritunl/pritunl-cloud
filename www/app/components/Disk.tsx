@@ -130,6 +130,14 @@ export default class Disk extends React.Component<Props, {}> {
 				statusText = 'Snapshotting';
 				statusClass += ' pt-text-intent-primary';
 				break;
+			case 'backup':
+				statusText = 'Backing Up';
+				statusClass += ' pt-text-intent-primary';
+				break;
+			case 'restore':
+				statusText = 'Restoring';
+				statusClass += ' pt-text-intent-primary';
+				break;
 		}
 
 		return <div
