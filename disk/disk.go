@@ -24,6 +24,7 @@ type Disk struct {
 	SourceInstance   bson.ObjectId `bson:"source_instance,omitempty" json:"source_instance"`
 	DeleteProtection bool          `bson:"delete_protection" json:"delete_protection"`
 	Image            bson.ObjectId `bson:"image,omitempty" json:"image"`
+	RestoreImage     bson.ObjectId `bson:"restore_image,omitempty" json:"restore_image"`
 	Backing          bool          `bson:"backing" json:"backing"`
 	BackingImage     string        `bson:"backing_image" json:"backing_image"`
 	Index            string        `bson:"index" json:"index"`
