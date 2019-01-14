@@ -8,6 +8,8 @@ import PageSelect from './PageSelect';
 import PageSwitch from './PageSwitch';
 import PageNumInput from './PageNumInput';
 import PageInfo from './PageInfo';
+import PageSelectButton from './PageSelectButton';
+import Help from './Help';
 import * as PageInfos from './PageInfo';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
@@ -16,6 +18,7 @@ import OrganizationsStore from '../stores/OrganizationsStore';
 import * as InstanceActions from '../actions/InstanceActions';
 import InstancesNodeStore from '../stores/InstancesNodeStore';
 import * as InstanceTypes from '../types/InstanceTypes';
+import * as Alert from '../Alert';
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -31,6 +34,7 @@ interface State {
 	message: string;
 	disk: DiskTypes.Disk;
 	instances: InstanceTypes.InstancesRo;
+	restoreImage: string;
 }
 
 const css = {
@@ -109,6 +113,7 @@ export default class DiskDetailed extends React.Component<Props, State> {
 			message: '',
 			disk: null,
 			instances: null,
+			restoreImage: null,
 		};
 	}
 
@@ -208,6 +213,52 @@ export default class DiskDetailed extends React.Component<Props, State> {
 		});
 	}
 
+	onRestoreBackup = (): void => {
+		let restoreImage: string;
+
+		if (this.state.restoreImage) {
+			restoreImage = this.state.restoreImage;
+		} else if (this.props.disk.backups && this.props.disk.backups.length) {
+			restoreImage = this.props.disk.backups[0].image;
+		} else {
+			return;
+		}
+
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+
+		let disk: DiskTypes.Disk;
+
+		if (this.state.changed) {
+			disk = {
+				...this.state.disk,
+			};
+		} else {
+			disk = {
+				...this.props.disk,
+			};
+		}
+
+		disk.state = 'restore';
+		disk.restore_image = restoreImage;
+
+		DiskActions.commit(disk).then((): void => {
+			Alert.success('Disk restore started');
+
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		});
+	}
+
 	render(): JSX.Element {
 		let disk: DiskTypes.Disk = this.state.disk ||
 			this.props.disk;
@@ -238,6 +289,22 @@ export default class DiskDetailed extends React.Component<Props, State> {
 			if (!hasInstances) {
 				instancesSelect = [<option key="null" value="">No Instances</option>];
 			}
+		}
+
+		let backupsSelect: JSX.Element[] = [];
+		for (let backup of (disk.backups || [])) {
+			backupsSelect.push(
+				<option key={backup.image} value={backup.image}>
+					{backup.name}
+				</option>,
+			);
+		}
+
+		let hasBackups = false;
+		if (!backupsSelect.length) {
+			backupsSelect = [<option key="null" value="">No Backups</option>];
+		} else {
+			hasBackups = true
 		}
 
 		let statusText = 'Unknown';
@@ -390,13 +457,38 @@ export default class DiskDetailed extends React.Component<Props, State> {
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
-						label="Delete Protection"
+						label="Delete protection"
 						help="Block disk from being deleted."
 						checked={disk.delete_protection}
 						onToggle={(): void => {
 							this.set('delete_protection', !disk.delete_protection);
 						}}
 					/>
+					<label
+						className="pt-label"
+						style={css.label}
+					>
+						Restore Backup
+						<Help
+							title="Restore Backup"
+							content="Select a backup to restore and replace the existing disk with the backup image."
+						/>
+					</label>
+					<PageSelectButton
+						label="Restore"
+						value={this.state.restoreImage}
+						disabled={!hasBackups || this.state.disabled}
+						buttonClass="pt-intent-success"
+						onChange={(val: string): void => {
+							this.setState({
+								...this.state,
+								restoreImage: val,
+							});
+						}}
+						onSubmit={this.onRestoreBackup}
+					>
+						{backupsSelect}
+					</PageSelectButton>
 				</div>
 				<div style={css.group}>
 					<PageInfo
