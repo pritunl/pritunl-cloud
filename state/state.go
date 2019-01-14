@@ -83,6 +83,10 @@ func (s *State) GetVirt(instId bson.ObjectId) *vm.VirtualMachine {
 	return s.virtsMap[instId]
 }
 
+func (s *State) GetInstace(instId bson.ObjectId) *instance.Instance {
+	return s.instancesMap[instId]
+}
+
 func (s *State) init() (err error) {
 	db := database.GetDatabase()
 	defer db.Close()
@@ -123,11 +127,14 @@ func (s *State) init() (err error) {
 	}, disks)
 	s.instances = instances
 
+	instancesMap := map[bson.ObjectId]*instance.Instance{}
 	vpcIdsSet := set.NewSet()
 	for _, inst := range instances {
 		virtsId.Remove(inst.Id)
 		vpcIdsSet.Add(inst.Vpc)
+		instancesMap[inst.Id] = inst
 	}
+	s.instancesMap = instancesMap
 
 	vpcIds := []bson.ObjectId{}
 	for vpcIdInf := range vpcIdsSet.Iter() {
