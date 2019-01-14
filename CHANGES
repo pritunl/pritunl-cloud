@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Add disk backup and restore
+
 Version 1.0.1144.28 2019-01-11
 ------------------------------
 
