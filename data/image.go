@@ -519,9 +519,9 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk) (err error) {
 	}
 
 	logrus.WithFields(logrus.Fields{
-		"disk_id":     dsk.Id.Hex(),
-		"storage_id":  store.Id.Hex(),
-		"source_path": dskPth,
+		"disk_id":    dsk.Id.Hex(),
+		"storage_id": store.Id.Hex(),
+		"disk_path":  dskPth,
 	}).Info("data: Creating disk snapshot")
 
 	imgId := bson.NewObjectId()
@@ -550,10 +550,10 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk) (err error) {
 	}
 
 	logrus.WithFields(logrus.Fields{
-		"disk_id":     dsk.Id.Hex(),
-		"source_path": dskPth,
-		"storage_id":  store.Id.Hex(),
-		"object_key":  img.Key,
+		"disk_id":    dsk.Id.Hex(),
+		"disk_path":  dskPth,
+		"storage_id": store.Id.Hex(),
+		"object_key": img.Key,
 	}).Info("data: Uploading disk snapshot")
 
 	client, err := minio.New(
@@ -642,17 +642,17 @@ func CreateBackup(db *database.Database, dsk *disk.Disk) (err error) {
 	}
 
 	logrus.WithFields(logrus.Fields{
-		"disk_id":     dsk.Id.Hex(),
-		"storage_id":  store.Id.Hex(),
-		"source_path": dskPth,
+		"disk_id":    dsk.Id.Hex(),
+		"storage_id": store.Id.Hex(),
+		"disk_path":  dskPth,
 	}).Info("data: Creating disk backup")
 
 	imgId := bson.NewObjectId()
 	tmpPath := path.Join(cacheDir,
 		fmt.Sprintf("backup-%s", imgId.Hex()))
 	img := &image.Image{
-		Id:     imgId,
-		DiskId: dsk.Id,
+		Id:   imgId,
+		Disk: dsk.Id,
 		Name: fmt.Sprintf("%s-%s", dsk.Name,
 			time.Now().Format("2006-01-02T15:04:05")),
 		Organization: dsk.Organization,
@@ -674,10 +674,10 @@ func CreateBackup(db *database.Database, dsk *disk.Disk) (err error) {
 	}
 
 	logrus.WithFields(logrus.Fields{
-		"disk_id":     dsk.Id.Hex(),
-		"source_path": dskPth,
-		"storage_id":  store.Id.Hex(),
-		"object_key":  img.Key,
+		"disk_id":    dsk.Id.Hex(),
+		"disk_path":  dskPth,
+		"storage_id": store.Id.Hex(),
+		"object_key": img.Key,
 	}).Info("data: Uploading disk backup")
 
 	client, err := minio.New(
