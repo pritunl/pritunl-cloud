@@ -17,6 +17,7 @@ export interface Disk {
 	backing_image?: string;
 	index?: string;
 	size?: number;
+	backups?: Backup[];
 }
 
 export interface Filter {
@@ -25,6 +26,11 @@ export interface Filter {
 	organization?: string;
 	datacenter?: string;
 	instance?: string;
+}
+
+export interface Backup {
+	image?: string;
+	name?: string;
 }
 
 export type Disks = Disk[];
