@@ -29,6 +29,7 @@ type diskData struct {
 	Node             bson.ObjectId `json:"node"`
 	DeleteProtection bool          `json:"delete_protection"`
 	Image            bson.ObjectId `json:"image"`
+	RestoreImage     bson.ObjectId `json:"restore_image"`
 	Backing          bool          `json:"backing"`
 	State            string        `json:"state"`
 	Size             int           `json:"size"`
@@ -71,6 +72,14 @@ func diskPut(c *gin.Context) {
 		return
 	}
 
+	fields := set.NewSet(
+		"state",
+		"name",
+		"instance",
+		"delete_protection",
+		"index",
+	)
+
 	if dta.Instance != "" {
 		exists, err := instance.ExistsOrg(db, userOrg, dta.Instance)
 		if err != nil {
@@ -91,17 +100,38 @@ func diskPut(c *gin.Context) {
 		dsk.State = disk.Snapshot
 	} else if dsk.State == disk.Available && dta.State == disk.Backup {
 		dsk.State = disk.Backup
-	} else if dsk.State == disk.Available && dta.State == disk.Restore {
-		dsk.State = disk.Restore
-	}
+	} else if dta.State == disk.Restore {
+		if dsk.State == disk.Available {
+			errData := &errortypes.ErrorData{
+				Error:   "disk_restore_active",
+				Message: "Disk restore already active",
+			}
 
-	fields := set.NewSet(
-		"state",
-		"name",
-		"instance",
-		"delete_protection",
-		"index",
-	)
+			c.JSON(400, errData)
+			return
+		}
+
+		img, err := image.Get(db, dta.RestoreImage)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		if img.Disk != dsk.Id {
+			errData := &errortypes.ErrorData{
+				Error:   "invalid_restore_image",
+				Message: "Invalid restore image",
+			}
+
+			c.JSON(400, errData)
+			return
+		}
+
+		dsk.State = disk.Restore
+		dsk.RestoreImage = img.Id
+
+		fields.Add("restore_image")
+	}
 
 	errData, err := dsk.Validate(db)
 	if err != nil {
@@ -235,9 +265,7 @@ func disksPut(c *gin.Context) {
 		return
 	}
 
-	if data.State != disk.Snapshot && data.State != disk.Backup &&
-		data.State != disk.Restore {
-
+	if data.State != disk.Snapshot && data.State != disk.Backup {
 		errData := &errortypes.ErrorData{
 			Error:   "invalid_state",
 			Message: "Invalid disk state",
