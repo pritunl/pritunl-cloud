@@ -24,9 +24,10 @@ type State struct {
 	disks            []*disk.Disk
 	virtsMap         map[bson.ObjectId]*vm.VirtualMachine
 	instances        []*instance.Instance
+	instancesMap     map[bson.ObjectId]*instance.Instance
+	instanceDisks    map[bson.ObjectId][]*disk.Disk
 	domainRecordsMap map[bson.ObjectId][]*domain.Record
 	vpcsMap          map[bson.ObjectId]*vpc.Vpc
-	instancesMap     map[bson.ObjectId]*instance.Instance
 	addInstances     set.Set
 	remInstances     set.Set
 }
@@ -57,6 +58,10 @@ func (s *State) DomainRecords(instId bson.ObjectId) []*domain.Record {
 
 func (s *State) Disks() []*disk.Disk {
 	return s.disks
+}
+
+func (s *State) GetInstaceDisks(instId bson.ObjectId) []*disk.Disk {
+	return s.instanceDisks[instId]
 }
 
 func (s *State) Vpc(vpcId bson.ObjectId) *vpc.Vpc {
@@ -109,6 +114,16 @@ func (s *State) init() (err error) {
 	}
 	s.disks = disks
 
+	instanceDisks := map[bson.ObjectId][]*disk.Disk{}
+	for _, dsk := range disks {
+		dsks := instanceDisks[dsk.Instance]
+		if dsks == nil {
+			dsks = []*disk.Disk{}
+		}
+		instanceDisks[dsk.Instance] = append(dsks, dsk)
+	}
+	s.instanceDisks = instanceDisks
+
 	curVirts, err := qemu.GetVms(db)
 	if err != nil {
 		return
@@ -122,9 +137,9 @@ func (s *State) init() (err error) {
 	}
 	s.virtsMap = virtsMap
 
-	instances, err := instance.GetAllVirt(db, &bson.M{
+	instances, err := instance.GetAllVirtMapped(db, &bson.M{
 		"node": node.Self.Id,
-	}, disks)
+	}, instanceDisks)
 	s.instances = instances
 
 	instancesMap := map[bson.ObjectId]*instance.Instance{}
