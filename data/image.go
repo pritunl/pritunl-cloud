@@ -727,3 +727,67 @@ func CreateBackup(db *database.Database, dsk *disk.Disk) (err error) {
 
 	return
 }
+
+func RestoreBackup(db *database.Database, dsk *disk.Disk) (err error) {
+	dskPth := paths.GetDiskPath(dsk.Id)
+	cacheDir := node.Self.GetCachePath()
+
+	img, err := image.Get(db, dsk.RestoreImage)
+	if err != nil {
+		return
+	}
+
+	if img.Disk != dsk.Id {
+		err = &errortypes.VerificationError{
+			errors.Wrap(err, "data: Restore image invalid"),
+		}
+		return
+	}
+
+	store, err := storage.Get(db, img.Storage)
+	if err != nil {
+		return
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"disk_id":    dsk.Id.Hex(),
+		"image_id":   img.Id.Hex(),
+		"storage_id": store.Id.Hex(),
+		"disk_path":  dskPth,
+	}).Info("data: Restoring disk backup")
+
+	client, err := minio.New(
+		store.Endpoint, store.AccessKey, store.SecretKey, !store.Insecure)
+	if err != nil {
+		err = &errortypes.ConnectionError{
+			errors.Wrap(err, "data: Failed to connect to storage"),
+		}
+		return
+	}
+
+	imgId := bson.NewObjectId()
+	tmpPath := path.Join(cacheDir,
+		fmt.Sprintf("restore-%s", imgId.Hex()))
+
+	defer utils.Remove(tmpPath)
+	err = client.FGetObject(store.Bucket,
+		img.Key, tmpPath, minio.GetObjectOptions{})
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "data: Failed to download restore image"),
+		}
+		return
+	}
+
+	err = utils.Chmod(tmpPath, 0600)
+	if err != nil {
+		return
+	}
+
+	err = utils.Exec("", "mv", "-f", tmpPath, dskPth)
+	if err != nil {
+		return
+	}
+
+	return
+}
