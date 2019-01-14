@@ -10,7 +10,7 @@ import (
 
 type Image struct {
 	Id           bson.ObjectId `bson:"_id,omitempty" json:"id"`
-	DiskId       bson.ObjectId `bson:"disk_id,omitempty" json:"disk_id"`
+	Disk         bson.ObjectId `bson:"disk,omitempty" json:"disk"`
 	Name         string        `bson:"name" json:"name"`
 	Organization bson.ObjectId `bson:"organization" json:"organization"`
 	Signed       bool          `bson:"signed" json:"signed"`
