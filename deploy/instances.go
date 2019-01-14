@@ -5,6 +5,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/instance"
@@ -506,6 +507,15 @@ func (s *Instances) Deploy() (err error) {
 		switch inst.State {
 		case instance.Start:
 			if curVirt.State == vm.Stopped || curVirt.State == vm.Failed {
+				dsks := s.stat.GetInstaceDisks(inst.Id)
+
+				for _, dsk := range dsks {
+					println(dsk.State)
+					if dsk.State != disk.Available {
+						continue
+					}
+				}
+
 				s.start(inst)
 				continue
 			}
@@ -538,6 +548,15 @@ func (s *Instances) Deploy() (err error) {
 			break
 		case instance.Restart:
 			if curVirt.State == vm.Running {
+				dsks := s.stat.GetInstaceDisks(inst.Id)
+
+				for _, dsk := range dsks {
+					println(dsk.State)
+					if dsk.State != disk.Available {
+						continue
+					}
+				}
+
 				s.restart(inst)
 				continue
 			}
