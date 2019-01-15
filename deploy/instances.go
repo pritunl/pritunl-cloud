@@ -510,7 +510,6 @@ func (s *Instances) Deploy() (err error) {
 				dsks := s.stat.GetInstaceDisks(inst.Id)
 
 				for _, dsk := range dsks {
-					println(dsk.State)
 					if dsk.State != disk.Available {
 						continue
 					}
@@ -551,7 +550,6 @@ func (s *Instances) Deploy() (err error) {
 				dsks := s.stat.GetInstaceDisks(inst.Id)
 
 				for _, dsk := range dsks {
-					println(dsk.State)
 					if dsk.State != disk.Available {
 						continue
 					}
