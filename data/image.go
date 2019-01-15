@@ -630,6 +630,13 @@ func CreateBackup(db *database.Database, dsk *disk.Disk) (err error) {
 		return
 	}
 
+	if dsk.BackingImage != "" {
+		logrus.WithFields(logrus.Fields{
+			"disk_id": dsk.Id.Hex(),
+		}).Error("data: Cannot backup disk with backing image")
+		return
+	}
+
 	store, err := storage.Get(db, dc.BackupStorage)
 	if err != nil {
 		if _, ok := err.(*database.NotFoundError); ok {
