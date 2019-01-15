@@ -30,6 +30,7 @@ type diskData struct {
 	Backing          bool          `json:"backing"`
 	State            string        `json:"state"`
 	Size             int           `json:"size"`
+	Backup           bool          `json:"backup"`
 }
 
 type disksMultiData struct {
@@ -74,12 +75,14 @@ func diskPut(c *gin.Context) {
 		"instance",
 		"delete_protection",
 		"index",
+		"backup",
 	)
 
 	dsk.Name = dta.Name
 	dsk.Instance = dta.Instance
 	dsk.DeleteProtection = dta.DeleteProtection
 	dsk.Index = dta.Index
+	dsk.Backup = dta.Backup
 
 	if dsk.State == disk.Available && dta.State == disk.Snapshot {
 		dsk.State = disk.Snapshot
@@ -166,6 +169,7 @@ func diskPost(c *gin.Context) {
 		DeleteProtection: dta.DeleteProtection,
 		Backing:          dta.Backing,
 		Size:             dta.Size,
+		Backup:           dta.Backup,
 	}
 
 	errData, err := dsk.Validate(db)
