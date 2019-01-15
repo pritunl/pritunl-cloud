@@ -252,8 +252,84 @@ func (d *Disks) destroy(dsk *disk.Disk) {
 	}()
 }
 
+func (d *Disks) scheduleBackup(dsk *disk.Disk) {
+	if time.Since(dsk.LastBackup) < 12*time.Hour {
+		return
+	}
+
+	if !backupLimiter.Acquire() {
+		return
+	}
+
+	acquired, lockId := disksLock.LockOpen(dsk.Id.Hex())
+	if !acquired {
+		backupLimiter.Release()
+		return
+	}
+
+	go func() {
+		defer func() {
+			time.Sleep(1 * time.Second)
+			disksLock.Unlock(dsk.Id.Hex(), lockId)
+			backupLimiter.Release()
+		}()
+
+		db := database.GetDatabase()
+		defer db.Close()
+
+		if dsk.State != disk.Available {
+			return
+		}
+
+		logrus.WithFields(logrus.Fields{
+			"disk_id": dsk.Id.Hex(),
+		}).Info("deploy: Scheduling automatic disk backup")
+
+		dsk.State = disk.Backup
+		dsk.LastBackup = time.Now()
+		err := dsk.CommitFields(db, set.NewSet("state", "last_backup"))
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("deploy: Failed update disk state")
+			time.Sleep(5 * time.Second)
+			return
+		}
+
+		event.PublishDispatch(db, "disk.change")
+
+		err = data.CreateBackup(db, dsk)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("deploy: Failed to backup disk")
+		}
+
+		dsk.State = disk.Available
+		err = dsk.CommitFields(db, set.NewSet("state"))
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("deploy: Failed update disk state")
+			time.Sleep(5 * time.Second)
+			return
+		}
+
+		event.PublishDispatch(db, "disk.change")
+		event.PublishDispatch(db, "image.change")
+	}()
+}
+
 func (d *Disks) Deploy() (err error) {
 	disks := d.stat.Disks()
+
+	backupHour := settings.System.DiskBackupTime
+	backupWindow := settings.System.DiskBackupWindow
+	utcHour := time.Now().UTC().Hour()
+	backupActive := false
+	if utcHour >= backupHour && utcHour <= (backupHour+backupWindow) {
+		backupActive = true
+	}
 
 	for _, dsk := range disks {
 		switch dsk.State {
@@ -271,6 +347,11 @@ func (d *Disks) Deploy() (err error) {
 			break
 		case disk.Destroy:
 			d.destroy(dsk)
+			break
+		case disk.Available:
+			if backupActive && dsk.Backup {
+				d.scheduleBackup(dsk)
+			}
 			break
 		}
 	}
