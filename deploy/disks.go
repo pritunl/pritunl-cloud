@@ -8,6 +8,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
@@ -15,7 +16,8 @@ import (
 )
 
 var (
-	disksLock = utils.NewMultiTimeoutLock(5 * time.Minute)
+	disksLock     = utils.NewMultiTimeoutLock(5 * time.Minute)
+	backupLimiter = utils.NewLimiter(3)
 )
 
 type Disks struct {
@@ -88,13 +90,22 @@ func (d *Disks) snapshot(dsk *disk.Disk) {
 }
 
 func (d *Disks) backup(dsk *disk.Disk) {
+	if !backupLimiter.Acquire() {
+		return
+	}
+
 	acquired, lockId := disksLock.LockOpen(dsk.Id.Hex())
 	if !acquired {
+		backupLimiter.Release()
 		return
 	}
 
 	go func() {
-		defer disksLock.Unlock(dsk.Id.Hex(), lockId)
+		defer func() {
+			time.Sleep(1 * time.Second)
+			disksLock.Unlock(dsk.Id.Hex(), lockId)
+			backupLimiter.Release()
+		}()
 
 		db := database.GetDatabase()
 		defer db.Close()
@@ -117,17 +128,27 @@ func (d *Disks) backup(dsk *disk.Disk) {
 		}
 
 		event.PublishDispatch(db, "disk.change")
+		event.PublishDispatch(db, "image.change")
 	}()
 }
 
 func (d *Disks) restore(dsk *disk.Disk) {
+	if !backupLimiter.Acquire() {
+		return
+	}
+
 	acquired, lockId := disksLock.LockOpen(dsk.Id.Hex())
 	if !acquired {
+		backupLimiter.Release()
 		return
 	}
 
 	go func() {
-		defer disksLock.Unlock(dsk.Id.Hex(), lockId)
+		defer func() {
+			time.Sleep(1 * time.Second)
+			disksLock.Unlock(dsk.Id.Hex(), lockId)
+			backupLimiter.Release()
+		}()
 
 		db := database.GetDatabase()
 		defer db.Close()
