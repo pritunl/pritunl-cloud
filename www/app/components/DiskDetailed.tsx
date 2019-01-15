@@ -472,6 +472,15 @@ export default class DiskDetailed extends React.Component<Props, State> {
 							this.set('delete_protection', !disk.delete_protection);
 						}}
 					/>
+					<PageSwitch
+						disabled={this.state.disabled}
+						label="Automatic backup"
+						help="Automatically backup disk daily."
+						checked={disk.backup}
+						onToggle={(): void => {
+							this.set('backup', !disk.backup);
+						}}
+					/>
 					<label
 						className="pt-label"
 						style={css.label}
