@@ -330,6 +330,14 @@ export default class DiskDetailed extends React.Component<Props, State> {
 				statusText = 'Snapshotting';
 				statusClass += ' pt-text-intent-primary';
 				break;
+			case 'backup':
+				statusText = 'Backing Up';
+				statusClass += ' pt-text-intent-primary';
+				break;
+			case 'restore':
+				statusText = 'Restoring';
+				statusClass += ' pt-text-intent-primary';
+				break;
 		}
 
 		let fields: PageInfos.Field[] = [
