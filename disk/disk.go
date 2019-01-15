@@ -58,6 +58,14 @@ func (d *Disk) Validate(db *database.Database) (
 		d.Index = strconv.Itoa(index)
 	}
 
+	if d.Backup && d.BackingImage != "" {
+		errData = &errortypes.ErrorData{
+			Error:   "backing_image_backup",
+			Message: "Cannot enable backups with backing image",
+		}
+		return
+	}
+
 	if d.Instance == "" && !strings.HasPrefix(d.Index, "hold") {
 		d.Index = fmt.Sprintf("hold_%s", bson.NewObjectId().Hex())
 	}
