@@ -12,6 +12,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type Disk struct {
@@ -29,6 +30,8 @@ type Disk struct {
 	BackingImage     string        `bson:"backing_image" json:"backing_image"`
 	Index            string        `bson:"index" json:"index"`
 	Size             int           `bson:"size" json:"size"`
+	Backup           bool          `bson:"backup" json:"backup"`
+	LastBackup       time.Time     `bson:"last_backup" json:"last_backup"`
 }
 
 func (d *Disk) Validate(db *database.Database) (
