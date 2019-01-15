@@ -19,6 +19,7 @@ type system struct {
 	UserCookieAuthKey    []byte `bson:"user_cookie_auth_key"`
 	UserCookieCryptoKey  []byte `bson:"user_cookie_crypto_key"`
 	AcmeKeyAlgorithm     string `bson:"acme_key_algorithm" default:"rsa"`
+	DiskBackupWindow     int    `bson:"disk_backup_window" default:"6"`
 	DiskBackupTime       int    `bson:"disk_backup_time" default:"10"`
 }
 
