@@ -13,6 +13,7 @@ export interface Disk {
 	instance?: string;
 	delete_protection?: boolean;
 	image?: string;
+	restore_image?: string;
 	backing?: boolean;
 	backing_image?: string;
 	index?: string;
