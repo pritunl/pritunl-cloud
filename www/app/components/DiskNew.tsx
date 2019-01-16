@@ -398,7 +398,7 @@ export default class DiskNew extends React.Component<Props, State> {
 						</PageSelect>
 						<PageSwitch
 							disabled={this.state.disabled}
-							label="Delete Protection"
+							label="Delete protection"
 							help="Block disk from being deleted."
 							checked={disk.delete_protection}
 							onToggle={(): void => {
