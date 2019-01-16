@@ -1,6 +1,11 @@
 pritunl-cloud changelog
 =======================
 
+Version 1.0.1149.32 2019-01-16
+------------------------------
+
+Add automatic backup scheduling
+
 Version 1.0.1147.30 2019-01-14
 ------------------------------
 
