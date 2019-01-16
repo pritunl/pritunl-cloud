@@ -14986,7 +14986,7 @@ System.registerDynamic("app/components/Storage.js", ["npm:react@16.4.1.js", "app
                     this.set('bucket', val);
                 } }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "Type", help: "Select public for read only storages with virtual machine images. Select private for read-write storages for snapshots.", value: storage.type, onChange: val => {
                     this.set('type', val);
-                } }, React.createElement("option", { value: "public" }, "Public"), React.createElement("option", { value: "private" }, "Private"), React.createElement("option", { value: "backup" }, "Backup"))), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
+                } }, React.createElement("option", { value: "public" }, "Public"), React.createElement("option", { value: "private" }, "Private"))), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
                     label: 'ID',
                     value: this.props.storage.id || 'None'
                 }] }), React.createElement(PageInput_1.default, { disabled: this.state.disabled, label: "Access Key", help: "Storage access key", type: "text", placeholder: "Enter access key", value: storage.access_key, onChange: val => {
@@ -16074,6 +16074,8 @@ System.registerDynamic("app/components/DiskDetailed.js", ["npm:react@16.4.1.js",
                     this.set('index', String(val));
                 } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Delete protection", help: "Block disk from being deleted.", checked: disk.delete_protection, onToggle: () => {
                     this.set('delete_protection', !disk.delete_protection);
+                } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Automatic backup", help: "Automatically backup disk daily.", checked: disk.backup, onToggle: () => {
+                    this.set('backup', !disk.backup);
                 } }), React.createElement("label", { className: "pt-label", style: css.label }, "Restore Backup", React.createElement(Help_1.default, { title: "Restore Backup", content: "Select a backup to restore and replace the existing disk with the backup image." })), React.createElement(PageSelectButtonConfirm_1.default, { label: "Restore", value: this.state.restoreImage, disabled: !hasBackups || this.state.disabled, confirmMsg: "Confirm disk restore", buttonClass: "pt-intent-success pt-icon-box", progressClassName: "pt-intent-success", onChange: val => {
                     this.setState(Object.assign({}, this.state, { restoreImage: val }));
                 }, onSubmit: this.onRestoreBackup }, backupsSelect)), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: fields }))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.disk && !this.state.message, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
