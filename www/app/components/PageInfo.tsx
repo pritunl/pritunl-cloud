@@ -23,13 +23,16 @@ export interface Props {
 const css = {
 	label: {
 		width: '100%',
-		maxWidth: '280px',
+		maxWidth: '320px',
 	} as React.CSSProperties,
 	value: {
 		wordWrap: 'break-word',
 	} as React.CSSProperties,
 	item: {
 		marginBottom: '5px',
+	} as React.CSSProperties,
+	bar: {
+		maxWidth: '280px',
 	} as React.CSSProperties,
 };
 
@@ -77,7 +80,10 @@ export default class PageInfo extends React.Component<Props, {}> {
 			bars.push(
 				<div key={bar.label} style={css.item}>
 					{bar.label}
-					<div className={'pt-progress-bar ' + (bar.progressClass || '')}>
+					<div
+						className={'pt-progress-bar ' + (bar.progressClass || '')}
+						style={css.bar}
+					>
 						<div className="pt-progress-meter" style={style}/>
 					</div>
 				</div>,
