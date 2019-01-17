@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Add copy to clipboard to web console
+
 Version 1.0.1149.32 2019-01-16
 ------------------------------
 
