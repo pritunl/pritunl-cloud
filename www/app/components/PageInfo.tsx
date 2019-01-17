@@ -1,10 +1,12 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
+import CopyButton from './CopyButton';
 
 export interface Field {
 	valueClass?: string;
 	label: string;
 	value: string | number | string[];
+	copy?: boolean;
 }
 
 export interface Bar {
@@ -34,6 +36,15 @@ const css = {
 	bar: {
 		maxWidth: '280px',
 	} as React.CSSProperties,
+	copy: {
+		cursor: 'pointer',
+		marginLeft: '3px',
+	} as React.CSSProperties,
+	copyHover: {
+		cursor: 'pointer',
+		marginLeft: '3px',
+		opacity: 0.7,
+	} as React.CSSProperties,
 };
 
 export default class PageInfo extends React.Component<Props, {}> {
@@ -47,15 +58,38 @@ export default class PageInfo extends React.Component<Props, {}> {
 			}
 
 			let value: string | JSX.Element[];
+			let copyBtn: JSX.Element;
 
 			if (typeof field.value === 'string') {
 				value = field.value;
+				if (field.copy) {
+					copyBtn = <CopyButton
+						value={field.value}
+					/>;
+				}
 			} else if (typeof field.value === 'number') {
 				value = field.value.toString();
+				if (field.copy) {
+					copyBtn = <CopyButton
+						value={field.value.toString()}
+					/>;
+				}
 			} else {
 				value = [];
 				for (let i = 0; i < field.value.length; i++) {
-					value.push(<div key={i}>{field.value[i]}</div>);
+					let copyItemBtn: JSX.Element;
+
+					if (field.copy) {
+						copyItemBtn = <CopyButton
+							value={field.value[i]}
+						/>;
+					}
+
+					value.push(
+						<div key={i}>
+							{field.value[i]}{copyItemBtn}
+						</div>
+					);
 				}
 			}
 
@@ -66,7 +100,7 @@ export default class PageInfo extends React.Component<Props, {}> {
 						className={field.valueClass || 'pt-text-muted'}
 						style={css.value}
 					>
-						{value}
+						{value}{copyBtn}
 					</div>
 				</div>,
 			);
