@@ -4895,7 +4895,8 @@ System.registerDynamic("app/components/Device.js", ["npm:react@16.4.1.js", "app/
         },
         group: {
             flex: 1,
-            minWidth: '250px'
+            minWidth: '280px',
+            margin: '0 10px'
         },
         inputGroup: {
             marginBottom: '11px',
@@ -10775,7 +10776,8 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.4.1.js",
         },
         group: {
             flex: 1,
-            minWidth: '250px'
+            minWidth: '280px',
+            margin: '0 10px'
         },
         save: {
             paddingBottom: '10px'
@@ -11182,10 +11184,12 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.4.1.js",
                     value: (this.props.node.memory_units || 'Unknown').toString()
                 }, {
                     label: 'Public IPv4',
-                    value: publicIps
+                    value: publicIps,
+                    copy: true
                 }, {
                     label: 'Public IPv6',
-                    value: publicIps6
+                    value: publicIps6,
+                    copy: true
                 }, {
                     label: 'Requests',
                     value: this.props.node.requests_min + '/min'
@@ -11960,7 +11964,8 @@ System.registerDynamic("app/components/Policy.js", ["npm:react@16.4.1.js", "app/
         },
         group: {
             flex: 1,
-            minWidth: '250px'
+            minWidth: '280px',
+            margin: '0 10px'
         },
         save: {
             paddingBottom: '10px'
@@ -12375,7 +12380,8 @@ System.registerDynamic("app/components/Certificate.js", ["npm:react@16.4.1.js", 
         },
         group: {
             flex: 1,
-            minWidth: '250px'
+            minWidth: '280px',
+            margin: '0 10px'
         },
         save: {
             paddingBottom: '10px'
@@ -12611,7 +12617,8 @@ System.registerDynamic("app/components/Organization.js", ["npm:react@16.4.1.js",
         },
         group: {
             flex: 1,
-            minWidth: '250px'
+            minWidth: '280px',
+            margin: '0 10px'
         },
         save: {
             paddingBottom: '10px'
@@ -12823,7 +12830,8 @@ System.registerDynamic("app/components/Datacenter.js", ["npm:react@16.4.1.js", "
         },
         group: {
             flex: 1,
-            minWidth: '250px'
+            minWidth: '280px',
+            margin: '0 10px'
         },
         save: {
             paddingBottom: '10px'
@@ -13150,7 +13158,8 @@ System.registerDynamic("app/components/Zone.js", ["npm:react@16.4.1.js", "app/ac
         },
         group: {
             flex: 1,
-            minWidth: '250px'
+            minWidth: '280px',
+            margin: '0 10px'
         },
         save: {
             paddingBottom: '10px'
@@ -13451,7 +13460,8 @@ System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.4.1.js", 
         },
         group: {
             flex: 1,
-            minWidth: '250px'
+            minWidth: '280px',
+            margin: '0 10px'
         },
         save: {
             paddingBottom: '10px'
@@ -13686,7 +13696,8 @@ System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.4.1.js", 
                     value: this.props.vpc.vpc_id || 'Unknown'
                 }, {
                     label: 'Private IPv6 Network',
-                    value: this.props.vpc.network6 || 'Unknown'
+                    value: this.props.vpc.network6 || 'Unknown',
+                    copy: true
                 }] }))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.vpc && !this.state.message, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
                     this.setState(Object.assign({}, this.state, { changed: false, vpc: null }));
                 }, onSave: this.onSave }));
@@ -13795,7 +13806,7 @@ System.registerDynamic("app/components/Vpc.js", ["npm:react@16.4.1.js", "app/sto
                     this.props.onOpen();
                 } }, React.createElement("div", { className: "pt-cell", style: css.name }, React.createElement("div", { className: "layout horizontal" }, React.createElement("label", { className: "pt-control pt-checkbox open-ignore", style: css.select }, React.createElement("input", { type: "checkbox", className: "open-ignore", checked: this.props.selected, onClick: evt => {
                     this.props.onSelect(evt.shiftKey);
-                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" })), React.createElement("div", { style: css.nameSpan }, vpc.name))), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, className: 'pt-icon-standard ' + (vpc.organization ? 'pt-icon-people' : 'pt-icon-layers') }), orgName), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, className: "pt-icon-standard pt-icon-cloud" }), datacenterName));
+                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" })), React.createElement("div", { style: css.nameSpan }, vpc.name))), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, className: 'pt-icon-standard pt-text-muted ' + (vpc.organization ? 'pt-icon-people' : 'pt-icon-layers') }), orgName), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, className: "pt-icon-standard pt-text-muted pt-icon-cloud" }), datacenterName));
         }
     }
     exports.default = Vpc;
@@ -14277,7 +14288,8 @@ System.registerDynamic("app/components/DomainDetailed.js", ["npm:react@16.4.1.js
         },
         group: {
             flex: 1,
-            minWidth: '250px'
+            minWidth: '280px',
+            margin: '0 10px'
         },
         save: {
             paddingBottom: '10px'
@@ -14488,7 +14500,7 @@ System.registerDynamic("app/components/Domain.js", ["npm:react@16.4.1.js", "app/
                     this.props.onOpen();
                 } }, React.createElement("div", { className: "pt-cell", style: css.name }, React.createElement("div", { className: "layout horizontal" }, React.createElement("label", { className: "pt-control pt-checkbox open-ignore", style: css.select }, React.createElement("input", { type: "checkbox", className: "open-ignore", checked: this.props.selected, onClick: evt => {
                     this.props.onSelect(evt.shiftKey);
-                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" })), React.createElement("div", { style: css.nameSpan }, domain.name))), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, className: 'pt-icon-standard ' + (domain.organization ? 'pt-icon-people' : 'pt-icon-layers') }), orgName));
+                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" })), React.createElement("div", { style: css.nameSpan }, domain.name))), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, className: 'pt-icon-standard pt-text-muted ' + (domain.organization ? 'pt-icon-people' : 'pt-icon-layers') }), orgName));
         }
     }
     exports.default = Domain;
@@ -14916,7 +14928,8 @@ System.registerDynamic("app/components/Storage.js", ["npm:react@16.4.1.js", "app
         },
         group: {
             flex: 1,
-            minWidth: '250px'
+            minWidth: '280px',
+            margin: '0 10px'
         },
         save: {
             paddingBottom: '10px'
@@ -15186,7 +15199,8 @@ System.registerDynamic("app/components/ImageDetailed.js", ["npm:react@16.4.1.js"
         },
         group: {
             flex: 1,
-            minWidth: '250px'
+            minWidth: '280px',
+            margin: '0 10px'
         },
         save: {
             paddingBottom: '10px'
@@ -15413,7 +15427,7 @@ System.registerDynamic("app/components/Image.js", ["npm:react@16.4.1.js", "app/c
                     this.props.onOpen();
                 } }, React.createElement("div", { className: "pt-cell", style: css.name }, React.createElement("div", { className: "layout horizontal" }, React.createElement("label", { className: "pt-control pt-checkbox open-ignore", style: css.select }, React.createElement("input", { type: "checkbox", className: "open-ignore", checked: this.props.selected, onClick: evt => {
                     this.props.onSelect(evt.shiftKey);
-                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" })), React.createElement("div", { style: css.nameSpan }, image.name))), React.createElement("div", { className: 'pt-cell ' + orgClass, style: css.item }, React.createElement("span", { style: css.icon, className: 'pt-icon-standard ' + orgIcon }), orgName), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, hidden: !image.key, className: "pt-icon-standard pt-icon-compressed" }), image.key));
+                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" })), React.createElement("div", { style: css.nameSpan }, image.name))), React.createElement("div", { className: 'pt-cell ' + orgClass, style: css.item }, React.createElement("span", { style: css.icon, className: 'pt-icon-standard pt-text-muted ' + orgIcon }), orgName), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, hidden: !image.key, className: "pt-icon-standard pt-text-muted pt-icon-compressed" }), image.key));
         }
     }
     exports.default = Image;
@@ -15854,7 +15868,8 @@ System.registerDynamic("app/components/DiskDetailed.js", ["npm:react@16.4.1.js",
         },
         group: {
             flex: 1,
-            minWidth: '250px'
+            minWidth: '280px',
+            margin: '0 10px'
         },
         save: {
             paddingBottom: '10px'
@@ -16212,7 +16227,7 @@ System.registerDynamic("app/components/Disk.js", ["npm:react@16.4.1.js", "app/st
                     this.props.onOpen();
                 } }, React.createElement("div", { className: "pt-cell", style: css.name }, React.createElement("div", { className: "layout horizontal" }, React.createElement("label", { className: "pt-control pt-checkbox open-ignore", style: css.select }, React.createElement("input", { type: "checkbox", className: "open-ignore", checked: this.props.selected, onClick: evt => {
                     this.props.onSelect(evt.shiftKey);
-                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" })), React.createElement("div", { style: css.nameSpan }, disk.name))), React.createElement("div", { className: statusClass, style: css.item }, React.createElement("span", { style: css.icon, className: "pt-icon-standard pt-icon-pulse" }), statusText), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, className: 'pt-icon-standard ' + (disk.organization ? 'pt-icon-people' : 'pt-icon-layers') }), orgName), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, className: "pt-icon-standard pt-icon-layers" }), node ? node.name : this.props.disk.node), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, className: "pt-icon-standard pt-icon-database" }), disk.size, "GB"));
+                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" })), React.createElement("div", { style: css.nameSpan }, disk.name))), React.createElement("div", { className: statusClass, style: css.item }, React.createElement("span", { style: css.icon, className: "pt-icon-standard pt-icon-pulse" }), statusText), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, className: 'pt-icon-standard pt-text-muted ' + (disk.organization ? 'pt-icon-people' : 'pt-icon-layers') }), orgName), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, className: "pt-icon-standard pt-text-muted pt-icon-layers" }), node ? node.name : this.props.disk.node), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, className: "pt-icon-standard pt-text-muted pt-icon-database" }), disk.size, "GB"));
         }
     }
     exports.default = Disk;
@@ -16509,7 +16524,8 @@ System.registerDynamic("app/components/DiskNew.js", ["npm:react@16.4.1.js", "app
         },
         group: {
             flex: 1,
-            minWidth: '250px'
+            minWidth: '280px',
+            margin: '0 10px'
         },
         save: {
             paddingBottom: '10px'
@@ -17410,19 +17426,24 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@16.4.1.
                     value: (this.props.instance.state || 'None') + ':' + (this.props.instance.vm_state || 'None')
                 }, {
                     label: 'Public MAC Address',
-                    value: this.props.instance.public_mac || 'Unknown'
+                    value: this.props.instance.public_mac || 'Unknown',
+                    copy: true
                 }, {
                     label: 'Public IPv4',
-                    value: publicIps
+                    value: publicIps,
+                    copy: true
                 }, {
                     label: 'Public IPv6',
-                    value: publicIps6
+                    value: publicIps6,
+                    copy: true
                 }, {
                     label: 'Private IPv4',
-                    value: privateIps
+                    value: privateIps,
+                    copy: true
                 }, {
                     label: 'Private IPv6',
-                    value: privateIps6
+                    value: privateIps6,
+                    copy: true
                 }, {
                     label: 'Disks',
                     value: info.disks || ''
@@ -17622,7 +17643,7 @@ System.registerDynamic("app/components/Instance.js", ["npm:react@16.4.1.js", "ap
                     this.props.onOpen();
                 } }, React.createElement("div", { className: "pt-cell", style: css.name }, React.createElement("div", { className: "layout horizontal" }, React.createElement("label", { className: "pt-control pt-checkbox open-ignore", style: css.select }, React.createElement("input", { type: "checkbox", className: "open-ignore", checked: this.props.selected, onClick: evt => {
                     this.props.onSelect(evt.shiftKey);
-                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" })), React.createElement("div", { style: css.nameSpan }, instance.name))), React.createElement("div", { className: statusClass, style: css.item }, React.createElement("span", { style: css.icon, hidden: !instance.status, className: "pt-icon-standard pt-icon-power" }), instance.status), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, hidden: !nodeName, className: "pt-icon-standard pt-icon-layers" }), nodeName), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, hidden: !zoneName, className: "pt-icon-standard pt-icon-layout-circle" }), zoneName), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, hidden: !publicIp, className: "pt-icon-standard pt-icon-ip-address" }), publicIp), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, hidden: !privateIp, className: "pt-icon-standard pt-icon-ip-address" }), privateIp));
+                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" })), React.createElement("div", { style: css.nameSpan }, instance.name))), React.createElement("div", { className: statusClass, style: css.item }, React.createElement("span", { style: css.icon, hidden: !instance.status, className: "pt-icon-standard pt-icon-power" }), instance.status), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, hidden: !nodeName, className: "pt-icon-standard pt-text-muted pt-icon-layers" }), nodeName), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, hidden: !zoneName, className: "pt-icon-standard pt-text-muted pt-icon-layout-circle" }), zoneName), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, hidden: !publicIp, className: "pt-icon-standard pt-text-muted pt-icon-ip-address" }), publicIp), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, hidden: !privateIp, className: "pt-icon-standard pt-text-muted pt-icon-ip-address" }), privateIp));
         }
     }
     exports.default = Instance;
@@ -18050,7 +18071,8 @@ System.registerDynamic("app/components/InstanceNew.js", ["npm:react@16.4.1.js", 
         },
         group: {
             flex: 1,
-            minWidth: '250px'
+            minWidth: '280px',
+            margin: '0 10px'
         },
         save: {
             paddingBottom: '10px'
@@ -18914,7 +18936,8 @@ System.registerDynamic("app/components/FirewallDetailed.js", ["npm:react@16.4.1.
         },
         group: {
             flex: 1,
-            minWidth: '250px'
+            minWidth: '280px',
+            margin: '0 10px'
         },
         save: {
             paddingBottom: '10px'
@@ -19228,7 +19251,7 @@ System.registerDynamic("app/components/Firewall.js", ["npm:react@16.4.1.js", "ap
                     this.props.onOpen();
                 } }, React.createElement("div", { className: "pt-cell", style: css.name }, React.createElement("div", { className: "layout horizontal" }, React.createElement("label", { className: "pt-control pt-checkbox open-ignore", style: css.select }, React.createElement("input", { type: "checkbox", className: "open-ignore", checked: this.props.selected, onClick: evt => {
                     this.props.onSelect(evt.shiftKey);
-                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" })), React.createElement("div", { style: css.nameSpan }, firewall.name))), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, className: 'pt-icon-standard ' + (firewall.organization ? 'pt-icon-people' : 'pt-icon-layers') }), orgName), React.createElement("div", { className: "flex pt-cell", style: css.roles }, networkRoles));
+                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" })), React.createElement("div", { style: css.nameSpan }, firewall.name))), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, className: 'pt-icon-standard pt-text-muted ' + (firewall.organization ? 'pt-icon-people' : 'pt-icon-layers') }), orgName), React.createElement("div", { className: "flex pt-cell", style: css.roles }, networkRoles));
         }
     }
     exports.default = Firewall;
@@ -19639,7 +19662,8 @@ System.registerDynamic("app/components/AuthorityDetailed.js", ["npm:react@16.4.1
         },
         group: {
             flex: 1,
-            minWidth: '250px'
+            minWidth: '280px',
+            margin: '0 10px'
         },
         save: {
             paddingBottom: '10px'
@@ -19952,7 +19976,7 @@ System.registerDynamic("app/components/Authority.js", ["npm:react@16.4.1.js", "a
                     this.props.onOpen();
                 } }, React.createElement("div", { className: "pt-cell", style: css.name }, React.createElement("div", { className: "layout horizontal" }, React.createElement("label", { className: "pt-control pt-checkbox open-ignore", style: css.select }, React.createElement("input", { type: "checkbox", className: "open-ignore", checked: this.props.selected, onClick: evt => {
                     this.props.onSelect(evt.shiftKey);
-                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" })), React.createElement("div", { style: css.nameSpan }, authority.name))), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, className: "pt-icon-standard pt-icon-people" }), orgName), React.createElement("div", { className: "flex pt-cell", style: css.roles }, networkRoles));
+                } }), React.createElement("span", { className: "pt-control-indicator open-ignore" })), React.createElement("div", { style: css.nameSpan }, authority.name))), React.createElement("div", { className: "pt-cell", style: css.item }, React.createElement("span", { style: css.icon, className: "pt-icon-standard pt-text-muted pt-icon-people" }), orgName), React.createElement("div", { className: "flex pt-cell", style: css.roles }, networkRoles));
         }
     }
     exports.default = Authority;
@@ -21524,23 +21548,126 @@ System.registerDynamic("app/components/PageSwitch.js", ["npm:react@16.4.1.js", "
     exports.default = PageSwitch;
     
 });
-System.registerDynamic("app/components/PageInfo.js", ["npm:react@16.4.1.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/CopyButton.js", ["npm:react@16.4.1.js", "app/Constants.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
         GLOBAL = global;
     Object.defineProperty(exports, "__esModule", { value: true });
     const React = $__require("npm:react@16.4.1.js");
+    const Constants = $__require("app/Constants.js");
+    const css = {
+        copy: {
+            cursor: 'pointer',
+            marginLeft: '3px'
+        },
+        copyHover: {
+            cursor: 'pointer',
+            marginLeft: '3px',
+            opacity: 0.7
+        },
+        copyClicked: {
+            cursor: 'pointer',
+            marginLeft: '3px',
+            opacity: 0.5
+        }
+    };
+    class CopyButton extends React.Component {
+        constructor(props, context) {
+            super(props, context);
+            this.state = {
+                hover: false,
+                click: false,
+                copied: false
+            };
+        }
+        render() {
+            let style;
+            if (this.state.click && !this.state.copied) {
+                style = css.copyClicked;
+            } else if (this.state.hover && !this.state.copied) {
+                style = css.copyHover;
+            } else {
+                style = css.copy;
+            }
+            let className = 'pt-icon-standard';
+            if (this.state.copied) {
+                className += ' pt-icon-tick pt-intent-success';
+            } else {
+                className += ' pt-icon-clipboard';
+            }
+            return React.createElement("span", { ref: elem => this.elem = elem, className: className, style: style, onMouseEnter: () => {
+                    this.setState(Object.assign({}, this.state, { hover: true }));
+                }, onMouseLeave: () => {
+                    this.setState(Object.assign({}, this.state, { hover: false, click: false }));
+                }, onMouseDown: () => {
+                    this.setState(Object.assign({}, this.state, { click: true }));
+                }, onMouseUp: () => {
+                    this.setState(Object.assign({}, this.state, { click: false }));
+                }, onClick: () => {
+                    this.setState(Object.assign({}, this.state, { copied: true }));
+                    setTimeout(() => {
+                        this.setState(Object.assign({}, this.state, { copied: false }));
+                    }, 1200);
+                    let elem = document.createElement('input');
+                    elem.contentEditable = 'true';
+                    elem.readOnly = true;
+                    elem.style.position = 'absolute';
+                    elem.style.width = '1px';
+                    elem.style.height = '1px';
+                    elem.style.padding = '0px';
+                    elem.style.border = 'none';
+                    elem.style.opacity = '0';
+                    elem.value = this.props.value;
+                    this.elem.parentElement.append(elem);
+                    if (Constants.mobileOs === 'iOS') {
+                        let range = document.createRange();
+                        range.selectNodeContents(elem);
+                        let selection = window.getSelection();
+                        selection.removeAllRanges();
+                        selection.addRange(range);
+                        elem.setSelectionRange(0, 999999);
+                    } else {
+                        elem.select();
+                    }
+                    document.execCommand('copy');
+                    elem.remove();
+                } });
+        }
+    }
+    exports.default = CopyButton;
+    
+});
+System.registerDynamic("app/components/PageInfo.js", ["npm:react@16.4.1.js", "app/components/CopyButton.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@16.4.1.js");
+    const CopyButton_1 = $__require("app/components/CopyButton.js");
     const css = {
         label: {
             width: '100%',
-            maxWidth: '280px'
+            maxWidth: '320px'
         },
         value: {
             wordWrap: 'break-word'
         },
         item: {
             marginBottom: '5px'
+        },
+        bar: {
+            maxWidth: '280px'
+        },
+        copy: {
+            cursor: 'pointer',
+            marginLeft: '3px'
+        },
+        copyHover: {
+            cursor: 'pointer',
+            marginLeft: '3px',
+            opacity: 0.7
         }
     };
     class PageInfo extends React.Component {
@@ -21552,23 +21679,34 @@ System.registerDynamic("app/components/PageInfo.js", ["npm:react@16.4.1.js"], tr
                     continue;
                 }
                 let value;
+                let copyBtn;
                 if (typeof field.value === 'string') {
                     value = field.value;
+                    if (field.copy) {
+                        copyBtn = React.createElement(CopyButton_1.default, { value: field.value });
+                    }
                 } else if (typeof field.value === 'number') {
                     value = field.value.toString();
+                    if (field.copy) {
+                        copyBtn = React.createElement(CopyButton_1.default, { value: field.value.toString() });
+                    }
                 } else {
                     value = [];
                     for (let i = 0; i < field.value.length; i++) {
-                        value.push(React.createElement("div", { key: i }, field.value[i]));
+                        let copyItemBtn;
+                        if (field.copy) {
+                            copyItemBtn = React.createElement(CopyButton_1.default, { value: field.value[i] });
+                        }
+                        value.push(React.createElement("div", { key: i }, field.value[i], copyItemBtn));
                     }
                 }
-                fields.push(React.createElement("div", { key: field.label, style: css.item }, field.label, React.createElement("div", { className: field.valueClass || 'pt-text-muted', style: css.value }, value)));
+                fields.push(React.createElement("div", { key: field.label, style: css.item }, field.label, React.createElement("div", { className: field.valueClass || 'pt-text-muted', style: css.value }, value, copyBtn)));
             }
             for (let bar of this.props.bars || []) {
                 let style = {
                     width: (bar.value || 0) + '%'
                 };
-                bars.push(React.createElement("div", { key: bar.label, style: css.item }, bar.label, React.createElement("div", { className: 'pt-progress-bar ' + (bar.progressClass || '') }, React.createElement("div", { className: "pt-progress-meter", style: style }))));
+                bars.push(React.createElement("div", { key: bar.label, style: css.item }, bar.label, React.createElement("div", { className: 'pt-progress-bar ' + (bar.progressClass || ''), style: css.bar }, React.createElement("div", { className: "pt-progress-meter", style: style }))));
             }
             let labelStyle;
             if (this.props.style) {
@@ -28118,6 +28256,7 @@ System.registerDynamic("app/Constants.js", ["npm:mobile-detect@1.4.2.js"], true,
     let md = new MobileDetect(window.navigator.userAgent);
     exports.user = !!window.user;
     exports.mobile = !!md.mobile();
+    exports.mobileOs = md.os();
     exports.loadDelay = 700;
     exports.u2fErrorCodes = {
         0: 'ok',
