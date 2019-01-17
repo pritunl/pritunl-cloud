@@ -573,6 +573,10 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 									this.props.instance.vm_state || 'None'),
 							},
 							{
+								label: 'Public MAC Address',
+								value: this.props.instance.public_mac || 'Unknown',
+							},
+							{
 								label: 'Public IPv4',
 								value: publicIps,
 							},
