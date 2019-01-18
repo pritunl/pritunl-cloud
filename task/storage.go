@@ -5,6 +5,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/storage"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -74,6 +75,8 @@ func storageSyncHandler(db *database.Database) (err error) {
 			return
 		}
 	}
+
+	event.PublishDispatch(db, "image.change")
 
 	return
 }
