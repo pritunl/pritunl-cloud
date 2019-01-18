@@ -218,10 +218,14 @@ func (s *Instances) destroy(inst *instance.Instance) {
 
 		err = instance.Remove(db, inst.Id)
 		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"error": err,
-			}).Error("deploy: Failed to remove instance")
-			return
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = nil
+			} else {
+				logrus.WithFields(logrus.Fields{
+					"error": err,
+				}).Error("deploy: Failed to remove instance")
+				return
+			}
 		}
 
 		event.PublishDispatch(db, "instance.change")
