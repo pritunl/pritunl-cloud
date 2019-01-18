@@ -18,6 +18,7 @@ const (
 
 var (
 	Production = true
+	LockDebug  = false
 	Interrupt  = false
 	StaticRoot = []string{
 		"www/dist",
