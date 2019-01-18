@@ -200,7 +200,15 @@ func (s *Instances) destroy(inst *instance.Instance) {
 		db := database.GetDatabase()
 		defer db.Close()
 
-		err := qemu.Destroy(db, inst.Virt)
+		_, err := instance.Get(db, inst.Id)
+		if err != nil {
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = nil
+			}
+			return
+		}
+
+		err = qemu.Destroy(db, inst.Virt)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
