@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Improve instance destroy
+
 Version 1.0.1150.31 2019-01-17
 ------------------------------
 
