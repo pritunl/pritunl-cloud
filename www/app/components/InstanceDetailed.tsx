@@ -70,7 +70,8 @@ const css = {
 	} as React.CSSProperties,
 	group: {
 		flex: 1,
-		minWidth: '250px',
+		minWidth: '280px',
+		margin: '0 10px',
 	} as React.CSSProperties,
 	save: {
 		paddingBottom: '10px',
