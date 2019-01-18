@@ -3,6 +3,7 @@ package utils
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"gopkg.in/mgo.v2/bson"
 	"sync"
@@ -31,16 +32,16 @@ func (m *MultiTimeoutLock) Lock(id string) (lockId bson.ObjectId) {
 
 	lock.Lock()
 
-	start := time.Now()
-	err := &errortypes.TimeoutError{
-		errors.New("utils: Multi lock timeout"),
-	}
-
 	lockId = bson.NewObjectId()
 	m.stateLock.Lock()
 	m.state[lockId] = true
 	m.stateLock.Unlock()
 
+	if !constants.LockDebug {
+		return
+	}
+
+	start := time.Now()
 	go func() {
 		for {
 			time.Sleep(1 * time.Second)
@@ -53,6 +54,10 @@ func (m *MultiTimeoutLock) Lock(id string) (lockId bson.ObjectId) {
 			}
 
 			if time.Since(start) > m.timeout {
+				err := &errortypes.TimeoutError{
+					errors.New("utils: Multi lock timeout"),
+				}
+
 				logrus.WithFields(logrus.Fields{
 					"error": err,
 				}).Error("utils: Multi lock timed out")
@@ -84,16 +89,16 @@ func (m *MultiTimeoutLock) LockOpen(id string) (
 
 	lock.Lock()
 
-	start := time.Now()
-	err := &errortypes.TimeoutError{
-		errors.New("utils: Multi lock timeout"),
-	}
-
 	lockId = bson.NewObjectId()
 	m.stateLock.Lock()
 	m.state[lockId] = true
 	m.stateLock.Unlock()
 
+	if !constants.LockDebug {
+		return
+	}
+
+	start := time.Now()
 	go func() {
 		for {
 			time.Sleep(1 * time.Second)
@@ -106,6 +111,10 @@ func (m *MultiTimeoutLock) LockOpen(id string) (
 			}
 
 			if time.Since(start) > m.timeout {
+				err := &errortypes.TimeoutError{
+					errors.New("utils: Multi lock timeout"),
+				}
+
 				logrus.WithFields(logrus.Fields{
 					"error": err,
 				}).Error("utils: Multi lock timed out")
@@ -132,16 +141,16 @@ func (m *MultiTimeoutLock) LockTimeout(id string,
 
 	lock.Lock()
 
-	start := time.Now()
-	err := &errortypes.TimeoutError{
-		errors.New("utils: Multi lock timeout"),
-	}
-
 	lockId = bson.NewObjectId()
 	m.stateLock.Lock()
 	m.state[lockId] = true
 	m.stateLock.Unlock()
 
+	if !constants.LockDebug {
+		return
+	}
+
+	start := time.Now()
 	go func() {
 		for {
 			time.Sleep(1 * time.Second)
@@ -154,6 +163,10 @@ func (m *MultiTimeoutLock) LockTimeout(id string,
 			}
 
 			if time.Since(start) > timeout {
+				err := &errortypes.TimeoutError{
+					errors.New("utils: Multi lock timeout"),
+				}
+
 				logrus.WithFields(logrus.Fields{
 					"error": err,
 				}).Error("utils: Multi lock timed out")
@@ -185,16 +198,16 @@ func (m *MultiTimeoutLock) LockOpenTimeout(id string,
 
 	lock.Lock()
 
-	start := time.Now()
-	err := &errortypes.TimeoutError{
-		errors.New("utils: Multi lock timeout"),
-	}
-
 	lockId = bson.NewObjectId()
 	m.stateLock.Lock()
 	m.state[lockId] = true
 	m.stateLock.Unlock()
 
+	if !constants.LockDebug {
+		return
+	}
+
+	start := time.Now()
 	go func() {
 		for {
 			time.Sleep(1 * time.Second)
@@ -207,6 +220,10 @@ func (m *MultiTimeoutLock) LockOpenTimeout(id string,
 			}
 
 			if time.Since(start) > timeout {
+				err := &errortypes.TimeoutError{
+					errors.New("utils: Multi lock timeout"),
+				}
+
 				logrus.WithFields(logrus.Fields{
 					"error": err,
 				}).Error("utils: Multi lock timed out")
