@@ -149,7 +149,7 @@ export default class Image extends React.Component<Props, {}> {
 			<div className={'pt-cell ' + orgClass} style={css.item}>
 				<span
 					style={css.icon}
-					className={'pt-icon-standard ' + orgIcon}
+					className={'pt-icon-standard pt-text-muted ' + orgIcon}
 				/>
 				{orgName}
 			</div>
@@ -157,7 +157,7 @@ export default class Image extends React.Component<Props, {}> {
 				<span
 					style={css.icon}
 					hidden={!image.key}
-					className="pt-icon-standard pt-icon-compressed"
+					className="pt-icon-standard pt-text-muted pt-icon-compressed"
 				/>
 				{image.key}
 			</div>

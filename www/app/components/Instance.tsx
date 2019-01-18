@@ -173,7 +173,7 @@ export default class Instance extends React.Component<Props, {}> {
 				<span
 					style={css.icon}
 					hidden={!nodeName}
-					className="pt-icon-standard pt-icon-layers"
+					className="pt-icon-standard pt-text-muted pt-icon-layers"
 				/>
 				{nodeName}
 			</div>
@@ -181,7 +181,7 @@ export default class Instance extends React.Component<Props, {}> {
 				<span
 					style={css.icon}
 					hidden={!zoneName}
-					className="pt-icon-standard pt-icon-layout-circle"
+					className="pt-icon-standard pt-text-muted pt-icon-layout-circle"
 				/>
 				{zoneName}
 			</div>
@@ -189,7 +189,7 @@ export default class Instance extends React.Component<Props, {}> {
 				<span
 					style={css.icon}
 					hidden={!publicIp}
-					className="pt-icon-standard pt-icon-ip-address"
+					className="pt-icon-standard pt-text-muted pt-icon-ip-address"
 				/>
 				{publicIp}
 			</div>
@@ -197,7 +197,7 @@ export default class Instance extends React.Component<Props, {}> {
 				<span
 					style={css.icon}
 					hidden={!privateIp}
-					className="pt-icon-standard pt-icon-ip-address"
+					className="pt-icon-standard pt-text-muted pt-icon-ip-address"
 				/>
 				{privateIp}
 			</div>

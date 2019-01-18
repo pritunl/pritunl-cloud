@@ -163,7 +163,7 @@ export default class Authority extends React.Component<Props, {}> {
 			<div className="pt-cell" style={css.item}>
 				<span
 					style={css.icon}
-					className="pt-icon-standard pt-icon-people"
+					className="pt-icon-standard pt-text-muted pt-icon-people"
 				/>
 				{orgName}
 			</div>

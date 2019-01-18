@@ -154,7 +154,7 @@ export default class Vpc extends React.Component<Props, {}> {
 			<div className="pt-cell" style={css.item}>
 				<span
 					style={css.icon}
-					className={'pt-icon-standard ' + (vpc.organization ?
+					className={'pt-icon-standard pt-text-muted ' + (vpc.organization ?
 						'pt-icon-people' : 'pt-icon-layers')}
 				/>
 				{orgName}
@@ -162,7 +162,7 @@ export default class Vpc extends React.Component<Props, {}> {
 			<div className="pt-cell" style={css.item}>
 				<span
 					style={css.icon}
-					className="pt-icon-standard pt-icon-cloud"
+					className="pt-icon-standard pt-text-muted pt-icon-cloud"
 				/>
 				{datacenterName}
 			</div>

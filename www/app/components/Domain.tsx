@@ -150,8 +150,8 @@ export default class Domain extends React.Component<Props, {}> {
 			<div className="pt-cell" style={css.item}>
 				<span
 					style={css.icon}
-					className={'pt-icon-standard ' + (domain.organization ?
-						'pt-icon-people' : 'pt-icon-layers')}
+					className={'pt-icon-standard pt-text-muted ' + (
+						domain.organization ? 'pt-icon-people' : 'pt-icon-layers')}
 				/>
 				{orgName}
 			</div>

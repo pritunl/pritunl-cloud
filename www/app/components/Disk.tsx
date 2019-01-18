@@ -184,7 +184,7 @@ export default class Disk extends React.Component<Props, {}> {
 			<div className="pt-cell" style={css.item}>
 				<span
 					style={css.icon}
-					className={'pt-icon-standard ' + (disk.organization ?
+					className={'pt-icon-standard pt-text-muted ' + (disk.organization ?
 						'pt-icon-people' : 'pt-icon-layers')}
 				/>
 				{orgName}
@@ -192,14 +192,14 @@ export default class Disk extends React.Component<Props, {}> {
 			<div className="pt-cell" style={css.item}>
 				<span
 					style={css.icon}
-					className="pt-icon-standard pt-icon-layers"
+					className="pt-icon-standard pt-text-muted pt-icon-layers"
 				/>
 				{node ? node.name : this.props.disk.node}
 			</div>
 			<div className="pt-cell" style={css.item}>
 				<span
 					style={css.icon}
-					className="pt-icon-standard pt-icon-database"
+					className="pt-icon-standard pt-text-muted pt-icon-database"
 				/>
 				{disk.size}GB
 			</div>

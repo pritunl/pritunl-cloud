@@ -164,8 +164,8 @@ export default class Firewall extends React.Component<Props, {}> {
 			<div className="pt-cell" style={css.item}>
 				<span
 					style={css.icon}
-					className={'pt-icon-standard ' + (firewall.organization ?
-						'pt-icon-people' : 'pt-icon-layers')}
+					className={'pt-icon-standard pt-text-muted ' + (
+						firewall.organization ? 'pt-icon-people' : 'pt-icon-layers')}
 				/>
 				{orgName}
 			</div>
