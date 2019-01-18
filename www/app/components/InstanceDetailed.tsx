@@ -540,7 +540,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					</PageSelect>
 					<PageSwitch
 						disabled={this.state.disabled}
-						label="Delete Protection"
+						label="Delete protection"
 						help="Block instance and any attached disks from being deleted."
 						checked={instance.delete_protection}
 						onToggle={(): void => {
