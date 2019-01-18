@@ -3,6 +3,7 @@ package utils
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"gopkg.in/mgo.v2/bson"
 	"sync"
@@ -20,15 +21,15 @@ func (l *TimeoutLock) Lock() (id bson.ObjectId) {
 	id = bson.NewObjectId()
 	l.lock.Lock()
 
-	start := time.Now()
-	err := &errortypes.TimeoutError{
-		errors.New("utils: Lock timeout"),
-	}
-
 	l.stateLock.Lock()
 	l.state[id] = true
 	l.stateLock.Unlock()
 
+	if !constants.LockDebug {
+		return
+	}
+
+	start := time.Now()
 	go func() {
 		for {
 			time.Sleep(1 * time.Second)
@@ -41,6 +42,10 @@ func (l *TimeoutLock) Lock() (id bson.ObjectId) {
 			}
 
 			if time.Since(start) > l.timeout {
+				err := &errortypes.TimeoutError{
+					errors.New("utils: Multi lock timeout"),
+				}
+
 				logrus.WithFields(logrus.Fields{
 					"error": err,
 				}).Error("utils: Lock timed out")
