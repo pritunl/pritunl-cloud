@@ -3,7 +3,6 @@ package data
 import (
 	"fmt"
 	"github.com/Sirupsen/logrus"
-	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/minio/minio-go"
 	"github.com/pritunl/pritunl-cloud/constants"
@@ -594,7 +593,7 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk) (err error) {
 	img.Etag = image.GetEtag(obj)
 	img.LastModified = obj.LastModified
 
-	err = img.CommitFields(db, set.NewSet("etag", "last_modified"))
+	err = img.Upsert(db)
 	if err != nil {
 		return
 	}
@@ -725,7 +724,7 @@ func CreateBackup(db *database.Database, dsk *disk.Disk) (err error) {
 	img.Etag = image.GetEtag(obj)
 	img.LastModified = obj.LastModified
 
-	err = img.CommitFields(db, set.NewSet("etag", "last_modified"))
+	err = img.Upsert(db)
 	if err != nil {
 		return
 	}
