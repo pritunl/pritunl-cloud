@@ -1050,10 +1050,12 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							{
 								label: 'Public IPv4',
 								value: publicIps,
+								copy: true,
 							},
 							{
 								label: 'Public IPv6',
 								value: publicIps6,
+								copy: true,
 							},
 							{
 								label: 'Requests',
