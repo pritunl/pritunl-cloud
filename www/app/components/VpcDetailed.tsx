@@ -564,6 +564,7 @@ export default class VpcDetailed extends React.Component<Props, State> {
 							{
 								label: 'Private IPv6 Network',
 								value: this.props.vpc.network6 || 'Unknown',
+								copy: true,
 							},
 						]}
 					/>
