@@ -9,6 +9,7 @@ export interface Datacenter {
 	organizations?: string[];
 	public_storages?: string[];
 	private_storage?: string;
+	backup_storage?: string;
 }
 
 export type Datacenters = Datacenter[];
