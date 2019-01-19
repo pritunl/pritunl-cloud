@@ -18,6 +18,7 @@ export interface Disk {
 	backing_image?: string;
 	index?: string;
 	size?: number;
+	backup?: boolean;
 	backups?: Backup[];
 }
 
