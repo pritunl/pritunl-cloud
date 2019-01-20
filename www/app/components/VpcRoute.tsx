@@ -35,10 +35,10 @@ export default class VpcRoute extends React.Component<Props, {}> {
 		let route = this.props.route;
 
 		return <div>
-			<div className="pt-control-group" style={css.group}>
+			<div className="bp3-control-group" style={css.group}>
 				<div style={css.inputBox}>
 					<input
-						className="pt-input"
+						className="bp3-input"
 						style={css.input}
 						disabled={this.props.disabled}
 						type="text"
@@ -55,7 +55,7 @@ export default class VpcRoute extends React.Component<Props, {}> {
 				</div>
 				<div style={css.inputBox}>
 					<input
-						className="pt-input"
+						className="bp3-input"
 						style={css.input}
 						disabled={this.props.disabled}
 						type="text"
@@ -71,14 +71,14 @@ export default class VpcRoute extends React.Component<Props, {}> {
 					/>
 				</div>
 				<button
-					className="pt-button pt-minimal pt-intent-danger pt-icon-remove"
+					className="bp3-button bp3-minimal bp3-intent-danger bp3-icon-remove"
 					disabled={this.props.disabled}
 					onClick={(): void => {
 						this.props.onRemove();
 					}}
 				/>
 				<button
-					className="pt-button pt-minimal pt-intent-success pt-icon-add"
+					className="bp3-button bp3-minimal bp3-intent-success bp3-icon-add"
 					onClick={(): void => {
 						this.props.onAdd();
 					}}

@@ -58,7 +58,7 @@ export default class PageInputButton extends React.Component<Props, {}> {
 	}
 
 	render(): JSX.Element {
-		let buttonClass = 'pt-button';
+		let buttonClass = 'bp3-button';
 		if (this.props.buttonClass) {
 			buttonClass += ' ' + this.props.buttonClass;
 		}
@@ -91,7 +91,7 @@ export default class PageInputButton extends React.Component<Props, {}> {
 
 		if (this.props.labelTop) {
 			return <label
-				className="pt-label"
+				className="bp3-label"
 				style={css.label}
 				hidden={this.props.hidden}
 			>
@@ -101,13 +101,13 @@ export default class PageInputButton extends React.Component<Props, {}> {
 					content={this.props.help}
 				/>
 				<div
-					className="pt-control-group"
+					className="bp3-control-group"
 					style={css.groupTop}
 					hidden={this.props.hidden}
 				>
 					<div style={css.inputBox}>
 						<input
-							className="pt-input"
+							className="bp3-input"
 							style={css.input}
 							type={this.props.type}
 							disabled={this.props.disabled}
@@ -136,13 +136,13 @@ export default class PageInputButton extends React.Component<Props, {}> {
 			</label>;
 		} else {
 			return <div
-				className="pt-control-group"
+				className="bp3-control-group"
 				style={this.props.listStyle ? css.groupList : css.group}
 				hidden={this.props.hidden}
 			>
 				<div style={css.inputBox}>
 					<input
-						className="pt-input"
+						className="bp3-input"
 						style={css.input}
 						type={this.props.type}
 						disabled={this.props.disabled}

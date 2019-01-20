@@ -219,9 +219,9 @@ export default class Nodes extends React.Component<{}, State> {
 			/>);
 		});
 
-		let filterClass = 'pt-button pt-intent-primary pt-icon-filter ';
+		let filterClass = 'bp3-button bp3-intent-primary bp3-icon-filter ';
 		if (this.state.filter) {
-			filterClass += 'pt-active';
+			filterClass += 'bp3-active';
 		}
 
 		return <Page>
@@ -245,7 +245,7 @@ export default class Nodes extends React.Component<{}, State> {
 							Filters
 						</button>
 						<button
-							className="pt-button pt-intent-warning pt-icon-chevron-up"
+							className="bp3-button bp3-intent-warning bp3-icon-chevron-up"
 							style={css.button}
 							disabled={!this.opened}
 							type="button"
@@ -271,7 +271,7 @@ export default class Nodes extends React.Component<{}, State> {
 			<div style={css.itemsBox}>
 				<div style={css.items}>
 					{nodesDom}
-					<tr className="pt-card pt-row" style={css.placeholder}>
+					<tr className="bp3-card bp3-row" style={css.placeholder}>
 						<td colSpan={4} style={css.placeholder}/>
 					</tr>
 				</div>

@@ -113,7 +113,7 @@ export default class FirewallsFilter extends React.Component<Props, {}> {
 					this.props.onFilter(filter);
 				}}
 			/>
-			<div className="pt-select" style={css.type} hidden={Constants.user}>
+			<div className="bp3-select" style={css.type} hidden={Constants.user}>
 				<select
 					value={this.props.filter.organization || 'any'}
 					onChange={(evt): void => {

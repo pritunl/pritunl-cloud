@@ -51,7 +51,7 @@ export default class PageSave extends React.Component<Props, {}> {
 				</span>
 				<div style={css.buttons}>
 					<button
-						className="pt-button pt-icon-cross"
+						className="bp3-button bp3-icon-cross"
 						style={css.button}
 						hidden={this.props.hidden}
 						type="button"
@@ -61,7 +61,7 @@ export default class PageSave extends React.Component<Props, {}> {
 						Cancel
 					</button>
 					<button
-						className="pt-button pt-intent-success pt-icon-tick"
+						className="bp3-button bp3-intent-success bp3-icon-tick"
 						style={css.button}
 						hidden={this.props.hidden}
 						type="button"

@@ -75,7 +75,7 @@ export default class Instance extends React.Component<Props, {}> {
 
 		if (this.props.open) {
 			return <div
-				className="pt-card pt-row"
+				className="bp3-card bp3-row"
 				style={css.cardOpen}
 			>
 				<InstanceDetailed
@@ -113,22 +113,22 @@ export default class Instance extends React.Component<Props, {}> {
 			privateIp = instance.private_ips[0];
 		}
 
-		let statusClass = 'pt-cell';
+		let statusClass = 'bp3-cell';
 		switch (instance.status) {
 			case 'Running':
-				statusClass += ' pt-text-intent-success';
+				statusClass += ' bp3-text-intent-success';
 				break;
 			case 'Restart Required':
-				statusClass += ' pt-text-intent-warning';
+				statusClass += ' bp3-text-intent-warning';
 				break;
 			case 'Stopped':
 			case 'Destroying':
-				statusClass += ' pt-text-intent-danger';
+				statusClass += ' bp3-text-intent-danger';
 				break;
 		}
 
 		return <div
-			className="pt-card pt-row"
+			className="bp3-card bp3-row"
 			style={cardStyle}
 			onClick={(evt): void => {
 				let target = evt.target as HTMLElement;
@@ -140,10 +140,10 @@ export default class Instance extends React.Component<Props, {}> {
 				this.props.onOpen();
 			}}
 		>
-			<div className="pt-cell" style={css.name}>
+			<div className="bp3-cell" style={css.name}>
 				<div className="layout horizontal">
 					<label
-						className="pt-control pt-checkbox open-ignore"
+						className="bp3-control bp3-checkbox open-ignore"
 						style={css.select}
 					>
 						<input
@@ -154,7 +154,7 @@ export default class Instance extends React.Component<Props, {}> {
 								this.props.onSelect(evt.shiftKey);
 							}}
 						/>
-						<span className="pt-control-indicator open-ignore"/>
+						<span className="bp3-control-indicator open-ignore"/>
 					</label>
 					<div style={css.nameSpan}>
 						{instance.name}
@@ -165,39 +165,39 @@ export default class Instance extends React.Component<Props, {}> {
 				<span
 					style={css.icon}
 					hidden={!instance.status}
-					className="pt-icon-standard pt-icon-power"
+					className="bp3-icon-standard bp3-icon-power"
 				/>
 				{instance.status}
 			</div>
-			<div className="pt-cell" style={css.item}>
+			<div className="bp3-cell" style={css.item}>
 				<span
 					style={css.icon}
 					hidden={!nodeName}
-					className="pt-icon-standard pt-text-muted pt-icon-layers"
+					className="bp3-icon-standard bp3-text-muted bp3-icon-layers"
 				/>
 				{nodeName}
 			</div>
-			<div className="pt-cell" style={css.item}>
+			<div className="bp3-cell" style={css.item}>
 				<span
 					style={css.icon}
 					hidden={!zoneName}
-					className="pt-icon-standard pt-text-muted pt-icon-layout-circle"
+					className="bp3-icon-standard bp3-text-muted bp3-icon-layout-circle"
 				/>
 				{zoneName}
 			</div>
-			<div className="pt-cell" style={css.item}>
+			<div className="bp3-cell" style={css.item}>
 				<span
 					style={css.icon}
 					hidden={!publicIp}
-					className="pt-icon-standard pt-text-muted pt-icon-ip-address"
+					className="bp3-icon-standard bp3-text-muted bp3-icon-ip-address"
 				/>
 				{publicIp}
 			</div>
-			<div className="pt-cell" style={css.item}>
+			<div className="bp3-cell" style={css.item}>
 				<span
 					style={css.icon}
 					hidden={!privateIp}
-					className="pt-icon-standard pt-text-muted pt-icon-ip-address"
+					className="bp3-icon-standard bp3-text-muted bp3-icon-ip-address"
 				/>
 				{privateIp}
 			</div>

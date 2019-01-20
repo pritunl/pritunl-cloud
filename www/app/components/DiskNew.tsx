@@ -303,11 +303,11 @@ export default class DiskNew extends React.Component<Props, State> {
 		}
 
 		return <div
-			className="pt-card pt-row"
+			className="bp3-card bp3-row"
 			style={css.row}
 		>
 			<td
-				className="pt-cell"
+				className="bp3-cell"
 				colSpan={5}
 				style={css.card}
 			>

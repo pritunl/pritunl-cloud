@@ -267,9 +267,9 @@ export default class Domains extends React.Component<{}, State> {
 			/>);
 		});
 
-		let filterClass = 'pt-button pt-intent-primary pt-icon-filter ';
+		let filterClass = 'bp3-button bp3-intent-primary bp3-icon-filter ';
 		if (this.state.filter) {
-			filterClass += 'pt-active';
+			filterClass += 'bp3-active';
 		}
 
 		return <Page>
@@ -293,7 +293,7 @@ export default class Domains extends React.Component<{}, State> {
 							Filters
 						</button>
 						<button
-							className="pt-button pt-intent-warning pt-icon-chevron-up"
+							className="bp3-button bp3-intent-warning bp3-icon-chevron-up"
 							style={css.button}
 							disabled={!this.opened}
 							type="button"
@@ -307,7 +307,7 @@ export default class Domains extends React.Component<{}, State> {
 							Collapse All
 						</button>
 						<button
-							className="pt-button pt-intent-success pt-icon-add"
+							className="bp3-button bp3-intent-success bp3-icon-add"
 							hidden={!Constants.user}
 							disabled={this.state.disabled}
 							style={css.button}
@@ -334,8 +334,8 @@ export default class Domains extends React.Component<{}, State> {
 						>New</button>
 						<ConfirmButton
 							label="Delete Selected"
-							className="pt-intent-danger pt-icon-delete"
-							progressClassName="pt-intent-danger"
+							className="bp3-intent-danger bp3-icon-delete"
+							progressClassName="bp3-intent-danger"
 							style={css.button}
 							disabled={!this.selected || this.state.disabled}
 							onConfirm={this.onDelete}
@@ -343,11 +343,11 @@ export default class Domains extends React.Component<{}, State> {
 					</div>
 					<div style={css.groupBox} hidden={Constants.user}>
 						<div
-							className="pt-control-group"
+							className="bp3-control-group"
 							style={css.group}
 						>
 							<div style={css.selectBox}>
-								<div className="pt-select" style={css.selectFirst}>
+								<div className="bp3-select" style={css.selectFirst}>
 									<select
 										style={css.selectInner}
 										disabled={!hasOrganizations || this.state.disabled}
@@ -364,7 +364,7 @@ export default class Domains extends React.Component<{}, State> {
 								</div>
 							</div>
 							<button
-								className="pt-button pt-intent-success pt-icon-add"
+								className="bp3-button bp3-intent-success bp3-icon-add"
 								disabled={!hasOrganizations || this.state.disabled}
 								type="button"
 								onClick={(): void => {
@@ -403,14 +403,14 @@ export default class Domains extends React.Component<{}, State> {
 			<div style={css.itemsBox}>
 				<div style={css.items}>
 					{domainsDom}
-					<tr className="pt-card pt-row" style={css.placeholder}>
+					<tr className="bp3-card bp3-row" style={css.placeholder}>
 						<td colSpan={5} style={css.placeholder}/>
 					</tr>
 				</div>
 			</div>
 			<NonState
 				hidden={!!domainsDom.length}
-				iconClass="pt-icon-map-marker"
+				iconClass="bp3-icon-map-marker"
 				title="No domains"
 				description="Add a new domain to get started."
 			/>

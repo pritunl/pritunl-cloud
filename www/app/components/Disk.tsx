@@ -84,7 +84,7 @@ export default class Disk extends React.Component<Props, {}> {
 
 		if (this.props.open) {
 			return <div
-				className="pt-card pt-row"
+				className="bp3-card bp3-row"
 				style={css.cardOpen}
 			>
 				<DiskDetailed
@@ -108,11 +108,11 @@ export default class Disk extends React.Component<Props, {}> {
 		}
 
 		let statusText = 'Unknown';
-		let statusClass = 'pt-cell';
+		let statusClass = 'bp3-cell';
 		switch (disk.state) {
 			case 'provision':
 				statusText = 'Provisioning';
-				statusClass += ' pt-text-intent-primary';
+				statusClass += ' bp3-text-intent-primary';
 				break;
 			case 'available':
 				if (disk.instance !== "") {
@@ -120,28 +120,28 @@ export default class Disk extends React.Component<Props, {}> {
 				} else {
 					statusText = 'Available';
 				}
-				statusClass += ' pt-text-intent-success';
+				statusClass += ' bp3-text-intent-success';
 				break;
 			case 'destroy':
 				statusText = 'Destroying';
-				statusClass += ' pt-text-intent-danger';
+				statusClass += ' bp3-text-intent-danger';
 				break;
 			case 'snapshot':
 				statusText = 'Snapshotting';
-				statusClass += ' pt-text-intent-primary';
+				statusClass += ' bp3-text-intent-primary';
 				break;
 			case 'backup':
 				statusText = 'Backing Up';
-				statusClass += ' pt-text-intent-primary';
+				statusClass += ' bp3-text-intent-primary';
 				break;
 			case 'restore':
 				statusText = 'Restoring';
-				statusClass += ' pt-text-intent-primary';
+				statusClass += ' bp3-text-intent-primary';
 				break;
 		}
 
 		return <div
-			className="pt-card pt-row"
+			className="bp3-card bp3-row"
 			style={css.card}
 			onClick={(evt): void => {
 				let target = evt.target as HTMLElement;
@@ -153,10 +153,10 @@ export default class Disk extends React.Component<Props, {}> {
 				this.props.onOpen();
 			}}
 		>
-			<div className="pt-cell" style={css.name}>
+			<div className="bp3-cell" style={css.name}>
 				<div className="layout horizontal">
 					<label
-						className="pt-control pt-checkbox open-ignore"
+						className="bp3-control bp3-checkbox open-ignore"
 						style={css.select}
 					>
 						<input
@@ -167,7 +167,7 @@ export default class Disk extends React.Component<Props, {}> {
 								this.props.onSelect(evt.shiftKey);
 							}}
 						/>
-						<span className="pt-control-indicator open-ignore"/>
+						<span className="bp3-control-indicator open-ignore"/>
 					</label>
 					<div style={css.nameSpan}>
 						{disk.name}
@@ -177,29 +177,29 @@ export default class Disk extends React.Component<Props, {}> {
 			<div className={statusClass} style={css.item}>
 				<span
 					style={css.icon}
-					className="pt-icon-standard pt-icon-pulse"
+					className="bp3-icon-standard bp3-icon-pulse"
 				/>
 				{statusText}
 			</div>
-			<div className="pt-cell" style={css.item}>
+			<div className="bp3-cell" style={css.item}>
 				<span
 					style={css.icon}
-					className={'pt-icon-standard pt-text-muted ' + (disk.organization ?
-						'pt-icon-people' : 'pt-icon-layers')}
+					className={'bp3-icon-standard bp3-text-muted ' + (disk.organization ?
+						'bp3-icon-people' : 'bp3-icon-layers')}
 				/>
 				{orgName}
 			</div>
-			<div className="pt-cell" style={css.item}>
+			<div className="bp3-cell" style={css.item}>
 				<span
 					style={css.icon}
-					className="pt-icon-standard pt-text-muted pt-icon-layers"
+					className="bp3-icon-standard bp3-text-muted bp3-icon-layers"
 				/>
 				{node ? node.name : this.props.disk.node}
 			</div>
-			<div className="pt-cell" style={css.item}>
+			<div className="bp3-cell" style={css.item}>
 				<span
 					style={css.icon}
-					className="pt-icon-standard pt-text-muted pt-icon-database"
+					className="bp3-icon-standard bp3-text-muted bp3-icon-database"
 				/>
 				{disk.size}GB
 			</div>

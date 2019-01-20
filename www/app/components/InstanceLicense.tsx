@@ -166,24 +166,24 @@ export default class Organization extends React.Component<Props, {}> {
 				}}
 			>
 				<textarea
-					className="pt-dialog-body pt-input"
+					className="bp3-dialog-body bp3-input"
 					style={css.textarea}
 					autoCapitalize="off"
 					spellCheck={false}
 					readOnly={true}
 					value={license}
 				/>
-				<div className="pt-dialog-footer">
-					<div className="pt-dialog-footer-actions">
+				<div className="bp3-dialog-footer">
+					<div className="bp3-dialog-footer-actions">
 						<button
-							className="pt-button pt-intent-danger"
+							className="bp3-button bp3-intent-danger"
 							type="button"
 							onClick={(): void => {
 								this.props.onClose();
 							}}
 						>Decline</button>
 						<button
-							className="pt-button pt-intent-success"
+							className="bp3-button bp3-intent-success"
 							type="button"
 							onClick={(): void => {
 								License.setOracle(true);

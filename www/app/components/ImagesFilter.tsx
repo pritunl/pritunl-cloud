@@ -95,7 +95,7 @@ export default class ImagesFilter extends React.Component<Props, {}> {
 					this.props.onFilter(filter);
 				}}
 			/>
-			<div className="pt-select" style={css.type}>
+			<div className="bp3-select" style={css.type}>
 				<select
 					value={this.props.filter.type || 'any'}
 					onChange={(evt): void => {
@@ -119,7 +119,7 @@ export default class ImagesFilter extends React.Component<Props, {}> {
 					<option value="public">Public</option>
 				</select>
 			</div>
-			<div className="pt-select" style={css.type} hidden={Constants.user}>
+			<div className="bp3-select" style={css.type} hidden={Constants.user}>
 				<select
 					value={this.props.filter.organization || 'any'}
 					onChange={(evt): void => {

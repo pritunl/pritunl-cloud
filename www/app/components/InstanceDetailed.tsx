@@ -326,14 +326,14 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		let statusClass = '';
 		switch (instance.status) {
 			case 'Running':
-				statusClass += 'pt-text-intent-success';
+				statusClass += 'bp3-text-intent-success';
 				break;
 			case 'Restart Required':
-				statusClass += ' pt-text-intent-warning';
+				statusClass += ' bp3-text-intent-warning';
 				break;
 			case 'Stopped':
 			case 'Destroying':
-				statusClass += 'pt-text-intent-danger';
+				statusClass += 'bp3-text-intent-danger';
 				break;
 		}
 
@@ -341,13 +341,13 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		for (let networkRole of (instance.network_roles || [])) {
 			networkRoles.push(
 				<div
-					className="pt-tag pt-tag-removable pt-intent-primary"
+					className="bp3-tag bp3-tag-removable bp3-intent-primary"
 					style={css.role}
 					key={networkRole}
 				>
 					{networkRole}
 					<button
-						className="pt-tag-remove"
+						className="bp3-tag-remove"
 						disabled={this.state.disabled}
 						onMouseUp={(): void => {
 							this.onRemoveNetworkRole(networkRole);
@@ -400,7 +400,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		}
 
 		return <td
-			className="pt-cell"
+			className="bp3-cell"
 			colSpan={6}
 			style={css.card}
 		>
@@ -421,7 +421,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					>
             <div>
               <label
-                className="pt-control pt-checkbox open-ignore"
+                className="bp3-control bp3-checkbox open-ignore"
                 style={css.select}
               >
                 <input
@@ -432,22 +432,22 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 										this.props.onSelect(evt.shiftKey);
 									}}
                 />
-                <span className="pt-control-indicator open-ignore"/>
+                <span className="bp3-control-indicator open-ignore"/>
               </label>
             </div>
 						<div className={statusClass} style={css.status}>
 							<span
 								style={css.icon}
 								hidden={!instance.status}
-								className="pt-icon-standard pt-icon-power"
+								className="bp3-icon-standard bp3-icon-power"
 							/>
 							{instance.status}
 						</div>
 						<div className="flex"/>
 						<ConfirmButton
-							className="pt-minimal pt-intent-danger pt-icon-trash open-ignore"
+							className="bp3-minimal bp3-intent-danger bp3-icon-trash open-ignore"
 							style={css.button}
-							progressClassName="pt-intent-danger"
+							progressClassName="bp3-intent-danger"
 							confirmMsg="Confirm instance remove"
 							disabled={this.state.disabled}
 							onConfirm={this.onDelete}
@@ -491,7 +491,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						}}
 						value={instance.processors}
 					/>
-					<label className="pt-label">
+					<label className="bp3-label">
 						Network Roles
 						<Help
 							title="Network Roles"
@@ -503,7 +503,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					</label>
 					<PageInputButton
 						disabled={this.state.disabled}
-						buttonClass="pt-intent-success pt-icon-add"
+						buttonClass="bp3-intent-success bp3-icon-add"
 						label="Add"
 						type="text"
 						placeholder="Add role"
@@ -633,8 +633,8 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			>
 				<ConfirmButton
 					label="Start"
-					className="pt-intent-success pt-icon-power"
-					progressClassName="pt-intent-success"
+					className="bp3-intent-success bp3-icon-power"
+					progressClassName="bp3-intent-success"
 					style={css.controlButton}
 					hidden={this.props.instance.state !== 'stop'}
 					disabled={this.state.disabled}
@@ -644,8 +644,8 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				/>
 				<ConfirmButton
 					label="Stop"
-					className="pt-intent-danger pt-icon-power"
-					progressClassName="pt-intent-danger"
+					className="bp3-intent-danger bp3-icon-power"
+					progressClassName="bp3-intent-danger"
 					style={css.controlButton}
 					hidden={this.props.instance.state !== 'start'}
 					disabled={this.state.disabled}

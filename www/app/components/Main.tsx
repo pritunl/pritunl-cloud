@@ -135,13 +135,13 @@ export default class Main extends React.Component<{}, State> {
 		if (Constants.user && !this.state.current) {
 			return <div>
 				<div
-					className="pt-callout pt-intent-danger pt-icon-error"
+					className="bp3-callout bp3-intent-danger bp3-icon-error"
 					style={css.card}
 				>
-					<h4 className="pt-callout-title">No Organization</h4>
+					<h4 className="bp3-callout-title">No Organization</h4>
 					Account does not have access to any organizations
 					<button
-						className="pt-button pt-minimal pt-icon-log-out"
+						className="bp3-button bp3-minimal bp3-icon-log-out"
 						onClick={() => {
 							window.location.href = '/logout';
 						}}
@@ -152,19 +152,19 @@ export default class Main extends React.Component<{}, State> {
 
 		return <ReactRouter.HashRouter>
 			<div>
-				<nav className="pt-navbar layout horizontal" style={css.nav}>
+				<nav className="bp3-navbar layout horizontal" style={css.nav}>
 					<div
-						className="pt-navbar-group pt-align-left flex"
+						className="bp3-navbar-group bp3-align-left flex"
 						style={css.navTitle}
 					>
-						<div className="pt-navbar-heading"
+						<div className="bp3-navbar-heading"
 							style={css.heading}
 						>Pritunl Cloud</div>
 						<OrganizationSelect hidden={!Constants.user}/>
 					</div>
-					<div className="pt-navbar-group pt-align-right" style={css.navGroup}>
+					<div className="bp3-navbar-group bp3-align-right" style={css.navGroup}>
 						<ReactRouter.Link
-							className="pt-button pt-minimal pt-icon-people"
+							className="bp3-button bp3-minimal bp3-icon-people"
 							style={css.link}
 							hidden={Constants.user}
 							to="/users"
@@ -172,7 +172,7 @@ export default class Main extends React.Component<{}, State> {
 							Users
 						</ReactRouter.Link>
 						<ReactRouter.Link
-							className="pt-button pt-minimal pt-icon-layers"
+							className="bp3-button bp3-minimal bp3-icon-layers"
 							style={css.link}
 							hidden={Constants.user}
 							to="/nodes"
@@ -180,7 +180,7 @@ export default class Main extends React.Component<{}, State> {
 							Nodes
 						</ReactRouter.Link>
 						<ReactRouter.Link
-							className="pt-button pt-minimal pt-icon-filter"
+							className="bp3-button bp3-minimal bp3-icon-filter"
 							style={css.link}
 							hidden={Constants.user}
 							to="/policies"
@@ -188,7 +188,7 @@ export default class Main extends React.Component<{}, State> {
 							Policies
 						</ReactRouter.Link>
 						<ReactRouter.Link
-							className="pt-button pt-minimal pt-icon-endorsed"
+							className="bp3-button bp3-minimal bp3-icon-endorsed"
 							style={css.link}
 							hidden={Constants.user}
 							to="/certificates"
@@ -196,7 +196,7 @@ export default class Main extends React.Component<{}, State> {
 							Certificates
 						</ReactRouter.Link>
 						<ReactRouter.Link
-							className="pt-button pt-minimal pt-icon-people"
+							className="bp3-button bp3-minimal bp3-icon-people"
 							style={css.link}
 							hidden={Constants.user}
 							to="/organizations"
@@ -204,7 +204,7 @@ export default class Main extends React.Component<{}, State> {
 							Organizations
 						</ReactRouter.Link>
 						<ReactRouter.Link
-							className="pt-button pt-minimal pt-icon-cloud"
+							className="bp3-button bp3-minimal bp3-icon-cloud"
 							style={css.link}
 							hidden={Constants.user}
 							to="/datacenters"
@@ -212,7 +212,7 @@ export default class Main extends React.Component<{}, State> {
 							Datacenters
 						</ReactRouter.Link>
 						<ReactRouter.Link
-							className="pt-button pt-minimal pt-icon-layout-circle"
+							className="bp3-button bp3-minimal bp3-icon-layout-circle"
 							style={css.link}
 							hidden={Constants.user}
 							to="/zones"
@@ -220,14 +220,14 @@ export default class Main extends React.Component<{}, State> {
 							Zones
 						</ReactRouter.Link>
 						<ReactRouter.Link
-							className="pt-button pt-minimal pt-icon-layout-auto"
+							className="bp3-button bp3-minimal bp3-icon-layout-auto"
 							style={css.link}
 							to="/vpcs"
 						>
 							VPCs
 						</ReactRouter.Link>
 						<ReactRouter.Link
-							className="pt-button pt-minimal pt-icon-map-marker"
+							className="bp3-button bp3-minimal bp3-icon-map-marker"
 							style={css.link}
 							hidden={Constants.user}
 							to="/domains"
@@ -235,7 +235,7 @@ export default class Main extends React.Component<{}, State> {
 							Domains
 						</ReactRouter.Link>
 						<ReactRouter.Link
-							className="pt-button pt-minimal pt-icon-database"
+							className="bp3-button bp3-minimal bp3-icon-database"
 							style={css.link}
 							hidden={Constants.user}
 							to="/storages"
@@ -243,42 +243,42 @@ export default class Main extends React.Component<{}, State> {
 							Storages
 						</ReactRouter.Link>
 						<ReactRouter.Link
-							className="pt-button pt-minimal pt-icon-compressed"
+							className="bp3-button bp3-minimal bp3-icon-compressed"
 							style={css.link}
 							to="/images"
 						>
 							Images
 						</ReactRouter.Link>
 						<ReactRouter.Link
-							className="pt-button pt-minimal pt-icon-floppy-disk"
+							className="bp3-button bp3-minimal bp3-icon-floppy-disk"
 							style={css.link}
 							to="/disks"
 						>
 							Disks
 						</ReactRouter.Link>
 						<ReactRouter.Link
-							className="pt-button pt-minimal pt-icon-dashboard"
+							className="bp3-button bp3-minimal bp3-icon-dashboard"
 							style={css.link}
 							to="/instances"
 						>
 							Instances
 						</ReactRouter.Link>
 						<ReactRouter.Link
-							className="pt-button pt-minimal pt-icon-key"
+							className="bp3-button bp3-minimal bp3-icon-key"
 							style={css.link}
 							to="/firewalls"
 						>
 							Firewalls
 						</ReactRouter.Link>
 						<ReactRouter.Link
-							className="pt-button pt-minimal pt-icon-office"
+							className="bp3-button bp3-minimal bp3-icon-office"
 							style={css.link}
 							to="/authorities"
 						>
 							Authorities
 						</ReactRouter.Link>
 						<ReactRouter.Link
-							className="pt-button pt-minimal pt-icon-history"
+							className="bp3-button bp3-minimal bp3-icon-history"
 							style={css.link}
 							hidden={Constants.user}
 							to="/logs"
@@ -286,7 +286,7 @@ export default class Main extends React.Component<{}, State> {
 							Logs
 						</ReactRouter.Link>
 						<ReactRouter.Link
-							className="pt-button pt-minimal pt-icon-settings"
+							className="bp3-button bp3-minimal bp3-icon-settings"
 							style={css.link}
 							hidden={Constants.user}
 							to="/settings"
@@ -299,7 +299,7 @@ export default class Main extends React.Component<{}, State> {
 							hidden={Constants.user}
 						>
 							<button
-								className="pt-button pt-minimal pt-icon-credit-card"
+								className="bp3-button bp3-minimal bp3-icon-credit-card"
 								style={css.link}
 								onClick={(): void => {
 									SubscriptionActions.sync(true);
@@ -308,7 +308,7 @@ export default class Main extends React.Component<{}, State> {
 						</ReactRouter.Link>
 						<ReactRouter.Route render={(props) => (
 							<button
-								className="pt-button pt-minimal pt-icon-refresh"
+								className="bp3-button bp3-minimal bp3-icon-refresh"
 								disabled={this.state.disabled}
 								onClick={() => {
 									let pathname = props.location.pathname;
@@ -579,13 +579,13 @@ export default class Main extends React.Component<{}, State> {
 							>Refresh</button>
 						)}/>
 						<button
-							className="pt-button pt-minimal pt-icon-log-out"
+							className="bp3-button bp3-minimal bp3-icon-log-out"
 							onClick={() => {
 								window.location.href = '/logout';
 							}}
 						>Logout</button>
 						<button
-							className="pt-button pt-minimal pt-icon-moon"
+							className="bp3-button bp3-minimal bp3-icon-moon"
 							onClick={(): void => {
 								Theme.toggle();
 								Theme.save();

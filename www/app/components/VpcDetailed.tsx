@@ -456,7 +456,7 @@ export default class VpcDetailed extends React.Component<Props, State> {
 		}
 
 		return <td
-			className="pt-cell"
+			className="bp3-cell"
 			colSpan={5}
 			style={css.card}
 		>
@@ -477,7 +477,7 @@ export default class VpcDetailed extends React.Component<Props, State> {
 					>
             <div>
               <label
-                className="pt-control pt-checkbox open-ignore"
+                className="bp3-control bp3-checkbox open-ignore"
                 style={css.select}
               >
                 <input
@@ -488,14 +488,14 @@ export default class VpcDetailed extends React.Component<Props, State> {
 										this.props.onSelect(evt.shiftKey);
 									}}
                 />
-                <span className="pt-control-indicator open-ignore"/>
+                <span className="bp3-control-indicator open-ignore"/>
               </label>
             </div>
 						<div className="flex"/>
 						<ConfirmButton
-							className="pt-minimal pt-intent-danger pt-icon-trash open-ignore"
+							className="bp3-minimal bp3-intent-danger bp3-icon-trash open-ignore"
 							style={css.button}
-							progressClassName="pt-intent-danger"
+							progressClassName="bp3-intent-danger"
 							confirmMsg="Confirm vpc remove"
 							disabled={this.state.disabled}
 							onConfirm={this.onDelete}

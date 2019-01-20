@@ -50,11 +50,11 @@ export default class CopyButton extends React.Component<Props, State> {
 			style = css.copy;
 		}
 
-		let className = 'pt-icon-standard';
+		let className = 'bp3-icon-standard';
 		if (this.state.copied) {
-			className += ' pt-icon-tick pt-intent-success';
+			className += ' bp3-icon-tick bp3-intent-success';
 		} else {
-			className += ' pt-icon-clipboard';
+			className += ' bp3-icon-clipboard';
 		}
 
 		return <span

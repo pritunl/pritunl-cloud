@@ -371,13 +371,13 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
 		for (let role of (authority.roles || [])) {
 			roles.push(
 				<div
-					className="pt-tag pt-tag-removable pt-intent-primary"
+					className="bp3-tag bp3-tag-removable bp3-intent-primary"
 					style={css.role}
 					key={role}
 				>
 					{role}
 					<button
-						className="pt-tag-remove"
+						className="bp3-tag-remove"
 						disabled={this.state.disabled}
 						onMouseUp={(): void => {
 							this.onRemoveRole(role);
@@ -391,13 +391,13 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
 		for (let networkRole of (authority.network_roles || [])) {
 			networkRoles.push(
 				<div
-					className="pt-tag pt-tag-removable pt-intent-primary"
+					className="bp3-tag bp3-tag-removable bp3-intent-primary"
 					style={css.role}
 					key={networkRole}
 				>
 					{networkRole}
 					<button
-						className="pt-tag-remove"
+						className="bp3-tag-remove"
 						disabled={this.state.disabled}
 						onMouseUp={(): void => {
 							this.onRemoveNetworkRole(networkRole);
@@ -408,7 +408,7 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
 		}
 
 		return <td
-			className="pt-cell"
+			className="bp3-cell"
 			colSpan={5}
 			style={css.card}
 		>
@@ -429,7 +429,7 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
 					>
             <div>
               <label
-                className="pt-control pt-checkbox open-ignore"
+                className="bp3-control bp3-checkbox open-ignore"
                 style={css.select}
               >
                 <input
@@ -440,14 +440,14 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
 										this.props.onSelect(evt.shiftKey);
 									}}
                 />
-                <span className="pt-control-indicator open-ignore"/>
+                <span className="bp3-control-indicator open-ignore"/>
               </label>
             </div>
 						<div className="flex"/>
 						<ConfirmButton
-							className="pt-minimal pt-intent-danger pt-icon-trash open-ignore"
+							className="bp3-minimal bp3-intent-danger bp3-icon-trash open-ignore"
 							style={css.button}
-							progressClassName="pt-intent-danger"
+							progressClassName="bp3-intent-danger"
 							confirmMsg="Confirm authority remove"
 							disabled={this.state.disabled}
 							onConfirm={this.onDelete}
@@ -497,7 +497,7 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
 						}}
 					/>
 					<label
-						className="pt-label"
+						className="bp3-label"
 						hidden={authority.type !== 'ssh_certificate'}
 					>
 						Roles
@@ -511,7 +511,7 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
 					</label>
 					<PageInputButton
 						disabled={this.state.disabled}
-						buttonClass="pt-intent-success pt-icon-add"
+						buttonClass="bp3-intent-success bp3-icon-add"
 						hidden={authority.type !== 'ssh_certificate'}
 						label="Add"
 						type="text"
@@ -547,7 +547,7 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
 					>
 						{organizationsSelect}
 					</PageSelect>
-					<label className="pt-label">
+					<label className="bp3-label">
 						Network Roles
 						<Help
 							title="Network Roles"
@@ -559,7 +559,7 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
 					</label>
 					<PageInputButton
 						disabled={this.state.disabled}
-						buttonClass="pt-intent-success pt-icon-add"
+						buttonClass="bp3-intent-success bp3-icon-add"
 						label="Add"
 						type="text"
 						placeholder="Add role"

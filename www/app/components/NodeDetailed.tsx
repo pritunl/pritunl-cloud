@@ -572,14 +572,14 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		for (let iface of (node.external_interfaces || [])) {
 			externalIfaces.push(
 				<div
-					className="pt-tag pt-tag-removable pt-intent-primary"
+					className="bp3-tag bp3-tag-removable bp3-intent-primary"
 					style={css.item}
 					key={iface}
 				>
 					{iface}
 					<button
 						disabled={this.state.disabled}
-						className="pt-tag-remove"
+						className="bp3-tag-remove"
 						onMouseUp={(): void => {
 							this.onRemoveExternalIface(iface);
 						}}
@@ -592,14 +592,14 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		for (let iface of (node.internal_interfaces || [])) {
 			internalIfaces.push(
 				<div
-					className="pt-tag pt-tag-removable pt-intent-primary"
+					className="bp3-tag bp3-tag-removable bp3-intent-primary"
 					style={css.item}
 					key={iface}
 				>
 					{iface}
 					<button
 						disabled={this.state.disabled}
-						className="pt-tag-remove"
+						className="bp3-tag-remove"
 						onMouseUp={(): void => {
 							this.onRemoveInternalIface(iface);
 						}}
@@ -632,14 +632,14 @@ export default class NodeDetailed extends React.Component<Props, State> {
 
 			certificates.push(
 				<div
-					className="pt-tag pt-tag-removable pt-intent-primary"
+					className="bp3-tag bp3-tag-removable bp3-intent-primary"
 					style={css.item}
 					key={cert.id}
 				>
 					{cert.name}
 					<button
 						disabled={this.state.disabled}
-						className="pt-tag-remove"
+						className="bp3-tag-remove"
 						onMouseUp={(): void => {
 							this.onRemoveCert(cert.id);
 						}}
@@ -709,13 +709,13 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		for (let networkRole of (node.network_roles || [])) {
 			networkRoles.push(
 				<div
-					className="pt-tag pt-tag-removable pt-intent-primary"
+					className="bp3-tag bp3-tag-removable bp3-intent-primary"
 					style={css.role}
 					key={networkRole}
 				>
 					{networkRole}
 					<button
-						className="pt-tag-remove"
+						className="bp3-tag-remove"
 						disabled={this.state.disabled}
 						onMouseUp={(): void => {
 							this.onRemoveNetworkRole(networkRole);
@@ -726,7 +726,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		}
 
 		return <td
-			className="pt-cell"
+			className="bp3-cell"
 			colSpan={4}
 			style={css.card}
 		>
@@ -747,8 +747,8 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					>
 						<div className="flex"/>
 						<ConfirmButton
-							className="pt-minimal pt-intent-danger pt-icon-trash open-ignore"
-							progressClassName="pt-intent-danger"
+							className="bp3-minimal bp3-intent-danger bp3-icon-trash open-ignore"
+							progressClassName="bp3-intent-danger"
 							confirmMsg="Confirm node remove"
 							disabled={active || this.state.disabled}
 							onConfirm={this.onDelete}
@@ -818,10 +818,10 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							this.set('user_domain', val);
 						}}
 					/>
-					<label className="pt-label" style={css.label}>
+					<label className="bp3-label" style={css.label}>
 						Protocol and Port
-						<div className="pt-control-group" style={css.inputGroup}>
-							<div className="pt-select" style={css.protocol}>
+						<div className="bp3-control-group" style={css.inputGroup}>
+							<div className="bp3-select" style={css.protocol}>
 								<select
 									disabled={this.state.disabled}
 									value={node.protocol || 'https'}
@@ -834,7 +834,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 								</select>
 							</div>
 							<input
-								className="pt-input"
+								className="bp3-input"
 								disabled={this.state.disabled}
 								style={css.port}
 								type="text"
@@ -906,7 +906,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						{zonesSelect}
 					</PageSelect>
 					<label
-						className="pt-label"
+						className="bp3-label"
 						style={css.label}
 						hidden={node.protocol === 'http'}
 					>
@@ -924,7 +924,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						label="Add Interface"
 						value={this.state.addExternalIface}
 						disabled={!externalIfacesSelect.length || this.state.disabled}
-						buttonClass="pt-intent-success"
+						buttonClass="bp3-intent-success"
 						onChange={(val: string): void => {
 							this.setState({
 								...this.state,
@@ -936,7 +936,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						{externalIfacesSelect}
 					</PageSelectButton>
 					<label
-						className="pt-label"
+						className="bp3-label"
 						style={css.label}
 						hidden={node.protocol === 'http'}
 					>
@@ -954,7 +954,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						label="Add Interface"
 						value={this.state.addInternalIface}
 						disabled={!internalIfacesSelect.length || this.state.disabled}
-						buttonClass="pt-intent-success"
+						buttonClass="bp3-intent-success"
 						onChange={(val: string): void => {
 							this.setState({
 								...this.state,
@@ -996,7 +996,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							this.toggleFirewall();
 						}}
 					/>
-					<label className="pt-label">
+					<label className="bp3-label">
 						Network Roles
 						<Help
 							title="Network Roles"
@@ -1008,7 +1008,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					</label>
 					<PageInputButton
 						disabled={this.state.disabled}
-						buttonClass="pt-intent-success pt-icon-add"
+						buttonClass="bp3-intent-success bp3-icon-add"
 						label="Add"
 						type="text"
 						placeholder="Add role"
@@ -1034,7 +1034,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 								value: node.software_version || 'Unknown',
 							},
 							{
-								valueClass: active ? '' : 'pt-text-intent-danger',
+								valueClass: active ? '' : 'bp3-text-intent-danger',
 								label: 'Timestamp',
 								value: MiscUtils.formatDate(
 									this.props.node.timestamp) || 'Inactive',
@@ -1064,29 +1064,29 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						]}
 						bars={[
 							{
-								progressClass: 'pt-no-stripes pt-intent-primary',
+								progressClass: 'bp3-no-stripes bp3-intent-primary',
 								label: 'Memory',
 								value: this.props.node.memory,
 							},
 							{
-								progressClass: 'pt-no-stripes pt-intent-success',
+								progressClass: 'bp3-no-stripes bp3-intent-success',
 								label: 'Load1',
 								value: this.props.node.load1,
 							},
 							{
-								progressClass: 'pt-no-stripes pt-intent-warning',
+								progressClass: 'bp3-no-stripes bp3-intent-warning',
 								label: 'Load5',
 								value: this.props.node.load5,
 							},
 							{
-								progressClass: 'pt-no-stripes pt-intent-danger',
+								progressClass: 'bp3-no-stripes bp3-intent-danger',
 								label: 'Load15',
 								value: this.props.node.load15,
 							},
 						]}
 					/>
 					<label
-						className="pt-label"
+						className="bp3-label"
 						style={css.label}
 						hidden={node.protocol === 'http'}
 					>
@@ -1104,7 +1104,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						label="Add Certificate"
 						value={this.state.addCert}
 						disabled={!this.props.certificates.length || this.state.disabled}
-						buttonClass="pt-intent-success"
+						buttonClass="bp3-intent-success"
 						onChange={(val: string): void => {
 							this.setState({
 								...this.state,

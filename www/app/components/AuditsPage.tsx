@@ -93,7 +93,7 @@ export default class AuditsPage extends React.Component<Props, State> {
 
 		return <div className="layout horizontal center-justified">
 			<button
-				className="pt-button pt-minimal pt-icon-chevron-backward"
+				className="bp3-button bp3-minimal bp3-icon-chevron-backward"
 				hidden={pages < 5}
 				disabled={page === 0}
 				type="button"
@@ -105,7 +105,7 @@ export default class AuditsPage extends React.Component<Props, State> {
 				}}
 			/>
 			<button
-				className="pt-button pt-minimal pt-icon-chevron-left"
+				className="bp3-button bp3-minimal bp3-icon-chevron-left"
 				style={css.button}
 				disabled={page === 0}
 				type="button"
@@ -118,7 +118,7 @@ export default class AuditsPage extends React.Component<Props, State> {
 			/>
 			{links}
 			<button
-				className="pt-button pt-minimal pt-icon-chevron-right"
+				className="bp3-button bp3-minimal bp3-icon-chevron-right"
 				style={css.button}
 				disabled={page === pages - 1}
 				type="button"
@@ -131,7 +131,7 @@ export default class AuditsPage extends React.Component<Props, State> {
 				}}
 			/>
 			<button
-				className="pt-button pt-minimal pt-icon-chevron-forward"
+				className="bp3-button bp3-minimal bp3-icon-chevron-forward"
 				hidden={pages < 5}
 				disabled={page === pages - 1}
 				type="button"

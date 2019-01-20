@@ -113,7 +113,7 @@ export default class NodesFilter extends React.Component<Props, {}> {
 					this.props.onFilter(filter);
 				}}
 			/>
-			<div className="pt-select" style={css.type}>
+			<div className="bp3-select" style={css.type}>
 				<select
 					value={this.props.filter.zone || 'any'}
 					onChange={(evt): void => {

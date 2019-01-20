@@ -74,7 +74,7 @@ export default class Storages extends React.Component<{}, State> {
 					<div className="flex"/>
 					<div style={css.buttons}>
 						<button
-							className="pt-button pt-intent-success pt-icon-add"
+							className="bp3-button bp3-intent-success bp3-icon-add"
 							style={css.button}
 							disabled={this.state.disabled}
 							type="button"
@@ -104,7 +104,7 @@ export default class Storages extends React.Component<{}, State> {
 			</div>
 			<NonState
 				hidden={!!storagesDom.length}
-				iconClass="pt-icon-database"
+				iconClass="bp3-icon-database"
 				title="No storages"
 				description="Add a new storage to get started."
 			/>

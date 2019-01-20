@@ -332,14 +332,14 @@ export default class Disks extends React.Component<{}, State> {
 			/>;
 		}
 
-		let debugClass = 'pt-button pt-icon-console ';
+		let debugClass = 'bp3-button bp3-icon-console ';
 		if (this.state.debug) {
-			debugClass += 'pt-active';
+			debugClass += 'bp3-active';
 		}
 
-		let filterClass = 'pt-button pt-intent-primary pt-icon-filter ';
+		let filterClass = 'bp3-button bp3-intent-primary bp3-icon-filter ';
 		if (this.state.filter) {
-			filterClass += 'pt-active';
+			filterClass += 'bp3-active';
 		}
 
 		return <Page>
@@ -377,7 +377,7 @@ export default class Disks extends React.Component<{}, State> {
 							Filters
 						</button>
 						<button
-							className="pt-button pt-intent-warning pt-icon-chevron-up"
+							className="bp3-button bp3-intent-warning bp3-icon-chevron-up"
 							style={css.button}
 							disabled={!this.opened}
 							type="button"
@@ -392,30 +392,30 @@ export default class Disks extends React.Component<{}, State> {
 						</button>
 						<ConfirmButton
 							label="Snapshot Selected"
-							className="pt-intent-primary pt-icon-floppy-disk"
-							progressClassName="pt-intent-primary"
+							className="bp3-intent-primary bp3-icon-floppy-disk"
+							progressClassName="bp3-intent-primary"
 							style={css.button}
 							disabled={!this.selected || this.state.disabled}
 							onConfirm={this.onSnapshot}
 						/>
 						<ConfirmButton
 							label="Backup Selected"
-							className="pt-intent-primary pt-icon-compressed"
-							progressClassName="pt-intent-primary"
+							className="bp3-intent-primary bp3-icon-compressed"
+							progressClassName="bp3-intent-primary"
 							style={css.button}
 							disabled={!this.selected || this.state.disabled}
 							onConfirm={this.onBackup}
 						/>
 						<ConfirmButton
 							label="Delete Selected"
-							className="pt-intent-danger pt-icon-delete"
-							progressClassName="pt-intent-danger"
+							className="bp3-intent-danger bp3-icon-delete"
+							progressClassName="bp3-intent-danger"
 							style={css.button}
 							disabled={!this.selected || this.state.disabled}
 							onConfirm={this.onDelete}
 						/>
 						<button
-							className="pt-button pt-intent-success pt-icon-add"
+							className="bp3-button bp3-intent-success bp3-icon-add"
 							style={css.button}
 							disabled={this.state.disabled || this.state.newOpened}
 							type="button"
@@ -435,8 +435,8 @@ export default class Disks extends React.Component<{}, State> {
 				>
 					<ConfirmButton
 						label="Force Delete Selected"
-						className="pt-intent-danger pt-icon-warning-sign"
-						progressClassName="pt-intent-danger"
+						className="bp3-intent-danger bp3-icon-warning-sign"
+						progressClassName="bp3-intent-danger"
 						style={css.button}
 						disabled={!this.selected || this.state.disabled}
 						onConfirm={this.onForceDelete}
@@ -454,14 +454,14 @@ export default class Disks extends React.Component<{}, State> {
 				<div style={css.items}>
 					{newDiskDom}
 					{disksDom}
-					<tr className="pt-card pt-row" style={css.placeholder}>
+					<tr className="bp3-card bp3-row" style={css.placeholder}>
 						<td colSpan={5} style={css.placeholder}/>
 					</tr>
 				</div>
 			</div>
 			<NonState
 				hidden={!!disksDom.length}
-				iconClass="pt-icon-floppy-disk"
+				iconClass="bp3-icon-floppy-disk"
 				title="No disks"
 				description="Add a new disk to get started."
 			/>

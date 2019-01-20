@@ -338,13 +338,13 @@ export default class Datacenter extends React.Component<Props, State> {
 
 			organizations.push(
 				<div
-					className="pt-tag pt-tag-removable pt-intent-primary"
+					className="bp3-tag bp3-tag-removable bp3-intent-primary"
 					style={css.item}
 					key={organization.id}
 				>
 					{organization.name}
 					<button
-						className="pt-tag-remove"
+						className="bp3-tag-remove"
 						onMouseUp={(): void => {
 							this.onRemoveOrganization(organization.id);
 						}}
@@ -376,14 +376,14 @@ export default class Datacenter extends React.Component<Props, State> {
 
 			publicStorages.push(
 				<div
-					className="pt-tag pt-tag-removable pt-intent-primary"
+					className="bp3-tag bp3-tag-removable bp3-intent-primary"
 					style={css.item}
 					key={storage.id}
 				>
 					{storage.name}
 					<button
 						disabled={this.state.disabled}
-						className="pt-tag-remove"
+						className="bp3-tag-remove"
 						onMouseUp={(): void => {
 							this.onRemoveStorage(storage.id);
 						}}
@@ -433,15 +433,15 @@ export default class Datacenter extends React.Component<Props, State> {
 		}
 
 		return <div
-			className="pt-card"
+			className="bp3-card"
 			style={css.card}
 		>
 			<div className="layout horizontal wrap">
 				<div style={css.group}>
 					<div style={css.remove}>
 						<ConfirmButton
-							className="pt-minimal pt-intent-danger pt-icon-trash"
-							progressClassName="pt-intent-danger"
+							className="bp3-minimal bp3-intent-danger bp3-icon-trash"
+							progressClassName="bp3-intent-danger"
 							confirmMsg="Confirm datacenter remove"
 							disabled={this.state.disabled}
 							onConfirm={this.onDelete}
@@ -509,7 +509,7 @@ export default class Datacenter extends React.Component<Props, State> {
 						<option value="aws_glacier">AWS Glacier</option>
 					</PageSelect>
 					<label
-						className="pt-label"
+						className="bp3-label"
 						style={css.label}
 					>
 						Public Storages
@@ -525,7 +525,7 @@ export default class Datacenter extends React.Component<Props, State> {
 						label="Add Storage"
 						value={this.state.addStorage}
 						disabled={!hasStorages|| this.state.disabled}
-						buttonClass="pt-intent-success"
+						buttonClass="bp3-intent-success"
 						onChange={(val: string): void => {
 							this.setState({
 								...this.state,
@@ -555,7 +555,7 @@ export default class Datacenter extends React.Component<Props, State> {
 						}}
 					/>
 					<label
-						className="pt-label"
+						className="bp3-label"
 						style={css.label}
 						hidden={!datacenter.match_organizations}
 					>
@@ -573,7 +573,7 @@ export default class Datacenter extends React.Component<Props, State> {
 						value={this.state.addOrganization}
 						disabled={!this.props.organizations.length}
 						hidden={!datacenter.match_organizations}
-						buttonClass="pt-intent-success"
+						buttonClass="bp3-intent-success"
 						onChange={(val: string): void => {
 							this.setState({
 								...this.state,
