@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Improve storage management
+
 Version 1.0.1153.8 2019-01-20
 -----------------------------
 
