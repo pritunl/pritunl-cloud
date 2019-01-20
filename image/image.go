@@ -2,9 +2,11 @@ package image
 
 import (
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"gopkg.in/mgo.v2/bson"
+	"strings"
 	"time"
 )
 
@@ -91,6 +93,57 @@ func (i *Image) Upsert(db *database.Database) (err error) {
 	if err != nil {
 		err = database.ParseError(err)
 		return
+	}
+
+	return
+}
+
+func (i *Image) Sync(db *database.Database) (err error) {
+	coll := db.Images()
+
+	if strings.HasPrefix(i.Key, "backup/") ||
+		strings.HasPrefix(i.Key, "snapshot/") {
+
+		err = coll.Update(&bson.M{
+			"storage": i.Storage,
+			"key":     i.Key,
+		}, &bson.M{
+			"$set": &bson.M{
+				"storage":       i.Storage,
+				"key":           i.Key,
+				"signed":        i.Signed,
+				"type":          i.Type,
+				"etag":          i.Etag,
+				"last_modified": i.LastModified,
+			},
+		})
+		if err != nil {
+			err = database.ParseError(err)
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = &LostImageError{
+					errors.Wrap(err, "image: Lost image"),
+				}
+			}
+			return
+		}
+	} else {
+		_, err = coll.Upsert(&bson.M{
+			"storage": i.Storage,
+			"key":     i.Key,
+		}, &bson.M{
+			"$set": &bson.M{
+				"storage":       i.Storage,
+				"key":           i.Key,
+				"signed":        i.Signed,
+				"type":          i.Type,
+				"etag":          i.Etag,
+				"last_modified": i.LastModified,
+			},
+		})
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
 	}
 
 	return
