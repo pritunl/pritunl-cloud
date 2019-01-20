@@ -795,3 +795,24 @@ func RestoreBackup(db *database.Database, dsk *disk.Disk) (err error) {
 
 	return
 }
+
+func ImageAvailable(db *database.Database, img *image.Image) (
+	available bool, err error) {
+
+	switch img.StorageClass {
+	case storage.AwsStandard:
+		available = true
+		break
+	case storage.AwsInfrequentAccess:
+		available = true
+		break
+	case storage.AwsGlacier:
+		available = false
+		break
+	default:
+		available = true
+		break
+	}
+
+	return
+}
