@@ -61,6 +61,7 @@ func Sync(db *database.Database, store *storage.Storage) (err error) {
 				Etag:         etag,
 				Type:         store.Type,
 				LastModified: object.LastModified,
+				StorageClass: storage.ParseStorageClass(object.StorageClass),
 			}
 
 			images = append(images, img)
