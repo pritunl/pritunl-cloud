@@ -76,3 +76,25 @@ func RandIp6() (addr string) {
 
 	return
 }
+
+func RandPrivateIp() string {
+	return fmt.Sprintf("10.232.%d.%d", rand.Intn(250)+4, rand.Intn(250)+4)
+}
+
+func RandPrivateIp6() (addr string) {
+	addr = "fd97:7d1d"
+	randByt, _ := RandBytes(12)
+	randHex := fmt.Sprintf("%x", randByt)
+
+	buf := bytes.Buffer{}
+	for i, run := range randHex {
+		if i%4 == 0 && i != len(randHex)-1 {
+			buf.WriteRune(':')
+		}
+		buf.WriteRune(run)
+	}
+
+	addr += buf.String()
+
+	return
+}
