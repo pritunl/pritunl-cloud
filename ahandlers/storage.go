@@ -1,6 +1,7 @@
 package ahandlers
 
 import (
+	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/pritunl-cloud/data"
@@ -87,7 +88,13 @@ func storagePut(c *gin.Context) {
 	go func() {
 		db := database.GetDatabase()
 		defer db.Close()
-		data.Sync(db, store)
+
+		err = data.Sync(db, store)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("storage: Failed to sync storage")
+		}
 	}()
 
 	event.PublishDispatch(db, "storage.change")
