@@ -5,10 +5,12 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/pritunl-cloud/aggregate"
+	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
+	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
@@ -52,7 +54,7 @@ func instancePut(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	data := &instanceData{}
+	dta := &instanceData{}
 
 	instanceId, ok := utils.ParseObjectId(c.Param("instance_id"))
 	if !ok {
@@ -60,7 +62,7 @@ func instancePut(c *gin.Context) {
 		return
 	}
 
-	err := c.Bind(data)
+	err := c.Bind(dta)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -74,16 +76,16 @@ func instancePut(c *gin.Context) {
 
 	inst.PreCommit()
 
-	inst.Name = data.Name
-	inst.Vpc = data.Vpc
-	if data.State != "" {
-		inst.State = data.State
+	inst.Name = dta.Name
+	inst.Vpc = dta.Vpc
+	if dta.State != "" {
+		inst.State = dta.State
 	}
-	inst.DeleteProtection = data.DeleteProtection
-	inst.Memory = data.Memory
-	inst.Processors = data.Processors
-	inst.NetworkRoles = data.NetworkRoles
-	inst.Domain = data.Domain
+	inst.DeleteProtection = dta.DeleteProtection
+	inst.Memory = dta.Memory
+	inst.Processors = dta.Processors
+	inst.NetworkRoles = dta.NetworkRoles
+	inst.Domain = dta.Domain
 
 	fields := set.NewSet(
 		"name",
@@ -134,45 +136,66 @@ func instancePost(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	data := &instanceData{
+	dta := &instanceData{
 		Name: "New Instance",
 	}
 
-	err := c.Bind(data)
+	err := c.Bind(dta)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	insts := []*instance.Instance{}
-
-	if data.Count == 0 {
-		data.Count = 1
+	img, err := image.GetOrg(db, dta.Organization, dta.Image)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
 	}
 
-	for i := 0; i < data.Count; i++ {
+	available, err := data.ImageAvailable(db, img)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+	if !available {
+		errData := &errortypes.ErrorData{
+			Error:   "invalid_image_storage_class",
+			Message: "Image storage class cannot be used",
+		}
+
+		c.JSON(400, errData)
+		return
+	}
+
+	insts := []*instance.Instance{}
+
+	if dta.Count == 0 {
+		dta.Count = 1
+	}
+
+	for i := 0; i < dta.Count; i++ {
 		name := ""
-		if strings.Contains(data.Name, "%") {
-			name = fmt.Sprintf(data.Name, i+1)
+		if strings.Contains(dta.Name, "%") {
+			name = fmt.Sprintf(dta.Name, i+1)
 		} else {
-			name = data.Name
+			name = dta.Name
 		}
 
 		inst := &instance.Instance{
-			State:            data.State,
-			Organization:     data.Organization,
-			Zone:             data.Zone,
-			Vpc:              data.Vpc,
-			Node:             data.Node,
-			Image:            data.Image,
-			ImageBacking:     data.ImageBacking,
-			DeleteProtection: data.DeleteProtection,
+			State:            dta.State,
+			Organization:     dta.Organization,
+			Zone:             dta.Zone,
+			Vpc:              dta.Vpc,
+			Node:             dta.Node,
+			Image:            dta.Image,
+			ImageBacking:     dta.ImageBacking,
+			DeleteProtection: dta.DeleteProtection,
 			Name:             name,
-			InitDiskSize:     data.InitDiskSize,
-			Memory:           data.Memory,
-			Processors:       data.Processors,
-			NetworkRoles:     data.NetworkRoles,
-			Domain:           data.Domain,
+			InitDiskSize:     dta.InitDiskSize,
+			Memory:           dta.Memory,
+			Processors:       dta.Processors,
+			NetworkRoles:     dta.NetworkRoles,
+			Domain:           dta.Domain,
 		}
 
 		errData, err := inst.Validate(db)
@@ -210,23 +233,23 @@ func instancesPut(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	data := &instanceMultiData{}
+	dta := &instanceMultiData{}
 
-	err := c.Bind(data)
+	err := c.Bind(dta)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
 	doc := bson.M{
-		"state": data.State,
+		"state": dta.State,
 	}
 
-	if data.State != instance.Start {
+	if dta.State != instance.Start {
 		doc["restart"] = false
 	}
 
-	err = instance.UpdateMulti(db, data.Ids, &doc)
+	err = instance.UpdateMulti(db, dta.Ids, &doc)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -282,9 +305,9 @@ func instancesDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	data := []bson.ObjectId{}
+	dta := []bson.ObjectId{}
 
-	err := c.Bind(&data)
+	err := c.Bind(&dta)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -292,7 +315,7 @@ func instancesDelete(c *gin.Context) {
 
 	force := c.Query("force")
 	if force == "true" {
-		for _, instId := range data {
+		for _, instId := range dta {
 			err = instance.Remove(db, instId)
 			if err != nil {
 				utils.AbortWithError(c, 500, err)
@@ -300,7 +323,7 @@ func instancesDelete(c *gin.Context) {
 			}
 		}
 	} else {
-		err = instance.DeleteMulti(db, data)
+		err = instance.DeleteMulti(db, dta)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
 			return
@@ -420,11 +443,11 @@ func instancesGet(c *gin.Context) {
 			}
 		}
 
-		data := &instancesData{
+		dta := &instancesData{
 			Instances: instances,
 			Count:     count,
 		}
 
-		c.JSON(200, data)
+		c.JSON(200, dta)
 	}
 }
