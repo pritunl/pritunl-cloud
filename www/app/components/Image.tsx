@@ -162,7 +162,7 @@ export default class Image extends React.Component<Props, {}> {
 			<div className={'pt-cell ' + orgClass} style={css.item}>
 				<span
 					style={css.icon}
-					className={'pt-icon-standard pt-text-muted ' + orgIcon}
+					className={'bp3-icon-standard ' + orgIcon}
 				/>
 				{orgName}
 			</div>
