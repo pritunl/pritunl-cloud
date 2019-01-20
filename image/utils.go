@@ -142,7 +142,7 @@ func GetAllNames(db *database.Database, query *bson.M) (
 	coll := db.Images()
 	images = []*Image{}
 
-	cursor := coll.Find(query).Sort("key").Select(&bson.M{
+	cursor := coll.Find(query).Sort("name").Select(&bson.M{
 		"name": 1,
 		"key":  1,
 	}).Iter()
