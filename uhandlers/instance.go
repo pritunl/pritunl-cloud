@@ -5,6 +5,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/pritunl-cloud/aggregate"
+	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/demo"
@@ -58,7 +59,7 @@ func instancePut(c *gin.Context) {
 
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(bson.ObjectId)
-	data := &instanceData{}
+	dta := &instanceData{}
 
 	instanceId, ok := utils.ParseObjectId(c.Param("instance_id"))
 	if !ok {
@@ -66,7 +67,7 @@ func instancePut(c *gin.Context) {
 		return
 	}
 
-	err := c.Bind(data)
+	err := c.Bind(dta)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -78,7 +79,7 @@ func instancePut(c *gin.Context) {
 		return
 	}
 
-	exists, err := vpc.ExistsOrg(db, userOrg, data.Vpc)
+	exists, err := vpc.ExistsOrg(db, userOrg, dta.Vpc)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -88,8 +89,8 @@ func instancePut(c *gin.Context) {
 		return
 	}
 
-	if data.Domain != "" {
-		exists, err := domain.ExistsOrg(db, userOrg, data.Domain)
+	if dta.Domain != "" {
+		exists, err := domain.ExistsOrg(db, userOrg, dta.Domain)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
 			return
@@ -102,16 +103,16 @@ func instancePut(c *gin.Context) {
 
 	inst.PreCommit()
 
-	inst.Name = data.Name
-	inst.Vpc = data.Vpc
-	if data.State != "" {
-		inst.State = data.State
+	inst.Name = dta.Name
+	inst.Vpc = dta.Vpc
+	if dta.State != "" {
+		inst.State = dta.State
 	}
-	inst.DeleteProtection = data.DeleteProtection
-	inst.Memory = data.Memory
-	inst.Processors = data.Processors
-	inst.NetworkRoles = data.NetworkRoles
-	inst.Domain = data.Domain
+	inst.DeleteProtection = dta.DeleteProtection
+	inst.Memory = dta.Memory
+	inst.Processors = dta.Processors
+	inst.NetworkRoles = dta.NetworkRoles
+	inst.Domain = dta.Domain
 
 	fields := set.NewSet(
 		"name",
@@ -163,17 +164,17 @@ func instancePost(c *gin.Context) {
 
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(bson.ObjectId)
-	data := &instanceData{
+	dta := &instanceData{
 		Name: "New Instance",
 	}
 
-	err := c.Bind(data)
+	err := c.Bind(dta)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	zne, err := zone.Get(db, data.Zone)
+	zne, err := zone.Get(db, dta.Zone)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -189,7 +190,7 @@ func instancePost(c *gin.Context) {
 		return
 	}
 
-	nde, err := node.Get(db, data.Node)
+	nde, err := node.Get(db, dta.Node)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -200,7 +201,7 @@ func instancePost(c *gin.Context) {
 		return
 	}
 
-	exists, err = vpc.ExistsOrg(db, userOrg, data.Vpc)
+	exists, err = vpc.ExistsOrg(db, userOrg, dta.Vpc)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -210,8 +211,8 @@ func instancePost(c *gin.Context) {
 		return
 	}
 
-	if data.Domain != "" {
-		exists, err := domain.ExistsOrg(db, userOrg, data.Domain)
+	if dta.Domain != "" {
+		exists, err := domain.ExistsOrg(db, userOrg, dta.Domain)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
 			return
@@ -222,45 +223,56 @@ func instancePost(c *gin.Context) {
 		}
 	}
 
-	exists, err = image.ExistsOrg(db, userOrg, data.Image)
+	img, err := image.GetOrg(db, userOrg, dta.Image)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
-	if !exists {
-		utils.AbortWithStatus(c, 405)
+
+	available, err := data.ImageAvailable(db, img)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+	if !available {
+		errData := &errortypes.ErrorData{
+			Error:   "invalid_image_storage_class",
+			Message: "Image storage class cannot be used",
+		}
+
+		c.JSON(400, errData)
 		return
 	}
 
 	insts := []*instance.Instance{}
 
-	if data.Count == 0 {
-		data.Count = 1
+	if dta.Count == 0 {
+		dta.Count = 1
 	}
 
-	for i := 0; i < data.Count; i++ {
+	for i := 0; i < dta.Count; i++ {
 		name := ""
-		if strings.Contains(data.Name, "%") {
-			name = fmt.Sprintf(data.Name, i+1)
+		if strings.Contains(dta.Name, "%") {
+			name = fmt.Sprintf(dta.Name, i+1)
 		} else {
-			name = data.Name
+			name = dta.Name
 		}
 
 		inst := &instance.Instance{
-			State:            data.State,
+			State:            dta.State,
 			Organization:     userOrg,
-			Zone:             data.Zone,
-			Vpc:              data.Vpc,
-			Node:             data.Node,
-			Image:            data.Image,
-			ImageBacking:     data.ImageBacking,
-			DeleteProtection: data.DeleteProtection,
+			Zone:             dta.Zone,
+			Vpc:              dta.Vpc,
+			Node:             dta.Node,
+			Image:            dta.Image,
+			ImageBacking:     dta.ImageBacking,
+			DeleteProtection: dta.DeleteProtection,
 			Name:             name,
-			InitDiskSize:     data.InitDiskSize,
-			Memory:           data.Memory,
-			Processors:       data.Processors,
-			NetworkRoles:     data.NetworkRoles,
-			Domain:           data.Domain,
+			InitDiskSize:     dta.InitDiskSize,
+			Memory:           dta.Memory,
+			Processors:       dta.Processors,
+			NetworkRoles:     dta.NetworkRoles,
+			Domain:           dta.Domain,
 		}
 
 		errData, err := inst.Validate(db)
@@ -299,23 +311,23 @@ func instancesPut(c *gin.Context) {
 
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(bson.ObjectId)
-	data := &instanceMultiData{}
+	dta := &instanceMultiData{}
 
-	err := c.Bind(data)
+	err := c.Bind(dta)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
 	doc := bson.M{
-		"state": data.State,
+		"state": dta.State,
 	}
 
-	if data.State != instance.Start {
+	if dta.State != instance.Start {
 		doc["restart"] = false
 	}
 
-	err = instance.UpdateMultiOrg(db, userOrg, data.Ids, &doc)
+	err = instance.UpdateMultiOrg(db, userOrg, dta.Ids, &doc)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -373,15 +385,15 @@ func instancesDelete(c *gin.Context) {
 
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(bson.ObjectId)
-	data := []bson.ObjectId{}
+	dta := []bson.ObjectId{}
 
-	err := c.Bind(&data)
+	err := c.Bind(&dta)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	err = instance.DeleteMultiOrg(db, userOrg, data)
+	err = instance.DeleteMultiOrg(db, userOrg, dta)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -500,11 +512,11 @@ func instancesGet(c *gin.Context) {
 			}
 		}
 
-		data := &instancesData{
+		dta := &instancesData{
 			Instances: instances,
 			Count:     count,
 		}
 
-		c.JSON(200, data)
+		c.JSON(200, dta)
 	}
 }
