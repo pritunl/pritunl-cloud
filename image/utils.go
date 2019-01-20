@@ -119,7 +119,7 @@ func GetAll(db *database.Database, query *bson.M, page, pageCount int) (
 	page = utils.Min(page, count / pageCount)
 	skip := utils.Min(page*pageCount, count)
 
-	cursor := qury.Sort("key").Skip(skip).Limit(pageCount).Iter()
+	cursor := qury.Sort("name").Skip(skip).Limit(pageCount).Iter()
 
 	img := &Image{}
 	for cursor.Next(img) {
