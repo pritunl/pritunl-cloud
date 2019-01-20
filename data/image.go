@@ -564,19 +564,17 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk) (err error) {
 		return
 	}
 
-	err = img.Insert(db)
-	if err != nil {
-		return
+	putOpts := minio.PutObjectOptions{}
+	storageClass := storage.GetStorageClass(dc.PrivateStorageClass)
+	if storageClass != "" {
+		putOpts.StorageClass = storageClass
 	}
 
-	_, err = client.FPutObject(store.Bucket, img.Key, tmpPath,
-		minio.PutObjectOptions{})
+	_, err = client.FPutObject(store.Bucket, img.Key, tmpPath, putOpts)
 	if err != nil {
 		err = &errortypes.WriteError{
 			errors.Wrap(err, "data: Failed to write object"),
 		}
-
-		image.Remove(db, img.Id)
 
 		return
 	}
@@ -695,19 +693,17 @@ func CreateBackup(db *database.Database, dsk *disk.Disk) (err error) {
 		return
 	}
 
-	err = img.Insert(db)
-	if err != nil {
-		return
+	putOpts := minio.PutObjectOptions{}
+	storageClass := storage.GetStorageClass(dc.BackupStorageClass)
+	if storageClass != "" {
+		putOpts.StorageClass = storageClass
 	}
 
-	_, err = client.FPutObject(store.Bucket, img.Key, tmpPath,
-		minio.PutObjectOptions{})
+	_, err = client.FPutObject(store.Bucket, img.Key, tmpPath, putOpts)
 	if err != nil {
 		err = &errortypes.WriteError{
 			errors.Wrap(err, "data: Failed to write object"),
 		}
-
-		image.Remove(db, img.Id)
 
 		return
 	}
