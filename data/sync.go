@@ -30,7 +30,7 @@ func Sync(db *database.Database, store *storage.Storage) (err error) {
 		store.Endpoint, store.AccessKey, store.SecretKey, !store.Insecure)
 	if err != nil {
 		err = &errortypes.ConnectionError{
-			errors.New("storage: Failed to connect to storage"),
+			errors.Wrap(err, "storage: Failed to connect to storage"),
 		}
 		return
 	}
@@ -44,7 +44,7 @@ func Sync(db *database.Database, store *storage.Storage) (err error) {
 	for object := range client.ListObjects(store.Bucket, "", true, done) {
 		if object.Err != nil {
 			err = &errortypes.RequestError{
-				errors.New("storage: Failed to list objects"),
+				errors.Wrap(object.Err, "storage: Failed to list objects"),
 			}
 			return
 		}
