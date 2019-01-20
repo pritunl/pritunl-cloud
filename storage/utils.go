@@ -68,7 +68,7 @@ func Remove(db *database.Database, storeId bson.ObjectId) (err error) {
 	return
 }
 
-func GetStorageClass(class string) string {
+func FormatStorageClass(class string) string {
 	switch class {
 	case AwsStandard:
 		return "STANDARD"
@@ -76,6 +76,19 @@ func GetStorageClass(class string) string {
 		return "STANDARD_IA"
 	case AwsGlacier:
 		return "GLACIER"
+	}
+
+	return ""
+}
+
+func ParseStorageClass(class string) string {
+	switch class {
+	case "STANDARD":
+		return AwsStandard
+	case "STANDARD_IA":
+		return AwsInfrequentAccess
+	case "GLACIER":
+		return AwsGlacier
 	}
 
 	return ""
