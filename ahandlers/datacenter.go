@@ -12,13 +12,15 @@ import (
 )
 
 type datacenterData struct {
-	Id                 bson.ObjectId   `json:"id"`
-	Name               string          `json:"name"`
-	MatchOrganizations bool            `json:"match_organizations"`
-	Organizations      []bson.ObjectId `json:"organizations"`
-	PublicStorages     []bson.ObjectId `json:"public_storages"`
-	PrivateStorage     bson.ObjectId   `json:"private_storage"`
-	BackupStorage      bson.ObjectId   `json:"backup_storage"`
+	Id                  bson.ObjectId   `json:"id"`
+	Name                string          `json:"name"`
+	MatchOrganizations  bool            `json:"match_organizations"`
+	Organizations       []bson.ObjectId `json:"organizations"`
+	PublicStorages      []bson.ObjectId `json:"public_storages"`
+	PrivateStorage      bson.ObjectId   `json:"private_storage"`
+	PrivateStorageClass string          `json:"private_storage_class"`
+	BackupStorage       bson.ObjectId   `json:"backup_storage"`
+	BackupStorageClass  string          `json:"backup_storage_class"`
 }
 
 func datacenterPut(c *gin.Context) {
@@ -52,7 +54,9 @@ func datacenterPut(c *gin.Context) {
 	dc.Organizations = data.Organizations
 	dc.PublicStorages = data.PublicStorages
 	dc.PrivateStorage = data.PrivateStorage
+	dc.PrivateStorageClass = data.PrivateStorageClass
 	dc.BackupStorage = data.BackupStorage
+	dc.BackupStorageClass = data.BackupStorageClass
 
 	fields := set.NewSet(
 		"name",
@@ -60,7 +64,9 @@ func datacenterPut(c *gin.Context) {
 		"organizations",
 		"public_storages",
 		"private_storage",
+		"private_storage_class",
 		"backup_storage",
+		"backup_storage_class",
 	)
 
 	errData, err := dc.Validate(db)
@@ -102,12 +108,14 @@ func datacenterPost(c *gin.Context) {
 	}
 
 	dc := &datacenter.Datacenter{
-		Name:               data.Name,
-		MatchOrganizations: data.MatchOrganizations,
-		Organizations:      data.Organizations,
-		PublicStorages:     data.PublicStorages,
-		PrivateStorage:     data.PrivateStorage,
-		BackupStorage:      data.BackupStorage,
+		Name:                data.Name,
+		MatchOrganizations:  data.MatchOrganizations,
+		Organizations:       data.Organizations,
+		PublicStorages:      data.PublicStorages,
+		PrivateStorage:      data.PrivateStorage,
+		PrivateStorageClass: data.PrivateStorageClass,
+		BackupStorage:       data.BackupStorage,
+		BackupStorageClass:  data.BackupStorageClass,
 	}
 
 	errData, err := dc.Validate(db)
