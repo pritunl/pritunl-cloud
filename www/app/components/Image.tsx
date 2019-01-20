@@ -112,6 +112,19 @@ export default class Image extends React.Component<Props, {}> {
 			orgName = 'Signed Public Image';
 		}
 
+		let diskIcon = 'bp3-icon-box';
+		switch (this.props.image.storage_class) {
+			case 'aws_standard':
+				diskIcon = 'bp3-icon-box';
+				break;
+			case 'aws_infrequent_access':
+				diskIcon = 'bp3-icon-compressed';
+				break;
+			case 'aws_glacier':
+				diskIcon = 'bp3-icon-snowflake';
+				break;
+		}
+
 		return <div
 			className="pt-card pt-row"
 			style={cardStyle}
@@ -157,7 +170,7 @@ export default class Image extends React.Component<Props, {}> {
 				<span
 					style={css.icon}
 					hidden={!image.key}
-					className="pt-icon-standard pt-text-muted pt-icon-compressed"
+					className={'bp3-icon-standard bp3-text-muted ' + diskIcon}
 				/>
 				{image.key}
 			</div>
