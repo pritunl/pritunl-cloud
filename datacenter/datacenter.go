@@ -9,13 +9,15 @@ import (
 )
 
 type Datacenter struct {
-	Id                 bson.ObjectId   `bson:"_id,omitempty" json:"id"`
-	Name               string          `bson:"name" json:"name"`
-	MatchOrganizations bool            `bson:"match_organizations" json:"match_organizations"`
-	Organizations      []bson.ObjectId `bson:"organizations" json:"organizations"`
-	PublicStorages     []bson.ObjectId `bson:"public_storages" json:"public_storages"`
-	PrivateStorage     bson.ObjectId   `bson:"private_storage,omitempty" json:"private_storage"`
-	BackupStorage      bson.ObjectId   `bson:"backup_storage,omitempty" json:"backup_storage"`
+	Id                  bson.ObjectId   `bson:"_id,omitempty" json:"id"`
+	Name                string          `bson:"name" json:"name"`
+	MatchOrganizations  bool            `bson:"match_organizations" json:"match_organizations"`
+	Organizations       []bson.ObjectId `bson:"organizations" json:"organizations"`
+	PublicStorages      []bson.ObjectId `bson:"public_storages" json:"public_storages"`
+	PrivateStorage      bson.ObjectId   `bson:"private_storage,omitempty" json:"private_storage"`
+	PrivateStorageClass string          `bson:"private_storage_class" json:"private_storage_class"`
+	BackupStorage       bson.ObjectId   `bson:"backup_storage,omitempty" json:"backup_storage"`
+	BackupStorageClass  string          `bson:"backup_storage_class" json:"backup_storage_class"`
 }
 
 func (d *Datacenter) Validate(db *database.Database) (
