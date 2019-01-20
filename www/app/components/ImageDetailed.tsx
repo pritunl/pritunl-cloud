@@ -199,6 +199,19 @@ export default class ImageDetailed extends React.Component<Props, State> {
 			orgName = 'Signed Public Image';
 		}
 
+		let storageClass = 'Default';
+		switch (this.props.image.storage_class) {
+			case 'aws_standard':
+				storageClass = 'Standard';
+				break;
+			case 'aws_infrequent_access':
+				storageClass = 'Standard-IA';
+				break;
+			case 'aws_glacier':
+				storageClass = 'Glacier';
+				break;
+		}
+
 		return <td
 			className="pt-cell"
 			colSpan={5}
@@ -280,6 +293,10 @@ export default class ImageDetailed extends React.Component<Props, State> {
 							{
 								label: 'Key',
 								value: this.props.image.key || 'Unknown',
+							},
+							{
+								label: 'Storage Class',
+								value: storageClass,
 							},
 							{
 								label: 'Last Modified',
