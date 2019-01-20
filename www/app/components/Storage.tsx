@@ -8,6 +8,8 @@ import PageSave from './PageSave';
 import PageSelect from './PageSelect';
 import PageSwitch from './PageSwitch';
 import ConfirmButton from './ConfirmButton';
+import * as InstanceActions from "../actions/InstanceActions";
+import * as Alert from "../Alert";
 
 interface Props {
 	storage: StorageTypes.StorageRo;
@@ -61,6 +63,9 @@ const css = {
 	} as React.CSSProperties,
 	port: {
 		flex: '1',
+	} as React.CSSProperties,
+	controlButton: {
+		marginRight: '10px',
 	} as React.CSSProperties,
 };
 
@@ -124,6 +129,26 @@ export default class Storage extends React.Component<Props, State> {
 			this.setState({
 				...this.state,
 				message: '',
+				disabled: false,
+			});
+		});
+	}
+
+	onSync = (): void => {
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+		StorageActions.commit(this.props.storage).then((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+
+			Alert.success('Storage sync started');
+		}).catch((): void => {
+			this.setState({
+				...this.state,
 				disabled: false,
 			});
 		});
@@ -269,7 +294,18 @@ export default class Storage extends React.Component<Props, State> {
 					});
 				}}
 				onSave={this.onSave}
-			/>
+			>
+				<ConfirmButton
+					label="Sync"
+					className="bp3-intent-success bp3-icon-refresh"
+					progressClassName="bp3-intent-success"
+					style={css.controlButton}
+					disabled={this.state.disabled}
+					onConfirm={(): void => {
+						this.onSync();
+					}}
+				/>
+			</PageSave>
 		</div>;
 	}
 }
