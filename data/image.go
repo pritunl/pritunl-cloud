@@ -565,7 +565,7 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk) (err error) {
 	}
 
 	putOpts := minio.PutObjectOptions{}
-	storageClass := storage.GetStorageClass(dc.PrivateStorageClass)
+	storageClass := storage.FormatStorageClass(dc.PrivateStorageClass)
 	if storageClass != "" {
 		putOpts.StorageClass = storageClass
 	}
@@ -590,6 +590,7 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk) (err error) {
 
 	img.Etag = image.GetEtag(obj)
 	img.LastModified = obj.LastModified
+	img.StorageClass = storage.ParseStorageClass(obj.StorageClass)
 
 	err = img.Upsert(db)
 	if err != nil {
@@ -694,7 +695,7 @@ func CreateBackup(db *database.Database, dsk *disk.Disk) (err error) {
 	}
 
 	putOpts := minio.PutObjectOptions{}
-	storageClass := storage.GetStorageClass(dc.BackupStorageClass)
+	storageClass := storage.FormatStorageClass(dc.BackupStorageClass)
 	if storageClass != "" {
 		putOpts.StorageClass = storageClass
 	}
@@ -719,6 +720,7 @@ func CreateBackup(db *database.Database, dsk *disk.Disk) (err error) {
 
 	img.Etag = image.GetEtag(obj)
 	img.LastModified = obj.LastModified
+	img.StorageClass = storage.ParseStorageClass(obj.StorageClass)
 
 	err = img.Upsert(db)
 	if err != nil {
