@@ -5,6 +5,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/pritunl-cloud/aggregate"
+	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/demo"
@@ -209,12 +210,24 @@ func diskPost(c *gin.Context) {
 	}
 
 	if dta.Image != "" {
-		exists, err = image.ExistsOrg(db, userOrg, dta.Image)
+		img, err := image.GetOrg(db, userOrg, dta.Image)
 		if err != nil {
+			utils.AbortWithError(c, 500, err)
 			return
 		}
-		if !exists {
-			utils.AbortWithStatus(c, 405)
+
+		available, err := data.ImageAvailable(db, img)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+		if !available {
+			errData := &errortypes.ErrorData{
+				Error:   "invalid_image_storage_class",
+				Message: "Image storage class cannot be used",
+			}
+
+			c.JSON(400, errData)
 			return
 		}
 	}
