@@ -67,3 +67,16 @@ func Remove(db *database.Database, storeId bson.ObjectId) (err error) {
 
 	return
 }
+
+func GetStorageClass(class string) string {
+	switch class {
+	case AwsStandard:
+		return "STANDARD"
+	case AwsInfrequentAccess:
+		return "STANDARD_IA"
+	case AwsGlacier:
+		return "GLACIER"
+	}
+
+	return ""
+}
