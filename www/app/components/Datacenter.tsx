@@ -471,6 +471,20 @@ export default class Datacenter extends React.Component<Props, State> {
 					</PageSelect>
 					<PageSelect
 						disabled={this.state.disabled}
+						label="Private Storage Class"
+						help="Private storage class to use when upload new objects."
+						value={datacenter.private_storage_class}
+						onChange={(val): void => {
+							this.set('private_storage_class', val);
+						}}
+					>
+						<option value="">Default</option>
+						<option value="aws_standard">AWS Standard</option>
+						<option value="aws_infrequent_access">AWS Standard-IA</option>
+						<option value="aws_glacier">AWS Glacier</option>
+					</PageSelect>
+					<PageSelect
+						disabled={this.state.disabled}
 						label="Backup Storage"
 						help="Backup storage that will store instance backups."
 						value={datacenter.backup_storage}
@@ -479,6 +493,20 @@ export default class Datacenter extends React.Component<Props, State> {
 						}}
 					>
 						{backupStoragesSelect}
+					</PageSelect>
+					<PageSelect
+						disabled={this.state.disabled}
+						label="Backup Storage Class"
+						help="Backup storage class to use when upload new objects."
+						value={datacenter.backup_storage_class}
+						onChange={(val): void => {
+							this.set('backup_storage_class', val);
+						}}
+					>
+						<option value="">Default</option>
+						<option value="aws_standard">AWS Standard</option>
+						<option value="aws_infrequent_access">AWS Standard-IA</option>
+						<option value="aws_glacier">AWS Glacier</option>
 					</PageSelect>
 					<label
 						className="pt-label"
