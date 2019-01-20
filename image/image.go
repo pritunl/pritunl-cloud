@@ -20,6 +20,7 @@ type Image struct {
 	Storage      bson.ObjectId `bson:"storage" json:"storage"`
 	Key          string        `bson:"key" json:"key"`
 	LastModified time.Time     `bson:"last_modified" json:"last_modified"`
+	StorageClass string        `bson:"storage_class" json:"storage_class"`
 	Etag         string        `bson:"etag" json:"etag"`
 }
 
@@ -87,6 +88,7 @@ func (i *Image) Upsert(db *database.Database) (err error) {
 			"storage":       i.Storage,
 			"key":           i.Key,
 			"last_modified": i.LastModified,
+			"storage_class": i.StorageClass,
 			"etag":          i.Etag,
 		},
 	})
@@ -115,6 +117,7 @@ func (i *Image) Sync(db *database.Database) (err error) {
 				"type":          i.Type,
 				"etag":          i.Etag,
 				"last_modified": i.LastModified,
+				"storage_class": i.StorageClass,
 			},
 		})
 		if err != nil {
