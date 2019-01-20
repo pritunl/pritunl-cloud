@@ -430,6 +430,12 @@ func instanceGet(c *gin.Context) {
 		inst.PublicIps6 = []string{
 			demo.RandIp6(inst.Id),
 		}
+		inst.PrivateIps = []string{
+			demo.RandPrivateIp(inst.Id),
+		}
+		inst.PrivateIps6 = []string{
+			demo.RandPrivateIp6(inst.Id),
+		}
 	}
 
 	c.JSON(200, inst)
@@ -508,6 +514,12 @@ func instancesGet(c *gin.Context) {
 				}
 				inst.PublicIps6 = []string{
 					demo.RandIp6(inst.Id),
+				}
+				inst.PrivateIps = []string{
+					demo.RandPrivateIp(inst.Id),
+				}
+				inst.PrivateIps6 = []string{
+					demo.RandPrivateIp6(inst.Id),
 				}
 			}
 		}
