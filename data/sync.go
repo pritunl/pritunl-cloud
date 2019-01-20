@@ -1,6 +1,7 @@
 package data
 
 import (
+	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/minio/minio-go"
@@ -69,9 +70,16 @@ func Sync(db *database.Database, store *storage.Storage) (err error) {
 	for _, img := range images {
 		img.Signed = signedKeys.Contains(img.Key)
 
-		err = img.Upsert(db)
+		err = img.Sync(db)
 		if err != nil {
-			return
+			if _, ok := err.(*image.LostImageError); ok {
+				logrus.WithFields(logrus.Fields{
+					"bucket": store.Bucket,
+					"key":    img.Key,
+				}).Error("data: Ignoring lost image")
+			} else {
+				return
+			}
 		}
 	}
 
