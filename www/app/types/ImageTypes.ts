@@ -7,6 +7,7 @@ export const CHANGE = 'image.change';
 
 export interface Image {
 	id: string;
+	disk_id?: string;
 	name?: string;
 	organization?: string;
 	storage?: string;
