@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Improve instance startup
+
 Version 1.0.1154.28 2019-01-21
 ------------------------------
 
