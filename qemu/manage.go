@@ -393,7 +393,13 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	ifaceVlan := vm.GetIfaceVlan(virt.Id, 0)
 	namespace := vm.GetNamespace(virt.Id, 0)
 	pidPath := fmt.Sprintf("/var/run/dhclient-%s.pid", ifaceExternal)
+	leasePath := paths.GetLeasePath(virt.Id)
 	adapter := virt.NetworkAdapters[0]
+
+	err = utils.ExistsMkdir(paths.GetLeasesPath(), 0755)
+	if err != nil {
+		return
+	}
 
 	vc, err := vpc.Get(db, adapter.VpcId)
 	if err != nil {
@@ -840,7 +846,9 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	_, err = utils.ExecCombinedOutputLogged(
 		nil,
 		"ip", "netns", "exec", namespace,
-		"dhclient", "-pf", pidPath,
+		"dhclient",
+		"-pf", pidPath,
+		"-lf", leasePath,
 		ifaceExternal,
 	)
 	if err != nil {
