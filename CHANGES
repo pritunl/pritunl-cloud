@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Improve instance management
+
 Version 1.0.1153.36 2019-01-20
 ------------------------------
 
