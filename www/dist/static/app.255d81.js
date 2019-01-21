@@ -4271,7 +4271,7 @@ System.registerDynamic("app/components/UsersPage.js", ["npm:react@16.7.0.js", "a
         link: {
             cursor: 'pointer',
             userSelect: 'none',
-            margin: '5px 5px 0 0'
+            margin: '7px 5px 0 0'
         },
         current: {
             opacity: 0.5
@@ -5207,7 +5207,7 @@ System.registerDynamic("app/components/AuditsPage.js", ["npm:react@16.7.0.js", "
         },
         link: {
             userSelect: 'none',
-            margin: '5px 5px 0 0'
+            margin: '7px 5px 0 0'
         },
         current: {
             opacity: 0.5
@@ -11548,7 +11548,7 @@ System.registerDynamic("app/components/NodesPage.js", ["npm:react@16.7.0.js", "a
         link: {
             cursor: 'pointer',
             userSelect: 'none',
-            margin: '5px 5px 0 0'
+            margin: '7px 5px 0 0'
         },
         current: {
             opacity: 0.5
@@ -14000,7 +14000,7 @@ System.registerDynamic("app/components/VpcsPage.js", ["npm:react@16.7.0.js", "ap
         link: {
             cursor: 'pointer',
             userSelect: 'none',
-            margin: '5px 5px 0 0'
+            margin: '7px 5px 0 0'
         },
         current: {
             opacity: 0.5
@@ -14671,7 +14671,7 @@ System.registerDynamic("app/components/DomainsPage.js", ["npm:react@16.7.0.js", 
         link: {
             cursor: 'pointer',
             userSelect: 'none',
-            margin: '5px 5px 0 0'
+            margin: '7px 5px 0 0'
         },
         current: {
             opacity: 0.5
@@ -14959,7 +14959,7 @@ System.registerDynamic("app/components/Domains.js", ["npm:react@16.7.0.js", "app
     exports.default = Domains;
     
 });
-System.registerDynamic("app/components/Storage.js", ["npm:react@16.7.0.js", "app/actions/StorageActions.js", "app/components/PageInput.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/PageSelect.js", "app/components/PageSwitch.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/Storage.js", ["npm:react@16.7.0.js", "app/actions/StorageActions.js", "app/components/PageInput.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/PageSelect.js", "app/components/PageSwitch.js", "app/components/ConfirmButton.js", "app/Alert.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -14973,6 +14973,7 @@ System.registerDynamic("app/components/Storage.js", ["npm:react@16.7.0.js", "app
     const PageSelect_1 = $__require("app/components/PageSelect.js");
     const PageSwitch_1 = $__require("app/components/PageSwitch.js");
     const ConfirmButton_1 = $__require("app/components/ConfirmButton.js");
+    const Alert = $__require("app/Alert.js");
     const css = {
         card: {
             position: 'relative',
@@ -15014,6 +15015,9 @@ System.registerDynamic("app/components/Storage.js", ["npm:react@16.7.0.js", "app
         },
         port: {
             flex: '1'
+        },
+        controlButton: {
+            marginRight: '10px'
         }
     };
     class Storage extends React.Component {
@@ -15030,6 +15034,15 @@ System.registerDynamic("app/components/Storage.js", ["npm:react@16.7.0.js", "app
                     }, 3000);
                 }).catch(() => {
                     this.setState(Object.assign({}, this.state, { message: '', disabled: false }));
+                });
+            };
+            this.onSync = () => {
+                this.setState(Object.assign({}, this.state, { disabled: true }));
+                StorageActions.commit(this.props.storage).then(() => {
+                    this.setState(Object.assign({}, this.state, { disabled: false }));
+                    Alert.success('Storage sync started');
+                }).catch(() => {
+                    this.setState(Object.assign({}, this.state, { disabled: false }));
                 });
             };
             this.onDelete = () => {
@@ -15078,7 +15091,9 @@ System.registerDynamic("app/components/Storage.js", ["npm:react@16.7.0.js", "app
                     this.set('insecure', !storage.insecure);
                 } }))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.storage, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
                     this.setState(Object.assign({}, this.state, { changed: false, storage: null }));
-                }, onSave: this.onSave }));
+                }, onSave: this.onSave }, React.createElement(ConfirmButton_1.default, { label: "Sync", className: "bp3-intent-success bp3-icon-refresh", progressClassName: "bp3-intent-success", style: css.controlButton, disabled: this.state.disabled, onConfirm: () => {
+                    this.onSync();
+                } })));
         }
     }
     exports.default = Storage;
@@ -15634,7 +15649,7 @@ System.registerDynamic("app/components/ImagesPage.js", ["npm:react@16.7.0.js", "
         link: {
             cursor: 'pointer',
             userSelect: 'none',
-            margin: '5px 5px 0 0'
+            margin: '7px 5px 0 0'
         },
         current: {
             opacity: 0.5
@@ -16433,7 +16448,7 @@ System.registerDynamic("app/components/DisksPage.js", ["npm:react@16.7.0.js", "a
         link: {
             cursor: 'pointer',
             userSelect: 'none',
-            margin: '5px 5px 0 0'
+            margin: '7px 5px 0 0'
         },
         current: {
             opacity: 0.5
@@ -18559,7 +18574,7 @@ System.registerDynamic("app/components/InstancesPage.js", ["npm:react@16.7.0.js"
         link: {
             cursor: 'pointer',
             userSelect: 'none',
-            margin: '5px 5px 0 0'
+            margin: '7px 5px 0 0'
         },
         current: {
             opacity: 0.5
@@ -19457,7 +19472,7 @@ System.registerDynamic("app/components/FirewallsPage.js", ["npm:react@16.7.0.js"
         link: {
             cursor: 'pointer',
             userSelect: 'none',
-            margin: '5px 5px 0 0'
+            margin: '7px 5px 0 0'
         },
         current: {
             opacity: 0.5
@@ -20190,7 +20205,7 @@ System.registerDynamic("app/components/AuthoritiesPage.js", ["npm:react@16.7.0.j
         link: {
             cursor: 'pointer',
             userSelect: 'none',
-            margin: '5px 5px 0 0'
+            margin: '7px 5px 0 0'
         },
         current: {
             opacity: 0.5
@@ -20643,7 +20658,7 @@ System.registerDynamic("app/components/LogsPage.js", ["npm:react@16.7.0.js", "ap
         link: {
             cursor: 'pointer',
             userSelect: 'none',
-            margin: '5px 5px 0 0'
+            margin: '7px 5px 0 0'
         },
         current: {
             opacity: 0.5
