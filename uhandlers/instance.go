@@ -223,7 +223,7 @@ func instancePost(c *gin.Context) {
 		}
 	}
 
-	img, err := image.GetOrg(db, userOrg, dta.Image)
+	img, err := image.GetOrgPublic(db, userOrg, dta.Image)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
