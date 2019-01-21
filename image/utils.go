@@ -58,6 +58,32 @@ func GetOrg(db *database.Database, orgId, imgId bson.ObjectId) (
 	return
 }
 
+func GetOrgPublic(db *database.Database, orgId, imgId bson.ObjectId) (
+	img *Image, err error) {
+
+	coll := db.Images()
+	img = &Image{}
+
+	err = coll.FindOne(&bson.M{
+		"_id": imgId,
+		"$or": []*bson.M{
+			&bson.M{
+				"organization": orgId,
+			},
+			&bson.M{
+				"organization": &bson.M{
+					"$exists": false,
+				},
+			},
+		},
+	}, img)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func Distinct(db *database.Database, storeId bson.ObjectId) (
 	keys []string, err error) {
 
