@@ -142,7 +142,7 @@ func imageGet(c *gin.Context) {
 		return
 	}
 
-	img, err := image.GetOrg(db, userOrg, imageId)
+	img, err := image.GetOrgPublic(db, userOrg, imageId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
