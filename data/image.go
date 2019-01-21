@@ -807,7 +807,38 @@ func ImageAvailable(db *database.Database, img *image.Image) (
 		available = true
 		break
 	case storage.AwsGlacier:
-		available = false
+		store, e := storage.Get(db, img.Storage)
+		if e != nil {
+			err = e
+			return
+		}
+
+		client, e := minio.New(
+			store.Endpoint, store.AccessKey, store.SecretKey, !store.Insecure)
+		if e != nil {
+			err = &errortypes.ConnectionError{
+				errors.Wrap(e, "data: Failed to connect to storage"),
+			}
+			return
+		}
+
+		obj, e := client.StatObject(store.Bucket, img.Key,
+			minio.StatObjectOptions{})
+		if e != nil {
+			err = &errortypes.ReadError{
+				errors.Wrap(e, "data: Failed to stat object"),
+			}
+			return
+		}
+
+		restore := obj.Metadata.Get("x-amz-restore")
+		if strings.Contains(restore, "ongoing-request=\"false\"") &&
+			strings.Contains(restore, "expiry-date") {
+
+			available = true
+		} else {
+			available = false
+		}
 		break
 	default:
 		available = true
