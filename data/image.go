@@ -579,6 +579,8 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk) (err error) {
 		return
 	}
 
+	time.Sleep(3 * time.Second)
+
 	obj, err := client.StatObject(store.Bucket, img.Key,
 		minio.StatObjectOptions{})
 	if err != nil {
@@ -590,7 +592,12 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk) (err error) {
 
 	img.Etag = image.GetEtag(obj)
 	img.LastModified = obj.LastModified
-	img.StorageClass = dc.PrivateStorageClass
+
+	if store.IsOracle() {
+		img.StorageClass = storage.ParseStorageClass(obj)
+	} else {
+		img.StorageClass = dc.BackupStorageClass
+	}
 
 	err = img.Upsert(db)
 	if err != nil {
@@ -709,6 +716,8 @@ func CreateBackup(db *database.Database, dsk *disk.Disk) (err error) {
 		return
 	}
 
+	time.Sleep(3 * time.Second)
+
 	obj, err := client.StatObject(store.Bucket, img.Key,
 		minio.StatObjectOptions{})
 	if err != nil {
@@ -720,7 +729,12 @@ func CreateBackup(db *database.Database, dsk *disk.Disk) (err error) {
 
 	img.Etag = image.GetEtag(obj)
 	img.LastModified = obj.LastModified
-	img.StorageClass = dc.BackupStorageClass
+
+	if store.IsOracle() {
+		img.StorageClass = storage.ParseStorageClass(obj)
+	} else {
+		img.StorageClass = dc.BackupStorageClass
+	}
 
 	err = img.Upsert(db)
 	if err != nil {
