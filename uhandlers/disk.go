@@ -15,6 +15,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/storage"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/zone"
 	"gopkg.in/mgo.v2/bson"
@@ -216,18 +217,31 @@ func diskPost(c *gin.Context) {
 			return
 		}
 
-		available, err := data.ImageAvailable(db, img)
+		store, err := storage.Get(db, img.Storage)
+		if err != nil {
+			return
+		}
+
+		available, err := data.ImageAvailable(store, img)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
 			return
 		}
 		if !available {
-			errData := &errortypes.ErrorData{
-				Error:   "image_not_available",
-				Message: "Image not restored from glacier",
+			if store.IsOracle() {
+				errData := &errortypes.ErrorData{
+					Error:   "image_not_available",
+					Message: "Image not restored from archive",
+				}
+				c.JSON(400, errData)
+			} else {
+				errData := &errortypes.ErrorData{
+					Error:   "image_not_available",
+					Message: "Image not restored from glacier",
+				}
+				c.JSON(400, errData)
 			}
 
-			c.JSON(400, errData)
 			return
 		}
 	}
