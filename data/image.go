@@ -590,7 +590,7 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk) (err error) {
 
 	img.Etag = image.GetEtag(obj)
 	img.LastModified = obj.LastModified
-	img.StorageClass = storage.ParseStorageClass(obj.StorageClass)
+	img.StorageClass = dc.PrivateStorageClass
 
 	err = img.Upsert(db)
 	if err != nil {
@@ -720,7 +720,7 @@ func CreateBackup(db *database.Database, dsk *disk.Disk) (err error) {
 
 	img.Etag = image.GetEtag(obj)
 	img.LastModified = obj.LastModified
-	img.StorageClass = storage.ParseStorageClass(obj.StorageClass)
+	img.StorageClass = dc.BackupStorageClass
 
 	err = img.Upsert(db)
 	if err != nil {
