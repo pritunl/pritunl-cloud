@@ -61,7 +61,21 @@ func Sync(db *database.Database, store *storage.Storage) (err error) {
 				Etag:         etag,
 				Type:         store.Type,
 				LastModified: object.LastModified,
-				StorageClass: storage.ParseStorageClass(object.StorageClass),
+			}
+
+			if store.IsOracle() {
+				obj, e := client.StatObject(store.Bucket, object.Key,
+					minio.StatObjectOptions{})
+				if e != nil {
+					err = &errortypes.ReadError{
+						errors.Wrap(e, "storage: Failed to stat object"),
+					}
+					return
+				}
+
+				img.StorageClass = storage.ParseStorageClass(obj)
+			} else {
+				img.StorageClass = storage.ParseStorageClass(object)
 			}
 
 			images = append(images, img)
