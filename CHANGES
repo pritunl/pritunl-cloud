@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Add support for Oracle Cloud archive storage
+
 Version 1.0.1154.31 2019-01-21
 ------------------------------
 
