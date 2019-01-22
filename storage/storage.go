@@ -6,6 +6,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"gopkg.in/mgo.v2/bson"
+	"strings"
 )
 
 type Storage struct {
@@ -17,6 +18,10 @@ type Storage struct {
 	AccessKey string        `bson:"access_key" json:"access_key"`
 	SecretKey string        `bson:"secret_key" json:"secret_key"`
 	Insecure  bool          `bson:"insecure" json:"insecure"`
+}
+
+func (s *Storage) IsOracle() bool {
+	return strings.Contains(strings.ToLower(s.Endpoint), "oracle")
 }
 
 func (s *Storage) Validate(db *database.Database) (
