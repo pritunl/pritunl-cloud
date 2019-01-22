@@ -810,8 +810,37 @@ func RestoreBackup(db *database.Database, dsk *disk.Disk) (err error) {
 	return
 }
 
-func ImageAvailable(db *database.Database, img *image.Image) (
+func ImageAvailable(store *storage.Storage, img *image.Image) (
 	available bool, err error) {
+
+	if strings.Contains(strings.ToLower(store.Endpoint), "oracle") {
+		client, e := minio.New(
+			store.Endpoint, store.AccessKey, store.SecretKey, !store.Insecure)
+		if e != nil {
+			err = &errortypes.ConnectionError{
+				errors.Wrap(e, "data: Failed to connect to storage"),
+			}
+			return
+		}
+
+		obj, e := client.StatObject(store.Bucket, img.Key,
+			minio.StatObjectOptions{})
+		if e != nil {
+			err = &errortypes.ReadError{
+				errors.Wrap(e, "data: Failed to stat object"),
+			}
+			return
+		}
+
+		archivalState := strings.ToLower(obj.Metadata.Get("Archival-State"))
+		if archivalState != "" && archivalState != "restored" {
+			available = false
+			return
+		}
+
+		available = true
+		return
+	}
 
 	switch img.StorageClass {
 	case storage.AwsStandard:
@@ -821,12 +850,6 @@ func ImageAvailable(db *database.Database, img *image.Image) (
 		available = true
 		break
 	case storage.AwsGlacier:
-		store, e := storage.Get(db, img.Storage)
-		if e != nil {
-			err = e
-			return
-		}
-
 		client, e := minio.New(
 			store.Endpoint, store.AccessKey, store.SecretKey, !store.Insecure)
 		if e != nil {
