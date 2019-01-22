@@ -15377,13 +15377,19 @@ System.registerDynamic("app/components/ImageDetailed.js", ["npm:react@16.7.0.js"
             let storageClass = 'Default';
             switch (this.props.image.storage_class) {
                 case 'aws_standard':
-                    storageClass = 'Standard';
+                    storageClass = 'AWS Standard';
                     break;
                 case 'aws_infrequent_access':
-                    storageClass = 'Standard-IA';
+                    storageClass = 'AWS Standard-IA';
                     break;
                 case 'aws_glacier':
-                    storageClass = 'Glacier';
+                    storageClass = 'AWS Glacier';
+                    break;
+                case 'oracle_standard':
+                    storageClass = 'Oracle Standard';
+                    break;
+                case 'oracle_archive':
+                    storageClass = 'Oracle Archive';
                     break;
             }
             return React.createElement("td", { className: "bp3-cell", colSpan: 5, style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { className: "layout horizontal", style: css.buttons, onClick: evt => {
@@ -15526,6 +15532,12 @@ System.registerDynamic("app/components/Image.js", ["npm:react@16.7.0.js", "app/c
                     diskIcon = 'bp3-icon-compressed';
                     break;
                 case 'aws_glacier':
+                    diskIcon = 'bp3-icon-snowflake';
+                    break;
+                case 'oracle_standard':
+                    diskIcon = 'bp3-icon-box';
+                    break;
+                case 'oracle_archive':
                     diskIcon = 'bp3-icon-snowflake';
                     break;
             }
