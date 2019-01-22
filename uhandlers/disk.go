@@ -223,8 +223,8 @@ func diskPost(c *gin.Context) {
 		}
 		if !available {
 			errData := &errortypes.ErrorData{
-				Error:   "invalid_image_storage_class",
-				Message: "Image storage class cannot be used",
+				Error:   "image_not_available",
+				Message: "Image not restored from glacier",
 			}
 
 			c.JSON(400, errData)
