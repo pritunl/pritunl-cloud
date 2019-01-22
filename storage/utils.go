@@ -1,8 +1,10 @@
 package storage
 
 import (
+	"github.com/minio/minio-go"
 	"github.com/pritunl/pritunl-cloud/database"
 	"gopkg.in/mgo.v2/bson"
+	"strings"
 )
 
 func Get(db *database.Database, storeId bson.ObjectId) (
@@ -81,8 +83,16 @@ func FormatStorageClass(class string) string {
 	return ""
 }
 
-func ParseStorageClass(class string) string {
-	switch class {
+func ParseStorageClass(obj minio.ObjectInfo) string {
+	opcRequestId := obj.Metadata.Get("Opc-Request-Id")
+	archivalState := strings.ToLower(obj.Metadata.Get("Archival-State"))
+	if archivalState != "" {
+		return OracleArchive
+	} else if opcRequestId != "" {
+		return OracleStandard
+	}
+
+	switch obj.StorageClass {
 	case "STANDARD":
 		return AwsStandard
 	case "STANDARD_IA":
