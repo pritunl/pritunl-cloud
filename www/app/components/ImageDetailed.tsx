@@ -202,13 +202,19 @@ export default class ImageDetailed extends React.Component<Props, State> {
 		let storageClass = 'Default';
 		switch (this.props.image.storage_class) {
 			case 'aws_standard':
-				storageClass = 'Standard';
+				storageClass = 'AWS Standard';
 				break;
 			case 'aws_infrequent_access':
-				storageClass = 'Standard-IA';
+				storageClass = 'AWS Standard-IA';
 				break;
 			case 'aws_glacier':
-				storageClass = 'Glacier';
+				storageClass = 'AWS Glacier';
+				break;
+			case 'oracle_standard':
+				storageClass = 'Oracle Standard';
+				break;
+			case 'oracle_archive':
+				storageClass = 'Oracle Archive';
 				break;
 		}
 
