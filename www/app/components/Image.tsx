@@ -123,6 +123,12 @@ export default class Image extends React.Component<Props, {}> {
 			case 'aws_glacier':
 				diskIcon = 'bp3-icon-snowflake';
 				break;
+			case 'oracle_standard':
+				diskIcon = 'bp3-icon-box';
+				break;
+			case 'oracle_archive':
+				diskIcon = 'bp3-icon-snowflake';
+				break;
 		}
 
 		return <div
