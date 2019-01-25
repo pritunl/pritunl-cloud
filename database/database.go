@@ -132,6 +132,16 @@ func (d *Database) Disks() (coll *Collection) {
 	return
 }
 
+func (d *Database) Blocks() (coll *Collection) {
+	coll = d.getCollection("blocks")
+	return
+}
+
+func (d *Database) BlocksIp() (coll *Collection) {
+	coll = d.getCollection("blocks_ip")
+	return
+}
+
 func (d *Database) Firewalls() (coll *Collection) {
 	coll = d.getCollection("firewalls")
 	return
