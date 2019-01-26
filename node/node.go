@@ -46,6 +46,7 @@ type Node struct {
 	ExternalInterfaces   []string                   `bson:"external_interfaces" json:"external_interfaces"`
 	InternalInterfaces   []string                   `bson:"internal_interfaces" json:"internal_interfaces"`
 	AvailableInterfaces  []string                   `bson:"available_interfaces" json:"available_interfaces"`
+	NetworkMode          string                     `bson:"network_mode" json:"network_mode"`
 	JumboFrames          bool                       `bson:"jumbo_frames" json:"jumbo_frames"`
 	Firewall             bool                       `bson:"firewall" json:"firewall"`
 	NetworkRoles         []string                   `bson:"network_roles" json:"network_roles"`
