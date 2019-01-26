@@ -635,6 +635,18 @@ func addIndexes() (err error) {
 		}
 	}
 
+	coll = db.BlocksIp()
+	err = coll.EnsureIndex(mgo.Index{
+		Key:        []string{"block", "ip"},
+		Unique:     true,
+		Background: true,
+	})
+	if err != nil {
+		err = &IndexError{
+			errors.Wrap(err, "database: Index error"),
+		}
+	}
+
 	coll = db.Vpcs()
 	err = coll.EnsureIndex(mgo.Index{
 		Key:        []string{"name"},
