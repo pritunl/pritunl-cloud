@@ -22,6 +22,7 @@ export interface Node {
 	external_interfaces?: string[];
 	internal_interfaces?: string[];
 	available_interfaces?: string[];
+	jumbo_frames?: boolean;
 	firewall?: boolean;
 	network_roles?: string[];
 	requests_min?: number;
