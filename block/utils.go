@@ -41,7 +41,7 @@ func GetAll(db *database.Database) (blocks []*Block, err error) {
 }
 
 func Remove(db *database.Database, blockId bson.ObjectId) (err error) {
-	coll := db.Images()
+	coll := db.Blocks()
 
 	_, err = coll.RemoveAll(&bson.M{
 		"storage": blockId,
