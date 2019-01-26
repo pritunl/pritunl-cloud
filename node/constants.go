@@ -8,4 +8,6 @@ const (
 	DefaultCache = "/cloud/cache"
 	Qemu         = "qemu"
 	Kvm          = "kvm"
+	Dhcp         = "dhcp"
+	Static       = "static"
 )
