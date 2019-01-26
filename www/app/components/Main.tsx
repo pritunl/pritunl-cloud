@@ -16,6 +16,7 @@ import Certificates from './Certificates';
 import Organizations from './Organizations';
 import Datacenters from './Datacenters';
 import Zones from './Zones';
+import Blocks from './Blocks';
 import Vpcs from './Vpcs';
 import Domains from './Domains';
 import Storages from './Storages';
@@ -36,6 +37,7 @@ import * as CertificateActions from '../actions/CertificateActions';
 import * as OrganizationActions from '../actions/OrganizationActions';
 import * as DatacenterActions from '../actions/DatacenterActions';
 import * as ZoneActions from '../actions/ZoneActions';
+import * as BlockActions from '../actions/BlockActions';
 import * as VpcActions from '../actions/VpcActions';
 import * as DomainActions from '../actions/DomainActions';
 import * as StorageActions from '../actions/StorageActions';
@@ -218,6 +220,14 @@ export default class Main extends React.Component<{}, State> {
 							to="/zones"
 						>
 							Zones
+						</ReactRouter.Link>
+						<ReactRouter.Link
+							className="bp3-button bp3-minimal bp3-icon-ip-address"
+							style={css.link}
+							hidden={Constants.user}
+							to="/blocks"
+						>
+							IP Blocks
 						</ReactRouter.Link>
 						<ReactRouter.Link
 							className="bp3-button bp3-minimal bp3-icon-layout-auto"
@@ -437,6 +447,18 @@ export default class Main extends React.Component<{}, State> {
 												disabled: false,
 											});
 										});
+									} else if (pathname === '/blocks') {
+										BlockActions.sync().then((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										}).catch((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										});
 									} else if (pathname === '/vpcs') {
 										VpcActions.sync().then((): void => {
 											this.setState({
@@ -626,6 +648,9 @@ export default class Main extends React.Component<{}, State> {
 				)}/>
 				<ReactRouter.Route path="/zones" render={() => (
 					<Zones/>
+				)}/>
+				<ReactRouter.Route path="/blocks" render={() => (
+					<Blocks/>
 				)}/>
 				<ReactRouter.Route path="/vpcs" render={() => (
 					<Vpcs/>
