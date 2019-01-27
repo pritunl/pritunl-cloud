@@ -16,24 +16,26 @@ import (
 )
 
 type nodeData struct {
-	Id                   bson.ObjectId   `json:"id"`
-	Zone                 bson.ObjectId   `json:"zone"`
-	Name                 string          `json:"name"`
-	Types                []string        `json:"types"`
-	Port                 int             `json:"port"`
-	Protocol             string          `json:"protocol"`
-	Hypervisor           string          `json:"hypervisor"`
-	Certificates         []bson.ObjectId `json:"certificates"`
-	AdminDomain          string          `json:"admin_domain"`
-	UserDomain           string          `json:"user_domain"`
-	Services             []bson.ObjectId `json:"services"`
-	ExternalInterfaces   []string        `json:"external_interfaces"`
-	InternalInterfaces   []string        `json:"internal_interfaces"`
-	JumboFrames          bool            `json:"jumbo_frames"`
-	ForwardedForHeader   string          `json:"forwarded_for_header"`
-	ForwardedProtoHeader string          `json:"forwarded_proto_header"`
-	Firewall             bool            `json:"firewall"`
-	NetworkRoles         []string        `json:"network_roles"`
+	Id                   bson.ObjectId           `json:"id"`
+	Zone                 bson.ObjectId           `json:"zone"`
+	Name                 string                  `json:"name"`
+	Types                []string                `json:"types"`
+	Port                 int                     `json:"port"`
+	Protocol             string                  `json:"protocol"`
+	Hypervisor           string                  `json:"hypervisor"`
+	Certificates         []bson.ObjectId         `json:"certificates"`
+	AdminDomain          string                  `json:"admin_domain"`
+	UserDomain           string                  `json:"user_domain"`
+	Services             []bson.ObjectId         `json:"services"`
+	ExternalInterfaces   []string                `json:"external_interfaces"`
+	InternalInterfaces   []string                `json:"internal_interfaces"`
+	NetworkMode          string                  `bson:"network_mode" json:"network_mode"`
+	Blocks               []*node.BlockAttachment `bson:"blocks" json:"blocks"`
+	JumboFrames          bool                    `json:"jumbo_frames"`
+	ForwardedForHeader   string                  `json:"forwarded_for_header"`
+	ForwardedProtoHeader string                  `json:"forwarded_proto_header"`
+	Firewall             bool                    `json:"firewall"`
+	NetworkRoles         []string                `json:"network_roles"`
 }
 
 type nodesData struct {
@@ -77,6 +79,8 @@ func nodePut(c *gin.Context) {
 	nde.UserDomain = data.UserDomain
 	nde.ExternalInterfaces = data.ExternalInterfaces
 	nde.InternalInterfaces = data.InternalInterfaces
+	nde.NetworkMode = data.NetworkMode
+	nde.Blocks = data.Blocks
 	nde.JumboFrames = data.JumboFrames
 	nde.ForwardedForHeader = data.ForwardedForHeader
 	nde.ForwardedProtoHeader = data.ForwardedProtoHeader
@@ -95,6 +99,8 @@ func nodePut(c *gin.Context) {
 		"user_domain",
 		"external_interfaces",
 		"internal_interfaces",
+		"network_mode",
+		"blocks",
 		"jumbo_frames",
 		"forwarded_for_header",
 		"forwarded_proto_header",
