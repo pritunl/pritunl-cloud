@@ -195,7 +195,7 @@ func (d *Database) Geo() (coll *Collection) {
 }
 
 func Connect() (err error) {
-	mgoUrl, err := url.Parse(config.Config.MongoUri)
+	mongoUrl, err := url.Parse(config.Config.MongoUri)
 	if err != nil {
 		err = &ConnectionError{
 			errors.Wrap(err, "database: Failed to parse mongo uri"),
@@ -204,10 +204,10 @@ func Connect() (err error) {
 	}
 
 	logrus.WithFields(logrus.Fields{
-		"mongodb_host": mgoUrl.Host,
+		"mongodb_host": mongoUrl.Host,
 	}).Info("database: Connecting to MongoDB server")
 
-	path := mgoUrl.Path
+	path := mongoUrl.Path
 	if len(path) > 1 {
 		DefaultDatabase = path[1:]
 	}
@@ -237,7 +237,7 @@ func Connect() (err error) {
 	}
 
 	logrus.WithFields(logrus.Fields{
-		"mongodb_host": mgoUrl.Host,
+		"mongodb_host": mongoUrl.Host,
 	}).Info("database: Connected to MongoDB server")
 
 	return
