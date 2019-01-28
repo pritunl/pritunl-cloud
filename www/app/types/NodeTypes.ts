@@ -17,6 +17,7 @@ export interface Node {
 	admin_domain?: string;
 	user_domain?: string;
 	certificates?: string[];
+	network_mode?: string;
 	external_interface?: string;
 	internal_interface?: string;
 	external_interfaces?: string[];
