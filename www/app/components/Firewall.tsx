@@ -120,7 +120,7 @@ export default class Firewall extends React.Component<Props, {}> {
 		}
 
 		let orgName = '';
-		if (firewall.organization) {
+		if (!MiscUtils.objectIdNil(firewall.organization)) {
 			let org = OrganizationsStore.organization(firewall.organization);
 			orgName = org ? org.name : firewall.organization;
 		} else {
