@@ -1067,10 +1067,22 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					>
 						{zonesSelect}
 					</PageSelect>
+					<PageSelect
+						disabled={this.state.disabled}
+						label="Network Mode"
+						help="Network mode for public IP addresses. Cannot be changed with instances running."
+						value={node.network_mode}
+						onChange={(val): void => {
+							this.onNetworkMode(val);
+						}}
+					>
+						<option value="dhcp">DHCP</option>
+						<option value="static">Static</option>
+					</PageSelect>
 					<label
 						className="bp3-label"
 						style={css.label}
-						hidden={node.protocol === 'http'}
+						hidden={node.network_mode !== 'dhcp' && node.network_mode !== ''}
 					>
 						External Interfaces
 						<Help
@@ -1082,7 +1094,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						</div>
 					</label>
 					<PageSelectButton
-						hidden={node.protocol === 'http'}
+						hidden={node.network_mode !== 'dhcp' && node.network_mode !== ''}
 						label="Add Interface"
 						value={this.state.addExternalIface}
 						disabled={!externalIfacesSelect.length || this.state.disabled}
@@ -1100,7 +1112,6 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					<label
 						className="bp3-label"
 						style={css.label}
-						hidden={node.protocol === 'http'}
 					>
 						Internal Interfaces
 						<Help
@@ -1112,7 +1123,6 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						</div>
 					</label>
 					<PageSelectButton
-						hidden={node.protocol === 'http'}
 						label="Add Interface"
 						value={this.state.addInternalIface}
 						disabled={!internalIfacesSelect.length || this.state.disabled}
