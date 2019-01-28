@@ -1,11 +1,13 @@
 package datacenter
 
 import (
+	"context"
+	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
-	"gopkg.in/mgo.v2/bson"
 )
 
-func Get(db *database.Database, dcId bson.ObjectId) (
+func Get(db *database.Database, dcId primitive.ObjectID) (
 	dc *Datacenter, err error) {
 
 	coll := db.Datacenters()
@@ -19,12 +21,12 @@ func Get(db *database.Database, dcId bson.ObjectId) (
 	return
 }
 
-func ExistsOrg(db *database.Database, orgId, dcId bson.ObjectId) (
+func ExistsOrg(db *database.Database, orgId, dcId primitive.ObjectID) (
 	exists bool, err error) {
 
 	coll := db.Datacenters()
 
-	n, err := coll.Find(&bson.M{
+	count, err := coll.Count(context.Background(), &bson.M{
 		"_id": dcId,
 		"$or": []*bson.M{
 			&bson.M{
@@ -34,12 +36,13 @@ func ExistsOrg(db *database.Database, orgId, dcId bson.ObjectId) (
 				"organizations": orgId,
 			},
 		},
-	}).Count()
+	})
 	if err != nil {
+		err = database.ParseError(err)
 		return
 	}
 
-	if n > 0 {
+	if count > 0 {
 		exists = true
 	}
 
@@ -50,15 +53,25 @@ func GetAll(db *database.Database) (dcs []*Datacenter, err error) {
 	coll := db.Datacenters()
 	dcs = []*Datacenter{}
 
-	cursor := coll.Find(bson.M{}).Iter()
+	cursor, err := coll.Find(context.Background(), &bson.M{})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(context.Background())
 
-	nde := &Datacenter{}
-	for cursor.Next(nde) {
-		dcs = append(dcs, nde)
-		nde = &Datacenter{}
+	for cursor.Next(context.Background()) {
+		dc := &Datacenter{}
+		err = cursor.Decode(dc)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		dcs = append(dcs, dc)
 	}
 
-	err = cursor.Close()
+	err = cursor.Err()
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -67,13 +80,13 @@ func GetAll(db *database.Database) (dcs []*Datacenter, err error) {
 	return
 }
 
-func GetAllNamesOrg(db *database.Database, orgId bson.ObjectId) (
+func GetAllNamesOrg(db *database.Database, orgId primitive.ObjectID) (
 	dcs []*Datacenter, err error) {
 
 	coll := db.Datacenters()
 	dcs = []*Datacenter{}
 
-	cursor := coll.Find(bson.M{
+	cursor, err := coll.Find(context.Background(), &bson.M{
 		"$or": []*bson.M{
 			&bson.M{
 				"match_organizations": false,
@@ -82,15 +95,25 @@ func GetAllNamesOrg(db *database.Database, orgId bson.ObjectId) (
 				"organizations": orgId,
 			},
 		},
-	}).Iter()
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(context.Background())
 
-	nde := &Datacenter{}
-	for cursor.Next(nde) {
-		dcs = append(dcs, nde)
-		nde = &Datacenter{}
+	for cursor.Next(context.Background()) {
+		dc := &Datacenter{}
+		err = cursor.Decode(dc)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		dcs = append(dcs, dc)
 	}
 
-	err = cursor.Close()
+	err = cursor.Err()
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -99,13 +122,13 @@ func GetAllNamesOrg(db *database.Database, orgId bson.ObjectId) (
 	return
 }
 
-func DistinctOrg(db *database.Database, orgId bson.ObjectId) (
-	ids []bson.ObjectId, err error) {
+func DistinctOrg(db *database.Database, orgId primitive.ObjectID) (
+	ids []primitive.ObjectID, err error) {
 
 	coll := db.Datacenters()
-	ids = []bson.ObjectId{}
+	ids = []primitive.ObjectID{}
 
-	err = coll.Find(&bson.M{
+	idsInf, err := coll.Distinct(context.Background(), "_id", &bson.M{
 		"$or": []*bson.M{
 			&bson.M{
 				"match_organizations": false,
@@ -114,18 +137,25 @@ func DistinctOrg(db *database.Database, orgId bson.ObjectId) (
 				"organizations": orgId,
 			},
 		},
-	}).Distinct("_id", &ids)
+	})
 	if err != nil {
+		err = database.ParseError(err)
 		return
+	}
+
+	for _, idInf := range idsInf {
+		if id, ok := idInf.(primitive.ObjectID); ok {
+			ids = append(ids, id)
+		}
 	}
 
 	return
 }
 
-func Remove(db *database.Database, dcId bson.ObjectId) (err error) {
+func Remove(db *database.Database, dcId primitive.ObjectID) (err error) {
 	coll := db.Datacenters()
 
-	err = coll.Remove(&bson.M{
+	_, err = coll.DeleteOne(context.Background(), &bson.M{
 		"_id": dcId,
 	})
 	if err != nil {

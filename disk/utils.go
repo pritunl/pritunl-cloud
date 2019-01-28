@@ -1,14 +1,19 @@
 package disk
 
 import (
+	"context"
 	"fmt"
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"gopkg.in/mgo.v2/bson"
 )
 
-func Get(db *database.Database, diskId bson.ObjectId) (dsk *Disk, err error) {
+func Get(db *database.Database, diskId primitive.ObjectID) (
+	dsk *Disk, err error) {
+
 	coll := db.Disks()
 	dsk = &Disk{}
 
@@ -20,17 +25,18 @@ func Get(db *database.Database, diskId bson.ObjectId) (dsk *Disk, err error) {
 	return
 }
 
-func GetOrg(db *database.Database, orgId, diskId bson.ObjectId) (
+func GetOrg(db *database.Database, orgId, diskId primitive.ObjectID) (
 	dsk *Disk, err error) {
 
 	coll := db.Disks()
 	dsk = &Disk{}
 
-	err = coll.FindOne(&bson.M{
+	err = coll.FindOne(context.Background(), &bson.M{
 		"_id":          diskId,
 		"organization": orgId,
-	}, dsk)
+	}).Decode(dsk)
 	if err != nil {
+		err = database.ParseError(err)
 		return
 	}
 
@@ -43,15 +49,25 @@ func GetAll(db *database.Database, query *bson.M) (
 	coll := db.Disks()
 	disks = []*Disk{}
 
-	cursor := coll.Find(query).Iter()
+	cursor, err := coll.Find(context.Background(), query)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(context.Background())
 
-	nde := &Disk{}
-	for cursor.Next(nde) {
+	for cursor.Next(context.Background()) {
+		nde := &Disk{}
+		err = cursor.Decode(nde)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
 		disks = append(disks, nde)
-		nde = &Disk{}
 	}
 
-	err = cursor.Close()
+	err = cursor.Err()
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -60,32 +76,50 @@ func GetAll(db *database.Database, query *bson.M) (
 	return
 }
 
-func GetAllPaged(db *database.Database, query *bson.M, page, pageCount int) (
-	disks []*Disk, count int, err error) {
+func GetAllPaged(db *database.Database, query *bson.M,
+	page, pageCount int64) (disks []*Disk, count int64, err error) {
 
 	coll := db.Disks()
 	disks = []*Disk{}
 
-	qury := coll.Find(query)
-
-	count, err = qury.Count()
+	count, err = coll.Count(context.Background(), query)
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
 
-	page = utils.Min(page, count/pageCount)
-	skip := utils.Min(page*pageCount, count)
+	page = utils.Min64(page, count/pageCount)
+	skip := utils.Min64(page*pageCount, count)
 
-	cursor := qury.Sort("name").Skip(skip).Limit(pageCount).Iter()
+	cursor, err := coll.Find(
+		context.Background(),
+		query,
+		&options.FindOptions{
+			Sort: &bson.D{
+				{"name", 1},
+			},
+			Skip:  &skip,
+			Limit: &pageCount,
+		},
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(context.Background())
 
-	disk := &Disk{}
-	for cursor.Next(disk) {
-		disks = append(disks, disk)
-		disk = &Disk{}
+	for cursor.Next(context.Background()) {
+		dsk := &Disk{}
+		err = cursor.Decode(dsk)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		disks = append(disks, dsk)
 	}
 
-	err = cursor.Close()
+	err = cursor.Err()
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -94,23 +128,41 @@ func GetAllPaged(db *database.Database, query *bson.M, page, pageCount int) (
 	return
 }
 
-func GetInstance(db *database.Database, instId bson.ObjectId) (
+func GetInstance(db *database.Database, instId primitive.ObjectID) (
 	disks []*Disk, err error) {
 
 	coll := db.Disks()
 	disks = []*Disk{}
 
-	cursor := coll.Find(&bson.M{
-		"instance": instId,
-	}).Sort("index").Iter()
+	cursor, err := coll.Find(
+		context.Background(),
+		&bson.M{
+			"instance": instId,
+		},
+		&options.FindOptions{
+			Sort: &bson.D{
+				{"index", 1},
+			},
+		},
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(context.Background())
 
-	dsk := &Disk{}
-	for cursor.Next(dsk) {
+	for cursor.Next(context.Background()) {
+		dsk := &Disk{}
+		err = cursor.Decode(dsk)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
 		disks = append(disks, dsk)
-		dsk = &Disk{}
 	}
 
-	err = cursor.Close()
+	err = cursor.Err()
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -119,40 +171,16 @@ func GetInstance(db *database.Database, instId bson.ObjectId) (
 	return
 }
 
-func GetInstanceIndex(db *database.Database, instId bson.ObjectId,
+func GetInstanceIndex(db *database.Database, instId primitive.ObjectID,
 	index string) (dsk *Disk, err error) {
 
 	coll := db.Disks()
 	dsk = &Disk{}
 
-	err = coll.FindOne(&bson.M{
+	err = coll.FindOne(context.Background(), &bson.M{
 		"instance": instId,
 		"index":    index,
-	}, dsk)
-	if err != nil {
-		return
-	}
-
-	return
-}
-
-func GetNode(db *database.Database, nodeId bson.ObjectId) (
-	disks []*Disk, err error) {
-
-	coll := db.Disks()
-	disks = []*Disk{}
-
-	cursor := coll.Find(&bson.M{
-		"node": nodeId,
-	}).Iter()
-
-	dsk := &Disk{}
-	for cursor.Next(dsk) {
-		disks = append(disks, dsk)
-		dsk = &Disk{}
-	}
-
-	err = cursor.Close()
+	}).Decode(dsk)
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -161,10 +189,45 @@ func GetNode(db *database.Database, nodeId bson.ObjectId) (
 	return
 }
 
-func Remove(db *database.Database, diskId bson.ObjectId) (err error) {
+func GetNode(db *database.Database, nodeId primitive.ObjectID) (
+	disks []*Disk, err error) {
+
+	coll := db.Disks()
+	disks = []*Disk{}
+
+	cursor, err := coll.Find(context.Background(), &bson.M{
+		"node": nodeId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(context.Background())
+
+	for cursor.Next(context.Background()) {
+		dsk := &Disk{}
+		err = cursor.Decode(dsk)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		disks = append(disks, dsk)
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func Remove(db *database.Database, diskId primitive.ObjectID) (err error) {
 	coll := db.Disks()
 
-	err = coll.Remove(&bson.M{
+	_, err = coll.DeleteOne(context.Background(), &bson.M{
 		"_id": diskId,
 	})
 	if err != nil {
@@ -180,13 +243,13 @@ func Remove(db *database.Database, diskId bson.ObjectId) (err error) {
 	return
 }
 
-func Detach(db *database.Database, dskIds bson.ObjectId) (err error) {
+func Detach(db *database.Database, dskIds primitive.ObjectID) (err error) {
 	coll := db.Disks()
 
 	err = coll.UpdateId(dskIds, &bson.M{
 		"$set": &bson.M{
 			"instance": "",
-			"index":    fmt.Sprintf("hold_%s", bson.NewObjectId().Hex()),
+			"index":    fmt.Sprintf("hold_%s", primitive.NewObjectID().Hex()),
 		},
 	})
 	if err != nil {
@@ -197,7 +260,7 @@ func Detach(db *database.Database, dskIds bson.ObjectId) (err error) {
 	return
 }
 
-func Delete(db *database.Database, dskId bson.ObjectId) (err error) {
+func Delete(db *database.Database, dskId primitive.ObjectID) (err error) {
 	coll := db.Disks()
 
 	err = coll.UpdateId(dskId, &bson.M{
@@ -213,10 +276,12 @@ func Delete(db *database.Database, dskId bson.ObjectId) (err error) {
 	return
 }
 
-func DeleteOrg(db *database.Database, orgId, dskId bson.ObjectId) (err error) {
+func DeleteOrg(db *database.Database, orgId, dskId primitive.ObjectID) (
+	err error) {
+
 	coll := db.Disks()
 
-	err = coll.Update(&bson.M{
+	_, err = coll.UpdateOne(context.Background(), &bson.M{
 		"_id":          dskId,
 		"organization": orgId,
 	}, &bson.M{
@@ -232,10 +297,10 @@ func DeleteOrg(db *database.Database, orgId, dskId bson.ObjectId) (err error) {
 	return
 }
 
-func DeleteMulti(db *database.Database, dskIds []bson.ObjectId) (err error) {
+func DeleteMulti(db *database.Database, dskIds []primitive.ObjectID) (err error) {
 	coll := db.Disks()
 
-	_, err = coll.UpdateAll(&bson.M{
+	_, err = coll.UpdateMany(context.Background(), &bson.M{
 		"_id": &bson.M{
 			"$in": dskIds,
 		},
@@ -255,12 +320,12 @@ func DeleteMulti(db *database.Database, dskIds []bson.ObjectId) (err error) {
 	return
 }
 
-func DeleteMultiOrg(db *database.Database, orgId bson.ObjectId,
-	dskIds []bson.ObjectId) (err error) {
+func DeleteMultiOrg(db *database.Database, orgId primitive.ObjectID,
+	dskIds []primitive.ObjectID) (err error) {
 
 	coll := db.Disks()
 
-	_, err = coll.UpdateAll(&bson.M{
+	_, err = coll.UpdateMany(context.Background(), &bson.M{
 		"_id": &bson.M{
 			"$in": dskIds,
 		},
@@ -281,7 +346,7 @@ func DeleteMultiOrg(db *database.Database, orgId bson.ObjectId,
 	return
 }
 
-func UpdateMulti(db *database.Database, dskIds []bson.ObjectId,
+func UpdateMulti(db *database.Database, dskIds []primitive.ObjectID,
 	doc *bson.M) (err error) {
 
 	coll := db.Disks()
@@ -298,7 +363,7 @@ func UpdateMulti(db *database.Database, dskIds []bson.ObjectId,
 		}
 	}
 
-	_, err = coll.UpdateAll(query, &bson.M{
+	_, err = coll.UpdateMany(context.Background(), query, &bson.M{
 		"$set": doc,
 	})
 	if err != nil {
@@ -309,8 +374,8 @@ func UpdateMulti(db *database.Database, dskIds []bson.ObjectId,
 	return
 }
 
-func UpdateMultiOrg(db *database.Database, orgId bson.ObjectId,
-	dskIds []bson.ObjectId, doc *bson.M) (err error) {
+func UpdateMultiOrg(db *database.Database, orgId primitive.ObjectID,
+	dskIds []primitive.ObjectID, doc *bson.M) (err error) {
 
 	coll := db.Disks()
 
@@ -327,7 +392,7 @@ func UpdateMultiOrg(db *database.Database, orgId bson.ObjectId,
 		}
 	}
 
-	_, err = coll.UpdateAll(&bson.M{
+	_, err = coll.UpdateMany(context.Background(), &bson.M{
 		"_id": &bson.M{
 			"$in": dskIds,
 		},
@@ -343,27 +408,40 @@ func UpdateMultiOrg(db *database.Database, orgId bson.ObjectId,
 	return
 }
 
-func GetAllKeys(db *database.Database, ndeId bson.ObjectId) (
+func GetAllKeys(db *database.Database, ndeId primitive.ObjectID) (
 	keys set.Set, err error) {
 
 	coll := db.Disks()
 	keys = set.NewSet()
 
-	cursor := coll.Find(&bson.M{
+	cursor, err := coll.Find(context.Background(), &bson.M{
 		"node": ndeId,
-	}).Select(&bson.M{
-		"node":          1,
-		"backing_image": 1,
-	}).Iter()
+	}, &options.FindOptions{
+		Projection: &bson.D{
+			{"node", 1},
+			{"backing_image", 1},
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(context.Background())
 
-	dsk := &Disk{}
-	for cursor.Next(dsk) {
+	for cursor.Next(context.Background()) {
+		dsk := &Disk{}
+		err = cursor.Decode(dsk)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
 		if dsk.BackingImage != "" {
 			keys.Add(dsk.BackingImage)
 		}
 	}
 
-	err = cursor.Close()
+	err = cursor.Err()
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -372,12 +450,12 @@ func GetAllKeys(db *database.Database, ndeId bson.ObjectId) (
 	return
 }
 
-func SetDeleteProtection(db *database.Database, instId bson.ObjectId,
+func SetDeleteProtection(db *database.Database, instId primitive.ObjectID,
 	protection bool) (err error) {
 
 	coll := db.Disks()
 
-	_, err = coll.UpdateAll(&bson.M{
+	_, err = coll.UpdateMany(context.Background(), &bson.M{
 		"instance": instId,
 	}, &bson.M{
 		"$set": &bson.M{

@@ -2,17 +2,18 @@ package uhandlers
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/zone"
-	"gopkg.in/mgo.v2/bson"
 )
 
 func nodesGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(bson.ObjectId)
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
 	zoneStr := c.Query("zone")
 	if zoneStr == "" {

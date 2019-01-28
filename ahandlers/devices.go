@@ -3,6 +3,7 @@ package ahandlers
 import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/audit"
 	"github.com/pritunl/pritunl-cloud/authorizer"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -14,13 +15,12 @@ import (
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/u2flib"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type deviceData struct {
-	User bson.ObjectId `json:"user"`
-	Name string        `json:"name"`
-	Type string        `json:"type"`
+	User primitive.ObjectID `json:"user"`
+	Name string             `json:"name"`
+	Type string             `json:"type"`
 }
 
 func devicePut(c *gin.Context) {

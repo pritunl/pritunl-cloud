@@ -11,14 +11,14 @@ import (
 
 type auditsData struct {
 	Audits []*audit.Audit `json:"audits"`
-	Count  int            `json:"count"`
+	Count  int64          `json:"count"`
 }
 
 func auditsGet(c *gin.Context) {
 	if demo.IsDemo() {
 		data := &auditsData{
 			Audits: demo.Audits,
-			Count:  len(demo.Audits),
+			Count:  int64(len(demo.Audits)),
 		}
 
 		c.JSON(200, data)
@@ -27,8 +27,8 @@ func auditsGet(c *gin.Context) {
 
 	db := c.MustGet("db").(*database.Database)
 
-	page, _ := strconv.Atoi(c.Query("page"))
-	pageCount, _ := strconv.Atoi(c.Query("page_count"))
+	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
+	pageCount, _ := strconv.ParseInt(c.Query("page_count"), 10, 0)
 
 	userId, ok := utils.ParseObjectId(c.Param("user_id"))
 	if !ok {

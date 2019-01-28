@@ -1,22 +1,23 @@
 package authority
 
 import (
+	"context"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type Authority struct {
-	Id           bson.ObjectId `bson:"_id,omitempty" json:"id"`
-	Name         string        `bson:"name" json:"name"`
-	Type         string        `bson:"type" json:"type"`
-	Organization bson.ObjectId `bson:"organization,omitempty" json:"organization"`
-	NetworkRoles []string      `bson:"network_roles" json:"network_roles"`
-	Key          string        `bson:"key" json:"key"`
-	Roles        []string      `bson:"roles" json:"roles"`
-	Certificate  string        `bson:"certificate" json:"certificate"`
+	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name         string             `bson:"name" json:"name"`
+	Type         string             `bson:"type" json:"type"`
+	Organization primitive.ObjectID `bson:"organization,omitempty" json:"organization"`
+	NetworkRoles []string           `bson:"network_roles" json:"network_roles"`
+	Key          string             `bson:"key" json:"key"`
+	Roles        []string           `bson:"roles" json:"roles"`
+	Certificate  string             `bson:"certificate" json:"certificate"`
 }
 
 func (f *Authority) Validate(db *database.Database) (
@@ -70,14 +71,14 @@ func (f *Authority) CommitFields(db *database.Database, fields set.Set) (
 func (f *Authority) Insert(db *database.Database) (err error) {
 	coll := db.Authorities()
 
-	if f.Id != "" {
+	if !f.Id.IsZero() {
 		err = &errortypes.DatabaseError{
 			errors.New("firewall: Authority already exists"),
 		}
 		return
 	}
 
-	err = coll.Insert(f)
+	_, err = coll.InsertOne(context.Background(), f)
 	if err != nil {
 		err = database.ParseError(err)
 		return

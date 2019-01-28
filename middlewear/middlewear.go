@@ -273,7 +273,7 @@ func UserOrg(c *gin.Context) {
 	}
 
 	orgId, ok := utils.ParseObjectId(orgIdStr)
-	if orgId == "" || !ok {
+	if orgId.IsZero() || !ok {
 		utils.AbortWithStatus(c, 400)
 		return
 	}

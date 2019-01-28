@@ -3,9 +3,9 @@ package utils
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"gopkg.in/mgo.v2/bson"
 	"sync"
 	"time"
 )
@@ -14,12 +14,12 @@ type MultiTimeoutLock struct {
 	counts    map[string]int
 	locks     map[string]*sync.Mutex
 	lock      sync.Mutex
-	state     map[bson.ObjectId]bool
+	state     map[primitive.ObjectID]bool
 	stateLock sync.Mutex
 	timeout   time.Duration
 }
 
-func (m *MultiTimeoutLock) Lock(id string) (lockId bson.ObjectId) {
+func (m *MultiTimeoutLock) Lock(id string) (lockId primitive.ObjectID) {
 	m.lock.Lock()
 	val := m.counts[id]
 	lock, ok := m.locks[id]
@@ -32,7 +32,7 @@ func (m *MultiTimeoutLock) Lock(id string) (lockId bson.ObjectId) {
 
 	lock.Lock()
 
-	lockId = bson.NewObjectId()
+	lockId = primitive.NewObjectID()
 	m.stateLock.Lock()
 	m.state[lockId] = true
 	m.stateLock.Unlock()
@@ -70,7 +70,7 @@ func (m *MultiTimeoutLock) Lock(id string) (lockId bson.ObjectId) {
 }
 
 func (m *MultiTimeoutLock) LockOpen(id string) (
-	acquired bool, lockId bson.ObjectId) {
+	acquired bool, lockId primitive.ObjectID) {
 
 	m.lock.Lock()
 	val := m.counts[id]
@@ -89,7 +89,7 @@ func (m *MultiTimeoutLock) LockOpen(id string) (
 
 	lock.Lock()
 
-	lockId = bson.NewObjectId()
+	lockId = primitive.NewObjectID()
 	m.stateLock.Lock()
 	m.state[lockId] = true
 	m.stateLock.Unlock()
@@ -127,7 +127,7 @@ func (m *MultiTimeoutLock) LockOpen(id string) (
 }
 
 func (m *MultiTimeoutLock) LockTimeout(id string,
-	timeout time.Duration) (lockId bson.ObjectId) {
+	timeout time.Duration) (lockId primitive.ObjectID) {
 
 	m.lock.Lock()
 	val := m.counts[id]
@@ -141,7 +141,7 @@ func (m *MultiTimeoutLock) LockTimeout(id string,
 
 	lock.Lock()
 
-	lockId = bson.NewObjectId()
+	lockId = primitive.NewObjectID()
 	m.stateLock.Lock()
 	m.state[lockId] = true
 	m.stateLock.Unlock()
@@ -179,7 +179,7 @@ func (m *MultiTimeoutLock) LockTimeout(id string,
 }
 
 func (m *MultiTimeoutLock) LockOpenTimeout(id string,
-	timeout time.Duration) (acquired bool, lockId bson.ObjectId) {
+	timeout time.Duration) (acquired bool, lockId primitive.ObjectID) {
 
 	m.lock.Lock()
 	val := m.counts[id]
@@ -198,7 +198,7 @@ func (m *MultiTimeoutLock) LockOpenTimeout(id string,
 
 	lock.Lock()
 
-	lockId = bson.NewObjectId()
+	lockId = primitive.NewObjectID()
 	m.stateLock.Lock()
 	m.state[lockId] = true
 	m.stateLock.Unlock()
@@ -235,7 +235,7 @@ func (m *MultiTimeoutLock) LockOpenTimeout(id string,
 	return
 }
 
-func (m *MultiTimeoutLock) Unlock(id string, lockId bson.ObjectId) {
+func (m *MultiTimeoutLock) Unlock(id string, lockId primitive.ObjectID) {
 	m.lock.Lock()
 	val := m.counts[id]
 	lock := m.locks[id]
@@ -265,7 +265,7 @@ func NewMultiTimeoutLock(timeout time.Duration) *MultiTimeoutLock {
 		counts:    map[string]int{},
 		locks:     map[string]*sync.Mutex{},
 		lock:      sync.Mutex{},
-		state:     map[bson.ObjectId]bool{},
+		state:     map[primitive.ObjectID]bool{},
 		stateLock: sync.Mutex{},
 		timeout:   timeout,
 	}

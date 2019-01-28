@@ -3,6 +3,7 @@ package uhandlers
 import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/audit"
 	"github.com/pritunl/pritunl-cloud/authorizer"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -15,7 +16,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/u2flib"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/validator"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type deviceData struct {
@@ -253,9 +253,9 @@ func deviceU2fRegisterGet(c *gin.Context) {
 		return
 	}
 
-	if deviceCount > 0 || secProviderId != "" {
+	if deviceCount > 0 || !secProviderId.IsZero() {
 		secType := ""
-		var secProvider bson.ObjectId
+		var secProvider primitive.ObjectID
 
 		if deviceCount == 0 {
 			secType = secondary.UserManage
@@ -573,7 +573,7 @@ func deviceU2fSignPost(c *gin.Context) {
 		return
 	}
 
-	if secProviderId != "" {
+	if !secProviderId.IsZero() {
 		secd, err := secondary.New(db, usr.Id,
 			secondary.UserManage, secProviderId)
 		if err != nil {

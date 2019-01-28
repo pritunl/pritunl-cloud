@@ -1,31 +1,32 @@
 package device
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"crypto/x509"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/u2flib"
-	"gopkg.in/mgo.v2/bson"
 	"time"
 )
 
 type Device struct {
-	Id           bson.ObjectId `bson:"_id,omitempty" json:"id"`
-	User         bson.ObjectId `bson:"user" json:"user"`
-	Name         string        `bson:"name" json:"name"`
-	Type         string        `bson:"type" json:"type"`
-	Mode         string        `bson:"mode" json:"mode"`
-	Timestamp    time.Time     `bson:"timestamp" json:"timestamp"`
-	Disabled     bool          `bson:"disabled" json:"disabled"`
-	ActiveUntil  time.Time     `bson:"activeactive_until_until" json:"active_until"`
-	LastActive   time.Time     `bson:"last_active" json:"last_active"`
-	U2fRaw       []byte        `bson:"u2f_raw" json:"-"`
-	U2fCounter   uint32        `bson:"u2f_counter" json:"-"`
-	U2fKeyHandle []byte        `bson:"u2f_key_handle" json:"-"`
-	U2fPublicKey []byte        `bson:"u2f_public_key" json:"-"`
+	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	User         primitive.ObjectID `bson:"user" json:"user"`
+	Name         string             `bson:"name" json:"name"`
+	Type         string             `bson:"type" json:"type"`
+	Mode         string             `bson:"mode" json:"mode"`
+	Timestamp    time.Time          `bson:"timestamp" json:"timestamp"`
+	Disabled     bool               `bson:"disabled" json:"disabled"`
+	ActiveUntil  time.Time          `bson:"activeactive_until_until" json:"active_until"`
+	LastActive   time.Time          `bson:"last_active" json:"last_active"`
+	U2fRaw       []byte             `bson:"u2f_raw" json:"-"`
+	U2fCounter   uint32             `bson:"u2f_counter" json:"-"`
+	U2fKeyHandle []byte             `bson:"u2f_key_handle" json:"-"`
+	U2fPublicKey []byte             `bson:"u2f_public_key" json:"-"`
 }
 
 func (d *Device) Validate(db *database.Database) (
@@ -136,7 +137,7 @@ func (d *Device) CommitFields(db *database.Database, fields set.Set) (
 func (d *Device) Insert(db *database.Database) (err error) {
 	coll := db.Devices()
 
-	err = coll.Insert(d)
+	_, err = coll.InsertOne(context.Background(), d)
 	if err != nil {
 		err = database.ParseError(err)
 		return

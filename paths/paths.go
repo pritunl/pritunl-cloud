@@ -2,13 +2,13 @@ package paths
 
 import (
 	"fmt"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
-	"gopkg.in/mgo.v2/bson"
 	"path"
 )
 
-func GetVmPath(instId bson.ObjectId) string {
+func GetVmPath(instId primitive.ObjectID) string {
 	return path.Join(node.Self.GetVirtPath(),
 		"instances", instId.Hex())
 }
@@ -26,33 +26,33 @@ func GetTempPath() string {
 }
 
 func GetTempDir() string {
-	return path.Join(GetTempPath(), bson.NewObjectId().Hex())
+	return path.Join(GetTempPath(), primitive.NewObjectID().Hex())
 }
 
-func GetDiskPath(diskId bson.ObjectId) string {
+func GetDiskPath(diskId primitive.ObjectID) string {
 	return path.Join(GetDisksPath(),
 		fmt.Sprintf("%s.qcow2", diskId.Hex()))
 }
 
 func GetDiskTempPath() string {
 	return path.Join(GetTempPath(),
-		fmt.Sprintf("disk-%s", bson.NewObjectId().Hex()))
+		fmt.Sprintf("disk-%s", primitive.NewObjectID().Hex()))
 }
 
 func GetImageTempPath() string {
 	return path.Join(GetTempPath(),
-		fmt.Sprintf("image-%s", bson.NewObjectId().Hex()))
+		fmt.Sprintf("image-%s", primitive.NewObjectID().Hex()))
 }
 
 func GetDiskMountPath() string {
-	return path.Join(GetTempPath(), bson.NewObjectId().Hex())
+	return path.Join(GetTempPath(), primitive.NewObjectID().Hex())
 }
 
 func GetInitsPath() string {
 	return path.Join(node.Self.GetVirtPath(), "inits")
 }
 
-func GetInitPath(instId bson.ObjectId) string {
+func GetInitPath(instId primitive.ObjectID) string {
 	return path.Join(GetInitsPath(),
 		fmt.Sprintf("%s.iso", instId.Hex()))
 }
@@ -61,30 +61,30 @@ func GetLeasesPath() string {
 	return path.Join(node.Self.GetVirtPath(), "leases")
 }
 
-func GetLeasePath(instId bson.ObjectId) string {
+func GetLeasePath(instId primitive.ObjectID) string {
 	return path.Join(GetLeasesPath(),
 		fmt.Sprintf("%s.leases", instId.Hex()))
 }
 
-func GetUnitName(virtId bson.ObjectId) string {
+func GetUnitName(virtId primitive.ObjectID) string {
 	return fmt.Sprintf("pritunl_cloud_%s.service", virtId.Hex())
 }
 
-func GetUnitPath(virtId bson.ObjectId) string {
+func GetUnitPath(virtId primitive.ObjectID) string {
 	return path.Join(settings.Hypervisor.SystemdPath, GetUnitName(virtId))
 }
 
-func GetPidPath(virtId bson.ObjectId) string {
+func GetPidPath(virtId primitive.ObjectID) string {
 	return path.Join(settings.Hypervisor.LibPath,
 		fmt.Sprintf("%s.pid", virtId.Hex()))
 }
 
-func GetSockPath(virtId bson.ObjectId) string {
+func GetSockPath(virtId primitive.ObjectID) string {
 	return path.Join(settings.Hypervisor.LibPath,
 		fmt.Sprintf("%s.sock", virtId.Hex()))
 }
 
-func GetGuestPath(virtId bson.ObjectId) string {
+func GetGuestPath(virtId primitive.ObjectID) string {
 	return path.Join(settings.Hypervisor.LibPath,
 		fmt.Sprintf("%s.guest", virtId.Hex()))
 }

@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/authority"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -15,7 +16,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
-	"gopkg.in/mgo.v2/bson"
 	"mime/multipart"
 	"net"
 	"net/textproto"
@@ -224,7 +224,7 @@ func getNetData(db *database.Database, inst *instance.Instance,
 
 	adapter := virt.NetworkAdapters[0]
 
-	if adapter.VpcId == "" {
+	if adapter.VpcId.IsZero() {
 		err = &errortypes.NotFoundError{
 			errors.Wrap(err, "cloudinit: Instance missing VPC"),
 		}
@@ -316,7 +316,7 @@ func Write(db *database.Database, inst *instance.Instance,
 	}
 
 	metaData := fmt.Sprintf(metaDataTmpl,
-		bson.NewObjectId().Hex(),
+		primitive.NewObjectID().Hex(),
 		inst.Id.Hex(),
 	)
 

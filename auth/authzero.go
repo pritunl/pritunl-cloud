@@ -2,6 +2,7 @@ package auth
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/dropbox/godropbox/errors"
@@ -104,7 +105,7 @@ func AuthZeroRequest(db *database.Database, location, query string,
 		Query:     query,
 	}
 
-	err = coll.Insert(tokn)
+	_, err = coll.InsertOne(context.Background(), tokn)
 	if err != nil {
 		err = database.ParseError(err)
 		return

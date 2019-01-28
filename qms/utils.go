@@ -2,12 +2,12 @@ package qms
 
 import (
 	"fmt"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/settings"
-	"gopkg.in/mgo.v2/bson"
 	"path"
 )
 
-func GetSockPath(virtId bson.ObjectId) string {
+func GetSockPath(virtId primitive.ObjectID) string {
 	return path.Join(settings.Hypervisor.LibPath,
 		fmt.Sprintf("%s.sock", virtId.Hex()))
 }

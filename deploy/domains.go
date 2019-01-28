@@ -146,7 +146,7 @@ func (d *Domains) Deploy() (err error) {
 			}
 		}
 
-		if inst.Domain != "" {
+		if !inst.Domain.IsZero() {
 			d.create(db, inst)
 		}
 	}

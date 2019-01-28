@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/aggregate"
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -20,37 +22,36 @@ import (
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
 	"github.com/pritunl/pritunl-cloud/zone"
-	"gopkg.in/mgo.v2/bson"
 	"strconv"
 	"strings"
 )
 
 type instanceData struct {
-	Id               bson.ObjectId `json:"id"`
-	Zone             bson.ObjectId `json:"zone"`
-	Vpc              bson.ObjectId `json:"vpc"`
-	Node             bson.ObjectId `json:"node"`
-	Image            bson.ObjectId `json:"image"`
-	ImageBacking     bool          `json:"image_backing"`
-	Domain           bson.ObjectId `json:"domain"`
-	Name             string        `json:"name"`
-	State            string        `json:"state"`
-	DeleteProtection bool          `json:"delete_protection"`
-	InitDiskSize     int           `json:"init_disk_size"`
-	Memory           int           `json:"memory"`
-	Processors       int           `json:"processors"`
-	NetworkRoles     []string      `json:"network_roles"`
-	Count            int           `json:"count"`
+	Id               primitive.ObjectID `json:"id"`
+	Zone             primitive.ObjectID `json:"zone"`
+	Vpc              primitive.ObjectID `json:"vpc"`
+	Node             primitive.ObjectID `json:"node"`
+	Image            primitive.ObjectID `json:"image"`
+	ImageBacking     bool               `json:"image_backing"`
+	Domain           primitive.ObjectID `json:"domain"`
+	Name             string             `json:"name"`
+	State            string             `json:"state"`
+	DeleteProtection bool               `json:"delete_protection"`
+	InitDiskSize     int                `json:"init_disk_size"`
+	Memory           int                `json:"memory"`
+	Processors       int                `json:"processors"`
+	NetworkRoles     []string           `json:"network_roles"`
+	Count            int                `json:"count"`
 }
 
 type instanceMultiData struct {
-	Ids   []bson.ObjectId `json:"ids"`
-	State string          `json:"state"`
+	Ids   []primitive.ObjectID `json:"ids"`
+	State string               `json:"state"`
 }
 
 type instancesData struct {
 	Instances []*aggregate.InstanceAggregate `json:"instances"`
-	Count     int                            `json:"count"`
+	Count     int64                          `json:"count"`
 }
 
 func instancePut(c *gin.Context) {
@@ -59,7 +60,7 @@ func instancePut(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(bson.ObjectId)
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
 	dta := &instanceData{}
 
 	instanceId, ok := utils.ParseObjectId(c.Param("instance_id"))
@@ -90,7 +91,7 @@ func instancePut(c *gin.Context) {
 		return
 	}
 
-	if dta.Domain != "" {
+	if !dta.Domain.IsZero() {
 		exists, err := domain.ExistsOrg(db, userOrg, dta.Domain)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
@@ -164,7 +165,7 @@ func instancePost(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(bson.ObjectId)
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
 	dta := &instanceData{
 		Name: "New Instance",
 	}
@@ -212,7 +213,7 @@ func instancePost(c *gin.Context) {
 		return
 	}
 
-	if dta.Domain != "" {
+	if !dta.Domain.IsZero() {
 		exists, err := domain.ExistsOrg(db, userOrg, dta.Domain)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
@@ -324,7 +325,7 @@ func instancesPut(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(bson.ObjectId)
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
 	dta := &instanceMultiData{}
 
 	err := c.Bind(dta)
@@ -358,7 +359,7 @@ func instanceDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(bson.ObjectId)
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
 	instanceId, ok := utils.ParseObjectId(c.Param("instance_id"))
 	if !ok {
@@ -398,8 +399,8 @@ func instancesDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(bson.ObjectId)
-	dta := []bson.ObjectId{}
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	dta := []primitive.ObjectID{}
 
 	err := c.Bind(&dta)
 	if err != nil {
@@ -420,7 +421,7 @@ func instancesDelete(c *gin.Context) {
 
 func instanceGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(bson.ObjectId)
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
 	instanceId, ok := utils.ParseObjectId(c.Param("instance_id"))
 	if !ok {
@@ -457,10 +458,10 @@ func instanceGet(c *gin.Context) {
 
 func instancesGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(bson.ObjectId)
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
 	nde, _ := utils.ParseObjectId(c.Query("node_names"))
-	if nde != "" {
+	if !nde.IsZero() {
 		query := &bson.M{
 			"node":         nde,
 			"organization": userOrg,
@@ -474,8 +475,8 @@ func instancesGet(c *gin.Context) {
 
 		c.JSON(200, insts)
 	} else {
-		page, _ := strconv.Atoi(c.Query("page"))
-		pageCount, _ := strconv.Atoi(c.Query("page_count"))
+		page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
+		pageCount, _ := strconv.ParseInt(c.Query("page_count"), 10, 0)
 
 		query := bson.M{
 			"organization": userOrg,

@@ -1,16 +1,18 @@
 package secondary
 
 import (
+	"context"
+	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"gopkg.in/mgo.v2/bson"
 	"math/rand"
 	"time"
 )
 
-func New(db *database.Database, userId bson.ObjectId, typ string,
-	proivderId bson.ObjectId) (secd *Secondary, err error) {
+func New(db *database.Database, userId primitive.ObjectID, typ string,
+	proivderId primitive.ObjectID) (secd *Secondary, err error) {
 
 	token, err := utils.RandStr(64)
 	if err != nil {
@@ -44,14 +46,15 @@ func Get(db *database.Database, token string, typ string) (
 
 	time.Sleep(time.Duration(rand.Intn(10)) * time.Millisecond)
 
-	err = coll.FindOne(&bson.M{
+	err = coll.FindOne(context.Background(), &bson.M{
 		"_id":  token,
 		"type": typ,
 		"timestamp": &bson.M{
 			"$gte": timestamp,
 		},
-	}, secd)
+	}).Decode(secd)
 	if err != nil {
+		err = database.ParseError(err)
 		return
 	}
 
@@ -61,7 +64,7 @@ func Get(db *database.Database, token string, typ string) (
 func Remove(db *database.Database, token string) (err error) {
 	coll := db.SecondaryTokens()
 
-	_, err = coll.RemoveAll(&bson.M{
+	_, err = coll.DeleteMany(context.Background(), &bson.M{
 		"_id": token,
 	})
 	if err != nil {

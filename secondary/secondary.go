@@ -1,16 +1,17 @@
 package secondary
 
 import (
+	"context"
 	"fmt"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/device"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/u2flib"
 	"github.com/pritunl/pritunl-cloud/user"
-	"gopkg.in/mgo.v2/bson"
 	"net/http"
 	"net/url"
 	"strings"
@@ -32,8 +33,8 @@ type Secondary struct {
 	usr          *user.User                  `bson:"-"`
 	provider     *settings.SecondaryProvider `bson:"-"`
 	Id           string                      `bson:"_id"`
-	ProviderId   bson.ObjectId               `bson:"provider_id,omitempty"`
-	UserId       bson.ObjectId               `bson:"user_id"`
+	ProviderId   primitive.ObjectID          `bson:"provider_id,omitempty"`
+	UserId       primitive.ObjectID          `bson:"user_id"`
 	Type         string                      `bson:"type"`
 	Timestamp    time.Time                   `bson:"timestamp"`
 	PushSent     bool                        `bson:"push_sent"`
@@ -797,7 +798,7 @@ func (s *Secondary) CommitFields(db *database.Database, fields set.Set) (
 func (s *Secondary) Insert(db *database.Database) (err error) {
 	coll := db.SecondaryTokens()
 
-	err = coll.Insert(s)
+	_, err = coll.InsertOne(context.Background(), s)
 	if err != nil {
 		err = database.ParseError(err)
 		return

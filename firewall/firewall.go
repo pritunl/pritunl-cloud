@@ -1,12 +1,13 @@
 package firewall
 
 import (
+	"context"
 	"fmt"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"gopkg.in/mgo.v2/bson"
 	"net"
 	"strconv"
 	"strings"
@@ -57,11 +58,11 @@ func (r *Rule) SetName(ipv6 bool) (name string) {
 }
 
 type Firewall struct {
-	Id           bson.ObjectId `bson:"_id,omitempty" json:"id"`
-	Name         string        `bson:"name" json:"name"`
-	Organization bson.ObjectId `bson:"organization,omitempty" json:"organization"`
-	NetworkRoles []string      `bson:"network_roles" json:"network_roles"`
-	Ingress      []*Rule       `bson:"ingress" json:"ingress"`
+	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name         string             `bson:"name" json:"name"`
+	Organization primitive.ObjectID `bson:"organization,omitempty" json:"organization"`
+	NetworkRoles []string           `bson:"network_roles" json:"network_roles"`
+	Ingress      []*Rule            `bson:"ingress" json:"ingress"`
 }
 
 func (f *Firewall) Validate(db *database.Database) (
@@ -196,14 +197,14 @@ func (f *Firewall) CommitFields(db *database.Database, fields set.Set) (
 func (f *Firewall) Insert(db *database.Database) (err error) {
 	coll := db.Firewalls()
 
-	if f.Id != "" {
+	if !f.Id.IsZero() {
 		err = &errortypes.DatabaseError{
 			errors.New("firewall: Firewall already exists"),
 		}
 		return
 	}
 
-	err = coll.Insert(f)
+	_, err = coll.InsertOne(context.Background(), f)
 	if err != nil {
 		err = database.ParseError(err)
 		return

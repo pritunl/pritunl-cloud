@@ -4,33 +4,34 @@ import (
 	"fmt"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/user"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"gopkg.in/mgo.v2/bson"
 	"strconv"
 	"strings"
 	"time"
 )
 
 type userData struct {
-	Id             bson.ObjectId `json:"id"`
-	Type           string        `json:"type"`
-	Username       string        `json:"username"`
-	Password       string        `json:"password"`
-	Roles          []string      `json:"roles"`
-	Administrator  string        `json:"administrator"`
-	Permissions    []string      `json:"permissions"`
-	GenerateSecret bool          `json:"generate_secret"`
-	Disabled       bool          `json:"disabled"`
-	ActiveUntil    time.Time     `json:"active_until"`
+	Id             primitive.ObjectID `json:"id"`
+	Type           string             `json:"type"`
+	Username       string             `json:"username"`
+	Password       string             `json:"password"`
+	Roles          []string           `json:"roles"`
+	Administrator  string             `json:"administrator"`
+	Permissions    []string           `json:"permissions"`
+	GenerateSecret bool               `json:"generate_secret"`
+	Disabled       bool               `json:"disabled"`
+	ActiveUntil    time.Time          `json:"active_until"`
 }
 
 type usersData struct {
 	Users []*user.User `json:"users"`
-	Count int          `json:"count"`
+	Count int64        `json:"count"`
 }
 
 func userGet(c *gin.Context) {
@@ -242,8 +243,8 @@ func userPost(c *gin.Context) {
 func usersGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 
-	page, _ := strconv.Atoi(c.Query("page"))
-	pageCount, _ := strconv.Atoi(c.Query("page_count"))
+	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
+	pageCount, _ := strconv.ParseInt(c.Query("page_count"), 10, 0)
 
 	query := bson.M{}
 
@@ -324,7 +325,7 @@ func usersDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	data := []bson.ObjectId{}
+	data := []primitive.ObjectID{}
 
 	err := c.Bind(&data)
 	if err != nil {

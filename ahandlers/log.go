@@ -3,18 +3,18 @@ package ahandlers
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/log"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"gopkg.in/mgo.v2/bson"
 	"strconv"
 	"strings"
 )
 
 type logsData struct {
 	Logs  []*log.Entry `json:"logs"`
-	Count int          `json:"count"`
+	Count int64        `json:"count"`
 }
 
 func logGet(c *gin.Context) {
@@ -44,7 +44,7 @@ func logsGet(c *gin.Context) {
 	if demo.IsDemo() {
 		data := &logsData{
 			Logs:  demo.Logs,
-			Count: len(demo.Logs),
+			Count: int64(len(demo.Logs)),
 		}
 
 		c.JSON(200, data)
@@ -54,9 +54,9 @@ func logsGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 
 	pageStr := c.Query("page")
-	page, _ := strconv.Atoi(pageStr)
+	page, _ := strconv.ParseInt(pageStr, 10, 0)
 	pageCountStr := c.Query("page_count")
-	pageCount, _ := strconv.Atoi(pageCountStr)
+	pageCount, _ := strconv.ParseInt(pageCountStr, 10, 0)
 
 	query := bson.M{}
 

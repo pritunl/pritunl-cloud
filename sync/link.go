@@ -2,12 +2,12 @@ package sync
 
 import (
 	"github.com/Sirupsen/logrus"
+	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/pritunl-cloud/bridge"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/ipsec"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/vpc"
-	"gopkg.in/mgo.v2/bson"
 	"time"
 )
 

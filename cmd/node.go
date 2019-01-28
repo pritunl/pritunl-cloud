@@ -2,14 +2,16 @@ package cmd
 
 import (
 	"github.com/Sirupsen/logrus"
+	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/config"
 	"github.com/pritunl/pritunl-cloud/constants"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/router"
 	"github.com/pritunl/pritunl-cloud/setup"
 	"github.com/pritunl/pritunl-cloud/sync"
 	"github.com/pritunl/pritunl-cloud/task"
-	"gopkg.in/mgo.v2/bson"
 	"os"
 	"os/signal"
 	"syscall"
@@ -17,8 +19,16 @@ import (
 )
 
 func Node() (err error) {
+	objId, err := primitive.ObjectIDFromHex(config.Config.NodeId)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "cmd: Failed to parse ObjectId"),
+		}
+		return
+	}
+
 	nde := &node.Node{
-		Id: bson.ObjectIdHex(config.Config.NodeId),
+		Id: objId,
 	}
 	err = nde.Init()
 	if err != nil {

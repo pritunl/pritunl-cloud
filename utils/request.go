@@ -1,11 +1,10 @@
 package utils
 
 import (
-	"encoding/hex"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/render"
-	"gopkg.in/mgo.v2/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"io"
 	"net/http"
 	"strings"
@@ -71,17 +70,13 @@ func StripPort(hostport string) string {
 	return hostport[:colon]
 }
 
-func ParseObjectId(strId string) (objId bson.ObjectId, ok bool) {
-	bytId, err := hex.DecodeString(strId)
+func ParseObjectId(strId string) (objId primitive.ObjectID, ok bool) {
+	objectId, err := primitive.ObjectIDFromHex(strId)
 	if err != nil {
 		return
 	}
 
-	if len(bytId) != 12 {
-		return
-	}
-
-	objId = bson.ObjectId(bytId)
+	objId = objectId
 	ok = true
 	return
 }

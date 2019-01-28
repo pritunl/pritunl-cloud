@@ -1,13 +1,16 @@
 package vpc
 
 import (
+	"context"
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"gopkg.in/mgo.v2/bson"
 )
 
-func Get(db *database.Database, vcId bson.ObjectId) (
+func Get(db *database.Database, vcId primitive.ObjectID) (
 	vc *Vpc, err error) {
 
 	coll := db.Vpcs()
@@ -21,32 +24,35 @@ func Get(db *database.Database, vcId bson.ObjectId) (
 	return
 }
 
-func GetOrg(db *database.Database, orgId, vcId bson.ObjectId) (
+func GetOrg(db *database.Database, orgId, vcId primitive.ObjectID) (
 	vc *Vpc, err error) {
 
 	coll := db.Vpcs()
 	vc = &Vpc{}
 
-	err = coll.FindOne(&bson.M{
+	err = coll.FindOne(context.Background(), &bson.M{
 		"_id":          vcId,
 		"organization": orgId,
-	}, vc)
+	}).Decode(vc)
 	if err != nil {
+		err = database.ParseError(err)
 		return
 	}
 
 	return
 }
 
-func ExistsOrg(db *database.Database, orgId, vcId bson.ObjectId) (
+func ExistsOrg(db *database.Database, orgId, vcId primitive.ObjectID) (
 	exists bool, err error) {
 
 	coll := db.Vpcs()
-
-	n, err := coll.Find(&bson.M{
-		"_id":          vcId,
-		"organization": orgId,
-	}).Count()
+	n, err := coll.Count(
+		context.Background(),
+		&bson.M{
+			"_id":          vcId,
+			"organization": orgId,
+		},
+	)
 	if err != nil {
 		return
 	}
@@ -64,15 +70,28 @@ func GetAll(db *database.Database, query *bson.M) (
 	coll := db.Vpcs()
 	vcs = []*Vpc{}
 
-	cursor := coll.Find(query).Iter()
+	cursor, err := coll.Find(
+		context.Background(),
+		query,
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(context.Background())
 
-	nde := &Vpc{}
-	for cursor.Next(nde) {
-		vcs = append(vcs, nde)
-		nde = &Vpc{}
+	for cursor.Next(context.Background()) {
+		vc := &Vpc{}
+		err = cursor.Decode(vc)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		vcs = append(vcs, vc)
 	}
 
-	err = cursor.Close()
+	err = cursor.Err()
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -87,19 +106,38 @@ func GetAllNames(db *database.Database, query *bson.M) (
 	coll := db.Vpcs()
 	vpcs = []*Vpc{}
 
-	cursor := coll.Find(query).Sort("name").Select(&bson.M{
-		"name":         1,
-		"organization": 1,
-		"type":         1,
-	}).Iter()
+	cursor, err := coll.Find(
+		context.Background(),
+		query,
+		&options.FindOptions{
+			Sort: &bson.D{
+				{"name", 1},
+			},
+			Projection: &bson.D{
+				{"name", 1},
+				{"organization", 1},
+				{"type", 1},
+			},
+		},
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(context.Background())
 
-	vc := &Vpc{}
-	for cursor.Next(vc) {
+	for cursor.Next(context.Background()) {
+		vc := &Vpc{}
+		err = cursor.Decode(vc)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
 		vpcs = append(vpcs, vc)
-		vc = &Vpc{}
 	}
 
-	err = cursor.Close()
+	err = cursor.Err()
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -108,32 +146,50 @@ func GetAllNames(db *database.Database, query *bson.M) (
 	return
 }
 
-func GetAllPaged(db *database.Database, query *bson.M, page, pageCount int) (
-	vcs []*Vpc, count int, err error) {
+func GetAllPaged(db *database.Database, query *bson.M,
+	page, pageCount int64) (vcs []*Vpc, count int64, err error) {
 
 	coll := db.Vpcs()
 	vcs = []*Vpc{}
 
-	qury := coll.Find(query)
-
-	count, err = qury.Count()
+	count, err = coll.Count(context.Background(), query)
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
 
-	page = utils.Min(page, count / pageCount)
-	skip := utils.Min(page*pageCount, count)
+	page = utils.Min64(page, count/pageCount)
+	skip := utils.Min64(page*pageCount, count)
 
-	cursor := qury.Sort("name").Skip(skip).Limit(pageCount).Iter()
+	cursor, err := coll.Find(
+		context.Background(),
+		query,
+		&options.FindOptions{
+			Sort: &bson.D{
+				{"name", 1},
+			},
+			Skip:  &skip,
+			Limit: &pageCount,
+		},
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(context.Background())
 
-	vc := &Vpc{}
-	for cursor.Next(vc) {
+	for cursor.Next(context.Background()) {
+		vc := &Vpc{}
+		err = cursor.Decode(vc)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
 		vcs = append(vcs, vc)
-		vc = &Vpc{}
 	}
 
-	err = cursor.Close()
+	err = cursor.Err()
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -142,25 +198,38 @@ func GetAllPaged(db *database.Database, query *bson.M, page, pageCount int) (
 	return
 }
 
-func GetIds(db *database.Database, ids []bson.ObjectId) (
+func GetIds(db *database.Database, ids []primitive.ObjectID) (
 	vcs []*Vpc, err error) {
 
 	coll := db.Vpcs()
 	vcs = []*Vpc{}
 
-	cursor := coll.Find(&bson.M{
-		"_id": &bson.M{
-			"$in": ids,
+	cursor, err := coll.Find(
+		context.Background(),
+		&bson.M{
+			"_id": &bson.M{
+				"$in": ids,
+			},
 		},
-	}).Iter()
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(context.Background())
 
-	nde := &Vpc{}
-	for cursor.Next(nde) {
-		vcs = append(vcs, nde)
-		nde = &Vpc{}
+	for cursor.Next(context.Background()) {
+		vc := &Vpc{}
+		err = cursor.Decode(vc)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		vcs = append(vcs, vc)
 	}
 
-	err = cursor.Close()
+	err = cursor.Err()
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -169,34 +238,39 @@ func GetIds(db *database.Database, ids []bson.ObjectId) (
 	return
 }
 
-func DistinctIds(db *database.Database, matchIds []bson.ObjectId) (
+func DistinctIds(db *database.Database, matchIds []primitive.ObjectID) (
 	idsSet set.Set, err error) {
 
 	coll := db.Images()
-
 	idsSet = set.NewSet()
 
-	ids := []bson.ObjectId{}
-	err = coll.Find(&bson.M{
-		"_id": &bson.M{
-			"$in": matchIds,
+	idsInf, err := coll.Distinct(
+		context.Background(),
+		"_id",
+		&bson.M{
+			"_id": &bson.M{
+				"$in": matchIds,
+			},
 		},
-	}).Distinct("_id", &ids)
+	)
 	if err != nil {
+		err = database.ParseError(err)
 		return
 	}
 
-	for _, id := range ids {
-		idsSet.Add(id)
+	for _, idInf := range idsInf {
+		if id, ok := idInf.(primitive.ObjectID); ok {
+			idsSet.Add(id)
+		}
 	}
 
 	return
 }
 
-func Remove(db *database.Database, vcId bson.ObjectId) (err error) {
+func Remove(db *database.Database, vcId primitive.ObjectID) (err error) {
 	coll := db.VpcsIp()
 
-	_, err = coll.RemoveAll(&bson.M{
+	_, err = coll.DeleteMany(context.Background(), &bson.M{
 		"vpc": vcId,
 	})
 	if err != nil {
@@ -206,7 +280,7 @@ func Remove(db *database.Database, vcId bson.ObjectId) (err error) {
 
 	coll = db.Vpcs()
 
-	err = coll.Remove(&bson.M{
+	_, err = coll.DeleteOne(context.Background(), &bson.M{
 		"_id": vcId,
 	})
 	if err != nil {
@@ -222,10 +296,10 @@ func Remove(db *database.Database, vcId bson.ObjectId) (err error) {
 	return
 }
 
-func RemoveOrg(db *database.Database, orgId, vcId bson.ObjectId) (err error) {
+func RemoveOrg(db *database.Database, orgId, vcId primitive.ObjectID) (err error) {
 	coll := db.VpcsIp()
 
-	_, err = coll.RemoveAll(&bson.M{
+	_, err = coll.DeleteMany(context.Background(), &bson.M{
 		"vpc": vcId,
 	})
 	if err != nil {
@@ -235,7 +309,7 @@ func RemoveOrg(db *database.Database, orgId, vcId bson.ObjectId) (err error) {
 
 	coll = db.Vpcs()
 
-	err = coll.Remove(&bson.M{
+	_, err = coll.DeleteOne(context.Background(), &bson.M{
 		"organization": orgId,
 		"_id":          vcId,
 	})
@@ -252,10 +326,10 @@ func RemoveOrg(db *database.Database, orgId, vcId bson.ObjectId) (err error) {
 	return
 }
 
-func RemoveMulti(db *database.Database, vcIds []bson.ObjectId) (err error) {
+func RemoveMulti(db *database.Database, vcIds []primitive.ObjectID) (err error) {
 	coll := db.VpcsIp()
 
-	_, err = coll.RemoveAll(&bson.M{
+	_, err = coll.DeleteMany(context.Background(), &bson.M{
 		"vpc": &bson.M{
 			"$in": vcIds,
 		},
@@ -267,7 +341,7 @@ func RemoveMulti(db *database.Database, vcIds []bson.ObjectId) (err error) {
 
 	coll = db.Vpcs()
 
-	_, err = coll.RemoveAll(&bson.M{
+	_, err = coll.DeleteMany(context.Background(), &bson.M{
 		"_id": &bson.M{
 			"$in": vcIds,
 		},
@@ -280,12 +354,12 @@ func RemoveMulti(db *database.Database, vcIds []bson.ObjectId) (err error) {
 	return
 }
 
-func RemoveInstanceIps(db *database.Database, instId bson.ObjectId) (
+func RemoveInstanceIps(db *database.Database, instId primitive.ObjectID) (
 	err error) {
 
 	coll := db.VpcsIp()
 
-	_, err = coll.UpdateAll(&bson.M{
+	_, err = coll.UpdateMany(context.Background(), &bson.M{
 		"instance": instId,
 	}, &bson.M{
 		"$set": &bson.M{
@@ -305,19 +379,23 @@ func RemoveInstanceIps(db *database.Database, instId bson.ObjectId) (
 	return
 }
 
-func RemoveInstanceIp(db *database.Database, instId, vpcId bson.ObjectId) (
-	err error) {
+func RemoveInstanceIp(db *database.Database, instId,
+	vpcId primitive.ObjectID) (err error) {
 
 	coll := db.VpcsIp()
 
-	err = coll.Update(&bson.M{
-		"vpc":      vpcId,
-		"instance": instId,
-	}, &bson.M{
-		"$set": &bson.M{
-			"instance": nil,
+	_, err = coll.UpdateOne(
+		context.Background(),
+		&bson.M{
+			"vpc":      vpcId,
+			"instance": instId,
 		},
-	})
+		&bson.M{
+			"$set": &bson.M{
+				"instance": nil,
+			},
+		},
+	)
 	if err != nil {
 		err = database.ParseError(err)
 		switch err.(type) {

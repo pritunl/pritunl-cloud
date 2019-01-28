@@ -4,30 +4,31 @@ import (
 	"fmt"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/authority"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"gopkg.in/mgo.v2/bson"
 	"strconv"
 	"strings"
 )
 
 type authorityData struct {
-	Id           bson.ObjectId `json:"id"`
-	Name         string        `json:"name"`
-	Type         string        `json:"type"`
-	Organization bson.ObjectId `json:"organization"`
-	NetworkRoles []string      `json:"network_roles"`
-	Key          string        `json:"key"`
-	Roles        []string      `json:"roles"`
-	Certificate  string        `json:"certificate"`
+	Id           primitive.ObjectID `json:"id"`
+	Name         string             `json:"name"`
+	Type         string             `json:"type"`
+	Organization primitive.ObjectID `json:"organization"`
+	NetworkRoles []string           `json:"network_roles"`
+	Key          string             `json:"key"`
+	Roles        []string           `json:"roles"`
+	Certificate  string             `json:"certificate"`
 }
 
 type authoritiesData struct {
 	Authorities []*authority.Authority `json:"authorities"`
-	Count       int                    `json:"count"`
+	Count       int64                  `json:"count"`
 }
 
 func authorityPut(c *gin.Context) {
@@ -175,7 +176,7 @@ func authoritiesDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	data := []bson.ObjectId{}
+	data := []primitive.ObjectID{}
 
 	err := c.Bind(&data)
 	if err != nil {
@@ -215,8 +216,8 @@ func authorityGet(c *gin.Context) {
 func authoritiesGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 
-	page, _ := strconv.Atoi(c.Query("page"))
-	pageCount, _ := strconv.Atoi(c.Query("page_count"))
+	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
+	pageCount, _ := strconv.ParseInt(c.Query("page_count"), 10, 0)
 
 	query := bson.M{}
 

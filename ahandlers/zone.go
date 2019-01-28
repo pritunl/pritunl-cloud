@@ -3,18 +3,18 @@ package ahandlers
 import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/zone"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type zoneData struct {
-	Id            bson.ObjectId   `json:"id"`
-	Datacenter    bson.ObjectId   `json:"datacenter"`
-	Name          string          `json:"name"`
+	Id         primitive.ObjectID `json:"id"`
+	Datacenter primitive.ObjectID `json:"datacenter"`
+	Name       string             `json:"name"`
 }
 
 func zonePut(c *gin.Context) {
@@ -88,8 +88,8 @@ func zonePost(c *gin.Context) {
 	}
 
 	zne := &zone.Zone{
-		Datacenter:    data.Datacenter,
-		Name:          data.Name,
+		Datacenter: data.Datacenter,
+		Name:       data.Name,
 	}
 
 	errData, err := zne.Validate(db)

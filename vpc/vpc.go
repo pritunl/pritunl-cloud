@@ -2,16 +2,18 @@ package vpc
 
 import (
 	"bytes"
+	"context"
 	"crypto/md5"
 	"fmt"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 	"math/rand"
 	"net"
 	"strings"
@@ -25,17 +27,17 @@ type Route struct {
 }
 
 type Vpc struct {
-	Id            bson.ObjectId `bson:"_id,omitempty" json:"id"`
-	Name          string        `bson:"name" json:"name"`
-	VpcId         int           `bson:"vpc_id" json:"vpc_id"`
-	Network       string        `bson:"network" json:"network"`
-	Network6      string        `bson:"-" json:"network6"`
-	Organization  bson.ObjectId `bson:"organization" json:"organization"`
-	Datacenter    bson.ObjectId `bson:"datacenter" json:"datacenter"`
-	Routes        []*Route      `bson:"routes" json:"routes"`
-	LinkUris      []string      `bson:"link_uris" json:"link_uris"`
-	LinkNode      bson.ObjectId `bson:"link_node,omitempty" json:"link_node"`
-	LinkTimestamp time.Time     `bson:"link_timestamp" json:"link_timestamp"`
+	Id            primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name          string             `bson:"name" json:"name"`
+	VpcId         int                `bson:"vpc_id" json:"vpc_id"`
+	Network       string             `bson:"network" json:"network"`
+	Network6      string             `bson:"-" json:"network6"`
+	Organization  primitive.ObjectID `bson:"organization" json:"organization"`
+	Datacenter    primitive.ObjectID `bson:"datacenter" json:"datacenter"`
+	Routes        []*Route           `bson:"routes" json:"routes"`
+	LinkUris      []string           `bson:"link_uris" json:"link_uris"`
+	LinkNode      primitive.ObjectID `bson:"link_node,omitempty" json:"link_node"`
+	LinkTimestamp time.Time          `bson:"link_timestamp" json:"link_timestamp"`
 }
 
 func (v *Vpc) Validate(db *database.Database) (
@@ -49,7 +51,7 @@ func (v *Vpc) Validate(db *database.Database) (
 		return
 	}
 
-	if v.Organization == "" {
+	if v.Organization.IsZero() {
 		errData = &errortypes.ErrorData{
 			Error:   "organization_required",
 			Message: "Missing required organization",
@@ -57,7 +59,7 @@ func (v *Vpc) Validate(db *database.Database) (
 		return
 	}
 
-	if v.Datacenter == "" {
+	if v.Datacenter.IsZero() {
 		errData = &errortypes.ErrorData{
 			Error:   "datacenter_required",
 			Message: "Missing required datacenter",
@@ -182,7 +184,7 @@ func (v *Vpc) Validate(db *database.Database) (
 
 func (v *Vpc) Json() {
 	netHash := md5.New()
-	netHash.Write([]byte(v.Id))
+	netHash.Write(v.Id[:])
 	netHashSum := fmt.Sprintf("%x", netHash.Sum(nil))[:12]
 
 	ip := fmt.Sprintf("fd97%s", netHashSum)
@@ -211,7 +213,7 @@ func (v *Vpc) GetNetwork() (network *net.IPNet, err error) {
 
 func (v *Vpc) GetNetwork6() (network *net.IPNet, err error) {
 	netHash := md5.New()
-	netHash.Write([]byte(v.Id))
+	netHash.Write(v.Id[:])
 	netHashSum := fmt.Sprintf("%x", netHash.Sum(nil))[:12]
 
 	ip := fmt.Sprintf("fd97%s", netHashSum)
@@ -263,18 +265,19 @@ func (v *Vpc) GetGateway6() (ip net.IP, err error) {
 	return
 }
 
-func (v *Vpc) GetIp(db *database.Database, typ string, instId bson.ObjectId) (
+func (v *Vpc) GetIp(db *database.Database, typ string, instId primitive.ObjectID) (
 	ip net.IP, err error) {
 
 	coll := db.VpcsIp()
 	vpcIp := &VpcIp{}
 
-	err = coll.FindOne(&bson.M{
+	err = coll.FindOne(context.Background(), &bson.M{
 		"vpc":      v.Id,
 		"type":     typ,
 		"instance": instId,
-	}, vpcIp)
+	}).Decode(vpcIp)
 	if err != nil {
+		err = database.ParseError(err)
 		vpcIp = nil
 		if _, ok := err.(*database.NotFoundError); ok {
 			err = nil
@@ -285,47 +288,56 @@ func (v *Vpc) GetIp(db *database.Database, typ string, instId bson.ObjectId) (
 
 	if vpcIp == nil {
 		vpcIp = &VpcIp{}
-		change := mgo.Change{
-			Update: &bson.M{
+		opts := &options.FindOneAndUpdateOptions{}
+		opts.SetReturnDocument(options.After)
+
+		err = coll.FindOneAndUpdate(
+			context.Background(),
+			&bson.M{
+				"vpc":      v.Id,
+				"type":     typ,
+				"instance": nil,
+			},
+			&bson.M{
 				"$set": &bson.M{
 					"instance": instId,
 				},
 			},
-			ReturnNew: true,
-		}
-
-		info, e := coll.Find(&bson.M{
-			"vpc":      v.Id,
-			"type":     typ,
-			"instance": nil,
-		}).Apply(change, vpcIp)
-		if e != nil {
-			err = database.ParseError(e)
+			opts,
+		).Decode(vpcIp)
+		if err != nil {
+			err = database.ParseError(err)
 			vpcIp = nil
 			if _, ok := err.(*database.NotFoundError); ok {
 				err = nil
 			} else {
 				return
 			}
-		} else if info.Updated == 0 {
-			vpcIp = nil
 		}
 	}
 
 	if vpcIp == nil {
 		vpcIp = &VpcIp{}
 
-		sort := ""
+		sort := 0
 		if typ == Gateway {
-			sort = "ip"
+			sort = 1
 		} else {
-			sort = "-ip"
+			sort = -1
 		}
 
-		err = coll.Find(&bson.M{
-			"vpc":  v.Id,
-			"type": typ,
-		}).Sort(sort).One(vpcIp)
+		err = coll.FindOne(
+			context.Background(),
+			&bson.M{
+				"vpc":  v.Id,
+				"type": typ,
+			},
+			&options.FindOneOptions{
+				Sort: &bson.D{
+					{"ip", sort},
+				},
+			},
+		).Decode(vpcIp)
 		if err != nil {
 			vpcIp = nil
 			err = database.ParseError(err)
@@ -381,7 +393,7 @@ func (v *Vpc) GetIp(db *database.Database, typ string, instId bson.ObjectId) (
 				return
 			}
 
-			err = coll.Insert(vpcIp)
+			_, err = coll.InsertOne(context.Background(), vpcIp)
 			if err != nil {
 				vpcIp = nil
 				err = database.ParseError(err)
@@ -410,7 +422,7 @@ func (v *Vpc) GetIp(db *database.Database, typ string, instId bson.ObjectId) (
 
 func (v *Vpc) GetIp6(addr net.IP) net.IP {
 	netHash := md5.New()
-	netHash.Write([]byte(v.Id))
+	netHash.Write(v.Id[:])
 	netHashSum := fmt.Sprintf("%x", netHash.Sum(nil))[:12]
 
 	macHash := md5.New()
@@ -438,16 +450,20 @@ func (v *Vpc) PingLink(db *database.Database) (held bool, err error) {
 		"link_timestamp": v.LinkTimestamp,
 	}
 
-	if v.LinkNode != "" {
+	if !v.LinkNode.IsZero() {
 		query["link_node"] = v.LinkNode
 	}
 
-	err = coll.Update(query, &bson.M{
-		"$set": &bson.M{
-			"link_node":      node.Self.Id,
-			"link_timestamp": time.Now(),
+	_, err = coll.UpdateOne(
+		context.Background(),
+		query,
+		&bson.M{
+			"$set": &bson.M{
+				"link_node":      node.Self.Id,
+				"link_timestamp": time.Now(),
+			},
 		},
-	})
+	)
 	if err != nil {
 		err = database.ParseError(err)
 		if _, ok := err.(*database.NotFoundError); ok {
@@ -520,14 +536,14 @@ func (v *Vpc) CommitFields(db *database.Database, fields set.Set) (
 func (v *Vpc) Insert(db *database.Database) (err error) {
 	coll := db.Vpcs()
 
-	if v.Id != "" {
+	if !v.Id.IsZero() {
 		err = &errortypes.DatabaseError{
 			errors.New("vpc: Vpc already exists"),
 		}
 		return
 	}
 
-	err = coll.Insert(v)
+	_, err = coll.InsertOne(context.Background(), v)
 	if err != nil {
 		err = database.ParseError(err)
 		return

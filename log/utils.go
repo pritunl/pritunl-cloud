@@ -1,13 +1,16 @@
 package log
 
 import (
+	"context"
+	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"gopkg.in/mgo.v2/bson"
 )
 
-func Get(db *database.Database, logId bson.ObjectId) (
+func Get(db *database.Database, logId primitive.ObjectID) (
 	entry *Entry, err error) {
 
 	coll := db.Logs()
@@ -21,32 +24,50 @@ func Get(db *database.Database, logId bson.ObjectId) (
 	return
 }
 
-func GetAll(db *database.Database, query *bson.M, page, pageCount int) (
-	entries []*Entry, count int, err error) {
+func GetAll(db *database.Database, query *bson.M, page, pageCount int64) (
+	entries []*Entry, count int64, err error) {
 
 	coll := db.Logs()
 	entries = []*Entry{}
 
-	qury := coll.Find(query)
-
-	count, err = qury.Count()
+	count, err = coll.Count(context.Background(), query)
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
 
-	page = utils.Min(page, count / pageCount)
-	skip := utils.Min(page*pageCount, count)
+	page = utils.Min64(page, count/pageCount)
+	skip := utils.Min64(page*pageCount, count)
 
-	cursor := qury.Sort("-$natural").Skip(skip).Limit(pageCount).Iter()
+	cursor, err := coll.Find(
+		context.Background(),
+		query,
+		&options.FindOptions{
+			Sort: &bson.D{
+				{"$natural", -1},
+			},
+			Skip:  &skip,
+			Limit: &pageCount,
+		},
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(context.Background())
 
-	entry := &Entry{}
-	for cursor.Next(entry) {
+	for cursor.Next(context.Background()) {
+		entry := &Entry{}
+		err = cursor.Decode(entry)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
 		entries = append(entries, entry)
-		entry = &Entry{}
 	}
 
-	err = cursor.Close()
+	err = cursor.Err()
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -58,7 +79,7 @@ func GetAll(db *database.Database, query *bson.M, page, pageCount int) (
 func Clear(db *database.Database) (err error) {
 	coll := db.Logs()
 
-	_, err = coll.RemoveAll(nil)
+	_, err = coll.DeleteMany(context.Background(), nil)
 	if err != nil {
 		err = database.ParseError(err)
 		return

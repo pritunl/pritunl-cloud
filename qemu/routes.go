@@ -2,15 +2,15 @@ package qemu
 
 import (
 	"fmt"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
-	"gopkg.in/mgo.v2/bson"
 	"net"
 	"strings"
 )
 
-func GetRoutes(instId bson.ObjectId) (routes []vpc.Route,
+func GetRoutes(instId primitive.ObjectID) (routes []vpc.Route,
 	routes6 []vpc.Route, err error) {
 
 	namespace := vm.GetNamespace(instId, 0)

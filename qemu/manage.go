@@ -6,6 +6,8 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/cloudinit"
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -24,7 +26,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
-	"gopkg.in/mgo.v2/bson"
 	"io/ioutil"
 	"net"
 	"regexp"
@@ -43,7 +44,7 @@ type InfoCache struct {
 	Virt      *vm.VirtualMachine
 }
 
-func GetVmInfo(vmId bson.ObjectId, getDisks bool) (
+func GetVmInfo(vmId primitive.ObjectID, getDisks bool) (
 	virt *vm.VirtualMachine, err error) {
 
 	refreshRate := time.Duration(
@@ -84,7 +85,7 @@ func GetVmInfo(vmId bson.ObjectId, getDisks bool) (
 			break
 		}
 
-		if virt.Id == "" {
+		if virt.Id.IsZero() {
 			virt = nil
 			return
 		}
@@ -271,10 +272,14 @@ func GetVms(db *database.Database) (virts []*vm.VirtualMachine, err error) {
 
 	for _, unit := range units {
 		match := serviceReg.FindStringSubmatch(unit)
-		if match == nil || len(match) != 2 || !bson.IsObjectIdHex(match[1]) {
+		if match == nil || len(match) != 2 {
 			continue
 		}
-		vmId := bson.ObjectIdHex(match[1])
+
+		vmId, err := primitive.ObjectIDFromHex(match[1])
+		if err != nil {
+			continue
+		}
 
 		waiter.Add(1)
 		go func() {
@@ -1152,7 +1157,7 @@ func Create(db *database.Database, inst *instance.Instance,
 
 	if dsk == nil {
 		dsk = &disk.Disk{
-			Id:               bson.NewObjectId(),
+			Id:               primitive.NewObjectID(),
 			Name:             inst.Name,
 			State:            disk.Available,
 			Node:             node.Self.Id,

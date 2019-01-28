@@ -1,17 +1,18 @@
 package organization
 
 import (
+	"context"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type Organization struct {
-	Id    bson.ObjectId `bson:"_id,omitempty" json:"id"`
-	Roles []string      `bson:"roles" json:"roles"`
-	Name  string        `bson:"name" json:"name"`
+	Id    primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Roles []string           `bson:"roles" json:"roles"`
+	Name  string             `bson:"name" json:"name"`
 }
 
 func (d *Organization) Validate(db *database.Database) (
@@ -51,14 +52,14 @@ func (d *Organization) CommitFields(db *database.Database, fields set.Set) (
 func (c *Organization) Insert(db *database.Database) (err error) {
 	coll := db.Organizations()
 
-	if c.Id != "" {
+	if !c.Id.IsZero() {
 		err = &errortypes.DatabaseError{
 			errors.New("organization: Organization already exists"),
 		}
 		return
 	}
 
-	err = coll.Insert(c)
+	_, err = coll.InsertOne(context.Background(), c)
 	if err != nil {
 		err = database.ParseError(err)
 		return

@@ -1,13 +1,13 @@
 package store
 
 import (
-	"gopkg.in/mgo.v2/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"sync"
 	"time"
 )
 
 var (
-	addressStores     = map[bson.ObjectId]AddressStore{}
+	addressStores     = map[primitive.ObjectID]AddressStore{}
 	addressStoresLock = sync.Mutex{}
 )
 
@@ -17,7 +17,7 @@ type AddressStore struct {
 	Timestamp time.Time
 }
 
-func GetAddress(virtId bson.ObjectId) (addressStore AddressStore, ok bool) {
+func GetAddress(virtId primitive.ObjectID) (addressStore AddressStore, ok bool) {
 	addressStoresLock.Lock()
 	addressStore, ok = addressStores[virtId]
 	addressStoresLock.Unlock()
@@ -25,7 +25,7 @@ func GetAddress(virtId bson.ObjectId) (addressStore AddressStore, ok bool) {
 	return
 }
 
-func SetAddress(virtId bson.ObjectId, addr, addr6 string) {
+func SetAddress(virtId primitive.ObjectID, addr, addr6 string) {
 	addressStoresLock.Lock()
 	addressStores[virtId] = AddressStore{
 		Addr:      addr,
@@ -35,7 +35,7 @@ func SetAddress(virtId bson.ObjectId, addr, addr6 string) {
 	addressStoresLock.Unlock()
 }
 
-func RemAddress(addressId bson.ObjectId) {
+func RemAddress(addressId primitive.ObjectID) {
 	addressStoresLock.Lock()
 	delete(addressStores, addressId)
 	addressStoresLock.Unlock()

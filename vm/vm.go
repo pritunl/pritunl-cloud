@@ -1,20 +1,21 @@
 package vm
 
 import (
+	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
-	"gopkg.in/mgo.v2/bson"
 	"path"
 	"strings"
 )
 
 type VirtualMachine struct {
-	Id              bson.ObjectId     `json:"id"`
-	State           string            `json:"state"`
-	Image           bson.ObjectId     `json:"image"`
-	Processors      int               `json:"processors"`
-	Memory          int               `json:"memory"`
-	Disks           []*Disk           `json:"disks"`
-	NetworkAdapters []*NetworkAdapter `json:"network_adapters"`
+	Id              primitive.ObjectID `json:"id"`
+	State           string             `json:"state"`
+	Image           primitive.ObjectID `json:"image"`
+	Processors      int                `json:"processors"`
+	Memory          int                `json:"memory"`
+	Disks           []*Disk            `json:"disks"`
+	NetworkAdapters []*NetworkAdapter  `json:"network_adapters"`
 }
 
 type Disk struct {
@@ -22,20 +23,22 @@ type Disk struct {
 	Path  string `json:"path"`
 }
 
-func (d *Disk) GetId() bson.ObjectId {
+func (d *Disk) GetId() primitive.ObjectID {
 	idStr := strings.Split(path.Base(d.Path), ".")[0]
-	if bson.IsObjectIdHex(idStr) {
-		return bson.ObjectIdHex(idStr)
+
+	objId, err := primitive.ObjectIDFromHex(idStr)
+	if err != nil {
+		return primitive.NilObjectID
 	}
-	return ""
+	return objId
 }
 
 type NetworkAdapter struct {
-	Type       string        `json:"type"`
-	MacAddress string        `json:"mac_address"`
-	VpcId      bson.ObjectId `json:"vpc_id"`
-	IpAddress  string        `json:"ip_address,omitempty"`
-	IpAddress6 string        `json:"ip_address6,omitempty"`
+	Type       string             `json:"type"`
+	MacAddress string             `json:"mac_address"`
+	VpcId      primitive.ObjectID `json:"vpc_id"`
+	IpAddress  string             `json:"ip_address,omitempty"`
+	IpAddress6 string             `json:"ip_address6,omitempty"`
 }
 
 func (v *VirtualMachine) Commit(db *database.Database) (err error) {

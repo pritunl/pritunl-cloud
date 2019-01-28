@@ -1,6 +1,7 @@
 package nonce
 
 import (
+	"context"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -20,7 +21,7 @@ func Validate(db *database.Database, nce string) (err error) {
 
 	coll := db.Nonces()
 
-	err = coll.Insert(doc)
+	_, err = coll.InsertOne(context.Background(), doc)
 	if err != nil {
 		err = database.ParseError(err)
 		switch err.(type) {

@@ -1,11 +1,13 @@
 package aggregate
 
 import (
+	"context"
+	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type DiskPipe struct {
@@ -14,8 +16,8 @@ type DiskPipe struct {
 }
 
 type DiskBackup struct {
-	Image bson.ObjectId `json:"image"`
-	Name  string        `json:"name"`
+	Image primitive.ObjectID `json:"image"`
+	Name  string             `json:"name"`
 }
 
 type DiskAggregate struct {
@@ -24,23 +26,21 @@ type DiskAggregate struct {
 }
 
 func GetDiskPaged(db *database.Database, query *bson.M, page,
-	pageCount int) (disks []*DiskAggregate, count int, err error) {
+	pageCount int64) (disks []*DiskAggregate, count int64, err error) {
 
 	coll := db.Disks()
 	disks = []*DiskAggregate{}
 
-	qury := coll.Find(query)
-
-	count, err = qury.Count()
+	count, err = coll.Count(context.Background(), query)
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
 
-	page = utils.Min(page, count/pageCount)
-	skip := utils.Min(page*pageCount, count)
+	page = utils.Min64(page, count/pageCount)
+	skip := utils.Min64(page*pageCount, count)
 
-	pipe := coll.Pipe([]*bson.M{
+	cursor, err := coll.Aggregate(context.Background(), []*bson.M{
 		&bson.M{
 			"$match": query,
 		},
@@ -64,14 +64,20 @@ func GetDiskPaged(db *database.Database, query *bson.M, page,
 			},
 		},
 	})
-
-	resp := []*DiskPipe{}
-	err = pipe.All(&resp)
 	if err != nil {
+		err = database.ParseError(err)
 		return
 	}
+	defer cursor.Close(context.Background())
 
-	for _, doc := range resp {
+	for cursor.Next(context.Background()) {
+		doc := &DiskPipe{}
+		err = cursor.Decode(doc)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
 		backups := []*DiskBackup{}
 
 		for _, img := range doc.ImageDocs {
@@ -89,6 +95,12 @@ func GetDiskPaged(db *database.Database, query *bson.M, page,
 		}
 
 		disks = append(disks, dsk)
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
 	}
 
 	return

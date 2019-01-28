@@ -1,20 +1,21 @@
 package block
 
 import (
+	"context"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type Block struct {
-	Id        bson.ObjectId `bson:"_id,omitempty" json:"id"`
-	Name      string        `bson:"name" json:"name"`
-	Addresses []string      `bson:"addresses" json:"addresses"`
-	Excludes  []string      `bson:"excludes" json:"excludes"`
-	Netmask   string        `bson:"netmask" json:"netmask"`
-	Gateway   string        `bson:"gateway" json:"gateway"`
+	Id        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name      string             `bson:"name" json:"name"`
+	Addresses []string           `bson:"addresses" json:"addresses"`
+	Excludes  []string           `bson:"excludes" json:"excludes"`
+	Netmask   string             `bson:"netmask" json:"netmask"`
+	Gateway   string             `bson:"gateway" json:"gateway"`
 }
 
 func (b *Block) Validate(db *database.Database) (
@@ -50,14 +51,14 @@ func (b *Block) CommitFields(db *database.Database, fields set.Set) (
 func (b *Block) Insert(db *database.Database) (err error) {
 	coll := db.Blocks()
 
-	if b.Id != "" {
+	if !b.Id.IsZero() {
 		err = &errortypes.DatabaseError{
 			errors.New("block: Block already exists"),
 		}
 		return
 	}
 
-	err = coll.Insert(b)
+	_, err = coll.InsertOne(context.Background(), b)
 	if err != nil {
 		err = database.ParseError(err)
 		return

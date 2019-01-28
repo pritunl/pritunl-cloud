@@ -1,24 +1,25 @@
 package domain
 
 import (
+	"context"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"gopkg.in/mgo.v2/bson"
 	"time"
 )
 
 type Record struct {
-	Id           bson.ObjectId `bson:"_id,omitempty" json:"id"`
-	Organization bson.ObjectId `bson:"organization" json:"organization"`
-	Domain       bson.ObjectId `bson:"domain" json:"domain"`
-	Node         bson.ObjectId `bson:"node" json:"node"`
-	Instance     bson.ObjectId `bson:"instance" json:"instance"`
-	Timestamp    time.Time     `bson:"timestamp" json:"timestamp"`
-	Name         string        `bson:"name" json:"name"`
-	Address      string        `bson:"address" json:"address"`
-	Address6     string        `bson:"address6" json:"address6"`
+	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Organization primitive.ObjectID `bson:"organization" json:"organization"`
+	Domain       primitive.ObjectID `bson:"domain" json:"domain"`
+	Node         primitive.ObjectID `bson:"node" json:"node"`
+	Instance     primitive.ObjectID `bson:"instance" json:"instance"`
+	Timestamp    time.Time          `bson:"timestamp" json:"timestamp"`
+	Name         string             `bson:"name" json:"name"`
+	Address      string             `bson:"address" json:"address"`
+	Address6     string             `bson:"address6" json:"address6"`
 }
 
 func (r *Record) Remove(db *database.Database) (err error) {
@@ -52,7 +53,7 @@ func (r *Record) Upsert(db *database.Database, addr, addr6 string) (
 
 	r.Timestamp = time.Now()
 
-	if r.Id == "" {
+	if r.Id.IsZero() {
 		err = r.Insert(db)
 		if err != nil {
 			return
@@ -86,7 +87,7 @@ func (r *Record) Upsert(db *database.Database, addr, addr6 string) (
 func (r *Record) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
-	if r.Node == "" {
+	if r.Node.IsZero() {
 		errData = &errortypes.ErrorData{
 			Error:   "node_required",
 			Message: "Missing required node",
@@ -94,7 +95,7 @@ func (r *Record) Validate(db *database.Database) (
 		return
 	}
 
-	if r.Instance == "" {
+	if r.Instance.IsZero() {
 		errData = &errortypes.ErrorData{
 			Error:   "instance_required",
 			Message: "Missing required instance",
@@ -132,16 +133,16 @@ func (r *Record) CommitFields(db *database.Database, fields set.Set) (
 func (r *Record) Insert(db *database.Database) (err error) {
 	coll := db.DomainsRecord()
 
-	if r.Id != "" {
+	if !r.Id.IsZero() {
 		err = &errortypes.DatabaseError{
 			errors.New("domain: Record already exists"),
 		}
 		return
 	}
 
-	r.Id = bson.NewObjectId()
+	r.Id = primitive.NewObjectID()
 
-	err = coll.Insert(r)
+	_, err = coll.InsertOne(context.Background(), r)
 	if err != nil {
 		err = database.ParseError(err)
 		return

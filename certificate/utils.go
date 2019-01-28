@@ -1,11 +1,13 @@
 package certificate
 
 import (
+	"context"
+	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
-	"gopkg.in/mgo.v2/bson"
 )
 
-func Get(db *database.Database, certId bson.ObjectId) (
+func Get(db *database.Database, certId primitive.ObjectID) (
 	cert *Certificate, err error) {
 
 	coll := db.Certificates()
@@ -23,15 +25,24 @@ func GetAll(db *database.Database) (certs []*Certificate, err error) {
 	coll := db.Certificates()
 	certs = []*Certificate{}
 
-	cursor := coll.Find(bson.M{}).Iter()
+	cursor, err := coll.Find(context.Background(), bson.M{})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(context.Background())
 
-	cert := &Certificate{}
-	for cursor.Next(cert) {
+	for cursor.Next(context.Background()) {
+		cert := &Certificate{}
+		err = cursor.Decode(cert)
+		if err != nil {
+			return
+		}
+
 		certs = append(certs, cert)
-		cert = &Certificate{}
 	}
 
-	err = cursor.Close()
+	err = cursor.Err()
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -40,10 +51,10 @@ func GetAll(db *database.Database) (certs []*Certificate, err error) {
 	return
 }
 
-func Remove(db *database.Database, certId bson.ObjectId) (err error) {
+func Remove(db *database.Database, certId primitive.ObjectID) (err error) {
 	coll := db.Certificates()
 
-	_, err = coll.RemoveAll(&bson.M{
+	_, err = coll.DeleteMany(context.Background(), &bson.M{
 		"_id": certId,
 	})
 	if err != nil {

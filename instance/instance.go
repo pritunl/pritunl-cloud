@@ -1,24 +1,25 @@
 package instance
 
 import (
+	"context"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
-	"gopkg.in/mgo.v2/bson"
 	"strconv"
 )
 
 type Instance struct {
-	Id                  bson.ObjectId      `bson:"_id,omitempty" json:"id"`
-	Organization        bson.ObjectId      `bson:"organization" json:"organization"`
-	Zone                bson.ObjectId      `bson:"zone" json:"zone"`
-	Vpc                 bson.ObjectId      `bson:"vpc" json:"vpc"`
-	Image               bson.ObjectId      `bson:"image" json:"image"`
+	Id                  primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Organization        primitive.ObjectID `bson:"organization" json:"organization"`
+	Zone                primitive.ObjectID `bson:"zone" json:"zone"`
+	Vpc                 primitive.ObjectID `bson:"vpc" json:"vpc"`
+	Image               primitive.ObjectID `bson:"image" json:"image"`
 	ImageBacking        bool               `bson:"image_backing" json:"image_backing"`
 	Status              string             `bson:"-" json:"status"`
 	State               string             `bson:"state" json:"state"`
@@ -30,15 +31,15 @@ type Instance struct {
 	PublicIps6          []string           `bson:"public_ips6" json:"public_ips6"`
 	PrivateIps          []string           `bson:"private_ips" json:"private_ips"`
 	PrivateIps6         []string           `bson:"private_ips6" json:"private_ips6"`
-	Node                bson.ObjectId      `bson:"node" json:"node"`
-	Domain              bson.ObjectId      `bson:"domain,omitempty" json:"domain"`
+	Node                primitive.ObjectID `bson:"node" json:"node"`
+	Domain              primitive.ObjectID `bson:"domain,omitempty" json:"domain"`
 	Name                string             `bson:"name" json:"name"`
 	InitDiskSize        int                `bson:"init_disk_size" json:"init_disk_size"`
 	Memory              int                `bson:"memory" json:"memory"`
 	Processors          int                `bson:"processors" json:"processors"`
 	NetworkRoles        []string           `bson:"network_roles" json:"network_roles"`
 	Virt                *vm.VirtualMachine `bson:"-" json:"-"`
-	curVpc              bson.ObjectId      `bson:"-" json:"-"`
+	curVpc              primitive.ObjectID `bson:"-" json:"-"`
 	curDeleteProtection bool               `bson:"-" json:"-"`
 }
 
@@ -53,35 +54,35 @@ func (i *Instance) Validate(db *database.Database) (
 		i.Restart = false
 	}
 
-	if i.Organization == "" {
+	if i.Organization.IsZero() {
 		errData = &errortypes.ErrorData{
 			Error:   "organization_required",
 			Message: "Missing required organization",
 		}
 	}
 
-	if i.Zone == "" {
+	if i.Zone.IsZero() {
 		errData = &errortypes.ErrorData{
 			Error:   "zone_required",
 			Message: "Missing required zone",
 		}
 	}
 
-	if i.Node == "" {
+	if i.Node.IsZero() {
 		errData = &errortypes.ErrorData{
 			Error:   "node_required",
 			Message: "Missing required node",
 		}
 	}
 
-	if i.Image == "" {
+	if i.Image.IsZero() {
 		errData = &errortypes.ErrorData{
 			Error:   "image_required",
 			Message: "Missing required image",
 		}
 	}
 
-	if i.Vpc == "" {
+	if i.Vpc.IsZero() {
 		errData = &errortypes.ErrorData{
 			Error:   "vpc_required",
 			Message: "Missing required VPC",
@@ -210,7 +211,7 @@ func (i *Instance) PreCommit() {
 func (i *Instance) PostCommit(db *database.Database) (
 	dskChange bool, err error) {
 
-	if i.curVpc != "" && i.curVpc != i.Vpc {
+	if !i.curVpc.IsZero() && i.curVpc != i.Vpc {
 		err = vpc.RemoveInstanceIp(db, i.Id, i.curVpc)
 		if err != nil {
 			return
@@ -256,14 +257,14 @@ func (i *Instance) CommitFields(db *database.Database, fields set.Set) (
 func (i *Instance) Insert(db *database.Database) (err error) {
 	coll := db.Instances()
 
-	if i.Id != "" {
+	if !i.Id.IsZero() {
 		err = &errortypes.DatabaseError{
 			errors.New("instance: Instance already exists"),
 		}
 		return
 	}
 
-	err = coll.Insert(i)
+	_, err = coll.InsertOne(context.Background(), i)
 	if err != nil {
 		err = database.ParseError(err)
 		return

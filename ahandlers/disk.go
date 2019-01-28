@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/aggregate"
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -14,35 +16,34 @@ import (
 	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/storage"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"gopkg.in/mgo.v2/bson"
 	"strconv"
 	"strings"
 )
 
 type diskData struct {
-	Id               bson.ObjectId `json:"id"`
-	Name             string        `json:"name"`
-	Organization     bson.ObjectId `json:"organization"`
-	Instance         bson.ObjectId `json:"instance"`
-	Index            string        `json:"index"`
-	Node             bson.ObjectId `json:"node"`
-	DeleteProtection bool          `json:"delete_protection"`
-	Image            bson.ObjectId `json:"image"`
-	RestoreImage     bson.ObjectId `json:"restore_image"`
-	Backing          bool          `json:"backing"`
-	State            string        `json:"state"`
-	Size             int           `json:"size"`
-	Backup           bool          `json:"backup"`
+	Id               primitive.ObjectID `json:"id"`
+	Name             string             `json:"name"`
+	Organization     primitive.ObjectID `json:"organization"`
+	Instance         primitive.ObjectID `json:"instance"`
+	Index            string             `json:"index"`
+	Node             primitive.ObjectID `json:"node"`
+	DeleteProtection bool               `json:"delete_protection"`
+	Image            primitive.ObjectID `json:"image"`
+	RestoreImage     primitive.ObjectID `json:"restore_image"`
+	Backing          bool               `json:"backing"`
+	State            string             `json:"state"`
+	Size             int                `json:"size"`
+	Backup           bool               `json:"backup"`
 }
 
 type disksMultiData struct {
-	Ids   []bson.ObjectId `json:"ids"`
-	State string          `json:"state"`
+	Ids   []primitive.ObjectID `json:"ids"`
+	State string               `json:"state"`
 }
 
 type disksData struct {
 	Disks []*aggregate.DiskAggregate `json:"disks"`
-	Count int                        `json:"count"`
+	Count int64                      `json:"count"`
 }
 
 func diskPut(c *gin.Context) {
@@ -161,7 +162,7 @@ func diskPost(c *gin.Context) {
 		return
 	}
 
-	if dta.Image != "" {
+	if !dta.Image.IsZero() {
 		img, err := image.GetOrgPublic(db, dta.Organization, dta.Image)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
@@ -316,7 +317,7 @@ func disksDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	dta := []bson.ObjectId{}
+	dta := []primitive.ObjectID{}
 
 	err := c.Bind(&dta)
 	if err != nil {
@@ -367,8 +368,8 @@ func diskGet(c *gin.Context) {
 func disksGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 
-	page, _ := strconv.Atoi(c.Query("page"))
-	pageCount, _ := strconv.Atoi(c.Query("page_count"))
+	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
+	pageCount, _ := strconv.ParseInt(c.Query("page_count"), 10, 0)
 
 	query := bson.M{}
 

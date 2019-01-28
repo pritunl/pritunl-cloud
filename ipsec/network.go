@@ -3,12 +3,12 @@ package ipsec
 import (
 	"fmt"
 	"github.com/Sirupsen/logrus"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/interfaces"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
-	"gopkg.in/mgo.v2/bson"
 	"net"
 	"strconv"
 	"strings"
@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	networkStates     = map[bson.ObjectId]bool{}
+	networkStates     = map[primitive.ObjectID]bool{}
 	networkStatesLock = sync.Mutex{}
 	networkLock       = utils.NewMultiTimeoutLock(2 * time.Minute)
 )

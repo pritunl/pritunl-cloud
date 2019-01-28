@@ -3,11 +3,11 @@ package config
 import (
 	"encoding/json"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/requires"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"gopkg.in/mgo.v2/bson"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -156,7 +156,7 @@ func init() {
 
 		if Config.NodeId == "" {
 			save = true
-			Config.NodeId = bson.NewObjectId().Hex()
+			Config.NodeId = primitive.NewObjectID().Hex()
 		}
 
 		if Config.MongoUri == "" {

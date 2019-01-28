@@ -1,43 +1,44 @@
 package disk
 
 import (
+	"context"
 	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"gopkg.in/mgo.v2/bson"
 	"strconv"
 	"strings"
 	"time"
 )
 
 type Disk struct {
-	Id               bson.ObjectId `bson:"_id,omitempty" json:"id"`
-	Name             string        `bson:"name" json:"name"`
-	State            string        `bson:"state" json:"state"`
-	Node             bson.ObjectId `bson:"node" json:"node"`
-	Organization     bson.ObjectId `bson:"organization,omitempty" json:"organization"`
-	Instance         bson.ObjectId `bson:"instance,omitempty" json:"instance"`
-	SourceInstance   bson.ObjectId `bson:"source_instance,omitempty" json:"source_instance"`
-	DeleteProtection bool          `bson:"delete_protection" json:"delete_protection"`
-	Image            bson.ObjectId `bson:"image,omitempty" json:"image"`
-	RestoreImage     bson.ObjectId `bson:"restore_image,omitempty" json:"restore_image"`
-	Backing          bool          `bson:"backing" json:"backing"`
-	BackingImage     string        `bson:"backing_image" json:"backing_image"`
-	Index            string        `bson:"index" json:"index"`
-	Size             int           `bson:"size" json:"size"`
-	Backup           bool          `bson:"backup" json:"backup"`
-	LastBackup       time.Time     `bson:"last_backup" json:"last_backup"`
+	Id               primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name             string             `bson:"name" json:"name"`
+	State            string             `bson:"state" json:"state"`
+	Node             primitive.ObjectID `bson:"node" json:"node"`
+	Organization     primitive.ObjectID `bson:"organization,omitempty" json:"organization"`
+	Instance         primitive.ObjectID `bson:"instance,omitempty" json:"instance"`
+	SourceInstance   primitive.ObjectID `bson:"source_instance,omitempty" json:"source_instance"`
+	DeleteProtection bool               `bson:"delete_protection" json:"delete_protection"`
+	Image            primitive.ObjectID `bson:"image,omitempty" json:"image"`
+	RestoreImage     primitive.ObjectID `bson:"restore_image,omitempty" json:"restore_image"`
+	Backing          bool               `bson:"backing" json:"backing"`
+	BackingImage     string             `bson:"backing_image" json:"backing_image"`
+	Index            string             `bson:"index" json:"index"`
+	Size             int                `bson:"size" json:"size"`
+	Backup           bool               `bson:"backup" json:"backup"`
+	LastBackup       time.Time          `bson:"last_backup" json:"last_backup"`
 }
 
 func (d *Disk) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
-	if d.Instance != "" && d.Index != "" {
+	if !d.Instance.IsZero() && d.Index != "" {
 		index, e := strconv.Atoi(d.Index)
 		if e != nil {
 			errData = &errortypes.ErrorData{
@@ -66,8 +67,8 @@ func (d *Disk) Validate(db *database.Database) (
 		return
 	}
 
-	if d.Instance == "" && !strings.HasPrefix(d.Index, "hold") {
-		d.Index = fmt.Sprintf("hold_%s", bson.NewObjectId().Hex())
+	if d.Instance.IsZero() && !strings.HasPrefix(d.Index, "hold") {
+		d.Index = fmt.Sprintf("hold_%s", primitive.NewObjectID().Hex())
 	}
 
 	if d.State == "" {
@@ -108,7 +109,7 @@ func (d *Disk) CommitFields(db *database.Database, fields set.Set) (
 func (d *Disk) Insert(db *database.Database) (err error) {
 	coll := db.Disks()
 
-	err = coll.Insert(d)
+	_, err = coll.InsertOne(context.Background(), d)
 	if err != nil {
 		err = database.ParseError(err)
 		return

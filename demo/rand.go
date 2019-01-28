@@ -1,20 +1,20 @@
 package demo
 
 import (
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"gopkg.in/mgo.v2/bson"
 	"sync"
 )
 
 var (
 	lock            = sync.Mutex{}
-	ipStore         = map[bson.ObjectId]string{}
-	ip6Store        = map[bson.ObjectId]string{}
-	privateIpStore  = map[bson.ObjectId]string{}
-	privateIp6Store = map[bson.ObjectId]string{}
+	ipStore         = map[primitive.ObjectID]string{}
+	ip6Store        = map[primitive.ObjectID]string{}
+	privateIpStore  = map[primitive.ObjectID]string{}
+	privateIp6Store = map[primitive.ObjectID]string{}
 )
 
-func RandIp(instId bson.ObjectId) (addr string) {
+func RandIp(instId primitive.ObjectID) (addr string) {
 	lock.Lock()
 	defer lock.Unlock()
 
@@ -27,7 +27,7 @@ func RandIp(instId bson.ObjectId) (addr string) {
 	return
 }
 
-func RandIp6(instId bson.ObjectId) (addr string) {
+func RandIp6(instId primitive.ObjectID) (addr string) {
 	lock.Lock()
 	defer lock.Unlock()
 
@@ -40,7 +40,7 @@ func RandIp6(instId bson.ObjectId) (addr string) {
 	return
 }
 
-func RandPrivateIp(instId bson.ObjectId) (addr string) {
+func RandPrivateIp(instId primitive.ObjectID) (addr string) {
 	lock.Lock()
 	defer lock.Unlock()
 
@@ -53,7 +53,7 @@ func RandPrivateIp(instId bson.ObjectId) (addr string) {
 	return
 }
 
-func RandPrivateIp6(instId bson.ObjectId) (addr string) {
+func RandPrivateIp6(instId primitive.ObjectID) (addr string) {
 	lock.Lock()
 	defer lock.Unlock()
 

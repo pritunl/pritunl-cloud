@@ -3,21 +3,21 @@ package ahandlers
 import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type blockData struct {
-	Id        bson.ObjectId `json:"id"`
-	Name      string        `json:"name"`
-	Addresses []string      `json:"addresses"`
-	Excludes  []string      `json:"excludes"`
-	Netmask   string        `json:"netmask"`
-	Gateway   string        `json:"gateway"`
+	Id        primitive.ObjectID `json:"id"`
+	Name      string             `json:"name"`
+	Addresses []string           `json:"addresses"`
+	Excludes  []string           `json:"excludes"`
+	Netmask   string             `json:"netmask"`
+	Gateway   string             `json:"gateway"`
 }
 
 func blockPut(c *gin.Context) {

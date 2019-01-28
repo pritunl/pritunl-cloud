@@ -1,8 +1,9 @@
 package acme
 
 import (
+	"context"
+	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/pritunl-cloud/database"
-	"gopkg.in/mgo.v2/bson"
 	"time"
 )
 
@@ -15,9 +16,9 @@ type Challenge struct {
 func (c *Challenge) Insert(db *database.Database) (err error) {
 	coll := db.AcmeChallenges()
 
-	err = coll.Insert(c)
+	_, err = coll.InsertOne(context.Background(), c)
 	if err != nil {
-		database.ParseError(err)
+		err = database.ParseError(err)
 		return
 	}
 
@@ -27,7 +28,7 @@ func (c *Challenge) Insert(db *database.Database) (err error) {
 func (c *Challenge) Remove(db *database.Database) (err error) {
 	coll := db.AcmeChallenges()
 
-	err = coll.Remove(&bson.M{
+	_, err = coll.DeleteOne(context.Background(), &bson.M{
 		"_id": c.Id,
 	})
 	if err != nil {

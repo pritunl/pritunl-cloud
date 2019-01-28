@@ -1,17 +1,18 @@
 package policy
 
 import (
+	"context"
 	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/agent"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/user"
-	"gopkg.in/mgo.v2/bson"
 	"net"
 	"net/http"
 )
@@ -23,28 +24,35 @@ type Rule struct {
 }
 
 type Policy struct {
-	Id                   bson.ObjectId    `bson:"_id,omitempty" json:"id"`
-	Name                 string           `bson:"name" json:"name"`
-	Roles                []string         `bson:"roles" json:"roles"`
-	Rules                map[string]*Rule `bson:"rules" json:"rules"`
-	AdminSecondary       bson.ObjectId    `bson:"admin_secondary,omitempty" json:"admin_secondary"`
-	UserSecondary        bson.ObjectId    `bson:"user_secondary,omitempty" json:"user_secondary"`
-	AdminDeviceSecondary bool             `bson:"admin_device_secondary" json:"admin_device_secondary"`
-	UserDeviceSecondary  bool             `bson:"user_device_secondary" json:"user_device_secondary"`
+	Id                   primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name                 string             `bson:"name" json:"name"`
+	Roles                []string           `bson:"roles" json:"roles"`
+	Rules                map[string]*Rule   `bson:"rules" json:"rules"`
+	AdminSecondary       primitive.ObjectID `bson:"admin_secondary,omitempty" json:"admin_secondary"`
+	UserSecondary        primitive.ObjectID `bson:"user_secondary,omitempty" json:"user_secondary"`
+	AdminDeviceSecondary bool               `bson:"admin_device_secondary" json:"admin_device_secondary"`
+	UserDeviceSecondary  bool               `bson:"user_device_secondary" json:"user_device_secondary"`
 }
 
 func (p *Policy) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
-	if p.AdminSecondary != "" &&
+	if p.Roles == nil {
+		p.Roles = []string{}
+	}
+	if p.Rules == nil {
+		p.Rules = map[string]*Rule{}
+	}
+
+	if !p.AdminSecondary.IsZero() &&
 		settings.Auth.GetSecondaryProvider(p.AdminSecondary) == nil {
 
-		p.AdminSecondary = ""
+		p.AdminSecondary = primitive.NilObjectID
 	}
-	if p.UserSecondary != "" &&
+	if !p.UserSecondary.IsZero() &&
 		settings.Auth.GetSecondaryProvider(p.UserSecondary) == nil {
 
-		p.UserSecondary = ""
+		p.UserSecondary = primitive.NilObjectID
 	}
 
 	hasUserNode := false
@@ -409,14 +417,14 @@ func (p *Policy) CommitFields(db *database.Database, fields set.Set) (
 func (p *Policy) Insert(db *database.Database) (err error) {
 	coll := db.Policies()
 
-	if p.Id != "" {
+	if !p.Id.IsZero() {
 		err = &errortypes.DatabaseError{
 			errors.New("policy: Policy already exists"),
 		}
 		return
 	}
 
-	err = coll.Insert(p)
+	_, err = coll.InsertOne(context.Background(), p)
 	if err != nil {
 		err = database.ParseError(err)
 		return

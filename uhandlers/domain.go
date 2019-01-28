@@ -2,15 +2,16 @@ package uhandlers
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/domain"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"gopkg.in/mgo.v2/bson"
 )
 
 func domainsGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(bson.ObjectId)
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
 	query := &bson.M{
 		"organization": userOrg,

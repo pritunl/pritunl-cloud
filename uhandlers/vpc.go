@@ -4,29 +4,30 @@ import (
 	"fmt"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vpc"
-	"gopkg.in/mgo.v2/bson"
 	"strconv"
 	"strings"
 )
 
 type vpcData struct {
-	Id         bson.ObjectId `json:"id"`
-	Name       string        `json:"name"`
-	Network    string        `json:"network"`
-	Datacenter bson.ObjectId `json:"datacenter"`
-	Routes     []*vpc.Route  `json:"routes"`
-	LinkUris   []string      `json:"link_uris"`
+	Id         primitive.ObjectID `json:"id"`
+	Name       string             `json:"name"`
+	Network    string             `json:"network"`
+	Datacenter primitive.ObjectID `json:"datacenter"`
+	Routes     []*vpc.Route       `json:"routes"`
+	LinkUris   []string           `json:"link_uris"`
 }
 
 type vpcsData struct {
 	Vpcs  []*vpc.Vpc `json:"vpcs"`
-	Count int        `json:"count"`
+	Count int64      `json:"count"`
 }
 
 func vpcPut(c *gin.Context) {
@@ -35,7 +36,7 @@ func vpcPut(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(bson.ObjectId)
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
 	data := &vpcData{}
 
 	vpcId, ok := utils.ParseObjectId(c.Param("vpc_id"))
@@ -112,7 +113,7 @@ func vpcPost(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(bson.ObjectId)
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
 	data := &vpcData{
 		Name: "New VPC",
 	}
@@ -174,7 +175,7 @@ func vpcDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(bson.ObjectId)
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
 	vpcId, ok := utils.ParseObjectId(c.Param("vpc_id"))
 	if !ok {
@@ -209,8 +210,8 @@ func vpcsDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(bson.ObjectId)
-	data := []bson.ObjectId{}
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	data := []primitive.ObjectID{}
 
 	err := c.Bind(&data)
 	if err != nil {
@@ -243,7 +244,7 @@ func vpcsDelete(c *gin.Context) {
 
 func vpcGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(bson.ObjectId)
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
 	vpcId, ok := utils.ParseObjectId(c.Param("vpc_id"))
 	if !ok {
@@ -264,7 +265,7 @@ func vpcGet(c *gin.Context) {
 
 func vpcsGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(bson.ObjectId)
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
 	if c.Query("names") == "true" {
 		query := &bson.M{
@@ -279,8 +280,8 @@ func vpcsGet(c *gin.Context) {
 
 		c.JSON(200, vpcs)
 	} else {
-		page, _ := strconv.Atoi(c.Query("page"))
-		pageCount, _ := strconv.Atoi(c.Query("page_count"))
+		page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
+		pageCount, _ := strconv.ParseInt(c.Query("page_count"), 10, 0)
 
 		query := bson.M{
 			"organization": userOrg,

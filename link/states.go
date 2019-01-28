@@ -10,11 +10,11 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"gopkg.in/mgo.v2/bson"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -24,7 +24,7 @@ import (
 )
 
 var (
-	caches = map[bson.ObjectId]map[string]*stateCache{}
+	caches = map[primitive.ObjectID]map[string]*stateCache{}
 )
 
 type stateData struct {
@@ -41,7 +41,7 @@ type stateCache struct {
 	State     *State
 }
 
-func getStateCache(vpcId bson.ObjectId, uri string) (state *State) {
+func getStateCache(vpcId primitive.ObjectID, uri string) (state *State) {
 	vpcCache := caches[vpcId]
 	if vpcCache != nil {
 		cache := vpcCache[uri]
@@ -56,7 +56,7 @@ func getStateCache(vpcId bson.ObjectId, uri string) (state *State) {
 	return
 }
 
-func getState(vpcId bson.ObjectId, uri, localAddr, pubAddr, pubAddr6 string) (
+func getState(vpcId primitive.ObjectID, uri, localAddr, pubAddr, pubAddr6 string) (
 	state *State, err error) {
 
 	if constants.Interrupt {
@@ -240,7 +240,7 @@ func getState(vpcId bson.ObjectId, uri, localAddr, pubAddr, pubAddr6 string) (
 	return
 }
 
-func GetStates(vpcId bson.ObjectId, uris []string,
+func GetStates(vpcId primitive.ObjectID, uris []string,
 	localAddr, pubAddr, pubAddr6 string) (states []*State) {
 
 	states = []*State{}

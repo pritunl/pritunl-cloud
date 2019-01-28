@@ -2,6 +2,7 @@ package auth
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -98,7 +99,7 @@ func GoogleRequest(db *database.Database, location, query string) (
 		Query:     query,
 	}
 
-	err = coll.Insert(tokn)
+	_, err = coll.InsertOne(context.Background(), tokn)
 	if err != nil {
 		err = database.ParseError(err)
 		return

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/aggregate"
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -18,34 +20,33 @@ import (
 	"github.com/pritunl/pritunl-cloud/storage"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/zone"
-	"gopkg.in/mgo.v2/bson"
 	"strconv"
 	"strings"
 )
 
 type diskData struct {
-	Id               bson.ObjectId `json:"id"`
-	Name             string        `json:"name"`
-	Instance         bson.ObjectId `json:"instance"`
-	Index            string        `json:"index"`
-	Node             bson.ObjectId `json:"node"`
-	DeleteProtection bool          `json:"delete_protection"`
-	Image            bson.ObjectId `json:"image"`
-	RestoreImage     bson.ObjectId `json:"restore_image"`
-	Backing          bool          `json:"backing"`
-	State            string        `json:"state"`
-	Size             int           `json:"size"`
-	Backup           bool          `json:"backup"`
+	Id               primitive.ObjectID `json:"id"`
+	Name             string             `json:"name"`
+	Instance         primitive.ObjectID `json:"instance"`
+	Index            string             `json:"index"`
+	Node             primitive.ObjectID `json:"node"`
+	DeleteProtection bool               `json:"delete_protection"`
+	Image            primitive.ObjectID `json:"image"`
+	RestoreImage     primitive.ObjectID `json:"restore_image"`
+	Backing          bool               `json:"backing"`
+	State            string             `json:"state"`
+	Size             int                `json:"size"`
+	Backup           bool               `json:"backup"`
 }
 
 type disksMultiData struct {
-	Ids   []bson.ObjectId `json:"ids"`
-	State string          `json:"state"`
+	Ids   []primitive.ObjectID `json:"ids"`
+	State string               `json:"state"`
 }
 
 type disksData struct {
 	Disks []*aggregate.DiskAggregate `json:"disks"`
-	Count int                        `json:"count"`
+	Count int64                      `json:"count"`
 }
 
 func diskPut(c *gin.Context) {
@@ -54,7 +55,7 @@ func diskPut(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(bson.ObjectId)
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
 	dta := &diskData{}
 
 	diskId, ok := utils.ParseObjectId(c.Param("disk_id"))
@@ -84,7 +85,7 @@ func diskPut(c *gin.Context) {
 		"backup",
 	)
 
-	if dta.Instance != "" {
+	if !dta.Instance.IsZero() {
 		exists, err := instance.ExistsOrg(db, userOrg, dta.Instance)
 		if err != nil {
 			return
@@ -166,7 +167,7 @@ func diskPost(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(bson.ObjectId)
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
 	dta := &diskData{
 		Name: "New Disk",
 	}
@@ -177,7 +178,7 @@ func diskPost(c *gin.Context) {
 		return
 	}
 
-	if dta.Instance != "" {
+	if !dta.Instance.IsZero() {
 		exists, err := instance.ExistsOrg(db, userOrg, dta.Instance)
 		if err != nil {
 			return
@@ -210,7 +211,7 @@ func diskPost(c *gin.Context) {
 		return
 	}
 
-	if dta.Image != "" {
+	if !dta.Image.IsZero() {
 		img, err := image.GetOrgPublic(db, userOrg, dta.Image)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
@@ -287,7 +288,7 @@ func disksPut(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(bson.ObjectId)
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
 	data := &disksMultiData{}
 
 	err := c.Bind(data)
@@ -327,7 +328,7 @@ func diskDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(bson.ObjectId)
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
 	diskId, ok := utils.ParseObjectId(c.Param("disk_id"))
 	if !ok {
@@ -367,8 +368,8 @@ func disksDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(bson.ObjectId)
-	dta := []bson.ObjectId{}
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	dta := []primitive.ObjectID{}
 
 	err := c.Bind(&dta)
 	if err != nil {
@@ -389,7 +390,7 @@ func disksDelete(c *gin.Context) {
 
 func diskGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(bson.ObjectId)
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
 	diskId, ok := utils.ParseObjectId(c.Param("disk_id"))
 	if !ok {
@@ -408,10 +409,10 @@ func diskGet(c *gin.Context) {
 
 func disksGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(bson.ObjectId)
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
-	page, _ := strconv.Atoi(c.Query("page"))
-	pageCount, _ := strconv.Atoi(c.Query("page_count"))
+	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
+	pageCount, _ := strconv.ParseInt(c.Query("page_count"), 10, 0)
 
 	query := bson.M{
 		"organization": userOrg,

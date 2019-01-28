@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/link"
 	"github.com/pritunl/pritunl-cloud/vm"
-	"gopkg.in/mgo.v2/bson"
 	"io/ioutil"
 	"path"
 	"strings"
@@ -22,7 +22,9 @@ type templateData struct {
 	PreSharedKey string
 }
 
-func writeTemplates(vpcId bson.ObjectId, states []*link.State) (err error) {
+func writeTemplates(vpcId primitive.ObjectID,
+	states []*link.State) (err error) {
+
 	namespace := vm.GetLinkNamespace(vpcId, 0)
 	baseDir := path.Join("/", "etc", "netns", namespace)
 

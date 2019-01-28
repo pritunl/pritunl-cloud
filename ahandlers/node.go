@@ -4,29 +4,30 @@ import (
 	"fmt"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"gopkg.in/mgo.v2/bson"
 	"strconv"
 	"strings"
 )
 
 type nodeData struct {
-	Id                   bson.ObjectId           `json:"id"`
-	Zone                 bson.ObjectId           `json:"zone"`
+	Id                   primitive.ObjectID      `json:"id"`
+	Zone                 primitive.ObjectID      `json:"zone"`
 	Name                 string                  `json:"name"`
 	Types                []string                `json:"types"`
 	Port                 int                     `json:"port"`
 	Protocol             string                  `json:"protocol"`
 	Hypervisor           string                  `json:"hypervisor"`
-	Certificates         []bson.ObjectId         `json:"certificates"`
+	Certificates         []primitive.ObjectID    `json:"certificates"`
 	AdminDomain          string                  `json:"admin_domain"`
 	UserDomain           string                  `json:"user_domain"`
-	Services             []bson.ObjectId         `json:"services"`
+	Services             []primitive.ObjectID    `json:"services"`
 	ExternalInterfaces   []string                `json:"external_interfaces"`
 	InternalInterfaces   []string                `json:"internal_interfaces"`
 	NetworkMode          string                  `bson:"network_mode" json:"network_mode"`
@@ -40,7 +41,7 @@ type nodeData struct {
 
 type nodesData struct {
 	Nodes []*node.Node `json:"nodes"`
-	Count int          `json:"count"`
+	Count int64        `json:"count"`
 }
 
 func nodePut(c *gin.Context) {
@@ -108,8 +109,8 @@ func nodePut(c *gin.Context) {
 		"network_roles",
 	)
 
-	if data.Zone != "" && data.Zone != nde.Zone {
-		if nde.Zone != "" {
+	if !data.Zone.IsZero() && data.Zone != nde.Zone {
+		if !nde.Zone.IsZero() {
 			errData := &errortypes.ErrorData{
 				Error:   "zone_modified",
 				Message: "Cannot modify zone once set",
@@ -210,8 +211,8 @@ func nodesGet(c *gin.Context) {
 
 		c.JSON(200, nodes)
 	} else {
-		page, _ := strconv.Atoi(c.Query("page"))
-		pageCount, _ := strconv.Atoi(c.Query("page_count"))
+		page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
+		pageCount, _ := strconv.ParseInt(c.Query("page_count"), 10, 0)
 
 		query := bson.M{}
 
@@ -229,7 +230,7 @@ func nodesGet(c *gin.Context) {
 		}
 
 		zone, _ := utils.ParseObjectId(c.Query("zone"))
-		if zone != "" {
+		if !zone.IsZero() {
 			query["zone"] = zone
 		}
 

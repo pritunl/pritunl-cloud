@@ -4,24 +4,24 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/storage"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type storageData struct {
-	Id        bson.ObjectId `json:"id"`
-	Name      string        `json:"name"`
-	Type      string        `json:"type"`
-	Endpoint  string        `json:"endpoint"`
-	Bucket    string        `json:"bucket"`
-	AccessKey string        `json:"access_key"`
-	SecretKey string        `json:"secret_key"`
-	Insecure  bool          `json:"insecure"`
+	Id        primitive.ObjectID `json:"id"`
+	Name      string             `json:"name"`
+	Type      string             `json:"type"`
+	Endpoint  string             `json:"endpoint"`
+	Bucket    string             `json:"bucket"`
+	AccessKey string             `json:"access_key"`
+	SecretKey string             `json:"secret_key"`
+	Insecure  bool               `json:"insecure"`
 }
 
 func storagePut(c *gin.Context) {

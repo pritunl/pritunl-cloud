@@ -1,13 +1,15 @@
 package task
 
 import (
+	"context"
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/storage"
-	"gopkg.in/mgo.v2/bson"
 )
 
 var storageSync = &Task{
@@ -22,10 +24,22 @@ var storageSync = &Task{
 func storageSyncHandler(db *database.Database) (err error) {
 	coll := db.Images()
 
-	imgStoreIdsList := []bson.ObjectId{}
-	err = coll.Find(&bson.M{}).Distinct("storage", &imgStoreIdsList)
+	imgStoreIdsList := []primitive.ObjectID{}
+
+	storeIdsInf, err := coll.Distinct(
+		context.Background(),
+		"storage",
+		&bson.M{},
+	)
 	if err != nil {
+		err = database.ParseError(err)
 		return
+	}
+
+	for _, storeIdInf := range storeIdsInf {
+		if storeId, ok := storeIdInf.(primitive.ObjectID); ok {
+			imgStoreIdsList = append(imgStoreIdsList, storeId)
+		}
 	}
 
 	imgStoreIds := set.NewSet()
@@ -54,9 +68,9 @@ func storageSyncHandler(db *database.Database) (err error) {
 
 	imgStoreIds.Subtract(storeIds)
 
-	remStoreIds := []bson.ObjectId{}
+	remStoreIds := []primitive.ObjectID{}
 	for storeIdInf := range imgStoreIds.Iter() {
-		storeId := storeIdInf.(bson.ObjectId)
+		storeId := storeIdInf.(primitive.ObjectID)
 
 		logrus.WithFields(logrus.Fields{
 			"storage_id": storeId.Hex(),
@@ -66,7 +80,7 @@ func storageSyncHandler(db *database.Database) (err error) {
 	}
 
 	if len(remStoreIds) > 0 {
-		_, err = coll.RemoveAll(&bson.M{
+		_, err = coll.DeleteMany(context.Background(), &bson.M{
 			"storage": &bson.M{
 				"$in": remStoreIds,
 			},

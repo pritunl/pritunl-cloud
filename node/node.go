@@ -2,8 +2,12 @@ package node
 
 import (
 	"container/list"
+	"context"
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/bridges"
 	"github.com/pritunl/pritunl-cloud/certificate"
 	"github.com/pritunl/pritunl-cloud/constants"
@@ -12,8 +16,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 	"net/http"
 	"sort"
 	"strings"
@@ -26,16 +28,16 @@ var (
 )
 
 type Node struct {
-	Id                   bson.ObjectId              `bson:"_id" json:"id"`
-	Zone                 bson.ObjectId              `bson:"zone,omitempty" json:"zone"`
+	Id                   primitive.ObjectID         `bson:"_id" json:"id"`
+	Zone                 primitive.ObjectID         `bson:"zone,omitempty" json:"zone"`
 	Name                 string                     `bson:"name" json:"name"`
 	Types                []string                   `bson:"types" json:"types"`
 	Timestamp            time.Time                  `bson:"timestamp" json:"timestamp"`
 	Port                 int                        `bson:"port" json:"port"`
 	Protocol             string                     `bson:"protocol" json:"protocol"`
 	Hypervisor           string                     `bson:"hypervisor" json:"hypervisor"`
-	Certificate          bson.ObjectId              `bson:"certificate" json:"certificate"`
-	Certificates         []bson.ObjectId            `bson:"certificates" json:"certificates"`
+	Certificate          primitive.ObjectID         `bson:"certificate" json:"certificate"`
+	Certificates         []primitive.ObjectID       `bson:"certificates" json:"certificates"`
 	AdminDomain          string                     `bson:"admin_domain" json:"admin_domain"`
 	UserDomain           string                     `bson:"user_domain" json:"user_domain"`
 	RequestsMin          int64                      `bson:"requests_min" json:"requests_min"`
@@ -142,7 +144,7 @@ func (n *Node) Validate(db *database.Database) (
 	}
 
 	if n.Certificates == nil || n.Protocol != "https" {
-		n.Certificates = []bson.ObjectId{}
+		n.Certificates = []primitive.ObjectID{}
 	}
 
 	if n.Types == nil {
@@ -161,16 +163,18 @@ func (n *Node) Validate(db *database.Database) (
 		}
 	}
 
-	if n.Zone != "" {
+	if !n.Zone.IsZero() {
 		coll := db.Zones()
-		count, e := coll.FindId(n.Zone).Count()
+		count, e := coll.Count(context.Background(), &bson.M{
+			"_id": n.Zone,
+		})
 		if e != nil {
 			err = database.ParseError(e)
 			return
 		}
 
 		if count == 0 {
-			n.Zone = ""
+			n.Zone = primitive.NilObjectID
 		}
 	}
 
@@ -257,8 +261,16 @@ func (n *Node) GetRemoteAddr(r *http.Request) (addr string) {
 func (n *Node) update(db *database.Database) (err error) {
 	coll := db.Nodes()
 
-	change := mgo.Change{
-		Update: &bson.M{
+	nde := &Node{}
+	opts := &options.FindOneAndUpdateOptions{}
+	opts.SetReturnDocument(options.After)
+
+	err = coll.FindOneAndUpdate(
+		context.Background(),
+		&bson.M{
+			"_id": n.Id,
+		},
+		&bson.M{
 			"$set": &bson.M{
 				"timestamp":            n.Timestamp,
 				"requests_min":         n.RequestsMin,
@@ -275,15 +287,8 @@ func (n *Node) update(db *database.Database) (err error) {
 				"available_interfaces": n.AvailableInterfaces,
 			},
 		},
-		Upsert:    false,
-		ReturnNew: true,
-	}
-
-	nde := &Node{}
-
-	_, err = coll.Find(&bson.M{
-		"_id": n.Id,
-	}).Apply(change, nde)
+		opts,
+	).Decode(nde)
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -547,9 +552,19 @@ func (n *Node) Init() (err error) {
 		bsonSet["external_interfaces"] = ifaces
 	}
 
-	_, err = coll.UpsertId(n.Id, &bson.M{
-		"$set": bsonSet,
-	})
+	opts := &options.UpdateOptions{}
+	opts.SetUpsert(true)
+
+	_, err = coll.UpdateOne(
+		context.Background(),
+		&bson.M{
+			"_id": n.Id,
+		},
+		&bson.M{
+			"$set": bsonSet,
+		},
+		opts,
+	)
 	if err != nil {
 		err = database.ParseError(err)
 		return

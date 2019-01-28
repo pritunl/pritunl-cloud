@@ -1,8 +1,11 @@
 package aggregate
 
 import (
+	"context"
 	"fmt"
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/authority"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
@@ -10,7 +13,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"gopkg.in/mgo.v2/bson"
 	"sort"
 	"strings"
 )
@@ -34,23 +36,21 @@ type InstanceAggregate struct {
 }
 
 func GetInstancePaged(db *database.Database, query *bson.M, page,
-	pageCount int) (insts []*InstanceAggregate, count int, err error) {
+pageCount int64) (insts []*InstanceAggregate, count int64, err error) {
 
 	coll := db.Instances()
 	insts = []*InstanceAggregate{}
 
-	qury := coll.Find(query)
-
-	count, err = qury.Count()
+	count, err = coll.Count(context.Background(), query)
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
 
-	page = utils.Min(page, count / pageCount)
-	skip := utils.Min(page*pageCount, count)
+	page = utils.Min64(page, count/pageCount)
+	skip := utils.Min64(page*pageCount, count)
 
-	pipe := coll.Pipe([]*bson.M{
+	cursor, err := coll.Aggregate(context.Background(), []*bson.M{
 		&bson.M{
 			"$match": query,
 		},
@@ -108,19 +108,25 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 		//	},
 		//},
 	})
-
-	firesOrg := map[bson.ObjectId]map[string][]*firewall.Firewall{}
-	firesRoles := map[bson.ObjectId]set.Set{}
-	authrsOrg := map[bson.ObjectId]map[string][]*authority.Authority{}
-	authrsRoles := map[bson.ObjectId]set.Set{}
-
-	resp := []*InstancePipe{}
-	err = pipe.All(&resp)
 	if err != nil {
+		err = database.ParseError(err)
 		return
 	}
+	defer cursor.Close(context.Background())
 
-	for _, doc := range resp {
+	firesOrg := map[primitive.ObjectID]map[string][]*firewall.Firewall{}
+	firesRoles := map[primitive.ObjectID]set.Set{}
+	authrsOrg := map[primitive.ObjectID]map[string][]*authority.Authority{}
+	authrsRoles := map[primitive.ObjectID]set.Set{}
+
+	for cursor.Next(context.Background()) {
+		doc := &InstancePipe{}
+		err = cursor.Decode(doc)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
 		info := &InstanceInfo{
 			Node:          "Unknown",
 			Disks:         []string{},
@@ -259,6 +265,12 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 		}
 
 		insts = append(insts, inst)
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
 	}
 
 	return

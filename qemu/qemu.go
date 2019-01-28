@@ -2,8 +2,8 @@ package qemu
 
 import (
 	"fmt"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/paths"
-	"gopkg.in/mgo.v2/bson"
 	"strings"
 )
 
@@ -22,7 +22,7 @@ type Network struct {
 }
 
 type Qemu struct {
-	Id       bson.ObjectId
+	Id       primitive.ObjectID
 	Data     string
 	Kvm      bool
 	Machine  string

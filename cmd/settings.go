@@ -1,16 +1,18 @@
 package cmd
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/config"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/user"
-	"gopkg.in/mgo.v2/bson"
 )
 
 func Mongo() (err error) {
@@ -41,7 +43,7 @@ func ResetId() (err error) {
 		return
 	}
 
-	config.Config.NodeId = bson.NewObjectId().Hex()
+	config.Config.NodeId = primitive.NewObjectID().Hex()
 
 	err = config.Save()
 	if err != nil {
@@ -61,7 +63,7 @@ func ResetPassword() (err error) {
 
 	coll := db.Users()
 
-	err = coll.Remove(&bson.M{
+	_, err = coll.DeleteOne(context.Background(), &bson.M{
 		"username": "pritunl",
 	})
 	if err != nil {

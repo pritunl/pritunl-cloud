@@ -1,13 +1,16 @@
 package image
 
 import (
+	"context"
 	"crypto/md5"
 	"fmt"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/minio/minio-go"
+	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"gopkg.in/mgo.v2/bson"
 	"regexp"
 	"time"
 )
@@ -27,7 +30,7 @@ func GetEtag(info minio.ObjectInfo) string {
 	return etagReg.ReplaceAllString(etag, "")
 }
 
-func Get(db *database.Database, imgId bson.ObjectId) (
+func Get(db *database.Database, imgId primitive.ObjectID) (
 	img *Image, err error) {
 
 	coll := db.Images()
@@ -41,30 +44,31 @@ func Get(db *database.Database, imgId bson.ObjectId) (
 	return
 }
 
-func GetOrg(db *database.Database, orgId, imgId bson.ObjectId) (
+func GetOrg(db *database.Database, orgId, imgId primitive.ObjectID) (
 	img *Image, err error) {
 
 	coll := db.Images()
 	img = &Image{}
 
-	err = coll.FindOne(&bson.M{
+	err = coll.FindOne(context.Background(), &bson.M{
 		"_id":          imgId,
 		"organization": orgId,
-	}, img)
+	}).Decode(img)
 	if err != nil {
+		err = database.ParseError(err)
 		return
 	}
 
 	return
 }
 
-func GetOrgPublic(db *database.Database, orgId, imgId bson.ObjectId) (
+func GetOrgPublic(db *database.Database, orgId, imgId primitive.ObjectID) (
 	img *Image, err error) {
 
 	coll := db.Images()
 	img = &Image{}
 
-	err = coll.FindOne(&bson.M{
+	err = coll.FindOne(context.Background(), &bson.M{
 		"_id": imgId,
 		"$or": []*bson.M{
 			&bson.M{
@@ -76,36 +80,44 @@ func GetOrgPublic(db *database.Database, orgId, imgId bson.ObjectId) (
 				},
 			},
 		},
-	}, img)
+	}).Decode(img)
 	if err != nil {
+		err = database.ParseError(err)
 		return
 	}
 
 	return
 }
 
-func Distinct(db *database.Database, storeId bson.ObjectId) (
+func Distinct(db *database.Database, storeId primitive.ObjectID) (
 	keys []string, err error) {
 
 	coll := db.Images()
-
 	keys = []string{}
-	err = coll.Find(&bson.M{
+
+	keysInf, err := coll.Distinct(context.Background(), "key", &bson.M{
 		"storage": storeId,
-	}).Distinct("key", &keys)
+	})
 	if err != nil {
+		err = database.ParseError(err)
 		return
+	}
+
+	for _, keyInf := range keysInf {
+		if key, ok := keyInf.(string); ok {
+			keys = append(keys, key)
+		}
 	}
 
 	return
 }
 
-func ExistsOrg(db *database.Database, orgId, imgId bson.ObjectId) (
+func ExistsOrg(db *database.Database, orgId, imgId primitive.ObjectID) (
 	exists bool, err error) {
 
 	coll := db.Images()
 
-	n, err := coll.Find(&bson.M{
+	n, err := coll.Count(context.Background(), &bson.M{
 		"_id": imgId,
 		"$or": []*bson.M{
 			&bson.M{
@@ -117,8 +129,9 @@ func ExistsOrg(db *database.Database, orgId, imgId bson.ObjectId) (
 				},
 			},
 		},
-	}).Count()
+	})
 	if err != nil {
+		err = database.ParseError(err)
 		return
 	}
 
@@ -128,32 +141,48 @@ func ExistsOrg(db *database.Database, orgId, imgId bson.ObjectId) (
 
 	return
 }
-func GetAll(db *database.Database, query *bson.M, page, pageCount int) (
-	imgs []*Image, count int, err error) {
+
+func GetAll(db *database.Database, query *bson.M, page, pageCount int64) (
+	imgs []*Image, count int64, err error) {
 
 	coll := db.Images()
 	imgs = []*Image{}
 
-	qury := coll.Find(query)
-
-	count, err = qury.Count()
+	count, err = coll.Count(context.Background(), query)
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
 
-	page = utils.Min(page, count/pageCount)
-	skip := utils.Min(page*pageCount, count)
+	page = utils.Min64(page, count/pageCount)
+	skip := utils.Min64(page*pageCount, count)
 
-	cursor := qury.Sort("name").Skip(skip).Limit(pageCount).Iter()
+	cursor, err := coll.Find(
+		context.Background(),
+		query,
+		&options.FindOptions{
+			Sort: &bson.D{
+				{"name", 1},
+			},
+			Skip:  &skip,
+			Limit: &pageCount,
+		},
+	)
+	defer cursor.Close(context.Background())
 
-	img := &Image{}
-	for cursor.Next(img) {
+	for cursor.Next(context.Background()) {
+		img := &Image{}
+		err = cursor.Decode(img)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
 		imgs = append(imgs, img)
 		img = &Image{}
 	}
 
-	err = cursor.Close()
+	err = cursor.Err()
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -168,18 +197,37 @@ func GetAllNames(db *database.Database, query *bson.M) (
 	coll := db.Images()
 	images = []*Image{}
 
-	cursor := coll.Find(query).Sort("name").Select(&bson.M{
-		"name": 1,
-		"key":  1,
-	}).Iter()
+	cursor, err := coll.Find(
+		context.Background(),
+		query,
+		&options.FindOptions{
+			Sort: &bson.D{
+				{"name", 1},
+			},
+			Projection: &bson.D{
+				{"name", 1},
+				{"key", 1},
+			},
+		},
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(context.Background())
 
-	img := &Image{}
-	for cursor.Next(img) {
+	for cursor.Next(context.Background()) {
+		img := &Image{}
+		err = cursor.Decode(img)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
 		images = append(images, img)
-		img = &Image{}
 	}
 
-	err = cursor.Close()
+	err = cursor.Err()
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -192,17 +240,37 @@ func GetAllKeys(db *database.Database) (keys set.Set, err error) {
 	coll := db.Images()
 	keys = set.NewSet()
 
-	cursor := coll.Find(&bson.M{}).Select(&bson.M{
-		"_id":  1,
-		"etag": 1,
-	}).Iter()
+	cursor, err := coll.Find(
+		context.Background(),
+		&bson.M{},
+		&options.FindOptions{
+			Sort: &bson.D{
+				{"name", 1},
+			},
+			Projection: &bson.D{
+				{"_id", 1},
+				{"etag", 1},
+			},
+		},
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(context.Background())
 
-	img := &Image{}
-	for cursor.Next(img) {
+	for cursor.Next(context.Background()) {
+		img := &Image{}
+		err = cursor.Decode(img)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
 		keys.Add(fmt.Sprintf("%s-%s", img.Id.Hex(), img.Etag))
 	}
 
-	err = cursor.Close()
+	err = cursor.Err()
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -211,10 +279,10 @@ func GetAllKeys(db *database.Database) (keys set.Set, err error) {
 	return
 }
 
-func Remove(db *database.Database, imgId bson.ObjectId) (err error) {
+func Remove(db *database.Database, imgId primitive.ObjectID) (err error) {
 	coll := db.Images()
 
-	err = coll.Remove(&bson.M{
+	_, err = coll.DeleteOne(context.Background(), &bson.M{
 		"_id": imgId,
 	})
 	if err != nil {
@@ -230,11 +298,11 @@ func Remove(db *database.Database, imgId bson.ObjectId) (err error) {
 	return
 }
 
-func RemoveKeys(db *database.Database, storeId bson.ObjectId,
+func RemoveKeys(db *database.Database, storeId primitive.ObjectID,
 	keys []string) (err error) {
 	coll := db.Images()
 
-	_, err = coll.RemoveAll(&bson.M{
+	_, err = coll.DeleteMany(context.Background(), &bson.M{
 		"storage": storeId,
 		"key": &bson.M{
 			"$in": keys,

@@ -1,12 +1,15 @@
 package node
 
 import (
+	"context"
+	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"gopkg.in/mgo.v2/bson"
 )
 
-func Get(db *database.Database, nodeId bson.ObjectId) (
+func Get(db *database.Database, nodeId primitive.ObjectID) (
 	nde *Node, err error) {
 
 	coll := db.Nodes()
@@ -24,16 +27,26 @@ func GetAll(db *database.Database) (nodes []*Node, err error) {
 	coll := db.Nodes()
 	nodes = []*Node{}
 
-	cursor := coll.Find(bson.M{}).Iter()
+	cursor, err := coll.Find(context.Background(), bson.M{})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(context.Background())
 
-	nde := &Node{}
-	for cursor.Next(nde) {
+	for cursor.Next(context.Background()) {
+		nde := &Node{}
+		err = cursor.Decode(nde)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
 		nde.SetActive()
 		nodes = append(nodes, nde)
-		nde = &Node{}
 	}
 
-	err = cursor.Close()
+	err = cursor.Err()
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -48,13 +61,33 @@ func GetAllHypervisors(db *database.Database, query *bson.M) (
 	coll := db.Nodes()
 	nodes = []*Node{}
 
-	cursor := coll.Find(query).Sort("name").Select(&bson.M{
-		"name":  1,
-		"types": 1,
-	}).Iter()
+	cursor, err := coll.Find(
+		context.Background(),
+		query,
+		&options.FindOptions{
+			Sort: &bson.D{
+				{"name", 1},
+			},
+			Projection: &bson.D{
+				{"name", 1},
+				{"types", 1},
+			},
+		},
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(context.Background())
 
-	nde := &Node{}
-	for cursor.Next(nde) {
+	for cursor.Next(context.Background()) {
+		nde := &Node{}
+		err = cursor.Decode(nde)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
 		if !nde.IsHypervisor() {
 			nde = &Node{}
 		} else {
@@ -63,7 +96,7 @@ func GetAllHypervisors(db *database.Database, query *bson.M) (
 		}
 	}
 
-	err = cursor.Close()
+	err = cursor.Err()
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -72,33 +105,51 @@ func GetAllHypervisors(db *database.Database, query *bson.M) (
 	return
 }
 
-func GetAllPaged(db *database.Database, query *bson.M, page, pageCount int) (
-	nodes []*Node, count int, err error) {
+func GetAllPaged(db *database.Database, query *bson.M,
+	page, pageCount int64) (nodes []*Node, count int64, err error) {
 
 	coll := db.Nodes()
 	nodes = []*Node{}
 
-	qury := coll.Find(query)
-
-	count, err = qury.Count()
+	count, err = coll.Count(context.Background(), query)
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
 
-	page = utils.Min(page, count / pageCount)
-	skip := utils.Min(page*pageCount, count)
+	page = utils.Min64(page, count/pageCount)
+	skip := utils.Min64(page*pageCount, count)
 
-	cursor := qury.Sort("name").Skip(skip).Limit(pageCount).Iter()
+	cursor, err := coll.Find(
+		context.Background(),
+		query,
+		&options.FindOptions{
+			Sort: &bson.D{
+				{"name", 1},
+			},
+			Skip:  &skip,
+			Limit: &pageCount,
+		},
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(context.Background())
 
-	nde := &Node{}
-	for cursor.Next(nde) {
+	for cursor.Next(context.Background()) {
+		nde := &Node{}
+		err = cursor.Decode(nde)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
 		nde.SetActive()
 		nodes = append(nodes, nde)
-		nde = &Node{}
 	}
 
-	err = cursor.Close()
+	err = cursor.Err()
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -107,10 +158,10 @@ func GetAllPaged(db *database.Database, query *bson.M, page, pageCount int) (
 	return
 }
 
-func Remove(db *database.Database, nodeId bson.ObjectId) (err error) {
+func Remove(db *database.Database, nodeId primitive.ObjectID) (err error) {
 	coll := db.Nodes()
 
-	err = coll.Remove(&bson.M{
+	_, err = coll.DeleteOne(context.Background(), &bson.M{
 		"_id": nodeId,
 	})
 	if err != nil {

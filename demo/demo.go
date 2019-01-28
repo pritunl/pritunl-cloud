@@ -2,6 +2,7 @@ package demo
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/agent"
 	"github.com/pritunl/pritunl-cloud/audit"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -9,7 +10,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/session"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/subscription"
-	"gopkg.in/mgo.v2/bson"
 	"time"
 )
 
@@ -47,9 +47,10 @@ var Agent = &agent.Agent{
 	Longitude:       -122.337,
 }
 
+var auditId, _ = primitive.ObjectIDFromHex("5a17f9bf051a45ffacf2b352")
 var Audits = []*audit.Audit{
 	&audit.Audit{
-		Id:        bson.ObjectIdHex("5a17f9bf051a45ffacf2b352"),
+		Id:        auditId,
 		Timestamp: time.Unix(1498018860, 0),
 		Type:      "admin_login",
 		Fields: audit.Fields{
@@ -70,9 +71,11 @@ var Sessions = []*session.Session{
 	},
 }
 
+var logId0, _ = primitive.ObjectIDFromHex("5a18e6ae051a45ffac0e5b67")
+var logId1, _ = primitive.ObjectIDFromHex("5a190b42051a45ffac129bbc")
 var Logs = []*log.Entry{
 	&log.Entry{
-		Id:        bson.ObjectIdHex("5a18e6ae051a45ffac0e5b67"),
+		Id:        logId0,
 		Level:     log.Info,
 		Timestamp: time.Unix(1498018860, 0),
 		Message:   "router: Starting redirect server",
@@ -84,7 +87,7 @@ var Logs = []*log.Entry{
 		},
 	},
 	&log.Entry{
-		Id:        bson.ObjectIdHex("5a190b42051a45ffac129bbc"),
+		Id:        logId1,
 		Level:     log.Info,
 		Timestamp: time.Unix(1498018860, 0),
 		Message:   "router: Starting web server",

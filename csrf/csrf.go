@@ -1,6 +1,7 @@
 package csrf
 
 import (
+	"context"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"time"
@@ -28,7 +29,7 @@ func NewToken(db *database.Database, sessionId string) (
 		Timestamp: time.Now(),
 	}
 
-	err = coll.Insert(doc)
+	_, err = coll.InsertOne(context.Background(), doc)
 	if err != nil {
 		err = database.ParseError(err)
 		return

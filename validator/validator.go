@@ -2,20 +2,21 @@ package validator
 
 import (
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/audit"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/policy"
 	"github.com/pritunl/pritunl-cloud/user"
-	"gopkg.in/mgo.v2/bson"
 	"net/http"
 	"time"
 )
 
 func ValidateAdmin(db *database.Database, usr *user.User,
-	isApi bool, r *http.Request) (deviceAuth bool, secProvider bson.ObjectId,
-	errAudit audit.Fields, errData *errortypes.ErrorData, err error) {
+	isApi bool, r *http.Request) (deviceAuth bool,
+	secProvider primitive.ObjectID, errAudit audit.Fields,
+	errData *errortypes.ErrorData, err error) {
 
 	if !usr.ActiveUntil.IsZero() && usr.ActiveUntil.Before(time.Now()) {
 		usr.ActiveUntil = time.Time{}
@@ -74,7 +75,7 @@ func ValidateAdmin(db *database.Database, usr *user.User,
 				deviceAuth = true
 			}
 
-			if polcy.AdminSecondary != "" && secProvider == "" {
+			if !polcy.AdminSecondary.IsZero() && secProvider.IsZero() {
 				secProvider = polcy.AdminSecondary
 			}
 		}
@@ -84,8 +85,9 @@ func ValidateAdmin(db *database.Database, usr *user.User,
 }
 
 func ValidateUser(db *database.Database, usr *user.User,
-	isApi bool, r *http.Request) (deviceAuth bool, secProvider bson.ObjectId,
-	errAudit audit.Fields, errData *errortypes.ErrorData, err error) {
+	isApi bool, r *http.Request) (deviceAuth bool,
+	secProvider primitive.ObjectID, errAudit audit.Fields,
+	errData *errortypes.ErrorData, err error) {
 
 	if !usr.ActiveUntil.IsZero() && usr.ActiveUntil.Before(time.Now()) {
 		usr.ActiveUntil = time.Time{}
@@ -139,7 +141,7 @@ func ValidateUser(db *database.Database, usr *user.User,
 				deviceAuth = true
 			}
 
-			if polcy.UserSecondary != "" && secProvider == "" {
+			if !polcy.UserSecondary.IsZero() && secProvider.IsZero() {
 				secProvider = polcy.UserSecondary
 			}
 		}

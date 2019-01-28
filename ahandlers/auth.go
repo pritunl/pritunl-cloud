@@ -2,6 +2,7 @@ package ahandlers
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/audit"
 	"github.com/pritunl/pritunl-cloud/auth"
 	"github.com/pritunl/pritunl-cloud/authorizer"
@@ -17,7 +18,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/u2flib"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/validator"
-	"gopkg.in/mgo.v2/bson"
 	"strings"
 )
 
@@ -116,9 +116,9 @@ func authSessionPost(c *gin.Context) {
 		}
 
 		secType := ""
-		var secProvider bson.ObjectId
+		var secProvider primitive.ObjectID
 		if deviceCount == 0 {
-			if secProviderId == "" {
+			if secProviderId.IsZero() {
 				secType = secondary.AdminDeviceRegister
 				secProvider = secondary.DeviceProvider
 			} else {
@@ -144,7 +144,7 @@ func authSessionPost(c *gin.Context) {
 
 		c.JSON(201, data)
 		return
-	} else if secProviderId != "" {
+	} else if !secProviderId.IsZero() {
 		secd, err := secondary.New(db, usr.Id, secondary.Admin, secProviderId)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
@@ -484,9 +484,9 @@ func authCallbackGet(c *gin.Context) {
 		}
 
 		secType := ""
-		var secProvider bson.ObjectId
+		var secProvider primitive.ObjectID
 		if deviceCount == 0 {
-			if secProviderId == "" {
+			if secProviderId.IsZero() {
 				secType = secondary.AdminDeviceRegister
 				secProvider = secondary.DeviceProvider
 			} else {
@@ -512,7 +512,7 @@ func authCallbackGet(c *gin.Context) {
 
 		c.Redirect(302, "/login?"+urlQuery)
 		return
-	} else if secProviderId != "" {
+	} else if !secProviderId.IsZero() {
 		secd, err := secondary.New(db, usr.Id, secondary.Admin, secProviderId)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
@@ -935,7 +935,7 @@ func authU2fSignPost(c *gin.Context) {
 		return
 	}
 
-	if secProviderId != "" {
+	if !secProviderId.IsZero() {
 		secd, err := secondary.New(db, usr.Id, secondary.Admin, secProviderId)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)

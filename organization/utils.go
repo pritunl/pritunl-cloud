@@ -1,11 +1,14 @@
 package organization
 
 import (
+	"context"
+	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
-	"gopkg.in/mgo.v2/bson"
 )
 
-func Get(db *database.Database, dcId bson.ObjectId) (
+func Get(db *database.Database, dcId primitive.ObjectID) (
 	dc *Organization, err error) {
 
 	coll := db.Organizations()
@@ -19,19 +22,29 @@ func Get(db *database.Database, dcId bson.ObjectId) (
 	return
 }
 
-func GetAll(db *database.Database) (dcs []*Organization, err error) {
+func GetAll(db *database.Database) (orgs []*Organization, err error) {
 	coll := db.Organizations()
-	dcs = []*Organization{}
+	orgs = []*Organization{}
 
-	cursor := coll.Find(bson.M{}).Iter()
+	cursor, err := coll.Find(context.Background(), bson.M{})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(context.Background())
 
-	nde := &Organization{}
-	for cursor.Next(nde) {
-		dcs = append(dcs, nde)
-		nde = &Organization{}
+	for cursor.Next(context.Background()) {
+		org := &Organization{}
+		err = cursor.Decode(org)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		orgs = append(orgs, org)
 	}
 
-	err = cursor.Close()
+	err = cursor.Err()
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -40,21 +53,37 @@ func GetAll(db *database.Database) (dcs []*Organization, err error) {
 	return
 }
 
-func GetAllName(db *database.Database) (dcs []*Organization, err error) {
+func GetAllName(db *database.Database) (orgs []*Organization, err error) {
 	coll := db.Organizations()
-	dcs = []*Organization{}
+	orgs = []*Organization{}
 
-	cursor := coll.Find(bson.M{}).Select(&bson.M{
-		"name": 1,
-	}).Iter()
+	cursor, err := coll.Find(
+		context.Background(),
+		&bson.M{},
+		&options.FindOptions{
+			Projection: &bson.D{
+				{"name", 1},
+			},
+		},
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(context.Background())
 
-	nde := &Organization{}
-	for cursor.Next(nde) {
-		dcs = append(dcs, nde)
-		nde = &Organization{}
+	for cursor.Next(context.Background()) {
+		org := &Organization{}
+		err = cursor.Decode(org)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		orgs = append(orgs, org)
 	}
 
-	err = cursor.Close()
+	err = cursor.Err()
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -64,26 +93,42 @@ func GetAllName(db *database.Database) (dcs []*Organization, err error) {
 }
 
 func GetAllNameRoles(db *database.Database, roles []string) (
-	dcs []*Organization, err error) {
+	orgs []*Organization, err error) {
 
 	coll := db.Organizations()
-	dcs = []*Organization{}
+	orgs = []*Organization{}
 
-	cursor := coll.Find(bson.M{
-		"roles": &bson.M{
-			"$in": roles,
+	cursor, err := coll.Find(
+		context.Background(),
+		&bson.M{
+			"roles": &bson.M{
+				"$in": roles,
+			},
 		},
-	}).Select(&bson.M{
-		"name": 1,
-	}).Iter()
+		&options.FindOptions{
+			Projection: &bson.D{
+				{"name", 1},
+			},
+		},
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(context.Background())
 
-	nde := &Organization{}
-	for cursor.Next(nde) {
-		dcs = append(dcs, nde)
-		nde = &Organization{}
+	for cursor.Next(context.Background()) {
+		org := &Organization{}
+		err = cursor.Decode(org)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		orgs = append(orgs, org)
 	}
 
-	err = cursor.Close()
+	err = cursor.Err()
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -92,10 +137,10 @@ func GetAllNameRoles(db *database.Database, roles []string) (
 	return
 }
 
-func Remove(db *database.Database, dcId bson.ObjectId) (err error) {
+func Remove(db *database.Database, dcId primitive.ObjectID) (err error) {
 	coll := db.Organizations()
 
-	err = coll.Remove(&bson.M{
+	_, err = coll.DeleteOne(context.Background(), &bson.M{
 		"_id": dcId,
 	})
 	if err != nil {

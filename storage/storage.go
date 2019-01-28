@@ -1,23 +1,24 @@
 package storage
 
 import (
+	"context"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"gopkg.in/mgo.v2/bson"
 	"strings"
 )
 
 type Storage struct {
-	Id        bson.ObjectId `bson:"_id,omitempty" json:"id"`
-	Name      string        `bson:"name" json:"name"`
-	Type      string        `bson:"type" json:"type"`
-	Endpoint  string        `bson:"endpoint" json:"endpoint"`
-	Bucket    string        `bson:"bucket" json:"bucket"`
-	AccessKey string        `bson:"access_key" json:"access_key"`
-	SecretKey string        `bson:"secret_key" json:"secret_key"`
-	Insecure  bool          `bson:"insecure" json:"insecure"`
+	Id        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name      string             `bson:"name" json:"name"`
+	Type      string             `bson:"type" json:"type"`
+	Endpoint  string             `bson:"endpoint" json:"endpoint"`
+	Bucket    string             `bson:"bucket" json:"bucket"`
+	AccessKey string             `bson:"access_key" json:"access_key"`
+	SecretKey string             `bson:"secret_key" json:"secret_key"`
+	Insecure  bool               `bson:"insecure" json:"insecure"`
 }
 
 func (s *Storage) IsOracle() bool {
@@ -61,14 +62,14 @@ func (s *Storage) CommitFields(db *database.Database, fields set.Set) (
 func (s *Storage) Insert(db *database.Database) (err error) {
 	coll := db.Storages()
 
-	if s.Id != "" {
+	if !s.Id.IsZero() {
 		err = &errortypes.DatabaseError{
 			errors.New("storage: Storage already exists"),
 		}
 		return
 	}
 
-	err = coll.Insert(s)
+	_, err = coll.InsertOne(context.Background(), s)
 	if err != nil {
 		err = database.ParseError(err)
 		return

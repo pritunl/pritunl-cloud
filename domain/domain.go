@@ -1,26 +1,27 @@
 package domain
 
 import (
+	"context"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type Domain struct {
-	Id           bson.ObjectId `bson:"_id,omitempty" json:"id"`
-	Name         string        `bson:"name" json:"name"`
-	Organization bson.ObjectId `bson:"organization,omitempty" json:"organization"`
-	Type         string        `bson:"type" json:"type"`
-	AwsId        string        `bson:"aws_id" json:"aws_id"`
-	AwsSecret    string        `bson:"aws_secret" json:"aws_secret"`
+	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name         string             `bson:"name" json:"name"`
+	Organization primitive.ObjectID `bson:"organization,omitempty" json:"organization"`
+	Type         string             `bson:"type" json:"type"`
+	AwsId        string             `bson:"aws_id" json:"aws_id"`
+	AwsSecret    string             `bson:"aws_secret" json:"aws_secret"`
 }
 
 func (d *Domain) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
-	if d.Organization == "" {
+	if d.Organization.IsZero() {
 		errData = &errortypes.ErrorData{
 			Error:   "organization_required",
 			Message: "Missing required organization",
@@ -62,14 +63,14 @@ func (d *Domain) CommitFields(db *database.Database, fields set.Set) (
 func (d *Domain) Insert(db *database.Database) (err error) {
 	coll := db.Domains()
 
-	if d.Id != "" {
+	if !d.Id.IsZero() {
 		err = &errortypes.DatabaseError{
 			errors.New("domain: Domain already exists"),
 		}
 		return
 	}
 
-	err = coll.Insert(d)
+	_, err = coll.InsertOne(context.Background(), d)
 	if err != nil {
 		err = database.ParseError(err)
 		return

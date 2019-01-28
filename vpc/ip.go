@@ -1,11 +1,13 @@
 package vpc
 
-import "gopkg.in/mgo.v2/bson"
+import (
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
+)
 
 type VpcIp struct {
-	Id       bson.ObjectId `bson:"_id,omitempty"`
-	Vpc      bson.ObjectId `bson:"vpc"`
-	Ip       int64         `bson:"ip"`
-	Type     string        `bson:"type"`
-	Instance bson.ObjectId `bson:"instance"`
+	Id       primitive.ObjectID `bson:"_id,omitempty"`
+	Vpc      primitive.ObjectID `bson:"vpc"`
+	Ip       int64              `bson:"ip"`
+	Type     string             `bson:"type"`
+	Instance primitive.ObjectID `bson:"instance"`
 }

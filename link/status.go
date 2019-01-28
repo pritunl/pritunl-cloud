@@ -3,10 +3,10 @@ package link
 import (
 	"fmt"
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
-	"gopkg.in/mgo.v2/bson"
 	"strings"
 	"time"
 )
@@ -15,7 +15,7 @@ var (
 	offlineTime time.Time
 )
 
-func GetStatus(vpcId bson.ObjectId) (status Status, err error) {
+func GetStatus(vpcId primitive.ObjectID) (status Status, err error) {
 	status = Status{}
 	namespace := vm.GetLinkNamespace(vpcId, 0)
 
@@ -75,7 +75,7 @@ func GetStatus(vpcId bson.ObjectId) (status Status, err error) {
 	return
 }
 
-func Update(vpcId bson.ObjectId, names set.Set) (
+func Update(vpcId primitive.ObjectID, names set.Set) (
 	resetLinks []string, err error) {
 
 	resetLinks = []string{}

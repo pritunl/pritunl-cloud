@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
@@ -11,20 +13,19 @@ import (
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"gopkg.in/mgo.v2/bson"
 	"strconv"
 	"strings"
 )
 
 type imageData struct {
-	Id           bson.ObjectId `json:"id"`
-	Name         string        `json:"name"`
-	Organization bson.ObjectId `json:"organization"`
+	Id           primitive.ObjectID `json:"id"`
+	Name         string             `json:"name"`
+	Organization primitive.ObjectID `json:"organization"`
 }
 
 type imagesData struct {
 	Images []*image.Image `json:"images"`
-	Count  int            `json:"count"`
+	Count  int64          `json:"count"`
 }
 
 func imagePut(c *gin.Context) {
@@ -113,7 +114,7 @@ func imagesDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	dta := []bson.ObjectId{}
+	dta := []primitive.ObjectID{}
 
 	err := c.Bind(&dta)
 	if err != nil {
@@ -156,7 +157,7 @@ func imagesGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 
 	dcId, _ := utils.ParseObjectId(c.Query("datacenter"))
-	if dcId != "" {
+	if !dcId.IsZero() {
 		dc, err := datacenter.Get(db, dcId)
 		if err != nil {
 			return
@@ -164,11 +165,11 @@ func imagesGet(c *gin.Context) {
 
 		storages := dc.PublicStorages
 		if storages == nil {
-			storages = []bson.ObjectId{}
+			storages = []primitive.ObjectID{}
 		}
 
 		if len(storages) == 0 {
-			c.JSON(200, []bson.ObjectId{})
+			c.JSON(200, []primitive.ObjectID{})
 			return
 		}
 
@@ -188,7 +189,7 @@ func imagesGet(c *gin.Context) {
 			img.Json()
 		}
 
-		if dc.PrivateStorage != "" {
+		if !dc.PrivateStorage.IsZero() {
 			query = &bson.M{
 				"storage": dc.PrivateStorage,
 			}
@@ -207,8 +208,8 @@ func imagesGet(c *gin.Context) {
 
 		c.JSON(200, images)
 	} else {
-		page, _ := strconv.Atoi(c.Query("page"))
-		pageCount, _ := strconv.Atoi(c.Query("page_count"))
+		page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
+		pageCount, _ := strconv.ParseInt(c.Query("page_count"), 10, 0)
 
 		query := bson.M{}
 

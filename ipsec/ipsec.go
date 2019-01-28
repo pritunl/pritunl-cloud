@@ -3,26 +3,26 @@ package ipsec
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/link"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
-	"gopkg.in/mgo.v2/bson"
 	"path"
 	"sync"
 	"time"
 )
 
 var (
-	deployStates = map[bson.ObjectId][]*link.State{}
-	curStates    = map[bson.ObjectId][]*link.State{}
+	deployStates = map[primitive.ObjectID][]*link.State{}
+	curStates    = map[primitive.ObjectID][]*link.State{}
 	currentVpcs  = set.NewSet()
 	deployLock   = sync.Mutex{}
 	ipsecLock    = utils.NewMultiTimeoutLock(2 * time.Minute)
 )
 
-func deploy(vpcId bson.ObjectId, states []*link.State) (err error) {
+func deploy(vpcId primitive.ObjectID, states []*link.State) (err error) {
 	curVpcs := currentVpcs
 
 	if !curVpcs.Contains(vpcId) {
@@ -81,13 +81,13 @@ func deploy(vpcId bson.ObjectId, states []*link.State) (err error) {
 	return
 }
 
-func Deploy(vcId bson.ObjectId, states []*link.State) {
+func Deploy(vcId primitive.ObjectID, states []*link.State) {
 	deployLock.Lock()
 	deployStates[vcId] = states
 	deployLock.Unlock()
 }
 
-func Redeploy(vcId bson.ObjectId) {
+func Redeploy(vcId primitive.ObjectID) {
 	deployLock.Lock()
 	if deployStates[vcId] == nil && curStates[vcId] != nil {
 		deployStates[vcId] = curStates[vcId]
@@ -97,7 +97,7 @@ func Redeploy(vcId bson.ObjectId) {
 
 func RunSync() {
 	for {
-		deploying := map[bson.ObjectId][]*link.State{}
+		deploying := map[primitive.ObjectID][]*link.State{}
 		deployLock.Lock()
 		for vpcId, states := range deployStates {
 			if states == nil {
@@ -105,7 +105,7 @@ func RunSync() {
 			}
 			deploying[vpcId] = states
 		}
-		deployStates = map[bson.ObjectId][]*link.State{}
+		deployStates = map[primitive.ObjectID][]*link.State{}
 		deployLock.Unlock()
 
 		for vpcId, states := range deploying {

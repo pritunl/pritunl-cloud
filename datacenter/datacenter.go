@@ -1,34 +1,35 @@
 package datacenter
 
 import (
+	"context"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type Datacenter struct {
-	Id                  bson.ObjectId   `bson:"_id,omitempty" json:"id"`
-	Name                string          `bson:"name" json:"name"`
-	MatchOrganizations  bool            `bson:"match_organizations" json:"match_organizations"`
-	Organizations       []bson.ObjectId `bson:"organizations" json:"organizations"`
-	PublicStorages      []bson.ObjectId `bson:"public_storages" json:"public_storages"`
-	PrivateStorage      bson.ObjectId   `bson:"private_storage,omitempty" json:"private_storage"`
-	PrivateStorageClass string          `bson:"private_storage_class" json:"private_storage_class"`
-	BackupStorage       bson.ObjectId   `bson:"backup_storage,omitempty" json:"backup_storage"`
-	BackupStorageClass  string          `bson:"backup_storage_class" json:"backup_storage_class"`
+	Id                  primitive.ObjectID   `bson:"_id,omitempty" json:"id"`
+	Name                string               `bson:"name" json:"name"`
+	MatchOrganizations  bool                 `bson:"match_organizations" json:"match_organizations"`
+	Organizations       []primitive.ObjectID `bson:"organizations" json:"organizations"`
+	PublicStorages      []primitive.ObjectID `bson:"public_storages" json:"public_storages"`
+	PrivateStorage      primitive.ObjectID   `bson:"private_storage,omitempty" json:"private_storage"`
+	PrivateStorageClass string               `bson:"private_storage_class" json:"private_storage_class"`
+	BackupStorage       primitive.ObjectID   `bson:"backup_storage,omitempty" json:"backup_storage"`
+	BackupStorageClass  string               `bson:"backup_storage_class" json:"backup_storage_class"`
 }
 
 func (d *Datacenter) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
 	if d.Organizations == nil || !d.MatchOrganizations {
-		d.Organizations = []bson.ObjectId{}
+		d.Organizations = []primitive.ObjectID{}
 	}
 
 	if d.PublicStorages == nil {
-		d.PublicStorages = []bson.ObjectId{}
+		d.PublicStorages = []primitive.ObjectID{}
 	}
 
 	return
@@ -61,14 +62,14 @@ func (d *Datacenter) CommitFields(db *database.Database, fields set.Set) (
 func (d *Datacenter) Insert(db *database.Database) (err error) {
 	coll := db.Datacenters()
 
-	if d.Id != "" {
+	if !d.Id.IsZero() {
 		err = &errortypes.DatabaseError{
 			errors.New("datacenter: Datacenter already exists"),
 		}
 		return
 	}
 
-	err = coll.Insert(d)
+	_, err = coll.InsertOne(context.Background(), d)
 	if err != nil {
 		err = database.ParseError(err)
 		return

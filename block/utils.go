@@ -1,11 +1,13 @@
 package block
 
 import (
+	"context"
+	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
-	"gopkg.in/mgo.v2/bson"
 )
 
-func Get(db *database.Database, blockId bson.ObjectId) (
+func Get(db *database.Database, blockId primitive.ObjectID) (
 	block *Block, err error) {
 
 	coll := db.Blocks()
@@ -23,15 +25,25 @@ func GetAll(db *database.Database) (blocks []*Block, err error) {
 	coll := db.Blocks()
 	blocks = []*Block{}
 
-	cursor := coll.Find(bson.M{}).Iter()
+	cursor, err := coll.Find(context.Background(), bson.M{})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(context.Background())
 
-	nde := &Block{}
-	for cursor.Next(nde) {
-		blocks = append(blocks, nde)
-		nde = &Block{}
+	for cursor.Next(context.Background()) {
+		blck := &Block{}
+		err = cursor.Decode(blck)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		blocks = append(blocks, blck)
 	}
 
-	err = cursor.Close()
+	err = cursor.Err()
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -40,19 +52,10 @@ func GetAll(db *database.Database) (blocks []*Block, err error) {
 	return
 }
 
-func Remove(db *database.Database, blockId bson.ObjectId) (err error) {
+func Remove(db *database.Database, blockId primitive.ObjectID) (err error) {
 	coll := db.Blocks()
 
-	_, err = coll.RemoveAll(&bson.M{
-		"storage": blockId,
-	})
-	if err != nil {
-		return
-	}
-
-	coll = db.Blocks()
-
-	err = coll.Remove(&bson.M{
+	_, err = coll.DeleteOne(context.Background(), &bson.M{
 		"_id": blockId,
 	})
 	if err != nil {

@@ -4,28 +4,29 @@ import (
 	"fmt"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/domain"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"gopkg.in/mgo.v2/bson"
 	"strconv"
 	"strings"
 )
 
 type domainData struct {
-	Id           bson.ObjectId `json:"id"`
-	Name         string        `json:"name"`
-	Organization bson.ObjectId `json:"organization"`
-	Type         string        `json:"type"`
-	AwsId        string        `json:"aws_id"`
-	AwsSecret    string        `json:"aws_secret"`
+	Id           primitive.ObjectID `json:"id"`
+	Name         string             `json:"name"`
+	Organization primitive.ObjectID `json:"organization"`
+	Type         string             `json:"type"`
+	AwsId        string             `json:"aws_id"`
+	AwsSecret    string             `json:"aws_secret"`
 }
 
 type domainsData struct {
 	Domains []*domain.Domain `json:"domains"`
-	Count   int              `json:"count"`
+	Count   int64            `json:"count"`
 }
 
 func domainPut(c *gin.Context) {
@@ -166,7 +167,7 @@ func domainsDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	data := []bson.ObjectId{}
+	data := []primitive.ObjectID{}
 
 	err := c.Bind(&data)
 	if err != nil {
@@ -217,8 +218,8 @@ func domainsGet(c *gin.Context) {
 
 		c.JSON(200, domns)
 	} else {
-		page, _ := strconv.Atoi(c.Query("page"))
-		pageCount, _ := strconv.Atoi(c.Query("page_count"))
+		page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
+		pageCount, _ := strconv.ParseInt(c.Query("page_count"), 10, 0)
 
 		query := bson.M{}
 

@@ -1,12 +1,15 @@
 package domain
 
 import (
+	"context"
+	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"gopkg.in/mgo.v2/bson"
 )
 
-func Get(db *database.Database, domnId bson.ObjectId) (
+func Get(db *database.Database, domnId primitive.ObjectID) (
 	domn *Domain, err error) {
 
 	coll := db.Domains()
@@ -20,33 +23,35 @@ func Get(db *database.Database, domnId bson.ObjectId) (
 	return
 }
 
-func GetOrg(db *database.Database, orgId, domnId bson.ObjectId) (
+func GetOrg(db *database.Database, orgId, domnId primitive.ObjectID) (
 	domn *Domain, err error) {
 
 	coll := db.Domains()
 	domn = &Domain{}
 
-	err = coll.FindOne(&bson.M{
+	err = coll.FindOne(context.Background(), &bson.M{
 		"_id":          domnId,
 		"organization": orgId,
-	}, domn)
+	}).Decode(domn)
 	if err != nil {
+		err = database.ParseError(err)
 		return
 	}
 
 	return
 }
 
-func ExistsOrg(db *database.Database, orgId, domnId bson.ObjectId) (
+func ExistsOrg(db *database.Database, orgId, domnId primitive.ObjectID) (
 	exists bool, err error) {
 
 	coll := db.Domains()
 
-	n, err := coll.Find(&bson.M{
+	n, err := coll.Count(context.Background(), &bson.M{
 		"_id":          domnId,
 		"organization": orgId,
-	}).Count()
+	})
 	if err != nil {
+		err = database.ParseError(err)
 		return
 	}
 
@@ -63,15 +68,25 @@ func GetAll(db *database.Database, query *bson.M) (
 	coll := db.Domains()
 	domns = []*Domain{}
 
-	cursor := coll.Find(query).Iter()
+	cursor, err := coll.Find(context.Background(), query)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(context.Background())
 
-	nde := &Domain{}
-	for cursor.Next(nde) {
-		domns = append(domns, nde)
-		nde = &Domain{}
+	for cursor.Next(context.Background()) {
+		dmn := &Domain{}
+		err = cursor.Decode(dmn)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		domns = append(domns, dmn)
 	}
 
-	err = cursor.Close()
+	err = cursor.Err()
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -80,32 +95,46 @@ func GetAll(db *database.Database, query *bson.M) (
 	return
 }
 
-func GetAllPaged(db *database.Database, query *bson.M, page, pageCount int) (
-	domns []*Domain, count int, err error) {
+func GetAllPaged(db *database.Database, query *bson.M,
+	page, pageCount int64) (domns []*Domain, count int64, err error) {
 
 	coll := db.Domains()
 	domns = []*Domain{}
 
-	qury := coll.Find(query)
-
-	count, err = qury.Count()
+	count, err = coll.Count(context.Background(), query)
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
 
-	page = utils.Min(page, count / pageCount)
-	skip := utils.Min(page*pageCount, count)
+	page = utils.Min64(page, count/pageCount)
+	skip := utils.Min64(page*pageCount, count)
 
-	cursor := qury.Sort("name").Skip(skip).Limit(pageCount).Iter()
+	cursor, err := coll.Find(
+		context.Background(),
+		query,
+		&options.FindOptions{
+			Sort: &bson.D{
+				{"name", 1},
+			},
+			Skip:  &skip,
+			Limit: &pageCount,
+		},
+	)
+	defer cursor.Close(context.Background())
 
-	domn := &Domain{}
-	for cursor.Next(domn) {
-		domns = append(domns, domn)
-		domn = &Domain{}
+	for cursor.Next(context.Background()) {
+		dmn := &Domain{}
+		err = cursor.Decode(dmn)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		domns = append(domns, dmn)
 	}
 
-	err = cursor.Close()
+	err = cursor.Err()
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -120,18 +149,34 @@ func GetAllName(db *database.Database, query *bson.M) (
 	coll := db.Domains()
 	domns = []*Domain{}
 
-	cursor := coll.Find(query).Select(&bson.M{
-		"name":         1,
-		"organization": 1,
-	}).Iter()
+	cursor, err := coll.Find(
+		context.Background(),
+		query,
+		&options.FindOptions{
+			Projection: &bson.D{
+				{"name", 1},
+				{"organization", 1},
+			},
+		},
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(context.Background())
 
-	inst := &Domain{}
-	for cursor.Next(inst) {
-		domns = append(domns, inst)
-		inst = &Domain{}
+	for cursor.Next(context.Background()) {
+		dmn := &Domain{}
+		err = cursor.Decode(dmn)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		domns = append(domns, dmn)
 	}
 
-	err = cursor.Close()
+	err = cursor.Err()
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -140,10 +185,10 @@ func GetAllName(db *database.Database, query *bson.M) (
 	return
 }
 
-func Remove(db *database.Database, domnId bson.ObjectId) (err error) {
+func Remove(db *database.Database, domnId primitive.ObjectID) (err error) {
 	coll := db.Domains()
 
-	err = coll.Remove(&bson.M{
+	_, err = coll.DeleteOne(context.Background(), &bson.M{
 		"_id": domnId,
 	})
 	if err != nil {
@@ -159,12 +204,12 @@ func Remove(db *database.Database, domnId bson.ObjectId) (err error) {
 	return
 }
 
-func RemoveOrg(db *database.Database, orgId, domnId bson.ObjectId) (
+func RemoveOrg(db *database.Database, orgId, domnId primitive.ObjectID) (
 	err error) {
 
 	coll := db.Domains()
 
-	err = coll.Remove(&bson.M{
+	_, err = coll.DeleteOne(context.Background(), &bson.M{
 		"_id":          domnId,
 		"organization": orgId,
 	})
@@ -181,10 +226,10 @@ func RemoveOrg(db *database.Database, orgId, domnId bson.ObjectId) (
 	return
 }
 
-func RemoveMulti(db *database.Database, domnIds []bson.ObjectId) (err error) {
+func RemoveMulti(db *database.Database, domnIds []primitive.ObjectID) (err error) {
 	coll := db.Domains()
 
-	_, err = coll.RemoveAll(&bson.M{
+	_, err = coll.DeleteMany(context.Background(), &bson.M{
 		"_id": &bson.M{
 			"$in": domnIds,
 		},
@@ -197,12 +242,12 @@ func RemoveMulti(db *database.Database, domnIds []bson.ObjectId) (err error) {
 	return
 }
 
-func RemoveMultiOrg(db *database.Database, orgId bson.ObjectId,
-	domnIds []bson.ObjectId) (err error) {
+func RemoveMultiOrg(db *database.Database, orgId primitive.ObjectID,
+	domnIds []primitive.ObjectID) (err error) {
 
 	coll := db.Domains()
 
-	_, err = coll.RemoveAll(&bson.M{
+	_, err = coll.DeleteMany(context.Background(), &bson.M{
 		"_id": &bson.M{
 			"$in": domnIds,
 		},
@@ -222,15 +267,25 @@ func GetRecordAll(db *database.Database, query *bson.M) (
 	coll := db.DomainsRecord()
 	recrds = []*Record{}
 
-	cursor := coll.Find(query).Iter()
+	cursor, err := coll.Find(context.Background(), query)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(context.Background())
 
-	recrd := &Record{}
-	for cursor.Next(recrd) {
+	for cursor.Next(context.Background()) {
+		recrd := &Record{}
+		err = cursor.Decode(recrd)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
 		recrds = append(recrds, recrd)
-		recrd = &Record{}
 	}
 
-	err = cursor.Close()
+	err = cursor.Err()
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -239,10 +294,12 @@ func GetRecordAll(db *database.Database, query *bson.M) (
 	return
 }
 
-func RemoveRecord(db *database.Database, recrdId bson.ObjectId) (err error) {
+func RemoveRecord(db *database.Database, recrdId primitive.ObjectID) (
+	err error) {
+
 	coll := db.DomainsRecord()
 
-	err = coll.Remove(&bson.M{
+	_, err = coll.DeleteOne(context.Background(), &bson.M{
 		"_id": recrdId,
 	})
 	if err != nil {

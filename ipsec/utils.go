@@ -2,14 +2,14 @@ package ipsec
 
 import (
 	"fmt"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
-	"gopkg.in/mgo.v2/bson"
 	"io/ioutil"
 	"strings"
 )
 
-func networkStopDhClient(vpcId bson.ObjectId) (err error) {
+func networkStopDhClient(vpcId primitive.ObjectID) (err error) {
 	ifaceExternal := vm.GetLinkIfaceExternal(vpcId, 0)
 	pidPath := fmt.Sprintf("/var/run/dhclient-%s.pid", ifaceExternal)
 

@@ -3,6 +3,8 @@ package state
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/domain"
@@ -13,7 +15,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type State struct {
@@ -22,12 +23,12 @@ type State struct {
 	nodeFirewall     []*firewall.Rule
 	firewalls        map[string][]*firewall.Rule
 	disks            []*disk.Disk
-	virtsMap         map[bson.ObjectId]*vm.VirtualMachine
+	virtsMap         map[primitive.ObjectID]*vm.VirtualMachine
 	instances        []*instance.Instance
-	instancesMap     map[bson.ObjectId]*instance.Instance
-	instanceDisks    map[bson.ObjectId][]*disk.Disk
-	domainRecordsMap map[bson.ObjectId][]*domain.Record
-	vpcsMap          map[bson.ObjectId]*vpc.Vpc
+	instancesMap     map[primitive.ObjectID]*instance.Instance
+	instanceDisks    map[primitive.ObjectID][]*disk.Disk
+	domainRecordsMap map[primitive.ObjectID][]*domain.Record
+	vpcsMap          map[primitive.ObjectID]*vpc.Vpc
 	addInstances     set.Set
 	remInstances     set.Set
 }
@@ -52,7 +53,7 @@ func (s *State) Firewalls() map[string][]*firewall.Rule {
 	return s.firewalls
 }
 
-func (s *State) DomainRecords(instId bson.ObjectId) []*domain.Record {
+func (s *State) DomainRecords(instId primitive.ObjectID) []*domain.Record {
 	return s.domainRecordsMap[instId]
 }
 
@@ -60,15 +61,15 @@ func (s *State) Disks() []*disk.Disk {
 	return s.disks
 }
 
-func (s *State) GetInstaceDisks(instId bson.ObjectId) []*disk.Disk {
+func (s *State) GetInstaceDisks(instId primitive.ObjectID) []*disk.Disk {
 	return s.instanceDisks[instId]
 }
 
-func (s *State) Vpc(vpcId bson.ObjectId) *vpc.Vpc {
+func (s *State) Vpc(vpcId primitive.ObjectID) *vpc.Vpc {
 	return s.vpcsMap[vpcId]
 }
 
-func (s *State) DiskInUse(instId, dskId bson.ObjectId) bool {
+func (s *State) DiskInUse(instId, dskId primitive.ObjectID) bool {
 	curVirt := s.virtsMap[instId]
 
 	if curVirt != nil {
@@ -84,11 +85,11 @@ func (s *State) DiskInUse(instId, dskId bson.ObjectId) bool {
 	return false
 }
 
-func (s *State) GetVirt(instId bson.ObjectId) *vm.VirtualMachine {
+func (s *State) GetVirt(instId primitive.ObjectID) *vm.VirtualMachine {
 	return s.virtsMap[instId]
 }
 
-func (s *State) GetInstace(instId bson.ObjectId) *instance.Instance {
+func (s *State) GetInstace(instId primitive.ObjectID) *instance.Instance {
 	return s.instancesMap[instId]
 }
 
@@ -114,7 +115,7 @@ func (s *State) init() (err error) {
 	}
 	s.disks = disks
 
-	instanceDisks := map[bson.ObjectId][]*disk.Disk{}
+	instanceDisks := map[primitive.ObjectID][]*disk.Disk{}
 	for _, dsk := range disks {
 		dsks := instanceDisks[dsk.Instance]
 		if dsks == nil {
@@ -130,7 +131,7 @@ func (s *State) init() (err error) {
 	}
 
 	virtsId := set.NewSet()
-	virtsMap := map[bson.ObjectId]*vm.VirtualMachine{}
+	virtsMap := map[primitive.ObjectID]*vm.VirtualMachine{}
 	for _, virt := range curVirts {
 		virtsId.Add(virt.Id)
 		virtsMap[virt.Id] = virt
@@ -142,7 +143,7 @@ func (s *State) init() (err error) {
 	}, instanceDisks)
 	s.instances = instances
 
-	instancesMap := map[bson.ObjectId]*instance.Instance{}
+	instancesMap := map[primitive.ObjectID]*instance.Instance{}
 	vpcIdsSet := set.NewSet()
 	for _, inst := range instances {
 		virtsId.Remove(inst.Id)
@@ -151,14 +152,14 @@ func (s *State) init() (err error) {
 	}
 	s.instancesMap = instancesMap
 
-	vpcIds := []bson.ObjectId{}
+	vpcIds := []primitive.ObjectID{}
 	for vpcIdInf := range vpcIdsSet.Iter() {
-		vpcIds = append(vpcIds, vpcIdInf.(bson.ObjectId))
+		vpcIds = append(vpcIds, vpcIdInf.(primitive.ObjectID))
 	}
 
 	for virtId := range virtsId.Iter() {
 		logrus.WithFields(logrus.Fields{
-			"id": virtId.(bson.ObjectId).Hex(),
+			"id": virtId.(primitive.ObjectID).Hex(),
 		}).Info("sync: Unknown instance")
 	}
 	s.instances = instances
@@ -175,7 +176,7 @@ func (s *State) init() (err error) {
 		return
 	}
 
-	vpcsMap := map[bson.ObjectId]*vpc.Vpc{}
+	vpcsMap := map[primitive.ObjectID]*vpc.Vpc{}
 	for _, vc := range vpcs {
 		vpcsMap[vc.Id] = vc
 	}
@@ -185,7 +186,7 @@ func (s *State) init() (err error) {
 		"node": node.Self.Id,
 	})
 
-	domainRecordsMap := map[bson.ObjectId][]*domain.Record{}
+	domainRecordsMap := map[primitive.ObjectID][]*domain.Record{}
 	for _, recrd := range recrds {
 		instRecrds := domainRecordsMap[recrd.Instance]
 		if instRecrds == nil {

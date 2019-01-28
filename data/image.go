@@ -5,6 +5,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/minio/minio-go"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
@@ -18,7 +19,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/zone"
 	"golang.org/x/crypto/openpgp"
-	"gopkg.in/mgo.v2/bson"
 	"os"
 	"path"
 	"strings"
@@ -182,7 +182,7 @@ func copyBackingImage(imagePth, backingImagePth string) (err error) {
 	return
 }
 
-func WriteImage(db *database.Database, imgId, dskId bson.ObjectId,
+func WriteImage(db *database.Database, imgId, dskId primitive.ObjectID,
 	size int, backingImage bool) (backingImageName string, err error) {
 
 	diskPath := paths.GetDiskPath(dskId)
@@ -380,7 +380,7 @@ func WriteImage(db *database.Database, imgId, dskId bson.ObjectId,
 	return
 }
 
-func DeleteImage(db *database.Database, imgId bson.ObjectId) (err error) {
+func DeleteImage(db *database.Database, imgId primitive.ObjectID) (err error) {
 	img, err := image.Get(db, imgId)
 	if err != nil {
 		return
@@ -417,7 +417,9 @@ func DeleteImage(db *database.Database, imgId bson.ObjectId) (err error) {
 	return
 }
 
-func DeleteImages(db *database.Database, imgIds []bson.ObjectId) (err error) {
+func DeleteImages(db *database.Database, imgIds []primitive.ObjectID) (
+	err error) {
+
 	for _, imgId := range imgIds {
 		err = DeleteImage(db, imgId)
 		if err != nil {
@@ -428,7 +430,7 @@ func DeleteImages(db *database.Database, imgIds []bson.ObjectId) (err error) {
 	return
 }
 
-func DeleteImageOrg(db *database.Database, orgId, imgId bson.ObjectId) (
+func DeleteImageOrg(db *database.Database, orgId, imgId primitive.ObjectID) (
 	err error) {
 
 	img, err := image.GetOrg(db, orgId, imgId)
@@ -467,8 +469,8 @@ func DeleteImageOrg(db *database.Database, orgId, imgId bson.ObjectId) (
 	return
 }
 
-func DeleteImagesOrg(db *database.Database, orgId bson.ObjectId,
-	imgIds []bson.ObjectId) (err error) {
+func DeleteImagesOrg(db *database.Database, orgId primitive.ObjectID,
+	imgIds []primitive.ObjectID) (err error) {
 
 	for _, imgId := range imgIds {
 		err = DeleteImageOrg(db, orgId, imgId)
@@ -499,7 +501,7 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk) (err error) {
 		return
 	}
 
-	if dc.PrivateStorage == "" {
+	if dc.PrivateStorage.IsZero() {
 		logrus.WithFields(logrus.Fields{
 			"disk_id": dsk.Id.Hex(),
 		}).Error("data: Cannot snapshot disk without private storage")
@@ -523,7 +525,7 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk) (err error) {
 		"disk_path":  dskPth,
 	}).Info("data: Creating disk snapshot")
 
-	imgId := bson.NewObjectId()
+	imgId := primitive.NewObjectID()
 	tmpPath := path.Join(cacheDir,
 		fmt.Sprintf("snapshot-%s", imgId.Hex()))
 	img := &image.Image{
@@ -628,7 +630,7 @@ func CreateBackup(db *database.Database, dsk *disk.Disk) (err error) {
 		return
 	}
 
-	if dc.BackupStorage == "" {
+	if dc.BackupStorage.IsZero() {
 		logrus.WithFields(logrus.Fields{
 			"disk_id": dsk.Id.Hex(),
 		}).Error("data: Cannot backup disk without backup storage")
@@ -659,7 +661,7 @@ func CreateBackup(db *database.Database, dsk *disk.Disk) (err error) {
 		"disk_path":  dskPth,
 	}).Info("data: Creating disk backup")
 
-	imgId := bson.NewObjectId()
+	imgId := primitive.NewObjectID()
 	tmpPath := path.Join(cacheDir,
 		fmt.Sprintf("backup-%s", imgId.Hex()))
 	img := &image.Image{
@@ -783,7 +785,7 @@ func RestoreBackup(db *database.Database, dsk *disk.Disk) (err error) {
 		return
 	}
 
-	imgId := bson.NewObjectId()
+	imgId := primitive.NewObjectID()
 	tmpPath := path.Join(cacheDir,
 		fmt.Sprintf("restore-%s", imgId.Hex()))
 

@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
-	"gopkg.in/mgo.v2/bson"
 	"net"
 	"strconv"
 	"strings"
@@ -19,7 +19,7 @@ var (
 	socketsLock = utils.NewMultiTimeoutLock(1 * time.Minute)
 )
 
-func GetDisks(vmId bson.ObjectId) (disks []*vm.Disk, err error) {
+func GetDisks(vmId primitive.ObjectID) (disks []*vm.Disk, err error) {
 	sockPath := GetSockPath(vmId)
 	disks = []*vm.Disk{}
 
@@ -124,7 +124,7 @@ func GetDisks(vmId bson.ObjectId) (disks []*vm.Disk, err error) {
 	return
 }
 
-func AddDisk(vmId bson.ObjectId, dsk *vm.Disk) (err error) {
+func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
 	sockPath := GetSockPath(vmId)
 
 	logrus.WithFields(logrus.Fields{
@@ -175,7 +175,7 @@ func AddDisk(vmId bson.ObjectId, dsk *vm.Disk) (err error) {
 	return
 }
 
-func RemoveDisk(vmId bson.ObjectId, dsk *vm.Disk) (err error) {
+func RemoveDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
 	sockPath := GetSockPath(vmId)
 
 	logrus.WithFields(logrus.Fields{
@@ -221,7 +221,7 @@ func RemoveDisk(vmId bson.ObjectId, dsk *vm.Disk) (err error) {
 	return
 }
 
-func Shutdown(vmId bson.ObjectId) (err error) {
+func Shutdown(vmId primitive.ObjectID) (err error) {
 	sockPath := GetSockPath(vmId)
 
 	lockId := socketsLock.Lock(vmId.Hex())

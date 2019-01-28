@@ -3,24 +3,24 @@ package ahandlers
 import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type datacenterData struct {
-	Id                  bson.ObjectId   `json:"id"`
-	Name                string          `json:"name"`
-	MatchOrganizations  bool            `json:"match_organizations"`
-	Organizations       []bson.ObjectId `json:"organizations"`
-	PublicStorages      []bson.ObjectId `json:"public_storages"`
-	PrivateStorage      bson.ObjectId   `json:"private_storage"`
-	PrivateStorageClass string          `json:"private_storage_class"`
-	BackupStorage       bson.ObjectId   `json:"backup_storage"`
-	BackupStorageClass  string          `json:"backup_storage_class"`
+	Id                  primitive.ObjectID   `json:"id"`
+	Name                string               `json:"name"`
+	MatchOrganizations  bool                 `json:"match_organizations"`
+	Organizations       []primitive.ObjectID `json:"organizations"`
+	PublicStorages      []primitive.ObjectID `json:"public_storages"`
+	PrivateStorage      primitive.ObjectID   `json:"private_storage"`
+	PrivateStorageClass string               `json:"private_storage_class"`
+	BackupStorage       primitive.ObjectID   `json:"backup_storage"`
+	BackupStorageClass  string               `json:"backup_storage_class"`
 }
 
 func datacenterPut(c *gin.Context) {
