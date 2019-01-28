@@ -4,14 +4,17 @@ import * as NodeTypes from '../types/NodeTypes';
 import * as CertificateTypes from '../types/CertificateTypes';
 import * as DatacenterTypes from "../types/DatacenterTypes";
 import * as ZoneTypes from '../types/ZoneTypes';
+import * as BlockTypes from '../types/BlockTypes';
 import NodesStore from '../stores/NodesStore';
 import CertificatesStore from '../stores/CertificatesStore';
 import DatacentersStore from '../stores/DatacentersStore';
 import ZonesStore from '../stores/ZonesStore';
+import BlocksStore from '../stores/BlocksStore';
 import * as NodeActions from '../actions/NodeActions';
 import * as CertificateActions from '../actions/CertificateActions';
 import * as DatacenterActions from '../actions/DatacenterActions';
 import * as ZoneActions from '../actions/ZoneActions';
+import * as BlockActions from '../actions/BlockActions';
 import Node from './Node';
 import NodesFilter from './NodesFilter';
 import NodesPage from './NodesPage';
@@ -32,6 +35,7 @@ interface State {
 	certificates: CertificateTypes.CertificatesRo;
 	datacenters: DatacenterTypes.DatacentersRo;
 	zones: ZoneTypes.ZonesRo;
+	blocks: BlockTypes.BlocksRo;
 	selected: Selected;
 	opened: Opened;
 	lastSelected: string;
@@ -76,6 +80,7 @@ export default class Nodes extends React.Component<{}, State> {
 			certificates: CertificatesStore.certificates,
 			datacenters: DatacentersStore.datacenters,
 			zones: ZonesStore.zones,
+			blocks: BlocksStore.blocks,
 			selected: {},
 			opened: {},
 			lastSelected: null,
@@ -96,10 +101,12 @@ export default class Nodes extends React.Component<{}, State> {
 		CertificatesStore.addChangeListener(this.onChange);
 		DatacentersStore.addChangeListener(this.onChange);
 		ZonesStore.addChangeListener(this.onChange);
+		BlocksStore.addChangeListener(this.onChange);
 		NodeActions.sync();
 		CertificateActions.sync();
 		DatacenterActions.sync();
 		ZoneActions.sync();
+		BlockActions.sync();
 	}
 
 	componentWillUnmount(): void {
@@ -107,6 +114,7 @@ export default class Nodes extends React.Component<{}, State> {
 		CertificatesStore.removeChangeListener(this.onChange);
 		DatacentersStore.removeChangeListener(this.onChange);
 		ZonesStore.removeChangeListener(this.onChange);
+		BlocksStore.removeChangeListener(this.onChange);
 	}
 
 	onChange = (): void => {
@@ -132,6 +140,7 @@ export default class Nodes extends React.Component<{}, State> {
 			certificates: CertificatesStore.certificates,
 			datacenters: DatacentersStore.datacenters,
 			zones: ZonesStore.zones,
+			blocks: BlocksStore.blocks,
 			selected: selected,
 			opened: opened,
 		});
@@ -147,6 +156,7 @@ export default class Nodes extends React.Component<{}, State> {
 				certificates={this.state.certificates}
 				datacenters={this.state.datacenters}
 				zones={this.state.zones}
+				blocks={this.state.blocks}
 				selected={!!this.state.selected[node.id]}
 				open={!!this.state.opened[node.id]}
 				onSelect={(shift: boolean): void => {
