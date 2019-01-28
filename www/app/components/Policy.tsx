@@ -119,7 +119,7 @@ export default class Policy extends React.Component<Props, State> {
 		}
 
 		let rules = {
-			...policy.rules,
+			...(policy.rules || {}),
 		};
 
 		if (rule.values == null) {
@@ -201,7 +201,7 @@ export default class Policy extends React.Component<Props, State> {
 		}
 
 		let roles = [
-			...policy.roles,
+			...(policy.roles || []),
 		];
 
 		if (!this.state.addRole) {
@@ -239,7 +239,7 @@ export default class Policy extends React.Component<Props, State> {
 		}
 
 		let roles = [
-			...policy.roles,
+			...(policy.roles || []),
 		];
 
 		let i = roles.indexOf(role);
@@ -283,19 +283,20 @@ export default class Policy extends React.Component<Props, State> {
 			);
 		}
 
-		let operatingSystem = policy.rules.operating_system || {
+		let rules = policy.rules || {};
+		let operatingSystem = rules.operating_system || {
 			type: 'operating_system',
 		};
-		let browser = policy.rules.browser || {
+		let browser = rules.browser || {
 			type: 'browser',
 		};
-		let location = policy.rules.location || {
+		let location = rules.location || {
 			type: 'location',
 		};
-		let whitelistNetworks = policy.rules.whitelist_networks || {
+		let whitelistNetworks = rules.whitelist_networks || {
 			type: 'whitelist_networks',
 		};
-		let blacklistNetworks = policy.rules.blacklist_networks || {
+		let blacklistNetworks = rules.blacklist_networks || {
 			type: 'blacklist_networks',
 		};
 
