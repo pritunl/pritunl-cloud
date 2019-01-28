@@ -5,6 +5,7 @@ import * as CertificateTypes from '../types/CertificateTypes';
 import * as DatacenterTypes from "../types/DatacenterTypes";
 import * as ZoneTypes from '../types/ZoneTypes';
 import * as NodeActions from '../actions/NodeActions';
+import * as BlockTypes from '../types/BlockTypes';
 import * as MiscUtils from '../utils/MiscUtils';
 import CertificatesStore from '../stores/CertificatesStore';
 import PageInput from './PageInput';
@@ -15,6 +16,7 @@ import PageSelectButton from './PageSelectButton';
 import PageInputButton from './PageInputButton';
 import PageInfo from './PageInfo';
 import PageSave from './PageSave';
+import NodeBlock from './NodeBlock';
 import ConfirmButton from './ConfirmButton';
 import Help from './Help';
 
@@ -23,6 +25,7 @@ interface Props {
 	certificates: CertificateTypes.CertificatesRo;
 	datacenters: DatacenterTypes.DatacentersRo;
 	zones: ZoneTypes.ZonesRo;
+	blocks: BlockTypes.BlocksRo;
 	selected: boolean;
 	onSelect: (shift: boolean) => void;
 	onClose: () => void;
@@ -101,6 +104,9 @@ const css = {
 	role: {
 		margin: '9px 5px 0 5px',
 		height: '20px',
+	} as React.CSSProperties,
+	blocks: {
+		marginBottom: '15px',
 	} as React.CSSProperties,
 };
 
@@ -552,6 +558,138 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		});
 	}
 
+	newBlock = (): NodeTypes.BlockAttachment => {
+		let defBlock = '';
+		if (this.props.blocks.length) {
+			defBlock = this.props.blocks[0].id;
+		}
+
+		return {
+			interface: this.props.node.available_interfaces[0],
+			block: defBlock,
+		} as NodeTypes.BlockAttachment;
+	}
+
+	onNetworkMode = (mode: string): void => {
+		let node: any;
+
+		if (this.state.changed) {
+			node = {
+				...this.state.node,
+			};
+		} else {
+			node = {
+				...this.props.node,
+			};
+		}
+
+		if (mode === 'static' && (node.blocks || []).length === 0) {
+			node.blocks = [
+				this.newBlock(),
+			];
+		}
+
+		node.network_mode = mode;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			node: node,
+		});
+	}
+
+	onAddBlock = (i: number): void => {
+		let node: NodeTypes.Node;
+
+		if (this.state.changed) {
+			node = {
+				...this.state.node,
+			};
+		} else {
+			node = {
+				...this.props.node,
+			};
+		}
+
+		let blocks = [
+			...node.blocks,
+		];
+
+		blocks.splice(i + 1, 0, this.newBlock());
+		node.blocks = blocks;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			node: node,
+		});
+	}
+
+	onChangeBlock(i: number, block: NodeTypes.BlockAttachment): void {
+		let node: NodeTypes.Node;
+
+		if (this.state.changed) {
+			node = {
+				...this.state.node,
+			};
+		} else {
+			node = {
+				...this.props.node,
+			};
+		}
+
+		let blocks = [
+			...node.blocks,
+		];
+
+		blocks[i] = block;
+
+		node.blocks = blocks;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			node: node,
+		});
+	}
+
+	onRemoveBlock(i: number): void {
+		let node: NodeTypes.Node;
+
+		if (this.state.changed) {
+			node = {
+				...this.state.node,
+			};
+		} else {
+			node = {
+				...this.props.node,
+			};
+		}
+
+		let blocks = [
+			...node.blocks,
+		];
+
+		blocks.splice(i, 1);
+
+		if (!blocks.length) {
+			blocks = [
+				this.newBlock(),
+			];
+		}
+
+		node.blocks = blocks;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			node: node,
+		});
+	}
+
 	render(): JSX.Element {
 		let node: NodeTypes.Node = this.state.node || this.props.node;
 		let active = node.requests_min !== 0 || node.memory !== 0 ||
@@ -722,6 +860,30 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						}}
 					/>
 				</div>,
+			);
+		}
+
+		let nodeBlocks = node.blocks || [];
+		let blocks: JSX.Element[] = [];
+		for (let i = 0; i < nodeBlocks.length; i++) {
+			let index = i;
+
+			blocks.push(
+				<NodeBlock
+					key={index}
+					interfaces={this.props.node.available_interfaces}
+					blocks={this.props.blocks}
+					block={nodeBlocks[index]}
+					onChange={(state: NodeTypes.BlockAttachment): void => {
+						this.onChangeBlock(index, state);
+					}}
+					onAdd={(): void => {
+						this.onAddBlock(index);
+					}}
+					onRemove={(): void => {
+						this.onRemoveBlock(index);
+					}}
+				/>,
 			);
 		}
 
@@ -965,6 +1127,14 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					>
 						{internalIfacesSelect}
 					</PageSelectButton>
+					<label
+						className="bp3-label"
+						hidden={node.network_mode !== 'static'}
+						style={css.label}
+					>
+						Interface Block Attachments
+						{blocks}
+					</label>
 					<PageSwitch
 						disabled={this.state.disabled}
 						label="Jumbo frames"
