@@ -9,7 +9,7 @@ export interface Rule {
 }
 
 export interface Policy {
-	id: string;
+	id?: string;
 	name?: string;
 	roles?: string[];
 	rules?: {[key: string]: Rule};

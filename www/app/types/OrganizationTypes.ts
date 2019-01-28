@@ -4,7 +4,7 @@ export const CHANGE = 'organization.change';
 export const CURRENT = 'organization.current';
 
 export interface Organization {
-	id: string;
+	id?: string;
 	name?: string;
 	roles?: string[];
 }

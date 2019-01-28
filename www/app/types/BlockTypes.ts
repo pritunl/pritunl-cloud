@@ -3,7 +3,7 @@ export const SYNC = 'block.sync';
 export const CHANGE = 'block.change';
 
 export interface Block {
-	id: string;
+	id?: string;
 	name?: string;
 	addresses?: string[];
 	excludes?: string[];

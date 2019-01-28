@@ -6,7 +6,7 @@ export const FILTER = 'image.filter';
 export const CHANGE = 'image.change';
 
 export interface Image {
-	id: string;
+	id?: string;
 	disk_id?: string;
 	name?: string;
 	organization?: string;

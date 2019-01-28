@@ -3,7 +3,7 @@ export const SYNC = 'storage.sync';
 export const CHANGE = 'storage.change';
 
 export interface Storage {
-	id: string;
+	id?: string;
 	name?: string;
 	type?: string;
 	endpoint?: string;

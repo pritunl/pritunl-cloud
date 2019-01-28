@@ -6,7 +6,7 @@ export const CHANGE = 'session.change';
 export const SHOW_REMOVED = 'session.show_removed';
 
 export interface Session {
-	id: string;
+	id?: string;
 	type?: string;
 	user?: string;
 	timestamp?: string;

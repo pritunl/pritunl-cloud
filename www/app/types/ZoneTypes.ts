@@ -3,7 +3,7 @@ export const SYNC = 'zone.sync';
 export const CHANGE = 'zone.change';
 
 export interface Zone {
-	id: string;
+	id?: string;
 	datacenter?: string;
 	name?: string;
 }

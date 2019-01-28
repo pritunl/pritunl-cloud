@@ -7,7 +7,7 @@ export const UNLOAD = 'user.unload';
 export const CHANGE = 'user.change';
 
 export interface User {
-	id: string;
+	id?: string;
 	type?: string;
 	username?: string;
 	password?: string;

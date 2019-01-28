@@ -5,7 +5,7 @@ export const FILTER = 'log.filter';
 export const CHANGE = 'log.change';
 
 export interface Log {
-	id: string;
+	id?: string;
 	level?: string;
 	timestamp?: string;
 	message?: string;

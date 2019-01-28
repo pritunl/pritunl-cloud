@@ -3,7 +3,7 @@ export const SYNC = 'datacenter.sync';
 export const CHANGE = 'datacenter.change';
 
 export interface Datacenter {
-	id: string;
+	id?: string;
 	name?: string;
 	match_organizations?: boolean;
 	organizations?: string[];

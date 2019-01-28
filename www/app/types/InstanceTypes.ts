@@ -6,7 +6,7 @@ export const FILTER = 'instance.filter';
 export const CHANGE = 'instance.change';
 
 export interface Instance {
-	id: string;
+	id?: string;
 	organization?: string;
 	zone?: string;
 	node?: string;

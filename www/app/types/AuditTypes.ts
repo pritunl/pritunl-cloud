@@ -6,7 +6,7 @@ export const TRAVERSE = 'audit.traverse';
 export const CHANGE = 'audit.change';
 
 export interface Audit {
-	id: string;
+	id?: string;
 	user?: string;
 	timestamp?: string;
 	type?: string;
