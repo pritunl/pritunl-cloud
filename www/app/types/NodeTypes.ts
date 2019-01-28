@@ -23,6 +23,7 @@ export interface Node {
 	external_interfaces?: string[];
 	internal_interfaces?: string[];
 	available_interfaces?: string[];
+	blocks?: BlockAttachment[];
 	jumbo_frames?: boolean;
 	firewall?: boolean;
 	network_roles?: string[];
@@ -48,6 +49,11 @@ export interface Filter {
 	admin?: boolean;
 	user?: boolean;
 	hypervisor?: boolean;
+}
+
+export interface BlockAttachment {
+	interface?: string;
+	block?: string;
 }
 
 export type Nodes = Node[];
