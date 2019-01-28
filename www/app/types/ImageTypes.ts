@@ -16,6 +16,7 @@ export interface Image {
 	type?: string;
 	etag?: string;
 	last_modified?: string;
+	storage_class?: string;
 }
 
 export interface Filter {
