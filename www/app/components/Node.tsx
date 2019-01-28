@@ -2,9 +2,10 @@
 import * as React from 'react';
 import * as MiscUtils from '../utils/MiscUtils';
 import * as NodeTypes from '../types/NodeTypes';
-import * as CertificateTypes from "../types/CertificateTypes";
-import * as DatacenterTypes from "../types/DatacenterTypes";
-import * as ZoneTypes from "../types/ZoneTypes";
+import * as CertificateTypes from '../types/CertificateTypes';
+import * as DatacenterTypes from '../types/DatacenterTypes';
+import * as ZoneTypes from '../types/ZoneTypes';
+import * as BlockTypes from '../types/BlockTypes';
 import NodeDetailed from './NodeDetailed';
 
 interface Props {
@@ -12,6 +13,7 @@ interface Props {
 	certificates: CertificateTypes.CertificatesRo;
 	datacenters: DatacenterTypes.DatacentersRo;
 	zones: ZoneTypes.ZonesRo;
+	blocks: BlockTypes.BlocksRo;
 	selected: boolean;
 	open: boolean;
 	onSelect: (shift: boolean) => void;
@@ -81,6 +83,7 @@ export default class Node extends React.Component<Props, {}> {
 					certificates={this.props.certificates}
 					datacenters={this.props.datacenters}
 					zones={this.props.zones}
+					blocks={this.props.blocks}
 					selected={this.props.selected}
 					onSelect={this.props.onSelect}
 					onClose={(): void => {
