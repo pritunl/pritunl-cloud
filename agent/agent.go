@@ -1,13 +1,14 @@
 package agent
 
 import (
+	"net/http"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/geo"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/ua-parser/uap-go/uaparser"
-	"net/http"
 )
 
 var (

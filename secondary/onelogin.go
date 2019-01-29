@@ -4,6 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"strings"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/audit"
@@ -12,11 +18,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/user"
-	"io/ioutil"
-	"net/http"
-	"net/url"
-	"strings"
-	"time"
 )
 
 var (

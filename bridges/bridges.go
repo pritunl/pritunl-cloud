@@ -1,12 +1,13 @@
 package bridges
 
 import (
-	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/pritunl-cloud/errortypes"
-	"github.com/pritunl/pritunl-cloud/utils"
 	"net"
 	"strings"
 	"time"
+
+	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 var (

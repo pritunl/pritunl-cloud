@@ -2,6 +2,9 @@ package iptables
 
 import (
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
@@ -14,8 +17,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
-	"strings"
-	"time"
 )
 
 func diffCmd(a, b []string) bool {

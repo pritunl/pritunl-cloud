@@ -2,11 +2,12 @@ package database
 
 import (
 	"context"
+	"sync"
+	"time"
+
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/mongo"
 	"github.com/pritunl/mongo-go-driver/mongo/options"
-	"sync"
-	"time"
 )
 
 var (

@@ -1,8 +1,10 @@
 package aggregate
 
 import (
-	"context"
 	"fmt"
+	"sort"
+	"strings"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
@@ -13,8 +15,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"sort"
-	"strings"
 )
 
 type InstancePipe struct {
@@ -36,12 +36,12 @@ type InstanceAggregate struct {
 }
 
 func GetInstancePaged(db *database.Database, query *bson.M, page,
-pageCount int64) (insts []*InstanceAggregate, count int64, err error) {
+	pageCount int64) (insts []*InstanceAggregate, count int64, err error) {
 
 	coll := db.Instances()
 	insts = []*InstanceAggregate{}
 
-	count, err = coll.Count(context.Background(), query)
+	count, err = coll.Count(db, query)
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -50,7 +50,7 @@ pageCount int64) (insts []*InstanceAggregate, count int64, err error) {
 	page = utils.Min64(page, count/pageCount)
 	skip := utils.Min64(page*pageCount, count)
 
-	cursor, err := coll.Aggregate(context.Background(), []*bson.M{
+	cursor, err := coll.Aggregate(db, []*bson.M{
 		&bson.M{
 			"$match": query,
 		},
@@ -112,14 +112,14 @@ pageCount int64) (insts []*InstanceAggregate, count int64, err error) {
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
 	firesOrg := map[primitive.ObjectID]map[string][]*firewall.Firewall{}
 	firesRoles := map[primitive.ObjectID]set.Set{}
 	authrsOrg := map[primitive.ObjectID]map[string][]*authority.Authority{}
 	authrsRoles := map[primitive.ObjectID]set.Set{}
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		doc := &InstancePipe{}
 		err = cursor.Decode(doc)
 		if err != nil {

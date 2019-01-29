@@ -1,6 +1,8 @@
 package ahandlers
 
 import (
+	"strings"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -9,7 +11,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/subscription"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"strings"
 )
 
 type subscriptionPostData struct {

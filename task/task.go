@@ -2,10 +2,11 @@ package task
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/node"
-	"time"
 )
 
 var (

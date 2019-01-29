@@ -2,6 +2,12 @@ package deploy
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -9,11 +15,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"strconv"
-	"strings"
 )
 
 type Namespace struct {

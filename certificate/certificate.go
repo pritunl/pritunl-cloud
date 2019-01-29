@@ -1,19 +1,19 @@
 package certificate
 
 import (
-	"context"
 	"crypto/md5"
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"io"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"io"
-	"time"
 )
 
 type Info struct {
@@ -172,7 +172,7 @@ func (c *Certificate) Insert(db *database.Database) (err error) {
 		return
 	}
 
-	_, err = coll.InsertOne(context.Background(), c)
+	_, err = coll.InsertOne(db, c)
 	if err != nil {
 		err = database.ParseError(err)
 		return

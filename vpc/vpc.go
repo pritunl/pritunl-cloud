@@ -2,9 +2,13 @@ package vpc
 
 import (
 	"bytes"
-	"context"
 	"crypto/md5"
 	"fmt"
+	"math/rand"
+	"net"
+	"strings"
+	"time"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
@@ -14,10 +18,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"math/rand"
-	"net"
-	"strings"
-	"time"
 )
 
 type Route struct {
@@ -271,7 +271,7 @@ func (v *Vpc) GetIp(db *database.Database, typ string, instId primitive.ObjectID
 	coll := db.VpcsIp()
 	vpcIp := &VpcIp{}
 
-	err = coll.FindOne(context.Background(), &bson.M{
+	err = coll.FindOne(db, &bson.M{
 		"vpc":      v.Id,
 		"type":     typ,
 		"instance": instId,
@@ -292,7 +292,7 @@ func (v *Vpc) GetIp(db *database.Database, typ string, instId primitive.ObjectID
 		opts.SetReturnDocument(options.After)
 
 		err = coll.FindOneAndUpdate(
-			context.Background(),
+			db,
 			&bson.M{
 				"vpc":      v.Id,
 				"type":     typ,
@@ -327,7 +327,7 @@ func (v *Vpc) GetIp(db *database.Database, typ string, instId primitive.ObjectID
 		}
 
 		err = coll.FindOne(
-			context.Background(),
+			db,
 			&bson.M{
 				"vpc":  v.Id,
 				"type": typ,
@@ -393,7 +393,7 @@ func (v *Vpc) GetIp(db *database.Database, typ string, instId primitive.ObjectID
 				return
 			}
 
-			_, err = coll.InsertOne(context.Background(), vpcIp)
+			_, err = coll.InsertOne(db, vpcIp)
 			if err != nil {
 				vpcIp = nil
 				err = database.ParseError(err)
@@ -455,7 +455,7 @@ func (v *Vpc) PingLink(db *database.Database) (held bool, err error) {
 	}
 
 	_, err = coll.UpdateOne(
-		context.Background(),
+		db,
 		query,
 		&bson.M{
 			"$set": &bson.M{
@@ -543,7 +543,7 @@ func (v *Vpc) Insert(db *database.Database) (err error) {
 		return
 	}
 
-	_, err = coll.InsertOne(context.Background(), v)
+	_, err = coll.InsertOne(db, v)
 	if err != nil {
 		err = database.ParseError(err)
 		return

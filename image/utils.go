@@ -1,18 +1,18 @@
 package image
 
 import (
-	"context"
 	"crypto/md5"
 	"fmt"
+	"regexp"
+	"time"
+
 	"github.com/dropbox/godropbox/container/set"
-	"github.com/minio/minio-go"
+	minio "github.com/minio/minio-go"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"regexp"
-	"time"
 )
 
 var (
@@ -50,7 +50,7 @@ func GetOrg(db *database.Database, orgId, imgId primitive.ObjectID) (
 	coll := db.Images()
 	img = &Image{}
 
-	err = coll.FindOne(context.Background(), &bson.M{
+	err = coll.FindOne(db, &bson.M{
 		"_id":          imgId,
 		"organization": orgId,
 	}).Decode(img)
@@ -68,7 +68,7 @@ func GetOrgPublic(db *database.Database, orgId, imgId primitive.ObjectID) (
 	coll := db.Images()
 	img = &Image{}
 
-	err = coll.FindOne(context.Background(), &bson.M{
+	err = coll.FindOne(db, &bson.M{
 		"_id": imgId,
 		"$or": []*bson.M{
 			&bson.M{
@@ -95,7 +95,7 @@ func Distinct(db *database.Database, storeId primitive.ObjectID) (
 	coll := db.Images()
 	keys = []string{}
 
-	keysInf, err := coll.Distinct(context.Background(), "key", &bson.M{
+	keysInf, err := coll.Distinct(db, "key", &bson.M{
 		"storage": storeId,
 	})
 	if err != nil {
@@ -117,7 +117,7 @@ func ExistsOrg(db *database.Database, orgId, imgId primitive.ObjectID) (
 
 	coll := db.Images()
 
-	n, err := coll.Count(context.Background(), &bson.M{
+	n, err := coll.Count(db, &bson.M{
 		"_id": imgId,
 		"$or": []*bson.M{
 			&bson.M{
@@ -148,7 +148,7 @@ func GetAll(db *database.Database, query *bson.M, page, pageCount int64) (
 	coll := db.Images()
 	imgs = []*Image{}
 
-	count, err = coll.Count(context.Background(), query)
+	count, err = coll.Count(db, query)
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -158,7 +158,7 @@ func GetAll(db *database.Database, query *bson.M, page, pageCount int64) (
 	skip := utils.Min64(page*pageCount, count)
 
 	cursor, err := coll.Find(
-		context.Background(),
+		db,
 		query,
 		&options.FindOptions{
 			Sort: &bson.D{
@@ -168,9 +168,9 @@ func GetAll(db *database.Database, query *bson.M, page, pageCount int64) (
 			Limit: &pageCount,
 		},
 	)
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		img := &Image{}
 		err = cursor.Decode(img)
 		if err != nil {
@@ -198,7 +198,7 @@ func GetAllNames(db *database.Database, query *bson.M) (
 	images = []*Image{}
 
 	cursor, err := coll.Find(
-		context.Background(),
+		db,
 		query,
 		&options.FindOptions{
 			Sort: &bson.D{
@@ -214,9 +214,9 @@ func GetAllNames(db *database.Database, query *bson.M) (
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		img := &Image{}
 		err = cursor.Decode(img)
 		if err != nil {
@@ -241,7 +241,7 @@ func GetAllKeys(db *database.Database) (keys set.Set, err error) {
 	keys = set.NewSet()
 
 	cursor, err := coll.Find(
-		context.Background(),
+		db,
 		&bson.M{},
 		&options.FindOptions{
 			Sort: &bson.D{
@@ -257,9 +257,9 @@ func GetAllKeys(db *database.Database) (keys set.Set, err error) {
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		img := &Image{}
 		err = cursor.Decode(img)
 		if err != nil {
@@ -282,7 +282,7 @@ func GetAllKeys(db *database.Database) (keys set.Set, err error) {
 func Remove(db *database.Database, imgId primitive.ObjectID) (err error) {
 	coll := db.Images()
 
-	_, err = coll.DeleteOne(context.Background(), &bson.M{
+	_, err = coll.DeleteOne(db, &bson.M{
 		"_id": imgId,
 	})
 	if err != nil {
@@ -302,7 +302,7 @@ func RemoveKeys(db *database.Database, storeId primitive.ObjectID,
 	keys []string) (err error) {
 	coll := db.Images()
 
-	_, err = coll.DeleteMany(context.Background(), &bson.M{
+	_, err = coll.DeleteMany(db, &bson.M{
 		"storage": storeId,
 		"key": &bson.M{
 			"$in": keys,

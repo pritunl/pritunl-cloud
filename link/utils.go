@@ -9,10 +9,11 @@ import (
 	"crypto/sha512"
 	"crypto/tls"
 	"encoding/base64"
-	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/pritunl-cloud/errortypes"
 	"net/http"
 	"time"
+
+	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 )
 
 var (

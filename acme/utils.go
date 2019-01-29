@@ -8,10 +8,11 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
+	"strings"
+
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"strings"
 )
 
 func ParsePath(path string) string {

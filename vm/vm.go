@@ -1,11 +1,12 @@
 package vm
 
 import (
+	"path"
+	"strings"
+
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
-	"path"
-	"strings"
 )
 
 type VirtualMachine struct {

@@ -1,8 +1,9 @@
 package firewall
 
 import (
-	"context"
 	"fmt"
+	"sort"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
@@ -15,7 +16,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
-	"sort"
 )
 
 func Get(db *database.Database, fireId primitive.ObjectID) (
@@ -38,7 +38,7 @@ func GetOrg(db *database.Database, orgId, fireId primitive.ObjectID) (
 	coll := db.Firewalls()
 	fire = &Firewall{}
 
-	err = coll.FindOne(context.Background(), &bson.M{
+	err = coll.FindOne(db, &bson.M{
 		"_id":          fireId,
 		"organization": orgId,
 	}).Decode(fire)
@@ -56,14 +56,14 @@ func GetAll(db *database.Database, query *bson.M) (
 	coll := db.Firewalls()
 	fires = []*Firewall{}
 
-	cursor, err := coll.Find(context.Background(), query)
+	cursor, err := coll.Find(db, query)
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		fire := &Firewall{}
 		err = cursor.Decode(fire)
 		if err != nil {
@@ -90,7 +90,7 @@ func GetRoles(db *database.Database, roles []string) (
 	fires = []*Firewall{}
 
 	cursor, err := coll.Find(
-		context.Background(),
+		db,
 		&bson.M{
 			"$or": []*bson.M{
 				&bson.M{
@@ -116,9 +116,9 @@ func GetRoles(db *database.Database, roles []string) (
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		fire := &Firewall{}
 		err = cursor.Decode(fire)
 		if err != nil {
@@ -144,16 +144,16 @@ func GetOrgMapRoles(db *database.Database, orgId primitive.ObjectID) (
 	coll := db.Firewalls()
 	fires = map[string][]*Firewall{}
 
-	cursor, err := coll.Find(context.Background(), &bson.M{
+	cursor, err := coll.Find(db, &bson.M{
 		"organization": orgId,
 	})
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		fire := &Firewall{}
 		err = cursor.Decode(fire)
 		if err != nil {
@@ -186,7 +186,7 @@ func GetOrgRoles(db *database.Database, orgId primitive.ObjectID,
 	fires = []*Firewall{}
 
 	cursor, err := coll.Find(
-		context.Background(),
+		db,
 		&bson.M{
 			"organization": orgId,
 			"network_roles": &bson.M{
@@ -203,9 +203,9 @@ func GetOrgRoles(db *database.Database, orgId primitive.ObjectID,
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		fire := &Firewall{}
 		err = cursor.Decode(fire)
 		if err != nil {
@@ -231,7 +231,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	coll := db.Firewalls()
 	fires = []*Firewall{}
 
-	count, err = coll.Count(context.Background(), query)
+	count, err = coll.Count(db, query)
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -241,7 +241,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	skip := utils.Min64(page*pageCount, count)
 
 	cursor, err := coll.Find(
-		context.Background(),
+		db,
 		query,
 		&options.FindOptions{
 			Sort: &bson.D{
@@ -255,9 +255,9 @@ func GetAllPaged(db *database.Database, query *bson.M,
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		fire := &Firewall{}
 		err = cursor.Decode(fire)
 		if err != nil {
@@ -280,7 +280,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 func Remove(db *database.Database, fireId primitive.ObjectID) (err error) {
 	coll := db.Firewalls()
 
-	_, err = coll.DeleteOne(context.Background(), &bson.M{
+	_, err = coll.DeleteOne(db, &bson.M{
 		"_id": fireId,
 	})
 	if err != nil {
@@ -301,7 +301,7 @@ func RemoveOrg(db *database.Database, orgId, fireId primitive.ObjectID) (
 
 	coll := db.Firewalls()
 
-	_, err = coll.DeleteOne(context.Background(), &bson.M{
+	_, err = coll.DeleteOne(db, &bson.M{
 		"_id":          fireId,
 		"organization": orgId,
 	})
@@ -321,7 +321,7 @@ func RemoveOrg(db *database.Database, orgId, fireId primitive.ObjectID) (
 func RemoveMulti(db *database.Database, fireIds []primitive.ObjectID) (err error) {
 	coll := db.Firewalls()
 
-	_, err = coll.DeleteMany(context.Background(), &bson.M{
+	_, err = coll.DeleteMany(db, &bson.M{
 		"_id": &bson.M{
 			"$in": fireIds,
 		},
@@ -339,7 +339,7 @@ func RemoveMultiOrg(db *database.Database, orgId primitive.ObjectID,
 
 	coll := db.Firewalls()
 
-	_, err = coll.DeleteMany(context.Background(), &bson.M{
+	_, err = coll.DeleteMany(db, &bson.M{
 		"_id": &bson.M{
 			"$in": fireIds,
 		},

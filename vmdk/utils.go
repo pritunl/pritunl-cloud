@@ -2,10 +2,10 @@ package vmdk
 
 import (
 	"bytes"
+	"os"
+
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"github.com/satori/go.uuid"
-	"os"
 )
 
 func SetRandUuid(diskPath string) (err error) {

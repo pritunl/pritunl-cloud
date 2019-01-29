@@ -2,11 +2,12 @@ package ipsec
 
 import (
 	"fmt"
+	"io/ioutil"
+	"strings"
+
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
-	"io/ioutil"
-	"strings"
 )
 
 func networkStopDhClient(vpcId primitive.ObjectID) (err error) {

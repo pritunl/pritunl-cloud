@@ -3,11 +3,12 @@ package qga
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/pritunl-cloud/errortypes"
 	"net"
 	"strings"
 	"time"
+
+	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 )
 
 type Command struct {

@@ -1,12 +1,12 @@
 package auth
 
 import (
-	"context"
+	"net/http"
+	"time"
+
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
-	"net/http"
-	"time"
 )
 
 var (
@@ -31,7 +31,7 @@ type Token struct {
 func (t *Token) Remove(db *database.Database) (err error) {
 	coll := db.Tokens()
 
-	_, err = coll.DeleteOne(context.Background(), &bson.M{
+	_, err = coll.DeleteOne(db, &bson.M{
 		"_id": t.Id,
 	})
 	if err != nil {

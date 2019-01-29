@@ -2,6 +2,9 @@ package ahandlers
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/mongo-go-driver/bson"
@@ -13,8 +16,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"strconv"
-	"strings"
 )
 
 type imageData struct {

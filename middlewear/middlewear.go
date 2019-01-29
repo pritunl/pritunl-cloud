@@ -2,6 +2,8 @@ package middlewear
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
@@ -16,7 +18,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/session"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/validator"
-	"net/http"
 )
 
 const robots = `User-agent: *
@@ -32,7 +33,7 @@ func Counter(c *gin.Context) {
 }
 
 func Database(c *gin.Context) {
-	db := database.GetDatabase()
+	db := database.GetDatabaseCtx(c.Request.Context())
 	c.Set("db", db)
 	c.Next()
 	db.Close()

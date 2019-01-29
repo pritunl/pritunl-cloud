@@ -1,13 +1,13 @@
 package audit
 
 import (
-	"context"
+	"time"
+
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/agent"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"time"
 )
 
 type Fields map[string]interface{}
@@ -31,7 +31,7 @@ func (a *Audit) Insert(db *database.Database) (err error) {
 		return
 	}
 
-	_, err = coll.InsertOne(context.Background(), a)
+	_, err = coll.InsertOne(db, a)
 	if err != nil {
 		err = database.ParseError(err)
 		return

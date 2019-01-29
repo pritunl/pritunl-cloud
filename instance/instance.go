@@ -1,7 +1,8 @@
 package instance
 
 import (
-	"context"
+	"strconv"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
@@ -11,7 +12,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
-	"strconv"
 )
 
 type Instance struct {
@@ -264,7 +264,7 @@ func (i *Instance) Insert(db *database.Database) (err error) {
 		return
 	}
 
-	_, err = coll.InsertOne(context.Background(), i)
+	_, err = coll.InsertOne(db, i)
 	if err != nil {
 		err = database.ParseError(err)
 		return

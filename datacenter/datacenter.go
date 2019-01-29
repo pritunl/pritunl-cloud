@@ -1,7 +1,6 @@
 package datacenter
 
 import (
-	"context"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
@@ -69,7 +68,7 @@ func (d *Datacenter) Insert(db *database.Database) (err error) {
 		return
 	}
 
-	_, err = coll.InsertOne(context.Background(), d)
+	_, err = coll.InsertOne(db, d)
 	if err != nil {
 		err = database.ParseError(err)
 		return

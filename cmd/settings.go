@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"context"
 	"encoding/json"
 	"flag"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
@@ -63,7 +63,7 @@ func ResetPassword() (err error) {
 
 	coll := db.Users()
 
-	_, err = coll.DeleteOne(context.Background(), &bson.M{
+	_, err = coll.DeleteOne(db, &bson.M{
 		"username": "pritunl",
 	})
 	if err != nil {

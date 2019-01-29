@@ -2,13 +2,15 @@ package uhandlers
 
 import (
 	"context"
+	"time"
+
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"time"
 )
 
 const (
@@ -18,6 +20,7 @@ const (
 )
 
 func eventGet(c *gin.Context) {
+	db := c.MustGet("db").(*database.Database)
 	socket := &event.WebSocket{}
 
 	defer func() {
@@ -31,7 +34,7 @@ func eventGet(c *gin.Context) {
 	event.WebSockets.Add(socket)
 	event.WebSocketsLock.Unlock()
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(db)
 	socket.Cancel = cancel
 
 	conn, err := event.Upgrader.Upgrade(c.Writer, c.Request, nil)
@@ -50,7 +53,7 @@ func eventGet(c *gin.Context) {
 		return
 	})
 
-	lst, err := event.SubscribeListener([]string{"dispatch"})
+	lst, err := event.SubscribeListener(db, []string{"dispatch"})
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return

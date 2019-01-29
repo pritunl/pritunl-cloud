@@ -3,11 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
+	"time"
+
 	"github.com/pritunl/pritunl-cloud/cmd"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/logger"
 	"github.com/pritunl/pritunl-cloud/requires"
-	"time"
 )
 
 const help = `

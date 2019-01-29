@@ -6,6 +6,14 @@ import (
 	"crypto/md5"
 	"crypto/tls"
 	"fmt"
+	"io"
+	"math/rand"
+	"net/http"
+	"strconv"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
@@ -19,13 +27,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/uhandlers"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"io"
-	"math/rand"
-	"net/http"
-	"strconv"
-	"strings"
-	"sync"
-	"time"
 )
 
 type Router struct {
@@ -385,7 +386,7 @@ func (r *Router) Restart() {
 
 	if r.redirectServer != nil {
 		redirectCtx, redirectCancel := context.WithTimeout(
-			context.Background(),
+			db,
 			1*time.Second,
 		)
 		defer redirectCancel()
@@ -393,7 +394,7 @@ func (r *Router) Restart() {
 	}
 	if r.webServer != nil {
 		webCtx, webCancel := context.WithTimeout(
-			context.Background(),
+			db,
 			1*time.Second,
 		)
 		defer webCancel()

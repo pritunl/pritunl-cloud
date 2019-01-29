@@ -1,7 +1,9 @@
 package audit
 
 import (
-	"context"
+	"net/http"
+	"time"
+
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/mongo-go-driver/mongo/options"
@@ -9,8 +11,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"net/http"
-	"time"
 )
 
 func Get(db *database.Database, adtId string) (
@@ -33,7 +33,7 @@ func GetAll(db *database.Database, userId primitive.ObjectID,
 	coll := db.Audits()
 	audits = []*Audit{}
 
-	count, err = coll.Count(context.Background(), &bson.M{
+	count, err = coll.Count(db, &bson.M{
 		"u": userId,
 	})
 	if err != nil {
@@ -44,7 +44,7 @@ func GetAll(db *database.Database, userId primitive.ObjectID,
 	page = utils.Min64(page, count/pageCount)
 	skip := utils.Min64(page*pageCount, count)
 
-	cursor, err := coll.Find(context.Background(), &bson.M{
+	cursor, err := coll.Find(db, &bson.M{
 		"u": userId,
 	}, &options.FindOptions{
 		Sort: &bson.D{
@@ -57,9 +57,9 @@ func GetAll(db *database.Database, userId primitive.ObjectID,
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		adt := &Audit{}
 		err = cursor.Decode(adt)
 		if err != nil {

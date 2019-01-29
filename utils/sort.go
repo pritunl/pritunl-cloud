@@ -1,8 +1,9 @@
 package utils
 
 import (
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"sort"
+
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 )
 
 type ObjectIdSlice []primitive.ObjectID

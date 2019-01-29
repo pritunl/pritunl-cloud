@@ -1,6 +1,8 @@
 package cookie
 
 import (
+	"net/http"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gorilla/securecookie"
@@ -11,7 +13,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/requires"
 	"github.com/pritunl/pritunl-cloud/session"
 	"github.com/pritunl/pritunl-cloud/settings"
-	"net/http"
 )
 
 var (

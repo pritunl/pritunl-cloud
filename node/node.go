@@ -2,7 +2,12 @@ package node
 
 import (
 	"container/list"
-	"context"
+	"net/http"
+	"sort"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/bson"
@@ -16,11 +21,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"net/http"
-	"sort"
-	"strings"
-	"sync"
-	"time"
 )
 
 var (
@@ -165,7 +165,7 @@ func (n *Node) Validate(db *database.Database) (
 
 	if !n.Zone.IsZero() {
 		coll := db.Zones()
-		count, e := coll.Count(context.Background(), &bson.M{
+		count, e := coll.Count(db, &bson.M{
 			"_id": n.Zone,
 		})
 		if e != nil {
@@ -266,7 +266,7 @@ func (n *Node) update(db *database.Database) (err error) {
 	opts.SetReturnDocument(options.After)
 
 	err = coll.FindOneAndUpdate(
-		context.Background(),
+		db,
 		&bson.M{
 			"_id": n.Id,
 		},
@@ -556,7 +556,7 @@ func (n *Node) Init() (err error) {
 	opts.SetUpsert(true)
 
 	_, err = coll.UpdateOne(
-		context.Background(),
+		db,
 		&bson.M{
 			"_id": n.Id,
 		},

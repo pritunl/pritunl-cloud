@@ -1,13 +1,13 @@
 package storage
 
 import (
-	"context"
+	"strings"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"strings"
 )
 
 type Storage struct {
@@ -69,7 +69,7 @@ func (s *Storage) Insert(db *database.Database) (err error) {
 		return
 	}
 
-	_, err = coll.InsertOne(context.Background(), s)
+	_, err = coll.InsertOne(db, s)
 	if err != nil {
 		err = database.ParseError(err)
 		return

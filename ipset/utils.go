@@ -1,14 +1,15 @@
 package ipset
 
 import (
+	"strings"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
-	"strings"
-	"time"
 )
 
 var (

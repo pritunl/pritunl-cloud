@@ -1,12 +1,12 @@
 package storage
 
 import (
-	"context"
-	"github.com/minio/minio-go"
+	"strings"
+
+	minio "github.com/minio/minio-go"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
-	"strings"
 )
 
 func Get(db *database.Database, storeId primitive.ObjectID) (
@@ -28,16 +28,16 @@ func GetAll(db *database.Database) (stores []*Storage, err error) {
 	stores = []*Storage{}
 
 	cursor, err := coll.Find(
-		context.Background(),
+		db,
 		&bson.M{},
 	)
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		store := &Storage{}
 		err = cursor.Decode(store)
 		if err != nil {
@@ -60,7 +60,7 @@ func GetAll(db *database.Database) (stores []*Storage, err error) {
 func Remove(db *database.Database, storeId primitive.ObjectID) (err error) {
 	coll := db.Images()
 
-	_, err = coll.DeleteMany(context.Background(), &bson.M{
+	_, err = coll.DeleteMany(db, &bson.M{
 		"storage": storeId,
 	})
 	if err != nil {
@@ -69,7 +69,7 @@ func Remove(db *database.Database, storeId primitive.ObjectID) (err error) {
 
 	coll = db.Storages()
 
-	_, err = coll.DeleteOne(context.Background(), &bson.M{
+	_, err = coll.DeleteOne(db, &bson.M{
 		"_id": storeId,
 	})
 	if err != nil {

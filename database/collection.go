@@ -1,21 +1,22 @@
 package database
 
 import (
-	"context"
+	"reflect"
+	"strings"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/mongo-go-driver/mongo"
-	"reflect"
-	"strings"
 )
 
 type Collection struct {
+	db *Database
 	*mongo.Collection
 }
 
 func (c *Collection) FindOneId(id interface{}, data interface{}) (err error) {
-	err = c.FindOne(context.Background(), &bson.M{
+	err = c.FindOne(c.db, &bson.M{
 		"_id": id,
 	}).Decode(data)
 	if err != nil {
@@ -27,7 +28,7 @@ func (c *Collection) FindOneId(id interface{}, data interface{}) (err error) {
 }
 
 func (c *Collection) UpdateId(id interface{}, data interface{}) (err error) {
-	_, err = c.UpdateOne(context.Background(), &bson.M{
+	_, err = c.UpdateOne(c.db, &bson.M{
 		"_id": id,
 	}, data)
 	if err != nil {
@@ -39,7 +40,7 @@ func (c *Collection) UpdateId(id interface{}, data interface{}) (err error) {
 }
 
 func (c *Collection) Commit(id interface{}, data interface{}) (err error) {
-	_, err = c.UpdateOne(context.Background(), &bson.M{
+	_, err = c.UpdateOne(c.db, &bson.M{
 		"_id": id,
 	}, &bson.M{
 		"$set": data,
@@ -55,7 +56,7 @@ func (c *Collection) Commit(id interface{}, data interface{}) (err error) {
 func (c *Collection) CommitFields(id interface{}, data interface{},
 	fields set.Set) (err error) {
 
-	_, err = c.UpdateOne(context.Background(), &bson.M{
+	_, err = c.UpdateOne(c.db, &bson.M{
 		"_id": id,
 	}, SelectFieldsAll(data, fields))
 	if err != nil {

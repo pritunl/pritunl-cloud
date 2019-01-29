@@ -2,9 +2,10 @@ package qemu
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/paths"
-	"strings"
 )
 
 type Disk struct {

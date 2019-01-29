@@ -2,17 +2,17 @@ package auth
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/url"
+	"time"
+
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"net/http"
-	"net/url"
-	"time"
 )
 
 const (
@@ -105,7 +105,7 @@ func AuthZeroRequest(db *database.Database, location, query string,
 		Query:     query,
 	}
 
-	_, err = coll.InsertOne(context.Background(), tokn)
+	_, err = coll.InsertOne(db, tokn)
 	if err != nil {
 		err = database.ParseError(err)
 		return

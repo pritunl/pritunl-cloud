@@ -1,12 +1,13 @@
 package ahandlers
 
 import (
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/pritunl-cloud/audit"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"strconv"
 )
 
 type auditsData struct {

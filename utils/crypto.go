@@ -4,13 +4,14 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
-	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/pritunl-cloud/errortypes"
 	"math"
 	"math/big"
 	mathrand "math/rand"
 	"regexp"
 	"strings"
+
+	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 )
 
 var (

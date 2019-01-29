@@ -1,10 +1,11 @@
 package authorizer
 
 import (
+	"net/http"
+
 	"github.com/pritunl/pritunl-cloud/auth"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/signature"
-	"net/http"
 )
 
 func AuthorizeAdmin(db *database.Database, w http.ResponseWriter,

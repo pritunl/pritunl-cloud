@@ -1,6 +1,8 @@
 package demo
 
 import (
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/agent"
@@ -10,7 +12,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/session"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/subscription"
-	"time"
 )
 
 func IsDemo() bool {

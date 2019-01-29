@@ -2,6 +2,12 @@ package task
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -10,11 +16,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"strings"
-	"time"
 )
 
 var backingClean = &Task{

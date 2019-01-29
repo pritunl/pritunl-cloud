@@ -1,7 +1,6 @@
 package block
 
 import (
-	"context"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
@@ -58,7 +57,7 @@ func (b *Block) Insert(db *database.Database) (err error) {
 		return
 	}
 
-	_, err = coll.InsertOne(context.Background(), b)
+	_, err = coll.InsertOne(db, b)
 	if err != nil {
 		err = database.ParseError(err)
 		return

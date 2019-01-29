@@ -1,11 +1,12 @@
 package utils
 
 import (
+	"runtime"
+
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/shirou/gopsutil/load"
 	"github.com/shirou/gopsutil/mem"
-	"runtime"
 )
 
 func MemoryUsed() (used, total float64, err error) {

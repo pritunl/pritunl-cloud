@@ -1,7 +1,6 @@
 package organization
 
 import (
-	"context"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
@@ -59,7 +58,7 @@ func (c *Organization) Insert(db *database.Database) (err error) {
 		return
 	}
 
-	_, err = coll.InsertOne(context.Background(), c)
+	_, err = coll.InsertOne(db, c)
 	if err != nil {
 		err = database.ParseError(err)
 		return

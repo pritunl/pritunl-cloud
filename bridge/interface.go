@@ -1,8 +1,9 @@
 package bridge
 
 import (
-	"github.com/pritunl/pritunl-cloud/utils"
 	"strings"
+
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 func getDefault() (iface string, err error) {

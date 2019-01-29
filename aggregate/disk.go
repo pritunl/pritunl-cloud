@@ -1,7 +1,6 @@
 package aggregate
 
 import (
-	"context"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -31,7 +30,7 @@ func GetDiskPaged(db *database.Database, query *bson.M, page,
 	coll := db.Disks()
 	disks = []*DiskAggregate{}
 
-	count, err = coll.Count(context.Background(), query)
+	count, err = coll.Count(db, query)
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -40,7 +39,7 @@ func GetDiskPaged(db *database.Database, query *bson.M, page,
 	page = utils.Min64(page, count/pageCount)
 	skip := utils.Min64(page*pageCount, count)
 
-	cursor, err := coll.Aggregate(context.Background(), []*bson.M{
+	cursor, err := coll.Aggregate(db, []*bson.M{
 		&bson.M{
 			"$match": query,
 		},
@@ -68,9 +67,9 @@ func GetDiskPaged(db *database.Database, query *bson.M, page,
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		doc := &DiskPipe{}
 		err = cursor.Decode(doc)
 		if err != nil {

@@ -1,10 +1,11 @@
 package cookie
 
 import (
+	"net/http"
+
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gorilla/securecookie"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"net/http"
 )
 
 func GetAdmin(w http.ResponseWriter, r *http.Request) (

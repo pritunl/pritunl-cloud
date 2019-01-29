@@ -1,9 +1,10 @@
 package store
 
 import (
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"sync"
 	"time"
+
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 )
 
 var (

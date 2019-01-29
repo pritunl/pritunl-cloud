@@ -2,14 +2,15 @@ package ahandlers
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/log"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"strconv"
-	"strings"
 )
 
 type logsData struct {

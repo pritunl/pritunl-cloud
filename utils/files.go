@@ -1,10 +1,11 @@
 package utils
 
 import (
-	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/pritunl-cloud/errortypes"
 	"io/ioutil"
 	"os"
+
+	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 )
 
 func Chmod(pth string, mode os.FileMode) (err error) {

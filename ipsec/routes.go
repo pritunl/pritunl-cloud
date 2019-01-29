@@ -1,10 +1,11 @@
 package ipsec
 
 import (
+	"strings"
+
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/link"
 	"github.com/pritunl/pritunl-cloud/vpc"
-	"strings"
 )
 
 func addRoutes(db *database.Database, vc *vpc.Vpc, states []*link.State,

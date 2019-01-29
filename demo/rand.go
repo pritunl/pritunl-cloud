@@ -1,9 +1,10 @@
 package demo
 
 import (
+	"sync"
+
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"sync"
 )
 
 var (

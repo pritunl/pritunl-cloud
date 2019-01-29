@@ -1,7 +1,6 @@
 package datacenter
 
 import (
-	"context"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -26,7 +25,7 @@ func ExistsOrg(db *database.Database, orgId, dcId primitive.ObjectID) (
 
 	coll := db.Datacenters()
 
-	count, err := coll.Count(context.Background(), &bson.M{
+	count, err := coll.Count(db, &bson.M{
 		"_id": dcId,
 		"$or": []*bson.M{
 			&bson.M{
@@ -53,14 +52,14 @@ func GetAll(db *database.Database) (dcs []*Datacenter, err error) {
 	coll := db.Datacenters()
 	dcs = []*Datacenter{}
 
-	cursor, err := coll.Find(context.Background(), &bson.M{})
+	cursor, err := coll.Find(db, &bson.M{})
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		dc := &Datacenter{}
 		err = cursor.Decode(dc)
 		if err != nil {
@@ -86,7 +85,7 @@ func GetAllNamesOrg(db *database.Database, orgId primitive.ObjectID) (
 	coll := db.Datacenters()
 	dcs = []*Datacenter{}
 
-	cursor, err := coll.Find(context.Background(), &bson.M{
+	cursor, err := coll.Find(db, &bson.M{
 		"$or": []*bson.M{
 			&bson.M{
 				"match_organizations": false,
@@ -100,9 +99,9 @@ func GetAllNamesOrg(db *database.Database, orgId primitive.ObjectID) (
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		dc := &Datacenter{}
 		err = cursor.Decode(dc)
 		if err != nil {
@@ -128,7 +127,7 @@ func DistinctOrg(db *database.Database, orgId primitive.ObjectID) (
 	coll := db.Datacenters()
 	ids = []primitive.ObjectID{}
 
-	idsInf, err := coll.Distinct(context.Background(), "_id", &bson.M{
+	idsInf, err := coll.Distinct(db, "_id", &bson.M{
 		"$or": []*bson.M{
 			&bson.M{
 				"match_organizations": false,
@@ -155,7 +154,7 @@ func DistinctOrg(db *database.Database, orgId primitive.ObjectID) (
 func Remove(db *database.Database, dcId primitive.ObjectID) (err error) {
 	coll := db.Datacenters()
 
-	_, err = coll.DeleteOne(context.Background(), &bson.M{
+	_, err = coll.DeleteOne(db, &bson.M{
 		"_id": dcId,
 	})
 	if err != nil {

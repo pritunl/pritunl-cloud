@@ -3,16 +3,17 @@ package qms
 import (
 	"bytes"
 	"fmt"
+	"net"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
-	"net"
-	"strconv"
-	"strings"
-	"time"
 )
 
 var (

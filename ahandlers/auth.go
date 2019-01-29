@@ -1,6 +1,8 @@
 package ahandlers
 
 import (
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/audit"
@@ -18,7 +20,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/u2flib"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/validator"
-	"strings"
 )
 
 func authStateGet(c *gin.Context) {

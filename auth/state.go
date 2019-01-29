@@ -1,8 +1,9 @@
 package auth
 
 import (
-	"github.com/pritunl/pritunl-cloud/settings"
 	"sort"
+
+	"github.com/pritunl/pritunl-cloud/settings"
 )
 
 type StateProvider struct {

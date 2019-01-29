@@ -7,6 +7,13 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
@@ -15,12 +22,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"io/ioutil"
-	"net/http"
-	"net/url"
-	"strconv"
-	"strings"
-	"time"
 )
 
 var (

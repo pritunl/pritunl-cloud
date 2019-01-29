@@ -1,7 +1,6 @@
 package log
 
 import (
-	"context"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/mongo-go-driver/mongo/options"
@@ -30,7 +29,7 @@ func GetAll(db *database.Database, query *bson.M, page, pageCount int64) (
 	coll := db.Logs()
 	entries = []*Entry{}
 
-	count, err = coll.Count(context.Background(), query)
+	count, err = coll.Count(db, query)
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -40,7 +39,7 @@ func GetAll(db *database.Database, query *bson.M, page, pageCount int64) (
 	skip := utils.Min64(page*pageCount, count)
 
 	cursor, err := coll.Find(
-		context.Background(),
+		db,
 		query,
 		&options.FindOptions{
 			Sort: &bson.D{
@@ -54,9 +53,9 @@ func GetAll(db *database.Database, query *bson.M, page, pageCount int64) (
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		entry := &Entry{}
 		err = cursor.Decode(entry)
 		if err != nil {
@@ -79,7 +78,7 @@ func GetAll(db *database.Database, query *bson.M, page, pageCount int64) (
 func Clear(db *database.Database) (err error) {
 	coll := db.Logs()
 
-	_, err = coll.DeleteMany(context.Background(), nil)
+	_, err = coll.DeleteMany(db, nil)
 	if err != nil {
 		err = database.ParseError(err)
 		return

@@ -3,14 +3,15 @@ package ipsec
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
+	"path"
+	"strings"
+
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/link"
 	"github.com/pritunl/pritunl-cloud/vm"
-	"io/ioutil"
-	"path"
-	"strings"
 )
 
 type templateData struct {

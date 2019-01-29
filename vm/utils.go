@@ -5,8 +5,9 @@ import (
 	"crypto/md5"
 	"encoding/base32"
 	"fmt"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"strings"
+
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 )
 
 func GetMacAddr(id primitive.ObjectID, secondId primitive.ObjectID) string {

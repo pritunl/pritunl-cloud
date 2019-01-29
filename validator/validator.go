@@ -1,6 +1,9 @@
 package validator
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/audit"
@@ -9,8 +12,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/policy"
 	"github.com/pritunl/pritunl-cloud/user"
-	"net/http"
-	"time"
 )
 
 func ValidateAdmin(db *database.Database, usr *user.User,

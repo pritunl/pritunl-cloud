@@ -2,10 +2,11 @@ package paths
 
 import (
 	"fmt"
+	"path"
+
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
-	"path"
 )
 
 func GetVmPath(instId primitive.ObjectID) string {

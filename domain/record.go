@@ -1,13 +1,13 @@
 package domain
 
 import (
-	"context"
+	"time"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"time"
 )
 
 type Record struct {
@@ -142,7 +142,7 @@ func (r *Record) Insert(db *database.Database) (err error) {
 
 	r.Id = primitive.NewObjectID()
 
-	_, err = coll.InsertOne(context.Background(), r)
+	_, err = coll.InsertOne(db, r)
 	if err != nil {
 		err = database.ParseError(err)
 		return

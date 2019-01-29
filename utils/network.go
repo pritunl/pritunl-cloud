@@ -2,13 +2,14 @@ package utils
 
 import (
 	"encoding/binary"
-	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/pritunl-cloud/errortypes"
 	"io/ioutil"
 	"math/big"
 	"net"
 	"os"
 	"strings"
+
+	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 )
 
 func IncIpAddress(ip net.IP) {

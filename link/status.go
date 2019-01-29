@@ -2,13 +2,14 @@ package link
 
 import (
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
-	"strings"
-	"time"
 )
 
 var (

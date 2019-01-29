@@ -1,16 +1,16 @@
 package firewall
 
 import (
-	"context"
 	"fmt"
+	"net"
+	"strconv"
+	"strings"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"net"
-	"strconv"
-	"strings"
 )
 
 type Rule struct {
@@ -204,7 +204,7 @@ func (f *Firewall) Insert(db *database.Database) (err error) {
 		return
 	}
 
-	_, err = coll.InsertOne(context.Background(), f)
+	_, err = coll.InsertOne(db, f)
 	if err != nil {
 		err = database.ParseError(err)
 		return

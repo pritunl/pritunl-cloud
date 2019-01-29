@@ -2,6 +2,9 @@ package database
 
 import (
 	"context"
+	"net/url"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
@@ -10,8 +13,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/requires"
-	"net/url"
-	"time"
 )
 
 var (
@@ -220,7 +221,7 @@ func Connect() (err error) {
 		return
 	}
 
-	err = client.Connect(context.Background())
+	err = client.Connect(context.TODO())
 	if err != nil {
 		err = &ConnectionError{
 			errors.Wrap(err, "database: Connection error"),
@@ -247,14 +248,14 @@ func ValidateDatabase() (err error) {
 	db := GetDatabase()
 
 	cursor, err := db.database.ListCollections(
-		context.Background(), &bson.M{})
+		db, &bson.M{})
 	if err != nil {
 		err = ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		item := &struct {
 			Name string `bson:"name"`
 		}{}
@@ -290,6 +291,22 @@ func GetDatabase() (db *Database) {
 	database := client.Database(DefaultDatabase)
 
 	db = &Database{
+		client:   client,
+		database: database,
+	}
+	return
+}
+
+func GetDatabaseCtx(ctx context.Context) (db *Database) {
+	client := Client
+	if client == nil {
+		return
+	}
+
+	database := client.Database(DefaultDatabase)
+
+	db = &Database{
+		ctx:      ctx,
 		client:   client,
 		database: database,
 	}
@@ -890,14 +907,14 @@ func addCollections() (err error) {
 	defer db.Close()
 
 	cursor, err := db.database.ListCollections(
-		context.Background(), &bson.M{})
+		db, &bson.M{})
 	if err != nil {
 		err = ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		item := &struct {
 			Name string `bson:"name"`
 		}{}

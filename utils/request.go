@@ -2,12 +2,13 @@ package utils
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/render"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/render"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 )
 
 type NopCloser struct {

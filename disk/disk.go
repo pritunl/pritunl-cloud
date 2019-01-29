@@ -1,8 +1,11 @@
 package disk
 
 import (
-	"context"
 	"fmt"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
@@ -11,9 +14,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"strconv"
-	"strings"
-	"time"
 )
 
 type Disk struct {
@@ -109,7 +109,7 @@ func (d *Disk) CommitFields(db *database.Database, fields set.Set) (
 func (d *Disk) Insert(db *database.Database) (err error) {
 	coll := db.Disks()
 
-	_, err = coll.InsertOne(context.Background(), d)
+	_, err = coll.InsertOne(db, d)
 	if err != nil {
 		err = database.ParseError(err)
 		return

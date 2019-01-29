@@ -1,15 +1,16 @@
 package interfaces
 
 import (
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"strings"
-	"sync"
-	"time"
 )
 
 var (

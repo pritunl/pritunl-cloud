@@ -1,6 +1,10 @@
 package auth
 
 import (
+	"net/http"
+	"net/url"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
@@ -8,9 +12,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/user"
-	"net/http"
-	"net/url"
-	"time"
 )
 
 func SyncUser(db *database.Database, usr *user.User) (

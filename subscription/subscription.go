@@ -3,14 +3,15 @@ package subscription
 import (
 	"bytes"
 	"encoding/json"
+	"net/http"
+	"strings"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/requires"
 	"github.com/pritunl/pritunl-cloud/settings"
-	"net/http"
-	"strings"
-	"time"
 )
 
 var (

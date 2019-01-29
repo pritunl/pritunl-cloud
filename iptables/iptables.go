@@ -1,13 +1,14 @@
 package iptables
 
 import (
+	"strings"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"strings"
-	"time"
 )
 
 var (

@@ -2,9 +2,10 @@ package qms
 
 import (
 	"fmt"
+	"path"
+
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/settings"
-	"path"
 )
 
 func GetSockPath(virtId primitive.ObjectID) string {

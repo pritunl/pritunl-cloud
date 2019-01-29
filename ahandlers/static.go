@@ -1,13 +1,14 @@
 package ahandlers
 
 import (
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/pritunl-cloud/authorizer"
 	"github.com/pritunl/pritunl-cloud/config"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/static"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"strings"
 )
 
 func staticPath(c *gin.Context, pth string) {

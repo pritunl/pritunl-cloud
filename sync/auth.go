@@ -1,14 +1,14 @@
 package sync
 
 import (
-	"context"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/user"
-	"time"
 )
 
 func authSync() (err error) {
@@ -20,7 +20,7 @@ func authSync() (err error) {
 	opts.SetLimit(1)
 
 	count, err := coll.Count(
-		context.Background(),
+		db,
 		&bson.M{
 			"type": user.Local,
 		},

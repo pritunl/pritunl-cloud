@@ -2,8 +2,10 @@ package auth
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
+	"net/http"
+	"time"
+
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -11,9 +13,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
-	"google.golang.org/api/admin/directory/v1"
-	"net/http"
-	"time"
+	admin "google.golang.org/api/admin/directory/v1"
 )
 
 const (
@@ -99,7 +99,7 @@ func GoogleRequest(db *database.Database, location, query string) (
 		Query:     query,
 	}
 
-	_, err = coll.InsertOne(context.Background(), tokn)
+	_, err = coll.InsertOne(db, tokn)
 	if err != nil {
 		err = database.ParseError(err)
 		return

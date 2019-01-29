@@ -2,11 +2,12 @@
 package session
 
 import (
+	"time"
+
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/agent"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/user"
-	"time"
 )
 
 type Session struct {

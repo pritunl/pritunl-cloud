@@ -1,10 +1,11 @@
 package systemd
 
 import (
-	"github.com/pritunl/pritunl-cloud/utils"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 var (

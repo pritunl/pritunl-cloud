@@ -1,7 +1,9 @@
 package user
 
 import (
-	"context"
+	"sort"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
@@ -13,8 +15,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/requires"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"golang.org/x/crypto/bcrypt"
-	"sort"
-	"time"
 )
 
 type User struct {
@@ -148,7 +148,7 @@ func (u *User) Insert(db *database.Database) (err error) {
 		return
 	}
 
-	_, err = coll.InsertOne(context.Background(), u)
+	_, err = coll.InsertOne(db, u)
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -165,7 +165,7 @@ func (u *User) Upsert(db *database.Database) (err error) {
 	opts.SetReturnDocument(options.After)
 
 	err = coll.FindOneAndUpdate(
-		context.Background(),
+		db,
 		&bson.M{
 			"type":     u.Type,
 			"username": u.Username,

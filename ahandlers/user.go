@@ -2,6 +2,10 @@ package ahandlers
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/mongo-go-driver/bson"
@@ -11,9 +15,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/user"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"strconv"
-	"strings"
-	"time"
 )
 
 type userData struct {

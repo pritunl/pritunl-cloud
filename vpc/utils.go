@@ -1,7 +1,6 @@
 package vpc
 
 import (
-	"context"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
@@ -30,7 +29,7 @@ func GetOrg(db *database.Database, orgId, vcId primitive.ObjectID) (
 	coll := db.Vpcs()
 	vc = &Vpc{}
 
-	err = coll.FindOne(context.Background(), &bson.M{
+	err = coll.FindOne(db, &bson.M{
 		"_id":          vcId,
 		"organization": orgId,
 	}).Decode(vc)
@@ -47,7 +46,7 @@ func ExistsOrg(db *database.Database, orgId, vcId primitive.ObjectID) (
 
 	coll := db.Vpcs()
 	n, err := coll.Count(
-		context.Background(),
+		db,
 		&bson.M{
 			"_id":          vcId,
 			"organization": orgId,
@@ -71,16 +70,16 @@ func GetAll(db *database.Database, query *bson.M) (
 	vcs = []*Vpc{}
 
 	cursor, err := coll.Find(
-		context.Background(),
+		db,
 		query,
 	)
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		vc := &Vpc{}
 		err = cursor.Decode(vc)
 		if err != nil {
@@ -107,7 +106,7 @@ func GetAllNames(db *database.Database, query *bson.M) (
 	vpcs = []*Vpc{}
 
 	cursor, err := coll.Find(
-		context.Background(),
+		db,
 		query,
 		&options.FindOptions{
 			Sort: &bson.D{
@@ -124,9 +123,9 @@ func GetAllNames(db *database.Database, query *bson.M) (
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		vc := &Vpc{}
 		err = cursor.Decode(vc)
 		if err != nil {
@@ -152,7 +151,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	coll := db.Vpcs()
 	vcs = []*Vpc{}
 
-	count, err = coll.Count(context.Background(), query)
+	count, err = coll.Count(db, query)
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -162,7 +161,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	skip := utils.Min64(page*pageCount, count)
 
 	cursor, err := coll.Find(
-		context.Background(),
+		db,
 		query,
 		&options.FindOptions{
 			Sort: &bson.D{
@@ -176,9 +175,9 @@ func GetAllPaged(db *database.Database, query *bson.M,
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		vc := &Vpc{}
 		err = cursor.Decode(vc)
 		if err != nil {
@@ -205,7 +204,7 @@ func GetIds(db *database.Database, ids []primitive.ObjectID) (
 	vcs = []*Vpc{}
 
 	cursor, err := coll.Find(
-		context.Background(),
+		db,
 		&bson.M{
 			"_id": &bson.M{
 				"$in": ids,
@@ -216,9 +215,9 @@ func GetIds(db *database.Database, ids []primitive.ObjectID) (
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		vc := &Vpc{}
 		err = cursor.Decode(vc)
 		if err != nil {
@@ -245,7 +244,7 @@ func DistinctIds(db *database.Database, matchIds []primitive.ObjectID) (
 	idsSet = set.NewSet()
 
 	idsInf, err := coll.Distinct(
-		context.Background(),
+		db,
 		"_id",
 		&bson.M{
 			"_id": &bson.M{
@@ -270,7 +269,7 @@ func DistinctIds(db *database.Database, matchIds []primitive.ObjectID) (
 func Remove(db *database.Database, vcId primitive.ObjectID) (err error) {
 	coll := db.VpcsIp()
 
-	_, err = coll.DeleteMany(context.Background(), &bson.M{
+	_, err = coll.DeleteMany(db, &bson.M{
 		"vpc": vcId,
 	})
 	if err != nil {
@@ -280,7 +279,7 @@ func Remove(db *database.Database, vcId primitive.ObjectID) (err error) {
 
 	coll = db.Vpcs()
 
-	_, err = coll.DeleteOne(context.Background(), &bson.M{
+	_, err = coll.DeleteOne(db, &bson.M{
 		"_id": vcId,
 	})
 	if err != nil {
@@ -299,7 +298,7 @@ func Remove(db *database.Database, vcId primitive.ObjectID) (err error) {
 func RemoveOrg(db *database.Database, orgId, vcId primitive.ObjectID) (err error) {
 	coll := db.VpcsIp()
 
-	_, err = coll.DeleteMany(context.Background(), &bson.M{
+	_, err = coll.DeleteMany(db, &bson.M{
 		"vpc": vcId,
 	})
 	if err != nil {
@@ -309,7 +308,7 @@ func RemoveOrg(db *database.Database, orgId, vcId primitive.ObjectID) (err error
 
 	coll = db.Vpcs()
 
-	_, err = coll.DeleteOne(context.Background(), &bson.M{
+	_, err = coll.DeleteOne(db, &bson.M{
 		"organization": orgId,
 		"_id":          vcId,
 	})
@@ -329,7 +328,7 @@ func RemoveOrg(db *database.Database, orgId, vcId primitive.ObjectID) (err error
 func RemoveMulti(db *database.Database, vcIds []primitive.ObjectID) (err error) {
 	coll := db.VpcsIp()
 
-	_, err = coll.DeleteMany(context.Background(), &bson.M{
+	_, err = coll.DeleteMany(db, &bson.M{
 		"vpc": &bson.M{
 			"$in": vcIds,
 		},
@@ -341,7 +340,7 @@ func RemoveMulti(db *database.Database, vcIds []primitive.ObjectID) (err error) 
 
 	coll = db.Vpcs()
 
-	_, err = coll.DeleteMany(context.Background(), &bson.M{
+	_, err = coll.DeleteMany(db, &bson.M{
 		"_id": &bson.M{
 			"$in": vcIds,
 		},
@@ -359,7 +358,7 @@ func RemoveInstanceIps(db *database.Database, instId primitive.ObjectID) (
 
 	coll := db.VpcsIp()
 
-	_, err = coll.UpdateMany(context.Background(), &bson.M{
+	_, err = coll.UpdateMany(db, &bson.M{
 		"instance": instId,
 	}, &bson.M{
 		"$set": &bson.M{
@@ -385,7 +384,7 @@ func RemoveInstanceIp(db *database.Database, instId,
 	coll := db.VpcsIp()
 
 	_, err = coll.UpdateOne(
-		context.Background(),
+		db,
 		&bson.M{
 			"vpc":      vpcId,
 			"instance": instId,

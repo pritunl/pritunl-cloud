@@ -1,9 +1,10 @@
 package ipset
 
 import (
+	"strings"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"strings"
 )
 
 type Sets struct {

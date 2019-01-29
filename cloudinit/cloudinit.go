@@ -4,6 +4,14 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
+	"mime/multipart"
+	"net"
+	"net/textproto"
+	"os"
+	"path"
+	"strings"
+	"text/template"
+
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/authority"
@@ -16,13 +24,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
-	"mime/multipart"
-	"net"
-	"net/textproto"
-	"os"
-	"path"
-	"strings"
-	"text/template"
 )
 
 const metaDataTmpl = `instance-id: %s

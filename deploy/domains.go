@@ -1,13 +1,14 @@
 package deploy
 
 import (
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/domain"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/state"
-	"time"
 )
 
 type Domains struct {

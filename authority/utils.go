@@ -1,7 +1,6 @@
 package authority
 
 import (
-	"context"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/mongo-go-driver/mongo/options"
@@ -29,7 +28,7 @@ func GetOrg(db *database.Database, orgId, authrId primitive.ObjectID) (
 	coll := db.Authorities()
 	authr = &Authority{}
 
-	err = coll.FindOne(context.Background(), &bson.M{
+	err = coll.FindOne(db, &bson.M{
 		"_id":          authrId,
 		"organization": orgId,
 	}).Decode(authr)
@@ -47,14 +46,14 @@ func GetAll(db *database.Database, query *bson.M) (
 	coll := db.Authorities()
 	authrs = []*Authority{}
 
-	cursor, err := coll.Find(context.Background(), query)
+	cursor, err := coll.Find(db, query)
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		authr := &Authority{}
 		err = cursor.Decode(authr)
 		if err != nil {
@@ -80,7 +79,7 @@ func GetRoles(db *database.Database, roles []string) (
 	coll := db.Authorities()
 	authrs = []*Authority{}
 
-	cursor, err := coll.Find(context.Background(), &bson.M{
+	cursor, err := coll.Find(db, &bson.M{
 		"$or": []*bson.M{
 			&bson.M{
 				"organization": nil,
@@ -103,9 +102,9 @@ func GetRoles(db *database.Database, roles []string) (
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		authr := &Authority{}
 		err = cursor.Decode(authr)
 		if err != nil {
@@ -131,16 +130,16 @@ func GetOrgMapRoles(db *database.Database, orgId primitive.ObjectID) (
 	coll := db.Authorities()
 	authrs = map[string][]*Authority{}
 
-	cursor, err := coll.Find(context.Background(), &bson.M{
+	cursor, err := coll.Find(db, &bson.M{
 		"organization": orgId,
 	})
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		authr := &Authority{}
 		err = cursor.Decode(authr)
 		if err != nil {
@@ -172,7 +171,7 @@ func GetOrgRoles(db *database.Database, orgId primitive.ObjectID,
 	coll := db.Authorities()
 	authrs = []*Authority{}
 
-	cursor, err := coll.Find(context.Background(), &bson.M{
+	cursor, err := coll.Find(db, &bson.M{
 		"organization": orgId,
 		"network_roles": &bson.M{
 			"$in": roles,
@@ -182,9 +181,9 @@ func GetOrgRoles(db *database.Database, orgId primitive.ObjectID,
 			{"_id", 1},
 		},
 	})
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		authr := &Authority{}
 		err = cursor.Decode(authr)
 		if err != nil {
@@ -210,7 +209,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	coll := db.Authorities()
 	authrs = []*Authority{}
 
-	count, err = coll.Count(context.Background(), query)
+	count, err = coll.Count(db, query)
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -220,7 +219,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	skip := utils.Min64(page*pageCount, count)
 
 	cursor, err := coll.Find(
-		context.Background(),
+		db,
 		query,
 		&options.FindOptions{
 			Sort: &bson.D{
@@ -234,9 +233,9 @@ func GetAllPaged(db *database.Database, query *bson.M,
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		authr := &Authority{}
 		err = cursor.Decode(authr)
 		if err != nil {
@@ -260,7 +259,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 func Remove(db *database.Database, authrId primitive.ObjectID) (err error) {
 	coll := db.Authorities()
 
-	_, err = coll.DeleteOne(context.Background(), &bson.M{
+	_, err = coll.DeleteOne(db, &bson.M{
 		"_id": authrId,
 	})
 	if err != nil {
@@ -281,7 +280,7 @@ func RemoveOrg(db *database.Database, orgId, authrId primitive.ObjectID) (
 
 	coll := db.Authorities()
 
-	_, err = coll.DeleteOne(context.Background(), &bson.M{
+	_, err = coll.DeleteOne(db, &bson.M{
 		"_id":          authrId,
 		"organization": orgId,
 	})
@@ -303,7 +302,7 @@ func RemoveMulti(db *database.Database,
 
 	coll := db.Authorities()
 
-	_, err = coll.DeleteMany(context.Background(), &bson.M{
+	_, err = coll.DeleteMany(db, &bson.M{
 		"_id": &bson.M{
 			"$in": authrIds,
 		},
@@ -321,7 +320,7 @@ func RemoveMultiOrg(db *database.Database, orgId primitive.ObjectID,
 
 	coll := db.Authorities()
 
-	_, err = coll.DeleteMany(context.Background(), &bson.M{
+	_, err = coll.DeleteMany(db, &bson.M{
 		"_id": &bson.M{
 			"$in": authrIds,
 		},

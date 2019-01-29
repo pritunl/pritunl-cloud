@@ -2,16 +2,17 @@ package config
 
 import (
 	"encoding/json"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"time"
+
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/requires"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"time"
 )
 
 var (

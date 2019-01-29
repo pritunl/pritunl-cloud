@@ -1,7 +1,6 @@
 package policy
 
 import (
-	"context"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -28,7 +27,7 @@ func GetService(db *database.Database, serviceId primitive.ObjectID) (
 	policies = []*Policy{}
 
 	cursor, err := coll.Find(
-		context.Background(),
+		db,
 		&bson.M{
 			"services": serviceId,
 		},
@@ -37,9 +36,9 @@ func GetService(db *database.Database, serviceId primitive.ObjectID) (
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		polcy := &Policy{}
 		err = cursor.Decode(polcy)
 		if err != nil {
@@ -66,7 +65,7 @@ func GetRoles(db *database.Database, roles []string) (
 	policies = []*Policy{}
 
 	cursor, err := coll.Find(
-		context.Background(),
+		db,
 		&bson.M{
 			"roles": &bson.M{
 				"$in": roles,
@@ -77,9 +76,9 @@ func GetRoles(db *database.Database, roles []string) (
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		polcy := &Policy{}
 		err = cursor.Decode(polcy)
 		if err != nil {
@@ -104,16 +103,16 @@ func GetAll(db *database.Database) (policies []*Policy, err error) {
 	policies = []*Policy{}
 
 	cursor, err := coll.Find(
-		context.Background(),
+		db,
 		&bson.M{},
 	)
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		polcy := &Policy{}
 		err = cursor.Decode(polcy)
 		if err != nil {
@@ -136,7 +135,7 @@ func GetAll(db *database.Database) (policies []*Policy, err error) {
 func Remove(db *database.Database, policyId primitive.ObjectID) (err error) {
 	coll := db.Policies()
 
-	_, err = coll.DeleteMany(context.Background(), &bson.M{
+	_, err = coll.DeleteMany(db, &bson.M{
 		"_id": policyId,
 	})
 	if err != nil {

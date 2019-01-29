@@ -1,11 +1,11 @@
 package nonce
 
 import (
-	"context"
+	"time"
+
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"time"
 )
 
 type nonce struct {
@@ -21,7 +21,7 @@ func Validate(db *database.Database, nce string) (err error) {
 
 	coll := db.Nonces()
 
-	_, err = coll.InsertOne(context.Background(), doc)
+	_, err = coll.InsertOne(db, doc)
 	if err != nil {
 		err = database.ParseError(err)
 		switch err.(type) {

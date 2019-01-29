@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/mongo"
 )

@@ -2,6 +2,9 @@ package ahandlers
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
@@ -13,8 +16,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vpc"
-	"strconv"
-	"strings"
 )
 
 type vpcData struct {
@@ -105,6 +106,9 @@ func vpcPost(c *gin.Context) {
 
 	err := c.Bind(data)
 	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "ahandler: Failed to bind"),
+		}
 		utils.AbortWithError(c, 500, err)
 		return
 	}

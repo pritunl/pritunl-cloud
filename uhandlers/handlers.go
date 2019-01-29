@@ -1,13 +1,14 @@
 package uhandlers
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/pritunl-cloud/config"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/middlewear"
 	"github.com/pritunl/pritunl-cloud/requires"
 	"github.com/pritunl/pritunl-cloud/static"
-	"net/http"
 )
 
 var (

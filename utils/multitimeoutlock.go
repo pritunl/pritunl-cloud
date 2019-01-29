@@ -1,13 +1,14 @@
 package utils
 
 import (
+	"sync"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"sync"
-	"time"
 )
 
 type MultiTimeoutLock struct {

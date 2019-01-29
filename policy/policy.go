@@ -1,8 +1,10 @@
 package policy
 
 import (
-	"context"
 	"fmt"
+	"net"
+	"net/http"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
@@ -13,8 +15,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/user"
-	"net"
-	"net/http"
 )
 
 type Rule struct {
@@ -424,7 +424,7 @@ func (p *Policy) Insert(db *database.Database) (err error) {
 		return
 	}
 
-	_, err = coll.InsertOne(context.Background(), p)
+	_, err = coll.InsertOne(db, p)
 	if err != nil {
 		err = database.ParseError(err)
 		return

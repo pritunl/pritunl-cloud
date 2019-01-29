@@ -2,12 +2,13 @@ package qemu
 
 import (
 	"fmt"
+	"net"
+	"strings"
+
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
-	"net"
-	"strings"
 )
 
 func GetRoutes(instId primitive.ObjectID) (routes []vpc.Route,

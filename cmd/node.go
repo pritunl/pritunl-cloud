@@ -1,6 +1,11 @@
 package cmd
 
 import (
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
@@ -12,10 +17,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/setup"
 	"github.com/pritunl/pritunl-cloud/sync"
 	"github.com/pritunl/pritunl-cloud/task"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 )
 
 func Node() (err error) {

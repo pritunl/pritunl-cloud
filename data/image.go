@@ -2,9 +2,14 @@ package data
 
 import (
 	"fmt"
+	"os"
+	"path"
+	"strings"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
-	"github.com/minio/minio-go"
+	minio "github.com/minio/minio-go"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -19,10 +24,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/zone"
 	"golang.org/x/crypto/openpgp"
-	"os"
-	"path"
-	"strings"
-	"time"
 )
 
 var (

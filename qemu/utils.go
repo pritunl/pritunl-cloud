@@ -2,6 +2,7 @@ package qemu
 
 import (
 	"encoding/json"
+
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"

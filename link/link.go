@@ -1,8 +1,9 @@
 package link
 
 import (
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"sync"
+
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 )
 
 var (

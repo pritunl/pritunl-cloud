@@ -1,7 +1,6 @@
 package instance
 
 import (
-	"context"
 	"github.com/Sirupsen/logrus"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
@@ -32,7 +31,7 @@ func GetOrg(db *database.Database, orgId, instId primitive.ObjectID) (
 	coll := db.Instances()
 	inst = &Instance{}
 
-	err = coll.FindOne(context.Background(), &bson.M{
+	err = coll.FindOne(db, &bson.M{
 		"_id":          instId,
 		"organization": orgId,
 	}).Decode(inst)
@@ -49,7 +48,7 @@ func ExistsOrg(db *database.Database, orgId, instId primitive.ObjectID) (
 
 	coll := db.Instances()
 
-	n, err := coll.Count(context.Background(), &bson.M{
+	n, err := coll.Count(db, &bson.M{
 		"_id":          instId,
 		"organization": orgId,
 	})
@@ -71,14 +70,14 @@ func GetAll(db *database.Database, query *bson.M) (
 	coll := db.Instances()
 	insts = []*Instance{}
 
-	cursor, err := coll.Find(context.Background(), query)
+	cursor, err := coll.Find(db, query)
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		inst := &Instance{}
 		err = cursor.Decode(inst)
 		if err != nil {
@@ -125,14 +124,14 @@ func GetAllVirt(db *database.Database, query *bson.M, disks []*disk.Disk) (
 	coll := db.Instances()
 	insts = []*Instance{}
 
-	cursor, err := coll.Find(context.Background(), query)
+	cursor, err := coll.Find(db, query)
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		inst := &Instance{}
 		err = cursor.Decode(inst)
 		if err != nil {
@@ -160,14 +159,14 @@ func GetAllVirtMapped(db *database.Database, query *bson.M,
 	coll := db.Instances()
 	insts = []*Instance{}
 
-	cursor, err := coll.Find(context.Background(), query)
+	cursor, err := coll.Find(db, query)
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		inst := &Instance{}
 		err = cursor.Decode(inst)
 		if err != nil {
@@ -216,7 +215,7 @@ func GetAllName(db *database.Database, query *bson.M) (
 	instances = []*Instance{}
 
 	cursor, err := coll.Find(
-		context.Background(),
+		db,
 		query,
 		&options.FindOptions{
 			Projection: &bson.D{
@@ -224,9 +223,9 @@ func GetAllName(db *database.Database, query *bson.M) (
 			},
 		},
 	)
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		inst := &Instance{}
 		err = cursor.Decode(inst)
 		if err != nil {
@@ -252,7 +251,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	coll := db.Instances()
 	insts = []*Instance{}
 
-	count, err = coll.Count(context.Background(), query)
+	count, err = coll.Count(db, query)
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -262,7 +261,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	skip := utils.Min64(page*pageCount, count)
 
 	cursor, err := coll.Find(
-		context.Background(),
+		db,
 		query,
 		&options.FindOptions{
 			Sort: &bson.D{
@@ -276,9 +275,9 @@ func GetAllPaged(db *database.Database, query *bson.M,
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		inst := &Instance{}
 		err = cursor.Decode(inst)
 		if err != nil {
@@ -318,7 +317,7 @@ func Remove(db *database.Database, instId primitive.ObjectID) (err error) {
 		return
 	}
 
-	_, err = coll.DeleteOne(context.Background(), &bson.M{
+	_, err = coll.DeleteOne(db, &bson.M{
 		"_id": instId,
 	})
 	if err != nil {
@@ -372,7 +371,7 @@ func DeleteOrg(db *database.Database, orgId, instId primitive.ObjectID) (
 func DeleteMulti(db *database.Database, instIds []primitive.ObjectID) (err error) {
 	coll := db.Instances()
 
-	_, err = coll.UpdateMany(context.Background(), &bson.M{
+	_, err = coll.UpdateMany(db, &bson.M{
 		"_id": &bson.M{
 			"$in": instIds,
 		},
@@ -397,7 +396,7 @@ func DeleteMultiOrg(db *database.Database, orgId primitive.ObjectID,
 
 	coll := db.Instances()
 
-	_, err = coll.UpdateMany(context.Background(), &bson.M{
+	_, err = coll.UpdateMany(db, &bson.M{
 		"_id": &bson.M{
 			"$in": instIds,
 		},
@@ -435,7 +434,7 @@ func UpdateMulti(db *database.Database, instIds []primitive.ObjectID,
 		}
 	}
 
-	_, err = coll.UpdateMany(context.Background(), query, &bson.M{
+	_, err = coll.UpdateMany(db, query, &bson.M{
 		"$set": doc,
 	})
 	if err != nil {
@@ -464,7 +463,7 @@ func UpdateMultiOrg(db *database.Database, orgId primitive.ObjectID,
 		}
 	}
 
-	_, err = coll.UpdateMany(context.Background(), query, &bson.M{
+	_, err = coll.UpdateMany(db, query, &bson.M{
 		"$set": doc,
 	})
 	if err != nil {

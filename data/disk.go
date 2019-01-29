@@ -2,6 +2,7 @@ package data
 
 import (
 	"fmt"
+
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/paths"

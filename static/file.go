@@ -5,11 +5,12 @@ import (
 	"compress/gzip"
 	"crypto/md5"
 	"encoding/base32"
-	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/pritunl-cloud/errortypes"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
+
+	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 )
 
 var (

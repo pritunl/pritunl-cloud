@@ -1,8 +1,12 @@
 package secondary
 
 import (
-	"context"
 	"fmt"
+	"net/http"
+	"net/url"
+	"strings"
+	"time"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
@@ -12,10 +16,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/u2flib"
 	"github.com/pritunl/pritunl-cloud/user"
-	"net/http"
-	"net/url"
-	"strings"
-	"time"
 )
 
 type SecondaryData struct {
@@ -798,7 +798,7 @@ func (s *Secondary) CommitFields(db *database.Database, fields set.Set) (
 func (s *Secondary) Insert(db *database.Database) (err error) {
 	coll := db.SecondaryTokens()
 
-	_, err = coll.InsertOne(context.Background(), s)
+	_, err = coll.InsertOne(db, s)
 	if err != nil {
 		err = database.ParseError(err)
 		return

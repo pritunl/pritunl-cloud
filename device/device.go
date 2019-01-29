@@ -1,16 +1,16 @@
 package device
 
 import (
-	"context"
 	"crypto/ecdsa"
 	"crypto/x509"
+	"time"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/u2flib"
-	"time"
 )
 
 type Device struct {
@@ -137,7 +137,7 @@ func (d *Device) CommitFields(db *database.Database, fields set.Set) (
 func (d *Device) Insert(db *database.Database) (err error) {
 	coll := db.Devices()
 
-	_, err = coll.InsertOne(context.Background(), d)
+	_, err = coll.InsertOne(db, d)
 	if err != nil {
 		err = database.ParseError(err)
 		return

@@ -2,17 +2,18 @@ package secondary
 
 import (
 	"encoding/json"
+	"net/http"
+	"net/url"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
-	"github.com/duosecurity/duo_api_golang"
+	duoapi "github.com/duosecurity/duo_api_golang"
 	"github.com/pritunl/pritunl-cloud/audit"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/user"
-	"net/http"
-	"net/url"
 )
 
 type duoApiResp struct {

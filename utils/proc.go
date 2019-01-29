@@ -2,13 +2,14 @@ package utils
 
 import (
 	"bytes"
-	"github.com/Sirupsen/logrus"
-	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/pritunl-cloud/errortypes"
 	"io"
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 )
 
 func Exec(dir, name string, arg ...string) (err error) {

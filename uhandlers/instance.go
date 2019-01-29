@@ -2,6 +2,9 @@ package uhandlers
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/mongo-go-driver/bson"
@@ -22,8 +25,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
 	"github.com/pritunl/pritunl-cloud/zone"
-	"strconv"
-	"strings"
 )
 
 type instanceData struct {

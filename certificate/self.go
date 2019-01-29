@@ -7,11 +7,12 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
+	"math/big"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"math/big"
-	"time"
 )
 
 var (

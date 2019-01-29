@@ -1,7 +1,9 @@
 package image
 
 import (
-	"context"
+	"strings"
+	"time"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
@@ -9,8 +11,6 @@ import (
 	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"strings"
-	"time"
 )
 
 type Image struct {
@@ -66,7 +66,7 @@ func (i *Image) CommitFields(db *database.Database, fields set.Set) (
 func (i *Image) Insert(db *database.Database) (err error) {
 	coll := db.Images()
 
-	_, err = coll.InsertOne(context.Background(), i)
+	_, err = coll.InsertOne(db, i)
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -81,7 +81,7 @@ func (i *Image) Upsert(db *database.Database) (err error) {
 	opts := &options.UpdateOptions{}
 	opts.SetUpsert(true)
 	_, err = coll.UpdateOne(
-		context.Background(),
+		db,
 		&bson.M{
 			"storage": i.Storage,
 			"key":     i.Key,
@@ -117,7 +117,7 @@ func (i *Image) Sync(db *database.Database) (err error) {
 		strings.HasPrefix(i.Key, "snapshot/") {
 
 		_, err = coll.UpdateOne(
-			context.Background(),
+			db,
 			&bson.M{
 				"storage": i.Storage,
 				"key":     i.Key,
@@ -147,7 +147,7 @@ func (i *Image) Sync(db *database.Database) (err error) {
 		opts := &options.UpdateOptions{}
 		opts.SetUpsert(true)
 		_, err = coll.UpdateOne(
-			context.Background(),
+			db,
 			&bson.M{
 				"storage": i.Storage,
 				"key":     i.Key,

@@ -1,6 +1,8 @@
 package sync
 
 import (
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/pritunl-cloud/bridge"
@@ -8,7 +10,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/ipsec"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/vpc"
-	"time"
 )
 
 func linkSync() (err error) {

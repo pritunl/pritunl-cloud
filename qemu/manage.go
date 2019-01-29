@@ -3,6 +3,14 @@ package qemu
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net"
+	"regexp"
+	"strconv"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
@@ -26,13 +34,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
-	"io/ioutil"
-	"net"
-	"regexp"
-	"strconv"
-	"strings"
-	"sync"
-	"time"
 )
 
 var (

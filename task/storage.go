@@ -1,7 +1,6 @@
 package task
 
 import (
-	"context"
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/bson"
@@ -27,7 +26,7 @@ func storageSyncHandler(db *database.Database) (err error) {
 	imgStoreIdsList := []primitive.ObjectID{}
 
 	storeIdsInf, err := coll.Distinct(
-		context.Background(),
+		db,
 		"storage",
 		&bson.M{},
 	)
@@ -80,7 +79,7 @@ func storageSyncHandler(db *database.Database) (err error) {
 	}
 
 	if len(remStoreIds) > 0 {
-		_, err = coll.DeleteMany(context.Background(), &bson.M{
+		_, err = coll.DeleteMany(db, &bson.M{
 			"storage": &bson.M{
 				"$in": remStoreIds,
 			},

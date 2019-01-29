@@ -1,11 +1,11 @@
 package task
 
 import (
-	"context"
+	"time"
+
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
-	"time"
 )
 
 type Job struct {
@@ -20,7 +20,7 @@ type Job struct {
 func (j *Job) Reserve(db *database.Database) (reserved bool, err error) {
 	coll := db.Tasks()
 
-	_, err = coll.InsertOne(context.Background(), j)
+	_, err = coll.InsertOne(db, j)
 	if err != nil {
 		err = database.ParseError(err)
 

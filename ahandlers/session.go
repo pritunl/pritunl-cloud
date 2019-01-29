@@ -1,14 +1,15 @@
 package ahandlers
 
 import (
+	"strconv"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/session"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"strconv"
-	"time"
 )
 
 func sessionsGet(c *gin.Context) {

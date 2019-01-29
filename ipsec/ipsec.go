@@ -1,6 +1,10 @@
 package ipsec
 
 import (
+	"path"
+	"sync"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
@@ -9,9 +13,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
-	"path"
-	"sync"
-	"time"
 )
 
 var (

@@ -2,6 +2,12 @@ package ipsec
 
 import (
 	"fmt"
+	"net"
+	"strconv"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/interfaces"
@@ -9,11 +15,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
-	"net"
-	"strconv"
-	"strings"
-	"sync"
-	"time"
 )
 
 var (

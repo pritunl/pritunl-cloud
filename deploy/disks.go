@@ -1,6 +1,8 @@
 package deploy
 
 import (
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/data"
@@ -12,7 +14,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
-	"time"
 )
 
 var (

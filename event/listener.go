@@ -1,8 +1,9 @@
 package event
 
 import (
-	"context"
 	"fmt"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
@@ -11,10 +12,10 @@ import (
 	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
-	"time"
 )
 
 type Listener struct {
+	db       *database.Database
 	state    bool
 	err      error
 	channels []string
@@ -30,9 +31,8 @@ func (l *Listener) Close() {
 	close(l.stream)
 }
 
-func (l *Listener) sub(db *database.Database, cursorId primitive.ObjectID) {
-	defer db.Close()
-	coll := db.Events()
+func (l *Listener) sub(cursorId primitive.ObjectID) {
+	coll := l.db.Events()
 
 	var channelBson interface{}
 	if len(l.channels) == 1 {
@@ -62,7 +62,7 @@ func (l *Listener) sub(db *database.Database, cursorId primitive.ObjectID) {
 	var err error
 	for {
 		cursor, err = coll.Find(
-			context.Background(),
+			l.db,
 			query,
 			queryOpts,
 		)
@@ -91,11 +91,11 @@ func (l *Listener) sub(db *database.Database, cursorId primitive.ObjectID) {
 		defer func() {
 			recover()
 		}()
-		cursor.Close(context.Background())
+		cursor.Close(l.db)
 	}()
 
 	for {
-		for cursor.Next(context.Background()) {
+		for cursor.Next(l.db) {
 			msg := &Event{}
 			err = cursor.Decode(msg)
 			if err != nil {
@@ -142,10 +142,8 @@ func (l *Listener) sub(db *database.Database, cursorId primitive.ObjectID) {
 			return
 		}
 
-		cursor.Close(context.Background())
-		db.Close()
-		db = database.GetDatabase()
-		coll = db.Events()
+		cursor.Close(l.db)
+		coll = l.db.Events()
 
 		query := &bson.M{
 			"_id": &bson.M{
@@ -156,7 +154,7 @@ func (l *Listener) sub(db *database.Database, cursorId primitive.ObjectID) {
 
 		for {
 			cursor, err = coll.Find(
-				context.Background(),
+				l.db,
 				query,
 				queryOpts,
 			)
@@ -184,10 +182,8 @@ func (l *Listener) sub(db *database.Database, cursorId primitive.ObjectID) {
 }
 
 func (l *Listener) init() (err error) {
-	db := database.GetDatabase()
-
-	coll := db.Events()
-	cursorId, err := getCursorId(db, coll, l.channels)
+	coll := l.db.Events()
+	cursorId, err := getCursorId(l.db, coll, l.channels)
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -201,14 +197,17 @@ func (l *Listener) init() (err error) {
 				"error": errors.New(fmt.Sprintf("%s", r)),
 			}).Error("event: Listener panic")
 		}
-		l.sub(db, cursorId)
+		l.sub(cursorId)
 	}()
 
 	return
 }
 
-func SubscribeListener(channels []string) (lst *Listener, err error) {
+func SubscribeListener(db *database.Database, channels []string) (
+	lst *Listener, err error) {
+
 	lst = &Listener{
+		db:       db,
 		channels: channels,
 		stream:   make(chan *Event, 10),
 	}

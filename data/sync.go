@@ -1,17 +1,18 @@
 package data
 
 import (
+	"strings"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
-	"github.com/minio/minio-go"
+	minio "github.com/minio/minio-go"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/storage"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"strings"
-	"time"
 )
 
 var (

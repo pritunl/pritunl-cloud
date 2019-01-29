@@ -1,12 +1,13 @@
 package authorizer
 
 import (
+	"net/http"
+
 	"github.com/pritunl/pritunl-cloud/cookie"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/session"
 	"github.com/pritunl/pritunl-cloud/signature"
 	"github.com/pritunl/pritunl-cloud/user"
-	"net/http"
 )
 
 type Authorizer struct {

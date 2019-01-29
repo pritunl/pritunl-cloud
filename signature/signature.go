@@ -5,15 +5,16 @@ import (
 	"crypto/sha512"
 	"crypto/subtle"
 	"encoding/base64"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/nonce"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/user"
-	"strconv"
-	"strings"
-	"time"
 )
 
 type Signature struct {

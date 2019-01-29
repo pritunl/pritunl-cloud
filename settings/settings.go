@@ -2,7 +2,11 @@
 package settings
 
 import (
-	"context"
+	"reflect"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
@@ -13,10 +17,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/requires"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"reflect"
-	"strconv"
-	"strings"
-	"time"
 )
 
 func Commit(db *database.Database, group interface{}, fields set.Set) (
@@ -30,7 +30,7 @@ func Commit(db *database.Database, group interface{}, fields set.Set) (
 	opts.SetUpsert(true)
 
 	_, err = coll.UpdateOne(
-		context.Background(),
+		db,
 		selector, &bson.M{
 			"$set": update,
 		},
@@ -52,7 +52,7 @@ func Get(db *database.Database, group string, key string) (
 	grp := map[string]interface{}{}
 
 	err = coll.FindOne(
-		context.Background(),
+		db,
 		&bson.M{
 			"_id": group,
 		},
@@ -89,7 +89,7 @@ func Set(db *database.Database, group string, key string, val interface{}) (
 	opts.SetUpsert(true)
 
 	_, err = coll.UpdateOne(
-		context.Background(),
+		db,
 		bson.M{
 			"_id": group,
 		},
@@ -115,7 +115,7 @@ func Unset(db *database.Database, group string, key string) (
 	opts.SetUpsert(true)
 
 	_, err = coll.UpdateOne(
-		context.Background(),
+		db,
 		bson.M{
 			"_id": group,
 		},

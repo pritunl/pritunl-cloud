@@ -1,7 +1,6 @@
 package certificate
 
 import (
-	"context"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -25,14 +24,14 @@ func GetAll(db *database.Database) (certs []*Certificate, err error) {
 	coll := db.Certificates()
 	certs = []*Certificate{}
 
-	cursor, err := coll.Find(context.Background(), bson.M{})
+	cursor, err := coll.Find(db, bson.M{})
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		cert := &Certificate{}
 		err = cursor.Decode(cert)
 		if err != nil {
@@ -54,7 +53,7 @@ func GetAll(db *database.Database) (certs []*Certificate, err error) {
 func Remove(db *database.Database, certId primitive.ObjectID) (err error) {
 	coll := db.Certificates()
 
-	_, err = coll.DeleteMany(context.Background(), &bson.M{
+	_, err = coll.DeleteMany(db, &bson.M{
 		"_id": certId,
 	})
 	if err != nil {

@@ -2,12 +2,13 @@ package sync
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/interfaces"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
-	"time"
 )
 
 func nodeSync() (err error) {

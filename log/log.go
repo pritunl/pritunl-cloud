@@ -1,14 +1,14 @@
 package log
 
 import (
-	"context"
+	"time"
+
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/requires"
-	"time"
 )
 
 var published = false
@@ -32,7 +32,7 @@ func (e *Entry) Insert(db *database.Database) (err error) {
 		return
 	}
 
-	_, err = coll.InsertOne(context.Background(), e)
+	_, err = coll.InsertOne(db, e)
 	if err != nil {
 		err = database.ParseError(err)
 		return

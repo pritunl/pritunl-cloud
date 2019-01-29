@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"context"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/mongo-go-driver/mongo/options"
@@ -29,7 +28,7 @@ func GetOrg(db *database.Database, orgId, domnId primitive.ObjectID) (
 	coll := db.Domains()
 	domn = &Domain{}
 
-	err = coll.FindOne(context.Background(), &bson.M{
+	err = coll.FindOne(db, &bson.M{
 		"_id":          domnId,
 		"organization": orgId,
 	}).Decode(domn)
@@ -46,7 +45,7 @@ func ExistsOrg(db *database.Database, orgId, domnId primitive.ObjectID) (
 
 	coll := db.Domains()
 
-	n, err := coll.Count(context.Background(), &bson.M{
+	n, err := coll.Count(db, &bson.M{
 		"_id":          domnId,
 		"organization": orgId,
 	})
@@ -68,14 +67,14 @@ func GetAll(db *database.Database, query *bson.M) (
 	coll := db.Domains()
 	domns = []*Domain{}
 
-	cursor, err := coll.Find(context.Background(), query)
+	cursor, err := coll.Find(db, query)
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		dmn := &Domain{}
 		err = cursor.Decode(dmn)
 		if err != nil {
@@ -101,7 +100,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	coll := db.Domains()
 	domns = []*Domain{}
 
-	count, err = coll.Count(context.Background(), query)
+	count, err = coll.Count(db, query)
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -111,7 +110,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	skip := utils.Min64(page*pageCount, count)
 
 	cursor, err := coll.Find(
-		context.Background(),
+		db,
 		query,
 		&options.FindOptions{
 			Sort: &bson.D{
@@ -121,9 +120,9 @@ func GetAllPaged(db *database.Database, query *bson.M,
 			Limit: &pageCount,
 		},
 	)
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		dmn := &Domain{}
 		err = cursor.Decode(dmn)
 		if err != nil {
@@ -150,7 +149,7 @@ func GetAllName(db *database.Database, query *bson.M) (
 	domns = []*Domain{}
 
 	cursor, err := coll.Find(
-		context.Background(),
+		db,
 		query,
 		&options.FindOptions{
 			Projection: &bson.D{
@@ -163,9 +162,9 @@ func GetAllName(db *database.Database, query *bson.M) (
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		dmn := &Domain{}
 		err = cursor.Decode(dmn)
 		if err != nil {
@@ -188,7 +187,7 @@ func GetAllName(db *database.Database, query *bson.M) (
 func Remove(db *database.Database, domnId primitive.ObjectID) (err error) {
 	coll := db.Domains()
 
-	_, err = coll.DeleteOne(context.Background(), &bson.M{
+	_, err = coll.DeleteOne(db, &bson.M{
 		"_id": domnId,
 	})
 	if err != nil {
@@ -209,7 +208,7 @@ func RemoveOrg(db *database.Database, orgId, domnId primitive.ObjectID) (
 
 	coll := db.Domains()
 
-	_, err = coll.DeleteOne(context.Background(), &bson.M{
+	_, err = coll.DeleteOne(db, &bson.M{
 		"_id":          domnId,
 		"organization": orgId,
 	})
@@ -229,7 +228,7 @@ func RemoveOrg(db *database.Database, orgId, domnId primitive.ObjectID) (
 func RemoveMulti(db *database.Database, domnIds []primitive.ObjectID) (err error) {
 	coll := db.Domains()
 
-	_, err = coll.DeleteMany(context.Background(), &bson.M{
+	_, err = coll.DeleteMany(db, &bson.M{
 		"_id": &bson.M{
 			"$in": domnIds,
 		},
@@ -247,7 +246,7 @@ func RemoveMultiOrg(db *database.Database, orgId primitive.ObjectID,
 
 	coll := db.Domains()
 
-	_, err = coll.DeleteMany(context.Background(), &bson.M{
+	_, err = coll.DeleteMany(db, &bson.M{
 		"_id": &bson.M{
 			"$in": domnIds,
 		},
@@ -267,14 +266,14 @@ func GetRecordAll(db *database.Database, query *bson.M) (
 	coll := db.DomainsRecord()
 	recrds = []*Record{}
 
-	cursor, err := coll.Find(context.Background(), query)
+	cursor, err := coll.Find(db, query)
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(db)
 
-	for cursor.Next(context.Background()) {
+	for cursor.Next(db) {
 		recrd := &Record{}
 		err = cursor.Decode(recrd)
 		if err != nil {
@@ -299,7 +298,7 @@ func RemoveRecord(db *database.Database, recrdId primitive.ObjectID) (
 
 	coll := db.DomainsRecord()
 
-	_, err = coll.DeleteOne(context.Background(), &bson.M{
+	_, err = coll.DeleteOne(db, &bson.M{
 		"_id": recrdId,
 	})
 	if err != nil {

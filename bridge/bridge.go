@@ -2,15 +2,16 @@ package bridge
 
 import (
 	"fmt"
+	"io/ioutil"
+	"net"
+	"strings"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"io/ioutil"
-	"net"
-	"strings"
-	"time"
 )
 
 const ifaceConf = `TYPE="Ethernet"

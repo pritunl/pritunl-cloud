@@ -2,7 +2,8 @@
 package event
 
 import (
-	"context"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
@@ -11,7 +12,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/requires"
-	"time"
 )
 
 var (
@@ -61,7 +61,7 @@ func getCursorId(db *database.Database, coll *database.Collection,
 
 	for i := 0; i < 2; i++ {
 		err = coll.FindOne(
-			context.Background(),
+			db,
 			query,
 			&options.FindOneOptions{
 				Sort: &bson.D{
@@ -141,7 +141,7 @@ func Publish(db *database.Database, channel string, data interface{}) (
 		Data:      data,
 	}
 
-	_, err = coll.InsertOne(context.Background(), msg)
+	_, err = coll.InsertOne(db, msg)
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -202,7 +202,7 @@ func Subscribe(channels []string, duration time.Duration,
 	var err error
 	for {
 		cursor, err = coll.Find(
-			context.Background(),
+			db,
 			query,
 			queryOpts,
 		)
@@ -226,11 +226,11 @@ func Subscribe(channels []string, duration time.Duration,
 		defer func() {
 			recover()
 		}()
-		cursor.Close(context.Background())
+		cursor.Close(db)
 	}()
 
 	for {
-		for cursor.Next(context.Background()) {
+		for cursor.Next(db) {
 			msg := &Event{}
 			err = cursor.Decode(msg)
 			if err != nil {
@@ -275,7 +275,7 @@ func Subscribe(channels []string, duration time.Duration,
 			time.Sleep(constants.RetryDelay)
 		}
 
-		cursor.Close(context.Background())
+		cursor.Close(db)
 		db.Close()
 		db = database.GetDatabase()
 		coll = db.Events()
@@ -288,7 +288,7 @@ func Subscribe(channels []string, duration time.Duration,
 		}
 		for {
 			cursor, err = coll.Find(
-				context.Background(),
+				db,
 				query,
 				queryOpts,
 			)
@@ -348,7 +348,7 @@ func SubscribeType(channels []string, duration time.Duration,
 	var err error
 	for {
 		cursor, err = coll.Find(
-			context.Background(),
+			db,
 			query,
 			queryOpts,
 		)
@@ -372,11 +372,11 @@ func SubscribeType(channels []string, duration time.Duration,
 		defer func() {
 			recover()
 		}()
-		cursor.Close(context.Background())
+		cursor.Close(db)
 	}()
 
 	for {
-		for cursor.Next(context.Background()) {
+		for cursor.Next(db) {
 			msg := newEvent()
 			err = cursor.Decode(msg)
 			if err != nil {
@@ -421,7 +421,7 @@ func SubscribeType(channels []string, duration time.Duration,
 			time.Sleep(constants.RetryDelay)
 		}
 
-		cursor.Close(context.Background())
+		cursor.Close(db)
 		db.Close()
 		db = database.GetDatabase()
 		coll = db.Events()
@@ -434,7 +434,7 @@ func SubscribeType(channels []string, duration time.Duration,
 		}
 		for {
 			cursor, err = coll.Find(
-				context.Background(),
+				db,
 				query,
 				queryOpts,
 			)
