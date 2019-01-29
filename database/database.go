@@ -21,8 +21,41 @@ var (
 )
 
 type Database struct {
+	ctx      context.Context
 	client   *mongo.Client
 	database *mongo.Database
+}
+
+func (d *Database) Deadline() (time.Time, bool) {
+	if d.ctx != nil {
+		return d.ctx.Deadline()
+	}
+	return time.Time{}, false
+}
+
+func (d *Database) Done() <-chan struct{} {
+	if d.ctx != nil {
+		return d.ctx.Done()
+	}
+	return nil
+}
+
+func (d *Database) Err() error {
+	if d.ctx != nil {
+		return d.ctx.Err()
+	}
+	return nil
+}
+
+func (d *Database) Value(key interface{}) interface{} {
+	if d.ctx != nil {
+		return d.ctx.Value(key)
+	}
+	return nil
+}
+
+func (d *Database) String() string {
+	return "context.database"
 }
 
 func (d *Database) Close() {
@@ -30,7 +63,8 @@ func (d *Database) Close() {
 
 func (d *Database) getCollection(name string) (coll *Collection) {
 	coll = &Collection{
-		d.database.Collection(name),
+		db:         d,
+		Collection: d.database.Collection(name),
 	}
 	return
 }
