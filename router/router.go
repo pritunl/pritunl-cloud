@@ -386,7 +386,7 @@ func (r *Router) Restart() {
 
 	if r.redirectServer != nil {
 		redirectCtx, redirectCancel := context.WithTimeout(
-			db,
+			context.Background(),
 			1*time.Second,
 		)
 		defer redirectCancel()
@@ -394,7 +394,7 @@ func (r *Router) Restart() {
 	}
 	if r.webServer != nil {
 		webCtx, webCancel := context.WithTimeout(
-			db,
+			context.Background(),
 			1*time.Second,
 		)
 		defer webCancel()
