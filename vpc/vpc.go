@@ -265,7 +265,9 @@ func (v *Vpc) GetGateway6() (ip net.IP, err error) {
 	return
 }
 
-func (v *Vpc) GetIp(db *database.Database, typ string, instId primitive.ObjectID) (
+func (v *Vpc) GetIp(db *database.Database, typ string,
+	instId primitive.ObjectID) (
+
 	ip net.IP, err error) {
 
 	coll := db.VpcsIp()
