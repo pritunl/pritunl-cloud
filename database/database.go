@@ -680,7 +680,6 @@ func addIndexes() (err error) {
 	index = &Index{
 		Collection: db.BlocksIp(),
 		Keys: &bson.D{
-			{"block", 1},
 			{"instance", 1},
 		},
 	}
