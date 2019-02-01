@@ -266,9 +266,7 @@ func (v *Vpc) GetGateway6() (ip net.IP, err error) {
 }
 
 func (v *Vpc) GetIp(db *database.Database, typ string,
-	instId primitive.ObjectID) (
-
-	ip net.IP, err error) {
+	instId primitive.ObjectID) (ip net.IP, err error) {
 
 	coll := db.VpcsIp()
 	vpcIp := &VpcIp{}
@@ -380,19 +378,18 @@ func (v *Vpc) GetIp(db *database.Database, typ string,
 				utils.IncIpAddress(curIp)
 			}
 
+			if !network.Contains(curIp) {
+				err = &errortypes.NotFoundError{
+					errors.New("vpc: Address pool full"),
+				}
+				return
+			}
+
 			vpcIp = &VpcIp{
 				Vpc:      v.Id,
 				Type:     typ,
 				Ip:       utils.IpAddress2Int(curIp),
 				Instance: instId,
-			}
-
-			if !network.Contains(curIp) {
-				vpcIp = nil
-				err = &errortypes.NotFoundError{
-					errors.New("vpc: Address pool full"),
-				}
-				return
 			}
 
 			_, err = coll.InsertOne(db, vpcIp)
