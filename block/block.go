@@ -35,6 +35,21 @@ func (b *Block) GetMask() net.IPMask {
 	return utils.ParseIpMask(b.Netmask)
 }
 
+func (b *Block) RemoveIp(db *database.Database,
+	instId primitive.ObjectID) (err error) {
+
+	coll := db.BlocksIp()
+	_, err = coll.DeleteMany(db, &bson.M{
+		"instance": instId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func (b *Block) Commit(db *database.Database) (err error) {
 	coll := db.Blocks()
 
