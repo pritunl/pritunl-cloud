@@ -275,6 +275,61 @@ func (n *Node) CommitFields(db *database.Database, fields set.Set) (
 	return
 }
 
+func (n *Node) GetStaticAddr(db *database.Database,
+	instId primitive.ObjectID) (blck *block.Block, ip net.IP, iface string,
+	err error) {
+
+	blck, blckIp, err := block.GetInstanceIp(db, instId)
+	if err != nil {
+		return
+	}
+
+	if blckIp != nil {
+		for _, blckAttch := range n.Blocks {
+			if blckAttch.Block == blck.Id {
+				ip = blckIp.GetIp()
+				iface = blckAttch.Interface
+				return
+			}
+		}
+
+		err = block.RemoveIp(db, blckIp.Id)
+		if err != nil {
+			return
+		}
+	}
+
+	for _, blckAttch := range n.Blocks {
+		blck, err = block.Get(db, blckAttch.Block)
+		if err != nil {
+			return
+		}
+
+		iface = blckAttch.Interface
+
+		ip, err = blck.GetIp(db, instId)
+		if err != nil {
+			if _, ok := err.(*block.BlockFull); ok {
+				err = nil
+				continue
+			} else {
+				return
+			}
+		}
+
+		break
+	}
+
+	if ip == nil {
+		err = &errortypes.NotFoundError{
+			errors.New("node: No block addresses available"),
+		}
+		return
+	}
+
+	return
+}
+
 func (n *Node) GetRemoteAddr(r *http.Request) (addr string) {
 	if n.ForwardedForHeader != "" {
 		addr = strings.TrimSpace(
