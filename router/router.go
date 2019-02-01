@@ -212,7 +212,7 @@ func (r *Router) initWeb() (err error) {
 	if r.protocol != "http" &&
 		(r.certificates == nil || len(r.certificates) == 0) {
 
-		_, _, err = certificate.SelfCert()
+		_, _, err = node.SelfCert()
 		if err != nil {
 			return
 		}
@@ -284,7 +284,7 @@ func (r *Router) startWeb() {
 		}
 
 		if len(tlsConfig.Certificates) == 0 {
-			certPem, keyPem, err := certificate.SelfCert()
+			certPem, keyPem, err := node.SelfCert()
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
 					"error": err,
