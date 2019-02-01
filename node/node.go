@@ -2,6 +2,7 @@ package node
 
 import (
 	"container/list"
+	"net"
 	"net/http"
 	"sort"
 	"strings"
@@ -10,9 +11,11 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/bridges"
 	"github.com/pritunl/pritunl-cloud/certificate"
 	"github.com/pritunl/pritunl-cloud/constants"
@@ -195,6 +198,33 @@ func (n *Node) Validate(db *database.Database) (
 			Message: "Cannot enable firewall without network roles",
 		}
 		return
+	}
+
+	if n.Blocks == nil {
+		n.Blocks = []*BlockAttachment{}
+	}
+
+	switch n.NetworkMode {
+	case Static:
+		n.ExternalInterfaces = []string{}
+
+		blockIfaces := set.NewSet()
+		for _, blck := range n.Blocks {
+			if blockIfaces.Contains(blck.Interface) {
+				errData = &errortypes.ErrorData{
+					Error:   "duplicate_block_interface",
+					Message: "Duplicate interface in block attachments",
+				}
+				return
+			}
+			blockIfaces.Add(blck.Interface)
+		}
+
+		break
+	default:
+		n.NetworkMode = Dhcp
+		n.Blocks = []*BlockAttachment{}
+		break
 	}
 
 	n.Format()
