@@ -145,6 +145,8 @@ func (b *Block) GetIp(db *database.Database,
 		return
 	}
 
+	broadcast := utils.GetLastIpAddress(gatewayCidr)
+
 	excludes := []*net.IPNet{}
 	for _, exclude := range b.Excludes {
 		_, network, e := net.ParseCIDR(exclude)
@@ -182,7 +184,7 @@ func (b *Block) GetIp(db *database.Database,
 			}
 
 			if blckIps.Contains(curIpInt) || gatewayCidr.IP.Equal(curIp) ||
-				gateway.Equal(curIp) {
+				gateway.Equal(curIp) || broadcast.Equal(curIp) {
 
 				continue
 			}
