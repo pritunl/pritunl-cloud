@@ -479,3 +479,23 @@ func UpdateMultiOrg(db *database.Database, orgId primitive.ObjectID,
 
 	return
 }
+
+func SetState(db *database.Database, instId primitive.ObjectID,
+	state string) (err error) {
+
+	coll := db.Instances()
+
+	_, err = coll.UpdateOne(db, &bson.M{
+		"_id": instId,
+	}, &bson.M{
+		"$set": &bson.M{
+			"state": state,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
