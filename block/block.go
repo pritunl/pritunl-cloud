@@ -1,11 +1,15 @@
 package block
 
 import (
+	"net"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type Block struct {
@@ -21,6 +25,14 @@ func (b *Block) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
 	return
+}
+
+func (b *Block) GetGateway() net.IP {
+	return net.ParseIP(b.Gateway)
+}
+
+func (b *Block) GetMask() net.IPMask {
+	return utils.ParseIpMask(b.Netmask)
 }
 
 func (b *Block) Commit(db *database.Database) (err error) {
