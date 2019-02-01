@@ -51,6 +51,36 @@ func GetAll(db *database.Database) (blocks []*Block, err error) {
 	return
 }
 
+func GetInstanceIp(db *database.Database,
+	instId primitive.ObjectID) (blck *Block, blckIp *BlockIp, err error) {
+
+	coll := db.BlocksIp()
+	blckIp = &BlockIp{}
+
+	err = coll.FindOne(db, &bson.M{
+		"instance": instId,
+	}).Decode(blckIp)
+	if err != nil {
+		err = database.ParseError(err)
+		blckIp = nil
+		if _, ok := err.(*database.NotFoundError); ok {
+			err = nil
+		}
+		return
+	}
+
+	blck, err = Get(db, blckIp.Block)
+	if err != nil {
+		if _, ok := err.(*database.NotFoundError); ok {
+			RemoveIp(db, blckIp.Id)
+		}
+		blckIp = nil
+		return
+	}
+
+	return
+}
+
 func Remove(db *database.Database, blockId primitive.ObjectID) (err error) {
 	coll := db.Blocks()
 
