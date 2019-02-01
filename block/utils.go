@@ -99,3 +99,45 @@ func Remove(db *database.Database, blockId primitive.ObjectID) (err error) {
 
 	return
 }
+
+func RemoveIp(db *database.Database, blockIpId primitive.ObjectID) (
+	err error) {
+
+	coll := db.BlocksIp()
+
+	_, err = coll.DeleteOne(db, &bson.M{
+		"_id": blockIpId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		switch err.(type) {
+		case *database.NotFoundError:
+			err = nil
+		default:
+			return
+		}
+	}
+
+	return
+}
+
+func RemoveInstanceIps(db *database.Database, instId primitive.ObjectID) (
+	err error) {
+
+	coll := db.BlocksIp()
+
+	_, err = coll.DeleteMany(db, &bson.M{
+		"_id": instId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		switch err.(type) {
+		case *database.NotFoundError:
+			err = nil
+		default:
+			return
+		}
+	}
+
+	return
+}
