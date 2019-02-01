@@ -41,6 +41,8 @@ type Node struct {
 	Hypervisor           string                     `bson:"hypervisor" json:"hypervisor"`
 	Certificate          primitive.ObjectID         `bson:"certificate" json:"certificate"`
 	Certificates         []primitive.ObjectID       `bson:"certificates" json:"certificates"`
+	SelfCertificate      string                     `bson:"self_certificate_key" json:"-"`
+	SelfCertificateKey   string                     `bson:"self_certificate" json:"-"`
 	AdminDomain          string                     `bson:"admin_domain" json:"admin_domain"`
 	UserDomain           string                     `bson:"user_domain" json:"user_domain"`
 	RequestsMin          int64                      `bson:"requests_min" json:"requests_min"`
@@ -386,6 +388,8 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.Protocol = nde.Protocol
 	n.Hypervisor = nde.Hypervisor
 	n.Certificates = nde.Certificates
+	n.SelfCertificate = nde.SelfCertificate
+	n.SelfCertificateKey = nde.SelfCertificateKey
 	n.AdminDomain = nde.AdminDomain
 	n.UserDomain = nde.UserDomain
 	n.ForwardedForHeader = nde.ForwardedForHeader
