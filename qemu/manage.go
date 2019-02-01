@@ -16,6 +16,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/cloudinit"
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -555,14 +556,28 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	externalIface := interfaces.GetExternal(ifaceExternalVirt)
 	internalIface := interfaces.GetInternal(ifaceInternalVirt)
+	var externalIface string
+	var blck *block.Block
+	var staticAddr net.IP
+
+	if node.Self.NetworkMode == node.Static {
+		blck, staticAddr, externalIface, err = node.Self.GetStaticAddr(
+			db, virt.Id)
+		if err != nil {
+			PowerOff(db, virt)
+			return
+		}
+	} else {
+		externalIface = interfaces.GetExternal(ifaceExternalVirt)
+	}
 
 	_, err = utils.ExecCombinedOutputLogged(
 		nil, "sysctl", "-w",
 		fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", externalIface),
 	)
 	if err != nil {
+		PowerOff(db, virt)
 		return
 	}
 	if internalIface != externalIface {
@@ -571,6 +586,7 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", internalIface),
 		)
 		if err != nil {
+			PowerOff(db, virt)
 			return
 		}
 	}
@@ -849,17 +865,48 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 
 	networkStopDhClient(db, virt)
 
-	_, err = utils.ExecCombinedOutputLogged(
-		nil,
-		"ip", "netns", "exec", namespace,
-		"dhclient",
-		"-pf", pidPath,
-		"-lf", leasePath,
-		ifaceExternal,
-	)
-	if err != nil {
-		PowerOff(db, virt)
-		return
+	if node.Self.NetworkMode == node.Static {
+		staticGateway := blck.GetGateway()
+		staticMask := blck.GetMask()
+		staticSize, _ := staticMask.Size()
+		staticCidr := fmt.Sprintf("%s/%d", staticAddr.String(), staticSize)
+
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{"File exists"},
+			"ip", "netns", "exec", namespace,
+			"ip", "addr",
+			"add", staticCidr,
+			"dev", ifaceExternal,
+		)
+		if err != nil {
+			PowerOff(db, virt)
+			return
+		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{"File exists"},
+			"ip", "netns", "exec", namespace,
+			"ip", "route",
+			"add", "default",
+			"via", staticGateway.String(),
+		)
+		if err != nil {
+			PowerOff(db, virt)
+			return
+		}
+	} else {
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", namespace,
+			"dhclient",
+			"-pf", pidPath,
+			"-lf", leasePath,
+			ifaceExternal,
+		)
+		if err != nil {
+			PowerOff(db, virt)
+			return
+		}
 	}
 
 	time.Sleep(2 * time.Second)
