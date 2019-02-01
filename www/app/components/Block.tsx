@@ -196,8 +196,9 @@ export default class Block extends React.Component<Props, State> {
 			...(block.addresses || []),
 		];
 
-		if (addresses.indexOf(this.state.addAddress) === -1) {
-			addresses.push(this.state.addAddress);
+		let addAddress = this.state.addAddress.trim();
+		if (addresses.indexOf(addAddress) === -1) {
+			addresses.push(addAddress);
 		}
 
 		addresses.sort();
@@ -267,8 +268,9 @@ export default class Block extends React.Component<Props, State> {
 			...(block.excludes || []),
 		];
 
-		if (excludes.indexOf(this.state.addExclude) === -1) {
-			excludes.push(this.state.addExclude);
+		let addExclude = this.state.addExclude.trim();
+		if (excludes.indexOf(addExclude) === -1) {
+			excludes.push(addExclude);
 		}
 
 		excludes.sort();
