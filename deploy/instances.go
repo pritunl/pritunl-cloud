@@ -58,6 +58,18 @@ func (s *Instances) create(inst *instance.Instance) {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
 			}).Error("deploy: Failed to create instance")
+
+			err = instance.SetState(db, inst.Id, instance.Stop)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"error": err,
+				}).Error("deploy: Failed to set instance state")
+
+				qemu.PowerOff(db, inst.Virt)
+
+				return
+			}
+
 			return
 		}
 
@@ -164,7 +176,7 @@ func (s *Instances) restart(inst *instance.Instance) {
 		db := database.GetDatabase()
 		defer db.Close()
 
-		err := qemu.PowerOn(db, inst, inst.Virt)
+		err := qemu.PowerOff(db, inst.Virt)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
@@ -174,11 +186,23 @@ func (s *Instances) restart(inst *instance.Instance) {
 
 		time.Sleep(1 * time.Second)
 
-		err = qemu.PowerOff(db, inst.Virt)
+		err = qemu.PowerOn(db, inst, inst.Virt)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
 			}).Error("deploy: Failed to restart instance")
+
+			err = instance.SetState(db, inst.Id, instance.Stop)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"error": err,
+				}).Error("deploy: Failed to set instance state")
+
+				qemu.PowerOff(db, inst.Virt)
+
+				return
+			}
+
 			return
 		}
 
