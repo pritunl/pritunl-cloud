@@ -127,7 +127,7 @@ func RemoveInstanceIps(db *database.Database, instId primitive.ObjectID) (
 	coll := db.BlocksIp()
 
 	_, err = coll.DeleteMany(db, &bson.M{
-		"_id": instId,
+		"instance": instId,
 	})
 	if err != nil {
 		err = database.ParseError(err)
