@@ -61,6 +61,7 @@ func SyncIfaces(force bool) {
 	externalIfaces := nde.ExternalInterfaces
 	internalIface := nde.InternalInterface
 	internalIfaces := nde.InternalInterfaces
+	blocks := nde.Blocks
 
 	if externalIfaces != nil {
 		for _, iface := range externalIfaces {
@@ -91,6 +92,17 @@ func SyncIfaces(force bool) {
 		ifaceSet, err := getIfaces(internalIface)
 		if err == nil {
 			ifacesNew[internalIface] = ifaceSet
+		}
+	}
+
+	if blocks != nil {
+		for _, blck := range blocks {
+			ifaceSet, err := getIfaces(blck.Interface)
+			if err != nil {
+				continue
+			}
+
+			ifacesNew[blck.Interface] = ifaceSet
 		}
 	}
 
