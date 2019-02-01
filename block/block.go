@@ -1,7 +1,9 @@
 package block
 
 import (
+	"fmt"
 	"net"
+	"strings"
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
@@ -23,6 +25,70 @@ type Block struct {
 
 func (b *Block) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
+
+	if b.Addresses == nil {
+		b.Addresses = []string{}
+	}
+
+	if b.Excludes == nil {
+		b.Excludes = []string{}
+	}
+
+	gateway := net.ParseIP(b.Gateway)
+	if gateway == nil {
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_gateway",
+			Message: "Gateway address is invalid",
+		}
+		return
+	}
+
+	netmask := utils.ParseIpMask(b.Netmask)
+	if netmask == nil {
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_netmask",
+			Message: "Netmask is invalid",
+		}
+		return
+	}
+
+	subnets := []string{}
+	for _, subnet := range b.Addresses {
+		if !strings.Contains(subnet, "/") {
+			subnet += "/32"
+		}
+
+		_, subnetNet, e := net.ParseCIDR(subnet)
+		if e != nil {
+			errData = &errortypes.ErrorData{
+				Error:   "invalid_subnet",
+				Message: "Invalid subnet address",
+			}
+			return
+		}
+
+		subnets = append(subnets, subnetNet.String())
+	}
+	b.Addresses = subnets
+
+	excludes := []string{}
+	for _, exclude := range b.Excludes {
+		if !strings.Contains(exclude, "/") {
+			exclude += "/32"
+		}
+
+		_, excludeNet, e := net.ParseCIDR(exclude)
+		if e != nil {
+			errData = &errortypes.ErrorData{
+				Error:   "invalid_exclude",
+				Message: "Invalid exclude address",
+			}
+			return
+		}
+
+		excludes = append(excludes, excludeNet.String())
+	}
+	b.Excludes = excludes
 
 	return
 }
