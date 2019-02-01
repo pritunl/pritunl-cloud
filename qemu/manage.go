@@ -46,7 +46,7 @@ type InfoCache struct {
 	Virt      *vm.VirtualMachine
 }
 
-func GetVmInfo(vmId primitive.ObjectID, getDisks bool) (
+func GetVmInfo(vmId primitive.ObjectID, getDisks, force bool) (
 	virt *vm.VirtualMachine, err error) {
 
 	refreshRate := time.Duration(
@@ -96,7 +96,7 @@ func GetVmInfo(vmId primitive.ObjectID, getDisks bool) (
 	} else {
 		virt = &virtStore.Virt
 
-		if virt.State != vm.Running ||
+		if force || virt.State != vm.Running ||
 			time.Since(virtStore.Timestamp) > refreshRate {
 
 			UpdateVmState(virt)
@@ -287,7 +287,7 @@ func GetVms(db *database.Database) (virts []*vm.VirtualMachine, err error) {
 		go func() {
 			defer waiter.Done()
 
-			virt, e := GetVmInfo(vmId, true)
+			virt, e := GetVmInfo(vmId, true, false)
 			if e != nil {
 				err = e
 				return
