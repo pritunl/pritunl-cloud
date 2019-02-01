@@ -15,19 +15,19 @@ import (
 )
 
 type Block struct {
-	Id        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Name      string             `bson:"name" json:"name"`
-	Addresses []string           `bson:"addresses" json:"addresses"`
-	Excludes  []string           `bson:"excludes" json:"excludes"`
-	Netmask   string             `bson:"netmask" json:"netmask"`
-	Gateway   string             `bson:"gateway" json:"gateway"`
+	Id       primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name     string             `bson:"name" json:"name"`
+	Subnets  []string           `bson:"subnets" json:"subnets"`
+	Excludes []string           `bson:"excludes" json:"excludes"`
+	Netmask  string             `bson:"netmask" json:"netmask"`
+	Gateway  string             `bson:"gateway" json:"gateway"`
 }
 
 func (b *Block) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
-	if b.Addresses == nil {
-		b.Addresses = []string{}
+	if b.Subnets == nil {
+		b.Subnets = []string{}
 	}
 
 	if b.Excludes == nil {
@@ -53,7 +53,7 @@ func (b *Block) Validate(db *database.Database) (
 	}
 
 	subnets := []string{}
-	for _, subnet := range b.Addresses {
+	for _, subnet := range b.Subnets {
 		if !strings.Contains(subnet, "/") {
 			subnet += "/32"
 		}
@@ -69,7 +69,7 @@ func (b *Block) Validate(db *database.Database) (
 
 		subnets = append(subnets, subnetNet.String())
 	}
-	b.Addresses = subnets
+	b.Subnets = subnets
 
 	excludes := []string{}
 	for _, exclude := range b.Excludes {
@@ -148,7 +148,7 @@ func (b *Block) GetIp(db *database.Database,
 		excludes = append(excludes, network)
 	}
 
-	for _, subnet := range b.Addresses {
+	for _, subnet := range b.Subnets {
 		_, network, e := net.ParseCIDR(subnet)
 		if e != nil {
 			err = &errortypes.ParseError{
