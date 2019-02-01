@@ -5,6 +5,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -309,6 +310,11 @@ func Remove(db *database.Database, instId primitive.ObjectID) (err error) {
 		logrus.WithFields(logrus.Fields{
 			"instance_id": instId.Hex(),
 		}).Info("instance: Delete protection ignore instance remove")
+		return
+	}
+
+	err = block.RemoveInstanceIps(db, instId)
+	if err != nil {
 		return
 	}
 
