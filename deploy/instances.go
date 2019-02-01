@@ -91,6 +91,18 @@ func (s *Instances) start(inst *instance.Instance) {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
 			}).Error("deploy: Failed to start instance")
+
+			err = instance.SetState(db, inst.Id, instance.Stop)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"error": err,
+				}).Error("deploy: Failed to set instance state")
+
+				qemu.PowerOff(db, inst.Virt)
+
+				return
+			}
+
 			return
 		}
 
