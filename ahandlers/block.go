@@ -12,12 +12,12 @@ import (
 )
 
 type blockData struct {
-	Id        primitive.ObjectID `json:"id"`
-	Name      string             `json:"name"`
-	Addresses []string           `json:"addresses"`
-	Excludes  []string           `json:"excludes"`
-	Netmask   string             `json:"netmask"`
-	Gateway   string             `json:"gateway"`
+	Id       primitive.ObjectID `json:"id"`
+	Name     string             `json:"name"`
+	Subnets  []string           `json:"subnets"`
+	Excludes []string           `json:"excludes"`
+	Netmask  string             `json:"netmask"`
+	Gateway  string             `json:"gateway"`
 }
 
 func blockPut(c *gin.Context) {
@@ -47,14 +47,14 @@ func blockPut(c *gin.Context) {
 	}
 
 	blck.Name = dta.Name
-	blck.Addresses = dta.Addresses
+	blck.Subnets = dta.Subnets
 	blck.Excludes = dta.Excludes
 	blck.Netmask = dta.Netmask
 	blck.Gateway = dta.Gateway
 
 	fields := set.NewSet(
 		"name",
-		"addresses",
+		"subnets",
 		"excludes",
 		"netmask",
 		"gateway",
@@ -99,11 +99,11 @@ func blockPost(c *gin.Context) {
 	}
 
 	blck := &block.Block{
-		Name:      dta.Name,
-		Addresses: dta.Addresses,
-		Excludes:  dta.Excludes,
-		Netmask:   dta.Netmask,
-		Gateway:   dta.Gateway,
+		Name:     dta.Name,
+		Subnets:  dta.Subnets,
+		Excludes: dta.Excludes,
+		Netmask:  dta.Netmask,
+		Gateway:  dta.Gateway,
 	}
 
 	errData, err := blck.Validate(db)
