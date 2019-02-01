@@ -135,6 +135,16 @@ func (b *Block) GetIp(db *database.Database,
 		return
 	}
 
+	gatewaySize, _ := b.GetMask().Size()
+	_, gatewayCidr, err := net.ParseCIDR(fmt.Sprintf("%s/%d",
+		gateway.String(), gatewaySize))
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.New("block: Failed to parse block gateway cidr"),
+		}
+		return
+	}
+
 	excludes := []*net.IPNet{}
 	for _, exclude := range b.Excludes {
 		_, network, e := net.ParseCIDR(exclude)
@@ -157,16 +167,23 @@ func (b *Block) GetIp(db *database.Database,
 			return
 		}
 
+		first := true
 		curIp := utils.CopyIpAddress(network.IP)
 		for {
-			utils.IncIpAddress(curIp)
+			if first {
+				first = false
+			} else {
+				utils.IncIpAddress(curIp)
+			}
 			curIpInt := utils.IpAddress2Int(curIp)
 
 			if !network.Contains(curIp) {
 				break
 			}
 
-			if blckIps.Contains(curIpInt) || gateway.Equal(curIp) {
+			if blckIps.Contains(curIpInt) || gatewayCidr.IP.Equal(curIp) ||
+				gateway.Equal(curIp) {
+
 				continue
 			}
 
