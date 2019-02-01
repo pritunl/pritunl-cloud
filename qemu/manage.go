@@ -447,7 +447,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"add", namespace,
 	)
 	if err != nil {
-		PowerOff(db, virt)
 		return
 	}
 
@@ -473,7 +472,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"addr", macAddrExternal,
 	)
 	if err != nil {
-		PowerOff(db, virt)
 		return
 	}
 
@@ -486,7 +484,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"addr", macAddrInternal,
 	)
 	if err != nil {
-		PowerOff(db, virt)
 		return
 	}
 
@@ -498,7 +495,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			"mtu", jumboMtu,
 		)
 		if err != nil {
-			PowerOff(db, virt)
 			return
 		}
 
@@ -509,7 +505,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			"mtu", jumboMtu,
 		)
 		if err != nil {
-			PowerOff(db, virt)
 			return
 		}
 
@@ -520,7 +515,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			"mtu", jumboMtu,
 		)
 		if err != nil {
-			PowerOff(db, virt)
 			return
 		}
 
@@ -531,7 +525,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			"mtu", jumboMtu,
 		)
 		if err != nil {
-			PowerOff(db, virt)
 			return
 		}
 	}
@@ -542,7 +535,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"set", "dev", ifaceExternalVirt, "up",
 	)
 	if err != nil {
-		PowerOff(db, virt)
 		return
 	}
 
@@ -552,7 +544,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"set", "dev", ifaceInternalVirt, "up",
 	)
 	if err != nil {
-		PowerOff(db, virt)
 		return
 	}
 
@@ -565,7 +556,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		blck, staticAddr, externalIface, err = node.Self.GetStaticAddr(
 			db, virt.Id)
 		if err != nil {
-			PowerOff(db, virt)
 			return
 		}
 	} else {
@@ -577,7 +567,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", externalIface),
 	)
 	if err != nil {
-		PowerOff(db, virt)
 		return
 	}
 	if internalIface != externalIface {
@@ -586,7 +575,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", internalIface),
 		)
 		if err != nil {
-			PowerOff(db, virt)
 			return
 		}
 	}
@@ -595,7 +583,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		[]string{"already a member of a bridge"},
 		"brctl", "addif", externalIface, ifaceExternalVirt)
 	if err != nil {
-		PowerOff(db, virt)
 		return
 	}
 
@@ -603,7 +590,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		[]string{"already a member of a bridge"},
 		"brctl", "addif", internalIface, ifaceInternalVirt)
 	if err != nil {
-		PowerOff(db, virt)
 		return
 	}
 
@@ -614,7 +600,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"netns", namespace,
 	)
 	if err != nil {
-		PowerOff(db, virt)
 		return
 	}
 
@@ -625,7 +610,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"netns", namespace,
 	)
 	if err != nil {
-		PowerOff(db, virt)
 		return
 	}
 
@@ -635,7 +619,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"sysctl", "-w", "net.ipv6.conf.all.accept_ra=0",
 	)
 	if err != nil {
-		PowerOff(db, virt)
 		return
 	}
 
@@ -645,7 +628,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"sysctl", "-w", "net.ipv6.conf.default.accept_ra=0",
 	)
 	if err != nil {
-		PowerOff(db, virt)
 		return
 	}
 
@@ -656,7 +638,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", ifaceExternal),
 	)
 	if err != nil {
-		PowerOff(db, virt)
 		return
 	}
 
@@ -666,7 +647,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"sysctl", "-w", "net.ipv4.ip_forward=1",
 	)
 	if err != nil {
-		PowerOff(db, virt)
 		return
 	}
 
@@ -676,7 +656,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"sysctl", "-w", "net.ipv6.conf.all.forwarding=1",
 	)
 	if err != nil {
-		PowerOff(db, virt)
 		return
 	}
 
@@ -687,7 +666,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"netns", namespace,
 	)
 	if err != nil {
-		PowerOff(db, virt)
 		return
 	}
 
@@ -698,7 +676,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"set", "dev", "lo", "up",
 	)
 	if err != nil {
-		PowerOff(db, virt)
 		return
 	}
 
@@ -709,7 +686,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"set", "dev", ifaceExternal, "up",
 	)
 	if err != nil {
-		PowerOff(db, virt)
 		return
 	}
 
@@ -720,7 +696,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"set", "dev", ifaceInternal, "up",
 	)
 	if err != nil {
-		PowerOff(db, virt)
 		return
 	}
 
@@ -733,7 +708,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			"mtu", jumboMtu,
 		)
 		if err != nil {
-			PowerOff(db, virt)
 			return
 		}
 	}
@@ -745,7 +719,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"set", "dev", iface, "up",
 	)
 	if err != nil {
-		PowerOff(db, virt)
 		return
 	}
 
@@ -759,7 +732,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"id", strconv.Itoa(vc.VpcId),
 	)
 	if err != nil {
-		PowerOff(db, virt)
 		return
 	}
 
@@ -772,7 +744,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			"mtu", jumboMtu,
 		)
 		if err != nil {
-			PowerOff(db, virt)
 			return
 		}
 	}
@@ -784,7 +755,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"set", "dev", ifaceVlan, "up",
 	)
 	if err != nil {
-		PowerOff(db, virt)
 		return
 	}
 
@@ -794,7 +764,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"brctl", "addbr", "br0",
 	)
 	if err != nil {
-		PowerOff(db, virt)
 		return
 	}
 
@@ -804,7 +773,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	//	"brctl", "stp", "br0", "on",
 	//)
 	//if err != nil {
-	//	PowerOff(db, virt)
 	//	return
 	//}
 
@@ -814,7 +782,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"brctl", "addif", "br0", ifaceVlan,
 	)
 	if err != nil {
-		PowerOff(db, virt)
 		return
 	}
 
@@ -824,7 +791,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"brctl", "addif", "br0", iface,
 	)
 	if err != nil {
-		PowerOff(db, virt)
 		return
 	}
 
@@ -836,7 +802,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"dev", "br0",
 	)
 	if err != nil {
-		PowerOff(db, virt)
 		return
 	}
 
@@ -848,7 +813,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"dev", "br0",
 	)
 	if err != nil {
-		PowerOff(db, virt)
 		return
 	}
 
@@ -859,7 +823,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"set", "dev", "br0", "up",
 	)
 	if err != nil {
-		PowerOff(db, virt)
 		return
 	}
 
@@ -879,7 +842,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			"dev", ifaceExternal,
 		)
 		if err != nil {
-			PowerOff(db, virt)
 			return
 		}
 
@@ -891,7 +853,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			"via", staticGateway.String(),
 		)
 		if err != nil {
-			PowerOff(db, virt)
 			return
 		}
 	} else {
@@ -904,7 +865,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			ifaceExternal,
 		)
 		if err != nil {
-			PowerOff(db, virt)
 			return
 		}
 	}
@@ -984,7 +944,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		err = &errortypes.NetworkError{
 			errors.New("qemu: Instance missing IPv4 address"),
 		}
-		PowerOff(db, virt)
 		return
 	}
 
@@ -999,7 +958,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	)
 	iptables.Unlock()
 	if err != nil {
-		PowerOff(db, virt)
 		return
 	}
 
@@ -1015,7 +973,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	)
 	iptables.Unlock()
 	if err != nil {
-		PowerOff(db, virt)
 		return
 	}
 
@@ -1031,7 +988,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		)
 		iptables.Unlock()
 		if err != nil {
-			PowerOff(db, virt)
 			return
 		}
 
@@ -1047,7 +1003,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		)
 		iptables.Unlock()
 		if err != nil {
-			PowerOff(db, virt)
 			return
 		}
 	} else {
