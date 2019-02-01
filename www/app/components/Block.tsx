@@ -18,7 +18,7 @@ interface State {
 	disabled: boolean;
 	changed: boolean;
 	message: string;
-	addAddress: string,
+	addSubnet: string,
 	addExclude: string,
 	block: BlockTypes.Block;
 }
@@ -77,7 +77,7 @@ export default class Block extends React.Component<Props, State> {
 			disabled: false,
 			changed: false,
 			message: '',
-			addAddress: '',
+			addSubnet: '',
 			addExclude: '',
 			block: null,
 		};
@@ -175,10 +175,10 @@ export default class Block extends React.Component<Props, State> {
 		});
 	}
 
-	onAddAddress = (): void => {
+	onAddSubnet = (): void => {
 		let block: BlockTypes.Block;
 
-		if (!this.state.addAddress) {
+		if (!this.state.addSubnet) {
 			return;
 		}
 
@@ -192,28 +192,28 @@ export default class Block extends React.Component<Props, State> {
 			};
 		}
 
-		let addresses = [
-			...(block.addresses || []),
+		let subnets = [
+			...(block.subnets || []),
 		];
 
-		let addAddress = this.state.addAddress.trim();
-		if (addresses.indexOf(addAddress) === -1) {
-			addresses.push(addAddress);
+		let addSubnet = this.state.addSubnet.trim();
+		if (subnets.indexOf(addSubnet) === -1) {
+			subnets.push(addSubnet);
 		}
 
-		addresses.sort();
-		block.addresses = addresses;
+		subnets.sort();
+		block.subnets = subnets;
 
 		this.setState({
 			...this.state,
 			changed: true,
 			message: '',
-			addAddress: '',
+			addSubnet: '',
 			block: block,
 		});
 	}
 
-	onRemoveAddress = (address: string): void => {
+	onRemoveSubnet = (subnet: string): void => {
 		let block: BlockTypes.Block;
 
 		if (this.state.changed) {
@@ -226,23 +226,23 @@ export default class Block extends React.Component<Props, State> {
 			};
 		}
 
-		let addresses = [
-			...(block.addresses || []),
+		let subnets = [
+			...(block.subnets || []),
 		];
 
-		let i = addresses.indexOf(address);
+		let i = subnets.indexOf(subnet);
 		if (i === -1) {
 			return;
 		}
 
-		addresses.splice(i, 1);
-		block.addresses = addresses;
+		subnets.splice(i, 1);
+		block.subnets = subnets;
 
 		this.setState({
 			...this.state,
 			changed: true,
 			message: '',
-			addAddress: '',
+			addSubnet: '',
 			block: block,
 		});
 	}
@@ -323,20 +323,20 @@ export default class Block extends React.Component<Props, State> {
 		let block: BlockTypes.Block = this.state.block ||
 			this.props.block;
 
-		let addresses: JSX.Element[] = [];
-		for (let addr of (block.addresses || [])) {
-			addresses.push(
+		let subnets: JSX.Element[] = [];
+		for (let subnet of (block.subnets || [])) {
+			subnets.push(
 				<div
 					className="bp3-tag bp3-tag-removable bp3-intent-primary"
 					style={css.item}
-					key={addr}
+					key={subnet}
 				>
-					{addr}
+					{subnet}
 					<button
 						className="bp3-tag-remove"
 						disabled={this.state.disabled}
 						onMouseUp={(): void => {
-							this.onRemoveAddress(addr);
+							this.onRemoveSubnet(subnet);
 						}}
 					/>
 				</div>,
@@ -396,7 +396,7 @@ export default class Block extends React.Component<Props, State> {
 							content="IP addresses that are available for instances."
 						/>
 						<div>
-							{addresses}
+							{subnets}
 						</div>
 					</label>
 					<PageInputButton
@@ -405,14 +405,14 @@ export default class Block extends React.Component<Props, State> {
 						label="Add"
 						type="text"
 						placeholder="Add addresses"
-						value={this.state.addAddress}
+						value={this.state.addSubnet}
 						onChange={(val): void => {
 							this.setState({
 								...this.state,
-								addAddress: val,
+								addSubnet: val,
 							});
 						}}
-						onSubmit={this.onAddAddress}
+						onSubmit={this.onAddSubnet}
 					/>
 					<label className="bp3-label">
 						IP Excludes
