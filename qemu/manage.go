@@ -1251,7 +1251,7 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	}
 
 	if exists {
-		vrt, e := GetVmInfo(virt.Id, false)
+		vrt, e := GetVmInfo(virt.Id, false, true)
 		if e != nil {
 			err = e
 			return
@@ -1287,7 +1287,7 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 				err = nil
 			} else {
 				for i := 0; i < settings.Hypervisor.StopTimeout; i++ {
-					vrt, err = GetVmInfo(virt.Id, false)
+					vrt, err = GetVmInfo(virt.Id, false, true)
 					if err != nil {
 						return
 					}
@@ -1483,7 +1483,7 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		err = nil
 	} else {
 		for i := 0; i < settings.Hypervisor.StopTimeout; i++ {
-			vrt, e := GetVmInfo(virt.Id, false)
+			vrt, e := GetVmInfo(virt.Id, false, true)
 			if e != nil {
 				err = e
 				return
