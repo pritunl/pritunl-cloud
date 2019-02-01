@@ -35,6 +35,122 @@ func (b *Block) GetMask() net.IPMask {
 	return utils.ParseIpMask(b.Netmask)
 }
 
+func (b *Block) GetIps(db *database.Database) (blckIps set.Set, err error) {
+	coll := db.BlocksIp()
+
+	ipsInf, err := coll.Distinct(db, "ip", &bson.M{
+		"block": b.Id,
+	})
+
+	blckIps = set.NewSet()
+	for _, ipInf := range ipsInf {
+		if ip, ok := ipInf.(int64); ok {
+			blckIps.Add(ip)
+		}
+	}
+
+	return
+}
+
+func (b *Block) GetIp(db *database.Database,
+	instId primitive.ObjectID) (ip net.IP, err error) {
+
+	blckIps, err := b.GetIps(db)
+	if err != nil {
+		return
+	}
+
+	coll := db.BlocksIp()
+	gateway := net.ParseIP(b.Gateway)
+	if gateway == nil {
+		err = &errortypes.ParseError{
+			errors.New("block: Failed to parse block gateway"),
+		}
+		return
+	}
+
+	excludes := []*net.IPNet{}
+	for _, exclude := range b.Excludes {
+		_, network, e := net.ParseCIDR(exclude)
+		if e != nil {
+			err = &errortypes.ParseError{
+				errors.Wrap(e, "block: Failed to parse block exclude"),
+			}
+			return
+		}
+
+		excludes = append(excludes, network)
+	}
+
+	for _, subnet := range b.Addresses {
+		_, network, e := net.ParseCIDR(subnet)
+		if e != nil {
+			err = &errortypes.ParseError{
+				errors.Wrap(e, "block: Failed to parse block subnet"),
+			}
+			return
+		}
+
+		curIp := utils.CopyIpAddress(network.IP)
+		for {
+			utils.IncIpAddress(curIp)
+			curIpInt := utils.IpAddress2Int(curIp)
+
+			if !network.Contains(curIp) {
+				break
+			}
+
+			if blckIps.Contains(curIpInt) || gateway.Equal(curIp) {
+				continue
+			}
+
+			excluded := false
+			for _, exclude := range excludes {
+				if exclude.Contains(curIp) {
+					excluded = true
+					break
+				}
+			}
+
+			if excluded {
+				continue
+			}
+
+			blckIp := &BlockIp{
+				Block:    b.Id,
+				Ip:       utils.IpAddress2Int(curIp),
+				Instance: instId,
+			}
+
+			_, err = coll.InsertOne(db, blckIp)
+			if err != nil {
+				err = database.ParseError(err)
+				if _, ok := err.(*database.DuplicateKeyError); ok {
+					err = nil
+					continue
+				}
+				return
+			}
+
+			ip = curIp
+			break
+		}
+
+		if ip != nil {
+			break
+		}
+	}
+
+	if ip == nil {
+		err = &BlockFull{
+			errors.New("block: Address pool full"),
+		}
+		return
+	}
+
+	return
+}
+
 func (b *Block) RemoveIp(db *database.Database,
 	instId primitive.ObjectID) (err error) {
 
