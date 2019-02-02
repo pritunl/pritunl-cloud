@@ -413,26 +413,6 @@ func addIndexes() (err error) {
 	if err != nil {
 		return
 	}
-	index = &Index{
-		Collection: db.Policies(),
-		Keys: &bson.D{
-			{"services", 1},
-		},
-	}
-	err = index.Create()
-	if err != nil {
-		return
-	}
-	index = &Index{
-		Collection: db.Policies(),
-		Keys: &bson.D{
-			{"authorities", 1},
-		},
-	}
-	err = index.Create()
-	if err != nil {
-		return
-	}
 
 	index = &Index{
 		Collection: db.CsrfTokens(),
