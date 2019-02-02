@@ -374,7 +374,9 @@ func DeleteOrg(db *database.Database, orgId, instId primitive.ObjectID) (
 	return
 }
 
-func DeleteMulti(db *database.Database, instIds []primitive.ObjectID) (err error) {
+func DeleteMulti(db *database.Database, instIds []primitive.ObjectID) (
+	err error) {
+
 	coll := db.Instances()
 
 	_, err = coll.UpdateMany(db, &bson.M{
