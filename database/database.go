@@ -948,6 +948,20 @@ func addCollections() (err error) {
 		return
 	}
 
+	err = db.database.RunCommand(
+		context.Background(),
+		bson.D{
+			{"create", "events"},
+			{"capped", true},
+			{"max", 1000},
+			{"size", 5242880},
+		},
+	).Err()
+	if err != nil {
+		err = ParseError(err)
+		return
+	}
+
 	return
 }
 
