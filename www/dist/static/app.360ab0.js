@@ -10789,7 +10789,75 @@ System.registerDynamic("app/components/PageInputSwitch.js", ["npm:react@16.7.0.j
     exports.default = PageInputSwitch;
     
 });
-System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.7.0.js", "app/actions/NodeActions.js", "app/utils/MiscUtils.js", "app/stores/CertificatesStore.js", "app/components/PageInput.js", "app/components/PageSwitch.js", "app/components/PageInputSwitch.js", "app/components/PageSelect.js", "app/components/PageSelectButton.js", "app/components/PageInputButton.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/ConfirmButton.js", "app/components/Help.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/NodeBlock.js", ["npm:react@16.7.0.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@16.7.0.js");
+    const css = {
+        group: {
+            width: '100%',
+            maxWidth: '310px',
+            marginTop: '5px'
+        },
+        sourceGroup: {
+            width: '100%',
+            maxWidth: '219px',
+            marginTop: '5px'
+        },
+        protocol: {
+            flex: '0 1 auto'
+        },
+        port: {
+            width: '100%'
+        },
+        portBox: {
+            flex: '1'
+        },
+        other: {
+            flex: '0 1 auto',
+            width: '52px',
+            borderRadius: '0 3px 3px 0'
+        }
+    };
+    class NodeBlock extends React.Component {
+        clone() {
+            return Object.assign({}, this.props.block);
+        }
+        render() {
+            let block = this.props.block;
+            let ifacesSelect = [];
+            for (let iface of this.props.interfaces || []) {
+                ifacesSelect.push(React.createElement("option", { key: iface, value: iface }, iface));
+            }
+            let blocksSelect = [];
+            for (let blck of this.props.blocks || []) {
+                blocksSelect.push(React.createElement("option", { key: blck.id, value: blck.id }, blck.name));
+            }
+            if (blocksSelect.length === 0) {
+                blocksSelect.push(React.createElement("option", { key: "null", value: "" }, "No Blocks"));
+            }
+            return React.createElement("div", null, React.createElement("div", { className: "bp3-control-group", style: css.group }, React.createElement("div", { className: "bp3-select", style: css.protocol }, React.createElement("select", { value: block.interface, onChange: evt => {
+                    let state = this.clone();
+                    state.interface = evt.target.value;
+                    this.props.onChange(state);
+                } }, ifacesSelect)), React.createElement("div", { className: "bp3-select", style: css.protocol }, React.createElement("select", { value: block.block, onChange: evt => {
+                    let state = this.clone();
+                    state.block = evt.target.value;
+                    this.props.onChange(state);
+                } }, blocksSelect)), React.createElement("button", { className: "bp3-button bp3-minimal bp3-intent-danger bp3-icon-remove", onClick: () => {
+                    this.props.onRemove();
+                } }), React.createElement("button", { className: "bp3-button bp3-minimal bp3-intent-success bp3-icon-add", onClick: () => {
+                    this.props.onAdd();
+                } })));
+        }
+    }
+    exports.default = NodeBlock;
+    
+});
+System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.7.0.js", "app/actions/NodeActions.js", "app/utils/MiscUtils.js", "app/stores/CertificatesStore.js", "app/components/PageInput.js", "app/components/PageSwitch.js", "app/components/PageInputSwitch.js", "app/components/PageSelect.js", "app/components/PageSelectButton.js", "app/components/PageInputButton.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/NodeBlock.js", "app/components/ConfirmButton.js", "app/components/Help.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -10807,6 +10875,7 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.7.0.js",
     const PageInputButton_1 = $__require("app/components/PageInputButton.js");
     const PageInfo_1 = $__require("app/components/PageInfo.js");
     const PageSave_1 = $__require("app/components/PageSave.js");
+    const NodeBlock_1 = $__require("app/components/NodeBlock.js");
     const ConfirmButton_1 = $__require("app/components/ConfirmButton.js");
     const Help_1 = $__require("app/components/Help.js");
     const css = {
@@ -10867,6 +10936,9 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.7.0.js",
         role: {
             margin: '9px 5px 0 5px',
             height: '20px'
+        },
+        blocks: {
+            marginBottom: '15px'
         }
     };
     class NodeDetailed extends React.Component {
@@ -11047,6 +11119,41 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.7.0.js",
                 node.certificates = certificates;
                 this.setState(Object.assign({}, this.state, { changed: true, node: node }));
             };
+            this.newBlock = () => {
+                let defBlock = '';
+                if (this.props.blocks.length) {
+                    defBlock = this.props.blocks[0].id;
+                }
+                return {
+                    interface: this.props.node.available_interfaces[0],
+                    block: defBlock
+                };
+            };
+            this.onNetworkMode = mode => {
+                let node;
+                if (this.state.changed) {
+                    node = Object.assign({}, this.state.node);
+                } else {
+                    node = Object.assign({}, this.props.node);
+                }
+                if (mode === 'static' && (node.blocks || []).length === 0) {
+                    node.blocks = [this.newBlock()];
+                }
+                node.network_mode = mode;
+                this.setState(Object.assign({}, this.state, { changed: true, node: node }));
+            };
+            this.onAddBlock = i => {
+                let node;
+                if (this.state.changed) {
+                    node = Object.assign({}, this.state.node);
+                } else {
+                    node = Object.assign({}, this.props.node);
+                }
+                let blocks = [...node.blocks];
+                blocks.splice(i + 1, 0, this.newBlock());
+                node.blocks = blocks;
+                this.setState(Object.assign({}, this.state, { changed: true, message: '', node: node }));
+            };
             this.state = {
                 disabled: false,
                 datacenter: '',
@@ -11099,6 +11206,33 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.7.0.js",
             });
             vals.sort();
             this.set('types', vals);
+        }
+        onChangeBlock(i, block) {
+            let node;
+            if (this.state.changed) {
+                node = Object.assign({}, this.state.node);
+            } else {
+                node = Object.assign({}, this.props.node);
+            }
+            let blocks = [...node.blocks];
+            blocks[i] = block;
+            node.blocks = blocks;
+            this.setState(Object.assign({}, this.state, { changed: true, message: '', node: node }));
+        }
+        onRemoveBlock(i) {
+            let node;
+            if (this.state.changed) {
+                node = Object.assign({}, this.state.node);
+            } else {
+                node = Object.assign({}, this.props.node);
+            }
+            let blocks = [...node.blocks];
+            blocks.splice(i, 1);
+            if (!blocks.length) {
+                blocks = [this.newBlock()];
+            }
+            node.blocks = blocks;
+            this.setState(Object.assign({}, this.state, { changed: true, message: '', node: node }));
         }
         render() {
             let node = this.state.node || this.props.node;
@@ -11181,6 +11315,18 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.7.0.js",
                         this.onRemoveNetworkRole(networkRole);
                     } })));
             }
+            let nodeBlocks = node.blocks || [];
+            let blocks = [];
+            for (let i = 0; i < nodeBlocks.length; i++) {
+                let index = i;
+                blocks.push(React.createElement(NodeBlock_1.default, { key: index, interfaces: this.props.node.available_interfaces, blocks: this.props.blocks, block: nodeBlocks[index], onChange: state => {
+                        this.onChangeBlock(index, state);
+                    }, onAdd: () => {
+                        this.onAddBlock(index);
+                    }, onRemove: () => {
+                        this.onRemoveBlock(index);
+                    } }));
+            }
             return React.createElement("td", { className: "bp3-cell", colSpan: 4, style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { className: "layout horizontal", style: css.buttons, onClick: evt => {
                     let target = evt.target;
                     if (target.className.indexOf('open-ignore') !== -1) {
@@ -11218,15 +11364,15 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.7.0.js",
                         node = Object.assign({}, this.props.node);
                     }
                     this.setState(Object.assign({}, this.state, { changed: true, node: node, zone: val }));
-                } }, zonesSelect), React.createElement("label", { className: "bp3-label", style: css.label, hidden: node.protocol === 'http' }, "External Interfaces", React.createElement(Help_1.default, { title: "External Interfaces", content: "External interfaces for instance public interface, must be a bridge interface. Leave blank for automatic configuration." }), React.createElement("div", null, externalIfaces)), React.createElement(PageSelectButton_1.default, { hidden: node.protocol === 'http', label: "Add Interface", value: this.state.addExternalIface, disabled: !externalIfacesSelect.length || this.state.disabled, buttonClass: "bp3-intent-success", onChange: val => {
+                } }, zonesSelect), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "Network Mode", help: "Network mode for public IP addresses. Cannot be changed with instances running.", value: node.network_mode, onChange: val => {
+                    this.onNetworkMode(val);
+                } }, React.createElement("option", { value: "dhcp" }, "DHCP"), React.createElement("option", { value: "static" }, "Static")), React.createElement("label", { className: "bp3-label", style: css.label, hidden: node.network_mode !== 'dhcp' && node.network_mode !== '' }, "External Interfaces", React.createElement(Help_1.default, { title: "External Interfaces", content: "External interfaces for instance public interface, must be a bridge interface. Leave blank for automatic configuration." }), React.createElement("div", null, externalIfaces)), React.createElement(PageSelectButton_1.default, { hidden: node.network_mode !== 'dhcp' && node.network_mode !== '', label: "Add Interface", value: this.state.addExternalIface, disabled: !externalIfacesSelect.length || this.state.disabled, buttonClass: "bp3-intent-success", onChange: val => {
                     this.setState(Object.assign({}, this.state, { addExternalIface: val }));
-                }, onSubmit: this.onAddExternalIface }, externalIfacesSelect), React.createElement("label", { className: "bp3-label", style: css.label, hidden: node.protocol === 'http' }, "Internal Interfaces", React.createElement(Help_1.default, { title: "Internal Interfaces", content: "Internal interfaces for instance private VPC interface, must be a bridge interface. Leave blank for to use external interface." }), React.createElement("div", null, internalIfaces)), React.createElement(PageSelectButton_1.default, { hidden: node.protocol === 'http', label: "Add Interface", value: this.state.addInternalIface, disabled: !internalIfacesSelect.length || this.state.disabled, buttonClass: "bp3-intent-success", onChange: val => {
+                }, onSubmit: this.onAddExternalIface }, externalIfacesSelect), React.createElement("label", { className: "bp3-label", style: css.label }, "Internal Interfaces", React.createElement(Help_1.default, { title: "Internal Interfaces", content: "Internal interfaces for instance private VPC interface, must be a bridge interface. Leave blank for to use external interface." }), React.createElement("div", null, internalIfaces)), React.createElement(PageSelectButton_1.default, { label: "Add Interface", value: this.state.addInternalIface, disabled: !internalIfacesSelect.length || this.state.disabled, buttonClass: "bp3-intent-success", onChange: val => {
                     this.setState(Object.assign({}, this.state, { addInternalIface: val }));
-                }, onSubmit: this.onAddInternalIface }, internalIfacesSelect), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Jumbo frames", help: "Enable jumbo frames on all interfaces, requires node restart when changed.", checked: node.jumbo_frames, onToggle: () => {
+                }, onSubmit: this.onAddInternalIface }, internalIfacesSelect), React.createElement("label", { className: "bp3-label", hidden: node.network_mode !== 'static', style: css.label }, "Interface Block Attachments", blocks), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Jumbo frames", help: "Enable jumbo frames on all interfaces, requires node restart when changed.", checked: node.jumbo_frames, onToggle: () => {
                     this.set('jumbo_frames', !node.jumbo_frames);
-                } }), React.createElement(PageSelect_1.default, { hidden: types.indexOf('hypervisor') === -1, disabled: this.state.disabled, label: "Hypervisor Mode", help: "Hypervisor mode, select KVM if CPU has hardware virtualization support.", value: node.hypervisor, onChange: val => {
-                    this.set('hypervisor', val);
-                } }, React.createElement("option", { value: "qemu" }, "QEMU"), React.createElement("option", { value: "kvm" }, "KVM")), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Firewall", help: "Configure firewall on node. Incorrectly configuring the firewall can block access to the node.", checked: node.firewall, onToggle: () => {
+                } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Firewall", help: "Configure firewall on node. Incorrectly configuring the firewall can block access to the node.", checked: node.firewall, onToggle: () => {
                     this.toggleFirewall();
                 } }), React.createElement("label", { className: "bp3-label" }, "Network Roles", React.createElement(Help_1.default, { title: "Network Roles", content: "Network roles that will be matched with firewall rules. Network roles are case-sensitive. Only firewall roles without an organization will match." }), React.createElement("div", null, networkRoles)), React.createElement(PageInputButton_1.default, { disabled: this.state.disabled, buttonClass: "bp3-intent-success bp3-icon-add", label: "Add", type: "text", placeholder: "Add role", value: this.state.addNetworkRole, onChange: val => {
                     this.setState(Object.assign({}, this.state, { addNetworkRole: val }));
@@ -11273,7 +11419,9 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.7.0.js",
                     progressClass: 'bp3-no-stripes bp3-intent-danger',
                     label: 'Load15',
                     value: this.props.node.load15
-                }] }), React.createElement("label", { className: "bp3-label", style: css.label, hidden: node.protocol === 'http' }, "Certificates", React.createElement(Help_1.default, { title: "Certificates", content: "The certificates to use for this nodes web server. The certificates must be valid for all the domains that this node provides access to. This includes the management domain and any service domains." }), React.createElement("div", null, certificates)), React.createElement(PageSelectButton_1.default, { hidden: node.protocol === 'http', label: "Add Certificate", value: this.state.addCert, disabled: !this.props.certificates.length || this.state.disabled, buttonClass: "bp3-intent-success", onChange: val => {
+                }] }), React.createElement(PageSelect_1.default, { hidden: types.indexOf('hypervisor') === -1, disabled: this.state.disabled, label: "Hypervisor Mode", help: "Hypervisor mode, select KVM if CPU has hardware virtualization support.", value: node.hypervisor, onChange: val => {
+                    this.set('hypervisor', val);
+                } }, React.createElement("option", { value: "qemu" }, "QEMU"), React.createElement("option", { value: "kvm" }, "KVM")), React.createElement("label", { className: "bp3-label", style: css.label, hidden: node.protocol === 'http' }, "Certificates", React.createElement(Help_1.default, { title: "Certificates", content: "The certificates to use for this nodes web server. The certificates must be valid for all the domains that this node provides access to. This includes the management domain and any service domains." }), React.createElement("div", null, certificates)), React.createElement(PageSelectButton_1.default, { hidden: node.protocol === 'http', label: "Add Certificate", value: this.state.addCert, disabled: !this.props.certificates.length || this.state.disabled, buttonClass: "bp3-intent-success", onChange: val => {
                     this.setState(Object.assign({}, this.state, { addCert: val }));
                 }, onSubmit: this.onAddCert }, certificatesSelect), React.createElement(PageInputSwitch_1.default, { disabled: this.state.disabled, label: "Forwarded for header", help: "Enable when using a load balancer. This header value will be used to get the users IP address. It is important to only enable this when a load balancer is used. If it is enabled without a load balancer users can spoof their IP address by providing a value for the header that will not be overwritten by a load balancer. Additionally the nodes firewall should be configured to only accept requests from the load balancer to prevent requests being sent directly to the node bypassing the load balancer.", type: "text", placeholder: "Forwarded for header", value: node.forwarded_for_header, checked: this.state.forwardedChecked, defaultValue: "X-Forwarded-For", onChange: (state, val) => {
                     let nde;
@@ -11362,7 +11510,7 @@ System.registerDynamic("app/components/Node.js", ["npm:react@16.7.0.js", "app/ut
         render() {
             let node = this.props.node;
             if (this.props.open) {
-                return React.createElement("div", { className: "bp3-card bp3-row", style: css.cardOpen }, React.createElement(NodeDetailed_1.default, { node: this.props.node, certificates: this.props.certificates, datacenters: this.props.datacenters, zones: this.props.zones, selected: this.props.selected, onSelect: this.props.onSelect, onClose: () => {
+                return React.createElement("div", { className: "bp3-card bp3-row", style: css.cardOpen }, React.createElement(NodeDetailed_1.default, { node: this.props.node, certificates: this.props.certificates, datacenters: this.props.datacenters, zones: this.props.zones, blocks: this.props.blocks, selected: this.props.selected, onSelect: this.props.onSelect, onClose: () => {
                         this.props.onOpen();
                     } }));
             }
@@ -11616,7 +11764,7 @@ System.registerDynamic("app/components/NodesPage.js", ["npm:react@16.7.0.js", "a
     exports.default = NodesPages;
     
 });
-System.registerDynamic("app/components/Nodes.js", ["npm:react@16.7.0.js", "app/stores/NodesStore.js", "app/stores/CertificatesStore.js", "app/stores/DatacentersStore.js", "app/stores/ZonesStore.js", "app/actions/NodeActions.js", "app/actions/CertificateActions.js", "app/actions/DatacenterActions.js", "app/actions/ZoneActions.js", "app/components/Node.js", "app/components/NodesFilter.js", "app/components/NodesPage.js", "app/components/Page.js", "app/components/PageHeader.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/Nodes.js", ["npm:react@16.7.0.js", "app/stores/NodesStore.js", "app/stores/CertificatesStore.js", "app/stores/DatacentersStore.js", "app/stores/ZonesStore.js", "app/stores/BlocksStore.js", "app/actions/NodeActions.js", "app/actions/CertificateActions.js", "app/actions/DatacenterActions.js", "app/actions/ZoneActions.js", "app/actions/BlockActions.js", "app/components/Node.js", "app/components/NodesFilter.js", "app/components/NodesPage.js", "app/components/Page.js", "app/components/PageHeader.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -11627,10 +11775,12 @@ System.registerDynamic("app/components/Nodes.js", ["npm:react@16.7.0.js", "app/s
     const CertificatesStore_1 = $__require("app/stores/CertificatesStore.js");
     const DatacentersStore_1 = $__require("app/stores/DatacentersStore.js");
     const ZonesStore_1 = $__require("app/stores/ZonesStore.js");
+    const BlocksStore_1 = $__require("app/stores/BlocksStore.js");
     const NodeActions = $__require("app/actions/NodeActions.js");
     const CertificateActions = $__require("app/actions/CertificateActions.js");
     const DatacenterActions = $__require("app/actions/DatacenterActions.js");
     const ZoneActions = $__require("app/actions/ZoneActions.js");
+    const BlockActions = $__require("app/actions/BlockActions.js");
     const Node_1 = $__require("app/components/Node.js");
     const NodesFilter_1 = $__require("app/components/NodesFilter.js");
     const NodesPage_1 = $__require("app/components/NodesPage.js");
@@ -11681,7 +11831,7 @@ System.registerDynamic("app/components/Nodes.js", ["npm:react@16.7.0.js", "app/s
                         opened[node.id] = true;
                     }
                 });
-                this.setState(Object.assign({}, this.state, { nodes: nodes, filter: NodesStore_1.default.filter, certificates: CertificatesStore_1.default.certificates, datacenters: DatacentersStore_1.default.datacenters, zones: ZonesStore_1.default.zones, selected: selected, opened: opened }));
+                this.setState(Object.assign({}, this.state, { nodes: nodes, filter: NodesStore_1.default.filter, certificates: CertificatesStore_1.default.certificates, datacenters: DatacentersStore_1.default.datacenters, zones: ZonesStore_1.default.zones, blocks: BlocksStore_1.default.blocks, selected: selected, opened: opened }));
             };
             this.state = {
                 nodes: NodesStore_1.default.nodes,
@@ -11689,6 +11839,7 @@ System.registerDynamic("app/components/Nodes.js", ["npm:react@16.7.0.js", "app/s
                 certificates: CertificatesStore_1.default.certificates,
                 datacenters: DatacentersStore_1.default.datacenters,
                 zones: ZonesStore_1.default.zones,
+                blocks: BlocksStore_1.default.blocks,
                 selected: {},
                 opened: {},
                 lastSelected: null,
@@ -11706,21 +11857,24 @@ System.registerDynamic("app/components/Nodes.js", ["npm:react@16.7.0.js", "app/s
             CertificatesStore_1.default.addChangeListener(this.onChange);
             DatacentersStore_1.default.addChangeListener(this.onChange);
             ZonesStore_1.default.addChangeListener(this.onChange);
+            BlocksStore_1.default.addChangeListener(this.onChange);
             NodeActions.sync();
             CertificateActions.sync();
             DatacenterActions.sync();
             ZoneActions.sync();
+            BlockActions.sync();
         }
         componentWillUnmount() {
             NodesStore_1.default.removeChangeListener(this.onChange);
             CertificatesStore_1.default.removeChangeListener(this.onChange);
             DatacentersStore_1.default.removeChangeListener(this.onChange);
             ZonesStore_1.default.removeChangeListener(this.onChange);
+            BlocksStore_1.default.removeChangeListener(this.onChange);
         }
         render() {
             let nodesDom = [];
             this.state.nodes.forEach(node => {
-                nodesDom.push(React.createElement(Node_1.default, { key: node.id, node: node, certificates: this.state.certificates, datacenters: this.state.datacenters, zones: this.state.zones, selected: !!this.state.selected[node.id], open: !!this.state.opened[node.id], onSelect: shift => {
+                nodesDom.push(React.createElement(Node_1.default, { key: node.id, node: node, certificates: this.state.certificates, datacenters: this.state.datacenters, zones: this.state.zones, blocks: this.state.blocks, selected: !!this.state.selected[node.id], open: !!this.state.opened[node.id], onSelect: shift => {
                         let selected = Object.assign({}, this.state.selected);
                         if (shift) {
                             let nodes = this.state.nodes;
@@ -12079,7 +12233,7 @@ System.registerDynamic("app/components/Policy.js", ["npm:react@16.7.0.js", "app/
                 } else {
                     policy = Object.assign({}, this.props.policy);
                 }
-                let roles = [...policy.roles];
+                let roles = [...(policy.roles || [])];
                 if (!this.state.addRole) {
                     return;
                 }
@@ -12115,7 +12269,7 @@ System.registerDynamic("app/components/Policy.js", ["npm:react@16.7.0.js", "app/
             } else {
                 policy = Object.assign({}, this.props.policy);
             }
-            let rules = Object.assign({}, policy.rules);
+            let rules = Object.assign({}, policy.rules || {});
             if (rule.values == null) {
                 delete rules[name];
             } else {
@@ -12131,7 +12285,7 @@ System.registerDynamic("app/components/Policy.js", ["npm:react@16.7.0.js", "app/
             } else {
                 policy = Object.assign({}, this.props.policy);
             }
-            let roles = [...policy.roles];
+            let roles = [...(policy.roles || [])];
             let i = roles.indexOf(role);
             if (i === -1) {
                 return;
@@ -12148,19 +12302,20 @@ System.registerDynamic("app/components/Policy.js", ["npm:react@16.7.0.js", "app/
                         this.onRemoveRole(role);
                     } })));
             }
-            let operatingSystem = policy.rules.operating_system || {
+            let rules = policy.rules || {};
+            let operatingSystem = rules.operating_system || {
                 type: 'operating_system'
             };
-            let browser = policy.rules.browser || {
+            let browser = rules.browser || {
                 type: 'browser'
             };
-            let location = policy.rules.location || {
+            let location = rules.location || {
                 type: 'location'
             };
-            let whitelistNetworks = policy.rules.whitelist_networks || {
+            let whitelistNetworks = rules.whitelist_networks || {
                 type: 'whitelist_networks'
             };
-            let blacklistNetworks = policy.rules.blacklist_networks || {
+            let blacklistNetworks = rules.blacklist_networks || {
                 type: 'blacklist_networks'
             };
             let providerIds = [];
@@ -13400,6 +13555,361 @@ System.registerDynamic("app/components/Zones.js", ["npm:react@16.7.0.js", "app/s
         }
     }
     exports.default = Zones;
+    
+});
+System.registerDynamic("app/stores/BlocksStore.js", ["app/dispatcher/Dispatcher.js", "app/EventEmitter.js", "app/types/BlockTypes.js", "app/types/GlobalTypes.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const Dispatcher_1 = $__require("app/dispatcher/Dispatcher.js");
+    const EventEmitter_1 = $__require("app/EventEmitter.js");
+    const BlockTypes = $__require("app/types/BlockTypes.js");
+    const GlobalTypes = $__require("app/types/GlobalTypes.js");
+    class BlocksStore extends EventEmitter_1.default {
+        constructor() {
+            super(...arguments);
+            this._blocks = Object.freeze([]);
+            this._map = {};
+            this._token = Dispatcher_1.default.register(this._callback.bind(this));
+        }
+        _reset() {
+            this._blocks = Object.freeze([]);
+            this._map = {};
+            this.emitChange();
+        }
+        get blocks() {
+            return this._blocks;
+        }
+        get blocksM() {
+            let blocks = [];
+            this._blocks.forEach(block => {
+                blocks.push(Object.assign({}, block));
+            });
+            return blocks;
+        }
+        block(id) {
+            let i = this._map[id];
+            if (i === undefined) {
+                return null;
+            }
+            return this._blocks[i];
+        }
+        emitChange() {
+            this.emitDefer(GlobalTypes.CHANGE);
+        }
+        addChangeListener(callback) {
+            this.on(GlobalTypes.CHANGE, callback);
+        }
+        removeChangeListener(callback) {
+            this.removeListener(GlobalTypes.CHANGE, callback);
+        }
+        _sync(blocks) {
+            this._map = {};
+            for (let i = 0; i < blocks.length; i++) {
+                blocks[i] = Object.freeze(blocks[i]);
+                this._map[blocks[i].id] = i;
+            }
+            this._blocks = Object.freeze(blocks);
+            this.emitChange();
+        }
+        _callback(action) {
+            switch (action.type) {
+                case GlobalTypes.RESET:
+                    this._reset();
+                    break;
+                case BlockTypes.SYNC:
+                    this._sync(action.data.blocks);
+                    break;
+            }
+        }
+    }
+    exports.default = new BlocksStore();
+    
+});
+System.registerDynamic("app/components/Block.js", ["npm:react@16.7.0.js", "app/actions/BlockActions.js", "app/components/PageInput.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/PageInputButton.js", "app/components/ConfirmButton.js", "app/Alert.js", "app/components/Help.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@16.7.0.js");
+    const BlockActions = $__require("app/actions/BlockActions.js");
+    const PageInput_1 = $__require("app/components/PageInput.js");
+    const PageInfo_1 = $__require("app/components/PageInfo.js");
+    const PageSave_1 = $__require("app/components/PageSave.js");
+    const PageInputButton_1 = $__require("app/components/PageInputButton.js");
+    const ConfirmButton_1 = $__require("app/components/ConfirmButton.js");
+    const Alert = $__require("app/Alert.js");
+    const Help_1 = $__require("app/components/Help.js");
+    const css = {
+        card: {
+            position: 'relative',
+            padding: '10px 10px 0 10px',
+            marginBottom: '5px'
+        },
+        remove: {
+            position: 'absolute',
+            top: '5px',
+            right: '5px'
+        },
+        item: {
+            margin: '9px 5px 0 5px',
+            height: '20px'
+        },
+        itemsLabel: {
+            display: 'block'
+        },
+        itemsAdd: {
+            margin: '8px 0 15px 0'
+        },
+        group: {
+            flex: 1,
+            minWidth: '280px',
+            margin: '0 10px'
+        },
+        save: {
+            paddingBottom: '10px'
+        },
+        label: {
+            width: '100%',
+            maxWidth: '280px'
+        },
+        inputGroup: {
+            width: '100%'
+        },
+        protocol: {
+            flex: '0 1 auto'
+        },
+        port: {
+            flex: '1'
+        },
+        controlButton: {
+            marginRight: '10px'
+        }
+    };
+    class Block extends React.Component {
+        constructor(props, context) {
+            super(props, context);
+            this.onSave = () => {
+                this.setState(Object.assign({}, this.state, { disabled: true }));
+                BlockActions.commit(this.state.block).then(() => {
+                    this.setState(Object.assign({}, this.state, { message: 'Your changes have been saved', changed: false, disabled: false }));
+                    setTimeout(() => {
+                        if (!this.state.changed) {
+                            this.setState(Object.assign({}, this.state, { message: '', changed: false, block: null }));
+                        }
+                    }, 3000);
+                }).catch(() => {
+                    this.setState(Object.assign({}, this.state, { message: '', disabled: false }));
+                });
+            };
+            this.onSync = () => {
+                this.setState(Object.assign({}, this.state, { disabled: true }));
+                BlockActions.commit(this.props.block).then(() => {
+                    this.setState(Object.assign({}, this.state, { disabled: false }));
+                    Alert.success('Block sync started');
+                }).catch(() => {
+                    this.setState(Object.assign({}, this.state, { disabled: false }));
+                });
+            };
+            this.onDelete = () => {
+                this.setState(Object.assign({}, this.state, { disabled: true }));
+                BlockActions.remove(this.props.block.id).then(() => {
+                    this.setState(Object.assign({}, this.state, { disabled: false }));
+                }).catch(() => {
+                    this.setState(Object.assign({}, this.state, { disabled: false }));
+                });
+            };
+            this.onAddSubnet = () => {
+                let block;
+                if (!this.state.addSubnet) {
+                    return;
+                }
+                if (this.state.changed) {
+                    block = Object.assign({}, this.state.block);
+                } else {
+                    block = Object.assign({}, this.props.block);
+                }
+                let subnets = [...(block.subnets || [])];
+                let addSubnet = this.state.addSubnet.trim();
+                if (subnets.indexOf(addSubnet) === -1) {
+                    subnets.push(addSubnet);
+                }
+                subnets.sort();
+                block.subnets = subnets;
+                this.setState(Object.assign({}, this.state, { changed: true, message: '', addSubnet: '', block: block }));
+            };
+            this.onRemoveSubnet = subnet => {
+                let block;
+                if (this.state.changed) {
+                    block = Object.assign({}, this.state.block);
+                } else {
+                    block = Object.assign({}, this.props.block);
+                }
+                let subnets = [...(block.subnets || [])];
+                let i = subnets.indexOf(subnet);
+                if (i === -1) {
+                    return;
+                }
+                subnets.splice(i, 1);
+                block.subnets = subnets;
+                this.setState(Object.assign({}, this.state, { changed: true, message: '', addSubnet: '', block: block }));
+            };
+            this.onAddExclude = () => {
+                let block;
+                if (!this.state.addExclude) {
+                    return;
+                }
+                if (this.state.changed) {
+                    block = Object.assign({}, this.state.block);
+                } else {
+                    block = Object.assign({}, this.props.block);
+                }
+                let excludes = [...(block.excludes || [])];
+                let addExclude = this.state.addExclude.trim();
+                if (excludes.indexOf(addExclude) === -1) {
+                    excludes.push(addExclude);
+                }
+                excludes.sort();
+                block.excludes = excludes;
+                this.setState(Object.assign({}, this.state, { changed: true, message: '', addExclude: '', block: block }));
+            };
+            this.onRemoveExclude = exclude => {
+                let block;
+                if (this.state.changed) {
+                    block = Object.assign({}, this.state.block);
+                } else {
+                    block = Object.assign({}, this.props.block);
+                }
+                let excludes = [...(block.excludes || [])];
+                let i = excludes.indexOf(exclude);
+                if (i === -1) {
+                    return;
+                }
+                excludes.splice(i, 1);
+                block.excludes = excludes;
+                this.setState(Object.assign({}, this.state, { changed: true, message: '', addExclude: '', block: block }));
+            };
+            this.state = {
+                disabled: false,
+                changed: false,
+                message: '',
+                addSubnet: '',
+                addExclude: '',
+                block: null
+            };
+        }
+        set(name, val) {
+            let block;
+            if (this.state.changed) {
+                block = Object.assign({}, this.state.block);
+            } else {
+                block = Object.assign({}, this.props.block);
+            }
+            block[name] = val;
+            this.setState(Object.assign({}, this.state, { changed: true, block: block }));
+        }
+        render() {
+            let block = this.state.block || this.props.block;
+            let subnets = [];
+            for (let subnet of block.subnets || []) {
+                subnets.push(React.createElement("div", { className: "bp3-tag bp3-tag-removable bp3-intent-primary", style: css.item, key: subnet }, subnet, React.createElement("button", { className: "bp3-tag-remove", disabled: this.state.disabled, onMouseUp: () => {
+                        this.onRemoveSubnet(subnet);
+                    } })));
+            }
+            let excludes = [];
+            for (let exclude of block.excludes || []) {
+                excludes.push(React.createElement("div", { className: "bp3-tag bp3-tag-removable bp3-intent-primary", style: css.item, key: exclude }, exclude, React.createElement("button", { className: "bp3-tag-remove", disabled: this.state.disabled, onMouseUp: () => {
+                        this.onRemoveExclude(exclude);
+                    } })));
+            }
+            return React.createElement("div", { className: "bp3-card", style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { style: css.remove }, React.createElement(ConfirmButton_1.default, { className: "bp3-minimal bp3-intent-danger bp3-icon-trash", progressClassName: "bp3-intent-danger", confirmMsg: "Confirm block remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { disabled: this.state.disabled, label: "Name", help: "Name of IP block", type: "text", placeholder: "Enter name", value: block.name, onChange: val => {
+                    this.set('name', val);
+                } }), React.createElement("label", { className: "bp3-label" }, "IP Addresses", React.createElement(Help_1.default, { title: "IP Addresses", content: "IP addresses that are available for instances." }), React.createElement("div", null, subnets)), React.createElement(PageInputButton_1.default, { disabled: this.state.disabled, buttonClass: "bp3-intent-success bp3-icon-add", label: "Add", type: "text", placeholder: "Add addresses", value: this.state.addSubnet, onChange: val => {
+                    this.setState(Object.assign({}, this.state, { addSubnet: val }));
+                }, onSubmit: this.onAddSubnet }), React.createElement("label", { className: "bp3-label" }, "IP Excludes", React.createElement(Help_1.default, { title: "IP Excludes", content: "IP addresses that are excluded from block. Add host or other reserved addresses here." }), React.createElement("div", null, excludes)), React.createElement(PageInputButton_1.default, { disabled: this.state.disabled, buttonClass: "bp3-intent-success bp3-icon-add", label: "Add", type: "text", placeholder: "Add exclude", value: this.state.addExclude, onChange: val => {
+                    this.setState(Object.assign({}, this.state, { addExclude: val }));
+                }, onSubmit: this.onAddExclude })), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
+                    label: 'ID',
+                    value: this.props.block.id || 'None'
+                }] }), React.createElement(PageInput_1.default, { disabled: this.state.disabled, label: "Netmask", help: "Netmask of IP block", type: "text", placeholder: "Enter netmask", value: block.netmask, onChange: val => {
+                    this.set('netmask', val);
+                } }), React.createElement(PageInput_1.default, { disabled: this.state.disabled, label: "Gateway", help: "Gateway address of IP block", type: "text", placeholder: "Enter gateway", value: block.gateway, onChange: val => {
+                    this.set('gateway', val);
+                } }))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.block, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
+                    this.setState(Object.assign({}, this.state, { changed: false, block: null }));
+                }, onSave: this.onSave }));
+        }
+    }
+    exports.default = Block;
+    
+});
+System.registerDynamic("app/components/Blocks.js", ["npm:react@16.7.0.js", "app/stores/BlocksStore.js", "app/actions/BlockActions.js", "app/components/NonState.js", "app/components/Block.js", "app/components/Page.js", "app/components/PageHeader.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const React = $__require("npm:react@16.7.0.js");
+    const BlocksStore_1 = $__require("app/stores/BlocksStore.js");
+    const BlockActions = $__require("app/actions/BlockActions.js");
+    const NonState_1 = $__require("app/components/NonState.js");
+    const Block_1 = $__require("app/components/Block.js");
+    const Page_1 = $__require("app/components/Page.js");
+    const PageHeader_1 = $__require("app/components/PageHeader.js");
+    const css = {
+        header: {
+            marginTop: '-19px'
+        },
+        heading: {
+            margin: '19px 0 0 0'
+        },
+        button: {
+            margin: '8px 0 0 8px'
+        },
+        buttons: {
+            marginTop: '8px'
+        },
+        noCerts: {
+            height: 'auto'
+        }
+    };
+    class Blocks extends React.Component {
+        constructor(props, context) {
+            super(props, context);
+            this.onChange = () => {
+                this.setState(Object.assign({}, this.state, { blocks: BlocksStore_1.default.blocks }));
+            };
+            this.state = {
+                blocks: BlocksStore_1.default.blocks,
+                disabled: false
+            };
+        }
+        componentDidMount() {
+            BlocksStore_1.default.addChangeListener(this.onChange);
+            BlockActions.sync();
+        }
+        componentWillUnmount() {
+            BlocksStore_1.default.removeChangeListener(this.onChange);
+        }
+        render() {
+            let blocksDom = [];
+            this.state.blocks.forEach(block => {
+                blocksDom.push(React.createElement(Block_1.default, { key: block.id, block: block }));
+            });
+            return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, "Blocks"), React.createElement("div", { className: "flex" }), React.createElement("div", { style: css.buttons }, React.createElement("button", { className: "bp3-button bp3-intent-success bp3-icon-add", style: css.button, disabled: this.state.disabled, type: "button", onClick: () => {
+                    this.setState(Object.assign({}, this.state, { disabled: true }));
+                    BlockActions.create(null).then(() => {
+                        this.setState(Object.assign({}, this.state, { disabled: false }));
+                    }).catch(() => {
+                        this.setState(Object.assign({}, this.state, { disabled: false }));
+                    });
+                } }, "New")))), React.createElement("div", null, blocksDom), React.createElement(NonState_1.default, { hidden: !!blocksDom.length, iconClass: "bp3-icon-ip-address", title: "No IP blocks", description: "Add a new IP block to get started." }));
+        }
+    }
+    exports.default = Blocks;
     
 });
 System.registerDynamic("app/components/VpcRoute.js", ["npm:react@16.7.0.js"], true, function ($__require, exports, module) {
@@ -19272,13 +19782,14 @@ System.registerDynamic("app/components/FirewallDetailed.js", ["npm:react@16.7.0.
     exports.default = FirewallDetailed;
     
 });
-System.registerDynamic("app/components/Firewall.js", ["npm:react@16.7.0.js", "app/stores/OrganizationsStore.js", "app/components/FirewallDetailed.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/Firewall.js", ["npm:react@16.7.0.js", "app/utils/MiscUtils.js", "app/stores/OrganizationsStore.js", "app/components/FirewallDetailed.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
         GLOBAL = global;
     Object.defineProperty(exports, "__esModule", { value: true });
     const React = $__require("npm:react@16.7.0.js");
+    const MiscUtils = $__require("app/utils/MiscUtils.js");
     const OrganizationsStore_1 = $__require("app/stores/OrganizationsStore.js");
     const FirewallDetailed_1 = $__require("app/components/FirewallDetailed.js");
     const css = {
@@ -19359,7 +19870,7 @@ System.registerDynamic("app/components/Firewall.js", ["npm:react@16.7.0.js", "ap
                 networkRoles.push(React.createElement("div", { className: "bp3-tag bp3-intent-primary", style: css.tag, key: networkRole }, networkRole));
             }
             let orgName = '';
-            if (firewall.organization) {
+            if (!MiscUtils.objectIdNil(firewall.organization)) {
                 let org = OrganizationsStore_1.default.organization(firewall.organization);
                 orgName = org ? org.name : firewall.organization;
             } else {
@@ -23904,6 +24415,135 @@ System.registerDynamic("app/actions/ZoneActions.js", ["npm:superagent@4.1.0.js",
     });
     
 });
+System.registerDynamic("app/types/BlockTypes.js", [], true, function ($__require, exports, module) {
+  "use strict";
+
+  var global = this || self,
+      GLOBAL = global;
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.SYNC = 'block.sync';
+  exports.CHANGE = 'block.change';
+  
+});
+System.registerDynamic("app/actions/BlockActions.js", ["npm:superagent@4.1.0.js", "app/dispatcher/Dispatcher.js", "app/dispatcher/EventDispatcher.js", "app/Alert.js", "app/Csrf.js", "app/Loader.js", "app/types/BlockTypes.js", "app/utils/MiscUtils.js", "app/Constants.js"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const SuperAgent = $__require("npm:superagent@4.1.0.js");
+    const Dispatcher_1 = $__require("app/dispatcher/Dispatcher.js");
+    const EventDispatcher_1 = $__require("app/dispatcher/EventDispatcher.js");
+    const Alert = $__require("app/Alert.js");
+    const Csrf = $__require("app/Csrf.js");
+    const Loader_1 = $__require("app/Loader.js");
+    const BlockTypes = $__require("app/types/BlockTypes.js");
+    const MiscUtils = $__require("app/utils/MiscUtils.js");
+    const Constants = $__require("app/Constants.js");
+    let syncId;
+    function sync() {
+        let curSyncId = MiscUtils.uuid();
+        syncId = curSyncId;
+        let loader = new Loader_1.default().loading();
+        return new Promise((resolve, reject) => {
+            SuperAgent.get('/block').set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
+                loader.done();
+                if (res && res.status === 401) {
+                    window.location.href = '/login';
+                    resolve();
+                    return;
+                }
+                if (curSyncId !== syncId) {
+                    resolve();
+                    return;
+                }
+                if (err) {
+                    Alert.errorRes(res, 'Failed to load blocks');
+                    reject(err);
+                    return;
+                }
+                Dispatcher_1.default.dispatch({
+                    type: BlockTypes.SYNC,
+                    data: {
+                        blocks: res.body
+                    }
+                });
+                resolve();
+            });
+        });
+    }
+    exports.sync = sync;
+    function commit(block) {
+        let loader = new Loader_1.default().loading();
+        return new Promise((resolve, reject) => {
+            SuperAgent.put('/block/' + block.id).send(block).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
+                loader.done();
+                if (res && res.status === 401) {
+                    window.location.href = '/login';
+                    resolve();
+                    return;
+                }
+                if (err) {
+                    Alert.errorRes(res, 'Failed to save block');
+                    reject(err);
+                    return;
+                }
+                resolve();
+            });
+        });
+    }
+    exports.commit = commit;
+    function create(block) {
+        let loader = new Loader_1.default().loading();
+        return new Promise((resolve, reject) => {
+            SuperAgent.post('/block').send(block).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
+                loader.done();
+                if (res && res.status === 401) {
+                    window.location.href = '/login';
+                    resolve();
+                    return;
+                }
+                if (err) {
+                    Alert.errorRes(res, 'Failed to create block');
+                    reject(err);
+                    return;
+                }
+                resolve();
+            });
+        });
+    }
+    exports.create = create;
+    function remove(blockId) {
+        let loader = new Loader_1.default().loading();
+        return new Promise((resolve, reject) => {
+            SuperAgent.delete('/block/' + blockId).set('Accept', 'application/json').set('Csrf-Token', Csrf.token).end((err, res) => {
+                loader.done();
+                if (res && res.status === 401) {
+                    window.location.href = '/login';
+                    resolve();
+                    return;
+                }
+                if (err) {
+                    Alert.errorRes(res, 'Failed to delete blocks');
+                    reject(err);
+                    return;
+                }
+                resolve();
+            });
+        });
+    }
+    exports.remove = remove;
+    EventDispatcher_1.default.register(action => {
+        switch (action.type) {
+            case BlockTypes.CHANGE:
+                if (!Constants.user) {
+                    sync();
+                }
+                break;
+        }
+    });
+    
+});
 System.registerDynamic("app/types/VpcTypes.js", [], true, function ($__require, exports, module) {
   "use strict";
 
@@ -27169,6 +27809,10 @@ System.registerDynamic("app/utils/MiscUtils.js", [], true, function ($__require,
         return (+new Date() + Math.floor(Math.random() * 999999)).toString(36);
     }
     exports.uuid = uuid;
+    function objectIdNil(objId) {
+        return !objId || objId == '000000000000000000000000';
+    }
+    exports.objectIdNil = objectIdNil;
     function zeroPad(num, width) {
         if (num < Math.pow(10, width)) {
             return ('0'.repeat(width - 1) + num).slice(-width);
@@ -28901,7 +29545,7 @@ System.registerDynamic("app/actions/SubscriptionActions.js", ["npm:superagent@4.
     });
     
 });
-System.registerDynamic("app/components/Main.js", ["npm:react@16.7.0.js", "npm:react-router-dom@4.3.1.js", "app/Theme.js", "app/Constants.js", "app/stores/SubscriptionStore.js", "app/stores/OrganizationsStore.js", "app/components/LoadingBar.js", "app/components/Subscription.js", "app/components/Users.js", "app/components/UserDetailed.js", "app/components/Nodes.js", "app/components/Policies.js", "app/components/Certificates.js", "app/components/Organizations.js", "app/components/Datacenters.js", "app/components/Zones.js", "app/components/Vpcs.js", "app/components/Domains.js", "app/components/Storages.js", "app/components/Images.js", "app/components/Disks.js", "app/components/Instances.js", "app/components/Firewalls.js", "app/components/Authorities.js", "app/components/Logs.js", "app/components/Settings.js", "app/components/OrganizationSelect.js", "app/actions/UserActions.js", "app/actions/SessionActions.js", "app/actions/AuditActions.js", "app/actions/NodeActions.js", "app/actions/PolicyActions.js", "app/actions/CertificateActions.js", "app/actions/OrganizationActions.js", "app/actions/DatacenterActions.js", "app/actions/ZoneActions.js", "app/actions/VpcActions.js", "app/actions/DomainActions.js", "app/actions/StorageActions.js", "app/actions/ImageActions.js", "app/actions/DiskActions.js", "app/actions/InstanceActions.js", "app/actions/FirewallActions.js", "app/actions/AuthorityActions.js", "app/actions/LogActions.js", "app/actions/SettingsActions.js", "app/actions/SubscriptionActions.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/Main.js", ["npm:react@16.7.0.js", "npm:react-router-dom@4.3.1.js", "app/Theme.js", "app/Constants.js", "app/stores/SubscriptionStore.js", "app/stores/OrganizationsStore.js", "app/components/LoadingBar.js", "app/components/Subscription.js", "app/components/Users.js", "app/components/UserDetailed.js", "app/components/Nodes.js", "app/components/Policies.js", "app/components/Certificates.js", "app/components/Organizations.js", "app/components/Datacenters.js", "app/components/Zones.js", "app/components/Blocks.js", "app/components/Vpcs.js", "app/components/Domains.js", "app/components/Storages.js", "app/components/Images.js", "app/components/Disks.js", "app/components/Instances.js", "app/components/Firewalls.js", "app/components/Authorities.js", "app/components/Logs.js", "app/components/Settings.js", "app/components/OrganizationSelect.js", "app/actions/UserActions.js", "app/actions/SessionActions.js", "app/actions/AuditActions.js", "app/actions/NodeActions.js", "app/actions/PolicyActions.js", "app/actions/CertificateActions.js", "app/actions/OrganizationActions.js", "app/actions/DatacenterActions.js", "app/actions/ZoneActions.js", "app/actions/BlockActions.js", "app/actions/VpcActions.js", "app/actions/DomainActions.js", "app/actions/StorageActions.js", "app/actions/ImageActions.js", "app/actions/DiskActions.js", "app/actions/InstanceActions.js", "app/actions/FirewallActions.js", "app/actions/AuthorityActions.js", "app/actions/LogActions.js", "app/actions/SettingsActions.js", "app/actions/SubscriptionActions.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -28923,6 +29567,7 @@ System.registerDynamic("app/components/Main.js", ["npm:react@16.7.0.js", "npm:re
     const Organizations_1 = $__require("app/components/Organizations.js");
     const Datacenters_1 = $__require("app/components/Datacenters.js");
     const Zones_1 = $__require("app/components/Zones.js");
+    const Blocks_1 = $__require("app/components/Blocks.js");
     const Vpcs_1 = $__require("app/components/Vpcs.js");
     const Domains_1 = $__require("app/components/Domains.js");
     const Storages_1 = $__require("app/components/Storages.js");
@@ -28943,6 +29588,7 @@ System.registerDynamic("app/components/Main.js", ["npm:react@16.7.0.js", "npm:re
     const OrganizationActions = $__require("app/actions/OrganizationActions.js");
     const DatacenterActions = $__require("app/actions/DatacenterActions.js");
     const ZoneActions = $__require("app/actions/ZoneActions.js");
+    const BlockActions = $__require("app/actions/BlockActions.js");
     const VpcActions = $__require("app/actions/VpcActions.js");
     const DomainActions = $__require("app/actions/DomainActions.js");
     const StorageActions = $__require("app/actions/StorageActions.js");
@@ -29026,7 +29672,7 @@ System.registerDynamic("app/components/Main.js", ["npm:react@16.7.0.js", "npm:re
                         window.location.href = '/logout';
                     } }, "Logout")));
             }
-            return React.createElement(ReactRouter.HashRouter, null, React.createElement("div", null, React.createElement("nav", { className: "bp3-navbar layout horizontal", style: css.nav }, React.createElement("div", { className: "bp3-navbar-group bp3-align-left flex", style: css.navTitle }, React.createElement("div", { className: "bp3-navbar-heading", style: css.heading }, "Pritunl Cloud"), React.createElement(OrganizationSelect_1.default, { hidden: !Constants.user })), React.createElement("div", { className: "bp3-navbar-group bp3-align-right", style: css.navGroup }, React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-people", style: css.link, hidden: Constants.user, to: "/users" }, "Users"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-layers", style: css.link, hidden: Constants.user, to: "/nodes" }, "Nodes"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-filter", style: css.link, hidden: Constants.user, to: "/policies" }, "Policies"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-endorsed", style: css.link, hidden: Constants.user, to: "/certificates" }, "Certificates"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-people", style: css.link, hidden: Constants.user, to: "/organizations" }, "Organizations"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-cloud", style: css.link, hidden: Constants.user, to: "/datacenters" }, "Datacenters"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-layout-circle", style: css.link, hidden: Constants.user, to: "/zones" }, "Zones"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-layout-auto", style: css.link, to: "/vpcs" }, "VPCs"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-map-marker", style: css.link, hidden: Constants.user, to: "/domains" }, "Domains"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-database", style: css.link, hidden: Constants.user, to: "/storages" }, "Storages"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-compressed", style: css.link, to: "/images" }, "Images"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-floppy-disk", style: css.link, to: "/disks" }, "Disks"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-dashboard", style: css.link, to: "/instances" }, "Instances"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-key", style: css.link, to: "/firewalls" }, "Firewalls"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-office", style: css.link, to: "/authorities" }, "Authorities"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-history", style: css.link, hidden: Constants.user, to: "/logs" }, "Logs"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-settings", style: css.link, hidden: Constants.user, to: "/settings" }, "Settings"), React.createElement(ReactRouter.Link, { to: "/subscription", style: css.sub, hidden: Constants.user }, React.createElement("button", { className: "bp3-button bp3-minimal bp3-icon-credit-card", style: css.link, onClick: () => {
+            return React.createElement(ReactRouter.HashRouter, null, React.createElement("div", null, React.createElement("nav", { className: "bp3-navbar layout horizontal", style: css.nav }, React.createElement("div", { className: "bp3-navbar-group bp3-align-left flex", style: css.navTitle }, React.createElement("div", { className: "bp3-navbar-heading", style: css.heading }, "Pritunl Cloud"), React.createElement(OrganizationSelect_1.default, { hidden: !Constants.user })), React.createElement("div", { className: "bp3-navbar-group bp3-align-right", style: css.navGroup }, React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-people", style: css.link, hidden: Constants.user, to: "/users" }, "Users"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-layers", style: css.link, hidden: Constants.user, to: "/nodes" }, "Nodes"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-filter", style: css.link, hidden: Constants.user, to: "/policies" }, "Policies"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-endorsed", style: css.link, hidden: Constants.user, to: "/certificates" }, "Certificates"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-people", style: css.link, hidden: Constants.user, to: "/organizations" }, "Organizations"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-cloud", style: css.link, hidden: Constants.user, to: "/datacenters" }, "Datacenters"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-layout-circle", style: css.link, hidden: Constants.user, to: "/zones" }, "Zones"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-ip-address", style: css.link, hidden: Constants.user, to: "/blocks" }, "IP Blocks"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-layout-auto", style: css.link, to: "/vpcs" }, "VPCs"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-map-marker", style: css.link, hidden: Constants.user, to: "/domains" }, "Domains"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-database", style: css.link, hidden: Constants.user, to: "/storages" }, "Storages"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-compressed", style: css.link, to: "/images" }, "Images"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-floppy-disk", style: css.link, to: "/disks" }, "Disks"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-dashboard", style: css.link, to: "/instances" }, "Instances"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-key", style: css.link, to: "/firewalls" }, "Firewalls"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-office", style: css.link, to: "/authorities" }, "Authorities"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-history", style: css.link, hidden: Constants.user, to: "/logs" }, "Logs"), React.createElement(ReactRouter.Link, { className: "bp3-button bp3-minimal bp3-icon-settings", style: css.link, hidden: Constants.user, to: "/settings" }, "Settings"), React.createElement(ReactRouter.Link, { to: "/subscription", style: css.sub, hidden: Constants.user }, React.createElement("button", { className: "bp3-button bp3-minimal bp3-icon-credit-card", style: css.link, onClick: () => {
                     SubscriptionActions.sync(true);
                 } }, "Subscription")), React.createElement(ReactRouter.Route, { render: props => React.createElement("button", { className: "bp3-button bp3-minimal bp3-icon-refresh", disabled: this.state.disabled, onClick: () => {
                         let pathname = props.location.pathname;
@@ -29086,6 +29732,12 @@ System.registerDynamic("app/components/Main.js", ["npm:react@16.7.0.js", "npm:re
                             });
                         } else if (pathname === '/zones') {
                             ZoneActions.sync().then(() => {
+                                this.setState(Object.assign({}, this.state, { disabled: false }));
+                            }).catch(() => {
+                                this.setState(Object.assign({}, this.state, { disabled: false }));
+                            });
+                        } else if (pathname === '/blocks') {
+                            BlockActions.sync().then(() => {
                                 this.setState(Object.assign({}, this.state, { disabled: false }));
                             }).catch(() => {
                                 this.setState(Object.assign({}, this.state, { disabled: false }));
@@ -29164,7 +29816,7 @@ System.registerDynamic("app/components/Main.js", ["npm:react@16.7.0.js", "npm:re
                 } }, "Logout"), React.createElement("button", { className: "bp3-button bp3-minimal bp3-icon-moon", onClick: () => {
                     Theme.toggle();
                     Theme.save();
-                } }))), React.createElement(LoadingBar_1.default, { intent: "primary" }), React.createElement(ReactRouter.Route, { path: "/", exact: true, render: () => Constants.user ? React.createElement(Vpcs_1.default, null) : React.createElement(Users_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/reload", render: () => React.createElement(ReactRouter.Redirect, { to: "/" }) }), React.createElement(ReactRouter.Route, { path: "/users", render: () => React.createElement(Users_1.default, null) }), React.createElement(ReactRouter.Route, { exact: true, path: "/user", render: () => React.createElement(UserDetailed_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/user/:userId", render: props => React.createElement(UserDetailed_1.default, { userId: props.match.params.userId }) }), React.createElement(ReactRouter.Route, { path: "/nodes", render: () => React.createElement(Nodes_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/policies", render: () => React.createElement(Policies_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/certificates", render: () => React.createElement(Certificates_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/organizations", render: () => React.createElement(Organizations_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/datacenters", render: () => React.createElement(Datacenters_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/zones", render: () => React.createElement(Zones_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/vpcs", render: () => React.createElement(Vpcs_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/domains", render: () => React.createElement(Domains_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/storages", render: () => React.createElement(Storages_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/images", render: () => React.createElement(Images_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/disks", render: () => React.createElement(Disks_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/instances", render: () => React.createElement(Instances_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/firewalls", render: () => React.createElement(Firewalls_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/authorities", render: () => React.createElement(Authorities_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/logs", render: () => React.createElement(Logs_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/settings", render: () => React.createElement(Settings_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/subscription", render: () => React.createElement(Subscription_1.default, null) })));
+                } }))), React.createElement(LoadingBar_1.default, { intent: "primary" }), React.createElement(ReactRouter.Route, { path: "/", exact: true, render: () => Constants.user ? React.createElement(Vpcs_1.default, null) : React.createElement(Users_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/reload", render: () => React.createElement(ReactRouter.Redirect, { to: "/" }) }), React.createElement(ReactRouter.Route, { path: "/users", render: () => React.createElement(Users_1.default, null) }), React.createElement(ReactRouter.Route, { exact: true, path: "/user", render: () => React.createElement(UserDetailed_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/user/:userId", render: props => React.createElement(UserDetailed_1.default, { userId: props.match.params.userId }) }), React.createElement(ReactRouter.Route, { path: "/nodes", render: () => React.createElement(Nodes_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/policies", render: () => React.createElement(Policies_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/certificates", render: () => React.createElement(Certificates_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/organizations", render: () => React.createElement(Organizations_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/datacenters", render: () => React.createElement(Datacenters_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/zones", render: () => React.createElement(Zones_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/blocks", render: () => React.createElement(Blocks_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/vpcs", render: () => React.createElement(Vpcs_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/domains", render: () => React.createElement(Domains_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/storages", render: () => React.createElement(Storages_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/images", render: () => React.createElement(Images_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/disks", render: () => React.createElement(Disks_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/instances", render: () => React.createElement(Instances_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/firewalls", render: () => React.createElement(Firewalls_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/authorities", render: () => React.createElement(Authorities_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/logs", render: () => React.createElement(Logs_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/settings", render: () => React.createElement(Settings_1.default, null) }), React.createElement(ReactRouter.Route, { path: "/subscription", render: () => React.createElement(Subscription_1.default, null) })));
         }
     }
     exports.default = Main;
