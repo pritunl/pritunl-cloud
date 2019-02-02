@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	listeners = map[string][]func(*Event){}
+	listeners = map[string][]func(*EventPublish){}
 )
 
 type Event struct {
@@ -44,7 +44,7 @@ type Dispatch struct {
 func getCursorId(db *database.Database, coll *database.Collection,
 	channels []string) (id primitive.ObjectID, err error) {
 
-	msg := &Event{}
+	msg := &EventPublish{}
 
 	var query *bson.M
 	if len(channels) == 1 {
@@ -166,7 +166,7 @@ func PublishDispatch(db *database.Database, typ string) (
 }
 
 func Subscribe(channels []string, duration time.Duration,
-	onMsg func(*Event, error) bool) {
+	onMsg func(*EventPublish, error) bool) {
 
 	db := database.GetDatabase()
 	defer db.Close()
@@ -231,7 +231,7 @@ func Subscribe(channels []string, duration time.Duration,
 
 	for {
 		for cursor.Next(db) {
-			msg := &Event{}
+			msg := &EventPublish{}
 			err = cursor.Decode(msg)
 			if err != nil {
 				err = database.ParseError(err)
@@ -457,11 +457,11 @@ func SubscribeType(channels []string, duration time.Duration,
 	}
 }
 
-func Register(channel string, callback func(*Event)) {
+func Register(channel string, callback func(*EventPublish)) {
 	callbacks := listeners[channel]
 
 	if callbacks == nil {
-		callbacks = []func(*Event){}
+		callbacks = []func(*EventPublish){}
 	}
 
 	listeners[channel] = append(callbacks, callback)
@@ -469,7 +469,7 @@ func Register(channel string, callback func(*Event)) {
 
 func subscribe(channels []string) {
 	Subscribe(channels, 10*time.Second,
-		func(msg *Event, err error) bool {
+		func(msg *EventPublish, err error) bool {
 			if msg == nil || err != nil {
 				return true
 			}
