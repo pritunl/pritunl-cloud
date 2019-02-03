@@ -34,14 +34,26 @@ func (b *Block) Validate(db *database.Database) (
 		b.Excludes = []string{}
 	}
 
-	gateway := net.ParseIP(b.Gateway)
-	if gateway == nil {
-		b.Gateway = ""
+	if b.Gateway != "" {
+		gateway := net.ParseIP(b.Gateway)
+		if gateway == nil {
+			errData = &errortypes.ErrorData{
+				Error:   "invalid_gateway",
+				Message: "Gateway address is invalid",
+			}
+			return
+		}
 	}
 
-	netmask := utils.ParseIpMask(b.Netmask)
-	if netmask == nil {
-		b.Netmask = ""
+	if b.Netmask != "" {
+		netmask := utils.ParseIpMask(b.Netmask)
+		if netmask == nil {
+			errData = &errortypes.ErrorData{
+				Error:   "invalid_netmask",
+				Message: "Netmask is invalid",
+			}
+			return
+		}
 	}
 
 	subnets := []string{}
