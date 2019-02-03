@@ -64,6 +64,10 @@ func GetRoles(db *database.Database, roles []string) (
 	coll := db.Policies()
 	policies = []*Policy{}
 
+	if roles == nil {
+		roles = []string{}
+	}
+
 	cursor, err := coll.Find(
 		db,
 		&bson.M{
