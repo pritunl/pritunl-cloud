@@ -245,7 +245,11 @@ func (b *Block) RemoveIp(db *database.Database,
 	})
 	if err != nil {
 		err = database.ParseError(err)
-		return
+		if _, ok := err.(*database.NotFoundError); ok {
+			err = nil
+		} else {
+			return
+		}
 	}
 
 	return
