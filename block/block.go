@@ -270,9 +270,109 @@ func (b *Block) CommitFields(db *database.Database, fields set.Set) (
 	err error) {
 
 	coll := db.Blocks()
+	ipColl := db.BlocksIp()
+	instColl := db.Instances()
+
+	gateway := net.ParseIP(b.Gateway)
+	excludes := []*net.IPNet{}
+	for _, exclude := range b.Excludes {
+		_, network, e := net.ParseCIDR(exclude)
+		if e != nil {
+			err = &errortypes.ParseError{
+				errors.Wrap(e, "block: Failed to parse block exclude"),
+			}
+			return
+		}
+
+		excludes = append(excludes, network)
+	}
+
+	subnets := []*net.IPNet{}
+	for _, subnet := range b.Subnets {
+		_, network, e := net.ParseCIDR(subnet)
+		if e != nil {
+			err = &errortypes.ParseError{
+				errors.Wrap(e, "block: Failed to parse block subnet"),
+			}
+			return
+		}
+
+		subnets = append(subnets, network)
+	}
 
 	err = coll.CommitFields(b.Id, b, fields)
 	if err != nil {
+		return
+	}
+
+	cursor, err := ipColl.Find(db, &bson.M{
+		"block": b.Id,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		blckIp := &BlockIp{}
+		err = cursor.Decode(blckIp)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		remove := false
+		ip := utils.Int2IpAddress(blckIp.Ip)
+
+		if gateway != nil && gateway.Equal(ip) {
+			remove = true
+		}
+
+		if !remove {
+			for _, exclude := range excludes {
+				if exclude.Contains(ip) {
+					remove = true
+					break
+				}
+			}
+		}
+
+		if !remove {
+			for _, subnet := range subnets {
+				if subnet.Contains(ip) {
+					remove = true
+					break
+				}
+			}
+		}
+
+		if remove {
+			_, _ = instColl.UpdateOne(db, &bson.M{
+				"_id": blckIp.Instance,
+			}, &bson.M{
+				"$set": &bson.M{
+					"restart_block_ip": true,
+				},
+			})
+
+			_, err = ipColl.DeleteOne(db, &bson.M{
+				"_id": blckIp.Id,
+			})
+			if err != nil {
+				err = database.ParseError(err)
+				if _, ok := err.(*database.NotFoundError); ok {
+					err = nil
+				} else {
+					return
+				}
+			}
+		}
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
 		return
 	}
 
