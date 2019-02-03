@@ -36,20 +36,12 @@ func (b *Block) Validate(db *database.Database) (
 
 	gateway := net.ParseIP(b.Gateway)
 	if gateway == nil {
-		errData = &errortypes.ErrorData{
-			Error:   "invalid_gateway",
-			Message: "Gateway address is invalid",
-		}
-		return
+		b.Gateway = ""
 	}
 
 	netmask := utils.ParseIpMask(b.Netmask)
 	if netmask == nil {
-		errData = &errortypes.ErrorData{
-			Error:   "invalid_netmask",
-			Message: "Netmask is invalid",
-		}
-		return
+		b.Netmask = ""
 	}
 
 	subnets := []string{}
