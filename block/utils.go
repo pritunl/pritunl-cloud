@@ -83,6 +83,47 @@ func GetInstanceIp(db *database.Database,
 
 func Remove(db *database.Database, blockId primitive.ObjectID) (err error) {
 	coll := db.Blocks()
+	ipColl := db.BlocksIp()
+	instColl := db.Instances()
+
+	cursor, err := ipColl.Find(db, &bson.M{
+		"block": blockId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		blckIp := &BlockIp{}
+		err = cursor.Decode(blckIp)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		_, _ = instColl.UpdateOne(db, &bson.M{
+			"_id": blckIp.Instance,
+		}, &bson.M{
+			"$set": &bson.M{
+				"restart_block_ip": true,
+			},
+		})
+	}
+
+	_, err = ipColl.DeleteMany(db, &bson.M{
+		"block": blockId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		switch err.(type) {
+		case *database.NotFoundError:
+			err = nil
+		default:
+			return
+		}
+	}
 
 	_, err = coll.DeleteOne(db, &bson.M{
 		"_id": blockId,
