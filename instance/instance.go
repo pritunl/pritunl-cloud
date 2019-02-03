@@ -26,6 +26,7 @@ type Instance struct {
 	PublicMac           string             `bson:"-" json:"public_mac"`
 	VmState             string             `bson:"vm_state" json:"vm_state"`
 	Restart             bool               `bson:"restart" json:"restart"`
+	RestartBlockIp      bool               `bson:"restart_block_ip" json:"restart_block_ip"`
 	DeleteProtection    bool               `bson:"delete_protection" json:"delete_protection"`
 	PublicIps           []string           `bson:"public_ips" json:"public_ips"`
 	PublicIps6          []string           `bson:"public_ips6" json:"public_ips6"`
@@ -52,6 +53,7 @@ func (i *Instance) Validate(db *database.Database) (
 
 	if i.State != Start {
 		i.Restart = false
+		i.RestartBlockIp = false
 	}
 
 	if i.Organization.IsZero() {
