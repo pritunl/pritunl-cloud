@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Improve node management
+
 Version 1.0.1168.33 2019-02-04
 ------------------------------
 
