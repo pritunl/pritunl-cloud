@@ -259,19 +259,8 @@ func (b *Block) RemoveIp(db *database.Database,
 	return
 }
 
-func (b *Block) Commit(db *database.Database) (err error) {
-	coll := db.Blocks()
-
-	err = coll.Commit(b.Id, b)
-	if err != nil {
-		return
-	}
-
-	return
-}
-
-func (b *Block) CommitFields(db *database.Database, fields set.Set) (
-	err error) {
+func (b *Block) ValidateAddresses(db *database.Database,
+	commitFields set.Set) (err error) {
 
 	coll := db.Blocks()
 	ipColl := db.BlocksIp()
@@ -304,9 +293,11 @@ func (b *Block) CommitFields(db *database.Database, fields set.Set) (
 		subnets = append(subnets, network)
 	}
 
-	err = coll.CommitFields(b.Id, b, fields)
-	if err != nil {
-		return
+	if commitFields != nil {
+		err = coll.CommitFields(b.Id, b, commitFields)
+		if err != nil {
+			return
+		}
 	}
 
 	cursor, err := ipColl.Find(db, &bson.M{
@@ -343,11 +334,16 @@ func (b *Block) CommitFields(db *database.Database, fields set.Set) (
 		}
 
 		if !remove {
+			match := false
 			for _, subnet := range subnets {
 				if subnet.Contains(ip) {
-					remove = true
+					match = true
 					break
 				}
+			}
+
+			if !match {
+				remove = true
 			}
 		}
 
@@ -377,6 +373,28 @@ func (b *Block) CommitFields(db *database.Database, fields set.Set) (
 	err = cursor.Err()
 	if err != nil {
 		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func (b *Block) Commit(db *database.Database) (err error) {
+	coll := db.Blocks()
+
+	err = coll.Commit(b.Id, b)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func (b *Block) CommitFields(db *database.Database, fields set.Set) (
+	err error) {
+
+	err = b.ValidateAddresses(db, fields)
+	if err != nil {
 		return
 	}
 
