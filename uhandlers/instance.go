@@ -122,6 +122,7 @@ func instancePut(c *gin.Context) {
 		"vpc",
 		"state",
 		"restart",
+		"restart_block_ip",
 		"delete_protection",
 		"memory",
 		"processors",
@@ -341,6 +342,7 @@ func instancesPut(c *gin.Context) {
 
 	if dta.State != instance.Start {
 		doc["restart"] = false
+		doc["restart_block_ip"] = false
 	}
 
 	err = instance.UpdateMultiOrg(db, userOrg, dta.Ids, &doc)
