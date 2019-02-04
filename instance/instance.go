@@ -42,6 +42,7 @@ type Instance struct {
 	Virt                *vm.VirtualMachine `bson:"-" json:"-"`
 	curVpc              primitive.ObjectID `bson:"-" json:"-"`
 	curDeleteProtection bool               `bson:"-" json:"-"`
+	curState            string             `bson:"-" json:"-"`
 }
 
 func (i *Instance) Validate(db *database.Database) (
@@ -208,6 +209,7 @@ func (i *Instance) IsActive() bool {
 func (i *Instance) PreCommit() {
 	i.curVpc = i.Vpc
 	i.curDeleteProtection = i.DeleteProtection
+	i.curState = i.State
 }
 
 func (i *Instance) PostCommit(db *database.Database) (
@@ -227,6 +229,13 @@ func (i *Instance) PostCommit(db *database.Database) (
 		if err != nil {
 			return
 		}
+	}
+
+	if i.curState != i.State && (i.State == Stop || i.State == Start ||
+		i.State == Restart) {
+
+		i.Restart = false
+		i.RestartBlockIp = false
 	}
 
 	return
