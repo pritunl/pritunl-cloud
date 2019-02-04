@@ -879,6 +879,9 @@ func generate(namespace, iface string, ingress []*firewall.Rule) (
 		cmd := rules.newCommand()
 		cmd = append(cmd,
 			"-i", "lo",
+		)
+		cmd = rules.commentCommand(cmd, false)
+		cmd = append(cmd,
 			"-j", "ACCEPT",
 		)
 		rules.Ingress = append(rules.Ingress, cmd)
@@ -888,6 +891,9 @@ func generate(namespace, iface string, ingress []*firewall.Rule) (
 		cmd := rules.newCommand()
 		cmd = append(cmd,
 			"-i", "lo",
+		)
+		cmd = rules.commentCommand(cmd, false)
+		cmd = append(cmd,
 			"-j", "ACCEPT",
 		)
 		rules.Ingress6 = append(rules.Ingress6, cmd)
