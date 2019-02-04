@@ -136,7 +136,7 @@ func (i *Instance) Format() {
 func (i *Instance) Json() {
 	switch i.State {
 	case Start:
-		if i.Restart {
+		if i.Restart || i.RestartBlockIp {
 			i.Status = "Restart Required"
 		} else {
 			switch i.VmState {
