@@ -10807,6 +10807,9 @@ System.registerDynamic("app/components/NodeBlock.js", ["npm:react@16.7.0.js"], t
             maxWidth: '219px',
             marginTop: '5px'
         },
+        control: {
+            marginTop: '5px'
+        },
         protocol: {
             flex: '0 1 auto'
         },
@@ -10847,9 +10850,9 @@ System.registerDynamic("app/components/NodeBlock.js", ["npm:react@16.7.0.js"], t
                     let state = this.clone();
                     state.block = evt.target.value;
                     this.props.onChange(state);
-                } }, blocksSelect)), React.createElement("button", { className: "bp3-button bp3-minimal bp3-intent-danger bp3-icon-remove", onClick: () => {
+                } }, blocksSelect)), React.createElement("button", { className: "bp3-button bp3-minimal bp3-intent-danger bp3-icon-remove", style: css.control, onClick: () => {
                     this.props.onRemove();
-                } }), React.createElement("button", { className: "bp3-button bp3-minimal bp3-intent-success bp3-icon-add", onClick: () => {
+                } }), React.createElement("button", { className: "bp3-button bp3-minimal bp3-intent-success bp3-icon-add", style: css.control, onClick: () => {
                     this.props.onAdd();
                 } })));
         }
