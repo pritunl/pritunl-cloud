@@ -4,6 +4,7 @@ pritunl-cloud changelog
 <%= version %>
 
 Add support for static instance IP addresses
+Improve instance management
 
 Version 1.0.1155.32 2019-01-22
 ------------------------------
