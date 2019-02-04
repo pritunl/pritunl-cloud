@@ -875,7 +875,7 @@ func generate(namespace, iface string, ingress []*firewall.Rule) (
 		Holds6:    [][]string{},
 	}
 
-	if rules.Interface != "host" {
+	if rules.Interface == "host" {
 		cmd := rules.newCommand()
 		cmd = append(cmd,
 			"-i", "lo",
