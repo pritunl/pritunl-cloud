@@ -23,6 +23,9 @@ const css = {
 		maxWidth: '219px',
 		marginTop: '5px',
 	} as React.CSSProperties,
+	control: {
+		marginTop: '5px',
+	} as React.CSSProperties,
 	protocol: {
 		flex: '0 1 auto',
 	} as React.CSSProperties,
@@ -100,12 +103,14 @@ export default class NodeBlock extends React.Component<Props, {}> {
 				</div>
 				<button
 					className="bp3-button bp3-minimal bp3-intent-danger bp3-icon-remove"
+					style={css.control}
 					onClick={(): void => {
 						this.props.onRemove();
 					}}
 				/>
 				<button
 					className="bp3-button bp3-minimal bp3-intent-success bp3-icon-add"
+					style={css.control}
 					onClick={(): void => {
 						this.props.onAdd();
 					}}
