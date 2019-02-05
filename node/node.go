@@ -209,19 +209,6 @@ func (n *Node) Validate(db *database.Database) (
 	switch n.NetworkMode {
 	case Static:
 		n.ExternalInterfaces = []string{}
-
-		blockIfaces := set.NewSet()
-		for _, blck := range n.Blocks {
-			if blockIfaces.Contains(blck.Interface) {
-				errData = &errortypes.ErrorData{
-					Error:   "duplicate_block_interface",
-					Message: "Duplicate interface in block attachments",
-				}
-				return
-			}
-			blockIfaces.Add(blck.Interface)
-		}
-
 		break
 	default:
 		n.NetworkMode = Dhcp
