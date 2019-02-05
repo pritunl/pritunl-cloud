@@ -22,8 +22,6 @@ const (
 	UserManage               = "user_manage"
 	UserManageDevice         = "user_manage_device"
 	UserManageDeviceRegister = "user_manage_device_register"
-	Authority                = "authority"
-	AuthorityDevice          = "authority_device"
 )
 
 var (
