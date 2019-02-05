@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Fix node configuration
+
 Version 1.0.1168.95 2019-02-04
 ------------------------------
 
