@@ -5,7 +5,7 @@ export const CHANGE = 'block.change';
 export interface Block {
 	id?: string;
 	name?: string;
-	addresses?: string[];
+	subnets?: string[];
 	excludes?: string[];
 	netmask?: string;
 	gateway?: string;
