@@ -1,4 +1,3 @@
-// Settings stored on mongodb.
 package settings
 
 import (
