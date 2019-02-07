@@ -15,9 +15,11 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
+	"github.com/pritunl/pritunl-cloud/zone"
 )
 
 type State struct {
+	nodeZone         *zone.Zone
 	namespaces       []string
 	interfaces       []string
 	nodeFirewall     []*firewall.Rule
@@ -31,6 +33,10 @@ type State struct {
 	vpcsMap          map[primitive.ObjectID]*vpc.Vpc
 	addInstances     set.Set
 	remInstances     set.Set
+}
+
+func (s *State) NodeZone() *zone.Zone {
+	return s.nodeZone
 }
 
 func (s *State) Namespaces() []string {
@@ -96,6 +102,17 @@ func (s *State) GetInstace(instId primitive.ObjectID) *instance.Instance {
 func (s *State) init() (err error) {
 	db := database.GetDatabase()
 	defer db.Close()
+
+	zneId := node.Self.Zone
+	if !zneId.IsZero() {
+		zne, e := zone.Get(db, zneId)
+		if e != nil {
+			err = e
+			return
+		}
+
+		s.nodeZone = zne
+	}
 
 	namespaces, err := utils.GetNamespaces()
 	if err != nil {
