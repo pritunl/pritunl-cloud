@@ -498,6 +498,25 @@ func (n *Node) sync() {
 		}
 	}
 
+	privateIps := map[string]string{}
+	internalInterfaces := n.InternalInterfaces
+	if internalInterfaces != nil {
+		for _, iface := range internalInterfaces {
+			addr, _, err := bridges.GetIpAddrs(iface)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"internal_interface": iface,
+					"error":              err,
+				}).Error("node: Failed to get private address")
+			}
+
+			if addr != "" {
+				privateIps[iface] = addr
+			}
+		}
+	}
+	n.PrivateIps = privateIps
+
 	ifaces, err := GetInterfaces()
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
