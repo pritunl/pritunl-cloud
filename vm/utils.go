@@ -137,3 +137,17 @@ func GetLinkNamespace(id primitive.ObjectID, n int) string {
 	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
 	return fmt.Sprintf("x%s%d", strings.ToLower(hashSum), n)
 }
+
+func GetHostVxlanIface(parentIface string) string {
+	hash := md5.New()
+	hash.Write([]byte(parentIface))
+	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
+	return fmt.Sprintf("k%s0", strings.ToLower(hashSum))
+}
+
+func GetHostBridgeIface(parentIface string) string {
+	hash := md5.New()
+	hash.Write([]byte(parentIface))
+	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
+	return fmt.Sprintf("b%s0", strings.ToLower(hashSum))
+}
