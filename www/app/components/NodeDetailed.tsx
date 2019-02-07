@@ -197,6 +197,36 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		this.set('types', vals);
 	}
 
+	ifaces(): string[] {
+		let node: NodeTypes.Node;
+
+		if (this.state.changed) {
+			node = {
+				...this.state.node,
+			};
+		} else {
+			node = {
+				...this.props.node,
+			};
+		}
+
+		let vxlan = false;
+		for (let zne of this.props.zones) {
+			if (zne.id === node.zone) {
+				if (zne.network_mode === 'vxlan') {
+					vxlan = true;
+				}
+				break;
+			}
+		}
+
+		if (vxlan) {
+			return node.available_interfaces;
+		} else {
+			return node.available_bridges;
+		}
+	}
+
 	onAddNetworkRole = (): void => {
 		let node: NodeTypes.Node;
 
@@ -345,12 +375,12 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		let node: NodeTypes.Node;
 
 		if (!this.state.addExternalIface &&
-			!this.props.node.available_interfaces.length) {
+			!this.props.node.available_bridges.length) {
 			return;
 		}
 
 		let certId = this.state.addExternalIface ||
-			this.props.node.available_interfaces[0];
+			this.props.node.available_bridges[0];
 
 		if (this.state.changed) {
 			node = {
@@ -416,14 +446,13 @@ export default class NodeDetailed extends React.Component<Props, State> {
 
 	onAddInternalIface = (): void => {
 		let node: NodeTypes.Node;
+		let availableIfaces = this.ifaces();
 
-		if (!this.state.addInternalIface &&
-				!this.props.node.available_interfaces.length) {
+		if (!this.state.addInternalIface && !availableIfaces.length) {
 			return;
 		}
 
-		let certId = this.state.addInternalIface ||
-			this.props.node.available_interfaces[0];
+		let certId = this.state.addInternalIface || availableIfaces[0];
 
 		if (this.state.changed) {
 			node = {
@@ -565,7 +594,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		}
 
 		return {
-			interface: this.props.node.available_interfaces[0],
+			interface: this.props.node.available_bridges[0],
 			block: defBlock,
 		} as NodeTypes.BlockAttachment;
 	}
@@ -747,13 +776,17 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		}
 
 		let externalIfacesSelect: JSX.Element[] = [];
-		let internalIfacesSelect: JSX.Element[] = [];
-		for (let iface of (this.props.node.available_interfaces || [])) {
+		for (let iface of (this.props.node.available_bridges || [])) {
 			externalIfacesSelect.push(
 				<option key={iface} value={iface}>
 					{iface}
 				</option>,
 			);
+		}
+
+		let availableIfaces = this.ifaces();
+		let internalIfacesSelect: JSX.Element[] = [];
+		for (let iface of (availableIfaces || [])) {
 			internalIfacesSelect.push(
 				<option key={iface} value={iface}>
 					{iface}
@@ -871,7 +904,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			blocks.push(
 				<NodeBlock
 					key={index}
-					interfaces={this.props.node.available_interfaces}
+					interfaces={this.props.node.available_bridges}
 					blocks={this.props.blocks}
 					block={nodeBlocks[index]}
 					onChange={(state: NodeTypes.BlockAttachment): void => {
