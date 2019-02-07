@@ -12,9 +12,10 @@ import (
 )
 
 type zoneData struct {
-	Id         primitive.ObjectID `json:"id"`
-	Datacenter primitive.ObjectID `json:"datacenter"`
-	Name       string             `json:"name"`
+	Id          primitive.ObjectID `json:"id"`
+	Datacenter  primitive.ObjectID `json:"datacenter"`
+	Name        string             `json:"name"`
+	NetworkMode string             `json:"network_mode"`
 }
 
 func zonePut(c *gin.Context) {
@@ -44,9 +45,11 @@ func zonePut(c *gin.Context) {
 	}
 
 	zne.Name = data.Name
+	zne.NetworkMode = data.NetworkMode
 
 	fields := set.NewSet(
 		"name",
+		"network_mode",
 	)
 
 	errData, err := zne.Validate(db)
@@ -88,8 +91,9 @@ func zonePost(c *gin.Context) {
 	}
 
 	zne := &zone.Zone{
-		Datacenter: data.Datacenter,
-		Name:       data.Name,
+		Datacenter:  data.Datacenter,
+		Name:        data.Name,
+		NetworkMode: data.NetworkMode,
 	}
 
 	errData, err := zne.Validate(db)
