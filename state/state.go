@@ -21,6 +21,7 @@ import (
 type State struct {
 	nodes            []*node.Node
 	nodeZone         *zone.Zone
+	vxlan            bool
 	zoneMap          map[primitive.ObjectID]*zone.Zone
 	namespaces       []string
 	interfaces       []string
@@ -39,6 +40,10 @@ type State struct {
 
 func (s *State) Nodes() []*node.Node {
 	return s.nodes
+}
+
+func (s *State) VxLan() bool {
+	return s.vxlan
 }
 
 func (s *State) NodeZone() *zone.Zone {
@@ -125,6 +130,8 @@ func (s *State) init() (err error) {
 	}
 
 	if s.nodeZone != nil && s.nodeZone.NetworkMode == zone.VxLan {
+		s.vxlan = true
+
 		znes, e := zone.GetAllDatacenter(db, s.nodeZone.Datacenter)
 		if e != nil {
 			err = e
