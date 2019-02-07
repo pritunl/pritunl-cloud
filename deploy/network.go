@@ -1,8 +1,10 @@
 package deploy
 
 import (
+	"github.com/pritunl/pritunl-cloud/interfaces"
 	"github.com/pritunl/pritunl-cloud/networking"
 	"github.com/pritunl/pritunl-cloud/state"
+	"github.com/pritunl/pritunl-cloud/vxlan"
 )
 
 type Network struct {
@@ -14,6 +16,13 @@ func (d *Network) Deploy() (err error) {
 	if err != nil {
 		return
 	}
+
+	err = vxlan.ApplyState(d.stat)
+	if err != nil {
+		return
+	}
+
+	interfaces.SyncIfaces(d.stat.VxLan())
 
 	return
 }
