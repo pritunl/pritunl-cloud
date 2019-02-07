@@ -11,9 +11,11 @@ import (
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/pritunl-cloud/vm"
 )
 
 var (
+	curVxlan   = false
 	ifaces     = map[string]set.Set{}
 	ifacesLock = sync.Mutex{}
 	lastChange time.Time
@@ -22,6 +24,13 @@ var (
 func getIfaces(bridge string) (ifacesSet set.Set, err error) {
 	output, err := utils.ExecCombinedOutput("", "brctl", "show", bridge)
 	if err != nil {
+		return
+	}
+
+	if strings.Contains(output, "Operation not supported") {
+		err = &errortypes.ReadError{
+			errors.New("interfaces: Operation not supported"),
+		}
 		return
 	}
 
@@ -48,12 +57,13 @@ func getIfaces(bridge string) (ifacesSet set.Set, err error) {
 	return
 }
 
-func SyncIfaces(force bool) {
+func SyncIfaces(vxlan bool) {
 	nde := node.Self
 
-	if !force && time.Since(lastChange) < 30*time.Second {
+	if vxlan == curVxlan && time.Since(lastChange) < 30*time.Second {
 		return
 	}
+	curVxlan = vxlan
 
 	ifacesNew := map[string]set.Set{}
 
@@ -82,11 +92,16 @@ func SyncIfaces(force bool) {
 	if internalIfaces != nil {
 		for _, iface := range internalIfaces {
 			ifaceSet, err := getIfaces(iface)
-			if err != nil {
-				continue
+			if err == nil {
+				ifacesNew[iface] = ifaceSet
 			}
 
-			ifacesNew[iface] = ifaceSet
+			vxIface := vm.GetHostBridgeIface(iface)
+			ifaceSet, err = getIfaces(vxIface)
+			if err == nil {
+				ifacesNew[vxIface] = ifaceSet
+			}
+
 		}
 	} else if internalIface != "" {
 		ifaceSet, err := getIfaces(internalIface)
@@ -183,13 +198,17 @@ func HasExternal() (exists bool) {
 	return
 }
 
-func GetInternal(virtIface string) (internalIface string) {
+func GetInternal(virtIface string, vxlan bool) (internalIface string) {
 	internalIfaces := node.Self.InternalInterfaces
 
 	if internalIfaces != nil {
 		curLen := 0
 
 		for _, iface := range internalIfaces {
+			if vxlan {
+				iface = vm.GetHostBridgeIface(iface)
+			}
+
 			ifacesSetLen := 0
 
 			ifacesLock.Lock()
@@ -218,11 +237,11 @@ func GetInternal(virtIface string) (internalIface string) {
 			}
 			ifacesLock.Unlock()
 		}
-	} else {
+	} else if !vxlan {
 		internalIface = node.Self.InternalInterface
 	}
 
-	if internalIface == "" {
+	if internalIface == "" && !vxlan {
 		internalIface = settings.Local.BridgeName
 	}
 
