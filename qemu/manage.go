@@ -35,6 +35,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
+	"github.com/pritunl/pritunl-cloud/zone"
 )
 
 var (
@@ -390,6 +391,16 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
+	zne, err := zone.Get(db, node.Self.Zone)
+	if err != nil {
+		return
+	}
+
+	vxlan := false
+	if zne.NetworkMode == zone.VxLan {
+		vxlan = true
+	}
+
 	jumboFrames := node.Self.JumboFrames
 	jumboMtu := strconv.Itoa(settings.Hypervisor.JumboMtu)
 	iface := vm.GetIface(virt.Id, 0)
@@ -547,7 +558,14 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	internalIface := interfaces.GetInternal(ifaceInternalVirt)
+	internalIface := interfaces.GetInternal(ifaceInternalVirt, vxlan)
+	if internalIface == "" {
+		err = &errortypes.NotFoundError{
+			errors.New("qemu: Failed to get internal interface"),
+		}
+		return
+	}
+
 	var externalIface string
 	var blck *block.Block
 	var staticAddr net.IP
