@@ -1,0 +1,569 @@
+package vxlan
+
+import (
+	"strconv"
+	"strings"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/dropbox/godropbox/container/set"
+	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/settings"
+	"github.com/pritunl/pritunl-cloud/state"
+	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/pritunl-cloud/vm"
+	"github.com/pritunl/pritunl-cloud/zone"
+)
+
+var (
+	curIfaces         set.Set
+	curDatabase       set.Set
+	curDatabaseIfaces set.Set
+)
+
+func initIfaces(stat *state.State, internaIfaces []string) (err error) {
+	newCurIfaces := set.NewSet()
+	for _, iface := range stat.Interfaces() {
+		if len(iface) == 14 && (strings.HasPrefix(iface, "k") ||
+			strings.HasPrefix(iface, "b")) {
+
+			newCurIfaces.Add(iface)
+		}
+	}
+
+	parentVxIfaces := map[string]string{}
+	parentBrIfaces := map[string]string{}
+	newIfaces := set.NewSet()
+	if internaIfaces != nil {
+		for _, iface := range internaIfaces {
+			vxIface := vm.GetHostVxlanIface(iface)
+			brIface := vm.GetHostBridgeIface(iface)
+
+			parentVxIfaces[vxIface] = iface
+			parentBrIfaces[brIface] = iface
+
+			newIfaces.Add(vxIface)
+			newIfaces.Add(brIface)
+		}
+	}
+
+	remIfaces := newCurIfaces.Copy()
+	remIfaces.Subtract(newIfaces)
+	for ifaceInf := range remIfaces.Iter() {
+		iface := ifaceInf.(string)
+
+		if strings.HasPrefix(iface, "b") {
+			logrus.WithFields(logrus.Fields{
+				"bridge": iface,
+			}).Info("vxlan: Removing bridge")
+
+			_, _ = utils.ExecCombinedOutputLogged(
+				[]string{
+					"Cannot find device",
+				},
+				"ip", "link",
+				"set", "dev",
+				iface, "down",
+			)
+			_, _ = utils.ExecCombinedOutputLogged(
+				[]string{
+					"exist",
+				},
+				"brctl", "delbr", iface,
+			)
+		}
+	}
+	for ifaceInf := range remIfaces.Iter() {
+		iface := ifaceInf.(string)
+
+		if strings.HasPrefix(iface, "k") {
+			logrus.WithFields(logrus.Fields{
+				"vxlan": iface,
+			}).Info("vxlan: Removing vxlan")
+
+			_, _ = utils.ExecCombinedOutputLogged(
+				[]string{
+					"Cannot find device",
+				},
+				"ip", "link",
+				"del", iface,
+			)
+		}
+	}
+
+	newCurIfaces.Intersect(newIfaces)
+	for ifaceInf := range newCurIfaces.Iter() {
+		iface := ifaceInf.(string)
+
+		if strings.HasPrefix(iface, "k") {
+			_, err = utils.ExecCombinedOutputLogged(
+				nil,
+				"ip", "link",
+				"set", "dev",
+				iface, "up",
+			)
+			if err != nil {
+				return
+			}
+		} else if strings.HasPrefix(iface, "b") {
+			parentIface := parentBrIfaces[iface]
+			if parentIface == "" {
+				continue
+			}
+
+			_, err = utils.ExecCombinedOutputLogged(
+				[]string{
+					"already a member",
+				},
+				"brctl", "addif",
+				iface, vm.GetHostVxlanIface(parentIface),
+			)
+			if err != nil {
+				return
+			}
+
+			_, err = utils.ExecCombinedOutputLogged(
+				nil,
+				"ip", "link",
+				"set", "dev",
+				iface, "up",
+			)
+			if err != nil {
+				return
+			}
+		}
+	}
+
+	curIfaces = newCurIfaces
+
+	return
+}
+
+func initDatabase(stat *state.State, internaIfaces []string) (err error) {
+	output, err := utils.ExecOutput("", "bridge", "fdb")
+	if err != nil {
+		return
+	}
+
+	nodes := stat.Nodes()
+	if nodes == nil {
+		nodes = []*node.Node{}
+	}
+
+	newDb := set.NewSet()
+	for _, nde := range nodes {
+		if nde.Id == node.Self.Id || nde.Zone.IsZero() ||
+			nde.PrivateIps == nil {
+
+			continue
+		}
+
+		ndeZone := stat.GetZone(nde.Zone)
+		if ndeZone == nil || ndeZone.NetworkMode != zone.VxLan {
+			continue
+		}
+
+		for _, privateIp := range nde.PrivateIps {
+			newDb.Add(privateIp)
+		}
+	}
+
+	newCurDb := set.NewSet()
+	newCurIfaces := set.NewSet()
+	ifaceBridgeDb := map[string]set.Set{}
+
+	for _, line := range strings.Split(output, "\n") {
+		fields := strings.Fields(line)
+		if len(fields) != 7 || fields[0] != "00:00:00:00:00:00" {
+			continue
+		}
+
+		iface := fields[2]
+		if len(iface) != 14 || !strings.HasPrefix(iface, "k") {
+			continue
+		}
+
+		dest := fields[4]
+
+		bridgeSet := ifaceBridgeDb[iface]
+		if bridgeSet == nil {
+			bridgeSet = set.NewSet()
+			ifaceBridgeDb[iface] = bridgeSet
+		}
+
+		newCurIfaces.Add(iface)
+		bridgeSet.Add(dest)
+		newCurDb.Add(dest)
+	}
+
+	for ifaceInf := range newCurIfaces.Iter() {
+		iface := ifaceInf.(string)
+		ifaceDb := ifaceBridgeDb[iface]
+
+		addDb := newDb.Copy()
+		addDb.Subtract(ifaceDb)
+		for destInf := range addDb.Iter() {
+			dest := destInf.(string)
+			if dest == "" {
+				logrus.Warning("vxlan: Empty destination")
+				continue
+			}
+
+			_, err = utils.ExecCombinedOutputLogged(
+				nil,
+				"bridge", "fdb",
+				"append", "00:00:00:00:00:00",
+				"dev", iface,
+				"dst", dest,
+			)
+			if err != nil {
+				return
+			}
+		}
+
+		remDb := ifaceDb.Copy()
+		remDb.Subtract(newDb)
+		for destInf := range remDb.Iter() {
+			dest := destInf.(string)
+			if dest == "" {
+				logrus.Warning("vxlan: Empty destination")
+				continue
+			}
+
+			_, err = utils.ExecCombinedOutputLogged(
+				[]string{
+					"Cannot find device",
+					"No such file",
+				},
+				"bridge", "fdb",
+				"del", "00:00:00:00:00:00",
+				"dev", iface,
+				"dst", dest,
+			)
+			if err != nil {
+				return
+			}
+		}
+
+	}
+
+	curDatabase = newCurDb
+	curDatabaseIfaces = newCurIfaces
+
+	return
+}
+
+func syncIfaces(stat *state.State, internaIfaces []string) (err error) {
+	cIfaces := curIfaces
+
+	parentVxIfaces := map[string]string{}
+	parentBrIfaces := map[string]string{}
+	newIfaces := set.NewSet()
+	if internaIfaces != nil && stat.VxLan() {
+		for _, iface := range internaIfaces {
+			vxIface := vm.GetHostVxlanIface(iface)
+			brIface := vm.GetHostBridgeIface(iface)
+
+			parentVxIfaces[vxIface] = iface
+			parentBrIfaces[brIface] = iface
+
+			newIfaces.Add(vxIface)
+			newIfaces.Add(brIface)
+		}
+	}
+
+	remIfaces := cIfaces.Copy()
+	remIfaces.Subtract(newIfaces)
+	for ifaceInf := range remIfaces.Iter() {
+		iface := ifaceInf.(string)
+
+		if strings.HasPrefix(iface, "b") {
+			logrus.WithFields(logrus.Fields{
+				"bridge": iface,
+			}).Info("vxlan: Removing bridge")
+
+			_, _ = utils.ExecCombinedOutputLogged(
+				[]string{
+					"Cannot find device",
+				},
+				"ip", "link",
+				"set", "dev",
+				iface, "down",
+			)
+			_, _ = utils.ExecCombinedOutputLogged(
+				[]string{
+					"exist",
+				},
+				"brctl", "delbr", iface,
+			)
+		}
+	}
+	for ifaceInf := range remIfaces.Iter() {
+		iface := ifaceInf.(string)
+
+		if strings.HasPrefix(iface, "k") {
+			logrus.WithFields(logrus.Fields{
+				"vxlan": iface,
+			}).Info("vxlan: Removing vxlan")
+
+			_, _ = utils.ExecCombinedOutputLogged(
+				[]string{
+					"Cannot find device",
+				},
+				"ip", "link",
+				"del", iface,
+			)
+		}
+	}
+
+	addIfaces := newIfaces.Copy()
+	addIfaces.Subtract(cIfaces)
+	for ifaceInf := range addIfaces.Iter() {
+		iface := ifaceInf.(string)
+
+		if strings.HasPrefix(iface, "k") {
+			vxId := settings.Hypervisor.VxlanId
+			destPort := settings.Hypervisor.VxlanDestPort
+			parentIface := parentVxIfaces[iface]
+
+			localIp := ""
+			if node.Self.PrivateIps != nil {
+				localIp = node.Self.PrivateIps[parentIface]
+			}
+
+			if localIp == "" {
+				err = &errortypes.NotFoundError{
+					errors.New("vxlan: Missing private IP for " +
+						"internal interface"),
+				}
+				return
+			}
+
+			logrus.WithFields(logrus.Fields{
+				"vxlan": iface,
+			}).Info("vxlan: Adding vxlan")
+
+			_, err = utils.ExecCombinedOutputLogged(
+				[]string{
+					"File exists",
+				},
+				"ip", "link",
+				"add", iface,
+				"type", "vxlan",
+				"id", strconv.Itoa(vxId),
+				"local", localIp,
+				"dstport", strconv.Itoa(destPort),
+				"dev", parentIface,
+			)
+			if err != nil {
+				return
+			}
+
+			_, err = utils.ExecCombinedOutputLogged(
+				nil,
+				"ip", "link",
+				"set", "dev",
+				iface, "up",
+			)
+			if err != nil {
+				return
+			}
+		}
+	}
+
+	for ifaceInf := range addIfaces.Iter() {
+		iface := ifaceInf.(string)
+
+		if strings.HasPrefix(iface, "b") {
+			parentIface := parentBrIfaces[iface]
+
+			logrus.WithFields(logrus.Fields{
+				"bridge": iface,
+			}).Info("vxlan: Adding bridge")
+
+			_, err = utils.ExecCombinedOutputLogged(
+				[]string{
+					"already exists",
+				},
+				"brctl", "addbr", iface,
+			)
+			if err != nil {
+				return
+			}
+
+			_, err = utils.ExecCombinedOutputLogged(
+				[]string{
+					"already a member",
+				},
+				"brctl", "addif",
+				iface, vm.GetHostVxlanIface(parentIface),
+			)
+			if err != nil {
+				return
+			}
+
+			_, err = utils.ExecCombinedOutputLogged(
+				nil,
+				"ip", "link",
+				"set", "dev",
+				iface, "up",
+			)
+			if err != nil {
+				return
+			}
+		}
+	}
+
+	curIfaces = newIfaces
+
+	return
+}
+
+func syncDatabase(stat *state.State, internaIfaces []string) (err error) {
+	cDatabase := curDatabase
+	cIfaces := curDatabaseIfaces
+
+	nodes := stat.Nodes()
+	if nodes == nil {
+		nodes = []*node.Node{}
+	}
+
+	newIfaces := set.NewSet()
+	if internaIfaces != nil {
+		for _, iface := range internaIfaces {
+			newIfaces.Add(vm.GetHostVxlanIface(iface))
+		}
+	}
+
+	newDb := set.NewSet()
+	for _, nde := range nodes {
+		if nde.Id == node.Self.Id || nde.Zone.IsZero() ||
+			nde.PrivateIps == nil {
+
+			continue
+		}
+
+		ndeZone := stat.GetZone(nde.Zone)
+		if ndeZone == nil || ndeZone.NetworkMode != zone.VxLan {
+			continue
+		}
+
+		for _, privateIp := range nde.PrivateIps {
+			newDb.Add(privateIp)
+		}
+	}
+
+	addDb := newDb.Copy()
+	addDb.Subtract(cDatabase)
+	for destInf := range addDb.Iter() {
+		dest := destInf.(string)
+		if dest == "" {
+			logrus.Warning("vxlan: Empty destination")
+			continue
+		}
+
+		for ifaceInf := range newIfaces.Iter() {
+			iface := ifaceInf.(string)
+
+			_, err = utils.ExecCombinedOutputLogged(
+				nil,
+				"bridge", "fdb",
+				"append", "00:00:00:00:00:00",
+				"dev", iface,
+				"dst", dest,
+			)
+			if err != nil {
+				return
+			}
+		}
+	}
+
+	remDb := cDatabase.Copy()
+	remDb.Subtract(newDb)
+	for destInf := range remDb.Iter() {
+		dest := destInf.(string)
+		if dest == "" {
+			logrus.Warning("vxlan: Empty destination")
+			continue
+		}
+
+		for ifaceInf := range newIfaces.Iter() {
+			iface := ifaceInf.(string)
+
+			_, err = utils.ExecCombinedOutputLogged(
+				[]string{
+					"Cannot find device",
+					"No such file",
+				},
+				"bridge", "fdb",
+				"del", "00:00:00:00:00:00",
+				"dev", iface,
+				"dst", dest,
+			)
+			if err != nil {
+				return
+			}
+		}
+	}
+
+	addIfaces := newIfaces.Copy()
+	addIfaces.Subtract(cIfaces)
+	for ifaceInf := range addIfaces.Iter() {
+		iface := ifaceInf.(string)
+
+		for destInf := range newDb.Iter() {
+			dest := destInf.(string)
+			if dest == "" {
+				logrus.Warning("vxlan: Empty destination")
+				continue
+			}
+
+			_, err = utils.ExecCombinedOutputLogged(
+				nil,
+				"bridge", "fdb",
+				"append", "00:00:00:00:00:00",
+				"dev", iface,
+				"dst", dest,
+			)
+			if err != nil {
+				return
+			}
+		}
+	}
+
+	curDatabase = newDb
+	curDatabaseIfaces = newIfaces
+
+	return
+}
+
+func ApplyState(stat *state.State) (err error) {
+	internaIfaces := node.Self.InternalInterfaces
+
+	if curIfaces == nil {
+		err = initIfaces(stat, internaIfaces)
+		if err != nil {
+			return
+		}
+	}
+
+	if curDatabase == nil {
+		err = initDatabase(stat, internaIfaces)
+		if err != nil {
+			return
+		}
+	}
+
+	err = syncIfaces(stat, internaIfaces)
+	if err != nil {
+		return
+	}
+
+	err = syncDatabase(stat, internaIfaces)
+	if err != nil {
+		return
+	}
+
+	return
+}
