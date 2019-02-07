@@ -496,6 +496,19 @@ func (n *Node) sync() {
 		}
 	}
 
+	ifaces, err := GetInterfaces()
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"error": err,
+		}).Error("node: Failed to get interfaces")
+	}
+
+	if ifaces != nil {
+		n.AvailableInterfaces = ifaces
+	} else {
+		n.AvailableInterfaces = []string{}
+	}
+
 	brdgs, err := bridges.GetBridges()
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
@@ -504,9 +517,9 @@ func (n *Node) sync() {
 	}
 
 	if brdgs != nil {
-		n.AvailableInterfaces = brdgs
+		n.AvailableBridges = brdgs
 	} else {
-		n.AvailableInterfaces = []string{}
+		n.AvailableBridges = []string{}
 	}
 
 	err = n.update(db)
