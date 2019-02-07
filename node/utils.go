@@ -157,6 +157,44 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	return
 }
 
+func GetAllNet(db *database.Database) (nodes []*Node, err error) {
+	coll := db.Nodes()
+	nodes = []*Node{}
+
+	opts := &options.FindOptions{
+		Projection: &bson.D{
+			{"zone", 1},
+			{"private_ips", 1},
+		},
+	}
+
+	cursor, err := coll.Find(db, bson.M{}, opts)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		nde := &Node{}
+		err = cursor.Decode(nde)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		nodes = append(nodes, nde)
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func Remove(db *database.Database, nodeId primitive.ObjectID) (err error) {
 	coll := db.Nodes()
 
