@@ -21,6 +21,7 @@ import (
 type State struct {
 	nodes            []*node.Node
 	nodeZone         *zone.Zone
+	zoneMap          map[primitive.ObjectID]*zone.Zone
 	namespaces       []string
 	interfaces       []string
 	nodeFirewall     []*firewall.Rule
@@ -42,6 +43,10 @@ func (s *State) Nodes() []*node.Node {
 
 func (s *State) NodeZone() *zone.Zone {
 	return s.nodeZone
+}
+
+func (s *State) GetZone(zneId primitive.ObjectID) *zone.Zone {
+	return s.zoneMap[zneId]
 }
 
 func (s *State) Namespaces() []string {
@@ -120,6 +125,18 @@ func (s *State) init() (err error) {
 	}
 
 	if s.nodeZone != nil && s.nodeZone.NetworkMode == zone.VxLan {
+		znes, e := zone.GetAllDatacenter(db, s.nodeZone.Datacenter)
+		if e != nil {
+			err = e
+			return
+		}
+
+		zonesMap := map[primitive.ObjectID]*zone.Zone{}
+		for _, zne := range znes {
+			zonesMap[zne.Id] = zne
+		}
+		s.zoneMap = zonesMap
+
 		ndes, e := node.GetAllNet(db)
 		if e != nil {
 			err = e
