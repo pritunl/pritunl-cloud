@@ -69,6 +69,7 @@ type Node struct {
 	MemoryUnitsRes       float64                    `bson:"memory_units_res" json:"memory_units_res"`
 	PublicIps            []string                   `bson:"public_ips" json:"public_ips"`
 	PublicIps6           []string                   `bson:"public_ips6" json:"public_ips6"`
+	PrivateIps           map[string]string          `bson:"private_ips" json:"private_ips"`
 	SoftwareVersion      string                     `bson:"software_version" json:"software_version"`
 	Version              int                        `bson:"version" json:"-"`
 	VirtPath             string                     `bson:"virt_path" json:"virt_path"`
@@ -359,6 +360,7 @@ func (n *Node) update(db *database.Database) (err error) {
 				"memory_units_res":     n.MemoryUnitsRes,
 				"public_ips":           n.PublicIps,
 				"public_ips6":          n.PublicIps6,
+				"private_ips":          n.PrivateIps,
 				"available_interfaces": n.AvailableInterfaces,
 				"available_bridges":    n.AvailableBridges,
 			},
