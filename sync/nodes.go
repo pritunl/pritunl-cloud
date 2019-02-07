@@ -6,7 +6,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/pritunl/pritunl-cloud/database"
-	"github.com/pritunl/pritunl-cloud/interfaces"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
 )
@@ -46,8 +45,6 @@ func nodeSync() (err error) {
 	settings.Local.AppId = appId
 	settings.Local.Facets = facets
 
-	interfaces.SyncIfaces(false)
-
 	return
 }
 
@@ -67,7 +64,5 @@ func nodeRunner() {
 }
 
 func initNode() {
-	interfaces.SyncIfaces(true)
-
 	go nodeRunner()
 }
