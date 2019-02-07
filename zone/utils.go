@@ -51,6 +51,44 @@ func GetAll(db *database.Database) (zones []*Zone, err error) {
 	return
 }
 
+func GetAllDatacenter(db *database.Database, dcId primitive.ObjectID) (
+	zones []*Zone, err error) {
+
+	coll := db.Zones()
+	zones = []*Zone{}
+
+	cursor, err := coll.Find(
+		db,
+		&bson.M{
+			"datacenter": dcId,
+		},
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		zne := &Zone{}
+		err = cursor.Decode(zne)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		zones = append(zones, zne)
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetAllDatacenters(db *database.Database, dcIds []primitive.ObjectID) (
 	zones []*Zone, err error) {
 
