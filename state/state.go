@@ -19,6 +19,7 @@ import (
 )
 
 type State struct {
+	nodes            []*node.Node
 	nodeZone         *zone.Zone
 	namespaces       []string
 	interfaces       []string
@@ -33,6 +34,10 @@ type State struct {
 	vpcsMap          map[primitive.ObjectID]*vpc.Vpc
 	addInstances     set.Set
 	remInstances     set.Set
+}
+
+func (s *State) Nodes() []*node.Node {
+	return s.nodes
 }
 
 func (s *State) NodeZone() *zone.Zone {
@@ -112,6 +117,16 @@ func (s *State) init() (err error) {
 		}
 
 		s.nodeZone = zne
+	}
+
+	if s.nodeZone != nil && s.nodeZone.NetworkMode == zone.VxLan {
+		ndes, e := node.GetAllNet(db)
+		if e != nil {
+			err = e
+			return
+		}
+
+		s.nodes = ndes
 	}
 
 	namespaces, err := utils.GetNamespaces()
