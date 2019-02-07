@@ -53,6 +53,7 @@ type Node struct {
 	ExternalInterfaces   []string                   `bson:"external_interfaces" json:"external_interfaces"`
 	InternalInterfaces   []string                   `bson:"internal_interfaces" json:"internal_interfaces"`
 	AvailableInterfaces  []string                   `bson:"available_interfaces" json:"available_interfaces"`
+	AvailableBridges     []string                   `bson:"available_bridges" json:"available_bridges"`
 	NetworkMode          string                     `bson:"network_mode" json:"network_mode"`
 	Blocks               []*BlockAttachment         `bson:"blocks" json:"blocks"`
 	JumboFrames          bool                       `bson:"jumbo_frames" json:"jumbo_frames"`
@@ -359,6 +360,7 @@ func (n *Node) update(db *database.Database) (err error) {
 				"public_ips":           n.PublicIps,
 				"public_ips6":          n.PublicIps6,
 				"available_interfaces": n.AvailableInterfaces,
+				"available_bridges":    n.AvailableBridges,
 			},
 		},
 		opts,
