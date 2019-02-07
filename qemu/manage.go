@@ -330,6 +330,8 @@ func Wait(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		if virt.State == vm.Running {
 			break
 		}
+
+		time.Sleep(1 * time.Second)
 	}
 
 	if virt.State != vm.Running {
