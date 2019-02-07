@@ -9,9 +9,10 @@ import (
 )
 
 type Zone struct {
-	Id         primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Datacenter primitive.ObjectID `bson:"datacenter,omitempty" json:"datacenter"`
-	Name       string             `bson:"name" json:"name"`
+	Id          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Datacenter  primitive.ObjectID `bson:"datacenter,omitempty" json:"datacenter"`
+	Name        string             `bson:"name" json:"name"`
+	NetworkMode string             `bson:"network_mode" json:"network_mode"`
 }
 
 func (z *Zone) Validate(db *database.Database) (
@@ -21,6 +22,22 @@ func (z *Zone) Validate(db *database.Database) (
 		errData = &errortypes.ErrorData{
 			Error:   "datacenter_required",
 			Message: "Missing required datacenter",
+		}
+		return
+	}
+
+	switch z.NetworkMode {
+	case Default:
+		break
+	case VxLan:
+		break
+	case "":
+		z.NetworkMode = Default
+		break
+	default:
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_network_mode",
+			Message: "Network mode invalid",
 		}
 		return
 	}
