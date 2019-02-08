@@ -3,6 +3,7 @@ package block
 import (
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 )
 
@@ -24,7 +25,13 @@ func GetAll(db *database.Database) (blocks []*Block, err error) {
 	coll := db.Blocks()
 	blocks = []*Block{}
 
-	cursor, err := coll.Find(db, bson.M{})
+	opts := &options.FindOptions{
+		Sort: &bson.D{
+			{"name", 1},
+		},
+	}
+
+	cursor, err := coll.Find(db, bson.M{}, opts)
 	if err != nil {
 		err = database.ParseError(err)
 		return
