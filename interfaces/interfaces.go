@@ -9,7 +9,6 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
-	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 )
@@ -168,10 +167,6 @@ func GetExternal(virtIface string) (externalIface string) {
 		externalIface = node.Self.ExternalInterface
 	}
 
-	if externalIface == "" {
-		externalIface = settings.Local.BridgeName
-	}
-
 	return
 }
 
@@ -185,10 +180,6 @@ func HasExternal() (exists bool) {
 		}
 	} else {
 		externalIface = node.Self.ExternalInterface
-	}
-
-	if externalIface == "" {
-		externalIface = settings.Local.BridgeName
 	}
 
 	if externalIface != "" {
@@ -241,10 +232,6 @@ func GetInternal(virtIface string, vxlan bool) (internalIface string) {
 		internalIface = node.Self.InternalInterface
 	}
 
-	if internalIface == "" && !vxlan {
-		internalIface = settings.Local.BridgeName
-	}
-
 	return
 }
 
@@ -273,11 +260,6 @@ func GetBridges() (bridges set.Set) {
 		if internalIface != "" {
 			bridges.Add(internalIface)
 		}
-	}
-
-	bridge := settings.Local.BridgeName
-	if bridge != "" {
-		bridges.Add(bridge)
 	}
 
 	return
