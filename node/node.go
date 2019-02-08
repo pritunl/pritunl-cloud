@@ -22,7 +22,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
-	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -465,23 +464,20 @@ func (n *Node) sync() {
 		n.Load15 = load.Load15
 	}
 
-	externalIface := ""
-	externalIfaces := n.ExternalInterfaces
-	if externalIfaces != nil && len(externalIfaces) > 0 {
-		externalIface = externalIfaces[0]
-	} else {
-		externalIface = n.ExternalInterface
-	}
-	if externalIface == "" {
-		externalIface = settings.Local.BridgeName
+	defaultIface, err := getDefaultIface()
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"default_interface": defaultIface,
+			"error":             err,
+		}).Error("node: Failed to get public address")
 	}
 
-	if externalIface != "" {
-		pubAddr, pubAddr6, err := bridges.GetIpAddrs(externalIface)
+	if defaultIface != "" {
+		pubAddr, pubAddr6, err := bridges.GetIpAddrs(defaultIface)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"external_interface": externalIface,
-				"error":              err,
+				"default_interface": defaultIface,
+				"error":             err,
 			}).Error("node: Failed to get public address")
 		}
 
