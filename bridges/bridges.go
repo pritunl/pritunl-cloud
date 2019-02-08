@@ -11,15 +11,15 @@ import (
 )
 
 var (
-	bridges      = []string{}
-	publicAddr   = ""
-	publicAddr6  = ""
-	lastSync     time.Time
-	lastAddrSync time.Time
+	bridges         = []string{}
+	lastBridgesSync time.Time
+	curAddr         = map[string]string{}
+	curAddr6        = map[string]string{}
+	lastAddrSync    = map[string]time.Time{}
 )
 
 func GetBridges() (brdgs []string, err error) {
-	if time.Since(lastSync) < 300*time.Second {
+	if time.Since(lastBridgesSync) < 300*time.Second {
 		brdgs = bridges
 		return
 	}
@@ -43,20 +43,24 @@ func GetBridges() (brdgs []string, err error) {
 			continue
 		}
 
+		if len(fields[0]) == 14 {
+			continue
+		}
+
 		bridgesNew = append(bridgesNew, fields[0])
 	}
 
 	bridges = bridgesNew
-	lastSync = time.Now()
-	brdgs = bridges
+	lastBridgesSync = time.Now()
+	brdgs = bridgesNew
 
 	return
 }
 
 func GetIpAddrs(iface string) (addr string, addr6 string, err error) {
-	if time.Since(lastAddrSync) < 600*time.Second {
-		addr = publicAddr
-		addr6 = publicAddr6
+	if time.Since(lastAddrSync[iface]) < 600*time.Second {
+		addr = curAddr[iface]
+		addr6 = curAddr6[iface]
 		return
 	}
 
@@ -120,9 +124,9 @@ func GetIpAddrs(iface string) (addr string, addr6 string, err error) {
 		}
 	}
 
-	publicAddr = addr
-	publicAddr6 = addr6
-	lastAddrSync = time.Now()
+	curAddr[iface] = addr
+	curAddr6[iface] = addr6
+	lastAddrSync[iface] = time.Now()
 
 	return
 }
