@@ -152,7 +152,15 @@ func instancePost(c *gin.Context) {
 
 	img, err := image.GetOrgPublic(db, dta.Organization, dta.Image)
 	if err != nil {
-		utils.AbortWithError(c, 500, err)
+		if _, ok := err.(*database.NotFoundError); ok {
+			errData := &errortypes.ErrorData{
+				Error:   "image_not_found",
+				Message: "Image not found",
+			}
+			c.JSON(400, errData)
+		} else {
+			utils.AbortWithError(c, 500, err)
+		}
 		return
 	}
 
