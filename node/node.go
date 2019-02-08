@@ -372,6 +372,7 @@ func (n *Node) update(db *database.Database) (err error) {
 	}
 
 	n.Id = nde.Id
+	n.Zone = nde.Zone
 	n.Name = nde.Name
 	n.Types = nde.Types
 	n.Port = nde.Port
