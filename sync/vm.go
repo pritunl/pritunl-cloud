@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/pritunl/pritunl-cloud/bridge"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deploy"
@@ -12,7 +11,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/iptables"
 	"github.com/pritunl/pritunl-cloud/node"
-	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/state"
 )
 
@@ -83,30 +81,18 @@ func vmRunner() {
 			continue
 		}
 
-		err := bridge.Configure()
-		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"error": err,
-			}).Error("sync: Failed to configure bridge")
-
-			time.Sleep(1 * time.Second)
-
-			continue
-		}
-
 		break
 	}
 
 	logrus.WithFields(logrus.Fields{
 		"production": constants.Production,
-		"bridge":     settings.Local.BridgeName,
 	}).Info("sync: Starting hypervisor")
 
 	for {
 		time.Sleep(2500 * time.Millisecond)
 		if !node.Self.IsHypervisor() {
 			syncNodeFirewall()
-			break
+			continue
 		}
 
 		err := deployState()
