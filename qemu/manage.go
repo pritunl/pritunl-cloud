@@ -601,6 +601,12 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	} else {
 		externalIface = interfaces.GetExternal(ifaceExternalVirt)
 	}
+	if externalIface == "" {
+		err = &errortypes.NotFoundError{
+			errors.New("qemu: Failed to get external interface"),
+		}
+		return
+	}
 
 	_, err = utils.ExecCombinedOutputLogged(
 		nil, "sysctl", "-w",
