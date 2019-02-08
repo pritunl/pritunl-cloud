@@ -24,6 +24,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
+	"github.com/pritunl/pritunl-cloud/zone"
 )
 
 const metaDataTmpl = `instance-id: %s
@@ -232,6 +233,16 @@ func getNetData(db *database.Database, inst *instance.Instance,
 		return
 	}
 
+	zne, err := zone.Get(db, node.Self.Zone)
+	if err != nil {
+		return
+	}
+
+	vxlan := false
+	if zne.NetworkMode == zone.VxLan {
+		vxlan = true
+	}
+
 	vc, err := vpc.Get(db, adapter.VpcId)
 	if err != nil {
 		return
@@ -272,8 +283,20 @@ func getNetData(db *database.Database, inst *instance.Instance,
 		Gateway6: gatewayAddr6.String(),
 	}
 
-	if node.Self.JumboFrames {
-		data.Mtu = fmt.Sprintf(netMtu, settings.Hypervisor.JumboMtu)
+	jumboFrames := node.Self.JumboFrames
+	if jumboFrames || vxlan {
+		mtuSize := 0
+		if jumboFrames {
+			mtuSize = settings.Hypervisor.JumboMtu
+		} else {
+			mtuSize = settings.Hypervisor.NormalMtu
+		}
+
+		if vxlan {
+			mtuSize -= 54
+		}
+
+		data.Mtu = fmt.Sprintf(netMtu, mtuSize)
 	}
 
 	output := &bytes.Buffer{}
