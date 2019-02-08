@@ -32,6 +32,17 @@ func syncNodeFirewall() {
 	db := database.GetDatabase()
 	defer db.Close()
 
+	if !node.Self.Firewall {
+		err := iptables.UpdateState([]*instance.Instance{}, []string{},
+			nil, map[string][]*firewall.Rule{})
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("sync: Failed to update iptables")
+		}
+		return
+	}
+
 	for i := 0; i < 2; i++ {
 		fires, err := firewall.GetRoles(db, node.Self.NetworkRoles)
 		if err != nil {
