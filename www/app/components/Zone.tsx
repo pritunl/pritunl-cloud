@@ -4,11 +4,10 @@ import * as ZoneTypes from '../types/ZoneTypes';
 import * as ZoneActions from '../actions/ZoneActions';
 import DatacentersStore from '../stores/DatacentersStore';
 import PageInput from './PageInput';
-import PageSelectButton from './PageSelectButton';
 import PageInfo from './PageInfo';
 import PageSave from './PageSave';
+import PageSelect from './PageSelect';
 import ConfirmButton from './ConfirmButton';
-import Help from './Help';
 
 interface Props {
 	zone: ZoneTypes.ZoneRo;
@@ -184,6 +183,18 @@ export default class Zone extends React.Component<Props, State> {
 							this.set('name', val);
 						}}
 					/>
+					<PageSelect
+						disabled={this.state.disabled}
+						label="Network Mode"
+						help="Network mode for internal VPC networking. If layer 2 networking with VLAN support isn't available VXLan must be used."
+						value={zone.network_mode}
+						onChange={(val): void => {
+							this.set('network_mode', val);
+						}}
+					>
+						<option value="default">Default</option>
+						<option value="vxlan">VXLan</option>
+					</PageSelect>
 				</div>
 				<div style={css.group}>
 					<PageInfo
