@@ -404,7 +404,6 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	}
 
 	jumboFrames := node.Self.JumboFrames
-	jumboMtu := strconv.Itoa(settings.Hypervisor.JumboMtu)
 	iface := vm.GetIface(virt.Id, 0)
 	ifaceExternalVirt := vm.GetIfaceVirt(virt.Id, 0)
 	ifaceInternalVirt := vm.GetIfaceVirt(virt.Id, 1)
@@ -415,6 +414,25 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	pidPath := fmt.Sprintf("/var/run/dhclient-%s.pid", ifaceExternal)
 	leasePath := paths.GetLeasePath(virt.Id)
 	adapter := virt.NetworkAdapters[0]
+
+	updateMtuInternal := ""
+	updateMtuExternal := ""
+	if jumboFrames || vxlan {
+		mtuSize := 0
+		if jumboFrames {
+			mtuSize = settings.Hypervisor.JumboMtu
+		} else {
+			mtuSize = settings.Hypervisor.NormalMtu
+		}
+
+		updateMtuExternal = strconv.Itoa(mtuSize)
+
+		if vxlan {
+			mtuSize -= 50
+		}
+
+		updateMtuInternal = strconv.Itoa(mtuSize)
+	}
 
 	err = utils.ExistsMkdir(paths.GetLeasesPath(), 0755)
 	if err != nil {
@@ -500,12 +518,12 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	if jumboFrames {
+	if updateMtuExternal != "" {
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
 			"ip", "link",
 			"set", "dev", ifaceExternalVirt,
-			"mtu", jumboMtu,
+			"mtu", updateMtuExternal,
 		)
 		if err != nil {
 			return
@@ -515,17 +533,19 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			nil,
 			"ip", "link",
 			"set", "dev", ifaceExternal,
-			"mtu", jumboMtu,
+			"mtu", updateMtuExternal,
 		)
 		if err != nil {
 			return
 		}
+	}
 
+	if updateMtuExternal != "" {
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
 			"ip", "link",
 			"set", "dev", ifaceInternalVirt,
-			"mtu", jumboMtu,
+			"mtu", updateMtuInternal,
 		)
 		if err != nil {
 			return
@@ -535,7 +555,7 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			nil,
 			"ip", "link",
 			"set", "dev", ifaceInternal,
-			"mtu", jumboMtu,
+			"mtu", updateMtuInternal,
 		)
 		if err != nil {
 			return
@@ -719,13 +739,13 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	if jumboFrames {
+	if updateMtuExternal != "" {
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
 			"ip", "netns", "exec", namespace,
 			"ip", "link",
 			"set", "dev", iface,
-			"mtu", jumboMtu,
+			"mtu", updateMtuExternal,
 		)
 		if err != nil {
 			return
@@ -755,13 +775,13 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	if jumboFrames {
+	if updateMtuInternal != "" {
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
 			"ip", "netns", "exec", namespace,
 			"ip", "link",
 			"set", "dev", ifaceVlan,
-			"mtu", jumboMtu,
+			"mtu", updateMtuInternal,
 		)
 		if err != nil {
 			return
