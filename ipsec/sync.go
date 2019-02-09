@@ -15,6 +15,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/interfaces"
@@ -31,11 +32,10 @@ var (
 )
 
 func syncStates(vc *vpc.Vpc) {
-	if syncLock.Locked(vc.Id.Hex()) {
+	accquired, lockId := syncLock.LockOpen(vc.Id.Hex())
+	if !accquired {
 		return
 	}
-
-	lockId := syncLock.Lock(vc.Id.Hex())
 	defer syncLock.Unlock(vc.Id.Hex(), lockId)
 
 	db := database.GetDatabase()
@@ -43,23 +43,41 @@ func syncStates(vc *vpc.Vpc) {
 
 	vcNet, err := vc.GetNetwork()
 	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"vpc_id": vc.Id.Hex(),
+			"error":  err,
+		}).Error("ipsec: Failed to get ipsec link network")
 		return
 	}
 
 	netAddr, err := vc.GetIp(db, vpc.Gateway, vc.Id)
 	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"vpc_id": vc.Id.Hex(),
+			"error":  err,
+		}).Error("ipsec: Failed to get ipsec link local IPv4 address")
 		return
 	}
 
 	netAddr6 := vc.GetIp6(netAddr)
 	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"vpc_id": vc.Id.Hex(),
+			"error":  err,
+		}).Error("ipsec: Failed to get ipsec link local IPv6 address")
 		return
 	}
 
 	netCidr, _ := vcNet.Mask.Size()
 
-	err = networkConf(vc, netAddr.String(), netAddr6.String(), netCidr)
+	err = networkConf(db, vc, netAddr.String(), netAddr6.String(), netCidr)
 	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"vpc_id":        vc.Id.Hex(),
+			"local_address": netAddr.String(),
+			"error":         err,
+		}).Error("ipsec: Failed to configure ipsec link network")
+		networkConfClear(vc.Id)
 		return
 	}
 
@@ -84,7 +102,7 @@ func syncStates(vc *vpc.Vpc) {
 			"local_address":   netAddr.String(),
 			"public_address":  pubAddr,
 			"public_address6": pubAddr6,
-		}).Error("ipsec: Failed to get IPv6 address for ipsec link")
+		}).Error("ipsec: Failed to get IP address for ipsec link")
 		return
 	}
 
@@ -107,7 +125,19 @@ func syncStates(vc *vpc.Vpc) {
 	link.HashesLock.Unlock()
 
 	if newHash != curHash {
-		Deploy(vc.Id, states)
+		logrus.WithFields(logrus.Fields{
+			"vpc_id": vc.Id.Hex(),
+		}).Info("ipsec: Deploying IPsec state")
+
+		err = deploy(vc.Id, states)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"vpc_id": vc.Id.Hex(),
+				"error":  err,
+			}).Error("ipsec: Failed to deploy state")
+			return
+		}
+
 		link.HashesLock.Lock()
 		link.Hashes[vc.Id] = newHash
 		link.HashesLock.Unlock()
@@ -127,11 +157,49 @@ func syncStates(vc *vpc.Vpc) {
 		logrus.WithFields(logrus.Fields{
 			"vpc_id": vc.Id.Hex(),
 		}).Warning("ipsec: Disconnected timeout restarting")
-		Redeploy(vc.Id)
+
+		err = deploy(vc.Id, states)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"vpc_id": vc.Id.Hex(),
+				"error":  err,
+			}).Error("ipsec: Failed to deploy state")
+			return
+		}
 	}
 }
 
-func SyncStates(vpcs []*vpc.Vpc) {
+func removeNamespace(vcId primitive.ObjectID) {
+	accquired, lockId := syncLock.LockOpen(vcId.Hex())
+	if !accquired {
+		return
+	}
+	defer syncLock.Unlock(vcId.Hex(), lockId)
+
+	err := stop(vcId)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"vpc_id": vcId.Hex(),
+			"error":  err,
+		}).Error("ipsec: Failed to stop ipsec")
+		return
+	}
+
+	err = networkConfClear(vcId)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"vpc_id": vcId.Hex(),
+			"error":  err,
+		}).Error("ipsec: Failed to clear network state")
+		return
+	}
+
+	namespace := vm.GetLinkNamespace(vcId, 0)
+	namespacePth := fmt.Sprintf("/etc/netns/%s", namespace)
+	os.RemoveAll(namespacePth)
+}
+
+func SyncStates(vpcs []*vpc.Vpc) (err error) {
 	if interfaces.HasExternal() {
 		return
 	}
@@ -177,8 +245,6 @@ func SyncStates(vpcs []*vpc.Vpc) {
 
 		sync = append(sync, vc)
 	}
-
-	currentVpcs = curVpcs
 
 	for _, vc := range sync {
 		go syncStates(vc)
@@ -242,7 +308,33 @@ func SyncStates(vpcs []*vpc.Vpc) {
 		}
 
 		if !curNamespaces.Contains(namespace) {
-			os.RemoveAll(filepath.Join("/etc/netns", namespace))
+			vcPth := filepath.Join("/etc/netns", namespace, "vpc.id")
+			vcExists, e := utils.Exists(vcPth)
+			if e != nil {
+				err = e
+				return
+			}
+
+			if vcExists {
+				vcIdByt, e := ioutil.ReadFile(vcPth)
+				if err != nil {
+					err = &errortypes.ReadError{
+						errors.Wrap(e, "ipsec: Failed to read vpc id"),
+					}
+					return
+				}
+
+				vcId, e := primitive.ObjectIDFromHex(
+					strings.TrimSpace(string(vcIdByt)))
+				if e != nil {
+					err = &errortypes.ParseError{
+						errors.Wrap(e, "ipsec: Failed to parse vpc id"),
+					}
+					return
+				}
+
+				go removeNamespace(vcId)
+			}
 		}
 	}
 
