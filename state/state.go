@@ -1,13 +1,17 @@
 package state
 
 import (
+	"io/ioutil"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/domain"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -20,6 +24,7 @@ import (
 
 type State struct {
 	nodes            []*node.Node
+	nodeDatacenter   primitive.ObjectID
 	nodeZone         *zone.Zone
 	vxlan            bool
 	zoneMap          map[primitive.ObjectID]*zone.Zone
@@ -36,6 +41,7 @@ type State struct {
 	vpcsMap          map[primitive.ObjectID]*vpc.Vpc
 	addInstances     set.Set
 	remInstances     set.Set
+	running          []string
 }
 
 func (s *State) Nodes() []*node.Node {
@@ -76,6 +82,10 @@ func (s *State) Firewalls() map[string][]*firewall.Rule {
 
 func (s *State) DomainRecords(instId primitive.ObjectID) []*domain.Record {
 	return s.domainRecordsMap[instId]
+}
+
+func (s *State) Running() []string {
+	return s.running
 }
 
 func (s *State) Disks() []*disk.Disk {
@@ -127,9 +137,10 @@ func (s *State) init() (err error) {
 		}
 
 		s.nodeZone = zne
+		s.nodeDatacenter = s.nodeZone.Datacenter
 	}
 
-	if s.nodeZone != nil && s.nodeZone.NetworkMode == zone.VxLan {
+	if s.nodeZone != nil && s.nodeZone.NetworkMode == zone.VxlanVlan {
 		s.vxlan = true
 
 		znes, e := zone.GetAllDatacenter(db, s.nodeZone.Datacenter)
@@ -253,6 +264,22 @@ func (s *State) init() (err error) {
 		domainRecordsMap[recrd.Instance] = instRecrds
 	}
 	s.domainRecordsMap = domainRecordsMap
+
+	items, err := ioutil.ReadDir("/var/run")
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "state: Failed to read run directory"),
+		}
+		return
+	}
+
+	running := []string{}
+	for _, item := range items {
+		if !item.IsDir() {
+			running = append(running, item.Name())
+		}
+	}
+	s.running = running
 
 	return
 }
