@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
@@ -21,13 +20,10 @@ import (
 )
 
 var (
-	deployStates = map[primitive.ObjectID][]*link.State{}
-	curStates    = map[primitive.ObjectID][]*link.State{}
-	deployLock   = sync.Mutex{}
-	ipsecLock    = utils.NewMultiTimeoutLock(2 * time.Minute)
+	ipsecLock = utils.NewMultiTimeoutLock(2 * time.Minute)
 )
 
-func deploy(vpcId primitive.ObjectID, states []*link.State) (err error) {
+func deployIpsec(vpcId primitive.ObjectID, states []*link.State) (err error) {
 	db := database.GetDatabase()
 	defer db.Close()
 
@@ -70,7 +66,8 @@ func deploy(vpcId primitive.ObjectID, states []*link.State) (err error) {
 
 	_, err = utils.ExecCombinedOutputLogged(
 		nil,
-		"ip", "netns", "exec", namespace,
+		"ip", "netns",
+		"exec", namespace,
 		"ipsec", "restart",
 	)
 	if err != nil {
@@ -80,7 +77,7 @@ func deploy(vpcId primitive.ObjectID, states []*link.State) (err error) {
 	return
 }
 
-func stop(vcId primitive.ObjectID) (err error) {
+func destroyIpsec(vcId primitive.ObjectID) (err error) {
 	namespace := vm.GetLinkNamespace(vcId, 0)
 	namespacePth := fmt.Sprintf("/etc/netns/%s", namespace)
 
@@ -88,7 +85,8 @@ func stop(vcId primitive.ObjectID) (err error) {
 		[]string{
 			"No such file or directory",
 		},
-		"ip", "netns", "exec", namespace,
+		"ip", "netns",
+		"exec", namespace,
 		"ipsec", "stop",
 	)
 
