@@ -93,7 +93,9 @@ func GetIpAddrs(iface string) (addr string, addr6 string, err error) {
 	fields := strings.Fields(ipData)
 	if len(fields) > 3 {
 		ipAddr := net.ParseIP(strings.Split(fields[3], "/")[0])
-		addr = ipAddr.String()
+		if ipAddr != nil && len(ipAddr) > 0 {
+			addr = ipAddr.String()
+		}
 	}
 
 	ipData, err = utils.ExecCombinedOutputLogged(
@@ -117,7 +119,9 @@ func GetIpAddrs(iface string) (addr string, addr6 string, err error) {
 			fields = strings.Fields(ipData)
 			if len(fields) > 3 {
 				ipAddr := net.ParseIP(strings.Split(fields[3], "/")[0])
-				addr6 = ipAddr.String()
+				if ipAddr != nil && len(ipAddr) > 0 {
+					addr6 = ipAddr.String()
+				}
 			}
 
 			break
