@@ -4,28 +4,25 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/ipsec"
 	"github.com/pritunl/pritunl-cloud/node"
-	"github.com/pritunl/pritunl-cloud/vpc"
 )
 
-func linkSync() (err error) {
-	db := database.GetDatabase()
-	defer db.Close()
+func linkRunner() {
+	for {
+		err := ipsec.InitState()
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("sync: Failed to init ipsec state")
 
-	vpcs, err := vpc.GetAll(db, &bson.M{})
-	if err != nil {
-		return
+			time.Sleep(2 * time.Second)
+			continue
+		}
+
+		break
 	}
 
-	ipsec.SyncStates(vpcs)
-
-	return
-}
-
-func linkRunner() {
 	for {
 		time.Sleep(2 * time.Second)
 
@@ -33,16 +30,13 @@ func linkRunner() {
 			continue
 		}
 
-		err := linkSync()
+		err := ipsec.SyncState()
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
-			}).Error("sync: Failed to sync IPsec links")
-			return
+			}).Error("sync: Failed to sync ipsec state")
 		}
 	}
-
-	return
 }
 
 func initLink() {
