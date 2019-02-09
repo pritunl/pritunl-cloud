@@ -237,6 +237,44 @@ func GetIds(db *database.Database, ids []primitive.ObjectID) (
 	return
 }
 
+func GetDatacenter(db *database.Database, dcId primitive.ObjectID) (
+	vcs []*Vpc, err error) {
+
+	coll := db.Vpcs()
+	vcs = []*Vpc{}
+
+	cursor, err := coll.Find(
+		db,
+		&bson.M{
+			"datacenter": dcId,
+		},
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		vc := &Vpc{}
+		err = cursor.Decode(vc)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		vcs = append(vcs, vc)
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func DistinctIds(db *database.Database, matchIds []primitive.ObjectID) (
 	idsSet set.Set, err error) {
 
