@@ -20,8 +20,8 @@ func GetStatus(vpcId primitive.ObjectID) (status Status, err error) {
 	status = Status{}
 	namespace := vm.GetLinkNamespace(vpcId, 0)
 
-	output, err := utils.ExecOutput(
-		"",
+	output, err := utils.ExecCombinedOutputLogged(
+		nil,
 		"ip", "netns", "exec", namespace,
 		"ipsec", "status",
 	)
