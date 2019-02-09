@@ -89,3 +89,11 @@ func GetGuestPath(virtId primitive.ObjectID) string {
 	return path.Join(settings.Hypervisor.LibPath,
 		fmt.Sprintf("%s.guest", virtId.Hex()))
 }
+
+func GetNamespacesPath() string {
+	return "/etc/netns"
+}
+
+func GetNamespacePath(namespace string) string {
+	return path.Join(GetNamespacesPath(), namespace)
+}
