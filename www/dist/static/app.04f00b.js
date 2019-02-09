@@ -610,7 +610,7 @@ System.registerDynamic("app/components/Subscription.js", ["npm:react@16.7.0.js",
                     }).catch(() => {
                         this.setState(Object.assign({}, this.state, { disabled: false }));
                     });
-                } }, "Activate License"), React.createElement(react_stripe_checkout_1.default, { label: "Pritunl Cloud", image: "//s3.amazonaws.com/pritunl-static/logo_stripe.png", allowRememberMe: false, zipCode: true, amount: 5000, name: "Pritunl Cloud - 7 Day Trial", description: "Subscribe to Cloud ($50/month)", panelLabel: "Subscribe", token: token => {
+                } }, "Activate License"), React.createElement(react_stripe_checkout_1.default, { label: "Pritunl Cloud", image: "https://objectstorage.us-ashburn-1.oraclecloud.com/n/pritunl8472/b/pritunl-static/o/logo_stripe.png", allowRememberMe: false, zipCode: true, amount: 5000, name: "Pritunl Cloud - 7 Day Trial", description: "Subscribe to Cloud ($50/month)", panelLabel: "Subscribe", token: token => {
                     this.setState(Object.assign({}, this.state, { disabled: true }));
                     SubscriptionActions.checkout('cloud', token.id, token.email).then(message => {
                         this.setState(Object.assign({}, this.state, { disabled: false, message: message }));
@@ -634,7 +634,7 @@ System.registerDynamic("app/components/Subscription.js", ["npm:react@16.7.0.js",
                     }).catch(() => {
                         this.setState(Object.assign({}, this.state, { disabled: false }));
                     });
-                } }), React.createElement(react_stripe_checkout_1.default, { label: "Pritunl Cloud", image: "//s3.amazonaws.com/pritunl-static/logo_stripe.png", allowRememberMe: false, zipCode: true, amount: canceling && sub.status !== 'active' ? 5000 : 0, name: "Pritunl Cloud", description: canceling ? 'Reactivate Subscription ($50/month)' : 'Update Payment Information', panelLabel: canceling ? 'Reactivate' : 'Update', token: token => {
+                } }), React.createElement(react_stripe_checkout_1.default, { label: "Pritunl Cloud", image: "https://objectstorage.us-ashburn-1.oraclecloud.com/n/pritunl8472/b/pritunl-static/o/logo_stripe.png", allowRememberMe: false, zipCode: true, amount: canceling && sub.status !== 'active' ? 5000 : 0, name: "Pritunl Cloud", description: canceling ? 'Reactivate Subscription ($50/month)' : 'Update Payment Information', panelLabel: canceling ? 'Reactivate' : 'Update', token: token => {
                     this.setState(Object.assign({}, this.state, { disabled: true }));
                     SubscriptionActions.payment(this.state.subscription.url_key, 'cloud', token.id, token.email).then(() => {
                         this.setState(Object.assign({}, this.state, { disabled: false }));
@@ -10831,9 +10831,16 @@ System.registerDynamic("app/components/NodeBlock.js", ["npm:react@16.7.0.js"], t
         }
         render() {
             let block = this.props.block;
+            let ifaceMatch = false;
             let ifacesSelect = [];
             for (let iface of this.props.interfaces || []) {
+                if (block.interface === iface) {
+                    ifaceMatch = true;
+                }
                 ifacesSelect.push(React.createElement("option", { key: iface, value: iface }, iface));
+            }
+            if (!ifaceMatch) {
+                ifacesSelect.push(React.createElement("option", { key: block.interface, value: block.interface }, block.interface));
             }
             let blocksSelect = [];
             for (let blck of this.props.blocks || []) {
@@ -11019,10 +11026,10 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.7.0.js",
             };
             this.onAddExternalIface = () => {
                 let node;
-                if (!this.state.addExternalIface && !this.props.node.available_interfaces.length) {
+                if (!this.state.addExternalIface && !this.props.node.available_bridges.length) {
                     return;
                 }
-                let certId = this.state.addExternalIface || this.props.node.available_interfaces[0];
+                let certId = this.state.addExternalIface || this.props.node.available_bridges[0];
                 if (this.state.changed) {
                     node = Object.assign({}, this.state.node);
                 } else {
@@ -11054,10 +11061,11 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.7.0.js",
             };
             this.onAddInternalIface = () => {
                 let node;
-                if (!this.state.addInternalIface && !this.props.node.available_interfaces.length) {
+                let availableIfaces = this.ifaces();
+                if (!this.state.addInternalIface && !availableIfaces.length) {
                     return;
                 }
-                let certId = this.state.addInternalIface || this.props.node.available_interfaces[0];
+                let certId = this.state.addInternalIface || availableIfaces[0];
                 if (this.state.changed) {
                     node = Object.assign({}, this.state.node);
                 } else {
@@ -11128,7 +11136,7 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.7.0.js",
                     defBlock = this.props.blocks[0].id;
                 }
                 return {
-                    interface: this.props.node.available_interfaces[0],
+                    interface: this.props.node.available_bridges[0],
                     block: defBlock
                 };
             };
@@ -11210,6 +11218,28 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.7.0.js",
             vals.sort();
             this.set('types', vals);
         }
+        ifaces() {
+            let node;
+            if (this.state.changed) {
+                node = Object.assign({}, this.state.node);
+            } else {
+                node = Object.assign({}, this.props.node);
+            }
+            let vxlan = false;
+            for (let zne of this.props.zones) {
+                if (zne.id === node.zone) {
+                    if (zne.network_mode === 'vxlan') {
+                        vxlan = true;
+                    }
+                    break;
+                }
+            }
+            if (vxlan) {
+                return node.available_interfaces;
+            } else {
+                return node.available_bridges;
+            }
+        }
         onChangeBlock(i, block) {
             let node;
             if (this.state.changed) {
@@ -11262,9 +11292,12 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.7.0.js",
                     } })));
             }
             let externalIfacesSelect = [];
-            let internalIfacesSelect = [];
-            for (let iface of this.props.node.available_interfaces || []) {
+            for (let iface of this.props.node.available_bridges || []) {
                 externalIfacesSelect.push(React.createElement("option", { key: iface, value: iface }, iface));
+            }
+            let availableIfaces = this.ifaces();
+            let internalIfacesSelect = [];
+            for (let iface of availableIfaces || []) {
                 internalIfacesSelect.push(React.createElement("option", { key: iface, value: iface }, iface));
             }
             let certificates = [];
@@ -11322,7 +11355,7 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.7.0.js",
             let blocks = [];
             for (let i = 0; i < nodeBlocks.length; i++) {
                 let index = i;
-                blocks.push(React.createElement(NodeBlock_1.default, { key: index, interfaces: this.props.node.available_interfaces, blocks: this.props.blocks, block: nodeBlocks[index], onChange: state => {
+                blocks.push(React.createElement(NodeBlock_1.default, { key: index, interfaces: this.props.node.available_bridges, blocks: this.props.blocks, block: nodeBlocks[index], onChange: state => {
                         this.onChangeBlock(index, state);
                     }, onAdd: () => {
                         this.onAddBlock(index);
@@ -13348,7 +13381,7 @@ System.registerDynamic("app/components/Datacenters.js", ["npm:react@16.7.0.js", 
     exports.default = Datacenters;
     
 });
-System.registerDynamic("app/components/Zone.js", ["npm:react@16.7.0.js", "app/actions/ZoneActions.js", "app/stores/DatacentersStore.js", "app/components/PageInput.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/Zone.js", ["npm:react@16.7.0.js", "app/actions/ZoneActions.js", "app/stores/DatacentersStore.js", "app/components/PageInput.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/PageSelect.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -13360,6 +13393,7 @@ System.registerDynamic("app/components/Zone.js", ["npm:react@16.7.0.js", "app/ac
     const PageInput_1 = $__require("app/components/PageInput.js");
     const PageInfo_1 = $__require("app/components/PageInfo.js");
     const PageSave_1 = $__require("app/components/PageSave.js");
+    const PageSelect_1 = $__require("app/components/PageSelect.js");
     const ConfirmButton_1 = $__require("app/components/ConfirmButton.js");
     const css = {
         card: {
@@ -13452,7 +13486,9 @@ System.registerDynamic("app/components/Zone.js", ["npm:react@16.7.0.js", "app/ac
             let datacenter = DatacentersStore_1.default.datacenter(this.props.zone.datacenter);
             return React.createElement("div", { className: "bp3-card", style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { style: css.remove }, React.createElement(ConfirmButton_1.default, { className: "bp3-minimal bp3-intent-danger bp3-icon-trash", progressClassName: "bp3-intent-danger", confirmMsg: "Confirm zone remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { label: "Name", help: "Name of zone", type: "text", placeholder: "Enter name", value: zone.name, onChange: val => {
                     this.set('name', val);
-                } })), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
+                } }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "Network Mode", help: "Network mode for internal VPC networking. If layer 2 networking with VLAN support isn't available VXLan must be used.", value: zone.network_mode, onChange: val => {
+                    this.set('network_mode', val);
+                } }, React.createElement("option", { value: "default" }, "Default"), React.createElement("option", { value: "vxlan_vlan" }, "VXLan"))), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
                     label: 'ID',
                     value: this.props.zone.id || 'None'
                 }, {
