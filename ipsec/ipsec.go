@@ -1,14 +1,19 @@
 package ipsec
 
 import (
+	"fmt"
+	"io/ioutil"
 	"path"
+	"path/filepath"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
-	"github.com/Sirupsen/logrus"
-	"github.com/dropbox/godropbox/container/set"
+	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/link"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
@@ -18,18 +23,11 @@ import (
 var (
 	deployStates = map[primitive.ObjectID][]*link.State{}
 	curStates    = map[primitive.ObjectID][]*link.State{}
-	currentVpcs  = set.NewSet()
 	deployLock   = sync.Mutex{}
 	ipsecLock    = utils.NewMultiTimeoutLock(2 * time.Minute)
 )
 
 func deploy(vpcId primitive.ObjectID, states []*link.State) (err error) {
-	curVpcs := currentVpcs
-
-	if !curVpcs.Contains(vpcId) {
-		return
-	}
-
 	db := database.GetDatabase()
 	defer db.Close()
 
@@ -82,58 +80,79 @@ func deploy(vpcId primitive.ObjectID, states []*link.State) (err error) {
 	return
 }
 
-func Deploy(vcId primitive.ObjectID, states []*link.State) {
-	deployLock.Lock()
-	deployStates[vcId] = states
-	deployLock.Unlock()
-}
+func stop(vcId primitive.ObjectID) (err error) {
+	namespace := vm.GetLinkNamespace(vcId, 0)
+	namespacePth := fmt.Sprintf("/etc/netns/%s", namespace)
 
-func Redeploy(vcId primitive.ObjectID) {
-	deployLock.Lock()
-	if deployStates[vcId] == nil && curStates[vcId] != nil {
-		deployStates[vcId] = curStates[vcId]
+	_, _ = utils.ExecCombinedOutputLogged(
+		[]string{
+			"No such file or directory",
+		},
+		"ip", "netns", "exec", namespace,
+		"ipsec", "stop",
+	)
+
+	time.Sleep(1 * time.Second)
+
+	charonPth := filepath.Join(
+		namespacePth, "ipsec.d", "run", "charon.pid")
+	charonExists, err := utils.Exists(charonPth)
+	if err != nil {
+		return
 	}
-	deployLock.Unlock()
-}
 
-func RunSync() {
-	for {
-		deploying := map[primitive.ObjectID][]*link.State{}
-		deployLock.Lock()
-		for vpcId, states := range deployStates {
-			if states == nil {
-				continue
+	if charonExists {
+		pidByt, e := ioutil.ReadFile(charonPth)
+		if e != nil {
+			err = &errortypes.ReadError{
+				errors.Wrap(e, "ipsec: Failed to read pid"),
 			}
-			deploying[vpcId] = states
-		}
-		deployStates = map[primitive.ObjectID][]*link.State{}
-		deployLock.Unlock()
-
-		for vpcId, states := range deploying {
-			logrus.WithFields(logrus.Fields{
-				"vpc_id": vpcId.Hex(),
-			}).Info("state: Deploying IPsec state")
-
-			err := deploy(vpcId, states)
-			if err != nil {
-				logrus.WithFields(logrus.Fields{
-					"error": err,
-				}).Error("state: Failed to deploy state")
-
-				time.Sleep(3 * time.Second)
-
-				deployLock.Lock()
-				if deployStates[vpcId] == nil {
-					deployStates[vpcId] = states
-				}
-				deployLock.Unlock()
-			}
-
-			deployLock.Lock()
-			curStates[vpcId] = states
-			deployLock.Unlock()
+			return
 		}
 
-		time.Sleep(10 * time.Millisecond)
+		pid, e := strconv.Atoi(strings.TrimSpace(string(pidByt)))
+		if e != nil {
+			err = &errortypes.ParseError{
+				errors.Wrap(e, "ipsec: Failed to parse pid"),
+			}
+			return
+		}
+
+		exists, _ := utils.Exists(fmt.Sprintf("/proc/%d/status", pid))
+		if exists {
+			utils.ExecCombinedOutput("", "kill", "-9", strconv.Itoa(pid))
+		}
 	}
+
+	starterPth := filepath.Join(
+		namespacePth, "ipsec.d", "run", "charon.pid")
+	starterExists, err := utils.Exists(starterPth)
+	if err != nil {
+		return
+	}
+
+	if starterExists {
+		pidByt, e := ioutil.ReadFile(starterPth)
+		if e != nil {
+			err = &errortypes.ReadError{
+				errors.Wrap(e, "ipsec: Failed to read pid"),
+			}
+			return
+		}
+
+		pid, e := strconv.Atoi(strings.TrimSpace(string(pidByt)))
+		if e != nil {
+			err = &errortypes.ParseError{
+				errors.Wrap(e, "ipsec: Failed to parse pid"),
+			}
+			return
+		}
+
+		exists, _ := utils.Exists(fmt.Sprintf("/proc/%d/status", pid))
+		if exists {
+			utils.ExecCombinedOutput("", "kill", "-9", strconv.Itoa(pid))
+		}
+	}
+
+	return
 }
