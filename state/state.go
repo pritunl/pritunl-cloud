@@ -38,6 +38,7 @@ type State struct {
 	instancesMap     map[primitive.ObjectID]*instance.Instance
 	instanceDisks    map[primitive.ObjectID][]*disk.Disk
 	domainRecordsMap map[primitive.ObjectID][]*domain.Record
+	vpcs             []*vpc.Vpc
 	vpcsMap          map[primitive.ObjectID]*vpc.Vpc
 	addInstances     set.Set
 	remInstances     set.Set
@@ -98,6 +99,10 @@ func (s *State) GetInstaceDisks(instId primitive.ObjectID) []*disk.Disk {
 
 func (s *State) Vpc(vpcId primitive.ObjectID) *vpc.Vpc {
 	return s.vpcsMap[vpcId]
+}
+
+func (s *State) Vpcs() []*vpc.Vpc {
+	return s.vpcs
 }
 
 func (s *State) DiskInUse(instId, dskId primitive.ObjectID) bool {
@@ -211,18 +216,11 @@ func (s *State) init() (err error) {
 	s.instances = instances
 
 	instancesMap := map[primitive.ObjectID]*instance.Instance{}
-	vpcIdsSet := set.NewSet()
 	for _, inst := range instances {
 		virtsId.Remove(inst.Id)
-		vpcIdsSet.Add(inst.Vpc)
 		instancesMap[inst.Id] = inst
 	}
 	s.instancesMap = instancesMap
-
-	vpcIds := []primitive.ObjectID{}
-	for vpcIdInf := range vpcIdsSet.Iter() {
-		vpcIds = append(vpcIds, vpcIdInf.(primitive.ObjectID))
-	}
 
 	for virtId := range virtsId.Iter() {
 		logrus.WithFields(logrus.Fields{
@@ -238,15 +236,19 @@ func (s *State) init() (err error) {
 	s.nodeFirewall = nodeFirewall
 	s.firewalls = firewalls
 
-	vpcs, err := vpc.GetIds(db, vpcIds)
-	if err != nil {
-		return
-	}
-
+	vpcs := []*vpc.Vpc{}
 	vpcsMap := map[primitive.ObjectID]*vpc.Vpc{}
-	for _, vc := range vpcs {
-		vpcsMap[vc.Id] = vc
+	if !s.nodeDatacenter.IsZero() {
+		vpcs, err = vpc.GetDatacenter(db, s.nodeDatacenter)
+		if err != nil {
+			return
+		}
+
+		for _, vc := range vpcs {
+			vpcsMap[vc.Id] = vc
+		}
 	}
+	s.vpcs = vpcs
 	s.vpcsMap = vpcsMap
 
 	recrds, err := domain.GetRecordAll(db, &bson.M{
