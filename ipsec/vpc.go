@@ -113,7 +113,7 @@ func deployVpc(vc *vpc.Vpc) {
 	if newHash != curHash {
 		logrus.WithFields(logrus.Fields{
 			"vpc_id": vc.Id.Hex(),
-		}).Info("ipsec: Deploying IPsec state")
+		}).Info("ipsec: Deploying ipsec state")
 
 		err = deployIpsec(vc.Id, states)
 		if err != nil {
