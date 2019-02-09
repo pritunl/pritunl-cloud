@@ -700,6 +700,16 @@ func addIndexes() (err error) {
 	if err != nil {
 		return
 	}
+	index = &Index{
+		Collection: db.Vpcs(),
+		Keys: &bson.D{
+			{"datacenter", 1},
+		},
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
 
 	index = &Index{
 		Collection: db.VpcsIp(),
