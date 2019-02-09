@@ -41,7 +41,7 @@ func networkConf(db *database.Database, vc *vpc.Vpc,
 
 	logrus.WithFields(logrus.Fields{
 		"vpc_id": vc.Id.Hex(),
-	}).Info("ipsec: Configuring IPsec network namespace")
+	}).Info("ipsec: Configuring ipsec network namespace")
 
 	jumboFrames := node.Self.JumboFrames
 	namespace := vm.GetLinkNamespace(vc.Id, 0)
@@ -61,7 +61,7 @@ func networkConf(db *database.Database, vc *vpc.Vpc,
 	}
 
 	vxlan := false
-	if zne.NetworkMode == zone.VxLan {
+	if zne.NetworkMode == zone.VxlanVlan {
 		vxlan = true
 	}
 
@@ -583,9 +583,12 @@ func networkConfClear(vcId primitive.ObjectID) (err error) {
 
 	logrus.WithFields(logrus.Fields{
 		"vpc_id": vcId.Hex(),
-	}).Info("ipsec: Removing IPsec network namespace")
+	}).Info("ipsec: Removing ipsec network namespace")
 
-	networkStopDhClient(vcId)
+	err = networkStopDhClient(vcId)
+	if err != nil {
+		return
+	}
 
 	ifaceExternalVirt := vm.GetLinkIfaceVirt(vcId, 0)
 	ifaceInternalVirt := vm.GetLinkIfaceVirt(vcId, 1)
@@ -603,7 +606,7 @@ func networkConfClear(vcId primitive.ObjectID) (err error) {
 	return
 }
 
-func syncAddr(vc *vpc.Vpc) (addr, addr6 string, err error) {
+func getAddr(vc *vpc.Vpc) (addr, addr6 string, err error) {
 	namespace := vm.GetLinkNamespace(vc.Id, 0)
 	ifaceExternal := vm.GetLinkIfaceExternal(vc.Id, 0)
 
