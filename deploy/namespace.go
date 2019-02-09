@@ -75,27 +75,16 @@ func (n *Namespace) Deploy() (err error) {
 		}
 	}
 
-	items, err := ioutil.ReadDir("/var/run")
-	if err != nil {
-		err = &errortypes.ReadError{
-			errors.Wrap(err, "deploy: Failed to read run directory"),
-		}
-		return
-	}
-
-	for _, item := range items {
-		name := item.Name()
-
-		if item.IsDir() || len(name) != 27 ||
-			!strings.HasPrefix(name, "dhclient-i") {
-
+	running := n.stat.Running()
+	for _, name := range running {
+		if len(name) != 27 || !strings.HasPrefix(name, "dhclient-i") {
 			continue
 		}
 
 		iface := name[9:23]
 
 		if !curExternalIfaces.Contains(iface) {
-			pth := filepath.Join("/var/run", item.Name())
+			pth := filepath.Join("/var/run", name)
 
 			pidByt, e := ioutil.ReadFile(pth)
 			if e != nil {
