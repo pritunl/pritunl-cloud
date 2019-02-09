@@ -29,7 +29,7 @@ func (z *Zone) Validate(db *database.Database) (
 	switch z.NetworkMode {
 	case Default:
 		break
-	case VxLan:
+	case VxlanVlan:
 		break
 	case "":
 		z.NetworkMode = Default

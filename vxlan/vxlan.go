@@ -160,7 +160,7 @@ func initDatabase(stat *state.State, internaIfaces []string) (err error) {
 		}
 
 		ndeZone := stat.GetZone(nde.Zone)
-		if ndeZone == nil || ndeZone.NetworkMode != zone.VxLan {
+		if ndeZone == nil || ndeZone.NetworkMode != zone.VxlanVlan {
 			continue
 		}
 
@@ -445,7 +445,7 @@ func syncDatabase(stat *state.State, internaIfaces []string) (err error) {
 		}
 
 		ndeZone := stat.GetZone(nde.Zone)
-		if ndeZone == nil || ndeZone.NetworkMode != zone.VxLan {
+		if ndeZone == nil || ndeZone.NetworkMode != zone.VxlanVlan {
 			continue
 		}
 

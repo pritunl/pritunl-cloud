@@ -1,6 +1,6 @@
 package zone
 
 const (
-	Default = "default"
-	VxLan   = "vxlan"
+	Default   = "default"
+	VxlanVlan = "vxlan_vlan"
 )

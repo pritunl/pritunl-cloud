@@ -399,7 +399,7 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	}
 
 	vxlan := false
-	if zne.NetworkMode == zone.VxLan {
+	if zne.NetworkMode == zone.VxlanVlan {
 		vxlan = true
 	}
 

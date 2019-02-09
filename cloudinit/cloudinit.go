@@ -239,7 +239,7 @@ func getNetData(db *database.Database, inst *instance.Instance,
 	}
 
 	vxlan := false
-	if zne.NetworkMode == zone.VxLan {
+	if zne.NetworkMode == zone.VxlanVlan {
 		vxlan = true
 	}
 
