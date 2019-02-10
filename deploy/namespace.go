@@ -12,6 +12,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/interfaces"
+	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
@@ -30,15 +31,32 @@ func (n *Namespace) Deploy() (err error) {
 	curVirtIfaces := set.NewSet()
 	curExternalIfaces := set.NewSet()
 
+	externalNetwork := true
+	if node.Self.NetworkMode == node.Internal {
+		externalNetwork = false
+	}
+
+	hostNetwork := false
+	if !node.Self.HostBlock.IsZero() {
+		hostNetwork = true
+	}
+
 	for _, inst := range instances {
 		if !inst.IsActive() {
 			continue
 		}
 
 		curNamespaces.Add(vm.GetNamespace(inst.Id, 0))
-		curVirtIfaces.Add(vm.GetIfaceVirt(inst.Id, 0))
+		if externalNetwork {
+			curVirtIfaces.Add(vm.GetIfaceVirt(inst.Id, 0))
+		}
 		curVirtIfaces.Add(vm.GetIfaceVirt(inst.Id, 1))
-		curExternalIfaces.Add(vm.GetIfaceExternal(inst.Id, 0))
+		if hostNetwork {
+			curVirtIfaces.Add(vm.GetIfaceVirt(inst.Id, 2))
+		}
+		if externalNetwork {
+			curExternalIfaces.Add(vm.GetIfaceExternal(inst.Id, 0))
+		}
 	}
 
 	for _, iface := range ifaces {
