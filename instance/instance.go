@@ -32,6 +32,7 @@ type Instance struct {
 	PublicIps6          []string           `bson:"public_ips6" json:"public_ips6"`
 	PrivateIps          []string           `bson:"private_ips" json:"private_ips"`
 	PrivateIps6         []string           `bson:"private_ips6" json:"private_ips6"`
+	HostIps             []string           `bson:"host_ips" json:"host_ips"`
 	Node                primitive.ObjectID `bson:"node" json:"node"`
 	Domain              primitive.ObjectID `bson:"domain,omitempty" json:"domain"`
 	Name                string             `bson:"name" json:"name"`
