@@ -154,6 +154,10 @@ func (r *Rules) Hold() (err error) {
 			cmd = append(cmd,
 				"-i", r.Interface,
 			)
+		} else if strings.HasPrefix(r.Interface, "h") {
+			cmd = append(cmd,
+				"-i", r.Interface,
+			)
 		} else if strings.HasPrefix(r.Interface, "i") {
 			cmd = append(cmd,
 				"-i", r.Interface,
@@ -181,6 +185,10 @@ func (r *Rules) Hold() (err error) {
 	cmd = r.newCommand()
 	if r.Interface != "host" {
 		if strings.HasPrefix(r.Interface, "e") {
+			cmd = append(cmd,
+				"-i", r.Interface,
+			)
+		} else if strings.HasPrefix(r.Interface, "h") {
 			cmd = append(cmd,
 				"-i", r.Interface,
 			)
