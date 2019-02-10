@@ -33,6 +33,7 @@ type nodeData struct {
 	InternalInterfaces   []string                `json:"internal_interfaces"`
 	NetworkMode          string                  `bson:"network_mode" json:"network_mode"`
 	Blocks               []*node.BlockAttachment `bson:"blocks" json:"blocks"`
+	HostBlock            primitive.ObjectID      `json:"host_block"`
 	JumboFrames          bool                    `json:"jumbo_frames"`
 	ForwardedForHeader   string                  `json:"forwarded_for_header"`
 	ForwardedProtoHeader string                  `json:"forwarded_proto_header"`
@@ -83,6 +84,7 @@ func nodePut(c *gin.Context) {
 	nde.InternalInterfaces = data.InternalInterfaces
 	nde.NetworkMode = data.NetworkMode
 	nde.Blocks = data.Blocks
+	nde.HostBlock = data.HostBlock
 	nde.JumboFrames = data.JumboFrames
 	nde.ForwardedForHeader = data.ForwardedForHeader
 	nde.ForwardedProtoHeader = data.ForwardedProtoHeader
@@ -103,6 +105,7 @@ func nodePut(c *gin.Context) {
 		"internal_interfaces",
 		"network_mode",
 		"blocks",
+		"host_block",
 		"jumbo_frames",
 		"forwarded_for_header",
 		"forwarded_proto_header",
