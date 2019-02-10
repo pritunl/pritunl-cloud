@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 )
@@ -125,6 +126,26 @@ func GetInterfaces() (ifaces []string, err error) {
 	ifaces = []string{}
 	for _, item := range items {
 		ifaces = append(ifaces, item.Name())
+	}
+
+	return
+}
+
+func GetInterfacesSet() (ifaces []string, ifacesSet set.Set, err error) {
+	items, err := ioutil.ReadDir("/sys/class/net")
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "utils: Failed to read network interfaces"),
+		}
+		return
+	}
+
+	ifaces = []string{}
+	ifacesSet = set.NewSet()
+	for _, item := range items {
+		name := item.Name()
+		ifaces = append(ifaces, name)
+		ifacesSet.Add(name)
 	}
 
 	return
