@@ -134,7 +134,7 @@ func (b *Block) GetIps(db *database.Database) (blckIps set.Set, err error) {
 }
 
 func (b *Block) GetIp(db *database.Database,
-	instId primitive.ObjectID) (ip net.IP, err error) {
+	instId primitive.ObjectID, typ string) (ip net.IP, err error) {
 
 	blckIps, err := b.GetIps(db)
 	if err != nil {
@@ -220,6 +220,7 @@ func (b *Block) GetIp(db *database.Database,
 				Block:    b.Id,
 				Ip:       utils.IpAddress2Int(curIp),
 				Instance: instId,
+				Type:     typ,
 			}
 
 			_, err = coll.InsertOne(db, blckIp)
