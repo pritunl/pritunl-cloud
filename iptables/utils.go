@@ -282,6 +282,11 @@ func UpdateState(instances []*instance.Instance, namespaces []string,
 	lockId := stateLock.Lock()
 	defer stateLock.Unlock(lockId)
 
+	externalNetwork := true
+	if node.Self.NetworkMode == node.Internal {
+		externalNetwork = false
+	}
+
 	newState := &State{
 		Interfaces: map[string]*Rules{},
 	}
@@ -322,10 +327,12 @@ func UpdateState(instances []*instance.Instance, namespaces []string,
 				continue
 			}
 
-			rules := generateInternal(namespace, ifaceExternal, ingress)
-			newState.Interfaces[namespace+"-"+ifaceExternal] = rules
+			if externalNetwork {
+				rules := generateInternal(namespace, ifaceExternal, ingress)
+				newState.Interfaces[namespace+"-"+ifaceExternal] = rules
+			}
 
-			rules = generateVirt(namespace, iface, ingress)
+			rules := generateVirt(namespace, iface, ingress)
 			newState.Interfaces[namespace+"-"+iface] = rules
 		}
 	}
