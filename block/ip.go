@@ -12,6 +12,7 @@ type BlockIp struct {
 	Block    primitive.ObjectID `bson:"block"`
 	Ip       int64              `bson:"ip"`
 	Instance primitive.ObjectID `bson:"instance"`
+	Type     string             `bson:"type"`
 }
 
 func (b *BlockIp) GetIp() net.IP {

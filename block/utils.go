@@ -58,14 +58,15 @@ func GetAll(db *database.Database) (blocks []*Block, err error) {
 	return
 }
 
-func GetInstanceIp(db *database.Database,
-	instId primitive.ObjectID) (blck *Block, blckIp *BlockIp, err error) {
+func GetInstanceIp(db *database.Database, instId primitive.ObjectID,
+	typ string) (blck *Block, blckIp *BlockIp, err error) {
 
 	coll := db.BlocksIp()
 	blckIp = &BlockIp{}
 
 	err = coll.FindOne(db, &bson.M{
 		"instance": instId,
+		"type":     typ,
 	}).Decode(blckIp)
 	if err != nil {
 		err = database.ParseError(err)
