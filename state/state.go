@@ -30,6 +30,7 @@ type State struct {
 	zoneMap          map[primitive.ObjectID]*zone.Zone
 	namespaces       []string
 	interfaces       []string
+	interfacesSet    set.Set
 	nodeFirewall     []*firewall.Rule
 	firewalls        map[string][]*firewall.Rule
 	disks            []*disk.Disk
@@ -67,6 +68,10 @@ func (s *State) Namespaces() []string {
 
 func (s *State) Interfaces() []string {
 	return s.interfaces
+}
+
+func (s *State) HasInterfaces(iface string) bool {
+	return s.interfacesSet.Contains(iface)
 }
 
 func (s *State) Instances() []*instance.Instance {
@@ -175,11 +180,12 @@ func (s *State) init() (err error) {
 	}
 	s.namespaces = namespaces
 
-	interfaces, err := utils.GetInterfaces()
+	interfaces, interfacesSet, err := utils.GetInterfacesSet()
 	if err != nil {
 		return
 	}
 	s.interfaces = interfaces
+	s.interfacesSet = interfacesSet
 
 	disks, err := disk.GetNode(db, node.Self.Id)
 	if err != nil {
