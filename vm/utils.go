@@ -68,6 +68,26 @@ func GetMacAddrInternal(id primitive.ObjectID,
 	return "04:" + macBuf.String()
 }
 
+func GetMacAddrHost(id primitive.ObjectID,
+	secondId primitive.ObjectID) string {
+
+	hash := md5.New()
+	hash.Write([]byte(id.Hex()))
+	hash.Write([]byte(secondId.Hex()))
+	macHash := fmt.Sprintf("%x", hash.Sum(nil))
+	macHash = macHash[:10]
+	macBuf := bytes.Buffer{}
+
+	for i, run := range macHash {
+		macBuf.WriteRune(run)
+		if i%2 == 1 && i != len(macHash)-1 {
+			macBuf.WriteRune(':')
+		}
+	}
+
+	return "06:" + macBuf.String()
+}
+
 func GetIface(id primitive.ObjectID, n int) string {
 	hash := md5.New()
 	hash.Write([]byte(id.Hex()))
@@ -94,6 +114,13 @@ func GetIfaceInternal(id primitive.ObjectID, n int) string {
 	hash.Write([]byte(id.Hex()))
 	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
 	return fmt.Sprintf("i%s%d", strings.ToLower(hashSum), n)
+}
+
+func GetIfaceHost(id primitive.ObjectID, n int) string {
+	hash := md5.New()
+	hash.Write([]byte(id.Hex()))
+	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
+	return fmt.Sprintf("h%s%d", strings.ToLower(hashSum), n)
 }
 
 func GetIfaceVlan(id primitive.ObjectID, n int) string {
