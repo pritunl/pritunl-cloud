@@ -11,6 +11,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/requires"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -430,4 +431,36 @@ func (b *Block) Insert(db *database.Database) (err error) {
 	}
 
 	return
+}
+
+func init() {
+	module := requires.New("block")
+	module.After("settings")
+
+	module.Handler = func() (err error) {
+		db := database.GetDatabase()
+		defer db.Close()
+
+		coll := db.BlocksIp()
+
+		// TODO Upgrade <= 1.0.1173.24
+		_, err = coll.UpdateMany(db, &bson.M{
+			"type": &bson.M{
+				"$exists": false,
+			},
+		}, &bson.M{
+			"$set": &bson.M{
+				"type": External,
+			},
+		})
+		if err != nil {
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = nil
+			} else {
+				return
+			}
+		}
+
+		return
+	}
 }
