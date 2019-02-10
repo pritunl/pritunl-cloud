@@ -8,6 +8,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/domain"
@@ -26,6 +27,7 @@ type State struct {
 	nodes            []*node.Node
 	nodeDatacenter   primitive.ObjectID
 	nodeZone         *zone.Zone
+	nodeHostBlock    *block.Block
 	vxlan            bool
 	zoneMap          map[primitive.ObjectID]*zone.Zone
 	namespaces       []string
@@ -56,6 +58,10 @@ func (s *State) VxLan() bool {
 
 func (s *State) NodeZone() *zone.Zone {
 	return s.nodeZone
+}
+
+func (s *State) NodeHostBlock() *block.Block {
+	return s.nodeHostBlock
 }
 
 func (s *State) GetZone(zneId primitive.ObjectID) *zone.Zone {
@@ -172,6 +178,21 @@ func (s *State) init() (err error) {
 		}
 
 		s.nodes = ndes
+	}
+
+	hostBlockId := node.Self.HostBlock
+	if !hostBlockId.IsZero() {
+		hostBlock, e := block.Get(db, hostBlockId)
+		if e != nil {
+			err = e
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = nil
+			} else {
+				return
+			}
+		}
+
+		s.nodeHostBlock = hostBlock
 	}
 
 	namespaces, err := utils.GetNamespaces()
