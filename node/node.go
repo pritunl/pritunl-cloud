@@ -55,6 +55,7 @@ type Node struct {
 	AvailableBridges     []string                   `bson:"available_bridges" json:"available_bridges"`
 	NetworkMode          string                     `bson:"network_mode" json:"network_mode"`
 	Blocks               []*BlockAttachment         `bson:"blocks" json:"blocks"`
+	HostBlock            primitive.ObjectID         `bson:"host_block,omitempty" json:"host_block"`
 	JumboFrames          bool                       `bson:"jumbo_frames" json:"jumbo_frames"`
 	Firewall             bool                       `bson:"firewall" json:"firewall"`
 	NetworkRoles         []string                   `bson:"network_roles" json:"network_roles"`
@@ -401,6 +402,7 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.InternalInterfaces = nde.InternalInterfaces
 	n.NetworkMode = nde.NetworkMode
 	n.Blocks = nde.Blocks
+	n.HostBlock = nde.HostBlock
 	n.JumboFrames = nde.JumboFrames
 	n.Firewall = nde.Firewall
 	n.NetworkRoles = nde.NetworkRoles
