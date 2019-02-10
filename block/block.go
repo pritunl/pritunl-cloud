@@ -105,6 +105,17 @@ func (b *Block) GetMask() net.IPMask {
 	return utils.ParseIpMask(b.Netmask)
 }
 
+func (b *Block) GetGatewayCidr() string {
+	staticGateway := net.ParseIP(b.Gateway)
+	staticMask := utils.ParseIpMask(b.Netmask)
+	if staticGateway == nil || staticMask == nil {
+		return ""
+	}
+
+	staticSize, _ := staticMask.Size()
+	return fmt.Sprintf("%s/%d", staticGateway.String(), staticSize)
+}
+
 func (b *Block) GetIps(db *database.Database) (blckIps set.Set, err error) {
 	coll := db.BlocksIp()
 
