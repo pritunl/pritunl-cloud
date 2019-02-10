@@ -11,6 +11,7 @@ const (
 	Qemu = "qemu"
 	Kvm  = "kvm"
 
-	Dhcp   = "dhcp"
-	Static = "static"
+	Dhcp     = "dhcp"
+	Static   = "static"
+	Internal = "internal"
 )

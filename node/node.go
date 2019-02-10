@@ -211,10 +211,20 @@ func (n *Node) Validate(db *database.Database) (
 	case Static:
 		n.ExternalInterfaces = []string{}
 		break
-	default:
+	case Internal:
+		n.ExternalInterfaces = []string{}
+		n.Blocks = []*BlockAttachment{}
+		break
+	case Dhcp, "":
 		n.NetworkMode = Dhcp
 		n.Blocks = []*BlockAttachment{}
 		break
+	default:
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_network_mode",
+			Message: "Network mode invalid",
+		}
+		return
 	}
 
 	n.Format()
