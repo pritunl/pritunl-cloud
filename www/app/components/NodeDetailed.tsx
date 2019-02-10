@@ -1111,6 +1111,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					>
 						<option value="dhcp">DHCP</option>
 						<option value="static">Static</option>
+						<option value="internal">Internal Only</option>
 					</PageSelect>
 					<label
 						className="bp3-label"
