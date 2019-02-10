@@ -280,7 +280,7 @@ func (n *Node) GetStaticAddr(db *database.Database,
 	instId primitive.ObjectID) (blck *block.Block, ip net.IP, iface string,
 	err error) {
 
-	blck, blckIp, err := block.GetInstanceIp(db, instId)
+	blck, blckIp, err := block.GetInstanceIp(db, instId, block.External)
 	if err != nil {
 		return
 	}
@@ -308,7 +308,7 @@ func (n *Node) GetStaticAddr(db *database.Database,
 
 		iface = blckAttch.Interface
 
-		ip, err = blck.GetIp(db, instId)
+		ip, err = blck.GetIp(db, instId, block.External)
 		if err != nil {
 			if _, ok := err.(*block.BlockFull); ok {
 				err = nil
@@ -323,7 +323,51 @@ func (n *Node) GetStaticAddr(db *database.Database,
 
 	if ip == nil {
 		err = &errortypes.NotFoundError{
-			errors.New("node: No block addresses available"),
+			errors.New("node: No external block addresses available"),
+		}
+		return
+	}
+
+	return
+}
+
+func (n *Node) GetStaticHostAddr(db *database.Database,
+	instId primitive.ObjectID) (blck *block.Block, ip net.IP, err error) {
+
+	blck, blckIp, err := block.GetInstanceIp(db, instId, block.Host)
+	if err != nil {
+		return
+	}
+
+	if blckIp != nil {
+		if n.HostBlock == blck.Id {
+			ip = blckIp.GetIp()
+			return
+		}
+
+		err = block.RemoveIp(db, blckIp.Id)
+		if err != nil {
+			return
+		}
+	}
+
+	blck, err = block.Get(db, n.HostBlock)
+	if err != nil {
+		return
+	}
+
+	ip, err = blck.GetIp(db, instId, block.Host)
+	if err != nil {
+		if _, ok := err.(*block.BlockFull); ok {
+			err = nil
+		} else {
+			return
+		}
+	}
+
+	if ip == nil {
+		err = &errortypes.NotFoundError{
+			errors.New("node: No host block addresses available"),
 		}
 		return
 	}
