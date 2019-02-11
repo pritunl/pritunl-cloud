@@ -23,6 +23,7 @@ export interface Node {
 	external_interfaces?: string[];
 	internal_interfaces?: string[];
 	available_interfaces?: string[];
+	available_bridges?: string[];
 	blocks?: BlockAttachment[];
 	jumbo_frames?: boolean;
 	firewall?: boolean;
