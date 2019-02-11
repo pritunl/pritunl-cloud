@@ -295,6 +295,11 @@ func UpdateState(instances []*instance.Instance, namespaces []string,
 		newState.Interfaces["0-host"] = generate("0", "host", nodeFirewall)
 	}
 
+	hostNetwork := false
+	if !node.Self.HostBlock.IsZero() {
+		hostNetwork = true
+	}
+
 	for _, inst := range instances {
 		if !inst.IsActive() {
 			continue
@@ -304,6 +309,7 @@ func UpdateState(instances []*instance.Instance, namespaces []string,
 			namespace := vm.GetNamespace(inst.Id, i)
 			iface := vm.GetIface(inst.Id, i)
 			ifaceExternal := vm.GetIfaceExternal(inst.Id, i)
+			ifaceHost := vm.GetIfaceHost(inst.Id, i)
 
 			_, ok := newState.Interfaces[namespace+"-"+iface]
 			if ok {
@@ -330,6 +336,11 @@ func UpdateState(instances []*instance.Instance, namespaces []string,
 			if externalNetwork {
 				rules := generateInternal(namespace, ifaceExternal, ingress)
 				newState.Interfaces[namespace+"-"+ifaceExternal] = rules
+			}
+
+			if hostNetwork {
+				rules := generateInternal(namespace, ifaceHost, ingress)
+				newState.Interfaces[namespace+"-"+ifaceHost] = rules
 			}
 
 			rules := generateVirt(namespace, iface, ingress)
