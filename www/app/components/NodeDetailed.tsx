@@ -794,6 +794,19 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			);
 		}
 
+		let hostBlocksSelect: JSX.Element[] = [
+			<option key={'0'} value={null}>
+				Disabled
+			</option>,
+		];
+		for (let blck of (this.props.blocks || [])) {
+			hostBlocksSelect.push(
+				<option key={blck.id} value={blck.id}>
+					{blck.name}
+				</option>,
+			);
+		}
+
 		let certificates: JSX.Element[] = [];
 		for (let certId of (node.certificates || [])) {
 			let cert = CertificatesStore.certificate(certId);
@@ -1179,6 +1192,17 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						Interface Block Attachments
 						{blocks}
 					</label>
+					<PageSelect
+						disabled={this.state.disabled}
+						label="Host Network Block"
+						help="IP address block to use for static address on host network."
+						value={node.host_block}
+						onChange={(val): void => {
+							this.set('host_block', val);
+						}}
+					>
+						{hostBlocksSelect}
+					</PageSelect>
 					<PageSwitch
 						disabled={this.state.disabled}
 						label="Jumbo frames"
