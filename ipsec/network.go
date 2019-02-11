@@ -456,6 +456,13 @@ func networkConf(db *database.Database, vc *vpc.Vpc,
 	if node.Self.NetworkMode == node.Static {
 		staticGateway := blck.GetGateway()
 		staticMask := blck.GetMask()
+		if staticGateway == nil || staticMask == nil {
+			err = &errortypes.ParseError{
+				errors.New("qemu: Invalid block gateway cidr"),
+			}
+			return
+		}
+
 		staticSize, _ := staticMask.Size()
 		staticCidr := fmt.Sprintf("%s/%d", staticAddr.String(), staticSize)
 
