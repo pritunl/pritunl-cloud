@@ -323,6 +323,11 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			publicIps6 = 'None';
 		}
 
+		let hostIps: any = this.props.instance.host_ips;
+		if (!hostIps || !hostIps.length) {
+			hostIps = 'None';
+		}
+
 		let statusClass = '';
 		switch (instance.status) {
 			case 'Running':
@@ -596,6 +601,11 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 							{
 								label: 'Private IPv6',
 								value: privateIps6,
+								copy: true,
+							},
+							{
+								label: 'Host IPv4',
+								value: hostIps,
 								copy: true,
 							},
 							{
