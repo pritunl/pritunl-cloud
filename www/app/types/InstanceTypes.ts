@@ -20,6 +20,7 @@ export interface Instance {
 	public_ips6?: string[];
 	private_ips?: string[];
 	private_ips6?: string[];
+	host_ips?: string[];
 	public_mac?: string;
 	name?: string;
 	init_disk_size?: number;
