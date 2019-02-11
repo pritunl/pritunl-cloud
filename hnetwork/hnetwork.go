@@ -16,6 +16,15 @@ func removeNetwork(stat *state.State) (err error) {
 	if curState != "" || stat.HasInterfaces(
 		settings.Hypervisor.HostNetworkName) {
 
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "link", "set",
+			"dev", settings.Hypervisor.HostNetworkName, "down",
+		)
+		if err != nil {
+			return
+		}
+
 		_, _ = utils.ExecCombinedOutputLogged(
 			[]string{
 				"exist",
