@@ -25,6 +25,7 @@ export interface Node {
 	available_interfaces?: string[];
 	available_bridges?: string[];
 	blocks?: BlockAttachment[];
+	host_block?: string;
 	jumbo_frames?: boolean;
 	firewall?: boolean;
 	network_roles?: string[];
