@@ -193,7 +193,7 @@ export default class Zone extends React.Component<Props, State> {
 						}}
 					>
 						<option value="default">Default</option>
-						<option value="vxlan">VXLan</option>
+						<option value="vxlan_vlan">VXLAN</option>
 					</PageSelect>
 				</div>
 				<div style={css.group}>
