@@ -108,6 +108,8 @@ export default class Instance extends React.Component<Props, {}> {
 		let privateIp = '';
 		if (instance.public_ips && instance.public_ips.length > 0) {
 			publicIp = instance.public_ips[0];
+		} else if (instance.host_ips && instance.host_ips.length > 0) {
+			publicIp = instance.host_ips[0];
 		}
 		if (instance.private_ips && instance.private_ips.length > 0) {
 			privateIp = instance.private_ips[0];
