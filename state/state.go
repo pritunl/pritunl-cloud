@@ -186,6 +186,7 @@ func (s *State) init() (err error) {
 		if e != nil {
 			err = e
 			if _, ok := err.(*database.NotFoundError); ok {
+				hostBlock = nil
 				err = nil
 			} else {
 				return
