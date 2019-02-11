@@ -213,7 +213,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		let vxlan = false;
 		for (let zne of this.props.zones) {
 			if (zne.id === node.zone) {
-				if (zne.network_mode === 'vxlan') {
+				if (zne.network_mode === 'vxlan_vlan') {
 					vxlan = true;
 				}
 				break;
