@@ -1190,6 +1190,21 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
 			"ip", "netns", "exec", namespace,
+			"iptables",
+			"-I", "FORWARD", "1",
+			"!", "-d", addr.String() + "/32",
+			"-i", ifaceExternal,
+			"-j", "DROP",
+		)
+		iptables.Unlock()
+		if err != nil {
+			return
+		}
+
+		iptables.Lock()
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", namespace,
 			"iptables", "-t", "nat",
 			"-A", "POSTROUTING",
 			"-o", ifaceExternal,
@@ -1216,6 +1231,21 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		}
 
 		if pubAddr6 != "" {
+			iptables.Lock()
+			_, err = utils.ExecCombinedOutputLogged(
+				nil,
+				"ip", "netns", "exec", namespace,
+				"ip6tables", "-t", "nat",
+				"-I", "FORWARD", "1",
+				"!", "-d", addr6.String() + "/128",
+				"-o", ifaceExternal,
+				"-j", "DROP",
+			)
+			iptables.Unlock()
+			if err != nil {
+				return
+			}
+
 			iptables.Lock()
 			_, err = utils.ExecCombinedOutputLogged(
 				nil,
@@ -1253,6 +1283,21 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	}
 
 	if hostNetwork {
+		iptables.Lock()
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", namespace,
+			"iptables",
+			"-I", "FORWARD", "1",
+			"!", "-d", addr.String() + "/32",
+			"-i", ifaceHost,
+			"-j", "DROP",
+		)
+		iptables.Unlock()
+		if err != nil {
+			return
+		}
+
 		iptables.Lock()
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
