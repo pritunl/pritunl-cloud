@@ -1235,10 +1235,10 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			_, err = utils.ExecCombinedOutputLogged(
 				nil,
 				"ip", "netns", "exec", namespace,
-				"ip6tables", "-t", "nat",
+				"ip6tables",
 				"-I", "FORWARD", "1",
 				"!", "-d", addr6.String() + "/128",
-				"-o", ifaceExternal,
+				"-i", ifaceExternal,
 				"-j", "DROP",
 			)
 			iptables.Unlock()
