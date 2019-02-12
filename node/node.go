@@ -81,6 +81,62 @@ type Node struct {
 	reqCount             *list.List                 `bson:"-" json:"-"`
 }
 
+func (n *Node) Copy() *Node {
+	nde := &Node{
+		Id:                   n.Id,
+		Zone:                 n.Zone,
+		Name:                 n.Name,
+		Types:                n.Types,
+		Timestamp:            n.Timestamp,
+		Port:                 n.Port,
+		Protocol:             n.Protocol,
+		Hypervisor:           n.Hypervisor,
+		Certificate:          n.Certificate,
+		Certificates:         n.Certificates,
+		SelfCertificate:      n.SelfCertificate,
+		SelfCertificateKey:   n.SelfCertificateKey,
+		AdminDomain:          n.AdminDomain,
+		UserDomain:           n.UserDomain,
+		RequestsMin:          n.RequestsMin,
+		ForwardedForHeader:   n.ForwardedForHeader,
+		ForwardedProtoHeader: n.ForwardedProtoHeader,
+		ExternalInterface:    n.ExternalInterface,
+		InternalInterface:    n.InternalInterface,
+		ExternalInterfaces:   n.ExternalInterfaces,
+		InternalInterfaces:   n.InternalInterfaces,
+		AvailableInterfaces:  n.AvailableInterfaces,
+		AvailableBridges:     n.AvailableBridges,
+		NetworkMode:          n.NetworkMode,
+		Blocks:               n.Blocks,
+		HostBlock:            n.HostBlock,
+		HostNat:              n.HostNat,
+		HostNatExcludes:      n.HostNatExcludes,
+		JumboFrames:          n.JumboFrames,
+		Firewall:             n.Firewall,
+		NetworkRoles:         n.NetworkRoles,
+		Memory:               n.Memory,
+		Load1:                n.Load1,
+		Load5:                n.Load5,
+		Load15:               n.Load15,
+		CpuUnits:             n.CpuUnits,
+		MemoryUnits:          n.MemoryUnits,
+		CpuUnitsRes:          n.CpuUnitsRes,
+		MemoryUnitsRes:       n.MemoryUnitsRes,
+		PublicIps:            n.PublicIps,
+		PublicIps6:           n.PublicIps6,
+		PrivateIps:           n.PrivateIps,
+		SoftwareVersion:      n.SoftwareVersion,
+		Version:              n.Version,
+		VirtPath:             n.VirtPath,
+		CachePath:            n.CachePath,
+		CertificateObjs:      n.CertificateObjs,
+		reqLock:              n.reqLock,
+		reqCount:             n.reqCount,
+	}
+
+	return nde
+}
+
 func (n *Node) AddRequest() {
 	n.reqLock.Lock()
 	back := n.reqCount.Back()
