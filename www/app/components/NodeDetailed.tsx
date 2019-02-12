@@ -42,6 +42,7 @@ interface State {
 	addInternalIface: string;
 	addCert: string;
 	addNetworkRole: string;
+	addHostNatExclude: string,
 	forwardedChecked: boolean;
 	forwardedProtoChecked: boolean;
 }
@@ -124,6 +125,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			addInternalIface: null,
 			addCert: null,
 			addNetworkRole: null,
+			addHostNatExclude: null,
 			forwardedChecked: false,
 			forwardedProtoChecked: false,
 		};
@@ -719,6 +721,78 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		});
 	}
 
+	onAddHostNatExclude = (): void => {
+		let node: NodeTypes.Node;
+
+		if (!this.state.addHostNatExclude) {
+			return;
+		}
+
+		if (this.state.changed) {
+			node = {
+				...this.state.node,
+			};
+		} else {
+			node = {
+				...this.props.node,
+			};
+		}
+
+		let hostNatExcludes = [
+			...(node.host_nat_excludes || []),
+		];
+
+		let addHostNatExclude = this.state.addHostNatExclude.trim();
+		if (hostNatExcludes.indexOf(addHostNatExclude) === -1) {
+			hostNatExcludes.push(addHostNatExclude);
+		}
+
+		hostNatExcludes.sort();
+		node.host_nat_excludes = hostNatExcludes;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			addHostNatExclude: '',
+			node: node,
+		});
+	}
+
+	onRemoveHostNatExclude = (exclude: string): void => {
+		let node: NodeTypes.Node;
+
+		if (this.state.changed) {
+			node = {
+				...this.state.node,
+			};
+		} else {
+			node = {
+				...this.props.node,
+			};
+		}
+
+		let hostNatExcludes = [
+			...(node.host_nat_excludes || []),
+		];
+
+		let i = hostNatExcludes.indexOf(exclude);
+		if (i === -1) {
+			return;
+		}
+
+		hostNatExcludes.splice(i, 1);
+		node.host_nat_excludes = hostNatExcludes;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			addHostNatExclude: '',
+			node: node,
+		});
+	}
+
 	render(): JSX.Element {
 		let node: NodeTypes.Node = this.state.node || this.props.node;
 		let active = node.requests_min !== 0 || node.memory !== 0 ||
@@ -795,7 +869,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		}
 
 		let hostBlocksSelect: JSX.Element[] = [
-			<option key={'0'} value={null}>
+			<option key="null" value="">
 				Disabled
 			</option>,
 		];
@@ -804,6 +878,26 @@ export default class NodeDetailed extends React.Component<Props, State> {
 				<option key={blck.id} value={blck.id}>
 					{blck.name}
 				</option>,
+			);
+		}
+
+		let hostNatExcludes: JSX.Element[] = [];
+		for (let hostNatExclude of (node.host_nat_excludes || [])) {
+			hostNatExcludes.push(
+				<div
+					className="bp3-tag bp3-tag-removable bp3-intent-primary"
+					style={css.item}
+					key={hostNatExclude}
+				>
+					{hostNatExclude}
+					<button
+						className="bp3-tag-remove"
+						disabled={this.state.disabled}
+						onMouseUp={(): void => {
+							this.onRemoveHostNatExclude(hostNatExclude);
+						}}
+					/>
+				</div>,
 			);
 		}
 
@@ -1203,6 +1297,45 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					>
 						{hostBlocksSelect}
 					</PageSelect>
+					<PageSwitch
+						disabled={this.state.disabled}
+						hidden={!node.host_block}
+						label="Host Network NAT"
+						help="Enable NAT to on the host network."
+						checked={node.host_nat}
+						onToggle={(): void => {
+							this.set('host_nat', !node.host_nat);
+						}}
+					/>
+					<label
+						className="bp3-label"
+						hidden={!node.host_block || !node.host_nat}
+					>
+						Host Network NAT Excludes
+						<Help
+							title="Host Network NAT Excludes"
+							content="Networks that will be excluded from host network NAT. These networks will still be routable without NAT."
+						/>
+						<div>
+							{hostNatExcludes}
+						</div>
+					</label>
+					<PageInputButton
+						disabled={this.state.disabled}
+						hidden={!node.host_block || !node.host_nat}
+						buttonClass="bp3-intent-success bp3-icon-add"
+						label="Add"
+						type="text"
+						placeholder="Add exclude"
+						value={this.state.addHostNatExclude}
+						onChange={(val): void => {
+							this.setState({
+								...this.state,
+								addHostNatExclude: val,
+							});
+						}}
+						onSubmit={this.onAddHostNatExclude}
+					/>
 					<PageSwitch
 						disabled={this.state.disabled}
 						label="Jumbo frames"
