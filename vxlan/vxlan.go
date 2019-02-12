@@ -146,6 +146,8 @@ func initDatabase(stat *state.State, internaIfaces []string) (err error) {
 		return
 	}
 
+	nodeSelf := stat.Node()
+
 	nodes := stat.Nodes()
 	if nodes == nil {
 		nodes = []*node.Node{}
@@ -153,7 +155,7 @@ func initDatabase(stat *state.State, internaIfaces []string) (err error) {
 
 	newDb := set.NewSet()
 	for _, nde := range nodes {
-		if nde.Id == node.Self.Id || nde.Zone.IsZero() ||
+		if nde.Id == nodeSelf.Id || nde.Zone.IsZero() ||
 			nde.PrivateIps == nil {
 
 			continue
@@ -256,6 +258,7 @@ func initDatabase(stat *state.State, internaIfaces []string) (err error) {
 
 func syncIfaces(stat *state.State, internaIfaces []string) (err error) {
 	cIfaces := curIfaces
+	nodeSelf := stat.Node()
 
 	parentVxIfaces := map[string]string{}
 	parentBrIfaces := map[string]string{}
@@ -328,8 +331,8 @@ func syncIfaces(stat *state.State, internaIfaces []string) (err error) {
 			parentIface := parentVxIfaces[iface]
 
 			localIp := ""
-			if node.Self.PrivateIps != nil {
-				localIp = node.Self.PrivateIps[parentIface]
+			if nodeSelf.PrivateIps != nil {
+				localIp = nodeSelf.PrivateIps[parentIface]
 			}
 
 			if localIp == "" {
@@ -421,6 +424,7 @@ func syncIfaces(stat *state.State, internaIfaces []string) (err error) {
 }
 
 func syncDatabase(stat *state.State, internaIfaces []string) (err error) {
+	nodeSelf := stat.Node()
 	cDatabase := curDatabase
 	cIfaces := curDatabaseIfaces
 
@@ -438,7 +442,7 @@ func syncDatabase(stat *state.State, internaIfaces []string) (err error) {
 
 	newDb := set.NewSet()
 	for _, nde := range nodes {
-		if nde.Id == node.Self.Id || nde.Zone.IsZero() ||
+		if nde.Id == nodeSelf.Id || nde.Zone.IsZero() ||
 			nde.PrivateIps == nil {
 
 			continue
@@ -539,7 +543,8 @@ func syncDatabase(stat *state.State, internaIfaces []string) (err error) {
 }
 
 func ApplyState(stat *state.State) (err error) {
-	internaIfaces := node.Self.InternalInterfaces
+	nodeSelf := stat.Node()
+	internaIfaces := nodeSelf.InternalInterfaces
 
 	if curIfaces == nil {
 		err = initIfaces(stat, internaIfaces)
