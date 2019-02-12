@@ -395,11 +395,12 @@ func MergeIngress(fires []*Firewall) (rules []*Rule) {
 	return
 }
 
-func GetAllIngress(db *database.Database, instances []*instance.Instance) (
-	nodeFirewall []*Rule, firewalls map[string][]*Rule, err error) {
+func GetAllIngress(db *database.Database, nodeSelf *node.Node,
+	instances []*instance.Instance) (nodeFirewall []*Rule,
+	firewalls map[string][]*Rule, err error) {
 
-	if node.Self.Firewall {
-		fires, e := GetRoles(db, node.Self.NetworkRoles)
+	if nodeSelf.Firewall {
+		fires, e := GetRoles(db, nodeSelf.NetworkRoles)
 		if e != nil {
 			err = e
 			return
