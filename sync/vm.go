@@ -33,8 +33,8 @@ func syncNodeFirewall() {
 	defer db.Close()
 
 	if !node.Self.Firewall {
-		err := iptables.UpdateState([]*instance.Instance{}, []string{},
-			nil, map[string][]*firewall.Rule{})
+		err := iptables.UpdateState(node.Self, []*instance.Instance{},
+			[]string{}, nil, map[string][]*firewall.Rule{})
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
@@ -54,8 +54,8 @@ func syncNodeFirewall() {
 
 		ingress := firewall.MergeIngress(fires)
 
-		err = iptables.UpdateState([]*instance.Instance{}, []string{},
-			ingress, map[string][]*firewall.Rule{})
+		err = iptables.UpdateState(node.Self, []*instance.Instance{},
+			[]string{}, ingress, map[string][]*firewall.Rule{})
 		if err != nil {
 			if i < 1 {
 				err = nil
