@@ -15,12 +15,14 @@ func (t *Iptables) Deploy() (err error) {
 	db := database.GetDatabase()
 	defer db.Close()
 
+	nodeSelf := t.stat.Node()
 	instaces := t.stat.Instances()
 	namespaces := t.stat.Namespaces()
 	nodeFirewall := t.stat.NodeFirewall()
 	firewalls := t.stat.Firewalls()
 
-	err = iptables.UpdateState(instaces, namespaces, nodeFirewall, firewalls)
+	err = iptables.UpdateState(nodeSelf, instaces, namespaces,
+		nodeFirewall, firewalls)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"error": err,
