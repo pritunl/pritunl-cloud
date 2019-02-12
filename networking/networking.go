@@ -5,7 +5,6 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/interfaces"
-	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -19,7 +18,9 @@ var (
 func ApplyState(stat *state.State) (err error) {
 	newMtu := 0
 
-	if node.Self.JumboFrames {
+	nodeSelf := stat.Node()
+
+	if nodeSelf.JumboFrames {
 		newMtu = settings.Hypervisor.JumboMtu
 	} else {
 		newMtu = settings.Hypervisor.NormalMtu
