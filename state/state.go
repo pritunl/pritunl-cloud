@@ -24,6 +24,7 @@ import (
 )
 
 type State struct {
+	nodeSelf         *node.Node
 	nodes            []*node.Node
 	nodeDatacenter   primitive.ObjectID
 	nodeZone         *zone.Zone
@@ -46,6 +47,10 @@ type State struct {
 	addInstances     set.Set
 	remInstances     set.Set
 	running          []string
+}
+
+func (s *State) Node() *node.Node {
+	return s.nodeSelf
 }
 
 func (s *State) Nodes() []*node.Node {
@@ -144,7 +149,9 @@ func (s *State) init() (err error) {
 	db := database.GetDatabase()
 	defer db.Close()
 
-	zneId := node.Self.Zone
+	s.nodeSelf = node.Self.Copy()
+
+	zneId := s.nodeSelf.Zone
 	if !zneId.IsZero() {
 		zne, e := zone.Get(db, zneId)
 		if e != nil {
@@ -180,7 +187,7 @@ func (s *State) init() (err error) {
 		s.nodes = ndes
 	}
 
-	hostBlockId := node.Self.HostBlock
+	hostBlockId := s.nodeSelf.HostBlock
 	if !hostBlockId.IsZero() {
 		hostBlock, e := block.Get(db, hostBlockId)
 		if e != nil {
@@ -209,7 +216,7 @@ func (s *State) init() (err error) {
 	s.interfaces = interfaces
 	s.interfacesSet = interfacesSet
 
-	disks, err := disk.GetNode(db, node.Self.Id)
+	disks, err := disk.GetNode(db, s.nodeSelf.Id)
 	if err != nil {
 		return
 	}
@@ -239,7 +246,7 @@ func (s *State) init() (err error) {
 	s.virtsMap = virtsMap
 
 	instances, err := instance.GetAllVirtMapped(db, &bson.M{
-		"node": node.Self.Id,
+		"node": s.nodeSelf.Id,
 	}, instanceDisks)
 	s.instances = instances
 
@@ -257,7 +264,8 @@ func (s *State) init() (err error) {
 	}
 	s.instances = instances
 
-	nodeFirewall, firewalls, err := firewall.GetAllIngress(db, instances)
+	nodeFirewall, firewalls, err := firewall.GetAllIngress(
+		db, s.nodeSelf, instances)
 	if err != nil {
 		return
 	}
@@ -280,7 +288,7 @@ func (s *State) init() (err error) {
 	s.vpcsMap = vpcsMap
 
 	recrds, err := domain.GetRecordAll(db, &bson.M{
-		"node": node.Self.Id,
+		"node": s.nodeSelf.Id,
 	})
 
 	domainRecordsMap := map[primitive.ObjectID][]*domain.Record{}
