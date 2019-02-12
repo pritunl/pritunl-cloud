@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/firewall"
@@ -26,7 +27,10 @@ type Rules struct {
 }
 
 type State struct {
-	Interfaces map[string]*Rules
+	HostNat          bool
+	HostNatExcludes  set.Set
+	HostNatInterface string
+	Interfaces       map[string]*Rules
 }
 
 func (r *Rules) newCommand() (cmd []string) {

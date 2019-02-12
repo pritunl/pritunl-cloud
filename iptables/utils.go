@@ -74,6 +74,76 @@ func getIptablesCmd(ipv6 bool) string {
 	}
 }
 
+func loadIptablesNat(state *State) (err error) {
+	Lock()
+	defer Unlock()
+
+	hostNat := false
+	hostNatInterface := ""
+	hostNatExcludes := set.NewSet()
+	iptablesCmd := getIptablesCmd(false)
+
+	output, err := utils.ExecOutput("", iptablesCmd, "-t", "nat", "-S")
+	if err != nil {
+		return
+	}
+
+	for _, line := range strings.Split(output, "\n") {
+		if !strings.Contains(line, "POSTROUTING") ||
+			!strings.Contains(line, "pritunl_cloud_host_nat") {
+
+			continue
+		}
+
+		cmd := strings.Fields(line)
+		cmdLen := len(cmd)
+		if cmdLen < 3 {
+			logrus.WithFields(logrus.Fields{
+				"iptables_rule": line,
+			}).Error("iptables: Invalid iptables state")
+
+			err = &errortypes.ParseError{
+				errors.New("iptables: Invalid iptables state"),
+			}
+			return
+		}
+
+		switch cmd[cmdLen-1] {
+		case "ACCEPT":
+			found := false
+			for _, field := range cmd {
+				if found {
+					hostNatExcludes.Add(field)
+					break
+				} else if field == "-d" {
+					found = true
+				}
+			}
+			break
+		case "MASQUERADE":
+			found := false
+			for _, field := range cmd {
+				if found {
+					hostNat = true
+					hostNatInterface = field
+					break
+				} else if field == "-o" {
+					found = true
+				}
+			}
+			break
+		default:
+			// TODO Remove invalid rule
+		}
+	}
+
+	state.HostNat = hostNat
+	state.HostNatInterface = hostNatInterface
+	state.HostNatExcludes = hostNatExcludes
+
+	return
+}
+
 func loadIptables(namespace string, state *State, ipv6 bool) (err error) {
 	Lock()
 	defer Unlock()
@@ -225,6 +295,106 @@ func applyState(oldState, newState *State, namespaces []string) (err error) {
 		}
 	}
 
+	iptablesCmd := getIptablesCmd(false)
+	if oldState.HostNat != newState.HostNat ||
+		oldState.HostNatInterface != newState.HostNatInterface {
+
+		if newState.HostNat {
+			if oldState.HostNat {
+				_, err = utils.ExecCombinedOutputLogged(
+					[]string{
+						"matching rule exist",
+						"match by that name",
+					},
+					iptablesCmd,
+					"-t", "nat",
+					"-D", "POSTROUTING",
+					"-o", oldState.HostNatInterface,
+					"-m", "comment",
+					"--comment", "pritunl_cloud_host_nat",
+					"-j", "MASQUERADE",
+				)
+				if err != nil {
+					return
+				}
+			}
+			_, err = utils.ExecCombinedOutputLogged(
+				[]string{
+					"matching rule exist",
+				},
+				iptablesCmd,
+				"-t", "nat",
+				"-A", "POSTROUTING",
+				"-o", newState.HostNatInterface,
+				"-m", "comment",
+				"--comment", "pritunl_cloud_host_nat",
+				"-j", "MASQUERADE",
+			)
+			if err != nil {
+				return
+			}
+		} else if oldState.HostNat {
+			_, err = utils.ExecCombinedOutputLogged(
+				[]string{
+					"matching rule exist",
+					"match by that name",
+				},
+				iptablesCmd,
+				"-t", "nat",
+				"-D", "POSTROUTING",
+				"-o", oldState.HostNatInterface,
+				"-m", "comment",
+				"--comment", "pritunl_cloud_host_nat",
+				"-j", "MASQUERADE",
+			)
+			if err != nil {
+				return
+			}
+		}
+	}
+
+	remNatExcludes := oldState.HostNatExcludes.Copy()
+	remNatExcludes.Subtract(newState.HostNatExcludes)
+	for natExcludeInf := range remNatExcludes.Iter() {
+		natExclude := natExcludeInf.(string)
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{
+				"matching rule exist",
+			},
+			iptablesCmd,
+			"-t", "nat",
+			"-D", "POSTROUTING",
+			"-d", natExclude,
+			"-m", "comment",
+			"--comment", "pritunl_cloud_host_nat",
+			"-j", "ACCEPT",
+		)
+		if err != nil {
+			return
+		}
+	}
+
+	addNatExcludes := newState.HostNatExcludes.Copy()
+	addNatExcludes.Subtract(oldState.HostNatExcludes)
+	for natExcludeInf := range addNatExcludes.Iter() {
+		natExclude := natExcludeInf.(string)
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{
+				"matching rule exist",
+			},
+			iptablesCmd,
+			"-t", "nat",
+			"-I", "POSTROUTING", "1",
+			"-d", natExclude,
+			"-m", "comment",
+			"--comment", "pritunl_cloud_host_nat",
+			"-j", "ACCEPT",
+		)
+		if err != nil {
+			return
+		}
+	}
+
 	for _, rules := range newState.Interfaces {
 		if rules.Namespace != "0" && !namespacesSet.Contains(rules.Namespace) {
 			_, err = utils.ExecCombinedOutputLogged(
@@ -275,15 +445,15 @@ func applyState(oldState, newState *State, namespaces []string) (err error) {
 	return
 }
 
-func UpdateState(instances []*instance.Instance, namespaces []string,
-	nodeFirewall []*firewall.Rule, firewalls map[string][]*firewall.Rule) (
-	err error) {
+func UpdateState(nodeSelf *node.Node, instances []*instance.Instance,
+	namespaces []string, nodeFirewall []*firewall.Rule,
+	firewalls map[string][]*firewall.Rule) (err error) {
 
 	lockId := stateLock.Lock()
 	defer stateLock.Unlock(lockId)
 
 	externalNetwork := true
-	if node.Self.NetworkMode == node.Internal {
+	if nodeSelf.NetworkMode == node.Internal {
 		externalNetwork = false
 	}
 
@@ -295,10 +465,22 @@ func UpdateState(instances []*instance.Instance, namespaces []string,
 		newState.Interfaces["0-host"] = generate("0", "host", nodeFirewall)
 	}
 
+	hostNat := false
 	hostNetwork := false
-	if !node.Self.HostBlock.IsZero() {
+	natExcludesSet := set.NewSet()
+	if !nodeSelf.HostBlock.IsZero() {
 		hostNetwork = true
+		hostNat = nodeSelf.HostNat
+		natExcludes := nodeSelf.HostNatExcludes
+		if hostNat && natExcludes != nil {
+			for _, natExclude := range natExcludes {
+				natExcludesSet.Add(natExclude)
+			}
+		}
 	}
+	newState.HostNat = hostNat
+	newState.HostNatExcludes = natExcludesSet
+	newState.HostNatInterface = "eth0"
 
 	for _, inst := range instances {
 		if !inst.IsActive() {
@@ -439,7 +621,8 @@ func Recover() (err error) {
 		return
 	}
 
-	nodeFirewall, firewalls, err := firewall.GetAllIngress(db, instances)
+	nodeFirewall, firewalls, err := firewall.GetAllIngress(
+		db, node.Self, instances)
 	if err != nil {
 		return
 	}
@@ -506,6 +689,11 @@ func Init(namespaces []string, instances []*instance.Instance,
 		Interfaces: map[string]*Rules{},
 	}
 
+	err = loadIptablesNat(state)
+	if err != nil {
+		return
+	}
+
 	err = loadIptables("0", state, false)
 	if err != nil {
 		return
@@ -530,7 +718,8 @@ func Init(namespaces []string, instances []*instance.Instance,
 
 	curState = state
 
-	err = UpdateState(instances, namespaces, nodeFirewall, firewalls)
+	err = UpdateState(node.Self, instances, namespaces,
+		nodeFirewall, firewalls)
 	if err != nil {
 		return
 	}
