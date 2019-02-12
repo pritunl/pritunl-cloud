@@ -230,6 +230,30 @@ func (n *Node) Validate(db *database.Database) (
 		return
 	}
 
+	if n.HostNatExcludes == nil {
+		n.HostNatExcludes = []string{}
+	}
+
+	if !n.HostBlock.IsZero() && n.HostNat {
+		hostNatExcludes := []string{}
+		for _, hostNat := range n.HostNatExcludes {
+			_, hostNatNet, e := net.ParseCIDR(hostNat)
+			if e != nil {
+				errData = &errortypes.ErrorData{
+					Error:   "invalid_host_nat_exclude",
+					Message: "Host NAT network exclude is invalid",
+				}
+				return
+			}
+
+			hostNatExcludes = append(hostNatExcludes, hostNatNet.String())
+		}
+		n.HostNatExcludes = hostNatExcludes
+	} else {
+		n.HostNat = false
+		n.HostNatExcludes = []string{}
+	}
+
 	n.Format()
 
 	return
