@@ -1192,7 +1192,7 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			"ip", "netns", "exec", namespace,
 			"iptables",
 			"-I", "FORWARD", "1",
-			"!", "-d", addr.String() + "/32",
+			"!", "-d", addr.String()+"/32",
 			"-i", ifaceExternal,
 			"-j", "DROP",
 		)
@@ -1207,6 +1207,7 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			"ip", "netns", "exec", namespace,
 			"iptables", "-t", "nat",
 			"-A", "POSTROUTING",
+			"-s", addr.String()+"/32",
 			"-o", ifaceExternal,
 			"-j", "MASQUERADE",
 		)
@@ -1237,7 +1238,7 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 				"ip", "netns", "exec", namespace,
 				"ip6tables",
 				"-I", "FORWARD", "1",
-				"!", "-d", addr6.String() + "/128",
+				"!", "-d", addr6.String()+"/128",
 				"-i", ifaceExternal,
 				"-j", "DROP",
 			)
@@ -1252,6 +1253,7 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 				"ip", "netns", "exec", namespace,
 				"ip6tables", "-t", "nat",
 				"-A", "POSTROUTING",
+				"-s", addr6.String()+"/32",
 				"-o", ifaceExternal,
 				"-j", "MASQUERADE",
 			)
@@ -1289,7 +1291,7 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			"ip", "netns", "exec", namespace,
 			"iptables",
 			"-I", "FORWARD", "1",
-			"!", "-d", addr.String() + "/32",
+			"!", "-d", addr.String()+"/32",
 			"-i", ifaceHost,
 			"-j", "DROP",
 		)
@@ -1304,6 +1306,7 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			"ip", "netns", "exec", namespace,
 			"iptables", "-t", "nat",
 			"-A", "POSTROUTING",
+			"-s", addr.String()+"/32",
 			"-o", ifaceHost,
 			"-j", "MASQUERADE",
 		)
