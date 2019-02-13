@@ -15,6 +15,13 @@ type RouteTable struct {
 	routeRules []core.RouteRule
 }
 
+func (r *RouteTable) RouteExists(dest string, nextHopId string) bool {
+	if r.Routes[dest] == nextHopId {
+		return true
+	}
+	return false
+}
+
 func GetRouteTables(pv *Provider, vcnId string) (
 	tables []*RouteTable, err error) {
 
