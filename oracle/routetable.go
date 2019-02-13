@@ -22,6 +22,55 @@ func (r *RouteTable) RouteExists(dest string, nextHopId string) bool {
 	return false
 }
 
+func (r *RouteTable) RouteUpsert(dest string, nextHopId string) bool {
+	for i, routeRule := range r.routeRules {
+		if routeRule.Destination != nil &&
+			*routeRule.Destination == dest {
+
+			if routeRule.NetworkEntityId != nil &&
+				*routeRule.NetworkEntityId != nextHopId {
+
+				routeRule.NetworkEntityId = &nextHopId
+				r.routeRules[i] = routeRule
+				return true
+			} else {
+				return false
+			}
+		}
+	}
+
+	routeRule := core.RouteRule{
+		Destination:     &dest,
+		NetworkEntityId: &nextHopId,
+	}
+	r.routeRules = append(r.routeRules, routeRule)
+	return true
+}
+
+func (r *RouteTable) CommitRouteRules(pv *Provider) (err error) {
+	client, err := pv.GetNetworkClient()
+	if err != nil {
+		return
+	}
+
+	req := core.UpdateRouteTableRequest{
+		RtId: &r.Id,
+		UpdateRouteTableDetails: core.UpdateRouteTableDetails{
+			RouteRules: r.routeRules,
+		},
+	}
+
+	_, err = client.UpdateRouteTable(context.Background(), req)
+	if err != nil {
+		err = &errortypes.RequestError{
+			errors.Wrap(err, "oracle: Failed to update route table"),
+		}
+		return
+	}
+
+	return
+}
+
 func GetRouteTables(pv *Provider, vcnId string) (
 	tables []*RouteTable, err error) {
 
