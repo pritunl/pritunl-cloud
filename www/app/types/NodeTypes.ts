@@ -44,6 +44,9 @@ export interface Node {
 	forwarded_for_header?: string;
 	forwarded_proto_header?: string;
 	software_version?: string;
+	oracle_user?: string;
+	oracle_public_key?: string;
+	oracle_host_route?: boolean;
 }
 
 export interface Filter {
