@@ -53,6 +53,7 @@ type Node struct {
 	InternalInterfaces   []string                   `bson:"internal_interfaces" json:"internal_interfaces"`
 	AvailableInterfaces  []string                   `bson:"available_interfaces" json:"available_interfaces"`
 	AvailableBridges     []string                   `bson:"available_bridges" json:"available_bridges"`
+	DefaultInterface     string                     `bson:"default_interface" json:"default_interface"`
 	NetworkMode          string                     `bson:"network_mode" json:"network_mode"`
 	Blocks               []*BlockAttachment         `bson:"blocks" json:"blocks"`
 	HostBlock            primitive.ObjectID         `bson:"host_block,omitempty" json:"host_block"`
@@ -106,6 +107,7 @@ func (n *Node) Copy() *Node {
 		InternalInterfaces:   n.InternalInterfaces,
 		AvailableInterfaces:  n.AvailableInterfaces,
 		AvailableBridges:     n.AvailableBridges,
+		DefaultInterface:     n.DefaultInterface,
 		NetworkMode:          n.NetworkMode,
 		Blocks:               n.Blocks,
 		HostBlock:            n.HostBlock,
@@ -499,6 +501,7 @@ func (n *Node) update(db *database.Database) (err error) {
 				"private_ips":          n.PrivateIps,
 				"available_interfaces": n.AvailableInterfaces,
 				"available_bridges":    n.AvailableBridges,
+				"default_interface":    n.DefaultInterface,
 			},
 		},
 		opts,
@@ -614,6 +617,8 @@ func (n *Node) sync() {
 	}
 
 	if defaultIface != "" {
+		n.DefaultInterface = defaultIface
+
 		pubAddr, pubAddr6, err := bridges.GetIpAddrs(defaultIface)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
