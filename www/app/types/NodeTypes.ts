@@ -24,6 +24,7 @@ export interface Node {
 	internal_interfaces?: string[];
 	available_interfaces?: string[];
 	available_bridges?: string[];
+	default_interface?: string;
 	blocks?: BlockAttachment[];
 	host_block?: string;
 	host_nat?: boolean;
