@@ -77,6 +77,10 @@ type Node struct {
 	Version              int                        `bson:"version" json:"-"`
 	VirtPath             string                     `bson:"virt_path" json:"virt_path"`
 	CachePath            string                     `bson:"cache_path" json:"cache_path"`
+	OracleUser           string                     `bson:"oracle_user" json:"oracle_user"`
+	OraclePrivateKey     string                     `bson:"oracle_private_key" json:"-"`
+	OraclePublicKey      string                     `bson:"oracle_public_key" json:"oracle_public_key"`
+	OracleHostRoute      bool                       `bson:"oracle_host_route" json:"oracle_host_route"`
 	CertificateObjs      []*certificate.Certificate `bson:"-" json:"-"`
 	reqLock              sync.Mutex                 `bson:"-" json:"-"`
 	reqCount             *list.List                 `bson:"-" json:"-"`
@@ -131,6 +135,10 @@ func (n *Node) Copy() *Node {
 		Version:              n.Version,
 		VirtPath:             n.VirtPath,
 		CachePath:            n.CachePath,
+		OracleUser:           n.OracleUser,
+		OraclePrivateKey:     n.OraclePrivateKey,
+		OraclePublicKey:      n.OraclePublicKey,
+		OracleHostRoute:      n.OracleHostRoute,
 		CertificateObjs:      n.CertificateObjs,
 		reqLock:              n.reqLock,
 		reqCount:             n.reqCount,
@@ -310,6 +318,18 @@ func (n *Node) Validate(db *database.Database) (
 	} else {
 		n.HostNat = false
 		n.HostNatExcludes = []string{}
+	}
+
+	if n.OracleHostRoute {
+		if n.OracleUser == "" {
+			errData = &errortypes.ErrorData{
+				Error:   "missing_oracle_user",
+				Message: "Oracle user OCID required for host routing",
+			}
+			return
+		}
+	} else {
+		n.OracleUser = ""
 	}
 
 	n.Format()
@@ -539,6 +559,10 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.NetworkRoles = nde.NetworkRoles
 	n.VirtPath = nde.VirtPath
 	n.CachePath = nde.CachePath
+	n.OracleUser = nde.OracleUser
+	n.OraclePrivateKey = nde.OraclePrivateKey
+	n.OraclePublicKey = nde.OraclePublicKey
+	n.OracleHostRoute = nde.OracleHostRoute
 
 	return
 }
@@ -784,6 +808,17 @@ func (n *Node) Init() (err error) {
 		"software_version": n.SoftwareVersion,
 	}
 
+	if n.OraclePublicKey == "" || n.OraclePrivateKey == "" {
+		privKey, pubKey, e := utils.GenerateRsaKey()
+		if e != nil {
+			err = e
+			return
+		}
+
+		bsonSet["oracle_public_key"] = string(pubKey)
+		bsonSet["oracle_private_key"] = string(privKey)
+	}
+
 	// Database upgrade
 	if n.InternalInterfaces == nil {
 		ifaces := []string{}
@@ -830,6 +865,8 @@ func (n *Node) Init() (err error) {
 	if err != nil {
 		return
 	}
+
+	n.sync()
 
 	event.PublishDispatch(db, "node.change")
 
