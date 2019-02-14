@@ -468,7 +468,7 @@ func UpdateState(nodeSelf *node.Node, instances []*instance.Instance,
 	hostNat := false
 	hostNetwork := false
 	natExcludesSet := set.NewSet()
-	if !nodeSelf.HostBlock.IsZero() {
+	if !nodeSelf.HostBlock.IsZero() && nodeSelf.DefaultInterface != "" {
 		hostNetwork = true
 		hostNat = nodeSelf.HostNat
 		natExcludes := nodeSelf.HostNatExcludes
@@ -477,10 +477,10 @@ func UpdateState(nodeSelf *node.Node, instances []*instance.Instance,
 				natExcludesSet.Add(natExclude)
 			}
 		}
+		newState.HostNatInterface = nodeSelf.DefaultInterface
 	}
 	newState.HostNat = hostNat
 	newState.HostNatExcludes = natExcludesSet
-	newState.HostNatInterface = "eth0"
 
 	for _, inst := range instances {
 		if !inst.IsActive() {
