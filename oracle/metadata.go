@@ -36,9 +36,9 @@ type ociMeta struct {
 	Vnics    []ociMetaVnic   `json:"vnics"`
 }
 
-func GetMetadata() (mdata *Metadata, err error) {
-	userOcid := node.Self.OracleUser
-	privateKey := node.Self.OraclePrivateKey
+func GetMetadata(nde *node.Node) (mdata *Metadata, err error) {
+	userOcid := nde.OracleUser
+	privateKey := nde.OraclePrivateKey
 
 	output, err := utils.ExecOutput("", "oci-metadata", "--json")
 	if err != nil {
