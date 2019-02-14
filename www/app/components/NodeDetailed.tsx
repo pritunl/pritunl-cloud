@@ -1447,6 +1447,10 @@ export default class NodeDetailed extends React.Component<Props, State> {
 								value: (this.props.node.memory_units || 'Unknown').toString(),
 							},
 							{
+								label: 'Default Interface',
+								value: this.props.node.default_interface || 'Unknown',
+							},
+							{
 								label: 'Public IPv4',
 								value: publicIps,
 								copy: true,
