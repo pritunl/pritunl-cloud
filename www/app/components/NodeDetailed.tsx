@@ -14,6 +14,7 @@ import PageInputSwitch from './PageInputSwitch';
 import PageSelect from './PageSelect';
 import PageSelectButton from './PageSelectButton';
 import PageInputButton from './PageInputButton';
+import PageTextArea from './PageTextArea';
 import PageInfo from './PageInfo';
 import PageSave from './PageSave';
 import NodeBlock from './NodeBlock';
@@ -212,9 +213,14 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			};
 		}
 
+		let zoneId = node.zone;
+		if (this.state.zone) {
+			zoneId = this.state.zone;
+		}
+
 		let vxlan = false;
 		for (let zne of this.props.zones) {
-			if (zne.id === node.zone) {
+			if (zne.id === zoneId) {
 				if (zne.network_mode === 'vxlan_vlan') {
 					vxlan = true;
 				}
@@ -1313,7 +1319,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					>
 						Host Network NAT Excludes
 						<Help
-							title="Host Network NAT Excludes"
+							title="Host network NAT excludes"
 							content="Networks that will be excluded from host network NAT. These networks will still be routable without NAT."
 						/>
 						<div>
@@ -1335,6 +1341,41 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							});
 						}}
 						onSubmit={this.onAddHostNatExclude}
+					/>
+					<PageSwitch
+						disabled={this.state.disabled}
+						hidden={!node.host_block}
+						label="Oracle Cloud host routing"
+						help="Automatically update Oracle Cloud routing tables with host network."
+						checked={node.oracle_host_route}
+						onToggle={(): void => {
+							this.set('oracle_host_route', !node.oracle_host_route);
+						}}
+					/>
+					<PageInput
+						disabled={this.state.disabled}
+						hidden={!node.oracle_host_route}
+						label="Oracle Cloud User OCID"
+						help="User OCID for Oracle Cloud API authentication."
+						type="text"
+						placeholder="Enter user OCID"
+						value={node.oracle_user}
+						onChange={(val): void => {
+							this.set('oracle_user', val);
+						}}
+					/>
+					<PageTextArea
+						disabled={this.state.disabled}
+						hidden={!node.oracle_host_route}
+						label="Oracle Cloud Public Key"
+						help="Public key for Oracle Cloud API authentication."
+						placeholder="Oracle Cloud public key"
+						readOnly={true}
+						rows={6}
+						value={node.oracle_public_key}
+						onChange={(val: string): void => {
+							this.set('oracle_public_key', val);
+						}}
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
