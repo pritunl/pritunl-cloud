@@ -4,9 +4,8 @@ import (
 	"context"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/pritunl-cloud/errortypes"
-
 	"github.com/oracle/oci-go-sdk/core"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 )
 
 type Vnic struct {
@@ -15,6 +14,7 @@ type Vnic struct {
 	IsPrimary           bool
 	MacAddress          string
 	PrivateIp           string
+	PrivateIpId         string
 	PublicIp            string
 	SkipSourceDestCheck bool
 }
@@ -82,6 +82,29 @@ func GetVnic(pv *Provider, vnicId string) (vnic *Vnic, err error) {
 	}
 	if orcVnic.SkipSourceDestCheck != nil {
 		vnic.SkipSourceDestCheck = *orcVnic.SkipSourceDestCheck
+	}
+
+	limit := 10
+	ipReq := core.ListPrivateIpsRequest{
+		VnicId: &vnic.Id,
+		Limit:  &limit,
+	}
+
+	orcIps, err := client.ListPrivateIps(context.Background(), ipReq)
+	if err != nil {
+		err = &errortypes.RequestError{
+			errors.Wrap(err, "oracle: Failed to get vnic ips"),
+		}
+		return
+	}
+
+	if orcIps.Items != nil {
+		for _, orcIp := range orcIps.Items {
+			if orcIp.IsPrimary != nil && *orcIp.IsPrimary && orcIp.Id != nil {
+				vnic.PrivateIpId = *orcIp.Id
+				break
+			}
+		}
 	}
 
 	return
