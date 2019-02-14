@@ -117,6 +117,28 @@ func (b *Block) GetGatewayCidr() string {
 	return fmt.Sprintf("%s/%d", staticGateway.String(), staticSize)
 }
 
+func (b *Block) GetNetwork() (staticNet *net.IPNet, err error) {
+	staticMask := utils.ParseIpMask(b.Netmask)
+	if staticMask == nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "block: Invalid netmask"),
+		}
+		return
+	}
+	staticSize, _ := staticMask.Size()
+
+	_, staticNet, err = net.ParseCIDR(
+		fmt.Sprintf("%s/%d", b.Gateway, staticSize))
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "block: Failed to parse network cidr"),
+		}
+		return
+	}
+
+	return
+}
+
 func (b *Block) GetIps(db *database.Database) (blckIps set.Set, err error) {
 	coll := db.BlocksIp()
 
