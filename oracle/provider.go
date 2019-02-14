@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/oracle/oci-go-sdk/core"
+	"github.com/pritunl/pritunl-cloud/node"
 )
 
 type Provider struct {
@@ -63,8 +64,10 @@ func (p *Provider) GetNetworkClient() (
 	return
 }
 
-func NewProvider(mdata *Metadata) (prov *Provider, err error) {
-	privateKey, fingerprint, err := loadPrivateKey()
+func NewProvider(nde *node.Node, mdata *Metadata) (
+	prov *Provider, err error) {
+
+	privateKey, fingerprint, err := loadPrivateKey(nde)
 	if err != nil {
 		return
 	}
