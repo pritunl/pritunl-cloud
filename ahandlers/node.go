@@ -41,6 +41,8 @@ type nodeData struct {
 	ForwardedProtoHeader string                  `json:"forwarded_proto_header"`
 	Firewall             bool                    `json:"firewall"`
 	NetworkRoles         []string                `json:"network_roles"`
+	OracleUser           string                  `bson:"oracle_user" json:"oracle_user"`
+	OracleHostRoute      bool                    `bson:"oracle_host_route" json:"oracle_host_route"`
 }
 
 type nodesData struct {
@@ -94,6 +96,8 @@ func nodePut(c *gin.Context) {
 	nde.ForwardedProtoHeader = data.ForwardedProtoHeader
 	nde.Firewall = data.Firewall
 	nde.NetworkRoles = data.NetworkRoles
+	nde.OracleUser = data.OracleUser
+	nde.OracleHostRoute = data.OracleHostRoute
 
 	fields := set.NewSet(
 		"name",
@@ -117,6 +121,8 @@ func nodePut(c *gin.Context) {
 		"forwarded_proto_header",
 		"firewall",
 		"network_roles",
+		"oracle_user",
+		"oracle_host_route",
 	)
 
 	if !data.Zone.IsZero() && data.Zone != nde.Zone {
