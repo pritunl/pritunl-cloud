@@ -167,7 +167,7 @@ export default class InstancesFilter extends React.Component<Props, {}> {
 					{nodesSelect}
 				</select>
 			</div>
-			<div className="bp3-select" style={css.type} hidden={Constants.user}>
+			<div className="bp3-select" style={css.type}>
 				<select
 					value={this.props.filter.zone || 'any'}
 					onChange={(evt): void => {
