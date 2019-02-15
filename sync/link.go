@@ -5,7 +5,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/pritunl/pritunl-cloud/ipsec"
-	"github.com/pritunl/pritunl-cloud/node"
 )
 
 func linkRunner() {
@@ -25,10 +24,6 @@ func linkRunner() {
 
 	for {
 		time.Sleep(2 * time.Second)
-
-		if !node.Self.IsHypervisor() {
-			continue
-		}
 
 		err := ipsec.SyncState()
 		if err != nil {
