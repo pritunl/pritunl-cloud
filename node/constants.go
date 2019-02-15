@@ -7,6 +7,7 @@ const (
 	Admin      = "admin"
 	User       = "user"
 	Hypervisor = "hypervisor"
+	Ipsec      = "ipsec"
 
 	Qemu = "qemu"
 	Kvm  = "kvm"
