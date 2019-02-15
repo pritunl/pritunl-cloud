@@ -1,8 +1,6 @@
 package oracle
 
 import (
-	"fmt"
-
 	"github.com/pritunl/pritunl-cloud/state"
 )
 
@@ -64,7 +62,6 @@ func ApplyState(stat *state.State) (err error) {
 	}
 
 	for _, table := range tables {
-		fmt.Println(table.Routes)
 		if table.RouteUpsert(blckNet.String(), vnic.PrivateIpId) {
 			err = table.CommitRouteRules(pv)
 			if err != nil {
