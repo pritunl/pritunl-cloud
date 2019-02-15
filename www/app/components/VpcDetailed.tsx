@@ -3,6 +3,7 @@ import * as React from 'react';
 import * as VpcTypes from '../types/VpcTypes';
 import * as VpcActions from '../actions/VpcActions';
 import * as OrganizationTypes from "../types/OrganizationTypes";
+import * as PageInfos from './PageInfo';
 import DatacentersStore from "../stores/DatacentersStore";
 import OrganizationsStore from "../stores/OrganizationsStore";
 import VpcRoute from './VpcRoute';
@@ -455,6 +456,37 @@ export default class VpcDetailed extends React.Component<Props, State> {
 			);
 		}
 
+		let fields: PageInfos.Field[] = [
+			{
+				label: 'ID',
+				value: this.props.vpc.id || 'Unknown',
+			},
+			{
+				label: 'Datacenter',
+				value: datacenterName,
+			},
+			{
+				label: 'Organization',
+				value: org ? org.name : this.props.vpc.organization,
+			},
+			{
+				label: 'VLAN Number',
+				value: this.props.vpc.vpc_id || 'Unknown',
+			},
+			{
+				label: 'Private IPv6 Network',
+				value: this.props.vpc.network6 || 'Unknown',
+				copy: true,
+			},
+		];
+
+		if (this.props.vpc.link_node) {
+			fields.push({
+				label: 'Link Node',
+				value: this.props.vpc.link_node,
+			});
+		}
+
 		return <td
 			className="bp3-cell"
 			colSpan={5}
@@ -544,29 +576,7 @@ export default class VpcDetailed extends React.Component<Props, State> {
 				</div>
 				<div style={css.group}>
 					<PageInfo
-						fields={[
-							{
-								label: 'ID',
-								value: this.props.vpc.id || 'Unknown',
-							},
-							{
-								label: 'Datacenter',
-								value: datacenterName,
-							},
-							{
-								label: 'Organization',
-								value: org ? org.name : this.props.vpc.organization,
-							},
-							{
-								label: 'VLAN Number',
-								value: this.props.vpc.vpc_id || 'Unknown',
-							},
-							{
-								label: 'Private IPv6 Network',
-								value: this.props.vpc.network6 || 'Unknown',
-								copy: true,
-							},
-						]}
+						fields={fields}
 					/>
 				</div>
 			</div>
