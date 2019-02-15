@@ -467,6 +467,7 @@ export default class Instances extends React.Component<{}, State> {
 				}}
 				nodes={this.state.nodes}
 				zones={this.state.zones}
+				vpcs={this.state.vpcs}
 				organizations={this.state.organizations}
 			/>
 			<div style={css.itemsBox}>
