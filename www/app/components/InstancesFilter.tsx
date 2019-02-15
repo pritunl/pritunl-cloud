@@ -5,6 +5,7 @@ import * as InstanceTypes from '../types/InstanceTypes';
 import SearchInput from './SearchInput';
 import * as OrganizationTypes from "../types/OrganizationTypes";
 import * as NodeTypes from '../types/NodeTypes';
+import * as VpcTypes from '../types/VpcTypes';
 import * as ZoneTypes from '../types/ZoneTypes';
 
 interface Props {
@@ -13,6 +14,7 @@ interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
 	nodes: NodeTypes.NodesRo;
 	zones: ZoneTypes.ZonesRo;
+	vpcs: VpcTypes.VpcsRo;
 }
 
 const css = {
@@ -86,6 +88,20 @@ export default class InstancesFilter extends React.Component<Props, {}> {
 						key={zone.id}
 						value={zone.id}
 					>{zone.name}</option>,
+				);
+			}
+		}
+
+		let vpcsSelect: JSX.Element[] = [
+			<option key="key" value="any">Any VPC</option>,
+		];
+		if (this.props.vpcs && this.props.vpcs.length) {
+			for (let vpc of this.props.vpcs) {
+				vpcsSelect.push(
+					<option
+						key={vpc.id}
+						value={vpc.id}
+					>{vpc.name}</option>,
 				);
 			}
 		}
@@ -187,6 +203,28 @@ export default class InstancesFilter extends React.Component<Props, {}> {
 					}}
 				>
 					{zonesSelect}
+				</select>
+			</div>
+			<div className="bp3-select" style={css.type}>
+				<select
+					value={this.props.filter.vpc || 'any'}
+					onChange={(evt): void => {
+						let filter = {
+							...this.props.filter,
+						};
+
+						let val = evt.target.value;
+
+						if (val === 'any') {
+							delete filter.vpc;
+						} else {
+							filter.vpc = val;
+						}
+
+						this.props.onFilter(filter);
+					}}
+				>
+					{vpcsSelect}
 				</select>
 			</div>
 			<div className="bp3-select" style={css.type} hidden={Constants.user}>
