@@ -1100,6 +1100,15 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							this.toggleType('hypervisor');
 						}}
 					/>
+					<PageSwitch
+						disabled={this.state.disabled}
+						label="Pritunl Link"
+						help="Run Pritunl Link IPSec connections on this node."
+						checked={types.indexOf('ipsec') !== -1}
+						onToggle={(): void => {
+							this.toggleType('ipsec');
+						}}
+					/>
 					<PageInput
 						disabled={this.state.disabled}
 						hidden={types.indexOf('admin') === -1 ||
