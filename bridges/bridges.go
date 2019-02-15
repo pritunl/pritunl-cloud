@@ -43,7 +43,7 @@ func GetBridges() (brdgs []string, err error) {
 			continue
 		}
 
-		if len(fields[0]) == 14 {
+		if len(fields[0]) == 14 || fields[0] == "pritunlhost0" {
 			continue
 		}
 
