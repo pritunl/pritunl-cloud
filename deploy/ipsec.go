@@ -31,6 +31,7 @@ func (t *Ipsec) Deploy() (err error) {
 	db := database.GetDatabase()
 	defer db.Close()
 
+	nodeSelf := t.stat.Node()
 	curVpcs := set.NewSet()
 	curNamespaces := set.NewSet()
 	curVirtIfaces := set.NewSet()
@@ -38,25 +39,27 @@ func (t *Ipsec) Deploy() (err error) {
 	newState := []*vpc.Vpc{}
 
 	vpcs := t.stat.Vpcs()
-	for _, vc := range vpcs {
-		if vc.LinkUris == nil || len(vc.LinkUris) == 0 {
-			continue
+	if nodeSelf.IsIpsec() {
+		for _, vc := range vpcs {
+			if vc.LinkUris == nil || len(vc.LinkUris) == 0 {
+				continue
+			}
+
+			if vc.LinkNode != node.Self.Id &&
+				time.Since(vc.LinkTimestamp) < time.Duration(
+					settings.Ipsec.LinkTimeout)*time.Second {
+
+				continue
+			}
+
+			curVpcs.Add(vc.Id)
+			curNamespaces.Add(vm.GetLinkNamespace(vc.Id, 0))
+			curVirtIfaces.Add(vm.GetLinkIfaceVirt(vc.Id, 0))
+			curVirtIfaces.Add(vm.GetLinkIfaceVirt(vc.Id, 1))
+			curExternalIfaces.Add(vm.GetLinkIfaceExternal(vc.Id, 0))
+
+			newState = append(newState, vc)
 		}
-
-		if vc.LinkNode != node.Self.Id &&
-			time.Since(vc.LinkTimestamp) < time.Duration(
-				settings.Ipsec.LinkTimeout)*time.Second {
-
-			continue
-		}
-
-		curVpcs.Add(vc.Id)
-		curNamespaces.Add(vm.GetLinkNamespace(vc.Id, 0))
-		curVirtIfaces.Add(vm.GetLinkIfaceVirt(vc.Id, 0))
-		curVirtIfaces.Add(vm.GetLinkIfaceVirt(vc.Id, 1))
-		curExternalIfaces.Add(vm.GetLinkIfaceExternal(vc.Id, 0))
-
-		newState = append(newState, vc)
 	}
 
 	ipsec.ApplyState(newState)
