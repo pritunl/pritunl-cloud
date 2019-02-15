@@ -21,7 +21,9 @@ func GetStatus(vpcId primitive.ObjectID) (status Status, err error) {
 	namespace := vm.GetLinkNamespace(vpcId, 0)
 
 	output, err := utils.ExecCombinedOutputLogged(
-		nil,
+		[]string{
+			"No such file",
+		},
 		"ip", "netns", "exec", namespace,
 		"ipsec", "status",
 	)
