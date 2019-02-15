@@ -195,6 +195,15 @@ func (n *Node) IsHypervisor() bool {
 	return false
 }
 
+func (n *Node) IsIpsec() bool {
+	for _, typ := range n.Types {
+		if typ == Ipsec {
+			return true
+		}
+	}
+	return false
+}
+
 func (n *Node) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
