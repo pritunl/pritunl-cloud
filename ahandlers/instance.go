@@ -447,6 +447,11 @@ func instancesGet(c *gin.Context) {
 			query["zone"] = zoneId
 		}
 
+		vpcId, ok := utils.ParseObjectId(c.Query("vpc"))
+		if ok {
+			query["vpc"] = vpcId
+		}
+
 		organization, ok := utils.ParseObjectId(c.Query("organization"))
 		if ok {
 			query["organization"] = organization
