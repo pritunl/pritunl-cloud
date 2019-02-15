@@ -15,6 +15,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/interfaces"
+	"github.com/pritunl/pritunl-cloud/iptables"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/settings"
@@ -304,6 +305,34 @@ func networkConf(db *database.Database, vc *vpc.Vpc,
 		"sysctl", "-w",
 		fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", ifaceExternal),
 	)
+	if err != nil {
+		return
+	}
+
+	iptables.Lock()
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", namespace,
+		"iptables",
+		"-A", "FORWARD",
+		"-i", ifaceExternal,
+		"-j", "DROP",
+	)
+	iptables.Unlock()
+	if err != nil {
+		return
+	}
+
+	iptables.Lock()
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", namespace,
+		"ip6tables",
+		"-A", "FORWARD",
+		"-i", ifaceExternal,
+		"-j", "DROP",
+	)
+	iptables.Unlock()
 	if err != nil {
 		return
 	}
