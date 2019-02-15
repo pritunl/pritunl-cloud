@@ -41,6 +41,7 @@ export interface Filter {
 	organization?: string;
 	node?: string;
 	zone?: string;
+	vpc?: string;
 }
 
 export interface Info {
