@@ -40,10 +40,6 @@ func networkConf(db *database.Database, vc *vpc.Vpc,
 		return
 	}
 
-	logrus.WithFields(logrus.Fields{
-		"vpc_id": vc.Id.Hex(),
-	}).Info("ipsec: Configuring ipsec network namespace")
-
 	jumboFrames := node.Self.JumboFrames
 	namespace := vm.GetLinkNamespace(vc.Id, 0)
 	ifaceExternalVirt := vm.GetLinkIfaceVirt(vc.Id, 0)
@@ -54,7 +50,12 @@ func networkConf(db *database.Database, vc *vpc.Vpc,
 	pidPath := fmt.Sprintf("/var/run/dhclient-%s.pid", ifaceExternal)
 	namespacePth := fmt.Sprintf("/etc/netns/%s", namespace)
 	vcIdPth := fmt.Sprintf("%s/vpc.id", namespacePth)
-	leasePath := paths.GetLeasePath(vc.Id)
+	leasePath := paths.GetLinkLeasePath()
+
+	logrus.WithFields(logrus.Fields{
+		"vpc_id":    vc.Id.Hex(),
+		"namespace": namespace,
+	}).Info("ipsec: Configuring ipsec network namespace")
 
 	zne, err := zone.Get(db, node.Self.Zone)
 	if err != nil {
