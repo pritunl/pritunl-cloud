@@ -10538,7 +10538,7 @@ System.registerDynamic("app/components/PageDateTime.js", ["npm:react@16.7.0.js",
         render() {
             let dateStyle = {};
             let date = new Date(this.props.value);
-            if (!this.props.value || this.props.value === '0001-01-01T00:00:00Z') {
+            if (!this.props.value || this.props.value.includes('0000-12-31') || this.props.value.includes('0001-01-01')) {
                 date = null;
             }
             if (!date || this.props.disabled) {
@@ -10867,7 +10867,7 @@ System.registerDynamic("app/components/NodeBlock.js", ["npm:react@16.7.0.js"], t
     exports.default = NodeBlock;
     
 });
-System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.7.0.js", "app/actions/NodeActions.js", "app/utils/MiscUtils.js", "app/stores/CertificatesStore.js", "app/components/PageInput.js", "app/components/PageSwitch.js", "app/components/PageInputSwitch.js", "app/components/PageSelect.js", "app/components/PageSelectButton.js", "app/components/PageInputButton.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/NodeBlock.js", "app/components/ConfirmButton.js", "app/components/Help.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.7.0.js", "app/actions/NodeActions.js", "app/utils/MiscUtils.js", "app/stores/CertificatesStore.js", "app/components/PageInput.js", "app/components/PageSwitch.js", "app/components/PageInputSwitch.js", "app/components/PageSelect.js", "app/components/PageSelectButton.js", "app/components/PageInputButton.js", "app/components/PageTextArea.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/NodeBlock.js", "app/components/ConfirmButton.js", "app/components/Help.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -10883,6 +10883,7 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.7.0.js",
     const PageSelect_1 = $__require("app/components/PageSelect.js");
     const PageSelectButton_1 = $__require("app/components/PageSelectButton.js");
     const PageInputButton_1 = $__require("app/components/PageInputButton.js");
+    const PageTextArea_1 = $__require("app/components/PageTextArea.js");
     const PageInfo_1 = $__require("app/components/PageInfo.js");
     const PageSave_1 = $__require("app/components/PageSave.js");
     const NodeBlock_1 = $__require("app/components/NodeBlock.js");
@@ -11165,6 +11166,41 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.7.0.js",
                 node.blocks = blocks;
                 this.setState(Object.assign({}, this.state, { changed: true, message: '', node: node }));
             };
+            this.onAddHostNatExclude = () => {
+                let node;
+                if (!this.state.addHostNatExclude) {
+                    return;
+                }
+                if (this.state.changed) {
+                    node = Object.assign({}, this.state.node);
+                } else {
+                    node = Object.assign({}, this.props.node);
+                }
+                let hostNatExcludes = [...(node.host_nat_excludes || [])];
+                let addHostNatExclude = this.state.addHostNatExclude.trim();
+                if (hostNatExcludes.indexOf(addHostNatExclude) === -1) {
+                    hostNatExcludes.push(addHostNatExclude);
+                }
+                hostNatExcludes.sort();
+                node.host_nat_excludes = hostNatExcludes;
+                this.setState(Object.assign({}, this.state, { changed: true, message: '', addHostNatExclude: '', node: node }));
+            };
+            this.onRemoveHostNatExclude = exclude => {
+                let node;
+                if (this.state.changed) {
+                    node = Object.assign({}, this.state.node);
+                } else {
+                    node = Object.assign({}, this.props.node);
+                }
+                let hostNatExcludes = [...(node.host_nat_excludes || [])];
+                let i = hostNatExcludes.indexOf(exclude);
+                if (i === -1) {
+                    return;
+                }
+                hostNatExcludes.splice(i, 1);
+                node.host_nat_excludes = hostNatExcludes;
+                this.setState(Object.assign({}, this.state, { changed: true, message: '', addHostNatExclude: '', node: node }));
+            };
             this.state = {
                 disabled: false,
                 datacenter: '',
@@ -11176,6 +11212,7 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.7.0.js",
                 addInternalIface: null,
                 addCert: null,
                 addNetworkRole: null,
+                addHostNatExclude: null,
                 forwardedChecked: false,
                 forwardedProtoChecked: false
             };
@@ -11225,10 +11262,14 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.7.0.js",
             } else {
                 node = Object.assign({}, this.props.node);
             }
+            let zoneId = node.zone;
+            if (this.state.zone) {
+                zoneId = this.state.zone;
+            }
             let vxlan = false;
             for (let zne of this.props.zones) {
-                if (zne.id === node.zone) {
-                    if (zne.network_mode === 'vxlan') {
+                if (zne.id === zoneId) {
+                    if (zne.network_mode === 'vxlan_vlan') {
                         vxlan = true;
                     }
                     break;
@@ -11299,6 +11340,16 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.7.0.js",
             let internalIfacesSelect = [];
             for (let iface of availableIfaces || []) {
                 internalIfacesSelect.push(React.createElement("option", { key: iface, value: iface }, iface));
+            }
+            let hostBlocksSelect = [React.createElement("option", { key: "null", value: "" }, "Disabled")];
+            for (let blck of this.props.blocks || []) {
+                hostBlocksSelect.push(React.createElement("option", { key: blck.id, value: blck.id }, blck.name));
+            }
+            let hostNatExcludes = [];
+            for (let hostNatExclude of node.host_nat_excludes || []) {
+                hostNatExcludes.push(React.createElement("div", { className: "bp3-tag bp3-tag-removable bp3-intent-primary", style: css.item, key: hostNatExclude }, hostNatExclude, React.createElement("button", { className: "bp3-tag-remove", disabled: this.state.disabled, onMouseUp: () => {
+                        this.onRemoveHostNatExclude(hostNatExclude);
+                    } })));
             }
             let certificates = [];
             for (let certId of node.certificates || []) {
@@ -11377,6 +11428,8 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.7.0.js",
                     this.toggleType('user');
                 } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Hypervisor", help: "Run instances with hypervisor on this node.", checked: types.indexOf('hypervisor') !== -1, onToggle: () => {
                     this.toggleType('hypervisor');
+                } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Pritunl Link", help: "Run Pritunl Link IPSec connections on this node.", checked: types.indexOf('ipsec') !== -1, onToggle: () => {
+                    this.toggleType('ipsec');
                 } }), React.createElement(PageInput_1.default, { disabled: this.state.disabled, hidden: types.indexOf('admin') === -1 || types.indexOf('user') === -1, label: "Admin Domain", help: "Domain that will be used to access the admin interface.", type: "text", placeholder: "Enter admin domain", value: node.admin_domain, onChange: val => {
                     this.set('admin_domain', val);
                 } }), React.createElement(PageInput_1.default, { disabled: this.state.disabled, hidden: types.indexOf('admin') === -1 || types.indexOf('user') === -1, label: "User Domain", help: "Domain that will be used to access the user interface.", type: "text", placeholder: "Enter user domain", value: node.user_domain, onChange: val => {
@@ -11402,11 +11455,23 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.7.0.js",
                     this.setState(Object.assign({}, this.state, { changed: true, node: node, zone: val }));
                 } }, zonesSelect), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "Network Mode", help: "Network mode for public IP addresses. Cannot be changed with instances running.", value: node.network_mode, onChange: val => {
                     this.onNetworkMode(val);
-                } }, React.createElement("option", { value: "dhcp" }, "DHCP"), React.createElement("option", { value: "static" }, "Static")), React.createElement("label", { className: "bp3-label", style: css.label, hidden: node.network_mode !== 'dhcp' && node.network_mode !== '' }, "External Interfaces", React.createElement(Help_1.default, { title: "External Interfaces", content: "External interfaces for instance public interface, must be a bridge interface. Leave blank for automatic configuration." }), React.createElement("div", null, externalIfaces)), React.createElement(PageSelectButton_1.default, { hidden: node.network_mode !== 'dhcp' && node.network_mode !== '', label: "Add Interface", value: this.state.addExternalIface, disabled: !externalIfacesSelect.length || this.state.disabled, buttonClass: "bp3-intent-success", onChange: val => {
+                } }, React.createElement("option", { value: "dhcp" }, "DHCP"), React.createElement("option", { value: "static" }, "Static"), React.createElement("option", { value: "internal" }, "Internal Only")), React.createElement("label", { className: "bp3-label", style: css.label, hidden: node.network_mode !== 'dhcp' && node.network_mode !== '' }, "External Interfaces", React.createElement(Help_1.default, { title: "External Interfaces", content: "External interfaces for instance public interface, must be a bridge interface. Leave blank for automatic configuration." }), React.createElement("div", null, externalIfaces)), React.createElement(PageSelectButton_1.default, { hidden: node.network_mode !== 'dhcp' && node.network_mode !== '', label: "Add Interface", value: this.state.addExternalIface, disabled: !externalIfacesSelect.length || this.state.disabled, buttonClass: "bp3-intent-success", onChange: val => {
                     this.setState(Object.assign({}, this.state, { addExternalIface: val }));
                 }, onSubmit: this.onAddExternalIface }, externalIfacesSelect), React.createElement("label", { className: "bp3-label", style: css.label }, "Internal Interfaces", React.createElement(Help_1.default, { title: "Internal Interfaces", content: "Internal interfaces for instance private VPC interface, must be a bridge interface. Leave blank for to use external interface." }), React.createElement("div", null, internalIfaces)), React.createElement(PageSelectButton_1.default, { label: "Add Interface", value: this.state.addInternalIface, disabled: !internalIfacesSelect.length || this.state.disabled, buttonClass: "bp3-intent-success", onChange: val => {
                     this.setState(Object.assign({}, this.state, { addInternalIface: val }));
-                }, onSubmit: this.onAddInternalIface }, internalIfacesSelect), React.createElement("label", { className: "bp3-label", hidden: node.network_mode !== 'static', style: css.label }, "Interface Block Attachments", blocks), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Jumbo frames", help: "Enable jumbo frames on all interfaces, requires node restart when changed.", checked: node.jumbo_frames, onToggle: () => {
+                }, onSubmit: this.onAddInternalIface }, internalIfacesSelect), React.createElement("label", { className: "bp3-label", hidden: node.network_mode !== 'static', style: css.label }, "Interface Block Attachments", blocks), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "Host Network Block", help: "IP address block to use for static address on host network.", value: node.host_block, onChange: val => {
+                    this.set('host_block', val);
+                } }, hostBlocksSelect), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, hidden: !node.host_block, label: "Host Network NAT", help: "Enable NAT to on the host network.", checked: node.host_nat, onToggle: () => {
+                    this.set('host_nat', !node.host_nat);
+                } }), React.createElement("label", { className: "bp3-label", hidden: !node.host_block || !node.host_nat }, "Host Network NAT Excludes", React.createElement(Help_1.default, { title: "Host network NAT excludes", content: "Networks that will be excluded from host network NAT. These networks will still be routable without NAT." }), React.createElement("div", null, hostNatExcludes)), React.createElement(PageInputButton_1.default, { disabled: this.state.disabled, hidden: !node.host_block || !node.host_nat, buttonClass: "bp3-intent-success bp3-icon-add", label: "Add", type: "text", placeholder: "Add exclude", value: this.state.addHostNatExclude, onChange: val => {
+                    this.setState(Object.assign({}, this.state, { addHostNatExclude: val }));
+                }, onSubmit: this.onAddHostNatExclude }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, hidden: true, label: "Oracle Cloud host routing", help: "Automatically update Oracle Cloud routing tables with host network.", checked: node.oracle_host_route, onToggle: () => {
+                    this.set('oracle_host_route', !node.oracle_host_route);
+                } }), React.createElement(PageInput_1.default, { disabled: this.state.disabled, hidden: !node.oracle_host_route, label: "Oracle Cloud User OCID", help: "User OCID for Oracle Cloud API authentication.", type: "text", placeholder: "Enter user OCID", value: node.oracle_user, onChange: val => {
+                    this.set('oracle_user', val);
+                } }), React.createElement(PageTextArea_1.default, { disabled: this.state.disabled, hidden: !node.oracle_host_route, label: "Oracle Cloud Public Key", help: "Public key for Oracle Cloud API authentication.", placeholder: "Oracle Cloud public key", readOnly: true, rows: 6, value: node.oracle_public_key, onChange: val => {
+                    this.set('oracle_public_key', val);
+                } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Jumbo frames", help: "Enable jumbo frames on all interfaces, requires node restart when changed.", checked: node.jumbo_frames, onToggle: () => {
                     this.set('jumbo_frames', !node.jumbo_frames);
                 } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Firewall", help: "Configure firewall on node. Incorrectly configuring the firewall can block access to the node.", checked: node.firewall, onToggle: () => {
                     this.toggleFirewall();
@@ -11428,6 +11493,9 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.7.0.js",
                 }, {
                     label: 'Memory Units',
                     value: (this.props.node.memory_units || 'Unknown').toString()
+                }, {
+                    label: 'Default Interface',
+                    value: this.props.node.default_interface || 'Unknown'
                 }, {
                     label: 'Public IPv4',
                     value: publicIps,
@@ -13488,7 +13556,7 @@ System.registerDynamic("app/components/Zone.js", ["npm:react@16.7.0.js", "app/ac
                     this.set('name', val);
                 } }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "Network Mode", help: "Network mode for internal VPC networking. If layer 2 networking with VLAN support isn't available VXLan must be used.", value: zone.network_mode, onChange: val => {
                     this.set('network_mode', val);
-                } }, React.createElement("option", { value: "default" }, "Default"), React.createElement("option", { value: "vxlan_vlan" }, "VXLan"))), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
+                } }, React.createElement("option", { value: "default" }, "Default"), React.createElement("option", { value: "vxlan_vlan" }, "VXLAN"))), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
                     label: 'ID',
                     value: this.props.zone.id || 'None'
                 }, {
@@ -14287,6 +14355,29 @@ System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.7.0.js", 
                         this.onRemoveLinkUri(0);
                     } }));
             }
+            let fields = [{
+                label: 'ID',
+                value: this.props.vpc.id || 'Unknown'
+            }, {
+                label: 'Datacenter',
+                value: datacenterName
+            }, {
+                label: 'Organization',
+                value: org ? org.name : this.props.vpc.organization
+            }, {
+                label: 'VLAN Number',
+                value: this.props.vpc.vpc_id || 'Unknown'
+            }, {
+                label: 'Private IPv6 Network',
+                value: this.props.vpc.network6 || 'Unknown',
+                copy: true
+            }];
+            if (this.props.vpc.link_node) {
+                fields.push({
+                    label: 'Link Node',
+                    value: this.props.vpc.link_node
+                });
+            }
             return React.createElement("td", { className: "bp3-cell", colSpan: 5, style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { className: "layout horizontal", style: css.buttons, onClick: evt => {
                     let target = evt.target;
                     if (target.className.indexOf('open-ignore') !== -1) {
@@ -14299,23 +14390,7 @@ System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.7.0.js", 
                     this.set('name', val);
                 } }), React.createElement(PageInput_1.default, { label: "Network", help: "Network address of vpc with cidr.", type: "text", placeholder: "Enter network", value: vpc.network, onChange: val => {
                     this.set('network', val);
-                } }), React.createElement("label", { style: css.itemsLabel }, "Route Table", React.createElement(Help_1.default, { title: "Route Table", content: "VPC routing table, enter a CIDR network for the desitnation and IP address for taget." })), React.createElement("div", { style: css.list }, routes), React.createElement("label", { style: css.itemsLabel }, "Pritunl Link URIs", React.createElement(Help_1.default, { title: "Pritunl Link URIs", content: "Pritunl Link URIs for automated IPsec linking with a Pritunl server." })), React.createElement("div", { style: css.list }, linkUris)), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
-                    label: 'ID',
-                    value: this.props.vpc.id || 'Unknown'
-                }, {
-                    label: 'Datacenter',
-                    value: datacenterName
-                }, {
-                    label: 'Organization',
-                    value: org ? org.name : this.props.vpc.organization
-                }, {
-                    label: 'VLAN Number',
-                    value: this.props.vpc.vpc_id || 'Unknown'
-                }, {
-                    label: 'Private IPv6 Network',
-                    value: this.props.vpc.network6 || 'Unknown',
-                    copy: true
-                }] }))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.vpc && !this.state.message, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
+                } }), React.createElement("label", { style: css.itemsLabel }, "Route Table", React.createElement(Help_1.default, { title: "Route Table", content: "VPC routing table, enter a CIDR network for the desitnation and IP address for taget." })), React.createElement("div", { style: css.list }, routes), React.createElement("label", { style: css.itemsLabel }, "Pritunl Link URIs", React.createElement(Help_1.default, { title: "Pritunl Link URIs", content: "Pritunl Link URIs for automated IPsec linking with a Pritunl server." })), React.createElement("div", { style: css.list }, linkUris)), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: fields }))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.vpc && !this.state.message, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
                     this.setState(Object.assign({}, this.state, { changed: false, vpc: null }));
                 }, onSave: this.onSave }));
         }
@@ -18015,6 +18090,10 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@16.7.0.
             if (!publicIps6 || !publicIps6.length) {
                 publicIps6 = 'None';
             }
+            let hostIps = this.props.instance.host_ips;
+            if (!hostIps || !hostIps.length) {
+                hostIps = 'None';
+            }
             let statusClass = '';
             switch (instance.status) {
                 case 'Running':
@@ -18114,6 +18193,10 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@16.7.0.
                 }, {
                     label: 'Private IPv6',
                     value: privateIps6,
+                    copy: true
+                }, {
+                    label: 'Host IPv4',
+                    value: hostIps,
                     copy: true
                 }, {
                     label: 'Disks',
@@ -18289,6 +18372,8 @@ System.registerDynamic("app/components/Instance.js", ["npm:react@16.7.0.js", "ap
             let privateIp = '';
             if (instance.public_ips && instance.public_ips.length > 0) {
                 publicIp = instance.public_ips[0];
+            } else if (instance.host_ips && instance.host_ips.length > 0) {
+                publicIp = instance.host_ips[0];
             }
             if (instance.private_ips && instance.private_ips.length > 0) {
                 privateIp = instance.private_ips[0];
@@ -19057,6 +19142,12 @@ System.registerDynamic("app/components/InstancesFilter.js", ["npm:react@16.7.0.j
                     zonesSelect.push(React.createElement("option", { key: zone.id, value: zone.id }, zone.name));
                 }
             }
+            let vpcsSelect = [React.createElement("option", { key: "key", value: "any" }, "Any VPC")];
+            if (this.props.vpcs && this.props.vpcs.length) {
+                for (let vpc of this.props.vpcs) {
+                    vpcsSelect.push(React.createElement("option", { key: vpc.id, value: vpc.id }, vpc.name));
+                }
+            }
             return React.createElement("div", { className: "layout horizontal wrap", style: css.filters }, React.createElement(SearchInput_1.default, { style: css.input, placeholder: "Instance ID", value: this.props.filter.id, onChange: val => {
                     let filter = Object.assign({}, this.props.filter);
                     if (val) {
@@ -19090,7 +19181,7 @@ System.registerDynamic("app/components/InstancesFilter.js", ["npm:react@16.7.0.j
                         filter.node = val;
                     }
                     this.props.onFilter(filter);
-                } }, nodesSelect)), React.createElement("div", { className: "bp3-select", style: css.type, hidden: Constants.user }, React.createElement("select", { value: this.props.filter.zone || 'any', onChange: evt => {
+                } }, nodesSelect)), React.createElement("div", { className: "bp3-select", style: css.type }, React.createElement("select", { value: this.props.filter.zone || 'any', onChange: evt => {
                     let filter = Object.assign({}, this.props.filter);
                     let val = evt.target.value;
                     if (val === 'any') {
@@ -19099,7 +19190,16 @@ System.registerDynamic("app/components/InstancesFilter.js", ["npm:react@16.7.0.j
                         filter.zone = val;
                     }
                     this.props.onFilter(filter);
-                } }, zonesSelect)), React.createElement("div", { className: "bp3-select", style: css.type, hidden: Constants.user }, React.createElement("select", { value: this.props.filter.organization || 'any', onChange: evt => {
+                } }, zonesSelect)), React.createElement("div", { className: "bp3-select", style: css.type }, React.createElement("select", { value: this.props.filter.vpc || 'any', onChange: evt => {
+                    let filter = Object.assign({}, this.props.filter);
+                    let val = evt.target.value;
+                    if (val === 'any') {
+                        delete filter.vpc;
+                    } else {
+                        filter.vpc = val;
+                    }
+                    this.props.onFilter(filter);
+                } }, vpcsSelect)), React.createElement("div", { className: "bp3-select", style: css.type, hidden: Constants.user }, React.createElement("select", { value: this.props.filter.organization || 'any', onChange: evt => {
                     let filter = Object.assign({}, this.props.filter);
                     let val = evt.target.value;
                     if (val === 'any') {
@@ -19439,7 +19539,7 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.7.0.js", "a
                     this.setState(Object.assign({}, this.state, { newOpened: true }));
                 } }, "New"))), React.createElement("div", { className: "layout horizontal wrap", style: css.debug, hidden: !this.state.debug }, React.createElement(ConfirmButton_1.default, { label: "Force Delete Selected", className: "bp3-intent-danger bp3-icon-warning-sign", progressClassName: "bp3-intent-danger", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onForceDelete }))), React.createElement(InstancesFilter_1.default, { filter: this.state.filter, onFilter: filter => {
                     InstanceActions.filter(filter);
-                }, nodes: this.state.nodes, zones: this.state.zones, organizations: this.state.organizations }), React.createElement("div", { style: css.itemsBox }, React.createElement("div", { style: css.items }, newInstanceDom, instancesDom, React.createElement("tr", { className: "bp3-card bp3-row", style: css.placeholder }, React.createElement("td", { colSpan: 6, style: css.placeholder })))), React.createElement(NonState_1.default, { hidden: !!instancesDom.length, iconClass: "bp3-icon-dashboard", title: "No instances", description: "Add a new instance to get started." }), React.createElement(InstancesPage_1.default, { onPage: () => {
+                }, nodes: this.state.nodes, zones: this.state.zones, vpcs: this.state.vpcs, organizations: this.state.organizations }), React.createElement("div", { style: css.itemsBox }, React.createElement("div", { style: css.items }, newInstanceDom, instancesDom, React.createElement("tr", { className: "bp3-card bp3-row", style: css.placeholder }, React.createElement("td", { colSpan: 6, style: css.placeholder })))), React.createElement(NonState_1.default, { hidden: !!instancesDom.length, iconClass: "bp3-icon-dashboard", title: "No instances", description: "Add a new instance to get started." }), React.createElement(InstancesPage_1.default, { onPage: () => {
                     this.setState({
                         lastSelected: null
                     });
