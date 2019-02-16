@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Add support for Oracle Cloud
+
 Version 1.0.1179.24 2019-02-15
 ------------------------------
 
