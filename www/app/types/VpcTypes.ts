@@ -15,6 +15,7 @@ export interface Vpc {
 	datacenter?: string;
 	routes?: Route[];
 	link_uris?: string[];
+	link_node?: string;
 }
 
 export interface Route {
