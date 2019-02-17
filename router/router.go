@@ -30,21 +30,22 @@ import (
 )
 
 type Router struct {
-	nodeHash       []byte
-	adminType      bool
-	userType       bool
-	port           int
-	protocol       string
-	certificates   []*certificate.Certificate
-	adminDomain    string
-	userDomain     string
-	aRouter        *gin.Engine
-	uRouter        *gin.Engine
-	waiter         sync.WaitGroup
-	lock           sync.Mutex
-	redirectServer *http.Server
-	webServer      *http.Server
-	stop           bool
+	nodeHash         []byte
+	adminType        bool
+	userType         bool
+	port             int
+	noRedirectServer bool
+	protocol         string
+	certificates     []*certificate.Certificate
+	adminDomain      string
+	userDomain       string
+	aRouter          *gin.Engine
+	uRouter          *gin.Engine
+	waiter           sync.WaitGroup
+	lock             sync.Mutex
+	redirectServer   *http.Server
+	webServer        *http.Server
+	stop             bool
 }
 
 func (r *Router) ServeHTTP(w http.ResponseWriter, re *http.Request) {
@@ -131,7 +132,7 @@ func (r *Router) initRedirect() (err error) {
 func (r *Router) startRedirect() {
 	defer r.waiter.Done()
 
-	if r.port == 80 {
+	if r.port == 80 || r.noRedirectServer {
 		return
 	}
 
@@ -162,6 +163,7 @@ func (r *Router) initWeb() (err error) {
 	r.adminDomain = node.Self.AdminDomain
 	r.userDomain = node.Self.UserDomain
 	r.certificates = node.Self.CertificateObjs
+	r.noRedirectServer = node.Self.NoRedirectServer
 
 	r.port = node.Self.Port
 	if r.port == 0 {
@@ -438,6 +440,7 @@ func (r *Router) hashNode() []byte {
 	io.WriteString(hash, node.Self.AdminDomain)
 	io.WriteString(hash, node.Self.UserDomain)
 	io.WriteString(hash, strconv.Itoa(node.Self.Port))
+	io.WriteString(hash, fmt.Sprintf("%t", node.Self.NoRedirectServer))
 	io.WriteString(hash, node.Self.Protocol)
 
 	io.WriteString(hash, strconv.Itoa(settings.Router.ReadTimeout))
