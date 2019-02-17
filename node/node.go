@@ -36,6 +36,7 @@ type Node struct {
 	Types                []string                   `bson:"types" json:"types"`
 	Timestamp            time.Time                  `bson:"timestamp" json:"timestamp"`
 	Port                 int                        `bson:"port" json:"port"`
+	NoRedirectServer     bool                       `bson:"no_redirect_server" json:"no_redirect_server"`
 	Protocol             string                     `bson:"protocol" json:"protocol"`
 	Hypervisor           string                     `bson:"hypervisor" json:"hypervisor"`
 	Certificate          primitive.ObjectID         `bson:"certificate" json:"certificate"`
