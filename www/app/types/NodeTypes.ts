@@ -11,6 +11,7 @@ export interface Node {
 	zone?: string;
 	name?: string;
 	port?: number;
+	no_redirect_server?: boolean;
 	protocol?: string;
 	hypervisor?: string;
 	timestamp?: string;
