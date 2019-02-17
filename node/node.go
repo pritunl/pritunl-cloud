@@ -95,6 +95,7 @@ func (n *Node) Copy() *Node {
 		Types:                n.Types,
 		Timestamp:            n.Timestamp,
 		Port:                 n.Port,
+		NoRedirectServer:     n.NoRedirectServer,
 		Protocol:             n.Protocol,
 		Hypervisor:           n.Hypervisor,
 		Certificate:          n.Certificate,
@@ -546,6 +547,7 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.Name = nde.Name
 	n.Types = nde.Types
 	n.Port = nde.Port
+	n.NoRedirectServer = nde.NoRedirectServer
 	n.Protocol = nde.Protocol
 	n.Hypervisor = nde.Hypervisor
 	n.Certificates = nde.Certificates
