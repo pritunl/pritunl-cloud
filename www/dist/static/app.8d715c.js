@@ -11438,7 +11438,9 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.7.0.js",
                     this.set('protocol', evt.target.value);
                 } }, React.createElement("option", { value: "http" }, "HTTP"), React.createElement("option", { value: "https" }, "HTTPS"))), React.createElement("input", { className: "bp3-input", disabled: this.state.disabled, style: css.port, type: "text", autoCapitalize: "off", spellCheck: false, placeholder: "Port", value: node.port || 443, onChange: evt => {
                     this.set('port', parseInt(evt.target.value, 10));
-                } }))), React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasDatacenters, hidden: !!this.props.node.zone, label: "Datacenter", help: "Node datacenter, cannot be changed once set.", value: this.state.datacenter, onChange: val => {
+                } }))), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Web redirect server", help: "Enable redirect server for HTTP requests to HTTPS. Required for Lets Encrypt certificates.", checked: !node.no_redirect_server, onToggle: () => {
+                    this.set('no_redirect_server', !node.no_redirect_server);
+                } }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasDatacenters, hidden: !!this.props.node.zone, label: "Datacenter", help: "Node datacenter, cannot be changed once set.", value: this.state.datacenter, onChange: val => {
                     if (this.state.changed) {
                         node = Object.assign({}, this.state.node);
                     } else {
