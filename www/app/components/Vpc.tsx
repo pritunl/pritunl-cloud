@@ -166,6 +166,13 @@ export default class Vpc extends React.Component<Props, {}> {
 				/>
 				{datacenterName}
 			</div>
+			<div className="bp3-cell" style={css.item}>
+				<span
+					style={css.icon}
+					className="bp3-icon-standard bp3-text-muted bp3-icon-layout-auto"
+				/>
+				{vpc.network}
+			</div>
 		</div>;
 	}
 }
