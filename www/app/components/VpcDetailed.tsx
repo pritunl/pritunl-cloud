@@ -489,7 +489,7 @@ export default class VpcDetailed extends React.Component<Props, State> {
 
 		return <td
 			className="bp3-cell"
-			colSpan={5}
+			colSpan={6}
 			style={css.card}
 		>
 			<div className="layout horizontal wrap">
