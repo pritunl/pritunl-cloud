@@ -333,7 +333,9 @@ func Remove(db *database.Database, vcId primitive.ObjectID) (err error) {
 	return
 }
 
-func RemoveOrg(db *database.Database, orgId, vcId primitive.ObjectID) (err error) {
+func RemoveOrg(db *database.Database, orgId, vcId primitive.ObjectID) (
+	err error) {
+
 	coll := db.VpcsIp()
 
 	_, err = coll.DeleteMany(db, &bson.M{
