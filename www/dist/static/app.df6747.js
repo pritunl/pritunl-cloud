@@ -11499,6 +11499,9 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.7.0.js",
                     label: 'Default Interface',
                     value: this.props.node.default_interface || 'Unknown'
                 }, {
+                    label: 'Hostname',
+                    value: node.hostname || 'Unknown'
+                }, {
                     label: 'Public IPv4',
                     value: publicIps,
                     copy: true
@@ -14380,7 +14383,7 @@ System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.7.0.js", 
                     value: this.props.vpc.link_node
                 });
             }
-            return React.createElement("td", { className: "bp3-cell", colSpan: 5, style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { className: "layout horizontal", style: css.buttons, onClick: evt => {
+            return React.createElement("td", { className: "bp3-cell", colSpan: 6, style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { className: "layout horizontal", style: css.buttons, onClick: evt => {
                     let target = evt.target;
                     if (target.className.indexOf('open-ignore') !== -1) {
                         return;
@@ -14500,7 +14503,7 @@ System.registerDynamic("app/components/Vpc.js", ["npm:react@16.7.0.js", "app/sto
                     this.props.onOpen();
                 } }, React.createElement("div", { className: "bp3-cell", style: css.name }, React.createElement("div", { className: "layout horizontal" }, React.createElement("label", { className: "bp3-control bp3-checkbox open-ignore", style: css.select }, React.createElement("input", { type: "checkbox", className: "open-ignore", checked: this.props.selected, onClick: evt => {
                     this.props.onSelect(evt.shiftKey);
-                } }), React.createElement("span", { className: "bp3-control-indicator open-ignore" })), React.createElement("div", { style: css.nameSpan }, vpc.name))), React.createElement("div", { className: "bp3-cell", style: css.item }, React.createElement("span", { style: css.icon, className: 'bp3-icon-standard bp3-text-muted ' + (vpc.organization ? 'bp3-icon-people' : 'bp3-icon-layers') }), orgName), React.createElement("div", { className: "bp3-cell", style: css.item }, React.createElement("span", { style: css.icon, className: "bp3-icon-standard bp3-text-muted bp3-icon-cloud" }), datacenterName));
+                } }), React.createElement("span", { className: "bp3-control-indicator open-ignore" })), React.createElement("div", { style: css.nameSpan }, vpc.name))), React.createElement("div", { className: "bp3-cell", style: css.item }, React.createElement("span", { style: css.icon, className: 'bp3-icon-standard bp3-text-muted ' + (vpc.organization ? 'bp3-icon-people' : 'bp3-icon-layers') }), orgName), React.createElement("div", { className: "bp3-cell", style: css.item }, React.createElement("span", { style: css.icon, className: "bp3-icon-standard bp3-text-muted bp3-icon-cloud" }), datacenterName), React.createElement("div", { className: "bp3-cell", style: css.item }, React.createElement("span", { style: css.icon, className: "bp3-icon-standard bp3-text-muted bp3-icon-layout-auto" }), vpc.network));
         }
     }
     exports.default = Vpc;
@@ -14927,7 +14930,7 @@ System.registerDynamic("app/components/Vpcs.js", ["npm:react@16.7.0.js", "app/Co
                     });
                 } }, "New"))))), React.createElement(VpcsFilter_1.default, { filter: this.state.filter, onFilter: filter => {
                     VpcActions.filter(filter);
-                }, organizations: this.state.organizations, datacenters: this.state.datacenters }), React.createElement("div", { style: css.itemsBox }, React.createElement("div", { style: css.items }, vpcsDom, React.createElement("tr", { className: "bp3-card bp3-row", style: css.placeholder }, React.createElement("td", { colSpan: 5, style: css.placeholder })))), React.createElement(NonState_1.default, { hidden: !!vpcsDom.length, iconClass: "bp3-icon-layout-auto", title: "No vpcs", description: "Add a new vpc to get started." }), React.createElement(VpcsPage_1.default, { onPage: () => {
+                }, organizations: this.state.organizations, datacenters: this.state.datacenters }), React.createElement("div", { style: css.itemsBox }, React.createElement("div", { style: css.items }, vpcsDom, React.createElement("tr", { className: "bp3-card bp3-row", style: css.placeholder }, React.createElement("td", { colSpan: 6, style: css.placeholder })))), React.createElement(NonState_1.default, { hidden: !!vpcsDom.length, iconClass: "bp3-icon-layout-auto", title: "No vpcs", description: "Add a new vpc to get started." }), React.createElement(VpcsPage_1.default, { onPage: () => {
                     this.setState({
                         lastSelected: null
                     });
