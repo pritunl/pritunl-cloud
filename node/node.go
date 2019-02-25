@@ -4,6 +4,7 @@ import (
 	"container/list"
 	"net"
 	"net/http"
+	"os"
 	"sort"
 	"strings"
 	"sync"
@@ -75,6 +76,7 @@ type Node struct {
 	PublicIps6           []string                   `bson:"public_ips6" json:"public_ips6"`
 	PrivateIps           map[string]string          `bson:"private_ips" json:"private_ips"`
 	SoftwareVersion      string                     `bson:"software_version" json:"software_version"`
+	Hostname             string                     `bson:"hostname" json:"hostname"`
 	Version              int                        `bson:"version" json:"-"`
 	VirtPath             string                     `bson:"virt_path" json:"virt_path"`
 	CachePath            string                     `bson:"cache_path" json:"cache_path"`
@@ -134,6 +136,7 @@ func (n *Node) Copy() *Node {
 		PublicIps6:           n.PublicIps6,
 		PrivateIps:           n.PrivateIps,
 		SoftwareVersion:      n.SoftwareVersion,
+		Hostname:             n.Hostname,
 		Version:              n.Version,
 		VirtPath:             n.VirtPath,
 		CachePath:            n.CachePath,
@@ -530,6 +533,7 @@ func (n *Node) update(db *database.Database) (err error) {
 				"public_ips":           n.PublicIps,
 				"public_ips6":          n.PublicIps6,
 				"private_ips":          n.PrivateIps,
+				"hostname":             n.Hostname,
 				"available_interfaces": n.AvailableInterfaces,
 				"available_bridges":    n.AvailableBridges,
 				"default_interface":    n.DefaultInterface,
