@@ -4,6 +4,7 @@ pritunl-cloud changelog
 <%= version %>
 
 Improve U2F support
+Web interface improvements
 
 Version 1.0.1181.24 2019-02-17
 ------------------------------
