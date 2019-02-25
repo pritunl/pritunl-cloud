@@ -84,7 +84,7 @@ func nodeRunner() {
 			}).Error("sync: Failed to sync node status")
 		}
 
-		time.Sleep(3 * time.Second)
+		time.Sleep(10 * time.Second)
 	}
 }
 
