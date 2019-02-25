@@ -2,9 +2,11 @@ package sync
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
@@ -18,8 +20,12 @@ func nodeSync() (err error) {
 	facets := []string{}
 
 	if node.Self.UserDomain != "" {
-		appId = fmt.Sprintf("https://%s/auth/u2f/app.json",
-			node.Self.UserDomain)
+		domain := node.Self.UserDomain
+		port := node.Self.Port
+		if node.Self.Protocol == "https" && port != 443 {
+			domain += ":" + strconv.Itoa(port)
+		}
+		appId = fmt.Sprintf("https://%s/auth/u2f/app.json", domain)
 	}
 
 	nodes, err := node.GetAll(db)
@@ -27,18 +33,37 @@ func nodeSync() (err error) {
 		return
 	}
 
+	domains := set.NewSet()
 	for _, nde := range nodes {
 		if appId == "" {
 			appId = fmt.Sprintf("https://%s/auth/u2f/app.json",
 				nde.UserDomain)
 		}
-		if nde.UserDomain != "" {
-			facets = append(facets,
-				fmt.Sprintf("https://%s", nde.UserDomain))
+
+		domain := nde.UserDomain
+		port := nde.Port
+		if domain != "" {
+			if nde.Protocol == "https" && port != 443 {
+				domain += ":" + strconv.Itoa(port)
+			}
+
+			if !domains.Contains(domain) {
+				domains.Add(domain)
+				facets = append(facets, fmt.Sprintf("https://%s", domain))
+			}
 		}
-		if nde.AdminDomain != "" {
-			facets = append(facets,
-				fmt.Sprintf("https://%s", nde.AdminDomain))
+
+		domain = nde.AdminDomain
+		port = nde.Port
+		if domain != "" {
+			if nde.Protocol == "https" && port != 443 {
+				domain += ":" + strconv.Itoa(port)
+			}
+
+			if !domains.Contains(domain) {
+				domains.Add(domain)
+				facets = append(facets, fmt.Sprintf("https://%s", domain))
+			}
 		}
 	}
 
