@@ -725,6 +725,17 @@ func (n *Node) sync() {
 		n.AvailableBridges = []string{}
 	}
 
+	hostname, err := os.Hostname()
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "node: Failed to get hostname"),
+		}
+		logrus.WithFields(logrus.Fields{
+			"error": err,
+		}).Error("node: Failed to get hostname")
+	}
+	n.Hostname = hostname
+
 	err = n.update(db)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
