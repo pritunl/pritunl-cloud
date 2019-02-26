@@ -1469,6 +1469,10 @@ export default class NodeDetailed extends React.Component<Props, State> {
 								value: this.props.node.default_interface || 'Unknown',
 							},
 							{
+								label: 'Hostname',
+								value: node.hostname || 'Unknown',
+							},
+							{
 								label: 'Public IPv4',
 								value: publicIps,
 								copy: true,
