@@ -235,30 +235,37 @@ func GetInternal(virtIface string, vxlan bool) (internalIface string) {
 	return
 }
 
-func GetBridges() (bridges set.Set) {
+func GetBridges(nde *node.Node) (bridges set.Set) {
 	bridges = set.NewSet()
 
-	externalIfaces := node.Self.ExternalInterfaces
+	externalIfaces := nde.ExternalInterfaces
 	if externalIfaces != nil {
 		for _, iface := range externalIfaces {
 			bridges.Add(iface)
 		}
 	} else {
-		externalIface := node.Self.ExternalInterface
+		externalIface := nde.ExternalInterface
 		if externalIface != "" {
 			bridges.Add(externalIface)
 		}
 	}
 
-	internalIfaces := node.Self.InternalInterfaces
+	internalIfaces := nde.InternalInterfaces
 	if internalIfaces != nil {
 		for _, iface := range internalIfaces {
 			bridges.Add(iface)
 		}
 	} else {
-		internalIface := node.Self.InternalInterface
+		internalIface := nde.InternalInterface
 		if internalIface != "" {
 			bridges.Add(internalIface)
+		}
+	}
+
+	ndeBlocks := nde.Blocks
+	if ndeBlocks != nil {
+		for _, blck := range ndeBlocks {
+			bridges.Add(blck.Interface)
 		}
 	}
 
