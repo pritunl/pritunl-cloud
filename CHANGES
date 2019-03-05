@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Set instance hostname
+
 Version 1.0.1189.79 2019-02-25
 ------------------------------
 
