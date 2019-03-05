@@ -341,7 +341,7 @@ func Write(db *database.Database, inst *instance.Instance,
 
 	metaData := fmt.Sprintf(metaDataTmpl,
 		primitive.NewObjectID().Hex(),
-		inst.Id.Hex(),
+		strings.Replace(inst.Name, " ", "_", -1),
 	)
 
 	err = utils.CreateWrite(metaPath, metaData, 0644)
