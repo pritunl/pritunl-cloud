@@ -32,7 +32,7 @@ func ApplyState(stat *state.State) (err error) {
 	}
 
 	mtu := strconv.Itoa(newMtu)
-	bridges := interfaces.GetBridges()
+	bridges := interfaces.GetBridges(nodeSelf)
 
 	ifaces := stat.Interfaces()
 	for _, iface := range ifaces {
