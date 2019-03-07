@@ -1753,7 +1753,7 @@ func PowerOn(db *database.Database, inst *instance.Instance,
 		"id": virt.Id.Hex(),
 	}).Info("qemu: Starting virtual machine")
 
-	err = cloudinit.Write(db, inst, virt)
+	err = cloudinit.Write(db, inst, virt, false)
 	if err != nil {
 		return
 	}
