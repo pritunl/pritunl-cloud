@@ -23,24 +23,33 @@ type Network struct {
 }
 
 type Qemu struct {
-	Id       primitive.ObjectID
-	Data     string
-	Kvm      bool
-	Machine  string
-	Cpu      string
-	Cpus     int
-	Cores    int
-	Threads  int
-	Boot     string
-	Memory   int
-	Disks    []*Disk
-	Networks []*Network
+	Id         primitive.ObjectID
+	Data       string
+	Kvm        bool
+	Machine    string
+	Cpu        string
+	Cpus       int
+	Cores      int
+	Threads    int
+	Boot       string
+	Memory     int
+	Vnc        bool
+	VncDisplay int
+	Disks      []*Disk
+	Networks   []*Network
 }
 
 func (q *Qemu) Marshal() (output string, err error) {
 	cmd := []string{
 		"/usr/bin/qemu-system-x86_64",
 		"-nographic",
+	}
+
+	if q.Vnc && q.VncDisplay != 0 {
+		cmd = append(cmd, "-vga")
+		cmd = append(cmd, "vmware")
+		cmd = append(cmd, "-vnc")
+		cmd = append(cmd, fmt.Sprintf(":%d,password", q.VncDisplay))
 	}
 
 	if q.Kvm {
@@ -134,9 +143,6 @@ func (q *Qemu) Marshal() (output string, err error) {
 	cmd = append(cmd, "-device")
 	cmd = append(cmd,
 		"virtserialport,chardev=guest,name=org.qemu.guest_agent.0")
-
-	//cmd = append(cmd, "-vnc")
-	//cmd = append(cmd, ":1")
 
 	output = fmt.Sprintf(
 		systemdTemplate,
