@@ -38,6 +38,7 @@ type instanceData struct {
 	Memory           int                `json:"memory"`
 	Processors       int                `json:"processors"`
 	NetworkRoles     []string           `json:"network_roles"`
+	Vnc              bool               `json:"vnc"`
 	Count            int                `json:"count"`
 }
 
@@ -88,6 +89,7 @@ func instancePut(c *gin.Context) {
 	inst.Memory = dta.Memory
 	inst.Processors = dta.Processors
 	inst.NetworkRoles = dta.NetworkRoles
+	inst.Vnc = dta.Vnc
 	inst.Domain = dta.Domain
 
 	fields := set.NewSet(
@@ -100,6 +102,9 @@ func instancePut(c *gin.Context) {
 		"memory",
 		"processors",
 		"network_roles",
+		"vnc",
+		"vnc_display",
+		"vnc_password",
 		"domain",
 	)
 
@@ -220,6 +225,7 @@ func instancePost(c *gin.Context) {
 			Memory:           dta.Memory,
 			Processors:       dta.Processors,
 			NetworkRoles:     dta.NetworkRoles,
+			Vnc:              dta.Vnc,
 			Domain:           dta.Domain,
 		}
 
