@@ -19,18 +19,20 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 	}
 
 	qm = &Qemu{
-		Id:       virt.Id,
-		Data:     string(data),
-		Kvm:      node.Self.Hypervisor == node.Kvm,
-		Machine:  "pc",
-		Cpu:      "host",
-		Cpus:     virt.Processors,
-		Cores:    1,
-		Threads:  1,
-		Boot:     "c",
-		Memory:   virt.Memory,
-		Disks:    []*Disk{},
-		Networks: []*Network{},
+		Id:         virt.Id,
+		Data:       string(data),
+		Kvm:        node.Self.Hypervisor == node.Kvm,
+		Machine:    "pc",
+		Cpu:        "host",
+		Cpus:       virt.Processors,
+		Cores:      1,
+		Threads:    1,
+		Boot:       "c",
+		Memory:     virt.Memory,
+		Vnc:        virt.Vnc,
+		VncDisplay: virt.VncDisplay,
+		Disks:      []*Disk{},
+		Networks:   []*Network{},
 	}
 
 	for _, disk := range virt.Disks {
