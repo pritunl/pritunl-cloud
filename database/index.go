@@ -19,6 +19,7 @@ type Index struct {
 	Collection *Collection
 	Keys       interface{}
 	Unique     bool
+	Partial    interface{}
 	Expire     time.Duration
 }
 
@@ -28,6 +29,10 @@ func (i *Index) Create() (err error) {
 
 	if i.Unique {
 		opts.SetUnique(true)
+	}
+
+	if i.Partial != nil {
+		opts.SetPartialFilterExpression(i.Partial)
 	}
 
 	if i.Expire != 0 {
