@@ -881,7 +881,7 @@ func addIndexes() (err error) {
 		},
 		Partial: &bson.M{
 			"vnc_display": &bson.M{
-				"$exists": true,
+				"$gt": 0,
 			},
 		},
 		Unique: true,
