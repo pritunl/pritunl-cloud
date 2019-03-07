@@ -138,7 +138,7 @@ func (i *Instance) Validate(db *database.Database) (
 			i.VncDisplay = rand.Intn(9998) + 4101
 		}
 		if i.VncPassword == "" {
-			i.VncPassword, err = utils.RandStr(16)
+			i.VncPassword, err = utils.RandStr(32)
 			if err != nil {
 				return
 			}
