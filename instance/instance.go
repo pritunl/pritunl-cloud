@@ -1,6 +1,7 @@
 package instance
 
 import (
+	"math/rand"
 	"strconv"
 
 	"github.com/dropbox/godropbox/container/set"
@@ -10,6 +11,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/paths"
+	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
 )
@@ -129,6 +131,20 @@ func (i *Instance) Validate(db *database.Database) (
 
 	if i.PrivateIps6 == nil {
 		i.PrivateIps6 = []string{}
+	}
+
+	if i.Vnc {
+		if i.VncDisplay == 0 {
+			i.VncDisplay = rand.Intn(9998) + 4101
+		}
+		if i.VncPassword == "" {
+			i.VncPassword, err = utils.RandStr(16)
+			if err != nil {
+				return
+			}
+		}
+	} else {
+		i.VncPassword = ""
 	}
 
 	return
@@ -294,6 +310,8 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 		Image:      i.Image,
 		Processors: i.Processors,
 		Memory:     i.Memory,
+		Vnc:        i.Vnc,
+		VncDisplay: i.VncDisplay,
 		Disks:      []*vm.Disk{},
 		NetworkAdapters: []*vm.NetworkAdapter{
 			&vm.NetworkAdapter{
@@ -323,7 +341,9 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 
 func (i *Instance) Changed(curVirt *vm.VirtualMachine) bool {
 	if i.Virt.Memory != curVirt.Memory ||
-		i.Virt.Processors != curVirt.Processors {
+		i.Virt.Processors != curVirt.Processors ||
+		i.Virt.Vnc != curVirt.Vnc ||
+		i.Virt.VncDisplay != curVirt.VncDisplay {
 
 		return true
 	}
