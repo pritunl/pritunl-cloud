@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Fix instance creation issue
+
 Version 1.0.1199.28 2019-03-07
 ------------------------------
 
