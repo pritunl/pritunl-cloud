@@ -1557,6 +1557,13 @@ func Create(db *database.Database, inst *instance.Instance,
 		return
 	}
 
+	if virt.Vnc {
+		err = qms.VncPassword(virt.Id, inst.VncPassword)
+		if err != nil {
+			return
+		}
+	}
+
 	err = NetworkConf(db, virt)
 	if err != nil {
 		return
@@ -1771,6 +1778,13 @@ func PowerOn(db *database.Database, inst *instance.Instance,
 	err = Wait(db, virt)
 	if err != nil {
 		return
+	}
+
+	if virt.Vnc {
+		err = qms.VncPassword(virt.Id, inst.VncPassword)
+		if err != nil {
+			return
+		}
 	}
 
 	err = NetworkConf(db, virt)
