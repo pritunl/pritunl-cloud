@@ -40,6 +40,9 @@ type Instance struct {
 	Memory              int                `bson:"memory" json:"memory"`
 	Processors          int                `bson:"processors" json:"processors"`
 	NetworkRoles        []string           `bson:"network_roles" json:"network_roles"`
+	Vnc                 bool               `bson:"vnc" json:"vnc"`
+	VncPassword         string             `bson:"vnc_password" json:"vnc_password"`
+	VncDisplay          int                `bson:"vnc_display,omitempty" json:"vnc_display"`
 	Virt                *vm.VirtualMachine `bson:"-" json:"-"`
 	curVpc              primitive.ObjectID `bson:"-" json:"-"`
 	curDeleteProtection bool               `bson:"-" json:"-"`
