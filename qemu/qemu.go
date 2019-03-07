@@ -115,7 +115,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 			break
 		case "bridge":
 			cmd = append(cmd, fmt.Sprintf(
-				"tap,vlan=0,ifname=%s,script=no",
+				"tap,ifname=%s,script=no",
 				network.Iface,
 			))
 			break
