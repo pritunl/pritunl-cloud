@@ -68,6 +68,8 @@ growpart:
 runcmd:
   - [ sysctl, -w, net.ipv4.conf.eth0.send_redirects=0 ]
 users:
+  - name: root
+    lock-passwd: true
   - name: cloud
     groups: adm, video, wheel, systemd-journal
     selinux-user: staff_u
