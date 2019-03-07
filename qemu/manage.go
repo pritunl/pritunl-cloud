@@ -1524,14 +1524,14 @@ func Create(db *database.Database, inst *instance.Instance,
 		}
 
 		event.PublishDispatch(db, "disk.change")
+
+		virt.Disks = append(virt.Disks, &vm.Disk{
+			Index: 0,
+			Path:  paths.GetDiskPath(dsk.Id),
+		})
 	}
 
-	virt.Disks = append(virt.Disks, &vm.Disk{
-		Index: 0,
-		Path:  paths.GetDiskPath(dsk.Id),
-	})
-
-	err = cloudinit.Write(db, inst, virt)
+	err = cloudinit.Write(db, inst, virt, true)
 	if err != nil {
 		return
 	}
