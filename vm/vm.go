@@ -15,6 +15,8 @@ type VirtualMachine struct {
 	Image           primitive.ObjectID `json:"image"`
 	Processors      int                `json:"processors"`
 	Memory          int                `json:"memory"`
+	Vnc             bool               `json:"vnc"`
+	VncDisplay      int                `json:"vnc_display"`
 	Disks           []*Disk            `json:"disks"`
 	NetworkAdapters []*NetworkAdapter  `json:"network_adapters"`
 }
