@@ -72,7 +72,7 @@ users:
     groups: adm, video, wheel, systemd-journal
     selinux-user: staff_u
     sudo: ALL=(ALL) NOPASSWD:ALL
-    lock-passwd: true
+    lock-passwd: {{.LockPasswd}}
     ssh-authorized-keys:
 {{range .Keys}}      - {{.}}
 {{end}}`
@@ -102,11 +102,12 @@ type netConfigData struct {
 }
 
 type cloudConfigData struct {
-	Keys []string
+	LockPasswd string
+	Keys       []string
 }
 
 func getUserData(db *database.Database, inst *instance.Instance,
-	virt *vm.VirtualMachine) (usrData string, err error) {
+	virt *vm.VirtualMachine, initial bool) (usrData string, err error) {
 
 	authrs, err := authority.GetOrgRoles(db, inst.Organization,
 		inst.NetworkRoles)
@@ -124,6 +125,12 @@ func getUserData(db *database.Database, inst *instance.Instance,
 
 	data := cloudConfigData{
 		Keys: []string{},
+	}
+
+	if !initial {
+		data.LockPasswd = "false"
+	} else {
+		data.LockPasswd = "true"
 	}
 
 	for _, authr := range authrs {
@@ -314,7 +321,7 @@ func getNetData(db *database.Database, inst *instance.Instance,
 }
 
 func Write(db *database.Database, inst *instance.Instance,
-	virt *vm.VirtualMachine) (err error) {
+	virt *vm.VirtualMachine, initial bool) (err error) {
 
 	tempDir := paths.GetTempDir()
 	metaPath := path.Join(tempDir, "meta-data")
@@ -334,7 +341,7 @@ func Write(db *database.Database, inst *instance.Instance,
 		return
 	}
 
-	usrData, err := getUserData(db, inst, virt)
+	usrData, err := getUserData(db, inst, virt, initial)
 	if err != nil {
 		return
 	}
