@@ -18142,6 +18142,65 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@16.7.0.
                     domainsSelect.push(React.createElement("option", { key: domain.id, value: domain.id }, domain.name));
                 }
             }
+            let fields = [{
+                label: 'ID',
+                value: this.props.instance.id || 'None'
+            }, {
+                label: 'Organization',
+                value: org ? org.name : this.props.instance.organization || 'None'
+            }, {
+                label: 'Zone',
+                value: zone ? zone.name : this.props.instance.zone || 'None'
+            }, {
+                label: 'Node',
+                value: info.node || 'None'
+            }, {
+                label: 'State',
+                value: (this.props.instance.state || 'None') + ':' + (this.props.instance.vm_state || 'None')
+            }, {
+                label: 'Public MAC Address',
+                value: this.props.instance.public_mac || 'Unknown',
+                copy: true
+            }, {
+                label: 'Public IPv4',
+                value: publicIps,
+                copy: true
+            }, {
+                label: 'Public IPv6',
+                value: publicIps6,
+                copy: true
+            }, {
+                label: 'Private IPv4',
+                value: privateIps,
+                copy: true
+            }, {
+                label: 'Private IPv6',
+                value: privateIps6,
+                copy: true
+            }, {
+                label: 'Host IPv4',
+                value: hostIps,
+                copy: true
+            }];
+            if (this.props.instance.vnc) {
+                fields.push({
+                    label: 'VNC Port',
+                    value: this.props.instance.vnc_display + 5900
+                }, {
+                    label: 'VNC Password',
+                    value: this.props.instance.vnc_password
+                });
+            }
+            fields.push({
+                label: 'Disks',
+                value: info.disks || ''
+            }, {
+                label: 'Firewall Rules',
+                value: this.props.instance.info.firewall_rules || ''
+            }, {
+                label: 'Authorities',
+                value: this.props.instance.info.authorities || ''
+            });
             return React.createElement("td", { className: "bp3-cell", colSpan: 6, style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { className: "layout horizontal", style: css.buttons, onClick: evt => {
                     let target = evt.target;
                     if (target.className.indexOf('open-ignore') !== -1) {
@@ -18162,57 +18221,11 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@16.7.0.
                     this.set('vpc', val);
                 } }, vpcsSelect), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "DNS Domain", help: "Domain to create DNS name using instance name.", value: instance.domain, onChange: val => {
                     this.set('domain', val);
-                } }, domainsSelect), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Delete protection", help: "Block instance and any attached disks from being deleted.", checked: instance.delete_protection, onToggle: () => {
+                } }, domainsSelect), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "VNC server", help: "Enable VNC server for remote control of instance.", checked: instance.vnc, onToggle: () => {
+                    this.set('vnc', !instance.vnc);
+                } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Delete protection", help: "Block instance and any attached disks from being deleted.", checked: instance.delete_protection, onToggle: () => {
                     this.set('delete_protection', !instance.delete_protection);
-                } })), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
-                    label: 'ID',
-                    value: this.props.instance.id || 'None'
-                }, {
-                    label: 'Organization',
-                    value: org ? org.name : this.props.instance.organization || 'None'
-                }, {
-                    label: 'Zone',
-                    value: zone ? zone.name : this.props.instance.zone || 'None'
-                }, {
-                    label: 'Node',
-                    value: info.node || 'None'
-                }, {
-                    label: 'State',
-                    value: (this.props.instance.state || 'None') + ':' + (this.props.instance.vm_state || 'None')
-                }, {
-                    label: 'Public MAC Address',
-                    value: this.props.instance.public_mac || 'Unknown',
-                    copy: true
-                }, {
-                    label: 'Public IPv4',
-                    value: publicIps,
-                    copy: true
-                }, {
-                    label: 'Public IPv6',
-                    value: publicIps6,
-                    copy: true
-                }, {
-                    label: 'Private IPv4',
-                    value: privateIps,
-                    copy: true
-                }, {
-                    label: 'Private IPv6',
-                    value: privateIps6,
-                    copy: true
-                }, {
-                    label: 'Host IPv4',
-                    value: hostIps,
-                    copy: true
-                }, {
-                    label: 'Disks',
-                    value: info.disks || ''
-                }, {
-                    label: 'Firewall Rules',
-                    value: this.props.instance.info.firewall_rules || ''
-                }, {
-                    label: 'Authorities',
-                    value: this.props.instance.info.authorities || ''
-                }] }))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.instance && !this.state.message, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
+                } })), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: fields }))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.instance && !this.state.message, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
                     this.setState(Object.assign({}, this.state, { changed: false, forwardedChecked: false, instance: null }));
                 }, onSave: this.onSave }, React.createElement(ConfirmButton_1.default, { label: "Start", className: "bp3-intent-success bp3-icon-power", progressClassName: "bp3-intent-success", style: css.controlButton, hidden: this.props.instance.state !== 'stop', disabled: this.state.disabled, onConfirm: () => {
                     this.update('start');
@@ -19062,7 +19075,9 @@ System.registerDynamic("app/components/InstanceNew.js", ["npm:react@16.7.0.js", 
                     this.set('node', val);
                 } }, nodesSelect), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "DNS Domain", help: "Domain to create DNS name using instance name.", value: instance.domain, onChange: val => {
                     this.set('domain', val);
-                } }, domainsSelect), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Start instance", help: "Automatically start instance. Disable to get the public MAC address before instance is started for first time.", checked: !instance.state, onToggle: () => {
+                } }, domainsSelect), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "VNC server", help: "Enable VNC server for remote control of instance.", checked: instance.vnc, onToggle: () => {
+                    this.set('vnc', !instance.vnc);
+                } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Start instance", help: "Automatically start instance. Disable to get the public MAC address before instance is started for first time.", checked: !instance.state, onToggle: () => {
                     if (instance.state === 'stop') {
                         this.set('state', '');
                     } else {
