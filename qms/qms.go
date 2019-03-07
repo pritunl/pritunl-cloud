@@ -259,3 +259,42 @@ func Shutdown(vmId primitive.ObjectID) (err error) {
 
 	return
 }
+
+func VncPassword(vmId primitive.ObjectID, passwd string) (err error) {
+	sockPath := GetSockPath(vmId)
+
+	lockId := socketsLock.Lock(vmId.Hex())
+	defer socketsLock.Unlock(vmId.Hex(), lockId)
+
+	conn, err := net.DialTimeout(
+		"unix",
+		sockPath,
+		1*time.Second,
+	)
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "qemu: Failed to open socket"),
+		}
+		return
+	}
+	defer conn.Close()
+
+	err = conn.SetDeadline(time.Now().Add(1 * time.Second))
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "qemu: Failed set deadline"),
+		}
+		return
+	}
+
+	_, err = conn.Write(
+		[]byte(fmt.Sprintf("change vnc password\n%s\n", passwd)))
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "qemu: Failed to write socket"),
+		}
+		return
+	}
+
+	return
+}
