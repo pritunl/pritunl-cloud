@@ -105,21 +105,21 @@ func (q *Qemu) Marshal() (output string, err error) {
 		))
 	}
 
+	count := 0
 	for _, network := range q.Networks {
-		cmd = append(cmd, "-net")
+		cmd = append(cmd, "-device")
+		cmd = append(cmd, fmt.Sprintf(
+			"virtio-net-pci,netdev=net%d,mac=%s",
+			count,
+			network.MacAddress,
+		))
 
-		switch network.Type {
-		case "nic":
-			cmd = append(cmd, fmt.Sprintf(
-				"nic,model=virtio,macaddr=%s", network.MacAddress))
-			break
-		case "bridge":
-			cmd = append(cmd, fmt.Sprintf(
-				"tap,ifname=%s,script=no",
-				network.Iface,
-			))
-			break
-		}
+		cmd = append(cmd, "-netdev")
+		cmd = append(cmd, fmt.Sprintf(
+			"tap,id=net%d,ifname=%s,script=no",
+			count,
+			network.Iface,
+		))
 	}
 
 	cmd = append(cmd, "-cdrom")
