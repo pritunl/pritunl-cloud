@@ -40,7 +40,7 @@ func GetDisks(vmId primitive.ObjectID) (disks []*vm.Disk, err error) {
 	}
 	defer conn.Close()
 
-	err = conn.SetDeadline(time.Now().Add(2 * time.Second))
+	err = conn.SetDeadline(time.Now().Add(3 * time.Second))
 	if err != nil {
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "qemu: Failed set deadline"),
@@ -94,6 +94,7 @@ func GetDisks(vmId primitive.ObjectID) (disks []*vm.Disk, err error) {
 		if !strings.HasPrefix(line, "virtio") || len(line) < 10 {
 			continue
 		}
+		line = strings.Replace(line, "\r", "", -1)
 
 		lineSpl := strings.SplitN(line[6:], ":", 2)
 		if len(lineSpl) != 2 {
@@ -104,12 +105,13 @@ func GetDisks(vmId primitive.ObjectID) (disks []*vm.Disk, err error) {
 			continue
 		}
 
-		index, e := strconv.Atoi(lineSpl[0])
+		indexStr := strings.Fields(strings.TrimSpace(lineSpl[0]))[0]
+		index, e := strconv.Atoi(indexStr)
 		if e != nil {
 			logrus.WithFields(logrus.Fields{
 				"instance_id": vmId.Hex(),
 				"line":        line,
-			}).Error("qemu: Unexpected qemu disk path")
+			}).Error("qemu: Unexpected qemu disk path index")
 			continue
 		}
 
