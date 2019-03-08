@@ -623,6 +623,9 @@ func (s *Instances) Deploy() (err error) {
 			}
 
 			break
+		case instance.Cleanup:
+			s.cleanup(inst)
+			continue
 		case instance.Stop:
 			if curVirt.State == vm.Running {
 				s.stop(inst)
