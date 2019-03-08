@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Improve network performance
+
 Version 1.0.1200.25 2019-03-08
 ------------------------------
 
