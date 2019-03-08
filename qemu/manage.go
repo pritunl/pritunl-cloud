@@ -258,7 +258,10 @@ func UpdateVmState(virt *vm.VirtualMachine) (err error) {
 	return
 }
 
-func GetVms(db *database.Database) (virts []*vm.VirtualMachine, err error) {
+func GetVms(db *database.Database,
+	instMap map[primitive.ObjectID]*instance.Instance) (
+	virts []*vm.VirtualMachine, err error) {
+
 	systemdPath := settings.Hypervisor.SystemdPath
 	virts = []*vm.VirtualMachine{}
 
@@ -302,7 +305,15 @@ func GetVms(db *database.Database) (virts []*vm.VirtualMachine, err error) {
 			}
 
 			if virt != nil {
-				e = virt.Commit(db)
+				inst := instMap[vmId]
+				if inst != nil && inst.VmState == vm.Running &&
+					(virt.State == vm.Stopped || virt.State == vm.Failed) {
+
+					inst.State = instance.Cleanup
+					e = virt.CommitState(db, instance.Cleanup)
+				} else {
+					e = virt.Commit(db)
+				}
 				if e != nil {
 					logrus.WithFields(logrus.Fields{
 						"error": e,
