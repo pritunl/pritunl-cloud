@@ -151,7 +151,7 @@ func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
 	}
 	defer conn.Close()
 
-	err = conn.SetDeadline(time.Now().Add(1 * time.Second))
+	err = conn.SetDeadline(time.Now().Add(3 * time.Second))
 	if err != nil {
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "qemu: Failed set deadline"),
@@ -202,7 +202,7 @@ func RemoveDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
 	}
 	defer conn.Close()
 
-	err = conn.SetDeadline(time.Now().Add(1 * time.Second))
+	err = conn.SetDeadline(time.Now().Add(3 * time.Second))
 	if err != nil {
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "qemu: Failed set deadline"),
@@ -243,7 +243,7 @@ func Shutdown(vmId primitive.ObjectID) (err error) {
 	}
 	defer conn.Close()
 
-	err = conn.SetDeadline(time.Now().Add(1 * time.Second))
+	err = conn.SetDeadline(time.Now().Add(3 * time.Second))
 	if err != nil {
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "qemu: Failed set deadline"),
@@ -258,6 +258,8 @@ func Shutdown(vmId primitive.ObjectID) (err error) {
 		}
 		return
 	}
+
+	time.Sleep(800 * time.Millisecond)
 
 	return
 }
@@ -281,7 +283,7 @@ func VncPassword(vmId primitive.ObjectID, passwd string) (err error) {
 	}
 	defer conn.Close()
 
-	err = conn.SetDeadline(time.Now().Add(1 * time.Second))
+	err = conn.SetDeadline(time.Now().Add(3 * time.Second))
 	if err != nil {
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "qemu: Failed set deadline"),
@@ -297,6 +299,8 @@ func VncPassword(vmId primitive.ObjectID, passwd string) (err error) {
 		}
 		return
 	}
+
+	time.Sleep(800 * time.Millisecond)
 
 	return
 }
