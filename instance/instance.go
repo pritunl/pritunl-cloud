@@ -185,6 +185,31 @@ func (i *Instance) Json() {
 			}
 		}
 		break
+	case Cleanup:
+		switch i.VmState {
+		case vm.Starting:
+			i.Status = "Stopping"
+			break
+		case vm.Running:
+			i.Status = "Stopping"
+			break
+		case vm.Stopped:
+			i.Status = "Stopping"
+			break
+		case vm.Failed:
+			i.Status = "Stopping"
+			break
+		case vm.Updating:
+			i.Status = "Updating"
+			break
+		case vm.Provisioning:
+			i.Status = "Stopping"
+			break
+		case "":
+			i.Status = "Stopping"
+			break
+		}
+		break
 	case Stop:
 		switch i.VmState {
 		case vm.Starting:
