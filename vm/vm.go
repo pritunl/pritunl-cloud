@@ -77,3 +77,40 @@ func (v *VirtualMachine) Commit(db *database.Database) (err error) {
 
 	return
 }
+
+func (v *VirtualMachine) CommitState(db *database.Database, state string) (
+	err error) {
+
+	coll := db.Instances()
+
+	addrs := []string{}
+	addrs6 := []string{}
+
+	for _, adapter := range v.NetworkAdapters {
+		if adapter.IpAddress != "" {
+			addrs = append(addrs, adapter.IpAddress)
+		}
+		if adapter.IpAddress6 != "" {
+			addrs6 = append(addrs6, adapter.IpAddress6)
+		}
+	}
+
+	err = coll.UpdateId(v.Id, &bson.M{
+		"$set": &bson.M{
+			"state":       state,
+			"vm_state":    v.State,
+			"public_ips":  addrs,
+			"public_ips6": addrs6,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		if _, ok := err.(*database.NotFoundError); ok {
+			err = nil
+		} else {
+			return
+		}
+	}
+
+	return
+}
