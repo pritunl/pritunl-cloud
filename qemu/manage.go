@@ -233,7 +233,7 @@ func UpdateVmState(virt *vm.VirtualMachine) (err error) {
 		virt.State = vm.Running
 		break
 	case "deactivating":
-		virt.State = vm.Stopped
+		virt.State = vm.Running
 		break
 	case "inactive":
 		virt.State = vm.Stopped
