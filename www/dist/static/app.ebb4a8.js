@@ -18108,6 +18108,7 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@16.7.0.
                     statusClass += ' bp3-text-intent-warning';
                     break;
                 case 'Stopped':
+                case 'Failed':
                 case 'Destroying':
                     statusClass += 'bp3-text-intent-danger';
                     break;
@@ -18405,6 +18406,7 @@ System.registerDynamic("app/components/Instance.js", ["npm:react@16.7.0.js", "ap
                     statusClass += ' bp3-text-intent-warning';
                     break;
                 case 'Stopped':
+                case 'Failed':
                 case 'Destroying':
                     statusClass += ' bp3-text-intent-danger';
                     break;
