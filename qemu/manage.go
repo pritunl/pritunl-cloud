@@ -98,7 +98,7 @@ func GetVmInfo(vmId primitive.ObjectID, getDisks, force bool) (
 		virt = &virtStore.Virt
 
 		if force || virt.State != vm.Running ||
-			time.Since(virtStore.Timestamp) > refreshRate {
+			time.Since(virtStore.Timestamp) > 3*time.Second {
 
 			UpdateVmState(virt)
 		}
