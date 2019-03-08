@@ -232,37 +232,34 @@ func (s *State) init() (err error) {
 	}
 	s.instanceDisks = instanceDisks
 
-	curVirts, err := qemu.GetVms(db)
-	if err != nil {
-		return
-	}
-
-	virtsId := set.NewSet()
-	virtsMap := map[primitive.ObjectID]*vm.VirtualMachine{}
-	for _, virt := range curVirts {
-		virtsId.Add(virt.Id)
-		virtsMap[virt.Id] = virt
-	}
-	s.virtsMap = virtsMap
-
 	instances, err := instance.GetAllVirtMapped(db, &bson.M{
 		"node": s.nodeSelf.Id,
 	}, instanceDisks)
 	s.instances = instances
 
+	instId := set.NewSet()
 	instancesMap := map[primitive.ObjectID]*instance.Instance{}
 	for _, inst := range instances {
-		virtsId.Remove(inst.Id)
+		instId.Add(inst.Id)
 		instancesMap[inst.Id] = inst
 	}
 	s.instancesMap = instancesMap
 
-	for virtId := range virtsId.Iter() {
-		logrus.WithFields(logrus.Fields{
-			"id": virtId.(primitive.ObjectID).Hex(),
-		}).Info("sync: Unknown instance")
+	curVirts, err := qemu.GetVms(db, instancesMap)
+	if err != nil {
+		return
 	}
-	s.instances = instances
+
+	virtsMap := map[primitive.ObjectID]*vm.VirtualMachine{}
+	for _, virt := range curVirts {
+		if !instId.Contains(virt.Id) {
+			logrus.WithFields(logrus.Fields{
+				"id": virt.Id.Hex(),
+			}).Info("sync: Unknown instance")
+		}
+		virtsMap[virt.Id] = virt
+	}
+	s.virtsMap = virtsMap
 
 	nodeFirewall, firewalls, err := firewall.GetAllIngress(
 		db, s.nodeSelf, instances)
