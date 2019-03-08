@@ -122,6 +122,41 @@ func (s *Instances) start(inst *instance.Instance) {
 	}()
 }
 
+func (s *Instances) cleanup(inst *instance.Instance) {
+	if !limiter.Acquire() {
+		return
+	}
+
+	acquired, lockId := instancesLock.LockOpen(inst.Id.Hex())
+	if !acquired {
+		limiter.Release()
+		return
+	}
+
+	go func() {
+		defer func() {
+			time.Sleep(3 * time.Second)
+			instancesLock.Unlock(inst.Id.Hex(), lockId)
+			limiter.Release()
+		}()
+
+		db := database.GetDatabase()
+		defer db.Close()
+
+		qemu.Cleanup(db, inst.Virt)
+
+		err := instance.SetState(db, inst.Id, instance.Stop)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("deploy: Failed to update instance")
+			return
+		}
+
+		event.PublishDispatch(db, "instance.change")
+	}()
+}
+
 func (s *Instances) stop(inst *instance.Instance) {
 	if !limiter.Acquire() {
 		return
