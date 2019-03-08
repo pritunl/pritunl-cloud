@@ -17,7 +17,6 @@ type Disk struct {
 }
 
 type Network struct {
-	Type       string
 	Iface      string
 	MacAddress string
 }
