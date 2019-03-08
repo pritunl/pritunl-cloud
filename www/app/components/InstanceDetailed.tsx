@@ -4,6 +4,7 @@ import * as InstanceTypes from '../types/InstanceTypes';
 import * as InstanceActions from '../actions/InstanceActions';
 import * as VpcTypes from '../types/VpcTypes';
 import * as DomainTypes from '../types/DomainTypes';
+import * as PageInfos from './PageInfo';
 import OrganizationsStore from '../stores/OrganizationsStore';
 import ZonesStore from '../stores/ZonesStore';
 import PageInput from './PageInput';
@@ -404,6 +405,89 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			}
 		}
 
+		let fields: PageInfos.Field[] = [
+			{
+				label: 'ID',
+				value: this.props.instance.id || 'None',
+			},
+			{
+				label: 'Organization',
+				value: org ? org.name :
+					this.props.instance.organization || 'None',
+			},
+			{
+				label: 'Zone',
+				value: zone ? zone.name : this.props.instance.zone || 'None',
+			},
+			{
+				label: 'Node',
+				value: info.node || 'None',
+			},
+			{
+				label: 'State',
+				value: (this.props.instance.state || 'None') + ':' + (
+					this.props.instance.vm_state || 'None'),
+			},
+			{
+				label: 'Public MAC Address',
+				value: this.props.instance.public_mac || 'Unknown',
+				copy: true,
+			},
+			{
+				label: 'Public IPv4',
+				value: publicIps,
+				copy: true,
+			},
+			{
+				label: 'Public IPv6',
+				value: publicIps6,
+				copy: true,
+			},
+			{
+				label: 'Private IPv4',
+				value: privateIps,
+				copy: true,
+			},
+			{
+				label: 'Private IPv6',
+				value: privateIps6,
+				copy: true,
+			},
+			{
+				label: 'Host IPv4',
+				value: hostIps,
+				copy: true,
+			},
+		];
+
+		if (this.props.instance.vnc) {
+			fields.push(
+				{
+					label: 'VNC Port',
+					value: this.props.instance.vnc_display + 5900,
+				},
+				{
+					label: 'VNC Password',
+					value: this.props.instance.vnc_password,
+				},
+			);
+		}
+
+		fields.push(
+			{
+				label: 'Disks',
+				value: info.disks || '',
+			},
+			{
+				label: 'Firewall Rules',
+				value: this.props.instance.info.firewall_rules || '',
+			},
+			{
+				label: 'Authorities',
+				value: this.props.instance.info.authorities || '',
+			},
+		);
+
 		return <td
 			className="bp3-cell"
 			colSpan={6}
@@ -555,72 +639,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				</div>
 				<div style={css.group}>
 					<PageInfo
-						fields={[
-							{
-								label: 'ID',
-								value: this.props.instance.id || 'None',
-							},
-							{
-								label: 'Organization',
-								value: org ? org.name :
-									this.props.instance.organization || 'None',
-							},
-							{
-								label: 'Zone',
-								value: zone ? zone.name : this.props.instance.zone || 'None',
-							},
-							{
-								label: 'Node',
-								value: info.node || 'None',
-							},
-							{
-								label: 'State',
-								value: (this.props.instance.state || 'None') + ':' + (
-									this.props.instance.vm_state || 'None'),
-							},
-							{
-								label: 'Public MAC Address',
-								value: this.props.instance.public_mac || 'Unknown',
-								copy: true,
-							},
-							{
-								label: 'Public IPv4',
-								value: publicIps,
-								copy: true,
-							},
-							{
-								label: 'Public IPv6',
-								value: publicIps6,
-								copy: true,
-							},
-							{
-								label: 'Private IPv4',
-								value: privateIps,
-								copy: true,
-							},
-							{
-								label: 'Private IPv6',
-								value: privateIps6,
-								copy: true,
-							},
-							{
-								label: 'Host IPv4',
-								value: hostIps,
-								copy: true,
-							},
-							{
-								label: 'Disks',
-								value: info.disks || '',
-							},
-							{
-								label: 'Firewall Rules',
-								value: this.props.instance.info.firewall_rules || '',
-							},
-							{
-								label: 'Authorities',
-								value: this.props.instance.info.authorities || '',
-							},
-						]}
+						fields={fields}
 					/>
 				</div>
 			</div>
