@@ -1809,6 +1809,27 @@ func PowerOn(db *database.Database, inst *instance.Instance,
 	return
 }
 
+func Cleanup(db *database.Database, virt *vm.VirtualMachine) {
+	logrus.WithFields(logrus.Fields{
+		"id": virt.Id.Hex(),
+	}).Info("qemu: Stopped virtual machine")
+
+	err := NetworkConfClear(db, virt)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"id":    virt.Id.Hex(),
+			"error": err,
+		}).Error("qemu: Failed to cleanup virtual machine network")
+	}
+
+	time.Sleep(3 * time.Second)
+
+	store.RemVirt(virt.Id)
+	store.RemDisks(virt.Id)
+
+	return
+}
+
 func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	unitName := paths.GetUnitName(virt.Id)
 
