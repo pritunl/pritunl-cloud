@@ -98,6 +98,19 @@ func (s *Instances) start(inst *instance.Instance) {
 		db := database.GetDatabase()
 		defer db.Close()
 
+		if inst.Restart || inst.RestartBlockIp {
+			inst.Restart = false
+			inst.RestartBlockIp = false
+			err := inst.CommitFields(db,
+				set.NewSet("restart", "restart_block_ip"))
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"error": err,
+				}).Error("deploy: Failed to commit instance")
+				return
+			}
+		}
+
 		err := qemu.PowerOn(db, inst, inst.Virt)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
@@ -220,6 +233,19 @@ func (s *Instances) restart(inst *instance.Instance) {
 		}
 
 		time.Sleep(1 * time.Second)
+
+		if inst.Restart || inst.RestartBlockIp {
+			inst.Restart = false
+			inst.RestartBlockIp = false
+			err = inst.CommitFields(db,
+				set.NewSet("restart", "restart_block_ip"))
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"error": err,
+				}).Error("deploy: Failed to commit instance")
+				return
+			}
+		}
 
 		err = qemu.PowerOn(db, inst, inst.Virt)
 		if err != nil {
