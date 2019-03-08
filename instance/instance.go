@@ -222,7 +222,7 @@ func (i *Instance) Json() {
 			i.Status = "Stopped"
 			break
 		case vm.Failed:
-			i.Status = "Stopped"
+			i.Status = "Failed"
 			break
 		case vm.Updating:
 			i.Status = "Updating"
