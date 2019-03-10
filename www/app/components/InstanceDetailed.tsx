@@ -338,6 +338,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				statusClass += ' bp3-text-intent-warning';
 				break;
 			case 'Stopped':
+			case 'Failed':
 			case 'Destroying':
 				statusClass += 'bp3-text-intent-danger';
 				break;
