@@ -40,6 +40,7 @@ type Node struct {
 	NoRedirectServer     bool                       `bson:"no_redirect_server" json:"no_redirect_server"`
 	Protocol             string                     `bson:"protocol" json:"protocol"`
 	Hypervisor           string                     `bson:"hypervisor" json:"hypervisor"`
+	Vga                  string                     `bson:"vga" json:"vga"`
 	Certificate          primitive.ObjectID         `bson:"certificate" json:"certificate"`
 	Certificates         []primitive.ObjectID       `bson:"certificates" json:"certificates"`
 	SelfCertificate      string                     `bson:"self_certificate_key" json:"-"`
@@ -100,6 +101,7 @@ func (n *Node) Copy() *Node {
 		NoRedirectServer:     n.NoRedirectServer,
 		Protocol:             n.Protocol,
 		Hypervisor:           n.Hypervisor,
+		Vga:                  n.Vga,
 		Certificate:          n.Certificate,
 		Certificates:         n.Certificates,
 		SelfCertificate:      n.SelfCertificate,
