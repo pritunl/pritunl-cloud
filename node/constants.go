@@ -12,6 +12,10 @@ const (
 	Qemu = "qemu"
 	Kvm  = "kvm"
 
+	Std    = "std"
+	Vmware = "vmware"
+	Virtio = "virtio"
+
 	Dhcp     = "dhcp"
 	Static   = "static"
 	Internal = "internal"
