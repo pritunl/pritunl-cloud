@@ -218,6 +218,20 @@ func (n *Node) Validate(db *database.Database) (
 		n.Hypervisor = Kvm
 	}
 
+	switch n.Vga {
+	case Std, Vmware, Virtio:
+		break
+	case "":
+		n.Vga = Vmware
+		break
+	default:
+		errData = &errortypes.ErrorData{
+			Error:   "node_vga_invalid",
+			Message: "Invalid VGA type",
+		}
+		return
+	}
+
 	if n.Protocol != "http" && n.Protocol != "https" {
 		errData = &errortypes.ErrorData{
 			Error:   "node_protocol_invalid",
