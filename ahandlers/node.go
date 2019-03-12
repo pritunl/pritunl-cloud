@@ -26,6 +26,7 @@ type nodeData struct {
 	NoRedirectServer     bool                    `json:"no_redirect_server"`
 	Protocol             string                  `json:"protocol"`
 	Hypervisor           string                  `json:"hypervisor"`
+	Vga                  string                  `json:"vga"`
 	Certificates         []primitive.ObjectID    `json:"certificates"`
 	AdminDomain          string                  `json:"admin_domain"`
 	UserDomain           string                  `json:"user_domain"`
@@ -83,6 +84,7 @@ func nodePut(c *gin.Context) {
 	nde.NoRedirectServer = data.NoRedirectServer
 	nde.Protocol = data.Protocol
 	nde.Hypervisor = data.Hypervisor
+	nde.Vga = data.Vga
 	nde.Certificates = data.Certificates
 	nde.AdminDomain = data.AdminDomain
 	nde.UserDomain = data.UserDomain
@@ -109,6 +111,7 @@ func nodePut(c *gin.Context) {
 		"no_redirect_server",
 		"protocol",
 		"hypervisor",
+		"vga",
 		"certificates",
 		"admin_domain",
 		"user_domain",
