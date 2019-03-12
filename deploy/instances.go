@@ -270,6 +270,9 @@ func (s *Instances) restart(inst *instance.Instance) {
 		inst.State = instance.Start
 		err = inst.CommitFields(db, set.NewSet("state"))
 		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("deploy: Failed to commit instance")
 			return
 		}
 
