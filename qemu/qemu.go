@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
 )
 
@@ -46,9 +47,14 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 	if q.Vnc && q.VncDisplay != 0 {
 		cmd = append(cmd, "-vga")
-		cmd = append(cmd, "vmware")
+		vga := node.Self.Vga
+		if vga == "" {
+			vga = node.Vmware
+		}
+		cmd = append(cmd, vga)
 		cmd = append(cmd, "-vnc")
-		cmd = append(cmd, fmt.Sprintf(":%d,password", q.VncDisplay))
+		cmd = append(cmd, fmt.Sprintf(
+			":%d,password,share=allow-exclusive", q.VncDisplay))
 	}
 
 	if q.Kvm {
