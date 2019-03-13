@@ -37,8 +37,10 @@ func (s *State) AddIngress(namespace string, ingress []*firewall.Rule) {
 			ruleName := ""
 			ipv6 := strings.Contains(sourceIp, ":")
 			if ipv6 {
+				sourceIp = strings.Replace(sourceIp, "/128", "", 1)
 				ruleName = name6
 			} else {
+				sourceIp = strings.Replace(sourceIp, "/32", "", 1)
 				ruleName = name
 			}
 
