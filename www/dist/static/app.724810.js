@@ -11530,7 +11530,9 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.7.0.js",
                     value: this.props.node.load15
                 }] }), React.createElement(PageSelect_1.default, { hidden: types.indexOf('hypervisor') === -1, disabled: this.state.disabled, label: "Hypervisor Mode", help: "Hypervisor mode, select KVM if CPU has hardware virtualization support.", value: node.hypervisor, onChange: val => {
                     this.set('hypervisor', val);
-                } }, React.createElement("option", { value: "qemu" }, "QEMU"), React.createElement("option", { value: "kvm" }, "KVM")), React.createElement("label", { className: "bp3-label", style: css.label, hidden: node.protocol === 'http' }, "Certificates", React.createElement(Help_1.default, { title: "Certificates", content: "The certificates to use for this nodes web server. The certificates must be valid for all the domains that this node provides access to. This includes the management domain and any service domains." }), React.createElement("div", null, certificates)), React.createElement(PageSelectButton_1.default, { hidden: node.protocol === 'http', label: "Add Certificate", value: this.state.addCert, disabled: !this.props.certificates.length || this.state.disabled, buttonClass: "bp3-intent-success", onChange: val => {
+                } }, React.createElement("option", { value: "qemu" }, "QEMU"), React.createElement("option", { value: "kvm" }, "KVM")), React.createElement(PageSelect_1.default, { hidden: types.indexOf('hypervisor') === -1, disabled: this.state.disabled, label: "Hypervisor VGA Type", help: "Type of VGA card to emulate. Virtio provides the best performance but requires Oracle Linux 7 with the KVM repository. VMware provides better performance then standard.", value: node.vga, onChange: val => {
+                    this.set('vga', val);
+                } }, React.createElement("option", { value: "vmware" }, "VMware"), React.createElement("option", { value: "virtio" }, "Virtio"), React.createElement("option", { value: "std" }, "Standard")), React.createElement("label", { className: "bp3-label", style: css.label, hidden: node.protocol === 'http' }, "Certificates", React.createElement(Help_1.default, { title: "Certificates", content: "The certificates to use for this nodes web server. The certificates must be valid for all the domains that this node provides access to. This includes the management domain and any service domains." }), React.createElement("div", null, certificates)), React.createElement(PageSelectButton_1.default, { hidden: node.protocol === 'http', label: "Add Certificate", value: this.state.addCert, disabled: !this.props.certificates.length || this.state.disabled, buttonClass: "bp3-intent-success", onChange: val => {
                     this.setState(Object.assign({}, this.state, { addCert: val }));
                 }, onSubmit: this.onAddCert }, certificatesSelect), React.createElement(PageInputSwitch_1.default, { disabled: this.state.disabled, label: "Forwarded for header", help: "Enable when using a load balancer. This header value will be used to get the users IP address. It is important to only enable this when a load balancer is used. If it is enabled without a load balancer users can spoof their IP address by providing a value for the header that will not be overwritten by a load balancer. Additionally the nodes firewall should be configured to only accept requests from the load balancer to prevent requests being sent directly to the node bypassing the load balancer.", type: "text", placeholder: "Forwarded for header", value: node.forwarded_for_header, checked: this.state.forwardedChecked, defaultValue: "X-Forwarded-For", onChange: (state, val) => {
                     let nde;
@@ -22017,6 +22019,10 @@ System.registerDynamic("app/components/SettingsProvider.js", ["npm:react@16.7.0.
     const PageSelect_1 = $__require("app/components/PageSelect.js");
     const Help_1 = $__require("app/components/Help.js");
     const css = {
+        label: {
+            fontSize: '16px',
+            margin: '0 0 7px 0'
+        },
         card: {
             marginBottom: '5px'
         },
@@ -22155,7 +22161,7 @@ System.registerDynamic("app/components/SettingsProvider.js", ["npm:react@16.7.0.
                         this.props.onChange(state);
                     } })));
             }
-            return React.createElement("div", { className: "bp3-card", style: css.card }, React.createElement("h6", null, label), React.createElement(PageInfo_1.default, { fields: [{
+            return React.createElement("div", { className: "bp3-card", style: css.card }, React.createElement("h6", { style: css.label }, label), React.createElement(PageInfo_1.default, { fields: [{
                     label: 'ID',
                     value: provider.id || 'None'
                 }] }), React.createElement(PageInput_1.default, { label: "Label", help: "Provider label that will be shown to users on the login page", type: "text", placeholder: "Provider label", value: provider.label, onChange: val => {
@@ -22526,6 +22532,10 @@ System.registerDynamic("app/components/SettingsSecondaryProvider.js", ["npm:reac
     const PageSwitch_1 = $__require("app/components/PageSwitch.js");
     const PageInfo_1 = $__require("app/components/PageInfo.js");
     const css = {
+        label: {
+            fontSize: '16px',
+            margin: '0 0 7px 0'
+        },
         card: {
             marginBottom: '5px'
         },
@@ -22632,7 +22642,7 @@ System.registerDynamic("app/components/SettingsSecondaryProvider.js", ["npm:reac
                     options = this.okta();
                     break;
             }
-            return React.createElement("div", { className: "bp3-card", style: css.card }, React.createElement("h6", null, label), React.createElement(PageInfo_1.default, { fields: [{
+            return React.createElement("div", { className: "bp3-card", style: css.card }, React.createElement("h6", { style: css.label }, label), React.createElement(PageInfo_1.default, { fields: [{
                     label: 'ID',
                     value: provider.id || 'None'
                 }] }), React.createElement(PageInput_1.default, { label: "Name", help: "Two-factor provider name.", type: "text", placeholder: "Two-factor provider name", value: provider.name, onChange: val => {
