@@ -171,6 +171,8 @@ func Register(engine *gin.Engine) {
 	csrfGroup.GET("/vpc", vpcsGet)
 	csrfGroup.GET("/vpc/:vpc_id", vpcGet)
 	csrfGroup.PUT("/vpc/:vpc_id", vpcPut)
+	csrfGroup.GET("/vpc/:vpc_id/routes", vpcRoutesGet)
+	csrfGroup.PUT("/vpc/:vpc_id/routes", vpcRoutesPut)
 	csrfGroup.POST("/vpc", vpcPost)
 	csrfGroup.DELETE("/vpc", vpcsDelete)
 	csrfGroup.DELETE("/vpc/:vpc_id", vpcDelete)
