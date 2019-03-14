@@ -117,6 +117,8 @@ func Register(engine *gin.Engine) {
 	orgGroup.GET("/vpc", vpcsGet)
 	orgGroup.GET("/vpc/:vpc_id", vpcGet)
 	orgGroup.PUT("/vpc/:vpc_id", vpcPut)
+	orgGroup.GET("/vpc/:vpc_id/routes", vpcRoutesGet)
+	orgGroup.PUT("/vpc/:vpc_id/routes", vpcRoutesPut)
 	orgGroup.POST("/vpc", vpcPost)
 	orgGroup.DELETE("/vpc", vpcsDelete)
 	orgGroup.DELETE("/vpc/:vpc_id", vpcDelete)
