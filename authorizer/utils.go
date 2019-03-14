@@ -11,12 +11,12 @@ import (
 func AuthorizeAdmin(db *database.Database, w http.ResponseWriter,
 	r *http.Request) (authr *Authorizer, err error) {
 
-	token := r.Header.Get("Pritunl-Cloud-Token")
-	sigStr := r.Header.Get("Pritunl-Cloud-Signature")
+	token := r.Header.Get("Auth-Token")
+	sigStr := r.Header.Get("Auth-Signature")
 
 	if token != "" && sigStr != "" {
-		timestamp := r.Header.Get("Pritunl-Cloud-Timestamp")
-		nonce := r.Header.Get("Pritunl-Cloud-Nonce")
+		timestamp := r.Header.Get("Auth-Timestamp")
+		nonce := r.Header.Get("Auth-Nonce")
 
 		sig, e := signature.Parse(
 			token,
@@ -60,12 +60,12 @@ func AuthorizeAdmin(db *database.Database, w http.ResponseWriter,
 func AuthorizeUser(db *database.Database, w http.ResponseWriter,
 	r *http.Request) (authr *Authorizer, err error) {
 
-	token := r.Header.Get("Pritunl-Cloud-Token")
-	sigStr := r.Header.Get("Pritunl-Cloud-Signature")
+	token := r.Header.Get("Auth-Token")
+	sigStr := r.Header.Get("Auth-Signature")
 
 	if token != "" && sigStr != "" {
-		timestamp := r.Header.Get("Pritunl-Cloud-Timestamp")
-		nonce := r.Header.Get("Pritunl-Cloud-Nonce")
+		timestamp := r.Header.Get("Auth-Timestamp")
+		nonce := r.Header.Get("Auth-Nonce")
 
 		sig, e := signature.Parse(
 			token,
