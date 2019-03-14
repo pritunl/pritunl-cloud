@@ -14,6 +14,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
+	"github.com/pritunl/pritunl-cloud/subscription"
 	"github.com/pritunl/pritunl-cloud/user"
 )
 
@@ -42,6 +43,35 @@ func (p *Policy) Validate(db *database.Database) (
 	}
 	if p.Rules == nil {
 		p.Rules = map[string]*Rule{}
+	}
+
+	for _, rule := range p.Rules {
+		switch rule.Type {
+		case OperatingSystem:
+			break
+		case Browser:
+			break
+		case Location:
+			if !subscription.Sub.Active {
+				errData = &errortypes.ErrorData{
+					Error: "location_subscription_required",
+					Message: "Location policy requires subscription " +
+						"for GeoIP service.",
+				}
+				return
+			}
+			break
+		case WhitelistNetworks:
+			break
+		case BlacklistNetworks:
+			break
+		default:
+			errData = &errortypes.ErrorData{
+				Error:   "invalid_rule_type",
+				Message: "Rule type is invalid",
+			}
+			return
+		}
 	}
 
 	if !p.AdminSecondary.IsZero() &&
