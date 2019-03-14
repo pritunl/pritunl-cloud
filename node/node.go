@@ -570,6 +570,7 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.NoRedirectServer = nde.NoRedirectServer
 	n.Protocol = nde.Protocol
 	n.Hypervisor = nde.Hypervisor
+	n.Vga = nde.Vga
 	n.Certificates = nde.Certificates
 	n.SelfCertificate = nde.SelfCertificate
 	n.SelfCertificateKey = nde.SelfCertificateKey
@@ -848,6 +849,7 @@ func (n *Node) Init() (err error) {
 		"protocol":         n.Protocol,
 		"port":             n.Port,
 		"hypervisor":       n.Hypervisor,
+		"vga":              n.Vga,
 		"software_version": n.SoftwareVersion,
 	}
 
