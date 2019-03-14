@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Add VGA option to node settings
+
 Version 1.0.1200.31 2019-03-08
 ------------------------------
 
