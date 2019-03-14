@@ -264,6 +264,82 @@ func vpcGet(c *gin.Context) {
 	c.JSON(200, vc)
 }
 
+func vpcRoutesGet(c *gin.Context) {
+	db := c.MustGet("db").(*database.Database)
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
+
+	vpcId, ok := utils.ParseObjectId(c.Param("vpc_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	vc, err := vpc.GetOrg(db, userOrg, vpcId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	c.JSON(200, vc.Routes)
+}
+
+func vpcRoutesPut(c *gin.Context) {
+	if demo.Blocked(c) {
+		return
+	}
+
+	db := c.MustGet("db").(*database.Database)
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	data := []*vpc.Route{}
+
+	vpcId, ok := utils.ParseObjectId(c.Param("vpc_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	err := c.Bind(&data)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	vc, err := vpc.GetOrg(db, userOrg, vpcId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	vc.Routes = data
+
+	fields := set.NewSet(
+		"routes",
+	)
+
+	errData, err := vc.Validate(db)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		c.JSON(400, errData)
+		return
+	}
+
+	err = vc.CommitFields(db, fields)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	event.PublishDispatch(db, "vpc.change")
+
+	vc.Json()
+
+	c.JSON(200, vc)
+}
+
 func vpcsGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
