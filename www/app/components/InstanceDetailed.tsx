@@ -630,6 +630,15 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					</PageSelect>
 					<PageSwitch
 						disabled={this.state.disabled}
+						label="VNC server"
+						help="Enable VNC server for remote control of instance."
+						checked={instance.vnc}
+						onToggle={(): void => {
+							this.set('vnc', !instance.vnc);
+						}}
+					/>
+					<PageSwitch
+						disabled={this.state.disabled}
 						label="Delete protection"
 						help="Block instance and any attached disks from being deleted."
 						checked={instance.delete_protection}
