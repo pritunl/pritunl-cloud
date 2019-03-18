@@ -573,6 +573,15 @@ export default class InstanceNew extends React.Component<Props, State> {
 						</PageSelect>
 						<PageSwitch
 							disabled={this.state.disabled}
+							label="VNC server"
+							help="Enable VNC server for remote control of instance."
+							checked={instance.vnc}
+							onToggle={(): void => {
+								this.set('vnc', !instance.vnc);
+							}}
+						/>
+						<PageSwitch
+							disabled={this.state.disabled}
 							label="Start instance"
 							help="Automatically start instance. Disable to get the public MAC address before instance is started for first time."
 							checked={!instance.state}
