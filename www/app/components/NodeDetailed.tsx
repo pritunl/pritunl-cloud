@@ -1523,6 +1523,20 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						<option value="qemu">QEMU</option>
 						<option value="kvm">KVM</option>
 					</PageSelect>
+					<PageSelect
+						hidden={types.indexOf('hypervisor') === -1}
+						disabled={this.state.disabled}
+						label="Hypervisor VGA Type"
+						help="Type of VGA card to emulate. Virtio provides the best performance but requires Oracle Linux 7 with the KVM repository. VMware provides better performance then standard."
+						value={node.vga}
+						onChange={(val): void => {
+							this.set('vga', val);
+						}}
+					>
+						<option value="vmware">VMware</option>
+						<option value="virtio">Virtio</option>
+						<option value="std">Standard</option>
+					</PageSelect>
 					<label
 						className="bp3-label"
 						style={css.label}
