@@ -18228,6 +18228,10 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@16.7.0.
                     this.set('vnc', !instance.vnc);
                 } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Delete protection", help: "Block instance and any attached disks from being deleted.", checked: instance.delete_protection, onToggle: () => {
                     this.set('delete_protection', !instance.delete_protection);
+                } }), React.createElement(PageSwitch_1.default, { label: "Public address", help: "Enable or disable public address for instance. Node must have network mode configured to assign public address.", checked: !instance.no_public_address, onToggle: () => {
+                    this.set('no_public_address', !instance.no_public_address);
+                } }), React.createElement(PageSwitch_1.default, { label: "Host address", help: "Enable or disable host address for instance. Node must have host networking configured to assign host address.", checked: !instance.no_host_address, onToggle: () => {
+                    this.set('no_host_address', !instance.no_host_address);
                 } })), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: fields }))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.instance && !this.state.message, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
                     this.setState(Object.assign({}, this.state, { changed: false, forwardedChecked: false, instance: null }));
                 }, onSave: this.onSave }, React.createElement(ConfirmButton_1.default, { label: "Start", className: "bp3-intent-success bp3-icon-power", progressClassName: "bp3-intent-success", style: css.controlButton, hidden: this.props.instance.state !== 'stop', disabled: this.state.disabled, onConfirm: () => {
@@ -19103,7 +19107,11 @@ System.registerDynamic("app/components/InstanceNew.js", ["npm:react@16.7.0.js", 
                     this.set('processors', val);
                 }, value: instance.processors }), React.createElement(PageNumInput_1.default, { label: "Count", help: "Number of instances to create.", min: 1, minorStepSize: 1, stepSize: 1, majorStepSize: 1, disabled: this.state.disabled, selectAllOnFocus: true, onChange: val => {
                     this.set('count', val);
-                }, value: instance.count }))), React.createElement(PageCreate_1.default, { style: css.save, hidden: !this.state.instance, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, closed: this.state.closed, light: true, onCancel: this.props.onClose, onCreate: this.onCreate })));
+                }, value: instance.count }), React.createElement(PageSwitch_1.default, { label: "Public address", help: "Enable or disable public address for instance. Node must have network mode configured to assign public address.", checked: !instance.no_public_address, onToggle: () => {
+                    this.set('no_public_address', !instance.no_public_address);
+                } }), React.createElement(PageSwitch_1.default, { label: "Host address", help: "Enable or disable host address for instance. Node must have host networking configured to assign host address.", checked: !instance.no_host_address, onToggle: () => {
+                    this.set('no_host_address', !instance.no_host_address);
+                } }))), React.createElement(PageCreate_1.default, { style: css.save, hidden: !this.state.instance, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, closed: this.state.closed, light: true, onCancel: this.props.onClose, onCreate: this.onCreate })));
         }
     }
     exports.default = InstanceNew;
