@@ -391,7 +391,9 @@ func (i *Instance) Changed(curVirt *vm.VirtualMachine) bool {
 	if i.Virt.Memory != curVirt.Memory ||
 		i.Virt.Processors != curVirt.Processors ||
 		i.Virt.Vnc != curVirt.Vnc ||
-		i.Virt.VncDisplay != curVirt.VncDisplay {
+		i.Virt.VncDisplay != curVirt.VncDisplay ||
+		i.Virt.NoPublicAddress != curVirt.NoPublicAddress ||
+		i.Virt.NoHostAddress != curVirt.NoHostAddress {
 
 		return true
 	}
