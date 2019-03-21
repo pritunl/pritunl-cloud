@@ -35,6 +35,8 @@ type Instance struct {
 	PrivateIps          []string           `bson:"private_ips" json:"private_ips"`
 	PrivateIps6         []string           `bson:"private_ips6" json:"private_ips6"`
 	HostIps             []string           `bson:"host_ips" json:"host_ips"`
+	NoPublicAddress     bool               `bson:"no_public_address" json:"no_public_address"`
+	NoHostAddress       bool               `bson:"no_host_address" json:"no_host_address"`
 	Node                primitive.ObjectID `bson:"node" json:"node"`
 	Domain              primitive.ObjectID `bson:"domain,omitempty" json:"domain"`
 	Name                string             `bson:"name" json:"name"`
@@ -49,6 +51,8 @@ type Instance struct {
 	curVpc              primitive.ObjectID `bson:"-" json:"-"`
 	curDeleteProtection bool               `bson:"-" json:"-"`
 	curState            string             `bson:"-" json:"-"`
+	curNoPublicAddress  bool               `bson:"-" json:"-"`
+	curNoHostAddress    bool               `bson:"-" json:"-"`
 }
 
 func (i *Instance) Validate(db *database.Database) (
@@ -255,6 +259,8 @@ func (i *Instance) PreCommit() {
 	i.curVpc = i.Vpc
 	i.curDeleteProtection = i.DeleteProtection
 	i.curState = i.State
+	i.curNoPublicAddress = i.NoPublicAddress
+	i.curNoHostAddress = i.NoHostAddress
 }
 
 func (i *Instance) PostCommit(db *database.Database) (
@@ -345,6 +351,8 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 				VpcId:      i.Vpc,
 			},
 		},
+		NoPublicAddress: i.NoPublicAddress,
+		NoHostAddress:   i.NoHostAddress,
 	}
 
 	if disks != nil {
