@@ -27,6 +27,9 @@ export interface Instance {
 	memory?: number;
 	processors?: number;
 	network_roles?: string[];
+	vnc?: boolean;
+	vnc_password?: string;
+	vnc_display?: number;
 	domain?: string;
 	vpc?: string;
 	count?: number;
