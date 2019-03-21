@@ -19,6 +19,8 @@ type VirtualMachine struct {
 	VncDisplay      int                `json:"vnc_display"`
 	Disks           []*Disk            `json:"disks"`
 	NetworkAdapters []*NetworkAdapter  `json:"network_adapters"`
+	NoPublicAddress bool               `json:"no_public_address"`
+	NoHostAddress   bool               `json:"no_host_address"`
 }
 
 type Disk struct {
