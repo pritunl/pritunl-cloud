@@ -190,3 +190,25 @@ func RemoveInstanceIps(db *database.Database, instId primitive.ObjectID) (
 
 	return
 }
+
+func RemoveInstanceIpsType(db *database.Database,
+	instId primitive.ObjectID, typ string) (err error) {
+
+	coll := db.BlocksIp()
+
+	_, err = coll.DeleteMany(db, &bson.M{
+		"instance": instId,
+		"type":     typ,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		switch err.(type) {
+		case *database.NotFoundError:
+			err = nil
+		default:
+			return
+		}
+	}
+
+	return
+}
