@@ -7,6 +7,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -287,6 +288,20 @@ func (i *Instance) PostCommit(db *database.Database) (
 
 		i.Restart = false
 		i.RestartBlockIp = false
+	}
+
+	if i.curNoPublicAddress != i.NoPublicAddress && i.NoPublicAddress {
+		err = block.RemoveInstanceIpsType(db, i.Id, block.External)
+		if err != nil {
+			return
+		}
+	}
+
+	if i.curNoHostAddress != i.NoHostAddress && i.NoHostAddress {
+		err = block.RemoveInstanceIpsType(db, i.Id, block.Host)
+		if err != nil {
+			return
+		}
 	}
 
 	return
