@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Add option to disable instance public and host address
+
 Version 1.0.1206.81 2019-03-14
 ------------------------------
 
