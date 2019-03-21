@@ -43,6 +43,8 @@ type instanceData struct {
 	Processors       int                `json:"processors"`
 	NetworkRoles     []string           `json:"network_roles"`
 	Vnc              bool               `json:"vnc"`
+	NoPublicAddress  bool               `json:"no_public_address"`
+	NoHostAddress    bool               `json:"no_host_address"`
 	Count            int                `json:"count"`
 }
 
@@ -118,6 +120,8 @@ func instancePut(c *gin.Context) {
 	inst.NetworkRoles = dta.NetworkRoles
 	inst.Vnc = dta.Vnc
 	inst.Domain = dta.Domain
+	inst.NoPublicAddress = dta.NoPublicAddress
+	inst.NoHostAddress = dta.NoHostAddress
 
 	fields := set.NewSet(
 		"name",
@@ -133,6 +137,8 @@ func instancePut(c *gin.Context) {
 		"vnc_display",
 		"vnc_password",
 		"domain",
+		"no_public_address",
+		"no_host_address",
 	)
 
 	errData, err := inst.Validate(db)
@@ -304,6 +310,8 @@ func instancePost(c *gin.Context) {
 			NetworkRoles:     dta.NetworkRoles,
 			Vnc:              dta.Vnc,
 			Domain:           dta.Domain,
+			NoPublicAddress:  dta.NoPublicAddress,
+			NoHostAddress:    dta.NoHostAddress,
 		}
 
 		errData, err := inst.Validate(db)
