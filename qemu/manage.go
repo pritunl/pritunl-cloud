@@ -437,12 +437,12 @@ func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	adapter := virt.NetworkAdapters[0]
 
 	externalNetwork := true
-	if nodeNetworkMode == node.Internal {
+	if virt.NoPublicAddress || nodeNetworkMode == node.Internal {
 		externalNetwork = false
 	}
 
 	hostNetwork := false
-	if !node.Self.HostBlock.IsZero() {
+	if !virt.NoHostAddress && !node.Self.HostBlock.IsZero() {
 		hostNetwork = true
 	}
 
