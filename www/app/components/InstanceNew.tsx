@@ -704,6 +704,22 @@ export default class InstanceNew extends React.Component<Props, State> {
 							}}
 							value={instance.count}
 						/>
+						<PageSwitch
+							label="Public address"
+							help="Enable or disable public address for instance. Node must have network mode configured to assign public address."
+							checked={!instance.no_public_address}
+							onToggle={(): void => {
+								this.set('no_public_address', !instance.no_public_address);
+							}}
+						/>
+						<PageSwitch
+							label="Host address"
+							help="Enable or disable host address for instance. Node must have host networking configured to assign host address."
+							checked={!instance.no_host_address}
+							onToggle={(): void => {
+								this.set('no_host_address', !instance.no_host_address);
+							}}
+						/>
 					</div>
 				</div>
 				<PageCreate
