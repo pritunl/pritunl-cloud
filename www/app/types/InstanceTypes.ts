@@ -31,6 +31,8 @@ export interface Instance {
 	vnc_password?: string;
 	vnc_display?: number;
 	domain?: string;
+	no_public_address?: boolean;
+	no_host_address?: boolean;
 	vpc?: string;
 	count?: number;
 	info?: Info;
