@@ -14,6 +14,7 @@ export interface Node {
 	no_redirect_server?: boolean;
 	protocol?: string;
 	hypervisor?: string;
+	vga?: string;
 	timestamp?: string;
 	admin_domain?: string;
 	user_domain?: string;
