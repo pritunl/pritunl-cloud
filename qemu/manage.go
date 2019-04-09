@@ -327,10 +327,6 @@ func GetVms(db *database.Database,
 		}()
 	}
 
-	if err != nil {
-		return
-	}
-
 	waiter.Wait()
 
 	return
