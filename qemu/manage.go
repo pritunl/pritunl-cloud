@@ -364,7 +364,9 @@ func Wait(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	return
 }
 
-func NetworkConf(db *database.Database, virt *vm.VirtualMachine) (err error) {
+func NetworkConf(db *database.Database,
+	virt *vm.VirtualMachine) (err error) {
+
 	ifaceNames := set.NewSet()
 
 	if len(virt.NetworkAdapters) == 0 {
