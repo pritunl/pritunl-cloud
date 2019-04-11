@@ -93,14 +93,14 @@ func GetVmInfo(vmId primitive.ObjectID, getDisks, force bool) (
 			return
 		}
 
-		UpdateVmState(virt)
+		_ = UpdateVmState(virt)
 	} else {
 		virt = &virtStore.Virt
 
 		if force || virt.State != vm.Running ||
 			time.Since(virtStore.Timestamp) > 3*time.Second {
 
-			UpdateVmState(virt)
+			_ = UpdateVmState(virt)
 		}
 	}
 
@@ -113,7 +113,7 @@ func GetVmInfo(vmId primitive.ObjectID, getDisks, force bool) (
 					if e != nil {
 						if i < 19 {
 							time.Sleep(100 * time.Millisecond)
-							UpdateVmState(virt)
+							_ = UpdateVmState(virt)
 							continue
 						}
 						err = e
