@@ -519,15 +519,18 @@ func NetworkConf(db *database.Database,
 		return
 	}
 
-	utils.ExecCombinedOutput("", "ip", "link",
-		"set", ifaceExternalVirt, "down")
-	utils.ExecCombinedOutput("", "ip", "link", "del", ifaceExternalVirt)
-	utils.ExecCombinedOutput("", "ip", "link",
-		"set", ifaceInternalVirt, "down")
-	utils.ExecCombinedOutput("", "ip", "link", "del", ifaceInternalVirt)
-	utils.ExecCombinedOutput("", "ip", "link",
-		"set", ifaceHostVirt, "down")
-	utils.ExecCombinedOutput("", "ip", "link", "del", ifaceHostVirt)
+	_, _ = utils.ExecCombinedOutput(
+		"", "ip", "link", "set", ifaceExternalVirt, "down")
+	_, _ = utils.ExecCombinedOutput(
+		"", "ip", "link", "del", ifaceExternalVirt)
+	_, _ = utils.ExecCombinedOutput(
+		"", "ip", "link", "set", ifaceInternalVirt, "down")
+	_, _ = utils.ExecCombinedOutput(
+		"", "ip", "link", "del", ifaceInternalVirt)
+	_, _ = utils.ExecCombinedOutput(
+		"", "ip", "link", "set", ifaceHostVirt, "down")
+	_, _ = utils.ExecCombinedOutput(
+		"", "ip", "link", "del", ifaceHostVirt)
 
 	interfaces.RemoveVirtIface(ifaceExternalVirt)
 	interfaces.RemoveVirtIface(ifaceInternalVirt)
