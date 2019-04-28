@@ -9,6 +9,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/mongo"
+	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/config"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -247,7 +248,8 @@ func Connect() (err error) {
 		DefaultDatabase = path[1:]
 	}
 
-	client, err := mongo.NewClient(config.Config.MongoUri)
+	opts := options.Client().ApplyURI(config.Config.MongoUri)
+	client, err := mongo.NewClient(opts)
 	if err != nil {
 		err = &ConnectionError{
 			errors.Wrap(err, "database: Client error"),
