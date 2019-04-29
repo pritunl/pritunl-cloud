@@ -117,7 +117,7 @@ func ExistsOrg(db *database.Database, orgId, imgId primitive.ObjectID) (
 
 	coll := db.Images()
 
-	n, err := coll.Count(db, &bson.M{
+	n, err := coll.CountDocuments(db, &bson.M{
 		"_id": imgId,
 		"$or": []*bson.M{
 			&bson.M{
@@ -148,7 +148,7 @@ func GetAll(db *database.Database, query *bson.M, page, pageCount int64) (
 	coll := db.Images()
 	imgs = []*Image{}
 
-	count, err = coll.Count(db, query)
+	count, err = coll.CountDocuments(db, query)
 	if err != nil {
 		err = database.ParseError(err)
 		return

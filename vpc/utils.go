@@ -45,7 +45,7 @@ func ExistsOrg(db *database.Database, orgId, vcId primitive.ObjectID) (
 	exists bool, err error) {
 
 	coll := db.Vpcs()
-	n, err := coll.Count(
+	n, err := coll.CountDocuments(
 		db,
 		&bson.M{
 			"_id":          vcId,
@@ -151,7 +151,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	coll := db.Vpcs()
 	vcs = []*Vpc{}
 
-	count, err = coll.Count(db, query)
+	count, err = coll.CountDocuments(db, query)
 	if err != nil {
 		err = database.ParseError(err)
 		return

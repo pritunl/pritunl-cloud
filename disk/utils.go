@@ -82,7 +82,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	coll := db.Disks()
 	disks = []*Disk{}
 
-	count, err = coll.Count(db, query)
+	count, err = coll.CountDocuments(db, query)
 	if err != nil {
 		err = database.ParseError(err)
 		return

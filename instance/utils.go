@@ -49,7 +49,7 @@ func ExistsOrg(db *database.Database, orgId, instId primitive.ObjectID) (
 
 	coll := db.Instances()
 
-	n, err := coll.Count(db, &bson.M{
+	n, err := coll.CountDocuments(db, &bson.M{
 		"_id":          instId,
 		"organization": orgId,
 	})
@@ -252,7 +252,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	coll := db.Instances()
 	insts = []*Instance{}
 
-	count, err = coll.Count(db, query)
+	count, err = coll.CountDocuments(db, query)
 	if err != nil {
 		err = database.ParseError(err)
 		return

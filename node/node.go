@@ -270,7 +270,7 @@ func (n *Node) Validate(db *database.Database) (
 
 	if !n.Zone.IsZero() {
 		coll := db.Zones()
-		count, e := coll.Count(db, &bson.M{
+		count, e := coll.CountDocuments(db, &bson.M{
 			"_id": n.Zone,
 		})
 		if e != nil {

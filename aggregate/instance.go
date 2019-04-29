@@ -41,7 +41,7 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 	coll := db.Instances()
 	insts = []*InstanceAggregate{}
 
-	count, err = coll.Count(db, query)
+	count, err = coll.CountDocuments(db, query)
 	if err != nil {
 		err = database.ParseError(err)
 		return

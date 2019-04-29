@@ -30,7 +30,7 @@ func GetDiskPaged(db *database.Database, query *bson.M, page,
 	coll := db.Disks()
 	disks = []*DiskAggregate{}
 
-	count, err = coll.Count(db, query)
+	count, err = coll.CountDocuments(db, query)
 	if err != nil {
 		err = database.ParseError(err)
 		return

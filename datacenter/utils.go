@@ -25,7 +25,7 @@ func ExistsOrg(db *database.Database, orgId, dcId primitive.ObjectID) (
 
 	coll := db.Datacenters()
 
-	count, err := coll.Count(db, &bson.M{
+	count, err := coll.CountDocuments(db, &bson.M{
 		"_id": dcId,
 		"$or": []*bson.M{
 			&bson.M{
