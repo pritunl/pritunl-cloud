@@ -27,6 +27,7 @@ type Rule struct {
 type Policy struct {
 	Id                   primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Name                 string             `bson:"name" json:"name"`
+	Disabled             bool               `bson:"disabled" json:"disabled"`
 	Roles                []string           `bson:"roles" json:"roles"`
 	Rules                map[string]*Rule   `bson:"rules" json:"rules"`
 	AdminSecondary       primitive.ObjectID `bson:"admin_secondary,omitempty" json:"admin_secondary"`
