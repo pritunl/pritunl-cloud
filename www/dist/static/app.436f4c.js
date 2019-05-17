@@ -12479,7 +12479,9 @@ System.registerDynamic("app/components/Policy.js", ["npm:react@16.7.0.js", "app/
                 } })), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
                     label: 'ID',
                     value: this.props.policy.id || 'None'
-                }] }), React.createElement(PolicyRule_1.default, { rule: location, onChange: val => {
+                }] }), React.createElement(PageSwitch_1.default, { label: "Enabled", help: "Enable or disable policy.", checked: !policy.disabled, onToggle: () => {
+                    this.set('disabled', !policy.disabled);
+                } }), React.createElement(PolicyRule_1.default, { rule: location, onChange: val => {
                     this.setRule('location', val);
                 } }), React.createElement(PolicyRule_1.default, { rule: operatingSystem, onChange: val => {
                     this.setRule('operating_system', val);
@@ -29224,6 +29226,7 @@ System.registerDynamic("app/Constants.js", ["npm:mobile-detect@1.4.3.js"], true,
         macos_1012: 'macOS 10.12',
         macos_1013: 'macOS 10.13',
         macos_1014: 'macOS 10.14',
+        macos_1015: 'macOS 10.15',
         windows_xp: 'Windows XP',
         windows_7: 'Windows 7',
         windows_vista: 'Windows Vista',
@@ -29235,12 +29238,14 @@ System.registerDynamic("app/Constants.js", ["npm:mobile-detect@1.4.3.js"], true,
         ios_10: 'iOS 10',
         ios_11: 'iOS 11',
         ios_12: 'iOS 12',
+        ios_13: 'iOS 13',
         android_4: 'Android KitKat 4.4',
         android_5: 'Android Lollipop 5.0',
         android_6: 'Android Marshmallow 6.0',
         android_7: 'Android Nougat 7.0',
         android_8: 'Android Oreo 8.0',
-        android_9: 'Android 9.0',
+        android_9: 'Android Pie 9.0',
+        android_10: 'Android Q 10.0',
         blackberry_10: 'Blackerry 10',
         windows_phone: 'Windows Phone',
         firefox_os: 'Firefox OS',
