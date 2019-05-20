@@ -111,7 +111,7 @@ func (p *Policy) Validate(db *database.Database) (
 	return
 }
 
-func (p *Policy) ValidateAdmin(db *database.Database, usr *user.User,
+func (p *Policy) ValidateUser(db *database.Database, usr *user.User,
 	r *http.Request) (errData *errortypes.ErrorData, err error) {
 
 	agnt, err := agent.Parse(db, r)
@@ -301,115 +301,6 @@ func (p *Policy) ValidateAdmin(db *database.Database, usr *user.User,
 					errData = &errortypes.ErrorData{
 						Error:   "blacklist_networks_policy",
 						Message: "Network not permitted",
-					}
-				}
-				return
-			}
-			break
-		}
-	}
-
-	return
-}
-
-func (p *Policy) ValidateUser(db *database.Database, usr *user.User,
-	r *http.Request) (errData *errortypes.ErrorData, err error) {
-
-	agnt, err := agent.Parse(db, r)
-	if err != nil {
-		return
-	}
-
-	for _, rule := range p.Rules {
-		switch rule.Type {
-		case OperatingSystem:
-			match := false
-			for _, value := range rule.Values {
-				if value == agnt.OperatingSystem {
-					match = true
-					break
-				}
-			}
-
-			if !match {
-				if rule.Disable {
-					errData = &errortypes.ErrorData{
-						Error:   "unauthorized",
-						Message: "Not authorized",
-					}
-
-					usr.Disabled = true
-					err = usr.CommitFields(db, set.NewSet("disabled"))
-					if err != nil {
-						return
-					}
-				} else {
-					errData = &errortypes.ErrorData{
-						Error:   "operating_system_policy",
-						Message: "Operating system not permitted",
-					}
-				}
-				return
-			}
-			break
-		case Browser:
-			match := false
-			for _, value := range rule.Values {
-				if value == agnt.Browser {
-					match = true
-					break
-				}
-			}
-
-			if !match {
-				if rule.Disable {
-					errData = &errortypes.ErrorData{
-						Error:   "unauthorized",
-						Message: "Not authorized",
-					}
-
-					usr.Disabled = true
-					err = usr.CommitFields(db, set.NewSet("disabled"))
-					if err != nil {
-						return
-					}
-				} else {
-					errData = &errortypes.ErrorData{
-						Error:   "browser_policy",
-						Message: "Browser not permitted",
-					}
-				}
-				return
-			}
-			break
-		case Location:
-			match := false
-			regionKey := fmt.Sprintf("%s_%s",
-				agnt.CountryCode, agnt.RegionCode)
-
-			for _, value := range rule.Values {
-				if value == agnt.CountryCode || value == regionKey {
-					match = true
-					break
-				}
-			}
-
-			if !match {
-				if rule.Disable {
-					errData = &errortypes.ErrorData{
-						Error:   "unauthorized",
-						Message: "Not authorized",
-					}
-
-					usr.Disabled = true
-					err = usr.CommitFields(db, set.NewSet("disabled"))
-					if err != nil {
-						return
-					}
-				} else {
-					errData = &errortypes.ErrorData{
-						Error:   "location_policy",
-						Message: "Location not permitted",
 					}
 				}
 				return
