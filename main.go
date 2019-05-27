@@ -22,6 +22,7 @@ Commands:
   start             Start node
   clear-logs        Clear logs
   reset-password    Reset administrator password
+  disable-policies  Disable all policies
 `
 
 func Init() {
@@ -66,6 +67,13 @@ func main() {
 	case "reset-password":
 		Init()
 		err := cmd.ResetPassword()
+		if err != nil {
+			panic(err)
+		}
+		return
+	case "disable-policies":
+		Init()
+		err := cmd.DisablePolicies()
 		if err != nil {
 			panic(err)
 		}
