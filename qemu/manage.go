@@ -1075,7 +1075,7 @@ func NetworkConf(db *database.Database,
 		return
 	}
 
-	networkStopDhClient(db, virt)
+	_ = networkStopDhClient(db, virt)
 
 	if externalNetwork {
 		if nodeNetworkMode == node.Static {
@@ -1395,10 +1395,10 @@ func networkStopDhClient(db *database.Database,
 	}
 
 	if pid != "" {
-		utils.ExecCombinedOutput("", "kill", pid)
+		_, _ = utils.ExecCombinedOutput("", "kill", pid)
 	}
 
-	utils.RemoveAll(pidPath)
+	_ = utils.RemoveAll(pidPath)
 
 	return
 }
@@ -1422,17 +1422,18 @@ func NetworkConfClear(db *database.Database,
 	ifaceInternalVirt := vm.GetIfaceVirt(virt.Id, 1)
 	ifaceHostVirt := vm.GetIfaceVirt(virt.Id, 2)
 
-	utils.ExecCombinedOutput("", "ip", "link",
-		"set", ifaceExternalVirt, "down")
-	utils.ExecCombinedOutput("", "ip", "link", "del", ifaceExternalVirt)
-
-	utils.ExecCombinedOutput("", "ip", "link",
-		"set", ifaceInternalVirt, "down")
-	utils.ExecCombinedOutput("", "ip", "link", "del", ifaceInternalVirt)
-
-	utils.ExecCombinedOutput("", "ip", "link",
-		"set", ifaceHostVirt, "down")
-	utils.ExecCombinedOutput("", "ip", "link", "del", ifaceHostVirt)
+	_, _ = utils.ExecCombinedOutput(
+		"", "ip", "link", "set", ifaceExternalVirt, "down")
+	_, _ = utils.ExecCombinedOutput(
+		"", "ip", "link", "del", ifaceExternalVirt)
+	_, _ = utils.ExecCombinedOutput(
+		"", "ip", "link", "set", ifaceInternalVirt, "down")
+	_, _ = utils.ExecCombinedOutput(
+		"", "ip", "link", "del", ifaceInternalVirt)
+	_, _ = utils.ExecCombinedOutput(
+		"", "ip", "link", "set", ifaceHostVirt, "down")
+	_, _ = utils.ExecCombinedOutput(
+		"", "ip", "link", "del", ifaceHostVirt)
 
 	interfaces.RemoveVirtIface(ifaceExternalVirt)
 	interfaces.RemoveVirtIface(ifaceInternalVirt)
@@ -1535,7 +1536,7 @@ func Create(db *database.Database, inst *instance.Instance,
 			return
 		}
 
-		event.PublishDispatch(db, "disk.change")
+		_ = event.PublishDispatch(db, "disk.change")
 
 		virt.Disks = append(virt.Disks, &vm.Disk{
 			Index: 0,
@@ -1663,7 +1664,7 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 					time.Sleep(1 * time.Second)
 
 					if (i+1)%15 == 0 {
-						qms.Shutdown(virt.Id)
+						_ = qms.Shutdown(virt.Id)
 					}
 				}
 			}
@@ -1888,7 +1889,7 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			time.Sleep(1 * time.Second)
 
 			if (i+1)%15 == 0 {
-				qms.Shutdown(virt.Id)
+				_ = qms.Shutdown(virt.Id)
 			}
 		}
 	}
