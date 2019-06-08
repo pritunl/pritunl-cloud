@@ -59,7 +59,6 @@ func GetVmInfo(vmId primitive.ObjectID, getDisks, force bool) (
 
 		unitData, e := ioutil.ReadFile(unitPath)
 		if e != nil {
-			// TODO if err.(*os.PathError).Error == os.ErrNotExist {
 			err = &errortypes.ReadError{
 				errors.Wrap(e, "qemu: Failed to read service"),
 			}
