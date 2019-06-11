@@ -116,6 +116,7 @@ func GetVmInfo(vmId primitive.ObjectID, getDisks, force bool) (
 							continue
 						}
 						err = e
+
 						return
 					}
 					virt.Disks = disks
