@@ -1612,7 +1612,7 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			return
 		}
 
-		if vrt.State == vm.Running {
+		if vrt != nil && vrt.State == vm.Running {
 			shutdown := false
 
 			logged := false
