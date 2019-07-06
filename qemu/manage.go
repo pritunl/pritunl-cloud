@@ -1016,15 +1016,6 @@ func NetworkConf(db *database.Database,
 		return
 	}
 
-	//_, err = utils.ExecCombinedOutputLogged(
-	//	nil,
-	//	"ip", "netns", "exec", namespace,
-	//	"brctl", "stp", "br0", "on",
-	//)
-	//if err != nil {
-	//	return
-	//}
-
 	_, err = utils.ExecCombinedOutputLogged(
 		[]string{"already a member of a bridge"},
 		"ip", "netns", "exec", namespace,
