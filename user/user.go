@@ -263,6 +263,7 @@ func (u *User) SetPassword(password string) (err error) {
 	}
 
 	u.Password = string(hash)
+	u.DefaultPassword = ""
 
 	return
 }
