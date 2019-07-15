@@ -18,21 +18,22 @@ import (
 )
 
 type User struct {
-	Id            primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Type          string             `bson:"type" json:"type"`
-	Username      string             `bson:"username" json:"username"`
-	Password      string             `bson:"password" json:"-"`
-	Token         string             `bson:"token" json:"token"`
-	Secret        string             `bson:"secret" json:"secret"`
-	Theme         string             `bson:"theme" json:"-"`
-	LastActive    time.Time          `bson:"last_active" json:"last_active"`
-	LastSync      time.Time          `bson:"last_sync" json:"last_sync"`
-	Roles         []string           `bson:"roles" json:"roles"`
-	Administrator string             `bson:"administrator" json:"administrator"`
-	Disabled      bool               `bson:"disabled" json:"disabled"`
-	ActiveUntil   time.Time          `bson:"active_until" json:"active_until"`
-	Permissions   []string           `bson:"permissions" json:"permissions"`
-	OracleLicense bool               `bson:"oracle_licese" json:"oracle_license"`
+	Id              primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Type            string             `bson:"type" json:"type"`
+	Username        string             `bson:"username" json:"username"`
+	Password        string             `bson:"password" json:"-"`
+	DefaultPassword string             `bson:"default_password" json:"-"`
+	Token           string             `bson:"token" json:"token"`
+	Secret          string             `bson:"secret" json:"secret"`
+	Theme           string             `bson:"theme" json:"-"`
+	LastActive      time.Time          `bson:"last_active" json:"last_active"`
+	LastSync        time.Time          `bson:"last_sync" json:"last_sync"`
+	Roles           []string           `bson:"roles" json:"roles"`
+	Administrator   string             `bson:"administrator" json:"administrator"`
+	Disabled        bool               `bson:"disabled" json:"disabled"`
+	ActiveUntil     time.Time          `bson:"active_until" json:"active_until"`
+	Permissions     []string           `bson:"permissions" json:"permissions"`
+	OracleLicense   bool               `bson:"oracle_licese" json:"oracle_license"`
 }
 
 func (u *User) Validate(db *database.Database) (
