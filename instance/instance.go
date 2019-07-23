@@ -3,6 +3,7 @@ package instance
 import (
 	"math/rand"
 	"strconv"
+	"time"
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
@@ -28,6 +29,7 @@ type Instance struct {
 	State               string             `bson:"state" json:"state"`
 	PublicMac           string             `bson:"-" json:"public_mac"`
 	VmState             string             `bson:"vm_state" json:"vm_state"`
+	VmTimestamp         time.Time          `bson:"vm_timestamp" json:"vm_timestamp"`
 	Restart             bool               `bson:"restart" json:"restart"`
 	RestartBlockIp      bool               `bson:"restart_block_ip" json:"restart_block_ip"`
 	DeleteProtection    bool               `bson:"delete_protection" json:"delete_protection"`
