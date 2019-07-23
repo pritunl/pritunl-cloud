@@ -13,6 +13,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/paths"
+	"github.com/pritunl/pritunl-cloud/systemd"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
@@ -26,6 +27,7 @@ type Instance struct {
 	Image               primitive.ObjectID `bson:"image" json:"image"`
 	ImageBacking        bool               `bson:"image_backing" json:"image_backing"`
 	Status              string             `bson:"-" json:"status"`
+	Uptime              string             `bson:"-" json:"uptime"`
 	State               string             `bson:"state" json:"state"`
 	PublicMac           string             `bson:"-" json:"public_mac"`
 	VmState             string             `bson:"vm_state" json:"vm_state"`
@@ -251,6 +253,11 @@ func (i *Instance) Json() {
 	}
 
 	i.PublicMac = vm.GetMacAddrExternal(i.Id, i.Vpc)
+	if i.VmTimestamp.IsZero() {
+		i.Uptime = ""
+	} else {
+		i.Uptime = systemd.FormatUptime(i.VmTimestamp)
+	}
 }
 
 func (i *Instance) IsActive() bool {
