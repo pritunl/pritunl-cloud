@@ -3,6 +3,7 @@ package vm
 import (
 	"path"
 	"strings"
+	"time"
 
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
@@ -12,6 +13,7 @@ import (
 type VirtualMachine struct {
 	Id              primitive.ObjectID `json:"id"`
 	State           string             `json:"state"`
+	Timestamp       time.Time          `json:"timestamp"`
 	Image           primitive.ObjectID `json:"image"`
 	Processors      int                `json:"processors"`
 	Memory          int                `json:"memory"`
@@ -63,9 +65,10 @@ func (v *VirtualMachine) Commit(db *database.Database) (err error) {
 
 	err = coll.UpdateId(v.Id, &bson.M{
 		"$set": &bson.M{
-			"vm_state":    v.State,
-			"public_ips":  addrs,
-			"public_ips6": addrs6,
+			"vm_state":     v.State,
+			"vm_timestamp": v.Timestamp,
+			"public_ips":   addrs,
+			"public_ips6":  addrs6,
 		},
 	})
 	if err != nil {
@@ -99,10 +102,11 @@ func (v *VirtualMachine) CommitState(db *database.Database, state string) (
 
 	err = coll.UpdateId(v.Id, &bson.M{
 		"$set": &bson.M{
-			"state":       state,
-			"vm_state":    v.State,
-			"public_ips":  addrs,
-			"public_ips6": addrs6,
+			"state":        state,
+			"vm_state":     v.State,
+			"vm_timestamp": v.Timestamp,
+			"public_ips":   addrs,
+			"public_ips6":  addrs6,
 		},
 	})
 	if err != nil {
