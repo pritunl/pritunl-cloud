@@ -5,6 +5,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -54,12 +56,33 @@ func Stop(unit string) (err error) {
 	return
 }
 
-func GetState(unit string) (state string, err error) {
+func GetState(unit string) (state string, timestamp time.Time, err error) {
 	systemdLock.Lock()
 	defer systemdLock.Unlock()
 
-	output, _ := utils.ExecOutput("", "systemctl", "is-active", unit)
-	state = strings.TrimSpace(output)
+	output, _ := utils.ExecOutput("", "systemctl", "show",
+		"--no-page", unit)
+
+	timestampStr := ""
+
+	for _, line := range strings.Split(output, "\n") {
+		n := len(line)
+		if state == "" && n > 13 && line[:12] == "ActiveState=" {
+			state = line[12:]
+		} else if timestampStr == "" && n > 24 &&
+			line[:23] == "ExecMainStartTimestamp=" {
+
+			timestampStr = line[23:]
+		}
+	}
+
+	timestamp, err = time.Parse("Mon 2006-01-02 15:04:05 MST", timestampStr)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "systemd: Failed to parse service timestamp"),
+		}
+		return
+	}
 
 	return
 }
