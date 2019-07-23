@@ -5,6 +5,7 @@ pritunl-cloud changelog
 
 Improve instance management
 Add uptime to instance info
+Generate random default password
 
 Version 1.0.1213.83 2019-03-21
 ------------------------------
