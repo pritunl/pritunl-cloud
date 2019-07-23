@@ -21,6 +21,7 @@ Commands:
   unset             Unset a setting
   start             Start node
   clear-logs        Clear logs
+  default-password  Get default administrator password
   reset-password    Reset administrator password
   disable-policies  Disable all policies
 `
@@ -60,6 +61,13 @@ func main() {
 	case "reset-id":
 		logger.Init()
 		err := cmd.ResetId()
+		if err != nil {
+			panic(err)
+		}
+		return
+	case "default-password":
+		Init()
+		err := cmd.DefaultPassword()
 		if err != nil {
 			panic(err)
 		}
