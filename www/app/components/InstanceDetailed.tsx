@@ -430,6 +430,10 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					this.props.instance.vm_state || 'None'),
 			},
 			{
+				label: 'Uptime',
+				value: this.props.instance.uptime || '-',
+			},
+			{
 				label: 'Public MAC Address',
 				value: this.props.instance.public_mac || 'Unknown',
 				copy: true,
