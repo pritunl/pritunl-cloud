@@ -13,6 +13,7 @@ export interface Instance {
 	image?: string;
 	image_backing?: boolean;
 	status?: string;
+	uptime?: string;
 	state?: string;
 	vm_state?: string;
 	delete_protection?: boolean;
