@@ -223,7 +223,7 @@ func GetVmInfo(vmId primitive.ObjectID, getDisks, force bool) (
 
 func UpdateVmState(virt *vm.VirtualMachine) (err error) {
 	unitName := paths.GetUnitName(virt.Id)
-	state, err := systemd.GetState(unitName)
+	state, timestamp, err := systemd.GetState(unitName)
 	if err != nil {
 		return
 	}
@@ -252,6 +252,8 @@ func UpdateVmState(virt *vm.VirtualMachine) (err error) {
 		virt.State = vm.Failed
 		break
 	}
+
+	virt.Timestamp = timestamp
 
 	store.SetVirt(virt.Id, virt)
 
