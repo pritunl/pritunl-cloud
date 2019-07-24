@@ -76,12 +76,15 @@ func GetState(unit string) (state string, timestamp time.Time, err error) {
 		}
 	}
 
-	timestamp, err = time.Parse("Mon 2006-01-02 15:04:05 MST", timestampStr)
-	if err != nil {
-		err = &errortypes.ParseError{
-			errors.Wrap(err, "systemd: Failed to parse service timestamp"),
+	if timestampStr != "" {
+		timestamp, err = time.Parse(
+			"Mon 2006-01-02 15:04:05 MST", timestampStr)
+		if err != nil {
+			err = &errortypes.ParseError{
+				errors.Wrap(err, "systemd: Failed to parse service timestamp"),
+			}
+			return
 		}
-		return
 	}
 
 	return
