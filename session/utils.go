@@ -45,7 +45,7 @@ func Get(db *database.Database, sessId string) (
 }
 
 func GetUpdate(db *database.Database, sessId string, r *http.Request,
-	typ string) (sess *Session, err error) {
+	typ, sig string) (sess *Session, err error) {
 
 	query := bson.M{
 		"_id": sessId,
@@ -88,6 +88,16 @@ func GetUpdate(db *database.Database, sessId string, r *http.Request,
 	}
 
 	sess.LastActive = timestamp
+
+	valid, err := sess.CheckSignature(db, sig)
+	if err != nil {
+		return
+	}
+
+	if !valid {
+		sess = nil
+		return
+	}
 
 	agnt, err := agent.Parse(db, r)
 	if err != nil {
@@ -152,7 +162,7 @@ func GetAll(db *database.Database, userId primitive.ObjectID,
 }
 
 func New(db *database.Database, r *http.Request, userId primitive.ObjectID,
-	typ string) (sess *Session, err error) {
+	typ string) (sess *Session, sig string, err error) {
 
 	id, err := utils.RandStr(32)
 	if err != nil {
@@ -172,6 +182,11 @@ func New(db *database.Database, r *http.Request, userId primitive.ObjectID,
 		Timestamp:  time.Now(),
 		LastActive: time.Now(),
 		Agent:      agnt,
+	}
+
+	sig, err = sess.GenerateSignature(db)
+	if err != nil {
+		return
 	}
 
 	_, err = coll.InsertOne(db, sess)
