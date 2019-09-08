@@ -16,6 +16,7 @@ export interface Instance {
 	uptime?: string;
 	state?: string;
 	vm_state?: string;
+	vm_timestamp?: string;
 	delete_protection?: boolean;
 	public_ips?: string[];
 	public_ips6?: string[];
