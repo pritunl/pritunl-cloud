@@ -63,6 +63,7 @@ type Node struct {
 	HostNat              bool                       `bson:"host_nat" json:"host_nat"`
 	HostNatExcludes      []string                   `bson:"host_nat_excludes" json:"host_nat_excludes"`
 	JumboFrames          bool                       `bson:"jumbo_frames" json:"jumbo_frames"`
+	UsbPassthrough       bool                       `bson:"usb_passthrough" json:"usb_passthrough"`
 	Firewall             bool                       `bson:"firewall" json:"firewall"`
 	NetworkRoles         []string                   `bson:"network_roles" json:"network_roles"`
 	Memory               float64                    `bson:"memory" json:"memory"`
@@ -588,6 +589,7 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.HostNat = nde.HostNat
 	n.HostNatExcludes = nde.HostNatExcludes
 	n.JumboFrames = nde.JumboFrames
+	n.UsbPassthrough = nde.UsbPassthrough
 	n.Firewall = nde.Firewall
 	n.NetworkRoles = nde.NetworkRoles
 	n.VirtPath = nde.VirtPath
