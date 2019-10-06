@@ -23,6 +23,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
+	"github.com/pritunl/pritunl-cloud/usb"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -64,6 +65,7 @@ type Node struct {
 	HostNatExcludes      []string                   `bson:"host_nat_excludes" json:"host_nat_excludes"`
 	JumboFrames          bool                       `bson:"jumbo_frames" json:"jumbo_frames"`
 	UsbPassthrough       bool                       `bson:"usb_passthrough" json:"usb_passthrough"`
+	UsbDevices           []*usb.Device              `bson:"usb_devices" json:"usb_devices"`
 	Firewall             bool                       `bson:"firewall" json:"firewall"`
 	NetworkRoles         []string                   `bson:"network_roles" json:"network_roles"`
 	Memory               float64                    `bson:"memory" json:"memory"`
