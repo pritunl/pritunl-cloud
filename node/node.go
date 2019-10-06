@@ -553,6 +553,7 @@ func (n *Node) update(db *database.Database) (err error) {
 				"public_ips6":          n.PublicIps6,
 				"private_ips":          n.PrivateIps,
 				"hostname":             n.Hostname,
+				"usb_devices":          n.UsbDevices,
 				"available_interfaces": n.AvailableInterfaces,
 				"available_bridges":    n.AvailableBridges,
 				"default_interface":    n.DefaultInterface,
@@ -756,6 +757,18 @@ func (n *Node) sync() {
 		}).Error("node: Failed to get hostname")
 	}
 	n.Hostname = hostname
+
+	if n.UsbPassthrough {
+		devices, e := usb.GetDevices()
+		if e != nil {
+			err = e
+			return
+		}
+
+		n.UsbDevices = devices
+	} else {
+		n.UsbDevices = []*usb.Device{}
+	}
 
 	err = n.update(db)
 	if err != nil {
