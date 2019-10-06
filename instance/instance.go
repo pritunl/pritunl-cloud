@@ -79,6 +79,7 @@ func (i *Instance) Validate(db *database.Database) (
 			Error:   "organization_required",
 			Message: "Missing required organization",
 		}
+		return
 	}
 
 	if i.Zone.IsZero() {
@@ -86,6 +87,7 @@ func (i *Instance) Validate(db *database.Database) (
 			Error:   "zone_required",
 			Message: "Missing required zone",
 		}
+		return
 	}
 
 	if i.Node.IsZero() {
@@ -93,6 +95,7 @@ func (i *Instance) Validate(db *database.Database) (
 			Error:   "node_required",
 			Message: "Missing required node",
 		}
+		return
 	}
 
 	if i.Image.IsZero() {
@@ -100,6 +103,7 @@ func (i *Instance) Validate(db *database.Database) (
 			Error:   "image_required",
 			Message: "Missing required image",
 		}
+		return
 	}
 
 	if i.Vpc.IsZero() {
@@ -107,6 +111,7 @@ func (i *Instance) Validate(db *database.Database) (
 			Error:   "vpc_required",
 			Message: "Missing required VPC",
 		}
+		return
 	}
 
 	if i.InitDiskSize != 0 && i.InitDiskSize < 10 {
@@ -114,6 +119,7 @@ func (i *Instance) Validate(db *database.Database) (
 			Error:   "init_disk_size_invalid",
 			Message: "Disk size below minimum",
 		}
+		return
 	}
 
 	if i.Memory < 256 {
@@ -149,6 +155,16 @@ func (i *Instance) Validate(db *database.Database) (
 	} else {
 		for _, device := range i.UsbDevices {
 			device.Name = ""
+			device.Vendor = usb.FilterId(device.Vendor)
+			device.Product = usb.FilterId(device.Product)
+
+			if device.Vendor == "" || device.Product == "" {
+				errData = &errortypes.ErrorData{
+					Error:   "usb_device_invalid",
+					Message: "Invalid USB device",
+				}
+				return
+			}
 		}
 	}
 
