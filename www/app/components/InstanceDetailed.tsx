@@ -16,6 +16,7 @@ import PageSave from './PageSave';
 import PageNumInput from './PageNumInput';
 import ConfirmButton from './ConfirmButton';
 import Help from './Help';
+import PageSelectButton from "./PageSelectButton";
 
 interface Props {
 	vpcs: VpcTypes.VpcsRo;
@@ -34,6 +35,7 @@ interface State {
 	addCert: string;
 	addNetworkRole: string;
 	addVpc: string;
+	addUsbDevice: string;
 	forwardedChecked: boolean;
 }
 
@@ -116,6 +118,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			addCert: null,
 			addNetworkRole: '',
 			addVpc: '',
+			addUsbDevice: '',
 			forwardedChecked: false,
 		};
 	}
@@ -209,6 +212,103 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			changed: true,
 			message: '',
 			addNetworkRole: '',
+			instance: instance,
+		});
+	}
+
+	onAddUsbDevice = (): void => {
+		let instance: InstanceTypes.Instance;
+		let infoUsbDevices = this.props.instance.info.usb_devices || [];
+
+		if (!this.state.addUsbDevice && !infoUsbDevices.length) {
+			return;
+		}
+
+		let addDevice = this.state.addUsbDevice;
+		if (!addDevice) {
+			addDevice = infoUsbDevices[0].vendor + ':' + infoUsbDevices[0].product;
+		}
+
+		if (this.state.changed) {
+			instance = {
+				...this.state.instance,
+			};
+		} else {
+			instance = {
+				...this.props.instance,
+			};
+		}
+
+		let usbDevices = [
+			...(instance.usb_devices || []),
+		];
+
+		let index = -1;
+		for (let i = 0; i < usbDevices.length; i++) {
+			let dev = usbDevices[i];
+			if (dev.vendor + ':' + dev.product === addDevice) {
+				index = i;
+				break
+			}
+		}
+
+		let device = addDevice.split(':');
+
+		if (index === -1) {
+			usbDevices.push({
+				vendor: device[0],
+				product: device[1],
+			});
+		}
+
+		instance.usb_devices = usbDevices;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			addUsbDevice: '',
+			instance: instance,
+		});
+	}
+
+	onRemoveUsbDevice = (device: string): void => {
+		let instance: InstanceTypes.Instance;
+
+		if (this.state.changed) {
+			instance = {
+				...this.state.instance,
+			};
+		} else {
+			instance = {
+				...this.props.instance,
+			};
+		}
+
+		let usbDevices = [
+			...(instance.usb_devices || []),
+		];
+
+		let index = -1;
+		for (let i = 0; i < usbDevices.length; i++) {
+			let dev = usbDevices[i];
+			if (dev.vendor + ':' + dev.product == device) {
+				index = i;
+				break
+			}
+		}
+		if (index === -1) {
+			return;
+		}
+
+		usbDevices.splice(index, 1);
+		instance.usb_devices = usbDevices;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			addUsbDevice: '',
 			instance: instance,
 		});
 	}
@@ -404,6 +504,41 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					>{domain.name}</option>,
 				);
 			}
+		}
+
+		let usbDevices: JSX.Element[] = [];
+		for (let device of (instance.usb_devices || [])) {
+			let key = device.vendor + ':' + device.product;
+			usbDevices.push(
+				<div
+					className="bp3-tag bp3-tag-removable bp3-intent-primary"
+					style={css.item}
+					key={key}
+				>
+					{key}
+					<button
+						disabled={this.state.disabled}
+						className="bp3-tag-remove"
+						onMouseUp={(): void => {
+							this.onRemoveUsbDevice(key);
+						}}
+					/>
+				</div>,
+			);
+		}
+
+		let infoUsbDevices = this.props.instance.info.usb_devices;
+		let usbDevicesSelect: JSX.Element[] = [];
+		for (let i = 0; i < (infoUsbDevices || []).length; i++) {
+			let device = infoUsbDevices[i];
+			usbDevicesSelect.push(
+				<option
+					key={i}
+					value={device.vendor + ':' + device.product}
+				>
+					{device.name + ' (' + device.vendor + ':' + device.product + ')'}
+				</option>,
+			);
 		}
 
 		let fields: PageInfos.Field[] = [
@@ -610,6 +745,36 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						}}
 						onSubmit={this.onAddNetworkRole}
 					/>
+					<label
+						className="bp3-label"
+						style={css.label}
+						hidden={infoUsbDevices === null}
+					>
+						USB Devices
+						<Help
+							title="USB Devices"
+							content="USB devices to for host passthrough to instance."
+						/>
+						<div>
+							{usbDevices}
+						</div>
+					</label>
+					<PageSelectButton
+						hidden={infoUsbDevices === null}
+						label="Add Device"
+						value={this.state.addUsbDevice}
+						disabled={!usbDevicesSelect.length || this.state.disabled}
+						buttonClass="bp3-intent-success"
+						onChange={(val: string): void => {
+							this.setState({
+								...this.state,
+								addUsbDevice: val,
+							});
+						}}
+						onSubmit={this.onAddUsbDevice}
+					>
+						{usbDevicesSelect}
+					</PageSelectButton>
 					<PageSelect
 						disabled={this.state.disabled || !hasVpcs}
 						label="VPC"
