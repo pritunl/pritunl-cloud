@@ -18,6 +18,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/storage"
+	"github.com/pritunl/pritunl-cloud/usb"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 )
@@ -38,6 +39,7 @@ type instanceData struct {
 	Memory           int                `json:"memory"`
 	Processors       int                `json:"processors"`
 	NetworkRoles     []string           `json:"network_roles"`
+	UsbDevices       []*usb.Device      `json:"usb_devices"`
 	Vnc              bool               `json:"vnc"`
 	NoPublicAddress  bool               `json:"no_public_address"`
 	NoHostAddress    bool               `json:"no_host_address"`
@@ -91,6 +93,7 @@ func instancePut(c *gin.Context) {
 	inst.Memory = dta.Memory
 	inst.Processors = dta.Processors
 	inst.NetworkRoles = dta.NetworkRoles
+	inst.UsbDevices = dta.UsbDevices
 	inst.Vnc = dta.Vnc
 	inst.Domain = dta.Domain
 	inst.NoPublicAddress = dta.NoPublicAddress
@@ -106,6 +109,7 @@ func instancePut(c *gin.Context) {
 		"memory",
 		"processors",
 		"network_roles",
+		"usb_devices",
 		"vnc",
 		"vnc_display",
 		"vnc_password",
@@ -231,6 +235,7 @@ func instancePost(c *gin.Context) {
 			Memory:           dta.Memory,
 			Processors:       dta.Processors,
 			NetworkRoles:     dta.NetworkRoles,
+			UsbDevices:       dta.UsbDevices,
 			Vnc:              dta.Vnc,
 			Domain:           dta.Domain,
 			NoPublicAddress:  dta.NoPublicAddress,
