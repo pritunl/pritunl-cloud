@@ -14,6 +14,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/systemd"
+	"github.com/pritunl/pritunl-cloud/usb"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
@@ -49,6 +50,7 @@ type Instance struct {
 	Memory              int                `bson:"memory" json:"memory"`
 	Processors          int                `bson:"processors" json:"processors"`
 	NetworkRoles        []string           `bson:"network_roles" json:"network_roles"`
+	UsbDevices          []*usb.Device      `bson:"usb_devices" json:"usb_devices"`
 	Vnc                 bool               `bson:"vnc" json:"vnc"`
 	VncPassword         string             `bson:"vnc_password" json:"vnc_password"`
 	VncDisplay          int                `bson:"vnc_display,omitempty" json:"vnc_display"`
@@ -140,6 +142,10 @@ func (i *Instance) Validate(db *database.Database) (
 
 	if i.PrivateIps6 == nil {
 		i.PrivateIps6 = []string{}
+	}
+
+	if i.UsbDevices == nil {
+		i.UsbDevices = []*usb.Device{}
 	}
 
 	if i.Vnc {
