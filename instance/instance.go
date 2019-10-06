@@ -74,6 +74,14 @@ func (i *Instance) Validate(db *database.Database) (
 		i.RestartBlockIp = false
 	}
 
+	if !ValidStates.Contains(i.State) {
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_state",
+			Message: "Invalid instance state",
+		}
+		return
+	}
+
 	if i.Organization.IsZero() {
 		errData = &errortypes.ErrorData{
 			Error:   "organization_required",
