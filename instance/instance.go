@@ -146,6 +146,10 @@ func (i *Instance) Validate(db *database.Database) (
 
 	if i.UsbDevices == nil {
 		i.UsbDevices = []*usb.Device{}
+	} else {
+		for _, device := range i.UsbDevices {
+			device.Name = ""
+		}
 	}
 
 	if i.Vnc {
