@@ -23,11 +23,17 @@ type VirtualMachine struct {
 	NetworkAdapters []*NetworkAdapter  `json:"network_adapters"`
 	NoPublicAddress bool               `json:"no_public_address"`
 	NoHostAddress   bool               `json:"no_host_address"`
+	UsbDevices      []*UsbDevice       `json:"usb_devices"`
 }
 
 type Disk struct {
 	Index int    `json:"index"`
 	Path  string `json:"path"`
+}
+
+type UsbDevice struct {
+	Vendor  string `json:"vendor"`
+	Product string `json:"product"`
 }
 
 func (d *Disk) GetId() primitive.ObjectID {
