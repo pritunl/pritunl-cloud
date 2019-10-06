@@ -12,6 +12,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/systemd"
 	"github.com/pritunl/pritunl-cloud/usb"
@@ -411,6 +412,7 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 		},
 		NoPublicAddress: i.NoPublicAddress,
 		NoHostAddress:   i.NoHostAddress,
+		UsbDevices:      []*vm.UsbDevice{},
 	}
 
 	if disks != nil {
@@ -423,6 +425,15 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 			i.Virt.Disks = append(i.Virt.Disks, &vm.Disk{
 				Index: index,
 				Path:  paths.GetDiskPath(dsk.Id),
+			})
+		}
+	}
+
+	if node.Self.UsbPassthrough && i.UsbDevices != nil {
+		for _, device := range i.UsbDevices {
+			i.Virt.UsbDevices = append(i.Virt.UsbDevices, &vm.UsbDevice{
+				Vendor:  device.Vendor,
+				Product: device.Product,
 			})
 		}
 	}
@@ -448,6 +459,20 @@ func (i *Instance) Changed(curVirt *vm.VirtualMachine) bool {
 
 		if adapter.VpcId != curVirt.NetworkAdapters[i].VpcId {
 			return true
+		}
+	}
+
+	if i.Virt.UsbDevices != nil {
+		for i, device := range i.Virt.UsbDevices {
+			if len(curVirt.UsbDevices) <= i {
+				return true
+			}
+
+			if device.Vendor != curVirt.UsbDevices[i].Vendor ||
+				device.Product != curVirt.UsbDevices[i].Product {
+
+				return true
+			}
 		}
 	}
 
