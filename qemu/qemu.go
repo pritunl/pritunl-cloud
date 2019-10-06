@@ -7,6 +7,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
+	"github.com/pritunl/pritunl-cloud/usb"
 )
 
 type Disk struct {
@@ -20,6 +21,11 @@ type Disk struct {
 type Network struct {
 	Iface      string
 	MacAddress string
+}
+
+type UsbDevice struct {
+	Vendor  string
+	Product string
 }
 
 type Qemu struct {
@@ -37,6 +43,7 @@ type Qemu struct {
 	VncDisplay int
 	Disks      []*Disk
 	Networks   []*Network
+	UsbDevices []*UsbDevice
 }
 
 func (q *Qemu) Marshal() (output string, err error) {
@@ -148,6 +155,29 @@ func (q *Qemu) Marshal() (output string, err error) {
 	cmd = append(cmd, "-device")
 	cmd = append(cmd,
 		"virtserialport,chardev=guest,name=org.qemu.guest_agent.0")
+
+	if node.Self.UsbPassthrough {
+		if len(q.UsbDevices) > 0 {
+			cmd = append(cmd, "-usb")
+		}
+
+		for _, device := range q.UsbDevices {
+			vendor := usb.FilterId(device.Vendor)
+			product := usb.FilterId(device.Product)
+
+			if vendor == "" || product == "" {
+				continue
+			}
+
+			cmd = append(cmd,
+				"-device",
+				fmt.Sprintf(
+					"usb-host,vendorid=0x%s,productid=0x%s",
+					vendor, product,
+				),
+			)
+		}
+	}
 
 	output = fmt.Sprintf(
 		systemdTemplate,
