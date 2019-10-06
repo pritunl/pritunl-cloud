@@ -39,6 +39,7 @@ type nodeData struct {
 	HostNat              bool                    `json:"host_nat"`
 	HostNatExcludes      []string                `json:"host_nat_excludes"`
 	JumboFrames          bool                    `json:"jumbo_frames"`
+	UsbPassthrough       bool                    `json:"usb_passthrough"`
 	ForwardedForHeader   string                  `json:"forwarded_for_header"`
 	ForwardedProtoHeader string                  `json:"forwarded_proto_header"`
 	Firewall             bool                    `json:"firewall"`
@@ -96,6 +97,7 @@ func nodePut(c *gin.Context) {
 	nde.HostNat = data.HostNat
 	nde.HostNatExcludes = data.HostNatExcludes
 	nde.JumboFrames = data.JumboFrames
+	nde.UsbPassthrough = data.UsbPassthrough
 	nde.ForwardedForHeader = data.ForwardedForHeader
 	nde.ForwardedProtoHeader = data.ForwardedProtoHeader
 	nde.Firewall = data.Firewall
@@ -123,6 +125,7 @@ func nodePut(c *gin.Context) {
 		"host_nat",
 		"host_nat_excludes",
 		"jumbo_frames",
+		"usb_passthrough",
 		"forwarded_for_header",
 		"forwarded_proto_header",
 		"firewall",
