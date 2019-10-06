@@ -33,6 +33,7 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 		VncDisplay: virt.VncDisplay,
 		Disks:      []*Disk{},
 		Networks:   []*Network{},
+		UsbDevices: []*UsbDevice{},
 	}
 
 	for _, disk := range virt.Disks {
@@ -48,7 +49,14 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 	for i, net := range virt.NetworkAdapters {
 		qm.Networks = append(qm.Networks, &Network{
 			MacAddress: net.MacAddress,
-			Iface: vm.GetIface(virt.Id, i),
+			Iface:      vm.GetIface(virt.Id, i),
+		})
+	}
+
+	for _, device := range virt.UsbDevices {
+		qm.UsbDevices = append(qm.UsbDevices, &UsbDevice{
+			Vendor:  device.Vendor,
+			Product: device.Product,
 		})
 	}
 
