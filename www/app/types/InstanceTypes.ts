@@ -29,6 +29,7 @@ export interface Instance {
 	memory?: number;
 	processors?: number;
 	network_roles?: string[];
+	usb_devices?: UsbDevice[];
 	vnc?: boolean;
 	vnc_password?: string;
 	vnc_display?: number;
@@ -51,11 +52,18 @@ export interface Filter {
 	vpc?: string;
 }
 
+export interface UsbDevice {
+	name?: string;
+	vendor?: string;
+	product?: string;
+}
+
 export interface Info {
 	node?: string;
 	firewall_rules?: string[];
 	authorities?: string[];
 	disks?: string[];
+	usb_devices?: UsbDevice[];
 }
 
 export type Instances = Instance[];
