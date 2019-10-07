@@ -11475,6 +11475,8 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.7.0.js",
                     this.set('oracle_public_key', val);
                 } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Jumbo frames", help: "Enable jumbo frames on all interfaces, requires node restart when changed.", checked: node.jumbo_frames, onToggle: () => {
                     this.set('jumbo_frames', !node.jumbo_frames);
+                } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "USB Passthough", help: "Enable USB passthrough support for instances.", checked: node.usb_passthrough, onToggle: () => {
+                    this.set('usb_passthrough', !node.usb_passthrough);
                 } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Firewall", help: "Configure firewall on node. Incorrectly configuring the firewall can block access to the node.", checked: node.firewall, onToggle: () => {
                     this.toggleFirewall();
                 } }), React.createElement("label", { className: "bp3-label" }, "Network Roles", React.createElement(Help_1.default, { title: "Network Roles", content: "Network roles that will be matched with firewall rules. Network roles are case-sensitive. Only firewall roles without an organization will match." }), React.createElement("div", null, networkRoles)), React.createElement(PageInputButton_1.default, { disabled: this.state.disabled, buttonClass: "bp3-intent-success bp3-icon-add", label: "Add", type: "text", placeholder: "Add role", value: this.state.addNetworkRole, onChange: val => {
@@ -17898,7 +17900,7 @@ System.registerDynamic("app/stores/DatacentersStore.js", ["app/dispatcher/Dispat
     exports.default = new DatacentersStore();
     
 });
-System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@16.7.0.js", "app/actions/InstanceActions.js", "app/stores/OrganizationsStore.js", "app/stores/ZonesStore.js", "app/components/PageInput.js", "app/components/PageInputButton.js", "app/components/PageInfo.js", "app/components/PageSwitch.js", "app/components/PageSelect.js", "app/components/PageSave.js", "app/components/PageNumInput.js", "app/components/ConfirmButton.js", "app/components/Help.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@16.7.0.js", "app/actions/InstanceActions.js", "app/stores/OrganizationsStore.js", "app/stores/ZonesStore.js", "app/components/PageInput.js", "app/components/PageInputButton.js", "app/components/PageInfo.js", "app/components/PageSwitch.js", "app/components/PageSelect.js", "app/components/PageSave.js", "app/components/PageNumInput.js", "app/components/ConfirmButton.js", "app/components/Help.js", "app/components/PageSelectButton.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -17917,6 +17919,7 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@16.7.0.
     const PageNumInput_1 = $__require("app/components/PageNumInput.js");
     const ConfirmButton_1 = $__require("app/components/ConfirmButton.js");
     const Help_1 = $__require("app/components/Help.js");
+    const PageSelectButton_1 = $__require("app/components/PageSelectButton.js");
     const css = {
         card: {
             position: 'relative',
@@ -18021,6 +18024,63 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@16.7.0.
                 instance.network_roles = networkRoles;
                 this.setState(Object.assign({}, this.state, { changed: true, message: '', addNetworkRole: '', instance: instance }));
             };
+            this.onAddUsbDevice = () => {
+                let instance;
+                let infoUsbDevices = this.props.instance.info.usb_devices || [];
+                if (!this.state.addUsbDevice && !infoUsbDevices.length) {
+                    return;
+                }
+                let addDevice = this.state.addUsbDevice;
+                if (!addDevice) {
+                    addDevice = infoUsbDevices[0].vendor + ':' + infoUsbDevices[0].product;
+                }
+                if (this.state.changed) {
+                    instance = Object.assign({}, this.state.instance);
+                } else {
+                    instance = Object.assign({}, this.props.instance);
+                }
+                let usbDevices = [...(instance.usb_devices || [])];
+                let index = -1;
+                for (let i = 0; i < usbDevices.length; i++) {
+                    let dev = usbDevices[i];
+                    if (dev.vendor + ':' + dev.product === addDevice) {
+                        index = i;
+                        break;
+                    }
+                }
+                let device = addDevice.split(':');
+                if (index === -1) {
+                    usbDevices.push({
+                        vendor: device[0],
+                        product: device[1]
+                    });
+                }
+                instance.usb_devices = usbDevices;
+                this.setState(Object.assign({}, this.state, { changed: true, message: '', addUsbDevice: '', instance: instance }));
+            };
+            this.onRemoveUsbDevice = device => {
+                let instance;
+                if (this.state.changed) {
+                    instance = Object.assign({}, this.state.instance);
+                } else {
+                    instance = Object.assign({}, this.props.instance);
+                }
+                let usbDevices = [...(instance.usb_devices || [])];
+                let index = -1;
+                for (let i = 0; i < usbDevices.length; i++) {
+                    let dev = usbDevices[i];
+                    if (dev.vendor + ':' + dev.product == device) {
+                        index = i;
+                        break;
+                    }
+                }
+                if (index === -1) {
+                    return;
+                }
+                usbDevices.splice(index, 1);
+                instance.usb_devices = usbDevices;
+                this.setState(Object.assign({}, this.state, { changed: true, message: '', addUsbDevice: '', instance: instance }));
+            };
             this.onSave = () => {
                 this.setState(Object.assign({}, this.state, { disabled: true }));
                 InstanceActions.commit(Object.assign({}, this.state.instance, { state: null })).then(() => {
@@ -18055,6 +18115,7 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@16.7.0.
                 addCert: null,
                 addNetworkRole: '',
                 addVpc: '',
+                addUsbDevice: '',
                 forwardedChecked: false
             };
         }
@@ -18147,6 +18208,19 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@16.7.0.
                     domainsSelect.push(React.createElement("option", { key: domain.id, value: domain.id }, domain.name));
                 }
             }
+            let usbDevices = [];
+            for (let device of instance.usb_devices || []) {
+                let key = device.vendor + ':' + device.product;
+                usbDevices.push(React.createElement("div", { className: "bp3-tag bp3-tag-removable bp3-intent-primary", style: css.item, key: key }, key, React.createElement("button", { disabled: this.state.disabled, className: "bp3-tag-remove", onMouseUp: () => {
+                        this.onRemoveUsbDevice(key);
+                    } })));
+            }
+            let infoUsbDevices = this.props.instance.info.usb_devices;
+            let usbDevicesSelect = [];
+            for (let i = 0; i < (infoUsbDevices || []).length; i++) {
+                let device = infoUsbDevices[i];
+                usbDevicesSelect.push(React.createElement("option", { key: i, value: device.vendor + ':' + device.product }, device.name + ' (' + device.vendor + ':' + device.product + ')'));
+            }
             let fields = [{
                 label: 'ID',
                 value: this.props.instance.id || 'None'
@@ -18225,7 +18299,9 @@ System.registerDynamic("app/components/InstanceDetailed.js", ["npm:react@16.7.0.
                     this.set('processors', val);
                 }, value: instance.processors }), React.createElement("label", { className: "bp3-label" }, "Network Roles", React.createElement(Help_1.default, { title: "Network Roles", content: "Network roles that will be matched with firewall rules. Network roles are case-sensitive." }), React.createElement("div", null, networkRoles)), React.createElement(PageInputButton_1.default, { disabled: this.state.disabled, buttonClass: "bp3-intent-success bp3-icon-add", label: "Add", type: "text", placeholder: "Add role", value: this.state.addNetworkRole, onChange: val => {
                     this.setState(Object.assign({}, this.state, { addNetworkRole: val }));
-                }, onSubmit: this.onAddNetworkRole }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasVpcs, label: "VPC", help: "VPC for instance.", value: instance.vpc, onChange: val => {
+                }, onSubmit: this.onAddNetworkRole }), React.createElement("label", { className: "bp3-label", style: css.label, hidden: infoUsbDevices === null }, "USB Devices", React.createElement(Help_1.default, { title: "USB Devices", content: "USB devices to for host passthrough to instance." }), React.createElement("div", null, usbDevices)), React.createElement(PageSelectButton_1.default, { hidden: infoUsbDevices === null, label: "Add Device", value: this.state.addUsbDevice, disabled: !usbDevicesSelect.length || this.state.disabled, buttonClass: "bp3-intent-success", onChange: val => {
+                    this.setState(Object.assign({}, this.state, { addUsbDevice: val }));
+                }, onSubmit: this.onAddUsbDevice }, usbDevicesSelect), React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasVpcs, label: "VPC", help: "VPC for instance.", value: instance.vpc, onChange: val => {
                     this.set('vpc', val);
                 } }, vpcsSelect), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "DNS Domain", help: "Domain to create DNS name using instance name.", value: instance.domain, onChange: val => {
                     this.set('domain', val);
