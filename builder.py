@@ -61,8 +61,8 @@ def post_git_asset(release_id, file_name, file_path):
     )
 
     if response.status_code != 201:
-        print 'Failed to create asset on github'
-        print response.json()
+        print('Failed to create asset on github')
+        print(response.json())
         sys.exit(1)
 
 def get_ver(version):
@@ -124,7 +124,7 @@ def aes_encrypt(passphrase, data):
         iterations=1000,
         backend=default_backend(),
     )
-    enc_key = kdf.derive(passphrase)
+    enc_key = kdf.derive(passphrase.encode())
 
     data += '\x00' * (16 - (len(data) % 16))
 
@@ -133,12 +133,12 @@ def aes_encrypt(passphrase, data):
         modes.CBC(enc_iv),
         backend=default_backend()
     ).encryptor()
-    enc_data = cipher.update(data) + cipher.finalize()
+    enc_data = cipher.update(data.encode()) + cipher.finalize()
 
     return '\n'.join([
-        base64.b64encode(enc_salt),
-        base64.b64encode(enc_iv),
-        base64.b64encode(enc_data),
+        base64.b64encode(enc_salt).decode('utf-8'),
+        base64.b64encode(enc_iv).decode('utf-8'),
+        base64.b64encode(enc_data).decode('utf-8'),
     ])
 
 def aes_decrypt(passphrase, data):
@@ -157,7 +157,7 @@ def aes_decrypt(passphrase, data):
         iterations=1000,
         backend=default_backend(),
     )
-    enc_key = kdf.derive(passphrase)
+    enc_key = kdf.derive(passphrase.encode())
 
     cipher = Cipher(
         algorithms.AES(enc_key),
@@ -166,7 +166,7 @@ def aes_decrypt(passphrase, data):
     ).decryptor()
     data = cipher.update(enc_data) + cipher.finalize()
 
-    return data.replace('\x00', '')
+    return data.decode('utf-8').replace('\x00', '')
 
 passphrase = getpass.getpass('Enter passphrase: ')
 
@@ -174,7 +174,7 @@ if cmd == 'encrypt':
     passphrase2 = getpass.getpass('Enter passphrase: ')
 
     if passphrase != passphrase2:
-        print 'ERROR: Passphrase mismatch'
+        print('ERROR: Passphrase mismatch')
         sys.exit(1)
 
     with open(BUILD_KEYS_PATH, 'r') as build_keys_file:
@@ -206,6 +206,7 @@ with open(BUILD_KEYS_PATH, 'r') as build_keys_file:
     github_owner = build_keys['github_owner']
     github_token = build_keys['github_token']
     gitlab_token = build_keys['gitlab_token']
+    gitlab_host = build_keys['gitlab_host']
     mirror_url = build_keys['mirror_url']
     test_mirror_url = build_keys['test_mirror_url']
 
@@ -223,7 +224,7 @@ build_num = 0
 
 # Run cmd
 if cmd == 'version':
-    print '%s v%s' % (REPO_NAME, cur_version)
+    print('%s v%s' % (REPO_NAME, cur_version))
     sys.exit(0)
 
 
@@ -242,18 +243,19 @@ if cmd == 'sync-releases':
         )
 
         if response.status_code != 200:
-            print 'Failed to get repo releases on github'
-            print response.json()
+            print('Failed to get repo releases on github')
+            print(response.json())
             sys.exit(1)
 
         for release in response.json():
-            print release['tag_name']
+            print(release['tag_name'])
 
             # Create gitlab release
             resp = requests.post(
-                'https://git.pritunl.com/api/v4/projects' + \
-                '/%s%%2F%s/repository/tags/%s/release' % (
-                    github_owner, REPO_NAME, release['tag_name']),
+                ('https://%s/api/v4/projects' +
+                 '/%s%%2F%s/repository/tags/%s/release') % (
+                    gitlab_host, github_owner, REPO_NAME,
+                    release['tag_name']),
                 headers={
                     'Private-Token': gitlab_token,
                     'Content-type': 'application/json',
@@ -265,8 +267,8 @@ if cmd == 'sync-releases':
             )
 
             if resp.status_code not in (201, 409):
-                print 'Failed to create releases on gitlab'
-                print resp.json()
+                print('Failed to create releases on gitlab')
+                print(resp.json())
                 sys.exit(1)
 
         if 'Link' not in response.headers or \
@@ -307,13 +309,13 @@ if cmd == 'set-version':
     )
 
     if response.status_code != 200:
-        print 'Failed to get repo releases on github'
-        print response.json()
+        print('Failed to get repo releases on github')
+        print(response.json())
         sys.exit(1)
 
     for release in response.json():
         if release['tag_name'] == new_version:
-            print 'Version already exists in github'
+            print('Version already exists in github')
             sys.exit(1)
 
 
@@ -336,13 +338,13 @@ if cmd == 'set-version':
                     release_body += '* %s\n' % line
 
     if not is_snapshot and version != new_version:
-        print 'New version does not exist in changes'
+        print('New version does not exist in changes')
         sys.exit(1)
 
     if is_snapshot:
         release_body = '* Snapshot release'
     elif not release_body:
-        print 'Failed to generate github release body'
+        print('Failed to generate github release body')
         sys.exit(1)
     release_body = release_body.rstrip('\n')
 
@@ -392,8 +394,8 @@ if cmd == 'set-version':
     )
 
     if response.status_code != 201:
-        print 'Failed to create release on github'
-        print response.json()
+        print('Failed to create release on github')
+        print(response.json())
         sys.exit(1)
 
     subprocess.check_call(['git', 'pull'])
@@ -403,9 +405,9 @@ if cmd == 'set-version':
 
     # Create gitlab release
     response = requests.post(
-        'https://git.pritunl.com/api/v4/projects' + \
-        '/%s%%2F%s/repository/tags/%s/release' % (
-            github_owner, REPO_NAME, new_version),
+        ('https://%s/api/v4/projects' +
+         '/%s%%2F%s/repository/tags/%s/release') % (
+            gitlab_host, github_owner, REPO_NAME, new_version),
         headers={
             'Private-Token': gitlab_token,
             'Content-type': 'application/json',
@@ -417,8 +419,8 @@ if cmd == 'set-version':
     )
 
     if response.status_code != 201:
-        print 'Failed to create release on gitlab'
-        print response.json()
+        print('Failed to create release on gitlab')
+        print(response.json())
         sys.exit(1)
 
 
@@ -455,7 +457,7 @@ if cmd == 'build' or cmd == 'build-upload':
             )
             pkgbuild_data = re.sub(
                 '"[a-f0-9]{64}"',
-                '"%s"' % archive_sha256_sum,
+                '"%s"' % archive_sha256_sum.decode('utf-8'),
                 pkgbuild_data,
                 count=1,
             )
@@ -493,7 +495,7 @@ if cmd == 'upload' or cmd == 'build-upload':
             release_id = release['id']
 
     if not release_id:
-        print 'Version does not exists in github'
+        print('Version does not exists in github')
         sys.exit(1)
 
 
@@ -506,12 +508,12 @@ if cmd == 'upload' or cmd == 'build-upload':
 
     # Sync mirror
     subprocess.check_call([
-        's3cmd',
-        'sync',
-        '--follow-symlinks',
-        '--delete-removed',
-        'mirror/',
-        's3://dev/' if is_snapshot else 's3://stable/',
+        'mc',
+        'mirror',
+        '--remove',
+        '--overwrite',
+        'mirror',
+        'repo/dev' if is_snapshot else 'repo/stable',
     ], cwd=pacur_path)
 
 
@@ -540,7 +542,7 @@ if cmd == 'upload-github':
             release_id = release['id']
 
     if not release_id:
-        print 'Version does not exists in github'
+        print('Version does not exists in github')
         sys.exit(1)
 
 
