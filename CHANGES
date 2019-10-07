@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Add support for USB passthrough
+
 Version 1.0.1338.74 2019-07-24
 ------------------------------
 
