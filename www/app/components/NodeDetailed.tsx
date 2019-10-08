@@ -1406,6 +1406,15 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
+						label="USB Passthough"
+						help="Enable USB passthrough support for instances."
+						checked={node.usb_passthrough}
+						onToggle={(): void => {
+							this.set('usb_passthrough', !node.usb_passthrough);
+						}}
+					/>
+					<PageSwitch
+						disabled={this.state.disabled}
 						label="Firewall"
 						help="Configure firewall on node. Incorrectly configuring the firewall can block access to the node."
 						checked={node.firewall}
