@@ -33,6 +33,7 @@ type instanceData struct {
 	ImageBacking     bool               `json:"image_backing"`
 	Domain           primitive.ObjectID `json:"domain"`
 	Name             string             `json:"name"`
+	Comment          string             `json:"comment"`
 	State            string             `json:"state"`
 	DeleteProtection bool               `json:"delete_protection"`
 	InitDiskSize     int                `json:"init_disk_size"`
@@ -85,6 +86,7 @@ func instancePut(c *gin.Context) {
 	inst.PreCommit()
 
 	inst.Name = dta.Name
+	inst.Comment = dta.Comment
 	inst.Vpc = dta.Vpc
 	if dta.State != "" {
 		inst.State = dta.State
@@ -101,6 +103,7 @@ func instancePut(c *gin.Context) {
 
 	fields := set.NewSet(
 		"name",
+		"comment",
 		"vpc",
 		"state",
 		"restart",
@@ -231,6 +234,7 @@ func instancePost(c *gin.Context) {
 			ImageBacking:     dta.ImageBacking,
 			DeleteProtection: dta.DeleteProtection,
 			Name:             name,
+			Comment:          dta.Comment,
 			InitDiskSize:     dta.InitDiskSize,
 			Memory:           dta.Memory,
 			Processors:       dta.Processors,
