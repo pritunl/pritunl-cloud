@@ -47,6 +47,7 @@ type Instance struct {
 	Node                primitive.ObjectID `bson:"node" json:"node"`
 	Domain              primitive.ObjectID `bson:"domain,omitempty" json:"domain"`
 	Name                string             `bson:"name" json:"name"`
+	Comment             string             `bson:"comment" json:"comment"`
 	InitDiskSize        int                `bson:"init_disk_size" json:"init_disk_size"`
 	Memory              int                `bson:"memory" json:"memory"`
 	Processors          int                `bson:"processors" json:"processors"`
