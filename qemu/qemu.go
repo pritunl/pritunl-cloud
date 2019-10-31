@@ -52,13 +52,14 @@ func (q *Qemu) Marshal() (output string, err error) {
 		"-nographic",
 	}
 
+	nodeVga := node.Self.Vga
+	if nodeVga == "" {
+		nodeVga = node.Vmware
+	}
+
 	if q.Vnc && q.VncDisplay != 0 {
 		cmd = append(cmd, "-vga")
-		vga := node.Self.Vga
-		if vga == "" {
-			vga = node.Vmware
-		}
-		cmd = append(cmd, vga)
+		cmd = append(cmd, nodeVga)
 		cmd = append(cmd, "-vnc")
 		cmd = append(cmd, fmt.Sprintf(
 			":%d,password,share=allow-exclusive", q.VncDisplay))
@@ -75,6 +76,9 @@ func (q *Qemu) Marshal() (output string, err error) {
 	options := ""
 	if q.Kvm {
 		options += ",accel=kvm"
+	}
+	if nodeVga == node.Virtio {
+		options += ",gfx_passthru=on"
 	}
 	cmd = append(cmd, fmt.Sprintf("type=%s%s", q.Machine, options))
 
