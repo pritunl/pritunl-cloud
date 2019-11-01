@@ -10,6 +10,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/mongo"
 	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/mongo/writeconcern"
 	"github.com/pritunl/pritunl-cloud/config"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -254,6 +255,12 @@ func Connect() (err error) {
 	}
 
 	opts := options.Client().ApplyURI(config.Config.MongoUri)
+	opts.WriteConcern = writeconcern.New(
+		writeconcern.WMajority(),
+		writeconcern.J(true),
+		writeconcern.WTimeout(15*time.Second),
+	)
+
 	client, err := mongo.NewClient(opts)
 	if err != nil {
 		err = &ConnectionError{
