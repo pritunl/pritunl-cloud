@@ -17,6 +17,7 @@ import PageNumInput from './PageNumInput';
 import ConfirmButton from './ConfirmButton';
 import Help from './Help';
 import PageSelectButton from "./PageSelectButton";
+import PageTextArea from "./PageTextArea";
 
 interface Props {
 	vpcs: VpcTypes.VpcsRo;
@@ -690,6 +691,16 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						value={instance.name}
 						onChange={(val): void => {
 							this.set('name', val);
+						}}
+					/>
+					<PageTextArea
+						label="Comment"
+						help="Instance comment."
+						placeholder="Instance comment"
+						rows={3}
+						value={instance.comment}
+						onChange={(val: string): void => {
+							this.set('comment', val);
 						}}
 					/>
 					<PageNumInput
