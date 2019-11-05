@@ -132,7 +132,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 		cmd = append(cmd, "-netdev")
 		cmd = append(cmd, fmt.Sprintf(
-			"tap,id=net%d,ifname=%s,script=no",
+			"tap,id=net%d,ifname=%s,script=no,vhost=on",
 			count,
 			network.Iface,
 		))
