@@ -150,7 +150,7 @@ product model or version.
 
 Last updated 24 March 2017`;
 
-export default class Organization extends React.Component<Props, {}> {
+export default class InstanceLicense extends React.Component<Props, {}> {
 	render(): JSX.Element {
 		if (!this.props.open) {
 			return <div/>;
