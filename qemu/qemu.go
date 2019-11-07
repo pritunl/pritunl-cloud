@@ -105,6 +105,8 @@ func (q *Qemu) Marshal() (output string, err error) {
 		additional := ""
 		if disk.Discard {
 			additional += ",discard=on"
+		} else {
+			additional += ",discard=off"
 		}
 		if disk.Media == "disk" {
 			additional += ",if=virtio"
