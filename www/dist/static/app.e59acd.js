@@ -12099,7 +12099,7 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.11.0.js"
                     this.setState(Object.assign(Object.assign({}, this.state), { changed: true, forwardedProtoChecked: state, node: nde }));
                 } }))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.node, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
                     this.setState(Object.assign(Object.assign({}, this.state), { changed: false, forwardedChecked: false, forwardedProtoChecked: false, node: null }));
-                }, onSave: this.onSave }, React.createElement(ConfirmButton_1.default, { label: "Upgrade", className: "bp3-intent-success bp3-icon-updated", progressClassName: "bp3-intent-success", style: css.upgrade, hidden: false, disabled: this.state.disabled, onConfirm: () => {} })));
+                }, onSave: this.onSave }));
         }
     }
     exports.default = NodeDetailed;
@@ -22477,8 +22477,8 @@ System.registerDynamic("app/components/ConfirmButton.js", ["npm:react@16.11.0.js
                     if (i % 10 === 0) {
                         this.setState(Object.assign(Object.assign({}, this.state), { confirm: i / 10 }));
                     }
-                    i += 1;
-                }, 3);
+                    i += 2;
+                }, 8);
             };
             this.clearConfirm = () => {
                 this.setState(Object.assign(Object.assign({}, this.state), { confirm: 0, confirming: null }));
