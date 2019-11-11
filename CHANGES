@@ -4,6 +4,7 @@ pritunl-cloud changelog
 <%= version %>
 
 Support acme v2
+Instance networking improvements
 
 Version 1.0.1413.18 2019-10-07
 ------------------------------
