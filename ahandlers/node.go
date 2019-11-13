@@ -44,8 +44,8 @@ type nodeData struct {
 	ForwardedProtoHeader string                  `json:"forwarded_proto_header"`
 	Firewall             bool                    `json:"firewall"`
 	NetworkRoles         []string                `json:"network_roles"`
-	OracleUser           string                  `bson:"oracle_user" json:"oracle_user"`
-	OracleHostRoute      bool                    `bson:"oracle_host_route" json:"oracle_host_route"`
+	OracleUser           string                  `json:"oracle_user"`
+	OracleHostRoute      bool                    `json:"oracle_host_route"`
 }
 
 type nodesData struct {
