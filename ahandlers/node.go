@@ -33,8 +33,8 @@ type nodeData struct {
 	Services             []primitive.ObjectID    `json:"services"`
 	ExternalInterfaces   []string                `json:"external_interfaces"`
 	InternalInterfaces   []string                `json:"internal_interfaces"`
-	NetworkMode          string                  `bson:"network_mode" json:"network_mode"`
-	Blocks               []*node.BlockAttachment `bson:"blocks" json:"blocks"`
+	NetworkMode          string                  `json:"network_mode"`
+	Blocks               []*node.BlockAttachment `json:"blocks"`
 	HostBlock            primitive.ObjectID      `json:"host_block"`
 	HostNat              bool                    `json:"host_nat"`
 	HostNatExcludes      []string                `json:"host_nat_excludes"`
