@@ -11,6 +11,10 @@ import (
 func AuthorizeAdmin(db *database.Database, w http.ResponseWriter,
 	r *http.Request) (authr *Authorizer, err error) {
 
+	authr = &Authorizer{
+		typ: Admin,
+	}
+
 	token := r.Header.Get("Auth-Token")
 	sigStr := r.Header.Get("Auth-Signature")
 
@@ -31,14 +35,9 @@ func AuthorizeAdmin(db *database.Database, w http.ResponseWriter,
 			return
 		}
 
-		err = sig.Validate(db)
+		err = authr.AddSignature(db, sig)
 		if err != nil {
 			return
-		}
-
-		authr = &Authorizer{
-			typ: Admin,
-			sig: sig,
 		}
 	} else {
 		cook, sess, e := auth.CookieSessionAdmin(db, w, r)
@@ -47,10 +46,9 @@ func AuthorizeAdmin(db *database.Database, w http.ResponseWriter,
 			return
 		}
 
-		authr = &Authorizer{
-			typ:  Admin,
-			cook: cook,
-			sess: sess,
+		err = authr.AddCookie(cook, sess)
+		if err != nil {
+			return
 		}
 	}
 
@@ -60,6 +58,10 @@ func AuthorizeAdmin(db *database.Database, w http.ResponseWriter,
 func AuthorizeUser(db *database.Database, w http.ResponseWriter,
 	r *http.Request) (authr *Authorizer, err error) {
 
+	authr = &Authorizer{
+		typ: User,
+	}
+
 	token := r.Header.Get("Auth-Token")
 	sigStr := r.Header.Get("Auth-Signature")
 
@@ -80,22 +82,21 @@ func AuthorizeUser(db *database.Database, w http.ResponseWriter,
 			return
 		}
 
-		authr = &Authorizer{
-			typ: User,
-			sig: sig,
+		err = authr.AddSignature(db, sig)
+		if err != nil {
+			return
 		}
-		return
-	}
+	} else {
+		cook, sess, e := auth.CookieSessionUser(db, w, r)
+		if e != nil {
+			err = e
+			return
+		}
 
-	cook, sess, err := auth.CookieSessionUser(db, w, r)
-	if err != nil {
-		return
-	}
-
-	authr = &Authorizer{
-		typ:  User,
-		cook: cook,
-		sess: sess,
+		err = authr.AddCookie(cook, sess)
+		if err != nil {
+			return
+		}
 	}
 
 	return
