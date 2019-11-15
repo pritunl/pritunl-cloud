@@ -19,4 +19,6 @@ const (
 	Dhcp     = "dhcp"
 	Static   = "static"
 	Internal = "internal"
+
+	Upgrade = "upgrade"
 )
