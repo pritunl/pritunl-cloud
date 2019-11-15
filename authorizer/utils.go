@@ -11,9 +11,7 @@ import (
 func AuthorizeAdmin(db *database.Database, w http.ResponseWriter,
 	r *http.Request) (authr *Authorizer, err error) {
 
-	authr = &Authorizer{
-		typ: Admin,
-	}
+	authr = NewAdmin()
 
 	token := r.Header.Get("Auth-Token")
 	sigStr := r.Header.Get("Auth-Signature")
@@ -58,9 +56,7 @@ func AuthorizeAdmin(db *database.Database, w http.ResponseWriter,
 func AuthorizeUser(db *database.Database, w http.ResponseWriter,
 	r *http.Request) (authr *Authorizer, err error) {
 
-	authr = &Authorizer{
-		typ: User,
-	}
+	authr = NewUser()
 
 	token := r.Header.Get("Auth-Token")
 	sigStr := r.Header.Get("Auth-Signature")
