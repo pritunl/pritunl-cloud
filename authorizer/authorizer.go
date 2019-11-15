@@ -26,6 +26,28 @@ func (a *Authorizer) IsValid() bool {
 	return a.sess != nil || a.sig != nil
 }
 
+func (a *Authorizer) AddSignature(db *database.Database,
+	sig *signature.Signature) (err error) {
+
+	err = sig.Validate(db)
+	if err != nil {
+		return
+	}
+
+	a.sig = sig
+
+	return
+}
+
+func (a *Authorizer) AddCookie(cook *cookie.Cookie,
+	sess *session.Session) (err error) {
+
+	a.cook = cook
+	a.sess = sess
+
+	return
+}
+
 func (a *Authorizer) Clear(db *database.Database, w http.ResponseWriter,
 	r *http.Request) (err error) {
 
