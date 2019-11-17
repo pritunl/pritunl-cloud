@@ -1010,7 +1010,9 @@ func NetworkConf(db *database.Database,
 	}
 
 	_, err = utils.ExecCombinedOutputLogged(
-		[]string{"already exists"},
+		[]string{
+			"File exists",
+		},
 		"ip", "netns", "exec", namespace,
 		"brctl", "addbr", "br0",
 	)
