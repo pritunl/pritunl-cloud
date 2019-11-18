@@ -68,9 +68,10 @@ func initIfaces(stat *state.State, internaIfaces []string) (err error) {
 			)
 			_, _ = utils.ExecCombinedOutputLogged(
 				[]string{
-					"exist",
+					"Cannot find device",
 				},
-				"brctl", "delbr", iface,
+				"ip", "link", "delete",
+				iface, "type", "bridge",
 			)
 		}
 	}
@@ -113,11 +114,9 @@ func initIfaces(stat *state.State, internaIfaces []string) (err error) {
 			}
 
 			_, err = utils.ExecCombinedOutputLogged(
-				[]string{
-					"already a member",
-				},
-				"brctl", "addif",
-				iface, vm.GetHostVxlanIface(parentIface),
+				nil,
+				"ip", "link", "set",
+				vm.GetHostVxlanIface(parentIface), "master", iface,
 			)
 			if err != nil {
 				return
@@ -296,9 +295,10 @@ func syncIfaces(stat *state.State, internaIfaces []string) (err error) {
 			)
 			_, _ = utils.ExecCombinedOutputLogged(
 				[]string{
-					"exist",
+					"Cannot find device",
 				},
-				"brctl", "delbr", iface,
+				"ip", "link", "delete",
+				iface, "type", "bridge",
 			)
 		}
 	}
@@ -387,20 +387,19 @@ func syncIfaces(stat *state.State, internaIfaces []string) (err error) {
 
 			_, err = utils.ExecCombinedOutputLogged(
 				[]string{
-					"already exists",
+					"File exists",
 				},
-				"brctl", "addbr", iface,
+				"ip", "link", "add",
+				iface, "type", "bridge",
 			)
 			if err != nil {
 				return
 			}
 
 			_, err = utils.ExecCombinedOutputLogged(
-				[]string{
-					"already a member",
-				},
-				"brctl", "addif",
-				iface, vm.GetHostVxlanIface(parentIface),
+				nil,
+				"ip", "link", "set",
+				vm.GetHostVxlanIface(parentIface), "master", iface,
 			)
 			if err != nil {
 				return
