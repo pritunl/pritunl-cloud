@@ -26,28 +26,17 @@ func GetBridges() (brdgs []string, err error) {
 
 	bridgesNew := []string{}
 
-	output, err := utils.ExecOutput("", "brctl", "show")
+	ifaces, err := GetAll()
 	if err != nil {
 		return
 	}
 
-	for i, line := range strings.Split(output, "\n") {
-		if i == 0 || strings.HasPrefix(line, " ") ||
-			strings.HasPrefix(line, "	") {
-
+	for _, iface := range ifaces {
+		if iface.Name == "pritunlhost0" {
 			continue
 		}
 
-		fields := strings.Fields(strings.TrimSpace(line))
-		if len(fields) == 0 {
-			continue
-		}
-
-		if len(fields[0]) == 14 || fields[0] == "pritunlhost0" {
-			continue
-		}
-
-		bridgesNew = append(bridgesNew, fields[0])
+		bridgesNew = append(bridgesNew, iface.Name)
 	}
 
 	bridges = bridgesNew
