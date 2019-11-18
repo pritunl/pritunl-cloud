@@ -742,24 +742,30 @@ func NetworkConf(db *database.Database,
 
 	if externalNetwork {
 		_, err = utils.ExecCombinedOutputLogged(
-			[]string{"already a member of a bridge"},
-			"brctl", "addif", externalIface, ifaceExternalVirt)
+			nil,
+			"ip", "link", "set",
+			ifaceExternalVirt, "master", externalIface,
+		)
 		if err != nil {
 			return
 		}
 	}
 
 	_, err = utils.ExecCombinedOutputLogged(
-		[]string{"already a member of a bridge"},
-		"brctl", "addif", internalIface, ifaceInternalVirt)
+		nil,
+		"ip", "link", "set",
+		ifaceInternalVirt, "master", internalIface,
+	)
 	if err != nil {
 		return
 	}
 
 	if hostNetwork {
 		_, err = utils.ExecCombinedOutputLogged(
-			[]string{"already a member of a bridge"},
-			"brctl", "addif", hostIface, ifaceHostVirt)
+			nil,
+			"ip", "link", "set",
+			ifaceHostVirt, "master", hostIface,
+		)
 		if err != nil {
 			return
 		}
@@ -1014,25 +1020,28 @@ func NetworkConf(db *database.Database,
 			"File exists",
 		},
 		"ip", "netns", "exec", namespace,
-		"brctl", "addbr", "br0",
+		"ip", "link", "add",
+		"br0", "type", "bridge",
 	)
 	if err != nil {
 		return
 	}
 
 	_, err = utils.ExecCombinedOutputLogged(
-		[]string{"already a member of a bridge"},
+		nil,
 		"ip", "netns", "exec", namespace,
-		"brctl", "addif", "br0", ifaceVlan,
+		"ip", "link", "set",
+		ifaceVlan, "master", "br0",
 	)
 	if err != nil {
 		return
 	}
 
 	_, err = utils.ExecCombinedOutputLogged(
-		[]string{"already a member of a bridge"},
+		nil,
 		"ip", "netns", "exec", namespace,
-		"brctl", "addif", "br0", iface,
+		"ip", "link", "set",
+		iface, "master", "br0",
 	)
 	if err != nil {
 		return
