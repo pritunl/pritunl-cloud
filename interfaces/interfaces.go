@@ -1,10 +1,12 @@
 package interfaces
 
 import (
+	"encoding/json"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -20,37 +22,39 @@ var (
 	lastChange time.Time
 )
 
+type iface struct {
+	Name  string `json:"ifname"`
+	State string `json:"operstate"`
+}
+
 func getIfaces(bridge string) (ifacesSet set.Set, err error) {
-	output, err := utils.ExecCombinedOutput("", "brctl", "show", bridge)
+	ifacesSet = set.NewSet()
+
+	output, err := utils.ExecCombinedOutputLogged(
+		[]string{
+			"does not exist",
+		},
+		"ip", "--json", "--brief", "link", "show", "master", bridge)
 	if err != nil {
 		return
 	}
 
-	if strings.Contains(output, "Operation not supported") {
-		err = &errortypes.ReadError{
-			errors.New("interfaces: Operation not supported"),
+	if strings.Contains(output, "does not exist") {
+		return
+	}
+
+	ifaces := []*iface{}
+
+	err = json.Unmarshal([]byte(output), &ifaces)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "interfaces: Failed to prase bridge ifaces"),
 		}
 		return
 	}
 
-	if strings.Contains(output, "No such device") {
-		err = &errortypes.ReadError{
-			errors.New("interfaces: No such device"),
-		}
-		return
-	}
-
-	ifacesSet = set.NewSet()
-
-	for i, line := range strings.Split(output, "\n") {
-		if i < 2 {
-			continue
-		}
-
-		line = strings.TrimSpace(line)
-		if len(line) == 14 {
-			ifacesSet.Add(line)
-		}
+	for _, iface := range ifaces {
+		ifacesSet.Add(iface.Name)
 	}
 
 	return
