@@ -27,11 +27,11 @@ func removeNetwork(stat *state.State) (err error) {
 
 		_, _ = utils.ExecCombinedOutputLogged(
 			[]string{
-				"exist",
+				"Cannot find device",
 			},
-			"brctl",
-			"delbr",
+			"ip", "link", "delete",
 			settings.Hypervisor.HostNetworkName,
+			"type", "bridge",
 		)
 
 		curState = ""
@@ -76,11 +76,11 @@ func ApplyState(stat *state.State) (err error) {
 
 			_, err = utils.ExecCombinedOutputLogged(
 				[]string{
-					"already exists",
+					"File exists",
 				},
-				"brctl",
-				"addbr",
+				"ip", "link", "add",
 				settings.Hypervisor.HostNetworkName,
+				"type", "bridge",
 			)
 			if err != nil {
 				return
