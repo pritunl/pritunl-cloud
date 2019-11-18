@@ -8,6 +8,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/iproute"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/state"
@@ -66,13 +67,7 @@ func initIfaces(stat *state.State, internaIfaces []string) (err error) {
 				"set", "dev",
 				iface, "down",
 			)
-			_, _ = utils.ExecCombinedOutputLogged(
-				[]string{
-					"Cannot find device",
-				},
-				"ip", "link", "delete",
-				iface, "type", "bridge",
-			)
+			_ = iproute.BridgeDelete("", iface)
 		}
 	}
 	for ifaceInf := range remIfaces.Iter() {
@@ -293,13 +288,7 @@ func syncIfaces(stat *state.State, internaIfaces []string) (err error) {
 				"set", "dev",
 				iface, "down",
 			)
-			_, _ = utils.ExecCombinedOutputLogged(
-				[]string{
-					"Cannot find device",
-				},
-				"ip", "link", "delete",
-				iface, "type", "bridge",
-			)
+			_ = iproute.BridgeDelete("", iface)
 		}
 	}
 	for ifaceInf := range remIfaces.Iter() {
@@ -385,13 +374,7 @@ func syncIfaces(stat *state.State, internaIfaces []string) (err error) {
 				"bridge": iface,
 			}).Info("vxlan: Adding bridge")
 
-			_, err = utils.ExecCombinedOutputLogged(
-				[]string{
-					"File exists",
-				},
-				"ip", "link", "add",
-				iface, "type", "bridge",
-			)
+			err = iproute.BridgeAdd("", iface)
 			if err != nil {
 				return
 			}
