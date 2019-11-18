@@ -25,6 +25,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/interfaces"
+	"github.com/pritunl/pritunl-cloud/iproute"
 	"github.com/pritunl/pritunl-cloud/iptables"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
@@ -1015,14 +1016,7 @@ func NetworkConf(db *database.Database,
 		return
 	}
 
-	_, err = utils.ExecCombinedOutputLogged(
-		[]string{
-			"File exists",
-		},
-		"ip", "netns", "exec", namespace,
-		"ip", "link", "add",
-		"br0", "type", "bridge",
-	)
+	err = iproute.BridgeAdd(namespace, "br0")
 	if err != nil {
 		return
 	}
