@@ -2,6 +2,7 @@ package hnetwork
 
 import (
 	"github.com/Sirupsen/logrus"
+	"github.com/pritunl/pritunl-cloud/iproute"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -25,14 +26,7 @@ func removeNetwork(stat *state.State) (err error) {
 			return
 		}
 
-		_, _ = utils.ExecCombinedOutputLogged(
-			[]string{
-				"Cannot find device",
-			},
-			"ip", "link", "delete",
-			settings.Hypervisor.HostNetworkName,
-			"type", "bridge",
-		)
+		_ = iproute.BridgeDelete("", settings.Hypervisor.HostNetworkName)
 
 		curState = ""
 	}
@@ -74,14 +68,7 @@ func ApplyState(stat *state.State) (err error) {
 				"host_block_gateway": gatewayCidr,
 			}).Info("hnetwork: Updating host network bridge")
 
-			_, err = utils.ExecCombinedOutputLogged(
-				[]string{
-					"File exists",
-				},
-				"ip", "link", "add",
-				settings.Hypervisor.HostNetworkName,
-				"type", "bridge",
-			)
+			err = iproute.BridgeAdd("", settings.Hypervisor.HostNetworkName)
 			if err != nil {
 				return
 			}
