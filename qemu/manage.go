@@ -150,60 +150,19 @@ func GetVmInfo(vmId primitive.ObjectID, getDisks, force bool) (
 		}
 
 		if externalNetwork {
-			ipData, e := utils.ExecCombinedOutputLogged(
-				[]string{
-					"No such file or directory",
-					"does not exist",
-					"setting the network namespace",
-				},
-				"ip", "netns", "exec", namespace,
-				"ip", "-f", "inet", "-o", "addr",
-				"show", "dev", ifaceExternal,
-			)
+			address, address6, e := iproute.AddressGetIface(
+				namespace, ifaceExternal)
 			if e != nil {
 				err = e
 				return
 			}
 
-			fields := strings.Fields(ipData)
-			if len(fields) > 3 {
-				ipAddr := net.ParseIP(strings.Split(fields[3], "/")[0])
-				if ipAddr != nil && len(ipAddr) > 0 &&
-					len(virt.NetworkAdapters) > 0 {
-
-					addr = ipAddr.String()
-				}
+			if address != nil {
+				addr = address.Local
 			}
 
-			ipData, e = utils.ExecCombinedOutputLogged(
-				[]string{
-					"No such file or directory",
-					"does not exist",
-					"setting the network namespace",
-				},
-				"ip", "netns", "exec", namespace,
-				"ip", "-f", "inet6", "-o", "addr",
-				"show", "dev", ifaceExternal,
-			)
-			if e != nil {
-				err = e
-				return
-			}
-
-			for _, line := range strings.Split(ipData, "\n") {
-				if !strings.Contains(line, "global") {
-					continue
-				}
-
-				fields = strings.Fields(ipData)
-				if len(fields) > 3 {
-					ipAddr := net.ParseIP(strings.Split(fields[3], "/")[0])
-					if ipAddr != nil && len(ipAddr) > 0 {
-						addr6 = ipAddr.String()
-					}
-				}
-
-				break
+			if address6 != nil {
+				addr6 = address6.Local
 			}
 
 			if len(virt.NetworkAdapters) > 0 {
@@ -1173,65 +1132,18 @@ func NetworkConf(db *database.Database,
 	pubAddr6 := ""
 	if externalNetwork {
 		for i := 0; i < 60; i++ {
-			ipData, e := utils.ExecCombinedOutputLogged(
-				[]string{
-					"No such file or directory",
-					"does not exist",
-				},
-				"ip", "netns", "exec", namespace,
-				"ip", "-f", "inet", "-o", "addr",
-				"show", "dev", ifaceExternal,
-			)
+			address, address6, e := iproute.AddressGetIface(
+				namespace, ifaceExternal)
 			if e != nil {
 				err = e
 				return
 			}
 
-			fields := strings.Fields(ipData)
-			if len(fields) > 3 {
-				ipAddr := net.ParseIP(strings.Split(fields[3], "/")[0])
-				if ipAddr != nil && len(ipAddr) > 0 &&
-					len(virt.NetworkAdapters) > 0 {
-
-					pubAddr = ipAddr.String()
-				}
-			}
-
-			ipData, e = utils.ExecCombinedOutputLogged(
-				[]string{
-					"No such file or directory",
-					"does not exist",
-				},
-				"ip", "netns", "exec", namespace,
-				"ip", "-f", "inet6", "-o", "addr",
-				"show", "dev", ifaceExternal,
-			)
-			if e != nil {
-				err = e
-				return
-			}
-
-			for _, line := range strings.Split(ipData, "\n") {
-				if !strings.Contains(line, "global") {
-					continue
-				}
-
-				fields = strings.Fields(ipData)
-				if len(fields) > 3 {
-					ipAddr := net.ParseIP(strings.Split(fields[3], "/")[0])
-					if ipAddr != nil && len(ipAddr) > 0 &&
-						len(virt.NetworkAdapters) > 0 {
-
-						pubAddr6 = ipAddr.String()
-					}
-				}
-
-				break
-			}
-
-			if pubAddr != "" && (pubAddr6 != "" ||
+			if address != nil && (address6 != nil ||
 				time.Since(start) > 8*time.Second) {
 
+				pubAddr = address.Local
+				pubAddr6 = address6.Local
 				break
 			}
 
