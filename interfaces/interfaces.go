@@ -80,6 +80,10 @@ func SyncIfaces(vxlan bool) {
 		for _, iface := range externalIfaces {
 			ifaceSet, err := getIfaces(iface)
 			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"bridge": iface,
+					"error":  err,
+				}).Error("interfaces: Bridge ifaces get failed")
 				continue
 			}
 
@@ -87,7 +91,12 @@ func SyncIfaces(vxlan bool) {
 		}
 	} else if externalIface != "" {
 		ifaceSet, err := getIfaces(externalIface)
-		if err == nil {
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"bridge": externalIface,
+				"error":  err,
+			}).Error("interfaces: Bridge ifaces get failed")
+		} else {
 			ifacesNew[externalIface] = ifaceSet
 		}
 	}
@@ -95,20 +104,35 @@ func SyncIfaces(vxlan bool) {
 	if internalIfaces != nil {
 		for _, iface := range internalIfaces {
 			ifaceSet, err := getIfaces(iface)
-			if err == nil {
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"bridge": iface,
+					"error":  err,
+				}).Error("interfaces: Bridge ifaces get failed")
+			} else {
 				ifacesNew[iface] = ifaceSet
 			}
 
 			vxIface := vm.GetHostBridgeIface(iface)
 			ifaceSet, err = getIfaces(vxIface)
-			if err == nil {
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"bridge": vxIface,
+					"error":  err,
+				}).Error("interfaces: Bridge ifaces get failed")
+			} else {
 				ifacesNew[vxIface] = ifaceSet
 			}
 
 		}
 	} else if internalIface != "" {
 		ifaceSet, err := getIfaces(internalIface)
-		if err == nil {
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"bridge": internalIface,
+				"error":  err,
+			}).Error("interfaces: Bridge ifaces get failed")
+		} else {
 			ifacesNew[internalIface] = ifaceSet
 		}
 	}
@@ -117,10 +141,13 @@ func SyncIfaces(vxlan bool) {
 		for _, blck := range blocks {
 			ifaceSet, err := getIfaces(blck.Interface)
 			if err != nil {
-				continue
+				logrus.WithFields(logrus.Fields{
+					"bridge": blck.Interface,
+					"error":  err,
+				}).Error("interfaces: Bridge ifaces get failed")
+			} else {
+				ifacesNew[blck.Interface] = ifaceSet
 			}
-
-			ifacesNew[blck.Interface] = ifaceSet
 		}
 	}
 
