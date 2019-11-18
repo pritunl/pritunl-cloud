@@ -1,17 +1,13 @@
 package interfaces
 
 import (
-	"encoding/json"
-	"strings"
 	"sync"
 	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
-	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/iproute"
 	"github.com/pritunl/pritunl-cloud/node"
-	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 )
 
@@ -22,34 +18,11 @@ var (
 	lastChange time.Time
 )
 
-type iface struct {
-	Name  string `json:"ifname"`
-	State string `json:"operstate"`
-}
-
 func getIfaces(bridge string) (ifacesSet set.Set, err error) {
 	ifacesSet = set.NewSet()
 
-	output, err := utils.ExecCombinedOutputLogged(
-		[]string{
-			"does not exist",
-		},
-		"ip", "--json", "--brief", "link", "show", "master", bridge)
+	ifaces, err := iproute.IfaceGetBridgeIfaces("", bridge)
 	if err != nil {
-		return
-	}
-
-	if strings.Contains(output, "does not exist") {
-		return
-	}
-
-	ifaces := []*iface{}
-
-	err = json.Unmarshal([]byte(output), &ifaces)
-	if err != nil {
-		err = &errortypes.ParseError{
-			errors.Wrap(err, "interfaces: Failed to prase bridge ifaces"),
-		}
 		return
 	}
 
