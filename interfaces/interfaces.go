@@ -84,10 +84,9 @@ func SyncIfaces(vxlan bool) {
 					"bridge": iface,
 					"error":  err,
 				}).Error("interfaces: Bridge ifaces get failed")
-				continue
+			} else {
+				ifacesNew[iface] = ifaceSet
 			}
-
-			ifacesNew[iface] = ifaceSet
 		}
 	} else if externalIface != "" {
 		ifaceSet, err := getIfaces(externalIface)
