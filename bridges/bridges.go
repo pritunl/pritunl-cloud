@@ -7,6 +7,7 @@ import (
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/iproute"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -26,7 +27,7 @@ func GetBridges() (brdgs []string, err error) {
 
 	bridgesNew := []string{}
 
-	ifaces, err := GetAll()
+	ifaces, err := iproute.IfaceGetBridges("")
 	if err != nil {
 		return
 	}
