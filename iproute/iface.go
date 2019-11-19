@@ -2,8 +2,6 @@ package iproute
 
 import (
 	"encoding/json"
-	"strings"
-
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -79,7 +77,7 @@ func IfaceGetBridgeIfaces(namespace, bridge string) (
 		return
 	}
 
-	if strings.Contains(output, "does not exist") {
+	if output == "" {
 		return
 	}
 

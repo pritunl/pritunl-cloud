@@ -2,8 +2,6 @@ package iproute
 
 import (
 	"encoding/json"
-	"strings"
-
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -56,7 +54,6 @@ func AddressGetIface(namespace, name string) (
 		return
 	}
 
-	output = strings.TrimSpace(output)
 	if output == "" {
 		return
 	}
