@@ -32,12 +32,14 @@ type Vpc struct {
 	VpcId         int                `bson:"vpc_id" json:"vpc_id"`
 	Network       string             `bson:"network" json:"network"`
 	Network6      string             `bson:"-" json:"network6"`
+	Subnets       []*Subnet          `bson:"subnets" json:"subnets"`
 	Organization  primitive.ObjectID `bson:"organization" json:"organization"`
 	Datacenter    primitive.ObjectID `bson:"datacenter" json:"datacenter"`
 	Routes        []*Route           `bson:"routes" json:"routes"`
 	LinkUris      []string           `bson:"link_uris" json:"link_uris"`
 	LinkNode      primitive.ObjectID `bson:"link_node,omitempty" json:"link_node"`
 	LinkTimestamp time.Time          `bson:"link_timestamp" json:"link_timestamp"`
+	curSubnets    []*Subnet          `bson:"-" json:"-"`
 }
 
 func (v *Vpc) Validate(db *database.Database) (
@@ -86,6 +88,33 @@ func (v *Vpc) Validate(db *database.Database) (
 	}
 
 	v.Network = network.String()
+
+	if v.Subnets == nil {
+		v.Subnets = []*Subnet{}
+	}
+
+	for _, sub := range v.Subnets {
+		if sub.Id.IsZero() {
+			subNetwork, e := sub.GetNetwork()
+			if e != nil {
+				errData = &errortypes.ErrorData{
+					Error:   "subnet_network_invalid",
+					Message: "Subnet network address invalid",
+				}
+				return
+			}
+
+			sub.Network = subNetwork.String()
+
+			if !utils.NetworkContains(network, subNetwork) {
+				errData = &errortypes.ErrorData{
+					Error:   "subnet_network_range_invalid",
+					Message: "Subnet network outside of VPC network",
+				}
+				return
+			}
+		}
+	}
 
 	if v.Routes == nil {
 		v.Routes = []*Route{}
