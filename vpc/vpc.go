@@ -211,6 +211,52 @@ func (v *Vpc) Validate(db *database.Database) (
 	return
 }
 
+func (v *Vpc) PreCommit() {
+	v.curSubnets = v.Subnets
+}
+
+func (v *Vpc) PostCommit(db *database.Database) (
+	errData *errortypes.ErrorData, err error) {
+
+	if v.curSubnets == nil {
+		return
+	}
+
+	curSubnets := map[primitive.ObjectID]*Subnet{}
+	for _, sub := range v.curSubnets {
+		curSubnets[sub.Id] = sub
+	}
+
+	newIds := set.NewSet()
+	for _, sub := range v.Subnets {
+		newIds.Add(sub.Id)
+
+		curSub := curSubnets[sub.Id]
+		if curSub != nil {
+			if curSub.Network != sub.Network {
+				errData = &errortypes.ErrorData{
+					Error:   "subnet_network_modified",
+					Message: "Cannot modify ",
+				}
+				return
+			}
+		} else {
+			sub.Id = primitive.NewObjectID()
+		}
+	}
+
+	for _, sub := range v.curSubnets {
+		if !newIds.Contains(sub.Id) {
+			err = v.RemoveSubnet(db, sub.Id)
+			if err != nil {
+				return
+			}
+		}
+	}
+
+	return
+}
+
 func (v *Vpc) Json() {
 	netHash := md5.New()
 	netHash.Write(v.Id[:])
