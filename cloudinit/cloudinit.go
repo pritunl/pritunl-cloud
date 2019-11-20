@@ -235,9 +235,16 @@ func getNetData(db *database.Database, inst *instance.Instance,
 
 	adapter := virt.NetworkAdapters[0]
 
-	if adapter.VpcId.IsZero() {
+	if adapter.Vpc.IsZero() {
 		err = &errortypes.NotFoundError{
 			errors.Wrap(err, "cloudinit: Instance missing VPC"),
+		}
+		return
+	}
+
+	if adapter.Subnet.IsZero() {
+		err = &errortypes.NotFoundError{
+			errors.Wrap(err, "cloudinit: Instance missing VPC subnet"),
 		}
 		return
 	}
@@ -252,7 +259,7 @@ func getNetData(db *database.Database, inst *instance.Instance,
 		vxlan = true
 	}
 
-	vc, err := vpc.Get(db, adapter.VpcId)
+	vc, err := vpc.Get(db, adapter.Vpc)
 	if err != nil {
 		return
 	}
@@ -262,25 +269,13 @@ func getNetData(db *database.Database, inst *instance.Instance,
 		return
 	}
 
-	addr, err := vc.GetIp(db, vpc.Instance, inst.Id)
-	if err != nil {
-		return
-	}
-
-	gatewayAddr, err := vc.GetIp(db, vpc.Gateway, inst.Id)
+	addr, gatewayAddr, err := vc.GetIp(db, inst.Subnet, inst.Id)
 	if err != nil {
 		return
 	}
 
 	addr6 := vc.GetIp6(addr)
-	if err != nil {
-		return
-	}
-
 	gatewayAddr6 := vc.GetIp6(gatewayAddr)
-	if err != nil {
-		return
-	}
 
 	data := netConfigData{
 		Mac:      adapter.MacAddress,
