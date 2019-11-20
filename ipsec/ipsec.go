@@ -37,7 +37,15 @@ func deployIpsec(vpcId primitive.ObjectID, states []*link.State) (err error) {
 		return
 	}
 
-	netAddr, err := vc.GetIp(db, vpc.Gateway, vc.Id)
+	if vc.Subnets == nil || len(vc.Subnets) == 0 {
+		err = &errortypes.ReadError{
+			errors.New("ipsec: Cannot get VPC default subnet"),
+		}
+		return
+	}
+	subId := vc.Subnets[0].Id
+
+	netAddr, _, err := vc.GetIp(db, subId, vc.Id)
 	if err != nil {
 		return
 	}
