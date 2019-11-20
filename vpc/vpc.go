@@ -275,6 +275,21 @@ func (v *Vpc) Json() {
 	v.Network6 = ipBuf.String() + "::/64"
 }
 
+func (v *Vpc) GetSubnet(id primitive.ObjectID) (sub *Subnet) {
+	if v.Subnets == nil || id.IsZero() {
+		return
+	}
+
+	for _, s := range v.Subnets {
+		if s.Id == id {
+			sub = s
+			return
+		}
+	}
+
+	return
+}
+
 func (v *Vpc) GetNetwork() (network *net.IPNet, err error) {
 	_, network, err = net.ParseCIDR(v.Network)
 	if err != nil {
