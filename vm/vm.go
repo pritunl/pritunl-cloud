@@ -49,7 +49,8 @@ func (d *Disk) GetId() primitive.ObjectID {
 type NetworkAdapter struct {
 	Type       string             `json:"type"`
 	MacAddress string             `json:"mac_address"`
-	VpcId      primitive.ObjectID `json:"vpc_id"`
+	Vpc        primitive.ObjectID `json:"vpc"`
+	Subnet     primitive.ObjectID `json:"subnet"`
 	IpAddress  string             `json:"ip_address,omitempty"`
 	IpAddress6 string             `json:"ip_address6,omitempty"`
 }
