@@ -10,8 +10,10 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/link"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
@@ -41,7 +43,15 @@ func deployVpc(vc *vpc.Vpc) {
 		return
 	}
 
-	netAddr, err := vc.GetIp(db, vpc.Gateway, vc.Id)
+	if vc.Subnets == nil || len(vc.Subnets) == 0 {
+		err = &errortypes.ReadError{
+			errors.New("ipsec: Cannot get VPC default subnet"),
+		}
+		return
+	}
+	subId := vc.Subnets[0].Id
+
+	_, netAddr, err := vc.GetIp(db, subId, vc.Id)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"vpc_id": vc.Id.Hex(),
@@ -51,14 +61,6 @@ func deployVpc(vc *vpc.Vpc) {
 	}
 
 	netAddr6 := vc.GetIp6(netAddr)
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"vpc_id": vc.Id.Hex(),
-			"error":  err,
-		}).Error("ipsec: Failed to get ipsec link local IPv6 address")
-		return
-	}
-
 	netCidr, _ := vcNet.Mask.Size()
 
 	err = networkConf(db, vc, netAddr.String(), netAddr6.String(), netCidr)
