@@ -327,8 +327,14 @@ func (v *Vpc) GetNetwork6() (network *net.IPNet, err error) {
 	return
 }
 
-func (v *Vpc) GenerateVpcId() {
+func (v *Vpc) InitVpc() {
 	v.VpcId = rand.Intn(4085) + 10
+
+	if v.Subnets != nil {
+		for _, sub := range v.Subnets {
+			sub.Id = primitive.NewObjectID()
+		}
+	}
 }
 
 func (v *Vpc) GetGateway() (ip net.IP, err error) {
