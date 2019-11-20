@@ -361,15 +361,22 @@ func (v *Vpc) GetGateway6() (ip net.IP, err error) {
 	return
 }
 
-func (v *Vpc) GetIp(db *database.Database, typ string,
-	instId primitive.ObjectID) (ip net.IP, err error) {
+func (v *Vpc) GetIp(db *database.Database,
+	subId, instId primitive.ObjectID) (instIp, gateIp net.IP, err error) {
+
+	subnet := v.GetSubnet(subId)
+	if subnet == nil {
+		err = &errortypes.ReadError{
+			errors.New("vpc: Subnet does not exist"),
+		}
+		return
+	}
 
 	coll := db.VpcsIp()
 	vpcIp := &VpcIp{}
 
 	err = coll.FindOne(db, &bson.M{
 		"vpc":      v.Id,
-		"type":     typ,
 		"instance": instId,
 	}).Decode(vpcIp)
 	if err != nil {
@@ -391,7 +398,7 @@ func (v *Vpc) GetIp(db *database.Database, typ string,
 			db,
 			&bson.M{
 				"vpc":      v.Id,
-				"type":     typ,
+				"subnet":   subId,
 				"instance": nil,
 			},
 			&bson.M{
@@ -415,22 +422,15 @@ func (v *Vpc) GetIp(db *database.Database, typ string,
 	if vpcIp == nil {
 		vpcIp = &VpcIp{}
 
-		sort := 0
-		if typ == Gateway {
-			sort = 1
-		} else {
-			sort = -1
-		}
-
 		err = coll.FindOne(
 			db,
 			&bson.M{
-				"vpc":  v.Id,
-				"type": typ,
+				"vpc":    v.Id,
+				"subnet": subId,
 			},
 			&options.FindOneOptions{
 				Sort: &bson.D{
-					{"ip", sort},
+					{"ip", -1},
 				},
 			},
 		).Decode(vpcIp)
@@ -444,37 +444,19 @@ func (v *Vpc) GetIp(db *database.Database, typ string,
 			}
 		}
 
-		network, e := v.GetNetwork()
+		start, stop, e := subnet.GetIndexRange()
 		if e != nil {
 			err = e
 			return
 		}
 
-		var curIp net.IP
-		if typ == Gateway {
-			if vpcIp == nil {
-				curIp = utils.GetLastIpAddress(network)
-				utils.DecIpAddress(curIp)
-			} else {
-				curIp = utils.Int2IpAddress(vpcIp.Ip)
-			}
-		} else {
-			if vpcIp == nil {
-				curIp = utils.CopyIpAddress(network.IP)
-				utils.IncIpAddress(curIp)
-			} else {
-				curIp = utils.Int2IpAddress(vpcIp.Ip)
-			}
+		curIp := start
+		if vpcIp != nil {
+			start = vpcIp.Ip + 1
 		}
 
 		for {
-			if typ == Gateway {
-				utils.DecIpAddress(curIp)
-			} else {
-				utils.IncIpAddress(curIp)
-			}
-
-			if !network.Contains(curIp) {
+			if curIp > stop {
 				err = &errortypes.NotFoundError{
 					errors.New("vpc: Address pool full"),
 				}
@@ -483,8 +465,8 @@ func (v *Vpc) GetIp(db *database.Database, typ string,
 
 			vpcIp = &VpcIp{
 				Vpc:      v.Id,
-				Type:     typ,
-				Ip:       utils.IpAddress2Int(curIp),
+				Subnet:   subId,
+				Ip:       curIp,
 				Instance: instId,
 			}
 
@@ -494,6 +476,7 @@ func (v *Vpc) GetIp(db *database.Database, typ string,
 				err = database.ParseError(err)
 				if _, ok := err.(*database.DuplicateKeyError); ok {
 					err = nil
+					curIp += 1
 					continue
 				}
 				return
@@ -503,14 +486,7 @@ func (v *Vpc) GetIp(db *database.Database, typ string,
 		}
 	}
 
-	if vpcIp == nil {
-		err = &errortypes.NotFoundError{
-			errors.New("vpc: Address not found"),
-		}
-		return
-	}
-
-	ip = utils.Int2IpAddress(vpcIp.Ip)
+	instIp, gateIp = vpcIp.GetIps()
 
 	return
 }
