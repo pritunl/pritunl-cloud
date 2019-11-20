@@ -70,6 +70,51 @@ func Int2IpAddress(n int64) net.IP {
 	return ip
 }
 
+func Int2IpIndex(n int64) (x int64, err error) {
+	if n%2 != 0 {
+		err = errortypes.ParseError{
+			errors.Newf("utils: Odd network int divide %d", n),
+		}
+		return
+	}
+
+	x = n / 2
+	return
+}
+
+func GetFirstIpIndex(network *net.IPNet) (n int64, err error) {
+	startIp := CopyIpAddress(network.IP)
+	startInt := IpAddress2Int(startIp)
+
+	startIndex, err := Int2IpIndex(startInt)
+	if err != nil {
+		return
+	}
+
+	n = startIndex + 1
+	return
+}
+
+func GetLastIpIndex(network *net.IPNet) (n int64, err error) {
+	endIp := GetLastIpAddress(network)
+	endInt := IpAddress2Int(endIp) - 1
+
+	endIndex, err := Int2IpIndex(endInt)
+	if err != nil {
+		return
+	}
+
+	n = endIndex - 1
+	return
+}
+
+func IpIndex2Ip(index int64) (x, y net.IP) {
+	x = Int2IpAddress(index * 2)
+	y = CopyIpAddress(x)
+	IncIpAddress(y)
+	return
+}
+
 func GetLastIpAddress(network *net.IPNet) net.IP {
 	prefixLen, bits := network.Mask.Size()
 	if prefixLen == bits {
