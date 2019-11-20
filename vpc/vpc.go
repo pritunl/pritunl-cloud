@@ -580,6 +580,23 @@ func (v *Vpc) AddLinkRoutes(db *database.Database, routes []*Route) (
 	return
 }
 
+func (v *Vpc) RemoveSubnet(db *database.Database, subId primitive.ObjectID) (
+	err error) {
+
+	coll := db.VpcsIp()
+
+	_, err = coll.DeleteMany(db, &bson.M{
+		"vpc":    v.Id,
+		"subnet": subId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func (v *Vpc) Commit(db *database.Database) (err error) {
 	coll := db.Vpcs()
 
