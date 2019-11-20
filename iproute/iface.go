@@ -19,7 +19,7 @@ func IfaceGetBridges(namespace string) (ifaces []*Iface, err error) {
 	if namespace != "" {
 		output, err = utils.ExecOutputLogged(
 			nil,
-			"ip", "netns", "exec",
+			"ip", "netns", "exec", namespace,
 			"ip", "--json", "--brief",
 			"link", "show",
 			"type", "bridge",
