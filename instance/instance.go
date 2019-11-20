@@ -26,6 +26,7 @@ type Instance struct {
 	Organization        primitive.ObjectID `bson:"organization" json:"organization"`
 	Zone                primitive.ObjectID `bson:"zone" json:"zone"`
 	Vpc                 primitive.ObjectID `bson:"vpc" json:"vpc"`
+	Subnet              primitive.ObjectID `bson:"subnet" json:"subnet"`
 	Image               primitive.ObjectID `bson:"image" json:"image"`
 	ImageBacking        bool               `bson:"image_backing" json:"image_backing"`
 	Status              string             `bson:"-" json:"status"`
@@ -120,6 +121,28 @@ func (i *Instance) Validate(db *database.Database) (
 		errData = &errortypes.ErrorData{
 			Error:   "vpc_required",
 			Message: "Missing required VPC",
+		}
+		return
+	}
+
+	vc, err := vpc.Get(db, i.Vpc)
+	if err != nil {
+		return
+	}
+
+	if i.Subnet.IsZero() {
+		errData = &errortypes.ErrorData{
+			Error:   "vpc_subnet_required",
+			Message: "Missing required VPC subnet",
+		}
+		return
+	}
+
+	sub := vc.GetSubnet(i.Subnet)
+	if sub == nil {
+		errData = &errortypes.ErrorData{
+			Error:   "vpc_subnet_missing",
+			Message: "VPC subnet does not exist",
 		}
 		return
 	}
@@ -303,6 +326,7 @@ func (i *Instance) IsActive() bool {
 
 func (i *Instance) PreCommit() {
 	i.curVpc = i.Vpc
+	i.curSubnet = i.Subnet
 	i.curDeleteProtection = i.DeleteProtection
 	i.curState = i.State
 	i.curNoPublicAddress = i.NoPublicAddress
@@ -312,7 +336,9 @@ func (i *Instance) PreCommit() {
 func (i *Instance) PostCommit(db *database.Database) (
 	dskChange bool, err error) {
 
-	if !i.curVpc.IsZero() && i.curVpc != i.Vpc {
+	if (!i.curVpc.IsZero() && i.curVpc != i.Vpc) ||
+		(!i.curSubnet.IsZero() && i.curSubnet != i.Subnet) {
+
 		err = vpc.RemoveInstanceIp(db, i.Id, i.curVpc)
 		if err != nil {
 			return
