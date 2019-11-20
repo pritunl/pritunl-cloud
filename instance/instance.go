@@ -59,6 +59,7 @@ type Instance struct {
 	VncDisplay          int                `bson:"vnc_display,omitempty" json:"vnc_display"`
 	Virt                *vm.VirtualMachine `bson:"-" json:"-"`
 	curVpc              primitive.ObjectID `bson:"-" json:"-"`
+	curSubnet           primitive.ObjectID `bson:"-" json:"-"`
 	curDeleteProtection bool               `bson:"-" json:"-"`
 	curState            string             `bson:"-" json:"-"`
 	curNoPublicAddress  bool               `bson:"-" json:"-"`
@@ -484,7 +485,11 @@ func (i *Instance) Changed(curVirt *vm.VirtualMachine) bool {
 			return true
 		}
 
-		if adapter.VpcId != curVirt.NetworkAdapters[i].VpcId {
+		if adapter.Vpc != curVirt.NetworkAdapters[i].Vpc {
+			return true
+		}
+
+		if adapter.Subnet != curVirt.NetworkAdapters[i].Subnet {
 			return true
 		}
 	}
