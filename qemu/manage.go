@@ -439,7 +439,7 @@ func NetworkConf(db *database.Database,
 		return
 	}
 
-	vc, err := vpc.Get(db, adapter.VpcId)
+	vc, err := vpc.Get(db, adapter.Vpc)
 	if err != nil {
 		return
 	}
@@ -449,25 +449,13 @@ func NetworkConf(db *database.Database,
 		return
 	}
 
-	addr, err := vc.GetIp(db, vpc.Instance, virt.Id)
-	if err != nil {
-		return
-	}
-
-	gatewayAddr, err := vc.GetIp(db, vpc.Gateway, virt.Id)
+	addr, gatewayAddr, err := vc.GetIp(db, adapter.Subnet, virt.Id)
 	if err != nil {
 		return
 	}
 
 	addr6 := vc.GetIp6(addr)
-	if err != nil {
-		return
-	}
-
 	gatewayAddr6 := vc.GetIp6(gatewayAddr)
-	if err != nil {
-		return
-	}
 
 	cidr, _ := vcNet.Mask.Size()
 	gatewayCidr := fmt.Sprintf("%s/%d", gatewayAddr.String(), cidr)
