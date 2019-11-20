@@ -39,7 +39,7 @@ func IfaceGetBridges(namespace string) (ifaces []*Iface, err error) {
 	err = json.Unmarshal([]byte(output), &ifaces)
 	if err != nil {
 		err = &errortypes.ParseError{
-			errors.Wrap(err, "bridges: Failed to prase bridges"),
+			errors.Wrap(err, "iproute: Failed to prase bridges"),
 		}
 		return
 	}
@@ -58,7 +58,7 @@ func IfaceGetBridgeIfaces(namespace, bridge string) (
 			[]string{
 				"does not exist",
 			},
-			"ip", "netns", "exec",
+			"ip", "netns", "exec", namespace,
 			"ip", "--json", "--brief",
 			"link", "show",
 			"master", bridge,
@@ -84,7 +84,7 @@ func IfaceGetBridgeIfaces(namespace, bridge string) (
 	err = json.Unmarshal([]byte(output), &ifaces)
 	if err != nil {
 		err = &errortypes.ParseError{
-			errors.Wrap(err, "bridges: Failed to prase bridges"),
+			errors.Wrap(err, "iproute: Failed to prase bridges"),
 		}
 		return
 	}
