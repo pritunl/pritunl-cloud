@@ -22,6 +22,7 @@ type vpcData struct {
 	Id           primitive.ObjectID `json:"id"`
 	Name         string             `json:"name"`
 	Network      string             `json:"network"`
+	Subnets      []*vpc.Subnet      `json:"subnets"`
 	Organization primitive.ObjectID `json:"organization"`
 	Datacenter   primitive.ObjectID `json:"datacenter"`
 	Routes       []*vpc.Route       `json:"routes"`
@@ -59,18 +60,33 @@ func vpcPut(c *gin.Context) {
 		return
 	}
 
+	vc.PreCommit()
+
 	vc.Name = data.Name
 	vc.Routes = data.Routes
+	vc.Subnets = data.Subnets
 	vc.LinkUris = data.LinkUris
 
 	fields := set.NewSet(
 		"state",
 		"name",
 		"routes",
+		"subnets",
 		"link_uris",
 	)
 
 	errData, err := vc.Validate(db)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		c.JSON(400, errData)
+		return
+	}
+
+	errData, err = vc.PostCommit(db)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -116,13 +132,14 @@ func vpcPost(c *gin.Context) {
 	vc := &vpc.Vpc{
 		Name:         data.Name,
 		Network:      data.Network,
+		Subnets:      data.Subnets,
 		Organization: data.Organization,
 		Datacenter:   data.Datacenter,
 		Routes:       data.Routes,
 		LinkUris:     data.LinkUris,
 	}
 
-	vc.GenerateVpcId()
+	vc.InitVpc()
 
 	errData, err := vc.Validate(db)
 	if err != nil {
