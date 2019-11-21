@@ -94,25 +94,23 @@ func (v *Vpc) Validate(db *database.Database) (
 	}
 
 	for _, sub := range v.Subnets {
-		if sub.Id.IsZero() {
-			subNetwork, e := sub.GetNetwork()
-			if e != nil {
-				errData = &errortypes.ErrorData{
-					Error:   "subnet_network_invalid",
-					Message: "Subnet network address invalid",
-				}
-				return
+		subNetwork, e := sub.GetNetwork()
+		if e != nil {
+			errData = &errortypes.ErrorData{
+				Error:   "subnet_network_invalid",
+				Message: "Subnet network address invalid",
 			}
+			return
+		}
 
-			sub.Network = subNetwork.String()
+		sub.Network = subNetwork.String()
 
-			if !utils.NetworkContains(network, subNetwork) {
-				errData = &errortypes.ErrorData{
-					Error:   "subnet_network_range_invalid",
-					Message: "Subnet network outside of VPC network",
-				}
-				return
+		if !utils.NetworkContains(network, subNetwork) {
+			errData = &errortypes.ErrorData{
+				Error:   "subnet_network_range_invalid",
+				Message: "Subnet network outside of VPC network",
 			}
+			return
 		}
 	}
 
