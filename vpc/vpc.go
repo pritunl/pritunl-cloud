@@ -17,6 +17,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/requires"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -93,6 +94,7 @@ func (v *Vpc) Validate(db *database.Database) (
 		v.Subnets = []*Subnet{}
 	}
 
+	subnetRanges := [][]int64{}
 	for _, sub := range v.Subnets {
 		subNetwork, e := sub.GetNetwork()
 		if e != nil {
@@ -111,6 +113,32 @@ func (v *Vpc) Validate(db *database.Database) (
 				Message: "Subnet network outside of VPC network",
 			}
 			return
+		}
+
+		subStart, subStop, err := sub.GetIndexRange()
+		if err != nil {
+			return
+		}
+
+		subnetRanges = append(subnetRanges, []int64{subStart, subStop})
+	}
+
+	for _, sub := range v.Subnets {
+		subStart, subStop, err := sub.GetIndexRange()
+		if err != nil {
+			return
+		}
+
+		for _, subRange := range subnetRanges {
+			if (subStart >= subRange[0] && subStart <= subRange[1]) ||
+				(subStop >= subRange[0] && subStop <= subRange[1]) {
+
+				errData = &errortypes.ErrorData{
+					Error:   "subnet_network_range_overlap",
+					Message: "VPC cannot have overlapping subnets",
+				}
+				return
+			}
 		}
 	}
 
