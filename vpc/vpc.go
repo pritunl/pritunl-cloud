@@ -94,8 +94,17 @@ func (v *Vpc) Validate(db *database.Database) (
 		v.Subnets = []*Subnet{}
 	}
 
-	subnetRanges := [][]int64{}
+	subnetRanges := []struct {
+		Id    primitive.ObjectID
+		Start int64
+		Stop  int64
+	}{}
+	subs := []*Subnet{}
 	for _, sub := range v.Subnets {
+		if sub.Network == "" {
+			continue
+		}
+
 		subNetwork, e := sub.GetNetwork()
 		if e != nil {
 			errData = &errortypes.ErrorData{
@@ -115,23 +124,40 @@ func (v *Vpc) Validate(db *database.Database) (
 			return
 		}
 
-		subStart, subStop, err := sub.GetIndexRange()
-		if err != nil {
+		subStart, subStop, e := sub.GetIndexRange()
+		if e != nil {
+			err = e
 			return
 		}
 
-		subnetRanges = append(subnetRanges, []int64{subStart, subStop})
+		subnetRanges = append(subnetRanges, struct {
+			Id    primitive.ObjectID
+			Start int64
+			Stop  int64
+		}{
+			Id:    sub.Id,
+			Start: subStart,
+			Stop:  subStop,
+		})
+
+		subs = append(subs, sub)
 	}
+	v.Subnets = subs
 
 	for _, sub := range v.Subnets {
-		subStart, subStop, err := sub.GetIndexRange()
-		if err != nil {
+		subStart, subStop, e := sub.GetIndexRange()
+		if e != nil {
+			err = e
 			return
 		}
 
-		for _, subRange := range subnetRanges {
-			if (subStart >= subRange[0] && subStart <= subRange[1]) ||
-				(subStop >= subRange[0] && subStop <= subRange[1]) {
+		for _, s := range subnetRanges {
+			if s.Id == sub.Id {
+				continue
+			}
+
+			if (subStart >= s.Start && subStart <= s.Stop) ||
+				(subStop >= s.Start && subStop <= s.Stop) {
 
 				errData = &errortypes.ErrorData{
 					Error:   "subnet_network_range_overlap",
