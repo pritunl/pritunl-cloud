@@ -116,6 +116,7 @@ func GetAllNames(db *database.Database, query *bson.M) (
 				{"name", 1},
 				{"organization", 1},
 				{"type", 1},
+				{"subnets", 1},
 			},
 		},
 	)
