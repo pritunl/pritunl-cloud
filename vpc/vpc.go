@@ -264,7 +264,11 @@ func (v *Vpc) Validate(db *database.Database) (
 }
 
 func (v *Vpc) PreCommit() {
-	v.curSubnets = v.Subnets
+	if v.Subnets == nil {
+		v.curSubnets = []*Subnet{}
+	} else {
+		v.curSubnets = v.Subnets
+	}
 }
 
 func (v *Vpc) PostCommit(db *database.Database) (
