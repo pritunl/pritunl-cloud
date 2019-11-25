@@ -129,6 +129,10 @@ func GetLastIpAddress(network *net.IPNet) net.IP {
 	return BigInt2IpAddress(end, bits)
 }
 
+func NetworkContains(x, y *net.IPNet) bool {
+	return x.Contains(y.IP) && x.Contains(GetLastIpAddress(y))
+}
+
 func ParseIpMask(mask string) net.IPMask {
 	maskIp := net.ParseIP(mask)
 	if maskIp == nil {
