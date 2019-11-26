@@ -274,10 +274,6 @@ func (v *Vpc) PreCommit() {
 func (v *Vpc) PostCommit(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
-	if v.curSubnets == nil {
-		return
-	}
-
 	curSubnets := map[primitive.ObjectID]*Subnet{}
 	for _, sub := range v.curSubnets {
 		curSubnets[sub.Id] = sub
