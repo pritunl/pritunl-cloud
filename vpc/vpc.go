@@ -114,6 +114,22 @@ func (v *Vpc) Validate(db *database.Database) (
 			return
 		}
 
+		cidr, _ := subNetwork.Mask.Size()
+		if cidr < 8 {
+			errData = &errortypes.ErrorData{
+				Error:   "subnet_network_size_invalid",
+				Message: "Subnet network size too big",
+			}
+			return
+		}
+		if cidr > 28 {
+			errData = &errortypes.ErrorData{
+				Error:   "subnet_network_size_invalid",
+				Message: "Subnet network size too small",
+			}
+			return
+		}
+
 		sub.Network = subNetwork.String()
 
 		if !utils.NetworkContains(network, subNetwork) {
