@@ -387,6 +387,40 @@ export default class InstanceNew extends React.Component<Props, State> {
 			vpcsSelect = [<option key="null" value="">No Vpcs</option>];
 		}
 
+		let hasSubnets = false;
+		let subnetSelect: JSX.Element[] = [];
+		if (this.props.vpcs && this.props.vpcs.length) {
+			subnetSelect.push(<option key="null" value="">Select Subnet</option>);
+
+			for (let vpc of this.props.vpcs) {
+				if (Constants.user) {
+					if (vpc.organization !== OrganizationsStore.current) {
+						continue;
+					}
+				} else {
+					if (vpc.organization !== instance.organization) {
+						continue;
+					}
+				}
+
+				if (vpc.id === instance.vpc) {
+					for (let sub of (vpc.subnets || [])) {
+						hasSubnets = true;
+						subnetSelect.push(
+							<option
+								key={sub.id}
+								value={sub.id}
+							>{sub.name + ' - ' + sub.network}</option>,
+						);
+					}
+				}
+			}
+		}
+
+		if (!hasSubnets) {
+			subnetSelect = [<option key="null" value="">No Subnets</option>];
+		}
+
 		let domainsSelect: JSX.Element[] = [
 			<option key="null" value="">No Domain</option>,
 		];
@@ -548,6 +582,23 @@ export default class InstanceNew extends React.Component<Props, State> {
 							}}
 						>
 							{vpcsSelect}
+						</PageSelect>
+						<PageSelect
+							disabled={this.state.disabled || !hasVpcs}
+							label="Subnet"
+							help="Subnet for instance."
+							value={instance.subnet}
+							onChange={(val): void => {
+								this.setState({
+									...this.state,
+									instance: {
+										...this.state.instance,
+										subnet: val,
+									},
+								});
+							}}
+						>
+							{subnetSelect}
 						</PageSelect>
 						<PageSelect
 							disabled={this.state.disabled || !hasNodes}
