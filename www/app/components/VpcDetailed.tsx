@@ -7,6 +7,7 @@ import * as PageInfos from './PageInfo';
 import DatacentersStore from "../stores/DatacentersStore";
 import OrganizationsStore from "../stores/OrganizationsStore";
 import VpcRoute from './VpcRoute';
+import VpcSubnet from './VpcSubnet';
 import VpcLinkUri from './VpcLinkUri';
 import PageInput from './PageInput';
 import PageInfo from './PageInfo';
@@ -130,6 +131,106 @@ export default class VpcDetailed extends React.Component<Props, State> {
 		this.setState({
 			...this.state,
 			changed: true,
+			vpc: vpc,
+		});
+	}
+
+	onAddSubnet = (i: number): void => {
+		let vpc: VpcTypes.Vpc;
+
+		if (this.state.changed) {
+			vpc = {
+				...this.state.vpc,
+			};
+		} else {
+			vpc = {
+				...this.props.vpc,
+			};
+		}
+
+		let subnets = [
+			...(vpc.subnets || []),
+		];
+
+		if (subnets.length === 0) {
+			subnets = [{}];
+		}
+
+		subnets.splice(i + 1, 0, {} as VpcTypes.Subnet);
+		vpc.subnets = subnets;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			vpc: vpc,
+		});
+	}
+
+	onChangeSubnet(i: number, subnet: VpcTypes.Subnet): void {
+		let vpc: VpcTypes.Vpc;
+
+		if (this.state.changed) {
+			vpc = {
+				...this.state.vpc,
+			};
+		} else {
+			vpc = {
+				...this.props.vpc,
+			};
+		}
+
+		let subnets = [
+			...(vpc.subnets || []),
+		];
+
+		if (subnets.length === 0) {
+			subnets = [{}];
+		}
+
+		subnets[i] = subnet;
+
+		vpc.subnets = subnets;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			vpc: vpc,
+		});
+	}
+
+	onRemoveSubnet(i: number): void {
+		let vpc: VpcTypes.Vpc;
+
+		if (this.state.changed) {
+			vpc = {
+				...this.state.vpc,
+			};
+		} else {
+			vpc = {
+				...this.props.vpc,
+			};
+		}
+
+		let subnets = [
+			...(vpc.subnets || []),
+		];
+
+		if (subnets.length !== 0) {
+			subnets.splice(i, 1);
+		}
+
+		if (subnets.length === 0) {
+			subnets = [{}];
+		}
+
+		vpc.subnets = subnets;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
 			vpc: vpc,
 		});
 	}
@@ -381,6 +482,32 @@ export default class VpcDetailed extends React.Component<Props, State> {
 		let datacenterName = datacenter ? datacenter.name : vpc.datacenter;
 		let org = OrganizationsStore.organization(this.props.vpc.organization);
 
+		let subnets = (vpc.subnets || []);
+		if (subnets.length === 0) {
+			subnets.push({});
+		}
+
+		let subnetsElem: JSX.Element[] = [];
+		for (let i = 0; i < subnets.length; i++) {
+			let index = i;
+
+			subnetsElem.push(
+				<VpcSubnet
+					key={index}
+					subnet={subnets[index]}
+					onChange={(state: VpcTypes.Subnet): void => {
+						this.onChangeSubnet(index, state);
+					}}
+					onAdd={(): void => {
+						this.onAddSubnet(index);
+					}}
+					onRemove={(): void => {
+						this.onRemoveSubnet(index);
+					}}
+				/>,
+			);
+		}
+
 		let routes: JSX.Element[] = [
 			<VpcRoute
 				disabled={true}
@@ -554,14 +681,14 @@ export default class VpcDetailed extends React.Component<Props, State> {
 						}}
 					/>
 					<label style={css.itemsLabel}>
-						Route Table
+						Subnets
 						<Help
-							title="Route Table"
-							content="VPC routing table, enter a CIDR network for the desitnation and IP address for taget."
+							title="Subnets"
+							content="Subnets in VPC, can only be added or removed. Once added a subnet network block cannot be modified."
 						/>
 					</label>
 					<div style={css.list}>
-						{routes}
+						{subnetsElem}
 					</div>
 					<label style={css.itemsLabel}>
 						Pritunl Link URIs
@@ -578,6 +705,16 @@ export default class VpcDetailed extends React.Component<Props, State> {
 					<PageInfo
 						fields={fields}
 					/>
+					<label style={css.itemsLabel}>
+						Route Table
+						<Help
+							title="Route Table"
+							content="VPC routing table, enter a CIDR network for the desitnation and IP address for taget."
+						/>
+					</label>
+					<div style={css.list}>
+						{routes}
+					</div>
 				</div>
 			</div>
 			<PageSave
