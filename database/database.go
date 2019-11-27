@@ -772,6 +772,17 @@ func addIndexes() (err error) {
 	if err != nil {
 		return
 	}
+	index = &Index{
+		Collection: db.VpcsIp(),
+		Keys: &bson.D{
+			{"vpc", 1},
+			{"subnet", 1},
+		},
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
 
 	index = &Index{
 		Collection: db.Sessions(),
