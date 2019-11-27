@@ -707,3 +707,25 @@ func (v *Vpc) Insert(db *database.Database) (err error) {
 
 	return
 }
+
+func init() {
+	module := requires.New("vpc")
+	module.After("settings")
+
+	module.Handler = func() (err error) {
+		db := database.GetDatabase()
+		defer db.Close()
+
+		coll := db.VpcsIp()
+
+		_, err = coll.DeleteMany(db, &bson.M{
+			"subnet": nil,
+		})
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		return
+	}
+}
