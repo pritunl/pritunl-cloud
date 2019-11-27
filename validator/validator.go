@@ -79,6 +79,10 @@ func ValidateAdmin(db *database.Database, usr *user.User,
 		}
 
 		for _, polcy := range policies {
+			if polcy.Disabled {
+				continue
+			}
+
 			if polcy.AdminDeviceSecondary {
 				deviceAuth = true
 			}
@@ -145,6 +149,10 @@ func ValidateUser(db *database.Database, usr *user.User,
 		}
 
 		for _, polcy := range policies {
+			if polcy.Disabled {
+				continue
+			}
+
 			if polcy.UserDeviceSecondary {
 				deviceAuth = true
 			}
