@@ -310,6 +310,12 @@ func (v *Vpc) PostCommit(db *database.Database) (
 			}
 		} else {
 			sub.Id = primitive.NewObjectID()
+
+			for _, s := range v.curSubnets {
+				if s.Network == sub.Network {
+					sub.Id = s.Id
+				}
+			}
 		}
 	}
 
