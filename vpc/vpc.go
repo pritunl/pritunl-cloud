@@ -304,7 +304,7 @@ func (v *Vpc) PostCommit(db *database.Database) (
 			if curSub.Network != sub.Network {
 				errData = &errortypes.ErrorData{
 					Error:   "subnet_network_modified",
-					Message: "Cannot modify ",
+					Message: "Cannot modify VPC subnet",
 				}
 				return
 			}
