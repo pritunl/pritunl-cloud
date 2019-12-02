@@ -300,7 +300,7 @@ func (v *Vpc) PostCommit(db *database.Database) (
 		newIds.Add(sub.Id)
 
 		curSub := curSubnets[sub.Id]
-		if curSub != nil {
+		if !sub.Id.IsZero() && curSub != nil {
 			if curSub.Network != sub.Network {
 				errData = &errortypes.ErrorData{
 					Error:   "subnet_network_modified",
