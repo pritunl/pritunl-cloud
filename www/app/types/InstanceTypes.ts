@@ -37,6 +37,7 @@ export interface Instance {
 	no_public_address?: boolean;
 	no_host_address?: boolean;
 	vpc?: string;
+	subnet?: string;
 	count?: number;
 	info?: Info;
 }
