@@ -18,6 +18,12 @@ export interface Vpc {
 	link_node?: string;
 }
 
+export interface Subnet {
+	id?: string;
+	name?: string;
+	network?: string;
+}
+
 export interface Route {
 	destination?: string;
 	target?: string;
