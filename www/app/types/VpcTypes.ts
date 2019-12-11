@@ -11,6 +11,7 @@ export interface Vpc {
 	vpc_id?: number;
 	network?: string;
 	network6?: string;
+	subnets?: Subnet[];
 	organization?: string;
 	datacenter?: string;
 	routes?: Route[];
