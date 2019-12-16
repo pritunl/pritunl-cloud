@@ -9,7 +9,6 @@ import (
 const (
 	Version         = "1.0.1452.55"
 	DatabaseVersion = 1
-	ConfPath        = "/cloud/pritunl-cloud.json"
 	LogPath         = "/var/log/pritunl-cloud.log"
 	LogPath2        = "/var/log/pritunl-cloud.log.1"
 	StaticCache     = true
@@ -17,10 +16,13 @@ const (
 )
 
 var (
-	Production = true
-	LockDebug  = false
-	Interrupt  = false
-	StaticRoot = []string{
+	Production   = true
+	LockDebug    = false
+	Interrupt    = false
+	ConfPath     = "/etc/pritunl-cloud.json"
+	DefaultRoot  = "/var/lib/pritunl-cloud"
+	DefaultCache = "/var/cache/pritunl-cloud"
+	StaticRoot   = []string{
 		"www/dist",
 		"/usr/share/pritunl-cloud/www",
 		path.Join(
