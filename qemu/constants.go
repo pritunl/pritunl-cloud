@@ -1,11 +1,10 @@
 package qemu
 
-const systemdTemplate = `[Unit]
+const systemdTemplate = `# PritunlData=%s
+
+[Unit]
 Description=Pritunl Cloud Virtual Machine
 After=network.target
-
-[Pritunl]
-PritunlData=%s
 
 [Service]
 Type=simple
