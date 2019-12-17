@@ -166,14 +166,14 @@ func (n *Node) AddRequest() {
 
 func (n *Node) GetVirtPath() string {
 	if n.VirtPath == "" {
-		return DefaultRoot
+		return constants.DefaultRoot
 	}
 	return n.VirtPath
 }
 
 func (n *Node) GetCachePath() string {
 	if n.CachePath == "" {
-		return DefaultCache
+		return constants.DefaultCache
 	}
 	return n.CachePath
 }
@@ -287,10 +287,10 @@ func (n *Node) Validate(db *database.Database) (
 	}
 
 	if n.VirtPath == "" {
-		n.VirtPath = DefaultRoot
+		n.VirtPath = constants.DefaultRoot
 	}
 	if n.CachePath == "" {
-		n.CachePath = DefaultCache
+		n.CachePath = constants.DefaultCache
 	}
 
 	if n.NetworkRoles == nil || !n.Firewall {
