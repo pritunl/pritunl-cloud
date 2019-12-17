@@ -68,7 +68,9 @@ func GetVmInfo(vmId primitive.ObjectID, getDisks, force bool) (
 
 		virt = &vm.VirtualMachine{}
 		for _, line := range strings.Split(string(unitData), "\n") {
-			if !strings.HasPrefix(line, "PritunlData=") {
+			if !strings.HasPrefix(line, "PritunlData=") &&
+				!strings.HasPrefix(line, "# PritunlData=") {
+
 				continue
 			}
 
