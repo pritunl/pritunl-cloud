@@ -1,9 +1,6 @@
 package node
 
 const (
-	DefaultRoot  = "/cloud"
-	DefaultCache = "/cloud/cache"
-
 	Admin      = "admin"
 	User       = "user"
 	Hypervisor = "hypervisor"
