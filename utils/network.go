@@ -39,7 +39,7 @@ func CopyIpAddress(src net.IP) net.IP {
 
 func IpAddress2BigInt(ip net.IP) (n *big.Int, bits int) {
 	n = &big.Int{}
-	n.SetBytes([]byte(ip))
+	n.SetBytes(ip)
 	if len(ip) == net.IPv4len {
 		bits = 32
 	} else {
@@ -54,7 +54,7 @@ func BigInt2IpAddress(n *big.Int, bits int) net.IP {
 	for i := 1; i <= len(byt); i++ {
 		ip[len(ip)-i] = byt[len(byt)-i]
 	}
-	return net.IP(ip)
+	return ip
 }
 
 func IpAddress2Int(ip net.IP) int64 {
