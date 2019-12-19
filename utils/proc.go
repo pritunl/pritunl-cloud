@@ -138,6 +138,7 @@ func ExecCombinedOutputLogged(ignores []string, name string, arg ...string) (
 		for _, ignore := range ignores {
 			if strings.Contains(output, ignore) {
 				err = nil
+				output = ""
 				break
 			}
 		}
@@ -177,6 +178,7 @@ func ExecCombinedOutputLoggedDir(ignores []string,
 		for _, ignore := range ignores {
 			if strings.Contains(output, ignore) {
 				err = nil
+				output = ""
 				break
 			}
 		}
@@ -219,6 +221,7 @@ func ExecOutputLogged(ignores []string, name string, arg ...string) (
 				strings.Contains(errOutput, ignore) {
 
 				err = nil
+				output = ""
 				break
 			}
 		}
