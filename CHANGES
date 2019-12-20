@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Move default data directory
+
 Version 1.0.1452.55 2019-11-15
 ------------------------------
 
