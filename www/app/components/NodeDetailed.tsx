@@ -85,6 +85,9 @@ const css = {
 	save: {
 		paddingBottom: '10px',
 	} as React.CSSProperties,
+	upgrade: {
+		marginRight: '10px',
+	} as React.CSSProperties,
 	label: {
 		width: '100%',
 		maxWidth: '280px',
@@ -356,6 +359,26 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			this.setState({
 				...this.state,
 				message: '',
+				disabled: false,
+			});
+		});
+	}
+
+	operation(state: string): void {
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+		NodeActions.operation(this.props.node.id, state).then((): void => {
+			setTimeout((): void => {
+				this.setState({
+					...this.state,
+					disabled: false,
+				});
+			}, 250);
+		}).catch((): void => {
+			this.setState({
+				...this.state,
 				disabled: false,
 			});
 		});
@@ -1658,7 +1681,19 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					});
 				}}
 				onSave={this.onSave}
-			/>
+			>
+				<ConfirmButton
+					label="Upgrade"
+					className="bp3-intent-success bp3-icon-updated"
+					progressClassName="bp3-intent-success"
+					style={css.upgrade}
+					hidden={false}
+					disabled={this.state.disabled}
+					onConfirm={(): void => {
+						this.operation('upgrade');
+					}}
+				/>
+			</PageSave>
 		</td>;
 	}
 }
