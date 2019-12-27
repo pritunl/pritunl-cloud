@@ -63,6 +63,13 @@ func (c *ConfigData) Save() (err error) {
 func Load() (err error) {
 	data := &ConfigData{}
 
+	_, err = os.Stat("/cloud/pritunl-cloud.json")
+	if err == nil {
+		constants.ConfPath = "/cloud/pritunl-cloud.json"
+		constants.DefaultRoot = "/cloud"
+		constants.DefaultCache = "/cloud/cache"
+	}
+
 	_, err = os.Stat(constants.ConfPath)
 	if err != nil {
 		if os.IsNotExist(err) {
