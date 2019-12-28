@@ -5,6 +5,7 @@ pritunl-cloud changelog
 
 Add VPC subnets
 Move default data directory
+Interface improvements
 
 Version 1.0.1452.55 2019-11-15
 ------------------------------
