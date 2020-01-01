@@ -168,6 +168,53 @@ func nodePut(c *gin.Context) {
 	c.JSON(200, nde)
 }
 
+func nodeOperationPut(c *gin.Context) {
+	if demo.Blocked(c) {
+		return
+	}
+
+	db := c.MustGet("db").(*database.Database)
+
+	nodeId, ok := utils.ParseObjectId(c.Param("node_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	operation := c.Param("operation")
+	if operation != node.Upgrade {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	nde, err := node.Get(db, nodeId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	nde.Operation = node.Upgrade
+
+	errData, err := nde.Validate(db)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		c.JSON(400, errData)
+		return
+	}
+
+	err = nde.CommitFields(db, set.NewSet("operation"))
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	c.JSON(200, nde)
+}
+
 func nodeDelete(c *gin.Context) {
 	if demo.Blocked(c) {
 		return
