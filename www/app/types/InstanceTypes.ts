@@ -25,6 +25,7 @@ export interface Instance {
 	host_ips?: string[];
 	public_mac?: string;
 	name?: string;
+	comment?: string;
 	init_disk_size?: number;
 	memory?: number;
 	processors?: number;
