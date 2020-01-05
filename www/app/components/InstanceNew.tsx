@@ -24,6 +24,7 @@ import PageSwitch from "./PageSwitch";
 import PageNumInput from './PageNumInput';
 import Help from './Help';
 import OrganizationsStore from "../stores/OrganizationsStore";
+import PageTextArea from "./PageTextArea";
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -511,6 +512,16 @@ export default class InstanceNew extends React.Component<Props, State> {
 							value={instance.name}
 							onChange={(val): void => {
 								this.set('name', val);
+							}}
+						/>
+						<PageTextArea
+							label="Comment"
+							help="Instance comment."
+							placeholder="Instance comment"
+							rows={3}
+							value={instance.comment}
+							onChange={(val: string): void => {
+								this.set('comment', val);
 							}}
 						/>
 						<PageSelect
