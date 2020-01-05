@@ -173,6 +173,35 @@ export function commit(node: NodeTypes.Node): Promise<void> {
 	});
 }
 
+export function operation(nodeId: string, operation: string): Promise<void> {
+	let loader = new Loader().loading();
+
+	return new Promise<void>((resolve, reject): void => {
+		SuperAgent
+			.put('/node/' + nodeId + '/' + operation)
+			.set('Accept', 'application/json')
+			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
+			.end((err: any, res: SuperAgent.Response): void => {
+				loader.done();
+
+				if (res && res.status === 401) {
+					window.location.href = '/login';
+					resolve();
+					return;
+				}
+
+				if (err) {
+					Alert.errorRes(res, 'Failed to update node');
+					reject(err);
+					return;
+				}
+
+				resolve();
+			});
+	});
+}
+
 export function create(node: NodeTypes.Node): Promise<void> {
 	let loader = new Loader().loading();
 
