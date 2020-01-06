@@ -88,6 +88,7 @@ type Node struct {
 	OraclePrivateKey     string                     `bson:"oracle_private_key" json:"-"`
 	OraclePublicKey      string                     `bson:"oracle_public_key" json:"oracle_public_key"`
 	OracleHostRoute      bool                       `bson:"oracle_host_route" json:"oracle_host_route"`
+	Operation            string                     `bson:"operation" json:"operation"`
 	CertificateObjs      []*certificate.Certificate `bson:"-" json:"-"`
 	reqLock              sync.Mutex                 `bson:"-" json:"-"`
 	reqCount             *list.List                 `bson:"-" json:"-"`
