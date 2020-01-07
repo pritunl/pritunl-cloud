@@ -602,6 +602,7 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.OraclePrivateKey = nde.OraclePrivateKey
 	n.OraclePublicKey = nde.OraclePublicKey
 	n.OracleHostRoute = nde.OracleHostRoute
+	n.Operation = nde.Operation
 
 	return
 }
