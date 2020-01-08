@@ -18,4 +18,5 @@ const (
 	Internal = "internal"
 
 	Upgrade = "upgrade"
+	Restart = "restart"
 )
