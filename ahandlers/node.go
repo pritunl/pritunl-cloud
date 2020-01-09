@@ -182,7 +182,7 @@ func nodeOperationPut(c *gin.Context) {
 	}
 
 	operation := c.Param("operation")
-	if operation != node.Upgrade {
+	if operation != node.Restart {
 		utils.AbortWithStatus(c, 400)
 		return
 	}
@@ -193,7 +193,7 @@ func nodeOperationPut(c *gin.Context) {
 		return
 	}
 
-	nde.Operation = node.Upgrade
+	nde.Operation = node.Restart
 
 	errData, err := nde.Validate(db)
 	if err != nil {
