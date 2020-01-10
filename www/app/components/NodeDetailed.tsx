@@ -85,7 +85,7 @@ const css = {
 	save: {
 		paddingBottom: '10px',
 	} as React.CSSProperties,
-	upgrade: {
+	restart: {
 		marginRight: '10px',
 	} as React.CSSProperties,
 	label: {
@@ -1683,14 +1683,14 @@ export default class NodeDetailed extends React.Component<Props, State> {
 				onSave={this.onSave}
 			>
 				<ConfirmButton
-					label="Upgrade"
+					label="Restart"
 					className="bp3-intent-success bp3-icon-updated"
 					progressClassName="bp3-intent-success"
-					style={css.upgrade}
+					style={css.restart}
 					hidden={false}
 					disabled={this.state.disabled}
 					onConfirm={(): void => {
-						this.operation('upgrade');
+						this.operation('restart');
 					}}
 				/>
 			</PageSave>
