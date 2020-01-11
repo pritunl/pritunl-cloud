@@ -785,6 +785,26 @@ func (n *Node) sync() {
 			"error": err,
 		}).Error("node: Failed to load node certificate")
 	}
+
+	if n.Operation == Restart {
+		logrus.Info("node: Restarting node")
+
+		n.Operation = ""
+		err = n.CommitFields(db, set.NewSet("operation"))
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("node: Failed to commit node operation")
+		} else {
+			cmd := exec.Command("systemctl", "restart", "pritunl-cloud")
+			err = cmd.Start()
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"error": err,
+				}).Error("node: Failed to start node restart")
+			}
+		}
+	}
 }
 
 func (n *Node) keepalive() {
