@@ -1684,8 +1684,8 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			>
 				<ConfirmButton
 					label="Restart"
-					className="bp3-intent-success bp3-icon-updated"
-					progressClassName="bp3-intent-success"
+					className="bp3-intent-danger bp3-icon-updated"
+					progressClassName="bp3-intent-danger"
 					style={css.restart}
 					hidden={false}
 					disabled={this.state.disabled}
