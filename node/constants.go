@@ -17,6 +17,5 @@ const (
 	Static   = "static"
 	Internal = "internal"
 
-	Upgrade = "upgrade"
 	Restart = "restart"
 )
