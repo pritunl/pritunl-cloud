@@ -21,6 +21,7 @@ import PageSave from './PageSave';
 import PageNew from './PageNew';
 import ConfirmButton from './ConfirmButton';
 import Help from './Help';
+import PageTextArea from "./PageTextArea";
 
 interface Props {
 	userId?: string;
@@ -375,6 +376,16 @@ export default class UserDetailed extends React.Component<Props, State> {
 						checked={user.disabled}
 						onToggle={(): void => {
 							this.set('disabled', !this.state.user.disabled);
+						}}
+					/>
+					<PageTextArea
+						label="Comment"
+						help="Instance comment."
+						placeholder="Instance comment"
+						rows={3}
+						value={user.comment}
+						onChange={(val: string): void => {
+							this.set('comment', val);
 						}}
 					/>
 				</PagePanel>
