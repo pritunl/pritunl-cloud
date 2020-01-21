@@ -18,6 +18,7 @@ import (
 type Block struct {
 	Id       primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Name     string             `bson:"name" json:"name"`
+	Type     string             `bson:"type" json:"type"`
 	Subnets  []string           `bson:"subnets" json:"subnets"`
 	Excludes []string           `bson:"excludes" json:"excludes"`
 	Netmask  string             `bson:"netmask" json:"netmask"`
