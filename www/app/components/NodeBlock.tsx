@@ -4,6 +4,7 @@ import * as NodeTypes from '../types/NodeTypes';
 import * as BlockTypes from '../types/BlockTypes';
 
 interface Props {
+	ipv6?: boolean;
 	interfaces?: string[];
 	blocks: BlockTypes.BlocksRo;
 	block: NodeTypes.BlockAttachment;
@@ -76,6 +77,12 @@ export default class NodeBlock extends React.Component<Props, {}> {
 
 		let blocksSelect: JSX.Element[] = [];
 		for (let blck of (this.props.blocks || [])) {
+			if (!this.props.ipv6 && blck.type === 'ipv6') {
+				continue;
+			} else if (this.props.ipv6 && blck.type !== 'ipv6') {
+				continue;
+			}
+
 			blocksSelect.push(
 				<option key={blck.id} value={blck.id}>
 					{blck.name}
