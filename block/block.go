@@ -134,6 +134,15 @@ func (b *Block) Validate(db *database.Database) (
 				return
 			}
 
+			size, _ := subnetNet.Mask.Size()
+			if size > 64 {
+				errData = &errortypes.ErrorData{
+					Error:   "invalid_subnet6_size",
+					Message: "Minimum subnet6 size 64 is required",
+				}
+				return
+			}
+
 			subnets6 = append(subnets6, subnetNet.String())
 		}
 		b.Subnets6 = subnets6
