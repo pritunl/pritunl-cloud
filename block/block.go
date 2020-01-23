@@ -23,6 +23,7 @@ type Block struct {
 	Excludes []string           `bson:"excludes" json:"excludes"`
 	Netmask  string             `bson:"netmask" json:"netmask"`
 	Gateway  string             `bson:"gateway" json:"gateway"`
+	Subnets6 []string           `bson:"subnets6" json:"subnets6"`
 }
 
 func (b *Block) Validate(db *database.Database) (
