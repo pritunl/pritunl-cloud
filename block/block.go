@@ -1,6 +1,8 @@
 package block
 
 import (
+	"bytes"
+	"crypto/md5"
 	"fmt"
 	"net"
 	"strings"
@@ -316,6 +318,76 @@ func (b *Block) GetIp(db *database.Database,
 	if ip == nil {
 		err = &BlockFull{
 			errors.New("block: Address pool full"),
+		}
+		return
+	}
+
+	return
+}
+
+func (b *Block) GetIp6(db *database.Database,
+	instId primitive.ObjectID, vlan int) (ip net.IP, err error) {
+
+	subnets6 := b.Subnets6
+	if subnets6 == nil || len(subnets6) < 1 {
+		return
+	}
+
+	subnet6 := subnets6[0]
+
+	if vlan == 0 || vlan > 4095 {
+		err = &errortypes.ParseError{
+			errors.New("block: Failed to split subnet6"),
+		}
+		return
+	}
+
+	_, subnetNet, err := net.ParseCIDR(subnet6)
+	if err != nil || subnetNet.IP.To4() != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "block: Invalid subnet6"),
+		}
+		return
+	}
+
+	cidr, _ := subnetNet.Mask.Size()
+
+	subnet6 = subnetNet.String()
+
+	subnet6spl := strings.Split(subnet6, ":/")
+	if len(subnet6spl) != 2 {
+		err = &errortypes.ParseError{
+			errors.New("block: Failed to split subnet6"),
+		}
+		return
+	}
+	addr6 := subnet6spl[0]
+
+	if strings.Count(addr6, ":") < 4 {
+		addr6 += ":"
+	}
+
+	addr6 += "0" + fmt.Sprintf("%03x", 4095) + ":"
+
+	hash := md5.New()
+	hash.Write([]byte(instId.Hex()))
+	macHash := fmt.Sprintf("%x", hash.Sum(nil))
+	macHash = macHash[:12]
+	macBuf := bytes.Buffer{}
+
+	for i, run := range macHash {
+		if i != 0 && i%4 == 0 {
+			macBuf.WriteRune(':')
+		}
+		macBuf.WriteRune(run)
+	}
+
+	addr6 += macBuf.String() + fmt.Sprintf("/%d", cidr)
+
+	ip, _, err = net.ParseCIDR(addr6)
+	if err != nil || subnetNet.IP.To4() != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "block: Failed to parse address6"),
 		}
 		return
 	}
