@@ -118,7 +118,7 @@ func (b *Block) Validate(db *database.Database) (
 			if !strings.Contains(subnet6, "/") {
 				errData = &errortypes.ErrorData{
 					Error:   "invalid_subnet6",
-					Message: "Missing IPv6 cidr",
+					Message: "Missing subnet6 cidr",
 				}
 				return
 			}
