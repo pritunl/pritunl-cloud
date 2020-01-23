@@ -29,73 +29,115 @@ type Block struct {
 func (b *Block) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
+	if b.Type == "" {
+		b.Type = IPv4
+	}
+
 	if b.Subnets == nil {
 		b.Subnets = []string{}
+	}
+
+	if b.Subnets6 == nil {
+		b.Subnets6 = []string{}
 	}
 
 	if b.Excludes == nil {
 		b.Excludes = []string{}
 	}
 
-	if b.Gateway != "" {
-		gateway := net.ParseIP(b.Gateway)
-		if gateway == nil {
-			errData = &errortypes.ErrorData{
-				Error:   "invalid_gateway",
-				Message: "Gateway address is invalid",
+	if b.Type == IPv4 {
+		b.Subnets6 = []string{}
+
+		if b.Gateway != "" {
+			gateway := net.ParseIP(b.Gateway)
+			if gateway == nil || gateway.To4() == nil {
+				errData = &errortypes.ErrorData{
+					Error:   "invalid_gateway",
+					Message: "Gateway address is invalid",
+				}
+				return
 			}
-			return
 		}
-	}
 
-	if b.Netmask != "" {
-		netmask := utils.ParseIpMask(b.Netmask)
-		if netmask == nil {
-			errData = &errortypes.ErrorData{
-				Error:   "invalid_netmask",
-				Message: "Netmask is invalid",
+		if b.Netmask != "" {
+			netmask := utils.ParseIpMask(b.Netmask)
+			if netmask == nil {
+				errData = &errortypes.ErrorData{
+					Error:   "invalid_netmask",
+					Message: "Netmask is invalid",
+				}
+				return
 			}
-			return
-		}
-	}
-
-	subnets := []string{}
-	for _, subnet := range b.Subnets {
-		if !strings.Contains(subnet, "/") {
-			subnet += "/32"
 		}
 
-		_, subnetNet, e := net.ParseCIDR(subnet)
-		if e != nil {
-			errData = &errortypes.ErrorData{
-				Error:   "invalid_subnet",
-				Message: "Invalid subnet address",
+		subnets := []string{}
+		for _, subnet := range b.Subnets {
+			if !strings.Contains(subnet, "/") {
+				subnet += "/32"
 			}
-			return
-		}
 
-		subnets = append(subnets, subnetNet.String())
-	}
-	b.Subnets = subnets
-
-	excludes := []string{}
-	for _, exclude := range b.Excludes {
-		if !strings.Contains(exclude, "/") {
-			exclude += "/32"
-		}
-
-		_, excludeNet, e := net.ParseCIDR(exclude)
-		if e != nil {
-			errData = &errortypes.ErrorData{
-				Error:   "invalid_exclude",
-				Message: "Invalid exclude address",
+			_, subnetNet, e := net.ParseCIDR(subnet)
+			if e != nil || subnetNet.IP.To4() == nil {
+				errData = &errortypes.ErrorData{
+					Error:   "invalid_subnet",
+					Message: "Invalid subnet address",
+				}
+				return
 			}
-			return
-		}
 
-		excludes = append(excludes, excludeNet.String())
+			subnets = append(subnets, subnetNet.String())
+		}
+		b.Subnets = subnets
+
+		excludes := []string{}
+		for _, exclude := range b.Excludes {
+			if !strings.Contains(exclude, "/") {
+				exclude += "/32"
+			}
+
+			_, excludeNet, e := net.ParseCIDR(exclude)
+			if e != nil || excludeNet.IP.To4() == nil {
+				errData = &errortypes.ErrorData{
+					Error:   "invalid_exclude",
+					Message: "Invalid exclude address",
+				}
+				return
+			}
+
+			excludes = append(excludes, excludeNet.String())
+		}
+		b.Excludes = excludes
+	} else if b.Type == IPv6 {
+		b.Subnets = []string{}
+		b.Excludes = []string{}
+		b.Netmask = ""
+		b.Gateway = ""
+
+		subnets6 := []string{}
+		for _, subnet6 := range b.Subnets6 {
+			if !strings.Contains(subnet6, "/") {
+				subnet6 += "/128"
+			}
+
+			_, subnetNet, e := net.ParseCIDR(subnet6)
+			if e != nil || subnetNet.IP.To4() != nil {
+				errData = &errortypes.ErrorData{
+					Error:   "invalid_subnet6",
+					Message: "Invalid subnet6 address",
+				}
+				return
+			}
+
+			subnets6 = append(subnets6, subnetNet.String())
+		}
+		b.Subnets6 = subnets6
+	} else {
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_type",
+			Message: "Block type is invalid",
+		}
+		return
 	}
-	b.Excludes = excludes
 
 	return
 }
