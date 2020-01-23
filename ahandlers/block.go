@@ -14,7 +14,9 @@ import (
 type blockData struct {
 	Id       primitive.ObjectID `json:"id"`
 	Name     string             `json:"name"`
+	Type     string             `json:"type"`
 	Subnets  []string           `json:"subnets"`
+	Subnets6 []string           `json:"subnets6"`
 	Excludes []string           `json:"excludes"`
 	Netmask  string             `json:"netmask"`
 	Gateway  string             `json:"gateway"`
@@ -47,14 +49,18 @@ func blockPut(c *gin.Context) {
 	}
 
 	blck.Name = dta.Name
+	blck.Type = dta.Type
 	blck.Subnets = dta.Subnets
+	blck.Subnets6 = dta.Subnets6
 	blck.Excludes = dta.Excludes
 	blck.Netmask = dta.Netmask
 	blck.Gateway = dta.Gateway
 
 	fields := set.NewSet(
 		"name",
+		"type",
 		"subnets",
+		"subnets6",
 		"excludes",
 		"netmask",
 		"gateway",
@@ -100,7 +106,9 @@ func blockPost(c *gin.Context) {
 
 	blck := &block.Block{
 		Name:     dta.Name,
+		Type:     dta.Type,
 		Subnets:  dta.Subnets,
+		Subnets6: dta.Subnets6,
 		Excludes: dta.Excludes,
 		Netmask:  dta.Netmask,
 		Gateway:  dta.Gateway,
