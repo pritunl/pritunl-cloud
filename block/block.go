@@ -116,7 +116,11 @@ func (b *Block) Validate(db *database.Database) (
 		subnets6 := []string{}
 		for _, subnet6 := range b.Subnets6 {
 			if !strings.Contains(subnet6, "/") {
-				subnet6 += "/128"
+				errData = &errortypes.ErrorData{
+					Error:   "invalid_subnet6",
+					Message: "Missing IPv6 cidr",
+				}
+				return
 			}
 
 			_, subnetNet, e := net.ParseCIDR(subnet6)
