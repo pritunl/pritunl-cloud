@@ -48,6 +48,26 @@ func GetMacAddrExternal(id primitive.ObjectID,
 	return "02:" + macBuf.String()
 }
 
+func GetMacAddrExternal6(id primitive.ObjectID,
+	secondId primitive.ObjectID) string {
+
+	hash := md5.New()
+	hash.Write([]byte(id.Hex()))
+	hash.Write([]byte(secondId.Hex()))
+	macHash := fmt.Sprintf("%x", hash.Sum(nil))
+	macHash = macHash[:10]
+	macBuf := bytes.Buffer{}
+
+	for i, run := range macHash {
+		macBuf.WriteRune(run)
+		if i%2 == 1 && i != len(macHash)-1 {
+			macBuf.WriteRune(':')
+		}
+	}
+
+	return "08:" + macBuf.String()
+}
+
 func GetMacAddrInternal(id primitive.ObjectID,
 	secondId primitive.ObjectID) string {
 
