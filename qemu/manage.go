@@ -384,6 +384,10 @@ func NetworkConf(db *database.Database,
 	}
 
 	nodeNetworkMode := node.Self.NetworkMode
+	if nodeNetworkMode == "" {
+		nodeNetworkMode = node.Dhcp
+	}
+	nodeNetworkMode6 := node.Self.NetworkMode6
 	jumboFrames := node.Self.JumboFrames
 	iface := vm.GetIface(virt.Id, 0)
 	ifaceExternalVirt := vm.GetIfaceVirt(virt.Id, 0)
@@ -398,9 +402,23 @@ func NetworkConf(db *database.Database,
 	leasePath := paths.GetLeasePath(virt.Id)
 	adapter := virt.NetworkAdapters[0]
 
+	ifaceExternal6 := ifaceExternal
+	ifaceExternalVirt6 := ifaceExternalVirt
+	if nodeNetworkMode6 != "" && (nodeNetworkMode != nodeNetworkMode6 ||
+		(nodeNetworkMode6 == node.Static)) {
+
+		ifaceExternal6 = vm.GetIfaceExternal(virt.Id, 1)
+		ifaceExternalVirt6 = vm.GetIfaceVirt(virt.Id, 3)
+	}
+
 	externalNetwork := true
 	if virt.NoPublicAddress || nodeNetworkMode == node.Internal {
 		externalNetwork = false
+	}
+
+	externalNetwork6 := externalNetwork
+	if !virt.NoPublicAddress && nodeNetworkMode6 != "" {
+		externalNetwork6 = true
 	}
 
 	hostNetwork := false
@@ -491,7 +509,14 @@ func NetworkConf(db *database.Database,
 	macAddrInternal := vm.GetMacAddrInternal(virt.Id, vc.Id)
 	macAddrHost := vm.GetMacAddrHost(virt.Id, vc.Id)
 
-	if externalNetwork {
+	macAddrExternal6 := macAddrExternal
+	if ifaceExternal != ifaceExternal6 {
+		macAddrExternal6 = vm.GetMacAddrExternal6(virt.Id, vc.Id)
+	}
+
+	if externalNetwork || (externalNetwork6 &&
+		ifaceExternal == ifaceExternal6) {
+
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
 			"ip", "link",
@@ -499,6 +524,19 @@ func NetworkConf(db *database.Database,
 			"type", "veth",
 			"peer", "name", ifaceExternal,
 			"addr", macAddrExternal,
+		)
+		if err != nil {
+			return
+		}
+	}
+	if externalNetwork6 && ifaceExternal != ifaceExternal6 {
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "link",
+			"add", ifaceExternalVirt6,
+			"type", "veth",
+			"peer", "name", ifaceExternal6,
+			"addr", macAddrExternal6,
 		)
 		if err != nil {
 			return
@@ -531,7 +569,9 @@ func NetworkConf(db *database.Database,
 		}
 	}
 
-	if externalNetwork && updateMtuExternal != "" {
+	if (externalNetwork || (externalNetwork6 &&
+		ifaceExternal == ifaceExternal6)) && updateMtuExternal != "" {
+
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
 			"ip", "link",
@@ -546,6 +586,29 @@ func NetworkConf(db *database.Database,
 			nil,
 			"ip", "link",
 			"set", "dev", ifaceExternal,
+			"mtu", updateMtuExternal,
+		)
+		if err != nil {
+			return
+		}
+	}
+	if externalNetwork6 && ifaceExternal != ifaceExternal6 &&
+		updateMtuExternal != "" {
+
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "link",
+			"set", "dev", ifaceExternalVirt6,
+			"mtu", updateMtuExternal,
+		)
+		if err != nil {
+			return
+		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "link",
+			"set", "dev", ifaceExternal6,
 			"mtu", updateMtuExternal,
 		)
 		if err != nil {
@@ -597,11 +660,23 @@ func NetworkConf(db *database.Database,
 		}
 	}
 
-	if externalNetwork {
+	if externalNetwork || (externalNetwork6 &&
+		ifaceExternal == ifaceExternal6) {
+
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
 			"ip", "link",
 			"set", "dev", ifaceExternalVirt, "up",
+		)
+		if err != nil {
+			return
+		}
+	}
+	if externalNetwork6 && ifaceExternal != ifaceExternal6 {
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "link",
+			"set", "dev", ifaceExternalVirt6, "up",
 		)
 		if err != nil {
 			return
@@ -647,14 +722,40 @@ func NetworkConf(db *database.Database,
 			if err != nil {
 				return
 			}
-		} else if nodeNetworkMode == node.Internal {
-
-		} else {
+		} else if nodeNetworkMode == node.Dhcp {
 			externalIface = interfaces.GetExternal(ifaceExternalVirt)
 		}
 		if externalIface == "" {
 			err = &errortypes.NotFoundError{
 				errors.New("qemu: Failed to get external interface"),
+			}
+			return
+		}
+	}
+
+	var externalIface6 string
+	var staticAddr6 net.IP
+	var staticCidr6 int
+
+	if externalNetwork6 {
+		if nodeNetworkMode6 == node.Static {
+			_, staticAddr6, staticCidr6, externalIface6,
+				err = node.Self.GetStaticAddr6(db, virt.Id, vc.VpcId)
+			if err != nil {
+				return
+			}
+		} else if nodeNetworkMode6 == node.Dhcp {
+			if nodeNetworkMode == node.Dhcp {
+				externalIface6 = externalIface
+			} else {
+				externalIface6 = interfaces.GetExternal(ifaceExternalVirt6)
+			}
+		} else {
+			externalIface6 = externalIface
+		}
+		if externalIface6 == "" {
+			err = &errortypes.NotFoundError{
+				errors.New("qemu: Failed to get external interface6"),
 			}
 			return
 		}
@@ -671,16 +772,16 @@ func NetworkConf(db *database.Database,
 		}
 	}
 
-	if externalNetwork {
+	if externalNetwork6 {
 		_, err = utils.ExecCombinedOutputLogged(
 			nil, "sysctl", "-w",
-			fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", externalIface),
+			fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", externalIface6),
 		)
 		if err != nil {
 			return
 		}
 	}
-	if !externalNetwork || internalIface != externalIface {
+	if !externalNetwork6 || internalIface != externalIface6 {
 		_, err = utils.ExecCombinedOutputLogged(
 			nil, "sysctl", "-w",
 			fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", internalIface),
@@ -690,11 +791,23 @@ func NetworkConf(db *database.Database,
 		}
 	}
 
-	if externalNetwork {
+	if externalNetwork || (externalNetwork6 &&
+		ifaceExternalVirt == ifaceExternalVirt6) {
+
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
 			"ip", "link", "set",
 			ifaceExternalVirt, "master", externalIface,
+		)
+		if err != nil {
+			return
+		}
+	}
+	if externalNetwork6 && ifaceExternalVirt != ifaceExternalVirt6 {
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "link", "set",
+			ifaceExternalVirt6, "master", externalIface6,
 		)
 		if err != nil {
 			return
@@ -721,11 +834,24 @@ func NetworkConf(db *database.Database,
 		}
 	}
 
-	if externalNetwork {
+	if externalNetwork || (externalNetwork6 &&
+		ifaceExternal == ifaceExternal6) {
+
 		_, err = utils.ExecCombinedOutputLogged(
 			[]string{"File exists"},
 			"ip", "link",
 			"set", "dev", ifaceExternal,
+			"netns", namespace,
+		)
+		if err != nil {
+			return
+		}
+	}
+	if externalNetwork6 && ifaceExternal != ifaceExternal6 {
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{"File exists"},
+			"ip", "link",
+			"set", "dev", ifaceExternal6,
 			"netns", namespace,
 		)
 		if err != nil {
@@ -773,12 +899,12 @@ func NetworkConf(db *database.Database,
 		return
 	}
 
-	if externalNetwork {
+	if externalNetwork6 {
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
 			"ip", "netns", "exec", namespace,
 			"sysctl", "-w",
-			fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", ifaceExternal),
+			fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2", ifaceExternal6),
 		)
 		if err != nil {
 			return
@@ -800,7 +926,8 @@ func NetworkConf(db *database.Database,
 		if err != nil {
 			return
 		}
-
+	}
+	if externalNetwork6 {
 		iptables.Lock()
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
@@ -808,7 +935,7 @@ func NetworkConf(db *database.Database,
 			"ip6tables",
 			"-I", "FORWARD", "1",
 			"!", "-d", addr6.String()+"/128",
-			"-i", ifaceExternal,
+			"-i", ifaceExternal6,
 			"-j", "DROP",
 		)
 		iptables.Unlock()
@@ -872,12 +999,25 @@ func NetworkConf(db *database.Database,
 		return
 	}
 
-	if externalNetwork {
+	if externalNetwork || (externalNetwork6 &&
+		ifaceExternal == ifaceExternal6) {
+
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
 			"ip", "netns", "exec", namespace,
 			"ip", "link",
 			"set", "dev", ifaceExternal, "up",
+		)
+		if err != nil {
+			return
+		}
+	}
+	if externalNetwork6 && ifaceExternal != ifaceExternal6 {
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", namespace,
+			"ip", "link",
+			"set", "dev", ifaceExternal6, "up",
 		)
 		if err != nil {
 			return
@@ -1074,6 +1214,21 @@ func NetworkConf(db *database.Database,
 			}
 		}
 	}
+	if externalNetwork6 && nodeNetworkMode6 == node.Static {
+		staticCidr6 := fmt.Sprintf(
+			"%s/%d", staticAddr6.String(), staticCidr6)
+
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{"File exists"},
+			"ip", "netns", "exec", namespace,
+			"ip", "-6", "addr",
+			"add", staticCidr6,
+			"dev", ifaceExternal6,
+		)
+		if err != nil {
+			return
+		}
+	}
 
 	if hostNetwork {
 		hostStaticGateway := hostBlck.GetGateway()
@@ -1120,7 +1275,9 @@ func NetworkConf(db *database.Database,
 
 	pubAddr := ""
 	pubAddr6 := ""
-	if externalNetwork {
+	if externalNetwork || (externalNetwork6 &&
+		ifaceExternal == ifaceExternal6) {
+
 		for i := 0; i < 60; i++ {
 			address, address6, e := iproute.AddressGetIface(
 				namespace, ifaceExternal)
@@ -1129,11 +1286,13 @@ func NetworkConf(db *database.Database,
 				return
 			}
 
-			if address != nil && (address6 != nil ||
-				time.Since(start) > 8*time.Second) {
+			if address != nil && (ifaceExternal != ifaceExternal6 ||
+				address6 != nil || time.Since(start) > 8*time.Second) {
 
 				pubAddr = address.Local
-				pubAddr6 = address6.Local
+				if address6 != nil {
+					pubAddr6 = address6.Local
+				}
 				break
 			}
 
@@ -1177,41 +1336,97 @@ func NetworkConf(db *database.Database,
 			return
 		}
 
-		if pubAddr6 != "" {
-			iptables.Lock()
-			_, err = utils.ExecCombinedOutputLogged(
-				nil,
-				"ip", "netns", "exec", namespace,
-				"ip6tables", "-t", "nat",
-				"-A", "POSTROUTING",
-				"-s", addr6.String()+"/32",
-				"-o", ifaceExternal,
-				"-j", "MASQUERADE",
-			)
-			iptables.Unlock()
-			if err != nil {
+		if externalNetwork6 && ifaceExternal == ifaceExternal6 {
+			if pubAddr6 != "" {
+				iptables.Lock()
+				_, err = utils.ExecCombinedOutputLogged(
+					nil,
+					"ip", "netns", "exec", namespace,
+					"ip6tables", "-t", "nat",
+					"-A", "POSTROUTING",
+					"-s", addr6.String()+"/32",
+					"-o", ifaceExternal,
+					"-j", "MASQUERADE",
+				)
+				iptables.Unlock()
+				if err != nil {
+					return
+				}
+
+				iptables.Lock()
+				_, err = utils.ExecCombinedOutputLogged(
+					nil,
+					"ip", "netns", "exec", namespace,
+					"ip6tables", "-t", "nat",
+					"-A", "PREROUTING",
+					"-d", pubAddr6,
+					"-j", "DNAT",
+					"--to-destination", addr6.String(),
+				)
+				iptables.Unlock()
+				if err != nil {
+					return
+				}
+			} else {
+				logrus.WithFields(logrus.Fields{
+					"instance_id":   virt.Id.Hex(),
+					"net_namespace": namespace,
+				}).Warning("qemu: Instance missing IPv6 address")
+			}
+		}
+	}
+	if externalNetwork6 && ifaceExternal != ifaceExternal6 {
+		for i := 0; i < 60; i++ {
+			_, address6, e := iproute.AddressGetIface(
+				namespace, ifaceExternal6)
+			if e != nil {
+				err = e
 				return
 			}
 
-			iptables.Lock()
-			_, err = utils.ExecCombinedOutputLogged(
-				nil,
-				"ip", "netns", "exec", namespace,
-				"ip6tables", "-t", "nat",
-				"-A", "PREROUTING",
-				"-d", pubAddr6,
-				"-j", "DNAT",
-				"--to-destination", addr6.String(),
-			)
-			iptables.Unlock()
-			if err != nil {
-				return
+			if address6 != nil {
+				pubAddr6 = address6.Local
+				break
 			}
-		} else {
-			logrus.WithFields(logrus.Fields{
-				"instance_id":   virt.Id.Hex(),
-				"net_namespace": namespace,
-			}).Warning("qemu: Instance missing IPv6 address")
+
+			time.Sleep(250 * time.Millisecond)
+		}
+
+		if pubAddr6 == "" {
+			err = &errortypes.NetworkError{
+				errors.New("qemu: Instance missing IPv6 address"),
+			}
+			return
+		}
+
+		iptables.Lock()
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", namespace,
+			"ip6tables", "-t", "nat",
+			"-A", "POSTROUTING",
+			"-s", addr6.String()+"/32",
+			"-o", ifaceExternal6,
+			"-j", "MASQUERADE",
+		)
+		iptables.Unlock()
+		if err != nil {
+			return
+		}
+
+		iptables.Lock()
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", namespace,
+			"ip6tables", "-t", "nat",
+			"-A", "PREROUTING",
+			"-d", pubAddr6,
+			"-j", "DNAT",
+			"--to-destination", addr6.String(),
+		)
+		iptables.Unlock()
+		if err != nil {
+			return
 		}
 	}
 
