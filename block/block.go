@@ -146,6 +146,14 @@ func (b *Block) Validate(db *database.Database) (
 			subnets6 = append(subnets6, subnetNet.String())
 		}
 		b.Subnets6 = subnets6
+
+		if len(b.Subnets6) > 1 {
+			errData = &errortypes.ErrorData{
+				Error:   "invalid_subnets6",
+				Message: "Currently only one IPv6 subnet is supported",
+			}
+			return
+		}
 	} else {
 		errData = &errortypes.ErrorData{
 			Error:   "invalid_type",
