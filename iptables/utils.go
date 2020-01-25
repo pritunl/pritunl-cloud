@@ -452,9 +452,22 @@ func UpdateState(nodeSelf *node.Node, instances []*instance.Instance,
 	lockId := stateLock.Lock()
 	defer stateLock.Unlock(lockId)
 
+	nodeNetworkMode := node.Self.NetworkMode
+	if nodeNetworkMode == "" {
+		nodeNetworkMode = node.Dhcp
+	}
+	nodeNetworkMode6 := node.Self.NetworkMode6
+
 	externalNetwork := true
-	if nodeSelf.NetworkMode == node.Internal {
+	if nodeNetworkMode == node.Internal {
 		externalNetwork = false
+	}
+
+	externalNetwork6 := false
+	if nodeNetworkMode6 != "" && (nodeNetworkMode != nodeNetworkMode6 ||
+		(nodeNetworkMode6 == node.Static)) {
+
+		externalNetwork6 = true
 	}
 
 	newState := &State{
@@ -490,6 +503,7 @@ func UpdateState(nodeSelf *node.Node, instances []*instance.Instance,
 		namespace := vm.GetNamespace(inst.Id, 0)
 		iface := vm.GetIface(inst.Id, 0)
 		ifaceExternal := vm.GetIfaceExternal(inst.Id, 0)
+		ifaceExternal6 := vm.GetIfaceExternal(inst.Id, 1)
 		ifaceHost := vm.GetIfaceHost(inst.Id, 0)
 
 		_, ok := newState.Interfaces[namespace+"-"+iface]
@@ -517,6 +531,11 @@ func UpdateState(nodeSelf *node.Node, instances []*instance.Instance,
 		if externalNetwork {
 			rules := generateInternal(namespace, ifaceExternal, ingress)
 			newState.Interfaces[namespace+"-"+ifaceExternal] = rules
+		}
+
+		if externalNetwork6 {
+			rules := generateInternal(namespace, ifaceExternal6, ingress)
+			newState.Interfaces[namespace+"-"+ifaceExternal6] = rules
 		}
 
 		if hostNetwork {
