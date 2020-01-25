@@ -343,7 +343,7 @@ func (b *Block) GetIp(db *database.Database,
 }
 
 func (b *Block) GetIp6(db *database.Database,
-	instId primitive.ObjectID, vlan int) (ip net.IP, err error) {
+	instId primitive.ObjectID, vlan int) (ip net.IP, cidr int, err error) {
 
 	subnets6 := b.Subnets6
 	if subnets6 == nil || len(subnets6) < 1 {
@@ -367,7 +367,7 @@ func (b *Block) GetIp6(db *database.Database,
 		return
 	}
 
-	cidr, _ := subnetNet.Mask.Size()
+	cidr, _ = subnetNet.Mask.Size()
 
 	subnet6 = subnetNet.String()
 
