@@ -622,9 +622,12 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.ExternalInterface = nde.ExternalInterface
 	n.InternalInterface = nde.InternalInterface
 	n.ExternalInterfaces = nde.ExternalInterfaces
+	n.ExternalInterfaces6 = nde.ExternalInterfaces6
 	n.InternalInterfaces = nde.InternalInterfaces
 	n.NetworkMode = nde.NetworkMode
+	n.NetworkMode6 = nde.NetworkMode6
 	n.Blocks = nde.Blocks
+	n.Blocks6 = nde.Blocks6
 	n.HostBlock = nde.HostBlock
 	n.HostNat = nde.HostNat
 	n.HostNatExcludes = nde.HostNatExcludes
