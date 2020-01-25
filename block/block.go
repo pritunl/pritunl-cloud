@@ -384,7 +384,7 @@ func (b *Block) GetIp6(db *database.Database,
 		addr6 += ":"
 	}
 
-	addr6 += "0" + fmt.Sprintf("%03x", 4095) + ":"
+	addr6 += "0" + fmt.Sprintf("%03x", vlan) + ":"
 
 	hash := md5.New()
 	hash.Write([]byte(instId.Hex()))
