@@ -54,12 +54,15 @@ type Node struct {
 	ExternalInterface    string                     `bson:"external_interface" json:"external_interface"`
 	InternalInterface    string                     `bson:"internal_interface" json:"internal_interface"`
 	ExternalInterfaces   []string                   `bson:"external_interfaces" json:"external_interfaces"`
+	ExternalInterfaces6  []string                   `bson:"external_interfaces6" json:"external_interfaces6"`
 	InternalInterfaces   []string                   `bson:"internal_interfaces" json:"internal_interfaces"`
 	AvailableInterfaces  []string                   `bson:"available_interfaces" json:"available_interfaces"`
 	AvailableBridges     []string                   `bson:"available_bridges" json:"available_bridges"`
 	DefaultInterface     string                     `bson:"default_interface" json:"default_interface"`
 	NetworkMode          string                     `bson:"network_mode" json:"network_mode"`
+	NetworkMode6         string                     `bson:"network_mode6" json:"network_mode6"`
 	Blocks               []*BlockAttachment         `bson:"blocks" json:"blocks"`
+	Blocks6              []*BlockAttachment         `bson:"blocks6" json:"blocks6"`
 	HostBlock            primitive.ObjectID         `bson:"host_block,omitempty" json:"host_block"`
 	HostNat              bool                       `bson:"host_nat" json:"host_nat"`
 	HostNatExcludes      []string                   `bson:"host_nat_excludes" json:"host_nat_excludes"`
