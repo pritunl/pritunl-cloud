@@ -32,9 +32,12 @@ type nodeData struct {
 	UserDomain           string                  `json:"user_domain"`
 	Services             []primitive.ObjectID    `json:"services"`
 	ExternalInterfaces   []string                `json:"external_interfaces"`
+	ExternalInterfaces6  []string                `json:"external_interfaces6"`
 	InternalInterfaces   []string                `json:"internal_interfaces"`
 	NetworkMode          string                  `json:"network_mode"`
+	NetworkMode6         string                  `json:"network_mode6"`
 	Blocks               []*node.BlockAttachment `json:"blocks"`
+	Blocks6              []*node.BlockAttachment `json:"blocks6"`
 	HostBlock            primitive.ObjectID      `json:"host_block"`
 	HostNat              bool                    `json:"host_nat"`
 	HostNatExcludes      []string                `json:"host_nat_excludes"`
@@ -90,9 +93,12 @@ func nodePut(c *gin.Context) {
 	nde.AdminDomain = data.AdminDomain
 	nde.UserDomain = data.UserDomain
 	nde.ExternalInterfaces = data.ExternalInterfaces
+	nde.ExternalInterfaces6 = data.ExternalInterfaces6
 	nde.InternalInterfaces = data.InternalInterfaces
 	nde.NetworkMode = data.NetworkMode
+	nde.NetworkMode6 = data.NetworkMode6
 	nde.Blocks = data.Blocks
+	nde.Blocks6 = data.Blocks6
 	nde.HostBlock = data.HostBlock
 	nde.HostNat = data.HostNat
 	nde.HostNatExcludes = data.HostNatExcludes
@@ -118,9 +124,12 @@ func nodePut(c *gin.Context) {
 		"admin_domain",
 		"user_domain",
 		"external_interfaces",
+		"external_interfaces6",
 		"internal_interfaces",
 		"network_mode",
+		"network_mode6",
 		"blocks",
+		"blocks6",
 		"host_block",
 		"host_nat",
 		"host_nat_excludes",
