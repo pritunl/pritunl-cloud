@@ -505,6 +505,41 @@ func (n *Node) GetStaticAddr(db *database.Database,
 	return
 }
 
+func (n *Node) GetStaticAddr6(db *database.Database,
+	instId primitive.ObjectID, vlan int) (blck *block.Block, ip net.IP,
+	cidr int, iface string, err error) {
+
+	for _, blckAttch := range n.Blocks6 {
+		blck, err = block.Get(db, blckAttch.Block)
+		if err != nil {
+			return
+		}
+
+		iface = blckAttch.Interface
+
+		ip, cidr, err = blck.GetIp6(db, instId, vlan)
+		if err != nil {
+			if _, ok := err.(*block.BlockFull); ok {
+				err = nil
+				continue
+			} else {
+				return
+			}
+		}
+
+		break
+	}
+
+	if ip == nil {
+		err = &errortypes.NotFoundError{
+			errors.New("node: No external block6 addresses available"),
+		}
+		return
+	}
+
+	return
+}
+
 func (n *Node) GetStaticHostAddr(db *database.Database,
 	instId primitive.ObjectID) (blck *block.Block, ip net.IP, err error) {
 
