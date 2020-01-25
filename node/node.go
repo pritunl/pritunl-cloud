@@ -312,6 +312,12 @@ func (n *Node) Validate(db *database.Database) (
 		return
 	}
 
+	if n.ExternalInterfaces == nil {
+		n.ExternalInterfaces = []string{}
+	}
+	if n.InternalInterfaces == nil {
+		n.InternalInterfaces = []string{}
+	}
 	if n.Blocks == nil {
 		n.Blocks = []*BlockAttachment{}
 	}
@@ -332,6 +338,29 @@ func (n *Node) Validate(db *database.Database) (
 		errData = &errortypes.ErrorData{
 			Error:   "invalid_network_mode",
 			Message: "Network mode invalid",
+		}
+		return
+	}
+
+	if n.ExternalInterfaces6 == nil {
+		n.ExternalInterfaces6 = []string{}
+	}
+	if n.Blocks6 == nil {
+		n.Blocks6 = []*BlockAttachment{}
+	}
+
+	switch n.NetworkMode6 {
+	case Static:
+		n.ExternalInterfaces6 = []string{}
+		break
+	case "":
+		n.ExternalInterfaces6 = []string{}
+		n.Blocks6 = []*BlockAttachment{}
+		break
+	default:
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_network_mode6",
+			Message: "Network mode6 invalid",
 		}
 		return
 	}
