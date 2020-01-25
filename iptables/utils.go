@@ -487,47 +487,45 @@ func UpdateState(nodeSelf *node.Node, instances []*instance.Instance,
 			continue
 		}
 
-		for i := range inst.Virt.NetworkAdapters {
-			namespace := vm.GetNamespace(inst.Id, i)
-			iface := vm.GetIface(inst.Id, i)
-			ifaceExternal := vm.GetIfaceExternal(inst.Id, i)
-			ifaceHost := vm.GetIfaceHost(inst.Id, i)
+		namespace := vm.GetNamespace(inst.Id, 0)
+		iface := vm.GetIface(inst.Id, 0)
+		ifaceExternal := vm.GetIfaceExternal(inst.Id, 0)
+		ifaceHost := vm.GetIfaceHost(inst.Id, 0)
 
-			_, ok := newState.Interfaces[namespace+"-"+iface]
-			if ok {
-				logrus.WithFields(logrus.Fields{
-					"namespace": namespace,
-					"interface": iface,
-				}).Error("iptables: Virtual interface conflict")
+		_, ok := newState.Interfaces[namespace+"-"+iface]
+		if ok {
+			logrus.WithFields(logrus.Fields{
+				"namespace": namespace,
+				"interface": iface,
+			}).Error("iptables: Virtual interface conflict")
 
-				err = &errortypes.ParseError{
-					errors.New("iptables: Virtual interface conflict"),
-				}
-				return
+			err = &errortypes.ParseError{
+				errors.New("iptables: Virtual interface conflict"),
 			}
-
-			ingress := firewalls[namespace]
-			if ingress == nil {
-				logrus.WithFields(logrus.Fields{
-					"instance_id": inst.Id.Hex(),
-					"namespace":   namespace,
-				}).Warn("iptables: Failed to load instance firewall rules")
-				continue
-			}
-
-			if externalNetwork {
-				rules := generateInternal(namespace, ifaceExternal, ingress)
-				newState.Interfaces[namespace+"-"+ifaceExternal] = rules
-			}
-
-			if hostNetwork {
-				rules := generateInternal(namespace, ifaceHost, ingress)
-				newState.Interfaces[namespace+"-"+ifaceHost] = rules
-			}
-
-			rules := generateVirt(namespace, iface, ingress)
-			newState.Interfaces[namespace+"-"+iface] = rules
+			return
 		}
+
+		ingress := firewalls[namespace]
+		if ingress == nil {
+			logrus.WithFields(logrus.Fields{
+				"instance_id": inst.Id.Hex(),
+				"namespace":   namespace,
+			}).Warn("iptables: Failed to load instance firewall rules")
+			continue
+		}
+
+		if externalNetwork {
+			rules := generateInternal(namespace, ifaceExternal, ingress)
+			newState.Interfaces[namespace+"-"+ifaceExternal] = rules
+		}
+
+		if hostNetwork {
+			rules := generateInternal(namespace, ifaceHost, ingress)
+			newState.Interfaces[namespace+"-"+ifaceHost] = rules
+		}
+
+		rules := generateVirt(namespace, iface, ingress)
+		newState.Interfaces[namespace+"-"+iface] = rules
 	}
 
 	err = applyState(curState, newState, namespaces)
