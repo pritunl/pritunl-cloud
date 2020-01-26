@@ -2,16 +2,18 @@ package iproute
 
 import (
 	"encoding/json"
+
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type Address struct {
-	Family string `json:"family"`
-	Local  string `json:"local"`
-	Prefix int    `json:"prefixlen"`
-	Scope  string `json:"scope"`
+	Family  string `json:"family"`
+	Local   string `json:"local"`
+	Prefix  int    `json:"prefixlen"`
+	Scope   string `json:"scope"`
+	Dynamic bool   `json:"dynamic"`
 }
 
 type AddressIface struct {
@@ -66,16 +68,21 @@ func AddressGetIface(namespace, name string) (
 		return
 	}
 
+	dynamic6 := true
 	for _, iface := range ifaces {
 		if iface.Name == name && iface.Addresses != nil {
 			for _, addr := range iface.Addresses {
 				if addr.Scope == "global" {
 					if address == nil && addr.Family == "inet" {
 						address = addr
-					} else if address6 == nil && addr.Family == "inet6" {
+					} else if (address6 == nil || dynamic6) &&
+						addr.Family == "inet6" {
+
+						if !addr.Dynamic {
+							dynamic6 = false
+						}
+
 						address6 = addr
-					} else if address != nil && address6 != nil {
-						return
 					}
 				}
 			}
