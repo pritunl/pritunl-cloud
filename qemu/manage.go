@@ -1534,13 +1534,18 @@ func NetworkConfClear(db *database.Database,
 	}
 
 	ifaceExternalVirt := vm.GetIfaceVirt(virt.Id, 0)
+	ifaceExternalVirt6 := vm.GetIfaceVirt(virt.Id, 3)
 	ifaceInternalVirt := vm.GetIfaceVirt(virt.Id, 1)
 	ifaceHostVirt := vm.GetIfaceVirt(virt.Id, 2)
 
 	_, _ = utils.ExecCombinedOutput(
 		"", "ip", "link", "set", ifaceExternalVirt, "down")
 	_, _ = utils.ExecCombinedOutput(
+		"", "ip", "link", "set", ifaceExternalVirt6, "down")
+	_, _ = utils.ExecCombinedOutput(
 		"", "ip", "link", "del", ifaceExternalVirt)
+	_, _ = utils.ExecCombinedOutput(
+		"", "ip", "link", "del", ifaceExternalVirt6)
 	_, _ = utils.ExecCombinedOutput(
 		"", "ip", "link", "set", ifaceInternalVirt, "down")
 	_, _ = utils.ExecCombinedOutput(
@@ -1551,6 +1556,7 @@ func NetworkConfClear(db *database.Database,
 		"", "ip", "link", "del", ifaceHostVirt)
 
 	interfaces.RemoveVirtIface(ifaceExternalVirt)
+	interfaces.RemoveVirtIface(ifaceExternalVirt6)
 	interfaces.RemoveVirtIface(ifaceInternalVirt)
 
 	store.RemAddress(virt.Id)
