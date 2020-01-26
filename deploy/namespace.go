@@ -31,9 +31,22 @@ func (n *Namespace) Deploy() (err error) {
 	curVirtIfaces := set.NewSet()
 	curExternalIfaces := set.NewSet()
 
+	nodeNetworkMode := node.Self.NetworkMode
+	if nodeNetworkMode == "" {
+		nodeNetworkMode = node.Dhcp
+	}
+	nodeNetworkMode6 := node.Self.NetworkMode6
+
 	externalNetwork := true
-	if node.Self.NetworkMode == node.Internal {
+	if nodeNetworkMode == node.Internal {
 		externalNetwork = false
+	}
+
+	externalNetwork6 := false
+	if nodeNetworkMode6 != "" && (nodeNetworkMode != nodeNetworkMode6 ||
+		(nodeNetworkMode6 == node.Static)) {
+
+		externalNetwork6 = true
 	}
 
 	hostNetwork := false
@@ -50,12 +63,18 @@ func (n *Namespace) Deploy() (err error) {
 		if externalNetwork {
 			curVirtIfaces.Add(vm.GetIfaceVirt(inst.Id, 0))
 		}
+		if externalNetwork6 {
+			curVirtIfaces.Add(vm.GetIfaceVirt(inst.Id, 3))
+		}
 		curVirtIfaces.Add(vm.GetIfaceVirt(inst.Id, 1))
 		if hostNetwork {
 			curVirtIfaces.Add(vm.GetIfaceVirt(inst.Id, 2))
 		}
 		if externalNetwork {
 			curExternalIfaces.Add(vm.GetIfaceExternal(inst.Id, 0))
+		}
+		if externalNetwork6 {
+			curExternalIfaces.Add(vm.GetIfaceExternal(inst.Id, 1))
 		}
 	}
 
