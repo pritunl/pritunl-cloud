@@ -145,10 +145,24 @@ func GetVmInfo(vmId primitive.ObjectID, getDisks, force bool) (
 
 		namespace := vm.GetNamespace(virt.Id, 0)
 		ifaceExternal := vm.GetIfaceExternal(virt.Id, 0)
+		ifaceExternal6 := vm.GetIfaceExternal(virt.Id, 1)
+
+		nodeNetworkMode := node.Self.NetworkMode
+		if nodeNetworkMode == "" {
+			nodeNetworkMode = node.Dhcp
+		}
+		nodeNetworkMode6 := node.Self.NetworkMode6
 
 		externalNetwork := true
-		if node.Self.NetworkMode == node.Internal {
+		if nodeNetworkMode == node.Internal {
 			externalNetwork = false
+		}
+
+		externalNetwork6 := false
+		if nodeNetworkMode6 != "" && (nodeNetworkMode != nodeNetworkMode6 ||
+			(nodeNetworkMode6 == node.Static)) {
+
+			externalNetwork6 = true
 		}
 
 		if externalNetwork {
@@ -166,13 +180,26 @@ func GetVmInfo(vmId primitive.ObjectID, getDisks, force bool) (
 			if address6 != nil {
 				addr6 = address6.Local
 			}
-
-			if len(virt.NetworkAdapters) > 0 {
-				virt.NetworkAdapters[0].IpAddress = addr
-				virt.NetworkAdapters[0].IpAddress6 = addr6
-			}
-			store.SetAddress(virt.Id, addr, addr6)
 		}
+
+		if externalNetwork6 {
+			_, address6, e := iproute.AddressGetIface(
+				namespace, ifaceExternal6)
+			if e != nil {
+				err = e
+				return
+			}
+
+			if address6 != nil {
+				addr6 = address6.Local
+			}
+		}
+
+		if len(virt.NetworkAdapters) > 0 {
+			virt.NetworkAdapters[0].IpAddress = addr
+			virt.NetworkAdapters[0].IpAddress6 = addr6
+		}
+		store.SetAddress(virt.Id, addr, addr6)
 	} else {
 		if len(virt.NetworkAdapters) > 0 {
 			virt.NetworkAdapters[0].IpAddress = addrStore.Addr
