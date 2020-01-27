@@ -9,6 +9,7 @@ import PageInputButton from './PageInputButton';
 import ConfirmButton from './ConfirmButton';
 import * as Alert from "../Alert";
 import Help from './Help';
+import PageSelect from "./PageSelect";
 
 interface Props {
 	block: BlockTypes.BlockRo;
@@ -19,6 +20,7 @@ interface State {
 	changed: boolean;
 	message: string;
 	addSubnet: string,
+	addSubnet6: string,
 	addExclude: string,
 	block: BlockTypes.Block;
 }
@@ -78,6 +80,7 @@ export default class Block extends React.Component<Props, State> {
 			changed: false,
 			message: '',
 			addSubnet: '',
+			addSubnet6: '',
 			addExclude: '',
 			block: null,
 		};
@@ -242,7 +245,77 @@ export default class Block extends React.Component<Props, State> {
 			...this.state,
 			changed: true,
 			message: '',
-			addSubnet: '',
+			block: block,
+		});
+	}
+
+	onAddSubnet6 = (): void => {
+		let block: BlockTypes.Block;
+
+		if (!this.state.addSubnet6) {
+			return;
+		}
+
+		if (this.state.changed) {
+			block = {
+				...this.state.block,
+			};
+		} else {
+			block = {
+				...this.props.block,
+			};
+		}
+
+		let subnets6 = [
+			...(block.subnets6 || []),
+		];
+
+		let addSubnet6 = this.state.addSubnet6.trim();
+		if (subnets6.indexOf(addSubnet6) === -1) {
+			subnets6.push(addSubnet6);
+		}
+
+		subnets6.sort();
+		block.subnets6 = subnets6;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			addSubnet6: '',
+			block: block,
+		});
+	}
+
+	onRemoveSubnet6 = (subnet: string): void => {
+		let block: BlockTypes.Block;
+
+		if (this.state.changed) {
+			block = {
+				...this.state.block,
+			};
+		} else {
+			block = {
+				...this.props.block,
+			};
+		}
+
+		let subnets6 = [
+			...(block.subnets6 || []),
+		];
+
+		let i = subnets6.indexOf(subnet);
+		if (i === -1) {
+			return;
+		}
+
+		subnets6.splice(i, 1);
+		block.subnets6 = subnets6;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
 			block: block,
 		});
 	}
@@ -314,7 +387,6 @@ export default class Block extends React.Component<Props, State> {
 			...this.state,
 			changed: true,
 			message: '',
-			addExclude: '',
 			block: block,
 		});
 	}
@@ -337,6 +409,26 @@ export default class Block extends React.Component<Props, State> {
 						disabled={this.state.disabled}
 						onMouseUp={(): void => {
 							this.onRemoveSubnet(subnet);
+						}}
+					/>
+				</div>,
+			);
+		}
+
+		let subnets6: JSX.Element[] = [];
+		for (let subnet of (block.subnets6 || [])) {
+			subnets6.push(
+				<div
+					className="bp3-tag bp3-tag-removable bp3-intent-primary"
+					style={css.item}
+					key={subnet}
+				>
+					{subnet}
+					<button
+						className="bp3-tag-remove"
+						disabled={this.state.disabled}
+						onMouseUp={(): void => {
+							this.onRemoveSubnet6(subnet);
 						}}
 					/>
 				</div>,
@@ -389,7 +481,34 @@ export default class Block extends React.Component<Props, State> {
 							this.set('name', val);
 						}}
 					/>
-					<label className="bp3-label">
+					<PageSelect
+						disabled={this.state.disabled}
+						label="Network Mode"
+						help="Network mode IP block."
+						value={block.type}
+						onChange={(val): void => {
+							this.set('type', val);
+						}}
+					>
+						<option value="ipv4">IPv4</option>
+						<option value="ipv6">IPv6</option>
+					</PageSelect>
+					<PageInput
+						disabled={this.state.disabled}
+						hidden={block.type === 'ipv6'}
+						label="Netmask"
+						help="Netmask of IP block"
+						type="text"
+						placeholder="Enter netmask"
+						value={block.netmask}
+						onChange={(val): void => {
+							this.set('netmask', val);
+						}}
+					/>
+					<label
+						className="bp3-label"
+						hidden={block.type === 'ipv6'}
+					>
 						IP Addresses
 						<Help
 							title="IP Addresses"
@@ -401,6 +520,7 @@ export default class Block extends React.Component<Props, State> {
 					</label>
 					<PageInputButton
 						disabled={this.state.disabled}
+						hidden={block.type === 'ipv6'}
 						buttonClass="bp3-intent-success bp3-icon-add"
 						label="Add"
 						type="text"
@@ -414,30 +534,34 @@ export default class Block extends React.Component<Props, State> {
 						}}
 						onSubmit={this.onAddSubnet}
 					/>
-					<label className="bp3-label">
-						IP Excludes
+					<label
+						className="bp3-label"
+						hidden={block.type !== 'ipv6'}
+					>
+						IPv6 Addresses
 						<Help
-							title="IP Excludes"
-							content="IP addresses that are excluded from block. Add host or other reserved addresses here."
+							title="IPv6 Addresses"
+							content="IPv6 addresses that are available for instances."
 						/>
 						<div>
-							{excludes}
+							{subnets6}
 						</div>
 					</label>
 					<PageInputButton
 						disabled={this.state.disabled}
+						hidden={block.type !== 'ipv6'}
 						buttonClass="bp3-intent-success bp3-icon-add"
 						label="Add"
 						type="text"
-						placeholder="Add exclude"
-						value={this.state.addExclude}
+						placeholder="Add addresses"
+						value={this.state.addSubnet6}
 						onChange={(val): void => {
 							this.setState({
 								...this.state,
-								addExclude: val,
+								addSubnet6: val,
 							});
 						}}
-						onSubmit={this.onAddExclude}
+						onSubmit={this.onAddSubnet6}
 					/>
 				</div>
 				<div style={css.group}>
@@ -451,17 +575,7 @@ export default class Block extends React.Component<Props, State> {
 					/>
 					<PageInput
 						disabled={this.state.disabled}
-						label="Netmask"
-						help="Netmask of IP block"
-						type="text"
-						placeholder="Enter netmask"
-						value={block.netmask}
-						onChange={(val): void => {
-							this.set('netmask', val);
-						}}
-					/>
-					<PageInput
-						disabled={this.state.disabled}
+						hidden={block.type === 'ipv6'}
 						label="Gateway"
 						help="Gateway address of IP block"
 						type="text"
@@ -470,6 +584,35 @@ export default class Block extends React.Component<Props, State> {
 						onChange={(val): void => {
 							this.set('gateway', val);
 						}}
+					/>
+					<label
+						className="bp3-label"
+						hidden={block.type === 'ipv6'}
+					>
+						IP Excludes
+						<Help
+							title="IP Excludes"
+							content="IP addresses that are excluded from block. Add host or other reserved addresses here."
+						/>
+						<div>
+							{excludes}
+						</div>
+					</label>
+					<PageInputButton
+						disabled={this.state.disabled}
+						hidden={block.type === 'ipv6'}
+						buttonClass="bp3-intent-success bp3-icon-add"
+						label="Add"
+						type="text"
+						placeholder="Add exclude"
+						value={this.state.addExclude}
+						onChange={(val): void => {
+							this.setState({
+								...this.state,
+								addExclude: val,
+							});
+						}}
+						onSubmit={this.onAddExclude}
 					/>
 				</div>
 			</div>
