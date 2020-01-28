@@ -40,7 +40,6 @@ interface State {
 	message: string;
 	node: NodeTypes.Node;
 	addExternalIface: string;
-	addExternalIface6: string;
 	addInternalIface: string;
 	addCert: string;
 	addNetworkRole: string;
@@ -127,7 +126,6 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			message: '',
 			node: null,
 			addExternalIface: null,
-			addExternalIface6: null,
 			addInternalIface: null,
 			addCert: null,
 			addNetworkRole: null,
@@ -541,79 +539,6 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		ifaces.splice(i, 1);
 
 		node.internal_interfaces = ifaces;
-
-		this.setState({
-			...this.state,
-			changed: true,
-			node: node,
-		});
-	}
-
-	onAddExternalIface6 = (): void => {
-		let node: NodeTypes.Node;
-
-		if (!this.state.addExternalIface6 &&
-			!this.props.node.available_bridges.length) {
-			return;
-		}
-
-		let index = this.state.addExternalIface6 ||
-			this.props.node.available_bridges[0];
-
-		if (this.state.changed) {
-			node = {
-				...this.state.node,
-			};
-		} else {
-			node = {
-				...this.props.node,
-			};
-		}
-
-		let ifaces = [
-			...(node.external_interfaces6 || []),
-		];
-
-		if (ifaces.indexOf(index) === -1) {
-			ifaces.push(index);
-		}
-
-		ifaces.sort();
-
-		node.external_interfaces6 = ifaces;
-
-		this.setState({
-			...this.state,
-			changed: true,
-			node: node,
-		});
-	}
-
-	onRemoveExternalIface6 = (iface: string): void => {
-		let node: NodeTypes.Node;
-
-		if (this.state.changed) {
-			node = {
-				...this.state.node,
-			};
-		} else {
-			node = {
-				...this.props.node,
-			};
-		}
-
-		let ifaces = [
-			...(node.external_interfaces6 || []),
-		];
-
-		let i = ifaces.indexOf(iface);
-		if (i === -1) {
-			return;
-		}
-
-		ifaces.splice(i, 1);
-
-		node.external_interfaces6 = ifaces;
 
 		this.setState({
 			...this.state,
@@ -1053,26 +978,6 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			);
 		}
 
-		let externalIfaces6: JSX.Element[] = [];
-		for (let iface of (node.external_interfaces6 || [])) {
-			externalIfaces6.push(
-				<div
-					className="bp3-tag bp3-tag-removable bp3-intent-primary"
-					style={css.item}
-					key={iface}
-				>
-					{iface}
-					<button
-						disabled={this.state.disabled}
-						className="bp3-tag-remove"
-						onMouseUp={(): void => {
-							this.onRemoveExternalIface6(iface);
-						}}
-					/>
-				</div>,
-			);
-		}
-
 		let internalIfaces: JSX.Element[] = [];
 		for (let iface of (node.internal_interfaces || [])) {
 			internalIfaces.push(
@@ -1096,15 +1001,6 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		let externalIfacesSelect: JSX.Element[] = [];
 		for (let iface of (this.props.node.available_bridges || [])) {
 			externalIfacesSelect.push(
-				<option key={iface} value={iface}>
-					{iface}
-				</option>,
-			);
-		}
-
-		let externalIfacesSelect6: JSX.Element[] = [];
-		for (let iface of (this.props.node.available_bridges || [])) {
-			externalIfacesSelect6.push(
 				<option key={iface} value={iface}>
 					{iface}
 				</option>,
@@ -1595,36 +1491,6 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						<option value="">Default</option>
 						<option value="static">Static</option>
 					</PageSelect>
-					<label
-						className="bp3-label"
-						style={css.label}
-						hidden={node.network_mode6 !== 'dhcp'}
-					>
-						External IPv6 Interfaces
-						<Help
-							title="External IPv6 Interfaces"
-							content="External IPv6 interfaces for instance public interface, must be a bridge interface. Leave blank for automatic configuration."
-						/>
-						<div>
-							{externalIfaces6}
-						</div>
-					</label>
-					<PageSelectButton
-						hidden={node.network_mode6 !== 'dhcp'}
-						label="Add Interface"
-						value={this.state.addExternalIface6}
-						disabled={!externalIfacesSelect6.length || this.state.disabled}
-						buttonClass="bp3-intent-success"
-						onChange={(val: string): void => {
-							this.setState({
-								...this.state,
-								addExternalIface6: val,
-							});
-						}}
-						onSubmit={this.onAddExternalIface6}
-					>
-						{externalIfacesSelect6}
-					</PageSelectButton>
 					<label
 						className="bp3-label"
 						hidden={node.network_mode6 !== 'static'}
