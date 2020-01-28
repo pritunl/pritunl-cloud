@@ -33,6 +33,11 @@ var (
 func networkConf(db *database.Database, vc *vpc.Vpc,
 	netAddr, netAddr6 string, netCidr int) (err error) {
 
+	err = &errortypes.UnknownError{
+		errors.New("ipsec: Link support in development"),
+	}
+	return
+
 	networkStatesLock.Lock()
 	networkState := networkStates[vc.Id]
 	networkStatesLock.Unlock()
