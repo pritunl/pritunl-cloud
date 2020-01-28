@@ -9,7 +9,7 @@ type Domain struct {
 	Host   string `bson:"host" json:"host"`
 }
 
-type Server struct {
+type Backend struct {
 	Protocol string `bson:"protocol" json:"protocol"`
 	Hostname string `bson:"hostname" json:"hostname"`
 	Port     int    `bson:"port" json:"port"`
@@ -17,10 +17,10 @@ type Server struct {
 
 type Balancer struct {
 	Id           primitive.ObjectID   `bson:"_id" json:"id"`
-	Zone         primitive.ObjectID   `bson:"zone,omitempty"`
 	Name         string               `bson:"name" json:"name"`
+	Zone         primitive.ObjectID   `bson:"zone,omitempty"`
 	Certificates []primitive.ObjectID `bson:"certificates" json:"certificates"`
 	WebSockets   bool                 `bson:"websockets" json:"websockets"`
 	Domains      []*Domain            `bson:"domains" json:"domains"`
-	Servers      []*Server            `bson:"servers" json:"servers"`
+	Backends     []*Backend           `bson:"backends" json:"backends"`
 }
