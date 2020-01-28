@@ -483,7 +483,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			return;
 		}
 
-		let certId = this.state.addInternalIface || availableIfaces[0];
+		let index = this.state.addInternalIface || availableIfaces[0];
 
 		if (this.state.changed) {
 			node = {
@@ -499,8 +499,8 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			...(node.internal_interfaces || []),
 		];
 
-		if (ifaces.indexOf(certId) === -1) {
-			ifaces.push(certId);
+		if (ifaces.indexOf(index) === -1) {
+			ifaces.push(index);
 		}
 
 		ifaces.sort();
@@ -1494,7 +1494,8 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							},
 							{
 								label: 'Memory Units',
-								value: (this.props.node.memory_units || 'Unknown').toString(),
+								value: (this.props.node.memory_units ||
+									'Unknown').toString(),
 							},
 							{
 								label: 'Default Interface',
