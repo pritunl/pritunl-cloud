@@ -40,6 +40,7 @@ interface State {
 	message: string;
 	node: NodeTypes.Node;
 	addExternalIface: string;
+	addExternalIface6: string;
 	addInternalIface: string;
 	addCert: string;
 	addNetworkRole: string;
@@ -126,6 +127,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			message: '',
 			node: null,
 			addExternalIface: null,
+			addExternalIface6: null,
 			addInternalIface: null,
 			addCert: null,
 			addNetworkRole: null,
@@ -547,6 +549,79 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		});
 	}
 
+	onAddExternalIface6 = (): void => {
+		let node: NodeTypes.Node;
+
+		if (!this.state.addExternalIface6 &&
+			!this.props.node.available_bridges.length) {
+			return;
+		}
+
+		let index = this.state.addExternalIface6 ||
+			this.props.node.available_bridges[0];
+
+		if (this.state.changed) {
+			node = {
+				...this.state.node,
+			};
+		} else {
+			node = {
+				...this.props.node,
+			};
+		}
+
+		let ifaces = [
+			...(node.external_interfaces6 || []),
+		];
+
+		if (ifaces.indexOf(index) === -1) {
+			ifaces.push(index);
+		}
+
+		ifaces.sort();
+
+		node.external_interfaces6 = ifaces;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			node: node,
+		});
+	}
+
+	onRemoveExternalIface6 = (iface: string): void => {
+		let node: NodeTypes.Node;
+
+		if (this.state.changed) {
+			node = {
+				...this.state.node,
+			};
+		} else {
+			node = {
+				...this.props.node,
+			};
+		}
+
+		let ifaces = [
+			...(node.external_interfaces6 || []),
+		];
+
+		let i = ifaces.indexOf(iface);
+		if (i === -1) {
+			return;
+		}
+
+		ifaces.splice(i, 1);
+
+		node.external_interfaces6 = ifaces;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			node: node,
+		});
+	}
+
 	onAddCert = (): void => {
 		let node: NodeTypes.Node;
 
@@ -658,6 +733,34 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		});
 	}
 
+	onNetworkMode6 = (mode: string): void => {
+		let node: any;
+
+		if (this.state.changed) {
+			node = {
+				...this.state.node,
+			};
+		} else {
+			node = {
+				...this.props.node,
+			};
+		}
+
+		if (mode === 'static' && (node.blocks6 || []).length === 0) {
+			node.blocks6 = [
+				this.newBlock(),
+			];
+		}
+
+		node.network_mode6 = mode;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			node: node,
+		});
+	}
+
 	onAddBlock = (i: number): void => {
 		let node: NodeTypes.Node;
 
@@ -741,6 +844,98 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		}
 
 		node.blocks = blocks;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			node: node,
+		});
+	}
+
+	onAddBlock6 = (i: number): void => {
+		let node: NodeTypes.Node;
+
+		if (this.state.changed) {
+			node = {
+				...this.state.node,
+			};
+		} else {
+			node = {
+				...this.props.node,
+			};
+		}
+
+		let blocks = [
+			...node.blocks6,
+		];
+
+		blocks.splice(i + 1, 0, this.newBlock());
+		node.blocks6 = blocks;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			node: node,
+		});
+	}
+
+	onChangeBlock6(i: number, block: NodeTypes.BlockAttachment): void {
+		let node: NodeTypes.Node;
+
+		if (this.state.changed) {
+			node = {
+				...this.state.node,
+			};
+		} else {
+			node = {
+				...this.props.node,
+			};
+		}
+
+		let blocks = [
+			...node.blocks6,
+		];
+
+		blocks[i] = block;
+
+		node.blocks6 = blocks;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			node: node,
+		});
+	}
+
+	onRemoveBlock6(i: number): void {
+		let node: NodeTypes.Node;
+
+		if (this.state.changed) {
+			node = {
+				...this.state.node,
+			};
+		} else {
+			node = {
+				...this.props.node,
+			};
+		}
+
+		let blocks = [
+			...node.blocks6,
+		];
+
+		blocks.splice(i, 1);
+
+		if (!blocks.length) {
+			blocks = [
+				this.newBlock(),
+			];
+		}
+
+		node.blocks6 = blocks;
 
 		this.setState({
 			...this.state,
@@ -858,6 +1053,26 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			);
 		}
 
+		let externalIfaces6: JSX.Element[] = [];
+		for (let iface of (node.external_interfaces6 || [])) {
+			externalIfaces6.push(
+				<div
+					className="bp3-tag bp3-tag-removable bp3-intent-primary"
+					style={css.item}
+					key={iface}
+				>
+					{iface}
+					<button
+						disabled={this.state.disabled}
+						className="bp3-tag-remove"
+						onMouseUp={(): void => {
+							this.onRemoveExternalIface6(iface);
+						}}
+					/>
+				</div>,
+			);
+		}
+
 		let internalIfaces: JSX.Element[] = [];
 		for (let iface of (node.internal_interfaces || [])) {
 			internalIfaces.push(
@@ -881,6 +1096,15 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		let externalIfacesSelect: JSX.Element[] = [];
 		for (let iface of (this.props.node.available_bridges || [])) {
 			externalIfacesSelect.push(
+				<option key={iface} value={iface}>
+					{iface}
+				</option>,
+			);
+		}
+
+		let externalIfacesSelect6: JSX.Element[] = [];
+		for (let iface of (this.props.node.available_bridges || [])) {
+			externalIfacesSelect6.push(
 				<option key={iface} value={iface}>
 					{iface}
 				</option>,
@@ -1043,6 +1267,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					interfaces={this.props.node.available_bridges}
 					blocks={this.props.blocks}
 					block={nodeBlocks[index]}
+					ipv6={false}
 					onChange={(state: NodeTypes.BlockAttachment): void => {
 						this.onChangeBlock(index, state);
 					}}
@@ -1051,6 +1276,31 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					}}
 					onRemove={(): void => {
 						this.onRemoveBlock(index);
+					}}
+				/>,
+			);
+		}
+
+		let nodeBlocks6 = node.blocks6 || [];
+		let blocks6: JSX.Element[] = [];
+		for (let i = 0; i < nodeBlocks6.length; i++) {
+			let index = i;
+
+			blocks6.push(
+				<NodeBlock
+					key={index}
+					interfaces={this.props.node.available_bridges}
+					blocks={this.props.blocks}
+					block={nodeBlocks6[index]}
+					ipv6={true}
+					onChange={(state: NodeTypes.BlockAttachment): void => {
+						this.onChangeBlock6(index, state);
+					}}
+					onAdd={(): void => {
+						this.onAddBlock6(index);
+					}}
+					onRemove={(): void => {
+						this.onRemoveBlock6(index);
 					}}
 				/>,
 			);
@@ -1330,8 +1580,58 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						hidden={node.network_mode !== 'static'}
 						style={css.label}
 					>
-						Interface Block Attachments
+						Internal Block Attachments
 						{blocks}
+					</label>
+					<PageSelect
+						disabled={this.state.disabled}
+						label="Network IPv6 Mode"
+						help="Network mode for public IPv6 addresses. Cannot be changed with instances running. Default will use IPv4 network mode."
+						value={node.network_mode6}
+						onChange={(val): void => {
+							this.onNetworkMode6(val);
+						}}
+					>
+						<option value="">Default</option>
+						<option value="static">Static</option>
+					</PageSelect>
+					<label
+						className="bp3-label"
+						style={css.label}
+						hidden={node.network_mode6 !== 'dhcp'}
+					>
+						External IPv6 Interfaces
+						<Help
+							title="External IPv6 Interfaces"
+							content="External IPv6 interfaces for instance public interface, must be a bridge interface. Leave blank for automatic configuration."
+						/>
+						<div>
+							{externalIfaces6}
+						</div>
+					</label>
+					<PageSelectButton
+						hidden={node.network_mode6 !== 'dhcp'}
+						label="Add Interface"
+						value={this.state.addExternalIface6}
+						disabled={!externalIfacesSelect6.length || this.state.disabled}
+						buttonClass="bp3-intent-success"
+						onChange={(val: string): void => {
+							this.setState({
+								...this.state,
+								addExternalIface6: val,
+							});
+						}}
+						onSubmit={this.onAddExternalIface6}
+					>
+						{externalIfacesSelect6}
+					</PageSelectButton>
+					<label
+						className="bp3-label"
+						hidden={node.network_mode6 !== 'static'}
+						style={css.label}
+					>
+						External IPv6 Block Attachments
+						{blocks6}
 					</label>
 					<PageSelect
 						disabled={this.state.disabled}
