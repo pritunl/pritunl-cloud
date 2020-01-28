@@ -20,14 +20,17 @@ export interface Node {
 	user_domain?: string;
 	certificates?: string[];
 	network_mode?: string;
+	network_mode6?: string;
 	external_interface?: string;
 	internal_interface?: string;
 	external_interfaces?: string[];
 	internal_interfaces?: string[];
+	external_interfaces6?: string[];
 	available_interfaces?: string[];
 	available_bridges?: string[];
 	default_interface?: string;
 	blocks?: BlockAttachment[];
+	blocks6?: BlockAttachment[];
 	host_block?: string;
 	host_nat?: boolean;
 	host_nat_excludes?: string[];
