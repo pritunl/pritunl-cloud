@@ -690,14 +690,14 @@ export default class VpcDetailed extends React.Component<Props, State> {
 					<div style={css.list}>
 						{subnetsElem}
 					</div>
-					<label style={css.itemsLabel}>
+					<label style={css.itemsLabel} hidden={true}>
 						Pritunl Link URIs
 						<Help
 							title="Pritunl Link URIs"
 							content="Pritunl Link URIs for automated IPsec linking with a Pritunl server."
 						/>
 					</label>
-					<div style={css.list}>
+					<div style={css.list} hidden={true}>
 						{linkUris}
 					</div>
 				</div>
