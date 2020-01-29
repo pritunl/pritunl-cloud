@@ -81,7 +81,7 @@ const css = {
 		padding: '10px 0',
 	} as React.CSSProperties,
 	link: {
-		padding: '0 8px',
+		padding: '0 7px',
 		color: 'inherit',
 	} as React.CSSProperties,
 	sub: {
