@@ -19,6 +19,7 @@ import Zones from './Zones';
 import Blocks from './Blocks';
 import Vpcs from './Vpcs';
 import Domains from './Domains';
+import Balancers from './Balancers';
 import Storages from './Storages';
 import Images from './Images';
 import Disks from './Disks';
@@ -40,6 +41,7 @@ import * as ZoneActions from '../actions/ZoneActions';
 import * as BlockActions from '../actions/BlockActions';
 import * as VpcActions from '../actions/VpcActions';
 import * as DomainActions from '../actions/DomainActions';
+import * as BalancerActions from '../actions/BalancerActions';
 import * as StorageActions from '../actions/StorageActions';
 import * as ImageActions from '../actions/ImageActions';
 import * as DiskActions from '../actions/DiskActions';
@@ -243,6 +245,13 @@ export default class Main extends React.Component<{}, State> {
 							to="/domains"
 						>
 							Domains
+						</ReactRouter.Link>
+						<ReactRouter.Link
+							className="bp3-button bp3-minimal bp3-icon-random"
+							style={css.link}
+							to="/balancers"
+						>
+							Load Balancers
 						</ReactRouter.Link>
 						<ReactRouter.Link
 							className="bp3-button bp3-minimal bp3-icon-database"
@@ -483,6 +492,18 @@ export default class Main extends React.Component<{}, State> {
 												disabled: false,
 											});
 										});
+									} else if (pathname === '/balancers') {
+										BalancerActions.sync().then((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										}).catch((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										});
 									} else if (pathname === '/storages') {
 										StorageActions.sync().then((): void => {
 											this.setState({
@@ -657,6 +678,9 @@ export default class Main extends React.Component<{}, State> {
 				)}/>
 				<ReactRouter.Route path="/domains" render={() => (
 					<Domains/>
+				)}/>
+				<ReactRouter.Route path="/balancers" render={() => (
+					<Balancers/>
 				)}/>
 				<ReactRouter.Route path="/storages" render={() => (
 					<Storages/>
