@@ -18,6 +18,7 @@ type Backend struct {
 type Balancer struct {
 	Id           primitive.ObjectID   `bson:"_id" json:"id"`
 	Name         string               `bson:"name" json:"name"`
+	Organization primitive.ObjectID   `bson:"organization,omitempty" json:"organization"`
 	Zone         primitive.ObjectID   `bson:"zone,omitempty"`
 	Certificates []primitive.ObjectID `bson:"certificates" json:"certificates"`
 	WebSockets   bool                 `bson:"websockets" json:"websockets"`
