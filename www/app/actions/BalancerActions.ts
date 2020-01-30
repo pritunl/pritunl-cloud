@@ -178,6 +178,36 @@ export function remove(balancerId: string): Promise<void> {
 	});
 }
 
+export function removeMulti(balancerIds: string[]): Promise<void> {
+	let loader = new Loader().loading();
+
+	return new Promise<void>((resolve, reject): void => {
+		SuperAgent
+			.delete('/balancer')
+			.send(balancerIds)
+			.set('Accept', 'application/json')
+			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
+			.end((err: any, res: SuperAgent.Response): void => {
+				loader.done();
+
+				if (res && res.status === 401) {
+					window.location.href = '/login';
+					resolve();
+					return;
+				}
+
+				if (err) {
+					Alert.errorRes(res, 'Failed to delete balancers');
+					reject(err);
+					return;
+				}
+
+				resolve();
+			});
+	});
+}
+
 EventDispatcher.register((action: BalancerTypes.BalancerDispatch) => {
 	switch (action.type) {
 		case BalancerTypes.CHANGE:
