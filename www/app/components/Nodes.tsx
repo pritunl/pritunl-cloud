@@ -289,6 +289,8 @@ export default class Nodes extends React.Component<{}, State> {
 			<NodesPage
 				onPage={(): void => {
 					this.setState({
+						...this.state,
+						selected: {},
 						lastSelected: null,
 					});
 				}}
