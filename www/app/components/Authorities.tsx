@@ -323,6 +323,8 @@ export default class Authorities extends React.Component<{}, State> {
 			<AuthoritiesPage
 				onPage={(): void => {
 					this.setState({
+						...this.state,
+						selected: {},
 						lastSelected: null,
 					});
 				}}
