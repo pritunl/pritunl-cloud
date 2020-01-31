@@ -5,14 +5,14 @@ export const FILTER = 'balancer.filter';
 export const CHANGE = 'balancer.change';
 
 export interface Domain {
-	domain: string;
+	domain?: string;
 	host?: string;
 }
 
 export interface Backend {
-	protocol: string;
+	protocol?: string;
 	hostname?: string;
-	port?: string;
+	port?: number;
 }
 
 export interface Balancer {
