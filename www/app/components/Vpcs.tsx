@@ -452,6 +452,8 @@ export default class Vpcs extends React.Component<{}, State> {
 			<VpcsPage
 				onPage={(): void => {
 					this.setState({
+						...this.state,
+						selected: {},
 						lastSelected: null,
 					});
 				}}
