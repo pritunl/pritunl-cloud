@@ -555,6 +555,25 @@ func applyState(oldState, newState *State, namespaces []string) (err error) {
 		}
 
 		oldRules := oldState.Interfaces[rules.Namespace+"-"+rules.Interface]
+
+		if (rules.Nat || rules.Nat6) && (oldRules == nil ||
+			diffRulesNat(oldRules, rules)) {
+
+			logrus.Info("iptables: Updating iptables nat")
+
+			if oldRules != nil {
+				err = oldRules.RemoveNat()
+				if err != nil {
+					return
+				}
+			}
+
+			err = rules.ApplyNat()
+			if err != nil {
+				return
+			}
+		}
+
 		if oldRules != nil {
 			if !diffRules(oldRules, rules) {
 				continue
