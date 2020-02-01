@@ -281,6 +281,139 @@ func loadIptables(namespace string, state *State, ipv6 bool) (err error) {
 		}
 	}
 
+	if namespace == "0" {
+		output, err = utils.ExecOutput("", iptablesCmd, "-S", "-t", "nat")
+		if err != nil {
+			return
+		}
+	} else {
+		output, err = utils.ExecOutput("",
+			"ip", "netns", "exec", namespace, iptablesCmd, "-S", "-t", "nat")
+		if err != nil {
+			return
+		}
+	}
+
+	preAddr := ""
+	prePubAddr := ""
+	postAddr := ""
+	postIface := ""
+
+	for _, line := range strings.Split(output, "\n") {
+		if !strings.Contains(line, "pritunl_cloud_nat") {
+			continue
+		}
+
+		cmd := strings.Fields(line)
+		if len(cmd) < 3 {
+			logrus.WithFields(logrus.Fields{
+				"iptables_rule": line,
+			}).Error("iptables: Invalid iptables state")
+
+			err = &errortypes.ParseError{
+				errors.New("iptables: Invalid iptables state"),
+			}
+			return
+		}
+		cmd = cmd[1:]
+
+		switch cmd[0] {
+		case "PREROUTING":
+			for i, item := range cmd {
+				if item == "-d" {
+					if len(cmd) < i+2 {
+						logrus.WithFields(logrus.Fields{
+							"iptables_rule": line,
+						}).Error("iptables: Invalid iptables pub addr")
+
+						err = &errortypes.ParseError{
+							errors.New(
+								"iptables: Invalid iptables pub addr"),
+						}
+						return
+					}
+					prePubAddr = strings.Split(cmd[i+1], "/")[0]
+				}
+
+				if item == "--to-destination" {
+					if len(cmd) < i+2 {
+						logrus.WithFields(logrus.Fields{
+							"iptables_rule": line,
+						}).Error("iptables: Invalid iptables addr")
+
+						err = &errortypes.ParseError{
+							errors.New(
+								"iptables: Invalid iptables addr"),
+						}
+						return
+					}
+					preAddr = strings.Split(cmd[i+1], "/")[0]
+				}
+			}
+			break
+		case "POSTROUTING":
+			for i, item := range cmd {
+				if item == "-s" {
+					if len(cmd) < i+2 {
+						logrus.WithFields(logrus.Fields{
+							"iptables_rule": line,
+						}).Error("iptables: Invalid iptables pub addr")
+
+						err = &errortypes.ParseError{
+							errors.New(
+								"iptables: Invalid iptables pub addr"),
+						}
+						return
+					}
+					postAddr = strings.Split(cmd[i+1], "/")[0]
+				}
+
+				if item == "-o" {
+					if len(cmd) < i+2 {
+						logrus.WithFields(logrus.Fields{
+							"iptables_rule": line,
+						}).Error("iptables: Invalid iptables addr")
+
+						err = &errortypes.ParseError{
+							errors.New(
+								"iptables: Invalid iptables addr"),
+						}
+						return
+					}
+					postIface = cmd[i+1]
+				}
+			}
+			break
+		}
+	}
+
+	if preAddr != "" && prePubAddr != "" && postIface != "" &&
+		postAddr == preAddr {
+
+		rules := state.Interfaces[namespace+"-"+postIface]
+		if rules == nil {
+			rules = &Rules{
+				Namespace: namespace,
+				Interface: postIface,
+				Ingress:   [][]string{},
+				Ingress6:  [][]string{},
+				Holds:     [][]string{},
+				Holds6:    [][]string{},
+			}
+			state.Interfaces[namespace+"-"+postIface] = rules
+		}
+
+		if !ipv6 {
+			rules.Nat = true
+			rules.NatAddr = preAddr
+			rules.NatPubAddr = prePubAddr
+		} else {
+			rules.Nat6 = true
+			rules.NatAddr6 = preAddr
+			rules.NatPubAddr6 = prePubAddr
+		}
+	}
+
 	return
 }
 
