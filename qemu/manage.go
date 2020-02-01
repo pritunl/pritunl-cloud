@@ -1333,67 +1333,92 @@ func NetworkConf(db *database.Database,
 			return
 		}
 
-		iptables.Lock()
-		_, err = utils.ExecCombinedOutputLogged(
-			nil,
-			"ip", "netns", "exec", namespace,
-			"iptables", "-t", "nat",
-			"-A", "POSTROUTING",
-			"-s", addr.String()+"/32",
-			"-o", ifaceExternal,
-			"-j", "MASQUERADE",
-		)
-		iptables.Unlock()
-		if err != nil {
-			return
-		}
-
-		iptables.Lock()
-		_, err = utils.ExecCombinedOutputLogged(
-			nil,
-			"ip", "netns", "exec", namespace,
-			"iptables", "-t", "nat",
-			"-A", "PREROUTING",
-			"-d", pubAddr,
-			"-j", "DNAT",
-			"--to-destination", addr.String(),
-		)
-		iptables.Unlock()
-		if err != nil {
-			return
-		}
+		//iptables.Lock()
+		//_, err = utils.ExecCombinedOutputLogged(
+		//	nil,
+		//	"ip", "netns", "exec", namespace,
+		//	"iptables", "-t", "nat",
+		//	"-A", "POSTROUTING",
+		//	"-s", addr.String()+"/32",
+		//	"-o", ifaceExternal,
+		//	"-m", "comment",
+		//	"--comment", "pritunl_cloud_nat",
+		//	"-j", "MASQUERADE",
+		//)
+		//iptables.Unlock()
+		//if err != nil {
+		//	return
+		//}
+		//
+		//iptables.Lock()
+		//_, err = utils.ExecCombinedOutputLogged(
+		//	nil,
+		//	"ip", "netns", "exec", namespace,
+		//	"iptables", "-t", "nat",
+		//	"-A", "PREROUTING",
+		//	"-d", pubAddr,
+		//	"-m", "comment",
+		//	"--comment", "pritunl_cloud_nat",
+		//	"-j", "DNAT",
+		//	"--to-destination", addr.String(),
+		//)
+		//iptables.Unlock()
+		//if err != nil {
+		//	return
+		//}
 
 		if externalNetwork6 && ifaceExternal == ifaceExternal6 {
 			if pubAddr6 != "" {
-				iptables.Lock()
-				_, err = utils.ExecCombinedOutputLogged(
-					nil,
-					"ip", "netns", "exec", namespace,
-					"ip6tables", "-t", "nat",
-					"-A", "POSTROUTING",
-					"-s", addr6.String()+"/32",
-					"-o", ifaceExternal,
-					"-j", "MASQUERADE",
-				)
-				iptables.Unlock()
-				if err != nil {
-					return
-				}
+				//iptables.Lock()
+				//_, err = utils.ExecCombinedOutputLogged(
+				//	nil,
+				//	"ip", "netns", "exec", namespace,
+				//	"ip6tables", "-t", "nat",
+				//	"-A", "POSTROUTING",
+				//	"-s", addr6.String()+"/128",
+				//	"-o", ifaceExternal,
+				//	"-m", "comment",
+				//	"--comment", "pritunl_cloud_nat",
+				//	"-j", "MASQUERADE",
+				//)
+				//iptables.Unlock()
+				//if err != nil {
+				//	return
+				//}
+				//
+				//iptables.Lock()
+				//_, err = utils.ExecCombinedOutputLogged(
+				//	nil,
+				//	"ip", "netns", "exec", namespace,
+				//	"ip6tables", "-t", "nat",
+				//	"-A", "PREROUTING",
+				//	"-d", pubAddr6,
+				//	"-m", "comment",
+				//	"--comment", "pritunl_cloud_nat",
+				//	"-j", "DNAT",
+				//	"--to-destination", addr6.String(),
+				//)
+				//iptables.Unlock()
+				//if err != nil {
+				//	return
+				//}
 
-				iptables.Lock()
-				_, err = utils.ExecCombinedOutputLogged(
-					nil,
-					"ip", "netns", "exec", namespace,
-					"ip6tables", "-t", "nat",
-					"-A", "PREROUTING",
-					"-d", pubAddr6,
-					"-j", "DNAT",
-					"--to-destination", addr6.String(),
-				)
-				iptables.Unlock()
-				if err != nil {
-					return
-				}
+				//iptables.Lock()
+				//_, err = utils.ExecCombinedOutputLogged(
+				//	nil,
+				//	"ip", "netns", "exec", namespace,
+				//	"ip6tables", "-t", "nat",
+				//	"-A", "POSTROUTING",
+				//	"-s", addr6.String(),
+				//	"-m", "comment",
+				//	"--comment", "pritunl_cloud_nat",
+				//	"-j", "SNAT",
+				//	"--to-source", pubAddr6,
+				//)
+				//iptables.Unlock()
+				//if err != nil {
+				//	return
+				//}
 			} else {
 				logrus.WithFields(logrus.Fields{
 					"instance_id":   virt.Id.Hex(),
@@ -1426,35 +1451,56 @@ func NetworkConf(db *database.Database,
 			return
 		}
 
-		iptables.Lock()
-		_, err = utils.ExecCombinedOutputLogged(
-			nil,
-			"ip", "netns", "exec", namespace,
-			"ip6tables", "-t", "nat",
-			"-A", "POSTROUTING",
-			"-s", addr6.String()+"/32",
-			"-o", ifaceExternal6,
-			"-j", "MASQUERADE",
-		)
-		iptables.Unlock()
-		if err != nil {
-			return
-		}
+		//iptables.Lock()
+		//_, err = utils.ExecCombinedOutputLogged(
+		//	nil,
+		//	"ip", "netns", "exec", namespace,
+		//	"ip6tables", "-t", "nat",
+		//	"-A", "POSTROUTING",
+		//	"-s", addr6.String()+"/128",
+		//	"-o", ifaceExternal6,
+		//	"-m", "comment",
+		//	"--comment", "pritunl_cloud_nat",
+		//	"-j", "MASQUERADE",
+		//)
+		//iptables.Unlock()
+		//if err != nil {
+		//	return
+		//}
+		//
+		//iptables.Lock()
+		//_, err = utils.ExecCombinedOutputLogged(
+		//	nil,
+		//	"ip", "netns", "exec", namespace,
+		//	"ip6tables", "-t", "nat",
+		//	"-A", "PREROUTING",
+		//	"-d", pubAddr6,
+		//	"-m", "comment",
+		//	"--comment", "pritunl_cloud_nat",
+		//	"-j", "DNAT",
+		//	"--to-destination", addr6.String(),
+		//)
+		//iptables.Unlock()
+		//if err != nil {
+		//	return
+		//}
 
-		iptables.Lock()
-		_, err = utils.ExecCombinedOutputLogged(
-			nil,
-			"ip", "netns", "exec", namespace,
-			"ip6tables", "-t", "nat",
-			"-A", "PREROUTING",
-			"-d", pubAddr6,
-			"-j", "DNAT",
-			"--to-destination", addr6.String(),
-		)
-		iptables.Unlock()
-		if err != nil {
-			return
-		}
+		//iptables.Lock()
+		//_, err = utils.ExecCombinedOutputLogged(
+		//	nil,
+		//	"ip", "netns", "exec", namespace,
+		//	"ip6tables", "-t", "nat",
+		//	"-A", "POSTROUTING",
+		//	"-s", addr6.String(),
+		//  "-m", "comment",
+		//  "--comment", "pritunl_cloud_nat",
+		//	"-j", "SNAT",
+		//	"--to-source", pubAddr6,
+		//)
+		//iptables.Unlock()
+		//if err != nil {
+		//	return
+		//}
 	}
 
 	if hostNetwork {
