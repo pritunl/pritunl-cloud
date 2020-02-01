@@ -672,6 +672,23 @@ func UpdateState(nodeSelf *node.Node, instances []*instance.Instance,
 		ifaceExternal6 := vm.GetIfaceExternal(inst.Id, 1)
 		ifaceHost := vm.GetIfaceHost(inst.Id, 0)
 
+		addr := ""
+		addr6 := ""
+		pubAddr := ""
+		pubAddr6 := ""
+		if inst.PrivateIps != nil && len(inst.PrivateIps) != 0 {
+			addr = inst.PrivateIps[0]
+		}
+		if inst.PrivateIps6 != nil && len(inst.PrivateIps6) != 0 {
+			addr6 = inst.PrivateIps6[0]
+		}
+		if inst.PublicIps != nil && len(inst.PublicIps) != 0 {
+			pubAddr = inst.PublicIps[0]
+		}
+		if inst.PublicIps6 != nil && len(inst.PublicIps6) != 0 {
+			pubAddr6 = inst.PublicIps6[0]
+		}
+
 		_, ok := newState.Interfaces[namespace+"-"+iface]
 		if ok {
 			logrus.WithFields(logrus.Fields{
@@ -695,17 +712,22 @@ func UpdateState(nodeSelf *node.Node, instances []*instance.Instance,
 		}
 
 		if externalNetwork {
-			rules := generateInternal(namespace, ifaceExternal, ingress)
+			rules := generateInternal(namespace, ifaceExternal,
+				true, addr, pubAddr, addr6, pubAddr6, ingress)
 			newState.Interfaces[namespace+"-"+ifaceExternal] = rules
 		}
 
-		if externalNetwork6 {
-			rules := generateInternal(namespace, ifaceExternal6, ingress)
+		if externalNetwork6 &&
+			(!externalNetwork || ifaceExternal != ifaceExternal6) {
+
+			rules := generateInternal(namespace, ifaceExternal6,
+				true, addr, pubAddr, addr6, pubAddr6, ingress)
 			newState.Interfaces[namespace+"-"+ifaceExternal6] = rules
 		}
 
 		if hostNetwork {
-			rules := generateInternal(namespace, ifaceHost, ingress)
+			rules := generateInternal(namespace, ifaceHost,
+				false, "", "", "", "", ingress)
 			newState.Interfaces[namespace+"-"+ifaceHost] = rules
 		}
 
