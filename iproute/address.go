@@ -9,11 +9,12 @@ import (
 )
 
 type Address struct {
-	Family  string `json:"family"`
-	Local   string `json:"local"`
-	Prefix  int    `json:"prefixlen"`
-	Scope   string `json:"scope"`
-	Dynamic bool   `json:"dynamic"`
+	Family     string `json:"family"`
+	Local      string `json:"local"`
+	Prefix     int    `json:"prefixlen"`
+	Scope      string `json:"scope"`
+	Dynamic    bool   `json:"dynamic"`
+	Deprecated bool   `json:"deprecated"`
 }
 
 type AddressIface struct {
@@ -72,7 +73,7 @@ func AddressGetIface(namespace, name string) (
 	for _, iface := range ifaces {
 		if iface.Name == name && iface.Addresses != nil {
 			for _, addr := range iface.Addresses {
-				if addr.Scope == "global" {
+				if addr.Scope == "global" && !addr.Deprecated {
 					if address == nil && addr.Family == "inet" {
 						address = addr
 					} else if (address6 == nil || dynamic6) &&
