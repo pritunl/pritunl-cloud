@@ -18,12 +18,18 @@ var (
 )
 
 type Rules struct {
-	Namespace string
-	Interface string
-	Ingress   [][]string
-	Ingress6  [][]string
-	Holds     [][]string
-	Holds6    [][]string
+	Namespace   string
+	Interface   string
+	Nat         bool
+	NatAddr     string
+	NatPubAddr  string
+	Nat6        bool
+	NatAddr6    string
+	NatPubAddr6 string
+	Ingress     [][]string
+	Ingress6    [][]string
+	Holds       [][]string
+	Holds6      [][]string
 }
 
 type State struct {
@@ -151,6 +157,84 @@ func (r *Rules) Apply() (err error) {
 	return
 }
 
+func (r *Rules) ApplyNat() (err error) {
+	iptablesCmd := getIptablesCmd(false)
+	if r.Nat {
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{
+				"matching rule exist",
+			},
+			"ip", "netns", "exec", r.Namespace, iptablesCmd,
+			"-t", "nat",
+			"-A", "PREROUTING",
+			"-d", r.NatPubAddr+"/32",
+			"-m", "comment",
+			"--comment", "pritunl_cloud_nat",
+			"-j", "DNAT",
+			"--to-destination", r.NatAddr,
+		)
+		if err != nil {
+			return
+		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{
+				"matching rule exist",
+			},
+			"ip", "netns", "exec", r.Namespace, iptablesCmd,
+			"-t", "nat",
+			"-A", "POSTROUTING",
+			"-s", r.NatAddr+"/32",
+			"-o", r.Interface,
+			"-m", "comment",
+			"--comment", "pritunl_cloud_nat",
+			"-j", "MASQUERADE",
+		)
+		if err != nil {
+			return
+		}
+	}
+
+	iptablesCmd = getIptablesCmd(true)
+	if r.Nat6 {
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{
+				"matching rule exist",
+			},
+			"ip", "netns", "exec", r.Namespace, iptablesCmd,
+			"-t", "nat",
+			"-A", "PREROUTING",
+			"-d", r.NatPubAddr6+"/128",
+			"-m", "comment",
+			"--comment", "pritunl_cloud_nat",
+			"-j", "DNAT",
+			"--to-destination", r.NatAddr6,
+		)
+		if err != nil {
+			return
+		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{
+				"matching rule exist",
+			},
+			"ip", "netns", "exec", r.Namespace, iptablesCmd,
+			"-t", "nat",
+			"-A", "POSTROUTING",
+			"-s", r.NatAddr6+"/128",
+			"-o", r.Interface,
+			"-m", "comment",
+			"--comment", "pritunl_cloud_nat",
+			"-j", "MASQUERADE",
+		)
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
 func (r *Rules) Hold() (err error) {
 	cmd := r.newCommand()
 	if r.Interface != "host" {
@@ -257,6 +341,92 @@ func (r *Rules) Remove() (err error) {
 		return
 	}
 	r.Holds6 = [][]string{}
+
+	return
+}
+
+func (r *Rules) RemoveNat() (err error) {
+	iptablesCmd := getIptablesCmd(false)
+	if r.NatPubAddr != "" && r.NatAddr != "" {
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{
+				"matching rule exist",
+				"match by that name",
+			},
+			"ip", "netns", "exec", r.Namespace, iptablesCmd,
+			"-t", "nat",
+			"-D", "PREROUTING",
+			"-d", r.NatPubAddr+"/32",
+			"-m", "comment",
+			"--comment", "pritunl_cloud_nat",
+			"-j", "DNAT",
+			"--to-destination", r.NatAddr,
+		)
+		if err != nil {
+			return
+		}
+	}
+
+	if r.NatAddr != "" {
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{
+				"matching rule exist",
+				"match by that name",
+			},
+			"ip", "netns", "exec", r.Namespace, iptablesCmd,
+			"-t", "nat",
+			"-D", "POSTROUTING",
+			"-s", r.NatAddr+"/32",
+			"-o", r.Interface,
+			"-m", "comment",
+			"--comment", "pritunl_cloud_nat",
+			"-j", "MASQUERADE",
+		)
+		if err != nil {
+			return
+		}
+	}
+
+	iptablesCmd = getIptablesCmd(true)
+	if r.NatPubAddr6 != "" && r.NatAddr6 != "" {
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{
+				"matching rule exist",
+				"match by that name",
+			},
+			"ip", "netns", "exec", r.Namespace, iptablesCmd,
+			"-t", "nat",
+			"-D", "PREROUTING",
+			"-d", r.NatPubAddr6+"/128",
+			"-m", "comment",
+			"--comment", "pritunl_cloud_nat",
+			"-j", "DNAT",
+			"--to-destination", r.NatAddr6,
+		)
+		if err != nil {
+			return
+		}
+	}
+
+	if r.NatAddr6 != "" {
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{
+				"matching rule exist",
+				"match by that name",
+			},
+			"ip", "netns", "exec", r.Namespace, iptablesCmd,
+			"-t", "nat",
+			"-D", "POSTROUTING",
+			"-s", r.NatAddr6+"/128",
+			"-o", r.Interface,
+			"-m", "comment",
+			"--comment", "pritunl_cloud_nat",
+			"-j", "MASQUERADE",
+		)
+		if err != nil {
+			return
+		}
+	}
 
 	return
 }
@@ -558,8 +728,9 @@ func generateVirt(namespace, iface string, ingress []*firewall.Rule) (
 	return
 }
 
-func generateInternal(namespace, iface string, ingress []*firewall.Rule) (
-	rules *Rules) {
+func generateInternal(namespace, iface string, nat bool,
+	natAddr, natPubAddr, natAddr6, natPubAddr6 string,
+	ingress []*firewall.Rule) (rules *Rules) {
 
 	rules = &Rules{
 		Namespace: namespace,
@@ -568,6 +739,20 @@ func generateInternal(namespace, iface string, ingress []*firewall.Rule) (
 		Ingress6:  [][]string{},
 		Holds:     [][]string{},
 		Holds6:    [][]string{},
+	}
+
+	if nat {
+		if natAddr != "" && natPubAddr != "" {
+			rules.Nat = true
+			rules.NatAddr = natAddr
+			rules.NatPubAddr = natPubAddr
+		}
+
+		if natAddr6 != "" && natPubAddr6 != "" {
+			rules.Nat6 = true
+			rules.NatAddr6 = natAddr6
+			rules.NatPubAddr6 = natPubAddr6
+		}
 	}
 
 	cmd := rules.newCommand()
