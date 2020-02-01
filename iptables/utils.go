@@ -66,6 +66,20 @@ func diffRules(a, b *Rules) bool {
 	return false
 }
 
+func diffRulesNat(a, b *Rules) bool {
+	if a.Nat != b.Nat ||
+		a.NatAddr != b.NatAddr ||
+		a.NatPubAddr != b.NatPubAddr ||
+		a.Nat6 != b.Nat6 ||
+		a.NatAddr6 != b.NatAddr6 ||
+		a.NatPubAddr6 != b.NatPubAddr6 {
+
+		return true
+	}
+
+	return false
+}
+
 func getIptablesCmd(ipv6 bool) string {
 	if ipv6 {
 		return "ip6tables"
