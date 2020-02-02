@@ -417,6 +417,8 @@ export default class Domains extends React.Component<{}, State> {
 			<DomainsPage
 				onPage={(): void => {
 					this.setState({
+						...this.state,
+						selected: {},
 						lastSelected: null,
 					});
 				}}
