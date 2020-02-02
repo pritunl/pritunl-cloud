@@ -219,7 +219,8 @@ func loadIptables(namespace string, state *State, ipv6 bool) (err error) {
 						}).Error("iptables: Invalid iptables interface")
 
 						err = &errortypes.ParseError{
-							errors.New("iptables: Invalid iptables interface"),
+							errors.New(
+								"iptables: Invalid iptables interface"),
 						}
 						return
 					}
@@ -543,7 +544,9 @@ func applyState(oldState, newState *State, namespaces []string) (err error) {
 	}
 
 	for _, rules := range newState.Interfaces {
-		if rules.Namespace != "0" && !namespacesSet.Contains(rules.Namespace) {
+		if rules.Namespace != "0" &&
+			!namespacesSet.Contains(rules.Namespace) {
+
 			_, err = utils.ExecCombinedOutputLogged(
 				[]string{"File exists"},
 				"ip", "netns",
