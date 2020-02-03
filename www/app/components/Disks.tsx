@@ -468,6 +468,8 @@ export default class Disks extends React.Component<{}, State> {
 			<DisksPage
 				onPage={(): void => {
 					this.setState({
+						...this.state,
+						selected: {},
 						lastSelected: null,
 					});
 				}}
