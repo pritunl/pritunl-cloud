@@ -1,6 +1,8 @@
 package balancer
 
 import (
+	"github.com/dropbox/godropbox/container/set"
+	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -64,6 +66,49 @@ func (b *Balancer) Validate(db *database.Database) (
 			}
 			return
 		}
+	}
+
+	return
+}
+
+func (b *Balancer) Commit(db *database.Database) (err error) {
+	coll := db.Balancers()
+
+	err = coll.Commit(b.Id, b)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func (b *Balancer) CommitFields(db *database.Database, fields set.Set) (
+	err error) {
+
+	coll := db.Balancers()
+
+	err = coll.CommitFields(b.Id, b, fields)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func (b *Balancer) Insert(db *database.Database) (err error) {
+	coll := db.Balancers()
+
+	if !b.Id.IsZero() {
+		err = &errortypes.DatabaseError{
+			errors.New("balancer: Balancer already exists"),
+		}
+		return
+	}
+
+	_, err = coll.InsertOne(db, b)
+	if err != nil {
+		err = database.ParseError(err)
+		return
 	}
 
 	return
