@@ -2,6 +2,8 @@ package balancer
 
 import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 )
 
 type Domain struct {
@@ -25,4 +27,44 @@ type Balancer struct {
 	WebSockets   bool                 `bson:"websockets" json:"websockets"`
 	Domains      []*Domain            `bson:"domains" json:"domains"`
 	Backends     []*Backend           `bson:"backends" json:"backends"`
+}
+
+func (b *Balancer) Validate(db *database.Database) (
+	errData *errortypes.ErrorData, err error) {
+
+	if b.Type == "" {
+		b.Type = Http
+	}
+
+	if b.Domains == nil {
+		b.Domains = []*Domain{}
+	}
+
+	for _, backend := range b.Backends {
+		if backend.Protocol != "http" && backend.Protocol != "https" {
+			errData = &errortypes.ErrorData{
+				Error:   "balancer_protocol_invalid",
+				Message: "Invalid balancer backend protocol",
+			}
+			return
+		}
+
+		if backend.Hostname == "" {
+			errData = &errortypes.ErrorData{
+				Error:   "balancer_hostname_invalid",
+				Message: "Invalid balancer backend hostname",
+			}
+			return
+		}
+
+		if backend.Port == 0 {
+			errData = &errortypes.ErrorData{
+				Error:   "balancer_port_invalid",
+				Message: "Invalid balancer backend port",
+			}
+			return
+		}
+	}
+
+	return
 }
