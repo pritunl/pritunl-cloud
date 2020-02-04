@@ -18,6 +18,7 @@ export interface Backend {
 export interface Balancer {
 	id?: string;
 	name?: string;
+	type?: string;
 	organization?: string;
 	zone?: string;
 	certificates?: string[];
