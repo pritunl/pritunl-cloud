@@ -161,6 +161,11 @@ func (d *Database) Zones() (coll *Collection) {
 	return
 }
 
+func (d *Database) Balancers() (coll *Collection) {
+	coll = d.getCollection("balancers")
+	return
+}
+
 func (d *Database) Instances() (coll *Collection) {
 	coll = d.getCollection("instances")
 	return
