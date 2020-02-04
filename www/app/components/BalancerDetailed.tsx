@@ -638,6 +638,16 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 						}}
 					/>
 					<PageSelect
+						label="Type"
+						help="Load balancer type"
+						value={balancer.type}
+						onChange={(val): void => {
+							this.set('type', val);
+						}}
+					>
+						<option value="http">HTTP</option>
+					</PageSelect>
+					<PageSelect
 						disabled={this.state.disabled || !hasDatacenters}
 						hidden={!!this.props.balancer.zone}
 						label="Datacenter"
