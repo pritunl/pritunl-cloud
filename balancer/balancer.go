@@ -24,7 +24,7 @@ type Balancer struct {
 	Name         string               `bson:"name" json:"name"`
 	Type         string               `bson:"type" json:"type"`
 	Organization primitive.ObjectID   `bson:"organization,omitempty" json:"organization"`
-	Zone         primitive.ObjectID   `bson:"zone,omitempty"`
+	Zone         primitive.ObjectID   `bson:"zone,omitempty" json:"zone"`
 	Certificates []primitive.ObjectID `bson:"certificates" json:"certificates"`
 	WebSockets   bool                 `bson:"websockets" json:"websockets"`
 	Domains      []*Domain            `bson:"domains" json:"domains"`
