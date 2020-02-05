@@ -16,6 +16,7 @@ import PageInfo from './PageInfo';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
 import Help from './Help';
+import PageSelectButton from "./PageSelectButton";
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -768,6 +769,34 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 					>
 						{organizationsSelect}
 					</PageSelect>
+					<label
+						className="bp3-label"
+						style={css.label}
+					>
+						Certificates
+						<Help
+							title="Certificates"
+							content="The certificates to use for this load balancer. The certificates must be valid for all the domains that this load balancer provides access to."
+						/>
+						<div>
+							{certificates}
+						</div>
+					</label>
+					<PageSelectButton
+						label="Add Certificate"
+						value={this.state.addCert}
+						disabled={this.state.disabled || !hasCertificates}
+						buttonClass="bp3-intent-success"
+						onChange={(val: string): void => {
+							this.setState({
+								...this.state,
+								addCert: val,
+							});
+						}}
+						onSubmit={this.onAddCert}
+					>
+						{certificatesSelect}
+					</PageSelectButton>
 				</div>
 			</div>
 			<PageSave
