@@ -34,7 +34,6 @@ interface State {
 	message: string;
 	balancer: BalancerTypes.Balancer;
 	datacenter: string;
-	zone: string;
 	addCert: string;
 }
 
@@ -115,7 +114,6 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 			message: '',
 			balancer: null,
 			datacenter: '',
-			zone: '',
 			addCert: null,
 		};
 	}
@@ -664,12 +662,13 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 								};
 							}
 
+							balancer.zone = null;
+
 							this.setState({
 								...this.state,
 								changed: true,
 								balancer: balancer,
 								datacenter: val,
-								zone: '',
 							});
 						}}
 					>
@@ -680,26 +679,9 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 						!hasZones}
 						label="Zone"
 						help="Load balancer zone."
-						value={this.props.balancer.zone ? this.props.balancer.zone :
-							this.state.zone}
+						value={balancer.zone}
 						onChange={(val): void => {
-							let balancer: BalancerTypes.Balancer;
-							if (this.state.changed) {
-								balancer = {
-									...this.state.balancer,
-								};
-							} else {
-								balancer = {
-									...this.props.balancer,
-								};
-							}
-
-							this.setState({
-								...this.state,
-								changed: true,
-								balancer: balancer,
-								zone: val,
-							});
+							this.set('zone', val);
 						}}
 					>
 						{zonesSelect}
