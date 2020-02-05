@@ -31,7 +31,7 @@ export interface Filter {
 	id?: string;
 	name?: string;
 	organization?: string;
-	zone?: boolean;
+	zone?: string;
 }
 
 export type Balancers = Balancer[];
