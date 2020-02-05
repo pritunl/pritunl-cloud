@@ -704,8 +704,7 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 						{datacentersSelect}
 					</PageSelect>
 					<PageSelect
-						disabled={!!this.props.balancer.zone || this.state.disabled ||
-						!hasZones}
+						disabled={this.state.disabled || !hasZones}
 						label="Zone"
 						help="Load balancer zone."
 						value={balancer.zone}
