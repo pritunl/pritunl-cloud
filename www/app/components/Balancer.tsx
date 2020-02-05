@@ -162,8 +162,8 @@ export default class Balancer extends React.Component<Props, {}> {
 			<div className="bp3-cell" style={css.item}>
 				<span
 					style={css.icon}
-					className={'bp3-icon-standard bp3-text-muted ' + (
-						balancer.organization ? 'bp3-icon-people' : 'bp3-icon-layers')}
+					hidden={!orgName}
+					className={'bp3-icon-standard bp3-text-muted bp3-icon-people'}
 				/>
 				{orgName}
 			</div>
