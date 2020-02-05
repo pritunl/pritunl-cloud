@@ -449,9 +449,18 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 		let balancer: BalancerTypes.Balancer = this.state.balancer ||
 			this.props.balancer;
 
+		let hasOrganizations = false;
 		let organizationsSelect: JSX.Element[] = [];
 		if (this.props.organizations.length) {
+			organizationsSelect.push(
+				<option key="null" value="">
+					Select Organization
+				</option>,
+			);
+
 			for (let organization of this.props.organizations) {
+				hasOrganizations = true;
+
 				organizationsSelect.push(
 					<option
 						key={organization.id}
@@ -459,6 +468,11 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 					>{organization.name}</option>,
 				);
 			}
+		}
+
+		if (!hasOrganizations) {
+			organizationsSelect.push(
+				<option key="null" value="">No Organizations</option>);
 		}
 
 		let domains: JSX.Element[] = [];
@@ -729,7 +743,7 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 						]}
 					/>
 					<PageSelect
-						disabled={this.state.disabled}
+						disabled={this.state.disabled || !hasOrganizations}
 						hidden={Constants.user}
 						label="Organization"
 						help="Organization for balancer, both the organaization and role must match. Select balancer balancer to match balancer network roles."
