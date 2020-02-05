@@ -536,15 +536,29 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 			);
 		}
 
+		let hasCertificates = false;
 		let certificatesSelect: JSX.Element[] = [];
 		if (this.props.certificates.length) {
 			for (let certificate of this.props.certificates) {
+				if (certificate.organization !== balancer.organization) {
+					continue;
+				}
+				hasCertificates = true;
+
 				certificatesSelect.push(
 					<option key={certificate.id} value={certificate.id}>
 						{certificate.name}
 					</option>,
 				);
 			}
+		}
+
+		if (!hasCertificates) {
+			certificatesSelect = [
+				<option key="null" value="">
+					No Certificates
+				</option>,
+			];
 		}
 
 		let defaultDatacenter = '';
