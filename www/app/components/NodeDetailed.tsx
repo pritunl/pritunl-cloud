@@ -1078,6 +1078,10 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		let certificatesSelect: JSX.Element[] = [];
 		if (this.props.certificates.length) {
 			for (let certificate of this.props.certificates) {
+				if (certificate.organization) {
+					continue;
+				}
+
 				certificatesSelect.push(
 					<option key={certificate.id} value={certificate.id}>
 						{certificate.name}
