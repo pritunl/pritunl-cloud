@@ -42,6 +42,14 @@ func (b *Balancer) Validate(db *database.Database) (
 		b.Domains = []*Domain{}
 	}
 
+	if b.Backends == nil {
+		b.Backends = []*Backend{}
+	}
+
+	if b.Certificates == nil {
+		b.Certificates = []primitive.ObjectID{}
+	}
+
 	for _, backend := range b.Backends {
 		if backend.Protocol != "http" && backend.Protocol != "https" {
 			errData = &errortypes.ErrorData{
