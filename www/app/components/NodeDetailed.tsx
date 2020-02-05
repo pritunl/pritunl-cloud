@@ -1075,12 +1075,14 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			);
 		}
 
+		let hasCertificates = false;
 		let certificatesSelect: JSX.Element[] = [];
 		if (this.props.certificates.length) {
 			for (let certificate of this.props.certificates) {
 				if (certificate.organization) {
 					continue;
 				}
+				hasCertificates = true;
 
 				certificatesSelect.push(
 					<option key={certificate.id} value={certificate.id}>
@@ -1088,6 +1090,14 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					</option>,
 				);
 			}
+		}
+
+		if (!hasCertificates) {
+			certificatesSelect = [
+				<option key="null" value="">
+					No Certificates
+				</option>,
+			];
 		}
 
 		let defaultDatacenter = '';
@@ -1758,7 +1768,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						hidden={node.protocol === 'http'}
 						label="Add Certificate"
 						value={this.state.addCert}
-						disabled={!this.props.certificates.length || this.state.disabled}
+						disabled={this.state.disabled || !hasCertificates}
 						buttonClass="bp3-intent-success"
 						onChange={(val: string): void => {
 							this.setState({
