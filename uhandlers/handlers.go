@@ -58,6 +58,12 @@ func Register(engine *gin.Engine) {
 	orgGroup.DELETE("/authority", authoritiesDelete)
 	orgGroup.DELETE("/authority/:authority_id", authorityDelete)
 
+	orgGroup.GET("/certificate", certificatesGet)
+	orgGroup.GET("/certificate/:cert_id", certificateGet)
+	orgGroup.PUT("/certificate/:cert_id", certificatePut)
+	orgGroup.POST("/certificate", certificatePost)
+	orgGroup.DELETE("/certificate/:cert_id", certificateDelete)
+
 	engine.GET("/check", checkGet)
 
 	authGroup.GET("/csrf", csrfGet)
