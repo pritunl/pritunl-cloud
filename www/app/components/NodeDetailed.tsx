@@ -554,8 +554,6 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			return;
 		}
 
-		let certId = this.state.addCert || this.props.certificates[0].id;
-
 		if (this.state.changed) {
 			node = {
 				...this.state.node,
@@ -564,6 +562,17 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			node = {
 				...this.props.node,
 			};
+		}
+
+		let certId = this.state.addCert;
+		if (!certId) {
+			for (let certificate of this.props.certificates) {
+				if (certificate.organization) {
+					continue;
+				}
+				certId = certificate.id;
+				break;
+			}
 		}
 
 		let certificates = [
