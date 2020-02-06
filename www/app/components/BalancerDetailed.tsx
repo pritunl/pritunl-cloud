@@ -525,7 +525,7 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 		let certificates: JSX.Element[] = [];
 		for (let certId of (balancer.certificates || [])) {
 			let cert = CertificatesStore.certificate(certId);
-			if (!cert || cert.organization !== balancer.organization) {
+			if (!cert) {
 				continue;
 			}
 
