@@ -13,12 +13,13 @@ import (
 )
 
 type certificateData struct {
-	Id          primitive.ObjectID `json:"id"`
-	Name        string             `json:"name"`
-	Type        string             `json:"type"`
-	Key         string             `json:"key"`
-	Certificate string             `json:"certificate"`
-	AcmeDomains []string           `json:"acme_domains"`
+	Id           primitive.ObjectID `json:"id"`
+	Name         string             `json:"name"`
+	Organization primitive.ObjectID `json:"organization"`
+	Type         string             `json:"type"`
+	Key          string             `json:"key"`
+	Certificate  string             `json:"certificate"`
+	AcmeDomains  []string           `json:"acme_domains"`
 }
 
 func certificatePut(c *gin.Context) {
@@ -48,11 +49,13 @@ func certificatePut(c *gin.Context) {
 	}
 
 	cert.Name = data.Name
+	cert.Organization = data.Organization
 	cert.Type = data.Type
 	cert.AcmeDomains = data.AcmeDomains
 
 	fields := set.NewSet(
 		"name",
+		"organization",
 		"type",
 		"acme_domains",
 		"info",
@@ -118,9 +121,10 @@ func certificatePost(c *gin.Context) {
 	}
 
 	cert := &certificate.Certificate{
-		Name:        data.Name,
-		Type:        data.Type,
-		AcmeDomains: data.AcmeDomains,
+		Name:         data.Name,
+		Organization: data.Organization,
+		Type:         data.Type,
+		AcmeDomains:  data.AcmeDomains,
 	}
 
 	if cert.Type != certificate.LetsEncrypt {
