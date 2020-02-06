@@ -55,6 +55,13 @@ func Register(engine *gin.Engine) {
 	csrfGroup.DELETE("/authority", authoritiesDelete)
 	csrfGroup.DELETE("/authority/:authority_id", authorityDelete)
 
+	csrfGroup.GET("/balancer", balancersGet)
+	csrfGroup.GET("/balancer/:balancer_id", balancerGet)
+	csrfGroup.PUT("/balancer/:balancer_id", balancerPut)
+	csrfGroup.POST("/balancer", balancerPost)
+	csrfGroup.DELETE("/balancer", balancersDelete)
+	csrfGroup.DELETE("/balancer/:balancer_id", balancerDelete)
+
 	csrfGroup.GET("/block", blocksGet)
 	csrfGroup.GET("/block/:block_id", blockGet)
 	csrfGroup.PUT("/block/:block_id", blockPut)
