@@ -28,15 +28,16 @@ type Info struct {
 }
 
 type Certificate struct {
-	Id          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Name        string             `bson:"name" json:"name"`
-	Type        string             `bson:"type" json:"type"`
-	Key         string             `bson:"key" json:"key"`
-	Certificate string             `bson:"certificate" json:"certificate"`
-	Info        *Info              `bson:"info" json:"info"`
-	AcmeHash    string             `bson:"acme_hash" json:"acme_hash"`
-	AcmeAccount string             `bson:"acme_account" json:"acme_account"`
-	AcmeDomains []string           `bson:"acme_domains" json:"acme_domains"`
+	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name         string             `bson:"name" json:"name"`
+	Organization primitive.ObjectID `bson:"organization,omitempty" json:"organization"`
+	Type         string             `bson:"type" json:"type"`
+	Key          string             `bson:"key" json:"key"`
+	Certificate  string             `bson:"certificate" json:"certificate"`
+	Info         *Info              `bson:"info" json:"info"`
+	AcmeHash     string             `bson:"acme_hash" json:"acme_hash"`
+	AcmeAccount  string             `bson:"acme_account" json:"acme_account"`
+	AcmeDomains  []string           `bson:"acme_domains" json:"acme_domains"`
 }
 
 func (c *Certificate) Validate(db *database.Database) (
