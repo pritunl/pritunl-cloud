@@ -17,6 +17,7 @@ import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
 import Help from './Help';
 import PageSelectButton from "./PageSelectButton";
+import PageSwitch from "./PageSwitch";
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -662,6 +663,15 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 						value={balancer.name}
 						onChange={(val): void => {
 							this.set('name', val);
+						}}
+					/>
+					<PageSwitch
+						disabled={this.state.disabled}
+						label="Active"
+						help="Enable or disable load balancer."
+						checked={balancer.state}
+						onToggle={(): void => {
+							this.set('state', !balancer.state);
 						}}
 					/>
 					<PageSelect
