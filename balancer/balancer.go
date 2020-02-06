@@ -23,6 +23,7 @@ type Balancer struct {
 	Id           primitive.ObjectID   `bson:"_id,omitempty" json:"id"`
 	Name         string               `bson:"name" json:"name"`
 	Type         string               `bson:"type" json:"type"`
+	State        bool                 `bson:"state" json:"state"`
 	Organization primitive.ObjectID   `bson:"organization,omitempty" json:"organization"`
 	Zone         primitive.ObjectID   `bson:"zone,omitempty" json:"zone"`
 	Certificates []primitive.ObjectID `bson:"certificates" json:"certificates"`
