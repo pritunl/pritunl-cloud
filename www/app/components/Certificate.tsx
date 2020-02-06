@@ -1,6 +1,7 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
 import * as CertificateTypes from '../types/CertificateTypes';
+import * as OrganizationTypes from '../types/OrganizationTypes';
 import * as CertificateActions from '../actions/CertificateActions';
 import * as MiscUtils from '../utils/MiscUtils';
 import CertificateDomain from './CertificateDomain';
@@ -11,9 +12,11 @@ import PageTextArea from './PageTextArea';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
 import Help from './Help';
+import * as Constants from "../Constants";
 
 interface Props {
 	certificate: CertificateTypes.CertificateRo;
+	organizations: OrganizationTypes.OrganizationsRo;
 }
 
 interface State {
@@ -240,6 +243,23 @@ export default class Certificate extends React.Component<Props, State> {
 
 		let info: CertificateTypes.Info = this.props.certificate.info || {};
 
+		let organizationsSelect: JSX.Element[] = [];
+		organizationsSelect.push(
+			<option key="null" value="">
+				Node Certificate
+			</option>,
+		);
+		if (this.props.organizations.length) {
+			for (let organization of this.props.organizations) {
+				organizationsSelect.push(
+					<option
+						key={organization.id}
+						value={organization.id}
+					>{organization.name}</option>,
+				);
+			}
+		}
+
 		let domains: JSX.Element[] = [];
 		for (let i = 0; i < cert.acme_domains.length; i++) {
 			let index = i;
@@ -371,6 +391,18 @@ export default class Certificate extends React.Component<Props, State> {
 					>
 						<option value="text">Text</option>
 						<option value="lets_encrypt">LetsEncrypt</option>
+					</PageSelect>
+					<PageSelect
+						disabled={this.state.disabled}
+						hidden={Constants.user}
+						label="Organization"
+						help="Organization for certificate. Select node to create a certificate for nodes. Load balancers in the same organization will have access to this certificate."
+						value={cert.organization}
+						onChange={(val): void => {
+							this.set('organization', val);
+						}}
+					>
+						{organizationsSelect}
 					</PageSelect>
 				</div>
 			</div>
