@@ -239,8 +239,6 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 			return;
 		}
 
-		let certId = this.state.addCert || this.props.certificates[0].id;
-
 		if (this.state.changed) {
 			balancer = {
 				...this.state.balancer,
@@ -249,6 +247,17 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 			balancer = {
 				...this.props.balancer,
 			};
+		}
+
+		let certId = this.state.addCert;
+		if (!certId) {
+			for (let certificate of this.props.certificates) {
+				if (certificate.organization !== balancer.organization) {
+					continue;
+				}
+				certId = certificate.id;
+				break;
+			}
 		}
 
 		let certificates = [
