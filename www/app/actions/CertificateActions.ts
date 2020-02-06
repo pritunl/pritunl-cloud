@@ -8,6 +8,7 @@ import Loader from '../Loader';
 import * as CertificateTypes from '../types/CertificateTypes';
 import * as MiscUtils from '../utils/MiscUtils';
 import * as Constants from "../Constants";
+import OrganizationsStore from "../stores/OrganizationsStore";
 
 let syncId: string;
 
@@ -22,6 +23,7 @@ export function sync(): Promise<void> {
 			.get('/certificate')
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -63,6 +65,7 @@ export function commit(cert: CertificateTypes.Certificate): Promise<void> {
 			.send(cert)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -92,6 +95,7 @@ export function create(cert: CertificateTypes.Certificate): Promise<void> {
 			.send(cert)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -120,6 +124,7 @@ export function remove(certId: string): Promise<void> {
 			.delete('/certificate/' + certId)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -143,9 +148,7 @@ export function remove(certId: string): Promise<void> {
 EventDispatcher.register((action: CertificateTypes.CertificateDispatch) => {
 	switch (action.type) {
 		case CertificateTypes.CHANGE:
-			if (!Constants.user) {
-				sync();
-			}
+			sync();
 			break;
 	}
 });
