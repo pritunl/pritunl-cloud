@@ -77,6 +77,40 @@ func (b *Balancer) Validate(db *database.Database) (
 		}
 	}
 
+	if b.State {
+		if b.Organization.IsZero() {
+			errData = &errortypes.ErrorData{
+				Error:   "organization_required",
+				Message: "Missing required organization",
+			}
+			return
+		}
+
+		if b.Zone.IsZero() {
+			errData = &errortypes.ErrorData{
+				Error:   "zone_required",
+				Message: "Missing required zone",
+			}
+			return
+		}
+
+		if b.Domains == nil || len(b.Domains) == 0 {
+			errData = &errortypes.ErrorData{
+				Error:   "domain_required",
+				Message: "Missing required domain",
+			}
+			return
+		}
+
+		if b.Backends == nil || len(b.Backends) == 0 {
+			errData = &errortypes.ErrorData{
+				Error:   "backend_required",
+				Message: "Missing required backend",
+			}
+			return
+		}
+	}
+
 	return
 }
 
