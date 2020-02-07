@@ -61,7 +61,6 @@ func firewallPut(c *gin.Context) {
 	fire.Ingress = data.Ingress
 
 	fields := set.NewSet(
-		"state",
 		"name",
 		"organization",
 		"network_roles",
