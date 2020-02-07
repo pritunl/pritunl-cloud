@@ -267,6 +267,7 @@ export default class Certificate extends React.Component<Props, State> {
 			domains.push(
 				<CertificateDomain
 					key={index}
+					disabled={this.state.disabled || Constants.user}
 					domain={cert.acme_domains[index]}
 					onChange={(state: string): void => {
 						this.onChangeDomain(index, state);
@@ -340,6 +341,7 @@ export default class Certificate extends React.Component<Props, State> {
 					</div>
 					<button
 						className="bp3-button bp3-intent-success bp3-icon-add"
+						disabled={this.state.disabled || Constants.user}
 						style={css.itemsAdd}
 						hidden={cert.type !== 'lets_encrypt'}
 						type="button"
@@ -383,6 +385,7 @@ export default class Certificate extends React.Component<Props, State> {
 					/>
 					<PageSelect
 						label="Type"
+						disabled={this.state.disabled || Constants.user}
 						help="Certificate type, use text to provide a certificate. LetsEncrypt provides free certificates that automatically renew."
 						value={cert.type}
 						onChange={(val): void => {
