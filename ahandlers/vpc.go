@@ -68,7 +68,6 @@ func vpcPut(c *gin.Context) {
 	vc.LinkUris = data.LinkUris
 
 	fields := set.NewSet(
-		"state",
 		"name",
 		"routes",
 		"subnets",
