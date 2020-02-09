@@ -194,7 +194,6 @@ export default class Main extends React.Component<{}, State> {
 						<ReactRouter.Link
 							className="bp3-button bp3-minimal bp3-icon-endorsed"
 							style={css.link}
-							hidden={Constants.user}
 							to="/certificates"
 						>
 							Certificates
