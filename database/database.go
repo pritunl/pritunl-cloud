@@ -855,6 +855,17 @@ func addIndexes() (err error) {
 	}
 
 	index = &Index{
+		Collection: db.Zones(),
+		Keys: &bson.D{
+			{"zone", 1},
+		},
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
+
+	index = &Index{
 		Collection: db.Authorities(),
 		Keys: &bson.D{
 			{"name", 1},
