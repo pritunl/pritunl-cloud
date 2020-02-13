@@ -25,7 +25,7 @@ type Balancer struct {
 	Type         string               `bson:"type" json:"type"`
 	State        bool                 `bson:"state" json:"state"`
 	Organization primitive.ObjectID   `bson:"organization,omitempty" json:"organization"`
-	Zone         primitive.ObjectID   `bson:"zone,omitempty" json:"zone"`
+	Datacenter   primitive.ObjectID   `bson:"datacenter,omitempty" json:"datacenter"`
 	Certificates []primitive.ObjectID `bson:"certificates" json:"certificates"`
 	WebSockets   bool                 `bson:"websockets" json:"websockets"`
 	Domains      []*Domain            `bson:"domains" json:"domains"`
@@ -86,10 +86,10 @@ func (b *Balancer) Validate(db *database.Database) (
 			return
 		}
 
-		if b.Zone.IsZero() {
+		if b.Datacenter.IsZero() {
 			errData = &errortypes.ErrorData{
-				Error:   "zone_required",
-				Message: "Missing required zone",
+				Error:   "datacenter_required",
+				Message: "Missing required datacenter",
 			}
 			return
 		}
