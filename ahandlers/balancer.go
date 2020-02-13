@@ -22,7 +22,7 @@ type balancerData struct {
 	State        bool                 `json:"state"`
 	Type         string               `json:"type"`
 	Organization primitive.ObjectID   `json:"organization"`
-	Zone         primitive.ObjectID   `json:"zone"`
+	Datacenter   primitive.ObjectID   `json:"datacenter"`
 	Certificates []primitive.ObjectID `json:"certificates"`
 	WebSockets   bool                 `json:"websockets"`
 	Domains      []*balancer.Domain   `json:"domains"`
@@ -64,7 +64,7 @@ func balancerPut(c *gin.Context) {
 	balnc.State = data.State
 	balnc.Type = data.Type
 	balnc.Organization = data.Organization
-	balnc.Zone = data.Zone
+	balnc.Datacenter = data.Datacenter
 	balnc.Certificates = data.Certificates
 	balnc.WebSockets = data.WebSockets
 	balnc.Domains = data.Domains
@@ -75,7 +75,7 @@ func balancerPut(c *gin.Context) {
 		"state",
 		"type",
 		"organization",
-		"zone",
+		"datacenter",
 		"certificates",
 		"web_sockets",
 		"domains",
@@ -125,7 +125,7 @@ func balancerPost(c *gin.Context) {
 		State:        data.State,
 		Type:         data.Type,
 		Organization: data.Organization,
-		Zone:         data.Zone,
+		Datacenter:   data.Datacenter,
 		Certificates: data.Certificates,
 		WebSockets:   data.WebSockets,
 		Domains:      data.Domains,
@@ -247,9 +247,9 @@ func balancersGet(c *gin.Context) {
 		query["organization"] = organization
 	}
 
-	zone, ok := utils.ParseObjectId(c.Query("zone"))
+	datacenter, ok := utils.ParseObjectId(c.Query("datacenter"))
 	if ok {
-		query["zone"] = zone
+		query["datacenter"] = datacenter
 	}
 
 	balancers, count, err := balancer.GetAllPaged(db, &query, page, pageCount)
