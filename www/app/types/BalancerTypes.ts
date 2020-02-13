@@ -21,7 +21,7 @@ export interface Balancer {
 	state?: boolean;
 	type?: string;
 	organization?: string;
-	zone?: string;
+	datacenter?: string;
 	certificates?: string[];
 	web_sockets?: boolean;
 	domains?: Domain[];
@@ -32,7 +32,7 @@ export interface Filter {
 	id?: string;
 	name?: string;
 	organization?: string;
-	zone?: string;
+	datacenter?: string;
 }
 
 export type Balancers = Balancer[];
