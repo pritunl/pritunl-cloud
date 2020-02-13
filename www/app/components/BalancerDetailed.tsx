@@ -6,7 +6,6 @@ import * as BalancerActions from '../actions/BalancerActions';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import * as CertificateTypes from '../types/CertificateTypes';
 import * as DatacenterTypes from '../types/DatacenterTypes';
-import * as ZoneTypes from '../types/ZoneTypes';
 import BalancerDomain from './BalancerDomain';
 import BalancerBackend from './BalancerBackend';
 import CertificatesStore from '../stores/CertificatesStore';
@@ -23,7 +22,6 @@ interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
 	certificates: CertificateTypes.CertificatesRo;
 	datacenters: DatacenterTypes.DatacentersRo;
-	zones: ZoneTypes.ZonesRo;
 	balancer: BalancerTypes.BalancerRo;
 	selected: boolean;
 	onSelect: (shift: boolean) => void;
@@ -35,7 +33,6 @@ interface State {
 	changed: boolean;
 	message: string;
 	balancer: BalancerTypes.Balancer;
-	datacenter: string;
 	addCert: string;
 }
 
@@ -115,7 +112,6 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 			changed: false,
 			message: '',
 			balancer: null,
-			datacenter: '',
 			addCert: null,
 		};
 	}
@@ -572,12 +568,13 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 			];
 		}
 
-		let defaultDatacenter = '';
 		let hasDatacenters = false;
 		let datacentersSelect: JSX.Element[] = [];
 		if (this.props.datacenters.length) {
+			datacentersSelect.push(
+				<option key="null" value="">Select Datacenter</option>);
+
 			hasDatacenters = true;
-			defaultDatacenter = this.props.datacenters[0].id;
 			for (let datacenter of this.props.datacenters) {
 				datacentersSelect.push(
 					<option
@@ -591,31 +588,6 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 		if (!hasDatacenters) {
 			datacentersSelect.push(
 				<option key="null" value="">No Datacenters</option>);
-		}
-
-		let datacenter = this.state.datacenter || defaultDatacenter;
-		let hasZones = false;
-		let zonesSelect: JSX.Element[] = [];
-		if (this.props.zones.length) {
-			zonesSelect.push(<option key="null" value="">Select Zone</option>);
-
-			for (let zone of this.props.zones) {
-				if (!this.props.balancer.zone && zone.datacenter !== datacenter) {
-					continue;
-				}
-				hasZones = true;
-
-				zonesSelect.push(
-					<option
-						key={zone.id}
-						value={zone.id}
-					>{zone.name}</option>,
-				);
-			}
-		}
-
-		if (!hasZones) {
-			zonesSelect = [<option key="null" value="">No Zones</option>];
 		}
 
 		return <td
@@ -695,43 +667,14 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 					</PageSelect>
 					<PageSelect
 						disabled={this.state.disabled || !hasDatacenters}
-						hidden={!!this.props.balancer.zone}
 						label="Datacenter"
 						help="Load balancer datacenter."
-						value={this.state.datacenter}
+						value={balancer.datacenter}
 						onChange={(val): void => {
-							if (this.state.changed) {
-								balancer = {
-									...this.state.balancer,
-								};
-							} else {
-								balancer = {
-									...this.props.balancer,
-								};
-							}
-
-							balancer.zone = null;
-
-							this.setState({
-								...this.state,
-								changed: true,
-								balancer: balancer,
-								datacenter: val,
-							});
+							this.set('datacenter', val);
 						}}
 					>
 						{datacentersSelect}
-					</PageSelect>
-					<PageSelect
-						disabled={this.state.disabled || !hasZones}
-						label="Zone"
-						help="Load balancer zone."
-						value={balancer.zone}
-						onChange={(val): void => {
-							this.set('zone', val);
-						}}
-					>
-						{zonesSelect}
 					</PageSelect>
 					<label style={css.itemsLabel}>
 						External Domains
