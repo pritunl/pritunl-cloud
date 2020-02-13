@@ -4,15 +4,12 @@ import * as BalancerTypes from '../types/BalancerTypes';
 import * as CertificateTypes from '../types/CertificateTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import * as DatacenterTypes from '../types/DatacenterTypes';
-import * as ZoneTypes from '../types/ZoneTypes';
 import BalancersStore from '../stores/BalancersStore';
 import OrganizationsStore from '../stores/OrganizationsStore';
 import DatacentersStore from '../stores/DatacentersStore';
-import ZonesStore from '../stores/ZonesStore';
 import * as BalancerActions from '../actions/BalancerActions';
 import * as OrganizationActions from '../actions/OrganizationActions';
 import * as DatacenterActions from '../actions/DatacenterActions';
-import * as ZoneActions from '../actions/ZoneActions';
 import Balancer from './Balancer';
 import BalancersPage from './BalancersPage';
 import BalancersFilter from './BalancersFilter';
@@ -37,7 +34,6 @@ interface State {
 	organizations: OrganizationTypes.OrganizationsRo;
 	certificates: CertificateTypes.CertificatesRo;
 	datacenters: DatacenterTypes.DatacentersRo;
-	zones: ZoneTypes.ZonesRo;
 	selected: Selected;
 	opened: Opened;
 	newOpened: boolean;
@@ -83,7 +79,6 @@ export default class Balancers extends React.Component<{}, State> {
 			organizations: OrganizationsStore.organizations,
 			certificates: CertificatesStore.certificates,
 			datacenters: DatacentersStore.datacenters,
-			zones: ZonesStore.zones,
 			selected: {},
 			opened: {},
 			newOpened: false,
@@ -105,12 +100,10 @@ export default class Balancers extends React.Component<{}, State> {
 		OrganizationsStore.addChangeListener(this.onChange);
 		CertificatesStore.addChangeListener(this.onChange);
 		DatacentersStore.addChangeListener(this.onChange);
-		ZonesStore.addChangeListener(this.onChange);
 		BalancerActions.sync();
 		OrganizationActions.sync();
 		CertificateActions.sync();
 		DatacenterActions.sync();
-		ZoneActions.sync();
 	}
 
 	componentWillUnmount(): void {
@@ -118,7 +111,6 @@ export default class Balancers extends React.Component<{}, State> {
 		OrganizationsStore.removeChangeListener(this.onChange);
 		CertificatesStore.removeChangeListener(this.onChange);
 		DatacentersStore.removeChangeListener(this.onChange);
-		ZonesStore.removeChangeListener(this.onChange);
 	}
 
 	onChange = (): void => {
@@ -144,7 +136,6 @@ export default class Balancers extends React.Component<{}, State> {
 			organizations: OrganizationsStore.organizations,
 			certificates: CertificatesStore.certificates,
 			datacenters: DatacentersStore.datacenters,
-			zones: ZonesStore.zones,
 			selected: selected,
 			opened: opened,
 		});
@@ -181,7 +172,6 @@ export default class Balancers extends React.Component<{}, State> {
 				organizations={this.state.organizations}
 				certificates={this.state.certificates}
 				datacenters={this.state.datacenters}
-				zones={this.state.zones}
 				selected={!!this.state.selected[balancer.id]}
 				open={!!this.state.opened[balancer.id]}
 				onSelect={(shift: boolean): void => {
