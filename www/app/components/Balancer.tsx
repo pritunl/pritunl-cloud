@@ -5,16 +5,14 @@ import * as BalancerTypes from '../types/BalancerTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import * as CertificateTypes from '../types/CertificateTypes';
 import * as DatacenterTypes from '../types/DatacenterTypes';
-import * as ZoneTypes from '../types/ZoneTypes';
 import OrganizationsStore from '../stores/OrganizationsStore';
-import ZonesStore from '../stores/ZonesStore';
+import DatacentersStore from '../stores/DatacentersStore';
 import BalancerDetailed from './BalancerDetailed';
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
 	certificates: CertificateTypes.CertificatesRo;
 	datacenters: DatacenterTypes.DatacentersRo;
-	zones: ZoneTypes.ZonesRo;
 	balancer: BalancerTypes.BalancerRo;
 	selected: boolean;
 	onSelect: (shift: boolean) => void;
@@ -96,7 +94,6 @@ export default class Balancer extends React.Component<Props, {}> {
 					organizations={this.props.organizations}
 					certificates={this.props.certificates}
 					datacenters={this.props.datacenters}
-					zones={this.props.zones}
 					balancer={this.props.balancer}
 					selected={this.props.selected}
 					onSelect={this.props.onSelect}
@@ -122,8 +119,9 @@ export default class Balancer extends React.Component<Props, {}> {
 			orgName = org ? org.name : balancer.organization;
 		}
 
-		let zone = ZonesStore.zone(this.props.balancer.zone);
-		let zoneName = zone ? zone.name : null;
+		let datacenter = DatacentersStore.datacenter(
+			this.props.balancer.datacenter);
+		let datacenterName = datacenter ? datacenter.name : null;
 
 		return <div
 			className="bp3-card bp3-row"
@@ -170,10 +168,10 @@ export default class Balancer extends React.Component<Props, {}> {
 			<div className="bp3-cell" style={css.item}>
 				<span
 					style={css.icon}
-					hidden={!zoneName}
-					className="bp3-icon-standard bp3-text-muted bp3-icon-layout-circle"
+					hidden={!datacenterName}
+					className="bp3-icon-standard bp3-text-muted bp3-icon-cloud"
 				/>
-				{zoneName}
+				{datacenterName}
 			</div>
 		</div>;
 	}
