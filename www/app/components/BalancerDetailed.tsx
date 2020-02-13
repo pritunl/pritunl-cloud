@@ -680,7 +680,7 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 						External Domains
 						<Help
 							title="External Domains"
-							content="When a request comes into a node the requests host will be used to match the request with the domain of a load balancer. Some internal services will be expecting a specific host such as a web server that serves mutliple websites that is also matching the requests host to one of the mutliple websites. If the internal service is expecting a different host set the host field, otherwise leave it blank. Load balancers that are associated with the same zone should not also have the same domains."
+							content="When a request comes into a node the requests host will be used to match the request with the domain of a load balancer. Some internal services will be expecting a specific host such as a web server that serves mutliple websites that is also matching the requests host to one of the mutliple websites. If the internal service is expecting a different host set the host field, otherwise leave it blank. Load balancers that are associated with the same datacenter should not also have the same domains."
 						/>
 					</label>
 					{domains}
