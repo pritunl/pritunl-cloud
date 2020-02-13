@@ -11,6 +11,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/balancer"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -68,6 +69,16 @@ func balancerPut(c *gin.Context) {
 	balnc.WebSockets = data.WebSockets
 	balnc.Domains = data.Domains
 	balnc.Backends = data.Backends
+
+	exists, err := datacenter.ExistsOrg(db, userOrg, balnc.Datacenter)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+	if !exists {
+		utils.AbortWithStatus(c, 405)
+		return
+	}
 
 	fields := set.NewSet(
 		"name",
@@ -129,6 +140,16 @@ func balancerPost(c *gin.Context) {
 		WebSockets:   data.WebSockets,
 		Domains:      data.Domains,
 		Backends:     data.Backends,
+	}
+
+	exists, err := datacenter.ExistsOrg(db, userOrg, balnc.Datacenter)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+	if !exists {
+		utils.AbortWithStatus(c, 405)
+		return
 	}
 
 	errData, err := balnc.Validate(db)
