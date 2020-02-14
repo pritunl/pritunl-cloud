@@ -297,6 +297,8 @@ export default class Images extends React.Component<{}, State> {
 			<ImagesPage
 				onPage={(): void => {
 					this.setState({
+						...this.state,
+						selected: {},
 						lastSelected: null,
 					});
 				}}
