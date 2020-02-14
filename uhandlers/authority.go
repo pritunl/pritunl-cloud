@@ -66,7 +66,6 @@ func authorityPut(c *gin.Context) {
 	fire.Certificate = data.Certificate
 
 	fields := set.NewSet(
-		"state",
 		"name",
 		"type",
 		"organization",
