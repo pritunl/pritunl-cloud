@@ -855,9 +855,9 @@ func addIndexes() (err error) {
 	}
 
 	index = &Index{
-		Collection: db.Zones(),
+		Collection: db.Balancers(),
 		Keys: &bson.D{
-			{"zone", 1},
+			{"datacenter", 1},
 		},
 	}
 	err = index.Create()
