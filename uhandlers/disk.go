@@ -78,7 +78,6 @@ func diskPut(c *gin.Context) {
 	}
 
 	fields := set.NewSet(
-		"state",
 		"name",
 		"instance",
 		"delete_protection",
