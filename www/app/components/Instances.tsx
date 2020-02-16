@@ -488,6 +488,8 @@ export default class Instances extends React.Component<{}, State> {
 			<InstancesPage
 				onPage={(): void => {
 					this.setState({
+						...this.state,
+						selected: {},
 						lastSelected: null,
 					});
 				}}
