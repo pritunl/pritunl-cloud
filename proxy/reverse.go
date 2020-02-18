@@ -19,14 +19,15 @@ import (
 )
 
 type Handler struct {
-	Index     int
-	State     int
-	LastState time.Time
+	Index           int
+	State           int
+	LastState       time.Time
+	LastOnlineState time.Time
 	*httputil.ReverseProxy
 }
 
 func NewHandler(index, state int, proxyProto string, proxyPort int,
-	domain *Domain, backend *balancer.Backend,
+	domain *Domain, backend *balancer.Backend, respHandler RespHandler,
 	errHandler ErrorHandler) (hand *Handler) {
 
 	proxyPortStr := strconv.Itoa(proxyPort)
@@ -113,6 +114,9 @@ func NewHandler(index, state int, proxyProto string, proxyPort int,
 				},
 			},
 			ErrorLog: log.New(writer, "", 0),
+			ModifyResponse: func(resp *http.Response) error {
+				return respHandler(hand, resp)
+			},
 			ErrorHandler: func(rw http.ResponseWriter,
 				r *http.Request, err error) {
 
