@@ -109,15 +109,15 @@ func (d *Domain) Init() {
 
 	for i, backend := range d.Balancer.Backends {
 		hand := NewHandler(i, UnknownHigh, d.ProxyProto, d.ProxyPort, d,
-			backend, d.ErrorHandlerFirst)
+			backend, d.ResponseHandler, d.ErrorHandlerFirst)
 		unknownHighWebFirst = append(unknownHighWebFirst, hand)
 
 		hand = NewHandler(i, UnknownHigh, d.ProxyProto, d.ProxyPort, d,
-			backend, d.ErrorHandlerSecond)
+			backend, d.ResponseHandler, d.ErrorHandlerSecond)
 		unknownHighWebSecond = append(unknownHighWebSecond, hand)
 
 		hand = NewHandler(i, UnknownHigh, d.ProxyProto, d.ProxyPort, d,
-			backend, d.ErrorHandlerThird)
+			backend, d.ResponseHandler, d.ErrorHandlerThird)
 		unknownHighWebThird = append(unknownHighWebThird, hand)
 	}
 
@@ -651,6 +651,14 @@ func (d *Domain) downgradeHandler(hand *Handler) {
 	}
 
 	d.Lock.Unlock()
+}
+
+func (d *Domain) ResponseHandler(hand *Handler, resp *http.Response) error {
+	if hand.State != Online && resp.StatusCode < 500 {
+		d.upgradeHandler(hand)
+	}
+
+	return nil
 }
 
 func (d *Domain) ErrorHandlerFirst(hand *Handler, rw http.ResponseWriter,
