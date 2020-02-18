@@ -267,6 +267,204 @@ func (d *Domain) ServeHTTPThird(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusBadGateway)
 }
 
+func (d *Domain) upgradeHandler(hand *Handler) {
+	d.Lock.Lock()
+
+	index := hand.Index
+	state := hand.State
+
+	switch state {
+	case Online:
+		break
+	case UnknownHigh:
+		if time.Since(hand.LastOnlineState) > 5*time.Second {
+			hand = d.UnknownHighWebFirst[index]
+			d.UnknownHighWebFirst[index] =
+				d.UnknownHighWebFirst[len(d.UnknownHighWebFirst)-1]
+			d.UnknownHighWebFirst[len(d.UnknownHighWebFirst)-1] = nil
+			d.UnknownHighWebFirst =
+				d.UnknownHighWebFirst[:len(d.UnknownHighWebFirst)-1]
+			for i, h := range d.UnknownHighWebFirst {
+				h.Index = i
+			}
+			hand.Index = len(d.OnlineWebFirst)
+			hand.State = Online
+			hand.LastOnlineState = time.Now()
+			d.OnlineWebFirst = append(d.OnlineWebFirst, hand)
+
+			hand = d.UnknownHighWebSecond[index]
+			d.UnknownHighWebSecond[index] =
+				d.UnknownHighWebSecond[len(d.UnknownHighWebSecond)-1]
+			d.UnknownHighWebSecond[len(d.UnknownHighWebSecond)-1] = nil
+			d.UnknownHighWebSecond =
+				d.UnknownHighWebSecond[:len(d.UnknownHighWebSecond)-1]
+			for i, h := range d.UnknownHighWebSecond {
+				h.Index = i
+			}
+			hand.Index = len(d.OnlineWebSecond)
+			hand.State = Online
+			hand.LastOnlineState = time.Now()
+			d.OnlineWebSecond = append(d.OnlineWebSecond, hand)
+
+			hand = d.UnknownHighWebThird[index]
+			d.UnknownHighWebThird[index] =
+				d.UnknownHighWebThird[len(d.UnknownHighWebThird)-1]
+			d.UnknownHighWebThird[len(d.UnknownHighWebThird)-1] = nil
+			d.UnknownHighWebThird =
+				d.UnknownHighWebThird[:len(d.UnknownHighWebThird)-1]
+			for i, h := range d.UnknownHighWebThird {
+				h.Index = i
+			}
+			hand.Index = len(d.OnlineWebThird)
+			hand.State = Online
+			hand.LastOnlineState = time.Now()
+			d.OnlineWebThird = append(d.OnlineWebThird, hand)
+		}
+
+		break
+	case UnknownMid:
+		if time.Since(hand.LastOnlineState) > 5*time.Second {
+			hand = d.UnknownMidWebFirst[index]
+			d.UnknownMidWebFirst[index] =
+				d.UnknownMidWebFirst[len(d.UnknownMidWebFirst)-1]
+			d.UnknownMidWebFirst[len(d.UnknownMidWebFirst)-1] = nil
+			d.UnknownMidWebFirst =
+				d.UnknownMidWebFirst[:len(d.UnknownMidWebFirst)-1]
+			for i, h := range d.UnknownMidWebFirst {
+				h.Index = i
+			}
+			hand.Index = len(d.OnlineWebFirst)
+			hand.State = Online
+			hand.LastOnlineState = time.Now()
+			d.OnlineWebFirst = append(d.OnlineWebFirst, hand)
+
+			hand = d.UnknownMidWebSecond[index]
+			d.UnknownMidWebSecond[index] =
+				d.UnknownMidWebSecond[len(d.UnknownMidWebSecond)-1]
+			d.UnknownMidWebSecond[len(d.UnknownMidWebSecond)-1] = nil
+			d.UnknownMidWebSecond =
+				d.UnknownMidWebSecond[:len(d.UnknownMidWebSecond)-1]
+			for i, h := range d.UnknownMidWebSecond {
+				h.Index = i
+			}
+			hand.Index = len(d.OnlineWebSecond)
+			hand.State = Online
+			hand.LastOnlineState = time.Now()
+			d.OnlineWebSecond = append(d.OnlineWebSecond, hand)
+
+			hand = d.UnknownMidWebThird[index]
+			d.UnknownMidWebThird[index] =
+				d.UnknownMidWebThird[len(d.UnknownMidWebThird)-1]
+			d.UnknownMidWebThird[len(d.UnknownMidWebThird)-1] = nil
+			d.UnknownMidWebThird =
+				d.UnknownMidWebThird[:len(d.UnknownMidWebThird)-1]
+			for i, h := range d.UnknownMidWebThird {
+				h.Index = i
+			}
+			hand.Index = len(d.OnlineWebThird)
+			hand.State = Online
+			hand.LastOnlineState = time.Now()
+			d.OnlineWebThird = append(d.OnlineWebThird, hand)
+		}
+
+		break
+	case UnknownLow:
+		if time.Since(hand.LastOnlineState) > 5*time.Second {
+			hand = d.UnknownLowWebFirst[index]
+			d.UnknownLowWebFirst[index] =
+				d.UnknownLowWebFirst[len(d.UnknownLowWebFirst)-1]
+			d.UnknownLowWebFirst[len(d.UnknownLowWebFirst)-1] = nil
+			d.UnknownLowWebFirst =
+				d.UnknownLowWebFirst[:len(d.UnknownLowWebFirst)-1]
+			for i, h := range d.UnknownLowWebFirst {
+				h.Index = i
+			}
+			hand.Index = len(d.OnlineWebFirst)
+			hand.State = Online
+			hand.LastOnlineState = time.Now()
+			d.OnlineWebFirst = append(d.OnlineWebFirst, hand)
+
+			hand = d.UnknownLowWebSecond[index]
+			d.UnknownLowWebSecond[index] =
+				d.UnknownLowWebSecond[len(d.UnknownLowWebSecond)-1]
+			d.UnknownLowWebSecond[len(d.UnknownLowWebSecond)-1] = nil
+			d.UnknownLowWebSecond =
+				d.UnknownLowWebSecond[:len(d.UnknownLowWebSecond)-1]
+			for i, h := range d.UnknownLowWebSecond {
+				h.Index = i
+			}
+			hand.Index = len(d.OnlineWebSecond)
+			hand.State = Online
+			hand.LastOnlineState = time.Now()
+			d.OnlineWebSecond = append(d.OnlineWebSecond, hand)
+
+			hand = d.UnknownLowWebThird[index]
+			d.UnknownLowWebThird[index] =
+				d.UnknownLowWebThird[len(d.UnknownLowWebThird)-1]
+			d.UnknownLowWebThird[len(d.UnknownLowWebThird)-1] = nil
+			d.UnknownLowWebThird =
+				d.UnknownLowWebThird[:len(d.UnknownLowWebThird)-1]
+			for i, h := range d.UnknownLowWebThird {
+				h.Index = i
+			}
+			hand.Index = len(d.OnlineWebThird)
+			hand.State = Online
+			hand.LastOnlineState = time.Now()
+			d.OnlineWebThird = append(d.OnlineWebThird, hand)
+		}
+
+		break
+	case Offline:
+		if time.Since(hand.LastOnlineState) > 5*time.Second {
+			hand = d.OfflineWebFirst[index]
+			d.OfflineWebFirst[index] =
+				d.OfflineWebFirst[len(d.OfflineWebFirst)-1]
+			d.OfflineWebFirst[len(d.OfflineWebFirst)-1] = nil
+			d.OfflineWebFirst =
+				d.OfflineWebFirst[:len(d.OfflineWebFirst)-1]
+			for i, h := range d.OfflineWebFirst {
+				h.Index = i
+			}
+			hand.Index = len(d.OnlineWebFirst)
+			hand.State = Online
+			hand.LastOnlineState = time.Now()
+			d.OnlineWebFirst = append(d.OnlineWebFirst, hand)
+
+			hand = d.OfflineWebSecond[index]
+			d.OfflineWebSecond[index] =
+				d.OfflineWebSecond[len(d.OfflineWebSecond)-1]
+			d.OfflineWebSecond[len(d.OfflineWebSecond)-1] = nil
+			d.OfflineWebSecond =
+				d.OfflineWebSecond[:len(d.OfflineWebSecond)-1]
+			for i, h := range d.OfflineWebSecond {
+				h.Index = i
+			}
+			hand.Index = len(d.OnlineWebSecond)
+			hand.State = Online
+			hand.LastOnlineState = time.Now()
+			d.OnlineWebSecond = append(d.OnlineWebSecond, hand)
+
+			hand = d.OfflineWebThird[index]
+			d.OfflineWebThird[index] =
+				d.OfflineWebThird[len(d.OfflineWebThird)-1]
+			d.OfflineWebThird[len(d.OfflineWebThird)-1] = nil
+			d.OfflineWebThird =
+				d.OfflineWebThird[:len(d.OfflineWebThird)-1]
+			for i, h := range d.OfflineWebThird {
+				h.Index = i
+			}
+			hand.Index = len(d.OnlineWebThird)
+			hand.State = Online
+			hand.LastOnlineState = time.Now()
+			d.OnlineWebThird = append(d.OnlineWebThird, hand)
+		}
+
+		break
+	}
+
+	d.Lock.Unlock()
+}
+
 func (d *Domain) downgradeHandler(hand *Handler) {
 	d.Lock.Lock()
 
