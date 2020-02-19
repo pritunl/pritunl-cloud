@@ -52,6 +52,7 @@ type Router struct {
 	lock             sync.Mutex
 	redirectServer   *http.Server
 	webServer        *http.Server
+	proxy            *proxy.Proxy
 	stop             bool
 }
 
@@ -529,4 +530,7 @@ func (r *Router) Init() {
 	} else {
 		gin.SetMode(gin.DebugMode)
 	}
+
+	r.proxy = &proxy.Proxy{}
+	r.certificates = &Certificates{}
 }
