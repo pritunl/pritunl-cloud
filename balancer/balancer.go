@@ -20,16 +20,17 @@ type Backend struct {
 }
 
 type Balancer struct {
-	Id           primitive.ObjectID   `bson:"_id,omitempty" json:"id"`
-	Name         string               `bson:"name" json:"name"`
-	Type         string               `bson:"type" json:"type"`
-	State        bool                 `bson:"state" json:"state"`
-	Organization primitive.ObjectID   `bson:"organization,omitempty" json:"organization"`
-	Datacenter   primitive.ObjectID   `bson:"datacenter,omitempty" json:"datacenter"`
-	Certificates []primitive.ObjectID `bson:"certificates" json:"certificates"`
-	WebSockets   bool                 `bson:"websockets" json:"websockets"`
-	Domains      []*Domain            `bson:"domains" json:"domains"`
-	Backends     []*Backend           `bson:"backends" json:"backends"`
+	Id              primitive.ObjectID   `bson:"_id,omitempty" json:"id"`
+	Name            string               `bson:"name" json:"name"`
+	Type            string               `bson:"type" json:"type"`
+	State           bool                 `bson:"state" json:"state"`
+	Organization    primitive.ObjectID   `bson:"organization,omitempty" json:"organization"`
+	Datacenter      primitive.ObjectID   `bson:"datacenter,omitempty" json:"datacenter"`
+	Certificates    []primitive.ObjectID `bson:"certificates" json:"certificates"`
+	ClientAuthority primitive.ObjectID   `bson:"client_authority" json:"client_authority"`
+	WebSockets      bool                 `bson:"websockets" json:"websockets"`
+	Domains         []*Domain            `bson:"domains" json:"domains"`
+	Backends        []*Backend           `bson:"backends" json:"backends"`
 }
 
 func (b *Balancer) Validate(db *database.Database) (
