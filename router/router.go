@@ -69,19 +69,29 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, re *http.Request) {
 		return
 	}
 
-	hst := utils.StripPort(re.Host)
-	if r.adminType && !r.userType {
-		r.aRouter.ServeHTTP(w, re)
+	if r.singleType {
+		if r.adminType {
+			r.aRouter.ServeHTTP(w, re)
+		} else if r.userType {
+			r.uRouter.ServeHTTP(w, re)
+		} else if r.balancerType {
+			r.proxy.ServeHTTP(utils.StripPort(re.Host), w, re)
+		} else {
+			utils.WriteStatus(w, 520)
+		}
 		return
-	} else if r.userType && !r.adminType {
-		r.uRouter.ServeHTTP(w, re)
-		return
-	} else if r.adminType && hst == r.adminDomain {
-		r.aRouter.ServeHTTP(w, re)
-		return
-	} else if r.userType && hst == r.userDomain {
-		r.uRouter.ServeHTTP(w, re)
-		return
+	} else {
+		hst := utils.StripPort(re.Host)
+		if r.adminType && hst == r.adminDomain {
+			r.aRouter.ServeHTTP(w, re)
+			return
+		} else if r.userType && hst == r.userDomain {
+			r.uRouter.ServeHTTP(w, re)
+			return
+		} else if r.balancerType {
+			r.proxy.ServeHTTP(hst, w, re)
+			return
+		}
 	}
 
 	if re.URL.Path == "/check" {
