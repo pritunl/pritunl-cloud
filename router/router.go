@@ -17,13 +17,16 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/pritunl-cloud/acme"
 	"github.com/pritunl/pritunl-cloud/ahandlers"
-	"github.com/pritunl/pritunl-cloud/certificate"
+	"github.com/pritunl/pritunl-cloud/balancer"
 	"github.com/pritunl/pritunl-cloud/constants"
+	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/proxy"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/uhandlers"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -40,6 +43,9 @@ type Router struct {
 	protocol         string
 	adminDomain      string
 	userDomain       string
+	stateLock        sync.Mutex
+	balancers        []*balancer.Balancer
+	certificates     *Certificates
 	aRouter          *gin.Engine
 	uRouter          *gin.Engine
 	waiter           sync.WaitGroup
