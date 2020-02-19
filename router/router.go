@@ -38,7 +38,6 @@ type Router struct {
 	port             int
 	noRedirectServer bool
 	protocol         string
-	certificates     []*certificate.Certificate
 	adminDomain      string
 	userDomain       string
 	aRouter          *gin.Engine
