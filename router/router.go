@@ -31,8 +31,10 @@ import (
 
 type Router struct {
 	nodeHash         []byte
+	singleType       bool
 	adminType        bool
 	userType         bool
+	balancerType     bool
 	port             int
 	noRedirectServer bool
 	protocol         string
@@ -161,10 +163,20 @@ func (r *Router) startRedirect() {
 func (r *Router) initWeb() (err error) {
 	r.adminType = node.Self.IsAdmin()
 	r.userType = node.Self.IsUser()
+	r.balancerType = node.Self.IsBalancer()
 	r.adminDomain = node.Self.AdminDomain
 	r.userDomain = node.Self.UserDomain
-	r.certificates = node.Self.CertificateObjs
 	r.noRedirectServer = node.Self.NoRedirectServer
+
+	if r.adminType && !r.userType && !r.balancerType {
+		r.singleType = true
+	} else if r.userType && !r.balancerType && !r.adminType {
+		r.singleType = true
+	} else if r.balancerType && !r.adminType && !r.userType {
+		r.singleType = true
+	} else {
+		r.singleType = false
+	}
 
 	r.port = node.Self.Port
 	if r.port == 0 {
