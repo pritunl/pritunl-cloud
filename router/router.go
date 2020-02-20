@@ -240,15 +240,6 @@ func (r *Router) initWeb() (err error) {
 		MaxHeaderBytes:    4096,
 	}
 
-	if r.protocol != "http" &&
-		(r.certificates == nil || len(r.certificates) == 0) {
-
-		_, _, err = node.SelfCert()
-		if err != nil {
-			return
-		}
-	}
-
 	return
 }
 
