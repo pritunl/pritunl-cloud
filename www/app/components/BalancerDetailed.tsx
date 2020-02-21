@@ -669,23 +669,23 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 
 			online.sort();
 			for (let backend of online) {
-				states.push(backend + ': online');
+				states.push(backend + ' - Online');
 			}
 			unknownHigh.sort();
 			for (let backend of unknownHigh) {
-				states.push(backend + ': unknown_high');
+				states.push(backend + ' - Unknown High');
 			}
 			unknownMid.sort();
 			for (let backend of unknownMid) {
-				states.push(backend + ': unknown_mid');
+				states.push(backend + ' - Unknown Mid');
 			}
 			unknownLow.sort();
 			for (let backend of unknownLow) {
-				states.push(backend + ': unknown_low');
+				states.push(backend + ' - Unknown Low');
 			}
 			offline.sort();
 			for (let backend of offline) {
-				states.push(backend + ': offline');
+				states.push(backend + ' - Offline');
 			}
 		}
 
