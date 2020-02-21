@@ -4,6 +4,7 @@ import CopyButton from './CopyButton';
 
 export interface Field {
 	valueClass?: string;
+	valueClasses?: string[];
 	label: string;
 	value: string | number | string[];
 	copy?: boolean;
@@ -86,7 +87,9 @@ export default class PageInfo extends React.Component<Props, {}> {
 					}
 
 					value.push(
-						<div key={i}>
+						<div key={i} className={field.valueClasses ?
+								field.valueClasses[i] :
+								(field.valueClass || 'bp3-text-muted')}>
 							{field.value[i]}{copyItemBtn}
 						</div>
 					);
