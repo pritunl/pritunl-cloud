@@ -599,6 +599,7 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 		let unknownMid: string[] = [];
 		let unknownLow: string[] = [];
 		let offline: string[] = [];
+		let backendsClasses: string[] = [];
 
 		if (balancer.states) {
 			for (let key in balancer.states) {
@@ -670,22 +671,27 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 			online.sort();
 			for (let backend of online) {
 				states.push(backend + ' - Online');
+				backendsClasses.push('bp3-text-intent-success');
 			}
 			unknownHigh.sort();
 			for (let backend of unknownHigh) {
 				states.push(backend + ' - Unknown High');
+				backendsClasses.push('bp3-text-intent-warning');
 			}
 			unknownMid.sort();
 			for (let backend of unknownMid) {
 				states.push(backend + ' - Unknown Mid');
+				backendsClasses.push('bp3-text-intent-warning');
 			}
 			unknownLow.sort();
 			for (let backend of unknownLow) {
 				states.push(backend + ' - Unknown Low');
+				backendsClasses.push('bp3-text-intent-warning');
 			}
 			offline.sort();
 			for (let backend of offline) {
 				states.push(backend + ' - Offline');
+				backendsClasses.push('bp3-text-intent-danger');
 			}
 		}
 
@@ -826,6 +832,7 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 							{
 								label: 'Backends',
 								value: states,
+								valueClasses: backendsClasses,
 							}
 						]}
 					/>
