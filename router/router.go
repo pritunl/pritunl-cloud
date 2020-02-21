@@ -421,13 +421,6 @@ func (r *Router) hashNode() []byte {
 	io.WriteString(hash, strconv.Itoa(settings.Router.WriteTimeout))
 	io.WriteString(hash, strconv.Itoa(settings.Router.IdleTimeout))
 
-	certs := node.Self.CertificateObjs
-	if certs != nil {
-		for _, cert := range certs {
-			io.WriteString(hash, cert.Hash())
-		}
-	}
-
 	return hash.Sum(nil)
 }
 
