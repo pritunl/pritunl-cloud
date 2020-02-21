@@ -264,7 +264,22 @@ func (n *Node) Validate(db *database.Database) (
 		n.Types = []string{}
 	}
 
-	if (n.IsAdmin() && !n.IsUser()) || (n.IsUser() && !n.IsAdmin()) {
+	for _, typ := range n.Types {
+		switch typ {
+		case Admin, User, Balancer, Hypervisor, Ipsec:
+			break
+		default:
+			errData = &errortypes.ErrorData{
+				Error:   "type_invalid",
+				Message: "Invalid node type",
+			}
+			return
+		}
+	}
+
+	if !n.IsBalancer() && ((n.IsAdmin() && !n.IsUser()) ||
+		(n.IsUser() && !n.IsAdmin())) {
+
 		n.AdminDomain = ""
 		n.UserDomain = ""
 	} else {
