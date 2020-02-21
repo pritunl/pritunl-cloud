@@ -187,8 +187,6 @@ func (d *Domain) ServeHTTPFirst(rw http.ResponseWriter, r *http.Request) {
 func (d *Domain) ServeHTTPSecond(rw http.ResponseWriter, r *http.Request) {
 	d.Retries += 1
 
-	//println("second")
-
 	onlineWebSecond := d.OnlineWebSecond
 	l := len(onlineWebSecond)
 	if l != 0 {
@@ -229,8 +227,6 @@ func (d *Domain) ServeHTTPSecond(rw http.ResponseWriter, r *http.Request) {
 
 func (d *Domain) ServeHTTPThird(rw http.ResponseWriter, r *http.Request) {
 	d.Retries += 1
-
-	//println("third")
 
 	onlineWebThird := d.OnlineWebThird
 	l := len(onlineWebThird)
