@@ -436,6 +436,38 @@ func (r *Router) watchNode() {
 			time.Sleep(2 * time.Second)
 		}
 	}
+}
+
+func (r *Router) updateState() (err error) {
+	db := database.GetDatabase()
+	defer db.Close()
+
+	if node.Self.IsBalancer() {
+		balncs, e := balancer.GetAll(db, &bson.M{
+			"zone": node.Self.Zone,
+		})
+		if e != nil {
+			r.balancers = []*balancer.Balancer{}
+			return
+		}
+
+		r.balancers = balncs
+	} else {
+		r.balancers = []*balancer.Balancer{}
+	}
+
+	r.stateLock.Lock()
+	defer r.stateLock.Unlock()
+
+	err = r.certificates.Update(db, r.balancers)
+	if err != nil {
+		return
+	}
+
+	err = r.proxy.Update(r.balancers)
+	if err != nil {
+		return
+	}
 
 	return
 }
