@@ -16,7 +16,6 @@ import (
 type Domain struct {
 	Hash              []byte
 	Requests          int
-	RequestsLock      sync.Mutex
 	RequestsPrev      [5]int
 	RequestsTotal     int
 	Retries           int
