@@ -1312,8 +1312,9 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					/>
 					<PageInput
 						disabled={this.state.disabled}
-						hidden={types.indexOf('admin') === -1 ||
-							types.indexOf('user') === -1}
+						hidden={types.indexOf('balancer') === -1 && (
+							types.indexOf('admin') === -1 ||
+							types.indexOf('user') === -1)}
 						label="Admin Domain"
 						help="Domain that will be used to access the admin interface."
 						type="text"
@@ -1325,8 +1326,9 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					/>
 					<PageInput
 						disabled={this.state.disabled}
-						hidden={types.indexOf('admin') === -1 ||
-							types.indexOf('user') === -1}
+						hidden={types.indexOf('balancer') === -1 && (
+							types.indexOf('admin') === -1 ||
+							types.indexOf('user') === -1)}
 						label="User Domain"
 						help="Domain that will be used to access the user interface."
 						type="text"
