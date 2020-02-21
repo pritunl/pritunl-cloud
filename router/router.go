@@ -312,6 +312,19 @@ func (r *Router) initServers() (err error) {
 	r.lock.Lock()
 	defer r.lock.Unlock()
 
+	db := database.GetDatabase()
+	defer db.Close()
+
+	err = r.certificates.Init()
+	if err != nil {
+		return
+	}
+
+	err = r.updateState()
+	if err != nil {
+		return
+	}
+
 	err = r.initRedirect()
 	if err != nil {
 		return
