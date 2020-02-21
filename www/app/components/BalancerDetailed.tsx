@@ -590,6 +590,100 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 				<option key="null" value="">No Datacenters</option>);
 		}
 
+		let requests = 0;
+		let retries = 0;
+		let states: string[] = [];
+		let statesMap: {[index: string]: number} = {};
+		let online: string[] = [];
+		let unknownHigh: string[] = [];
+		let unknownMid: string[] = [];
+		let unknownLow: string[] = [];
+		let offline: string[] = [];
+
+		if (balancer.states) {
+			for (let key in balancer.states) {
+				if (!balancer.states.hasOwnProperty(key)) {
+					continue;
+				}
+				let state = balancer.states[key];
+
+				requests += state.requests || 0;
+				retries += state.retries || 0;
+
+				for (let backend of state.offline) {
+					let curState = statesMap[backend];
+					if (curState === undefined || curState > 1) {
+						statesMap[backend] = 1;
+					}
+				}
+				for (let backend of state.unknown_low) {
+					let curState = statesMap[backend];
+					if (curState === undefined || curState > 2) {
+						statesMap[backend] = 2;
+					}
+				}
+				for (let backend of state.unknown_mid) {
+					let curState = statesMap[backend];
+					if (curState === undefined || curState > 3) {
+						statesMap[backend] = 3;
+					}
+				}
+				for (let backend of state.unknown_high) {
+					let curState = statesMap[backend];
+					if (curState === undefined || curState > 4) {
+						statesMap[backend] = 4;
+					}
+				}
+				for (let backend of state.online) {
+					let curState = statesMap[backend];
+					if (curState === undefined) {
+						statesMap[backend] = 5;
+					}
+				}
+			}
+
+			for (let backend in statesMap) {
+				if (!statesMap.hasOwnProperty(backend)) {
+					continue;
+				}
+				let state = statesMap[backend];
+
+				switch (state) {
+					case 5:
+						online.push(backend);
+						break;
+					case 4:
+						unknownHigh.push(backend);
+						break;
+					case 3:
+						unknownMid.push(backend);
+						break;
+					case 2:
+						unknownLow.push(backend);
+						break;
+					case 1:
+						offline.push(backend);
+						break;
+				}
+			}
+
+			for (let backend of online) {
+				states.push(backend + ': online');
+			}
+			for (let backend of unknownHigh) {
+				states.push(backend + ': unknown_high');
+			}
+			for (let backend of unknownMid) {
+				states.push(backend + ': unknown_mid');
+			}
+			for (let backend of unknownLow) {
+				states.push(backend + ': unknown_low');
+			}
+			for (let backend of offline) {
+				states.push(backend + ': offline');
+			}
+		}
+
 		return <td
 			className="bp3-cell"
 			colSpan={5}
@@ -716,6 +810,18 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 								label: 'ID',
 								value: this.props.balancer.id || 'Unknown',
 							},
+							{
+								label: 'Requests',
+								value: requests + '/min',
+							},
+							{
+								label: 'Retries',
+								value: retries + '/min',
+							},
+							{
+								label: 'Backends',
+								value: states,
+							}
 						]}
 					/>
 					<PageSelect
