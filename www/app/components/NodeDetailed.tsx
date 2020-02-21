@@ -1285,6 +1285,15 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
+						label="Load Balancer"
+						help="Provides access to load balancers."
+						checked={types.indexOf('balancer') !== -1}
+						onToggle={(): void => {
+							this.toggleType('balancer');
+						}}
+					/>
+					<PageSwitch
+						disabled={this.state.disabled}
 						label="Hypervisor"
 						help="Run instances with hypervisor on this node."
 						checked={types.indexOf('hypervisor') !== -1}
