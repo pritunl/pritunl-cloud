@@ -87,9 +87,14 @@ export default class PageInfo extends React.Component<Props, {}> {
 					}
 
 					value.push(
-						<div key={i} className={field.valueClasses ?
+						<div
+							key={i}
+							className={
+								field.valueClasses ?
 								field.valueClasses[i] :
-								(field.valueClass || 'bp3-text-muted')}>
+								(field.valueClass || 'bp3-text-muted')
+							}
+						>
 							{field.value[i]}{copyItemBtn}
 						</div>
 					);
