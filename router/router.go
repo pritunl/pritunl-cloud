@@ -472,9 +472,23 @@ func (r *Router) updateState() (err error) {
 	return
 }
 
+func (r *Router) watchState() {
+	for {
+		time.Sleep(3 * time.Second) // TODO Use 10
+
+		err := r.updateState()
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("proxy: Failed to load proxy state")
+		}
+	}
+}
+
 func (r *Router) Run() (err error) {
 	r.nodeHash = r.hashNode()
 	go r.watchNode()
+	go r.watchState()
 
 	for {
 		if !node.Self.IsAdmin() && !node.Self.IsUser() {
