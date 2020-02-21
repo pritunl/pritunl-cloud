@@ -15,6 +15,17 @@ export interface Backend {
 	port?: number;
 }
 
+export interface State {
+	timestamp?: string;
+	requests?: number;
+	retries?: number;
+	online?: string[];
+	unknown_high?: string[];
+	unknown_mid?: string[];
+	unknown_low?: string[];
+	offline?: string[];
+}
+
 export interface Balancer {
 	id?: string;
 	name?: string;
@@ -26,6 +37,7 @@ export interface Balancer {
 	web_sockets?: boolean;
 	domains?: Domain[];
 	backends?: Backend[];
+	states?: {[key: string]: State};
 }
 
 export interface Filter {
