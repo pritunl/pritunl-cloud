@@ -3,9 +3,13 @@ package proxy
 import (
 	"bytes"
 	"net/http"
+	"sync"
+	"time"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/balancer"
+	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -13,6 +17,12 @@ import (
 
 type Proxy struct {
 	Domains map[string]*Domain
+	lock    sync.Mutex
+}
+
+type balancerState struct {
+	Balancer *balancer.Balancer
+	State    *balancer.State
 }
 
 func (p *Proxy) ServeHTTP(hst string, rw http.ResponseWriter,
