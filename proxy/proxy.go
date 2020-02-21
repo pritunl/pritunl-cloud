@@ -37,15 +37,34 @@ func (p *Proxy) ServeHTTP(hst string, rw http.ResponseWriter,
 	domain.ServeHTTPFirst(rw, r)
 }
 
-func (p *Proxy) Update(balncs []*balancer.Balancer) (err error) {
+func (p *Proxy) Update(db *database.Database, balncs []*balancer.Balancer) (
+	err error) {
+
 	domains := map[string]*Domain{}
+	states := []*balancerState{}
 
 	proxyProto := node.Self.Protocol
 	proxyPort := node.Self.Port
 
+	p.lock.Lock()
 	for _, balnc := range balncs {
 		if !balnc.State {
 			continue
+		}
+
+		onlineWeb := set.NewSet()
+		unknownHighWeb := set.NewSet()
+		unknownMidWeb := set.NewSet()
+		unknownLowWeb := set.NewSet()
+		offlineWeb := set.NewSet()
+
+		state := &balancer.State{
+			Timestamp:   time.Now(),
+			Online:      []string{},
+			UnknownHigh: []string{},
+			UnknownMid:  []string{},
+			UnknownLow:  []string{},
+			Offline:     []string{},
 		}
 
 		for _, domain := range balnc.Domains {
@@ -72,7 +91,26 @@ func (p *Proxy) Update(balncs []*balancer.Balancer) (err error) {
 
 			curDomain := p.Domains[domain.Domain]
 			if curDomain != nil && curDomain.Balancer.Id == balnc.Id {
-				curDomain.Print()
+				state.Requests += curDomain.RequestsTotal
+				state.Retries += curDomain.RetriesTotal
+
+				curDomain.Lock.Lock()
+				for _, hand := range curDomain.OnlineWebFirst {
+					onlineWeb.Add(hand.Key)
+				}
+				for _, hand := range curDomain.UnknownHighWebFirst {
+					unknownHighWeb.Add(hand.Key)
+				}
+				for _, hand := range curDomain.UnknownMidWebFirst {
+					unknownMidWeb.Add(hand.Key)
+				}
+				for _, hand := range curDomain.UnknownLowWebFirst {
+					unknownLowWeb.Add(hand.Key)
+				}
+				for _, hand := range curDomain.OfflineWebFirst {
+					offlineWeb.Add(hand.Key)
+				}
+				curDomain.Lock.Unlock()
 
 				if bytes.Equal(curDomain.Hash, proxyDomain.Hash) {
 					domains[domain.Domain] = curDomain
@@ -80,8 +118,10 @@ func (p *Proxy) Update(balncs []*balancer.Balancer) (err error) {
 				} else {
 					proxyDomain.Requests = curDomain.Requests
 					proxyDomain.RequestsPrev = curDomain.RequestsPrev
+					proxyDomain.RequestsTotal = curDomain.RequestsTotal
 					proxyDomain.Retries = curDomain.Retries
 					proxyDomain.RetriesPrev = curDomain.RetriesPrev
+					proxyDomain.RetriesTotal = curDomain.RetriesTotal
 				}
 			}
 
@@ -89,9 +129,64 @@ func (p *Proxy) Update(balncs []*balancer.Balancer) (err error) {
 
 			domains[domain.Domain] = proxyDomain
 		}
+
+		recorded := set.NewSet()
+		for keyInf := range offlineWeb.Iter() {
+			if recorded.Contains(keyInf) {
+				continue
+			}
+			recorded.Add(keyInf)
+
+			state.Offline = append(state.Offline, keyInf.(string))
+		}
+		for keyInf := range unknownLowWeb.Iter() {
+			if recorded.Contains(keyInf) {
+				continue
+			}
+			recorded.Add(keyInf)
+
+			state.UnknownLow = append(state.UnknownLow, keyInf.(string))
+		}
+		for keyInf := range unknownMidWeb.Iter() {
+			if recorded.Contains(keyInf) {
+				continue
+			}
+			recorded.Add(keyInf)
+
+			state.UnknownMid = append(state.UnknownMid, keyInf.(string))
+		}
+		for keyInf := range unknownHighWeb.Iter() {
+			if recorded.Contains(keyInf) {
+				continue
+			}
+			recorded.Add(keyInf)
+
+			state.UnknownHigh = append(state.UnknownHigh, keyInf.(string))
+		}
+		for keyInf := range onlineWeb.Iter() {
+			if recorded.Contains(keyInf) {
+				continue
+			}
+			recorded.Add(keyInf)
+
+			state.Online = append(state.Online, keyInf.(string))
+		}
+
+		states = append(states, &balancerState{
+			Balancer: balnc,
+			State:    state,
+		})
 	}
 
 	p.Domains = domains
+	p.lock.Unlock()
+
+	for _, balncState := range states {
+		err = balncState.Balancer.CommitState(db, balncState.State)
+		if err != nil {
+			return
+		}
+	}
 
 	return
 }
