@@ -190,3 +190,47 @@ func (p *Proxy) Update(db *database.Database, balncs []*balancer.Balancer) (
 
 	return
 }
+
+func (p *Proxy) syncCount() {
+	p.lock.Lock()
+	defer p.lock.Unlock()
+
+	domains := p.Domains
+	for _, dom := range domains {
+		dom.Print()
+
+		reqPrev := dom.RequestsPrev
+		dom.RequestsTotal = reqPrev[0] + reqPrev[1] + reqPrev[2] +
+			reqPrev[3] + reqPrev[4] + dom.Requests
+		reqPrev[0] = reqPrev[1]
+		reqPrev[1] = reqPrev[2]
+		reqPrev[2] = reqPrev[3]
+		reqPrev[3] = reqPrev[4]
+		reqPrev[4] = dom.Requests
+		dom.RequestsPrev = reqPrev
+		dom.Requests = 0
+
+		retPrev := dom.RetriesPrev
+		dom.RetriesTotal = retPrev[0] + retPrev[1] + retPrev[2] +
+			retPrev[3] + retPrev[4] + dom.Retries
+		retPrev[0] = retPrev[1]
+		retPrev[1] = retPrev[2]
+		retPrev[2] = retPrev[3]
+		retPrev[3] = retPrev[4]
+		retPrev[4] = dom.Retries
+		dom.RetriesPrev = retPrev
+		dom.Retries = 0
+	}
+}
+
+func (p *Proxy) runCounter() {
+	for {
+		time.Sleep(10 * time.Second)
+		p.syncCount()
+	}
+}
+
+func (p *Proxy) Init() {
+	p.Domains = map[string]*Domain{}
+	go p.runCounter()
+}
