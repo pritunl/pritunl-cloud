@@ -3,6 +3,7 @@ package node
 const (
 	Admin      = "admin"
 	User       = "user"
+	Balancer   = "balancer"
 	Hypervisor = "hypervisor"
 	Ipsec      = "ipsec"
 
