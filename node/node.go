@@ -19,7 +19,6 @@ import (
 	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/bridges"
-	"github.com/pritunl/pritunl-cloud/certificate"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -33,69 +32,68 @@ var (
 )
 
 type Node struct {
-	Id                   primitive.ObjectID         `bson:"_id" json:"id"`
-	Zone                 primitive.ObjectID         `bson:"zone,omitempty" json:"zone"`
-	Name                 string                     `bson:"name" json:"name"`
-	Types                []string                   `bson:"types" json:"types"`
-	Timestamp            time.Time                  `bson:"timestamp" json:"timestamp"`
-	Port                 int                        `bson:"port" json:"port"`
-	NoRedirectServer     bool                       `bson:"no_redirect_server" json:"no_redirect_server"`
-	Protocol             string                     `bson:"protocol" json:"protocol"`
-	Hypervisor           string                     `bson:"hypervisor" json:"hypervisor"`
-	Vga                  string                     `bson:"vga" json:"vga"`
-	Certificate          primitive.ObjectID         `bson:"certificate" json:"certificate"`
-	Certificates         []primitive.ObjectID       `bson:"certificates" json:"certificates"`
-	SelfCertificate      string                     `bson:"self_certificate_key" json:"-"`
-	SelfCertificateKey   string                     `bson:"self_certificate" json:"-"`
-	AdminDomain          string                     `bson:"admin_domain" json:"admin_domain"`
-	UserDomain           string                     `bson:"user_domain" json:"user_domain"`
-	RequestsMin          int64                      `bson:"requests_min" json:"requests_min"`
-	ForwardedForHeader   string                     `bson:"forwarded_for_header" json:"forwarded_for_header"`
-	ForwardedProtoHeader string                     `bson:"forwarded_proto_header" json:"forwarded_proto_header"`
-	ExternalInterface    string                     `bson:"external_interface" json:"external_interface"`
-	InternalInterface    string                     `bson:"internal_interface" json:"internal_interface"`
-	ExternalInterfaces   []string                   `bson:"external_interfaces" json:"external_interfaces"`
-	ExternalInterfaces6  []string                   `bson:"external_interfaces6" json:"external_interfaces6"`
-	InternalInterfaces   []string                   `bson:"internal_interfaces" json:"internal_interfaces"`
-	AvailableInterfaces  []string                   `bson:"available_interfaces" json:"available_interfaces"`
-	AvailableBridges     []string                   `bson:"available_bridges" json:"available_bridges"`
-	DefaultInterface     string                     `bson:"default_interface" json:"default_interface"`
-	NetworkMode          string                     `bson:"network_mode" json:"network_mode"`
-	NetworkMode6         string                     `bson:"network_mode6" json:"network_mode6"`
-	Blocks               []*BlockAttachment         `bson:"blocks" json:"blocks"`
-	Blocks6              []*BlockAttachment         `bson:"blocks6" json:"blocks6"`
-	HostBlock            primitive.ObjectID         `bson:"host_block,omitempty" json:"host_block"`
-	HostNat              bool                       `bson:"host_nat" json:"host_nat"`
-	HostNatExcludes      []string                   `bson:"host_nat_excludes" json:"host_nat_excludes"`
-	JumboFrames          bool                       `bson:"jumbo_frames" json:"jumbo_frames"`
-	UsbPassthrough       bool                       `bson:"usb_passthrough" json:"usb_passthrough"`
-	UsbDevices           []*usb.Device              `bson:"usb_devices" json:"usb_devices"`
-	Firewall             bool                       `bson:"firewall" json:"firewall"`
-	NetworkRoles         []string                   `bson:"network_roles" json:"network_roles"`
-	Memory               float64                    `bson:"memory" json:"memory"`
-	Load1                float64                    `bson:"load1" json:"load1"`
-	Load5                float64                    `bson:"load5" json:"load5"`
-	Load15               float64                    `bson:"load15" json:"load15"`
-	CpuUnits             int                        `bson:"cpu_units" json:"cpu_units"`
-	MemoryUnits          float64                    `bson:"memory_units" json:"memory_units"`
-	CpuUnitsRes          int                        `bson:"cpu_units_res" json:"cpu_units_res"`
-	MemoryUnitsRes       float64                    `bson:"memory_units_res" json:"memory_units_res"`
-	PublicIps            []string                   `bson:"public_ips" json:"public_ips"`
-	PublicIps6           []string                   `bson:"public_ips6" json:"public_ips6"`
-	PrivateIps           map[string]string          `bson:"private_ips" json:"private_ips"`
-	SoftwareVersion      string                     `bson:"software_version" json:"software_version"`
-	Hostname             string                     `bson:"hostname" json:"hostname"`
-	Version              int                        `bson:"version" json:"-"`
-	VirtPath             string                     `bson:"virt_path" json:"virt_path"`
-	CachePath            string                     `bson:"cache_path" json:"cache_path"`
-	OracleUser           string                     `bson:"oracle_user" json:"oracle_user"`
-	OraclePrivateKey     string                     `bson:"oracle_private_key" json:"-"`
-	OraclePublicKey      string                     `bson:"oracle_public_key" json:"oracle_public_key"`
-	OracleHostRoute      bool                       `bson:"oracle_host_route" json:"oracle_host_route"`
-	Operation            string                     `bson:"operation" json:"operation"`
-	CertificateObjs      []*certificate.Certificate `bson:"-" json:"-"`
-	reqLock              sync.Mutex                 `bson:"-" json:"-"`
-	reqCount             *list.List                 `bson:"-" json:"-"`
+	Id                   primitive.ObjectID   `bson:"_id" json:"id"`
+	Zone                 primitive.ObjectID   `bson:"zone,omitempty" json:"zone"`
+	Name                 string               `bson:"name" json:"name"`
+	Types                []string             `bson:"types" json:"types"`
+	Timestamp            time.Time            `bson:"timestamp" json:"timestamp"`
+	Port                 int                  `bson:"port" json:"port"`
+	NoRedirectServer     bool                 `bson:"no_redirect_server" json:"no_redirect_server"`
+	Protocol             string               `bson:"protocol" json:"protocol"`
+	Hypervisor           string               `bson:"hypervisor" json:"hypervisor"`
+	Vga                  string               `bson:"vga" json:"vga"`
+	Certificate          primitive.ObjectID   `bson:"certificate" json:"certificate"`
+	Certificates         []primitive.ObjectID `bson:"certificates" json:"certificates"`
+	SelfCertificate      string               `bson:"self_certificate_key" json:"-"`
+	SelfCertificateKey   string               `bson:"self_certificate" json:"-"`
+	AdminDomain          string               `bson:"admin_domain" json:"admin_domain"`
+	UserDomain           string               `bson:"user_domain" json:"user_domain"`
+	RequestsMin          int64                `bson:"requests_min" json:"requests_min"`
+	ForwardedForHeader   string               `bson:"forwarded_for_header" json:"forwarded_for_header"`
+	ForwardedProtoHeader string               `bson:"forwarded_proto_header" json:"forwarded_proto_header"`
+	ExternalInterface    string               `bson:"external_interface" json:"external_interface"`
+	InternalInterface    string               `bson:"internal_interface" json:"internal_interface"`
+	ExternalInterfaces   []string             `bson:"external_interfaces" json:"external_interfaces"`
+	ExternalInterfaces6  []string             `bson:"external_interfaces6" json:"external_interfaces6"`
+	InternalInterfaces   []string             `bson:"internal_interfaces" json:"internal_interfaces"`
+	AvailableInterfaces  []string             `bson:"available_interfaces" json:"available_interfaces"`
+	AvailableBridges     []string             `bson:"available_bridges" json:"available_bridges"`
+	DefaultInterface     string               `bson:"default_interface" json:"default_interface"`
+	NetworkMode          string               `bson:"network_mode" json:"network_mode"`
+	NetworkMode6         string               `bson:"network_mode6" json:"network_mode6"`
+	Blocks               []*BlockAttachment   `bson:"blocks" json:"blocks"`
+	Blocks6              []*BlockAttachment   `bson:"blocks6" json:"blocks6"`
+	HostBlock            primitive.ObjectID   `bson:"host_block,omitempty" json:"host_block"`
+	HostNat              bool                 `bson:"host_nat" json:"host_nat"`
+	HostNatExcludes      []string             `bson:"host_nat_excludes" json:"host_nat_excludes"`
+	JumboFrames          bool                 `bson:"jumbo_frames" json:"jumbo_frames"`
+	UsbPassthrough       bool                 `bson:"usb_passthrough" json:"usb_passthrough"`
+	UsbDevices           []*usb.Device        `bson:"usb_devices" json:"usb_devices"`
+	Firewall             bool                 `bson:"firewall" json:"firewall"`
+	NetworkRoles         []string             `bson:"network_roles" json:"network_roles"`
+	Memory               float64              `bson:"memory" json:"memory"`
+	Load1                float64              `bson:"load1" json:"load1"`
+	Load5                float64              `bson:"load5" json:"load5"`
+	Load15               float64              `bson:"load15" json:"load15"`
+	CpuUnits             int                  `bson:"cpu_units" json:"cpu_units"`
+	MemoryUnits          float64              `bson:"memory_units" json:"memory_units"`
+	CpuUnitsRes          int                  `bson:"cpu_units_res" json:"cpu_units_res"`
+	MemoryUnitsRes       float64              `bson:"memory_units_res" json:"memory_units_res"`
+	PublicIps            []string             `bson:"public_ips" json:"public_ips"`
+	PublicIps6           []string             `bson:"public_ips6" json:"public_ips6"`
+	PrivateIps           map[string]string    `bson:"private_ips" json:"private_ips"`
+	SoftwareVersion      string               `bson:"software_version" json:"software_version"`
+	Hostname             string               `bson:"hostname" json:"hostname"`
+	Version              int                  `bson:"version" json:"-"`
+	VirtPath             string               `bson:"virt_path" json:"virt_path"`
+	CachePath            string               `bson:"cache_path" json:"cache_path"`
+	OracleUser           string               `bson:"oracle_user" json:"oracle_user"`
+	OraclePrivateKey     string               `bson:"oracle_private_key" json:"-"`
+	OraclePublicKey      string               `bson:"oracle_public_key" json:"oracle_public_key"`
+	OracleHostRoute      bool                 `bson:"oracle_host_route" json:"oracle_host_route"`
+	Operation            string               `bson:"operation" json:"operation"`
+	reqLock              sync.Mutex           `bson:"-" json:"-"`
+	reqCount             *list.List           `bson:"-" json:"-"`
 }
 
 func (n *Node) Copy() *Node {
@@ -157,7 +155,6 @@ func (n *Node) Copy() *Node {
 		OraclePrivateKey:     n.OraclePrivateKey,
 		OraclePublicKey:      n.OraclePublicKey,
 		OracleHostRoute:      n.OracleHostRoute,
-		CertificateObjs:      n.CertificateObjs,
 		reqLock:              n.reqLock,
 		reqCount:             n.reqCount,
 	}
