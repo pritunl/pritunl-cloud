@@ -273,70 +273,10 @@ func (r *Router) startWeb() {
 		}
 	} else {
 		tlsConfig := &tls.Config{
-			MinVersion: tls.VersionTLS12,
-			MaxVersion: tls.VersionTLS13,
+			MinVersion:     tls.VersionTLS12,
+			MaxVersion:     tls.VersionTLS13,
+			GetCertificate: r.certificates.GetCertificate,
 		}
-		tlsConfig.Certificates = []tls.Certificate{}
-
-		if r.certificates != nil {
-			for _, cert := range r.certificates {
-				keypair, err := tls.X509KeyPair(
-					[]byte(cert.Certificate),
-					[]byte(cert.Key),
-				)
-				if err != nil {
-					err = &errortypes.ReadError{
-						errors.Wrap(
-							err,
-							"router: Failed to load certificate",
-						),
-					}
-					logrus.WithFields(logrus.Fields{
-						"error": err,
-					}).Error("router: Web server certificate error")
-					err = nil
-					continue
-				}
-
-				tlsConfig.Certificates = append(
-					tlsConfig.Certificates,
-					keypair,
-				)
-			}
-		}
-
-		if len(tlsConfig.Certificates) == 0 {
-			certPem, keyPem, err := node.SelfCert()
-			if err != nil {
-				logrus.WithFields(logrus.Fields{
-					"error": err,
-				}).Error("router: Web server self certificate error")
-				return
-			}
-
-			keypair, err := tls.X509KeyPair(certPem, keyPem)
-			if err != nil {
-				err = &errortypes.ReadError{
-					errors.Wrap(
-						err,
-						"router: Failed to load self certificate",
-					),
-				}
-				logrus.WithFields(logrus.Fields{
-					"error": err,
-				}).Error("router: Web server self certificate error")
-				return
-			}
-
-			tlsConfig.Certificates = append(
-				tlsConfig.Certificates,
-				keypair,
-			)
-		}
-
-		tlsConfig.BuildNameToCertificate()
-
-		r.webServer.TLSConfig = tlsConfig
 
 		listener, err := tls.Listen("tcp", r.webServer.Addr, tlsConfig)
 		if err != nil {
