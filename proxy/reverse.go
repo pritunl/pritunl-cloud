@@ -19,6 +19,7 @@ import (
 )
 
 type Handler struct {
+	Key             string
 	Index           int
 	State           int
 	LastState       time.Time
@@ -80,6 +81,7 @@ func NewHandler(index, state int, proxyProto string, proxyPort int,
 	}
 
 	hand = &Handler{
+		Key:   fmt.Sprintf("%s:%d", backend.Hostname, backend.Port),
 		Index: index,
 		State: state,
 		ReverseProxy: &httputil.ReverseProxy{
