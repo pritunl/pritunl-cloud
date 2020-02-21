@@ -693,35 +693,6 @@ func (n *Node) update(db *database.Database) (err error) {
 	return
 }
 
-func (n *Node) loadCerts(db *database.Database) (err error) {
-	certObjs := []*certificate.Certificate{}
-
-	if n.Certificates == nil || len(n.Certificates) == 0 {
-		n.CertificateObjs = certObjs
-		return
-	}
-
-	for _, certId := range n.Certificates {
-		cert, e := certificate.Get(db, certId)
-		if e != nil {
-			switch e.(type) {
-			case *database.NotFoundError:
-				e = nil
-				break
-			default:
-				err = e
-				return
-			}
-		} else {
-			certObjs = append(certObjs, cert)
-		}
-	}
-
-	n.CertificateObjs = certObjs
-
-	return
-}
-
 func (n *Node) sync() {
 	db := database.GetDatabase()
 	defer db.Close()
@@ -863,13 +834,6 @@ func (n *Node) sync() {
 		logrus.WithFields(logrus.Fields{
 			"error": err,
 		}).Error("node: Failed to update node")
-	}
-
-	err = n.loadCerts(db)
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"error": err,
-		}).Error("node: Failed to load node certificate")
 	}
 
 	if n.Operation == Restart {
@@ -1030,11 +994,6 @@ func (n *Node) Init() (err error) {
 	}
 
 	n.reqInit()
-
-	err = n.loadCerts(db)
-	if err != nil {
-		return
-	}
 
 	n.sync()
 
