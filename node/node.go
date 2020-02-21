@@ -201,6 +201,15 @@ func (n *Node) IsUser() bool {
 	return false
 }
 
+func (n *Node) IsBalancer() bool {
+	for _, typ := range n.Types {
+		if typ == Balancer {
+			return true
+		}
+	}
+	return false
+}
+
 func (n *Node) IsHypervisor() bool {
 	for _, typ := range n.Types {
 		if typ == Hypervisor {
