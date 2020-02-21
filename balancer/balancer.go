@@ -1,11 +1,15 @@
 package balancer
 
 import (
+	"time"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/node"
 )
 
 type Domain struct {
@@ -17,6 +21,17 @@ type Backend struct {
 	Protocol string `bson:"protocol" json:"protocol"`
 	Hostname string `bson:"hostname" json:"hostname"`
 	Port     int    `bson:"port" json:"port"`
+}
+
+type State struct {
+	Timestamp   time.Time `bson:"timestamp" json:"timestamp"`
+	Requests    int       `bson:"requests" json:"requests"`
+	Retries     int       `bson:"retries" json:"retries"`
+	Online      []string  `bson:"online" json:"online"`
+	UnknownHigh []string  `bson:"unknown_high" json:"unknown_high"`
+	UnknownMid  []string  `bson:"unknown_mid" json:"unknown_mid"`
+	UnknownLow  []string  `bson:"unknown_low" json:"unknown_low"`
+	Offline     []string  `bson:"offline" json:"offline"`
 }
 
 type Balancer struct {
