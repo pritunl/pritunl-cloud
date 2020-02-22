@@ -443,8 +443,14 @@ func (r *Router) updateState() (err error) {
 	defer db.Close()
 
 	if node.Self.IsBalancer() {
+		dcId, e := node.Self.GetDatacenter(db)
+		if e != nil {
+			err = e
+			return
+		}
+
 		balncs, e := balancer.GetAll(db, &bson.M{
-			"zone": node.Self.Zone,
+			"datacenter": dcId,
 		})
 		if e != nil {
 			r.balancers = []*balancer.Balancer{}
