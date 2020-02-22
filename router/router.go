@@ -470,7 +470,7 @@ func (r *Router) updateState() (err error) {
 		return
 	}
 
-	err = r.proxy.Update(r.balancers)
+	err = r.proxy.Update(db, r.balancers)
 	if err != nil {
 		return
 	}
