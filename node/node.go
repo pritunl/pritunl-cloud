@@ -25,6 +25,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/usb"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/pritunl-cloud/zone"
 )
 
 var (
@@ -94,6 +95,8 @@ type Node struct {
 	Operation            string               `bson:"operation" json:"operation"`
 	reqLock              sync.Mutex           `bson:"-" json:"-"`
 	reqCount             *list.List           `bson:"-" json:"-"`
+	dcId                 primitive.ObjectID   `bson:"-" json:"-"`
+	dcZoneId             primitive.ObjectID   `bson:"-" json:"-"`
 }
 
 func (n *Node) Copy() *Node {
@@ -181,6 +184,26 @@ func (n *Node) GetCachePath() string {
 		return constants.DefaultCache
 	}
 	return n.CachePath
+}
+
+func (n *Node) GetDatacenter(db *database.Database) (
+	dcId primitive.ObjectID, err error) {
+
+	if n.Zone == n.dcZoneId {
+		dcId = n.dcId
+		return
+	}
+
+	zne, err := zone.Get(db, n.Zone)
+	if err != nil {
+		return
+	}
+
+	dcId = zne.Datacenter
+	n.dcId = zne.Datacenter
+	n.dcZoneId = n.Zone
+
+	return
 }
 
 func (n *Node) IsAdmin() bool {
