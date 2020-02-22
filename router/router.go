@@ -474,7 +474,7 @@ func (r *Router) updateState() (err error) {
 
 func (r *Router) watchState() {
 	for {
-		time.Sleep(3 * time.Second) // TODO Use 10
+		time.Sleep(4 * time.Second)
 
 		err := r.updateState()
 		if err != nil {
