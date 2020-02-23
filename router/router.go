@@ -497,7 +497,9 @@ func (r *Router) Run() (err error) {
 	go r.watchState()
 
 	for {
-		if !node.Self.IsAdmin() && !node.Self.IsUser() {
+		if !node.Self.IsAdmin() && !node.Self.IsUser() &&
+			!node.Self.IsBalancer() {
+
 			time.Sleep(500 * time.Millisecond)
 			continue
 		}
