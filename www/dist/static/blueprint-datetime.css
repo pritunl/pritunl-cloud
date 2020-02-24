@@ -5,6 +5,9 @@ Licensed under the Apache License, Version 2.0.
 
 */
 .bp3-datepicker{
+  display:-webkit-box;
+  display:-ms-flexbox;
+  display:flex;
   position:relative;
   border-radius:3px;
   background:#ffffff;
