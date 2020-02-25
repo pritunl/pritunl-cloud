@@ -18,7 +18,6 @@ import ConfirmButton from './ConfirmButton';
 import Help from './Help';
 import PageSelectButton from "./PageSelectButton";
 import PageTextArea from "./PageTextArea";
-import * as Constants from "../Constants";
 
 interface Props {
 	vpcs: VpcTypes.VpcsRo;
