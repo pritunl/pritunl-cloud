@@ -71,6 +71,8 @@ const css = {
 };
 
 export default class Balancers extends React.Component<{}, State> {
+	interval: NodeJS.Timer;
+
 	constructor(props: any, context: any) {
 		super(props, context);
 		this.state = {
@@ -104,6 +106,10 @@ export default class Balancers extends React.Component<{}, State> {
 		OrganizationActions.sync();
 		CertificateActions.sync();
 		DatacenterActions.sync();
+
+		this.interval = setInterval(() => {
+			BalancerActions.sync(true);
+		}, 5000);
 	}
 
 	componentWillUnmount(): void {
@@ -111,6 +117,7 @@ export default class Balancers extends React.Component<{}, State> {
 		OrganizationsStore.removeChangeListener(this.onChange);
 		CertificatesStore.removeChangeListener(this.onChange);
 		DatacentersStore.removeChangeListener(this.onChange);
+		clearInterval(this.interval);
 	}
 
 	onChange = (): void => {
