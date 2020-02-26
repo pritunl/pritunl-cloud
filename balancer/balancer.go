@@ -46,6 +46,7 @@ type Balancer struct {
 	WebSockets      bool                 `bson:"websockets" json:"websockets"`
 	Domains         []*Domain            `bson:"domains" json:"domains"`
 	Backends        []*Backend           `bson:"backends" json:"backends"`
+	States          map[string]*State    `bson:"states" json:"states"`
 }
 
 func (b *Balancer) Validate(db *database.Database) (
@@ -65,6 +66,10 @@ func (b *Balancer) Validate(db *database.Database) (
 
 	if b.Certificates == nil {
 		b.Certificates = []primitive.ObjectID{}
+	}
+
+	if b.States == nil {
+		b.States = map[string]*State{}
 	}
 
 	for _, backend := range b.Backends {
