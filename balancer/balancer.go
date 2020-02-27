@@ -135,6 +135,25 @@ func (b *Balancer) Validate(db *database.Database) (
 	return
 }
 
+func (b *Balancer) CommitState(db *database.Database, state *State) (
+	err error) {
+
+	coll := db.Balancers()
+	_, err = coll.UpdateOne(db, &bson.M{
+		"_id": b.Id,
+	}, &bson.M{
+		"$set": &bson.M{
+			"states." + node.Self.Id.Hex(): state,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func (b *Balancer) Commit(db *database.Database) (err error) {
 	coll := db.Balancers()
 
