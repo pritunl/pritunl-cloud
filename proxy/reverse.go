@@ -86,8 +86,6 @@ func NewHandler(index, state int, proxyProto string, proxyPort int,
 		State: state,
 		ReverseProxy: &httputil.ReverseProxy{
 			Director: func(req *http.Request) {
-				req.Header.Set("X-Forwarded-For",
-					node.Self.GetRemoteAddr(req))
 				req.Header.Set("X-Forwarded-Host", req.Host)
 				req.Header.Set("X-Forwarded-Proto", proxyProto)
 				req.Header.Set("X-Forwarded-Port", proxyPortStr)
