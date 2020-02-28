@@ -236,7 +236,25 @@ func (p *Proxy) runCounter() {
 	}
 }
 
+func (p *Proxy) healthCheck() {
+	p.lock.Lock()
+	defer p.lock.Unlock()
+
+	domains := p.Domains
+	for _, dom := range domains {
+		dom.Check()
+	}
+}
+
+func (p *Proxy) runHealthCheck() {
+	for {
+		time.Sleep(5 * time.Second)
+		p.healthCheck()
+	}
+}
+
 func (p *Proxy) Init() {
 	p.Domains = map[string]*Domain{}
 	go p.runCounter()
+	go p.runHealthCheck()
 }
