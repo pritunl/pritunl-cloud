@@ -282,6 +282,46 @@ func (d *Domain) ServeHTTPThird(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusBadGateway)
 }
 
+func (d *Domain) checkHandler(hand *Handler) {
+	resp, err := checkClient.Get(hand.CheckUrl)
+	if err != nil || resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		if hand.State != Offline {
+			d.offlineHandler(hand)
+		}
+	} else {
+		if hand.State != Online {
+			d.upgradeHandler(hand)
+		}
+	}
+}
+
+func (d *Domain) Check() {
+	d.Lock.Lock()
+	defer d.Lock.Unlock()
+
+	for _, hand := range d.OnlineWebFirst {
+		go d.checkHandler(hand)
+	}
+
+	for _, hand := range d.UnknownHighWebFirst {
+		go d.checkHandler(hand)
+	}
+
+	for _, hand := range d.UnknownMidWebFirst {
+		go d.checkHandler(hand)
+	}
+
+	for _, hand := range d.UnknownLowWebFirst {
+		go d.checkHandler(hand)
+	}
+
+	for _, hand := range d.OfflineWebFirst {
+		go d.checkHandler(hand)
+	}
+
+	return
+}
+
 func (d *Domain) upgradeHandler(hand *Handler) {
 	d.Lock.Lock()
 
