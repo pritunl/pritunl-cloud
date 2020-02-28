@@ -14,6 +14,22 @@ import (
 	"github.com/pritunl/pritunl-cloud/balancer"
 )
 
+var (
+	checkTransport = &http.Transport{
+		DisableKeepAlives:   true,
+		TLSHandshakeTimeout: 5 * time.Second,
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+			MinVersion:         tls.VersionTLS12,
+			MaxVersion:         tls.VersionTLS13,
+		},
+	}
+	checkClient = &http.Client{
+		Transport: checkTransport,
+		Timeout:   5 * time.Second,
+	}
+)
+
 type Domain struct {
 	Hash              []byte
 	Requests          *int32
