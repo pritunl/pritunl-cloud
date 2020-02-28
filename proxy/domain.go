@@ -324,6 +324,7 @@ func (d *Domain) Check() {
 
 func (d *Domain) upgradeHandler(hand *Handler) {
 	d.Lock.Lock()
+	defer d.Lock.Unlock()
 
 	index := hand.Index
 	state := hand.State
@@ -516,12 +517,11 @@ func (d *Domain) upgradeHandler(hand *Handler) {
 
 		break
 	}
-
-	d.Lock.Unlock()
 }
 
 func (d *Domain) downgradeHandler(hand *Handler) {
 	d.Lock.Lock()
+	defer d.Lock.Unlock()
 
 	index := hand.Index
 	state := hand.State
