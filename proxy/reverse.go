@@ -7,13 +7,13 @@ import (
 	"net"
 	"net/http"
 	"net/http/httputil"
+	"net/url"
 	"strconv"
 	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/pritunl/pritunl-cloud/balancer"
 	"github.com/pritunl/pritunl-cloud/logger"
-	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
@@ -22,6 +22,7 @@ type Handler struct {
 	Key             string
 	Index           int
 	State           int
+	CheckUrl        string
 	LastState       time.Time
 	LastOnlineState time.Time
 	*httputil.ReverseProxy
@@ -35,6 +36,19 @@ func NewHandler(index, state int, proxyProto string, proxyPort int,
 	reqHost := domain.Domain.Host
 	backendProto := backend.Protocol
 	backendHost := utils.FormatHostPort(backend.Hostname, backend.Port)
+
+	handUrl := fmt.Sprintf(
+		"%s://%s:%d",
+		backend.Protocol,
+		backend.Hostname,
+		backend.Port,
+	)
+
+	checkUrl, err := url.Parse(handUrl)
+	if err != nil {
+		checkUrl, _ = url.Parse("http://0.0.0.0")
+	}
+	checkUrl.Path = domain.Balancer.CheckPath
 
 	dialTimeout := time.Duration(
 		settings.Router.DialTimeout) * time.Second
@@ -68,12 +82,7 @@ func NewHandler(index, state int, proxyProto string, proxyPort int,
 		Fields: logrus.Fields{
 			"balancer": domain.Balancer.Name,
 			"domain":   domain.Domain.Domain,
-			"server": fmt.Sprintf(
-				"%s://%s:%d",
-				backend.Protocol,
-				backend.Hostname,
-				backend.Port,
-			),
+			"server":   handUrl,
 		},
 		Filters: []string{
 			"context canceled",
@@ -81,9 +90,10 @@ func NewHandler(index, state int, proxyProto string, proxyPort int,
 	}
 
 	hand = &Handler{
-		Key:   fmt.Sprintf("%s:%d", backend.Hostname, backend.Port),
-		Index: index,
-		State: state,
+		Key:      fmt.Sprintf("%s:%d", backend.Hostname, backend.Port),
+		Index:    index,
+		State:    state,
+		CheckUrl: checkUrl.String(),
 		ReverseProxy: &httputil.ReverseProxy{
 			Director: func(req *http.Request) {
 				req.Header.Set("X-Forwarded-Host", req.Host)
