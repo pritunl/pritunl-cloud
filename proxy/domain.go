@@ -704,8 +704,193 @@ func (d *Domain) downgradeHandler(hand *Handler) {
 	case Offline:
 		break
 	}
+}
 
-	d.Lock.Unlock()
+func (d *Domain) offlineHandler(hand *Handler) {
+	d.Lock.Lock()
+	defer d.Lock.Unlock()
+
+	index := hand.Index
+	state := hand.State
+
+	switch state {
+	case Online:
+		hand = d.OnlineWebFirst[index]
+		d.OnlineWebFirst[index] = d.OnlineWebFirst[len(d.OnlineWebFirst)-1]
+		d.OnlineWebFirst[len(d.OnlineWebFirst)-1] = nil
+		d.OnlineWebFirst = d.OnlineWebFirst[:len(d.OnlineWebFirst)-1]
+		for i, h := range d.OnlineWebFirst {
+			h.Index = i
+		}
+		hand.Index = len(d.UnknownMidWebFirst)
+		hand.State = Offline
+		hand.LastState = time.Now()
+		d.OfflineWebFirst = append(d.OfflineWebFirst, hand)
+
+		hand = d.OnlineWebSecond[index]
+		d.OnlineWebSecond[index] = d.OnlineWebSecond[len(d.OnlineWebSecond)-1]
+		d.OnlineWebSecond[len(d.OnlineWebSecond)-1] = nil
+		d.OnlineWebSecond = d.OnlineWebSecond[:len(d.OnlineWebSecond)-1]
+		for i, h := range d.OnlineWebSecond {
+			h.Index = i
+		}
+		hand.Index = len(d.OfflineWebSecond)
+		hand.State = Offline
+		hand.LastState = time.Now()
+		d.OfflineWebSecond = append(d.OfflineWebSecond, hand)
+
+		hand = d.OnlineWebThird[index]
+		d.OnlineWebThird[index] = d.OnlineWebThird[len(d.OnlineWebThird)-1]
+		d.OnlineWebThird[len(d.OnlineWebThird)-1] = nil
+		d.OnlineWebThird = d.OnlineWebThird[:len(d.OnlineWebThird)-1]
+		for i, h := range d.OnlineWebThird {
+			h.Index = i
+		}
+		hand.Index = len(d.OfflineWebThird)
+		hand.State = Offline
+		hand.LastState = time.Now()
+		d.OfflineWebThird = append(d.OfflineWebThird, hand)
+
+		break
+	case UnknownHigh:
+		hand = d.UnknownHighWebFirst[index]
+		d.UnknownHighWebFirst[index] =
+			d.UnknownHighWebFirst[len(d.UnknownHighWebFirst)-1]
+		d.UnknownHighWebFirst[len(d.UnknownHighWebFirst)-1] = nil
+		d.UnknownHighWebFirst =
+			d.UnknownHighWebFirst[:len(d.UnknownHighWebFirst)-1]
+		for i, h := range d.UnknownHighWebFirst {
+			h.Index = i
+		}
+		hand.Index = len(d.UnknownMidWebFirst)
+		hand.State = Offline
+		hand.LastState = time.Now()
+		d.OfflineWebFirst = append(d.OfflineWebFirst, hand)
+
+		hand = d.UnknownHighWebSecond[index]
+		d.UnknownHighWebSecond[index] =
+			d.UnknownHighWebSecond[len(d.UnknownHighWebSecond)-1]
+		d.UnknownHighWebSecond[len(d.UnknownHighWebSecond)-1] = nil
+		d.UnknownHighWebSecond =
+			d.UnknownHighWebSecond[:len(d.UnknownHighWebSecond)-1]
+		for i, h := range d.UnknownHighWebSecond {
+			h.Index = i
+		}
+		hand.Index = len(d.OfflineWebSecond)
+		hand.State = Offline
+		hand.LastState = time.Now()
+		d.OfflineWebSecond = append(d.OfflineWebSecond, hand)
+
+		hand = d.UnknownHighWebThird[index]
+		d.UnknownHighWebThird[index] =
+			d.UnknownHighWebThird[len(d.UnknownHighWebThird)-1]
+		d.UnknownHighWebThird[len(d.UnknownHighWebThird)-1] = nil
+		d.UnknownHighWebThird =
+			d.UnknownHighWebThird[:len(d.UnknownHighWebThird)-1]
+		for i, h := range d.UnknownHighWebThird {
+			h.Index = i
+		}
+		hand.Index = len(d.OfflineWebThird)
+		hand.State = Offline
+		hand.LastState = time.Now()
+		d.OfflineWebThird = append(d.OfflineWebThird, hand)
+
+		break
+	case UnknownMid:
+		if time.Since(hand.LastState) > 1*time.Second {
+			hand = d.UnknownMidWebFirst[index]
+			d.UnknownMidWebFirst[index] =
+				d.UnknownMidWebFirst[len(d.UnknownMidWebFirst)-1]
+			d.UnknownMidWebFirst[len(d.UnknownMidWebFirst)-1] = nil
+			d.UnknownMidWebFirst =
+				d.UnknownMidWebFirst[:len(d.UnknownMidWebFirst)-1]
+			for i, h := range d.UnknownMidWebFirst {
+				h.Index = i
+			}
+			hand.Index = len(d.UnknownLowWebFirst)
+			hand.State = Offline
+			hand.LastState = time.Now()
+			d.OfflineWebFirst = append(d.OfflineWebFirst, hand)
+
+			hand = d.UnknownMidWebSecond[index]
+			d.UnknownMidWebSecond[index] =
+				d.UnknownMidWebSecond[len(d.UnknownMidWebSecond)-1]
+			d.UnknownMidWebSecond[len(d.UnknownMidWebSecond)-1] = nil
+			d.UnknownMidWebSecond =
+				d.UnknownMidWebSecond[:len(d.UnknownMidWebSecond)-1]
+			for i, h := range d.UnknownMidWebSecond {
+				h.Index = i
+			}
+			hand.Index = len(d.OfflineWebSecond)
+			hand.State = Offline
+			hand.LastState = time.Now()
+			d.OfflineWebSecond = append(d.OfflineWebSecond, hand)
+
+			hand = d.UnknownMidWebThird[index]
+			d.UnknownMidWebThird[index] =
+				d.UnknownMidWebThird[len(d.UnknownMidWebThird)-1]
+			d.UnknownMidWebThird[len(d.UnknownMidWebThird)-1] = nil
+			d.UnknownMidWebThird =
+				d.UnknownMidWebThird[:len(d.UnknownMidWebThird)-1]
+			for i, h := range d.UnknownMidWebThird {
+				h.Index = i
+			}
+			hand.Index = len(d.OfflineWebThird)
+			hand.State = Offline
+			hand.LastState = time.Now()
+			d.OfflineWebThird = append(d.OfflineWebThird, hand)
+		}
+
+		break
+	case UnknownLow:
+		if time.Since(hand.LastState) > 2*time.Second {
+			hand = d.UnknownLowWebFirst[index]
+			d.UnknownLowWebFirst[index] =
+				d.UnknownLowWebFirst[len(d.UnknownLowWebFirst)-1]
+			d.UnknownLowWebFirst[len(d.UnknownLowWebFirst)-1] = nil
+			d.UnknownLowWebFirst =
+				d.UnknownLowWebFirst[:len(d.UnknownLowWebFirst)-1]
+			for i, h := range d.UnknownLowWebFirst {
+				h.Index = i
+			}
+			hand.Index = len(d.OfflineWebFirst)
+			hand.State = Offline
+			hand.LastState = time.Now()
+			d.OfflineWebFirst = append(d.OfflineWebFirst, hand)
+
+			hand = d.UnknownLowWebSecond[index]
+			d.UnknownLowWebSecond[index] =
+				d.UnknownLowWebSecond[len(d.UnknownLowWebSecond)-1]
+			d.UnknownLowWebSecond[len(d.UnknownLowWebSecond)-1] = nil
+			d.UnknownLowWebSecond =
+				d.UnknownLowWebSecond[:len(d.UnknownLowWebSecond)-1]
+			for i, h := range d.UnknownLowWebSecond {
+				h.Index = i
+			}
+			hand.Index = len(d.OfflineWebSecond)
+			hand.State = Offline
+			hand.LastState = time.Now()
+			d.OfflineWebSecond = append(d.OfflineWebSecond, hand)
+
+			hand = d.UnknownLowWebThird[index]
+			d.UnknownLowWebThird[index] =
+				d.UnknownLowWebThird[len(d.UnknownLowWebThird)-1]
+			d.UnknownLowWebThird[len(d.UnknownLowWebThird)-1] = nil
+			d.UnknownLowWebThird =
+				d.UnknownLowWebThird[:len(d.UnknownLowWebThird)-1]
+			for i, h := range d.UnknownLowWebThird {
+				h.Index = i
+			}
+			hand.Index = len(d.OfflineWebThird)
+			hand.State = Offline
+			hand.LastState = time.Now()
+			d.OfflineWebThird = append(d.OfflineWebThird, hand)
+		}
+
+		break
+	case Offline:
+		break
+	}
 }
 
 func (d *Domain) ResponseHandler(hand *Handler, resp *http.Response) error {
