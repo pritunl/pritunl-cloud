@@ -46,6 +46,15 @@ func NewHandler(index, state int, proxyProto string, proxyPort int,
 
 	checkUrl, err := url.Parse(handUrl)
 	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"balancer":   domain.Balancer.Name,
+			"domain":     domain.Domain.Domain,
+			"protocol":   backend.Protocol,
+			"hostname":   backend.Hostname,
+			"port":       backend.Port,
+			"check_path": domain.Balancer.CheckPath,
+		}).Error("proxy: Error parsing balancer backend URL")
+
 		checkUrl, _ = url.Parse("http://0.0.0.0")
 	}
 	checkUrl.Path = domain.Balancer.CheckPath
