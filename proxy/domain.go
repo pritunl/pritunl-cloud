@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/pritunl/pritunl-cloud/authority"
@@ -15,10 +16,10 @@ import (
 
 type Domain struct {
 	Hash              []byte
-	Requests          int
+	Requests          *int32
 	RequestsPrev      [5]int
 	RequestsTotal     int
-	Retries           int
+	Retries           *int32
 	RetriesPrev       [5]int
 	RetriesTotal      int
 	Lock              sync.Mutex
@@ -143,7 +144,7 @@ func (d *Domain) Init() {
 }
 
 func (d *Domain) ServeHTTPFirst(rw http.ResponseWriter, r *http.Request) {
-	d.Requests += 1
+	atomic.AddInt32(d.Requests, 1)
 
 	onlineWebFirst := d.OnlineWebFirst
 	l := len(onlineWebFirst)
@@ -184,7 +185,7 @@ func (d *Domain) ServeHTTPFirst(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (d *Domain) ServeHTTPSecond(rw http.ResponseWriter, r *http.Request) {
-	d.Retries += 1
+	atomic.AddInt32(d.Retries, 1)
 
 	onlineWebSecond := d.OnlineWebSecond
 	l := len(onlineWebSecond)
@@ -225,7 +226,7 @@ func (d *Domain) ServeHTTPSecond(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (d *Domain) ServeHTTPThird(rw http.ResponseWriter, r *http.Request) {
-	d.Retries += 1
+	atomic.AddInt32(d.Retries, 1)
 
 	onlineWebThird := d.OnlineWebThird
 	l := len(onlineWebThird)

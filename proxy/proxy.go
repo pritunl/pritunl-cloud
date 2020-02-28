@@ -86,6 +86,8 @@ func (p *Proxy) Update(db *database.Database, balncs []*balancer.Balancer) (
 				ProxyPort:  proxyPort,
 				Balancer:   balnc,
 				Domain:     domain,
+				Requests:   new(int32),
+				Retries:    new(int32),
 			}
 			proxyDomain.CalculateHash()
 
@@ -197,29 +199,33 @@ func (p *Proxy) syncCount() {
 
 	domains := p.Domains
 	for _, dom := range domains {
-		dom.Print()
-
+		req := dom.Requests
+		dom.Requests = new(int32)
 		reqPrev := dom.RequestsPrev
-		dom.RequestsTotal = reqPrev[0] + reqPrev[1] + reqPrev[2] +
-			reqPrev[3] + reqPrev[4] + dom.Requests
+		reqTotal := reqPrev[0] + reqPrev[1] + reqPrev[2] +
+			reqPrev[3] + reqPrev[4]
 		reqPrev[0] = reqPrev[1]
 		reqPrev[1] = reqPrev[2]
 		reqPrev[2] = reqPrev[3]
 		reqPrev[3] = reqPrev[4]
-		reqPrev[4] = dom.Requests
+		reqPrev[4] = int(*req)
+		reqTotal += int(*req)
 		dom.RequestsPrev = reqPrev
-		dom.Requests = 0
+		dom.RequestsTotal = reqTotal
 
+		ret := dom.Retries
+		dom.Retries = new(int32)
 		retPrev := dom.RetriesPrev
-		dom.RetriesTotal = retPrev[0] + retPrev[1] + retPrev[2] +
-			retPrev[3] + retPrev[4] + dom.Retries
+		retTotal := retPrev[0] + retPrev[1] + retPrev[2] +
+			retPrev[3] + retPrev[4]
 		retPrev[0] = retPrev[1]
 		retPrev[1] = retPrev[2]
 		retPrev[2] = retPrev[3]
 		retPrev[3] = retPrev[4]
-		retPrev[4] = dom.Retries
+		retPrev[4] = int(*ret)
+		retTotal += int(*ret)
 		dom.RetriesPrev = retPrev
-		dom.Retries = 0
+		dom.RetriesTotal = retTotal
 	}
 }
 
