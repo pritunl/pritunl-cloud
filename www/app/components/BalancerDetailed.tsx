@@ -876,6 +876,16 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 					>
 						{certificatesSelect}
 					</PageSelectButton>
+					<PageInput
+						label="Health Check Path"
+						help="Path to check status of backend servers. Path must return 200-299 status code."
+						type="text"
+						placeholder="Enter path"
+						value={balancer.check_path}
+						onChange={(val): void => {
+							this.set('check_path', val);
+						}}
+					/>
 				</div>
 			</div>
 			<PageSave
