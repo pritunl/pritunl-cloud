@@ -37,6 +37,7 @@ export interface Balancer {
 	web_sockets?: boolean;
 	domains?: Domain[];
 	backends?: Backend[];
+	check_path?: string;
 	states?: {[key: string]: State};
 }
 
