@@ -27,6 +27,7 @@ type balancerData struct {
 	WebSockets   bool                 `json:"websockets"`
 	Domains      []*balancer.Domain   `json:"domains"`
 	Backends     []*balancer.Backend  `json:"backends"`
+	CheckPath    string               `json:"check_path"`
 }
 
 type balancersData struct {
@@ -69,6 +70,7 @@ func balancerPut(c *gin.Context) {
 	balnc.WebSockets = data.WebSockets
 	balnc.Domains = data.Domains
 	balnc.Backends = data.Backends
+	balnc.CheckPath = data.CheckPath
 
 	exists, err := datacenter.ExistsOrg(db, userOrg, balnc.Datacenter)
 	if err != nil {
@@ -89,6 +91,7 @@ func balancerPut(c *gin.Context) {
 		"web_sockets",
 		"domains",
 		"backends",
+		"check_path",
 	)
 
 	errData, err := balnc.Validate(db)
@@ -140,6 +143,7 @@ func balancerPost(c *gin.Context) {
 		WebSockets:   data.WebSockets,
 		Domains:      data.Domains,
 		Backends:     data.Backends,
+		CheckPath:    data.CheckPath,
 	}
 
 	exists, err := datacenter.ExistsOrg(db, userOrg, balnc.Datacenter)
