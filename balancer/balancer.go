@@ -47,6 +47,7 @@ type Balancer struct {
 	Domains         []*Domain            `bson:"domains" json:"domains"`
 	Backends        []*Backend           `bson:"backends" json:"backends"`
 	States          map[string]*State    `bson:"states" json:"states"`
+	CheckPath       string               `bson:"check_path" json:"check_path"`
 }
 
 func (b *Balancer) Validate(db *database.Database) (
