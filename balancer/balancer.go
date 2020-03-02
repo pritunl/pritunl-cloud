@@ -124,6 +124,14 @@ func (b *Balancer) Validate(db *database.Database) (
 			return
 		}
 
+		if b.CheckPath == "" {
+			errData = &errortypes.ErrorData{
+				Error:   "check_path_required",
+				Message: "Missing required health check path",
+			}
+			return
+		}
+
 		if b.Backends == nil || len(b.Backends) == 0 {
 			errData = &errortypes.ErrorData{
 				Error:   "backend_required",
