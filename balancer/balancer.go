@@ -139,6 +139,32 @@ func (b *Balancer) Validate(db *database.Database) (
 			}
 			return
 		}
+
+		domains := []string{}
+		for _, domain := range b.Domains {
+			domains = append(domains, domain.Domain)
+		}
+
+		coll := db.Balancers()
+		count, e := coll.CountDocuments(db, &bson.M{
+			"state": true,
+			"domains.domain": &bson.M{
+				"$in": domains,
+			},
+		})
+		if e != nil {
+			err = database.ParseError(e)
+			return
+		}
+
+		if count > 0 {
+			errData = &errortypes.ErrorData{
+				Error: "domain_conflict",
+				Message: "External domain conflicts with another " +
+					"load balancer in same datacenter",
+			}
+			return
+		}
 	}
 
 	return
@@ -178,6 +204,32 @@ func (b *Balancer) CommitFields(db *database.Database, fields set.Set) (
 	err error) {
 
 	coll := db.Balancers()
+
+	if b.State && (fields.Contains("state") || fields.Contains("domains")) {
+		domains := []string{}
+		for _, domain := range b.Domains {
+			domains = append(domains, domain.Domain)
+		}
+
+		coll := db.Balancers()
+		count, e := coll.CountDocuments(db, &bson.M{
+			"state": true,
+			"domains.domain": &bson.M{
+				"$in": domains,
+			},
+		})
+		if e != nil {
+			err = database.ParseError(e)
+			return
+		}
+
+		if count > 0 {
+			err = &errortypes.ReadError{
+				errors.New("balancer: Datacenter domain conflict"),
+			}
+			return
+		}
+	}
 
 	err = coll.CommitFields(b.Id, b, fields)
 	if err != nil {
