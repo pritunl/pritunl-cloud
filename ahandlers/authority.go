@@ -19,6 +19,7 @@ import (
 type authorityData struct {
 	Id           primitive.ObjectID `json:"id"`
 	Name         string             `json:"name"`
+	Comment      string             `json:"comment"`
 	Type         string             `json:"type"`
 	Organization primitive.ObjectID `json:"organization"`
 	NetworkRoles []string           `json:"network_roles"`
@@ -59,6 +60,7 @@ func authorityPut(c *gin.Context) {
 	}
 
 	fire.Name = data.Name
+	fire.Comment = data.Comment
 	fire.Type = data.Type
 	fire.Organization = data.Organization
 	fire.NetworkRoles = data.NetworkRoles
@@ -68,6 +70,7 @@ func authorityPut(c *gin.Context) {
 
 	fields := set.NewSet(
 		"name",
+		"comment",
 		"type",
 		"organization",
 		"network_roles",
@@ -116,6 +119,7 @@ func authorityPost(c *gin.Context) {
 
 	fire := &authority.Authority{
 		Name:         data.Name,
+		Comment:         data.Comment,
 		Type:         data.Type,
 		Organization: data.Organization,
 		NetworkRoles: data.NetworkRoles,
