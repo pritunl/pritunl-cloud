@@ -30,6 +30,7 @@ type Info struct {
 type Certificate struct {
 	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Name         string             `bson:"name" json:"name"`
+	Comment      string             `bson:"comment" json:"comment"`
 	Organization primitive.ObjectID `bson:"organization,omitempty" json:"organization"`
 	Type         string             `bson:"type" json:"type"`
 	Key          string             `bson:"key" json:"key"`
