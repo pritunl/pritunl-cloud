@@ -11,6 +11,7 @@ import (
 type Datacenter struct {
 	Id                  primitive.ObjectID   `bson:"_id,omitempty" json:"id"`
 	Name                string               `bson:"name" json:"name"`
+	Comment             string               `bson:"comment" json:"comment"`
 	MatchOrganizations  bool                 `bson:"match_organizations" json:"match_organizations"`
 	Organizations       []primitive.ObjectID `bson:"organizations" json:"organizations"`
 	PublicStorages      []primitive.ObjectID `bson:"public_storages" json:"public_storages"`
