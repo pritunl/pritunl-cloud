@@ -19,6 +19,7 @@ import (
 type Disk struct {
 	Id               primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Name             string             `bson:"name" json:"name"`
+	Comment          string             `bson:"comment" json:"comment"`
 	State            string             `bson:"state" json:"state"`
 	Node             primitive.ObjectID `bson:"node" json:"node"`
 	Organization     primitive.ObjectID `bson:"organization,omitempty" json:"organization"`
