@@ -36,6 +36,7 @@ type Node struct {
 	Id                   primitive.ObjectID   `bson:"_id" json:"id"`
 	Zone                 primitive.ObjectID   `bson:"zone,omitempty" json:"zone"`
 	Name                 string               `bson:"name" json:"name"`
+	Comment              string               `bson:"comment" json:"comment"`
 	Types                []string             `bson:"types" json:"types"`
 	Timestamp            time.Time            `bson:"timestamp" json:"timestamp"`
 	Port                 int                  `bson:"port" json:"port"`
@@ -104,6 +105,7 @@ func (n *Node) Copy() *Node {
 		Id:                   n.Id,
 		Zone:                 n.Zone,
 		Name:                 n.Name,
+		Comment:              n.Comment,
 		Types:                n.Types,
 		Timestamp:            n.Timestamp,
 		Port:                 n.Port,
@@ -685,6 +687,7 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.Id = nde.Id
 	n.Zone = nde.Zone
 	n.Name = nde.Name
+	n.Comment = nde.Comment
 	n.Types = nde.Types
 	n.Port = nde.Port
 	n.NoRedirectServer = nde.NoRedirectServer
