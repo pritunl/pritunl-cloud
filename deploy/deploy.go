@@ -52,11 +52,11 @@ func Deploy(stat *state.State) (err error) {
 		return
 	}
 
-	ispec := NewIpsec(stat)
-	err = ispec.Deploy()
-	if err != nil {
-		return
-	}
+	//ispec := NewIpsec(stat)
+	//err = ispec.Deploy()
+	//if err != nil {
+	//	return
+	//}
 
 	return
 }
