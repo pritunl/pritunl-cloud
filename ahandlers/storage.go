@@ -16,6 +16,7 @@ import (
 type storageData struct {
 	Id        primitive.ObjectID `json:"id"`
 	Name      string             `json:"name"`
+	Comment   string             `json:"comment"`
 	Type      string             `json:"type"`
 	Endpoint  string             `json:"endpoint"`
 	Bucket    string             `json:"bucket"`
@@ -51,6 +52,7 @@ func storagePut(c *gin.Context) {
 	}
 
 	store.Name = dta.Name
+	store.Comment = dta.Comment
 	store.Type = dta.Type
 	store.Endpoint = dta.Endpoint
 	store.Bucket = dta.Bucket
@@ -60,6 +62,7 @@ func storagePut(c *gin.Context) {
 
 	fields := set.NewSet(
 		"name",
+		"comment",
 		"type",
 		"endpoint",
 		"bucket",
@@ -120,6 +123,7 @@ func storagePost(c *gin.Context) {
 
 	store := &storage.Storage{
 		Name:      dta.Name,
+		Comment:   dta.Comment,
 		Type:      dta.Type,
 		Endpoint:  dta.Endpoint,
 		Bucket:    dta.Bucket,

@@ -21,6 +21,7 @@ import (
 type vpcData struct {
 	Id           primitive.ObjectID `json:"id"`
 	Name         string             `json:"name"`
+	Comment      string             `json:"comment"`
 	Network      string             `json:"network"`
 	Subnets      []*vpc.Subnet      `json:"subnets"`
 	Organization primitive.ObjectID `json:"organization"`
@@ -63,12 +64,14 @@ func vpcPut(c *gin.Context) {
 	vc.PreCommit()
 
 	vc.Name = data.Name
+	vc.Comment = data.Comment
 	vc.Routes = data.Routes
 	vc.Subnets = data.Subnets
 	vc.LinkUris = data.LinkUris
 
 	fields := set.NewSet(
 		"name",
+		"comment",
 		"routes",
 		"subnets",
 		"link_uris",
@@ -130,6 +133,7 @@ func vpcPost(c *gin.Context) {
 
 	vc := &vpc.Vpc{
 		Name:         data.Name,
+		Comment:      data.Comment,
 		Network:      data.Network,
 		Subnets:      data.Subnets,
 		Organization: data.Organization,

@@ -19,6 +19,7 @@ import (
 type domainData struct {
 	Id           primitive.ObjectID `json:"id"`
 	Name         string             `json:"name"`
+	Comment      string             `json:"comment"`
 	Organization primitive.ObjectID `json:"organization"`
 	Type         string             `json:"type"`
 	AwsId        string             `json:"aws_id"`
@@ -57,6 +58,7 @@ func domainPut(c *gin.Context) {
 	}
 
 	domn.Name = data.Name
+	domn.Comment = data.Comment
 	domn.Organization = data.Organization
 	domn.Type = data.Type
 	domn.AwsId = data.AwsId
@@ -64,6 +66,7 @@ func domainPut(c *gin.Context) {
 
 	fields := set.NewSet(
 		"name",
+		"comment",
 		"organization",
 		"type",
 		"aws_id",
@@ -110,6 +113,7 @@ func domainPost(c *gin.Context) {
 
 	domn := &domain.Domain{
 		Name:         data.Name,
+		Comment:      data.Comment,
 		Organization: data.Organization,
 		Type:         data.Type,
 		AwsId:        data.AwsId,

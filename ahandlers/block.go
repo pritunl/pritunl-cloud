@@ -14,6 +14,7 @@ import (
 type blockData struct {
 	Id       primitive.ObjectID `json:"id"`
 	Name     string             `json:"name"`
+	Comment  string             `json:"comment"`
 	Type     string             `json:"type"`
 	Subnets  []string           `json:"subnets"`
 	Subnets6 []string           `json:"subnets6"`
@@ -49,6 +50,7 @@ func blockPut(c *gin.Context) {
 	}
 
 	blck.Name = dta.Name
+	blck.Comment = dta.Comment
 	blck.Type = dta.Type
 	blck.Subnets = dta.Subnets
 	blck.Subnets6 = dta.Subnets6
@@ -58,6 +60,7 @@ func blockPut(c *gin.Context) {
 
 	fields := set.NewSet(
 		"name",
+		"comment",
 		"type",
 		"subnets",
 		"subnets6",
@@ -106,6 +109,7 @@ func blockPost(c *gin.Context) {
 
 	blck := &block.Block{
 		Name:     dta.Name,
+		Comment:  dta.Comment,
 		Type:     dta.Type,
 		Subnets:  dta.Subnets,
 		Subnets6: dta.Subnets6,

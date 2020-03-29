@@ -12,9 +12,10 @@ import (
 )
 
 type organizationData struct {
-	Id    primitive.ObjectID `json:"id"`
-	Name  string             `json:"name"`
-	Roles []string           `json:"roles"`
+	Id      primitive.ObjectID `json:"id"`
+	Name    string             `json:"name"`
+	Comment string             `json:"comment"`
+	Roles   []string           `json:"roles"`
 }
 
 func organizationPut(c *gin.Context) {
@@ -44,10 +45,12 @@ func organizationPut(c *gin.Context) {
 	}
 
 	org.Name = data.Name
+	org.Comment = data.Comment
 	org.Roles = data.Roles
 
 	fields := set.NewSet(
 		"name",
+		"comment",
 		"roles",
 	)
 
@@ -90,8 +93,9 @@ func organizationPost(c *gin.Context) {
 	}
 
 	org := &organization.Organization{
-		Name:  data.Name,
-		Roles: data.Roles,
+		Name:    data.Name,
+		Comment: data.Comment,
+		Roles:   data.Roles,
 	}
 
 	errData, err := org.Validate(db)

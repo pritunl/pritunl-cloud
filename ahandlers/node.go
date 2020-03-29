@@ -21,6 +21,7 @@ type nodeData struct {
 	Id                   primitive.ObjectID      `json:"id"`
 	Zone                 primitive.ObjectID      `json:"zone"`
 	Name                 string                  `json:"name"`
+	Comment              string                  `json:"comment"`
 	Types                []string                `json:"types"`
 	Port                 int                     `json:"port"`
 	NoRedirectServer     bool                    `json:"no_redirect_server"`
@@ -83,6 +84,7 @@ func nodePut(c *gin.Context) {
 	}
 
 	nde.Name = data.Name
+	nde.Comment = data.Comment
 	nde.Types = data.Types
 	nde.Port = data.Port
 	nde.NoRedirectServer = data.NoRedirectServer
@@ -113,6 +115,7 @@ func nodePut(c *gin.Context) {
 
 	fields := set.NewSet(
 		"name",
+		"comment",
 		"zone",
 		"types",
 		"port",

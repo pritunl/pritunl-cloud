@@ -15,6 +15,7 @@ type zoneData struct {
 	Id          primitive.ObjectID `json:"id"`
 	Datacenter  primitive.ObjectID `json:"datacenter"`
 	Name        string             `json:"name"`
+	Comment     string             `json:"comment"`
 	NetworkMode string             `json:"network_mode"`
 }
 
@@ -45,10 +46,12 @@ func zonePut(c *gin.Context) {
 	}
 
 	zne.Name = data.Name
+	zne.Comment = data.Comment
 	zne.NetworkMode = data.NetworkMode
 
 	fields := set.NewSet(
 		"name",
+		"comment",
 		"network_mode",
 	)
 
@@ -93,6 +96,7 @@ func zonePost(c *gin.Context) {
 	zne := &zone.Zone{
 		Datacenter:  data.Datacenter,
 		Name:        data.Name,
+		Comment:     data.Comment,
 		NetworkMode: data.NetworkMode,
 	}
 

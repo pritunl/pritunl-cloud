@@ -14,6 +14,7 @@ import (
 type datacenterData struct {
 	Id                  primitive.ObjectID   `json:"id"`
 	Name                string               `json:"name"`
+	Comment             string               `json:"comment"`
 	MatchOrganizations  bool                 `json:"match_organizations"`
 	Organizations       []primitive.ObjectID `json:"organizations"`
 	PublicStorages      []primitive.ObjectID `json:"public_storages"`
@@ -50,6 +51,7 @@ func datacenterPut(c *gin.Context) {
 	}
 
 	dc.Name = data.Name
+	dc.Comment = data.Comment
 	dc.MatchOrganizations = data.MatchOrganizations
 	dc.Organizations = data.Organizations
 	dc.PublicStorages = data.PublicStorages
@@ -60,6 +62,7 @@ func datacenterPut(c *gin.Context) {
 
 	fields := set.NewSet(
 		"name",
+		"comment",
 		"match_organizations",
 		"organizations",
 		"public_storages",
@@ -109,6 +112,7 @@ func datacenterPost(c *gin.Context) {
 
 	dc := &datacenter.Datacenter{
 		Name:                data.Name,
+		Comment:             data.Comment,
 		MatchOrganizations:  data.MatchOrganizations,
 		Organizations:       data.Organizations,
 		PublicStorages:      data.PublicStorages,

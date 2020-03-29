@@ -19,6 +19,7 @@ import (
 type balancerData struct {
 	Id           primitive.ObjectID   `json:"id"`
 	Name         string               `json:"name"`
+	Comment      string               `json:"comment"`
 	State        bool                 `json:"state"`
 	Type         string               `json:"type"`
 	Organization primitive.ObjectID   `json:"organization"`
@@ -62,6 +63,7 @@ func balancerPut(c *gin.Context) {
 	}
 
 	balnc.Name = data.Name
+	balnc.Comment = data.Comment
 	balnc.State = data.State
 	balnc.Type = data.Type
 	balnc.Organization = data.Organization
@@ -74,6 +76,7 @@ func balancerPut(c *gin.Context) {
 
 	fields := set.NewSet(
 		"name",
+		"comment",
 		"state",
 		"type",
 		"organization",
@@ -125,6 +128,7 @@ func balancerPost(c *gin.Context) {
 
 	balnc := &balancer.Balancer{
 		Name:         data.Name,
+		Comment:      data.Comment,
 		State:        data.State,
 		Type:         data.Type,
 		Organization: data.Organization,

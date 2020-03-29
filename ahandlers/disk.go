@@ -24,6 +24,7 @@ import (
 type diskData struct {
 	Id               primitive.ObjectID `json:"id"`
 	Name             string             `json:"name"`
+	Comment          string             `json:"comment"`
 	Organization     primitive.ObjectID `json:"organization"`
 	Instance         primitive.ObjectID `json:"instance"`
 	Index            string             `json:"index"`
@@ -75,6 +76,7 @@ func diskPut(c *gin.Context) {
 
 	fields := set.NewSet(
 		"name",
+		"comment",
 		"instance",
 		"delete_protection",
 		"index",
@@ -82,6 +84,7 @@ func diskPut(c *gin.Context) {
 	)
 
 	dsk.Name = dta.Name
+	dsk.Comment = dta.Comment
 	dsk.Instance = dta.Instance
 	dsk.DeleteProtection = dta.DeleteProtection
 	dsk.Index = dta.Index
@@ -200,6 +203,7 @@ func diskPost(c *gin.Context) {
 
 	dsk := &disk.Disk{
 		Name:             dta.Name,
+		Comment:          dta.Comment,
 		Organization:     dta.Organization,
 		Instance:         dta.Instance,
 		Index:            dta.Index,
