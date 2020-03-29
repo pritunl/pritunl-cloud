@@ -112,10 +112,10 @@ func (p *Proxy) Update(db *database.Database, balncs []*balancer.Balancer) (
 				for _, hand := range curDomain.OfflineWebFirst {
 					offlineWeb.Add(hand.Key)
 				}
-				curDomain.Lock.Unlock()
 
 				if bytes.Equal(curDomain.Hash, proxyDomain.Hash) {
 					domains[domain.Domain] = curDomain
+					curDomain.Lock.Unlock()
 					continue
 				} else {
 					proxyDomain.Requests = curDomain.Requests
@@ -124,6 +124,7 @@ func (p *Proxy) Update(db *database.Database, balncs []*balancer.Balancer) (
 					proxyDomain.Retries = curDomain.Retries
 					proxyDomain.RetriesPrev = curDomain.RetriesPrev
 					proxyDomain.RetriesTotal = curDomain.RetriesTotal
+					curDomain.Lock.Unlock()
 				}
 			}
 
