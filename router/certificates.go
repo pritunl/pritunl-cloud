@@ -112,11 +112,6 @@ func (c *Certificates) Update(db *database.Database,
 
 	for _, balnc := range balncs {
 		for _, certId := range balnc.Certificates {
-			if loaded.Contains(certId) {
-				continue
-			}
-			loaded.Add(certId)
-
 			cert, e := certificate.Get(db, certId)
 			if e != nil {
 				if _, ok := e.(*database.NotFoundError); !ok {
@@ -129,6 +124,13 @@ func (c *Certificates) Update(db *database.Database,
 			}
 
 			if cert != nil {
+				if cert.Organization != balnc.Organization ||
+					loaded.Contains(certId) {
+
+					continue
+				}
+				loaded.Add(certId)
+
 				certificates = append(certificates, cert)
 			}
 		}
