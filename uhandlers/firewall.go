@@ -19,6 +19,7 @@ import (
 type firewallData struct {
 	Id           primitive.ObjectID `json:"id"`
 	Name         string             `json:"name"`
+	Comment      string             `json:"comment"`
 	NetworkRoles []string           `json:"network_roles"`
 	Ingress      []*firewall.Rule   `json:"ingress"`
 }
@@ -56,12 +57,13 @@ func firewallPut(c *gin.Context) {
 	}
 
 	fire.Name = data.Name
+	fire.Comment = data.Comment
 	fire.NetworkRoles = data.NetworkRoles
 	fire.Ingress = data.Ingress
 
 	fields := set.NewSet(
-		"state",
 		"name",
+		"comment",
 		"network_roles",
 		"ingress",
 	)
@@ -107,6 +109,7 @@ func firewallPost(c *gin.Context) {
 
 	fire := &firewall.Firewall{
 		Name:         data.Name,
+		Comment:      data.Comment,
 		Organization: userOrg,
 		NetworkRoles: data.NetworkRoles,
 		Ingress:      data.Ingress,

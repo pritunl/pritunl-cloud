@@ -19,8 +19,9 @@ import (
 )
 
 type imageData struct {
-	Id   primitive.ObjectID `json:"id"`
-	Name string             `json:"name"`
+	Id      primitive.ObjectID `json:"id"`
+	Name    string             `json:"name"`
+	Comment string             `json:"comment"`
 }
 
 type imagesData struct {
@@ -56,9 +57,11 @@ func imagePut(c *gin.Context) {
 	}
 
 	img.Name = dta.Name
+	img.Comment = dta.Comment
 
 	fields := set.NewSet(
 		"name",
+		"comment",
 	)
 
 	errData, err := img.Validate(db)
