@@ -13,6 +13,7 @@ import (
 type Storage struct {
 	Id        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Name      string             `bson:"name" json:"name"`
+	Comment   string             `bson:"comment" json:"comment"`
 	Type      string             `bson:"type" json:"type"`
 	Endpoint  string             `bson:"endpoint" json:"endpoint"`
 	Bucket    string             `bson:"bucket" json:"bucket"`
