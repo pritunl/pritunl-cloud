@@ -12,6 +12,7 @@ type Zone struct {
 	Id          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Datacenter  primitive.ObjectID `bson:"datacenter,omitempty" json:"datacenter"`
 	Name        string             `bson:"name" json:"name"`
+	Comment     string             `bson:"comment" json:"comment"`
 	NetworkMode string             `bson:"network_mode" json:"network_mode"`
 }
 
