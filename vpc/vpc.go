@@ -30,6 +30,7 @@ type Route struct {
 type Vpc struct {
 	Id            primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Name          string             `bson:"name" json:"name"`
+	Comment       string             `bson:"comment" json:"comment"`
 	VpcId         int                `bson:"vpc_id" json:"vpc_id"`
 	Network       string             `bson:"network" json:"network"`
 	Network6      string             `bson:"-" json:"network6"`
