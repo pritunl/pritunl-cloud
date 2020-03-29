@@ -23,6 +23,7 @@ type User struct {
 	Type            string             `bson:"type" json:"type"`
 	Username        string             `bson:"username" json:"username"`
 	Password        string             `bson:"password" json:"-"`
+	Comment         string             `bson:"comment" json:"comment"`
 	DefaultPassword string             `bson:"default_password" json:"-"`
 	Token           string             `bson:"token" json:"token"`
 	Secret          string             `bson:"secret" json:"secret"`
