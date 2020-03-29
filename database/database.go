@@ -758,6 +758,7 @@ func addIndexes() (err error) {
 		Collection: db.VpcsIp(),
 		Keys: &bson.D{
 			{"vpc", 1},
+			{"subnet", 1},
 			{"ip", 1},
 		},
 		Unique: true,
