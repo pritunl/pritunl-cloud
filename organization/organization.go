@@ -9,9 +9,10 @@ import (
 )
 
 type Organization struct {
-	Id    primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Roles []string           `bson:"roles" json:"roles"`
-	Name  string             `bson:"name" json:"name"`
+	Id      primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Roles   []string           `bson:"roles" json:"roles"`
+	Name    string             `bson:"name" json:"name"`
+	Comment string             `bson:"comment" json:"comment"`
 }
 
 func (d *Organization) Validate(db *database.Database) (
