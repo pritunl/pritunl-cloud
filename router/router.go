@@ -533,5 +533,7 @@ func (r *Router) Init() {
 	}
 
 	r.proxy = &proxy.Proxy{}
+	r.proxy.Init()
+
 	r.certificates = &Certificates{}
 }
