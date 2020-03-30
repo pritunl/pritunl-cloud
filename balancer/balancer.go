@@ -171,6 +171,29 @@ func (b *Balancer) Validate(db *database.Database) (
 	return
 }
 
+func (b *Balancer) Clean(db *database.Database) (err error) {
+	if b.States == nil || len(b.States) == 0 {
+		return
+	}
+
+	changed := false
+	for key, state := range b.States {
+		if time.Since(state.Timestamp) > 1*time.Minute {
+			changed = true
+			delete(b.States, key)
+		}
+	}
+
+	if changed {
+		err = b.CommitFields(db, set.NewSet("states"))
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
 func (b *Balancer) CommitState(db *database.Database, state *State) (
 	err error) {
 
