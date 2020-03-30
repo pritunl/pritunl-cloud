@@ -154,9 +154,9 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 		let backends = [
 			...balancer.backends,
 			{
-				protocol: 'https',
+				protocol: 'http',
 				hostname: '',
-				port: 443,
+				port: 80,
 			},
 		];
 
