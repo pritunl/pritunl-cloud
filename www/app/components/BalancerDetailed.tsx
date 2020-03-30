@@ -743,7 +743,7 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 					</div>
 					<PageInput
 						label="Name"
-						help="Name of balancer"
+						help="Name of load balancer"
 						type="text"
 						placeholder="Enter name"
 						value={balancer.name}
