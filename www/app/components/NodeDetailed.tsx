@@ -1645,31 +1645,6 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							this.toggleFirewall();
 						}}
 					/>
-					<label className="bp3-label">
-						Network Roles
-						<Help
-							title="Network Roles"
-							content="Network roles that will be matched with firewall rules. Network roles are case-sensitive. Only firewall roles without an organization will match."
-						/>
-						<div>
-							{networkRoles}
-						</div>
-					</label>
-					<PageInputButton
-						disabled={this.state.disabled}
-						buttonClass="bp3-intent-success bp3-icon-add"
-						label="Add"
-						type="text"
-						placeholder="Add role"
-						value={this.state.addNetworkRole}
-						onChange={(val): void => {
-							this.setState({
-								...this.state,
-								addNetworkRole: val,
-							});
-						}}
-						onSubmit={this.onAddNetworkRole}
-					/>
 				</div>
 				<div style={css.group}>
 					<PageInfo
@@ -1722,11 +1697,6 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						]}
 						bars={[
 							{
-								progressClass: 'bp3-no-stripes bp3-intent-primary',
-								label: 'Memory',
-								value: this.props.node.memory,
-							},
-							{
 								progressClass: 'bp3-no-stripes bp3-intent-success',
 								label: 'Load1',
 								value: this.props.node.load1,
@@ -1740,6 +1710,11 @@ export default class NodeDetailed extends React.Component<Props, State> {
 								progressClass: 'bp3-no-stripes bp3-intent-danger',
 								label: 'Load15',
 								value: this.props.node.load15,
+							},
+							{
+								progressClass: 'bp3-no-stripes bp3-intent-primary',
+								label: 'Memory',
+								value: this.props.node.memory,
 							},
 						]}
 					/>
@@ -1770,6 +1745,31 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						<option value="virtio">Virtio</option>
 						<option value="std">Standard</option>
 					</PageSelect>
+					<label className="bp3-label">
+						Network Roles
+						<Help
+							title="Network Roles"
+							content="Network roles that will be matched with firewall rules. Network roles are case-sensitive. Only firewall roles without an organization will match."
+						/>
+						<div>
+							{networkRoles}
+						</div>
+					</label>
+					<PageInputButton
+						disabled={this.state.disabled}
+						buttonClass="bp3-intent-success bp3-icon-add"
+						label="Add"
+						type="text"
+						placeholder="Add role"
+						value={this.state.addNetworkRole}
+						onChange={(val): void => {
+							this.setState({
+								...this.state,
+								addNetworkRole: val,
+							});
+						}}
+						onSubmit={this.onAddNetworkRole}
+					/>
 					<label
 						className="bp3-label"
 						style={css.label}
