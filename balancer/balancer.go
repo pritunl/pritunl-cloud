@@ -171,6 +171,20 @@ func (b *Balancer) Validate(db *database.Database) (
 	return
 }
 
+func (b *Balancer) Json() {
+	if b.States == nil || len(b.States) == 0 {
+		return
+	}
+
+	for key, state := range b.States {
+		if time.Since(state.Timestamp) > 1*time.Minute {
+			delete(b.States, key)
+		}
+	}
+
+	return
+}
+
 func (b *Balancer) Clean(db *database.Database) (err error) {
 	if b.States == nil || len(b.States) == 0 {
 		return
