@@ -19,6 +19,7 @@ import * as InstanceActions from '../actions/InstanceActions';
 import InstancesNodeStore from '../stores/InstancesNodeStore';
 import * as InstanceTypes from '../types/InstanceTypes';
 import * as Alert from '../Alert';
+import PageTextArea from "./PageTextArea";
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -437,6 +438,16 @@ export default class DiskDetailed extends React.Component<Props, State> {
 							this.set('name', val);
 						}}
 					/>
+					<PageTextArea
+						label="Comment"
+						help="Disk comment."
+						placeholder="Disk comment"
+						rows={3}
+						value={disk.comment}
+						onChange={(val: string): void => {
+							this.set('comment', val);
+						}}
+					/>
 					<PageSelect
 						disabled={this.state.disabled || !hasInstances}
 						label="Instance"
@@ -472,6 +483,11 @@ export default class DiskDetailed extends React.Component<Props, State> {
 						onToggle={(): void => {
 							this.set('delete_protection', !disk.delete_protection);
 						}}
+					/>
+				</div>
+				<div style={css.group}>
+					<PageInfo
+						fields={fields}
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
@@ -509,11 +525,6 @@ export default class DiskDetailed extends React.Component<Props, State> {
 					>
 						{backupsSelect}
 					</PageSelectButtonConfirm>
-				</div>
-				<div style={css.group}>
-					<PageInfo
-						fields={fields}
-					/>
 				</div>
 			</div>
 			<PageSave
