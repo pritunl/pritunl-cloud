@@ -463,6 +463,16 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
 							this.set('name', val);
 						}}
 					/>
+					<PageTextArea
+						label="Comment"
+						help="Authority comment."
+						placeholder="Authority comment"
+						rows={3}
+						value={authority.comment}
+						onChange={(val: string): void => {
+							this.set('comment', val);
+						}}
+					/>
 					<PageSelect
 						label="Type"
 						help="Authority type. SSH keys will be saved to ~/.ssh/authorized_keys. SSH certificates will be saved to the SSH server configuration."
