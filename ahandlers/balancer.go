@@ -107,6 +107,8 @@ func balancerPut(c *gin.Context) {
 
 	event.PublishDispatch(db, "balancer.change")
 
+	balnc.Json()
+
 	c.JSON(200, balnc)
 }
 
@@ -158,6 +160,8 @@ func balancerPost(c *gin.Context) {
 	}
 
 	event.PublishDispatch(db, "balancer.change")
+
+	balnc.Json()
 
 	c.JSON(200, balnc)
 }
@@ -226,6 +230,8 @@ func balancerGet(c *gin.Context) {
 		return
 	}
 
+	balnc.Json()
+
 	c.JSON(200, balnc)
 }
 
@@ -260,14 +266,18 @@ func balancersGet(c *gin.Context) {
 		query["datacenter"] = datacenter
 	}
 
-	balancers, count, err := balancer.GetAllPaged(db, &query, page, pageCount)
+	balncs, count, err := balancer.GetAllPaged(db, &query, page, pageCount)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
+	for _, balnc := range balncs {
+		balnc.Json()
+	}
+
 	data := &balancersData{
-		Balancers: balancers,
+		Balancers: balncs,
 		Count:     count,
 	}
 
