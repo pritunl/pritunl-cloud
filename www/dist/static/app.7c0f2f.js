@@ -11323,6 +11323,8 @@ System.registerDynamic("app/components/UserDetailed.js", ["npm:react@16.12.0.js"
             }
             return React.createElement(Page_1.default, null, React.createElement(PageHeader_1.default, null, React.createElement("div", { className: "layout horizontal wrap", style: css.header }, React.createElement("h2", { style: css.heading }, userId ? 'User Info' : 'New User'), React.createElement("div", { className: "flex" }), React.createElement("div", null, React.createElement(ConfirmButton_1.default, { label: "Delete", className: "bp3-intent-danger bp3-icon-delete", progressClassName: "bp3-intent-danger", style: css.button, disabled: this.state.disabled || this.state.locked, hidden: !userId, onConfirm: this.onDelete })))), React.createElement(PageSplit_1.default, null, React.createElement(PagePanel_1.default, { className: "layout vertical" }, React.createElement(PageInput_1.default, { disabled: this.state.locked, label: "Username", help: "Username, if using single sign-on username must match", type: "text", placeholder: "Enter username", value: user.username, onChange: val => {
                     this.set('username', val);
+                } }), React.createElement(PageTextArea_1.default, { label: "Comment", help: "User comment.", placeholder: "User comment", rows: 3, value: user.comment, onChange: val => {
+                    this.set('comment', val);
                 } }), React.createElement(PageInput_1.default, { hidden: user.type !== 'local', disabled: this.state.locked, label: "Password", help: "Password, leave blank to keep current password", type: "password", placeholder: "Change password", value: user.password, onChange: val => {
                     this.set('password', val);
                 } }), React.createElement(PageInput_1.default, { hidden: user.type !== 'api', disabled: this.state.locked, readOnly: true, autoSelect: true, label: "Token", help: "API token", type: "text", placeholder: "Save to generate token", value: user.token }), React.createElement(PageInput_1.default, { hidden: user.type !== 'api' || !user.token || !user.secret, disabled: this.state.locked, readOnly: true, autoSelect: true, label: "Secret", help: "API secret, will only be shown once", type: "text", placeholder: "", value: user.secret }), React.createElement(PageSwitch_1.default, { hidden: user.type !== 'api' || !user.token || !!user.secret, label: "Generate new token and secret", help: "Enable to generate a new token and secret on save. Secret can only be shown by generating new credentials.", disabled: this.state.locked, checked: user.generate_secret, onToggle: () => {
@@ -11339,8 +11341,6 @@ System.registerDynamic("app/components/UserDetailed.js", ["npm:react@16.12.0.js"
                     }
                 } }), React.createElement(PageSwitch_1.default, { label: "Disabled", help: "Disables the user ending all active sessions and prevents new authentications", disabled: this.state.locked, checked: user.disabled, onToggle: () => {
                     this.set('disabled', !this.state.user.disabled);
-                } }), React.createElement(PageTextArea_1.default, { label: "Comment", help: "Instance comment.", placeholder: "Instance comment", rows: 3, value: user.comment, onChange: val => {
-                    this.set('comment', val);
                 } })), React.createElement(PagePanel_1.default, null, React.createElement(PageInfo_1.default, { fields: [{
                     label: 'ID',
                     value: user.id || 'None'
@@ -12126,6 +12126,8 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.12.0.js"
                     this.props.onClose();
                 } }, React.createElement("div", { className: "flex" }), React.createElement(ConfirmButton_1.default, { className: "bp3-minimal bp3-intent-danger bp3-icon-trash open-ignore", progressClassName: "bp3-intent-danger", confirmMsg: "Confirm node remove", disabled: active || this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { disabled: this.state.disabled, label: "Name", help: "Name of node", type: "text", placeholder: "Enter name", value: node.name, onChange: val => {
                     this.set('name', val);
+                } }), React.createElement(PageTextArea_1.default, { label: "Comment", help: "Node comment.", placeholder: "Node comment", rows: 3, value: node.comment, onChange: val => {
+                    this.set('comment', val);
                 } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Admin", help: "Provides access to the admin console on this node.", checked: types.indexOf('admin') !== -1, onToggle: () => {
                     this.toggleType('admin');
                 } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "User", help: "Provides access to the user console on this node for SSH certificates.", checked: types.indexOf('user') !== -1, onToggle: () => {
@@ -12187,9 +12189,7 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.12.0.js"
                     this.set('usb_passthrough', !node.usb_passthrough);
                 } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Firewall", help: "Configure firewall on node. Incorrectly configuring the firewall can block access to the node.", checked: node.firewall, onToggle: () => {
                     this.toggleFirewall();
-                } }), React.createElement("label", { className: "bp3-label" }, "Network Roles", React.createElement(Help_1.default, { title: "Network Roles", content: "Network roles that will be matched with firewall rules. Network roles are case-sensitive. Only firewall roles without an organization will match." }), React.createElement("div", null, networkRoles)), React.createElement(PageInputButton_1.default, { disabled: this.state.disabled, buttonClass: "bp3-intent-success bp3-icon-add", label: "Add", type: "text", placeholder: "Add role", value: this.state.addNetworkRole, onChange: val => {
-                    this.setState(Object.assign(Object.assign({}, this.state), { addNetworkRole: val }));
-                }, onSubmit: this.onAddNetworkRole })), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
+                } })), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
                     label: 'ID',
                     value: this.props.node.id || 'None'
                 }, {
@@ -12223,10 +12223,6 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.12.0.js"
                     label: 'Requests',
                     value: this.props.node.requests_min + '/min'
                 }], bars: [{
-                    progressClass: 'bp3-no-stripes bp3-intent-primary',
-                    label: 'Memory',
-                    value: this.props.node.memory
-                }, {
                     progressClass: 'bp3-no-stripes bp3-intent-success',
                     label: 'Load1',
                     value: this.props.node.load1
@@ -12238,11 +12234,17 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.12.0.js"
                     progressClass: 'bp3-no-stripes bp3-intent-danger',
                     label: 'Load15',
                     value: this.props.node.load15
+                }, {
+                    progressClass: 'bp3-no-stripes bp3-intent-primary',
+                    label: 'Memory',
+                    value: this.props.node.memory
                 }] }), React.createElement(PageSelect_1.default, { hidden: types.indexOf('hypervisor') === -1, disabled: this.state.disabled, label: "Hypervisor Mode", help: "Hypervisor mode, select KVM if CPU has hardware virtualization support.", value: node.hypervisor, onChange: val => {
                     this.set('hypervisor', val);
                 } }, React.createElement("option", { value: "qemu" }, "QEMU"), React.createElement("option", { value: "kvm" }, "KVM")), React.createElement(PageSelect_1.default, { hidden: types.indexOf('hypervisor') === -1, disabled: this.state.disabled, label: "Hypervisor VGA Type", help: "Type of VGA card to emulate. Virtio provides the best performance but requires Oracle Linux 7 with the KVM repository. VMware provides better performance then standard.", value: node.vga, onChange: val => {
                     this.set('vga', val);
-                } }, React.createElement("option", { value: "vmware" }, "VMware"), React.createElement("option", { value: "virtio" }, "Virtio"), React.createElement("option", { value: "std" }, "Standard")), React.createElement("label", { className: "bp3-label", style: css.label, hidden: node.protocol === 'http' }, "Certificates", React.createElement(Help_1.default, { title: "Certificates", content: "The certificates to use for this nodes web server. The certificates must be valid for all the domains that this node provides access to. This includes the management domain and any service domains." }), React.createElement("div", null, certificates)), React.createElement(PageSelectButton_1.default, { hidden: node.protocol === 'http', label: "Add Certificate", value: this.state.addCert, disabled: this.state.disabled || !hasCertificates, buttonClass: "bp3-intent-success", onChange: val => {
+                } }, React.createElement("option", { value: "vmware" }, "VMware"), React.createElement("option", { value: "virtio" }, "Virtio"), React.createElement("option", { value: "std" }, "Standard")), React.createElement("label", { className: "bp3-label" }, "Network Roles", React.createElement(Help_1.default, { title: "Network Roles", content: "Network roles that will be matched with firewall rules. Network roles are case-sensitive. Only firewall roles without an organization will match." }), React.createElement("div", null, networkRoles)), React.createElement(PageInputButton_1.default, { disabled: this.state.disabled, buttonClass: "bp3-intent-success bp3-icon-add", label: "Add", type: "text", placeholder: "Add role", value: this.state.addNetworkRole, onChange: val => {
+                    this.setState(Object.assign(Object.assign({}, this.state), { addNetworkRole: val }));
+                }, onSubmit: this.onAddNetworkRole }), React.createElement("label", { className: "bp3-label", style: css.label, hidden: node.protocol === 'http' }, "Certificates", React.createElement(Help_1.default, { title: "Certificates", content: "The certificates to use for this nodes web server. The certificates must be valid for all the domains that this node provides access to. This includes the management domain and any service domains." }), React.createElement("div", null, certificates)), React.createElement(PageSelectButton_1.default, { hidden: node.protocol === 'http', label: "Add Certificate", value: this.state.addCert, disabled: this.state.disabled || !hasCertificates, buttonClass: "bp3-intent-success", onChange: val => {
                     this.setState(Object.assign(Object.assign({}, this.state), { addCert: val }));
                 }, onSubmit: this.onAddCert }, certificatesSelect), React.createElement(PageInputSwitch_1.default, { disabled: this.state.disabled, label: "Forwarded for header", help: "Enable when using a load balancer. This header value will be used to get the users IP address. It is important to only enable this when a load balancer is used. If it is enabled without a load balancer users can spoof their IP address by providing a value for the header that will not be overwritten by a load balancer. Additionally the nodes firewall should be configured to only accept requests from the load balancer to prevent requests being sent directly to the node bypassing the load balancer.", type: "text", placeholder: "Forwarded for header", value: node.forwarded_for_header, checked: this.state.forwardedChecked, defaultValue: "X-Forwarded-For", onChange: (state, val) => {
                     let nde;
@@ -12359,7 +12361,7 @@ System.registerDynamic("app/components/Node.js", ["npm:react@16.12.0.js", "app/u
                     this.props.onOpen();
                 } }, React.createElement("div", { className: "bp3-cell", style: css.name }, React.createElement("div", { className: "layout horizontal" }, React.createElement("label", { className: "bp3-control bp3-checkbox open-ignore", style: css.select }, React.createElement("input", { type: "checkbox", className: "open-ignore", checked: this.props.selected, onClick: evt => {
                     this.props.onSelect(evt.shiftKey);
-                } }), React.createElement("span", { className: "bp3-control-indicator open-ignore" })), React.createElement("div", { style: css.nameSpan }, node.name))), React.createElement("div", { className: "bp3-cell", style: css.item }, node.requests_min + '/min'), React.createElement("div", { className: "bp3-cell", style: css.item }, MiscUtils.formatDateShortTime(node.timestamp) || 'Inactive'), React.createElement("div", { className: "bp3-cell", style: css.bars }, React.createElement("div", { className: "bp3-progress-bar bp3-no-stripes bp3-intent-primary", style: css.bar }, React.createElement("div", { className: "bp3-progress-meter", style: memoryStyle })), React.createElement("div", { className: "bp3-progress-bar bp3-no-stripes bp3-intent-success", style: css.bar }, React.createElement("div", { className: "bp3-progress-meter", style: load1Style })), React.createElement("div", { className: "bp3-progress-bar bp3-no-stripes bp3-intent-warning", style: css.barLast }, React.createElement("div", { className: "bp3-progress-meter", style: load5Style }))));
+                } }), React.createElement("span", { className: "bp3-control-indicator open-ignore" })), React.createElement("div", { style: css.nameSpan }, node.name))), React.createElement("div", { className: "bp3-cell", style: css.item }, node.requests_min + '/min'), React.createElement("div", { className: "bp3-cell", style: css.item }, MiscUtils.formatDateShortTime(node.timestamp) || 'Inactive'), React.createElement("div", { className: "bp3-cell", style: css.bars }, React.createElement("div", { className: "bp3-progress-bar bp3-no-stripes bp3-intent-success", style: css.bar }, React.createElement("div", { className: "bp3-progress-meter", style: load1Style })), React.createElement("div", { className: "bp3-progress-bar bp3-no-stripes bp3-intent-warning", style: css.barLast }, React.createElement("div", { className: "bp3-progress-meter", style: load5Style })), React.createElement("div", { className: "bp3-progress-bar bp3-no-stripes bp3-intent-primary", style: css.bar }, React.createElement("div", { className: "bp3-progress-meter", style: memoryStyle }))));
         }
     }
     exports.default = Node;
@@ -12962,7 +12964,7 @@ System.registerDynamic("app/components/PolicyRule.js", ["npm:react@16.12.0.js", 
     exports.default = PolicyRule;
     
 });
-System.registerDynamic("app/components/Policy.js", ["npm:react@16.12.0.js", "app/actions/PolicyActions.js", "app/components/PolicyRule.js", "app/components/PageInput.js", "app/components/PageSwitch.js", "app/components/PageSelect.js", "app/components/PageInputButton.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/ConfirmButton.js", "app/components/Help.js", "app/Alert.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/Policy.js", ["npm:react@16.12.0.js", "app/actions/PolicyActions.js", "app/components/PolicyRule.js", "app/components/PageInput.js", "app/components/PageSwitch.js", "app/components/PageSelect.js", "app/components/PageInputButton.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/ConfirmButton.js", "app/components/Help.js", "app/Alert.js", "app/components/PageTextArea.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -12980,6 +12982,7 @@ System.registerDynamic("app/components/Policy.js", ["npm:react@16.12.0.js", "app
     const ConfirmButton_1 = $__require("app/components/ConfirmButton.js");
     const Help_1 = $__require("app/components/Help.js");
     const Alert = $__require("app/Alert.js");
+    const PageTextArea_1 = $__require("app/components/PageTextArea.js");
     const css = {
         card: {
             position: 'relative',
@@ -13156,6 +13159,8 @@ System.registerDynamic("app/components/Policy.js", ["npm:react@16.12.0.js", "app
             let userProvider = policy.user_secondary && providerIds.indexOf(policy.user_secondary) !== -1;
             return React.createElement("div", { className: "bp3-card", style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { style: css.remove }, React.createElement(ConfirmButton_1.default, { className: "bp3-minimal bp3-intent-danger bp3-icon-trash", progressClassName: "bp3-intent-danger", confirmMsg: "Confirm policy remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { label: "Name", help: "Name of policy", type: "text", placeholder: "Enter name", value: policy.name, onChange: val => {
                     this.set('name', val);
+                } }), React.createElement(PageTextArea_1.default, { label: "Comment", help: "Policy comment.", placeholder: "Policy comment", rows: 3, value: policy.comment, onChange: val => {
+                    this.set('comment', val);
                 } }), React.createElement("label", { className: "bp3-label" }, "Roles", React.createElement(Help_1.default, { title: "Roles", content: "Roles associated with this policy. All requests from users with associated roles must pass this policy check." }), React.createElement("div", null, roles)), React.createElement(PageInputButton_1.default, { buttonClass: "bp3-intent-success bp3-icon-add", label: "Add", type: "text", placeholder: "Add role", value: this.state.addRole, onChange: val => {
                     this.setState(Object.assign(Object.assign({}, this.state), { addRole: val }));
                 }, onSubmit: this.onAddRole }), React.createElement(PageSwitch_1.default, { label: "Admin two-factor authentication", help: "Require admins to use two-factor authentication.", checked: adminProvider, onToggle: () => {
@@ -13464,6 +13469,8 @@ System.registerDynamic("app/components/Certificate.js", ["npm:react@16.12.0.js",
             }
             return React.createElement("div", { className: "bp3-card", style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { style: css.remove }, React.createElement(ConfirmButton_1.default, { className: "bp3-minimal bp3-intent-danger bp3-icon-trash", progressClassName: "bp3-intent-danger", confirmMsg: "Confirm certificate remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { label: "Name", help: "Name of certificate", type: "text", placeholder: "Name", value: cert.name, onChange: val => {
                     this.set('name', val);
+                } }), React.createElement(PageTextArea_1.default, { label: "Comment", help: "Certificate comment.", placeholder: "Certificate comment", rows: 3, value: cert.comment, onChange: val => {
+                    this.set('comment', val);
                 } }), React.createElement(PageTextArea_1.default, { readOnly: cert.type !== 'text', label: "Private Key", help: "Certificate private key in PEM format", placeholder: "Private key", rows: 6, value: cert.key, onChange: val => {
                     this.set('key', val);
                 } }), React.createElement(PageTextArea_1.default, { readOnly: cert.type !== 'text', label: "Certificate Chain", help: "Certificate followed by certificate chain in PEM format", placeholder: "Certificate chain", rows: 6, value: cert.certificate, onChange: val => {
@@ -13573,7 +13580,7 @@ System.registerDynamic("app/components/Certificates.js", ["npm:react@16.12.0.js"
     exports.default = Certificates;
     
 });
-System.registerDynamic("app/components/Organization.js", ["npm:react@16.12.0.js", "app/actions/OrganizationActions.js", "app/components/PageInput.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/PageInputButton.js", "app/components/ConfirmButton.js", "app/components/Help.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/Organization.js", ["npm:react@16.12.0.js", "app/actions/OrganizationActions.js", "app/components/PageInput.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/PageInputButton.js", "app/components/ConfirmButton.js", "app/components/Help.js", "app/components/PageTextArea.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -13587,6 +13594,7 @@ System.registerDynamic("app/components/Organization.js", ["npm:react@16.12.0.js"
     const PageInputButton_1 = $__require("app/components/PageInputButton.js");
     const ConfirmButton_1 = $__require("app/components/ConfirmButton.js");
     const Help_1 = $__require("app/components/Help.js");
+    const PageTextArea_1 = $__require("app/components/PageTextArea.js");
     const css = {
         card: {
             position: 'relative',
@@ -13697,12 +13705,14 @@ System.registerDynamic("app/components/Organization.js", ["npm:react@16.12.0.js"
             }
             return React.createElement("div", { className: "bp3-card", style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { style: css.remove }, React.createElement(ConfirmButton_1.default, { className: "bp3-minimal bp3-intent-danger bp3-icon-trash", progressClassName: "bp3-intent-danger", confirmMsg: "Confirm organization remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { label: "Name", help: "Name of organization", type: "text", placeholder: "Name", value: org.name, onChange: val => {
                     this.set('name', val);
-                } }), React.createElement("label", { className: "bp3-label" }, "Roles", React.createElement(Help_1.default, { title: "Roles", content: "User roles will be used to match with organization roles. A user must have a matching role to access an organization." }), React.createElement("div", null, roles)), React.createElement(PageInputButton_1.default, { disabled: this.state.disabled, buttonClass: "bp3-intent-success bp3-icon-add", label: "Add", type: "text", placeholder: "Add role", value: this.state.addRole, onChange: val => {
-                    this.setState(Object.assign(Object.assign({}, this.state), { addRole: val }));
-                }, onSubmit: this.onAddRole })), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
+                } }), React.createElement(PageTextArea_1.default, { label: "Comment", help: "Organization comment.", placeholder: "Organization comment", rows: 3, value: org.comment, onChange: val => {
+                    this.set('comment', val);
+                } })), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
                     label: 'ID',
                     value: this.props.organization.id || 'None'
-                }] }))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.organization, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
+                }] }), React.createElement("label", { className: "bp3-label" }, "Roles", React.createElement(Help_1.default, { title: "Roles", content: "User roles will be used to match with organization roles. A user must have a matching role to access an organization." }), React.createElement("div", null, roles)), React.createElement(PageInputButton_1.default, { disabled: this.state.disabled, buttonClass: "bp3-intent-success bp3-icon-add", label: "Add", type: "text", placeholder: "Add role", value: this.state.addRole, onChange: val => {
+                    this.setState(Object.assign(Object.assign({}, this.state), { addRole: val }));
+                }, onSubmit: this.onAddRole }))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.organization, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
                     this.setState(Object.assign(Object.assign({}, this.state), { changed: false, organization: null }));
                 }, onSave: this.onSave }));
         }
@@ -13776,7 +13786,7 @@ System.registerDynamic("app/components/Organizations.js", ["npm:react@16.12.0.js
     exports.default = Organizations;
     
 });
-System.registerDynamic("app/components/Datacenter.js", ["npm:react@16.12.0.js", "app/actions/DatacenterActions.js", "app/stores/StoragesStore.js", "app/stores/OrganizationsStore.js", "app/components/PageInput.js", "app/components/PageInfo.js", "app/components/PageSelect.js", "app/components/PageSelectButton.js", "app/components/PageSwitch.js", "app/components/PageSave.js", "app/components/ConfirmButton.js", "app/components/Help.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/Datacenter.js", ["npm:react@16.12.0.js", "app/actions/DatacenterActions.js", "app/stores/StoragesStore.js", "app/stores/OrganizationsStore.js", "app/components/PageInput.js", "app/components/PageInfo.js", "app/components/PageSelect.js", "app/components/PageSelectButton.js", "app/components/PageSwitch.js", "app/components/PageSave.js", "app/components/ConfirmButton.js", "app/components/Help.js", "app/components/PageTextArea.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -13794,6 +13804,7 @@ System.registerDynamic("app/components/Datacenter.js", ["npm:react@16.12.0.js", 
     const PageSave_1 = $__require("app/components/PageSave.js");
     const ConfirmButton_1 = $__require("app/components/ConfirmButton.js");
     const Help_1 = $__require("app/components/Help.js");
+    const PageTextArea_1 = $__require("app/components/PageTextArea.js");
     const css = {
         card: {
             position: 'relative',
@@ -14010,6 +14021,8 @@ System.registerDynamic("app/components/Datacenter.js", ["npm:react@16.12.0.js", 
             }
             return React.createElement("div", { className: "bp3-card", style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { style: css.remove }, React.createElement(ConfirmButton_1.default, { className: "bp3-minimal bp3-intent-danger bp3-icon-trash", progressClassName: "bp3-intent-danger", confirmMsg: "Confirm datacenter remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { disabled: this.state.disabled, label: "Name", help: "Name of datacenter", type: "text", placeholder: "Enter name", value: datacenter.name, onChange: val => {
                     this.set('name', val);
+                } }), React.createElement(PageTextArea_1.default, { label: "Comment", help: "Datacenter comment.", placeholder: "Datacenter comment", rows: 3, value: datacenter.comment, onChange: val => {
+                    this.set('comment', val);
                 } }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "Private Storage", help: "Private storage that will store instance snapshots.", value: datacenter.private_storage, onChange: val => {
                     this.set('private_storage', val);
                 } }, privateStoragesSelect), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "Private Storage Class", help: "Private storage class to use when upload new objects.", value: datacenter.private_storage_class, onChange: val => {
@@ -14018,12 +14031,12 @@ System.registerDynamic("app/components/Datacenter.js", ["npm:react@16.12.0.js", 
                     this.set('backup_storage', val);
                 } }, backupStoragesSelect), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "Backup Storage Class", help: "Backup storage class to use when upload new objects.", value: datacenter.backup_storage_class, onChange: val => {
                     this.set('backup_storage_class', val);
-                } }, React.createElement("option", { value: "" }, "Default"), React.createElement("option", { value: "aws_standard" }, "AWS Standard"), React.createElement("option", { value: "aws_infrequent_access" }, "AWS Standard-IA"), React.createElement("option", { value: "aws_glacier" }, "AWS Glacier")), React.createElement("label", { className: "bp3-label", style: css.label }, "Public Storages", React.createElement(Help_1.default, { title: "Public Storages", content: "Public storages that can be used for new instance images." }), React.createElement("div", null, publicStorages)), React.createElement(PageSelectButton_1.default, { label: "Add Storage", value: this.state.addStorage, disabled: !hasStorages || this.state.disabled, buttonClass: "bp3-intent-success", onChange: val => {
-                    this.setState(Object.assign(Object.assign({}, this.state), { addStorage: val }));
-                }, onSubmit: this.onAddStorage }, publicStoragesSelect)), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
+                } }, React.createElement("option", { value: "" }, "Default"), React.createElement("option", { value: "aws_standard" }, "AWS Standard"), React.createElement("option", { value: "aws_infrequent_access" }, "AWS Standard-IA"), React.createElement("option", { value: "aws_glacier" }, "AWS Glacier"))), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
                     label: 'ID',
                     value: this.props.datacenter.id || 'None'
-                }] }), React.createElement(PageSwitch_1.default, { label: "Match organizations", help: "Limit what organizations can access this datacenter, by default all organizations will have access.", checked: datacenter.match_organizations, onToggle: () => {
+                }] }), React.createElement("label", { className: "bp3-label", style: css.label }, "Public Storages", React.createElement(Help_1.default, { title: "Public Storages", content: "Public storages that can be used for new instance images." }), React.createElement("div", null, publicStorages)), React.createElement(PageSelectButton_1.default, { label: "Add Storage", value: this.state.addStorage, disabled: !hasStorages || this.state.disabled, buttonClass: "bp3-intent-success", onChange: val => {
+                    this.setState(Object.assign(Object.assign({}, this.state), { addStorage: val }));
+                }, onSubmit: this.onAddStorage }, publicStoragesSelect), React.createElement(PageSwitch_1.default, { label: "Match organizations", help: "Limit what organizations can access this datacenter, by default all organizations will have access.", checked: datacenter.match_organizations, onToggle: () => {
                     this.toggle('match_organizations');
                 } }), React.createElement("label", { className: "bp3-label", style: css.label, hidden: !datacenter.match_organizations }, "Organizations", React.createElement(Help_1.default, { title: "Organizations", content: "Organizations that can access this zone." }), React.createElement("div", null, organizations)), React.createElement(PageSelectButton_1.default, { label: "Add Organization", value: this.state.addOrganization, disabled: !this.props.organizations.length, hidden: !datacenter.match_organizations, buttonClass: "bp3-intent-success", onChange: val => {
                     this.setState(Object.assign(Object.assign({}, this.state), { addOrganization: val }));
@@ -14113,7 +14126,7 @@ System.registerDynamic("app/components/Datacenters.js", ["npm:react@16.12.0.js",
     exports.default = Datacenters;
     
 });
-System.registerDynamic("app/components/Zone.js", ["npm:react@16.12.0.js", "app/actions/ZoneActions.js", "app/stores/DatacentersStore.js", "app/components/PageInput.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/PageSelect.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/Zone.js", ["npm:react@16.12.0.js", "app/actions/ZoneActions.js", "app/stores/DatacentersStore.js", "app/components/PageInput.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/PageSelect.js", "app/components/ConfirmButton.js", "app/components/PageTextArea.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -14127,6 +14140,7 @@ System.registerDynamic("app/components/Zone.js", ["npm:react@16.12.0.js", "app/a
     const PageSave_1 = $__require("app/components/PageSave.js");
     const PageSelect_1 = $__require("app/components/PageSelect.js");
     const ConfirmButton_1 = $__require("app/components/ConfirmButton.js");
+    const PageTextArea_1 = $__require("app/components/PageTextArea.js");
     const css = {
         card: {
             position: 'relative',
@@ -14218,6 +14232,8 @@ System.registerDynamic("app/components/Zone.js", ["npm:react@16.12.0.js", "app/a
             let datacenter = DatacentersStore_1.default.datacenter(this.props.zone.datacenter);
             return React.createElement("div", { className: "bp3-card", style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { style: css.remove }, React.createElement(ConfirmButton_1.default, { className: "bp3-minimal bp3-intent-danger bp3-icon-trash", progressClassName: "bp3-intent-danger", confirmMsg: "Confirm zone remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { label: "Name", help: "Name of zone", type: "text", placeholder: "Enter name", value: zone.name, onChange: val => {
                     this.set('name', val);
+                } }), React.createElement(PageTextArea_1.default, { label: "Comment", help: "Zone comment.", placeholder: "Zone comment", rows: 3, value: zone.comment, onChange: val => {
+                    this.set('comment', val);
                 } }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "Network Mode", help: "Network mode for internal VPC networking. If layer 2 networking with VLAN support isn't available VXLan must be used.", value: zone.network_mode, onChange: val => {
                     this.set('network_mode', val);
                 } }, React.createElement("option", { value: "default" }, "Default"), React.createElement("option", { value: "vxlan_vlan" }, "VXLAN"))), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
@@ -14399,7 +14415,7 @@ System.registerDynamic("app/stores/BlocksStore.js", ["app/dispatcher/Dispatcher.
     exports.default = new BlocksStore();
     
 });
-System.registerDynamic("app/components/Block.js", ["npm:react@16.12.0.js", "app/actions/BlockActions.js", "app/components/PageInput.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/PageInputButton.js", "app/components/ConfirmButton.js", "app/Alert.js", "app/components/Help.js", "app/components/PageSelect.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/Block.js", ["npm:react@16.12.0.js", "app/actions/BlockActions.js", "app/components/PageInput.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/PageInputButton.js", "app/components/ConfirmButton.js", "app/Alert.js", "app/components/Help.js", "app/components/PageSelect.js", "app/components/PageTextArea.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -14415,6 +14431,7 @@ System.registerDynamic("app/components/Block.js", ["npm:react@16.12.0.js", "app/
     const Alert = $__require("app/Alert.js");
     const Help_1 = $__require("app/components/Help.js");
     const PageSelect_1 = $__require("app/components/PageSelect.js");
+    const PageTextArea_1 = $__require("app/components/PageTextArea.js");
     const css = {
         card: {
             position: 'relative',
@@ -14641,6 +14658,8 @@ System.registerDynamic("app/components/Block.js", ["npm:react@16.12.0.js", "app/
             }
             return React.createElement("div", { className: "bp3-card", style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { style: css.remove }, React.createElement(ConfirmButton_1.default, { className: "bp3-minimal bp3-intent-danger bp3-icon-trash", progressClassName: "bp3-intent-danger", confirmMsg: "Confirm block remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { disabled: this.state.disabled, label: "Name", help: "Name of IP block", type: "text", placeholder: "Enter name", value: block.name, onChange: val => {
                     this.set('name', val);
+                } }), React.createElement(PageTextArea_1.default, { label: "Comment", help: "Block comment.", placeholder: "Block comment", rows: 3, value: block.comment, onChange: val => {
+                    this.set('comment', val);
                 } }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "Network Mode", help: "Network mode IP block.", value: block.type, onChange: val => {
                     this.set('type', val);
                 } }, React.createElement("option", { value: "ipv4" }, "IPv4"), React.createElement("option", { value: "ipv6" }, "IPv6")), React.createElement(PageInput_1.default, { disabled: this.state.disabled, hidden: block.type === 'ipv6', label: "Netmask", help: "Netmask of IP block", type: "text", placeholder: "Enter netmask", value: block.netmask, onChange: val => {
@@ -14852,7 +14871,7 @@ System.registerDynamic("app/components/VpcLinkUri.js", ["npm:react@16.12.0.js"],
     exports.default = VpcUriLink;
     
 });
-System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.12.0.js", "app/actions/VpcActions.js", "app/stores/DatacentersStore.js", "app/stores/OrganizationsStore.js", "app/components/VpcRoute.js", "app/components/VpcSubnet.js", "app/components/VpcLinkUri.js", "app/components/PageInput.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/ConfirmButton.js", "app/components/Help.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.12.0.js", "app/actions/VpcActions.js", "app/stores/DatacentersStore.js", "app/stores/OrganizationsStore.js", "app/components/VpcRoute.js", "app/components/VpcSubnet.js", "app/components/VpcLinkUri.js", "app/components/PageInput.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/ConfirmButton.js", "app/components/Help.js", "app/components/PageTextArea.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -14870,6 +14889,7 @@ System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.12.0.js",
     const PageSave_1 = $__require("app/components/PageSave.js");
     const ConfirmButton_1 = $__require("app/components/ConfirmButton.js");
     const Help_1 = $__require("app/components/Help.js");
+    const PageTextArea_1 = $__require("app/components/PageTextArea.js");
     const css = {
         card: {
             position: 'relative',
@@ -15206,6 +15226,8 @@ System.registerDynamic("app/components/VpcDetailed.js", ["npm:react@16.12.0.js",
                     this.props.onSelect(evt.shiftKey);
                 } }), React.createElement("span", { className: "bp3-control-indicator open-ignore" }))), React.createElement("div", { className: "flex" }), React.createElement(ConfirmButton_1.default, { className: "bp3-minimal bp3-intent-danger bp3-icon-trash open-ignore", style: css.button, progressClassName: "bp3-intent-danger", confirmMsg: "Confirm vpc remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { label: "Name", help: "Name of vpc", type: "text", placeholder: "Enter name", value: vpc.name, onChange: val => {
                     this.set('name', val);
+                } }), React.createElement(PageTextArea_1.default, { label: "Comment", help: "VPC comment.", placeholder: "VPC comment", rows: 3, value: vpc.comment, onChange: val => {
+                    this.set('comment', val);
                 } }), React.createElement(PageInput_1.default, { label: "Network", help: "Network address of vpc with cidr.", type: "text", placeholder: "Enter network", value: vpc.network, onChange: val => {
                     this.set('network', val);
                 } }), React.createElement("label", { style: css.itemsLabel }, "Subnets", React.createElement(Help_1.default, { title: "Subnets", content: "Subnets in VPC, can only be added or removed. Once added a subnet network block cannot be modified." })), React.createElement("div", { style: css.list }, subnetsElem), React.createElement("label", { style: css.itemsLabel, hidden: true }, "Pritunl Link URIs", React.createElement(Help_1.default, { title: "Pritunl Link URIs", content: "Pritunl Link URIs for automated IPsec linking with a Pritunl server." })), React.createElement("div", { style: css.list, hidden: true }, linkUris)), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: fields }), React.createElement("label", { style: css.itemsLabel }, "Route Table", React.createElement(Help_1.default, { title: "Route Table", content: "VPC routing table, enter a CIDR network for the desitnation and IP address for taget." })), React.createElement("div", { style: css.list }, routes))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.vpc && !this.state.message, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
@@ -15751,7 +15773,7 @@ System.registerDynamic("app/components/Vpcs.js", ["npm:react@16.12.0.js", "app/C
     exports.default = Vpcs;
     
 });
-System.registerDynamic("app/components/DomainDetailed.js", ["npm:react@16.12.0.js", "app/actions/DomainActions.js", "app/stores/OrganizationsStore.js", "app/components/PageInput.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/ConfirmButton.js", "app/components/PageSelect.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/DomainDetailed.js", ["npm:react@16.12.0.js", "app/actions/DomainActions.js", "app/stores/OrganizationsStore.js", "app/components/PageInput.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/ConfirmButton.js", "app/components/PageSelect.js", "app/components/PageTextArea.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -15765,6 +15787,7 @@ System.registerDynamic("app/components/DomainDetailed.js", ["npm:react@16.12.0.j
     const PageSave_1 = $__require("app/components/PageSave.js");
     const ConfirmButton_1 = $__require("app/components/ConfirmButton.js");
     const PageSelect_1 = $__require("app/components/PageSelect.js");
+    const PageTextArea_1 = $__require("app/components/PageTextArea.js");
     const css = {
         card: {
             position: 'relative',
@@ -15891,6 +15914,8 @@ System.registerDynamic("app/components/DomainDetailed.js", ["npm:react@16.12.0.j
                     this.props.onSelect(evt.shiftKey);
                 } }), React.createElement("span", { className: "bp3-control-indicator open-ignore" }))), React.createElement("div", { className: "flex" }), React.createElement(ConfirmButton_1.default, { className: "bp3-minimal bp3-intent-danger bp3-icon-trash open-ignore", style: css.button, progressClassName: "bp3-intent-danger", confirmMsg: "Confirm domain remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { label: "Domain", help: "Domain name.", type: "text", placeholder: "Enter domain", value: domain.name, onChange: val => {
                     this.set('name', val);
+                } }), React.createElement(PageTextArea_1.default, { label: "Comment", help: "Domain comment.", placeholder: "Domain comment", rows: 3, value: domain.comment, onChange: val => {
+                    this.set('comment', val);
                 } }), React.createElement(PageSelect_1.default, { label: "Type", help: "Domain type.", value: domain.type, onChange: val => {
                     this.set('type', val);
                 } }, React.createElement("option", { value: "" }, "Select Type"), React.createElement("option", { value: "route_53" }, "AWS Route53")), React.createElement(PageInput_1.default, { hidden: domain.type !== 'route_53', label: "AWS Access Key ID", help: "AWS access key ID.", type: "text", placeholder: "Enter access key ID", value: domain.aws_id, onChange: val => {
@@ -16494,7 +16519,7 @@ System.registerDynamic("app/components/BalancerBackend.js", ["npm:react@16.12.0.
     exports.default = BalancerBackend;
     
 });
-System.registerDynamic("app/components/BalancerDetailed.js", ["npm:react@16.12.0.js", "app/Constants.js", "app/actions/BalancerActions.js", "app/components/BalancerDomain.js", "app/components/BalancerBackend.js", "app/stores/CertificatesStore.js", "app/components/PageInput.js", "app/components/PageSelect.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/ConfirmButton.js", "app/components/Help.js", "app/components/PageSelectButton.js", "app/components/PageSwitch.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/BalancerDetailed.js", ["npm:react@16.12.0.js", "app/Constants.js", "app/actions/BalancerActions.js", "app/components/BalancerDomain.js", "app/components/BalancerBackend.js", "app/stores/CertificatesStore.js", "app/components/PageInput.js", "app/components/PageSelect.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/ConfirmButton.js", "app/components/Help.js", "app/components/PageSelectButton.js", "app/components/PageSwitch.js", "app/components/PageTextArea.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -16514,6 +16539,7 @@ System.registerDynamic("app/components/BalancerDetailed.js", ["npm:react@16.12.0
     const Help_1 = $__require("app/components/Help.js");
     const PageSelectButton_1 = $__require("app/components/PageSelectButton.js");
     const PageSwitch_1 = $__require("app/components/PageSwitch.js");
+    const PageTextArea_1 = $__require("app/components/PageTextArea.js");
     const css = {
         card: {
             position: 'relative',
@@ -16592,9 +16618,9 @@ System.registerDynamic("app/components/BalancerDetailed.js", ["npm:react@16.12.0
                     balancer = Object.assign({}, this.props.balancer);
                 }
                 let backends = [...balancer.backends, {
-                    protocol: 'https',
+                    protocol: 'http',
                     hostname: '',
-                    port: 443
+                    port: 80
                 }];
                 balancer.backends = backends;
                 this.setState(Object.assign(Object.assign({}, this.state), { changed: true, message: '', balancer: balancer }));
@@ -16920,8 +16946,10 @@ System.registerDynamic("app/components/BalancerDetailed.js", ["npm:react@16.12.0
                     this.props.onClose();
                 } }, React.createElement("div", null, React.createElement("label", { className: "bp3-control bp3-checkbox open-ignore", style: css.select }, React.createElement("input", { type: "checkbox", className: "open-ignore", checked: this.props.selected, onClick: evt => {
                     this.props.onSelect(evt.shiftKey);
-                } }), React.createElement("span", { className: "bp3-control-indicator open-ignore" }))), React.createElement("div", { className: "flex" }), React.createElement(ConfirmButton_1.default, { className: "bp3-minimal bp3-intent-danger bp3-icon-trash open-ignore", style: css.button, progressClassName: "bp3-intent-danger", confirmMsg: "Confirm balancer remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { label: "Name", help: "Name of balancer", type: "text", placeholder: "Enter name", value: balancer.name, onChange: val => {
+                } }), React.createElement("span", { className: "bp3-control-indicator open-ignore" }))), React.createElement("div", { className: "flex" }), React.createElement(ConfirmButton_1.default, { className: "bp3-minimal bp3-intent-danger bp3-icon-trash open-ignore", style: css.button, progressClassName: "bp3-intent-danger", confirmMsg: "Confirm balancer remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { label: "Name", help: "Name of load balancer", type: "text", placeholder: "Enter name", value: balancer.name, onChange: val => {
                     this.set('name', val);
+                } }), React.createElement(PageTextArea_1.default, { label: "Comment", help: "Load balancer comment.", placeholder: "Load balancer comment", rows: 3, value: balancer.comment, onChange: val => {
+                    this.set('comment', val);
                 } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Active", help: "Enable or disable load balancer.", checked: balancer.state, onToggle: () => {
                     this.set('state', !balancer.state);
                 } }), React.createElement(PageSelect_1.default, { label: "Type", help: "Load balancer type", value: balancer.type, onChange: val => {
@@ -16945,7 +16973,9 @@ System.registerDynamic("app/components/BalancerDetailed.js", ["npm:react@16.12.0
                     this.set('organization', val);
                 } }, organizationsSelect), React.createElement("label", { className: "bp3-label", style: css.label }, "Certificates", React.createElement(Help_1.default, { title: "Certificates", content: "The certificates to use for this load balancer. The certificates must be valid for all the domains that this load balancer provides access to." }), React.createElement("div", null, certificates)), React.createElement(PageSelectButton_1.default, { label: "Add Certificate", value: this.state.addCert, disabled: this.state.disabled || !hasCertificates, buttonClass: "bp3-intent-success", onChange: val => {
                     this.setState(Object.assign(Object.assign({}, this.state), { addCert: val }));
-                }, onSubmit: this.onAddCert }, certificatesSelect))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.balancer && !this.state.message, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
+                }, onSubmit: this.onAddCert }, certificatesSelect), React.createElement(PageInput_1.default, { label: "Health Check Path", help: "Path to check status of backend servers. Path must return 200-299 status code.", type: "text", placeholder: "Enter path", value: balancer.check_path, onChange: val => {
+                    this.set('check_path', val);
+                } }))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.balancer && !this.state.message, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
                     this.setState(Object.assign(Object.assign({}, this.state), { changed: false, balancer: null }));
                 }, onSave: this.onSave }));
         }
@@ -17483,7 +17513,7 @@ System.registerDynamic("app/components/Balancers.js", ["npm:react@16.12.0.js", "
     exports.default = Balancers;
     
 });
-System.registerDynamic("app/components/Storage.js", ["npm:react@16.12.0.js", "app/actions/StorageActions.js", "app/components/PageInput.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/PageSelect.js", "app/components/PageSwitch.js", "app/components/ConfirmButton.js", "app/Alert.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/Storage.js", ["npm:react@16.12.0.js", "app/actions/StorageActions.js", "app/components/PageInput.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/PageSelect.js", "app/components/PageSwitch.js", "app/components/ConfirmButton.js", "app/Alert.js", "app/components/PageTextArea.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -17498,6 +17528,7 @@ System.registerDynamic("app/components/Storage.js", ["npm:react@16.12.0.js", "ap
     const PageSwitch_1 = $__require("app/components/PageSwitch.js");
     const ConfirmButton_1 = $__require("app/components/ConfirmButton.js");
     const Alert = $__require("app/Alert.js");
+    const PageTextArea_1 = $__require("app/components/PageTextArea.js");
     const css = {
         card: {
             position: 'relative',
@@ -17598,16 +17629,18 @@ System.registerDynamic("app/components/Storage.js", ["npm:react@16.12.0.js", "ap
             let storage = this.state.storage || this.props.storage;
             return React.createElement("div", { className: "bp3-card", style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { style: css.remove }, React.createElement(ConfirmButton_1.default, { className: "bp3-minimal bp3-intent-danger bp3-icon-trash", progressClassName: "bp3-intent-danger", confirmMsg: "Confirm storage remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { disabled: this.state.disabled, label: "Name", help: "Name of storage", type: "text", placeholder: "Enter name", value: storage.name, onChange: val => {
                     this.set('name', val);
+                } }), React.createElement(PageTextArea_1.default, { label: "Comment", help: "Storage comment.", placeholder: "Storage comment", rows: 3, value: storage.comment, onChange: val => {
+                    this.set('comment', val);
                 } }), React.createElement(PageInput_1.default, { disabled: this.state.disabled, label: "Endpoint", help: "Storage endpoint domain and port", type: "text", placeholder: "Enter endpoint", value: storage.endpoint, onChange: val => {
                     this.set('endpoint', val);
                 } }), React.createElement(PageInput_1.default, { disabled: this.state.disabled, label: "Bucket", help: "Storage bucket name", type: "text", placeholder: "Enter bucket", value: storage.bucket, onChange: val => {
                     this.set('bucket', val);
-                } }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "Type", help: "Select public for read only storages with virtual machine images. Select private for read-write storages for snapshots.", value: storage.type, onChange: val => {
-                    this.set('type', val);
-                } }, React.createElement("option", { value: "public" }, "Public"), React.createElement("option", { value: "private" }, "Private"))), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
+                } })), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
                     label: 'ID',
                     value: this.props.storage.id || 'None'
-                }] }), React.createElement(PageInput_1.default, { disabled: this.state.disabled, label: "Access Key", help: "Storage access key", type: "text", placeholder: "Enter access key", value: storage.access_key, onChange: val => {
+                }] }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled, label: "Type", help: "Select public for read only storages with virtual machine images. Select private for read-write storages for snapshots.", value: storage.type, onChange: val => {
+                    this.set('type', val);
+                } }, React.createElement("option", { value: "public" }, "Public"), React.createElement("option", { value: "private" }, "Private")), React.createElement(PageInput_1.default, { disabled: this.state.disabled, label: "Access Key", help: "Storage access key", type: "text", placeholder: "Enter access key", value: storage.access_key, onChange: val => {
                     this.set('access_key', val);
                 } }), React.createElement(PageInput_1.default, { disabled: this.state.disabled, label: "Secret Key", help: "Storage secret key", type: "text", placeholder: "Enter secret key", value: storage.secret_key, onChange: val => {
                     this.set('secret_key', val);
@@ -17760,7 +17793,7 @@ System.registerDynamic("app/stores/StoragesStore.js", ["app/dispatcher/Dispatche
     exports.default = new StoragesStore();
     
 });
-System.registerDynamic("app/components/ImageDetailed.js", ["npm:react@16.12.0.js", "app/actions/ImageActions.js", "app/utils/MiscUtils.js", "app/stores/OrganizationsStore.js", "app/stores/StoragesStore.js", "app/components/PageInput.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/ConfirmButton.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/ImageDetailed.js", ["npm:react@16.12.0.js", "app/actions/ImageActions.js", "app/utils/MiscUtils.js", "app/stores/OrganizationsStore.js", "app/stores/StoragesStore.js", "app/components/PageInput.js", "app/components/PageInfo.js", "app/components/PageSave.js", "app/components/ConfirmButton.js", "app/components/PageTextArea.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -17775,6 +17808,7 @@ System.registerDynamic("app/components/ImageDetailed.js", ["npm:react@16.12.0.js
     const PageInfo_1 = $__require("app/components/PageInfo.js");
     const PageSave_1 = $__require("app/components/PageSave.js");
     const ConfirmButton_1 = $__require("app/components/ConfirmButton.js");
+    const PageTextArea_1 = $__require("app/components/PageTextArea.js");
     const css = {
         card: {
             position: 'relative',
@@ -17926,6 +17960,8 @@ System.registerDynamic("app/components/ImageDetailed.js", ["npm:react@16.12.0.js
                     this.props.onSelect(evt.shiftKey);
                 } }), React.createElement("span", { className: "bp3-control-indicator open-ignore" }))), React.createElement("div", { className: "flex" }), React.createElement(ConfirmButton_1.default, { className: "bp3-minimal bp3-intent-danger bp3-icon-trash open-ignore", style: css.button, progressClassName: "bp3-intent-danger", confirmMsg: "Confirm image remove", disabled: this.props.image.type === 'public' || this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { label: "Name", help: "Name of image", type: "text", placeholder: "Enter name", value: image.name, onChange: val => {
                     this.set('name', val);
+                } }), React.createElement(PageTextArea_1.default, { label: "Comment", help: "Image comment.", placeholder: "Image comment", rows: 3, value: image.comment, onChange: val => {
+                    this.set('comment', val);
                 } })), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
                     label: 'ID',
                     value: this.props.image.id || 'Unknown'
@@ -18459,7 +18495,7 @@ System.registerDynamic("app/components/PageSelectButtonConfirm.js", ["npm:react@
     exports.default = PageSelectButton;
     
 });
-System.registerDynamic("app/components/DiskDetailed.js", ["npm:react@16.12.0.js", "app/actions/DiskActions.js", "app/components/PageInput.js", "app/components/PageSelect.js", "app/components/PageSwitch.js", "app/components/PageNumInput.js", "app/components/PageInfo.js", "app/components/PageSelectButtonConfirm.js", "app/components/Help.js", "app/components/PageSave.js", "app/components/ConfirmButton.js", "app/stores/NodesStore.js", "app/stores/OrganizationsStore.js", "app/actions/InstanceActions.js", "app/stores/InstancesNodeStore.js", "app/Alert.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/DiskDetailed.js", ["npm:react@16.12.0.js", "app/actions/DiskActions.js", "app/components/PageInput.js", "app/components/PageSelect.js", "app/components/PageSwitch.js", "app/components/PageNumInput.js", "app/components/PageInfo.js", "app/components/PageSelectButtonConfirm.js", "app/components/Help.js", "app/components/PageSave.js", "app/components/ConfirmButton.js", "app/stores/NodesStore.js", "app/stores/OrganizationsStore.js", "app/actions/InstanceActions.js", "app/stores/InstancesNodeStore.js", "app/Alert.js", "app/components/PageTextArea.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -18481,6 +18517,7 @@ System.registerDynamic("app/components/DiskDetailed.js", ["npm:react@16.12.0.js"
     const InstanceActions = $__require("app/actions/InstanceActions.js");
     const InstancesNodeStore_1 = $__require("app/stores/InstancesNodeStore.js");
     const Alert = $__require("app/Alert.js");
+    const PageTextArea_1 = $__require("app/components/PageTextArea.js");
     const css = {
         card: {
             position: 'relative',
@@ -18727,17 +18764,19 @@ System.registerDynamic("app/components/DiskDetailed.js", ["npm:react@16.12.0.js"
                     this.props.onSelect(evt.shiftKey);
                 } }), React.createElement("span", { className: "bp3-control-indicator open-ignore" }))), React.createElement("div", { className: statusClass, style: css.status }, React.createElement("span", { style: css.icon, className: "bp3-icon-standard bp3-icon-pulse" }), statusText), React.createElement("div", { className: "flex" }), React.createElement(ConfirmButton_1.default, { className: "bp3-minimal bp3-intent-danger bp3-icon-trash open-ignore", style: css.button, progressClassName: "bp3-intent-danger", confirmMsg: "Confirm disk remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { label: "Name", help: "Name of disk.", type: "text", placeholder: "Enter name", value: disk.name, onChange: val => {
                     this.set('name', val);
+                } }), React.createElement(PageTextArea_1.default, { label: "Comment", help: "Disk comment.", placeholder: "Disk comment", rows: 3, value: disk.comment, onChange: val => {
+                    this.set('comment', val);
                 } }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasInstances, label: "Instance", help: "Instance to attach disk to.", value: disk.instance, onChange: val => {
                     this.set('instance', val);
                 } }, instancesSelect), React.createElement(PageNumInput_1.default, { label: "Index", help: "Index to attach disk.", hidden: !disk.instance, min: 0, max: 8, minorStepSize: 1, stepSize: 1, majorStepSize: 1, disabled: this.state.disabled, selectAllOnFocus: true, value: Number(disk.index), onChange: val => {
                     this.set('index', String(val));
                 } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Delete protection", help: "Block disk from being deleted.", checked: disk.delete_protection, onToggle: () => {
                     this.set('delete_protection', !disk.delete_protection);
-                } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Automatic backup", help: "Automatically backup disk daily.", checked: disk.backup, onToggle: () => {
+                } })), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: fields }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Automatic backup", help: "Automatically backup disk daily.", checked: disk.backup, onToggle: () => {
                     this.set('backup', !disk.backup);
                 } }), React.createElement("label", { className: "bp3-label", style: css.label }, "Restore Backup", React.createElement(Help_1.default, { title: "Restore Backup", content: "Select a backup to restore and replace the existing disk with the backup image." })), React.createElement(PageSelectButtonConfirm_1.default, { label: "Restore", value: this.state.restoreImage, disabled: !hasBackups || this.state.disabled, confirmMsg: "Confirm disk restore", buttonClass: "bp3-intent-success bp3-icon-box", progressClassName: "bp3-intent-success", onChange: val => {
                     this.setState(Object.assign(Object.assign({}, this.state), { restoreImage: val }));
-                }, onSubmit: this.onRestoreBackup }, backupsSelect)), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: fields }))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.disk && !this.state.message, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
+                }, onSubmit: this.onRestoreBackup }, backupsSelect))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.disk && !this.state.message, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
                     this.setState(Object.assign(Object.assign({}, this.state), { changed: false, disk: null }));
                 }, onSave: this.onSave }));
         }
@@ -21709,7 +21748,7 @@ System.registerDynamic("app/components/FirewallRule.js", ["npm:react@16.12.0.js"
     exports.default = FirewallRule;
     
 });
-System.registerDynamic("app/components/FirewallDetailed.js", ["npm:react@16.12.0.js", "app/Constants.js", "app/actions/FirewallActions.js", "app/components/FirewallRule.js", "app/components/PageInput.js", "app/components/PageSelect.js", "app/components/PageInfo.js", "app/components/PageInputButton.js", "app/components/PageSave.js", "app/components/ConfirmButton.js", "app/components/Help.js"], true, function ($__require, exports, module) {
+System.registerDynamic("app/components/FirewallDetailed.js", ["npm:react@16.12.0.js", "app/Constants.js", "app/actions/FirewallActions.js", "app/components/FirewallRule.js", "app/components/PageInput.js", "app/components/PageSelect.js", "app/components/PageInfo.js", "app/components/PageInputButton.js", "app/components/PageSave.js", "app/components/ConfirmButton.js", "app/components/Help.js", "app/components/PageTextArea.js"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -21726,6 +21765,7 @@ System.registerDynamic("app/components/FirewallDetailed.js", ["npm:react@16.12.0
     const PageSave_1 = $__require("app/components/PageSave.js");
     const ConfirmButton_1 = $__require("app/components/ConfirmButton.js");
     const Help_1 = $__require("app/components/Help.js");
+    const PageTextArea_1 = $__require("app/components/PageTextArea.js");
     const css = {
         card: {
             position: 'relative',
@@ -21956,6 +21996,8 @@ System.registerDynamic("app/components/FirewallDetailed.js", ["npm:react@16.12.0
                     this.props.onSelect(evt.shiftKey);
                 } }), React.createElement("span", { className: "bp3-control-indicator open-ignore" }))), React.createElement("div", { className: "flex" }), React.createElement(ConfirmButton_1.default, { className: "bp3-minimal bp3-intent-danger bp3-icon-trash open-ignore", style: css.button, progressClassName: "bp3-intent-danger", confirmMsg: "Confirm firewall remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { label: "Name", help: "Name of firewall", type: "text", placeholder: "Enter name", value: firewall.name, onChange: val => {
                     this.set('name', val);
+                } }), React.createElement(PageTextArea_1.default, { label: "Comment", help: "Firewall comment.", placeholder: "Firewall comment", rows: 3, value: firewall.comment, onChange: val => {
+                    this.set('comment', val);
                 } }), React.createElement("label", { style: css.itemsLabel }, "Ingress Rules", React.createElement(Help_1.default, { title: "Ingress Rules", content: "Firewall rules." })), React.createElement("div", { style: css.rules }, rules)), React.createElement("div", { style: css.group }, React.createElement(PageInfo_1.default, { fields: [{
                     label: 'ID',
                     value: this.props.firewall.id || 'Unknown'
@@ -22672,6 +22714,8 @@ System.registerDynamic("app/components/AuthorityDetailed.js", ["npm:react@16.12.
                     this.props.onSelect(evt.shiftKey);
                 } }), React.createElement("span", { className: "bp3-control-indicator open-ignore" }))), React.createElement("div", { className: "flex" }), React.createElement(ConfirmButton_1.default, { className: "bp3-minimal bp3-intent-danger bp3-icon-trash open-ignore", style: css.button, progressClassName: "bp3-intent-danger", confirmMsg: "Confirm authority remove", disabled: this.state.disabled, onConfirm: this.onDelete })), React.createElement(PageInput_1.default, { label: "Name", help: "Name of authority", type: "text", placeholder: "Enter name", value: authority.name, onChange: val => {
                     this.set('name', val);
+                } }), React.createElement(PageTextArea_1.default, { label: "Comment", help: "Authority comment.", placeholder: "Authority comment", rows: 3, value: authority.comment, onChange: val => {
+                    this.set('comment', val);
                 } }), React.createElement(PageSelect_1.default, { label: "Type", help: "Authority type. SSH keys will be saved to ~/.ssh/authorized_keys. SSH certificates will be saved to the SSH server configuration.", value: authority.type, onChange: val => {
                     this.set('type', val);
                 } }, React.createElement("option", { value: "ssh_key" }, "SSH Key"), React.createElement("option", { value: "ssh_certificate" }, "SSH Certificate")), React.createElement(PageTextArea_1.default, { hidden: authority.type !== 'ssh_key', label: "SSH Key", help: "SSH authorized public key in PEM format.", placeholder: "Public key", rows: 6, value: authority.key, onChange: val => {
