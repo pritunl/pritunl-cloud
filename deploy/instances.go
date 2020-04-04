@@ -334,7 +334,9 @@ func (s *Instances) destroy(inst *instance.Instance) {
 	}()
 }
 
-func (s *Instances) diskRemove(inst *instance.Instance, remDisks []*vm.Disk) {
+func (s *Instances) diskRemove(inst *instance.Instance,
+	remDisks []*vm.Disk) {
+
 	acquired, lockId := instancesLock.LockOpen(inst.Id.Hex())
 	if !acquired {
 		return
