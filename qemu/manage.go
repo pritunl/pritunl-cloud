@@ -763,10 +763,11 @@ func NetworkConf(db *database.Database,
 	var externalIface6 string
 	var staticAddr6 net.IP
 	var staticCidr6 int
+	var blck6 *block.Block
 
 	if externalNetwork6 {
 		if nodeNetworkMode6 == node.Static {
-			_, staticAddr6, staticCidr6, externalIface6,
+			blck6, staticAddr6, staticCidr6, externalIface6,
 				err = node.Self.GetStaticAddr6(db, virt.Id, vc.VpcId)
 			if err != nil {
 				return
@@ -1256,7 +1257,14 @@ func NetworkConf(db *database.Database,
 			return
 		}
 
-		gateway6 := blck.GetGateway6()
+		gateway6 := blck6.GetGateway6()
+		if gateway6 == nil {
+			err = &errortypes.ParseError{
+				errors.New("qemu: Invalid block gateway6"),
+			}
+			return
+		}
+
 		if gateway6 != nil {
 			_, err = utils.ExecCombinedOutputLogged(
 				[]string{"File exists"},
@@ -1270,7 +1278,6 @@ func NetworkConf(db *database.Database,
 				return
 			}
 		}
-
 	}
 
 	if hostNetwork {
