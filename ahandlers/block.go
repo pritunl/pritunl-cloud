@@ -21,6 +21,7 @@ type blockData struct {
 	Excludes []string           `json:"excludes"`
 	Netmask  string             `json:"netmask"`
 	Gateway  string             `json:"gateway"`
+	Gateway6 string             `json:"gateway6"`
 }
 
 func blockPut(c *gin.Context) {
@@ -57,6 +58,7 @@ func blockPut(c *gin.Context) {
 	blck.Excludes = dta.Excludes
 	blck.Netmask = dta.Netmask
 	blck.Gateway = dta.Gateway
+	blck.Gateway6 = dta.Gateway6
 
 	fields := set.NewSet(
 		"name",
@@ -67,6 +69,7 @@ func blockPut(c *gin.Context) {
 		"excludes",
 		"netmask",
 		"gateway",
+		"gateway6",
 	)
 
 	errData, err := blck.Validate(db)
@@ -116,6 +119,7 @@ func blockPost(c *gin.Context) {
 		Excludes: dta.Excludes,
 		Netmask:  dta.Netmask,
 		Gateway:  dta.Gateway,
+		Gateway6: dta.Gateway6,
 	}
 
 	errData, err := blck.Validate(db)
