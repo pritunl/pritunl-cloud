@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Networking improvements
+
 Version 1.2.1589.78 2020-03-31
 ------------------------------
 
