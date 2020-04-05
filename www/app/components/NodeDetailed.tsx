@@ -232,7 +232,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		}
 
 		if (vxlan) {
-			return node.available_interfaces;
+			return node.available_bridges.concat(node.available_interfaces);
 		} else {
 			return node.available_bridges;
 		}
