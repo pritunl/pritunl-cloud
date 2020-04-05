@@ -1255,6 +1255,22 @@ func NetworkConf(db *database.Database,
 		if err != nil {
 			return
 		}
+
+		gateway6 := blck.GetGateway6()
+		if gateway6 != nil {
+			_, err = utils.ExecCombinedOutputLogged(
+				[]string{"File exists"},
+				"ip", "netns", "exec", namespace,
+				"ip", "-6", "route",
+				"add", "default",
+				"via", gateway6.String(),
+				"dev", ifaceExternal6,
+			)
+			if err != nil {
+				return
+			}
+		}
+
 	}
 
 	if hostNetwork {
