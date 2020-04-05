@@ -61,6 +61,7 @@ func (b *Block) Validate(db *database.Database) (
 				}
 				return
 			}
+			b.Gateway = gateway.String()
 		}
 
 		if b.Netmask != "" {
