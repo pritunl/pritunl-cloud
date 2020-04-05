@@ -11923,7 +11923,7 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.12.0.js"
                 }
             }
             if (vxlan) {
-                return node.available_interfaces;
+                return node.available_bridges.concat(node.available_interfaces);
             } else {
                 return node.available_bridges;
             }
@@ -14673,6 +14673,8 @@ System.registerDynamic("app/components/Block.js", ["npm:react@16.12.0.js", "app/
                     value: this.props.block.id || 'None'
                 }] }), React.createElement(PageInput_1.default, { disabled: this.state.disabled, hidden: block.type === 'ipv6', label: "Gateway", help: "Gateway address of IP block", type: "text", placeholder: "Enter gateway", value: block.gateway, onChange: val => {
                     this.set('gateway', val);
+                } }), React.createElement(PageInput_1.default, { disabled: this.state.disabled, hidden: block.type !== 'ipv6', label: "IPv6 Gateway", help: "Gateway address of IPv6 block", type: "text", placeholder: "Enter IPv6 gateway", value: block.gateway6, onChange: val => {
+                    this.set('gateway6', val);
                 } }), React.createElement("label", { className: "bp3-label", hidden: block.type === 'ipv6' }, "IP Excludes", React.createElement(Help_1.default, { title: "IP Excludes", content: "IP addresses that are excluded from block. Add host or other reserved addresses here." }), React.createElement("div", null, excludes)), React.createElement(PageInputButton_1.default, { disabled: this.state.disabled, hidden: block.type === 'ipv6', buttonClass: "bp3-intent-success bp3-icon-add", label: "Add", type: "text", placeholder: "Add exclude", value: this.state.addExclude, onChange: val => {
                     this.setState(Object.assign(Object.assign({}, this.state), { addExclude: val }));
                 }, onSubmit: this.onAddExclude }))), React.createElement(PageSave_1.default, { style: css.save, hidden: !this.state.block, message: this.state.message, changed: this.state.changed, disabled: this.state.disabled, light: true, onCancel: () => {
