@@ -627,10 +627,14 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		});
 	}
 
-	newBlock = (): NodeTypes.BlockAttachment => {
+	newBlock = (ipv6: boolean): NodeTypes.BlockAttachment => {
 		let defBlock = '';
-		if (this.props.blocks.length) {
-			defBlock = this.props.blocks[0].id;
+
+		for (let block of (this.props.blocks || [])) {
+			if ((ipv6 && block.type == 'ipv6') ||
+					(!ipv6 && block.type == 'ipv4')) {
+				defBlock = block.id;
+			}
 		}
 
 		return {
@@ -654,7 +658,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 
 		if (mode === 'static' && (node.blocks || []).length === 0) {
 			node.blocks = [
-				this.newBlock(),
+				this.newBlock(false),
 			];
 		}
 
@@ -682,7 +686,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 
 		if (mode === 'static' && (node.blocks6 || []).length === 0) {
 			node.blocks6 = [
-				this.newBlock(),
+				this.newBlock(true),
 			];
 		}
 
@@ -712,7 +716,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			...node.blocks,
 		];
 
-		blocks.splice(i + 1, 0, this.newBlock());
+		blocks.splice(i + 1, 0, this.newBlock(false));
 		node.blocks = blocks;
 
 		this.setState({
@@ -773,7 +777,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 
 		if (!blocks.length) {
 			blocks = [
-				this.newBlock(),
+				this.newBlock(false),
 			];
 		}
 
@@ -804,7 +808,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			...node.blocks6,
 		];
 
-		blocks.splice(i + 1, 0, this.newBlock());
+		blocks.splice(i + 1, 0, this.newBlock(true));
 		node.blocks6 = blocks;
 
 		this.setState({
@@ -865,7 +869,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 
 		if (!blocks.length) {
 			blocks = [
-				this.newBlock(),
+				this.newBlock(true),
 			];
 		}
 
