@@ -372,6 +372,27 @@ func (n *Node) Validate(db *database.Database) (
 	switch n.NetworkMode {
 	case Static:
 		n.ExternalInterfaces = []string{}
+
+		for _, blckAttch := range n.Blocks {
+			blck, e := block.Get(db, blckAttch.Block)
+			if e != nil {
+				if _, ok := e.(*database.NotFoundError); ok {
+					e = nil
+				} else {
+					err = e
+					return
+				}
+			}
+
+			if blck == nil || blck.Type != block.IPv4 {
+				errData = &errortypes.ErrorData{
+					Error:   "invalid_block",
+					Message: "External IPv4 block invalid",
+				}
+				return
+			}
+		}
+
 		break
 	case Internal:
 		n.ExternalInterfaces = []string{}
@@ -399,6 +420,27 @@ func (n *Node) Validate(db *database.Database) (
 	switch n.NetworkMode6 {
 	case Static:
 		n.ExternalInterfaces6 = []string{}
+
+		for _, blckAttch := range n.Blocks6 {
+			blck, e := block.Get(db, blckAttch.Block)
+			if e != nil {
+				if _, ok := e.(*database.NotFoundError); ok {
+					e = nil
+				} else {
+					err = e
+					return
+				}
+			}
+
+			if blck == nil || blck.Type != block.IPv6 {
+				errData = &errortypes.ErrorData{
+					Error:   "invalid_block6",
+					Message: "External IPv6 block invalid",
+				}
+				return
+			}
+		}
+
 		break
 	case "":
 		n.ExternalInterfaces6 = []string{}
@@ -414,6 +456,26 @@ func (n *Node) Validate(db *database.Database) (
 
 	if n.HostNatExcludes == nil {
 		n.HostNatExcludes = []string{}
+	}
+
+	if !n.HostBlock.IsZero() {
+		blck, e := block.Get(db, n.HostBlock)
+		if e != nil {
+			if _, ok := e.(*database.NotFoundError); ok {
+				e = nil
+			} else {
+				err = e
+				return
+			}
+		}
+
+		if blck == nil || blck.Type != block.IPv4 {
+			errData = &errortypes.ErrorData{
+				Error:   "invalid_host_block",
+				Message: "Host block invalid",
+			}
+			return
+		}
 	}
 
 	if !n.HostBlock.IsZero() && n.HostNat {
