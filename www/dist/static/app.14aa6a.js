@@ -11753,10 +11753,12 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.12.0.js"
                 node.certificates = certificates;
                 this.setState(Object.assign(Object.assign({}, this.state), { changed: true, node: node }));
             };
-            this.newBlock = () => {
+            this.newBlock = ipv6 => {
                 let defBlock = '';
-                if (this.props.blocks.length) {
-                    defBlock = this.props.blocks[0].id;
+                for (let block of this.props.blocks || []) {
+                    if (ipv6 && block.type == 'ipv6' || !ipv6 && block.type == 'ipv4') {
+                        defBlock = block.id;
+                    }
                 }
                 return {
                     interface: this.props.node.available_bridges[0],
@@ -11771,7 +11773,7 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.12.0.js"
                     node = Object.assign({}, this.props.node);
                 }
                 if (mode === 'static' && (node.blocks || []).length === 0) {
-                    node.blocks = [this.newBlock()];
+                    node.blocks = [this.newBlock(false)];
                 }
                 node.network_mode = mode;
                 this.setState(Object.assign(Object.assign({}, this.state), { changed: true, node: node }));
@@ -11784,7 +11786,7 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.12.0.js"
                     node = Object.assign({}, this.props.node);
                 }
                 if (mode === 'static' && (node.blocks6 || []).length === 0) {
-                    node.blocks6 = [this.newBlock()];
+                    node.blocks6 = [this.newBlock(true)];
                 }
                 node.network_mode6 = mode;
                 this.setState(Object.assign(Object.assign({}, this.state), { changed: true, node: node }));
@@ -11797,7 +11799,7 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.12.0.js"
                     node = Object.assign({}, this.props.node);
                 }
                 let blocks = [...node.blocks];
-                blocks.splice(i + 1, 0, this.newBlock());
+                blocks.splice(i + 1, 0, this.newBlock(false));
                 node.blocks = blocks;
                 this.setState(Object.assign(Object.assign({}, this.state), { changed: true, message: '', node: node }));
             };
@@ -11809,7 +11811,7 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.12.0.js"
                     node = Object.assign({}, this.props.node);
                 }
                 let blocks = [...node.blocks6];
-                blocks.splice(i + 1, 0, this.newBlock());
+                blocks.splice(i + 1, 0, this.newBlock(true));
                 node.blocks6 = blocks;
                 this.setState(Object.assign(Object.assign({}, this.state), { changed: true, message: '', node: node }));
             };
@@ -11960,7 +11962,7 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.12.0.js"
             let blocks = [...node.blocks];
             blocks.splice(i, 1);
             if (!blocks.length) {
-                blocks = [this.newBlock()];
+                blocks = [this.newBlock(false)];
             }
             node.blocks = blocks;
             this.setState(Object.assign(Object.assign({}, this.state), { changed: true, message: '', node: node }));
@@ -11987,7 +11989,7 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.12.0.js"
             let blocks = [...node.blocks6];
             blocks.splice(i, 1);
             if (!blocks.length) {
-                blocks = [this.newBlock()];
+                blocks = [this.newBlock(true)];
             }
             node.blocks6 = blocks;
             this.setState(Object.assign(Object.assign({}, this.state), { changed: true, message: '', node: node }));
