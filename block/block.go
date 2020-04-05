@@ -27,6 +27,7 @@ type Block struct {
 	Excludes []string           `bson:"excludes" json:"excludes"`
 	Netmask  string             `bson:"netmask" json:"netmask"`
 	Gateway  string             `bson:"gateway" json:"gateway"`
+	Gateway6 string             `bson:"gateway6" json:"gateway6"`
 }
 
 func (b *Block) Validate(db *database.Database) (
@@ -115,6 +116,18 @@ func (b *Block) Validate(db *database.Database) (
 		b.Excludes = []string{}
 		b.Netmask = ""
 		b.Gateway = ""
+
+		if b.Gateway6 != "" {
+			gateway6 := net.ParseIP(b.Gateway6)
+			if gateway6 == nil || gateway6.To4() != nil {
+				errData = &errortypes.ErrorData{
+					Error:   "invalid_gateway6",
+					Message: "Gateway IPv6 address is invalid",
+				}
+				return
+			}
+			b.Gateway6 = gateway6.String()
+		}
 
 		subnets6 := []string{}
 		for _, subnet6 := range b.Subnets6 {
