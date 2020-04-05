@@ -183,6 +183,10 @@ func (b *Block) GetGateway() net.IP {
 	return net.ParseIP(b.Gateway)
 }
 
+func (b *Block) GetGateway6() net.IP {
+	return net.ParseIP(b.Gateway6)
+}
+
 func (b *Block) GetMask() net.IPMask {
 	return utils.ParseIpMask(b.Netmask)
 }
