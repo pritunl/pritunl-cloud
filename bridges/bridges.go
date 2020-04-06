@@ -1,8 +1,11 @@
 package bridges
 
 import (
+	"io/ioutil"
+	"strings"
 	"time"
 
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/iproute"
@@ -23,6 +26,7 @@ func GetBridges() (brdgs []string, err error) {
 	}
 
 	bridgesNew := []string{}
+	bridgesSet := set.NewSet()
 
 	ifaces, err := iproute.IfaceGetBridges("")
 	if err != nil {
@@ -35,6 +39,36 @@ func GetBridges() (brdgs []string, err error) {
 		}
 
 		bridgesNew = append(bridgesNew, iface.Name)
+		bridgesSet.Add(iface.Name)
+	}
+
+	items, err := ioutil.ReadDir("/etc/sysconfig/network-scripts")
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "utils: Failed to read network scripts"),
+		}
+		return
+	}
+
+	for _, item := range items {
+		name := item.Name()
+
+		if !strings.HasPrefix(name, "ifcfg-") ||
+			!strings.Contains(name, ":") {
+
+			continue
+		}
+
+		name = name[6:]
+		names := strings.Split(name, ":")
+		if len(names) != 2 {
+			continue
+		}
+
+		if bridgesSet.Contains(names[0]) && !bridgesSet.Contains(name) {
+			bridgesNew = append(bridgesNew, name)
+			bridgesSet.Add(name)
+		}
 	}
 
 	bridges = bridgesNew
