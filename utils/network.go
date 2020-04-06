@@ -192,7 +192,7 @@ func GetInterfacesSet() (ifaces []string, ifacesSet set.Set, err error) {
 	items, err = ioutil.ReadDir("/etc/sysconfig/network-scripts")
 	if err != nil {
 		err = &errortypes.ReadError{
-			errors.Wrap(err, "utils: Failed to read network interfaces"),
+			errors.Wrap(err, "utils: Failed to read network scripts"),
 		}
 		return
 	}
