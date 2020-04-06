@@ -585,6 +585,18 @@ export default class Block extends React.Component<Props, State> {
 							this.set('gateway', val);
 						}}
 					/>
+					<PageInput
+						disabled={this.state.disabled}
+						hidden={block.type !== 'ipv6'}
+						label="IPv6 Gateway"
+						help="Gateway address of IPv6 block"
+						type="text"
+						placeholder="Enter IPv6 gateway"
+						value={block.gateway6}
+						onChange={(val): void => {
+							this.set('gateway6', val);
+						}}
+					/>
 					<label
 						className="bp3-label"
 						hidden={block.type === 'ipv6'}
