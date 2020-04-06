@@ -11756,7 +11756,7 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.12.0.js"
             this.newBlock = ipv6 => {
                 let defBlock = '';
                 for (let block of this.props.blocks || []) {
-                    if (ipv6 && block.type == 'ipv6' || !ipv6 && block.type == 'ipv4') {
+                    if (ipv6 && block.type === 'ipv6' || !ipv6 && block.type === 'ipv4') {
                         defBlock = block.id;
                     }
                 }
@@ -12029,6 +12029,9 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.12.0.js"
             }
             let hostBlocksSelect = [React.createElement("option", { key: "null", value: "" }, "Disabled")];
             for (let blck of this.props.blocks || []) {
+                if (blck.type !== 'ipv4') {
+                    continue;
+                }
                 hostBlocksSelect.push(React.createElement("option", { key: blck.id, value: blck.id }, blck.name));
             }
             let hostNatExcludes = [];
