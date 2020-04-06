@@ -164,17 +164,9 @@ func GetNamespaces() (namespaces []string, err error) {
 }
 
 func GetInterfaces() (ifaces []string, err error) {
-	items, err := ioutil.ReadDir("/sys/class/net")
+	ifaces, _, err = GetInterfacesSet()
 	if err != nil {
-		err = &errortypes.ReadError{
-			errors.Wrap(err, "utils: Failed to read network interfaces"),
-		}
 		return
-	}
-
-	ifaces = []string{}
-	for _, item := range items {
-		ifaces = append(ifaces, item.Name())
 	}
 
 	return
@@ -197,10 +189,41 @@ func GetInterfacesSet() (ifaces []string, ifacesSet set.Set, err error) {
 		ifacesSet.Add(name)
 	}
 
+	items, err = ioutil.ReadDir("/etc/sysconfig/network-scripts")
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "utils: Failed to read network interfaces"),
+		}
+		return
+	}
+
+	for _, item := range items {
+		name := item.Name()
+
+		if !strings.HasPrefix(name, "ifcfg-") ||
+			!strings.Contains(name, ":") {
+
+			continue
+		}
+
+		name = name[6:]
+		names := strings.Split(name, ":")
+		if len(names) != 2 {
+			continue
+		}
+
+		if ifacesSet.Contains(names[0]) && !ifacesSet.Contains(name) {
+			ifaces = append(ifaces, name)
+			ifacesSet.Add(name)
+		}
+	}
+
 	return
 }
 
 func GetInterfaceUpper(iface string) (upper string, err error) {
+	iface = strings.Split(iface, ":")[0]
+
 	items, err := ioutil.ReadDir("/sys/class/net/" + iface)
 	if err != nil {
 		if os.IsNotExist(os.ErrNotExist) {
