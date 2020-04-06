@@ -17,6 +17,7 @@ import ConfirmButton from './ConfirmButton';
 import Help from './Help';
 import PageSelectButton from "./PageSelectButton";
 import PageSwitch from "./PageSwitch";
+import PageTextArea from "./PageTextArea";
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -749,6 +750,16 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 						value={balancer.name}
 						onChange={(val): void => {
 							this.set('name', val);
+						}}
+					/>
+					<PageTextArea
+						label="Comment"
+						help="Load balancer comment."
+						placeholder="Load balancer comment"
+						rows={3}
+						value={balancer.comment}
+						onChange={(val: string): void => {
+							this.set('comment', val);
 						}}
 					/>
 					<PageSwitch
