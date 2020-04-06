@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Add support for network alias interfaces
+
 Version 1.2.1594.77 2020-04-05
 ------------------------------
 
