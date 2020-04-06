@@ -2,6 +2,7 @@ package iproute
 
 import (
 	"encoding/json"
+	"strings"
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -13,6 +14,7 @@ type Address struct {
 	Local      string `json:"local"`
 	Prefix     int    `json:"prefixlen"`
 	Scope      string `json:"scope"`
+	Label      string `json:"label"`
 	Dynamic    bool   `json:"dynamic"`
 	Deprecated bool   `json:"deprecated"`
 }
@@ -27,6 +29,12 @@ func AddressGetIface(namespace, name string) (
 	address, address6 *Address, err error) {
 
 	ifaces := []*AddressIface{}
+
+	label := ""
+	if strings.Contains(name, ":") {
+		label = name
+		name = strings.Split(name, ":")[0]
+	}
 
 	var output string
 	if namespace != "" {
@@ -67,6 +75,31 @@ func AddressGetIface(namespace, name string) (
 			errors.Wrap(err, "iproute: Failed to parse interface address"),
 		}
 		return
+	}
+
+	if label != "" {
+		dynamic6 := true
+		for _, iface := range ifaces {
+			if iface.Name == name && iface.Addresses != nil {
+				for _, addr := range iface.Addresses {
+					if addr.Label == label && addr.Scope == "global" &&
+						!addr.Deprecated {
+
+						if address == nil && addr.Family == "inet" {
+							address = addr
+						} else if (address6 == nil || dynamic6) &&
+							addr.Family == "inet6" {
+
+							if !addr.Dynamic {
+								dynamic6 = false
+							}
+
+							address6 = addr
+						}
+					}
+				}
+			}
+		}
 	}
 
 	dynamic6 := true
