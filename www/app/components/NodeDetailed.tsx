@@ -631,8 +631,8 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		let defBlock = '';
 
 		for (let block of (this.props.blocks || [])) {
-			if ((ipv6 && block.type == 'ipv6') ||
-					(!ipv6 && block.type == 'ipv4')) {
+			if ((ipv6 && block.type === 'ipv6') ||
+					(!ipv6 && block.type === 'ipv4')) {
 				defBlock = block.id;
 			}
 		}
@@ -1036,6 +1036,10 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			</option>,
 		];
 		for (let blck of (this.props.blocks || [])) {
+			if (blck.type !== 'ipv4') {
+				continue;
+			}
+
 			hostBlocksSelect.push(
 				<option key={blck.id} value={blck.id}>
 					{blck.name}
