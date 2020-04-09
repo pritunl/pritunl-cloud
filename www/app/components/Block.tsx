@@ -10,6 +10,7 @@ import ConfirmButton from './ConfirmButton';
 import * as Alert from "../Alert";
 import Help from './Help';
 import PageSelect from "./PageSelect";
+import PageTextArea from "./PageTextArea";
 
 interface Props {
 	block: BlockTypes.BlockRo;
@@ -479,6 +480,16 @@ export default class Block extends React.Component<Props, State> {
 						value={block.name}
 						onChange={(val): void => {
 							this.set('name', val);
+						}}
+					/>
+					<PageTextArea
+						label="Comment"
+						help="Block comment."
+						placeholder="Block comment"
+						rows={3}
+						value={block.comment}
+						onChange={(val: string): void => {
+							this.set('comment', val);
 						}}
 					/>
 					<PageSelect
