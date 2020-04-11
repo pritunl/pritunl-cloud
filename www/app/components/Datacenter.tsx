@@ -14,6 +14,7 @@ import PageSwitch from './PageSwitch';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
 import Help from './Help';
+import PageTextArea from "./PageTextArea";
 
 interface Props {
 	datacenter: DatacenterTypes.DatacenterRo;
@@ -458,6 +459,16 @@ export default class Datacenter extends React.Component<Props, State> {
 							this.set('name', val);
 						}}
 					/>
+					<PageTextArea
+						label="Comment"
+						help="Datacenter comment."
+						placeholder="Datacenter comment"
+						rows={3}
+						value={datacenter.comment}
+						onChange={(val: string): void => {
+							this.set('comment', val);
+						}}
+					/>
 					<PageSelect
 						disabled={this.state.disabled}
 						label="Private Storage"
@@ -508,6 +519,16 @@ export default class Datacenter extends React.Component<Props, State> {
 						<option value="aws_infrequent_access">AWS Standard-IA</option>
 						<option value="aws_glacier">AWS Glacier</option>
 					</PageSelect>
+				</div>
+				<div style={css.group}>
+					<PageInfo
+						fields={[
+							{
+								label: 'ID',
+								value: this.props.datacenter.id || 'None',
+							},
+						]}
+					/>
 					<label
 						className="bp3-label"
 						style={css.label}
@@ -536,16 +557,6 @@ export default class Datacenter extends React.Component<Props, State> {
 					>
 						{publicStoragesSelect}
 					</PageSelectButton>
-				</div>
-				<div style={css.group}>
-					<PageInfo
-						fields={[
-							{
-								label: 'ID',
-								value: this.props.datacenter.id || 'None',
-							},
-						]}
-					/>
 					<PageSwitch
 						label="Match organizations"
 						help="Limit what organizations can access this datacenter, by default all organizations will have access."
