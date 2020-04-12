@@ -9,6 +9,7 @@ import PageInfo from './PageInfo';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
 import PageSelect from "./PageSelect";
+import PageTextArea from "./PageTextArea";
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -243,6 +244,16 @@ export default class DomainDetailed extends React.Component<Props, State> {
 						value={domain.name}
 						onChange={(val): void => {
 							this.set('name', val);
+						}}
+					/>
+					<PageTextArea
+						label="Comment"
+						help="Domain comment."
+						placeholder="Domain comment"
+						rows={3}
+						value={domain.comment}
+						onChange={(val: string): void => {
+							this.set('comment', val);
 						}}
 					/>
 					<PageSelect
