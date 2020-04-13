@@ -12,6 +12,7 @@ import PageInputButton from './PageInputButton';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
 import Help from './Help';
+import PageTextArea from "./PageTextArea";
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -481,6 +482,16 @@ export default class FirewallDetailed extends React.Component<Props, State> {
 						value={firewall.name}
 						onChange={(val): void => {
 							this.set('name', val);
+						}}
+					/>
+					<PageTextArea
+						label="Comment"
+						help="Firewall comment."
+						placeholder="Firewall comment"
+						rows={3}
+						value={firewall.comment}
+						onChange={(val: string): void => {
+							this.set('comment', val);
 						}}
 					/>
 					<label style={css.itemsLabel}>
