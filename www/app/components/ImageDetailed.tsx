@@ -9,6 +9,7 @@ import PageInput from './PageInput';
 import PageInfo from './PageInfo';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
+import PageTextArea from "./PageTextArea";
 
 interface Props {
 	image: ImageTypes.ImageRo;
@@ -273,6 +274,16 @@ export default class ImageDetailed extends React.Component<Props, State> {
 						value={image.name}
 						onChange={(val): void => {
 							this.set('name', val);
+						}}
+					/>
+					<PageTextArea
+						label="Comment"
+						help="Image comment."
+						placeholder="Image comment"
+						rows={3}
+						value={image.comment}
+						onChange={(val: string): void => {
+							this.set('comment', val);
 						}}
 					/>
 				</div>
