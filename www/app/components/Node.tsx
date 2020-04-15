@@ -155,12 +155,6 @@ export default class Node extends React.Component<Props, {}> {
 			</div>
 			<div className="bp3-cell" style={css.bars}>
 				<div
-					className="bp3-progress-bar bp3-no-stripes bp3-intent-primary"
-					style={css.bar}
-				>
-					<div className="bp3-progress-meter" style={memoryStyle}/>
-				</div>
-				<div
 					className="bp3-progress-bar bp3-no-stripes bp3-intent-success"
 					style={css.bar}
 				>
@@ -171,6 +165,12 @@ export default class Node extends React.Component<Props, {}> {
 					style={css.barLast}
 				>
 					<div className="bp3-progress-meter" style={load5Style}/>
+				</div>
+				<div
+					className="bp3-progress-bar bp3-no-stripes bp3-intent-primary"
+					style={css.bar}
+				>
+					<div className="bp3-progress-meter" style={memoryStyle}/>
 				</div>
 			</div>
 		</div>;
