@@ -1273,6 +1273,16 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							this.set('name', val);
 						}}
 					/>
+					<PageTextArea
+						label="Comment"
+						help="Node comment."
+						placeholder="Node comment"
+						rows={3}
+						value={node.comment}
+						onChange={(val: string): void => {
+							this.set('comment', val);
+						}}
+					/>
 					<PageSwitch
 						disabled={this.state.disabled}
 						label="Admin"
