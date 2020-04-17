@@ -8,6 +8,7 @@ import PageSave from './PageSave';
 import PageInputButton from './PageInputButton';
 import ConfirmButton from './ConfirmButton';
 import Help from './Help';
+import PageTextArea from "./PageTextArea";
 
 interface Props {
 	organization: OrganizationTypes.OrganizationRo;
@@ -252,6 +253,26 @@ export default class Organization extends React.Component<Props, State> {
 							this.set('name', val);
 						}}
 					/>
+					<PageTextArea
+						label="Comment"
+						help="Organization comment."
+						placeholder="Organization comment"
+						rows={3}
+						value={org.comment}
+						onChange={(val: string): void => {
+							this.set('comment', val);
+						}}
+					/>
+				</div>
+				<div style={css.group}>
+					<PageInfo
+						fields={[
+							{
+								label: 'ID',
+								value: this.props.organization.id || 'None',
+							},
+						]}
+					/>
 					<label className="bp3-label">
 						Roles
 						<Help
@@ -276,16 +297,6 @@ export default class Organization extends React.Component<Props, State> {
 							});
 						}}
 						onSubmit={this.onAddRole}
-					/>
-				</div>
-				<div style={css.group}>
-					<PageInfo
-						fields={[
-							{
-								label: 'ID',
-								value: this.props.organization.id || 'None',
-							},
-						]}
 					/>
 				</div>
 			</div>
