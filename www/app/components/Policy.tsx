@@ -13,6 +13,7 @@ import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
 import Help from './Help';
 import * as Alert from '../Alert';
+import PageTextArea from "./PageTextArea";
 
 interface Props {
 	policy: PolicyTypes.PolicyRo;
@@ -353,6 +354,16 @@ export default class Policy extends React.Component<Props, State> {
 						value={policy.name}
 						onChange={(val): void => {
 							this.set('name', val);
+						}}
+					/>
+					<PageTextArea
+						label="Comment"
+						help="Policy comment."
+						placeholder="Policy comment"
+						rows={3}
+						value={policy.comment}
+						onChange={(val: string): void => {
+							this.set('comment', val);
 						}}
 					/>
 					<label className="bp3-label">
