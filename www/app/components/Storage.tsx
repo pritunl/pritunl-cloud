@@ -10,6 +10,7 @@ import PageSwitch from './PageSwitch';
 import ConfirmButton from './ConfirmButton';
 import * as InstanceActions from "../actions/InstanceActions";
 import * as Alert from "../Alert";
+import PageTextArea from "./PageTextArea";
 
 interface Props {
 	storage: StorageTypes.StorageRo;
@@ -200,6 +201,16 @@ export default class Storage extends React.Component<Props, State> {
 						value={storage.name}
 						onChange={(val): void => {
 							this.set('name', val);
+						}}
+					/>
+					<PageTextArea
+						label="Comment"
+						help="Storage comment."
+						placeholder="Storage comment"
+						rows={3}
+						value={storage.comment}
+						onChange={(val: string): void => {
+							this.set('comment', val);
 						}}
 					/>
 					<PageInput
