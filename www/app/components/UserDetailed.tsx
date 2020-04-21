@@ -270,6 +270,16 @@ export default class UserDetailed extends React.Component<Props, State> {
 							this.set('username', val);
 						}}
 					/>
+					<PageTextArea
+						label="Comment"
+						help="User comment."
+						placeholder="User comment"
+						rows={3}
+						value={user.comment}
+						onChange={(val: string): void => {
+							this.set('comment', val);
+						}}
+					/>
 					<PageInput
 						hidden={user.type !== 'local'}
 						disabled={this.state.locked}
@@ -376,16 +386,6 @@ export default class UserDetailed extends React.Component<Props, State> {
 						checked={user.disabled}
 						onToggle={(): void => {
 							this.set('disabled', !this.state.user.disabled);
-						}}
-					/>
-					<PageTextArea
-						label="Comment"
-						help="Instance comment."
-						placeholder="Instance comment"
-						rows={3}
-						value={user.comment}
-						onChange={(val: string): void => {
-							this.set('comment', val);
 						}}
 					/>
 				</PagePanel>
