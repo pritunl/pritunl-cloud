@@ -14,6 +14,7 @@ import PageInfo from './PageInfo';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
 import Help from './Help';
+import PageTextArea from "./PageTextArea";
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -668,6 +669,16 @@ export default class VpcDetailed extends React.Component<Props, State> {
 						value={vpc.name}
 						onChange={(val): void => {
 							this.set('name', val);
+						}}
+					/>
+					<PageTextArea
+						label="Comment"
+						help="VPC comment."
+						placeholder="VPC comment"
+						rows={3}
+						value={vpc.comment}
+						onChange={(val: string): void => {
+							this.set('comment', val);
 						}}
 					/>
 					<PageInput
