@@ -36,7 +36,7 @@ func getIfaces(bridge string) (ifacesSet set.Set, err error) {
 func SyncIfaces(vxlan bool) {
 	nde := node.Self
 
-	if vxlan == curVxlan && time.Since(lastChange) < 30*time.Second {
+	if vxlan == curVxlan && time.Since(lastChange) < 10*time.Second {
 		return
 	}
 	curVxlan = vxlan
