@@ -12,20 +12,129 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/dropbox/godropbox/errors"
+	"github.com/gorilla/websocket"
 	"github.com/pritunl/pritunl-cloud/balancer"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/logger"
+	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type Handler struct {
-	Key             string
-	Index           int
-	State           int
-	CheckUrl        string
-	LastState       time.Time
-	LastOnlineState time.Time
+	Key                string
+	Index              int
+	State              int
+	Domain             *Domain
+	CheckUrl           string
+	LastState          time.Time
+	LastOnlineState    time.Time
+	BackendHost        string
+	BackendProto       string
+	BackendProtoWs     string
+	RequestHost        string
+	ForwardedProto     string
+	ForwardedPort      string
+	TlsConfig          *tls.Config
+	WebSockets         bool
+	WebSocketsUpgrader *websocket.Upgrader
 	*httputil.ReverseProxy
+}
+
+func (h *Handler) ServeWS(rw http.ResponseWriter, r *http.Request) {
+	header := utils.CloneHeader(r.Header)
+	u := &url.URL{}
+	*u = *r.URL
+
+	u.Scheme = h.BackendProtoWs
+	u.Host = h.BackendHost
+
+	if h.RequestHost != "" {
+		r.Host = h.RequestHost
+	}
+
+	header.Set("X-Forwarded-For",
+		node.Self.GetRemoteAddr(r))
+	header.Set("X-Forwarded-Host", r.Host)
+	header.Set("X-Forwarded-Proto", h.ForwardedProto)
+	header.Set("X-Forwarded-Port", h.ForwardedPort)
+
+	header.Del("Upgrade")
+	header.Del("Connection")
+	header.Del("Sec-Websocket-Key")
+	header.Del("Sec-Websocket-Version")
+	header.Del("Sec-Websocket-Extensions")
+
+	var backConn *websocket.Conn
+	var backResp *http.Response
+	var err error
+
+	dialer := &websocket.Dialer{
+		Proxy: func(req *http.Request) (url *url.URL, err error) {
+			if h.RequestHost != "" {
+				req.Host = h.RequestHost
+			} else {
+				req.Host = r.Host
+			}
+			return
+		},
+		HandshakeTimeout: 45 * time.Second,
+		TLSClientConfig:  h.TlsConfig,
+	}
+
+	backConn, backResp, err = dialer.Dial(u.String(), header)
+	if err != nil {
+		if backResp != nil {
+			err = &errortypes.RequestError{
+				errors.Wrapf(err, "proxy: WebSocket dial error %d",
+					backResp.StatusCode),
+			}
+		} else {
+			err = &errortypes.RequestError{
+				errors.Wrap(err, "proxy: WebSocket dial error"),
+			}
+		}
+		WriteError(rw, r, 500, err)
+		return
+	}
+	defer backConn.Close()
+
+	upgradeHeaders := http.Header{}
+	val := backResp.Header.Get("Sec-Websocket-Protocol")
+	if val != "" {
+		upgradeHeaders.Set("Sec-Websocket-Protocol", val)
+	}
+	val = backResp.Header.Get("Set-Cookie")
+	if val != "" {
+		upgradeHeaders.Set("Set-Cookie", val)
+	}
+
+	frontConn, err := h.WebSocketsUpgrader.Upgrade(rw, r, upgradeHeaders)
+	if err != nil {
+		err = &errortypes.RequestError{
+			errors.Wrap(err, "proxy: WebSocket upgrade error"),
+		}
+		WriteError(rw, r, 500, err)
+		return
+	}
+	defer frontConn.Close()
+
+	conn := &webSocketConn{
+		front: frontConn,
+		back:  backConn,
+		r:     r,
+	}
+
+	conn.Run(h.Domain)
+}
+
+func (h *Handler) Serve(rw http.ResponseWriter, r *http.Request) {
+	if h.WebSockets && r.Header.Get("Upgrade") == "websocket" {
+		h.ServeWS(rw, r)
+	} else {
+		h.ServeHTTP(rw, r)
+	}
 }
 
 func NewHandler(index, state int, proxyProto string, proxyPort int,
@@ -36,6 +145,13 @@ func NewHandler(index, state int, proxyProto string, proxyPort int,
 	reqHost := domain.Domain.Host
 	backendProto := backend.Protocol
 	backendHost := utils.FormatHostPort(backend.Hostname, backend.Port)
+
+	backendProtoWs := ""
+	if backendProto == "https" {
+		backendProtoWs = "wss"
+	} else {
+		backendProtoWs = "ws"
+	}
 
 	handUrl := fmt.Sprintf(
 		"%s://%s:%d",
@@ -99,10 +215,19 @@ func NewHandler(index, state int, proxyProto string, proxyPort int,
 	}
 
 	hand = &Handler{
-		Key:      fmt.Sprintf("%s:%d", backend.Hostname, backend.Port),
-		Index:    index,
-		State:    state,
-		CheckUrl: checkUrl.String(),
+		Key:            fmt.Sprintf("%s:%d", backend.Hostname, backend.Port),
+		Index:          index,
+		State:          state,
+		Domain:         domain,
+		CheckUrl:       checkUrl.String(),
+		BackendHost:    backendHost,
+		BackendProto:   backendProto,
+		BackendProtoWs: backendProtoWs,
+		RequestHost:    reqHost,
+		ForwardedProto: proxyProto,
+		ForwardedPort:  proxyPortStr,
+		WebSockets:     domain.Balancer.WebSockets,
+		TlsConfig:      tlsConfig,
 		ReverseProxy: &httputil.ReverseProxy{
 			Director: func(req *http.Request) {
 				req.Header.Set("X-Forwarded-Host", req.Host)
@@ -142,6 +267,18 @@ func NewHandler(index, state int, proxyProto string, proxyPort int,
 				errHandler(hand, rw, r, err)
 			},
 		},
+	}
+
+	if hand.WebSockets {
+		hand.WebSocketsUpgrader = &websocket.Upgrader{
+			HandshakeTimeout: time.Duration(
+				settings.Router.HandshakeTimeout) * time.Second,
+			ReadBufferSize:  1024,
+			WriteBufferSize: 1024,
+			CheckOrigin: func(r *http.Request) bool {
+				return true
+			},
+		}
 	}
 
 	return
