@@ -79,6 +79,7 @@ func (d *Domain) CalculateHash() {
 
 	h.Write([]byte(d.Balancer.Id.Hex()))
 	h.Write([]byte(d.Balancer.Name))
+	h.Write([]byte(strconv.FormatBool(d.Balancer.WebSockets)))
 	h.Write([]byte(d.Domain.Domain))
 	h.Write([]byte(d.Domain.Host))
 
