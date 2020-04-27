@@ -149,6 +149,9 @@ func (b *Balancer) Validate(db *database.Database) (
 
 		coll := db.Balancers()
 		count, e := coll.CountDocuments(db, &bson.M{
+			"_id": &bson.M{
+				"$ne": b.Id,
+			},
 			"state": true,
 			"domains.domain": &bson.M{
 				"$in": domains,
@@ -252,6 +255,9 @@ func (b *Balancer) CommitFields(db *database.Database, fields set.Set) (
 
 		coll := db.Balancers()
 		count, e := coll.CountDocuments(db, &bson.M{
+			"_id": &bson.M{
+				"$ne": b.Id,
+			},
 			"state": true,
 			"domains.domain": &bson.M{
 				"$in": domains,
