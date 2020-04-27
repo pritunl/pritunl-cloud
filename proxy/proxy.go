@@ -41,6 +41,8 @@ func (p *Proxy) Update(db *database.Database, balncs []*balancer.Balancer) (
 	err error) {
 
 	domains := map[string]*Domain{}
+	domainsName := set.NewSet()
+	remDomains := []*Domain{}
 	states := []*balancerState{}
 
 	proxyProto := node.Self.Protocol
@@ -80,6 +82,8 @@ func (p *Proxy) Update(db *database.Database, balncs []*balancer.Balancer) (
 				continue
 			}
 
+			domainsName.Add(domain.Domain)
+
 			proxyDomain := &Domain{
 				SkipVerify: settings.Router.SkipVerify,
 				ProxyProto: proxyProto,
@@ -95,6 +99,7 @@ func (p *Proxy) Update(db *database.Database, balncs []*balancer.Balancer) (
 			if curDomain != nil && curDomain.Balancer.Id == balnc.Id {
 				state.Requests += curDomain.RequestsTotal
 				state.Retries += curDomain.RetriesTotal
+				state.WebSockets += curDomain.WebSocketConns.Len()
 
 				curDomain.Lock.Lock()
 				for _, hand := range curDomain.OnlineWebFirst {
@@ -125,6 +130,8 @@ func (p *Proxy) Update(db *database.Database, balncs []*balancer.Balancer) (
 					proxyDomain.RetriesPrev = curDomain.RetriesPrev
 					proxyDomain.RetriesTotal = curDomain.RetriesTotal
 					curDomain.Lock.Unlock()
+
+					remDomains = append(remDomains, curDomain)
 				}
 			}
 
@@ -181,8 +188,27 @@ func (p *Proxy) Update(db *database.Database, balncs []*balancer.Balancer) (
 		})
 	}
 
+	curDomains := p.Domains
+	for name, domain := range curDomains {
+		if !domainsName.Contains(name) {
+			remDomains = append(remDomains, domain)
+		}
+	}
+
 	p.Domains = domains
 	p.lock.Unlock()
+
+	for _, domain := range remDomains {
+		domain.WebSocketConnsLock.Lock()
+		for socketInf := range domain.WebSocketConns.Iter() {
+			func() {
+				socket := socketInf.(*webSocketConn)
+				socket.Close()
+			}()
+		}
+		domain.WebSocketConns = set.NewSet()
+		domain.WebSocketConnsLock.Unlock()
+	}
 
 	for _, balncState := range states {
 		err = balncState.Balancer.CommitState(db, balncState.State)
