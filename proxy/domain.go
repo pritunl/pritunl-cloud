@@ -907,6 +907,10 @@ func (d *Domain) ResponseHandler(hand *Handler, resp *http.Response) error {
 func (d *Domain) ErrorHandlerFirst(hand *Handler, rw http.ResponseWriter,
 	r *http.Request, err error) {
 
+	if _, ok := err.(*WebSocketBlock); ok {
+		return
+	}
+
 	d.downgradeHandler(hand)
 	d.ServeHTTPSecond(rw, r)
 }
@@ -914,12 +918,20 @@ func (d *Domain) ErrorHandlerFirst(hand *Handler, rw http.ResponseWriter,
 func (d *Domain) ErrorHandlerSecond(hand *Handler, rw http.ResponseWriter,
 	r *http.Request, err error) {
 
+	if _, ok := err.(*WebSocketBlock); ok {
+		return
+	}
+
 	d.downgradeHandler(hand)
 	d.ServeHTTPThird(rw, r)
 }
 
 func (d *Domain) ErrorHandlerThird(hand *Handler, rw http.ResponseWriter,
 	r *http.Request, err error) {
+
+	if _, ok := err.(*WebSocketBlock); ok {
+		return
+	}
 
 	d.downgradeHandler(hand)
 	rw.WriteHeader(http.StatusBadGateway)
