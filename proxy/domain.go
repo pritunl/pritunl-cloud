@@ -10,6 +10,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/authority"
 	"github.com/pritunl/pritunl-cloud/balancer"
 )
@@ -65,9 +66,8 @@ type Domain struct {
 	UnknownLowWebThird  []*Handler
 	OfflineWebThird     []*Handler
 
-	OnlineWebSocket  []*Handler
-	UnknownWebSocket []*Handler
-	OfflineWebSocket []*Handler
+	WebSocketConns     set.Set
+	WebSocketConnsLock sync.Mutex
 }
 
 func (d *Domain) CalculateHash() {
