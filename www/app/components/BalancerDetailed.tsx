@@ -593,6 +593,7 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 
 		let requests = 0;
 		let retries = 0;
+		let websockets = 0;
 		let states: string[] = [];
 		let statesMap: {[index: string]: number} = {};
 		let online: string[] = [];
@@ -611,6 +612,7 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 
 				requests += state.requests || 0;
 				retries += state.retries || 0;
+				websockets += state.websockets || 0;
 
 				for (let backend of state.offline) {
 					let curState = statesMap[backend];
@@ -839,6 +841,10 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 							{
 								label: 'Retries',
 								value: retries + '/min',
+							},
+							{
+								label: 'WebSockets',
+								value: websockets,
 							},
 							{
 								label: 'Backends',
