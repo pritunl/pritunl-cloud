@@ -158,6 +158,8 @@ func (d *Domain) Init() {
 	d.UnknownMidWebThird = []*Handler{}
 	d.UnknownLowWebThird = []*Handler{}
 	d.OfflineWebThird = []*Handler{}
+
+	d.WebSocketConns = set.NewSet()
 }
 
 func (d *Domain) ServeHTTPFirst(rw http.ResponseWriter, r *http.Request) {
@@ -166,35 +168,35 @@ func (d *Domain) ServeHTTPFirst(rw http.ResponseWriter, r *http.Request) {
 	onlineWebFirst := d.OnlineWebFirst
 	l := len(onlineWebFirst)
 	if l != 0 {
-		onlineWebFirst[rand.Intn(l)].ServeHTTP(rw, r)
+		onlineWebFirst[rand.Intn(l)].Serve(rw, r)
 		return
 	}
 
 	unknownHighWebFirst := d.UnknownHighWebFirst
 	l = len(unknownHighWebFirst)
 	if l != 0 {
-		unknownHighWebFirst[rand.Intn(l)].ServeHTTP(rw, r)
+		unknownHighWebFirst[rand.Intn(l)].Serve(rw, r)
 		return
 	}
 
 	unknownMidWebFirst := d.UnknownMidWebFirst
 	l = len(unknownMidWebFirst)
 	if l != 0 {
-		unknownMidWebFirst[rand.Intn(l)].ServeHTTP(rw, r)
+		unknownMidWebFirst[rand.Intn(l)].Serve(rw, r)
 		return
 	}
 
 	unknownLowWebFirst := d.UnknownLowWebFirst
 	l = len(unknownLowWebFirst)
 	if l != 0 {
-		unknownLowWebFirst[rand.Intn(l)].ServeHTTP(rw, r)
+		unknownLowWebFirst[rand.Intn(l)].Serve(rw, r)
 		return
 	}
 
 	offlineWebFirst := d.OfflineWebFirst
 	l = len(offlineWebFirst)
 	if l != 0 {
-		offlineWebFirst[rand.Intn(l)].ServeHTTP(rw, r)
+		offlineWebFirst[rand.Intn(l)].Serve(rw, r)
 		return
 	}
 
@@ -207,35 +209,35 @@ func (d *Domain) ServeHTTPSecond(rw http.ResponseWriter, r *http.Request) {
 	onlineWebSecond := d.OnlineWebSecond
 	l := len(onlineWebSecond)
 	if l != 0 {
-		onlineWebSecond[rand.Intn(l)].ServeHTTP(rw, r)
+		onlineWebSecond[rand.Intn(l)].Serve(rw, r)
 		return
 	}
 
 	unknownHighWebSecond := d.UnknownHighWebSecond
 	l = len(unknownHighWebSecond)
 	if l != 0 {
-		unknownHighWebSecond[rand.Intn(l)].ServeHTTP(rw, r)
+		unknownHighWebSecond[rand.Intn(l)].Serve(rw, r)
 		return
 	}
 
 	unknownMidWebSecond := d.UnknownMidWebSecond
 	l = len(unknownMidWebSecond)
 	if l != 0 {
-		unknownMidWebSecond[rand.Intn(l)].ServeHTTP(rw, r)
+		unknownMidWebSecond[rand.Intn(l)].Serve(rw, r)
 		return
 	}
 
 	unknownLowWebSecond := d.UnknownLowWebSecond
 	l = len(unknownLowWebSecond)
 	if l != 0 {
-		unknownLowWebSecond[rand.Intn(l)].ServeHTTP(rw, r)
+		unknownLowWebSecond[rand.Intn(l)].Serve(rw, r)
 		return
 	}
 
 	offlineWebSecond := d.OfflineWebSecond
 	l = len(offlineWebSecond)
 	if l != 0 {
-		offlineWebSecond[rand.Intn(l)].ServeHTTP(rw, r)
+		offlineWebSecond[rand.Intn(l)].Serve(rw, r)
 		return
 	}
 
@@ -248,35 +250,35 @@ func (d *Domain) ServeHTTPThird(rw http.ResponseWriter, r *http.Request) {
 	onlineWebThird := d.OnlineWebThird
 	l := len(onlineWebThird)
 	if l != 0 {
-		onlineWebThird[rand.Intn(l)].ServeHTTP(rw, r)
+		onlineWebThird[rand.Intn(l)].Serve(rw, r)
 		return
 	}
 
 	unknownHighWebThird := d.UnknownHighWebThird
 	l = len(unknownHighWebThird)
 	if l != 0 {
-		unknownHighWebThird[rand.Intn(l)].ServeHTTP(rw, r)
+		unknownHighWebThird[rand.Intn(l)].Serve(rw, r)
 		return
 	}
 
 	unknownMidWebThird := d.UnknownMidWebThird
 	l = len(unknownMidWebThird)
 	if l != 0 {
-		unknownMidWebThird[rand.Intn(l)].ServeHTTP(rw, r)
+		unknownMidWebThird[rand.Intn(l)].Serve(rw, r)
 		return
 	}
 
 	unknownLowWebThird := d.UnknownLowWebThird
 	l = len(unknownLowWebThird)
 	if l != 0 {
-		unknownLowWebThird[rand.Intn(l)].ServeHTTP(rw, r)
+		unknownLowWebThird[rand.Intn(l)].Serve(rw, r)
 		return
 	}
 
 	offlineWebThird := d.OfflineWebThird
 	l = len(offlineWebThird)
 	if l != 0 {
-		offlineWebThird[rand.Intn(l)].ServeHTTP(rw, r)
+		offlineWebThird[rand.Intn(l)].Serve(rw, r)
 		return
 	}
 
