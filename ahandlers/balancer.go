@@ -82,7 +82,7 @@ func balancerPut(c *gin.Context) {
 		"organization",
 		"datacenter",
 		"certificates",
-		"web_sockets",
+		"websockets",
 		"domains",
 		"backends",
 		"check_path",
