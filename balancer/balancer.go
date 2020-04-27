@@ -27,6 +27,7 @@ type State struct {
 	Timestamp   time.Time `bson:"timestamp" json:"timestamp"`
 	Requests    int       `bson:"requests" json:"requests"`
 	Retries     int       `bson:"retries" json:"retries"`
+	WebSockets  int       `bson:"websockets" json:"websockets"`
 	Online      []string  `bson:"online" json:"online"`
 	UnknownHigh []string  `bson:"unknown_high" json:"unknown_high"`
 	UnknownMid  []string  `bson:"unknown_mid" json:"unknown_mid"`
