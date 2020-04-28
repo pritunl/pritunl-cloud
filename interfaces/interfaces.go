@@ -95,7 +95,6 @@ func SyncIfaces(vxlan bool) {
 			} else {
 				ifacesNew[vxIface] = ifaceSet
 			}
-
 		}
 	} else if internalIface != "" {
 		ifaceSet, err := getIfaces(internalIface)
