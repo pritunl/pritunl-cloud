@@ -185,6 +185,11 @@ func GetInterfacesSet() (ifaces []string, ifacesSet set.Set, err error) {
 	ifacesSet = set.NewSet()
 	for _, item := range items {
 		name := item.Name()
+
+		if name == "" {
+			continue
+		}
+
 		ifaces = append(ifaces, name)
 		ifacesSet.Add(name)
 	}
@@ -209,6 +214,10 @@ func GetInterfacesSet() (ifaces []string, ifacesSet set.Set, err error) {
 		name = name[6:]
 		names := strings.Split(name, ":")
 		if len(names) != 2 {
+			continue
+		}
+
+		if name == "" {
 			continue
 		}
 
