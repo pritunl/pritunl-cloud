@@ -39,6 +39,7 @@ type Handler struct {
 	TlsConfig          *tls.Config
 	WebSockets         bool
 	WebSocketsUpgrader *websocket.Upgrader
+	ErrorHandler       ErrorHandler
 	*httputil.ReverseProxy
 }
 
@@ -95,7 +96,8 @@ func (h *Handler) ServeWS(rw http.ResponseWriter, r *http.Request) {
 				errors.Wrap(err, "proxy: WebSocket dial error"),
 			}
 		}
-		WriteError(rw, r, 500, err)
+
+		h.ErrorHandler(h, rw, r, err)
 		return
 	}
 	defer backConn.Close()
@@ -115,7 +117,8 @@ func (h *Handler) ServeWS(rw http.ResponseWriter, r *http.Request) {
 		err = &errortypes.RequestError{
 			errors.Wrap(err, "proxy: WebSocket upgrade error"),
 		}
-		WriteError(rw, r, 500, err)
+
+		h.ErrorHandler(h, rw, r, err)
 		return
 	}
 	defer frontConn.Close()
@@ -228,6 +231,7 @@ func NewHandler(index, state int, proxyProto string, proxyPort int,
 		ForwardedPort:  proxyPortStr,
 		WebSockets:     domain.Balancer.WebSockets,
 		TlsConfig:      tlsConfig,
+		ErrorHandler:   errHandler,
 		ReverseProxy: &httputil.ReverseProxy{
 			Director: func(req *http.Request) {
 				req.Header.Set("X-Forwarded-Host", req.Host)
