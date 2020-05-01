@@ -603,7 +603,7 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 		let offline: string[] = [];
 		let backendsClasses: string[] = [];
 
-		if (balancer.states) {
+		if (this.props.balancer.state && balancer.states) {
 			for (let key in balancer.states) {
 				if (!balancer.states.hasOwnProperty(key)) {
 					continue;
@@ -696,6 +696,10 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 				states.push(backend + ' - Offline');
 				backendsClasses.push('bp3-text-intent-danger');
 			}
+		}
+
+		if (!states.length) {
+			states = ['-'];
 		}
 
 		return <td
