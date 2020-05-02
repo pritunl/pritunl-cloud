@@ -857,6 +857,15 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 							}
 						]}
 					/>
+					<PageSwitch
+						disabled={this.state.disabled}
+						label="WebSockets"
+						help="Enable or disable WebSocket support on balancer."
+						checked={balancer.websockets}
+						onToggle={(): void => {
+							this.set('websockets', !balancer.websockets);
+						}}
+					/>
 					<PageSelect
 						disabled={this.state.disabled || !hasOrganizations}
 						hidden={Constants.user}
