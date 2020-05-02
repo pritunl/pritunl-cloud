@@ -7,6 +7,7 @@ export const CHANGE = 'authority.change';
 export interface Authority {
 	id?: string;
 	name?: string;
+	comment?: string;
 	type?: string;
 	organization?: string;
 	network_roles?: string[];
