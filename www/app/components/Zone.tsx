@@ -8,6 +8,7 @@ import PageInfo from './PageInfo';
 import PageSave from './PageSave';
 import PageSelect from './PageSelect';
 import ConfirmButton from './ConfirmButton';
+import PageTextArea from "./PageTextArea";
 
 interface Props {
 	zone: ZoneTypes.ZoneRo;
@@ -181,6 +182,16 @@ export default class Zone extends React.Component<Props, State> {
 						value={zone.name}
 						onChange={(val): void => {
 							this.set('name', val);
+						}}
+					/>
+					<PageTextArea
+						label="Comment"
+						help="Zone comment."
+						placeholder="Zone comment"
+						rows={3}
+						value={zone.comment}
+						onChange={(val: string): void => {
+							this.set('comment', val);
 						}}
 					/>
 					<PageSelect
