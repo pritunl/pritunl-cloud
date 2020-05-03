@@ -29,6 +29,7 @@ export interface State {
 export interface Balancer {
 	id?: string;
 	name?: string;
+	comment?: string;
 	state?: boolean;
 	type?: string;
 	organization?: string;
