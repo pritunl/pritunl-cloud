@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Add web socket support to load balancers
+
 Version 1.2.1595.50 2020-04-06
 ------------------------------
 
