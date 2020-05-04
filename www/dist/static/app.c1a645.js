@@ -16849,6 +16849,7 @@ System.registerDynamic("app/components/BalancerDetailed.js", ["npm:react@16.12.0
             }
             let requests = 0;
             let retries = 0;
+            let websockets = 0;
             let states = [];
             let statesMap = {};
             let online = [];
@@ -16857,7 +16858,7 @@ System.registerDynamic("app/components/BalancerDetailed.js", ["npm:react@16.12.0
             let unknownLow = [];
             let offline = [];
             let backendsClasses = [];
-            if (balancer.states) {
+            if (this.props.balancer.state && balancer.states) {
                 for (let key in balancer.states) {
                     if (!balancer.states.hasOwnProperty(key)) {
                         continue;
@@ -16865,6 +16866,7 @@ System.registerDynamic("app/components/BalancerDetailed.js", ["npm:react@16.12.0
                     let state = balancer.states[key];
                     requests += state.requests || 0;
                     retries += state.retries || 0;
+                    websockets += state.websockets || 0;
                     for (let backend of state.offline) {
                         let curState = statesMap[backend];
                         if (curState === undefined || curState > 1) {
@@ -16945,6 +16947,9 @@ System.registerDynamic("app/components/BalancerDetailed.js", ["npm:react@16.12.0
                     backendsClasses.push('bp3-text-intent-danger');
                 }
             }
+            if (!states.length) {
+                states = ['-'];
+            }
             return React.createElement("td", { className: "bp3-cell", colSpan: 5, style: css.card }, React.createElement("div", { className: "layout horizontal wrap" }, React.createElement("div", { style: css.group }, React.createElement("div", { className: "layout horizontal", style: css.buttons, onClick: evt => {
                     let target = evt.target;
                     if (target.className.indexOf('open-ignore') !== -1) {
@@ -16973,10 +16978,15 @@ System.registerDynamic("app/components/BalancerDetailed.js", ["npm:react@16.12.0
                     label: 'Retries',
                     value: retries + '/min'
                 }, {
+                    label: 'WebSockets',
+                    value: websockets
+                }, {
                     label: 'Backends',
                     value: states,
                     valueClasses: backendsClasses
-                }] }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasOrganizations, hidden: Constants.user, label: "Organization", help: "Organization for balancer, both the organaization and role must match. Select balancer balancer to match balancer network roles.", value: balancer.organization, onChange: val => {
+                }] }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "WebSockets", help: "Enable or disable WebSocket support on balancer.", checked: balancer.websockets, onToggle: () => {
+                    this.set('websockets', !balancer.websockets);
+                } }), React.createElement(PageSelect_1.default, { disabled: this.state.disabled || !hasOrganizations, hidden: Constants.user, label: "Organization", help: "Organization for balancer, both the organaization and role must match. Select balancer balancer to match balancer network roles.", value: balancer.organization, onChange: val => {
                     this.set('organization', val);
                 } }, organizationsSelect), React.createElement("label", { className: "bp3-label", style: css.label }, "Certificates", React.createElement(Help_1.default, { title: "Certificates", content: "The certificates to use for this load balancer. The certificates must be valid for all the domains that this load balancer provides access to." }), React.createElement("div", null, certificates)), React.createElement(PageSelectButton_1.default, { label: "Add Certificate", value: this.state.addCert, disabled: this.state.disabled || !hasCertificates, buttonClass: "bp3-intent-success", onChange: val => {
                     this.setState(Object.assign(Object.assign({}, this.state), { addCert: val }));
