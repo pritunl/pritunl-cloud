@@ -19,6 +19,7 @@ export interface State {
 	timestamp?: string;
 	requests?: number;
 	retries?: number;
+	websockets?: number;
 	online?: string[];
 	unknown_high?: string[];
 	unknown_mid?: string[];
@@ -35,7 +36,7 @@ export interface Balancer {
 	organization?: string;
 	datacenter?: string;
 	certificates?: string[];
-	web_sockets?: boolean;
+	websockets?: boolean;
 	domains?: Domain[];
 	backends?: Backend[];
 	check_path?: string;
