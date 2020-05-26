@@ -5,6 +5,7 @@ export const CHANGE = 'datacenter.change';
 export interface Datacenter {
 	id?: string;
 	name?: string;
+	comment?: string;
 	match_organizations?: boolean;
 	organizations?: string[];
 	public_storages?: string[];
