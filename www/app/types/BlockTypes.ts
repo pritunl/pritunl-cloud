@@ -12,6 +12,7 @@ export interface Block {
 	excludes?: string[];
 	netmask?: string;
 	gateway?: string;
+	gateway6?: string;
 }
 
 export type Blocks = Block[];
