@@ -7,6 +7,7 @@ export const CHANGE = 'disk.change';
 export interface Disk {
 	id?: string;
 	name?: string;
+	comment?: string;
 	node?: string;
 	organization?: string;
 	state?: string;
