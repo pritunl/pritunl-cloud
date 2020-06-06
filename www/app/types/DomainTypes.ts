@@ -8,6 +8,7 @@ export const CHANGE = 'domain.change';
 export interface Domain {
 	id?: string;
 	name?: string;
+	comment?: string;
 	organization?: string;
 	type?: string;
 	aws_id?: string;
