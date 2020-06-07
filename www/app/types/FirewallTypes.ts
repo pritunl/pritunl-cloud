@@ -13,6 +13,7 @@ export interface Rule {
 export interface Firewall {
 	id?: string;
 	name?: string;
+	comment?: string;
 	organization?: string;
 	network_roles?: string[];
 	ingress?: Rule[];
