@@ -9,6 +9,7 @@ export interface Image {
 	id?: string;
 	disk_id?: string;
 	name?: string;
+	comment?: string;
 	organization?: string;
 	storage?: string;
 	signed?: boolean;
