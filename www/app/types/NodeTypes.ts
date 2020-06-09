@@ -10,6 +10,7 @@ export interface Node {
 	types?: string[];
 	zone?: string;
 	name?: string;
+	comment?: string;
 	port?: number;
 	no_redirect_server?: boolean;
 	protocol?: string;
