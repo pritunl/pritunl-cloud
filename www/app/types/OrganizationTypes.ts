@@ -6,6 +6,7 @@ export const CURRENT = 'organization.current';
 export interface Organization {
 	id?: string;
 	name?: string;
+	comment?: string;
 	roles?: string[];
 }
 
