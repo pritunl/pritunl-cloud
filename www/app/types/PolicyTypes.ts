@@ -11,6 +11,7 @@ export interface Rule {
 export interface Policy {
 	id?: string;
 	name?: string;
+	comment?: string;
 	disabled?: boolean;
 	roles?: string[];
 	rules?: {[key: string]: Rule};
