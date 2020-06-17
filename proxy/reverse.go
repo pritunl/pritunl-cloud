@@ -9,6 +9,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -133,7 +134,9 @@ func (h *Handler) ServeWS(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Serve(rw http.ResponseWriter, r *http.Request) {
-	if h.WebSockets && r.Header.Get("Upgrade") == "websocket" {
+	if h.WebSockets && strings.ToLower(
+		r.Header.Get("Upgrade")) == "websocket" {
+
 		h.ServeWS(rw, r)
 	} else {
 		h.ServeHTTP(rw, r)
