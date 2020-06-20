@@ -5,6 +5,7 @@ export const CHANGE = 'storage.change';
 export interface Storage {
 	id?: string;
 	name?: string;
+	comment?: string;
 	type?: string;
 	endpoint?: string;
 	bucket?: string;
