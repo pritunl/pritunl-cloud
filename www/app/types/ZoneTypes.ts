@@ -6,6 +6,7 @@ export interface Zone {
 	id?: string;
 	datacenter?: string;
 	name?: string;
+	comment?: string;
 	network_mode?: string;
 }
 
