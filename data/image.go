@@ -1,6 +1,7 @@
 package data
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path"
@@ -10,6 +11,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
 	minio "github.com/minio/minio-go"
+	"github.com/minio/minio-go/pkg/credentials"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -68,8 +70,10 @@ func getImage(db *database.Database, img *image.Image,
 		"path":       pth,
 	}).Info("data: Downloading image")
 
-	client, err := minio.New(
-		store.Endpoint, store.AccessKey, store.SecretKey, !store.Insecure)
+	client, err := minio.New(store.Endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(store.AccessKey, store.SecretKey, ""),
+		Secure: !store.Insecure,
+	})
 	if err != nil {
 		err = &errortypes.ConnectionError{
 			errors.Wrap(err, "data: Failed to connect to storage"),
@@ -77,7 +81,7 @@ func getImage(db *database.Database, img *image.Image,
 		return
 	}
 
-	err = client.FGetObject(store.Bucket,
+	err = client.FGetObject(context.Background(), store.Bucket,
 		img.Key, tmpPth, minio.GetObjectOptions{})
 	if err != nil {
 		os.Remove(tmpPth)
@@ -92,7 +96,7 @@ func getImage(db *database.Database, img *image.Image,
 		sigPth := tmpPth + ".sig"
 		defer os.Remove(sigPth)
 
-		err = client.FGetObject(store.Bucket,
+		err = client.FGetObject(context.Background(), store.Bucket,
 			img.Key+".sig", sigPth, minio.GetObjectOptions{})
 		if err != nil {
 			os.Remove(tmpPth)
@@ -396,8 +400,10 @@ func DeleteImage(db *database.Database, imgId primitive.ObjectID) (err error) {
 		return
 	}
 
-	client, err := minio.New(
-		store.Endpoint, store.AccessKey, store.SecretKey, !store.Insecure)
+	client, err := minio.New(store.Endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(store.AccessKey, store.SecretKey, ""),
+		Secure: !store.Insecure,
+	})
 	if err != nil {
 		err = &errortypes.ConnectionError{
 			errors.Wrap(err, "data: Failed to connect to storage"),
@@ -405,7 +411,8 @@ func DeleteImage(db *database.Database, imgId primitive.ObjectID) (err error) {
 		return
 	}
 
-	err = client.RemoveObject(store.Bucket, img.Key)
+	err = client.RemoveObject(context.Background(),
+		store.Bucket, img.Key, minio.RemoveObjectOptions{})
 	if err != nil {
 		return
 	}
@@ -448,8 +455,10 @@ func DeleteImageOrg(db *database.Database, orgId, imgId primitive.ObjectID) (
 		return
 	}
 
-	client, err := minio.New(
-		store.Endpoint, store.AccessKey, store.SecretKey, !store.Insecure)
+	client, err := minio.New(store.Endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(store.AccessKey, store.SecretKey, ""),
+		Secure: !store.Insecure,
+	})
 	if err != nil {
 		err = &errortypes.ConnectionError{
 			errors.Wrap(err, "data: Failed to connect to storage"),
@@ -457,7 +466,8 @@ func DeleteImageOrg(db *database.Database, orgId, imgId primitive.ObjectID) (
 		return
 	}
 
-	err = client.RemoveObject(store.Bucket, img.Key)
+	err = client.RemoveObject(context.Background(),
+		store.Bucket, img.Key, minio.RemoveObjectOptions{})
 	if err != nil {
 		return
 	}
@@ -558,8 +568,10 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk) (err error) {
 		"object_key": img.Key,
 	}).Info("data: Uploading disk snapshot")
 
-	client, err := minio.New(
-		store.Endpoint, store.AccessKey, store.SecretKey, !store.Insecure)
+	client, err := minio.New(store.Endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(store.AccessKey, store.SecretKey, ""),
+		Secure: !store.Insecure,
+	})
 	if err != nil {
 		err = &errortypes.ConnectionError{
 			errors.Wrap(err, "data: Failed to connect to storage"),
@@ -573,7 +585,8 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk) (err error) {
 		putOpts.StorageClass = storageClass
 	}
 
-	_, err = client.FPutObject(store.Bucket, img.Key, tmpPath, putOpts)
+	_, err = client.FPutObject(context.Background(),
+		store.Bucket, img.Key, tmpPath, putOpts)
 	if err != nil {
 		err = &errortypes.WriteError{
 			errors.Wrap(err, "data: Failed to write object"),
@@ -584,8 +597,8 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk) (err error) {
 
 	time.Sleep(3 * time.Second)
 
-	obj, err := client.StatObject(store.Bucket, img.Key,
-		minio.StatObjectOptions{})
+	obj, err := client.StatObject(context.Background(),
+		store.Bucket, img.Key, minio.StatObjectOptions{})
 	if err != nil {
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "data: Failed to stat object"),
@@ -695,8 +708,10 @@ func CreateBackup(db *database.Database, dsk *disk.Disk) (err error) {
 		"object_key": img.Key,
 	}).Info("data: Uploading disk backup")
 
-	client, err := minio.New(
-		store.Endpoint, store.AccessKey, store.SecretKey, !store.Insecure)
+	client, err := minio.New(store.Endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(store.AccessKey, store.SecretKey, ""),
+		Secure: !store.Insecure,
+	})
 	if err != nil {
 		err = &errortypes.ConnectionError{
 			errors.Wrap(err, "data: Failed to connect to storage"),
@@ -710,7 +725,8 @@ func CreateBackup(db *database.Database, dsk *disk.Disk) (err error) {
 		putOpts.StorageClass = storageClass
 	}
 
-	_, err = client.FPutObject(store.Bucket, img.Key, tmpPath, putOpts)
+	_, err = client.FPutObject(context.Background(),
+		store.Bucket, img.Key, tmpPath, putOpts)
 	if err != nil {
 		err = &errortypes.WriteError{
 			errors.Wrap(err, "data: Failed to write object"),
@@ -721,8 +737,8 @@ func CreateBackup(db *database.Database, dsk *disk.Disk) (err error) {
 
 	time.Sleep(3 * time.Second)
 
-	obj, err := client.StatObject(store.Bucket, img.Key,
-		minio.StatObjectOptions{})
+	obj, err := client.StatObject(context.Background(),
+		store.Bucket, img.Key, minio.StatObjectOptions{})
 	if err != nil {
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "data: Failed to stat object"),
@@ -777,8 +793,10 @@ func RestoreBackup(db *database.Database, dsk *disk.Disk) (err error) {
 		"disk_path":  dskPth,
 	}).Info("data: Restoring disk backup")
 
-	client, err := minio.New(
-		store.Endpoint, store.AccessKey, store.SecretKey, !store.Insecure)
+	client, err := minio.New(store.Endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(store.AccessKey, store.SecretKey, ""),
+		Secure: !store.Insecure,
+	})
 	if err != nil {
 		err = &errortypes.ConnectionError{
 			errors.Wrap(err, "data: Failed to connect to storage"),
@@ -791,7 +809,7 @@ func RestoreBackup(db *database.Database, dsk *disk.Disk) (err error) {
 		fmt.Sprintf("restore-%s", imgId.Hex()))
 
 	defer utils.Remove(tmpPath)
-	err = client.FGetObject(store.Bucket,
+	err = client.FGetObject(context.Background(), store.Bucket,
 		img.Key, tmpPath, minio.GetObjectOptions{})
 	if err != nil {
 		err = &errortypes.ReadError{
@@ -817,8 +835,11 @@ func ImageAvailable(store *storage.Storage, img *image.Image) (
 	available bool, err error) {
 
 	if strings.Contains(strings.ToLower(store.Endpoint), "oracle") {
-		client, e := minio.New(
-			store.Endpoint, store.AccessKey, store.SecretKey, !store.Insecure)
+		client, e := minio.New(store.Endpoint, &minio.Options{
+			Creds: credentials.NewStaticV4(store.AccessKey,
+				store.SecretKey, ""),
+			Secure: !store.Insecure,
+		})
 		if e != nil {
 			err = &errortypes.ConnectionError{
 				errors.Wrap(e, "data: Failed to connect to storage"),
@@ -826,8 +847,8 @@ func ImageAvailable(store *storage.Storage, img *image.Image) (
 			return
 		}
 
-		obj, e := client.StatObject(store.Bucket, img.Key,
-			minio.StatObjectOptions{})
+		obj, e := client.StatObject(context.Background(),
+			store.Bucket, img.Key, minio.StatObjectOptions{})
 		if e != nil {
 			err = &errortypes.ReadError{
 				errors.Wrap(e, "data: Failed to stat object"),
@@ -853,8 +874,11 @@ func ImageAvailable(store *storage.Storage, img *image.Image) (
 		available = true
 		break
 	case storage.AwsGlacier:
-		client, e := minio.New(
-			store.Endpoint, store.AccessKey, store.SecretKey, !store.Insecure)
+		client, e := minio.New(store.Endpoint, &minio.Options{
+			Creds: credentials.NewStaticV4(store.AccessKey,
+				store.SecretKey, ""),
+			Secure: !store.Insecure,
+		})
 		if e != nil {
 			err = &errortypes.ConnectionError{
 				errors.Wrap(e, "data: Failed to connect to storage"),
@@ -862,8 +886,8 @@ func ImageAvailable(store *storage.Storage, img *image.Image) (
 			return
 		}
 
-		obj, e := client.StatObject(store.Bucket, img.Key,
-			minio.StatObjectOptions{})
+		obj, e := client.StatObject(context.Background(),
+			store.Bucket, img.Key, minio.StatObjectOptions{})
 		if e != nil {
 			err = &errortypes.ReadError{
 				errors.Wrap(e, "data: Failed to stat object"),

@@ -1,6 +1,7 @@
 package data
 
 import (
+	"context"
 	"strings"
 	"time"
 
@@ -8,6 +9,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	minio "github.com/minio/minio-go"
+	"github.com/minio/minio-go/pkg/credentials"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/image"
@@ -27,8 +29,10 @@ func Sync(db *database.Database, store *storage.Storage) (err error) {
 	lockId := syncLock.Lock(store.Id.Hex())
 	defer syncLock.Unlock(store.Id.Hex(), lockId)
 
-	client, err := minio.New(
-		store.Endpoint, store.AccessKey, store.SecretKey, !store.Insecure)
+	client, err := minio.New(store.Endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(store.AccessKey, store.SecretKey, ""),
+		Secure: !store.Insecure,
+	})
 	if err != nil {
 		err = &errortypes.ConnectionError{
 			errors.Wrap(err, "storage: Failed to connect to storage"),
@@ -36,13 +40,16 @@ func Sync(db *database.Database, store *storage.Storage) (err error) {
 		return
 	}
 
-	done := make(chan struct{})
-	defer close(done)
-
 	images := []*image.Image{}
 	signedKeys := set.NewSet()
 	remoteKeys := set.NewSet()
-	for object := range client.ListObjects(store.Bucket, "", true, done) {
+	for object := range client.ListObjects(
+		context.Background(),
+		store.Bucket, minio.ListObjectsOptions{
+			Recursive: true,
+		},
+	) {
+
 		if object.Err != nil {
 			err = &errortypes.RequestError{
 				errors.Wrap(object.Err, "storage: Failed to list objects"),
@@ -65,8 +72,8 @@ func Sync(db *database.Database, store *storage.Storage) (err error) {
 			}
 
 			if store.IsOracle() {
-				obj, e := client.StatObject(store.Bucket, object.Key,
-					minio.StatObjectOptions{})
+				obj, e := client.StatObject(context.Background(),
+					store.Bucket, object.Key, minio.StatObjectOptions{})
 				if e != nil {
 					err = &errortypes.ReadError{
 						errors.Wrap(e, "storage: Failed to stat object"),
