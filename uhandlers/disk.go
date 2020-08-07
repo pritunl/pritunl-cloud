@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
@@ -68,6 +69,9 @@ func diskPut(c *gin.Context) {
 
 	err := c.Bind(dta)
 	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "handler: Bind error"),
+		}
 		utils.AbortWithError(c, 500, err)
 		return
 	}
@@ -177,6 +181,9 @@ func diskPost(c *gin.Context) {
 
 	err := c.Bind(dta)
 	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "handler: Bind error"),
+		}
 		utils.AbortWithError(c, 500, err)
 		return
 	}
@@ -297,6 +304,9 @@ func disksPut(c *gin.Context) {
 
 	err := c.Bind(data)
 	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "handler: Bind error"),
+		}
 		utils.AbortWithError(c, 500, err)
 		return
 	}
@@ -377,6 +387,9 @@ func disksDelete(c *gin.Context) {
 
 	err := c.Bind(&dta)
 	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "handler: Bind error"),
+		}
 		utils.AbortWithError(c, 500, err)
 		return
 	}
