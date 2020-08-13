@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
@@ -79,6 +80,9 @@ func instancePut(c *gin.Context) {
 
 	err := c.Bind(dta)
 	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "handler: Bind error"),
+		}
 		utils.AbortWithError(c, 500, err)
 		return
 	}
@@ -195,6 +199,9 @@ func instancePost(c *gin.Context) {
 
 	err := c.Bind(dta)
 	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "handler: Bind error"),
+		}
 		utils.AbortWithError(c, 500, err)
 		return
 	}
@@ -367,6 +374,9 @@ func instancesPut(c *gin.Context) {
 
 	err := c.Bind(dta)
 	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "handler: Bind error"),
+		}
 		utils.AbortWithError(c, 500, err)
 		return
 	}
@@ -442,6 +452,9 @@ func instancesDelete(c *gin.Context) {
 
 	err := c.Bind(&dta)
 	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "handler: Bind error"),
+		}
 		utils.AbortWithError(c, 500, err)
 		return
 	}
