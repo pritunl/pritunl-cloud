@@ -6,6 +6,7 @@ import (
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/satori/go.uuid"
 )
 
 func SetRandUuid(diskPath string) (err error) {
