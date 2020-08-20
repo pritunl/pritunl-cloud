@@ -25,7 +25,15 @@ func SetRandUuid(diskPath string) (err error) {
 		}
 		return
 	}
-	defer diskFile.Close()
+	defer func() {
+		err = diskFile.Close()
+		if err != nil {
+			err = &errortypes.WriteError{
+				errors.Wrap(err, "vmdk: Failed to write file"),
+			}
+			return
+		}
+	}()
 
 	buffer := make([]byte, 10000)
 	nRead, err := diskFile.Read(buffer)
@@ -75,7 +83,15 @@ func SetUuid(diskPath string, diskUuid string) (err error) {
 		}
 		return
 	}
-	defer diskFile.Close()
+	defer func() {
+		err = diskFile.Close()
+		if err != nil {
+			err = &errortypes.WriteError{
+				errors.Wrap(err, "vmdk: Failed to write file"),
+			}
+			return
+		}
+	}()
 
 	buffer := make([]byte, 10000)
 	nRead, err := diskFile.Read(buffer)
@@ -125,7 +141,15 @@ func GetUuid(diskPath string) (diskUuid string, err error) {
 		}
 		return
 	}
-	defer diskFile.Close()
+	defer func() {
+		err = diskFile.Close()
+		if err != nil {
+			err = &errortypes.WriteError{
+				errors.Wrap(err, "vmdk: Failed to write file"),
+			}
+			return
+		}
+	}()
 
 	buffer := make([]byte, 10000)
 	_, err = diskFile.Read(buffer)
