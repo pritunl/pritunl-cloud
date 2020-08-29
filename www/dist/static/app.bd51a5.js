@@ -12914,13 +12914,13 @@ System.registerDynamic("app/components/PolicyRule.js", ["npm:react@16.12.0.js", 
                     options = Constants.locations;
                     break;
                 case 'whitelist_networks':
-                    label = 'Whitelisted Networks';
-                    selectLabel = 'Whitelisted network policies';
+                    label = 'Permitted Networks';
+                    selectLabel = 'Permitted network policies';
                     selectPlaceholder = 'Add network';
                     break;
                 case 'blacklist_networks':
-                    label = 'Blacklisted Networks';
-                    selectLabel = 'Blacklisted network policies';
+                    label = 'Blocked Networks';
+                    selectLabel = 'Blocked network policies';
                     selectPlaceholder = 'Add network';
                     break;
             }
