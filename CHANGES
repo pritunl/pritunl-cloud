@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Web server improvements
+
 Version 1.0.1623.75 2020-05-04
 ------------------------------
 
