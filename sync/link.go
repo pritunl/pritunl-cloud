@@ -3,7 +3,7 @@ package sync
 import (
 	"time"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/pritunl/pritunl-cloud/ipsec"
 )
 

@@ -3,7 +3,7 @@ package agent
 import (
 	"net/http"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/geo"
 	"github.com/pritunl/pritunl-cloud/node"
