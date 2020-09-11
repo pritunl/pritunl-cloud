@@ -1753,7 +1753,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						hidden={types.indexOf('hypervisor') === -1}
 						disabled={this.state.disabled}
 						label="Hypervisor VGA Type"
-						help="Type of VGA card to emulate. Virtio provides the best performance but requires Oracle Linux 7 with the KVM repository. VMware provides better performance then standard."
+						help="Type of VGA card to emulate. Virtio provides the best performance but requires the Pritunl KVM repository. VMware provides better performance then standard."
 						value={node.vga}
 						onChange={(val): void => {
 							this.set('vga', val);
