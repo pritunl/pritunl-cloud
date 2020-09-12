@@ -115,7 +115,7 @@ export default class Disk extends React.Component<Props, {}> {
 				statusClass += ' bp3-text-intent-primary';
 				break;
 			case 'available':
-				if (disk.instance !== "") {
+				if (disk.instance) {
 					statusText = 'Connected';
 				} else {
 					statusText = 'Available';
