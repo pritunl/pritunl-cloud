@@ -349,7 +349,7 @@ export default class DiskDetailed extends React.Component<Props, State> {
 			},
 			{
 				label: 'Image',
-				value: this.props.disk.image || 'Unknown',
+				value: this.props.disk.image || 'Blank Disk',
 			},
 			{
 				label: 'Organization',
