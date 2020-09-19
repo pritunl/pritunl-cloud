@@ -31,7 +31,7 @@ class AuditsStore extends EventEmitter {
 
 	get auditsM(): AuditTypes.Audits {
 		let audits: AuditTypes.Audits = [];
-		this._audits.forEach((audit: AuditTypes.AuditRo): void => {
+		this._audits.forEach((audit: AuditTypes.Audit): void => {
 			audits.push({
 				...audit,
 			});
