@@ -46,6 +46,15 @@ func (d *Disk) GetId() primitive.ObjectID {
 	return objId
 }
 
+func (d *Disk) Copy() (dsk *Disk) {
+	dsk = &Disk{
+		Index: d.Index,
+		Path:  d.Path,
+	}
+
+	return
+}
+
 type NetworkAdapter struct {
 	Type       string             `json:"type"`
 	MacAddress string             `json:"mac_address"`
