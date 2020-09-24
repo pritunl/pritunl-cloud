@@ -132,7 +132,7 @@ func GetVmInfo(vmId primitive.ObjectID, getDisks, force bool) (
 		} else {
 			disks := []*vm.Disk{}
 			for _, dsk := range disksStore.Disks {
-				disks = append(disks, &dsk)
+				disks = append(disks, dsk.Copy())
 			}
 			virt.Disks = disks
 		}
