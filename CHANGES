@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Fix issue with multiple instance disks
+
 Version 1.0.1743.55 2020-09-01
 ------------------------------
 
