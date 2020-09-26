@@ -196,7 +196,7 @@ func GetAllVirtMapped(db *database.Database, query *bson.M,
 			}
 		}
 
-		inst.LoadVirt(instanceDisks[inst.Id])
+		inst.LoadVirt(virtDsks)
 		insts = append(insts, inst)
 	}
 
