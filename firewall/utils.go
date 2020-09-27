@@ -318,7 +318,9 @@ func RemoveOrg(db *database.Database, orgId, fireId primitive.ObjectID) (
 	return
 }
 
-func RemoveMulti(db *database.Database, fireIds []primitive.ObjectID) (err error) {
+func RemoveMulti(db *database.Database, fireIds []primitive.ObjectID) (
+	err error) {
+
 	coll := db.Firewalls()
 
 	_, err = coll.DeleteMany(db, &bson.M{
