@@ -12245,7 +12245,7 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.12.0.js"
                     value: this.props.node.memory
                 }] }), React.createElement(PageSelect_1.default, { hidden: types.indexOf('hypervisor') === -1, disabled: this.state.disabled, label: "Hypervisor Mode", help: "Hypervisor mode, select KVM if CPU has hardware virtualization support.", value: node.hypervisor, onChange: val => {
                     this.set('hypervisor', val);
-                } }, React.createElement("option", { value: "qemu" }, "QEMU"), React.createElement("option", { value: "kvm" }, "KVM")), React.createElement(PageSelect_1.default, { hidden: types.indexOf('hypervisor') === -1, disabled: this.state.disabled, label: "Hypervisor VGA Type", help: "Type of VGA card to emulate. Virtio provides the best performance but requires Oracle Linux 7 with the KVM repository. VMware provides better performance then standard.", value: node.vga, onChange: val => {
+                } }, React.createElement("option", { value: "qemu" }, "QEMU"), React.createElement("option", { value: "kvm" }, "KVM")), React.createElement(PageSelect_1.default, { hidden: types.indexOf('hypervisor') === -1, disabled: this.state.disabled, label: "Hypervisor VGA Type", help: "Type of VGA card to emulate. Virtio provides the best performance but requires the Pritunl KVM repository. VMware provides better performance then standard.", value: node.vga, onChange: val => {
                     this.set('vga', val);
                 } }, React.createElement("option", { value: "vmware" }, "VMware"), React.createElement("option", { value: "virtio" }, "Virtio"), React.createElement("option", { value: "std" }, "Standard")), React.createElement("label", { className: "bp3-label" }, "Network Roles", React.createElement(Help_1.default, { title: "Network Roles", content: "Network roles that will be matched with firewall rules. Network roles are case-sensitive. Only firewall roles without an organization will match." }), React.createElement("div", null, networkRoles)), React.createElement(PageInputButton_1.default, { disabled: this.state.disabled, buttonClass: "bp3-intent-success bp3-icon-add", label: "Add", type: "text", placeholder: "Add role", value: this.state.addNetworkRole, onChange: val => {
                     this.setState(Object.assign(Object.assign({}, this.state), { addNetworkRole: val }));
@@ -18079,11 +18079,7 @@ System.registerDynamic("app/components/Image.js", ["npm:react@16.12.0.js", "app/
                         this.props.onOpen();
                     } }));
             }
-            let active = true;
             let cardStyle = Object.assign({}, css.card);
-            if (!active) {
-                cardStyle.opacity = 0.6;
-            }
             let orgClass = '';
             let orgIcon = '';
             let orgName = '';
@@ -18723,7 +18719,7 @@ System.registerDynamic("app/components/DiskDetailed.js", ["npm:react@16.12.0.js"
                     statusClass += ' bp3-text-intent-primary';
                     break;
                 case 'available':
-                    if (this.props.disk.instance !== "") {
+                    if (this.props.disk.instance) {
                         statusText = 'Connected';
                     } else {
                         statusText = 'Available';
@@ -18752,7 +18748,7 @@ System.registerDynamic("app/components/DiskDetailed.js", ["npm:react@16.12.0.js"
                 value: this.props.disk.id || 'Unknown'
             }, {
                 label: 'Image',
-                value: this.props.disk.image || 'Unknown'
+                value: this.props.disk.image || 'Blank Disk'
             }, {
                 label: 'Organization',
                 value: org ? org.name : this.props.disk.organization
@@ -18895,7 +18891,7 @@ System.registerDynamic("app/components/Disk.js", ["npm:react@16.12.0.js", "app/s
                     statusClass += ' bp3-text-intent-primary';
                     break;
                 case 'available':
-                    if (disk.instance !== "") {
+                    if (disk.instance) {
                         statusText = 'Connected';
                     } else {
                         statusText = 'Available';
