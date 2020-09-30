@@ -879,19 +879,12 @@ func Init(namespaces []string, instances []*instance.Instance,
 		)
 	}
 
-	_, err = utils.ExecCombinedOutputLogged(
-		nil, "sysctl", "-w", "net.bridge.bridge-nf-call-iptables=1",
+	utils.ExecCombinedOutput(
+		"", "sysctl", "-w", "net.bridge.bridge-nf-call-iptables=1",
 	)
-	if err != nil {
-		return
-	}
-
-	_, err = utils.ExecCombinedOutputLogged(
-		nil, "sysctl", "-w", "net.bridge.bridge-nf-call-ip6tables=1",
+	utils.ExecCombinedOutput(
+		"", "sysctl", "-w", "net.bridge.bridge-nf-call-ip6tables=1",
 	)
-	if err != nil {
-		return
-	}
 
 	_, err = utils.ExecCombinedOutputLogged(
 		nil, "sysctl", "-w", "net.ipv4.ip_forward=1",
