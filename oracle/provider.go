@@ -4,6 +4,7 @@ import (
 	"crypto/rsa"
 	"fmt"
 
+	"github.com/oracle/oci-go-sdk/common"
 	"github.com/oracle/oci-go-sdk/core"
 	"github.com/pritunl/pritunl-cloud/node"
 )
@@ -16,6 +17,14 @@ type Provider struct {
 	region      string
 	compartment string
 	netClient   *core.VirtualNetworkClient
+}
+
+func (p *Provider) AuthType() (common.AuthConfig, error) {
+	return common.AuthConfig{
+		AuthType:         common.UserPrincipal,
+		IsFromConfigFile: false,
+		OboToken:         nil,
+	}, nil
 }
 
 func (p *Provider) PrivateRSAKey() (*rsa.PrivateKey, error) {
