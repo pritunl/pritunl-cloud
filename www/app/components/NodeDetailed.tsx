@@ -1321,6 +1321,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
+						hidden={true}
 						label="Pritunl Link"
 						help="Run Pritunl Link IPSec connections on this node."
 						checked={types.indexOf('ipsec') !== -1}
