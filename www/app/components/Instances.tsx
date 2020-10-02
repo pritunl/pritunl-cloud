@@ -415,8 +415,8 @@ export default class Instances extends React.Component<{}, State> {
 						/>
 						<ConfirmButton
 							label="Stop Selected"
-							className="bp3-intent-danger bp3-icon-power"
-							progressClassName="bp3-intent-danger"
+							className="bp3-intent-warning bp3-icon-power"
+							progressClassName="bp3-intent-warning"
 							style={css.button}
 							disabled={!this.selected || this.state.disabled}
 							onConfirm={(): void => {
