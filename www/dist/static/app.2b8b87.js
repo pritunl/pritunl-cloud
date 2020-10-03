@@ -12141,7 +12141,7 @@ System.registerDynamic("app/components/NodeDetailed.js", ["npm:react@16.12.0.js"
                     this.toggleType('balancer');
                 } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Hypervisor", help: "Run instances with hypervisor on this node.", checked: types.indexOf('hypervisor') !== -1, onToggle: () => {
                     this.toggleType('hypervisor');
-                } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, label: "Pritunl Link", help: "Run Pritunl Link IPSec connections on this node.", checked: types.indexOf('ipsec') !== -1, onToggle: () => {
+                } }), React.createElement(PageSwitch_1.default, { disabled: this.state.disabled, hidden: true, label: "Pritunl Link", help: "Run Pritunl Link IPSec connections on this node.", checked: types.indexOf('ipsec') !== -1, onToggle: () => {
                     this.toggleType('ipsec');
                 } }), React.createElement(PageInput_1.default, { disabled: this.state.disabled, hidden: types.indexOf('balancer') === -1 && (types.indexOf('admin') === -1 || types.indexOf('user') === -1), label: "Admin Domain", help: "Domain that will be used to access the admin interface.", type: "text", placeholder: "Enter admin domain", value: node.admin_domain, onChange: val => {
                     this.set('admin_domain', val);
@@ -21637,7 +21637,7 @@ System.registerDynamic("app/components/Instances.js", ["npm:react@16.12.0.js", "
                     this.setState(Object.assign(Object.assign({}, this.state), { opened: {} }));
                 } }, "Collapse All"), React.createElement(ConfirmButton_1.default, { label: "Start Selected", className: "bp3-intent-success bp3-icon-power", progressClassName: "bp3-intent-success", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: () => {
                     this.updateSelected('start');
-                } }), React.createElement(ConfirmButton_1.default, { label: "Stop Selected", className: "bp3-intent-danger bp3-icon-power", progressClassName: "bp3-intent-danger", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: () => {
+                } }), React.createElement(ConfirmButton_1.default, { label: "Stop Selected", className: "bp3-intent-warning bp3-icon-power", progressClassName: "bp3-intent-warning", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: () => {
                     this.updateSelected('stop');
                 } }), React.createElement(ConfirmButton_1.default, { label: "Delete Selected", className: "bp3-intent-danger bp3-icon-delete", progressClassName: "bp3-intent-danger", style: css.button, disabled: !this.selected || this.state.disabled, onConfirm: this.onDelete }), React.createElement("button", { className: "bp3-button bp3-intent-success bp3-icon-add", style: css.button, disabled: this.state.disabled || this.state.newOpened, type: "button", onClick: () => {
                     this.setState(Object.assign(Object.assign({}, this.state), { newOpened: true }));
