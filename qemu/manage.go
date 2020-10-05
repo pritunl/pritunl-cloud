@@ -1569,9 +1569,10 @@ func NetworkConf(db *database.Database,
 	coll := db.Instances()
 	err = coll.UpdateId(virt.Id, &bson.M{
 		"$set": &bson.M{
-			"private_ips":  []string{addr.String()},
-			"private_ips6": []string{addr6.String()},
-			"host_ips":     hostIps,
+			"private_ips":       []string{addr.String()},
+			"private_ips6":      []string{addr6.String()},
+			"network_namespace": namespace,
+			"host_ips":          hostIps,
 		},
 	})
 	if err != nil {
