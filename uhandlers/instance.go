@@ -502,6 +502,7 @@ func instanceGet(c *gin.Context) {
 		inst.PrivateIps6 = []string{
 			demo.RandPrivateIp6(inst.Id),
 		}
+		inst.NetworkNamespace = vm.GetNamespace(inst.Id, 0)
 	}
 
 	c.JSON(200, inst)
@@ -551,6 +552,11 @@ func instancesGet(c *gin.Context) {
 			query["network_roles"] = networkRole
 		}
 
+		networkNamespace := strings.TrimSpace(c.Query("network_namespace"))
+		if networkNamespace != "" {
+			query["network_namespace"] = networkNamespace
+		}
+
 		nodeId, ok := utils.ParseObjectId(c.Query("node"))
 		if ok {
 			query["node"] = nodeId
@@ -592,6 +598,7 @@ func instancesGet(c *gin.Context) {
 				inst.PrivateIps6 = []string{
 					demo.RandPrivateIp6(inst.Id),
 				}
+				inst.NetworkNamespace = vm.GetNamespace(inst.Id, 0)
 			}
 		}
 
