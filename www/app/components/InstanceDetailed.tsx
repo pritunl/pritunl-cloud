@@ -627,6 +627,11 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				value: hostIps,
 				copy: true,
 			},
+			{
+				label: 'Network Namespace',
+				value: this.props.instance.network_namespace || 'None',
+				copy: true,
+			},
 		];
 
 		if (this.props.instance.vnc) {
