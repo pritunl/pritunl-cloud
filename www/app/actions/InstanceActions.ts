@@ -309,7 +309,7 @@ export function syncNode(node: string): Promise<void> {
 				}
 
 				if (err) {
-					Alert.errorRes(res, 'Failed to load images names');
+					Alert.errorRes(res, 'Failed to load instance names');
 					reject(err);
 					return;
 				}
