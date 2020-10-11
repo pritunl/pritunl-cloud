@@ -25,8 +25,8 @@ const css = {
 		width: '200px',
 		margin: '5px',
 	} as React.CSSProperties,
-	role: {
-		width: '150px',
+	shortInput: {
+		width: '180px',
 		margin: '5px',
 	} as React.CSSProperties,
 	type: {
@@ -144,7 +144,7 @@ export default class InstancesFilter extends React.Component<Props, {}> {
 				}}
 			/>
 			<SearchInput
-				style={css.role}
+				style={css.shortInput}
 				placeholder="Network Role"
 				value={this.props.filter.network_role}
 				onChange={(val: string): void => {
@@ -156,6 +156,24 @@ export default class InstancesFilter extends React.Component<Props, {}> {
 						filter.network_role = val;
 					} else {
 						delete filter.network_role;
+					}
+
+					this.props.onFilter(filter);
+				}}
+			/>
+			<SearchInput
+				style={css.shortInput}
+				placeholder="Network Namespace"
+				value={this.props.filter.network_namespace}
+				onChange={(val: string): void => {
+					let filter = {
+						...this.props.filter,
+					};
+
+					if (val) {
+						filter.network_namespace = val;
+					} else {
+						delete filter.network_namespace;
 					}
 
 					this.props.onFilter(filter);
