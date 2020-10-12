@@ -22,6 +22,7 @@ export interface Instance {
 	public_ips6?: string[];
 	private_ips?: string[];
 	private_ips6?: string[];
+	network_namespace?: string;
 	host_ips?: string[];
 	public_mac?: string;
 	name?: string;
@@ -48,6 +49,7 @@ export interface Filter {
 	name?: string;
 	state?: string;
 	network_role?: string;
+	network_namespace?: string;
 	organization?: string;
 	node?: string;
 	zone?: string;
