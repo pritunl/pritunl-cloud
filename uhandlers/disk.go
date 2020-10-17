@@ -143,6 +143,7 @@ func diskPut(c *gin.Context) {
 		dsk.State = disk.Restore
 		dsk.RestoreImage = img.Id
 
+		fields.Add("state")
 		fields.Add("restore_image")
 	}
 
