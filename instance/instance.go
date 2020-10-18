@@ -1,12 +1,16 @@
 package instance
 
 import (
+	"fmt"
+	"io"
 	"math/rand"
+	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/gorilla/websocket"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -14,11 +18,13 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/systemd"
 	"github.com/pritunl/pritunl-cloud/usb"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
+	"github.com/sirupsen/logrus"
 )
 
 type Instance struct {
@@ -542,6 +548,113 @@ func (i *Instance) DiskChanged(curVirt *vm.VirtualMachine) (
 			addDisks = append(addDisks, dsk)
 		}
 	}
+
+	return
+}
+
+func (i *Instance) VncConnect(db *database.Database,
+	rw http.ResponseWriter, r *http.Request) (err error) {
+
+	nde, err := node.Get(db, i.Node)
+	if err != nil {
+		return
+	}
+
+	if nde.PublicIps == nil || len(nde.PublicIps) == 0 {
+		err = &errortypes.NotFoundError{
+			errors.New("instance: Node missing public IP for VNC"),
+		}
+		return
+	}
+
+	wsUrl := fmt.Sprintf(
+		"ws://%s:%d",
+		nde.PublicIps[0],
+		i.VncDisplay+15900,
+	)
+
+	var backConn *websocket.Conn
+	var backResp *http.Response
+
+	dialer := &websocket.Dialer{
+		HandshakeTimeout: 10 * time.Second,
+	}
+
+	header := http.Header{}
+	header.Set(
+		"Sec-Websocket-Protocol",
+		r.Header.Get("Sec-Websocket-Protocol"),
+	)
+
+	backConn, backResp, err = dialer.Dial(wsUrl, header)
+	if err != nil {
+		if backResp != nil {
+			err = &errortypes.RequestError{
+				errors.Wrapf(err, "instance: WebSocket dial error %d",
+					backResp.StatusCode),
+			}
+		} else {
+			err = &errortypes.RequestError{
+				errors.Wrap(err, "instance: WebSocket dial error"),
+			}
+		}
+		return
+	}
+	defer backConn.Close()
+
+	wsUpgrader := &websocket.Upgrader{
+		HandshakeTimeout: time.Duration(
+			settings.Router.HandshakeTimeout) * time.Second,
+		ReadBufferSize:  2048,
+		WriteBufferSize: 2048,
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
+	}
+
+	upgradeHeader := http.Header{}
+	val := backResp.Header.Get("Sec-Websocket-Protocol")
+	if val != "" {
+		upgradeHeader.Set("Sec-Websocket-Protocol", val)
+	}
+
+	frontConn, err := wsUpgrader.Upgrade(rw, r, upgradeHeader)
+	if err != nil {
+		err = &errortypes.RequestError{
+			errors.Wrap(err, "instance: WebSocket upgrade error"),
+		}
+		return
+	}
+	defer frontConn.Close()
+
+	wait := make(chan bool, 4)
+	go func() {
+		defer func() {
+			rec := recover()
+			if rec != nil {
+				logrus.WithFields(logrus.Fields{
+					"panic": rec,
+				}).Error("instance: WebSocket VNC back panic")
+				wait <- true
+			}
+		}()
+		io.Copy(backConn.UnderlyingConn(), frontConn.UnderlyingConn())
+		wait <- true
+	}()
+	go func() {
+		defer func() {
+			rec := recover()
+			if rec != nil {
+				logrus.WithFields(logrus.Fields{
+					"panic": rec,
+				}).Error("instance: WebSocket VNC front panic")
+				wait <- true
+			}
+		}()
+		io.Copy(frontConn.UnderlyingConn(), backConn.UnderlyingConn())
+		wait <- true
+	}()
+	<-wait
 
 	return
 }
