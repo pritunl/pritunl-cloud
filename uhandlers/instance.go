@@ -610,3 +610,30 @@ func instancesGet(c *gin.Context) {
 		c.JSON(200, dta)
 	}
 }
+
+func instanceVncGet(c *gin.Context) {
+	if demo.Blocked(c) {
+		return
+	}
+
+	db := c.MustGet("db").(*database.Database)
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
+
+	instanceId, ok := utils.ParseObjectId(c.Param("instance_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	inst, err := instance.GetOrg(db, userOrg, instanceId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	err = inst.VncConnect(db, c.Writer, c.Request)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+}
