@@ -69,7 +69,8 @@ func (d *Disks) snapshot(dsk *disk.Disk) {
 		db := database.GetDatabase()
 		defer db.Close()
 
-		err := data.CreateSnapshot(db, dsk)
+		virt := d.stat.GetVirt(dsk.Instance)
+		err := data.CreateSnapshot(db, dsk, virt)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
@@ -111,7 +112,8 @@ func (d *Disks) backup(dsk *disk.Disk) {
 		db := database.GetDatabase()
 		defer db.Close()
 
-		err := data.CreateBackup(db, dsk)
+		virt := d.stat.GetVirt(dsk.Instance)
+		err := data.CreateBackup(db, dsk, virt)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
@@ -299,7 +301,8 @@ func (d *Disks) scheduleBackup(dsk *disk.Disk) {
 
 		event.PublishDispatch(db, "disk.change")
 
-		err = data.CreateBackup(db, dsk)
+		virt := d.stat.GetVirt(dsk.Instance)
+		err = data.CreateBackup(db, dsk, virt)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
