@@ -1,0 +1,12 @@
+{
+  "name": "novnc-core",
+  "version": "1.2.0",
+  "description": "An HTML5 VNC client",
+  "main": "lib/rfb.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/novnc/noVNC.git"
+  },
+  "author": "Joel Martin <github@martintribe.org> (https://github.com/kanaka)",
+  "license": "MPL-2.0"
+}
