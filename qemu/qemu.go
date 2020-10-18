@@ -11,11 +11,10 @@ import (
 )
 
 type Disk struct {
-	Media   string
-	Index   int
-	File    string
-	Format  string
-	Discard bool
+	Media  string
+	Index  int
+	File   string
+	Format string
 }
 
 type Network struct {
@@ -102,24 +101,13 @@ func (q *Qemu) Marshal() (output string, err error) {
 	cmd = append(cmd, fmt.Sprintf("%dM", q.Memory))
 
 	for _, disk := range q.Disks {
-		additional := ""
-		if disk.Discard {
-			additional += ",discard=on"
-		} else {
-			additional += ",discard=off"
-		}
-		if disk.Media == "disk" {
-			additional += ",if=virtio"
-		}
-
 		cmd = append(cmd, "-drive")
 		cmd = append(cmd, fmt.Sprintf(
-			"file=%s,index=%d,media=%s,format=%s%s",
+			"file=%s,index=%d,media=%s,format=%s,discard=off,if=virtio",
 			disk.File,
 			disk.Index,
 			disk.Media,
 			disk.Format,
-			additional,
 		))
 	}
 
