@@ -42,7 +42,6 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 			Index:   disk.Index,
 			File:    disk.Path,
 			Format:  "qcow2",
-			Discard: false,
 		})
 	}
 
