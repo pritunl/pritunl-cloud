@@ -12,6 +12,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/sirupsen/logrus"
 )
@@ -55,7 +56,7 @@ var (
 func runCommand(vmId primitive.ObjectID, cmd *cmdBase,
 	cmdReturn interface{}) (err error) {
 
-	sockPath := GetQmpSockPath(vmId)
+	sockPath := paths.GetQmpSockPath(vmId)
 
 	lockId := socketsLock.Lock(vmId.Hex())
 	defer socketsLock.Unlock(vmId.Hex(), lockId)
