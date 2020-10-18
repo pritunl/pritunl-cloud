@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -14,6 +13,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/sirupsen/logrus"
 )
 
 type Disk struct {
@@ -64,6 +64,14 @@ func (d *Disk) Validate(db *database.Database) (
 		errData = &errortypes.ErrorData{
 			Error:   "backing_image_backup",
 			Message: "Cannot enable backups with backing image",
+		}
+		return
+	}
+
+	if d.State == Restore && d.RestoreImage.IsZero() {
+		errData = &errortypes.ErrorData{
+			Error:   "restore_missing_image",
+			Message: "Cannot restore without image set",
 		}
 		return
 	}
