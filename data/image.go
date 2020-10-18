@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
 	minio "github.com/minio/minio-go"
 	"github.com/minio/minio-go/pkg/credentials"
@@ -22,9 +21,12 @@ import (
 	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
+	"github.com/pritunl/pritunl-cloud/qmp"
 	"github.com/pritunl/pritunl-cloud/storage"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/zone"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/openpgp"
 )
 
@@ -493,7 +495,9 @@ func DeleteImagesOrg(db *database.Database, orgId primitive.ObjectID,
 	return
 }
 
-func CreateSnapshot(db *database.Database, dsk *disk.Disk) (err error) {
+func CreateSnapshot(db *database.Database, dsk *disk.Disk,
+	virt *vm.VirtualMachine) (err error) {
+
 	dskPth := paths.GetDiskPath(dsk.Id)
 	cacheDir := node.Self.GetCachePath()
 
@@ -550,10 +554,30 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk) (err error) {
 	}
 
 	defer utils.Remove(tmpPath)
-	err = utils.Exec("", "qemu-img", "convert", "-f", "qcow2",
-		"-O", "qcow2", "-c", dskPth, tmpPath)
-	if err != nil {
-		return
+
+	attached := false
+	virtIndex := 0
+	if virt != nil {
+		for _, virtDsk := range virt.Disks {
+			if virtDsk.GetId() == dsk.Id {
+				attached = true
+				virtIndex = virtDsk.Index
+				break
+			}
+		}
+	}
+
+	if attached && virt != nil {
+		err = qmp.BackupDisk(virt.Id, dsk, virtIndex, tmpPath)
+		if err != nil {
+			return
+		}
+	} else {
+		err = utils.Exec("", "qemu-img", "convert", "-f", "qcow2",
+			"-O", "qcow2", "-c", dskPth, tmpPath)
+		if err != nil {
+			return
+		}
 	}
 
 	err = utils.Chmod(tmpPath, 0600)
@@ -625,7 +649,9 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk) (err error) {
 	return
 }
 
-func CreateBackup(db *database.Database, dsk *disk.Disk) (err error) {
+func CreateBackup(db *database.Database, dsk *disk.Disk,
+	virt *vm.VirtualMachine) (err error) {
+
 	dskPth := paths.GetDiskPath(dsk.Id)
 	cacheDir := node.Self.GetCachePath()
 
@@ -690,10 +716,30 @@ func CreateBackup(db *database.Database, dsk *disk.Disk) (err error) {
 	}
 
 	defer utils.Remove(tmpPath)
-	err = utils.Exec("", "qemu-img", "convert", "-f", "qcow2",
-		"-O", "qcow2", "-c", dskPth, tmpPath)
-	if err != nil {
-		return
+
+	attached := false
+	virtIndex := 0
+	if virt != nil {
+		for _, virtDsk := range virt.Disks {
+			if virtDsk.GetId() == dsk.Id {
+				attached = true
+				virtIndex = virtDsk.Index
+				break
+			}
+		}
+	}
+
+	if attached && virt != nil {
+		err = qmp.BackupDisk(virt.Id, dsk, virtIndex, tmpPath)
+		if err != nil {
+			return
+		}
+	} else {
+		err = utils.Exec("", "qemu-img", "convert", "-f", "qcow2",
+			"-O", "qcow2", "-c", dskPth, tmpPath)
+		if err != nil {
+			return
+		}
 	}
 
 	err = utils.Chmod(tmpPath, 0600)
