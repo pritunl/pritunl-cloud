@@ -3,7 +3,6 @@ package deploy
 import (
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -14,6 +13,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -254,7 +254,7 @@ func (d *Disks) destroy(dsk *disk.Disk) {
 }
 
 func (d *Disks) scheduleBackup(dsk *disk.Disk) {
-	if time.Since(dsk.LastBackup) < 12*time.Hour {
+	if time.Since(dsk.LastBackup) < 24*time.Hour {
 		return
 	}
 
