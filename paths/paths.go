@@ -89,6 +89,11 @@ func GetSockPath(virtId primitive.ObjectID) string {
 		fmt.Sprintf("%s.sock", virtId.Hex()))
 }
 
+func GetQmpSockPath(virtId primitive.ObjectID) string {
+	return path.Join(settings.Hypervisor.LibPath,
+		fmt.Sprintf("%s.qmp.sock", virtId.Hex()))
+}
+
 func GetGuestPath(virtId primitive.ObjectID) string {
 	return path.Join(settings.Hypervisor.LibPath,
 		fmt.Sprintf("%s.guest", virtId.Hex()))
