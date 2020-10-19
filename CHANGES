@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Add VNC client to web console
+
 Version 1.2.1772.58 2020-09-30
 ------------------------------
 
