@@ -64,7 +64,7 @@ func GetInterfaces(sockPath string) (ifaces *Interfaces, err error) {
 	conn, err := net.DialTimeout(
 		"unix",
 		sockPath,
-		1*time.Second,
+		3*time.Second,
 	)
 	if err != nil {
 		err = &errortypes.ConnectionError{
@@ -74,7 +74,7 @@ func GetInterfaces(sockPath string) (ifaces *Interfaces, err error) {
 	}
 	defer conn.Close()
 
-	err = conn.SetDeadline(time.Now().Add(1 * time.Second))
+	err = conn.SetDeadline(time.Now().Add(5 * time.Second))
 	if err != nil {
 		return
 	}
