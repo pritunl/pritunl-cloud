@@ -30,7 +30,7 @@ func GetDisks(vmId primitive.ObjectID) (disks []*vm.Disk, err error) {
 	conn, err := net.DialTimeout(
 		"unix",
 		sockPath,
-		1*time.Second,
+		3*time.Second,
 	)
 	if err != nil {
 		err = &errortypes.ReadError{
@@ -40,7 +40,7 @@ func GetDisks(vmId primitive.ObjectID) (disks []*vm.Disk, err error) {
 	}
 	defer conn.Close()
 
-	err = conn.SetDeadline(time.Now().Add(10 * time.Second))
+	err = conn.SetDeadline(time.Now().Add(5 * time.Second))
 	if err != nil {
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "qemu: Failed set deadline"),
@@ -141,7 +141,7 @@ func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
 	conn, err := net.DialTimeout(
 		"unix",
 		sockPath,
-		1*time.Second,
+		3*time.Second,
 	)
 	if err != nil {
 		err = &errortypes.ReadError{
@@ -151,7 +151,7 @@ func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
 	}
 	defer conn.Close()
 
-	err = conn.SetDeadline(time.Now().Add(10 * time.Second))
+	err = conn.SetDeadline(time.Now().Add(5 * time.Second))
 	if err != nil {
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "qemu: Failed set deadline"),
@@ -192,7 +192,7 @@ func RemoveDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
 	conn, err := net.DialTimeout(
 		"unix",
 		sockPath,
-		1*time.Second,
+		3*time.Second,
 	)
 	if err != nil {
 		err = &errortypes.ReadError{
@@ -202,7 +202,7 @@ func RemoveDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
 	}
 	defer conn.Close()
 
-	err = conn.SetDeadline(time.Now().Add(10 * time.Second))
+	err = conn.SetDeadline(time.Now().Add(5 * time.Second))
 	if err != nil {
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "qemu: Failed set deadline"),
@@ -233,7 +233,7 @@ func Shutdown(vmId primitive.ObjectID) (err error) {
 	conn, err := net.DialTimeout(
 		"unix",
 		sockPath,
-		1*time.Second,
+		3*time.Second,
 	)
 	if err != nil {
 		err = &errortypes.ReadError{
@@ -243,7 +243,7 @@ func Shutdown(vmId primitive.ObjectID) (err error) {
 	}
 	defer conn.Close()
 
-	err = conn.SetDeadline(time.Now().Add(10 * time.Second))
+	err = conn.SetDeadline(time.Now().Add(5 * time.Second))
 	if err != nil {
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "qemu: Failed set deadline"),
@@ -273,7 +273,7 @@ func VncPassword(vmId primitive.ObjectID, passwd string) (err error) {
 	conn, err := net.DialTimeout(
 		"unix",
 		sockPath,
-		1*time.Second,
+		3*time.Second,
 	)
 	if err != nil {
 		err = &errortypes.ReadError{
@@ -283,7 +283,7 @@ func VncPassword(vmId primitive.ObjectID, passwd string) (err error) {
 	}
 	defer conn.Close()
 
-	err = conn.SetDeadline(time.Now().Add(10 * time.Second))
+	err = conn.SetDeadline(time.Now().Add(5 * time.Second))
 	if err != nil {
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "qemu: Failed set deadline"),
