@@ -61,7 +61,10 @@ func (q *Qemu) Marshal() (output string, err error) {
 		cmd = append(cmd, nodeVga)
 		cmd = append(cmd, "-vnc")
 		cmd = append(cmd, fmt.Sprintf(
-			":%d,password,share=allow-exclusive", q.VncDisplay))
+			":%d,websocket=%d,password,share=allow-exclusive",
+			q.VncDisplay,
+			q.VncDisplay+15900,
+		))
 	}
 
 	if q.Kvm {
