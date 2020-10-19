@@ -8,12 +8,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -160,7 +160,7 @@ func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
 	}
 
 	drive := fmt.Sprintf(
-		"file=%s,index=%d,media=disk,format=qcow2,discard=on,if=virtio\n",
+		"file=%s,index=%d,media=disk,format=qcow2,discard=off,if=virtio\n",
 		dsk.Path,
 		dsk.Index,
 	)
