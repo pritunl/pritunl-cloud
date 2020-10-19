@@ -1,10 +1,12 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
+import RFB from 'novnc-core';
 import * as InstanceTypes from '../types/InstanceTypes';
 import * as InstanceActions from '../actions/InstanceActions';
 import * as VpcTypes from '../types/VpcTypes';
 import * as DomainTypes from '../types/DomainTypes';
 import * as PageInfos from './PageInfo';
+import * as Csrf from '../Csrf';
 import OrganizationsStore from '../stores/OrganizationsStore';
 import ZonesStore from '../stores/ZonesStore';
 import PageInput from './PageInput';
@@ -38,6 +40,12 @@ interface State {
 	addVpc: string;
 	addUsbDevice: string;
 	forwardedChecked: boolean;
+	vnc: boolean;
+	vncCtrl: boolean;
+	vncAlt: boolean;
+	vncSuper: boolean;
+	vncScale: boolean;
+	vncHeight: number;
 }
 
 const css = {
@@ -106,9 +114,15 @@ const css = {
 		margin: '9px 5px 0 5px',
 		height: '20px',
 	} as React.CSSProperties,
+	vncBox: {
+		position: 'relative',
+	} as React.CSSProperties,
 };
 
 export default class InstanceDetailed extends React.Component<Props, State> {
+	vncRef: React.RefObject<HTMLDivElement>;
+	vncRfb: RFB;
+
 	constructor(props: any, context: any) {
 		super(props, context);
 		this.state = {
@@ -121,7 +135,21 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			addVpc: '',
 			addUsbDevice: '',
 			forwardedChecked: false,
+			vnc: false,
+			vncCtrl: false,
+			vncAlt: false,
+			vncSuper: false,
+			vncScale: false,
+			vncHeight: null,
 		};
+
+		this.vncRef = React.createRef();
+	}
+
+	componentWillUnmount(): void {
+		if (this.vncRfb) {
+			this.vncRfb.disconnect();
+		}
 	}
 
 	set(name: string, val: any): void {
@@ -144,6 +172,152 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			changed: true,
 			instance: instance,
 		});
+	}
+
+	onTogleVnc = (): void => {
+		if (this.state.vnc) {
+			if (this.vncRfb) {
+				this.vncRfb.disconnect();
+			}
+		} else {
+			this.vncRfb = new RFB(
+				this.vncRef.current,
+				'wss://cloud.silicon.red/instance/' +
+				this.props.instance.id + '/vnc?csrf_token=' + Csrf.token,
+				{
+					shared: true,
+					wsProtocols: ['binary'],
+					credentials: {
+						password: this.props.instance.vnc_password,
+					},
+				},
+			);
+			if (this.state.vncScale) {
+				this.vncRfb.scaleViewport = 'scale';
+			}
+		}
+
+		this.setState({
+			...this.state,
+			vnc: !this.state.vnc,
+		});
+	}
+
+	onToggleVncCtrl = (): void => {
+		if (this.vncRfb) {
+			if (this.state.vncCtrl) {
+				this.vncRfb.sendKey(0xffe3, 'ControlLeft', false);
+			} else {
+				this.vncRfb.sendKey(0xffe3, 'ControlLeft', true);
+			}
+		}
+
+		this.setState({
+			...this.state,
+			vncCtrl: !this.state.vncCtrl,
+		});
+	}
+
+	onToggleVncAlt = (): void => {
+		if (this.vncRfb) {
+			if (this.state.vncAlt) {
+				this.vncRfb.sendKey(0xffe9, 'AltLeft', false);
+			} else {
+				this.vncRfb.sendKey(0xffe9, 'AltLeft', true);
+			}
+		}
+
+		this.setState({
+			...this.state,
+			vncAlt: !this.state.vncAlt,
+		});
+	}
+
+	onToggleVncSuper = (): void => {
+		if (this.vncRfb) {
+			if (this.state.vncSuper) {
+				this.vncRfb.sendKey(0xffeb, 'MetaLeft', false);
+			} else {
+				this.vncRfb.sendKey(0xffeb, 'MetaLeft', true);
+			}
+		}
+
+		this.setState({
+			...this.state,
+			vncSuper: !this.state.vncSuper,
+		});
+	}
+
+	onVncCtrlAltDel = (): void => {
+		if (this.vncRfb) {
+			this.vncRfb.sendCtrlAltDel();
+		}
+	}
+
+	onToggleVncFullscreen = (): void => {
+		if (document.fullscreenElement) {
+			if (document.exitFullscreen) {
+				document.exitFullscreen();
+			}
+		} else {
+			if (this.vncRef) {
+				if (this.vncRef.current.requestFullscreen) {
+					this.vncRef.current.requestFullscreen();
+				}
+			}
+		}
+	}
+
+	onToggleVncScale = (): void => {
+		let vncHeight: number;
+		let vncScale = this.state.vncScale;
+
+		if (vncScale) {
+			this.vncRfb.scaleViewport = '';
+		} else {
+			let ratio = this.vncRfb._canvas.height / this.vncRfb._canvas.width;
+			vncHeight = Math.floor(this.vncRef.current.offsetWidth * ratio);
+		}
+
+		this.setState({
+			...this.state,
+			vncScale: !this.state.vncScale,
+			vncHeight: vncHeight,
+		});
+
+		if (!vncScale) {
+			this.vncRfb.scaleViewport = 'scale';
+			setTimeout((): void => {
+				if (this.state.vncScale) {
+					this.vncRfb.scaleViewport = 'scale';
+				}
+				setTimeout((): void => {
+					if (this.state.vncScale) {
+						this.vncRfb.scaleViewport = 'scale';
+					}
+					setTimeout((): void => {
+						if (this.state.vncScale) {
+							this.vncRfb.scaleViewport = 'scale';
+						}
+						setTimeout((): void => {
+							if (this.state.vncScale) {
+								this.vncRfb.scaleViewport = 'scale';
+							}
+							setTimeout((): void => {
+								if (this.state.vncScale) {
+									this.vncRfb.scaleViewport = 'scale';
+								}
+								setTimeout((): void => {
+									if (this.state.vncScale) {
+										this.vncRfb.scaleViewport = 'scale';
+									}
+								}, 50);
+							}, 50);
+						}, 50);
+					}, 50);
+				}, 50);
+			}, 50);
+		}
 	}
 
 	onAddNetworkRole = (): void => {
@@ -662,6 +836,10 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			},
 		);
 
+		let vncStyle = {
+			height: this.state.vncHeight ? this.state.vncHeight + 'px' : '100%',
+		} as React.CSSProperties;
+
 		return <td
 			className="bp3-cell"
 			colSpan={6}
@@ -932,7 +1110,138 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						this.update('stop');
 					}}
 				/>
+				<button
+					className="bp3-button bp3-intent-success bp3-icon-console"
+					hidden={this.state.vnc || !this.props.instance.vnc}
+					style={css.controlButton}
+					disabled={this.state.disabled}
+					type="button"
+					onClick={(): void => {
+						this.onTogleVnc();
+					}}
+				>
+					VNC Console
+				</button>
+				<button
+					className="bp3-button bp3-intent-danger bp3-icon-console"
+					hidden={!this.state.vnc}
+					style={css.controlButton}
+					disabled={this.state.disabled}
+					type="button"
+					onClick={(): void => {
+						this.onTogleVnc();
+					}}
+				>
+					VNC Console
+				</button>
+				<button
+					className={'bp3-button bp3-icon-key-control' +
+						(this.state.vncCtrl ? ' bp3-active' : '')}
+					hidden={!this.state.vnc}
+					style={css.controlButton}
+					disabled={this.state.disabled}
+					type="button"
+					onClick={(): void => {
+						this.onToggleVncCtrl();
+					}}
+				>
+					Ctrl
+				</button>
+				<button
+					className={'bp3-button bp3-icon-key-option' +
+						(this.state.vncAlt ? ' bp3-active' : '')}
+					hidden={!this.state.vnc}
+					style={css.controlButton}
+					disabled={this.state.disabled}
+					type="button"
+					onClick={(): void => {
+						this.onToggleVncAlt();
+					}}
+				>
+					Alt
+				</button>
+				<button
+					className={'bp3-button bp3-icon-key-command' +
+						(this.state.vncSuper ? ' bp3-active' : '')}
+					hidden={!this.state.vnc}
+					style={css.controlButton}
+					disabled={this.state.disabled}
+					type="button"
+					onClick={(): void => {
+						this.onToggleVncSuper();
+					}}
+				>
+					Super
+				</button>
+				<button
+					className="bp3-button bp3-icon-key-tab"
+					hidden={!this.state.vnc}
+					style={css.controlButton}
+					disabled={this.state.disabled}
+					type="button"
+					onClick={(): void => {
+						this.onTogleVnc();
+					}}
+				>
+					Tab
+				</button>
+				<button
+					className="bp3-button bp3-icon-key-escape"
+					hidden={!this.state.vnc}
+					style={css.controlButton}
+					disabled={this.state.disabled}
+					type="button"
+					onClick={(): void => {
+						this.onTogleVnc();
+					}}
+				>
+					Esc
+				</button>
+				<button
+					className="bp3-button bp3-icon-fullscreen"
+					hidden={!this.state.vnc}
+					style={css.controlButton}
+					disabled={this.state.disabled}
+					type="button"
+					onClick={(): void => {
+						this.onToggleVncFullscreen();
+					}}
+				>
+					Fullscreen
+				</button>
+				<button
+					className={'bp3-button bp3-icon-zoom-to-fit' +
+						(this.state.vncScale ? ' bp3-active' : '')}
+					hidden={!this.state.vnc}
+					style={css.controlButton}
+					disabled={this.state.disabled}
+					type="button"
+					onClick={(): void => {
+						this.onToggleVncScale();
+					}}
+				>
+					Scale
+				</button>
+				<button
+					className="bp3-button bp3-intent-danger bp3-icon-control"
+					hidden={!this.state.vnc}
+					style={css.controlButton}
+					disabled={this.state.disabled}
+					type="button"
+					onClick={(): void => {
+						this.onVncCtrlAltDel();
+					}}
+				>
+					Ctrl-Alt-Del
+				</button>
 			</PageSave>
+			<div style={css.vncBox}>
+				<div
+					ref={this.vncRef}
+					style={vncStyle}
+					hidden={!this.state.vnc}
+				/>
+			</div>
 		</td>;
 	}
 }
