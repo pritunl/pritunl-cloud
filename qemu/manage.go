@@ -11,7 +11,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
@@ -37,6 +36,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
 	"github.com/pritunl/pritunl-cloud/zone"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -1882,7 +1882,7 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 					time.Sleep(1 * time.Second)
 
 					if (i+1)%15 == 0 {
-						_ = qms.Shutdown(virt.Id)
+						go qms.Shutdown(virt.Id)
 					}
 				}
 			}
@@ -2107,7 +2107,7 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			time.Sleep(1 * time.Second)
 
 			if (i+1)%15 == 0 {
-				_ = qms.Shutdown(virt.Id)
+				go qms.Shutdown(virt.Id)
 			}
 		}
 	}
