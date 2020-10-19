@@ -138,10 +138,16 @@ func (s *State) DiskInUse(instId, dskId primitive.ObjectID) bool {
 }
 
 func (s *State) GetVirt(instId primitive.ObjectID) *vm.VirtualMachine {
+	if instId.IsZero() {
+		return nil
+	}
 	return s.virtsMap[instId]
 }
 
 func (s *State) GetInstace(instId primitive.ObjectID) *instance.Instance {
+	if instId.IsZero() {
+		return nil
+	}
 	return s.instancesMap[instId]
 }
 
