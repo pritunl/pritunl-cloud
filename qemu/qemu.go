@@ -137,6 +137,12 @@ func (q *Qemu) Marshal() (output string, err error) {
 		paths.GetSockPath(q.Id),
 	))
 
+	cmd = append(cmd, "-qmp")
+	cmd = append(cmd, fmt.Sprintf(
+		"unix:%s,server,nowait",
+		paths.GetQmpSockPath(q.Id),
+	))
+
 	cmd = append(cmd, "-pidfile")
 	cmd = append(cmd, paths.GetPidPath(q.Id))
 
