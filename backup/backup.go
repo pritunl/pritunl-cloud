@@ -116,8 +116,6 @@ func (b *Backup) backupDisks(db *database.Database) (err error) {
 				"disk_id": dsk.Id.Hex(),
 			}).Info("backup: Disk exported")
 		}
-
-		break
 	}
 
 	exportedDisks, err := ioutil.ReadDir(disksDir)
