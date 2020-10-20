@@ -3,10 +3,9 @@ package cmd
 import (
 	"flag"
 
-	"github.com/pritunl/pritunl-cloud/errortypes"
-
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/backup"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 )
 
 func Backup() (err error) {
