@@ -69,8 +69,7 @@ func (b *Backup) backupDisk(db *database.Database,
 	if !online {
 		dskPth := path.Join(b.virtPath, "disks",
 			fmt.Sprintf("%s.qcow2", dsk.Id.Hex()))
-		err = utils.Exec("", "qemu-img", "convert", "-f", "qcow2",
-			"-O", "qcow2", "-c", dskPth, dest)
+		err = utils.Exec("", "cp", dskPth, dest)
 		if err != nil {
 			return
 		}
