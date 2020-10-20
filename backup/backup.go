@@ -276,7 +276,7 @@ func (b *Backup) Run() (err error) {
 	}
 
 	b.node = nde
-	b.virtPath = b.virtPath
+	b.virtPath = nde.GetVirtPath()
 
 	err = b.backupDisks(db)
 	if err != nil {
