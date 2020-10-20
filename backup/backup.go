@@ -263,6 +263,94 @@ func (b *Backup) backupLeases(db *database.Database) (err error) {
 		"node_id": b.node.Id.Hex(),
 	}).Info("backup: Exporting leases")
 
+	trashDir := path.Join(b.Destination, "trash")
+	leasesDir := path.Join(b.Destination, "leases")
+	curLeasesDir := path.Join(b.virtPath, "leases")
+	err = utils.ExistsMkdir(leasesDir, 0755)
+	if err != nil {
+		return
+	}
+
+	exists, err := utils.Exists(curLeasesDir)
+	if err != nil {
+		return
+	}
+
+	curLeases := []os.FileInfo{}
+	if exists {
+		curLeases, err = ioutil.ReadDir(curLeasesDir)
+		if err != nil {
+			err = &errortypes.ReadError{
+				errors.Wrap(
+					err,
+					"backup: Failed to read leases directory",
+				),
+			}
+			return
+		}
+	}
+
+	leaseFilename := set.NewSet()
+	for _, item := range curLeases {
+		filename := item.Name()
+		leaseFilename.Add(filename)
+
+		leasePath := path.Join(curLeasesDir, filename)
+		newLeasePath := path.Join(leasesDir, filename)
+
+		_ = os.Remove(newLeasePath)
+
+		err = utils.Exec("", "cp", leasePath, newLeasePath)
+		if err != nil {
+			return
+		}
+
+		logrus.WithFields(logrus.Fields{
+			"node_id": b.node.Id.Hex(),
+			"lease":   filename,
+		}).Info("backup: Lease exported")
+	}
+
+	exportedLeases, err := ioutil.ReadDir(leasesDir)
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(
+				err,
+				"backup: Failed to read leases directory",
+			),
+		}
+		return
+	}
+
+	trashLeasesDir := path.Join(trashDir, "leases")
+	for _, item := range exportedLeases {
+		filename := item.Name()
+		leasePath := path.Join(leasesDir, filename)
+		newLeasePath := path.Join(trashLeasesDir, filename)
+
+		if !leaseFilename.Contains(filename) {
+			err = utils.ExistsMkdir(trashLeasesDir, 0755)
+			if err != nil {
+				return
+			}
+
+			err = os.Rename(leasePath, newLeasePath)
+			if err != nil {
+				b.errorCount += 1
+				logrus.WithFields(logrus.Fields{
+					"node_id": b.node.Id.Hex(),
+					"lease":   filename,
+					"error":   err,
+				}).Error("backup: Failed to move lease to trash")
+			} else {
+				logrus.WithFields(logrus.Fields{
+					"node_id": b.node.Id.Hex(),
+					"lease":   filename,
+				}).Info("backup: Lease moved to trash")
+			}
+		}
+	}
+
 	return
 }
 
