@@ -175,15 +175,23 @@ func (b *Backup) backupBackingDisks(db *database.Database) (err error) {
 		return
 	}
 
-	curBackingDisks, err := ioutil.ReadDir(curBackingDisksDir)
+	exists, err := utils.Exists(curBackingDisksDir)
 	if err != nil {
-		err = &errortypes.ReadError{
-			errors.Wrap(
-				err,
-				"backup: Failed to read backing disks directory",
-			),
-		}
 		return
+	}
+
+	curBackingDisks := []os.FileInfo{}
+	if exists {
+		curBackingDisks, err = ioutil.ReadDir(curBackingDisksDir)
+		if err != nil {
+			err = &errortypes.ReadError{
+				errors.Wrap(
+					err,
+					"backup: Failed to read backing disks directory",
+				),
+			}
+			return
+		}
 	}
 
 	backingFilenames := set.NewSet()
