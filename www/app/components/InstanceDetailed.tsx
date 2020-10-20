@@ -254,6 +254,18 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		}
 	}
 
+	onVncTab = (): void => {
+		if (this.vncRfb) {
+			this.vncRfb.sendKey(0xff09, 'Tab');
+		}
+	}
+
+	onVncEsc = (): void => {
+		if (this.vncRfb) {
+			this.vncRfb.sendKey(0xff1b, 'Escape');
+		}
+	}
+
 	onToggleVncFullscreen = (): void => {
 		if (document.fullscreenElement) {
 			if (document.exitFullscreen) {
@@ -1180,7 +1192,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					disabled={this.state.disabled}
 					type="button"
 					onClick={(): void => {
-						this.onTogleVnc();
+						this.onVncTab();
 					}}
 				>
 					Tab
@@ -1192,7 +1204,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					disabled={this.state.disabled}
 					type="button"
 					onClick={(): void => {
-						this.onTogleVnc();
+						this.onVncEsc();
 					}}
 				>
 					Esc
