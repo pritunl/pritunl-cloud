@@ -24,6 +24,7 @@ Commands:
   default-password  Get default administrator password
   reset-password    Reset administrator password
   disable-policies  Disable all policies
+  backup            Backup local data
 `
 
 func Init() {
@@ -103,6 +104,13 @@ func main() {
 	case "clear-logs":
 		Init()
 		err := cmd.ClearLogs()
+		if err != nil {
+			panic(err)
+		}
+		return
+	case "backup":
+		Init()
+		err := cmd.Backup()
 		if err != nil {
 			panic(err)
 		}
