@@ -555,24 +555,21 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk,
 
 	defer utils.Remove(tmpPath)
 
-	attached := false
-	virtIndex := 0
+	available := false
 	if virt != nil {
-		for _, virtDsk := range virt.Disks {
-			if virtDsk.GetId() == dsk.Id {
-				attached = true
-				virtIndex = virtDsk.Index
-				break
+		err = qmp.BackupDisk(virt.Id, dsk, tmpPath)
+		if err != nil {
+			if _, ok := err.(*qmp.DiskNotFound); ok {
+				err = nil
+			} else {
+				return
 			}
+		} else {
+			available = true
 		}
 	}
 
-	if attached && virt != nil {
-		err = qmp.BackupDisk(virt.Id, dsk, virtIndex, tmpPath)
-		if err != nil {
-			return
-		}
-	} else {
+	if !available {
 		err = utils.Exec("", "qemu-img", "convert", "-f", "qcow2",
 			"-O", "qcow2", "-c", dskPth, tmpPath)
 		if err != nil {
@@ -717,24 +714,21 @@ func CreateBackup(db *database.Database, dsk *disk.Disk,
 
 	defer utils.Remove(tmpPath)
 
-	attached := false
-	virtIndex := 0
+	available := false
 	if virt != nil {
-		for _, virtDsk := range virt.Disks {
-			if virtDsk.GetId() == dsk.Id {
-				attached = true
-				virtIndex = virtDsk.Index
-				break
+		err = qmp.BackupDisk(virt.Id, dsk, tmpPath)
+		if err != nil {
+			if _, ok := err.(*qmp.DiskNotFound); ok {
+				err = nil
+			} else {
+				return
 			}
+		} else {
+			available = true
 		}
 	}
 
-	if attached && virt != nil {
-		err = qmp.BackupDisk(virt.Id, dsk, virtIndex, tmpPath)
-		if err != nil {
-			return
-		}
-	} else {
+	if !available {
 		err = utils.Exec("", "qemu-img", "convert", "-f", "qcow2",
 			"-O", "qcow2", "-c", dskPth, tmpPath)
 		if err != nil {
