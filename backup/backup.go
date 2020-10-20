@@ -54,6 +54,8 @@ func (b *Backup) backupDisk(db *database.Database,
 		}
 	}
 
+	_ = os.Remove(dest)
+
 	if online {
 		err = qmp.BackupDisk(dsk.Instance, dsk, dest)
 		if err != nil {
@@ -100,8 +102,6 @@ func (b *Backup) backupDisks(db *database.Database) (err error) {
 		diskFilenames.Add(filename)
 
 		destPath := path.Join(disksDir, filename)
-
-		_ = os.Remove(destPath)
 
 		err = b.backupDisk(db, dsk, destPath)
 		if err != nil {
