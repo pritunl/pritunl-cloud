@@ -28,6 +28,7 @@ type Backup struct {
 	Destination string
 	node        *node.Node
 	virtPath    string
+	errorCount  int
 }
 
 func (b *Backup) backupDisk(db *database.Database,
@@ -105,6 +106,7 @@ func (b *Backup) backupDisks(db *database.Database) (err error) {
 
 		err = b.backupDisk(db, dsk, destPath)
 		if err != nil {
+			b.errorCount += 1
 			logrus.WithFields(logrus.Fields{
 				"disk_id": dsk.Id.Hex(),
 				"error":   err,
@@ -142,6 +144,7 @@ func (b *Backup) backupDisks(db *database.Database) (err error) {
 
 			err = os.Rename(diskPath, newDiskPath)
 			if err != nil {
+				b.errorCount += 1
 				logrus.WithFields(logrus.Fields{
 					"node_id": b.node.Id.Hex(),
 					"disk_id": idStr,
@@ -229,6 +232,7 @@ func (b *Backup) backupBackingDisks(db *database.Database) (err error) {
 
 			err = os.Rename(backingPath, newBackingPath)
 			if err != nil {
+				b.errorCount += 1
 				logrus.WithFields(logrus.Fields{
 					"node_id":      b.node.Id.Hex(),
 					"backing_disk": filename,
@@ -286,6 +290,13 @@ func (b *Backup) Run() (err error) {
 
 	err = b.backupLeases(db)
 	if err != nil {
+		return
+	}
+
+	if b.errorCount > 0 {
+		err = &errortypes.ExecError{
+			errors.Wrap(err, "backup: Backup encountered errors"),
+		}
 		return
 	}
 
