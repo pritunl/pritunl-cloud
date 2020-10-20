@@ -570,8 +570,7 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk,
 	}
 
 	if !available {
-		err = utils.Exec("", "qemu-img", "convert", "-f", "qcow2",
-			"-O", "qcow2", "-c", dskPth, tmpPath)
+		err = utils.Exec("", "cp", dskPth, tmpPath)
 		if err != nil {
 			return
 		}
@@ -729,8 +728,7 @@ func CreateBackup(db *database.Database, dsk *disk.Disk,
 	}
 
 	if !available {
-		err = utils.Exec("", "qemu-img", "convert", "-f", "qcow2",
-			"-O", "qcow2", "-c", dskPth, tmpPath)
+		err = utils.Exec("", "cp", dskPth, tmpPath)
 		if err != nil {
 			return
 		}
