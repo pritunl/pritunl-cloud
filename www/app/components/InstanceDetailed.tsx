@@ -1237,7 +1237,6 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				<button
 					className="bp3-button bp3-intent-danger bp3-icon-control"
 					hidden={!this.state.vnc}
-					style={css.controlButton}
 					disabled={this.state.disabled}
 					type="button"
 					onClick={(): void => {
