@@ -1,3 +1,7 @@
+cd packages/novnc-core
+jspm link github:novnc-core@dev
+cd ../../
+
 tsc
 rm -rf dist/static
 mkdir -p dist/static
