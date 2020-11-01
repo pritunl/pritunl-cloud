@@ -150,6 +150,10 @@ export default class DiskDetailed extends React.Component<Props, State> {
 
 		disk[name] = val;
 
+		if (name === 'instance' && !Number(disk.index)) {
+			disk['index'] = '0';
+		}
+
 		this.setState({
 			...this.state,
 			changed: true,
@@ -470,7 +474,7 @@ export default class DiskDetailed extends React.Component<Props, State> {
 						majorStepSize={1}
 						disabled={this.state.disabled}
 						selectAllOnFocus={true}
-						value={Number(disk.index)}
+						value={Number(disk.index) || 0}
 						onChange={(val: number): void => {
 							this.set('index', String(val));
 						}}
