@@ -79,6 +79,10 @@ func (u *User) Validate(db *database.Database) (
 }
 
 func (u *User) Format() {
+	if u.Type == Local {
+		u.Username = strings.ToLower(u.Username)
+	}
+
 	roles := []string{}
 	rolesSet := set.NewSet()
 
