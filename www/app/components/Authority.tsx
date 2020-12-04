@@ -96,14 +96,9 @@ export default class Authority extends React.Component<Props, {}> {
 			</div>;
 		}
 
-		let active = true;
-
 		let cardStyle = {
 			...css.card,
 		};
-		if (!active) {
-			cardStyle.opacity = 0.6;
-		}
 
 		let networkRoles: JSX.Element[] = [];
 		for (let networkRole of (authority.network_roles || [])) {
