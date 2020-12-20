@@ -77,7 +77,10 @@ func runCommand(vmId primitive.ObjectID, cmd *cmdBase,
 	sockPath := paths.GetQmpSockPath(vmId)
 
 	lockId := socketsLock.Lock(vmId.Hex())
-	defer socketsLock.Unlock(vmId.Hex(), lockId)
+	defer func() {
+		time.Sleep(100 * time.Millisecond)
+		socketsLock.Unlock(vmId.Hex(), lockId)
+	}()
 
 	conn, err := net.DialTimeout(
 		"unix",
