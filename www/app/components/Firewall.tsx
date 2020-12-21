@@ -97,14 +97,9 @@ export default class Firewall extends React.Component<Props, {}> {
 			</div>;
 		}
 
-		let active = true;
-
 		let cardStyle = {
 			...css.card,
 		};
-		if (!active) {
-			cardStyle.opacity = 0.6;
-		}
 
 		let networkRoles: JSX.Element[] = [];
 		for (let networkRole of (firewall.network_roles || [])) {
