@@ -29,7 +29,8 @@ func GetInterfaces() (ifaces []string, err error) {
 	for _, iface := range allIfaces {
 		if len(iface) == 14 || iface == "lo" ||
 			strings.Contains(iface, "br") ||
-			iface == "pritunlhost0" {
+			iface == "pritunlhost0" ||
+			iface == "" {
 
 			continue
 		}
