@@ -34,7 +34,7 @@ func GetBridges() (brdgs []string, err error) {
 	}
 
 	for _, iface := range ifaces {
-		if iface.Name == "pritunlhost0" {
+		if iface.Name == "pritunlhost0" || iface.Name == "" {
 			continue
 		}
 
@@ -61,7 +61,7 @@ func GetBridges() (brdgs []string, err error) {
 
 		name = name[6:]
 		names := strings.Split(name, ":")
-		if len(names) != 2 {
+		if len(names) != 2 || names[0] == "" {
 			continue
 		}
 
