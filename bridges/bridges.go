@@ -45,7 +45,7 @@ func GetBridges() (brdgs []string, err error) {
 	items, err := ioutil.ReadDir("/etc/sysconfig/network-scripts")
 	if err != nil {
 		err = &errortypes.ReadError{
-			errors.Wrap(err, "utils: Failed to read network scripts"),
+			errors.Wrap(err, "bridges: Failed to read network scripts"),
 		}
 		return
 	}
