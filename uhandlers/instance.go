@@ -572,6 +572,11 @@ func instancesGet(c *gin.Context) {
 			query["vpc"] = vpcId
 		}
 
+		subnetId, ok := utils.ParseObjectId(c.Query("subnet"))
+		if ok {
+			query["subnet"] = subnetId
+		}
+
 		instances, count, err := aggregate.GetInstancePaged(
 			db, &query, page, pageCount)
 		if err != nil {
