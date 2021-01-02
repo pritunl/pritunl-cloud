@@ -106,6 +106,24 @@ export default class InstancesFilter extends React.Component<Props, {}> {
 			}
 		}
 
+		let subnetsSelect: JSX.Element[] = [
+			<option key="key" value="any">Any Subnet</option>,
+		];
+		if (this.props.vpcs && this.props.vpcs.length) {
+			for (let vpc of this.props.vpcs) {
+				if (vpc.id === this.props.filter.vpc) {
+					for (let sub of (vpc.subnets || [])) {
+						subnetsSelect.push(
+							<option
+								key={sub.id}
+								value={sub.id}
+							>{sub.name + ' - ' + sub.network}</option>,
+						);
+					}
+				}
+			}
+		}
+
 		return <div className="layout horizontal wrap" style={css.filters}>
 			<SearchInput
 				style={css.input}
@@ -235,14 +253,40 @@ export default class InstancesFilter extends React.Component<Props, {}> {
 
 						if (val === 'any') {
 							delete filter.vpc;
+							delete filter.subnet;
 						} else {
-							filter.vpc = val;
+							if (filter.vpc !== val) {
+								filter.vpc = val;
+								delete filter.subnet;
+							}
 						}
 
 						this.props.onFilter(filter);
 					}}
 				>
 					{vpcsSelect}
+				</select>
+			</div>
+			<div className="bp3-select" style={css.type}>
+				<select
+					value={this.props.filter.subnet || 'any'}
+					onChange={(evt): void => {
+						let filter = {
+							...this.props.filter,
+						};
+
+						let val = evt.target.value;
+
+						if (val === 'any') {
+							delete filter.subnet;
+						} else {
+							filter.subnet = val;
+						}
+
+						this.props.onFilter(filter);
+					}}
+				>
+					{subnetsSelect}
 				</select>
 			</div>
 			<div className="bp3-select" style={css.type} hidden={Constants.user}>
