@@ -54,6 +54,7 @@ export interface Filter {
 	node?: string;
 	zone?: string;
 	vpc?: string;
+	subnet?: string;
 }
 
 export interface UsbDevice {
