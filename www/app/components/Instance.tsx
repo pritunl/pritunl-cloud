@@ -91,7 +91,6 @@ export default class Instance extends React.Component<Props, {}> {
 			</div>;
 		}
 
-		let active = true;
 		let node = NodesStore.node(this.props.instance.node);
 		let nodeName = node ? node.name : null;
 		let zone = ZonesStore.zone(this.props.instance.zone);
@@ -100,9 +99,6 @@ export default class Instance extends React.Component<Props, {}> {
 		let cardStyle = {
 			...css.card,
 		};
-		if (!active) {
-			cardStyle.opacity = 0.6;
-		}
 
 		let publicIp = '';
 		let privateIp = '';
