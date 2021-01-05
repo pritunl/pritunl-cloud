@@ -166,8 +166,8 @@ func (n *Node) Copy() *Node {
 		OraclePublicKey:      n.OraclePublicKey,
 		OracleHostRoute:      n.OracleHostRoute,
 		Operation:            n.Operation,
-		reqLock:              n.reqLock,
-		reqCount:             n.reqCount,
+		dcId:                 n.dcId,
+		dcZoneId:             n.dcZoneId,
 	}
 
 	return nde
