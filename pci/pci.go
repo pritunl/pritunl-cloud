@@ -41,7 +41,9 @@ func GetVfio() (devices []*Device, err error) {
 	outputLines := strings.Split(output, "\n")
 	for _, line := range outputLines {
 		if strings.TrimSpace(line) == "" {
-			if dev.Slot != "" && dev.Name != "" && dev.Driver == "vfio-pci" {
+			if dev.Slot != "" && dev.Name != "" &&
+				dev.Driver == "vfio-pci" && CheckSlot(dev.Slot) {
+
 				devices = append(devices, dev)
 			}
 
