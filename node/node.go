@@ -72,6 +72,7 @@ type Node struct {
 	JumboFrames          bool                 `bson:"jumbo_frames" json:"jumbo_frames"`
 	UsbPassthrough       bool                 `bson:"usb_passthrough" json:"usb_passthrough"`
 	UsbDevices           []*usb.Device        `bson:"usb_devices" json:"usb_devices"`
+	PciPassthrough       bool                 `bson:"pci_passthrough" json:"pci_passthrough"`
 	PciDevices           []*pci.Device        `bson:"pci_devices" json:"pci_devices"`
 	Firewall             bool                 `bson:"firewall" json:"firewall"`
 	NetworkRoles         []string             `bson:"network_roles" json:"network_roles"`
@@ -142,6 +143,7 @@ func (n *Node) Copy() *Node {
 		JumboFrames:          n.JumboFrames,
 		UsbPassthrough:       n.UsbPassthrough,
 		UsbDevices:           n.UsbDevices,
+		PciPassthrough:       n.PciPassthrough,
 		PciDevices:           n.PciDevices,
 		Firewall:             n.Firewall,
 		NetworkRoles:         n.NetworkRoles,
@@ -783,6 +785,7 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.HostNatExcludes = nde.HostNatExcludes
 	n.JumboFrames = nde.JumboFrames
 	n.UsbPassthrough = nde.UsbPassthrough
+	n.PciPassthrough = nde.PciPassthrough
 	n.Firewall = nde.Firewall
 	n.NetworkRoles = nde.NetworkRoles
 	n.VirtPath = nde.VirtPath
