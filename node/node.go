@@ -140,6 +140,9 @@ func (n *Node) Copy() *Node {
 		HostNat:              n.HostNat,
 		HostNatExcludes:      n.HostNatExcludes,
 		JumboFrames:          n.JumboFrames,
+		UsbPassthrough:       n.UsbPassthrough,
+		UsbDevices:           n.UsbDevices,
+		PciDevices:           n.PciDevices,
 		Firewall:             n.Firewall,
 		NetworkRoles:         n.NetworkRoles,
 		Memory:               n.Memory,
@@ -162,6 +165,7 @@ func (n *Node) Copy() *Node {
 		OraclePrivateKey:     n.OraclePrivateKey,
 		OraclePublicKey:      n.OraclePublicKey,
 		OracleHostRoute:      n.OracleHostRoute,
+		Operation:            n.Operation,
 		reqLock:              n.reqLock,
 		reqCount:             n.reqCount,
 	}
