@@ -11,7 +11,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
@@ -23,9 +22,11 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
+	"github.com/pritunl/pritunl-cloud/pci"
 	"github.com/pritunl/pritunl-cloud/usb"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/zone"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -71,6 +72,7 @@ type Node struct {
 	JumboFrames          bool                 `bson:"jumbo_frames" json:"jumbo_frames"`
 	UsbPassthrough       bool                 `bson:"usb_passthrough" json:"usb_passthrough"`
 	UsbDevices           []*usb.Device        `bson:"usb_devices" json:"usb_devices"`
+	PciDevices           []*pci.Device        `bson:"pci_devices" json:"pci_devices"`
 	Firewall             bool                 `bson:"firewall" json:"firewall"`
 	NetworkRoles         []string             `bson:"network_roles" json:"network_roles"`
 	Memory               float64              `bson:"memory" json:"memory"`
