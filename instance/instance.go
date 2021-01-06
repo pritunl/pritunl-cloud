@@ -495,6 +495,14 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 		}
 	}
 
+	if node.Self.PciPassthrough && i.PciDevices != nil {
+		for _, device := range i.PciDevices {
+			i.Virt.PciDevices = append(i.Virt.PciDevices, &vm.PciDevice{
+				Slot: device.Slot,
+			})
+		}
+	}
+
 	return
 }
 
@@ -524,6 +532,10 @@ func (i *Instance) Changed(curVirt *vm.VirtualMachine) bool {
 	}
 
 	if i.Virt.UsbDevices != nil {
+		if len(i.Virt.UsbDevices) > 0 && curVirt.UsbDevices == nil {
+			return true
+		}
+
 		for i, device := range i.Virt.UsbDevices {
 			if len(curVirt.UsbDevices) <= i {
 				return true
@@ -532,6 +544,22 @@ func (i *Instance) Changed(curVirt *vm.VirtualMachine) bool {
 			if device.Vendor != curVirt.UsbDevices[i].Vendor ||
 				device.Product != curVirt.UsbDevices[i].Product {
 
+				return true
+			}
+		}
+	}
+
+	if i.Virt.PciDevices != nil {
+		if len(i.Virt.PciDevices) > 0 && curVirt.PciDevices == nil {
+			return true
+		}
+
+		for i, device := range i.Virt.PciDevices {
+			if len(curVirt.PciDevices) <= i {
+				return true
+			}
+
+			if device.Slot != curVirt.PciDevices[i].Slot {
 				return true
 			}
 		}
