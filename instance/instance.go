@@ -18,6 +18,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
+	"github.com/pritunl/pritunl-cloud/pci"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/systemd"
 	"github.com/pritunl/pritunl-cloud/usb"
@@ -61,6 +62,7 @@ type Instance struct {
 	Processors          int                `bson:"processors" json:"processors"`
 	NetworkRoles        []string           `bson:"network_roles" json:"network_roles"`
 	UsbDevices          []*usb.Device      `bson:"usb_devices" json:"usb_devices"`
+	PciDevices          []*pci.Device      `bson:"pci_devices" json:"pci_devices"`
 	Vnc                 bool               `bson:"vnc" json:"vnc"`
 	VncPassword         string             `bson:"vnc_password" json:"vnc_password"`
 	VncDisplay          int                `bson:"vnc_display,omitempty" json:"vnc_display"`
