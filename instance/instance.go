@@ -44,6 +44,7 @@ type Instance struct {
 	VmTimestamp         time.Time          `bson:"vm_timestamp" json:"vm_timestamp"`
 	Restart             bool               `bson:"restart" json:"restart"`
 	RestartBlockIp      bool               `bson:"restart_block_ip" json:"restart_block_ip"`
+	Uefi                bool               `bson:"uefi" json:"uefi"`
 	DeleteProtection    bool               `bson:"delete_protection" json:"delete_protection"`
 	PublicIps           []string           `bson:"public_ips" json:"public_ips"`
 	PublicIps6          []string           `bson:"public_ips6" json:"public_ips6"`
@@ -466,6 +467,7 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 				Subnet:     i.Subnet,
 			},
 		},
+		Uefi:            i.Uefi,
 		NoPublicAddress: i.NoPublicAddress,
 		NoHostAddress:   i.NoHostAddress,
 		UsbDevices:      []*vm.UsbDevice{},
@@ -511,6 +513,7 @@ func (i *Instance) Changed(curVirt *vm.VirtualMachine) bool {
 		i.Virt.Processors != curVirt.Processors ||
 		i.Virt.Vnc != curVirt.Vnc ||
 		i.Virt.VncDisplay != curVirt.VncDisplay ||
+		i.Virt.Uefi != curVirt.Uefi ||
 		i.Virt.NoPublicAddress != curVirt.NoPublicAddress ||
 		i.Virt.NoHostAddress != curVirt.NoHostAddress {
 
