@@ -17,7 +17,23 @@ func CheckSlot(slot string) bool {
 	return reg.MatchString(slot)
 }
 
-func GetAllVfio() (devices []*Device, err error) {
+func GetVfio(slot string) (dev *Device, err error) {
+	devices, err := GetVfioAll()
+	if err != nil {
+		return
+	}
+
+	for _, device := range devices {
+		if device.Slot == slot {
+			dev = device
+			return
+		}
+	}
+
+	return
+}
+
+func GetVfioAll() (devices []*Device, err error) {
 	if time.Since(syncLast) < 30*time.Second {
 		devices = syncCache
 		return
