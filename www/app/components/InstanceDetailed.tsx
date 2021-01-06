@@ -39,6 +39,7 @@ interface State {
 	addNetworkRole: string;
 	addVpc: string;
 	addUsbDevice: string;
+	addPciDevice: string;
 	forwardedChecked: boolean;
 	vnc: boolean;
 	vncCtrl: boolean;
@@ -135,6 +136,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			addNetworkRole: '',
 			addVpc: '',
 			addUsbDevice: '',
+			addPciDevice: '',
 			forwardedChecked: false,
 			vnc: false,
 			vncCtrl: false,
@@ -501,6 +503,100 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		});
 	}
 
+	onAddPciDevice = (): void => {
+		let instance: InstanceTypes.Instance;
+		let infoPciDevices = this.props.instance.info.pci_devices || [];
+
+		if (!this.state.addPciDevice && !infoPciDevices.length) {
+			return;
+		}
+
+		let addDevice = this.state.addPciDevice;
+		if (!addDevice) {
+			addDevice = infoPciDevices[0].slot;
+		}
+
+		if (this.state.changed) {
+			instance = {
+				...this.state.instance,
+			};
+		} else {
+			instance = {
+				...this.props.instance,
+			};
+		}
+
+		let pciDevices = [
+			...(instance.pci_devices || []),
+		];
+
+		let index = -1;
+		for (let i = 0; i < pciDevices.length; i++) {
+			let dev = pciDevices[i];
+			if (dev.slot === addDevice) {
+				index = i;
+				break
+			}
+		}
+
+		if (index === -1) {
+			pciDevices.push({
+				slot: addDevice,
+			});
+		}
+
+		instance.pci_devices = pciDevices;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			addPciDevice: '',
+			instance: instance,
+		});
+	}
+
+	onRemovePciDevice = (device: string): void => {
+		let instance: InstanceTypes.Instance;
+
+		if (this.state.changed) {
+			instance = {
+				...this.state.instance,
+			};
+		} else {
+			instance = {
+				...this.props.instance,
+			};
+		}
+
+		let pciDevices = [
+			...(instance.pci_devices || []),
+		];
+
+		let index = -1;
+		for (let i = 0; i < pciDevices.length; i++) {
+			let dev = pciDevices[i];
+			if (dev.slot === device) {
+				index = i;
+				break
+			}
+		}
+		if (index === -1) {
+			return;
+		}
+
+		pciDevices.splice(index, 1);
+		instance.pci_devices = pciDevices;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			addPciDevice: '',
+			instance: instance,
+		});
+	}
+
 	onSave = (): void => {
 		this.setState({
 			...this.state,
@@ -757,6 +853,41 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			);
 		}
 
+		let pciDevices: JSX.Element[] = [];
+		for (let device of (instance.pci_devices || [])) {
+			let key = device.slot;
+			pciDevices.push(
+				<div
+					className="bp3-tag bp3-tag-removable bp3-intent-primary"
+					style={css.item}
+					key={key}
+				>
+					{key}
+					<button
+						disabled={this.state.disabled}
+						className="bp3-tag-remove"
+						onMouseUp={(): void => {
+							this.onRemovePciDevice(key);
+						}}
+					/>
+				</div>,
+			);
+		}
+
+		let infoPciDevices = this.props.instance.info.pci_devices;
+		let pciDevicesSelect: JSX.Element[] = [];
+		for (let i = 0; i < (infoPciDevices || []).length; i++) {
+			let device = infoPciDevices[i];
+			pciDevicesSelect.push(
+				<option
+					key={i}
+					value={device.slot}
+				>
+					{device.slot + ' ' + device.class + ':' + device.name}
+				</option>,
+			);
+		}
+
 		let fields: PageInfos.Field[] = [
 			{
 				label: 'ID',
@@ -980,6 +1111,36 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						}}
 						onSubmit={this.onAddNetworkRole}
 					/>
+					<label
+						className="bp3-label"
+						style={css.label}
+						hidden={infoPciDevices === null}
+					>
+						PCI Devices
+						<Help
+							title="PCI Devices"
+							content="PCI devices to for host passthrough to instance."
+						/>
+						<div>
+							{pciDevices}
+						</div>
+					</label>
+					<PageSelectButton
+						hidden={infoPciDevices === null}
+						label="Add Device"
+						value={this.state.addPciDevice}
+						disabled={!pciDevicesSelect.length || this.state.disabled}
+						buttonClass="bp3-intent-success"
+						onChange={(val: string): void => {
+							this.setState({
+								...this.state,
+								addPciDevice: val,
+							});
+						}}
+						onSubmit={this.onAddPciDevice}
+					>
+						{pciDevicesSelect}
+					</PageSelectButton>
 					<label
 						className="bp3-label"
 						style={css.label}
