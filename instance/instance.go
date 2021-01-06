@@ -211,6 +211,24 @@ func (i *Instance) Validate(db *database.Database) (
 		}
 	}
 
+	if i.PciDevices == nil {
+		i.PciDevices = []*pci.Device{}
+	} else {
+		for _, device := range i.PciDevices {
+			device.Name = ""
+			device.Class = ""
+			device.Driver = ""
+
+			if !pci.CheckSlot(device.Slot) {
+				errData = &errortypes.ErrorData{
+					Error:   "pci_device_slot_invalid",
+					Message: "Invalid PCI slot",
+				}
+				return
+			}
+		}
+	}
+
 	if i.Vnc {
 		if i.VncDisplay == 0 {
 			i.VncDisplay = rand.Intn(9998) + 4101
@@ -451,6 +469,7 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 		NoPublicAddress: i.NoPublicAddress,
 		NoHostAddress:   i.NoHostAddress,
 		UsbDevices:      []*vm.UsbDevice{},
+		PciDevices:      []*vm.PciDevice{},
 	}
 
 	if disks != nil {
