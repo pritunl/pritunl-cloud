@@ -14,6 +14,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/pci"
 	"github.com/pritunl/pritunl-cloud/usb"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
@@ -30,6 +31,7 @@ type InstanceInfo struct {
 	FirewallRules []string      `json:"firewall_rules"`
 	Authorities   []string      `json:"authorities"`
 	UsbDevices    []*usb.Device `json:"usb_devices"`
+	PciDevices    []*pci.Device `json:"pci_devices"`
 }
 
 type InstanceAggregate struct {
@@ -142,6 +144,10 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 			info.Node = nde.Name
 			if nde.UsbPassthrough {
 				info.UsbDevices = nde.UsbDevices
+			}
+
+			if nde.PciDevices != nil {
+				info.PciDevices = nde.PciDevices
 			}
 		}
 
