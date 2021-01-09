@@ -58,6 +58,7 @@ const netMtu = `
     mtu: %d`
 
 const cloudConfigTmpl = `#cloud-config
+hostname: {{.Hostname}}
 ssh_deletekeys: false
 disable_root: true
 ssh_pwauth: no
@@ -104,6 +105,7 @@ type netConfigData struct {
 }
 
 type cloudConfigData struct {
+	Hostname   string
 	LockPasswd string
 	Keys       []string
 }
@@ -126,7 +128,8 @@ func getUserData(db *database.Database, inst *instance.Instance,
 	cloudScript := ""
 
 	data := cloudConfigData{
-		Keys: []string{},
+		Keys:     []string{},
+		Hostname: strings.Replace(inst.Name, " ", "_", -1),
 	}
 
 	if !initial {
