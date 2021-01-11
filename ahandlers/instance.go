@@ -37,6 +37,7 @@ type instanceData struct {
 	Name             string             `json:"name"`
 	Comment          string             `json:"comment"`
 	State            string             `json:"state"`
+	Uefi             bool               `json:"uefi"`
 	DeleteProtection bool               `json:"delete_protection"`
 	InitDiskSize     int                `json:"init_disk_size"`
 	Memory           int                `json:"memory"`
@@ -95,6 +96,7 @@ func instancePut(c *gin.Context) {
 	if dta.State != "" {
 		inst.State = dta.State
 	}
+	inst.Uefi = dta.Uefi
 	inst.DeleteProtection = dta.DeleteProtection
 	inst.Memory = dta.Memory
 	inst.Processors = dta.Processors
@@ -114,6 +116,7 @@ func instancePut(c *gin.Context) {
 		"state",
 		"restart",
 		"restart_block_ip",
+		"uefi",
 		"delete_protection",
 		"memory",
 		"processors",
@@ -240,6 +243,7 @@ func instancePost(c *gin.Context) {
 			Node:             dta.Node,
 			Image:            dta.Image,
 			ImageBacking:     dta.ImageBacking,
+			Uefi:             dta.Uefi,
 			DeleteProtection: dta.DeleteProtection,
 			Name:             name,
 			Comment:          dta.Comment,
