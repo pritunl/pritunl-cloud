@@ -419,6 +419,8 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			addDevice = infoUsbDevices[0].vendor + ':' + infoUsbDevices[0].product;
 		}
 
+		let bus = addDevice.indexOf('-') !== -1;
+
 		if (this.state.changed) {
 			instance = {
 				...this.state.instance,
@@ -436,19 +438,33 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		let index = -1;
 		for (let i = 0; i < usbDevices.length; i++) {
 			let dev = usbDevices[i];
-			if (dev.vendor + ':' + dev.product === addDevice) {
+			if (!bus && dev.vendor + ':' + dev.product === addDevice) {
+				index = i;
+				break
+			} else if (bus && dev.bus + '-' + dev.address === addDevice) {
 				index = i;
 				break
 			}
 		}
 
-		let device = addDevice.split(':');
+		if (!bus) {
+			let device = addDevice.split(':');
 
-		if (index === -1) {
-			usbDevices.push({
-				vendor: device[0],
-				product: device[1],
-			});
+			if (index === -1) {
+				usbDevices.push({
+					vendor: device[0],
+					product: device[1],
+				});
+			}
+		} else {
+			let port = addDevice.split('-');
+
+			if (index === -1) {
+				usbDevices.push({
+					bus: port[0],
+					address: port[1],
+				});
+			}
 		}
 
 		instance.usb_devices = usbDevices;
@@ -479,10 +495,15 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			...(instance.usb_devices || []),
 		];
 
+		let bus = device.indexOf('-') !== -1;
+
 		let index = -1;
 		for (let i = 0; i < usbDevices.length; i++) {
 			let dev = usbDevices[i];
-			if (dev.vendor + ':' + dev.product == device) {
+			if (!bus && dev.vendor + ':' + dev.product == device) {
+				index = i;
+				break
+			} else if (bus && dev.bus + '-' + dev.address == device) {
 				index = i;
 				break
 			}
@@ -820,7 +841,12 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 
 		let usbDevices: JSX.Element[] = [];
 		for (let device of (instance.usb_devices || [])) {
-			let key = device.vendor + ':' + device.product;
+			let key = '';
+			if (device.bus && device.address) {
+				key = device.bus + '-' + device.address;
+			} else {
+				key = device.vendor + ':' + device.product;
+			}
 			usbDevices.push(
 				<div
 					className="bp3-tag bp3-tag-removable bp3-intent-primary"
@@ -849,6 +875,18 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					value={device.vendor + ':' + device.product}
 				>
 					{device.name + ' (' + device.vendor + ':' + device.product + ')'}
+				</option>,
+			);
+		}
+		for (let i = 0; i < (infoUsbDevices || []).length; i++) {
+			let device = infoUsbDevices[i];
+			usbDevicesSelect.push(
+				<option
+					key={i}
+					value={device.bus + '-' + device.address}
+				>
+					{'Bus:' + device.bus + ' Port:' + device.address +
+					' (' + device.name + ')'}
 				</option>,
 			);
 		}
