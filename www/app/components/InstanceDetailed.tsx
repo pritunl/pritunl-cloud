@@ -1253,6 +1253,15 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
+						label="UEFI"
+						help="Enable UEFI boot, requires UEFI image."
+						checked={instance.uefi}
+						onToggle={(): void => {
+							this.set('uefi', !instance.uefi);
+						}}
+					/>
+					<PageSwitch
+						disabled={this.state.disabled}
 						label="Delete protection"
 						help="Block instance and any attached disks from being deleted."
 						checked={instance.delete_protection}
