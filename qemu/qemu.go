@@ -25,6 +25,8 @@ type Network struct {
 type UsbDevice struct {
 	Vendor  string
 	Product string
+	Bus     string
+	Address string
 }
 
 type Qemu struct {
