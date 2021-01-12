@@ -62,6 +62,8 @@ export interface UsbDevice {
 	name?: string;
 	vendor?: string;
 	product?: string;
+	bus?: string;
+	address?: string;
 }
 
 export interface PciDevice {
