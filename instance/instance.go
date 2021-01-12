@@ -201,8 +201,12 @@ func (i *Instance) Validate(db *database.Database) (
 			device.Name = ""
 			device.Vendor = usb.FilterId(device.Vendor)
 			device.Product = usb.FilterId(device.Product)
+			device.Bus = usb.FilterAddr(device.Bus)
+			device.Address = usb.FilterAddr(device.Address)
 
-			if device.Vendor == "" || device.Product == "" {
+			if (device.Vendor == "" || device.Product == "") &&
+				(device.Bus == "" || device.Address == "") {
+
 				errData = &errortypes.ErrorData{
 					Error:   "usb_device_invalid",
 					Message: "Invalid USB device",
@@ -493,6 +497,8 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 			i.Virt.UsbDevices = append(i.Virt.UsbDevices, &vm.UsbDevice{
 				Vendor:  device.Vendor,
 				Product: device.Product,
+				Bus:     device.Bus,
+				Address: device.Address,
 			})
 		}
 	}
