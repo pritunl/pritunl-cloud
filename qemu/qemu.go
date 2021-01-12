@@ -167,18 +167,31 @@ func (q *Qemu) Marshal() (output string, err error) {
 		for _, device := range q.UsbDevices {
 			vendor := usb.FilterId(device.Vendor)
 			product := usb.FilterId(device.Product)
+			bus := usb.FilterAddr(device.Bus)
+			address := usb.FilterAddr(device.Address)
 
-			if vendor == "" || product == "" {
-				continue
+			if vendor != "" && product != "" {
+				cmd = append(cmd,
+					"-device",
+					fmt.Sprintf(
+						"usb-host,vendorid=0x%s,productid=0x%s,id=usb%s_%s",
+						vendor, product,
+						vendor, product,
+					),
+				)
+			} else if bus != "" && address != "" {
+				cmd = append(cmd,
+					"-device",
+					fmt.Sprintf(
+						"usb-host,hostbus=%s,hostaddr=%s,id=usb%s_%s",
+						strings.TrimLeft(bus, "0"),
+						strings.TrimLeft(address, "0"),
+						strings.TrimLeft(bus, "0"),
+						strings.TrimLeft(address, "0"),
+					),
+				)
 			}
 
-			cmd = append(cmd,
-				"-device",
-				fmt.Sprintf(
-					"usb-host,vendorid=0x%s,productid=0x%s",
-					vendor, product,
-				),
-			)
 		}
 	}
 
