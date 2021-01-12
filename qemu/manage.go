@@ -1662,6 +1662,30 @@ func NetworkConfClear(db *database.Database,
 	return
 }
 
+func writeOvmfVars(virt *vm.VirtualMachine) (err error) {
+	if !virt.Uefi {
+		return
+	}
+
+	ovmfVarsPath := paths.GetOvmfVarsPath(virt.Id)
+	ovmfVarsPathSource, err := paths.FindOvmfVarsPath()
+	if err != nil {
+		return
+	}
+
+	err = utils.ExistsMkdir(paths.GetOvmfDir(), 0755)
+	if err != nil {
+		return
+	}
+
+	err = utils.Exec("", "cp", ovmfVarsPathSource, ovmfVarsPath)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func writeService(virt *vm.VirtualMachine) (err error) {
 	unitPath := paths.GetUnitPath(virt.Id)
 
@@ -1763,6 +1787,11 @@ func Create(db *database.Database, inst *instance.Instance,
 	}
 
 	err = cloudinit.Write(db, inst, virt, true)
+	if err != nil {
+		return
+	}
+
+	err = writeOvmfVars(virt)
 	if err != nil {
 		return
 	}
@@ -1992,6 +2021,11 @@ func PowerOn(db *database.Database, inst *instance.Instance,
 	}).Info("qemu: Starting virtual machine")
 
 	err = cloudinit.Write(db, inst, virt, false)
+	if err != nil {
+		return
+	}
+
+	err = writeOvmfVars(virt)
 	if err != nil {
 		return
 	}
