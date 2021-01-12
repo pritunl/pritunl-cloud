@@ -29,22 +29,30 @@ type UsbDevice struct {
 	Address string
 }
 
+type PciDevice struct {
+	Slot string
+}
+
 type Qemu struct {
-	Id         primitive.ObjectID
-	Data       string
-	Kvm        bool
-	Machine    string
-	Cpu        string
-	Cpus       int
-	Cores      int
-	Threads    int
-	Boot       string
-	Memory     int
-	Vnc        bool
-	VncDisplay int
-	Disks      []*Disk
-	Networks   []*Network
-	UsbDevices []*UsbDevice
+	Id           primitive.ObjectID
+	Data         string
+	Kvm          bool
+	Machine      string
+	Cpu          string
+	Cpus         int
+	Cores        int
+	Threads      int
+	Boot         string
+	Uefi         bool
+	OvmfCodePath string
+	OvmfVarsPath string
+	Memory       int
+	Vnc          bool
+	VncDisplay   int
+	Disks        []*Disk
+	Networks     []*Network
+	UsbDevices   []*UsbDevice
+	PciDevices   []*PciDevice
 }
 
 func (q *Qemu) Marshal() (output string, err error) {
