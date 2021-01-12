@@ -66,7 +66,33 @@ func (q *Qemu) Marshal() (output string, err error) {
 		nodeVga = node.Vmware
 	}
 
-	if q.Vnc && q.VncDisplay != 0 {
+	gpuPassthrough := false
+	if node.Self.PciPassthrough && len(q.PciDevices) > 0 {
+		gpuPassthrough = true
+
+		for i, device := range q.PciDevices {
+			cmd = append(cmd, "-device")
+
+			if i == 0 {
+				cmd = append(cmd, fmt.Sprintf(
+					"vfio-pci,host=0000:%s,multifunction=on,x-vga=on",
+					device.Slot,
+				))
+			} else {
+				cmd = append(cmd, fmt.Sprintf(
+					"vfio-pci,host=0000:%s",
+					device.Slot,
+				))
+			}
+		}
+
+		cmd = append(cmd, "-display")
+		cmd = append(cmd, "none")
+		cmd = append(cmd, "-vga")
+		cmd = append(cmd, "none")
+	}
+
+	if !gpuPassthrough && q.Vnc && q.VncDisplay != 0 {
 		cmd = append(cmd, "-vga")
 		cmd = append(cmd, nodeVga)
 		cmd = append(cmd, "-vnc")
@@ -89,14 +115,18 @@ func (q *Qemu) Marshal() (output string, err error) {
 	if q.Kvm {
 		options += ",accel=kvm"
 	}
-	if nodeVga == node.Virtio {
+	if !gpuPassthrough && nodeVga == node.Virtio {
 		options += ",gfx_passthru=on"
 	}
 	cmd = append(cmd, fmt.Sprintf("type=%s%s", q.Machine, options))
 
 	if q.Kvm {
 		cmd = append(cmd, "-cpu")
-		cmd = append(cmd, q.Cpu)
+		if gpuPassthrough {
+			cmd = append(cmd, q.Cpu+",kvm=off,hv_vendor_id=null")
+		} else {
+			cmd = append(cmd, q.Cpu)
+		}
 	}
 
 	cmd = append(cmd, "-smp")
