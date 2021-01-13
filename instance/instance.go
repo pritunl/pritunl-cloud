@@ -551,7 +551,9 @@ func (i *Instance) Changed(curVirt *vm.VirtualMachine) bool {
 			}
 
 			if device.Vendor != curVirt.UsbDevices[i].Vendor ||
-				device.Product != curVirt.UsbDevices[i].Product {
+				device.Product != curVirt.UsbDevices[i].Product ||
+				device.Bus != curVirt.UsbDevices[i].Bus ||
+				device.Address != curVirt.UsbDevices[i].Address {
 
 				return true
 			}
