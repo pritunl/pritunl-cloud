@@ -886,7 +886,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					key={i}
 					value={device.bus + '-' + device.address}
 				>
-					{'Bus:' + device.bus + ' Port:' + device.address +
+					{'Bus=' + device.bus + ' Port=' + device.address +
 					' (' + device.name + ')'}
 				</option>,
 			);
