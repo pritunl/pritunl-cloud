@@ -21,6 +21,7 @@ type Image struct {
 	Organization primitive.ObjectID `bson:"organization" json:"organization"`
 	Signed       bool               `bson:"signed" json:"signed"`
 	Type         string             `bson:"type" json:"type"`
+	Firmware     string             `bson:"firmware" json:"firmware"`
 	Storage      primitive.ObjectID `bson:"storage" json:"storage"`
 	Key          string             `bson:"key" json:"key"`
 	LastModified time.Time          `bson:"last_modified" json:"last_modified"`
@@ -30,6 +31,10 @@ type Image struct {
 
 func (i *Image) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
+
+	if i.Firmware == "" {
+		i.Firmware = Unknown
+	}
 
 	return
 }
@@ -94,6 +99,7 @@ func (i *Image) Upsert(db *database.Database) (err error) {
 				"organization":  i.Organization,
 				"signed":        i.Signed,
 				"type":          i.Type,
+				"firmware":      i.Firmware,
 				"storage":       i.Storage,
 				"key":           i.Key,
 				"last_modified": i.LastModified,
@@ -129,6 +135,7 @@ func (i *Image) Sync(db *database.Database) (err error) {
 					"key":           i.Key,
 					"signed":        i.Signed,
 					"type":          i.Type,
+					"firmware":      i.Firmware,
 					"etag":          i.Etag,
 					"last_modified": i.LastModified,
 					"storage_class": i.StorageClass,
@@ -159,6 +166,7 @@ func (i *Image) Sync(db *database.Database) (err error) {
 					"key":           i.Key,
 					"signed":        i.Signed,
 					"type":          i.Type,
+					"firmware":      i.Firmware,
 					"etag":          i.Etag,
 					"last_modified": i.LastModified,
 				},
