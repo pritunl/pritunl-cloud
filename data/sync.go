@@ -5,7 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	minio "github.com/minio/minio-go"
@@ -15,6 +14,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/storage"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -66,6 +66,7 @@ func Sync(db *database.Database, store *storage.Storage) (err error) {
 			img := &image.Image{
 				Storage:      store.Id,
 				Key:          object.Key,
+				Firmware:     image.Unknown,
 				Etag:         etag,
 				Type:         store.Type,
 				LastModified: object.LastModified,
@@ -92,6 +93,16 @@ func Sync(db *database.Database, store *storage.Storage) (err error) {
 
 	for _, img := range images {
 		img.Signed = signedKeys.Contains(img.Key)
+
+		if img.Signed {
+			if strings.Contains(img.Key, "_efi") ||
+				strings.Contains(img.Key, "_uefi") {
+
+				img.Firmware = image.Uefi
+			} else {
+				img.Firmware = image.Bios
+			}
+		}
 
 		err = img.Sync(db)
 		if err != nil {
