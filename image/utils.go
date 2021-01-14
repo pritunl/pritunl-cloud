@@ -207,6 +207,7 @@ func GetAllNames(db *database.Database, query *bson.M) (
 			Projection: &bson.D{
 				{"name", 1},
 				{"key", 1},
+				{"firmware", 1},
 			},
 		},
 	)
