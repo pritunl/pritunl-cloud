@@ -742,6 +742,7 @@ func (n *Node) update(db *database.Database) (err error) {
 				"private_ips":          n.PrivateIps,
 				"hostname":             n.Hostname,
 				"usb_devices":          n.UsbDevices,
+				"pci_devices":          n.PciDevices,
 				"available_interfaces": n.AvailableInterfaces,
 				"available_bridges":    n.AvailableBridges,
 				"default_interface":    n.DefaultInterface,
