@@ -936,6 +936,17 @@ func (n *Node) sync() {
 		n.UsbDevices = []*usb.Device{}
 	}
 
+	if n.PciPassthrough {
+		pciDevices, e := pci.GetVfioAll()
+		if err != nil {
+			err = e
+			return
+		}
+		n.PciDevices = pciDevices
+	} else {
+		n.PciDevices = []*pci.Device{}
+	}
+
 	err = n.update(db)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
