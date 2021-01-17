@@ -30,9 +30,18 @@ func GetTempDir() string {
 	return path.Join(GetTempPath(), primitive.NewObjectID().Hex())
 }
 
+func GetOvmfDir() string {
+	return path.Join(node.Self.GetVirtPath(), "ovmf")
+}
+
 func GetDiskPath(diskId primitive.ObjectID) string {
 	return path.Join(GetDisksPath(),
 		fmt.Sprintf("%s.qcow2", diskId.Hex()))
+}
+
+func GetOvmfVarsPath(virtId primitive.ObjectID) string {
+	return path.Join(GetOvmfDir(),
+		fmt.Sprintf("%s_vars.fd", virtId.Hex()))
 }
 
 func GetDiskTempPath() string {
