@@ -1842,6 +1842,7 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	sockPath := paths.GetSockPath(virt.Id)
 	guestPath := paths.GetGuestPath(virt.Id)
 	pidPath := paths.GetPidPath(virt.Id)
+	ovmfVarsPath := paths.GetOvmfVarsPath(virt.Id)
 
 	logrus.WithFields(logrus.Fields{
 		"id": virt.Id.Hex(),
@@ -2000,6 +2001,11 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	}
 
 	err = utils.RemoveAll(unitPath)
+	if err != nil {
+		return
+	}
+
+	err = utils.RemoveAll(ovmfVarsPath)
 	if err != nil {
 		return
 	}
