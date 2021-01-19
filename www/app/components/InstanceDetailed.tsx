@@ -185,8 +185,9 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		} else {
 			this.vncRfb = new RFB(
 				this.vncRef.current,
-				'wss://cloud.silicon.red/instance/' +
-				this.props.instance.id + '/vnc?csrf_token=' + Csrf.token,
+				'wss://' + location.hostname + (
+					location.port ? ':' + location.port:'') + '/instance/' +
+					this.props.instance.id + '/vnc?csrf_token=' + Csrf.token,
 				{
 					shared: true,
 					wsProtocols: ['binary'],
