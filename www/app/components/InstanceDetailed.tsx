@@ -997,10 +997,12 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				{
 					label: 'VNC Port',
 					value: this.props.instance.vnc_display + 5900,
+					copy: true,
 				},
 				{
 					label: 'VNC Password',
 					value: this.props.instance.vnc_password,
+					copy: true,
 				},
 			);
 		}
