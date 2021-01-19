@@ -186,7 +186,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			this.vncRfb = new RFB(
 				this.vncRef.current,
 				'wss://' + location.hostname + (
-					location.port ? ':' + location.port:'') + '/instance/' +
+					location.port ? ':' + location.port : '') + '/instance/' +
 					this.props.instance.id + '/vnc?csrf_token=' + Csrf.token,
 				{
 					shared: true,
