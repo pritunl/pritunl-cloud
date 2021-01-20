@@ -323,101 +323,6 @@ export default class VpcDetailed extends React.Component<Props, State> {
 		});
 	}
 
-	onAddLinkUri = (i: number): void => {
-		let vpc: VpcTypes.Vpc;
-
-		if (this.state.changed) {
-			vpc = {
-				...this.state.vpc,
-			};
-		} else {
-			vpc = {
-				...this.props.vpc,
-			};
-		}
-
-		let linkUris = [
-			...(vpc.link_uris || []),
-		];
-		if (!linkUris.length) {
-			linkUris = [''];
-		}
-
-		linkUris.splice(i + 1, 0, '');
-		vpc.link_uris = linkUris;
-
-		this.setState({
-			...this.state,
-			changed: true,
-			message: '',
-			vpc: vpc,
-		});
-	}
-
-	onChangeLinkUri(i: number, linkUri: string): void {
-		let vpc: VpcTypes.Vpc;
-
-		if (this.state.changed) {
-			vpc = {
-				...this.state.vpc,
-			};
-		} else {
-			vpc = {
-				...this.props.vpc,
-			};
-		}
-
-		let linkUris = [
-			...(vpc.link_uris || []),
-		];
-		if (!linkUris.length) {
-			linkUris = [''];
-		}
-
-		linkUris[i] = linkUri;
-
-		vpc.link_uris = linkUris;
-
-		this.setState({
-			...this.state,
-			changed: true,
-			message: '',
-			vpc: vpc,
-		});
-	}
-
-	onRemoveLinkUri(i: number): void {
-		let vpc: VpcTypes.Vpc;
-
-		if (this.state.changed) {
-			vpc = {
-				...this.state.vpc,
-			};
-		} else {
-			vpc = {
-				...this.props.vpc,
-			};
-		}
-
-		let linkUris = [
-			...(vpc.link_uris || []),
-		];
-		if (!linkUris.length) {
-			linkUris = [''];
-		}
-
-		linkUris.splice(i, 1);
-
-		vpc.link_uris = linkUris;
-
-		this.setState({
-			...this.state,
-			changed: true,
-			message: '',
-			vpc: vpc,
-		});
-	}
-
 	onSave = (): void => {
 		this.setState({
 			...this.state,
@@ -545,46 +450,6 @@ export default class VpcDetailed extends React.Component<Props, State> {
 			}
 		}
 
-		let linkUris: JSX.Element[] = [];
-		if (vpc.link_uris) {
-			for (let i = 0; i < vpc.link_uris.length; i++) {
-				let index = i;
-
-				linkUris.push(
-					<VpcLinkUri
-						key={index}
-						linkUri={vpc.link_uris[index]}
-						onChange={(linkUri: string): void => {
-							this.onChangeLinkUri(index, linkUri);
-						}}
-						onAdd={(): void => {
-							this.onAddLinkUri(index);
-						}}
-						onRemove={(): void => {
-							this.onRemoveLinkUri(index);
-						}}
-					/>,
-				);
-			}
-		}
-		if (!linkUris.length) {
-			linkUris.push(
-				<VpcLinkUri
-					key={0}
-					linkUri=""
-					onChange={(linkUri: string): void => {
-						this.onChangeLinkUri(0, linkUri);
-					}}
-					onAdd={(): void => {
-						this.onAddLinkUri(0);
-					}}
-					onRemove={(): void => {
-						this.onRemoveLinkUri(0);
-					}}
-				/>,
-			);
-		}
-
 		let fields: PageInfos.Field[] = [
 			{
 				label: 'ID',
@@ -608,13 +473,6 @@ export default class VpcDetailed extends React.Component<Props, State> {
 				copy: true,
 			},
 		];
-
-		if (this.props.vpc.link_node) {
-			fields.push({
-				label: 'Link Node',
-				value: this.props.vpc.link_node,
-			});
-		}
 
 		return <td
 			className="bp3-cell"
@@ -701,16 +559,6 @@ export default class VpcDetailed extends React.Component<Props, State> {
 					</label>
 					<div style={css.list}>
 						{subnetsElem}
-					</div>
-					<label style={css.itemsLabel} hidden={true}>
-						Pritunl Link URIs
-						<Help
-							title="Pritunl Link URIs"
-							content="Pritunl Link URIs for automated IPsec linking with a Pritunl server."
-						/>
-					</label>
-					<div style={css.list} hidden={true}>
-						{linkUris}
 					</div>
 				</div>
 				<div style={css.group}>
