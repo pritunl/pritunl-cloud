@@ -27,7 +27,6 @@ type vpcData struct {
 	Organization primitive.ObjectID `json:"organization"`
 	Datacenter   primitive.ObjectID `json:"datacenter"`
 	Routes       []*vpc.Route       `json:"routes"`
-	LinkUris     []string           `json:"link_uris"`
 }
 
 type vpcsData struct {
@@ -67,14 +66,12 @@ func vpcPut(c *gin.Context) {
 	vc.Comment = data.Comment
 	vc.Routes = data.Routes
 	vc.Subnets = data.Subnets
-	vc.LinkUris = data.LinkUris
 
 	fields := set.NewSet(
 		"name",
 		"comment",
 		"routes",
 		"subnets",
-		"link_uris",
 	)
 
 	errData, err := vc.Validate(db)
@@ -139,7 +136,6 @@ func vpcPost(c *gin.Context) {
 		Organization: data.Organization,
 		Datacenter:   data.Datacenter,
 		Routes:       data.Routes,
-		LinkUris:     data.LinkUris,
 	}
 
 	vc.InitVpc()

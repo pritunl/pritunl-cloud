@@ -4,11 +4,6 @@ import (
 	"bytes"
 	"crypto/md5"
 	"fmt"
-	"math/rand"
-	"net"
-	"strings"
-	"time"
-
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
@@ -16,9 +11,11 @@ import (
 	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/requires"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"math/rand"
+	"net"
+	"strings"
 )
 
 type Route struct {
@@ -28,20 +25,17 @@ type Route struct {
 }
 
 type Vpc struct {
-	Id            primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Name          string             `bson:"name" json:"name"`
-	Comment       string             `bson:"comment" json:"comment"`
-	VpcId         int                `bson:"vpc_id" json:"vpc_id"`
-	Network       string             `bson:"network" json:"network"`
-	Network6      string             `bson:"-" json:"network6"`
-	Subnets       []*Subnet          `bson:"subnets" json:"subnets"`
-	Organization  primitive.ObjectID `bson:"organization" json:"organization"`
-	Datacenter    primitive.ObjectID `bson:"datacenter" json:"datacenter"`
-	Routes        []*Route           `bson:"routes" json:"routes"`
-	LinkUris      []string           `bson:"link_uris" json:"link_uris"`
-	LinkNode      primitive.ObjectID `bson:"link_node,omitempty" json:"link_node"`
-	LinkTimestamp time.Time          `bson:"link_timestamp" json:"link_timestamp"`
-	curSubnets    []*Subnet          `bson:"-" json:"-"`
+	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name         string             `bson:"name" json:"name"`
+	Comment      string             `bson:"comment" json:"comment"`
+	VpcId        int                `bson:"vpc_id" json:"vpc_id"`
+	Network      string             `bson:"network" json:"network"`
+	Network6     string             `bson:"-" json:"network6"`
+	Subnets      []*Subnet          `bson:"subnets" json:"subnets"`
+	Organization primitive.ObjectID `bson:"organization" json:"organization"`
+	Datacenter   primitive.ObjectID `bson:"datacenter" json:"datacenter"`
+	Routes       []*Route           `bson:"routes" json:"routes"`
+	curSubnets   []*Subnet          `bson:"-" json:"-"`
 }
 
 func (v *Vpc) Validate(db *database.Database) (
@@ -188,18 +182,6 @@ func (v *Vpc) Validate(db *database.Database) (
 	if v.Routes == nil {
 		v.Routes = []*Route{}
 	}
-
-	if v.LinkUris == nil {
-		v.LinkUris = []string{}
-	}
-
-	linkUris := []string{}
-	for _, linkUri := range v.LinkUris {
-		if linkUri != "" {
-			linkUris = append(linkUris, linkUri)
-		}
-	}
-	v.LinkUris = linkUris
 
 	destinations := set.NewSet()
 	for _, route := range v.Routes {
@@ -586,73 +568,6 @@ func (v *Vpc) GetIp6(addr net.IP) net.IP {
 	}
 
 	return net.ParseIP(ipBuf.String())
-}
-
-func (v *Vpc) PingLink(db *database.Database) (held bool, err error) {
-	coll := db.Vpcs()
-
-	query := bson.M{
-		"_id":            v.Id,
-		"link_timestamp": v.LinkTimestamp,
-	}
-
-	if !v.LinkNode.IsZero() {
-		query["link_node"] = v.LinkNode
-	}
-
-	_, err = coll.UpdateOne(
-		db,
-		query,
-		&bson.M{
-			"$set": &bson.M{
-				"link_node":      node.Self.Id,
-				"link_timestamp": time.Now(),
-			},
-		},
-	)
-	if err != nil {
-		err = database.ParseError(err)
-		if _, ok := err.(*database.NotFoundError); ok {
-			err = nil
-		} else {
-			return
-		}
-	} else {
-		held = true
-	}
-
-	return
-}
-
-func (v *Vpc) AddLinkRoutes(db *database.Database, routes []*Route) (
-	err error) {
-
-	vc, err := Get(db, v.Id)
-	if err != nil {
-		return
-	}
-
-	linkDsts := set.NewSet()
-	for _, route := range routes {
-		linkDsts.Add(route.Destination)
-	}
-
-	for _, route := range vc.Routes {
-		if route.Link || linkDsts.Contains(route.Destination) {
-			continue
-		}
-
-		routes = append(routes, route)
-	}
-
-	vc.Routes = routes
-
-	err = vc.CommitFields(db, set.NewSet("routes"))
-	if err != nil {
-		return
-	}
-
-	return
 }
 
 func (v *Vpc) RemoveSubnet(db *database.Database, subId primitive.ObjectID) (

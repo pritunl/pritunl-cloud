@@ -4,5 +4,4 @@ func Init() {
 	initAuth()
 	initNode()
 	initVm()
-	initLink()
 }

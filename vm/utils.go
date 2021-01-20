@@ -157,34 +157,6 @@ func GetNamespace(id primitive.ObjectID, n int) string {
 	return fmt.Sprintf("n%s%d", strings.ToLower(hashSum), n)
 }
 
-func GetLinkIfaceExternal(id primitive.ObjectID, n int) string {
-	hash := md5.New()
-	hash.Write([]byte(id.Hex()))
-	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
-	return fmt.Sprintf("z%s%d", strings.ToLower(hashSum), n)
-}
-
-func GetLinkIfaceInternal(id primitive.ObjectID, n int) string {
-	hash := md5.New()
-	hash.Write([]byte(id.Hex()))
-	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
-	return fmt.Sprintf("y%s%d", strings.ToLower(hashSum), n)
-}
-
-func GetLinkIfaceVirt(id primitive.ObjectID, n int) string {
-	hash := md5.New()
-	hash.Write([]byte(id.Hex()))
-	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
-	return fmt.Sprintf("w%s%d", strings.ToLower(hashSum), n)
-}
-
-func GetLinkNamespace(id primitive.ObjectID, n int) string {
-	hash := md5.New()
-	hash.Write([]byte(id.Hex()))
-	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
-	return fmt.Sprintf("x%s%d", strings.ToLower(hashSum), n)
-}
-
 func GetHostVxlanIface(parentIface string) string {
 	hash := md5.New()
 	hash.Write([]byte(parentIface))

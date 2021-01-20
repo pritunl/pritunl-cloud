@@ -5,7 +5,6 @@ const (
 	User       = "user"
 	Balancer   = "balancer"
 	Hypervisor = "hypervisor"
-	Ipsec      = "ipsec"
 
 	Qemu = "qemu"
 	Kvm  = "kvm"

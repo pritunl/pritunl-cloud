@@ -252,15 +252,6 @@ func (n *Node) IsHypervisor() bool {
 	return false
 }
 
-func (n *Node) IsIpsec() bool {
-	for _, typ := range n.Types {
-		if typ == Ipsec {
-			return true
-		}
-	}
-	return false
-}
-
 func (n *Node) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
@@ -308,7 +299,7 @@ func (n *Node) Validate(db *database.Database) (
 
 	for _, typ := range n.Types {
 		switch typ {
-		case Admin, User, Balancer, Hypervisor, Ipsec:
+		case Admin, User, Balancer, Hypervisor:
 			break
 		default:
 			errData = &errortypes.ErrorData{
