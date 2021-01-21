@@ -9,20 +9,22 @@ import (
 )
 
 var (
-	syncLast    time.Time
-	syncLock    sync.Mutex
-	syncDevices []*Device
+	syncLast  time.Time
+	syncLock  sync.Mutex
+	syncCache []*Device
 )
 
 type Device struct {
 	Name    string `bson:"name" json:"name"`
 	Vendor  string `bson:"vendor" json:"vendor"`
 	Product string `bson:"product" json:"product"`
+	Bus     string `bson:"bus" json:"bus"`
+	Address string `bson:"address" json:"address"`
 }
 
 func GetDevices() (devices []*Device, err error) {
 	if time.Since(syncLast) < 30*time.Second {
-		devices = syncDevices
+		devices = syncCache
 		return
 	}
 	syncLock.Lock()
@@ -44,6 +46,9 @@ func GetDevices() (devices []*Device, err error) {
 			continue
 		}
 
+		bus := strings.TrimSpace(strings.SplitN(fields[1], ":", 2)[0])
+		address := strings.TrimSpace(strings.SplitN(fields[3], ":", 2)[0])
+
 		deviceId := strings.SplitN(fields[5], ":", 2)
 		if len(deviceId) != 2 {
 			continue
@@ -53,11 +58,13 @@ func GetDevices() (devices []*Device, err error) {
 			Name:    strings.Join(fields[6:], " "),
 			Vendor:  deviceId[0],
 			Product: deviceId[1],
+			Bus:     bus,
+			Address: address,
 		}
 		devices = append(devices, device)
 	}
 
-	syncDevices = devices
+	syncCache = devices
 	syncLast = time.Now()
 
 	return
