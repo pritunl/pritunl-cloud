@@ -32,6 +32,7 @@ type Disk struct {
 	BackingImage     string             `bson:"backing_image" json:"backing_image"`
 	Index            string             `bson:"index" json:"index"`
 	Size             int                `bson:"size" json:"size"`
+	NewSize          int                `bson:"new_size" json:"new_size"`
 	Backup           bool               `bson:"backup" json:"backup"`
 	LastBackup       time.Time          `bson:"last_backup" json:"last_backup"`
 }
@@ -86,6 +87,26 @@ func (d *Disk) Validate(db *database.Database) (
 
 	if d.Size < 10 {
 		d.Size = 10
+	}
+
+	if d.State == Expand {
+		if d.NewSize == 0 {
+			errData = &errortypes.ErrorData{
+				Error:   "new_size_missing",
+				Message: "Cannot expand without new size",
+			}
+			return
+		}
+
+		if d.NewSize < d.Size {
+			errData = &errortypes.ErrorData{
+				Error:   "new_size_invalid",
+				Message: "New size cannot be less then current size",
+			}
+			return
+		}
+	} else {
+		d.NewSize = 0
 	}
 
 	return
