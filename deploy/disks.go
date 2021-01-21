@@ -412,6 +412,9 @@ func (d *Disks) Deploy() (err error) {
 		case disk.Restore:
 			d.restore(dsk)
 			break
+		case disk.Expand:
+			d.expand(dsk)
+			break
 		case disk.Destroy:
 			d.destroy(dsk)
 			break
