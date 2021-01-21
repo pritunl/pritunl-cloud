@@ -36,6 +36,7 @@ type diskData struct {
 	Backing          bool               `json:"backing"`
 	State            string             `json:"state"`
 	Size             int                `json:"size"`
+	NewSize          int                `json:"new_size"`
 	Backup           bool               `json:"backup"`
 }
 
@@ -85,6 +86,7 @@ func diskPut(c *gin.Context) {
 		"delete_protection",
 		"index",
 		"backup",
+		"new_size",
 	)
 
 	dsk.Name = dta.Name
@@ -96,8 +98,14 @@ func diskPut(c *gin.Context) {
 
 	if dsk.State == disk.Available && dta.State == disk.Snapshot {
 		dsk.State = disk.Snapshot
+		fields.Add("state")
 	} else if dsk.State == disk.Available && dta.State == disk.Backup {
 		dsk.State = disk.Backup
+		fields.Add("state")
+	} else if dsk.State == disk.Available && dta.State == disk.Expand {
+		dsk.State = disk.Expand
+		dsk.NewSize = dta.NewSize
+		fields.Add("state")
 	} else if dta.State == disk.Restore {
 		if dsk.State != disk.Available {
 			errData := &errortypes.ErrorData{
