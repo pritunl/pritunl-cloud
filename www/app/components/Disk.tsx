@@ -138,6 +138,10 @@ export default class Disk extends React.Component<Props, {}> {
 				statusText = 'Restoring';
 				statusClass += ' bp3-text-intent-primary';
 				break;
+			case 'expand':
+				statusText = 'Expanding';
+				statusClass += ' bp3-text-intent-primary';
+				break;
 		}
 
 		return <div
