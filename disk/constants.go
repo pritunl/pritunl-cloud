@@ -5,6 +5,7 @@ const (
 	Available = "available"
 	Snapshot  = "snapshot"
 	Backup    = "backup"
+	Expand    = "expand"
 	Restore   = "restore"
 	Destroy   = "destroy"
 )
