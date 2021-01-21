@@ -1,7 +1,6 @@
 package instance
 
 import (
-	"github.com/sirupsen/logrus"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/mongo-go-driver/mongo/options"
@@ -10,6 +9,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vpc"
+	"github.com/sirupsen/logrus"
 )
 
 func Get(db *database.Database, instId primitive.ObjectID) (
@@ -110,7 +110,8 @@ func GetAllVirt(db *database.Database, query *bson.M, disks []*disk.Disk) (
 		} else if dsk.State != disk.Available &&
 			dsk.State != disk.Snapshot &&
 			dsk.State != disk.Backup &&
-			dsk.State != disk.Restore {
+			dsk.State != disk.Restore &&
+			dsk.State != disk.Expand {
 
 			continue
 		}
@@ -187,7 +188,8 @@ func GetAllVirtMapped(db *database.Database, query *bson.M,
 				} else if dsk.State != disk.Available &&
 					dsk.State != disk.Snapshot &&
 					dsk.State != disk.Backup &&
-					dsk.State != disk.Restore {
+					dsk.State != disk.Restore &&
+					dsk.State != disk.Expand {
 
 					continue
 				}
