@@ -36,6 +36,7 @@ interface State {
 	disk: DiskTypes.Disk;
 	instances: InstanceTypes.InstancesRo;
 	restoreImage: string;
+	resizeDisk: boolean;
 }
 
 const css = {
@@ -117,6 +118,7 @@ export default class DiskDetailed extends React.Component<Props, State> {
 			disk: null,
 			instances: null,
 			restoreImage: null,
+			resizeDisk: false,
 		};
 	}
 
@@ -162,12 +164,49 @@ export default class DiskDetailed extends React.Component<Props, State> {
 		});
 	}
 
+	setResizeDisk(val: boolean): void {
+		let disk: any;
+
+		if (this.state.changed) {
+			disk = {
+				...this.state.disk,
+			};
+		} else {
+			disk = {
+				...this.props.disk,
+			};
+		}
+
+		if (val) {
+			disk.new_size = disk.size;
+		} else {
+			disk.new_size = 0;
+		}
+
+		this.setState({
+			...this.state,
+			changed: true,
+			resizeDisk: val,
+			disk: disk,
+		});
+
+	}
+
 	onSave = (): void => {
 		this.setState({
 			...this.state,
 			disabled: true,
 		});
-		DiskActions.commit(this.state.disk).then((): void => {
+
+		let disk = {
+			...this.state.disk,
+		};
+
+		if (this.state.resizeDisk && disk.new_size > disk.size) {
+			disk.state = 'expand';
+		}
+
+		DiskActions.commit(disk).then((): void => {
 			this.setState({
 				...this.state,
 				message: 'Your changes have been saved',
@@ -181,6 +220,7 @@ export default class DiskDetailed extends React.Component<Props, State> {
 						...this.state,
 						disk: null,
 						changed: false,
+						resizeDisk: false,
 					});
 				}
 			}, 1000);
@@ -345,6 +385,10 @@ export default class DiskDetailed extends React.Component<Props, State> {
 				statusText = 'Restoring';
 				statusClass += ' bp3-text-intent-primary';
 				break;
+			case 'expand':
+				statusText = 'Expanding';
+				statusClass += ' bp3-text-intent-primary';
+				break;
 		}
 
 		let fields: PageInfos.Field[] = [
@@ -493,6 +537,30 @@ export default class DiskDetailed extends React.Component<Props, State> {
 				<div style={css.group}>
 					<PageInfo
 						fields={fields}
+					/>
+					<PageSwitch
+						disabled={this.state.disabled || disk.state != 'available'}
+						label="Resize disk"
+						help="Change size of disk. Instance will be stopped."
+						checked={this.state.resizeDisk}
+						onToggle={(): void => {
+							this.setResizeDisk(!this.state.resizeDisk);
+						}}
+					/>
+					<PageNumInput
+						label="New Size"
+						help="New disk size in gigabytes."
+						hidden={!this.state.resizeDisk}
+						min={disk.size}
+						minorStepSize={1}
+						stepSize={1}
+						majorStepSize={1}
+						disabled={this.state.disabled}
+						selectAllOnFocus={true}
+						value={disk.new_size}
+						onChange={(val: number): void => {
+							this.set('new_size', val);
+						}}
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
