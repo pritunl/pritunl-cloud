@@ -6,6 +6,8 @@ type hypervisor struct {
 	Id              string `bson:"_id"`
 	SystemdPath     string `bson:"systemd_path" default:"/etc/systemd/system"`
 	LibPath         string `bson:"systemd_path" default:"/var/lib/pritunl-cloud"`
+	OvmfCodePath    string `bson:"ovmf_vars_path"`
+	OvmfVarsPath    string `bson:"ovmf_vars_path"`
 	NormalMtu       int    `bson:"normal_mtu" default:"1500"`
 	JumboMtu        int    `bson:"jumbo_mtu" default:"9000"`
 	VxlanId         int    `bson:"vxlan_id" default:"9417"`
