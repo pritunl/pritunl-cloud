@@ -212,6 +212,23 @@ export default class InstanceNew extends React.Component<Props, State> {
 		});
 	}
 
+	onUefi(uefi: boolean): void {
+		let instance: any = {
+			...this.state.instance,
+		};
+
+		if (instance.uefi !== uefi) {
+			instance.image = '';
+		}
+		instance.uefi = uefi;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			instance: instance,
+		});
+	}
+
 	onAddNetworkRole = (): void => {
 		if (!this.state.addNetworkRole) {
 			return;
@@ -448,6 +465,12 @@ export default class InstanceNew extends React.Component<Props, State> {
 
 			hasImages = true;
 			for (let image of this.state.images) {
+				if (instance.uefi && image.firmware === 'bios') {
+					continue;
+				} else if (!instance.uefi && image.firmware === 'uefi') {
+					continue;
+				}
+
 				imagesSelect.push(
 					<option
 						key={image.id}
@@ -653,6 +676,15 @@ export default class InstanceNew extends React.Component<Props, State> {
 								} else {
 									this.set('state', 'stop');
 								}
+							}}
+						/>
+						<PageSwitch
+							disabled={this.state.disabled}
+							label="UEFI"
+							help="Enable UEFI boot, requires OVMF package for UEFI image."
+							checked={instance.uefi}
+							onToggle={(): void => {
+								this.onUefi(!instance.uefi);
 							}}
 						/>
 						<PageSwitch
