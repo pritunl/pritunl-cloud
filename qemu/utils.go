@@ -6,6 +6,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/vm"
 )
 
@@ -18,30 +19,42 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 		return
 	}
 
+	ovmfCodePath := ""
+	if virt.Uefi {
+		ovmfCodePath, err = paths.FindOvmfCodePath()
+		if err != nil {
+			return
+		}
+	}
+
 	qm = &Qemu{
-		Id:         virt.Id,
-		Data:       string(data),
-		Kvm:        node.Self.Hypervisor == node.Kvm,
-		Machine:    "pc",
-		Cpu:        "host",
-		Cpus:       virt.Processors,
-		Cores:      1,
-		Threads:    1,
-		Boot:       "c",
-		Memory:     virt.Memory,
-		Vnc:        virt.Vnc,
-		VncDisplay: virt.VncDisplay,
-		Disks:      []*Disk{},
-		Networks:   []*Network{},
-		UsbDevices: []*UsbDevice{},
+		Id:           virt.Id,
+		Data:         string(data),
+		Kvm:          node.Self.Hypervisor == node.Kvm,
+		Machine:      "pc",
+		Cpu:          "host",
+		Cpus:         virt.Processors,
+		Cores:        1,
+		Threads:      1,
+		Boot:         "c",
+		Uefi:         virt.Uefi,
+		OvmfCodePath: ovmfCodePath,
+		OvmfVarsPath: paths.GetOvmfVarsPath(virt.Id),
+		Memory:       virt.Memory,
+		Vnc:          virt.Vnc,
+		VncDisplay:   virt.VncDisplay,
+		Disks:        []*Disk{},
+		Networks:     []*Network{},
+		UsbDevices:   []*UsbDevice{},
+		PciDevices:   []*PciDevice{},
 	}
 
 	for _, disk := range virt.Disks {
 		qm.Disks = append(qm.Disks, &Disk{
-			Media:   "disk",
-			Index:   disk.Index,
-			File:    disk.Path,
-			Format:  "qcow2",
+			Media:  "disk",
+			Index:  disk.Index,
+			File:   disk.Path,
+			Format: "qcow2",
 		})
 	}
 
