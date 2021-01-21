@@ -69,6 +69,8 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 		qm.UsbDevices = append(qm.UsbDevices, &UsbDevice{
 			Vendor:  device.Vendor,
 			Product: device.Product,
+			Bus:     device.Bus,
+			Address: device.Address,
 		})
 	}
 
