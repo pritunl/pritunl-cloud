@@ -3,6 +3,7 @@ pritunl-cloud changelog
 
 <%= version %>
 
+Add disk resizing
 Format username capitalization on update
 
 Version 1.2.1807.79 2020-11-04
