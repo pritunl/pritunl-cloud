@@ -541,26 +541,6 @@ func (i *Instance) Changed(curVirt *vm.VirtualMachine) bool {
 		}
 	}
 
-	if i.Virt.UsbDevices != nil {
-		if len(i.Virt.UsbDevices) > 0 && curVirt.UsbDevices == nil {
-			return true
-		}
-
-		for i, device := range i.Virt.UsbDevices {
-			if len(curVirt.UsbDevices) <= i {
-				return true
-			}
-
-			if device.Vendor != curVirt.UsbDevices[i].Vendor ||
-				device.Product != curVirt.UsbDevices[i].Product ||
-				device.Bus != curVirt.UsbDevices[i].Bus ||
-				device.Address != curVirt.UsbDevices[i].Address {
-
-				return true
-			}
-		}
-	}
-
 	if i.Virt.PciDevices != nil {
 		if len(i.Virt.PciDevices) > 0 && curVirt.PciDevices == nil {
 			return true
