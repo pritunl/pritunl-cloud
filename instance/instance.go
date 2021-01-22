@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
@@ -607,6 +608,82 @@ func (i *Instance) DiskChanged(curVirt *vm.VirtualMachine) (
 			remDisks = append(remDisks, curDsk)
 			addDisks = append(addDisks, dsk)
 		}
+	}
+
+	return
+}
+
+func (i *Instance) UsbChanged(curVirt *vm.VirtualMachine) (
+	addUsbs, remUsbs []*vm.UsbDevice) {
+
+	addUsbs = []*vm.UsbDevice{}
+	remUsbs = []*vm.UsbDevice{}
+
+	usbsVendor := set.NewSet()
+	curUsbsVendor := set.NewSet()
+	usbsBus := set.NewSet()
+	curUsbsBus := set.NewSet()
+
+	if curVirt.UsbDevices != nil {
+		for _, device := range curVirt.UsbDevices {
+			if device.Vendor != "" && device.Product != "" {
+				curUsbsVendor.Add(fmt.Sprintf("%s_%s",
+					device.Vendor, device.Product))
+			} else if device.Bus != "" && device.Address != "" {
+				curUsbsBus.Add(fmt.Sprintf("%s_%s",
+					device.Bus, device.Address))
+			}
+		}
+	}
+
+	if i.Virt.UsbDevices != nil {
+		for _, device := range i.Virt.UsbDevices {
+			if device.Vendor != "" && device.Product != "" {
+				usbsVendor.Add(fmt.Sprintf("%s_%s",
+					device.Vendor, device.Product))
+			} else if device.Bus != "" && device.Address != "" {
+				usbsBus.Add(fmt.Sprintf("%s_%s",
+					device.Bus, device.Address))
+			}
+		}
+	}
+
+	addUsbsVendor := usbsVendor.Copy()
+	addUsbsVendor.Subtract(curUsbsVendor)
+	addUsbsBus := usbsBus.Copy()
+	addUsbsBus.Subtract(curUsbsBus)
+	remUsbsVendor := curUsbsVendor.Copy()
+	remUsbsVendor.Subtract(usbsVendor)
+	remUsbsBus := curUsbsBus.Copy()
+	remUsbsBus.Subtract(usbsBus)
+
+	for deviceInf := range addUsbsVendor.Iter() {
+		device := strings.Split(deviceInf.(string), "_")
+		addUsbs = append(addUsbs, &vm.UsbDevice{
+			Vendor:  device[0],
+			Product: device[1],
+		})
+	}
+	for deviceInf := range addUsbsBus.Iter() {
+		device := strings.Split(deviceInf.(string), "_")
+		addUsbs = append(addUsbs, &vm.UsbDevice{
+			Bus:     device[0],
+			Address: device[1],
+		})
+	}
+	for deviceInf := range remUsbsVendor.Iter() {
+		device := strings.Split(deviceInf.(string), "_")
+		remUsbs = append(remUsbs, &vm.UsbDevice{
+			Vendor:  device[0],
+			Product: device[1],
+		})
+	}
+	for deviceInf := range remUsbsBus.Iter() {
+		device := strings.Split(deviceInf.(string), "_")
+		remUsbs = append(remUsbs, &vm.UsbDevice{
+			Bus:     device[0],
+			Address: device[1],
+		})
 	}
 
 	return
