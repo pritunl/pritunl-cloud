@@ -17,3 +17,12 @@ func FilterId(deviceId string) string {
 	}
 	return deviceId
 }
+
+func FilterAddr(addr string) string {
+	addr = strings.ToLower(addr)
+	addr = reg.ReplaceAllString(addr, "")
+	if len(addr) != 3 {
+		return ""
+	}
+	return addr
+}
