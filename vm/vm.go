@@ -21,9 +21,11 @@ type VirtualMachine struct {
 	VncDisplay      int                `json:"vnc_display"`
 	Disks           []*Disk            `json:"disks"`
 	NetworkAdapters []*NetworkAdapter  `json:"network_adapters"`
+	Uefi            bool               `json:"uefi"`
 	NoPublicAddress bool               `json:"no_public_address"`
 	NoHostAddress   bool               `json:"no_host_address"`
 	UsbDevices      []*UsbDevice       `json:"usb_devices"`
+	PciDevices      []*PciDevice       `json:"pci_devices"`
 }
 
 type Disk struct {
@@ -34,6 +36,12 @@ type Disk struct {
 type UsbDevice struct {
 	Vendor  string `json:"vendor"`
 	Product string `json:"product"`
+	Bus     string `json:"bus"`
+	Address string `json:"address"`
+}
+
+type PciDevice struct {
+	Slot string `json:"slot"`
 }
 
 func (d *Disk) GetId() primitive.ObjectID {
