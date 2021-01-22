@@ -48,7 +48,7 @@ type InfoCache struct {
 	Virt      *vm.VirtualMachine
 }
 
-func GetVmInfo(vmId primitive.ObjectID, getDisks, force bool) (
+func GetVmInfo(vmId primitive.ObjectID, queryQms, force bool) (
 	virt *vm.VirtualMachine, err error) {
 
 	refreshRate := time.Duration(
@@ -106,7 +106,7 @@ func GetVmInfo(vmId primitive.ObjectID, getDisks, force bool) (
 		}
 	}
 
-	if virt.State == vm.Running && getDisks {
+	if virt.State == vm.Running && queryQms {
 		disksStore, ok := store.GetDisks(vmId)
 		if !ok || time.Since(disksStore.Timestamp) > refreshRate {
 			for i := 0; i < 20; i++ {
@@ -135,6 +135,38 @@ func GetVmInfo(vmId primitive.ObjectID, getDisks, force bool) (
 				disks = append(disks, dsk.Copy())
 			}
 			virt.Disks = disks
+		}
+	}
+
+	if virt.State == vm.Running && queryQms && node.Self.UsbPassthrough {
+		usbsStore, ok := store.GetUsbs(vmId)
+		if !ok || time.Since(usbsStore.Timestamp) > refreshRate {
+			for i := 0; i < 20; i++ {
+				if virt.State == vm.Running {
+					usbs, e := qms.GetUsbDevices(vmId)
+					if e != nil {
+						if i < 19 {
+							time.Sleep(100 * time.Millisecond)
+							_ = UpdateVmState(virt)
+							continue
+						}
+						err = e
+
+						return
+					}
+					virt.UsbDevices = usbs
+
+					store.SetUsbs(vmId, usbs)
+				}
+
+				break
+			}
+		} else {
+			usbs := []*vm.UsbDevice{}
+			for _, usb := range usbsStore.Usbs {
+				usbs = append(usbs, usb.Copy())
+			}
+			virt.UsbDevices = usbs
 		}
 	}
 
