@@ -11,6 +11,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/sirupsen/logrus"
@@ -21,7 +22,7 @@ var (
 )
 
 func GetDisks(vmId primitive.ObjectID) (disks []*vm.Disk, err error) {
-	sockPath := GetSockPath(vmId)
+	sockPath := paths.GetSockPath(vmId)
 	disks = []*vm.Disk{}
 
 	lockId := socketsLock.Lock(vmId.Hex())
@@ -128,7 +129,7 @@ func GetDisks(vmId primitive.ObjectID) (disks []*vm.Disk, err error) {
 }
 
 func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
-	sockPath := GetSockPath(vmId)
+	sockPath := paths.GetSockPath(vmId)
 
 	logrus.WithFields(logrus.Fields{
 		"instance_id": vmId.Hex(),
@@ -179,7 +180,7 @@ func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
 }
 
 func RemoveDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
-	sockPath := GetSockPath(vmId)
+	sockPath := paths.GetSockPath(vmId)
 
 	logrus.WithFields(logrus.Fields{
 		"instance_id": vmId.Hex(),
@@ -225,7 +226,7 @@ func RemoveDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
 }
 
 func Shutdown(vmId primitive.ObjectID) (err error) {
-	sockPath := GetSockPath(vmId)
+	sockPath := paths.GetSockPath(vmId)
 
 	lockId := socketsLock.Lock(vmId.Hex())
 	defer socketsLock.Unlock(vmId.Hex(), lockId)
@@ -265,7 +266,7 @@ func Shutdown(vmId primitive.ObjectID) (err error) {
 }
 
 func VncPassword(vmId primitive.ObjectID, passwd string) (err error) {
-	sockPath := GetSockPath(vmId)
+	sockPath := paths.GetSockPath(vmId)
 
 	lockId := socketsLock.Lock(vmId.Hex())
 	defer socketsLock.Unlock(vmId.Hex(), lockId)
