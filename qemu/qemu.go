@@ -103,6 +103,19 @@ func (q *Qemu) Marshal() (output string, err error) {
 		))
 	}
 
+	if q.Uefi {
+		cmd = append(cmd, "-drive")
+		cmd = append(cmd, fmt.Sprintf(
+			"if=pflash,format=raw,readonly,file=%s",
+			q.OvmfCodePath,
+		))
+		cmd = append(cmd, "-drive")
+		cmd = append(cmd, fmt.Sprintf(
+			"if=pflash,format=raw,file=%s",
+			q.OvmfVarsPath,
+		))
+	}
+
 	if q.Kvm {
 		cmd = append(cmd, "-enable-kvm")
 	}
