@@ -227,7 +227,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 				cmd = append(cmd,
 					"-device",
 					fmt.Sprintf(
-						"usb-host,vendorid=0x%s,productid=0x%s,id=usb%s_%s",
+						"usb-host,vendorid=0x%s,productid=0x%s,id=usbv%s_%s",
 						vendor, product,
 						vendor, product,
 					),
@@ -236,15 +236,14 @@ func (q *Qemu) Marshal() (output string, err error) {
 				cmd = append(cmd,
 					"-device",
 					fmt.Sprintf(
-						"usb-host,hostbus=%s,hostaddr=%s,id=usb%s_%s",
+						"usb-host,hostbus=%s,hostaddr=%s,id=usbb%s_%s",
 						strings.TrimLeft(bus, "0"),
 						strings.TrimLeft(address, "0"),
-						strings.TrimLeft(bus, "0"),
-						strings.TrimLeft(address, "0"),
+						bus,
+						address,
 					),
 				)
 			}
-
 		}
 	}
 
