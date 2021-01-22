@@ -4,7 +4,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -20,6 +19,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -335,7 +335,7 @@ func (s *Instances) destroy(inst *instance.Instance) {
 }
 
 func (s *Instances) diskRemove(inst *instance.Instance,
-	remDisks []*vm.Disk) {
+	virt *vm.VirtualMachine, remDisks []*vm.Disk) {
 
 	acquired, lockId := instancesLock.LockOpen(inst.Id.Hex())
 	if !acquired {
@@ -363,6 +363,86 @@ func (s *Instances) diskRemove(inst *instance.Instance,
 
 		event.PublishDispatch(db, "instance.change")
 		event.PublishDispatch(db, "disk.change")
+	}()
+}
+
+func (s *Instances) usbAdd(inst *instance.Instance, virt *vm.VirtualMachine,
+	addUsbs []*vm.UsbDevice) {
+
+	acquired, lockId := instancesLock.LockOpen(inst.Id.Hex())
+	if !acquired {
+		return
+	}
+
+	go func() {
+		defer func() {
+			time.Sleep(3 * time.Second)
+			instancesLock.Unlock(inst.Id.Hex(), lockId)
+		}()
+
+		db := database.GetDatabase()
+		defer db.Close()
+
+		for _, device := range addUsbs {
+			e := qms.AddUsb(inst.Id, device)
+			if e != nil {
+				logrus.WithFields(logrus.Fields{
+					"error": e,
+				}).Error("sync: Failed to add usb")
+				return
+			}
+		}
+
+		time.Sleep(200 * time.Millisecond)
+
+		err := qemu.UpdateVmUsb(virt)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("sync: Failed to update vm usb state")
+		}
+
+		event.PublishDispatch(db, "instance.change")
+	}()
+}
+
+func (s *Instances) usbRemove(inst *instance.Instance,
+	virt *vm.VirtualMachine, remUsbs []*vm.UsbDevice) {
+
+	acquired, lockId := instancesLock.LockOpen(inst.Id.Hex())
+	if !acquired {
+		return
+	}
+
+	go func() {
+		defer func() {
+			time.Sleep(3 * time.Second)
+			instancesLock.Unlock(inst.Id.Hex(), lockId)
+		}()
+
+		db := database.GetDatabase()
+		defer db.Close()
+
+		for _, device := range remUsbs {
+			err := qms.RemoveUsb(inst.Id, device)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"error": err,
+				}).Error("sync: Failed to remove usb")
+				return
+			}
+		}
+
+		time.Sleep(200 * time.Millisecond)
+
+		err := qemu.UpdateVmUsb(virt)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("sync: Failed to update vm usb state")
+		}
+
+		event.PublishDispatch(db, "instance.change")
 	}()
 }
 
