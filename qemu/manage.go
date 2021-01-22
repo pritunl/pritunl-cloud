@@ -267,6 +267,31 @@ func UpdateVmDisk(virt *vm.VirtualMachine) (err error) {
 	return
 }
 
+func UpdateVmUsb(virt *vm.VirtualMachine) (err error) {
+	for i := 0; i < 20; i++ {
+		if virt.State == vm.Running {
+			usbs, e := qms.GetUsbDevices(virt.Id)
+			if e != nil {
+				if i < 19 {
+					time.Sleep(100 * time.Millisecond)
+					_ = UpdateVmState(virt)
+					continue
+				}
+				err = e
+
+				return
+			}
+			virt.UsbDevices = usbs
+
+			store.SetUsbs(virt.Id, usbs)
+		}
+
+		break
+	}
+
+	return
+}
+
 func UpdateVmState(virt *vm.VirtualMachine) (err error) {
 	unitName := paths.GetUnitName(virt.Id)
 	state, timestamp, err := systemd.GetState(unitName)
