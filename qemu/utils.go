@@ -74,5 +74,11 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 		})
 	}
 
+	for _, device := range virt.PciDevices {
+		qm.PciDevices = append(qm.PciDevices, &PciDevice{
+			Slot: device.Slot,
+		})
+	}
+
 	return
 }
