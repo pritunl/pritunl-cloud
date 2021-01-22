@@ -361,6 +361,15 @@ func (s *Instances) diskRemove(inst *instance.Instance,
 			}
 		}
 
+		time.Sleep(200 * time.Millisecond)
+
+		err := qemu.UpdateVmDisk(virt)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("sync: Failed to update vm disk state")
+		}
+
 		event.PublishDispatch(db, "instance.change")
 		event.PublishDispatch(db, "disk.change")
 	}()
