@@ -455,6 +455,7 @@ func (s *Instances) diff(db *database.Database,
 	if len(addDisks) > 0 {
 		changed = true
 	}
+	addUsbs, remUsbs := inst.UsbChanged(curVirt)
 
 	if instancesLock.Locked(inst.Id.Hex()) {
 		return
@@ -475,7 +476,16 @@ func (s *Instances) diff(db *database.Database,
 	}
 
 	if len(remDisks) > 0 {
-		s.diskRemove(inst, remDisks)
+		s.diskRemove(inst, curVirt, remDisks)
+	}
+
+	if len(remUsbs) > 0 {
+		s.usbRemove(inst, curVirt, remUsbs)
+	}
+
+
+	if len(addUsbs) > 0 {
+		s.usbAdd(inst, curVirt, addUsbs)
 	}
 
 	return
