@@ -1816,6 +1816,11 @@ func Create(db *database.Database, inst *instance.Instance,
 		return
 	}
 
+	err = utils.ExistsMkdir(settings.Hypervisor.RunPath, 0755)
+	if err != nil {
+		return
+	}
+
 	err = utils.ExistsMkdir(vmPath, 0755)
 	if err != nil {
 		return
@@ -1923,8 +1928,14 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	unitName := paths.GetUnitName(virt.Id)
 	unitPath := paths.GetUnitPath(virt.Id)
 	sockPath := paths.GetSockPath(virt.Id)
+	// TODO Backward compatibility
+	sockPathOld := paths.GetSockPath(virt.Id)
 	guestPath := paths.GetGuestPath(virt.Id)
+	// TODO Backward compatibility
+	guestPathOld := paths.GetGuestPathOld(virt.Id)
 	pidPath := paths.GetPidPath(virt.Id)
+	// TODO Backward compatibility
+	pidPathOld := paths.GetPidPathOld(virt.Id)
 	ovmfVarsPath := paths.GetOvmfVarsPath(virt.Id)
 
 	logrus.WithFields(logrus.Fields{
@@ -2063,12 +2074,30 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
+	// TODO Backward compatibility
+	err = utils.RemoveAll(sockPathOld)
+	if err != nil {
+		return
+	}
+
 	err = utils.RemoveAll(guestPath)
 	if err != nil {
 		return
 	}
 
+	// TODO Backward compatibility
+	err = utils.RemoveAll(guestPathOld)
+	if err != nil {
+		return
+	}
+
 	err = utils.RemoveAll(pidPath)
+	if err != nil {
+		return
+	}
+
+	// TODO Backward compatibility
+	err = utils.RemoveAll(pidPathOld)
 	if err != nil {
 		return
 	}
@@ -2108,6 +2137,11 @@ func PowerOn(db *database.Database, inst *instance.Instance,
 	logrus.WithFields(logrus.Fields{
 		"id": virt.Id.Hex(),
 	}).Info("qemu: Starting virtual machine")
+
+	err = utils.ExistsMkdir(settings.Hypervisor.RunPath, 0755)
+	if err != nil {
+		return
+	}
 
 	err = cloudinit.Write(db, inst, virt, false)
 	if err != nil {
