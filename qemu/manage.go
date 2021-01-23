@@ -1959,7 +1959,7 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 
 			logged := false
 			for i := 0; i < 10; i++ {
-				err = qms.Shutdown(virt.Id)
+				err = qmp.Shutdown(virt.Id)
 				if err == nil {
 					break
 				}
@@ -2006,7 +2006,10 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 					time.Sleep(1 * time.Second)
 
 					if (i+1)%15 == 0 {
-						go qms.Shutdown(virt.Id)
+						go func() {
+							qmp.Shutdown(virt.Id)
+							qms.Shutdown(virt.Id)
+						}()
 					}
 				}
 			}
@@ -2216,7 +2219,7 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 
 	logged := false
 	for i := 0; i < 10; i++ {
-		err = qms.Shutdown(virt.Id)
+		err = qmp.Shutdown(virt.Id)
 		if err == nil {
 			break
 		}
@@ -2264,7 +2267,10 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			time.Sleep(1 * time.Second)
 
 			if (i+1)%15 == 0 {
-				go qms.Shutdown(virt.Id)
+				go func() {
+					qmp.Shutdown(virt.Id)
+					qms.Shutdown(virt.Id)
+				}()
 			}
 		}
 	}
