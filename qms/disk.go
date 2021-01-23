@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"net"
+	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -11,6 +12,8 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/settings"
+	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/sirupsen/logrus"
 )
@@ -89,38 +92,101 @@ func GetDisks(vmId primitive.ObjectID) (disks []*vm.Disk, err error) {
 		}
 	}
 
+	index := 0
 	for _, line := range strings.Split(string(buffer), "\n") {
-		if !strings.HasPrefix(line, "virtio") || len(line) < 10 {
+		if len(line) < 10 {
+			continue
+		}
+
+		// TODO Backwards compatibility
+		if strings.HasPrefix(line, "virtio") {
+			line = strings.Replace(line, "\r", "", -1)
+
+			if !strings.HasPrefix(line, "virtio") || len(line) < 10 {
+				continue
+			}
+			line = strings.Replace(line, "\r", "", -1)
+
+			lineSpl := strings.SplitN(line[6:], ":", 2)
+			if len(lineSpl) != 2 {
+				logrus.WithFields(logrus.Fields{
+					"instance_id": vmId.Hex(),
+					"line":        line,
+				}).Error("qemu: Unexpected qemu disk path")
+				continue
+			}
+
+			indexStr := strings.Fields(strings.TrimSpace(lineSpl[0]))[0]
+			indx, e := strconv.Atoi(indexStr)
+			if e != nil {
+				logrus.WithFields(logrus.Fields{
+					"instance_id": vmId.Hex(),
+					"line":        line,
+				}).Error("qemu: Unexpected qemu disk path index")
+				continue
+			}
+
+			diskPath := strings.Fields(strings.TrimSpace(lineSpl[1]))[0]
+
+			idStr := strings.Split(path.Base(diskPath), ".")[0]
+
+			diskId, err := primitive.ObjectIDFromHex(idStr)
+			if err != nil {
+				continue
+			}
+
+			dsk := &vm.Disk{
+				Id:    diskId,
+				Index: indx,
+				Path:  diskPath,
+			}
+			disks = append(disks, dsk)
+
+			continue
+		}
+
+		if !strings.HasPrefix(line, "disk_") {
 			continue
 		}
 		line = strings.Replace(line, "\r", "", -1)
 
-		lineSpl := strings.SplitN(line[6:], ":", 2)
+		lineSpl := strings.SplitN(line, ":", 2)
 		if len(lineSpl) != 2 {
 			logrus.WithFields(logrus.Fields{
 				"instance_id": vmId.Hex(),
 				"line":        line,
-			}).Error("qemu: Unexpected qemu disk path")
+			}).Error("qemu: Unexpected qemu disk id")
 			continue
 		}
 
-		indexStr := strings.Fields(strings.TrimSpace(lineSpl[0]))[0]
-		index, e := strconv.Atoi(indexStr)
-		if e != nil {
+		idIndexStr := strings.Fields(strings.TrimSpace(lineSpl[0]))[0]
+		if len(idIndexStr) < 6 {
 			logrus.WithFields(logrus.Fields{
 				"instance_id": vmId.Hex(),
 				"line":        line,
-			}).Error("qemu: Unexpected qemu disk path index")
+			}).Error("qemu: Unexpected qemu disk id length")
+			continue
+		}
+
+		dskId, ok := utils.ParseObjectId(idIndexStr[5:])
+		if !ok {
+			logrus.WithFields(logrus.Fields{
+				"instance_id": vmId.Hex(),
+				"line":        line,
+			}).Error("qemu: Unexpected qemu disk id parse")
 			continue
 		}
 
 		diskPath := strings.Fields(strings.TrimSpace(lineSpl[1]))[0]
 
 		dsk := &vm.Disk{
+			Id:    dskId,
 			Index: index,
 			Path:  diskPath,
 		}
 		disks = append(disks, dsk)
+
+		index += 1
 	}
 
 	return
