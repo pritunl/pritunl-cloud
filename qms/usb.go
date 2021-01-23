@@ -114,7 +114,7 @@ func GetUsbDevices(vmId primitive.ObjectID) (
 
 		device := &vm.UsbDevice{}
 		if strings.HasPrefix(deviceId, "usbv") {
-			lineSpl = strings.Split(deviceId[4:], "_")
+			lineSpl = strings.Split(deviceId[5:], "_")
 			if len(lineSpl) != 2 {
 				logrus.WithFields(logrus.Fields{
 					"instance_id": vmId.Hex(),
@@ -126,7 +126,7 @@ func GetUsbDevices(vmId primitive.ObjectID) (
 			device.Vendor = lineSpl[0]
 			device.Product = lineSpl[1]
 		} else if strings.HasPrefix(deviceId, "usbb") {
-			lineSpl = strings.Split(deviceId[4:], "_")
+			lineSpl = strings.Split(deviceId[5:], "_")
 			if len(lineSpl) != 2 {
 				logrus.WithFields(logrus.Fields{
 					"instance_id": vmId.Hex(),
@@ -197,13 +197,13 @@ func AddUsb(vmId primitive.ObjectID, device *vm.UsbDevice) (err error) {
 	deviceLine := ""
 	if vendor != "" && product != "" {
 		deviceLine = fmt.Sprintf(
-			"usb-host,vendorid=0x%s,productid=0x%s,id=usbv%s_%s",
+			"usb-host,vendorid=0x%s,productid=0x%s,id=usbv_%s_%s",
 			vendor, product,
 			vendor, product,
 		)
 	} else if bus != "" && address != "" {
 		deviceLine = fmt.Sprintf(
-			"usb-host,hostbus=%s,hostaddr=%s,id=usbb%s_%s",
+			"usb-host,hostbus=%s,hostaddr=%s,id=usbb_%s_%s",
 			strings.TrimLeft(bus, "0"),
 			strings.TrimLeft(address, "0"),
 			bus,
@@ -275,9 +275,9 @@ func RemoveUsb(vmId primitive.ObjectID, device *vm.UsbDevice) (err error) {
 
 	deviceId := ""
 	if vendor != "" && product != "" {
-		deviceId = fmt.Sprintf("usbv%s_%s", vendor, product)
+		deviceId = fmt.Sprintf("usbv_%s_%s", vendor, product)
 	} else if bus != "" && address != "" {
-		deviceId = fmt.Sprintf("usbb%s_%s", bus, address)
+		deviceId = fmt.Sprintf("usbb_%s_%s", bus, address)
 	} else {
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "qemu: Unknown usb device id"),
