@@ -4,6 +4,7 @@ pritunl-cloud changelog
 <%= version %>
 
 Add disk resizing
+Support add and remove USB devices on running instance
 Format username capitalization on update
 
 Version 1.2.1807.79 2020-11-04
