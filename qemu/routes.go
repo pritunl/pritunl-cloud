@@ -23,9 +23,6 @@ func GetRoutes(instId primitive.ObjectID) (routes []vpc.Route,
 		"ip", "netns", "exec", namespace,
 		"route", "-n",
 	)
-	//if err != nil {
-	//	return
-	//}
 
 	if output == "" {
 		return
@@ -76,9 +73,10 @@ func GetRoutes(instId primitive.ObjectID) (routes []vpc.Route,
 		"ip", "netns", "exec", namespace,
 		"route", "-6", "-n",
 	)
-	//if err != nil {
-	//	return
-	//}
+
+	if output == "" {
+		return
+	}
 
 	lines = strings.Split(output, "\n")
 	if len(lines) > 2 {
