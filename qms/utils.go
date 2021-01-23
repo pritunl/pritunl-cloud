@@ -1,14 +1,26 @@
 package qms
 
 import (
-	"fmt"
-	"path"
-
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/pritunl-cloud/settings"
+	"github.com/pritunl/pritunl-cloud/paths"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
-func GetSockPath(virtId primitive.ObjectID) string {
-	return path.Join(settings.Hypervisor.LibPath,
-		fmt.Sprintf("%s.sock", virtId.Hex()))
+// TODO Backward compatibility
+func GetSockPath(virtId primitive.ObjectID) (pth string, err error) {
+	sockPath := paths.GetSockPath(virtId)
+	sockPathOld := paths.GetSockPathOld(virtId)
+
+	exists, err := utils.Exists(sockPath)
+	if err != nil {
+		return
+	}
+
+	if exists {
+		pth = sockPath
+	} else {
+		pth = sockPathOld
+	}
+
+	return
 }

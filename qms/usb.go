@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -19,7 +18,10 @@ import (
 func GetUsbDevices(vmId primitive.ObjectID) (
 	devices []*vm.UsbDevice, err error) {
 
-	sockPath := paths.GetSockPath(vmId)
+	sockPath, err := GetSockPath(vmId)
+	if err != nil {
+		return
+	}
 
 	lockId := socketsLock.Lock(vmId.Hex())
 	defer socketsLock.Unlock(vmId.Hex(), lockId)
@@ -150,7 +152,10 @@ func GetUsbDevices(vmId primitive.ObjectID) (
 }
 
 func AddUsb(vmId primitive.ObjectID, device *vm.UsbDevice) (err error) {
-	sockPath := paths.GetSockPath(vmId)
+	sockPath, err := GetSockPath(vmId)
+	if err != nil {
+		return
+	}
 
 	logrus.WithFields(logrus.Fields{
 		"instance_id": vmId.Hex(),
@@ -226,7 +231,10 @@ func AddUsb(vmId primitive.ObjectID, device *vm.UsbDevice) (err error) {
 }
 
 func RemoveUsb(vmId primitive.ObjectID, device *vm.UsbDevice) (err error) {
-	sockPath := paths.GetSockPath(vmId)
+	sockPath, err := GetSockPath(vmId)
+	if err != nil {
+		return
+	}
 
 	logrus.WithFields(logrus.Fields{
 		"instance_id": vmId.Hex(),

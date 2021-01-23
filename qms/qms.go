@@ -11,7 +11,6 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/sirupsen/logrus"
@@ -22,8 +21,12 @@ var (
 )
 
 func GetDisks(vmId primitive.ObjectID) (disks []*vm.Disk, err error) {
-	sockPath := paths.GetSockPath(vmId)
 	disks = []*vm.Disk{}
+
+	sockPath, err := GetSockPath(vmId)
+	if err != nil {
+		return
+	}
 
 	lockId := socketsLock.Lock(vmId.Hex())
 	defer socketsLock.Unlock(vmId.Hex(), lockId)
@@ -129,7 +132,10 @@ func GetDisks(vmId primitive.ObjectID) (disks []*vm.Disk, err error) {
 }
 
 func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
-	sockPath := paths.GetSockPath(vmId)
+	sockPath, err := GetSockPath(vmId)
+	if err != nil {
+		return
+	}
 
 	logrus.WithFields(logrus.Fields{
 		"instance_id": vmId.Hex(),
@@ -180,7 +186,10 @@ func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
 }
 
 func RemoveDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
-	sockPath := paths.GetSockPath(vmId)
+	sockPath, err := GetSockPath(vmId)
+	if err != nil {
+		return
+	}
 
 	logrus.WithFields(logrus.Fields{
 		"instance_id": vmId.Hex(),
@@ -226,7 +235,10 @@ func RemoveDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
 }
 
 func Shutdown(vmId primitive.ObjectID) (err error) {
-	sockPath := paths.GetSockPath(vmId)
+	sockPath, err := GetSockPath(vmId)
+	if err != nil {
+		return
+	}
 
 	lockId := socketsLock.Lock(vmId.Hex())
 	defer socketsLock.Unlock(vmId.Hex(), lockId)
@@ -260,13 +272,16 @@ func Shutdown(vmId primitive.ObjectID) (err error) {
 		return
 	}
 
-	time.Sleep(800 * time.Millisecond)
+	time.Sleep(500 * time.Millisecond)
 
 	return
 }
 
 func VncPassword(vmId primitive.ObjectID, passwd string) (err error) {
-	sockPath := paths.GetSockPath(vmId)
+	sockPath, err := GetSockPath(vmId)
+	if err != nil {
+		return
+	}
 
 	lockId := socketsLock.Lock(vmId.Hex())
 	defer socketsLock.Unlock(vmId.Hex(), lockId)
