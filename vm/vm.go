@@ -40,6 +40,17 @@ type UsbDevice struct {
 	Address string `json:"address"`
 }
 
+func (u *UsbDevice) Copy() (device *UsbDevice) {
+	device = &UsbDevice{
+		Vendor:  u.Vendor,
+		Product: u.Product,
+		Bus:     u.Bus,
+		Address: u.Address,
+	}
+
+	return
+}
+
 type PciDevice struct {
 	Slot string `json:"slot"`
 }
