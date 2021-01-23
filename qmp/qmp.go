@@ -74,7 +74,18 @@ var (
 func runCommand(vmId primitive.ObjectID, cmd *cmdBase,
 	cmdReturn interface{}) (err error) {
 
+	// TODO Backward compatibility
 	sockPath := paths.GetQmpSockPath(vmId)
+	sockPathOld := paths.GetQmpSockPathOld(vmId)
+
+	exists, err := utils.Exists(sockPath)
+	if err != nil {
+		return
+	}
+
+	if !exists {
+		sockPath = sockPathOld
+	}
 
 	lockId := socketsLock.Lock(vmId.Hex())
 	defer func() {
