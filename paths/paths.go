@@ -89,21 +89,45 @@ func GetUnitPath(virtId primitive.ObjectID) string {
 }
 
 func GetPidPath(virtId primitive.ObjectID) string {
-	return path.Join(settings.Hypervisor.LibPath,
+	return path.Join(settings.Hypervisor.RunPath,
 		fmt.Sprintf("%s.pid", virtId.Hex()))
 }
 
 func GetSockPath(virtId primitive.ObjectID) string {
-	return path.Join(settings.Hypervisor.LibPath,
+	return path.Join(settings.Hypervisor.RunPath,
 		fmt.Sprintf("%s.sock", virtId.Hex()))
 }
 
 func GetQmpSockPath(virtId primitive.ObjectID) string {
-	return path.Join(settings.Hypervisor.LibPath,
+	return path.Join(settings.Hypervisor.RunPath,
 		fmt.Sprintf("%s.qmp.sock", virtId.Hex()))
 }
 
 func GetGuestPath(virtId primitive.ObjectID) string {
+	return path.Join(settings.Hypervisor.RunPath,
+		fmt.Sprintf("%s.guest", virtId.Hex()))
+}
+
+// TODO Backward compatibility
+func GetPidPathOld(virtId primitive.ObjectID) string {
+	return path.Join(settings.Hypervisor.LibPath,
+		fmt.Sprintf("%s.pid", virtId.Hex()))
+}
+
+// TODO Backward compatibility
+func GetSockPathOld(virtId primitive.ObjectID) string {
+	return path.Join(settings.Hypervisor.LibPath,
+		fmt.Sprintf("%s.sock", virtId.Hex()))
+}
+
+// TODO Backward compatibility
+func GetQmpSockPathOld(virtId primitive.ObjectID) string {
+	return path.Join(settings.Hypervisor.LibPath,
+		fmt.Sprintf("%s.qmp.sock", virtId.Hex()))
+}
+
+// TODO Backward compatibility
+func GetGuestPathOld(virtId primitive.ObjectID) string {
 	return path.Join(settings.Hypervisor.LibPath,
 		fmt.Sprintf("%s.guest", virtId.Hex()))
 }
