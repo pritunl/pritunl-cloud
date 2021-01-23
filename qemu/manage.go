@@ -28,6 +28,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/iptables"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
+	"github.com/pritunl/pritunl-cloud/qmp"
 	"github.com/pritunl/pritunl-cloud/qms"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/store"
@@ -1900,7 +1901,7 @@ func Create(db *database.Database, inst *instance.Instance,
 	}
 
 	if virt.Vnc {
-		err = qms.VncPassword(virt.Id, inst.VncPassword)
+		err = qmp.VncPassword(virt.Id, inst.VncPassword)
 		if err != nil {
 			return
 		}
@@ -2134,7 +2135,7 @@ func PowerOn(db *database.Database, inst *instance.Instance,
 	}
 
 	if virt.Vnc {
-		err = qms.VncPassword(virt.Id, inst.VncPassword)
+		err = qmp.VncPassword(virt.Id, inst.VncPassword)
 		if err != nil {
 			return
 		}
