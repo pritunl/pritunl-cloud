@@ -7,11 +7,12 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/usb"
 )
 
 type Disk struct {
-	Media  string
+	Id     string
 	Index  int
 	File   string
 	Format string
@@ -157,13 +158,23 @@ func (q *Qemu) Marshal() (output string, err error) {
 	cmd = append(cmd, fmt.Sprintf("%dM", q.Memory))
 
 	for _, disk := range q.Disks {
+		dskId := fmt.Sprintf("disk_%s", disk.Id)
+		dskDevId := fmt.Sprintf("diskdev_%s", disk.Id)
+
 		cmd = append(cmd, "-drive")
 		cmd = append(cmd, fmt.Sprintf(
-			"file=%s,index=%d,media=%s,format=%s,discard=off,if=virtio",
+			"file=%s,media=disk,format=%s,discard=unmap,if=none,id=%s",
 			disk.File,
-			disk.Index,
-			disk.Media,
 			disk.Format,
+			dskId,
+		))
+
+		cmd = append(cmd, "-device")
+		cmd = append(cmd, fmt.Sprintf(
+			"virtio-blk-pci,drive=%s,num-queues=%d,id=%s",
+			dskId,
+			settings.Hypervisor.DiskQueues,
+			dskDevId,
 		))
 	}
 
