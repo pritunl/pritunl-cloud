@@ -272,6 +272,11 @@ func UpdateVmState(virt *vm.VirtualMachine) (err error) {
 	return
 }
 
+func SetVmState(virt *vm.VirtualMachine, state string) {
+	virt.State = state
+	store.SetVirt(virt.Id, virt)
+}
+
 func GetVms(db *database.Database,
 	instMap map[primitive.ObjectID]*instance.Instance) (
 	virts []*vm.VirtualMachine, err error) {
