@@ -192,7 +192,9 @@ func GetDisks(vmId primitive.ObjectID) (disks []*vm.Disk, err error) {
 	return
 }
 
-func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
+func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk,
+	virt *vm.VirtualMachine) (err error) {
+
 	dskId := fmt.Sprintf("disk_%s", dsk.Id.Hex())
 	dskDevId := fmt.Sprintf("diskdev_%s", dsk.Id.Hex())
 
@@ -246,10 +248,18 @@ func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
 		return
 	}
 
+	queues := virt.Processors / 2
+
+	if queues > settings.Hypervisor.DiskQueuesMax {
+		queues = settings.Hypervisor.DiskQueuesMax
+	} else if queues < settings.Hypervisor.DiskQueuesMin {
+		queues = settings.Hypervisor.DiskQueuesMin
+	}
+
 	device := fmt.Sprintf(
 		"virtio-blk-pci,drive=%s,num-queues=%d,id=%s",
 		dskId,
-		settings.Hypervisor.DiskQueues,
+		queues,
 		dskDevId,
 	)
 

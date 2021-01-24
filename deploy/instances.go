@@ -352,7 +352,7 @@ func (s *Instances) diskAdd(inst *instance.Instance,
 		defer db.Close()
 
 		for _, dsk := range addDisks {
-			e := qms.AddDisk(inst.Id, dsk)
+			e := qms.AddDisk(inst.Id, dsk, virt)
 			if e != nil {
 				logrus.WithFields(logrus.Fields{
 					"error": e,
