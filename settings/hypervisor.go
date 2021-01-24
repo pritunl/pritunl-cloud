@@ -11,6 +11,7 @@ type hypervisor struct {
 	OvmfVarsPath    string `bson:"ovmf_vars_path"`
 	NormalMtu       int    `bson:"normal_mtu" default:"1500"`
 	JumboMtu        int    `bson:"jumbo_mtu" default:"9000"`
+	DiskQueues      int    `bson:"disk_queues" default:"2"`
 	VxlanId         int    `bson:"vxlan_id" default:"9417"`
 	VxlanDestPort   int    `bson:"vxlan_dest_port" default:"4789"`
 	HostNetworkName string `bson:"host_network_name" default:"pritunlhost0"`
