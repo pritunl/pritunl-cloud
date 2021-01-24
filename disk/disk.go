@@ -61,6 +61,14 @@ func (d *Disk) Validate(db *database.Database) (
 		d.Index = strconv.Itoa(index)
 	}
 
+	if d.Node.IsZero() {
+		errData = &errortypes.ErrorData{
+			Error:   "node_required",
+			Message: "Missing required node",
+		}
+		return
+	}
+
 	if d.Backup && d.BackingImage != "" {
 		errData = &errortypes.ErrorData{
 			Error:   "backing_image_backup",
