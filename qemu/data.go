@@ -172,7 +172,7 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 
 	time.Sleep(3 * time.Second)
 
-	err = NetworkConfClear(db, virt)
+	err = NetworkConfClear(virt)
 	if err != nil {
 		return
 	}
@@ -281,7 +281,7 @@ func Cleanup(db *database.Database, virt *vm.VirtualMachine) {
 		"id": virt.Id.Hex(),
 	}).Info("qemu: Stopped virtual machine")
 
-	err := NetworkConfClear(db, virt)
+	err := NetworkConfClear(virt)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"id":    virt.Id.Hex(),

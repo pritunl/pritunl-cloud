@@ -28,9 +28,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func networkStopDhClient(db *database.Database,
-	virt *vm.VirtualMachine) (err error) {
-
+func networkStopDhClient(virt *vm.VirtualMachine) (err error) {
 	if len(virt.NetworkAdapters) == 0 {
 		err = &errortypes.NotFoundError{
 			errors.New("qemu: Missing network interfaces"),
@@ -56,9 +54,7 @@ func networkStopDhClient(db *database.Database,
 	return
 }
 
-func NetworkConfClear(db *database.Database,
-	virt *vm.VirtualMachine) (err error) {
-
+func NetworkConfClear(virt *vm.VirtualMachine) (err error) {
 	if len(virt.NetworkAdapters) == 0 {
 		err = &errortypes.NotFoundError{
 			errors.New("qemu: Missing network interfaces"),
@@ -66,7 +62,7 @@ func NetworkConfClear(db *database.Database,
 		return
 	}
 
-	err = networkStopDhClient(db, virt)
+	err = networkStopDhClient(virt)
 	if err != nil {
 		return
 	}
@@ -938,7 +934,7 @@ func NetworkConf(db *database.Database,
 		return
 	}
 
-	_ = networkStopDhClient(db, virt)
+	_ = networkStopDhClient(virt)
 
 	if externalNetwork {
 		if nodeNetworkMode == node.Static {
