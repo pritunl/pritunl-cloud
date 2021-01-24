@@ -50,7 +50,7 @@ type Qemu struct {
 	Memory       int
 	Vnc          bool
 	VncDisplay   int
-	Disks        []*Disk
+	Disks        Disks
 	Networks     []*Network
 	UsbDevices   []*UsbDevice
 	PciDevices   []*PciDevice

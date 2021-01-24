@@ -2,6 +2,7 @@ package qemu
 
 import (
 	"encoding/json"
+	"sort"
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -51,12 +52,14 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 
 	for _, disk := range virt.Disks {
 		qm.Disks = append(qm.Disks, &Disk{
-			Media:  "disk",
+			Id:     disk.Id.Hex(),
 			Index:  disk.Index,
 			File:   disk.Path,
 			Format: "qcow2",
 		})
 	}
+
+	sort.Sort(qm.Disks)
 
 	for i, net := range virt.NetworkAdapters {
 		qm.Networks = append(qm.Networks, &Network{
