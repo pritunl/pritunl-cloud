@@ -452,6 +452,7 @@ func Create(db *database.Database, inst *instance.Instance,
 		_ = event.PublishDispatch(db, "disk.change")
 
 		virt.Disks = append(virt.Disks, &vm.Disk{
+			Id:    dsk.Id,
 			Index: 0,
 			Path:  paths.GetDiskPath(dsk.Id),
 		})
