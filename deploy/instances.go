@@ -334,6 +334,47 @@ func (s *Instances) destroy(inst *instance.Instance) {
 	}()
 }
 
+func (s *Instances) diskAdd(inst *instance.Instance,
+	virt *vm.VirtualMachine, addDisks []*vm.Disk) {
+
+	acquired, lockId := instancesLock.LockOpen(inst.Id.Hex())
+	if !acquired {
+		return
+	}
+
+	go func() {
+		defer func() {
+			time.Sleep(3 * time.Second)
+			instancesLock.Unlock(inst.Id.Hex(), lockId)
+		}()
+
+		db := database.GetDatabase()
+		defer db.Close()
+
+		for _, dsk := range addDisks {
+			e := qms.AddDisk(inst.Id, dsk)
+			if e != nil {
+				logrus.WithFields(logrus.Fields{
+					"error": e,
+				}).Error("sync: Failed to add disk")
+				return
+			}
+		}
+
+		time.Sleep(200 * time.Millisecond)
+
+		err := qemu.UpdateVmDisk(virt)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("sync: Failed to update vm disk state")
+		}
+
+		event.PublishDispatch(db, "instance.change")
+		event.PublishDispatch(db, "disk.change")
+	}()
+}
+
 func (s *Instances) diskRemove(inst *instance.Instance,
 	virt *vm.VirtualMachine, remDisks []*vm.Disk) {
 
@@ -461,9 +502,6 @@ func (s *Instances) diff(db *database.Database,
 	curVirt := s.stat.GetVirt(inst.Id)
 	changed := inst.Changed(curVirt)
 	addDisks, remDisks := inst.DiskChanged(curVirt)
-	if len(addDisks) > 0 {
-		changed = true
-	}
 	addUsbs, remUsbs := inst.UsbChanged(curVirt)
 
 	if instancesLock.Locked(inst.Id.Hex()) {
@@ -488,10 +526,13 @@ func (s *Instances) diff(db *database.Database,
 		s.diskRemove(inst, curVirt, remDisks)
 	}
 
+	if len(addDisks) > 0 {
+		s.diskAdd(inst, curVirt, addDisks)
+	}
+
 	if len(remUsbs) > 0 {
 		s.usbRemove(inst, curVirt, remUsbs)
 	}
-
 
 	if len(addUsbs) > 0 {
 		s.usbAdd(inst, curVirt, addUsbs)
