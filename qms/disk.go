@@ -193,6 +193,9 @@ func GetDisks(vmId primitive.ObjectID) (disks []*vm.Disk, err error) {
 }
 
 func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
+	dskId := fmt.Sprintf("disk_%s", dsk.Id.Hex())
+	dskDevId := fmt.Sprintf("diskdev_%s", dsk.Id.Hex())
+
 	sockPath, err := GetSockPath(vmId)
 	if err != nil {
 		return
@@ -228,12 +231,31 @@ func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
 	}
 
 	drive := fmt.Sprintf(
-		"file=%s,index=%d,media=disk,format=qcow2,discard=off,if=virtio\n",
+		"file=%s,media=disk,format=qcow2,discard=unmap,if=none,id=%s",
 		dsk.Path,
-		dsk.Index,
+		dskId,
 	)
 
-	_, err = conn.Write([]byte("drive_add virtio " + drive))
+	_, err = conn.Write([]byte(fmt.Sprintf(
+		"drive_add 0 %s\n", drive,
+	)))
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "qemu: Failed to write socket"),
+		}
+		return
+	}
+
+	device := fmt.Sprintf(
+		"virtio-blk-pci,drive=%s,num-queues=%d,id=%s",
+		dskId,
+		settings.Hypervisor.DiskQueues,
+		dskDevId,
+	)
+
+	_, err = conn.Write([]byte(fmt.Sprintf(
+		"device_add %s\n", device,
+	)))
 	if err != nil {
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "qemu: Failed to write socket"),
@@ -282,7 +304,16 @@ func RemoveDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
 	}
 
 	_, err = conn.Write([]byte(
-		fmt.Sprintf("drive_del virtio%d\n", dsk.Index)))
+		fmt.Sprintf("drive_del disk_%s\n", dsk.Id.Hex())))
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "qemu: Failed to write socket"),
+		}
+		return
+	}
+
+	_, err = conn.Write([]byte(
+		fmt.Sprintf("device_del diskdev_%s\n", dsk.Id.Hex())))
 	if err != nil {
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "qemu: Failed to write socket"),
