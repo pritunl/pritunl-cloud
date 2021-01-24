@@ -487,6 +487,7 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 			}
 
 			i.Virt.Disks = append(i.Virt.Disks, &vm.Disk{
+				Id:    dsk.Id,
 				Index: index,
 				Path:  paths.GetDiskPath(dsk.Id),
 			})
@@ -566,26 +567,22 @@ func (i *Instance) DiskChanged(curVirt *vm.VirtualMachine) (
 	addDisks = []*vm.Disk{}
 	remDisks = []*vm.Disk{}
 	disks := set.NewSet()
-	curDisks := map[int]*vm.Disk{}
+	curDisks := set.NewSet()
 
 	for _, dsk := range i.Virt.Disks {
-		disks.Add(dsk.Index)
+		disks.Add(dsk.Id)
 	}
 
 	for _, dsk := range curVirt.Disks {
-		if !disks.Contains(dsk.Index) {
+		if !disks.Contains(dsk.Id) {
 			remDisks = append(remDisks, dsk)
 		} else {
-			curDisks[dsk.Index] = dsk
+			curDisks.Add(dsk.Id)
 		}
 	}
 
 	for _, dsk := range i.Virt.Disks {
-		curDsk := curDisks[dsk.Index]
-		if curDsk == nil {
-			addDisks = append(addDisks, dsk)
-		} else if dsk.Path != curDsk.Path {
-			remDisks = append(remDisks, curDsk)
+		if !curDisks.Contains(dsk.Id) {
 			addDisks = append(addDisks, dsk)
 		}
 	}
