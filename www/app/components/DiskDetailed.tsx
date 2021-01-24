@@ -406,7 +406,7 @@ export default class DiskDetailed extends React.Component<Props, State> {
 			},
 			{
 				label: 'Node',
-				value: node ? node.name : this.props.disk.node,
+				value: (node ? node.name : this.props.disk.node) || '-',
 			},
 			{
 				label: 'Size',
