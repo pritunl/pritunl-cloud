@@ -56,6 +56,30 @@ type Qemu struct {
 	PciDevices   []*PciDevice
 }
 
+func (q *Qemu) GetDiskQueues() (queues int) {
+	queues = q.Cpus / 2
+
+	if queues > settings.Hypervisor.DiskQueuesMax {
+		queues = settings.Hypervisor.DiskQueuesMax
+	} else if queues < settings.Hypervisor.DiskQueuesMin {
+		queues = settings.Hypervisor.DiskQueuesMin
+	}
+
+	return
+}
+
+func (q *Qemu) GetNetworkQueues() (queues int) {
+	queues = q.Cpus / 2
+
+	if queues > settings.Hypervisor.NetworkQueuesMax {
+		queues = settings.Hypervisor.NetworkQueuesMax
+	} else if queues < settings.Hypervisor.NetworkQueuesMin {
+		queues = settings.Hypervisor.NetworkQueuesMin
+	}
+
+	return
+}
+
 func (q *Qemu) Marshal() (output string, err error) {
 	cmd := []string{
 		"/usr/bin/qemu-system-x86_64",
@@ -173,7 +197,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 		cmd = append(cmd, fmt.Sprintf(
 			"virtio-blk-pci,drive=%s,num-queues=%d,id=%s",
 			dskId,
-			settings.Hypervisor.DiskQueues,
+			q.GetDiskQueues(),
 			dskDevId,
 		))
 	}
@@ -189,9 +213,10 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 		cmd = append(cmd, "-netdev")
 		cmd = append(cmd, fmt.Sprintf(
-			"tap,id=net%d,ifname=%s,script=no,vhost=on",
+			"tap,id=net%d,ifname=%s,script=no,vhost=on,queues=%d",
 			count,
 			network.Iface,
+			q.GetNetworkQueues(),
 		))
 	}
 
