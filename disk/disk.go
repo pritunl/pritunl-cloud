@@ -35,6 +35,8 @@ type Disk struct {
 	NewSize          int                `bson:"new_size" json:"new_size"`
 	Backup           bool               `bson:"backup" json:"backup"`
 	LastBackup       time.Time          `bson:"last_backup" json:"last_backup"`
+	curIndex         string             `bson:"-" json:"-"`
+	curInstance      primitive.ObjectID `bson:"-" json:"-"`
 }
 
 func (d *Disk) Validate(db *database.Database) (
@@ -89,6 +91,24 @@ func (d *Disk) Validate(db *database.Database) (
 		d.Index = fmt.Sprintf("hold_%s", primitive.NewObjectID().Hex())
 	}
 
+	if !d.Instance.IsZero() {
+		disks, e := GetInstance(db, d.Instance)
+		if e != nil {
+			err = e
+			return
+		}
+
+		for _, dsk := range disks {
+			if dsk.Id != d.Id && dsk.Index == d.Index {
+				errData = &errortypes.ErrorData{
+					Error:   "disk_index_in_use",
+					Message: "Disk index is already in use on instance",
+				}
+				return
+			}
+		}
+	}
+
 	if d.State == "" {
 		d.State = Provision
 	}
@@ -117,7 +137,28 @@ func (d *Disk) Validate(db *database.Database) (
 		d.NewSize = 0
 	}
 
+	if d.DeleteProtection && d.curInstance != d.Instance {
+		errData = &errortypes.ErrorData{
+			Error:   "delete_protection_index",
+			Message: "Cannot change instance with delete protection enabled",
+		}
+		return
+	}
+
+	if d.DeleteProtection && d.curIndex != d.Index {
+		errData = &errortypes.ErrorData{
+			Error:   "delete_protection_index",
+			Message: "Cannot change index with delete protection enabled",
+		}
+		return
+	}
+
 	return
+}
+
+func (d *Disk) PreCommit() {
+	d.curIndex = d.Index
+	d.curInstance = d.Instance
 }
 
 func (d *Disk) Commit(db *database.Database) (err error) {
