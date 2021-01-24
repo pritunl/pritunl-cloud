@@ -29,8 +29,9 @@ type VirtualMachine struct {
 }
 
 type Disk struct {
-	Index int    `json:"index"`
-	Path  string `json:"path"`
+	Id    primitive.ObjectID `json:"id"`
+	Index int                `json:"index"`
+	Path  string             `json:"path"`
 }
 
 type UsbDevice struct {
@@ -67,6 +68,7 @@ func (d *Disk) GetId() primitive.ObjectID {
 
 func (d *Disk) Copy() (dsk *Disk) {
 	dsk = &Disk{
+		Id:    d.Id,
 		Index: d.Index,
 		Path:  d.Path,
 	}
