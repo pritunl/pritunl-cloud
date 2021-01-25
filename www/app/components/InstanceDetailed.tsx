@@ -874,7 +874,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			let device = infoUsbDevices[i];
 			usbDevicesSelect.push(
 				<option
-					key={i}
+					key={i + '_' + device.vendor + ':' + device.product}
 					value={device.vendor + ':' + device.product}
 				>
 					{'Device=' + device.vendor + ':' + device.product +
@@ -886,7 +886,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			let device = infoUsbDevices[i];
 			usbDevicesSelect.push(
 				<option
-					key={i}
+					key={i + '_' + device.bus + '-' + device.address}
 					value={device.bus + '-' + device.address}
 				>
 					{'Bus=' + device.bus + ' Port=' + device.address +
@@ -922,7 +922,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			let device = infoPciDevices[i];
 			pciDevicesSelect.push(
 				<option
-					key={i}
+					key={device.slot}
 					value={device.slot}
 				>
 					{device.slot + ' ' + device.class + ':' + device.name}
