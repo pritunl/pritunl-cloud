@@ -54,6 +54,7 @@ const css = {
 		position: 'relative',
 		padding: '48px 10px 0 10px',
 		width: '100%',
+		maxWidth: '1062px',
 	} as React.CSSProperties,
 	button: {
 		height: '30px',
@@ -117,6 +118,7 @@ const css = {
 		height: '20px',
 	} as React.CSSProperties,
 	vncBox: {
+		paddingBottom: '10px',
 		position: 'relative',
 	} as React.CSSProperties,
 };
