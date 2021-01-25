@@ -124,6 +124,7 @@ const css = {
 };
 
 export default class InstanceDetailed extends React.Component<Props, State> {
+	vncState: boolean;
 	vncRef: React.RefObject<HTMLDivElement>;
 	vncRfb: RFB;
 
@@ -151,7 +152,12 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		this.vncRef = React.createRef();
 	}
 
+	componentDidMount(): void {
+		this.vncState = true;
+	}
+
 	componentWillUnmount(): void {
+		this.vncState = false;
 		if (this.vncRfb) {
 			this.vncRfb.disconnect();
 		}
@@ -185,28 +191,39 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				this.vncRfb.disconnect();
 			}
 		} else {
-			this.vncRfb = new RFB(
-				this.vncRef.current,
-				'wss://' + location.hostname + (
-					location.port ? ':' + location.port : '') + '/instance/' +
-					this.props.instance.id + '/vnc?csrf_token=' + Csrf.token,
-				{
-					shared: true,
-					wsProtocols: ['binary'],
-					credentials: {
-						password: this.props.instance.vnc_password,
-					},
-				},
-			);
-			if (this.state.vncScale) {
-				this.vncRfb.scaleViewport = 'scale';
-			}
+			this.connectVnc();
 		}
 
 		this.setState({
 			...this.state,
 			vnc: !this.state.vnc,
 		});
+	}
+
+	connectVnc = (): void => {
+		this.vncRfb = new RFB(
+			this.vncRef.current,
+			'wss://' + location.hostname + (
+				location.port ? ':' + location.port : '') + '/instance/' +
+			this.props.instance.id + '/vnc?csrf_token=' + Csrf.token,
+			{
+				shared: true,
+				wsProtocols: ['binary'],
+				credentials: {
+					password: this.props.instance.vnc_password,
+				},
+			},
+		);
+		this.vncRfb.addEventListener('disconnect', function() {
+			setTimeout(function() {
+				if (this.state.vnc && this.vncState) {
+					this.connectVnc();
+				}
+			}.bind(this), 250);
+		}.bind(this));
+		if (this.state.vncScale) {
+			this.vncRfb.scaleViewport = 'scale';
+		}
 	}
 
 	onToggleVncCtrl = (): void => {
