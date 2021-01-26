@@ -16,6 +16,7 @@ type driveBackupArgs struct {
 	Device string `json:"device"`
 	Sync   string `json:"sync"`
 	Target string `json:"target"`
+	Format string `json:"format"`
 }
 
 type blockDeviceImage struct {
@@ -102,6 +103,7 @@ func driveBackup(vmId primitive.ObjectID, dsk *disk.Disk,
 			Device: deviceName,
 			Sync:   "full",
 			Target: destPth,
+			Format: "qcow2",
 		},
 	}
 
