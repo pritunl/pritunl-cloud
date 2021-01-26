@@ -703,12 +703,12 @@ func (i *Instance) VncConnect(db *database.Database,
 	backConn, backResp, err = dialer.Dial(wsUrl, header)
 	if err != nil {
 		if backResp != nil {
-			err = &errortypes.RequestError{
+			err = &VncDialError{
 				errors.Wrapf(err, "instance: WebSocket dial error %d",
 					backResp.StatusCode),
 			}
 		} else {
-			err = &errortypes.RequestError{
+			err = &VncDialError{
 				errors.Wrap(err, "instance: WebSocket dial error"),
 			}
 		}
