@@ -263,7 +263,7 @@ func (n *Node) Validate(db *database.Database) (
 	case Std, Vmware, Virtio:
 		break
 	case "":
-		n.Vga = Vmware
+		n.Vga = Virtio
 		break
 	default:
 		errData = &errortypes.ErrorData{
