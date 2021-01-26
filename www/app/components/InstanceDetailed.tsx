@@ -980,6 +980,10 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				copy: true,
 			},
 			{
+				label: 'Platform',
+				value: (this.props.instance.uefi ? 'UEFI' : 'BIOS'),
+			},
+			{
 				label: 'Public IPv4',
 				value: publicIps,
 				copy: true,
