@@ -42,7 +42,7 @@ func GetDisks(vmId primitive.ObjectID) (disks []*vm.Disk, err error) {
 	}
 	defer conn.Close()
 
-	err = conn.SetDeadline(time.Now().Add(5 * time.Second))
+	err = conn.SetDeadline(time.Now().Add(3 * time.Second))
 	if err != nil {
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "qemu: Failed set deadline"),
