@@ -89,6 +89,8 @@ func diskPut(c *gin.Context) {
 		"new_size",
 	)
 
+	dsk.PreCommit()
+
 	dsk.Name = dta.Name
 	dsk.Comment = dta.Comment
 	dsk.Instance = dta.Instance
