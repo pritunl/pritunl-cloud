@@ -69,7 +69,7 @@ func runCommand(vmId primitive.ObjectID, cmd *cmdBase,
 	conn, err := net.DialTimeout(
 		"unix",
 		sockPath,
-		1*time.Second,
+		10*time.Second,
 	)
 	if err != nil {
 		err = &errortypes.ReadError{
@@ -79,7 +79,7 @@ func runCommand(vmId primitive.ObjectID, cmd *cmdBase,
 	}
 	defer conn.Close()
 
-	err = conn.SetDeadline(time.Now().Add(10 * time.Second))
+	err = conn.SetDeadline(time.Now().Add(6 * time.Second))
 	if err != nil {
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "qmp: Failed set deadline"),
@@ -107,7 +107,7 @@ func runCommand(vmId primitive.ObjectID, cmd *cmdBase,
 		return
 	}
 
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(50 * time.Millisecond)
 
 	cmdData, err = json.Marshal(cmd)
 	if err != nil {
