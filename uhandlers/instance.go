@@ -646,7 +646,11 @@ func instanceVncGet(c *gin.Context) {
 
 	err = inst.VncConnect(db, c.Writer, c.Request)
 	if err != nil {
-		utils.AbortWithError(c, 500, err)
+		if _, ok := err.(*instance.VncDialError); ok {
+			utils.AbortWithStatus(c, 504)
+		} else {
+			utils.AbortWithError(c, 500, err)
+		}
 		return
 	}
 }
