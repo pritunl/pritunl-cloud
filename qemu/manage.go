@@ -109,9 +109,16 @@ func GetVmInfo(vmId primitive.ObjectID, queryQms, force bool) (
 							_ = UpdateVmState(virt)
 							continue
 						}
-						err = e
 
-						return
+						logrus.WithFields(logrus.Fields{
+							"instance_id": vmId.Hex(),
+							"error":       e,
+						}).Error("qemu: Failed to get VM disk state")
+
+						ForcePowerOff(virt)
+						SetVmState(virt, vm.Failed)
+
+						break
 					}
 					virt.Disks = disks
 
@@ -141,9 +148,16 @@ func GetVmInfo(vmId primitive.ObjectID, queryQms, force bool) (
 							_ = UpdateVmState(virt)
 							continue
 						}
-						err = e
 
-						return
+						logrus.WithFields(logrus.Fields{
+							"instance_id": vmId.Hex(),
+							"error":       e,
+						}).Error("qemu: Failed to get VM usb state")
+
+						ForcePowerOff(virt)
+						SetVmState(virt, vm.Failed)
+
+						break
 					}
 					virt.UsbDevices = usbs
 
