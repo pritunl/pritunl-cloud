@@ -1895,8 +1895,8 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							this.set('vga', val);
 						}}
 					>
-						<option value="vmware">VMware</option>
 						<option value="virtio">Virtio</option>
+						<option value="vmware">VMware</option>
 						<option value="std">Standard</option>
 					</PageSelect>
 					<label
