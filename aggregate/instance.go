@@ -11,6 +11,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/authority"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
+	"github.com/pritunl/pritunl-cloud/drive"
 	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -26,12 +27,13 @@ type InstancePipe struct {
 }
 
 type InstanceInfo struct {
-	Node          string        `json:"node"`
-	Disks         []string      `json:"disks"`
-	FirewallRules []string      `json:"firewall_rules"`
-	Authorities   []string      `json:"authorities"`
-	UsbDevices    []*usb.Device `json:"usb_devices"`
-	PciDevices    []*pci.Device `json:"pci_devices"`
+	Node          string          `json:"node"`
+	Disks         []string        `json:"disks"`
+	FirewallRules []string        `json:"firewall_rules"`
+	Authorities   []string        `json:"authorities"`
+	UsbDevices    []*usb.Device   `json:"usb_devices"`
+	PciDevices    []*pci.Device   `json:"pci_devices"`
+	DriveDevices  []*drive.Device `json:"drive_devices"`
 }
 
 type InstanceAggregate struct {
@@ -148,6 +150,10 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 
 			if nde.PciDevices != nil {
 				info.PciDevices = nde.PciDevices
+			}
+
+			if nde.InstanceDrives != nil {
+				info.DriveDevices = nde.InstanceDrives
 			}
 		}
 
