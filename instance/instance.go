@@ -506,6 +506,7 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 		NoHostAddress:   i.NoHostAddress,
 		UsbDevices:      []*vm.UsbDevice{},
 		PciDevices:      []*vm.PciDevice{},
+		DriveDevices:    []*vm.DriveDevice{},
 	}
 
 	if disks != nil {
@@ -539,6 +540,27 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 			i.Virt.PciDevices = append(i.Virt.PciDevices, &vm.PciDevice{
 				Slot: device.Slot,
 			})
+		}
+	}
+
+	instanceDrives := set.NewSet()
+	nodeInstanceDrives := node.Self.InstanceDrives
+	if nodeInstanceDrives != nil {
+		for _, device := range nodeInstanceDrives {
+			instanceDrives.Add(device.Id)
+		}
+	}
+
+	if i.DriveDevices != nil {
+		for _, device := range i.DriveDevices {
+			if instanceDrives.Contains(device.Id) {
+				i.Virt.DriveDevices = append(
+					i.Virt.DriveDevices,
+					&vm.DriveDevice{
+						Id: device.Id,
+					},
+				)
+			}
 		}
 	}
 
