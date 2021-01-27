@@ -38,6 +38,7 @@ interface State {
 	addCert: string;
 	addNetworkRole: string;
 	addVpc: string;
+	addDriveDevice: string;
 	addUsbDevice: string;
 	addPciDevice: string;
 	forwardedChecked: boolean;
@@ -138,6 +139,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			addCert: null,
 			addNetworkRole: '',
 			addVpc: '',
+			addDriveDevice: '',
 			addUsbDevice: '',
 			addPciDevice: '',
 			forwardedChecked: false,
@@ -422,6 +424,100 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			changed: true,
 			message: '',
 			addNetworkRole: '',
+			instance: instance,
+		});
+	}
+
+	onAddDriveDevice = (): void => {
+		let instance: InstanceTypes.Instance;
+		let infoDriveDevices = this.props.instance.info.drive_devices || [];
+
+		if (!this.state.addDriveDevice && !infoDriveDevices.length) {
+			return;
+		}
+
+		let addDevice = this.state.addDriveDevice;
+		if (!addDevice) {
+			addDevice = infoDriveDevices[0].id;
+		}
+
+		if (this.state.changed) {
+			instance = {
+				...this.state.instance,
+			};
+		} else {
+			instance = {
+				...this.props.instance,
+			};
+		}
+
+		let driveDevices = [
+			...(instance.drive_devices || []),
+		];
+
+		let index = -1;
+		for (let i = 0; i < driveDevices.length; i++) {
+			let dev = driveDevices[i];
+			if (dev.id === addDevice) {
+				index = i;
+				break
+			}
+		}
+
+		if (index === -1) {
+			driveDevices.push({
+				id: addDevice,
+			});
+		}
+
+		instance.drive_devices = driveDevices;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			addDriveDevice: '',
+			instance: instance,
+		});
+	}
+
+	onRemoveDriveDevice = (device: string): void => {
+		let instance: InstanceTypes.Instance;
+
+		if (this.state.changed) {
+			instance = {
+				...this.state.instance,
+			};
+		} else {
+			instance = {
+				...this.props.instance,
+			};
+		}
+
+		let driveDevices = [
+			...(instance.drive_devices || []),
+		];
+
+		let index = -1;
+		for (let i = 0; i < driveDevices.length; i++) {
+			let dev = driveDevices[i];
+			if (dev.id === device) {
+				index = i;
+				break
+			}
+		}
+		if (index === -1) {
+			return;
+		}
+
+		driveDevices.splice(index, 1);
+		instance.drive_devices = driveDevices;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			addDriveDevice: '',
 			instance: instance,
 		});
 	}
@@ -859,6 +955,41 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			}
 		}
 
+		let driveDevices: JSX.Element[] = [];
+		for (let device of (instance.drive_devices || [])) {
+			let key = device.id;
+			driveDevices.push(
+				<div
+					className="bp3-tag bp3-tag-removable bp3-intent-primary"
+					style={css.item}
+					key={key}
+				>
+					{key}
+					<button
+						disabled={this.state.disabled}
+						className="bp3-tag-remove"
+						onMouseUp={(): void => {
+							this.onRemoveDriveDevice(key);
+						}}
+					/>
+				</div>,
+			);
+		}
+
+		let infoDriveDevices = this.props.instance.info.drive_devices;
+		let driveDevicesSelect: JSX.Element[] = [];
+		for (let i = 0; i < (infoDriveDevices || []).length; i++) {
+			let device = infoDriveDevices[i];
+			driveDevicesSelect.push(
+				<option
+					key={device.id}
+					value={device.id}
+				>
+					{device.id}
+				</option>,
+			);
+		}
+
 		let usbDevices: JSX.Element[] = [];
 		for (let device of (instance.usb_devices || [])) {
 			let key = '';
@@ -1176,6 +1307,36 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						}}
 						onSubmit={this.onAddNetworkRole}
 					/>
+					<label
+						className="bp3-label"
+						style={css.label}
+						hidden={infoDriveDevices === null}
+					>
+						Disk Passthrough Devices
+						<Help
+							title="Disk Passthrough Devices"
+							content="Passthrough node disk to instance."
+						/>
+						<div>
+							{driveDevices}
+						</div>
+					</label>
+					<PageSelectButton
+						hidden={infoDriveDevices === null}
+						label="Add Device"
+						value={this.state.addDriveDevice}
+						disabled={!driveDevicesSelect.length || this.state.disabled}
+						buttonClass="bp3-intent-success"
+						onChange={(val: string): void => {
+							this.setState({
+								...this.state,
+								addDriveDevice: val,
+							});
+						}}
+						onSubmit={this.onAddDriveDevice}
+					>
+						{driveDevicesSelect}
+					</PageSelectButton>
 					<label
 						className="bp3-label"
 						style={css.label}
