@@ -44,6 +44,7 @@ interface State {
 	addCert: string;
 	addNetworkRole: string;
 	addHostNatExclude: string,
+	addDrive: string;
 	forwardedChecked: boolean;
 	forwardedProtoChecked: boolean;
 }
@@ -131,6 +132,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			addCert: null,
 			addNetworkRole: null,
 			addHostNatExclude: null,
+			addDrive: null,
 			forwardedChecked: false,
 			forwardedProtoChecked: false,
 		};
@@ -956,6 +958,100 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		});
 	}
 
+	onAddDrive = (): void => {
+		let node: NodeTypes.Node;
+		let availabeDrives = this.props.node.available_drives || [];
+
+		if (!this.state.addDrive && !availabeDrives.length) {
+			return;
+		}
+
+		let addDrive = this.state.addDrive;
+		if (!addDrive) {
+			addDrive = availabeDrives[0].id;
+		}
+
+		if (this.state.changed) {
+			node = {
+				...this.state.node,
+			};
+		} else {
+			node = {
+				...this.props.node,
+			};
+		}
+
+		let instanceDrives = [
+			...(node.instance_drives || []),
+		];
+
+		let index = -1;
+		for (let i = 0; i < instanceDrives.length; i++) {
+			let dev = instanceDrives[i];
+			if (dev.id === addDrive) {
+				index = i;
+				break
+			}
+		}
+
+		if (index === -1) {
+			instanceDrives.push({
+				id: addDrive,
+			});
+		}
+
+		node.instance_drives = instanceDrives;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			addDrive: '',
+			node: node,
+		});
+	}
+
+	onRemoveDrive = (device: string): void => {
+		let node: NodeTypes.Node;
+
+		if (this.state.changed) {
+			node = {
+				...this.state.node,
+			};
+		} else {
+			node = {
+				...this.props.node,
+			};
+		}
+
+		let instanceDrives = [
+			...(node.instance_drives || []),
+		];
+
+		let index = -1;
+		for (let i = 0; i < instanceDrives.length; i++) {
+			let dev = instanceDrives[i];
+			if (dev.id === device) {
+				index = i;
+				break
+			}
+		}
+		if (index === -1) {
+			return;
+		}
+
+		instanceDrives.splice(index, 1);
+		node.instance_drives = instanceDrives;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			addDrive: '',
+			node: node,
+		});
+	}
+
 	render(): JSX.Element {
 		let node: NodeTypes.Node = this.state.node || this.props.node;
 		let active = node.requests_min !== 0 || node.memory !== 0 ||
@@ -1065,6 +1161,35 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						}}
 					/>
 				</div>,
+			);
+		}
+
+		let availableDrives: JSX.Element[] = [];
+		for (let device of (node.instance_drives || [])) {
+			availableDrives.push(
+				<div
+					className="bp3-tag bp3-tag-removable bp3-intent-primary"
+					style={css.item}
+					key={device.id}
+				>
+					{device.id}
+					<button
+						disabled={this.state.disabled}
+						className="bp3-tag-remove"
+						onMouseUp={(): void => {
+							this.onRemoveDrive(device.id);
+						}}
+					/>
+				</div>,
+			);
+		}
+
+		let availableDrivesSelect: JSX.Element[] = [];
+		for (let device of (node.available_drives || [])) {
+			availableDrivesSelect.push(
+				<option key={device.id} value={device.id}>
+					{device.id}
+				</option>,
 			);
 		}
 
@@ -1774,6 +1899,34 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						<option value="virtio">Virtio</option>
 						<option value="std">Standard</option>
 					</PageSelect>
+					<label
+						className="bp3-label"
+						style={css.label}
+					>
+						Instance Passthrough Disks
+						<Help
+							title="Instance Direct Disks"
+							content="Disk devices available to instances for passthrough."
+						/>
+						<div>
+							{availableDrives}
+						</div>
+					</label>
+					<PageSelectButton
+						label="Add Disk"
+						value={this.state.addDrive}
+						disabled={!availableDrivesSelect.length || this.state.disabled}
+						buttonClass="bp3-intent-success"
+						onChange={(val: string): void => {
+							this.setState({
+								...this.state,
+								addDrive: val,
+							});
+						}}
+						onSubmit={this.onAddDrive}
+					>
+						{availableDrivesSelect}
+					</PageSelectButton>
 					<label className="bp3-label">
 						Network Roles
 						<Help
