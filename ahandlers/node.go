@@ -11,6 +11,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
+	"github.com/pritunl/pritunl-cloud/drive"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -39,6 +40,7 @@ type nodeData struct {
 	NetworkMode6         string                  `json:"network_mode6"`
 	Blocks               []*node.BlockAttachment `json:"blocks"`
 	Blocks6              []*node.BlockAttachment `json:"blocks6"`
+	InstanceDrives       []*drive.Device         `json:"instance_drives"`
 	HostBlock            primitive.ObjectID      `json:"host_block"`
 	HostNat              bool                    `json:"host_nat"`
 	HostNatExcludes      []string                `json:"host_nat_excludes"`
@@ -102,6 +104,7 @@ func nodePut(c *gin.Context) {
 	nde.NetworkMode6 = data.NetworkMode6
 	nde.Blocks = data.Blocks
 	nde.Blocks6 = data.Blocks6
+	nde.InstanceDrives = data.InstanceDrives
 	nde.HostBlock = data.HostBlock
 	nde.HostNat = data.HostNat
 	nde.HostNatExcludes = data.HostNatExcludes
@@ -135,6 +138,7 @@ func nodePut(c *gin.Context) {
 		"network_mode6",
 		"blocks",
 		"blocks6",
+		"instance_drives",
 		"host_block",
 		"host_nat",
 		"host_nat_excludes",
