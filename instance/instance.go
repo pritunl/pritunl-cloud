@@ -16,6 +16,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
+	"github.com/pritunl/pritunl-cloud/drive"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
@@ -65,6 +66,7 @@ type Instance struct {
 	NetworkRoles        []string           `bson:"network_roles" json:"network_roles"`
 	UsbDevices          []*usb.Device      `bson:"usb_devices" json:"usb_devices"`
 	PciDevices          []*pci.Device      `bson:"pci_devices" json:"pci_devices"`
+	DriveDevices        []*drive.Device    `bson:"drive_devices" json:"drive_devices"`
 	Vnc                 bool               `bson:"vnc" json:"vnc"`
 	VncPassword         string             `bson:"vnc_password" json:"vnc_password"`
 	VncDisplay          int                `bson:"vnc_display,omitempty" json:"vnc_display"`
@@ -195,6 +197,11 @@ func (i *Instance) Validate(db *database.Database) (
 		i.PrivateIps6 = []string{}
 	}
 
+	nde, err := node.Get(db, i.Node)
+	if err != nil {
+		return
+	}
+
 	if i.UsbDevices == nil {
 		i.UsbDevices = []*usb.Device{}
 	} else {
@@ -229,6 +236,28 @@ func (i *Instance) Validate(db *database.Database) (
 				errData = &errortypes.ErrorData{
 					Error:   "pci_device_slot_invalid",
 					Message: "Invalid PCI slot",
+				}
+				return
+			}
+		}
+	}
+
+	instanceDrives := set.NewSet()
+	nodeInstanceDrives := nde.InstanceDrives
+	if nodeInstanceDrives != nil {
+		for _, device := range nodeInstanceDrives {
+			instanceDrives.Add(device.Id)
+		}
+	}
+
+	if i.DriveDevices == nil {
+		i.DriveDevices = []*drive.Device{}
+	} else {
+		for _, device := range i.DriveDevices {
+			if !instanceDrives.Contains(device.Id) {
+				errData = &errortypes.ErrorData{
+					Error:   "drive_invalid",
+					Message: "Instance drive not available",
 				}
 				return
 			}
