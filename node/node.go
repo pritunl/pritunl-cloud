@@ -20,6 +20,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/bridges"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/drive"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/pci"
@@ -66,6 +67,8 @@ type Node struct {
 	NetworkMode6         string               `bson:"network_mode6" json:"network_mode6"`
 	Blocks               []*BlockAttachment   `bson:"blocks" json:"blocks"`
 	Blocks6              []*BlockAttachment   `bson:"blocks6" json:"blocks6"`
+	AvailableDrives      []*drive.Device      `bson:"available_drives" json:"available_drives"`
+	InstanceDrives       []*drive.Device      `bson:"instance_drives" json:"instance_drives"`
 	HostBlock            primitive.ObjectID   `bson:"host_block,omitempty" json:"host_block"`
 	HostNat              bool                 `bson:"host_nat" json:"host_nat"`
 	HostNatExcludes      []string             `bson:"host_nat_excludes" json:"host_nat_excludes"`
@@ -137,6 +140,8 @@ func (n *Node) Copy() *Node {
 		NetworkMode6:         n.NetworkMode6,
 		Blocks:               n.Blocks,
 		Blocks6:              n.Blocks6,
+		AvailableDrives:      n.AvailableDrives,
+		InstanceDrives:       n.InstanceDrives,
 		HostBlock:            n.HostBlock,
 		HostNat:              n.HostNat,
 		HostNatExcludes:      n.HostNatExcludes,
@@ -367,6 +372,15 @@ func (n *Node) Validate(db *database.Database) (
 	if n.Blocks == nil {
 		n.Blocks = []*BlockAttachment{}
 	}
+
+	instanceDrives := []*drive.Device{}
+	if n.InstanceDrives != nil {
+		for _, device := range n.InstanceDrives {
+			// TODO Filter drive id
+			instanceDrives = append(instanceDrives, device)
+		}
+	}
+	n.InstanceDrives = instanceDrives
 
 	switch n.NetworkMode {
 	case Static:
@@ -737,6 +751,7 @@ func (n *Node) update(db *database.Database) (err error) {
 				"available_interfaces": n.AvailableInterfaces,
 				"available_bridges":    n.AvailableBridges,
 				"default_interface":    n.DefaultInterface,
+				"available_drives":     n.AvailableDrives,
 			},
 		},
 		opts,
@@ -772,6 +787,7 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.NetworkMode6 = nde.NetworkMode6
 	n.Blocks = nde.Blocks
 	n.Blocks6 = nde.Blocks6
+	n.InstanceDrives = nde.InstanceDrives
 	n.HostBlock = nde.HostBlock
 	n.HostNat = nde.HostNat
 	n.HostNatExcludes = nde.HostNatExcludes
@@ -903,6 +919,12 @@ func (n *Node) sync() {
 	} else {
 		n.AvailableBridges = []string{}
 	}
+
+	drives, err := drive.GetDevices()
+	if err != nil {
+		return
+	}
+	n.AvailableDrives = drives
 
 	hostname, err := os.Hostname()
 	if err != nil {
