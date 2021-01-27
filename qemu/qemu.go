@@ -2,9 +2,11 @@ package qemu
 
 import (
 	"fmt"
+	"path"
 	"strings"
 
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/pritunl-cloud/drive"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/settings"
@@ -34,6 +36,10 @@ type PciDevice struct {
 	Slot string
 }
 
+type DriveDevice struct {
+	Id string
+}
+
 type Qemu struct {
 	Id           primitive.ObjectID
 	Data         string
@@ -54,6 +60,7 @@ type Qemu struct {
 	Networks     []*Network
 	UsbDevices   []*UsbDevice
 	PciDevices   []*PciDevice
+	DriveDevices []*DriveDevice
 }
 
 func (q *Qemu) GetDiskQueues() (queues int) {
@@ -190,6 +197,27 @@ func (q *Qemu) Marshal() (output string, err error) {
 			"file=%s,media=disk,format=%s,discard=unmap,if=none,id=%s",
 			disk.File,
 			disk.Format,
+			dskId,
+		))
+
+		cmd = append(cmd, "-device")
+		cmd = append(cmd, fmt.Sprintf(
+			"virtio-blk-pci,drive=%s,num-queues=%d,id=%s",
+			dskId,
+			q.GetDiskQueues(),
+			dskDevId,
+		))
+	}
+
+	for _, device := range q.DriveDevices {
+		dskHashId := drive.GetDriveHashId(device.Id)
+		dskId := fmt.Sprintf("physicaldisk_%s", dskHashId)
+		dskDevId := fmt.Sprintf("physicaldiskdev_%s", dskHashId)
+
+		cmd = append(cmd, "-drive")
+		cmd = append(cmd, fmt.Sprintf(
+			"file=%s,media=disk,format=raw,discard=on,if=none,id=%s",
+			path.Join("/dev/disk/by-id", device.Id),
 			dskId,
 		))
 
