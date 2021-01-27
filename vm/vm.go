@@ -26,6 +26,7 @@ type VirtualMachine struct {
 	NoHostAddress   bool               `json:"no_host_address"`
 	UsbDevices      []*UsbDevice       `json:"usb_devices"`
 	PciDevices      []*PciDevice       `json:"pci_devices"`
+	DriveDevices    []*DriveDevice     `json:"drive_devices"`
 }
 
 type Disk struct {
@@ -54,6 +55,10 @@ func (u *UsbDevice) Copy() (device *UsbDevice) {
 
 type PciDevice struct {
 	Slot string `json:"slot"`
+}
+
+type DriveDevice struct {
+	Id string `json:"id"`
 }
 
 func (d *Disk) GetId() primitive.ObjectID {
