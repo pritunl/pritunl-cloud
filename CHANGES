@@ -3,6 +3,7 @@ pritunl-cloud changelog
 
 <%= version %>
 
+Add pci passthrough
 Add disk resizing
 Add disk passthrough
 Support add and remove USB devices on running instance
