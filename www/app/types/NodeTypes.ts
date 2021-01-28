@@ -32,6 +32,8 @@ export interface Node {
 	default_interface?: string;
 	blocks?: BlockAttachment[];
 	blocks6?: BlockAttachment[];
+	available_drives?: Drive[];
+	instance_drives?: Drive[];
 	host_block?: string;
 	host_nat?: boolean;
 	host_nat_excludes?: string[];
@@ -55,6 +57,10 @@ export interface Node {
 	oracle_user?: string;
 	oracle_public_key?: string;
 	oracle_host_route?: boolean;
+}
+
+export interface Drive {
+	id?: string;
 }
 
 export interface Filter {
