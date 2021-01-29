@@ -34,6 +34,7 @@ export interface Instance {
 	network_roles?: string[];
 	usb_devices?: UsbDevice[];
 	pci_devices?: PciDevice[];
+	drive_devices?: DriveDevice[];
 	vnc?: boolean;
 	vnc_password?: string;
 	vnc_display?: number;
@@ -74,6 +75,10 @@ export interface PciDevice {
 	driver?: string;
 }
 
+export interface DriveDevice {
+	id?: string;
+}
+
 export interface Info {
 	node?: string;
 	firewall_rules?: string[];
@@ -81,6 +86,7 @@ export interface Info {
 	disks?: string[];
 	usb_devices?: UsbDevice[];
 	pci_devices?: PciDevice[];
+	drive_devices?: DriveDevice[];
 }
 
 export type Instances = Instance[];
