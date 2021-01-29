@@ -98,6 +98,8 @@ func GetVmInfo(vmId primitive.ObjectID, queryQms, force bool) (
 	}
 
 	if virt.State == vm.Running && queryQms {
+		virt.DisksAvailable = true
+		disksUpdated := false
 		disksStore, ok := store.GetDisks(vmId)
 		if !ok || time.Since(disksStore.Timestamp) > refreshRate {
 			for i := 0; i < 20; i++ {
@@ -115,19 +117,23 @@ func GetVmInfo(vmId primitive.ObjectID, queryQms, force bool) (
 							"error":       e,
 						}).Error("qemu: Failed to get VM disk state")
 
-						ForcePowerOff(virt)
-						SetVmState(virt, vm.Failed)
+						virt.DisksAvailable = false
+
+						e = nil
 
 						break
 					}
-					virt.Disks = disks
 
+					virt.Disks = disks
 					store.SetDisks(vmId, disks)
+					disksUpdated = true
 				}
 
 				break
 			}
-		} else {
+		}
+
+		if ok && !disksUpdated {
 			disks := []*vm.Disk{}
 			for _, dsk := range disksStore.Disks {
 				disks = append(disks, dsk.Copy())
@@ -137,6 +143,8 @@ func GetVmInfo(vmId primitive.ObjectID, queryQms, force bool) (
 	}
 
 	if virt.State == vm.Running && queryQms && node.Self.UsbPassthrough {
+		virt.UsbDevicesAvailable = true
+		usbsUpdated := false
 		usbsStore, ok := store.GetUsbs(vmId)
 		if !ok || time.Since(usbsStore.Timestamp) > refreshRate {
 			for i := 0; i < 20; i++ {
@@ -154,19 +162,23 @@ func GetVmInfo(vmId primitive.ObjectID, queryQms, force bool) (
 							"error":       e,
 						}).Error("qemu: Failed to get VM usb state")
 
-						ForcePowerOff(virt)
-						SetVmState(virt, vm.Failed)
+						virt.UsbDevicesAvailable = false
+
+						e = nil
 
 						break
 					}
-					virt.UsbDevices = usbs
 
+					virt.UsbDevices = usbs
 					store.SetUsbs(vmId, usbs)
+					usbsUpdated = true
 				}
 
 				break
 			}
-		} else {
+		}
+
+		if ok && !usbsUpdated {
 			usbs := []*vm.UsbDevice{}
 			for _, usb := range usbsStore.Usbs {
 				usbs = append(usbs, usb.Copy())
