@@ -162,19 +162,43 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	return
 }
 
-func ForcePowerOff(virt *vm.VirtualMachine, e error) (err error) {
+func ForcePowerOffErr(virt *vm.VirtualMachine, e error) (err error) {
 	unitName := paths.GetUnitName(virt.Id)
 
-	if e == nil {
-		logrus.WithFields(logrus.Fields{
-			"instance_id": virt.Id.Hex(),
-		}).Warning("qemu: Force power off virtual machine")
-	} else {
-		logrus.WithFields(logrus.Fields{
-			"instance_id": virt.Id.Hex(),
-			"error":       e,
-		}).Error("qemu: Force power off virtual machine")
+	logrus.WithFields(logrus.Fields{
+		"instance_id": virt.Id.Hex(),
+		"error":       e,
+	}).Error("qemu: Force power off virtual machine")
+
+	go qmp.Shutdown(virt.Id)
+	go qms.Shutdown(virt.Id)
+
+	time.Sleep(15 * time.Second)
+
+	err = systemd.Stop(unitName)
+	if err != nil {
+		return
 	}
+
+	err = NetworkConfClear(virt)
+	if err != nil {
+		return
+	}
+
+	time.Sleep(3 * time.Second)
+
+	store.RemVirt(virt.Id)
+	store.RemDisks(virt.Id)
+
+	return
+}
+
+func ForcePowerOff(virt *vm.VirtualMachine) (err error) {
+	unitName := paths.GetUnitName(virt.Id)
+
+	logrus.WithFields(logrus.Fields{
+		"instance_id": virt.Id.Hex(),
+	}).Warning("qemu: Force power off virtual machine")
 
 	go qmp.Shutdown(virt.Id)
 	go qms.Shutdown(virt.Id)

@@ -54,7 +54,7 @@ func GetVmInfo(vmId primitive.ObjectID, queryQms, force bool) (
 			err = &errortypes.ReadError{
 				errors.Wrap(e, "qemu: Failed to read service"),
 			}
-			_ = ForcePowerOff(virt, err)
+			_ = ForcePowerOffErr(virt, err)
 			return
 		}
 
@@ -76,7 +76,7 @@ func GetVmInfo(vmId primitive.ObjectID, queryQms, force bool) (
 				err = &errortypes.ParseError{
 					errors.Wrap(err, "qemu: Failed to parse service data"),
 				}
-				_ = ForcePowerOff(virt, err)
+				_ = ForcePowerOffErr(virt, err)
 				return
 			}
 
@@ -222,7 +222,7 @@ func GetVmInfo(vmId primitive.ObjectID, queryQms, force bool) (
 				namespace, ifaceExternal)
 			if e != nil {
 				err = e
-				_ = ForcePowerOff(virt, err)
+				_ = ForcePowerOffErr(virt, err)
 				return
 			}
 
@@ -240,7 +240,7 @@ func GetVmInfo(vmId primitive.ObjectID, queryQms, force bool) (
 				namespace, ifaceExternal6)
 			if e != nil {
 				err = e
-				_ = ForcePowerOff(virt, err)
+				_ = ForcePowerOffErr(virt, err)
 				return
 			}
 
