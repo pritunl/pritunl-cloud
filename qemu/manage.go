@@ -351,7 +351,10 @@ func GetVms(db *database.Database,
 
 			virt, e := GetVmInfo(vmId, true, false)
 			if e != nil {
-				err = e
+				logrus.WithFields(logrus.Fields{
+					"instance_id": vmId.Hex(),
+					"error":       e,
+				}).Error("qemu: Failed to get VM state")
 				return
 			}
 
