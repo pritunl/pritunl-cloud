@@ -471,6 +471,10 @@ func Register(channel string, callback func(*EventPublish)) {
 func subscribe(channels []string) {
 	Subscribe(channels, 10*time.Second,
 		func(msg *EventPublish, err error) bool {
+			if constants.Shutdown {
+				return true
+			}
+
 			if msg == nil || err != nil {
 				return true
 			}

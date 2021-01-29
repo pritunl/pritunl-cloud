@@ -5,11 +5,12 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
+	"github.com/sirupsen/logrus"
 )
 
 func nodeSync() (err error) {
@@ -77,6 +78,10 @@ func nodeRunner() {
 	time.Sleep(1 * time.Second)
 
 	for {
+		if constants.Shutdown {
+			return
+		}
+
 		err := nodeSync()
 		if err != nil {
 			logrus.WithFields(logrus.Fields{

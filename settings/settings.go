@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
@@ -16,6 +15,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/requires"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/sirupsen/logrus"
 )
 
 func Commit(db *database.Database, group interface{}, fields set.Set) (
@@ -243,6 +243,10 @@ func Update(name string) (err error) {
 func update() {
 	for {
 		time.Sleep(10 * time.Second)
+		if constants.Shutdown {
+			return
+		}
+
 		for name := range registry {
 			err := Update(name)
 			if err != nil {

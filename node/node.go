@@ -990,6 +990,10 @@ func (n *Node) sync() {
 
 func (n *Node) keepalive() {
 	for {
+		if constants.Shutdown {
+			return
+		}
+
 		n.sync()
 		time.Sleep(1 * time.Second)
 	}
@@ -1007,6 +1011,10 @@ func (n *Node) reqInit() {
 func (n *Node) reqSync() {
 	for {
 		time.Sleep(1 * time.Second)
+
+		if constants.Shutdown {
+			return
+		}
 
 		n.reqLock.Lock()
 

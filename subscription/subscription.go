@@ -7,11 +7,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/requires"
 	"github.com/pritunl/pritunl-cloud/settings"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -154,6 +155,10 @@ func Update() (errData *errortypes.ErrorData, err error) {
 func update() {
 	for {
 		time.Sleep(30 * time.Minute)
+		if constants.Shutdown {
+			return
+		}
+
 		err, _ := Update()
 		if err != nil {
 			logrus.WithFields(logrus.Fields{

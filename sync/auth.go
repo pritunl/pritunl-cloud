@@ -3,12 +3,13 @@ package sync
 import (
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/user"
+	"github.com/sirupsen/logrus"
 )
 
 func authSync() (err error) {
@@ -41,6 +42,10 @@ func authRunner() {
 
 	for {
 		time.Sleep(10 * time.Second)
+
+		if constants.Shutdown {
+			return
+		}
 
 		err := authSync()
 		if err != nil {

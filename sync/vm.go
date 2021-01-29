@@ -87,6 +87,10 @@ func vmRunner() {
 
 	for {
 		time.Sleep(1 * time.Second)
+		if constants.Shutdown {
+			return
+		}
+
 		if !node.Self.IsHypervisor() {
 			syncNodeFirewall()
 			continue
@@ -101,6 +105,10 @@ func vmRunner() {
 
 	for {
 		time.Sleep(2500 * time.Millisecond)
+		if constants.Shutdown {
+			return
+		}
+
 		if !node.Self.IsHypervisor() {
 			syncNodeFirewall()
 			continue
