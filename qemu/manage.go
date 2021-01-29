@@ -11,6 +11,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/cloudinit"
+	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
@@ -419,6 +420,10 @@ func Create(db *database.Database, inst *instance.Instance,
 
 	vmPath := paths.GetVmPath(virt.Id)
 	unitName := paths.GetUnitName(virt.Id)
+
+	if constants.Interrupt {
+		return
+	}
 
 	logrus.WithFields(logrus.Fields{
 		"id": virt.Id.Hex(),

@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
@@ -37,6 +38,10 @@ func (d *Disks) provision(dsk *disk.Disk) {
 		db := database.GetDatabase()
 		defer db.Close()
 
+		if constants.Interrupt {
+			return
+		}
+
 		backingImage, err := data.CreateDisk(db, dsk)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
@@ -68,6 +73,10 @@ func (d *Disks) snapshot(dsk *disk.Disk) {
 
 		db := database.GetDatabase()
 		defer db.Close()
+
+		if constants.Interrupt {
+			return
+		}
 
 		virt := d.stat.GetVirt(dsk.Instance)
 		err := data.CreateSnapshot(db, dsk, virt)
@@ -102,6 +111,10 @@ func (d *Disks) expand(dsk *disk.Disk) {
 
 		db := database.GetDatabase()
 		defer db.Close()
+
+		if constants.Interrupt {
+			return
+		}
 
 		inst := d.stat.GetInstace(dsk.Instance)
 		if inst != nil {
@@ -175,6 +188,10 @@ func (d *Disks) backup(dsk *disk.Disk) {
 		db := database.GetDatabase()
 		defer db.Close()
 
+		if constants.Interrupt {
+			return
+		}
+
 		virt := d.stat.GetVirt(dsk.Instance)
 		err := data.CreateBackup(db, dsk, virt)
 		if err != nil {
@@ -218,6 +235,10 @@ func (d *Disks) restore(dsk *disk.Disk) {
 
 		db := database.GetDatabase()
 		defer db.Close()
+
+		if constants.Interrupt {
+			return
+		}
 
 		inst := d.stat.GetInstace(dsk.Instance)
 		if inst != nil {
@@ -303,6 +324,10 @@ func (d *Disks) destroy(dsk *disk.Disk) {
 		db := database.GetDatabase()
 		defer db.Close()
 
+		if constants.Interrupt {
+			return
+		}
+
 		err := dsk.Destroy(db)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
@@ -340,6 +365,10 @@ func (d *Disks) scheduleBackup(dsk *disk.Disk) {
 
 		db := database.GetDatabase()
 		defer db.Close()
+
+		if constants.Interrupt {
+			return
+		}
 
 		if dsk.State != disk.Available {
 			return

@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/pritunl/pritunl-cloud/cloudinit"
+	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/paths"
@@ -20,6 +21,10 @@ import (
 func PowerOn(db *database.Database, inst *instance.Instance,
 	virt *vm.VirtualMachine) (err error) {
 	unitName := paths.GetUnitName(virt.Id)
+
+	if constants.Interrupt {
+		return
+	}
 
 	logrus.WithFields(logrus.Fields{
 		"id": virt.Id.Hex(),
@@ -75,6 +80,10 @@ func PowerOn(db *database.Database, inst *instance.Instance,
 
 func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	unitName := paths.GetUnitName(virt.Id)
+
+	if constants.Interrupt {
+		return
+	}
 
 	logrus.WithFields(logrus.Fields{
 		"id": virt.Id.Hex(),
@@ -165,6 +174,10 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 func ForcePowerOffErr(virt *vm.VirtualMachine, e error) (err error) {
 	unitName := paths.GetUnitName(virt.Id)
 
+	if constants.Interrupt {
+		return
+	}
+
 	logrus.WithFields(logrus.Fields{
 		"instance_id": virt.Id.Hex(),
 		"error":       e,
@@ -195,6 +208,10 @@ func ForcePowerOffErr(virt *vm.VirtualMachine, e error) (err error) {
 
 func ForcePowerOff(virt *vm.VirtualMachine) (err error) {
 	unitName := paths.GetUnitName(virt.Id)
+
+	if constants.Interrupt {
+		return
+	}
 
 	logrus.WithFields(logrus.Fields{
 		"instance_id": virt.Id.Hex(),
