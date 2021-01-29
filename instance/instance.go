@@ -633,6 +633,14 @@ func (i *Instance) DiskChanged(curVirt *vm.VirtualMachine) (
 
 	addDisks = []*vm.Disk{}
 	remDisks = []*vm.Disk{}
+
+	if !curVirt.DisksAvailable {
+		logrus.WithFields(logrus.Fields{
+			"instance_id": curVirt.Id.Hex(),
+		}).Warn("qemu: Ignoring disk state")
+		return
+	}
+
 	disks := set.NewSet()
 	curDisks := set.NewSet()
 
@@ -662,6 +670,17 @@ func (i *Instance) UsbChanged(curVirt *vm.VirtualMachine) (
 
 	addUsbs = []*vm.UsbDevice{}
 	remUsbs = []*vm.UsbDevice{}
+
+	if !node.Self.UsbPassthrough {
+		return
+	}
+
+	if !curVirt.UsbDevicesAvailable {
+		logrus.WithFields(logrus.Fields{
+			"instance_id": curVirt.Id.Hex(),
+		}).Warn("qemu: Ignoring USB state")
+		return
+	}
 
 	usbsVendor := set.NewSet()
 	curUsbsVendor := set.NewSet()
