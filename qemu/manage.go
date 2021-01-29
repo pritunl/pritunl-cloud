@@ -103,13 +103,14 @@ func GetVmInfo(vmId primitive.ObjectID, queryQms, force bool) (
 		virt.DisksAvailable = true
 		disksUpdated := false
 		disksStore, ok := store.GetDisks(vmId)
+
 		if !ok || time.Since(disksStore.Timestamp) > refreshRate {
-			for i := 0; i < 20; i++ {
+			for i := 0; i < 10; i++ {
 				if virt.State == vm.Running {
 					disks, e := qms.GetDisks(vmId)
 					if e != nil {
-						if i < 19 {
-							time.Sleep(100 * time.Millisecond)
+						if i < 9 {
+							time.Sleep(300 * time.Millisecond)
 							_ = UpdateVmState(virt)
 							continue
 						}
@@ -149,12 +150,12 @@ func GetVmInfo(vmId primitive.ObjectID, queryQms, force bool) (
 		usbsUpdated := false
 		usbsStore, ok := store.GetUsbs(vmId)
 		if !ok || time.Since(usbsStore.Timestamp) > refreshRate {
-			for i := 0; i < 20; i++ {
+			for i := 0; i < 10; i++ {
 				if virt.State == vm.Running {
 					usbs, e := qms.GetUsbDevices(vmId)
 					if e != nil {
-						if i < 19 {
-							time.Sleep(100 * time.Millisecond)
+						if i < 9 {
+							time.Sleep(300 * time.Millisecond)
 							_ = UpdateVmState(virt)
 							continue
 						}

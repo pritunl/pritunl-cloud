@@ -9,12 +9,12 @@ import (
 )
 
 func UpdateVmDisk(virt *vm.VirtualMachine) (err error) {
-	for i := 0; i < 20; i++ {
+	for i := 0; i < 10; i++ {
 		if virt.State == vm.Running {
 			disks, e := qms.GetDisks(virt.Id)
 			if e != nil {
-				if i < 19 {
-					time.Sleep(100 * time.Millisecond)
+				if i < 9 {
+					time.Sleep(300 * time.Millisecond)
 					_ = UpdateVmState(virt)
 					continue
 				}
