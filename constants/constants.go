@@ -19,6 +19,7 @@ var (
 	Production   = true
 	LockDebug    = false
 	Interrupt    = false
+	Shutdown     = false
 	ConfPath     = "/etc/pritunl-cloud.json"
 	DefaultRoot  = "/var/lib/pritunl-cloud"
 	DefaultCache = "/var/cache/pritunl-cloud"

@@ -6,7 +6,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/config"
@@ -17,6 +16,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/setup"
 	"github.com/pritunl/pritunl-cloud/sync"
 	"github.com/pritunl/pritunl-cloud/task"
+	"github.com/sirupsen/logrus"
 )
 
 func Node() (err error) {
@@ -64,10 +64,17 @@ func Node() (err error) {
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 	<-sig
 
+	logrus.Info("cmd.node: Shutting down")
+
+	constants.Shutdown = true
+	go routr.Shutdown()
+
+	if constants.Production {
+		time.Sleep(20 * time.Second)
+	}
+
 	constants.Interrupt = true
 
-	logrus.Info("cmd.node: Shutting down")
-	go routr.Shutdown()
 	if constants.Production {
 		time.Sleep(10 * time.Second)
 	} else {
