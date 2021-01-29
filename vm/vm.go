@@ -11,22 +11,24 @@ import (
 )
 
 type VirtualMachine struct {
-	Id              primitive.ObjectID `json:"id"`
-	State           string             `json:"state"`
-	Timestamp       time.Time          `json:"timestamp"`
-	Image           primitive.ObjectID `json:"image"`
-	Processors      int                `json:"processors"`
-	Memory          int                `json:"memory"`
-	Vnc             bool               `json:"vnc"`
-	VncDisplay      int                `json:"vnc_display"`
-	Disks           []*Disk            `json:"disks"`
-	NetworkAdapters []*NetworkAdapter  `json:"network_adapters"`
-	Uefi            bool               `json:"uefi"`
-	NoPublicAddress bool               `json:"no_public_address"`
-	NoHostAddress   bool               `json:"no_host_address"`
-	UsbDevices      []*UsbDevice       `json:"usb_devices"`
-	PciDevices      []*PciDevice       `json:"pci_devices"`
-	DriveDevices    []*DriveDevice     `json:"drive_devices"`
+	Id                  primitive.ObjectID `json:"id"`
+	State               string             `json:"state"`
+	Timestamp           time.Time          `json:"timestamp"`
+	Image               primitive.ObjectID `json:"image"`
+	Processors          int                `json:"processors"`
+	Memory              int                `json:"memory"`
+	Vnc                 bool               `json:"vnc"`
+	VncDisplay          int                `json:"vnc_display"`
+	Disks               []*Disk            `json:"disks"`
+	DisksAvailable      bool               `json:"-"`
+	NetworkAdapters     []*NetworkAdapter  `json:"network_adapters"`
+	Uefi                bool               `json:"uefi"`
+	NoPublicAddress     bool               `json:"no_public_address"`
+	NoHostAddress       bool               `json:"no_host_address"`
+	UsbDevices          []*UsbDevice       `json:"usb_devices"`
+	UsbDevicesAvailable bool               `json:"-"`
+	PciDevices          []*PciDevice       `json:"pci_devices"`
+	DriveDevices        []*DriveDevice     `json:"drive_devices"`
 }
 
 type Disk struct {
