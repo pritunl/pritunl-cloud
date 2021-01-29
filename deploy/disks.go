@@ -251,9 +251,8 @@ func (d *Disks) restore(dsk *disk.Disk) {
 		err := data.RestoreBackup(db, dsk)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"instance_id": inst.Id.Hex(),
-				"disk_id":     dsk.Id.Hex(),
-				"error":       err,
+				"disk_id": dsk.Id.Hex(),
+				"error":   err,
 			}).Error("deploy: Failed to restore disk")
 		}
 
@@ -261,9 +260,8 @@ func (d *Disks) restore(dsk *disk.Disk) {
 		err = dsk.CommitFields(db, set.NewSet("state"))
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"instance_id": inst.Id.Hex(),
-				"disk_id":     dsk.Id.Hex(),
-				"error":       err,
+				"disk_id": dsk.Id.Hex(),
+				"error":   err,
 			}).Error("deploy: Failed update disk state")
 			time.Sleep(5 * time.Second)
 			return
