@@ -609,6 +609,22 @@ func (i *Instance) Changed(curVirt *vm.VirtualMachine) bool {
 		}
 	}
 
+	if i.Virt.DriveDevices != nil {
+		if len(i.Virt.DriveDevices) > 0 && curVirt.DriveDevices == nil {
+			return true
+		}
+
+		for i, device := range i.Virt.DriveDevices {
+			if len(curVirt.DriveDevices) <= i {
+				return true
+			}
+
+			if device.Id != curVirt.DriveDevices[i].Id {
+				return true
+			}
+		}
+	}
+
 	return false
 }
 
