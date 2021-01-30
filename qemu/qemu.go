@@ -194,7 +194,8 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 		cmd = append(cmd, "-drive")
 		cmd = append(cmd, fmt.Sprintf(
-			"file=%s,media=disk,format=%s,discard=unmap,if=none,id=%s",
+			"file=%s,media=disk,format=%s,cache=none," +
+				"discard=unmap,if=none,id=%s",
 			disk.File,
 			disk.Format,
 			dskId,
@@ -216,7 +217,8 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 		cmd = append(cmd, "-drive")
 		cmd = append(cmd, fmt.Sprintf(
-			"file=%s,media=disk,format=raw,discard=on,if=none,id=%s",
+			"file=%s,media=disk,format=raw,cache=none," +
+				"discard=on,if=none,id=%s",
 			path.Join("/dev/disk/by-id", device.Id),
 			dskId,
 		))
