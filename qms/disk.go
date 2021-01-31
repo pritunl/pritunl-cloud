@@ -233,7 +233,8 @@ func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk,
 	}
 
 	drive := fmt.Sprintf(
-		"file=%s,media=disk,format=qcow2,discard=unmap,if=none,id=%s",
+		"file=%s,media=disk,format=qcow2,cache=none," +
+			"discard=unmap,if=none,id=%s",
 		dsk.Path,
 		dskId,
 	)
