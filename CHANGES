@@ -10,6 +10,7 @@ Add disk passthrough
 Support add and remove USB devices on running instance
 Support add and remove disks on running instance
 Format username capitalization on update
+Move instance runtime files to run directory
 
 Version 1.2.1807.79 2020-11-04
 ------------------------------
