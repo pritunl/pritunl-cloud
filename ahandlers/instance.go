@@ -18,6 +18,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/pritunl/pritunl-cloud/iscsi"
 	"github.com/pritunl/pritunl-cloud/pci"
 	"github.com/pritunl/pritunl-cloud/storage"
 	"github.com/pritunl/pritunl-cloud/usb"
@@ -47,6 +48,7 @@ type instanceData struct {
 	UsbDevices       []*usb.Device      `json:"usb_devices"`
 	PciDevices       []*pci.Device      `json:"pci_devices"`
 	DriveDevices     []*drive.Device    `json:"drive_devices"`
+	IscsiDevices     []*iscsi.Device    `json:"iscsi_devices"`
 	Vnc              bool               `json:"vnc"`
 	NoPublicAddress  bool               `json:"no_public_address"`
 	NoHostAddress    bool               `json:"no_host_address"`
@@ -106,6 +108,7 @@ func instancePut(c *gin.Context) {
 	inst.UsbDevices = dta.UsbDevices
 	inst.PciDevices = dta.PciDevices
 	inst.DriveDevices = dta.DriveDevices
+	inst.IscsiDevices = dta.IscsiDevices
 	inst.Vnc = dta.Vnc
 	inst.Domain = dta.Domain
 	inst.NoPublicAddress = dta.NoPublicAddress
@@ -127,6 +130,7 @@ func instancePut(c *gin.Context) {
 		"usb_devices",
 		"pci_devices",
 		"drive_devices",
+		"iscsi_devices",
 		"vnc",
 		"vnc_display",
 		"vnc_password",
@@ -258,6 +262,7 @@ func instancePost(c *gin.Context) {
 			UsbDevices:       dta.UsbDevices,
 			PciDevices:       dta.PciDevices,
 			DriveDevices:     dta.DriveDevices,
+			IscsiDevices:     dta.IscsiDevices,
 			Vnc:              dta.Vnc,
 			Domain:           dta.Domain,
 			NoPublicAddress:  dta.NoPublicAddress,
