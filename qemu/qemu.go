@@ -64,7 +64,7 @@ type Qemu struct {
 }
 
 func (q *Qemu) GetDiskQueues() (queues int) {
-	queues = q.Cpus / 2
+	queues = q.Cpus
 
 	if queues > settings.Hypervisor.DiskQueuesMax {
 		queues = settings.Hypervisor.DiskQueuesMax
@@ -76,7 +76,7 @@ func (q *Qemu) GetDiskQueues() (queues int) {
 }
 
 func (q *Qemu) GetNetworkQueues() (queues int) {
-	queues = q.Cpus / 2
+	queues = q.Cpus
 
 	if queues > settings.Hypervisor.NetworkQueuesMax {
 		queues = settings.Hypervisor.NetworkQueuesMax
