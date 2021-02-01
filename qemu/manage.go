@@ -290,8 +290,8 @@ func UpdateVmState(virt *vm.VirtualMachine) (err error) {
 		break
 	default:
 		logrus.WithFields(logrus.Fields{
-			"id":    virt.Id.Hex(),
-			"state": state,
+			"instance_id": virt.Id.Hex(),
+			"state":       state,
 		}).Info("qemu: Unknown virtual machine state")
 		virt.State = vm.Failed
 		break
