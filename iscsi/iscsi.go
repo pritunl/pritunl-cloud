@@ -20,9 +20,16 @@ type Device struct {
 }
 
 func (d *Device) Json() {
+	host := ""
+	if d.Port != 0 {
+		host = fmt.Sprintf("%s:%d", d.Host, d.Port)
+	} else {
+		host = fmt.Sprintf("%s", d.Host)
+	}
+
 	uri := url.URL{
 		Scheme: "iscsi",
-		Host:   fmt.Sprint("%s:%d", d.Host, d.Port),
+		Host:   host,
 		Path:   fmt.Sprintf("%s/%s", d.Iqn, d.Lun),
 	}
 
