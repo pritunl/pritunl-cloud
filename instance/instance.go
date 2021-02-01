@@ -399,6 +399,12 @@ func (i *Instance) Json() {
 	} else {
 		i.Uptime = systemd.FormatUptime(i.VmTimestamp)
 	}
+
+	if i.IscsiDevices != nil {
+		for _, device := range i.IscsiDevices {
+			device.Json()
+		}
+	}
 }
 
 func (i *Instance) IsActive() bool {
