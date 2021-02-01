@@ -35,6 +35,7 @@ export interface Instance {
 	usb_devices?: UsbDevice[];
 	pci_devices?: PciDevice[];
 	drive_devices?: DriveDevice[];
+	iscsi_devices?: IscsiDevice[];
 	vnc?: boolean;
 	vnc_password?: string;
 	vnc_display?: number;
@@ -73,6 +74,16 @@ export interface PciDevice {
 	class?: string;
 	name?: string;
 	driver?: string;
+}
+
+export interface IscsiDevice {
+	host?: string;
+	port?: number;
+	iqn?: string;
+	lun?: string;
+	username?: string;
+	password?: string;
+	uri?: string;
 }
 
 export interface DriveDevice {
