@@ -8,7 +8,6 @@ import DatacentersStore from "../stores/DatacentersStore";
 import OrganizationsStore from "../stores/OrganizationsStore";
 import VpcRoute from './VpcRoute';
 import VpcSubnet from './VpcSubnet';
-import VpcLinkUri from './VpcLinkUri';
 import PageInput from './PageInput';
 import PageInfo from './PageInfo';
 import PageSave from './PageSave';
