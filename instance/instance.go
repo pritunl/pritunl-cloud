@@ -18,6 +18,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/drive"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/iscsi"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/pci"
@@ -67,6 +68,7 @@ type Instance struct {
 	UsbDevices          []*usb.Device      `bson:"usb_devices" json:"usb_devices"`
 	PciDevices          []*pci.Device      `bson:"pci_devices" json:"pci_devices"`
 	DriveDevices        []*drive.Device    `bson:"drive_devices" json:"drive_devices"`
+	IscsiDevices        []*iscsi.Device    `bson:"iscsi_devices" json:"iscsi_devices"`
 	Vnc                 bool               `bson:"vnc" json:"vnc"`
 	VncPassword         string             `bson:"vnc_password" json:"vnc_password"`
 	VncDisplay          int                `bson:"vnc_display,omitempty" json:"vnc_display"`
@@ -263,6 +265,23 @@ func (i *Instance) Validate(db *database.Database) (
 			}
 		}
 	}
+
+	iscsiDevices := []*iscsi.Device{}
+	if i.IscsiDevices != nil {
+		for _, device := range i.IscsiDevices {
+			if device.Uri == "" {
+				continue
+			}
+
+			errData, err = device.Parse()
+			if err != nil || errData != nil {
+				return
+			}
+
+			iscsiDevices = append(iscsiDevices, device)
+		}
+	}
+	i.IscsiDevices = iscsiDevices
 
 	if i.Vnc {
 		if i.VncDisplay == 0 {
