@@ -73,6 +73,7 @@ type Node struct {
 	HostNat              bool                 `bson:"host_nat" json:"host_nat"`
 	HostNatExcludes      []string             `bson:"host_nat_excludes" json:"host_nat_excludes"`
 	JumboFrames          bool                 `bson:"jumbo_frames" json:"jumbo_frames"`
+	Iscsi                bool                 `bson:"iscsi" json:"iscsi"`
 	UsbPassthrough       bool                 `bson:"usb_passthrough" json:"usb_passthrough"`
 	UsbDevices           []*usb.Device        `bson:"usb_devices" json:"usb_devices"`
 	PciPassthrough       bool                 `bson:"pci_passthrough" json:"pci_passthrough"`
@@ -146,6 +147,7 @@ func (n *Node) Copy() *Node {
 		HostNat:              n.HostNat,
 		HostNatExcludes:      n.HostNatExcludes,
 		JumboFrames:          n.JumboFrames,
+		Iscsi:                n.Iscsi,
 		UsbPassthrough:       n.UsbPassthrough,
 		UsbDevices:           n.UsbDevices,
 		PciPassthrough:       n.PciPassthrough,
