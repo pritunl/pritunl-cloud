@@ -794,6 +794,7 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.HostNat = nde.HostNat
 	n.HostNatExcludes = nde.HostNatExcludes
 	n.JumboFrames = nde.JumboFrames
+	n.Iscsi = nde.Iscsi
 	n.UsbPassthrough = nde.UsbPassthrough
 	n.PciPassthrough = nde.PciPassthrough
 	n.Firewall = nde.Firewall
