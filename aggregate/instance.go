@@ -28,6 +28,7 @@ type InstancePipe struct {
 
 type InstanceInfo struct {
 	Node          string          `json:"node"`
+	Iscsi         bool            `json:"iscsi"`
 	Disks         []string        `json:"disks"`
 	FirewallRules []string        `json:"firewall_rules"`
 	Authorities   []string        `json:"authorities"`
@@ -144,6 +145,8 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 			nde := doc.NodeDocs[0]
 
 			info.Node = nde.Name
+			info.Iscsi = nde.Iscsi
+
 			if nde.UsbPassthrough {
 				info.UsbDevices = nde.UsbDevices
 			}
