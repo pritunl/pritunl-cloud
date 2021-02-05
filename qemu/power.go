@@ -220,7 +220,7 @@ func ForcePowerOff(virt *vm.VirtualMachine) (err error) {
 	go qmp.Shutdown(virt.Id)
 	go qms.Shutdown(virt.Id)
 
-	time.Sleep(10 * time.Second)
+	time.Sleep(5 * time.Second)
 
 	err = systemd.Stop(unitName)
 	if err != nil {
