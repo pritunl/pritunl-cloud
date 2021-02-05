@@ -39,6 +39,7 @@ export interface Node {
 	host_nat_excludes?: string[];
 	jumbo_frames?: boolean;
 	usb_passthrough?: boolean;
+	pci_passthrough?: boolean;
 	firewall?: boolean;
 	network_roles?: string[];
 	requests_min?: number;
