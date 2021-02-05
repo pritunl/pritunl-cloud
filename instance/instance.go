@@ -532,6 +532,7 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 		UsbDevices:      []*vm.UsbDevice{},
 		PciDevices:      []*vm.PciDevice{},
 		DriveDevices:    []*vm.DriveDevice{},
+		IscsiDevices:    []*vm.IscsiDevice{},
 	}
 
 	if disks != nil {
@@ -586,6 +587,17 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 					},
 				)
 			}
+		}
+	}
+
+	if node.Self.Iscsi && i.IscsiDevices != nil {
+		for _, device := range i.IscsiDevices {
+			i.Virt.IscsiDevices = append(
+				i.Virt.IscsiDevices,
+				&vm.IscsiDevice{
+					Uri: device.QemuUri(),
+				},
+			)
 		}
 	}
 
@@ -645,6 +657,22 @@ func (i *Instance) Changed(curVirt *vm.VirtualMachine) bool {
 			}
 
 			if device.Id != curVirt.DriveDevices[i].Id {
+				return true
+			}
+		}
+	}
+
+	if i.Virt.IscsiDevices != nil {
+		if len(i.Virt.IscsiDevices) > 0 && curVirt.IscsiDevices == nil {
+			return true
+		}
+
+		for i, device := range i.Virt.IscsiDevices {
+			if len(curVirt.IscsiDevices) <= i {
+				return true
+			}
+
+			if device.Uri != curVirt.IscsiDevices[i].Uri {
 				return true
 			}
 		}
