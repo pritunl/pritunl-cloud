@@ -5,6 +5,7 @@ import * as Blueprint from '@blueprintjs/core';
 interface Props {
 	title: string;
 	content: string;
+	examples?: string[];
 }
 
 interface State {
@@ -38,6 +39,14 @@ const css = {
 		maxWidth: '400px',
 		margin: '30px 20px',
 	} as React.CSSProperties,
+	inputFirst: {
+		width: '100%',
+		marginTop: '15px',
+	} as React.CSSProperties,
+	input: {
+		width: '100%',
+		marginTop: '5px',
+	} as React.CSSProperties,
 };
 
 let dialog = true;
@@ -50,7 +59,29 @@ export default class Help extends React.Component<Props, State> {
 		};
 	}
 
+	autoSelect = (evt: React.MouseEvent<HTMLInputElement>): void => {
+		evt.currentTarget.select();
+	}
+
 	render(): JSX.Element {
+		let examplesElem: JSX.Element[] = [];
+		for (let i = 0; i < (this.props.examples || []).length; i++) {
+			examplesElem.push(
+				<input
+					key={'example-' + i}
+					className="bp3-input"
+					style={i === 0 ? css.inputFirst : css.input}
+					disabled={false}
+					readOnly={true}
+					type="text"
+					autoCapitalize="off"
+					spellCheck={false}
+					value={this.props.examples[i]}
+					onClick={this.autoSelect}
+				/>
+			);
+		}
+
 		let helpElm: JSX.Element;
 		if (this.state.popover) {
 			if (dialog) {
@@ -67,6 +98,7 @@ export default class Help extends React.Component<Props, State> {
 				>
 					<div className="bp3-dialog-body">
 						{this.props.content}
+						{examplesElem}
 					</div>
 					<div className="bp3-dialog-footer">
 						<div className="bp3-dialog-footer-actions">
@@ -122,7 +154,10 @@ export default class Help extends React.Component<Props, State> {
 									style={css.content}
 								>
 									<h5>{this.props.title}</h5>
-									<div>{this.props.content}</div>
+									<div>
+										{this.props.content}
+										{examplesElem}
+									</div>
 								</div>
 							</div>
 						</div>
