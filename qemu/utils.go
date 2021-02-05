@@ -48,6 +48,8 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 		Networks:     []*Network{},
 		UsbDevices:   []*UsbDevice{},
 		PciDevices:   []*PciDevice{},
+		DriveDevices: []*DriveDevice{},
+		IscsiDevices: []*IscsiDevice{},
 	}
 
 	for _, disk := range virt.Disks {
@@ -86,6 +88,12 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 	for _, device := range virt.DriveDevices {
 		qm.DriveDevices = append(qm.DriveDevices, &DriveDevice{
 			Id: device.Id,
+		})
+	}
+
+	for _, device := range virt.IscsiDevices {
+		qm.IscsiDevices = append(qm.IscsiDevices, &IscsiDevice{
+			Uri: device.Uri,
 		})
 	}
 
