@@ -1,6 +1,7 @@
 package qemu
 
 import (
+	"crypto/md5"
 	"fmt"
 	"path"
 	"strings"
@@ -40,6 +41,10 @@ type DriveDevice struct {
 	Id string
 }
 
+type IscsiDevice struct {
+	Uri string
+}
+
 type Qemu struct {
 	Id           primitive.ObjectID
 	Data         string
@@ -61,6 +66,7 @@ type Qemu struct {
 	UsbDevices   []*UsbDevice
 	PciDevices   []*PciDevice
 	DriveDevices []*DriveDevice
+	IscsiDevices []*IscsiDevice
 }
 
 func (q *Qemu) GetDiskQueues() (queues int) {
@@ -230,6 +236,43 @@ func (q *Qemu) Marshal() (output string, err error) {
 			q.GetDiskQueues(),
 			dskDevId,
 		))
+	}
+
+	hasIscsi := false
+	if node.Self.Iscsi {
+		for _, device := range q.IscsiDevices {
+			if !hasIscsi {
+				cmd = append(cmd, "-iscsi")
+				cmd = append(cmd, fmt.Sprintf(
+					"initiator-name=iqn.2008-11.org.linux-kvm:%s",
+					q.Id.Hex(),
+				))
+				hasIscsi = true
+			}
+
+			iscsiHash := md5.New()
+			iscsiHash.Write([]byte(device.Uri))
+			iscsiId := fmt.Sprintf("%x", iscsiHash.Sum(nil))
+
+			dskId := fmt.Sprintf("iscsidisk_%s", iscsiId)
+			dskDevId := fmt.Sprintf("iscsidiskdev_%s", iscsiId)
+
+			cmd = append(cmd, "-drive")
+			cmd = append(cmd, fmt.Sprintf(
+				"file=%s,media=disk,format=raw,cache=none,"+
+					"discard=on,if=none,id=%s",
+				device.Uri,
+				dskId,
+			))
+
+			cmd = append(cmd, "-device")
+			cmd = append(cmd, fmt.Sprintf(
+				"virtio-blk-pci,drive=%s,num-queues=%d,id=%s",
+				dskId,
+				q.GetDiskQueues(),
+				dskDevId,
+			))
+		}
 	}
 
 	count := 0
