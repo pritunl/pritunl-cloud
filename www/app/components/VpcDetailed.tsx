@@ -428,7 +428,7 @@ export default class VpcDetailed extends React.Component<Props, State> {
 			/>,
 		];
 		if (vpc.routes) {
-			for (let i = 0; i < vpc.routes.length; i++) {
+			for (let i = 0; i < (vpc.routes || []).length; i++) {
 				let index = i;
 
 				routes.push(
