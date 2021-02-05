@@ -29,6 +29,7 @@ type VirtualMachine struct {
 	UsbDevicesAvailable bool               `json:"-"`
 	PciDevices          []*PciDevice       `json:"pci_devices"`
 	DriveDevices        []*DriveDevice     `json:"drive_devices"`
+	IscsiDevices        []*IscsiDevice     `json:"iscsi_devices"`
 }
 
 type Disk struct {
@@ -61,6 +62,10 @@ type PciDevice struct {
 
 type DriveDevice struct {
 	Id string `json:"id"`
+}
+
+type IscsiDevice struct {
+	Uri string `json:"iscsi"`
 }
 
 func (d *Disk) GetId() primitive.ObjectID {
