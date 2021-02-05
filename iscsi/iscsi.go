@@ -178,5 +178,15 @@ func (d *Device) Parse() (errData *errortypes.ErrorData, err error) {
 	d.Password = password
 	d.Uri = ""
 
+	d.Json()
+	if strings.Contains(d.Uri, "%") {
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_iscsi_uri",
+			Message: "Invalid iSCSI URI, cannot contain % character",
+		}
+		return
+	}
+	d.Uri = ""
+
 	return
 }
