@@ -14,7 +14,7 @@ type hypervisor struct {
 	DiskQueuesMin    int    `bson:"disk_queues_min" default:"1"`
 	DiskQueuesMax    int    `bson:"disk_queues_max" default:"4"`
 	NetworkQueuesMin int    `bson:"network_queues_min" default:"1"`
-	NetworkQueuesMax int    `bson:"network_queues_max" default:"4"`
+	NetworkQueuesMax int    `bson:"network_queues_max" default:"8"`
 	VxlanId          int    `bson:"vxlan_id" default:"9417"`
 	VxlanDestPort    int    `bson:"vxlan_dest_port" default:"4789"`
 	HostNetworkName  string `bson:"host_network_name" default:"pritunlhost0"`
