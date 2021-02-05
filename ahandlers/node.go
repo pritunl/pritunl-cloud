@@ -45,6 +45,7 @@ type nodeData struct {
 	HostNat              bool                    `json:"host_nat"`
 	HostNatExcludes      []string                `json:"host_nat_excludes"`
 	JumboFrames          bool                    `json:"jumbo_frames"`
+	Iscsi                bool                    `json:"iscsi"`
 	UsbPassthrough       bool                    `json:"usb_passthrough"`
 	PciPassthrough       bool                    `json:"pci_passthrough"`
 	ForwardedForHeader   string                  `json:"forwarded_for_header"`
@@ -109,6 +110,7 @@ func nodePut(c *gin.Context) {
 	nde.HostNat = data.HostNat
 	nde.HostNatExcludes = data.HostNatExcludes
 	nde.JumboFrames = data.JumboFrames
+	nde.Iscsi = data.Iscsi
 	nde.UsbPassthrough = data.UsbPassthrough
 	nde.PciPassthrough = data.PciPassthrough
 	nde.ForwardedForHeader = data.ForwardedForHeader
@@ -143,6 +145,7 @@ func nodePut(c *gin.Context) {
 		"host_nat",
 		"host_nat_excludes",
 		"jumbo_frames",
+		"iscsi",
 		"usb_passthrough",
 		"pci_passthrough",
 		"forwarded_for_header",
