@@ -33,7 +33,7 @@ func (d *Device) Json() {
 		Path:   fmt.Sprintf("%s/%s", d.Iqn, d.Lun),
 	}
 
-	if d.Username != "" {
+	if d.Username != "" && d.Password != "" {
 		uri.User = url.UserPassword(d.Username, d.Password)
 	}
 
