@@ -40,6 +40,35 @@ func (d *Device) Json() {
 	d.Uri = uri.String()
 }
 
+func (d *Device) QemuUri() (uriStr string) {
+	host := ""
+	if d.Port != 0 {
+		host = fmt.Sprintf("%s:%d", d.Host, d.Port)
+	} else {
+		host = fmt.Sprintf("%s", d.Host)
+	}
+
+	uri := url.URL{
+		Scheme: "iscsi",
+		Host:   host,
+		Path:   fmt.Sprintf("%s/%s", d.Iqn, d.Lun),
+	}
+
+	if d.Username != "" && d.Password != "" {
+		uri.User = url.UserPassword(d.Username, d.Password)
+	}
+
+	uriStr = uri.String()
+
+	uriStr = strings.Replace(uriStr, "%", "", -1)
+
+	if d.Username != "" && d.Password != "" && len(uriStr) > 8 {
+		uriStr = uriStr[:8] + strings.Replace(uriStr[8:], ":", "%%", 1)
+	}
+
+	return
+}
+
 func (d *Device) Parse() (errData *errortypes.ErrorData, err error) {
 	if d.Uri == "" {
 		errData = &errortypes.ErrorData{
