@@ -160,6 +160,44 @@ func ContainsDir(pth string) (hasDir bool, err error) {
 	return
 }
 
+func Open(path string, perm os.FileMode) (file *os.File, err error) {
+	file, err = os.OpenFile(path, os.O_RDWR|os.O_TRUNC, perm)
+	if err != nil {
+		err = &errortypes.WriteError{
+			errors.Wrapf(err, "utils: Failed to open '%s'", path),
+		}
+		return
+	}
+
+	return
+}
+
+func Write(path string, data string, perm os.FileMode) (err error) {
+	file, err := Open(path, perm)
+	if err != nil {
+		return
+	}
+	defer func() {
+		err = file.Close()
+		if err != nil {
+			err = &errortypes.WriteError{
+				errors.Wrapf(err, "utils: Failed to write '%s'", path),
+			}
+			return
+		}
+	}()
+
+	_, err = file.WriteString(data)
+	if err != nil {
+		err = &errortypes.WriteError{
+			errors.Wrapf(err, "utils: Failed to write to file '%s'", path),
+		}
+		return
+	}
+
+	return
+}
+
 func Create(path string, perm os.FileMode) (file *os.File, err error) {
 	file, err = os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, perm)
 	if err != nil {
