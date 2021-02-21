@@ -7,6 +7,7 @@ Add uefi instance support
 Add pci passthrough
 Add disk resizing
 Add disk passthrough
+Add iscsi instance disk support
 Support add and remove USB devices on running instance
 Support add and remove disks on running instance
 Format username capitalization on update
