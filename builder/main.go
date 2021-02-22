@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 
+	"github.com/pritunl/pritunl-cloud/builder/sysctl"
+	"github.com/pritunl/pritunl-cloud/builder/systemctl"
 	"github.com/pritunl/pritunl-cloud/colorize"
 	"github.com/pritunl/pritunl-cloud/logger"
 )
@@ -35,4 +37,14 @@ func main() {
 	intro := colorize.ColorString(art, colorize.BlueBold, colorize.None)
 
 	fmt.Println(intro)
+
+	err := sysctl.Sysctl()
+	if err != nil {
+		panic(err)
+	}
+
+	err = systemctl.Systemctl()
+	if err != nil {
+		panic(err)
+	}
 }
