@@ -126,7 +126,7 @@ func (n *Namespace) Deploy() (err error) {
 			pidByt, e := ioutil.ReadFile(pth)
 			if e != nil {
 				err = &errortypes.ReadError{
-					errors.Wrap(e, "ipsec: Failed to read dhclient pid"),
+					errors.Wrap(e, "namespace: Failed to read dhclient pid"),
 				}
 				return
 			}
@@ -134,7 +134,7 @@ func (n *Namespace) Deploy() (err error) {
 			pid, e := strconv.Atoi(strings.TrimSpace(string(pidByt)))
 			if e != nil {
 				err = &errortypes.ParseError{
-					errors.Wrap(e, "ipsec: Failed to parse dhclient pid"),
+					errors.Wrap(e, "namespace: Failed to parse dhclient pid"),
 				}
 				return
 			}
