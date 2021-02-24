@@ -45,6 +45,12 @@ func Init() {
 	logrus.SetLevel(logrus.InfoLevel)
 }
 
+func InitStdout() {
+	logrus.SetFormatter(&formatter{})
+	logrus.SetOutput(os.Stdout)
+	logrus.SetLevel(logrus.InfoLevel)
+}
+
 func init() {
 	module := requires.New("logger")
 	module.After("config")
