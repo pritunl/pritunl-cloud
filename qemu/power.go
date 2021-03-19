@@ -149,7 +149,7 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 
 	if !shutdown {
 		logrus.WithFields(logrus.Fields{
-			"id": virt.Id.Hex(),
+			"instance_id": virt.Id.Hex(),
 		}).Warning("qemu: Force power off virtual machine")
 
 		err = systemd.Stop(unitName)
