@@ -578,7 +578,7 @@ export default class DiskDetailed extends React.Component<Props, State> {
 						Restore Backup
 						<Help
 							title="Restore Backup"
-							content="Select a backup to restore and replace the existing disk with the backup image."
+							content="Select a backup to restore and replace the existing disk with the backup image. Instance will be stopped."
 						/>
 					</label>
 					<PageSelectButtonConfirm
