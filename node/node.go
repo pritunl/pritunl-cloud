@@ -96,6 +96,7 @@ type Node struct {
 	Version              int                  `bson:"version" json:"-"`
 	VirtPath             string               `bson:"virt_path" json:"virt_path"`
 	CachePath            string               `bson:"cache_path" json:"cache_path"`
+	TempPath             string               `bson:"temp_path" json:"temp_path"`
 	OracleUser           string               `bson:"oracle_user" json:"oracle_user"`
 	OraclePrivateKey     string               `bson:"oracle_private_key" json:"-"`
 	OraclePublicKey      string               `bson:"oracle_public_key" json:"oracle_public_key"`
@@ -170,6 +171,7 @@ func (n *Node) Copy() *Node {
 		Version:              n.Version,
 		VirtPath:             n.VirtPath,
 		CachePath:            n.CachePath,
+		TempPath:             n.TempPath,
 		OracleUser:           n.OracleUser,
 		OraclePrivateKey:     n.OraclePrivateKey,
 		OraclePublicKey:      n.OraclePublicKey,
@@ -201,6 +203,13 @@ func (n *Node) GetCachePath() string {
 		return constants.DefaultCache
 	}
 	return n.CachePath
+}
+
+func (n *Node) GetTempPath() string {
+	if n.TempPath == "" {
+		return constants.DefaultTemp
+	}
+	return n.TempPath
 }
 
 func (n *Node) GetDatacenter(db *database.Database) (
