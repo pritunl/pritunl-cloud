@@ -810,6 +810,7 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.NetworkRoles = nde.NetworkRoles
 	n.VirtPath = nde.VirtPath
 	n.CachePath = nde.CachePath
+	n.TempPath = nde.TempPath
 	n.OracleUser = nde.OracleUser
 	n.OraclePrivateKey = nde.OraclePrivateKey
 	n.OraclePublicKey = nde.OraclePublicKey
