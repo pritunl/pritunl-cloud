@@ -95,7 +95,7 @@ func (c *Certificates) Update(db *database.Database,
 
 			cert, e := certificate.Get(db, certId)
 			if e != nil {
-				if _, ok := e.(*database.NotFoundError); !ok {
+				if _, ok := e.(*database.NotFoundError); ok {
 					cert = nil
 					e = nil
 				} else {
@@ -114,7 +114,7 @@ func (c *Certificates) Update(db *database.Database,
 		for _, certId := range balnc.Certificates {
 			cert, e := certificate.Get(db, certId)
 			if e != nil {
-				if _, ok := e.(*database.NotFoundError); !ok {
+				if _, ok := e.(*database.NotFoundError); ok {
 					cert = nil
 					e = nil
 				} else {
