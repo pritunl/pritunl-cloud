@@ -23,7 +23,7 @@ func GetBackingPath() string {
 }
 
 func GetTempPath() string {
-	return path.Join(node.Self.GetVirtPath(), "temp")
+	return node.Self.GetTempPath()
 }
 
 func GetTempDir() string {
