@@ -38,6 +38,7 @@ export interface Node {
 	host_nat?: boolean;
 	host_nat_excludes?: string[];
 	jumbo_frames?: boolean;
+	iscsi?: boolean;
 	usb_passthrough?: boolean;
 	pci_passthrough?: boolean;
 	firewall?: boolean;
