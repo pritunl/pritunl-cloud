@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/pritunl/pritunl-cloud/builder/mongo"
 	"github.com/pritunl/pritunl-cloud/builder/sysctl"
 	"github.com/pritunl/pritunl-cloud/builder/systemctl"
 	"github.com/pritunl/pritunl-cloud/colorize"
@@ -44,6 +45,11 @@ func main() {
 	}
 
 	err = systemctl.Systemctl()
+	if err != nil {
+		panic(err)
+	}
+
+	err = mongo.Mongo()
 	if err != nil {
 		panic(err)
 	}
