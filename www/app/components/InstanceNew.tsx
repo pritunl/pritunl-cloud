@@ -144,6 +144,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 		return {
 			id: null,
 			name: 'New instance',
+			uefi: true,
 			init_disk_size: 10,
 			memory: 1024,
 			processors: 1,
