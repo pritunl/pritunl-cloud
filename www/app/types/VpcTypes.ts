@@ -16,8 +16,6 @@ export interface Vpc {
 	organization?: string;
 	datacenter?: string;
 	routes?: Route[];
-	link_uris?: string[];
-	link_node?: string;
 }
 
 export interface Subnet {
