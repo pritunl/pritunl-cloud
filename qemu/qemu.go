@@ -166,9 +166,6 @@ func (q *Qemu) Marshal() (output string, err error) {
 	if q.Kvm {
 		options += ",accel=kvm"
 	}
-	if !gpuPassthrough && nodeVga == node.Virtio {
-		options += ",gfx_passthru=on"
-	}
 	cmd = append(cmd, fmt.Sprintf("type=%s%s", q.Machine, options))
 
 	if q.Kvm {
