@@ -112,7 +112,7 @@ export function checkout(plan: string, card: string,
 
 				if (res && res.status === 401) {
 					window.location.href = '/login';
-					resolve();
+					resolve('');
 					return;
 				}
 
