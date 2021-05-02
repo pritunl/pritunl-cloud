@@ -5,6 +5,7 @@ import * as DiskTypes from '../types/DiskTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import DisksStore from '../stores/DisksStore';
 import OrganizationsStore from '../stores/OrganizationsStore';
+import NodesStore from '../stores/NodesStore';
 import * as DiskActions from '../actions/DiskActions';
 import * as OrganizationActions from '../actions/OrganizationActions';
 import Disk from './Disk';
@@ -22,6 +23,7 @@ import * as DatacenterTypes from "../types/DatacenterTypes";
 import InstancesStore from "../stores/InstancesStore";
 import * as InstanceActions from "../actions/InstanceActions";
 import * as DatacenterActions from "../actions/DatacenterActions";
+import * as NodeActions from "../actions/NodeActions";
 import * as ZoneActions from "../actions/ZoneActions";
 
 interface Selected {
@@ -117,6 +119,7 @@ export default class Disks extends React.Component<{}, State> {
 		DiskActions.sync();
 		OrganizationActions.sync();
 		DatacenterActions.sync();
+		NodeActions.sync();
 		ZoneActions.sync();
 	}
 
@@ -125,6 +128,7 @@ export default class Disks extends React.Component<{}, State> {
 		DisksStore.removeChangeListener(this.onChange);
 		OrganizationsStore.removeChangeListener(this.onChange);
 		DatacentersStore.removeChangeListener(this.onChange);
+		NodesStore.removeChangeListener(this.onChange);
 		ZonesStore.removeChangeListener(this.onChange);
 	}
 
