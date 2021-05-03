@@ -1,17 +1,8 @@
 ### pritunl-cloud-www
 
-Requires [jspm](https://www.npmjs.com/package/jspm)
-
 ```
-cd packages/novnc-core
-jspm link github:novnc-core@dev
-cd ../../
-
 npm install
-jspm install
-sed -i 's|lib/node/index.js|lib/client.js|g' jspm_packages/npm/superagent@*.js
-
-jspm install --link github:novnc-core@dev
+rm node_modules/react-stripe-checkout/index.d.ts
 ```
 
 #### lint
@@ -24,9 +15,8 @@ tslint -c tslint.json app/**/*.ts*
 ### development
 
 ```
-tsc
-jspm depcache app/App.js
 tsc --watch
+webpack-cli --config webpack.dev.config --progress --color --watch
 ```
 
 #### production
@@ -40,4 +30,28 @@ sh build.sh
 ```
 rm -rf app/*.js*
 rm -rf app/**/*.js*
+```
+
+### internal
+
+```
+# desktop
+rsync --human-readable --archive --xattrs --progress --delete --exclude "/node_modules/*" --exclude "/jspm_packages/*" --exclude "app/*.js" --exclude "app/*.js.map" --exclude "app/**/*.js" --exclude "app/**/*.js.map" /home/cloud/go/src/github.com/pritunl/pritunl-cloud/www/ 123.123.123.123:/home/cloud/pritunl-cloud-www/
+
+# npm-server
+cd /home/cloud/pritunl-cloud-www/
+npm install
+rm node_modules/react-stripe-checkout/index.d.ts
+
+# desktop
+scp 123.123.123.123:/home/cloud/pritunl-cloud-www/package.json /home/cloud/go/src/github.com/pritunl/pritunl-cloud/www/package.json
+scp 123.123.123.123:/home/cloud/pritunl-cloud-www/package-lock.json /home/cloud/go/src/github.com/pritunl/pritunl-cloud/www/package-lock.json
+rsync --human-readable --archive --xattrs --progress --delete 123.123.123.123:/home/cloud/pritunl-cloud-www/node_modules/ /home/cloud/go/src/github.com/pritunl/pritunl-cloud/www/node_modules/
+
+# npm-server
+sh build.sh
+
+# desktop
+rsync --human-readable --archive --xattrs --progress --delete 123.123.123.123:/home/cloud/pritunl-cloud-www/dist/ /home/cloud/go/src/github.com/pritunl/pritunl-cloud/www/dist/
+rsync --human-readable --archive --xattrs --progress --delete 123.123.123.123:/home/cloud/pritunl-cloud-www/dist-dev/ /home/cloud/go/src/github.com/pritunl/pritunl-cloud/www/dist-dev/
 ```
