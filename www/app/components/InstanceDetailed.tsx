@@ -1,6 +1,6 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
-import RFB from 'novnc-core';
+import RFB from '@novnc/novnc';
 import * as InstanceTypes from '../types/InstanceTypes';
 import * as InstanceActions from '../actions/InstanceActions';
 import * as VpcTypes from '../types/VpcTypes';
