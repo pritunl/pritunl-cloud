@@ -53,6 +53,8 @@ type Instance struct {
 	PublicIps6          []string           `bson:"public_ips6" json:"public_ips6"`
 	PrivateIps          []string           `bson:"private_ips" json:"private_ips"`
 	PrivateIps6         []string           `bson:"private_ips6" json:"private_ips6"`
+	GatewayIps          []string           `bson:"gateway_ips" json:"gateway_ips"`
+	GatewayIps6         []string           `bson:"gateway_ips6" json:"gateway_ips6"`
 	HostIps             []string           `bson:"host_ips" json:"host_ips"`
 	NetworkNamespace    string             `bson:"network_namespace" json:"network_namespace"`
 	NoPublicAddress     bool               `bson:"no_public_address" json:"no_public_address"`
