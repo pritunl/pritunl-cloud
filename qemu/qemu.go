@@ -58,6 +58,8 @@ type Qemu struct {
 	Cpus         int
 	Cores        int
 	Threads      int
+	Dies         int
+	Sockets      int
 	Boot         string
 	Uefi         bool
 	OvmfCodePath string
@@ -186,10 +188,11 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 	cmd = append(cmd, "-smp")
 	cmd = append(cmd, fmt.Sprintf(
-		"cpus=%d,cores=%d,threads=%d",
-		q.Cpus,
+		"cores=%d,threads=%d,dies=%d,sockets=%d",
 		q.Cores,
 		q.Threads,
+		q.Dies,
+		q.Sockets,
 	))
 
 	cmd = append(cmd, "-boot")
