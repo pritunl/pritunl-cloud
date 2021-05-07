@@ -47,9 +47,25 @@ func eventGet(c *gin.Context) {
 	}
 	socket.Conn = conn
 
-	conn.SetReadDeadline(time.Now().Add(pingWait))
+	err = conn.SetReadDeadline(time.Now().Add(pingWait))
+	if err != nil {
+		err = &errortypes.RequestError{
+			errors.Wrap(err, "mhandlers: Failed to set read deadline"),
+		}
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
 	conn.SetPongHandler(func(x string) (err error) {
-		conn.SetReadDeadline(time.Now().Add(pingWait))
+		err = conn.SetReadDeadline(time.Now().Add(pingWait))
+		if err != nil {
+			err = &errortypes.RequestError{
+				errors.Wrap(err, "mhandlers: Failed to set read deadline"),
+			}
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
 		return
 	})
 
@@ -69,7 +85,8 @@ func eventGet(c *gin.Context) {
 			recover()
 		}()
 		for {
-			if _, _, err := conn.NextReader(); err != nil {
+			_, _, err := conn.NextReader()
+			if err != nil {
 				conn.Close()
 				break
 			}
@@ -82,20 +99,44 @@ func eventGet(c *gin.Context) {
 			return
 		case msg, ok := <-sub:
 			if !ok {
-				conn.WriteControl(websocket.CloseMessage, []byte{},
+				err = conn.WriteControl(websocket.CloseMessage, []byte{},
 					time.Now().Add(writeTimeout))
+				if err != nil {
+					err = &errortypes.RequestError{
+						errors.Wrap(err,
+							"mhandlers: Failed to set write control"),
+					}
+					return
+				}
+
 				return
 			}
 
-			conn.SetWriteDeadline(time.Now().Add(writeTimeout))
+			err = conn.SetWriteDeadline(time.Now().Add(writeTimeout))
+			if err != nil {
+				err = &errortypes.RequestError{
+					errors.Wrap(err,
+						"mhandlers: Failed to set write deadline"),
+				}
+				return
+			}
+
 			err = conn.WriteJSON(msg)
 			if err != nil {
+				err = &errortypes.RequestError{
+					errors.Wrap(err,
+						"mhandlers: Failed to set write json"),
+				}
 				return
 			}
 		case <-ticker.C:
 			err = conn.WriteControl(websocket.PingMessage, []byte{},
 				time.Now().Add(writeTimeout))
 			if err != nil {
+				err = &errortypes.RequestError{
+					errors.Wrap(err,
+						"mhandlers: Failed to set write control"),
+				}
 				return
 			}
 		}
