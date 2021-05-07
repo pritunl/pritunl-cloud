@@ -32,7 +32,7 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 		Id:           virt.Id,
 		Data:         string(data),
 		Kvm:          node.Self.Hypervisor == node.Kvm,
-		Machine:      "pc",
+		Machine:      "q35",
 		Cpu:          "host",
 		Cpus:         virt.Processors,
 		Cores:        1,
