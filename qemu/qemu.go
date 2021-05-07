@@ -26,6 +26,10 @@ type Network struct {
 	MacAddress string
 }
 
+type Iso struct {
+	Name string
+}
+
 type UsbDevice struct {
 	Vendor  string
 	Product string
@@ -63,6 +67,7 @@ type Qemu struct {
 	VncDisplay   int
 	Disks        Disks
 	Networks     []*Network
+	Isos         []*Iso
 	UsbDevices   []*UsbDevice
 	PciDevices   []*PciDevice
 	DriveDevices []*DriveDevice
@@ -94,6 +99,8 @@ func (q *Qemu) GetNetworkQueues() (queues int) {
 }
 
 func (q *Qemu) Marshal() (output string, err error) {
+	localIsosPath := paths.GetLocalIsosPath()
+
 	cmd := []string{
 		"/usr/bin/qemu-system-x86_64",
 		"-nographic",
