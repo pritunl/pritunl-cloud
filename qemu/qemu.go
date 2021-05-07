@@ -320,7 +320,8 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 	if node.Self.UsbPassthrough {
 		if len(q.UsbDevices) > 0 {
-			cmd = append(cmd, "-usb")
+			cmd = append(cmd, "-device")
+			cmd = append(cmd, "qemu-xhci")
 		}
 
 		for _, device := range q.UsbDevices {
