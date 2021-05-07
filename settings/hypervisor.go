@@ -21,6 +21,7 @@ type hypervisor struct {
 	StartTimeout     int    `bson:"start_timeout" default:"45"`
 	StopTimeout      int    `bson:"stop_timeout" default:"180"`
 	RefreshRate      int    `bson:"refresh_rate" default:"90"`
+	SplashTime       int    `bson:"splash_time" default:"30"`
 }
 
 func newHypervisor() interface{} {
