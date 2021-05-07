@@ -479,11 +479,22 @@ func Create(db *database.Database, inst *instance.Instance,
 			DeleteProtection: inst.DeleteProtection,
 		}
 
-		backingImage, e := data.WriteImage(db, virt.Image, dsk.Id,
-			inst.InitDiskSize, inst.ImageBacking)
-		if e != nil {
-			err = e
-			return
+		backingImage := ""
+
+		if virt.Image.IsZero() {
+			backingImage, err = data.CreateDisk(db, dsk)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"error": err,
+				}).Error("deploy: Failed to provision disk")
+				return
+			}
+		} else {
+			backingImage, err = data.WriteImage(db, virt.Image, dsk.Id,
+				inst.InitDiskSize, inst.ImageBacking)
+			if err != nil {
+				return
+			}
 		}
 
 		dsk.BackingImage = backingImage
