@@ -270,46 +270,48 @@ func instancePost(c *gin.Context) {
 		}
 	}
 
-	img, err := image.GetOrgPublic(db, userOrg, dta.Image)
-	if err != nil {
-		if _, ok := err.(*database.NotFoundError); ok {
-			errData := &errortypes.ErrorData{
-				Error:   "image_not_found",
-				Message: "Image not found",
+	if !dta.Image.IsZero() {
+		img, err := image.GetOrgPublic(db, userOrg, dta.Image)
+		if err != nil {
+			if _, ok := err.(*database.NotFoundError); ok {
+				errData := &errortypes.ErrorData{
+					Error:   "image_not_found",
+					Message: "Image not found",
+				}
+				c.JSON(400, errData)
+			} else {
+				utils.AbortWithError(c, 500, err)
 			}
-			c.JSON(400, errData)
-		} else {
+			return
+		}
+
+		store, err := storage.Get(db, img.Storage)
+		if err != nil {
+			return
+		}
+
+		available, err := data.ImageAvailable(store, img)
+		if err != nil {
 			utils.AbortWithError(c, 500, err)
+			return
 		}
-		return
-	}
-
-	store, err := storage.Get(db, img.Storage)
-	if err != nil {
-		return
-	}
-
-	available, err := data.ImageAvailable(store, img)
-	if err != nil {
-		utils.AbortWithError(c, 500, err)
-		return
-	}
-	if !available {
-		if store.IsOracle() {
-			errData := &errortypes.ErrorData{
-				Error:   "image_not_available",
-				Message: "Image not restored from archive",
+		if !available {
+			if store.IsOracle() {
+				errData := &errortypes.ErrorData{
+					Error:   "image_not_available",
+					Message: "Image not restored from archive",
+				}
+				c.JSON(400, errData)
+			} else {
+				errData := &errortypes.ErrorData{
+					Error:   "image_not_available",
+					Message: "Image not restored from glacier",
+				}
+				c.JSON(400, errData)
 			}
-			c.JSON(400, errData)
-		} else {
-			errData := &errortypes.ErrorData{
-				Error:   "image_not_available",
-				Message: "Image not restored from glacier",
-			}
-			c.JSON(400, errData)
+
+			return
 		}
-
-		return
 	}
 
 	insts := []*instance.Instance{}
