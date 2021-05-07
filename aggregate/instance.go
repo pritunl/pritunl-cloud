@@ -14,6 +14,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/drive"
 	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/pritunl/pritunl-cloud/iso"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/pci"
 	"github.com/pritunl/pritunl-cloud/usb"
@@ -32,6 +33,7 @@ type InstanceInfo struct {
 	Disks         []string        `json:"disks"`
 	FirewallRules []string        `json:"firewall_rules"`
 	Authorities   []string        `json:"authorities"`
+	Isos          []*iso.Iso      `json:"isos"`
 	UsbDevices    []*usb.Device   `json:"usb_devices"`
 	PciDevices    []*pci.Device   `json:"pci_devices"`
 	DriveDevices  []*drive.Device `json:"drive_devices"`
@@ -150,6 +152,8 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 
 			info.Node = nde.Name
 			info.Iscsi = nde.Iscsi
+
+			info.Isos = nde.LocalIsos
 
 			if nde.UsbPassthrough {
 				info.UsbDevices = nde.UsbDevices
