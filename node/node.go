@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path"
 	"sort"
 	"strings"
 	"sync"
@@ -23,6 +24,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/drive"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
+	"github.com/pritunl/pritunl-cloud/iso"
 	"github.com/pritunl/pritunl-cloud/pci"
 	"github.com/pritunl/pritunl-cloud/usb"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -74,6 +76,7 @@ type Node struct {
 	HostNatExcludes      []string             `bson:"host_nat_excludes" json:"host_nat_excludes"`
 	JumboFrames          bool                 `bson:"jumbo_frames" json:"jumbo_frames"`
 	Iscsi                bool                 `bson:"iscsi" json:"iscsi"`
+	LocalIsos            []*iso.Iso           `bson:"local_isos" json:"local_isos"`
 	UsbPassthrough       bool                 `bson:"usb_passthrough" json:"usb_passthrough"`
 	UsbDevices           []*usb.Device        `bson:"usb_devices" json:"usb_devices"`
 	PciPassthrough       bool                 `bson:"pci_passthrough" json:"pci_passthrough"`
@@ -149,6 +152,7 @@ func (n *Node) Copy() *Node {
 		HostNatExcludes:      n.HostNatExcludes,
 		JumboFrames:          n.JumboFrames,
 		Iscsi:                n.Iscsi,
+		LocalIsos:            n.LocalIsos,
 		UsbPassthrough:       n.UsbPassthrough,
 		UsbDevices:           n.UsbDevices,
 		PciPassthrough:       n.PciPassthrough,
@@ -757,6 +761,7 @@ func (n *Node) update(db *database.Database) (err error) {
 				"public_ips6":          n.PublicIps6,
 				"private_ips":          n.PrivateIps,
 				"hostname":             n.Hostname,
+				"local_isos":           n.LocalIsos,
 				"usb_devices":          n.UsbDevices,
 				"pci_devices":          n.PciDevices,
 				"available_interfaces": n.AvailableInterfaces,
@@ -949,6 +954,12 @@ func (n *Node) sync() {
 		}).Error("node: Failed to get hostname")
 	}
 	n.Hostname = hostname
+
+	isos, err := iso.GetIsos(path.Join(n.GetVirtPath(), "isos"))
+	if err != nil {
+		return
+	}
+	n.LocalIsos = isos
 
 	if n.UsbPassthrough {
 		devices, e := usb.GetDevices()
