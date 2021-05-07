@@ -303,6 +303,20 @@ func (q *Qemu) Marshal() (output string, err error) {
 		paths.GetInitPath(q.Id),
 	))
 
+	if q.Isos != nil && len(q.Isos) > 0 {
+		for i, iso := range q.Isos {
+			cmd = append(cmd, "-drive")
+			cmd = append(cmd, fmt.Sprintf(
+				"file=%s,media=cdrom,index=%d",
+				path.Join(localIsosPath, path.Base(iso.Name)),
+				i+1,
+			))
+		}
+
+		cmd = append(cmd, "-boot")
+		cmd = append(cmd, "order=d,menu=on,splash-time=30000")
+	}
+
 	cmd = append(cmd, "-monitor")
 	cmd = append(cmd, fmt.Sprintf(
 		"unix:%s,server,nowait",
