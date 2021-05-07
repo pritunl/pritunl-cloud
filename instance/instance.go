@@ -19,6 +19,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/drive"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/iscsi"
+	"github.com/pritunl/pritunl-cloud/iso"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/pci"
@@ -67,6 +68,7 @@ type Instance struct {
 	Memory              int                `bson:"memory" json:"memory"`
 	Processors          int                `bson:"processors" json:"processors"`
 	NetworkRoles        []string           `bson:"network_roles" json:"network_roles"`
+	Isos                []*iso.Iso         `bson:"isos" json:"isos"`
 	UsbDevices          []*usb.Device      `bson:"usb_devices" json:"usb_devices"`
 	PciDevices          []*pci.Device      `bson:"pci_devices" json:"pci_devices"`
 	DriveDevices        []*drive.Device    `bson:"drive_devices" json:"drive_devices"`
@@ -531,6 +533,7 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 		Uefi:            i.Uefi,
 		NoPublicAddress: i.NoPublicAddress,
 		NoHostAddress:   i.NoHostAddress,
+		Isos:            []*vm.Iso{},
 		UsbDevices:      []*vm.UsbDevice{},
 		PciDevices:      []*vm.PciDevice{},
 		DriveDevices:    []*vm.DriveDevice{},
@@ -550,6 +553,12 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 				Path:  paths.GetDiskPath(dsk.Id),
 			})
 		}
+	}
+
+	for _, is := range i.Isos {
+		i.Virt.Isos = append(i.Virt.Isos, &vm.Iso{
+			Name: is.Name,
+		})
 	}
 
 	if node.Self.UsbPassthrough && i.UsbDevices != nil {
