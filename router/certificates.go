@@ -5,7 +5,6 @@ import (
 	"crypto/x509"
 	"strings"
 
-	"github.com/sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/balancer"
@@ -13,16 +12,21 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/sirupsen/logrus"
 )
 
 type Certificates struct {
-	selfCert  *tls.Certificate
-	domainMap map[string]*tls.Certificate
+	selfCert    *tls.Certificate
+	domainMap   map[string]*tls.Certificate
+	wildcardMap map[string]*tls.Certificate
 }
 
 func (c *Certificates) Init() (err error) {
 	if c.domainMap == nil {
 		c.domainMap = map[string]*tls.Certificate{}
+	}
+	if c.wildcardMap == nil {
+		c.wildcardMap = map[string]*tls.Certificate{}
 	}
 
 	if c.selfCert == nil {
@@ -72,6 +76,13 @@ func (c *Certificates) GetCertificate(info *tls.ClientHelloInfo) (
 	}
 
 	cert = c.domainMap[name]
+	if cert == nil {
+		index := strings.Index(name, ".")
+		if index > 0 {
+			cert = c.wildcardMap[name[index+1:]]
+		}
+	}
+
 	if cert == nil {
 		cert = c.selfCert
 	}
@@ -137,6 +148,7 @@ func (c *Certificates) Update(db *database.Database,
 	}
 
 	domainMap := map[string]*tls.Certificate{}
+	wildcardMap := map[string]*tls.Certificate{}
 	for _, cert := range certificates {
 		keypair, e := tls.X509KeyPair(
 			[]byte(cert.Certificate),
@@ -162,15 +174,30 @@ func (c *Certificates) Update(db *database.Database,
 				continue
 			}
 		}
+
 		if len(x509Cert.Subject.CommonName) > 0 {
-			domainMap[x509Cert.Subject.CommonName] = tlsCert
+			if strings.HasPrefix(x509Cert.Subject.CommonName, "*.") {
+				base := strings.Replace(
+					x509Cert.Subject.CommonName,
+					"*.", "", 1,
+				)
+				wildcardMap[base] = tlsCert
+			} else {
+				domainMap[x509Cert.Subject.CommonName] = tlsCert
+			}
 		}
 		for _, san := range x509Cert.DNSNames {
-			domainMap[san] = tlsCert
+			if strings.HasPrefix(san, "*.") {
+				base := strings.Replace(san, "*.", "", 1)
+				wildcardMap[base] = tlsCert
+			} else {
+				domainMap[san] = tlsCert
+			}
 		}
 	}
 
 	c.domainMap = domainMap
+	c.wildcardMap = wildcardMap
 
 	return
 }
