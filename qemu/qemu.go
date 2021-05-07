@@ -297,8 +297,11 @@ func (q *Qemu) Marshal() (output string, err error) {
 		))
 	}
 
-	cmd = append(cmd, "-cdrom")
-	cmd = append(cmd, paths.GetInitPath(q.Id))
+	cmd = append(cmd, "-drive")
+	cmd = append(cmd, fmt.Sprintf(
+		"file=%s,media=cdrom,index=0",
+		paths.GetInitPath(q.Id),
+	))
 
 	cmd = append(cmd, "-monitor")
 	cmd = append(cmd, fmt.Sprintf(
