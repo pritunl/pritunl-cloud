@@ -1315,6 +1315,8 @@ func NetworkConf(db *database.Database,
 		"$set": &bson.M{
 			"private_ips":       []string{addr.String()},
 			"private_ips6":      []string{addr6.String()},
+			"gateway_ips":       []string{gatewayCidr},
+			"gateway_ips6":      []string{gatewayAddr6.String() + "/64"},
 			"network_namespace": namespace,
 			"host_ips":          hostIps,
 		},
