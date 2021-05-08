@@ -25,6 +25,7 @@ type VirtualMachine struct {
 	Uefi                bool               `json:"uefi"`
 	NoPublicAddress     bool               `json:"no_public_address"`
 	NoHostAddress       bool               `json:"no_host_address"`
+	Isos                []*Iso             `json:"isos"`
 	UsbDevices          []*UsbDevice       `json:"usb_devices"`
 	UsbDevicesAvailable bool               `json:"-"`
 	PciDevices          []*PciDevice       `json:"pci_devices"`
@@ -36,6 +37,10 @@ type Disk struct {
 	Id    primitive.ObjectID `json:"id"`
 	Index int                `json:"index"`
 	Path  string             `json:"path"`
+}
+
+type Iso struct {
+	Name string `json:"name"`
 }
 
 type UsbDevice struct {
