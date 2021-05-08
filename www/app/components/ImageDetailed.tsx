@@ -262,8 +262,11 @@ export default class ImageDetailed extends React.Component<Props, State> {
 						<ConfirmButton
 							className="bp3-minimal bp3-intent-danger bp3-icon-trash open-ignore"
 							style={css.button}
+							safe={true}
 							progressClassName="bp3-intent-danger"
-							confirmMsg="Confirm image remove"
+							dialogClassName="bp3-intent-danger bp3-icon-delete"
+							dialogLabel="Delete Image"
+							confirmMsg="Permanently delete this image"
 							disabled={this.props.image.type === 'public' ||
 								this.state.disabled}
 							onConfirm={this.onDelete}

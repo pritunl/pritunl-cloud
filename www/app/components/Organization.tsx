@@ -236,9 +236,12 @@ export default class Organization extends React.Component<Props, State> {
 				<div style={css.group}>
 					<div style={css.remove}>
 						<ConfirmButton
+							safe={true}
 							className="bp3-minimal bp3-intent-danger bp3-icon-trash"
 							progressClassName="bp3-intent-danger"
-							confirmMsg="Confirm organization remove"
+							dialogClassName="bp3-intent-danger bp3-icon-delete"
+							dialogLabel="Delete Organization"
+							confirmMsg="Permanently delete this organization"
 							disabled={this.state.disabled}
 							onConfirm={this.onDelete}
 						/>

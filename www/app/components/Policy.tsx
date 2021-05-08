@@ -339,9 +339,12 @@ export default class Policy extends React.Component<Props, State> {
 				<div style={css.group}>
 					<div style={css.remove}>
 						<ConfirmButton
+							safe={true}
 							className="bp3-minimal bp3-intent-danger bp3-icon-trash"
 							progressClassName="bp3-intent-danger"
-							confirmMsg="Confirm policy remove"
+							dialogClassName="bp3-intent-danger bp3-icon-delete"
+							dialogLabel="Delete Balancer"
+							confirmMsg="Permanently delete this policy"
 							disabled={this.state.disabled}
 							onConfirm={this.onDelete}
 						/>

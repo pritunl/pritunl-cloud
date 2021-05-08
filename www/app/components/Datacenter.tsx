@@ -441,9 +441,12 @@ export default class Datacenter extends React.Component<Props, State> {
 				<div style={css.group}>
 					<div style={css.remove}>
 						<ConfirmButton
+							safe={true}
 							className="bp3-minimal bp3-intent-danger bp3-icon-trash"
 							progressClassName="bp3-intent-danger"
-							confirmMsg="Confirm datacenter remove"
+							dialogClassName="bp3-intent-danger bp3-icon-delete"
+							dialogLabel="Delete Datacenter"
+							confirmMsg="Permanently delete this datacenter"
 							disabled={this.state.disabled}
 							onConfirm={this.onDelete}
 						/>
