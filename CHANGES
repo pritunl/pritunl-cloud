@@ -10,6 +10,7 @@ Add disk passthrough
 Add iscsi instance disk support
 Support add and remove USB devices on running instance
 Support add and remove disks on running instance
+Support wildcard certificates
 Format username capitalization on update
 Move instance runtime files to run directory
 
