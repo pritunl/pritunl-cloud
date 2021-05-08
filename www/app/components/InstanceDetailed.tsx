@@ -40,6 +40,7 @@ interface State {
 	addNetworkRole: string;
 	addVpc: string;
 	addDriveDevice: string;
+	addIso: string;
 	addUsbDevice: string;
 	addPciDevice: string;
 	forwardedChecked: boolean;
@@ -144,6 +145,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			addNetworkRole: '',
 			addVpc: '',
 			addDriveDevice: '',
+			addIso: '',
 			addUsbDevice: '',
 			addPciDevice: '',
 			forwardedChecked: false,
@@ -522,6 +524,100 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			changed: true,
 			message: '',
 			addDriveDevice: '',
+			instance: instance,
+		});
+	}
+
+	onAddIso = (): void => {
+		let instance: InstanceTypes.Instance;
+		let infoIsos = this.props.instance.info.isos || [];
+
+		if (!this.state.addIso && !infoIsos.length) {
+			return;
+		}
+
+		let addIso = this.state.addIso;
+		if (!addIso) {
+			addIso = infoIsos[0].name;
+		}
+
+		if (this.state.changed) {
+			instance = {
+				...this.state.instance,
+			};
+		} else {
+			instance = {
+				...this.props.instance,
+			};
+		}
+
+		let isos = [
+			...(instance.isos || []),
+		];
+
+		let index = -1;
+		for (let i = 0; i < isos.length; i++) {
+			let iso = isos[i];
+			if (iso.name === addIso) {
+				index = i;
+				break
+			}
+		}
+
+		if (index === -1) {
+			isos.push({
+				name: addIso,
+			});
+		}
+
+		instance.isos = isos;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			addIso: '',
+			instance: instance,
+		});
+	}
+
+	onRemoveIso = (isoName: string): void => {
+		let instance: InstanceTypes.Instance;
+
+		if (this.state.changed) {
+			instance = {
+				...this.state.instance,
+			};
+		} else {
+			instance = {
+				...this.props.instance,
+			};
+		}
+
+		let isos = [
+			...(instance.isos || []),
+		];
+
+		let index = -1;
+		for (let i = 0; i < isos.length; i++) {
+			let iso = isos[i];
+			if (iso.name == isoName) {
+				index = i;
+				break
+			}
+		}
+		if (index === -1) {
+			return;
+		}
+
+		isos.splice(index, 1);
+		instance.isos = isos;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			addIso: '',
 			instance: instance,
 		});
 	}
@@ -1104,6 +1200,41 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			);
 		}
 
+		let isos: JSX.Element[] = [];
+		for (let iso of (instance.isos || [])) {
+			let key = iso.name;
+			isos.push(
+				<div
+					className="bp3-tag bp3-tag-removable bp3-intent-primary"
+					style={css.item}
+					key={key}
+				>
+					{key}
+					<button
+						disabled={this.state.disabled}
+						className="bp3-tag-remove"
+						onMouseUp={(): void => {
+							this.onRemoveIso(key);
+						}}
+					/>
+				</div>,
+			);
+		}
+
+		let infoIsos = this.props.instance.info.isos;
+		let isosSelect: JSX.Element[] = [];
+		for (let i = 0; i < (infoIsos || []).length; i++) {
+			let iso = infoIsos[i];
+			isosSelect.push(
+				<option
+					key={iso.name}
+					value={iso.name}
+				>
+					{iso.name}
+				</option>,
+			);
+		}
+
 		let usbDevices: JSX.Element[] = [];
 		for (let device of (instance.usb_devices || [])) {
 			let key = '';
@@ -1460,6 +1591,36 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						}}
 						onSubmit={this.onAddNetworkRole}
 					/>
+					<label
+						className="bp3-label"
+						style={css.label}
+						hidden={infoIsos === null}
+					>
+						ISO Images
+						<Help
+							title="ISO Images"
+							content="ISO images to attach to instance."
+						/>
+						<div>
+							{isos}
+						</div>
+					</label>
+					<PageSelectButton
+						hidden={infoIsos === null}
+						label="Add ISO"
+						value={this.state.addIso}
+						disabled={!isosSelect.length || this.state.disabled}
+						buttonClass="bp3-intent-success"
+						onChange={(val: string): void => {
+							this.setState({
+								...this.state,
+								addIso: val,
+							});
+						}}
+						onSubmit={this.onAddIso}
+					>
+						{isosSelect}
+					</PageSelectButton>
 					<label
 						className="bp3-label"
 						style={css.label}
