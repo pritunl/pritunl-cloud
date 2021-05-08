@@ -317,7 +317,13 @@ func (q *Qemu) Marshal() (output string, err error) {
 		}
 
 		cmd = append(cmd, "-boot")
-		cmd = append(cmd, "order=d,menu=on,splash-time=30000")
+		cmd = append(
+			cmd,
+			fmt.Sprintf(
+				"order=d,menu=on,splash-time=%d",
+				settings.Hypervisor.SplashTime*1000,
+			),
+		)
 	}
 
 	cmd = append(cmd, "-monitor")
