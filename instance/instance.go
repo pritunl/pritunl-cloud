@@ -129,14 +129,6 @@ func (i *Instance) Validate(db *database.Database) (
 		return
 	}
 
-	if i.Image.IsZero() {
-		errData = &errortypes.ErrorData{
-			Error:   "image_required",
-			Message: "Missing required image",
-		}
-		return
-	}
-
 	if i.Vpc.IsZero() {
 		errData = &errortypes.ErrorData{
 			Error:   "vpc_required",
