@@ -633,6 +633,22 @@ func (i *Instance) Changed(curVirt *vm.VirtualMachine) bool {
 		}
 	}
 
+	if i.Virt.Isos != nil {
+		if len(i.Virt.Isos) > 0 && curVirt.Isos == nil {
+			return true
+		}
+
+		for i, device := range i.Virt.Isos {
+			if len(curVirt.Isos) <= i {
+				return true
+			}
+
+			if device.Name != curVirt.Isos[i].Name {
+				return true
+			}
+		}
+	}
+
 	if i.Virt.PciDevices != nil {
 		if len(i.Virt.PciDevices) > 0 && curVirt.PciDevices == nil {
 			return true
