@@ -23,6 +23,8 @@ export interface Instance {
 	public_ips6?: string[];
 	private_ips?: string[];
 	private_ips6?: string[];
+	gateway_ips?: string[];
+	gateway_ips6?: string[];
 	network_namespace?: string;
 	host_ips?: string[];
 	public_mac?: string;
