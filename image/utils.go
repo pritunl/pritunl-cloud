@@ -154,7 +154,11 @@ func GetAll(db *database.Database, query *bson.M, page, pageCount int64) (
 		return
 	}
 
-	page = utils.Min64(page, count/pageCount)
+	maxPage := count / pageCount
+	if count == pageCount {
+		maxPage = 0
+	}
+	page = utils.Min64(page, maxPage)
 	skip := utils.Min64(page*pageCount, count)
 
 	cursor, err := coll.Find(
