@@ -22,6 +22,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/iscsi"
+	"github.com/pritunl/pritunl-cloud/iso"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/pci"
 	"github.com/pritunl/pritunl-cloud/storage"
@@ -50,6 +51,7 @@ type instanceData struct {
 	Memory           int                `json:"memory"`
 	Processors       int                `json:"processors"`
 	NetworkRoles     []string           `json:"network_roles"`
+	Isos             []*iso.Iso         `json:"isos"`
 	UsbDevices       []*usb.Device      `json:"usb_devices"`
 	PciDevices       []*pci.Device      `json:"pci_devices"`
 	DriveDevices     []*drive.Device    `json:"drive_devices"`
@@ -136,6 +138,7 @@ func instancePut(c *gin.Context) {
 	inst.Memory = dta.Memory
 	inst.Processors = dta.Processors
 	inst.NetworkRoles = dta.NetworkRoles
+	inst.Isos = dta.Isos
 	inst.UsbDevices = dta.UsbDevices
 	inst.PciDevices = dta.PciDevices
 	inst.DriveDevices = dta.DriveDevices
@@ -158,6 +161,7 @@ func instancePut(c *gin.Context) {
 		"memory",
 		"processors",
 		"network_roles",
+		"isos",
 		"usb_devices",
 		"pci_devices",
 		"drive_devices",
@@ -344,6 +348,7 @@ func instancePost(c *gin.Context) {
 			Memory:           dta.Memory,
 			Processors:       dta.Processors,
 			NetworkRoles:     dta.NetworkRoles,
+			Isos:             dta.Isos,
 			UsbDevices:       dta.UsbDevices,
 			PciDevices:       dta.PciDevices,
 			DriveDevices:     dta.DriveDevices,
