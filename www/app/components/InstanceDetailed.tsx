@@ -939,6 +939,16 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			privateIps6 = 'None';
 		}
 
+		let gatewayIps: any = this.props.instance.gateway_ips;
+		if (!gatewayIps || !gatewayIps.length) {
+			gatewayIps = 'None';
+		}
+
+		let gatewayIps6: any = this.props.instance.gateway_ips6;
+		if (!gatewayIps6 || !gatewayIps6.length) {
+			gatewayIps6 = 'None';
+		}
+
 		let publicIps: any = this.props.instance.public_ips;
 		if (!publicIps || !publicIps.length) {
 			publicIps = 'None';
@@ -1263,6 +1273,16 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			{
 				label: 'Private IPv6',
 				value: privateIps6,
+				copy: true,
+			},
+			{
+				label: 'Gateway IPv4',
+				value: gatewayIps,
+				copy: true,
+			},
+			{
+				label: 'Gateway IPv6',
+				value: gatewayIps6,
 				copy: true,
 			},
 			{
