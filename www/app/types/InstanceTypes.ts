@@ -34,6 +34,7 @@ export interface Instance {
 	memory?: number;
 	processors?: number;
 	network_roles?: string[];
+	isos?: Iso[];
 	usb_devices?: UsbDevice[];
 	pci_devices?: PciDevice[];
 	drive_devices?: DriveDevice[];
@@ -61,6 +62,10 @@ export interface Filter {
 	zone?: string;
 	vpc?: string;
 	subnet?: string;
+}
+
+export interface Iso {
+	name?: string;
 }
 
 export interface UsbDevice {
@@ -97,6 +102,7 @@ export interface Info {
 	firewall_rules?: string[];
 	authorities?: string[];
 	disks?: string[];
+	isos?: Iso[];
 	usb_devices?: UsbDevice[];
 	pci_devices?: PciDevice[];
 	drive_devices?: DriveDevice[];
