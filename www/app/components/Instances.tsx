@@ -427,7 +427,9 @@ export default class Instances extends React.Component<{}, State> {
 							label="Delete Selected"
 							className="bp3-intent-danger bp3-icon-delete"
 							progressClassName="bp3-intent-danger"
+							safe={true}
 							style={css.button}
+							confirmMsg="Permanently delete the selected instances"
 							disabled={!this.selected || this.state.disabled}
 							onConfirm={this.onDelete}
 						/>
