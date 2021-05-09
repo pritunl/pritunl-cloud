@@ -312,9 +312,6 @@ func (r *Router) initServers() (err error) {
 	r.lock.Lock()
 	defer r.lock.Unlock()
 
-	db := database.GetDatabase()
-	defer db.Close()
-
 	err = r.certificates.Init()
 	if err != nil {
 		return
@@ -532,8 +529,7 @@ func (r *Router) Init() {
 		gin.SetMode(gin.DebugMode)
 	}
 
+	r.certificates = &Certificates{}
 	r.proxy = &proxy.Proxy{}
 	r.proxy.Init()
-
-	r.certificates = &Certificates{}
 }
