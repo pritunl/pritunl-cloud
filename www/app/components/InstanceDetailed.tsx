@@ -1512,8 +1512,11 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						<ConfirmButton
 							className="bp3-minimal bp3-intent-danger bp3-icon-trash open-ignore"
 							style={css.button}
+							safe={true}
 							progressClassName="bp3-intent-danger"
-							confirmMsg="Confirm instance remove"
+							dialogClassName="bp3-intent-danger bp3-icon-delete"
+							dialogLabel="Delete Instance"
+							confirmMsg="Permanently delete this instance"
 							disabled={this.state.disabled}
 							onConfirm={this.onDelete}
 						/>
