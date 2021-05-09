@@ -36,7 +36,7 @@ rm -rf app/**/*.js*
 
 ```
 # desktop
-rsync --human-readable --archive --xattrs --progress --delete --exclude "/node_modules/*" --exclude "/jspm_packages/*" --exclude "app/*.js" --exclude "app/*.js.map" --exclude "app/**/*.js" --exclude "app/**/*.js.map" /home/cloud/go/src/github.com/pritunl/pritunl-cloud/www/ 123.123.123.123:/home/cloud/pritunl-cloud-www/
+rsync --human-readable --archive --xattrs --progress --delete --exclude "/node_modules/*" --exclude "/jspm_packages/*" --exclude "app/*.js" --exclude "app/*.js.map" --exclude "app/**/*.js" --exclude "app/**/*.js.map" /home/cloud/go/src/github.com/pritunl/pritunl-cloud/www/ $NPM_SERVER:/home/cloud/pritunl-cloud-www/
 
 # npm-server
 cd /home/cloud/pritunl-cloud-www/
@@ -44,14 +44,15 @@ npm install
 rm node_modules/react-stripe-checkout/index.d.ts
 
 # desktop
-scp 123.123.123.123:/home/cloud/pritunl-cloud-www/package.json /home/cloud/go/src/github.com/pritunl/pritunl-cloud/www/package.json
-scp 123.123.123.123:/home/cloud/pritunl-cloud-www/package-lock.json /home/cloud/go/src/github.com/pritunl/pritunl-cloud/www/package-lock.json
-rsync --human-readable --archive --xattrs --progress --delete 123.123.123.123:/home/cloud/pritunl-cloud-www/node_modules/ /home/cloud/go/src/github.com/pritunl/pritunl-cloud/www/node_modules/
+scp $NPM_SERVER:/home/cloud/pritunl-cloud-www/package.json /home/cloud/go/src/github.com/pritunl/pritunl-cloud/www/package.json
+scp $NPM_SERVER:/home/cloud/pritunl-cloud-www/package-lock.json /home/cloud/go/src/github.com/pritunl/pritunl-cloud/www/package-lock.json
+rsync --human-readable --archive --xattrs --progress --delete $NPM_SERVER:/home/cloud/pritunl-cloud-www/node_modules/ /home/cloud/go/src/github.com/pritunl/pritunl-cloud/www/node_modules/
 
 # npm-server
+rsync --human-readable --archive --xattrs --progress --delete --exclude "/node_modules/*" --exclude "/jspm_packages/*" --exclude "app/*.js" --exclude "app/*.js.map" --exclude "app/**/*.js" --exclude "app/**/*.js.map" /home/cloud/go/src/github.com/pritunl/pritunl-cloud/www/ $NPM_SERVER:/home/cloud/pritunl-cloud-www/
 sh build.sh
 
 # desktop
-rsync --human-readable --archive --xattrs --progress --delete 123.123.123.123:/home/cloud/pritunl-cloud-www/dist/ /home/cloud/go/src/github.com/pritunl/pritunl-cloud/www/dist/
-rsync --human-readable --archive --xattrs --progress --delete 123.123.123.123:/home/cloud/pritunl-cloud-www/dist-dev/ /home/cloud/go/src/github.com/pritunl/pritunl-cloud/www/dist-dev/
+rsync --human-readable --archive --xattrs --progress --delete $NPM_SERVER:/home/cloud/pritunl-cloud-www/dist/ /home/cloud/go/src/github.com/pritunl/pritunl-cloud/www/dist/
+rsync --human-readable --archive --xattrs --progress --delete $NPM_SERVER:/home/cloud/pritunl-cloud-www/dist-dev/ /home/cloud/go/src/github.com/pritunl/pritunl-cloud/www/dist-dev/
 ```
