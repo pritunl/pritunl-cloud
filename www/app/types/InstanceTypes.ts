@@ -99,6 +99,7 @@ export interface DriveDevice {
 
 export interface Info {
 	node?: string;
+	iscsi?: boolean;
 	firewall_rules?: string[];
 	authorities?: string[];
 	disks?: string[];
