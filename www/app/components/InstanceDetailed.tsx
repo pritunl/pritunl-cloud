@@ -1597,7 +1597,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					<label
 						className="bp3-label"
 						style={css.label}
-						hidden={infoIsos === null}
+						hidden={!isos.length && !isosSelect.length}
 					>
 						ISO Images
 						<Help
@@ -1609,10 +1609,10 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						</div>
 					</label>
 					<PageSelectButton
-						hidden={infoIsos === null}
+						hidden={!isosSelect.length}
 						label="Add ISO"
 						value={this.state.addIso}
-						disabled={!isosSelect.length || this.state.disabled}
+						disabled={this.state.disabled}
 						buttonClass="bp3-intent-success"
 						onChange={(val: string): void => {
 							this.setState({
@@ -1627,7 +1627,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					<label
 						className="bp3-label"
 						style={css.label}
-						hidden={infoDriveDevices === null}
+						hidden={!driveDevices.length && !driveDevicesSelect.length}
 					>
 						Disk Passthrough Devices
 						<Help
@@ -1639,10 +1639,10 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						</div>
 					</label>
 					<PageSelectButton
-						hidden={infoDriveDevices === null}
+						hidden={!driveDevicesSelect.length}
 						label="Add Device"
 						value={this.state.addDriveDevice}
-						disabled={!driveDevicesSelect.length || this.state.disabled}
+						disabled={this.state.disabled}
 						buttonClass="bp3-intent-success"
 						onChange={(val: string): void => {
 							this.setState({
@@ -1654,7 +1654,12 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					>
 						{driveDevicesSelect}
 					</PageSelectButton>
-					<label style={css.itemsLabel}>
+					<label
+						hidden={!info.iscsi &&
+							(!this.props.instance.iscsi_devices ||
+							this.props.instance.iscsi_devices.length === 0)}
+						style={css.itemsLabel}
+					>
 						iSCSI Devices
 						<Help
 							title="iSCSI Devices"
@@ -1665,13 +1670,18 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 							]}
 						/>
 					</label>
-					<div style={css.list}>
+					<div
+						hidden={!info.iscsi &&
+							(!this.props.instance.iscsi_devices ||
+							this.props.instance.iscsi_devices.length === 0)}
+						style={css.list}
+					>
 						{iscsiDevicesElem}
 					</div>
 					<label
 						className="bp3-label"
 						style={css.label}
-						hidden={infoPciDevices === null}
+						hidden={!pciDevices.length && !pciDevicesSelect.length}
 					>
 						PCI Devices
 						<Help
@@ -1683,10 +1693,10 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						</div>
 					</label>
 					<PageSelectButton
-						hidden={infoPciDevices === null}
+						hidden={!pciDevicesSelect.length}
 						label="Add Device"
 						value={this.state.addPciDevice}
-						disabled={!pciDevicesSelect.length || this.state.disabled}
+						disabled={this.state.disabled}
 						buttonClass="bp3-intent-success"
 						onChange={(val: string): void => {
 							this.setState({
