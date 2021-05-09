@@ -161,6 +161,8 @@ export default class InstanceLicense extends React.Component<Props, {}> {
 				title="Oracle Linux End-User License Agreement"
 				style={css.dialog}
 				isOpen={this.props.open}
+				usePortal={true}
+				portalContainer={document.body}
 				onClose={(): void => {
 					this.props.onClose();
 				}}
