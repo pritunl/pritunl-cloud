@@ -4,9 +4,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/sirupsen/logrus"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/requires"
+	"github.com/sirupsen/logrus"
 )
 
 var (
