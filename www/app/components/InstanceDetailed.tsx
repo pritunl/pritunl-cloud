@@ -1323,7 +1323,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			);
 		}
 
-		let iscsiDevices = (instance.iscsi_devices || []);
+		let iscsiDevices = [...(instance.iscsi_devices || [])];
 		if (iscsiDevices.length === 0) {
 			iscsiDevices.push({});
 		}
