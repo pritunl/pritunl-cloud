@@ -38,8 +38,15 @@ func New(name string) (module *Module) {
 	return
 }
 
-func Init() {
+func Init(ignore []string) {
 	loaded := false
+	ignoreSet := set.NewSet()
+
+	if ignore != nil {
+		for _, name := range ignore {
+			ignoreSet.Add(name)
+		}
+	}
 
 Loop:
 	for count := 0; count < 100; count += 1 {
@@ -126,9 +133,11 @@ Loop:
 
 	i := modules.Front()
 	for i != nil {
-		err := i.Value.(*Module).Handler()
-		if err != nil {
-			panic(err)
+		if !ignoreSet.Contains(i.Value.(*Module).name) {
+			err := i.Value.(*Module).Handler()
+			if err != nil {
+				panic(err)
+			}
 		}
 
 		i = i.Next()
