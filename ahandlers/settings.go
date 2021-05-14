@@ -80,6 +80,8 @@ func settingsPut(c *gin.Context) {
 	}
 
 	for _, provider := range data.AuthProviders {
+		provider.Label = utils.FilterStr(provider.Label, 32)
+
 		if provider.Id.IsZero() {
 			provider.Id = primitive.NewObjectID()
 		}
@@ -87,6 +89,9 @@ func settingsPut(c *gin.Context) {
 	settings.Auth.Providers = data.AuthProviders
 
 	for _, provider := range data.AuthSecondaryProviders {
+		provider.Name = utils.FilterStr(provider.Name, 32)
+		provider.Label = utils.FilterStr(provider.Label, 32)
+
 		if provider.Id.IsZero() {
 			provider.Id = primitive.NewObjectID()
 		}
