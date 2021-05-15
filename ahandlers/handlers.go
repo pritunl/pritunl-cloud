@@ -1,14 +1,13 @@
 package ahandlers
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/pritunl-cloud/config"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/middlewear"
 	"github.com/pritunl/pritunl-cloud/requires"
 	"github.com/pritunl/pritunl-cloud/static"
+	"net/http"
 )
 
 var (
@@ -211,7 +210,7 @@ func Register(engine *gin.Engine) {
 }
 
 func init() {
-	module := requires.New("mhandlers")
+	module := requires.New("ahandlers")
 	module.After("settings")
 
 	module.Handler = func() (err error) {
