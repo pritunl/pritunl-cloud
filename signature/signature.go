@@ -15,6 +15,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/nonce"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/user"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type Signature struct {
@@ -60,7 +61,7 @@ func (s *Signature) Validate(db *database.Database) (err error) {
 		return
 	}
 
-	if time.Since(s.Timestamp) > time.Duration(
+	if utils.SinceAbs(s.Timestamp) > time.Duration(
 		settings.Auth.Window)*time.Second {
 
 		err = &errortypes.AuthenticationError{
