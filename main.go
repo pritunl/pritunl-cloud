@@ -29,7 +29,12 @@ Commands:
 
 func Init() {
 	logger.Init()
-	requires.Init()
+	requires.Init(nil)
+}
+
+func InitLimited() {
+	logger.Init()
+	requires.Init([]string{"ahandlers", "uhandlers"})
 }
 
 func main() {
@@ -67,49 +72,49 @@ func main() {
 		}
 		return
 	case "default-password":
-		Init()
+		InitLimited()
 		err := cmd.DefaultPassword()
 		if err != nil {
 			panic(err)
 		}
 		return
 	case "reset-password":
-		Init()
+		InitLimited()
 		err := cmd.ResetPassword()
 		if err != nil {
 			panic(err)
 		}
 		return
 	case "disable-policies":
-		Init()
+		InitLimited()
 		err := cmd.DisablePolicies()
 		if err != nil {
 			panic(err)
 		}
 		return
 	case "set":
-		Init()
+		InitLimited()
 		err := cmd.SettingsSet()
 		if err != nil {
 			panic(err)
 		}
 		return
 	case "unset":
-		Init()
+		InitLimited()
 		err := cmd.SettingsUnset()
 		if err != nil {
 			panic(err)
 		}
 		return
 	case "clear-logs":
-		Init()
+		InitLimited()
 		err := cmd.ClearLogs()
 		if err != nil {
 			panic(err)
 		}
 		return
 	case "backup":
-		Init()
+		InitLimited()
 		err := cmd.Backup()
 		if err != nil {
 			panic(err)
