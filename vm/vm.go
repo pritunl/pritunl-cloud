@@ -23,6 +23,7 @@ type VirtualMachine struct {
 	DisksAvailable      bool               `json:"-"`
 	NetworkAdapters     []*NetworkAdapter  `json:"network_adapters"`
 	Uefi                bool               `json:"uefi"`
+	SecureBoot          bool               `json:"secure_boot"`
 	NoPublicAddress     bool               `json:"no_public_address"`
 	NoHostAddress       bool               `json:"no_host_address"`
 	Isos                []*Iso             `json:"isos"`
