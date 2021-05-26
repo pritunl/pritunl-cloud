@@ -22,7 +22,7 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 
 	ovmfCodePath := ""
 	if virt.Uefi {
-		ovmfCodePath, err = paths.FindOvmfCodePath()
+		ovmfCodePath, err = paths.FindOvmfCodePath(virt.SecureBoot)
 		if err != nil {
 			return
 		}
@@ -40,6 +40,7 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 		Sockets:      1,
 		Boot:         "c",
 		Uefi:         virt.Uefi,
+		SecureBoot:   virt.SecureBoot,
 		OvmfCodePath: ovmfCodePath,
 		OvmfVarsPath: paths.GetOvmfVarsPath(virt.Id),
 		Memory:       virt.Memory,
