@@ -22,7 +22,7 @@ func writeOvmfVars(virt *vm.VirtualMachine) (err error) {
 	}
 
 	ovmfVarsPath := paths.GetOvmfVarsPath(virt.Id)
-	ovmfVarsPathSource, err := paths.FindOvmfVarsPath()
+	ovmfVarsPathSource, err := paths.FindOvmfVarsPath(virt.SecureBoot)
 	if err != nil {
 		return
 	}
