@@ -20,6 +20,14 @@ var (
 		"/usr/share/OVMF/OVMF_VARS.pure-efi.fd",
 		"/usr/share/OVMF/OVMF_VARS.fd",
 	}
+	ovmfSecureCodePaths = []string{
+		"/usr/share/edk2/ovmf/OVMF_CODE.secboot.fd",
+		"/usr/share/OVMF/OVMF_CODE.secboot.fd",
+	}
+	ovmfSecureVarsPaths = []string{
+		"/usr/share/edk2/ovmf/OVMF_VARS.secboot.fd",
+		"/usr/share/OVMF/OVMF_VARS.secboot.fd",
+	}
 )
 
 func existsFile(pth string) (exists bool, err error) {
@@ -40,21 +48,40 @@ func existsFile(pth string) (exists bool, err error) {
 	return
 }
 
-func FindOvmfCodePath() (pth string, err error) {
-	pth = settings.Hypervisor.OvmfCodePath
-	if pth != "" {
-		return
-	}
-
-	for _, pth = range ovmfCodePaths {
-		exists, e := existsFile(pth)
-		if e != nil {
-			err = e
+func FindOvmfCodePath(secureBoot bool) (pth string, err error) {
+	if secureBoot {
+		pth = settings.Hypervisor.OvmfSecureCodePath
+		if pth != "" {
 			return
 		}
 
-		if exists {
+		for _, pth = range ovmfSecureCodePaths {
+			exists, e := existsFile(pth)
+			if e != nil {
+				err = e
+				return
+			}
+
+			if exists {
+				return
+			}
+		}
+	} else {
+		pth = settings.Hypervisor.OvmfCodePath
+		if pth != "" {
 			return
+		}
+
+		for _, pth = range ovmfCodePaths {
+			exists, e := existsFile(pth)
+			if e != nil {
+				err = e
+				return
+			}
+
+			if exists {
+				return
+			}
 		}
 	}
 
@@ -65,21 +92,40 @@ func FindOvmfCodePath() (pth string, err error) {
 	return
 }
 
-func FindOvmfVarsPath() (pth string, err error) {
-	pth = settings.Hypervisor.OvmfVarsPath
-	if pth != "" {
-		return
-	}
-
-	for _, pth = range ovmfVarsPaths {
-		exists, e := existsFile(pth)
-		if e != nil {
-			err = e
+func FindOvmfVarsPath(secureBoot bool) (pth string, err error) {
+	if secureBoot {
+		pth = settings.Hypervisor.OvmfSecureVarsPath
+		if pth != "" {
 			return
 		}
 
-		if exists {
+		for _, pth = range ovmfSecureVarsPaths {
+			exists, e := existsFile(pth)
+			if e != nil {
+				err = e
+				return
+			}
+
+			if exists {
+				return
+			}
+		}
+	} else {
+		pth = settings.Hypervisor.OvmfVarsPath
+		if pth != "" {
 			return
+		}
+
+		for _, pth = range ovmfVarsPaths {
+			exists, e := existsFile(pth)
+			if e != nil {
+				err = e
+				return
+			}
+
+			if exists {
+				return
+			}
 		}
 	}
 
