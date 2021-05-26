@@ -4,6 +4,7 @@ pritunl-cloud changelog
 <%= version %>
 
 Add uefi instance support
+Add secure boot instance support
 Add pci passthrough
 Add disk resizing
 Add disk passthrough
