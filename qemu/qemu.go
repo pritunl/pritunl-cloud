@@ -62,6 +62,7 @@ type Qemu struct {
 	Sockets      int
 	Boot         string
 	Uefi         bool
+	SecureBoot   bool
 	OvmfCodePath string
 	OvmfVarsPath string
 	Memory       int
@@ -144,7 +145,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 		cmd = append(cmd, nodeVga)
 		cmd = append(cmd, "-vnc")
 		cmd = append(cmd, fmt.Sprintf(
-			":%d,websocket=%d,password,share=allow-exclusive",
+			":%d,websocket=%d,password=on,share=allow-exclusive",
 			q.VncDisplay,
 			q.VncDisplay+15900,
 		))
@@ -153,7 +154,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 	if q.Uefi {
 		cmd = append(cmd, "-drive")
 		cmd = append(cmd, fmt.Sprintf(
-			"if=pflash,format=raw,readonly,file=%s",
+			"if=pflash,format=raw,readonly=on,file=%s",
 			q.OvmfCodePath,
 		))
 		cmd = append(cmd, "-drive")
@@ -328,13 +329,13 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 	cmd = append(cmd, "-monitor")
 	cmd = append(cmd, fmt.Sprintf(
-		"unix:%s,server,nowait",
+		"unix:%s,server=on,wait=off",
 		paths.GetSockPath(q.Id),
 	))
 
 	cmd = append(cmd, "-qmp")
 	cmd = append(cmd, fmt.Sprintf(
-		"unix:%s,server,nowait",
+		"unix:%s,server=on,wait=off",
 		paths.GetQmpSockPath(q.Id),
 	))
 
@@ -344,7 +345,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 	guestPath := paths.GetGuestPath(q.Id)
 	cmd = append(cmd, "-chardev")
 	cmd = append(cmd, fmt.Sprintf(
-		"socket,path=%s,server,nowait,id=guest", guestPath))
+		"socket,path=%s,server=on,wait=off,id=guest", guestPath))
 	cmd = append(cmd, "-device")
 	cmd = append(cmd, "virtio-serial")
 	cmd = append(cmd, "-device")
