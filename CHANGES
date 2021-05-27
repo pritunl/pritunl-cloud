@@ -15,6 +15,7 @@ Support add and remove disks on running instance
 Support wildcard certificates
 Format username capitalization on update
 Move instance runtime files to run directory
+Web interface improvements
 
 Version 1.2.1807.79 2020-11-04
 ------------------------------
