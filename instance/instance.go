@@ -201,6 +201,14 @@ func (i *Instance) Validate(db *database.Database) (
 		return
 	}
 
+	if i.Isos == nil {
+		i.Isos = []*iso.Iso{}
+	} else {
+		for _, is := range i.Isos {
+			is.Name = utils.FilterPath(is.Name, 128)
+		}
+	}
+
 	if i.UsbDevices == nil {
 		i.UsbDevices = []*usb.Device{}
 	} else {
