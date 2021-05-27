@@ -12,6 +12,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/usb"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type Disk struct {
@@ -312,7 +313,10 @@ func (q *Qemu) Marshal() (output string, err error) {
 			cmd = append(cmd, "-drive")
 			cmd = append(cmd, fmt.Sprintf(
 				"file=%s,media=cdrom,index=%d",
-				path.Join(localIsosPath, path.Base(iso.Name)),
+				path.Join(
+					localIsosPath,
+					path.Base(utils.FilterPath(iso.Name, 128)),
+				),
 				i+1,
 			))
 		}
