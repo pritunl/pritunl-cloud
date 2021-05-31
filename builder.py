@@ -516,7 +516,7 @@ if cmd == 'upload' or cmd == 'build-upload':
         '--overwrite',
         '--md5',
         'mirror',
-        'repo-east/dev' if is_snapshot else 'repo-east/stable',
+        'repo-east/unstable',
     ], cwd=pacur_path)
 
     subprocess.check_call([
@@ -526,7 +526,7 @@ if cmd == 'upload' or cmd == 'build-upload':
         '--overwrite',
         '--md5',
         'mirror',
-        'repo-west/dev' if is_snapshot else 'repo-west/stable',
+        'repo-west/unstable',
     ], cwd=pacur_path)
 
 
