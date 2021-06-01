@@ -18,6 +18,7 @@ export interface Instance {
 	vm_state?: string;
 	vm_timestamp?: string;
 	uefi?: boolean;
+	secure_boot?: boolean;
 	delete_protection?: boolean;
 	public_ips?: string[];
 	public_ips6?: string[];
