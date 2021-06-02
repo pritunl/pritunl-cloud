@@ -1387,6 +1387,10 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				value: (this.props.instance.uefi ? 'UEFI' : 'BIOS'),
 			},
 			{
+				label: 'SecureBoot',
+				value: (this.props.instance.secure_boot ? 'Enabled' : 'Disabled'),
+			},
+			{
 				label: 'Public IPv4',
 				value: publicIps,
 				copy: true,
@@ -1787,6 +1791,16 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						checked={instance.uefi}
 						onToggle={(): void => {
 							this.set('uefi', !instance.uefi);
+						}}
+					/>
+					<PageSwitch
+						disabled={this.state.disabled}
+						hidden={!instance.uefi}
+						label="SecureBoot"
+						help="Enable secure boot, requires UEFI image."
+						checked={instance.secure_boot}
+						onToggle={(): void => {
+							this.set('secure_boot', !instance.secure_boot);
 						}}
 					/>
 					<PageSwitch
