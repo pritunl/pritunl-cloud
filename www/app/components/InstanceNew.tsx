@@ -145,6 +145,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 			id: null,
 			name: 'New instance',
 			uefi: true,
+			secure_boot: true,
 			init_disk_size: 10,
 			memory: 1024,
 			processors: 1,
@@ -222,6 +223,23 @@ export default class InstanceNew extends React.Component<Props, State> {
 			instance.image = '';
 		}
 		instance.uefi = uefi;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			instance: instance,
+		});
+	}
+
+	onSecureBoot(secureBoot: boolean): void {
+		let instance: any = {
+			...this.state.instance,
+		};
+
+		if (instance.secure_boot !== secureBoot) {
+			instance.image = '';
+		}
+		instance.secure_boot = secureBoot;
 
 		this.setState({
 			...this.state,
@@ -686,6 +704,16 @@ export default class InstanceNew extends React.Component<Props, State> {
 							checked={instance.uefi}
 							onToggle={(): void => {
 								this.onUefi(!instance.uefi);
+							}}
+						/>
+						<PageSwitch
+							disabled={this.state.disabled}
+							hidden={!instance.uefi}
+							label="SecureBoot"
+							help="Enable secure boot, requires OVMF package for UEFI image."
+							checked={instance.secure_boot}
+							onToggle={(): void => {
+								this.onSecureBoot(!instance.secure_boot);
 							}}
 						/>
 						<PageSwitch
