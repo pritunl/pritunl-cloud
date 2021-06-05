@@ -1828,13 +1828,11 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							},
 							{
 								label: 'Memory Units',
-								value: (this.props.node.memory_units ||
-									'Unknown').toString(),
+								value: (this.props.node.memory_units || 0).toString(),
 							},
 							{
 								label: 'Memory Units Reserved',
-								value: (this.props.node.memory_units_res ||
-									'Unknown').toString(),
+								value: (this.props.node.memory_units_res || 0).toString(),
 							},
 							{
 								label: 'Default Interface',
