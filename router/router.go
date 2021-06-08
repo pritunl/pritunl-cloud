@@ -14,7 +14,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/mongo-go-driver/bson"
@@ -30,6 +29,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/uhandlers"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/sirupsen/logrus"
 )
 
 type Router struct {
