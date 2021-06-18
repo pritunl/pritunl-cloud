@@ -299,6 +299,7 @@ export default class Firewalls extends React.Component<{}, State> {
 											port: '22',
 										} as FirewallTypes.Rule,
 									],
+									comment: '22/tcp - SSH connections'
 								} as FirewallTypes.Firewall).then((): void => {
 									this.setState({
 										...this.state,
