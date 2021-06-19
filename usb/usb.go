@@ -27,6 +27,7 @@ func GetDevices() (devices []*Device, err error) {
 		devices = syncCache
 		return
 	}
+
 	syncLock.Lock()
 	defer syncLock.Unlock()
 
