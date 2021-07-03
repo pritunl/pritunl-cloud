@@ -181,11 +181,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 	if q.Kvm {
 		cmd = append(cmd, "-cpu")
-		if gpuPassthrough {
-			cmd = append(cmd, q.Cpu+",kvm=off,hv_vendor_id=null")
-		} else {
-			cmd = append(cmd, q.Cpu)
-		}
+		cmd = append(cmd, q.Cpu)
 	}
 
 	cmd = append(cmd, "-smp")
