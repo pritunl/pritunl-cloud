@@ -5,7 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
@@ -15,12 +14,14 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/requires"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
 	Id              primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Type            string             `bson:"type" json:"type"`
+	Provider        primitive.ObjectID `bson:"provider" json:"provider"`
 	Username        string             `bson:"username" json:"username"`
 	Password        string             `bson:"password" json:"-"`
 	Comment         string             `bson:"comment" json:"comment"`
