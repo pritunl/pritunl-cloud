@@ -1787,7 +1787,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					<PageSwitch
 						disabled={this.state.disabled}
 						label="UEFI"
-						help="Enable UEFI boot, requires UEFI image."
+						help="Enable UEFI boot, requires OVMF package for UEFI image."
 						checked={instance.uefi}
 						onToggle={(): void => {
 							this.set('uefi', !instance.uefi);
@@ -1797,7 +1797,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						disabled={this.state.disabled}
 						hidden={!instance.uefi}
 						label="SecureBoot"
-						help="Enable secure boot, requires UEFI image."
+						help="Enable secure boot, requires OVMF package for UEFI image."
 						checked={instance.secure_boot}
 						onToggle={(): void => {
 							this.set('secure_boot', !instance.secure_boot);
