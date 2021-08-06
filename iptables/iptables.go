@@ -4,12 +4,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -185,6 +185,24 @@ func (r *Rules) ApplyNat() (err error) {
 			"-t", "nat",
 			"-A", "POSTROUTING",
 			"-s", r.NatAddr+"/32",
+			"-d", r.NatAddr+"/32",
+			"-m", "comment",
+			"--comment", "pritunl_cloud_nat",
+			"-j", "SNAT",
+			"--to", r.NatPubAddr,
+		)
+		if err != nil {
+			return
+		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{
+				"matching rule exist",
+			},
+			"ip", "netns", "exec", r.Namespace, iptablesCmd,
+			"-t", "nat",
+			"-A", "POSTROUTING",
+			"-s", r.NatAddr+"/32",
 			"-o", r.Interface,
 			"-m", "comment",
 			"--comment", "pritunl_cloud_nat",
@@ -209,6 +227,24 @@ func (r *Rules) ApplyNat() (err error) {
 			"--comment", "pritunl_cloud_nat",
 			"-j", "DNAT",
 			"--to-destination", r.NatAddr6,
+		)
+		if err != nil {
+			return
+		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{
+				"matching rule exist",
+			},
+			"ip", "netns", "exec", r.Namespace, iptablesCmd,
+			"-t", "nat",
+			"-A", "POSTROUTING",
+			"-s", r.NatAddr6+"/128",
+			"-d", r.NatAddr6+"/128",
+			"-m", "comment",
+			"--comment", "pritunl_cloud_nat",
+			"-j", "SNAT",
+			"--to", r.NatPubAddr6,
 		)
 		if err != nil {
 			return
@@ -365,6 +401,25 @@ func (r *Rules) RemoveNat() (err error) {
 		if err != nil {
 			return
 		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{
+				"matching rule exist",
+				"match by that name",
+			},
+			"ip", "netns", "exec", r.Namespace, iptablesCmd,
+			"-t", "nat",
+			"-D", "POSTROUTING",
+			"-s", r.NatAddr+"/32",
+			"-d", r.NatAddr+"/32",
+			"-m", "comment",
+			"--comment", "pritunl_cloud_nat",
+			"-j", "SNAT",
+			"--to", r.NatPubAddr,
+		)
+		if err != nil {
+			return
+		}
 	}
 
 	if r.NatAddr != "" {
@@ -402,6 +457,25 @@ func (r *Rules) RemoveNat() (err error) {
 			"--comment", "pritunl_cloud_nat",
 			"-j", "DNAT",
 			"--to-destination", r.NatAddr6,
+		)
+		if err != nil {
+			return
+		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{
+				"matching rule exist",
+				"match by that name",
+			},
+			"ip", "netns", "exec", r.Namespace, iptablesCmd,
+			"-t", "nat",
+			"-D", "POSTROUTING",
+			"-s", r.NatAddr6+"/128",
+			"-d", r.NatAddr6+"/128",
+			"-m", "comment",
+			"--comment", "pritunl_cloud_nat",
+			"-j", "SNAT",
+			"--to", r.NatPubAddr6,
 		)
 		if err != nil {
 			return
