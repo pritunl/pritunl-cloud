@@ -934,6 +934,16 @@ func NetworkConf(db *database.Database,
 		return
 	}
 
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", namespace,
+		"bridge", "link",
+		"set", "dev", iface, "hairpin", "on",
+	)
+	if err != nil {
+		return
+	}
+
 	_ = networkStopDhClient(virt)
 
 	if externalNetwork {
