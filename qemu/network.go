@@ -1288,6 +1288,22 @@ func NetworkConf(db *database.Database,
 			"iptables", "-t", "nat",
 			"-A", "POSTROUTING",
 			"-s", addr.String()+"/32",
+			"-d", addr.String()+"/32",
+			"-j", "SNAT",
+			"--to", hostStaticAddr.String(),
+		)
+		iptables.Unlock()
+		if err != nil {
+			return
+		}
+
+		iptables.Lock()
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", namespace,
+			"iptables", "-t", "nat",
+			"-A", "POSTROUTING",
+			"-s", addr.String()+"/32",
 			"-o", ifaceHost,
 			"-j", "MASQUERADE",
 		)
