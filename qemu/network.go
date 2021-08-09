@@ -1318,7 +1318,7 @@ func NetworkConf(db *database.Database,
 			"ip", "netns", "exec", namespace,
 			"iptables", "-t", "nat",
 			"-A", "PREROUTING",
-			"-d", hostStaticAddr.String(),
+			"-d", hostStaticAddr.String()+"/32",
 			"-j", "DNAT",
 			"--to-destination", addr.String(),
 		)
