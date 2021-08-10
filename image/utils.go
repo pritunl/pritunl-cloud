@@ -166,7 +166,7 @@ func GetAll(db *database.Database, query *bson.M, page, pageCount int64) (
 		query,
 		&options.FindOptions{
 			Sort: &bson.D{
-				{"name", 1},
+				{"key", 1},
 			},
 			Skip:  &skip,
 			Limit: &pageCount,
@@ -206,7 +206,7 @@ func GetAllNames(db *database.Database, query *bson.M) (
 		query,
 		&options.FindOptions{
 			Sort: &bson.D{
-				{"name", 1},
+				{"key", 1},
 			},
 			Projection: &bson.D{
 				{"name", 1},
@@ -250,7 +250,7 @@ func GetAllKeys(db *database.Database) (keys set.Set, err error) {
 		&bson.M{},
 		&options.FindOptions{
 			Sort: &bson.D{
-				{"name", 1},
+				{"key", 1},
 			},
 			Projection: &bson.D{
 				{"_id", 1},
