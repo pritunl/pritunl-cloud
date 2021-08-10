@@ -424,6 +424,11 @@ func disksGet(c *gin.Context) {
 		query["instance"] = inst
 	}
 
+	nodeId, ok := utils.ParseObjectId(c.Query("node"))
+	if ok {
+		query["node"] = nodeId
+	}
+
 	disks, count, err := aggregate.GetDiskPaged(db, &query, page, pageCount)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
