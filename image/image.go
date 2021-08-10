@@ -1,6 +1,7 @@
 package image
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -42,6 +43,74 @@ func (i *Image) Validate(db *database.Database) (
 func (i *Image) Json() {
 	if i.Name == "" {
 		i.Name = i.Key
+	}
+
+	if i.Signed && len(i.Name) > 6 {
+		names := strings.Split(i.Name[:len(i.Name)-6], "_")
+		n := len(names)
+		if n == 2 && len(names[1]) == 4 {
+			switch names[0] {
+			case "centos7":
+				i.Name = fmt.Sprintf(
+					"CentOS 7 %s/20%s",
+					names[1][2:],
+					names[1][:2],
+				)
+				break
+			case "centos8":
+				i.Name = fmt.Sprintf(
+					"CentOS 8 %s/20%s",
+					names[1][2:],
+					names[1][:2],
+				)
+				break
+			case "oraclelinux7":
+				i.Name = fmt.Sprintf(
+					"Oracle Linux 7 %s/20%s",
+					names[1][2:],
+					names[1][:2],
+				)
+				break
+			case "oraclelinux8":
+				i.Name = fmt.Sprintf(
+					"Oracle Linux 8 %s/20%s",
+					names[1][2:],
+					names[1][:2],
+				)
+				break
+			}
+		} else if n == 3 && names[1] == "efi" && len(names[2]) == 4 {
+			switch names[0] {
+			case "centos7":
+				i.Name = fmt.Sprintf(
+					"CentOS 7 EFI %s/20%s",
+					names[2][2:],
+					names[2][:2],
+				)
+				break
+			case "centos8":
+				i.Name = fmt.Sprintf(
+					"CentOS 8 EFI %s/20%s",
+					names[2][2:],
+					names[2][:2],
+				)
+				break
+			case "oraclelinux7":
+				i.Name = fmt.Sprintf(
+					"Oracle Linux 7 EFI %s/20%s",
+					names[2][2:],
+					names[2][:2],
+				)
+				break
+			case "oraclelinux8":
+				i.Name = fmt.Sprintf(
+					"Oracle Linux 8 EFI %s/20%s",
+					names[2][2:],
+					names[2][:2],
+				)
+				break
+			}
+		}
 	}
 }
 
