@@ -550,7 +550,7 @@ func addIndexes() (err error) {
 	index = &Index{
 		Collection: db.Images(),
 		Keys: &bson.D{
-			{"name", 1},
+			{"key", 1},
 		},
 	}
 	err = index.Create()
