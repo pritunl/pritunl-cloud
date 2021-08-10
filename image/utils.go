@@ -211,6 +211,7 @@ func GetAllNames(db *database.Database, query *bson.M) (
 			Projection: &bson.D{
 				{"name", 1},
 				{"key", 1},
+				{"signed", 1},
 				{"firmware", 1},
 			},
 		},
@@ -228,6 +229,8 @@ func GetAllNames(db *database.Database, query *bson.M) (
 			err = database.ParseError(err)
 			return
 		}
+
+		img.Json()
 
 		images = append(images, img)
 	}
