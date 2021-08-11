@@ -3,11 +3,13 @@ import * as React from 'react';
 import * as Constants from "../Constants";
 import * as DiskTypes from '../types/DiskTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
+import * as NodeTypes from '../types/NodeTypes';
 import DisksStore from '../stores/DisksStore';
 import OrganizationsStore from '../stores/OrganizationsStore';
 import NodesStore from '../stores/NodesStore';
 import * as DiskActions from '../actions/DiskActions';
 import * as OrganizationActions from '../actions/OrganizationActions';
+import * as NodeActions from '../actions/NodeActions';
 import Disk from './Disk';
 import DisksFilter from './DisksFilter';
 import DisksPage from './DisksPage';
@@ -23,7 +25,6 @@ import * as DatacenterTypes from "../types/DatacenterTypes";
 import InstancesStore from "../stores/InstancesStore";
 import * as InstanceActions from "../actions/InstanceActions";
 import * as DatacenterActions from "../actions/DatacenterActions";
-import * as NodeActions from "../actions/NodeActions";
 import * as ZoneActions from "../actions/ZoneActions";
 
 interface Selected {
@@ -41,6 +42,7 @@ interface State {
 	organizations: OrganizationTypes.OrganizationsRo;
 	datacenters: DatacenterTypes.DatacentersRo;
 	zones: ZoneTypes.ZonesRo;
+	nodes: NodeTypes.NodesRo;
 	selected: Selected;
 	opened: Opened;
 	newOpened: boolean;
@@ -94,6 +96,7 @@ export default class Disks extends React.Component<{}, State> {
 			organizations: OrganizationsStore.organizations,
 			datacenters: DatacentersStore.datacenters,
 			zones: ZonesStore.zones,
+			nodes: NodesStore.nodes,
 			selected: {},
 			opened: {},
 			newOpened: false,
@@ -115,12 +118,14 @@ export default class Disks extends React.Component<{}, State> {
 		DisksStore.addChangeListener(this.onChange);
 		OrganizationsStore.addChangeListener(this.onChange);
 		DatacentersStore.addChangeListener(this.onChange);
+		ZonesStore.addChangeListener(this.onChange);
+		NodesStore.addChangeListener(this.onChange);
 		InstanceActions.sync();
 		DiskActions.sync();
 		OrganizationActions.sync();
 		DatacenterActions.sync();
-		NodeActions.sync();
 		ZoneActions.sync();
+		NodeActions.sync();
 	}
 
 	componentWillUnmount(): void {
@@ -128,8 +133,8 @@ export default class Disks extends React.Component<{}, State> {
 		DisksStore.removeChangeListener(this.onChange);
 		OrganizationsStore.removeChangeListener(this.onChange);
 		DatacentersStore.removeChangeListener(this.onChange);
-		NodesStore.removeChangeListener(this.onChange);
 		ZonesStore.removeChangeListener(this.onChange);
+		NodesStore.removeChangeListener(this.onChange);
 	}
 
 	onChange = (): void => {
@@ -155,6 +160,7 @@ export default class Disks extends React.Component<{}, State> {
 			organizations: OrganizationsStore.organizations,
 			datacenters: DatacentersStore.datacenters,
 			zones: ZonesStore.zones,
+			nodes: NodesStore.nodes,
 			selected: selected,
 			opened: opened,
 		});
@@ -453,6 +459,7 @@ export default class Disks extends React.Component<{}, State> {
 					DiskActions.filter(filter);
 				}}
 				organizations={this.state.organizations}
+				nodes={this.state.nodes}
 			/>
 			<div style={css.itemsBox}>
 				<div style={css.items}>
