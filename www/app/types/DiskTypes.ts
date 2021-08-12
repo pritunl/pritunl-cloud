@@ -30,6 +30,7 @@ export interface Filter {
 	organization?: string;
 	datacenter?: string;
 	instance?: string;
+	node?: string;
 }
 
 export interface Backup {
