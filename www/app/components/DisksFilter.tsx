@@ -4,11 +4,13 @@ import * as Constants from '../Constants';
 import * as DiskTypes from '../types/DiskTypes';
 import SearchInput from './SearchInput';
 import * as OrganizationTypes from "../types/OrganizationTypes";
+import * as NodeTypes from '../types/NodeTypes';
 
 interface Props {
 	filter: DiskTypes.Filter;
 	onFilter: (filter: DiskTypes.Filter) => void;
 	organizations: OrganizationTypes.OrganizationsRo;
+	nodes: NodeTypes.NodesRo;
 }
 
 const css = {
@@ -54,6 +56,20 @@ export default class DisksFilter extends React.Component<Props, {}> {
 						key={organization.id}
 						value={organization.id}
 					>{organization.name}</option>,
+				);
+			}
+		}
+
+		let nodesSelect: JSX.Element[] = [
+			<option key="key" value="any">Any Node</option>,
+		];
+		if (this.props.nodes && this.props.nodes.length) {
+			for (let node of this.props.nodes) {
+				nodesSelect.push(
+					<option
+						key={node.id}
+						value={node.id}
+					>{node.name}</option>,
 				);
 			}
 		}
@@ -133,6 +149,28 @@ export default class DisksFilter extends React.Component<Props, {}> {
 					}}
 				>
 					{organizationsSelect}
+				</select>
+			</div>
+			<div className="bp3-select" style={css.type} hidden={Constants.user}>
+				<select
+					value={this.props.filter.node || 'any'}
+					onChange={(evt): void => {
+						let filter = {
+							...this.props.filter,
+						};
+
+						let val = evt.target.value;
+
+						if (val === 'any') {
+							delete filter.node;
+						} else {
+							filter.node = val;
+						}
+
+						this.props.onFilter(filter);
+					}}
+				>
+					{nodesSelect}
 				</select>
 			</div>
 		</div>;
