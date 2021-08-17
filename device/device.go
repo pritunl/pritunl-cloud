@@ -11,6 +11,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/u2flib"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type Device struct {
@@ -31,6 +32,8 @@ type Device struct {
 
 func (d *Device) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
+
+	d.Name = utils.FilterStr(d.Name, 32)
 
 	if len(d.Name) == 0 {
 		errData = &errortypes.ErrorData{
