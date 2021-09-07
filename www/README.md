@@ -49,8 +49,6 @@ rm node_modules/react-stripe-checkout/index.d.ts
 scp $NPM_SERVER:/home/cloud/pritunl-cloud-www/package.json /home/cloud/go/src/github.com/pritunl/pritunl-cloud/www/package.json
 scp $NPM_SERVER:/home/cloud/pritunl-cloud-www/package-lock.json /home/cloud/go/src/github.com/pritunl/pritunl-cloud/www/package-lock.json
 rsync --human-readable --archive --xattrs --progress --delete $NPM_SERVER:/home/cloud/pritunl-cloud-www/node_modules/ /home/cloud/go/src/github.com/pritunl/pritunl-cloud/www/node_modules/
-
-# desktop
 rsync --human-readable --archive --xattrs --progress --delete --exclude "/node_modules/*" --exclude "/jspm_packages/*" --exclude "app/*.js" --exclude "app/*.js.map" --exclude "app/**/*.js" --exclude "app/**/*.js.map" /home/cloud/go/src/github.com/pritunl/pritunl-cloud/www/ $NPM_SERVER:/home/cloud/pritunl-cloud-www/
 
 # npm-server
