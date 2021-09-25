@@ -12,6 +12,8 @@ import PageInput from './PageInput';
 import PageInputButton from './PageInputButton';
 import PageSwitch from './PageSwitch';
 import PageSelect from './PageSelect';
+import CertificatesStore from "../stores/CertificatesStore";
+import NodeBlock from "./NodeBlock";
 
 interface Props {
 	hidden?: boolean;
@@ -23,6 +25,15 @@ interface Props {
 }
 
 interface State {
+	disabled: boolean;
+	changed: boolean;
+	message: string;
+	node: NodeTypes.Node;
+	datacenter: string;
+	zone: string;
+	internalIface: string;
+	network: string;
+	network6: string;
 	popover: boolean;
 }
 
@@ -62,17 +73,84 @@ export default class NodeDeploy extends React.Component<Props, State> {
 	constructor(props: any, context: any) {
 		super(props, context);
 		this.state = {
+			disabled: false,
+			changed: false,
+			message: '',
+			node: null,
+			datacenter: '',
+			zone: '',
+			internalIface: '',
+			network: '',
+			network6: '',
 			popover: false,
 		};
+	}
+
+	set(name: string, val: any): void {
+		let node: any;
+
+		if (this.state.changed) {
+			node = {
+				...this.state.node,
+			};
+		} else {
+			node = {
+				...this.props.node,
+			};
+		}
+
+		node[name] = val;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			node: node,
+		});
+	}
+
+	ifaces(): string[] {
+		let node: NodeTypes.Node;
+
+		if (this.state.changed) {
+			node = {
+				...this.state.node,
+			};
+		} else {
+			node = {
+				...this.props.node,
+			};
+		}
+
+		let zoneId = node.zone;
+		if (this.state.zone) {
+			zoneId = this.state.zone;
+		}
+
+		let vxlan = false;
+		for (let zne of this.props.zones) {
+			if (zne.id === zoneId) {
+				if (zne.network_mode === 'vxlan_vlan') {
+					vxlan = true;
+				}
+				break;
+			}
+		}
+
+		if (vxlan) {
+			return node.available_bridges.concat(node.available_interfaces);
+		} else {
+			return node.available_bridges;
+		}
 	}
 
 	render(): JSX.Element {
 		let popoverElem: JSX.Element;
 
 		if (this.state.popover) {
-			let callout = 'Initialize Node';
+			let callout = 'Initialize Node. Selected zone must have VXLAN network mode.';
 			let errorMsg = '';
 			let errorMsgElem: JSX.Element;
+			let node: NodeTypes.Node = this.state.node || this.props.node;
 
 			if (errorMsg) {
 				errorMsgElem = <div className="bp3-dialog-body">
@@ -83,6 +161,62 @@ export default class NodeDeploy extends React.Component<Props, State> {
 						{errorMsg}
 					</div>
 				</div>;
+			}
+
+			let defaultDatacenter = '';
+			let hasDatacenters = false;
+			let datacentersSelect: JSX.Element[] = [];
+			if (this.props.datacenters.length) {
+				hasDatacenters = true;
+				defaultDatacenter = this.props.datacenters[0].id;
+				for (let datacenter of this.props.datacenters) {
+					datacentersSelect.push(
+						<option
+							key={datacenter.id}
+							value={datacenter.id}
+						>{datacenter.name}</option>,
+					);
+				}
+			}
+
+			if (!hasDatacenters) {
+				datacentersSelect.push(
+					<option key="null" value="">No Datacenters</option>);
+			}
+
+			let datacenter = this.state.datacenter || defaultDatacenter;
+			let hasZones = false;
+			let zonesSelect: JSX.Element[] = [];
+			if (this.props.zones.length) {
+				zonesSelect.push(<option key="null" value="">Select Zone</option>);
+
+				for (let zone of this.props.zones) {
+					if (!this.props.node.zone && zone.datacenter !== datacenter) {
+						continue;
+					}
+					hasZones = true;
+
+					zonesSelect.push(
+						<option
+							key={zone.id}
+							value={zone.id}
+						>{zone.name}</option>,
+					);
+				}
+			}
+
+			if (!hasZones) {
+				zonesSelect = [<option key="null" value="">No Zones</option>];
+			}
+
+			let availableIfaces = this.ifaces();
+			let internalIfacesSelect: JSX.Element[] = [];
+			for (let iface of (availableIfaces || [])) {
+				internalIfacesSelect.push(
+					<option key={iface} value={iface}>
+						{iface}
+					</option>,
+				);
 			}
 
 			popoverElem = <Blueprint.Dialog
@@ -106,6 +240,141 @@ export default class NodeDeploy extends React.Component<Props, State> {
 					>
 						{callout}
 					</div>
+					<PageSelect
+						disabled={this.state.disabled || !hasDatacenters}
+						hidden={!!this.props.node.zone}
+						label="Datacenter"
+						help="Node datacenter, cannot be changed once set."
+						value={this.state.datacenter}
+						onChange={(val): void => {
+							if (this.state.changed) {
+								node = {
+									...this.state.node,
+								};
+							} else {
+								node = {
+									...this.props.node,
+								};
+							}
+
+							this.setState({
+								...this.state,
+								changed: true,
+								node: node,
+								datacenter: val,
+								zone: '',
+							});
+						}}
+					>
+						{datacentersSelect}
+					</PageSelect>
+					<PageSelect
+						disabled={!!this.props.node.zone || this.state.disabled ||
+						!hasZones}
+						label="Zone"
+						help="Node zone, cannot be changed once set."
+						value={this.props.node.zone ? this.props.node.zone :
+							this.state.zone}
+						onChange={(val): void => {
+							let node: NodeTypes.Node;
+							if (this.state.changed) {
+								node = {
+									...this.state.node,
+								};
+							} else {
+								node = {
+									...this.props.node,
+								};
+							}
+
+							this.setState({
+								...this.state,
+								changed: true,
+								node: node,
+								zone: val,
+							});
+						}}
+					>
+						{zonesSelect}
+					</PageSelect>
+					<PageSelect
+						disabled={this.state.disabled || !internalIfacesSelect.length}
+						label="Network Interface"
+						help="Network interface for instance private VPC interface. This interface will be used to send VPC traffic between instances located on multiple nodes. For single node clusters this will not be used."
+						value={this.state.internalIface}
+						onChange={(val): void => {
+							if (this.state.changed) {
+								node = {
+									...this.state.node,
+								};
+							} else {
+								node = {
+									...this.props.node,
+								};
+							}
+
+							this.setState({
+								...this.state,
+								changed: true,
+								node: node,
+								internalIface: val,
+							});
+						}}
+					>
+						{internalIfacesSelect}
+					</PageSelect>
+					<PageInput
+						disabled={this.state.disabled}
+						label="Host IPv4 Network"
+						help="Host IPv4 network that is configured on the host to provide networking between the host and the instances. Each node must have a unique host network."
+						type="text"
+						placeholder="Enter network"
+						value={this.state.network}
+						onChange={(val): void => {
+							if (this.state.changed) {
+								node = {
+									...this.state.node,
+								};
+							} else {
+								node = {
+									...this.props.node,
+								};
+							}
+
+							this.setState({
+								...this.state,
+								changed: true,
+								node: node,
+								network: val,
+							});
+						}}
+					/>
+					<PageInput
+						disabled={this.state.disabled}
+						label="Public IPv6 Network"
+						help="Public IPv6 network that is routed to this node. Copy the network and prefix, must be at least /64 prefix."
+						type="text"
+						placeholder="Enter network"
+						value={this.state.network6}
+						onChange={(val): void => {
+							if (this.state.changed) {
+								node = {
+									...this.state.node,
+								};
+							} else {
+								node = {
+									...this.props.node,
+								};
+							}
+
+							this.setState({
+								...this.state,
+								changed: true,
+								node: node,
+								network6: val,
+							});
+						}}
+					/>
 				</div>
 				<div className="bp3-dialog-footer">
 					<div className="bp3-dialog-footer-actions">
