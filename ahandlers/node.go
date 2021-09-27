@@ -2,6 +2,7 @@ package ahandlers
 
 import (
 	"fmt"
+	"net"
 	"strconv"
 	"strings"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/drive"
@@ -59,6 +61,13 @@ type nodeData struct {
 type nodesData struct {
 	Nodes []*node.Node `json:"nodes"`
 	Count int64        `json:"count"`
+}
+
+type nodeInitData struct {
+	Zone              primitive.ObjectID `json:"zone"`
+	InternalInterface string             `json:"internal_interface"`
+	HostNetwork       string             `json:"host_network"`
+	Network6          string             `json:"network6"`
 }
 
 func nodePut(c *gin.Context) {
@@ -233,6 +242,177 @@ func nodeOperationPut(c *gin.Context) {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
+
+	event.PublishDispatch(db, "node.change")
+
+	c.JSON(200, nde)
+}
+
+func nodeInitPost(c *gin.Context) {
+	if demo.Blocked(c) {
+		return
+	}
+
+	db := c.MustGet("db").(*database.Database)
+	data := &nodeInitData{}
+
+	err := c.Bind(data)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	nodeId, ok := utils.ParseObjectId(c.Param("node_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	nde, err := node.Get(db, nodeId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	fields := set.NewSet(
+		"zone",
+		"network_mode",
+		"internal_interfaces",
+		"host_nat",
+		"host_block",
+	)
+
+	nde.Zone = data.Zone
+	nde.NetworkMode = node.Internal
+	nde.InternalInterfaces = []string{
+		data.InternalInterface,
+	}
+
+	_, hostnet, err := net.ParseCIDR(data.HostNetwork)
+	if err != nil {
+		errData := &errortypes.ErrorData{
+			Error:   "invalid_host_network",
+			Message: "Invalid host IPv4 network",
+		}
+		c.JSON(400, errData)
+		return
+	}
+
+	hostnetGateway := hostnet.IP
+	utils.IncIpAddress(hostnetGateway)
+
+	hostBlck := &block.Block{
+		Name: nde.Name + "-hostnet",
+		Type: block.IPv4,
+		Netmask: fmt.Sprintf(
+			"%d.%d.%d.%d",
+			hostnet.Mask[0],
+			hostnet.Mask[1],
+			hostnet.Mask[2],
+			hostnet.Mask[3],
+		),
+		Subnets: []string{
+			data.HostNetwork,
+		},
+		Gateway: hostnetGateway.String(),
+	}
+
+	errData, err := hostBlck.Validate(db)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		c.JSON(400, errData)
+		return
+	}
+
+	err = hostBlck.Insert(db)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	nde.HostNat = true
+	nde.HostBlock = hostBlck.Id
+
+	var blckId6 primitive.ObjectID
+	if data.Network6 != "" {
+		blck6 := &block.Block{
+			Name: nde.Name + "-ipv6",
+			Type: block.IPv6,
+			Subnets6: []string{
+				data.Network6,
+			},
+		}
+
+		errData, err := blck6.Validate(db)
+		if err != nil {
+			block.Remove(db, hostBlck.Id)
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		if errData != nil {
+			block.Remove(db, hostBlck.Id)
+			c.JSON(400, errData)
+			return
+		}
+
+		err = blck6.Insert(db)
+		if err != nil {
+			block.Remove(db, hostBlck.Id)
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		blckId6 = blck6.Id
+
+		event.PublishDispatch(db, "block.change")
+
+		nde.NetworkMode6 = node.Static
+		nde.Blocks6 = []*node.BlockAttachment{
+			&node.BlockAttachment{
+				Interface: "",
+				Block:     blck6.Id,
+			},
+		}
+
+		fields.Add("network_mode6")
+		fields.Add("blocks6")
+	}
+
+	errData, err = nde.Validate(db)
+	if err != nil {
+		block.Remove(db, hostBlck.Id)
+		if !blckId6.IsZero() {
+			block.Remove(db, blckId6)
+		}
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		block.Remove(db, hostBlck.Id)
+		if !blckId6.IsZero() {
+			block.Remove(db, blckId6)
+		}
+		c.JSON(400, errData)
+		return
+	}
+
+	err = nde.CommitFields(db, fields)
+	if err != nil {
+		block.Remove(db, hostBlck.Id)
+		if !blckId6.IsZero() {
+			block.Remove(db, blckId6)
+		}
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	event.PublishDispatch(db, "node.change")
 
 	c.JSON(200, nde)
 }
