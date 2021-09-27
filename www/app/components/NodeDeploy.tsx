@@ -26,9 +26,7 @@ interface Props {
 
 interface State {
 	disabled: boolean;
-	changed: boolean;
 	message: string;
-	node: NodeTypes.Node;
 	datacenter: string;
 	zone: string;
 	internalIface: string;
@@ -74,9 +72,7 @@ export default class NodeDeploy extends React.Component<Props, State> {
 		super(props, context);
 		this.state = {
 			disabled: false,
-			changed: false,
 			message: '',
-			node: null,
 			datacenter: '',
 			zone: '',
 			internalIface: '',
@@ -86,40 +82,8 @@ export default class NodeDeploy extends React.Component<Props, State> {
 		};
 	}
 
-	set(name: string, val: any): void {
-		let node: any;
-
-		if (this.state.changed) {
-			node = {
-				...this.state.node,
-			};
-		} else {
-			node = {
-				...this.props.node,
-			};
-		}
-
-		node[name] = val;
-
-		this.setState({
-			...this.state,
-			changed: true,
-			node: node,
-		});
-	}
-
 	ifaces(): string[] {
-		let node: NodeTypes.Node;
-
-		if (this.state.changed) {
-			node = {
-				...this.state.node,
-			};
-		} else {
-			node = {
-				...this.props.node,
-			};
-		}
+		let node = this.props.node;
 
 		let zoneId = node.zone;
 		if (this.state.zone) {
@@ -150,7 +114,6 @@ export default class NodeDeploy extends React.Component<Props, State> {
 			let callout = 'Initialize Node. Selected zone must have VXLAN network mode.';
 			let errorMsg = '';
 			let errorMsgElem: JSX.Element;
-			let node: NodeTypes.Node = this.state.node || this.props.node;
 
 			if (errorMsg) {
 				errorMsgElem = <div className="bp3-dialog-body">
@@ -247,20 +210,8 @@ export default class NodeDeploy extends React.Component<Props, State> {
 						help="Node datacenter, cannot be changed once set."
 						value={this.state.datacenter}
 						onChange={(val): void => {
-							if (this.state.changed) {
-								node = {
-									...this.state.node,
-								};
-							} else {
-								node = {
-									...this.props.node,
-								};
-							}
-
 							this.setState({
 								...this.state,
-								changed: true,
-								node: node,
 								datacenter: val,
 								zone: '',
 							});
@@ -276,21 +227,8 @@ export default class NodeDeploy extends React.Component<Props, State> {
 						value={this.props.node.zone ? this.props.node.zone :
 							this.state.zone}
 						onChange={(val): void => {
-							let node: NodeTypes.Node;
-							if (this.state.changed) {
-								node = {
-									...this.state.node,
-								};
-							} else {
-								node = {
-									...this.props.node,
-								};
-							}
-
 							this.setState({
 								...this.state,
-								changed: true,
-								node: node,
 								zone: val,
 							});
 						}}
@@ -303,20 +241,8 @@ export default class NodeDeploy extends React.Component<Props, State> {
 						help="Network interface for instance private VPC interface. This interface will be used to send VPC traffic between instances located on multiple nodes. For single node clusters this will not be used."
 						value={this.state.internalIface}
 						onChange={(val): void => {
-							if (this.state.changed) {
-								node = {
-									...this.state.node,
-								};
-							} else {
-								node = {
-									...this.props.node,
-								};
-							}
-
 							this.setState({
 								...this.state,
-								changed: true,
-								node: node,
 								internalIface: val,
 							});
 						}}
@@ -331,20 +257,8 @@ export default class NodeDeploy extends React.Component<Props, State> {
 						placeholder="Enter network"
 						value={this.state.network}
 						onChange={(val): void => {
-							if (this.state.changed) {
-								node = {
-									...this.state.node,
-								};
-							} else {
-								node = {
-									...this.props.node,
-								};
-							}
-
 							this.setState({
 								...this.state,
-								changed: true,
-								node: node,
 								network: val,
 							});
 						}}
@@ -357,20 +271,8 @@ export default class NodeDeploy extends React.Component<Props, State> {
 						placeholder="Enter network"
 						value={this.state.network6}
 						onChange={(val): void => {
-							if (this.state.changed) {
-								node = {
-									...this.state.node,
-								};
-							} else {
-								node = {
-									...this.props.node,
-								};
-							}
-
 							this.setState({
 								...this.state,
-								changed: true,
-								node: node,
 								network6: val,
 							});
 						}}
