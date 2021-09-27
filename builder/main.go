@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/pritunl/pritunl-cloud/builder/cloud"
 	"github.com/pritunl/pritunl-cloud/builder/mongo"
 	"github.com/pritunl/pritunl-cloud/builder/sysctl"
 	"github.com/pritunl/pritunl-cloud/builder/systemctl"
@@ -50,6 +51,11 @@ func main() {
 	}
 
 	err = mongo.Mongo()
+	if err != nil {
+		panic(err)
+	}
+
+	err = cloud.Cloud()
 	if err != nil {
 		panic(err)
 	}
