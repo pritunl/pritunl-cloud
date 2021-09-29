@@ -1,13 +1,14 @@
 package ahandlers
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/pritunl-cloud/config"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/middlewear"
 	"github.com/pritunl/pritunl-cloud/requires"
 	"github.com/pritunl/pritunl-cloud/static"
-	"net/http"
 )
 
 var (
@@ -138,6 +139,7 @@ func Register(engine *gin.Engine) {
 	csrfGroup.GET("/node/:node_id", nodeGet)
 	csrfGroup.PUT("/node/:node_id", nodePut)
 	csrfGroup.PUT("/node/:node_id/:operation", nodeOperationPut)
+	csrfGroup.POST("/node/:node_id/init", nodeInitPost)
 	csrfGroup.DELETE("/node/:node_id", nodeDelete)
 
 	csrfGroup.GET("/organization", organizationsGet)
