@@ -124,5 +124,20 @@ func (n *NetConf) Init(db *database.Database) (err error) {
 		return
 	}
 
+	err = n.Vlan(db)
+	if err != nil {
+		return
+	}
+
+	err = n.Bridge(db)
+	if err != nil {
+		return
+	}
+
+	err = n.Ip(db)
+	if err != nil {
+		return
+	}
+
 	return
 }
