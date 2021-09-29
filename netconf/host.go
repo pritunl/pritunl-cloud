@@ -2,7 +2,6 @@ package netconf
 
 import (
 	"github.com/pritunl/pritunl-cloud/database"
-	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -83,12 +82,28 @@ func (n *NetConf) hostMaster(db *database.Database) (err error) {
 }
 
 func (n *NetConf) hostSpace(db *database.Database) (err error) {
-	if n.NetworkMode != node.Disabled {
+	if n.HostNetwork {
 		_, err = utils.ExecCombinedOutputLogged(
 			[]string{"File exists"},
 			"ip", "link",
 			"set", "dev", n.SpaceHostIface,
 			"netns", n.Namespace,
+		)
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
+func (n *NetConf) hostSpaceUp(db *database.Database) (err error) {
+	if n.HostNetwork {
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", n.Namespace,
+			"ip", "link",
+			"set", "dev", n.SpaceHostIface, "up",
 		)
 		if err != nil {
 			return
@@ -120,6 +135,11 @@ func (n *NetConf) Host(db *database.Database) (err error) {
 	}
 
 	err = n.hostSpace(db)
+	if err != nil {
+		return
+	}
+
+	err = n.hostSpaceUp(db)
 	if err != nil {
 		return
 	}
