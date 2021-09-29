@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/pritunl/pritunl-cloud/interfaces"
-
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/interfaces"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/settings"
@@ -73,6 +72,9 @@ func (n *NetConf) Iface(db *database.Database) (err error) {
 
 		n.SpaceExternalIface6 = vm.GetIfaceExternal(n.Virt.Id, 1)
 		n.SystemExternalIface6 = vm.GetIfaceVirt(n.Virt.Id, 3)
+	} else if n.NetworkMode == n.NetworkMode6 {
+		n.SpaceExternalIface6 = n.SpaceExternalIface
+		n.SystemExternalIface6 = n.SystemExternalIface
 	}
 
 	if n.JumboFrames || n.Vxlan {
