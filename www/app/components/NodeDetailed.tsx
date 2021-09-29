@@ -8,6 +8,7 @@ import * as NodeActions from '../actions/NodeActions';
 import * as BlockTypes from '../types/BlockTypes';
 import * as MiscUtils from '../utils/MiscUtils';
 import CertificatesStore from '../stores/CertificatesStore';
+import NodeDeploy from './NodeDeploy';
 import PageInput from './PageInput';
 import PageSwitch from './PageSwitch';
 import PageInputSwitch from './PageInputSwitch';
@@ -2083,6 +2084,13 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					onConfirm={(): void => {
 						this.operation('restart');
 					}}
+				/>
+				<NodeDeploy
+					disabled={this.state.disabled || this.state.changed}
+					node={this.props.node}
+					datacenters={this.props.datacenters}
+					zones={this.props.zones}
+					blocks={this.props.blocks}
 				/>
 			</PageSave>
 		</td>;
