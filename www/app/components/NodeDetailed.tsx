@@ -1619,7 +1619,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						Internal Interfaces
 						<Help
 							title="Internal Interfaces"
-							content="Internal interfaces for instance private VPC interface, must be a bridge interface. Leave blank for to use external interface."
+							content="Internal interfaces for instance private VPC interface. If zone network mode is default must be a bridge interface. Set zone network mode to VXLan to use non-bridge interface. Leave blank to use external interface."
 						/>
 						<div>
 							{internalIfaces}
