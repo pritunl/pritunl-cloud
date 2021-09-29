@@ -225,6 +225,36 @@ func (n *NetConf) externalSpace(db *database.Database) (err error) {
 	return
 }
 
+func (n *NetConf) externalSpaceUp(db *database.Database) (err error) {
+	if n.NetworkMode != node.Disabled {
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", n.Namespace,
+			"ip", "link",
+			"set", "dev", n.SpaceExternalIface, "up",
+		)
+		if err != nil {
+			return
+		}
+	}
+
+	if n.NetworkMode6 != node.Disabled &&
+		n.SpaceExternalIface != n.SpaceExternalIface6 {
+
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", n.Namespace,
+			"ip", "link",
+			"set", "dev", n.SpaceExternalIface6, "up",
+		)
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
 func (n *NetConf) External(db *database.Database) (err error) {
 	err = n.externalNet(db)
 	if err != nil {
@@ -252,6 +282,11 @@ func (n *NetConf) External(db *database.Database) (err error) {
 	}
 
 	err = n.externalSpace(db)
+	if err != nil {
+		return
+	}
+
+	err = n.externalSpaceUp(db)
 	if err != nil {
 		return
 	}
