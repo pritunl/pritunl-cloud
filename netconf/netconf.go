@@ -68,9 +68,9 @@ type NetConf struct {
 	ExternalAddrCidr6    string
 	ExternalGatewayAddr6 net.IP
 
-	HostAddr            net.IP
-	HostGatewayAddr     net.IP
-	HostGatewayAddrCidr string
+	HostAddr        net.IP
+	HostAddrCidr    string
+	HostGatewayAddr net.IP
 
 	ExternalMacAddr  string
 	ExternalMacAddr6 string
