@@ -107,6 +107,41 @@ export default class NodeDeploy extends React.Component<Props, State> {
 		}
 	}
 
+	onSave = (): void => {
+		let internalIface = this.state.internalIface;
+		if (!internalIface) {
+			let ifaces = this.ifaces();
+			if (ifaces.length) {
+				internalIface = ifaces[0];
+			}
+		}
+
+		let data: NodeTypes.NodeInit = {
+			zone: this.state.zone,
+			internal_interface: internalIface,
+			host_network: this.state.network,
+			network6: this.state.network6,
+		};
+
+		NodeActions.init(this.props.node.id, data).then((): void => {
+			// this.setState({
+			// 	...this.state,
+			// 	message: 'Your changes have been saved',
+			// 	disabled: false,
+			// });
+			this.setState({
+				...this.state,
+				popover: !this.state.popover,
+			});
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				message: '',
+				disabled: false,
+			});
+		});
+	}
+
 	render(): JSX.Element {
 		let popoverElem: JSX.Element;
 
@@ -280,6 +315,13 @@ export default class NodeDeploy extends React.Component<Props, State> {
 				</div>
 				<div className="bp3-dialog-footer">
 					<div className="bp3-dialog-footer-actions">
+						<button
+							className="bp3-button bp3-icon-cloud-upload bp3-intent-primary"
+							type="button"
+							onClick={this.onSave}
+						>
+							Initialize Node
+						</button>
 						<button
 							className="bp3-button"
 							type="button"
