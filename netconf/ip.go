@@ -7,10 +7,13 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/iproute"
+	"github.com/pritunl/pritunl-cloud/iptables"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/store"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/sirupsen/logrus"
@@ -237,6 +240,91 @@ func (n *NetConf) ipDetect(db *database.Database) (err error) {
 	return
 }
 
+func (n *NetConf) ipHostIptables(db *database.Database) (err error) {
+	if n.HostNetwork {
+		iptables.Lock()
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", n.Namespace,
+			"iptables", "-t", "nat",
+			"-A", "POSTROUTING",
+			"-s", n.InternalAddr.String()+"/32",
+			"-d", n.InternalAddr.String()+"/32",
+			"-j", "SNAT",
+			"--to", n.HostAddr.String(),
+		)
+		iptables.Unlock()
+		if err != nil {
+			return
+		}
+
+		iptables.Lock()
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", n.Namespace,
+			"iptables", "-t", "nat",
+			"-A", "POSTROUTING",
+			"-s", n.InternalAddr.String()+"/32",
+			"-o", n.SpaceHostIface,
+			"-j", "MASQUERADE",
+		)
+		iptables.Unlock()
+		if err != nil {
+			return
+		}
+
+		iptables.Lock()
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", n.Namespace,
+			"iptables", "-t", "nat",
+			"-A", "PREROUTING",
+			"-d", n.HostAddr.String()+"/32",
+			"-j", "DNAT",
+			"--to-destination", n.InternalAddr.String(),
+		)
+		iptables.Unlock()
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
+func (n *NetConf) ipDatabase(db *database.Database) (err error) {
+	store.RemAddress(n.Virt.Id)
+	store.RemRoutes(n.Virt.Id)
+
+	hostIps := []string{}
+	if n.HostAddr != nil {
+		hostIps = append(hostIps, n.HostAddr.String())
+	}
+
+	coll := db.Instances()
+	err = coll.UpdateId(n.Virt.Id, &bson.M{
+		"$set": &bson.M{
+			"private_ips":  []string{n.InternalAddr.String()},
+			"private_ips6": []string{n.InternalAddr6.String()},
+			"gateway_ips":  []string{n.InternalGatewayAddrCidr},
+			"gateway_ips6": []string{
+				n.InternalGatewayAddr6.String() + "/64"},
+			"network_namespace": n.Namespace,
+			"host_ips":          hostIps,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		if _, ok := err.(*database.NotFoundError); ok {
+			err = nil
+		} else {
+			return
+		}
+	}
+
+	return
+}
+
 func (n *NetConf) Ip(db *database.Database) (err error) {
 	err = n.ipClear(db)
 	if err != nil {
@@ -254,6 +342,16 @@ func (n *NetConf) Ip(db *database.Database) (err error) {
 	}
 
 	err = n.ipDetect(db)
+	if err != nil {
+		return
+	}
+
+	err = n.ipHostIptables(db)
+	if err != nil {
+		return
+	}
+
+	err = n.ipDatabase(db)
 	if err != nil {
 		return
 	}
