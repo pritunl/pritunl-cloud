@@ -114,6 +114,51 @@ func (n *NetConf) spaceVirt(db *database.Database) (err error) {
 	return
 }
 
+func (n *NetConf) spaceLoopback(db *database.Database) (err error) {
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", n.Namespace,
+		"ip", "link",
+		"set", "dev", "lo", "up",
+	)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func (n *NetConf) spaceMtu(db *database.Database) (err error) {
+	if n.VirtIfaceMtu != "" {
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", n.Namespace,
+			"ip", "link",
+			"set", "dev", n.VirtIface,
+			"mtu", n.VirtIfaceMtu,
+		)
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
+func (n *NetConf) spaceUp(db *database.Database) (err error) {
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", n.Namespace,
+		"ip", "link",
+		"set", "dev", n.VirtIface, "up",
+	)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func (n *NetConf) Space(db *database.Database) (err error) {
 	err = n.spaceSysctl(db)
 	if err != nil {
@@ -126,6 +171,21 @@ func (n *NetConf) Space(db *database.Database) (err error) {
 	}
 
 	err = n.spaceVirt(db)
+	if err != nil {
+		return
+	}
+
+	err = n.spaceLoopback(db)
+	if err != nil {
+		return
+	}
+
+	err = n.spaceMtu(db)
+	if err != nil {
+		return
+	}
+
+	err = n.spaceUp(db)
 	if err != nil {
 		return
 	}
