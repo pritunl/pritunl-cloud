@@ -19,6 +19,8 @@ func (n *NetConf) Address(db *database.Database) (err error) {
 		return
 	}
 
+	n.VxlanId = vc.VpcId
+
 	vcNet, err := vc.GetNetwork()
 	if err != nil {
 		return
@@ -35,7 +37,7 @@ func (n *NetConf) Address(db *database.Database) (err error) {
 	n.InternalGatewayAddrCidr = fmt.Sprintf(
 		"%s/%d", gatewayAddr.String(), cidr)
 
-	n.InternalAddr = vc.GetIp6(addr)
+	n.InternalAddr6 = vc.GetIp6(addr)
 	n.InternalGatewayAddr6 = vc.GetIp6(gatewayAddr)
 
 	n.ExternalMacAddr = vm.GetMacAddrExternal(n.Virt.Id, vc.Id)
@@ -140,9 +142,9 @@ func (n *NetConf) Address(db *database.Database) (err error) {
 
 		hostStaticSize, _ := hostStaticMask.Size()
 		hostStaticCidr := fmt.Sprintf(
-			"%s/%d", addr.String(), hostStaticSize)
+			"%s/%d", staticAddr.String(), hostStaticSize)
 
-		n.HostGatewayAddrCidr = hostStaticCidr
+		n.HostAddrCidr = hostStaticCidr
 		n.HostGatewayAddr = hostStaticGateway
 	}
 
