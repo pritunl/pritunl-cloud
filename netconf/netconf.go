@@ -11,6 +11,7 @@ import (
 type NetConf struct {
 	Virt          *vm.VirtualMachine
 	Vxlan         bool
+	VxlanId       int
 	NetworkMode   string
 	NetworkMode6  string
 	HostNetwork   bool
