@@ -108,28 +108,6 @@ func (n *NetConf) internalSpace(db *database.Database) (err error) {
 	return
 }
 
-func (n *NetConf) internalSpaceSysctl(db *database.Database) (err error) {
-	_, err = utils.ExecCombinedOutputLogged(
-		nil,
-		"ip", "netns", "exec", n.Namespace,
-		"sysctl", "-w", "net.ipv6.conf.all.accept_ra=0",
-	)
-	if err != nil {
-		return
-	}
-
-	_, err = utils.ExecCombinedOutputLogged(
-		nil,
-		"ip", "netns", "exec", n.Namespace,
-		"sysctl", "-w", "net.ipv6.conf.default.accept_ra=0",
-	)
-	if err != nil {
-		return
-	}
-
-	return
-}
-
 func (n *NetConf) Internal(db *database.Database) (err error) {
 	err = n.internalNet(db)
 	if err != nil {
