@@ -100,6 +100,20 @@ func (n *NetConf) spaceForward(db *database.Database) (err error) {
 	return
 }
 
+func (n *NetConf) spaceVirt(db *database.Database) (err error) {
+	_, err = utils.ExecCombinedOutputLogged(
+		[]string{"File exists"},
+		"ip", "link",
+		"set", "dev", n.VirtIface,
+		"netns", n.Namespace,
+	)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func (n *NetConf) Space(db *database.Database) (err error) {
 	err = n.spaceSysctl(db)
 	if err != nil {
@@ -107,6 +121,11 @@ func (n *NetConf) Space(db *database.Database) (err error) {
 	}
 
 	err = n.spaceForward(db)
+	if err != nil {
+		return
+	}
+
+	err = n.spaceVirt(db)
 	if err != nil {
 		return
 	}
