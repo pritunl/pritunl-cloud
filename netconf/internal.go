@@ -108,6 +108,20 @@ func (n *NetConf) internalSpace(db *database.Database) (err error) {
 	return
 }
 
+func (n *NetConf) internalSpaceUp(db *database.Database) (err error) {
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", n.Namespace,
+		"ip", "link",
+		"set", "dev", n.SpaceInternalIface, "up",
+	)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func (n *NetConf) Internal(db *database.Database) (err error) {
 	err = n.internalNet(db)
 	if err != nil {
@@ -130,6 +144,11 @@ func (n *NetConf) Internal(db *database.Database) (err error) {
 	}
 
 	err = n.internalSpace(db)
+	if err != nil {
+		return
+	}
+
+	err = n.internalSpaceUp(db)
 	if err != nil {
 		return
 	}
