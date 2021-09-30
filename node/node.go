@@ -387,6 +387,12 @@ func (n *Node) Validate(db *database.Database) (
 	if n.Blocks == nil {
 		n.Blocks = []*BlockAttachment{}
 	}
+	if n.ExternalInterfaces6 == nil {
+		n.ExternalInterfaces6 = []string{}
+	}
+	if n.Blocks6 == nil {
+		n.Blocks6 = []*BlockAttachment{}
+	}
 
 	instanceDrives := []*drive.Device{}
 	if n.InstanceDrives != nil {
@@ -422,12 +428,11 @@ func (n *Node) Validate(db *database.Database) (
 		}
 
 		break
-	case Internal:
-		n.ExternalInterfaces = []string{}
-		n.Blocks = []*BlockAttachment{}
-		break
 	case Dhcp, "":
 		n.NetworkMode = Dhcp
+		n.Blocks = []*BlockAttachment{}
+		break
+	case Disabled:
 		n.Blocks = []*BlockAttachment{}
 		break
 	default:
@@ -436,13 +441,6 @@ func (n *Node) Validate(db *database.Database) (
 			Message: "Network mode invalid",
 		}
 		return
-	}
-
-	if n.ExternalInterfaces6 == nil {
-		n.ExternalInterfaces6 = []string{}
-	}
-	if n.Blocks6 == nil {
-		n.Blocks6 = []*BlockAttachment{}
 	}
 
 	switch n.NetworkMode6 {
@@ -470,9 +468,12 @@ func (n *Node) Validate(db *database.Database) (
 		}
 
 		break
-	case "":
-		n.ExternalInterfaces6 = []string{}
+	case Dhcp, "":
+		n.NetworkMode6 = Dhcp
 		n.Blocks6 = []*BlockAttachment{}
+		break
+	case Disabled:
+		n.Blocks = []*BlockAttachment{}
 		break
 	default:
 		errData = &errortypes.ErrorData{
@@ -480,6 +481,10 @@ func (n *Node) Validate(db *database.Database) (
 			Message: "Network mode6 invalid",
 		}
 		return
+	}
+
+	if n.NetworkMode == Disabled && n.NetworkMode6 == Disabled {
+		n.ExternalInterfaces = []string{}
 	}
 
 	if n.HostNatExcludes == nil {
