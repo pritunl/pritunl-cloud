@@ -13,6 +13,7 @@ const (
 	Vmware = "vmware"
 	Virtio = "virtio"
 
+	Disabled = "disabled"
 	Dhcp     = "dhcp"
 	Static   = "static"
 	Internal = "internal"
