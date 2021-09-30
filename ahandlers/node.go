@@ -18,6 +18,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/pritunl-cloud/zone"
 )
 
 type nodeData struct {
@@ -66,8 +67,8 @@ type nodesData struct {
 type nodeInitData struct {
 	Zone              primitive.ObjectID `json:"zone"`
 	InternalInterface string             `json:"internal_interface"`
+	ExternalInterface string             `json:"external_interface"`
 	HostNetwork       string             `json:"host_network"`
-	Network6          string             `json:"network6"`
 }
 
 func nodePut(c *gin.Context) {
@@ -277,16 +278,37 @@ func nodeInitPost(c *gin.Context) {
 	fields := set.NewSet(
 		"zone",
 		"network_mode",
+		"network_mode6",
 		"internal_interfaces",
+		"external_interfaces",
 		"host_nat",
 		"host_block",
 	)
 
 	nde.Zone = data.Zone
-	nde.NetworkMode = node.Internal
+	nde.NetworkMode = node.Disabled
+	nde.NetworkMode6 = node.Dhcp
 	nde.InternalInterfaces = []string{
 		data.InternalInterface,
 	}
+	nde.ExternalInterfaces = []string{
+		data.ExternalInterface,
+	}
+
+	zne, err := zone.Get(db, nde.Zone)
+	if err != nil {
+		return
+	}
+
+	zne.NetworkMode = zone.VxlanVlan
+
+	err = zne.CommitFields(db, set.NewSet("network_mode"))
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	event.PublishDispatch(db, "zone.change")
 
 	_, hostnet, err := net.ParseCIDR(data.HostNetwork)
 	if err != nil {
@@ -302,7 +324,7 @@ func nodeInitPost(c *gin.Context) {
 	utils.IncIpAddress(hostnetGateway)
 
 	hostBlck := &block.Block{
-		Name: nde.Name + "-hostnet",
+		Name: nde.Name,
 		Type: block.IPv4,
 		Netmask: fmt.Sprintf(
 			"%d.%d.%d.%d",
@@ -337,67 +359,15 @@ func nodeInitPost(c *gin.Context) {
 	nde.HostNat = true
 	nde.HostBlock = hostBlck.Id
 
-	var blckId6 primitive.ObjectID
-	if data.Network6 != "" {
-		blck6 := &block.Block{
-			Name: nde.Name + "-ipv6",
-			Type: block.IPv6,
-			Subnets6: []string{
-				data.Network6,
-			},
-		}
-
-		errData, err := blck6.Validate(db)
-		if err != nil {
-			block.Remove(db, hostBlck.Id)
-			utils.AbortWithError(c, 500, err)
-			return
-		}
-
-		if errData != nil {
-			block.Remove(db, hostBlck.Id)
-			c.JSON(400, errData)
-			return
-		}
-
-		err = blck6.Insert(db)
-		if err != nil {
-			block.Remove(db, hostBlck.Id)
-			utils.AbortWithError(c, 500, err)
-			return
-		}
-
-		blckId6 = blck6.Id
-
-		event.PublishDispatch(db, "block.change")
-
-		nde.NetworkMode6 = node.Static
-		nde.Blocks6 = []*node.BlockAttachment{
-			&node.BlockAttachment{
-				Interface: "",
-				Block:     blck6.Id,
-			},
-		}
-
-		fields.Add("network_mode6")
-		fields.Add("blocks6")
-	}
-
 	errData, err = nde.Validate(db)
 	if err != nil {
 		block.Remove(db, hostBlck.Id)
-		if !blckId6.IsZero() {
-			block.Remove(db, blckId6)
-		}
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
 	if errData != nil {
 		block.Remove(db, hostBlck.Id)
-		if !blckId6.IsZero() {
-			block.Remove(db, blckId6)
-		}
 		c.JSON(400, errData)
 		return
 	}
@@ -405,9 +375,6 @@ func nodeInitPost(c *gin.Context) {
 	err = nde.CommitFields(db, fields)
 	if err != nil {
 		block.Remove(db, hostBlck.Id)
-		if !blckId6.IsZero() {
-			block.Remove(db, blckId6)
-		}
 		utils.AbortWithError(c, 500, err)
 		return
 	}
