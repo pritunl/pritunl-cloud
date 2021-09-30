@@ -5,7 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
@@ -17,6 +16,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
+	"github.com/sirupsen/logrus"
 )
 
 func diffCmd(a, b []string) bool {
@@ -626,17 +626,8 @@ func UpdateState(nodeSelf *node.Node, instances []*instance.Instance,
 		nodeNetworkMode = node.Dhcp
 	}
 	nodeNetworkMode6 := node.Self.NetworkMode6
-
-	externalNetwork := true
-	if nodeNetworkMode == node.Internal {
-		externalNetwork = false
-	}
-
-	externalNetwork6 := false
-	if nodeNetworkMode6 != "" && (nodeNetworkMode != nodeNetworkMode6 ||
-		(nodeNetworkMode6 == node.Static)) {
-
-		externalNetwork6 = true
+	if nodeNetworkMode6 == "" {
+		nodeNetworkMode6 = node.Dhcp
 	}
 
 	newState := &State{
@@ -671,9 +662,16 @@ func UpdateState(nodeSelf *node.Node, instances []*instance.Instance,
 
 		namespace := vm.GetNamespace(inst.Id, 0)
 		iface := vm.GetIface(inst.Id, 0)
-		ifaceExternal := vm.GetIfaceExternal(inst.Id, 0)
-		ifaceExternal6 := vm.GetIfaceExternal(inst.Id, 1)
 		ifaceHost := vm.GetIfaceHost(inst.Id, 0)
+
+		ifaceExternal := vm.GetIfaceExternal(inst.Id, 0)
+		ifaceExternal6 := ifaceExternal
+
+		if nodeNetworkMode != nodeNetworkMode6 ||
+			nodeNetworkMode6 == node.Static {
+
+			ifaceExternal6 = vm.GetIfaceExternal(inst.Id, 1)
+		}
 
 		addr := ""
 		addr6 := ""
@@ -714,14 +712,14 @@ func UpdateState(nodeSelf *node.Node, instances []*instance.Instance,
 			continue
 		}
 
-		if externalNetwork {
+		if nodeNetworkMode != node.Disabled {
 			rules := generateInternal(namespace, ifaceExternal,
 				true, addr, pubAddr, addr6, pubAddr6, ingress)
 			newState.Interfaces[namespace+"-"+ifaceExternal] = rules
 		}
 
-		if externalNetwork6 &&
-			(!externalNetwork || ifaceExternal != ifaceExternal6) {
+		if nodeNetworkMode6 != node.Disabled &&
+			ifaceExternal != ifaceExternal6 {
 
 			rules := generateInternal(namespace, ifaceExternal6,
 				true, addr, pubAddr, addr6, pubAddr6, ingress)
