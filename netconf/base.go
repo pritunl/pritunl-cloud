@@ -6,15 +6,19 @@ import (
 )
 
 func (n *NetConf) Base(db *database.Database) (err error) {
-	n.PhysicalExternalIfaceBridge, err = utils.IsInterfaceBridge(
-		n.PhysicalExternalIface)
-	if err != nil {
-		return
+	if n.PhysicalExternalIface != "" {
+		n.PhysicalExternalIfaceBridge, err = utils.IsInterfaceBridge(
+			n.PhysicalExternalIface)
+		if err != nil {
+			return
+		}
 	}
-	n.PhysicalExternalIfaceBridge6, err = utils.IsInterfaceBridge(
-		n.PhysicalExternalIface6)
-	if err != nil {
-		return
+	if n.PhysicalExternalIface6 != "" {
+		n.PhysicalExternalIfaceBridge6, err = utils.IsInterfaceBridge(
+			n.PhysicalExternalIface6)
+		if err != nil {
+			return
+		}
 	}
 	n.PhysicalInternalIfaceBridge, err = utils.IsInterfaceBridge(
 		n.PhysicalInternalIface)
