@@ -73,7 +73,10 @@ func (n *NetConf) externalNet(db *database.Database) (err error) {
 }
 
 func (n *NetConf) externalMtu(db *database.Database) (err error) {
-	if n.NetworkMode != node.Disabled && n.SystemExternalIfaceMtu != "" {
+	if n.NetworkMode != node.Disabled &&
+		n.PhysicalExternalIfaceBridge &&
+		n.SystemExternalIfaceMtu != "" {
+
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
 			"ip", "link",
@@ -84,7 +87,10 @@ func (n *NetConf) externalMtu(db *database.Database) (err error) {
 			return
 		}
 	}
-	if n.NetworkMode6 != node.Disabled && n.SystemExternalIfaceMtu6 != "" {
+	if n.NetworkMode6 != node.Disabled &&
+		n.PhysicalExternalIfaceBridge6 &&
+		n.SystemExternalIfaceMtu6 != "" {
+
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
 			"ip", "link",
@@ -107,7 +113,7 @@ func (n *NetConf) externalMtu(db *database.Database) (err error) {
 			return
 		}
 	}
-	if n.NetworkMode != node.Disabled && n.SpaceExternalIfaceMtu6 != "" {
+	if n.NetworkMode6 != node.Disabled && n.SpaceExternalIfaceMtu6 != "" {
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
 			"ip", "link",
