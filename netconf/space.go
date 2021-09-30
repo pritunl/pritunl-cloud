@@ -79,6 +79,23 @@ func (n *NetConf) spaceForward(db *database.Database) (err error) {
 		}
 	}
 
+	if n.HostNetwork {
+		iptables.Lock()
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", n.Namespace,
+			"iptables",
+			"-I", "FORWARD", "1",
+			"!", "-d", n.InternalAddr.String()+"/32",
+			"-i", n.SpaceHostIface,
+			"-j", "DROP",
+		)
+		iptables.Unlock()
+		if err != nil {
+			return
+		}
+	}
+
 	_, err = utils.ExecCombinedOutputLogged(
 		nil,
 		"ip", "netns", "exec", n.Namespace,
