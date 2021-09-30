@@ -37,7 +37,7 @@ func (n *NetConf) internalNet(db *database.Database) (err error) {
 }
 
 func (n *NetConf) internalMtu(db *database.Database) (err error) {
-	if n.SystemInternalIfaceMtu != "" {
+	if n.SystemInternalIfaceMtu != "" && n.PhysicalInternalIfaceBridge {
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
 			"ip", "link",
@@ -64,7 +64,7 @@ func (n *NetConf) internalMtu(db *database.Database) (err error) {
 }
 
 func (n *NetConf) internalUp(db *database.Database) (err error) {
-	if n.PhysicalExternalIfaceBridge {
+	if n.PhysicalInternalIfaceBridge {
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
 			"ip", "link",
