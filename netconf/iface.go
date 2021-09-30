@@ -104,6 +104,8 @@ func (n *NetConf) Iface(db *database.Database) (err error) {
 		if n.Vxlan {
 			mtuSize -= 4
 		}
+
+		n.VirtIfaceMtu = strconv.Itoa(mtuSize)
 	}
 
 	return
