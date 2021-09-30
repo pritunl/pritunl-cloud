@@ -35,16 +35,21 @@ func (n *Namespace) Deploy() (err error) {
 	if nodeNetworkMode == "" {
 		nodeNetworkMode = node.Dhcp
 	}
-	nodeNetworkMode6 := node.Self.NetworkMode6
 
-	externalNetwork := true
-	if nodeNetworkMode == node.Internal {
-		externalNetwork = false
+	nodeNetworkMode6 := node.Self.NetworkMode6
+	if nodeNetworkMode6 == "" {
+		nodeNetworkMode6 = node.Dhcp
+	}
+
+	externalNetwork := false
+	if nodeNetworkMode != node.Disabled {
+		externalNetwork = true
 	}
 
 	externalNetwork6 := false
-	if nodeNetworkMode6 != "" && (nodeNetworkMode != nodeNetworkMode6 ||
-		(nodeNetworkMode6 == node.Static)) {
+	if nodeNetworkMode6 != node.Disabled &&
+		(nodeNetworkMode != nodeNetworkMode6 ||
+			nodeNetworkMode6 == node.Static) {
 
 		externalNetwork6 = true
 	}
