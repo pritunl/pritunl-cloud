@@ -106,17 +106,6 @@ func (n *NetConf) ipExternal(db *database.Database) (err error) {
 			if err != nil {
 				return
 			}
-		} else {
-			_, err = utils.ExecCombinedOutputLogged(
-				[]string{"File exists"},
-				"ip", "netns", "exec", n.Namespace,
-				"ip", "-6", "route",
-				"add", "default",
-				"dev", n.SpaceExternalIface6,
-			)
-			if err != nil {
-				return
-			}
 		}
 	}
 
