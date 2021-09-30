@@ -78,13 +78,6 @@ func (n *NetConf) Address(db *database.Database) (err error) {
 		n.ExternalGatewayAddr = staticGateway
 	}
 
-	if n.PhysicalExternalIface == "" {
-		err = &errortypes.NotFoundError{
-			errors.New("qemu: Failed to get external interface"),
-		}
-		return
-	}
-
 	if n.NetworkMode6 == node.Dhcp {
 		if n.NetworkMode == node.Dhcp {
 			n.PhysicalExternalIface6 = n.PhysicalExternalIface
