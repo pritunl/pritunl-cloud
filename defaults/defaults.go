@@ -17,6 +17,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/storage"
 	"github.com/pritunl/pritunl-cloud/vpc"
 	"github.com/pritunl/pritunl-cloud/zone"
+	"github.com/sirupsen/logrus"
 )
 
 func initStorage(db *database.Database) (err error) {
@@ -110,7 +111,9 @@ func initOrganization(db *database.Database) (
 	return
 }
 
-func initDatacenter(db *database.Database) (err error) {
+func initDatacenter(db *database.Database) (
+	defaultDc primitive.ObjectID, err error) {
+
 	dcs, err := datacenter.GetAll(db)
 	if err != nil {
 		return
@@ -159,34 +162,37 @@ func initDatacenter(db *database.Database) (err error) {
 			return
 		}
 
+		defaultDc = dc.Id
+
+		logrus.WithFields(logrus.Fields{
+			"datacenter": dc.Id.Hex(),
+		}).Info("defaults: Created default datacenter")
+
 		event.PublishDispatch(db, "datacenter.change")
+	} else {
+		for _, dc := range dcs {
+			if defaultDc.IsZero() || dc.Name == "us-west-1" {
+				defaultDc = dc.Id
+			}
+		}
 	}
 
 	return
 }
 
-func initZone(db *database.Database) (err error) {
+func initZone(db *database.Database, defaultDc primitive.ObjectID) (
+	err error) {
+
 	zones, err := zone.GetAll(db)
 	if err != nil {
 		return
 	}
 
 	if len(zones) == 0 {
-		dcs, e := datacenter.GetAll(db)
-		if e != nil {
-			err = e
-			return
-		}
-
 		zne := &zone.Zone{
 			Name:        "us-west-1a",
-			NetworkMode: zone.Default,
-		}
-
-		for _, dc := range dcs {
-			if zne.Datacenter.IsZero() || dc.Name == "us-west-1" {
-				zne.Datacenter = dc.Id
-			}
+			NetworkMode: zone.VxlanVlan,
+			Datacenter:  defaultDc,
 		}
 
 		errData, e := zne.Validate(db)
@@ -210,14 +216,18 @@ func initZone(db *database.Database) (err error) {
 			return
 		}
 
+		logrus.WithFields(logrus.Fields{
+			"zone": zne.Id.Hex(),
+		}).Info("defaults: Created default zone")
+
 		event.PublishDispatch(db, "zone.change")
 	}
 
 	return
 }
 
-func initVpc(db *database.Database, defaultOrg primitive.ObjectID) (
-	err error) {
+func initVpc(db *database.Database, defaultOrg,
+	defaultDc primitive.ObjectID) (err error) {
 
 	if defaultOrg.IsZero() {
 		return
@@ -233,6 +243,8 @@ func initVpc(db *database.Database, defaultOrg primitive.ObjectID) (
 		vc := &vpc.Vpc{
 			Name:         "vpc",
 			Organization: defaultOrg,
+			Datacenter:   defaultDc,
+			VpcId:        1000 + rand.Intn(3000),
 			Network:      fmt.Sprintf("10.%d.0.0/16", netNum),
 			Subnets: []*vpc.Subnet{
 				&vpc.Subnet{
@@ -241,6 +253,8 @@ func initVpc(db *database.Database, defaultOrg primitive.ObjectID) (
 				},
 			},
 		}
+
+		vc.InitVpc()
 
 		errData, e := vc.Validate(db)
 		if e != nil {
@@ -294,7 +308,14 @@ func initFirewall(db *database.Database, defaultOrg primitive.ObjectID) (
 						"0.0.0.0/0",
 						"::/0",
 					},
-					Protocol: "tcp",
+					Protocol: firewall.Icmp,
+				},
+				&firewall.Rule{
+					SourceIps: []string{
+						"0.0.0.0/0",
+						"::/0",
+					},
+					Protocol: firewall.Tcp,
 					Port:     "22",
 				},
 			},
@@ -341,7 +362,7 @@ func initAuthority(db *database.Database, defaultOrg primitive.ObjectID) (
 
 	if len(authrs) == 0 {
 		authr := &authority.Authority{
-			Name:         "instance",
+			Name:         "cloud",
 			Type:         authority.SshKey,
 			Organization: defaultOrg,
 			NetworkRoles: []string{
@@ -390,17 +411,17 @@ func Defaults() (err error) {
 		return
 	}
 
-	err = initDatacenter(db)
+	defaultDc, err := initDatacenter(db)
 	if err != nil {
 		return
 	}
 
-	err = initZone(db)
+	err = initZone(db, defaultDc)
 	if err != nil {
 		return
 	}
 
-	err = initVpc(db, defaultOrg)
+	err = initVpc(db, defaultOrg, defaultDc)
 	if err != nil {
 		return
 	}
