@@ -59,11 +59,13 @@ func (c *Organization) Insert(db *database.Database) (err error) {
 		return
 	}
 
-	_, err = coll.InsertOne(db, c)
+	resp, err := coll.InsertOne(db, c)
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
+
+	c.Id = resp.InsertedID.(primitive.ObjectID)
 
 	return
 }
