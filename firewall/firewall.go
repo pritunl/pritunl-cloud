@@ -205,11 +205,13 @@ func (f *Firewall) Insert(db *database.Database) (err error) {
 		return
 	}
 
-	_, err = coll.InsertOne(db, f)
+	resp, err := coll.InsertOne(db, f)
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
+
+	f.Id = resp.InsertedID.(primitive.ObjectID)
 
 	return
 }
