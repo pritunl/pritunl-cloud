@@ -17,6 +17,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/interfaces"
 	"github.com/pritunl/pritunl-cloud/iproute"
 	"github.com/pritunl/pritunl-cloud/iptables"
+	"github.com/pritunl/pritunl-cloud/netconf"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/settings"
@@ -54,7 +55,31 @@ func networkStopDhClient(virt *vm.VirtualMachine) (err error) {
 	return
 }
 
-func NetworkConfClear(virt *vm.VirtualMachine) (err error) {
+func NetworkConfClear(db *database.Database,
+	virt *vm.VirtualMachine) (err error) {
+
+	nc := netconf.New(virt)
+	err = nc.Clean(db)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func NetworkConf(db *database.Database,
+	virt *vm.VirtualMachine) (err error) {
+
+	nc := netconf.New(virt)
+	err = nc.Init(db)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func NetworkConfClearOld(virt *vm.VirtualMachine) (err error) {
 	if len(virt.NetworkAdapters) == 0 {
 		err = &errortypes.NotFoundError{
 			errors.New("qemu: Missing network interfaces"),
@@ -99,7 +124,7 @@ func NetworkConfClear(virt *vm.VirtualMachine) (err error) {
 	return
 }
 
-func NetworkConf(db *database.Database,
+func NetworkConfOld(db *database.Database,
 	virt *vm.VirtualMachine) (err error) {
 
 	ifaceNames := set.NewSet()
