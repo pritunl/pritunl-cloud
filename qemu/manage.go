@@ -40,8 +40,8 @@ type InfoCache struct {
 	Virt      *vm.VirtualMachine
 }
 
-func GetVmInfo(vmId primitive.ObjectID, queryQms, force bool) (
-	virt *vm.VirtualMachine, err error) {
+func GetVmInfo(db *database.Database, vmId primitive.ObjectID,
+	queryQms, force bool) (virt *vm.VirtualMachine, err error) {
 
 	refreshRate := time.Duration(
 		settings.Hypervisor.RefreshRate) * time.Second
@@ -55,7 +55,7 @@ func GetVmInfo(vmId primitive.ObjectID, queryQms, force bool) (
 			err = &errortypes.ReadError{
 				errors.Wrap(e, "qemu: Failed to read service"),
 			}
-			_ = ForcePowerOffErr(virt, err)
+			_ = ForcePowerOffErr(db, virt, err)
 			return
 		}
 
@@ -77,7 +77,7 @@ func GetVmInfo(vmId primitive.ObjectID, queryQms, force bool) (
 				err = &errortypes.ParseError{
 					errors.Wrap(err, "qemu: Failed to parse service data"),
 				}
-				_ = ForcePowerOffErr(virt, err)
+				_ = ForcePowerOffErr(db, virt, err)
 				return
 			}
 
@@ -197,33 +197,31 @@ func GetVmInfo(vmId primitive.ObjectID, queryQms, force bool) (
 		addr6 := ""
 
 		namespace := vm.GetNamespace(virt.Id, 0)
-		ifaceExternal := vm.GetIfaceExternal(virt.Id, 0)
-		ifaceExternal6 := vm.GetIfaceExternal(virt.Id, 1)
 
 		nodeNetworkMode := node.Self.NetworkMode
 		if nodeNetworkMode == "" {
 			nodeNetworkMode = node.Dhcp
 		}
 		nodeNetworkMode6 := node.Self.NetworkMode6
-
-		externalNetwork := true
-		if nodeNetworkMode == node.Internal {
-			externalNetwork = false
+		if nodeNetworkMode6 == "" {
+			nodeNetworkMode6 = node.Dhcp
 		}
 
-		externalNetwork6 := false
-		if nodeNetworkMode6 != "" && (nodeNetworkMode != nodeNetworkMode6 ||
-			(nodeNetworkMode6 == node.Static)) {
+		ifaceExternal := vm.GetIfaceExternal(virt.Id, 0)
+		ifaceExternal6 := ifaceExternal
 
-			externalNetwork6 = true
+		if nodeNetworkMode != nodeNetworkMode6 ||
+			nodeNetworkMode6 == node.Static {
+
+			ifaceExternal6 = vm.GetIfaceExternal(virt.Id, 1)
 		}
 
-		if externalNetwork {
+		if nodeNetworkMode != node.Disabled {
 			address, address6, e := iproute.AddressGetIface(
 				namespace, ifaceExternal)
 			if e != nil {
 				err = e
-				_ = ForcePowerOffErr(virt, err)
+				_ = ForcePowerOffErr(db, virt, err)
 				return
 			}
 
@@ -236,12 +234,14 @@ func GetVmInfo(vmId primitive.ObjectID, queryQms, force bool) (
 			}
 		}
 
-		if externalNetwork6 {
+		if nodeNetworkMode6 != node.Disabled &&
+			ifaceExternal != ifaceExternal6 {
+
 			_, address6, e := iproute.AddressGetIface(
 				namespace, ifaceExternal6)
 			if e != nil {
 				err = e
-				_ = ForcePowerOffErr(virt, err)
+				_ = ForcePowerOffErr(db, virt, err)
 				return
 			}
 
@@ -349,7 +349,7 @@ func GetVms(db *database.Database,
 		go func() {
 			defer waiter.Done()
 
-			virt, e := GetVmInfo(vmId, true, false)
+			virt, e := GetVmInfo(db, vmId, true, false)
 			if e != nil {
 				logrus.WithFields(logrus.Fields{
 					"instance_id": vmId.Hex(),
