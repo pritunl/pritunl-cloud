@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"net"
 	"os"
+	"path"
 	"strings"
 
 	"github.com/dropbox/godropbox/container/set"
@@ -250,6 +251,16 @@ func GetInterfaceUpper(iface string) (upper string, err error) {
 		if strings.HasPrefix(name, "upper_") {
 			upper = name[6:]
 		}
+	}
+
+	return
+}
+
+func IsInterfaceBridge(iface string) (bridge bool, err error) {
+	bridge, err = ExistsDir(
+		path.Join("/", "sys", "class", "net", iface, "bridge"))
+	if err != nil {
+		return
 	}
 
 	return
