@@ -19,7 +19,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (n *NetConf) ipClear(db *database.Database) (err error) {
+func (n *NetConf) ipStartDhClient(db *database.Database) (err error) {
 	if len(n.Virt.NetworkAdapters) == 0 {
 		err = &errortypes.NotFoundError{
 			errors.New("qemu: Missing network interfaces"),
@@ -315,7 +315,7 @@ func (n *NetConf) ipDatabase(db *database.Database) (err error) {
 }
 
 func (n *NetConf) Ip(db *database.Database) (err error) {
-	err = n.ipClear(db)
+	err = n.ipStartDhClient(db)
 	if err != nil {
 		return
 	}
