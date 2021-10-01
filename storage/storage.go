@@ -70,11 +70,13 @@ func (s *Storage) Insert(db *database.Database) (err error) {
 		return
 	}
 
-	_, err = coll.InsertOne(db, s)
+	resp, err := coll.InsertOne(db, s)
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
+
+	s.Id = resp.InsertedID.(primitive.ObjectID)
 
 	return
 }
