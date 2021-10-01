@@ -10,6 +10,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/config"
 	"github.com/pritunl/pritunl-cloud/constants"
+	"github.com/pritunl/pritunl-cloud/defaults"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/router"
@@ -37,6 +38,11 @@ func Node() (err error) {
 	}
 
 	err = setup.Iptables()
+	if err != nil {
+		return
+	}
+
+	err = defaults.Defaults()
 	if err != nil {
 		return
 	}
