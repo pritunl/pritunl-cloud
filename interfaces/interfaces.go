@@ -4,11 +4,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/iproute"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/vm"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -110,6 +110,10 @@ func SyncIfaces(vxlan bool) {
 
 	if blocks != nil {
 		for _, blck := range blocks {
+			if blck.Interface == "" {
+				continue
+			}
+
 			ifaceSet, err := getIfaces(blck.Interface)
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
@@ -267,6 +271,9 @@ func GetBridges(nde *node.Node) (bridges set.Set) {
 	ndeBlocks := nde.Blocks
 	if ndeBlocks != nil {
 		for _, blck := range ndeBlocks {
+			if blck.Interface == "" {
+				continue
+			}
 			bridges.Add(blck.Interface)
 		}
 	}
