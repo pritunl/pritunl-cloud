@@ -84,5 +84,7 @@ func (f *Authority) Insert(db *database.Database) (err error) {
 		return
 	}
 
+	f.Id = resp.InsertedID.(primitive.ObjectID)
+
 	return
 }
