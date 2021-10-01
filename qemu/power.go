@@ -116,7 +116,7 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		err = nil
 	} else {
 		for i := 0; i < settings.Hypervisor.StopTimeout; i++ {
-			vrt, e := GetVmInfo(virt.Id, false, true)
+			vrt, e := GetVmInfo(db, virt.Id, false, true)
 			if e != nil {
 				err = e
 				return
@@ -158,7 +158,7 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		}
 	}
 
-	err = NetworkConfClear(virt)
+	err = NetworkConfClear(db, virt)
 	if err != nil {
 		return
 	}
@@ -171,7 +171,9 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	return
 }
 
-func ForcePowerOffErr(virt *vm.VirtualMachine, e error) (err error) {
+func ForcePowerOffErr(db *database.Database, virt *vm.VirtualMachine,
+	e error) (err error) {
+
 	unitName := paths.GetUnitName(virt.Id)
 
 	if constants.Interrupt {
@@ -193,7 +195,7 @@ func ForcePowerOffErr(virt *vm.VirtualMachine, e error) (err error) {
 		return
 	}
 
-	err = NetworkConfClear(virt)
+	err = NetworkConfClear(db, virt)
 	if err != nil {
 		return
 	}
@@ -206,7 +208,9 @@ func ForcePowerOffErr(virt *vm.VirtualMachine, e error) (err error) {
 	return
 }
 
-func ForcePowerOff(virt *vm.VirtualMachine) (err error) {
+func ForcePowerOff(db *database.Database, virt *vm.VirtualMachine) (
+	err error) {
+
 	unitName := paths.GetUnitName(virt.Id)
 
 	if constants.Interrupt {
@@ -227,7 +231,7 @@ func ForcePowerOff(virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	err = NetworkConfClear(virt)
+	err = NetworkConfClear(db, virt)
 	if err != nil {
 		return
 	}
