@@ -185,6 +185,9 @@ func (b *Block) GetGateway() net.IP {
 }
 
 func (b *Block) GetGateway6() net.IP {
+	if b.Gateway6 == "" {
+		return nil
+	}
 	return net.ParseIP(b.Gateway6)
 }
 
@@ -607,6 +610,8 @@ func (b *Block) Insert(db *database.Database) (err error) {
 		err = database.ParseError(err)
 		return
 	}
+
+	b.Id = resp.InsertedID.(primitive.ObjectID)
 
 	return
 }
