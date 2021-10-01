@@ -91,7 +91,7 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	}
 
 	if exists {
-		vrt, e := GetVmInfo(virt.Id, false, true)
+		vrt, e := GetVmInfo(db, virt.Id, false, true)
 		if e != nil {
 			err = e
 			return
@@ -127,7 +127,7 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 				err = nil
 			} else {
 				for i := 0; i < settings.Hypervisor.StopTimeout; i++ {
-					vrt, err = GetVmInfo(virt.Id, false, true)
+					vrt, err = GetVmInfo(db, virt.Id, false, true)
 					if err != nil {
 						return
 					}
@@ -172,7 +172,7 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 
 	time.Sleep(3 * time.Second)
 
-	err = NetworkConfClear(virt)
+	err = NetworkConfClear(db, virt)
 	if err != nil {
 		return
 	}
@@ -281,7 +281,7 @@ func Cleanup(db *database.Database, virt *vm.VirtualMachine) {
 		"id": virt.Id.Hex(),
 	}).Info("qemu: Stopped virtual machine")
 
-	err := NetworkConfClear(virt)
+	err := NetworkConfClear(db, virt)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"id":    virt.Id.Hex(),
