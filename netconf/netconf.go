@@ -141,3 +141,22 @@ func (n *NetConf) Init(db *database.Database) (err error) {
 
 	return
 }
+
+func (n *NetConf) Clean(db *database.Database) (err error) {
+	err = n.Iface(db)
+	if err != nil {
+		return
+	}
+
+	err = n.ClearAll(db)
+	if err != nil {
+		return
+	}
+
+	err = n.Clear(db)
+	if err != nil {
+		return
+	}
+
+	return
+}
