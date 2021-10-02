@@ -56,6 +56,10 @@ func initStorage(db *database.Database) (err error) {
 			return
 		}
 
+		logrus.WithFields(logrus.Fields{
+			"storage": store.Id.Hex(),
+		}).Info("defaults: Created default storage")
+
 		event.PublishDispatch(db, "storage.change")
 	}
 
@@ -98,6 +102,10 @@ func initOrganization(db *database.Database) (
 		}
 
 		defaultOrg = org.Id
+
+		logrus.WithFields(logrus.Fields{
+			"organization": org.Id.Hex(),
+		}).Info("defaults: Created default organization")
 
 		event.PublishDispatch(db, "organization.change")
 	} else {
@@ -277,6 +285,10 @@ func initVpc(db *database.Database, defaultOrg,
 			return
 		}
 
+		logrus.WithFields(logrus.Fields{
+			"vpc": vc.Id.Hex(),
+		}).Info("defaults: Created default VPC")
+
 		event.PublishDispatch(db, "vpc.change")
 	}
 
@@ -342,6 +354,10 @@ func initFirewall(db *database.Database, defaultOrg primitive.ObjectID) (
 			return
 		}
 
+		logrus.WithFields(logrus.Fields{
+			"firewall": fire.Id.Hex(),
+		}).Info("defaults: Created default firewall")
+
 		event.PublishDispatch(db, "firewall.change")
 	}
 
@@ -390,6 +406,10 @@ func initAuthority(db *database.Database, defaultOrg primitive.ObjectID) (
 		if err != nil {
 			return
 		}
+
+		logrus.WithFields(logrus.Fields{
+			"authority": authr.Id.Hex(),
+		}).Info("defaults: Created default authority")
 
 		event.PublishDispatch(db, "authority.change")
 	}
