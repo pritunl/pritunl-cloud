@@ -621,11 +621,13 @@ func (v *Vpc) Insert(db *database.Database) (err error) {
 		return
 	}
 
-	_, err = coll.InsertOne(db, v)
+	resp, err := coll.InsertOne(db, v)
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
+
+	v.Id = resp.InsertedID.(primitive.ObjectID)
 
 	return
 }
