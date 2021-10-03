@@ -80,11 +80,13 @@ func (z *Zone) Insert(db *database.Database) (err error) {
 		return
 	}
 
-	_, err = coll.InsertOne(db, z)
+	resp, err := coll.InsertOne(db, z)
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
+
+	z.Id = resp.InsertedID.(primitive.ObjectID)
 
 	return
 }
