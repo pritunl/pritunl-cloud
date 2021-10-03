@@ -19,7 +19,7 @@ func (n *NetConf) Address(db *database.Database) (err error) {
 		return
 	}
 
-	n.VxlanId = vc.VpcId
+	n.VlanId = vc.VpcId
 
 	vcNet, err := vc.GetNetwork()
 	if err != nil {

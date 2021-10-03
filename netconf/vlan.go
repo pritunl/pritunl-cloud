@@ -15,7 +15,7 @@ func (n *NetConf) vlanNet(db *database.Database) (err error) {
 		"add", "link", n.SpaceInternalIface,
 		"name", n.BridgeInternalIface,
 		"type", "vlan",
-		"id", strconv.Itoa(n.VxlanId),
+		"id", strconv.Itoa(n.VlanId),
 	)
 	if err != nil {
 		return
