@@ -73,12 +73,12 @@ func (f *Authority) Insert(db *database.Database) (err error) {
 
 	if !f.Id.IsZero() {
 		err = &errortypes.DatabaseError{
-			errors.New("firewall: Authority already exists"),
+			errors.New("authority: Authority already exists"),
 		}
 		return
 	}
 
-	_, err = coll.InsertOne(db, f)
+	resp, err := coll.InsertOne(db, f)
 	if err != nil {
 		err = database.ParseError(err)
 		return
