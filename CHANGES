@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Support instance networking without bridge
+
 Version 1.2.2091.92 2021-08-15
 ------------------------------
 
