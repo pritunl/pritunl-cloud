@@ -368,6 +368,7 @@ func init() {
 				Type:          Local,
 				Username:      "pritunl",
 				Administrator: "super",
+				Roles:         []string{"org"},
 			}
 
 			err = usr.GenerateDefaultPassword()
