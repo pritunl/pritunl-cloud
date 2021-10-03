@@ -22,6 +22,9 @@ type NetConf struct {
 	DhcpLeasePath string
 	VmAdapter     *vm.NetworkAdapter
 
+	PublicAddress  string
+	PublicAddress6 string
+
 	VirtIface           string
 	SpaceExternalIface  string
 	SpaceExternalIface6 string
