@@ -123,7 +123,7 @@ func PritunlRepo() (err error) {
 
 func Install() (err error) {
 	err = utils.Exec("", "/usr/bin/yum", "-y", "remove",
-		"qemu-kvm", "qemu-img", "qemu-system-x86")
+		"qemu-kvm", "qemu-img", "qemu-system-x86", "cockpit", "cockpit-ws")
 	if err != nil {
 		return
 	}
@@ -135,7 +135,7 @@ func Install() (err error) {
 
 	err = utils.Exec("", "/usr/bin/yum", "-y", "install",
 		"edk2-ovmf", "pritunl-qemu-kvm", "pritunl-qemu-img",
-		"pritunl-qemu-system-x86", "pritunl-cloud")
+		"pritunl-qemu-system-x86", "pritunl-cloud", "genisoimage", "libusal")
 	if err != nil {
 		return
 	}
