@@ -144,6 +144,7 @@ export default class Zones extends React.Component<{}, State> {
 									});
 									ZoneActions.create({
 										id: null,
+										network_mode: 'vxlan_vlan',
 										datacenter: this.state.datacenter ||
 											this.state.datacenters[0].id,
 									}).then((): void => {
