@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Fix zone defaults
+
 Version 1.2.2140.92 2021-10-03
 ------------------------------
 
