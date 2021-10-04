@@ -128,6 +128,11 @@ func Install() (err error) {
 		return
 	}
 
+	utils.ExecOutputLogged(nil,
+		"/usr/bin/systemctl", "stop", "libvirtd")
+	utils.ExecOutputLogged(nil,
+		"/usr/bin/systemctl", "disable", "libvirtd")
+
 	err = utils.Exec("", "/usr/bin/yum", "-y", "install",
 		"edk2-ovmf", "pritunl-qemu-kvm", "pritunl-qemu-img",
 		"pritunl-qemu-system-x86", "pritunl-cloud")
