@@ -19,6 +19,11 @@ func Firewall() (err error) {
 		return
 	}
 
+	err = utils.Exec("", "/usr/bin/yum", "-y", "remove", "iptables-services")
+	if err != nil {
+		return
+	}
+
 	_, err = utils.ExecOutputLogged(nil,
 		"/usr/bin/systemctl", "disable", "firewalld")
 	if err != nil {
