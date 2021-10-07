@@ -31,7 +31,6 @@ interface State {
 	zone: string;
 	internalIface: string;
 	network: string;
-	network6: string;
 	popover: boolean;
 }
 
@@ -77,7 +76,6 @@ export default class NodeDeploy extends React.Component<Props, State> {
 			zone: '',
 			internalIface: '',
 			network: '',
-			network6: '',
 			popover: false,
 		};
 	}
@@ -120,7 +118,6 @@ export default class NodeDeploy extends React.Component<Props, State> {
 			zone: this.state.zone,
 			internal_interface: internalIface,
 			host_network: this.state.network,
-			network6: this.state.network6,
 		};
 
 		NodeActions.init(this.props.node.id, data).then((): void => {
