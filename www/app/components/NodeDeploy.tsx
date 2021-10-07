@@ -117,6 +117,7 @@ export default class NodeDeploy extends React.Component<Props, State> {
 		let data: NodeTypes.NodeInit = {
 			zone: this.state.zone,
 			internal_interface: internalIface,
+			external_interface: internalIface,
 			host_network: this.state.network,
 		};
 
@@ -292,20 +293,6 @@ export default class NodeDeploy extends React.Component<Props, State> {
 							this.setState({
 								...this.state,
 								network: val,
-							});
-						}}
-					/>
-					<PageInput
-						disabled={this.state.disabled}
-						label="Public IPv6 Network"
-						help="Public IPv6 network that is routed to this node. Copy the network and prefix, must be at least /64 prefix."
-						type="text"
-						placeholder="Enter network"
-						value={this.state.network6}
-						onChange={(val): void => {
-							this.setState({
-								...this.state,
-								network6: val,
 							});
 						}}
 					/>
