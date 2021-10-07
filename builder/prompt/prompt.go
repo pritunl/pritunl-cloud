@@ -8,6 +8,10 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 )
 
+var (
+	AssumeYes = false
+)
+
 func parseYesNo(input string) (val bool, err error) {
 	input = strings.ToLower(input)
 	if input == "y" || input == "yes" {
@@ -25,6 +29,11 @@ func parseYesNo(input string) (val bool, err error) {
 }
 
 func Confirm(label string) (resp bool, err error) {
+	if AssumeYes {
+		resp = true
+		return
+	}
+
 	prompt := promptui.Prompt{
 		Label: label,
 		Validate: func(input string) error {
@@ -53,6 +62,11 @@ func Confirm(label string) (resp bool, err error) {
 }
 
 func ConfirmDefault(label string, def bool) (resp bool, err error) {
+	if AssumeYes {
+		resp = true
+		return
+	}
+
 	prompt := promptui.Prompt{
 		Label: label,
 		Validate: func(input string) error {
