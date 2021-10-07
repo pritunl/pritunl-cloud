@@ -24,17 +24,8 @@ func Firewall() (err error) {
 		return
 	}
 
-	_, err = utils.ExecOutputLogged(nil,
-		"/usr/bin/systemctl", "disable", "firewalld")
-	if err != nil {
-		return
-	}
-
-	_, err = utils.ExecOutputLogged(nil,
-		"/usr/bin/systemctl", "stop", "firewalld")
-	if err != nil {
-		return
-	}
+	utils.ExecCombinedOutput("/usr/bin/systemctl", "disable", "firewalld")
+	utils.ExecCombinedOutput("/usr/bin/systemctl", "stop", "firewalld")
 
 	logrus.WithFields(logrus.Fields{
 		"service": "firewalld",
