@@ -144,15 +144,9 @@ func Install() (err error) {
 		return
 	}
 
-	_, err = utils.ExecOutputLogged(nil,
-		"/usr/bin/systemctl", "start", "pritunl-cloud")
-	if err != nil {
-		return
-	}
-
 	logrus.WithFields(logrus.Fields{
 		"package": "pritunl-cloud",
-	}).Info("mongo: Pritunl Cloud install")
+	}).Info("cloud: Pritunl Cloud install")
 
 	return
 }
