@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Web interface improvements
+
 Version 1.2.2141.15 2021-10-04
 ------------------------------
 
