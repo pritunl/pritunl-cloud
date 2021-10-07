@@ -1,10 +1,14 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+
+	"github.com/pritunl/pritunl-cloud/builder/prompt"
 
 	"github.com/pritunl/pritunl-cloud/builder/cloud"
 	"github.com/pritunl/pritunl-cloud/builder/mongo"
+	"github.com/pritunl/pritunl-cloud/builder/start"
 	"github.com/pritunl/pritunl-cloud/builder/sysctl"
 	"github.com/pritunl/pritunl-cloud/builder/systemctl"
 	"github.com/pritunl/pritunl-cloud/colorize"
@@ -33,10 +37,29 @@ const (
 `
 )
 
+const help = `
+Usage: pritunl-builder OPTIONS
+
+Options:
+  --assume-yes  Assume yes to prompts
+  --no-start    Do not start Pritunl Cloud service
+`
+
 func main() {
 	logger.InitStdout()
 
 	intro := colorize.ColorString(art, colorize.BlueBold, colorize.None)
+	assumeYes := flag.Bool("assume-yes", false, "Assume yes to prompts")
+	noStart := flag.Bool("no-start", false,
+		"Do not start Pritunl Cloud service")
+
+	flag.Usage = func() {
+		fmt.Println(help)
+	}
+
+	flag.Parse()
+
+	prompt.AssumeYes = *assumeYes
 
 	fmt.Println(intro)
 
@@ -56,6 +79,11 @@ func main() {
 	}
 
 	err = cloud.Cloud()
+	if err != nil {
+		panic(err)
+	}
+
+	err = start.Start(*noStart)
 	if err != nil {
 		panic(err)
 	}
