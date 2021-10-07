@@ -70,7 +70,7 @@ func KvmRepo() (err error) {
 
 	logrus.WithFields(logrus.Fields{
 		"path": repoKvmPath,
-	}).Info("mongo: Pritunl KVM repository added")
+	}).Info("cloud: Pritunl KVM repository added")
 
 	return
 }
@@ -116,7 +116,7 @@ func PritunlRepo() (err error) {
 
 	logrus.WithFields(logrus.Fields{
 		"path": repoPritunlPath,
-	}).Info("mongo: Pritunl repository added")
+	}).Info("cloud: Pritunl repository added")
 
 	return
 }
