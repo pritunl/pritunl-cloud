@@ -408,14 +408,13 @@ export default class NodeDetailed extends React.Component<Props, State> {
 
 	onAddExternalIface = (): void => {
 		let node: NodeTypes.Node;
+		let availableIfaces = this.ifaces();
 
-		if (!this.state.addExternalIface &&
-			!this.props.node.available_bridges.length) {
+		if (!this.state.addExternalIface && !availableIfaces.length) {
 			return;
 		}
 
-		let certId = this.state.addExternalIface ||
-			this.props.node.available_bridges[0];
+		let index = this.state.addExternalIface || availableIfaces[0];
 
 		if (this.state.changed) {
 			node = {
@@ -431,8 +430,8 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			...(node.external_interfaces || []),
 		];
 
-		if (ifaces.indexOf(certId) === -1) {
-			ifaces.push(certId);
+		if (ifaces.indexOf(index) === -1) {
+			ifaces.push(index);
 		}
 
 		ifaces.sort();
@@ -1109,8 +1108,9 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			);
 		}
 
+		let availableIfaces = this.ifaces();
 		let externalIfacesSelect: JSX.Element[] = [];
-		for (let iface of (this.props.node.available_bridges || [])) {
+		for (let iface of (availableIfaces || [])) {
 			externalIfacesSelect.push(
 				<option key={iface} value={iface}>
 					{iface}
@@ -1118,7 +1118,6 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			);
 		}
 
-		let availableIfaces = this.ifaces();
 		let internalIfacesSelect: JSX.Element[] = [];
 		for (let iface of (availableIfaces || [])) {
 			internalIfacesSelect.push(
@@ -1581,12 +1580,30 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					>
 						<option value="dhcp">DHCP</option>
 						<option value="static">Static</option>
-						<option value="internal">Internal Only</option>
+						<option value="disabled">Disabled</option>
+					</PageSelect>
+					<PageSelect
+						disabled={this.state.disabled}
+						label="Network IPv6 Mode"
+						help="Network mode for public IPv6 addresses. Cannot be changed with instances running. Default will use IPv4 network mode."
+						value={node.network_mode6}
+						onChange={(val): void => {
+							this.onNetworkMode6(val);
+						}}
+					>
+						<option value="dhcp">DHCP</option>
+						<option value="static">Static</option>
+						<option value="disabled">Disabled</option>
 					</PageSelect>
 					<label
 						className="bp3-label"
 						style={css.label}
-						hidden={node.network_mode !== 'dhcp' && node.network_mode !== ''}
+						hidden={
+							node.network_mode !== 'dhcp' &&
+							node.network_mode !== '' &&
+							node.network_mode6 !== 'dhcp' &&
+							node.network_mode6 !== ''
+						}
 					>
 						External Interfaces
 						<Help
@@ -1598,7 +1615,12 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						</div>
 					</label>
 					<PageSelectButton
-						hidden={node.network_mode !== 'dhcp' && node.network_mode !== ''}
+						hidden={
+							node.network_mode !== 'dhcp' &&
+							node.network_mode !== '' &&
+							node.network_mode6 !== 'dhcp' &&
+							node.network_mode6 !== ''
+						}
 						label="Add Interface"
 						value={this.state.addExternalIface}
 						disabled={!externalIfacesSelect.length || this.state.disabled}
@@ -1646,21 +1668,9 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						hidden={node.network_mode !== 'static'}
 						style={css.label}
 					>
-						Internal Block Attachments
+						External IPv4 Block Attachments
 						{blocks}
 					</label>
-					<PageSelect
-						disabled={this.state.disabled}
-						label="Network IPv6 Mode"
-						help="Network mode for public IPv6 addresses. Cannot be changed with instances running. Default will use IPv4 network mode."
-						value={node.network_mode6}
-						onChange={(val): void => {
-							this.onNetworkMode6(val);
-						}}
-					>
-						<option value="">Default</option>
-						<option value="static">Static</option>
-					</PageSelect>
 					<label
 						className="bp3-label"
 						hidden={node.network_mode6 !== 'static'}
