@@ -143,7 +143,7 @@ export default class NodeDeploy extends React.Component<Props, State> {
 		let popoverElem: JSX.Element;
 
 		if (this.state.popover) {
-			let callout = 'Initialize Node. Selected zone must have VXLAN network mode.';
+			let callout = 'Initialize node, select the hosts public network interface.';
 			let errorMsg = '';
 			let errorMsgElem: JSX.Element;
 
@@ -270,7 +270,7 @@ export default class NodeDeploy extends React.Component<Props, State> {
 					<PageSelect
 						disabled={this.state.disabled || !internalIfacesSelect.length}
 						label="Network Interface"
-						help="Network interface for instance private VPC interface. This interface will be used to send VPC traffic between instances located on multiple nodes. For single node clusters this will not be used."
+						help="Network interface for instance private VPC interface and IPv6 traffic. This interface will be used to send VPC traffic between instances located on multiple nodes. For single node clusters this interface will only be used for IPv6 traffic."
 						value={this.state.internalIface}
 						onChange={(val): void => {
 							this.setState({
