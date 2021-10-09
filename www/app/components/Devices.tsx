@@ -21,6 +21,7 @@ interface State {
 	deviceType: string;
 	deviceName: string;
 	devicePubKey: string;
+	devicePhoneNumber: string;
 	showEnded: boolean;
 	disabled: boolean;
 }
@@ -56,6 +57,7 @@ export default class Devices extends React.Component<Props, State> {
 			deviceName: '',
 			deviceType: '',
 			devicePubKey: '',
+			devicePhoneNumber: '',
 			showEnded: false,
 			disabled: false,
 		};
@@ -159,22 +161,31 @@ export default class Devices extends React.Component<Props, State> {
 	}
 
 	addDevice = (): void => {
-		if (this.state.deviceType === 'smart_card') {
+		if (this.state.deviceType === 'phone_call' ||
+			this.state.deviceType === 'phone_sms') {
+
 			this.setState({
 				disabled: true,
 			});
+
+			let deviceTypes = this.state.deviceType.split('_');
+			let deviceType = deviceTypes[0];
+			let deviceMode = deviceTypes[1];
 
 			DeviceActions.create({
 				id: null,
 				user: this.props.userId,
 				name: this.state.deviceName,
-				type: this.state.deviceType,
+				type: deviceType,
+				mode: deviceMode,
+				number: this.state.devicePhoneNumber,
 			}).then((): void => {
 				this.setState({
 					...this.state,
 					disabled: false,
 					deviceName: '',
 					devicePubKey: '',
+					devicePhoneNumber: '',
 				});
 
 				Alert.success('Successfully registered device');
@@ -225,6 +236,8 @@ export default class Devices extends React.Component<Props, State> {
 									}}
 								>
 									<option value="u2f">U2F</option>
+									<option value="phone_call">Phone (Call)</option>
+									<option value="phone_message">Phone (SMS)</option>
 								</select>
 							</div>
 							<div className="layout horizontal" style={css.inputBox}>
