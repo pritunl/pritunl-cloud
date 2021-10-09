@@ -24,6 +24,7 @@ type Device struct {
 	Disabled     bool               `bson:"disabled" json:"disabled"`
 	ActiveUntil  time.Time          `bson:"activeactive_until_until" json:"active_until"`
 	LastActive   time.Time          `bson:"last_active" json:"last_active"`
+	Number       string             `bson:"number" json:"number"`
 	U2fRaw       []byte             `bson:"u2f_raw" json:"-"`
 	U2fCounter   uint32             `bson:"u2f_counter" json:"-"`
 	U2fKeyHandle []byte             `bson:"u2f_key_handle" json:"-"`
@@ -51,15 +52,39 @@ func (d *Device) Validate(db *database.Database) (
 		return
 	}
 
-	if d.Type != U2f {
-		errData = &errortypes.ErrorData{
-			Error:   "device_type_invalid",
-			Message: "Device type is invalid",
+	switch d.Mode {
+	case Secondary:
+		if d.Type != U2f {
+			errData = &errortypes.ErrorData{
+				Error:   "device_type_invalid",
+				Message: "Device type is invalid",
+			}
+			return
 		}
-		return
-	}
+		break
+	case Phone:
+		if d.Type != Call && d.Type != Message {
+			errData = &errortypes.ErrorData{
+				Error:   "device_type_invalid",
+				Message: "Device type is invalid",
+			}
+			return
+		}
 
-	if d.Mode != Secondary {
+		if len(d.Number) == 10 {
+			d.Number = "+1" + d.Number
+		}
+
+		if len(d.Number) < 10 {
+			errData = &errortypes.ErrorData{
+				Error:   "device_number_invalid",
+				Message: "Device phone number invalid",
+			}
+			return
+		}
+
+		break
+	default:
 		errData = &errortypes.ErrorData{
 			Error:   "device_mode_invalid",
 			Message: "Device mode is invalid",
