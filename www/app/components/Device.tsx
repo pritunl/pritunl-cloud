@@ -134,12 +134,21 @@ export default class Device extends React.Component<Props, State> {
 			case 'u2f':
 				deviceType = 'U2F';
 				break;
+			case 'call':
+				deviceType = 'Call';
+				break;
+			case 'message':
+				deviceType = 'SMS';
+				break;
 		}
 
 		let deviceMode = 'Unknown';
 		switch (device.mode) {
 			case 'secondary':
 				deviceMode = 'Secondary';
+				break;
+			case 'phone':
+				deviceMode = 'Phone';
 				break;
 		}
 
@@ -148,6 +157,14 @@ export default class Device extends React.Component<Props, State> {
 		};
 		if (device.disabled) {
 			cardStyle.opacity = 0.6;
+		}
+
+		let deviceOther: PageInfos.Field;
+		if (device.type === 'call' || device.type === 'sms') {
+			deviceOther = {
+				label: 'Phone Number',
+				value: device.number,
+			};
 		}
 
 		return <div
@@ -201,6 +218,7 @@ export default class Device extends React.Component<Props, State> {
 								label: 'Type',
 								value: deviceType,
 							},
+							deviceOther,
 						]}
 					/>
 				</div>
