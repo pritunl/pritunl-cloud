@@ -19,9 +19,11 @@ import (
 )
 
 type deviceData struct {
-	User primitive.ObjectID `json:"user"`
-	Name string             `json:"name"`
-	Type string             `json:"type"`
+	User   primitive.ObjectID `json:"user"`
+	Name   string             `json:"name"`
+	Type   string             `json:"type"`
+	Mode   string             `json:"mode"`
+	Number string             `json:"number"`
 }
 
 func devicePut(c *gin.Context) {
@@ -98,9 +100,10 @@ func devicePost(c *gin.Context) {
 		return
 	}
 
-	devc := device.New(data.User, data.Type, device.Secondary)
+	devc := device.New(data.User, data.Type, data.Mode)
 
 	devc.Name = data.Name
+	devc.Number = data.Number
 
 	errData, err := devc.Validate(db)
 	if err != nil {
