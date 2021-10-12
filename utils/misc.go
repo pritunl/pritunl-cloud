@@ -203,3 +203,11 @@ func SinceAbs(t time.Time) (s time.Duration) {
 	}
 	return
 }
+
+func PointerInt(x int) *int {
+	return &x
+}
+
+func PointerString(x string) *string {
+	return &x
+}
