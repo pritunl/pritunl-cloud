@@ -238,7 +238,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		if (vxlan) {
 			return node.available_bridges.concat(node.available_interfaces);
 		} else {
-			return node.available_bridges;
+			return node.available_bridges.concat(node.available_interfaces);
 		}
 	}
 
@@ -641,7 +641,8 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		}
 
 		return {
-			interface: this.props.node.available_bridges[0],
+			interface: this.props.node.available_bridges.concat(
+				this.props.node.available_interfaces)[0],
 			block: defBlock,
 		} as NodeTypes.BlockAttachment;
 	}
@@ -1317,7 +1318,8 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			blocks.push(
 				<NodeBlock
 					key={index}
-					interfaces={this.props.node.available_bridges}
+					interfaces={node.available_bridges.concat(
+						node.available_interfaces)}
 					blocks={this.props.blocks}
 					block={nodeBlocks[index]}
 					ipv6={false}
@@ -1342,7 +1344,8 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			blocks6.push(
 				<NodeBlock
 					key={index}
-					interfaces={this.props.node.available_bridges}
+					interfaces={node.available_bridges.concat(
+						node.available_interfaces)}
 					blocks={this.props.blocks}
 					block={nodeBlocks6[index]}
 					ipv6={true}
