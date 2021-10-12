@@ -42,6 +42,10 @@ const css = {
 		top: '5px',
 		right: '5px',
 	} as React.CSSProperties,
+	controlButton: {
+		marginTop: '10px',
+		marginRight: '10px',
+	} as React.CSSProperties,
 };
 
 export default class Device extends React.Component<Props, State> {
@@ -73,6 +77,26 @@ export default class Device extends React.Component<Props, State> {
 			...this.state,
 			changed: true,
 			device: device,
+		});
+	}
+
+	onTestAlert = (): void => {
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+		DeviceActions.testAlert(this.props.device.id).then((): void => {
+			Alert.success('Test alert sent');
+
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
 		});
 	}
 
@@ -160,11 +184,16 @@ export default class Device extends React.Component<Props, State> {
 		}
 
 		let deviceOther: PageInfos.Field;
-		if (device.type === 'call' || device.type === 'sms') {
+		if (device.type === 'call' || device.type === 'message') {
 			deviceOther = {
 				label: 'Phone Number',
 				value: device.number,
 			};
+		}
+
+		let alertIcon = 'bp3-icon-phone';
+		if (device.type === 'message') {
+			alertIcon = 'bp3-icon-mobile-phone';
 		}
 
 		return <div
@@ -241,6 +270,19 @@ export default class Device extends React.Component<Props, State> {
 						]}
 					/>
 				</div>
+			</div>
+			<div className="layout horizontal wrap">
+				<ConfirmButton
+					label="Send Test Alert"
+					className={'bp3-intent-success ' + alertIcon}
+					progressClassName="bp3-intent-success"
+					style={css.controlButton}
+					hidden={this.props.device.mode !== 'phone'}
+					disabled={this.state.disabled}
+					onConfirm={(): void => {
+						this.onTestAlert();
+					}}
+				/>
 			</div>
 		</div>;
 	}
