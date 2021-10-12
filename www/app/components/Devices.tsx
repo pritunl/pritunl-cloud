@@ -164,15 +164,16 @@ export default class Devices extends React.Component<Props, State> {
 
 	addDevice = (): void => {
 		if (this.state.deviceType === 'phone_call' ||
-			this.state.deviceType === 'phone_sms') {
+			this.state.deviceType === 'phone_message') {
 
 			this.setState({
+				...this.state,
 				disabled: true,
 			});
 
 			let deviceTypes = this.state.deviceType.split('_');
-			let deviceType = deviceTypes[0];
-			let deviceMode = deviceTypes[1];
+			let deviceMode = deviceTypes[0];
+			let deviceType = deviceTypes[1];
 
 			DeviceActions.create({
 				id: null,
@@ -219,7 +220,7 @@ export default class Devices extends React.Component<Props, State> {
 		return <div>
 			<PageHeader>
 				<div className="layout horizontal wrap" style={css.header}>
-					<h2 style={css.heading}>User Security Devices</h2>
+					<h2 style={css.heading}>User Devices</h2>
 					<div className="flex"/>
 					<div style={css.groupBox} className="layout horizontal">
 						<div
@@ -257,6 +258,25 @@ export default class Devices extends React.Component<Props, State> {
 									onKeyPress={(evt): void => {
 										if (this.state.deviceType !== 'smart_card' &&
 												evt.key === 'Enter') {
+											this.addDevice();
+										}
+									}}
+								/>
+								<input
+									className="bp3-input"
+									hidden={this.state.deviceType !== 'phone_call' &&
+									this.state.deviceType !== 'phone_message'}
+									type="text"
+									placeholder="Device phone number"
+									value={this.state.devicePhoneNumber}
+									onChange={(evt): void => {
+										this.setState({
+											...this.state,
+											devicePhoneNumber: evt.target.value,
+										});
+									}}
+									onKeyPress={(evt): void => {
+										if (evt.key === 'Enter') {
 											this.addDevice();
 										}
 									}}
