@@ -9,11 +9,10 @@ import (
 )
 
 type Subnet struct {
-	Id                 string
-	AvailabilityDomain string
-	CidrBlock          string
-	VcnId              string
-	VirtualRouterIp    string
+	Id              string
+	VcnId           string
+	CidrBlock       string
+	VirtualRouterIp string
 }
 
 func GetSubnet(pv *Provider, subnetId string) (subnet *Subnet, err error) {
@@ -37,9 +36,6 @@ func GetSubnet(pv *Provider, subnetId string) (subnet *Subnet, err error) {
 	subnet = &Subnet{}
 	if orcSubnet.Id != nil {
 		subnet.Id = *orcSubnet.Id
-	}
-	if orcSubnet.AvailabilityDomain != nil {
-		subnet.AvailabilityDomain = *orcSubnet.AvailabilityDomain
 	}
 	if orcSubnet.CidrBlock != nil {
 		subnet.CidrBlock = *orcSubnet.CidrBlock
