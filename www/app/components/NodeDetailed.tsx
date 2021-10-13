@@ -1547,7 +1547,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						disabled={!!this.props.node.zone || this.state.disabled ||
 							!hasZones}
 						label="Zone"
-						help="Node zone, cannot be changed once set."
+						help="Node zone, cannot be changed once set. Clear node ID in configuration file to reset node."
 						value={this.props.node.zone ? this.props.node.zone :
 							this.state.zone}
 						onChange={(val): void => {
