@@ -19,6 +19,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/bridges"
+	"github.com/pritunl/pritunl-cloud/cloud"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/drive"
@@ -64,6 +65,7 @@ type Node struct {
 	InternalInterfaces   []string             `bson:"internal_interfaces" json:"internal_interfaces"`
 	AvailableInterfaces  []string             `bson:"available_interfaces" json:"available_interfaces"`
 	AvailableBridges     []string             `bson:"available_bridges" json:"available_bridges"`
+	AvailableVpcs        []*cloud.Vpc         `bson:"available_vpcs" json:"available_vpcs"`
 	DefaultInterface     string               `bson:"default_interface" json:"default_interface"`
 	NetworkMode          string               `bson:"network_mode" json:"network_mode"`
 	NetworkMode6         string               `bson:"network_mode6" json:"network_mode6"`
@@ -784,6 +786,7 @@ func (n *Node) update(db *database.Database) (err error) {
 				"pci_devices":          n.PciDevices,
 				"available_interfaces": n.AvailableInterfaces,
 				"available_bridges":    n.AvailableBridges,
+				"available_vpcs":       n.AvailableVpcs,
 				"default_interface":    n.DefaultInterface,
 				"available_drives":     n.AvailableDrives,
 			},
