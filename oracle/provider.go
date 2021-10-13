@@ -10,13 +10,15 @@ import (
 )
 
 type Provider struct {
-	privateKey  *rsa.PrivateKey
-	tenancy     string
-	user        string
-	fingerprint string
-	region      string
-	compartment string
-	netClient   *core.VirtualNetworkClient
+	Metadata      *Metadata
+	privateKey    *rsa.PrivateKey
+	tenancy       string
+	user          string
+	fingerprint   string
+	region        string
+	compartment   string
+	netClient     *core.VirtualNetworkClient
+	computeClient *core.ComputeClient
 }
 
 func (p *Provider) AuthType() (common.AuthConfig, error) {
@@ -73,6 +75,25 @@ func (p *Provider) GetNetworkClient() (
 	return
 }
 
+func (p *Provider) GetComputeClient() (
+	computeClient *core.ComputeClient, err error) {
+
+	if p.computeClient != nil {
+		computeClient = p.computeClient
+		return
+	}
+
+	client, err := core.NewComputeClientWithConfigurationProvider(p)
+	if err != nil {
+		return
+	}
+
+	p.computeClient = &client
+	computeClient = p.computeClient
+
+	return
+}
+
 func NewProvider(nde *node.Node, mdata *Metadata) (
 	prov *Provider, err error) {
 
@@ -82,6 +103,7 @@ func NewProvider(nde *node.Node, mdata *Metadata) (
 	}
 
 	prov = &Provider{
+		Metadata:    mdata,
 		privateKey:  privateKey,
 		tenancy:     mdata.TenancyOcid,
 		user:        mdata.UserOcid,
