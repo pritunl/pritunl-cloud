@@ -473,7 +473,7 @@ func (n *Node) Validate(db *database.Database) (
 		n.Blocks6 = []*BlockAttachment{}
 		break
 	case Disabled:
-		n.Blocks = []*BlockAttachment{}
+		n.Blocks6 = []*BlockAttachment{}
 		break
 	default:
 		errData = &errortypes.ErrorData{
