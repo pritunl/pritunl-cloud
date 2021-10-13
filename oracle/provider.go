@@ -94,10 +94,13 @@ func (p *Provider) GetComputeClient() (
 	return
 }
 
-func NewProvider(nde *node.Node, mdata *Metadata) (
-	prov *Provider, err error) {
+func NewProvider(authPv AuthProvider) (prov *Provider, err error) {
+	mdata, err := GetMetadata(authPv)
+	if err != nil {
+		return
+	}
 
-	privateKey, fingerprint, err := loadPrivateKey(nde)
+	privateKey, fingerprint, err := loadPrivateKey(mdata)
 	if err != nil {
 		return
 	}

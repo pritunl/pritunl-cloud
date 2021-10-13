@@ -5,7 +5,6 @@ import (
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -37,9 +36,9 @@ type ociMeta struct {
 	Vnics    []ociMetaVnic   `json:"vnics"`
 }
 
-func GetMetadata(nde *node.Node) (mdata *Metadata, err error) {
-	userOcid := nde.OracleUser
-	privateKey := nde.OraclePrivateKey
+func GetMetadata(authPv AuthProvider) (mdata *Metadata, err error) {
+	userOcid := authPv.OracleUser()
+	privateKey := authPv.OraclePrivateKey()
 
 	output, err := utils.ExecOutput("", "oci-metadata", "--json")
 	if err != nil {

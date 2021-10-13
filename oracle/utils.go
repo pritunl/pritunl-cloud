@@ -10,13 +10,12 @@ import (
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"github.com/pritunl/pritunl-cloud/node"
 )
 
-func loadPrivateKey(nde *node.Node) (
+func loadPrivateKey(mdata *Metadata) (
 	key *rsa.PrivateKey, fingerprint string, err error) {
 
-	block, _ := pem.Decode([]byte(nde.OraclePrivateKey))
+	block, _ := pem.Decode([]byte(mdata.PrivateKey))
 	if block == nil {
 		err = &errortypes.ParseError{
 			errors.New("oracle: Failed to decode private key"),
