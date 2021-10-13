@@ -6,6 +6,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/oracle/oci-go-sdk/core"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type Vnic struct {
@@ -105,6 +106,35 @@ func GetVnic(pv *Provider, vnicId string) (vnic *Vnic, err error) {
 				break
 			}
 		}
+	}
+
+	return
+}
+
+func CreateVnic(pv *Provider, name string, subnetId string) (err error) {
+	client, err := pv.GetComputeClient()
+	if err != nil {
+		return
+	}
+
+	req := core.AttachVnicRequest{
+		AttachVnicDetails: core.AttachVnicDetails{
+			InstanceId:  utils.PointerString(pv.Metadata.InstanceOcid),
+			DisplayName: utils.PointerString(name),
+			CreateVnicDetails: &core.CreateVnicDetails{
+				AssignPublicIp: utils.PointerBool(true),
+				DisplayName:    utils.PointerString(name),
+				SubnetId:       utils.PointerString(subnetId),
+			},
+		},
+	}
+
+	_, err = client.AttachVnic(context.Background(), req)
+	if err != nil {
+		err = &errortypes.RequestError{
+			errors.Wrap(err, "oracle: Failed to create vnic"),
+		}
+		return
 	}
 
 	return
