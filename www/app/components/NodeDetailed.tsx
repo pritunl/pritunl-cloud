@@ -1837,12 +1837,12 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							},
 							{
 								label: 'CPU Units Reserved',
-								value: (this.props.node.cpu_units_res ||
-									'Unknown').toString(),
+								value: (this.props.node.cpu_units_res || 0).toString(),
 							},
 							{
 								label: 'Memory Units',
-								value: (this.props.node.memory_units || 0).toString(),
+								value: (this.props.node.memory_units ||
+									'Unknown').toString(),
 							},
 							{
 								label: 'Memory Units Reserved',
