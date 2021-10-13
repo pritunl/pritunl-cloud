@@ -1574,7 +1574,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					</PageSelect>
 					<PageSelect
 						disabled={this.state.disabled}
-						label="Network Mode"
+						label="Network IPv4 Mode"
 						help="Network mode for public IP addresses. Cannot be changed with instances running."
 						value={node.network_mode}
 						onChange={(val): void => {
@@ -1645,7 +1645,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						Internal Interfaces
 						<Help
 							title="Internal Interfaces"
-							content="Internal interfaces for instance private VPC interface. If zone network mode is default must be a bridge interface. Set zone network mode to VXLan to use non-bridge interface. Leave blank to use external interface."
+							content="Internal interfaces for instance private VPC interface. If zone network mode is default this must be a bridge interface. Set zone network mode to VXLan to use non-bridge interface. Leave blank to use external interface."
 						/>
 						<div>
 							{internalIfaces}
