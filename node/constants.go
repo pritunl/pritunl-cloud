@@ -17,6 +17,7 @@ const (
 	Dhcp     = "dhcp"
 	Static   = "static"
 	Internal = "internal"
+	Oracle   = "oracle"
 
 	Restart = "restart"
 )

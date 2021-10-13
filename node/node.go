@@ -435,6 +435,9 @@ func (n *Node) Validate(db *database.Database) (
 		}
 
 		break
+	case Oracle:
+		n.Blocks = []*BlockAttachment{}
+		break
 	case Dhcp, "":
 		n.NetworkMode = Dhcp
 		n.Blocks = []*BlockAttachment{}
@@ -474,6 +477,9 @@ func (n *Node) Validate(db *database.Database) (
 			}
 		}
 
+		break
+	case Oracle:
+		n.Blocks6 = []*BlockAttachment{}
 		break
 	case Dhcp, "":
 		n.NetworkMode6 = Dhcp
