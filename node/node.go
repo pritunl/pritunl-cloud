@@ -188,6 +188,13 @@ func (n *Node) Copy() *Node {
 	return nde
 }
 
+func (n *Node) GetOracleAuthProvider() (pv *NodeOracleAuthProvider) {
+	pv = &NodeOracleAuthProvider{
+		nde: n,
+	}
+	return
+}
+
 func (n *Node) AddRequest() {
 	n.reqLock.Lock()
 	back := n.reqCount.Back()
