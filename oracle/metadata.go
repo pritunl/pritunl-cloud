@@ -15,6 +15,7 @@ type Metadata struct {
 	RegionName      string
 	TenancyOcid     string
 	CompartmentOcid string
+	InstanceOcid    string
 	VnicOcid        string
 }
 
@@ -76,6 +77,7 @@ func GetMetadata(nde *node.Node) (mdata *Metadata, err error) {
 		RegionName:      data.Instance.RegionName,
 		TenancyOcid:     data.Instance.CompartmentId,
 		CompartmentOcid: data.Instance.CompartmentId,
+		InstanceOcid:    data.Instance.Id,
 		VnicOcid:        vnicOcid,
 	}
 
