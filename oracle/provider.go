@@ -6,7 +6,7 @@ import (
 
 	"github.com/oracle/oci-go-sdk/common"
 	"github.com/oracle/oci-go-sdk/core"
-	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/sirupsen/logrus"
 )
 
 type Provider struct {
@@ -19,6 +19,18 @@ type Provider struct {
 	compartment   string
 	netClient     *core.VirtualNetworkClient
 	computeClient *core.ComputeClient
+}
+
+func (p *Provider) LogInfo() {
+	logrus.WithFields(logrus.Fields{
+		"region":        p.Metadata.RegionName,
+		"tenancy":       p.Metadata.TenancyOcid,
+		"compartment":   p.Metadata.CompartmentOcid,
+		"instance":      p.Metadata.InstanceOcid,
+		"instance_vnic": p.Metadata.VnicOcid,
+		"user":          p.Metadata.UserOcid,
+		"fingerprint":   p.fingerprint,
+	}).Info("oracle: Oracle provider data")
 }
 
 func (p *Provider) AuthType() (common.AuthConfig, error) {
