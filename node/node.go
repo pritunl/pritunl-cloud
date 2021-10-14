@@ -959,6 +959,23 @@ func (n *Node) sync() {
 		n.AvailableBridges = []string{}
 	}
 
+	if n.NetworkMode == Oracle || n.NetworkMode6 == Oracle {
+		oracleVpcs, e := cloud.GetOracleVpcs(n.GetOracleAuthProvider())
+		if e != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": e,
+			}).Error("node: Failed to get oracle vpcs")
+		}
+
+		if oracleVpcs != nil {
+			n.AvailableVpcs = oracleVpcs
+		} else {
+			n.AvailableVpcs = []*cloud.Vpc{}
+		}
+	} else {
+		n.AvailableVpcs = []*cloud.Vpc{}
+	}
+
 	drives, err := drive.GetDevices()
 	if err != nil {
 		return
