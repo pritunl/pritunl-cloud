@@ -63,6 +63,13 @@ export interface Node {
 	oracle_host_route?: boolean;
 }
 
+export interface NodeInit {
+	zone?: string;
+	internal_interface?: string;
+	external_interface?: string;
+	host_network?: string;
+}
+
 export interface Drive {
 	id?: string;
 }
