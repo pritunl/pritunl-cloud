@@ -142,6 +142,7 @@ func (n *Node) Copy() *Node {
 		InternalInterfaces:   n.InternalInterfaces,
 		AvailableInterfaces:  n.AvailableInterfaces,
 		AvailableBridges:     n.AvailableBridges,
+		AvailableVpcs:        n.AvailableVpcs,
 		DefaultInterface:     n.DefaultInterface,
 		NetworkMode:          n.NetworkMode,
 		NetworkMode6:         n.NetworkMode6,
