@@ -1,24 +1,22 @@
 package cloud
 
 import (
+	"time"
+
 	"github.com/pritunl/pritunl-cloud/oracle"
 )
 
-type Subnet struct {
-	Id      string `bson:"id" json:"id"`
-	VpcId   string `bson:"vpc_id" json:"vpc_id"`
-	Name    string `bson:"name" json:"name"`
-	Network string `bson:"network" json:"network"`
-}
-
-type Vpc struct {
-	Id      string    `bson:"id" json:"id"`
-	Name    string    `bson:"name" json:"name"`
-	Network string    `bson:"network" json:"network"`
-	Subnets []*Subnet `bson:"subnets" json:"subnets"`
-}
+var (
+	lastOracleSync time.Time
+	oracleVpcs     []*Vpc
+)
 
 func GetOracleVpcs(authPv oracle.AuthProvider) (vpcs []*Vpc, err error) {
+	if time.Since(lastOracleSync) < 30*time.Second {
+		vpcs = oracleVpcs
+		return
+	}
+
 	pv, err := oracle.NewProvider(authPv)
 	if err != nil {
 		return
@@ -51,6 +49,9 @@ func GetOracleVpcs(authPv oracle.AuthProvider) (vpcs []*Vpc, err error) {
 
 		vpcs = append(vpcs, vpc)
 	}
+
+	lastOracleSync = time.Now()
+	oracleVpcs = vpcs
 
 	return
 }
