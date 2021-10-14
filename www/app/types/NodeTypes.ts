@@ -63,6 +63,20 @@ export interface Node {
 	oracle_host_route?: boolean;
 }
 
+export interface Vpc {
+	id?: string;
+	name?: string;
+	network?: string;
+	subnets?: Subnet[];
+}
+
+export interface Subnet {
+	id?: string;
+	vpc_id?: string;
+	name?: string;
+	network?: string;
+}
+
 export interface NodeInit {
 	zone?: string;
 	internal_interface?: string;
