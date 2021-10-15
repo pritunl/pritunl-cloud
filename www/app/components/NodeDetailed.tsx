@@ -42,6 +42,7 @@ interface State {
 	node: NodeTypes.Node;
 	addExternalIface: string;
 	addInternalIface: string;
+	addOracleSubnet: string;
 	addCert: string;
 	addNetworkRole: string;
 	addHostNatExclude: string,
@@ -130,6 +131,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			node: null,
 			addExternalIface: null,
 			addInternalIface: null,
+			addOracleSubnet: null,
 			addCert: null,
 			addNetworkRole: null,
 			addHostNatExclude: null,
@@ -240,6 +242,17 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		} else {
 			return node.available_bridges.concat(node.available_interfaces);
 		}
+	}
+
+	subnetLabel(subnetId: string): string {
+		for (let vpc of (this.props.node.available_vpcs || [])) {
+			for (let subnet of (vpc.subnets || [])) {
+				if (subnet.id === subnetId) {
+					return vpc.name + ' - ' + subnet.name;
+				}
+			}
+		}
+		return subnetId;
 	}
 
 	onAddNetworkRole = (): void => {
@@ -703,6 +716,95 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		});
 	}
 
+	onAddOracleSubnet = (): void => {
+		let node: NodeTypes.Node;
+		let availabeVpcs = this.props.node.available_vpcs || [];
+
+		if (!this.state.addOracleSubnet && !availabeVpcs.length &&
+				!availabeVpcs[0].subnets.length) {
+			return;
+		}
+
+		let addOracleSubnet = this.state.addOracleSubnet;
+		if (!addOracleSubnet) {
+			addOracleSubnet = availabeVpcs[0].subnets[0].id;
+		}
+
+		if (this.state.changed) {
+			node = {
+				...this.state.node,
+			};
+		} else {
+			node = {
+				...this.props.node,
+			};
+		}
+
+		let nodeOracleSubnets = [
+			...(node.oracle_subnets || []),
+		];
+
+		let index = -1;
+		for (let i = 0; i < nodeOracleSubnets.length; i++) {
+			if (nodeOracleSubnets[i] === addOracleSubnet) {
+				index = i;
+				break
+			}
+		}
+
+		if (index === -1) {
+			nodeOracleSubnets.push(addOracleSubnet);
+		}
+
+		node.oracle_subnets = nodeOracleSubnets;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			node: node,
+		});
+	}
+
+	onRemoveOracleSubnet = (device: string): void => {
+		let node: NodeTypes.Node;
+
+		if (this.state.changed) {
+			node = {
+				...this.state.node,
+			};
+		} else {
+			node = {
+				...this.props.node,
+			};
+		}
+
+		let nodeOracleSubnets = [
+			...(node.oracle_subnets || []),
+		];
+
+		let index = -1;
+		for (let i = 0; i < nodeOracleSubnets.length; i++) {
+			if (nodeOracleSubnets[i] === device) {
+				index = i;
+				break
+			}
+		}
+		if (index === -1) {
+			return;
+		}
+
+		nodeOracleSubnets.splice(index, 1);
+		node.oracle_subnets = nodeOracleSubnets;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			node: node,
+		});
+	}
+
 	onAddBlock = (i: number): void => {
 		let node: NodeTypes.Node;
 
@@ -1126,6 +1228,37 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					{iface}
 				</option>,
 			);
+		}
+
+		let oracleSubnets: JSX.Element[] = [];
+		for (let subnetId of (node.oracle_subnets || [])) {
+			oracleSubnets.push(
+				<div
+					className="bp3-tag bp3-tag-removable bp3-intent-primary"
+					style={css.item}
+					key={subnetId}
+				>
+					{this.subnetLabel(subnetId)}
+					<button
+						disabled={this.state.disabled}
+						className="bp3-tag-remove"
+						onMouseUp={(): void => {
+							this.onRemoveOracleSubnet(subnetId);
+						}}
+					/>
+				</div>,
+			);
+		}
+
+		let availableSubnetsSelect: JSX.Element[] = [];
+		for (let vpc of (node.available_vpcs || [])) {
+			for (let subnet of (vpc.subnets || [])) {
+				availableSubnetsSelect.push(
+					<option key={subnet.id} value={subnet.id}>
+						{vpc.name + ' - ' + subnet.name}
+					</option>,
+				);
+			}
 		}
 
 		let hostBlocksSelect: JSX.Element[] = [
@@ -1583,6 +1716,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					>
 						<option value="dhcp">DHCP</option>
 						<option value="static">Static</option>
+						<option value="oracle">Oracle Cloud</option>
 						<option value="disabled">Disabled</option>
 					</PageSelect>
 					<PageSelect
@@ -1596,6 +1730,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					>
 						<option value="dhcp">DHCP</option>
 						<option value="static">Static</option>
+						<option value="oracle">Oracle Cloud</option>
 						<option value="disabled">Disabled</option>
 					</PageSelect>
 					<label
@@ -1682,6 +1817,36 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						External IPv6 Block Attachments
 						{blocks6}
 					</label>
+					<label
+						className="bp3-label"
+						hidden={node.network_mode !== 'oracle'}
+						style={css.label}
+					>
+						Oracle Cloud Subnets
+						<Help
+							title="Oracle Cloud Subnets"
+							content="Oracle Cloud VCN subnets available to attach to instances."
+						/>
+						<div>
+							{oracleSubnets}
+						</div>
+					</label>
+					<PageSelectButton
+						label="Add Subnet"
+						hidden={node.network_mode !== 'oracle'}
+						value={this.state.addOracleSubnet}
+						disabled={!availableSubnetsSelect.length || this.state.disabled}
+						buttonClass="bp3-intent-success"
+						onChange={(val: string): void => {
+							this.setState({
+								...this.state,
+								addOracleSubnet: val,
+							});
+						}}
+						onSubmit={this.onAddOracleSubnet}
+					>
+						{availableSubnetsSelect}
+					</PageSelectButton>
 					<PageSelect
 						disabled={this.state.disabled}
 						label="Host Network Block"
