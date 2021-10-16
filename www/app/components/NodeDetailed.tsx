@@ -1056,7 +1056,6 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			...this.state,
 			changed: true,
 			message: '',
-			addHostNatExclude: '',
 			node: node,
 		});
 	}
@@ -1109,7 +1108,6 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			...this.state,
 			changed: true,
 			message: '',
-			addDrive: '',
 			node: node,
 		});
 	}
@@ -1150,7 +1148,6 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			...this.state,
 			changed: true,
 			message: '',
-			addDrive: '',
 			node: node,
 		});
 	}
