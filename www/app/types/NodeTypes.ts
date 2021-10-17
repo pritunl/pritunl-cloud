@@ -28,6 +28,8 @@ export interface Node {
 	internal_interfaces?: string[];
 	external_interfaces6?: string[];
 	available_interfaces?: string[];
+	available_vpcs?: Vpc[];
+	oracle_subnets?: string[];
 	available_bridges?: string[];
 	default_interface?: string;
 	blocks?: BlockAttachment[];
