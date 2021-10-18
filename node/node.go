@@ -66,6 +66,7 @@ type Node struct {
 	AvailableInterfaces  []string             `bson:"available_interfaces" json:"available_interfaces"`
 	AvailableBridges     []string             `bson:"available_bridges" json:"available_bridges"`
 	AvailableVpcs        []*cloud.Vpc         `bson:"available_vpcs" json:"available_vpcs"`
+	OracleSubnets        []string             `bson:"oracle_subnets" json:"oracle_subnets"`
 	DefaultInterface     string               `bson:"default_interface" json:"default_interface"`
 	NetworkMode          string               `bson:"network_mode" json:"network_mode"`
 	NetworkMode6         string               `bson:"network_mode6" json:"network_mode6"`
@@ -143,6 +144,7 @@ func (n *Node) Copy() *Node {
 		AvailableInterfaces:  n.AvailableInterfaces,
 		AvailableBridges:     n.AvailableBridges,
 		AvailableVpcs:        n.AvailableVpcs,
+		OracleSubnets:        n.OracleSubnets,
 		DefaultInterface:     n.DefaultInterface,
 		NetworkMode:          n.NetworkMode,
 		NetworkMode6:         n.NetworkMode6,
