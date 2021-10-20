@@ -571,6 +571,32 @@ func (n *Node) Format() {
 	utils.SortObjectIds(n.Certificates)
 }
 
+func (n *Node) JsonHypervisor() {
+	vpcs := []*cloud.Vpc{}
+
+	oracleSubnets := set.NewSet()
+	for _, subnet := range n.OracleSubnets {
+		oracleSubnets.Add(subnet)
+	}
+
+	for _, vpc := range n.AvailableVpcs {
+		subnets := []*cloud.Subnet{}
+		for _, subnet := range vpc.Subnets {
+			if oracleSubnets.Contains(subnet.Id) {
+				subnets = append(subnets, subnet)
+			}
+		}
+
+		if len(subnets) > 0 {
+			vpcs = append(vpcs, vpc)
+		}
+	}
+
+	n.AvailableVpcs = vpcs
+
+	return
+}
+
 func (n *Node) SetActive() {
 	if time.Since(n.Timestamp) > 30*time.Second {
 		n.RequestsMin = 0
