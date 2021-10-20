@@ -406,6 +406,10 @@ func (n *Node) Validate(db *database.Database) (
 		n.Blocks6 = []*BlockAttachment{}
 	}
 
+	if n.OracleSubnets == nil {
+		n.OracleSubnets = []string{}
+	}
+
 	instanceDrives := []*drive.Device{}
 	if n.InstanceDrives != nil {
 		for _, device := range n.InstanceDrives {
