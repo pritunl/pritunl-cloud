@@ -820,6 +820,7 @@ func (n *Node) update(db *database.Database) (err error) {
 				"available_interfaces": n.AvailableInterfaces,
 				"available_bridges":    n.AvailableBridges,
 				"available_vpcs":       n.AvailableVpcs,
+				"oracle_subnets":       n.OracleSubnets,
 				"default_interface":    n.DefaultInterface,
 				"available_drives":     n.AvailableDrives,
 			},
@@ -853,6 +854,7 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.ExternalInterfaces = nde.ExternalInterfaces
 	n.ExternalInterfaces6 = nde.ExternalInterfaces6
 	n.InternalInterfaces = nde.InternalInterfaces
+	n.OracleSubnets = nde.OracleSubnets
 	n.NetworkMode = nde.NetworkMode
 	n.NetworkMode6 = nde.NetworkMode6
 	n.Blocks = nde.Blocks
