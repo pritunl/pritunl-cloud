@@ -22,6 +22,9 @@ type VirtualMachine struct {
 	Disks               []*Disk            `json:"disks"`
 	DisksAvailable      bool               `json:"-"`
 	NetworkAdapters     []*NetworkAdapter  `json:"network_adapters"`
+	OracleSubnet        string             `json:"oracle_subnet"`
+	OracleVnic          string             `json:"oracle_vnic"`
+	OracleIp            string             `json:"oracle_ip"`
 	Uefi                bool               `json:"uefi"`
 	SecureBoot          bool               `json:"secure_boot"`
 	NoPublicAddress     bool               `json:"no_public_address"`
