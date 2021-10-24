@@ -533,6 +533,8 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 				Subnet:     i.Subnet,
 			},
 		},
+		OracleSubnet:    i.OracleSubnet,
+		OracleVnic:      i.OracleVnic,
 		Uefi:            i.Uefi,
 		SecureBoot:      i.SecureBoot,
 		NoPublicAddress: i.NoPublicAddress,
