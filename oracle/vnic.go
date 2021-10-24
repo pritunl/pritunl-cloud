@@ -2,6 +2,7 @@ package oracle
 
 import (
 	"context"
+	"time"
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/oracle/oci-go-sdk/core"
@@ -111,7 +112,36 @@ func GetVnic(pv *Provider, vnicId string) (vnic *Vnic, err error) {
 	return
 }
 
-func CreateVnic(pv *Provider, name string, subnetId string) (err error) {
+func getVnicAttachment(pv *Provider, attachmentId string) (
+	vnicId string, err error) {
+
+	client, err := pv.GetComputeClient()
+	if err != nil {
+		return
+	}
+
+	req := core.GetVnicAttachmentRequest{
+		VnicAttachmentId: utils.PointerString(attachmentId),
+	}
+
+	resp, err := client.GetVnicAttachment(context.Background(), req)
+	if err != nil {
+		err = &errortypes.RequestError{
+			errors.Wrap(err, "oracle: Failed to create vnic"),
+		}
+		return
+	}
+
+	if resp.VnicId != nil {
+		vnicId = *resp.VnicId
+	}
+
+	return
+}
+
+func CreateVnic(pv *Provider, name string, subnetId string) (
+	vnicId string, err error) {
+
 	client, err := pv.GetComputeClient()
 	if err != nil {
 		return
