@@ -204,3 +204,24 @@ func CreateVnic(pv *Provider, name string, subnetId string) (
 
 	return
 }
+
+func RemoveVnic(pv *Provider, vnicId string) (err error) {
+	client, err := pv.GetComputeClient()
+	if err != nil {
+		return
+	}
+
+	req := core.DetachVnicRequest{
+		VnicAttachmentId: utils.PointerString(vnicId),
+	}
+
+	_, err = client.DetachVnic(context.Background(), req)
+	if err != nil {
+		err = &errortypes.RequestError{
+			errors.Wrap(err, "oracle: Failed to remove vnic"),
+		}
+		return
+	}
+
+	return
+}
