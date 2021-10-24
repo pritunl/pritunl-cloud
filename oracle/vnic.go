@@ -159,10 +159,45 @@ func CreateVnic(pv *Provider, name string, subnetId string) (
 		},
 	}
 
-	_, err = client.AttachVnic(context.Background(), req)
+	resp, err := client.AttachVnic(context.Background(), req)
 	if err != nil {
 		err = &errortypes.RequestError{
 			errors.Wrap(err, "oracle: Failed to create vnic"),
+		}
+		return
+	}
+
+	if resp.Id == nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "oracle: Nil vnic attachment id"),
+		}
+		return
+	}
+
+	vnicAttachId := *resp.Id
+
+	for i := 0; i < 60; i++ {
+		vnicId, err = getVnicAttachment(pv, vnicAttachId)
+		if err != nil {
+			time.Sleep(500 * time.Millisecond)
+			if i == 59 {
+				return
+			}
+			err = nil
+			continue
+		}
+
+		if vnicId == "" {
+			time.Sleep(500 * time.Millisecond)
+			continue
+		}
+
+		break
+	}
+
+	if vnicId == "" {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "oracle: Nil vnic id"),
 		}
 		return
 	}
