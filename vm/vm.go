@@ -141,6 +141,38 @@ func (v *VirtualMachine) Commit(db *database.Database) (err error) {
 	return
 }
 
+func (v *VirtualMachine) CommitOracleVnic(db *database.Database) (err error) {
+	coll := db.Instances()
+
+	err = coll.UpdateId(v.Id, &bson.M{
+		"$set": &bson.M{
+			"oracle_vnic": v.OracleVnic,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func (v *VirtualMachine) CommitOracleIps(db *database.Database) (err error) {
+	coll := db.Instances()
+
+	err = coll.UpdateId(v.Id, &bson.M{
+		"$set": &bson.M{
+			"oracle_ips": []string{v.OracleIp},
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func (v *VirtualMachine) CommitState(db *database.Database, state string) (
 	err error) {
 
