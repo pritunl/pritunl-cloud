@@ -38,6 +38,8 @@ type Instance struct {
 	Zone                primitive.ObjectID `bson:"zone" json:"zone"`
 	Vpc                 primitive.ObjectID `bson:"vpc" json:"vpc"`
 	Subnet              primitive.ObjectID `bson:"subnet" json:"subnet"`
+	OracleSubnet        string             `bson:"oracle_subnet" json:"oracle_subnet"`
+	OracleVnic          string             `bson:"oracle_vnic" json:"oracle_vnic"`
 	Image               primitive.ObjectID `bson:"image" json:"image"`
 	ImageBacking        bool               `bson:"image_backing" json:"image_backing"`
 	Status              string             `bson:"-" json:"status"`
