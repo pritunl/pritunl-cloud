@@ -140,7 +140,7 @@ func getVnicAttachment(pv *Provider, attachmentId string) (
 }
 
 func CreateVnic(pv *Provider, name string, subnetId string) (
-	vnicId string, err error) {
+	vnicId, vnicAttachId string, err error) {
 
 	client, err := pv.GetComputeClient()
 	if err != nil {
@@ -174,7 +174,7 @@ func CreateVnic(pv *Provider, name string, subnetId string) (
 		return
 	}
 
-	vnicAttachId := *resp.Id
+	vnicAttachId = *resp.Id
 
 	for i := 0; i < 60; i++ {
 		vnicId, err = getVnicAttachment(pv, vnicAttachId)
@@ -205,14 +205,14 @@ func CreateVnic(pv *Provider, name string, subnetId string) (
 	return
 }
 
-func RemoveVnic(pv *Provider, vnicId string) (err error) {
+func RemoveVnic(pv *Provider, vnicAttachId string) (err error) {
 	client, err := pv.GetComputeClient()
 	if err != nil {
 		return
 	}
 
 	req := core.DetachVnicRequest{
-		VnicAttachmentId: utils.PointerString(vnicId),
+		VnicAttachmentId: utils.PointerString(vnicAttachId),
 	}
 
 	_, err = client.DetachVnic(context.Background(), req)
