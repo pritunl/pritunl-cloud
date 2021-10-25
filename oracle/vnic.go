@@ -52,7 +52,7 @@ func GetVnic(pv *Provider, vnicId string) (vnic *Vnic, err error) {
 	}
 
 	req := core.GetVnicRequest{
-		VnicId: &vnicId,
+		VnicId: utils.PointerString(vnicId),
 	}
 
 	orcVnic, err := client.GetVnic(context.Background(), req)
