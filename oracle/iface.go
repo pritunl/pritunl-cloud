@@ -27,6 +27,8 @@ func GetIfaces(logOutput bool) (ifaces []*Iface, err error) {
 	output, err := utils.ExecCombinedOutputLogged(
 		[]string{
 			"does not have",
+			"invalid metadata",
+			"cannot locate",
 		},
 		"/usr/bin/bash",
 		"/home/opc/secondary_vnic_all_configure.sh",
@@ -82,6 +84,8 @@ func ConfIfaces(logOutput bool) (err error) {
 	output, err := utils.ExecCombinedOutputLogged(
 		[]string{
 			"does not have",
+			"invalid metadata",
+			"cannot locate",
 		},
 		"/usr/bin/bash",
 		"/home/opc/secondary_vnic_all_configure.sh",
