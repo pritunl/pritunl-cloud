@@ -9,6 +9,7 @@ import (
 )
 
 type Iface struct {
+	Name       string
 	Address    string
 	Namespace  string
 	MacAddress string
@@ -53,6 +54,7 @@ func GetIfaces(logOutput bool) (ifaces []*Iface, err error) {
 
 		if found && fields[0] == "-" && fields[5] != "-" {
 			iface := &Iface{
+				Name:       fields[7],
 				Address:    fields[1],
 				Namespace:  fields[5],
 				MacAddress: fields[11],
