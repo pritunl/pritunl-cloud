@@ -11,6 +11,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/pritunl/pritunl-cloud/netconf"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/qemu"
 	"github.com/pritunl/pritunl-cloud/qms"
@@ -314,6 +315,14 @@ func (s *Instances) destroy(inst *instance.Instance) {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
 			}).Error("deploy: Failed to power off instance")
+			return
+		}
+
+		err = netconf.Destroy(db, inst.Virt)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("deploy: Failed to destroy netconf")
 			return
 		}
 
