@@ -24,6 +24,7 @@ type VirtualMachine struct {
 	NetworkAdapters     []*NetworkAdapter  `json:"network_adapters"`
 	OracleSubnet        string             `json:"oracle_subnet"`
 	OracleVnic          string             `json:"oracle_vnic"`
+	OracleVnicAttach    string             `json:"oracle_vnic_attach"`
 	OracleIp            string             `json:"oracle_ip"`
 	Uefi                bool               `json:"uefi"`
 	SecureBoot          bool               `json:"secure_boot"`
@@ -146,7 +147,8 @@ func (v *VirtualMachine) CommitOracleVnic(db *database.Database) (err error) {
 
 	err = coll.UpdateId(v.Id, &bson.M{
 		"$set": &bson.M{
-			"oracle_vnic": v.OracleVnic,
+			"oracle_vnic":        v.OracleVnic,
+			"oracle_vnic_attach": v.OracleVnicAttach,
 		},
 	})
 	if err != nil {
