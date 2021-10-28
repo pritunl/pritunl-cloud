@@ -18,18 +18,21 @@ var (
 )
 
 type Rules struct {
-	Namespace   string
-	Interface   string
-	Nat         bool
-	NatAddr     string
-	NatPubAddr  string
-	Nat6        bool
-	NatAddr6    string
-	NatPubAddr6 string
-	Ingress     [][]string
-	Ingress6    [][]string
-	Holds       [][]string
-	Holds6      [][]string
+	Namespace        string
+	Interface        string
+	Nat              bool
+	NatAddr          string
+	NatPubAddr       string
+	Nat6             bool
+	NatAddr6         string
+	NatPubAddr6      string
+	OracleNat        bool
+	OracleNatAddr    string
+	OracleNatPubAddr string
+	Ingress          [][]string
+	Ingress6         [][]string
+	Holds            [][]string
+	Holds6           [][]string
 }
 
 type State struct {
@@ -268,6 +271,61 @@ func (r *Rules) ApplyNat() (err error) {
 		}
 	}
 
+	iptablesCmd = getIptablesCmd(false)
+	if r.OracleNat {
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{
+				"matching rule exist",
+			},
+			"ip", "netns", "exec", r.Namespace, iptablesCmd,
+			"-t", "nat",
+			"-A", "PREROUTING",
+			"-d", r.OracleNatPubAddr+"/32",
+			"-m", "comment",
+			"--comment", "pritunl_cloud_oracle_nat",
+			"-j", "DNAT",
+			"--to-destination", r.OracleNatAddr,
+		)
+		if err != nil {
+			return
+		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{
+				"matching rule exist",
+			},
+			"ip", "netns", "exec", r.Namespace, iptablesCmd,
+			"-t", "nat",
+			"-A", "POSTROUTING",
+			"-s", r.OracleNatAddr+"/32",
+			"-d", r.OracleNatAddr+"/32",
+			"-m", "comment",
+			"--comment", "pritunl_cloud_oracle_nat",
+			"-j", "SNAT",
+			"--to", r.OracleNatPubAddr,
+		)
+		if err != nil {
+			return
+		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{
+				"matching rule exist",
+			},
+			"ip", "netns", "exec", r.Namespace, iptablesCmd,
+			"-t", "nat",
+			"-A", "POSTROUTING",
+			"-s", r.OracleNatAddr+"/32",
+			"-o", r.Interface,
+			"-m", "comment",
+			"--comment", "pritunl_cloud_oracle_nat",
+			"-j", "MASQUERADE",
+		)
+		if err != nil {
+			return
+		}
+	}
+
 	return
 }
 
@@ -495,6 +553,66 @@ func (r *Rules) RemoveNat() (err error) {
 			"-o", r.Interface,
 			"-m", "comment",
 			"--comment", "pritunl_cloud_nat",
+			"-j", "MASQUERADE",
+		)
+		if err != nil {
+			return
+		}
+	}
+
+	iptablesCmd = getIptablesCmd(false)
+	if r.OracleNatPubAddr != "" && r.OracleNatAddr != "" {
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{
+				"matching rule exist",
+				"match by that name",
+			},
+			"ip", "netns", "exec", r.Namespace, iptablesCmd,
+			"-t", "nat",
+			"-D", "PREROUTING",
+			"-d", r.OracleNatPubAddr+"/32",
+			"-m", "comment",
+			"--comment", "pritunl_cloud_oracle_nat",
+			"-j", "DNAT",
+			"--to-destination", r.OracleNatAddr,
+		)
+		if err != nil {
+			return
+		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{
+				"matching rule exist",
+				"match by that name",
+			},
+			"ip", "netns", "exec", r.Namespace, iptablesCmd,
+			"-t", "nat",
+			"-D", "POSTROUTING",
+			"-s", r.OracleNatAddr+"/32",
+			"-d", r.OracleNatAddr+"/32",
+			"-m", "comment",
+			"--comment", "pritunl_cloud_oracle_nat",
+			"-j", "SNAT",
+			"--to", r.OracleNatPubAddr,
+		)
+		if err != nil {
+			return
+		}
+	}
+
+	if r.OracleNatAddr != "" {
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{
+				"matching rule exist",
+				"match by that name",
+			},
+			"ip", "netns", "exec", r.Namespace, iptablesCmd,
+			"-t", "nat",
+			"-D", "POSTROUTING",
+			"-s", r.OracleNatAddr+"/32",
+			"-o", r.Interface,
+			"-m", "comment",
+			"--comment", "pritunl_cloud_oracle_nat",
 			"-j", "MASQUERADE",
 		)
 		if err != nil {
@@ -804,7 +922,7 @@ func generateVirt(namespace, iface string, ingress []*firewall.Rule) (
 
 func generateInternal(namespace, iface string, nat bool,
 	natAddr, natPubAddr, natAddr6, natPubAddr6 string,
-	ingress []*firewall.Rule) (rules *Rules) {
+	oracleNatPubAddr string, ingress []*firewall.Rule) (rules *Rules) {
 
 	rules = &Rules{
 		Namespace: namespace,
@@ -826,6 +944,12 @@ func generateInternal(namespace, iface string, nat bool,
 			rules.Nat6 = true
 			rules.NatAddr6 = natAddr6
 			rules.NatPubAddr6 = natPubAddr6
+		}
+
+		if natAddr != "" && oracleNatPubAddr != "" {
+			rules.OracleNat = true
+			rules.OracleNatAddr = natAddr
+			rules.OracleNatPubAddr = oracleNatPubAddr
 		}
 	}
 
