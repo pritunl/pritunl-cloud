@@ -39,6 +39,7 @@ type nodeData struct {
 	ExternalInterfaces   []string                `json:"external_interfaces"`
 	ExternalInterfaces6  []string                `json:"external_interfaces6"`
 	InternalInterfaces   []string                `json:"internal_interfaces"`
+	OracleSubnets        []string                `json:"oracle_subnets"`
 	NetworkMode          string                  `json:"network_mode"`
 	NetworkMode6         string                  `json:"network_mode6"`
 	Blocks               []*node.BlockAttachment `json:"blocks"`
@@ -111,6 +112,7 @@ func nodePut(c *gin.Context) {
 	nde.ExternalInterfaces = data.ExternalInterfaces
 	nde.ExternalInterfaces6 = data.ExternalInterfaces6
 	nde.InternalInterfaces = data.InternalInterfaces
+	nde.OracleSubnets = data.OracleSubnets
 	nde.NetworkMode = data.NetworkMode
 	nde.NetworkMode6 = data.NetworkMode6
 	nde.Blocks = data.Blocks
@@ -146,6 +148,7 @@ func nodePut(c *gin.Context) {
 		"external_interfaces",
 		"external_interfaces6",
 		"internal_interfaces",
+		"oracle_subnets",
 		"network_mode",
 		"network_mode6",
 		"blocks",
