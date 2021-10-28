@@ -36,6 +36,7 @@ type NetConf struct {
 	SpaceExternalIface6 string
 	SpaceInternalIface  string
 	SpaceHostIface      string
+	SpaceOracleIface    string
 
 	BridgeInternalIface string
 
