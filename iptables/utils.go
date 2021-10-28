@@ -72,7 +72,10 @@ func diffRulesNat(a, b *Rules) bool {
 		a.NatPubAddr != b.NatPubAddr ||
 		a.Nat6 != b.Nat6 ||
 		a.NatAddr6 != b.NatAddr6 ||
-		a.NatPubAddr6 != b.NatPubAddr6 {
+		a.NatPubAddr6 != b.NatPubAddr6 ||
+		a.OracleNat != b.OracleNat ||
+		a.OracleNatAddr != b.OracleNatAddr ||
+		a.OracleNatPubAddr != b.OracleNatPubAddr {
 
 		return true
 	}
@@ -388,6 +391,99 @@ func loadIptables(namespace string, state *State, ipv6 bool) (err error) {
 		}
 	}
 
+	oraclePreAddr := ""
+	oraclePrePubAddr := ""
+	oraclePostAddr := ""
+	oraclePostIface := ""
+
+	for _, line := range strings.Split(output, "\n") {
+		if !strings.Contains(line, "pritunl_cloud_oracle_nat") {
+			continue
+		}
+
+		cmd := strings.Fields(line)
+		if len(cmd) < 3 {
+			logrus.WithFields(logrus.Fields{
+				"iptables_rule": line,
+			}).Error("iptables: Invalid iptables state")
+
+			err = &errortypes.ParseError{
+				errors.New("iptables: Invalid iptables state"),
+			}
+			return
+		}
+		cmd = cmd[1:]
+
+		switch cmd[0] {
+		case "PREROUTING":
+			for i, item := range cmd {
+				if item == "-d" {
+					if len(cmd) < i+2 {
+						logrus.WithFields(logrus.Fields{
+							"iptables_rule": line,
+						}).Error("iptables: Invalid iptables pub addr")
+
+						err = &errortypes.ParseError{
+							errors.New(
+								"iptables: Invalid iptables pub addr"),
+						}
+						return
+					}
+					oraclePrePubAddr = strings.Split(cmd[i+1], "/")[0]
+				}
+
+				if item == "--to-destination" {
+					if len(cmd) < i+2 {
+						logrus.WithFields(logrus.Fields{
+							"iptables_rule": line,
+						}).Error("iptables: Invalid iptables addr")
+
+						err = &errortypes.ParseError{
+							errors.New(
+								"iptables: Invalid iptables addr"),
+						}
+						return
+					}
+					oraclePreAddr = strings.Split(cmd[i+1], "/")[0]
+				}
+			}
+			break
+		case "POSTROUTING":
+			for i, item := range cmd {
+				if item == "-s" {
+					if len(cmd) < i+2 {
+						logrus.WithFields(logrus.Fields{
+							"iptables_rule": line,
+						}).Error("iptables: Invalid iptables pub addr")
+
+						err = &errortypes.ParseError{
+							errors.New(
+								"iptables: Invalid iptables pub addr"),
+						}
+						return
+					}
+					oraclePostAddr = strings.Split(cmd[i+1], "/")[0]
+				}
+
+				if item == "-o" {
+					if len(cmd) < i+2 {
+						logrus.WithFields(logrus.Fields{
+							"iptables_rule": line,
+						}).Error("iptables: Invalid iptables addr")
+
+						err = &errortypes.ParseError{
+							errors.New(
+								"iptables: Invalid iptables addr"),
+						}
+						return
+					}
+					oraclePostIface = cmd[i+1]
+				}
+			}
+			break
+		}
+	}
+
 	if preAddr != "" && prePubAddr != "" && postIface != "" &&
 		postAddr == preAddr {
 
@@ -412,6 +508,31 @@ func loadIptables(namespace string, state *State, ipv6 bool) (err error) {
 			rules.Nat6 = true
 			rules.NatAddr6 = preAddr
 			rules.NatPubAddr6 = prePubAddr
+		}
+	}
+
+	if oraclePreAddr != "" && oraclePrePubAddr != "" &&
+		oraclePostIface != "" && oraclePostAddr == oraclePreAddr {
+
+		rules := state.Interfaces[namespace+"-"+oraclePostIface]
+		if rules == nil {
+			rules = &Rules{
+				Namespace: namespace,
+				Interface: oraclePostIface,
+				Ingress:   [][]string{},
+				Ingress6:  [][]string{},
+				Holds:     [][]string{},
+				Holds6:    [][]string{},
+			}
+			state.Interfaces[namespace+"-"+oraclePostIface] = rules
+		}
+
+		if oraclePreAddr != "" && oraclePrePubAddr != "" &&
+			oraclePostIface != "" && oraclePostAddr == oraclePreAddr {
+
+			rules.OracleNat = true
+			rules.OracleNatAddr = oraclePreAddr
+			rules.OracleNatPubAddr = oraclePrePubAddr
 		}
 	}
 
@@ -559,8 +680,8 @@ func applyState(oldState, newState *State, namespaces []string) (err error) {
 
 		oldRules := oldState.Interfaces[rules.Namespace+"-"+rules.Interface]
 
-		if (rules.Nat || rules.Nat6) && (oldRules == nil ||
-			diffRulesNat(oldRules, rules)) {
+		if (rules.Nat || rules.Nat6 || rules.OracleNat) &&
+			(oldRules == nil || diffRulesNat(oldRules, rules)) {
 
 			logrus.Info("iptables: Updating iptables nat")
 
@@ -690,6 +811,12 @@ func UpdateState(nodeSelf *node.Node, instances []*instance.Instance,
 			pubAddr6 = inst.PublicIps6[0]
 		}
 
+		oracleAddr := ""
+		oracleIface := vm.GetIfaceOracle(inst.Id, 0)
+		if inst.OracleIps != nil && len(inst.OracleIps) != 0 {
+			oracleAddr = inst.OracleIps[0]
+		}
+
 		_, ok := newState.Interfaces[namespace+"-"+iface]
 		if ok {
 			logrus.WithFields(logrus.Fields{
@@ -712,23 +839,36 @@ func UpdateState(nodeSelf *node.Node, instances []*instance.Instance,
 			continue
 		}
 
-		if nodeNetworkMode != node.Disabled {
+		if nodeNetworkMode != node.Disabled &&
+			nodeNetworkMode != node.Oracle {
+
 			rules := generateInternal(namespace, ifaceExternal,
-				true, addr, pubAddr, addr6, pubAddr6, ingress)
+				true, addr, pubAddr, addr6, pubAddr6,
+				oracleAddr, ingress)
 			newState.Interfaces[namespace+"-"+ifaceExternal] = rules
 		}
 
 		if nodeNetworkMode6 != node.Disabled &&
-			ifaceExternal != ifaceExternal6 {
+			ifaceExternal != ifaceExternal6 &&
+			nodeNetworkMode6 != node.Oracle {
 
 			rules := generateInternal(namespace, ifaceExternal6,
-				true, addr, pubAddr, addr6, pubAddr6, ingress)
+				true, addr, pubAddr, addr6, pubAddr6,
+				oracleAddr, ingress)
 			newState.Interfaces[namespace+"-"+ifaceExternal6] = rules
+		}
+
+		if nodeNetworkMode == node.Oracle {
+			rules := generateInternal(namespace, oracleIface,
+				true, addr, pubAddr, addr6, pubAddr6,
+				oracleAddr, ingress)
+
+			newState.Interfaces[namespace+"-"+oracleIface] = rules
 		}
 
 		if hostNetwork {
 			rules := generateInternal(namespace, ifaceHost,
-				false, "", "", "", "", ingress)
+				false, "", "", "", "", "", ingress)
 			newState.Interfaces[namespace+"-"+ifaceHost] = rules
 		}
 
