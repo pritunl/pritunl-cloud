@@ -9,7 +9,7 @@ import (
 )
 
 func (n *NetConf) externalNet(db *database.Database) (err error) {
-	if n.NetworkMode != node.Disabled {
+	if n.NetworkMode != node.Disabled && n.NetworkMode != node.Oracle {
 		if n.PhysicalExternalIfaceBridge {
 			_, err = utils.ExecCombinedOutputLogged(
 				nil,
@@ -39,7 +39,8 @@ func (n *NetConf) externalNet(db *database.Database) (err error) {
 	}
 
 	if n.NetworkMode6 != node.Disabled &&
-		n.SpaceExternalIface != n.SpaceExternalIface6 {
+		n.SpaceExternalIface != n.SpaceExternalIface6 &&
+		n.NetworkMode6 != node.Oracle {
 
 		if n.PhysicalExternalIfaceBridge6 {
 			_, err = utils.ExecCombinedOutputLogged(
@@ -75,7 +76,8 @@ func (n *NetConf) externalNet(db *database.Database) (err error) {
 func (n *NetConf) externalMtu(db *database.Database) (err error) {
 	if n.NetworkMode != node.Disabled &&
 		n.PhysicalExternalIfaceBridge &&
-		n.SystemExternalIfaceMtu != "" {
+		n.SystemExternalIfaceMtu != "" &&
+		n.NetworkMode != node.Oracle {
 
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
@@ -89,7 +91,8 @@ func (n *NetConf) externalMtu(db *database.Database) (err error) {
 	}
 	if n.NetworkMode6 != node.Disabled &&
 		n.PhysicalExternalIfaceBridge6 &&
-		n.SystemExternalIfaceMtu6 != "" {
+		n.SystemExternalIfaceMtu6 != "" &&
+		n.NetworkMode6 != node.Oracle {
 
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
@@ -102,7 +105,9 @@ func (n *NetConf) externalMtu(db *database.Database) (err error) {
 		}
 	}
 
-	if n.NetworkMode != node.Disabled && n.SpaceExternalIfaceMtu != "" {
+	if n.NetworkMode != node.Disabled && n.SpaceExternalIfaceMtu != "" &&
+		n.NetworkMode != node.Oracle {
+
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
 			"ip", "link",
@@ -113,7 +118,9 @@ func (n *NetConf) externalMtu(db *database.Database) (err error) {
 			return
 		}
 	}
-	if n.NetworkMode6 != node.Disabled && n.SpaceExternalIfaceMtu6 != "" {
+	if n.NetworkMode6 != node.Disabled && n.SpaceExternalIfaceMtu6 != "" &&
+		n.NetworkMode != node.Oracle {
+
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
 			"ip", "link",
@@ -129,7 +136,9 @@ func (n *NetConf) externalMtu(db *database.Database) (err error) {
 }
 
 func (n *NetConf) externalUp(db *database.Database) (err error) {
-	if n.NetworkMode != node.Disabled && n.PhysicalExternalIfaceBridge {
+	if n.NetworkMode != node.Disabled && n.PhysicalExternalIfaceBridge &&
+		n.NetworkMode != node.Oracle {
+
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
 			"ip", "link",
@@ -141,7 +150,8 @@ func (n *NetConf) externalUp(db *database.Database) (err error) {
 	}
 
 	if n.NetworkMode6 != node.Disabled && n.PhysicalExternalIfaceBridge6 &&
-		n.SystemExternalIface != n.SystemExternalIface6 {
+		n.SystemExternalIface != n.SystemExternalIface6 &&
+		n.NetworkMode6 != node.Oracle {
 
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
@@ -157,7 +167,7 @@ func (n *NetConf) externalUp(db *database.Database) (err error) {
 }
 
 func (n *NetConf) externalSysctl(db *database.Database) (err error) {
-	if n.NetworkMode6 != node.Disabled {
+	if n.NetworkMode6 != node.Disabled && n.NetworkMode6 != node.Oracle {
 		_, err = utils.ExecCombinedOutputLogged(
 			nil, "sysctl", "-w",
 			fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2",
@@ -172,7 +182,9 @@ func (n *NetConf) externalSysctl(db *database.Database) (err error) {
 }
 
 func (n *NetConf) externalMaster(db *database.Database) (err error) {
-	if n.NetworkMode != node.Disabled && n.PhysicalExternalIfaceBridge {
+	if n.NetworkMode != node.Disabled && n.PhysicalExternalIfaceBridge &&
+		n.NetworkMode != node.Oracle {
+
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
 			"ip", "link",
@@ -185,7 +197,8 @@ func (n *NetConf) externalMaster(db *database.Database) (err error) {
 	}
 
 	if n.NetworkMode6 != node.Disabled && n.PhysicalExternalIfaceBridge6 &&
-		n.SystemExternalIface != n.SystemExternalIface6 {
+		n.SystemExternalIface != n.SystemExternalIface6 &&
+		n.NetworkMode6 != node.Oracle {
 
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
@@ -202,7 +215,7 @@ func (n *NetConf) externalMaster(db *database.Database) (err error) {
 }
 
 func (n *NetConf) externalSpace(db *database.Database) (err error) {
-	if n.NetworkMode != node.Disabled {
+	if n.NetworkMode != node.Disabled && n.NetworkMode != node.Oracle {
 		_, err = utils.ExecCombinedOutputLogged(
 			[]string{"File exists"},
 			"ip", "link",
@@ -215,7 +228,8 @@ func (n *NetConf) externalSpace(db *database.Database) (err error) {
 	}
 
 	if n.NetworkMode6 != node.Disabled &&
-		n.SpaceExternalIface != n.SpaceExternalIface6 {
+		n.SpaceExternalIface != n.SpaceExternalIface6 &&
+		n.NetworkMode6 != node.Oracle {
 
 		_, err = utils.ExecCombinedOutputLogged(
 			[]string{"File exists"},
@@ -232,7 +246,7 @@ func (n *NetConf) externalSpace(db *database.Database) (err error) {
 }
 
 func (n *NetConf) externalSpaceUp(db *database.Database) (err error) {
-	if n.NetworkMode != node.Disabled {
+	if n.NetworkMode != node.Disabled && n.NetworkMode != node.Oracle {
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
 			"ip", "netns", "exec", n.Namespace,
@@ -245,7 +259,8 @@ func (n *NetConf) externalSpaceUp(db *database.Database) (err error) {
 	}
 
 	if n.NetworkMode6 != node.Disabled &&
-		n.SpaceExternalIface != n.SpaceExternalIface6 {
+		n.SpaceExternalIface != n.SpaceExternalIface6 &&
+		n.NetworkMode6 != node.Oracle {
 
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
