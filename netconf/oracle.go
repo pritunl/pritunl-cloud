@@ -1,14 +1,16 @@
 package netconf
 
 import (
+	"net"
+	"strings"
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"github.com/pritunl/pritunl-cloud/namespace"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/oracle"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 func (n *NetConf) oracleInitVnic(db *database.Database) (err error) {
@@ -27,14 +29,14 @@ func (n *NetConf) oracleInitVnic(db *database.Database) (err error) {
 		}
 
 		if vnic.SubnetId != n.Virt.OracleSubnet {
-			err = oracle.RemoveVnic(pv, n.Virt.OracleVnic)
+			err = oracle.RemoveVnic(pv, n.Virt.OracleVnicAttach)
 			if err != nil {
 				return
 			}
 
 			vnic = nil
 		} else if !n.OracleSubnets.Contains(vnic.SubnetId) {
-			err = oracle.RemoveVnic(pv, n.Virt.OracleVnic)
+			err = oracle.RemoveVnic(pv, n.Virt.OracleVnicAttach)
 			if err != nil {
 				return
 			}
@@ -64,7 +66,7 @@ func (n *NetConf) oracleInitVnic(db *database.Database) (err error) {
 		n.Virt.OracleVnicAttach = vnicAttachId
 		err = n.Virt.CommitOracleVnic(db)
 		if err != nil {
-			_ = oracle.RemoveVnic(pv, vnicId)
+			_ = oracle.RemoveVnic(pv, vnicAttachId)
 			return
 		}
 	}
