@@ -3,6 +3,7 @@ package netconf
 import (
 	"net"
 
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/vm"
@@ -16,6 +17,7 @@ type NetConf struct {
 	NetworkMode6  string
 	HostNetwork   bool
 	HostBlock     primitive.ObjectID
+	OracleSubnets set.Set
 	JumboFrames   bool
 	Namespace     string
 	DhcpPidPath   string
@@ -24,6 +26,10 @@ type NetConf struct {
 
 	PublicAddress  string
 	PublicAddress6 string
+
+	OracleAddress       string
+	OracleAddressSubnet string
+	OracleRouterAddress string
 
 	VirtIface           string
 	SpaceExternalIface  string
