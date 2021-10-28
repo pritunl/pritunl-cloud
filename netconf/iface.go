@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/interfaces"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -41,6 +42,13 @@ func (n *NetConf) Iface(db *database.Database) (err error) {
 		n.HostNetwork = true
 	}
 
+	n.OracleSubnets = set.NewSet()
+	if node.Self.OracleSubnets != nil {
+		for _, subnet := range node.Self.OracleSubnets {
+			n.OracleSubnets.Add(subnet)
+		}
+	}
+
 	n.JumboFrames = node.Self.JumboFrames
 	n.Namespace = vm.GetNamespace(n.Virt.Id, 0)
 	n.VmAdapter = n.Virt.NetworkAdapters[0]
@@ -53,6 +61,7 @@ func (n *NetConf) Iface(db *database.Database) (err error) {
 	n.SpaceExternalIface = vm.GetIfaceExternal(n.Virt.Id, 0)
 	n.SpaceInternalIface = vm.GetIfaceInternal(n.Virt.Id, 0)
 	n.SpaceHostIface = vm.GetIfaceHost(n.Virt.Id, 0)
+	n.SpaceOracleIface = vm.GetIfaceOracle(n.Virt.Id, 0)
 
 	n.BridgeInternalIface = vm.GetIfaceVlan(n.Virt.Id, 0)
 
