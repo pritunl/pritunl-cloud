@@ -33,6 +33,7 @@ type instanceData struct {
 	Zone             primitive.ObjectID `json:"zone"`
 	Vpc              primitive.ObjectID `json:"vpc"`
 	Subnet           primitive.ObjectID `json:"subnet"`
+	OracleSubnet     string             `json:"oracle_subnet"`
 	Node             primitive.ObjectID `json:"node"`
 	Image            primitive.ObjectID `json:"image"`
 	ImageBacking     bool               `json:"image_backing"`
@@ -100,6 +101,7 @@ func instancePut(c *gin.Context) {
 	inst.Comment = dta.Comment
 	inst.Vpc = dta.Vpc
 	inst.Subnet = dta.Subnet
+	inst.OracleSubnet = dta.OracleSubnet
 	if dta.State != "" {
 		inst.State = dta.State
 	}
@@ -124,6 +126,7 @@ func instancePut(c *gin.Context) {
 		"comment",
 		"vpc",
 		"subnet",
+		"oracle_subnet",
 		"state",
 		"restart",
 		"restart_block_ip",
@@ -257,6 +260,7 @@ func instancePost(c *gin.Context) {
 			Zone:             dta.Zone,
 			Vpc:              dta.Vpc,
 			Subnet:           dta.Subnet,
+			OracleSubnet:     dta.OracleSubnet,
 			Node:             dta.Node,
 			Image:            dta.Image,
 			ImageBacking:     dta.ImageBacking,
