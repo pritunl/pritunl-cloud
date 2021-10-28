@@ -75,41 +75,35 @@ func (n *NetConf) oracleInitVnic(db *database.Database) (err error) {
 }
 
 func (n *NetConf) oracleConfVnic(db *database.Database) (err error) {
-	curNamespace := ""
 	found := false
 
-	for i := 0; i < 60; i++ {
-		time.Sleep(1 * time.Second)
+	oracleMacAddr := ""
 
-		ifaces, e := oracle.GetIfaces(i == 59)
+	for i := 0; i < 120; i++ {
+		time.Sleep(2 * time.Second)
+
+		mdata, e := oracle.GetOciMetadata()
 		if e != nil {
 			err = e
 			return
 		}
 
-		for _, iface := range ifaces {
-			if iface.VnicId == n.Virt.OracleVnic {
-				curNamespace = iface.Namespace
+		for _, vnic := range mdata.Vnics {
+			if vnic.Id == n.Virt.OracleVnic {
+				n.Virt.OracleIp = vnic.PrivateIp
+				n.OracleAddress = vnic.PrivateIp
+				n.OracleAddressSubnet = vnic.SubnetCidrBlock
+				n.OracleRouterAddress = vnic.VirtualRouterIp
 
-				n.Virt.OracleIp = iface.Address
-				err = n.Virt.CommitOracleIps(db)
-				if err != nil {
-					return
-				}
+				oracleMacAddr = strings.ToLower(vnic.MacAddr)
 
 				found = true
-
 				break
 			}
 		}
 
 		if found {
 			break
-		}
-
-		err = oracle.ConfIfaces(i == 59)
-		if err != nil {
-			return
 		}
 	}
 
@@ -120,11 +114,134 @@ func (n *NetConf) oracleConfVnic(db *database.Database) (err error) {
 		return
 	}
 
-	if curNamespace != n.Namespace {
-		err = namespace.Rename(curNamespace, n.Namespace)
-		if err != nil {
-			return
+	err = n.Virt.CommitOracleIps(db)
+	if err != nil {
+		return
+	}
+
+	ifaces, err := net.Interfaces()
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "netconf: Failed get network interfaces"),
 		}
+		return
+	}
+
+	oracleIface := ""
+	for _, iface := range ifaces {
+		if strings.ToLower(iface.HardwareAddr.String()) == oracleMacAddr {
+			oracleIface = iface.Name
+			break
+		}
+	}
+
+	if oracleIface == "" {
+		err = &errortypes.NotFoundError{
+			errors.New("netconf: Failed to find oracle interface"),
+		}
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "link",
+		"set", "dev", oracleIface, "down",
+	)
+	if err != nil {
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "link",
+		"set", "dev", oracleIface,
+		"name", n.SpaceOracleIface,
+	)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func (n *NetConf) oracleSpace(db *database.Database) (err error) {
+	_, err = utils.ExecCombinedOutputLogged(
+		[]string{"File exists"},
+		"ip", "link",
+		"set", "dev", n.SpaceOracleIface,
+		"netns", n.Namespace,
+	)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func (n *NetConf) oracleMtu(db *database.Database) (err error) {
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", n.Namespace,
+		"ip", "link",
+		"set", "dev", n.SpaceOracleIface,
+		"mtu", "9000",
+	)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func (n *NetConf) oracleIp(db *database.Database) (err error) {
+	subnetSplit := strings.Split(n.OracleAddressSubnet, "/")
+	if len(subnetSplit) != 2 {
+		err = &errortypes.ParseError{
+			errors.Newf("netconf: Failed to get oracle cidr %s",
+				n.OracleAddressSubnet),
+		}
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		[]string{"File exists"},
+		"ip", "netns", "exec", n.Namespace,
+		"ip", "addr",
+		"add", n.OracleAddress+"/"+subnetSplit[1],
+		"dev", n.SpaceOracleIface,
+	)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func (n *NetConf) oracleUp(db *database.Database) (err error) {
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", n.Namespace,
+		"ip", "link",
+		"set", "dev", n.SpaceOracleIface, "up",
+	)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func (n *NetConf) oracleRoute(db *database.Database) (err error) {
+	_, err = utils.ExecCombinedOutputLogged(
+		[]string{"File exists"},
+		"ip", "netns", "exec", n.Namespace,
+		"ip", "route",
+		"add", "default",
+		"via", n.OracleRouterAddress,
+		"dev", n.SpaceOracleIface,
+	)
+	if err != nil {
+		return
 	}
 
 	return
@@ -144,5 +261,31 @@ func (n *NetConf) Oracle(db *database.Database) (err error) {
 	if err != nil {
 		return
 	}
+
+	err = n.oracleSpace(db)
+	if err != nil {
+		return
+	}
+
+	err = n.oracleMtu(db)
+	if err != nil {
+		return
+	}
+
+	err = n.oracleIp(db)
+	if err != nil {
+		return
+	}
+
+	err = n.oracleUp(db)
+	if err != nil {
+		return
+	}
+
+	err = n.oracleRoute(db)
+	if err != nil {
+		return
+	}
+
 	return
 }
