@@ -42,14 +42,15 @@ func (n *Namespace) Deploy() (err error) {
 	}
 
 	externalNetwork := false
-	if nodeNetworkMode != node.Disabled {
+	if nodeNetworkMode != node.Disabled && nodeNetworkMode != node.Oracle {
 		externalNetwork = true
 	}
 
 	externalNetwork6 := false
 	if nodeNetworkMode6 != node.Disabled &&
 		(nodeNetworkMode != nodeNetworkMode6 ||
-			nodeNetworkMode6 == node.Static) {
+			nodeNetworkMode6 == node.Static) &&
+		nodeNetworkMode6 != node.Oracle {
 
 		externalNetwork6 = true
 	}
