@@ -204,6 +204,10 @@ func SinceAbs(t time.Time) (s time.Duration) {
 	return
 }
 
+func PointerBool(x bool) *bool {
+	return &x
+}
+
 func PointerInt(x int) *int {
 	return &x
 }
