@@ -48,6 +48,7 @@ export interface Instance {
 	no_host_address?: boolean;
 	vpc?: string;
 	subnet?: string;
+	oracle_subnet?: string;
 	count?: number;
 	info?: Info;
 }
