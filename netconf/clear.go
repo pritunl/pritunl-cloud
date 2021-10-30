@@ -75,6 +75,10 @@ func (n *NetConf) ClearAll(db *database.Database) (err error) {
 }
 
 func clearIface(iface string) {
+	if iface == "" {
+		return
+	}
+
 	_, _ = utils.ExecCombinedOutput(
 		"", "ip", "link", "set", iface, "down")
 	_, _ = utils.ExecCombinedOutput(
