@@ -25,6 +25,7 @@ import PageNumInput from './PageNumInput';
 import Help from './Help';
 import OrganizationsStore from "../stores/OrganizationsStore";
 import PageTextArea from "./PageTextArea";
+import NodesStore from "../stores/NodesStore";
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -458,6 +459,31 @@ export default class InstanceNew extends React.Component<Props, State> {
 			subnetSelect = [<option key="null" value="">No Subnets</option>];
 		}
 
+		let oracleSubnetsSelect: JSX.Element[] = [
+			<option key="null" value="">Disabled</option>,
+		];
+		if (instance.node) {
+			let node = NodesStore.node(instance.node);
+
+			if (node.oracle_subnets && node.oracle_subnets.length) {
+				let subnets: Map<string, string> = new Map();
+
+				for (let vpc of (node.available_vpcs || [])) {
+					for (let subnet of (vpc.subnets || [])) {
+						subnets.set(subnet.id, vpc.name + ' - ' + subnet.name);
+					}
+				}
+
+				for (let subnetId of (node.oracle_subnets || [])) {
+					oracleSubnetsSelect.push(
+						<option key={subnetId} value={subnetId}>
+							{subnets.get(subnetId) || subnetId}
+						</option>,
+					);
+				}
+			}
+		}
+
 		let domainsSelect: JSX.Element[] = [
 			<option key="null" value="">No Domain</option>,
 		];
@@ -652,6 +678,24 @@ export default class InstanceNew extends React.Component<Props, State> {
 							}}
 						>
 							{subnetSelect}
+						</PageSelect>
+						<PageSelect
+							disabled={this.state.disabled}
+							hidden={oracleSubnetsSelect.length <= 1}
+							label="Oracle Cloud Subnet"
+							help="Oracle Cloud subnet for instance."
+							value={instance.oracle_subnet}
+							onChange={(val): void => {
+								this.setState({
+									...this.state,
+									instance: {
+										...this.state.instance,
+										oracle_subnet: val,
+									},
+								});
+							}}
+						>
+							{oracleSubnetsSelect}
 						</PageSelect>
 						<PageSelect
 							disabled={this.state.disabled || !hasNodes}
