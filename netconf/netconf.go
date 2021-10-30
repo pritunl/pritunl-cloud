@@ -114,6 +114,11 @@ func (n *NetConf) Init(db *database.Database) (err error) {
 		return
 	}
 
+	err = n.Oracle(db)
+	if err != nil {
+		return
+	}
+
 	err = n.External(db)
 	if err != nil {
 		return
