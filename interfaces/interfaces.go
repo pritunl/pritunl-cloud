@@ -282,6 +282,10 @@ func GetBridges(nde *node.Node) (bridges set.Set) {
 }
 
 func RemoveVirtIface(virtIface string) {
+	if virtIface == "" {
+		return
+	}
+
 	ifacesLock.Lock()
 	lastChange = time.Now()
 	for iface, ifaceSet := range ifaces {
