@@ -18,22 +18,27 @@ type Metadata struct {
 	VnicOcid        string
 }
 
-type ociMetaVnic struct {
-	Id        string `json:"vnicId"`
-	MacAddr   string `json:"macAddr"`
-	PrivateIp string `json:"privateIp"`
+type OciMetaVnic struct {
+	Id                  string `json:"vnicId"`
+	VlanTag             int    `json:"vlanTag"`
+	MacAddr             string `json:"macAddr"`
+	PrivateIp           string `json:"privateIp"`
+	VirtualRouterIp     string `json:"virtualRouterIp"`
+	SubnetCidrBlock     string `json:"subnetCidrBlock"`
+	Ipv6SubnetCidrBlock string `json:"ipv6SubnetCidrBlock"`
+	Ipv6VirtualRouterIp string `json:"ipv6VirtualRouterIp"`
 }
 
-type ociMetaInstance struct {
+type OciMetaInstance struct {
 	Id            string `json:"id"`
 	DisplayName   string `json:"displayName"`
 	CompartmentId string `json:"compartmentId"`
 	RegionName    string `json:"canonicalRegionName"`
 }
 
-type ociMeta struct {
-	Instance ociMetaInstance `json:"instance"`
-	Vnics    []ociMetaVnic   `json:"vnics"`
+type OciMeta struct {
+	Instance OciMetaInstance `json:"instance"`
+	Vnics    []OciMetaVnic   `json:"vnics"`
 }
 
 func GetMetadata(authPv AuthProvider) (mdata *Metadata, err error) {
@@ -45,7 +50,7 @@ func GetMetadata(authPv AuthProvider) (mdata *Metadata, err error) {
 		return
 	}
 
-	data := &ociMeta{}
+	data := &OciMeta{}
 
 	err = json.Unmarshal([]byte(output), data)
 	if err != nil {
@@ -78,6 +83,25 @@ func GetMetadata(authPv AuthProvider) (mdata *Metadata, err error) {
 		CompartmentOcid: data.Instance.CompartmentId,
 		InstanceOcid:    data.Instance.Id,
 		VnicOcid:        vnicOcid,
+	}
+
+	return
+}
+
+func GetOciMetadata() (mdata *OciMeta, err error) {
+	output, err := utils.ExecOutput("", "oci-metadata", "--json")
+	if err != nil {
+		return
+	}
+
+	mdata = &OciMeta{}
+
+	err = json.Unmarshal([]byte(output), mdata)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "oracle: Failed to parse metadata"),
+		}
+		return
 	}
 
 	return
