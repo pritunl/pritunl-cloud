@@ -7,9 +7,9 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/sirupsen/logrus"
 )
 
 func Exec(dir, name string, arg ...string) (err error) {
@@ -73,6 +73,74 @@ func ExecInput(dir, input, name string, arg ...string) (err error) {
 		err = &errortypes.RequestError{
 			errors.Wrapf(err, "utils: Failed to exec '%s'", name),
 		}
+		return
+	}
+
+	return
+}
+
+func ExecInputOutputLogged(ignores []string, input, name string,
+	arg ...string) (output string, err error) {
+
+	cmd := exec.Command(name, arg...)
+
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+
+	cmd.Stdout = stdout
+	cmd.Stderr = stderr
+
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		err = &errortypes.RequestError{
+			errors.Wrapf(err,
+				"utils: Failed to get stdin in exec '%s'", name),
+		}
+		return
+	}
+	defer stdin.Close()
+
+	err = cmd.Start()
+
+	_, err = io.WriteString(stdin, input)
+	if err != nil {
+		err = &errortypes.RequestError{
+			errors.Wrapf(err, "utils: Failed to write stdin in exec '%s'",
+				name),
+		}
+		return
+	}
+
+	stdin.Close()
+
+	err = cmd.Wait()
+
+	output = stdout.String()
+	errOutput := stderr.String()
+
+	if err != nil && ignores != nil {
+		for _, ignore := range ignores {
+			if strings.Contains(output, ignore) ||
+				strings.Contains(errOutput, ignore) {
+
+				err = nil
+				output = ""
+				break
+			}
+		}
+	}
+	if err != nil {
+		err = &errortypes.ExecError{
+			errors.Wrapf(err, "utils: Failed to exec '%s'", name),
+		}
+
+		logrus.WithFields(logrus.Fields{
+			"output":       output,
+			"error_output": errOutput,
+			"cmd":          name,
+			"arg":          arg,
+			"error":        err,
+		}).Error("utils: Process exec error")
 		return
 	}
 
