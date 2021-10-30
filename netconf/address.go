@@ -102,13 +102,6 @@ func (n *NetConf) Address(db *database.Database) (err error) {
 		n.ExternalGatewayAddr6 = gateway6
 	}
 
-	if n.PhysicalExternalIface6 == "" {
-		err = &errortypes.NotFoundError{
-			errors.New("qemu: Failed to get external interface6"),
-		}
-		return
-	}
-
 	if n.SpaceExternalIface6 == n.SpaceExternalIface {
 		n.ExternalMacAddr6 = n.ExternalMacAddr
 	} else {
