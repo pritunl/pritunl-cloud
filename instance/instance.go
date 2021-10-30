@@ -205,6 +205,24 @@ func (i *Instance) Validate(db *database.Database) (
 		return
 	}
 
+	if i.OracleSubnet != "" {
+		match := false
+		for _, subnet := range nde.OracleSubnets {
+			if subnet == i.OracleSubnet {
+				match = true
+				break
+			}
+		}
+
+		if !match {
+			errData = &errortypes.ErrorData{
+				Error:   "oracle_subnet_invalid",
+				Message: "Invalid Oracle subnet",
+			}
+			return
+		}
+	}
+
 	if i.Isos == nil {
 		i.Isos = []*iso.Iso{}
 	} else {
