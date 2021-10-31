@@ -820,6 +820,7 @@ func (n *Node) update(db *database.Database) (err error) {
 				"available_interfaces": n.AvailableInterfaces,
 				"available_bridges":    n.AvailableBridges,
 				"available_vpcs":       n.AvailableVpcs,
+				"oracle_subnets":       n.OracleSubnets,
 				"default_interface":    n.DefaultInterface,
 				"available_drives":     n.AvailableDrives,
 			},
