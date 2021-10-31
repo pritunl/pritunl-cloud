@@ -193,8 +193,19 @@ func (q *Qemu) Marshal() (output string, err error) {
 		q.Sockets,
 	))
 
-	cmd = append(cmd, "-boot")
-	cmd = append(cmd, q.Boot)
+	if q.Isos != nil && len(q.Isos) > 0 {
+		cmd = append(cmd, "-boot")
+		cmd = append(
+			cmd,
+			fmt.Sprintf(
+				"order=d,menu=on,splash-time=%d",
+				settings.Hypervisor.SplashTime*1000,
+			),
+		)
+	} else {
+		cmd = append(cmd, "-boot")
+		cmd = append(cmd, q.Boot)
+	}
 
 	cmd = append(cmd, "-m")
 	cmd = append(cmd, fmt.Sprintf("%dM", q.Memory))
@@ -316,15 +327,6 @@ func (q *Qemu) Marshal() (output string, err error) {
 				i+1,
 			))
 		}
-
-		cmd = append(cmd, "-boot")
-		cmd = append(
-			cmd,
-			fmt.Sprintf(
-				"order=d,menu=on,splash-time=%d",
-				settings.Hypervisor.SplashTime*1000,
-			),
-		)
 	}
 
 	cmd = append(cmd, "-monitor")
