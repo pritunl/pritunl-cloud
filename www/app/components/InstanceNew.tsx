@@ -106,6 +106,8 @@ const css = {
 };
 
 export default class InstanceNew extends React.Component<Props, State> {
+	imagesMap: Map<string, string>;
+
 	constructor(props: any, context: any) {
 		super(props, context);
 		this.state = {
@@ -300,6 +302,25 @@ export default class InstanceNew extends React.Component<Props, State> {
 			changed: true,
 			message: '',
 			addNetworkRole: '',
+			instance: instance,
+		});
+	}
+
+	onImageselect = (val: string): void => {
+		let instance: any = {
+			...this.state.instance,
+		};
+		let imageName = this.imagesMap.get(val);
+
+		instance.image = val;
+
+		if (imageName && imageName.toLowerCase().indexOf('fedora') !== -1) {
+			instance.secure_boot = false;
+		}
+
+		this.setState({
+			...this.state,
+			changed: true,
 			instance: instance,
 		});
 	}
@@ -505,6 +526,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 
 		let hasImages = false;
 		let imagesSelect: JSX.Element[] = [];
+		this.imagesMap = new Map();
 		if (this.state.images.length) {
 			imagesSelect.push(<option key="null" value="">Select Image</option>);
 
@@ -515,6 +537,8 @@ export default class InstanceNew extends React.Component<Props, State> {
 				} else if (!instance.uefi && image.firmware === 'uefi') {
 					continue;
 				}
+
+				this.imagesMap.set(image.id, image.name);
 
 				imagesSelect.push(
 					<option
@@ -776,9 +800,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 							label="Image"
 							help="Starting image for node."
 							value={instance.image}
-							onChange={(val): void => {
-								this.set('image', val);
-							}}
+							onChange={this.onImageselect}
 						>
 							{imagesSelect}
 						</PageSelect>
