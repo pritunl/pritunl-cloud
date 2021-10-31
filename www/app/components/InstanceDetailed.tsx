@@ -1061,6 +1061,11 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			hostIps = 'None';
 		}
 
+		let oracleIps: any = this.props.instance.oracle_ips;
+		if (!oracleIps || !oracleIps.length) {
+			oracleIps = null;
+		}
+
 		let statusClass = '';
 		switch (instance.status) {
 			case 'Running':
@@ -1446,6 +1451,19 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				value: gatewayIps6,
 				copy: true,
 			},
+		];
+
+		if (oracleIps) {
+			fields.push(
+				{
+					label: 'Oracle IPv4',
+					value: oracleIps,
+					copy: true,
+				},
+			);
+		}
+
+		fields.push(
 			{
 				label: 'Host IPv4',
 				value: hostIps,
@@ -1456,7 +1474,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				value: this.props.instance.network_namespace || 'None',
 				copy: true,
 			},
-		];
+		);
 
 		if (this.props.instance.vnc) {
 			fields.push(
