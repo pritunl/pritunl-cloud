@@ -70,6 +70,7 @@ func GetAllHypervisors(db *database.Database, query *bson.M) (
 			Projection: &bson.D{
 				{"name", 1},
 				{"types", 1},
+				{"oracle_subnets", 1},
 			},
 		},
 	)
@@ -93,6 +94,8 @@ func GetAllHypervisors(db *database.Database, query *bson.M) (
 			nodes = append(nodes, nde)
 			nde = &Node{}
 		}
+
+		nde.JsonHypervisor()
 	}
 
 	err = cursor.Err()
