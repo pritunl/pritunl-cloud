@@ -28,7 +28,7 @@ func (n *NetConf) spaceSysctl(db *database.Database) (err error) {
 		return
 	}
 
-	if n.NetworkMode6 != node.Disabled {
+	if n.NetworkMode6 != node.Disabled && n.NetworkMode6 != node.Oracle {
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
 			"ip", "netns", "exec", n.Namespace,
@@ -45,7 +45,7 @@ func (n *NetConf) spaceSysctl(db *database.Database) (err error) {
 }
 
 func (n *NetConf) spaceForward(db *database.Database) (err error) {
-	if n.NetworkMode != node.Disabled {
+	if n.NetworkMode != node.Disabled && n.NetworkMode != node.Oracle {
 		iptables.Lock()
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
@@ -62,7 +62,7 @@ func (n *NetConf) spaceForward(db *database.Database) (err error) {
 		}
 	}
 
-	if n.NetworkMode6 != node.Disabled {
+	if n.NetworkMode6 != node.Disabled && n.NetworkMode6 != node.Oracle {
 		iptables.Lock()
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
