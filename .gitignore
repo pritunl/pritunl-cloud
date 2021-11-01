@@ -11,3 +11,4 @@ Thumbs.db
 *.egg-info
 build_keys.json
 /pritunl-cloud
+/builder/builder
