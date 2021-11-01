@@ -168,7 +168,8 @@ func getUserData(db *database.Database, inst *instance.Instance,
 		cloudScript += fmt.Sprintf(teeTmpl, "/etc/ssh/trusted", trusted)
 	}
 	if principals != "" {
-		cloudScript += fmt.Sprintf(teeTmpl, "/etc/ssh/principals", principals)
+		cloudScript += fmt.Sprintf(teeTmpl, "/etc/ssh/principals",
+			principals)
 	}
 
 	if cloudScript != "" {
