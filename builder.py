@@ -278,6 +278,10 @@ if cmd == 'sync-releases':
             break
         next_url = response.headers['Link'].split(';')[0][1:-1]
 
+if cmd == 'get-version':
+    new_version_orig = args[1]
+    new_version = get_ver(new_version_orig)
+    print(new_version)
 
 if cmd == 'set-version':
     new_version_orig = args[1]
