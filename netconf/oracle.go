@@ -151,14 +151,16 @@ func (n *NetConf) oracleConfVnic(db *database.Database) (err error) {
 		return
 	}
 
-	_, err = utils.ExecCombinedOutputLogged(
-		nil,
-		"ip", "link",
-		"set", "dev", oracleIface,
-		"name", n.SpaceOracleIface,
-	)
-	if err != nil {
-		return
+	if oracleIface != n.SpaceOracleIface {
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "link",
+			"set", "dev", oracleIface,
+			"name", n.SpaceOracleIface,
+		)
+		if err != nil {
+			return
+		}
 	}
 
 	return
