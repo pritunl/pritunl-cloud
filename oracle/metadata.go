@@ -2,6 +2,7 @@ package oracle
 
 import (
 	"encoding/json"
+	"strings"
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -27,6 +28,7 @@ type OciMetaVnic struct {
 	SubnetCidrBlock     string `json:"subnetCidrBlock"`
 	Ipv6SubnetCidrBlock string `json:"ipv6SubnetCidrBlock"`
 	Ipv6VirtualRouterIp string `json:"ipv6VirtualRouterIp"`
+	NicIndex            int    `json:"nicIndex"`
 }
 
 type OciMetaInstance struct {
