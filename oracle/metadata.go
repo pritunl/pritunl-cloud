@@ -36,11 +36,19 @@ type OciMetaInstance struct {
 	DisplayName   string `json:"displayName"`
 	CompartmentId string `json:"compartmentId"`
 	RegionName    string `json:"canonicalRegionName"`
+	Shape         string `json:"shape"`
 }
 
 type OciMeta struct {
 	Instance OciMetaInstance `json:"instance"`
 	Vnics    []OciMetaVnic   `json:"vnics"`
+}
+
+func (o *OciMeta) IsBareMetal() bool {
+	if strings.Contains(o.Instance.Shape, "BM.") {
+		return true
+	}
+	return false
 }
 
 func GetMetadata(authPv AuthProvider) (mdata *Metadata, err error) {
