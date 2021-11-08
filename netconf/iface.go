@@ -62,6 +62,7 @@ func (n *NetConf) Iface(db *database.Database) (err error) {
 	n.SpaceInternalIface = vm.GetIfaceInternal(n.Virt.Id, 0)
 	n.SpaceHostIface = vm.GetIfaceHost(n.Virt.Id, 0)
 	n.SpaceOracleIface = vm.GetIfaceOracle(n.Virt.Id, 0)
+	n.SpaceOracleVirtIface = vm.GetIfaceOracleVirt(n.Virt.Id, 0)
 
 	n.BridgeInternalIface = vm.GetIfaceVlan(n.Virt.Id, 0)
 
