@@ -2,6 +2,7 @@ package netconf
 
 import (
 	"net"
+	"strconv"
 	"strings"
 	"time"
 
@@ -75,6 +76,162 @@ func (n *NetConf) oracleInitVnic(db *database.Database) (err error) {
 }
 
 func (n *NetConf) oracleConfVnic(db *database.Database) (err error) {
+	mdata, e := oracle.GetOciMetadata()
+	if e != nil {
+		err = e
+		return
+	}
+
+	n.OracleMetal = mdata.IsBareMetal()
+
+	if n.OracleMetal {
+		err = n.oracleConfVnicMetal(db)
+		if err != nil {
+			return
+		}
+	} else {
+		err = n.oracleConfVnicVirt(db)
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
+func (n *NetConf) oracleConfVnicMetal(db *database.Database) (err error) {
+	found := false
+
+	nicIndex := 0
+	macAddr := ""
+	physicalMacAddr := ""
+
+	for i := 0; i < 120; i++ {
+		time.Sleep(2 * time.Second)
+
+		mdata, e := oracle.GetOciMetadata()
+		if e != nil {
+			err = e
+			return
+		}
+
+		for _, vnic := range mdata.Vnics {
+			if vnic.Id == n.Virt.OracleVnic {
+				n.Virt.OracleIp = vnic.PrivateIp
+				n.OracleVlan = vnic.VlanTag
+				n.OracleAddress = vnic.PrivateIp
+				n.OracleAddressSubnet = vnic.SubnetCidrBlock
+				n.OracleRouterAddress = vnic.VirtualRouterIp
+
+				nicIndex = vnic.NicIndex
+				macAddr = strings.ToLower(vnic.MacAddr)
+
+				found = true
+				break
+			}
+		}
+
+		if found {
+			break
+		}
+	}
+
+	if !found {
+		err = &errortypes.NotFoundError{
+			errors.New("netconf: Failed to find vnic"),
+		}
+		return
+	}
+
+	mdata, err := oracle.GetOciMetadata()
+	if err != nil {
+		return
+	}
+
+	found = false
+	for _, vnic := range mdata.Vnics {
+		if vnic.NicIndex == nicIndex && vnic.VlanTag == 0 {
+			physicalMacAddr = strings.ToLower(vnic.MacAddr)
+
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		err = &errortypes.NotFoundError{
+			errors.New("netconf: Failed to find physical nic"),
+		}
+		return
+	}
+
+	err = n.Virt.CommitOracleIps(db)
+	if err != nil {
+		return
+	}
+
+	ifaces, err := net.Interfaces()
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "netconf: Failed get network interfaces"),
+		}
+		return
+	}
+
+	physicalIface := ""
+	for _, iface := range ifaces {
+		if strings.ToLower(iface.HardwareAddr.String()) == physicalMacAddr {
+			physicalIface = iface.Name
+			break
+		}
+	}
+
+	if physicalIface == "" {
+		err = &errortypes.NotFoundError{
+			errors.New("netconf: Failed to find oracle physical interface"),
+		}
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "link",
+		"add", "link", physicalIface,
+		"name", n.SpaceOracleVirtIface,
+		"address", macAddr,
+		"type", "macvlan",
+	)
+	if err != nil {
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		[]string{"File exists"},
+		"ip", "link",
+		"set", "dev", n.SpaceOracleVirtIface,
+		"netns", n.Namespace,
+	)
+	if err != nil {
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		[]string{"File exists"},
+		"ip", "netns", "exec", n.Namespace,
+		"ip", "link",
+		"add", "link", n.SpaceOracleVirtIface,
+		"name", n.SpaceOracleIface,
+		"type", "vlan",
+		"id", strconv.Itoa(n.OracleVlan),
+	)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func (n *NetConf) oracleConfVnicVirt(db *database.Database) (err error) {
 	found := false
 
 	oracleMacAddr := ""
@@ -163,10 +320,6 @@ func (n *NetConf) oracleConfVnic(db *database.Database) (err error) {
 		}
 	}
 
-	return
-}
-
-func (n *NetConf) oracleSpace(db *database.Database) (err error) {
 	_, err = utils.ExecCombinedOutputLogged(
 		[]string{"File exists"},
 		"ip", "link",
@@ -181,6 +334,19 @@ func (n *NetConf) oracleSpace(db *database.Database) (err error) {
 }
 
 func (n *NetConf) oracleMtu(db *database.Database) (err error) {
+	if n.OracleMetal {
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", n.Namespace,
+			"ip", "link",
+			"set", "dev", n.SpaceOracleVirtIface,
+			"mtu", "9000",
+		)
+		if err != nil {
+			return
+		}
+	}
+
 	_, err = utils.ExecCombinedOutputLogged(
 		nil,
 		"ip", "netns", "exec", n.Namespace,
@@ -220,6 +386,18 @@ func (n *NetConf) oracleIp(db *database.Database) (err error) {
 }
 
 func (n *NetConf) oracleUp(db *database.Database) (err error) {
+	if n.OracleMetal {
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", n.Namespace,
+			"ip", "link",
+			"set", "dev", n.SpaceOracleVirtIface, "up",
+		)
+		if err != nil {
+			return
+		}
+	}
+
 	_, err = utils.ExecCombinedOutputLogged(
 		nil,
 		"ip", "netns", "exec", n.Namespace,
@@ -260,11 +438,6 @@ func (n *NetConf) Oracle(db *database.Database) (err error) {
 	}
 
 	err = n.oracleConfVnic(db)
-	if err != nil {
-		return
-	}
-
-	err = n.oracleSpace(db)
 	if err != nil {
 		return
 	}
