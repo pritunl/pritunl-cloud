@@ -60,7 +60,8 @@ type Instance struct {
 	PrivateIps6         []string           `bson:"private_ips6" json:"private_ips6"`
 	GatewayIps          []string           `bson:"gateway_ips" json:"gateway_ips"`
 	GatewayIps6         []string           `bson:"gateway_ips6" json:"gateway_ips6"`
-	OracleIps           []string           `bson:"oracle_ips" json:"oracle_ips"`
+	OraclePrivateIps    []string           `bson:"oracle_private_ips" json:"oracle_private_ips"`
+	OraclePublicIps     []string           `bson:"oracle_public_ips" json:"oracle_public_ips"`
 	HostIps             []string           `bson:"host_ips" json:"host_ips"`
 	NetworkNamespace    string             `bson:"network_namespace" json:"network_namespace"`
 	NoPublicAddress     bool               `bson:"no_public_address" json:"no_public_address"`
