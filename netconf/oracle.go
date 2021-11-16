@@ -12,6 +12,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/oracle"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/sirupsen/logrus"
 )
 
 func (n *NetConf) oracleInitVnic(db *database.Database) (err error) {
@@ -112,10 +113,14 @@ func (n *NetConf) oracleConfVnic(db *database.Database) (err error) {
 
 func (n *NetConf) oracleConfVnicMetal(db *database.Database) (err error) {
 	found := false
-
 	nicIndex := 0
 	macAddr := ""
 	physicalMacAddr := ""
+
+	pv, err := oracle.NewProvider(node.Self.GetOracleAuthProvider())
+	if err != nil {
+		return
+	}
 
 	for i := 0; i < 120; i++ {
 		time.Sleep(2 * time.Second)
@@ -128,7 +133,7 @@ func (n *NetConf) oracleConfVnicMetal(db *database.Database) (err error) {
 
 		for _, vnic := range mdata.Vnics {
 			if vnic.Id == n.Virt.OracleVnic {
-				n.Virt.OracleIp = vnic.PrivateIp
+				n.Virt.OraclePrivateIp = vnic.PrivateIp
 				n.OracleVlan = vnic.VlanTag
 				n.OracleAddress = vnic.PrivateIp
 				n.OracleAddressSubnet = vnic.SubnetCidrBlock
@@ -175,6 +180,13 @@ func (n *NetConf) oracleConfVnicMetal(db *database.Database) (err error) {
 		}
 		return
 	}
+
+	vnic, err := oracle.GetVnic(pv, n.Virt.OracleVnic)
+	if err != nil {
+		return
+	}
+
+	n.Virt.OraclePublicIp = vnic.PublicIp
 
 	err = n.Virt.CommitOracleIps(db)
 	if err != nil {
@@ -244,8 +256,12 @@ func (n *NetConf) oracleConfVnicMetal(db *database.Database) (err error) {
 
 func (n *NetConf) oracleConfVnicVirt(db *database.Database) (err error) {
 	found := false
-
 	oracleMacAddr := ""
+
+	pv, err := oracle.NewProvider(node.Self.GetOracleAuthProvider())
+	if err != nil {
+		return
+	}
 
 	for i := 0; i < 120; i++ {
 		time.Sleep(2 * time.Second)
@@ -258,7 +274,7 @@ func (n *NetConf) oracleConfVnicVirt(db *database.Database) (err error) {
 
 		for _, vnic := range mdata.Vnics {
 			if vnic.Id == n.Virt.OracleVnic {
-				n.Virt.OracleIp = vnic.PrivateIp
+				n.Virt.OraclePrivateIp = vnic.PrivateIp
 				n.OracleAddress = vnic.PrivateIp
 				n.OracleAddressSubnet = vnic.SubnetCidrBlock
 				n.OracleRouterAddress = vnic.VirtualRouterIp
@@ -281,6 +297,13 @@ func (n *NetConf) oracleConfVnicVirt(db *database.Database) (err error) {
 		}
 		return
 	}
+
+	vnic, err := oracle.GetVnic(pv, n.Virt.OracleVnic)
+	if err != nil {
+		return
+	}
+
+	n.Virt.OraclePublicIp = vnic.PublicIp
 
 	err = n.Virt.CommitOracleIps(db)
 	if err != nil {
