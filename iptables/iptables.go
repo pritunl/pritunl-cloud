@@ -344,6 +344,10 @@ func (r *Rules) Hold() (err error) {
 			cmd = append(cmd,
 				"-i", r.Interface,
 			)
+		} else if strings.HasPrefix(r.Interface, "o") {
+			cmd = append(cmd,
+				"-i", r.Interface,
+			)
 		} else if strings.HasPrefix(r.Interface, "p") {
 			cmd = append(cmd,
 				"-m", "physdev",
@@ -375,6 +379,10 @@ func (r *Rules) Hold() (err error) {
 				"-i", r.Interface,
 			)
 		} else if strings.HasPrefix(r.Interface, "i") {
+			cmd = append(cmd,
+				"-i", r.Interface,
+			)
+		} else if strings.HasPrefix(r.Interface, "o") {
 			cmd = append(cmd,
 				"-i", r.Interface,
 			)
