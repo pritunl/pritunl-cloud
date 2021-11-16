@@ -105,8 +105,19 @@ func (q *Qemu) GetNetworkQueues() (queues int) {
 func (q *Qemu) Marshal() (output string, err error) {
 	localIsosPath := paths.GetLocalIsosPath()
 
+	qemuPath := ""
+	exists, err := utils.Exists(System)
+	if err != nil {
+		return
+	}
+	if exists {
+		qemuPath = System
+	} else {
+		qemuPath = Libvirt
+	}
+
 	cmd := []string{
-		"/usr/bin/qemu-system-x86_64",
+		qemuPath,
 		"-nographic",
 	}
 
