@@ -26,10 +26,21 @@ func (n *NetConf) oracleInitVnic(db *database.Database) (err error) {
 	if n.Virt.OracleVnic != "" {
 		vnic, err = oracle.GetVnic(pv, n.Virt.OracleVnic)
 		if err != nil {
-			return
+			if _, ok := err.(*errortypes.NotFoundError); ok {
+				logrus.WithFields(logrus.Fields{
+					"vnic_id": n.Virt.OracleVnic,
+					"error":   err,
+				}).Warn("netconf: Oracle vnic not found, creating new vnic")
+
+				err = nil
+			} else {
+				return
+			}
 		}
 
-		if vnic.SubnetId != n.Virt.OracleSubnet {
+		if vnic == nil {
+			found = false
+		} else if vnic.SubnetId != n.Virt.OracleSubnet {
 			err = oracle.RemoveVnic(pv, n.Virt.OracleVnicAttach)
 			if err != nil {
 				return
