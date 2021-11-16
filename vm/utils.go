@@ -150,6 +150,13 @@ func GetIfaceOracle(id primitive.ObjectID, n int) string {
 	return fmt.Sprintf("o%s%d", strings.ToLower(hashSum), n)
 }
 
+func GetIfaceOracleVirt(id primitive.ObjectID, n int) string {
+	hash := md5.New()
+	hash.Write([]byte(id.Hex()))
+	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
+	return fmt.Sprintf("t%s%d", strings.ToLower(hashSum), n)
+}
+
 func GetIfaceVlan(id primitive.ObjectID, n int) string {
 	hash := md5.New()
 	hash.Write([]byte(id.Hex()))
