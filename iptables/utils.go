@@ -813,8 +813,8 @@ func UpdateState(nodeSelf *node.Node, instances []*instance.Instance,
 
 		oracleAddr := ""
 		oracleIface := vm.GetIfaceOracle(inst.Id, 0)
-		if inst.OracleIps != nil && len(inst.OracleIps) != 0 {
-			oracleAddr = inst.OracleIps[0]
+		if inst.OraclePrivateIps != nil && len(inst.OraclePrivateIps) != 0 {
+			oracleAddr = inst.OraclePrivateIps[0]
 		}
 
 		_, ok := newState.Interfaces[namespace+"-"+iface]
