@@ -4,6 +4,7 @@ pritunl-cloud changelog
 <%= version %>
 
 Add Oracle Cloud vnic support
+Improve qemu support
 
 Version 1.2.2144.31 2021-10-07
 ------------------------------
