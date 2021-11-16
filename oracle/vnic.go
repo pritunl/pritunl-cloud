@@ -57,6 +57,15 @@ func GetVnic(pv *Provider, vnicId string) (vnic *Vnic, err error) {
 
 	orcVnic, err := client.GetVnic(context.Background(), req)
 	if err != nil {
+		if orcVnic.RawResponse != nil &&
+			orcVnic.RawResponse.StatusCode == 404 {
+
+			err = &errortypes.NotFoundError{
+				errors.Wrap(err, "oracle: Failed to find vnic"),
+			}
+			return
+		}
+
 		err = &errortypes.RequestError{
 			errors.Wrap(err, "oracle: Failed to get vnic"),
 		}
@@ -102,7 +111,9 @@ func GetVnic(pv *Provider, vnicId string) (vnic *Vnic, err error) {
 
 	if orcIps.Items != nil {
 		for _, orcIp := range orcIps.Items {
-			if orcIp.IsPrimary != nil && *orcIp.IsPrimary && orcIp.Id != nil {
+			if orcIp.IsPrimary != nil && *orcIp.IsPrimary &&
+				orcIp.Id != nil {
+
 				vnic.PrivateIpId = *orcIp.Id
 				break
 			}
@@ -159,12 +170,26 @@ func CreateVnic(pv *Provider, name string, subnetId string) (
 		},
 	}
 
-	resp, err := client.AttachVnic(context.Background(), req)
-	if err != nil {
-		err = &errortypes.RequestError{
-			errors.Wrap(err, "oracle: Failed to create vnic"),
+	var resp core.AttachVnicResponse
+
+	for i := 0; i < 120; i++ {
+		resp, err = client.AttachVnic(context.Background(), req)
+		if err != nil {
+			if i != 119 && resp.RawResponse != nil &&
+				resp.RawResponse.StatusCode == 409 {
+
+				time.Sleep(1 * time.Second)
+
+				continue
+			}
+
+			err = &errortypes.RequestError{
+				errors.Wrap(err, "oracle: Failed to create vnic"),
+			}
+			return
 		}
-		return
+
+		break
 	}
 
 	if resp.Id == nil {
@@ -215,12 +240,24 @@ func RemoveVnic(pv *Provider, vnicAttachId string) (err error) {
 		VnicAttachmentId: utils.PointerString(vnicAttachId),
 	}
 
-	_, err = client.DetachVnic(context.Background(), req)
-	if err != nil {
-		err = &errortypes.RequestError{
-			errors.Wrap(err, "oracle: Failed to remove vnic"),
+	for i := 0; i < 120; i++ {
+		resp, e := client.DetachVnic(context.Background(), req)
+		if e != nil {
+			if i != 119 && resp.RawResponse != nil &&
+				resp.RawResponse.StatusCode == 409 {
+
+				time.Sleep(1 * time.Second)
+
+				continue
+			}
+
+			err = &errortypes.RequestError{
+				errors.Wrap(e, "oracle: Failed to remove vnic"),
+			}
+			return
 		}
-		return
+
+		break
 	}
 
 	return
