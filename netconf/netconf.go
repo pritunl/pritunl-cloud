@@ -33,12 +33,13 @@ type NetConf struct {
 	OracleRouterAddress string
 	OracleMetal         bool
 
-	VirtIface           string
-	SpaceExternalIface  string
-	SpaceExternalIface6 string
-	SpaceInternalIface  string
-	SpaceHostIface      string
-	SpaceOracleIface    string
+	VirtIface            string
+	SpaceExternalIface   string
+	SpaceExternalIface6  string
+	SpaceInternalIface   string
+	SpaceHostIface       string
+	SpaceOracleIface     string
+	SpaceOracleVirtIface string
 
 	BridgeInternalIface string
 
