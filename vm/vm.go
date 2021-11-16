@@ -25,7 +25,8 @@ type VirtualMachine struct {
 	OracleSubnet        string             `json:"oracle_subnet"`
 	OracleVnic          string             `json:"oracle_vnic"`
 	OracleVnicAttach    string             `json:"oracle_vnic_attach"`
-	OracleIp            string             `json:"oracle_ip"`
+	OraclePrivateIp     string             `json:"oracle_private_ip"`
+	OraclePublicIp      string             `json:"oracle_public_ip"`
 	Uefi                bool               `json:"uefi"`
 	SecureBoot          bool               `json:"secure_boot"`
 	NoPublicAddress     bool               `json:"no_public_address"`
@@ -164,7 +165,8 @@ func (v *VirtualMachine) CommitOracleIps(db *database.Database) (err error) {
 
 	err = coll.UpdateId(v.Id, &bson.M{
 		"$set": &bson.M{
-			"oracle_ips": []string{v.OracleIp},
+			"oracle_private_ips": []string{v.OraclePrivateIp},
+			"oracle_public_ips":  []string{v.OraclePublicIp},
 		},
 	})
 	if err != nil {
