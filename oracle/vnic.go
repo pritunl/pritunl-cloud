@@ -7,6 +7,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/oracle/oci-go-sdk/core"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -172,13 +173,17 @@ func CreateVnic(pv *Provider, name string, subnetId string) (
 
 	var resp core.AttachVnicResponse
 
-	for i := 0; i < 120; i++ {
+	retryCount := settings.System.OracleApiRetryCount
+	retryRate := time.Duration(
+		settings.System.OracleApiRetryRate) * time.Second
+
+	for i := 0; i < retryCount; i++ {
 		resp, err = client.AttachVnic(context.Background(), req)
 		if err != nil {
-			if i != 119 && resp.RawResponse != nil &&
+			if i != retryCount-1 && resp.RawResponse != nil &&
 				resp.RawResponse.StatusCode == 409 {
 
-				time.Sleep(1 * time.Second)
+				time.Sleep(retryRate)
 
 				continue
 			}
@@ -240,13 +245,17 @@ func RemoveVnic(pv *Provider, vnicAttachId string) (err error) {
 		VnicAttachmentId: utils.PointerString(vnicAttachId),
 	}
 
-	for i := 0; i < 120; i++ {
+	retryCount := settings.System.OracleApiRetryCount
+	retryRate := time.Duration(
+		settings.System.OracleApiRetryRate) * time.Second
+
+	for i := 0; i < retryCount; i++ {
 		resp, e := client.DetachVnic(context.Background(), req)
 		if e != nil {
-			if i != 119 && resp.RawResponse != nil &&
+			if i != retryCount-1 && resp.RawResponse != nil &&
 				resp.RawResponse.StatusCode == 409 {
 
-				time.Sleep(1 * time.Second)
+				time.Sleep(retryRate)
 
 				continue
 			}
