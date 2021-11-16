@@ -553,7 +553,9 @@ func (n *Node) Validate(db *database.Database) (
 		n.HostNatExcludes = []string{}
 	}
 
-	if n.OracleHostRoute {
+	if n.OracleHostRoute || n.NetworkMode == Oracle ||
+		n.NetworkMode6 == Oracle {
+
 		if n.OracleUser == "" {
 			errData = &errortypes.ErrorData{
 				Error:   "missing_oracle_user",
