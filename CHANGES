@@ -1,8 +1,7 @@
 pritunl-cloud changelog
 =======================
 
-Version 1.2.2184.80 2021-11-16
-------------------------------
+<%= version %>
 
 Add Oracle Cloud vnic support
 
