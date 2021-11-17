@@ -81,7 +81,7 @@ func main() {
 		panic(err)
 	}
 
-	err = cloud.Cloud(unstable)
+	err = cloud.Cloud(*unstable)
 	if err != nil {
 		panic(err)
 	}
