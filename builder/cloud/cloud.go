@@ -18,6 +18,12 @@ baseurl=https://repo.pritunl.com/stable/yum/oraclelinux/8/
 gpgcheck=1
 enabled=1
 `
+	repoPritunlUnstableData = `[pritunl]
+name=Pritunl Unstable Repository
+baseurl=https://repo.pritunl.com/unstable/yum/oraclelinux/8/
+gpgcheck=1
+enabled=1
+`
 	repoKvmKeyPath     = "/tmp/pritunl-kvm.pub"
 	repoKvmFingerprint = "1BB6FBB8D641BD9C6C0398D74D55437EC0508F5F"
 	repoKvmPath        = "/etc/yum.repos.d/pritunl-kvm.repo"
@@ -75,14 +81,25 @@ func KvmRepo() (err error) {
 	return
 }
 
-func PritunlRepo() (err error) {
-	err = utils.CreateWrite(
-		repoPritunlPath,
-		repoPritunlData,
-		0644,
-	)
-	if err != nil {
-		return
+func PritunlRepo(unstable bool) (err error) {
+	if unstable {
+		err = utils.CreateWrite(
+			repoPritunlPath,
+			repoPritunlUnstableData,
+			0644,
+		)
+		if err != nil {
+			return
+		}
+	} else {
+		err = utils.CreateWrite(
+			repoPritunlPath,
+			repoPritunlData,
+			0644,
+		)
+		if err != nil {
+			return
+		}
 	}
 
 	err = utils.Exec("",
@@ -122,18 +139,12 @@ func PritunlRepo() (err error) {
 }
 
 func Install() (err error) {
-	err = utils.Exec("", "/usr/bin/yum", "-y", "remove",
-		"qemu-kvm", "qemu-img", "qemu-system-x86", "cockpit", "cockpit-ws")
-	if err != nil {
-		return
-	}
-
 	utils.ExecCombinedOutput("", "/usr/bin/systemctl", "stop", "libvirtd")
 	utils.ExecCombinedOutput("", "/usr/bin/systemctl", "disable", "libvirtd")
 
 	err = utils.Exec("", "/usr/bin/yum", "-y", "install",
-		"edk2-ovmf", "pritunl-qemu-kvm", "pritunl-qemu-img",
-		"pritunl-qemu-system-x86", "pritunl-cloud", "genisoimage", "libusal")
+		"edk2-ovmf", "qemu-kvm", "qemu-kvm-core", "qemu-img", "genisoimage",
+		"pritunl-cloud")
 	if err != nil {
 		return
 	}
@@ -151,8 +162,53 @@ func Install() (err error) {
 	return
 }
 
-func Cloud() (err error) {
-	resp, err := prompt.ConfirmDefault(
+func InstallKvm() (err error) {
+	err = utils.Exec("", "/usr/bin/yum", "-y", "remove",
+		"qemu-kvm", "qemu-img", "qemu-system-x86", "cockpit", "cockpit-ws")
+	if err != nil {
+		return
+	}
+
+	utils.ExecCombinedOutput("", "/usr/bin/systemctl", "stop", "libvirtd")
+	utils.ExecCombinedOutput("", "/usr/bin/systemctl", "disable", "libvirtd")
+
+	err = utils.Exec("", "/usr/bin/yum", "-y", "install",
+		"edk2-ovmf", "genisoimage", "libusal", "pritunl-qemu-kvm",
+		"pritunl-qemu-img", "pritunl-qemu-system-x86", "pritunl-cloud")
+	if err != nil {
+		return
+	}
+
+	_, err = utils.ExecOutputLogged(nil,
+		"/usr/bin/systemctl", "enable", "pritunl-cloud")
+	if err != nil {
+		return
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"package": "pritunl-cloud",
+	}).Info("cloud: Pritunl Cloud install")
+
+	return
+}
+
+func Cloud(unstable bool) (err error) {
+	kvmResp, err := prompt.ConfirmDefault(
+		"Enable Pritunl Cloud KVM Repo [Y/n]",
+		true,
+	)
+	if err != nil {
+		return
+	}
+
+	if kvmResp {
+		err = KvmRepo()
+		if err != nil {
+			return
+		}
+	}
+
+	cloudResp, err := prompt.ConfirmDefault(
 		"Install Pritunl Cloud [Y/n]",
 		true,
 	)
@@ -160,23 +216,25 @@ func Cloud() (err error) {
 		return
 	}
 
-	if !resp {
+	if !cloudResp {
 		return
 	}
 
-	err = KvmRepo()
+	err = PritunlRepo(unstable)
 	if err != nil {
 		return
 	}
 
-	err = PritunlRepo()
-	if err != nil {
-		return
-	}
-
-	err = Install()
-	if err != nil {
-		return
+	if kvmResp {
+		err = InstallKvm()
+		if err != nil {
+			return
+		}
+	} else {
+		err = Install()
+		if err != nil {
+			return
+		}
 	}
 
 	return

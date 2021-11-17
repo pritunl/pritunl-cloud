@@ -43,6 +43,7 @@ Usage: pritunl-builder OPTIONS
 Options:
   --assume-yes  Assume yes to prompts
   --no-start    Do not start Pritunl Cloud service
+  --unstable    Use unstable repository
 `
 
 func main() {
@@ -52,6 +53,8 @@ func main() {
 	assumeYes := flag.Bool("assume-yes", false, "Assume yes to prompts")
 	noStart := flag.Bool("no-start", false,
 		"Do not start Pritunl Cloud service")
+	unstable := flag.Bool("unstable", false,
+		"Use unstable repository")
 
 	flag.Usage = func() {
 		fmt.Println(help)
@@ -78,7 +81,7 @@ func main() {
 		panic(err)
 	}
 
-	err = cloud.Cloud()
+	err = cloud.Cloud(unstable)
 	if err != nil {
 		panic(err)
 	}
