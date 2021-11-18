@@ -565,6 +565,8 @@ func (n *Node) Validate(db *database.Database) (
 		}
 	} else {
 		n.OracleUser = ""
+		n.OracleSubnets = []string{}
+		n.AvailableVpcs = []*cloud.Vpc{}
 	}
 
 	n.Format()
