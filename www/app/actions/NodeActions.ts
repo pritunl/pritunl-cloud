@@ -13,11 +13,14 @@ import * as MiscUtils from '../utils/MiscUtils';
 let syncId: string;
 let syncZonesId: string;
 
-export function sync(): Promise<void> {
+export function sync(noLoading?: boolean): Promise<void> {
 	let curSyncId = MiscUtils.uuid();
 	syncId = curSyncId;
 
-	let loader = new Loader().loading();
+	let loader: Loader;
+	if (!noLoading) {
+		loader = new Loader().loading();
+	}
 
 	return new Promise<void>((resolve, reject): void => {
 		SuperAgent
@@ -31,7 +34,9 @@ export function sync(): Promise<void> {
 			.set('Csrf-Token', Csrf.token)
 			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
-				loader.done();
+				if (loader) {
+					loader.done();
+				}
 
 				if (res && res.status === 401) {
 					window.location.href = '/login';
