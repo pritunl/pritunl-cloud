@@ -1061,9 +1061,13 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			hostIps = 'None';
 		}
 
-		let oracleIps: any = this.props.instance.oracle_ips;
-		if (!oracleIps || !oracleIps.length) {
-			oracleIps = null;
+		let oraclePrivateIps: any = this.props.instance.oracle_private_ips;
+		if (!oraclePrivateIps || !oraclePrivateIps.length) {
+			oraclePrivateIps = null;
+		}
+		let oraclePublicIps: any = this.props.instance.oracle_public_ips;
+		if (!oraclePublicIps || !oraclePublicIps.length) {
+			oraclePublicIps = null;
 		}
 
 		let statusClass = '';
@@ -1453,11 +1457,20 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			},
 		];
 
-		if (oracleIps) {
+		if (oraclePrivateIps) {
 			fields.push(
 				{
-					label: 'Oracle IPv4',
-					value: oracleIps,
+					label: 'Oracle Private IPv4',
+					value: oraclePrivateIps,
+					copy: true,
+				},
+			);
+		}
+		if (oraclePublicIps) {
+			fields.push(
+				{
+					label: 'Oracle Public IPv4',
+					value: oraclePublicIps,
 					copy: true,
 				},
 			);
