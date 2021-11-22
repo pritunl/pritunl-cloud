@@ -1906,7 +1906,9 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					/>
 					<PageInput
 						disabled={this.state.disabled}
-						hidden={!node.oracle_host_route}
+						hidden={!node.oracle_host_route &&
+							node.network_mode !== 'oracle' &&
+							node.network_mode6 !== 'oracle'}
 						label="Oracle Cloud User OCID"
 						help="User OCID for Oracle Cloud API authentication."
 						type="text"
@@ -1918,7 +1920,9 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					/>
 					<PageTextArea
 						disabled={this.state.disabled}
-						hidden={!node.oracle_host_route}
+						hidden={!node.oracle_host_route &&
+							node.network_mode !== 'oracle' &&
+							node.network_mode6 !== 'oracle'}
 						label="Oracle Cloud Public Key"
 						help="Public key for Oracle Cloud API authentication."
 						placeholder="Oracle Cloud public key"
