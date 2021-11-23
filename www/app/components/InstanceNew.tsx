@@ -670,6 +670,17 @@ export default class InstanceNew extends React.Component<Props, State> {
 							{zonesSelect}
 						</PageSelect>
 						<PageSelect
+							disabled={this.state.disabled || !hasNodes}
+							label="Node"
+							help="Node to run instance on."
+							value={instance.node}
+							onChange={(val): void => {
+								this.set('node', val);
+							}}
+						>
+							{nodesSelect}
+						</PageSelect>
+						<PageSelect
 							disabled={this.state.disabled || !hasVpcs}
 							label="VPC"
 							help="VPC for instance."
@@ -720,17 +731,6 @@ export default class InstanceNew extends React.Component<Props, State> {
 							}}
 						>
 							{oracleSubnetsSelect}
-						</PageSelect>
-						<PageSelect
-							disabled={this.state.disabled || !hasNodes}
-							label="Node"
-							help="Node to run instance on."
-							value={instance.node}
-							onChange={(val): void => {
-								this.set('node', val);
-							}}
-						>
-							{nodesSelect}
 						</PageSelect>
 						<PageSelect
 							disabled={this.state.disabled}
