@@ -26,7 +26,8 @@ export interface Instance {
 	private_ips6?: string[];
 	gateway_ips?: string[];
 	gateway_ips6?: string[];
-	oracle_ips?: string[];
+	oracle_private_ips?: string[];
+	oracle_public_ips?: string[];
 	network_namespace?: string;
 	host_ips?: string[];
 	public_mac?: string;
