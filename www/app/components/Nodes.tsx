@@ -72,6 +72,8 @@ const css = {
 };
 
 export default class Nodes extends React.Component<{}, State> {
+	interval: NodeJS.Timer;
+
 	constructor(props: any, context: any) {
 		super(props, context);
 		this.state = {
@@ -107,6 +109,10 @@ export default class Nodes extends React.Component<{}, State> {
 		DatacenterActions.sync();
 		ZoneActions.sync();
 		BlockActions.sync();
+
+		this.interval = setInterval(() => {
+			NodeActions.sync(true);
+		}, 1000);
 	}
 
 	componentWillUnmount(): void {
@@ -115,6 +121,7 @@ export default class Nodes extends React.Component<{}, State> {
 		DatacentersStore.removeChangeListener(this.onChange);
 		ZonesStore.removeChangeListener(this.onChange);
 		BlocksStore.removeChangeListener(this.onChange);
+		clearInterval(this.interval);
 	}
 
 	onChange = (): void => {
