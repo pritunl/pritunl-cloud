@@ -58,20 +58,20 @@ func authorityPut(c *gin.Context) {
 		return
 	}
 
-	fire, err := authority.Get(db, authorityId)
+	authr, err := authority.Get(db, authorityId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	fire.Name = data.Name
-	fire.Comment = data.Comment
-	fire.Type = data.Type
-	fire.Organization = data.Organization
-	fire.NetworkRoles = data.NetworkRoles
-	fire.Key = data.Key
-	fire.Roles = data.Roles
-	fire.Certificate = data.Certificate
+	authr.Name = data.Name
+	authr.Comment = data.Comment
+	authr.Type = data.Type
+	authr.Organization = data.Organization
+	authr.NetworkRoles = data.NetworkRoles
+	authr.Key = data.Key
+	authr.Roles = data.Roles
+	authr.Certificate = data.Certificate
 
 	fields := set.NewSet(
 		"name",
@@ -84,7 +84,7 @@ func authorityPut(c *gin.Context) {
 		"certificate",
 	)
 
-	errData, err := fire.Validate(db)
+	errData, err := authr.Validate(db)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -95,7 +95,7 @@ func authorityPut(c *gin.Context) {
 		return
 	}
 
-	err = fire.CommitFields(db, fields)
+	err = authr.CommitFields(db, fields)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -103,7 +103,7 @@ func authorityPut(c *gin.Context) {
 
 	event.PublishDispatch(db, "authority.change")
 
-	c.JSON(200, fire)
+	c.JSON(200, authr)
 }
 
 func authorityPost(c *gin.Context) {
@@ -125,7 +125,7 @@ func authorityPost(c *gin.Context) {
 		return
 	}
 
-	fire := &authority.Authority{
+	authr := &authority.Authority{
 		Name:         data.Name,
 		Comment:      data.Comment,
 		Type:         data.Type,
@@ -136,7 +136,7 @@ func authorityPost(c *gin.Context) {
 		Certificate:  data.Certificate,
 	}
 
-	errData, err := fire.Validate(db)
+	errData, err := authr.Validate(db)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -147,7 +147,7 @@ func authorityPost(c *gin.Context) {
 		return
 	}
 
-	err = fire.Insert(db)
+	err = authr.Insert(db)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -155,7 +155,7 @@ func authorityPost(c *gin.Context) {
 
 	event.PublishDispatch(db, "authority.change")
 
-	c.JSON(200, fire)
+	c.JSON(200, authr)
 }
 
 func authorityDelete(c *gin.Context) {
@@ -219,13 +219,13 @@ func authorityGet(c *gin.Context) {
 		return
 	}
 
-	fire, err := authority.Get(db, authorityId)
+	authr, err := authority.Get(db, authorityId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	c.JSON(200, fire)
+	c.JSON(200, authr)
 }
 
 func authoritiesGet(c *gin.Context) {
