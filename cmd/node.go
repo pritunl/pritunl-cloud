@@ -61,7 +61,7 @@ func Node() (err error) {
 
 	go func() {
 		err = routr.Run()
-		if err != nil {
+		if err != nil && !constants.Shutdown {
 			panic(err)
 		}
 	}()
