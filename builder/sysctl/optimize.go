@@ -17,6 +17,8 @@ vm.dirty_background_ratio = 3
 `
 	raidSpeedLimit = `dev.raid.speed_limit_max = 100000
 `
+	cachePressure = `vm.vfs_cache_pressure = 200
+`
 	selinuxConfDisabled = `
 # This file controls the state of SELinux on the system.
 # SELINUX= can take one of these three values:
@@ -125,6 +127,51 @@ func DirtyRatio() (err error) {
 			logrus.WithFields(logrus.Fields{
 				"path": pth,
 			}).Info("sysctl: Dirty memory limit disabled")
+		}
+	}
+
+	return
+}
+
+func CachePressure() (err error) {
+	resp, err := prompt.ConfirmDefault(
+		"Optimize cache pressure [Y/n]",
+		true,
+	)
+	if err != nil {
+		return
+	}
+
+	pth := "/etc/sysctl.d/10-cache.conf"
+	if resp {
+		err = utils.CreateWrite(
+			pth,
+			cachePressure,
+			0644,
+		)
+		if err != nil {
+			return
+		}
+
+		logrus.WithFields(logrus.Fields{
+			"path": pth,
+		}).Info("sysctl: Optimize cache pressure enabled")
+	} else {
+		exists, e := utils.Exists(pth)
+		if e != nil {
+			err = e
+			return
+		}
+
+		if exists {
+			err = utils.Remove(pth)
+			if err != nil {
+				return
+			}
+
+			logrus.WithFields(logrus.Fields{
+				"path": pth,
+			}).Info("sysctl: Optimize cache pressure disabled")
 		}
 	}
 
@@ -257,6 +304,11 @@ func Optimize() (err error) {
 	}
 
 	err = DirtyRatio()
+	if err != nil {
+		return
+	}
+
+	err = CachePressure()
 	if err != nil {
 		return
 	}
