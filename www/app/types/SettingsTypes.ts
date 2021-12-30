@@ -76,8 +76,6 @@ export interface Settings {
 	auth_admin_max_duration: number;
 	auth_user_expire: number;
 	auth_user_max_duration: number;
-	elastic_address: string;
-	elastic_proxy_requests: boolean;
 }
 
 export type SettingsRo = Readonly<Settings>;
