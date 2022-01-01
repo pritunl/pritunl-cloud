@@ -84,6 +84,21 @@ func GetQemuPath() (path string, err error) {
 	return
 }
 
+func GetUringSupport() (supported bool, err error) {
+	major, minor, _, err := GetQemuVersion()
+	if err != nil {
+		return
+	}
+
+	if major > 6 {
+		supported = true
+	} else if major == 6 && minor >= 2 {
+		supported = true
+	}
+
+	return
+}
+
 func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 	data, err := json.Marshal(virt)
 	if err != nil {

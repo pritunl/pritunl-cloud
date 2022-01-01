@@ -229,6 +229,21 @@ func (q *Qemu) Marshal() (output string, err error) {
 		))
 	}
 
+	diskAio := settings.Hypervisor.DiskAio
+	if diskAio == "" {
+		supported, e := GetUringSupport()
+		if e != nil {
+			err = e
+			return
+		}
+
+		if supported {
+			diskAio = "io_uring"
+		} else {
+			diskAio = "threads"
+		}
+	}
+
 	for _, disk := range q.Disks {
 		dskId := fmt.Sprintf("disk_%s", disk.Id)
 		dskDevId := fmt.Sprintf("diskdev_%s", disk.Id)
@@ -236,9 +251,10 @@ func (q *Qemu) Marshal() (output string, err error) {
 		cmd = append(cmd, "-drive")
 		cmd = append(cmd, fmt.Sprintf(
 			"file=%s,media=disk,format=%s,cache=none,"+
-				"discard=unmap,if=none,id=%s",
+				"aio=%s,discard=unmap,if=none,id=%s",
 			disk.File,
 			disk.Format,
+			diskAio,
 			dskId,
 		))
 
