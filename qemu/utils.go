@@ -8,8 +8,23 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
+	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 )
+
+func GetQemuPath() (path string, err error) {
+	exists, err := utils.Exists(System)
+	if err != nil {
+		return
+	}
+	if exists {
+		path = System
+	} else {
+		path = Libvirt
+	}
+
+	return
+}
 
 func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 	data, err := json.Marshal(virt)
