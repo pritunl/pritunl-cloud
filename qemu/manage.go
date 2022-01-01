@@ -521,6 +521,11 @@ func Create(db *database.Database, inst *instance.Instance,
 		return
 	}
 
+	err = initHugepage(virt)
+	if err != nil {
+		return
+	}
+
 	err = writeOvmfVars(virt)
 	if err != nil {
 		return

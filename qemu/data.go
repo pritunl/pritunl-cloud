@@ -5,6 +5,7 @@ import (
 
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
+	"github.com/pritunl/pritunl-cloud/hugepages"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/qmp"
 	"github.com/pritunl/pritunl-cloud/qms"
@@ -15,6 +16,19 @@ import (
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/sirupsen/logrus"
 )
+
+func initHugepage(virt *vm.VirtualMachine) (err error) {
+	if !virt.Hugepages {
+		return
+	}
+
+	err = hugepages.UpdateHugepagesSize()
+	if err != nil {
+		return
+	}
+
+	return
+}
 
 func writeOvmfVars(virt *vm.VirtualMachine) (err error) {
 	if !virt.Uefi {
