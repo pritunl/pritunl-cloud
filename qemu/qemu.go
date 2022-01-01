@@ -67,6 +67,7 @@ type Qemu struct {
 	OvmfCodePath string
 	OvmfVarsPath string
 	Memory       int
+	Hugepages    bool
 	Vnc          bool
 	VncDisplay   int
 	Disks        Disks
@@ -184,7 +185,10 @@ func (q *Qemu) Marshal() (output string, err error) {
 	cmd = append(cmd, fmt.Sprintf("pritunl_%s", q.Id.Hex()))
 
 	cmd = append(cmd, "-machine")
-	options := ""
+	options := ",mem-merge=on"
+	if q.Hugepages {
+		options += ",memory-backend=pc.ram"
+	}
 	if q.Kvm {
 		options += ",accel=kvm"
 	}
@@ -220,6 +224,16 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 	cmd = append(cmd, "-m")
 	cmd = append(cmd, fmt.Sprintf("%dM", q.Memory))
+
+	if q.Hugepages {
+		cmd = append(cmd, "-object")
+		cmd = append(cmd, fmt.Sprintf(
+			"memory-backend-file,id=pc.ram,"+
+				"size=%dM,mem-path=%s,prealloc=off,share=off,merge=on",
+			q.Memory,
+			paths.GetHugepagePath(q.Id),
+		))
+	}
 
 	for _, disk := range q.Disks {
 		dskId := fmt.Sprintf("disk_%s", disk.Id)

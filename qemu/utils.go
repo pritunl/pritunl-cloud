@@ -44,6 +44,7 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 		OvmfCodePath: ovmfCodePath,
 		OvmfVarsPath: paths.GetOvmfVarsPath(virt.Id),
 		Memory:       virt.Memory,
+		Hugepages:    virt.Hugepages,
 		Vnc:          virt.Vnc,
 		VncDisplay:   virt.VncDisplay,
 		Disks:        []*Disk{},
