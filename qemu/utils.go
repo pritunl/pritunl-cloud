@@ -3,6 +3,8 @@ package qemu
 import (
 	"encoding/json"
 	"sort"
+	"strconv"
+	"strings"
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -11,6 +13,62 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 )
+
+func GetQemuVersion() (major, minor, patch int, err error) {
+	qemuPath, err := GetQemuPath()
+	if err != nil {
+		return
+	}
+
+	output, _ := utils.ExecCombinedOutputLogged(
+		nil,
+		qemuPath, "--version",
+	)
+
+	lines := strings.Split(output, "\n")
+
+	for _, line := range lines {
+		fields := strings.Fields(line)
+		if len(fields) < 4 || strings.ToLower(fields[2]) != "version" {
+			continue
+		}
+
+		versions := strings.Split(fields[3], ".")
+		if len(versions) != 3 {
+			continue
+		}
+
+		var e error
+		major, e = strconv.Atoi(versions[0])
+		if e != nil {
+			continue
+		}
+
+		minor, e = strconv.Atoi(versions[1])
+		if e != nil {
+			major = 0
+			continue
+		}
+
+		patch, e = strconv.Atoi(versions[1])
+		if e != nil {
+			major = 0
+			minor = 0
+			continue
+		}
+
+		break
+	}
+
+	if major == 0 {
+		err = &errortypes.ParseError{
+			errors.Newf("qemu: Invalid Qemu version '%s'", output),
+		}
+		return
+	}
+
+	return
+}
 
 func GetQemuPath() (path string, err error) {
 	exists, err := utils.Exists(System)
