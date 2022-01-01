@@ -12,6 +12,7 @@ type hypervisor struct {
 	OvmfVarsPath       string `bson:"ovmf_vars_path"`
 	OvmfSecureCodePath string `bson:"ovmf_secure_vars_path"`
 	OvmfSecureVarsPath string `bson:"ovmf_secure_vars_path"`
+	DiskAio            string `bson:"disk_aio"`
 	NormalMtu          int    `bson:"normal_mtu" default:"1500"`
 	JumboMtu           int    `bson:"jumbo_mtu" default:"9000"`
 	DiskQueuesMin      int    `bson:"disk_queues_min" default:"1"`
