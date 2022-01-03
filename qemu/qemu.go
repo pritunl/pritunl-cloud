@@ -166,7 +166,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 		))
 		cmd = append(cmd, "-drive")
 		cmd = append(cmd, fmt.Sprintf(
-			"if=pflash,format=raw,file=%s",
+			"if=pflash,format=raw,readonly=on,file=%s",
 			q.OvmfVarsPath,
 		))
 	}
