@@ -314,10 +314,6 @@ export default class InstanceNew extends React.Component<Props, State> {
 
 		instance.image = val;
 
-		if (imageName && imageName.toLowerCase().indexOf('fedora') !== -1) {
-			instance.secure_boot = false;
-		}
-
 		this.setState({
 			...this.state,
 			changed: true,
