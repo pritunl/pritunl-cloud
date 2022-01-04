@@ -59,6 +59,7 @@ type Connection struct {
 	vmId     primitive.ObjectID
 	sock     net.Conn
 	lockId   primitive.ObjectID
+	deadline time.Duration
 	command  interface{}
 	response interface{}
 }
@@ -91,7 +92,12 @@ func (c *Connection) connect() (err error) {
 		return
 	}
 
-	err = c.sock.SetDeadline(time.Now().Add(6 * time.Second))
+	deadline := c.deadline
+	if deadline == 0 {
+		deadline = 6 * time.Second
+	}
+
+	err = c.sock.SetDeadline(time.Now().Add(deadline))
 	if err != nil {
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "qmp: Failed set deadline"),
@@ -145,6 +151,10 @@ func (c *Connection) Close() {
 	}
 
 	socketsLock.Unlock(c.vmId.Hex(), c.lockId)
+}
+
+func (c *Connection) SetDeadline(deadline time.Duration) {
+	c.deadline = deadline
 }
 
 func (c *Connection) Send(command interface{}, resp interface{}) (
