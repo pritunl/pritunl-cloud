@@ -1,7 +1,6 @@
 package ahandlers
 
 import (
-	"github.com/sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
@@ -11,6 +10,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/storage"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/sirupsen/logrus"
 )
 
 type storageData struct {
@@ -98,6 +98,8 @@ func storagePut(c *gin.Context) {
 				"error": err,
 			}).Error("storage: Failed to sync storage")
 		}
+
+		event.PublishDispatch(db, "image.change")
 	}()
 
 	event.PublishDispatch(db, "storage.change")
