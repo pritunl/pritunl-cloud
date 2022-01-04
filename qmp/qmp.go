@@ -3,53 +3,60 @@ package qmp
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net"
-	"strings"
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
-type cmdBase struct {
+type Command struct {
 	Execute   string      `json:"execute"`
 	Arguments interface{} `json:"arguments,omitempty"`
 }
 
-type jobStatus struct {
+type JobStatus struct {
 	Id     string `json:"id"`
 	Type   string `json:"type"`
 	Status string `json:"status"`
 }
 
-type jobStatusReturn struct {
-	Return []*jobStatus `json:"return"`
-	Error  *cmdError    `json:"error"`
+type JobStatusReturn struct {
+	Return []*JobStatus  `json:"return"`
+	Error  *CommandError `json:"error"`
 }
 
-type cmdError struct {
+type CommandError struct {
 	Class string `json:"class"`
 	Desc  string `json:"desc"`
 }
 
-type cmdReturn struct {
-	Return interface{} `json:"return"`
-	Error  *cmdError   `json:"error"`
+type CommandReturn struct {
+	Return interface{}   `json:"return"`
+	Error  *CommandError `json:"error"`
 }
 
 var (
 	socketsLock = utils.NewMultiTimeoutLock(1 * time.Minute)
 )
 
-func runCommand(vmId primitive.ObjectID, cmd *cmdBase,
-	cmdReturn interface{}) (err error) {
+type runner struct {
+	vmId     primitive.ObjectID
+	sock     net.Conn
+	lockId   primitive.ObjectID
+	command  interface{}
+	response interface{}
+}
 
+func (r *runner) Connect() (err error) {
 	// TODO Backward compatibility
-	sockPath := paths.GetQmpSockPath(vmId)
-	sockPathOld := paths.GetQmpSockPathOld(vmId)
+	sockPath := paths.GetQmpSockPath(r.vmId)
+	sockPathOld := paths.GetQmpSockPathOld(r.vmId)
 
 	exists, err := utils.Exists(sockPath)
 	if err != nil {
@@ -60,13 +67,9 @@ func runCommand(vmId primitive.ObjectID, cmd *cmdBase,
 		sockPath = sockPathOld
 	}
 
-	lockId := socketsLock.Lock(vmId.Hex())
-	defer func() {
-		time.Sleep(100 * time.Millisecond)
-		socketsLock.Unlock(vmId.Hex(), lockId)
-	}()
+	r.lockId = socketsLock.Lock(r.vmId.Hex())
 
-	conn, err := net.DialTimeout(
+	r.sock, err = net.DialTimeout(
 		"unix",
 		sockPath,
 		10*time.Second,
@@ -77,9 +80,8 @@ func runCommand(vmId primitive.ObjectID, cmd *cmdBase,
 		}
 		return
 	}
-	defer conn.Close()
 
-	err = conn.SetDeadline(time.Now().Add(6 * time.Second))
+	err = r.sock.SetDeadline(time.Now().Add(6 * time.Second))
 	if err != nil {
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "qmp: Failed set deadline"),
@@ -87,92 +89,185 @@ func runCommand(vmId primitive.ObjectID, cmd *cmdBase,
 		return
 	}
 
-	initCmd := &cmdBase{
-		Execute: "qmp_capabilities",
-	}
-
-	cmdData, err := json.Marshal(initCmd)
-	if err != nil {
-		err = &errortypes.ParseError{
-			errors.Wrap(err, "qmp: Failed to marshal command"),
-		}
-		return
-	}
-
-	_, err = conn.Write([]byte(string(cmdData) + "\n"))
-	if err != nil {
-		err = &errortypes.ReadError{
-			errors.Wrap(err, "qmp: Failed to write socket"),
-		}
-		return
-	}
-
-	time.Sleep(50 * time.Millisecond)
-
-	cmdData, err = json.Marshal(cmd)
-	if err != nil {
-		err = &errortypes.ParseError{
-			errors.Wrap(err, "qmp: Failed to marshal command"),
-		}
-		return
-	}
-
-	_, err = conn.Write([]byte(string(cmdData) + "\n"))
-	if err != nil {
-		err = &errortypes.ReadError{
-			errors.Wrap(err, "qmp: Failed to write socket"),
-		}
-		return
-	}
-
-	buffer := make([]byte, 100000)
+	var info []byte
 	for {
-		buf := make([]byte, 10000)
-		n, e := conn.Read(buf)
+		buffer := make([]byte, 5000000)
+		n, e := r.sock.Read(buffer)
 		if e != nil {
 			err = &errortypes.ReadError{
 				errors.Wrap(e, "qmp: Failed to read socket"),
 			}
 			return
 		}
-		buffer = append(buffer, buf[:n]...)
+		buffer = buffer[:n]
 
-		if bytes.Count(bytes.TrimSpace(buffer), []byte(`"return"`)) > 1 ||
-			bytes.Contains(bytes.TrimSpace(buffer), []byte(`"error"`)) {
-
-			break
-		}
-	}
-
-	initReturn := false
-	returnDataStr := ""
-	lines := strings.Split(string(buffer), "\n")
-	for _, line := range lines {
-		if strings.Contains(line, `"return"`) {
-			if initReturn {
-				returnDataStr = line
-				break
-			} else {
-				initReturn = true
-				continue
+		lines := bytes.Split(buffer, []byte("\n"))
+		for _, line := range lines {
+			if !constants.Production {
+				fmt.Println(string(line))
 			}
-		} else if strings.Contains(line, `"return"`) ||
-			strings.Contains(line, `"error"`) {
 
-			returnDataStr = line
+			if bytes.Contains(line, []byte(`"QMP"`)) {
+				info = line
+				break
+			}
+		}
+
+		if info != nil {
 			break
 		}
 	}
 
-	err = json.Unmarshal([]byte(returnDataStr), cmdReturn)
+	if info == nil {
+		err = &errortypes.ReadError{
+			errors.New("qmp: No info message from socket"),
+		}
+		return
+	}
+
+	return
+}
+
+func (r *runner) Disconnect() {
+	sock := r.sock
+	if sock != nil {
+		_ = sock.Close()
+	}
+
+	socketsLock.Unlock(r.vmId.Hex(), r.lockId)
+}
+
+func (r *runner) Send(command interface{}, resp interface{}) (err error) {
+	cmdData, err := json.Marshal(command)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "qmp: Failed to marshal command"),
+		}
+		return
+	}
+
+	if !constants.Production {
+		fmt.Println(string(cmdData))
+	}
+
+	cmdData = append(cmdData, '\n')
+
+	_, err = r.sock.Write(cmdData)
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "qmp: Failed to write socket"),
+		}
+		return
+	}
+
+	var returnData []byte
+	returnWait := make(chan bool, 2)
+
+	go func() {
+		defer func() {
+			returnWait <- true
+		}()
+
+		for {
+			buffer := make([]byte, 5000000)
+			n, e := r.sock.Read(buffer)
+			if e != nil {
+				err = &errortypes.ReadError{
+					errors.Wrap(e, "qmp: Failed to read socket"),
+				}
+				return
+			}
+			buffer = buffer[:n]
+
+			lines := bytes.Split(buffer, []byte("\n"))
+			for _, line := range lines {
+				if !constants.Production {
+					fmt.Println(string(line))
+				}
+
+				if bytes.Contains(line, []byte(`"return"`)) ||
+					bytes.Contains(line, []byte(`"error"`)) {
+
+					returnData = line
+					returnWait <- true
+
+					return
+				}
+			}
+		}
+	}()
+
+	<-returnWait
+	if err != nil {
+		return
+	}
+
+	if returnData == nil {
+		err = &errortypes.ReadError{
+			errors.New("qmp: No data from socket"),
+		}
+		return
+	}
+
+	err = json.Unmarshal(returnData, resp)
 	if err != nil {
 		err = &errortypes.ParseError{
 			errors.Wrapf(
 				err,
-				"qmp: Failed to unmarshal return %s",
-				returnDataStr,
+				"qmp: Failed to unmarshal return '%s'",
+				string(returnData),
 			),
 		}
+		return
+	}
+
+	return
+}
+
+func (r *runner) Run() (err error) {
+	defer r.Disconnect()
+
+	err = r.Connect()
+	if err != nil {
+		return
+	}
+
+	initCmd := &Command{
+		Execute: "qmp_capabilities",
+	}
+
+	initResp := &CommandReturn{}
+	err = r.Send(initCmd, initResp)
+	if err != nil {
+		return
+	}
+
+	if initResp.Error != nil {
+		err = &errortypes.ApiError{
+			errors.Newf("qmp: Return error '%s'", initResp.Error.Desc),
+		}
+		return
+	}
+
+	err = r.Send(r.command, r.response)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func RunCommand(vmId primitive.ObjectID, cmd interface{},
+	resp interface{}) (err error) {
+
+	runner := &runner{
+		vmId:     vmId,
+		command:  cmd,
+		response: resp,
+	}
+
+	err = runner.Run()
+	if err != nil {
 		return
 	}
 
