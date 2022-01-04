@@ -45,7 +45,7 @@ var (
 	socketsLock = utils.NewMultiTimeoutLock(1 * time.Minute)
 )
 
-type runner struct {
+type Connection struct {
 	vmId     primitive.ObjectID
 	sock     net.Conn
 	lockId   primitive.ObjectID
@@ -53,10 +53,10 @@ type runner struct {
 	response interface{}
 }
 
-func (r *runner) Connect() (err error) {
+func (c *Connection) connect() (err error) {
 	// TODO Backward compatibility
-	sockPath := paths.GetQmpSockPath(r.vmId)
-	sockPathOld := paths.GetQmpSockPathOld(r.vmId)
+	sockPath := paths.GetQmpSockPath(c.vmId)
+	sockPathOld := paths.GetQmpSockPathOld(c.vmId)
 
 	exists, err := utils.Exists(sockPath)
 	if err != nil {
@@ -67,9 +67,9 @@ func (r *runner) Connect() (err error) {
 		sockPath = sockPathOld
 	}
 
-	r.lockId = socketsLock.Lock(r.vmId.Hex())
+	c.lockId = socketsLock.Lock(c.vmId.Hex())
 
-	r.sock, err = net.DialTimeout(
+	c.sock, err = net.DialTimeout(
 		"unix",
 		sockPath,
 		10*time.Second,
@@ -81,7 +81,7 @@ func (r *runner) Connect() (err error) {
 		return
 	}
 
-	err = r.sock.SetDeadline(time.Now().Add(6 * time.Second))
+	err = c.sock.SetDeadline(time.Now().Add(6 * time.Second))
 	if err != nil {
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "qmp: Failed set deadline"),
@@ -92,7 +92,7 @@ func (r *runner) Connect() (err error) {
 	var info []byte
 	for {
 		buffer := make([]byte, 5000000)
-		n, e := r.sock.Read(buffer)
+		n, e := c.sock.Read(buffer)
 		if e != nil {
 			err = &errortypes.ReadError{
 				errors.Wrap(e, "qmp: Failed to read socket"),
@@ -128,16 +128,18 @@ func (r *runner) Connect() (err error) {
 	return
 }
 
-func (r *runner) Disconnect() {
-	sock := r.sock
+func (c *Connection) Close() {
+	sock := c.sock
 	if sock != nil {
 		_ = sock.Close()
 	}
 
-	socketsLock.Unlock(r.vmId.Hex(), r.lockId)
+	socketsLock.Unlock(c.vmId.Hex(), c.lockId)
 }
 
-func (r *runner) Send(command interface{}, resp interface{}) (err error) {
+func (c *Connection) Send(command interface{}, resp interface{}) (
+	err error) {
+
 	cmdData, err := json.Marshal(command)
 	if err != nil {
 		err = &errortypes.ParseError{
@@ -152,7 +154,7 @@ func (r *runner) Send(command interface{}, resp interface{}) (err error) {
 
 	cmdData = append(cmdData, '\n')
 
-	_, err = r.sock.Write(cmdData)
+	_, err = c.sock.Write(cmdData)
 	if err != nil {
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "qmp: Failed to write socket"),
@@ -170,7 +172,7 @@ func (r *runner) Send(command interface{}, resp interface{}) (err error) {
 
 		for {
 			buffer := make([]byte, 5000000)
-			n, e := r.sock.Read(buffer)
+			n, e := c.sock.Read(buffer)
 			if e != nil {
 				err = &errortypes.ReadError{
 					errors.Wrap(e, "qmp: Failed to read socket"),
@@ -224,10 +226,8 @@ func (r *runner) Send(command interface{}, resp interface{}) (err error) {
 	return
 }
 
-func (r *runner) Run() (err error) {
-	defer r.Disconnect()
-
-	err = r.Connect()
+func (c *Connection) Connect() (err error) {
+	err = c.connect()
 	if err != nil {
 		return
 	}
@@ -237,7 +237,7 @@ func (r *runner) Run() (err error) {
 	}
 
 	initResp := &CommandReturn{}
-	err = r.Send(initCmd, initResp)
+	err = c.Send(initCmd, initResp)
 	if err != nil {
 		return
 	}
@@ -249,9 +249,12 @@ func (r *runner) Run() (err error) {
 		return
 	}
 
-	err = r.Send(r.command, r.response)
-	if err != nil {
-		return
+	return
+}
+
+func NewConnection(vmId primitive.ObjectID) (conn *Connection) {
+	conn = &Connection{
+		vmId: vmId,
 	}
 
 	return
@@ -260,13 +263,15 @@ func (r *runner) Run() (err error) {
 func RunCommand(vmId primitive.ObjectID, cmd interface{},
 	resp interface{}) (err error) {
 
-	runner := &runner{
-		vmId:     vmId,
-		command:  cmd,
-		response: resp,
+	conn := NewConnection(vmId)
+	defer conn.Close()
+
+	err = conn.Connect()
+	if err != nil {
+		return
 	}
 
-	err = runner.Run()
+	err = conn.Send(cmd, resp)
 	if err != nil {
 		return
 	}
