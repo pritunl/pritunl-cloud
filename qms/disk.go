@@ -50,9 +50,9 @@ func GetDisks(vmId primitive.ObjectID) (disks []*vm.Disk, err error) {
 		return
 	}
 
-	buffer := make([]byte, 100000)
+	buffer := []byte{}
 	for {
-		buf := make([]byte, 10000)
+		buf := make([]byte, 5000000)
 		n, e := conn.Read(buf)
 		if e != nil {
 			err = &errortypes.ReadError{
@@ -75,9 +75,9 @@ func GetDisks(vmId primitive.ObjectID) (disks []*vm.Disk, err error) {
 		return
 	}
 
-	buffer = make([]byte, 100000)
+	buffer = []byte{}
 	for {
-		buf := make([]byte, 10000)
+		buf := make([]byte, 5000000)
 		n, e := conn.Read(buf)
 		if e != nil {
 			err = &errortypes.ReadError{
@@ -316,7 +316,7 @@ func RemoveDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
 	}
 
 	_, err = conn.Write([]byte(
-		fmt.Sprintf("drive_del disk_%s\n", dsk.Id.Hex())))
+		fmt.Sprintf("device_del diskdev_%s\n", dsk.Id.Hex())))
 	if err != nil {
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "qemu: Failed to write socket"),
@@ -324,8 +324,10 @@ func RemoveDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
 		return
 	}
 
+	time.Sleep(50 * time.Millisecond)
+
 	_, err = conn.Write([]byte(
-		fmt.Sprintf("device_del diskdev_%s\n", dsk.Id.Hex())))
+		fmt.Sprintf("drive_del disk_%s\n", dsk.Id.Hex())))
 	if err != nil {
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "qemu: Failed to write socket"),

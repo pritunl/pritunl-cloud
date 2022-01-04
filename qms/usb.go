@@ -47,9 +47,9 @@ func GetUsbDevices(vmId primitive.ObjectID) (
 		return
 	}
 
-	buffer := make([]byte, 100000)
+	buffer := []byte{}
 	for {
-		buf := make([]byte, 10000)
+		buf := make([]byte, 5000000)
 		n, e := conn.Read(buf)
 		if e != nil {
 			err = &errortypes.ReadError{
@@ -72,9 +72,9 @@ func GetUsbDevices(vmId primitive.ObjectID) (
 		return
 	}
 
-	buffer = make([]byte, 100000)
+	buffer = []byte{}
 	for {
-		buf := make([]byte, 10000)
+		buf := make([]byte, 5000000)
 		n, e := conn.Read(buf)
 		if e != nil {
 			err = &errortypes.ReadError{
