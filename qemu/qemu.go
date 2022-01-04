@@ -267,17 +267,25 @@ func (q *Qemu) Marshal() (output string, err error) {
 	}
 
 	for _, disk := range q.Disks {
-		dskId := fmt.Sprintf("disk_%s", disk.Id)
-		dskDevId := fmt.Sprintf("diskdev_%s", disk.Id)
+		dskId := fmt.Sprintf("fd_%s", disk.Id)
+		dskFileId := fmt.Sprintf("fdf_%s", disk.Id)
+		dskDevId := fmt.Sprintf("fdd_%s", disk.Id)
 
-		cmd = append(cmd, "-drive")
+		cmd = append(cmd, "-blockdev")
 		cmd = append(cmd, fmt.Sprintf(
-			"file=%s,media=disk,format=%s,cache=none,"+
-				"aio=%s,discard=unmap,if=none,id=%s",
+			"driver=file,node-name=%s,filename=%s,aio=%s,"+
+				"discard=unmap,cache.direct=on,cache.no-flush=off",
+			dskFileId,
 			disk.File,
-			disk.Format,
 			diskAio,
+		))
+
+		cmd = append(cmd, "-blockdev")
+		cmd = append(cmd, fmt.Sprintf(
+			"driver=%s,node-name=%s,file=%s",
+			disk.Format,
 			dskId,
+			dskFileId,
 		))
 
 		cmd = append(cmd, "-device")
