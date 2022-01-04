@@ -14,6 +14,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/netconf"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/qemu"
+	"github.com/pritunl/pritunl-cloud/qmp"
 	"github.com/pritunl/pritunl-cloud/qms"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/store"
@@ -361,7 +362,7 @@ func (s *Instances) diskAdd(inst *instance.Instance,
 		defer db.Close()
 
 		for _, dsk := range addDisks {
-			e := qms.AddDisk(inst.Id, dsk, virt)
+			e := qmp.AddDisk(inst.Id, dsk)
 			if e != nil {
 				logrus.WithFields(logrus.Fields{
 					"error": e,
@@ -402,7 +403,7 @@ func (s *Instances) diskRemove(inst *instance.Instance,
 		defer db.Close()
 
 		for _, dsk := range remDisks {
-			e := qms.RemoveDisk(inst.Id, dsk)
+			e := qmp.RemoveDisk(inst.Id, dsk)
 			if e != nil {
 				logrus.WithFields(logrus.Fields{
 					"error": e,
