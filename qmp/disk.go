@@ -13,23 +13,24 @@ import (
 	"github.com/pritunl/pritunl-cloud/vm"
 )
 
-type blockdevArgs struct {
-	NodeName string        `json:"node-name"`
-	Driver   string        `json:"driver"`
-	Discard  string        `json:"discard"`
-	Cache    blockDevCache `json:"cache"`
-	File     blockDevFile  `json:"file"`
+type blockDevFileArgs struct {
+	Driver   string            `json:"driver"`
+	NodeName string            `json:"node-name"`
+	Aio      string            `json:"aio"`
+	Discard  string            `json:"discard"`
+	Filename string            `json:"filename"`
+	Cache    blockDevFileCache `json:"cache"`
 }
 
-type blockDevFile struct {
-	Driver   string `json:"driver"`
-	Aio      string `json:"aio"`
-	Filename string `json:"filename"`
-}
-
-type blockDevCache struct {
+type blockDevFileCache struct {
 	NoFlush bool `json:"no-flush"`
 	Direct  bool `json:"direct"`
+}
+
+type blockDevArgs struct {
+	Driver   string `json:"driver"`
+	NodeName string `json:"node-name"`
+	File     string `json:"file"`
 }
 
 type deviceAddArgs struct {
@@ -42,8 +43,9 @@ type deviceAddArgs struct {
 func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk, virt *vm.VirtualMachine) (
 	err error) {
 
-	dskId := fmt.Sprintf("disk_%s", dsk.Id.Hex())
-	dskDevId := fmt.Sprintf("diskdev_%s", dsk.Id.Hex())
+	dskId := fmt.Sprintf("fd_%s", dsk.Id.Hex())
+	dskFileId := fmt.Sprintf("fdf_%s", dsk.Id.Hex())
+	dskDevId := fmt.Sprintf("fdd_%s", dsk.Id.Hex())
 
 	diskAio := settings.Hypervisor.DiskAio
 	if diskAio == "" {
@@ -70,23 +72,47 @@ func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk, virt *vm.VirtualMachine) (
 
 	cmd := &Command{
 		Execute: "blockdev-add",
-		Arguments: &blockdevArgs{
-			NodeName: dskId,
-			Driver:   "qcow2",
+		Arguments: &blockDevFileArgs{
+			Driver:   "file",
+			NodeName: dskFileId,
+			Aio:      diskAio,
 			Discard:  "unmap",
-			Cache: blockDevCache{
+			Filename: dsk.Path,
+			Cache: blockDevFileCache{
 				NoFlush: false,
 				Direct:  true,
-			},
-			File: blockDevFile{
-				Driver:   "file",
-				Aio:      diskAio,
-				Filename: dsk.Path,
 			},
 		},
 	}
 
 	returnData := &CommandReturn{}
+	err = conn.Send(cmd, returnData)
+	if err != nil {
+		return
+	}
+
+	if returnData.Error != nil &&
+		!strings.Contains(
+			strings.ToLower(returnData.Error.Desc),
+			"duplicate",
+		) {
+
+		err = &errortypes.ApiError{
+			errors.Newf("qmp: Return error %s", returnData.Error.Desc),
+		}
+		return
+	}
+
+	cmd = &Command{
+		Execute: "blockdev-add",
+		Arguments: &blockDevArgs{
+			Driver:   "qcow2",
+			NodeName: dskId,
+			File:     dskFileId,
+		},
+	}
+
+	returnData = &CommandReturn{}
 	err = conn.Send(cmd, returnData)
 	if err != nil {
 		return
