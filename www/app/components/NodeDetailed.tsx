@@ -16,6 +16,7 @@ import PageSelect from './PageSelect';
 import PageSelectButton from './PageSelectButton';
 import PageInputButton from './PageInputButton';
 import PageTextArea from './PageTextArea';
+import PageNumInput from './PageNumInput';
 import PageInfo from './PageInfo';
 import PageSave from './PageSave';
 import NodeBlock from './NodeBlock';
@@ -1968,6 +1969,30 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						onToggle={(): void => {
 							this.set('usb_passthrough', !node.usb_passthrough);
 						}}
+					/>
+					<PageSwitch
+						disabled={this.state.disabled}
+						label="HugePages"
+						help="Static hugepages provide a sector of the system memory to be dedicated for hugepages. This memory will be used for instances allowing higher memory performance and preventing the host system from disturbing memory dedicated for virtual instances. This option should always be used on production systems. The hugepages size must be set with the option below or manually with sysctl. Enabling this option while instances are running is likely to crash the system."
+						checked={node.hugepages}
+						onToggle={(): void => {
+							this.set('hugepages', !node.hugepages);
+						}}
+					/>
+					<PageNumInput
+						label="HugePages Size"
+						help="Size of hugepages space in megabytes. Set this option to the size of memory that will be dedicated for virtual instances. It is recommended to leave 4GB of memory for the host system. Set to 0 if the hugepages size is being manually configured."
+						min={0}
+						minorStepSize={0}
+						stepSize={1024}
+						majorStepSize={1024}
+						disabled={this.state.disabled}
+						hidden={!node.hugepages}
+						selectAllOnFocus={true}
+						onChange={(val: number): void => {
+							this.set('hugepages_size', val);
+						}}
+						value={node.hugepages_size}
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
