@@ -10,7 +10,9 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/features"
 	"github.com/pritunl/pritunl-cloud/settings"
+	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
+	"github.com/sirupsen/logrus"
 )
 
 type blockDevFileArgs struct {
@@ -50,9 +52,7 @@ type blockDevEvent struct {
 	Data  blockDevEventData `json:"data"`
 }
 
-func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk, virt *vm.VirtualMachine) (
-	err error) {
-
+func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
 	dskId := fmt.Sprintf("fd_%s", dsk.Id.Hex())
 	dskFileId := fmt.Sprintf("fdf_%s", dsk.Id.Hex())
 	dskDevId := fmt.Sprintf("fdd_%s", dsk.Id.Hex())
@@ -72,7 +72,7 @@ func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk, virt *vm.VirtualMachine) (
 		}
 	}
 
-	conn := NewConnection(vmId)
+	conn := NewConnection(vmId, true)
 	defer conn.Close()
 
 	err = conn.Connect()
@@ -188,7 +188,7 @@ func RemoveDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
 		}
 	}
 
-	conn := NewConnection(vmId)
+	conn := NewConnection(vmId, true)
 	defer conn.Close()
 
 	conn.SetDeadline(30 * time.Second)
@@ -299,6 +299,130 @@ func RemoveDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
 			errors.Newf("qmp: Return error %s", returnData.Error.Desc),
 		}
 		return
+	}
+
+	return
+}
+
+type blockQueryReturn struct {
+	Return []blockQueryDevice `json:"return"`
+	Error  *CommandError      `json:"error"`
+}
+
+type blockQueryDevice struct {
+	Device    string             `json:"device"`
+	Locked    bool               `json:"locked"`
+	Removable bool               `json:"removable"`
+	Inserted  blockQueryInserted `json:"inserted"`
+}
+
+type blockQueryInserted struct {
+	NodeName string          `json:"node-name"`
+	Drv      string          `json:"drv"`
+	File     string          `json:"file"`
+	Cache    blockQueryCache `json:"cache"`
+	Image    blockQueryImage `json:"image"`
+}
+
+type blockQueryCache struct {
+	NoFlush   bool `json:"no-flush"`
+	Direct    bool `json:"direct"`
+	Writeback bool `json:"writeback"`
+}
+
+type blockQueryImage struct {
+	VirtualSize int64  `json:"virtual-size"`
+	Filename    string `json:"filename"`
+	Format      string `json:"format"`
+	ActualSize  int64  `json:"actual-size"`
+}
+
+func GetDisks(vmId primitive.ObjectID) (disks []*vm.Disk, err error) {
+	conn := NewConnection(vmId, false)
+	defer conn.Close()
+
+	err = conn.Connect()
+	if err != nil {
+		return
+	}
+
+	cmd := &Command{
+		Execute: "query-block",
+	}
+
+	returnData := &blockQueryReturn{}
+	err = conn.Send(cmd, returnData)
+	if err != nil {
+		return
+	}
+
+	if returnData.Error != nil {
+		err = &errortypes.ApiError{
+			errors.Newf("qmp: Return error %s", returnData.Error.Desc),
+		}
+		return
+	}
+
+	index := 0
+	for _, disk := range returnData.Return {
+		var idSpl []string
+		if strings.HasPrefix(disk.Device, "disk_") {
+			idSpl = strings.Split(disk.Device, "_")
+		} else if strings.HasPrefix(disk.Inserted.NodeName, "fd_") {
+			idSpl = strings.Split(disk.Inserted.NodeName, "_")
+		} else {
+			continue
+		}
+
+		if len(idSpl) < 2 {
+			logrus.WithFields(logrus.Fields{
+				"instance_id":   vmId.Hex(),
+				"qmp_names":     idSpl,
+				"qmp_device":    disk.Device,
+				"qmp_node_name": disk.Inserted.NodeName,
+				"qmp_file":      disk.Inserted.File,
+				"qmp_filename":  disk.Inserted.Image.Filename,
+			}).Error("qmp: Disk id invalid")
+			continue
+		}
+
+		dskId, ok := utils.ParseObjectId(idSpl[1])
+		if !ok {
+			logrus.WithFields(logrus.Fields{
+				"instance_id":   vmId.Hex(),
+				"qmp_names":     idSpl,
+				"qmp_device":    disk.Device,
+				"qmp_node_name": disk.Inserted.NodeName,
+				"qmp_file":      disk.Inserted.File,
+				"qmp_filename":  disk.Inserted.Image.Filename,
+			}).Error("qmp: Disk id parse failed")
+			continue
+		}
+
+		filename := disk.Inserted.Image.Filename
+		if filename == "" {
+			filename = disk.Inserted.File
+			if filename == "" {
+				logrus.WithFields(logrus.Fields{
+					"instance_id":   vmId.Hex(),
+					"qmp_names":     idSpl,
+					"qmp_device":    disk.Device,
+					"qmp_node_name": disk.Inserted.NodeName,
+					"qmp_file":      disk.Inserted.File,
+					"qmp_filename":  disk.Inserted.Image.Filename,
+				}).Error("qmp: Disk filename invalid")
+				continue
+			}
+		}
+
+		dsk := &vm.Disk{
+			Id:    dskId,
+			Index: index,
+			Path:  filename,
+		}
+		disks = append(disks, dsk)
+
+		index += 1
 	}
 
 	return
