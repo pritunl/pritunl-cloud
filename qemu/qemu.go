@@ -8,6 +8,7 @@ import (
 
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/drive"
+	"github.com/pritunl/pritunl-cloud/features"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/settings"
@@ -106,7 +107,7 @@ func (q *Qemu) GetNetworkQueues() (queues int) {
 func (q *Qemu) Marshal() (output string, err error) {
 	localIsosPath := paths.GetLocalIsosPath()
 
-	qemuPath, err := GetQemuPath()
+	qemuPath, err := features.GetQemuPath()
 	if err != nil {
 		return
 	}
@@ -234,7 +235,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 	diskAio := settings.Hypervisor.DiskAio
 	if diskAio == "" {
-		supported, e := GetUringSupport()
+		supported, e := features.GetUringSupport()
 		if e != nil {
 			err = e
 			return
