@@ -60,7 +60,15 @@ func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk, virt *vm.VirtualMachine) (
 		}
 	}
 
-	cmd := &cmdBase{
+	conn := NewConnection(vmId)
+	defer conn.Close()
+
+	err = conn.Connect()
+	if err != nil {
+		return
+	}
+
+	cmd := &Command{
 		Execute: "blockdev-add",
 		Arguments: &blockdevArgs{
 			NodeName: dskId,
@@ -78,8 +86,8 @@ func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk, virt *vm.VirtualMachine) (
 		},
 	}
 
-	returnData := &cmdReturn{}
-	err = runCommand(vmId, cmd, returnData)
+	returnData := &CommandReturn{}
+	err = conn.Send(cmd, returnData)
 	if err != nil {
 		return
 	}
@@ -96,7 +104,7 @@ func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk, virt *vm.VirtualMachine) (
 		return
 	}
 
-	cmd = &cmdBase{
+	cmd = &Command{
 		Execute: "device_add",
 		Arguments: &deviceAddArgs{
 			Id:     dskDevId,
@@ -106,8 +114,8 @@ func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk, virt *vm.VirtualMachine) (
 		},
 	}
 
-	returnData = &cmdReturn{}
-	err = runCommand(vmId, cmd, returnData)
+	returnData = &CommandReturn{}
+	err = conn.Send(cmd, returnData)
 	if err != nil {
 		return
 	}
@@ -118,6 +126,7 @@ func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk, virt *vm.VirtualMachine) (
 		}
 		return
 	}
+
 	time.Sleep(1 * time.Second)
 
 	return
