@@ -84,6 +84,8 @@ type Node struct {
 	UsbDevices           []*usb.Device        `bson:"usb_devices" json:"usb_devices"`
 	PciPassthrough       bool                 `bson:"pci_passthrough" json:"pci_passthrough"`
 	PciDevices           []*pci.Device        `bson:"pci_devices" json:"pci_devices"`
+	Hugepages            bool                 `bson:"hugepages" json:"hugepages"`
+	HugepagesSize        int                  `bson:"hugepages_size" json:"hugepages_size"`
 	Firewall             bool                 `bson:"firewall" json:"firewall"`
 	NetworkRoles         []string             `bson:"network_roles" json:"network_roles"`
 	Memory               float64              `bson:"memory" json:"memory"`
@@ -162,6 +164,8 @@ func (n *Node) Copy() *Node {
 		UsbDevices:           n.UsbDevices,
 		PciPassthrough:       n.PciPassthrough,
 		PciDevices:           n.PciDevices,
+		Hugepages:            n.Hugepages,
+		HugepagesSize:        n.HugepagesSize,
 		Firewall:             n.Firewall,
 		NetworkRoles:         n.NetworkRoles,
 		Memory:               n.Memory,
@@ -870,6 +874,8 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.Iscsi = nde.Iscsi
 	n.UsbPassthrough = nde.UsbPassthrough
 	n.PciPassthrough = nde.PciPassthrough
+	n.Hugepages = nde.Hugepages
+	n.HugepagesSize = nde.HugepagesSize
 	n.Firewall = nde.Firewall
 	n.NetworkRoles = nde.NetworkRoles
 	n.VirtPath = nde.VirtPath
