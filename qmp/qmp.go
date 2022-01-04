@@ -49,6 +49,8 @@ type CommandReturn struct {
 	Error  *CommandError `json:"error"`
 }
 
+type EventCallback func() (resp interface{}, err error)
+
 var (
 	socketsLock = utils.NewMultiTimeoutLock(1 * time.Minute)
 )
@@ -229,6 +231,50 @@ func (c *Connection) Send(command interface{}, resp interface{}) (
 			),
 		}
 		return
+	}
+
+	return
+}
+
+func (c *Connection) Event(resp interface{}, callback EventCallback) (
+	err error) {
+
+	for {
+		buffer := make([]byte, 5000000)
+		n, e := c.sock.Read(buffer)
+		if e != nil {
+			err = &errortypes.ReadError{
+				errors.Wrap(e, "qmp: Failed to read socket"),
+			}
+			return
+		}
+		buffer = buffer[:n]
+
+		lines := bytes.Split(buffer, []byte("\n"))
+		for _, line := range lines {
+			if !constants.Production {
+				fmt.Println(string(line))
+			}
+
+			if bytes.Contains(line, []byte(`"event"`)) {
+				err = json.Unmarshal(line, resp)
+				if err != nil {
+					err = &errortypes.ParseError{
+						errors.Wrapf(
+							err,
+							"qmp: Failed to unmarshal return '%s'",
+							string(line),
+						),
+					}
+					return
+				}
+
+				resp, err = callback()
+				if err != nil || resp == nil {
+					return
+				}
+			}
+		}
 	}
 
 	return
