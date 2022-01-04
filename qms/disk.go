@@ -233,7 +233,7 @@ func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk,
 	}
 
 	drive := fmt.Sprintf(
-		"file=%s,media=disk,format=qcow2,cache=none," +
+		"file=%s,media=disk,format=qcow2,cache=none,"+
 			"discard=unmap,if=none,id=%s",
 		dsk.Path,
 		dskId,
@@ -258,10 +258,11 @@ func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk,
 	}
 
 	device := fmt.Sprintf(
-		"virtio-blk-pci,drive=%s,num-queues=%d,id=%s",
+		"virtio-blk-pci,drive=%s,num-queues=%d,id=%s,bus=diskbus%d",
 		dskId,
 		queues,
 		dskDevId,
+		dsk.Index,
 	)
 
 	_, err = conn.Write([]byte(fmt.Sprintf(
