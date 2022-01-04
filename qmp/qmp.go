@@ -20,6 +20,14 @@ type Command struct {
 	Arguments interface{} `json:"arguments,omitempty"`
 }
 
+type CommandId struct {
+	Id string `json:"id"`
+}
+
+type CommandNode struct {
+	NodeName string `json:"node-name"`
+}
+
 type JobStatus struct {
 	Id     string `json:"id"`
 	Type   string `json:"type"`

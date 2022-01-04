@@ -13,15 +13,15 @@ type vncPasswordArgs struct {
 }
 
 func VncPassword(vmId primitive.ObjectID, passwd string) (err error) {
-	cmd := &cmdBase{
+	cmd := &Command{
 		Execute: "change-vnc-password",
 		Arguments: &vncPasswordArgs{
 			Password: passwd,
 		},
 	}
 
-	returnData := &cmdReturn{}
-	err = runCommand(vmId, cmd, returnData)
+	returnData := &CommandReturn{}
+	err = RunCommand(vmId, cmd, returnData)
 	if err != nil {
 		return
 	}

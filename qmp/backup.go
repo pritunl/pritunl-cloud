@@ -34,18 +34,18 @@ type blockDevice struct {
 
 type blockDeviceReturn struct {
 	Return []*blockDevice `json:"return"`
-	Error  *cmdError      `json:"error"`
+	Error  *CommandError  `json:"error"`
 }
 
 func driveGetDevice(vmId primitive.ObjectID, dsk *disk.Disk) (
 	name string, err error) {
 
-	cmd := &cmdBase{
+	cmd := &Command{
 		Execute: "query-block",
 	}
 
 	returnData := &blockDeviceReturn{}
-	err = runCommand(vmId, cmd, returnData)
+	err = RunCommand(vmId, cmd, returnData)
 	if err != nil {
 		return
 	}
@@ -97,7 +97,7 @@ func driveBackup(vmId primitive.ObjectID, dsk *disk.Disk,
 		return
 	}
 
-	cmd := &cmdBase{
+	cmd := &Command{
 		Execute: "drive-backup",
 		Arguments: &driveBackupArgs{
 			Device: deviceName,
@@ -107,8 +107,8 @@ func driveBackup(vmId primitive.ObjectID, dsk *disk.Disk,
 		},
 	}
 
-	returnData := &cmdReturn{}
-	err = runCommand(vmId, cmd, returnData)
+	returnData := &CommandReturn{}
+	err = RunCommand(vmId, cmd, returnData)
 	if err != nil {
 		return
 	}
@@ -128,12 +128,12 @@ func driveBackup(vmId primitive.ObjectID, dsk *disk.Disk,
 func driveBackupCheck(vmId primitive.ObjectID, deviceName string) (
 	complete bool, err error) {
 
-	cmd := &cmdBase{
+	cmd := &Command{
 		Execute: "query-jobs",
 	}
 
-	returnData := &jobStatusReturn{}
-	err = runCommand(vmId, cmd, returnData)
+	returnData := &JobStatusReturn{}
+	err = RunCommand(vmId, cmd, returnData)
 	if err != nil {
 		return
 	}

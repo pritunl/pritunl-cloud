@@ -9,12 +9,12 @@ import (
 )
 
 func Shutdown(vmId primitive.ObjectID) (err error) {
-	cmd := &cmdBase{
+	cmd := &Command{
 		Execute: "system_powerdown",
 	}
 
-	returnData := &cmdReturn{}
-	err = runCommand(vmId, cmd, returnData)
+	returnData := &CommandReturn{}
+	err = RunCommand(vmId, cmd, returnData)
 	if err != nil {
 		return
 	}
