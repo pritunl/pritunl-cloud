@@ -118,8 +118,14 @@ func (q *Qemu) Marshal() (output string, err error) {
 	}
 
 	nodeVga := node.Self.Vga
+	nodeEgl := false
 	if nodeVga == "" {
 		nodeVga = node.Vmware
+	}
+
+	if nodeVga == node.VirtioEgl {
+		nodeVga = node.Virtio
+		nodeEgl = true
 	}
 
 	gpuPassthrough := false
@@ -149,6 +155,10 @@ func (q *Qemu) Marshal() (output string, err error) {
 	}
 
 	if !gpuPassthrough && q.Vnc && q.VncDisplay != 0 {
+		if nodeEgl {
+			cmd = append(cmd, "-display")
+			cmd = append(cmd, "egl-headless")
+		}
 		cmd = append(cmd, "-vga")
 		cmd = append(cmd, nodeVga)
 		cmd = append(cmd, "-vnc")
