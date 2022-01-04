@@ -60,6 +60,7 @@ type Connection struct {
 	sock     net.Conn
 	lockId   primitive.ObjectID
 	deadline time.Duration
+	logging  bool
 	command  interface{}
 	response interface{}
 }
@@ -119,7 +120,7 @@ func (c *Connection) connect() (err error) {
 
 		lines := bytes.Split(buffer, []byte("\n"))
 		for _, line := range lines {
-			if !constants.Production {
+			if !constants.Production && c.logging {
 				fmt.Println(string(line))
 			}
 
@@ -168,7 +169,7 @@ func (c *Connection) Send(command interface{}, resp interface{}) (
 		return
 	}
 
-	if !constants.Production {
+	if !constants.Production && c.logging {
 		fmt.Println(string(cmdData))
 	}
 
@@ -203,7 +204,7 @@ func (c *Connection) Send(command interface{}, resp interface{}) (
 
 			lines := bytes.Split(buffer, []byte("\n"))
 			for _, line := range lines {
-				if !constants.Production {
+				if !constants.Production && c.logging {
 					fmt.Println(string(line))
 				}
 
@@ -262,7 +263,7 @@ func (c *Connection) Event(resp interface{}, callback EventCallback) (
 
 		lines := bytes.Split(buffer, []byte("\n"))
 		for _, line := range lines {
-			if !constants.Production {
+			if !constants.Production && c.logging {
 				fmt.Println(string(line))
 			}
 
@@ -316,9 +317,10 @@ func (c *Connection) Connect() (err error) {
 	return
 }
 
-func NewConnection(vmId primitive.ObjectID) (conn *Connection) {
+func NewConnection(vmId primitive.ObjectID, logging bool) (conn *Connection) {
 	conn = &Connection{
-		vmId: vmId,
+		vmId:    vmId,
+		logging: logging,
 	}
 
 	return
@@ -327,7 +329,7 @@ func NewConnection(vmId primitive.ObjectID) (conn *Connection) {
 func RunCommand(vmId primitive.ObjectID, cmd interface{},
 	resp interface{}) (err error) {
 
-	conn := NewConnection(vmId)
+	conn := NewConnection(vmId, true)
 	defer conn.Close()
 
 	err = conn.Connect()
