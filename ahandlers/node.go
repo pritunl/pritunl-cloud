@@ -52,6 +52,8 @@ type nodeData struct {
 	Iscsi                bool                    `json:"iscsi"`
 	UsbPassthrough       bool                    `json:"usb_passthrough"`
 	PciPassthrough       bool                    `json:"pci_passthrough"`
+	Hugepages            bool                    `json:"hugepages"`
+	HugepagesSize        int                     `json:"hugepages_size"`
 	ForwardedForHeader   string                  `json:"forwarded_for_header"`
 	ForwardedProtoHeader string                  `json:"forwarded_proto_header"`
 	Firewall             bool                    `json:"firewall"`
@@ -125,6 +127,8 @@ func nodePut(c *gin.Context) {
 	nde.Iscsi = data.Iscsi
 	nde.UsbPassthrough = data.UsbPassthrough
 	nde.PciPassthrough = data.PciPassthrough
+	nde.Hugepages = data.Hugepages
+	nde.HugepagesSize = data.HugepagesSize
 	nde.ForwardedForHeader = data.ForwardedForHeader
 	nde.ForwardedProtoHeader = data.ForwardedProtoHeader
 	nde.Firewall = data.Firewall
@@ -161,6 +165,8 @@ func nodePut(c *gin.Context) {
 		"iscsi",
 		"usb_passthrough",
 		"pci_passthrough",
+		"hugepages",
+		"hugepages_size",
 		"forwarded_for_header",
 		"forwarded_proto_header",
 		"firewall",
