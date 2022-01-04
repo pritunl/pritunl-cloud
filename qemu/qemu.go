@@ -189,6 +189,14 @@ func (q *Qemu) Marshal() (output string, err error) {
 	cmd = append(cmd, "-name")
 	cmd = append(cmd, fmt.Sprintf("pritunl_%s", q.Id.Hex()))
 
+	slot := -1
+	for i := 0; i < 10; i++ {
+		slot += 1
+		cmd = append(cmd, "-device")
+		cmd = append(cmd,
+			fmt.Sprintf("pcie-root-port,id=diskbus%d,slot=%d", slot, slot))
+	}
+
 	cmd = append(cmd, "-machine")
 	options := ",mem-merge=on"
 	if q.Hugepages {
@@ -274,10 +282,11 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 		cmd = append(cmd, "-device")
 		cmd = append(cmd, fmt.Sprintf(
-			"virtio-blk-pci,drive=%s,num-queues=%d,id=%s",
+			"virtio-blk-pci,drive=%s,num-queues=%d,id=%s,bus=diskbus%d",
 			dskId,
 			q.GetDiskQueues(),
 			dskDevId,
+			disk.Index,
 		))
 	}
 
@@ -285,6 +294,14 @@ func (q *Qemu) Marshal() (output string, err error) {
 		dskHashId := drive.GetDriveHashId(device.Id)
 		dskId := fmt.Sprintf("physicaldisk_%s", dskHashId)
 		dskDevId := fmt.Sprintf("physicaldiskdev_%s", dskHashId)
+		dskBusId := fmt.Sprintf("physicaldiskbus_%s", dskHashId)
+		slot += 1
+
+		cmd = append(cmd, "-device")
+		cmd = append(cmd, fmt.Sprintf(
+			"pcie-root-port,id=%s,slot=%d",
+			dskBusId, slot,
+		))
 
 		cmd = append(cmd, "-drive")
 		cmd = append(cmd, fmt.Sprintf(
@@ -296,10 +313,11 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 		cmd = append(cmd, "-device")
 		cmd = append(cmd, fmt.Sprintf(
-			"virtio-blk-pci,drive=%s,num-queues=%d,id=%s",
+			"virtio-blk-pci,drive=%s,num-queues=%d,id=%s,bus=%s",
 			dskId,
 			q.GetDiskQueues(),
 			dskDevId,
+			dskBusId,
 		))
 	}
 
@@ -321,6 +339,14 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 			dskId := fmt.Sprintf("iscsidisk_%s", iscsiId)
 			dskDevId := fmt.Sprintf("iscsidiskdev_%s", iscsiId)
+			dskBusId := fmt.Sprintf("iscsidiskbus_%s", iscsiId)
+			slot += 1
+
+			cmd = append(cmd, "-device")
+			cmd = append(cmd, fmt.Sprintf(
+				"pcie-root-port,id=%s,slot=%d",
+				dskBusId, slot,
+			))
 
 			cmd = append(cmd, "-drive")
 			cmd = append(cmd, fmt.Sprintf(
@@ -332,10 +358,11 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 			cmd = append(cmd, "-device")
 			cmd = append(cmd, fmt.Sprintf(
-				"virtio-blk-pci,drive=%s,num-queues=%d,id=%s",
+				"virtio-blk-pci,drive=%s,num-queues=%d,id=%s,bus=%s",
 				dskId,
 				q.GetDiskQueues(),
 				dskDevId,
+				dskBusId,
 			))
 		}
 	}
