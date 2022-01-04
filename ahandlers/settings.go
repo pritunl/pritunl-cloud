@@ -21,8 +21,6 @@ type settingsData struct {
 	AuthProxyMaxDuration   int                           `json:"auth_proxy_max_duration"`
 	AuthUserExpire         int                           `json:"auth_user_expire"`
 	AuthUserMaxDuration    int                           `json:"auth_user_max_duration"`
-	ElasticAddress         string                        `json:"elastic_address"`
-	ElasticProxyRequests   bool                          `json:"elastic_proxy_requests"`
 }
 
 func getSettingsData() *settingsData {
