@@ -282,7 +282,8 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 		cmd = append(cmd, "-blockdev")
 		cmd = append(cmd, fmt.Sprintf(
-			"driver=%s,node-name=%s,file=%s",
+			"driver=%s,node-name=%s,file=%s,"+
+				"cache.direct=on,cache.no-flush=off",
 			disk.Format,
 			dskId,
 			dskFileId,
