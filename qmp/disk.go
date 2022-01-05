@@ -58,6 +58,11 @@ func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
 	dskFileId := fmt.Sprintf("fdf_%s", dsk.Id.Hex())
 	dskDevId := fmt.Sprintf("fdd_%s", dsk.Id.Hex())
 
+	logrus.WithFields(logrus.Fields{
+		"instance_id": vmId.Hex(),
+		"disk_id":     dsk.Id.Hex(),
+	}).Info("qmp: Connecting virtual disk")
+
 	diskAio := settings.Hypervisor.DiskAio
 	if diskAio == "" {
 		supported, e := features.GetUringSupport()
@@ -155,6 +160,11 @@ func RemoveDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
 	dskId := fmt.Sprintf("fd_%s", dsk.Id.Hex())
 	dskFileId := fmt.Sprintf("fdf_%s", dsk.Id.Hex())
 	dskDevId := fmt.Sprintf("fdd_%s", dsk.Id.Hex())
+
+	logrus.WithFields(logrus.Fields{
+		"instance_id": vmId.Hex(),
+		"disk_id":     dsk.Id.Hex(),
+	}).Info("qmp: Disconnecting virtual disk")
 
 	diskAio := settings.Hypervisor.DiskAio
 	if diskAio == "" {
