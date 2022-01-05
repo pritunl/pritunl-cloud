@@ -16,23 +16,24 @@ import (
 )
 
 type blockDevFileArgs struct {
-	Driver   string            `json:"driver"`
-	NodeName string            `json:"node-name"`
-	Aio      string            `json:"aio"`
-	Discard  string            `json:"discard"`
-	Filename string            `json:"filename"`
-	Cache    blockDevFileCache `json:"cache"`
-}
-
-type blockDevFileCache struct {
-	NoFlush bool `json:"no-flush"`
-	Direct  bool `json:"direct"`
+	Driver   string        `json:"driver"`
+	NodeName string        `json:"node-name"`
+	Aio      string        `json:"aio"`
+	Discard  string        `json:"discard"`
+	Filename string        `json:"filename"`
+	Cache    blockDevCache `json:"cache"`
 }
 
 type blockDevArgs struct {
-	Driver   string `json:"driver"`
-	NodeName string `json:"node-name"`
-	File     string `json:"file"`
+	Driver   string           `json:"driver"`
+	NodeName string           `json:"node-name"`
+	File     blockDevFileArgs `json:"file"`
+	Cache    blockDevCache    `json:"cache"`
+}
+
+type blockDevCache struct {
+	NoFlush bool `json:"no-flush"`
+	Direct  bool `json:"direct"`
 }
 
 type deviceAddArgs struct {
@@ -82,13 +83,21 @@ func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
 
 	cmd := &Command{
 		Execute: "blockdev-add",
-		Arguments: &blockDevFileArgs{
-			Driver:   "file",
-			NodeName: dskFileId,
-			Aio:      diskAio,
-			Discard:  "unmap",
-			Filename: dsk.Path,
-			Cache: blockDevFileCache{
+		Arguments: &blockDevArgs{
+			Driver:   "qcow2",
+			NodeName: dskId,
+			File: blockDevFileArgs{
+				Driver:   "file",
+				NodeName: dskFileId,
+				Aio:      diskAio,
+				Discard:  "unmap",
+				Filename: dsk.Path,
+				Cache: blockDevCache{
+					NoFlush: false,
+					Direct:  true,
+				},
+			},
+			Cache: blockDevCache{
 				NoFlush: false,
 				Direct:  true,
 			},
@@ -110,33 +119,7 @@ func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
 		err = &errortypes.ApiError{
 			errors.Newf("qmp: Return error %s", returnData.Error.Desc),
 		}
-		return
-	}
 
-	cmd = &Command{
-		Execute: "blockdev-add",
-		Arguments: &blockDevArgs{
-			Driver:   "qcow2",
-			NodeName: dskId,
-			File:     dskFileId,
-		},
-	}
-
-	returnData = &CommandReturn{}
-	err = conn.Send(cmd, returnData)
-	if err != nil {
-		return
-	}
-
-	if returnData.Error != nil &&
-		!strings.Contains(
-			strings.ToLower(returnData.Error.Desc),
-			"duplicate",
-		) {
-
-		err = &errortypes.ApiError{
-			errors.Newf("qmp: Return error %s", returnData.Error.Desc),
-		}
 		return
 	}
 
