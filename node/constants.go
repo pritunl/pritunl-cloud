@@ -9,9 +9,10 @@ const (
 	Qemu = "qemu"
 	Kvm  = "kvm"
 
-	Std    = "std"
-	Vmware = "vmware"
-	Virtio = "virtio"
+	Std       = "std"
+	Vmware    = "vmware"
+	Virtio    = "virtio"
+	VirtioEgl = "virtio_egl"
 
 	Disabled = "disabled"
 	Dhcp     = "dhcp"

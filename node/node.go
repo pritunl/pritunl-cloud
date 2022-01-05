@@ -296,7 +296,7 @@ func (n *Node) Validate(db *database.Database) (
 	}
 
 	switch n.Vga {
-	case Std, Vmware, Virtio:
+	case Std, Vmware, Virtio, VirtioEgl:
 		break
 	case "":
 		n.Vga = Virtio
