@@ -164,14 +164,18 @@ func (n *NetConf) ipDetect(db *database.Database) (err error) {
 				if (address != nil && address6 != nil) ||
 					time.Since(start) > 8*time.Second {
 
-					pubAddr = address.Local
+					if address != nil {
+						pubAddr = address.Local
+					}
 					if address6 != nil {
 						pubAddr6 = address6.Local
 					}
 					break
 				}
 			} else if address != nil || time.Since(start) > 8*time.Second {
-				pubAddr = address.Local
+				if address != nil {
+					pubAddr = address.Local
+				}
 				break
 			}
 
