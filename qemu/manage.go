@@ -268,7 +268,7 @@ func GetVmInfo(db *database.Database, vmId primitive.ObjectID,
 	return
 }
 
-func UpdateVmState(virt *vm.VirtualMachine) (err error) {
+func updateVmState(virt *vm.VirtualMachine, retry bool) (err error) {
 	unitName := paths.GetUnitName(virt.Id)
 	state, timestamp, err := systemd.GetState(unitName)
 	if err != nil {
@@ -292,17 +292,32 @@ func UpdateVmState(virt *vm.VirtualMachine) (err error) {
 		virt.State = vm.Stopped
 		break
 	default:
-		logrus.WithFields(logrus.Fields{
-			"instance_id": virt.Id.Hex(),
-			"state":       state,
-		}).Info("qemu: Unknown virtual machine state")
-		virt.State = vm.Failed
+		if retry {
+			time.Sleep(2 * time.Second)
+			err = updateVmState(virt, false)
+			return
+		} else {
+			logrus.WithFields(logrus.Fields{
+				"instance_id": virt.Id.Hex(),
+				"state":       state,
+			}).Info("qemu: Unknown virtual machine state")
+			virt.State = vm.Failed
+		}
 		break
 	}
 
 	virt.Timestamp = timestamp
 
 	store.SetVirt(virt.Id, virt)
+
+	return
+}
+
+func UpdateVmState(virt *vm.VirtualMachine) (err error) {
+	err = updateVmState(virt, true)
+	if err != nil {
+		return
+	}
 
 	return
 }
