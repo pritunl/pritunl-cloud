@@ -93,6 +93,10 @@ func GetPidPath(virtId primitive.ObjectID) string {
 		fmt.Sprintf("%s.pid", virtId.Hex()))
 }
 
+func GetHugepagePath(virtId primitive.ObjectID) string {
+	return path.Join(settings.Hypervisor.HugepagesPath, virtId.Hex())
+}
+
 func GetSockPath(virtId primitive.ObjectID) string {
 	return path.Join(settings.Hypervisor.RunPath,
 		fmt.Sprintf("%s.sock", virtId.Hex()))
