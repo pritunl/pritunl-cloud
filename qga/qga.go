@@ -99,16 +99,17 @@ func GetInterfaces(sockPath string) (ifaces *Interfaces, err error) {
 		return
 	}
 
-	buff := make([]byte, 100000)
-	_, err = conn.Read(buff)
+	buffer := make([]byte, 5000000)
+	n, err := conn.Read(buffer)
 	if err != nil {
 		err = &errortypes.WriteError{
 			errors.Wrap(err, "qga: Failed to read from guest agent"),
 		}
 		return
 	}
+	buffer = buffer[:n]
 
-	respByt := bytes.Trim(buff, "\x00")
+	respByt := bytes.Trim(buffer, "\x00")
 	respByt = bytes.TrimSpace(respByt)
 
 	ifaces = &Interfaces{}
