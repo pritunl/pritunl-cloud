@@ -318,9 +318,9 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 	for _, device := range q.DriveDevices {
 		dskHashId := drive.GetDriveHashId(device.Id)
-		dskId := fmt.Sprintf("physicaldisk_%s", dskHashId)
-		dskDevId := fmt.Sprintf("physicaldiskdev_%s", dskHashId)
-		dskBusId := fmt.Sprintf("physicaldiskbus_%s", dskHashId)
+		dskId := fmt.Sprintf("pd_%s", dskHashId)
+		dskDevId := fmt.Sprintf("pdd_%s", dskHashId)
+		dskBusId := fmt.Sprintf("pdb_%s", dskHashId)
 		slot += 1
 
 		cmd = append(cmd, "-device")
@@ -363,9 +363,9 @@ func (q *Qemu) Marshal() (output string, err error) {
 			iscsiHash.Write([]byte(device.Uri))
 			iscsiId := fmt.Sprintf("%x", iscsiHash.Sum(nil))
 
-			dskId := fmt.Sprintf("iscsidisk_%s", iscsiId)
-			dskDevId := fmt.Sprintf("iscsidiskdev_%s", iscsiId)
-			dskBusId := fmt.Sprintf("iscsidiskbus_%s", iscsiId)
+			dskId := fmt.Sprintf("id_%s", iscsiId)
+			dskDevId := fmt.Sprintf("idd_%s", iscsiId)
+			dskBusId := fmt.Sprintf("idb_%s", iscsiId)
 			slot += 1
 
 			cmd = append(cmd, "-device")
