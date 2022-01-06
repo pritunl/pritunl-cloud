@@ -456,6 +456,12 @@ func (q *Qemu) Marshal() (output string, err error) {
 	cmd = append(cmd,
 		"virtserialport,chardev=guest,name=org.qemu.guest_agent.0")
 
+	if !settings.Hypervisor.NoSandbox {
+		cmd = append(cmd, "-sandbox")
+		cmd = append(cmd, "on,obsolete=deny,elevateprivileges=deny,"+
+			"spawn=deny,resourcecontrol=deny")
+	}
+
 	if node.Self.UsbPassthrough {
 		if len(q.UsbDevices) > 0 {
 			cmd = append(cmd, "-device")
