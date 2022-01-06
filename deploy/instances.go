@@ -1,6 +1,7 @@
 package deploy
 
 import (
+	"sort"
 	"strings"
 	"time"
 
@@ -345,7 +346,7 @@ func (s *Instances) destroy(inst *instance.Instance) {
 }
 
 func (s *Instances) diskAdd(inst *instance.Instance,
-	virt *vm.VirtualMachine, addDisks []*vm.Disk) {
+	virt *vm.VirtualMachine, addDisks vm.SortDisks) {
 
 	acquired, lockId := instancesLock.LockOpen(inst.Id.Hex())
 	if !acquired {
@@ -360,6 +361,8 @@ func (s *Instances) diskAdd(inst *instance.Instance,
 
 		db := database.GetDatabase()
 		defer db.Close()
+
+		sort.Sort(addDisks)
 
 		for _, dsk := range addDisks {
 			e := qmp.AddDisk(inst.Id, dsk)
@@ -386,7 +389,7 @@ func (s *Instances) diskAdd(inst *instance.Instance,
 }
 
 func (s *Instances) diskRemove(inst *instance.Instance,
-	virt *vm.VirtualMachine, remDisks []*vm.Disk) {
+	virt *vm.VirtualMachine, remDisks vm.SortDisks) {
 
 	acquired, lockId := instancesLock.LockOpen(inst.Id.Hex())
 	if !acquired {
@@ -401,6 +404,8 @@ func (s *Instances) diskRemove(inst *instance.Instance,
 
 		db := database.GetDatabase()
 		defer db.Close()
+
+		sort.Sort(sort.Reverse(remDisks))
 
 		for _, dsk := range remDisks {
 			e := qmp.RemoveDisk(inst.Id, dsk)
