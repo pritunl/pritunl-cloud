@@ -752,15 +752,17 @@ func (i *Instance) DiskChanged(curVirt *vm.VirtualMachine) (
 		return
 	}
 
-	disks := set.NewSet()
+	disks := map[primitive.ObjectID]*vm.Disk{}
 	curDisks := set.NewSet()
 
 	for _, dsk := range i.Virt.Disks {
-		disks.Add(dsk.Id)
+		disks[dsk.Id] = dsk
 	}
 
 	for _, dsk := range curVirt.Disks {
-		if !disks.Contains(dsk.Id) {
+		newDsk := disks[dsk.Id]
+
+		if newDsk == nil || dsk.Index != newDsk.Index {
 			remDisks = append(remDisks, dsk)
 		} else {
 			curDisks.Add(dsk.Id)
