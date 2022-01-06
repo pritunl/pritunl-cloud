@@ -25,7 +25,15 @@ func GetAll(db *database.Database) (orgs []*Organization, err error) {
 	coll := db.Organizations()
 	orgs = []*Organization{}
 
-	cursor, err := coll.Find(db, bson.M{})
+	cursor, err := coll.Find(
+		db,
+		&bson.M{},
+		&options.FindOptions{
+			Sort: &bson.D{
+				{"name", 1},
+			},
+		},
+	)
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -60,6 +68,9 @@ func GetAllName(db *database.Database) (orgs []*Organization, err error) {
 		db,
 		&bson.M{},
 		&options.FindOptions{
+			Sort: &bson.D{
+				{"name", 1},
+			},
 			Projection: &bson.D{
 				{"name", 1},
 			},
