@@ -2,6 +2,7 @@ package qmp
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -352,6 +353,29 @@ type blockQueryImage struct {
 	ActualSize  int64  `json:"actual-size"`
 }
 
+type pciQueryReturn struct {
+	Return []pciQueryBus `json:"return"`
+	Error  *CommandError `json:"error"`
+}
+
+type pciQueryBus struct {
+	Bus       int            `json:"bus"`
+	Slot      int            `json:"slot"`
+	QdevId    string         `json:"qdev_id"`
+	Devices   []pciQueryBus  `json:"devices,omitempty"`
+	PciBridge pciQueryBridge `json:"pci_bridge,omitempty"`
+}
+
+type pciQueryBridge struct {
+	Devices []pciQueryDevice `json:"devices,omitempty"`
+}
+
+type pciQueryDevice struct {
+	Bus    int    `json:"bus"`
+	Slot   int    `json:"slot"`
+	QdevId string `json:"qdev_id"`
+}
+
 func GetDisks(vmId primitive.ObjectID) (disks []*vm.Disk, err error) {
 	conn := NewConnection(vmId, false)
 	defer conn.Close()
@@ -377,6 +401,8 @@ func GetDisks(vmId primitive.ObjectID) (disks []*vm.Disk, err error) {
 		}
 		return
 	}
+
+	disksMap := map[primitive.ObjectID]*vm.Disk{}
 
 	index := 0
 	for _, disk := range returnData.Return {
@@ -436,8 +462,77 @@ func GetDisks(vmId primitive.ObjectID) (disks []*vm.Disk, err error) {
 			Path:  filename,
 		}
 		disks = append(disks, dsk)
+		disksMap[dsk.Id] = dsk
 
 		index += 1
+	}
+
+	cmd = &Command{
+		Execute: "query-pci",
+	}
+
+	pciReturnData := &pciQueryReturn{}
+	err = conn.Send(cmd, pciReturnData)
+	if err != nil {
+		return
+	}
+
+	if pciReturnData.Error != nil {
+		err = &errortypes.ApiError{
+			errors.Newf("qmp: Return error %s", pciReturnData.Error.Desc),
+		}
+		return
+	}
+
+	for _, rootBus := range pciReturnData.Return {
+		if rootBus.Devices == nil {
+			continue
+		}
+		for _, subBus := range rootBus.Devices {
+			if !strings.HasPrefix(subBus.QdevId, "diskbus") ||
+				subBus.PciBridge.Devices == nil {
+
+				continue
+			}
+			for _, device := range subBus.PciBridge.Devices {
+				if !strings.HasPrefix(device.QdevId, "fdd_") {
+					continue
+				}
+
+				dskIndex, e := strconv.Atoi(subBus.QdevId[7:])
+				if e != nil {
+					logrus.WithFields(logrus.Fields{
+						"instance_id": vmId.Hex(),
+						"qmp_diskbus": subBus.QdevId,
+						"qmp_device":  device.QdevId,
+					}).Error("qmp: Disk bus parse failed")
+					continue
+				}
+
+				dskId, ok := utils.ParseObjectId(device.QdevId[4:])
+				if !ok {
+					logrus.WithFields(logrus.Fields{
+						"instance_id": vmId.Hex(),
+						"qmp_diskbus": subBus.QdevId,
+						"qmp_device":  device.QdevId,
+					}).Error("qmp: Disk bus id parse failed")
+					continue
+				}
+
+				dsk := disksMap[dskId]
+				if dsk == nil {
+					logrus.WithFields(logrus.Fields{
+						"instance_id": vmId.Hex(),
+						"disk_id":     dskId.Hex(),
+						"qmp_diskbus": subBus.QdevId,
+						"qmp_device":  device.QdevId,
+					}).Error("qmp: Unknown disk found")
+					continue
+				}
+
+				dsk.Index = dskIndex
+			}
+		}
 	}
 
 	return
