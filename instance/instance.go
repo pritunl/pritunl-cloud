@@ -543,6 +543,7 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 		Image:      i.Image,
 		Processors: i.Processors,
 		Memory:     i.Memory,
+		Hugepages:  node.Self.Hugepages,
 		Vnc:        i.Vnc,
 		VncDisplay: i.VncDisplay,
 		Disks:      []*vm.Disk{},
@@ -645,6 +646,7 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 
 func (i *Instance) Changed(curVirt *vm.VirtualMachine) bool {
 	if i.Virt.Memory != curVirt.Memory ||
+		i.Virt.Hugepages != curVirt.Hugepages ||
 		i.Virt.Processors != curVirt.Processors ||
 		i.Virt.Vnc != curVirt.Vnc ||
 		i.Virt.VncDisplay != curVirt.VncDisplay ||
