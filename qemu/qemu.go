@@ -218,6 +218,20 @@ func (q *Qemu) Marshal() (output string, err error) {
 		cmd = append(cmd, q.Cpu)
 	}
 
+	cmd = append(cmd, "-no-hpet")
+	cmd = append(cmd, "-rtc", "base=utc,driftfix=slew")
+	cmd = append(cmd, "-msg", "timestamp=on")
+	cmd = append(cmd, "-global", "kvm-pit.lost_tick_policy=delay")
+	cmd = append(cmd, "-global", "ICH9-LPC.disable_s3=1")
+	cmd = append(cmd, "-global", "ICH9-LPC.disable_s4=1")
+	if q.SecureBoot {
+		cmd = append(
+			cmd,
+			"-global",
+			"driver=cfi.pflash01,property=secure,value=on",
+		)
+	}
+
 	cmd = append(cmd, "-smp")
 	cmd = append(cmd, fmt.Sprintf(
 		"cores=%d,threads=%d,dies=%d,sockets=%d",
