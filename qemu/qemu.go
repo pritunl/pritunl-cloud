@@ -199,6 +199,9 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 	cmd = append(cmd, "-machine")
 	options := ",mem-merge=on"
+	if q.SecureBoot {
+		options += ",smm=on"
+	}
 	if q.Hugepages {
 		options += ",memory-backend=pc.ram"
 	}
