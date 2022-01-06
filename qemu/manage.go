@@ -108,7 +108,7 @@ func GetVmInfo(db *database.Database, vmId primitive.ObjectID,
 		if !ok || time.Since(disksStore.Timestamp) > refreshRate {
 			for i := 0; i < 10; i++ {
 				if virt.State == vm.Running {
-					disks, e := qms.GetDisks(vmId)
+					disks, e := qmp.GetDisks(vmId)
 					if e != nil {
 						if i < 9 {
 							time.Sleep(300 * time.Millisecond)
