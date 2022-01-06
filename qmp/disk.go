@@ -25,10 +25,10 @@ type blockDevFileArgs struct {
 }
 
 type blockDevArgs struct {
-	Driver   string           `json:"driver"`
-	NodeName string           `json:"node-name"`
-	File     blockDevFileArgs `json:"file"`
-	Cache    blockDevCache    `json:"cache"`
+	Driver   string        `json:"driver"`
+	NodeName string        `json:"node-name"`
+	File     string        `json:"file"`
+	Cache    blockDevCache `json:"cache"`
 }
 
 type blockDevCache struct {
@@ -88,20 +88,12 @@ func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
 
 	cmd := &Command{
 		Execute: "blockdev-add",
-		Arguments: &blockDevArgs{
-			Driver:   "qcow2",
-			NodeName: dskId,
-			File: blockDevFileArgs{
-				Driver:   "file",
-				NodeName: dskFileId,
-				Aio:      diskAio,
-				Discard:  "unmap",
-				Filename: dsk.Path,
-				Cache: blockDevCache{
-					NoFlush: false,
-					Direct:  true,
-				},
-			},
+		Arguments: &blockDevFileArgs{
+			Driver:   "file",
+			NodeName: dskFileId,
+			Aio:      diskAio,
+			Discard:  "unmap",
+			Filename: dsk.Path,
 			Cache: blockDevCache{
 				NoFlush: false,
 				Direct:  true,
@@ -124,7 +116,37 @@ func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
 		err = &errortypes.ApiError{
 			errors.Newf("qmp: Return error %s", returnData.Error.Desc),
 		}
+		return
+	}
 
+	cmd = &Command{
+		Execute: "blockdev-add",
+		Arguments: &blockDevArgs{
+			Driver:   "qcow2",
+			NodeName: dskId,
+			File:     dskFileId,
+			Cache: blockDevCache{
+				NoFlush: false,
+				Direct:  true,
+			},
+		},
+	}
+
+	returnData = &CommandReturn{}
+	err = conn.Send(cmd, returnData)
+	if err != nil {
+		return
+	}
+
+	if returnData.Error != nil &&
+		!strings.Contains(
+			strings.ToLower(returnData.Error.Desc),
+			"duplicate",
+		) {
+
+		err = &errortypes.ApiError{
+			errors.Newf("qmp: Return error %s", returnData.Error.Desc),
+		}
 		return
 	}
 
