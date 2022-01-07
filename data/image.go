@@ -293,7 +293,7 @@ func WriteImage(db *database.Database, imgId, dskId primitive.ObjectID,
 			}
 
 			_, err = utils.ExecCombinedOutputLogged(nil, "qemu-img",
-				"create", "-f", "qcow2",
+				"create", "-f", "qcow2", "-F", "qcow2",
 				"-o", fmt.Sprintf("backing_file=%s", backingImagePth),
 				diskTempPath,
 				fmt.Sprintf("%dG", size))
@@ -371,7 +371,7 @@ func WriteImage(db *database.Database, imgId, dskId primitive.ObjectID,
 			}
 
 			_, err = utils.ExecCombinedOutputLogged(nil, "qemu-img",
-				"create", "-f", "qcow2",
+				"create", "-f", "qcow2", "-F", "qcow2",
 				"-o", fmt.Sprintf("backing_file=%s", backingImagePth),
 				diskTempPath,
 				fmt.Sprintf("%dG", size))
