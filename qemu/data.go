@@ -114,6 +114,7 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	// TODO Backward compatibility
 	pidPathOld := paths.GetPidPathOld(virt.Id)
 	ovmfVarsPath := paths.GetOvmfVarsPath(virt.Id)
+	hugepagesPath := paths.GetHugepagePath(virt.Id)
 
 	logrus.WithFields(logrus.Fields{
 		"id": virt.Id.Hex(),
@@ -303,6 +304,11 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	}
 
 	err = utils.RemoveAll(ovmfVarsPath)
+	if err != nil {
+		return
+	}
+
+	err = utils.RemoveAll(hugepagesPath)
 	if err != nil {
 		return
 	}
