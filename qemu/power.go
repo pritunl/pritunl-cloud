@@ -30,6 +30,12 @@ func PowerOn(db *database.Database, inst *instance.Instance,
 		"id": virt.Id.Hex(),
 	}).Info("qemu: Starting virtual machine")
 
+	err = inst.InitUnixId(db)
+	if err != nil {
+		return
+	}
+	virt.UnixId = inst.UnixId
+
 	err = utils.ExistsMkdir(settings.Hypervisor.RunPath, 0755)
 	if err != nil {
 		return

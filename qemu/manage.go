@@ -456,6 +456,12 @@ func Create(db *database.Database, inst *instance.Instance,
 		return
 	}
 
+	err = inst.InitUnixId(db)
+	if err != nil {
+		return
+	}
+	virt.UnixId = inst.UnixId
+
 	err = utils.ExistsMkdir(settings.Hypervisor.LibPath, 0755)
 	if err != nil {
 		return
