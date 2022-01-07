@@ -65,6 +65,11 @@ func writeOvmfVars(virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
+	err = utils.Chmod(ovmfVarsPath, 0600)
+	if err != nil {
+		return
+	}
+
 	return
 }
 
