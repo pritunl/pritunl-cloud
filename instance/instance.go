@@ -35,6 +35,7 @@ import (
 type Instance struct {
 	Id                  primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Organization        primitive.ObjectID `bson:"organization" json:"organization"`
+	UnixId              int                `bson:"unix_id" json:"unix_id"`
 	Zone                primitive.ObjectID `bson:"zone" json:"zone"`
 	Vpc                 primitive.ObjectID `bson:"vpc" json:"vpc"`
 	Subnet              primitive.ObjectID `bson:"subnet" json:"subnet"`
@@ -141,6 +142,10 @@ func (i *Instance) Validate(db *database.Database) (
 			Message: "Missing required VPC",
 		}
 		return
+	}
+
+	if i.UnixId == 0 {
+		i.GenerateUnixId()
 	}
 
 	vc, err := vpc.Get(db, i.Vpc)
@@ -323,6 +328,25 @@ func (i *Instance) Validate(db *database.Database) (
 		}
 	} else {
 		i.VncPassword = ""
+	}
+
+	return
+}
+
+func (i *Instance) GenerateUnixId() {
+	i.UnixId = rand.Intn(55500) + 10000
+}
+
+func (i *Instance) InitUnixId(db *database.Database) (err error) {
+	if i.UnixId != 0 {
+		return
+	}
+
+	i.GenerateUnixId()
+
+	err = i.CommitFields(db, set.NewSet("unix_id"))
+	if err != nil {
+		return
 	}
 
 	return
@@ -528,18 +552,35 @@ func (i *Instance) Insert(db *database.Database) (err error) {
 		return
 	}
 
-	_, err = coll.InsertOne(db, i)
-	if err != nil {
-		err = database.ParseError(err)
+	for n := 0; n < 2000; n++ {
+		println("***************************************************")
+		println("3", n)
+		println("***************************************************")
+
+		_, err = coll.InsertOne(db, i)
+		if err != nil {
+			err = database.ParseError(err)
+			if _, ok := err.(*database.DuplicateKeyError); ok {
+				i.GenerateUnixId()
+				err = nil
+				continue
+			}
+			return
+		}
+
 		return
 	}
 
+	err = &errortypes.WriteError{
+		errors.New("instance: Failed to insert unique unix id"),
+	}
 	return
 }
 
 func (i *Instance) LoadVirt(disks []*disk.Disk) {
 	i.Virt = &vm.VirtualMachine{
 		Id:         i.Id,
+		UnixId:     i.UnixId,
 		Image:      i.Image,
 		Processors: i.Processors,
 		Memory:     i.Memory,
