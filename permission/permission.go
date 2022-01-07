@@ -75,3 +75,17 @@ func InitVirt(virt *vm.VirtualMachine) (err error) {
 
 	return
 }
+
+func InitDisk(virt *vm.VirtualMachine, dsk *vm.Disk) (err error) {
+	err = UserAdd(virt)
+	if err != nil {
+		return
+	}
+
+	err = chown(virt, dsk.Path)
+	if err != nil {
+		return
+	}
+
+	return
+}
