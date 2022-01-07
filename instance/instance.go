@@ -534,9 +534,31 @@ func (i *Instance) CommitFields(db *database.Database, fields set.Set) (
 
 	coll := db.Instances()
 
-	err = coll.CommitFields(i.Id, i, fields)
-	if err != nil {
+	if fields.Contains("unix_id") {
+		for n := 0; n < 10000; n++ {
+			err = coll.CommitFields(i.Id, i, fields)
+			if err != nil {
+				err = database.ParseError(err)
+				if _, ok := err.(*database.DuplicateKeyError); ok {
+					i.GenerateUnixId()
+					err = nil
+					continue
+				}
+				return
+			}
+
+			return
+		}
+
+		err = &errortypes.WriteError{
+			errors.New("instance: Failed to commit unique unix id"),
+		}
 		return
+	} else {
+		err = coll.CommitFields(i.Id, i, fields)
+		if err != nil {
+			return
+		}
 	}
 
 	return
@@ -553,10 +575,6 @@ func (i *Instance) Insert(db *database.Database) (err error) {
 	}
 
 	for n := 0; n < 2000; n++ {
-		println("***************************************************")
-		println("3", n)
-		println("***************************************************")
-
 		_, err = coll.InsertOne(db, i)
 		if err != nil {
 			err = database.ParseError(err)
