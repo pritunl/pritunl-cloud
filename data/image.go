@@ -283,6 +283,11 @@ func WriteImage(db *database.Database, imgId, dskId primitive.ObjectID,
 
 			utils.Exec("", "touch", backingImagePth)
 
+			err = utils.Chmod(backingImagePth, 0644)
+			if err != nil {
+				return
+			}
+
 			if size < 10 {
 				size = 10
 			}
@@ -355,6 +360,11 @@ func WriteImage(db *database.Database, imgId, dskId primitive.ObjectID,
 
 		if backingImage {
 			utils.Exec("", "touch", backingImagePth)
+
+			err = utils.Chmod(backingImagePth, 0644)
+			if err != nil {
+				return
+			}
 
 			if size < 10 {
 				size = 10
