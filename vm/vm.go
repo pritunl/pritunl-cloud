@@ -12,6 +12,7 @@ import (
 
 type VirtualMachine struct {
 	Id                  primitive.ObjectID `json:"id"`
+	UnixId              int                `json:"unix_id"`
 	State               string             `json:"state"`
 	Timestamp           time.Time          `json:"timestamp"`
 	Image               primitive.ObjectID `json:"image"`
