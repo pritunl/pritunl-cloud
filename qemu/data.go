@@ -104,6 +104,7 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	unitName := paths.GetUnitName(virt.Id)
 	unitPath := paths.GetUnitPath(virt.Id)
 	sockPath := paths.GetSockPath(virt.Id)
+	sockQmpPath := paths.GetQmpSockPath(virt.Id)
 	// TODO Backward compatibility
 	sockPathOld := paths.GetSockPath(virt.Id)
 	guestPath := paths.GetGuestPath(virt.Id)
@@ -249,6 +250,11 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	}
 
 	err = utils.RemoveAll(sockPath)
+	if err != nil {
+		return
+	}
+
+	err = utils.RemoveAll(sockQmpPath)
 	if err != nil {
 		return
 	}
