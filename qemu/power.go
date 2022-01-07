@@ -55,6 +55,11 @@ func PowerOn(db *database.Database, inst *instance.Instance,
 		return
 	}
 
+	err = initPermissions(virt)
+	if err != nil {
+		return
+	}
+
 	err = systemd.Start(unitName)
 	if err != nil {
 		return

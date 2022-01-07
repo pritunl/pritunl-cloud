@@ -551,6 +551,11 @@ func Create(db *database.Database, inst *instance.Instance,
 		return
 	}
 
+	err = initPermissions(virt)
+	if err != nil {
+		return
+	}
+
 	virt.State = vm.Starting
 	err = virt.Commit(db)
 	if err != nil {

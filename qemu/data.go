@@ -8,6 +8,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/hugepages"
 	"github.com/pritunl/pritunl-cloud/paths"
+	"github.com/pritunl/pritunl-cloud/permission"
 	"github.com/pritunl/pritunl-cloud/qmp"
 	"github.com/pritunl/pritunl-cloud/qms"
 	"github.com/pritunl/pritunl-cloud/settings"
@@ -30,6 +31,15 @@ func initHugepage(virt *vm.VirtualMachine) (err error) {
 
 	hugepagesPath := paths.GetHugepagePath(virt.Id)
 	_ = os.Remove(hugepagesPath)
+
+	return
+}
+
+func initPermissions(virt *vm.VirtualMachine) (err error) {
+	err = permission.InitVirt(virt)
+	if err != nil {
+		return
+	}
 
 	return
 }
