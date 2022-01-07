@@ -14,6 +14,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/netconf"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/permission"
 	"github.com/pritunl/pritunl-cloud/qemu"
 	"github.com/pritunl/pritunl-cloud/qmp"
 	"github.com/pritunl/pritunl-cloud/qms"
@@ -365,10 +366,15 @@ func (s *Instances) diskAdd(inst *instance.Instance,
 		sort.Sort(addDisks)
 
 		for _, dsk := range addDisks {
-			e := qmp.AddDisk(inst.Id, dsk)
-			if e != nil {
+			err := permission.InitDisk(virt, dsk)
+			if err != nil {
+				return
+			}
+
+			err = qmp.AddDisk(inst.Id, dsk)
+			if err != nil {
 				logrus.WithFields(logrus.Fields{
-					"error": e,
+					"error": err,
 				}).Error("sync: Failed to add disk")
 				return
 			}
