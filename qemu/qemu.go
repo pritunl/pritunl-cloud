@@ -11,6 +11,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/features"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
+	"github.com/pritunl/pritunl-cloud/permission"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/usb"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -188,6 +189,9 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 	cmd = append(cmd, "-name")
 	cmd = append(cmd, fmt.Sprintf("pritunl_%s", q.Id.Hex()))
+
+	cmd = append(cmd, "-runas")
+	cmd = append(cmd, permission.GetUserName(q.Id))=
 
 	slot := -1
 	for i := 0; i < 10; i++ {
@@ -458,7 +462,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 	if !settings.Hypervisor.NoSandbox {
 		cmd = append(cmd, "-sandbox")
-		cmd = append(cmd, "on,obsolete=deny,elevateprivileges=deny,"+
+		cmd = append(cmd, "on,obsolete=deny,elevateprivileges=allow,"+
 			"spawn=deny,resourcecontrol=deny")
 	}
 
