@@ -191,7 +191,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 	cmd = append(cmd, fmt.Sprintf("pritunl_%s", q.Id.Hex()))
 
 	cmd = append(cmd, "-runas")
-	cmd = append(cmd, permission.GetUserName(q.Id))=
+	cmd = append(cmd, permission.GetUserName(q.Id))
 
 	slot := -1
 	for i := 0; i < 10; i++ {
@@ -337,7 +337,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 		cmd = append(cmd, fmt.Sprintf(
 			"file=%s,media=disk,format=raw,cache=none,"+
 				"discard=on,if=none,id=%s",
-			path.Join("/dev/disk/by-id", device.Id),
+			paths.GetDrivePath(device.Id),
 			dskId,
 		))
 
