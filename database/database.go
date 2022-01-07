@@ -957,6 +957,22 @@ func addIndexes() (err error) {
 	if err != nil {
 		return
 	}
+	index = &Index{
+		Collection: db.Instances(),
+		Keys: &bson.D{
+			{"unix_id", 1},
+		},
+		Partial: &bson.M{
+			"unix_id": &bson.M{
+				"$gt": 0,
+			},
+		},
+		Unique: true,
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
 
 	index = &Index{
 		Collection: db.Tasks(),
