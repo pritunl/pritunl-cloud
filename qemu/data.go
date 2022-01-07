@@ -1,6 +1,7 @@
 package qemu
 
 import (
+	"os"
 	"time"
 
 	"github.com/pritunl/pritunl-cloud/database"
@@ -26,6 +27,9 @@ func initHugepage(virt *vm.VirtualMachine) (err error) {
 	if err != nil {
 		return
 	}
+
+	hugepagesPath := paths.GetHugepagePath(virt.Id)
+	_ = os.Remove(hugepagesPath)
 
 	return
 }
