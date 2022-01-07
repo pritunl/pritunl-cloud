@@ -34,6 +34,10 @@ func GetTempDir() string {
 	return path.Join(GetTempPath(), primitive.NewObjectID().Hex())
 }
 
+func GetDrivePath(driveId string) string {
+	return path.Join("/dev/disk/by-id", driveId)
+}
+
 func GetOvmfDir() string {
 	return path.Join(node.Self.GetVirtPath(), "ovmf")
 }
