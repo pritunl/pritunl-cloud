@@ -320,9 +320,6 @@ func (i *Instance) Validate(db *database.Database) (
 	i.IscsiDevices = iscsiDevices
 
 	if i.Vnc {
-		if i.VncDisplay == 0 {
-			i.VncDisplay = rand.Intn(9998) + 4101
-		}
 		if i.VncPassword == "" {
 			i.VncPassword, err = utils.RandStr(32)
 			if err != nil {
@@ -363,6 +360,78 @@ func (i *Instance) InitUnixId(db *database.Database) (err error) {
 		return
 	}
 
+	return
+}
+
+func (i *Instance) GenerateSpicePort() {
+	i.SpicePort = rand.Intn(4999) + 15000
+}
+
+func (i *Instance) InitSpicePort(db *database.Database) (err error) {
+	if i.SpicePort != 0 {
+		return
+	}
+
+	i.GenerateSpicePort()
+
+	coll := db.Instances()
+
+	for n := 0; n < 10000; n++ {
+		err = coll.CommitFields(i.Id, i, set.NewSet("spice_port"))
+		if err != nil {
+			err = database.ParseError(err)
+			if _, ok := err.(*database.DuplicateKeyError); ok {
+				i.GenerateSpicePort()
+				err = nil
+				continue
+			}
+			return
+		}
+
+		event.PublishDispatch(db, "instance.change")
+
+		return
+	}
+
+	err = &errortypes.WriteError{
+		errors.New("instance: Failed to commit unique spice port"),
+	}
+	return
+}
+
+func (i *Instance) GenerateVncDisplay() {
+	i.VncDisplay = rand.Intn(4998) + 4101
+}
+
+func (i *Instance) InitVncDisplay(db *database.Database) (err error) {
+	if i.VncDisplay != 0 {
+		return
+	}
+
+	i.GenerateVncDisplay()
+
+	coll := db.Instances()
+
+	for n := 0; n < 10000; n++ {
+		err = coll.CommitFields(i.Id, i, set.NewSet("vnc_display"))
+		if err != nil {
+			err = database.ParseError(err)
+			if _, ok := err.(*database.DuplicateKeyError); ok {
+				i.GenerateVncDisplay()
+				err = nil
+				continue
+			}
+			return
+		}
+
+		event.PublishDispatch(db, "instance.change")
+
+		return
+	}
+
+	err = &errortypes.WriteError{
+		errors.New("instance: Failed to commit unique vnc port"),
+	}
 	return
 }
 
