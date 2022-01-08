@@ -383,6 +383,14 @@ func Write(db *database.Database, inst *instance.Instance,
 		"meta-data",
 		"network-config",
 	)
+	if err != nil {
+		return
+	}
+
+	err = utils.Chmod(initPath, 0600)
+	if err != nil {
+		return
+	}
 
 	return
 }
