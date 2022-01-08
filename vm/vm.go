@@ -21,6 +21,8 @@ type VirtualMachine struct {
 	Hugepages           bool               `json:"hugepages"`
 	Vnc                 bool               `json:"vnc"`
 	VncDisplay          int                `json:"vnc_display"`
+	Spice               bool               `json:"spice"`
+	SpicePort           int                `json:"spice_port"`
 	Disks               []*Disk            `json:"disks"`
 	DisksAvailable      bool               `json:"-"`
 	NetworkAdapters     []*NetworkAdapter  `json:"network_adapters"`
