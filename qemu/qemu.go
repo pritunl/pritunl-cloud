@@ -72,6 +72,8 @@ type Qemu struct {
 	Hugepages    bool
 	Vnc          bool
 	VncDisplay   int
+	Spice        bool
+	SpicePort    int
 	Disks        Disks
 	Networks     []*Network
 	Isos         []*Iso
@@ -155,19 +157,32 @@ func (q *Qemu) Marshal() (output string, err error) {
 		cmd = append(cmd, "none")
 	}
 
-	if !gpuPassthrough && q.Vnc && q.VncDisplay != 0 {
+	if !gpuPassthrough && (q.Vnc && q.VncDisplay != 0) ||
+		(q.Spice && q.SpicePort != 0) {
+
 		if nodeEgl {
 			cmd = append(cmd, "-display")
 			cmd = append(cmd, "egl-headless")
 		}
 		cmd = append(cmd, "-vga")
 		cmd = append(cmd, nodeVga)
-		cmd = append(cmd, "-vnc")
-		cmd = append(cmd, fmt.Sprintf(
-			":%d,websocket=%d,password=on,share=allow-exclusive",
-			q.VncDisplay,
-			q.VncDisplay+15900,
-		))
+
+		if q.Vnc && q.VncDisplay != 0 {
+			cmd = append(cmd, "-vnc")
+			cmd = append(cmd, fmt.Sprintf(
+				":%d,websocket=%d,password=on,share=allow-exclusive",
+				q.VncDisplay,
+				q.VncDisplay+15900,
+			))
+		}
+
+		if q.Spice && q.SpicePort != 0 {
+			cmd = append(cmd, "-spice")
+			cmd = append(cmd, fmt.Sprintf(
+				"ipv4=on,port=%d,image-compression=off",
+				q.SpicePort,
+			))
+		}
 	}
 
 	if q.Uefi {
@@ -212,7 +227,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 	if q.Kvm {
 		options += ",accel=kvm"
 	}
-	if !q.Vnc {
+	if !q.Vnc && !q.Spice {
 		options += ",vmport=off"
 	}
 	cmd = append(cmd, fmt.Sprintf("type=%s%s", q.Machine, options))
