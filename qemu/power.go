@@ -36,6 +36,22 @@ func PowerOn(db *database.Database, inst *instance.Instance,
 	}
 	virt.UnixId = inst.UnixId
 
+	if inst.Vnc {
+		err = inst.InitVncDisplay(db)
+		if err != nil {
+			return
+		}
+		virt.VncDisplay = inst.VncDisplay
+	}
+
+	if inst.Spice {
+		err = inst.InitSpicePort(db)
+		if err != nil {
+			return
+		}
+		virt.SpicePort = inst.SpicePort
+	}
+
 	err = utils.ExistsMkdir(settings.Hypervisor.RunPath, 0755)
 	if err != nil {
 		return
@@ -78,6 +94,13 @@ func PowerOn(db *database.Database, inst *instance.Instance,
 
 	if virt.Vnc {
 		err = qmp.VncPassword(virt.Id, inst.VncPassword)
+		if err != nil {
+			return
+		}
+	}
+
+	if virt.Spice {
+		err = qmp.SetPassword(virt.Id, qmp.Spice, inst.SpicePassword)
 		if err != nil {
 			return
 		}
