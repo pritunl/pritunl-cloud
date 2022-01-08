@@ -82,7 +82,10 @@ type Instance struct {
 	IscsiDevices        []*iscsi.Device    `bson:"iscsi_devices" json:"iscsi_devices"`
 	Vnc                 bool               `bson:"vnc" json:"vnc"`
 	VncPassword         string             `bson:"vnc_password" json:"vnc_password"`
-	VncDisplay          int                `bson:"vnc_display,omitempty" json:"vnc_display"`
+	VncDisplay          int                `bson:"vnc_display" json:"vnc_display"`
+	Spice               bool               `bson:"spice" json:"spice"`
+	SpicePassword       string             `bson:"spice_password" json:"spice_password"`
+	SpicePort           int                `bson:"spice_port" json:"spice_port"`
 	Virt                *vm.VirtualMachine `bson:"-" json:"-"`
 	curVpc              primitive.ObjectID `bson:"-" json:"-"`
 	curSubnet           primitive.ObjectID `bson:"-" json:"-"`
@@ -328,6 +331,17 @@ func (i *Instance) Validate(db *database.Database) (
 		}
 	} else {
 		i.VncPassword = ""
+	}
+
+	if i.Spice {
+		if i.SpicePassword == "" {
+			i.SpicePassword, err = utils.RandStr(32)
+			if err != nil {
+				return
+			}
+		}
+	} else {
+		i.SpicePassword = ""
 	}
 
 	return
