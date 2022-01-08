@@ -2,12 +2,13 @@ package qemu
 
 import (
 	"encoding/json"
+	"sort"
+
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/vm"
-	"sort"
 )
 
 func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
@@ -46,6 +47,8 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 		Hugepages:    virt.Hugepages,
 		Vnc:          virt.Vnc,
 		VncDisplay:   virt.VncDisplay,
+		Spice:        virt.Spice,
+		SpicePort:    virt.SpicePort,
 		Disks:        []*Disk{},
 		Networks:     []*Network{},
 		Isos:         []*Iso{},
