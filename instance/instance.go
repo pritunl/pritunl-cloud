@@ -18,6 +18,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/drive"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/iscsi"
 	"github.com/pritunl/pritunl-cloud/iso"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -688,6 +689,8 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 		Hugepages:  node.Self.Hugepages,
 		Vnc:        i.Vnc,
 		VncDisplay: i.VncDisplay,
+		Spice:      i.Spice,
+		SpicePort:  i.SpicePort,
 		Disks:      []*vm.Disk{},
 		NetworkAdapters: []*vm.NetworkAdapter{
 			&vm.NetworkAdapter{
@@ -792,6 +795,8 @@ func (i *Instance) Changed(curVirt *vm.VirtualMachine) bool {
 		i.Virt.Processors != curVirt.Processors ||
 		i.Virt.Vnc != curVirt.Vnc ||
 		i.Virt.VncDisplay != curVirt.VncDisplay ||
+		i.Virt.Spice != curVirt.Spice ||
+		i.Virt.SpicePort != curVirt.SpicePort ||
 		i.Virt.Uefi != curVirt.Uefi ||
 		i.Virt.SecureBoot != curVirt.SecureBoot ||
 		i.Virt.NoPublicAddress != curVirt.NoPublicAddress ||
