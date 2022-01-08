@@ -59,6 +59,7 @@ type instanceData struct {
 	DriveDevices     []*drive.Device    `json:"drive_devices"`
 	IscsiDevices     []*iscsi.Device    `json:"iscsi_devices"`
 	Vnc              bool               `json:"vnc"`
+	Spice            bool               `json:"spice"`
 	NoPublicAddress  bool               `json:"no_public_address"`
 	NoHostAddress    bool               `json:"no_host_address"`
 	Count            int                `json:"count"`
@@ -148,11 +149,13 @@ func instancePut(c *gin.Context) {
 	inst.DriveDevices = dta.DriveDevices
 	inst.IscsiDevices = dta.IscsiDevices
 	inst.Vnc = dta.Vnc
+	inst.Spice = dta.Spice
 	inst.Domain = dta.Domain
 	inst.NoPublicAddress = dta.NoPublicAddress
 	inst.NoHostAddress = dta.NoHostAddress
 
 	fields := set.NewSet(
+		"unix_id",
 		"name",
 		"comment",
 		"vpc",
@@ -175,6 +178,9 @@ func instancePut(c *gin.Context) {
 		"vnc",
 		"vnc_display",
 		"vnc_password",
+		"spice",
+		"spice_port",
+		"spice_password",
 		"domain",
 		"no_public_address",
 		"no_host_address",
@@ -361,6 +367,7 @@ func instancePost(c *gin.Context) {
 			DriveDevices:     dta.DriveDevices,
 			IscsiDevices:     dta.IscsiDevices,
 			Vnc:              dta.Vnc,
+			Spice:            dta.Spice,
 			Domain:           dta.Domain,
 			NoPublicAddress:  dta.NoPublicAddress,
 			NoHostAddress:    dta.NoHostAddress,
