@@ -33,6 +33,8 @@ type nodeData struct {
 	Hypervisor           string                  `json:"hypervisor"`
 	Vga                  string                  `json:"vga"`
 	VgaRender            string                  `json:"vga_render"`
+	Gui                  bool                    `json:"gui"`
+	GuiUser              string                  `json:"gui_user"`
 	Certificates         []primitive.ObjectID    `json:"certificates"`
 	AdminDomain          string                  `json:"admin_domain"`
 	UserDomain           string                  `json:"user_domain"`
@@ -110,6 +112,8 @@ func nodePut(c *gin.Context) {
 	nde.Hypervisor = data.Hypervisor
 	nde.Vga = data.Vga
 	nde.VgaRender = data.VgaRender
+	nde.Gui = data.Gui
+	nde.GuiUser = data.GuiUser
 	nde.Certificates = data.Certificates
 	nde.AdminDomain = data.AdminDomain
 	nde.UserDomain = data.UserDomain
@@ -149,6 +153,8 @@ func nodePut(c *gin.Context) {
 		"hypervisor",
 		"vga",
 		"vga_render",
+		"gui",
+		"gui_user",
 		"certificates",
 		"admin_domain",
 		"user_domain",
