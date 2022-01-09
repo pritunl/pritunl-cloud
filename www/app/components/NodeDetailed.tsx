@@ -1421,6 +1421,28 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			zonesSelect = [<option key="null" value="">No Zones</option>];
 		}
 
+		let hasRenders = false;
+		let rendersSelect: JSX.Element[] = [];
+		if (this.props.node.available_renders &&
+			this.props.node.available_renders.length) {
+			rendersSelect.push(<option key="null" value="">Select Render</option>);
+
+			for (let render of this.props.node.available_renders) {
+				hasRenders = true;
+
+				rendersSelect.push(
+					<option
+						key={render}
+						value={render}
+					>{render}</option>,
+				);
+			}
+		}
+
+		if (!hasRenders) {
+			rendersSelect = [<option key="null" value="">No Renders</option>];
+		}
+
 		let networkRoles: JSX.Element[] = [];
 		for (let networkRole of (node.network_roles || [])) {
 			networkRoles.push(
@@ -2111,6 +2133,19 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						<option value="virtio">Virtio</option>
 						<option value="vmware">VMware</option>
 						<option value="std">Standard</option>
+					</PageSelect>
+					<PageSelect
+						hidden={types.indexOf('hypervisor') === -1 ||
+							node.vga !== 'virtio_egl'}
+						disabled={this.state.disabled || !hasRenders}
+						label="Hypervisor EGL Render"
+						help="Graphics card to use for EGL rendering."
+						value={node.vga_render}
+						onChange={(val): void => {
+							this.set('vga_render', val);
+						}}
+					>
+						{rendersSelect}
 					</PageSelect>
 					<label
 						className="bp3-label"
