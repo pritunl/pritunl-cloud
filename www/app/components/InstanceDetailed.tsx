@@ -1855,6 +1855,15 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
+						label="Spice server"
+						help="Enable Spice server for remote control of instance."
+						checked={instance.spice}
+						onToggle={(): void => {
+							this.set('spice', !instance.spice);
+						}}
+					/>
+					<PageSwitch
+						disabled={this.state.disabled}
 						label="UEFI"
 						help="Enable UEFI boot, requires OVMF package for UEFI image."
 						checked={instance.uefi}
