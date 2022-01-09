@@ -27,6 +27,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/iso"
 	"github.com/pritunl/pritunl-cloud/pci"
+	"github.com/pritunl/pritunl-cloud/render"
 	"github.com/pritunl/pritunl-cloud/usb"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/zone"
@@ -49,6 +50,8 @@ type Node struct {
 	Protocol             string               `bson:"protocol" json:"protocol"`
 	Hypervisor           string               `bson:"hypervisor" json:"hypervisor"`
 	Vga                  string               `bson:"vga" json:"vga"`
+	VgaRender            string               `bson:"vga_render" json:"vga_render"`
+	AvailableRenders     []string             `bson:"available_renders" json:"available_renders"`
 	Certificate          primitive.ObjectID   `bson:"certificate" json:"certificate"`
 	Certificates         []primitive.ObjectID `bson:"certificates" json:"certificates"`
 	SelfCertificate      string               `bson:"self_certificate_key" json:"-"`
@@ -129,6 +132,8 @@ func (n *Node) Copy() *Node {
 		Protocol:             n.Protocol,
 		Hypervisor:           n.Hypervisor,
 		Vga:                  n.Vga,
+		VgaRender:            n.VgaRender,
+		AvailableRenders:     n.AvailableRenders,
 		Certificate:          n.Certificate,
 		Certificates:         n.Certificates,
 		SelfCertificate:      n.SelfCertificate,
@@ -296,10 +301,31 @@ func (n *Node) Validate(db *database.Database) (
 	}
 
 	switch n.Vga {
-	case Std, Vmware, Virtio, VirtioEgl:
+	case Std, Vmware, Virtio:
+		n.VgaRender = ""
+		break
+	case VirtioEgl:
+		if n.VgaRender != "" {
+			found := false
+			for _, rendr := range n.AvailableRenders {
+				if n.VgaRender == rendr {
+					found = true
+					break
+				}
+			}
+
+			if !found {
+				errData = &errortypes.ErrorData{
+					Error:   "node_vga_render_invalid",
+					Message: "Invalid EGL render",
+				}
+				return
+			}
+		}
 		break
 	case "":
 		n.Vga = Virtio
+		n.VgaRender = ""
 		break
 	default:
 		errData = &errortypes.ErrorData{
@@ -825,6 +851,7 @@ func (n *Node) update(db *database.Database) (err error) {
 				"local_isos":           n.LocalIsos,
 				"usb_devices":          n.UsbDevices,
 				"pci_devices":          n.PciDevices,
+				"available_renders":    n.AvailableRenders,
 				"available_interfaces": n.AvailableInterfaces,
 				"available_bridges":    n.AvailableBridges,
 				"available_vpcs":       n.AvailableVpcs,
@@ -849,6 +876,7 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.Protocol = nde.Protocol
 	n.Hypervisor = nde.Hypervisor
 	n.Vga = nde.Vga
+	n.VgaRender = nde.VgaRender
 	n.Certificates = nde.Certificates
 	n.SelfCertificate = nde.SelfCertificate
 	n.SelfCertificateKey = nde.SelfCertificateKey
