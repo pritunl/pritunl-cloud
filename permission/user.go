@@ -44,3 +44,14 @@ func UserAdd(virt *vm.VirtualMachine) (err error) {
 
 	return
 }
+
+func UserDelete(virt *vm.VirtualMachine) (err error) {
+	name := GetUserName(virt.Id)
+
+	_, _ = utils.ExecCombinedOutput("",
+		"userdel",
+		name,
+	)
+
+	return
+}
