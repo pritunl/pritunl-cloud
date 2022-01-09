@@ -16,6 +16,8 @@ export interface Node {
 	protocol?: string;
 	hypervisor?: string;
 	vga?: string;
+	vga_render?: string;
+	available_renders?: string[];
 	timestamp?: string;
 	admin_domain?: string;
 	user_domain?: string;
