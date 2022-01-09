@@ -87,6 +87,7 @@ type Instance struct {
 	Spice               bool               `bson:"spice" json:"spice"`
 	SpicePassword       string             `bson:"spice_password" json:"spice_password"`
 	SpicePort           int                `bson:"spice_port" json:"spice_port"`
+	Gui                 bool               `bson:"gui" json:"gui"`
 	Virt                *vm.VirtualMachine `bson:"-" json:"-"`
 	curVpc              primitive.ObjectID `bson:"-" json:"-"`
 	curSubnet           primitive.ObjectID `bson:"-" json:"-"`
@@ -691,6 +692,7 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 		VncDisplay: i.VncDisplay,
 		Spice:      i.Spice,
 		SpicePort:  i.SpicePort,
+		Gui:        i.Gui,
 		Disks:      []*vm.Disk{},
 		NetworkAdapters: []*vm.NetworkAdapter{
 			&vm.NetworkAdapter{
@@ -797,6 +799,7 @@ func (i *Instance) Changed(curVirt *vm.VirtualMachine) bool {
 		i.Virt.VncDisplay != curVirt.VncDisplay ||
 		i.Virt.Spice != curVirt.Spice ||
 		i.Virt.SpicePort != curVirt.SpicePort ||
+		i.Virt.Gui != curVirt.Gui ||
 		i.Virt.Uefi != curVirt.Uefi ||
 		i.Virt.SecureBoot != curVirt.SecureBoot ||
 		i.Virt.NoPublicAddress != curVirt.NoPublicAddress ||
