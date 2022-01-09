@@ -45,6 +45,9 @@ export interface Instance {
 	vnc?: boolean;
 	vnc_password?: string;
 	vnc_display?: number;
+	spice?: boolean;
+	spice_password?: string;
+	spice_port?: number;
 	domain?: string;
 	no_public_address?: boolean;
 	no_host_address?: boolean;
