@@ -28,6 +28,9 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 		}
 	}
 
+	guiUser := node.Self.GuiUser
+	gui := virt.Gui && node.Self.Gui && guiUser != ""
+
 	qm = &Qemu{
 		Id:           virt.Id,
 		Data:         string(data),
@@ -49,6 +52,8 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 		VncDisplay:   virt.VncDisplay,
 		Spice:        virt.Spice,
 		SpicePort:    virt.SpicePort,
+		Gui:          gui,
+		GuiUser:      guiUser,
 		Disks:        []*Disk{},
 		Networks:     []*Network{},
 		Isos:         []*Iso{},
