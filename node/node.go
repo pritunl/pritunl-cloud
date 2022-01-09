@@ -52,6 +52,8 @@ type Node struct {
 	Vga                  string               `bson:"vga" json:"vga"`
 	VgaRender            string               `bson:"vga_render" json:"vga_render"`
 	AvailableRenders     []string             `bson:"available_renders" json:"available_renders"`
+	Gui                  bool                 `bson:"gui" json:"gui"`
+	GuiUser              string               `bson:"gui_user" json:"gui_user"`
 	Certificate          primitive.ObjectID   `bson:"certificate" json:"certificate"`
 	Certificates         []primitive.ObjectID `bson:"certificates" json:"certificates"`
 	SelfCertificate      string               `bson:"self_certificate_key" json:"-"`
@@ -133,6 +135,8 @@ func (n *Node) Copy() *Node {
 		Hypervisor:           n.Hypervisor,
 		Vga:                  n.Vga,
 		VgaRender:            n.VgaRender,
+		Gui:                  n.Gui,
+		GuiUser:              n.GuiUser,
 		AvailableRenders:     n.AvailableRenders,
 		Certificate:          n.Certificate,
 		Certificates:         n.Certificates,
@@ -333,6 +337,18 @@ func (n *Node) Validate(db *database.Database) (
 			Message: "Invalid VGA type",
 		}
 		return
+	}
+
+	if n.Gui {
+		if n.GuiUser == "" {
+			errData = &errortypes.ErrorData{
+				Error:   "gui_user_missing",
+				Message: "Desktop GUI user must be set",
+			}
+			return
+		}
+	} else {
+		n.GuiUser = ""
 	}
 
 	if n.Protocol != "http" && n.Protocol != "https" {
@@ -877,6 +893,8 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.Hypervisor = nde.Hypervisor
 	n.Vga = nde.Vga
 	n.VgaRender = nde.VgaRender
+	n.Gui = nde.Gui
+	n.GuiUser = nde.GuiUser
 	n.Certificates = nde.Certificates
 	n.SelfCertificate = nde.SelfCertificate
 	n.SelfCertificateKey = nde.SelfCertificateKey
