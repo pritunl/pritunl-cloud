@@ -1967,107 +1967,122 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				>
 					VNC Console
 				</button>
-				<button
-					className={'bp3-button bp3-icon-key-control' +
-						(this.state.vncCtrl ? ' bp3-active' : '')}
-					hidden={!this.state.vnc}
-					style={css.controlButton}
-					disabled={this.state.disabled}
-					type="button"
-					onClick={(): void => {
-						this.onToggleVncCtrl();
-					}}
-				>
-					Ctrl
-				</button>
-				<button
-					className={'bp3-button bp3-icon-key-option' +
-						(this.state.vncAlt ? ' bp3-active' : '')}
-					hidden={!this.state.vnc}
-					style={css.controlButton}
-					disabled={this.state.disabled}
-					type="button"
-					onClick={(): void => {
-						this.onToggleVncAlt();
-					}}
-				>
-					Alt
-				</button>
-				<button
-					className={'bp3-button bp3-icon-key-command' +
-						(this.state.vncSuper ? ' bp3-active' : '')}
-					hidden={!this.state.vnc}
-					style={css.controlButton}
-					disabled={this.state.disabled}
-					type="button"
-					onClick={(): void => {
-						this.onToggleVncSuper();
-					}}
-				>
-					Super
-				</button>
-				<button
-					className="bp3-button bp3-icon-key-tab"
-					hidden={!this.state.vnc}
-					style={css.controlButton}
-					disabled={this.state.disabled}
-					type="button"
-					onClick={(): void => {
-						this.onVncTab();
-					}}
-				>
-					Tab
-				</button>
-				<button
-					className="bp3-button bp3-icon-key-escape"
-					hidden={!this.state.vnc}
-					style={css.controlButton}
-					disabled={this.state.disabled}
-					type="button"
-					onClick={(): void => {
-						this.onVncEsc();
-					}}
-				>
-					Esc
-				</button>
-				<button
-					className="bp3-button bp3-icon-fullscreen"
-					hidden={!this.state.vnc}
-					style={css.controlButton}
-					disabled={this.state.disabled}
-					type="button"
-					onClick={(): void => {
-						this.onToggleVncFullscreen();
-					}}
-				>
-					Fullscreen
-				</button>
-				<button
-					className={'bp3-button bp3-icon-zoom-to-fit' +
-						(this.state.vncScale ? ' bp3-active' : '')}
-					hidden={!this.state.vnc}
-					style={css.controlButton}
-					disabled={this.state.disabled}
-					type="button"
-					onClick={(): void => {
-						this.onToggleVncScale();
-					}}
-				>
-					Scale
-				</button>
-				<button
-					className="bp3-button bp3-intent-danger bp3-icon-control"
-					hidden={!this.state.vnc}
-					disabled={this.state.disabled}
-					type="button"
-					onClick={(): void => {
-						this.onVncCtrlAltDel();
-					}}
-				>
-					Ctrl-Alt-Del
-				</button>
 			</PageSave>
 			<div style={css.vncBox}>
+				<div className="layout horizontal">
+					<button
+						className={'bp3-button bp3-icon-key-control' +
+							(this.state.vncCtrl ? ' bp3-active' : '')}
+						hidden={!this.state.vnc}
+						style={css.controlButton}
+						disabled={this.state.disabled}
+						type="button"
+						onClick={(): void => {
+							this.onToggleVncCtrl();
+						}}
+					>
+						Ctrl
+					</button>
+					<button
+						className={'bp3-button bp3-icon-key-option' +
+							(this.state.vncAlt ? ' bp3-active' : '')}
+						hidden={!this.state.vnc}
+						style={css.controlButton}
+						disabled={this.state.disabled}
+						type="button"
+						onClick={(): void => {
+							this.onToggleVncAlt();
+						}}
+					>
+						Alt
+					</button>
+					<button
+						className={'bp3-button bp3-icon-key-command' +
+							(this.state.vncSuper ? ' bp3-active' : '')}
+						hidden={!this.state.vnc}
+						style={css.controlButton}
+						disabled={this.state.disabled}
+						type="button"
+						onClick={(): void => {
+							this.onToggleVncSuper();
+						}}
+					>
+						Super
+					</button>
+					<button
+						className="bp3-button bp3-icon-key-tab"
+						hidden={!this.state.vnc}
+						style={css.controlButton}
+						disabled={this.state.disabled}
+						type="button"
+						onClick={(): void => {
+							this.onVncTab();
+						}}
+					>
+						Tab
+					</button>
+					<button
+						className="bp3-button bp3-icon-key-escape"
+						hidden={!this.state.vnc}
+						style={css.controlButton}
+						disabled={this.state.disabled}
+						type="button"
+						onClick={(): void => {
+							this.onVncEsc();
+						}}
+					>
+						Esc
+					</button>
+					<button
+						className="bp3-button bp3-icon-fullscreen"
+						hidden={!this.state.vnc}
+						style={css.controlButton}
+						disabled={this.state.disabled}
+						type="button"
+						onClick={(): void => {
+							this.onToggleVncFullscreen();
+						}}
+					>
+						Fullscreen
+					</button>
+					<button
+						className={'bp3-button bp3-icon-zoom-to-fit' +
+							(this.state.vncScale ? ' bp3-active' : '')}
+						hidden={!this.state.vnc}
+						style={css.controlButton}
+						disabled={this.state.disabled}
+						type="button"
+						onClick={(): void => {
+							this.onToggleVncScale();
+						}}
+					>
+						Scale
+					</button>
+					<button
+						className="bp3-button bp3-icon-control"
+						hidden={!this.state.vnc}
+						style={css.controlButton}
+						disabled={this.state.disabled}
+						type="button"
+						onClick={(): void => {
+							this.onVncCtrlAltDel();
+						}}
+					>
+						Ctrl+Alt+Del
+					</button>
+					<button
+						className="bp3-button bp3-icon-control"
+						hidden={!this.state.vnc}
+						style={css.controlButton}
+						disabled={this.state.disabled}
+						type="button"
+						onClick={(): void => {
+							this.onVncCtrlAltDel();
+						}}
+					>
+						Ctrl+Alt+Del
+					</button>
+				</div>
 				<div
 					ref={this.vncRef}
 					style={vncStyle}
