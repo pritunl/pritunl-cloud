@@ -750,6 +750,15 @@ export default class InstanceNew extends React.Component<Props, State> {
 						/>
 						<PageSwitch
 							disabled={this.state.disabled}
+							label="Spice server"
+							help="Enable Spice server for remote control of instance."
+							checked={instance.spice}
+							onToggle={(): void => {
+								this.set('spice', !instance.spice);
+							}}
+						/>
+						<PageSwitch
+							disabled={this.state.disabled}
 							label="Start instance"
 							help="Automatically start instance. Disable to get the public MAC address before instance is started for first time."
 							checked={!instance.state}
