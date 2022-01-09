@@ -12,6 +12,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/permission"
+	"github.com/pritunl/pritunl-cloud/render"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/usb"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -122,6 +123,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 	nodeVga := node.Self.Vga
 	nodeEgl := false
+	nodeVgaRenderPath := ""
 	if nodeVga == "" {
 		nodeVga = node.Vmware
 	}
@@ -129,6 +131,13 @@ func (q *Qemu) Marshal() (output string, err error) {
 	if nodeVga == node.VirtioEgl {
 		nodeVga = node.Virtio
 		nodeEgl = true
+		nodeVgaRender := node.Self.VgaRender
+		if nodeVgaRender != "" {
+			nodeVgaRenderPath, err = render.GetRender(nodeVgaRender)
+			if err != nil {
+				return
+			}
+		}
 	}
 
 	gpuPassthrough := false
@@ -162,10 +171,17 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 		if nodeEgl {
 			cmd = append(cmd, "-display")
-			cmd = append(cmd, "egl-headless")
+
+			options := "egl-headless"
+			if nodeVgaRenderPath != "" {
+				options += fmt.Sprintf(",rendernode=%s", nodeVgaRenderPath)
+			}
+
+			cmd = append(cmd, options)
+		} else {
+			cmd = append(cmd, "-vga")
+			cmd = append(cmd, nodeVga)
 		}
-		cmd = append(cmd, "-vga")
-		cmd = append(cmd, nodeVga)
 
 		if q.Vnc && q.VncDisplay != 0 {
 			cmd = append(cmd, "-vnc")
