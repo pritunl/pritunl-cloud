@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/pritunl-cloud/compositor"
 	"github.com/pritunl/pritunl-cloud/drive"
 	"github.com/pritunl/pritunl-cloud/features"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -75,6 +76,8 @@ type Qemu struct {
 	VncDisplay   int
 	Spice        bool
 	SpicePort    int
+	Gui          bool
+	GuiUser      string
 	Disks        Disks
 	Networks     []*Network
 	Isos         []*Iso
@@ -167,20 +170,38 @@ func (q *Qemu) Marshal() (output string, err error) {
 	}
 
 	if !gpuPassthrough && (q.Vnc && q.VncDisplay != 0) ||
-		(q.Spice && q.SpicePort != 0) {
+		(q.Spice && q.SpicePort != 0) || q.Gui {
 
-		if nodeEgl {
+		if q.Gui {
 			cmd = append(cmd, "-display")
+			cmd = append(cmd, "sdl,gl=on")
 
-			options := "egl-headless"
-			if nodeVgaRenderPath != "" {
-				options += fmt.Sprintf(",rendernode=%s", nodeVgaRenderPath)
+			if nodeEgl {
+				cmd = append(cmd, "-device")
+				cmd = append(cmd, "virtio-vga-gl")
+				cmd = append(cmd, "-vga")
+				cmd = append(cmd, "none")
+			} else {
+				cmd = append(cmd, "-vga")
+				cmd = append(cmd, nodeVga)
 			}
-
-			cmd = append(cmd, options)
 		} else {
-			cmd = append(cmd, "-vga")
-			cmd = append(cmd, nodeVga)
+			if nodeEgl {
+				cmd = append(cmd, "-display")
+
+				options := "egl-headless"
+				if nodeVgaRenderPath != "" {
+					options += fmt.Sprintf(",rendernode=%s", nodeVgaRenderPath)
+				}
+
+				cmd = append(cmd, options)
+
+				cmd = append(cmd, "-vga")
+				cmd = append(cmd, "none")
+			} else {
+				cmd = append(cmd, "-vga")
+				cmd = append(cmd, nodeVga)
+			}
 		}
 
 		if q.Vnc && q.VncDisplay != 0 {
@@ -243,7 +264,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 	if q.Kvm {
 		options += ",accel=kvm"
 	}
-	if !q.Vnc && !q.Spice {
+	if !q.Vnc && !q.Spice && !q.Gui {
 		options += ",vmport=off"
 	}
 	cmd = append(cmd, fmt.Sprintf("type=%s%s", q.Machine, options))
@@ -533,9 +554,18 @@ func (q *Qemu) Marshal() (output string, err error) {
 		}
 	}
 
+	compositorEnv := ""
+	if q.Gui {
+		compositorEnv, err = compositor.GetEnv(q.GuiUser)
+		if err != nil {
+			return
+		}
+	}
+
 	output = fmt.Sprintf(
 		systemdTemplate,
 		q.Data,
+		compositorEnv,
 		strings.Join(cmd, " "),
 	)
 	return
