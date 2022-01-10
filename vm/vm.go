@@ -23,6 +23,7 @@ type VirtualMachine struct {
 	VncDisplay          int                `json:"vnc_display"`
 	Spice               bool               `json:"spice"`
 	SpicePort           int                `json:"spice_port"`
+	Gui                 bool               `json:"gui"`
 	Disks               []*Disk            `json:"disks"`
 	DisksAvailable      bool               `json:"-"`
 	NetworkAdapters     []*NetworkAdapter  `json:"network_adapters"`
