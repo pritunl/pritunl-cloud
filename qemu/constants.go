@@ -6,7 +6,7 @@ const systemdTemplate = `# PritunlData=%s
 Description=Pritunl Cloud Virtual Machine
 After=network.target
 
-[Service]
+[Service]%s
 Type=simple
 User=root
 ExecStart=%s
