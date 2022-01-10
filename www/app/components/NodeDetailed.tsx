@@ -2025,6 +2025,27 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							this.toggleFirewall();
 						}}
 					/>
+					<PageSwitch
+						disabled={this.state.disabled}
+						label="Desktop GUI"
+						help="Enable support for desktop GUI display for instances. Requires Xorg or Wayland session to be running."
+						checked={node.gui}
+						onToggle={(): void => {
+							this.set('gui', !node.gui);
+						}}
+					/>
+					<PageInput
+						disabled={this.state.disabled}
+						hidden={!node.gui}
+						label="Desktop GUI User"
+						help="Username of user to open desktop GUI window."
+						type="text"
+						placeholder="Enter username"
+						value={node.gui_user}
+						onChange={(val): void => {
+							this.set('gui_user', val);
+						}}
+					/>
 				</div>
 				<div style={css.group}>
 					<PageInfo
