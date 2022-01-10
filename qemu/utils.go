@@ -29,7 +29,6 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 	}
 
 	guiUser := node.Self.GuiUser
-	gui := virt.Gui && node.Self.Gui && guiUser != ""
 
 	qm = &Qemu{
 		Id:           virt.Id,
@@ -48,11 +47,11 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 		OvmfVarsPath: paths.GetOvmfVarsPath(virt.Id),
 		Memory:       virt.Memory,
 		Hugepages:    virt.Hugepages,
-		Vnc:          virt.Vnc,
+		Vnc:          virt.Vnc && virt.VncDisplay != 0,
 		VncDisplay:   virt.VncDisplay,
-		Spice:        virt.Spice,
+		Spice:        virt.Spice && virt.SpicePort != 0,
 		SpicePort:    virt.SpicePort,
-		Gui:          gui,
+		Gui:          virt.Gui && node.Self.Gui && guiUser != "",
 		GuiUser:      guiUser,
 		GuiMode:      "sdl",
 		Disks:        []*Disk{},

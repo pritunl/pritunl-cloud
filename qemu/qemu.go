@@ -203,7 +203,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 			}
 		}
 
-		if q.Vnc && q.VncDisplay != 0 {
+		if q.Vnc {
 			cmd = append(cmd, "-vnc")
 			cmd = append(cmd, fmt.Sprintf(
 				":%d,websocket=%d,password=on,share=allow-exclusive",
@@ -212,7 +212,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 			))
 		}
 
-		if q.Spice && q.SpicePort != 0 {
+		if q.Spice {
 			cmd = append(cmd, "-spice")
 			cmd = append(cmd, fmt.Sprintf(
 				"ipv4=on,port=%d,image-compression=off",
@@ -263,7 +263,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 	if q.Kvm {
 		options += ",accel=kvm"
 	}
-	if !q.Vnc && !q.Spice && !q.Gui {
+	if gpuPassthrough || (!q.Vnc && !q.Spice && !q.Gui) {
 		options += ",vmport=off"
 	}
 	cmd = append(cmd, fmt.Sprintf("type=%s%s", q.Machine, options))
