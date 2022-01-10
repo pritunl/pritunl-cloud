@@ -313,6 +313,11 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
+	err = permission.UserDelete(virt)
+	if err != nil {
+		return
+	}
+
 	store.RemVirt(virt.Id)
 	store.RemDisks(virt.Id)
 	store.RemAddress(virt.Id)
