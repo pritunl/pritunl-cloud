@@ -72,6 +72,22 @@ func (d *Database) getCollection(name string) (coll *Collection) {
 	return
 }
 
+func (d *Database) getCollectionWeak(name string) (coll *Collection) {
+	opts := &options.CollectionOptions{}
+
+	opts.WriteConcern = writeconcern.New(
+		writeconcern.W(1),
+		writeconcern.WTimeout(10*time.Second),
+	)
+	opts.ReadConcern = readconcern.Local()
+
+	coll = &Collection{
+		db:         d,
+		Collection: d.database.Collection(name, opts),
+	}
+	return
+}
+
 func (d *Database) Users() (coll *Collection) {
 	coll = d.getCollection("users")
 	return
@@ -128,7 +144,7 @@ func (d *Database) Settings() (coll *Collection) {
 }
 
 func (d *Database) Events() (coll *Collection) {
-	coll = d.getCollection("events")
+	coll = d.getCollectionWeak("events")
 	return
 }
 
