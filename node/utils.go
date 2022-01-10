@@ -70,6 +70,7 @@ func GetAllHypervisors(db *database.Database, query *bson.M) (
 			Projection: &bson.D{
 				{"name", 1},
 				{"types", 1},
+				{"gui", 1},
 				{"oracle_subnets", 1},
 			},
 		},
