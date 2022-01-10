@@ -3,6 +3,7 @@ package permission
 import (
 	"fmt"
 	"os/user"
+	"path"
 	"strconv"
 
 	"github.com/dropbox/godropbox/errors"
@@ -41,6 +42,9 @@ func UserAdd(virt *vm.VirtualMachine) (err error) {
 	if err != nil {
 		return
 	}
+
+	mailPath := path.Join("/var/mail", name)
+	_ = utils.RemoveAll(mailPath)
 
 	return
 }
