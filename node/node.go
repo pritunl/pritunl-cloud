@@ -1072,6 +1072,12 @@ func (n *Node) sync() {
 	}
 	n.AvailableDrives = drives
 
+	renders, err := render.GetRenders()
+	if err != nil {
+		return
+	}
+	n.AvailableRenders = renders
+
 	hostname, err := os.Hostname()
 	if err != nil {
 		err = &errortypes.ReadError{
