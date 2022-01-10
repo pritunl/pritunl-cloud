@@ -54,6 +54,7 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 		SpicePort:    virt.SpicePort,
 		Gui:          gui,
 		GuiUser:      guiUser,
+		GuiMode:      "sdl",
 		Disks:        []*Disk{},
 		Networks:     []*Network{},
 		Isos:         []*Iso{},

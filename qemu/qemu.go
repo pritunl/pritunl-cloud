@@ -78,6 +78,7 @@ type Qemu struct {
 	SpicePort    int
 	Gui          bool
 	GuiUser      string
+	GuiMode      string
 	Disks        Disks
 	Networks     []*Network
 	Isos         []*Iso
@@ -169,12 +170,10 @@ func (q *Qemu) Marshal() (output string, err error) {
 		cmd = append(cmd, "none")
 	}
 
-	if !gpuPassthrough && (q.Vnc && q.VncDisplay != 0) ||
-		(q.Spice && q.SpicePort != 0) || q.Gui {
-
+	if !gpuPassthrough && (q.Vnc || q.Spice || q.Gui) {
 		if q.Gui {
 			cmd = append(cmd, "-display")
-			cmd = append(cmd, "sdl,gl=on")
+			cmd = append(cmd, fmt.Sprintf("%s,gl=on", q.GuiMode))
 
 			if nodeEgl {
 				cmd = append(cmd, "-device")
