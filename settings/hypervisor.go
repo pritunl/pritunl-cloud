@@ -8,6 +8,7 @@ type hypervisor struct {
 	LibPath            string `bson:"systemd_path" default:"/var/lib/pritunl-cloud"`
 	RunPath            string `bson:"run_path" default:"/var/run/pritunl-cloud"`
 	HugepagesPath      string `bson:"hugepages_path" default:"/dev/hugepages/pritunl"`
+	DesktopEnv         string `bson:"desktop_env" default:"gnome"`
 	OvmfCodePath       string `bson:"ovmf_vars_path"`
 	OvmfVarsPath       string `bson:"ovmf_vars_path"`
 	OvmfSecureCodePath string `bson:"ovmf_secure_vars_path"`
