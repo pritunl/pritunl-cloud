@@ -14,6 +14,9 @@ const (
 	Virtio    = "virtio"
 	VirtioEgl = "virtio_egl"
 
+	Sdl = "sdl"
+	Gtk = "gtk"
+
 	Disabled = "disabled"
 	Dhcp     = "dhcp"
 	Static   = "static"
