@@ -1490,10 +1490,17 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		);
 
 		if (this.props.instance.vnc) {
+			let vncPort;
+			if (this.props.instance.vnc_display) {
+				vncPort = this.props.instance.vnc_display + 5900;
+			} else {
+				vncPort = '-';
+			}
+
 			fields.push(
 				{
 					label: 'VNC Port',
-					value: this.props.instance.vnc_display + 5900,
+					value: vncPort,
 					copy: true,
 				},
 				{
