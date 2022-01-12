@@ -349,8 +349,23 @@ func (n *Node) Validate(db *database.Database) (
 			}
 			return
 		}
+
+		switch n.GuiMode {
+		case Sdl, "":
+			n.GuiMode = Sdl
+			break
+		case Gtk:
+			break
+		default:
+			errData = &errortypes.ErrorData{
+				Error:   "gui_mode_invalid",
+				Message: "Invalid desktop GUI mode",
+			}
+			return
+		}
 	} else {
 		n.GuiUser = ""
+		n.GuiMode = ""
 	}
 
 	if n.Protocol != "http" && n.Protocol != "https" {
