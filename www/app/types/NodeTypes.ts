@@ -18,6 +18,8 @@ export interface Node {
 	vga?: string;
 	vga_render?: string;
 	available_renders?: string[];
+	gui?: boolean;
+	gui_user?: string;
 	timestamp?: string;
 	admin_domain?: string;
 	user_domain?: string;
