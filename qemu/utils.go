@@ -29,6 +29,10 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 	}
 
 	guiUser := node.Self.GuiUser
+	guiMode := node.Self.GuiMode
+	if guiMode == "" {
+		guiMode = node.Sdl
+	}
 
 	qm = &Qemu{
 		Id:           virt.Id,
@@ -53,7 +57,7 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 		SpicePort:    virt.SpicePort,
 		Gui:          virt.Gui && node.Self.Gui && guiUser != "",
 		GuiUser:      guiUser,
-		GuiMode:      "sdl",
+		GuiMode:      guiMode,
 		Disks:        []*Disk{},
 		Networks:     []*Network{},
 		Isos:         []*Iso{},
