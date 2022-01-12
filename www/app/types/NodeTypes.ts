@@ -45,6 +45,8 @@ export interface Node {
 	iscsi?: boolean;
 	usb_passthrough?: boolean;
 	pci_passthrough?: boolean;
+	hugepages?: boolean;
+	hugepages_size?: number;
 	firewall?: boolean;
 	network_roles?: string[];
 	requests_min?: number;
