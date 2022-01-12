@@ -54,6 +54,7 @@ type Node struct {
 	AvailableRenders     []string             `bson:"available_renders" json:"available_renders"`
 	Gui                  bool                 `bson:"gui" json:"gui"`
 	GuiUser              string               `bson:"gui_user" json:"gui_user"`
+	GuiMode              string               `bson:"gui_mode" json:"gui_mode"`
 	Certificate          primitive.ObjectID   `bson:"certificate" json:"certificate"`
 	Certificates         []primitive.ObjectID `bson:"certificates" json:"certificates"`
 	SelfCertificate      string               `bson:"self_certificate_key" json:"-"`
@@ -137,6 +138,7 @@ func (n *Node) Copy() *Node {
 		VgaRender:            n.VgaRender,
 		Gui:                  n.Gui,
 		GuiUser:              n.GuiUser,
+		GuiMode:              n.GuiMode,
 		AvailableRenders:     n.AvailableRenders,
 		Certificate:          n.Certificate,
 		Certificates:         n.Certificates,
@@ -895,6 +897,7 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.VgaRender = nde.VgaRender
 	n.Gui = nde.Gui
 	n.GuiUser = nde.GuiUser
+	n.GuiMode = nde.GuiMode
 	n.Certificates = nde.Certificates
 	n.SelfCertificate = nde.SelfCertificate
 	n.SelfCertificateKey = nde.SelfCertificateKey
