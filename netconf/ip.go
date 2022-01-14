@@ -254,19 +254,37 @@ func (n *NetConf) ipHostIptables(db *database.Database) (err error) {
 			return
 		}
 
-		iptables.Lock()
-		_, err = utils.ExecCombinedOutputLogged(
-			nil,
-			"ip", "netns", "exec", n.Namespace,
-			"iptables", "-t", "nat",
-			"-A", "POSTROUTING",
-			"-s", n.InternalAddr.String()+"/32",
-			"-o", n.SpaceHostIface,
-			"-j", "MASQUERADE",
-		)
-		iptables.Unlock()
-		if err != nil {
-			return
+		if n.HostNat {
+			iptables.Lock()
+			_, err = utils.ExecCombinedOutputLogged(
+				nil,
+				"ip", "netns", "exec", n.Namespace,
+				"iptables", "-t", "nat",
+				"-A", "POSTROUTING",
+				"-s", n.InternalAddr.String()+"/32",
+				"-o", n.SpaceHostIface,
+				"-j", "MASQUERADE",
+			)
+			iptables.Unlock()
+			if err != nil {
+				return
+			}
+		} else {
+			iptables.Lock()
+			_, err = utils.ExecCombinedOutputLogged(
+				nil,
+				"ip", "netns", "exec", n.Namespace,
+				"iptables", "-t", "nat",
+				"-A", "POSTROUTING",
+				"-s", n.InternalAddr.String()+"/32",
+				"-d", n.HostSubnet,
+				"-o", n.SpaceHostIface,
+				"-j", "MASQUERADE",
+			)
+			iptables.Unlock()
+			if err != nil {
+				return
+			}
 		}
 
 		iptables.Lock()
