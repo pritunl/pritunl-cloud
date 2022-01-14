@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/interfaces"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -40,6 +41,22 @@ func (n *NetConf) Iface(db *database.Database) (err error) {
 	n.HostBlock = node.Self.HostBlock
 	if !n.HostBlock.IsZero() && !n.Virt.NoHostAddress {
 		n.HostNetwork = true
+		if node.Self.HostNat {
+			n.HostNat = true
+		}
+
+		blck, e := block.Get(db, n.HostBlock)
+		if e != nil {
+			err = e
+			return
+		}
+
+		hostNetwork, e := blck.GetNetwork()
+		if e != nil {
+			err = e
+			return
+		}
+		n.HostSubnet = hostNetwork.String()
 	}
 
 	n.OracleSubnets = set.NewSet()

@@ -16,6 +16,8 @@ type NetConf struct {
 	NetworkMode   string
 	NetworkMode6  string
 	HostNetwork   bool
+	HostNat       bool
+	HostSubnet    string
 	HostBlock     primitive.ObjectID
 	OracleSubnets set.Set
 	JumboFrames   bool
