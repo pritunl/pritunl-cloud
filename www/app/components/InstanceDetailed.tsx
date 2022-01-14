@@ -1511,6 +1511,21 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			);
 		}
 
+		if (this.props.instance.spice) {
+			fields.push(
+				{
+					label: 'Spice Port',
+					value: this.props.instance.spice_port || '-',
+					copy: true,
+				},
+				{
+					label: 'Spice Password',
+					value: this.props.instance.spice_password,
+					copy: true,
+				},
+			);
+		}
+
 		fields.push(
 			{
 				label: 'Disks',
