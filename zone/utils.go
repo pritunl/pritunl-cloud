@@ -3,6 +3,7 @@ package zone
 import (
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 )
 
@@ -24,7 +25,15 @@ func GetAll(db *database.Database) (zones []*Zone, err error) {
 	coll := db.Zones()
 	zones = []*Zone{}
 
-	cursor, err := coll.Find(db, &bson.M{})
+	cursor, err := coll.Find(
+		db,
+		&bson.M{},
+		&options.FindOptions{
+			Sort: &bson.D{
+				{"name", 1},
+			},
+		},
+	)
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -61,6 +70,11 @@ func GetAllDatacenter(db *database.Database, dcId primitive.ObjectID) (
 		db,
 		&bson.M{
 			"datacenter": dcId,
+		},
+		&options.FindOptions{
+			Sort: &bson.D{
+				{"name", 1},
+			},
 		},
 	)
 	if err != nil {
@@ -100,6 +114,11 @@ func GetAllDatacenters(db *database.Database, dcIds []primitive.ObjectID) (
 		&bson.M{
 			"datacenter": &bson.M{
 				"$in": dcIds,
+			},
+		},
+		&options.FindOptions{
+			Sort: &bson.D{
+				{"name", 1},
 			},
 		},
 	)
