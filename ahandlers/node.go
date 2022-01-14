@@ -35,6 +35,7 @@ type nodeData struct {
 	VgaRender            string                  `json:"vga_render"`
 	Gui                  bool                    `json:"gui"`
 	GuiUser              string                  `json:"gui_user"`
+	GuiMode              string                  `json:"gui_mode"`
 	Certificates         []primitive.ObjectID    `json:"certificates"`
 	AdminDomain          string                  `json:"admin_domain"`
 	UserDomain           string                  `json:"user_domain"`
@@ -114,6 +115,7 @@ func nodePut(c *gin.Context) {
 	nde.VgaRender = data.VgaRender
 	nde.Gui = data.Gui
 	nde.GuiUser = data.GuiUser
+	nde.GuiMode = data.GuiMode
 	nde.Certificates = data.Certificates
 	nde.AdminDomain = data.AdminDomain
 	nde.UserDomain = data.UserDomain
@@ -155,6 +157,7 @@ func nodePut(c *gin.Context) {
 		"vga_render",
 		"gui",
 		"gui_user",
+		"gui_mode",
 		"certificates",
 		"admin_domain",
 		"user_domain",
