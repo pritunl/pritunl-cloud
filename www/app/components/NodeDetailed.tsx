@@ -2034,6 +2034,28 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							this.set('gui', !node.gui);
 						}}
 					/>
+					<PageSwitch
+						disabled={this.state.disabled}
+						label="Desktop GUI Mode"
+						help="Enable support for desktop GUI display for instances. Requires Xorg or Wayland session to be running."
+						checked={node.gui}
+						onToggle={(): void => {
+							this.set('gui', !node.gui);
+						}}
+					/>
+					<PageSelect
+						hidden={!node.gui}
+						disabled={this.state.disabled}
+						label="Desktop GUI Mode"
+						help="Desktop GUI display mode. SDL is recommended for better compatibility."
+						value={node.gui_mode}
+						onChange={(val): void => {
+							this.set('gui_mode', val);
+						}}
+					>
+						<option value="sdl">SDL</option>
+						<option value="gtk">GTK</option>
+					</PageSelect>
 					<PageInput
 						disabled={this.state.disabled}
 						hidden={!node.gui}
