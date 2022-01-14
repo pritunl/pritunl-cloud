@@ -86,6 +86,11 @@ func ParseError(err error) (newErr error) {
 
 	errCode := GetErrorCode(err)
 	switch errCode {
+	case 66:
+		newErr = &ImmutableKeyError{
+			errors.New("database: Immutable key"),
+		}
+		break
 	case 11000, 11001, 12582, 16460:
 		newErr = &DuplicateKeyError{
 			errors.New("database: Duplicate key"),
