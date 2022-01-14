@@ -173,7 +173,8 @@ func (q *Qemu) Marshal() (output string, err error) {
 	if !gpuPassthrough && (q.Vnc || q.Spice || q.Gui) {
 		if q.Gui {
 			cmd = append(cmd, "-display")
-			cmd = append(cmd, fmt.Sprintf("%s,gl=on", q.GuiMode))
+			cmd = append(cmd, fmt.Sprintf(
+				"%s,gl=on,window-close=off", q.GuiMode))
 
 			if nodeEgl {
 				cmd = append(cmd, "-device")
