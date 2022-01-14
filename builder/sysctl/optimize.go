@@ -7,7 +7,11 @@ import (
 )
 
 const (
-	securityLimits = `* hard nofile 500000
+	securityLimits = `* soft memlock 2048000000
+* hard memlock 2048000000
+root soft memlock 2048000000
+root hard memlock 2048000000
+* hard nofile 500000
 * soft nofile 500000
 root hard nofile 500000
 root soft nofile 500000
@@ -16,6 +20,8 @@ root soft nofile 500000
 vm.dirty_background_ratio = 3
 `
 	raidSpeedLimit = `dev.raid.speed_limit_max = 100000
+`
+	schedulerMigration = `kernel.sched_migration_cost_ns = 5000000
 `
 	cachePressure = `vm.vfs_cache_pressure = 200
 `
@@ -127,6 +133,51 @@ func DirtyRatio() (err error) {
 			logrus.WithFields(logrus.Fields{
 				"path": pth,
 			}).Info("sysctl: Dirty memory limit disabled")
+		}
+	}
+
+	return
+}
+
+func SchedulerMigration() (err error) {
+	resp, err := prompt.ConfirmDefault(
+		"Optimize scheduler migration [Y/n]",
+		true,
+	)
+	if err != nil {
+		return
+	}
+
+	pth := "/etc/sysctl.d/10-scheduler.conf"
+	if resp {
+		err = utils.CreateWrite(
+			pth,
+			schedulerMigration,
+			0644,
+		)
+		if err != nil {
+			return
+		}
+
+		logrus.WithFields(logrus.Fields{
+			"path": pth,
+		}).Info("sysctl: Optimize scheduler migration enabled")
+	} else {
+		exists, e := utils.Exists(pth)
+		if e != nil {
+			err = e
+			return
+		}
+
+		if exists {
+			err = utils.Remove(pth)
+			if err != nil {
+				return
+			}
+
+			logrus.WithFields(logrus.Fields{
+				"path": pth,
+			}).Info("sysctl: Optimize scheduler migration disabled")
 		}
 	}
 
