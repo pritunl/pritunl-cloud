@@ -145,7 +145,9 @@ func GetDisks(vmId primitive.ObjectID) (disks []*vm.Disk, err error) {
 			continue
 		}
 
-		if !strings.HasPrefix(line, "disk_") {
+		if !strings.HasPrefix(line, "disk_") &&
+			!strings.HasPrefix(line, "fd_") {
+
 			continue
 		}
 		line = strings.Replace(line, "\r", "", -1)
@@ -168,7 +170,16 @@ func GetDisks(vmId primitive.ObjectID) (disks []*vm.Disk, err error) {
 			continue
 		}
 
-		dskId, ok := utils.ParseObjectId(idIndexStr[5:])
+		idIndexStrSpl := strings.Split(idIndexStr, "_")
+		if len(idIndexStrSpl) < 2 {
+			logrus.WithFields(logrus.Fields{
+				"instance_id": vmId.Hex(),
+				"line":        line,
+			}).Error("qemu: Unexpected qemu disk id invalid")
+			continue
+		}
+
+		dskId, ok := utils.ParseObjectId(idIndexStrSpl[1])
 		if !ok {
 			logrus.WithFields(logrus.Fields{
 				"instance_id": vmId.Hex(),
