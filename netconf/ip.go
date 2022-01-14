@@ -149,7 +149,7 @@ func (n *NetConf) ipDetect(db *database.Database) (err error) {
 	pubAddr := ""
 	pubAddr6 := ""
 	if n.NetworkMode != node.Disabled && n.NetworkMode != node.Oracle {
-		for i := 0; i < 60; i++ {
+		for i := 0; i < 120; i++ {
 			address, address6, e := iproute.AddressGetIface(
 				n.Namespace, n.SpaceExternalIface)
 			if e != nil {
@@ -206,7 +206,7 @@ func (n *NetConf) ipDetect(db *database.Database) (err error) {
 		n.SpaceExternalIface != n.SpaceExternalIface6 &&
 		n.NetworkMode6 != node.Oracle {
 
-		for i := 0; i < 60; i++ {
+		for i := 0; i < 120; i++ {
 			_, address6, e := iproute.AddressGetIface(
 				n.Namespace, n.SpaceExternalIface6)
 			if e != nil {
