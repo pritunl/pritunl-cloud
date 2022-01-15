@@ -13,6 +13,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/iproute"
 	"github.com/pritunl/pritunl-cloud/iptables"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/store"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
@@ -146,10 +147,12 @@ func (n *NetConf) ipDetect(db *database.Database) (err error) {
 	time.Sleep(2 * time.Second)
 	start := time.Now()
 
+	ipTimeout := settings.Hypervisor.IpTimeout * 4
+
 	pubAddr := ""
 	pubAddr6 := ""
 	if n.NetworkMode != node.Disabled && n.NetworkMode != node.Oracle {
-		for i := 0; i < 120; i++ {
+		for i := 0; i < ipTimeout; i++ {
 			address, address6, e := iproute.AddressGetIface(
 				n.Namespace, n.SpaceExternalIface)
 			if e != nil {
@@ -206,7 +209,7 @@ func (n *NetConf) ipDetect(db *database.Database) (err error) {
 		n.SpaceExternalIface != n.SpaceExternalIface6 &&
 		n.NetworkMode6 != node.Oracle {
 
-		for i := 0; i < 120; i++ {
+		for i := 0; i < ipTimeout; i++ {
 			_, address6, e := iproute.AddressGetIface(
 				n.Namespace, n.SpaceExternalIface6)
 			if e != nil {
