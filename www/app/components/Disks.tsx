@@ -352,6 +352,16 @@ export default class Disks extends React.Component<{}, State> {
 			filterClass += 'bp3-active';
 		}
 
+		let selectedNames: string[] = [];
+		for (let instId of Object.keys(this.state.selected)) {
+			let inst = DisksStore.disk(instId);
+			if (inst) {
+				selectedNames.push(inst.name || instId);
+			} else {
+				selectedNames.push(instId);
+			}
+		}
+
 		return <Page>
 			<PageHeader>
 				<div className="layout horizontal wrap" style={css.header}>
@@ -404,7 +414,10 @@ export default class Disks extends React.Component<{}, State> {
 							label="Snapshot Selected"
 							className="bp3-intent-primary bp3-icon-floppy-disk"
 							progressClassName="bp3-intent-primary"
+							safe={true}
 							style={css.button}
+							confirmMsg="Snapshot the selected disks"
+							items={selectedNames}
 							disabled={!this.selected || this.state.disabled}
 							onConfirm={this.onSnapshot}
 						/>
@@ -412,7 +425,10 @@ export default class Disks extends React.Component<{}, State> {
 							label="Backup Selected"
 							className="bp3-intent-primary bp3-icon-compressed"
 							progressClassName="bp3-intent-primary"
+							safe={true}
 							style={css.button}
+							confirmMsg="Backup the selected disks"
+							items={selectedNames}
 							disabled={!this.selected || this.state.disabled}
 							onConfirm={this.onBackup}
 						/>
@@ -420,7 +436,10 @@ export default class Disks extends React.Component<{}, State> {
 							label="Delete Selected"
 							className="bp3-intent-danger bp3-icon-delete"
 							progressClassName="bp3-intent-danger"
+							safe={true}
 							style={css.button}
+							confirmMsg="Permanently delete the selected disks"
+							items={selectedNames}
 							disabled={!this.selected || this.state.disabled}
 							onConfirm={this.onDelete}
 						/>
@@ -447,7 +466,10 @@ export default class Disks extends React.Component<{}, State> {
 						label="Force Delete Selected"
 						className="bp3-intent-danger bp3-icon-warning-sign"
 						progressClassName="bp3-intent-danger"
+						safe={true}
 						style={css.button}
+						confirmMsg="Permanently force delete the selected disks"
+						items={selectedNames}
 						disabled={!this.selected || this.state.disabled}
 						onConfirm={this.onForceDelete}
 					/>
