@@ -171,15 +171,15 @@ export default class InstanceNew extends React.Component<Props, State> {
 	}
 
 	onCreate = (): void => {
-		if (this.state.instance.image &&
-				this.state.instance.image.indexOf('oracle') &&
-				!License.oracle) {
-			this.setState({
-				...this.state,
-				licenseOpen: true,
-			});
-			return
-		}
+		// if (this.state.instance.image &&
+		// 		this.state.instance.image.indexOf('oracle') &&
+		// 		!License.oracle) {
+		// 	this.setState({
+		// 		...this.state,
+		// 		licenseOpen: true,
+		// 	});
+		// 	return
+		// }
 
 		this.setState({
 			...this.state,
