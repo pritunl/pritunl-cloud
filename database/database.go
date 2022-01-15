@@ -960,6 +960,7 @@ func addIndexes() (err error) {
 	index = &Index{
 		Collection: db.Instances(),
 		Keys: &bson.D{
+			{"node", 1},
 			{"vnc_display", 1},
 		},
 		Partial: &bson.M{
