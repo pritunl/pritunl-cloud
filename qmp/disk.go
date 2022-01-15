@@ -62,6 +62,7 @@ func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
 	logrus.WithFields(logrus.Fields{
 		"instance_id": vmId.Hex(),
 		"disk_id":     dsk.Id.Hex(),
+		"disk_index":  dsk.Index,
 	}).Info("qmp: Connecting virtual disk")
 
 	diskAio := settings.Hypervisor.DiskAio
@@ -187,6 +188,7 @@ func RemoveDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
 	logrus.WithFields(logrus.Fields{
 		"instance_id": vmId.Hex(),
 		"disk_id":     dsk.Id.Hex(),
+		"disk_index":  dsk.Index,
 	}).Info("qmp: Disconnecting virtual disk")
 
 	diskAio := settings.Hypervisor.DiskAio
