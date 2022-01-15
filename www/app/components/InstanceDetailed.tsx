@@ -1886,6 +1886,15 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
+						label="Desktop GUI"
+						help="Enable desktop GUI window for instance display."
+						checked={instance.gui}
+						onToggle={(): void => {
+							this.set('gui', !instance.gui);
+						}}
+					/>
+					<PageSwitch
+						disabled={this.state.disabled}
 						label="UEFI"
 						help="Enable UEFI boot, requires OVMF package for UEFI image."
 						checked={instance.uefi}
