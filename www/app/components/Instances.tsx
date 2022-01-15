@@ -355,6 +355,16 @@ export default class Instances extends React.Component<{}, State> {
 			filterClass += 'bp3-active';
 		}
 
+		let selectedNames: string[] = [];
+		for (let instId of Object.keys(this.state.selected)) {
+			let inst = InstancesStore.instance(instId);
+			if (inst) {
+				selectedNames.push(inst.name || instId);
+			} else {
+				selectedNames.push(instId);
+			}
+		}
+
 		return <Page>
 			<PageHeader>
 				<div className="layout horizontal wrap" style={css.header}>
@@ -407,7 +417,10 @@ export default class Instances extends React.Component<{}, State> {
 							label="Start Selected"
 							className="bp3-intent-success bp3-icon-power"
 							progressClassName="bp3-intent-success"
+							safe={true}
 							style={css.button}
+							confirmMsg="Start the selected instances"
+							items={selectedNames}
 							disabled={!this.selected || this.state.disabled}
 							onConfirm={(): void => {
 								this.updateSelected('start');
@@ -417,7 +430,10 @@ export default class Instances extends React.Component<{}, State> {
 							label="Stop Selected"
 							className="bp3-intent-warning bp3-icon-power"
 							progressClassName="bp3-intent-warning"
+							safe={true}
 							style={css.button}
+							confirmMsg="Stop the selected instances"
+							items={selectedNames}
 							disabled={!this.selected || this.state.disabled}
 							onConfirm={(): void => {
 								this.updateSelected('stop');
@@ -430,6 +446,7 @@ export default class Instances extends React.Component<{}, State> {
 							safe={true}
 							style={css.button}
 							confirmMsg="Permanently delete the selected instances"
+							items={selectedNames}
 							disabled={!this.selected || this.state.disabled}
 							onConfirm={this.onDelete}
 						/>
@@ -457,6 +474,8 @@ export default class Instances extends React.Component<{}, State> {
 						className="bp3-intent-danger bp3-icon-warning-sign"
 						progressClassName="bp3-intent-danger"
 						style={css.button}
+						confirmMsg="Permanently force delete the selected instances"
+						items={selectedNames}
 						disabled={!this.selected || this.state.disabled}
 						onConfirm={this.onForceDelete}
 					/>
