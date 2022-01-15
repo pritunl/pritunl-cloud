@@ -2174,6 +2174,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						}}
 					>
 						<option value="virtio">Virtio</option>
+						<option value="virtio_egl">Virtio OpenGL</option>
 						<option value="vmware">VMware</option>
 						<option value="std">Standard</option>
 					</PageSelect>
