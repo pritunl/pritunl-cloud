@@ -20,6 +20,7 @@ export interface Node {
 	available_renders?: string[];
 	gui?: boolean;
 	gui_user?: string;
+	gui_mode?: string;
 	timestamp?: string;
 	admin_domain?: string;
 	user_domain?: string;
