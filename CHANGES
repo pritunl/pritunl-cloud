@@ -3,6 +3,7 @@ pritunl-cloud changelog
 
 <%= version %>
 
+Add hugepages support
 Add support for Azure graph API
 
 Version 1.2.2184.82 2021-11-16
