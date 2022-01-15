@@ -176,7 +176,7 @@ func MemoryUsed() (used, total float64, err error) {
 	virt, err := mem.VirtualMemory()
 	if err != nil {
 		err = &errortypes.ReadError{
-			errors.Wrapf(err, "utils: Failed to read virtual memory"),
+			errors.Wrap(err, "utils: Failed to read virtual memory"),
 		}
 		return
 	}
@@ -201,7 +201,7 @@ func LoadAverage() (ld *LoadStat, err error) {
 	avg, err := load.Avg()
 	if err != nil {
 		err = &errortypes.ReadError{
-			errors.Wrapf(err, "utils: Failed to read load average"),
+			errors.Wrap(err, "utils: Failed to read load average"),
 		}
 		return
 	}
