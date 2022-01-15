@@ -760,6 +760,15 @@ export default class InstanceNew extends React.Component<Props, State> {
 						/>
 						<PageSwitch
 							disabled={this.state.disabled}
+							label="Desktop GUI"
+							help="Enable desktop GUI window for instance display."
+							checked={instance.gui}
+							onToggle={(): void => {
+								this.set('gui', !instance.gui);
+							}}
+						/>
+						<PageSwitch
+							disabled={this.state.disabled}
 							label="Start instance"
 							help="Automatically start instance. Disable to get the public MAC address before instance is started for first time."
 							checked={!instance.state}
