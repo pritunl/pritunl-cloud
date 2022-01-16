@@ -196,14 +196,14 @@ func (q *Qemu) Marshal() (output string, err error) {
 		} else {
 			if nodeEgl {
 				cmd = append(cmd, "-display")
-
 				options := "egl-headless"
 				if nodeVgaRenderPath != "" {
 					options += fmt.Sprintf(",rendernode=%s", nodeVgaRenderPath)
 				}
-
 				cmd = append(cmd, options)
 
+				cmd = append(cmd, "-device")
+				cmd = append(cmd, "virtio-vga-gl")
 				cmd = append(cmd, "-vga")
 				cmd = append(cmd, "none")
 			} else {
