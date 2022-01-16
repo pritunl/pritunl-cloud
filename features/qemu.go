@@ -98,3 +98,16 @@ func GetUringSupport() (supported bool, err error) {
 
 	return
 }
+
+func GetMemoryBackendSupport() (supported bool, err error) {
+	major, _, _, err := GetQemuVersion()
+	if err != nil {
+		return
+	}
+
+	if major >= 6 {
+		supported = true
+	}
+
+	return
+}
