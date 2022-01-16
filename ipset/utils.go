@@ -4,12 +4,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -50,7 +50,15 @@ func UpdateState(instances []*instance.Instance, namespaces []string,
 				continue
 			}
 
+			addr6 := ""
+			if inst.PrivateIps6 != nil && len(inst.PrivateIps6) != 0 {
+				addr6 = inst.PrivateIps6[0]
+			}
+
 			newState.AddIngress(namespace, ingress)
+			if addr6 != "" && !inst.SkipSourceDestCheck {
+				newState.AddSourceDestCheck(namespace, addr6)
+			}
 		}
 	}
 
@@ -128,6 +136,9 @@ func UpdateNamesState(instances []*instance.Instance,
 			}
 
 			newNamesState.AddIngress(namespace, ingress)
+			if !inst.SkipSourceDestCheck {
+				newNamesState.AddSourceDestCheck(namespace)
+			}
 		}
 	}
 

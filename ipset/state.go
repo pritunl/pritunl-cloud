@@ -55,6 +55,22 @@ func (s *State) AddIngress(namespace string, ingress []*firewall.Rule) {
 	}
 }
 
+func (s *State) AddSourceDestCheck(namespace, addr6 string) {
+	sets := s.Namespaces[namespace]
+	if sets == nil {
+		sets = &Sets{
+			Namespace: namespace,
+			Sets:      map[string]set.Set{},
+		}
+		s.Namespaces[namespace] = sets
+	}
+
+	sdcSet := set.NewSet()
+	sdcSet.Add(addr6)
+	sdcSet.Add("fe80::/10")
+	sets.Sets["pr6_sdc"] = sdcSet
+}
+
 func (s *State) AddMember(namespace string, ruleName, member string) {
 	sets := s.Namespaces[namespace]
 	if sets == nil {
@@ -110,6 +126,19 @@ func (n *NamesState) AddIngress(namespace string, ingress []*firewall.Rule) {
 
 		}
 	}
+}
+
+func (n *NamesState) AddSourceDestCheck(namespace string) {
+	sets := n.Namespaces[namespace]
+	if sets == nil {
+		sets = &Names{
+			Namespace: namespace,
+			Sets:      set.NewSet(),
+		}
+		n.Namespaces[namespace] = sets
+	}
+
+	sets.Sets.Add("pr6_sdc")
 }
 
 func (n *NamesState) AddName(namespace string, ruleName string) {
