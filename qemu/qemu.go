@@ -147,6 +147,11 @@ func (q *Qemu) Marshal() (output string, err error) {
 		}
 	}
 
+	memoryBackend, err := features.GetMemoryBackendSupport()
+	if err != nil {
+		return
+	}
+
 	gpuPassthrough := false
 	if node.Self.PciPassthrough && len(q.PciDevices) > 0 {
 		gpuPassthrough = true
@@ -261,7 +266,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 	if q.SecureBoot {
 		options += ",smm=on"
 	}
-	if q.Hugepages {
+	if q.Hugepages && memoryBackend {
 		options += ",memory-backend=pc.ram"
 	}
 	if q.Kvm {
@@ -318,13 +323,18 @@ func (q *Qemu) Marshal() (output string, err error) {
 	cmd = append(cmd, fmt.Sprintf("%dM", q.Memory))
 
 	if q.Hugepages {
-		cmd = append(cmd, "-object")
-		cmd = append(cmd, fmt.Sprintf(
-			"memory-backend-file,id=pc.ram,"+
-				"size=%dM,mem-path=%s,prealloc=off,share=off,merge=on",
-			q.Memory,
-			paths.GetHugepagePath(q.Id),
-		))
+		if memoryBackend {
+			cmd = append(cmd, "-object")
+			cmd = append(cmd, fmt.Sprintf(
+				"memory-backend-file,id=pc.ram,"+
+					"size=%dM,mem-path=%s,prealloc=off,share=off,merge=on",
+				q.Memory,
+				paths.GetHugepagePath(q.Id),
+			))
+		} else {
+			cmd = append(cmd, "-mem-path")
+			cmd = append(cmd, paths.GetHugepagePath(q.Id))
+		}
 	}
 
 	diskAio := settings.Hypervisor.DiskAio
