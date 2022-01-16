@@ -11,7 +11,7 @@ import (
 )
 
 func chown(virt *vm.VirtualMachine, path string) (err error) {
-	err = os.Chown(path, virt.UnixId, virt.UnixId)
+	err = os.Chown(path, virt.UnixId, 0)
 	if err != nil {
 		err = &errortypes.WriteError{
 			errors.Newf(
