@@ -34,7 +34,7 @@ func UserAdd(virt *vm.VirtualMachine) (err error) {
 
 	_, err = utils.ExecCombinedOutputLogged(nil,
 		"useradd",
-		"--user-group",
+		"--no-user-group",
 		"--no-create-home",
 		"--uid", strconv.Itoa(virt.UnixId),
 		name,
@@ -54,6 +54,11 @@ func UserDelete(virt *vm.VirtualMachine) (err error) {
 
 	_, _ = utils.ExecCombinedOutput("",
 		"userdel",
+		name,
+	)
+
+	_, _ = utils.ExecCombinedOutput("",
+		"groupdel",
 		name,
 	)
 
