@@ -29,6 +29,8 @@ type Rules struct {
 	OracleNat        bool
 	OracleNatAddr    string
 	OracleNatPubAddr string
+	SourceDestCheck  [][]string
+	SourceDestCheck6 [][]string
 	Ingress          [][]string
 	Ingress6         [][]string
 	Holds            [][]string
@@ -68,6 +70,15 @@ func (r *Rules) commentCommand(inCmd []string, hold bool) (cmd []string) {
 	cmd = append(inCmd,
 		"-m", "comment",
 		"--comment", comment,
+	)
+
+	return
+}
+
+func (r *Rules) commentCommandSdc(inCmd []string) (cmd []string) {
+	cmd = append(inCmd,
+		"-m", "comment",
+		"--comment", "pritunl_cloud_sdc",
 	)
 
 	return
@@ -135,6 +146,16 @@ func (r *Rules) run(cmds [][]string, ipCmd string, ipv6 bool) (err error) {
 }
 
 func (r *Rules) Apply() (err error) {
+	err = r.run(r.SourceDestCheck, "-A", false)
+	if err != nil {
+		return
+	}
+
+	err = r.run(r.SourceDestCheck6, "-A", true)
+	if err != nil {
+		return
+	}
+
 	err = r.run(r.Ingress, "-A", false)
 	if err != nil {
 		return
@@ -420,6 +441,18 @@ func (r *Rules) Hold() (err error) {
 }
 
 func (r *Rules) Remove() (err error) {
+	err = r.run(r.SourceDestCheck, "-D", false)
+	if err != nil {
+		return
+	}
+	r.SourceDestCheck = [][]string{}
+
+	err = r.run(r.SourceDestCheck6, "-D", true)
+	if err != nil {
+		return
+	}
+	r.SourceDestCheck6 = [][]string{}
+
 	err = r.run(r.Ingress, "-D", false)
 	if err != nil {
 		return
@@ -631,16 +664,89 @@ func (r *Rules) RemoveNat() (err error) {
 	return
 }
 
-func generateVirt(namespace, iface string, ingress []*firewall.Rule) (
-	rules *Rules) {
+func generateVirt(namespace, iface, addr, addr6 string, sourceDestCheck bool,
+	ingress []*firewall.Rule) (rules *Rules) {
 
 	rules = &Rules{
-		Namespace: namespace,
-		Interface: iface,
-		Ingress:   [][]string{},
-		Ingress6:  [][]string{},
-		Holds:     [][]string{},
-		Holds6:    [][]string{},
+		Namespace:       namespace,
+		Interface:       iface,
+		SourceDestCheck: [][]string{},
+		Ingress:         [][]string{},
+		Ingress6:        [][]string{},
+		Holds:           [][]string{},
+		Holds6:          [][]string{},
+	}
+
+	if sourceDestCheck {
+		cmd := rules.newCommand()
+		cmd = append(cmd,
+			"!", "-s", addr+"/32",
+		)
+		if rules.Interface != "host" {
+			cmd = append(cmd,
+				"-m", "physdev",
+				"--physdev-in", rules.Interface,
+				"--physdev-is-bridged",
+			)
+		}
+		cmd = rules.commentCommandSdc(cmd)
+		cmd = append(cmd,
+			"-j", "DROP",
+		)
+		rules.SourceDestCheck = append(rules.SourceDestCheck, cmd)
+
+		cmd = rules.newCommand()
+		cmd = append(cmd,
+			"-m", "set",
+			"!", "--match-set", "pr6_sdc", "src",
+		)
+		if rules.Interface != "host" {
+			cmd = append(cmd,
+				"-m", "physdev",
+				"--physdev-in", rules.Interface,
+				"--physdev-is-bridged",
+			)
+		}
+		cmd = rules.commentCommandSdc(cmd)
+		cmd = append(cmd,
+			"-j", "DROP",
+		)
+		rules.SourceDestCheck6 = append(rules.SourceDestCheck6, cmd)
+
+		cmd = rules.newCommand()
+		cmd = append(cmd,
+			"!", "-d", addr+"/32",
+		)
+		if rules.Interface != "host" {
+			cmd = append(cmd,
+				"-m", "physdev",
+				"--physdev-out", rules.Interface,
+				"--physdev-is-bridged",
+			)
+		}
+		cmd = rules.commentCommandSdc(cmd)
+		cmd = append(cmd,
+			"-j", "DROP",
+		)
+		rules.SourceDestCheck = append(rules.SourceDestCheck, cmd)
+
+		cmd = rules.newCommand()
+		cmd = append(cmd,
+			"-m", "set",
+			"!", "--match-set", "pr6_sdc", "dst",
+		)
+		if rules.Interface != "host" {
+			cmd = append(cmd,
+				"-m", "physdev",
+				"--physdev-out", rules.Interface,
+				"--physdev-is-bridged",
+			)
+		}
+		cmd = rules.commentCommandSdc(cmd)
+		cmd = append(cmd,
+			"-j", "DROP",
+		)
+		rules.SourceDestCheck6 = append(rules.SourceDestCheck6, cmd)
 	}
 
 	cmd := rules.newCommand()
@@ -933,12 +1039,13 @@ func generateInternal(namespace, iface string, nat bool,
 	oracleNatPubAddr string, ingress []*firewall.Rule) (rules *Rules) {
 
 	rules = &Rules{
-		Namespace: namespace,
-		Interface: iface,
-		Ingress:   [][]string{},
-		Ingress6:  [][]string{},
-		Holds:     [][]string{},
-		Holds6:    [][]string{},
+		Namespace:       namespace,
+		Interface:       iface,
+		SourceDestCheck: [][]string{},
+		Ingress:         [][]string{},
+		Ingress6:        [][]string{},
+		Holds:           [][]string{},
+		Holds6:          [][]string{},
 	}
 
 	if nat {
@@ -1228,12 +1335,13 @@ func generate(namespace, iface string, ingress []*firewall.Rule) (
 	rules *Rules) {
 
 	rules = &Rules{
-		Namespace: namespace,
-		Interface: iface,
-		Ingress:   [][]string{},
-		Ingress6:  [][]string{},
-		Holds:     [][]string{},
-		Holds6:    [][]string{},
+		Namespace:       namespace,
+		Interface:       iface,
+		SourceDestCheck: [][]string{},
+		Ingress:         [][]string{},
+		Ingress6:        [][]string{},
+		Holds:           [][]string{},
+		Holds6:          [][]string{},
 	}
 
 	if rules.Interface == "host" {
