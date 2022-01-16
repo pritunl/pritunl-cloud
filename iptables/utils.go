@@ -34,7 +34,9 @@ func diffCmd(a, b []string) bool {
 }
 
 func diffRules(a, b *Rules) bool {
-	if len(a.Ingress) != len(b.Ingress) ||
+	if len(a.SourceDestCheck) != len(b.SourceDestCheck) ||
+		len(a.SourceDestCheck6) != len(b.SourceDestCheck6) ||
+		len(a.Ingress) != len(b.Ingress) ||
 		len(a.Ingress6) != len(b.Ingress6) ||
 		len(a.Holds) != len(b.Holds) ||
 		len(a.Holds6) != len(b.Holds6) {
@@ -42,6 +44,16 @@ func diffRules(a, b *Rules) bool {
 		return true
 	}
 
+	for i := range a.SourceDestCheck {
+		if diffCmd(a.SourceDestCheck[i], b.SourceDestCheck[i]) {
+			return true
+		}
+	}
+	for i := range a.SourceDestCheck6 {
+		if diffCmd(a.SourceDestCheck6[i], b.SourceDestCheck6[i]) {
+			return true
+		}
+	}
 	for i := range a.Ingress {
 		if diffCmd(a.Ingress[i], b.Ingress[i]) {
 			return true
@@ -182,9 +194,11 @@ func loadIptables(namespace string, state *State, ipv6 bool) (err error) {
 	}
 
 	for _, line := range strings.Split(output, "\n") {
-		if !strings.Contains(line, "pritunl_cloud_rule") &&
-			!strings.Contains(line, "pritunl_cloud_hold") {
+		ruleComment := strings.Contains(line, "pritunl_cloud_rule")
+		holdComment := strings.Contains(line, "pritunl_cloud_hold")
+		sdcComment := strings.Contains(line, "pritunl_cloud_sdc")
 
+		if !ruleComment && !holdComment && !sdcComment {
 			continue
 		}
 
@@ -202,7 +216,36 @@ func loadIptables(namespace string, state *State, ipv6 bool) (err error) {
 		cmd = cmd[1:]
 
 		iface := ""
-		if namespace != "0" {
+		if sdcComment {
+			if cmd[0] != "FORWARD" {
+				logrus.WithFields(logrus.Fields{
+					"iptables_rule": line,
+				}).Error("iptables: Invalid iptables sdc chain")
+
+				err = &errortypes.ParseError{
+					errors.New("iptables: Invalid iptables sdc chain"),
+				}
+				return
+			}
+
+			for i, item := range cmd {
+				if item == "--physdev-in" || item == "--physdev-out" {
+					if len(cmd) < i+2 {
+						logrus.WithFields(logrus.Fields{
+							"iptables_rule": line,
+						}).Error("iptables: Invalid iptables sdc interface")
+
+						err = &errortypes.ParseError{
+							errors.New(
+								"iptables: Invalid iptables sdc interface"),
+						}
+						return
+					}
+					iface = cmd[i+1]
+					break
+				}
+			}
+		} else if namespace != "0" {
 			if cmd[0] != "FORWARD" {
 				logrus.WithFields(logrus.Fields{
 					"iptables_rule": line,
@@ -260,21 +303,29 @@ func loadIptables(namespace string, state *State, ipv6 bool) (err error) {
 		rules := state.Interfaces[namespace+"-"+iface]
 		if rules == nil {
 			rules = &Rules{
-				Namespace: namespace,
-				Interface: iface,
-				Ingress:   [][]string{},
-				Ingress6:  [][]string{},
-				Holds:     [][]string{},
-				Holds6:    [][]string{},
+				Namespace:        namespace,
+				Interface:        iface,
+				SourceDestCheck:  [][]string{},
+				SourceDestCheck6: [][]string{},
+				Ingress:          [][]string{},
+				Ingress6:         [][]string{},
+				Holds:            [][]string{},
+				Holds6:           [][]string{},
 			}
 			state.Interfaces[namespace+"-"+iface] = rules
 		}
 
-		if strings.Contains(line, "pritunl_cloud_hold") {
+		if holdComment {
 			if ipv6 {
 				rules.Holds6 = append(rules.Holds6, cmd)
 			} else {
 				rules.Holds = append(rules.Holds, cmd)
+			}
+		} else if sdcComment {
+			if ipv6 {
+				rules.SourceDestCheck6 = append(rules.SourceDestCheck6, cmd)
+			} else {
+				rules.SourceDestCheck = append(rules.SourceDestCheck, cmd)
 			}
 		} else {
 			if ipv6 {
@@ -490,12 +541,14 @@ func loadIptables(namespace string, state *State, ipv6 bool) (err error) {
 		rules := state.Interfaces[namespace+"-"+postIface]
 		if rules == nil {
 			rules = &Rules{
-				Namespace: namespace,
-				Interface: postIface,
-				Ingress:   [][]string{},
-				Ingress6:  [][]string{},
-				Holds:     [][]string{},
-				Holds6:    [][]string{},
+				Namespace:        namespace,
+				Interface:        postIface,
+				SourceDestCheck:  [][]string{},
+				SourceDestCheck6: [][]string{},
+				Ingress:          [][]string{},
+				Ingress6:         [][]string{},
+				Holds:            [][]string{},
+				Holds6:           [][]string{},
 			}
 			state.Interfaces[namespace+"-"+postIface] = rules
 		}
@@ -872,7 +925,8 @@ func UpdateState(nodeSelf *node.Node, instances []*instance.Instance,
 			newState.Interfaces[namespace+"-"+ifaceHost] = rules
 		}
 
-		rules := generateVirt(namespace, iface, ingress)
+		rules := generateVirt(namespace, iface, addr, addr6,
+			!inst.SkipSourceDestCheck, ingress)
 		newState.Interfaces[namespace+"-"+iface] = rules
 	}
 
