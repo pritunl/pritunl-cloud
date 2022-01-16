@@ -125,6 +125,9 @@ func (q *Qemu) Marshal() (output string, err error) {
 		"-nographic",
 	}
 
+	cmd = append(cmd, "-uuid")
+	cmd = append(cmd, paths.GetVmUuid(q.Id))
+
 	nodeVga := node.Self.Vga
 	nodeEgl := false
 	nodeVgaRenderPath := ""
