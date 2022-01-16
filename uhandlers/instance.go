@@ -34,36 +34,37 @@ import (
 )
 
 type instanceData struct {
-	Id               primitive.ObjectID `json:"id"`
-	Zone             primitive.ObjectID `json:"zone"`
-	Vpc              primitive.ObjectID `json:"vpc"`
-	Subnet           primitive.ObjectID `json:"subnet"`
-	OracleSubnet     string             `json:"oracle_subnet"`
-	Node             primitive.ObjectID `json:"node"`
-	Image            primitive.ObjectID `json:"image"`
-	ImageBacking     bool               `json:"image_backing"`
-	Domain           primitive.ObjectID `json:"domain"`
-	Name             string             `json:"name"`
-	Comment          string             `json:"comment"`
-	State            string             `json:"state"`
-	Uefi             bool               `json:"uefi"`
-	SecureBoot       bool               `json:"secure_boot"`
-	DeleteProtection bool               `json:"delete_protection"`
-	InitDiskSize     int                `json:"init_disk_size"`
-	Memory           int                `json:"memory"`
-	Processors       int                `json:"processors"`
-	NetworkRoles     []string           `json:"network_roles"`
-	Isos             []*iso.Iso         `json:"isos"`
-	UsbDevices       []*usb.Device      `json:"usb_devices"`
-	PciDevices       []*pci.Device      `json:"pci_devices"`
-	DriveDevices     []*drive.Device    `json:"drive_devices"`
-	IscsiDevices     []*iscsi.Device    `json:"iscsi_devices"`
-	Vnc              bool               `json:"vnc"`
-	Spice            bool               `json:"spice"`
-	Gui              bool               `json:"gui"`
-	NoPublicAddress  bool               `json:"no_public_address"`
-	NoHostAddress    bool               `json:"no_host_address"`
-	Count            int                `json:"count"`
+	Id                  primitive.ObjectID `json:"id"`
+	Zone                primitive.ObjectID `json:"zone"`
+	Vpc                 primitive.ObjectID `json:"vpc"`
+	Subnet              primitive.ObjectID `json:"subnet"`
+	OracleSubnet        string             `json:"oracle_subnet"`
+	Node                primitive.ObjectID `json:"node"`
+	Image               primitive.ObjectID `json:"image"`
+	ImageBacking        bool               `json:"image_backing"`
+	Domain              primitive.ObjectID `json:"domain"`
+	Name                string             `json:"name"`
+	Comment             string             `json:"comment"`
+	State               string             `json:"state"`
+	Uefi                bool               `json:"uefi"`
+	SecureBoot          bool               `json:"secure_boot"`
+	DeleteProtection    bool               `json:"delete_protection"`
+	SkipSourceDestCheck bool               `json:"skip_source_dest_check"`
+	InitDiskSize        int                `json:"init_disk_size"`
+	Memory              int                `json:"memory"`
+	Processors          int                `json:"processors"`
+	NetworkRoles        []string           `json:"network_roles"`
+	Isos                []*iso.Iso         `json:"isos"`
+	UsbDevices          []*usb.Device      `json:"usb_devices"`
+	PciDevices          []*pci.Device      `json:"pci_devices"`
+	DriveDevices        []*drive.Device    `json:"drive_devices"`
+	IscsiDevices        []*iscsi.Device    `json:"iscsi_devices"`
+	Vnc                 bool               `json:"vnc"`
+	Spice               bool               `json:"spice"`
+	Gui                 bool               `json:"gui"`
+	NoPublicAddress     bool               `json:"no_public_address"`
+	NoHostAddress       bool               `json:"no_host_address"`
+	Count               int                `json:"count"`
 }
 
 type instanceMultiData struct {
@@ -141,6 +142,7 @@ func instancePut(c *gin.Context) {
 	inst.Uefi = dta.Uefi
 	inst.SecureBoot = dta.SecureBoot
 	inst.DeleteProtection = dta.DeleteProtection
+	inst.SkipSourceDestCheck = dta.SkipSourceDestCheck
 	inst.Memory = dta.Memory
 	inst.Processors = dta.Processors
 	inst.NetworkRoles = dta.NetworkRoles
@@ -169,6 +171,7 @@ func instancePut(c *gin.Context) {
 		"uefi",
 		"secure_boot",
 		"delete_protection",
+		"skip_source_dest_check",
 		"memory",
 		"processors",
 		"network_roles",
@@ -348,33 +351,34 @@ func instancePost(c *gin.Context) {
 		}
 
 		inst := &instance.Instance{
-			State:            dta.State,
-			Organization:     userOrg,
-			Zone:             dta.Zone,
-			Vpc:              dta.Vpc,
-			Subnet:           dta.Subnet,
-			OracleSubnet:     dta.OracleSubnet,
-			Node:             dta.Node,
-			Image:            dta.Image,
-			ImageBacking:     dta.ImageBacking,
-			DeleteProtection: dta.DeleteProtection,
-			Name:             name,
-			Comment:          dta.Comment,
-			InitDiskSize:     dta.InitDiskSize,
-			Memory:           dta.Memory,
-			Processors:       dta.Processors,
-			NetworkRoles:     dta.NetworkRoles,
-			Isos:             dta.Isos,
-			UsbDevices:       dta.UsbDevices,
-			PciDevices:       dta.PciDevices,
-			DriveDevices:     dta.DriveDevices,
-			IscsiDevices:     dta.IscsiDevices,
-			Vnc:              dta.Vnc,
-			Spice:            dta.Spice,
-			Gui:              dta.Gui,
-			Domain:           dta.Domain,
-			NoPublicAddress:  dta.NoPublicAddress,
-			NoHostAddress:    dta.NoHostAddress,
+			State:               dta.State,
+			Organization:        userOrg,
+			Zone:                dta.Zone,
+			Vpc:                 dta.Vpc,
+			Subnet:              dta.Subnet,
+			OracleSubnet:        dta.OracleSubnet,
+			Node:                dta.Node,
+			Image:               dta.Image,
+			ImageBacking:        dta.ImageBacking,
+			DeleteProtection:    dta.DeleteProtection,
+			SkipSourceDestCheck: dta.SkipSourceDestCheck,
+			Name:                name,
+			Comment:             dta.Comment,
+			InitDiskSize:        dta.InitDiskSize,
+			Memory:              dta.Memory,
+			Processors:          dta.Processors,
+			NetworkRoles:        dta.NetworkRoles,
+			Isos:                dta.Isos,
+			UsbDevices:          dta.UsbDevices,
+			PciDevices:          dta.PciDevices,
+			DriveDevices:        dta.DriveDevices,
+			IscsiDevices:        dta.IscsiDevices,
+			Vnc:                 dta.Vnc,
+			Spice:               dta.Spice,
+			Gui:                 dta.Gui,
+			Domain:              dta.Domain,
+			NoPublicAddress:     dta.NoPublicAddress,
+			NoHostAddress:       dta.NoHostAddress,
 		}
 
 		errData, err := inst.Validate(db)
