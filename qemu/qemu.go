@@ -250,8 +250,10 @@ func (q *Qemu) Marshal() (output string, err error) {
 	cmd = append(cmd, "-name")
 	cmd = append(cmd, fmt.Sprintf("pritunl_%s", q.Id.Hex()))
 
-	cmd = append(cmd, "-runas")
-	cmd = append(cmd, permission.GetUserName(q.Id))
+	if !gpuPassthrough {
+		cmd = append(cmd, "-runas")
+		cmd = append(cmd, permission.GetUserName(q.Id))
+	}
 
 	slot := -1
 	for i := 0; i < 10; i++ {
