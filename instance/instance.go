@@ -56,6 +56,7 @@ type Instance struct {
 	Uefi                bool               `bson:"uefi" json:"uefi"`
 	SecureBoot          bool               `bson:"secure_boot" json:"secure_boot"`
 	DeleteProtection    bool               `bson:"delete_protection" json:"delete_protection"`
+	SkipSourceDestCheck bool               `bson:"skip_source_dest_check" json:"skip_source_dest_check"`
 	PublicIps           []string           `bson:"public_ips" json:"public_ips"`
 	PublicIps6          []string           `bson:"public_ips6" json:"public_ips6"`
 	PrivateIps          []string           `bson:"private_ips" json:"private_ips"`
