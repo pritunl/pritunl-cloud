@@ -1,6 +1,8 @@
 package paths
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"path"
 
@@ -8,6 +10,27 @@ import (
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
 )
+
+func GetVmUuid(instId primitive.ObjectID) string {
+	idHash := md5.New()
+	idHash.Write(instId[:])
+	uuid := idHash.Sum(nil)
+
+	uuid[6] = (uuid[6] & 0x0f) | uint8((3&0xf)<<4)
+	uuid[8] = (uuid[8] & 0x3f) | 0x80
+
+	buffer := [36]byte{}
+	hex.Encode(buffer[:], uuid[:4])
+	buffer[8] = '-'
+	hex.Encode(buffer[9:13], uuid[4:6])
+	buffer[13] = '-'
+	hex.Encode(buffer[14:18], uuid[6:8])
+	buffer[18] = '-'
+	hex.Encode(buffer[19:23], uuid[8:10])
+	buffer[23] = '-'
+	hex.Encode(buffer[24:], uuid[10:])
+	return string(buffer[:])
+}
 
 func GetVmPath(instId primitive.ObjectID) string {
 	return path.Join(node.Self.GetVirtPath(),
