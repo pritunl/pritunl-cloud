@@ -1,7 +1,9 @@
 package secondary
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -13,9 +15,13 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/device"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
-	"github.com/pritunl/pritunl-cloud/u2flib"
 	"github.com/pritunl/pritunl-cloud/user"
+	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/webauthn/protocol"
+	"github.com/pritunl/webauthn/webauthn"
+	"github.com/sirupsen/logrus"
 )
 
 type SecondaryData struct {
@@ -30,19 +36,21 @@ type SecondaryData struct {
 }
 
 type Secondary struct {
-	usr          *user.User                  `bson:"-"`
-	provider     *settings.SecondaryProvider `bson:"-"`
-	Id           string                      `bson:"_id"`
-	ProviderId   primitive.ObjectID          `bson:"provider_id,omitempty"`
-	UserId       primitive.ObjectID          `bson:"user_id"`
-	Type         string                      `bson:"type"`
-	Timestamp    time.Time                   `bson:"timestamp"`
-	PushSent     bool                        `bson:"push_sent"`
-	PhoneSent    bool                        `bson:"phone_sent"`
-	SmsSent      bool                        `bson:"sms_sent"`
-	Disabled     bool                        `bson:"disabled"`
-	U2fChallenge *u2flib.Challenge           `bson:"u2f_challenge"`
+	usr        *user.User                  `bson:"-"`
+	provider   *settings.SecondaryProvider `bson:"-"`
+	Id         string                      `bson:"_id"`
+	ProviderId primitive.ObjectID          `bson:"provider_id,omitempty"`
+	UserId     primitive.ObjectID          `bson:"user_id"`
+	Type       string                      `bson:"type"`
+	Timestamp  time.Time                   `bson:"timestamp"`
+	PushSent   bool                        `bson:"push_sent"`
+	PhoneSent  bool                        `bson:"phone_sent"`
+	SmsSent    bool                        `bson:"sms_sent"`
+	Disabled   bool                        `bson:"disabled"`
+	WanSession *webauthn.SessionData       `bson:"wan_session"`
 }
+
+// TODO Disable secondary after login
 
 func (s *Secondary) Push(db *database.Database, r *http.Request) (
 	errData *errortypes.ErrorData, err error) {
@@ -316,8 +324,9 @@ func (s *Secondary) Sms(db *database.Database, r *http.Request) (
 	return
 }
 
-func (s *Secondary) DeviceRegisterRequest(db *database.Database) (
-	jsonResp interface{}, errData *errortypes.ErrorData, err error) {
+func (s *Secondary) DeviceRegisterRequest(db *database.Database,
+	origin string) (jsonResp interface{}, errData *errortypes.ErrorData,
+	err error) {
 
 	if s.Disabled {
 		errData = &errortypes.ErrorData{
@@ -334,7 +343,7 @@ func (s *Secondary) DeviceRegisterRequest(db *database.Database) (
 		return
 	}
 
-	if s.U2fChallenge != nil {
+	if s.WanSession != nil {
 		err = &errortypes.AuthenticationError{
 			errors.New("secondary: Device registration already requested"),
 		}
@@ -346,48 +355,30 @@ func (s *Secondary) DeviceRegisterRequest(db *database.Database) (
 		return
 	}
 
-	devices, err := device.GetAll(db, usr.Id)
+	web, err := node.Self.GetWebauthn(origin)
 	if err != nil {
 		return
 	}
 
-	regs := []u2flib.Registration{}
-	for _, devc := range devices {
-		if devc.Type != device.U2f {
-			continue
-		}
-
-		reg, e := devc.UnmarshalRegistration()
-		if e != nil {
-			err = e
-			return
-		}
-
-		regs = append(regs, reg)
-	}
-
-	chal, err := u2flib.NewChallenge(settings.Local.AppId,
-		settings.Local.Facets)
+	options, sessionData, err := web.BeginRegistration(usr)
 	if err != nil {
-		err = &errortypes.ParseError{
-			errors.Wrap(err, "secondary: Failed to generate u2f challenge"),
-		}
+		err = utils.ParseWebauthnError(err)
 		return
 	}
 
-	s.U2fChallenge = chal
-	err = s.CommitFields(db, set.NewSet("u2f_challenge"))
+	s.WanSession = sessionData
+	err = s.CommitFields(db, set.NewSet("wan_session"))
 	if err != nil {
 		return
 	}
 
-	jsonResp = u2flib.NewWebRegisterRequest(chal, regs)
+	jsonResp = options
 
 	return
 }
 
 func (s *Secondary) DeviceRegisterResponse(db *database.Database,
-	regResp *u2flib.RegisterResponse, name string) (
+	origin string, body io.Reader, name string) (
 	devc *device.Device, errData *errortypes.ErrorData, err error) {
 
 	if s.Disabled {
@@ -405,7 +396,7 @@ func (s *Secondary) DeviceRegisterResponse(db *database.Database,
 		return
 	}
 
-	if s.U2fChallenge == nil {
+	if s.WanSession == nil {
 		err = &errortypes.AuthenticationError{
 			errors.New("secondary: Device registration not requested"),
 		}
@@ -417,26 +408,31 @@ func (s *Secondary) DeviceRegisterResponse(db *database.Database,
 		return
 	}
 
-	u2fConfig := &u2flib.Config{
-		SkipAttestationVerify: true,
-	}
-
-	reg, err := u2flib.Register(*regResp, *s.U2fChallenge, u2fConfig)
+	data, err := protocol.ParseCredentialCreationResponseBody(body)
 	if err != nil {
-		err = &errortypes.AuthenticationError{
-			errors.Wrap(err, "secondary: Failed to register u2f device"),
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "handler: Webauthn parse error"),
 		}
 		return
 	}
 
-	devc = device.New(usr.Id, device.U2f, device.Secondary)
-	devc.User = usr.Id
-	devc.Name = name
-
-	err = devc.MarshalRegistration(reg)
+	web, err := node.Self.GetWebauthn(origin)
 	if err != nil {
 		return
 	}
+
+	credential, err := web.CreateCredential(usr, *s.WanSession, data)
+	if err != nil {
+		err = utils.ParseWebauthnError(err)
+		return
+	}
+
+	devc = device.New(usr.Id, device.WebAuthn, device.Secondary)
+	devc.User = usr.Id
+	devc.Name = name
+	devc.WanRpId = web.Config.RPID
+
+	devc.MarshalWebauthn(credential)
 
 	errData, err = devc.Validate(db)
 	if err != nil || errData != nil {
@@ -451,7 +447,7 @@ func (s *Secondary) DeviceRegisterResponse(db *database.Database,
 	return
 }
 
-func (s *Secondary) DeviceSignRequest(db *database.Database) (
+func (s *Secondary) DeviceRequest(db *database.Database, origin string) (
 	jsonResp interface{}, errData *errortypes.ErrorData, err error) {
 
 	if s.Disabled {
@@ -469,7 +465,7 @@ func (s *Secondary) DeviceSignRequest(db *database.Database) (
 		return
 	}
 
-	if s.U2fChallenge != nil {
+	if s.WanSession != nil {
 		err = &errortypes.AuthenticationError{
 			errors.New("secondary: Device sign already requested"),
 		}
@@ -481,48 +477,47 @@ func (s *Secondary) DeviceSignRequest(db *database.Database) (
 		return
 	}
 
-	devices, err := device.GetAll(db, usr.Id)
+	web, err := node.Self.GetWebauthn(origin)
 	if err != nil {
 		return
 	}
 
-	regs := []u2flib.Registration{}
-	for _, devc := range devices {
-		if devc.Type != device.U2f {
-			continue
-		}
-
-		reg, e := devc.UnmarshalRegistration()
-		if e != nil {
-			err = e
-			return
-		}
-
-		regs = append(regs, reg)
-	}
-
-	chal, err := u2flib.NewChallenge(settings.Local.AppId,
-		settings.Local.Facets)
-	if err != nil {
-		err = &errortypes.ParseError{
-			errors.Wrap(err, "secondary: Failed to generate u2f challenge"),
-		}
-		return
-	}
-
-	s.U2fChallenge = chal
-	err = s.CommitFields(db, set.NewSet("u2f_challenge"))
+	_, hasU2f, err := usr.LoadWebAuthnDevices(db)
 	if err != nil {
 		return
 	}
 
-	jsonResp = chal.SignRequest(regs)
+	loginOpts := []webauthn.LoginOption{
+		webauthn.WithUserVerification(protocol.VerificationPreferred),
+	}
+	if hasU2f {
+		loginOpts = append(
+			loginOpts,
+			webauthn.WithAssertionExtensions(protocol.AuthenticationExtensions{
+				"appid": settings.Local.AppId,
+			}),
+		)
+	}
+
+	options, sessionData, err := web.BeginLogin(usr, loginOpts...)
+	if err != nil {
+		err = utils.ParseWebauthnError(err)
+		return
+	}
+
+	s.WanSession = sessionData
+	err = s.CommitFields(db, set.NewSet("wan_session"))
+	if err != nil {
+		return
+	}
+
+	jsonResp = options
 
 	return
 }
 
-func (s *Secondary) DeviceSignResponse(db *database.Database,
-	signResp *u2flib.SignResponse) (errData *errortypes.ErrorData, err error) {
+func (s *Secondary) DeviceRespond(db *database.Database, origin string,
+	body io.Reader) (errData *errortypes.ErrorData, err error) {
 
 	if s.Disabled {
 		errData = &errortypes.ErrorData{
@@ -539,7 +534,7 @@ func (s *Secondary) DeviceSignResponse(db *database.Database,
 		return
 	}
 
-	if s.U2fChallenge == nil {
+	if s.WanSession == nil {
 		err = &errortypes.AuthenticationError{
 			errors.New("secondary: Device sign not requested"),
 		}
@@ -551,32 +546,60 @@ func (s *Secondary) DeviceSignResponse(db *database.Database,
 		return
 	}
 
-	devices, err := device.GetAll(db, usr.Id)
+	data, err := protocol.ParseCredentialRequestResponseBody(body)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "handler: Webauthn parse error"),
+		}
+		return
+	}
+
+	web, err := node.Self.GetWebauthn(origin)
 	if err != nil {
 		return
 	}
 
+	devices, _, err := usr.LoadWebAuthnDevices(db)
+	if err != nil {
+		return
+	}
+
+	credential, err := web.ValidateLogin(
+		usr, *s.WanSession, data)
+	if err != nil {
+		err = utils.ParseWebauthnError(err)
+		logrus.WithFields(logrus.Fields{
+			"user_id": s.UserId.Hex(),
+			"error":   err,
+		}).Error("secondary: Secondary authentication was denied")
+
+		errData = &errortypes.ErrorData{
+			Error:   "secondary_denied",
+			Message: "Secondary authentication was denied",
+		}
+		return
+	}
+
 	for _, devc := range devices {
-		if devc.Type != device.U2f {
-			continue
-		}
+		if devc.Type == device.U2f {
+			if !bytes.Equal(devc.U2fKeyHandle, credential.ID) {
+				continue
+			}
+		} else if devc.Type == device.WebAuthn {
+			if !bytes.Equal(devc.WanId, credential.ID) ||
+				!bytes.Equal(devc.WanPublicKey, credential.PublicKey) {
 
-		reg, e := devc.UnmarshalRegistration()
-		if e != nil {
-			err = e
-			return
-		}
-
-		counter, e := reg.Authenticate(
-			*signResp, *s.U2fChallenge, devc.U2fCounter)
-		if e != nil {
+				continue
+			}
+		} else {
 			continue
 		}
 
 		devc.LastActive = time.Now()
-		devc.U2fCounter = counter
+		devc.MarshalWebauthn(credential)
 
-		err = devc.CommitFields(db, set.NewSet("last_active", "u2f_counter"))
+		err = devc.CommitFields(db, set.NewSet(
+			"last_active", "u2f_counter", "wan_authenticator"))
 		if err != nil {
 			return
 		}
@@ -598,10 +621,10 @@ func (s *Secondary) GetData() (data *SecondaryData, err error) {
 		register := false
 
 		if strings.Contains(s.Type, "register") {
-			label = "Register U2F Device"
+			label = "Register Device"
 			register = true
 		} else {
-			label = "U2F Device"
+			label = "Device Authentication"
 			register = false
 		}
 
@@ -624,14 +647,12 @@ func (s *Secondary) GetData() (data *SecondaryData, err error) {
 	}
 
 	data = &SecondaryData{
-		Token:          s.Id,
-		Label:          provider.Label,
-		Push:           provider.PushFactor,
-		Phone:          provider.PhoneFactor,
-		Passcode:       provider.PasscodeFactor || provider.SmsFactor,
-		Sms:            provider.SmsFactor,
-		Device:         false,
-		DeviceRegister: false,
+		Token:    s.Id,
+		Label:    provider.Label,
+		Push:     provider.PushFactor,
+		Phone:    provider.PhoneFactor,
+		Passcode: provider.PasscodeFactor || provider.SmsFactor,
+		Sms:      provider.SmsFactor,
 	}
 	return
 }
@@ -642,10 +663,10 @@ func (s *Secondary) GetQuery() (query string, err error) {
 		factor := ""
 
 		if strings.Contains(s.Type, "register") {
-			label = "Register U2F Device"
+			label = "Register Device"
 			factor = "device_register"
 		} else {
-			label = "U2F Device"
+			label = "Device Authentication"
 			factor = "device"
 		}
 
