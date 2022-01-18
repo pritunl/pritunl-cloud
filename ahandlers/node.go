@@ -39,6 +39,7 @@ type nodeData struct {
 	Certificates         []primitive.ObjectID    `json:"certificates"`
 	AdminDomain          string                  `json:"admin_domain"`
 	UserDomain           string                  `json:"user_domain"`
+	WebauthnDomain       string                  `json:"webauthn_domain"`
 	Services             []primitive.ObjectID    `json:"services"`
 	ExternalInterfaces   []string                `json:"external_interfaces"`
 	ExternalInterfaces6  []string                `json:"external_interfaces6"`
@@ -119,6 +120,7 @@ func nodePut(c *gin.Context) {
 	nde.Certificates = data.Certificates
 	nde.AdminDomain = data.AdminDomain
 	nde.UserDomain = data.UserDomain
+	nde.WebauthnDomain = data.WebauthnDomain
 	nde.ExternalInterfaces = data.ExternalInterfaces
 	nde.ExternalInterfaces6 = data.ExternalInterfaces6
 	nde.InternalInterfaces = data.InternalInterfaces
@@ -161,6 +163,7 @@ func nodePut(c *gin.Context) {
 		"certificates",
 		"admin_domain",
 		"user_domain",
+		"webauthn_domain",
 		"external_interfaces",
 		"external_interfaces6",
 		"internal_interfaces",

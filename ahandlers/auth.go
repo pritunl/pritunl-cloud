@@ -15,10 +15,9 @@ import (
 	"github.com/pritunl/pritunl-cloud/device"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
+	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/secondary"
 	"github.com/pritunl/pritunl-cloud/session"
-	"github.com/pritunl/pritunl-cloud/settings"
-	"github.com/pritunl/pritunl-cloud/u2flib"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/validator"
 )
@@ -562,7 +561,7 @@ func authCallbackGet(c *gin.Context) {
 	c.Redirect(302, "/")
 }
 
-func authU2fRegisterGet(c *gin.Context) {
+func authWanRegisterGet(c *gin.Context) {
 	if demo.Blocked(c) {
 		return
 	}
@@ -570,11 +569,10 @@ func authU2fRegisterGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 	token := c.Query("token")
 
-	if settings.Local.AppId == "" {
+	if node.Self.WebauthnDomain == "" {
 		errData := &errortypes.ErrorData{
-			Error: "user_node_unavailable",
-			Message: "At least one node must have a user domain configured " +
-				"to use secondary device authentication",
+			Error:   "webauthn_domain_unavailable",
+			Message: "WebAuthn domain must be configured",
 		}
 		c.JSON(400, errData)
 		return
@@ -612,7 +610,8 @@ func authU2fRegisterGet(c *gin.Context) {
 		return
 	}
 
-	resp, errData, err := secd.DeviceRegisterRequest(db)
+	resp, errData, err := secd.DeviceRegisterRequest(db,
+		utils.GetOrigin(c.Request))
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -642,26 +641,27 @@ func authU2fRegisterGet(c *gin.Context) {
 	c.JSON(200, resp)
 }
 
-type u2fRegisterData struct {
-	Token    string                   `json:"token"`
-	Name     string                   `json:"name"`
-	Response *u2flib.RegisterResponse `json:"response"`
+type authWanRegisterData struct {
+	Token string `json:"token"`
+	Name  string `json:"name"`
 }
 
-func authU2fRegisterPost(c *gin.Context) {
+func authWanRegisterPost(c *gin.Context) {
 	if demo.Blocked(c) {
 		return
 	}
 
 	db := c.MustGet("db").(*database.Database)
+	data := &authWanRegisterData{}
 
-	data := &u2fRegisterData{}
-
-	err := c.Bind(data)
+	body, err := utils.CopyBody(c.Request)
 	if err != nil {
-		err = &errortypes.ParseError{
-			errors.Wrap(err, "handler: Bind error"),
-		}
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	err = c.Bind(data)
+	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
@@ -719,7 +719,7 @@ func authU2fRegisterPost(c *gin.Context) {
 	}
 
 	devc, errData, err := secd.DeviceRegisterResponse(
-		db, data.Response, data.Name)
+		db, utils.GetOrigin(c.Request), body, data.Name)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -786,7 +786,7 @@ func authU2fRegisterPost(c *gin.Context) {
 	c.Status(200)
 }
 
-func authU2fSignGet(c *gin.Context) {
+func authWanRequestGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 	token := c.Query("token")
 
@@ -810,7 +810,8 @@ func authU2fSignGet(c *gin.Context) {
 		return
 	}
 
-	resp, errData, err := secd.DeviceSignRequest(db)
+	resp, errData, err := secd.DeviceRequest(
+		db, utils.GetOrigin(c.Request))
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -840,16 +841,21 @@ func authU2fSignGet(c *gin.Context) {
 	c.JSON(200, resp)
 }
 
-type u2fSignData struct {
-	Token    string               `json:"token"`
-	Response *u2flib.SignResponse `json:"response"`
+type authWanRespondData struct {
+	Token string `json:"token"`
 }
 
-func authU2fSignPost(c *gin.Context) {
+func authWanRespondPost(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
-	data := &u2fSignData{}
+	data := &authWanRespondData{}
 
-	err := c.Bind(data)
+	body, err := utils.CopyBody(c.Request)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	err = c.Bind(data)
 	if err != nil {
 		err = &errortypes.ParseError{
 			errors.Wrap(err, "handler: Bind error"),
@@ -910,7 +916,8 @@ func authU2fSignPost(c *gin.Context) {
 		return
 	}
 
-	errData, err = secd.DeviceSignResponse(db, data.Response)
+	errData, err = secd.DeviceRespond(
+		db, utils.GetOrigin(c.Request), body)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -950,7 +957,8 @@ func authU2fSignPost(c *gin.Context) {
 	}
 
 	if !secProviderId.IsZero() {
-		secd, err := secondary.New(db, usr.Id, secondary.Admin, secProviderId)
+		secd, err := secondary.New(db, usr.Id, secondary.Admin,
+			secProviderId)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
 			return
