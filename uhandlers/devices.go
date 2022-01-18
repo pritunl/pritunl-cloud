@@ -12,9 +12,8 @@ import (
 	"github.com/pritunl/pritunl-cloud/device"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
+	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/secondary"
-	"github.com/pritunl/pritunl-cloud/settings"
-	"github.com/pritunl/pritunl-cloud/u2flib"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/validator"
 )
@@ -190,12 +189,12 @@ func devicesGet(c *gin.Context) {
 	c.JSON(200, devices)
 }
 
-type devicesU2fRegisterRespData struct {
+type devicesWanRegisterRespData struct {
 	Token   string      `json:"token"`
-	Request interface{} `json:"request"`
+	Options interface{} `json:"options"`
 }
 
-func deviceU2fRegisterGet(c *gin.Context) {
+func deviceWanRegisterGet(c *gin.Context) {
 	if demo.Blocked(c) {
 		return
 	}
@@ -203,11 +202,10 @@ func deviceU2fRegisterGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 	authr := c.MustGet("authorizer").(*authorizer.Authorizer)
 
-	if settings.Local.AppId == "" {
+	if node.Self.WebauthnDomain == "" {
 		errData := &errortypes.ErrorData{
-			Error: "user_node_unavailable",
-			Message: "At least one node must have a user domain configured " +
-				"to use secondary device authentication",
+			Error:   "webauthn_domain_unavailable",
+			Message: "WebAuthn domain must be configured",
 		}
 		c.JSON(400, errData)
 		return
@@ -292,7 +290,20 @@ func deviceU2fRegisterGet(c *gin.Context) {
 		return
 	}
 
-	jsonResp, errData, err := secd.DeviceRegisterRequest(db)
+	err = audit.New(
+		db,
+		c.Request,
+		usr.Id,
+		audit.UserDeviceRegisterRequest,
+		audit.Fields{},
+	)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	jsonResp, errData, err := secd.DeviceRegisterRequest(db,
+		utils.GetOrigin(c.Request))
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -303,32 +314,35 @@ func deviceU2fRegisterGet(c *gin.Context) {
 		return
 	}
 
-	resp := &devicesU2fRegisterRespData{
+	resp := &devicesWanRegisterRespData{
 		Token:   secd.Id,
-		Request: jsonResp,
+		Options: jsonResp,
 	}
 
 	c.JSON(200, resp)
 }
 
-type devicesU2fRegisterData struct {
-	Type     string                   `json:"type"`
-	Token    string                   `json:"token"`
-	Name     string                   `json:"name"`
-	Response *u2flib.RegisterResponse `json:"response"`
+type devicesWanRegisterData struct {
+	Token string `json:"token"`
+	Name  string `json:"name"`
 }
 
-func deviceU2fRegisterPost(c *gin.Context) {
+func deviceWanRegisterPost(c *gin.Context) {
 	if demo.Blocked(c) {
 		return
 	}
 
 	db := c.MustGet("db").(*database.Database)
 	authr := c.MustGet("authorizer").(*authorizer.Authorizer)
+	data := &devicesWanRegisterData{}
 
-	data := &devicesU2fRegisterData{}
+	body, err := utils.CopyBody(c.Request)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
 
-	err := c.Bind(data)
+	err = c.Bind(data)
 	if err != nil {
 		err = &errortypes.ParseError{
 			errors.Wrap(err, "handler: Bind error"),
@@ -359,7 +373,7 @@ func deviceU2fRegisterPost(c *gin.Context) {
 	}
 
 	devc, errData, err := secd.DeviceRegisterResponse(
-		db, data.Response, data.Name)
+		db, utils.GetOrigin(c.Request), body, data.Name)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -389,17 +403,17 @@ func deviceU2fRegisterPost(c *gin.Context) {
 	c.JSON(200, nil)
 }
 
-type deviceU2fSecondaryData struct {
+type deviceSecondaryData struct {
 	Type     string `json:"type"`
 	Token    string `json:"token"`
 	Factor   string `json:"factor"`
 	Passcode string `json:"passcode"`
 }
 
-func deviceU2fSecondaryPut(c *gin.Context) {
+func deviceSecondaryPut(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 	authr := c.MustGet("authorizer").(*authorizer.Authorizer)
-	data := &deviceU2fSecondaryData{}
+	data := &deviceSecondaryData{}
 
 	err := c.Bind(data)
 	if err != nil {
@@ -452,7 +466,8 @@ func deviceU2fSecondaryPut(c *gin.Context) {
 		return
 	}
 
-	jsonResp, errData, err := secd.DeviceRegisterRequest(db)
+	jsonResp, errData, err := secd.DeviceRegisterRequest(db,
+		utils.GetOrigin(c.Request))
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -463,15 +478,15 @@ func deviceU2fSecondaryPut(c *gin.Context) {
 		return
 	}
 
-	resp := &devicesU2fRegisterRespData{
+	resp := &devicesWanRegisterRespData{
 		Token:   secd.Id,
-		Request: jsonResp,
+		Options: jsonResp,
 	}
 
 	c.JSON(200, resp)
 }
 
-func deviceU2fSignGet(c *gin.Context) {
+func deviceWanRequestGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 	token := c.Query("token")
 
@@ -489,7 +504,8 @@ func deviceU2fSignGet(c *gin.Context) {
 		return
 	}
 
-	resp, errData, err := secd.DeviceSignRequest(db)
+	resp, errData, err := secd.DeviceRequest(
+		db, utils.GetOrigin(c.Request))
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -503,18 +519,22 @@ func deviceU2fSignGet(c *gin.Context) {
 	c.JSON(200, resp)
 }
 
-type deviceU2fSignData struct {
-	Type     string               `json:"type"`
-	Token    string               `json:"token"`
-	Response *u2flib.SignResponse `json:"response"`
+type deviceWanRespondData struct {
+	Token string `json:"token"`
 }
 
-func deviceU2fSignPost(c *gin.Context) {
+func deviceWanRespondPost(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 	authr := c.MustGet("authorizer").(*authorizer.Authorizer)
-	data := &deviceU2fSignData{}
+	data := &deviceWanRespondData{}
 
-	err := c.Bind(data)
+	body, err := utils.CopyBody(c.Request)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	err = c.Bind(data)
 	if err != nil {
 		err = &errortypes.ParseError{
 			errors.Wrap(err, "handler: Bind error"),
@@ -537,7 +557,14 @@ func deviceU2fSignPost(c *gin.Context) {
 		return
 	}
 
-	errData, err := secd.DeviceSignResponse(db, data.Response)
+	usr, err := authr.GetUser(db)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	_, secProviderId, errAudit, errData, err := validator.ValidateUser(
+		db, usr, false, c.Request)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -548,14 +575,8 @@ func deviceU2fSignPost(c *gin.Context) {
 		return
 	}
 
-	usr, err := authr.GetUser(db)
-	if err != nil {
-		utils.AbortWithError(c, 500, err)
-		return
-	}
-
-	_, secProviderId, errAudit, errData, err := validator.ValidateUser(
-		db, usr, false, c.Request)
+	errData, err = secd.DeviceRespond(
+		db, utils.GetOrigin(c.Request), body)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -611,7 +632,8 @@ func deviceU2fSignPost(c *gin.Context) {
 		return
 	}
 
-	jsonResp, errData, err := secd.DeviceRegisterRequest(db)
+	jsonResp, errData, err := secd.DeviceRegisterRequest(db,
+		utils.GetOrigin(c.Request))
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -622,9 +644,9 @@ func deviceU2fSignPost(c *gin.Context) {
 		return
 	}
 
-	resp := &devicesU2fRegisterRespData{
+	resp := &devicesWanRegisterRespData{
 		Token:   secd.Id,
-		Request: jsonResp,
+		Options: jsonResp,
 	}
 
 	c.JSON(200, resp)
