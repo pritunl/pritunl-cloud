@@ -500,8 +500,8 @@ export default class Policy extends React.Component<Props, State> {
 						}}
 					/>
 					<PageSwitch
-						label="Admin U2F device authentication"
-						help="Require admins to use U2F device authentication."
+						label="Admin WebAuthn device authentication"
+						help="Require admins to use WebAuthn device authentication."
 						checked={policy.admin_device_secondary}
 						onToggle={(): void => {
 							this.set('admin_device_secondary',
@@ -509,8 +509,8 @@ export default class Policy extends React.Component<Props, State> {
 						}}
 					/>
 					<PageSwitch
-						label="User U2F device authentication"
-						help="Require users to use U2F device authentication."
+						label="User WebAuthn device authentication"
+						help="Require users to use WebAuthn device authentication."
 						checked={policy.user_device_secondary}
 						onToggle={(): void => {
 							this.set('user_device_secondary',
