@@ -11,32 +11,37 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/device"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/requires"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/webauthn/webauthn"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 )
 
+//ApiRoles        []string           `bson:"api_roles" json:"api_roles"`
+
 type User struct {
-	Id              primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Type            string             `bson:"type" json:"type"`
-	Provider        primitive.ObjectID `bson:"provider" json:"provider"`
-	Username        string             `bson:"username" json:"username"`
-	Password        string             `bson:"password" json:"-"`
-	Comment         string             `bson:"comment" json:"comment"`
-	DefaultPassword string             `bson:"default_password" json:"-"`
-	Token           string             `bson:"token" json:"token"`
-	Secret          string             `bson:"secret" json:"secret"`
-	Theme           string             `bson:"theme" json:"-"`
-	LastActive      time.Time          `bson:"last_active" json:"last_active"`
-	LastSync        time.Time          `bson:"last_sync" json:"last_sync"`
-	Roles           []string           `bson:"roles" json:"roles"`
-	Administrator   string             `bson:"administrator" json:"administrator"`
-	Disabled        bool               `bson:"disabled" json:"disabled"`
-	ActiveUntil     time.Time          `bson:"active_until" json:"active_until"`
-	Permissions     []string           `bson:"permissions" json:"permissions"`
-	OracleLicense   bool               `bson:"oracle_licese" json:"oracle_license"`
+	Id              primitive.ObjectID    `bson:"_id,omitempty" json:"id"`
+	Type            string                `bson:"type" json:"type"`
+	Provider        primitive.ObjectID    `bson:"provider" json:"provider"`
+	Username        string                `bson:"username" json:"username"`
+	Password        string                `bson:"password" json:"-"`
+	Comment         string                `bson:"comment" json:"comment"`
+	DefaultPassword string                `bson:"default_password" json:"-"`
+	Token           string                `bson:"token" json:"token"`
+	Secret          string                `bson:"secret" json:"secret"`
+	Theme           string                `bson:"theme" json:"-"`
+	LastActive      time.Time             `bson:"last_active" json:"last_active"`
+	LastSync        time.Time             `bson:"last_sync" json:"last_sync"`
+	Roles           []string              `bson:"roles" json:"roles"`
+	Administrator   string                `bson:"administrator" json:"administrator"`
+	Disabled        bool                  `bson:"disabled" json:"disabled"`
+	ActiveUntil     time.Time             `bson:"active_until" json:"active_until"`
+	Permissions     []string              `bson:"permissions" json:"permissions"`
+	OracleLicense   bool                  `bson:"oracle_licese" json:"oracle_license"`
+	WanCredentials  []webauthn.Credential `bson:"-" json:"-"`
 }
 
 func (u *User) Validate(db *database.Database) (
@@ -316,6 +321,60 @@ func (u *User) GenerateToken() (err error) {
 	}
 
 	return
+}
+
+func (u *User) LoadWebAuthnDevices(db *database.Database) (
+	devices []*device.Device, hasU2f bool, err error) {
+
+	devices, err = device.GetAll(db, u.Id)
+	if err != nil {
+		return
+	}
+
+	wanCredentials := []webauthn.Credential{}
+	for _, devc := range devices {
+		switch devc.Type {
+		case device.WebAuthn:
+			break
+		case device.U2f:
+			hasU2f = true
+			break
+		default:
+			continue
+		}
+
+		wanCred, e := devc.UnmarshalWebauthn()
+		if e != nil {
+			err = e
+			return
+		}
+
+		wanCredentials = append(wanCredentials, wanCred)
+	}
+
+	u.WanCredentials = wanCredentials
+
+	return
+}
+
+func (u *User) WebAuthnID() []byte {
+	return u.Id[:]
+}
+
+func (u *User) WebAuthnName() string {
+	return u.Username
+}
+
+func (u *User) WebAuthnDisplayName() string {
+	return u.Username
+}
+
+func (u *User) WebAuthnIcon() string {
+	return ""
+}
+
+func (u *User) WebAuthnCredentials() []webauthn.Credential {
+	return u.WanCredentials
 }
 
 func init() {
