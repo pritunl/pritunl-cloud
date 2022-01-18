@@ -4,6 +4,7 @@
     "@blueprintjs/core": "3.44.0",
     "@blueprintjs/datetime": "3.23.0",
     "@blueprintjs/icons": "3.26.0",
+    "@github/webauthn-json": "0.6.2",
     "@novnc/novnc": "1.2.0",
     "@popperjs/core": "2.9.2",
     "@types/chart.js": "2.9.32",
@@ -31,7 +32,6 @@
     "react-transition-group": "4.4.1",
     "superagent": "6.1.0",
     "systemjs": "6.8.3",
-    "terser-webpack-plugin": "5.1.1",
-    "webpack": "5.36.2"
+    "terser-webpack-plugin": "5.1.1"
   }
 }
