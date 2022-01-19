@@ -155,6 +155,9 @@ export default class Device extends React.Component<Props, State> {
 
 		let deviceType = 'Unknown';
 		switch (device.type) {
+			case 'webauthn':
+				deviceType = 'WebAuthn';
+				break;
 			case 'u2f':
 				deviceType = 'U2F';
 				break;
@@ -184,7 +187,12 @@ export default class Device extends React.Component<Props, State> {
 		}
 
 		let deviceOther: PageInfos.Field;
-		if (device.type === 'call' || device.type === 'message') {
+		if (device.wan_rp_id) {
+			deviceOther = {
+				label: 'WebAuthn Domain',
+				value: device.wan_rp_id,
+			};
+		} else if (device.type === 'call' || device.type === 'message') {
 			deviceOther = {
 				label: 'Phone Number',
 				value: device.number,
