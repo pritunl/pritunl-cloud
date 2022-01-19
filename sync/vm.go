@@ -3,7 +3,6 @@ package sync
 import (
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deploy"
@@ -12,6 +11,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/iptables"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/state"
+	"github.com/sirupsen/logrus"
 )
 
 func deployState() (err error) {
@@ -33,13 +33,8 @@ func syncNodeFirewall() {
 	defer db.Close()
 
 	if !node.Self.Firewall {
-		err := iptables.UpdateState(node.Self, []*instance.Instance{},
+		iptables.UpdateState(node.Self, []*instance.Instance{},
 			[]string{}, nil, map[string][]*firewall.Rule{})
-		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"error": err,
-			}).Error("sync: Failed to update iptables")
-		}
 		return
 	}
 
@@ -54,29 +49,8 @@ func syncNodeFirewall() {
 
 		ingress := firewall.MergeIngress(fires)
 
-		err = iptables.UpdateState(node.Self, []*instance.Instance{},
+		iptables.UpdateStateRecover(node.Self, []*instance.Instance{},
 			[]string{}, ingress, map[string][]*firewall.Rule{})
-		if err != nil {
-			if i < 1 {
-				err = nil
-				time.Sleep(300 * time.Millisecond)
-				continue
-			} else {
-				logrus.WithFields(logrus.Fields{
-					"error": err,
-				}).Error("sync: Failed to update iptables, resetting state")
-				for {
-					err = iptables.Recover()
-					if err != nil {
-						logrus.WithFields(logrus.Fields{
-							"error": err,
-						}).Error("sync: Failed to recover iptables, retrying")
-						continue
-					}
-					break
-				}
-			}
-		}
 
 		break
 	}
