@@ -66,7 +66,9 @@ func (s *State) AddSourceDestCheck(namespace, addr6 string) {
 	}
 
 	sdcSet := set.NewSet()
-	sdcSet.Add(addr6)
+	if addr6 != "" {
+		sdcSet.Add(addr6)
+	}
 	sdcSet.Add("fe80::/10")
 	sets.Sets["pr6_sdc"] = sdcSet
 }

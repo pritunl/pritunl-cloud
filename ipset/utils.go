@@ -56,7 +56,7 @@ func UpdateState(instances []*instance.Instance, namespaces []string,
 			}
 
 			newState.AddIngress(namespace, ingress)
-			if addr6 != "" && !inst.SkipSourceDestCheck {
+			if !inst.SkipSourceDestCheck {
 				newState.AddSourceDestCheck(namespace, addr6)
 			}
 		}
