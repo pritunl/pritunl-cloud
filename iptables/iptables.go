@@ -4,7 +4,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/firewall"
@@ -16,33 +15,6 @@ var (
 	curState  *State
 	stateLock = utils.NewTimeoutLock(3 * time.Minute)
 )
-
-type Rules struct {
-	Namespace        string
-	Interface        string
-	Nat              bool
-	NatAddr          string
-	NatPubAddr       string
-	Nat6             bool
-	NatAddr6         string
-	NatPubAddr6      string
-	OracleNat        bool
-	OracleNatAddr    string
-	OracleNatPubAddr string
-	SourceDestCheck  [][]string
-	SourceDestCheck6 [][]string
-	Ingress          [][]string
-	Ingress6         [][]string
-	Holds            [][]string
-	Holds6           [][]string
-}
-
-type State struct {
-	HostNat          bool
-	HostNatExcludes  set.Set
-	HostNatInterface string
-	Interfaces       map[string]*Rules
-}
 
 func (r *Rules) newCommand() (cmd []string) {
 	chain := ""
@@ -678,24 +650,26 @@ func generateVirt(namespace, iface, addr, addr6 string, sourceDestCheck bool,
 	}
 
 	if sourceDestCheck {
-		cmd := rules.newCommand()
-		cmd = append(cmd,
-			"!", "-s", addr+"/32",
-		)
-		if rules.Interface != "host" {
+		if addr != "" {
+			cmd := rules.newCommand()
 			cmd = append(cmd,
-				"-m", "physdev",
-				"--physdev-in", rules.Interface,
-				"--physdev-is-bridged",
+				"!", "-s", addr+"/32",
 			)
+			if rules.Interface != "host" {
+				cmd = append(cmd,
+					"-m", "physdev",
+					"--physdev-in", rules.Interface,
+					"--physdev-is-bridged",
+				)
+			}
+			cmd = rules.commentCommandSdc(cmd)
+			cmd = append(cmd,
+				"-j", "DROP",
+			)
+			rules.SourceDestCheck = append(rules.SourceDestCheck, cmd)
 		}
-		cmd = rules.commentCommandSdc(cmd)
-		cmd = append(cmd,
-			"-j", "DROP",
-		)
-		rules.SourceDestCheck = append(rules.SourceDestCheck, cmd)
 
-		cmd = rules.newCommand()
+		cmd := rules.newCommand()
 		cmd = append(cmd,
 			"-m", "set",
 			"!", "--match-set", "pr6_sdc", "src",
@@ -713,22 +687,24 @@ func generateVirt(namespace, iface, addr, addr6 string, sourceDestCheck bool,
 		)
 		rules.SourceDestCheck6 = append(rules.SourceDestCheck6, cmd)
 
-		cmd = rules.newCommand()
-		cmd = append(cmd,
-			"!", "-d", addr+"/32",
-		)
-		if rules.Interface != "host" {
+		if addr != "" {
+			cmd = rules.newCommand()
 			cmd = append(cmd,
-				"-m", "physdev",
-				"--physdev-out", rules.Interface,
-				"--physdev-is-bridged",
+				"!", "-d", addr+"/32",
 			)
+			if rules.Interface != "host" {
+				cmd = append(cmd,
+					"-m", "physdev",
+					"--physdev-out", rules.Interface,
+					"--physdev-is-bridged",
+				)
+			}
+			cmd = rules.commentCommandSdc(cmd)
+			cmd = append(cmd,
+				"-j", "DROP",
+			)
+			rules.SourceDestCheck = append(rules.SourceDestCheck, cmd)
 		}
-		cmd = rules.commentCommandSdc(cmd)
-		cmd = append(cmd,
-			"-j", "DROP",
-		)
-		rules.SourceDestCheck = append(rules.SourceDestCheck, cmd)
 
 		cmd = rules.newCommand()
 		cmd = append(cmd,
