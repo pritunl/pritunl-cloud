@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
-	minio "github.com/minio/minio-go"
-	"github.com/minio/minio-go/pkg/credentials"
+	minio "github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -73,7 +73,11 @@ func getImage(db *database.Database, img *image.Image,
 	}).Info("data: Downloading image")
 
 	client, err := minio.New(store.Endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(store.AccessKey, store.SecretKey, ""),
+		Creds: credentials.NewStaticV4(
+			store.AccessKey,
+			store.SecretKey,
+			"",
+		),
 		Secure: !store.Insecure,
 	})
 	if err != nil {
