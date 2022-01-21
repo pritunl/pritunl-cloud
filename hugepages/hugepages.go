@@ -8,12 +8,11 @@ import (
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"github.com/shirou/gopsutil/mem"
 	"github.com/sirupsen/logrus"
 )
 
 func HugepageSize() (count int, size uint64, err error) {
-	virt, err := mem.VirtualMemory()
+	virt, err := utils.GetMemInfo()
 	if err != nil {
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "hugepages: Failed to read virtual memory"),
@@ -22,7 +21,7 @@ func HugepageSize() (count int, size uint64, err error) {
 	}
 
 	count = int(virt.HugePagesTotal)
-	size = virt.HugePageSize / 1024
+	size = virt.HugePageSize
 
 	if size < 1024 {
 		err = &errortypes.ReadError{
