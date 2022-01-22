@@ -7,6 +7,7 @@ Add hugepages support
 Add support for Azure graph API
 Add instance gui
 Add instance spice server
+Add instance source destination check
 
 Version 1.2.2184.82 2021-11-16
 ------------------------------
