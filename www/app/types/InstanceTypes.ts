@@ -20,6 +20,7 @@ export interface Instance {
 	uefi?: boolean;
 	secure_boot?: boolean;
 	delete_protection?: boolean;
+	skip_source_dest_check?: boolean;
 	public_ips?: string[];
 	public_ips6?: string[];
 	private_ips?: string[];
@@ -105,6 +106,11 @@ export interface DriveDevice {
 	id?: string;
 }
 
+export interface OracleSubnet {
+	id?: string;
+	name?: string;
+}
+
 export interface Info {
 	node?: string;
 	iscsi?: boolean;
@@ -115,6 +121,7 @@ export interface Info {
 	usb_devices?: UsbDevice[];
 	pci_devices?: PciDevice[];
 	drive_devices?: DriveDevice[];
+	oracle_subnets?: OracleSubnet[];
 }
 
 export type Instances = Instance[];
