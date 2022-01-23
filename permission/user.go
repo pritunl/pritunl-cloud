@@ -64,3 +64,34 @@ func UserDelete(virt *vm.VirtualMachine) (err error) {
 
 	return
 }
+
+func UserGroupAdd(virtId primitive.ObjectID, group string) (err error) {
+	name := GetUserName(virtId)
+
+	_, err = utils.ExecCombinedOutputLogged(
+		[]string{
+			"does not exist",
+		},
+		"gpasswd",
+		"-a", name,
+		group,
+	)
+
+	return
+}
+
+func UserGroupDelete(virtId primitive.ObjectID, group string) (err error) {
+	name := GetUserName(virtId)
+
+	_, err = utils.ExecCombinedOutputLogged(
+		[]string{
+			"not a member",
+			"does not exist",
+		},
+		"gpasswd",
+		"-d", name,
+		group,
+	)
+
+	return
+}
