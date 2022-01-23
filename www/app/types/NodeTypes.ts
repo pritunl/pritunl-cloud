@@ -24,6 +24,7 @@ export interface Node {
 	timestamp?: string;
 	admin_domain?: string;
 	user_domain?: string;
+	webauthn_domain?: string;
 	certificates?: string[];
 	network_mode?: string;
 	network_mode6?: string;
