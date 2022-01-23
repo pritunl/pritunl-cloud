@@ -118,10 +118,16 @@ type Node struct {
 	OraclePublicKey      string               `bson:"oracle_public_key" json:"oracle_public_key"`
 	OracleHostRoute      bool                 `bson:"oracle_host_route" json:"oracle_host_route"`
 	Operation            string               `bson:"operation" json:"operation"`
+	oracleSubnetsNamed   []*OracleSubnet      `bson:"-" json:"-"`
 	reqLock              sync.Mutex           `bson:"-" json:"-"`
 	reqCount             *list.List           `bson:"-" json:"-"`
 	dcId                 primitive.ObjectID   `bson:"-" json:"-"`
 	dcZoneId             primitive.ObjectID   `bson:"-" json:"-"`
+}
+
+type OracleSubnet struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
 }
 
 func (n *Node) Copy() *Node {
@@ -254,6 +260,44 @@ func (n *Node) GetDatacenter(db *database.Database) (
 	dcId = zne.Datacenter
 	n.dcId = zne.Datacenter
 	n.dcZoneId = n.Zone
+
+	return
+}
+
+func (n *Node) GetOracleSubnetsName() (subnets []*OracleSubnet) {
+	if n.oracleSubnetsNamed != nil {
+		subnets = n.oracleSubnetsNamed
+		return
+	}
+
+	names := map[string]string{}
+
+	if n.AvailableVpcs != nil {
+		for _, vpc := range n.AvailableVpcs {
+			for _, subnet := range vpc.Subnets {
+				names[subnet.Id] = fmt.Sprintf(
+					"%s - %s", vpc.Name, subnet.Name)
+			}
+		}
+	}
+
+	subnets = []*OracleSubnet{}
+
+	if n.OracleSubnets != nil {
+		for _, subnetId := range n.OracleSubnets {
+			name := names[subnetId]
+			if name == "" {
+				name = subnetId
+			}
+
+			subnets = append(subnets, &OracleSubnet{
+				Id:   subnetId,
+				Name: name,
+			})
+		}
+	}
+
+	n.oracleSubnetsNamed = subnets
 
 	return
 }
