@@ -97,6 +97,7 @@ type Node struct {
 	Firewall             bool                 `bson:"firewall" json:"firewall"`
 	NetworkRoles         []string             `bson:"network_roles" json:"network_roles"`
 	Memory               float64              `bson:"memory" json:"memory"`
+	HugePagesUsed        float64              `bson:"hugepages_used" json:"hugepages_used"`
 	Load1                float64              `bson:"load1" json:"load1"`
 	Load5                float64              `bson:"load5" json:"load5"`
 	Load15               float64              `bson:"load15" json:"load15"`
@@ -939,6 +940,7 @@ func (n *Node) update(db *database.Database) (err error) {
 				"timestamp":            n.Timestamp,
 				"requests_min":         n.RequestsMin,
 				"memory":               n.Memory,
+				"hugepages_used":       n.HugePagesUsed,
 				"load1":                n.Load1,
 				"load5":                n.Load5,
 				"load15":               n.Load15,
