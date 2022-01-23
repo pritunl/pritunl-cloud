@@ -4,8 +4,8 @@ import (
 	"crypto/rsa"
 	"fmt"
 
-	"github.com/oracle/oci-go-sdk/common"
-	"github.com/oracle/oci-go-sdk/core"
+	"github.com/oracle/oci-go-sdk/v55/common"
+	"github.com/oracle/oci-go-sdk/v55/core"
 	"github.com/sirupsen/logrus"
 )
 
@@ -56,6 +56,7 @@ func (p *Provider) TenancyOCID() (string, error) {
 func (p *Provider) UserOCID() (string, error) {
 	return p.user, nil
 }
+
 func (p *Provider) KeyFingerprint() (string, error) {
 	return p.fingerprint, nil
 }
