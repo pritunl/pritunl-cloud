@@ -60,7 +60,7 @@ const netMtu = `
 const cloudConfigTmpl = `#cloud-config
 hostname: {{.Hostname}}
 ssh_deletekeys: false
-disable_root: true
+{{if eq .RootPasswd ""}}disable_root: true{{else}}disable_root: false{{end}}
 ssh_pwauth: no
 growpart:
     mode: auto
@@ -70,7 +70,9 @@ runcmd:
   - [ sysctl, -w, net.ipv4.conf.eth0.send_redirects=0 ]
 users:
   - name: root
-    lock-passwd: true
+    {{if eq .RootPasswd ""}}lock-passwd: true{{else}}lock-passwd: false
+    passwd: {{.RootPasswd}}
+    hashed_passwd: {{.RootPasswd}}{{end}}
   - name: cloud
     groups: adm, video, wheel, systemd-journal
     selinux-user: staff_u
@@ -106,6 +108,7 @@ type netConfigData struct {
 
 type cloudConfigData struct {
 	Hostname   string
+	RootPasswd string
 	LockPasswd string
 	Keys       []string
 }
@@ -130,6 +133,13 @@ func getUserData(db *database.Database, inst *instance.Instance,
 	data := cloudConfigData{
 		Keys:     []string{},
 		Hostname: strings.Replace(inst.Name, " ", "_", -1),
+	}
+
+	if inst.RootEnabled {
+		data.RootPasswd, err = utils.GenerateShadow(inst.RootPasswd)
+		if err != nil {
+			return
+		}
 	}
 
 	if !initial {
