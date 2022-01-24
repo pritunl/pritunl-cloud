@@ -1,33 +1,34 @@
 package utils
 
 import (
+	"io/ioutil"
 	"runtime"
 	"strconv"
 	"strings"
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"github.com/shirou/gopsutil/load"
-	"github.com/shirou/gopsutil/mem"
 )
 
 type MemInfo struct {
-	Total             uint64
-	Free              uint64
-	Available         uint64
-	Buffers           uint64
-	Cached            uint64
-	Used              uint64
-	UsedPercent       float64
-	Dirty             uint64
-	SwapTotal         uint64
-	SwapFree          uint64
-	SwapUsed          uint64
-	SwapUsedPercent   float64
-	HugePagesTotal    uint64
-	HugePagesFree     uint64
-	HugePagesReserved uint64
-	HugePageSize      uint64
+	Total                uint64
+	Free                 uint64
+	Available            uint64
+	Buffers              uint64
+	Cached               uint64
+	Used                 uint64
+	UsedPercent          float64
+	Dirty                uint64
+	SwapTotal            uint64
+	SwapFree             uint64
+	SwapUsed             uint64
+	SwapUsedPercent      float64
+	HugePagesTotal       uint64
+	HugePagesFree        uint64
+	HugePagesReserved    uint64
+	HugePagesUsed        uint64
+	HugePagesUsedPercent float64
+	HugePageSize         uint64
 }
 
 func GetMemInfo() (info *MemInfo, err error) {
@@ -169,20 +170,12 @@ func GetMemInfo() (info *MemInfo, err error) {
 			info.SwapUsed) / float64(info.SwapTotal) * 100.0
 	}
 
-	return
-}
-
-func MemoryUsed() (used, total float64, err error) {
-	virt, err := mem.VirtualMemory()
-	if err != nil {
-		err = &errortypes.ReadError{
-			errors.Wrap(err, "utils: Failed to read virtual memory"),
-		}
-		return
+	info.HugePagesUsed = (info.HugePagesTotal - info.HugePagesFree) +
+		info.HugePagesReserved
+	if info.HugePagesUsed != 0 {
+		info.HugePagesUsedPercent = float64(
+			info.HugePagesUsed) / float64(info.HugePagesTotal) * 100.0
 	}
-
-	used = ToFixed(virt.UsedPercent, 2)
-	total = ToFixed(float64(virt.Total)/float64(1073741824), 2)
 
 	return
 }
@@ -197,20 +190,53 @@ type LoadStat struct {
 func LoadAverage() (ld *LoadStat, err error) {
 	count := runtime.NumCPU()
 	countFloat := float64(count)
+	_ = countFloat
 
-	avg, err := load.Avg()
+	ld = &LoadStat{}
+
+	line, err := ioutil.ReadFile("/proc/loadavg")
 	if err != nil {
 		err = &errortypes.ReadError{
-			errors.Wrap(err, "utils: Failed to read load average"),
+			errors.Wrap(err, "utils: Failed to read loadavg"),
+		}
+		return
+	}
+
+	values := strings.Fields(string(line))
+	if len(values) < 3 {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "utils: Invalid loadavg data"),
+		}
+		return
+	}
+
+	load1, err := strconv.ParseFloat(values[0], 64)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "utils: Invalid load1 data"),
+		}
+		return
+	}
+	load5, err := strconv.ParseFloat(values[1], 64)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "utils: Invalid load5 data"),
+		}
+		return
+	}
+	load15, err := strconv.ParseFloat(values[2], 64)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "utils: Invalid load15 data"),
 		}
 		return
 	}
 
 	ld = &LoadStat{
 		CpuUnits: count,
-		Load1:    ToFixed(avg.Load1/countFloat*100, 2),
-		Load5:    ToFixed(avg.Load5/countFloat*100, 2),
-		Load15:   ToFixed(avg.Load15/countFloat*100, 2),
+		Load1:    ToFixed(load1/countFloat*100, 2),
+		Load5:    ToFixed(load5/countFloat*100, 2),
+		Load15:   ToFixed(load15/countFloat*100, 2),
 	}
 
 	return
