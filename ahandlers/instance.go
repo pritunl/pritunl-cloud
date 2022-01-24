@@ -41,6 +41,7 @@ type instanceData struct {
 	Name                string             `json:"name"`
 	Comment             string             `json:"comment"`
 	State               string             `json:"state"`
+	RootEnabled         bool               `json:"root_enabled"`
 	Uefi                bool               `json:"uefi"`
 	SecureBoot          bool               `json:"secure_boot"`
 	DeleteProtection    bool               `json:"delete_protection"`
@@ -120,6 +121,7 @@ func instancePut(c *gin.Context) {
 	inst.PciDevices = dta.PciDevices
 	inst.DriveDevices = dta.DriveDevices
 	inst.IscsiDevices = dta.IscsiDevices
+	inst.RootEnabled = dta.RootEnabled
 	inst.Vnc = dta.Vnc
 	inst.Spice = dta.Spice
 	inst.Gui = dta.Gui
@@ -149,6 +151,8 @@ func instancePut(c *gin.Context) {
 		"pci_devices",
 		"drive_devices",
 		"iscsi_devices",
+		"root_enabled",
+		"root_passwd",
 		"vnc",
 		"vnc_display",
 		"vnc_password",
@@ -291,6 +295,7 @@ func instancePost(c *gin.Context) {
 			PciDevices:          dta.PciDevices,
 			DriveDevices:        dta.DriveDevices,
 			IscsiDevices:        dta.IscsiDevices,
+			RootEnabled:         dta.RootEnabled,
 			Vnc:                 dta.Vnc,
 			Spice:               dta.Spice,
 			Gui:                 dta.Gui,
