@@ -3,11 +3,13 @@ package qemu
 import (
 	"encoding/json"
 	"sort"
+	"strings"
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
+	"github.com/pritunl/pritunl-cloud/pci"
 	"github.com/pritunl/pritunl-cloud/vm"
 )
 
@@ -101,8 +103,20 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 	}
 
 	for _, device := range virt.PciDevices {
+		dev, e := pci.GetVfio(device.Slot)
+		if e != nil {
+			err = e
+			return
+		}
+
+		name := strings.ToLower(dev.Name)
+
 		qm.PciDevices = append(qm.PciDevices, &PciDevice{
 			Slot: device.Slot,
+			Gpu: strings.Contains(name, "vga compatible") ||
+				strings.Contains(name, "vga controller") ||
+				strings.Contains(name, "graphics controller") ||
+				strings.Contains(name, "display controller"),
 		})
 	}
 

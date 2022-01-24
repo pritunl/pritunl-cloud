@@ -44,6 +44,7 @@ type UsbDevice struct {
 
 type PciDevice struct {
 	Slot string
+	Gpu  bool
 }
 
 type DriveDevice struct {
