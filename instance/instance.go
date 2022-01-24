@@ -73,6 +73,8 @@ type Instance struct {
 	Domain              primitive.ObjectID `bson:"domain,omitempty" json:"domain"`
 	Name                string             `bson:"name" json:"name"`
 	Comment             string             `bson:"comment" json:"comment"`
+	RootEnabled         bool               `bson:"root_enabled" json:"root_enabled"`
+	RootPasswd          string             `bson:"root_passwd" json:"root_passwd"`
 	InitDiskSize        int                `bson:"init_disk_size" json:"init_disk_size"`
 	Memory              int                `bson:"memory" json:"memory"`
 	Processors          int                `bson:"processors" json:"processors"`
@@ -233,6 +235,17 @@ func (i *Instance) Validate(db *database.Database) (
 			}
 			return
 		}
+	}
+
+	if i.RootEnabled {
+		if i.RootPasswd == "" {
+			i.RootPasswd, err = utils.RandPasswd(8)
+			if err != nil {
+				return
+			}
+		}
+	} else {
+		i.RootPasswd = ""
 	}
 
 	if i.Isos == nil {
