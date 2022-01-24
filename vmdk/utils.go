@@ -5,18 +5,12 @@ import (
 	"os"
 
 	"github.com/dropbox/godropbox/errors"
+	"github.com/google/uuid"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"github.com/satori/go.uuid"
 )
 
 func SetRandUuid(diskPath string) (err error) {
-	diskUuid, err := uuid.NewV4()
-	if err != nil {
-		err = &errortypes.ReadError{
-			errors.Wrap(err, "vmdk: Failed to generate uuid"),
-		}
-		return
-	}
+	diskUuid := uuid.New()
 
 	diskFile, err := os.OpenFile(diskPath, os.O_RDWR, 0)
 	if err != nil {
