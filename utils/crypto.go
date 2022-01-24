@@ -18,7 +18,9 @@ import (
 )
 
 var (
-	randRe = regexp.MustCompile("[^a-zA-Z0-9]+")
+	randRe       = regexp.MustCompile("[^a-zA-Z0-9]+")
+	randPasswdRe = regexp.MustCompile(
+		"[^23456789abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ]+")
 )
 
 func RandStr(n int) (str string, err error) {
@@ -31,6 +33,35 @@ func RandStr(n int) (str string, err error) {
 
 		output := base64.RawStdEncoding.EncodeToString(input)
 		output = randRe.ReplaceAllString(output, "")
+
+		if len(output) < n {
+			continue
+		}
+
+		str = output[:n]
+		break
+	}
+
+	if str == "" {
+		err = &errortypes.UnknownError{
+			errors.Wrap(err, "utils: Random generate error"),
+		}
+		return
+	}
+
+	return
+}
+
+func RandPasswd(n int) (str string, err error) {
+	for i := 0; i < 10; i++ {
+		input, e := RandBytes(n * 2)
+		if e != nil {
+			err = e
+			return
+		}
+
+		output := base64.RawStdEncoding.EncodeToString(input)
+		output = randPasswdRe.ReplaceAllString(output, "")
 
 		if len(output) < n {
 			continue
