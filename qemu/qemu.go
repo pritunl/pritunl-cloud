@@ -115,6 +115,7 @@ func (q *Qemu) GetNetworkQueues() (queues int) {
 
 func (q *Qemu) Marshal() (output string, err error) {
 	localIsosPath := paths.GetLocalIsosPath()
+	slot := -1
 
 	qemuPath, err := features.GetQemuPath()
 	if err != nil {
@@ -153,30 +154,40 @@ func (q *Qemu) Marshal() (output string, err error) {
 		return
 	}
 
+	pciPassthrough := false
 	gpuPassthrough := false
 	if node.Self.PciPassthrough && len(q.PciDevices) > 0 {
-		gpuPassthrough = true
+		pciPassthrough = true
 
 		for i, device := range q.PciDevices {
+			slot += 1
 			cmd = append(cmd, "-device")
+			cmd = append(cmd,
+				fmt.Sprintf("pcie-root-port,id=pcibus%d,slot=%d", i, slot))
 
-			if i == 0 {
+			cmd = append(cmd, "-device")
+			if device.Gpu {
+				gpuPassthrough = true
 				cmd = append(cmd, fmt.Sprintf(
-					"vfio-pci,host=0000:%s,multifunction=on,x-vga=on",
+					"vfio-pci,host=0000:%s,bus=pcibus%d,"+
+						"multifunction=on,x-vga=on",
 					device.Slot,
+					i,
 				))
 			} else {
 				cmd = append(cmd, fmt.Sprintf(
-					"vfio-pci,host=0000:%s",
-					device.Slot,
+					"vfio-pci,host=0000:%s,bus=pcibus%d",
+					device.Slot, i,
 				))
 			}
 		}
 
-		cmd = append(cmd, "-display")
-		cmd = append(cmd, "none")
-		cmd = append(cmd, "-vga")
-		cmd = append(cmd, "none")
+		if gpuPassthrough {
+			cmd = append(cmd, "-display")
+			cmd = append(cmd, "none")
+			cmd = append(cmd, "-vga")
+			cmd = append(cmd, "none")
+		}
 	}
 
 	if !gpuPassthrough && (q.Vnc || q.Spice || q.Gui) {
@@ -251,17 +262,16 @@ func (q *Qemu) Marshal() (output string, err error) {
 	cmd = append(cmd, "-name")
 	cmd = append(cmd, fmt.Sprintf("pritunl_%s", q.Id.Hex()))
 
-	if !gpuPassthrough {
+	if !pciPassthrough {
 		cmd = append(cmd, "-runas")
 		cmd = append(cmd, permission.GetUserName(q.Id))
 	}
 
-	slot := -1
 	for i := 0; i < 10; i++ {
 		slot += 1
 		cmd = append(cmd, "-device")
 		cmd = append(cmd,
-			fmt.Sprintf("pcie-root-port,id=diskbus%d,slot=%d", slot, slot))
+			fmt.Sprintf("pcie-root-port,id=diskbus%d,slot=%d", i, slot))
 	}
 
 	cmd = append(cmd, "-machine")
