@@ -1032,21 +1032,25 @@ func (n *Node) sync() {
 
 	n.Timestamp = time.Now()
 
-	mem, total, err := utils.MemoryUsed()
+	mem, err := utils.GetMemInfo()
 	if err != nil {
 		n.Memory = 0
+		n.HugePagesUsed = 0
+		n.MemoryUnits = 0
 
 		logrus.WithFields(logrus.Fields{
 			"error": err,
 		}).Error("node: Failed to get memory")
 	} else {
-		n.Memory = mem
+		n.Memory = utils.ToFixed(mem.UsedPercent, 2)
+		n.HugePagesUsed = utils.ToFixed(mem.HugePagesUsedPercent, 2)
+		n.MemoryUnits = utils.ToFixed(
+			float64(mem.Total)/float64(1073741824), 2)
 	}
 
 	load, err := utils.LoadAverage()
 	if err != nil {
 		n.CpuUnits = 0
-		n.MemoryUnits = 0
 		n.Load1 = 0
 		n.Load5 = 0
 		n.Load15 = 0
@@ -1056,7 +1060,6 @@ func (n *Node) sync() {
 		}).Error("node: Failed to get load")
 	} else {
 		n.CpuUnits = load.CpuUnits
-		n.MemoryUnits = total
 		n.Load1 = load.Load1
 		n.Load5 = load.Load5
 		n.Load15 = load.Load15
