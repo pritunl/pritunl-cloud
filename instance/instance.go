@@ -324,7 +324,7 @@ func (i *Instance) Validate(db *database.Database) (
 
 	if i.Vnc {
 		if i.VncPassword == "" {
-			i.VncPassword, err = utils.RandStr(32)
+			i.VncPassword, err = utils.RandPasswd(32)
 			if err != nil {
 				return
 			}
@@ -335,7 +335,7 @@ func (i *Instance) Validate(db *database.Database) (
 
 	if i.Spice {
 		if i.SpicePassword == "" {
-			i.SpicePassword, err = utils.RandStr(32)
+			i.SpicePassword, err = utils.RandPasswd(32)
 			if err != nil {
 				return
 			}
