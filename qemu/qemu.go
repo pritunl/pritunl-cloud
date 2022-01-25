@@ -545,8 +545,13 @@ func (q *Qemu) Marshal() (output string, err error) {
 	}
 
 	if node.Self.UsbPassthrough {
+		slot += 1
 		cmd = append(cmd, "-device")
-		cmd = append(cmd, "qemu-xhci")
+		cmd = append(cmd,
+			fmt.Sprintf("pcie-root-port,id=usbbus,slot=%d", slot))
+
+		cmd = append(cmd, "-device")
+		cmd = append(cmd, "qemu-xhci,bus=usbbus")
 
 		for _, device := range q.UsbDevices {
 			vendor := usb.FilterId(device.Vendor)
