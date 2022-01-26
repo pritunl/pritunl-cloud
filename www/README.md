@@ -2,7 +2,10 @@
 
 ```
 npm install
-rm node_modules/react-stripe-checkout/index.d.ts
+rm ./node_modules/react-stripe-checkout/index.d.ts
+cd ./node_modules/@github/webauthn-json/dist/
+ln -sf ./esm/* ./
+cd ../../../../
 ```
 
 #### lint
@@ -43,7 +46,10 @@ cd /home/cloud/pritunl-cloud-www/
 rm package-lock.json
 rm -rf node_modules
 npm install
-rm node_modules/react-stripe-checkout/index.d.ts
+rm ./node_modules/react-stripe-checkout/index.d.ts
+cd ./node_modules/@github/webauthn-json/dist/
+ln -sf ./esm/* ./
+cd ../../../../
 
 # desktop
 scp $NPM_SERVER:/home/cloud/pritunl-cloud-www/package.json /home/cloud/go/src/github.com/pritunl/pritunl-cloud/www/package.json
