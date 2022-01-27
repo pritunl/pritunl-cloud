@@ -21,6 +21,10 @@ h5 {
   font-size: 16px;
 }
 
+.no-select {
+  user-select: none;
+}
+
 body.bp3-dark {
   background-color: #293742;
 }
