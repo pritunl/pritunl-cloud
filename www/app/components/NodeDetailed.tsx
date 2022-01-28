@@ -7,6 +7,7 @@ import * as ZoneTypes from '../types/ZoneTypes';
 import * as NodeActions from '../actions/NodeActions';
 import * as BlockTypes from '../types/BlockTypes';
 import * as MiscUtils from '../utils/MiscUtils';
+import * as PageInfos from './PageInfo';
 import CertificatesStore from '../stores/CertificatesStore';
 import NodeDeploy from './NodeDeploy';
 import PageInput from './PageInput';
@@ -1169,6 +1170,37 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			publicIps6 = 'None';
 		}
 
+		let resourceBars: PageInfos.Bar[] = [
+			{
+				progressClass: 'bp3-no-stripes bp3-intent-success',
+				label: 'Load1',
+				value: this.props.node.load1 || 0,
+			},
+			{
+				progressClass: 'bp3-no-stripes bp3-intent-warning',
+				label: 'Load5',
+				value: this.props.node.load5 || 0,
+			},
+			{
+				progressClass: 'bp3-no-stripes bp3-intent-danger',
+				label: 'Load15',
+				value: this.props.node.load15 || 0,
+			},
+			{
+				progressClass: 'bp3-no-stripes bp3-intent-primary',
+				label: 'Memory',
+				value: this.props.node.memory || 0,
+			},
+		];
+		if (this.props.node.hugepages) {
+			resourceBars.push({
+				progressClass: 'bp3-no-stripes bp3-intent-primary',
+				label: 'HugePages',
+				value: this.props.node.hugepages_used || 0,
+				color: '#7207d4',
+			});
+		}
+
 		let externalIfaces: JSX.Element[] = [];
 		for (let iface of (node.external_interfaces || [])) {
 			externalIfaces.push(
@@ -2140,28 +2172,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 								value: this.props.node.requests_min + '/min',
 							},
 						]}
-						bars={[
-							{
-								progressClass: 'bp3-no-stripes bp3-intent-success',
-								label: 'Load1',
-								value: this.props.node.load1,
-							},
-							{
-								progressClass: 'bp3-no-stripes bp3-intent-warning',
-								label: 'Load5',
-								value: this.props.node.load5,
-							},
-							{
-								progressClass: 'bp3-no-stripes bp3-intent-danger',
-								label: 'Load15',
-								value: this.props.node.load15,
-							},
-							{
-								progressClass: 'bp3-no-stripes bp3-intent-primary',
-								label: 'Memory',
-								value: this.props.node.memory,
-							},
-						]}
+						bars={resourceBars}
 					/>
 					<PageSelect
 						hidden={types.indexOf('hypervisor') === -1}
