@@ -228,6 +228,16 @@ export default class Images extends React.Component<{}, State> {
 			filterClass += 'bp3-active';
 		}
 
+		let selectedNames: string[] = [];
+		for (let instId of Object.keys(this.state.selected)) {
+			let inst = ImagesStore.image(instId);
+			if (inst) {
+				selectedNames.push(inst.name || instId);
+			} else {
+				selectedNames.push(instId);
+			}
+		}
+
 		return <Page>
 			<PageHeader>
 				<div className="layout horizontal wrap" style={css.header}>
@@ -266,7 +276,11 @@ export default class Images extends React.Component<{}, State> {
 							label="Delete Selected"
 							className="bp3-intent-danger bp3-icon-delete"
 							progressClassName="bp3-intent-danger"
+							safe={true}
 							style={css.button}
+							confirmMsg="Permanently force delete the selected images"
+							confirmInput={true}
+							items={selectedNames}
 							disabled={!this.selected || this.state.disabled}
 							onConfirm={this.onDelete}
 						/>

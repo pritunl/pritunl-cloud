@@ -447,6 +447,7 @@ export default class Datacenter extends React.Component<Props, State> {
 							dialogClassName="bp3-intent-danger bp3-icon-delete"
 							dialogLabel="Delete Datacenter"
 							confirmMsg="Permanently delete this datacenter"
+							confirmInput={true}
 							disabled={this.state.disabled}
 							onConfirm={this.onDelete}
 						/>

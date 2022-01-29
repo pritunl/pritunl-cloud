@@ -1555,23 +1555,26 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			<div className="layout horizontal wrap">
 				<div style={css.group}>
 					<div
-						className="layout horizontal"
+						className="layout horizontal tab-close"
 						style={css.buttons}
 						onClick={(evt): void => {
 							let target = evt.target as HTMLElement;
 
-							if (target.className.indexOf('open-ignore') !== -1) {
-								return;
+							if (target.className.indexOf('tab-close') !== -1) {
+								this.props.onClose();
 							}
-
-							this.props.onClose();
 						}}
 					>
-						<div className="flex"/>
+						<div className="flex tab-close"/>
 						<ConfirmButton
-							className="bp3-minimal bp3-intent-danger bp3-icon-trash open-ignore"
+							className="bp3-minimal bp3-intent-danger bp3-icon-trash"
+							style={css.button}
+							safe={true}
 							progressClassName="bp3-intent-danger"
-							confirmMsg="Confirm node remove"
+							dialogClassName="bp3-intent-danger bp3-icon-delete"
+							dialogLabel="Delete Node"
+							confirmMsg="Permanently delete this node"
+							confirmInput={true}
 							disabled={active || this.state.disabled}
 							onConfirm={this.onDelete}
 						/>

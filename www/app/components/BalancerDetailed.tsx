@@ -711,26 +711,23 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 			<div className="layout horizontal wrap">
 				<div style={css.group}>
 					<div
-						className="layout horizontal"
+						className="layout horizontal tab-close"
 						style={css.buttons}
 						onClick={(evt): void => {
 							let target = evt.target as HTMLElement;
 
-							if (target.className.indexOf('open-ignore') !== -1) {
-								return;
+							if (target.className.indexOf('tab-close') !== -1) {
+								this.props.onClose();
 							}
-
-							this.props.onClose();
 						}}
 					>
             <div>
               <label
-                className="bp3-control bp3-checkbox open-ignore"
+                className="bp3-control bp3-checkbox bp3-checkbox"
                 style={css.select}
               >
                 <input
                   type="checkbox"
-                  className="open-ignore"
                   checked={this.props.selected}
 									onChange={(evt): void => {
 									}}
@@ -738,18 +735,19 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 										this.props.onSelect(evt.shiftKey);
 									}}
                 />
-                <span className="bp3-control-indicator open-ignore"/>
+                <span className="bp3-control-indicator"/>
               </label>
             </div>
-						<div className="flex"/>
+						<div className="flex bp3-checkbox"/>
 						<ConfirmButton
-							className="bp3-minimal bp3-intent-danger bp3-icon-trash open-ignore"
+							className="bp3-minimal bp3-intent-danger bp3-icon-trash"
 							style={css.button}
 							safe={true}
 							progressClassName="bp3-intent-danger"
 							dialogClassName="bp3-intent-danger bp3-icon-delete"
 							dialogLabel="Delete Balancer"
 							confirmMsg="Permanently delete this balancer"
+							confirmInput={true}
 							disabled={this.state.disabled}
 							onConfirm={this.onDelete}
 						/>
