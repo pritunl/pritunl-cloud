@@ -1940,6 +1940,16 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 							this.set('no_host_address', !instance.no_host_address);
 						}}
 					/>
+					<PageSwitch
+						disabled={this.state.disabled}
+						label="Skip source/destination check"
+						help="Allow network traffic from non-instance addresses."
+						checked={instance.skip_source_dest_check}
+						onToggle={(): void => {
+							this.set('skip_source_dest_check',
+								!instance.skip_source_dest_check);
+						}}
+					/>
 				</div>
 				<div style={css.group}>
 					<PageInfo
