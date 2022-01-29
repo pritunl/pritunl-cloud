@@ -106,6 +106,10 @@ export default class Node extends React.Component<Props, {}> {
 		let memoryStyle: React.CSSProperties = {
 			width: (node.memory || 0) + '%',
 		};
+		let hugepagesStyle: React.CSSProperties = {
+			width: (node.hugepages_used || 0) + '%',
+			backgroundColor: '#7207d4',
+		};
 		let load1Style: React.CSSProperties = {
 			width: (node.load1 || 0) + '%',
 		};
@@ -164,15 +168,23 @@ export default class Node extends React.Component<Props, {}> {
 				</div>
 				<div
 					className="bp3-progress-bar bp3-no-stripes bp3-intent-warning"
-					style={css.barLast}
+					style={css.bar}
 				>
 					<div className="bp3-progress-meter" style={load5Style}/>
 				</div>
 				<div
 					className="bp3-progress-bar bp3-no-stripes bp3-intent-primary"
-					style={css.bar}
+					style={css.barLast}
+					hidden={node.hugepages}
 				>
 					<div className="bp3-progress-meter" style={memoryStyle}/>
+				</div>
+				<div
+					className="bp3-progress-bar bp3-no-stripes"
+					style={css.barLast}
+					hidden={!node.hugepages}
+				>
+					<div className="bp3-progress-meter" style={hugepagesStyle}/>
 				</div>
 			</div>
 		</div>;
