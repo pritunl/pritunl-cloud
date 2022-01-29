@@ -1157,25 +1157,13 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		let oracleSubnetsSelect: JSX.Element[] = [
 			<option key="null" value="">Disabled</option>,
 		];
-		if (instance.node) {
-			let node = NodesStore.node(instance.node);
-
-			if (node.oracle_subnets && node.oracle_subnets.length) {
-				let subnets: Map<string, string> = new Map();
-
-				for (let vpc of (node.available_vpcs || [])) {
-					for (let subnet of (vpc.subnets || [])) {
-						subnets.set(subnet.id, vpc.name + ' - ' + subnet.name);
-					}
-				}
-
-				for (let subnetId of (node.oracle_subnets || [])) {
-					oracleSubnetsSelect.push(
-						<option key={subnetId} value={subnetId}>
-							{subnets.get(subnetId) || subnetId}
-						</option>,
-					);
-				}
+		if (this.props.instance.info.oracle_subnets) {
+			for (let subnet of (this.props.instance.info.oracle_subnets || [])) {
+				oracleSubnetsSelect.push(
+					<option key={subnet.id} value={subnet.id}>
+						{subnet.name}
+					</option>,
+				);
 			}
 		}
 
