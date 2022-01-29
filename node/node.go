@@ -2,6 +2,7 @@ package node
 
 import (
 	"container/list"
+	"fmt"
 	"net"
 	"net/http"
 	"os"
@@ -546,7 +547,7 @@ func (n *Node) Validate(db *database.Database) (
 	instanceDrives := []*drive.Device{}
 	if n.InstanceDrives != nil {
 		for _, device := range n.InstanceDrives {
-			// TODO Filter drive id
+			device.Id = utils.FilterPath(device.Id, 512)
 			instanceDrives = append(instanceDrives, device)
 		}
 	}
