@@ -58,13 +58,14 @@ const css = {
 		position: 'relative',
 		padding: '48px 10px 0 10px',
 		width: '100%',
-		maxWidth: '1062px',
+		maxWidth: '1060px',
 	} as React.CSSProperties,
 	button: {
 		height: '30px',
 	} as React.CSSProperties,
 	controlButton: {
 		marginRight: '10px',
+		marginBottom: '10px',
 	} as React.CSSProperties,
 	buttons: {
 		cursor: 'pointer',
@@ -94,9 +95,6 @@ const css = {
 		minWidth: '280px',
 		margin: '0 10px',
 	} as React.CSSProperties,
-	save: {
-		paddingBottom: '10px',
-	} as React.CSSProperties,
 	label: {
 		width: '100%',
 		maxWidth: '280px',
@@ -125,7 +123,6 @@ const css = {
 		height: '20px',
 	} as React.CSSProperties,
 	vncBox: {
-		paddingBottom: '10px',
 		position: 'relative',
 	} as React.CSSProperties,
 };
@@ -1070,10 +1067,10 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			oraclePublicIps = null;
 		}
 
-		let statusClass = '';
+		let statusClass = 'no-select tab-close';
 		switch (instance.status) {
 			case 'Running':
-				statusClass += 'bp3-text-intent-success';
+				statusClass += ' bp3-text-intent-success';
 				break;
 			case 'Restart Required':
 				statusClass += ' bp3-text-intent-warning';
@@ -1081,7 +1078,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			case 'Stopped':
 			case 'Failed':
 			case 'Destroying':
-				statusClass += 'bp3-text-intent-danger';
+				statusClass += ' bp3-text-intent-danger';
 				break;
 		}
 
@@ -1543,6 +1540,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 
 		let vncStyle = {
 			height: this.state.vncHeight ? this.state.vncHeight + 'px' : '100%',
+			marginBottom: '10px',
 		} as React.CSSProperties;
 
 		return <td
@@ -1943,11 +1941,11 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				</div>
 			</div>
 			<PageSave
-				style={css.save}
 				hidden={!this.state.instance && !this.state.message}
 				message={this.state.message}
 				changed={this.state.changed}
 				disabled={this.state.disabled}
+				wrap={true}
 				light={true}
 				onCancel={(): void => {
 					this.setState({
