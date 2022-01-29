@@ -191,6 +191,7 @@ export default class Storage extends React.Component<Props, State> {
 							dialogClassName="bp3-intent-danger bp3-icon-delete"
 							dialogLabel="Delete Storage"
 							confirmMsg="Permanently delete this storage"
+							confirmInput={true}
 							disabled={this.state.disabled}
 							onConfirm={this.onDelete}
 						/>

@@ -439,6 +439,7 @@ export default class Disks extends React.Component<{}, State> {
 							safe={true}
 							style={css.button}
 							confirmMsg="Permanently delete the selected disks"
+							confirmInput={true}
 							items={selectedNames}
 							disabled={!this.selected || this.state.disabled}
 							onConfirm={this.onDelete}

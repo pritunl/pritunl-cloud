@@ -520,6 +520,7 @@ export default class VpcDetailed extends React.Component<Props, State> {
 							dialogClassName="bp3-intent-danger bp3-icon-delete"
 							dialogLabel="Delete VPC"
 							confirmMsg="Permanently delete this VPC"
+							confirmInput={true}
 							disabled={this.state.disabled}
 							onConfirm={this.onDelete}
 						/>

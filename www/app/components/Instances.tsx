@@ -446,6 +446,7 @@ export default class Instances extends React.Component<{}, State> {
 							safe={true}
 							style={css.button}
 							confirmMsg="Permanently delete the selected instances"
+							confirmInput={true}
 							items={selectedNames}
 							disabled={!this.selected || this.state.disabled}
 							onConfirm={this.onDelete}

@@ -242,6 +242,7 @@ export default class Organization extends React.Component<Props, State> {
 							dialogClassName="bp3-intent-danger bp3-icon-delete"
 							dialogLabel="Delete Organization"
 							confirmMsg="Permanently delete this organization"
+							confirmInput={true}
 							disabled={this.state.disabled}
 							onConfirm={this.onDelete}
 						/>

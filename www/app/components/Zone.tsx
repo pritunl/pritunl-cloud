@@ -173,6 +173,7 @@ export default class Zone extends React.Component<Props, State> {
 							dialogClassName="bp3-intent-danger bp3-icon-delete"
 							dialogLabel="Delete Zone"
 							confirmMsg="Permanently delete this zone"
+							confirmInput={true}
 							disabled={this.state.disabled}
 							onConfirm={this.onDelete}
 						/>
