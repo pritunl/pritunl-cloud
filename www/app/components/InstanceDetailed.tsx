@@ -1474,6 +1474,16 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			},
 		);
 
+		if (this.props.instance.root_enabled) {
+			fields.push(
+				{
+					label: 'Root Password',
+					value: this.props.instance.root_passwd,
+					copy: true,
+				},
+			);
+		}
+
 		if (this.props.instance.vnc) {
 			let vncPort;
 			if (this.props.instance.vnc_display) {
@@ -1850,6 +1860,15 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					>
 						{domainsSelect}
 					</PageSelect>
+					<PageSwitch
+						disabled={this.state.disabled}
+						label="Root enabled"
+						help="Enable root unix account for VNC/Spice access. Random password will be generated."
+						checked={instance.root_enabled}
+						onToggle={(): void => {
+							this.set('root_enabled', !instance.root_enabled);
+						}}
+					/>
 					<PageSwitch
 						disabled={this.state.disabled}
 						label="VNC server"
