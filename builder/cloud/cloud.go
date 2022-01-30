@@ -1,9 +1,12 @@
 package cloud
 
 import (
+	"encoding/json"
 	"os"
 
+	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/builder/prompt"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/sirupsen/logrus"
 )
@@ -34,6 +37,10 @@ gpgcheck=1
 enabled=1
 `
 )
+
+type InstallConfigData struct {
+	MongoUri string `json:"mongo_uri"`
+}
 
 func KvmRepo() (err error) {
 	err = utils.CreateWrite(
@@ -192,6 +199,29 @@ func InstallKvm() (err error) {
 	return
 }
 
+func InstallMongo(mongoUri string) (err error) {
+	confData, err := json.Marshal(&InstallConfigData{
+		MongoUri: mongoUri,
+	})
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "builder: Failed to marshal config"),
+		}
+		return
+	}
+
+	err = utils.Write(
+		"/etc/pritunl-cloud.json",
+		string(confData),
+		0600,
+	)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func Cloud(unstable bool) (err error) {
 	kvmResp, err := prompt.ConfirmDefault(
 		"Enable Pritunl Cloud KVM Repo [Y/n]",
@@ -232,6 +262,21 @@ func Cloud(unstable bool) (err error) {
 		}
 	} else {
 		err = Install()
+		if err != nil {
+			return
+		}
+	}
+
+	mongoUri, err := prompt.InputDefault(
+		"Enter MongoDB URI [mongodb://localhost:27017/pritunl-cloud]",
+		"",
+	)
+	if err != nil {
+		return
+	}
+
+	if mongoUri != "" {
+		err = InstallMongo(mongoUri)
 		if err != nil {
 			return
 		}
