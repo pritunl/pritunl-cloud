@@ -102,3 +102,34 @@ func ConfirmDefault(label string, def bool) (resp bool, err error) {
 
 	return
 }
+
+func InputDefault(label string, def string) (resp string, err error) {
+	if AssumeYes {
+		resp = def
+		return
+	}
+
+	prompt := promptui.Prompt{
+		Label: label,
+		Validate: func(input string) error {
+			return nil
+		},
+	}
+
+	result, err := prompt.Run()
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "prompt: Prompt run error"),
+		}
+		return
+	}
+
+	if result == "" {
+		resp = def
+		return
+	}
+
+	resp = result
+
+	return
+}
