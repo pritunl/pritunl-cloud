@@ -215,6 +215,8 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			{
 				shared: true,
 				wsProtocols: ['binary'],
+				qualityLevel: 2,
+				compressionLevel: 4,
 				credentials: {
 					password: this.props.instance.vnc_password,
 				},
