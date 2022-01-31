@@ -10,6 +10,7 @@ Add instance spice server
 Add instance source destination check
 Add JumpCloud single sign-on
 Add instance root password option
+Improve instance sandboxing
 
 Version 1.2.2184.82 2021-11-16
 ------------------------------
