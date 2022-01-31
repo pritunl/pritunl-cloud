@@ -8,6 +8,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -44,8 +45,16 @@ func GetIsos(isoDir string) (isos []*Iso, err error) {
 
 	for _, item := range isoFiles {
 		filename := item.Name()
+		filenameFilt := utils.FilterPath(filename, 128)
+
+		if filenameFilt != filename {
+			logrus.WithFields(logrus.Fields{
+				"name": filename,
+			}).Error("iso: Invalid ISO filename")
+		}
+
 		iso := &Iso{
-			Name: filename,
+			Name: filenameFilt,
 		}
 		isos = append(isos, iso)
 	}
