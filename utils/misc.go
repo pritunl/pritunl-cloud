@@ -153,6 +153,7 @@ var pathSafeChars = set.NewSet(
 	'_',
 	',',
 	'.',
+	':',
 	'~',
 	'@',
 	'!',
