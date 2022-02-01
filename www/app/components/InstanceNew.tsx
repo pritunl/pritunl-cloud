@@ -25,7 +25,6 @@ import PageNumInput from './PageNumInput';
 import Help from './Help';
 import OrganizationsStore from "../stores/OrganizationsStore";
 import PageTextArea from "./PageTextArea";
-import NodesStore from "../stores/NodesStore";
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -326,7 +325,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 
 		let node: NodeTypes.Node;
 		if (instance.node) {
-			node = NodesStore.node(instance.node);
+			node = NodesZoneStore.node(instance.node);
 		}
 
 		let hasOrganizations = !!this.props.organizations.length;
