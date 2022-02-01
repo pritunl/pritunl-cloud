@@ -91,13 +91,11 @@ func GetAllHypervisors(db *database.Database, query *bson.M) (
 		}
 
 		if !nde.IsHypervisor() {
-			nde = &Node{}
-		} else {
-			nodes = append(nodes, nde)
-			nde = &Node{}
+			continue
 		}
-
 		nde.JsonHypervisor()
+
+		nodes = append(nodes, nde)
 	}
 
 	err = cursor.Err()
