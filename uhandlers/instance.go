@@ -46,6 +46,7 @@ type instanceData struct {
 	Name                string             `json:"name"`
 	Comment             string             `json:"comment"`
 	State               string             `json:"state"`
+	RootEnabled         bool               `json:"root_enabled"`
 	Uefi                bool               `json:"uefi"`
 	SecureBoot          bool               `json:"secure_boot"`
 	DeleteProtection    bool               `json:"delete_protection"`
@@ -59,7 +60,6 @@ type instanceData struct {
 	PciDevices          []*pci.Device      `json:"pci_devices"`
 	DriveDevices        []*drive.Device    `json:"drive_devices"`
 	IscsiDevices        []*iscsi.Device    `json:"iscsi_devices"`
-	RootEnabled         bool               `json:"root_enabled"`
 	Vnc                 bool               `json:"vnc"`
 	Spice               bool               `json:"spice"`
 	Gui                 bool               `json:"gui"`
@@ -364,6 +364,8 @@ func instancePost(c *gin.Context) {
 			Node:                dta.Node,
 			Image:               dta.Image,
 			ImageBacking:        dta.ImageBacking,
+			Uefi:                dta.Uefi,
+			SecureBoot:          dta.SecureBoot,
 			DeleteProtection:    dta.DeleteProtection,
 			SkipSourceDestCheck: dta.SkipSourceDestCheck,
 			Name:                name,
