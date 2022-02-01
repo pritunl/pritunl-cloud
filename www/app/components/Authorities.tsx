@@ -229,6 +229,16 @@ export default class Authorities extends React.Component<{}, State> {
 			filterClass += 'bp3-active';
 		}
 
+		let selectedNames: string[] = [];
+		for (let authrId of Object.keys(this.state.selected)) {
+			let authr = AuthoritiesStore.authority(authrId);
+			if (authr) {
+				selectedNames.push(authr.name || authrId);
+			} else {
+				selectedNames.push(authrId);
+			}
+		}
+
 		return <Page>
 			<PageHeader>
 				<div className="layout horizontal wrap" style={css.header}>
@@ -267,7 +277,11 @@ export default class Authorities extends React.Component<{}, State> {
 							label="Delete Selected"
 							className="bp3-intent-danger bp3-icon-delete"
 							progressClassName="bp3-intent-danger"
+							safe={true}
 							style={css.button}
+							confirmMsg="Permanently delete the selected authorities"
+							confirmInput={true}
+							items={selectedNames}
 							disabled={!this.selected || this.state.disabled}
 							onConfirm={this.onDelete}
 						/>
