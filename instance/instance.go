@@ -380,6 +380,7 @@ func (i *Instance) InitUnixId(db *database.Database) (err error) {
 }
 
 func (i *Instance) GenerateSpicePort() {
+	// Spice 15000 - 19999
 	i.SpicePort = rand.Intn(4999) + 15000
 }
 
@@ -416,6 +417,8 @@ func (i *Instance) InitSpicePort(db *database.Database) (err error) {
 }
 
 func (i *Instance) GenerateVncDisplay() {
+	// VNC 10001 - 14999
+	// VNC WebSocket 20001 - 24999
 	i.VncDisplay = rand.Intn(4998) + 4101
 }
 
