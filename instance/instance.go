@@ -1040,16 +1040,21 @@ func (i *Instance) VncConnect(db *database.Database,
 		return
 	}
 
-	if nde.PublicIps == nil || len(nde.PublicIps) == 0 {
+	vncHost := ""
+	if nde.Id == node.Self.Id {
+		vncHost = "127.0.0.1"
+	} else if nde.PublicIps == nil || len(nde.PublicIps) == 0 {
 		err = &errortypes.NotFoundError{
 			errors.New("instance: Node missing public IP for VNC"),
 		}
 		return
+	} else {
+		vncHost = nde.PublicIps[0]
 	}
 
 	wsUrl := fmt.Sprintf(
 		"ws://%s:%d",
-		nde.PublicIps[0],
+		vncHost,
 		i.VncDisplay+15900,
 	)
 
