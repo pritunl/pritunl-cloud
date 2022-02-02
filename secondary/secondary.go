@@ -355,7 +355,7 @@ func (s *Secondary) DeviceRegisterRequest(db *database.Database,
 		return
 	}
 
-	web, err := node.Self.GetWebauthn(origin)
+	web, err := node.Self.GetWebauthn(origin, true)
 	if err != nil {
 		return
 	}
@@ -416,7 +416,7 @@ func (s *Secondary) DeviceRegisterResponse(db *database.Database,
 		return
 	}
 
-	web, err := node.Self.GetWebauthn(origin)
+	web, err := node.Self.GetWebauthn(origin, true)
 	if err != nil {
 		return
 	}
@@ -477,7 +477,7 @@ func (s *Secondary) DeviceRequest(db *database.Database, origin string) (
 		return
 	}
 
-	web, err := node.Self.GetWebauthn(origin)
+	web, err := node.Self.GetWebauthn(origin, false)
 	if err != nil {
 		return
 	}
@@ -554,7 +554,7 @@ func (s *Secondary) DeviceRespond(db *database.Database, origin string,
 		return
 	}
 
-	web, err := node.Self.GetWebauthn(origin)
+	web, err := node.Self.GetWebauthn(origin, false)
 	if err != nil {
 		return
 	}
