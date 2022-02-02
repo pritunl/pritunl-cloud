@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Fix U2F migration to WebAuthn issues
+
 Version 1.2.2261.49 2022-02-01
 ------------------------------
 
