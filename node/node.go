@@ -347,19 +347,24 @@ func (n *Node) GetOracleAuthProvider() (pv *NodeOracleAuthProvider) {
 	return
 }
 
-func (n *Node) GetWebauthn(origin string) (
+func (n *Node) GetWebauthn(origin string, strict bool) (
 	web *webauthn.WebAuthn, err error) {
 
-	if n.WebauthnDomain == "" {
-		err = &errortypes.ReadError{
-			errors.New("node: Webauthn domain not configured"),
+	webauthnDomain := n.WebauthnDomain
+	if webauthnDomain == "" {
+		if strict {
+			err = &errortypes.ReadError{
+				errors.New("node: Webauthn domain not configured"),
+			}
+			return
+		} else {
+			webauthnDomain = n.UserDomain
 		}
-		return
 	}
 
 	web, err = webauthn.New(&webauthn.Config{
 		RPDisplayName: "Pritunl Cloud",
-		RPID:          n.WebauthnDomain,
+		RPID:          webauthnDomain,
 		RPOrigin:      origin,
 	})
 	if err != nil {
