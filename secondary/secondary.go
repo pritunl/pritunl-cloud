@@ -493,9 +493,11 @@ func (s *Secondary) DeviceRequest(db *database.Database, origin string) (
 	if hasU2f {
 		loginOpts = append(
 			loginOpts,
-			webauthn.WithAssertionExtensions(protocol.AuthenticationExtensions{
-				"appid": settings.Local.AppId,
-			}),
+			webauthn.WithAssertionExtensions(
+				protocol.AuthenticationExtensions{
+					"appid": settings.Local.AppId,
+				},
+			),
 		)
 	}
 
