@@ -279,7 +279,7 @@ export default class Firewalls extends React.Component<{}, State> {
 							progressClassName="bp3-intent-danger"
 							safe={true}
 							style={css.button}
-							confirmMsg="Permanently force delete the selected firewalls"
+							confirmMsg="Permanently delete the selected firewalls"
 							confirmInput={true}
 							items={selectedNames}
 							disabled={!this.selected || this.state.disabled}
