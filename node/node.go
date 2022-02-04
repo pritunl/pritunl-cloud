@@ -1058,7 +1058,7 @@ func (n *Node) sync() {
 		n.Memory = utils.ToFixed(mem.UsedPercent, 2)
 		n.HugePagesUsed = utils.ToFixed(mem.HugePagesUsedPercent, 2)
 		n.MemoryUnits = utils.ToFixed(
-			float64(mem.Total)/float64(1073741824), 2)
+			float64(mem.Total)/float64(1048576), 2)
 	}
 
 	load, err := utils.LoadAverage()
