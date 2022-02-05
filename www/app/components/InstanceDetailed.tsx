@@ -211,12 +211,10 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			this.vncRef.current,
 			'wss://' + location.hostname + (
 				location.port ? ':' + location.port : '') + '/instance/' +
-			this.props.instance.id + '/vnc?csrf_token=' + Csrf.token,
+				this.props.instance.id + '/vnc?csrf_token=' + Csrf.token,
 			{
 				shared: true,
 				wsProtocols: ['binary'],
-				qualityLevel: 2,
-				compressionLevel: 4,
 				credentials: {
 					password: this.props.instance.vnc_password,
 				},
