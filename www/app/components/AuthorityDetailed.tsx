@@ -453,6 +453,7 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
 							dialogLabel="Delete Authority"
 							confirmMsg="Permanently delete this authority"
 							confirmInput={true}
+							items={[authority.name]}
 							disabled={this.state.disabled}
 							onConfirm={this.onDelete}
 						/>
