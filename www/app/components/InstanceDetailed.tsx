@@ -1442,20 +1442,20 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			},
 		];
 
-		if (oraclePrivateIps) {
-			fields.push(
-				{
-					label: 'Oracle Private IPv4',
-					value: oraclePrivateIps,
-					copy: true,
-				},
-			);
-		}
 		if (oraclePublicIps) {
 			fields.push(
 				{
 					label: 'Oracle Public IPv4',
 					value: oraclePublicIps,
+					copy: true,
+				},
+			);
+		}
+		if (oraclePrivateIps) {
+			fields.push(
+				{
+					label: 'Oracle Private IPv4',
+					value: oraclePrivateIps,
 					copy: true,
 				},
 			);
