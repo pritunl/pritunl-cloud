@@ -4,7 +4,7 @@ const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = {
   mode: 'development',
-  devtool: 'inline-source-map',
+  devtool: 'eval-source-map',
   entry: {
     app: {
       import: './app/App.js',
@@ -19,6 +19,15 @@ module.exports = {
     aggregateTimeout: 100,
     ignored: [
       path.resolve(__dirname, 'node_modules'),
+    ],
+  },
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        enforce: 'pre',
+        use: ['source-map-loader'],
+      },
     ],
   },
   plugins: [
