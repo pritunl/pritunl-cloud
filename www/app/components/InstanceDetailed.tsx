@@ -2123,18 +2123,6 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					>
 						Ctrl+Alt+Del
 					</button>
-					<button
-						className="bp3-button bp3-icon-control"
-						hidden={!this.state.vnc}
-						style={css.controlButton}
-						disabled={this.state.disabled}
-						type="button"
-						onClick={(): void => {
-							this.onVncCtrlAltDel();
-						}}
-					>
-						Ctrl+Alt+Del
-					</button>
 				</div>
 				<div
 					ref={this.vncRef}
