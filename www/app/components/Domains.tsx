@@ -272,6 +272,16 @@ export default class Domains extends React.Component<{}, State> {
 			filterClass += 'bp3-active';
 		}
 
+		let selectedNames: string[] = [];
+		for (let domainId of Object.keys(this.state.selected)) {
+			let domain = DomainsStore.domain(domainId);
+			if (domain) {
+				selectedNames.push(domain.name || domainId);
+			} else {
+				selectedNames.push(domainId);
+			}
+		}
+
 		return <Page>
 			<PageHeader>
 				<div className="layout horizontal wrap" style={css.header}>
@@ -336,7 +346,11 @@ export default class Domains extends React.Component<{}, State> {
 							label="Delete Selected"
 							className="bp3-intent-danger bp3-icon-delete"
 							progressClassName="bp3-intent-danger"
+							safe={true}
 							style={css.button}
+							confirmMsg="Permanently delete the selected domains"
+							confirmInput={true}
+							items={selectedNames}
 							disabled={!this.selected || this.state.disabled}
 							onConfirm={this.onDelete}
 						/>
