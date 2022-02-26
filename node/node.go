@@ -567,8 +567,6 @@ func (n *Node) Validate(db *database.Database) (
 
 	switch n.NetworkMode {
 	case Static:
-		n.ExternalInterfaces = []string{}
-
 		for _, blckAttch := range n.Blocks {
 			blck, e := block.Get(db, blckAttch.Block)
 			if e != nil {
@@ -610,8 +608,6 @@ func (n *Node) Validate(db *database.Database) (
 
 	switch n.NetworkMode6 {
 	case Static:
-		n.ExternalInterfaces6 = []string{}
-
 		for _, blckAttch := range n.Blocks6 {
 			blck, e := block.Get(db, blckAttch.Block)
 			if e != nil {
@@ -651,7 +647,9 @@ func (n *Node) Validate(db *database.Database) (
 		return
 	}
 
-	if n.NetworkMode == Disabled && n.NetworkMode6 == Disabled {
+	if n.NetworkMode == Static && n.NetworkMode6 == Static ||
+		n.NetworkMode == Disabled && n.NetworkMode6 == Disabled {
+
 		n.ExternalInterfaces = []string{}
 	}
 
