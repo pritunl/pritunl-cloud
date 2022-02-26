@@ -4,6 +4,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -29,7 +30,7 @@ func GetInterfaces() (ifaces []string, err error) {
 	for _, iface := range allIfaces {
 		if len(iface) == 14 || iface == "lo" ||
 			strings.Contains(iface, "br") ||
-			iface == "pritunlhost0" ||
+			iface == settings.Hypervisor.HostNetworkName ||
 			iface == "" {
 
 			continue
