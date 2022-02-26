@@ -85,7 +85,7 @@ func (n *NetConf) Address(db *database.Database) (err error) {
 			n.PhysicalExternalIface6 = interfaces.GetExternal(
 				n.SystemExternalIface6)
 		}
-	} else if n.NetworkMode == node.Static {
+	} else if n.NetworkMode6 == node.Static {
 		blck, staticAddr, prefix, iface, e := node.Self.GetStaticAddr6(
 			db, n.Virt.Id, vc.VpcId)
 		if e != nil {
