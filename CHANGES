@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Fix issues with static IPv6 configuration
+
 Version 1.2.2262.39 2022-02-02
 ------------------------------
 
