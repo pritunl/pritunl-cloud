@@ -277,6 +277,8 @@ func Connect() (err error) {
 	}
 
 	opts := options.Client().ApplyURI(config.Config.MongoUri)
+	opts.SetRetryReads(true)
+	opts.SetRetryWrites(true)
 	opts.WriteConcern = writeconcern.New(
 		writeconcern.WMajority(),
 		writeconcern.WTimeout(15*time.Second),
