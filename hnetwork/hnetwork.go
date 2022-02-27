@@ -1,20 +1,158 @@
 package hnetwork
 
 import (
-	"github.com/sirupsen/logrus"
+	"strings"
+
+	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/iproute"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/sirupsen/logrus"
 )
 
 var (
 	initialized = false
-	curState    = ""
+	curGateway  = ""
+	curRule     *IptablesRule
 )
 
+type IptablesRule struct {
+	Source string
+	Output string
+}
+
+func (h *IptablesRule) Add() (err error) {
+	_, err = utils.ExecCombinedOutputLogged(
+		[]string{
+			"matching rule exist",
+		},
+		"iptables",
+		"-t", "nat",
+		"-A", "POSTROUTING",
+		"-s", h.Source,
+		"-o", h.Output,
+		"-m", "comment",
+		"--comment", "pritunl_cloud_host_nat",
+		"-j", "MASQUERADE",
+	)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func (h *IptablesRule) Remove() (err error) {
+	if h.Source == "" {
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{
+				"matching rule exist",
+				"match by that name",
+			},
+			"iptables",
+			"-t", "nat",
+			"-D", "POSTROUTING",
+			"-o", h.Output,
+			"-m", "comment",
+			"--comment", "pritunl_cloud_host_nat",
+			"-j", "MASQUERADE",
+		)
+	} else {
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{
+				"matching rule exist",
+				"match by that name",
+			},
+			"iptables",
+			"-t", "nat",
+			"-D", "POSTROUTING",
+			"-s", h.Source,
+			"-o", h.Output,
+			"-m", "comment",
+			"--comment", "pritunl_cloud_host_nat",
+			"-j", "MASQUERADE",
+		)
+	}
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func loadIptablesNat() (rules []*IptablesRule, err error) {
+	rules = []*IptablesRule{}
+
+	output, err := utils.ExecOutput("", "iptables", "-t", "nat", "-S")
+	if err != nil {
+		return
+	}
+
+	for _, line := range strings.Split(output, "\n") {
+		if !strings.Contains(line, "POSTROUTING") ||
+			!strings.Contains(line, "MASQUERADE") ||
+			!strings.Contains(line, "pritunl_cloud_host_nat") {
+
+			continue
+		}
+
+		cmd := strings.Fields(line)
+		cmdLen := len(cmd)
+		if cmdLen < 3 {
+			logrus.WithFields(logrus.Fields{
+				"iptables_rule": line,
+			}).Error("hnetwork: Invalid iptables state")
+
+			err = &errortypes.ParseError{
+				errors.New("hnetwork: Invalid iptables state"),
+			}
+			return
+		}
+
+		rule := &IptablesRule{}
+
+		for i, item := range cmd {
+			if item == "-s" {
+				if len(cmd) < i+2 {
+					logrus.WithFields(logrus.Fields{
+						"iptables_rule": line,
+					}).Error("hnetwork: Invalid iptables host nat source")
+
+					err = &errortypes.ParseError{
+						errors.New(
+							"hnetwork: Invalid iptables host nat source"),
+					}
+					return
+				}
+				rule.Source = cmd[i+1]
+			}
+
+			if item == "-o" {
+				if len(cmd) < i+2 {
+					logrus.WithFields(logrus.Fields{
+						"iptables_rule": line,
+					}).Error("hnetwork: Invalid iptables host nat output")
+
+					err = &errortypes.ParseError{
+						errors.New(
+							"hnetwork: Invalid iptables host nat output"),
+					}
+					return
+				}
+				rule.Output = cmd[i+1]
+			}
+		}
+
+		rules = append(rules, rule)
+	}
+
+	return
+}
+
 func removeNetwork(stat *state.State) (err error) {
-	if curState != "" || stat.HasInterfaces(
+	if curGateway != "" || stat.HasInterfaces(
 		settings.Hypervisor.HostNetworkName) {
 
 		_, err = utils.ExecCombinedOutputLogged(
@@ -28,7 +166,7 @@ func removeNetwork(stat *state.State) (err error) {
 
 		_ = iproute.BridgeDelete("", settings.Hypervisor.HostNetworkName)
 
-		curState = ""
+		curGateway = ""
 	}
 
 	return
@@ -42,12 +180,29 @@ func ApplyState(stat *state.State) (err error) {
 			return
 		}
 
+		rules, e := loadIptablesNat()
+		if e != nil {
+			err = e
+			return
+		}
+
+		if len(rules) > 1 {
+			for _, rule := range rules {
+				err = rule.Remove()
+				if err != nil {
+					return
+				}
+			}
+		} else if len(rules) == 1 {
+			curRule = rules[0]
+		}
+
 		initialized = true
-		curState = addr
+		curGateway = addr
 	}
 
 	hostBlock := stat.NodeHostBlock()
-	if stat.NodeHostBlock() != nil {
+	if hostBlock != nil {
 		gatewayCidr := hostBlock.GetGatewayCidr()
 		if gatewayCidr == "" {
 			logrus.WithFields(logrus.Fields{
@@ -62,7 +217,7 @@ func ApplyState(stat *state.State) (err error) {
 			return
 		}
 
-		if curState != gatewayCidr {
+		if curGateway != gatewayCidr {
 			logrus.WithFields(logrus.Fields{
 				"host_block":         hostBlock.Id.Hex(),
 				"host_block_gateway": gatewayCidr,
@@ -78,12 +233,84 @@ func ApplyState(stat *state.State) (err error) {
 				return
 			}
 
-			curState = gatewayCidr
+			curGateway = gatewayCidr
+		}
+
+		if stat.Node().HostNat {
+			hostNet, e := hostBlock.GetNetwork()
+			if e != nil {
+				logrus.WithFields(logrus.Fields{
+					"host_block": hostBlock.Id.Hex(),
+					"error":      e,
+				}).Error("hnetwork: Host nat block network invalid")
+			} else {
+				newRule := &IptablesRule{
+					Source: hostNet.String(),
+					Output: stat.Node().DefaultInterface,
+				}
+
+				if curRule == nil || curRule.Source != newRule.Source ||
+					curRule.Output != newRule.Output {
+
+					logrus.WithFields(logrus.Fields{
+						"host_block":  hostBlock.Id.Hex(),
+						"host_source": newRule.Source,
+						"host_output": newRule.Output,
+					}).Info("hnetwork: Updating host network nat")
+
+					if curRule != nil {
+						err = curRule.Remove()
+						if err != nil {
+							return
+						}
+						curRule = nil
+					}
+
+					err = newRule.Add()
+					if err != nil {
+						logrus.WithFields(logrus.Fields{
+							"host_block":  hostBlock.Id.Hex(),
+							"host_source": newRule.Source,
+							"host_output": newRule.Output,
+							"error":       err,
+						}).Error("hnetwork: Host nat add rule failed")
+						err = nil
+					} else {
+						curRule = newRule
+					}
+				}
+			}
+		} else if curRule != nil {
+			logrus.WithFields(logrus.Fields{
+				"host_block":  hostBlock.Id.Hex(),
+				"host_source": curRule.Source,
+				"host_output": curRule.Output,
+			}).Info("hnetwork: Updating host network nat")
+
+			err = curRule.Remove()
+			if err != nil {
+				return
+			}
+			curRule = nil
 		}
 	} else {
 		err = removeNetwork(stat)
 		if err != nil {
 			return
+		}
+
+		if curRule != nil {
+			logrus.WithFields(logrus.Fields{
+				"host_block":  hostBlock.Id.Hex(),
+				"host_source": curRule.Source,
+				"host_output": curRule.Output,
+			}).Info("hnetwork: Updating host network nat")
+
+			err = curRule.Remove()
+			if err != nil {
+				return
+			}
+			curRule = nil
 		}
 	}
 
