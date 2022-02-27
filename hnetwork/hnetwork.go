@@ -24,19 +24,35 @@ type IptablesRule struct {
 }
 
 func (h *IptablesRule) Add() (err error) {
-	_, err = utils.ExecCombinedOutputLogged(
-		[]string{
-			"matching rule exist",
-		},
-		"iptables",
+	args := []string{
 		"-t", "nat",
 		"-A", "POSTROUTING",
-		"-s", h.Source,
-		"-o", h.Output,
+	}
+
+	if h.Source != "" {
+		args = append(args, "-s", h.Source)
+	}
+	if h.Output != "" {
+		args = append(args, "-o", h.Output)
+	}
+
+	args = append(args,
 		"-m", "comment",
 		"--comment", "pritunl_cloud_host_nat",
 		"-j", "MASQUERADE",
 	)
+
+	_, err = utils.ExecCombinedOutputLogged(
+		[]string{
+			"matching rule exist",
+			"match by that name",
+		},
+		"iptables",
+		args...,
+	)
+	if err != nil {
+		return
+	}
 	if err != nil {
 		return
 	}
@@ -45,36 +61,32 @@ func (h *IptablesRule) Add() (err error) {
 }
 
 func (h *IptablesRule) Remove() (err error) {
-	if h.Source == "" {
-		_, err = utils.ExecCombinedOutputLogged(
-			[]string{
-				"matching rule exist",
-				"match by that name",
-			},
-			"iptables",
-			"-t", "nat",
-			"-D", "POSTROUTING",
-			"-o", h.Output,
-			"-m", "comment",
-			"--comment", "pritunl_cloud_host_nat",
-			"-j", "MASQUERADE",
-		)
-	} else {
-		_, err = utils.ExecCombinedOutputLogged(
-			[]string{
-				"matching rule exist",
-				"match by that name",
-			},
-			"iptables",
-			"-t", "nat",
-			"-D", "POSTROUTING",
-			"-s", h.Source,
-			"-o", h.Output,
-			"-m", "comment",
-			"--comment", "pritunl_cloud_host_nat",
-			"-j", "MASQUERADE",
-		)
+	args := []string{
+		"-t", "nat",
+		"-D", "POSTROUTING",
 	}
+
+	if h.Source != "" {
+		args = append(args, "-s", h.Source)
+	}
+	if h.Output != "" {
+		args = append(args, "-o", h.Output)
+	}
+
+	args = append(args,
+		"-m", "comment",
+		"--comment", "pritunl_cloud_host_nat",
+		"-j", "MASQUERADE",
+	)
+
+	_, err = utils.ExecCombinedOutputLogged(
+		[]string{
+			"matching rule exist",
+			"match by that name",
+		},
+		"iptables",
+		args...,
+	)
 	if err != nil {
 		return
 	}
@@ -301,7 +313,6 @@ func ApplyState(stat *state.State) (err error) {
 
 		if curRule != nil {
 			logrus.WithFields(logrus.Fields{
-				"host_block":  hostBlock.Id.Hex(),
 				"host_source": curRule.Source,
 				"host_output": curRule.Output,
 			}).Info("hnetwork: Updating host network nat")
