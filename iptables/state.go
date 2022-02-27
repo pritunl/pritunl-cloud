@@ -1,7 +1,6 @@
 package iptables
 
 import (
-	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -10,10 +9,7 @@ import (
 )
 
 type State struct {
-	HostNat          bool
-	HostNatExcludes  set.Set
-	HostNatInterface string
-	Interfaces       map[string]*Rules
+	Interfaces map[string]*Rules
 }
 
 func LoadState(nodeSelf *node.Node, instances []*instance.Instance,
@@ -37,22 +33,7 @@ func LoadState(nodeSelf *node.Node, instances []*instance.Instance,
 		state.Interfaces["0-host"] = generate("0", "host", nodeFirewall)
 	}
 
-	hostNat := false
-	hostNetwork := false
-	natExcludesSet := set.NewSet()
-	if !nodeSelf.HostBlock.IsZero() && nodeSelf.DefaultInterface != "" {
-		hostNetwork = true
-		hostNat = nodeSelf.HostNat
-		natExcludes := nodeSelf.HostNatExcludes
-		if hostNat && natExcludes != nil {
-			for _, natExclude := range natExcludes {
-				natExcludesSet.Add(natExclude)
-			}
-		}
-		state.HostNatInterface = nodeSelf.DefaultInterface
-	}
-	state.HostNat = hostNat
-	state.HostNatExcludes = natExcludesSet
+	hostNetwork := !nodeSelf.HostBlock.IsZero()
 
 	for _, inst := range instances {
 		if !inst.IsActive() {
