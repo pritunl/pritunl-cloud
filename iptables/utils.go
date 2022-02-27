@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/firewall"
@@ -96,76 +95,6 @@ func getIptablesCmd(ipv6 bool) string {
 	} else {
 		return "iptables"
 	}
-}
-
-func loadIptablesNat(state *State) (err error) {
-	Lock()
-	defer Unlock()
-
-	hostNat := false
-	hostNatInterface := ""
-	hostNatExcludes := set.NewSet()
-	iptablesCmd := getIptablesCmd(false)
-
-	output, err := utils.ExecOutput("", iptablesCmd, "-t", "nat", "-S")
-	if err != nil {
-		return
-	}
-
-	for _, line := range strings.Split(output, "\n") {
-		if !strings.Contains(line, "POSTROUTING") ||
-			!strings.Contains(line, "pritunl_cloud_host_nat") {
-
-			continue
-		}
-
-		cmd := strings.Fields(line)
-		cmdLen := len(cmd)
-		if cmdLen < 3 {
-			logrus.WithFields(logrus.Fields{
-				"iptables_rule": line,
-			}).Error("iptables: Invalid iptables state")
-
-			err = &errortypes.ParseError{
-				errors.New("iptables: Invalid iptables state"),
-			}
-			return
-		}
-
-		switch cmd[cmdLen-1] {
-		case "ACCEPT":
-			found := false
-			for _, field := range cmd {
-				if found {
-					hostNatExcludes.Add(field)
-					break
-				} else if field == "-d" {
-					found = true
-				}
-			}
-			break
-		case "MASQUERADE":
-			found := false
-			for _, field := range cmd {
-				if found {
-					hostNat = true
-					hostNatInterface = field
-					break
-				} else if field == "-o" {
-					found = true
-				}
-			}
-			break
-		default:
-			// TODO Remove invalid rule
-		}
-	}
-
-	state.HostNat = hostNat
-	state.HostNatInterface = hostNatInterface
-	state.HostNatExcludes = hostNatExcludes
-
-	return
 }
 
 func loadIptables(namespace string, state *State, ipv6 bool) (err error) {
@@ -708,11 +637,6 @@ func Init(namespaces []string, instances []*instance.Instance,
 
 	state := &State{
 		Interfaces: map[string]*Rules{},
-	}
-
-	err = loadIptablesNat(state)
-	if err != nil {
-		return
 	}
 
 	err = loadIptables("0", state, false)
