@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Improve host networking
+
 Version 1.2.2286.62 2022-02-26
 ------------------------------
 
