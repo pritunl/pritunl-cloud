@@ -85,7 +85,6 @@ type Node struct {
 	InstanceDrives       []*drive.Device      `bson:"instance_drives" json:"instance_drives"`
 	HostBlock            primitive.ObjectID   `bson:"host_block,omitempty" json:"host_block"`
 	HostNat              bool                 `bson:"host_nat" json:"host_nat"`
-	HostNatExcludes      []string             `bson:"host_nat_excludes" json:"host_nat_excludes"`
 	JumboFrames          bool                 `bson:"jumbo_frames" json:"jumbo_frames"`
 	Iscsi                bool                 `bson:"iscsi" json:"iscsi"`
 	LocalIsos            []*iso.Iso           `bson:"local_isos" json:"local_isos"`
@@ -177,7 +176,6 @@ func (n *Node) Copy() *Node {
 		InstanceDrives:       n.InstanceDrives,
 		HostBlock:            n.HostBlock,
 		HostNat:              n.HostNat,
-		HostNatExcludes:      n.HostNatExcludes,
 		JumboFrames:          n.JumboFrames,
 		Iscsi:                n.Iscsi,
 		LocalIsos:            n.LocalIsos,
@@ -653,10 +651,6 @@ func (n *Node) Validate(db *database.Database) (
 		n.ExternalInterfaces = []string{}
 	}
 
-	if n.HostNatExcludes == nil {
-		n.HostNatExcludes = []string{}
-	}
-
 	if !n.HostBlock.IsZero() {
 		blck, e := block.Get(db, n.HostBlock)
 		if e != nil {
@@ -677,24 +671,8 @@ func (n *Node) Validate(db *database.Database) (
 		}
 	}
 
-	if !n.HostBlock.IsZero() && n.HostNat {
-		hostNatExcludes := []string{}
-		for _, hostNat := range n.HostNatExcludes {
-			_, hostNatNet, e := net.ParseCIDR(hostNat)
-			if e != nil {
-				errData = &errortypes.ErrorData{
-					Error:   "invalid_host_nat_exclude",
-					Message: "Host NAT network exclude is invalid",
-				}
-				return
-			}
-
-			hostNatExcludes = append(hostNatExcludes, hostNatNet.String())
-		}
-		n.HostNatExcludes = hostNatExcludes
-	} else {
+	if n.HostBlock.IsZero() && n.HostNat {
 		n.HostNat = false
-		n.HostNatExcludes = []string{}
 	}
 
 	if n.OracleHostRoute || n.NetworkMode == Oracle ||
@@ -1016,7 +994,6 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.InstanceDrives = nde.InstanceDrives
 	n.HostBlock = nde.HostBlock
 	n.HostNat = nde.HostNat
-	n.HostNatExcludes = nde.HostNatExcludes
 	n.JumboFrames = nde.JumboFrames
 	n.Iscsi = nde.Iscsi
 	n.UsbPassthrough = nde.UsbPassthrough
