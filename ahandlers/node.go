@@ -318,6 +318,7 @@ func nodeInitPost(c *gin.Context) {
 
 	zne, err := zone.Get(db, nde.Zone)
 	if err != nil {
+		utils.AbortWithError(c, 500, err)
 		return
 	}
 
