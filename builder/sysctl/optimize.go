@@ -1,6 +1,7 @@
 package sysctl
 
 import (
+	"github.com/pritunl/pritunl-cloud/builder/constants"
 	"github.com/pritunl/pritunl-cloud/builder/prompt"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/sirupsen/logrus"
@@ -275,6 +276,10 @@ func RaidSpeedLimit() (err error) {
 }
 
 func Selinux() (err error) {
+	if constants.Target != constants.Rpm {
+		return
+	}
+
 	resp, err := prompt.ConfirmDefault(
 		"Disable SELinux (required for Pritunl Cloud) [Y/n]",
 		true,
@@ -355,6 +360,11 @@ func Optimize() (err error) {
 	}
 
 	err = DirtyRatio()
+	if err != nil {
+		return
+	}
+
+	err = SchedulerMigration()
 	if err != nil {
 		return
 	}
