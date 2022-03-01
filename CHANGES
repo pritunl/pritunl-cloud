@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Improve node init support
+
 Version 1.2.2287.69 2022-02-27
 ------------------------------
 
