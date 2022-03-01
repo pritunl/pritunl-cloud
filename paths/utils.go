@@ -27,6 +27,7 @@ var (
 	ovmfSecureVarsPaths = []string{
 		"/usr/share/edk2/ovmf/OVMF_VARS.secboot.fd",
 		"/usr/share/OVMF/OVMF_VARS.secboot.fd",
+		"/usr/share/OVMF/OVMF_VARS.fd",
 	}
 )
 
