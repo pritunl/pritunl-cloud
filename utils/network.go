@@ -195,36 +195,43 @@ func GetInterfacesSet() (ifaces []string, ifacesSet set.Set, err error) {
 		ifacesSet.Add(name)
 	}
 
-	items, err = ioutil.ReadDir("/etc/sysconfig/network-scripts")
+	exists, err := ExistsDir("/etc/sysconfig/network-scripts")
 	if err != nil {
-		err = &errortypes.ReadError{
-			errors.Wrap(err, "utils: Failed to read network scripts"),
-		}
 		return
 	}
 
-	for _, item := range items {
-		name := item.Name()
-
-		if !strings.HasPrefix(name, "ifcfg-") ||
-			!strings.Contains(name, ":") {
-
-			continue
+	if exists {
+		items, err = ioutil.ReadDir("/etc/sysconfig/network-scripts")
+		if err != nil {
+			err = &errortypes.ReadError{
+				errors.Wrap(err, "utils: Failed to read network scripts"),
+			}
+			return
 		}
 
-		name = name[6:]
-		names := strings.Split(name, ":")
-		if len(names) != 2 {
-			continue
-		}
+		for _, item := range items {
+			name := item.Name()
 
-		if name == "" {
-			continue
-		}
+			if !strings.HasPrefix(name, "ifcfg-") ||
+				!strings.Contains(name, ":") {
 
-		if ifacesSet.Contains(names[0]) && !ifacesSet.Contains(name) {
-			ifaces = append(ifaces, name)
-			ifacesSet.Add(name)
+				continue
+			}
+
+			name = name[6:]
+			names := strings.Split(name, ":")
+			if len(names) != 2 {
+				continue
+			}
+
+			if name == "" {
+				continue
+			}
+
+			if ifacesSet.Contains(names[0]) && !ifacesSet.Contains(name) {
+				ifaces = append(ifaces, name)
+				ifacesSet.Add(name)
+			}
 		}
 	}
 
