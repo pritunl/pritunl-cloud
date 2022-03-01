@@ -93,6 +93,7 @@ func Remove(db *database.Database, blockId primitive.ObjectID) (err error) {
 	coll := db.Blocks()
 	ipColl := db.BlocksIp()
 	instColl := db.Instances()
+	nodeColl := db.Nodes()
 
 	cursor, err := ipColl.Find(db, &bson.M{
 		"block": blockId,
@@ -131,6 +132,16 @@ func Remove(db *database.Database, blockId primitive.ObjectID) (err error) {
 		default:
 			return
 		}
+	}
+
+	_, err = nodeColl.UpdateMany(db, &bson.M{
+		"host_block": blockId,
+	}, &bson.M{"$set": &bson.M{
+		"host_block": primitive.NilObjectID,
+	}})
+	if err != nil {
+		err = database.ParseError(err)
+		return
 	}
 
 	_, err = coll.DeleteOne(db, &bson.M{
