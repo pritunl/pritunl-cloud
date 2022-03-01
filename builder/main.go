@@ -4,10 +4,10 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/pritunl/pritunl-cloud/builder/prompt"
-
 	"github.com/pritunl/pritunl-cloud/builder/cloud"
+	"github.com/pritunl/pritunl-cloud/builder/constants"
 	"github.com/pritunl/pritunl-cloud/builder/mongo"
+	"github.com/pritunl/pritunl-cloud/builder/prompt"
 	"github.com/pritunl/pritunl-cloud/builder/start"
 	"github.com/pritunl/pritunl-cloud/builder/sysctl"
 	"github.com/pritunl/pritunl-cloud/builder/systemctl"
@@ -66,7 +66,12 @@ func main() {
 
 	fmt.Println(intro)
 
-	err := sysctl.Sysctl()
+	err := constants.Init()
+	if err != nil {
+		return
+	}
+
+	err = sysctl.Sysctl()
 	if err != nil {
 		panic(err)
 	}
