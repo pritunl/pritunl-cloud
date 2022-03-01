@@ -47,7 +47,6 @@ interface State {
 	addOracleSubnet: string;
 	addCert: string;
 	addNetworkRole: string;
-	addHostNatExclude: string,
 	addDrive: string;
 	forwardedChecked: boolean;
 	forwardedProtoChecked: boolean;
@@ -136,7 +135,6 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			addOracleSubnet: null,
 			addCert: null,
 			addNetworkRole: null,
-			addHostNatExclude: null,
 			addDrive: null,
 			forwardedChecked: false,
 			forwardedProtoChecked: false,
@@ -991,77 +989,6 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		});
 	}
 
-	onAddHostNatExclude = (): void => {
-		let node: NodeTypes.Node;
-
-		if (!this.state.addHostNatExclude) {
-			return;
-		}
-
-		if (this.state.changed) {
-			node = {
-				...this.state.node,
-			};
-		} else {
-			node = {
-				...this.props.node,
-			};
-		}
-
-		let hostNatExcludes = [
-			...(node.host_nat_excludes || []),
-		];
-
-		let addHostNatExclude = this.state.addHostNatExclude.trim();
-		if (hostNatExcludes.indexOf(addHostNatExclude) === -1) {
-			hostNatExcludes.push(addHostNatExclude);
-		}
-
-		hostNatExcludes.sort();
-		node.host_nat_excludes = hostNatExcludes;
-
-		this.setState({
-			...this.state,
-			changed: true,
-			message: '',
-			addHostNatExclude: '',
-			node: node,
-		});
-	}
-
-	onRemoveHostNatExclude = (exclude: string): void => {
-		let node: NodeTypes.Node;
-
-		if (this.state.changed) {
-			node = {
-				...this.state.node,
-			};
-		} else {
-			node = {
-				...this.props.node,
-			};
-		}
-
-		let hostNatExcludes = [
-			...(node.host_nat_excludes || []),
-		];
-
-		let i = hostNatExcludes.indexOf(exclude);
-		if (i === -1) {
-			return;
-		}
-
-		hostNatExcludes.splice(i, 1);
-		node.host_nat_excludes = hostNatExcludes;
-
-		this.setState({
-			...this.state,
-			changed: true,
-			message: '',
-			node: node,
-		});
-	}
-
 	onAddDrive = (): void => {
 		let node: NodeTypes.Node;
 		let availabeDrives = this.props.node.available_drives || [];
@@ -1305,26 +1232,6 @@ export default class NodeDetailed extends React.Component<Props, State> {
 				<option key={blck.id} value={blck.id}>
 					{blck.name}
 				</option>,
-			);
-		}
-
-		let hostNatExcludes: JSX.Element[] = [];
-		for (let hostNatExclude of (node.host_nat_excludes || [])) {
-			hostNatExcludes.push(
-				<div
-					className="bp3-tag bp3-tag-removable bp3-intent-primary"
-					style={css.item}
-					key={hostNatExclude}
-				>
-					{hostNatExclude}
-					<button
-						className="bp3-tag-remove"
-						disabled={this.state.disabled}
-						onMouseUp={(): void => {
-							this.onRemoveHostNatExclude(hostNatExclude);
-						}}
-					/>
-				</div>,
 			);
 		}
 
@@ -1935,35 +1842,6 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						onToggle={(): void => {
 							this.set('host_nat', !node.host_nat);
 						}}
-					/>
-					<label
-						className="bp3-label"
-						hidden={!node.host_block || !node.host_nat}
-					>
-						Host Network NAT Excludes
-						<Help
-							title="Host network NAT excludes"
-							content="Networks that will be excluded from host network NAT. These networks will still be routable without NAT."
-						/>
-						<div>
-							{hostNatExcludes}
-						</div>
-					</label>
-					<PageInputButton
-						disabled={this.state.disabled}
-						hidden={!node.host_block || !node.host_nat}
-						buttonClass="bp3-intent-success bp3-icon-add"
-						label="Add"
-						type="text"
-						placeholder="Add exclude"
-						value={this.state.addHostNatExclude}
-						onChange={(val): void => {
-							this.setState({
-								...this.state,
-								addHostNatExclude: val,
-							});
-						}}
-						onSubmit={this.onAddHostNatExclude}
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
