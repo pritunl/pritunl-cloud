@@ -45,7 +45,6 @@ func ExecInput(dir, input, name string, arg ...string) (err error) {
 		}
 		return
 	}
-	defer stdin.Close()
 
 	if dir != "" {
 		cmd.Dir = dir
@@ -63,6 +62,15 @@ func ExecInput(dir, input, name string, arg ...string) (err error) {
 	if err != nil {
 		err = &errortypes.RequestError{
 			errors.Wrapf(err, "utils: Failed to write stdin in exec '%s'",
+				name),
+		}
+		return
+	}
+
+	err = stdin.Close()
+	if err != nil {
+		err = &errortypes.ExecError{
+			errors.Wrapf(err, "utils: Failed to close stdin in exec '%s'",
 				name),
 		}
 		return
