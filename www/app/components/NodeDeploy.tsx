@@ -27,10 +27,16 @@ interface Props {
 interface State {
 	disabled: boolean;
 	message: string;
+	provider: string;
 	datacenter: string;
 	zone: string;
 	internalIface: string;
+	externalIface: string;
 	network: string;
+	gateway: string;
+	netmask: string;
+	subnets: string[];
+	addSubnet: string,
 	popover: boolean;
 }
 
@@ -72,10 +78,16 @@ export default class NodeDeploy extends React.Component<Props, State> {
 		this.state = {
 			disabled: false,
 			message: '',
+			provider: '',
 			datacenter: '',
 			zone: '',
 			internalIface: '',
+			externalIface: '',
 			network: '',
+			gateway: '',
+			netmask: '',
+			subnets: [],
+			addSubnet: '',
 			popover: false,
 		};
 	}
@@ -114,19 +126,27 @@ export default class NodeDeploy extends React.Component<Props, State> {
 			}
 		}
 
+		let externalIface = this.state.externalIface;
+		if (!externalIface) {
+			let ifaces = this.ifaces();
+			if (ifaces.length) {
+				externalIface = ifaces[0];
+			}
+		}
+
 		let data: NodeTypes.NodeInit = {
-			zone: this.state.zone,
+			provider: this.state.provider,
+			zone: this.props.node.zone ? this.props.node.zone :
+				this.state.zone,
 			internal_interface: internalIface,
-			external_interface: internalIface,
+			external_interface: externalIface,
 			host_network: this.state.network,
+			block_gateway: this.state.gateway,
+			block_netmask: this.state.netmask,
+			block_subnets: this.state.subnets,
 		};
 
 		NodeActions.init(this.props.node.id, data).then((): void => {
-			// this.setState({
-			// 	...this.state,
-			// 	message: 'Your changes have been saved',
-			// 	disabled: false,
-			// });
 			this.setState({
 				...this.state,
 				popover: !this.state.popover,
@@ -137,6 +157,47 @@ export default class NodeDeploy extends React.Component<Props, State> {
 				message: '',
 				disabled: false,
 			});
+		});
+	}
+
+	onAddSubnet = (): void => {
+		if (!this.state.addSubnet) {
+			return;
+		}
+
+		let subnets = [
+			...this.state.subnets,
+		];
+
+		let addSubnet = this.state.addSubnet.trim();
+		if (subnets.indexOf(addSubnet) === -1) {
+			subnets.push(addSubnet);
+		}
+
+		subnets.sort();
+
+		this.setState({
+			...this.state,
+			subnets: subnets,
+			addSubnet: '',
+		});
+	}
+
+	onRemoveSubnet = (subnet: string): void => {
+		let subnets = [
+			...(this.state.subnets || []),
+		];
+
+		let i = subnets.indexOf(subnet);
+		if (i === -1) {
+			return;
+		}
+
+		subnets.splice(i, 1);
+
+		this.setState({
+			...this.state,
+			subnets: subnets,
 		});
 	}
 
@@ -206,12 +267,32 @@ export default class NodeDeploy extends React.Component<Props, State> {
 			}
 
 			let availableIfaces = this.ifaces();
-			let internalIfacesSelect: JSX.Element[] = [];
+			let ifacesSelect: JSX.Element[] = [];
 			for (let iface of (availableIfaces || [])) {
-				internalIfacesSelect.push(
+				ifacesSelect.push(
 					<option key={iface} value={iface}>
 						{iface}
 					</option>,
+				);
+			}
+
+			let subnets: JSX.Element[] = [];
+			for (let subnet of (this.state.subnets || [])) {
+				subnets.push(
+					<div
+						className="bp3-tag bp3-tag-removable bp3-intent-primary"
+						style={css.item}
+						key={subnet}
+					>
+						{subnet}
+						<button
+							className="bp3-tag-remove"
+							disabled={this.state.disabled}
+							onMouseUp={(): void => {
+								this.onRemoveSubnet(subnet);
+							}}
+						/>
+					</div>,
 				);
 			}
 
@@ -236,6 +317,22 @@ export default class NodeDeploy extends React.Component<Props, State> {
 					>
 						{callout}
 					</div>
+					<PageSelect
+						disabled={this.state.disabled}
+						label="Provider"
+						help="Bare metal hosting provider."
+						value={this.state.provider}
+						onChange={(val): void => {
+							this.setState({
+								...this.state,
+								provider: val,
+							});
+						}}
+					>
+						<option key="vultr" value="vultr">Vultr</option>
+						<option key="phoenixnap" value="phoenixnap">phoenixNAP</option>
+						<option key="other" value="other">Other</option>
+					</PageSelect>
 					<PageSelect
 						disabled={this.state.disabled || !hasDatacenters}
 						hidden={!!this.props.node.zone}
@@ -269,7 +366,8 @@ export default class NodeDeploy extends React.Component<Props, State> {
 						{zonesSelect}
 					</PageSelect>
 					<PageSelect
-						disabled={this.state.disabled || !internalIfacesSelect.length}
+						disabled={this.state.disabled || !ifacesSelect.length}
+						hidden={this.state.provider === 'phoenixnap'}
 						label="Network Interface"
 						help="Network interface for instance private VPC interface and IPv6 traffic. This interface will be used to send VPC traffic between instances located on multiple nodes. For single node clusters this interface will only be used for IPv6 traffic."
 						value={this.state.internalIface}
@@ -280,12 +378,101 @@ export default class NodeDeploy extends React.Component<Props, State> {
 							});
 						}}
 					>
-						{internalIfacesSelect}
+						{ifacesSelect}
+					</PageSelect>
+					<PageSelect
+						disabled={this.state.disabled || !ifacesSelect.length}
+						hidden={this.state.provider !== 'phoenixnap'}
+						label="Private Network Interface"
+						help="Network interface for instance private VPC interface."
+						value={this.state.internalIface}
+						onChange={(val): void => {
+							this.setState({
+								...this.state,
+								internalIface: val,
+							});
+						}}
+					>
+						{ifacesSelect}
+					</PageSelect>
+					<PageSelect
+						disabled={this.state.disabled || !ifacesSelect.length}
+						hidden={this.state.provider !== 'phoenixnap'}
+						label="Public Network Interface"
+						help="Network interface for instance public traffic."
+						value={this.state.externalIface}
+						onChange={(val): void => {
+							this.setState({
+								...this.state,
+								externalIface: val,
+							});
+						}}
+					>
+						{ifacesSelect}
 					</PageSelect>
 					<PageInput
 						disabled={this.state.disabled}
+						hidden={this.state.provider !== 'phoenixnap'}
+						label="Public Gateway"
+						help="Gateway address with prefix for public IP network."
+						type="text"
+						placeholder="Enter gateway"
+						value={this.state.gateway}
+						onChange={(val): void => {
+							this.setState({
+								...this.state,
+								gateway: val,
+							});
+						}}
+					/>
+					<PageInput
+						disabled={this.state.disabled}
+						hidden={true}
+						label="Public Netmask"
+						help="Netmask of of public IP addresses"
+						type="text"
+						placeholder="Enter netmask"
+						value={this.state.netmask}
+						onChange={(val): void => {
+							this.setState({
+								...this.state,
+								netmask: val,
+							});
+						}}
+					/>
+					<label
+						className="bp3-label"
+						hidden={this.state.provider !== 'phoenixnap'}
+					>
+						IP Addresses
+						<Help
+							title="Public IP Addresses"
+							content="Public IP addresses that are available for instances."
+						/>
+						<div>
+							{subnets}
+						</div>
+					</label>
+					<PageInputButton
+						disabled={this.state.disabled}
+						hidden={this.state.provider !== 'phoenixnap'}
+						buttonClass="bp3-intent-success bp3-icon-add"
+						label="Add"
+						type="text"
+						placeholder="Add addresses"
+						value={this.state.addSubnet}
+						onChange={(val): void => {
+							this.setState({
+								...this.state,
+								addSubnet: val,
+							});
+						}}
+						onSubmit={this.onAddSubnet}
+					/>
+					<PageInput
+						disabled={this.state.disabled}
 						label="Host IPv4 Network"
-						help="Host IPv4 network that is configured on the host to provide networking between the host and the instances. Each node must have a unique host network."
+						help="Host IPv4 network with prefix that is configured on the host to provide networking between the host and the instances. Each node must have a unique host network."
 						type="text"
 						placeholder="Enter network"
 						value={this.state.network}
@@ -300,13 +487,6 @@ export default class NodeDeploy extends React.Component<Props, State> {
 				<div className="bp3-dialog-footer">
 					<div className="bp3-dialog-footer-actions">
 						<button
-							className="bp3-button bp3-icon-cloud-upload bp3-intent-primary"
-							type="button"
-							onClick={this.onSave}
-						>
-							Initialize Node
-						</button>
-						<button
 							className="bp3-button"
 							type="button"
 							onClick={(): void => {
@@ -316,6 +496,13 @@ export default class NodeDeploy extends React.Component<Props, State> {
 								});
 							}}
 						>Close</button>
+						<button
+							className="bp3-button bp3-icon-cloud-upload bp3-intent-primary"
+							type="button"
+							onClick={this.onSave}
+						>
+							Initialize Node
+						</button>
 					</div>
 				</div>
 			</Blueprint.Dialog>;
