@@ -72,10 +72,14 @@ type nodesData struct {
 }
 
 type nodeInitData struct {
+	Provider          string             `json:"provider"`
 	Zone              primitive.ObjectID `json:"zone"`
 	InternalInterface string             `json:"internal_interface"`
 	ExternalInterface string             `json:"external_interface"`
 	HostNetwork       string             `json:"host_network"`
+	BlockGateway      string             `json:"block_gateway"`
+	BlockNetmask      string             `json:"block_netmask"`
+	BlockSubnets      []string           `json:"block_subnets"`
 }
 
 func nodePut(c *gin.Context) {
@@ -307,13 +311,22 @@ func nodeInitPost(c *gin.Context) {
 	)
 
 	nde.Zone = data.Zone
-	nde.NetworkMode = node.Disabled
-	nde.NetworkMode6 = node.Dhcp
-	nde.InternalInterfaces = []string{
-		data.InternalInterface,
-	}
-	nde.ExternalInterfaces = []string{
-		data.ExternalInterface,
+
+	if data.Provider == "phoenixnap" {
+		nde.NetworkMode = node.Static
+		nde.NetworkMode6 = node.Disabled
+		nde.InternalInterfaces = []string{
+			data.InternalInterface,
+		}
+	} else {
+		nde.NetworkMode = node.Disabled
+		nde.NetworkMode6 = node.Dhcp
+		nde.InternalInterfaces = []string{
+			data.InternalInterface,
+		}
+		nde.ExternalInterfaces = []string{
+			data.InternalInterface,
+		}
 	}
 
 	zne, err := zone.Get(db, nde.Zone)
@@ -346,7 +359,7 @@ func nodeInitPost(c *gin.Context) {
 	utils.IncIpAddress(hostnetGateway)
 
 	hostBlck := &block.Block{
-		Name: nde.Name,
+		Name: nde.Name + "-host",
 		Type: block.IPv4,
 		Netmask: fmt.Sprintf(
 			"%d.%d.%d.%d",
@@ -381,6 +394,63 @@ func nodeInitPost(c *gin.Context) {
 	nde.HostNat = true
 	nde.HostBlock = hostBlck.Id
 
+	if data.Provider == "phoenixnap" {
+		publicBlck := &block.Block{
+			Name:    nde.Name + "-public",
+			Type:    block.IPv4,
+			Subnets: data.BlockSubnets,
+		}
+
+		if data.BlockNetmask == "" {
+			_, gateway, err := net.ParseCIDR(data.BlockGateway)
+			if err != nil {
+				errData := &errortypes.ErrorData{
+					Error:   "invalid_block_gateway",
+					Message: "Invalid public gateway",
+				}
+				c.JSON(400, errData)
+				return
+			}
+
+			publicBlck.Netmask = fmt.Sprintf(
+				"%d.%d.%d.%d",
+				gateway.Mask[0],
+				gateway.Mask[1],
+				gateway.Mask[2],
+				gateway.Mask[3],
+			)
+			publicBlck.Gateway = strings.Split(data.BlockGateway, "/")[0]
+		} else {
+			publicBlck.Netmask = data.BlockNetmask
+			publicBlck.Gateway = data.BlockGateway
+		}
+
+		errData, err = publicBlck.Validate(db)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		if errData != nil {
+			c.JSON(400, errData)
+			return
+		}
+
+		err = publicBlck.Insert(db)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		nde.Blocks = []*node.BlockAttachment{
+			&node.BlockAttachment{
+				Interface: data.ExternalInterface,
+				Block:     publicBlck.Id,
+			},
+		}
+		fields.Add("blocks")
+	}
+
 	errData, err = nde.Validate(db)
 	if err != nil {
 		block.Remove(db, hostBlck.Id)
@@ -402,6 +472,7 @@ func nodeInitPost(c *gin.Context) {
 	}
 
 	event.PublishDispatch(db, "node.change")
+	event.PublishDispatch(db, "block.change")
 
 	c.JSON(200, nde)
 }
