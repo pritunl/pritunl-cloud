@@ -23,7 +23,7 @@ func Exec(dir, name string, arg ...string) (err error) {
 
 	err = cmd.Run()
 	if err != nil {
-		err = &errortypes.RequestError{
+		err = &errortypes.ExecError{
 			errors.Wrapf(err, "utils: Failed to exec '%s'", name),
 		}
 		return
@@ -39,7 +39,7 @@ func ExecInput(dir, input, name string, arg ...string) (err error) {
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
-		err = &errortypes.RequestError{
+		err = &errortypes.ExecError{
 			errors.Wrapf(err,
 				"utils: Failed to get stdin in exec '%s'", name),
 		}
@@ -52,7 +52,7 @@ func ExecInput(dir, input, name string, arg ...string) (err error) {
 
 	err = cmd.Start()
 	if err != nil {
-		err = &errortypes.RequestError{
+		err = &errortypes.ExecError{
 			errors.Wrapf(err, "utils: Failed to exec '%s'", name),
 		}
 		return
@@ -60,7 +60,7 @@ func ExecInput(dir, input, name string, arg ...string) (err error) {
 
 	_, err = io.WriteString(stdin, input)
 	if err != nil {
-		err = &errortypes.RequestError{
+		err = &errortypes.ExecError{
 			errors.Wrapf(err, "utils: Failed to write stdin in exec '%s'",
 				name),
 		}
@@ -78,7 +78,7 @@ func ExecInput(dir, input, name string, arg ...string) (err error) {
 
 	err = cmd.Wait()
 	if err != nil {
-		err = &errortypes.RequestError{
+		err = &errortypes.ExecError{
 			errors.Wrapf(err, "utils: Failed to exec '%s'", name),
 		}
 		return
@@ -100,7 +100,7 @@ func ExecInputOutputLogged(ignores []string, input, name string,
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
-		err = &errortypes.RequestError{
+		err = &errortypes.ExecError{
 			errors.Wrapf(err,
 				"utils: Failed to get stdin in exec '%s'", name),
 		}
@@ -112,7 +112,7 @@ func ExecInputOutputLogged(ignores []string, input, name string,
 
 	_, err = io.WriteString(stdin, input)
 	if err != nil {
-		err = &errortypes.RequestError{
+		err = &errortypes.ExecError{
 			errors.Wrapf(err, "utils: Failed to write stdin in exec '%s'",
 				name),
 		}
@@ -168,7 +168,7 @@ func ExecOutput(dir, name string, arg ...string) (output string, err error) {
 		output = string(outputByt)
 	}
 	if err != nil {
-		err = &errortypes.RequestError{
+		err = &errortypes.ExecError{
 			errors.Wrapf(err, "utils: Failed to exec '%s'", name),
 		}
 		return
