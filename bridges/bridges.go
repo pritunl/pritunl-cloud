@@ -10,6 +10,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/iproute"
 	"github.com/pritunl/pritunl-cloud/settings"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 var (
@@ -45,32 +46,39 @@ func GetBridges() (brdgs []string, err error) {
 		bridgesSet.Add(iface.Name)
 	}
 
-	items, err := ioutil.ReadDir("/etc/sysconfig/network-scripts")
+	exists, err := utils.ExistsDir("/etc/sysconfig/network-scripts")
 	if err != nil {
-		err = &errortypes.ReadError{
-			errors.Wrap(err, "bridges: Failed to read network scripts"),
-		}
 		return
 	}
 
-	for _, item := range items {
-		name := item.Name()
-
-		if !strings.HasPrefix(name, "ifcfg-") ||
-			!strings.Contains(name, ":") {
-
-			continue
+	if exists {
+		items, e := ioutil.ReadDir("/etc/sysconfig/network-scripts")
+		if e != nil {
+			err = &errortypes.ReadError{
+				errors.Wrap(e, "bridges: Failed to read network scripts"),
+			}
+			return
 		}
 
-		name = name[6:]
-		names := strings.Split(name, ":")
-		if len(names) != 2 || names[0] == "" {
-			continue
-		}
+		for _, item := range items {
+			name := item.Name()
 
-		if bridgesSet.Contains(names[0]) && !bridgesSet.Contains(name) {
-			bridgesNew = append(bridgesNew, name)
-			bridgesSet.Add(name)
+			if !strings.HasPrefix(name, "ifcfg-") ||
+				!strings.Contains(name, ":") {
+
+				continue
+			}
+
+			name = name[6:]
+			names := strings.Split(name, ":")
+			if len(names) != 2 || names[0] == "" {
+				continue
+			}
+
+			if bridgesSet.Contains(names[0]) && !bridgesSet.Contains(name) {
+				bridgesNew = append(bridgesNew, name)
+				bridgesSet.Add(name)
+			}
 		}
 	}
 
