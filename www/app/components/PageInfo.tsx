@@ -14,6 +14,7 @@ export interface Bar {
 	progressClass?: string;
 	label: string;
 	value: number;
+	color?: string;
 }
 
 export interface Props {
@@ -118,6 +119,10 @@ export default class PageInfo extends React.Component<Props, {}> {
 			let style: React.CSSProperties = {
 				width: (bar.value || 0) + '%',
 			};
+
+			if (bar.color) {
+				style.backgroundColor = bar.color;
+			}
 
 			bars.push(
 				<div key={bar.label} style={css.item}>
