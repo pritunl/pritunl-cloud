@@ -53,6 +53,7 @@ type nodeData struct {
 	HostBlock            primitive.ObjectID      `json:"host_block"`
 	HostNat              bool                    `json:"host_nat"`
 	JumboFrames          bool                    `json:"jumbo_frames"`
+	JumboFramesInternal  bool                    `json:"jumbo_frames_internal"`
 	Iscsi                bool                    `json:"iscsi"`
 	UsbPassthrough       bool                    `json:"usb_passthrough"`
 	PciPassthrough       bool                    `json:"pci_passthrough"`
@@ -136,6 +137,7 @@ func nodePut(c *gin.Context) {
 	nde.HostBlock = data.HostBlock
 	nde.HostNat = data.HostNat
 	nde.JumboFrames = data.JumboFrames
+	nde.JumboFramesInternal = data.JumboFramesInternal
 	nde.Iscsi = data.Iscsi
 	nde.UsbPassthrough = data.UsbPassthrough
 	nde.PciPassthrough = data.PciPassthrough
@@ -178,6 +180,7 @@ func nodePut(c *gin.Context) {
 		"host_block",
 		"host_nat",
 		"jumbo_frames",
+		"jumbo_frames_internal",
 		"iscsi",
 		"usb_passthrough",
 		"pci_passthrough",
