@@ -115,6 +115,7 @@ func GetAllNames(db *database.Database, query *bson.M) (
 			Projection: &bson.D{
 				{"name", 1},
 				{"organization", 1},
+				{"datacenter", 1},
 				{"type", 1},
 				{"subnets", 1},
 			},
