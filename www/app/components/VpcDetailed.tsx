@@ -481,39 +481,36 @@ export default class VpcDetailed extends React.Component<Props, State> {
 			<div className="layout horizontal wrap">
 				<div style={css.group}>
 					<div
-						className="layout horizontal"
+						className="layout horizontal tab-close"
 						style={css.buttons}
 						onClick={(evt): void => {
 							let target = evt.target as HTMLElement;
 
-							if (target.className.indexOf('open-ignore') !== -1) {
-								return;
+							if (target.className.indexOf('tab-close') !== -1) {
+								this.props.onClose();
 							}
-
-							this.props.onClose();
 						}}
 					>
-            <div>
-              <label
-                className="bp3-control bp3-checkbox open-ignore"
-                style={css.select}
-              >
-                <input
-                  type="checkbox"
-                  className="open-ignore"
-                  checked={this.props.selected}
+						<div>
+							<label
+								className="bp3-control bp3-checkbox"
+								style={css.select}
+							>
+								<input
+									type="checkbox"
+									checked={this.props.selected}
 									onChange={(evt): void => {
 									}}
-                  onClick={(evt): void => {
+									onClick={(evt): void => {
 										this.props.onSelect(evt.shiftKey);
 									}}
-                />
-                <span className="bp3-control-indicator open-ignore"/>
-              </label>
-            </div>
-						<div className="flex"/>
+								/>
+								<span className="bp3-control-indicator"/>
+							</label>
+						</div>
+						<div className="flex tab-close"/>
 						<ConfirmButton
-							className="bp3-minimal bp3-intent-danger bp3-icon-trash open-ignore"
+							className="bp3-minimal bp3-intent-danger bp3-icon-trash"
 							style={css.button}
 							safe={true}
 							progressClassName="bp3-intent-danger"
@@ -521,6 +518,7 @@ export default class VpcDetailed extends React.Component<Props, State> {
 							dialogLabel="Delete VPC"
 							confirmMsg="Permanently delete this VPC"
 							confirmInput={true}
+							items={[vpc.name]}
 							disabled={this.state.disabled}
 							onConfirm={this.onDelete}
 						/>
