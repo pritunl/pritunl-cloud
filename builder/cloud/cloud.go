@@ -282,7 +282,7 @@ func installApt() (err error) {
 	}
 
 	err = utils.Exec("", "/usr/bin/apt", "-y", "install",
-		"ovmf", "qemu", "qemu-efi", "qemu-kvm", "qemu-system-x86",
+		"ovmf", "qemu", "qemu-efi", "qemu-system-x86", "qemu-user",
 		"qemu-utils", "genisoimage", "pritunl-cloud")
 	if err != nil {
 		return
