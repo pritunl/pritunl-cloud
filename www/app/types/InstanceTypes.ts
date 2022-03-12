@@ -43,6 +43,8 @@ export interface Instance {
 	pci_devices?: PciDevice[];
 	drive_devices?: DriveDevice[];
 	iscsi_devices?: IscsiDevice[];
+	root_enabled?: boolean;
+	root_passwd?: string;
 	vnc?: boolean;
 	vnc_password?: string;
 	vnc_display?: number;
