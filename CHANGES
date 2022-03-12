@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Add support for internal only jumbo frames
+
 Version 1.2.2289.56 2022-03-01
 ------------------------------
 
