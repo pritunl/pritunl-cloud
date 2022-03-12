@@ -44,8 +44,8 @@ export interface Node {
 	instance_drives?: Drive[];
 	host_block?: string;
 	host_nat?: boolean;
-	host_nat_excludes?: string[];
 	jumbo_frames?: boolean;
+	jumbo_frames_internal?: boolean;
 	iscsi?: boolean;
 	usb_passthrough?: boolean;
 	pci_passthrough?: boolean;
@@ -59,6 +59,7 @@ export interface Node {
 	cpu_units_res?: number;
 	memory_units_res?: number;
 	memory?: number;
+	hugepages_used?: number;
 	load1?: number;
 	load5?: number;
 	load15?: number;
