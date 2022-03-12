@@ -47,7 +47,7 @@ cp login.html dist/login.html
 APP_HASH=`md5sum dist/static/app.js | cut -c1-6`
 
 mv dist/static/app.js dist/static/app.${APP_HASH}.js
-#mv dist/static/app.js.map dist/static/app.${APP_HASH}.js.map
+mv dist/static/app.js.map dist/static/app.${APP_HASH}.js.map
 
 sed -i -e "s|static/app.js|static/app.${APP_HASH}.js|g" dist/index.html
 sed -i -e "s|static/app.js|static/app.${APP_HASH}.js|g" dist/uindex.html
