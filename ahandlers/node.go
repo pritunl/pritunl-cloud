@@ -309,8 +309,6 @@ func nodeInitPost(c *gin.Context) {
 		"network_mode6",
 		"internal_interfaces",
 		"external_interfaces",
-		"host_nat",
-		"host_block",
 	)
 
 	nde.Zone = data.Zone
@@ -321,8 +319,17 @@ func nodeInitPost(c *gin.Context) {
 		nde.InternalInterfaces = []string{
 			data.InternalInterface,
 		}
-	} else {
+	} else if data.Provider == "vultr" {
 		nde.NetworkMode = node.Disabled
+		nde.NetworkMode6 = node.Dhcp
+		nde.InternalInterfaces = []string{
+			data.InternalInterface,
+		}
+		nde.ExternalInterfaces = []string{
+			data.InternalInterface,
+		}
+	} else {
+		nde.NetworkMode = node.Dhcp
 		nde.NetworkMode6 = node.Dhcp
 		nde.InternalInterfaces = []string{
 			data.InternalInterface,
@@ -348,54 +355,60 @@ func nodeInitPost(c *gin.Context) {
 
 	event.PublishDispatch(db, "zone.change")
 
-	_, hostnet, err := net.ParseCIDR(data.HostNetwork)
-	if err != nil {
-		errData := &errortypes.ErrorData{
-			Error:   "invalid_host_network",
-			Message: "Invalid host IPv4 network",
+	var hostBlck *block.Block
+	if data.HostNetwork != "" {
+		_, hostnet, err := net.ParseCIDR(data.HostNetwork)
+		if err != nil {
+			errData := &errortypes.ErrorData{
+				Error:   "invalid_host_network",
+				Message: "Invalid host IPv4 network",
+			}
+			c.JSON(400, errData)
+			return
 		}
-		c.JSON(400, errData)
-		return
+
+		hostnetGateway := hostnet.IP
+		utils.IncIpAddress(hostnetGateway)
+
+		hostBlck = &block.Block{
+			Name: nde.Name + "-host",
+			Type: block.IPv4,
+			Netmask: fmt.Sprintf(
+				"%d.%d.%d.%d",
+				hostnet.Mask[0],
+				hostnet.Mask[1],
+				hostnet.Mask[2],
+				hostnet.Mask[3],
+			),
+			Subnets: []string{
+				data.HostNetwork,
+			},
+			Gateway: hostnetGateway.String(),
+		}
+
+		errData, err := hostBlck.Validate(db)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		if errData != nil {
+			c.JSON(400, errData)
+			return
+		}
+
+		err = hostBlck.Insert(db)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		nde.HostNat = true
+		nde.HostBlock = hostBlck.Id
+
+		fields.Add("host_nat")
+		fields.Add("host_block")
 	}
-
-	hostnetGateway := hostnet.IP
-	utils.IncIpAddress(hostnetGateway)
-
-	hostBlck := &block.Block{
-		Name: nde.Name + "-host",
-		Type: block.IPv4,
-		Netmask: fmt.Sprintf(
-			"%d.%d.%d.%d",
-			hostnet.Mask[0],
-			hostnet.Mask[1],
-			hostnet.Mask[2],
-			hostnet.Mask[3],
-		),
-		Subnets: []string{
-			data.HostNetwork,
-		},
-		Gateway: hostnetGateway.String(),
-	}
-
-	errData, err := hostBlck.Validate(db)
-	if err != nil {
-		utils.AbortWithError(c, 500, err)
-		return
-	}
-
-	if errData != nil {
-		c.JSON(400, errData)
-		return
-	}
-
-	err = hostBlck.Insert(db)
-	if err != nil {
-		utils.AbortWithError(c, 500, err)
-		return
-	}
-
-	nde.HostNat = true
-	nde.HostBlock = hostBlck.Id
 
 	if data.Provider == "phoenixnap" {
 		publicBlck := &block.Block{
@@ -428,7 +441,7 @@ func nodeInitPost(c *gin.Context) {
 			publicBlck.Gateway = data.BlockGateway
 		}
 
-		errData, err = publicBlck.Validate(db)
+		errData, err := publicBlck.Validate(db)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
 			return
@@ -454,22 +467,28 @@ func nodeInitPost(c *gin.Context) {
 		fields.Add("blocks")
 	}
 
-	errData, err = nde.Validate(db)
+	errData, err := nde.Validate(db)
 	if err != nil {
-		block.Remove(db, hostBlck.Id)
+		if hostBlck != nil {
+			block.Remove(db, hostBlck.Id)
+		}
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
 	if errData != nil {
-		block.Remove(db, hostBlck.Id)
+		if hostBlck != nil {
+			block.Remove(db, hostBlck.Id)
+		}
 		c.JSON(400, errData)
 		return
 	}
 
 	err = nde.CommitFields(db, fields)
 	if err != nil {
-		block.Remove(db, hostBlck.Id)
+		if hostBlck != nil {
+			block.Remove(db, hostBlck.Id)
+		}
 		utils.AbortWithError(c, 500, err)
 		return
 	}
