@@ -54,6 +54,22 @@ config:
         gateway: {{.Gateway6}}
 `
 
+const netConfig2Tmpl = `version: 2
+ethernets:
+  eth0:
+    match:
+      macaddress: {{.Mac}}{{.Mtu}}
+    addresses:
+      - {{.Address}}
+      - {{.Address6}}
+    gateway4: {{.Gateway}}
+    gateway6: {{.Gateway6}}
+    nameservers:
+      addresses:
+        - 8.8.8.8
+        - 8.8.4.4
+`
+
 const netMtu = `
     mtu: %d`
 
@@ -93,17 +109,20 @@ EOF
 var (
 	cloudConfig = template.Must(template.New("cloud").Parse(cloudConfigTmpl))
 	netConfig   = template.Must(template.New("net").Parse(netConfigTmpl))
+	netConfig2  = template.Must(template.New("net2").Parse(netConfig2Tmpl))
 )
 
 type netConfigData struct {
-	Mac      string
-	Mtu      string
-	Address  string
-	Netmask  string
-	Network  string
-	Gateway  string
-	Address6 string
-	Gateway6 string
+	Mac          string
+	Mtu          string
+	Address      string
+	AddressCidr  string
+	Netmask      string
+	Network      string
+	Gateway      string
+	Address6     string
+	AddressCidr6 string
+	Gateway6     string
 }
 
 type cloudConfigData struct {
@@ -318,7 +337,12 @@ func getNetData(db *database.Database, inst *instance.Instance,
 	}
 
 	output := &bytes.Buffer{}
-	err = netConfig.Execute(output, data)
+
+	if settings.Hypervisor.CloudInitNetVer == 2 {
+		err = netConfig2.Execute(output, data)
+	} else {
+		err = netConfig.Execute(output, data)
+	}
 	if err != nil {
 		err = &errortypes.ParseError{
 			errors.Wrap(err, "cloudinit: Failed to exec cloud template"),
