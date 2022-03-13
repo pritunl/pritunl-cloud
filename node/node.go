@@ -86,6 +86,7 @@ type Node struct {
 	HostBlock            primitive.ObjectID   `bson:"host_block,omitempty" json:"host_block"`
 	HostNat              bool                 `bson:"host_nat" json:"host_nat"`
 	JumboFrames          bool                 `bson:"jumbo_frames" json:"jumbo_frames"`
+	JumboFramesInternal  bool                 `bson:"jumbo_frames_internal" json:"jumbo_frames_internal"`
 	Iscsi                bool                 `bson:"iscsi" json:"iscsi"`
 	LocalIsos            []*iso.Iso           `bson:"local_isos" json:"local_isos"`
 	UsbPassthrough       bool                 `bson:"usb_passthrough" json:"usb_passthrough"`
@@ -177,6 +178,7 @@ func (n *Node) Copy() *Node {
 		HostBlock:            n.HostBlock,
 		HostNat:              n.HostNat,
 		JumboFrames:          n.JumboFrames,
+		JumboFramesInternal:  n.JumboFramesInternal,
 		Iscsi:                n.Iscsi,
 		LocalIsos:            n.LocalIsos,
 		UsbPassthrough:       n.UsbPassthrough,
@@ -995,6 +997,7 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.HostBlock = nde.HostBlock
 	n.HostNat = nde.HostNat
 	n.JumboFrames = nde.JumboFrames
+	n.JumboFramesInternal = nde.JumboFramesInternal
 	n.Iscsi = nde.Iscsi
 	n.UsbPassthrough = nde.UsbPassthrough
 	n.PciPassthrough = nde.PciPassthrough
@@ -1128,6 +1131,10 @@ func (n *Node) sync() {
 		n.AvailableBridges = brdgs
 	} else {
 		n.AvailableBridges = []string{}
+	}
+
+	if n.JumboFrames {
+		n.JumboFramesInternal = true
 	}
 
 	if n.NetworkMode == Oracle || n.NetworkMode6 == Oracle {
