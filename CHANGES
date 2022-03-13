@@ -4,6 +4,7 @@ pritunl-cloud changelog
 <%= version %>
 
 Add support for internal only jumbo frames
+Update image labels for Ubuntu
 
 Version 1.2.2289.56 2022-03-01
 ------------------------------
