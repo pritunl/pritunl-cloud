@@ -287,11 +287,6 @@ func getNetData(db *database.Database, inst *instance.Instance,
 		return
 	}
 
-	vxlan := false
-	if zne.NetworkMode == zone.VxlanVlan {
-		vxlan = true
-	}
-
 	vc, err := vpc.Get(db, adapter.Vpc)
 	if err != nil {
 		return
@@ -307,34 +302,27 @@ func getNetData(db *database.Database, inst *instance.Instance,
 		return
 	}
 
+	cidr, _ := vcNet.Mask.Size()
+
 	addr6 := vc.GetIp6(addr)
 	gatewayAddr6 := vc.GetIp6(gatewayAddr)
 
 	data := netConfigData{
-		Mac:      adapter.MacAddress,
-		Address:  addr.String(),
-		Netmask:  net.IP(vcNet.Mask).String(),
-		Network:  vcNet.IP.String(),
-		Gateway:  gatewayAddr.String(),
-		Address6: addr6.String(),
-		Gateway6: gatewayAddr6.String(),
+		Mac:          adapter.MacAddress,
+		Address:      addr.String(),
+		AddressCidr:  fmt.Sprintf("%s/%d", addr.String(), cidr),
+		Netmask:      net.IP(vcNet.Mask).String(),
+		Network:      vcNet.IP.String(),
+		Gateway:      gatewayAddr.String(),
+		Address6:     addr6.String(),
+		AddressCidr6: addr6.String() + "/64",
+		Gateway6:     gatewayAddr6.String(),
 	}
 
-	jumboFrames := node.Self.JumboFrames
-	if jumboFrames || vxlan {
-		mtuSize := 0
-		if jumboFrames {
-			mtuSize = settings.Hypervisor.JumboMtu
-		} else {
-			mtuSize = settings.Hypervisor.NormalMtu
-		}
-
-		if vxlan {
-			mtuSize -= 54
-		}
-
-		data.Mtu = fmt.Sprintf(netMtu, mtuSize)
-	}
+	data.Mtu = fmt.Sprintf(netMtu, instance.GetInstanceMtu(
+		node.Self.JumboFrames || node.Self.JumboFramesInternal,
+		zne.NetworkMode == zone.VxlanVlan,
+	))
 
 	output := &bytes.Buffer{}
 
