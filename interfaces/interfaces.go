@@ -278,6 +278,72 @@ func GetBridges(nde *node.Node) (bridges set.Set) {
 		}
 	}
 
+	ndeBlocks6 := nde.Blocks6
+	if ndeBlocks6 != nil {
+		for _, blck := range ndeBlocks6 {
+			if blck.Interface == "" {
+				continue
+			}
+			bridges.Add(blck.Interface)
+		}
+	}
+
+	return
+}
+
+func GetBridgesInternal(nde *node.Node) (bridges set.Set) {
+	bridges = set.NewSet()
+
+	internalIfaces := nde.InternalInterfaces
+	if internalIfaces != nil {
+		for _, iface := range internalIfaces {
+			bridges.Add(iface)
+		}
+	} else {
+		internalIface := nde.InternalInterface
+		if internalIface != "" {
+			bridges.Add(internalIface)
+		}
+	}
+
+	return
+}
+
+func GetBridgesExternal(nde *node.Node) (bridges set.Set) {
+	bridges = set.NewSet()
+
+	externalIfaces := nde.ExternalInterfaces
+	if externalIfaces != nil {
+		for _, iface := range externalIfaces {
+			bridges.Add(iface)
+		}
+	} else {
+		externalIface := nde.ExternalInterface
+		if externalIface != "" {
+			bridges.Add(externalIface)
+		}
+	}
+
+	ndeBlocks := nde.Blocks
+	if ndeBlocks != nil {
+		for _, blck := range ndeBlocks {
+			if blck.Interface == "" {
+				continue
+			}
+			bridges.Add(blck.Interface)
+		}
+	}
+
+	ndeBlocks6 := nde.Blocks6
+	if ndeBlocks6 != nil {
+		for _, blck := range ndeBlocks6 {
+			if blck.Interface == "" {
+				continue
+			}
+			bridges.Add(blck.Interface)
+		}
+	}
+
 	return
 }
 
