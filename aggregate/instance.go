@@ -19,17 +19,20 @@ import (
 	"github.com/pritunl/pritunl-cloud/pci"
 	"github.com/pritunl/pritunl-cloud/usb"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/pritunl-cloud/zone"
 )
 
 type InstancePipe struct {
 	instance.Instance `bson:",inline"`
 	NodeDocs          []*node.Node `bson:"node_docs"`
+	ZoneDocs          []*zone.Zone `bson:"zone_docs"`
 	DiskDocs          []*disk.Disk `bson:"disk_docs"`
 }
 
 type InstanceInfo struct {
 	Node          string               `json:"node"`
 	NodePublicIp  string               `json:"node_public_ip"`
+	Mtu           int                  `json:"mtu"`
 	Iscsi         bool                 `json:"iscsi"`
 	Disks         []string             `json:"disks"`
 	FirewallRules []string             `json:"firewall_rules"`
@@ -86,6 +89,14 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 				"localField":   "node",
 				"foreignField": "_id",
 				"as":           "node_docs",
+			},
+		},
+		&bson.M{
+			"$lookup": &bson.M{
+				"from":         "zones",
+				"localField":   "zone",
+				"foreignField": "_id",
+				"as":           "zone_docs",
 			},
 		},
 		&bson.M{
@@ -150,9 +161,18 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 			OracleSubnets: []*node.OracleSubnet{},
 		}
 
-		if len(doc.NodeDocs) > 0 {
-			nde := doc.NodeDocs[0]
+		var nde *node.Node
+		var zne *zone.Zone
 
+		if len(doc.NodeDocs) > 0 {
+			nde = doc.NodeDocs[0]
+		}
+
+		if len(doc.ZoneDocs) > 0 {
+			zne = doc.ZoneDocs[0]
+		}
+
+		if nde != nil {
 			info.Node = nde.Name
 			if len(nde.PublicIps) > 0 {
 				info.NodePublicIp = nde.PublicIps[0]
@@ -174,6 +194,13 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 			if nde.InstanceDrives != nil {
 				info.DriveDevices = nde.InstanceDrives
 			}
+		}
+
+		if nde != nil && zne != nil {
+			info.Mtu = instance.GetInstanceMtu(
+				nde.JumboFrames || nde.JumboFramesInternal,
+				zne.NetworkMode == zone.VxlanVlan,
+			)
 		}
 
 		for _, dsk := range doc.DiskDocs {
