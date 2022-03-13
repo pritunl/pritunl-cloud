@@ -283,7 +283,7 @@ func Connect() (err error) {
 		writeconcern.WMajority(),
 		writeconcern.WTimeout(15*time.Second),
 	)
-	opts.ReadConcern = readconcern.Majority()
+	opts.ReadConcern = readconcern.Local()
 
 	client, err := mongo.NewClient(opts)
 	if err != nil {
