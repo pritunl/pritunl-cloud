@@ -10,21 +10,22 @@ import (
 )
 
 type NetConf struct {
-	Virt          *vm.VirtualMachine
-	Vxlan         bool
-	VlanId        int
-	NetworkMode   string
-	NetworkMode6  string
-	HostNetwork   bool
-	HostNat       bool
-	HostSubnet    string
-	HostBlock     primitive.ObjectID
-	OracleSubnets set.Set
-	JumboFrames   bool
-	Namespace     string
-	DhcpPidPath   string
-	DhcpLeasePath string
-	VmAdapter     *vm.NetworkAdapter
+	Virt                *vm.VirtualMachine
+	Vxlan               bool
+	VlanId              int
+	NetworkMode         string
+	NetworkMode6        string
+	HostNetwork         bool
+	HostNat             bool
+	HostSubnet          string
+	HostBlock           primitive.ObjectID
+	OracleSubnets       set.Set
+	JumboFramesExternal bool
+	JumboFramesInternal bool
+	Namespace           string
+	DhcpPidPath         string
+	DhcpLeasePath       string
+	VmAdapter           *vm.NetworkAdapter
 
 	PublicAddress  string
 	PublicAddress6 string
