@@ -3,7 +3,6 @@ package deploy
 import (
 	"github.com/pritunl/pritunl-cloud/hnetwork"
 	"github.com/pritunl/pritunl-cloud/interfaces"
-	"github.com/pritunl/pritunl-cloud/networking"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/vxlan"
 	"github.com/sirupsen/logrus"
@@ -14,11 +13,6 @@ type Network struct {
 }
 
 func (d *Network) Deploy() (err error) {
-	err = networking.ApplyState(d.stat)
-	if err != nil {
-		return
-	}
-
 	err = hnetwork.ApplyState(d.stat)
 	if err != nil {
 		return
