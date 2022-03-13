@@ -177,7 +177,7 @@ func Open(path string, perm os.FileMode) (file *os.File, err error) {
 func ReadLines(path string) (lines []string, err error) {
 	file, err := os.Open(path)
 	if err != nil {
-		err = &errortypes.WriteError{
+		err = &errortypes.ReadError{
 			errors.Wrapf(err, "utils: Failed to open '%s'", path),
 		}
 		return
@@ -185,7 +185,7 @@ func ReadLines(path string) (lines []string, err error) {
 	defer func() {
 		err = file.Close()
 		if err != nil {
-			err = &errortypes.WriteError{
+			err = &errortypes.ReadError{
 				errors.Wrapf(err, "utils: Failed to read '%s'", path),
 			}
 			return
