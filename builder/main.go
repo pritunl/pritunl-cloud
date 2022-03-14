@@ -41,6 +41,7 @@ const help = `
 Usage: pritunl-builder OPTIONS
 
 Options:
+  --version     Show version
   --assume-yes  Assume yes to prompts
   --no-start    Do not start Pritunl Cloud service
   --unstable    Use unstable repository
@@ -50,6 +51,7 @@ func main() {
 	logger.InitStdout()
 
 	intro := colorize.ColorString(art, colorize.BlueBold, colorize.None)
+	showVersion := flag.Bool("version", false, "Show version")
 	assumeYes := flag.Bool("assume-yes", false, "Assume yes to prompts")
 	noStart := flag.Bool("no-start", false,
 		"Do not start Pritunl Cloud service")
@@ -61,6 +63,11 @@ func main() {
 	}
 
 	flag.Parse()
+
+	if *showVersion {
+		fmt.Printf("pritunl-cloud-builder v%s\n", constants.Version)
+		return
+	}
 
 	prompt.AssumeYes = *assumeYes
 
