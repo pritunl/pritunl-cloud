@@ -7,8 +7,9 @@ var (
 )
 
 const (
-	Rpm = "rpm"
-	Apt = "apt"
+	Version = "1.0.2302.50"
+	Rpm     = "rpm"
+	Apt     = "apt"
 )
 
 func Init() (err error) {
