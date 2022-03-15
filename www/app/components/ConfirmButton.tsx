@@ -89,6 +89,7 @@ export default class ConfirmButton extends React.Component<Props, State> {
 		this.setState({
 			...this.state,
 			dialog: false,
+			input: '',
 		});
 	}
 
@@ -96,6 +97,7 @@ export default class ConfirmButton extends React.Component<Props, State> {
 		this.setState({
 			...this.state,
 			dialog: false,
+			input: '',
 		});
 		if (this.props.onConfirm) {
 			this.props.onConfirm();
@@ -197,6 +199,11 @@ export default class ConfirmButton extends React.Component<Props, State> {
 					spellCheck={false}
 					placeholder='Enter "delete" to confirm'
 					value={this.state.input}
+					onKeyDown={(evt): void => {
+						if (evt.key === "Enter" && this.state.input === 'delete') {
+							this.closeDialogConfirm();
+						}
+					}}
 					onChange={(evt): void => {
 						this.setState({
 							...this.state,
