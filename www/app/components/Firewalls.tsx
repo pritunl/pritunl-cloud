@@ -295,7 +295,14 @@ export default class Firewalls extends React.Component<{}, State> {
 									...this.state,
 									disabled: true,
 								});
+
+								let orgId = '';
+								if (this.state.organizations.length) {
+									orgId = this.state.organizations[0].id;
+								}
+
 								FirewallActions.create({
+									organization: orgId,
 									ingress: [
 										{
 											source_ips: [
