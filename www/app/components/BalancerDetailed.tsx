@@ -738,7 +738,7 @@ export default class BalancerDetailed extends React.Component<Props, State> {
                 <span className="bp3-control-indicator"/>
               </label>
             </div>
-						<div className="flex bp3-checkbox"/>
+						<div className="flex tab-close"/>
 						<ConfirmButton
 							className="bp3-minimal bp3-intent-danger bp3-icon-trash"
 							style={css.button}
@@ -748,6 +748,7 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 							dialogLabel="Delete Balancer"
 							confirmMsg="Permanently delete this balancer"
 							confirmInput={true}
+							items={[balancer.name]}
 							disabled={this.state.disabled}
 							onConfirm={this.onDelete}
 						/>
