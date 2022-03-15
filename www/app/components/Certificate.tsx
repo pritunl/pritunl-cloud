@@ -294,6 +294,7 @@ export default class Certificate extends React.Component<Props, State> {
 							dialogLabel="Delete Certificate"
 							confirmMsg="Permanently delete this certificate"
 							confirmInput={true}
+							items={[cert.name]}
 							disabled={this.state.disabled}
 							onConfirm={this.onDelete}
 						/>
