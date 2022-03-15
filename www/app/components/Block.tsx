@@ -471,6 +471,7 @@ export default class Block extends React.Component<Props, State> {
 							dialogLabel="Delete Block"
 							confirmMsg="Permanently delete this block"
 							confirmInput={true}
+							items={[block.name]}
 							disabled={this.state.disabled}
 							onConfirm={this.onDelete}
 						/>
