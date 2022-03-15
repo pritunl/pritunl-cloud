@@ -374,10 +374,9 @@ export default class FirewallDetailed extends React.Component<Props, State> {
 			this.props.firewall;
 
 		let organizationsSelect: JSX.Element[] = [];
+		organizationsSelect.push(
+			<option key="null" value="">Node Firewall</option>);
 		if (this.props.organizations.length) {
-			organizationsSelect.push(
-				<option key="null" value="">Node Firewall</option>);
-
 			for (let organization of this.props.organizations) {
 				organizationsSelect.push(
 					<option
@@ -474,6 +473,7 @@ export default class FirewallDetailed extends React.Component<Props, State> {
 							dialogLabel="Delete Firewall"
 							confirmMsg="Permanently delete this firewall"
 							confirmInput={true}
+							items={[firewall.name]}
 							disabled={this.state.disabled}
 							onConfirm={this.onDelete}
 						/>
