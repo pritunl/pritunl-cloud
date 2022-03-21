@@ -5,13 +5,13 @@ var Hypervisor *hypervisor
 type hypervisor struct {
 	Id                 string `bson:"_id"`
 	SystemdPath        string `bson:"systemd_path" default:"/etc/systemd/system"`
-	LibPath            string `bson:"systemd_path" default:"/var/lib/pritunl-cloud"`
+	LibPath            string `bson:"lib_path" default:"/var/lib/pritunl-cloud"`
 	RunPath            string `bson:"run_path" default:"/var/run/pritunl-cloud"`
 	HugepagesPath      string `bson:"hugepages_path" default:"/dev/hugepages/pritunl"`
 	DesktopEnv         string `bson:"desktop_env" default:"gnome"`
-	OvmfCodePath       string `bson:"ovmf_vars_path"`
+	OvmfCodePath       string `bson:"ovmf_code_path"`
 	OvmfVarsPath       string `bson:"ovmf_vars_path"`
-	OvmfSecureCodePath string `bson:"ovmf_secure_vars_path"`
+	OvmfSecureCodePath string `bson:"ovmf_secure_code_path"`
 	OvmfSecureVarsPath string `bson:"ovmf_secure_vars_path"`
 	DiskAio            string `bson:"disk_aio"`
 	NoSandbox          bool   `bson:"no_sandbox"`
