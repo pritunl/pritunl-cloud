@@ -24,6 +24,7 @@ Commands:
   default-password  Get default administrator password
   reset-password    Reset administrator password
   disable-policies  Disable all policies
+  mtu-check         Check and show instance MTUs
   backup            Backup local data
 `
 
@@ -92,6 +93,13 @@ func main() {
 	case "disable-policies":
 		InitLimited()
 		err := cmd.DisablePolicies()
+		if err != nil {
+			panic(err)
+		}
+		return
+	case "mtu-check":
+		InitLimited()
+		err := cmd.MtuCheck()
 		if err != nil {
 			panic(err)
 		}
