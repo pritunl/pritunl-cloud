@@ -343,9 +343,10 @@ export default class Policy extends React.Component<Props, State> {
 							className="bp3-minimal bp3-intent-danger bp3-icon-trash"
 							progressClassName="bp3-intent-danger"
 							dialogClassName="bp3-intent-danger bp3-icon-delete"
-							dialogLabel="Delete Balancer"
+							dialogLabel="Delete Policy"
 							confirmMsg="Permanently delete this policy"
 							confirmInput={true}
+							items={[policy.name]}
 							disabled={this.state.disabled}
 							onConfirm={this.onDelete}
 						/>
