@@ -472,7 +472,7 @@ export default class NodeDeploy extends React.Component<Props, State> {
 					<PageInput
 						disabled={this.state.disabled}
 						label="Host IPv4 Network"
-						help="Host IPv4 network with prefix that is configured on the host to provide networking between the host and the instances. Each node must have a unique host network."
+						help="Host IPv4 network with prefix that is configured on the host to provide networking between the host and the instances. If left blank no host network will be created."
 						type="text"
 						placeholder="Enter network"
 						value={this.state.network}
