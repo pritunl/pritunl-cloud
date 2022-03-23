@@ -135,7 +135,7 @@ export default class NodeDeploy extends React.Component<Props, State> {
 		}
 
 		let data: NodeTypes.NodeInit = {
-			provider: this.state.provider,
+			provider: this.state.provider || 'other',
 			zone: this.props.node.zone ? this.props.node.zone :
 				this.state.zone,
 			internal_interface: internalIface,
@@ -329,9 +329,9 @@ export default class NodeDeploy extends React.Component<Props, State> {
 							});
 						}}
 					>
+						<option key="other" value="other">Other</option>
 						<option key="vultr" value="vultr">Vultr</option>
 						<option key="phoenixnap" value="phoenixnap">phoenixNAP</option>
-						<option key="other" value="other">Other</option>
 					</PageSelect>
 					<PageSelect
 						disabled={this.state.disabled || !hasDatacenters}
