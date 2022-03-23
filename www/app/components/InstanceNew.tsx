@@ -432,6 +432,10 @@ export default class InstanceNew extends React.Component<Props, State> {
 					}
 				}
 
+				if (vpc.datacenter !== this.state.datacenter) {
+					continue;
+				}
+
 				hasVpcs = true;
 				vpcsSelect.push(
 					<option
@@ -460,6 +464,10 @@ export default class InstanceNew extends React.Component<Props, State> {
 					if (vpc.organization !== instance.organization) {
 						continue;
 					}
+				}
+
+				if (vpc.datacenter !== this.state.datacenter) {
+					continue;
 				}
 
 				if (vpc.id === instance.vpc) {
