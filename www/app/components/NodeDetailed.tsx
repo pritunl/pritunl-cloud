@@ -1884,11 +1884,20 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
-						label="Jumbo frames"
-						help="Enable jumbo frames on all interfaces, requires node restart when changed."
+						label="Jumbo frames external"
+						help="Enable jumbo frames on external interfaces, requires node restart when changed. Node external interfaces must be configured for 9000 MTU. Also requires internal jumbo frames."
 						checked={node.jumbo_frames}
 						onToggle={(): void => {
 							this.set('jumbo_frames', !node.jumbo_frames);
+						}}
+					/>
+					<PageSwitch
+						disabled={this.state.disabled}
+						label="Jumbo frames internal"
+						help="Enable jumbo frames on internal interfaces, requires node restart when changed. Node interal interfaces must be configured for 9000 MTU."
+						checked={node.jumbo_frames || node.jumbo_frames_internal}
+						onToggle={(): void => {
+							this.set('jumbo_frames_internal', !node.jumbo_frames_internal);
 						}}
 					/>
 					<PageSwitch
