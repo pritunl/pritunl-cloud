@@ -309,9 +309,11 @@ func nodeInitPost(c *gin.Context) {
 		"network_mode6",
 		"internal_interfaces",
 		"external_interfaces",
+		"jumbo_frames_internal",
 	)
 
 	nde.Zone = data.Zone
+	nde.JumboFramesInternal = true
 
 	if data.Provider == "phoenixnap" {
 		nde.NetworkMode = node.Static
