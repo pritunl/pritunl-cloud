@@ -1467,6 +1467,19 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				value: hostIps,
 				copy: true,
 			},
+		);
+
+		if (this.props.instance.info.mtu) {
+			fields.push(
+				{
+					label: 'Network MTU',
+					value: this.props.instance.info.mtu,
+					copy: true,
+				},
+			);
+		}
+
+		fields.push(
 			{
 				label: 'Network Namespace',
 				value: this.props.instance.network_namespace || 'None',
