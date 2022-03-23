@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Add mtu check command
+
 Version 1.2.2301.94 2022-03-13
 ------------------------------
 
