@@ -115,6 +115,8 @@ export interface OracleSubnet {
 
 export interface Info {
 	node?: string;
+	node_public_ip?: string;
+	mtu?: number;
 	iscsi?: boolean;
 	firewall_rules?: string[];
 	authorities?: string[];
