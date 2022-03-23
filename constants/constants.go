@@ -17,13 +17,14 @@ const (
 
 var (
 	Production   = true
+	DebugWeb     = false
 	LockDebug    = false
 	Interrupt    = false
 	Shutdown     = false
 	ConfPath     = "/etc/pritunl-cloud.json"
 	DefaultRoot  = "/var/lib/pritunl-cloud"
 	DefaultCache = "/var/cache/pritunl-cloud"
-	DefaultTemp = "/tmp/pritunl-cloud"
+	DefaultTemp  = "/tmp/pritunl-cloud"
 	StaticRoot   = []string{
 		"www/dist",
 		"/usr/share/pritunl-cloud/www",
