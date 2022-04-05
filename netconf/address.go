@@ -44,10 +44,6 @@ func (n *NetConf) Address(db *database.Database) (err error) {
 	n.InternalMacAddr = vm.GetMacAddrInternal(n.Virt.Id, vc.Id)
 	n.HostMacAddr = vm.GetMacAddrHost(n.Virt.Id, vc.Id)
 
-	if n.PhysicalExternalIface6 != n.PhysicalExternalIface {
-		n.ExternalMacAddr6 = vm.GetMacAddrExternal6(n.Virt.Id, vc.Id)
-	}
-
 	if n.NetworkMode == node.Dhcp {
 		n.PhysicalExternalIface = interfaces.GetExternal(
 			n.SystemExternalIface)
@@ -78,16 +74,19 @@ func (n *NetConf) Address(db *database.Database) (err error) {
 		n.ExternalGatewayAddr = staticGateway
 	}
 
-	if n.NetworkMode6 == node.Dhcp {
-		if n.NetworkMode == node.Dhcp {
-			n.PhysicalExternalIface6 = n.PhysicalExternalIface
-		} else {
-			n.PhysicalExternalIface6 = interfaces.GetExternal(
-				n.SystemExternalIface6)
-		}
-	} else if n.NetworkMode6 == node.Static {
+	if n.NetworkMode == node.Disabled &&
+		n.NetworkMode6 != node.Disabled &&
+		n.NetworkMode6 != node.Oracle {
+
+		n.PhysicalExternalIface6 = interfaces.GetExternal(
+			n.SystemExternalIface6)
+	} else {
+		n.PhysicalExternalIface6 = n.PhysicalExternalIface
+	}
+
+	if n.NetworkMode6 == node.Static {
 		blck, staticAddr, prefix, iface, e := node.Self.GetStaticAddr6(
-			db, n.Virt.Id, vc.VpcId)
+			db, n.Virt.Id, vc.VpcId, n.PhysicalExternalIface)
 		if e != nil {
 			err = e
 			return
@@ -100,6 +99,10 @@ func (n *NetConf) Address(db *database.Database) (err error) {
 
 		n.ExternalAddrCidr6 = staticCidr6
 		n.ExternalGatewayAddr6 = gateway6
+	}
+
+	if n.PhysicalExternalIface6 != n.PhysicalExternalIface {
+		n.ExternalMacAddr6 = vm.GetMacAddrExternal6(n.Virt.Id, vc.Id)
 	}
 
 	if n.SpaceExternalIface6 == n.SpaceExternalIface {
