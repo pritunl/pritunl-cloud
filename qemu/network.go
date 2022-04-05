@@ -537,7 +537,8 @@ func NetworkConfOld(db *database.Database,
 	if externalNetwork6 {
 		if nodeNetworkMode6 == node.Static {
 			blck6, staticAddr6, staticCidr6, externalIface6,
-				err = node.Self.GetStaticAddr6(db, virt.Id, vc.VpcId)
+				err = node.Self.GetStaticAddr6(
+				db, virt.Id, vc.VpcId, externalIface)
 			if err != nil {
 				return
 			}
