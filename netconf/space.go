@@ -28,7 +28,20 @@ func (n *NetConf) spaceSysctl(db *database.Database) (err error) {
 		return
 	}
 
-	if n.NetworkMode6 != node.Disabled && n.NetworkMode6 != node.Oracle {
+	if n.NetworkMode6 == node.Static {
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", n.Namespace,
+			"sysctl", "-w",
+			fmt.Sprintf("net.ipv6.conf.%s.autoconf=0",
+				n.SpaceExternalIface6),
+		)
+		if err != nil {
+			return
+		}
+	}
+
+	if n.NetworkMode6 == node.Static || n.NetworkMode6 == node.Dhcp {
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
 			"ip", "netns", "exec", n.Namespace,
