@@ -5,6 +5,7 @@ pritunl-cloud changelog
 
 Improve node init support
 Add mtu check command
+Fix static IPv6 issues
 
 Version 1.2.2301.94 2022-03-13
 ------------------------------
