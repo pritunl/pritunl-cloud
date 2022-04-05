@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Improve IPv6 networking
+
 Version 1.2.2324.56 2022-04-05
 ------------------------------
 
