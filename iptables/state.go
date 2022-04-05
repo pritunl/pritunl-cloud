@@ -47,8 +47,9 @@ func LoadState(nodeSelf *node.Node, instances []*instance.Instance,
 		ifaceExternal := vm.GetIfaceExternal(inst.Id, 0)
 		ifaceExternal6 := ifaceExternal
 
-		if nodeNetworkMode != nodeNetworkMode6 ||
-			nodeNetworkMode6 == node.Static {
+		if nodeNetworkMode == node.Disabled &&
+			nodeNetworkMode6 != node.Disabled &&
+			nodeNetworkMode6 != node.Oracle {
 
 			ifaceExternal6 = vm.GetIfaceExternal(inst.Id, 1)
 		}
@@ -96,28 +97,32 @@ func LoadState(nodeSelf *node.Node, instances []*instance.Instance,
 
 		// TODO Move to netconf
 
+		nat6 := false
+		if nodeNetworkMode6 != node.Disabled &&
+			nodeNetworkMode6 != node.Oracle {
+
+			if ifaceExternal != ifaceExternal6 {
+				rules := generateInternal(namespace, ifaceExternal6,
+					false, true, addr, pubAddr, addr6, pubAddr6,
+					oracleAddr, ingress)
+				state.Interfaces[namespace+"-"+ifaceExternal6] = rules
+			} else {
+				nat6 = true
+			}
+		}
+
 		if nodeNetworkMode != node.Disabled &&
 			nodeNetworkMode != node.Oracle {
 
 			rules := generateInternal(namespace, ifaceExternal,
-				true, addr, pubAddr, addr6, pubAddr6,
+				true, nat6, addr, pubAddr, addr6, pubAddr6,
 				oracleAddr, ingress)
 			state.Interfaces[namespace+"-"+ifaceExternal] = rules
 		}
 
-		if nodeNetworkMode6 != node.Disabled &&
-			ifaceExternal != ifaceExternal6 &&
-			nodeNetworkMode6 != node.Oracle {
-
-			rules := generateInternal(namespace, ifaceExternal6,
-				true, addr, pubAddr, addr6, pubAddr6,
-				oracleAddr, ingress)
-			state.Interfaces[namespace+"-"+ifaceExternal6] = rules
-		}
-
 		if nodeNetworkMode == node.Oracle {
 			rules := generateInternal(namespace, oracleIface,
-				true, addr, pubAddr, addr6, pubAddr6,
+				true, false, addr, pubAddr, addr6, pubAddr6,
 				oracleAddr, ingress)
 
 			state.Interfaces[namespace+"-"+oracleIface] = rules
@@ -125,7 +130,7 @@ func LoadState(nodeSelf *node.Node, instances []*instance.Instance,
 
 		if hostNetwork {
 			rules := generateInternal(namespace, ifaceHost,
-				false, "", "", "", "", "", ingress)
+				false, false, "", "", "", "", "", ingress)
 			state.Interfaces[namespace+"-"+ifaceHost] = rules
 		}
 
