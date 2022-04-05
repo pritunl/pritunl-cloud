@@ -1010,7 +1010,7 @@ func generateVirt(namespace, iface, addr, addr6 string, sourceDestCheck bool,
 	return
 }
 
-func generateInternal(namespace, iface string, nat bool,
+func generateInternal(namespace, iface string, nat, nat6 bool,
 	natAddr, natPubAddr, natAddr6, natPubAddr6 string,
 	oracleNatPubAddr string, ingress []*firewall.Rule) (rules *Rules) {
 
@@ -1031,16 +1031,18 @@ func generateInternal(namespace, iface string, nat bool,
 			rules.NatPubAddr = natPubAddr
 		}
 
-		if natAddr6 != "" && natPubAddr6 != "" {
-			rules.Nat6 = true
-			rules.NatAddr6 = natAddr6
-			rules.NatPubAddr6 = natPubAddr6
-		}
-
 		if natAddr != "" && oracleNatPubAddr != "" {
 			rules.OracleNat = true
 			rules.OracleNatAddr = natAddr
 			rules.OracleNatPubAddr = oracleNatPubAddr
+		}
+	}
+
+	if nat6 {
+		if natAddr6 != "" && natPubAddr6 != "" {
+			rules.Nat6 = true
+			rules.NatAddr6 = natAddr6
+			rules.NatPubAddr6 = natPubAddr6
 		}
 	}
 
