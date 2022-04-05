@@ -823,33 +823,70 @@ func (n *Node) GetStaticAddr(db *database.Database,
 }
 
 func (n *Node) GetStaticAddr6(db *database.Database,
-	instId primitive.ObjectID, vlan int) (blck *block.Block, ip net.IP,
-	cidr int, iface string, err error) {
+	instId primitive.ObjectID, vlan int, matchIface string) (
+	blck *block.Block, ip net.IP, cidr int, iface string, err error) {
 
-	for _, blckAttch := range n.Blocks6 {
-		blck, err = block.Get(db, blckAttch.Block)
-		if err != nil {
-			return
-		}
+	mismatch := false
 
-		iface = blckAttch.Interface
-
-		ip, cidr, err = blck.GetIp6(db, instId, vlan)
-		if err != nil {
-			if _, ok := err.(*block.BlockFull); ok {
-				err = nil
+	if matchIface != "" {
+		for _, blckAttch := range n.Blocks6 {
+			if blckAttch.Interface != matchIface {
+				mismatch = true
 				continue
-			} else {
+			}
+
+			blck, err = block.Get(db, blckAttch.Block)
+			if err != nil {
 				return
 			}
-		}
 
-		break
+			iface = blckAttch.Interface
+
+			ip, cidr, err = blck.GetIp6(db, instId, vlan)
+			if err != nil {
+				if _, ok := err.(*block.BlockFull); ok {
+					err = nil
+					continue
+				} else {
+					return
+				}
+			}
+
+			break
+		}
+	} else {
+		for _, blckAttch := range n.Blocks6 {
+			blck, err = block.Get(db, blckAttch.Block)
+			if err != nil {
+				return
+			}
+
+			iface = blckAttch.Interface
+
+			ip, cidr, err = blck.GetIp6(db, instId, vlan)
+			if err != nil {
+				if _, ok := err.(*block.BlockFull); ok {
+					err = nil
+					continue
+				} else {
+					return
+				}
+			}
+
+			break
+		}
 	}
 
 	if ip == nil {
-		err = &errortypes.NotFoundError{
-			errors.New("node: No external block6 addresses available"),
+		if mismatch {
+			err = &errortypes.NotFoundError{
+				errors.New("node: No external block6 with matching " +
+					"block interface available"),
+			}
+		} else {
+			err = &errortypes.NotFoundError{
+				errors.New("node: No external block6 addresses available"),
+			}
 		}
 		return
 	}
