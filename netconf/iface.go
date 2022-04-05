@@ -15,7 +15,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/zone"
 )
 
-func (n *NetConf) Iface(db *database.Database) (err error) {
+func (n *NetConf) Iface1(db *database.Database) (err error) {
 	zne, err := zone.Get(db, node.Self.Zone)
 	if err != nil {
 		return
@@ -72,6 +72,11 @@ func (n *NetConf) Iface(db *database.Database) (err error) {
 
 	n.Namespace = vm.GetNamespace(n.Virt.Id, 0)
 	n.VmAdapter = n.Virt.NetworkAdapters[0]
+
+	return
+}
+
+func (n *NetConf) Iface2(db *database.Database, clean bool) (err error) {
 	n.PhysicalHostIface = settings.Hypervisor.HostNetworkName
 
 	n.VirtIface = vm.GetIface(n.Virt.Id, 0)
@@ -95,14 +100,13 @@ func (n *NetConf) Iface(db *database.Database) (err error) {
 	)
 	n.DhcpLeasePath = paths.GetLeasePath(n.Virt.Id)
 
-	n.SpaceExternalIface = n.SpaceExternalIface
-	n.SystemExternalIface6 = n.SystemExternalIface
-	if n.NetworkMode != n.NetworkMode6 ||
-		n.NetworkMode6 == node.Static {
+	if (n.NetworkMode != n.NetworkMode6 ||
+		n.NetworkMode6 == node.Static) &&
+		(clean || n.PhysicalExternalIface != n.PhysicalExternalIface6) {
 
 		n.SpaceExternalIface6 = vm.GetIfaceExternal(n.Virt.Id, 1)
 		n.SystemExternalIface6 = vm.GetIfaceVirt(n.Virt.Id, 3)
-	} else if n.NetworkMode == n.NetworkMode6 {
+	} else {
 		n.SpaceExternalIface6 = n.SpaceExternalIface
 		n.SystemExternalIface6 = n.SystemExternalIface
 	}

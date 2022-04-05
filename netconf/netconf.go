@@ -100,12 +100,17 @@ func (n *NetConf) Init(db *database.Database) (err error) {
 		return
 	}
 
-	err = n.Iface(db)
+	err = n.Iface1(db)
 	if err != nil {
 		return
 	}
 
 	err = n.Address(db)
+	if err != nil {
+		return
+	}
+
+	err = n.Iface2(db, false)
 	if err != nil {
 		return
 	}
@@ -164,7 +169,12 @@ func (n *NetConf) Init(db *database.Database) (err error) {
 }
 
 func (n *NetConf) Clean(db *database.Database) (err error) {
-	err = n.Iface(db)
+	err = n.Iface1(db)
+	if err != nil {
+		return
+	}
+
+	err = n.Iface2(db, true)
 	if err != nil {
 		return
 	}
