@@ -243,6 +243,7 @@ export default class Organization extends React.Component<Props, State> {
 							dialogLabel="Delete Organization"
 							confirmMsg="Permanently delete this organization"
 							confirmInput={true}
+							items={[org.name]}
 							disabled={this.state.disabled}
 							onConfirm={this.onDelete}
 						/>

@@ -236,6 +236,7 @@ export default class DomainDetailed extends React.Component<Props, State> {
 							dialogLabel="Delete Domain"
 							confirmMsg="Permanently delete this domain"
 							confirmInput={true}
+							items={[domain.name]}
 							disabled={this.state.disabled}
 							onConfirm={this.onDelete}
 						/>

@@ -476,6 +476,7 @@ export default class DiskDetailed extends React.Component<Props, State> {
 							dialogLabel="Delete Disk"
 							confirmMsg="Permanently delete this disk"
 							confirmInput={true}
+							items={[disk.name]}
 							disabled={this.state.disabled}
 							onConfirm={this.onDelete}
 						/>

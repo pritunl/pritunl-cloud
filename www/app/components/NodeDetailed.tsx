@@ -1482,6 +1482,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							dialogLabel="Delete Node"
 							confirmMsg="Permanently delete this node"
 							confirmInput={true}
+							items={[node.name]}
 							disabled={active || this.state.disabled}
 							onConfirm={this.onDelete}
 						/>

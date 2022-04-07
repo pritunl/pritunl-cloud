@@ -1607,6 +1607,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 							dialogLabel="Delete Instance"
 							confirmMsg="Permanently delete this instance"
 							confirmInput={true}
+							items={[instance.name]}
 							disabled={this.state.disabled}
 							onConfirm={this.onDelete}
 						/>

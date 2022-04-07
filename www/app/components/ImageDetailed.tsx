@@ -265,6 +265,7 @@ export default class ImageDetailed extends React.Component<Props, State> {
 							dialogLabel="Delete Image"
 							confirmMsg="Permanently delete this image"
 							confirmInput={true}
+							items={[image.name]}
 							disabled={this.props.image.type === 'public' ||
 								this.state.disabled}
 							onConfirm={this.onDelete}
