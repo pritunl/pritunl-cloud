@@ -1498,6 +1498,16 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		}
 
 		if (this.props.instance.vnc) {
+			if (this.props.instance.info.node_public_ip) {
+				fields.push(
+					{
+						label: 'VNC IP',
+						value: this.props.instance.info.node_public_ip,
+						copy: true,
+					},
+				);
+			}
+
 			let vncPort;
 			if (this.props.instance.vnc_display) {
 				vncPort = this.props.instance.vnc_display + 5900;
