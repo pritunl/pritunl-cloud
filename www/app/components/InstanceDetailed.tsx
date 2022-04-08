@@ -1530,6 +1530,16 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		}
 
 		if (this.props.instance.spice) {
+			if (this.props.instance.info.node_public_ip) {
+				fields.push(
+					{
+						label: 'Spice IP',
+						value: this.props.instance.info.node_public_ip,
+						copy: true,
+					},
+				);
+			}
+
 			fields.push(
 				{
 					label: 'Spice Port',
