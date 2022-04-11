@@ -62,7 +62,7 @@ func (c *Check) host(db *database.Database) (err error) {
 	for _, iface := range ifaces {
 		mtu := 0
 
-		if iface.Ifname == "pritunlhost0" {
+		if iface.Ifname == settings.Hypervisor.HostNetworkName {
 			mtu = c.mtuHost
 		} else if internalIfaces.Contains(iface.Ifname) {
 			mtu = c.mtuHost
