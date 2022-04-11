@@ -73,6 +73,8 @@ func GetAllHypervisors(db *database.Database, query *bson.M) (
 				{"gui", 1},
 				{"available_vpcs", 1},
 				{"oracle_subnets", 1},
+				{"default_no_public_address", 1},
+				{"default_no_public_address6", 1},
 			},
 		},
 	)
