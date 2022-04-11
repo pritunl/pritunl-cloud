@@ -68,6 +68,7 @@ type Instance struct {
 	HostIps             []string           `bson:"host_ips" json:"host_ips"`
 	NetworkNamespace    string             `bson:"network_namespace" json:"network_namespace"`
 	NoPublicAddress     bool               `bson:"no_public_address" json:"no_public_address"`
+	NoPublicAddress6    bool               `bson:"no_public_address6" json:"no_public_address6"`
 	NoHostAddress       bool               `bson:"no_host_address" json:"no_host_address"`
 	Node                primitive.ObjectID `bson:"node" json:"node"`
 	Domain              primitive.ObjectID `bson:"domain,omitempty" json:"domain"`
@@ -725,6 +726,7 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 		Uefi:             i.Uefi,
 		SecureBoot:       i.SecureBoot,
 		NoPublicAddress:  i.NoPublicAddress,
+		NoPublicAddress6: i.NoPublicAddress6,
 		NoHostAddress:    i.NoHostAddress,
 		Isos:             []*vm.Iso{},
 		UsbDevices:       []*vm.UsbDevice{},
@@ -820,6 +822,7 @@ func (i *Instance) Changed(curVirt *vm.VirtualMachine) bool {
 		i.Virt.Uefi != curVirt.Uefi ||
 		i.Virt.SecureBoot != curVirt.SecureBoot ||
 		i.Virt.NoPublicAddress != curVirt.NoPublicAddress ||
+		i.Virt.NoPublicAddress6 != curVirt.NoPublicAddress6 ||
 		i.Virt.NoHostAddress != curVirt.NoHostAddress {
 
 		return true
