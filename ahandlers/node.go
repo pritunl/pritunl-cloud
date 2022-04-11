@@ -17,6 +17,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/zone"
 )
@@ -323,19 +324,19 @@ func nodeInitPost(c *gin.Context) {
 		nde.NetworkMode = node.Disabled
 		nde.NetworkMode6 = node.Dhcp
 		nde.InternalInterfaces = []string{
-			data.InternalInterface,
+			settings.Hypervisor.HostNetworkName,
 		}
 		nde.ExternalInterfaces = []string{
-			data.InternalInterface,
+			data.ExternalInterface,
 		}
 	} else {
-		nde.NetworkMode = node.Dhcp
+		nde.NetworkMode = node.Disabled
 		nde.NetworkMode6 = node.Dhcp
 		nde.InternalInterfaces = []string{
-			data.InternalInterface,
+			settings.Hypervisor.HostNetworkName,
 		}
 		nde.ExternalInterfaces = []string{
-			data.InternalInterface,
+			data.ExternalInterface,
 		}
 	}
 
@@ -345,7 +346,7 @@ func nodeInitPost(c *gin.Context) {
 		return
 	}
 
-	zne.NetworkMode = zone.VxlanVlan
+	zne.NetworkMode = zone.Default
 
 	err = zne.CommitFields(db, set.NewSet("network_mode"))
 	if err != nil {
