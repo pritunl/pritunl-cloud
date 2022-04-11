@@ -1959,11 +1959,19 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						}}
 					/>
 					<PageSwitch
-						label="Public address"
-						help="Enable or disable public address for instance. Node must have network mode configured to assign public address."
+						label="Public IPv4 address"
+						help="Enable or disable public IPv4 address for instance. Node must have network mode configured to assign public address."
 						checked={!instance.no_public_address}
 						onToggle={(): void => {
 							this.set('no_public_address', !instance.no_public_address);
+						}}
+					/>
+					<PageSwitch
+						label="Public IPv6 address"
+						help="Enable or disable public IPv6 address for instance. Node must have network mode configured to assign public address."
+						checked={!instance.no_public_address6}
+						onToggle={(): void => {
+							this.set('no_public_address6', !instance.no_public_address6);
 						}}
 					/>
 					<PageSwitch
