@@ -25,6 +25,7 @@ type hypervisor struct {
 	VxlanId            int    `bson:"vxlan_id" default:"9417"`
 	VxlanDestPort      int    `bson:"vxlan_dest_port" default:"4789"`
 	IpTimeout          int    `bson:"ip_timeout" default:"30"`
+	IpTimeout6         int    `bson:"ip_timeout6" default:"15"`
 	HostNetworkName    string `bson:"host_network_name" default:"pritunlhost0"`
 	StartTimeout       int    `bson:"start_timeout" default:"45"`
 	StopTimeout        int    `bson:"stop_timeout" default:"180"`
