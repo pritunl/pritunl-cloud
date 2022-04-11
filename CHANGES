@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Add option to disable public IPv6 address
+
 Version 1.2.2330.2 2022-04-11
 -----------------------------
 
