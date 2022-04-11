@@ -35,6 +35,7 @@ type VirtualMachine struct {
 	Uefi                bool               `json:"uefi"`
 	SecureBoot          bool               `json:"secure_boot"`
 	NoPublicAddress     bool               `json:"no_public_address"`
+	NoPublicAddress6    bool               `json:"no_public_address6"`
 	NoHostAddress       bool               `json:"no_host_address"`
 	Isos                []*Iso             `json:"isos"`
 	UsbDevices          []*UsbDevice       `json:"usb_devices"`
