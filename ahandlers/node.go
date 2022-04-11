@@ -23,49 +23,51 @@ import (
 )
 
 type nodeData struct {
-	Id                   primitive.ObjectID      `json:"id"`
-	Zone                 primitive.ObjectID      `json:"zone"`
-	Name                 string                  `json:"name"`
-	Comment              string                  `json:"comment"`
-	Types                []string                `json:"types"`
-	Port                 int                     `json:"port"`
-	NoRedirectServer     bool                    `json:"no_redirect_server"`
-	Protocol             string                  `json:"protocol"`
-	Hypervisor           string                  `json:"hypervisor"`
-	Vga                  string                  `json:"vga"`
-	VgaRender            string                  `json:"vga_render"`
-	Gui                  bool                    `json:"gui"`
-	GuiUser              string                  `json:"gui_user"`
-	GuiMode              string                  `json:"gui_mode"`
-	Certificates         []primitive.ObjectID    `json:"certificates"`
-	AdminDomain          string                  `json:"admin_domain"`
-	UserDomain           string                  `json:"user_domain"`
-	WebauthnDomain       string                  `json:"webauthn_domain"`
-	Services             []primitive.ObjectID    `json:"services"`
-	ExternalInterfaces   []string                `json:"external_interfaces"`
-	ExternalInterfaces6  []string                `json:"external_interfaces6"`
-	InternalInterfaces   []string                `json:"internal_interfaces"`
-	OracleSubnets        []string                `json:"oracle_subnets"`
-	NetworkMode          string                  `json:"network_mode"`
-	NetworkMode6         string                  `json:"network_mode6"`
-	Blocks               []*node.BlockAttachment `json:"blocks"`
-	Blocks6              []*node.BlockAttachment `json:"blocks6"`
-	InstanceDrives       []*drive.Device         `json:"instance_drives"`
-	HostBlock            primitive.ObjectID      `json:"host_block"`
-	HostNat              bool                    `json:"host_nat"`
-	JumboFrames          bool                    `json:"jumbo_frames"`
-	JumboFramesInternal  bool                    `json:"jumbo_frames_internal"`
-	Iscsi                bool                    `json:"iscsi"`
-	UsbPassthrough       bool                    `json:"usb_passthrough"`
-	PciPassthrough       bool                    `json:"pci_passthrough"`
-	Hugepages            bool                    `json:"hugepages"`
-	HugepagesSize        int                     `json:"hugepages_size"`
-	ForwardedForHeader   string                  `json:"forwarded_for_header"`
-	ForwardedProtoHeader string                  `json:"forwarded_proto_header"`
-	Firewall             bool                    `json:"firewall"`
-	NetworkRoles         []string                `json:"network_roles"`
-	OracleUser           string                  `json:"oracle_user"`
-	OracleHostRoute      bool                    `json:"oracle_host_route"`
+	Id                      primitive.ObjectID      `json:"id"`
+	Zone                    primitive.ObjectID      `json:"zone"`
+	Name                    string                  `json:"name"`
+	Comment                 string                  `json:"comment"`
+	Types                   []string                `json:"types"`
+	Port                    int                     `json:"port"`
+	NoRedirectServer        bool                    `json:"no_redirect_server"`
+	Protocol                string                  `json:"protocol"`
+	Hypervisor              string                  `json:"hypervisor"`
+	Vga                     string                  `json:"vga"`
+	VgaRender               string                  `json:"vga_render"`
+	Gui                     bool                    `json:"gui"`
+	GuiUser                 string                  `json:"gui_user"`
+	GuiMode                 string                  `json:"gui_mode"`
+	Certificates            []primitive.ObjectID    `json:"certificates"`
+	AdminDomain             string                  `json:"admin_domain"`
+	UserDomain              string                  `json:"user_domain"`
+	WebauthnDomain          string                  `json:"webauthn_domain"`
+	Services                []primitive.ObjectID    `json:"services"`
+	ExternalInterfaces      []string                `json:"external_interfaces"`
+	ExternalInterfaces6     []string                `json:"external_interfaces6"`
+	InternalInterfaces      []string                `json:"internal_interfaces"`
+	OracleSubnets           []string                `json:"oracle_subnets"`
+	NetworkMode             string                  `json:"network_mode"`
+	NetworkMode6            string                  `json:"network_mode6"`
+	Blocks                  []*node.BlockAttachment `json:"blocks"`
+	Blocks6                 []*node.BlockAttachment `json:"blocks6"`
+	InstanceDrives          []*drive.Device         `json:"instance_drives"`
+	HostBlock               primitive.ObjectID      `json:"host_block"`
+	HostNat                 bool                    `json:"host_nat"`
+	DefaultNoPublicAddress  bool                    `json:"default_no_public_address"`
+	DefaultNoPublicAddress6 bool                    `json:"default_no_public_address6"`
+	JumboFrames             bool                    `json:"jumbo_frames"`
+	JumboFramesInternal     bool                    `json:"jumbo_frames_internal"`
+	Iscsi                   bool                    `json:"iscsi"`
+	UsbPassthrough          bool                    `json:"usb_passthrough"`
+	PciPassthrough          bool                    `json:"pci_passthrough"`
+	Hugepages               bool                    `json:"hugepages"`
+	HugepagesSize           int                     `json:"hugepages_size"`
+	ForwardedForHeader      string                  `json:"forwarded_for_header"`
+	ForwardedProtoHeader    string                  `json:"forwarded_proto_header"`
+	Firewall                bool                    `json:"firewall"`
+	NetworkRoles            []string                `json:"network_roles"`
+	OracleUser              string                  `json:"oracle_user"`
+	OracleHostRoute         bool                    `json:"oracle_host_route"`
 }
 
 type nodesData struct {
@@ -137,6 +139,8 @@ func nodePut(c *gin.Context) {
 	nde.InstanceDrives = data.InstanceDrives
 	nde.HostBlock = data.HostBlock
 	nde.HostNat = data.HostNat
+	nde.DefaultNoPublicAddress = data.DefaultNoPublicAddress
+	nde.DefaultNoPublicAddress6 = data.DefaultNoPublicAddress6
 	nde.JumboFrames = data.JumboFrames
 	nde.JumboFramesInternal = data.JumboFramesInternal
 	nde.Iscsi = data.Iscsi
@@ -180,6 +184,8 @@ func nodePut(c *gin.Context) {
 		"instance_drives",
 		"host_block",
 		"host_nat",
+		"default_no_public_address",
+		"default_no_public_address6",
 		"jumbo_frames",
 		"jumbo_frames_internal",
 		"iscsi",
