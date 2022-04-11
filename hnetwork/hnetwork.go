@@ -5,7 +5,6 @@ import (
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"github.com/pritunl/pritunl-cloud/iproute"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -167,16 +166,10 @@ func removeNetwork(stat *state.State) (err error) {
 	if curGateway != "" || stat.HasInterfaces(
 		settings.Hypervisor.HostNetworkName) {
 
-		_, err = utils.ExecCombinedOutputLogged(
-			nil,
-			"ip", "link", "set",
-			"dev", settings.Hypervisor.HostNetworkName, "down",
-		)
+		err = clearAddr()
 		if err != nil {
 			return
 		}
-
-		_ = iproute.BridgeDelete("", settings.Hypervisor.HostNetworkName)
 
 		curGateway = ""
 	}
@@ -213,6 +206,17 @@ func ApplyState(stat *state.State) (err error) {
 		curGateway = addr
 	}
 
+	if !stat.HasInterfaces(settings.Hypervisor.HostNetworkName) {
+		logrus.WithFields(logrus.Fields{
+			"iface": settings.Hypervisor.HostNetworkName,
+		}).Info("hnetwork: Creating host interface")
+
+		err = create()
+		if err != nil {
+			return
+		}
+	}
+
 	hostBlock := stat.NodeHostBlock()
 	if hostBlock != nil {
 		gatewayCidr := hostBlock.GetGatewayCidr()
@@ -234,11 +238,6 @@ func ApplyState(stat *state.State) (err error) {
 				"host_block":         hostBlock.Id.Hex(),
 				"host_block_gateway": gatewayCidr,
 			}).Info("hnetwork: Updating host network bridge")
-
-			err = iproute.BridgeAdd("", settings.Hypervisor.HostNetworkName)
-			if err != nil {
-				return
-			}
 
 			err = setAddr(gatewayCidr)
 			if err != nil {
