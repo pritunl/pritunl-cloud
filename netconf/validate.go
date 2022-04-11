@@ -7,12 +7,15 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/iproute"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 )
 
 func (n *NetConf) Validate() (err error) {
+	namespace := vm.GetNamespace(n.Virt.Id, 0)
+
 	err = utils.ExistsMkdir(paths.GetLeasesPath(), 0755)
 	if err != nil {
 		return
@@ -45,6 +48,24 @@ func (n *NetConf) Validate() (err error) {
 		}
 
 		for _, iface := range ifaces {
+			if ifaceNames.Contains(iface.Name) {
+				ifaceNames.Remove(iface.Name)
+			}
+		}
+
+		if ifaceNames.Len() == 0 {
+			break
+		}
+
+		ifaces2, e := iproute.IfaceGetAll(namespace)
+		if e != nil {
+			err = &errortypes.ReadError{
+				errors.Wrap(e, "qemu: Failed to get network interfaces"),
+			}
+			return
+		}
+
+		for _, iface := range ifaces2 {
 			if ifaceNames.Contains(iface.Name) {
 				ifaceNames.Remove(iface.Name)
 			}
