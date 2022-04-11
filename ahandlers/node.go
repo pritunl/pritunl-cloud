@@ -321,12 +321,16 @@ func nodeInitPost(c *gin.Context) {
 	nde.Zone = data.Zone
 
 	if data.Provider == "phoenixnap" {
+		fields.Add("default_no_public_address")
+		nde.DefaultNoPublicAddress = true
 		nde.NetworkMode = node.Static
 		nde.NetworkMode6 = node.Disabled
 		nde.InternalInterfaces = []string{
 			data.InternalInterface,
 		}
 	} else if data.Provider == "vultr" {
+		fields.Add("default_no_public_address")
+		nde.DefaultNoPublicAddress = true
 		nde.NetworkMode = node.Disabled
 		nde.NetworkMode6 = node.Dhcp
 		nde.InternalInterfaces = []string{
