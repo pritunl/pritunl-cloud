@@ -36,6 +36,11 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 		guiMode = node.Sdl
 	}
 
+	namespace := ""
+	if !virt.HasExternalNetwork() {
+		namespace = vm.GetNamespace(virt.Id, 0)
+	}
+
 	qm = &Qemu{
 		Id:           virt.Id,
 		Data:         string(data),
@@ -60,6 +65,9 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 		Gui:          virt.Gui && node.Self.Gui && guiUser != "",
 		GuiUser:      guiUser,
 		GuiMode:      guiMode,
+		ProtectHome:  virt.ProtectHome(),
+		ProtectTmp:   virt.ProtectTmp(),
+		Namespace:    namespace,
 		Disks:        []*Disk{},
 		Networks:     []*Network{},
 		Isos:         []*Iso{},
