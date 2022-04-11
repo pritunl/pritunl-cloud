@@ -59,6 +59,7 @@ type instanceData struct {
 	Spice               bool               `json:"spice"`
 	Gui                 bool               `json:"gui"`
 	NoPublicAddress     bool               `json:"no_public_address"`
+	NoPublicAddress6    bool               `json:"no_public_address6"`
 	NoHostAddress       bool               `json:"no_host_address"`
 	Count               int                `json:"count"`
 }
@@ -127,6 +128,7 @@ func instancePut(c *gin.Context) {
 	inst.Gui = dta.Gui
 	inst.Domain = dta.Domain
 	inst.NoPublicAddress = dta.NoPublicAddress
+	inst.NoPublicAddress6 = dta.NoPublicAddress6
 	inst.NoHostAddress = dta.NoHostAddress
 
 	fields := set.NewSet(
@@ -162,6 +164,7 @@ func instancePut(c *gin.Context) {
 		"gui",
 		"domain",
 		"no_public_address",
+		"no_public_address6",
 		"no_host_address",
 	)
 
@@ -301,6 +304,7 @@ func instancePost(c *gin.Context) {
 			Gui:                 dta.Gui,
 			Domain:              dta.Domain,
 			NoPublicAddress:     dta.NoPublicAddress,
+			NoPublicAddress6:    dta.NoPublicAddress6,
 			NoHostAddress:       dta.NoHostAddress,
 		}
 
