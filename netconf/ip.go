@@ -145,9 +145,9 @@ func (n *NetConf) ipHost(db *database.Database) (err error) {
 
 func (n *NetConf) ipDetect(db *database.Database) (err error) {
 	time.Sleep(2 * time.Second)
-	start := time.Now()
 
 	ipTimeout := settings.Hypervisor.IpTimeout * 4
+	ipTimeout6 := settings.Hypervisor.IpTimeout6 * 4
 
 	pubAddr := ""
 	pubAddr6 := ""
@@ -164,9 +164,7 @@ func (n *NetConf) ipDetect(db *database.Database) (err error) {
 				n.SpaceExternalIface == n.SpaceExternalIface6 &&
 				n.NetworkMode6 != node.Oracle {
 
-				if (address != nil && address6 != nil) ||
-					time.Since(start) > 8*time.Second {
-
+				if address != nil && address6 != nil {
 					if address != nil {
 						pubAddr = address.Local
 					}
@@ -175,10 +173,8 @@ func (n *NetConf) ipDetect(db *database.Database) (err error) {
 					}
 					break
 				}
-			} else if address != nil || time.Since(start) > 8*time.Second {
-				if address != nil {
-					pubAddr = address.Local
-				}
+			} else if address != nil {
+				pubAddr = address.Local
 				break
 			}
 
@@ -209,7 +205,7 @@ func (n *NetConf) ipDetect(db *database.Database) (err error) {
 		n.SpaceExternalIface != n.SpaceExternalIface6 &&
 		n.NetworkMode6 != node.Oracle {
 
-		for i := 0; i < ipTimeout; i++ {
+		for i := 0; i < ipTimeout6; i++ {
 			_, address6, e := iproute.AddressGetIface(
 				n.Namespace, n.SpaceExternalIface6)
 			if e != nil {
