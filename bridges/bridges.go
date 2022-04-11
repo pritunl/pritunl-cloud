@@ -9,7 +9,6 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/iproute"
-	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -36,9 +35,7 @@ func GetBridges() (brdgs []string, err error) {
 	}
 
 	for _, iface := range ifaces {
-		if iface.Name == settings.Hypervisor.HostNetworkName ||
-			iface.Name == "" {
-
+		if iface.Name == "" {
 			continue
 		}
 
