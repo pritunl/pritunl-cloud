@@ -213,7 +213,7 @@ func NetworkConfOld(db *database.Database,
 	}
 
 	externalNetwork6 := externalNetwork
-	if !virt.NoPublicAddress && nodeNetworkMode6 != "" {
+	if !virt.NoPublicAddress6 && nodeNetworkMode6 != "" {
 		externalNetwork6 = true
 	}
 
