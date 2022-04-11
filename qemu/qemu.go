@@ -80,6 +80,9 @@ type Qemu struct {
 	Gui          bool
 	GuiUser      string
 	GuiMode      string
+	ProtectHome  bool
+	ProtectTmp   bool
+	Namespace    string
 	Disks        Disks
 	Networks     []*Network
 	Isos         []*Iso
@@ -591,11 +594,40 @@ func (q *Qemu) Marshal() (output string, err error) {
 		}
 	}
 
-	output = fmt.Sprintf(
-		systemdTemplate,
-		q.Data,
-		compositorEnv,
-		strings.Join(cmd, " "),
-	)
+	protectTmp := ""
+	if q.ProtectTmp {
+		protectTmp = "true"
+	} else {
+		protectTmp = "false"
+	}
+
+	protectHome := ""
+	if q.ProtectHome {
+		protectHome = "true"
+	} else {
+		protectHome = "false"
+	}
+
+	if q.Namespace == "" {
+		output = fmt.Sprintf(
+			systemdTemplateExternalNet,
+			q.Data,
+			compositorEnv,
+			strings.Join(cmd, " "),
+			protectTmp,
+			protectHome,
+		)
+	} else {
+		output = fmt.Sprintf(
+			systemdTemplate,
+			q.Data,
+			compositorEnv,
+			strings.Join(cmd, " "),
+			protectTmp,
+			protectHome,
+			q.Namespace,
+		)
+	}
+
 	return
 }
