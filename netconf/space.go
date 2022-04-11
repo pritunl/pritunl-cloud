@@ -132,7 +132,10 @@ func (n *NetConf) spaceForward(db *database.Database) (err error) {
 
 func (n *NetConf) spaceVirt(db *database.Database) (err error) {
 	_, err = utils.ExecCombinedOutputLogged(
-		[]string{"File exists"},
+		[]string{
+			"Cannot find device",
+			"File exists",
+		},
 		"ip", "link",
 		"set", "dev", n.VirtIface,
 		"netns", n.Namespace,
