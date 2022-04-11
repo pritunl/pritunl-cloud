@@ -368,13 +368,13 @@ export default class NodeDeploy extends React.Component<Props, State> {
 					<PageSelect
 						disabled={this.state.disabled || !ifacesSelect.length}
 						hidden={this.state.provider === 'phoenixnap'}
-						label="Network Interface"
-						help="Network interface for instance private VPC interface and IPv6 traffic. This interface will be used to send VPC traffic between instances located on multiple nodes. For single node clusters this interface will only be used for IPv6 traffic."
-						value={this.state.internalIface}
+						label="Public Network Interface"
+						help="Network interface for instance public traffic."
+						value={this.state.externalIface}
 						onChange={(val): void => {
 							this.setState({
 								...this.state,
-								internalIface: val,
+								externalIface: val,
 							});
 						}}
 					>
