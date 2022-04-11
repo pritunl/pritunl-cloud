@@ -234,7 +234,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 	}
 
 	onSecureBoot(secureBoot: boolean): void {
-		let instance: any = {
+		let instance: InstanceTypes.Instance = {
 			...this.state.instance,
 		};
 
@@ -242,6 +242,26 @@ export default class InstanceNew extends React.Component<Props, State> {
 			instance.image = '';
 		}
 		instance.secure_boot = secureBoot;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			instance: instance,
+		});
+	}
+
+	onNode(nodeId: string): void {
+		let instance: InstanceTypes.Instance = {
+			...this.state.instance,
+		};
+
+		instance.node = nodeId;
+
+		let node = NodesZoneStore.node(instance.node);
+		if (node) {
+			instance.no_public_address = node.default_no_public_address;
+			instance.no_public_address6 = node.default_no_public_address6;
+		}
 
 		this.setState({
 			...this.state,
@@ -679,7 +699,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 							help="Node to run instance on."
 							value={instance.node}
 							onChange={(val): void => {
-								this.set('node', val);
+								this.onNode(val);
 							}}
 						>
 							{nodesSelect}
@@ -926,11 +946,20 @@ export default class InstanceNew extends React.Component<Props, State> {
 						/>
 						<PageSwitch
 							disabled={this.state.disabled}
-							label="Public address"
-							help="Enable or disable public address for instance. Node must have network mode configured to assign public address."
+							label="Public IPv4 address"
+							help="Enable or disable public IPv4 address for instance. Node must have network mode configured to assign public address."
 							checked={!instance.no_public_address}
 							onToggle={(): void => {
 								this.set('no_public_address', !instance.no_public_address);
+							}}
+						/>
+						<PageSwitch
+							disabled={this.state.disabled}
+							label="Public IPv6 address"
+							help="Enable or disable public IPv6 address for instance. Node must have network mode configured to assign public address."
+							checked={!instance.no_public_address6}
+							onToggle={(): void => {
+								this.set('no_public_address6', !instance.no_public_address6);
 							}}
 						/>
 						<PageSwitch
