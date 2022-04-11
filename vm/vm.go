@@ -44,6 +44,19 @@ type VirtualMachine struct {
 	IscsiDevices        []*IscsiDevice     `json:"iscsi_devices"`
 }
 
+func (v *VirtualMachine) HasExternalNetwork() bool {
+	return v.Vnc || v.Spice || (v.IscsiDevices != nil &&
+		len(v.IscsiDevices) > 0)
+}
+
+func (v *VirtualMachine) ProtectHome() bool {
+	return !v.Gui
+}
+
+func (v *VirtualMachine) ProtectTmp() bool {
+	return !v.Gui
+}
+
 type Disk struct {
 	Id    primitive.ObjectID `json:"id"`
 	Index int                `json:"index"`
