@@ -36,6 +36,8 @@ func (n *NetConf) Iface1(db *database.Database) (err error) {
 	}
 	if n.NetworkMode == node.Internal || n.Virt.NoPublicAddress {
 		n.NetworkMode = node.Disabled
+	}
+	if n.Virt.NoPublicAddress6 {
 		n.NetworkMode6 = node.Disabled
 	}
 	n.HostBlock = node.Self.HostBlock
