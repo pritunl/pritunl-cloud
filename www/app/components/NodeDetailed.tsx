@@ -1885,6 +1885,26 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
+						label="Default instance public IPv4 address"
+						help="Enable or disable default option for instance public IPv4 address."
+						checked={!node.default_no_public_address}
+						onToggle={(): void => {
+							this.set('default_no_public_address',
+								!node.default_no_public_address);
+						}}
+					/>
+					<PageSwitch
+						disabled={this.state.disabled}
+						label="Default instance public IPv6 address"
+						help="Enable or disable default option for instance public IPv6 address."
+						checked={!node.default_no_public_address6}
+						onToggle={(): void => {
+							this.set('default_no_public_address6',
+								!node.default_no_public_address6);
+						}}
+					/>
+					<PageSwitch
+						disabled={this.state.disabled}
 						label="Jumbo frames external"
 						help="Enable jumbo frames on external interfaces, requires node restart when changed. Node external interfaces must be configured for 9000 MTU. Also requires internal jumbo frames."
 						checked={node.jumbo_frames}
