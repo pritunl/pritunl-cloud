@@ -2292,17 +2292,6 @@ export default class NodeDetailed extends React.Component<Props, State> {
 				}}
 				onSave={this.onSave}
 			>
-				<ConfirmButton
-					label="Restart"
-					className="bp3-intent-danger bp3-icon-updated"
-					progressClassName="bp3-intent-danger"
-					style={css.restart}
-					hidden={false}
-					disabled={this.state.disabled}
-					onConfirm={(): void => {
-						this.operation('restart');
-					}}
-				/>
 				<NodeDeploy
 					disabled={this.state.disabled || this.state.changed}
 					node={this.props.node}
