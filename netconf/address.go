@@ -74,7 +74,7 @@ func (n *NetConf) Address(db *database.Database) (err error) {
 		n.ExternalGatewayAddr = staticGateway
 	}
 
-	if n.NetworkMode == node.Disabled &&
+	if n.PhysicalExternalIface == "" &&
 		n.NetworkMode6 != node.Disabled &&
 		n.NetworkMode6 != node.Oracle {
 
@@ -86,7 +86,7 @@ func (n *NetConf) Address(db *database.Database) (err error) {
 
 	if n.NetworkMode6 == node.Static {
 		blck, staticAddr, prefix, iface, e := node.Self.GetStaticAddr6(
-			db, n.Virt.Id, vc.VpcId, n.PhysicalExternalIface)
+			db, n.Virt.Id, vc.VpcId, n.PhysicalExternalIface6)
 		if e != nil {
 			err = e
 			return

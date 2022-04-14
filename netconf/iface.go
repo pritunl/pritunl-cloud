@@ -83,9 +83,11 @@ func (n *NetConf) Iface2(db *database.Database, clean bool) (err error) {
 
 	n.VirtIface = vm.GetIface(n.Virt.Id, 0)
 	n.SystemExternalIface = vm.GetIfaceVirt(n.Virt.Id, 0)
+	n.SystemExternalIface6 = n.SystemExternalIface
 	n.SystemInternalIface = vm.GetIfaceVirt(n.Virt.Id, 1)
 	n.SystemHostIface = vm.GetIfaceVirt(n.Virt.Id, 2)
 	n.SpaceExternalIface = vm.GetIfaceExternal(n.Virt.Id, 0)
+	n.SpaceExternalIface6 = n.SpaceExternalIface
 	n.SpaceInternalIface = vm.GetIfaceInternal(n.Virt.Id, 0)
 	n.SpaceHostIface = vm.GetIfaceHost(n.Virt.Id, 0)
 	n.SpaceOracleIface = vm.GetIfaceOracle(n.Virt.Id, 0)
@@ -101,17 +103,6 @@ func (n *NetConf) Iface2(db *database.Database, clean bool) (err error) {
 		n.SpaceExternalIface,
 	)
 	n.DhcpLeasePath = paths.GetLeasePath(n.Virt.Id)
-
-	if (n.NetworkMode != n.NetworkMode6 ||
-		n.NetworkMode6 == node.Static) &&
-		(clean || n.PhysicalExternalIface != n.PhysicalExternalIface6) {
-
-		n.SpaceExternalIface6 = vm.GetIfaceExternal(n.Virt.Id, 1)
-		n.SystemExternalIface6 = vm.GetIfaceVirt(n.Virt.Id, 3)
-	} else {
-		n.SpaceExternalIface6 = n.SpaceExternalIface
-		n.SystemExternalIface6 = n.SystemExternalIface
-	}
 
 	if n.JumboFramesExternal || n.JumboFramesInternal || n.Vxlan {
 		mtuSizeExternal := 0
