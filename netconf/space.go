@@ -13,6 +13,41 @@ func (n *NetConf) spaceSysctl(db *database.Database) (err error) {
 	_, err = utils.ExecCombinedOutputLogged(
 		nil,
 		"ip", "netns", "exec", n.Namespace,
+		"sysctl", "-w", "net.ipv4.conf.all.accept_redirects=0",
+	)
+	if err != nil {
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", n.Namespace,
+		"sysctl", "-w", "net.ipv4.conf.default.accept_redirects=0",
+	)
+	if err != nil {
+		return
+	}
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", n.Namespace,
+		"sysctl", "-w", "net.ipv4.conf.all.rp_filter=1",
+	)
+	if err != nil {
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", n.Namespace,
+		"sysctl", "-w", "net.ipv4.conf.default.rp_filter=1",
+	)
+	if err != nil {
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", n.Namespace,
 		"sysctl", "-w", "net.ipv6.conf.all.accept_ra=0",
 	)
 	if err != nil {
