@@ -208,13 +208,6 @@ func GetVmInfo(db *database.Database, vmId primitive.ObjectID,
 		}
 
 		ifaceExternal := vm.GetIfaceExternal(virt.Id, 0)
-		ifaceExternal6 := ifaceExternal
-
-		if nodeNetworkMode != nodeNetworkMode6 ||
-			nodeNetworkMode6 == node.Static {
-
-			ifaceExternal6 = vm.GetIfaceExternal(virt.Id, 1)
-		}
 
 		if nodeNetworkMode != node.Disabled &&
 			nodeNetworkMode != node.Oracle {
@@ -234,14 +227,11 @@ func GetVmInfo(db *database.Database, vmId primitive.ObjectID,
 			if address6 != nil {
 				addr6 = address6.Local
 			}
-		}
-
-		if nodeNetworkMode6 != node.Disabled &&
-			ifaceExternal != ifaceExternal6 &&
+		} else if nodeNetworkMode6 != node.Disabled &&
 			nodeNetworkMode6 != node.Oracle {
 
 			_, address6, e := iproute.AddressGetIface(
-				namespace, ifaceExternal6)
+				namespace, ifaceExternal)
 			if e != nil {
 				err = e
 				_ = ForcePowerOffErr(db, virt, err)
