@@ -1,7 +1,8 @@
 pritunl-cloud changelog
 =======================
 
-<%= version %>
+Version 1.2.2333.97 2022-04-14
+------------------------------
 
 Improve instance management
 
