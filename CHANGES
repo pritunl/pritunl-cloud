@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Improve instance networking
+
 Version 1.2.2330.66 2022-04-11
 ------------------------------
 
