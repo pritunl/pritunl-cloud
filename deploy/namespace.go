@@ -42,17 +42,12 @@ func (n *Namespace) Deploy() (err error) {
 	}
 
 	externalNetwork := false
-	if nodeNetworkMode != node.Disabled && nodeNetworkMode != node.Oracle {
+	if (nodeNetworkMode != node.Disabled &&
+		nodeNetworkMode != node.Oracle) ||
+		(nodeNetworkMode6 != node.Disabled &&
+			nodeNetworkMode6 != node.Oracle) {
+
 		externalNetwork = true
-	}
-
-	externalNetwork6 := false
-	if nodeNetworkMode6 != node.Disabled &&
-		(nodeNetworkMode != nodeNetworkMode6 ||
-			nodeNetworkMode6 == node.Static) &&
-		nodeNetworkMode6 != node.Oracle {
-
-		externalNetwork6 = true
 	}
 
 	hostNetwork := false
@@ -69,18 +64,12 @@ func (n *Namespace) Deploy() (err error) {
 		if externalNetwork {
 			curVirtIfaces.Add(vm.GetIfaceVirt(inst.Id, 0))
 		}
-		if externalNetwork6 {
-			curVirtIfaces.Add(vm.GetIfaceVirt(inst.Id, 3))
-		}
 		curVirtIfaces.Add(vm.GetIfaceVirt(inst.Id, 1))
 		if hostNetwork {
 			curVirtIfaces.Add(vm.GetIfaceVirt(inst.Id, 2))
 		}
 		if externalNetwork {
 			curExternalIfaces.Add(vm.GetIfaceExternal(inst.Id, 0))
-		}
-		if externalNetwork6 {
-			curExternalIfaces.Add(vm.GetIfaceExternal(inst.Id, 1))
 		}
 	}
 
