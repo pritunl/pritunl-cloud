@@ -241,6 +241,10 @@ func (s *State) init() (err error) {
 	instances, err := instance.GetAllVirtMapped(db, &bson.M{
 		"node": s.nodeSelf.Id,
 	}, instanceDisks)
+	if err != nil {
+		return
+	}
+
 	s.instances = instances
 
 	instId := set.NewSet()
@@ -293,6 +297,9 @@ func (s *State) init() (err error) {
 	recrds, err := domain.GetRecordAll(db, &bson.M{
 		"node": s.nodeSelf.Id,
 	})
+	if err != nil {
+		return
+	}
 
 	domainRecordsMap := map[primitive.ObjectID][]*domain.Record{}
 	for _, recrd := range recrds {
