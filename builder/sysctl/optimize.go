@@ -26,6 +26,12 @@ vm.dirty_background_ratio = 3
 `
 	cachePressure = `vm.vfs_cache_pressure = 200
 `
+	sourceRoute = `net.ipv4.conf.all.accept_redirects = 0
+net.ipv4.conf.default.accept_redirects = 0
+`
+	rpFilter = `net.ipv4.conf.all.rp_filter=1
+net.ipv4.conf.default.rp_filter=1
+`
 	selinuxConfDisabled = `
 # This file controls the state of SELinux on the system.
 # SELINUX= can take one of these three values:
@@ -230,6 +236,96 @@ func CachePressure() (err error) {
 	return
 }
 
+func DisableSourceRoute() (err error) {
+	resp, err := prompt.ConfirmDefault(
+		"Disable source route packets [Y/n]",
+		true,
+	)
+	if err != nil {
+		return
+	}
+
+	pth := "/etc/sysctl.d/10-source-route.conf"
+	if resp {
+		err = utils.CreateWrite(
+			pth,
+			sourceRoute,
+			0644,
+		)
+		if err != nil {
+			return
+		}
+
+		logrus.WithFields(logrus.Fields{
+			"path": pth,
+		}).Info("sysctl: Disable source route packets")
+	} else {
+		exists, e := utils.Exists(pth)
+		if e != nil {
+			err = e
+			return
+		}
+
+		if exists {
+			err = utils.Remove(pth)
+			if err != nil {
+				return
+			}
+
+			logrus.WithFields(logrus.Fields{
+				"path": pth,
+			}).Info("sysctl: Disable source route packets")
+		}
+	}
+
+	return
+}
+
+func RpFilter() (err error) {
+	resp, err := prompt.ConfirmDefault(
+		"Enable packet rp filter [Y/n]",
+		true,
+	)
+	if err != nil {
+		return
+	}
+
+	pth := "/etc/sysctl.d/10-rp-filter.conf"
+	if resp {
+		err = utils.CreateWrite(
+			pth,
+			rpFilter,
+			0644,
+		)
+		if err != nil {
+			return
+		}
+
+		logrus.WithFields(logrus.Fields{
+			"path": pth,
+		}).Info("sysctl: Enable packet rp filter")
+	} else {
+		exists, e := utils.Exists(pth)
+		if e != nil {
+			err = e
+			return
+		}
+
+		if exists {
+			err = utils.Remove(pth)
+			if err != nil {
+				return
+			}
+
+			logrus.WithFields(logrus.Fields{
+				"path": pth,
+			}).Info("sysctl: Disable packet rp filter")
+		}
+	}
+
+	return
+}
+
 func RaidSpeedLimit() (err error) {
 	resp, err := prompt.ConfirmDefault(
 		"Limit raid sync speed [Y/n]",
@@ -370,6 +466,16 @@ func Optimize() (err error) {
 	}
 
 	err = CachePressure()
+	if err != nil {
+		return
+	}
+
+	err = DisableSourceRoute()
+	if err != nil {
+		return
+	}
+
+	err = RpFilter()
 	if err != nil {
 		return
 	}
