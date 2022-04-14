@@ -45,7 +45,6 @@ func LoadState(nodeSelf *node.Node, instances []*instance.Instance,
 		ifaceHost := vm.GetIfaceHost(inst.Id, 0)
 
 		ifaceExternal := vm.GetIfaceExternal(inst.Id, 0)
-		ifaceExternal6 := ifaceExternal
 
 		addr := ""
 		addr6 := ""
@@ -91,24 +90,24 @@ func LoadState(nodeSelf *node.Node, instances []*instance.Instance,
 		// TODO Move to netconf
 
 		nat6 := false
-		if nodeNetworkMode6 != node.Disabled &&
-			nodeNetworkMode6 != node.Oracle {
-
-			if ifaceExternal != ifaceExternal6 {
-				rules := generateInternal(namespace, ifaceExternal6,
-					false, true, addr, pubAddr, addr6, pubAddr6,
-					oracleAddr, ingress)
-				state.Interfaces[namespace+"-"+ifaceExternal6] = rules
-			} else {
-				nat6 = true
-			}
-		}
-
 		if nodeNetworkMode != node.Disabled &&
 			nodeNetworkMode != node.Oracle {
 
+			if nodeNetworkMode6 != node.Disabled &&
+				nodeNetworkMode6 != node.Oracle {
+
+				nat6 = true
+			}
+
 			rules := generateInternal(namespace, ifaceExternal,
 				true, nat6, addr, pubAddr, addr6, pubAddr6,
+				oracleAddr, ingress)
+			state.Interfaces[namespace+"-"+ifaceExternal] = rules
+		} else if nodeNetworkMode6 != node.Disabled &&
+			nodeNetworkMode6 != node.Oracle {
+
+			rules := generateInternal(namespace, ifaceExternal,
+				false, true, addr, pubAddr, addr6, pubAddr6,
 				oracleAddr, ingress)
 			state.Interfaces[namespace+"-"+ifaceExternal] = rules
 		}
