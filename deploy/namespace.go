@@ -18,6 +18,10 @@ import (
 	"github.com/pritunl/pritunl-cloud/vm"
 )
 
+var (
+	firstRun = true
+)
+
 type Namespace struct {
 	stat *state.State
 }
@@ -71,7 +75,22 @@ func (n *Namespace) Deploy() (err error) {
 		if externalNetwork {
 			curExternalIfaces.Add(vm.GetIfaceExternal(inst.Id, 0))
 		}
+
+		// TODO Upgrade code
+		if firstRun {
+			namespace := vm.GetNamespace(inst.Id, 0)
+			iface := vm.GetIfaceExternal(inst.Id, 1)
+
+			_, _ = utils.ExecCombinedOutput("",
+				"ip", "netns", "exec", namespace,
+				"ip", "link", "set", iface, "down")
+			_, _ = utils.ExecCombinedOutput("",
+				"ip", "netns", "exec", namespace,
+				"ip", "link", "del", iface)
+		}
 	}
+
+	firstRun = true
 
 	for _, iface := range ifaces {
 		if len(iface) != 14 || !strings.HasPrefix(iface, "v") {
