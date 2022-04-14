@@ -47,13 +47,6 @@ func LoadState(nodeSelf *node.Node, instances []*instance.Instance,
 		ifaceExternal := vm.GetIfaceExternal(inst.Id, 0)
 		ifaceExternal6 := ifaceExternal
 
-		if nodeNetworkMode == node.Disabled &&
-			nodeNetworkMode6 != node.Disabled &&
-			nodeNetworkMode6 != node.Oracle {
-
-			ifaceExternal6 = vm.GetIfaceExternal(inst.Id, 1)
-		}
-
 		addr := ""
 		addr6 := ""
 		pubAddr := ""
