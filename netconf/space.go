@@ -63,13 +63,13 @@ func (n *NetConf) spaceSysctl(db *database.Database) (err error) {
 		return
 	}
 
-	if n.NetworkMode6 == node.Static {
+	if n.NetworkMode6 != node.Dhcp {
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
 			"ip", "netns", "exec", n.Namespace,
 			"sysctl", "-w",
 			fmt.Sprintf("net.ipv6.conf.%s.autoconf=0",
-				n.SpaceExternalIface6),
+				n.SpaceExternalIface),
 		)
 		if err != nil {
 			return
@@ -82,7 +82,7 @@ func (n *NetConf) spaceSysctl(db *database.Database) (err error) {
 			"ip", "netns", "exec", n.Namespace,
 			"sysctl", "-w",
 			fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2",
-				n.SpaceExternalIface6),
+				n.SpaceExternalIface),
 		)
 		if err != nil {
 			return
@@ -93,7 +93,9 @@ func (n *NetConf) spaceSysctl(db *database.Database) (err error) {
 }
 
 func (n *NetConf) spaceForward(db *database.Database) (err error) {
-	if n.NetworkMode != node.Disabled && n.NetworkMode != node.Oracle {
+	if (n.NetworkMode != node.Disabled && n.NetworkMode != node.Oracle) ||
+		(n.NetworkMode6 != node.Disabled && n.NetworkMode6 != node.Oracle) {
+
 		iptables.Lock()
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
@@ -108,9 +110,7 @@ func (n *NetConf) spaceForward(db *database.Database) (err error) {
 		if err != nil {
 			return
 		}
-	}
 
-	if n.NetworkMode6 != node.Disabled && n.NetworkMode6 != node.Oracle {
 		iptables.Lock()
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
@@ -118,7 +118,7 @@ func (n *NetConf) spaceForward(db *database.Database) (err error) {
 			"ip6tables",
 			"-I", "FORWARD", "1",
 			"!", "-d", n.InternalAddr6.String()+"/128",
-			"-i", n.SpaceExternalIface6,
+			"-i", n.SpaceExternalIface,
 			"-j", "DROP",
 		)
 		iptables.Unlock()

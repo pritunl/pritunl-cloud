@@ -25,16 +25,13 @@ func (n *NetConf) Clear(db *database.Database) (err error) {
 	}
 
 	clearIface(n.SystemExternalIface)
-	clearIface(n.SystemExternalIface6)
 	clearIface(n.SystemInternalIface)
 	clearIface(n.SystemHostIface)
 	clearIface(n.SpaceExternalIface)
-	clearIface(n.SpaceExternalIface6)
 	clearIface(n.SpaceInternalIface)
 	clearIface(n.SpaceHostIface)
 
 	interfaces.RemoveVirtIface(n.SystemExternalIface)
-	interfaces.RemoveVirtIface(n.SystemExternalIface6)
 	interfaces.RemoveVirtIface(n.SystemInternalIface)
 
 	return

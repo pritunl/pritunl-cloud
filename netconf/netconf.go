@@ -38,7 +38,6 @@ type NetConf struct {
 
 	VirtIface            string
 	SpaceExternalIface   string
-	SpaceExternalIface6  string
 	SpaceInternalIface   string
 	SpaceHostIface       string
 	SpaceOracleIface     string
@@ -46,23 +45,18 @@ type NetConf struct {
 
 	BridgeInternalIface string
 
-	SystemExternalIface  string
-	SystemExternalIface6 string
-	SystemInternalIface  string
-	SystemHostIface      string
+	SystemExternalIface string
+	SystemInternalIface string
+	SystemHostIface     string
 
-	PhysicalExternalIface        string
-	PhysicalExternalIfaceBridge  bool
-	PhysicalExternalIface6       string
-	PhysicalExternalIfaceBridge6 bool
-	PhysicalInternalIface        string
-	PhysicalInternalIfaceBridge  bool
-	PhysicalHostIface            string
+	PhysicalExternalIface       string
+	PhysicalExternalIfaceBridge bool
+	PhysicalInternalIface       string
+	PhysicalInternalIfaceBridge bool
+	PhysicalHostIface           string
 
-	SpaceExternalIfaceMtu   string
-	SpaceExternalIfaceMtu6  string
-	SystemExternalIfaceMtu  string
-	SystemExternalIfaceMtu6 string
+	SpaceExternalIfaceMtu  string
+	SystemExternalIfaceMtu string
 
 	SpaceInternalIfaceMtu  string
 	BridgeInternalIfaceMtu string
@@ -88,10 +82,9 @@ type NetConf struct {
 	HostAddrCidr    string
 	HostGatewayAddr net.IP
 
-	ExternalMacAddr  string
-	ExternalMacAddr6 string
-	InternalMacAddr  string
-	HostMacAddr      string
+	ExternalMacAddr string
+	InternalMacAddr string
+	HostMacAddr     string
 }
 
 func (n *NetConf) Init(db *database.Database) (err error) {

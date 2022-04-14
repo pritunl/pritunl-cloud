@@ -83,11 +83,9 @@ func (n *NetConf) Iface2(db *database.Database, clean bool) (err error) {
 
 	n.VirtIface = vm.GetIface(n.Virt.Id, 0)
 	n.SystemExternalIface = vm.GetIfaceVirt(n.Virt.Id, 0)
-	n.SystemExternalIface6 = n.SystemExternalIface
 	n.SystemInternalIface = vm.GetIfaceVirt(n.Virt.Id, 1)
 	n.SystemHostIface = vm.GetIfaceVirt(n.Virt.Id, 2)
 	n.SpaceExternalIface = vm.GetIfaceExternal(n.Virt.Id, 0)
-	n.SpaceExternalIface6 = n.SpaceExternalIface
 	n.SpaceInternalIface = vm.GetIfaceInternal(n.Virt.Id, 0)
 	n.SpaceHostIface = vm.GetIfaceHost(n.Virt.Id, 0)
 	n.SpaceOracleIface = vm.GetIfaceOracle(n.Virt.Id, 0)
@@ -120,9 +118,7 @@ func (n *NetConf) Iface2(db *database.Database, clean bool) (err error) {
 		}
 
 		n.SpaceExternalIfaceMtu = strconv.Itoa(mtuSizeExternal)
-		n.SpaceExternalIfaceMtu6 = strconv.Itoa(mtuSizeExternal)
 		n.SystemExternalIfaceMtu = strconv.Itoa(mtuSizeExternal)
-		n.SystemExternalIfaceMtu6 = strconv.Itoa(mtuSizeExternal)
 
 		n.SpaceHostIfaceMtu = strconv.Itoa(mtuSizeInternal)
 		n.SystemHostIfaceMtu = strconv.Itoa(mtuSizeInternal)

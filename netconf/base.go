@@ -13,13 +13,6 @@ func (n *NetConf) Base(db *database.Database) (err error) {
 			return
 		}
 	}
-	if n.PhysicalExternalIface6 != "" {
-		n.PhysicalExternalIfaceBridge6, err = utils.IsInterfaceBridge(
-			n.PhysicalExternalIface6)
-		if err != nil {
-			return
-		}
-	}
 	n.PhysicalInternalIfaceBridge, err = utils.IsInterfaceBridge(
 		n.PhysicalInternalIface)
 	if err != nil {

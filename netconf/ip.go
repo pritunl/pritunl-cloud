@@ -17,7 +17,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/store"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
-	"github.com/sirupsen/logrus"
 )
 
 func (n *NetConf) ipStartDhClient(db *database.Database) (err error) {
@@ -89,7 +88,7 @@ func (n *NetConf) ipExternal(db *database.Database) (err error) {
 			"ip", "netns", "exec", n.Namespace,
 			"ip", "-6", "addr",
 			"add", n.ExternalAddrCidr6,
-			"dev", n.SpaceExternalIface6,
+			"dev", n.SpaceExternalIface,
 		)
 		if err != nil {
 			return
@@ -102,7 +101,7 @@ func (n *NetConf) ipExternal(db *database.Database) (err error) {
 				"ip", "-6", "route",
 				"add", "default",
 				"via", n.ExternalGatewayAddr6.String(),
-				"dev", n.SpaceExternalIface6,
+				"dev", n.SpaceExternalIface,
 			)
 			if err != nil {
 				return
@@ -161,7 +160,6 @@ func (n *NetConf) ipDetect(db *database.Database) (err error) {
 			}
 
 			if n.NetworkMode6 != node.Disabled &&
-				n.SpaceExternalIface == n.SpaceExternalIface6 &&
 				n.NetworkMode6 != node.Oracle {
 
 				if address != nil && address6 != nil {
@@ -187,27 +185,12 @@ func (n *NetConf) ipDetect(db *database.Database) (err error) {
 			}
 			return
 		}
-
-		if n.NetworkMode6 != node.Disabled &&
-			n.SpaceExternalIface == n.SpaceExternalIface6 &&
-			n.NetworkMode6 != node.Oracle {
-
-			if pubAddr6 == "" {
-				logrus.WithFields(logrus.Fields{
-					"instance_id":   n.Virt.Id.Hex(),
-					"net_namespace": n.Namespace,
-				}).Warning("qemu: Instance missing IPv6 address")
-			}
-		}
-	}
-
-	if n.NetworkMode6 != node.Disabled &&
-		n.SpaceExternalIface != n.SpaceExternalIface6 &&
+	} else if n.NetworkMode6 != node.Disabled &&
 		n.NetworkMode6 != node.Oracle {
 
 		for i := 0; i < ipTimeout6; i++ {
 			_, address6, e := iproute.AddressGetIface(
-				n.Namespace, n.SpaceExternalIface6)
+				n.Namespace, n.SpaceExternalIface)
 			if e != nil {
 				err = e
 				return
