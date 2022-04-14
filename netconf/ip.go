@@ -321,6 +321,29 @@ func (n *NetConf) ipDatabase(db *database.Database) (err error) {
 	return
 }
 
+func (n *NetConf) ipInit6(db *database.Database) (err error) {
+	if n.NetworkMode6 == node.Disabled || n.NetworkMode6 == node.Oracle {
+		_, err = utils.ExecCombinedOutput(
+			"",
+			"ip", "netns", "exec", n.Namespace,
+			"ping", "-c", "1", "-w", "3", "app6.pritunl.com",
+		)
+		if err != nil {
+			err = nil
+
+			time.Sleep(500 * time.Millisecond)
+
+			_, _ = utils.ExecCombinedOutput(
+				"",
+				"ip", "netns", "exec", n.Namespace,
+				"ping", "-c", "1", "-w", "2", "app6.pritunl.com",
+			)
+		}
+	}
+
+	return
+}
+
 func (n *NetConf) Ip(db *database.Database) (err error) {
 	err = n.ipStartDhClient(db)
 	if err != nil {
@@ -348,6 +371,11 @@ func (n *NetConf) Ip(db *database.Database) (err error) {
 	}
 
 	err = n.ipDatabase(db)
+	if err != nil {
+		return
+	}
+
+	err = n.ipInit6(db)
 	if err != nil {
 		return
 	}
