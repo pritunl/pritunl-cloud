@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Support IPv6 only instances
+
 Version 1.2.2334.69 2022-04-15
 ------------------------------
 
