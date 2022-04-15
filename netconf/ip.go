@@ -17,6 +17,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/store"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
+	"github.com/sirupsen/logrus"
 )
 
 func (n *NetConf) ipStartDhClient(db *database.Database) (err error) {
@@ -322,22 +323,21 @@ func (n *NetConf) ipDatabase(db *database.Database) (err error) {
 }
 
 func (n *NetConf) ipInit6(db *database.Database) (err error) {
-	if n.NetworkMode6 == node.Disabled || n.NetworkMode6 == node.Oracle {
+	if n.NetworkMode6 != node.Disabled && n.NetworkMode6 != node.Oracle &&
+		n.PublicAddress6 != "" {
+
 		_, err = utils.ExecCombinedOutput(
 			"",
 			"ip", "netns", "exec", n.Namespace,
-			"ping", "-c", "1", "-w", "3", "app6.pritunl.com",
+			"ping", "-c", "3", "-i", "0.5", "-w", "6", "app6.pritunl.com",
 		)
 		if err != nil {
 			err = nil
-
-			time.Sleep(500 * time.Millisecond)
-
-			_, _ = utils.ExecCombinedOutput(
-				"",
-				"ip", "netns", "exec", n.Namespace,
-				"ping", "-c", "1", "-w", "2", "app6.pritunl.com",
-			)
+			logrus.WithFields(logrus.Fields{
+				"instance_id": n.Virt.Id.Hex(),
+				"namespace":   n.Namespace,
+				"address6":    n.PublicAddress6,
+			}).Warn("netconf: Failed to initialize IPv6 network ping")
 		}
 	}
 
