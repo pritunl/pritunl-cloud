@@ -324,20 +324,69 @@ func (n *NetConf) ipDatabase(db *database.Database) (err error) {
 
 func (n *NetConf) ipInit6(db *database.Database) (err error) {
 	if n.NetworkMode6 != node.Disabled && n.NetworkMode6 != node.Oracle &&
-		n.PublicAddress6 != "" {
+		n.PublicAddress6 != "" && !settings.Hypervisor.NoIpv6PingInit {
 
-		_, err = utils.ExecCombinedOutput(
-			"",
-			"ip", "netns", "exec", n.Namespace,
-			"ping", "-c", "3", "-i", "0.5", "-w", "6", "app6.pritunl.com",
-		)
-		if err != nil {
-			err = nil
+		_, e := utils.DnsLookup("2001:4860:4860::8888", "app6.pritunl.com")
+		if e != nil {
 			logrus.WithFields(logrus.Fields{
 				"instance_id": n.Virt.Id.Hex(),
 				"namespace":   n.Namespace,
 				"address6":    n.PublicAddress6,
+				"error":       e,
+			}).Warn("netconf: Failed to initialize IPv6 network DNS lookup")
+		}
+
+		output, e := utils.ExecCombinedOutput(
+			"",
+			"ip", "netns", "exec", n.Namespace,
+			"ping", "-c", "3", "-i", "0.5", "-w", "6", "2001:4860:4860::8888",
+		)
+		if e != nil {
+			logrus.WithFields(logrus.Fields{
+				"instance_id": n.Virt.Id.Hex(),
+				"namespace":   n.Namespace,
+				"address6":    n.PublicAddress6,
+				"output":      output,
 			}).Warn("netconf: Failed to initialize IPv6 network ping")
+		}
+	}
+
+	return
+}
+
+func (n *NetConf) ipInit6Alt(db *database.Database) (err error) {
+	if n.NetworkMode6 != node.Disabled && n.NetworkMode6 != node.Oracle &&
+		n.PublicAddress6 != "" && !settings.Hypervisor.NoIpv6PingInit {
+
+		addrs, e := utils.DnsLookup("2001:4860:4860::8888", "app6.pritunl.com")
+		if e != nil {
+			logrus.WithFields(logrus.Fields{
+				"instance_id": n.Virt.Id.Hex(),
+				"namespace":   n.Namespace,
+				"address6":    n.PublicAddress6,
+				"error":       e,
+			}).Warn("netconf: Failed to initialize IPv6 network DNS lookup")
+		} else if addrs != nil && len(addrs) > 0 {
+			output, e := utils.ExecCombinedOutput(
+				"",
+				"ip", "netns", "exec", n.Namespace,
+				"ping", "-c", "3", "-i", "0.5", "-w", "6", addrs[0],
+			)
+			if e != nil {
+				logrus.WithFields(logrus.Fields{
+					"instance_id": n.Virt.Id.Hex(),
+					"namespace":   n.Namespace,
+					"address6":    n.PublicAddress6,
+					"output":      output,
+				}).Warn("netconf: Failed to initialize IPv6 network ping")
+			}
+		} else {
+			logrus.WithFields(logrus.Fields{
+				"instance_id": n.Virt.Id.Hex(),
+				"namespace":   n.Namespace,
+				"address6":    n.PublicAddress6,
+				"lookup":      addrs,
+			}).Warn("netconf: Failed to initialize IPv6 network DNS lookup")
 		}
 	}
 
