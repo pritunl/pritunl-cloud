@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Fix issue with instance startup
+
 Version 1.2.2333.97 2022-04-14
 ------------------------------
 
