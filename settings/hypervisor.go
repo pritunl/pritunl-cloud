@@ -31,6 +31,7 @@ type hypervisor struct {
 	StopTimeout        int    `bson:"stop_timeout" default:"180"`
 	RefreshRate        int    `bson:"refresh_rate" default:"90"`
 	SplashTime         int    `bson:"splash_time" default:"60"`
+	NoIpv6PingInit     bool   `bson:"no_ipv6_ping_init"`
 }
 
 func newHypervisor() interface{} {
