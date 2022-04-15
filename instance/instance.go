@@ -567,6 +567,12 @@ func (i *Instance) IsActive() bool {
 		i.VmState == vm.Starting || i.VmState == vm.Provisioning
 }
 
+func (i *Instance) IsIpv6Only() bool {
+	return (node.Self.NetworkMode == node.Disabled || i.NoPublicAddress) &&
+		(node.Self.NetworkMode6 != node.Disabled && !i.NoPublicAddress6) &&
+		(node.Self.HostBlock.IsZero() || i.NoHostAddress)
+}
+
 func (i *Instance) PreCommit() {
 	i.curVpc = i.Vpc
 	i.curSubnet = i.Subnet
