@@ -47,8 +47,8 @@ config:
         network: {{.Network}}
         gateway: {{.Gateway}}
         dns_nameservers:
-          - 8.8.8.8
-          - 8.8.4.4
+          - {{.Dns1}}
+          - {{.Dns2}}
       - type: static
         address: {{.Address6}}
         gateway: {{.Gateway6}}
@@ -66,8 +66,8 @@ ethernets:
     gateway6: {{.Gateway6}}
     nameservers:
       addresses:
-        - 8.8.8.8
-        - 8.8.4.4
+        - {{.Dns1}}
+        - {{.Dns2}}
 `
 
 const netMtu = `
@@ -123,6 +123,8 @@ type netConfigData struct {
 	Address6     string
 	AddressCidr6 string
 	Gateway6     string
+	Dns1         string
+	Dns2         string
 }
 
 type cloudConfigData struct {
@@ -307,6 +309,16 @@ func getNetData(db *database.Database, inst *instance.Instance,
 	addr6 := vc.GetIp6(addr)
 	gatewayAddr6 := vc.GetIp6(gatewayAddr)
 
+	dns1 := ""
+	dns2 := ""
+	if inst.IsIpv6Only() {
+		dns1 = settings.Hypervisor.DnsServerPrimary6
+		dns2 = settings.Hypervisor.DnsServerSecondary6
+	} else {
+		dns1 = settings.Hypervisor.DnsServerPrimary
+		dns2 = settings.Hypervisor.DnsServerSecondary
+	}
+
 	data := netConfigData{
 		Mac:          adapter.MacAddress,
 		Address:      addr.String(),
@@ -317,6 +329,8 @@ func getNetData(db *database.Database, inst *instance.Instance,
 		Address6:     addr6.String(),
 		AddressCidr6: addr6.String() + "/64",
 		Gateway6:     gatewayAddr6.String(),
+		Dns1:         dns1,
+		Dns2:         dns2,
 	}
 
 	data.Mtu = fmt.Sprintf(netMtu, instance.GetInstanceMtu(
