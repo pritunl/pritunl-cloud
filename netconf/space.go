@@ -63,7 +63,7 @@ func (n *NetConf) spaceSysctl(db *database.Database) (err error) {
 		return
 	}
 
-	if n.NetworkMode6 != node.Dhcp {
+	if n.NetworkMode6 == node.Static {
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
 			"ip", "netns", "exec", n.Namespace,
@@ -102,7 +102,9 @@ func (n *NetConf) spaceSysctl(db *database.Database) (err error) {
 		}
 	}
 
-	if n.NetworkMode6 == node.Disabled || n.NetworkMode6 == node.Oracle {
+	if (n.NetworkMode != node.Disabled && n.NetworkMode != node.Oracle) &&
+		(n.NetworkMode6 == node.Disabled || n.NetworkMode6 == node.Oracle) {
+
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
 			"ip", "netns", "exec", n.Namespace,
