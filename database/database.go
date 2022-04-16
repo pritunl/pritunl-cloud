@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"net/url"
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
@@ -11,6 +10,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/mongo-go-driver/mongo/readconcern"
 	"github.com/pritunl/mongo-go-driver/mongo/writeconcern"
+	"github.com/pritunl/mongo-go-driver/x/mongo/driver/connstring"
 	"github.com/pritunl/pritunl-cloud/config"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -259,7 +259,7 @@ func (d *Database) Geo() (coll *Collection) {
 }
 
 func Connect() (err error) {
-	mongoUrl, err := url.Parse(config.Config.MongoUri)
+	mongoUrl, err := connstring.ParseAndValidate(config.Config.MongoUri)
 	if err != nil {
 		err = &ConnectionError{
 			errors.Wrap(err, "database: Failed to parse mongo uri"),
@@ -268,12 +268,11 @@ func Connect() (err error) {
 	}
 
 	logrus.WithFields(logrus.Fields{
-		"mongodb_host": mongoUrl.Host,
+		"mongodb_hosts": mongoUrl.Hosts,
 	}).Info("database: Connecting to MongoDB server")
 
-	path := mongoUrl.Path
-	if len(path) > 1 {
-		DefaultDatabase = path[1:]
+	if mongoUrl.Database != "" {
+		DefaultDatabase = mongoUrl.Database
 	}
 
 	opts := options.Client().ApplyURI(config.Config.MongoUri)
@@ -310,7 +309,7 @@ func Connect() (err error) {
 	}
 
 	logrus.WithFields(logrus.Fields{
-		"mongodb_host": mongoUrl.Host,
+		"mongodb_hosts": mongoUrl.Hosts,
 	}).Info("database: Connected to MongoDB server")
 
 	return
