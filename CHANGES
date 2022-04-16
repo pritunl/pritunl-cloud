@@ -1,7 +1,8 @@
 pritunl-cloud changelog
 =======================
 
-<%= version %>
+Version 1.2.2335.81 2022-04-16
+------------------------------
 
 Add support for MongoDB unix socket
 
