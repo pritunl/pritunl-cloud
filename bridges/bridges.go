@@ -20,6 +20,11 @@ var (
 	lastAddrSync    = map[string]time.Time{}
 )
 
+func ClearCache() {
+	lastBridgesSync = time.Time{}
+	bridges = []string{}
+}
+
 func GetBridges() (brdgs []string, err error) {
 	if time.Since(lastBridgesSync) < 300*time.Second {
 		brdgs = bridges
