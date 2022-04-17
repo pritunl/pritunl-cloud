@@ -3,6 +3,7 @@ package hnetwork
 import (
 	"fmt"
 
+	"github.com/pritunl/pritunl-cloud/bridges"
 	"github.com/pritunl/pritunl-cloud/iproute"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -22,6 +23,8 @@ func create() (err error) {
 	if err != nil {
 		return
 	}
+
+	bridges.ClearCache()
 
 	return
 }
