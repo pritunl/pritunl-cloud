@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Fix compatibility issue with Fedora update
+
 Version 1.2.2335.81 2022-04-16
 ------------------------------
 
