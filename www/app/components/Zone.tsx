@@ -201,7 +201,7 @@ export default class Zone extends React.Component<Props, State> {
 					<PageSelect
 						disabled={this.state.disabled}
 						label="Network Mode"
-						help="Network mode for internal VPC networking. If layer 2 networking with VLAN support isn't available VXLan must be used. A network bridge is required for the node internal interfaces when using default."
+						help="Network mode for internal VPC networking. If layer 2 networking with VLAN support isn't available VXLan must be used. A network bridge is required for the node internal interfaces when using default. Other zones in datacenter must use same network mode to support connectivity between zones."
 						value={zone.network_mode}
 						onChange={(val): void => {
 							this.set('network_mode', val);
