@@ -353,7 +353,7 @@ func InstallMongo(mongoUri string) (err error) {
 		return
 	}
 
-	err = utils.Write(
+	err = utils.CreateWrite(
 		"/etc/pritunl-cloud.json",
 		string(confData),
 		0600,
