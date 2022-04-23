@@ -54,6 +54,7 @@ export interface Instance {
 	gui?: boolean;
 	domain?: string;
 	no_public_address?: boolean;
+	no_public_address6?: boolean;
 	no_host_address?: boolean;
 	vpc?: string;
 	subnet?: string;
