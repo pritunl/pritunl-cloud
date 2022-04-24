@@ -44,6 +44,8 @@ export interface Node {
 	instance_drives?: Drive[];
 	host_block?: string;
 	host_nat?: boolean;
+	default_no_public_address?: boolean;
+	default_no_public_address6?: boolean;
 	jumbo_frames?: boolean;
 	jumbo_frames_internal?: boolean;
 	iscsi?: boolean;
