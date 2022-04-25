@@ -91,10 +91,14 @@ export interface Subnet {
 }
 
 export interface NodeInit {
+	provider?: string;
 	zone?: string;
 	internal_interface?: string;
 	external_interface?: string;
 	host_network?: string;
+	block_gateway?: string;
+	block_netmask?: string;
+	block_subnets?: string[];
 }
 
 export interface Drive {
