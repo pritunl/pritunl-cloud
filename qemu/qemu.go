@@ -137,7 +137,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 	nodeEgl := false
 	nodeVgaRenderPath := ""
 	if nodeVga == "" {
-		nodeVga = node.Vmware
+		nodeVga = node.Virtio
 	}
 
 	if nodeVga == node.VirtioEgl {
