@@ -306,6 +306,10 @@ func updateVmState(virt *vm.VirtualMachine, retry bool) (err error) {
 func UpdateVmState(virt *vm.VirtualMachine) (err error) {
 	err = updateVmState(virt, true)
 	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"instance_id": virt.Id.Hex(),
+			"error":       err,
+		}).Error("deploy: Error updating VM state")
 		return
 	}
 
