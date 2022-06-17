@@ -2,6 +2,7 @@ package uhandlers
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -454,7 +455,7 @@ func disksGet(c *gin.Context) {
 	name := strings.TrimSpace(c.Query("name"))
 	if name != "" {
 		query["name"] = &bson.M{
-			"$regex":   fmt.Sprintf(".*%s.*", name),
+			"$regex":   fmt.Sprintf(".*%s.*", regexp.QuoteMeta(name)),
 			"$options": "i",
 		}
 	}

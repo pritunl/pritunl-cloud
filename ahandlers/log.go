@@ -2,6 +2,7 @@ package ahandlers
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -64,7 +65,7 @@ func logsGet(c *gin.Context) {
 	message := strings.TrimSpace(c.Query("message"))
 	if message != "" {
 		query["message"] = &bson.M{
-			"$regex":   fmt.Sprintf(".*%s.*", message),
+			"$regex":   fmt.Sprintf(".*%s.*", regexp.QuoteMeta(message)),
 			"$options": "i",
 		}
 	}

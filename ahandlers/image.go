@@ -2,6 +2,7 @@ package ahandlers
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -21,7 +22,7 @@ import (
 type imageData struct {
 	Id           primitive.ObjectID `json:"id"`
 	Name         string             `json:"name"`
-	Comment        string             `json:"comment"`
+	Comment      string             `json:"comment"`
 	Organization primitive.ObjectID `json:"organization"`
 }
 
@@ -227,13 +228,15 @@ func imagesGet(c *gin.Context) {
 			query["$or"] = []*bson.M{
 				&bson.M{
 					"name": &bson.M{
-						"$regex":   fmt.Sprintf(".*%s.*", name),
+						"$regex": fmt.Sprintf(".*%s.*",
+							regexp.QuoteMeta(name)),
 						"$options": "i",
 					},
 				},
 				&bson.M{
 					"key": &bson.M{
-						"$regex":   fmt.Sprintf(".*%s.*", name),
+						"$regex": fmt.Sprintf(".*%s.*",
+							regexp.QuoteMeta(name)),
 						"$options": "i",
 					},
 				},

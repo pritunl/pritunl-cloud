@@ -3,6 +3,7 @@ package ahandlers
 import (
 	"fmt"
 	"net"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -591,7 +592,7 @@ func nodesGet(c *gin.Context) {
 		name := strings.TrimSpace(c.Query("name"))
 		if name != "" {
 			query["name"] = &bson.M{
-				"$regex":   fmt.Sprintf(".*%s.*", name),
+				"$regex":   fmt.Sprintf(".*%s.*", regexp.QuoteMeta(name)),
 				"$options": "i",
 			}
 		}
