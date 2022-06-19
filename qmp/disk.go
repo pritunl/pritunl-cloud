@@ -83,7 +83,7 @@ func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
 	conn := NewConnection(vmId, true)
 	defer conn.Close()
 
-	err = conn.Connect()
+	_, err = conn.Connect()
 	if err != nil {
 		return
 	}
@@ -211,7 +211,7 @@ func RemoveDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
 
 	conn.SetDeadline(30 * time.Second)
 
-	err = conn.Connect()
+	_, err = conn.Connect()
 	if err != nil {
 		return
 	}
@@ -378,11 +378,13 @@ type pciQueryDevice struct {
 	QdevId string `json:"qdev_id"`
 }
 
-func GetDisks(vmId primitive.ObjectID) (disks []*vm.Disk, err error) {
+func GetDisks(vmId primitive.ObjectID) (info *QemuInfo, disks []*vm.Disk,
+	err error) {
+
 	conn := NewConnection(vmId, false)
 	defer conn.Close()
 
-	err = conn.Connect()
+	info, err = conn.Connect()
 	if err != nil {
 		return
 	}
