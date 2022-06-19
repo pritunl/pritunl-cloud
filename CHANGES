@@ -3,6 +3,7 @@ pritunl-cloud changelog
 
 <%= version %>
 
+Show running QEMU version in instance info
 Improve Lets Encrypt certificates
 
 Version 1.2.2397.83 2022-06-17
