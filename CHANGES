@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Improve Lets Encrypt certificates
+
 Version 1.2.2397.83 2022-06-17
 ------------------------------
 
