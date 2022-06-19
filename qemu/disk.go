@@ -11,7 +11,7 @@ import (
 func UpdateVmDisk(virt *vm.VirtualMachine) (err error) {
 	for i := 0; i < 10; i++ {
 		if virt.State == vm.Running {
-			disks, e := qmp.GetDisks(virt.Id)
+			_, disks, e := qmp.GetDisks(virt.Id)
 			if e != nil {
 				if i < 9 {
 					time.Sleep(300 * time.Millisecond)
