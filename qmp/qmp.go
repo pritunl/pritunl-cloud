@@ -39,6 +39,30 @@ type JobStatusReturn struct {
 	Error  *CommandError `json:"error"`
 }
 
+type QmpVersionData struct {
+	Major int `json:"major"`
+	Minor int `json:"minor"`
+	Micro int `json:"micro"`
+}
+
+type QmpVersion struct {
+	Qemu QmpVersionData `json:"qemu"`
+}
+
+type QmpData struct {
+	Version QmpVersion `json:"version"`
+}
+
+type QmpCapabilities struct {
+	QMP QmpData `json:"QMP"`
+}
+
+type QemuInfo struct {
+	VersionMajor int
+	VersionMinor int
+	VersionMicro int
+}
+
 type CommandError struct {
 	Class string `json:"class"`
 	Desc  string `json:"desc"`
@@ -65,7 +89,7 @@ type Connection struct {
 	response interface{}
 }
 
-func (c *Connection) connect() (err error) {
+func (c *Connection) connect() (info *QemuInfo, err error) {
 	// TODO Backward compatibility
 	sockPath := paths.GetQmpSockPath(c.vmId)
 	sockPathOld := paths.GetQmpSockPathOld(c.vmId)
@@ -106,7 +130,7 @@ func (c *Connection) connect() (err error) {
 		return
 	}
 
-	var info []byte
+	var infoByt []byte
 	for {
 		buffer := make([]byte, 5000000)
 		n, e := c.sock.Read(buffer)
@@ -125,21 +149,41 @@ func (c *Connection) connect() (err error) {
 			}
 
 			if bytes.Contains(line, []byte(`"QMP"`)) {
-				info = line
+				infoByt = line
 				break
 			}
 		}
 
-		if info != nil {
+		if infoByt != nil {
 			break
 		}
 	}
 
-	if info == nil {
+	if infoByt == nil {
 		err = &errortypes.ReadError{
 			errors.New("qmp: No info message from socket"),
 		}
 		return
+	}
+
+	connInfo := &QmpCapabilities{}
+
+	err = json.Unmarshal(infoByt, connInfo)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrapf(
+				err,
+				"qmp: Failed to unmarshal info '%s'",
+				string(infoByt),
+			),
+		}
+		return
+	}
+
+	info = &QemuInfo{
+		VersionMajor: connInfo.QMP.Version.Qemu.Major,
+		VersionMinor: connInfo.QMP.Version.Qemu.Minor,
+		VersionMicro: connInfo.QMP.Version.Qemu.Micro,
 	}
 
 	return
@@ -291,8 +335,8 @@ func (c *Connection) Event(resp interface{}, callback EventCallback) (
 	return
 }
 
-func (c *Connection) Connect() (err error) {
-	err = c.connect()
+func (c *Connection) Connect() (info *QemuInfo, err error) {
+	info, err = c.connect()
 	if err != nil {
 		return
 	}
@@ -332,7 +376,7 @@ func RunCommand(vmId primitive.ObjectID, cmd interface{},
 	conn := NewConnection(vmId, true)
 	defer conn.Close()
 
-	err = conn.Connect()
+	_, err = conn.Connect()
 	if err != nil {
 		return
 	}
