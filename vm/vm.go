@@ -15,6 +15,7 @@ type VirtualMachine struct {
 	UnixId              int                `json:"unix_id"`
 	State               string             `json:"state"`
 	Timestamp           time.Time          `json:"timestamp"`
+	QemuVersion         string             `json:"qemu_version"`
 	Image               primitive.ObjectID `json:"image"`
 	Processors          int                `json:"processors"`
 	Memory              int                `json:"memory"`
@@ -142,13 +143,19 @@ func (v *VirtualMachine) Commit(db *database.Database) (err error) {
 		}
 	}
 
+	data := bson.M{
+		"vm_state":     v.State,
+		"vm_timestamp": v.Timestamp,
+		"public_ips":   addrs,
+		"public_ips6":  addrs6,
+	}
+
+	if v.QemuVersion != "" {
+		data["qemu_version"] = v.QemuVersion
+	}
+
 	err = coll.UpdateId(v.Id, &bson.M{
-		"$set": &bson.M{
-			"vm_state":     v.State,
-			"vm_timestamp": v.Timestamp,
-			"public_ips":   addrs,
-			"public_ips6":  addrs6,
-		},
+		"$set": data,
 	})
 	if err != nil {
 		err = database.ParseError(err)
@@ -213,14 +220,20 @@ func (v *VirtualMachine) CommitState(db *database.Database, state string) (
 		}
 	}
 
+	data := bson.M{
+		"state":        state,
+		"vm_state":     v.State,
+		"vm_timestamp": v.Timestamp,
+		"public_ips":   addrs,
+		"public_ips6":  addrs6,
+	}
+
+	if v.QemuVersion != "" {
+		data["qemu_version"] = v.QemuVersion
+	}
+
 	err = coll.UpdateId(v.Id, &bson.M{
-		"$set": &bson.M{
-			"state":        state,
-			"vm_state":     v.State,
-			"vm_timestamp": v.Timestamp,
-			"public_ips":   addrs,
-			"public_ips6":  addrs6,
-		},
+		"$set": data,
 	})
 	if err != nil {
 		err = database.ParseError(err)
