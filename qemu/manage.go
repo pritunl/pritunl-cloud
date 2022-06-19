@@ -2,6 +2,7 @@ package qemu
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"regexp"
 	"strings"
@@ -108,7 +109,7 @@ func GetVmInfo(db *database.Database, vmId primitive.ObjectID,
 		if !ok || time.Since(disksStore.Timestamp) > refreshRate {
 			for i := 0; i < 10; i++ {
 				if virt.State == vm.Running {
-					disks, e := qmp.GetDisks(vmId)
+					info, disks, e := qmp.GetDisks(vmId)
 					if e != nil {
 						if i < 9 {
 							time.Sleep(300 * time.Millisecond)
@@ -128,6 +129,12 @@ func GetVmInfo(db *database.Database, vmId primitive.ObjectID,
 						break
 					}
 
+					virt.QemuVersion = fmt.Sprintf(
+						"%d.%d.%d",
+						info.VersionMajor,
+						info.VersionMinor,
+						info.VersionMicro,
+					)
 					virt.Disks = disks
 					store.SetDisks(vmId, disks)
 					disksUpdated = true
