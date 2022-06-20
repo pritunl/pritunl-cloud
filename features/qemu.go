@@ -3,6 +3,7 @@ package features
 import (
 	"strconv"
 	"strings"
+	"syscall"
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -84,18 +85,104 @@ func GetQemuVersion() (major, minor, patch int, err error) {
 	return
 }
 
+func GetKernelVersion() (major, minor, patch int, err error) {
+	uname := &syscall.Utsname{}
+
+	err = syscall.Uname(uname)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "qemu: Failed to get syscall uname"),
+		}
+		return
+	}
+
+	version := utils.Int8Str(uname.Release[:])
+
+	versions := strings.Split(version, "-")
+	if len(versions) < 2 {
+		err = &errortypes.ParseError{
+			errors.Newf(
+				"qemu: Failed to parse uname version 1 '%s'",
+				version,
+			),
+		}
+		return
+	}
+
+	versions = strings.Split(versions[0], ".")
+	if len(versions) < 3 {
+		err = &errortypes.ParseError{
+			errors.Newf(
+				"qemu: Failed to parse uname version 2 '%s'",
+				version,
+			),
+		}
+		return
+	}
+
+	major, err = strconv.Atoi(versions[0])
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrapf(
+				err,
+				"qemu: Failed to parse uname version 3 '%s'",
+				version,
+			),
+		}
+		return
+	}
+
+	minor, err = strconv.Atoi(versions[1])
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrapf(
+				err,
+				"qemu: Failed to parse uname version 4 '%s'",
+				version,
+			),
+		}
+		return
+	}
+
+	patch, err = strconv.Atoi(versions[2])
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrapf(
+				err,
+				"qemu: Failed to parse uname version 5 '%s'",
+				version,
+			),
+		}
+		return
+	}
+
+	return
+}
+
 func GetUringSupport() (supported bool, err error) {
-	major, minor, _, err := GetQemuVersion()
+	major, minor, _, err := GetKernelVersion()
 	if err != nil {
 		return
 	}
 
-	if major > 6 {
-		supported = true
-	} else if major == 6 && minor >= 2 {
-		supported = true
+	if major < 5 {
+		return
+	} else if major == 5 && minor < 2 {
+		return
 	}
 
+	major, minor, _, err = GetQemuVersion()
+	if err != nil {
+		return
+	}
+
+	if major < 6 {
+		return
+	} else if major == 6 && minor < 2 {
+		return
+	}
+
+	supported = true
 	return
 }
 
