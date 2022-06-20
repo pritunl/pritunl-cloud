@@ -1,7 +1,8 @@
 pritunl-cloud changelog
 =======================
 
-<%= version %>
+Version 1.2.2400.30 2022-06-20
+------------------------------
 
 Add AlmaLinux image labels
 
