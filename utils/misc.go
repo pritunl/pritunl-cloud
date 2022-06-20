@@ -216,3 +216,14 @@ func PointerInt(x int) *int {
 func PointerString(x string) *string {
 	return &x
 }
+
+func Int8Str(arr []int8) string {
+	b := make([]byte, 0, len(arr))
+	for _, v := range arr {
+		if v == 0x00 {
+			break
+		}
+		b = append(b, byte(v))
+	}
+	return string(b)
+}
