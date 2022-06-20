@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Fix QEMU feature detection
+
 Version 1.2.2400.30 2022-06-20
 ------------------------------
 
