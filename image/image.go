@@ -50,6 +50,20 @@ func (i *Image) Json() {
 		n := len(names)
 		if n == 2 && len(names[1]) == 4 {
 			switch names[0] {
+			case "almalinux8":
+				i.Name = fmt.Sprintf(
+					"AlmaLinux 8 %s/20%s",
+					names[1][2:],
+					names[1][:2],
+				)
+				break
+			case "almalinux9":
+				i.Name = fmt.Sprintf(
+					"AlmaLinux 9 %s/20%s",
+					names[1][2:],
+					names[1][:2],
+				)
+				break
 			case "centos7":
 				i.Name = fmt.Sprintf(
 					"CentOS 7 %s/20%s",
@@ -95,6 +109,20 @@ func (i *Image) Json() {
 			}
 		} else if n == 3 && names[1] == "efi" && len(names[2]) == 4 {
 			switch names[0] {
+			case "almalinux8":
+				i.Name = fmt.Sprintf(
+					"AlmaLinux 8 EFI %s/20%s",
+					names[2][2:],
+					names[2][:2],
+				)
+				break
+			case "almalinux9":
+				i.Name = fmt.Sprintf(
+					"AlmaLinux 9 EFI %s/20%s",
+					names[2][2:],
+					names[2][:2],
+				)
+				break
 			case "centos7":
 				i.Name = fmt.Sprintf(
 					"CentOS 7 EFI %s/20%s",
