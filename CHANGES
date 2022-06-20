@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Add AlmaLinux images
+
 Version 1.2.2399.48 2022-06-19
 ------------------------------
 
