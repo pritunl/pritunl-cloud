@@ -1403,6 +1403,10 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				copy: true,
 			},
 			{
+				label: 'QEMU Version',
+				value: this.props.instance.qemu_version || 'Unknown',
+			},
+			{
 				label: 'Platform',
 				value: (this.props.instance.uefi ? 'UEFI' : 'BIOS'),
 			},
