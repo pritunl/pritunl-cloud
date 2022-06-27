@@ -74,6 +74,10 @@ func (s *State) AddSourceDestCheck(namespace, addr6 string) {
 }
 
 func (s *State) AddMember(namespace string, ruleName, member string) {
+	if strings.HasPrefix(ruleName, "prx") {
+		return
+	}
+
 	sets := s.Namespaces[namespace]
 	if sets == nil {
 		sets = &Sets{
@@ -144,6 +148,10 @@ func (n *NamesState) AddSourceDestCheck(namespace string) {
 }
 
 func (n *NamesState) AddName(namespace string, ruleName string) {
+	if strings.HasPrefix(ruleName, "prx") {
+		return
+	}
+
 	sets := n.Namespaces[namespace]
 	if sets == nil {
 		sets = &Names{
