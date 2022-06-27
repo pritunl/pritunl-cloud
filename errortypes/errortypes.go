@@ -60,6 +60,10 @@ type NetworkError struct {
 	errors.DropboxError
 }
 
+type TypeError struct {
+	errors.DropboxError
+}
+
 type ErrorData struct {
 	Error   string `json:"error"`
 	Message string `json:"error_msg"`
