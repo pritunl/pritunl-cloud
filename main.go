@@ -136,6 +136,24 @@ func main() {
 			panic(err)
 		}
 		return
+	case "dhcp4-server":
+		err := cmd.Dhcp4Server()
+		if err != nil {
+			panic(err)
+		}
+		return
+	case "dhcp6-server":
+		err := cmd.Dhcp6Server()
+		if err != nil {
+			panic(err)
+		}
+		return
+	case "ndp-server":
+		err := cmd.NdpServer()
+		if err != nil {
+			panic(err)
+		}
+		return
 	}
 
 	fmt.Println(help)
