@@ -109,6 +109,17 @@ func (s *Server4) handleMsg(conn net.PacketConn, peer net.Addr,
 }
 
 func (s *Server4) Start() (err error) {
+	logrus.WithFields(logrus.Fields{
+		"iface":       s.Iface,
+		"client_ip":   s.ClientIp,
+		"gateway_ip":  s.GatewayIp,
+		"prefix_len":  s.PrefixLen,
+		"dns_servers": s.DnsServers,
+		"mtu":         s.Mtu,
+		"lifetime":    s.Lifetime,
+		"debug":       s.Debug,
+	}).Info("dhcps: Starting server4")
+
 	s.lifetime = time.Duration(s.Lifetime) * time.Second
 
 	if s.DnsServers != nil && len(s.DnsServers) > 0 {

@@ -30,6 +30,18 @@ type ServerNdp struct {
 }
 
 func (s *ServerNdp) Start() (err error) {
+	logrus.WithFields(logrus.Fields{
+		"iface":       s.Iface,
+		"client_ip":   s.ClientIp,
+		"gateway_ip":  s.GatewayIp,
+		"prefix_len":  s.PrefixLen,
+		"dns_servers": s.DnsServers,
+		"mtu":         s.Mtu,
+		"lifetime":    s.Lifetime,
+		"delay":       s.Delay,
+		"debug":       s.Debug,
+	}).Info("dhcps: Starting ndp server")
+
 	s.lifetime = time.Duration(s.Lifetime) * time.Second
 	s.delay = time.Duration(s.Delay) * time.Second
 
