@@ -64,6 +64,7 @@ func (s *Server6) handleMsg(conn net.PacketConn, peer net.Addr,
 	serverId := msg.Options.ServerID()
 
 	if s.Debug {
+		fmt.Printf("Peer: %s\n", peer.String())
 		fmt.Println(msg.Summary())
 	}
 
@@ -147,6 +148,7 @@ func (s *Server6) handleMsg(conn net.PacketConn, peer net.Addr,
 	}
 
 	if s.Debug {
+		fmt.Printf("Peer: %s\n", peer.String())
 		fmt.Println(resp.Summary())
 	}
 
