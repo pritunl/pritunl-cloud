@@ -14,17 +14,18 @@ import (
 )
 
 type Server6 struct {
-	Iface        string
-	ClientIp     string
-	GatewayIp    string
-	PrefixLen    int
-	DnsServers   []string
-	Mtu          int
-	Lifetime     time.Duration
-	Debug        bool
+	Iface        string   `json:"iface"`
+	ClientIp     string   `json:"client_ip"`
+	GatewayIp    string   `json:"gateway_ip"`
+	PrefixLen    int      `json:"prefix_len"`
+	DnsServers   []string `json:"dns_servers"`
+	Mtu          int      `json:"mtu"`
+	Lifetime     int      `json:"lifetime"`
+	Debug        bool     `json:"debug"`
 	serverId     dhcpv6.Duid
 	dnsServersIp []net.IP
 	server       *server6.Server
+	lifetime     time.Duration
 }
 
 func (s *Server6) handler(conn net.PacketConn, peer net.Addr,
@@ -177,8 +178,8 @@ func (s *Server6) process(msg *dhcpv6.Message,
 	}
 
 	oia := &dhcpv6.OptIANA{
-		T1: s.Lifetime / 2,
-		T2: time.Duration(float32(s.Lifetime) / 1.5),
+		T1: s.lifetime / 2,
+		T2: time.Duration(float32(s.lifetime) / 1.5),
 	}
 
 	roia := msg.Options.OneIANA()
@@ -190,8 +191,8 @@ func (s *Server6) process(msg *dhcpv6.Message,
 
 	oiaAddr := &dhcpv6.OptIAAddress{
 		IPv6Addr:          net.ParseIP(s.ClientIp),
-		PreferredLifetime: s.Lifetime,
-		ValidLifetime:     s.Lifetime,
+		PreferredLifetime: s.lifetime,
+		ValidLifetime:     s.lifetime,
 	}
 
 	oia.Options = dhcpv6.IdentityOptions{
@@ -222,6 +223,8 @@ func (s *Server6) process(msg *dhcpv6.Message,
 }
 
 func (s *Server6) Start() (err error) {
+	s.lifetime = time.Duration(s.Lifetime) * time.Second
+
 	iface, err := net.InterfaceByName(s.Iface)
 	if err != nil {
 		err = &errortypes.ReadError{

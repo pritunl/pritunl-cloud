@@ -13,16 +13,17 @@ import (
 )
 
 type Server4 struct {
-	Iface        string
-	ClientIp     string
-	GatewayIp    string
-	PrefixLen    int
-	DnsServers   []string
-	Mtu          int
-	Lifetime     time.Duration
-	Debug        bool
+	Iface        string   `json:"iface"`
+	ClientIp     string   `json:"client_ip"`
+	GatewayIp    string   `json:"gateway_ip"`
+	PrefixLen    int      `json:"prefix_len"`
+	DnsServers   []string `json:"dns_servers"`
+	Mtu          int      `json:"mtu"`
+	Lifetime     int      `json:"lifetime"`
+	Debug        bool     `json:"debug"`
 	dnsServersIp []net.IP
 	server       *server4.Server
+	lifetime     time.Duration
 }
 
 func (s *Server4) handler(conn net.PacketConn, peer net.Addr,
@@ -75,7 +76,7 @@ func (s *Server4) handleMsg(conn net.PacketConn, peer net.Addr,
 		net.CIDRMask(s.PrefixLen, net.IPv4len*8)))
 	resp.UpdateOption(dhcpv4.OptDNS(s.dnsServersIp...))
 	resp.UpdateOption(dhcpv4.OptServerIdentifier(gatewayIp))
-	resp.UpdateOption(dhcpv4.OptIPAddressLeaseTime(s.Lifetime))
+	resp.UpdateOption(dhcpv4.OptIPAddressLeaseTime(s.lifetime))
 	if s.Mtu != 0 {
 		resp.UpdateOption(dhcpv4.Option{
 			Code:  dhcpv4.OptionInterfaceMTU,
@@ -99,6 +100,8 @@ func (s *Server4) handleMsg(conn net.PacketConn, peer net.Addr,
 }
 
 func (s *Server4) Start() (err error) {
+	s.lifetime = time.Duration(s.Lifetime) * time.Second
+
 	if s.DnsServers != nil && len(s.DnsServers) > 0 {
 		dnsServers := []net.IP{}
 		for _, dnsServer := range s.DnsServers {

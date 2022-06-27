@@ -13,21 +13,26 @@ import (
 )
 
 type ServerNdp struct {
-	Iface       string
-	ClientIp    string
-	GatewayIp   string
-	PrefixLen   int
-	DnsServers  []string
-	Mtu         int
-	Lifetime    time.Duration
-	Delay       time.Duration
-	Debug       bool
+	Iface       string   `json:"iface"`
+	ClientIp    string   `json:"client_ip"`
+	GatewayIp   string   `json:"gateway_ip"`
+	PrefixLen   int      `json:"prefix_len"`
+	DnsServers  []string `json:"dns_servers"`
+	Mtu         int      `json:"mtu"`
+	Lifetime    int      `json:"lifetime"`
+	Delay       int      `json:"delay"`
+	Debug       bool     `json:"debug"`
 	iface       *net.Interface
 	gatewayAddr netip.Addr
 	prefixAddr  netip.Addr
+	lifetime    time.Duration
+	delay       time.Duration
 }
 
 func (s *ServerNdp) Start() (err error) {
+	s.lifetime = time.Duration(s.Lifetime) * time.Second
+	s.delay = time.Duration(s.Delay) * time.Second
+
 	s.iface, err = net.InterfaceByName(s.Iface)
 	if err != nil {
 		err = &errortypes.ReadError{
@@ -84,8 +89,8 @@ func (s *ServerNdp) run() (err error) {
 			Prefix:                         s.prefixAddr,
 			PrefixLength:                   uint8(s.PrefixLen),
 			AutonomousAddressConfiguration: false,
-			ValidLifetime:                  s.Lifetime,
-			PreferredLifetime:              s.Lifetime,
+			ValidLifetime:                  s.lifetime,
+			PreferredLifetime:              s.lifetime,
 		},
 		&ndp.LinkLayerAddress{
 			Direction: ndp.Source,
@@ -125,6 +130,6 @@ func (s *ServerNdp) run() (err error) {
 			return
 		}
 
-		time.Sleep(s.Delay)
+		time.Sleep(s.delay)
 	}
 }
