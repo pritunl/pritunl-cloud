@@ -1,0 +1,130 @@
+package dhcps
+
+import (
+	"fmt"
+	"net"
+	"net/netip"
+	"time"
+
+	"github.com/dropbox/godropbox/errors"
+	"github.com/mdlayher/ndp"
+	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/sirupsen/logrus"
+)
+
+type ServerNdp struct {
+	Iface       string
+	ClientIp    string
+	GatewayIp   string
+	PrefixLen   int
+	DnsServers  []string
+	Mtu         int
+	Lifetime    time.Duration
+	Delay       time.Duration
+	Debug       bool
+	iface       *net.Interface
+	gatewayAddr netip.Addr
+	prefixAddr  netip.Addr
+}
+
+func (s *ServerNdp) Start() (err error) {
+	s.iface, err = net.InterfaceByName(s.Iface)
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "dhcps: Failed to find network interface"),
+		}
+		return
+	}
+
+	s.gatewayAddr, err = netip.ParseAddr(s.GatewayIp)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "dhcps: Failed to parse gateway addr"),
+		}
+		return
+	}
+
+	prefix, err := netip.ParsePrefix(
+		fmt.Sprintf("%s/%d", s.ClientIp, s.PrefixLen))
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "dhcps: Failed to parse client addr and prefix"),
+		}
+		return
+	}
+
+	s.prefixAddr = prefix.Masked().Addr()
+
+	prefix.Addr()
+
+	err = s.run()
+	if err != nil {
+		if s.Debug {
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("dhcps: NDP server error")
+		}
+		return
+	}
+
+	return
+}
+
+func (s *ServerNdp) run() (err error) {
+	conn, _, err := ndp.Listen(s.iface, ndp.LinkLocal)
+	if err != nil {
+		return
+	}
+	defer func() {
+		_ = conn.Close()
+	}()
+
+	opts := []ndp.Option{
+		&ndp.PrefixInformation{
+			Prefix:                         s.prefixAddr,
+			PrefixLength:                   uint8(s.PrefixLen),
+			AutonomousAddressConfiguration: false,
+			ValidLifetime:                  s.Lifetime,
+			PreferredLifetime:              s.Lifetime,
+		},
+		&ndp.LinkLayerAddress{
+			Direction: ndp.Source,
+			Addr:      s.iface.HardwareAddr,
+		},
+	}
+
+	if s.Mtu != 0 {
+		opts = append(opts, &ndp.MTU{
+			MTU: uint32(s.Mtu),
+		})
+	}
+
+	msgRa := &ndp.RouterAdvertisement{
+		CurrentHopLimit:           1,
+		RouterSelectionPreference: ndp.Medium,
+		RouterLifetime:            30 * time.Second,
+		ManagedConfiguration:      true,
+		OtherConfiguration:        true,
+		Options:                   opts,
+	}
+
+	err = conn.JoinGroup(netip.MustParseAddr("ff02::2"))
+	if err != nil {
+		err = &errortypes.NetworkError{
+			errors.Wrap(err, "dhcps: Failed to join NDP group"),
+		}
+		return
+	}
+
+	for {
+		err = conn.WriteTo(msgRa, nil, netip.IPv6LinkLocalAllNodes())
+		if err != nil {
+			err = &errortypes.NetworkError{
+				errors.Wrap(err, "dhcps: Failed to write NDP message"),
+			}
+			return
+		}
+
+		time.Sleep(s.Delay)
+	}
+}
