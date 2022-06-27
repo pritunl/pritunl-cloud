@@ -127,6 +127,78 @@ func UpdateEbtables(vmId primitive.ObjectID, namespace string) (err error) {
 	return
 }
 
+func ClearEbtables(vmId primitive.ObjectID, namespace string) (err error) {
+	iface := vm.GetIface(vmId, 0)
+
+	_, _ = utils.ExecCombinedOutput(
+		"",
+		"ip", "netns", "exec", namespace,
+		"ebtables",
+		"-D", "OUTPUT",
+		"-o", iface,
+		"-p", "IPv4",
+		"--ip-protocol", "udp",
+		"--ip-sport", "67",
+		"-j", "ACCEPT",
+	)
+	_, _ = utils.ExecCombinedOutput(
+		"",
+		"ip", "netns", "exec", namespace,
+		"ebtables",
+		"-D", "OUTPUT",
+		"-p", "IPv4",
+		"--ip-protocol", "udp",
+		"--ip-sport", "67",
+		"-j", "DROP",
+	)
+
+	_, _ = utils.ExecCombinedOutput(
+		"",
+		"ip", "netns", "exec", namespace,
+		"ebtables",
+		"-D", "OUTPUT",
+		"-o", iface,
+		"-p", "IPv6",
+		"--ip6-protocol", "udp",
+		"--ip6-sport", "547",
+		"-j", "ACCEPT",
+	)
+	_, _ = utils.ExecCombinedOutput(
+		"",
+		"ip", "netns", "exec", namespace,
+		"ebtables",
+		"-D", "OUTPUT",
+		"-p", "IPv6",
+		"--ip6-protocol", "udp",
+		"--ip6-sport", "547",
+		"-j", "DROP",
+	)
+
+	_, _ = utils.ExecCombinedOutput(
+		"",
+		"ip", "netns", "exec", namespace,
+		"ebtables",
+		"-D", "OUTPUT",
+		"-o", iface,
+		"-p", "IPv6",
+		"--ip6-protocol", "ipv6-icmp",
+		"--ip6-icmp-type", "134",
+		"-j", "ACCEPT",
+	)
+	_, _ = utils.ExecCombinedOutput(
+		"",
+		"ip", "netns", "exec", namespace,
+		"ebtables",
+		"-D", "OUTPUT",
+		"-p", "IPv6",
+		"--ip6-protocol", "ipv6-icmp",
+		"--ip6-icmp-type", "134",
+		"-j", "DROP",
+	)
+
+	return
+}
+
 func WriteService(vmId primitive.ObjectID, namespace string,
 	config interface{}) (err error) {
 
@@ -323,6 +395,24 @@ func Start(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 	err = systemd.Start(unitServerNdp)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func Stop(db *database.Database, virt *vm.VirtualMachine) (err error) {
+	namespace := vm.GetNamespace(virt.Id, 0)
+	unitServer4 := paths.GetUnitNameDhcp4(virt.Id)
+	unitServer6 := paths.GetUnitNameDhcp6(virt.Id)
+	unitServerNdp := paths.GetUnitNameNdp(virt.Id)
+
+	_ = systemd.Stop(unitServer4)
+	_ = systemd.Stop(unitServer6)
+	_ = systemd.Stop(unitServerNdp)
+
+	err = ClearEbtables(virt.Id, namespace)
 	if err != nil {
 		return
 	}
