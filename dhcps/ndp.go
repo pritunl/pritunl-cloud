@@ -105,7 +105,7 @@ func (s *ServerNdp) run() (err error) {
 	}
 
 	msgRa := &ndp.RouterAdvertisement{
-		CurrentHopLimit:           1,
+		CurrentHopLimit:           64,
 		RouterSelectionPreference: ndp.Medium,
 		RouterLifetime:            30 * time.Second,
 		ManagedConfiguration:      true,
