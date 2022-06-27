@@ -45,6 +45,7 @@ type instanceData struct {
 	RootEnabled         bool               `json:"root_enabled"`
 	Uefi                bool               `json:"uefi"`
 	SecureBoot          bool               `json:"secure_boot"`
+	DhcpServer          bool               `json:"dhcp_server"`
 	DeleteProtection    bool               `json:"delete_protection"`
 	SkipSourceDestCheck bool               `json:"skip_source_dest_check"`
 	InitDiskSize        int                `json:"init_disk_size"`
@@ -113,6 +114,7 @@ func instancePut(c *gin.Context) {
 	}
 	inst.Uefi = dta.Uefi
 	inst.SecureBoot = dta.SecureBoot
+	inst.DhcpServer = dta.DhcpServer
 	inst.DeleteProtection = dta.DeleteProtection
 	inst.SkipSourceDestCheck = dta.SkipSourceDestCheck
 	inst.Memory = dta.Memory
@@ -144,6 +146,7 @@ func instancePut(c *gin.Context) {
 		"restart_block_ip",
 		"uefi",
 		"secure_boot",
+		"dhcp_server",
 		"delete_protection",
 		"skip_source_dest_check",
 		"memory",
@@ -286,6 +289,7 @@ func instancePost(c *gin.Context) {
 			ImageBacking:        dta.ImageBacking,
 			Uefi:                dta.Uefi,
 			SecureBoot:          dta.SecureBoot,
+			DhcpServer:          dta.DhcpServer,
 			DeleteProtection:    dta.DeleteProtection,
 			SkipSourceDestCheck: dta.SkipSourceDestCheck,
 			Name:                name,
