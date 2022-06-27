@@ -74,9 +74,16 @@ func (s *Server4) handleMsg(conn net.PacketConn, peer net.Addr,
 	resp.UpdateOption(dhcpv4.OptRouter(gatewayIp))
 	resp.UpdateOption(dhcpv4.OptSubnetMask(
 		net.CIDRMask(s.PrefixLen, net.IPv4len*8)))
-	resp.UpdateOption(dhcpv4.OptDNS(s.dnsServersIp...))
 	resp.UpdateOption(dhcpv4.OptServerIdentifier(gatewayIp))
 	resp.UpdateOption(dhcpv4.OptIPAddressLeaseTime(s.lifetime))
+
+	requested := req.ParameterRequestList()
+	if requested.Has(dhcpv4.OptionDomainNameServer) &&
+		!resp.Options.Has(dhcpv4.OptionDomainNameServer) {
+
+		resp.UpdateOption(dhcpv4.OptDNS(s.dnsServersIp...))
+	}
+
 	if s.Mtu != 0 {
 		resp.UpdateOption(dhcpv4.Option{
 			Code:  dhcpv4.OptionInterfaceMTU,
