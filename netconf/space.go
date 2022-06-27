@@ -124,6 +124,37 @@ func (n *NetConf) spaceForward(db *database.Database) (err error) {
 	if (n.NetworkMode != node.Disabled && n.NetworkMode != node.Oracle) ||
 		(n.NetworkMode6 != node.Disabled && n.NetworkMode6 != node.Oracle) {
 
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", n.Namespace,
+			"ipset",
+			"create", "prx_inst6", "hash:net",
+			"family", "inet6",
+		)
+		if err != nil {
+			return
+		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", n.Namespace,
+			"ipset",
+			"add", "prx_inst6", "fe80::/64",
+		)
+		if err != nil {
+			return
+		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", n.Namespace,
+			"ipset",
+			"add", "prx_inst6", n.InternalAddr6.String()+"/128",
+		)
+		if err != nil {
+			return
+		}
+
 		iptables.Lock()
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
@@ -145,7 +176,8 @@ func (n *NetConf) spaceForward(db *database.Database) (err error) {
 			"ip", "netns", "exec", n.Namespace,
 			"ip6tables",
 			"-I", "FORWARD", "1",
-			"!", "-d", n.InternalAddr6.String()+"/128",
+			"-m", "set",
+			"!", "--match-set", "prx_inst6", "dst",
 			"-i", n.SpaceExternalIface,
 			"-j", "DROP",
 		)
