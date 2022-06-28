@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Add instance DHCP server
+
 Version 1.2.2400.46 2022-06-20
 ------------------------------
 
