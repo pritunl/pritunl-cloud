@@ -115,6 +115,31 @@ func GetUnitPath(virtId primitive.ObjectID) string {
 	return path.Join(settings.Hypervisor.SystemdPath, GetUnitName(virtId))
 }
 
+func GetUnitNameDhcp4(virtId primitive.ObjectID, n int) string {
+	return fmt.Sprintf("pritunl_dhcp4_%s_%d.service", virtId.Hex(), n)
+}
+
+func GetUnitPathDhcp4(virtId primitive.ObjectID, n int) string {
+	return path.Join(settings.Hypervisor.SystemdPath, GetUnitNameDhcp4(virtId, n))
+}
+
+func GetUnitNameDhcp6(virtId primitive.ObjectID, n int) string {
+	return fmt.Sprintf("pritunl_dhcp6_%s_%d.service", virtId.Hex(), n)
+}
+
+func GetUnitPathDhcp6(virtId primitive.ObjectID, n int) string {
+	return path.Join(settings.Hypervisor.SystemdPath, GetUnitNameDhcp6(virtId, n))
+}
+
+func GetUnitNameNdp(virtId primitive.ObjectID, n int) string {
+	return fmt.Sprintf("pritunl_ndp_%s_%d.service", virtId.Hex(), n)
+}
+
+func GetUnitPathNdp(virtId primitive.ObjectID, n int) string {
+	return path.Join(settings.Hypervisor.SystemdPath,
+		GetUnitNameNdp(virtId, n))
+}
+
 func GetPidPath(virtId primitive.ObjectID) string {
 	return path.Join(settings.Hypervisor.RunPath,
 		fmt.Sprintf("%s.pid", virtId.Hex()))
