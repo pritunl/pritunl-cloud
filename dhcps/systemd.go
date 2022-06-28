@@ -17,6 +17,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
 	"github.com/pritunl/pritunl-cloud/zone"
+	"github.com/sirupsen/logrus"
 )
 
 const systemdTemplate = `[Unit]
@@ -321,6 +322,10 @@ func WriteService(vmId primitive.ObjectID, namespace string,
 
 func Start(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	namespace := vm.GetNamespace(virt.Id, 0)
+
+	logrus.WithFields(logrus.Fields{
+		"id": virt.Id.Hex(),
+	}).Info("qemu: Starting virtual machine dhcp server")
 
 	zne, err := zone.Get(db, node.Self.Zone)
 	if err != nil {
