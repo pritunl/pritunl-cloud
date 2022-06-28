@@ -9,8 +9,10 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/features"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
+	"github.com/pritunl/pritunl-cloud/permission"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/systemd"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -20,12 +22,17 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const (
+	dhcpCaps = "CAP_NET_BIND_SERVICE CAP_NET_BROADCAST"
+	ndpCaps  = "CAP_NET_BIND_SERVICE CAP_NET_BROADCAST CAP_NET_RAW"
+)
+
 const systemdTemplate = `[Unit]
 Description=Pritunl Cloud %s
 After=network.target
 
 [Service]
-Environment=CONFIG=%s
+Environment=CONFIG='%s'
 Type=simple
 User=root
 ExecStart=/usr/sbin/ip netns exec %s %s %s
@@ -34,8 +41,25 @@ ProtectHome=true
 ProtectSystem=full
 ProtectHostname=true
 ProtectKernelTunables=true
+AmbientCapabilities=%s
+`
+
+const systemdNamespaceTemplate = `[Unit]
+Description=Pritunl Cloud %s
+After=network.target
+
+[Service]
+Environment=CONFIG='%s'
+Type=simple
+User=%s
+ExecStart=%s %s
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=full
+ProtectHostname=true
+ProtectKernelTunables=true
 NetworkNamespacePath=/var/run/netns/%s
-AmbientCapabilities=CAP_NET_BIND_SERVICE
+AmbientCapabilities=%s
 `
 
 func UpdateEbtables(vmId primitive.ObjectID, namespace string) (err error) {
@@ -261,10 +285,11 @@ func ClearEbtables(vmId primitive.ObjectID, namespace string) (err error) {
 }
 
 func WriteService(vmId primitive.ObjectID, namespace string,
-	config interface{}) (err error) {
+	config interface{}, systemdNamespace bool) (err error) {
 
 	param := ""
 	unitPath := ""
+	caps := ""
 
 	curPath, err := os.Executable()
 	if err != nil {
@@ -285,15 +310,18 @@ func WriteService(vmId primitive.ObjectID, namespace string,
 	switch config.(type) {
 	case *Server4:
 		param = "dhcp4-server"
-		unitPath = paths.GetUnitPathDhcp4(vmId)
+		unitPath = paths.GetUnitPathDhcp4(vmId, 0)
+		caps = dhcpCaps
 		break
 	case *Server6:
 		param = "dhcp6-server"
-		unitPath = paths.GetUnitPathDhcp6(vmId)
+		unitPath = paths.GetUnitPathDhcp6(vmId, 0)
+		caps = dhcpCaps
 		break
 	case *ServerNdp:
 		param = "ndp-server"
-		unitPath = paths.GetUnitPathNdp(vmId)
+		unitPath = paths.GetUnitPathNdp(vmId, 0)
+		caps = ndpCaps
 		break
 	default:
 		err = &errortypes.TypeError{
@@ -302,15 +330,29 @@ func WriteService(vmId primitive.ObjectID, namespace string,
 		return
 	}
 
-	output := fmt.Sprintf(
-		systemdTemplate,
-		param,
-		string(confData),
-		namespace,
-		curPath,
-		param,
-		namespace,
-	)
+	output := ""
+	if systemdNamespace {
+		output = fmt.Sprintf(
+			systemdNamespaceTemplate,
+			param,
+			string(confData),
+			permission.GetUserName(vmId),
+			curPath,
+			param,
+			namespace,
+			caps,
+		)
+	} else {
+		output = fmt.Sprintf(
+			systemdTemplate,
+			param,
+			string(confData),
+			namespace,
+			curPath,
+			param,
+			caps,
+		)
+	}
 
 	err = utils.CreateWrite(unitPath, output, 0644)
 	if err != nil {
@@ -322,6 +364,8 @@ func WriteService(vmId primitive.ObjectID, namespace string,
 
 func Start(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	namespace := vm.GetNamespace(virt.Id, 0)
+
+	hasSystemdNamespace := features.HasSystemdNamespace()
 
 	logrus.WithFields(logrus.Fields{
 		"id": virt.Id.Hex(),
@@ -425,23 +469,23 @@ func Start(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	unitServer4 := paths.GetUnitNameDhcp4(virt.Id)
-	unitServer6 := paths.GetUnitNameDhcp6(virt.Id)
-	unitServerNdp := paths.GetUnitNameNdp(virt.Id)
+	unitServer4 := paths.GetUnitNameDhcp4(virt.Id, 0)
+	unitServer6 := paths.GetUnitNameDhcp6(virt.Id, 0)
+	unitServerNdp := paths.GetUnitNameNdp(virt.Id, 0)
 
 	_ = systemd.Stop(unitServer4)
 	_ = systemd.Stop(unitServer6)
 	_ = systemd.Stop(unitServerNdp)
 
-	err = WriteService(virt.Id, namespace, server4)
+	err = WriteService(virt.Id, namespace, server4, hasSystemdNamespace)
 	if err != nil {
 		return
 	}
-	err = WriteService(virt.Id, namespace, server6)
+	err = WriteService(virt.Id, namespace, server6, hasSystemdNamespace)
 	if err != nil {
 		return
 	}
-	err = WriteService(virt.Id, namespace, serverNdp)
+	err = WriteService(virt.Id, namespace, serverNdp, hasSystemdNamespace)
 	if err != nil {
 		return
 	}
@@ -469,9 +513,9 @@ func Start(db *database.Database, virt *vm.VirtualMachine) (err error) {
 
 func Stop(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	namespace := vm.GetNamespace(virt.Id, 0)
-	unitServer4 := paths.GetUnitNameDhcp4(virt.Id)
-	unitServer6 := paths.GetUnitNameDhcp6(virt.Id)
-	unitServerNdp := paths.GetUnitNameNdp(virt.Id)
+	unitServer4 := paths.GetUnitNameDhcp4(virt.Id, 0)
+	unitServer6 := paths.GetUnitNameDhcp6(virt.Id, 0)
+	unitServerNdp := paths.GetUnitNameNdp(virt.Id, 0)
 
 	_ = systemd.Stop(unitServer4)
 	_ = systemd.Stop(unitServer6)
