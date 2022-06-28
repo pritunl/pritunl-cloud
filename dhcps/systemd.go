@@ -43,6 +43,39 @@ func UpdateEbtables(vmId primitive.ObjectID, namespace string) (err error) {
 	_, err = utils.ExecCombinedOutputLogged(
 		nil,
 		"ip", "netns", "exec", namespace,
+		"iptables",
+		"-t", "mangle",
+		"-A", "POSTROUTING",
+		"-o", "br0",
+		"-p", "udp",
+		"-m", "udp",
+		"--sport", "67",
+		"-j", "CHECKSUM",
+		"--checksum-fill",
+	)
+	if err != nil {
+		return
+	}
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", namespace,
+		"ip6tables",
+		"-t", "mangle",
+		"-A", "POSTROUTING",
+		"-o", "br0",
+		"-p", "udp",
+		"-m", "udp",
+		"--sport", "547",
+		"-j", "CHECKSUM",
+		"--checksum-fill",
+	)
+	if err != nil {
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", namespace,
 		"ebtables",
 		"-I", "OUTPUT",
 		"-o", iface,
@@ -129,6 +162,33 @@ func UpdateEbtables(vmId primitive.ObjectID, namespace string) (err error) {
 
 func ClearEbtables(vmId primitive.ObjectID, namespace string) (err error) {
 	iface := vm.GetIface(vmId, 0)
+
+	_, _ = utils.ExecCombinedOutput(
+		"",
+		"ip", "netns", "exec", namespace,
+		"iptables",
+		"-t", "mangle",
+		"-D", "POSTROUTING",
+		"-o", "br0",
+		"-p", "udp",
+		"-m", "udp",
+		"--sport", "67",
+		"-j", "CHECKSUM",
+		"--checksum-fill",
+	)
+	_, _ = utils.ExecCombinedOutput(
+		"",
+		"ip", "netns", "exec", namespace,
+		"ip6tables",
+		"-t", "mangle",
+		"-D", "POSTROUTING",
+		"-o", "br0",
+		"-p", "udp",
+		"-m", "udp",
+		"--sport", "547",
+		"-j", "CHECKSUM",
+		"--checksum-fill",
+	)
 
 	_, _ = utils.ExecCombinedOutput(
 		"",
