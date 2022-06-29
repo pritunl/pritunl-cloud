@@ -38,7 +38,7 @@ MIME-Version: 1.0
 const netConfigTmpl = `version: 1
 config:
   - type: physical
-    name: eth0
+    name: {{.Iface}}
     mac_address: {{.Mac}}{{.Mtu}}
     subnets:
       - type: static
@@ -56,7 +56,7 @@ config:
 
 const netConfig2Tmpl = `version: 2
 ethernets:
-  eth0:
+  {{.Iface}}:
     match:
       macaddress: {{.Mac}}{{.Mtu}}
     addresses:
@@ -78,6 +78,7 @@ hostname: {{.Hostname}}
 ssh_deletekeys: false
 {{if eq .RootPasswd ""}}disable_root: true{{else}}disable_root: false{{end}}
 ssh_pwauth: no
+write_files:{{.WriteFiles}}
 growpart:
     mode: auto
     devices: ["/"]
@@ -98,21 +99,50 @@ users:
 {{range .Keys}}      - {{.}}
 {{end}}`
 
-const cloudScriptTmpl = `#!/bin/bash
-%s`
+const cloudBsdConfigTmpl = `#cloud-config
+hostname: {{.Hostname}}
+ssh_deletekeys: false
+{{if eq .RootPasswd ""}}disable_root: true{{else}}disable_root: false{{end}}
+ssh_pwauth: no
+write_files:{{.WriteFiles}}
+growpart:
+    mode: auto
+    devices: ["/"]
+    ignore_growroot_disabled: false
+runcmd:
+  - [ sysctl, net.inet.ip.redirect=0 ]
+  - [ ifconfig, vtnet0, inet6, {{.Address6}}/64 ]
+  - [ route, -6, add, default, {{.Gateway6}} ]
+users:
+  - name: root
+    {{if eq .RootPasswd ""}}lock-passwd: true{{else}}lock-passwd: false
+    passwd: {{.RootPasswd}}
+    hashed_passwd: {{.RootPasswd}}{{end}}
+  - name: cloud
+    groups: cloud, wheel
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    lock-passwd: {{.LockPasswd}}
+    ssh-authorized-keys:
+{{range .Keys}}      - {{.}}
+{{end}}`
 
-const teeTmpl = `sudo tee %s << EOF
-%s
-EOF
-`
+const writeFileTmpl = `
+  - encoding: base64
+    content: %s
+    owner: %s
+    path: %s
+    permissions: "%s"`
 
 var (
-	cloudConfig = template.Must(template.New("cloud").Parse(cloudConfigTmpl))
-	netConfig   = template.Must(template.New("net").Parse(netConfigTmpl))
-	netConfig2  = template.Must(template.New("net2").Parse(netConfig2Tmpl))
+	cloudConfig    = template.Must(template.New("cloud").Parse(cloudConfigTmpl))
+	cloudBsdConfig = template.Must(template.New("cloud_bsd").Parse(
+		cloudBsdConfigTmpl))
+	netConfig  = template.Must(template.New("net").Parse(netConfigTmpl))
+	netConfig2 = template.Must(template.New("net2").Parse(netConfig2Tmpl))
 )
 
 type netConfigData struct {
+	Iface        string
 	Mac          string
 	Mtu          string
 	Address      string
@@ -131,11 +161,15 @@ type cloudConfigData struct {
 	Hostname   string
 	RootPasswd string
 	LockPasswd string
+	WriteFiles string
+	Address6   string
+	Gateway6   string
 	Keys       []string
 }
 
 func getUserData(db *database.Database, inst *instance.Instance,
-	virt *vm.VirtualMachine, initial bool) (usrData string, err error) {
+	virt *vm.VirtualMachine, initial bool, addr6, gateway6 net.IP) (
+	usrData string, err error) {
 
 	authrs, err := authority.GetOrgRoles(db, inst.Organization,
 		inst.NetworkRoles)
@@ -143,17 +177,15 @@ func getUserData(db *database.Database, inst *instance.Instance,
 		return
 	}
 
-	if len(authrs) == 0 {
-		return
-	}
-
 	trusted := ""
 	principals := ""
-	cloudScript := ""
+	authorizedKeys := ""
 
 	data := cloudConfigData{
 		Keys:     []string{},
 		Hostname: strings.Replace(inst.Name, " ", "_", -1),
+		Address6: addr6.String(),
+		Gateway6: gateway6.String(),
 	}
 
 	if inst.RootEnabled {
@@ -169,11 +201,39 @@ func getUserData(db *database.Database, inst *instance.Instance,
 		data.LockPasswd = "true"
 	}
 
+	owner := ""
+	if virt.CloudType == instance.FreeBSD {
+		owner = "root:wheel"
+	} else {
+		owner = "root:root"
+	}
+
+	if virt.CloudType == instance.FreeBSD {
+		resolvConf := ""
+		resolvConf += fmt.Sprintf("nameserver %s\n",
+			settings.Hypervisor.DnsServerPrimary)
+		resolvConf += fmt.Sprintf("nameserver %s\n",
+			settings.Hypervisor.DnsServerSecondary)
+		resolvConf += fmt.Sprintf("nameserver %s\n",
+			settings.Hypervisor.DnsServerPrimary6)
+		resolvConf += fmt.Sprintf("nameserver %s\n",
+			settings.Hypervisor.DnsServerSecondary6)
+
+		data.WriteFiles += fmt.Sprintf(
+			writeFileTmpl,
+			base64.StdEncoding.EncodeToString([]byte(resolvConf)),
+			owner,
+			"/etc/resolv.conf",
+			"0644",
+		)
+	}
+
 	for _, authr := range authrs {
 		switch authr.Type {
 		case authority.SshKey:
 			for _, key := range strings.Split(authr.Key, "\n") {
 				data.Keys = append(data.Keys, key)
+				authorizedKeys += key + "\n"
 			}
 			break
 		case authority.SshCertificate:
@@ -183,10 +243,47 @@ func getUserData(db *database.Database, inst *instance.Instance,
 		}
 	}
 
+	if trusted == "" {
+		trusted = "\n"
+	}
+	if principals == "" {
+		principals = "\n"
+	}
+
+	data.WriteFiles += fmt.Sprintf(
+		writeFileTmpl,
+		base64.StdEncoding.EncodeToString([]byte(trusted)),
+		owner,
+		"/etc/ssh/trusted",
+		"0644",
+	)
+	data.WriteFiles += fmt.Sprintf(
+		writeFileTmpl,
+		base64.StdEncoding.EncodeToString([]byte(principals)),
+		owner,
+		"/etc/ssh/principals",
+		"0644",
+	)
+	data.WriteFiles += fmt.Sprintf(
+		writeFileTmpl,
+		base64.StdEncoding.EncodeToString([]byte(authorizedKeys)),
+		"cloud:cloud",
+		"/home/cloud/.ssh/authorized_keys",
+		"0600",
+	)
+
 	items := []string{}
 
 	output := &bytes.Buffer{}
-	err = cloudConfig.Execute(output, data)
+
+	var templ *template.Template
+	if virt.CloudType == instance.FreeBSD {
+		templ = cloudBsdConfig
+	} else {
+		templ = cloudConfig
+	}
+
+	err = templ.Execute(output, data)
 	if err != nil {
 		err = &errortypes.ParseError{
 			errors.Wrap(err, "cloudinit: Failed to exec cloud template"),
@@ -194,18 +291,6 @@ func getUserData(db *database.Database, inst *instance.Instance,
 		return
 	}
 	items = append(items, output.String())
-
-	if trusted != "" {
-		cloudScript += fmt.Sprintf(teeTmpl, "/etc/ssh/trusted", trusted)
-	}
-	if principals != "" {
-		cloudScript += fmt.Sprintf(teeTmpl, "/etc/ssh/principals",
-			principals)
-	}
-
-	if cloudScript != "" {
-		items = append(items, fmt.Sprintf(cloudScriptTmpl, cloudScript))
-	}
 
 	buffer := &bytes.Buffer{}
 	message := multipart.NewWriter(buffer)
@@ -259,7 +344,8 @@ func getUserData(db *database.Database, inst *instance.Instance,
 }
 
 func getNetData(db *database.Database, inst *instance.Instance,
-	virt *vm.VirtualMachine) (netData string, err error) {
+	virt *vm.VirtualMachine) (netData string, addr6, gateway6 net.IP,
+	err error) {
 
 	if len(virt.NetworkAdapters) == 0 {
 		err = &errortypes.NotFoundError{
@@ -306,8 +392,8 @@ func getNetData(db *database.Database, inst *instance.Instance,
 
 	cidr, _ := vcNet.Mask.Size()
 
-	addr6 := vc.GetIp6(addr)
-	gatewayAddr6 := vc.GetIp6(gatewayAddr)
+	addr6 = vc.GetIp6(addr)
+	gateway6 = vc.GetIp6(gatewayAddr)
 
 	dns1 := ""
 	dns2 := ""
@@ -328,9 +414,15 @@ func getNetData(db *database.Database, inst *instance.Instance,
 		Gateway:      gatewayAddr.String(),
 		Address6:     addr6.String(),
 		AddressCidr6: addr6.String() + "/64",
-		Gateway6:     gatewayAddr6.String(),
+		Gateway6:     gateway6.String(),
 		Dns1:         dns1,
 		Dns2:         dns2,
+	}
+
+	if virt.CloudType == instance.FreeBSD {
+		data.Iface = "vtnet0"
+	} else {
+		data.Iface = "eth0"
 	}
 
 	data.Mtu = fmt.Sprintf(netMtu, instance.GetInstanceMtu(
@@ -378,7 +470,12 @@ func Write(db *database.Database, inst *instance.Instance,
 		return
 	}
 
-	usrData, err := getUserData(db, inst, virt, initial)
+	netData, addr6, gateway6, err := getNetData(db, inst, virt)
+	if err != nil {
+		return
+	}
+
+	usrData, err := getUserData(db, inst, virt, initial, addr6, gateway6)
 	if err != nil {
 		return
 	}
@@ -393,14 +490,11 @@ func Write(db *database.Database, inst *instance.Instance,
 		return
 	}
 
-	netData, err := getNetData(db, inst, virt)
-	if err != nil {
-		return
-	}
-
-	err = utils.CreateWrite(netPath, netData, 0644)
-	if err != nil {
-		return
+	if !virt.DhcpServer {
+		err = utils.CreateWrite(netPath, netData, 0644)
+		if err != nil {
+			return
+		}
 	}
 
 	err = utils.CreateWrite(userPath, usrData, 0644)
@@ -408,16 +502,23 @@ func Write(db *database.Database, inst *instance.Instance,
 		return
 	}
 
-	_, err = utils.ExecCombinedOutputLoggedDir(
-		nil, tempDir,
-		"genisoimage",
+	args := []string{
 		"-output", initPath,
 		"-volid", "cidata",
 		"-joliet",
 		"-rock",
 		"user-data",
 		"meta-data",
-		"network-config",
+	}
+
+	if !virt.DhcpServer {
+		args = append(args, "network-config")
+	}
+
+	_, err = utils.ExecCombinedOutputLoggedDir(
+		nil, tempDir,
+		"genisoimage",
+		args...,
 	)
 	if err != nil {
 		return
