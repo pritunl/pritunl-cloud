@@ -1955,6 +1955,15 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
+						label="DHCP server"
+						help="Enable instance DHCP server, use for instances without cloud init network configuration support."
+						checked={instance.dhcp_server}
+						onToggle={(): void => {
+							this.set('dhcp_server', !instance.dhcp_server);
+						}}
+					/>
+					<PageSwitch
+						disabled={this.state.disabled}
 						label="Delete protection"
 						help="Block instance and any attached disks from being deleted."
 						checked={instance.delete_protection}
