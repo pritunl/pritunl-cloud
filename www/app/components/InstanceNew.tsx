@@ -47,6 +47,8 @@ interface State {
 	nodes: NodeTypes.NodesRo;
 	addNetworkRole: string;
 	addVpc: string;
+	dhcpChanged: boolean;
+	secureBootChanged: boolean;
 }
 
 const css = {
@@ -121,6 +123,8 @@ export default class InstanceNew extends React.Component<Props, State> {
 			nodes: [],
 			addNetworkRole: '',
 			addVpc: '',
+			dhcpChanged: false,
+			secureBootChanged: false,
 		};
 	}
 
@@ -247,6 +251,22 @@ export default class InstanceNew extends React.Component<Props, State> {
 			...this.state,
 			changed: true,
 			instance: instance,
+			secureBootChanged: true,
+		});
+	}
+
+	onDhcpServer(dhcpServer: boolean): void {
+		let instance: InstanceTypes.Instance = {
+			...this.state.instance,
+		};
+
+		instance.dhcp_server = dhcpServer;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			instance: instance,
+			dhcpChanged: true,
 		});
 	}
 
@@ -332,6 +352,17 @@ export default class InstanceNew extends React.Component<Props, State> {
 		let imageName = this.imagesMap.get(val);
 
 		instance.image = val;
+		if (imageName.indexOf('FreeBSD') !== -1) {
+			instance.dhcp_server = true;
+			instance.secure_boot = false;
+		} else {
+			if (!this.state.dhcpChanged) {
+				instance.dhcp_server = false;
+			}
+			if (!this.state.secureBootChanged) {
+				instance.secure_boot = true;
+			}
+		}
 
 		this.setState({
 			...this.state,
@@ -833,6 +864,15 @@ export default class InstanceNew extends React.Component<Props, State> {
 							checked={instance.secure_boot}
 							onToggle={(): void => {
 								this.onSecureBoot(!instance.secure_boot);
+							}}
+						/>
+						<PageSwitch
+							disabled={this.state.disabled}
+							label="DHCP server"
+							help="Enable instance DHCP server, use for instances without cloud init network configuration support."
+							checked={instance.dhcp_server}
+							onToggle={(): void => {
+								this.onDhcpServer(!instance.dhcp_server);
 							}}
 						/>
 						<PageSwitch
