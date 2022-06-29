@@ -125,7 +125,7 @@ func (n *NetConf) spaceForward(db *database.Database) (err error) {
 		(n.NetworkMode6 != node.Disabled && n.NetworkMode6 != node.Oracle) {
 
 		_, err = utils.ExecCombinedOutputLogged(
-			nil,
+			[]string{"already exists"},
 			"ip", "netns", "exec", n.Namespace,
 			"ipset",
 			"create", "prx_inst6", "hash:net",
@@ -136,7 +136,7 @@ func (n *NetConf) spaceForward(db *database.Database) (err error) {
 		}
 
 		_, err = utils.ExecCombinedOutputLogged(
-			nil,
+			[]string{"already added"},
 			"ip", "netns", "exec", n.Namespace,
 			"ipset",
 			"add", "prx_inst6", "fe80::/64",
@@ -146,7 +146,7 @@ func (n *NetConf) spaceForward(db *database.Database) (err error) {
 		}
 
 		_, err = utils.ExecCombinedOutputLogged(
-			nil,
+			[]string{"already added"},
 			"ip", "netns", "exec", n.Namespace,
 			"ipset",
 			"add", "prx_inst6", n.InternalAddr6.String()+"/128",
