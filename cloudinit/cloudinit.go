@@ -210,14 +210,18 @@ func getUserData(db *database.Database, inst *instance.Instance,
 
 	if virt.CloudType == instance.FreeBSD {
 		resolvConf := ""
-		resolvConf += fmt.Sprintf("nameserver %s\n",
-			settings.Hypervisor.DnsServerPrimary)
-		resolvConf += fmt.Sprintf("nameserver %s\n",
-			settings.Hypervisor.DnsServerSecondary)
-		resolvConf += fmt.Sprintf("nameserver %s\n",
-			settings.Hypervisor.DnsServerPrimary6)
-		resolvConf += fmt.Sprintf("nameserver %s\n",
-			settings.Hypervisor.DnsServerSecondary6)
+
+		if inst.IsIpv6Only() {
+			resolvConf += fmt.Sprintf("nameserver %s\n",
+				settings.Hypervisor.DnsServerPrimary6)
+			resolvConf += fmt.Sprintf("nameserver %s\n",
+				settings.Hypervisor.DnsServerSecondary6)
+		} else {
+			resolvConf += fmt.Sprintf("nameserver %s\n",
+				settings.Hypervisor.DnsServerPrimary)
+			resolvConf += fmt.Sprintf("nameserver %s\n",
+				settings.Hypervisor.DnsServerSecondary)
+		}
 
 		data.WriteFiles += fmt.Sprintf(
 			writeFileTmpl,
