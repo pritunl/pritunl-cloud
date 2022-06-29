@@ -353,15 +353,13 @@ export default class InstanceNew extends React.Component<Props, State> {
 
 		instance.image = val;
 		if (imageName.indexOf('FreeBSD') !== -1) {
-			instance.dhcp_server = true;
 			instance.secure_boot = false;
+			instance.cloud_type = 'freebsd';
 		} else {
-			if (!this.state.dhcpChanged) {
-				instance.dhcp_server = false;
-			}
 			if (!this.state.secureBootChanged) {
 				instance.secure_boot = true;
 			}
+			instance.cloud_type = 'linux';
 		}
 
 		this.setState({
@@ -797,6 +795,18 @@ export default class InstanceNew extends React.Component<Props, State> {
 							}}
 						>
 							{domainsSelect}
+						</PageSelect>
+						<PageSelect
+							disabled={this.state.disabled}
+							label="CloudInit Type"
+							help="Target operating system for cloud init"
+							value={instance.cloud_type}
+							onChange={(val): void => {
+								this.set('cloud_type', val);
+							}}
+						>
+							<option key="linux" value="linux">Linux</option>,
+							<option key="freebsd" value="freebsd">FreeBSD</option>,
 						</PageSelect>
 						<PageSwitch
 							disabled={this.state.disabled}
