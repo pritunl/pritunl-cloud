@@ -172,6 +172,13 @@ func (i *Image) Json() {
 					names[2][:2],
 				)
 				break
+			case "freebsd":
+				i.Name = fmt.Sprintf(
+					"FreeBSD EFI %s/20%s",
+					names[2][2:],
+					names[2][:2],
+				)
+				break
 			}
 		}
 	}
