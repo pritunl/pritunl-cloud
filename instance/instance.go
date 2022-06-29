@@ -56,6 +56,7 @@ type Instance struct {
 	Uefi                bool               `bson:"uefi" json:"uefi"`
 	SecureBoot          bool               `bson:"secure_boot" json:"secure_boot"`
 	DhcpServer          bool               `bson:"dhcp_server" json:"dhcp_server"`
+	CloudType           string             `bson:"cloud_type" json:"cloud_type"`
 	DeleteProtection    bool               `bson:"delete_protection" json:"delete_protection"`
 	SkipSourceDestCheck bool               `bson:"skip_source_dest_check" json:"skip_source_dest_check"`
 	QemuVersion         string             `bson:"qemu_version" json:"qemu_version"`
@@ -215,6 +216,17 @@ func (i *Instance) Validate(db *database.Database) (
 
 	if i.PrivateIps6 == nil {
 		i.PrivateIps6 = []string{}
+	}
+
+	if i.CloudType == "" {
+		i.CloudType = Linux
+	}
+	if !ValidCloudTypes.Contains(i.CloudType) {
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_cloud_type",
+			Message: "Invalid cloud init type",
+		}
+		return
 	}
 
 	nde, err := node.Get(db, i.Node)
@@ -734,6 +746,7 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 		Uefi:             i.Uefi,
 		SecureBoot:       i.SecureBoot,
 		DhcpServer:       i.DhcpServer,
+		CloudType:        i.CloudType,
 		NoPublicAddress:  i.NoPublicAddress,
 		NoPublicAddress6: i.NoPublicAddress6,
 		NoHostAddress:    i.NoHostAddress,
@@ -831,6 +844,7 @@ func (i *Instance) Changed(curVirt *vm.VirtualMachine) bool {
 		i.Virt.Uefi != curVirt.Uefi ||
 		i.Virt.SecureBoot != curVirt.SecureBoot ||
 		i.Virt.DhcpServer != curVirt.DhcpServer ||
+		i.Virt.CloudType != curVirt.CloudType ||
 		i.Virt.NoPublicAddress != curVirt.NoPublicAddress ||
 		i.Virt.NoPublicAddress6 != curVirt.NoPublicAddress6 ||
 		i.Virt.NoHostAddress != curVirt.NoHostAddress {
