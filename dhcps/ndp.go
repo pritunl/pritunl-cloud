@@ -74,17 +74,18 @@ func (s *ServerNdp) Start() (err error) {
 
 	prefix.Addr()
 
-	err = s.run()
-	if err != nil {
-		if s.Debug {
-			logrus.WithFields(logrus.Fields{
-				"error": err,
-			}).Error("dhcps: NDP server error")
+	for {
+		err = s.run()
+		if err != nil {
+			if s.Debug {
+				logrus.WithFields(logrus.Fields{
+					"error": err,
+				}).Error("dhcps: NDP server error")
+			}
 		}
-		return
-	}
 
-	return
+		time.Sleep(s.delay)
+	}
 }
 
 func (s *ServerNdp) run() (err error) {
@@ -98,6 +99,14 @@ func (s *ServerNdp) run() (err error) {
 	defer func() {
 		_ = conn.Close()
 	}()
+
+	err = conn.SetDeadline(time.Now().Add(10 * time.Second))
+	if err != nil {
+		err = &errortypes.NetworkError{
+			errors.Wrap(err, "dhcps: Failed to set deadline"),
+		}
+		return
+	}
 
 	opts := []ndp.Option{
 		&ndp.PrefixInformation{
@@ -136,15 +145,17 @@ func (s *ServerNdp) run() (err error) {
 		return
 	}
 
-	for {
-		err = conn.WriteTo(msgRa, nil, netip.IPv6LinkLocalAllNodes())
-		if err != nil {
-			err = &errortypes.NetworkError{
-				errors.Wrap(err, "dhcps: Failed to write NDP message"),
-			}
-			return
-		}
-
-		time.Sleep(s.delay)
+	if s.Debug {
+		fmt.Println("Send RA")
 	}
+
+	err = conn.WriteTo(msgRa, nil, netip.IPv6LinkLocalAllNodes())
+	if err != nil {
+		err = &errortypes.NetworkError{
+			errors.Wrap(err, "dhcps: Failed to write NDP message"),
+		}
+		return
+	}
+
+	return
 }
