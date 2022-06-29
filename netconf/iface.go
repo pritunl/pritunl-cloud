@@ -5,8 +5,10 @@ import (
 	"strconv"
 
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/interfaces"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
@@ -73,6 +75,13 @@ func (n *NetConf) Iface1(db *database.Database) (err error) {
 		node.Self.JumboFramesInternal
 
 	n.Namespace = vm.GetNamespace(n.Virt.Id, 0)
+
+	if n.Virt.NetworkAdapters == nil || len(n.Virt.NetworkAdapters) < 1 {
+		err = &errortypes.ParseError{
+			errors.New("netconf: Missing virt network adapter"),
+		}
+		return
+	}
 	n.VmAdapter = n.Virt.NetworkAdapters[0]
 
 	return
