@@ -36,6 +36,7 @@ type VirtualMachine struct {
 	Uefi                bool               `json:"uefi"`
 	SecureBoot          bool               `json:"secure_boot"`
 	DhcpServer          bool               `json:"dhcp_server"`
+	CloudType           string             `json:"cloud_type"`
 	NoPublicAddress     bool               `json:"no_public_address"`
 	NoPublicAddress6    bool               `json:"no_public_address6"`
 	NoHostAddress       bool               `json:"no_host_address"`
