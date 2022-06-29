@@ -11,6 +11,8 @@ const (
 	Cleanup   = "cleanup"
 	Restart   = "restart"
 	Destroy   = "destroy"
+	Linux     = "linux"
+	FreeBSD   = "freebsd"
 )
 
 var (
@@ -21,5 +23,9 @@ var (
 		Cleanup,
 		Restart,
 		Destroy,
+	)
+	ValidCloudTypes = set.NewSet(
+		Linux,
+		FreeBSD,
 	)
 )
