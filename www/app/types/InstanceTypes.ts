@@ -19,6 +19,7 @@ export interface Instance {
 	vm_timestamp?: string;
 	uefi?: boolean;
 	secure_boot?: boolean;
+	dhcp_server?: boolean;
 	delete_protection?: boolean;
 	skip_source_dest_check?: boolean;
 	qemu_version?: string;
