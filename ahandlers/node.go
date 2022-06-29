@@ -17,6 +17,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/drive"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
+	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -79,6 +80,7 @@ type nodesData struct {
 type nodeInitData struct {
 	Provider          string             `json:"provider"`
 	Zone              primitive.ObjectID `json:"zone"`
+	Firewall          bool               `json:"firewall"`
 	InternalInterface string             `json:"internal_interface"`
 	ExternalInterface string             `json:"external_interface"`
 	HostNetwork       string             `json:"host_network"`
@@ -496,6 +498,98 @@ func nodeInitPost(c *gin.Context) {
 		return
 	}
 
+	if data.Firewall {
+		nde.Firewall = true
+		fields.Add("firewall")
+
+		if nde.NetworkRoles == nil {
+			nde.NetworkRoles = []string{}
+		}
+
+		hasRole := false
+		for _, role := range nde.NetworkRoles {
+			if role == "firewall" {
+				hasRole = true
+			}
+		}
+
+		if !hasRole {
+			nde.NetworkRoles = append(nde.NetworkRoles, "firewall")
+			fields.Add("network_roles")
+		}
+
+		fires, err := firewall.GetAll(db, &bson.M{
+			"organization": &bson.M{
+				"$exists": false,
+			},
+			"network_roles": "firewall",
+		})
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		if len(fires) == 0 {
+			fire := &firewall.Firewall{
+				Name:    "node-firewall",
+				Comment: "",
+				NetworkRoles: []string{
+					"firewall",
+				},
+				Ingress: []*firewall.Rule{
+					&firewall.Rule{
+						SourceIps: []string{
+							"0.0.0.0/0",
+							"::/0",
+						},
+						Protocol: firewall.Icmp,
+					},
+					&firewall.Rule{
+						SourceIps: []string{
+							"0.0.0.0/0",
+							"::/0",
+						},
+						Protocol: firewall.Tcp,
+						Port:     "22",
+					},
+					&firewall.Rule{
+						SourceIps: []string{
+							"0.0.0.0/0",
+							"::/0",
+						},
+						Protocol: firewall.Tcp,
+						Port:     "80",
+					},
+					&firewall.Rule{
+						SourceIps: []string{
+							"0.0.0.0/0",
+							"::/0",
+						},
+						Protocol: firewall.Tcp,
+						Port:     "443",
+					},
+				},
+			}
+
+			errData, err = fire.Validate(db)
+			if err != nil {
+				utils.AbortWithError(c, 500, err)
+				return
+			}
+
+			if errData != nil {
+				c.JSON(400, errData)
+				return
+			}
+
+			err = fire.Insert(db)
+			if err != nil {
+				utils.AbortWithError(c, 500, err)
+				return
+			}
+		}
+	}
+
 	err = nde.CommitFields(db, fields)
 	if err != nil {
 		if hostBlck != nil {
@@ -507,6 +601,9 @@ func nodeInitPost(c *gin.Context) {
 
 	event.PublishDispatch(db, "node.change")
 	event.PublishDispatch(db, "block.change")
+	if data.Firewall {
+		event.PublishDispatch(db, "firewall.change")
+	}
 
 	c.JSON(200, nde)
 }
