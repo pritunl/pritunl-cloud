@@ -6,6 +6,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/cloudinit"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/dhcps"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/qmp"
@@ -80,6 +81,18 @@ func PowerOn(db *database.Database, inst *instance.Instance,
 	err = initPermissions(virt)
 	if err != nil {
 		return
+	}
+
+	if virt.DhcpServer {
+		err = dhcps.Start(db, virt)
+		if err != nil {
+			return
+		}
+	} else {
+		err = dhcps.Stop(db, virt)
+		if err != nil {
+			return
+		}
 	}
 
 	err = systemd.Start(unitName)
