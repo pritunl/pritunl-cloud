@@ -90,6 +90,9 @@ func (s *ServerNdp) Start() (err error) {
 func (s *ServerNdp) run() (err error) {
 	conn, _, err := ndp.Listen(s.iface, ndp.LinkLocal)
 	if err != nil {
+		err = &errortypes.NetworkError{
+			errors.Wrap(err, "dhcps: Failed to write NDP message"),
+		}
 		return
 	}
 	defer func() {
