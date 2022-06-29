@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
@@ -12,7 +13,7 @@ import (
 )
 
 func Dhcp4Server() (err error) {
-	config := os.Getenv("CONFIG")
+	config := strings.Trim(os.Getenv("CONFIG"), "'")
 	server4 := &dhcps.Server4{}
 
 	err = json.Unmarshal([]byte(config), server4)
@@ -36,7 +37,7 @@ func Dhcp4Server() (err error) {
 }
 
 func Dhcp6Server() (err error) {
-	config := os.Getenv("CONFIG")
+	config := strings.Trim(os.Getenv("CONFIG"), "'")
 	server6 := &dhcps.Server6{}
 
 	err = json.Unmarshal([]byte(config), server6)
@@ -60,7 +61,7 @@ func Dhcp6Server() (err error) {
 }
 
 func NdpServer() (err error) {
-	config := os.Getenv("CONFIG")
+	config := strings.Trim(os.Getenv("CONFIG"), "'")
 	serverNdp := &dhcps.ServerNdp{}
 
 	err = json.Unmarshal([]byte(config), serverNdp)
