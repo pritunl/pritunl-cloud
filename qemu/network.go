@@ -13,6 +13,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/dhcps"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/interfaces"
 	"github.com/pritunl/pritunl-cloud/iproute"
@@ -57,6 +58,11 @@ func networkStopDhClient(virt *vm.VirtualMachine) (err error) {
 
 func NetworkConfClear(db *database.Database,
 	virt *vm.VirtualMachine) (err error) {
+
+	err = dhcps.Stop(db, virt)
+	if err != nil {
+		return
+	}
 
 	nc := netconf.New(virt)
 	err = nc.Clean(db)
