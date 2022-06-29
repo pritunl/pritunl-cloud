@@ -1898,6 +1898,18 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					>
 						{domainsSelect}
 					</PageSelect>
+					<PageSelect
+						disabled={this.state.disabled}
+						label="CloudInit Type"
+						help="Target operating system for cloud init"
+						value={instance.cloud_type}
+						onChange={(val): void => {
+							this.set('cloud_type', val);
+						}}
+					>
+						<option key="linux" value="linux">Linux</option>,
+						<option key="freebsd" value="freebsd">FreeBSD</option>,
+					</PageSelect>
 					<PageSwitch
 						disabled={this.state.disabled}
 						label="Root enabled"
