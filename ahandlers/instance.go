@@ -46,6 +46,7 @@ type instanceData struct {
 	Uefi                bool               `json:"uefi"`
 	SecureBoot          bool               `json:"secure_boot"`
 	DhcpServer          bool               `json:"dhcp_server"`
+	CloudType           string             `json:"cloud_type"`
 	DeleteProtection    bool               `json:"delete_protection"`
 	SkipSourceDestCheck bool               `json:"skip_source_dest_check"`
 	InitDiskSize        int                `json:"init_disk_size"`
@@ -115,6 +116,7 @@ func instancePut(c *gin.Context) {
 	inst.Uefi = dta.Uefi
 	inst.SecureBoot = dta.SecureBoot
 	inst.DhcpServer = dta.DhcpServer
+	inst.CloudType = dta.CloudType
 	inst.DeleteProtection = dta.DeleteProtection
 	inst.SkipSourceDestCheck = dta.SkipSourceDestCheck
 	inst.Memory = dta.Memory
@@ -147,6 +149,7 @@ func instancePut(c *gin.Context) {
 		"uefi",
 		"secure_boot",
 		"dhcp_server",
+		"cloud_type",
 		"delete_protection",
 		"skip_source_dest_check",
 		"memory",
@@ -290,6 +293,7 @@ func instancePost(c *gin.Context) {
 			Uefi:                dta.Uefi,
 			SecureBoot:          dta.SecureBoot,
 			DhcpServer:          dta.DhcpServer,
+			CloudType:           dta.CloudType,
 			DeleteProtection:    dta.DeleteProtection,
 			SkipSourceDestCheck: dta.SkipSourceDestCheck,
 			Name:                name,
