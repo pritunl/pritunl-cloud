@@ -339,7 +339,8 @@ func (n *NetConf) ipInit6(db *database.Database) (err error) {
 		output, e := utils.ExecCombinedOutput(
 			"",
 			"ip", "netns", "exec", n.Namespace,
-			"ping", "-c", "3", "-i", "0.5", "-w", "6", "2001:4860:4860::8888",
+			"ping6", "-c", "3", "-i", "0.5", "-w", "6",
+			"2001:4860:4860::8888",
 		)
 		if e != nil {
 			logrus.WithFields(logrus.Fields{
@@ -370,7 +371,7 @@ func (n *NetConf) ipInit6Alt(db *database.Database) (err error) {
 			output, e := utils.ExecCombinedOutput(
 				"",
 				"ip", "netns", "exec", n.Namespace,
-				"ping", "-c", "3", "-i", "0.5", "-w", "6", addrs[0],
+				"ping6", "-c", "3", "-i", "0.5", "-w", "6", addrs[0],
 			)
 			if e != nil {
 				logrus.WithFields(logrus.Fields{
