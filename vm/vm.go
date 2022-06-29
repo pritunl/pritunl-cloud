@@ -35,6 +35,7 @@ type VirtualMachine struct {
 	OraclePublicIp      string             `json:"oracle_public_ip"`
 	Uefi                bool               `json:"uefi"`
 	SecureBoot          bool               `json:"secure_boot"`
+	DhcpServer          bool               `json:"dhcp_server"`
 	NoPublicAddress     bool               `json:"no_public_address"`
 	NoPublicAddress6    bool               `json:"no_public_address6"`
 	NoHostAddress       bool               `json:"no_host_address"`
