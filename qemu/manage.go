@@ -15,6 +15,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/dhcps"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
@@ -583,6 +584,18 @@ func Create(db *database.Database, inst *instance.Instance,
 	err = virt.Commit(db)
 	if err != nil {
 		return
+	}
+
+	if virt.DhcpServer {
+		err = dhcps.Start(db, virt)
+		if err != nil {
+			return
+		}
+	} else {
+		err = dhcps.Stop(db, virt)
+		if err != nil {
+			return
+		}
 	}
 
 	err = systemd.Start(unitName)
