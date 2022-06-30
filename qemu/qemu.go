@@ -69,6 +69,7 @@ type Qemu struct {
 	Boot         string
 	Uefi         bool
 	SecureBoot   bool
+	Tpm          bool
 	OvmfCodePath string
 	OvmfVarsPath string
 	Memory       int
@@ -248,12 +249,12 @@ func (q *Qemu) Marshal() (output string, err error) {
 	if q.Uefi {
 		cmd = append(cmd, "-drive")
 		cmd = append(cmd, fmt.Sprintf(
-			"if=pflash,format=raw,readonly=on,file=%s",
+			"if=pflash,format=raw,unit=0,readonly=on,file=%s",
 			q.OvmfCodePath,
 		))
 		cmd = append(cmd, "-drive")
 		cmd = append(cmd, fmt.Sprintf(
-			"if=pflash,format=raw,readonly=on,file=%s",
+			"if=pflash,format=raw,unit=1,file=%s",
 			q.OvmfVarsPath,
 		))
 	}
@@ -530,6 +531,17 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 	cmd = append(cmd, "-pidfile")
 	cmd = append(cmd, paths.GetPidPath(q.Id))
+
+	if q.Tpm {
+		cmd = append(cmd, "-chardev")
+		cmd = append(cmd,
+			fmt.Sprintf("socket,id=tpmsock0,path=%s",
+				paths.GetTpmSockPath(q.Id)))
+		cmd = append(cmd, "-tpmdev")
+		cmd = append(cmd, "emulator,id=tpmdev0,chardev=tpmsock0")
+		cmd = append(cmd, "-device")
+		cmd = append(cmd, "tpm-tis,tpmdev=tpmdev0")
+	}
 
 	guestPath := paths.GetGuestPath(q.Id)
 	cmd = append(cmd, "-chardev")

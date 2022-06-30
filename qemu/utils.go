@@ -54,6 +54,7 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 		Boot:         "c",
 		Uefi:         virt.Uefi,
 		SecureBoot:   virt.SecureBoot,
+		Tpm:          virt.Tpm,
 		OvmfCodePath: ovmfCodePath,
 		OvmfVarsPath: paths.GetOvmfVarsPath(virt.Id),
 		Memory:       virt.Memory,
