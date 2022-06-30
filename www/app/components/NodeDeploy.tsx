@@ -30,6 +30,7 @@ interface State {
 	provider: string;
 	datacenter: string;
 	zone: string;
+	firewall: boolean;
 	internalIface: string;
 	externalIface: string;
 	network: string;
@@ -81,6 +82,7 @@ export default class NodeDeploy extends React.Component<Props, State> {
 			provider: '',
 			datacenter: '',
 			zone: '',
+			firewall: true,
 			internalIface: '',
 			externalIface: '',
 			network: '',
@@ -138,6 +140,7 @@ export default class NodeDeploy extends React.Component<Props, State> {
 			provider: this.state.provider || 'other',
 			zone: this.props.node.zone ? this.props.node.zone :
 				this.state.zone,
+			firewall: this.state.firewall,
 			internal_interface: internalIface,
 			external_interface: externalIface,
 			host_network: this.state.network,
@@ -480,6 +483,18 @@ export default class NodeDeploy extends React.Component<Props, State> {
 							this.setState({
 								...this.state,
 								network: val,
+							});
+						}}
+					/>
+					<PageSwitch
+						disabled={this.state.disabled}
+						label="Node firewall"
+						help="Configure a default firewall for the node allowing web and ssh traffic from all addresses. This should always be enabled unless an external firewall has been configured on the host system. The firewall can be modified after from the web console."
+						checked={this.state.firewall}
+						onToggle={(): void => {
+							this.setState({
+								...this.state,
+								firewall: !this.state.firewall,
 							});
 						}}
 					/>
