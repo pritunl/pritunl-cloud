@@ -3,6 +3,7 @@ pritunl-cloud changelog
 
 <%= version %>
 
+Add FreeBSD support
 Add instance DHCP server
 Configure node firewall in node init
 
