@@ -26,6 +26,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/pci"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/systemd"
+	"github.com/pritunl/pritunl-cloud/tpm"
 	"github.com/pritunl/pritunl-cloud/usb"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
@@ -55,6 +56,8 @@ type Instance struct {
 	RestartBlockIp      bool               `bson:"restart_block_ip" json:"restart_block_ip"`
 	Uefi                bool               `bson:"uefi" json:"uefi"`
 	SecureBoot          bool               `bson:"secure_boot" json:"secure_boot"`
+	Tpm                 bool               `bson:"tpm" json:"tpm"`
+	TpmSecret           string             `bson:"tpm_secret" json:"-"`
 	DhcpServer          bool               `bson:"dhcp_server" json:"dhcp_server"`
 	CloudType           string             `bson:"cloud_type" json:"cloud_type"`
 	DeleteProtection    bool               `bson:"delete_protection" json:"delete_protection"`
@@ -227,6 +230,13 @@ func (i *Instance) Validate(db *database.Database) (
 			Message: "Invalid cloud init type",
 		}
 		return
+	}
+
+	if i.TpmSecret == "" {
+		i.TpmSecret, err = tpm.GenerateSecret()
+		if err != nil {
+			return
+		}
 	}
 
 	nde, err := node.Get(db, i.Node)
@@ -745,6 +755,7 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 		OracleVnicAttach: i.OracleVnicAttach,
 		Uefi:             i.Uefi,
 		SecureBoot:       i.SecureBoot,
+		Tpm:              i.Tpm,
 		DhcpServer:       i.DhcpServer,
 		CloudType:        i.CloudType,
 		NoPublicAddress:  i.NoPublicAddress,
@@ -843,6 +854,7 @@ func (i *Instance) Changed(curVirt *vm.VirtualMachine) bool {
 		i.Virt.Gui != curVirt.Gui ||
 		i.Virt.Uefi != curVirt.Uefi ||
 		i.Virt.SecureBoot != curVirt.SecureBoot ||
+		i.Virt.Tpm != curVirt.Tpm ||
 		i.Virt.DhcpServer != curVirt.DhcpServer ||
 		i.Virt.CloudType != curVirt.CloudType ||
 		i.Virt.NoPublicAddress != curVirt.NoPublicAddress ||
