@@ -28,6 +28,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/store"
 	"github.com/pritunl/pritunl-cloud/systemd"
+	"github.com/pritunl/pritunl-cloud/tpm"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/sirupsen/logrus"
@@ -593,6 +594,18 @@ func Create(db *database.Database, inst *instance.Instance,
 		}
 	} else {
 		err = dhcps.Stop(db, virt)
+		if err != nil {
+			return
+		}
+	}
+
+	if virt.Tpm {
+		err = tpm.Start(db, virt)
+		if err != nil {
+			return
+		}
+	} else {
+		err = tpm.Stop(db, virt)
 		if err != nil {
 			return
 		}
