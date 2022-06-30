@@ -79,9 +79,7 @@ func (s *Server4) handleMsg(conn net.PacketConn, peer net.Addr,
 	resp.UpdateOption(dhcpv4.OptIPAddressLeaseTime(s.lifetime))
 
 	requested := req.ParameterRequestList()
-	if requested.Has(dhcpv4.OptionDomainNameServer) &&
-		!resp.Options.Has(dhcpv4.OptionDomainNameServer) {
-
+	if requested.Has(dhcpv4.OptionDomainNameServer) {
 		resp.UpdateOption(dhcpv4.OptDNS(s.dnsServersIp...))
 	}
 
