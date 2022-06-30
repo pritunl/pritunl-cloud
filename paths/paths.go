@@ -49,6 +49,22 @@ func GetBackingPath() string {
 	return path.Join(node.Self.GetVirtPath(), "backing")
 }
 
+func GetTpmsPath() string {
+	return path.Join(node.Self.GetVirtPath(), "tpms")
+}
+
+func GetTpmPath(virtId primitive.ObjectID) string {
+	return path.Join(GetTpmsPath(), virtId.Hex())
+}
+
+func GetTpmSockPath(virtId primitive.ObjectID) string {
+	return path.Join(GetTpmsPath(), virtId.Hex(), "sock")
+}
+
+func GetTpmPwdPath(virtId primitive.ObjectID) string {
+	return path.Join(GetTpmsPath(), virtId.Hex(), "pwd")
+}
+
 func GetTempPath() string {
 	return node.Self.GetTempPath()
 }
@@ -138,6 +154,15 @@ func GetUnitNameNdp(virtId primitive.ObjectID, n int) string {
 func GetUnitPathNdp(virtId primitive.ObjectID, n int) string {
 	return path.Join(settings.Hypervisor.SystemdPath,
 		GetUnitNameNdp(virtId, n))
+}
+
+func GetUnitNameTpm(virtId primitive.ObjectID) string {
+	return fmt.Sprintf("pritunl_tpm_%s.service", virtId.Hex())
+}
+
+func GetUnitPathTpm(virtId primitive.ObjectID) string {
+	return path.Join(settings.Hypervisor.SystemdPath,
+		GetUnitNameTpm(virtId))
 }
 
 func GetPidPath(virtId primitive.ObjectID) string {
