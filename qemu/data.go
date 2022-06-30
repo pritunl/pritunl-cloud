@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/dhcps"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/hugepages"
 	"github.com/pritunl/pritunl-cloud/paths"
@@ -14,6 +15,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/store"
 	"github.com/pritunl/pritunl-cloud/systemd"
+	"github.com/pritunl/pritunl-cloud/tpm"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/sirupsen/logrus"
@@ -103,9 +105,11 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	vmPath := paths.GetVmPath(virt.Id)
 	unitName := paths.GetUnitName(virt.Id)
 	unitPath := paths.GetUnitPath(virt.Id)
-	unitServer4 := paths.GetUnitPathDhcp4(virt.Id, 0)
-	unitServer6 := paths.GetUnitPathDhcp6(virt.Id, 0)
-	unitServerNdp := paths.GetUnitPathNdp(virt.Id, 0)
+	unitPathServer4 := paths.GetUnitPathDhcp4(virt.Id, 0)
+	unitPathServer6 := paths.GetUnitPathDhcp6(virt.Id, 0)
+	unitPathServerNdp := paths.GetUnitPathNdp(virt.Id, 0)
+	tpmPath := paths.GetTpmPath(virt.Id)
+	unitPathTpm := paths.GetUnitPathTpm(virt.Id)
 	sockPath := paths.GetSockPath(virt.Id)
 	sockQmpPath := paths.GetQmpSockPath(virt.Id)
 	// TODO Backward compatibility
@@ -122,6 +126,9 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	logrus.WithFields(logrus.Fields{
 		"id": virt.Id.Hex(),
 	}).Info("qemu: Destroying virtual machine")
+
+	_ = tpm.Stop(db, virt)
+	_ = dhcps.Stop(db, virt)
 
 	exists, err := utils.Exists(unitPath)
 	if err != nil {
@@ -253,17 +260,27 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	err = utils.RemoveAll(unitServer4)
+	err = utils.RemoveAll(tpmPath)
 	if err != nil {
 		return
 	}
 
-	err = utils.RemoveAll(unitServer6)
+	err = utils.RemoveAll(unitPathTpm)
 	if err != nil {
 		return
 	}
 
-	err = utils.RemoveAll(unitServerNdp)
+	err = utils.RemoveAll(unitPathServer4)
+	if err != nil {
+		return
+	}
+
+	err = utils.RemoveAll(unitPathServer6)
+	if err != nil {
+		return
+	}
+
+	err = utils.RemoveAll(unitPathServerNdp)
 	if err != nil {
 		return
 	}
