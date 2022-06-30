@@ -16,7 +16,7 @@ func Reload() (err error) {
 	systemdLock.Lock()
 	defer systemdLock.Unlock()
 
-	err = utils.Exec("", "systemctl", "daemon-reload")
+	_, err = utils.ExecCombinedOutput("", "systemctl", "daemon-reload")
 	if err != nil {
 		return
 	}
@@ -30,7 +30,7 @@ func Start(unit string) (err error) {
 	systemdLock.Lock()
 	defer systemdLock.Unlock()
 
-	err = utils.Exec("", "systemctl", "start", unit)
+	_, err = utils.ExecCombinedOutput("", "systemctl", "start", unit)
 	if err != nil {
 		return
 	}
@@ -44,7 +44,7 @@ func Stop(unit string) (err error) {
 	systemdLock.Lock()
 	defer systemdLock.Unlock()
 
-	err = utils.Exec("", "systemctl", "stop", unit)
+	_, err = utils.ExecCombinedOutput("", "systemctl", "stop", unit)
 	if err != nil {
 		return
 	}
