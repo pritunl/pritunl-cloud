@@ -10,7 +10,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/vm"
 )
 
-func chown(virt *vm.VirtualMachine, path string) (err error) {
+func Chown(virt *vm.VirtualMachine, path string) (err error) {
 	err = os.Chown(path, virt.UnixId, 0)
 	if err != nil {
 		err = &errortypes.WriteError{
@@ -33,7 +33,7 @@ func touchChown(virt *vm.VirtualMachine, path string) (err error) {
 		return
 	}
 
-	err = chown(virt, path)
+	err = Chown(virt, path)
 	if err != nil {
 		return
 	}
@@ -48,26 +48,26 @@ func InitVirt(virt *vm.VirtualMachine) (err error) {
 	}
 
 	if virt.Uefi {
-		err = chown(virt, paths.GetOvmfVarsPath(virt.Id))
+		err = Chown(virt, paths.GetOvmfVarsPath(virt.Id))
 		if err != nil {
 			return
 		}
 	}
 
-	err = chown(virt, paths.GetInitPath(virt.Id))
+	err = Chown(virt, paths.GetInitPath(virt.Id))
 	if err != nil {
 		return
 	}
 
 	for _, disk := range virt.Disks {
-		err = chown(virt, disk.Path)
+		err = Chown(virt, disk.Path)
 		if err != nil {
 			return
 		}
 	}
 
 	for _, device := range virt.DriveDevices {
-		err = chown(virt, paths.GetDrivePath(device.Id))
+		err = Chown(virt, paths.GetDrivePath(device.Id))
 		if err != nil {
 			return
 		}
@@ -82,7 +82,7 @@ func InitDisk(virt *vm.VirtualMachine, dsk *vm.Disk) (err error) {
 		return
 	}
 
-	err = chown(virt, dsk.Path)
+	err = Chown(virt, dsk.Path)
 	if err != nil {
 		return
 	}
