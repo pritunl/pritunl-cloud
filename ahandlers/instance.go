@@ -45,6 +45,7 @@ type instanceData struct {
 	RootEnabled         bool               `json:"root_enabled"`
 	Uefi                bool               `json:"uefi"`
 	SecureBoot          bool               `json:"secure_boot"`
+	Tpm                 bool               `json:"tpm"`
 	DhcpServer          bool               `json:"dhcp_server"`
 	CloudType           string             `json:"cloud_type"`
 	DeleteProtection    bool               `json:"delete_protection"`
@@ -115,6 +116,7 @@ func instancePut(c *gin.Context) {
 	}
 	inst.Uefi = dta.Uefi
 	inst.SecureBoot = dta.SecureBoot
+	inst.Tpm = dta.Tpm
 	inst.DhcpServer = dta.DhcpServer
 	inst.CloudType = dta.CloudType
 	inst.DeleteProtection = dta.DeleteProtection
@@ -148,6 +150,8 @@ func instancePut(c *gin.Context) {
 		"restart_block_ip",
 		"uefi",
 		"secure_boot",
+		"tpm",
+		"tpm_secret",
 		"dhcp_server",
 		"cloud_type",
 		"delete_protection",
@@ -292,6 +296,7 @@ func instancePost(c *gin.Context) {
 			ImageBacking:        dta.ImageBacking,
 			Uefi:                dta.Uefi,
 			SecureBoot:          dta.SecureBoot,
+			Tpm:                 dta.Tpm,
 			DhcpServer:          dta.DhcpServer,
 			CloudType:           dta.CloudType,
 			DeleteProtection:    dta.DeleteProtection,
