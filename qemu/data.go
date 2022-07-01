@@ -37,6 +37,20 @@ func initHugepage(virt *vm.VirtualMachine) (err error) {
 	return
 }
 
+func initCache(virt *vm.VirtualMachine) (err error) {
+	err = utils.ExistsMkdir(paths.GetCachesDir(), 0755)
+	if err != nil {
+		return
+	}
+
+	err = utils.ExistsMkdir(paths.GetCacheDir(virt.Id), 0700)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func initPermissions(virt *vm.VirtualMachine) (err error) {
 	err = permission.InitVirt(virt)
 	if err != nil {
@@ -122,6 +136,7 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	pidPathOld := paths.GetPidPathOld(virt.Id)
 	ovmfVarsPath := paths.GetOvmfVarsPath(virt.Id)
 	hugepagesPath := paths.GetHugepagePath(virt.Id)
+	cachePath := paths.GetCacheDir(virt.Id)
 
 	logrus.WithFields(logrus.Fields{
 		"id": virt.Id.Hex(),
@@ -344,6 +359,11 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	}
 
 	err = utils.RemoveAll(hugepagesPath)
+	if err != nil {
+		return
+	}
+
+	err = utils.RemoveAll(cachePath)
 	if err != nil {
 		return
 	}
