@@ -73,6 +73,11 @@ func InitVirt(virt *vm.VirtualMachine) (err error) {
 		}
 	}
 
+	err = Chown(virt, paths.GetCacheDir(virt.Id))
+	if err != nil {
+		return
+	}
+
 	return
 }
 
