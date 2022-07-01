@@ -78,7 +78,7 @@ func Start(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	err = permission.Chown(virt, tpmPath)
+	err = permission.InitTpm(virt)
 	if err != nil {
 		return
 	}
@@ -117,7 +117,7 @@ func Start(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	err = permission.Chown(virt, pwdPath)
+	err = permission.InitTpmPwd(virt)
 	if err != nil {
 		_ = os.Remove(pwdPath)
 		return
