@@ -64,6 +64,11 @@ func PowerOn(db *database.Database, inst *instance.Instance,
 		return
 	}
 
+	err = initCache(virt)
+	if err != nil {
+		return
+	}
+
 	err = initHugepage(virt)
 	if err != nil {
 		return
