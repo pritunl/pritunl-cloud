@@ -10,7 +10,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/vm"
 )
 
-func Chown(virt *vm.VirtualMachine, path string) (err error) {
+func chown(virt *vm.VirtualMachine, path string) (err error) {
 	err = os.Chown(path, virt.UnixId, 0)
 	if err != nil {
 		err = &errortypes.WriteError{
@@ -33,7 +33,7 @@ func touchChown(virt *vm.VirtualMachine, path string) (err error) {
 		return
 	}
 
-	err = Chown(virt, path)
+	err = chown(virt, path)
 	if err != nil {
 		return
 	}
@@ -48,32 +48,32 @@ func InitVirt(virt *vm.VirtualMachine) (err error) {
 	}
 
 	if virt.Uefi {
-		err = Chown(virt, paths.GetOvmfVarsPath(virt.Id))
+		err = chown(virt, paths.GetOvmfVarsPath(virt.Id))
 		if err != nil {
 			return
 		}
 	}
 
-	err = Chown(virt, paths.GetInitPath(virt.Id))
+	err = chown(virt, paths.GetInitPath(virt.Id))
 	if err != nil {
 		return
 	}
 
 	for _, disk := range virt.Disks {
-		err = Chown(virt, disk.Path)
+		err = chown(virt, disk.Path)
 		if err != nil {
 			return
 		}
 	}
 
 	for _, device := range virt.DriveDevices {
-		err = Chown(virt, paths.GetDrivePath(device.Id))
+		err = chown(virt, paths.GetDrivePath(device.Id))
 		if err != nil {
 			return
 		}
 	}
 
-	err = Chown(virt, paths.GetCacheDir(virt.Id))
+	err = chown(virt, paths.GetCacheDir(virt.Id))
 	if err != nil {
 		return
 	}
@@ -87,7 +87,29 @@ func InitDisk(virt *vm.VirtualMachine, dsk *vm.Disk) (err error) {
 		return
 	}
 
-	err = Chown(virt, dsk.Path)
+	err = chown(virt, dsk.Path)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func InitTpm(virt *vm.VirtualMachine) (err error) {
+	tpmPath := paths.GetTpmPath(virt.Id)
+
+	err = chown(virt, tpmPath)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func InitTpmPwd(virt *vm.VirtualMachine) (err error) {
+	tpmPath := paths.GetTpmPwdPath(virt.Id)
+
+	err = chown(virt, tpmPath)
 	if err != nil {
 		return
 	}
