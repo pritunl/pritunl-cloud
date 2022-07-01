@@ -257,7 +257,7 @@ func installRpm() (err error) {
 
 	err = utils.Exec("", "/usr/bin/yum", "-y", "install",
 		"edk2-ovmf", "qemu-kvm", "qemu-kvm-core", "qemu-img", "genisoimage",
-		"pritunl-cloud")
+		"swtpm", "pritunl-cloud")
 	if err != nil {
 		return
 	}
@@ -283,7 +283,7 @@ func installApt() (err error) {
 
 	err = utils.Exec("", "/usr/bin/apt", "-y", "install",
 		"ovmf", "qemu", "qemu-efi", "qemu-system-x86", "qemu-user",
-		"qemu-utils", "genisoimage", "pritunl-cloud")
+		"swtpm", "qemu-utils", "genisoimage", "pritunl-cloud")
 	if err != nil {
 		return
 	}
