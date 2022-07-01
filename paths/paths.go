@@ -77,6 +77,14 @@ func GetDrivePath(driveId string) string {
 	return path.Join("/dev/disk/by-id", driveId)
 }
 
+func GetCachesDir() string {
+	return path.Join(node.Self.GetVirtPath(), "caches")
+}
+
+func GetCacheDir(virtId primitive.ObjectID) string {
+	return path.Join(GetCachesDir(), virtId.Hex())
+}
+
 func GetOvmfDir() string {
 	return path.Join(node.Self.GetVirtPath(), "ovmf")
 }
