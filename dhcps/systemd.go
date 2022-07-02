@@ -369,7 +369,7 @@ func Start(db *database.Database, virt *vm.VirtualMachine) (err error) {
 
 	logrus.WithFields(logrus.Fields{
 		"id": virt.Id.Hex(),
-	}).Info("qemu: Starting virtual machine dhcp server")
+	}).Info("dhcps: Starting virtual machine dhcp server")
 
 	zne, err := zone.Get(db, node.Self.Zone)
 	if err != nil {
