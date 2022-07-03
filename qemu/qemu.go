@@ -354,6 +354,12 @@ func (q *Qemu) Marshal() (output string, err error) {
 		}
 	}
 
+	if !settings.Hypervisor.NoVirtRng {
+		cmd = append(cmd, "-object",
+			"rng-random,filename=/dev/random,id=rng0")
+		cmd = append(cmd, "-device", "virtio-rng-pci,rng=rng0")
+	}
+
 	diskAio := settings.Hypervisor.DiskAio
 	if diskAio == "" {
 		supported, e := features.GetUringSupport()
