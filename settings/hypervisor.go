@@ -22,6 +22,7 @@ type hypervisor struct {
 	NetworkQueuesMin    int    `bson:"network_queues_min" default:"1"`
 	NetworkQueuesMax    int    `bson:"network_queues_max" default:"8"`
 	CloudInitNetVer     int    `bson:"cloud_init_net_ver" default:"1"`
+	NoVirtRng           bool   `bson:"no_virt_rng"`
 	VxlanId             int    `bson:"vxlan_id" default:"9417"`
 	VxlanDestPort       int    `bson:"vxlan_dest_port" default:"4789"`
 	IpTimeout           int    `bson:"ip_timeout" default:"30"`
