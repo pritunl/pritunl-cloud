@@ -202,13 +202,13 @@ func getUserData(db *database.Database, inst *instance.Instance,
 	}
 
 	owner := ""
-	if virt.CloudType == instance.FreeBSD {
+	if virt.CloudType == instance.BSD {
 		owner = "root:wheel"
 	} else {
 		owner = "root:root"
 	}
 
-	if virt.CloudType == instance.FreeBSD {
+	if virt.CloudType == instance.BSD {
 		resolvConf := ""
 
 		if inst.IsIpv6Only() {
@@ -281,7 +281,7 @@ func getUserData(db *database.Database, inst *instance.Instance,
 	output := &bytes.Buffer{}
 
 	var templ *template.Template
-	if virt.CloudType == instance.FreeBSD {
+	if virt.CloudType == instance.BSD {
 		templ = cloudBsdConfig
 	} else {
 		templ = cloudConfig
@@ -423,7 +423,7 @@ func getNetData(db *database.Database, inst *instance.Instance,
 		Dns2:         dns2,
 	}
 
-	if virt.CloudType == instance.FreeBSD {
+	if virt.CloudType == instance.BSD {
 		data.Iface = "vtnet0"
 	} else {
 		data.Iface = "eth0"

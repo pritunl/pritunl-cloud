@@ -12,7 +12,7 @@ const (
 	Restart   = "restart"
 	Destroy   = "destroy"
 	Linux     = "linux"
-	FreeBSD   = "freebsd"
+	BSD       = "bsd"
 )
 
 var (
@@ -26,6 +26,6 @@ var (
 	)
 	ValidCloudTypes = set.NewSet(
 		Linux,
-		FreeBSD,
+		BSD,
 	)
 )
