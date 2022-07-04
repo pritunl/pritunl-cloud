@@ -352,9 +352,9 @@ export default class InstanceNew extends React.Component<Props, State> {
 		let imageName = this.imagesMap.get(val);
 
 		instance.image = val;
-		if (imageName.indexOf('FreeBSD') !== -1) {
+		if (imageName.indexOf('BSD') !== -1) {
 			instance.secure_boot = false;
-			instance.cloud_type = 'freebsd';
+			instance.cloud_type = 'bsd';
 		} else {
 			if (!this.state.secureBootChanged) {
 				instance.secure_boot = true;
@@ -806,7 +806,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 							}}
 						>
 							<option key="linux" value="linux">Linux</option>,
-							<option key="freebsd" value="freebsd">FreeBSD</option>,
+							<option key="bsd" value="bsd">BSD</option>,
 						</PageSelect>
 						<PageSwitch
 							disabled={this.state.disabled}

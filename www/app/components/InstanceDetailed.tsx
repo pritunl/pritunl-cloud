@@ -1908,7 +1908,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						}}
 					>
 						<option key="linux" value="linux">Linux</option>,
-						<option key="freebsd" value="freebsd">FreeBSD</option>,
+						<option key="bsd" value="bsd">BSD</option>,
 					</PageSelect>
 					<PageSwitch
 						disabled={this.state.disabled}
