@@ -844,6 +844,15 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 }
 
 func (i *Instance) Changed(curVirt *vm.VirtualMachine) bool {
+	curCloudType := curVirt.CloudType
+	if curCloudType == "" {
+		curCloudType = Linux
+	}
+	cloudType := i.Virt.CloudType
+	if cloudType == "" {
+		cloudType = Linux
+	}
+
 	if i.Virt.Memory != curVirt.Memory ||
 		i.Virt.Hugepages != curVirt.Hugepages ||
 		i.Virt.Processors != curVirt.Processors ||
@@ -856,7 +865,7 @@ func (i *Instance) Changed(curVirt *vm.VirtualMachine) bool {
 		i.Virt.SecureBoot != curVirt.SecureBoot ||
 		i.Virt.Tpm != curVirt.Tpm ||
 		i.Virt.DhcpServer != curVirt.DhcpServer ||
-		i.Virt.CloudType != curVirt.CloudType ||
+		cloudType != curCloudType ||
 		i.Virt.NoPublicAddress != curVirt.NoPublicAddress ||
 		i.Virt.NoPublicAddress6 != curVirt.NoPublicAddress6 ||
 		i.Virt.NoHostAddress != curVirt.NoHostAddress {
