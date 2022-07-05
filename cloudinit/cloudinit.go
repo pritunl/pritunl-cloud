@@ -105,10 +105,6 @@ ssh_deletekeys: false
 {{if eq .RootPasswd ""}}disable_root: true{{else}}disable_root: false{{end}}
 ssh_pwauth: no
 write_files:{{.WriteFiles}}
-growpart:
-    mode: auto
-    devices: ["/"]
-    ignore_growroot_disabled: false
 runcmd:
   - [ sysctl, net.inet.ip.redirect=0 ]
   - [ ifconfig, vtnet0, inet6, {{.Address6}}/64 ]
