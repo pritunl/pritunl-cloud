@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Update QEMU configuration
+
 Version 1.2.2414.59 2022-07-04
 ------------------------------
 
