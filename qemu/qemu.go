@@ -354,7 +354,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 		}
 	}
 
-	if !settings.Hypervisor.NoVirtRng {
+	if settings.Hypervisor.VirtRng {
 		cmd = append(cmd, "-object",
 			"rng-random,filename=/dev/random,id=rng0")
 		cmd = append(cmd, "-device", "virtio-rng-pci,rng=rng0")
