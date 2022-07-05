@@ -7,7 +7,7 @@ var (
 )
 
 const (
-	Version = "1.0.2415.73"
+	Version = "1.0.2415.74"
 	Rpm     = "rpm"
 	Apt     = "apt"
 )
