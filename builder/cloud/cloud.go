@@ -323,7 +323,7 @@ func InstallKvm() (err error) {
 	utils.ExecCombinedOutput("", "/usr/bin/systemctl", "disable", "libvirtd")
 
 	err = utils.Exec("", "/usr/bin/yum", "-y", "install",
-		"edk2-ovmf", "genisoimage", "libusal", "pritunl-qemu-kvm",
+		"edk2-ovmf", "genisoimage", "swtpm", "libusal", "pritunl-qemu-kvm",
 		"pritunl-qemu-img", "pritunl-qemu-system-x86", "pritunl-cloud")
 	if err != nil {
 		return
