@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Update cloud init configuration
+
 Version 1.2.2415.30 2022-07-05
 ------------------------------
 
