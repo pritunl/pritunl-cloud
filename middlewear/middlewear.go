@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/pritunl-cloud/audit"
@@ -19,6 +18,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/session"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/validator"
+	"github.com/sirupsen/logrus"
 )
 
 const robots = `User-agent: *
@@ -38,6 +38,15 @@ func Database(c *gin.Context) {
 	c.Set("db", db)
 	c.Next()
 	db.Close()
+}
+
+func Headers(c *gin.Context) {
+	headers := c.Writer.Header()
+
+	headers.Add("X-Frame-Options", "DENY")
+	headers.Add("X-XSS-Protection", "1; mode=block")
+	headers.Add("X-Content-Type-Options", "nosniff")
+	headers.Add("X-Robots-Tag", "noindex")
 }
 
 func SessionAdmin(c *gin.Context) {
