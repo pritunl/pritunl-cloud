@@ -373,12 +373,16 @@ if cmd == 'set-version':
     subprocess.check_call(['git', 'commit', '-S', '-m', 'Create new release'])
     subprocess.check_call(['git', 'push'])
 
-
     # Create branch
     if not is_snapshot:
         subprocess.check_call(['git', 'branch', new_version])
         subprocess.check_call(['git', 'push', '-u', 'origin', new_version])
     time.sleep(6)
+
+    # Create tag
+    subprocess.check_call(['git', 'tag', new_version])
+    subprocess.check_call(['git', 'push', '--tags'])
+    time.sleep(1)
 
 
     # Create release
