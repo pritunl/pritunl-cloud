@@ -85,15 +85,15 @@ func SyncIfaces(vxlan bool) {
 				ifacesNew[iface] = ifaceSet
 			}
 
-			vxIface := vm.GetHostBridgeIface(iface)
-			ifaceSet, err = getIfaces(vxIface)
+			brIface := vm.GetHostBridgeIface(iface)
+			ifaceSet, err = getIfaces(brIface)
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
-					"bridge": vxIface,
+					"bridge": brIface,
 					"error":  err,
 				}).Error("interfaces: Bridge ifaces get failed")
 			} else {
-				ifacesNew[vxIface] = ifaceSet
+				ifacesNew[brIface] = ifaceSet
 			}
 		}
 	} else if internalIface != "" {
