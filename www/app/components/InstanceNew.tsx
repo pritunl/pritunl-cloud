@@ -878,6 +878,16 @@ export default class InstanceNew extends React.Component<Props, State> {
 						/>
 						<PageSwitch
 							disabled={this.state.disabled}
+							hidden={!instance.uefi}
+							label="TPM"
+							help="Enable TPM, requires swtpm and OVMF package."
+							checked={instance.tpm}
+							onToggle={(): void => {
+								this.set('tpm', !instance.tpm);
+							}}
+						/>
+						<PageSwitch
+							disabled={this.state.disabled}
 							label="DHCP server"
 							help="Enable instance DHCP server, use for instances without cloud init network configuration support."
 							checked={instance.dhcp_server}
