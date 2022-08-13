@@ -5,6 +5,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/pritunl-cloud/alert"
 	"github.com/pritunl/pritunl-cloud/audit"
 	"github.com/pritunl/pritunl-cloud/authorizer"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -197,7 +198,7 @@ func deviceAlertPost(c *gin.Context) {
 		return
 	}
 
-	errData, err := devc.TestAlert(db)
+	errData, err := alert.SendTest(db, devc)
 	if errData != nil {
 		c.JSON(400, errData)
 		return
