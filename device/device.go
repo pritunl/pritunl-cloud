@@ -9,7 +9,6 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/pritunl-cloud/alert"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/u2flib"
@@ -27,6 +26,7 @@ type Device struct {
 	Disabled           bool                    `bson:"disabled" json:"disabled"`
 	ActiveUntil        time.Time               `bson:"activeactive_until_until" json:"active_until"`
 	LastActive         time.Time               `bson:"last_active" json:"last_active"`
+	AlertLevels        []int                   `bson:"alert_levels" json:"alert_levels"`
 	Number             string                  `bson:"number" json:"number"`
 	U2fRaw             []byte                  `bson:"u2f_raw" json:"-"`
 	U2fCounter         uint32                  `bson:"u2f_counter" json:"-"`
@@ -100,19 +100,30 @@ func (d *Device) Validate(db *database.Database) (
 		return
 	}
 
+	if d.AlertLevels == nil {
+		d.AlertLevels = []int{}
+	}
+	for _, level := range d.AlertLevels {
+		switch level {
+		case Low:
+		case Medium:
+		case High:
+			break
+		default:
+			errData = &errortypes.ErrorData{
+				Error:   "device_alert_level_invalid",
+				Message: "Device alert level is invalid",
+			}
+			return
+		}
+	}
+
 	return
 }
 
-func (d *Device) TestAlert(db *database.Database) (
-	errData *errortypes.ErrorData, err error) {
-
+func (d *Device) SetActive(db *database.Database) (err error) {
 	d.LastActive = time.Now()
 	err = d.CommitFields(db, set.NewSet("last_active"))
-	if err != nil {
-		return
-	}
-
-	errData, err = alert.Alert(d.Number, "Test alert message", d.Type)
 	if err != nil {
 		return
 	}
