@@ -108,6 +108,11 @@ func (d *Database) Alerts() (coll *Collection) {
 	return
 }
 
+func (d *Database) AlertsLock() (coll *Collection) {
+	coll = d.getCollection("alerts_lock")
+	return
+}
+
 func (d *Database) Sessions() (coll *Collection) {
 	coll = d.getCollection("sessions")
 	return
@@ -556,6 +561,18 @@ func addIndexes() (err error) {
 			{"resource", 1},
 			{"timestamp", -1},
 		},
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
+
+	index = &Index{
+		Collection: db.AlertsLock(),
+		Keys: &bson.D{
+			{"timestamp", 1},
+		},
+		Expire: 48 * time.Hour,
 	}
 	err = index.Create()
 	if err != nil {
