@@ -323,6 +323,17 @@ func (u *User) GenerateToken() (err error) {
 	return
 }
 
+func (u *User) GetDevices(db *database.Database) (
+	devices []*device.Device, err error) {
+
+	devices, err = device.GetAll(db, u.Id)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func (u *User) LoadWebAuthnDevices(db *database.Database) (
 	devices []*device.Device, hasU2f bool, err error) {
 
