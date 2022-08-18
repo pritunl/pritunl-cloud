@@ -1,4 +1,4 @@
-package alert
+package alertevent
 
 const (
 	Low    = 1
