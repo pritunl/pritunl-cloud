@@ -20,7 +20,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func Node() (err error) {
+func Node(testing bool) (err error) {
 	objId, err := primitive.ObjectIDFromHex(config.Config.NodeId)
 	if err != nil {
 		err = &errortypes.ParseError{
@@ -66,9 +66,13 @@ func Node() (err error) {
 		}
 	}()
 
-	sig := make(chan os.Signal, 2)
-	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
-	<-sig
+	if testing {
+		time.Sleep(300 * time.Second)
+	} else {
+		sig := make(chan os.Signal, 2)
+		signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
+		<-sig
+	}
 
 	logrus.Info("cmd.node: Shutting down")
 
