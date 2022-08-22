@@ -108,8 +108,13 @@ func (d *Database) Alerts() (coll *Collection) {
 	return
 }
 
-func (d *Database) AlertsLock() (coll *Collection) {
-	coll = d.getCollection("alerts_lock")
+func (d *Database) AlertsEvent() (coll *Collection) {
+	coll = d.getCollection("alerts_event")
+	return
+}
+
+func (d *Database) AlertsEventLock() (coll *Collection) {
+	coll = d.getCollection("alerts_event_lock")
 	return
 }
 
@@ -557,6 +562,28 @@ func addIndexes() (err error) {
 	index = &Index{
 		Collection: db.Alerts(),
 		Keys: &bson.D{
+			{"name", 1},
+		},
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
+
+	index = &Index{
+		Collection: db.Alerts(),
+		Keys: &bson.D{
+			{"roles", 1},
+		},
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
+
+	index = &Index{
+		Collection: db.AlertsEvent(),
+		Keys: &bson.D{
 			{"timestamp", 1},
 		},
 		Expire: 48 * time.Hour,
@@ -567,7 +594,7 @@ func addIndexes() (err error) {
 	}
 
 	index = &Index{
-		Collection: db.Alerts(),
+		Collection: db.AlertsEvent(),
 		Keys: &bson.D{
 			{"source", 1},
 			{"resource", 1},
@@ -580,7 +607,7 @@ func addIndexes() (err error) {
 	}
 
 	index = &Index{
-		Collection: db.AlertsLock(),
+		Collection: db.AlertsEventLock(),
 		Keys: &bson.D{
 			{"timestamp", 1},
 		},
