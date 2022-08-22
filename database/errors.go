@@ -31,3 +31,7 @@ type UnknownError struct {
 type CertificateError struct {
 	errors.DropboxError
 }
+
+type IndexConflict struct {
+	errors.DropboxError
+}

@@ -2,12 +2,20 @@ package database
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/mongo"
 )
 
 func GetErrorCodes(err error) (errCodes []int) {
 	switch err := err.(type) {
+	case mongo.CommandError:
+		errCodes = []int{int(err.Code)}
+		if strings.Contains(err.Name, "Conflict") {
+			errCodes = append(errCodes, 85)
+		}
+		break
 	case mongo.WriteError:
 		errCodes = []int{err.Code}
 		break
@@ -71,6 +79,11 @@ func ParseError(err error) (newErr error) {
 	errCodes := GetErrorCodes(err)
 	for _, errCode := range errCodes {
 		switch errCode {
+		case 85:
+			newErr = &IndexConflict{
+				errors.New("database: Index conflict"),
+			}
+			return
 		case 11000, 11001, 12582, 16460:
 			newErr = &DuplicateKeyError{
 				errors.New("database: Duplicate key"),
