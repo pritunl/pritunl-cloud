@@ -74,7 +74,7 @@ func Send(number, message, alertType string) (
 		return
 	}
 
-	req.Header.Set("User-Agent", "pritunl-zero")
+	req.Header.Set("User-Agent", "pritunl-cloud")
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
 
