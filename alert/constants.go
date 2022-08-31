@@ -7,5 +7,5 @@ const (
 )
 
 const (
-	SystemOffline = "system_offline"
+	InstanceOffline = "instance_offline"
 )

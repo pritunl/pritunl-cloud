@@ -9,13 +9,16 @@ import (
 )
 
 type Alert struct {
-	Id       primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Name     string             `bson:"name" json:"name"`
-	Roles    []string           `bson:"roles" json:"roles"`
-	Resource string             `bson:"resource" json:"resource"`
-	Level    int                `bson:"level" json:"level"`
-	ValueInt int                `bson:"value_int" json:"value_int"`
-	ValueStr string             `bson:"value_str" json:"value_str"`
+	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name         string             `bson:"name" json:"name"`
+	Organization primitive.ObjectID `bson:"organization,omitempty" json:"organization"`
+	Roles        []string           `bson:"roles" json:"roles"`
+	Resource     string             `bson:"resource" json:"resource"`
+	Level        int                `bson:"level" json:"level"`
+	Frequency    int                `bson:"frequency" json:"frequency"`
+	Ignores      []string           `bson:"ignores" json:"ignores"`
+	ValueInt     int                `bson:"value_int" json:"value_int"`
+	ValueStr     string             `bson:"value_str" json:"value_str"`
 }
 
 func (a *Alert) Validate(db *database.Database) (
@@ -32,7 +35,31 @@ func (a *Alert) Validate(db *database.Database) (
 		a.Roles = []string{}
 	}
 
+	if a.Frequency < 300 {
+		errData = &errortypes.ErrorData{
+			Error:   "alert_frequency_invalid",
+			Message: "Alert frequency cannot be less then 300 seconds",
+		}
+		return
+	}
+
+	if a.Frequency > 604800 {
+		errData = &errortypes.ErrorData{
+			Error:   "alert_frequency_invalid",
+			Message: "Alert frequency too large",
+		}
+		return
+	}
+
+	if a.Ignores != nil {
+		a.Ignores = []string{}
+	}
+
 	switch a.Resource {
+	case InstanceOffline:
+		a.ValueInt = 0
+		a.ValueStr = ""
+		break
 	default:
 		errData = &errortypes.ErrorData{
 			Error:   "alert_resource_name_invalid",
