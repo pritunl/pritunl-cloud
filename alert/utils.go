@@ -23,6 +23,24 @@ func Get(db *database.Database, alertId primitive.ObjectID) (
 	return
 }
 
+func GetOrg(db *database.Database, orgId, alertId primitive.ObjectID) (
+	alrt *Alert, err error) {
+
+	coll := db.Alerts()
+	alrt = &Alert{}
+
+	err = coll.FindOne(db, &bson.M{
+		"_id":          alertId,
+		"organization": orgId,
+	}).Decode(alrt)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetMulti(db *database.Database, alertIds []primitive.ObjectID) (
 	alerts []*Alert, err error) {
 
@@ -103,10 +121,18 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	coll := db.Alerts()
 	alerts = []*Alert{}
 
-	count, err = coll.CountDocuments(db, query)
-	if err != nil {
-		err = database.ParseError(err)
-		return
+	if len(*query) == 0 {
+		count, err = coll.EstimatedDocumentCount(db)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+	} else {
+		count, err = coll.CountDocuments(db, query)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
 	}
 
 	maxPage := count / pageCount
@@ -238,6 +264,28 @@ func Remove(db *database.Database,
 	return
 }
 
+func RemoveOrg(db *database.Database, orgId, alertId primitive.ObjectID) (
+	err error) {
+
+	coll := db.Alerts()
+
+	_, err = coll.DeleteOne(db, &bson.M{
+		"_id":          alertId,
+		"organization": orgId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		switch err.(type) {
+		case *database.NotFoundError:
+			err = nil
+		default:
+			return
+		}
+	}
+
+	return
+}
+
 func RemoveMulti(db *database.Database, alertIds []primitive.ObjectID) (
 	err error) {
 
@@ -247,6 +295,25 @@ func RemoveMulti(db *database.Database, alertIds []primitive.ObjectID) (
 		"_id": &bson.M{
 			"$in": alertIds,
 		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func RemoveMultiOrg(db *database.Database, orgId primitive.ObjectID,
+	alertIds []primitive.ObjectID) (err error) {
+
+	coll := db.Alerts()
+
+	_, err = coll.DeleteMany(db, &bson.M{
+		"_id": &bson.M{
+			"$in": alertIds,
+		},
+		"organization": orgId,
 	})
 	if err != nil {
 		err = database.ParseError(err)
