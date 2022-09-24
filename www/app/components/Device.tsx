@@ -7,6 +7,9 @@ import * as PageInfos from './PageInfo';
 import PageInfo from './PageInfo';
 import ConfirmButton from './ConfirmButton';
 import * as Alert from '../Alert';
+import PageSwitch from "./PageSwitch";
+import PageSave from "./PageSave";
+import PageInput from "./PageInput";
 
 interface Props {
 	device: DeviceTypes.DeviceRo;
@@ -15,6 +18,7 @@ interface Props {
 interface State {
 	disabled: boolean;
 	changed: boolean;
+	message: string;
 	device: DeviceTypes.Device;
 }
 
@@ -29,8 +33,7 @@ const css = {
 	} as React.CSSProperties,
 	group: {
 		flex: 1,
-		minWidth: '280px',
-		margin: '0 10px',
+		minWidth: '250px',
 	} as React.CSSProperties,
 	inputGroup: {
 		marginBottom: '11px',
@@ -43,8 +46,10 @@ const css = {
 		right: '5px',
 	} as React.CSSProperties,
 	controlButton: {
-		marginTop: '10px',
 		marginRight: '10px',
+	} as React.CSSProperties,
+	save: {
+		paddingTop: '10px',
 	} as React.CSSProperties,
 };
 
@@ -54,6 +59,7 @@ export default class Device extends React.Component<Props, State> {
 		this.state = {
 			disabled: false,
 			changed: false,
+			message: '',
 			device: null,
 		};
 	}
@@ -72,6 +78,37 @@ export default class Device extends React.Component<Props, State> {
 		}
 
 		device[name] = val;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			device: device,
+		});
+	}
+
+	toggleLevel(level: number) {
+		let device: any;
+
+		if (this.state.changed) {
+			device = {
+				...this.state.device,
+			};
+		} else {
+			device = {
+				...this.props.device,
+			};
+		}
+
+		let levels: number[] = Object.assign([], (device.alert_levels || []));
+		let index = levels.indexOf(level);
+
+		if (index !== -1) {
+			levels.splice(index, 1);
+		} else {
+			levels.push(level);
+		}
+
+		device.alert_levels = levels;
 
 		this.setState({
 			...this.state,
@@ -122,7 +159,7 @@ export default class Device extends React.Component<Props, State> {
 						device: null,
 					});
 				}
-			}, 3000);
+			}, 1000);
 		}).catch((): void => {
 			this.setState({
 				...this.state,
@@ -153,6 +190,8 @@ export default class Device extends React.Component<Props, State> {
 		let device: DeviceTypes.Device = this.state.device ||
 			this.props.device;
 
+		let isPhone: boolean = this.props.device.mode === 'phone';
+
 		let deviceType = 'Unknown';
 		switch (device.type) {
 			case 'webauthn':
@@ -179,13 +218,6 @@ export default class Device extends React.Component<Props, State> {
 				break;
 		}
 
-		let cardStyle = {
-			...css.card,
-		};
-		if (device.disabled) {
-			cardStyle.opacity = 0.6;
-		}
-
 		let deviceOther: PageInfos.Field;
 		if (device.wan_rp_id) {
 			deviceOther = {
@@ -204,6 +236,84 @@ export default class Device extends React.Component<Props, State> {
 			alertIcon = 'bp3-icon-mobile-phone';
 		}
 
+		let cardStyle = {
+			...css.card,
+		};
+		if (device.disabled) {
+			cardStyle.opacity = 0.6;
+		}
+
+		let fields1: PageInfos.Field[];
+		let fields2: PageInfos.Field[];
+
+		if (isPhone) {
+			fields1 = [
+				{
+					label: 'ID',
+					value: device.id || 'None',
+				},
+			];
+			fields2 = [
+				{
+					label: 'Type',
+					value: deviceType,
+				},
+				{
+					label: 'Mode',
+					value: deviceMode,
+				},
+				deviceOther,
+				{
+					label: 'Registered',
+					value: MiscUtils.formatDate(device.timestamp) || 'Unknown',
+				},
+				{
+					label: 'Last Active',
+					value: MiscUtils.formatDate(device.last_active) || 'Unknown',
+				},
+			];
+		} else {
+			fields1 = [
+				{
+					label: 'ID',
+					value: device.id || 'None',
+				},
+				{
+					label: 'Type',
+					value: deviceType,
+				},
+				deviceOther,
+			];
+			fields2 = [
+				{
+					label: 'Mode',
+					value: deviceMode,
+				},
+				{
+					label: 'Registered',
+					value: MiscUtils.formatDate(device.timestamp) || 'Unknown',
+				},
+				{
+					label: 'Last Active',
+					value: MiscUtils.formatDate(device.last_active) || 'Unknown',
+				},
+			];
+		}
+
+		let testButton: JSX.Element;
+		if (isPhone) {
+			testButton = <ConfirmButton
+				label="Send Test Alert"
+				className={'bp3-intent-success ' + alertIcon}
+				progressClassName="bp3-intent-success"
+				style={css.controlButton}
+				disabled={this.state.disabled}
+				onConfirm={(): void => {
+					this.onTestAlert();
+				}}
+			/>;
+		}
+
 		return <div
 			className="bp3-card"
 			style={cardStyle}
@@ -219,79 +329,77 @@ export default class Device extends React.Component<Props, State> {
 							onConfirm={this.onDelete}
 						/>
 					</div>
-					<div
-						className="bp3-input-group flex"
-						style={css.inputGroup}
-					>
-						<input
-							className="bp3-input"
-							type="text"
-							placeholder="Device name"
-							value={device.name}
-							onChange={(evt): void => {
-								this.set('name', evt.target.value);
-							}}
-							onKeyPress={(evt): void => {
-								if (evt.key === 'Enter') {
-									this.onSave();
-								}
-							}}
-						/>
-						<button
-							className="bp3-button bp3-minimal bp3-intent-primary bp3-icon-tick"
-							hidden={!this.state.device}
-							disabled={this.state.disabled}
-							onClick={this.onSave}
-						/>
-					</div>
+					<PageInput
+						label="Device Name"
+						help="Name of device."
+						type="text"
+						placeholder="Enter name"
+						disabled={this.state.disabled}
+						value={device.name}
+						onChange={(val): void => {
+							this.set('name', val);
+						}}
+					/>
+					<PageSwitch
+						label="Low alerts"
+						help="Recieve low level alerts on this device."
+						hidden={!isPhone}
+						disabled={this.state.disabled}
+						checked={(device.alert_levels || []).indexOf(1) !== -1}
+						onToggle={(): void => {
+							this.toggleLevel(1);
+						}}
+					/>
+					<PageSwitch
+						label="Medium alerts"
+						help="Recieve medium level alerts on this device."
+						hidden={!isPhone}
+						disabled={this.state.disabled}
+						checked={(device.alert_levels || []).indexOf(5) !== -1}
+						onToggle={(): void => {
+							this.toggleLevel(5);
+						}}
+					/>
+					<PageSwitch
+						label="High alerts"
+						help="Recieve high level alerts on this device."
+						hidden={!isPhone}
+						disabled={this.state.disabled}
+						checked={(device.alert_levels || []).indexOf(10) !== -1}
+						onToggle={(): void => {
+							this.toggleLevel(10);
+						}}
+					/>
 					<PageInfo
 						style={css.info}
-						fields={[
-							{
-								label: 'ID',
-								value: device.id || 'None',
-							},
-							{
-								label: 'Type',
-								value: deviceType,
-							},
-							deviceOther,
-						]}
+						fields={fields1}
 					/>
 				</div>
 				<div style={css.group}>
 					<PageInfo
 						style={css.info}
-						fields={[
-							{
-								label: 'Registered',
-								value: MiscUtils.formatDate(device.timestamp) || 'Unknown',
-							},
-							{
-								label: 'Last Active',
-								value: MiscUtils.formatDate(device.last_active) || 'Unknown',
-							},
-							{
-								label: 'Mode',
-								value: deviceMode,
-							},
-						]}
+						fields={fields2}
 					/>
 				</div>
 			</div>
-			<div className="layout horizontal wrap">
-				<ConfirmButton
-					label="Send Test Alert"
-					className={'bp3-intent-success ' + alertIcon}
-					progressClassName="bp3-intent-success"
-					style={css.controlButton}
-					hidden={this.props.device.mode !== 'phone'}
-					disabled={this.state.disabled}
-					onConfirm={(): void => {
-						this.onTestAlert();
-					}}
-				/>
-			</div>
+			<PageSave
+				style={css.save}
+				hidden={!this.state.device && !this.state.message}
+				message={this.state.message}
+				changed={this.state.changed}
+				disabled={this.state.disabled}
+				light={true}
+				onCancel={(): void => {
+					this.setState({
+						...this.state,
+						changed: false,
+						device: null,
+					});
+				}}
+				onSave={this.onSave}
+			>
+				{testButton}
+			</PageSave>
 		</div>;
 	}
 }
