@@ -164,7 +164,9 @@ func setDefaults(obj interface{}) {
 				panic(err)
 			}
 			fld.SetBool(parVal)
-		case reflect.Int:
+
+			break
+		case reflect.Int, reflect.Int64:
 			if fld.Int() != 0 {
 				break
 			}
@@ -174,12 +176,16 @@ func setDefaults(obj interface{}) {
 				panic(err)
 			}
 			fld.SetInt(int64(parVal))
+
+			break
 		case reflect.String:
 			if fld.String() != "" {
 				break
 			}
 
 			fld.SetString(tag)
+
+			break
 		case reflect.Slice:
 			if fld.Len() != 0 {
 				break
@@ -214,6 +220,8 @@ func setDefaults(obj interface{}) {
 			}
 
 			fld.Set(slice)
+
+			break
 		}
 	}
 
