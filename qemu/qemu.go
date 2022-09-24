@@ -623,7 +623,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 	if q.ProtectHome {
 		protectHome = "true"
 	} else {
-		protectHome = "false"
+		protectHome = "read-only"
 	}
 
 	if q.Namespace == "" {
