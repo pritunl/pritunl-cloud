@@ -20,6 +20,7 @@ func Register(engine *gin.Engine) {
 	engine.Use(middlewear.Limiter)
 	engine.Use(middlewear.Counter)
 	engine.Use(middlewear.Recovery)
+	engine.Use(middlewear.Headers)
 
 	dbGroup := engine.Group("")
 	dbGroup.Use(middlewear.Database)
@@ -37,6 +38,12 @@ func Register(engine *gin.Engine) {
 	orgGroup.Use(middlewear.UserOrg)
 
 	engine.NoRoute(middlewear.NotFound)
+
+	csrfGroup.GET("/alert", alertsGet)
+	csrfGroup.PUT("/alert/:alert_id", alertPut)
+	csrfGroup.POST("/alert", alertPost)
+	csrfGroup.DELETE("/alert", alertsDelete)
+	csrfGroup.DELETE("/alert/:alert_id", alertDelete)
 
 	engine.GET("/auth/state", authStateGet)
 	dbGroup.POST("/auth/session", authSessionPost)
