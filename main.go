@@ -58,7 +58,7 @@ func main() {
 		}
 
 		Init()
-		err := cmd.Node()
+		err := cmd.Node(false)
 		if err != nil {
 			panic(err)
 		}
