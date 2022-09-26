@@ -653,7 +653,7 @@ export default class AlertDetailed extends React.Component<Props, State> {
 						placeholder="Enter frequency"
 						value={alert.frequency}
 						onChange={(val): void => {
-							this.set('frequency', val);
+							this.set('frequency', parseInt(val, 10));
 						}}
 					/>
 				</div>
