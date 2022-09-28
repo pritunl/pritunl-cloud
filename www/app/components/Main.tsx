@@ -15,6 +15,7 @@ import Policies from './Policies';
 import Certificates from './Certificates';
 import Organizations from './Organizations';
 import Datacenters from './Datacenters';
+import Alerts from './Alerts';
 import Zones from './Zones';
 import Blocks from './Blocks';
 import Vpcs from './Vpcs';
@@ -37,6 +38,7 @@ import * as PolicyActions from '../actions/PolicyActions';
 import * as CertificateActions from '../actions/CertificateActions';
 import * as OrganizationActions from '../actions/OrganizationActions';
 import * as DatacenterActions from '../actions/DatacenterActions';
+import * as AlertActions from '../actions/AlertActions';
 import * as ZoneActions from '../actions/ZoneActions';
 import * as BlockActions from '../actions/BlockActions';
 import * as VpcActions from '../actions/VpcActions';
@@ -294,6 +296,13 @@ export default class Main extends React.Component<{}, State> {
 							to="/authorities"
 						>
 							Authorities
+						</ReactRouter.Link>
+						<ReactRouter.Link
+							className="bp3-button bp3-minimal bp3-icon-notifications"
+							style={css.link}
+							to="/alerts"
+						>
+							Alerts
 						</ReactRouter.Link>
 						<ReactRouter.Link
 							className="bp3-button bp3-minimal bp3-icon-history"
