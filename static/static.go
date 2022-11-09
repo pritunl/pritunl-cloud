@@ -4,6 +4,7 @@ package static
 import (
 	"io/ioutil"
 	"path"
+	"time"
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -54,10 +55,15 @@ func NewStore(root string) (store *Store, err error) {
 
 	err = store.addDir(root)
 	if err != nil {
-		err = &errortypes.UnknownError{
-			errors.Wrap(err, "static: Init error"),
+		time.Sleep(3 * time.Second)
+
+		err = store.addDir(root)
+		if err != nil {
+			err = &errortypes.UnknownError{
+				errors.Wrap(err, "static: Init error"),
+			}
+			return
 		}
-		return
 	}
 
 	return
