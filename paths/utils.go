@@ -3,10 +3,9 @@ package paths
 import (
 	"os"
 
-	"github.com/pritunl/pritunl-cloud/settings"
-
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/settings"
 )
 
 var (
