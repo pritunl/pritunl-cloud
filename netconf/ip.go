@@ -163,10 +163,11 @@ func (n *NetConf) ipDetect(db *database.Database) (err error) {
 			if n.NetworkMode6 != node.Disabled &&
 				n.NetworkMode6 != node.Oracle {
 
+				if address != nil {
+					pubAddr = address.Local
+				}
+
 				if address != nil && address6 != nil {
-					if address != nil {
-						pubAddr = address.Local
-					}
 					if address6 != nil {
 						pubAddr6 = address6.Local
 					}
