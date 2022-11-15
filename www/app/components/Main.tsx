@@ -708,6 +708,9 @@ export default class Main extends React.Component<{}, State> {
 				<ReactRouter.Route path="/authorities" render={() => (
 					<Authorities/>
 				)}/>
+				<ReactRouter.Route path="/alerts" render={() => (
+					<Alerts/>
+				)}/>
 				<ReactRouter.Route path="/logs" render={() => (
 					<Logs/>
 				)}/>
