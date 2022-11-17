@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Fix network configuration issue with IPv6 instances
+
 Version 1.2.2415.36 2022-07-05
 ------------------------------
 
