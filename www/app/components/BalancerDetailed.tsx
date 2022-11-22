@@ -754,6 +754,7 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 						/>
 					</div>
 					<PageInput
+						disabled={this.state.disabled}
 						label="Name"
 						help="Name of load balancer"
 						type="text"
