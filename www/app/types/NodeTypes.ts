@@ -93,6 +93,7 @@ export interface Subnet {
 export interface NodeInit {
 	provider?: string;
 	zone?: string;
+	firewall?: boolean;
 	internal_interface?: string;
 	external_interface?: string;
 	host_network?: string;
