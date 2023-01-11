@@ -92,6 +92,13 @@ func (i *Image) Json() {
 					names[1][:2],
 				)
 				break
+			case "oraclelinux9":
+				i.Name = fmt.Sprintf(
+					"Oracle Linux 9 %s/20%s",
+					names[1][2:],
+					names[1][:2],
+				)
+				break
 			case "ubuntu2004":
 				i.Name = fmt.Sprintf(
 					"Ubuntu 20.04 %s/20%s",
@@ -147,6 +154,13 @@ func (i *Image) Json() {
 			case "oraclelinux8":
 				i.Name = fmt.Sprintf(
 					"Oracle Linux 8 EFI %s/20%s",
+					names[2][2:],
+					names[2][:2],
+				)
+				break
+			case "oraclelinux9":
+				i.Name = fmt.Sprintf(
+					"Oracle Linux 9 EFI %s/20%s",
 					names[2][2:],
 					names[2][:2],
 				)
