@@ -2,7 +2,6 @@ package cloud
 
 import (
 	"encoding/json"
-	"os"
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/builder/constants"
@@ -13,6 +12,7 @@ import (
 )
 
 const (
+	repoPritunlKeyUrl      = "https://raw.githubusercontent.com/pritunl/pgp/master/pritunl_repo_pub.asc"
 	repoPritunlKeyPath     = "/tmp/pritunl.pub"
 	repoPritunlFingerprint = "7568D9BB55FF9E5287D586017AE645C0CF8E292A"
 	repoPritunlPath        = "/etc/yum.repos.d/pritunl.repo"
@@ -28,12 +28,19 @@ baseurl=https://repo.pritunl.com/unstable/yum/oraclelinux/8/
 gpgcheck=1
 enabled=1
 `
+	repoKvmKeyUrl      = "https://raw.githubusercontent.com/pritunl/pgp/master/pritunl_repo_pub.asc"
 	repoKvmKeyPath     = "/tmp/pritunl-kvm.pub"
 	repoKvmFingerprint = "1BB6FBB8D641BD9C6C0398D74D55437EC0508F5F"
 	repoKvmPath        = "/etc/yum.repos.d/pritunl-kvm.repo"
 	repoKvmData        = `[pritunl-kvm]
 name=Pritunl KVM Repository
-baseurl=https://repo.pritunl.com/kvm/
+baseurl=https://repo.pritunl.com/kvm-stable/oraclelinux/9/
+gpgcheck=1
+enabled=1
+`
+	repoKvmUnstableData = `[pritunl-kvm]
+name=Pritunl KVM Repository
+baseurl=https://repo.pritunl.com/kvm-unstable/oraclelinux/9/
 gpgcheck=1
 enabled=1
 `
@@ -99,48 +106,64 @@ type InstallConfigData struct {
 	MongoUri string `json:"mongo_uri"`
 }
 
-func KvmRepo() (err error) {
+func KvmRepo(unstable bool) (err error) {
 	if constants.Target != constants.Rpm {
 		return
 	}
 
-	err = utils.CreateWrite(
-		repoKvmPath,
-		repoKvmData,
-		0644,
-	)
+	if unstable {
+		err = utils.CreateWrite(
+			repoKvmPath,
+			repoKvmUnstableData,
+			0644,
+		)
+	} else {
+		err = utils.CreateWrite(
+			repoKvmPath,
+			repoKvmData,
+			0644,
+		)
+	}
 	if err != nil {
 		return
 	}
 
-	err = utils.Exec("",
-		"/usr/bin/gpg",
-		"--keyserver", "hkp://keyserver.ubuntu.com",
-		"--recv-keys", repoKvmFingerprint,
-	)
-	if err != nil {
-		return
-	}
-
-	err = utils.Exec("",
-		"/usr/bin/gpg",
-		"--armor",
-		"--output", repoKvmKeyPath,
-		"--export", repoKvmFingerprint,
-	)
-	if err != nil {
-		return
-	}
+	//err = utils.Exec("",
+	//	"/usr/bin/gpg",
+	//	"--keyserver", "hkp://keyserver.ubuntu.com",
+	//	"--recv-keys", repoKvmFingerprint,
+	//)
+	//if err != nil {
+	//	return
+	//}
+	//
+	//err = utils.Exec("",
+	//	"/usr/bin/gpg",
+	//	"--armor",
+	//	"--output", repoKvmKeyPath,
+	//	"--export", repoKvmFingerprint,
+	//)
+	//if err != nil {
+	//	return
+	//}
+	//
+	//err = utils.Exec("",
+	//	"/usr/bin/rpm",
+	//	"--import", repoKvmKeyPath,
+	//)
+	//if err != nil {
+	//	return
+	//}
+	//
+	//_ = os.Remove(repoKvmKeyPath)
 
 	err = utils.Exec("",
 		"/usr/bin/rpm",
-		"--import", repoKvmKeyPath,
+		"--import", repoKvmKeyUrl,
 	)
 	if err != nil {
 		return
 	}
-
-	_ = os.Remove(repoKvmKeyPath)
 
 	logrus.WithFields(logrus.Fields{
 		"path": repoKvmPath,
@@ -170,34 +193,42 @@ func pritunlRepoRpm(unstable bool) (err error) {
 		}
 	}
 
-	err = utils.Exec("",
-		"/usr/bin/gpg",
-		"--keyserver", "hkp://keyserver.ubuntu.com",
-		"--recv-keys", repoPritunlFingerprint,
-	)
-	if err != nil {
-		return
-	}
-
-	err = utils.Exec("",
-		"/usr/bin/gpg",
-		"--armor",
-		"--output", repoPritunlKeyPath,
-		"--export", repoPritunlFingerprint,
-	)
-	if err != nil {
-		return
-	}
+	//err = utils.Exec("",
+	//	"/usr/bin/gpg",
+	//	"--keyserver", "hkp://keyserver.ubuntu.com",
+	//	"--recv-keys", repoPritunlFingerprint,
+	//)
+	//if err != nil {
+	//	return
+	//}
+	//
+	//err = utils.Exec("",
+	//	"/usr/bin/gpg",
+	//	"--armor",
+	//	"--output", repoPritunlKeyPath,
+	//	"--export", repoPritunlFingerprint,
+	//)
+	//if err != nil {
+	//	return
+	//}
+	//
+	//err = utils.Exec("",
+	//	"/usr/bin/rpm",
+	//	"--import", repoPritunlKeyPath,
+	//)
+	//if err != nil {
+	//	return
+	//}
+	//
+	//_ = os.Remove(repoPritunlKeyPath)
 
 	err = utils.Exec("",
 		"/usr/bin/rpm",
-		"--import", repoPritunlKeyPath,
+		"--import", repoPritunlKeyUrl,
 	)
 	if err != nil {
 		return
 	}
-
-	_ = os.Remove(repoPritunlKeyPath)
 
 	logrus.WithFields(logrus.Fields{
 		"path": repoPritunlPath,
@@ -378,7 +409,7 @@ func Cloud(unstable bool) (err error) {
 	}
 
 	if kvmResp {
-		err = KvmRepo()
+		err = KvmRepo(unstable)
 		if err != nil {
 			return
 		}
