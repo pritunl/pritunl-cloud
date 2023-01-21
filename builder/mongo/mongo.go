@@ -9,12 +9,12 @@ import (
 
 const (
 	repoPath = "/etc/yum.repos.d/mongodb-org.repo"
-	repoData = `[mongodb-org-5.0]
+	repoData = `[mongodb-org-6.0]
 name=MongoDB Repository
-baseurl=https://repo.mongodb.org/yum/redhat/8/mongodb-org/5.0/x86_64/
+baseurl=https://repo.mongodb.org/yum/redhat/8/mongodb-org/6.0/x86_64/
 gpgcheck=1
 enabled=1
-gpgkey=https://www.mongodb.org/static/pgp/server-5.0.asc
+gpgkey=https://www.mongodb.org/static/pgp/server-6.0.asc
 `
 	aptRepoPath = "/etc/apt/sources.list.d/mongodb-org-5.0.list"
 	aptRepoData = `deb https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/5.0 multiverse
