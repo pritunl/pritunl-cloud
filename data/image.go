@@ -194,7 +194,8 @@ func copyBackingImage(imagePth, backingImagePth string) (err error) {
 }
 
 func WriteImage(db *database.Database, imgId, dskId primitive.ObjectID,
-	size int, backingImage bool) (backingImageName string, err error) {
+	size int, backingImage bool) (newSize int, backingImageName string,
+	err error) {
 
 	diskPath := paths.GetDiskPath(dskId)
 	diskTempPath := paths.GetDiskTempPath()
@@ -220,6 +221,8 @@ func WriteImage(db *database.Database, imgId, dskId primitive.ObjectID,
 	if err != nil {
 		return
 	}
+
+	largeBase := strings.Contains(img.Key, "fedora")
 
 	backingImagePth := path.Join(
 		backingPath,
@@ -292,8 +295,12 @@ func WriteImage(db *database.Database, imgId, dskId primitive.ObjectID,
 				return
 			}
 
-			if size < 10 {
+			if largeBase && size < 16 {
+				size = 16
+				newSize = 16
+			} else if !largeBase && size < 10 {
 				size = 10
+				newSize = 10
 			}
 
 			_, err = utils.ExecCombinedOutputLogged(nil, "qemu-img",
@@ -310,7 +317,12 @@ func WriteImage(db *database.Database, imgId, dskId primitive.ObjectID,
 				return
 			}
 
-			if size > 10 {
+			if largeBase && size < 16 {
+				size = 16
+				newSize = 16
+			}
+
+			if (largeBase && size > 16) || (!largeBase && size > 10) {
 				_, err = utils.ExecCombinedOutputLogged(nil, "qemu-img",
 					"resize", diskTempPath, fmt.Sprintf("%dG", size))
 				if err != nil {
@@ -370,8 +382,12 @@ func WriteImage(db *database.Database, imgId, dskId primitive.ObjectID,
 				return
 			}
 
-			if size < 10 {
+			if largeBase && size < 16 {
+				size = 16
+				newSize = 16
+			} else if !largeBase && size < 10 {
 				size = 10
+				newSize = 10
 			}
 
 			_, err = utils.ExecCombinedOutputLogged(nil, "qemu-img",
@@ -383,7 +399,12 @@ func WriteImage(db *database.Database, imgId, dskId primitive.ObjectID,
 				return
 			}
 		} else {
-			if size > 10 {
+			if largeBase && size < 16 {
+				size = 16
+				newSize = 16
+			}
+
+			if (largeBase && size > 16) || (!largeBase && size > 10) {
 				_, err = utils.ExecCombinedOutputLogged(nil, "qemu-img",
 					"resize", diskTempPath, fmt.Sprintf("%dG", size))
 				if err != nil {
