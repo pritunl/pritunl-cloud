@@ -10,12 +10,12 @@ import (
 )
 
 func CreateDisk(db *database.Database, dsk *disk.Disk) (
-	backingImage string, err error) {
+	newSize int, backingImage string, err error) {
 
 	diskPath := paths.GetDiskPath(dsk.Id)
 
 	if !dsk.Image.IsZero() {
-		backingImage, err = WriteImage(
+		newSize, backingImage, err = WriteImage(
 			db, dsk.Image, dsk.Id, dsk.Size, dsk.Backing)
 		if err != nil {
 			return
