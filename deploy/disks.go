@@ -42,7 +42,7 @@ func (d *Disks) provision(dsk *disk.Disk) {
 			return
 		}
 
-		backingImage, err := data.CreateDisk(db, dsk)
+		newSize, backingImage, err := data.CreateDisk(db, dsk)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
@@ -50,10 +50,17 @@ func (d *Disks) provision(dsk *disk.Disk) {
 			return
 		}
 
+		fields := set.NewSet("state", "backing_image")
+
 		dsk.State = disk.Available
 		dsk.BackingImage = backingImage
 
-		err = dsk.CommitFields(db, set.NewSet("state", "backing_image"))
+		if newSize != 0 {
+			fields.Add("size")
+			dsk.Size = newSize
+		}
+
+		err = dsk.CommitFields(db, fields)
 		if err != nil {
 			return
 		}
