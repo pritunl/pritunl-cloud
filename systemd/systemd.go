@@ -30,7 +30,7 @@ func Start(unit string) (err error) {
 	systemdLock.Lock()
 	defer systemdLock.Unlock()
 
-	_, err = utils.ExecCombinedOutput("", "systemctl", "start", unit)
+	_, err = utils.ExecCombinedOutputLogged(nil, "systemctl", "start", unit)
 	if err != nil {
 		return
 	}
