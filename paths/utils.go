@@ -11,6 +11,7 @@ import (
 var (
 	ovmfCodePaths = []string{
 		"/usr/share/edk2/ovmf/OVMF_CODE.fd",
+		"/usr/share/edk2/ovmf/OVMF_CODE.cc.fd",
 		"/usr/share/OVMF/OVMF_CODE.pure-efi.fd",
 		"/usr/share/OVMF/OVMF_CODE.fd",
 	}
