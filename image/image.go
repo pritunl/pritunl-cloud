@@ -48,7 +48,7 @@ func (i *Image) Json() {
 	if i.Signed && len(i.Name) > 6 {
 		names := strings.Split(i.Name[:len(i.Name)-6], "_")
 		n := len(names)
-		if n == 2 && len(names[1]) == 4 {
+		if n == 2 && len(names[1]) >= 4 {
 			switch names[0] {
 			case "almalinux8":
 				i.Name = fmt.Sprintf(
