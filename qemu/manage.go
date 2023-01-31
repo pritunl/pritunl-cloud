@@ -524,8 +524,9 @@ func Create(db *database.Database, inst *instance.Instance,
 
 		backingImage := ""
 
+		newSize := 0
 		if virt.Image.IsZero() {
-			backingImage, err = data.CreateDisk(db, dsk)
+			newSize, backingImage, err = data.CreateDisk(db, dsk)
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
 					"error": err,
@@ -533,11 +534,15 @@ func Create(db *database.Database, inst *instance.Instance,
 				return
 			}
 		} else {
-			backingImage, err = data.WriteImage(db, virt.Image, dsk.Id,
-				inst.InitDiskSize, inst.ImageBacking)
+			newSize, backingImage, err = data.WriteImage(db, virt.Image,
+				dsk.Id, inst.InitDiskSize, inst.ImageBacking)
 			if err != nil {
 				return
 			}
+		}
+
+		if newSize != 0 {
+			dsk.Size = newSize
 		}
 
 		dsk.BackingImage = backingImage
