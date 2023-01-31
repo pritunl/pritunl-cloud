@@ -82,7 +82,9 @@ func GetState(unit string) (state string, timestamp time.Time, err error) {
 		}
 	}
 
-	if state == "failed" && exitCode == "2" && exitStatus == "31" {
+	if (state == "failed" && exitCode == "2" && exitStatus == "31") ||
+		(state == "failed" && exitCode == "3" && exitStatus == "31") {
+
 		state = "inactive"
 	}
 
