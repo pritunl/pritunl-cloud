@@ -3,6 +3,7 @@ pritunl-cloud changelog
 
 <%= version %>
 
+Support RHEL 9
 Web interface design changes
 Fix network configuration issue with IPv6 instances
 
