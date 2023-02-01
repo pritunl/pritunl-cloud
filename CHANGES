@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Fix kernel compatibility issue
+
 Version 1.2.2626.25 2023-02-01
 ------------------------------
 
