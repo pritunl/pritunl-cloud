@@ -1,6 +1,7 @@
 package features
 
 import (
+	"io/ioutil"
 	"strconv"
 	"strings"
 	"syscall"
@@ -160,6 +161,18 @@ func GetKernelVersion() (major, minor, patch int, err error) {
 }
 
 func GetUringSupport() (supported bool, err error) {
+	kallsyms, err := ioutil.ReadFile("/proc/kallsyms")
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrapf(err, "features: Failed to read /proc/kallsyms"),
+		}
+		return
+	}
+
+	if !strings.Contains(string(kallsyms), "io_uring_init") {
+		return
+	}
+
 	major, minor, _, err := GetKernelVersion()
 	if err != nil {
 		return
