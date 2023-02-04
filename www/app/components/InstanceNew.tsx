@@ -49,6 +49,7 @@ interface State {
 	addVpc: string;
 	dhcpChanged: boolean;
 	secureBootChanged: boolean;
+	hiddenImages: boolean;
 }
 
 const css = {
@@ -125,6 +126,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 			addVpc: '',
 			dhcpChanged: false,
 			secureBootChanged: false,
+			hiddenImages: false,
 		};
 	}
 
@@ -580,6 +582,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 		let hasImages = false;
 		let imagesSelect: JSX.Element[] = [];
 		this.imagesMap = new Map();
+		let imagesVer = new Map();
 		if (this.state.images.length) {
 			imagesSelect.push(<option key="null" value="">Select Image</option>);
 
@@ -591,13 +594,43 @@ export default class InstanceNew extends React.Component<Props, State> {
 					continue;
 				}
 
-				this.imagesMap.set(image.id, image.name);
+				if (!this.state.hiddenImages && image.signed) {
+					let imgSpl = image.key.split('_');
 
+					if (imgSpl.length >= 2 && imgSpl[imgSpl.length - 1].length >= 4) {
+						let imgKey = imgSpl[0] + '_' + image.firmware
+
+						let imgVer = parseInt(
+							imgSpl[imgSpl.length - 1].substring(0, 4), 10);
+						if (imgVer) {
+							let curImg = imagesVer.get(imgKey);
+							if (!curImg || imgVer > curImg[0]) {
+								imagesVer.set(imgKey, [imgVer, image.id, image.name]);
+							}
+							continue;
+						}
+					}
+				}
+
+				this.imagesMap.set(image.id, image.name);
+			}
+
+			for (let item of this.imagesMap.entries()) {
 				imagesSelect.push(
 					<option
-						key={image.id}
-						value={image.id}
-					>{image.name}</option>,
+						key={item[0]}
+						value={item[0]}
+					>{item[1]}</option>,
+				);
+			}
+
+			for (let item of imagesVer.entries()) {
+				this.imagesMap.set(item[1][1], item[1][2]);
+				imagesSelect.push(
+					<option
+						key={item[1][1]}
+						value={item[1][1]}
+					>{item[1][2]}</option>,
 				);
 			}
 		}
@@ -915,6 +948,17 @@ export default class InstanceNew extends React.Component<Props, State> {
 						>
 							{imagesSelect}
 						</PageSelect>
+						<PageSwitch
+							label="Show hidden images"
+							help="Show previous versions of images."
+							checked={this.state.hiddenImages}
+							onToggle={(): void => {
+								this.setState({
+									...this.state,
+									hiddenImages: !this.state.hiddenImages,
+								});
+							}}
+						/>
 						<PageSwitch
 							label="Linked disk image"
 							help="Link to source disk image instead of creating full copy. This will reduce disk size and provide faster startup."
