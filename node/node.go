@@ -1377,8 +1377,8 @@ func (n *Node) Init() (err error) {
 			return
 		}
 
-		bsonSet["oracle_public_key"] = string(pubKey)
-		bsonSet["oracle_private_key"] = string(privKey)
+		bsonSet["oracle_public_key"] = strings.TrimSpace(string(pubKey))
+		bsonSet["oracle_private_key"] = strings.TrimSpace(string(privKey))
 	}
 
 	// Database upgrade
