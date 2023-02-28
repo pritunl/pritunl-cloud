@@ -592,7 +592,7 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk,
 	defer utils.Remove(tmpPath)
 
 	available := false
-	if virt != nil {
+	if virt != nil && virt.Running() {
 		err = qmp.BackupDisk(virt.Id, dsk, tmpPath)
 		if err != nil {
 			if _, ok := err.(*qmp.DiskNotFound); ok {
@@ -751,7 +751,7 @@ func CreateBackup(db *database.Database, dsk *disk.Disk,
 	defer utils.Remove(tmpPath)
 
 	available := false
-	if virt != nil {
+	if virt != nil && virt.Running() {
 		err = qmp.BackupDisk(virt.Id, dsk, tmpPath)
 		if err != nil {
 			if _, ok := err.(*qmp.DiskNotFound); ok {
