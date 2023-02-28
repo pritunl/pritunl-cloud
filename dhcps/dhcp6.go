@@ -22,7 +22,7 @@ type Server6 struct {
 	Mtu          int      `json:"mtu"`
 	Lifetime     int      `json:"lifetime"`
 	Debug        bool     `json:"debug"`
-	serverId     dhcpv6.Duid
+	serverId     dhcpv6.DUID
 	dnsServersIp []net.IP
 	server       *server6.Server
 	lifetime     time.Duration
@@ -254,9 +254,8 @@ func (s *Server6) Start() (err error) {
 		s.dnsServersIp = dnsServers
 	}
 
-	s.serverId = dhcpv6.Duid{
-		Type:          dhcpv6.DUID_LLT,
-		HwType:        iana.HWTypeEthernet,
+	s.serverId = &dhcpv6.DUIDLLT{
+		HWType:        iana.HWTypeEthernet,
 		LinkLayerAddr: iface.HardwareAddr,
 		Time:          dhcpv6.GetTime(),
 	}
