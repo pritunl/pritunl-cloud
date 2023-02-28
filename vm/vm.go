@@ -62,6 +62,10 @@ func (v *VirtualMachine) ProtectTmp() bool {
 	return !v.Gui
 }
 
+func (v *VirtualMachine) Running() bool {
+	return v.State == Starting || v.State == Running
+}
+
 type Disk struct {
 	Id    primitive.ObjectID `json:"id"`
 	Index int                `json:"index"`
