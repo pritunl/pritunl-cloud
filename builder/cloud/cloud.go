@@ -18,13 +18,13 @@ const (
 	repoPritunlPath        = "/etc/yum.repos.d/pritunl.repo"
 	repoPritunlData        = `[pritunl]
 name=Pritunl Repository
-baseurl=https://repo.pritunl.com/stable/yum/oraclelinux/8/
+baseurl=https://repo.pritunl.com/stable/yum/oraclelinux/9/
 gpgcheck=1
 enabled=1
 `
 	repoPritunlUnstableData = `[pritunl]
 name=Pritunl Unstable Repository
-baseurl=https://repo.pritunl.com/unstable/yum/oraclelinux/8/
+baseurl=https://repo.pritunl.com/unstable/yum/oraclelinux/9/
 gpgcheck=1
 enabled=1
 `
