@@ -28,7 +28,7 @@ baseurl=https://repo.pritunl.com/unstable/yum/oraclelinux/9/
 gpgcheck=1
 enabled=1
 `
-	repoKvmKeyUrl      = "https://raw.githubusercontent.com/pritunl/pgp/master/pritunl_repo_pub.asc"
+	repoKvmKeyUrl      = "https://raw.githubusercontent.com/pritunl/pgp/master/pritunl_kvm_repo_pub.asc"
 	repoKvmKeyPath     = "/tmp/pritunl-kvm.pub"
 	repoKvmFingerprint = "1BB6FBB8D641BD9C6C0398D74D55437EC0508F5F"
 	repoKvmPath        = "/etc/yum.repos.d/pritunl-kvm.repo"
