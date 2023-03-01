@@ -309,7 +309,7 @@ func (d *Disks) destroy(dsk *disk.Disk) {
 		}).Info("deploy: Delete protection ignore disk destroy")
 
 		dsk.State = disk.Available
-		dsk.CommitFields(db, set.NewSet("state"))
+		_ = dsk.CommitFields(db, set.NewSet("state"))
 
 		event.PublishDispatch(db, "disk.change")
 
