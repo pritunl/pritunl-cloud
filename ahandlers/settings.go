@@ -13,14 +13,17 @@ import (
 )
 
 type settingsData struct {
-	AuthProviders          []*settings.Provider          `json:"auth_providers"`
-	AuthSecondaryProviders []*settings.SecondaryProvider `json:"auth_secondary_providers"`
-	AuthAdminExpire        int                           `json:"auth_admin_expire"`
-	AuthAdminMaxDuration   int                           `json:"auth_admin_max_duration"`
-	AuthProxyExpire        int                           `json:"auth_proxy_expire"`
-	AuthProxyMaxDuration   int                           `json:"auth_proxy_max_duration"`
-	AuthUserExpire         int                           `json:"auth_user_expire"`
-	AuthUserMaxDuration    int                           `json:"auth_user_max_duration"`
+	AuthProviders             []*settings.Provider          `json:"auth_providers"`
+	AuthSecondaryProviders    []*settings.SecondaryProvider `json:"auth_secondary_providers"`
+	AuthAdminExpire           int                           `json:"auth_admin_expire"`
+	AuthAdminMaxDuration      int                           `json:"auth_admin_max_duration"`
+	AuthProxyExpire           int                           `json:"auth_proxy_expire"`
+	AuthProxyMaxDuration      int                           `json:"auth_proxy_max_duration"`
+	AuthUserExpire            int                           `json:"auth_user_expire"`
+	AuthUserMaxDuration       int                           `json:"auth_user_max_duration"`
+	AuthFastLogin             bool                          `json:"auth_fast_login"`
+	AuthForceFastUserLogin    bool                          `json:"auth_force_fast_user_login"`
+	AuthForceFastServiceLogin bool                          `json:"auth_force_fast_service_login"`
 }
 
 func getSettingsData() *settingsData {
@@ -31,6 +34,8 @@ func getSettingsData() *settingsData {
 		AuthAdminMaxDuration:   settings.Auth.AdminMaxDuration,
 		AuthUserExpire:         settings.Auth.UserExpire,
 		AuthUserMaxDuration:    settings.Auth.UserMaxDuration,
+		AuthFastLogin:          settings.Auth.FastLogin,
+		AuthForceFastUserLogin: settings.Auth.ForceFastUserLogin,
 	}
 
 	return data
@@ -75,6 +80,14 @@ func settingsPut(c *gin.Context) {
 	if settings.Auth.UserMaxDuration != data.AuthUserMaxDuration {
 		settings.Auth.UserMaxDuration = data.AuthUserMaxDuration
 		fields.Add("user_max_duration")
+	}
+	if settings.Auth.FastLogin != data.AuthFastLogin {
+		settings.Auth.FastLogin = data.AuthFastLogin
+		fields.Add("auth_fast_login")
+	}
+	if settings.Auth.ForceFastUserLogin != data.AuthForceFastUserLogin {
+		settings.Auth.ForceFastUserLogin = data.AuthForceFastUserLogin
+		fields.Add("auth_force_fast_user_login")
 	}
 
 	for _, provider := range data.AuthProviders {
