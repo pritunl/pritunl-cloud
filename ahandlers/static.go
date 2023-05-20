@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/pritunl-cloud/auth"
 	"github.com/pritunl/pritunl-cloud/authorizer"
 	"github.com/pritunl/pritunl-cloud/config"
 	"github.com/pritunl/pritunl-cloud/constants"
@@ -41,6 +42,12 @@ func staticPath(c *gin.Context, pth string, cache bool) {
 func staticIndexGet(c *gin.Context) {
 	authr := c.MustGet("authorizer").(*authorizer.Authorizer)
 	if !authr.IsValid() {
+		fastPth := auth.GetFastAdminPath()
+		if fastPth != "" {
+			c.Redirect(302, fastPth)
+			return
+		}
+
 		c.Redirect(302, "/login")
 		return
 	}
@@ -70,11 +77,23 @@ func staticTestingGet(c *gin.Context) {
 		} else if c.Request.URL.Path == "/build.js" {
 			pth = "build.js"
 		} else if c.Request.URL.Path == "/login" {
+			fastPth := auth.GetFastAdminPath()
+			if fastPth != "" {
+				c.Redirect(302, fastPth)
+				return
+			}
+
 			c.Request.URL.Path = "/login.html"
 			pth = "login.html"
 		} else {
 			authr := c.MustGet("authorizer").(*authorizer.Authorizer)
 			if !authr.IsValid() {
+				fastPth := auth.GetFastAdminPath()
+				if fastPth != "" {
+					c.Redirect(302, fastPth)
+					return
+				}
+
 				c.Redirect(302, "/login")
 				return
 			}
