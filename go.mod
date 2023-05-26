@@ -16,7 +16,7 @@ require (
 	github.com/mdlayher/ndp v1.0.0
 	github.com/minio/minio-go/v7 v7.0.49
 	github.com/oracle/oci-go-sdk/v55 v55.1.0
-	github.com/pritunl/mongo-go-driver v1.8.4
+	github.com/pritunl/mongo-go-driver v1.11.3
 	github.com/pritunl/webauthn v1.0.2
 	github.com/sirupsen/logrus v1.9.0
 	github.com/ua-parser/uap-go v0.0.0-20211112212520-00c877edfe0f
@@ -59,6 +59,7 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
+	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
 	github.com/pelletier/go-toml/v2 v2.0.6 // indirect
 	github.com/pierrec/lz4/v4 v4.1.17 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
