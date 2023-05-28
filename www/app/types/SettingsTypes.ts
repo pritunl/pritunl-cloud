@@ -84,6 +84,8 @@ export interface Settings {
 	auth_admin_max_duration: number;
 	auth_user_expire: number;
 	auth_user_max_duration: number;
+	auth_fast_login: boolean;
+	auth_force_fast_user_login: boolean;
 }
 
 export type SettingsRo = Readonly<Settings>;
