@@ -51,6 +51,8 @@ type auth struct {
 	Sync               int                  `bson:"sync" json:"sync" default:"1800"`
 	Providers          []*Provider          `bson:"providers"`
 	SecondaryProviders []*SecondaryProvider `bson:"secondary_providers"`
+	FastLogin          bool                 `bson:"fast_login" json:"fast_login"`
+	ForceFastUserLogin bool                 `bson:"force_fast_user_login" json:"force_fast_user_login"`
 	Window             int                  `bson:"window" json:"window" default:"60"`
 	SecondaryExpire    int                  `bson:"secondary_expire" json:"secondary_expire" default:"90"`
 	AdminExpire        int                  `bson:"admin_expire" json:"admin_expire" default:"1440"`
