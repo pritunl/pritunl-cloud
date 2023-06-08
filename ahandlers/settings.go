@@ -83,11 +83,11 @@ func settingsPut(c *gin.Context) {
 	}
 	if settings.Auth.FastLogin != data.AuthFastLogin {
 		settings.Auth.FastLogin = data.AuthFastLogin
-		fields.Add("auth_fast_login")
+		fields.Add("fast_login")
 	}
 	if settings.Auth.ForceFastUserLogin != data.AuthForceFastUserLogin {
 		settings.Auth.ForceFastUserLogin = data.AuthForceFastUserLogin
-		fields.Add("auth_force_fast_user_login")
+		fields.Add("force_fast_user_login")
 	}
 
 	for _, provider := range data.AuthProviders {
