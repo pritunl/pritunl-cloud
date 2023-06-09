@@ -85,6 +85,8 @@ growpart:
     ignore_growroot_disabled: false
 runcmd:
   - [ sysctl, -w, net.ipv4.conf.eth0.send_redirects=0 ]
+  - 'chmod 600 /etc/ssh/*_key'
+  - [ systemctl, restart, sshd ]
 users:
   - name: root
     {{if eq .RootPasswd ""}}lock-passwd: true{{else}}lock-passwd: false
