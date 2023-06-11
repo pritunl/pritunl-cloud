@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Add support for Fedora 38
+
 Version 1.2.2653.26 2023-02-28
 ------------------------------
 
