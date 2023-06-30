@@ -2,12 +2,11 @@ package twilio
 
 import (
 	"encoding/xml"
-	"github.com/twilio/twilio-go"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/pritunl-zero/database"
-	"github.com/pritunl/pritunl-zero/errortypes"
-	"github.com/pritunl/pritunl-zero/settings"
+	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/settings"
 	openapi "github.com/twilio/twilio-go/rest/api/v2010"
 )
 
