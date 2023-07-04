@@ -4,7 +4,6 @@ import (
 	"encoding/xml"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/settings"
 	openapi "github.com/twilio/twilio-go/rest/api/v2010"
@@ -22,7 +21,7 @@ type TwimlResponse struct {
 	Say     *TwimlSay `xml:"Say"`
 }
 
-func PhoneCall(db *database.Database, number, message string) (err error) {
+func PhoneCall(number, message string) (err error) {
 	client := twilio.NewRestClientWithParams(twilio.ClientParams{
 		Username: settings.System.TwilioAccount,
 		Password: settings.System.TwilioSecret,
@@ -69,7 +68,7 @@ func PhoneCall(db *database.Database, number, message string) (err error) {
 	return
 }
 
-func TextMessage(db *database.Database, number, message string) (err error) {
+func TextMessage(number, message string) (err error) {
 	client := twilio.NewRestClientWithParams(twilio.ClientParams{
 		Username: settings.System.TwilioAccount,
 		Password: settings.System.TwilioSecret,
