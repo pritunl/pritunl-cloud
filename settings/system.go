@@ -23,6 +23,8 @@ type system struct {
 	DiskBackupTime       int    `bson:"disk_backup_time" default:"10"`
 	OracleApiRetryRate   int    `bson:"oracle_api_retry_rate" default:"1"`
 	OracleApiRetryCount  int    `bson:"oracle_api_retry_count" default:"120"`
+	TwilioAccount        string `bson:"twilio_account"`
+	TwilioSecret         string `bson:"twilio_secret"`
 }
 
 func newSystem() interface{} {
