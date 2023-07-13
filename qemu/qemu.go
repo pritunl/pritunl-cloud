@@ -135,15 +135,13 @@ func (q *Qemu) Marshal() (output string, err error) {
 	cmd = append(cmd, paths.GetVmUuid(q.Id))
 
 	nodeVga := node.Self.Vga
-	nodeEgl := false
 	nodeVgaRenderPath := ""
 	if nodeVga == "" {
 		nodeVga = node.Virtio
 	}
 
-	if nodeVga == node.VirtioEgl {
+	if nodeVga == node.VirtioEgl || nodeVga == node.VirtioEglVulkan {
 		nodeVga = node.Virtio
-		nodeEgl = true
 		nodeVgaRender := node.Self.VgaRender
 		if nodeVgaRender != "" {
 			nodeVgaRenderPath, err = render.GetRender(nodeVgaRender)
@@ -200,9 +198,14 @@ func (q *Qemu) Marshal() (output string, err error) {
 			cmd = append(cmd, fmt.Sprintf(
 				"%s,gl=on,window-close=off", q.GuiMode))
 
-			if nodeEgl {
+			if nodeVga == node.VirtioEgl {
 				cmd = append(cmd, "-device")
 				cmd = append(cmd, "virtio-vga-gl")
+				cmd = append(cmd, "-vga")
+				cmd = append(cmd, "none")
+			} else if nodeVga == node.VirtioEglVulkan {
+				cmd = append(cmd, "-device")
+				cmd = append(cmd, "virtio-gpu-gl-pci")
 				cmd = append(cmd, "-vga")
 				cmd = append(cmd, "none")
 			} else {
@@ -210,7 +213,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 				cmd = append(cmd, nodeVga)
 			}
 		} else {
-			if nodeEgl {
+			if nodeVga == node.VirtioEgl || nodeVga == node.VirtioEglVulkan {
 				cmd = append(cmd, "-display")
 				options := "egl-headless"
 				if nodeVgaRenderPath != "" {
@@ -218,10 +221,17 @@ func (q *Qemu) Marshal() (output string, err error) {
 				}
 				cmd = append(cmd, options)
 
-				cmd = append(cmd, "-device")
-				cmd = append(cmd, "virtio-vga-gl")
-				cmd = append(cmd, "-vga")
-				cmd = append(cmd, "none")
+				if nodeVga == node.VirtioEglVulkan {
+					cmd = append(cmd, "-device")
+					cmd = append(cmd, "virtio-gpu-gl-pci")
+					cmd = append(cmd, "-vga")
+					cmd = append(cmd, "none")
+				} else {
+					cmd = append(cmd, "-device")
+					cmd = append(cmd, "virtio-vga-gl")
+					cmd = append(cmd, "-vga")
+					cmd = append(cmd, "none")
+				}
 			} else {
 				cmd = append(cmd, "-vga")
 				cmd = append(cmd, nodeVga)
