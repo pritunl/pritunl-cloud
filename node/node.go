@@ -397,7 +397,7 @@ func (n *Node) Validate(db *database.Database) (
 	case Std, Vmware, Virtio:
 		n.VgaRender = ""
 		break
-	case VirtioEgl:
+	case VirtioEgl, VirtioEglVulkan:
 		if n.VgaRender != "" {
 			found := false
 			for _, rendr := range n.AvailableRenders {
