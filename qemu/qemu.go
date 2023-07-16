@@ -141,7 +141,6 @@ func (q *Qemu) Marshal() (output string, err error) {
 	}
 
 	if nodeVga == node.VirtioEgl || nodeVga == node.VirtioEglVulkan {
-		nodeVga = node.Virtio
 		nodeVgaRender := node.Self.VgaRender
 		if nodeVgaRender != "" {
 			nodeVgaRenderPath, err = render.GetRender(nodeVgaRender)
