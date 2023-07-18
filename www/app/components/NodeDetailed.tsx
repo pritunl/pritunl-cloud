@@ -2110,12 +2110,13 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					>
 						<option value="virtio">Virtio</option>
 						<option value="virtio_egl">Virtio OpenGL</option>
+						<option value="virtio_egl_vulkan">Virtio OpenGL Vulkan</option>
 						<option value="vmware">VMware</option>
 						<option value="std">Standard</option>
 					</PageSelect>
 					<PageSelect
 						hidden={types.indexOf('hypervisor') === -1 ||
-							node.vga !== 'virtio_egl'}
+							(node.vga !== 'virtio_egl' && node.vga !== 'virtio_egl_vulkan')}
 						disabled={this.state.disabled || !hasRenders}
 						label="Hypervisor EGL Render"
 						help="Graphics card to use for EGL rendering."
