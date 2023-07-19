@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Fix QEMU desktop GUI on Fedora 38
+
 Version 1.2.2759.95 2023-06-14
 ------------------------------
 
