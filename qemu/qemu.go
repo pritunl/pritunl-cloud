@@ -571,11 +571,11 @@ func (q *Qemu) Marshal() (output string, err error) {
 	if !settings.Hypervisor.NoSandbox {
 		cmd = append(cmd, "-sandbox")
 		if q.Gui {
-		  cmd = append(cmd, "on,obsolete=deny,elevateprivileges=allow,"+
-			  "spawn=allow,resourcecontrol=deny")
+			cmd = append(cmd, "on,obsolete=deny,elevateprivileges=allow,"+
+				"spawn=allow,resourcecontrol=deny")
 		} else {
-		  cmd = append(cmd, "on,obsolete=deny,elevateprivileges=allow,"+
-			  "spawn=deny,resourcecontrol=deny")
+			cmd = append(cmd, "on,obsolete=deny,elevateprivileges=allow,"+
+				"spawn=deny,resourcecontrol=deny")
 		}
 	}
 
