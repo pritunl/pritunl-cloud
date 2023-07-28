@@ -118,6 +118,10 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 			return
 		}
 
+		if dev == nil {
+			continue
+		}
+
 		name := strings.ToLower(dev.Name)
 
 		qm.PciDevices = append(qm.PciDevices, &PciDevice{
