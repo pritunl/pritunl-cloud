@@ -11,6 +11,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/pci"
 	"github.com/pritunl/pritunl-cloud/vm"
+	"github.com/sirupsen/logrus"
 )
 
 func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
@@ -119,6 +120,11 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 		}
 
 		if dev == nil {
+			logrus.WithFields(logrus.Fields{
+				"instance_id": virt.Id.Hex(),
+				"device_slot": device.Slot,
+			}).Error("qemu: Failed to find vfio device")
+
 			continue
 		}
 
