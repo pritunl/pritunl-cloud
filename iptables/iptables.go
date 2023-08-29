@@ -8,6 +8,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/pritunl-cloud/vpc"
 	"github.com/sirupsen/logrus"
 )
 
@@ -26,6 +27,14 @@ func (r *Rules) newCommand() (cmd []string) {
 
 	cmd = []string{
 		chain,
+	}
+
+	return
+}
+
+func (r *Rules) newCommandMap() (cmd []string) {
+	cmd = []string{
+		"PREROUTING",
 	}
 
 	return
@@ -56,11 +65,25 @@ func (r *Rules) commentCommandSdc(inCmd []string) (cmd []string) {
 	return
 }
 
-func (r *Rules) run(cmds [][]string, ipCmd string, ipv6 bool) (err error) {
+func (r *Rules) commentCommandMap(inCmd []string) (cmd []string) {
+	cmd = append(inCmd,
+		"-m", "comment",
+		"--comment", "pritunl_cloud_map",
+	)
+
+	return
+}
+
+func (r *Rules) run(table string, cmds [][]string,
+	ipCmd string, ipv6 bool) (err error) {
+
 	iptablesCmd := getIptablesCmd(ipv6)
 
 	for _, cmd := range cmds {
 		cmd = append([]string{ipCmd}, cmd...)
+		if table != "" {
+			cmd = append([]string{"-t", table}, cmd...)
+		}
 
 		if r.Namespace != "0" {
 			cmd = append([]string{
@@ -118,33 +141,43 @@ func (r *Rules) run(cmds [][]string, ipCmd string, ipv6 bool) (err error) {
 }
 
 func (r *Rules) Apply() (err error) {
-	err = r.run(r.SourceDestCheck, "-A", false)
+	err = r.run("", r.SourceDestCheck, "-A", false)
 	if err != nil {
 		return
 	}
 
-	err = r.run(r.SourceDestCheck6, "-A", true)
+	err = r.run("", r.SourceDestCheck6, "-A", true)
 	if err != nil {
 		return
 	}
 
-	err = r.run(r.Ingress, "-A", false)
+	err = r.run("", r.Ingress, "-A", false)
 	if err != nil {
 		return
 	}
 
-	err = r.run(r.Ingress6, "-A", true)
+	err = r.run("", r.Ingress6, "-A", true)
 	if err != nil {
 		return
 	}
 
-	err = r.run(r.Holds, "-D", false)
+	err = r.run("nat", r.Maps, "-A", false)
+	if err != nil {
+		return
+	}
+
+	err = r.run("nat", r.Maps6, "-A", true)
+	if err != nil {
+		return
+	}
+
+	err = r.run("", r.Holds, "-D", false)
 	if err != nil {
 		return
 	}
 	r.Holds = [][]string{}
 
-	err = r.run(r.Holds6, "-D", true)
+	err = r.run("", r.Holds6, "-D", true)
 	if err != nil {
 		return
 	}
@@ -399,12 +432,12 @@ func (r *Rules) Hold() (err error) {
 	)
 	r.Holds6 = append(r.Holds6, cmd)
 
-	err = r.run(r.Holds, "-A", false)
+	err = r.run("", r.Holds, "-A", false)
 	if err != nil {
 		return
 	}
 
-	err = r.run(r.Holds6, "-A", true)
+	err = r.run("", r.Holds6, "-A", true)
 	if err != nil {
 		return
 	}
@@ -413,37 +446,49 @@ func (r *Rules) Hold() (err error) {
 }
 
 func (r *Rules) Remove() (err error) {
-	err = r.run(r.SourceDestCheck, "-D", false)
+	err = r.run("", r.SourceDestCheck, "-D", false)
 	if err != nil {
 		return
 	}
 	r.SourceDestCheck = [][]string{}
 
-	err = r.run(r.SourceDestCheck6, "-D", true)
+	err = r.run("", r.SourceDestCheck6, "-D", true)
 	if err != nil {
 		return
 	}
 	r.SourceDestCheck6 = [][]string{}
 
-	err = r.run(r.Ingress, "-D", false)
+	err = r.run("", r.Ingress, "-D", false)
 	if err != nil {
 		return
 	}
 	r.Ingress = [][]string{}
 
-	err = r.run(r.Ingress6, "-D", true)
+	err = r.run("", r.Ingress6, "-D", true)
 	if err != nil {
 		return
 	}
 	r.Ingress6 = [][]string{}
 
-	err = r.run(r.Holds, "-D", false)
+	err = r.run("nat", r.Maps, "-D", false)
+	if err != nil {
+		return
+	}
+	r.Maps = [][]string{}
+
+	err = r.run("nat", r.Maps6, "-D", true)
+	if err != nil {
+		return
+	}
+	r.Maps6 = [][]string{}
+
+	err = r.run("", r.Holds, "-D", false)
 	if err != nil {
 		return
 	}
 	r.Holds = [][]string{}
 
-	err = r.run(r.Holds6, "-D", true)
+	err = r.run("", r.Holds6, "-D", true)
 	if err != nil {
 		return
 	}
@@ -636,8 +681,8 @@ func (r *Rules) RemoveNat() (err error) {
 	return
 }
 
-func generateVirt(namespace, iface, addr, addr6 string, sourceDestCheck bool,
-	ingress []*firewall.Rule) (rules *Rules) {
+func generateVirt(vc *vpc.Vpc, namespace, iface, addr, addr6 string,
+	sourceDestCheck bool, ingress []*firewall.Rule) (rules *Rules) {
 
 	rules = &Rules{
 		Namespace:       namespace,
@@ -645,6 +690,8 @@ func generateVirt(namespace, iface, addr, addr6 string, sourceDestCheck bool,
 		SourceDestCheck: [][]string{},
 		Ingress:         [][]string{},
 		Ingress6:        [][]string{},
+		Maps:            [][]string{},
+		Maps6:           [][]string{},
 		Holds:           [][]string{},
 		Holds6:          [][]string{},
 	}
@@ -1007,6 +1054,44 @@ func generateVirt(namespace, iface, addr, addr6 string, sourceDestCheck bool,
 	)
 	rules.Ingress6 = append(rules.Ingress6, cmd)
 
+	if vc != nil && vc.Maps != nil {
+		for _, mp := range vc.Maps {
+			if mp.Type != vpc.Destination {
+				continue
+			}
+
+			if strings.Contains(mp.Target, ":") {
+				if addr6 != "" {
+					cmd = rules.newCommandMap()
+					cmd = append(cmd,
+						"-s", addr+"/128",
+						"-d", mp.Destination,
+					)
+					cmd = rules.commentCommandMap(cmd)
+					cmd = append(cmd,
+						"-j", "DNAT",
+						"--to-destination", mp.Target,
+					)
+					rules.Maps6 = append(rules.Maps6, cmd)
+				}
+			} else {
+				if addr != "" {
+					cmd = rules.newCommandMap()
+					cmd = append(cmd,
+						"-s", addr+"/32",
+						"-d", mp.Destination,
+					)
+					cmd = rules.commentCommandMap(cmd)
+					cmd = append(cmd,
+						"-j", "DNAT",
+						"--to-destination", mp.Target,
+					)
+					rules.Maps = append(rules.Maps, cmd)
+				}
+			}
+		}
+	}
+
 	return
 }
 
@@ -1020,6 +1105,8 @@ func generateInternal(namespace, iface string, nat, nat6 bool,
 		SourceDestCheck: [][]string{},
 		Ingress:         [][]string{},
 		Ingress6:        [][]string{},
+		Maps:            [][]string{},
+		Maps6:           [][]string{},
 		Holds:           [][]string{},
 		Holds6:          [][]string{},
 	}
