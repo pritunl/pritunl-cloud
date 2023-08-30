@@ -16,6 +16,8 @@ type Rules struct {
 	SourceDestCheck6 [][]string
 	Ingress          [][]string
 	Ingress6         [][]string
+	Maps             [][]string
+	Maps6            [][]string
 	Holds            [][]string
 	Holds6           [][]string
 }
