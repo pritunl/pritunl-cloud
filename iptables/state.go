@@ -1,10 +1,12 @@
 package iptables
 
 import (
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/vm"
+	"github.com/pritunl/pritunl-cloud/vpc"
 	"github.com/sirupsen/logrus"
 )
 
@@ -12,9 +14,14 @@ type State struct {
 	Interfaces map[string]*Rules
 }
 
-func LoadState(nodeSelf *node.Node, instances []*instance.Instance,
-	nodeFirewall []*firewall.Rule, firewalls map[string][]*firewall.Rule) (
-	state *State) {
+func LoadState(nodeSelf *node.Node, vpcs []*vpc.Vpc,
+	instances []*instance.Instance, nodeFirewall []*firewall.Rule,
+	firewalls map[string][]*firewall.Rule) (state *State) {
+
+	vpcsMap := map[primitive.ObjectID]*vpc.Vpc{}
+	for _, vc := range vpcs {
+		vpcsMap[vc.Id] = vc
+	}
 
 	nodeNetworkMode := node.Self.NetworkMode
 	if nodeNetworkMode == "" {
@@ -126,8 +133,8 @@ func LoadState(nodeSelf *node.Node, instances []*instance.Instance,
 			state.Interfaces[namespace+"-"+ifaceHost] = rules
 		}
 
-		rules := generateVirt(namespace, iface, addr, addr6,
-			!inst.SkipSourceDestCheck, ingress)
+		rules := generateVirt(vpcsMap[inst.Vpc], namespace, iface, addr,
+			addr6, !inst.SkipSourceDestCheck, ingress)
 		state.Interfaces[namespace+"-"+iface] = rules
 	}
 
