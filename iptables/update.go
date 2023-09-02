@@ -3,15 +3,15 @@ package iptables
 import (
 	"time"
 
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
-
-	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/pritunl-cloud/vpc"
 	"github.com/sirupsen/logrus"
 )
 
@@ -194,6 +194,19 @@ func (u *Update) reload() (err error) {
 	db := database.GetDatabase()
 	defer db.Close()
 
+	nodeDatacenter, err := node.Self.GetDatacenter(db)
+	if err != nil {
+		return
+	}
+
+	vpcs := []*vpc.Vpc{}
+	if !nodeDatacenter.IsZero() {
+		vpcs, err = vpc.GetDatacenter(db, nodeDatacenter)
+		if err != nil {
+			return
+		}
+	}
+
 	namespaces, err := utils.GetNamespaces()
 	if err != nil {
 		return
@@ -217,7 +230,7 @@ func (u *Update) reload() (err error) {
 		return
 	}
 
-	err = Init(namespaces, instances, nodeFirewall, firewalls)
+	err = Init(namespaces, vpcs, instances, nodeFirewall, firewalls)
 	if err != nil {
 		return
 	}
@@ -248,22 +261,22 @@ func ApplyUpdate(newState *State, namespaces []string, recover bool) {
 	return
 }
 
-func UpdateState(nodeSelf *node.Node, instances []*instance.Instance,
-	namespaces []string, nodeFirewall []*firewall.Rule,
-	firewalls map[string][]*firewall.Rule) {
+func UpdateState(nodeSelf *node.Node, vpcs []*vpc.Vpc,
+	instances []*instance.Instance, namespaces []string,
+	nodeFirewall []*firewall.Rule, firewalls map[string][]*firewall.Rule) {
 
-	newState := LoadState(nodeSelf, instances, nodeFirewall, firewalls)
+	newState := LoadState(nodeSelf, vpcs, instances, nodeFirewall, firewalls)
 
 	ApplyUpdate(newState, namespaces, false)
 
 	return
 }
 
-func UpdateStateRecover(nodeSelf *node.Node, instances []*instance.Instance,
-	namespaces []string, nodeFirewall []*firewall.Rule,
-	firewalls map[string][]*firewall.Rule) {
+func UpdateStateRecover(nodeSelf *node.Node, vpcs []*vpc.Vpc,
+	instances []*instance.Instance, namespaces []string,
+	nodeFirewall []*firewall.Rule, firewalls map[string][]*firewall.Rule) {
 
-	newState := LoadState(nodeSelf, instances, nodeFirewall, firewalls)
+	newState := LoadState(nodeSelf, vpcs, instances, nodeFirewall, firewalls)
 
 	ApplyUpdate(newState, namespaces, true)
 
