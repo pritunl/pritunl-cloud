@@ -10,6 +10,8 @@ import (
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/pritunl-cloud/vm"
+	"github.com/pritunl/pritunl-cloud/vpc"
 	"github.com/sirupsen/logrus"
 )
 
@@ -32,6 +34,8 @@ func diffRules(a, b *Rules) bool {
 		len(a.SourceDestCheck6) != len(b.SourceDestCheck6) ||
 		len(a.Ingress) != len(b.Ingress) ||
 		len(a.Ingress6) != len(b.Ingress6) ||
+		len(a.Maps) != len(b.Maps) ||
+		len(a.Maps6) != len(b.Maps6) ||
 		len(a.Holds) != len(b.Holds) ||
 		len(a.Holds6) != len(b.Holds6) {
 
@@ -55,6 +59,16 @@ func diffRules(a, b *Rules) bool {
 	}
 	for i := range a.Ingress6 {
 		if diffCmd(a.Ingress6[i], b.Ingress6[i]) {
+			return true
+		}
+	}
+	for i := range a.Maps {
+		if diffCmd(a.Maps[i], b.Maps[i]) {
+			return true
+		}
+	}
+	for i := range a.Maps6 {
+		if diffCmd(a.Maps6[i], b.Maps6[i]) {
 			return true
 		}
 	}
@@ -97,7 +111,9 @@ func getIptablesCmd(ipv6 bool) string {
 	}
 }
 
-func loadIptables(namespace string, state *State, ipv6 bool) (err error) {
+func loadIptables(namespace, instIface string, state *State,
+	ipv6 bool) (err error) {
+
 	Lock()
 	defer Unlock()
 
@@ -233,6 +249,8 @@ func loadIptables(namespace string, state *State, ipv6 bool) (err error) {
 				SourceDestCheck6: [][]string{},
 				Ingress:          [][]string{},
 				Ingress6:         [][]string{},
+				Maps:             [][]string{},
+				Maps6:            [][]string{},
 				Holds:            [][]string{},
 				Holds6:           [][]string{},
 			}
@@ -279,7 +297,10 @@ func loadIptables(namespace string, state *State, ipv6 bool) (err error) {
 	postIface := ""
 
 	for _, line := range strings.Split(output, "\n") {
-		if !strings.Contains(line, "pritunl_cloud_nat") {
+		natComment := strings.Contains(line, "pritunl_cloud_nat")
+		mapComment := strings.Contains(line, "pritunl_cloud_map")
+
+		if !natComment && !mapComment {
 			continue
 		}
 
@@ -296,73 +317,119 @@ func loadIptables(namespace string, state *State, ipv6 bool) (err error) {
 		}
 		cmd = cmd[1:]
 
-		switch cmd[0] {
-		case "PREROUTING":
-			for i, item := range cmd {
-				if item == "-d" {
-					if len(cmd) < i+2 {
-						logrus.WithFields(logrus.Fields{
-							"iptables_rule": line,
-						}).Error("iptables: Invalid iptables pub addr")
+		if mapComment {
+			iface := instIface
 
-						err = &errortypes.ParseError{
-							errors.New(
-								"iptables: Invalid iptables pub addr"),
-						}
-						return
+			if iface == "" {
+				logrus.WithFields(logrus.Fields{
+					"namespace":     namespace,
+					"iface":         iface,
+					"iptables_rule": line,
+				}).Error("iptables: Missing instance iface for map")
+			} else {
+				if cmd[0] != "PREROUTING" {
+					logrus.WithFields(logrus.Fields{
+						"iptables_rule": line,
+					}).Error("iptables: Invalid iptables map chain")
+
+					err = &errortypes.ParseError{
+						errors.New("iptables: Invalid iptables map chain"),
 					}
-					prePubAddr = strings.Split(cmd[i+1], "/")[0]
+					return
 				}
 
-				if item == "--to-destination" {
-					if len(cmd) < i+2 {
-						logrus.WithFields(logrus.Fields{
-							"iptables_rule": line,
-						}).Error("iptables: Invalid iptables addr")
-
-						err = &errortypes.ParseError{
-							errors.New(
-								"iptables: Invalid iptables addr"),
-						}
-						return
+				rules := state.Interfaces[namespace+"-"+iface]
+				if rules == nil {
+					rules = &Rules{
+						Namespace:        namespace,
+						Interface:        iface,
+						SourceDestCheck:  [][]string{},
+						SourceDestCheck6: [][]string{},
+						Ingress:          [][]string{},
+						Ingress6:         [][]string{},
+						Maps:             [][]string{},
+						Maps6:            [][]string{},
+						Holds:            [][]string{},
+						Holds6:           [][]string{},
 					}
-					preAddr = strings.Split(cmd[i+1], "/")[0]
-				}
-			}
-			break
-		case "POSTROUTING":
-			for i, item := range cmd {
-				if item == "-s" {
-					if len(cmd) < i+2 {
-						logrus.WithFields(logrus.Fields{
-							"iptables_rule": line,
-						}).Error("iptables: Invalid iptables pub addr")
-
-						err = &errortypes.ParseError{
-							errors.New(
-								"iptables: Invalid iptables pub addr"),
-						}
-						return
-					}
-					postAddr = strings.Split(cmd[i+1], "/")[0]
+					state.Interfaces[namespace+"-"+iface] = rules
 				}
 
-				if item == "-o" {
-					if len(cmd) < i+2 {
-						logrus.WithFields(logrus.Fields{
-							"iptables_rule": line,
-						}).Error("iptables: Invalid iptables addr")
-
-						err = &errortypes.ParseError{
-							errors.New(
-								"iptables: Invalid iptables addr"),
-						}
-						return
-					}
-					postIface = cmd[i+1]
+				if ipv6 {
+					rules.Maps6 = append(rules.Maps6, cmd)
+				} else {
+					rules.Maps = append(rules.Maps, cmd)
 				}
 			}
-			break
+		} else {
+			switch cmd[0] {
+			case "PREROUTING":
+				for i, item := range cmd {
+					if item == "-d" {
+						if len(cmd) < i+2 {
+							logrus.WithFields(logrus.Fields{
+								"iptables_rule": line,
+							}).Error("iptables: Invalid iptables pub addr")
+
+							err = &errortypes.ParseError{
+								errors.New(
+									"iptables: Invalid iptables pub addr"),
+							}
+							return
+						}
+						prePubAddr = strings.Split(cmd[i+1], "/")[0]
+					}
+
+					if item == "--to-destination" {
+						if len(cmd) < i+2 {
+							logrus.WithFields(logrus.Fields{
+								"iptables_rule": line,
+							}).Error("iptables: Invalid iptables addr")
+
+							err = &errortypes.ParseError{
+								errors.New(
+									"iptables: Invalid iptables addr"),
+							}
+							return
+						}
+						preAddr = strings.Split(cmd[i+1], "/")[0]
+					}
+				}
+				break
+			case "POSTROUTING":
+				for i, item := range cmd {
+					if item == "-s" {
+						if len(cmd) < i+2 {
+							logrus.WithFields(logrus.Fields{
+								"iptables_rule": line,
+							}).Error("iptables: Invalid iptables pub addr")
+
+							err = &errortypes.ParseError{
+								errors.New(
+									"iptables: Invalid iptables pub addr"),
+							}
+							return
+						}
+						postAddr = strings.Split(cmd[i+1], "/")[0]
+					}
+
+					if item == "-o" {
+						if len(cmd) < i+2 {
+							logrus.WithFields(logrus.Fields{
+								"iptables_rule": line,
+							}).Error("iptables: Invalid iptables addr")
+
+							err = &errortypes.ParseError{
+								errors.New(
+									"iptables: Invalid iptables addr"),
+							}
+							return
+						}
+						postIface = cmd[i+1]
+					}
+				}
+				break
+			}
 		}
 	}
 
@@ -578,9 +645,9 @@ func RecoverNode() (err error) {
 	return
 }
 
-func Init(namespaces []string, instances []*instance.Instance,
-	nodeFirewall []*firewall.Rule, firewalls map[string][]*firewall.Rule) (
-	err error) {
+func Init(namespaces []string, vpcs []*vpc.Vpc,
+	instances []*instance.Instance, nodeFirewall []*firewall.Rule,
+	firewalls map[string][]*firewall.Rule) (err error) {
 
 	_, err = utils.ExecCombinedOutputLogged(
 		nil, "sysctl", "-w", "net.ipv6.conf.all.accept_ra=2",
@@ -639,23 +706,34 @@ func Init(namespaces []string, instances []*instance.Instance,
 		Interfaces: map[string]*Rules{},
 	}
 
-	err = loadIptables("0", state, false)
+	err = loadIptables("0", "", state, false)
 	if err != nil {
 		return
 	}
 
-	err = loadIptables("0", state, true)
+	err = loadIptables("0", "", state, true)
 	if err != nil {
 		return
+	}
+
+	namespaceMap := map[string]*instance.Instance{}
+	for _, inst := range instances {
+		namespaceMap[vm.GetNamespace(inst.Id, 0)] = inst
 	}
 
 	for _, namespace := range namespaces {
-		err = loadIptables(namespace, state, false)
+		instIface := ""
+		inst := namespaceMap[namespace]
+		if inst != nil {
+			instIface = vm.GetIface(inst.Id, 0)
+		}
+
+		err = loadIptables(namespace, instIface, state, false)
 		if err != nil {
 			return
 		}
 
-		err = loadIptables(namespace, state, true)
+		err = loadIptables(namespace, instIface, state, true)
 		if err != nil {
 			return
 		}
@@ -663,7 +741,8 @@ func Init(namespaces []string, instances []*instance.Instance,
 
 	curState = state
 
-	UpdateState(node.Self, instances, namespaces, nodeFirewall, firewalls)
+	UpdateState(node.Self, vpcs, instances,
+		namespaces, nodeFirewall, firewalls)
 
 	return
 }
