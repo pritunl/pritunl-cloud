@@ -10,6 +10,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/iptables"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/pritunl-cloud/vpc"
 )
 
 func Iptables() (err error) {
@@ -19,6 +20,19 @@ func Iptables() (err error) {
 	namespaces, err := utils.GetNamespaces()
 	if err != nil {
 		return
+	}
+
+	nodeDatacenter, err := node.Self.GetDatacenter(db)
+	if err != nil {
+		return
+	}
+
+	vpcs := []*vpc.Vpc{}
+	if !nodeDatacenter.IsZero() {
+		vpcs, err = vpc.GetDatacenter(db, nodeDatacenter)
+		if err != nil {
+			return
+		}
 	}
 
 	disks, err := disk.GetNode(db, node.Self.Id)
@@ -44,7 +58,7 @@ func Iptables() (err error) {
 		return
 	}
 
-	err = iptables.Init(namespaces, instances, nodeFirewall, firewalls)
+	err = iptables.Init(namespaces, vpcs, instances, nodeFirewall, firewalls)
 	if err != nil {
 		return
 	}
