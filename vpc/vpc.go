@@ -24,6 +24,12 @@ type Route struct {
 	Link        bool   `bson:"link" json:"link"`
 }
 
+type Map struct {
+	Type        string `bson:"type" json:"type"`
+	Destination string `bson:"destination" json:"destination"`
+	Target      string `bson:"target" json:"target"`
+}
+
 type Vpc struct {
 	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Name         string             `bson:"name" json:"name"`
@@ -35,6 +41,7 @@ type Vpc struct {
 	Organization primitive.ObjectID `bson:"organization" json:"organization"`
 	Datacenter   primitive.ObjectID `bson:"datacenter" json:"datacenter"`
 	Routes       []*Route           `bson:"routes" json:"routes"`
+	Maps         []*Map             `bson:"maps" json:"maps"`
 	curSubnets   []*Subnet          `bson:"-" json:"-"`
 }
 
@@ -258,6 +265,102 @@ func (v *Vpc) Validate(db *database.Database) (
 			}
 		}
 	}
+
+	maps := []*Map{}
+	destinations = set.NewSet()
+	for _, mp := range v.Maps {
+		if mp.Target == "" && mp.Destination == "" {
+			continue
+		}
+
+		if mp.Type == "" {
+			mp.Type = Destination
+		}
+
+		if mp.Type != Destination {
+			errData = &errortypes.ErrorData{
+				Error:   "map_invalid_type",
+				Message: "Map type invalid",
+			}
+			return
+		}
+
+		if destinations.Contains(mp.Destination) {
+			errData = &errortypes.ErrorData{
+				Error:   "map_duplicate_destination",
+				Message: "Duplicate map destinations",
+			}
+			return
+		}
+		destinations.Add(mp.Destination)
+
+		if strings.Contains(mp.Destination, ":") !=
+			strings.Contains(mp.Target, ":") {
+
+			errData = &errortypes.ErrorData{
+				Error:   "map_target_destination_invalid",
+				Message: "Map target/destination invalid",
+			}
+			return
+		}
+
+		_, destination, e := net.ParseCIDR(mp.Destination)
+		if e != nil {
+			errData = &errortypes.ErrorData{
+				Error:   "map_destination_invalid",
+				Message: "Map destination invalid",
+			}
+			return
+		}
+		mp.Destination = destination.String()
+
+		if mp.Destination == "0.0.0.0/0" || mp.Destination == "::/0" {
+			errData = &errortypes.ErrorData{
+				Error:   "map_destination_invalid",
+				Message: "Map destination invalid",
+			}
+			return
+		}
+
+		target := net.ParseIP(mp.Target)
+		if target == nil {
+			errData = &errortypes.ErrorData{
+				Error:   "map_target_invalid",
+				Message: "Map target invalid",
+			}
+			return
+		}
+		mp.Target = target.String()
+
+		if mp.Target == "0.0.0.0" {
+			errData = &errortypes.ErrorData{
+				Error:   "map_target_invalid",
+				Message: "Map target invalid",
+			}
+			return
+		}
+
+		if !strings.Contains(mp.Target, ":") {
+			if !network.Contains(target) {
+				errData = &errortypes.ErrorData{
+					Error:   "map_target_invalid_network",
+					Message: "Map target not in VPC network",
+				}
+				return
+			}
+		} else {
+			if !network6.Contains(target) {
+				errData = &errortypes.ErrorData{
+					Error:   "map_target_invalid_network6",
+					Message: "Map target not in VPC IPv6 network",
+				}
+				return
+			}
+		}
+
+		maps = append(maps, mp)
+	}
+	v.Maps = maps
 
 	return
 }
