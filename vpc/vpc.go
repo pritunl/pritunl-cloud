@@ -194,8 +194,8 @@ func (v *Vpc) Validate(db *database.Database) (
 	for _, route := range v.Routes {
 		if destinations.Contains(route.Destination) {
 			errData = &errortypes.ErrorData{
-				Error:   "duplicate_destination",
-				Message: "Duplicate route destinations",
+				Error:   "route_duplicate_destination",
+				Message: "Duplicate mp destinations",
 			}
 			return
 		}
