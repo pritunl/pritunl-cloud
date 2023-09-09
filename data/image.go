@@ -575,6 +575,11 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk,
 		"disk_path":  dskPth,
 	}).Info("data: Creating disk snapshot")
 
+	err = utils.ExistsMkdir(cacheDir, 0755)
+	if err != nil {
+		return
+	}
+
 	imgId := primitive.NewObjectID()
 	tmpPath := path.Join(cacheDir,
 		fmt.Sprintf("snapshot-%s", imgId.Hex()))
@@ -733,6 +738,11 @@ func CreateBackup(db *database.Database, dsk *disk.Disk,
 		"disk_path":  dskPth,
 	}).Info("data: Creating disk backup")
 
+	err = utils.ExistsMkdir(cacheDir, 0755)
+	if err != nil {
+		return
+	}
+
 	imgId := primitive.NewObjectID()
 	tmpPath := path.Join(cacheDir,
 		fmt.Sprintf("backup-%s", imgId.Hex()))
@@ -867,6 +877,11 @@ func RestoreBackup(db *database.Database, dsk *disk.Disk) (err error) {
 		"storage_id": store.Id.Hex(),
 		"disk_path":  dskPth,
 	}).Info("data: Restoring disk backup")
+
+	err = utils.ExistsMkdir(cacheDir, 0755)
+	if err != nil {
+		return
+	}
 
 	client, err := minio.New(store.Endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(store.AccessKey, store.SecretKey, ""),
