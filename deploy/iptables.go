@@ -15,12 +15,13 @@ func (t *Iptables) Deploy() (err error) {
 	defer db.Close()
 
 	nodeSelf := t.stat.Node()
+	vpcs := t.stat.Vpcs()
 	instaces := t.stat.Instances()
 	namespaces := t.stat.Namespaces()
 	nodeFirewall := t.stat.NodeFirewall()
 	firewalls := t.stat.Firewalls()
 
-	iptables.UpdateStateRecover(nodeSelf, instaces, namespaces,
+	iptables.UpdateStateRecover(nodeSelf, vpcs, instaces, namespaces,
 		nodeFirewall, firewalls)
 
 	return
