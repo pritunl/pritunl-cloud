@@ -11,6 +11,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/iptables"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/state"
+	"github.com/pritunl/pritunl-cloud/vpc"
 	"github.com/sirupsen/logrus"
 )
 
@@ -33,7 +34,7 @@ func syncNodeFirewall() {
 	defer db.Close()
 
 	if !node.Self.Firewall {
-		iptables.UpdateState(node.Self, []*instance.Instance{},
+		iptables.UpdateState(node.Self, []*vpc.Vpc{}, []*instance.Instance{},
 			[]string{}, nil, map[string][]*firewall.Rule{})
 		return
 	}
@@ -49,8 +50,9 @@ func syncNodeFirewall() {
 
 		ingress := firewall.MergeIngress(fires)
 
-		iptables.UpdateStateRecover(node.Self, []*instance.Instance{},
-			[]string{}, ingress, map[string][]*firewall.Rule{})
+		iptables.UpdateStateRecover(node.Self, []*vpc.Vpc{},
+			[]*instance.Instance{}, []string{}, ingress,
+			map[string][]*firewall.Rule{})
 
 		break
 	}
