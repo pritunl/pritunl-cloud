@@ -26,6 +26,7 @@ type vpcData struct {
 	Subnets    []*vpc.Subnet      `json:"subnets"`
 	Datacenter primitive.ObjectID `json:"datacenter"`
 	Routes     []*vpc.Route       `json:"routes"`
+	Maps       []*vpc.Map         `json:"maps"`
 }
 
 type vpcsData struct {
@@ -80,12 +81,14 @@ func vpcPut(c *gin.Context) {
 	vc.Name = data.Name
 	vc.Comment = data.Comment
 	vc.Routes = data.Routes
+	vc.Maps = data.Maps
 	vc.Subnets = data.Subnets
 
 	fields := set.NewSet(
 		"name",
 		"comment",
 		"routes",
+		"maps",
 		"subnets",
 	)
 
@@ -159,6 +162,7 @@ func vpcPost(c *gin.Context) {
 		Organization: userOrg,
 		Datacenter:   data.Datacenter,
 		Routes:       data.Routes,
+		Maps:         data.Maps,
 	}
 
 	vc.InitVpc()
