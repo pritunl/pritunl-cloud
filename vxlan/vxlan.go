@@ -4,7 +4,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -15,6 +14,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/zone"
+	"github.com/sirupsen/logrus"
 )
 
 var (
