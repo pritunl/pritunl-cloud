@@ -7,6 +7,7 @@ import * as PageInfos from './PageInfo';
 import DatacentersStore from "../stores/DatacentersStore";
 import OrganizationsStore from "../stores/OrganizationsStore";
 import VpcRoute from './VpcRoute';
+import VpcMap from './VpcMap';
 import VpcSubnet from './VpcSubnet';
 import PageInput from './PageInput';
 import PageInfo from './PageInfo';
@@ -322,6 +323,106 @@ export default class VpcDetailed extends React.Component<Props, State> {
 		});
 	}
 
+	onAddMap = (i: number): void => {
+		let vpc: VpcTypes.Vpc;
+
+		if (this.state.changed) {
+			vpc = {
+				...this.state.vpc,
+			};
+		} else {
+			vpc = {
+				...this.props.vpc,
+			};
+		}
+
+		let maps = [
+			...(vpc.maps || []),
+		];
+
+		if (maps.length === 0) {
+			maps = [{}];
+		}
+
+		maps.splice(i + 1, 0, {} as VpcTypes.Map);
+		vpc.maps = maps;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			vpc: vpc,
+		});
+	}
+
+	onChangeMap(i: number, map: VpcTypes.Map): void {
+		let vpc: VpcTypes.Vpc;
+
+		if (this.state.changed) {
+			vpc = {
+				...this.state.vpc,
+			};
+		} else {
+			vpc = {
+				...this.props.vpc,
+			};
+		}
+
+		let maps = [
+			...(vpc.maps || []),
+		];
+
+		if (maps.length === 0) {
+			maps = [{}];
+		}
+
+		maps[i] = map;
+
+		vpc.maps = maps;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			vpc: vpc,
+		});
+	}
+
+	onRemoveMap(i: number): void {
+		let vpc: VpcTypes.Vpc;
+
+		if (this.state.changed) {
+			vpc = {
+				...this.state.vpc,
+			};
+		} else {
+			vpc = {
+				...this.props.vpc,
+			};
+		}
+
+		let maps = [
+			...(vpc.maps || []),
+		];
+
+		if (maps.length !== 0) {
+			maps.splice(i, 1);
+		}
+
+		if (maps.length === 0) {
+			maps = [{}];
+		}
+
+		vpc.maps = maps;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			vpc: vpc,
+		});
+	}
+
 	onSave = (): void => {
 		this.setState({
 			...this.state,
@@ -449,6 +550,32 @@ export default class VpcDetailed extends React.Component<Props, State> {
 			}
 		}
 
+		let maps = (vpc.maps || []);
+		if (maps.length === 0) {
+			maps.push({});
+		}
+
+		let mapsElem: JSX.Element[] = [];
+		for (let i = 0; i < maps.length; i++) {
+			let index = i;
+
+			mapsElem.push(
+				<VpcMap
+					key={index}
+					map={maps[index]}
+					onChange={(state: VpcTypes.Map): void => {
+						this.onChangeMap(index, state);
+					}}
+					onAdd={(): void => {
+						this.onAddMap(index);
+					}}
+					onRemove={(): void => {
+						this.onRemoveMap(index);
+					}}
+				/>,
+			);
+		}
+
 		let fields: PageInfos.Field[] = [
 			{
 				label: 'ID',
@@ -562,6 +689,16 @@ export default class VpcDetailed extends React.Component<Props, State> {
 					</label>
 					<div style={css.list}>
 						{subnetsElem}
+					</div>
+					<label style={css.itemsLabel}>
+						Network Maps
+						<Help
+							title="Network Maps"
+							content="Map destination network CIDR to new target IP."
+						/>
+					</label>
+					<div style={css.list}>
+						{mapsElem}
 					</div>
 				</div>
 				<div style={css.group}>
