@@ -16,6 +16,7 @@ export interface Vpc {
 	organization?: string;
 	datacenter?: string;
 	routes?: Route[];
+	maps?: Map[];
 }
 
 export interface Subnet {
