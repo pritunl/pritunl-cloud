@@ -30,6 +30,11 @@ export interface Route {
 	target?: string;
 }
 
+export interface Map {
+	destination?: string;
+	target?: string;
+}
+
 export interface Filter {
 	id?: string;
 	name?: string;
