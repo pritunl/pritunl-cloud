@@ -74,7 +74,17 @@ func GetFastAdminPath() (path string) {
 	if !settings.Local.NoLocalAuth || !settings.Auth.FastLogin ||
 		len(settings.Auth.Providers) != 1 {
 
-		return
+		googleOnly := true
+		for _, provider := range settings.Auth.Providers {
+			if provider.Type != Google {
+				googleOnly = false
+				break
+			}
+		}
+
+		if !googleOnly {
+			return
+		}
 	}
 
 	for _, provider := range settings.Auth.Providers {
@@ -92,7 +102,17 @@ func GetFastAdminPath() (path string) {
 func GetFastUserPath() (path string) {
 	if settings.Auth.ForceFastUserLogin {
 		if len(settings.Auth.Providers) != 1 {
-			return
+			googleOnly := true
+			for _, provider := range settings.Auth.Providers {
+				if provider.Type != Google {
+					googleOnly = false
+					break
+				}
+			}
+
+			if !googleOnly {
+				return
+			}
 		}
 	} else {
 		if !settings.Local.NoLocalAuth || !settings.Auth.FastLogin ||
