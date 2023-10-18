@@ -24,6 +24,8 @@ type settingsData struct {
 	AuthFastLogin             bool                          `json:"auth_fast_login"`
 	AuthForceFastUserLogin    bool                          `json:"auth_force_fast_user_login"`
 	AuthForceFastServiceLogin bool                          `json:"auth_force_fast_service_login"`
+	TwilioAccount             string                        `json:"twilio_account"`
+	TwilioSecret              string                        `json:"twilio_secret"`
 }
 
 func getSettingsData() *settingsData {
@@ -36,6 +38,8 @@ func getSettingsData() *settingsData {
 		AuthUserMaxDuration:    settings.Auth.UserMaxDuration,
 		AuthFastLogin:          settings.Auth.FastLogin,
 		AuthForceFastUserLogin: settings.Auth.ForceFastUserLogin,
+		TwilioAccount:          settings.System.TwilioAccount,
+		TwilioSecret:           settings.System.TwilioSecret,
 	}
 
 	return data
@@ -60,7 +64,27 @@ func settingsPut(c *gin.Context) {
 		return
 	}
 
-	fields := set.NewSet(
+	fields := set.NewSet()
+
+	if settings.System.TwilioAccount != data.TwilioAccount {
+		settings.System.TwilioAccount = data.TwilioAccount
+		fields.Add("twilio_account")
+	}
+
+	if settings.System.TwilioSecret != data.TwilioSecret {
+		settings.System.TwilioSecret = data.TwilioSecret
+		fields.Add("twilio_secret")
+	}
+
+	if fields.Len() != 0 {
+		err = settings.Commit(db, settings.System, fields)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+	}
+
+	fields = set.NewSet(
 		"providers",
 		"secondary_providers",
 	)
