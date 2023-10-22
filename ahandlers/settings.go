@@ -26,6 +26,7 @@ type settingsData struct {
 	AuthForceFastServiceLogin bool                          `json:"auth_force_fast_service_login"`
 	TwilioAccount             string                        `json:"twilio_account"`
 	TwilioSecret              string                        `json:"twilio_secret"`
+	TwilioNumber              string                        `json:"twilio_number"`
 }
 
 func getSettingsData() *settingsData {
@@ -40,6 +41,7 @@ func getSettingsData() *settingsData {
 		AuthForceFastUserLogin: settings.Auth.ForceFastUserLogin,
 		TwilioAccount:          settings.System.TwilioAccount,
 		TwilioSecret:           settings.System.TwilioSecret,
+		TwilioNumber:           settings.System.TwilioNumber,
 	}
 
 	return data
@@ -74,6 +76,11 @@ func settingsPut(c *gin.Context) {
 	if settings.System.TwilioSecret != data.TwilioSecret {
 		settings.System.TwilioSecret = data.TwilioSecret
 		fields.Add("twilio_secret")
+	}
+
+	if settings.System.TwilioNumber != data.TwilioNumber {
+		settings.System.TwilioNumber = data.TwilioNumber
+		fields.Add("twilio_number")
 	}
 
 	if fields.Len() != 0 {
