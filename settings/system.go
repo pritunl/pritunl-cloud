@@ -25,6 +25,7 @@ type system struct {
 	OracleApiRetryCount  int    `bson:"oracle_api_retry_count" default:"120"`
 	TwilioAccount        string `bson:"twilio_account"`
 	TwilioSecret         string `bson:"twilio_secret"`
+	TwilioNumber         string `bson:"twilio_number"`
 }
 
 func newSystem() interface{} {
