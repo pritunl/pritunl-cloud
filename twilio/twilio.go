@@ -6,6 +6,8 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/settings"
+	"github.com/sirupsen/logrus"
+	"github.com/twilio/twilio-go"
 	openapi "github.com/twilio/twilio-go/rest/api/v2010"
 )
 
@@ -91,6 +93,23 @@ func TextMessage(number, message string) (err error) {
 	if respSid == "" {
 		err = &errortypes.RequestError{
 			errors.Wrap(err, "twilio: Invalid message sid"),
+		}
+		return
+	}
+
+	if resp.ErrorCode != nil && resp.ErrorMessage != nil &&
+		*resp.ErrorMessage != "" {
+
+		logrus.WithFields(logrus.Fields{
+			"number":        number,
+			"message":       message,
+			"source_number": settings.System.TwilioNumber,
+			"error_code":    resp.ErrorCode,
+			"error_message": resp.ErrorMessage,
+		}).Error("twilio: Text message error")
+
+		err = &errortypes.RequestError{
+			errors.Wrap(err, "twilio: Twilio message error"),
 		}
 		return
 	}
