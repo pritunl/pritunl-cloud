@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Improve single sign-on fast login
+
 Version 1.2.2853.96 2023-09-16
 ------------------------------
 
