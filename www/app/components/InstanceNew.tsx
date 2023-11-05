@@ -843,6 +843,19 @@ export default class InstanceNew extends React.Component<Props, State> {
 						</PageSelect>
 						<PageSwitch
 							disabled={this.state.disabled}
+							label="Start instance"
+							help="Automatically start instance. Disable to get the public MAC address before instance is started for first time."
+							checked={!instance.state}
+							onToggle={(): void => {
+								if (instance.state === 'stop') {
+									this.set('state', '');
+								} else {
+									this.set('state', 'stop');
+								}
+							}}
+						/>
+						<PageSwitch
+							disabled={this.state.disabled}
 							label="Root enabled"
 							help="Enable root unix account for VNC/Spice access. Random password will be generated."
 							checked={instance.root_enabled}
@@ -875,19 +888,6 @@ export default class InstanceNew extends React.Component<Props, State> {
 							checked={instance.gui}
 							onToggle={(): void => {
 								this.set('gui', !instance.gui);
-							}}
-						/>
-						<PageSwitch
-							disabled={this.state.disabled}
-							label="Start instance"
-							help="Automatically start instance. Disable to get the public MAC address before instance is started for first time."
-							checked={!instance.state}
-							onToggle={(): void => {
-								if (instance.state === 'stop') {
-									this.set('state', '');
-								} else {
-									this.set('state', 'stop');
-								}
 							}}
 						/>
 						<PageSwitch
