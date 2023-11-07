@@ -278,6 +278,26 @@ export default class Settings extends React.Component<{}, State> {
 							this.set('auth_user_max_duration', parseInt(val, 10));
 						}}
 					/>
+					<PageInput
+						label="Twilio Account SID"
+						help="Twilio account SID for SMS and phone alerts."
+						type="text"
+						placeholder="Twilio account"
+						value={this.state.settings.twilio_account}
+						onChange={(val): void => {
+							this.set('twilio_account', val);
+						}}
+					/>
+					<PageInput
+						label="Twilio Secret"
+						help="Twilio account secret for SMS and phone alerts."
+						type="text"
+						placeholder="Twilio account secret"
+						value={this.state.settings.twilio_secret}
+						onChange={(val): void => {
+							this.set('twilio_secret', val);
+						}}
+					/>
 					<PageSwitch
 						label="Fast single sign-on login"
 						help="When only one single sign-on provider is configured and no local user accounts exists the login page will immediately redirect to the single sign-on provider."
