@@ -86,6 +86,8 @@ export interface Settings {
 	auth_user_max_duration: number;
 	auth_fast_login: boolean;
 	auth_force_fast_user_login: boolean;
+	twilio_account: string;
+	twilio_secret: string;
 }
 
 export type SettingsRo = Readonly<Settings>;
