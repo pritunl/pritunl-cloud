@@ -856,15 +856,6 @@ export default class InstanceNew extends React.Component<Props, State> {
 						/>
 						<PageSwitch
 							disabled={this.state.disabled}
-							label="Root enabled"
-							help="Enable root unix account for VNC/Spice access. Random password will be generated."
-							checked={instance.root_enabled}
-							onToggle={(): void => {
-								this.set('root_enabled', !instance.root_enabled);
-							}}
-						/>
-						<PageSwitch
-							disabled={this.state.disabled}
 							label="VNC server"
 							help="Enable VNC server for remote control of instance."
 							checked={instance.vnc}
@@ -888,6 +879,15 @@ export default class InstanceNew extends React.Component<Props, State> {
 							checked={instance.gui}
 							onToggle={(): void => {
 								this.set('gui', !instance.gui);
+							}}
+						/>
+						<PageSwitch
+							disabled={this.state.disabled}
+							label="Root enabled"
+							help="Enable root unix account for VNC/Spice access. Random password will be generated."
+							checked={instance.root_enabled}
+							onToggle={(): void => {
+								this.set('root_enabled', !instance.root_enabled);
 							}}
 						/>
 						<PageSwitch
