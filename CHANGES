@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Fix fast login issues
+
 Version 1.2.2900.76 2023-11-02
 ------------------------------
 
