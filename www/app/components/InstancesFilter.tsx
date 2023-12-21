@@ -163,6 +163,24 @@ export default class InstancesFilter extends React.Component<Props, {}> {
 			/>
 			<SearchInput
 				style={css.shortInput}
+				placeholder="Comment"
+				value={this.props.filter.comment}
+				onChange={(val: string): void => {
+					let filter = {
+						...this.props.filter,
+					};
+
+					if (val) {
+						filter.comment = val;
+					} else {
+						delete filter.comment;
+					}
+
+					this.props.onFilter(filter);
+				}}
+			/>
+			<SearchInput
+				style={css.shortInput}
 				placeholder="Network Role"
 				value={this.props.filter.network_role}
 				onChange={(val: string): void => {
