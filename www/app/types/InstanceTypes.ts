@@ -70,6 +70,7 @@ export interface Instance {
 export interface Filter {
 	id?: string;
 	name?: string;
+	comment?: string;
 	state?: string;
 	network_role?: string;
 	network_namespace?: string;
