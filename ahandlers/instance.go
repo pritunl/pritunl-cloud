@@ -567,6 +567,14 @@ func instancesGet(c *gin.Context) {
 			query["organization"] = organization
 		}
 
+		comment := strings.TrimSpace(c.Query("comment"))
+		if comment != "" {
+			query["comment"] = &bson.M{
+				"$regex":   fmt.Sprintf(".*%s.*", comment),
+				"$options": "i",
+			}
+		}
+
 		instances, count, err := aggregate.GetInstancePaged(
 			db, &query, page, pageCount)
 		if err != nil {
