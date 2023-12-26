@@ -243,6 +243,14 @@ func firewallsGet(c *gin.Context) {
 		}
 	}
 
+	comment := strings.TrimSpace(c.Query("comment"))
+	if comment != "" {
+		query["comment"] = &bson.M{
+			"$regex":   fmt.Sprintf(".*%s.*", comment),
+			"$options": "i",
+		}
+	}
+
 	networkRole := strings.TrimSpace(c.Query("network_role"))
 	if networkRole != "" {
 		query["network_roles"] = networkRole
