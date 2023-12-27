@@ -237,6 +237,14 @@ func firewallsGet(c *gin.Context) {
 		query["organization"] = organization
 	}
 
+	comment := strings.TrimSpace(c.Query("comment"))
+	if comment != "" {
+		query["comment"] = &bson.M{
+			"$regex":   fmt.Sprintf(".*%s.*", comment),
+			"$options": "i",
+		}
+	}
+
 	firewalls, count, err := firewall.GetAllPaged(db, &query, page, pageCount)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
