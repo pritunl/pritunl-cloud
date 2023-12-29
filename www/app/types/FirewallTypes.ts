@@ -22,6 +22,7 @@ export interface Firewall {
 export interface Filter {
 	id?: string;
 	name?: string;
+	comment?: string;
 	network_role?: string;
 	organization?: string;
 }
