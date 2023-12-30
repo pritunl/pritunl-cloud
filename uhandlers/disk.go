@@ -470,6 +470,14 @@ func disksGet(c *gin.Context) {
 		query["node"] = nodeId
 	}
 
+	comment := strings.TrimSpace(c.Query("comment"))
+	if comment != "" {
+		query["comment"] = &bson.M{
+			"$regex":   fmt.Sprintf(".*%s.*", comment),
+			"$options": "i",
+		}
+	}
+
 	disks, count, err := aggregate.GetDiskPaged(db, &query, page, pageCount)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
