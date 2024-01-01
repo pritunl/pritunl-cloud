@@ -278,6 +278,14 @@ func balancersGet(c *gin.Context) {
 		query["datacenter"] = datacenter
 	}
 
+	comment := strings.TrimSpace(c.Query("comment"))
+	if comment != "" {
+		query["comment"] = &bson.M{
+			"$regex":   fmt.Sprintf(".*%s.*", comment),
+			"$options": "i",
+		}
+	}
+
 	balncs, count, err := balancer.GetAllPaged(db, &query, page, pageCount)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
