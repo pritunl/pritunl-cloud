@@ -48,6 +48,7 @@ export interface Filter {
 	name?: string;
 	organization?: string;
 	datacenter?: string;
+	comment?: string;
 }
 
 export type Balancers = Balancer[];
