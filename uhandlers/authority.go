@@ -255,6 +255,14 @@ func authoritiesGet(c *gin.Context) {
 		query["network_roles"] = networkRole
 	}
 
+	comment := strings.TrimSpace(c.Query("comment"))
+	if comment != "" {
+		query["comment"] = &bson.M{
+			"$regex":   fmt.Sprintf(".*%s.*", comment),
+			"$options": "i",
+		}
+	}
+
 	authorities, count, err := authority.GetAllPaged(
 		db, &query, page, pageCount)
 	if err != nil {
