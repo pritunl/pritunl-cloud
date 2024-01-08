@@ -35,6 +35,10 @@ func (a *Alert) Validate(db *database.Database) (
 		a.Roles = []string{}
 	}
 
+	if a.Frequency == 0 {
+		a.Frequency = 300
+	}
+
 	if a.Frequency < 300 {
 		errData = &errortypes.ErrorData{
 			Error:   "alert_frequency_invalid",
