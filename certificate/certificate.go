@@ -9,12 +9,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/sirupsen/logrus"
 )
 
 type Info struct {
@@ -36,9 +36,12 @@ type Certificate struct {
 	Key          string             `bson:"key" json:"key"`
 	Certificate  string             `bson:"certificate" json:"certificate"`
 	Info         *Info              `bson:"info" json:"info"`
-	AcmeHash     string             `bson:"acme_hash" json:"acme_hash"`
-	AcmeAccount  string             `bson:"acme_account" json:"acme_account"`
+	AcmeHash     string             `bson:"acme_hash" json:"-"`
+	AcmeAccount  string             `bson:"acme_account" json:"-"`
 	AcmeDomains  []string           `bson:"acme_domains" json:"acme_domains"`
+	AcmeType     string             `bson:"acme_type" json:"acme_type"`
+	AcmeAuth     string             `bson:"acme_auth" json:"acme_auth"`
+	AcmeSecret   primitive.ObjectID `bson:"acme_secret,omitempty" json:"acme_secret"`
 }
 
 func (c *Certificate) Validate(db *database.Database) (
@@ -48,9 +51,45 @@ func (c *Certificate) Validate(db *database.Database) (
 		c.Type = Text
 	}
 
-	if c.Type != LetsEncrypt {
+	if c.Type == LetsEncrypt {
+		switch c.AcmeType {
+		case AcmeHTTP, "":
+			c.AcmeType = AcmeHTTP
+			break
+		case AcmeDNS:
+			if c.AcmeSecret.IsZero() {
+				errData = &errortypes.ErrorData{
+					Error:   "acme_secret_invalid",
+					Message: "LetsEncrypt verification secret invalid",
+				}
+				return
+			}
+			break
+		default:
+			errData = &errortypes.ErrorData{
+				Error:   "acme_type_invalid",
+				Message: "LetsEncrypt verification type invalid",
+			}
+			return
+		}
+
+		switch c.AcmeAuth {
+		case AcmeAWS, "":
+			c.AcmeAuth = AcmeAWS
+			break
+		default:
+			errData = &errortypes.ErrorData{
+				Error:   "acme_auth_invalid",
+				Message: "LetsEncrypt verification provider invalid",
+			}
+			return
+		}
+	} else {
 		c.AcmeAccount = ""
 		c.AcmeDomains = []string{}
+		c.AcmeType = ""
+		c.AcmeAuth = ""
+		c.AcmeSecret = primitive.NilObjectID
 	}
 
 	if c.AcmeDomains == nil {
