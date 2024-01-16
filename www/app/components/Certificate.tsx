@@ -2,8 +2,10 @@
 import * as React from 'react';
 import * as CertificateTypes from '../types/CertificateTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
+import * as SecretTypes from '../types/SecretTypes';
 import * as CertificateActions from '../actions/CertificateActions';
 import * as MiscUtils from '../utils/MiscUtils';
+import OrganizationsStore from "../stores/OrganizationsStore";
 import CertificateDomain from './CertificateDomain';
 import PageInput from './PageInput';
 import PageSelect from './PageSelect';
@@ -17,6 +19,7 @@ import * as Constants from "../Constants";
 interface Props {
 	certificate: CertificateTypes.CertificateRo;
 	organizations: OrganizationTypes.OrganizationsRo;
+	secrets: SecretTypes.SecretsRo;
 }
 
 interface State {
@@ -260,6 +263,36 @@ export default class Certificate extends React.Component<Props, State> {
 			}
 		}
 
+		let hasSecrets = false;
+		let secretsSelect: JSX.Element[] = [];
+		if (this.props.secrets.length) {
+			secretsSelect.push(<option key="null" value="">Select Secret</option>);
+
+			for (let secret of this.props.secrets) {
+				if (Constants.user) {
+					if (cert.organization !== OrganizationsStore.current) {
+						continue;
+					}
+				} else {
+					if (cert.organization !== secret.organization) {
+						continue;
+					}
+				}
+
+				hasSecrets = true;
+				secretsSelect.push(
+					<option
+						key={secret.id}
+						value={secret.id}
+					>{secret.name}</option>,
+				);
+			}
+		}
+
+		if (!hasSecrets) {
+			secretsSelect = [<option key="null" value="">No Secrets</option>];
+		}
+
 		let domains: JSX.Element[] = [];
 		for (let i = 0; i < cert.acme_domains.length; i++) {
 			let index = i;
@@ -400,7 +433,7 @@ export default class Certificate extends React.Component<Props, State> {
 					/>
 					<PageSelect
 						label="Type"
-						disabled={this.state.disabled || Constants.user}
+						disabled={this.state.disabled}
 						help="Certificate type, use text to provide a certificate. LetsEncrypt provides free certificates that automatically renew."
 						value={cert.type}
 						onChange={(val): void => {
@@ -421,6 +454,43 @@ export default class Certificate extends React.Component<Props, State> {
 						}}
 					>
 						{organizationsSelect}
+					</PageSelect>
+					<PageSelect
+						label="LetsEncrypt Verification Type"
+						disabled={this.state.disabled}
+						hidden={cert.type != "lets_encrypt"}
+						help="Verification type for LetsEncrypt certificate. HTTP verification will use a HTTP request on port 80 from the host. DNS will use a DNS API provider to set a DNS TXT record."
+						value={cert.acme_type}
+						onChange={(val): void => {
+							this.set('acme_type', val);
+						}}
+					>
+						<option value="acme_http" hidden={Constants.user}>HTTP</option>
+						<option value="acme_dns">DNS TXT</option>
+					</PageSelect>
+					<PageSelect
+						label="LetsEncrypt Verification Provider"
+						disabled={this.state.disabled}
+						hidden={cert.acme_type != "acme_dns"}
+						help="API provider for LetsEncrypt verification."
+						value={cert.acme_auth}
+						onChange={(val): void => {
+							this.set('acme_auth', val);
+						}}
+					>
+						<option value="acme_aws">AWS</option>
+					</PageSelect>
+					<PageSelect
+						disabled={this.state.disabled}
+						hidden={cert.acme_type != "acme_dns"}
+						label="LetsEncrypt Verification Secret"
+						help="Secret containing API keys to use for LetsEncrypt verification."
+						value={cert.acme_secret}
+						onChange={(val): void => {
+							this.set('acme_secret', val);
+						}}
+					>
+						{secretsSelect}
 					</PageSelect>
 				</div>
 			</div>
