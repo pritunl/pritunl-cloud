@@ -1,15 +1,17 @@
 package acme
 
 import (
+	"strings"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/secret"
 	"github.com/pritunl/pritunl-cloud/settings"
-	"strings"
 )
 
 type Aws struct {
@@ -18,7 +20,9 @@ type Aws struct {
 	cacheZoneId map[string]string
 }
 
-func (a *Aws) Connect(secr *secret.Secret) (err error) {
+func (a *Aws) Connect(db *database.Database,
+	secr *secret.Secret) (err error) {
+
 	if secr.Type != secret.AWS {
 		err = &errortypes.ApiError{
 			errors.Wrap(err, "acme: Secret type not AWS"),
@@ -82,7 +86,9 @@ func (a *Aws) DnsZoneFind(domain string) (zoneId string, err error) {
 	return
 }
 
-func (a *Aws) DnsTxtUpsert(domain, val string) (err error) {
+func (a *Aws) DnsTxtUpsert(db *database.Database,
+	domain, val string) (err error) {
+
 	zoneId, err := a.DnsZoneFind(domain)
 	if err != nil {
 		return
@@ -121,7 +127,9 @@ func (a *Aws) DnsTxtUpsert(domain, val string) (err error) {
 	return
 }
 
-func (a *Aws) DnsTxtDelete(domain, val string) (err error) {
+func (a *Aws) DnsTxtDelete(db *database.Database,
+	domain, val string) (err error) {
+
 	zoneId, err := a.DnsZoneFind(domain)
 	if err != nil {
 		return
