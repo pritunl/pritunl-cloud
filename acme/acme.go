@@ -75,7 +75,7 @@ func Generate(db *database.Database, cert *certificate.Certificate) (
 			return
 		}
 
-		err = dnsSvc.Connect(secr)
+		err = dnsSvc.Connect(db, secr)
 		if err != nil {
 			return
 		}
@@ -221,13 +221,13 @@ func Generate(db *database.Database, cert *certificate.Certificate) (
 			chalDomain = fmt.Sprintf(
 				"_acme-challenge.%s.", authz.Identifier.Value)
 
-			err = dnsSvc.DnsTxtUpsert(chalDomain, chalToken)
+			err = dnsSvc.DnsTxtUpsert(db, chalDomain, chalToken)
 			if err != nil {
 				return
 			}
 
 			defer func() {
-				e := dnsSvc.DnsTxtDelete(chalDomain, chalToken)
+				e := dnsSvc.DnsTxtDelete(db, chalDomain, chalToken)
 				if e != nil {
 					logrus.WithFields(logrus.Fields{
 						"certificate": cert.Name,
