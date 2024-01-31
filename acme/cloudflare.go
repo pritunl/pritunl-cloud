@@ -305,8 +305,6 @@ func (c *Cloudflare) DnsTxtUpsert(db *database.Database,
 	return
 }
 
-AS-2115GT-HNTR
-
 func (c *Cloudflare) DnsTxtDelete(db *database.Database,
 	domain, val string) (err error) {
 

@@ -20,10 +20,6 @@ import (
 	"golang.org/x/crypto/acme"
 )
 
-func prompt(_ string) bool {
-	return true
-}
-
 func revoke(client *acme.Client, authzUrls []string) {
 	if authzUrls == nil {
 		return
@@ -189,4 +185,8 @@ func extractDomain(domain string) string {
 		return parts[len(parts)-2] + "." + parts[len(parts)-1]
 	}
 	return domain
+}
+
+func cleanDomain(domain string) string {
+	return strings.Trim(domain, ".")
 }
