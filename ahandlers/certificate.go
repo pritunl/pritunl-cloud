@@ -23,6 +23,9 @@ type certificateData struct {
 	Key          string             `json:"key"`
 	Certificate  string             `json:"certificate"`
 	AcmeDomains  []string           `json:"acme_domains"`
+	AcmeType     string             `json:"acme_type"`
+	AcmeAuth     string             `json:"acme_auth"`
+	AcmeSecret   primitive.ObjectID `json:"acme_secret"`
 }
 
 func certificatePut(c *gin.Context) {
@@ -59,6 +62,9 @@ func certificatePut(c *gin.Context) {
 	cert.Organization = data.Organization
 	cert.Type = data.Type
 	cert.AcmeDomains = data.AcmeDomains
+	cert.AcmeType = data.AcmeType
+	cert.AcmeAuth = data.AcmeAuth
+	cert.AcmeSecret = data.AcmeSecret
 
 	fields := set.NewSet(
 		"name",
@@ -66,6 +72,9 @@ func certificatePut(c *gin.Context) {
 		"organization",
 		"type",
 		"acme_domains",
+		"acme_type",
+		"acme_auth",
+		"acme_secret",
 		"info",
 	)
 
@@ -94,17 +103,7 @@ func certificatePut(c *gin.Context) {
 	}
 
 	if cert.Type == certificate.LetsEncrypt {
-		err = acme.Update(db, cert)
-		if err != nil {
-			utils.AbortWithError(c, 500, err)
-			return
-		}
-
-		err = acme.Renew(db, cert)
-		if err != nil {
-			utils.AbortWithError(c, 500, err)
-			return
-		}
+		acme.RenewBackground(cert)
 	}
 
 	event.PublishDispatch(db, "certificate.change")
@@ -137,6 +136,9 @@ func certificatePost(c *gin.Context) {
 		Organization: data.Organization,
 		Type:         data.Type,
 		AcmeDomains:  data.AcmeDomains,
+		AcmeType:     data.AcmeType,
+		AcmeAuth:     data.AcmeAuth,
+		AcmeSecret:   data.AcmeSecret,
 	}
 
 	if cert.Type != certificate.LetsEncrypt {
@@ -162,17 +164,7 @@ func certificatePost(c *gin.Context) {
 	}
 
 	if cert.Type == certificate.LetsEncrypt {
-		err = acme.Update(db, cert)
-		if err != nil {
-			utils.AbortWithError(c, 500, err)
-			return
-		}
-
-		err = acme.Renew(db, cert)
-		if err != nil {
-			utils.AbortWithError(c, 500, err)
-			return
-		}
+		acme.RenewBackground(cert)
 	}
 
 	event.PublishDispatch(db, "certificate.change")
