@@ -652,25 +652,7 @@ func (v *Vpc) GetIp(db *database.Database,
 }
 
 func (v *Vpc) GetIp6(addr net.IP) net.IP {
-	netHash := md5.New()
-	netHash.Write(v.Id[:])
-	netHashSum := fmt.Sprintf("%x", netHash.Sum(nil))[:12]
-
-	macHash := md5.New()
-	macHash.Write(addr)
-	macHashSum := fmt.Sprintf("%x", macHash.Sum(nil))[:16]
-
-	ip := fmt.Sprintf("fd97%s%s", netHashSum, macHashSum)
-	ipBuf := bytes.Buffer{}
-
-	for i, run := range ip {
-		if i%4 == 0 && i != 0 && i != len(ip)-1 {
-			ipBuf.WriteRune(':')
-		}
-		ipBuf.WriteRune(run)
-	}
-
-	return net.ParseIP(ipBuf.String())
+	return GetIp6(v.Id, addr)
 }
 
 func (v *Vpc) RemoveSubnet(db *database.Database, subId primitive.ObjectID) (
