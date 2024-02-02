@@ -40,7 +40,7 @@ func (n *NetConf) Address(db *database.Database) (err error) {
 	n.InternalGatewayAddr6 = vc.GetIp6(gatewayAddr)
 
 	n.ExternalMacAddr = vm.GetMacAddrExternal(n.Virt.Id, vc.Id)
-	n.InternalMacAddr = vm.GetMacAddrInternal(n.Virt.Id, vc.Id)
+	n.InternalMacAddr = vm.GetMacAddrInternal(vc.Id, vc.Id)
 	n.HostMacAddr = vm.GetMacAddrHost(n.Virt.Id, vc.Id)
 
 	if n.NetworkMode == node.Dhcp {
