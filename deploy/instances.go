@@ -7,6 +7,7 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/arp"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -722,6 +723,43 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 
 		if changed {
 			store.RemRoutes(inst.Id)
+		}
+
+		var curRecords set.Set
+
+		recordsStore, ok := store.GetArp(inst.Id)
+		if !ok {
+			curRecords, err = arp.GetRecords(namespace)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"instance_id": inst.Id.Hex(),
+					"error":       err,
+				}).Error("deploy: Failed to deploy instance arp table")
+				return
+			}
+
+			if routes == nil || routes6 == nil {
+				return
+			}
+
+			store.SetArp(inst.Id, curRecords)
+		} else {
+			curRecords = recordsStore.Records
+		}
+
+		newRecords := s.stat.ArpRecords(namespace)
+
+		changed, err = arp.ApplyState(namespace, curRecords, newRecords)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"instance_id": inst.Id.Hex(),
+				"error":       err,
+			}).Error("deploy: Failed to deploy instance arp table")
+			return
+		}
+
+		if changed {
+			store.RemArp(inst.Id)
 		}
 	}()
 
