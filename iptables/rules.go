@@ -12,6 +12,8 @@ type Rules struct {
 	OracleNat        bool
 	OracleNatAddr    string
 	OracleNatPubAddr string
+	Header           [][]string
+	Header6          [][]string
 	SourceDestCheck  [][]string
 	SourceDestCheck6 [][]string
 	Ingress          [][]string
