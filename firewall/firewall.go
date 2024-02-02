@@ -35,6 +35,20 @@ func (r *Rule) SetName(ipv6 bool) (name string) {
 			name = "pr4_icmp"
 		}
 		break
+	case Multicast:
+		if ipv6 {
+			name = "pr6_multi"
+		} else {
+			name = "pr4_multi"
+		}
+		break
+	case Broadcast:
+		if ipv6 {
+			name = "pr6_broad"
+		} else {
+			name = "pr4_broad"
+		}
+		break
 	case Tcp, Udp:
 		if ipv6 {
 			name = fmt.Sprintf(
@@ -85,7 +99,7 @@ func (f *Firewall) Validate(db *database.Database) (
 		case Icmp:
 			rule.Port = ""
 			break
-		case Tcp, Udp:
+		case Tcp, Udp, Multicast, Broadcast:
 			ports := strings.Split(rule.Port, "-")
 
 			portInt, e := strconv.Atoi(ports[0])
@@ -138,33 +152,37 @@ func (f *Firewall) Validate(db *database.Database) (
 			return
 		}
 
-		for i, sourceIp := range rule.SourceIps {
-			if sourceIp == "" {
-				errData = &errortypes.ErrorData{
-					Error:   "invalid_ingress_rule_source_ip",
-					Message: "Empty ingress rule source IP",
+		if rule.Protocol == Multicast || rule.Protocol == Broadcast {
+			rule.SourceIps = []string{}
+		} else {
+			for i, sourceIp := range rule.SourceIps {
+				if sourceIp == "" {
+					errData = &errortypes.ErrorData{
+						Error:   "invalid_ingress_rule_source_ip",
+						Message: "Empty ingress rule source IP",
+					}
+					return
 				}
-				return
-			}
 
-			if !strings.Contains(sourceIp, "/") {
-				if strings.Contains(sourceIp, ":") {
-					sourceIp += "/128"
-				} else {
-					sourceIp += "/32"
+				if !strings.Contains(sourceIp, "/") {
+					if strings.Contains(sourceIp, ":") {
+						sourceIp += "/128"
+					} else {
+						sourceIp += "/32"
+					}
 				}
-			}
 
-			_, sourceCidr, e := net.ParseCIDR(sourceIp)
-			if e != nil {
-				errData = &errortypes.ErrorData{
-					Error:   "invalid_ingress_rule_source_ip",
-					Message: "Invalid ingress rule source IP",
+				_, sourceCidr, e := net.ParseCIDR(sourceIp)
+				if e != nil {
+					errData = &errortypes.ErrorData{
+						Error:   "invalid_ingress_rule_source_ip",
+						Message: "Invalid ingress rule source IP",
+					}
+					return
 				}
-				return
-			}
 
-			rule.SourceIps[i] = sourceCidr.String()
+				rule.SourceIps[i] = sourceCidr.String()
+			}
 		}
 	}
 
