@@ -30,7 +30,9 @@ func diffCmd(a, b []string) bool {
 }
 
 func diffRules(a, b *Rules) bool {
-	if len(a.SourceDestCheck) != len(b.SourceDestCheck) ||
+	if len(a.Header) != len(b.Header) ||
+		len(a.Header6) != len(b.Header6) ||
+		len(a.SourceDestCheck) != len(b.SourceDestCheck) ||
 		len(a.SourceDestCheck6) != len(b.SourceDestCheck6) ||
 		len(a.Ingress) != len(b.Ingress) ||
 		len(a.Ingress6) != len(b.Ingress6) ||
@@ -42,6 +44,16 @@ func diffRules(a, b *Rules) bool {
 		return true
 	}
 
+	for i := range a.Header {
+		if diffCmd(a.Header[i], b.Header[i]) {
+			return true
+		}
+	}
+	for i := range a.Header6 {
+		if diffCmd(a.Header6[i], b.Header6[i]) {
+			return true
+		}
+	}
 	for i := range a.SourceDestCheck {
 		if diffCmd(a.SourceDestCheck[i], b.SourceDestCheck[i]) {
 			return true
@@ -136,9 +148,10 @@ func loadIptables(namespace, instIface string, state *State,
 	for _, line := range strings.Split(output, "\n") {
 		ruleComment := strings.Contains(line, "pritunl_cloud_rule")
 		holdComment := strings.Contains(line, "pritunl_cloud_hold")
+		headComment := strings.Contains(line, "pritunl_cloud_head")
 		sdcComment := strings.Contains(line, "pritunl_cloud_sdc")
 
-		if !ruleComment && !holdComment && !sdcComment {
+		if !ruleComment && !holdComment && !headComment && !sdcComment {
 			continue
 		}
 
@@ -245,6 +258,8 @@ func loadIptables(namespace, instIface string, state *State,
 			rules = &Rules{
 				Namespace:        namespace,
 				Interface:        iface,
+				Header:           [][]string{},
+				Header6:          [][]string{},
 				SourceDestCheck:  [][]string{},
 				SourceDestCheck6: [][]string{},
 				Ingress:          [][]string{},
@@ -269,11 +284,25 @@ func loadIptables(namespace, instIface string, state *State,
 			} else {
 				rules.SourceDestCheck = append(rules.SourceDestCheck, cmd)
 			}
-		} else {
+		} else if sdcComment {
 			if ipv6 {
-				rules.Ingress6 = append(rules.Ingress6, cmd)
+				rules.SourceDestCheck6 = append(rules.SourceDestCheck6, cmd)
 			} else {
-				rules.Ingress = append(rules.Ingress, cmd)
+				rules.SourceDestCheck = append(rules.SourceDestCheck, cmd)
+			}
+		} else {
+			if headComment {
+				if ipv6 {
+					rules.Header6 = append(rules.Header6, cmd)
+				} else {
+					rules.Header = append(rules.Header, cmd)
+				}
+			} else {
+				if ipv6 {
+					rules.Ingress6 = append(rules.Ingress6, cmd)
+				} else {
+					rules.Ingress = append(rules.Ingress, cmd)
+				}
 			}
 		}
 	}
@@ -343,6 +372,8 @@ func loadIptables(namespace, instIface string, state *State,
 					rules = &Rules{
 						Namespace:        namespace,
 						Interface:        iface,
+						Header:           [][]string{},
+						Header6:          [][]string{},
 						SourceDestCheck:  [][]string{},
 						SourceDestCheck6: [][]string{},
 						Ingress:          [][]string{},
@@ -534,6 +565,8 @@ func loadIptables(namespace, instIface string, state *State,
 			rules = &Rules{
 				Namespace:        namespace,
 				Interface:        postIface,
+				Header:           [][]string{},
+				Header6:          [][]string{},
 				SourceDestCheck:  [][]string{},
 				SourceDestCheck6: [][]string{},
 				Ingress:          [][]string{},
@@ -561,12 +594,16 @@ func loadIptables(namespace, instIface string, state *State,
 		rules := state.Interfaces[namespace+"-"+oraclePostIface]
 		if rules == nil {
 			rules = &Rules{
-				Namespace: namespace,
-				Interface: oraclePostIface,
-				Ingress:   [][]string{},
-				Ingress6:  [][]string{},
-				Holds:     [][]string{},
-				Holds6:    [][]string{},
+				Namespace:        namespace,
+				Interface:        oraclePostIface,
+				Header:           [][]string{},
+				Header6:          [][]string{},
+				SourceDestCheck:  [][]string{},
+				SourceDestCheck6: [][]string{},
+				Ingress:          [][]string{},
+				Ingress6:         [][]string{},
+				Holds:            [][]string{},
+				Holds6:           [][]string{},
 			}
 			state.Interfaces[namespace+"-"+oraclePostIface] = rules
 		}
