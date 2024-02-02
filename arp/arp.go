@@ -32,7 +32,7 @@ func GetRecords(namespace string) (records set.Set, err error) {
 	output, _ := utils.ExecCombinedOutputLogged(
 		nil,
 		"ip", "netns", "exec", namespace,
-		"ip", "-4", "--json",
+		"ip", "--json",
 		"neighbor",
 	)
 
@@ -94,8 +94,15 @@ func BuildState(instances []*instance.Instance,
 					continue
 				}
 
+				addr := vpcIp.GetIp()
+
 				newRecrds.Add(Record{
-					Ip:  vpcIp.GetIp().String(),
+					Ip:  vpc.GetIp6(vpcIp.Vpc, addr).String(),
+					Mac: vm.GetMacAddr(vpcIp.Instance, adapter.Vpc),
+				})
+
+				newRecrds.Add(Record{
+					Ip:  addr.String(),
 					Mac: vm.GetMacAddr(vpcIp.Instance, adapter.Vpc),
 				})
 			}
