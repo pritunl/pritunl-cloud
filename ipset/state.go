@@ -25,7 +25,9 @@ func (s *State) AddIngress(namespace string, ingress []*firewall.Rule) {
 		name := rule.SetName(false)
 		name6 := rule.SetName(true)
 
-		if name == "" || name6 == "" {
+		if name == "" || name6 == "" || rule.Protocol == firewall.Multicast ||
+			rule.Protocol == firewall.Broadcast {
+
 			continue
 		}
 
@@ -114,7 +116,9 @@ func (n *NamesState) AddIngress(namespace string, ingress []*firewall.Rule) {
 		name := rule.SetName(false)
 		name6 := rule.SetName(true)
 
-		if name == "" || name6 == "" {
+		if name == "" || name6 == "" || rule.Protocol == firewall.Multicast ||
+			rule.Protocol == firewall.Broadcast {
+
 			continue
 		}
 
