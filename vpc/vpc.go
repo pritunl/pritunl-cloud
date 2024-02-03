@@ -648,6 +648,11 @@ func (v *Vpc) GetIp(db *database.Database,
 
 	instIp, gateIp = vpcIp.GetIps()
 
+	gateIp, err = v.GetGateway()
+	if err != nil {
+		return
+	}
+
 	return
 }
 
