@@ -15,6 +15,10 @@ type VpcIp struct {
 	Instance primitive.ObjectID `bson:"instance"`
 }
 
+func (i *VpcIp) GetIp() net.IP {
+	return utils.Int2IpAddress(i.Ip * 2)
+}
+
 func (i *VpcIp) GetIps() (net.IP, net.IP) {
 	return utils.IpIndex2Ip(i.Ip)
 }
