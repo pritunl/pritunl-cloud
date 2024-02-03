@@ -15,6 +15,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/organization"
 	"github.com/pritunl/pritunl-cloud/storage"
+	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vpc"
 	"github.com/pritunl/pritunl-cloud/zone"
 	"github.com/sirupsen/logrus"
@@ -247,17 +248,20 @@ func initVpc(db *database.Database, defaultOrg,
 	}
 
 	if len(vcs) == 0 {
-		netNum := 100 + rand.Intn(100)
+		start, end, step := 100, 220, 4
+		randomStep := rand.Intn((end-start)/step + 1)
+		netNum := start + (randomStep * step)
+
 		vc := &vpc.Vpc{
 			Name:         "vpc",
 			Organization: defaultOrg,
 			Datacenter:   defaultDc,
-			VpcId:        1000 + rand.Intn(3000),
-			Network:      fmt.Sprintf("10.%d.0.0/16", netNum),
+			VpcId:        utils.RandInt(1000, 4090),
+			Network:      fmt.Sprintf("10.%d.0.0/14", netNum),
 			Subnets: []*vpc.Subnet{
 				&vpc.Subnet{
 					Name:    "primary",
-					Network: fmt.Sprintf("10.%d.1.0/24", netNum),
+					Network: fmt.Sprintf("10.%d.2.0/23", netNum),
 				},
 			},
 		}
