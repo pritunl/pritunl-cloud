@@ -522,6 +522,46 @@ func RemoveMulti(db *database.Database, vcIds []primitive.ObjectID) (err error) 
 	return
 }
 
+func GetIpsMapped(db *database.Database, ids []primitive.ObjectID) (
+	vpcsMap map[primitive.ObjectID][]*VpcIp, err error) {
+
+	coll := db.VpcsIp()
+	vpcsMap = map[primitive.ObjectID][]*VpcIp{}
+
+	cursor, err := coll.Find(
+		db,
+		&bson.M{
+			"vpc": &bson.M{
+				"$in": ids,
+			},
+		},
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		vc := &VpcIp{}
+		err = cursor.Decode(vc)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		vpcsMap[vc.Vpc] = append(vpcsMap[vc.Vpc], vc)
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func RemoveInstanceIps(db *database.Database, instId primitive.ObjectID) (
 	err error) {
 
