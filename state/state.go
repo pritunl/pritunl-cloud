@@ -7,6 +7,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/pritunl-cloud/arp"
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
@@ -44,6 +45,8 @@ type State struct {
 	domainRecordsMap map[primitive.ObjectID][]*domain.Record
 	vpcs             []*vpc.Vpc
 	vpcsMap          map[primitive.ObjectID]*vpc.Vpc
+	vpcIpsMap        map[primitive.ObjectID][]*vpc.VpcIp
+	arpRecords       map[string]set.Set
 	addInstances     set.Set
 	remInstances     set.Set
 	running          []string
@@ -115,6 +118,18 @@ func (s *State) GetInstaceDisks(instId primitive.ObjectID) []*disk.Disk {
 
 func (s *State) Vpc(vpcId primitive.ObjectID) *vpc.Vpc {
 	return s.vpcsMap[vpcId]
+}
+
+func (s *State) VpcIps(vpcId primitive.ObjectID) []*vpc.VpcIp {
+	return s.vpcIpsMap[vpcId]
+}
+
+func (s *State) VpcIpsMap() map[primitive.ObjectID][]*vpc.VpcIp {
+	return s.vpcIpsMap
+}
+
+func (s *State) ArpRecords(namespace string) set.Set {
+	return s.arpRecords[namespace]
 }
 
 func (s *State) Vpcs() []*vpc.Vpc {
@@ -280,6 +295,7 @@ func (s *State) init() (err error) {
 	s.firewalls = firewalls
 
 	vpcs := []*vpc.Vpc{}
+	vpcsId := []primitive.ObjectID{}
 	vpcsMap := map[primitive.ObjectID]*vpc.Vpc{}
 	if !s.nodeDatacenter.IsZero() {
 		vpcs, err = vpc.GetDatacenter(db, s.nodeDatacenter)
@@ -288,11 +304,23 @@ func (s *State) init() (err error) {
 		}
 
 		for _, vc := range vpcs {
+			vpcsId = append(vpcsId, vc.Id)
 			vpcsMap[vc.Id] = vc
 		}
 	}
 	s.vpcs = vpcs
 	s.vpcsMap = vpcsMap
+
+	vpcIpsMap := map[primitive.ObjectID][]*vpc.VpcIp{}
+	if !s.nodeDatacenter.IsZero() {
+		vpcIpsMap, err = vpc.GetIpsMapped(db, vpcsId)
+		if err != nil {
+			return
+		}
+	}
+	s.vpcIpsMap = vpcIpsMap
+
+	s.arpRecords = arp.BuildState(s.instances, s.vpcIpsMap)
 
 	recrds, err := domain.GetRecordAll(db, &bson.M{
 		"node": s.nodeSelf.Id,
