@@ -293,6 +293,7 @@ func (n *NetConf) ipHostIptables(db *database.Database) (err error) {
 func (n *NetConf) ipDatabase(db *database.Database) (err error) {
 	store.RemAddress(n.Virt.Id)
 	store.RemRoutes(n.Virt.Id)
+	store.RemArp(n.Virt.Id)
 
 	hostIps := []string{}
 	if n.HostAddr != nil {

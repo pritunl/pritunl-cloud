@@ -67,6 +67,7 @@ func (n *NetConf) ClearAll(db *database.Database) (err error) {
 
 	store.RemAddress(n.Virt.Id)
 	store.RemRoutes(n.Virt.Id)
+	store.RemArp(n.Virt.Id)
 
 	return
 }
