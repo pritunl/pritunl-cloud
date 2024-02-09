@@ -402,10 +402,7 @@ func Start(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	}
 
 	addr6 := vc.GetIp6(addr)
-	gatewayAddr6, err := vc.GetGateway6()
-	if err != nil {
-		return
-	}
+	gatewayAddr6 := vc.GetGatewayIp6(addr)
 
 	jumboFramesExternal := node.Self.JumboFrames
 	jumboFramesInternal := node.Self.JumboFrames ||
