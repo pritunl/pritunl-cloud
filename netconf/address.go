@@ -37,7 +37,7 @@ func (n *NetConf) Address(db *database.Database) (err error) {
 		"%s/%d", gatewayAddr.String(), cidr)
 
 	n.InternalAddr6 = vc.GetIp6(addr)
-	n.InternalGatewayAddr6, err = vc.GetGateway6()
+	n.InternalGatewayAddr6 = vc.GetGatewayIp6(addr)
 	if err != nil {
 		return
 	}
