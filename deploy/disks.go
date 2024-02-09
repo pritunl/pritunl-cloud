@@ -299,11 +299,8 @@ func (d *Disks) restore(dsk *disk.Disk) {
 	}()
 }
 
-func (d *Disks) destroy(dsk *disk.Disk) {
+func (d *Disks) destroy(db *database.Database, dsk *disk.Disk) {
 	if dsk.DeleteProtection {
-		db := database.GetDatabase()
-		defer db.Close()
-
 		logrus.WithFields(logrus.Fields{
 			"disk_id": dsk.Id.Hex(),
 		}).Info("deploy: Delete protection ignore disk destroy")
@@ -421,7 +418,7 @@ func (d *Disks) scheduleBackup(dsk *disk.Disk) {
 	}()
 }
 
-func (d *Disks) Deploy() (err error) {
+func (d *Disks) Deploy(db *database.Database) (err error) {
 	disks := d.stat.Disks()
 
 	backupHour := settings.System.DiskBackupTime
@@ -450,7 +447,7 @@ func (d *Disks) Deploy() (err error) {
 			d.expand(dsk)
 			break
 		case disk.Destroy:
-			d.destroy(dsk)
+			d.destroy(db, dsk)
 			break
 		case disk.Available:
 			if backupActive && dsk.Backup {

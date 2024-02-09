@@ -3,12 +3,12 @@ package deploy
 import (
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/domain"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/state"
+	"github.com/sirupsen/logrus"
 )
 
 type Domains struct {
@@ -107,10 +107,7 @@ func (d *Domains) remove(db *database.Database, recrd *domain.Record) {
 	return
 }
 
-func (d *Domains) Deploy() (err error) {
-	db := database.GetDatabase()
-	defer db.Close()
-
+func (d *Domains) Deploy(db *database.Database) (err error) {
 	instances := d.stat.Instances()
 
 	for _, inst := range instances {

@@ -1,7 +1,6 @@
 package deploy
 
 import (
-	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/ipset"
 	"github.com/pritunl/pritunl-cloud/state"
 )
@@ -11,9 +10,6 @@ type Ipset struct {
 }
 
 func (t *Ipset) Deploy() (err error) {
-	db := database.GetDatabase()
-	defer db.Close()
-
 	instaces := t.stat.Instances()
 	namespaces := t.stat.Namespaces()
 	nodeFirewall := t.stat.NodeFirewall()
@@ -28,9 +24,6 @@ func (t *Ipset) Deploy() (err error) {
 }
 
 func (t *Ipset) Clean() (err error) {
-	db := database.GetDatabase()
-	defer db.Close()
-
 	instaces := t.stat.Instances()
 	nodeFirewall := t.stat.NodeFirewall()
 	firewalls := t.stat.Firewalls()

@@ -1,10 +1,14 @@
 package deploy
 
 import (
+	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/state"
 )
 
 func Deploy(stat *state.State) (err error) {
+	db := database.GetDatabase()
+	defer db.Close()
+
 	network := NewNetwork(stat)
 	err = network.Deploy()
 	if err != nil {
@@ -29,13 +33,13 @@ func Deploy(stat *state.State) (err error) {
 	}
 
 	disks := NewDisks(stat)
-	err = disks.Deploy()
+	err = disks.Deploy(db)
 	if err != nil {
 		return
 	}
 
 	instances := NewInstances(stat)
-	err = instances.Deploy()
+	err = instances.Deploy(db)
 	if err != nil {
 		return
 	}
@@ -47,7 +51,7 @@ func Deploy(stat *state.State) (err error) {
 	}
 
 	domains := NewDomains(stat)
-	err = domains.Deploy()
+	err = domains.Deploy(db)
 	if err != nil {
 		return
 	}

@@ -766,10 +766,7 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 	return
 }
 
-func (s *Instances) Deploy() (err error) {
-	db := database.GetDatabase()
-	defer db.Close()
-
+func (s *Instances) Deploy(db *database.Database) (err error) {
 	instances := s.stat.Instances()
 	namespaces := s.stat.Namespaces()
 
