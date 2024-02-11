@@ -2,10 +2,21 @@ package lvm
 
 import (
 	"encoding/json"
+	"time"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/pool"
 	"github.com/pritunl/pritunl-cloud/utils"
+)
+
+var (
+	cachedNodePools          []*pool.Pool
+	cachedNodePoolsTimestamp time.Time
 )
 
 type report struct {
@@ -26,12 +37,16 @@ type vgDetails struct {
 	VgFree    string `json:"vg_free"`
 }
 
-type VolumeGroup struct {
-	Name string
-}
+func GetAvailablePools(db *database.Database, zoneId primitive.ObjectID) (
+	availablePools []*pool.Pool, err error) {
 
-func GetVgs() (vgs []*VolumeGroup, err error) {
-	vgs = []*VolumeGroup{}
+	if time.Since(cachedNodePoolsTimestamp) < 30*time.Second {
+		availablePools = cachedNodePools
+		return
+	}
+
+	availablePools = []*pool.Pool{}
+	vgNames := set.NewSet()
 
 	output, err := utils.ExecCombinedOutput("",
 		"vgs", "--reportformat", "json")
@@ -48,53 +63,34 @@ func GetVgs() (vgs []*VolumeGroup, err error) {
 		return
 	}
 
-	if reprt.Report == nil {
-		return
-	}
-
-	for _, reportGroup := range reprt.Report {
-		if reportGroup.Vg != nil {
-			for _, reportVg := range reportGroup.Vg {
-				vg := &VolumeGroup{
-					Name: reportVg.VgName,
+	if reprt.Report != nil {
+		for _, reportGroup := range reprt.Report {
+			if reportGroup.Vg != nil {
+				for _, reportVg := range reportGroup.Vg {
+					vgNames.Add(reportVg.VgName)
 				}
-				vgs = append(vgs, vg)
 			}
 		}
 	}
 
-	return
-}
-
-func GetVgsNameSet() (vgNames set.Set, err error) {
-	vgNames = set.NewSet()
-
-	output, err := utils.ExecCombinedOutput("",
-		"vgs", "--reportformat", "json")
-	if err != nil {
-		return
-	}
-
-	reprt := &report{}
-	err = json.Unmarshal([]byte(output), reprt)
-	if err != nil {
-		err = &errortypes.ParseError{
-			errors.Wrap(err, "deploy: Failed to unmarshal vgs report"),
+	if vgNames.Len() > 0 {
+		pools, e := pool.GetAll(db, &bson.M{
+			"zone": zoneId,
+		})
+		if e != nil {
+			err = e
+			return
 		}
-		return
-	}
 
-	if reprt.Report == nil {
-		return
-	}
-
-	for _, reportGroup := range reprt.Report {
-		if reportGroup.Vg != nil {
-			for _, reportVg := range reportGroup.Vg {
-				vgNames.Add(reportVg.VgName)
+		for _, pl := range pools {
+			if vgNames.Contains(pl.VgName) {
+				availablePools = append(availablePools, pl)
 			}
 		}
 	}
+
+	cachedNodePools = availablePools
+	cachedNodePoolsTimestamp = time.Now()
 
 	return
 }
