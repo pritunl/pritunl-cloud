@@ -19,6 +19,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/image"
+	"github.com/pritunl/pritunl-cloud/lvm"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/qmp"
@@ -422,7 +423,83 @@ func WriteImage(db *database.Database, imgId, dskId primitive.ObjectID,
 	return
 }
 
-func DeleteImage(db *database.Database, imgId primitive.ObjectID) (err error) {
+func writeImageLvm(db *database.Database, vgName string,
+	imgId, dskId primitive.ObjectID, size int) (newSize int, err error) {
+
+	lvName := dskId.Hex()
+	sourcePth := ""
+	diskTempPath := paths.GetDiskTempPath()
+	defer utils.Remove(diskTempPath)
+
+	img, err := image.Get(db, imgId)
+	if err != nil {
+		return
+	}
+
+	largeBase := strings.Contains(img.Key, "fedora")
+
+	if img.Type == storage.Public {
+		cacheDir := node.Self.GetCachePath()
+
+		imagePth := path.Join(
+			cacheDir,
+			fmt.Sprintf("image-%s-%s", img.Id.Hex(), img.Etag),
+		)
+
+		err = utils.ExistsMkdir(cacheDir, 0755)
+		if err != nil {
+			return
+		}
+
+		err = getImage(db, img, imagePth)
+		if err != nil {
+			return
+		}
+
+		sourcePth = imagePth
+
+		if largeBase && size < 16 {
+			size = 16
+			newSize = 16
+		} else if !largeBase && size < 10 {
+			size = 10
+			newSize = 10
+		}
+	} else {
+		err = getImage(db, img, diskTempPath)
+		if err != nil {
+			return
+		}
+
+		sourcePth = diskTempPath
+
+		if largeBase && size < 16 {
+			size = 16
+			newSize = 16
+		}
+	}
+
+	err = lvm.CreateLv(vgName, lvName, size)
+	if err != nil {
+		return
+	}
+
+	err = lvm.ActivateLv(vgName, lvName)
+	if err != nil {
+		return
+	}
+
+	err = lvm.WriteLv(vgName, lvName, sourcePth)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func DeleteImage(db *database.Database, imgId primitive.ObjectID) (
+	err error) {
+
 	img, err := image.Get(db, imgId)
 	if err != nil {
 		return
