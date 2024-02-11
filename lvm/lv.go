@@ -2,8 +2,14 @@ package lvm
 
 import (
 	"fmt"
-	"github.com/pritunl/pritunl-cloud/utils"
+	"math"
 	"path/filepath"
+	"strconv"
+	"strings"
+
+	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 func CreateLv(vgName, lvName string, size int) (err error) {
@@ -37,6 +43,40 @@ func WriteLv(vgName, lvName, sourcePth string) (err error) {
 	if err != nil {
 		return
 	}
+
+	return
+}
+
+func ExtendLv(vgName, lvName string, addSize int) (err error) {
+	_, err = utils.ExecCombinedOutputLogged(nil,
+		"lvextend", "-L", fmt.Sprintf("+%dG", addSize),
+		fmt.Sprintf("%s/%s", vgName, lvName))
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func GetSizeLv(vgName, lvName string) (size int, err error) {
+	output, err := utils.ExecCombinedOutput("",
+		"lvs", fmt.Sprintf("%s/%s", vgName, lvName),
+		"-o", "LV_SIZE", "--units", "g", "--noheadings")
+	if err != nil {
+		return
+	}
+
+	output = strings.Trim(strings.TrimSpace(strings.ToLower(output)), "g")
+
+	number, err := strconv.ParseFloat(output, 64)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "lvm: Failed to parse lvm volume size"),
+		}
+		return
+	}
+
+	size = int(math.Round(number))
 
 	return
 }
