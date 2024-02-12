@@ -13,6 +13,7 @@ import UserDetailed from './UserDetailed';
 import Nodes from './Nodes';
 import Policies from './Policies';
 import Certificates from './Certificates';
+import Secrets from './Secrets';
 import Organizations from './Organizations';
 import Datacenters from './Datacenters';
 import Alerts from './Alerts';
@@ -37,6 +38,7 @@ import * as AuditActions from '../actions/AuditActions';
 import * as NodeActions from '../actions/NodeActions';
 import * as PolicyActions from '../actions/PolicyActions';
 import * as CertificateActions from '../actions/CertificateActions';
+import * as SecretActions from '../actions/SecretActions';
 import * as OrganizationActions from '../actions/OrganizationActions';
 import * as DatacenterActions from '../actions/DatacenterActions';
 import * as AlertActions from '../actions/AlertActions';
@@ -204,6 +206,13 @@ export default class Main extends React.Component<{}, State> {
 							Certificates
 						</ReactRouter.Link>
 						<ReactRouter.Link
+							className="bp3-button bp3-minimal bp3-icon-key"
+							style={css.link}
+							to="/secrets"
+						>
+							Secrets
+						</ReactRouter.Link>
+						<ReactRouter.Link
 							className="bp3-button bp3-minimal bp3-icon-people"
 							style={css.link}
 							hidden={Constants.user}
@@ -294,7 +303,7 @@ export default class Main extends React.Component<{}, State> {
 							Instances
 						</ReactRouter.Link>
 						<ReactRouter.Link
-							className="bp3-button bp3-minimal bp3-icon-key"
+							className="bp3-button bp3-minimal bp3-icon-shield"
 							style={css.link}
 							to="/firewalls"
 						>
@@ -471,7 +480,30 @@ export default class Main extends React.Component<{}, State> {
 											});
 										});
 									} else if (pathname === '/certificates') {
+										SecretActions.sync().then((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										}).catch((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										});
 										CertificateActions.sync().then((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										}).catch((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										});
+									} else if (pathname === '/secrets') {
+										SecretActions.sync().then((): void => {
 											this.setState({
 												...this.state,
 												disabled: false,
@@ -746,6 +778,9 @@ export default class Main extends React.Component<{}, State> {
 				)}/>
 				<ReactRouter.Route path="/certificates" render={() => (
 					<Certificates/>
+				)}/>
+				<ReactRouter.Route path="/secrets" render={() => (
+					<Secrets/>
 				)}/>
 				<ReactRouter.Route path="/organizations" render={() => (
 					<Organizations/>
