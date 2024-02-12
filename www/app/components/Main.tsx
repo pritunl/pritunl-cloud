@@ -23,6 +23,7 @@ import Domains from './Domains';
 import Balancers from './Balancers';
 import Storages from './Storages';
 import Images from './Images';
+import Pools from './Pools';
 import Disks from './Disks';
 import Instances from './Instances';
 import Firewalls from './Firewalls';
@@ -46,6 +47,7 @@ import * as DomainActions from '../actions/DomainActions';
 import * as BalancerActions from '../actions/BalancerActions';
 import * as StorageActions from '../actions/StorageActions';
 import * as ImageActions from '../actions/ImageActions';
+import * as PoolActions from '../actions/PoolActions';
 import * as DiskActions from '../actions/DiskActions';
 import * as InstanceActions from '../actions/InstanceActions';
 import * as FirewallActions from '../actions/FirewallActions';
@@ -269,6 +271,13 @@ export default class Main extends React.Component<{}, State> {
 							to="/images"
 						>
 							Images
+						</ReactRouter.Link>
+						<ReactRouter.Link
+							className="bp3-button bp3-minimal bp3-icon-control"
+							style={css.link}
+							to="/pools"
+						>
+							Disk Pools
 						</ReactRouter.Link>
 						<ReactRouter.Link
 							className="bp3-button bp3-minimal bp3-icon-floppy-disk"
@@ -581,6 +590,18 @@ export default class Main extends React.Component<{}, State> {
 												disabled: false,
 											});
 										});
+									} else if (pathname === '/pools') {
+										PoolActions.sync().then((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										}).catch((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										});
 									} else if (pathname === '/disks') {
 										DiskActions.sync().then((): void => {
 											this.setState({
@@ -752,6 +773,9 @@ export default class Main extends React.Component<{}, State> {
 				)}/>
 				<ReactRouter.Route path="/images" render={() => (
 					<Images/>
+				)}/>
+				<ReactRouter.Route path="/pools" render={() => (
+					<Pools/>
 				)}/>
 				<ReactRouter.Route path="/disks" render={() => (
 					<Disks/>
