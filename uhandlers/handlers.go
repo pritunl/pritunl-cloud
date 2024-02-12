@@ -131,11 +131,11 @@ func Register(engine *gin.Engine) {
 
 	orgGroup.GET("/node", nodesGet)
 
-	csrfGroup.GET("/secret", secretsGet)
-	csrfGroup.GET("/secret/:secr_id", secretGet)
-	csrfGroup.PUT("/secret/:secr_id", secretPut)
-	csrfGroup.POST("/secret", secretPost)
-	csrfGroup.DELETE("/secret/:secr_id", secretDelete)
+	orgGroup.GET("/secret", secretsGet)
+	orgGroup.GET("/secret/:secr_id", secretGet)
+	orgGroup.PUT("/secret/:secr_id", secretPut)
+	orgGroup.POST("/secret", secretPost)
+	orgGroup.DELETE("/secret/:secr_id", secretDelete)
 
 	csrfGroup.GET("/organization", organizationsGet)
 
