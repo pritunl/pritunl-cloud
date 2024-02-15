@@ -30,7 +30,9 @@ type diskData struct {
 	Organization     primitive.ObjectID `json:"organization"`
 	Instance         primitive.ObjectID `json:"instance"`
 	Index            string             `json:"index"`
+	Type             string             `json:"type"`
 	Node             primitive.ObjectID `json:"node"`
+	Pool             primitive.ObjectID `json:"pool"`
 	DeleteProtection bool               `json:"delete_protection"`
 	Image            primitive.ObjectID `json:"image"`
 	RestoreImage     primitive.ObjectID `json:"restore_image"`
@@ -83,6 +85,7 @@ func diskPut(c *gin.Context) {
 	fields := set.NewSet(
 		"name",
 		"comment",
+		"type",
 		"instance",
 		"delete_protection",
 		"index",
@@ -226,7 +229,9 @@ func diskPost(c *gin.Context) {
 		Organization:     dta.Organization,
 		Instance:         dta.Instance,
 		Index:            dta.Index,
+		Type:             dta.Type,
 		Node:             dta.Node,
+		Pool:             dta.Pool,
 		Image:            dta.Image,
 		DeleteProtection: dta.DeleteProtection,
 		Backing:          dta.Backing,
