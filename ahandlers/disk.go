@@ -196,6 +196,7 @@ func diskPost(c *gin.Context) {
 
 		store, err := storage.Get(db, img.Storage)
 		if err != nil {
+			utils.AbortWithError(c, 500, err)
 			return
 		}
 
@@ -318,6 +319,7 @@ func diskDelete(c *gin.Context) {
 
 	dsk, err := disk.Get(db, diskId)
 	if err != nil {
+		utils.AbortWithError(c, 500, err)
 		return
 	}
 
