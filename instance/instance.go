@@ -24,6 +24,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/pci"
+	"github.com/pritunl/pritunl-cloud/pool"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/systemd"
 	"github.com/pritunl/pritunl-cloud/tpm"
@@ -46,6 +47,8 @@ type Instance struct {
 	OracleVnicAttach    string             `bson:"oracle_vnic_attach" json:"oracle_vnic_attach"`
 	Image               primitive.ObjectID `bson:"image" json:"image"`
 	ImageBacking        bool               `bson:"image_backing" json:"image_backing"`
+	DiskType            string             `bson:"disk_type" json:"disk_type"`
+	DiskPool            primitive.ObjectID `bson:"disk_pool,omitempty" json:"disk_pool"`
 	Status              string             `bson:"-" json:"status"`
 	Uptime              string             `bson:"-" json:"uptime"`
 	State               string             `bson:"state" json:"state"`
@@ -728,10 +731,14 @@ func (i *Instance) Insert(db *database.Database) (err error) {
 	return
 }
 
-func (i *Instance) LoadVirt(disks []*disk.Disk) {
+func (i *Instance) LoadVirt(poolsMap map[primitive.ObjectID]*pool.Pool,
+	disks []*disk.Disk) {
+
 	i.Virt = &vm.VirtualMachine{
 		Id:         i.Id,
 		UnixId:     i.UnixId,
+		DiskType:   i.DiskType,
+		DiskPool:   i.DiskPool,
 		Image:      i.Image,
 		Processors: i.Processors,
 		Memory:     i.Memory,
@@ -770,16 +777,36 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 
 	if disks != nil {
 		for _, dsk := range disks {
-			index, err := strconv.Atoi(dsk.Index)
-			if err != nil {
-				continue
-			}
+			switch dsk.Type {
+			case disk.Lvm:
+				pl := poolsMap[dsk.Pool]
+				if pl == nil {
+					continue
+				}
 
-			i.Virt.Disks = append(i.Virt.Disks, &vm.Disk{
-				Id:    dsk.Id,
-				Index: index,
-				Path:  paths.GetDiskPath(dsk.Id),
-			})
+				i.Virt.DriveDevices = append(
+					i.Virt.DriveDevices,
+					&vm.DriveDevice{
+						Id:     dsk.Id.Hex(),
+						Type:   vm.Lvm,
+						VgName: pl.VgName,
+						LvName: dsk.Id.Hex(),
+					},
+				)
+				break
+			case disk.Qcow2, "":
+				index, err := strconv.Atoi(dsk.Index)
+				if err != nil {
+					continue
+				}
+
+				i.Virt.Disks = append(i.Virt.Disks, &vm.Disk{
+					Id:    dsk.Id,
+					Index: index,
+					Path:  paths.GetDiskPath(dsk.Id),
+				})
+				break
+			}
 		}
 	}
 
@@ -822,7 +849,8 @@ func (i *Instance) LoadVirt(disks []*disk.Disk) {
 				i.Virt.DriveDevices = append(
 					i.Virt.DriveDevices,
 					&vm.DriveDevice{
-						Id: device.Id,
+						Id:   device.Id,
+						Type: vm.Physical,
 					},
 				)
 			}
