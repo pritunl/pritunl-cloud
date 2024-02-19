@@ -203,6 +203,11 @@ func (d *Database) Instances() (coll *Collection) {
 	return
 }
 
+func (d *Database) Pools() (coll *Collection) {
+	coll = d.getCollection("pools")
+	return
+}
+
 func (d *Database) Disks() (coll *Collection) {
 	coll = d.getCollection("disks")
 	return
