@@ -63,6 +63,7 @@ type Instance struct {
 	TpmSecret           string             `bson:"tpm_secret" json:"-"`
 	DhcpServer          bool               `bson:"dhcp_server" json:"dhcp_server"`
 	CloudType           string             `bson:"cloud_type" json:"cloud_type"`
+	CloudScript         string             `bson:"cloud_script" json:"cloud_script"`
 	DeleteProtection    bool               `bson:"delete_protection" json:"delete_protection"`
 	SkipSourceDestCheck bool               `bson:"skip_source_dest_check" json:"skip_source_dest_check"`
 	QemuVersion         string             `bson:"qemu_version" json:"qemu_version"`
