@@ -167,6 +167,20 @@ func (i *Instance) Validate(db *database.Database) (
 		i.GenerateUnixId()
 	}
 
+	switch i.DiskType {
+	case disk.Lvm:
+		if i.DiskPool.IsZero() {
+			errData = &errortypes.ErrorData{
+				Error:   "pool_required",
+				Message: "Missing required disk pool",
+			}
+			return
+		}
+		break
+	case disk.Qcow2, "":
+		i.DiskType = disk.Qcow2
+	}
+
 	vc, err := vpc.Get(db, i.Vpc)
 	if err != nil {
 		return
