@@ -7,6 +7,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
+	"github.com/pritunl/pritunl-cloud/pool"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vpc"
@@ -114,29 +115,37 @@ func GetAll(db *database.Database, query *bson.M) (
 	return
 }
 
-func GetAllVirt(db *database.Database, query *bson.M, disks []*disk.Disk) (
+func GetAllVirt(db *database.Database, query *bson.M,
+	pools []*pool.Pool, disks []*disk.Disk) (
 	insts []*Instance, err error) {
 
+	poolsMap := map[primitive.ObjectID]*pool.Pool{}
+	for _, pl := range pools {
+		poolsMap[pl.Id] = pl
+	}
+
 	instanceDisks := map[primitive.ObjectID][]*disk.Disk{}
-	for _, dsk := range disks {
-		if dsk.State == disk.Destroy && dsk.DeleteProtection {
-			logrus.WithFields(logrus.Fields{
-				"disk_id": dsk.Id.Hex(),
-			}).Info("instance: Delete protection ignore disk detach")
-		} else if dsk.State != disk.Available &&
-			dsk.State != disk.Snapshot &&
-			dsk.State != disk.Backup &&
-			dsk.State != disk.Restore &&
-			dsk.State != disk.Expand {
+	if disks != nil {
+		for _, dsk := range disks {
+			if dsk.State == disk.Destroy && dsk.DeleteProtection {
+				logrus.WithFields(logrus.Fields{
+					"disk_id": dsk.Id.Hex(),
+				}).Info("instance: Delete protection ignore disk detach")
+			} else if dsk.State != disk.Available &&
+				dsk.State != disk.Snapshot &&
+				dsk.State != disk.Backup &&
+				dsk.State != disk.Restore &&
+				dsk.State != disk.Expand {
 
-			continue
-		}
+				continue
+			}
 
-		dsks := instanceDisks[dsk.Instance]
-		if dsks == nil {
-			dsks = []*disk.Disk{}
+			dsks := instanceDisks[dsk.Instance]
+			if dsks == nil {
+				dsks = []*disk.Disk{}
+			}
+			instanceDisks[dsk.Instance] = append(dsks, dsk)
 		}
-		instanceDisks[dsk.Instance] = append(dsks, dsk)
 	}
 
 	coll := db.Instances()
@@ -157,7 +166,7 @@ func GetAllVirt(db *database.Database, query *bson.M, disks []*disk.Disk) (
 			return
 		}
 
-		inst.LoadVirt(instanceDisks[inst.Id])
+		inst.LoadVirt(poolsMap, instanceDisks[inst.Id])
 		insts = append(insts, inst)
 	}
 
@@ -171,7 +180,7 @@ func GetAllVirt(db *database.Database, query *bson.M, disks []*disk.Disk) (
 }
 
 func GetAllVirtMapped(db *database.Database, query *bson.M,
-	instanceDisks map[primitive.ObjectID][]*disk.Disk) (
+	pools []*pool.Pool, instanceDisks map[primitive.ObjectID][]*disk.Disk) (
 	insts []*Instance, err error) {
 
 	coll := db.Instances()
@@ -183,6 +192,11 @@ func GetAllVirtMapped(db *database.Database, query *bson.M,
 		return
 	}
 	defer cursor.Close(db)
+
+	poolsMap := map[primitive.ObjectID]*pool.Pool{}
+	for _, pl := range pools {
+		poolsMap[pl.Id] = pl
+	}
 
 	for cursor.Next(db) {
 		inst := &Instance{}
@@ -214,7 +228,7 @@ func GetAllVirtMapped(db *database.Database, query *bson.M,
 			}
 		}
 
-		inst.LoadVirt(virtDsks)
+		inst.LoadVirt(poolsMap, virtDsks)
 		insts = append(insts, inst)
 	}
 
