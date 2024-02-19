@@ -53,6 +53,7 @@ type instanceData struct {
 	Tpm                 bool               `json:"tpm"`
 	DhcpServer          bool               `json:"dhcp_server"`
 	CloudType           string             `json:"cloud_type"`
+	CloudScript         string             `json:"cloud_script"`
 	DeleteProtection    bool               `json:"delete_protection"`
 	SkipSourceDestCheck bool               `json:"skip_source_dest_check"`
 	InitDiskSize        int                `json:"init_disk_size"`
@@ -150,6 +151,7 @@ func instancePut(c *gin.Context) {
 	inst.Tpm = dta.Tpm
 	inst.DhcpServer = dta.DhcpServer
 	inst.CloudType = dta.CloudType
+	inst.CloudScript = dta.CloudScript
 	inst.DeleteProtection = dta.DeleteProtection
 	inst.SkipSourceDestCheck = dta.SkipSourceDestCheck
 	inst.Memory = dta.Memory
@@ -185,6 +187,7 @@ func instancePut(c *gin.Context) {
 		"tpm_secret",
 		"dhcp_server",
 		"cloud_type",
+		"cloud_script",
 		"delete_protection",
 		"skip_source_dest_check",
 		"memory",
