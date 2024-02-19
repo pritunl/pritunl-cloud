@@ -163,6 +163,13 @@ func Register(engine *gin.Engine) {
 	csrfGroup.POST("/policy", policyPost)
 	csrfGroup.DELETE("/policy/:policy_id", policyDelete)
 
+	csrfGroup.GET("/pool", poolsGet)
+	csrfGroup.GET("/pool/:pool_id", poolGet)
+	csrfGroup.PUT("/pool/:pool_id", poolPut)
+	csrfGroup.POST("/pool", poolPost)
+	csrfGroup.DELETE("/pool", poolsDelete)
+	csrfGroup.DELETE("/pool/:pool_id", poolDelete)
+
 	csrfGroup.GET("/secret", secretsGet)
 	csrfGroup.GET("/secret/:secr_id", secretGet)
 	csrfGroup.PUT("/secret/:secr_id", secretPut)
