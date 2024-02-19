@@ -119,6 +119,51 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	return
 }
 
+func GetAllNames(db *database.Database, query *bson.M) (
+	pools []*Pool, err error) {
+
+	coll := db.Pools()
+	pools = []*Pool{}
+
+	cursor, err := coll.Find(
+		db,
+		query,
+		&options.FindOptions{
+			Sort: &bson.D{
+				{"name", 1},
+			},
+			Projection: &bson.D{
+				{"_id", 1},
+				{"name", 1},
+			},
+		},
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		pl := &Pool{}
+		err = cursor.Decode(pl)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		pools = append(pools, pl)
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func Remove(db *database.Database, poolId primitive.ObjectID) (err error) {
 	coll := db.Pools()
 
