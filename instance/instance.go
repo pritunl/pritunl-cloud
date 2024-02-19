@@ -5,6 +5,7 @@ import (
 	"io"
 	"math/rand"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -246,6 +247,14 @@ func (i *Instance) Validate(db *database.Database) (
 		errData = &errortypes.ErrorData{
 			Error:   "invalid_cloud_type",
 			Message: "Invalid cloud init type",
+		}
+		return
+	}
+
+	if i.CloudScript != "" && !scriptReg.MatchString(i.CloudScript) {
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_cloud_script",
+			Message: "Startup script missing shebang on first line",
 		}
 		return
 	}
