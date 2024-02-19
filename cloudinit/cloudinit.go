@@ -86,7 +86,8 @@ growpart:
 runcmd:
   - [ sysctl, -w, net.ipv4.conf.eth0.send_redirects=0 ]
   - 'chmod 600 /etc/ssh/*_key'
-  - [ systemctl, restart, sshd ]
+  - [ systemctl, restart, sshd ]{{if .RunScript}}
+  - [ /etc/cloudinit_script ]{{else}}{{end}}
 users:
   - name: root
     {{if eq .RootPasswd ""}}lock-passwd: true{{else}}lock-passwd: false
@@ -110,7 +111,8 @@ write_files:{{.WriteFiles}}
 runcmd:
   - [ sysctl, net.inet.ip.redirect=0 ]
   - [ ifconfig, vtnet0, inet6, {{.Address6}}/64 ]
-  - [ route, -6, add, default, {{.Gateway6}} ]
+  - [ route, -6, add, default, {{.Gateway6}} ]{{if .RunScript}}
+  - [ /etc/cloudinit_script ]{{else}}{{end}}
 users:
   - name: root
     {{if eq .RootPasswd ""}}lock-passwd: true{{else}}lock-passwd: false
@@ -123,13 +125,6 @@ users:
     ssh-authorized-keys:
 {{range .Keys}}      - {{.}}
 {{end}}`
-
-const writeFileTmpl = `
-  - encoding: base64
-    content: %s
-    owner: %s
-    path: %s
-    permissions: "%s"`
 
 var (
 	cloudConfig    = template.Must(template.New("cloud").Parse(cloudConfigTmpl))
@@ -160,6 +155,7 @@ type cloudConfigData struct {
 	RootPasswd string
 	LockPasswd string
 	WriteFiles string
+	RunScript  bool
 	Address6   string
 	Gateway6   string
 	Keys       []string
@@ -178,6 +174,7 @@ func getUserData(db *database.Database, inst *instance.Instance,
 	trusted := ""
 	principals := ""
 	authorizedKeys := ""
+	writeFiles := []*fileData{}
 
 	data := cloudConfigData{
 		Keys:     []string{},
@@ -221,13 +218,22 @@ func getUserData(db *database.Database, inst *instance.Instance,
 				settings.Hypervisor.DnsServerSecondary)
 		}
 
-		data.WriteFiles += fmt.Sprintf(
-			writeFileTmpl,
-			base64.StdEncoding.EncodeToString([]byte(resolvConf)),
-			owner,
-			"/etc/resolv.conf",
-			"0644",
-		)
+		writeFiles = append(writeFiles, &fileData{
+			Content:     resolvConf,
+			Owner:       owner,
+			Path:        "/etc/resolv.conf",
+			Permissions: "0644",
+		})
+	}
+
+	if inst.CloudScript != "" {
+		data.RunScript = true
+		writeFiles = append(writeFiles, &fileData{
+			Content:     inst.CloudScript,
+			Owner:       owner,
+			Path:        "/etc/cloudinit_script",
+			Permissions: "0755",
+		})
 	}
 
 	for _, authr := range authrs {
@@ -252,27 +258,29 @@ func getUserData(db *database.Database, inst *instance.Instance,
 		principals = "\n"
 	}
 
-	data.WriteFiles += fmt.Sprintf(
-		writeFileTmpl,
-		base64.StdEncoding.EncodeToString([]byte(trusted)),
-		owner,
-		"/etc/ssh/trusted",
-		"0644",
-	)
-	data.WriteFiles += fmt.Sprintf(
-		writeFileTmpl,
-		base64.StdEncoding.EncodeToString([]byte(principals)),
-		owner,
-		"/etc/ssh/principals",
-		"0644",
-	)
-	data.WriteFiles += fmt.Sprintf(
-		writeFileTmpl,
-		base64.StdEncoding.EncodeToString([]byte(authorizedKeys)),
-		"cloud:cloud",
-		"/home/cloud/.ssh/authorized_keys",
-		"0600",
-	)
+	writeFiles = append(writeFiles, &fileData{
+		Content:     trusted,
+		Owner:       owner,
+		Path:        "/etc/ssh/trusted",
+		Permissions: "0644",
+	})
+	writeFiles = append(writeFiles, &fileData{
+		Content:     principals,
+		Owner:       owner,
+		Path:        "/etc/ssh/principals",
+		Permissions: "0644",
+	})
+	writeFiles = append(writeFiles, &fileData{
+		Content:     authorizedKeys,
+		Owner:       "cloud:cloud",
+		Path:        "/home/cloud/.ssh/authorized_keys",
+		Permissions: "0600",
+	})
+
+	data.WriteFiles, err = generateWriteFiles(writeFiles)
+	if err != nil {
+		return
+	}
 
 	items := []string{}
 
