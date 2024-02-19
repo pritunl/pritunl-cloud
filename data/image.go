@@ -19,9 +19,11 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/image"
+	"github.com/pritunl/pritunl-cloud/lock"
 	"github.com/pritunl/pritunl-cloud/lvm"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
+	"github.com/pritunl/pritunl-cloud/pool"
 	"github.com/pritunl/pritunl-cloud/qmp"
 	"github.com/pritunl/pritunl-cloud/storage"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -194,11 +196,11 @@ func copyBackingImage(imagePth, backingImagePth string) (err error) {
 	return
 }
 
-func WriteImage(db *database.Database, imgId, dskId primitive.ObjectID,
-	size int, backingImage bool) (newSize int, backingImageName string,
-	err error) {
+func writeImageQcow(db *database.Database, dsk *disk.Disk) (
+	newSize int, backingImageName string, err error) {
 
-	diskPath := paths.GetDiskPath(dskId)
+	size := dsk.Size
+	diskPath := paths.GetDiskPath(dsk.Id)
 	diskTempPath := paths.GetDiskTempPath()
 	disksPath := paths.GetDisksPath()
 	backingPath := paths.GetBackingPath()
@@ -218,7 +220,7 @@ func WriteImage(db *database.Database, imgId, dskId primitive.ObjectID,
 		return
 	}
 
-	img, err := image.Get(db, imgId)
+	img, err := image.Get(db, dsk.Image)
 	if err != nil {
 		return
 	}
@@ -231,7 +233,7 @@ func WriteImage(db *database.Database, imgId, dskId primitive.ObjectID,
 	)
 
 	backingImageExists := false
-	if backingImage {
+	if dsk.Backing {
 		backingImageName = fmt.Sprintf("%s-%s", img.Id.Hex(), img.Etag)
 
 		backingImageExists, err = utils.Exists(backingImagePth)
@@ -270,7 +272,7 @@ func WriteImage(db *database.Database, imgId, dskId primitive.ObjectID,
 			logrus.WithFields(logrus.Fields{
 				"image_id":   img.Id.Hex(),
 				"image_type": img.Type,
-				"disk_id":    dskId.Hex(),
+				"disk_id":    dsk.Id.Hex(),
 				"key":        img.Key,
 				"path":       diskPath,
 			}).Error("data: Blocking disk image overwrite")
@@ -283,7 +285,7 @@ func WriteImage(db *database.Database, imgId, dskId primitive.ObjectID,
 
 		utils.Exec("", "touch", imagePth)
 
-		if backingImage {
+		if dsk.Backing {
 			err = copyBackingImage(imagePth, backingImagePth)
 			if err != nil {
 				return
@@ -342,7 +344,7 @@ func WriteImage(db *database.Database, imgId, dskId primitive.ObjectID,
 			return
 		}
 	} else {
-		if backingImage {
+		if dsk.Backing {
 			err = getImage(db, img, backingImagePth)
 			if err != nil {
 				return
@@ -364,7 +366,7 @@ func WriteImage(db *database.Database, imgId, dskId primitive.ObjectID,
 			logrus.WithFields(logrus.Fields{
 				"image_id":   img.Id.Hex(),
 				"image_type": img.Type,
-				"disk_id":    dskId.Hex(),
+				"disk_id":    dsk.Id.Hex(),
 				"key":        img.Key,
 				"path":       diskPath,
 			}).Error("data: Blocking disk image overwrite")
@@ -375,7 +377,7 @@ func WriteImage(db *database.Database, imgId, dskId primitive.ObjectID,
 			return
 		}
 
-		if backingImage {
+		if dsk.Backing {
 			utils.Exec("", "touch", backingImagePth)
 
 			err = utils.Chmod(backingImagePth, 0644)
@@ -423,15 +425,24 @@ func WriteImage(db *database.Database, imgId, dskId primitive.ObjectID,
 	return
 }
 
-func writeImageLvm(db *database.Database, vgName string,
-	imgId, dskId primitive.ObjectID, size int) (newSize int, err error) {
+func writeImageLvm(db *database.Database, dsk *disk.Disk,
+	pl *pool.Pool) (newSize int, err error) {
 
-	lvName := dskId.Hex()
+	size := dsk.Size
+	vgName := pl.VgName
+	lvName := dsk.Id.Hex()
 	sourcePth := ""
 	diskTempPath := paths.GetDiskTempPath()
 	defer utils.Remove(diskTempPath)
 
-	img, err := image.Get(db, imgId)
+	if dsk.Backing {
+		err = &errortypes.ParseError{
+			errors.New("data: Cannot create LVM disk with linked image"),
+		}
+		return
+	}
+
+	img, err := image.Get(db, dsk.Image)
 	if err != nil {
 		return
 	}
@@ -478,6 +489,26 @@ func writeImageLvm(db *database.Database, vgName string,
 			newSize = 16
 		}
 	}
+
+	acquired, err := lock.LvmLock(db, vgName, lvName)
+	if err != nil {
+		return
+	}
+
+	if !acquired {
+		err = &errortypes.WriteError{
+			errors.New("data: Failed to acquire LVM lock"),
+		}
+		return
+	}
+	defer func() {
+		err2 := lock.LvmUnlock(db, vgName, lvName)
+		if err2 != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": err2,
+			}).Error("data: Failed to unlock lvm")
+		}
+	}()
 
 	err = lvm.CreateLv(vgName, lvName, size)
 	if err != nil {
@@ -533,6 +564,38 @@ func DeleteImage(db *database.Database, imgId primitive.ObjectID) (
 
 	err = image.Remove(db, img.Id)
 	if err != nil {
+		return
+	}
+
+	return
+}
+
+func WriteImage(db *database.Database, dsk *disk.Disk) (
+	newSize int, backingImageName string, err error) {
+
+	switch dsk.Type {
+	case disk.Lvm:
+		pl, e := pool.Get(db, dsk.Pool)
+		if e != nil {
+			err = e
+			return
+		}
+
+		newSize, err = writeImageLvm(db, dsk, pl)
+		if err != nil {
+			return
+		}
+		break
+	case "", disk.Qcow2:
+		newSize, backingImageName, err = writeImageQcow(db, dsk)
+		if err != nil {
+			return
+		}
+		break
+	default:
+		err = &errortypes.ParseError{
+			errors.Newf("data: Unknown disk type %s", dsk.Type),
+		}
 		return
 	}
 
