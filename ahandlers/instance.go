@@ -14,6 +14,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
+	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/drive"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
@@ -21,11 +22,13 @@ import (
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/iscsi"
 	"github.com/pritunl/pritunl-cloud/iso"
+	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/pci"
 	"github.com/pritunl/pritunl-cloud/storage"
 	"github.com/pritunl/pritunl-cloud/usb"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
+	"github.com/pritunl/pritunl-cloud/zone"
 )
 
 type instanceData struct {
@@ -36,6 +39,8 @@ type instanceData struct {
 	Subnet              primitive.ObjectID `json:"subnet"`
 	OracleSubnet        string             `json:"oracle_subnet"`
 	Node                primitive.ObjectID `json:"node"`
+	DiskType            string             `json:"disk_type"`
+	DiskPool            primitive.ObjectID `json:"disk_pool"`
 	Image               primitive.ObjectID `json:"image"`
 	ImageBacking        bool               `json:"image_backing"`
 	Domain              primitive.ObjectID `json:"domain"`
@@ -229,6 +234,41 @@ func instancePost(c *gin.Context) {
 		return
 	}
 
+	zne, err := zone.Get(db, dta.Zone)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	nde, err := node.Get(db, dta.Node)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if nde.Zone != zne.Id {
+		utils.AbortWithStatus(c, 405)
+		return
+	}
+
+	if dta.DiskType == disk.Lvm {
+		poolMatch := false
+		for _, plId := range nde.Pools {
+			if plId == dta.DiskPool {
+				poolMatch = true
+			}
+		}
+
+		if !poolMatch {
+			errData := &errortypes.ErrorData{
+				Error:   "pool_not_found",
+				Message: "Pool not found",
+			}
+			c.JSON(400, errData)
+			return
+		}
+	}
+
 	if !dta.Image.IsZero() {
 		img, err := image.GetOrgPublic(db, dta.Organization, dta.Image)
 		if err != nil {
@@ -295,6 +335,8 @@ func instancePost(c *gin.Context) {
 			Subnet:              dta.Subnet,
 			OracleSubnet:        dta.OracleSubnet,
 			Node:                dta.Node,
+			DiskType:            dta.DiskType,
+			DiskPool:            dta.DiskPool,
 			Image:               dta.Image,
 			ImageBacking:        dta.ImageBacking,
 			Uefi:                dta.Uefi,
@@ -504,10 +546,36 @@ func instanceGet(c *gin.Context) {
 func instancesGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 
-	nde, _ := utils.ParseObjectId(c.Query("node_names"))
-	if !nde.IsZero() {
+	ndeId, _ := utils.ParseObjectId(c.Query("node_names"))
+	plId, _ := utils.ParseObjectId(c.Query("pool_names"))
+	if !ndeId.IsZero() {
 		query := &bson.M{
-			"node": nde,
+			"node": ndeId,
+		}
+
+		insts, err := instance.GetAllName(db, query)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		c.JSON(200, insts)
+	} else if !plId.IsZero() {
+		nodes, err := node.GetAllPool(db, plId)
+		if err != nil {
+			return
+		}
+
+		ndeIds := []primitive.ObjectID{}
+
+		for _, nde := range nodes {
+			ndeIds = append(ndeIds, nde.Id)
+		}
+
+		query := &bson.M{
+			"node": &bson.M{
+				"$in": ndeIds,
+			},
 		}
 
 		insts, err := instance.GetAllName(db, query)
