@@ -579,7 +579,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 		}
 	}
 
-	if node.Self.UsbPassthrough {
+	if node.Self.UsbPassthrough || q.Vnc || q.Spice {
 		slot += 1
 		cmd = append(cmd, "-device")
 		cmd = append(cmd,
@@ -587,6 +587,13 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 		cmd = append(cmd, "-device")
 		cmd = append(cmd, "qemu-xhci,bus=usbbus")
+
+		if q.Vnc || q.Spice {
+			cmd = append(cmd, "-device")
+			cmd = append(cmd, "usb-tablet")
+			cmd = append(cmd, "-device")
+			cmd = append(cmd, "usb-kbd")
+		}
 
 		for _, device := range q.UsbDevices {
 			vendor := usb.FilterId(device.Vendor)
