@@ -4,9 +4,11 @@ import (
 	"os"
 	"time"
 
+	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/dhcps"
 	"github.com/pritunl/pritunl-cloud/disk"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/hugepages"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/permission"
@@ -259,6 +261,46 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			}
 		} else {
 			err = disk.Detach(db, dsk.GetId())
+			if err != nil {
+				return
+			}
+		}
+	}
+
+	for i, dsk := range virt.DriveDevices {
+		if dsk.Type != vm.Lvm {
+			continue
+		}
+
+		dskId, ok := utils.ParseObjectId(dsk.Id)
+		if dskId.IsZero() || !ok {
+			err = &errortypes.ParseError{
+				errors.Newf("qemu: Failed to parse LVM disk ID '%s'", dsk.Id),
+			}
+			return
+		}
+
+		ds, e := disk.Get(db, dskId)
+		if e != nil {
+			err = e
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = nil
+				continue
+			}
+			return
+		}
+
+		if i == 0 && ds.SourceInstance == virt.Id {
+			err = disk.Delete(db, ds.Id)
+			if err != nil {
+				if _, ok := err.(*database.NotFoundError); ok {
+					err = nil
+					continue
+				}
+				return
+			}
+		} else {
+			err = disk.Detach(db, dskId)
 			if err != nil {
 				return
 			}
