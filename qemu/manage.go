@@ -23,6 +23,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/iproute"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
+	"github.com/pritunl/pritunl-cloud/pool"
 	"github.com/pritunl/pritunl-cloud/qmp"
 	"github.com/pritunl/pritunl-cloud/qms"
 	"github.com/pritunl/pritunl-cloud/settings"
@@ -511,6 +512,8 @@ func Create(db *database.Database, inst *instance.Instance,
 			Id:               primitive.NewObjectID(),
 			Name:             inst.Name,
 			State:            disk.Available,
+			Type:             virt.DiskType,
+			Pool:             virt.DiskPool,
 			Node:             node.Self.Id,
 			Organization:     inst.Organization,
 			Instance:         inst.Id,
@@ -534,8 +537,7 @@ func Create(db *database.Database, inst *instance.Instance,
 				return
 			}
 		} else {
-			newSize, backingImage, err = data.WriteImage(db, virt.Image,
-				dsk.Id, inst.InitDiskSize, inst.ImageBacking)
+			newSize, backingImage, err = data.WriteImage(db, dsk)
 			if err != nil {
 				return
 			}
@@ -554,11 +556,26 @@ func Create(db *database.Database, inst *instance.Instance,
 
 		_ = event.PublishDispatch(db, "disk.change")
 
-		virt.Disks = append(virt.Disks, &vm.Disk{
-			Id:    dsk.Id,
-			Index: 0,
-			Path:  paths.GetDiskPath(dsk.Id),
-		})
+		if virt.DiskType == disk.Lvm {
+			pl, e := pool.Get(db, dsk.Pool)
+			if e != nil {
+				err = e
+				return
+			}
+
+			virt.DriveDevices = append(virt.DriveDevices, &vm.DriveDevice{
+				Id:     dsk.Id.Hex(),
+				Type:   vm.Lvm,
+				VgName: pl.VgName,
+				LvName: dsk.Id.Hex(),
+			})
+		} else {
+			virt.Disks = append(virt.Disks, &vm.Disk{
+				Id:    dsk.Id,
+				Index: 0,
+				Path:  paths.GetDiskPath(dsk.Id),
+			})
+		}
 	}
 
 	err = cloudinit.Write(db, inst, virt, true)
