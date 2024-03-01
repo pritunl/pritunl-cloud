@@ -126,6 +126,7 @@ func NetworkConfClearOld(virt *vm.VirtualMachine) (err error) {
 
 	store.RemAddress(virt.Id)
 	store.RemRoutes(virt.Id)
+	store.RemArp(virt.Id)
 
 	return
 }
