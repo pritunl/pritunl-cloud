@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"fmt"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
@@ -17,6 +18,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/usb"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/pritunl-cloud/vm"
 )
 
 type Disk struct {
@@ -48,7 +50,10 @@ type PciDevice struct {
 }
 
 type DriveDevice struct {
-	Id string
+	Id     string
+	Type   string
+	VgName string
+	LvName string
 }
 
 type IscsiDevice struct {
@@ -418,6 +423,14 @@ func (q *Qemu) Marshal() (output string, err error) {
 	}
 
 	for _, device := range q.DriveDevices {
+		drivePth := ""
+		if device.Type == vm.Lvm {
+			drivePth = filepath.Join("/dev/mapper",
+				fmt.Sprintf("%s-%s", device.VgName, device.LvName))
+		} else {
+			drivePth = paths.GetDrivePath(device.Id)
+		}
+
 		dskHashId := drive.GetDriveHashId(device.Id)
 		dskId := fmt.Sprintf("pd_%s", dskHashId)
 		dskDevId := fmt.Sprintf("pdd_%s", dskHashId)
@@ -434,7 +447,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 		cmd = append(cmd, fmt.Sprintf(
 			"file=%s,media=disk,format=raw,cache=none,"+
 				"discard=on,if=none,id=%s",
-			paths.GetDrivePath(device.Id),
+			drivePth,
 			dskId,
 		))
 

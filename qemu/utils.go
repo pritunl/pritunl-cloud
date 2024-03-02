@@ -141,7 +141,10 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 
 	for _, device := range virt.DriveDevices {
 		qm.DriveDevices = append(qm.DriveDevices, &DriveDevice{
-			Id: device.Id,
+			Id:     device.Id,
+			Type:   device.Type,
+			VgName: device.VgName,
+			LvName: device.LvName,
 		})
 	}
 
