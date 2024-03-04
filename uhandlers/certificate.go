@@ -4,10 +4,12 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/pritunl-cloud/acme"
 	"github.com/pritunl/pritunl-cloud/certificate"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/event"
+	"github.com/pritunl/pritunl-cloud/secret"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -15,8 +17,12 @@ type certificateData struct {
 	Id          primitive.ObjectID `json:"id"`
 	Name        string             `json:"name"`
 	Comment     string             `json:"comment"`
+	Type        string             `json:"type"`
 	Key         string             `json:"key"`
 	Certificate string             `json:"certificate"`
+	AcmeDomains []string           `json:"acme_domains"`
+	AcmeAuth    string             `json:"acme_auth"`
+	AcmeSecret  primitive.ObjectID `json:"acme_secret"`
 }
 
 func certificatePut(c *gin.Context) {
@@ -46,14 +52,38 @@ func certificatePut(c *gin.Context) {
 		return
 	}
 
+	if !data.AcmeSecret.IsZero() {
+		exists, err := secret.ExistsOrg(db, userOrg, data.AcmeSecret)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+		if !exists {
+			utils.AbortWithStatus(c, 405)
+			return
+		}
+	} else {
+		data.AcmeSecret = primitive.NilObjectID
+	}
+
 	cert.Name = data.Name
 	cert.Comment = data.Comment
 	cert.Key = data.Key
 	cert.Certificate = data.Certificate
+	cert.Type = data.Type
+	cert.AcmeDomains = data.AcmeDomains
+	cert.AcmeType = certificate.AcmeDNS
+	cert.AcmeAuth = data.AcmeAuth
+	cert.AcmeSecret = data.AcmeSecret
 
 	fields := set.NewSet(
 		"name",
 		"comment",
+		"type",
+		"acme_domains",
+		"acme_type",
+		"acme_auth",
+		"acme_secret",
 		"info",
 	)
 
@@ -79,6 +109,10 @@ func certificatePut(c *gin.Context) {
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
+	}
+
+	if cert.Type == certificate.LetsEncrypt {
+		acme.RenewBackground(cert)
 	}
 
 	event.PublishDispatch(db, "certificate.change")
@@ -107,7 +141,11 @@ func certificatePost(c *gin.Context) {
 		Name:         data.Name,
 		Comment:      data.Comment,
 		Organization: userOrg,
-		Type:         certificate.Text,
+		Type:         data.Type,
+		AcmeDomains:  data.AcmeDomains,
+		AcmeType:     certificate.AcmeDNS,
+		AcmeAuth:     data.AcmeAuth,
+		AcmeSecret:   data.AcmeSecret,
 	}
 
 	if cert.Type != certificate.LetsEncrypt {
@@ -130,6 +168,10 @@ func certificatePost(c *gin.Context) {
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
+	}
+
+	if cert.Type == certificate.LetsEncrypt {
+		acme.RenewBackground(cert)
 	}
 
 	event.PublishDispatch(db, "certificate.change")
