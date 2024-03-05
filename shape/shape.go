@@ -11,6 +11,7 @@ type Shape struct {
 	Id               primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Name             string             `bson:"name" json:"name"`
 	Comment          string             `bson:"comment" json:"comment"`
+	Type             string             `bson:"type" json:"type"`
 	DeleteProtection bool               `bson:"delete_protection" json:"delete_protection"`
 	Zone             primitive.ObjectID `bson:"zone" json:"zone"`
 	Roles            []string           `bson:"roles" json:"roles"`
@@ -23,6 +24,21 @@ type Shape struct {
 
 func (p *Shape) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
+
+	if p.Type == "" {
+		p.Type = Instance
+	}
+
+	switch p.Type {
+	case Instance:
+		break
+	default:
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_secret_type",
+			Message: "Shape type invalid",
+		}
+		return
+	}
 
 	return
 }
