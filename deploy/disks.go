@@ -85,19 +85,28 @@ func (d *Disks) snapshot(dsk *disk.Disk) {
 			return
 		}
 
-		virt := d.stat.GetVirt(dsk.Instance)
-		err := data.CreateSnapshot(db, dsk, virt)
-		if err != nil {
+		if dsk.Type != disk.Qcow2 {
 			logrus.WithFields(logrus.Fields{
-				"error": err,
-			}).Error("deploy: Failed to snapshot disk")
+				"disk_id":   dsk.Id.Hex(),
+				"disk_type": dsk.Type,
+			}).Error("deploy: Disk type does not support snapshot")
+		} else {
+			virt := d.stat.GetVirt(dsk.Instance)
+			err := data.CreateSnapshot(db, dsk, virt)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"error": err,
+				}).Error("deploy: Failed to snapshot disk")
+			}
 		}
 
 		dsk.State = disk.Available
-		err = dsk.CommitFields(db, set.NewSet("state"))
+		err := dsk.CommitFields(db, set.NewSet("state"))
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"error": err,
+				"disk_id":   dsk.Id.Hex(),
+				"disk_type": dsk.Type,
+				"error":     err,
 			}).Error("deploy: Failed update disk state")
 			time.Sleep(5 * time.Second)
 			return
@@ -199,16 +208,23 @@ func (d *Disks) backup(dsk *disk.Disk) {
 			return
 		}
 
-		virt := d.stat.GetVirt(dsk.Instance)
-		err := data.CreateBackup(db, dsk, virt)
-		if err != nil {
+		if dsk.Type != disk.Qcow2 {
 			logrus.WithFields(logrus.Fields{
-				"error": err,
-			}).Error("deploy: Failed to backup disk")
+				"disk_id":   dsk.Id.Hex(),
+				"disk_type": dsk.Type,
+			}).Error("deploy: Disk type does not support backup")
+		} else {
+			virt := d.stat.GetVirt(dsk.Instance)
+			err := data.CreateBackup(db, dsk, virt)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"error": err,
+				}).Error("deploy: Failed to backup disk")
+			}
 		}
 
 		dsk.State = disk.Available
-		err = dsk.CommitFields(db, set.NewSet("state"))
+		err := dsk.CommitFields(db, set.NewSet("state"))
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
@@ -276,16 +292,23 @@ func (d *Disks) restore(dsk *disk.Disk) {
 			}
 		}
 
-		err := data.RestoreBackup(db, dsk)
-		if err != nil {
+		if dsk.Type != disk.Qcow2 {
 			logrus.WithFields(logrus.Fields{
-				"disk_id": dsk.Id.Hex(),
-				"error":   err,
-			}).Error("deploy: Failed to restore disk")
+				"disk_id":   dsk.Id.Hex(),
+				"disk_type": dsk.Type,
+			}).Error("deploy: Disk type does not support restore")
+		} else {
+			err := data.RestoreBackup(db, dsk)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"disk_id": dsk.Id.Hex(),
+					"error":   err,
+				}).Error("deploy: Failed to restore disk")
+			}
 		}
 
 		dsk.State = disk.Available
-		err = dsk.CommitFields(db, set.NewSet("state"))
+		err := dsk.CommitFields(db, set.NewSet("state"))
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"disk_id": dsk.Id.Hex(),
