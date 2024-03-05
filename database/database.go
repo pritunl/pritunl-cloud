@@ -193,6 +193,11 @@ func (d *Database) Zones() (coll *Collection) {
 	return
 }
 
+func (d *Database) Shapes() (coll *Collection) {
+	coll = d.getCollection("shapes")
+	return
+}
+
 func (d *Database) Balancers() (coll *Collection) {
 	coll = d.getCollection("balancers")
 	return
