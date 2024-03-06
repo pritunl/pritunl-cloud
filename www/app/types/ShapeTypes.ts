@@ -8,6 +8,7 @@ export interface Shape {
 	id?: string;
 	name?: string;
 	comment?: string;
+	type?: string;
 	delete_protection?: boolean;
 	zone?: string;
 	roles?: string[];
