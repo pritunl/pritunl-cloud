@@ -22,14 +22,14 @@ type Shape struct {
 	Processors       int                `bson:"processors" json:"processors"`
 }
 
-func (p *Shape) Validate(db *database.Database) (
+func (s *Shape) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
-	if p.Type == "" {
-		p.Type = Instance
+	if s.Type == "" {
+		s.Type = Instance
 	}
 
-	switch p.Type {
+	switch s.Type {
 	case Instance:
 		break
 	default:
@@ -43,10 +43,10 @@ func (p *Shape) Validate(db *database.Database) (
 	return
 }
 
-func (p *Shape) Commit(db *database.Database) (err error) {
+func (s *Shape) Commit(db *database.Database) (err error) {
 	coll := db.Shapes()
 
-	err = coll.Commit(p.Id, p)
+	err = coll.Commit(s.Id, s)
 	if err != nil {
 		return
 	}
@@ -54,12 +54,12 @@ func (p *Shape) Commit(db *database.Database) (err error) {
 	return
 }
 
-func (p *Shape) CommitFields(db *database.Database, fields set.Set) (
+func (s *Shape) CommitFields(db *database.Database, fields set.Set) (
 	err error) {
 
 	coll := db.Shapes()
 
-	err = coll.CommitFields(p.Id, p, fields)
+	err = coll.CommitFields(s.Id, s, fields)
 	if err != nil {
 		return
 	}
@@ -67,10 +67,10 @@ func (p *Shape) CommitFields(db *database.Database, fields set.Set) (
 	return
 }
 
-func (p *Shape) Insert(db *database.Database) (err error) {
+func (s *Shape) Insert(db *database.Database) (err error) {
 	coll := db.Shapes()
 
-	_, err = coll.InsertOne(db, p)
+	_, err = coll.InsertOne(db, s)
 	if err != nil {
 		err = database.ParseError(err)
 		return
