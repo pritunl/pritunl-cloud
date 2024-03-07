@@ -21,6 +21,7 @@ type shapeData struct {
 	Id               primitive.ObjectID `json:"id"`
 	Name             string             `json:"name"`
 	Comment          string             `json:"comment"`
+	Type             string             `json:"type"`
 	DeleteProtection bool               `json:"delete_protection"`
 	Zone             primitive.ObjectID `json:"zone"`
 	Roles            []string           `json:"roles"`
@@ -63,6 +64,7 @@ func shapePut(c *gin.Context) {
 	}
 
 	shpe.Name = data.Name
+	shpe.Type = data.Type
 	shpe.Comment = data.Comment
 	shpe.DeleteProtection = data.DeleteProtection
 	shpe.Zone = data.Zone
@@ -75,6 +77,7 @@ func shapePut(c *gin.Context) {
 
 	fields := set.NewSet(
 		"name",
+		"type",
 		"comment",
 		"delete_protection",
 		"zone",
