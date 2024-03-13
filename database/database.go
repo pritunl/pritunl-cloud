@@ -228,6 +228,11 @@ func (d *Database) BlocksIp() (coll *Collection) {
 	return
 }
 
+func (d *Database) LvmLock() (coll *Collection) {
+	coll = d.getCollection("lvm_lock")
+	return
+}
+
 func (d *Database) Firewalls() (coll *Collection) {
 	coll = d.getCollection("firewalls")
 	return
