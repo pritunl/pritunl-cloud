@@ -182,6 +182,13 @@ func Register(engine *gin.Engine) {
 	csrfGroup.GET("/settings", settingsGet)
 	csrfGroup.PUT("/settings", settingsPut)
 
+	csrfGroup.GET("/shape", shapesGet)
+	csrfGroup.GET("/shape/:shape_id", shapeGet)
+	csrfGroup.PUT("/shape/:shape_id", shapePut)
+	csrfGroup.POST("/shape", shapePost)
+	csrfGroup.DELETE("/shape", shapesDelete)
+	csrfGroup.DELETE("/shape/:shape_id", shapeDelete)
+
 	csrfGroup.GET("/storage", storagesGet)
 	csrfGroup.GET("/storage/:store_id", storageGet)
 	csrfGroup.PUT("/storage/:store_id", storagePut)
