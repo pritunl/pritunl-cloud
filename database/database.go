@@ -704,6 +704,18 @@ func addIndexes() (err error) {
 	}
 
 	index = &Index{
+		Collection: db.LvmLock(),
+		Keys: &bson.D{
+			{"timestamp", 1},
+		},
+		Expire: 90 * time.Second,
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
+
+	index = &Index{
 		Collection: db.Disks(),
 		Keys: &bson.D{
 			{"instance", 1},
