@@ -61,13 +61,15 @@ func (s *Instances) create(inst *instance.Instance) {
 		err := qemu.Create(db, inst, inst.Virt)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"error": err,
+				"instance_id": inst.Id.Hex(),
+				"error":       err,
 			}).Error("deploy: Failed to create instance")
 
 			err = instance.SetState(db, inst.Id, instance.Stop)
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
-					"error": err,
+					"instance_id": inst.Id.Hex(),
+					"error":       err,
 				}).Error("deploy: Failed to set instance state")
 
 				qemu.PowerOff(db, inst.Virt)
@@ -110,7 +112,8 @@ func (s *Instances) start(inst *instance.Instance) {
 				set.NewSet("restart", "restart_block_ip"))
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
-					"error": err,
+					"instance_id": inst.Id.Hex(),
+					"error":       err,
 				}).Error("deploy: Failed to commit instance")
 				return
 			}
@@ -119,13 +122,15 @@ func (s *Instances) start(inst *instance.Instance) {
 		err := qemu.PowerOn(db, inst, inst.Virt)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"error": err,
+				"instance_id": inst.Id.Hex(),
+				"error":       err,
 			}).Error("deploy: Failed to start instance")
 
 			err = instance.SetState(db, inst.Id, instance.Stop)
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
-					"error": err,
+					"instance_id": inst.Id.Hex(),
+					"error":       err,
 				}).Error("deploy: Failed to set instance state")
 
 				qemu.PowerOff(db, inst.Virt)
@@ -166,7 +171,8 @@ func (s *Instances) cleanup(inst *instance.Instance) {
 		err := instance.SetState(db, inst.Id, instance.Stop)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"error": err,
+				"instance_id": inst.Id.Hex(),
+				"error":       err,
 			}).Error("deploy: Failed to update instance")
 			return
 		}
@@ -199,7 +205,8 @@ func (s *Instances) stop(inst *instance.Instance) {
 		err := qemu.PowerOff(db, inst.Virt)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"error": err,
+				"instance_id": inst.Id.Hex(),
+				"error":       err,
 			}).Error("deploy: Failed to stop instance")
 			return
 		}
@@ -232,7 +239,8 @@ func (s *Instances) restart(inst *instance.Instance) {
 		err := qemu.PowerOff(db, inst.Virt)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"error": err,
+				"instance_id": inst.Id.Hex(),
+				"error":       err,
 			}).Error("deploy: Failed to restart instance")
 			return
 		}
@@ -246,7 +254,8 @@ func (s *Instances) restart(inst *instance.Instance) {
 				set.NewSet("restart", "restart_block_ip"))
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
-					"error": err,
+					"instance_id": inst.Id.Hex(),
+					"error":       err,
 				}).Error("deploy: Failed to commit instance")
 				return
 			}
@@ -255,13 +264,15 @@ func (s *Instances) restart(inst *instance.Instance) {
 		err = qemu.PowerOn(db, inst, inst.Virt)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"error": err,
+				"instance_id": inst.Id.Hex(),
+				"error":       err,
 			}).Error("deploy: Failed to restart instance")
 
 			err = instance.SetState(db, inst.Id, instance.Stop)
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
-					"error": err,
+					"instance_id": inst.Id.Hex(),
+					"error":       err,
 				}).Error("deploy: Failed to set instance state")
 
 				qemu.PowerOff(db, inst.Virt)
@@ -276,7 +287,8 @@ func (s *Instances) restart(inst *instance.Instance) {
 		err = inst.CommitFields(db, set.NewSet("state"))
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"error": err,
+				"instance_id": inst.Id.Hex(),
+				"error":       err,
 			}).Error("deploy: Failed to commit instance")
 			return
 		}
@@ -317,7 +329,8 @@ func (s *Instances) destroy(inst *instance.Instance) {
 		err = qemu.Destroy(db, inst.Virt)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"error": err,
+				"instance_id": inst.Id.Hex(),
+				"error":       err,
 			}).Error("deploy: Failed to power off instance")
 			return
 		}
@@ -325,7 +338,8 @@ func (s *Instances) destroy(inst *instance.Instance) {
 		err = netconf.Destroy(db, inst.Virt)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"error": err,
+				"instance_id": inst.Id.Hex(),
+				"error":       err,
 			}).Error("deploy: Failed to destroy netconf")
 			return
 		}
@@ -336,7 +350,8 @@ func (s *Instances) destroy(inst *instance.Instance) {
 				err = nil
 			} else {
 				logrus.WithFields(logrus.Fields{
-					"error": err,
+					"instance_id": inst.Id.Hex(),
+					"error":       err,
 				}).Error("deploy: Failed to remove instance")
 				return
 			}
@@ -375,7 +390,9 @@ func (s *Instances) diskAdd(inst *instance.Instance,
 			err = qmp.AddDisk(inst.Id, dsk)
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
-					"error": err,
+					"instance_id": inst.Id.Hex(),
+					"disk_id":     dsk.Id.Hex(),
+					"error":       err,
 				}).Error("sync: Failed to add disk")
 				return
 			}
@@ -386,7 +403,8 @@ func (s *Instances) diskAdd(inst *instance.Instance,
 		err := qemu.UpdateVmDisk(virt)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"error": err,
+				"instance_id": inst.Id.Hex(),
+				"error":       err,
 			}).Error("sync: Failed to update vm disk state")
 		}
 
@@ -418,7 +436,9 @@ func (s *Instances) diskRemove(inst *instance.Instance,
 			e := qmp.RemoveDisk(inst.Id, dsk)
 			if e != nil {
 				logrus.WithFields(logrus.Fields{
-					"error": e,
+					"instance_id": inst.Id.Hex(),
+					"disk_id":     dsk.Id.Hex(),
+					"error":       e,
 				}).Error("sync: Failed to remove disk")
 				return
 			}
@@ -429,7 +449,8 @@ func (s *Instances) diskRemove(inst *instance.Instance,
 		err := qemu.UpdateVmDisk(virt)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"error": err,
+				"instance_id": inst.Id.Hex(),
+				"error":       err,
 			}).Error("sync: Failed to update vm disk state")
 		}
 
@@ -459,7 +480,12 @@ func (s *Instances) usbAdd(inst *instance.Instance, virt *vm.VirtualMachine,
 			e := qms.AddUsb(inst.Id, device)
 			if e != nil {
 				logrus.WithFields(logrus.Fields{
-					"error": e,
+					"instance_id": inst.Id.Hex(),
+					"usb_address": device.Address,
+					"usb_bus":     device.Bus,
+					"usb_product": device.Product,
+					"usb_vendor":  device.Vendor,
+					"error":       e,
 				}).Error("sync: Failed to add usb")
 				return
 			}
@@ -470,7 +496,8 @@ func (s *Instances) usbAdd(inst *instance.Instance, virt *vm.VirtualMachine,
 		err := qemu.UpdateVmUsb(virt)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"error": err,
+				"instance_id": inst.Id.Hex(),
+				"error":       err,
 			}).Error("sync: Failed to update vm usb state")
 		}
 
@@ -499,7 +526,12 @@ func (s *Instances) usbRemove(inst *instance.Instance,
 			err := qms.RemoveUsb(inst.Id, device)
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
-					"error": err,
+					"instance_id": inst.Id.Hex(),
+					"usb_address": device.Address,
+					"usb_bus":     device.Bus,
+					"usb_product": device.Product,
+					"usb_vendor":  device.Vendor,
+					"error":       err,
 				}).Error("sync: Failed to remove usb")
 				return
 			}
@@ -510,7 +542,8 @@ func (s *Instances) usbRemove(inst *instance.Instance,
 		err := qemu.UpdateVmUsb(virt)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"error": err,
+				"instance_id": inst.Id.Hex(),
+				"error":       err,
 			}).Error("sync: Failed to update vm usb state")
 		}
 
@@ -591,18 +624,20 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
 		}()
 
+		namespace := vm.GetNamespace(inst.Id, 0)
+
 		vc := s.stat.Vpc(inst.Vpc)
 		if vc == nil {
 			err = &errortypes.NotFoundError{
 				errors.New("deploy: Instance vpc not found"),
 			}
 			logrus.WithFields(logrus.Fields{
-				"error": err,
+				"instance_id":   inst.Id.Hex(),
+				"net_namespace": namespace,
+				"error":         err,
 			}).Error("deploy: Failed to deploy instance routes")
 			return
 		}
-
-		namespace := vm.GetNamespace(inst.Id, 0)
 
 		curRoutes := set.NewSet()
 		curRoutes6 := set.NewSet()
@@ -617,7 +652,9 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 			routes, routes6, err = qemu.GetRoutes(inst.Id)
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
-					"error": err,
+					"instance_id":   inst.Id.Hex(),
+					"net_namespace": namespace,
+					"error":         err,
 				}).Error("deploy: Failed to deploy instance routes")
 				return
 			}
