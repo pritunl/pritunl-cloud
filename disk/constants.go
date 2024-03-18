@@ -8,4 +8,7 @@ const (
 	Expand    = "expand"
 	Restore   = "restore"
 	Destroy   = "destroy"
+
+	Qcow2 = "qcow2"
+	Lvm   = "lvm"
 )
