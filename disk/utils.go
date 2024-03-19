@@ -201,14 +201,19 @@ func GetInstanceIndex(db *database.Database, instId primitive.ObjectID,
 	return
 }
 
-func GetNode(db *database.Database, nodeId primitive.ObjectID) (
-	disks []*Disk, err error) {
+func GetNode(db *database.Database, nodeId primitive.ObjectID,
+	nodePools []primitive.ObjectID) (disks []*Disk, err error) {
 
 	coll := db.Disks()
 	disks = []*Disk{}
 
 	cursor, err := coll.Find(db, &bson.M{
-		"node": nodeId,
+		"$or": []bson.M{
+			{"node": nodeId},
+			{"pool": &bson.M{
+				"$in": nodePools,
+			}},
+		},
 	})
 	if err != nil {
 		err = database.ParseError(err)
@@ -309,7 +314,9 @@ func DeleteOrg(db *database.Database, orgId, dskId primitive.ObjectID) (
 	return
 }
 
-func DeleteMulti(db *database.Database, dskIds []primitive.ObjectID) (err error) {
+func DeleteMulti(db *database.Database, dskIds []primitive.ObjectID) (
+	err error) {
+
 	coll := db.Disks()
 
 	_, err = coll.UpdateMany(db, &bson.M{
