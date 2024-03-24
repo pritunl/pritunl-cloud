@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	Libvirt = "/usr/libexec/qemu-kvm"
+	Libexec = "/usr/libexec/qemu-kvm"
 	System  = "/usr/bin/qemu-system-x86_64"
 )
 
@@ -24,7 +24,7 @@ func GetQemuPath() (path string, err error) {
 	if exists {
 		path = System
 	} else {
-		path = Libvirt
+		path = Libexec
 	}
 
 	return
