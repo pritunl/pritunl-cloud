@@ -36,6 +36,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var scriptReg = regexp.MustCompile("^#!")
+
 type Instance struct {
 	Id                  primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Organization        primitive.ObjectID `bson:"organization" json:"organization"`
