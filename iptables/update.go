@@ -6,7 +6,6 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/pritunl-cloud/database"
-	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -212,14 +211,9 @@ func (u *Update) reload() (err error) {
 		return
 	}
 
-	disks, err := disk.GetNode(db, node.Self.Id)
-	if err != nil {
-		return
-	}
-
 	instances, err := instance.GetAllVirt(db, &bson.M{
 		"node": node.Self.Id,
-	}, disks)
+	}, nil, nil)
 	if err != nil {
 		return
 	}
