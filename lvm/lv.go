@@ -23,6 +23,17 @@ func CreateLv(vgName, lvName string, size int) (err error) {
 	return
 }
 
+func RemoveLv(vgName, lvName string) (err error) {
+	_, err = utils.ExecCombinedOutputLogged([]string{
+		"Failed to find",
+	}, "lvremove", "-y", fmt.Sprintf("%s/%s", vgName, lvName))
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func ActivateLv(vgName, lvName string) (err error) {
 	_, err = utils.ExecCombinedOutputLogged(nil,
 		"lvchange", "-ay", fmt.Sprintf("%s/%s", vgName, lvName))
