@@ -13,7 +13,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/requires"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"math/rand"
 	"net"
 	"strings"
 )
@@ -31,18 +30,19 @@ type Map struct {
 }
 
 type Vpc struct {
-	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Name         string             `bson:"name" json:"name"`
-	Comment      string             `bson:"comment" json:"comment"`
-	VpcId        int                `bson:"vpc_id" json:"vpc_id"`
-	Network      string             `bson:"network" json:"network"`
-	Network6     string             `bson:"-" json:"network6"`
-	Subnets      []*Subnet          `bson:"subnets" json:"subnets"`
-	Organization primitive.ObjectID `bson:"organization" json:"organization"`
-	Datacenter   primitive.ObjectID `bson:"datacenter" json:"datacenter"`
-	Routes       []*Route           `bson:"routes" json:"routes"`
-	Maps         []*Map             `bson:"maps" json:"maps"`
-	curSubnets   []*Subnet          `bson:"-" json:"-"`
+	Id               primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name             string             `bson:"name" json:"name"`
+	Comment          string             `bson:"comment" json:"comment"`
+	VpcId            int                `bson:"vpc_id" json:"vpc_id"`
+	Network          string             `bson:"network" json:"network"`
+	Network6         string             `bson:"-" json:"network6"`
+	Subnets          []*Subnet          `bson:"subnets" json:"subnets"`
+	Organization     primitive.ObjectID `bson:"organization" json:"organization"`
+	Datacenter       primitive.ObjectID `bson:"datacenter" json:"datacenter"`
+	Routes           []*Route           `bson:"routes" json:"routes"`
+	Maps             []*Map             `bson:"maps" json:"maps"`
+	DeleteProtection bool               `bson:"delete_protection" json:"delete_protection"`
+	curSubnets       []*Subnet          `bson:"-" json:"-"`
 }
 
 func (v *Vpc) Validate(db *database.Database) (
@@ -488,7 +488,7 @@ func (v *Vpc) GetNetwork6() (network *net.IPNet, err error) {
 }
 
 func (v *Vpc) InitVpc() {
-	v.VpcId = rand.Intn(4085) + 10
+	v.VpcId = utils.RandInt(1000, 4090)
 
 	if v.Subnets != nil {
 		for _, sub := range v.Subnets {
