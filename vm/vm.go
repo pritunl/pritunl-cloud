@@ -16,6 +16,8 @@ type VirtualMachine struct {
 	State               string             `json:"state"`
 	Timestamp           time.Time          `json:"timestamp"`
 	QemuVersion         string             `json:"qemu_version"`
+	DiskType            string             `json:"disk_type"`
+	DiskPool            primitive.ObjectID `json:"disk_pool"`
 	Image               primitive.ObjectID `json:"image"`
 	Processors          int                `json:"processors"`
 	Memory              int                `json:"memory"`
@@ -99,7 +101,10 @@ type PciDevice struct {
 }
 
 type DriveDevice struct {
-	Id string `json:"id"`
+	Id     string `json:"id"`
+	Type   string `json:"type"`
+	VgName string `json:"vg_name"`
+	LvName string `json:"lv_name"`
 }
 
 type IscsiDevice struct {
