@@ -9,6 +9,7 @@ import * as DatacenterTypes from '../types/DatacenterTypes';
 import * as NodeTypes from '../types/NodeTypes';
 import * as VpcTypes from '../types/VpcTypes';
 import * as ImageTypes from '../types/ImageTypes';
+import * as PoolTypes from '../types/PoolTypes';
 import * as ZoneTypes from '../types/ZoneTypes';
 import * as InstanceActions from '../actions/InstanceActions';
 import * as ImageActions from '../actions/ImageActions';
@@ -31,6 +32,7 @@ interface Props {
 	vpcs: VpcTypes.VpcsRo;
 	domains: DomainTypes.DomainsRo;
 	datacenters: DatacenterTypes.DatacentersRo;
+	pools: PoolTypes.PoolsRo;
 	zones: ZoneTypes.ZonesRo;
 	onClose: () => void;
 }
@@ -579,6 +581,30 @@ export default class InstanceNew extends React.Component<Props, State> {
 			}
 		}
 
+		let hasPools = false;
+		let poolsSelect: JSX.Element[] = [];
+		if (this.props.pools.length) {
+			poolsSelect.push(<option key="null" value="">Select Pool</option>);
+
+			hasPools = true;
+			for (let pool of this.props.pools) {
+				if (!node || !node.pools || node.pools.indexOf(pool.id) === -1) {
+					continue
+				}
+
+				poolsSelect.push(
+					<option
+						key={pool.id}
+						value={pool.id}
+					>{pool.name}</option>,
+				);
+			}
+		}
+
+		if (!hasPools) {
+			poolsSelect = [<option key="null" value="">No Pools</option>];
+		}
+
 		let hasImages = false;
 		let imagesSelect: JSX.Element[] = [];
 		this.imagesMap = new Map();
@@ -939,6 +965,30 @@ export default class InstanceNew extends React.Component<Props, State> {
 						/>
 					</div>
 					<div style={css.group}>
+						<PageSelect
+							disabled={this.state.disabled}
+							label="Disk Type"
+							help="Type of disk. QCOW disk files are stored locally on the node filesystem. LVM disks are partitioned as a logical volume."
+							value={instance.disk_type}
+							onChange={(val): void => {
+								this.set('disk_type', val);
+							}}
+						>
+							<option key="qcow2" value="qcow2">QCOW</option>
+							<option key="lvm" value="lvm">LVM</option>
+						</PageSelect>
+						<PageSelect
+							disabled={this.state.disabled || !hasPools}
+							label="Pool"
+							help="LVM volume group to add disk to."
+							hidden={instance.disk_type !== "lvm"}
+							value={instance.disk_pool}
+							onChange={(val): void => {
+								this.set('disk_pool', val);
+							}}
+						>
+							{poolsSelect}
+						</PageSelect>
 						<PageSelect
 							disabled={this.state.disabled || !hasImages}
 							label="Image"
