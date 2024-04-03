@@ -24,6 +24,7 @@ export interface Instance {
 	tpm?: boolean;
 	dhcp_server?: boolean;
 	cloud_type?: string;
+	cloud_script?: string;
 	delete_protection?: boolean;
 	skip_source_dest_check?: boolean;
 	qemu_version?: string;
