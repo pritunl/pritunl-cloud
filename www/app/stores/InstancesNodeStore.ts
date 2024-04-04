@@ -16,8 +16,8 @@ class InstancesNodeStore extends EventEmitter {
 		this.emitChange();
 	}
 
-	instances(node: string): InstanceTypes.InstancesRo {
-		return this._instances.get(node) || [];
+	instances(scope: string): InstanceTypes.InstancesRo {
+		return this._instances.get(scope) || [];
 	}
 
 	instance(id: string): InstanceTypes.InstanceRo {
@@ -40,11 +40,12 @@ class InstancesNodeStore extends EventEmitter {
 		this.removeListener(GlobalTypes.CHANGE, callback);
 	}
 
-	_sync(node: string, instances: InstanceTypes.Instance[]): void {
+	_sync(scope: string, instances: InstanceTypes.Instance[]): void {
+
 		for (let i = 0; i < instances.length; i++) {
 			instances[i] = Object.freeze(instances[i]);
 		}
-		this._instances.set(node, Object.freeze(instances));
+		this._instances.set(scope, Object.freeze(instances));
 
 		this._map = {};
 		for (let item of this._instances.entries()) {
@@ -65,7 +66,7 @@ class InstancesNodeStore extends EventEmitter {
 				break;
 
 			case InstanceTypes.SYNC_NODE:
-				this._sync(action.data.node, action.data.instances);
+				this._sync(action.data.scope, action.data.instances);
 				break;
 		}
 	}
