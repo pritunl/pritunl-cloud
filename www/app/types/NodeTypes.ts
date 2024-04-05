@@ -40,6 +40,7 @@ export interface Node {
 	default_interface?: string;
 	blocks?: BlockAttachment[];
 	blocks6?: BlockAttachment[];
+	pools?: string[];
 	available_drives?: Drive[];
 	instance_drives?: Drive[];
 	host_block?: string;
