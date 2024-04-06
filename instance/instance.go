@@ -83,7 +83,8 @@ type Instance struct {
 	NoPublicAddress     bool               `bson:"no_public_address" json:"no_public_address"`
 	NoPublicAddress6    bool               `bson:"no_public_address6" json:"no_public_address6"`
 	NoHostAddress       bool               `bson:"no_host_address" json:"no_host_address"`
-	Node                primitive.ObjectID `bson:"node" json:"node"`
+	Node                primitive.ObjectID `bson:"node,omitempty" json:"node"`
+	Shape               primitive.ObjectID `bson:"shape,omitempty" json:"node"`
 	Domain              primitive.ObjectID `bson:"domain,omitempty" json:"domain"`
 	Name                string             `bson:"name" json:"name"`
 	Comment             string             `bson:"comment" json:"comment"`
