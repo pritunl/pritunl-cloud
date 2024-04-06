@@ -151,7 +151,7 @@ func (i *Instance) Validate(db *database.Database) (
 		return
 	}
 
-	if i.Node.IsZero() {
+	if i.Node.IsZero() && i.Shape.IsZero() {
 		errData = &errortypes.ErrorData{
 			Error:   "node_required",
 			Message: "Missing required node",
