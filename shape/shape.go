@@ -2,9 +2,11 @@ package shape
 
 import (
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/node"
 )
 
 type Shape struct {
@@ -40,6 +42,27 @@ func (s *Shape) Validate(db *database.Database) (
 		return
 	}
 
+	return
+}
+
+func (s *Shape) FindNode(db *database.Database, processors, memory int) (
+	nde *node.Node, err error) {
+
+	ndes, err := node.GetAllShape(db, s.Zone, s.Roles)
+	if err != nil {
+		return
+	}
+
+	NodeUsageSort(ndes)
+
+	for _, nd := range ndes {
+		nde = nd
+		return
+	}
+
+	err = &errortypes.NotFoundError{
+		errors.New("shape: Failed to find available node"),
+	}
 	return
 }
 
