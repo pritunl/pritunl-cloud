@@ -11,6 +11,7 @@ import * as VpcTypes from '../types/VpcTypes';
 import * as ImageTypes from '../types/ImageTypes';
 import * as PoolTypes from '../types/PoolTypes';
 import * as ZoneTypes from '../types/ZoneTypes';
+import * as ShapeTypes from '../types/ShapeTypes';
 import * as InstanceActions from '../actions/InstanceActions';
 import * as ImageActions from '../actions/ImageActions';
 import * as NodeActions from '../actions/NodeActions';
@@ -34,6 +35,7 @@ interface Props {
 	datacenters: DatacenterTypes.DatacentersRo;
 	pools: PoolTypes.PoolsRo;
 	zones: ZoneTypes.ZonesRo;
+	shapes: ShapeTypes.ShapesRo;
 	onClose: () => void;
 }
 
@@ -449,6 +451,31 @@ export default class InstanceNew extends React.Component<Props, State> {
 			zonesSelect = [<option key="null" value="">No Zones</option>];
 		}
 
+		let zone = this.state.instance ? this.state.instance.zone : "";
+		let hasShapes = false;
+		let shapesSelect: JSX.Element[] = [];
+		if (this.props.shapes && this.props.shapes.length) {
+			shapesSelect.push(<option key="null" value="">Select Shape</option>);
+
+			for (let shape of this.props.shapes) {
+				if (shape.zone !== zone) {
+					continue;
+				}
+				hasShapes = true;
+
+				shapesSelect.push(
+					<option
+						key={shape.id}
+						value={shape.id}
+					>{shape.name}</option>,
+				);
+			}
+		}
+
+		if (!hasShapes) {
+			shapesSelect = [<option key="null" value="">No Shapes</option>];
+		}
+
 		let hasNodes = false;
 		let nodesSelect: JSX.Element[] = [];
 		if (this.state.nodes && this.state.nodes.length) {
@@ -780,6 +807,23 @@ export default class InstanceNew extends React.Component<Props, State> {
 							}}
 						>
 							{zonesSelect}
+						</PageSelect>
+						<PageSelect
+							disabled={this.state.disabled || !hasShapes}
+							label="Shape"
+							help="Instance shape to run instance on, node will be automatically selected."
+							value={instance.shape}
+							onChange={(val): void => {
+								this.setState({
+									...this.state,
+									instance: {
+										...this.state.instance,
+										shape: val,
+									},
+								});
+							}}
+						>
+							{shapesSelect}
 						</PageSelect>
 						<PageSelect
 							disabled={this.state.disabled || !hasNodes}
