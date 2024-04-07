@@ -344,6 +344,25 @@ func (n *Node) IsHypervisor() bool {
 	return false
 }
 
+func (n *Node) Usage() int {
+	memoryUsage := float64(n.MemoryUnitsRes) / float64(n.MemoryUnits)
+	if memoryUsage > 1.0 {
+		memoryUsage = 1.0
+	}
+
+	cpuUsage := float64(n.CpuUnitsRes) / float64(n.CpuUnits)
+	if cpuUsage > 1.0 {
+		cpuUsage = 1.0
+	}
+
+	totalUsage := (memoryUsage * 0.75) + (cpuUsage * 0.25)
+	if totalUsage > 1.0 {
+		totalUsage = 1.0
+	}
+
+	return int(totalUsage * 100)
+}
+
 func (n *Node) GetOracleAuthProvider() (pv *NodeOracleAuthProvider) {
 	pv = &NodeOracleAuthProvider{
 		nde: n,
