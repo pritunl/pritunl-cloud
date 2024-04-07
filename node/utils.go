@@ -54,6 +54,47 @@ func GetAll(db *database.Database) (nodes []*Node, err error) {
 	return
 }
 
+func GetAllNamesMap(db *database.Database, query *bson.M) (
+	nodeNames map[primitive.ObjectID]string, err error) {
+
+	coll := db.Nodes()
+	nodeNames = map[primitive.ObjectID]string{}
+
+	cursor, err := coll.Find(
+		db,
+		query,
+		&options.FindOptions{
+			Projection: &bson.D{
+				{"name", 1},
+			},
+		},
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		nde := &Node{}
+		err = cursor.Decode(nde)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		nodeNames[nde.Id] = nde.Name
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetAllHypervisors(db *database.Database, query *bson.M) (
 	nodes []*Node, err error) {
 
