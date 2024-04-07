@@ -281,6 +281,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 			...this.state.instance,
 		};
 
+		instance.shape = "";
 		instance.node = nodeId;
 
 		let node = NodesZoneStore.node(instance.node);
@@ -288,6 +289,21 @@ export default class InstanceNew extends React.Component<Props, State> {
 			instance.no_public_address = node.default_no_public_address;
 			instance.no_public_address6 = node.default_no_public_address6;
 		}
+
+		this.setState({
+			...this.state,
+			changed: true,
+			instance: instance,
+		});
+	}
+
+	onShape(shape: string): void {
+		let instance: InstanceTypes.Instance = {
+			...this.state.instance,
+		};
+
+		instance.node = "";
+		instance.shape = shape;
 
 		this.setState({
 			...this.state,
@@ -814,13 +830,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 							help="Instance shape to run instance on, node will be automatically selected."
 							value={instance.shape}
 							onChange={(val): void => {
-								this.setState({
-									...this.state,
-									instance: {
-										...this.state.instance,
-										shape: val,
-									},
-								});
+								this.onShape(val);
 							}}
 						>
 							{shapesSelect}
