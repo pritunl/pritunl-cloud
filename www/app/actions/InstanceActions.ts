@@ -275,11 +275,25 @@ export function updateMulti(instanceIds: string[],
 	});
 }
 
-export function syncNode(node: string): Promise<void> {
+export function syncNode(node: string, pool: string): Promise<void> {
 	let curSyncId = MiscUtils.uuid();
 	syncId = curSyncId;
 
-	if (!node) {
+	let scope: string;
+	let query: {[key: string]: string};
+	if (node) {
+		scope = node;
+		query = {
+			node_names: node,
+		};
+	} else {
+		scope = pool;
+		query = {
+			pool_names: pool,
+		};
+	}
+
+	if (!scope) {
 		return Promise.resolve();
 	}
 
@@ -288,9 +302,7 @@ export function syncNode(node: string): Promise<void> {
 	return new Promise<void>((resolve, reject): void => {
 		SuperAgent
 			.get('/instance')
-			.query({
-				node_names: node,
-			})
+			.query(query)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.set('Organization', OrganizationsStore.current)
@@ -317,7 +329,7 @@ export function syncNode(node: string): Promise<void> {
 				Dispatcher.dispatch({
 					type: InstanceTypes.SYNC_NODE,
 					data: {
-						node: node,
+						scope: scope,
 						instances: res.body,
 					},
 				});
