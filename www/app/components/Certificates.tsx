@@ -2,10 +2,13 @@
 import * as React from 'react';
 import * as CertificateTypes from '../types/CertificateTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
+import * as SecretTypes from '../types/SecretTypes';
 import CertificatesStore from '../stores/CertificatesStore';
 import OrganizationsStore from '../stores/OrganizationsStore';
+import SecretsStore from '../stores/SecretsStore';
 import * as CertificateActions from '../actions/CertificateActions';
 import * as OrganizationActions from '../actions/OrganizationActions';
+import * as SecretActions from '../actions/SecretActions';
 import NonState from './NonState';
 import Certificate from './Certificate';
 import Page from './Page';
@@ -48,13 +51,16 @@ export default class Certificates extends React.Component<{}, State> {
 	componentDidMount(): void {
 		CertificatesStore.addChangeListener(this.onChange);
 		OrganizationsStore.addChangeListener(this.onChange);
+		SecretsStore.addChangeListener(this.onChange);
 		CertificateActions.sync();
 		OrganizationActions.sync();
+		SecretActions.sync();
 	}
 
 	componentWillUnmount(): void {
 		CertificatesStore.removeChangeListener(this.onChange);
 		OrganizationsStore.removeChangeListener(this.onChange);
+		SecretsStore.removeChangeListener(this.onChange);
 	}
 
 	onChange = (): void => {
@@ -62,6 +68,7 @@ export default class Certificates extends React.Component<{}, State> {
 			...this.state,
 			certificates: CertificatesStore.certificates,
 			organizations: OrganizationsStore.organizations,
+			secrets: SecretsStore.secrets,
 		});
 	}
 
@@ -74,6 +81,7 @@ export default class Certificates extends React.Component<{}, State> {
 				key={cert.id}
 				certificate={cert}
 				organizations={this.state.organizations}
+				secrets={this.state.secrets}
 			/>);
 		});
 
