@@ -17,6 +17,7 @@ import PageHeader from './PageHeader';
 interface State {
 	certificates: CertificateTypes.CertificatesRo;
 	organizations: OrganizationTypes.OrganizationsRo;
+	secrets: SecretTypes.SecretsRo;
 	disabled: boolean;
 }
 
@@ -44,6 +45,7 @@ export default class Certificates extends React.Component<{}, State> {
 		this.state = {
 			certificates: CertificatesStore.certificates,
 			organizations: OrganizationsStore.organizations,
+			secrets: SecretsStore.secrets,
 			disabled: false,
 		};
 	}
