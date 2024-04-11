@@ -6,9 +6,11 @@ import * as OrganizationTypes from "../types/OrganizationTypes";
 import OrganizationsStore from '../stores/OrganizationsStore';
 import DiskDetailed from './DiskDetailed';
 import NodesStore from "../stores/NodesStore";
+import * as PoolTypes from "../types/PoolTypes";
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
+	pools: PoolTypes.PoolsRo;
 	disk: DiskTypes.DiskRo;
 	selected: boolean;
 	onSelect: (shift: boolean) => void;
@@ -80,7 +82,6 @@ const css = {
 export default class Disk extends React.Component<Props, {}> {
 	render(): JSX.Element {
 		let disk = this.props.disk;
-		let node = NodesStore.node(this.props.disk.node);
 
 		if (this.props.open) {
 			return <div
@@ -89,6 +90,7 @@ export default class Disk extends React.Component<Props, {}> {
 			>
 				<DiskDetailed
 					organizations={this.props.organizations}
+					pools={this.props.pools}
 					disk={this.props.disk}
 					selected={this.props.selected}
 					onSelect={this.props.onSelect}
@@ -142,6 +144,26 @@ export default class Disk extends React.Component<Props, {}> {
 				statusText = 'Expanding';
 				statusClass += ' bp3-text-intent-primary';
 				break;
+		}
+
+		let resourceIcon = "";
+		let resourceValue = "";
+		if (this.props.disk.type === "lvm") {
+			resourceIcon = "bp3-icon-control";
+			resourceValue = "Pool Unavailable"
+
+			if (this.props.pools.length) {
+				for (let pool of this.props.pools) {
+					if (pool.id === disk.pool) {
+						resourceValue = pool.name;
+						break;
+					}
+				}
+			}
+		} else {
+			let node = NodesStore.node(disk.node);
+			resourceIcon = "bp3-icon-layers";
+			resourceValue = node ? node.name : disk.node;
 		}
 
 		return <div
@@ -198,9 +220,9 @@ export default class Disk extends React.Component<Props, {}> {
 			<div className="bp3-cell" style={css.item}>
 				<span
 					style={css.icon}
-					className="bp3-icon-standard bp3-text-muted bp3-icon-layers"
+					className={"bp3-icon-standard bp3-text-muted " + resourceIcon}
 				/>
-				{node ? node.name : this.props.disk.node}
+				{resourceValue}
 			</div>
 			<div className="bp3-cell" style={css.item}>
 				<span
