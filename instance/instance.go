@@ -151,12 +151,35 @@ func (i *Instance) Validate(db *database.Database) (
 		return
 	}
 
-	if i.Node.IsZero() && i.Shape.IsZero() {
-		errData = &errortypes.ErrorData{
-			Error:   "node_required",
-			Message: "Missing required node",
+	if i.Node.IsZero() {
+		if i.Shape.IsZero() {
+			errData = &errortypes.ErrorData{
+				Error:   "node_required",
+				Message: "Missing required node",
+			}
+			return
 		}
-		return
+
+		shpe, e := shape.Get(db, i.Shape)
+		if e != nil {
+			err = e
+			return
+		}
+
+		if !shpe.Flexible {
+			i.Processors = shpe.Processors
+			i.Memory = shpe.Memory
+		}
+
+		nde, e := shpe.FindNode(db, i.Processors, i.Memory)
+		if e != nil {
+			err = e
+			return
+		}
+
+		i.Node = nde.Id
+		i.DiskType = shpe.DiskType
+		i.DiskPool = shpe.DiskPool
 	}
 
 	if i.Vpc.IsZero() {
