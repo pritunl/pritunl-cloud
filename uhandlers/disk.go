@@ -33,7 +33,9 @@ type diskData struct {
 	Comment          string             `json:"comment"`
 	Instance         primitive.ObjectID `json:"instance"`
 	Index            string             `json:"index"`
+	Type             string             `json:"type"`
 	Node             primitive.ObjectID `json:"node"`
+	Pool             primitive.ObjectID `json:"pool"`
 	DeleteProtection bool               `json:"delete_protection"`
 	Image            primitive.ObjectID `json:"image"`
 	RestoreImage     primitive.ObjectID `json:"restore_image"`
@@ -87,6 +89,7 @@ func diskPut(c *gin.Context) {
 	fields := set.NewSet(
 		"name",
 		"comment",
+		"type",
 		"instance",
 		"delete_protection",
 		"index",
@@ -97,6 +100,7 @@ func diskPut(c *gin.Context) {
 	if !dta.Instance.IsZero() {
 		exists, err := instance.ExistsOrg(db, userOrg, dta.Instance)
 		if err != nil {
+			utils.AbortWithError(c, 500, err)
 			return
 		}
 		if !exists {
@@ -203,6 +207,7 @@ func diskPost(c *gin.Context) {
 	if !dta.Instance.IsZero() {
 		exists, err := instance.ExistsOrg(db, userOrg, dta.Instance)
 		if err != nil {
+			utils.AbortWithError(c, 500, err)
 			return
 		}
 		if !exists {
@@ -242,6 +247,7 @@ func diskPost(c *gin.Context) {
 
 		store, err := storage.Get(db, img.Storage)
 		if err != nil {
+			utils.AbortWithError(c, 500, err)
 			return
 		}
 
@@ -275,7 +281,9 @@ func diskPost(c *gin.Context) {
 		Organization:     userOrg,
 		Instance:         dta.Instance,
 		Index:            dta.Index,
+		Type:             dta.Type,
 		Node:             dta.Node,
+		Pool:             dta.Pool,
 		Image:            dta.Image,
 		DeleteProtection: dta.DeleteProtection,
 		Backing:          dta.Backing,
@@ -364,6 +372,7 @@ func diskDelete(c *gin.Context) {
 
 	dsk, err := disk.Get(db, diskId)
 	if err != nil {
+		utils.AbortWithError(c, 500, err)
 		return
 	}
 
