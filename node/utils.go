@@ -215,6 +215,58 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	return
 }
 
+func GetAllShape(db *database.Database, zone primitive.ObjectID,
+	roles []string) (nodes []*Node, err error) {
+
+	coll := db.Nodes()
+	nodes = []*Node{}
+
+	query := &bson.M{
+		"zone": zone,
+		"network_roles": &bson.M{
+			"$in": roles,
+		},
+	}
+
+	cursor, err := coll.Find(
+		db,
+		query,
+		&options.FindOptions{
+			//Sort: &bson.D{
+			//	{"name", 1},
+			//},
+		},
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		nde := &Node{}
+		err = cursor.Decode(nde)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		if !nde.IsHypervisor() || !nde.IsOnline() {
+			continue
+		}
+
+		nodes = append(nodes, nde)
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetAllNet(db *database.Database) (nodes []*Node, err error) {
 	coll := db.Nodes()
 	nodes = []*Node{}
