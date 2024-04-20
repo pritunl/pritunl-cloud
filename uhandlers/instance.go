@@ -41,6 +41,7 @@ type instanceData struct {
 	Vpc                 primitive.ObjectID `json:"vpc"`
 	Subnet              primitive.ObjectID `json:"subnet"`
 	OracleSubnet        string             `json:"oracle_subnet"`
+	Shape               primitive.ObjectID `json:"shape"`
 	Node                primitive.ObjectID `json:"node"`
 	DiskType            string             `json:"disk_type"`
 	DiskPool            primitive.ObjectID `json:"disk_pool"`
@@ -283,32 +284,38 @@ func instancePost(c *gin.Context) {
 		return
 	}
 
-	nde, err := node.Get(db, dta.Node)
-	if err != nil {
-		utils.AbortWithError(c, 500, err)
-		return
-	}
-
-	if nde.Zone != zne.Id {
-		utils.AbortWithStatus(c, 405)
-		return
-	}
-
-	if dta.DiskType == disk.Lvm {
-		poolMatch := false
-		for _, plId := range nde.Pools {
-			if plId == dta.DiskPool {
-				poolMatch = true
-			}
+	if !dta.Shape.IsZero() {
+		dta.Node = primitive.NilObjectID
+		dta.DiskType = ""
+		dta.DiskPool = primitive.NilObjectID
+	} else {
+		nde, err := node.Get(db, dta.Node)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
 		}
 
-		if !poolMatch {
-			errData := &errortypes.ErrorData{
-				Error:   "pool_not_found",
-				Message: "Pool not found",
-			}
-			c.JSON(400, errData)
+		if nde.Zone != zne.Id {
+			utils.AbortWithStatus(c, 405)
 			return
+		}
+
+		if dta.DiskType == disk.Lvm {
+			poolMatch := false
+			for _, plId := range nde.Pools {
+				if plId == dta.DiskPool {
+					poolMatch = true
+				}
+			}
+
+			if !poolMatch {
+				errData := &errortypes.ErrorData{
+					Error:   "pool_not_found",
+					Message: "Pool not found",
+				}
+				c.JSON(400, errData)
+				return
+			}
 		}
 	}
 
@@ -349,18 +356,19 @@ func instancePost(c *gin.Context) {
 			return
 		}
 
-		store, err := storage.Get(db, img.Storage)
+		stre, err := storage.Get(db, img.Storage)
 		if err != nil {
+			utils.AbortWithError(c, 500, err)
 			return
 		}
 
-		available, err := data.ImageAvailable(store, img)
+		available, err := data.ImageAvailable(stre, img)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
 			return
 		}
 		if !available {
-			if store.IsOracle() {
+			if stre.IsOracle() {
 				errData := &errortypes.ErrorData{
 					Error:   "image_not_available",
 					Message: "Image not restored from archive",
@@ -399,6 +407,7 @@ func instancePost(c *gin.Context) {
 			Vpc:                 dta.Vpc,
 			Subnet:              dta.Subnet,
 			OracleSubnet:        dta.OracleSubnet,
+			Shape:               dta.Shape,
 			Node:                dta.Node,
 			DiskType:            dta.DiskType,
 			DiskPool:            dta.DiskPool,
