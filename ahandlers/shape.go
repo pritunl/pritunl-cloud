@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/pritunl-cloud/aggregate"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/event"
@@ -268,7 +269,7 @@ func shapesGet(c *gin.Context) {
 		}
 	}
 
-	shapes, count, err := shape.GetAllPaged(db, &query, page, pageCount)
+	shapes, count, err := aggregate.GetShapePaged(db, &query, page, pageCount)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
