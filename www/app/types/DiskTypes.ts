@@ -8,7 +8,9 @@ export interface Disk {
 	id?: string;
 	name?: string;
 	comment?: string;
+	type?: string;
 	node?: string;
+	pool?: string;
 	organization?: string;
 	state?: string;
 	instance?: string;
