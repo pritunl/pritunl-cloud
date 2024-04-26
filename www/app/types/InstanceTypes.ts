@@ -10,6 +10,7 @@ export interface Instance {
 	organization?: string;
 	zone?: string;
 	node?: string;
+	shape?: string;
 	image?: string;
 	image_backing?: boolean;
 	disk_type?: string;
