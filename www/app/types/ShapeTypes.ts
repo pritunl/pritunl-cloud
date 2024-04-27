@@ -17,6 +17,7 @@ export interface Shape {
 	disk_pool?: string;
 	memory?: number;
 	processors?: number;
+	node_count?: number;
 }
 
 export interface Filter {
