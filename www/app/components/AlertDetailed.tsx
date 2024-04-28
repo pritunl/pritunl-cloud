@@ -362,10 +362,12 @@ export default class AlertDetailed extends React.Component<Props, State> {
 		let alert: AlertTypes.Alert = this.state.alert ||
 			this.props.alert;
 
+		let hasOrganizations = !!this.props.organizations.length;
 		let organizationsSelect: JSX.Element[] = [];
-		organizationsSelect.push(
-			<option key="null" value="">Node Firewall</option>);
-		if (this.props.organizations.length) {
+		if (this.props.organizations && this.props.organizations.length) {
+			organizationsSelect.push(
+				<option key="null" value="">Select Organization</option>);
+
 			for (let organization of this.props.organizations) {
 				organizationsSelect.push(
 					<option
@@ -374,6 +376,11 @@ export default class AlertDetailed extends React.Component<Props, State> {
 					>{organization.name}</option>,
 				);
 			}
+		}
+
+		if (!hasOrganizations) {
+			organizationsSelect.push(
+				<option key="null" value="">No Organizations</option>);
 		}
 
 		let fields: PageInfos.Field[] = [
