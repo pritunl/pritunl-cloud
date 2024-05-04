@@ -8,6 +8,7 @@ import Loader from '../Loader';
 import AlertsStore from '../stores/AlertsStore';
 import * as AlertTypes from '../types/AlertTypes';
 import * as MiscUtils from '../utils/MiscUtils';
+import OrganizationsStore from "../stores/OrganizationsStore";
 
 let syncId: string;
 
@@ -27,6 +28,7 @@ export function sync(): Promise<void> {
 			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -91,6 +93,7 @@ export function commit(alert: AlertTypes.Alert): Promise<void> {
 			.send(alert)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -120,6 +123,7 @@ export function create(alert: AlertTypes.Alert): Promise<void> {
 			.send(alert)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -148,6 +152,7 @@ export function remove(alertId: string): Promise<void> {
 			.delete('/alert/' + alertId)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -171,6 +176,7 @@ export function removeMulti(alertIds: string[]): Promise<void> {
 			.send(alertIds)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
