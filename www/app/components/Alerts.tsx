@@ -96,6 +96,7 @@ export default class Alerts extends React.Component<{}, State> {
 		OrganizationsStore.addChangeListener(this.onChange);
 		AlertActions.sync();
 		AuthorityActions.sync();
+		OrganizationActions.sync();
 	}
 
 	componentWillUnmount(): void {
