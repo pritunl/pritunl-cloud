@@ -106,7 +106,7 @@ export default class Disk extends React.Component<Props, {}> {
 			let org = OrganizationsStore.organization(disk.organization);
 			orgName = org ? org.name : disk.organization;
 		} else {
-			orgName = 'Node Disk';
+			orgName = 'Unknown Organization';
 		}
 
 		let statusText = 'Unknown';
