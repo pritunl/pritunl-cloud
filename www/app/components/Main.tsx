@@ -18,6 +18,7 @@ import Organizations from './Organizations';
 import Datacenters from './Datacenters';
 import Alerts from './Alerts';
 import Zones from './Zones';
+import Shapes from './Shapes';
 import Blocks from './Blocks';
 import Vpcs from './Vpcs';
 import Domains from './Domains';
@@ -43,6 +44,7 @@ import * as OrganizationActions from '../actions/OrganizationActions';
 import * as DatacenterActions from '../actions/DatacenterActions';
 import * as AlertActions from '../actions/AlertActions';
 import * as ZoneActions from '../actions/ZoneActions';
+import * as ShapeActions from '../actions/ShapeActions';
 import * as BlockActions from '../actions/BlockActions';
 import * as VpcActions from '../actions/VpcActions';
 import * as DomainActions from '../actions/DomainActions';
@@ -235,6 +237,14 @@ export default class Main extends React.Component<{}, State> {
 							to="/zones"
 						>
 							Zones
+						</ReactRouter.Link>
+						<ReactRouter.Link
+							className="bp3-button bp3-minimal bp3-icon-zoom-to-fit"
+							style={css.link}
+							hidden={Constants.user}
+							to="/shapes"
+						>
+							Shapes
 						</ReactRouter.Link>
 						<ReactRouter.Link
 							className="bp3-button bp3-minimal bp3-icon-ip-address"
@@ -550,6 +560,18 @@ export default class Main extends React.Component<{}, State> {
 												disabled: false,
 											});
 										});
+									} else if (pathname === '/shapes') {
+										ShapeActions.sync().then((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										}).catch((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										});
 									} else if (pathname === '/blocks') {
 										BlockActions.sync().then((): void => {
 											this.setState({
@@ -790,6 +812,9 @@ export default class Main extends React.Component<{}, State> {
 				)}/>
 				<ReactRouter.Route path="/zones" render={() => (
 					<Zones/>
+				)}/>
+				<ReactRouter.Route path="/shapes" render={() => (
+					<Shapes/>
 				)}/>
 				<ReactRouter.Route path="/blocks" render={() => (
 					<Blocks/>
