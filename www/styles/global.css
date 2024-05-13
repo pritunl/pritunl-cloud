@@ -33,6 +33,45 @@ body.bp3-dark {
   display: none;
 }
 
+.ace_editor * {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace !important;
+}
+
+.ace-eclipse.ace_editor {
+  border: 1px solid rgb(209, 209, 209);
+}
+
+.ace-dracula .ace_gutter {
+  background-color: #23242e !important;
+  border-right: 1px solid rgb(255 255 255 / 15%) !important;
+}
+
+.ace_editor ::-webkit-scrollbar {
+  width: 15px;
+  background: #f5f8fa;
+}
+.ace_editor ::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  background: #ffffff;
+  border: 1px solid rgb(16 22 26 / 20%);
+}
+.ace_editor ::-webkit-scrollbar-corner {
+  background: #f5f8fa;
+}
+
+.bp3-dark .ace_editor ::-webkit-scrollbar {
+  width: 15px;
+  background: #293742;
+}
+.bp3-dark .ace_editor ::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  background: #30404d;
+  border: 1px solid rgb(16 22 26 / 70%);
+}
+.bp3-dark .ace_editor ::-webkit-scrollbar-corner {
+  background: #293742;
+}
+
 .bp3-dark .logo-light {
   display: none;
 }
