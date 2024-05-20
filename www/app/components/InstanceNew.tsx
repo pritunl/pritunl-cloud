@@ -935,6 +935,16 @@ export default class InstanceNew extends React.Component<Props, State> {
 							<option key="linux" value="linux">Linux</option>,
 							<option key="bsd" value="bsd">BSD</option>,
 						</PageSelect>
+						<PageTextArea
+							label="Startup Script"
+							help="Script to run on instance startup. These commands will run on every startup. File must start with #! such as `#!/bin/bash` to specify code interpreter."
+							placeholder="Startup script"
+							rows={3}
+							value={instance.cloud_script}
+							onChange={(val: string): void => {
+								this.set('cloud_script', val);
+							}}
+						/>
 						<PageSwitch
 							disabled={this.state.disabled}
 							label="Start instance"
