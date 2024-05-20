@@ -106,7 +106,13 @@ export default class FirewallRule extends React.Component<Props, {}> {
 		let sourceIpsDoms: JSX.Element[] = [];
 		sourceIps.forEach((sourceIp: string, i: number): void => {
 			sourceIpsDoms.push(
-				<div className="bp3-control-group" style={css.sourceGroup} key={i}>
+				<div
+					className="bp3-control-group"
+					style={css.sourceGroup}
+					hidden={rule.protocol === "multicast" ||
+						rule.protocol === "broadcast"}
+					key={i}
+				>
 					<input
 						className="bp3-input"
 						style={css.port}
@@ -155,6 +161,8 @@ export default class FirewallRule extends React.Component<Props, {}> {
 						<option value="icmp">ICMP</option>
 						<option value="tcp">TCP</option>
 						<option value="udp">UDP</option>
+						<option value="multicast">Multicast</option>
+						<option value="broadcast">Broadcast</option>
 					</select>
 				</div>
 				<div style={css.portBox}>
