@@ -354,7 +354,7 @@ export default class Firewalls extends React.Component<{}, State> {
 			</div>
 			<NonState
 				hidden={!!firewallsDom.length}
-				iconClass="bp3-icon-key"
+				iconClass="bp3-icon-shield"
 				title="No firewalls"
 				description="Add a new firewall to get started."
 			/>
