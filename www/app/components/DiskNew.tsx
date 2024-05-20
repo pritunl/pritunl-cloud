@@ -396,6 +396,18 @@ export default class DiskNew extends React.Component<Props, State> {
 						/>
 						<PageSelect
 							disabled={this.state.disabled}
+							label="Type"
+							help="Type of disk. QCOW disk files are stored locally on the node filesystem. LVM disks are partitioned as a logical volume."
+							value={disk.type}
+							onChange={(val): void => {
+								this.set('type', val);
+							}}
+						>
+							<option key="qcow2" value="qcow2">QCOW</option>
+							<option key="lvm" value="lvm">LVM</option>
+						</PageSelect>
+						<PageSelect
+							disabled={this.state.disabled}
 							label="Organization"
 							help="Organization for disk."
 							value={disk.organization}
@@ -450,6 +462,7 @@ export default class DiskNew extends React.Component<Props, State> {
 							disabled={this.state.disabled || !hasNodes}
 							label="Node"
 							help="Node to run disk on."
+							hidden={disk.type === "lvm"}
 							value={disk.node}
 							onChange={(val): void => {
 								this.setState({
