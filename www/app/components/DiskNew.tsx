@@ -7,6 +7,7 @@ import * as NodeTypes from '../types/NodeTypes';
 import * as InstanceTypes from '../types/InstanceTypes';
 import * as ImageTypes from '../types/ImageTypes';
 import * as ZoneTypes from '../types/ZoneTypes';
+import * as PoolTypes from '../types/PoolTypes';
 import * as DiskActions from '../actions/DiskActions';
 import * as ImageActions from '../actions/ImageActions';
 import * as InstanceActions from '../actions/InstanceActions';
@@ -25,6 +26,7 @@ import Help from './Help';
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
 	datacenters: DatacenterTypes.DatacentersRo;
+	pools: PoolTypes.PoolsRo;
 	zones: ZoneTypes.ZonesRo;
 	onClose: () => void;
 }
@@ -276,6 +278,30 @@ export default class DiskNew extends React.Component<Props, State> {
 			nodesSelect = [<option key="null" value="">No Nodes</option>];
 		}
 
+		let hasPools = false;
+		let poolsSelect: JSX.Element[] = [];
+		if (this.props.pools.length) {
+			poolsSelect.push(<option key="null" value="">Select Pool</option>);
+
+			for (let pool of this.props.pools) {
+				if (pool.zone !== this.state.zone) {
+					continue
+				}
+
+				hasPools = true;
+				poolsSelect.push(
+					<option
+						key={pool.id}
+						value={pool.id}
+					>{pool.name}</option>,
+				);
+			}
+		}
+
+		if (!hasPools) {
+			poolsSelect = [<option key="null" value="">No Pools</option>];
+		}
+
 		let hasInstances = false;
 		let instancesSelect: JSX.Element[] = [];
 		if (this.state.instances.length) {
@@ -296,7 +322,6 @@ export default class DiskNew extends React.Component<Props, State> {
 		if (!hasInstances) {
 			instancesSelect = [<option key="null" value="">No Instances</option>];
 		}
-
 
 		let imagesSelect: JSX.Element[] = [
 			<option key="null" value="">Blank Disk</option>,
@@ -435,10 +460,22 @@ export default class DiskNew extends React.Component<Props, State> {
 										instance: '',
 									},
 								});
-								InstanceActions.syncNode(val);
+								InstanceActions.syncNode(val, null);
 							}}
 						>
 							{nodesSelect}
+						</PageSelect>
+						<PageSelect
+							disabled={this.state.disabled || !hasPools}
+							label="Pool"
+							help="LVM volume group to add disk to."
+							hidden={disk.type !== "lvm"}
+							value={disk.pool}
+							onChange={(val): void => {
+								this.set('pool', val);
+							}}
+						>
+							{poolsSelect}
 						</PageSelect>
 						<PageSwitch
 							disabled={this.state.disabled}
