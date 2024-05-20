@@ -524,6 +524,18 @@ export default class DiskDetailed extends React.Component<Props, State> {
 						}}
 					/>
 					<PageSelect
+						disabled={true}
+						label="Type"
+						help="Type of disk. QCOW disk files are stored locally on the node filesystem. LVM disks are partitioned as a logical volume."
+						value={disk.type}
+						onChange={(val): void => {
+							this.set('type', val);
+						}}
+					>
+						<option key="qcow2" value="qcow2">QCOW</option>
+						<option key="lvm" value="lvm">LVM</option>
+					</PageSelect>
+					<PageSelect
 						disabled={this.state.disabled || !hasInstances}
 						label="Instance"
 						help="Instance to attach disk to."
