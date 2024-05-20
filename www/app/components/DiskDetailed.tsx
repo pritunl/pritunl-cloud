@@ -20,9 +20,11 @@ import InstancesNodeStore from '../stores/InstancesNodeStore';
 import * as InstanceTypes from '../types/InstanceTypes';
 import * as Alert from '../Alert';
 import PageTextArea from "./PageTextArea";
+import * as PoolTypes from "../types/PoolTypes";
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
+	pools: PoolTypes.PoolsRo;
 	disk: DiskTypes.DiskRo;
 	selected: boolean;
 	onSelect: (shift: boolean) => void;
@@ -124,7 +126,7 @@ export default class DiskDetailed extends React.Component<Props, State> {
 
 	componentDidMount(): void {
 		InstancesNodeStore.addChangeListener(this.onChange);
-		InstanceActions.syncNode(this.props.disk.node);
+		InstanceActions.syncNode(this.props.disk.node, this.props.disk.pool);
 	}
 
 	componentWillUnmount(): void {
@@ -134,7 +136,8 @@ export default class DiskDetailed extends React.Component<Props, State> {
 	onChange = (): void => {
 		this.setState({
 			...this.state,
-			instances: InstancesNodeStore.instances(this.props.disk.node),
+			instances: InstancesNodeStore.instances(
+				this.props.disk.node || this.props.disk.pool),
 		});
 	}
 
@@ -338,6 +341,25 @@ export default class DiskDetailed extends React.Component<Props, State> {
 			}
 		}
 
+		let resourceLabel = "";
+		let resourceValue = "";
+		if (disk.type === "lvm") {
+			resourceLabel = "Pool"
+			resourceValue = "Pool Unavailable"
+
+			if (this.props.pools.length) {
+				for (let pool of this.props.pools) {
+					if (pool.id === disk.pool) {
+						resourceValue = pool.name;
+						break;
+					}
+				}
+			}
+		} else {
+			resourceLabel = "Node";
+			resourceValue = (node ? node.name : this.props.disk.node) || '-';
+		}
+
 		let backupsSelect: JSX.Element[] = [];
 		for (let backup of (disk.backups || [])) {
 			backupsSelect.push(
@@ -405,8 +427,8 @@ export default class DiskDetailed extends React.Component<Props, State> {
 				value: org ? org.name : this.props.disk.organization,
 			},
 			{
-				label: 'Node',
-				value: (node ? node.name : this.props.disk.node) || '-',
+				label: resourceLabel,
+				value: resourceValue,
 			},
 			{
 				label: 'Size',
