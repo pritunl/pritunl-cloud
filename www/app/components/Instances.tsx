@@ -9,6 +9,7 @@ import * as DatacenterTypes from '../types/DatacenterTypes';
 import * as NodeTypes from '../types/NodeTypes';
 import * as PoolTypes from '../types/PoolTypes';
 import * as ZoneTypes from '../types/ZoneTypes';
+import * as ShapeTypes from '../types/ShapeTypes';
 import InstancesStore from '../stores/InstancesStore';
 import OrganizationsStore from '../stores/OrganizationsStore';
 import DomainsNameStore from '../stores/DomainsNameStore';
@@ -17,6 +18,7 @@ import DatacentersStore from '../stores/DatacentersStore';
 import NodesStore from '../stores/NodesStore';
 import PoolsStore from '../stores/PoolsStore';
 import ZonesStore from '../stores/ZonesStore';
+import ShapesStore from '../stores/ShapesStore';
 import * as InstanceActions from '../actions/InstanceActions';
 import * as OrganizationActions from '../actions/OrganizationActions';
 import * as DomainActions from '../actions/DomainActions';
@@ -25,6 +27,7 @@ import * as DatacenterActions from '../actions/DatacenterActions';
 import * as NodeActions from '../actions/NodeActions';
 import * as PoolActions from '../actions/PoolActions';
 import * as ZoneActions from '../actions/ZoneActions';
+import * as ShapeActions from '../actions/ShapeActions';
 import Instance from './Instance';
 import InstanceNew from './InstanceNew';
 import InstancesFilter from './InstancesFilter';
@@ -53,6 +56,7 @@ interface State {
 	nodes: NodeTypes.NodesRo;
 	pools: PoolTypes.PoolsRo;
 	zones: ZoneTypes.ZonesRo;
+	shapes: ShapeTypes.ShapesRo;
 	selected: Selected;
 	opened: Opened;
 	newOpened: boolean;
@@ -112,6 +116,7 @@ export default class Instances extends React.Component<{}, State> {
 			nodes: NodesStore.nodes,
 			pools: PoolsStore.pools,
 			zones: ZonesStore.zones,
+			shapes: ShapesStore.shapes,
 			selected: {},
 			opened: {},
 			newOpened: false,
@@ -137,6 +142,7 @@ export default class Instances extends React.Component<{}, State> {
 		NodesStore.addChangeListener(this.onChange);
 		PoolsStore.addChangeListener(this.onChange);
 		ZonesStore.addChangeListener(this.onChange);
+		ShapesStore.addChangeListener(this.onChange);
 		InstanceActions.sync();
 		OrganizationActions.sync();
 		DomainActions.syncName();
@@ -145,6 +151,7 @@ export default class Instances extends React.Component<{}, State> {
 		NodeActions.sync();
 		PoolActions.sync();
 		ZoneActions.sync();
+		ShapeActions.sync();
 
 		this.interval = setInterval(() => {
 			InstanceActions.sync(true);
@@ -160,6 +167,7 @@ export default class Instances extends React.Component<{}, State> {
 		NodesStore.removeChangeListener(this.onChange);
 		PoolsStore.removeChangeListener(this.onChange);
 		ZonesStore.removeChangeListener(this.onChange);
+		ShapesStore.removeChangeListener(this.onChange);
 		clearInterval(this.interval);
 	}
 
@@ -190,6 +198,7 @@ export default class Instances extends React.Component<{}, State> {
 			nodes: NodesStore.nodes,
 			pools: PoolsStore.pools,
 			zones: ZonesStore.zones,
+			shapes: ShapesStore.shapes,
 			selected: selected,
 			opened: opened,
 		});
@@ -244,7 +253,6 @@ export default class Instances extends React.Component<{}, State> {
 			Object.keys(this.state.selected), state).then((): void => {
 			this.setState({
 				...this.state,
-				selected: {},
 				disabled: false,
 			});
 		}).catch((): void => {
@@ -346,6 +354,7 @@ export default class Instances extends React.Component<{}, State> {
 				datacenters={this.state.datacenters}
 				pools={this.state.pools}
 				zones={this.state.zones}
+				shapes={this.state.shapes}
 				onClose={(): void => {
 					this.setState({
 						...this.state,
