@@ -27,6 +27,7 @@ import PageNumInput from './PageNumInput';
 import Help from './Help';
 import OrganizationsStore from "../stores/OrganizationsStore";
 import PageTextArea from "./PageTextArea";
+import ShapesStore from "../stores/ShapesStore";
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -297,13 +298,21 @@ export default class InstanceNew extends React.Component<Props, State> {
 		});
 	}
 
-	onShape(shape: string): void {
+	onShape(shapeId: string): void {
 		let instance: InstanceTypes.Instance = {
 			...this.state.instance,
 		};
 
 		instance.node = "";
-		instance.shape = shape;
+		instance.shape = shapeId;
+
+		let shape = ShapesStore.shape(shapeId);
+		if (shape) {
+			instance.disk_type = shape.disk_type;
+			instance.disk_pool = shape.disk_pool;
+			instance.processors = shape.processors;
+			instance.memory = shape.memory;
+		}
 
 		this.setState({
 			...this.state,
@@ -393,6 +402,11 @@ export default class InstanceNew extends React.Component<Props, State> {
 
 	render(): JSX.Element {
 		let instance = this.state.instance;
+		let lockResources = false;
+		if (instance.shape) {
+			let shape = ShapesStore.shape(instance.shape);
+			lockResources = !shape.flexible;
+		}
 
 		let node: NodeTypes.Node;
 		if (instance.node) {
@@ -467,7 +481,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 			zonesSelect = [<option key="null" value="">No Zones</option>];
 		}
 
-		let zone = this.state.instance ? this.state.instance.zone : "";
+		let zone = instance ? instance.zone : "";
 		let hasShapes = false;
 		let shapesSelect: JSX.Element[] = [];
 		if (this.props.shapes && this.props.shapes.length) {
@@ -825,7 +839,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 							{zonesSelect}
 						</PageSelect>
 						<PageSelect
-							disabled={this.state.disabled || !hasShapes}
+							disabled={this.state.disabled || !hasShapes || !!instance.node}
 							label="Shape"
 							help="Instance shape to run instance on, node will be automatically selected."
 							value={instance.shape}
@@ -836,7 +850,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 							{shapesSelect}
 						</PageSelect>
 						<PageSelect
-							disabled={this.state.disabled || !hasNodes}
+							disabled={this.state.disabled || !hasNodes || !!instance.shape}
 							label="Node"
 							help="Node to run instance on."
 							value={instance.node}
@@ -1020,7 +1034,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 					</div>
 					<div style={css.group}>
 						<PageSelect
-							disabled={this.state.disabled}
+							disabled={this.state.disabled || !!instance.shape}
 							label="Disk Type"
 							help="Type of disk. QCOW disk files are stored locally on the node filesystem. LVM disks are partitioned as a logical volume."
 							value={instance.disk_type}
@@ -1117,7 +1131,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 							minorStepSize={256}
 							stepSize={512}
 							majorStepSize={1024}
-							disabled={this.state.disabled}
+							disabled={this.state.disabled || lockResources}
 							selectAllOnFocus={true}
 							onChange={(val: number): void => {
 								this.set('memory', val);
@@ -1131,7 +1145,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 							minorStepSize={1}
 							stepSize={1}
 							majorStepSize={2}
-							disabled={this.state.disabled}
+							disabled={this.state.disabled || lockResources}
 							selectAllOnFocus={true}
 							onChange={(val: number): void => {
 								this.set('processors', val);
