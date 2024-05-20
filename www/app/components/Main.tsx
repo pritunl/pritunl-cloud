@@ -28,6 +28,7 @@ import Images from './Images';
 import Pools from './Pools';
 import Disks from './Disks';
 import Instances from './Instances';
+import Pods from './Pods';
 import Firewalls from './Firewalls';
 import Authorities from './Authorities';
 import Logs from './Logs';
@@ -54,6 +55,7 @@ import * as ImageActions from '../actions/ImageActions';
 import * as PoolActions from '../actions/PoolActions';
 import * as DiskActions from '../actions/DiskActions';
 import * as InstanceActions from '../actions/InstanceActions';
+import * as PodActions from '../actions/PodActions';
 import * as FirewallActions from '../actions/FirewallActions';
 import * as AuthorityActions from '../actions/AuthorityActions';
 import * as LogActions from '../actions/LogActions';
@@ -311,6 +313,13 @@ export default class Main extends React.Component<{}, State> {
 							to="/instances"
 						>
 							Instances
+						</ReactRouter.Link>
+						<ReactRouter.Link
+							className="bp3-button bp3-minimal bp3-icon-cube"
+							style={css.link}
+							to="/pods"
+						>
+							Pods
 						</ReactRouter.Link>
 						<ReactRouter.Link
 							className="bp3-button bp3-minimal bp3-icon-shield"
@@ -680,6 +689,18 @@ export default class Main extends React.Component<{}, State> {
 												disabled: false,
 											});
 										});
+									} else if (pathname === '/pods') {
+										PodActions.sync().then((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										}).catch((): void => {
+											this.setState({
+												...this.state,
+												disabled: false,
+											});
+										});
 									} else if (pathname === '/firewalls') {
 										FirewallActions.sync().then((): void => {
 											this.setState({
@@ -842,6 +863,9 @@ export default class Main extends React.Component<{}, State> {
 				)}/>
 				<ReactRouter.Route path="/instances" render={() => (
 					<Instances/>
+				)}/>
+				<ReactRouter.Route path="/pods" render={() => (
+					<Pods/>
 				)}/>
 				<ReactRouter.Route path="/firewalls" render={() => (
 					<Firewalls/>
