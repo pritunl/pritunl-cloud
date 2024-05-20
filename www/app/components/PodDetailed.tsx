@@ -10,7 +10,6 @@ import PageInfo from './PageInfo';
 import PageInputButton from './PageInputButton';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
-import Overview from './Overview';
 import Help from './Help';
 import PageTextArea from "./PageTextArea";
 import * as DomainTypes from "../types/DomainTypes";
@@ -20,6 +19,16 @@ import * as NodeTypes from "../types/NodeTypes";
 import * as PoolTypes from "../types/PoolTypes";
 import * as ZoneTypes from "../types/ZoneTypes";
 import * as ShapeTypes from "../types/ShapeTypes";
+import * as Theme from "../Theme";
+
+import AceEditor from "react-ace"
+import "ace-builds/src-noconflict/mode-text"
+import "ace-builds/src-noconflict/mode-markdown"
+import "ace-builds/src-noconflict/mode-sh"
+import "ace-builds/src-noconflict/mode-python"
+import "ace-builds/src-noconflict/theme-dracula"
+import "ace-builds/src-noconflict/theme-eclipse"
+import {Ace} from "ace-builds"
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -43,6 +52,8 @@ interface State {
 	addRole: string;
 	pod: PodTypes.Pod;
 }
+
+const example = `test`
 
 const css = {
 	card: {
@@ -111,9 +122,16 @@ const css = {
 	rules: {
 		marginBottom: '15px',
 	} as React.CSSProperties,
+	editorBox: {
+	} as React.CSSProperties,
+	editor: {
+		margin: '10px 0',
+	} as React.CSSProperties,
 };
 
 export default class PodDetailed extends React.Component<Props, State> {
+	editor: Ace.Editor
+
 	constructor(props: any, context: any) {
 		super(props, context);
 		this.state = {
@@ -335,32 +353,29 @@ export default class PodDetailed extends React.Component<Props, State> {
 						onClick={(evt): void => {
 							let target = evt.target as HTMLElement;
 
-							if (target.className && target.className.indexOf &&
-								target.className.indexOf('tab-close') !== -1) {
-
+							if (target.className.indexOf('tab-close') !== -1) {
 								this.props.onClose();
 							}
 						}}
 					>
-            <div>
-              <label
-                className="bp3-control bp3-checkbox"
-                style={css.select}
-              >
-                <input
-                  type="checkbox"
-                  checked={this.props.selected}
+						<div>
+							<label
+								className="bp3-control bp3-checkbox"
+								style={css.select}
+							>
+								<input
+									type="checkbox"
+									checked={this.props.selected}
 									onChange={(evt): void => {
 									}}
-                  onClick={(evt): void => {
+									onClick={(evt): void => {
 										this.props.onSelect(evt.shiftKey);
 									}}
-                />
-                <span className="bp3-control-indicator"/>
-              </label>
-            </div>
+								/>
+								<span className="bp3-control-indicator"/>
+							</label>
+						</div>
 						<div className="flex tab-close"/>
-						<Overview resource={"TODO"}/>
 						<ConfirmButton
 							className="bp3-minimal bp3-intent-danger bp3-icon-trash"
 							style={css.button}
@@ -443,6 +458,37 @@ export default class PodDetailed extends React.Component<Props, State> {
 						onSubmit={this.onAddRole}
 					/>
 				</div>
+			</div>
+			<div className="layout horizontal flex" style={css.editorBox}>
+				<label
+					className="bp3-label flex"
+					style={css.editor}
+				>
+					<AceEditor
+						name="log-view"
+						theme={Theme.editorTheme()}
+						height="500px"
+						width="100%"
+						mode="python"
+						fontSize="12px"
+						wrapEnabled={true}
+						showPrintMargin={false}
+						showGutter={true}
+						readOnly={false}
+						value={example}
+						editorProps={{
+							$blockScrolling: true,
+						}}
+						setOptions={{
+							showFoldWidgets: false,
+						}}
+						onLoad={(editor: Ace.Editor): void => {
+							this.editor = editor
+							this.editor.scrollToLine(Number.POSITIVE_INFINITY,
+								false, false, null)
+						}}
+					/>
+				</label>
 			</div>
 			<PageSave
 				style={css.save}
