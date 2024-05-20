@@ -7,9 +7,11 @@ import * as NodeTypes from '../types/NodeTypes';
 import DisksStore from '../stores/DisksStore';
 import OrganizationsStore from '../stores/OrganizationsStore';
 import NodesStore from '../stores/NodesStore';
+import PoolsStore from '../stores/PoolsStore';
 import * as DiskActions from '../actions/DiskActions';
 import * as OrganizationActions from '../actions/OrganizationActions';
 import * as NodeActions from '../actions/NodeActions';
+import * as PoolActions from '../actions/PoolActions';
 import Disk from './Disk';
 import DisksFilter from './DisksFilter';
 import DisksPage from './DisksPage';
@@ -26,6 +28,7 @@ import InstancesStore from "../stores/InstancesStore";
 import * as InstanceActions from "../actions/InstanceActions";
 import * as DatacenterActions from "../actions/DatacenterActions";
 import * as ZoneActions from "../actions/ZoneActions";
+import * as PoolTypes from "../types/PoolTypes";
 
 interface Selected {
 	[key: string]: boolean;
@@ -43,6 +46,7 @@ interface State {
 	datacenters: DatacenterTypes.DatacentersRo;
 	zones: ZoneTypes.ZonesRo;
 	nodes: NodeTypes.NodesRo;
+	pools: PoolTypes.PoolsRo;
 	selected: Selected;
 	opened: Opened;
 	newOpened: boolean;
@@ -97,6 +101,7 @@ export default class Disks extends React.Component<{}, State> {
 			datacenters: DatacentersStore.datacenters,
 			zones: ZonesStore.zones,
 			nodes: NodesStore.nodes,
+			pools: PoolsStore.pools,
 			selected: {},
 			opened: {},
 			newOpened: false,
@@ -120,12 +125,14 @@ export default class Disks extends React.Component<{}, State> {
 		DatacentersStore.addChangeListener(this.onChange);
 		ZonesStore.addChangeListener(this.onChange);
 		NodesStore.addChangeListener(this.onChange);
+		PoolsStore.addChangeListener(this.onChange);
 		InstanceActions.sync();
 		DiskActions.sync();
 		OrganizationActions.sync();
 		DatacenterActions.sync();
 		ZoneActions.sync();
 		NodeActions.sync();
+		PoolActions.sync();
 	}
 
 	componentWillUnmount(): void {
@@ -135,6 +142,7 @@ export default class Disks extends React.Component<{}, State> {
 		DatacentersStore.removeChangeListener(this.onChange);
 		ZonesStore.removeChangeListener(this.onChange);
 		NodesStore.removeChangeListener(this.onChange);
+		PoolsStore.removeChangeListener(this.onChange);
 	}
 
 	onChange = (): void => {
@@ -161,6 +169,7 @@ export default class Disks extends React.Component<{}, State> {
 			datacenters: DatacentersStore.datacenters,
 			zones: ZonesStore.zones,
 			nodes: NodesStore.nodes,
+			pools: PoolsStore.pools,
 			selected: selected,
 			opened: opened,
 		});
@@ -255,6 +264,7 @@ export default class Disks extends React.Component<{}, State> {
 				key={disk.id}
 				disk={disk}
 				organizations={this.state.organizations}
+				pools={this.state.pools}
 				selected={!!this.state.selected[disk.id]}
 				open={!!this.state.opened[disk.id]}
 				onSelect={(shift: boolean): void => {
@@ -333,6 +343,7 @@ export default class Disks extends React.Component<{}, State> {
 				organizations={this.state.organizations}
 				datacenters={this.state.datacenters}
 				zones={this.state.zones}
+				pools={this.state.pools}
 				onClose={(): void => {
 					this.setState({
 						...this.state,
