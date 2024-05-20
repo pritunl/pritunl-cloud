@@ -319,6 +319,8 @@ export default class Secret extends React.Component<Props, State> {
 						}}
 					>
 						<option value="aws">AWS</option>
+						<option value="cloudflare">Cloudflare</option>
+						<option value="oracle_cloud">Oracle Cloud</option>
 					</PageSelect>
 					<PageSelect
 						disabled={this.state.disabled}
@@ -332,6 +334,19 @@ export default class Secret extends React.Component<Props, State> {
 					>
 						{organizationsSelect}
 					</PageSelect>
+					<PageTextArea
+						disabled={this.state.disabled}
+						hidden={publicKeyLabel === ""}
+						label={publicKeyLabel}
+						help={publicKeyHelp}
+						placeholder={publicKeyPlaceholder}
+						readOnly={true}
+						rows={6}
+						value={secr.public_key}
+						onChange={(val: string): void => {
+							this.set('public_key', val);
+						}}
+					/>
 				</div>
 			</div>
 			<PageSave
