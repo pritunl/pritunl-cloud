@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkpritunl_cloud=self.webpackChunkpritunl_cloud||[]).push([[54005],{31682:(e,d)=>{Object.defineProperty(d,"__esModule",{value:!0}),d.default=void 0;var t={lastWeek:"'síðasta' dddd 'kl.' p",yesterday:"'í gær kl.' p",today:"'í dag kl.' p",tomorrow:"'á morgun kl.' p",nextWeek:"dddd 'kl.' p",other:"P"},l=function(e,d,l,u){return t[e]};d.default=l,e.exports=d.default}}]);
+//# sourceMappingURL=date-fns-locale-is-_lib-formatRelative-index-js.js.map
