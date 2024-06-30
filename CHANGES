@@ -1,6 +1,10 @@
 pritunl-cloud changelog
 =======================
 
+<%= version %>
+
+Add secrets storage
+
 Version 1.2.2933.86 2023-12-05
 ------------------------------
 
