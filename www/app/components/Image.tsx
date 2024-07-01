@@ -71,7 +71,7 @@ export default class Image extends React.Component<Props, {}> {
 
 		if (this.props.open) {
 			return <div
-				className="bp3-card bp3-row"
+				className="bp5-card bp5-row"
 				style={css.cardOpen}
 			>
 				<ImageDetailed
@@ -94,40 +94,40 @@ export default class Image extends React.Component<Props, {}> {
 		let orgName = '';
 		if (image.organization) {
 			let org = OrganizationsStore.organization(image.organization);
-			orgIcon = 'bp3-text-muted bp3-icon-people';
+			orgIcon = 'bp5-text-muted bp5-icon-people';
 			orgName = org ? org.name : image.organization;
 		} else {
-			orgIcon = 'bp3-text-muted bp3-icon-globe';
+			orgIcon = 'bp5-text-muted bp5-icon-globe';
 			orgName = 'Public Image';
 		}
 
 		if (image.signed) {
-			orgClass = 'bp3-text-intent-success';
-			orgIcon = 'bp3-icon-endorsed';
+			orgClass = 'bp5-text-intent-success';
+			orgIcon = 'bp5-icon-endorsed';
 			orgName = 'Signed Public Image';
 		}
 
-		let diskIcon = 'bp3-icon-box';
+		let diskIcon = 'bp5-icon-box';
 		switch (this.props.image.storage_class) {
 			case 'aws_standard':
-				diskIcon = 'bp3-icon-box';
+				diskIcon = 'bp5-icon-box';
 				break;
 			case 'aws_infrequent_access':
-				diskIcon = 'bp3-icon-compressed';
+				diskIcon = 'bp5-icon-compressed';
 				break;
 			case 'aws_glacier':
-				diskIcon = 'bp3-icon-snowflake';
+				diskIcon = 'bp5-icon-snowflake';
 				break;
 			case 'oracle_standard':
-				diskIcon = 'bp3-icon-box';
+				diskIcon = 'bp5-icon-box';
 				break;
 			case 'oracle_archive':
-				diskIcon = 'bp3-icon-snowflake';
+				diskIcon = 'bp5-icon-snowflake';
 				break;
 		}
 
 		return <div
-			className="bp3-card bp3-row"
+			className="bp5-card bp5-row"
 			style={cardStyle}
 			onClick={(evt): void => {
 				let target = evt.target as HTMLElement;
@@ -139,10 +139,10 @@ export default class Image extends React.Component<Props, {}> {
 				this.props.onOpen();
 			}}
 		>
-			<div className="bp3-cell" style={css.name}>
+			<div className="bp5-cell" style={css.name}>
 				<div className="layout horizontal">
 					<label
-						className="bp3-control bp3-checkbox open-ignore"
+						className="bp5-control bp5-checkbox open-ignore"
 						style={css.select}
 					>
 						<input
@@ -155,25 +155,25 @@ export default class Image extends React.Component<Props, {}> {
 								this.props.onSelect(evt.shiftKey);
 							}}
 						/>
-						<span className="bp3-control-indicator open-ignore"/>
+						<span className="bp5-control-indicator open-ignore"/>
 					</label>
 					<div style={css.nameSpan}>
 						{image.name}
 					</div>
 				</div>
 			</div>
-			<div className={'bp3-cell ' + orgClass} style={css.item}>
+			<div className={'bp5-cell ' + orgClass} style={css.item}>
 				<span
 					style={css.icon}
-					className={'bp3-icon-standard ' + orgIcon}
+					className={'bp5-icon-standard ' + orgIcon}
 				/>
 				{orgName}
 			</div>
-			<div className="bp3-cell" style={css.item}>
+			<div className="bp5-cell" style={css.item}>
 				<span
 					style={css.icon}
 					hidden={!image.key}
-					className={'bp3-icon-standard bp3-text-muted ' + diskIcon}
+					className={'bp5-icon-standard bp5-text-muted ' + diskIcon}
 				/>
 				{image.key}
 			</div>

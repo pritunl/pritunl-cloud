@@ -107,14 +107,14 @@ export default class FirewallRule extends React.Component<Props, {}> {
 		sourceIps.forEach((sourceIp: string, i: number): void => {
 			sourceIpsDoms.push(
 				<div
-					className="bp3-control-group"
+					className="bp5-control-group"
 					style={css.sourceGroup}
 					hidden={rule.protocol === "multicast" ||
 						rule.protocol === "broadcast"}
 					key={i}
 				>
 					<input
-						className="bp3-input"
+						className="bp5-input"
 						style={css.port}
 						type="text"
 						autoCapitalize="off"
@@ -126,13 +126,13 @@ export default class FirewallRule extends React.Component<Props, {}> {
 						}}
 					/>
 					<button
-						className="bp3-button bp3-minimal bp3-intent-danger bp3-icon-remove"
+						className="bp5-button bp5-minimal bp5-intent-danger bp5-icon-remove"
 						onClick={(): void => {
 							this.onRemoveSourceIp(i);
 						}}
 					/>
 					<button
-						className="bp3-button bp3-minimal bp3-intent-success bp3-icon-add"
+						className="bp5-button bp5-minimal bp5-intent-success bp5-icon-add"
 						onClick={(): void => {
 							this.onAddSourceIp(i);
 						}}
@@ -142,8 +142,8 @@ export default class FirewallRule extends React.Component<Props, {}> {
 		});
 
 		return <div>
-			<div className="bp3-control-group" style={css.group}>
-				<div className="bp3-select" style={css.protocol}>
+			<div className="bp5-control-group" style={css.group}>
+				<div className="bp5-select" style={css.protocol}>
 					<select
 						value={rule.protocol}
 						onChange={(evt): void => {
@@ -167,7 +167,7 @@ export default class FirewallRule extends React.Component<Props, {}> {
 				</div>
 				<div style={css.portBox}>
 					<input
-						className="bp3-input"
+						className="bp5-input"
 						style={css.port}
 						disabled={!!placeholder}
 						type="text"
@@ -183,13 +183,13 @@ export default class FirewallRule extends React.Component<Props, {}> {
 					/>
 				</div>
 				<button
-					className="bp3-button bp3-minimal bp3-intent-danger bp3-icon-remove"
+					className="bp5-button bp5-minimal bp5-intent-danger bp5-icon-remove"
 					onClick={(): void => {
 						this.props.onRemove();
 					}}
 				/>
 				<button
-					className="bp3-button bp3-minimal bp3-intent-success bp3-icon-add"
+					className="bp5-button bp5-minimal bp5-intent-success bp5-icon-add"
 					onClick={(): void => {
 						this.props.onAdd();
 					}}

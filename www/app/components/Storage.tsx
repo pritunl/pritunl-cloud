@@ -178,7 +178,7 @@ export default class Storage extends React.Component<Props, State> {
 			this.props.storage;
 
 		return <div
-			className="bp3-card"
+			className="bp5-card"
 			style={css.card}
 		>
 			<div className="layout horizontal wrap">
@@ -186,9 +186,9 @@ export default class Storage extends React.Component<Props, State> {
 					<div style={css.remove}>
 						<ConfirmButton
 							safe={true}
-							className="bp3-minimal bp3-intent-danger bp3-icon-trash"
-							progressClassName="bp3-intent-danger"
-							dialogClassName="bp3-intent-danger bp3-icon-delete"
+							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
+							progressClassName="bp5-intent-danger"
+							dialogClassName="bp5-intent-danger bp5-icon-delete"
 							dialogLabel="Delete Storage"
 							confirmMsg="Permanently delete this storage"
 							confirmInput={true}
@@ -312,8 +312,8 @@ export default class Storage extends React.Component<Props, State> {
 			>
 				<ConfirmButton
 					label="Sync"
-					className="bp3-intent-success bp3-icon-refresh"
-					progressClassName="bp3-intent-success"
+					className="bp5-intent-success bp5-icon-refresh"
+					progressClassName="bp5-intent-success"
 					style={css.controlButton}
 					disabled={this.state.disabled}
 					onConfirm={(): void => {

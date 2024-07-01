@@ -168,24 +168,24 @@ export default class InstanceLicense extends React.Component<Props, {}> {
 				}}
 			>
 				<textarea
-					className="bp3-dialog-body bp3-input"
+					className="bp5-dialog-body bp5-input"
 					style={css.textarea}
 					autoCapitalize="off"
 					spellCheck={false}
 					readOnly={true}
 					value={license}
 				/>
-				<div className="bp3-dialog-footer">
-					<div className="bp3-dialog-footer-actions">
+				<div className="bp5-dialog-footer">
+					<div className="bp5-dialog-footer-actions">
 						<button
-							className="bp3-button bp3-intent-danger"
+							className="bp5-button bp5-intent-danger"
 							type="button"
 							onClick={(): void => {
 								this.props.onClose();
 							}}
 						>Decline</button>
 						<button
-							className="bp3-button bp3-intent-success"
+							className="bp5-button bp5-intent-success"
 							type="button"
 							onClick={(): void => {
 								License.setOracle(true);

@@ -85,7 +85,7 @@ export default class Disk extends React.Component<Props, {}> {
 
 		if (this.props.open) {
 			return <div
-				className="bp3-card bp3-row"
+				className="bp5-card bp5-row"
 				style={css.cardOpen}
 			>
 				<DiskDetailed
@@ -110,11 +110,11 @@ export default class Disk extends React.Component<Props, {}> {
 		}
 
 		let statusText = 'Unknown';
-		let statusClass = 'bp3-cell';
+		let statusClass = 'bp5-cell';
 		switch (disk.state) {
 			case 'provision':
 				statusText = 'Provisioning';
-				statusClass += ' bp3-text-intent-primary';
+				statusClass += ' bp5-text-intent-primary';
 				break;
 			case 'available':
 				if (disk.instance) {
@@ -122,34 +122,34 @@ export default class Disk extends React.Component<Props, {}> {
 				} else {
 					statusText = 'Available';
 				}
-				statusClass += ' bp3-text-intent-success';
+				statusClass += ' bp5-text-intent-success';
 				break;
 			case 'destroy':
 				statusText = 'Destroying';
-				statusClass += ' bp3-text-intent-danger';
+				statusClass += ' bp5-text-intent-danger';
 				break;
 			case 'snapshot':
 				statusText = 'Snapshotting';
-				statusClass += ' bp3-text-intent-primary';
+				statusClass += ' bp5-text-intent-primary';
 				break;
 			case 'backup':
 				statusText = 'Backing Up';
-				statusClass += ' bp3-text-intent-primary';
+				statusClass += ' bp5-text-intent-primary';
 				break;
 			case 'restore':
 				statusText = 'Restoring';
-				statusClass += ' bp3-text-intent-primary';
+				statusClass += ' bp5-text-intent-primary';
 				break;
 			case 'expand':
 				statusText = 'Expanding';
-				statusClass += ' bp3-text-intent-primary';
+				statusClass += ' bp5-text-intent-primary';
 				break;
 		}
 
 		let resourceIcon = "";
 		let resourceValue = "";
 		if (this.props.disk.type === "lvm") {
-			resourceIcon = "bp3-icon-control";
+			resourceIcon = "bp5-icon-control";
 			resourceValue = "Pool Unavailable"
 
 			if (this.props.pools.length) {
@@ -162,12 +162,12 @@ export default class Disk extends React.Component<Props, {}> {
 			}
 		} else {
 			let node = NodesStore.node(disk.node);
-			resourceIcon = "bp3-icon-layers";
+			resourceIcon = "bp5-icon-layers";
 			resourceValue = node ? node.name : disk.node;
 		}
 
 		return <div
-			className="bp3-card bp3-row"
+			className="bp5-card bp5-row"
 			style={css.card}
 			onClick={(evt): void => {
 				let target = evt.target as HTMLElement;
@@ -179,10 +179,10 @@ export default class Disk extends React.Component<Props, {}> {
 				this.props.onOpen();
 			}}
 		>
-			<div className="bp3-cell" style={css.name}>
+			<div className="bp5-cell" style={css.name}>
 				<div className="layout horizontal">
 					<label
-						className="bp3-control bp3-checkbox open-ignore"
+						className="bp5-control bp5-checkbox open-ignore"
 						style={css.select}
 					>
 						<input
@@ -195,7 +195,7 @@ export default class Disk extends React.Component<Props, {}> {
 								this.props.onSelect(evt.shiftKey);
 							}}
 						/>
-						<span className="bp3-control-indicator open-ignore"/>
+						<span className="bp5-control-indicator open-ignore"/>
 					</label>
 					<div style={css.nameSpan}>
 						{disk.name}
@@ -205,29 +205,29 @@ export default class Disk extends React.Component<Props, {}> {
 			<div className={statusClass} style={css.item}>
 				<span
 					style={css.icon}
-					className="bp3-icon-standard bp3-icon-pulse"
+					className="bp5-icon-standard bp5-icon-pulse"
 				/>
 				{statusText}
 			</div>
-			<div className="bp3-cell" style={css.item}>
+			<div className="bp5-cell" style={css.item}>
 				<span
 					style={css.icon}
-					className={'bp3-icon-standard bp3-text-muted ' + (disk.organization ?
-						'bp3-icon-people' : 'bp3-icon-layers')}
+					className={'bp5-icon-standard bp5-text-muted ' + (disk.organization ?
+						'bp5-icon-people' : 'bp5-icon-layers')}
 				/>
 				{orgName}
 			</div>
-			<div className="bp3-cell" style={css.item}>
+			<div className="bp5-cell" style={css.item}>
 				<span
 					style={css.icon}
-					className={"bp3-icon-standard bp3-text-muted " + resourceIcon}
+					className={"bp5-icon-standard bp5-text-muted " + resourceIcon}
 				/>
 				{resourceValue}
 			</div>
-			<div className="bp3-cell" style={css.item}>
+			<div className="bp5-cell" style={css.item}>
 				<span
 					style={css.icon}
-					className="bp3-icon-standard bp3-text-muted bp3-icon-database"
+					className="bp5-icon-standard bp5-text-muted bp5-icon-database"
 				/>
 				{disk.size}GB
 			</div>

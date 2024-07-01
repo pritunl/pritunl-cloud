@@ -213,9 +213,9 @@ export default class NodeDeploy extends React.Component<Props, State> {
 			let errorMsgElem: JSX.Element;
 
 			if (errorMsg) {
-				errorMsgElem = <div className="bp3-dialog-body">
+				errorMsgElem = <div className="bp5-dialog-body">
 					<div
-						className="bp3-callout bp3-intent-danger bp3-icon-ban-circle"
+						className="bp5-callout bp5-intent-danger bp5-icon-ban-circle"
 						style={css.callout}
 					>
 						{errorMsg}
@@ -283,13 +283,13 @@ export default class NodeDeploy extends React.Component<Props, State> {
 			for (let subnet of (this.state.subnets || [])) {
 				subnets.push(
 					<div
-						className="bp3-tag bp3-tag-removable bp3-intent-primary"
+						className="bp5-tag bp5-tag-removable bp5-intent-primary"
 						style={css.item}
 						key={subnet}
 					>
 						{subnet}
 						<button
-							className="bp3-tag-remove"
+							className="bp5-tag-remove"
 							disabled={this.state.disabled}
 							onMouseUp={(): void => {
 								this.onRemoveSubnet(subnet);
@@ -313,9 +313,9 @@ export default class NodeDeploy extends React.Component<Props, State> {
 				}}
 			>
 				{errorMsgElem}
-				<div className="bp3-dialog-body" hidden={!!errorMsgElem}>
+				<div className="bp5-dialog-body" hidden={!!errorMsgElem}>
 					<div
-						className="bp3-callout bp3-intent-primary bp3-icon-info-sign"
+						className="bp5-callout bp5-intent-primary bp5-icon-info-sign"
 						style={css.callout}
 					>
 						{callout}
@@ -444,7 +444,7 @@ export default class NodeDeploy extends React.Component<Props, State> {
 						}}
 					/>
 					<label
-						className="bp3-label"
+						className="bp5-label"
 						hidden={this.state.provider !== 'phoenixnap'}
 					>
 						IP Addresses
@@ -459,7 +459,7 @@ export default class NodeDeploy extends React.Component<Props, State> {
 					<PageInputButton
 						disabled={this.state.disabled}
 						hidden={this.state.provider !== 'phoenixnap'}
-						buttonClass="bp3-intent-success bp3-icon-add"
+						buttonClass="bp5-intent-success bp5-icon-add"
 						label="Add"
 						type="text"
 						placeholder="Add addresses"
@@ -499,10 +499,10 @@ export default class NodeDeploy extends React.Component<Props, State> {
 						}}
 					/>
 				</div>
-				<div className="bp3-dialog-footer">
-					<div className="bp3-dialog-footer-actions">
+				<div className="bp5-dialog-footer">
+					<div className="bp5-dialog-footer-actions">
 						<button
-							className="bp3-button"
+							className="bp5-button"
 							type="button"
 							onClick={(): void => {
 								this.setState({
@@ -512,7 +512,7 @@ export default class NodeDeploy extends React.Component<Props, State> {
 							}}
 						>Close</button>
 						<button
-							className="bp3-button bp3-icon-cloud-upload bp3-intent-primary"
+							className="bp5-button bp5-icon-cloud-upload bp5-intent-primary"
 							type="button"
 							onClick={this.onSave}
 						>
@@ -525,7 +525,7 @@ export default class NodeDeploy extends React.Component<Props, State> {
 
 		return <div hidden={this.props.hidden} style={css.box}>
 			<button
-				className="bp3-button bp3-icon-cloud-upload bp3-intent-primary"
+				className="bp5-button bp5-icon-cloud-upload bp5-intent-primary"
 				style={css.button}
 				type="button"
 				disabled={this.props.disabled}

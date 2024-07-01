@@ -82,7 +82,7 @@ export default class Vpc extends React.Component<Props, {}> {
 
 		if (this.props.open) {
 			return <div
-				className="bp3-card bp3-row"
+				className="bp5-card bp5-row"
 				style={css.cardOpen}
 			>
 				<VpcDetailed
@@ -113,7 +113,7 @@ export default class Vpc extends React.Component<Props, {}> {
 		let datacenterName = datacenter ? datacenter.name : vpc.datacenter;
 
 		return <div
-			className="bp3-card bp3-row"
+			className="bp5-card bp5-row"
 			style={cardStyle}
 			onClick={(evt): void => {
 				let target = evt.target as HTMLElement;
@@ -125,10 +125,10 @@ export default class Vpc extends React.Component<Props, {}> {
 				this.props.onOpen();
 			}}
 		>
-			<div className="bp3-cell" style={css.name}>
+			<div className="bp5-cell" style={css.name}>
 				<div className="layout horizontal">
 					<label
-						className="bp3-control bp3-checkbox open-ignore"
+						className="bp5-control bp5-checkbox open-ignore"
 						style={css.select}
 					>
 						<input
@@ -141,32 +141,32 @@ export default class Vpc extends React.Component<Props, {}> {
 								this.props.onSelect(evt.shiftKey);
 							}}
 						/>
-						<span className="bp3-control-indicator open-ignore"/>
+						<span className="bp5-control-indicator open-ignore"/>
 					</label>
 					<div style={css.nameSpan}>
 						{vpc.name}
 					</div>
 				</div>
 			</div>
-			<div className="bp3-cell" style={css.item}>
+			<div className="bp5-cell" style={css.item}>
 				<span
 					style={css.icon}
-					className={'bp3-icon-standard bp3-text-muted ' + (vpc.organization ?
-						'bp3-icon-people' : 'bp3-icon-layers')}
+					className={'bp5-icon-standard bp5-text-muted ' + (vpc.organization ?
+						'bp5-icon-people' : 'bp5-icon-layers')}
 				/>
 				{orgName}
 			</div>
-			<div className="bp3-cell" style={css.item}>
+			<div className="bp5-cell" style={css.item}>
 				<span
 					style={css.icon}
-					className="bp3-icon-standard bp3-text-muted bp3-icon-cloud"
+					className="bp5-icon-standard bp5-text-muted bp5-icon-cloud"
 				/>
 				{datacenterName}
 			</div>
-			<div className="bp3-cell" style={css.item}>
+			<div className="bp5-cell" style={css.item}>
 				<span
 					style={css.icon}
-					className="bp3-icon-standard bp3-text-muted bp3-icon-layout-auto"
+					className="bp5-icon-standard bp5-text-muted bp5-icon-layout-auto"
 				/>
 				{vpc.network}
 			</div>

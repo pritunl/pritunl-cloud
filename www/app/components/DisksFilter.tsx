@@ -129,7 +129,7 @@ export default class DisksFilter extends React.Component<Props, {}> {
 					this.props.onFilter(filter);
 				}}
 			/>
-			<div className="bp3-select" style={css.type} hidden={Constants.user}>
+			<div className="bp5-select" style={css.type} hidden={Constants.user}>
 				<select
 					value={this.props.filter.organization || 'any'}
 					onChange={(evt): void => {
@@ -151,7 +151,7 @@ export default class DisksFilter extends React.Component<Props, {}> {
 					{organizationsSelect}
 				</select>
 			</div>
-			<div className="bp3-select" style={css.type} hidden={Constants.user}>
+			<div className="bp5-select" style={css.type} hidden={Constants.user}>
 				<select
 					value={this.props.filter.node || 'any'}
 					onChange={(evt): void => {

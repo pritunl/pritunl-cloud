@@ -11,6 +11,7 @@ import PageInfo from './PageInfo';
 import PageInputButton from './PageInputButton';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
+import Overview from './Overview';
 import Help from './Help';
 import PageTextArea from "./PageTextArea";
 
@@ -391,13 +392,13 @@ export default class FirewallDetailed extends React.Component<Props, State> {
 		for (let networkRole of (firewall.network_roles || [])) {
 			networkRoles.push(
 				<div
-					className="bp3-tag bp3-tag-removable bp3-intent-primary"
+					className="bp5-tag bp5-tag-removable bp5-intent-primary"
 					style={css.role}
 					key={networkRole}
 				>
 					{networkRole}
 					<button
-						className="bp3-tag-remove"
+						className="bp5-tag-remove"
 						disabled={this.state.disabled}
 						onMouseUp={(): void => {
 							this.onRemoveNetworkRole(networkRole);
@@ -429,7 +430,7 @@ export default class FirewallDetailed extends React.Component<Props, State> {
 		}
 
 		return <td
-			className="bp3-cell"
+			className="bp5-cell"
 			colSpan={5}
 			style={css.card}
 		>
@@ -441,14 +442,16 @@ export default class FirewallDetailed extends React.Component<Props, State> {
 						onClick={(evt): void => {
 							let target = evt.target as HTMLElement;
 
-							if (target.className.indexOf('tab-close') !== -1) {
+							if (target.className && target.className.indexOf &&
+								target.className.indexOf('tab-close') !== -1) {
+
 								this.props.onClose();
 							}
 						}}
 					>
             <div>
               <label
-                className="bp3-control bp3-checkbox"
+                className="bp5-control bp5-checkbox"
                 style={css.select}
               >
                 <input
@@ -460,16 +463,17 @@ export default class FirewallDetailed extends React.Component<Props, State> {
 										this.props.onSelect(evt.shiftKey);
 									}}
                 />
-                <span className="bp3-control-indicator"/>
+                <span className="bp5-control-indicator"/>
               </label>
             </div>
 						<div className="flex tab-close"/>
+						<Overview resource={"TODO"}/>
 						<ConfirmButton
-							className="bp3-minimal bp3-intent-danger bp3-icon-trash"
+							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
 							style={css.button}
 							safe={true}
-							progressClassName="bp3-intent-danger"
-							dialogClassName="bp3-intent-danger bp3-icon-delete"
+							progressClassName="bp5-intent-danger"
+							dialogClassName="bp5-intent-danger bp5-icon-delete"
 							dialogLabel="Delete Firewall"
 							confirmMsg="Permanently delete this firewall"
 							confirmInput={true}
@@ -530,7 +534,7 @@ export default class FirewallDetailed extends React.Component<Props, State> {
 					>
 						{organizationsSelect}
 					</PageSelect>
-					<label className="bp3-label">
+					<label className="bp5-label">
 						Network Roles
 						<Help
 							title="Network Roles"
@@ -542,7 +546,7 @@ export default class FirewallDetailed extends React.Component<Props, State> {
 					</label>
 					<PageInputButton
 						disabled={this.state.disabled}
-						buttonClass="bp3-intent-success bp3-icon-add"
+						buttonClass="bp5-intent-success bp5-icon-add"
 						label="Add"
 						type="text"
 						placeholder="Add role"

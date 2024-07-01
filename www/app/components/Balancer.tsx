@@ -87,7 +87,7 @@ export default class Balancer extends React.Component<Props, {}> {
 
 		if (this.props.open) {
 			return <div
-				className="bp3-card bp3-row"
+				className="bp5-card bp5-row"
 				style={css.cardOpen}
 			>
 				<BalancerDetailed
@@ -119,7 +119,7 @@ export default class Balancer extends React.Component<Props, {}> {
 		let datacenterName = datacenter ? datacenter.name : null;
 
 		return <div
-			className="bp3-card bp3-row"
+			className="bp5-card bp5-row"
 			style={cardStyle}
 			onClick={(evt): void => {
 				let target = evt.target as HTMLElement;
@@ -131,10 +131,10 @@ export default class Balancer extends React.Component<Props, {}> {
 				this.props.onOpen();
 			}}
 		>
-			<div className="bp3-cell" style={css.name}>
+			<div className="bp5-cell" style={css.name}>
 				<div className="layout horizontal">
 					<label
-						className="bp3-control bp3-checkbox open-ignore"
+						className="bp5-control bp5-checkbox open-ignore"
 						style={css.select}
 					>
 						<input
@@ -147,26 +147,26 @@ export default class Balancer extends React.Component<Props, {}> {
 								this.props.onSelect(evt.shiftKey);
 							}}
 						/>
-						<span className="bp3-control-indicator open-ignore"/>
+						<span className="bp5-control-indicator open-ignore"/>
 					</label>
 					<div style={css.nameSpan}>
 						{balancer.name}
 					</div>
 				</div>
 			</div>
-			<div className="bp3-cell" style={css.item}>
+			<div className="bp5-cell" style={css.item}>
 				<span
 					style={css.icon}
 					hidden={!orgName}
-					className={'bp3-icon-standard bp3-text-muted bp3-icon-people'}
+					className={'bp5-icon-standard bp5-text-muted bp5-icon-people'}
 				/>
 				{orgName}
 			</div>
-			<div className="bp3-cell" style={css.item}>
+			<div className="bp5-cell" style={css.item}>
 				<span
 					style={css.icon}
 					hidden={!datacenterName}
-					className="bp3-icon-standard bp3-text-muted bp3-icon-cloud"
+					className="bp5-icon-standard bp5-text-muted bp5-icon-cloud"
 				/>
 				{datacenterName}
 			</div>

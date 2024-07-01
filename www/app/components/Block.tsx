@@ -400,13 +400,13 @@ export default class Block extends React.Component<Props, State> {
 		for (let subnet of (block.subnets || [])) {
 			subnets.push(
 				<div
-					className="bp3-tag bp3-tag-removable bp3-intent-primary"
+					className="bp5-tag bp5-tag-removable bp5-intent-primary"
 					style={css.item}
 					key={subnet}
 				>
 					{subnet}
 					<button
-						className="bp3-tag-remove"
+						className="bp5-tag-remove"
 						disabled={this.state.disabled}
 						onMouseUp={(): void => {
 							this.onRemoveSubnet(subnet);
@@ -420,13 +420,13 @@ export default class Block extends React.Component<Props, State> {
 		for (let subnet of (block.subnets6 || [])) {
 			subnets6.push(
 				<div
-					className="bp3-tag bp3-tag-removable bp3-intent-primary"
+					className="bp5-tag bp5-tag-removable bp5-intent-primary"
 					style={css.item}
 					key={subnet}
 				>
 					{subnet}
 					<button
-						className="bp3-tag-remove"
+						className="bp5-tag-remove"
 						disabled={this.state.disabled}
 						onMouseUp={(): void => {
 							this.onRemoveSubnet6(subnet);
@@ -440,13 +440,13 @@ export default class Block extends React.Component<Props, State> {
 		for (let exclude of (block.excludes || [])) {
 			excludes.push(
 				<div
-					className="bp3-tag bp3-tag-removable bp3-intent-primary"
+					className="bp5-tag bp5-tag-removable bp5-intent-primary"
 					style={css.item}
 					key={exclude}
 				>
 					{exclude}
 					<button
-						className="bp3-tag-remove"
+						className="bp5-tag-remove"
 						disabled={this.state.disabled}
 						onMouseUp={(): void => {
 							this.onRemoveExclude(exclude);
@@ -457,7 +457,7 @@ export default class Block extends React.Component<Props, State> {
 		}
 
 		return <div
-			className="bp3-card"
+			className="bp5-card"
 			style={css.card}
 		>
 			<div className="layout horizontal wrap">
@@ -465,9 +465,9 @@ export default class Block extends React.Component<Props, State> {
 					<div style={css.remove}>
 						<ConfirmButton
 							safe={true}
-							className="bp3-minimal bp3-intent-danger bp3-icon-trash"
-							progressClassName="bp3-intent-danger"
-							dialogClassName="bp3-intent-danger bp3-icon-delete"
+							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
+							progressClassName="bp5-intent-danger"
+							dialogClassName="bp5-intent-danger bp5-icon-delete"
 							dialogLabel="Delete Block"
 							confirmMsg="Permanently delete this block"
 							confirmInput={true}
@@ -522,7 +522,7 @@ export default class Block extends React.Component<Props, State> {
 						}}
 					/>
 					<label
-						className="bp3-label"
+						className="bp5-label"
 						hidden={block.type === 'ipv6'}
 					>
 						IP Addresses
@@ -537,7 +537,7 @@ export default class Block extends React.Component<Props, State> {
 					<PageInputButton
 						disabled={this.state.disabled}
 						hidden={block.type === 'ipv6'}
-						buttonClass="bp3-intent-success bp3-icon-add"
+						buttonClass="bp5-intent-success bp5-icon-add"
 						label="Add"
 						type="text"
 						placeholder="Add addresses"
@@ -551,7 +551,7 @@ export default class Block extends React.Component<Props, State> {
 						onSubmit={this.onAddSubnet}
 					/>
 					<label
-						className="bp3-label"
+						className="bp5-label"
 						hidden={block.type !== 'ipv6'}
 					>
 						IPv6 Addresses
@@ -566,7 +566,7 @@ export default class Block extends React.Component<Props, State> {
 					<PageInputButton
 						disabled={this.state.disabled}
 						hidden={block.type !== 'ipv6'}
-						buttonClass="bp3-intent-success bp3-icon-add"
+						buttonClass="bp5-intent-success bp5-icon-add"
 						label="Add"
 						type="text"
 						placeholder="Add addresses"
@@ -614,7 +614,7 @@ export default class Block extends React.Component<Props, State> {
 						}}
 					/>
 					<label
-						className="bp3-label"
+						className="bp5-label"
 						hidden={block.type === 'ipv6'}
 					>
 						IP Excludes
@@ -629,7 +629,7 @@ export default class Block extends React.Component<Props, State> {
 					<PageInputButton
 						disabled={this.state.disabled}
 						hidden={block.type === 'ipv6'}
-						buttonClass="bp3-intent-success bp3-icon-add"
+						buttonClass="bp5-intent-success bp5-icon-add"
 						label="Add"
 						type="text"
 						placeholder="Add exclude"

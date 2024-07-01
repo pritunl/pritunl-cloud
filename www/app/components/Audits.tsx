@@ -80,7 +80,7 @@ export default class Audits extends React.Component<Props, State> {
 			</div>
 			<NonState
 				hidden={!!audits.length}
-				iconClass="bp3-icon-search-template"
+				iconClass="bp5-icon-search-template"
 				title="No audit events"
 			/>
 			<AuditsPage/>

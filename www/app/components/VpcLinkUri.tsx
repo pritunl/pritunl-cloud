@@ -26,10 +26,10 @@ const css = {
 export default class VpcUriLink extends React.Component<Props, {}> {
 	render(): JSX.Element {
 		return <div>
-			<div className="bp3-control-group" style={css.group}>
+			<div className="bp5-control-group" style={css.group}>
 				<div style={css.inputBox}>
 					<input
-						className="bp3-input"
+						className="bp5-input"
 						style={css.input}
 						disabled={this.props.disabled}
 						type="text"
@@ -43,14 +43,14 @@ export default class VpcUriLink extends React.Component<Props, {}> {
 					/>
 				</div>
 				<button
-					className="bp3-button bp3-minimal bp3-intent-danger bp3-icon-remove"
+					className="bp5-button bp5-minimal bp5-intent-danger bp5-icon-remove"
 					disabled={this.props.disabled}
 					onClick={(): void => {
 						this.props.onRemove();
 					}}
 				/>
 				<button
-					className="bp3-button bp3-minimal bp3-intent-success bp3-icon-add"
+					className="bp5-button bp5-minimal bp5-intent-success bp5-icon-add"
 					onClick={(): void => {
 						this.props.onAdd();
 					}}

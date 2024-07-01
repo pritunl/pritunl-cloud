@@ -113,11 +113,11 @@ export default class Zones extends React.Component<{}, State> {
 					<div className="flex"/>
 					<div>
 						<div
-							className="bp3-control-group"
+							className="bp5-control-group"
 							style={css.group}
 						>
 							<div style={css.selectBox}>
-								<div className="bp3-select" style={css.select}>
+								<div className="bp5-select" style={css.select}>
 									<select
 										style={css.selectInner}
 										disabled={!hasDatacenters || this.state.disabled}
@@ -134,7 +134,7 @@ export default class Zones extends React.Component<{}, State> {
 								</div>
 							</div>
 							<button
-								className="bp3-button bp3-intent-success bp3-icon-add"
+								className="bp5-button bp5-intent-success bp5-icon-add"
 								disabled={!hasDatacenters || this.state.disabled}
 								type="button"
 								onClick={(): void => {
@@ -169,7 +169,7 @@ export default class Zones extends React.Component<{}, State> {
 			</div>
 			<NonState
 				hidden={!!zonesDom.length}
-				iconClass="bp3-icon-layout-circle"
+				iconClass="bp5-icon-layout-circle"
 				title="No zones"
 				description="Add a new zone to get started."
 			/>

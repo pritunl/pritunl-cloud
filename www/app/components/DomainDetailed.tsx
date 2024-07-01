@@ -192,7 +192,7 @@ export default class DomainDetailed extends React.Component<Props, State> {
 		let org = OrganizationsStore.organization(this.props.domain.organization);
 
 		return <td
-			className="bp3-cell"
+			className="bp5-cell"
 			colSpan={5}
 			style={css.card}
 		>
@@ -211,7 +211,7 @@ export default class DomainDetailed extends React.Component<Props, State> {
 					>
             <div>
               <label
-                className="bp3-control bp3-checkbox"
+                className="bp5-control bp5-checkbox"
                 style={css.select}
               >
                 <input
@@ -223,16 +223,16 @@ export default class DomainDetailed extends React.Component<Props, State> {
 										this.props.onSelect(evt.shiftKey);
 									}}
                 />
-                <span className="bp3-control-indicator"/>
+                <span className="bp5-control-indicator"/>
               </label>
             </div>
 						<div className="flex tab-close"/>
 						<ConfirmButton
-							className="bp3-minimal bp3-intent-danger bp3-icon-trash"
+							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
 							style={css.button}
 							safe={true}
-							progressClassName="bp3-intent-danger"
-							dialogClassName="bp3-intent-danger bp3-icon-delete"
+							progressClassName="bp5-intent-danger"
+							dialogClassName="bp5-intent-danger bp5-icon-delete"
 							dialogLabel="Delete Domain"
 							confirmMsg="Permanently delete this domain"
 							confirmInput={true}

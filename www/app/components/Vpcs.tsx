@@ -311,9 +311,9 @@ export default class Vpcs extends React.Component<{}, State> {
 			/>);
 		});
 
-		let filterClass = 'bp3-button bp3-intent-primary bp3-icon-filter ';
+		let filterClass = 'bp5-button bp5-intent-primary bp5-icon-filter ';
 		if (this.state.filter) {
-			filterClass += 'bp3-active';
+			filterClass += 'bp5-active';
 		}
 
 		return <Page>
@@ -339,11 +339,11 @@ export default class Vpcs extends React.Component<{}, State> {
 					</div>
 					<div style={Constants.user ? css.groupBoxUser : css.groupBox}>
 						<div
-							className="bp3-control-group"
+							className="bp5-control-group"
 							style={css.group}
 						>
 							<input
-								className="bp3-input"
+								className="bp5-input"
 								style={css.input}
 								type="text"
 								disabled={!hasOrganizations || this.state.disabled}
@@ -359,7 +359,7 @@ export default class Vpcs extends React.Component<{}, State> {
 								}}
 							/>
 							<div style={css.selectBox} hidden={Constants.user}>
-								<div className="bp3-select" style={css.selectFirst}>
+								<div className="bp5-select" style={css.selectFirst}>
 									<select
 										style={css.selectInner}
 										disabled={!hasOrganizations || this.state.disabled}
@@ -376,7 +376,7 @@ export default class Vpcs extends React.Component<{}, State> {
 								</div>
 							</div>
 							<div style={css.selectBox}>
-								<div className="bp3-select" style={css.select}>
+								<div className="bp5-select" style={css.select}>
 									<select
 										style={css.selectInner}
 										disabled={!hasDatacenters || this.state.disabled}
@@ -393,7 +393,7 @@ export default class Vpcs extends React.Component<{}, State> {
 								</div>
 							</div>
 							<button
-								className="bp3-button bp3-intent-success bp3-icon-add"
+								className="bp5-button bp5-intent-success bp5-icon-add"
 								disabled={!hasDatacenters || !hasOrganizations ||
 									this.state.disabled}
 								type="button"
@@ -438,14 +438,14 @@ export default class Vpcs extends React.Component<{}, State> {
 			<div style={css.itemsBox}>
 				<div style={css.items}>
 					{vpcsDom}
-					<tr className="bp3-card bp3-row" style={css.placeholder}>
+					<tr className="bp5-card bp5-row" style={css.placeholder}>
 						<td colSpan={6} style={css.placeholder}/>
 					</tr>
 				</div>
 			</div>
 			<NonState
 				hidden={!!vpcsDom.length}
-				iconClass="bp3-icon-layout-auto"
+				iconClass="bp5-icon-layout-auto"
 				title="No vpcs"
 				description="Add a new vpc to get started."
 			/>

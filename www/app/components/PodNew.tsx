@@ -266,13 +266,13 @@ export default class PodNew extends React.Component<Props, State> {
 		for (let role of (pod.roles || [])) {
 			roles.push(
 				<div
-					className="bp3-tag bp3-tag-removable bp3-intent-primary"
+					className="bp5-tag bp5-tag-removable bp5-intent-primary"
 					style={css.role}
 					key={role}
 				>
 					{role}
 					<button
-						className="bp3-tag-remove"
+						className="bp5-tag-remove"
 						disabled={this.state.disabled}
 						onMouseUp={(): void => {
 							this.onRemoveRole(role);
@@ -283,11 +283,11 @@ export default class PodNew extends React.Component<Props, State> {
 		}
 
 		return <div
-			className="bp3-card bp3-row"
+			className="bp5-card bp5-row"
 			style={css.row}
 		>
 			<td
-				className="bp3-cell"
+				className="bp5-cell"
 				colSpan={6}
 				style={css.card}
 			>
@@ -339,7 +339,7 @@ export default class PodNew extends React.Component<Props, State> {
 						/>
 					</div>
 					<div style={css.group}>
-						<label className="bp3-label">
+						<label className="bp5-label">
 							Roles
 							<Help
 								title="Roles"
@@ -351,7 +351,7 @@ export default class PodNew extends React.Component<Props, State> {
 						</label>
 						<PageInputButton
 							disabled={this.state.disabled}
-							buttonClass="bp3-intent-success bp3-icon-add"
+							buttonClass="bp5-intent-success bp5-icon-add"
 							label="Add"
 							type="text"
 							placeholder="Add role"

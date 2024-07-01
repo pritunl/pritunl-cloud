@@ -74,7 +74,7 @@ export default class Blocks extends React.Component<{}, State> {
 					<div className="flex"/>
 					<div style={css.buttons}>
 						<button
-							className="bp3-button bp3-intent-success bp3-icon-add"
+							className="bp5-button bp5-intent-success bp5-icon-add"
 							style={css.button}
 							disabled={this.state.disabled}
 							type="button"
@@ -104,7 +104,7 @@ export default class Blocks extends React.Component<{}, State> {
 			</div>
 			<NonState
 				hidden={!!blocksDom.length}
-				iconClass="bp3-icon-ip-address"
+				iconClass="bp5-icon-ip-address"
 				title="No IP blocks"
 				description="Add a new IP block to get started."
 			/>

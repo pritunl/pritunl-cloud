@@ -1099,29 +1099,29 @@ export default class NodeDetailed extends React.Component<Props, State> {
 
 		let resourceBars: PageInfos.Bar[] = [
 			{
-				progressClass: 'bp3-no-stripes bp3-intent-success',
+				progressClass: 'bp5-no-stripes bp5-intent-success',
 				label: 'Load1',
 				value: this.props.node.load1 || 0,
 			},
 			{
-				progressClass: 'bp3-no-stripes bp3-intent-warning',
+				progressClass: 'bp5-no-stripes bp5-intent-warning',
 				label: 'Load5',
 				value: this.props.node.load5 || 0,
 			},
 			{
-				progressClass: 'bp3-no-stripes bp3-intent-danger',
+				progressClass: 'bp5-no-stripes bp5-intent-danger',
 				label: 'Load15',
 				value: this.props.node.load15 || 0,
 			},
 			{
-				progressClass: 'bp3-no-stripes bp3-intent-primary',
+				progressClass: 'bp5-no-stripes bp5-intent-primary',
 				label: 'Memory',
 				value: this.props.node.memory || 0,
 			},
 		];
 		if (this.props.node.hugepages) {
 			resourceBars.push({
-				progressClass: 'bp3-no-stripes bp3-intent-primary',
+				progressClass: 'bp5-no-stripes bp5-intent-primary',
 				label: 'HugePages',
 				value: this.props.node.hugepages_used || 0,
 				color: '#7207d4',
@@ -1132,14 +1132,14 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		for (let iface of (node.external_interfaces || [])) {
 			externalIfaces.push(
 				<div
-					className="bp3-tag bp3-tag-removable bp3-intent-primary"
+					className="bp5-tag bp5-tag-removable bp5-intent-primary"
 					style={css.item}
 					key={iface}
 				>
 					{iface}
 					<button
 						disabled={this.state.disabled}
-						className="bp3-tag-remove"
+						className="bp5-tag-remove"
 						onMouseUp={(): void => {
 							this.onRemoveExternalIface(iface);
 						}}
@@ -1152,14 +1152,14 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		for (let iface of (node.internal_interfaces || [])) {
 			internalIfaces.push(
 				<div
-					className="bp3-tag bp3-tag-removable bp3-intent-primary"
+					className="bp5-tag bp5-tag-removable bp5-intent-primary"
 					style={css.item}
 					key={iface}
 				>
 					{iface}
 					<button
 						disabled={this.state.disabled}
-						className="bp3-tag-remove"
+						className="bp5-tag-remove"
 						onMouseUp={(): void => {
 							this.onRemoveInternalIface(iface);
 						}}
@@ -1191,14 +1191,14 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		for (let subnetId of (node.oracle_subnets || [])) {
 			oracleSubnets.push(
 				<div
-					className="bp3-tag bp3-tag-removable bp3-intent-primary"
+					className="bp5-tag bp5-tag-removable bp5-intent-primary"
 					style={css.item}
 					key={subnetId}
 				>
 					{this.subnetLabel(subnetId)}
 					<button
 						disabled={this.state.disabled}
-						className="bp3-tag-remove"
+						className="bp5-tag-remove"
 						onMouseUp={(): void => {
 							this.onRemoveOracleSubnet(subnetId);
 						}}
@@ -1239,14 +1239,14 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		for (let device of (node.instance_drives || [])) {
 			availableDrives.push(
 				<div
-					className="bp3-tag bp3-tag-removable bp3-intent-primary"
+					className="bp5-tag bp5-tag-removable bp5-intent-primary"
 					style={css.item}
 					key={device.id}
 				>
 					{device.id}
 					<button
 						disabled={this.state.disabled}
-						className="bp3-tag-remove"
+						className="bp5-tag-remove"
 						onMouseUp={(): void => {
 							this.onRemoveDrive(device.id);
 						}}
@@ -1273,14 +1273,14 @@ export default class NodeDetailed extends React.Component<Props, State> {
 
 			certificates.push(
 				<div
-					className="bp3-tag bp3-tag-removable bp3-intent-primary"
+					className="bp5-tag bp5-tag-removable bp5-intent-primary"
 					style={css.item}
 					key={cert.id}
 				>
 					{cert.name}
 					<button
 						disabled={this.state.disabled}
-						className="bp3-tag-remove"
+						className="bp5-tag-remove"
 						onMouseUp={(): void => {
 							this.onRemoveCert(cert.id);
 						}}
@@ -1386,13 +1386,13 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		for (let networkRole of (node.network_roles || [])) {
 			networkRoles.push(
 				<div
-					className="bp3-tag bp3-tag-removable bp3-intent-primary"
+					className="bp5-tag bp5-tag-removable bp5-intent-primary"
 					style={css.role}
 					key={networkRole}
 				>
 					{networkRole}
 					<button
-						className="bp3-tag-remove"
+						className="bp5-tag-remove"
 						disabled={this.state.disabled}
 						onMouseUp={(): void => {
 							this.onRemoveNetworkRole(networkRole);
@@ -1455,7 +1455,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		}
 
 		return <td
-			className="bp3-cell"
+			className="bp5-cell"
 			colSpan={4}
 			style={css.card}
 		>
@@ -1474,11 +1474,11 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					>
 						<div className="flex tab-close"/>
 						<ConfirmButton
-							className="bp3-minimal bp3-intent-danger bp3-icon-trash"
+							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
 							style={css.button}
 							safe={true}
-							progressClassName="bp3-intent-danger"
-							dialogClassName="bp3-intent-danger bp3-icon-delete"
+							progressClassName="bp5-intent-danger"
+							dialogClassName="bp5-intent-danger bp5-icon-delete"
 							dialogLabel="Delete Node"
 							confirmMsg="Permanently delete this node"
 							confirmInput={true}
@@ -1585,10 +1585,10 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							this.set('webauthn_domain', val);
 						}}
 					/>
-					<label className="bp3-label" style={css.label}>
+					<label className="bp5-label" style={css.label}>
 						Protocol and Port
-						<div className="bp3-control-group" style={css.inputGroup}>
-							<div className="bp3-select" style={css.protocol}>
+						<div className="bp5-control-group" style={css.inputGroup}>
+							<div className="bp5-select" style={css.protocol}>
 								<select
 									disabled={this.state.disabled}
 									value={node.protocol || 'https'}
@@ -1601,7 +1601,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 								</select>
 							</div>
 							<input
-								className="bp3-input"
+								className="bp5-input"
 								disabled={this.state.disabled}
 								style={css.port}
 								type="text"
@@ -1710,7 +1710,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						<option value="disabled">Disabled</option>
 					</PageSelect>
 					<label
-						className="bp3-label"
+						className="bp5-label"
 						style={css.label}
 						hidden={
 							node.network_mode !== 'dhcp' &&
@@ -1738,7 +1738,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						label="Add Interface"
 						value={this.state.addExternalIface}
 						disabled={!externalIfacesSelect.length || this.state.disabled}
-						buttonClass="bp3-intent-success"
+						buttonClass="bp5-intent-success"
 						onChange={(val: string): void => {
 							this.setState({
 								...this.state,
@@ -1750,7 +1750,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						{externalIfacesSelect}
 					</PageSelectButton>
 					<label
-						className="bp3-label"
+						className="bp5-label"
 						style={css.label}
 					>
 						Internal Interfaces
@@ -1766,7 +1766,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						label="Add Interface"
 						value={this.state.addInternalIface}
 						disabled={!internalIfacesSelect.length || this.state.disabled}
-						buttonClass="bp3-intent-success"
+						buttonClass="bp5-intent-success"
 						onChange={(val: string): void => {
 							this.setState({
 								...this.state,
@@ -1778,7 +1778,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						{internalIfacesSelect}
 					</PageSelectButton>
 					<label
-						className="bp3-label"
+						className="bp5-label"
 						hidden={node.network_mode !== 'static'}
 						style={css.label}
 					>
@@ -1786,7 +1786,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						{blocks}
 					</label>
 					<label
-						className="bp3-label"
+						className="bp5-label"
 						hidden={node.network_mode6 !== 'static'}
 						style={css.label}
 					>
@@ -1794,7 +1794,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						{blocks6}
 					</label>
 					<label
-						className="bp3-label"
+						className="bp5-label"
 						hidden={node.network_mode !== 'oracle'}
 						style={css.label}
 					>
@@ -1812,7 +1812,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						hidden={node.network_mode !== 'oracle'}
 						value={this.state.addOracleSubnet}
 						disabled={!availableSubnetsSelect.length || this.state.disabled}
-						buttonClass="bp3-intent-success"
+						buttonClass="bp5-intent-success"
 						onChange={(val: string): void => {
 							this.setState({
 								...this.state,
@@ -1926,6 +1926,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						label="Instance iSCSI support"
 						help="Enable iSCSI disk support for instances."
 						checked={node.iscsi}
+						hidden={!node.iscsi}
 						onToggle={(): void => {
 							this.set('iscsi', !node.iscsi);
 						}}
@@ -2037,7 +2038,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 								value: node.software_version || 'Unknown',
 							},
 							{
-								valueClass: active ? '' : 'bp3-text-intent-danger',
+								valueClass: active ? '' : 'bp5-text-intent-danger',
 								label: 'Timestamp',
 								value: MiscUtils.formatDate(
 									this.props.node.timestamp) || 'Inactive',
@@ -2128,7 +2129,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						{rendersSelect}
 					</PageSelect>
 					<label
-						className="bp3-label"
+						className="bp5-label"
 						style={css.label}
 					>
 						Instance Passthrough Disks
@@ -2144,7 +2145,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						label="Add Disk"
 						value={this.state.addDrive}
 						disabled={!availableDrivesSelect.length || this.state.disabled}
-						buttonClass="bp3-intent-success"
+						buttonClass="bp5-intent-success"
 						onChange={(val: string): void => {
 							this.setState({
 								...this.state,
@@ -2155,7 +2156,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					>
 						{availableDrivesSelect}
 					</PageSelectButton>
-					<label className="bp3-label">
+					<label className="bp5-label">
 						Network Roles
 						<Help
 							title="Network Roles"
@@ -2167,7 +2168,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					</label>
 					<PageInputButton
 						disabled={this.state.disabled}
-						buttonClass="bp3-intent-success bp3-icon-add"
+						buttonClass="bp5-intent-success bp5-icon-add"
 						label="Add"
 						type="text"
 						placeholder="Add role"
@@ -2181,7 +2182,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						onSubmit={this.onAddNetworkRole}
 					/>
 					<label
-						className="bp3-label"
+						className="bp5-label"
 						style={css.label}
 						hidden={node.protocol === 'http'}
 					>
@@ -2199,7 +2200,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						label="Add Certificate"
 						value={this.state.addCert}
 						disabled={this.state.disabled || !hasCertificates}
-						buttonClass="bp3-intent-success"
+						buttonClass="bp5-intent-success"
 						onChange={(val: string): void => {
 							this.setState({
 								...this.state,

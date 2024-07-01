@@ -1070,15 +1070,15 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		let statusClass = 'no-select tab-close';
 		switch (instance.status) {
 			case 'Running':
-				statusClass += ' bp3-text-intent-success';
+				statusClass += ' bp5-text-intent-success';
 				break;
 			case 'Restart Required':
-				statusClass += ' bp3-text-intent-warning';
+				statusClass += ' bp5-text-intent-warning';
 				break;
 			case 'Stopped':
 			case 'Failed':
 			case 'Destroying':
-				statusClass += ' bp3-text-intent-danger';
+				statusClass += ' bp5-text-intent-danger';
 				break;
 		}
 
@@ -1086,13 +1086,13 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		for (let networkRole of (instance.network_roles || [])) {
 			networkRoles.push(
 				<div
-					className="bp3-tag bp3-tag-removable bp3-intent-primary"
+					className="bp5-tag bp5-tag-removable bp5-intent-primary"
 					style={css.role}
 					key={networkRole}
 				>
 					{networkRole}
 					<button
-						className="bp3-tag-remove"
+						className="bp5-tag-remove"
 						disabled={this.state.disabled}
 						onMouseUp={(): void => {
 							this.onRemoveNetworkRole(networkRole);
@@ -1190,14 +1190,14 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			let key = device.id;
 			driveDevices.push(
 				<div
-					className="bp3-tag bp3-tag-removable bp3-intent-primary"
+					className="bp5-tag bp5-tag-removable bp5-intent-primary"
 					style={css.item}
 					key={key}
 				>
 					{key}
 					<button
 						disabled={this.state.disabled}
-						className="bp3-tag-remove"
+						className="bp5-tag-remove"
 						onMouseUp={(): void => {
 							this.onRemoveDriveDevice(key);
 						}}
@@ -1225,14 +1225,14 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			let key = iso.name;
 			isos.push(
 				<div
-					className="bp3-tag bp3-tag-removable bp3-intent-primary"
+					className="bp5-tag bp5-tag-removable bp5-intent-primary"
 					style={css.item}
 					key={key}
 				>
 					{key}
 					<button
 						disabled={this.state.disabled}
-						className="bp3-tag-remove"
+						className="bp5-tag-remove"
 						onMouseUp={(): void => {
 							this.onRemoveIso(key);
 						}}
@@ -1265,14 +1265,14 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			}
 			usbDevices.push(
 				<div
-					className="bp3-tag bp3-tag-removable bp3-intent-primary"
+					className="bp5-tag bp5-tag-removable bp5-intent-primary"
 					style={css.item}
 					key={key}
 				>
 					{key}
 					<button
 						disabled={this.state.disabled}
-						className="bp3-tag-remove"
+						className="bp5-tag-remove"
 						onMouseUp={(): void => {
 							this.onRemoveUsbDevice(key);
 						}}
@@ -1313,14 +1313,14 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			let key = device.slot;
 			pciDevices.push(
 				<div
-					className="bp3-tag bp3-tag-removable bp3-intent-primary"
+					className="bp5-tag bp5-tag-removable bp5-intent-primary"
 					style={css.item}
 					key={key}
 				>
 					{key}
 					<button
 						disabled={this.state.disabled}
-						className="bp3-tag-remove"
+						className="bp5-tag-remove"
 						onMouseUp={(): void => {
 							this.onRemovePciDevice(key);
 						}}
@@ -1579,7 +1579,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		} as React.CSSProperties;
 
 		return <td
-			className="bp3-cell"
+			className="bp5-cell"
 			colSpan={6}
 			style={css.card}
 		>
@@ -1598,7 +1598,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					>
             <div>
               <label
-                className="bp3-control bp3-checkbox"
+                className="bp5-control bp5-checkbox"
                 style={css.select}
               >
                 <input
@@ -1610,24 +1610,24 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 										this.props.onSelect(evt.shiftKey);
 									}}
                 />
-                <span className="bp3-control-indicator"/>
+                <span className="bp5-control-indicator"/>
               </label>
             </div>
 						<div className={statusClass} style={css.status}>
 							<span
 								style={css.icon}
 								hidden={!instance.status}
-								className="bp3-icon-standard bp3-icon-power"
+								className="bp5-icon-standard bp5-icon-power"
 							/>
 							{instance.status}
 						</div>
 						<div className="flex tab-close"/>
 						<ConfirmButton
-							className="bp3-minimal bp3-intent-danger bp3-icon-trash"
+							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
 							style={css.button}
 							safe={true}
-							progressClassName="bp3-intent-danger"
-							dialogClassName="bp3-intent-danger bp3-icon-delete"
+							progressClassName="bp5-intent-danger"
+							dialogClassName="bp5-intent-danger bp5-icon-delete"
 							dialogLabel="Delete Instance"
 							confirmMsg="Permanently delete this instance"
 							confirmInput={true}
@@ -1684,7 +1684,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						}}
 						value={instance.processors}
 					/>
-					<label className="bp3-label">
+					<label className="bp5-label">
 						Network Roles
 						<Help
 							title="Network Roles"
@@ -1696,7 +1696,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					</label>
 					<PageInputButton
 						disabled={this.state.disabled}
-						buttonClass="bp3-intent-success bp3-icon-add"
+						buttonClass="bp5-intent-success bp5-icon-add"
 						label="Add"
 						type="text"
 						placeholder="Add role"
@@ -1710,7 +1710,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						onSubmit={this.onAddNetworkRole}
 					/>
 					<label
-						className="bp3-label"
+						className="bp5-label"
 						style={css.label}
 						hidden={!isos.length && !isosSelect.length}
 					>
@@ -1728,7 +1728,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						label="Add ISO"
 						value={this.state.addIso}
 						disabled={this.state.disabled}
-						buttonClass="bp3-intent-success"
+						buttonClass="bp5-intent-success"
 						onChange={(val: string): void => {
 							this.setState({
 								...this.state,
@@ -1740,7 +1740,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						{isosSelect}
 					</PageSelectButton>
 					<label
-						className="bp3-label"
+						className="bp5-label"
 						style={css.label}
 						hidden={!driveDevices.length && !driveDevicesSelect.length}
 					>
@@ -1758,7 +1758,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						label="Add Device"
 						value={this.state.addDriveDevice}
 						disabled={this.state.disabled}
-						buttonClass="bp3-intent-success"
+						buttonClass="bp5-intent-success"
 						onChange={(val: string): void => {
 							this.setState({
 								...this.state,
@@ -1794,7 +1794,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						{iscsiDevicesElem}
 					</div>
 					<label
-						className="bp3-label"
+						className="bp5-label"
 						style={css.label}
 						hidden={!pciDevices.length && !pciDevicesSelect.length}
 					>
@@ -1812,7 +1812,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						label="Add Device"
 						value={this.state.addPciDevice}
 						disabled={this.state.disabled}
-						buttonClass="bp3-intent-success"
+						buttonClass="bp5-intent-success"
 						onChange={(val: string): void => {
 							this.setState({
 								...this.state,
@@ -1824,7 +1824,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						{pciDevicesSelect}
 					</PageSelectButton>
 					<label
-						className="bp3-label"
+						className="bp5-label"
 						style={css.label}
 						hidden={infoUsbDevices === null}
 					>
@@ -1842,7 +1842,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						label="Add Device"
 						value={this.state.addUsbDevice}
 						disabled={!usbDevicesSelect.length || this.state.disabled}
-						buttonClass="bp3-intent-success"
+						buttonClass="bp5-intent-success"
 						onChange={(val: string): void => {
 							this.setState({
 								...this.state,
@@ -2063,8 +2063,8 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			>
 				<ConfirmButton
 					label="Start"
-					className="bp3-intent-success bp3-icon-power"
-					progressClassName="bp3-intent-success"
+					className="bp5-intent-success bp5-icon-power"
+					progressClassName="bp5-intent-success"
 					style={css.controlButton}
 					hidden={this.props.instance.state !== 'stop'}
 					disabled={this.state.disabled}
@@ -2074,8 +2074,8 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				/>
 				<ConfirmButton
 					label="Stop"
-					className="bp3-intent-danger bp3-icon-power"
-					progressClassName="bp3-intent-danger"
+					className="bp5-intent-danger bp5-icon-power"
+					progressClassName="bp5-intent-danger"
 					style={css.controlButton}
 					hidden={this.props.instance.state !== 'start'}
 					disabled={this.state.disabled}
@@ -2084,7 +2084,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					}}
 				/>
 				<button
-					className="bp3-button bp3-intent-success bp3-icon-console"
+					className="bp5-button bp5-intent-success bp5-icon-console"
 					hidden={this.state.vnc || !this.props.instance.vnc}
 					style={css.controlButton}
 					disabled={this.state.disabled}
@@ -2096,7 +2096,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					VNC Console
 				</button>
 				<button
-					className="bp3-button bp3-intent-danger bp3-icon-console"
+					className="bp5-button bp5-intent-danger bp5-icon-console"
 					hidden={!this.state.vnc}
 					style={css.controlButton}
 					disabled={this.state.disabled}
@@ -2111,8 +2111,8 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			<div style={css.vncBox}>
 				<div className="layout horizontal">
 					<button
-						className={'bp3-button bp3-icon-key-control' +
-							(this.state.vncCtrl ? ' bp3-active' : '')}
+						className={'bp5-button bp5-icon-key-control' +
+							(this.state.vncCtrl ? ' bp5-active' : '')}
 						hidden={!this.state.vnc}
 						style={css.controlButton}
 						disabled={this.state.disabled}
@@ -2124,8 +2124,8 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						Ctrl
 					</button>
 					<button
-						className={'bp3-button bp3-icon-key-option' +
-							(this.state.vncAlt ? ' bp3-active' : '')}
+						className={'bp5-button bp5-icon-key-option' +
+							(this.state.vncAlt ? ' bp5-active' : '')}
 						hidden={!this.state.vnc}
 						style={css.controlButton}
 						disabled={this.state.disabled}
@@ -2137,8 +2137,8 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						Alt
 					</button>
 					<button
-						className={'bp3-button bp3-icon-key-command' +
-							(this.state.vncSuper ? ' bp3-active' : '')}
+						className={'bp5-button bp5-icon-key-command' +
+							(this.state.vncSuper ? ' bp5-active' : '')}
 						hidden={!this.state.vnc}
 						style={css.controlButton}
 						disabled={this.state.disabled}
@@ -2150,7 +2150,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						Super
 					</button>
 					<button
-						className="bp3-button bp3-icon-key-tab"
+						className="bp5-button bp5-icon-key-tab"
 						hidden={!this.state.vnc}
 						style={css.controlButton}
 						disabled={this.state.disabled}
@@ -2162,7 +2162,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						Tab
 					</button>
 					<button
-						className="bp3-button bp3-icon-key-escape"
+						className="bp5-button bp5-icon-key-escape"
 						hidden={!this.state.vnc}
 						style={css.controlButton}
 						disabled={this.state.disabled}
@@ -2174,7 +2174,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						Esc
 					</button>
 					<button
-						className="bp3-button bp3-icon-fullscreen"
+						className="bp5-button bp5-icon-fullscreen"
 						hidden={!this.state.vnc}
 						style={css.controlButton}
 						disabled={this.state.disabled}
@@ -2186,8 +2186,8 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						Fullscreen
 					</button>
 					<button
-						className={'bp3-button bp3-icon-zoom-to-fit' +
-							(this.state.vncScale ? ' bp3-active' : '')}
+						className={'bp5-button bp5-icon-zoom-to-fit' +
+							(this.state.vncScale ? ' bp5-active' : '')}
 						hidden={!this.state.vnc}
 						style={css.controlButton}
 						disabled={this.state.disabled}
@@ -2199,7 +2199,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						Scale
 					</button>
 					<button
-						className="bp3-button bp3-icon-control"
+						className="bp5-button bp5-icon-control"
 						hidden={!this.state.vnc}
 						style={css.controlButton}
 						disabled={this.state.disabled}

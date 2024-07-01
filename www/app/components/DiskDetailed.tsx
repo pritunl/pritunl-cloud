@@ -381,7 +381,7 @@ export default class DiskDetailed extends React.Component<Props, State> {
 		switch (this.props.disk.state) {
 			case 'provision':
 				statusText = 'Provisioning';
-				statusClass += ' bp3-text-intent-primary';
+				statusClass += ' bp5-text-intent-primary';
 				break;
 			case 'available':
 				if (this.props.disk.instance) {
@@ -389,27 +389,27 @@ export default class DiskDetailed extends React.Component<Props, State> {
 				} else {
 					statusText = 'Available';
 				}
-				statusClass += ' bp3-text-intent-success';
+				statusClass += ' bp5-text-intent-success';
 				break;
 			case 'destroy':
 				statusText = 'Destroying';
-				statusClass += ' bp3-text-intent-danger';
+				statusClass += ' bp5-text-intent-danger';
 				break;
 			case 'snapshot':
 				statusText = 'Snapshotting';
-				statusClass += ' bp3-text-intent-primary';
+				statusClass += ' bp5-text-intent-primary';
 				break;
 			case 'backup':
 				statusText = 'Backing Up';
-				statusClass += ' bp3-text-intent-primary';
+				statusClass += ' bp5-text-intent-primary';
 				break;
 			case 'restore':
 				statusText = 'Restoring';
-				statusClass += ' bp3-text-intent-primary';
+				statusClass += ' bp5-text-intent-primary';
 				break;
 			case 'expand':
 				statusText = 'Expanding';
-				statusClass += ' bp3-text-intent-primary';
+				statusClass += ' bp5-text-intent-primary';
 				break;
 		}
 
@@ -447,7 +447,7 @@ export default class DiskDetailed extends React.Component<Props, State> {
 		}
 
 		return <td
-			className="bp3-cell"
+			className="bp5-cell"
 			colSpan={5}
 			style={css.card}
 		>
@@ -466,7 +466,7 @@ export default class DiskDetailed extends React.Component<Props, State> {
 					>
             <div>
               <label
-                className="bp3-control bp3-checkbox tab-close"
+                className="bp5-control bp5-checkbox tab-close"
                 style={css.select}
               >
                 <input
@@ -478,23 +478,23 @@ export default class DiskDetailed extends React.Component<Props, State> {
 										this.props.onSelect(evt.shiftKey);
 									}}
                 />
-                <span className="bp3-control-indicator"/>
+                <span className="bp5-control-indicator"/>
               </label>
             </div>
 						<div className={statusClass} style={css.status}>
 							<span
 								style={css.icon}
-								className="bp3-icon-standard bp3-icon-pulse"
+								className="bp5-icon-standard bp5-icon-pulse"
 							/>
 							{statusText}
 						</div>
 						<div className="flex tab-close"/>
 						<ConfirmButton
-							className="bp3-minimal bp3-intent-danger bp3-icon-trash"
+							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
 							style={css.button}
 							safe={true}
-							progressClassName="bp3-intent-danger"
-							dialogClassName="bp3-intent-danger bp3-icon-delete"
+							progressClassName="bp5-intent-danger"
+							dialogClassName="bp5-intent-danger bp5-icon-delete"
 							dialogLabel="Delete Disk"
 							confirmMsg="Permanently delete this disk"
 							confirmInput={true}
@@ -610,7 +610,7 @@ export default class DiskDetailed extends React.Component<Props, State> {
 						}}
 					/>
 					<label
-						className="bp3-label"
+						className="bp5-label"
 						style={css.label}
 					>
 						Restore Backup
@@ -624,8 +624,8 @@ export default class DiskDetailed extends React.Component<Props, State> {
 						value={this.state.restoreImage}
 						disabled={!hasBackups || this.state.disabled}
 						confirmMsg="Confirm disk restore"
-						buttonClass="bp3-intent-success bp3-icon-box"
-						progressClassName="bp3-intent-success"
+						buttonClass="bp5-intent-success bp5-icon-box"
+						progressClassName="bp5-intent-success"
 						onChange={(val: string): void => {
 							this.setState({
 								...this.state,

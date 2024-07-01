@@ -215,7 +215,7 @@ export default class InstancesFilter extends React.Component<Props, {}> {
 					this.props.onFilter(filter);
 				}}
 			/>
-			<div className="bp3-select" style={css.type}>
+			<div className="bp5-select" style={css.type}>
 				<select
 					value={this.props.filter.node || 'any'}
 					onChange={(evt): void => {
@@ -237,7 +237,7 @@ export default class InstancesFilter extends React.Component<Props, {}> {
 					{nodesSelect}
 				</select>
 			</div>
-			<div className="bp3-select" style={css.type}>
+			<div className="bp5-select" style={css.type}>
 				<select
 					value={this.props.filter.zone || 'any'}
 					onChange={(evt): void => {
@@ -259,7 +259,7 @@ export default class InstancesFilter extends React.Component<Props, {}> {
 					{zonesSelect}
 				</select>
 			</div>
-			<div className="bp3-select" style={css.type}>
+			<div className="bp5-select" style={css.type}>
 				<select
 					value={this.props.filter.vpc || 'any'}
 					onChange={(evt): void => {
@@ -285,7 +285,7 @@ export default class InstancesFilter extends React.Component<Props, {}> {
 					{vpcsSelect}
 				</select>
 			</div>
-			<div className="bp3-select" style={css.type}>
+			<div className="bp5-select" style={css.type}>
 				<select
 					value={this.props.filter.subnet || 'any'}
 					onChange={(evt): void => {
@@ -307,7 +307,7 @@ export default class InstancesFilter extends React.Component<Props, {}> {
 					{subnetsSelect}
 				</select>
 			</div>
-			<div className="bp3-select" style={css.type} hidden={Constants.user}>
+			<div className="bp5-select" style={css.type} hidden={Constants.user}>
 				<select
 					value={this.props.filter.organization || 'any'}
 					onChange={(evt): void => {

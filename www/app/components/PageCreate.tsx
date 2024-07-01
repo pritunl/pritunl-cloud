@@ -42,7 +42,7 @@ export default class PageCreate extends React.Component<Props, {}> {
 		let closedDom: JSX.Element;
 		if (this.props.closed) {
 			closedDom = <button
-				className="bp3-button bp3-intent-success bp3-icon-cross"
+				className="bp5-button bp5-intent-success bp5-icon-cross"
 				style={css.button}
 				type="button"
 				onClick={this.props.onCancel}
@@ -63,7 +63,7 @@ export default class PageCreate extends React.Component<Props, {}> {
 				</span>
 				<div style={css.buttons}>
 					<button
-						className="bp3-button bp3-icon-cross"
+						className="bp5-button bp5-icon-cross"
 						style={css.button}
 						type="button"
 						hidden={this.props.closed}
@@ -73,7 +73,7 @@ export default class PageCreate extends React.Component<Props, {}> {
 						Cancel
 					</button>
 					<button
-						className="bp3-button bp3-intent-success bp3-icon-tick"
+						className="bp5-button bp5-intent-success bp5-icon-tick"
 						style={css.button}
 						type="button"
 						hidden={this.props.closed}

@@ -59,7 +59,7 @@ export default class Organization extends React.Component<Props, State> {
 
 		return <div style={css.select}>
 			<div
-				className="bp3-select"
+				className="bp5-select"
 				hidden={this.props.hidden}
 			>
 				<select

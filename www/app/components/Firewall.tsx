@@ -82,7 +82,7 @@ export default class Firewall extends React.Component<Props, {}> {
 
 		if (this.props.open) {
 			return <div
-				className="bp3-card bp3-row"
+				className="bp5-card bp5-row"
 				style={css.cardOpen}
 			>
 				<FirewallDetailed
@@ -105,7 +105,7 @@ export default class Firewall extends React.Component<Props, {}> {
 		for (let networkRole of (firewall.network_roles || [])) {
 			networkRoles.push(
 				<div
-					className="bp3-tag bp3-intent-primary"
+					className="bp5-tag bp5-intent-primary"
 					style={css.tag}
 					key={networkRole}
 				>
@@ -123,7 +123,7 @@ export default class Firewall extends React.Component<Props, {}> {
 		}
 
 		return <div
-			className="bp3-card bp3-row"
+			className="bp5-card bp5-row"
 			style={cardStyle}
 			onClick={(evt): void => {
 				let target = evt.target as HTMLElement;
@@ -135,10 +135,10 @@ export default class Firewall extends React.Component<Props, {}> {
 				this.props.onOpen();
 			}}
 		>
-			<div className="bp3-cell" style={css.name}>
+			<div className="bp5-cell" style={css.name}>
 				<div className="layout horizontal">
 					<label
-						className="bp3-control bp3-checkbox open-ignore"
+						className="bp5-control bp5-checkbox open-ignore"
 						style={css.select}
 					>
 						<input
@@ -151,22 +151,22 @@ export default class Firewall extends React.Component<Props, {}> {
 								this.props.onSelect(evt.shiftKey);
 							}}
 						/>
-						<span className="bp3-control-indicator open-ignore"/>
+						<span className="bp5-control-indicator open-ignore"/>
 					</label>
 					<div style={css.nameSpan}>
 						{firewall.name}
 					</div>
 				</div>
 			</div>
-			<div className="bp3-cell" style={css.item}>
+			<div className="bp5-cell" style={css.item}>
 				<span
 					style={css.icon}
-					className={'bp3-icon-standard bp3-text-muted ' + (
-						firewall.organization ? 'bp3-icon-people' : 'bp3-icon-layers')}
+					className={'bp5-icon-standard bp5-text-muted ' + (
+						firewall.organization ? 'bp5-icon-people' : 'bp5-icon-layers')}
 				/>
 				{orgName}
 			</div>
-			<div className="flex bp3-cell" style={css.roles}>
+			<div className="flex bp5-cell" style={css.roles}>
 				{networkRoles}
 			</div>
 		</div>;

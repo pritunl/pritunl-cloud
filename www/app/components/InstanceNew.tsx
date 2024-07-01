@@ -722,13 +722,13 @@ export default class InstanceNew extends React.Component<Props, State> {
 		for (let networkRole of (instance.network_roles || [])) {
 			networkRoles.push(
 				<div
-					className="bp3-tag bp3-tag-removable bp3-intent-primary"
+					className="bp5-tag bp5-tag-removable bp5-intent-primary"
 					style={css.role}
 					key={networkRole}
 				>
 					{networkRole}
 					<button
-						className="bp3-tag-remove"
+						className="bp5-tag-remove"
 						disabled={this.state.disabled}
 						onMouseUp={(): void => {
 							this.onRemoveNetworkRole(networkRole);
@@ -743,11 +743,11 @@ export default class InstanceNew extends React.Component<Props, State> {
 		}
 
 		return <div
-			className="bp3-card bp3-row"
+			className="bp5-card bp5-row"
 			style={css.row}
 		>
 			<td
-				className="bp3-cell"
+				className="bp5-cell"
 				colSpan={6}
 				style={css.card}
 			>
@@ -1095,7 +1095,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 								this.set('image_backing', !instance.image_backing);
 							}}
 						/>
-						<label className="bp3-label">
+						<label className="bp5-label">
 							Network Roles
 							<Help
 								title="Network Roles"
@@ -1107,7 +1107,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 						</label>
 						<PageInputButton
 							disabled={this.state.disabled}
-							buttonClass="bp3-intent-success bp3-icon-add"
+							buttonClass="bp5-intent-success bp5-icon-add"
 							label="Add"
 							type="text"
 							placeholder="Add role"

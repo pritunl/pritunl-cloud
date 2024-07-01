@@ -3,6 +3,7 @@ import * as React from 'react';
 import ConfirmButton from './ConfirmButton';
 
 interface Props {
+	children?: React.ReactNode
 	hidden?: boolean;
 	label: string;
 	value: string;
@@ -35,18 +36,18 @@ const css = {
 
 export default class PageSelectButton extends React.Component<Props, {}> {
 	render(): JSX.Element {
-		let buttonClass = 'bp3-button';
+		let buttonClass = 'bp5-button';
 		if (this.props.buttonClass) {
 			buttonClass += ' ' + this.props.buttonClass;
 		}
 
 		return <div
-			className="bp3-control-group"
+			className="bp5-control-group"
 			style={css.group}
 			hidden={this.props.hidden}
 		>
 			<div style={css.selectBox}>
-				<div className="bp3-select" style={css.select}>
+				<div className="bp5-select" style={css.select}>
 					<select
 						style={css.selectInner}
 						disabled={this.props.disabled}

@@ -82,7 +82,7 @@ export default class Alert extends React.Component<Props, {}> {
 
 		if (this.props.open) {
 			return <div
-				className="bp3-card bp3-row"
+				className="bp5-card bp5-row"
 				style={css.cardOpen}
 			>
 				<AlertDetailed
@@ -107,7 +107,7 @@ export default class Alert extends React.Component<Props, {}> {
 		for (let role of alert.roles) {
 			roles.push(
 				<div
-					className="bp3-tag bp3-intent-primary"
+					className="bp5-tag bp5-intent-primary"
 					style={css.tag}
 					key={role}
 				>
@@ -117,7 +117,7 @@ export default class Alert extends React.Component<Props, {}> {
 		}
 
 		return <div
-			className="bp3-card bp3-row"
+			className="bp5-card bp5-row"
 			style={cardStyle}
 			onClick={(evt): void => {
 				let target = evt.target as HTMLElement;
@@ -129,10 +129,10 @@ export default class Alert extends React.Component<Props, {}> {
 				this.props.onOpen();
 			}}
 		>
-			<div className="bp3-cell" style={css.name}>
+			<div className="bp5-cell" style={css.name}>
 				<div className="layout horizontal">
 					<label
-						className="bp3-control bp3-checkbox open-ignore"
+						className="bp5-control bp5-checkbox open-ignore"
 						style={css.select}
 					>
 						<input
@@ -145,14 +145,14 @@ export default class Alert extends React.Component<Props, {}> {
 								this.props.onSelect(evt.shiftKey);
 							}}
 						/>
-						<span className="bp3-control-indicator open-ignore"/>
+						<span className="bp5-control-indicator open-ignore"/>
 					</label>
 					<div style={css.nameSpan}>
 						{alert.name}
 					</div>
 				</div>
 			</div>
-			<div className="flex bp3-cell" style={css.roles}>
+			<div className="flex bp5-cell" style={css.roles}>
 				{roles}
 			</div>
 		</div>;

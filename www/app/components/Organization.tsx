@@ -212,13 +212,13 @@ export default class Organization extends React.Component<Props, State> {
 		for (let role of (org.roles || [])) {
 			roles.push(
 				<div
-					className="bp3-tag bp3-tag-removable bp3-intent-primary"
+					className="bp5-tag bp5-tag-removable bp5-intent-primary"
 					style={css.role}
 					key={role}
 				>
 					{role}
 					<button
-						className="bp3-tag-remove"
+						className="bp5-tag-remove"
 						disabled={this.state.disabled}
 						onMouseUp={(): void => {
 							this.onRemoveRole(role);
@@ -229,7 +229,7 @@ export default class Organization extends React.Component<Props, State> {
 		}
 
 		return <div
-			className="bp3-card"
+			className="bp5-card"
 			style={css.card}
 		>
 			<div className="layout horizontal wrap">
@@ -237,9 +237,9 @@ export default class Organization extends React.Component<Props, State> {
 					<div style={css.remove}>
 						<ConfirmButton
 							safe={true}
-							className="bp3-minimal bp3-intent-danger bp3-icon-trash"
-							progressClassName="bp3-intent-danger"
-							dialogClassName="bp3-intent-danger bp3-icon-delete"
+							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
+							progressClassName="bp5-intent-danger"
+							dialogClassName="bp5-intent-danger bp5-icon-delete"
 							dialogLabel="Delete Organization"
 							confirmMsg="Permanently delete this organization"
 							confirmInput={true}
@@ -278,7 +278,7 @@ export default class Organization extends React.Component<Props, State> {
 							},
 						]}
 					/>
-					<label className="bp3-label">
+					<label className="bp5-label">
 						Roles
 						<Help
 							title="Roles"
@@ -290,7 +290,7 @@ export default class Organization extends React.Component<Props, State> {
 					</label>
 					<PageInputButton
 						disabled={this.state.disabled}
-						buttonClass="bp3-intent-success bp3-icon-add"
+						buttonClass="bp5-intent-success bp5-icon-add"
 						label="Add"
 						type="text"
 						placeholder="Add role"

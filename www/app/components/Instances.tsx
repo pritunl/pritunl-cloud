@@ -155,7 +155,9 @@ export default class Instances extends React.Component<{}, State> {
 
 		this.interval = setInterval(() => {
 			InstanceActions.sync(true);
-		}, 1000);
+			// TODO wait for last sync to finish
+			// TODO requests stack on slow server
+		}, 3000);
 	}
 
 	componentWillUnmount(): void {
@@ -364,14 +366,14 @@ export default class Instances extends React.Component<{}, State> {
 			/>;
 		}
 
-		let debugClass = 'bp3-button bp3-icon-console ';
+		let debugClass = 'bp5-button bp5-icon-console ';
 		if (this.state.debug) {
-			debugClass += 'bp3-active';
+			debugClass += 'bp5-active';
 		}
 
-		let filterClass = 'bp3-button bp3-intent-primary bp3-icon-filter ';
+		let filterClass = 'bp5-button bp5-intent-primary bp5-icon-filter ';
 		if (this.state.filter) {
-			filterClass += 'bp3-active';
+			filterClass += 'bp5-active';
 		}
 
 		let selectedNames: string[] = [];
@@ -419,7 +421,7 @@ export default class Instances extends React.Component<{}, State> {
 							Filters
 						</button>
 						<button
-							className="bp3-button bp3-intent-warning bp3-icon-chevron-up"
+							className="bp5-button bp5-intent-warning bp5-icon-chevron-up"
 							style={css.button}
 							disabled={!this.opened}
 							type="button"
@@ -434,8 +436,8 @@ export default class Instances extends React.Component<{}, State> {
 						</button>
 						<ConfirmButton
 							label="Start Selected"
-							className="bp3-intent-success bp3-icon-power"
-							progressClassName="bp3-intent-success"
+							className="bp5-intent-success bp5-icon-power"
+							progressClassName="bp5-intent-success"
 							safe={true}
 							style={css.button}
 							confirmMsg="Start the selected instances"
@@ -447,8 +449,8 @@ export default class Instances extends React.Component<{}, State> {
 						/>
 						<ConfirmButton
 							label="Stop Selected"
-							className="bp3-intent-warning bp3-icon-power"
-							progressClassName="bp3-intent-warning"
+							className="bp5-intent-warning bp5-icon-power"
+							progressClassName="bp5-intent-warning"
 							safe={true}
 							style={css.button}
 							confirmMsg="Stop the selected instances"
@@ -460,8 +462,8 @@ export default class Instances extends React.Component<{}, State> {
 						/>
 						<ConfirmButton
 							label="Delete Selected"
-							className="bp3-intent-danger bp3-icon-delete"
-							progressClassName="bp3-intent-danger"
+							className="bp5-intent-danger bp5-icon-delete"
+							progressClassName="bp5-intent-danger"
 							safe={true}
 							style={css.button}
 							confirmMsg="Permanently delete the selected instances"
@@ -471,7 +473,7 @@ export default class Instances extends React.Component<{}, State> {
 							onConfirm={this.onDelete}
 						/>
 						<button
-							className="bp3-button bp3-intent-success bp3-icon-add"
+							className="bp5-button bp5-intent-success bp5-icon-add"
 							style={css.button}
 							disabled={this.state.disabled || this.state.newOpened}
 							type="button"
@@ -491,8 +493,8 @@ export default class Instances extends React.Component<{}, State> {
 				>
 					<ConfirmButton
 						label="Force Delete Selected"
-						className="bp3-intent-danger bp3-icon-warning-sign"
-						progressClassName="bp3-intent-danger"
+						className="bp5-intent-danger bp5-icon-warning-sign"
+						progressClassName="bp5-intent-danger"
 						style={css.button}
 						confirmMsg="Permanently force delete the selected instances"
 						items={selectedNames}
@@ -515,14 +517,14 @@ export default class Instances extends React.Component<{}, State> {
 				<div style={css.items}>
 					{newInstanceDom}
 					{instancesDom}
-					<tr className="bp3-card bp3-row" style={css.placeholder}>
+					<tr className="bp5-card bp5-row" style={css.placeholder}>
 						<td colSpan={6} style={css.placeholder}/>
 					</tr>
 				</div>
 			</div>
 			<NonState
 				hidden={!!instancesDom.length}
-				iconClass="bp3-icon-dashboard"
+				iconClass="bp5-icon-dashboard"
 				title="No instances"
 				description="Add a new instance to get started."
 			/>

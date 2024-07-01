@@ -96,8 +96,8 @@ export default class NodeBlock extends React.Component<Props, {}> {
 		}
 
 		return <div>
-			<div className="bp3-control-group" style={css.group}>
-				<div className="bp3-select" style={css.protocol}>
+			<div className="bp5-control-group" style={css.group}>
+				<div className="bp5-select" style={css.protocol}>
 					<select
 						value={block.interface}
 						onChange={(evt): void => {
@@ -109,7 +109,7 @@ export default class NodeBlock extends React.Component<Props, {}> {
 						{ifacesSelect}
 					</select>
 				</div>
-				<div className="bp3-select" style={css.protocol}>
+				<div className="bp5-select" style={css.protocol}>
 					<select
 						value={block.block}
 						onChange={(evt): void => {
@@ -122,14 +122,14 @@ export default class NodeBlock extends React.Component<Props, {}> {
 					</select>
 				</div>
 				<button
-					className="bp3-button bp3-minimal bp3-intent-danger bp3-icon-remove"
+					className="bp5-button bp5-minimal bp5-intent-danger bp5-icon-remove"
 					style={css.control}
 					onClick={(): void => {
 						this.props.onRemove();
 					}}
 				/>
 				<button
-					className="bp3-button bp3-minimal bp3-intent-success bp3-icon-add"
+					className="bp5-button bp5-minimal bp5-intent-success bp5-icon-add"
 					style={css.control}
 					onClick={(): void => {
 						this.props.onAdd();

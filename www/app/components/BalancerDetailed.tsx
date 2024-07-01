@@ -529,14 +529,14 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 
 			certificates.push(
 				<div
-					className="bp3-tag bp3-tag-removable bp3-intent-primary"
+					className="bp5-tag bp5-tag-removable bp5-intent-primary"
 					style={css.item}
 					key={cert.id}
 				>
 					{cert.name}
 					<button
 						disabled={this.state.disabled}
-						className="bp3-tag-remove"
+						className="bp5-tag-remove"
 						onMouseUp={(): void => {
 							this.onRemoveCert(cert.id);
 						}}
@@ -675,27 +675,27 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 			online.sort();
 			for (let backend of online) {
 				states.push(backend + ' - Online');
-				backendsClasses.push('bp3-text-intent-success');
+				backendsClasses.push('bp5-text-intent-success');
 			}
 			unknownHigh.sort();
 			for (let backend of unknownHigh) {
 				states.push(backend + ' - Unknown High');
-				backendsClasses.push('bp3-text-intent-warning');
+				backendsClasses.push('bp5-text-intent-warning');
 			}
 			unknownMid.sort();
 			for (let backend of unknownMid) {
 				states.push(backend + ' - Unknown Mid');
-				backendsClasses.push('bp3-text-intent-warning');
+				backendsClasses.push('bp5-text-intent-warning');
 			}
 			unknownLow.sort();
 			for (let backend of unknownLow) {
 				states.push(backend + ' - Unknown Low');
-				backendsClasses.push('bp3-text-intent-warning');
+				backendsClasses.push('bp5-text-intent-warning');
 			}
 			offline.sort();
 			for (let backend of offline) {
 				states.push(backend + ' - Offline');
-				backendsClasses.push('bp3-text-intent-danger');
+				backendsClasses.push('bp5-text-intent-danger');
 			}
 		}
 
@@ -704,7 +704,7 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 		}
 
 		return <td
-			className="bp3-cell"
+			className="bp5-cell"
 			colSpan={5}
 			style={css.card}
 		>
@@ -723,7 +723,7 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 					>
             <div>
               <label
-                className="bp3-control bp3-checkbox bp3-checkbox"
+                className="bp5-control bp5-checkbox bp5-checkbox"
                 style={css.select}
               >
                 <input
@@ -735,16 +735,16 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 										this.props.onSelect(evt.shiftKey);
 									}}
                 />
-                <span className="bp3-control-indicator"/>
+                <span className="bp5-control-indicator"/>
               </label>
             </div>
 						<div className="flex tab-close"/>
 						<ConfirmButton
-							className="bp3-minimal bp3-intent-danger bp3-icon-trash"
+							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
 							style={css.button}
 							safe={true}
-							progressClassName="bp3-intent-danger"
-							dialogClassName="bp3-intent-danger bp3-icon-delete"
+							progressClassName="bp5-intent-danger"
+							dialogClassName="bp5-intent-danger bp5-icon-delete"
 							dialogLabel="Delete Balancer"
 							confirmMsg="Permanently delete this balancer"
 							confirmInput={true}
@@ -813,7 +813,7 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 					</label>
 					{domains}
 					<button
-						className="bp3-button bp3-intent-success bp3-icon-add"
+						className="bp5-button bp5-intent-success bp5-icon-add"
 						style={css.itemsAdd}
 						type="button"
 						onClick={this.onAddDomain}
@@ -829,7 +829,7 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 					</label>
 					{backends}
 					<button
-						className="bp3-button bp3-intent-success bp3-icon-add"
+						className="bp5-button bp5-intent-success bp5-icon-add"
 						style={css.itemsAdd}
 						type="button"
 						onClick={this.onAddBackend}
@@ -885,7 +885,7 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 						{organizationsSelect}
 					</PageSelect>
 					<label
-						className="bp3-label"
+						className="bp5-label"
 						style={css.label}
 					>
 						Certificates
@@ -901,7 +901,7 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 						label="Add Certificate"
 						value={this.state.addCert}
 						disabled={this.state.disabled || !hasCertificates}
-						buttonClass="bp3-intent-success"
+						buttonClass="bp5-intent-success"
 						onChange={(val: string): void => {
 							this.setState({
 								...this.state,
