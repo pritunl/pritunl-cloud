@@ -93,7 +93,7 @@ func (c *Cookie) NewSession(db *database.Database, r *http.Request,
 	maxAge := 0
 
 	if remember {
-		maxAge = 15778500
+		maxAge = 94694400
 	}
 
 	c.store.Options.MaxAge = maxAge
