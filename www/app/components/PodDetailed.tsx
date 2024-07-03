@@ -21,6 +21,9 @@ import * as ZoneTypes from "../types/ZoneTypes";
 import * as ShapeTypes from "../types/ShapeTypes";
 import * as Theme from "../Theme";
 
+import Markdown from 'react-markdown';
+import hljs from "highlight.js/lib/core";
+
 import AceEditor from "react-ace"
 import "ace-builds/src-noconflict/mode-text"
 import "ace-builds/src-noconflict/mode-markdown"
@@ -52,8 +55,6 @@ interface State {
 	addRole: string;
 	pod: PodTypes.Pod;
 }
-
-const example = `test`
 
 const css = {
 	card: {
@@ -123,6 +124,7 @@ const css = {
 		marginBottom: '15px',
 	} as React.CSSProperties,
 	editorBox: {
+		margin: '10px 0',
 	} as React.CSSProperties,
 	editor: {
 		margin: '10px 0',
@@ -131,6 +133,7 @@ const css = {
 
 export default class PodDetailed extends React.Component<Props, State> {
 	editor: Ace.Editor
+	markdown: React.RefObject<HTMLDivElement>;
 
 	constructor(props: any, context: any) {
 		super(props, context);
@@ -141,6 +144,30 @@ export default class PodDetailed extends React.Component<Props, State> {
 			addRole: null,
 			pod: null,
 		};
+
+		this.markdown = React.createRef();
+	}
+
+	componentDidMount(): void {
+		hljs.highlightAll();
+
+		if (this.markdown.current) {
+			const bashElements = this.markdown.current.querySelectorAll('[class^="language-"]:not(.hljs)')
+			Array.from(bashElements).forEach(element => {
+				element.classList.add('hljs');
+			});
+		}
+	}
+
+	componentDidUpdate(): void {
+		hljs.highlightAll();
+
+		if (this.markdown.current) {
+			const bashElements = this.markdown.current.querySelectorAll('code:not(.hljs)')
+			Array.from(bashElements).forEach(element => {
+				element.classList.add('hljs');
+			});
+		}
 	}
 
 	set(name: string, val: any): void {
@@ -460,35 +487,49 @@ export default class PodDetailed extends React.Component<Props, State> {
 				</div>
 			</div>
 			<div className="layout horizontal flex" style={css.editorBox}>
-				<label
-					className="bp5-label flex"
-					style={css.editor}
-				>
-					<AceEditor
-						name="log-view"
-						theme={Theme.editorTheme()}
-						height="500px"
-						width="100%"
-						mode="python"
-						fontSize="12px"
-						wrapEnabled={true}
-						showPrintMargin={false}
-						showGutter={true}
-						readOnly={false}
-						value={example}
-						editorProps={{
-							$blockScrolling: true,
-						}}
-						setOptions={{
-							showFoldWidgets: false,
-						}}
-						onLoad={(editor: Ace.Editor): void => {
-							this.editor = editor
-							this.editor.scrollToLine(Number.POSITIVE_INFINITY,
-								false, false, null)
-						}}
-					/>
-				</label>
+				<div ref={this.markdown} style={css.group}>
+					<Markdown>{pod.spec}</Markdown>
+				</div>
+				<div style={css.group}>
+					<label
+						className="bp5-label flex"
+						style={css.editorBox}
+					>
+						Pod Spec
+						<Help
+							title="Spec"
+							content="Spec file for pod."
+						/>
+						<AceEditor
+							name="log-view"
+							theme={Theme.editorTheme()}
+							height="800px"
+							width="100%"
+							mode="python"
+							fontSize="12px"
+							style={css.editor}
+							wrapEnabled={true}
+							showPrintMargin={false}
+							showGutter={true}
+							readOnly={false}
+							value={pod.spec}
+							editorProps={{
+								$blockScrolling: true,
+							}}
+							setOptions={{
+								showFoldWidgets: false,
+							}}
+							onLoad={(editor: Ace.Editor): void => {
+								this.editor = editor
+								this.editor.scrollToLine(Number.POSITIVE_INFINITY,
+									false, false, null)
+							}}
+							onChange={(val): void => {
+								this.set("spec", val)
+							}}
+						/>
+					</label>
+				</div>
 			</div>
 			<PageSave
 				style={css.save}
