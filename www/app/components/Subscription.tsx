@@ -209,49 +209,14 @@ export default class Subscription extends React.Component<{}, State> {
 								});
 							});
 						}}
-					>Activate License</button>
-					{/*<ReactStripeCheckout*/}
-					{/*	label="Pritunl Cloud"*/}
-					{/*	image="https://objectstorage.us-ashburn-1.oraclecloud.com/n/pritunl8472/b/pritunl-static/o/logo_stripe.png"*/}
-					{/*	allowRememberMe={false}*/}
-					{/*	zipCode={true}*/}
-					{/*	amount={5000}*/}
-					{/*	name="Pritunl Cloud - 7 Day Trial"*/}
-					{/*	description="Subscribe to Cloud ($50/month)"*/}
-					{/*	panelLabel="Subscribe"*/}
-					{/*	token={(token): void => {*/}
-					{/*		this.setState({*/}
-					{/*			...this.state,*/}
-					{/*			disabled: true,*/}
-					{/*		});*/}
-					{/*		SubscriptionActions.checkout(*/}
-					{/*			'cloud',*/}
-					{/*			token.id,*/}
-					{/*			token.email,*/}
-					{/*		).then((message: string): void => {*/}
-					{/*			this.setState({*/}
-					{/*				...this.state,*/}
-					{/*				disabled: false,*/}
-					{/*				message: message,*/}
-					{/*			});*/}
-					{/*		}).catch((): void => {*/}
-					{/*			this.setState({*/}
-					{/*				...this.state,*/}
-					{/*				disabled: false,*/}
-					{/*			});*/}
-					{/*		});*/}
-					{/*	}}*/}
-					{/*	onScriptError={(err): void => {*/}
-					{/*		Alert.error('Failed to load Stripe Checkout');*/}
-					{/*	}}*/}
-					{/*	stripeKey="pk_live_plmoOl3lS3k5dMNQViZWGfVR"*/}
-					{/*>*/}
-					{/*	<button*/}
-					{/*		className="bp5-button bp5-intent-success bp5-icon-credit-card"*/}
-					{/*		style={css.button}*/}
-					{/*		disabled={this.state.disabled}*/}
-					{/*	>Subscribe</button>*/}
-					{/*</ReactStripeCheckout>*/}
+					>Activate License
+					</button>
+					<a
+						className="bp5-button bp5-intent-success bp5-icon-credit-card"
+						style={css.button2}
+						target="_blank"
+						href="https://app.pritunl.com/checkout/cloud"
+					>Create Account</a>
 				</div>
 			</div>
 		</div>;
@@ -342,80 +307,13 @@ export default class Subscription extends React.Component<{}, State> {
 					</div>
 				</div>
 				<div className="layout horizontal center-justified">
-					<ConfirmButton
-						className="bp5-intent-danger bp5-icon-disable"
-						progressClassName="bp5-intent-danger"
+					<a
+						className="bp5-button bp5-intent-success bp5-icon-cog"
 						style={css.button2}
-						disabled={this.state.disabled}
-						hidden={canceling}
-						label="End Subscription"
-						onConfirm={(): void => {
-							this.setState({
-								...this.state,
-								disabled: true,
-							});
-							SubscriptionActions.cancel(
-								this.state.subscription.url_key,
-							).then((): void => {
-								this.setState({
-									...this.state,
-									disabled: false,
-								});
-							}).catch((): void => {
-								this.setState({
-									...this.state,
-									disabled: false,
-								});
-							});
-						}}
-					/>
-					{/*<ReactStripeCheckout*/}
-					{/*	label="Pritunl Cloud"*/}
-					{/*	image="https://objectstorage.us-ashburn-1.oraclecloud.com/n/pritunl8472/b/pritunl-static/o/logo_stripe.png"*/}
-					{/*	allowRememberMe={false}*/}
-					{/*	zipCode={true}*/}
-					{/*	amount={canceling && sub.status !== 'active' ? 5000 : 0}*/}
-					{/*	name="Pritunl Cloud"*/}
-					{/*	description={canceling ?*/}
-					{/*		'Reactivate Subscription ($50/month)' :*/}
-					{/*		'Update Payment Information'*/}
-					{/*	}*/}
-					{/*	panelLabel={canceling ? 'Reactivate' : 'Update'}*/}
-					{/*	token={(token): void => {*/}
-					{/*		this.setState({*/}
-					{/*			...this.state,*/}
-					{/*			disabled: true,*/}
-					{/*		});*/}
-					{/*		SubscriptionActions.payment(*/}
-					{/*			this.state.subscription.url_key,*/}
-					{/*			'cloud',*/}
-					{/*			token.id,*/}
-					{/*			token.email,*/}
-					{/*		).then((): void => {*/}
-					{/*			this.setState({*/}
-					{/*				...this.state,*/}
-					{/*				disabled: false,*/}
-					{/*			});*/}
-					{/*		}).catch((): void => {*/}
-					{/*			this.setState({*/}
-					{/*				...this.state,*/}
-					{/*				disabled: false,*/}
-					{/*			});*/}
-					{/*		});*/}
-					{/*	}}*/}
-					{/*	onScriptError={(err): void => {*/}
-					{/*		Alert.error('Failed to load Stripe Checkout');*/}
-					{/*	}}*/}
-					{/*	stripeKey="pk_live_plmoOl3lS3k5dMNQViZWGfVR"*/}
-					{/*>*/}
-					{/*	<button*/}
-					{/*		className="bp5-button bp5-intent-success bp5-icon-credit-card"*/}
-					{/*		style={canceling ? css.button3 : css.button2}*/}
-					{/*		disabled={this.state.disabled}*/}
-					{/*	>*/}
-					{/*		{canceling ? 'Reactivate Subscription' : 'Update Payment'}*/}
-					{/*	</button>*/}
-					{/*</ReactStripeCheckout>*/}
+						target="_blank"
+						href={"https://app.pritunl.com/subscription/" +
+							this.state.subscription.url_key}
+					>Manage Account</a>
 				</div>
 				<div className="layout horizontal center-justified">
 					<ConfirmButton
@@ -423,6 +321,7 @@ export default class Subscription extends React.Component<{}, State> {
 						progressClassName="bp5-intent-danger"
 						style={css.button2}
 						disabled={this.state.disabled}
+						safe={true}
 						label="Remove License"
 						onConfirm={(): void => {
 							this.setState({
