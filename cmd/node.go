@@ -80,15 +80,15 @@ func Node(testing bool) (err error) {
 	go routr.Shutdown()
 
 	if constants.Production {
-		time.Sleep(20 * time.Second)
+		//time.Sleep(20 * time.Second)
 	}
 
 	constants.Interrupt = true
 
-	if constants.Production {
-		time.Sleep(10 * time.Second)
-	} else {
+	if !constants.Production || constants.FastExit {
 		time.Sleep(300 * time.Millisecond)
+	} else {
+		time.Sleep(10 * time.Second)
 	}
 
 	return
