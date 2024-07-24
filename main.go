@@ -50,10 +50,16 @@ func main() {
 	switch flag.Arg(0) {
 	case "start":
 		for _, arg := range flag.Args() {
-			if arg == "--debug" {
+			switch arg {
+			case "--debug":
 				constants.Production = false
-			} else if arg == "--debug-web" {
+				break
+			case "--debug-web":
 				constants.DebugWeb = true
+				break
+			case "--fast-exit":
+				constants.FastExit = true
+				break
 			}
 		}
 
