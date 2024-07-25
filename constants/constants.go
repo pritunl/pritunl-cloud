@@ -18,6 +18,7 @@ const (
 var (
 	Production   = true
 	DebugWeb     = false
+	FastExit     = false
 	LockDebug    = false
 	Interrupt    = false
 	Shutdown     = false
