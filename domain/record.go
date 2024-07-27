@@ -11,31 +11,43 @@ import (
 )
 
 type Record struct {
-	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Organization primitive.ObjectID `bson:"organization" json:"organization"`
-	Domain       primitive.ObjectID `bson:"domain" json:"domain"`
-	Node         primitive.ObjectID `bson:"node" json:"node"`
-	Instance     primitive.ObjectID `bson:"instance" json:"instance"`
-	Timestamp    time.Time          `bson:"timestamp" json:"timestamp"`
-	Name         string             `bson:"name" json:"name"`
-	Address      string             `bson:"address" json:"address"`
-	Address6     string             `bson:"address6" json:"address6"`
+	Id        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Domain    primitive.ObjectID `bson:"domain" json:"domain"`
+	Timestamp time.Time          `bson:"timestamp" json:"timestamp"`
+	SubDomain string             `bson:"sub_domain" json:"sub_domain"`
+	Type      string             `bson:"type" json:"type"`
+	Value     string             `bson:"value" json:"value"`
 }
 
 func (r *Record) Remove(db *database.Database) (err error) {
-	domn, err := GetOrg(db, r.Organization, r.Domain)
+	domn, err := Get(db, r.Domain)
 	if err != nil {
 		return
 	}
 
-	if domn.Type == Route53 {
-		err = AwsUpsertDomain(domn, r.Name, "", "")
+	domain := r.SubDomain + "." + domn.RootDomain
+
+	svc, err := domn.GetDnsService(db)
+	if err != nil {
+		return
+	}
+
+	switch r.Type {
+	case A:
+		err = svc.DnsADelete(db, domain, r.Value)
 		if err != nil {
 			return
 		}
-	} else {
+		break
+	case AAAA:
+		err = svc.DnsAAAADelete(db, domain, r.Value)
+		if err != nil {
+			return
+		}
+		break
+	default:
 		err = &errortypes.UnknownError{
-			errors.New("domain: Unknown domain type"),
+			errors.New("domain: Unknown record type"),
 		}
 		return
 	}
@@ -46,38 +58,35 @@ func (r *Record) Remove(db *database.Database) (err error) {
 func (r *Record) Upsert(db *database.Database, addr, addr6 string) (
 	err error) {
 
-	domn, err := GetOrg(db, r.Organization, r.Domain)
+	domn, err := Get(db, r.Domain)
 	if err != nil {
 		return
 	}
 
-	r.Timestamp = time.Now()
+	domain := r.SubDomain + "." + domn.RootDomain
 
-	if r.Id.IsZero() {
-		err = r.Insert(db)
-		if err != nil {
-			return
-		}
+	svc, err := domn.GetDnsService(db)
+	if err != nil {
+		return
 	}
 
-	if domn.Type == Route53 {
-		err = AwsUpsertDomain(domn, r.Name, addr, addr6)
+	switch r.Type {
+	case A:
+		err = svc.DnsAUpsert(db, domain, r.Value)
 		if err != nil {
 			return
 		}
-	} else {
+		break
+	case AAAA:
+		err = svc.DnsAAAAUpsert(db, domain, r.Value)
+		if err != nil {
+			return
+		}
+		break
+	default:
 		err = &errortypes.UnknownError{
-			errors.New("domain: Unknown domain type"),
+			errors.New("domain: Unknown record type"),
 		}
-		return
-	}
-
-	r.Address = addr
-	r.Address6 = addr6
-
-	err = r.CommitFields(
-		db, set.NewSet("timestamp", "address", "address6"))
-	if err != nil {
 		return
 	}
 
@@ -87,18 +96,30 @@ func (r *Record) Upsert(db *database.Database, addr, addr6 string) (
 func (r *Record) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
-	if r.Node.IsZero() {
+	if r.Domain.IsZero() {
 		errData = &errortypes.ErrorData{
-			Error:   "node_required",
-			Message: "Missing required node",
+			Error:   "domain_required",
+			Message: "Missing required domain",
 		}
 		return
 	}
 
-	if r.Instance.IsZero() {
+	switch r.Type {
+	case A:
+		break
+	case AAAA:
+		break
+	default:
+		err = &errortypes.UnknownError{
+			errors.New("domain: Unknown record type"),
+		}
+		return
+	}
+
+	if r.Value == "" {
 		errData = &errortypes.ErrorData{
-			Error:   "instance_required",
-			Message: "Missing required instance",
+			Error:   "value_required",
+			Message: "Missing required value",
 		}
 		return
 	}
