@@ -1,5 +1,11 @@
 package domain
 
 const (
-	Route53 = "route_53"
+	AWS         = "aws"
+	Cloudflare  = "cloudflare"
+	OracleCloud = "oracle_cloud"
+
+	A    = "A"
+	AAAA = "AAAA"
+	TXT  = "TXT"
 )
