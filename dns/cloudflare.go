@@ -8,7 +8,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/secret"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"strings"
 )
 
 type Cloudflare struct {
@@ -59,7 +58,7 @@ func (c *Cloudflare) DnsZoneFind(db *database.Database, domain string) (
 	}
 
 	for _, zone := range zones {
-		if strings.Trim(zone.Name, ".") == strings.Trim(domain, ".") {
+		if matchDomains(zone.Name, domain) {
 			zoneId = zone.ID
 			break
 		}
@@ -107,9 +106,7 @@ func (c *Cloudflare) DnsTxtGet(db *database.Database,
 	}
 
 	for _, record := range records {
-		if record.Type == "TXT" &&
-			strings.Trim(record.Name, ".") == strings.Trim(domain, ".") {
-
+		if record.Type == "TXT" && matchDomains(record.Name, domain) {
 			vals = append(vals, record.Content)
 			break
 		}
@@ -147,9 +144,7 @@ func (c *Cloudflare) DnsTxtUpsert(db *database.Database,
 
 	recordId := ""
 	for _, record := range records {
-		if record.Type == "TXT" &&
-			strings.Trim(record.Name, ".") == strings.Trim(domain, ".") {
-
+		if record.Type == "TXT" && matchDomains(record.Name, domain) {
 			recordId = record.ID
 			break
 		}
@@ -228,9 +223,352 @@ func (c *Cloudflare) DnsTxtDelete(db *database.Database,
 	recordId := ""
 	for _, record := range records {
 		if record.Type == "TXT" &&
-			strings.Trim(record.Name, ".") == strings.Trim(domain, ".") &&
-			strings.ReplaceAll(record.Content, "\"",
-				"") == strings.ReplaceAll(val, "\"", "") {
+			matchDomains(record.Name, domain) &&
+			matchTxt(record.Content, val) {
+
+			recordId = record.ID
+			break
+		}
+	}
+
+	if recordId != "" {
+		err = c.sess.DeleteDNSRecord(
+			db,
+			cloudflare.ZoneIdentifier(zoneId),
+			recordId,
+		)
+		if err != nil {
+			err = &errortypes.ParseError{
+				errors.Wrap(err, "acme: Failed to delete DNS record"),
+			}
+			return
+		}
+	}
+
+	return
+}
+
+func (c *Cloudflare) DnsAGet(db *database.Database,
+	domain string) (vals []string, err error) {
+
+	vals = []string{}
+
+	domain = cleanDomain(domain)
+
+	zoneId, err := c.DnsZoneFind(db, domain)
+	if err != nil {
+		return
+	}
+
+	listParams := cloudflare.ListDNSRecordsParams{
+		Type: "A",
+		Name: domain,
+	}
+
+	records, _, err := c.sess.ListDNSRecords(
+		db,
+		cloudflare.ZoneIdentifier(zoneId),
+		listParams,
+	)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "acme: Failed to get DNS records"),
+		}
+		return
+	}
+
+	for _, record := range records {
+		if record.Type == "A" && matchDomains(record.Name, domain) {
+			vals = append(vals, record.Content)
+			break
+		}
+	}
+
+	return
+}
+
+func (c *Cloudflare) DnsAUpsert(db *database.Database,
+	domain, val string) (err error) {
+
+	domain = cleanDomain(domain)
+
+	zoneId, err := c.DnsZoneFind(db, domain)
+	if err != nil {
+		return
+	}
+
+	listParams := cloudflare.ListDNSRecordsParams{
+		Type: "A",
+		Name: domain,
+	}
+
+	records, _, err := c.sess.ListDNSRecords(
+		db,
+		cloudflare.ZoneIdentifier(zoneId),
+		listParams,
+	)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "acme: Failed to get DNS records"),
+		}
+		return
+	}
+
+	recordId := ""
+	for _, record := range records {
+		if record.Type == "A" && matchDomains(record.Name, domain) {
+			recordId = record.ID
+			break
+		}
+	}
+
+	if recordId == "" {
+		createParams := cloudflare.CreateDNSRecordParams{
+			Type:    "A",
+			Name:    domain,
+			Content: val,
+			TTL:     settings.Acme.DnsCloudflareTtl,
+		}
+
+		_, err = c.sess.CreateDNSRecord(
+			db,
+			cloudflare.ZoneIdentifier(zoneId),
+			createParams,
+		)
+		if err != nil {
+			err = &errortypes.ParseError{
+				errors.Wrap(err, "acme: Failed to create DNS record"),
+			}
+			return
+		}
+	} else {
+		updateParams := cloudflare.UpdateDNSRecordParams{
+			Type:    "A",
+			Name:    domain,
+			Content: val,
+			TTL:     settings.Acme.DnsCloudflareTtl,
+		}
+
+		_, err = c.sess.UpdateDNSRecord(
+			db,
+			cloudflare.ResourceIdentifier(recordId),
+			updateParams,
+		)
+		if err != nil {
+			err = &errortypes.ParseError{
+				errors.Wrap(err, "acme: Failed to update DNS record"),
+			}
+			return
+		}
+	}
+
+	return
+}
+
+func (c *Cloudflare) DnsADelete(db *database.Database,
+	domain, val string) (err error) {
+
+	domain = cleanDomain(domain)
+
+	zoneId, err := c.DnsZoneFind(db, domain)
+	if err != nil {
+		return
+	}
+
+	listParams := cloudflare.ListDNSRecordsParams{
+		Type: "A",
+		Name: domain,
+	}
+
+	records, _, err := c.sess.ListDNSRecords(
+		db,
+		cloudflare.ZoneIdentifier(zoneId),
+		listParams,
+	)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "acme: Failed to get DNS records"),
+		}
+		return
+	}
+
+	recordId := ""
+	for _, record := range records {
+		if record.Type == "A" &&
+			matchDomains(record.Name, domain) &&
+			record.Content == val {
+
+			recordId = record.ID
+			break
+		}
+	}
+
+	if recordId != "" {
+		err = c.sess.DeleteDNSRecord(
+			db,
+			cloudflare.ZoneIdentifier(zoneId),
+			recordId,
+		)
+		if err != nil {
+			err = &errortypes.ParseError{
+				errors.Wrap(err, "acme: Failed to delete DNS record"),
+			}
+			return
+		}
+	}
+
+	return
+}
+
+func (c *Cloudflare) DnsAAAAGet(db *database.Database,
+	domain string) (vals []string, err error) {
+
+	vals = []string{}
+
+	domain = cleanDomain(domain)
+
+	zoneId, err := c.DnsZoneFind(db, domain)
+	if err != nil {
+		return
+	}
+
+	listParams := cloudflare.ListDNSRecordsParams{
+		Type: "AAAA",
+		Name: domain,
+	}
+
+	records, _, err := c.sess.ListDNSRecords(
+		db,
+		cloudflare.ZoneIdentifier(zoneId),
+		listParams,
+	)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "acme: Failed to get DNS records"),
+		}
+		return
+	}
+
+	for _, record := range records {
+		if record.Type == "AAAA" && matchDomains(record.Name, domain) {
+			vals = append(vals, record.Content)
+			break
+		}
+	}
+
+	return
+}
+
+func (c *Cloudflare) DnsAAAAUpsert(db *database.Database,
+	domain, val string) (err error) {
+
+	domain = cleanDomain(domain)
+
+	zoneId, err := c.DnsZoneFind(db, domain)
+	if err != nil {
+		return
+	}
+
+	listParams := cloudflare.ListDNSRecordsParams{
+		Type: "AAAA",
+		Name: domain,
+	}
+
+	records, _, err := c.sess.ListDNSRecords(
+		db,
+		cloudflare.ZoneIdentifier(zoneId),
+		listParams,
+	)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "acme: Failed to get DNS records"),
+		}
+		return
+	}
+
+	recordId := ""
+	for _, record := range records {
+		if record.Type == "AAAA" && matchDomains(record.Name, domain) {
+			recordId = record.ID
+			break
+		}
+	}
+
+	if recordId == "" {
+		createParams := cloudflare.CreateDNSRecordParams{
+			Type:    "AAAA",
+			Name:    domain,
+			Content: val,
+			TTL:     settings.Acme.DnsCloudflareTtl,
+		}
+
+		_, err = c.sess.CreateDNSRecord(
+			db,
+			cloudflare.ZoneIdentifier(zoneId),
+			createParams,
+		)
+		if err != nil {
+			err = &errortypes.ParseError{
+				errors.Wrap(err, "acme: Failed to create DNS record"),
+			}
+			return
+		}
+	} else {
+		updateParams := cloudflare.UpdateDNSRecordParams{
+			Type:    "AAAA",
+			Name:    domain,
+			Content: val,
+			TTL:     settings.Acme.DnsCloudflareTtl,
+		}
+
+		_, err = c.sess.UpdateDNSRecord(
+			db,
+			cloudflare.ResourceIdentifier(recordId),
+			updateParams,
+		)
+		if err != nil {
+			err = &errortypes.ParseError{
+				errors.Wrap(err, "acme: Failed to update DNS record"),
+			}
+			return
+		}
+	}
+
+	return
+}
+
+func (c *Cloudflare) DnsAAAADelete(db *database.Database,
+	domain, val string) (err error) {
+
+	domain = cleanDomain(domain)
+
+	zoneId, err := c.DnsZoneFind(db, domain)
+	if err != nil {
+		return
+	}
+
+	listParams := cloudflare.ListDNSRecordsParams{
+		Type: "AAAA",
+		Name: domain,
+	}
+
+	records, _, err := c.sess.ListDNSRecords(
+		db,
+		cloudflare.ZoneIdentifier(zoneId),
+		listParams,
+	)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "acme: Failed to get DNS records"),
+		}
+		return
+	}
+
+	recordId := ""
+	for _, record := range records {
+		if record.Type == "AAAA" &&
+			matchDomains(record.Name, domain) &&
+			record.Content == val {
 
 			recordId = record.ID
 			break
