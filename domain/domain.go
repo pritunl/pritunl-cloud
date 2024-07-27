@@ -5,6 +5,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/dns"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 )
 
@@ -14,8 +15,8 @@ type Domain struct {
 	Comment      string             `bson:"comment" json:"comment"`
 	Organization primitive.ObjectID `bson:"organization,omitempty" json:"organization"`
 	Type         string             `bson:"type" json:"type"`
-	AwsId        string             `bson:"aws_id" json:"aws_id"`
-	AwsSecret    string             `bson:"aws_secret" json:"aws_secret"`
+	Secret       primitive.ObjectID `bson:"secret" json:"secret"`
+	RootDomain   string             `bson:"root_domain" json:"root_domain"`
 }
 
 func (d *Domain) Validate(db *database.Database) (
@@ -29,8 +30,28 @@ func (d *Domain) Validate(db *database.Database) (
 		return
 	}
 
-	if d.Type != Route53 {
-		d.Type = Route53
+	switch d.Type {
+	case AWS, "":
+		d.Type = AWS
+		break
+	case Cloudflare:
+		break
+	case OracleCloud:
+		break
+	default:
+		errData = &errortypes.ErrorData{
+			Error:   "type_invalid",
+			Message: "Type invalid",
+		}
+		return
+	}
+
+	if d.Secret.IsZero() {
+		errData = &errortypes.ErrorData{
+			Error:   "secret_invalid",
+			Message: "Secret invalid",
+		}
+		return
 	}
 
 	return
@@ -73,6 +94,29 @@ func (d *Domain) Insert(db *database.Database) (err error) {
 	_, err = coll.InsertOne(db, d)
 	if err != nil {
 		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func (d *Domain) GetDnsService(db *database.Database) (
+	svc dns.Service, err error) {
+
+	switch d.Type {
+	case AWS:
+		svc = &dns.Aws{}
+		break
+	case Cloudflare:
+		svc = &dns.Cloudflare{}
+		break
+	case OracleCloud:
+		svc = &dns.Oracle{}
+		break
+	default:
+		err = &errortypes.UnknownError{
+			errors.Newf("domain: Unknown domain type"),
+		}
 		return
 	}
 
