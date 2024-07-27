@@ -3,6 +3,7 @@ package domain
 import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/dns"
@@ -17,6 +18,7 @@ type Domain struct {
 	Type         string             `bson:"type" json:"type"`
 	Secret       primitive.ObjectID `bson:"secret" json:"secret"`
 	RootDomain   string             `bson:"root_domain" json:"root_domain"`
+	Records      []*Record          `bson:"-" json:"records"`
 }
 
 func (d *Domain) Validate(db *database.Database) (
@@ -119,6 +121,41 @@ func (d *Domain) GetDnsService(db *database.Database) (
 		}
 		return
 	}
+
+	return
+}
+
+func (d *Domain) LoadRecords(db *database.Database) (err error) {
+	coll := db.DomainsRecords()
+	recs := []*Record{}
+
+	cursor, err := coll.Find(db, &bson.M{
+		"domain": d.Id,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		rec := &Record{}
+		err = cursor.Decode(rec)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		recs = append(recs, rec)
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	d.Records = recs
 
 	return
 }
