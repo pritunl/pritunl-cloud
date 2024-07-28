@@ -23,8 +23,8 @@ type domainData struct {
 	Comment      string             `json:"comment"`
 	Organization primitive.ObjectID `json:"organization"`
 	Type         string             `json:"type"`
-	AwsId        string             `json:"aws_id"`
-	AwsSecret    string             `json:"aws_secret"`
+	Secret       primitive.ObjectID `json:"secret"`
+	RootDomain   string             `json:"root_domain"`
 }
 
 type domainsData struct {
@@ -62,16 +62,16 @@ func domainPut(c *gin.Context) {
 	domn.Comment = data.Comment
 	domn.Organization = data.Organization
 	domn.Type = data.Type
-	domn.AwsId = data.AwsId
-	domn.AwsSecret = data.AwsSecret
+	domn.Secret = data.Secret
+	domn.RootDomain = data.RootDomain
 
 	fields := set.NewSet(
 		"name",
 		"comment",
 		"organization",
 		"type",
-		"aws_id",
-		"aws_secret",
+		"secret",
+		"root_domain",
 	)
 
 	errData, err := domn.Validate(db)
@@ -117,8 +117,8 @@ func domainPost(c *gin.Context) {
 		Comment:      data.Comment,
 		Organization: data.Organization,
 		Type:         data.Type,
-		AwsId:        data.AwsId,
-		AwsSecret:    data.AwsSecret,
+		Secret:       data.Secret,
+		RootDomain:   data.RootDomain,
 	}
 
 	errData, err := domn.Validate(db)
@@ -204,6 +204,11 @@ func domainGet(c *gin.Context) {
 	domn, err := domain.Get(db, domainId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	err = domn.LoadRecords(db)
+	if err != nil {
 		return
 	}
 
