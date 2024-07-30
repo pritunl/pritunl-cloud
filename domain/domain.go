@@ -5,9 +5,11 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/dns"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/secret"
 )
 
 type Domain struct {
@@ -54,6 +56,42 @@ func (d *Domain) Validate(db *database.Database) (
 			Message: "Secret invalid",
 		}
 		return
+	}
+
+	for _, record := range d.Records {
+		record.Domain = d.Id
+
+		errData, err = record.Validate(db)
+		if err != nil {
+			return
+		}
+
+		if errData != nil {
+			return
+		}
+	}
+
+	return
+}
+
+func (d *Domain) CommitRecords(db *database.Database) (err error) {
+	secr, err := secret.GetOrg(db, d.Organization, d.Secret)
+	if err != nil {
+		return
+	}
+
+	for _, record := range d.Records {
+		if record.Delete {
+			err = record.Remove(db, secr)
+			if err != nil {
+				return
+			}
+		} else if record.Update {
+			err = record.Upsert(db, secr)
+			if err != nil {
+				return
+			}
+		}
 	}
 
 	return
