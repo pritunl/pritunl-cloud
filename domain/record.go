@@ -5,9 +5,12 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/secret"
+	"github.com/sirupsen/logrus"
 )
 
 type Record struct {
@@ -17,9 +20,13 @@ type Record struct {
 	SubDomain string             `bson:"sub_domain" json:"sub_domain"`
 	Type      string             `bson:"type" json:"type"`
 	Value     string             `bson:"value" json:"value"`
+	Update    bool               `bson:"-" json:"update"`
+	Delete    bool               `bson:"-" json:"delete"`
 }
 
-func (r *Record) Remove(db *database.Database) (err error) {
+func (r *Record) Remove(db *database.Database,
+	secr *secret.Secret) (err error) {
+
 	domn, err := Get(db, r.Domain)
 	if err != nil {
 		return
@@ -105,8 +112,8 @@ func (r *Record) Remove(db *database.Database) (err error) {
 	return
 }
 
-func (r *Record) Upsert(db *database.Database, addr, addr6 string) (
-	err error) {
+func (r *Record) Upsert(db *database.Database,
+	secr *secret.Secret) (err error) {
 
 	domn, err := Get(db, r.Domain)
 	if err != nil {
@@ -119,6 +126,17 @@ func (r *Record) Upsert(db *database.Database, addr, addr6 string) (
 	if err != nil {
 		return
 	}
+
+	err = svc.Connect(db, secr)
+	if err != nil {
+		return
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"domain":     r.Domain.Hex(),
+		"sub_domain": r.SubDomain,
+		"type":       r.Type,
+	}).Info("domain: Updating record")
 
 	switch r.Type {
 	case A:
@@ -137,6 +155,18 @@ func (r *Record) Upsert(db *database.Database, addr, addr6 string) (
 		err = &errortypes.UnknownError{
 			errors.New("domain: Unknown record type"),
 		}
+		return
+	}
+
+	r.Timestamp = time.Now()
+
+	coll := db.DomainsRecords()
+
+	err = coll.Upsert(&bson.M{
+		"domain":     r.Domain,
+		"sub_domain": r.SubDomain,
+	}, r)
+	if err != nil {
 		return
 	}
 
