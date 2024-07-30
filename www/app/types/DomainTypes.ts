@@ -11,8 +11,20 @@ export interface Domain {
 	comment?: string;
 	organization?: string;
 	type?: string;
-	aws_id?: string;
-	aws_secret?: string;
+	secret?: string;
+	root_domain?: string;
+	records?: Record[];
+}
+
+export interface Record {
+	id?: string;
+	domain?: string;
+	timestamp?: string;
+	sub_domain?: string;
+	type?: string;
+	value?: string;
+	update?: boolean;
+	delete?: boolean;
 }
 
 export interface Filter {
