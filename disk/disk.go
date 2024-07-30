@@ -7,11 +7,15 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
+	"github.com/pritunl/pritunl-cloud/lock"
+	"github.com/pritunl/pritunl-cloud/lvm"
 	"github.com/pritunl/pritunl-cloud/paths"
+	"github.com/pritunl/pritunl-cloud/pool"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/sirupsen/logrus"
 )
@@ -21,7 +25,9 @@ type Disk struct {
 	Name             string             `bson:"name" json:"name"`
 	Comment          string             `bson:"comment" json:"comment"`
 	State            string             `bson:"state" json:"state"`
-	Node             primitive.ObjectID `bson:"node" json:"node"`
+	Type             string             `bson:"type" json:"type"`
+	Node             primitive.ObjectID `bson:"node,omitempty" json:"node"`
+	Pool             primitive.ObjectID `bson:"pool,omitempty" json:"pool"`
 	Organization     primitive.ObjectID `bson:"organization,omitempty" json:"organization"`
 	Instance         primitive.ObjectID `bson:"instance,omitempty" json:"instance"`
 	SourceInstance   primitive.ObjectID `bson:"source_instance,omitempty" json:"source_instance"`
@@ -63,10 +69,43 @@ func (d *Disk) Validate(db *database.Database) (
 		d.Index = strconv.Itoa(index)
 	}
 
-	if d.Node.IsZero() {
+	if d.Type == "" {
+		d.Type = Qcow2
+	}
+
+	switch d.Type {
+	case Qcow2:
+		d.Pool = primitive.NilObjectID
+		if d.Node.IsZero() {
+			errData = &errortypes.ErrorData{
+				Error:   "node_required",
+				Message: "Missing required node",
+			}
+			return
+		}
+		break
+	case Lvm:
+		d.Node = primitive.NilObjectID
+		if d.Pool.IsZero() {
+			errData = &errortypes.ErrorData{
+				Error:   "pool_required",
+				Message: "Missing required pool",
+			}
+			return
+		}
+
+		if d.Backing || d.BackingImage != "" {
+			errData = &errortypes.ErrorData{
+				Error:   "backing_image_invalid",
+				Message: "LVM disk cannot have backing image",
+			}
+			return
+		}
+		break
+	default:
 		errData = &errortypes.ErrorData{
-			Error:   "node_required",
-			Message: "Missing required node",
+			Error:   "unknown_type",
+			Message: "Unknown disk type",
 		}
 		return
 	}
@@ -216,14 +255,57 @@ func (d *Disk) Destroy(db *database.Database) (err error) {
 		return
 	}
 
-	logrus.WithFields(logrus.Fields{
-		"disk_id":   d.Id.Hex(),
-		"disk_path": dskPath,
-	}).Info("qemu: Destroying disk")
+	if d.Type == Lvm {
+		pl, e := pool.Get(db, d.Pool)
+		if e != nil {
+			err = e
+			return
+		}
 
-	err = utils.RemoveAll(dskPath)
-	if err != nil {
-		return
+		vgName := pl.VgName
+		lvName := d.Id.Hex()
+
+		acquired, e := lock.LvmLock(db, vgName, lvName)
+		if e != nil {
+			err = e
+			return
+		}
+
+		if !acquired {
+			err = &errortypes.WriteError{
+				errors.New("data: Failed to acquire LVM lock"),
+			}
+			return
+		}
+		defer func() {
+			err2 := lock.LvmUnlock(db, vgName, lvName)
+			if err2 != nil {
+				logrus.WithFields(logrus.Fields{
+					"error": err2,
+				}).Error("data: Failed to unlock lvm")
+			}
+		}()
+
+		logrus.WithFields(logrus.Fields{
+			"disk_id": d.Id.Hex(),
+			"vg_name": vgName,
+			"lv_name": lvName,
+		}).Info("qemu: Destroying LVM disk")
+
+		err = lvm.RemoveLv(vgName, lvName)
+		if err != nil {
+			return
+		}
+	} else {
+		logrus.WithFields(logrus.Fields{
+			"disk_id":   d.Id.Hex(),
+			"disk_path": dskPath,
+		}).Info("qemu: Destroying QCOW disk")
+
+		err = utils.RemoveAll(dskPath)
+		if err != nil {
+			return
+		}
 	}
 
 	err = Remove(db, d.Id)
