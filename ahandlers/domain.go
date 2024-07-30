@@ -25,6 +25,7 @@ type domainData struct {
 	Type         string             `json:"type"`
 	Secret       primitive.ObjectID `json:"secret"`
 	RootDomain   string             `json:"root_domain"`
+	Records      []*domain.Record   `json:"records"`
 }
 
 type domainsData struct {
@@ -64,6 +65,7 @@ func domainPut(c *gin.Context) {
 	domn.Type = data.Type
 	domn.Secret = data.Secret
 	domn.RootDomain = data.RootDomain
+	domn.Records = data.Records
 
 	fields := set.NewSet(
 		"name",
@@ -86,6 +88,12 @@ func domainPut(c *gin.Context) {
 	}
 
 	err = domn.CommitFields(db, fields)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	err = domn.CommitRecords(db)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
