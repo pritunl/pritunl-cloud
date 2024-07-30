@@ -32,15 +32,21 @@ func (r *Record) Remove(db *database.Database) (err error) {
 		return
 	}
 
+	err = svc.Connect(db, secr)
+	if err != nil {
+		return
+	}
+
+	vals := []string{}
 	switch r.Type {
 	case A:
-		err = svc.DnsADelete(db, domain, r.Value)
+		vals, err = svc.DnsAGet(db, domain)
 		if err != nil {
 			return
 		}
 		break
 	case AAAA:
-		err = svc.DnsAAAADelete(db, domain, r.Value)
+		vals, err = svc.DnsAAAAGet(db, domain)
 		if err != nil {
 			return
 		}
@@ -50,6 +56,50 @@ func (r *Record) Remove(db *database.Database) (err error) {
 			errors.New("domain: Unknown record type"),
 		}
 		return
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"domain":     r.Domain.Hex(),
+		"sub_domain": r.SubDomain,
+		"type":       r.Type,
+		"cur_values": vals,
+	}).Info("domain: Removing record")
+
+	if len(vals) == 1 && vals[0] == "" || len(vals) > 0 {
+		switch r.Type {
+		case A:
+			err = svc.DnsADelete(db, domain, r.Value)
+			if err != nil {
+				return
+			}
+			break
+		case AAAA:
+			err = svc.DnsAAAADelete(db, domain, r.Value)
+			if err != nil {
+				return
+			}
+			break
+		default:
+			err = &errortypes.UnknownError{
+				errors.New("domain: Unknown record type"),
+			}
+			return
+		}
+	}
+
+	coll := db.DomainsRecords()
+
+	_, err = coll.DeleteOne(db, &bson.M{
+		"_id": r.Id,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		switch err.(type) {
+		case *database.NotFoundError:
+			err = nil
+		default:
+			return
+		}
 	}
 
 	return
