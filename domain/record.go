@@ -208,7 +208,7 @@ func (r *Record) Validate(db *database.Database) (
 }
 
 func (r *Record) Commit(db *database.Database) (err error) {
-	coll := db.DomainsRecord()
+	coll := db.DomainsRecords()
 
 	err = coll.Commit(r.Id, r)
 	if err != nil {
@@ -221,7 +221,7 @@ func (r *Record) Commit(db *database.Database) (err error) {
 func (r *Record) CommitFields(db *database.Database, fields set.Set) (
 	err error) {
 
-	coll := db.DomainsRecord()
+	coll := db.DomainsRecords()
 
 	err = coll.CommitFields(r.Id, r, fields)
 	if err != nil {
@@ -232,7 +232,7 @@ func (r *Record) CommitFields(db *database.Database, fields set.Set) (
 }
 
 func (r *Record) Insert(db *database.Database) (err error) {
-	coll := db.DomainsRecord()
+	coll := db.DomainsRecords()
 
 	if !r.Id.IsZero() {
 		err = &errortypes.DatabaseError{
