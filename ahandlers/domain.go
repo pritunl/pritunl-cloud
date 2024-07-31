@@ -59,6 +59,13 @@ func domainPut(c *gin.Context) {
 		return
 	}
 
+	err = domn.LoadRecords(db)
+	if err != nil {
+		return
+	}
+
+	domn.PreCommit()
+
 	domn.Name = data.Name
 	domn.Comment = data.Comment
 	domn.Organization = data.Organization
