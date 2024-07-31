@@ -4,6 +4,20 @@ import (
 	"strings"
 )
 
+func matchDomains(x, y string) bool {
+	if strings.Trim(x, ".") == strings.Trim(y, ".") {
+		return true
+	}
+	return false
+}
+
+func matchTxt(x, y string) bool {
+	if strings.Trim(x, "\"") == strings.Trim(y, "\"") {
+		return true
+	}
+	return false
+}
+
 func extractDomain(domain string) string {
 	domain = strings.Trim(domain, ".")
 	parts := strings.Split(domain, ".")
