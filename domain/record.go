@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"strings"
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
@@ -9,8 +10,6 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"github.com/pritunl/pritunl-cloud/secret"
-	"github.com/sirupsen/logrus"
 )
 
 type Record struct {
@@ -20,157 +19,7 @@ type Record struct {
 	SubDomain string             `bson:"sub_domain" json:"sub_domain"`
 	Type      string             `bson:"type" json:"type"`
 	Value     string             `bson:"value" json:"value"`
-	Update    bool               `bson:"-" json:"update"`
-	Delete    bool               `bson:"-" json:"delete"`
-}
-
-func (r *Record) Remove(db *database.Database,
-	secr *secret.Secret) (err error) {
-
-	domn, err := Get(db, r.Domain)
-	if err != nil {
-		return
-	}
-
-	domain := r.SubDomain + "." + domn.RootDomain
-
-	svc, err := domn.GetDnsService(db)
-	if err != nil {
-		return
-	}
-
-	err = svc.Connect(db, secr)
-	if err != nil {
-		return
-	}
-
-	vals := []string{}
-	switch r.Type {
-	case A:
-		vals, err = svc.DnsAGet(db, domain)
-		if err != nil {
-			return
-		}
-		break
-	case AAAA:
-		vals, err = svc.DnsAAAAGet(db, domain)
-		if err != nil {
-			return
-		}
-		break
-	default:
-		err = &errortypes.UnknownError{
-			errors.New("domain: Unknown record type"),
-		}
-		return
-	}
-
-	logrus.WithFields(logrus.Fields{
-		"domain":     r.Domain.Hex(),
-		"sub_domain": r.SubDomain,
-		"type":       r.Type,
-		"cur_values": vals,
-	}).Info("domain: Removing record")
-
-	if len(vals) == 1 && vals[0] == "" || len(vals) > 0 {
-		switch r.Type {
-		case A:
-			err = svc.DnsADelete(db, domain, r.Value)
-			if err != nil {
-				return
-			}
-			break
-		case AAAA:
-			err = svc.DnsAAAADelete(db, domain, r.Value)
-			if err != nil {
-				return
-			}
-			break
-		default:
-			err = &errortypes.UnknownError{
-				errors.New("domain: Unknown record type"),
-			}
-			return
-		}
-	}
-
-	coll := db.DomainsRecords()
-
-	_, err = coll.DeleteOne(db, &bson.M{
-		"_id": r.Id,
-	})
-	if err != nil {
-		err = database.ParseError(err)
-		switch err.(type) {
-		case *database.NotFoundError:
-			err = nil
-		default:
-			return
-		}
-	}
-
-	return
-}
-
-func (r *Record) Upsert(db *database.Database,
-	secr *secret.Secret) (err error) {
-
-	domn, err := Get(db, r.Domain)
-	if err != nil {
-		return
-	}
-
-	domain := r.SubDomain + "." + domn.RootDomain
-
-	svc, err := domn.GetDnsService(db)
-	if err != nil {
-		return
-	}
-
-	err = svc.Connect(db, secr)
-	if err != nil {
-		return
-	}
-
-	logrus.WithFields(logrus.Fields{
-		"domain":     r.Domain.Hex(),
-		"sub_domain": r.SubDomain,
-		"type":       r.Type,
-	}).Info("domain: Updating record")
-
-	switch r.Type {
-	case A:
-		err = svc.DnsAUpsert(db, domain, r.Value)
-		if err != nil {
-			return
-		}
-		break
-	case AAAA:
-		err = svc.DnsAAAAUpsert(db, domain, r.Value)
-		if err != nil {
-			return
-		}
-		break
-	default:
-		err = &errortypes.UnknownError{
-			errors.New("domain: Unknown record type"),
-		}
-		return
-	}
-
-	r.Timestamp = time.Now()
-
-	coll := db.DomainsRecords()
-
-	err = coll.Upsert(&bson.M{
-		"domain":     r.Domain,
-		"sub_domain": r.SubDomain,
-	}, r)
-	if err != nil {
-		return
-	}
-
-	return
+	Operation string             `bson:"-" json:"operation"`
 }
 
 func (r *Record) Validate(db *database.Database) (
