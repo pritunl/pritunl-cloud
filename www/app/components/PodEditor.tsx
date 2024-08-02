@@ -39,13 +39,15 @@ const css = {
 		flex: 1,
 		minWidth: '280px',
 		margin: '0 10px',
-		padding: '30px 0 0 0 ',
+		padding: '26px 0 0 0 ',
 	} as React.CSSProperties,
 	editorBox: {
 		margin: '10px 0',
 	} as React.CSSProperties,
 	editor: {
-		margin: '10px 0',
+		margin: '11px 0 10px 0',
+		borderRadius: '3px',
+		overflow: 'hidden',
 	} as React.CSSProperties,
 	buttonEdit: {
 		position: 'absolute',
