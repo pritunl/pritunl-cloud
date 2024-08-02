@@ -6,14 +6,7 @@ import * as Theme from "../Theme";
 import Markdown from 'react-markdown';
 import hljs from "highlight.js/lib/core";
 
-import AceEditor from "react-ace"
-import "ace-builds/src-noconflict/mode-text"
-import "ace-builds/src-noconflict/mode-markdown"
-import "ace-builds/src-noconflict/mode-sh"
-import "ace-builds/src-noconflict/mode-python"
-import "ace-builds/src-noconflict/theme-dracula"
-import "ace-builds/src-noconflict/theme-eclipse"
-import {Ace} from "ace-builds"
+import * as MonacoEditor from "@monaco-editor/react"
 
 interface Props {
 	defaultEdit?: boolean;
@@ -75,7 +68,6 @@ const css = {
 };
 
 export default class PodEditor extends React.Component<Props, State> {
-	editor: Ace.Editor
 	markdown: React.RefObject<HTMLDivElement>;
 
 	constructor(props: any, context: any) {
@@ -208,34 +200,31 @@ export default class PodEditor extends React.Component<Props, State> {
 						title="Spec"
 						content="Spec file for pod."
 					/>
-					<AceEditor
-						name="log-view"
-						theme={Theme.editorTheme()}
-						height="800px"
-						width="100%"
-						mode="python"
-						fontSize="12px"
-						style={css.editor}
-						wrapEnabled={true}
-						showPrintMargin={false}
-						showGutter={true}
-						readOnly={false}
-						value={this.props.value}
-						editorProps={{
-							$blockScrolling: true,
-						}}
-						setOptions={{
-							showFoldWidgets: false,
-						}}
-						onLoad={(editor: Ace.Editor): void => {
-							this.editor = editor
-							this.editor.scrollToLine(Number.POSITIVE_INFINITY,
-								false, false, null)
-						}}
-						onChange={(val): void => {
-							this.props.onChange(val)
-						}}
-					/>
+					<div style={css.editor}>
+						<MonacoEditor.Editor
+							height="800px"
+							width="100%"
+							defaultLanguage="markdown"
+							theme={Theme.editorTheme()}
+							defaultValue={this.props.value}
+							options={{
+								folding: false,
+								fontSize: 14,
+								fontFamily: "'DejaVu Sans Mono', Monaco, Menlo, 'Ubuntu Mono', Consolas, source-code-pro, monospace",
+								tabSize: 4,
+								detectIndentation: false,
+								rulers: [80],
+								scrollBeyondLastLine: false,
+								minimap: {
+									enabled: expandRight,
+								},
+								wordWrap: "on",
+							}}
+							onChange={(val): void => {
+								this.props.onChange(val)
+							}}
+						/>
+					</div>
 				</label>
 			</div>
 		</div>;
