@@ -67,6 +67,10 @@ const css = {
 	} as React.CSSProperties,
 };
 
+const hashRe = /^( {0,3})#+\s+\S+/
+const blockRe = /^( {4}|\s*`)/
+const langRe = /^language-(.+)$/
+
 export default class PodEditor extends React.Component<Props, State> {
 	markdown: React.RefObject<HTMLDivElement>;
 
@@ -81,24 +85,26 @@ export default class PodEditor extends React.Component<Props, State> {
 	}
 
 	componentDidMount(): void {
-		hljs.highlightAll();
-
 		if (this.markdown.current) {
-			const bashElements = this.markdown.current.querySelectorAll('[class^="language-"]:not(.hljs)')
-			Array.from(bashElements).forEach(element => {
-				element.classList.add('hljs');
-			});
+			const codeElems = this.markdown.current.querySelectorAll('pre code')
+
+			Array.from(codeElems).forEach((element: HTMLElement) => {
+				if (!element.dataset.highlighted) {
+					hljs.highlightElement(element)
+				}
+			})
 		}
 	}
 
 	componentDidUpdate(): void {
-		hljs.highlightAll();
-
 		if (this.markdown.current) {
-			const bashElements = this.markdown.current.querySelectorAll('code:not(.hljs)')
-			Array.from(bashElements).forEach(element => {
-				element.classList.add('hljs');
-			});
+			const codeElems = this.markdown.current.querySelectorAll('pre code')
+
+			Array.from(codeElems).forEach((element: HTMLElement) => {
+				if (!element.dataset.highlighted) {
+					hljs.highlightElement(element)
+				}
+			})
 		}
 	}
 
@@ -127,7 +133,23 @@ export default class PodEditor extends React.Component<Props, State> {
 		}
 
 		if (!expandRight) {
-			markdown = <Markdown>{this.props.value}</Markdown>
+			markdown = <Markdown
+				children={this.props.value}
+				components={{
+					code(props) {
+						let {children, className, node, ...rest} = props
+						let match = (className || "").match(langRe)
+
+						if (match && !hljs.getLanguage(match[1])) {
+							className = "language-plaintext"
+						}
+
+						return <code {...rest} className={className}>
+							{children}
+						</code>
+					}
+				}}
+			/>
 
 			if (expandLeft) {
 				markdownButton = <button
