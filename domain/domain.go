@@ -10,6 +10,8 @@ import (
 	"github.com/pritunl/pritunl-cloud/dns"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/secret"
+	"strings"
+	"time"
 )
 
 type Domain struct {
@@ -21,6 +23,7 @@ type Domain struct {
 	Secret       primitive.ObjectID `bson:"secret" json:"secret"`
 	RootDomain   string             `bson:"root_domain" json:"root_domain"`
 	Records      []*Record          `bson:"-" json:"records"`
+	OrigRecords  []*Record          `bson:"-" json:"-"`
 }
 
 func (d *Domain) Validate(db *database.Database) (
@@ -58,8 +61,13 @@ func (d *Domain) Validate(db *database.Database) (
 		return
 	}
 
+	newRecords := []*Record{}
 	for _, record := range d.Records {
 		record.Domain = d.Id
+
+		if record.Operation == DELETE && record.Id.IsZero() {
+			continue
+		}
 
 		errData, err = record.Validate(db)
 		if err != nil {
@@ -69,9 +77,16 @@ func (d *Domain) Validate(db *database.Database) (
 		if errData != nil {
 			return
 		}
+
+		newRecords = append(newRecords, record)
 	}
+	d.Records = newRecords
 
 	return
+}
+
+func (d *Domain) PreCommit() {
+	d.OrigRecords = d.Records
 }
 
 func (d *Domain) CommitRecords(db *database.Database) (err error) {
@@ -80,14 +95,121 @@ func (d *Domain) CommitRecords(db *database.Database) (err error) {
 		return
 	}
 
+	newRecords := []*Record{}
 	for _, record := range d.Records {
-		if record.Delete {
-			err = record.Remove(db, secr)
+		if record.Operation == DELETE {
+			for _, origRecord := range d.OrigRecords {
+				if record.Id == origRecord.Id {
+					record = origRecord
+					record.Operation = DELETE
+					break
+				}
+			}
+		}
+
+		newRecords = append(newRecords, record)
+	}
+	d.Records = newRecords
+
+	batches := map[string][]*Record{}
+
+	for _, record := range d.Records {
+		batchKey := record.SubDomain + ":" + record.Type
+		batches[batchKey] = append(batches[batchKey], record)
+	}
+
+	for _, records := range batches {
+		err = d.UpdateRecords(db, secr, records)
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
+func (d *Domain) UpdateRecords(db *database.Database, secr *secret.Secret,
+	records []*Record) (err error) {
+
+	ops := []*dns.Operation{}
+	subDomain := ""
+	dnsType := ""
+
+	for _, rec := range records {
+		if subDomain == "" {
+			subDomain = rec.SubDomain
+		} else if rec.SubDomain != subDomain {
+			err = &errortypes.ParseError{
+				errors.Newf("domain: Update subdomain inconsistent"),
+			}
+			return
+		}
+
+		if dnsType == "" {
+			dnsType = rec.Type
+		} else if rec.Type != dnsType {
+			err = &errortypes.ParseError{
+				errors.Newf("domain: Update type inconsistent"),
+			}
+			return
+		}
+
+		switch rec.Operation {
+		case INSERT, UPDATE:
+			ops = append(ops, &dns.Operation{
+				Operation: dns.UPSERT,
+				Value:     rec.Value,
+			})
+			break
+		case DELETE:
+			ops = append(ops, &dns.Operation{
+				Operation: dns.DELETE,
+				Value:     rec.Value,
+			})
+			break
+		default:
+			ops = append(ops, &dns.Operation{
+				Operation: dns.RETAIN,
+				Value:     rec.Value,
+			})
+		}
+	}
+
+	domain := subDomain + "." + d.RootDomain
+
+	svc, err := d.GetDnsService(db)
+	if err != nil {
+		return
+	}
+
+	err = svc.Connect(db, secr)
+	if err != nil {
+		return
+	}
+
+	err = svc.DnsCommit(db, domain, dnsType, ops)
+	if err != nil {
+		return
+	}
+
+	for _, rec := range records {
+		rec.Timestamp = time.Now()
+
+		switch rec.Operation {
+		case INSERT:
+			err = rec.Insert(db)
 			if err != nil {
 				return
 			}
-		} else if record.Update {
-			err = record.Upsert(db, secr)
+			break
+		case DELETE:
+			err = rec.Remove(db)
+			if err != nil {
+				return
+			}
+			break
+		default:
+			err = rec.Commit(db)
 			if err != nil {
 				return
 			}
