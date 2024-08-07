@@ -29,6 +29,8 @@ type Domain struct {
 func (d *Domain) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
+	d.RootDomain = strings.ToLower(d.RootDomain)
+
 	if d.Organization.IsZero() {
 		errData = &errortypes.ErrorData{
 			Error:   "organization_required",
