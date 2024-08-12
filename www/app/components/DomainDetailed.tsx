@@ -10,9 +10,14 @@ import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
 import PageSelect from "./PageSelect";
 import PageTextArea from "./PageTextArea";
+import DomainRecord from "./DomainRecord";
+import * as Constants from "../Constants";
+import * as SecretTypes from "../types/SecretTypes";
+import Help from "./Help";
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
+	secrets: SecretTypes.SecretsRo;
 	domain: DomainTypes.DomainRo;
 	selected: boolean;
 	onSelect: (shift: boolean) => void;
@@ -128,6 +133,99 @@ export default class DomainDetailed extends React.Component<Props, State> {
 		});
 	}
 
+	onAddRecord = (): void => {
+		let domain: DomainTypes.Domain;
+
+		if (this.state.changed) {
+			domain = {
+				...this.state.domain,
+			};
+		} else {
+			domain = {
+				...this.props.domain,
+			};
+		}
+
+		let records = [
+			...(domain.records || []),
+			{
+				operation: "insert",
+			},
+		];
+
+		domain.records = records;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			domain: domain,
+		});
+	}
+
+	onChangeRecord(i: number, state: DomainTypes.Record): void {
+		let domain: DomainTypes.Domain;
+
+		if (this.state.changed) {
+			domain = {
+				...this.state.domain,
+			};
+		} else {
+			domain = {
+				...this.props.domain,
+			};
+		}
+
+		let records = [
+			...(domain.records || []),
+		];
+
+		state.type = (state.type || "A")
+
+		records[i] = state;
+
+		domain.records = records;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			domain: domain,
+		});
+	}
+
+	onRemoveRecord(i: number): void {
+		let domain: DomainTypes.Domain;
+
+		if (this.state.changed) {
+			domain = {
+				...this.state.domain,
+			};
+		} else {
+			domain = {
+				...this.props.domain,
+			};
+		}
+
+		let records = [
+			...(domain.records || []),
+		];
+
+		records[i] = {
+			...records[i],
+			operation: "delete",
+		};
+
+		domain.records = records;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			domain: domain,
+		});
+	}
+
 	onSave = (): void => {
 		this.setState({
 			...this.state,
@@ -189,7 +287,77 @@ export default class DomainDetailed extends React.Component<Props, State> {
 	render(): JSX.Element {
 		let domain: DomainTypes.Domain = this.state.domain ||
 			this.props.domain;
-		let org = OrganizationsStore.organization(this.props.domain.organization);
+
+		let hasOrganizations = false
+		let organizationsSelect: JSX.Element[] = [];
+		if (this.props.organizations.length) {
+			for (let organization of this.props.organizations) {
+				hasOrganizations = true
+				organizationsSelect.push(
+					<option
+						key={organization.id}
+						value={organization.id}
+					>{organization.name}</option>,
+				);
+			}
+		}
+
+		if (!hasOrganizations) {
+			organizationsSelect.push(
+				<option key="null" value="">No Organizations</option>);
+		}
+
+		let hasSecrets = false;
+		let secretsSelect: JSX.Element[] = [];
+		if (this.props.secrets.length) {
+			secretsSelect.push(<option key="null" value="">Select Secret</option>);
+
+			for (let secret of this.props.secrets) {
+				if (Constants.user) {
+					if (domain.organization !== OrganizationsStore.current) {
+						continue;
+					}
+				} else {
+					if (domain.organization !== secret.organization) {
+						continue;
+					}
+				}
+
+				hasSecrets = true;
+				secretsSelect.push(
+					<option
+						key={secret.id}
+						value={secret.id}
+					>{secret.name}</option>,
+				);
+			}
+		}
+
+		if (!hasSecrets) {
+			secretsSelect = [<option key="null" value="">No Secrets</option>];
+		}
+
+		let records: JSX.Element[] = [];
+		for (let i = 0; i < domain.records.length; i++) {
+			let index = i;
+
+			if (domain.records[index].operation === "delete") {
+				continue;
+			}
+
+			records.push(
+				<DomainRecord
+					key={index}
+					record={domain.records[index]}
+					onChange={(state: DomainTypes.Record): void => {
+						this.onChangeRecord(index, state);
+					}}
+					onRemove={(): void => {
+						this.onRemoveRecord(index);
+					}}
+				/>,
+			);
+		}
 
 		return <td
 			className="bp5-cell"
@@ -209,23 +377,23 @@ export default class DomainDetailed extends React.Component<Props, State> {
 							}
 						}}
 					>
-            <div>
-              <label
-                className="bp5-control bp5-checkbox"
-                style={css.select}
-              >
-                <input
-                  type="checkbox"
-                  checked={this.props.selected}
+						<div>
+							<label
+								className="bp5-control bp5-checkbox"
+								style={css.select}
+							>
+								<input
+									type="checkbox"
+									checked={this.props.selected}
 									onChange={(evt): void => {
 									}}
-                  onClick={(evt): void => {
+									onClick={(evt): void => {
 										this.props.onSelect(evt.shiftKey);
 									}}
-                />
-                <span className="bp5-control-indicator"/>
-              </label>
-            </div>
+								/>
+								<span className="bp5-control-indicator"/>
+							</label>
+						</div>
 						<div className="flex tab-close"/>
 						<ConfirmButton
 							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
@@ -261,39 +429,32 @@ export default class DomainDetailed extends React.Component<Props, State> {
 							this.set('comment', val);
 						}}
 					/>
-					<PageSelect
-						label="Type"
-						help="Domain type."
-						value={domain.type}
+					<PageInput
+						label="Domain"
+						help="Root domain name."
+						type="text"
+						placeholder="Enter domain"
+						value={domain.root_domain}
 						onChange={(val): void => {
-							this.set('type', val);
+							this.set('root_domain', val);
 						}}
+					/>
+					<label style={css.itemsLabel}>
+						Domain Records
+						<Help
+							title="Domain Records"
+							content="Domain DNS records."
+						/>
+					</label>
+					{records}
+					<button
+						className="bp5-button bp5-intent-success bp5-icon-add"
+						style={css.itemsAdd}
+						type="button"
+						onClick={this.onAddRecord}
 					>
-						<option value="">Select Type</option>
-						<option value="route_53">AWS Route53</option>
-					</PageSelect>
-					<PageInput
-						hidden={domain.type !== 'route_53'}
-						label="AWS Access Key ID"
-						help="AWS access key ID."
-						type="text"
-						placeholder="Enter access key ID"
-						value={domain.aws_id}
-						onChange={(val): void => {
-							this.set('aws_id', val);
-						}}
-					/>
-					<PageInput
-						hidden={domain.type !== 'route_53'}
-						label="AWS Secret Access Key"
-						help="AWS secret access key."
-						type="text"
-						placeholder="Enter secret access key"
-						value={domain.aws_secret}
-						onChange={(val): void => {
-							this.set('aws_secret', val);
-						}}
-					/>
+						Add Record
+					</button>
 				</div>
 				<div style={css.group}>
 					<PageInfo
@@ -302,12 +463,43 @@ export default class DomainDetailed extends React.Component<Props, State> {
 								label: 'ID',
 								value: this.props.domain.id || 'Unknown',
 							},
-							{
-								label: 'Organization',
-								value: org ? org.name : this.props.domain.organization,
-							},
 						]}
 					/>
+					<PageSelect
+						disabled={this.state.disabled}
+						hidden={Constants.user}
+						label="Organization"
+						help="Organization for domain."
+						value={domain.organization}
+						onChange={(val): void => {
+							this.set('organization', val);
+						}}
+					>
+						{organizationsSelect}
+					</PageSelect>
+					<PageSelect
+						label="Provider"
+						help="Domain provider."
+						value={domain.type}
+						onChange={(val): void => {
+							this.set('type', val);
+						}}
+					>
+						<option value="aws">AWS</option>
+						<option value="cloudflare">Cloudflare</option>
+						<option value="oracle_cloud">Oracle Cloud</option>
+					</PageSelect>
+					<PageSelect
+						disabled={this.state.disabled}
+						label="Provider API Secret"
+						help="Secret containing API keys to use for provider."
+						value={domain.secret}
+						onChange={(val): void => {
+							this.set('secret', val);
+						}}
+					>
+						{secretsSelect}
+					</PageSelect>
 				</div>
 			</div>
 			<PageSave
