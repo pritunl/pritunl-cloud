@@ -1,33 +1,15 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
-import * as DiskTypes from '../types/DiskTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
-import * as DatacenterTypes from '../types/DatacenterTypes';
-import * as NodeTypes from '../types/NodeTypes';
-import * as InstanceTypes from '../types/InstanceTypes';
-import * as ImageTypes from '../types/ImageTypes';
-import * as ZoneTypes from '../types/ZoneTypes';
-import * as PoolTypes from '../types/PoolTypes';
 import * as DomainActions from '../actions/DomainActions';
-import * as ImageActions from '../actions/ImageActions';
-import * as InstanceActions from '../actions/InstanceActions';
-import * as NodeActions from '../actions/NodeActions';
-import ImagesDatacenterStore from '../stores/ImagesDatacenterStore';
-import InstancesNodeStore from '../stores/InstancesNodeStore';
-import NodesZoneStore from '../stores/NodesZoneStore';
 import PageInput from './PageInput';
-import PageInputButton from './PageInputButton';
 import PageCreate from './PageCreate';
 import PageSelect from './PageSelect';
-import PageSwitch from "./PageSwitch";
-import PageNumInput from './PageNumInput';
-import Help from './Help';
 import * as SecretTypes from "../types/SecretTypes";
 import * as DomainTypes from "../types/DomainTypes";
 import * as Constants from "../Constants";
 import OrganizationsStore from "../stores/OrganizationsStore";
 import PageTextArea from "./PageTextArea";
-import PageInfo from "./PageInfo";
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -249,18 +231,6 @@ export default class DomainNew extends React.Component<Props, State> {
 								this.set('comment', val);
 							}}
 						/>
-						<PageSelect
-							label="Provider"
-							help="Domain provider."
-							value={domain.type}
-							onChange={(val): void => {
-								this.set('type', val);
-							}}
-						>
-							<option value="aws">AWS</option>
-							<option value="cloudflare">Cloudflare</option>
-							<option value="oracle_cloud">Oracle Cloud</option>
-						</PageSelect>
 						<PageInput
 							label="Domain"
 							help="Root domain name."
@@ -271,17 +241,6 @@ export default class DomainNew extends React.Component<Props, State> {
 								this.set('root_domain', val);
 							}}
 						/>
-						<PageSelect
-							disabled={this.state.disabled}
-							label="Provider API Secret"
-							help="Secret containing API keys to use for provider."
-							value={domain.secret}
-							onChange={(val): void => {
-								this.set('secret', val);
-							}}
-						>
-							{secretsSelect}
-						</PageSelect>
 					</div>
 					<div style={css.group}>
 						<PageSelect
@@ -295,6 +254,29 @@ export default class DomainNew extends React.Component<Props, State> {
 							}}
 						>
 							{organizationsSelect}
+						</PageSelect>
+						<PageSelect
+							label="Provider"
+							help="Domain provider."
+							value={domain.type}
+							onChange={(val): void => {
+								this.set('type', val);
+							}}
+						>
+							<option value="aws">AWS</option>
+							<option value="cloudflare">Cloudflare</option>
+							<option value="oracle_cloud">Oracle Cloud</option>
+						</PageSelect>
+						<PageSelect
+							disabled={this.state.disabled}
+							label="Provider API Secret"
+							help="Secret containing API keys to use for provider."
+							value={domain.secret}
+							onChange={(val): void => {
+								this.set('secret', val);
+							}}
+						>
+							{secretsSelect}
 						</PageSelect>
 					</div>
 				</div>
