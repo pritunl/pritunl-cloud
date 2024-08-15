@@ -4,9 +4,11 @@ import * as DomainTypes from '../types/DomainTypes';
 import * as OrganizationTypes from "../types/OrganizationTypes";
 import OrganizationsStore from '../stores/OrganizationsStore';
 import DomainDetailed from './DomainDetailed';
+import * as SecretTypes from "../types/SecretTypes";
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
+	secrets: SecretTypes.SecretsRo;
 	domain: DomainTypes.DomainRo;
 	selected: boolean;
 	onSelect: (shift: boolean) => void;
@@ -86,6 +88,7 @@ export default class Domain extends React.Component<Props, {}> {
 			>
 				<DomainDetailed
 					organizations={this.props.organizations}
+					secrets={this.props.secrets}
 					domain={this.props.domain}
 					selected={this.props.selected}
 					onSelect={this.props.onSelect}
