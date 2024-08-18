@@ -410,10 +410,10 @@ export default class DomainDetailed extends React.Component<Props, State> {
 						/>
 					</div>
 					<PageInput
-						label="Domain"
+						label="Name"
 						help="Domain name."
 						type="text"
-						placeholder="Enter domain"
+						placeholder="Enter name"
 						value={domain.name}
 						onChange={(val): void => {
 							this.set('name', val);
