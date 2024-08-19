@@ -43,7 +43,9 @@ export default class DomainRecord extends React.Component<Props, {}> {
 					onChange={(evt): void => {
 						let state = this.clone();
 						state.type = evt.target.value;
-						state.update = true;
+						if (!state.operation) {
+							state.operation = "update"
+						}
 						this.props.onChange(state);
 					}}
 				>
@@ -63,7 +65,9 @@ export default class DomainRecord extends React.Component<Props, {}> {
 					onChange={(evt): void => {
 						let state = this.clone();
 						state.sub_domain = evt.target.value;
-						state.update = true;
+						if (!state.operation) {
+							state.operation = "update"
+						}
 						this.props.onChange(state);
 					}}
 				/>
@@ -80,7 +84,9 @@ export default class DomainRecord extends React.Component<Props, {}> {
 					onChange={(evt): void => {
 						let state = this.clone();
 						state.value = evt.target.value;
-						state.update = true;
+						if (!state.operation) {
+							state.operation = "update"
+						}
 						this.props.onChange(state);
 					}}
 				/>
