@@ -10,10 +10,15 @@ import * as OrganizationActions from '../actions/OrganizationActions';
 import Domain from './Domain';
 import DomainsFilter from './DomainsFilter';
 import DomainsPage from './DomainsPage';
+import DomainNew from './DomainNew';
 import Page from './Page';
 import PageHeader from './PageHeader';
 import NonState from './NonState';
 import ConfirmButton from './ConfirmButton';
+import * as SecretTypes from "../types/SecretTypes";
+import SecretsStore from "../stores/SecretsStore";
+import * as SecretActions from "../actions/SecretActions";
+import DiskNew from "./DiskNew";
 
 interface Selected {
 	[key: string]: boolean;
@@ -27,6 +32,7 @@ interface State {
 	domains: DomainTypes.DomainsRo;
 	filter: DomainTypes.Filter;
 	organizations: OrganizationTypes.OrganizationsRo;
+	secrets: SecretTypes.SecretsRo;
 	organization: string;
 	selected: Selected;
 	opened: Opened;
@@ -90,6 +96,7 @@ export default class Domains extends React.Component<{}, State> {
 			domains: DomainsStore.domains,
 			filter: DomainsStore.filter,
 			organizations: OrganizationsStore.organizations,
+			secrets: SecretsStore.secrets,
 			organization: '',
 			selected: {},
 			opened: {},
@@ -110,13 +117,16 @@ export default class Domains extends React.Component<{}, State> {
 	componentDidMount(): void {
 		DomainsStore.addChangeListener(this.onChange);
 		OrganizationsStore.addChangeListener(this.onChange);
+		SecretsStore.addChangeListener(this.onChange);
 		DomainActions.sync();
 		OrganizationActions.sync();
+		SecretActions.sync();
 	}
 
 	componentWillUnmount(): void {
 		DomainsStore.removeChangeListener(this.onChange);
 		OrganizationsStore.removeChangeListener(this.onChange);
+		SecretsStore.removeChangeListener(this.onChange);
 	}
 
 	onChange = (): void => {
@@ -140,6 +150,7 @@ export default class Domains extends React.Component<{}, State> {
 			domains: domains,
 			filter: DomainsStore.filter,
 			organizations: OrganizationsStore.organizations,
+			secrets: SecretsStore.secrets,
 			selected: selected,
 			opened: opened,
 		});
@@ -195,6 +206,7 @@ export default class Domains extends React.Component<{}, State> {
 				key={domain.id}
 				domain={domain}
 				organizations={this.state.organizations}
+				secrets={this.state.secrets}
 				selected={!!this.state.selected[domain.id]}
 				open={!!this.state.opened[domain.id]}
 				onSelect={(shift: boolean): void => {
