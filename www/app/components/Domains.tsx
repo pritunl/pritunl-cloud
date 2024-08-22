@@ -294,6 +294,20 @@ export default class Domains extends React.Component<{}, State> {
 			}
 		}
 
+		let newDiskDom: JSX.Element;
+		if (this.state.newOpened) {
+			newDiskDom = <DomainNew
+				organizations={this.state.organizations}
+				secrets={this.state.secrets}
+				onClose={(): void => {
+					this.setState({
+						...this.state,
+						newOpened: false,
+					});
+				}}
+			/>;
+		}
+
 		return <Page>
 			<PageHeader>
 				<div className="layout horizontal wrap" style={css.header}>
@@ -328,32 +342,6 @@ export default class Domains extends React.Component<{}, State> {
 						>
 							Collapse All
 						</button>
-						<button
-							className="bp5-button bp5-intent-success bp5-icon-add"
-							hidden={!Constants.user}
-							disabled={this.state.disabled}
-							style={css.button}
-							type="button"
-							onClick={(): void => {
-								this.setState({
-									...this.state,
-									disabled: true,
-								});
-								DomainActions.create({
-									id: null,
-								}).then((): void => {
-									this.setState({
-										...this.state,
-										disabled: false,
-									});
-								}).catch((): void => {
-									this.setState({
-										...this.state,
-										disabled: false,
-									});
-								});
-							}}
-						>New</button>
 						<ConfirmButton
 							label="Delete Selected"
 							className="bp5-intent-danger bp5-icon-delete"
@@ -366,56 +354,18 @@ export default class Domains extends React.Component<{}, State> {
 							disabled={!this.selected || this.state.disabled}
 							onConfirm={this.onDelete}
 						/>
-					</div>
-					<div style={css.groupBox} hidden={Constants.user}>
-						<div
-							className="bp5-control-group"
-							style={css.group}
-						>
-							<div style={css.selectBox}>
-								<div className="bp5-select" style={css.selectFirst}>
-									<select
-										style={css.selectInner}
-										disabled={!hasOrganizations || this.state.disabled}
-										value={this.state.organization}
-										onChange={(evt): void => {
-											this.setState({
-												...this.state,
-												organization: evt.target.value,
-											});
-										}}
-									>
-										{organizationsSelect}
-									</select>
-								</div>
-							</div>
-							<button
-								className="bp5-button bp5-intent-success bp5-icon-add"
-								disabled={!hasOrganizations || this.state.disabled}
-								type="button"
-								onClick={(): void => {
-									this.setState({
-										...this.state,
-										disabled: true,
-									});
-									DomainActions.create({
-										id: null,
-										organization: this.state.organization ||
-											this.state.organizations[0].id,
-									}).then((): void => {
-										this.setState({
-											...this.state,
-											disabled: false,
-										});
-									}).catch((): void => {
-										this.setState({
-											...this.state,
-											disabled: false,
-										});
-									});
-								}}
-							>New</button>
-						</div>
+						<button
+							className="bp5-button bp5-intent-success bp5-icon-add"
+							style={css.button}
+							disabled={this.state.disabled || this.state.newOpened}
+							type="button"
+							onClick={(): void => {
+								this.setState({
+									...this.state,
+									newOpened: true,
+								});
+							}}
+						>New</button>
 					</div>
 				</div>
 			</PageHeader>
@@ -428,6 +378,7 @@ export default class Domains extends React.Component<{}, State> {
 			/>
 			<div style={css.itemsBox}>
 				<div style={css.items}>
+					{newDiskDom}
 					{domainsDom}
 					<tr className="bp5-card bp5-row" style={css.placeholder}>
 						<td colSpan={5} style={css.placeholder}/>
