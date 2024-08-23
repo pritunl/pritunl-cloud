@@ -1889,17 +1889,6 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					</PageSelect>
 					<PageSelect
 						disabled={this.state.disabled}
-						label="DNS Domain"
-						help="Domain to create DNS name using instance name."
-						value={instance.domain}
-						onChange={(val): void => {
-							this.set('domain', val);
-						}}
-					>
-						{domainsSelect}
-					</PageSelect>
-					<PageSelect
-						disabled={this.state.disabled}
 						label="CloudInit Type"
 						help="Target operating system for cloud init"
 						value={instance.cloud_type}
