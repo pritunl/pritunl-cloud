@@ -8,6 +8,7 @@ import PageInput from './PageInput';
 import PageSelect from './PageSelect';
 import PageInfo from './PageInfo';
 import PageInputButton from './PageInputButton';
+import PodEditor from './PodEditor';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
 import Help from './Help';
@@ -20,18 +21,6 @@ import * as PoolTypes from "../types/PoolTypes";
 import * as ZoneTypes from "../types/ZoneTypes";
 import * as ShapeTypes from "../types/ShapeTypes";
 import * as Theme from "../Theme";
-
-import Markdown from 'react-markdown';
-import hljs from "highlight.js/lib/core";
-
-import AceEditor from "react-ace"
-import "ace-builds/src-noconflict/mode-text"
-import "ace-builds/src-noconflict/mode-markdown"
-import "ace-builds/src-noconflict/mode-sh"
-import "ace-builds/src-noconflict/mode-python"
-import "ace-builds/src-noconflict/theme-dracula"
-import "ace-builds/src-noconflict/theme-eclipse"
-import {Ace} from "ace-builds"
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -123,18 +112,9 @@ const css = {
 	rules: {
 		marginBottom: '15px',
 	} as React.CSSProperties,
-	editorBox: {
-		margin: '10px 0',
-	} as React.CSSProperties,
-	editor: {
-		margin: '10px 0',
-	} as React.CSSProperties,
 };
 
 export default class PodDetailed extends React.Component<Props, State> {
-	editor: Ace.Editor
-	markdown: React.RefObject<HTMLDivElement>;
-
 	constructor(props: any, context: any) {
 		super(props, context);
 		this.state = {
@@ -144,30 +124,6 @@ export default class PodDetailed extends React.Component<Props, State> {
 			addRole: null,
 			pod: null,
 		};
-
-		this.markdown = React.createRef();
-	}
-
-	componentDidMount(): void {
-		hljs.highlightAll();
-
-		if (this.markdown.current) {
-			const bashElements = this.markdown.current.querySelectorAll('[class^="language-"]:not(.hljs)')
-			Array.from(bashElements).forEach(element => {
-				element.classList.add('hljs');
-			});
-		}
-	}
-
-	componentDidUpdate(): void {
-		hljs.highlightAll();
-
-		if (this.markdown.current) {
-			const bashElements = this.markdown.current.querySelectorAll('code:not(.hljs)')
-			Array.from(bashElements).forEach(element => {
-				element.classList.add('hljs');
-			});
-		}
 	}
 
 	set(name: string, val: any): void {
@@ -486,51 +442,13 @@ export default class PodDetailed extends React.Component<Props, State> {
 					/>
 				</div>
 			</div>
-			<div className="layout horizontal flex" style={css.editorBox}>
-				<div ref={this.markdown} style={css.group}>
-					<Markdown>{pod.spec}</Markdown>
-				</div>
-				<div style={css.group}>
-					<label
-						className="bp5-label flex"
-						style={css.editorBox}
-					>
-						Pod Spec
-						<Help
-							title="Spec"
-							content="Spec file for pod."
-						/>
-						<AceEditor
-							name="log-view"
-							theme={Theme.editorTheme()}
-							height="800px"
-							width="100%"
-							mode="python"
-							fontSize="12px"
-							style={css.editor}
-							wrapEnabled={true}
-							showPrintMargin={false}
-							showGutter={true}
-							readOnly={false}
-							value={pod.spec}
-							editorProps={{
-								$blockScrolling: true,
-							}}
-							setOptions={{
-								showFoldWidgets: false,
-							}}
-							onLoad={(editor: Ace.Editor): void => {
-								this.editor = editor
-								this.editor.scrollToLine(Number.POSITIVE_INFINITY,
-									false, false, null)
-							}}
-							onChange={(val): void => {
-								this.set("spec", val)
-							}}
-						/>
-					</label>
-				</div>
-			</div>
+			<PodEditor
+				disabled={this.state.disabled}
+				value={pod.spec}
+				onChange={(val: string): void => {
+					this.set("spec", val)
+				}}
+			/>
 			<PageSave
 				style={css.save}
 				hidden={!this.state.pod && !this.state.message}
