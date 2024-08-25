@@ -17,6 +17,7 @@ import PageCreate from './PageCreate';
 import PageSelect from './PageSelect';
 import PageSwitch from "./PageSwitch";
 import PageNumInput from './PageNumInput';
+import PodEditor from "./PodEditor";
 import Help from './Help';
 import OrganizationsStore from "../stores/OrganizationsStore";
 import PageTextArea from "./PageTextArea";
@@ -366,6 +367,14 @@ export default class PodNew extends React.Component<Props, State> {
 						/>
 					</div>
 				</div>
+				<PodEditor
+					disabled={this.state.disabled}
+					defaultEdit={true}
+					value={pod.spec}
+					onChange={(val: string): void => {
+						this.set("spec", val)
+					}}
+				/>
 				<PageCreate
 					style={css.save}
 					hidden={!this.state.pod}
