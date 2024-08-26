@@ -181,10 +181,12 @@ export default class PodEditor extends React.Component<Props, State> {
 			}
 		}
 
-		let valTrim = (this.props.value || "").trimStart()
-		if (!valTrim || (valTrim.length > 0 && valTrim.charAt(0) === "`")) {
+		let val = (this.props.value || "")
+		let valTrim = val.trimStart()
+
+		if (blockRe.test(val)) {
 			leftGroupStyle = css.groupSpacedExt
-		} else if (valTrim && valTrim.length > 0 && valTrim.charAt(0) !== "#") {
+		} else if (!hashRe.test(val)) {
 			leftGroupStyle = css.groupSpaced
 		} else {
 			let valFirst = valTrim.split('\n')[0] || ""
