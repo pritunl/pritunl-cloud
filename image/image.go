@@ -113,6 +113,20 @@ func (i *Image) Json() {
 					names[2][:2],
 				)
 				break
+			case "ubuntu2404":
+				i.Name = fmt.Sprintf(
+					"Ubuntu 24.04 %s/20%s",
+					names[2][2:],
+					names[2][:2],
+				)
+				break
+			case "ubuntu2604":
+				i.Name = fmt.Sprintf(
+					"Ubuntu 26.04 %s/20%s",
+					names[2][2:],
+					names[2][:2],
+				)
+				break
 			}
 		} else if n == 3 && names[1] == "efi" && len(names[2]) == 4 {
 			switch names[0] {
@@ -182,6 +196,20 @@ func (i *Image) Json() {
 			case "ubuntu2204":
 				i.Name = fmt.Sprintf(
 					"Ubuntu 22.04 EFI %s/20%s",
+					names[2][2:],
+					names[2][:2],
+				)
+				break
+			case "ubuntu2404":
+				i.Name = fmt.Sprintf(
+					"Ubuntu 24.04 EFI %s/20%s",
+					names[2][2:],
+					names[2][:2],
+				)
+				break
+			case "ubuntu2604":
+				i.Name = fmt.Sprintf(
+					"Ubuntu 26.04 EFI %s/20%s",
 					names[2][2:],
 					names[2][:2],
 				)
