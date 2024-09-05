@@ -157,6 +157,13 @@ func Register(engine *gin.Engine) {
 	csrfGroup.POST("/organization", organizationPost)
 	csrfGroup.DELETE("/organization/:org_id", organizationDelete)
 
+	csrfGroup.GET("/pod", podsGet)
+	csrfGroup.GET("/pod/:pod_id", podGet)
+	csrfGroup.PUT("/pod/:pod_id", podPut)
+	csrfGroup.POST("/pod", podPost)
+	csrfGroup.DELETE("/pod", podsDelete)
+	csrfGroup.DELETE("/pod/:pod_id", podDelete)
+
 	csrfGroup.GET("/policy", policiesGet)
 	csrfGroup.GET("/policy/:policy_id", policyGet)
 	csrfGroup.PUT("/policy/:policy_id", policyPut)
