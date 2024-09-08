@@ -6,7 +6,7 @@ toolchain go1.22.5
 
 require (
 	github.com/aws/aws-sdk-go v1.55.3
-	github.com/cloudflare/cloudflare-go v0.100.0
+	github.com/cloudflare/cloudflare-go v0.103.0
 	github.com/dropbox/godropbox v0.0.0-20230623171840-436d2007a9fd
 	github.com/duosecurity/duo_api_golang v0.0.0-20240408132100-cb1770897e66
 	github.com/gin-gonic/gin v1.10.0
@@ -24,7 +24,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/twilio/twilio-go v1.22.3
 	github.com/ua-parser/uap-go v0.0.0-20240611065828-3a4781585db6
-	golang.org/x/crypto v0.25.0
+	golang.org/x/crypto v0.26.0
 	golang.org/x/oauth2 v0.21.0
 	google.golang.org/api v0.189.0
 )
@@ -61,8 +61,6 @@ require (
 	github.com/google/s2a-go v0.1.8 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
 	github.com/googleapis/gax-go/v2 v2.13.0 // indirect
-	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
-	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
 	github.com/hashicorp/golang-lru v1.0.2 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
@@ -94,10 +92,10 @@ require (
 	go.opentelemetry.io/otel/metric v1.28.0 // indirect
 	go.opentelemetry.io/otel/trace v1.28.0 // indirect
 	golang.org/x/arch v0.8.0 // indirect
-	golang.org/x/net v0.27.0 // indirect
-	golang.org/x/sync v0.7.0 // indirect
-	golang.org/x/sys v0.22.0 // indirect
-	golang.org/x/text v0.16.0 // indirect
+	golang.org/x/net v0.28.0 // indirect
+	golang.org/x/sync v0.8.0 // indirect
+	golang.org/x/sys v0.23.0 // indirect
+	golang.org/x/text v0.17.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240722135656-d784300faade // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240725223205-93522f1f2a9f // indirect
