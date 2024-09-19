@@ -18,6 +18,10 @@ cp node_modules/@blueprintjs/icons/lib/css/blueprint-icons-20.svg dist-dev/stati
 cp node_modules/@blueprintjs/icons/lib/css/blueprint-icons-20.ttf dist-dev/static/
 cp node_modules/@blueprintjs/icons/lib/css/blueprint-icons-20.woff dist-dev/static/
 cp node_modules/@blueprintjs/icons/lib/css/blueprint-icons-20.woff2 dist-dev/static/
+cp static/RobotoMono-Regular.ttf dist-dev/static/
+cp static/RobotoMono-Medium.ttf dist-dev/static/
+cp -r node_modules/monaco-editor/min/vs dist-dev/static/
+cp static/yamlFixed.js dist-dev/static/vs/basic-languages/yaml/yaml.js
 sed -i 's|../../resources/icons/||g' dist-dev/static/blueprint-icons.css
 
 webpack --config webpack.dev.config
@@ -44,6 +48,10 @@ cp node_modules/@blueprintjs/icons/lib/css/blueprint-icons-20.svg dist/static/
 cp node_modules/@blueprintjs/icons/lib/css/blueprint-icons-20.ttf dist/static/
 cp node_modules/@blueprintjs/icons/lib/css/blueprint-icons-20.woff dist/static/
 cp node_modules/@blueprintjs/icons/lib/css/blueprint-icons-20.woff2 dist/static/
+cp static/RobotoMono-Regular.ttf dist/static/
+cp static/RobotoMono-Medium.ttf dist/static/
+cp -r node_modules/monaco-editor/min/vs dist/static/
+cp -r yamlFixed.js dist/static/vs/basic-languages/yaml/yaml.js
 sed -i 's|../../resources/icons/||g' dist/static/blueprint-icons.css
 
 webpack
