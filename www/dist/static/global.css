@@ -22,6 +22,11 @@ body {
   font-family: Roboto, Noto, sans-serif;
 }
 
+code {
+  font-family: 'Roboto Mono', Consolas, Menlo, 'DejaVu Sans Mono', monospace;
+  font-weight: 500;
+}
+
 h2 {
   font-size: 28px;
 }
