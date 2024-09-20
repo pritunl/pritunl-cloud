@@ -21,6 +21,7 @@ import Shapes from './Shapes';
 import Blocks from './Blocks';
 import Vpcs from './Vpcs';
 import Domains from './Domains';
+import Plans from './Plans';
 import Balancers from './Balancers';
 import Storages from './Storages';
 import Images from './Images';
@@ -53,6 +54,7 @@ import * as ShapeActions from '../actions/ShapeActions';
 import * as BlockActions from '../actions/BlockActions';
 import * as VpcActions from '../actions/VpcActions';
 import * as DomainActions from '../actions/DomainActions';
+import * as PlanActions from '../actions/PlanActions';
 import * as BalancerActions from '../actions/BalancerActions';
 import * as StorageActions from '../actions/StorageActions';
 import * as ImageActions from '../actions/ImageActions';
@@ -294,6 +296,13 @@ export default class Main extends React.Component<{}, State> {
 						to="/images"
 					>
 						Images
+					</RouterLink>
+					<RouterLink
+						className="bp5-button bp5-minimal bp5-icon-map-marker"
+						style={css.link}
+						to="/plans"
+					>
+						Plans
 					</RouterLink>
 					<RouterLink
 						className="bp5-button bp5-minimal bp5-icon-control"
@@ -619,6 +628,18 @@ export default class Main extends React.Component<{}, State> {
 										disabled: false,
 									});
 								});
+							} else if (pathname === '/plans') {
+								PlanActions.sync().then((): void => {
+									this.setState({
+										...this.state,
+										disabled: false,
+									});
+								}).catch((): void => {
+									this.setState({
+										...this.state,
+										disabled: false,
+									});
+								});
 							} else if (pathname === '/balancers') {
 								BalancerActions.sync().then((): void => {
 									this.setState({
@@ -848,6 +869,9 @@ export default class Main extends React.Component<{}, State> {
 				)}/>
 				<RouterRoute path="/domains" render={() => (
 					<Domains/>
+				)}/>
+				<RouterRoute path="/plans" render={() => (
+					<Plans/>
 				)}/>
 				<RouterRoute path="/balancers" render={() => (
 					<Balancers/>
