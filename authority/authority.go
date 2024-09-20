@@ -6,6 +6,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type Authority struct {
@@ -22,6 +23,8 @@ type Authority struct {
 
 func (f *Authority) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
+
+	f.Name = utils.FilterName(f.Name)
 
 	if f.Roles == nil {
 		f.Roles = []string{}

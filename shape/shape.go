@@ -7,6 +7,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type Shape struct {
@@ -26,6 +27,8 @@ type Shape struct {
 
 func (s *Shape) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
+
+	s.Name = utils.FilterName(s.Name)
 
 	if s.Type == "" {
 		s.Type = Instance

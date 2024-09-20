@@ -48,6 +48,8 @@ type Disk struct {
 func (d *Disk) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
+	d.Name = utils.FilterName(d.Name)
+
 	if !d.Instance.IsZero() && d.Index != "" {
 		index, e := strconv.Atoi(d.Index)
 		if e != nil {

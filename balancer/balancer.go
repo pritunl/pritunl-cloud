@@ -10,6 +10,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type Domain struct {
@@ -54,6 +55,8 @@ type Balancer struct {
 
 func (b *Balancer) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
+
+	b.Name = utils.FilterName(b.Name)
 
 	if b.Type == "" {
 		b.Type = Http

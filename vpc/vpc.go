@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"crypto/md5"
 	"fmt"
+	"net"
+	"strings"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
@@ -13,8 +16,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/requires"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"net"
-	"strings"
 )
 
 type Route struct {
@@ -47,6 +48,8 @@ type Vpc struct {
 
 func (v *Vpc) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
+
+	v.Name = utils.FilterName(v.Name)
 
 	if v.VpcId == 0 {
 		errData = &errortypes.ErrorData{
@@ -103,6 +106,15 @@ func (v *Vpc) Validate(db *database.Database) (
 	}{}
 	subs := []*Subnet{}
 	for _, sub := range v.Subnets {
+		errData, err = sub.Validate(db)
+		if err != nil {
+			return
+		}
+
+		if errData != nil {
+			return
+		}
+
 		if sub.Network == "" {
 			continue
 		}

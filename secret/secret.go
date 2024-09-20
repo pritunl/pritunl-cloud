@@ -6,6 +6,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type Secret struct {
@@ -21,6 +22,8 @@ type Secret struct {
 
 func (c *Secret) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
+
+	c.Name = utils.FilterName(c.Name)
 
 	switch c.Type {
 	case AWS, "":

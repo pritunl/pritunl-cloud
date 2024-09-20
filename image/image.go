@@ -12,6 +12,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type Image struct {
@@ -32,6 +33,8 @@ type Image struct {
 
 func (i *Image) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
+
+	i.Name = utils.FilterName(i.Name)
 
 	if i.Firmware == "" {
 		i.Firmware = Unknown

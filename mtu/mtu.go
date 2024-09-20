@@ -5,10 +5,6 @@ import (
 	"strings"
 
 	"github.com/dropbox/godropbox/container/set"
-
-	"github.com/pritunl/pritunl-cloud/settings"
-	"github.com/pritunl/pritunl-cloud/zone"
-
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
@@ -18,7 +14,9 @@ import (
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/ip"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/vm"
+	"github.com/pritunl/pritunl-cloud/zone"
 )
 
 type Check struct {

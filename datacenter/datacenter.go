@@ -6,6 +6,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type Datacenter struct {
@@ -23,6 +24,8 @@ type Datacenter struct {
 
 func (d *Datacenter) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
+
+	d.Name = utils.FilterName(d.Name)
 
 	if d.Organizations == nil || !d.MatchOrganizations {
 		d.Organizations = []primitive.ObjectID{}

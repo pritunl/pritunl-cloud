@@ -11,6 +11,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type Rule struct {
@@ -82,6 +83,8 @@ type Firewall struct {
 
 func (f *Firewall) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
+
+	f.Name = utils.FilterName(f.Name)
 
 	if f.NetworkRoles == nil {
 		f.NetworkRoles = []string{}

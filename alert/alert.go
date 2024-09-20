@@ -31,6 +31,8 @@ func (a *Alert) Validate(db *database.Database) (
 		}
 	}
 
+	a.Name = utils.FilterName(a.Name)
+
 	if a.Roles == nil {
 		a.Roles = []string{}
 	}

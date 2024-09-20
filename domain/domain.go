@@ -1,6 +1,9 @@
 package domain
 
 import (
+	"strings"
+	"time"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
@@ -10,8 +13,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/dns"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/secret"
-	"strings"
-	"time"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type Domain struct {
@@ -28,6 +30,8 @@ type Domain struct {
 
 func (d *Domain) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
+
+	d.Name = utils.FilterName(d.Name)
 
 	d.RootDomain = strings.ToLower(d.RootDomain)
 

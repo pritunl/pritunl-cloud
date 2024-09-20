@@ -33,6 +33,8 @@ type Block struct {
 func (b *Block) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
+	b.Name = utils.FilterName(b.Name)
+
 	if b.Type == "" {
 		b.Type = IPv4
 	}

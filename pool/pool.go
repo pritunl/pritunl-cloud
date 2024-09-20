@@ -5,6 +5,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type Pool struct {
@@ -19,6 +20,8 @@ type Pool struct {
 
 func (p *Pool) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
+
+	p.Name = utils.FilterName(p.Name)
 
 	return
 }

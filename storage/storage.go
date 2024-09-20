@@ -8,6 +8,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type Storage struct {
@@ -28,6 +29,8 @@ func (s *Storage) IsOracle() bool {
 
 func (s *Storage) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
+
+	s.Name = utils.FilterName(s.Name)
 
 	if s.Type == "" {
 		s.Type = Public

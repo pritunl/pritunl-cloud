@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"github.com/pritunl/pritunl-cloud/utils"
 	"io"
 	"strings"
 	"time"
@@ -46,6 +47,8 @@ type Certificate struct {
 
 func (c *Certificate) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
+
+	c.Name = utils.FilterName(c.Name)
 
 	if c.Type == "" {
 		c.Type = Text

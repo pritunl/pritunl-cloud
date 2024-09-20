@@ -5,7 +5,6 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
@@ -16,6 +15,8 @@ import (
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/subscription"
 	"github.com/pritunl/pritunl-cloud/user"
+	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/sirupsen/logrus"
 )
 
 type Rule struct {
@@ -39,6 +40,8 @@ type Policy struct {
 
 func (p *Policy) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
+
+	p.Name = utils.FilterName(p.Name)
 
 	if p.Roles == nil {
 		p.Roles = []string{}

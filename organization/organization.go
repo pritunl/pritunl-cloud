@@ -6,6 +6,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type Organization struct {
@@ -17,6 +18,8 @@ type Organization struct {
 
 func (d *Organization) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
+
+	d.Name = utils.FilterName(d.Name)
 
 	if d.Roles == nil {
 		d.Roles = []string{}

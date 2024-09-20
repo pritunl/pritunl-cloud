@@ -118,6 +118,8 @@ type Instance struct {
 func (i *Instance) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
+	i.Name = utils.FilterName(i.Name)
+
 	if i.State == "" {
 		i.State = Start
 	}
