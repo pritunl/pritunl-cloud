@@ -15,11 +15,10 @@ import (
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
-	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
-type podData struct {
+type serviceData struct {
 	Id               primitive.ObjectID `json:"id"`
 	Name             string             `json:"name"`
 	Comment          string             `json:"comment"`
@@ -31,21 +30,21 @@ type podData struct {
 	Spec             string             `json:"spec"`
 }
 
-type podsData struct {
-	Pods  []*pod.Pod `json:"pods"`
-	Count int64      `json:"count"`
+type servicesData struct {
+	Services []*service.Service `json:"services"`
+	Count    int64              `json:"count"`
 }
 
-func podPut(c *gin.Context) {
+func servicePut(c *gin.Context) {
 	if demo.Blocked(c) {
 		return
 	}
 
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
-	data := &podData{}
+	data := &serviceData{}
 
-	podId, ok := utils.ParseObjectId(c.Param("pod_id"))
+	serviceId, ok := utils.ParseObjectId(c.Param("service_id"))
 	if !ok {
 		utils.AbortWithStatus(c, 400)
 		return
@@ -60,7 +59,7 @@ func podPut(c *gin.Context) {
 		return
 	}
 
-	pd, err := pod.GetOrg(db, userOrg, podId)
+	pd, err := service.GetOrg(db, userOrg, serviceId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -102,20 +101,20 @@ func podPut(c *gin.Context) {
 		return
 	}
 
-	event.PublishDispatch(db, "pod.change")
+	event.PublishDispatch(db, "service.change")
 
 	c.JSON(200, pd)
 }
 
-func podPost(c *gin.Context) {
+func servicePost(c *gin.Context) {
 	if demo.Blocked(c) {
 		return
 	}
 
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
-	data := &podData{
-		Name: "New Pod",
+	data := &serviceData{
+		Name: "New Service",
 	}
 
 	err := c.Bind(data)
@@ -127,7 +126,7 @@ func podPost(c *gin.Context) {
 		return
 	}
 
-	pd := &pod.Pod{
+	pd := &service.Service{
 		Name:             data.Name,
 		Comment:          data.Comment,
 		Organization:     userOrg,
@@ -155,12 +154,12 @@ func podPost(c *gin.Context) {
 		return
 	}
 
-	event.PublishDispatch(db, "pod.change")
+	event.PublishDispatch(db, "service.change")
 
 	c.JSON(200, pd)
 }
 
-func podDelete(c *gin.Context) {
+func serviceDelete(c *gin.Context) {
 	if demo.Blocked(c) {
 		return
 	}
@@ -168,24 +167,24 @@ func podDelete(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
-	podId, ok := utils.ParseObjectId(c.Param("pod_id"))
+	serviceId, ok := utils.ParseObjectId(c.Param("service_id"))
 	if !ok {
 		utils.AbortWithStatus(c, 400)
 		return
 	}
 
-	err := pod.RemoveOrg(db, userOrg, podId)
+	err := service.RemoveOrg(db, userOrg, serviceId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	event.PublishDispatch(db, "pod.change")
+	event.PublishDispatch(db, "service.change")
 
 	c.JSON(200, nil)
 }
 
-func podsDelete(c *gin.Context) {
+func servicesDelete(c *gin.Context) {
 	if demo.Blocked(c) {
 		return
 	}
@@ -203,28 +202,28 @@ func podsDelete(c *gin.Context) {
 		return
 	}
 
-	err = pod.RemoveMultiOrg(db, userOrg, data)
+	err = service.RemoveMultiOrg(db, userOrg, data)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	event.PublishDispatch(db, "pod.change")
+	event.PublishDispatch(db, "service.change")
 
 	c.JSON(200, nil)
 }
 
-func podGet(c *gin.Context) {
+func serviceGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
-	podId, ok := utils.ParseObjectId(c.Param("pod_id"))
+	serviceId, ok := utils.ParseObjectId(c.Param("service_id"))
 	if !ok {
 		utils.AbortWithStatus(c, 400)
 		return
 	}
 
-	pd, err := pod.GetOrg(db, userOrg, podId)
+	pd, err := service.GetOrg(db, userOrg, serviceId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -233,7 +232,7 @@ func podGet(c *gin.Context) {
 	c.JSON(200, pd)
 }
 
-func podsGet(c *gin.Context) {
+func servicesGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
@@ -244,9 +243,9 @@ func podsGet(c *gin.Context) {
 		"organization": userOrg,
 	}
 
-	podId, ok := utils.ParseObjectId(c.Query("id"))
+	serviceId, ok := utils.ParseObjectId(c.Query("id"))
 	if ok {
-		query["_id"] = podId
+		query["_id"] = serviceId
 	}
 
 	name := strings.TrimSpace(c.Query("name"))
@@ -270,15 +269,15 @@ func podsGet(c *gin.Context) {
 		query["role"] = role
 	}
 
-	pods, count, err := pod.GetAllPaged(db, &query, page, pageCount)
+	services, count, err := service.GetAllPaged(db, &query, page, pageCount)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	data := &podsData{
-		Pods:  pods,
-		Count: count,
+	data := &servicesData{
+		Services: services,
+		Count:    count,
 	}
 
 	c.JSON(200, data)

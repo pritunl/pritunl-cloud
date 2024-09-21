@@ -1,4 +1,4 @@
-package pod
+package service
 
 import (
 	"github.com/pritunl/mongo-go-driver/bson"
@@ -8,13 +8,13 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
-func Get(db *database.Database, podId primitive.ObjectID) (
-	pd *Pod, err error) {
+func Get(db *database.Database, serviceId primitive.ObjectID) (
+	pd *Service, err error) {
 
-	coll := db.Pods()
-	pd = &Pod{}
+	coll := db.Services()
+	pd = &Service{}
 
-	err = coll.FindOneId(podId, pd)
+	err = coll.FindOneId(serviceId, pd)
 	if err != nil {
 		return
 	}
@@ -23,10 +23,10 @@ func Get(db *database.Database, podId primitive.ObjectID) (
 }
 
 func GetOrg(db *database.Database, orgId, pdId primitive.ObjectID) (
-	pd *Pod, err error) {
+	pd *Service, err error) {
 
-	coll := db.Pods()
-	pd = &Pod{}
+	coll := db.Services()
+	pd = &Service{}
 
 	err = coll.FindOne(db, &bson.M{
 		"_id":          pdId,
@@ -41,10 +41,10 @@ func GetOrg(db *database.Database, orgId, pdId primitive.ObjectID) (
 }
 
 func GetAll(db *database.Database, query *bson.M) (
-	pods []*Pod, err error) {
+	services []*Service, err error) {
 
-	coll := db.Pods()
-	pods = []*Pod{}
+	coll := db.Services()
+	services = []*Service{}
 
 	cursor, err := coll.Find(db, query)
 	if err != nil {
@@ -54,14 +54,14 @@ func GetAll(db *database.Database, query *bson.M) (
 	defer cursor.Close(db)
 
 	for cursor.Next(db) {
-		nde := &Pod{}
+		nde := &Service{}
 		err = cursor.Decode(nde)
 		if err != nil {
 			err = database.ParseError(err)
 			return
 		}
 
-		pods = append(pods, nde)
+		services = append(services, nde)
 	}
 
 	err = cursor.Err()
@@ -74,10 +74,10 @@ func GetAll(db *database.Database, query *bson.M) (
 }
 
 func GetAllPaged(db *database.Database, query *bson.M,
-	page, pageCount int64) (pods []*Pod, count int64, err error) {
+	page, pageCount int64) (services []*Service, count int64, err error) {
 
-	coll := db.Pods()
-	pods = []*Pod{}
+	coll := db.Services()
+	services = []*Service{}
 
 	if len(*query) == 0 {
 		count, err = coll.EstimatedDocumentCount(db)
@@ -118,14 +118,14 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	defer cursor.Close(db)
 
 	for cursor.Next(db) {
-		pd := &Pod{}
+		pd := &Service{}
 		err = cursor.Decode(pd)
 		if err != nil {
 			err = database.ParseError(err)
 			return
 		}
 
-		pods = append(pods, pd)
+		services = append(services, pd)
 	}
 
 	err = cursor.Err()
@@ -137,11 +137,11 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	return
 }
 
-func Remove(db *database.Database, podId primitive.ObjectID) (err error) {
-	coll := db.Pods()
+func Remove(db *database.Database, serviceId primitive.ObjectID) (err error) {
+	coll := db.Services()
 
 	_, err = coll.DeleteOne(db, &bson.M{
-		"_id":               podId,
+		"_id":               serviceId,
 		"delete_protection": false,
 	})
 	if err != nil {
@@ -157,13 +157,13 @@ func Remove(db *database.Database, podId primitive.ObjectID) (err error) {
 	return
 }
 
-func RemoveOrg(db *database.Database, orgId, podId primitive.ObjectID) (
+func RemoveOrg(db *database.Database, orgId, serviceId primitive.ObjectID) (
 	err error) {
 
-	coll := db.Pods()
+	coll := db.Services()
 
 	_, err = coll.DeleteOne(db, &bson.M{
-		"_id":          podId,
+		"_id":          serviceId,
 		"organization": orgId,
 	})
 	if err != nil {
@@ -179,14 +179,14 @@ func RemoveOrg(db *database.Database, orgId, podId primitive.ObjectID) (
 	return
 }
 
-func RemoveMulti(db *database.Database, podIds []primitive.ObjectID) (
+func RemoveMulti(db *database.Database, serviceIds []primitive.ObjectID) (
 	err error) {
 
-	coll := db.Pods()
+	coll := db.Services()
 
 	_, err = coll.DeleteMany(db, &bson.M{
 		"_id": &bson.M{
-			"$in":               podIds,
+			"$in":               serviceIds,
 			"delete_protection": false,
 		},
 	})
@@ -199,13 +199,13 @@ func RemoveMulti(db *database.Database, podIds []primitive.ObjectID) (
 }
 
 func RemoveMultiOrg(db *database.Database, orgId primitive.ObjectID,
-	podIds []primitive.ObjectID) (err error) {
+	serviceIds []primitive.ObjectID) (err error) {
 
-	coll := db.Pods()
+	coll := db.Services()
 
 	_, err = coll.DeleteMany(db, &bson.M{
 		"_id": &bson.M{
-			"$in": podIds,
+			"$in": serviceIds,
 		},
 		"organization": orgId,
 	})

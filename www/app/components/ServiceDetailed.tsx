@@ -1,14 +1,14 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
 import * as Constants from '../Constants';
-import * as PodTypes from '../types/PodTypes';
-import * as PodActions from '../actions/PodActions';
+import * as ServiceTypes from '../types/ServiceTypes';
+import * as ServiceActions from '../actions/ServiceActions';
 import * as OrganizationTypes from "../types/OrganizationTypes";
 import PageInput from './PageInput';
 import PageSelect from './PageSelect';
 import PageInfo from './PageInfo';
 import PageInputButton from './PageInputButton';
-import PodEditor from './PodEditor';
+import ServiceEditor from './ServiceEditor';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
 import Help from './Help';
@@ -31,7 +31,7 @@ interface Props {
 	pools: PoolTypes.PoolsRo;
 	zones: ZoneTypes.ZonesRo;
 	shapes: ShapeTypes.ShapesRo;
-	pod: PodTypes.PodRo;
+	service: ServiceTypes.ServiceRo;
 	selected: boolean;
 	onSelect: (shift: boolean) => void;
 	onClose: () => void;
@@ -42,7 +42,7 @@ interface State {
 	changed: boolean;
 	message: string;
 	addRole: string;
-	pod: PodTypes.Pod;
+	service: ServiceTypes.Service;
 }
 
 const css = {
@@ -114,7 +114,7 @@ const css = {
 	} as React.CSSProperties,
 };
 
-export default class PodDetailed extends React.Component<Props, State> {
+export default class ServiceDetailed extends React.Component<Props, State> {
 	constructor(props: any, context: any) {
 		super(props, context);
 		this.state = {
@@ -122,51 +122,51 @@ export default class PodDetailed extends React.Component<Props, State> {
 			changed: false,
 			message: '',
 			addRole: null,
-			pod: null,
+			service: null,
 		};
 	}
 
 	set(name: string, val: any): void {
-		let pod: any;
+		let service: any;
 
 		if (this.state.changed) {
-			pod = {
-				...this.state.pod,
+			service = {
+				...this.state.service,
 			};
 		} else {
-			pod = {
-				...this.props.pod,
+			service = {
+				...this.props.service,
 			};
 		}
 
-		pod[name] = val;
+		service[name] = val;
 
 		this.setState({
 			...this.state,
 			changed: true,
-			pod: pod,
+			service: service,
 		});
 	}
 
 	onAddRole = (): void => {
-		let pod: PodTypes.Pod;
+		let service: ServiceTypes.Service;
 
 		if (!this.state.addRole) {
 			return;
 		}
 
 		if (this.state.changed) {
-			pod = {
-				...this.state.pod,
+			service = {
+				...this.state.service,
 			};
 		} else {
-			pod = {
-				...this.props.pod,
+			service = {
+				...this.props.service,
 			};
 		}
 
 		let roles = [
-			...(pod.roles || []),
+			...(service.roles || []),
 		];
 
 
@@ -175,32 +175,32 @@ export default class PodDetailed extends React.Component<Props, State> {
 		}
 
 		roles.sort();
-		pod.roles = roles;
+		service.roles = roles;
 
 		this.setState({
 			...this.state,
 			changed: true,
 			message: '',
 			addRole: '',
-			pod: pod,
+			service: service,
 		});
 	}
 
 	onRemoveRole = (role: string): void => {
-		let pod: PodTypes.Pod;
+		let service: ServiceTypes.Service;
 
 		if (this.state.changed) {
-			pod = {
-				...this.state.pod,
+			service = {
+				...this.state.service,
 			};
 		} else {
-			pod = {
-				...this.props.pod,
+			service = {
+				...this.props.service,
 			};
 		}
 
 		let roles = [
-			...(pod.roles || []),
+			...(service.roles || []),
 		];
 
 		let i = roles.indexOf(role);
@@ -209,14 +209,14 @@ export default class PodDetailed extends React.Component<Props, State> {
 		}
 
 		roles.splice(i, 1);
-		pod.roles = roles;
+		service.roles = roles;
 
 		this.setState({
 			...this.state,
 			changed: true,
 			message: '',
 			addRole: '',
-			pod: pod,
+			service: service,
 		});
 	}
 
@@ -225,7 +225,7 @@ export default class PodDetailed extends React.Component<Props, State> {
 			...this.state,
 			disabled: true,
 		});
-		PodActions.commit(this.state.pod).then((): void => {
+		ServiceActions.commit(this.state.service).then((): void => {
 			this.setState({
 				...this.state,
 				message: 'Your changes have been saved',
@@ -237,7 +237,7 @@ export default class PodDetailed extends React.Component<Props, State> {
 				if (!this.state.changed) {
 					this.setState({
 						...this.state,
-						pod: null,
+						service: null,
 						changed: false,
 					});
 				}
@@ -265,7 +265,7 @@ export default class PodDetailed extends React.Component<Props, State> {
 			...this.state,
 			disabled: true,
 		});
-		PodActions.remove(this.props.pod.id).then((): void => {
+		ServiceActions.remove(this.props.service.id).then((): void => {
 			this.setState({
 				...this.state,
 				disabled: false,
@@ -279,8 +279,8 @@ export default class PodDetailed extends React.Component<Props, State> {
 	}
 
 	render(): JSX.Element {
-		let pod: PodTypes.Pod = this.state.pod ||
-			this.props.pod;
+		let service: ServiceTypes.Service = this.state.service ||
+			this.props.service;
 
 		let hasOrganizations = !!this.props.organizations.length;
 		let organizationsSelect: JSX.Element[] = [];
@@ -304,7 +304,7 @@ export default class PodDetailed extends React.Component<Props, State> {
 		}
 
 		let roles: JSX.Element[] = [];
-		for (let role of (pod.roles || [])) {
+		for (let role of (service.roles || [])) {
 			roles.push(
 				<div
 					className="bp5-tag bp5-tag-removable bp5-intent-primary"
@@ -365,30 +365,30 @@ export default class PodDetailed extends React.Component<Props, State> {
 							safe={true}
 							progressClassName="bp5-intent-danger"
 							dialogClassName="bp5-intent-danger bp5-icon-delete"
-							dialogLabel="Delete Pod"
-							confirmMsg="Permanently delete this pod"
+							dialogLabel="Delete Service"
+							confirmMsg="Permanently delete this service"
 							confirmInput={true}
-							items={[pod.name]}
+							items={[service.name]}
 							disabled={this.state.disabled}
 							onConfirm={this.onDelete}
 						/>
 					</div>
 					<PageInput
 						label="Name"
-						help="Name of pod"
+						help="Name of service"
 						type="text"
 						placeholder="Enter name"
-						value={pod.name}
+						value={service.name}
 						onChange={(val): void => {
 							this.set('name', val);
 						}}
 					/>
 					<PageTextArea
 						label="Comment"
-						help="Pod comment."
-						placeholder="Pod comment"
+						help="Service comment."
+						placeholder="Service comment"
 						rows={3}
-						value={pod.comment}
+						value={service.comment}
 						onChange={(val: string): void => {
 							this.set('comment', val);
 						}}
@@ -399,7 +399,7 @@ export default class PodDetailed extends React.Component<Props, State> {
 						fields={[
 							{
 								label: 'ID',
-								value: this.props.pod.id || 'Unknown',
+								value: this.props.service.id || 'Unknown',
 							},
 						]}
 					/>
@@ -407,8 +407,8 @@ export default class PodDetailed extends React.Component<Props, State> {
 						disabled={this.state.disabled || !hasOrganizations}
 						hidden={Constants.user}
 						label="Organization"
-						help="Organization for pod."
-						value={pod.organization}
+						help="Organization for service."
+						value={service.organization}
 						onChange={(val): void => {
 							this.set('organization', val);
 						}}
@@ -442,16 +442,16 @@ export default class PodDetailed extends React.Component<Props, State> {
 					/>
 				</div>
 			</div>
-			<PodEditor
+			<ServiceEditor
 				disabled={this.state.disabled}
-				value={pod.spec}
+				value={service.spec}
 				onChange={(val: string): void => {
 					this.set("spec", val)
 				}}
 			/>
 			<PageSave
 				style={css.save}
-				hidden={!this.state.pod && !this.state.message}
+				hidden={!this.state.service && !this.state.message}
 				message={this.state.message}
 				changed={this.state.changed}
 				disabled={this.state.disabled}
@@ -460,7 +460,7 @@ export default class PodDetailed extends React.Component<Props, State> {
 					this.setState({
 						...this.state,
 						changed: false,
-						pod: null,
+						service: null,
 					});
 				}}
 				onSave={this.onSave}

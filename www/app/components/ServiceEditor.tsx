@@ -73,7 +73,7 @@ const hashRe = /^( {0,3})#+\s+\S+/
 const blockRe = /^( {4}|\s*`)/
 const langRe = /^language-(.+)$/
 
-export default class PodEditor extends React.Component<Props, State> {
+export default class ServiceEditor extends React.Component<Props, State> {
 	markdown: React.RefObject<HTMLDivElement>;
 
 	constructor(props: any, context: any) {
@@ -221,10 +221,10 @@ export default class PodEditor extends React.Component<Props, State> {
 					className="bp5-label flex"
 					style={css.editorBox}
 				>
-					Pod Spec
+					Service Spec
 					<Help
 						title="Spec"
-						content="Spec file for pod."
+						content="Spec file for service."
 					/>
 					<div style={css.editor}>
 						<MonacoEditor.Editor

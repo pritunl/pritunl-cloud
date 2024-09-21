@@ -1,20 +1,20 @@
 /// <reference path="../References.d.ts"/>
 import Dispatcher from '../dispatcher/Dispatcher';
 import EventEmitter from '../EventEmitter';
-import * as PodTypes from '../types/PodTypes';
+import * as ServiceTypes from '../types/ServiceTypes';
 import * as GlobalTypes from '../types/GlobalTypes';
 
-class PodsStore extends EventEmitter {
-	_pods: PodTypes.PodsRo = Object.freeze([]);
+class ServicesStore extends EventEmitter {
+	_services: ServiceTypes.ServicesRo = Object.freeze([]);
 	_page: number;
 	_pageCount: number;
-	_filter: PodTypes.Filter = null;
+	_filter: ServiceTypes.Filter = null;
 	_count: number;
 	_map: {[key: string]: number} = {};
 	_token = Dispatcher.register((this._callback).bind(this));
 
 	_reset(): void {
-		this._pods = Object.freeze([]);
+		this._services = Object.freeze([]);
 		this._page = undefined;
 		this._pageCount = undefined;
 		this._filter = null;
@@ -23,18 +23,18 @@ class PodsStore extends EventEmitter {
 		this.emitChange();
 	}
 
-	get pods(): PodTypes.PodsRo {
-		return this._pods;
+	get services(): ServiceTypes.ServicesRo {
+		return this._services;
 	}
 
-	get podsM(): PodTypes.Pods {
-		let pods: PodTypes.Pods = [];
-		this._pods.forEach((pod: PodTypes.PodRo): void => {
-			pods.push({
-				...pod,
+	get servicesM(): ServiceTypes.Services {
+		let services: ServiceTypes.Services = [];
+		this._services.forEach((service: ServiceTypes.ServiceRo): void => {
+			services.push({
+				...service,
 			});
 		});
-		return pods;
+		return services;
 	}
 
 	get page(): number {
@@ -49,7 +49,7 @@ class PodsStore extends EventEmitter {
 		return Math.ceil(this.count / this.pageCount);
 	}
 
-	get filter(): PodTypes.Filter {
+	get filter(): ServiceTypes.Filter {
 		return this._filter;
 	}
 
@@ -57,12 +57,12 @@ class PodsStore extends EventEmitter {
 		return this._count || 0;
 	}
 
-	pod(id: string): PodTypes.PodRo {
+	service(id: string): ServiceTypes.ServiceRo {
 		let i = this._map[id];
 		if (i === undefined) {
 			return null;
 		}
-		return this._pods[i];
+		return this._services[i];
 	}
 
 	emitChange(): void {
@@ -81,7 +81,7 @@ class PodsStore extends EventEmitter {
 		this._page = Math.min(this.pages, page);
 	}
 
-	_filterCallback(filter: PodTypes.Filter): void {
+	_filterCallback(filter: ServiceTypes.Filter): void {
 		if ((this._filter !== null && filter === null) ||
 			(!Object.keys(this._filter || {}).length && filter !== null) || (
 				filter && this._filter && (
@@ -93,39 +93,39 @@ class PodsStore extends EventEmitter {
 		this.emitChange();
 	}
 
-	_sync(pods: PodTypes.Pod[], count: number): void {
+	_sync(services: ServiceTypes.Service[], count: number): void {
 		this._map = {};
-		for (let i = 0; i < pods.length; i++) {
-			pods[i] = Object.freeze(pods[i]);
-			this._map[pods[i].id] = i;
+		for (let i = 0; i < services.length; i++) {
+			services[i] = Object.freeze(services[i]);
+			this._map[services[i].id] = i;
 		}
 
 		this._count = count;
-		this._pods = Object.freeze(pods);
+		this._services = Object.freeze(services);
 		this._page = Math.min(this.pages, this.page);
 
 		this.emitChange();
 	}
 
-	_callback(action: PodTypes.PodDispatch): void {
+	_callback(action: ServiceTypes.ServiceDispatch): void {
 		switch (action.type) {
 			case GlobalTypes.RESET:
 				this._reset();
 				break;
 
-			case PodTypes.TRAVERSE:
+			case ServiceTypes.TRAVERSE:
 				this._traverse(action.data.page);
 				break;
 
-			case PodTypes.FILTER:
+			case ServiceTypes.FILTER:
 				this._filterCallback(action.data.filter);
 				break;
 
-			case PodTypes.SYNC:
-				this._sync(action.data.pods, action.data.count);
+			case ServiceTypes.SYNC:
+				this._sync(action.data.services, action.data.count);
 				break;
 		}
 	}
 }
 
-export default new PodsStore();
+export default new ServicesStore();

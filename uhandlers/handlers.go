@@ -131,12 +131,12 @@ func Register(engine *gin.Engine) {
 
 	orgGroup.GET("/node", nodesGet)
 
-	orgGroup.GET("/pod", podsGet)
-	orgGroup.GET("/pod/:pod_id", podGet)
-	orgGroup.PUT("/pod/:pod_id", podPut)
-	orgGroup.POST("/pod", podPost)
-	orgGroup.DELETE("/pod", podsDelete)
-	orgGroup.DELETE("/pod/:pod_id", podDelete)
+	orgGroup.GET("/service", servicesGet)
+	orgGroup.GET("/service/:service_id", serviceGet)
+	orgGroup.PUT("/service/:service_id", servicePut)
+	orgGroup.POST("/service", servicePost)
+	orgGroup.DELETE("/service", servicesDelete)
+	orgGroup.DELETE("/service/:service_id", serviceDelete)
 
 	csrfGroup.GET("/pool", poolsGet)
 

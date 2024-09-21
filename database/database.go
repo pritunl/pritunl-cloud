@@ -118,6 +118,11 @@ func (d *Database) AlertsEventLock() (coll *Collection) {
 	return
 }
 
+func (d *Database) Services() (coll *Collection) {
+	coll = d.getCollection("services")
+	return
+}
+
 func (d *Database) Sessions() (coll *Collection) {
 	coll = d.getCollection("sessions")
 	return

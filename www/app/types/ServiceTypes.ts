@@ -1,10 +1,10 @@
 /// <reference path="../References.d.ts"/>
-export const SYNC = 'pod.sync';
-export const TRAVERSE = 'pod.traverse';
-export const FILTER = 'pod.filter';
-export const CHANGE = 'pod.change';
+export const SYNC = 'service.sync';
+export const TRAVERSE = 'service.traverse';
+export const FILTER = 'service.filter';
+export const CHANGE = 'service.change';
 
-export interface Pod {
+export interface Service {
 	id?: string;
 	name?: string;
 	comment?: string;
@@ -24,17 +24,17 @@ export interface Filter {
 	organization?: string;
 }
 
-export type Pods = Pod[];
+export type Services = Service[];
 
-export type PodRo = Readonly<Pod>;
-export type PodsRo = ReadonlyArray<PodRo>;
+export type ServiceRo = Readonly<Service>;
+export type ServicesRo = ReadonlyArray<ServiceRo>;
 
-export interface PodDispatch {
+export interface ServiceDispatch {
 	type: string;
 	data?: {
 		id?: string;
-		pod?: Pod;
-		pods?: Pods;
+		service?: Service;
+		services?: Services;
 		page?: number;
 		pageCount?: number;
 		filter?: Filter;

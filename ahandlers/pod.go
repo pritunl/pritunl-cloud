@@ -13,11 +13,11 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/event"
-	"github.com/pritunl/pritunl-cloud/pod"
+	"github.com/pritunl/pritunl-cloud/service"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
-type podData struct {
+type serviceData struct {
 	Id               primitive.ObjectID `json:"id"`
 	Name             string             `json:"name"`
 	Comment          string             `json:"comment"`
@@ -29,20 +29,20 @@ type podData struct {
 	Spec             string             `json:"spec"`
 }
 
-type podsData struct {
-	Pods  []*pod.Pod `json:"pods"`
-	Count int64      `json:"count"`
+type servicesData struct {
+	Services []*service.Service `json:"services"`
+	Count    int64              `json:"count"`
 }
 
-func podPut(c *gin.Context) {
+func servicePut(c *gin.Context) {
 	if demo.Blocked(c) {
 		return
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	data := &podData{}
+	data := &serviceData{}
 
-	podId, ok := utils.ParseObjectId(c.Param("pod_id"))
+	serviceId, ok := utils.ParseObjectId(c.Param("service_id"))
 	if !ok {
 		utils.AbortWithStatus(c, 400)
 		return
@@ -54,7 +54,7 @@ func podPut(c *gin.Context) {
 		return
 	}
 
-	pd, err := pod.Get(db, podId)
+	pd, err := service.Get(db, serviceId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -98,19 +98,19 @@ func podPut(c *gin.Context) {
 		return
 	}
 
-	event.PublishDispatch(db, "pod.change")
+	event.PublishDispatch(db, "service.change")
 
 	c.JSON(200, pd)
 }
 
-func podPost(c *gin.Context) {
+func servicePost(c *gin.Context) {
 	if demo.Blocked(c) {
 		return
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	data := &podData{
-		Name: "New Pod",
+	data := &serviceData{
+		Name: "New Service",
 	}
 
 	err := c.Bind(data)
@@ -119,7 +119,7 @@ func podPost(c *gin.Context) {
 		return
 	}
 
-	pd := &pod.Pod{
+	pd := &service.Service{
 		Name:             data.Name,
 		Comment:          data.Comment,
 		Organization:     data.Organization,
@@ -147,36 +147,36 @@ func podPost(c *gin.Context) {
 		return
 	}
 
-	event.PublishDispatch(db, "pod.change")
+	event.PublishDispatch(db, "service.change")
 
 	c.JSON(200, pd)
 }
 
-func podDelete(c *gin.Context) {
+func serviceDelete(c *gin.Context) {
 	if demo.Blocked(c) {
 		return
 	}
 
 	db := c.MustGet("db").(*database.Database)
 
-	podId, ok := utils.ParseObjectId(c.Param("pod_id"))
+	serviceId, ok := utils.ParseObjectId(c.Param("service_id"))
 	if !ok {
 		utils.AbortWithStatus(c, 400)
 		return
 	}
 
-	err := pod.Remove(db, podId)
+	err := service.Remove(db, serviceId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	event.PublishDispatch(db, "pod.change")
+	event.PublishDispatch(db, "service.change")
 
 	c.JSON(200, nil)
 }
 
-func podsDelete(c *gin.Context) {
+func servicesDelete(c *gin.Context) {
 	if demo.Blocked(c) {
 		return
 	}
@@ -190,27 +190,27 @@ func podsDelete(c *gin.Context) {
 		return
 	}
 
-	err = pod.RemoveMulti(db, data)
+	err = service.RemoveMulti(db, data)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	event.PublishDispatch(db, "pod.change")
+	event.PublishDispatch(db, "service.change")
 
 	c.JSON(200, nil)
 }
 
-func podGet(c *gin.Context) {
+func serviceGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 
-	podId, ok := utils.ParseObjectId(c.Param("pod_id"))
+	serviceId, ok := utils.ParseObjectId(c.Param("service_id"))
 	if !ok {
 		utils.AbortWithStatus(c, 400)
 		return
 	}
 
-	pd, err := pod.Get(db, podId)
+	pd, err := service.Get(db, serviceId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -219,7 +219,7 @@ func podGet(c *gin.Context) {
 	c.JSON(200, pd)
 }
 
-func podsGet(c *gin.Context) {
+func servicesGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 
 	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
@@ -227,9 +227,9 @@ func podsGet(c *gin.Context) {
 
 	query := bson.M{}
 
-	podId, ok := utils.ParseObjectId(c.Query("id"))
+	serviceId, ok := utils.ParseObjectId(c.Query("id"))
 	if ok {
-		query["_id"] = podId
+		query["_id"] = serviceId
 	}
 
 	name := strings.TrimSpace(c.Query("name"))
@@ -258,15 +258,15 @@ func podsGet(c *gin.Context) {
 		}
 	}
 
-	pods, count, err := pod.GetAllPaged(db, &query, page, pageCount)
+	services, count, err := service.GetAllPaged(db, &query, page, pageCount)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	data := &podsData{
-		Pods:  pods,
-		Count: count,
+	data := &servicesData{
+		Services: services,
+		Count:    count,
 	}
 
 	c.JSON(200, data)

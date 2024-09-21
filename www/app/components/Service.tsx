@@ -1,10 +1,10 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
 import * as MiscUtils from '../utils/MiscUtils';
-import * as PodTypes from '../types/PodTypes';
+import * as ServiceTypes from '../types/ServiceTypes';
 import * as OrganizationTypes from "../types/OrganizationTypes";
 import OrganizationsStore from '../stores/OrganizationsStore';
-import PodDetailed from './PodDetailed';
+import ServiceDetailed from './ServiceDetailed';
 import * as DomainTypes from "../types/DomainTypes";
 import * as VpcTypes from "../types/VpcTypes";
 import * as DatacenterTypes from "../types/DatacenterTypes";
@@ -22,7 +22,7 @@ interface Props {
 	pools: PoolTypes.PoolsRo;
 	zones: ZoneTypes.ZonesRo;
 	shapes: ShapeTypes.ShapesRo;
-	pod: PodTypes.PodRo;
+	service: ServiceTypes.ServiceRo;
 	selected: boolean;
 	onSelect: (shift: boolean) => void;
 	open: boolean;
@@ -90,16 +90,16 @@ const css = {
 	} as React.CSSProperties,
 };
 
-export default class Pod extends React.Component<Props, {}> {
+export default class Service extends React.Component<Props, {}> {
 	render(): JSX.Element {
-		let pod = this.props.pod;
+		let service = this.props.service;
 
 		if (this.props.open) {
 			return <div
 				className="bp5-card bp5-row"
 				style={css.cardOpen}
 			>
-				<PodDetailed
+				<ServiceDetailed
 					organizations={this.props.organizations}
 					domains={this.props.domains}
 					vpcs={this.props.vpcs}
@@ -108,7 +108,7 @@ export default class Pod extends React.Component<Props, {}> {
 					pools={this.props.pools}
 					zones={this.props.zones}
 					shapes={this.props.shapes}
-					pod={this.props.pod}
+					service={this.props.service}
 					selected={this.props.selected}
 					onSelect={this.props.onSelect}
 					onClose={(): void => {
@@ -123,7 +123,7 @@ export default class Pod extends React.Component<Props, {}> {
 		};
 
 		let role: JSX.Element[] = [];
-		for (let networkRole of (pod.roles || [])) {
+		for (let networkRole of (service.roles || [])) {
 			role.push(
 				<div
 					className="bp5-tag bp5-intent-primary"
@@ -136,11 +136,11 @@ export default class Pod extends React.Component<Props, {}> {
 		}
 
 		let orgName = '';
-		if (!MiscUtils.objectIdNil(pod.organization)) {
-			let org = OrganizationsStore.organization(pod.organization);
-			orgName = org ? org.name : pod.organization;
+		if (!MiscUtils.objectIdNil(service.organization)) {
+			let org = OrganizationsStore.organization(service.organization);
+			orgName = org ? org.name : service.organization;
 		} else {
-			orgName = 'Node Pod';
+			orgName = 'Node Service';
 		}
 
 		return <div
@@ -175,7 +175,7 @@ export default class Pod extends React.Component<Props, {}> {
 						<span className="bp5-control-indicator open-ignore"/>
 					</label>
 					<div style={css.nameSpan}>
-						{pod.name}
+						{service.name}
 					</div>
 				</div>
 			</div>
@@ -183,7 +183,7 @@ export default class Pod extends React.Component<Props, {}> {
 				<span
 					style={css.icon}
 					className={'bp5-icon-standard bp5-text-muted ' + (
-						pod.organization ? 'bp5-icon-people' : 'bp5-icon-layers')}
+						service.organization ? 'bp5-icon-people' : 'bp5-icon-layers')}
 				/>
 				{orgName}
 			</div>

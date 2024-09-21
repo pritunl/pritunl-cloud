@@ -1,4 +1,4 @@
-package pod
+package service
 
 import (
 	"github.com/dropbox/godropbox/container/set"
@@ -8,7 +8,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
-type Pod struct {
+type Service struct {
 	Id               primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Name             string             `bson:"name" json:"name"`
 	Comment          string             `bson:"comment" json:"comment"`
@@ -20,7 +20,7 @@ type Pod struct {
 	Spec             string             `bson:"spec" json:"spec"`
 }
 
-func (p *Pod) Validate(db *database.Database) (
+func (p *Service) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
 	p.Name = utils.FilterName(p.Name)
@@ -34,8 +34,8 @@ func (p *Pod) Validate(db *database.Database) (
 		break
 	default:
 		errData = &errortypes.ErrorData{
-			Error:   "invalid_pod_type",
-			Message: "Pod type invalid",
+			Error:   "invalid_service_type",
+			Message: "Service type invalid",
 		}
 		return
 	}
@@ -43,8 +43,8 @@ func (p *Pod) Validate(db *database.Database) (
 	return
 }
 
-func (p *Pod) Commit(db *database.Database) (err error) {
-	coll := db.Pods()
+func (p *Service) Commit(db *database.Database) (err error) {
+	coll := db.Services()
 
 	err = coll.Commit(p.Id, p)
 	if err != nil {
@@ -54,10 +54,10 @@ func (p *Pod) Commit(db *database.Database) (err error) {
 	return
 }
 
-func (p *Pod) CommitFields(db *database.Database, fields set.Set) (
+func (p *Service) CommitFields(db *database.Database, fields set.Set) (
 	err error) {
 
-	coll := db.Pods()
+	coll := db.Services()
 
 	err = coll.CommitFields(p.Id, p, fields)
 	if err != nil {
@@ -67,8 +67,8 @@ func (p *Pod) CommitFields(db *database.Database, fields set.Set) (
 	return
 }
 
-func (p *Pod) Insert(db *database.Database) (err error) {
-	coll := db.Pods()
+func (p *Service) Insert(db *database.Database) (err error) {
+	coll := db.Services()
 
 	_, err = coll.InsertOne(db, p)
 	if err != nil {
