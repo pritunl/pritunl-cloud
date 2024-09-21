@@ -39,11 +39,11 @@ func Register(engine *gin.Engine) {
 
 	engine.NoRoute(middlewear.NotFound)
 
-	csrfGroup.GET("/alert", alertsGet)
-	csrfGroup.PUT("/alert/:alert_id", alertPut)
-	csrfGroup.POST("/alert", alertPost)
-	csrfGroup.DELETE("/alert", alertsDelete)
-	csrfGroup.DELETE("/alert/:alert_id", alertDelete)
+	orgGroup.GET("/alert", alertsGet)
+	orgGroup.PUT("/alert/:alert_id", alertPut)
+	orgGroup.POST("/alert", alertPost)
+	orgGroup.DELETE("/alert", alertsDelete)
+	orgGroup.DELETE("/alert/:alert_id", alertDelete)
 
 	engine.GET("/auth/state", authStateGet)
 	dbGroup.POST("/auth/session", authSessionPost)
@@ -130,6 +130,13 @@ func Register(engine *gin.Engine) {
 	csrfGroup.PUT("/license", licensePut)
 
 	orgGroup.GET("/node", nodesGet)
+
+	orgGroup.GET("/pod", podsGet)
+	orgGroup.GET("/pod/:pod_id", podGet)
+	orgGroup.PUT("/pod/:pod_id", podPut)
+	orgGroup.POST("/pod", podPost)
+	orgGroup.DELETE("/pod", podsDelete)
+	orgGroup.DELETE("/pod/:pod_id", podDelete)
 
 	csrfGroup.GET("/pool", poolsGet)
 
