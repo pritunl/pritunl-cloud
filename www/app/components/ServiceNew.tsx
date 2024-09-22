@@ -17,7 +17,7 @@ import PageCreate from './PageCreate';
 import PageSelect from './PageSelect';
 import PageSwitch from "./PageSwitch";
 import PageNumInput from './PageNumInput';
-import ServiceEditor from "./ServiceEditor";
+import ServiceWorkspace from './ServiceWorkspace';
 import Help from './Help';
 import OrganizationsStore from "../stores/OrganizationsStore";
 import PageTextArea from "./PageTextArea";
@@ -41,7 +41,6 @@ interface State {
 	changed: boolean;
 	message: string;
 	service: ServiceTypes.Service;
-	addRole: string;
 }
 
 const css = {
@@ -100,8 +99,6 @@ const css = {
 };
 
 export default class ServiceNew extends React.Component<Props, State> {
-	imagesMap: Map<string, string>;
-
 	constructor(props: any, context: any) {
 		super(props, context);
 		this.state = {
@@ -110,7 +107,6 @@ export default class ServiceNew extends React.Component<Props, State> {
 			changed: false,
 			message: '',
 			service: this.default,
-			addRole: '',
 		};
 	}
 
@@ -184,61 +180,6 @@ export default class ServiceNew extends React.Component<Props, State> {
 		});
 	}
 
-	onAddRole = (): void => {
-		if (!this.state.addRole) {
-			return;
-		}
-
-		let service = {
-			...this.state.service,
-		};
-
-		let roles = [
-			...(service.roles || []),
-		];
-
-		if (roles.indexOf(this.state.addRole) === -1) {
-			roles.push(this.state.addRole);
-		}
-
-		roles.sort();
-		service.roles = roles;
-
-		this.setState({
-			...this.state,
-			changed: true,
-			message: '',
-			addRole: '',
-			service: service,
-		});
-	}
-
-	onRemoveRole = (role: string): void => {
-		let service = {
-			...this.state.service,
-		};
-
-		let roles = [
-			...(service.roles || []),
-		];
-
-		let i = roles.indexOf(role);
-		if (i === -1) {
-			return;
-		}
-
-		roles.splice(i, 1);
-		service.roles = roles;
-
-		this.setState({
-			...this.state,
-			changed: true,
-			message: '',
-			addRole: '',
-			service: service,
-		});
-	}
-
 	render(): JSX.Element {
 		let service = this.state.service;
 
@@ -261,26 +202,6 @@ export default class ServiceNew extends React.Component<Props, State> {
 		if (!hasOrganizations) {
 			organizationsSelect.push(
 				<option key="null" value="">No Organizations</option>);
-		}
-
-		let roles: JSX.Element[] = [];
-		for (let role of (service.roles || [])) {
-			roles.push(
-				<div
-					className="bp5-tag bp5-tag-removable bp5-intent-primary"
-					style={css.role}
-					key={role}
-				>
-					{role}
-					<button
-						className="bp5-tag-remove"
-						disabled={this.state.disabled}
-						onMouseUp={(): void => {
-							this.onRemoveRole(role);
-						}}
-					/>
-				</div>,
-			);
 		}
 
 		return <div
@@ -340,40 +261,19 @@ export default class ServiceNew extends React.Component<Props, State> {
 						/>
 					</div>
 					<div style={css.group}>
-						<label className="bp5-label">
-							Roles
-							<Help
-								title="Roles"
-								content="Roles that will be matched with firewall rules. Network roles are case-sensitive."
-							/>
-							<div>
-								{roles}
-							</div>
-						</label>
-						<PageInputButton
-							disabled={this.state.disabled}
-							buttonClass="bp5-intent-success bp5-icon-add"
-							label="Add"
-							type="text"
-							placeholder="Add role"
-							value={this.state.addRole}
-							onChange={(val): void => {
-								this.setState({
-									...this.state,
-									addRole: val,
-								});
-							}}
-							onSubmit={this.onAddRole}
-						/>
 					</div>
 				</div>
-				<ServiceEditor
+				<ServiceWorkspace
+					service={service}
+					organizations={this.props.organizations}
+					domains={this.props.domains}
+					vpcs={this.props.vpcs}
+					datacenters={this.props.datacenters}
+					nodes={this.props.nodes}
+					pools={this.props.pools}
+					zones={this.props.zones}
+					shapes={this.props.shapes}
 					disabled={this.state.disabled}
-					defaultEdit={true}
-					value={service.spec}
-					onChange={(val: string): void => {
-						this.set("spec", val)
-					}}
 				/>
 				<PageCreate
 					style={css.save}
