@@ -157,12 +157,12 @@ func Register(engine *gin.Engine) {
 	csrfGroup.POST("/organization", organizationPost)
 	csrfGroup.DELETE("/organization/:org_id", organizationDelete)
 
-	csrfGroup.GET("/service", servicesGet)
-	csrfGroup.GET("/service/:service_id", serviceGet)
-	csrfGroup.PUT("/service/:service_id", servicePut)
-	csrfGroup.POST("/service", servicePost)
-	csrfGroup.DELETE("/service", servicesDelete)
-	csrfGroup.DELETE("/service/:service_id", serviceDelete)
+	csrfGroup.GET("/plan", plansGet)
+	csrfGroup.GET("/plan/:plan_id", planGet)
+	csrfGroup.PUT("/plan/:plan_id", planPut)
+	csrfGroup.POST("/plan", planPost)
+	csrfGroup.DELETE("/plan", plansDelete)
+	csrfGroup.DELETE("/plan/:plan_id", planDelete)
 
 	csrfGroup.GET("/policy", policiesGet)
 	csrfGroup.GET("/policy/:policy_id", policyGet)
@@ -188,6 +188,13 @@ func Register(engine *gin.Engine) {
 
 	csrfGroup.GET("/settings", settingsGet)
 	csrfGroup.PUT("/settings", settingsPut)
+
+	csrfGroup.GET("/service", servicesGet)
+	csrfGroup.GET("/service/:service_id", serviceGet)
+	csrfGroup.PUT("/service/:service_id", servicePut)
+	csrfGroup.POST("/service", servicePost)
+	csrfGroup.DELETE("/service", servicesDelete)
+	csrfGroup.DELETE("/service/:service_id", serviceDelete)
 
 	csrfGroup.GET("/shape", shapesGet)
 	csrfGroup.GET("/shape/:shape_id", shapeGet)
