@@ -243,6 +243,11 @@ func (d *Database) Firewalls() (coll *Collection) {
 	return
 }
 
+func (d *Database) Plans() (coll *Collection) {
+	coll = d.getCollection("plans")
+	return
+}
+
 func (d *Database) Vpcs() (coll *Collection) {
 	coll = d.getCollection("vpcs")
 	return
