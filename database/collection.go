@@ -8,6 +8,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/mongo-go-driver/mongo"
+	"github.com/pritunl/mongo-go-driver/mongo/options"
 )
 
 type Collection struct {
@@ -59,6 +60,21 @@ func (c *Collection) CommitFields(id interface{}, data interface{},
 	_, err = c.UpdateOne(c.db, &bson.M{
 		"_id": id,
 	}, SelectFieldsAll(data, fields))
+	if err != nil {
+		err = ParseError(err)
+		return
+	}
+
+	return
+}
+
+func (c *Collection) Upsert(query *bson.M, data interface{}) (err error) {
+	opts := &options.UpdateOptions{}
+	opts.SetUpsert(true)
+
+	_, err = c.UpdateOne(c.db, query, &bson.M{
+		"$set": data,
+	}, opts)
 	if err != nil {
 		err = ParseError(err)
 		return
