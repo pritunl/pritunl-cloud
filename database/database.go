@@ -273,8 +273,8 @@ func (d *Database) Domains() (coll *Collection) {
 	return
 }
 
-func (d *Database) DomainsRecord() (coll *Collection) {
-	coll = d.getCollection("domains_record")
+func (d *Database) DomainsRecords() (coll *Collection) {
+	coll = d.getCollection("domains_records")
 	return
 }
 
@@ -765,30 +765,9 @@ func addIndexes() (err error) {
 	}
 
 	index = &Index{
-		Collection: db.Domains(),
+		Collection: db.DomainsRecords(),
 		Keys: &bson.D{
 			{"domain", 1},
-		},
-	}
-	err = index.Create()
-	if err != nil {
-		return
-	}
-
-	index = &Index{
-		Collection: db.DomainsRecord(),
-		Keys: &bson.D{
-			{"domain", 1},
-		},
-	}
-	err = index.Create()
-	if err != nil {
-		return
-	}
-	index = &Index{
-		Collection: db.DomainsRecord(),
-		Keys: &bson.D{
-			{"node", 1},
 		},
 	}
 	err = index.Create()
