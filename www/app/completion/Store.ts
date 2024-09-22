@@ -13,20 +13,6 @@ class CompletionStore extends EventEmitter {
 
 	constructor() {
 		super()
-
-		this._kindMap = {}
-		for (let i = 0; i < this._kinds.length; i++) {
-			this._kindMap[this._kinds[i].name] = i
-		}
-
-		this._resourceMap = {}
-		Object.entries(this._resources).forEach(([kindName, resources]) => {
-			let kindResourceMap: Record<string, number> = {}
-			for (let i = 0; i < resources.length; i++) {
-				kindResourceMap[resources[i].name] = i
-			}
-			this._resourceMap[kindName] = kindResourceMap
-		})
 	}
 
 	get kinds(): CompletionTypes.Kind[] {
@@ -79,6 +65,188 @@ class CompletionStore extends EventEmitter {
 				this._reset()
 				break
 		}
+	}
+
+	update(resources: CompletionTypes.Resources): void {
+		this._kinds = []
+		this._resources = {}
+
+		this._kinds.push({
+			name: "organization",
+			label: "Organization",
+			title: "**Organization**",
+		})
+		let resourceList: CompletionTypes.Resource[] = []
+		for (let item of resources.organizations) {
+			resourceList.push({
+				id: item.id,
+				name: item.name,
+				info: [],
+			})
+		}
+		this._resources["organization"] = resourceList
+
+		this._kinds.push({
+			name: "domain",
+			label: "Domain",
+			title: "**Domain**",
+		})
+		resourceList = []
+		for (let item of resources.domains) {
+			resourceList.push({
+				id: item.id,
+				name: item.name,
+				info: [],
+			})
+		}
+		this._resources["domain"] = resourceList
+
+		this._kinds.push({
+			name: "vpc",
+			label: "VPC",
+			title: "**VPC**",
+		})
+		resourceList = []
+		for (let item of resources.vpcs) {
+			resourceList.push({
+				id: item.id,
+				name: item.name,
+				info: [],
+			})
+		}
+		this._resources["vpc"] = resourceList
+
+		this._kinds.push({
+			name: "datacenter",
+			label: "Datacenter",
+			title: "**Datacenter**",
+		})
+		resourceList = []
+		for (let item of resources.datacenters) {
+			resourceList.push({
+				id: item.id,
+				name: item.name,
+				info: [],
+			})
+		}
+		this._resources["datacenter"] = resourceList
+
+		this._kinds.push({
+			name: "node",
+			label: "Node",
+			title: "**Node**",
+		})
+		resourceList = []
+		for (let item of resources.nodes) {
+			resourceList.push({
+				id: item.id,
+				name: item.name,
+				info: [],
+			})
+		}
+		this._resources["node"] = resourceList
+
+		this._kinds.push({
+			name: "pool",
+			label: "Pool",
+			title: "**Pool**",
+		})
+		resourceList = []
+		for (let item of resources.pools) {
+			resourceList.push({
+				id: item.id,
+				name: item.name,
+				info: [],
+			})
+		}
+		this._resources["pool"] = resourceList
+
+		this._kinds.push({
+			name: "zone",
+			label: "Zone",
+			title: "**Zone**",
+		})
+		resourceList = []
+		for (let item of resources.zones) {
+			resourceList.push({
+				id: item.id,
+				name: item.name,
+				info: [],
+			})
+		}
+		this._resources["zone"] = resourceList
+
+		this._kinds.push({
+			name: "shape",
+			label: "Shapes",
+			title: "**Shapes**",
+		})
+		resourceList = []
+		for (let item of resources.shapes) {
+			resourceList.push({
+				id: item.id,
+				name: item.name,
+				info: [],
+			})
+		}
+		this._resources["shape"] = resourceList
+
+		this._kinds.push({
+			name: "instance",
+			label: "Instance",
+			title: "**Instance**",
+		})
+		resourceList = []
+		for (let item of resources.instances) {
+			resourceList.push({
+				id: item.id,
+				name: item.name,
+				info: [
+					{
+						label: "**Name**",
+						value: item.name,
+					},
+					{
+						label: "**Memory**",
+						value: item.memory,
+					},
+					{
+						label: "**Processors**",
+						value: item.processors,
+					},
+				],
+			})
+		}
+		this._resources["instance"] = resourceList
+
+		this._kinds.push({
+			name: "plan",
+			label: "Plan",
+			title: "**Plan**",
+		})
+		resourceList = []
+		for (let item of resources.plans) {
+			resourceList.push({
+				id: item.id,
+				name: item.name,
+				info: [],
+			})
+		}
+		this._resources["plan"] = resourceList
+
+		this._kindMap = {}
+		for (let i = 0; i < this._kinds.length; i++) {
+			this._kindMap[this._kinds[i].name] = i
+		}
+
+		this._resourceMap = {}
+		Object.entries(this._resources).forEach(([kindName, resources]) => {
+			let kindResourceMap: Record<string, number> = {}
+			for (let i = 0; i < resources.length; i++) {
+				kindResourceMap[resources[i].name] = i
+			}
+			this._resourceMap[kindName] = kindResourceMap
+		})
 	}
 }
 
