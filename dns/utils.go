@@ -1,6 +1,7 @@
 package dns
 
 import (
+	"net"
 	"strings"
 )
 
@@ -16,6 +17,15 @@ func matchTxt(x, y string) bool {
 		return true
 	}
 	return false
+}
+
+func normalizeIp(addr string) string {
+	ip := net.ParseIP(addr)
+	if ip == nil {
+		return ""
+	}
+
+	return strings.ToLower(ip.String())
 }
 
 func extractDomain(domain string) string {
