@@ -15,6 +15,7 @@ import (
 type Record struct {
 	Id        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Domain    primitive.ObjectID `bson:"domain" json:"domain"`
+	Resource  primitive.ObjectID `bson:"resource" json:"resource"`
 	Timestamp time.Time          `bson:"timestamp" json:"timestamp"`
 	SubDomain string             `bson:"sub_domain" json:"sub_domain"`
 	Type      string             `bson:"type" json:"type"`
@@ -24,6 +25,8 @@ type Record struct {
 
 func (r *Record) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
+
+	r.SubDomain = strings.ToLower(r.SubDomain)
 
 	if r.Domain.IsZero() {
 		errData = &errortypes.ErrorData{
@@ -75,6 +78,25 @@ func (r *Record) CommitFields(db *database.Database, fields set.Set) (
 	err = coll.CommitFields(r.Id, r, fields)
 	if err != nil {
 		return
+	}
+
+	return
+}
+
+func (r *Record) Remove(db *database.Database) (err error) {
+	coll := db.DomainsRecords()
+
+	_, err = coll.DeleteOne(db, &bson.M{
+		"_id": r.Id,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		switch err.(type) {
+		case *database.NotFoundError:
+			err = nil
+		default:
+			return
+		}
 	}
 
 	return
