@@ -13,32 +13,19 @@ type Service struct {
 	Name             string             `bson:"name" json:"name"`
 	Comment          string             `bson:"comment" json:"comment"`
 	Organization     primitive.ObjectID `json:"organization"`
-	Type             string             `bson:"type" json:"type"`
 	DeleteProtection bool               `bson:"delete_protection" json:"delete_protection"`
-	Zone             primitive.ObjectID `bson:"zone" json:"zone"`
-	Roles            []string           `bson:"roles" json:"roles"`
-	Spec             string             `bson:"spec" json:"spec"`
+	Units            []*Unit            `bson:"units" json:"units"`
+}
+
+type Unit struct {
+	Name string `bson:"name" json:"name"`
+	Spec string `bson:"spec" json:"spec"`
 }
 
 func (p *Service) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
 	p.Name = utils.FilterName(p.Name)
-
-	if p.Type == "" {
-		p.Type = Todo
-	}
-
-	switch p.Type {
-	case Todo:
-		break
-	default:
-		errData = &errortypes.ErrorData{
-			Error:   "invalid_service_type",
-			Message: "Service type invalid",
-		}
-		return
-	}
 
 	return
 }
