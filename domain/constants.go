@@ -8,4 +8,8 @@ const (
 	A    = "A"
 	AAAA = "AAAA"
 	TXT  = "TXT"
+
+	INSERT = "insert"
+	UPDATE = "update"
+	DELETE = "delete"
 )
