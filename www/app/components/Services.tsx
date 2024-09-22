@@ -14,7 +14,6 @@ import Page from './Page';
 import PageHeader from './PageHeader';
 import NonState from './NonState';
 import ConfirmButton from './ConfirmButton';
-import InstanceNew from "./InstanceNew";
 import DomainsNameStore from "../stores/DomainsNameStore";
 import VpcsNameStore from "../stores/VpcsNameStore";
 import DatacentersStore from "../stores/DatacentersStore";
@@ -22,13 +21,19 @@ import NodesStore from "../stores/NodesStore";
 import PoolsStore from "../stores/PoolsStore";
 import ZonesStore from "../stores/ZonesStore";
 import ShapesStore from "../stores/ShapesStore";
+import InstancesStore from "../stores/InstancesStore";
+import ImagesStore from "../stores/ImagesStore";
+import PlansStore from "../stores/PlansStore";
+import CompletionStore from "../completion/Store"
 import * as VpcTypes from "../types/VpcTypes";
 import * as DatacenterTypes from "../types/DatacenterTypes";
 import * as NodeTypes from "../types/NodeTypes";
 import * as PoolTypes from "../types/PoolTypes";
 import * as ZoneTypes from "../types/ZoneTypes";
 import * as ShapeTypes from "../types/ShapeTypes";
-import InstancesStore from "../stores/InstancesStore";
+import * as ImageTypes from "../types/ImageTypes";
+import * as InstanceTypes from "../types/InstanceTypes";
+import * as PlanTypes from "../types/PlanTypes";
 import * as DomainActions from "../actions/DomainActions";
 import * as VpcActions from "../actions/VpcActions";
 import * as DatacenterActions from "../actions/DatacenterActions";
@@ -36,8 +41,10 @@ import * as NodeActions from "../actions/NodeActions";
 import * as PoolActions from "../actions/PoolActions";
 import * as ZoneActions from "../actions/ZoneActions";
 import * as ShapeActions from "../actions/ShapeActions";
+import * as ImageActions from "../actions/ImageActions";
+import * as InstanceActions from "../actions/InstanceActions";
+import * as PlanActions from "../actions/PlanActions";
 import * as DomainTypes from "../types/DomainTypes";
-import * as ImageTypes from "../types/ImageTypes";
 
 interface Selected {
 	[key: string]: boolean;
@@ -58,6 +65,9 @@ interface State {
 	pools: PoolTypes.PoolsRo;
 	zones: ZoneTypes.ZonesRo;
 	shapes: ShapeTypes.ShapesRo;
+	images: ImageTypes.ImagesRo;
+	instances: InstanceTypes.InstancesRo;
+	plans: PlanTypes.PlansRo;
 	selected: Selected;
 	opened: Opened;
 	newOpened: boolean;
@@ -108,6 +118,9 @@ export default class Services extends React.Component<{}, State> {
 			pools: PoolsStore.pools,
 			zones: ZonesStore.zones,
 			shapes: ShapesStore.shapes,
+			images: ImagesStore.images,
+			instances: InstancesStore.instances,
+			plans: PlansStore.plans,
 			selected: {},
 			opened: {},
 			newOpened: false,
@@ -126,7 +139,6 @@ export default class Services extends React.Component<{}, State> {
 
 	componentDidMount(): void {
 		ServicesStore.addChangeListener(this.onChange);
-		InstancesStore.addChangeListener(this.onChange);
 		OrganizationsStore.addChangeListener(this.onChange);
 		DomainsNameStore.addChangeListener(this.onChange);
 		VpcsNameStore.addChangeListener(this.onChange);
@@ -135,6 +147,9 @@ export default class Services extends React.Component<{}, State> {
 		PoolsStore.addChangeListener(this.onChange);
 		ZonesStore.addChangeListener(this.onChange);
 		ShapesStore.addChangeListener(this.onChange);
+		ImagesStore.addChangeListener(this.onChange);
+		InstancesStore.addChangeListener(this.onChange);
+		PlansStore.addChangeListener(this.onChange);
 		ServiceActions.sync();
 		OrganizationActions.sync();
 		DomainActions.syncName();
@@ -144,6 +159,9 @@ export default class Services extends React.Component<{}, State> {
 		PoolActions.sync();
 		ZoneActions.sync();
 		ShapeActions.sync();
+		ImageActions.sync();
+		InstanceActions.sync();
+		PlanActions.sync();
 	}
 
 	componentWillUnmount(): void {
@@ -156,9 +174,26 @@ export default class Services extends React.Component<{}, State> {
 		PoolsStore.removeChangeListener(this.onChange);
 		ZonesStore.removeChangeListener(this.onChange);
 		ShapesStore.removeChangeListener(this.onChange);
+		ImagesStore.removeChangeListener(this.onChange);
+		InstancesStore.removeChangeListener(this.onChange);
+		PlansStore.removeChangeListener(this.onChange);
 	}
 
 	onChange = (): void => {
+		CompletionStore.update({
+			organizations: OrganizationsStore.organizations,
+			domains: DomainsNameStore.domains,
+			vpcs: VpcsNameStore.vpcs,
+			datacenters: DatacentersStore.datacenters,
+			nodes: NodesStore.nodes,
+			pools: PoolsStore.pools,
+			zones: ZonesStore.zones,
+			shapes: ShapesStore.shapes,
+			images: ImagesStore.images,
+			instances: InstancesStore.instances,
+			plans: PlansStore.plans,
+		})
+
 		let services = ServicesStore.services;
 		let selected: Selected = {};
 		let curSelected = this.state.selected;
@@ -179,6 +214,16 @@ export default class Services extends React.Component<{}, State> {
 			services: services,
 			filter: ServicesStore.filter,
 			organizations: OrganizationsStore.organizations,
+			domains: DomainsNameStore.domains,
+			vpcs: VpcsNameStore.vpcs,
+			datacenters: DatacentersStore.datacenters,
+			nodes: NodesStore.nodes,
+			pools: PoolsStore.pools,
+			zones: ZonesStore.zones,
+			shapes: ShapesStore.shapes,
+			images: ImagesStore.images,
+			instances: InstancesStore.instances,
+			plans: PlansStore.plans,
 			selected: selected,
 			opened: opened,
 		});
@@ -213,13 +258,6 @@ export default class Services extends React.Component<{}, State> {
 				key={service.id}
 				service={service}
 				organizations={this.state.organizations}
-				domains={this.state.domains}
-				vpcs={this.state.vpcs}
-				datacenters={this.state.datacenters}
-				nodes={this.state.nodes}
-				pools={this.state.pools}
-				zones={this.state.zones}
-				shapes={this.state.shapes}
 				selected={!!this.state.selected[service.id]}
 				open={!!this.state.opened[service.id]}
 				onSelect={(shift: boolean): void => {
@@ -296,13 +334,6 @@ export default class Services extends React.Component<{}, State> {
 		if (this.state.newOpened) {
 			newServiceDom = <ServiceNew
 				organizations={this.state.organizations}
-				domains={this.state.domains}
-				vpcs={this.state.vpcs}
-				datacenters={this.state.datacenters}
-				nodes={this.state.nodes}
-				pools={this.state.pools}
-				zones={this.state.zones}
-				shapes={this.state.shapes}
 				onClose={(): void => {
 					this.setState({
 						...this.state,
