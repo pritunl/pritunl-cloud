@@ -81,7 +81,12 @@ class CompletionStore extends EventEmitter {
 			resourceList.push({
 				id: item.id,
 				name: item.name,
-				info: [],
+				info: [
+					{
+						label: "**Name**",
+						value: item.name,
+					},
+				],
 			})
 		}
 		this._resources["organization"] = resourceList
@@ -96,7 +101,12 @@ class CompletionStore extends EventEmitter {
 			resourceList.push({
 				id: item.id,
 				name: item.name,
-				info: [],
+				info: [
+					{
+						label: "**Name**",
+						value: item.name,
+					},
+				],
 			})
 		}
 		this._resources["domain"] = resourceList
@@ -111,7 +121,12 @@ class CompletionStore extends EventEmitter {
 			resourceList.push({
 				id: item.id,
 				name: item.name,
-				info: [],
+				info: [
+					{
+						label: "**Name**",
+						value: item.name,
+					},
+				],
 			})
 		}
 		this._resources["vpc"] = resourceList
@@ -126,7 +141,12 @@ class CompletionStore extends EventEmitter {
 			resourceList.push({
 				id: item.id,
 				name: item.name,
-				info: [],
+				info: [
+					{
+						label: "**Name**",
+						value: item.name,
+					},
+				],
 			})
 		}
 		this._resources["datacenter"] = resourceList
@@ -141,7 +161,12 @@ class CompletionStore extends EventEmitter {
 			resourceList.push({
 				id: item.id,
 				name: item.name,
-				info: [],
+				info: [
+					{
+						label: "**Name**",
+						value: item.name,
+					},
+				],
 			})
 		}
 		this._resources["node"] = resourceList
@@ -156,7 +181,12 @@ class CompletionStore extends EventEmitter {
 			resourceList.push({
 				id: item.id,
 				name: item.name,
-				info: [],
+				info: [
+					{
+						label: "**Name**",
+						value: item.name,
+					},
+				],
 			})
 		}
 		this._resources["pool"] = resourceList
@@ -171,7 +201,12 @@ class CompletionStore extends EventEmitter {
 			resourceList.push({
 				id: item.id,
 				name: item.name,
-				info: [],
+				info: [
+					{
+						label: "**Name**",
+						value: item.name,
+					},
+				],
 			})
 		}
 		this._resources["zone"] = resourceList
@@ -186,10 +221,35 @@ class CompletionStore extends EventEmitter {
 			resourceList.push({
 				id: item.id,
 				name: item.name,
-				info: [],
+				info: [
+					{
+						label: "**Name**",
+						value: item.name,
+					},
+				],
 			})
 		}
 		this._resources["shape"] = resourceList
+
+		this._kinds.push({
+			name: "image",
+			label: "Image",
+			title: "**Image**",
+		})
+		resourceList = []
+		for (let item of resources.images) {
+			resourceList.push({
+				id: item.id,
+				name: item.name,
+				info: [
+					{
+						label: "**Name**",
+						value: item.name,
+					},
+				],
+			})
+		}
+		this._resources["image"] = resourceList
 
 		this._kinds.push({
 			name: "instance",
@@ -229,7 +289,12 @@ class CompletionStore extends EventEmitter {
 			resourceList.push({
 				id: item.id,
 				name: item.name,
-				info: [],
+				info: [
+					{
+						label: "**Name**",
+						value: item.name,
+					},
+				],
 			})
 		}
 		this._resources["plan"] = resourceList
