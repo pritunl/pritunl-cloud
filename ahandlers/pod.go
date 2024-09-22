@@ -22,11 +22,8 @@ type serviceData struct {
 	Name             string             `json:"name"`
 	Comment          string             `json:"comment"`
 	Organization     primitive.ObjectID `json:"organization"`
-	Type             string             `json:"type"`
 	DeleteProtection bool               `json:"delete_protection"`
-	Zone             primitive.ObjectID `json:"zone"`
-	Roles            []string           `json:"roles"`
-	Spec             string             `json:"spec"`
+	Units            []*service.Unit    `bson:"units" json:"units"`
 }
 
 type servicesData struct {
@@ -63,22 +60,16 @@ func servicePut(c *gin.Context) {
 	pd.Name = data.Name
 	pd.Comment = data.Comment
 	pd.Organization = data.Organization
-	pd.Type = data.Type
 	pd.DeleteProtection = data.DeleteProtection
-	pd.Zone = data.Zone
-	pd.Roles = data.Roles
-	pd.Spec = data.Spec
+	pd.Units = data.Units
 
 	fields := set.NewSet(
 		"id",
 		"name",
 		"comment",
 		"organization",
-		"type",
 		"delete_protection",
-		"zone",
-		"roles",
-		"spec",
+		"units",
 	)
 
 	errData, err := pd.Validate(db)
@@ -123,11 +114,8 @@ func servicePost(c *gin.Context) {
 		Name:             data.Name,
 		Comment:          data.Comment,
 		Organization:     data.Organization,
-		Type:             data.Type,
 		DeleteProtection: data.DeleteProtection,
-		Zone:             data.Zone,
-		Roles:            data.Roles,
-		Spec:             data.Spec,
+		Units:            data.Units,
 	}
 
 	errData, err := pd.Validate(db)
