@@ -8,7 +8,7 @@ import PageInput from './PageInput';
 import PageSelect from './PageSelect';
 import PageInfo from './PageInfo';
 import PageInputButton from './PageInputButton';
-import ServiceEditor from './ServiceEditor';
+import ServiceWorkspace from './ServiceWorkspace';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
 import Help from './Help';
@@ -20,7 +20,6 @@ import * as NodeTypes from "../types/NodeTypes";
 import * as PoolTypes from "../types/PoolTypes";
 import * as ZoneTypes from "../types/ZoneTypes";
 import * as ShapeTypes from "../types/ShapeTypes";
-import * as Theme from "../Theme";
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -41,7 +40,6 @@ interface State {
 	disabled: boolean;
 	changed: boolean;
 	message: string;
-	addRole: string;
 	service: ServiceTypes.Service;
 }
 
@@ -121,7 +119,6 @@ export default class ServiceDetailed extends React.Component<Props, State> {
 			disabled: false,
 			changed: false,
 			message: '',
-			addRole: null,
 			service: null,
 		};
 	}
@@ -148,77 +145,6 @@ export default class ServiceDetailed extends React.Component<Props, State> {
 		});
 	}
 
-	onAddRole = (): void => {
-		let service: ServiceTypes.Service;
-
-		if (!this.state.addRole) {
-			return;
-		}
-
-		if (this.state.changed) {
-			service = {
-				...this.state.service,
-			};
-		} else {
-			service = {
-				...this.props.service,
-			};
-		}
-
-		let roles = [
-			...(service.roles || []),
-		];
-
-
-		if (roles.indexOf(this.state.addRole) === -1) {
-			roles.push(this.state.addRole);
-		}
-
-		roles.sort();
-		service.roles = roles;
-
-		this.setState({
-			...this.state,
-			changed: true,
-			message: '',
-			addRole: '',
-			service: service,
-		});
-	}
-
-	onRemoveRole = (role: string): void => {
-		let service: ServiceTypes.Service;
-
-		if (this.state.changed) {
-			service = {
-				...this.state.service,
-			};
-		} else {
-			service = {
-				...this.props.service,
-			};
-		}
-
-		let roles = [
-			...(service.roles || []),
-		];
-
-		let i = roles.indexOf(role);
-		if (i === -1) {
-			return;
-		}
-
-		roles.splice(i, 1);
-		service.roles = roles;
-
-		this.setState({
-			...this.state,
-			changed: true,
-			message: '',
-			addRole: '',
-			service: service,
-		});
-	}
 
 	onSave = (): void => {
 		this.setState({
@@ -301,26 +227,6 @@ export default class ServiceDetailed extends React.Component<Props, State> {
 		if (!hasOrganizations) {
 			organizationsSelect.push(
 				<option key="null" value="">No Organizations</option>);
-		}
-
-		let roles: JSX.Element[] = [];
-		for (let role of (service.roles || [])) {
-			roles.push(
-				<div
-					className="bp5-tag bp5-tag-removable bp5-intent-primary"
-					style={css.role}
-					key={role}
-				>
-					{role}
-					<button
-						className="bp5-tag-remove"
-						disabled={this.state.disabled}
-						onMouseUp={(): void => {
-							this.onRemoveRole(role);
-						}}
-					/>
-				</div>,
-			);
 		}
 
 		return <td
@@ -415,39 +321,19 @@ export default class ServiceDetailed extends React.Component<Props, State> {
 					>
 						{organizationsSelect}
 					</PageSelect>
-					<label className="bp5-label">
-						Roles
-						<Help
-							title="Roles"
-							content="Roles that will be matched with firewall rules. Network roles are case-sensitive."
-						/>
-						<div>
-							{roles}
-						</div>
-					</label>
-					<PageInputButton
-						disabled={this.state.disabled}
-						buttonClass="bp5-intent-success bp5-icon-add"
-						label="Add"
-						type="text"
-						placeholder="Add role"
-						value={this.state.addRole}
-						onChange={(val): void => {
-							this.setState({
-								...this.state,
-								addRole: val,
-							});
-						}}
-						onSubmit={this.onAddRole}
-					/>
 				</div>
 			</div>
-			<ServiceEditor
-				disabled={this.state.disabled}
-				value={service.spec}
-				onChange={(val: string): void => {
-					this.set("spec", val)
-				}}
+			<ServiceWorkspace
+					service={service}
+					organizations={this.props.organizations}
+					domains={this.props.domains}
+					vpcs={this.props.vpcs}
+					datacenters={this.props.datacenters}
+					nodes={this.props.nodes}
+					pools={this.props.pools}
+					zones={this.props.zones}
+					shapes={this.props.shapes}
+					disabled={this.state.disabled}
 			/>
 			<PageSave
 				style={css.save}
