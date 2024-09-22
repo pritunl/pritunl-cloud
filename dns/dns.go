@@ -16,8 +16,4 @@ type Service interface {
 		ops []*Operation) (err error)
 	DnsFind(db *database.Database, domain, recordType string) (
 		vals []string, err error)
-
-	DnsTxtGet(db *database.Database, domain string) (vals []string, err error)
-	DnsTxtUpsert(db *database.Database, domain, val string) (err error)
-	DnsTxtDelete(db *database.Database, domain, val string) (err error)
 }
