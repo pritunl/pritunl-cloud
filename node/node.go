@@ -27,8 +27,10 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/iso"
+	"github.com/pritunl/pritunl-cloud/lvm"
 	"github.com/pritunl/pritunl-cloud/pci"
 	"github.com/pritunl/pritunl-cloud/render"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/usb"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/zone"
@@ -81,6 +83,7 @@ type Node struct {
 	NetworkMode6            string               `bson:"network_mode6" json:"network_mode6"`
 	Blocks                  []*BlockAttachment   `bson:"blocks" json:"blocks"`
 	Blocks6                 []*BlockAttachment   `bson:"blocks6" json:"blocks6"`
+	Pools                   []primitive.ObjectID `bson:"pools" json:"pools"`
 	AvailableDrives         []*drive.Device      `bson:"available_drives" json:"available_drives"`
 	InstanceDrives          []*drive.Device      `bson:"instance_drives" json:"instance_drives"`
 	HostBlock               primitive.ObjectID   `bson:"host_block,omitempty" json:"host_block"`
@@ -175,6 +178,7 @@ func (n *Node) Copy() *Node {
 		NetworkMode6:            n.NetworkMode6,
 		Blocks:                  n.Blocks,
 		Blocks6:                 n.Blocks6,
+		Pools:                   n.Pools,
 		AvailableDrives:         n.AvailableDrives,
 		InstanceDrives:          n.InstanceDrives,
 		HostBlock:               n.HostBlock,
@@ -1013,6 +1017,7 @@ func (n *Node) update(db *database.Database) (err error) {
 				"available_bridges":    n.AvailableBridges,
 				"available_vpcs":       n.AvailableVpcs,
 				"default_interface":    n.DefaultInterface,
+				"pools":                n.Pools,
 				"available_drives":     n.AvailableDrives,
 			},
 		},
