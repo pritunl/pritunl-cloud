@@ -55,77 +55,77 @@ func (i *Image) Json() {
 			switch names[0] {
 			case "almalinux8":
 				i.Name = fmt.Sprintf(
-					"AlmaLinux 8 %s/20%s",
+					"almalinux-8-%s-20%s",
 					names[1][2:],
 					names[1][:2],
 				)
 				break
 			case "almalinux9":
 				i.Name = fmt.Sprintf(
-					"AlmaLinux 9 %s/20%s",
+					"almalinux-9-%s-20%s",
 					names[1][2:],
 					names[1][:2],
 				)
 				break
 			case "centos7":
 				i.Name = fmt.Sprintf(
-					"CentOS 7 %s/20%s",
+					"centos-7-%--20%s",
 					names[1][2:],
 					names[1][:2],
 				)
 				break
 			case "centos8":
 				i.Name = fmt.Sprintf(
-					"CentOS 8 %s/20%s",
+					"centos-8-%--20%s",
 					names[1][2:],
 					names[1][:2],
 				)
 				break
 			case "oraclelinux7":
 				i.Name = fmt.Sprintf(
-					"Oracle Linux 7 %s/20%s",
+					"oracle-linux-7-%s-20%s",
 					names[1][2:],
 					names[1][:2],
 				)
 				break
 			case "oraclelinux8":
 				i.Name = fmt.Sprintf(
-					"Oracle Linux 8 %s/20%s",
+					"oracle-linux-8-%s-20%s",
 					names[1][2:],
 					names[1][:2],
 				)
 				break
 			case "oraclelinux9":
 				i.Name = fmt.Sprintf(
-					"Oracle Linux 9 %s/20%s",
+					"oracle-linux-9-%s-20%s",
 					names[1][2:],
 					names[1][:2],
 				)
 				break
 			case "ubuntu2004":
 				i.Name = fmt.Sprintf(
-					"Ubuntu 20.04 %s/20%s",
+					"ubuntu-2004-%s-20%s",
 					names[1][2:],
 					names[1][:2],
 				)
 				break
 			case "ubuntu2204":
 				i.Name = fmt.Sprintf(
-					"Ubuntu 22.04 %s/20%s",
+					"ubuntu-2204-%s-20%s",
 					names[2][2:],
 					names[2][:2],
 				)
 				break
 			case "ubuntu2404":
 				i.Name = fmt.Sprintf(
-					"Ubuntu 24.04 %s/20%s",
+					"ubuntu-2404-%s-20%s",
 					names[2][2:],
 					names[2][:2],
 				)
 				break
 			case "ubuntu2604":
 				i.Name = fmt.Sprintf(
-					"Ubuntu 26.04 %s/20%s",
+					"ubuntu-2604-%s-20%s",
 					names[2][2:],
 					names[2][:2],
 				)
@@ -135,91 +135,91 @@ func (i *Image) Json() {
 			switch names[0] {
 			case "almalinux8":
 				i.Name = fmt.Sprintf(
-					"AlmaLinux 8 EFI %s/20%s",
+					"almalinux-8-efi-%s-20%s",
 					names[2][2:],
 					names[2][:2],
 				)
 				break
 			case "almalinux9":
 				i.Name = fmt.Sprintf(
-					"AlmaLinux 9 EFI %s/20%s",
+					"almalinux-9-efi-%s-20%s",
 					names[2][2:],
 					names[2][:2],
 				)
 				break
 			case "centos7":
 				i.Name = fmt.Sprintf(
-					"CentOS 7 EFI %s/20%s",
+					"centos-7-efi-%s-20%s",
 					names[2][2:],
 					names[2][:2],
 				)
 				break
 			case "centos8":
 				i.Name = fmt.Sprintf(
-					"CentOS 8 EFI %s/20%s",
+					"centos-8-efi-%s-20%s",
 					names[2][2:],
 					names[2][:2],
 				)
 				break
 			case "oraclelinux7":
 				i.Name = fmt.Sprintf(
-					"Oracle Linux 7 EFI %s/20%s",
+					"oracle-linux-7-efi-%s-20%s",
 					names[2][2:],
 					names[2][:2],
 				)
 				break
 			case "oraclelinux8":
 				i.Name = fmt.Sprintf(
-					"Oracle Linux 8 EFI %s/20%s",
+					"oracle-linux-8-efi-%s-20%s",
 					names[2][2:],
 					names[2][:2],
 				)
 				break
 			case "oraclelinux9":
 				i.Name = fmt.Sprintf(
-					"Oracle Linux 9 EFI %s/20%s",
+					"oracle-linux-9-efi-%s-20%s",
 					names[2][2:],
 					names[2][:2],
 				)
 				break
 			case "fedora":
 				i.Name = fmt.Sprintf(
-					"Fedora EFI %s/20%s",
+					"fedora-efi-%s-20%s",
 					names[2][2:],
 					names[2][:2],
 				)
 				break
 			case "ubuntu2004":
 				i.Name = fmt.Sprintf(
-					"Ubuntu 20.04 EFI %s/20%s",
+					"ubuntu-2004-efi-%s-20%s",
 					names[2][2:],
 					names[2][:2],
 				)
 				break
 			case "ubuntu2204":
 				i.Name = fmt.Sprintf(
-					"Ubuntu 22.04 EFI %s/20%s",
+					"ubuntu-2204-efi-%s-20%s",
 					names[2][2:],
 					names[2][:2],
 				)
 				break
 			case "ubuntu2404":
 				i.Name = fmt.Sprintf(
-					"Ubuntu 24.04 EFI %s/20%s",
+					"ubuntu-2404-efi-%s-20%s",
 					names[2][2:],
 					names[2][:2],
 				)
 				break
 			case "ubuntu2604":
 				i.Name = fmt.Sprintf(
-					"Ubuntu 26.04 EFI %s/20%s",
+					"ubuntu-2604-efi-%s-20%s",
 					names[2][2:],
 					names[2][:2],
 				)
 				break
 			case "freebsd":
 				i.Name = fmt.Sprintf(
-					"FreeBSD EFI %s/20%s",
+					"freebsd-efi-%s-20%s",
 					names[2][2:],
 					names[2][:2],
 				)
