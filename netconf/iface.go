@@ -84,6 +84,8 @@ func (n *NetConf) Iface1(db *database.Database) (err error) {
 	}
 	n.VmAdapter = n.Virt.NetworkAdapters[0]
 
+	n.SystemExternalIface = vm.GetIfaceVirt(n.Virt.Id, 0)
+
 	return
 }
 
@@ -91,7 +93,6 @@ func (n *NetConf) Iface2(db *database.Database, clean bool) (err error) {
 	n.PhysicalHostIface = settings.Hypervisor.HostNetworkName
 
 	n.VirtIface = vm.GetIface(n.Virt.Id, 0)
-	n.SystemExternalIface = vm.GetIfaceVirt(n.Virt.Id, 0)
 	n.SystemInternalIface = vm.GetIfaceVirt(n.Virt.Id, 1)
 	n.SystemHostIface = vm.GetIfaceVirt(n.Virt.Id, 2)
 	n.SpaceExternalIface = vm.GetIfaceExternal(n.Virt.Id, 0)
