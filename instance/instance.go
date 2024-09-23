@@ -27,6 +27,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/pci"
 	"github.com/pritunl/pritunl-cloud/pool"
 	"github.com/pritunl/pritunl-cloud/settings"
+	"github.com/pritunl/pritunl-cloud/shape"
 	"github.com/pritunl/pritunl-cloud/systemd"
 	"github.com/pritunl/pritunl-cloud/tpm"
 	"github.com/pritunl/pritunl-cloud/usb"
@@ -84,8 +85,7 @@ type Instance struct {
 	NoPublicAddress6    bool               `bson:"no_public_address6" json:"no_public_address6"`
 	NoHostAddress       bool               `bson:"no_host_address" json:"no_host_address"`
 	Node                primitive.ObjectID `bson:"node,omitempty" json:"node"`
-	Shape               primitive.ObjectID `bson:"shape,omitempty" json:"node"`
-	Domain              primitive.ObjectID `bson:"domain,omitempty" json:"domain"`
+	Shape               primitive.ObjectID `bson:"shape,omitempty" json:"shape"`
 	Name                string             `bson:"name" json:"name"`
 	Comment             string             `bson:"comment" json:"comment"`
 	RootEnabled         bool               `bson:"root_enabled" json:"root_enabled"`
