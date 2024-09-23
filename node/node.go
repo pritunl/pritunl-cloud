@@ -348,6 +348,15 @@ func (n *Node) IsHypervisor() bool {
 	return false
 }
 
+func (n *Node) IsOnline() bool {
+	if time.Since(n.Timestamp) > time.Duration(
+		settings.System.NodeTimestampTtl)*time.Second {
+
+		return false
+	}
+	return true
+}
+
 func (n *Node) Usage() int {
 	memoryUsage := float64(n.MemoryUnitsRes) / float64(n.MemoryUnits)
 	if memoryUsage > 1.0 {
