@@ -100,10 +100,6 @@ func (s *State) Firewalls() map[string][]*firewall.Rule {
 	return s.firewalls
 }
 
-func (s *State) DomainRecords(instId primitive.ObjectID) []*domain.Record {
-	return s.domainRecordsMap[instId]
-}
-
 func (s *State) Running() []string {
 	return s.running
 }
@@ -329,25 +325,6 @@ func (s *State) init() (err error) {
 	s.vpcIpsMap = vpcIpsMap
 
 	s.arpRecords = arp.BuildState(s.instances, s.vpcIpsMap)
-
-	recrds, err := domain.GetRecordAll(db, &bson.M{
-		"node": s.nodeSelf.Id,
-	})
-	if err != nil {
-		return
-	}
-
-	domainRecordsMap := map[primitive.ObjectID][]*domain.Record{}
-	for _, recrd := range recrds {
-		instRecrds := domainRecordsMap[recrd.Instance]
-		if instRecrds == nil {
-			instRecrds = []*domain.Record{}
-		}
-
-		instRecrds = append(instRecrds, recrd)
-		domainRecordsMap[recrd.Instance] = instRecrds
-	}
-	s.domainRecordsMap = domainRecordsMap
 
 	items, err := ioutil.ReadDir("/var/run")
 	if err != nil {
