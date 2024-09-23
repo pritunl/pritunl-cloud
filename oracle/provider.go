@@ -4,8 +4,10 @@ import (
 	"crypto/rsa"
 	"fmt"
 
-	"github.com/oracle/oci-go-sdk/v55/common"
-	"github.com/oracle/oci-go-sdk/v55/core"
+	"github.com/dropbox/godropbox/errors"
+	"github.com/oracle/oci-go-sdk/v65/common"
+	"github.com/oracle/oci-go-sdk/v65/core"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/sirupsen/logrus"
 )
 
@@ -79,6 +81,9 @@ func (p *Provider) GetNetworkClient() (
 
 	client, err := core.NewVirtualNetworkClientWithConfigurationProvider(p)
 	if err != nil {
+		err = &errortypes.RequestError{
+			errors.Wrap(err, "oracle: Failed to create oracle client"),
+		}
 		return
 	}
 
@@ -98,6 +103,9 @@ func (p *Provider) GetComputeClient() (
 
 	client, err := core.NewComputeClientWithConfigurationProvider(p)
 	if err != nil {
+		err = &errortypes.RequestError{
+			errors.Wrap(err, "oracle: Failed to create oracle client"),
+		}
 		return
 	}
 
