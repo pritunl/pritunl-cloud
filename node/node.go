@@ -1232,6 +1232,17 @@ func (n *Node) sync() {
 		n.AvailableVpcs = []*cloud.Vpc{}
 	}
 
+	pools, err := lvm.GetAvailablePools(db, n.Zone)
+	if err != nil {
+		return
+	}
+
+	poolIds := []primitive.ObjectID{}
+	for _, pl := range pools {
+		poolIds = append(poolIds, pl.Id)
+	}
+	n.Pools = poolIds
+
 	drives, err := drive.GetDevices()
 	if err != nil {
 		return
