@@ -2,22 +2,31 @@
 import * as React from 'react';
 import Help from "./Help";
 import * as Theme from "../Theme";
+import * as CompletionEngine from "../completion/Engine"
 
 import Markdown from 'react-markdown';
 import hljs from "highlight.js/lib/core";
 
 import * as MonacoEditor from "@monaco-editor/react"
+import * as Monaco from "monaco-editor";
 
 interface Props {
-	defaultEdit?: boolean;
+	readOnly: boolean;
+	expandLeft: boolean;
+	expandRight: boolean;
 	disabled?: boolean;
+	uuid: string;
 	value: string;
+	onEdit?: () => void;
 	onChange?: (value: string) => void;
 }
 
 interface State {
-	expandLeft: boolean;
-	expandRight: boolean;
+}
+
+interface EditorState {
+	model: Monaco.editor.ITextModel
+	view: Monaco.editor.ICodeEditorViewState
 }
 
 const css = {
@@ -25,27 +34,33 @@ const css = {
 		position: 'relative',
 		flex: 1,
 		minWidth: '280px',
-		margin: '0 10px',
+		margin: '0',
 	} as React.CSSProperties,
 	groupSpaced: {
 		position: 'relative',
 		flex: 1,
 		minWidth: '280px',
-		margin: '0 10px',
+		margin: '0',
 		padding: '8px 0 0 0 ',
 	} as React.CSSProperties,
 	groupSpacedExt: {
 		position: 'relative',
 		flex: 1,
 		minWidth: '280px',
-		margin: '0 10px',
-		padding: '26px 0 0 0 ',
+		margin: '0',
+		padding: '0 0 0 0 ', // TODO
+	} as React.CSSProperties,
+	groupSplit: {
+		position: 'relative',
+		flex: 1,
+		minWidth: '280px',
+		margin: '0 0 0 10px',
 	} as React.CSSProperties,
 	editorBox: {
-		margin: '10px 0',
+		margin: '0 0 10px 0',
 	} as React.CSSProperties,
 	editor: {
-		margin: '11px 0 10px 0',
+		margin: '0 0 10px 0',
 		borderRadius: '3px',
 		overflow: 'hidden',
 	} as React.CSSProperties,
@@ -74,16 +89,19 @@ const blockRe = /^( {4}|\s*`)/
 const langRe = /^language-(.+)$/
 
 export default class ServiceEditor extends React.Component<Props, State> {
-	markdown: React.RefObject<HTMLDivElement>;
+	markdown: React.RefObject<HTMLDivElement>
+	curUuid: string
+	editor: Monaco.editor.IStandaloneCodeEditor
+	monaco: MonacoEditor.Monaco
+	states: Record<string, EditorState>
 
 	constructor(props: any, context: any) {
 		super(props, context);
 		this.state = {
-			expandLeft: null,
-			expandRight: null,
 		}
 
 		this.markdown = React.createRef();
+		this.states = {}
 	}
 
 	componentDidMount(): void {
@@ -110,29 +128,43 @@ export default class ServiceEditor extends React.Component<Props, State> {
 		}
 	}
 
-	render(): JSX.Element {
-		let expandLeft = this.state.expandLeft
-		let expandRight = this.state.expandRight
-		let markdown: JSX.Element
-		let markdownButton: JSX.Element
-		let leftGroupStyle: React.CSSProperties = css.group
-		let expandIconClass: string
+	updateState(): void {
+		if (!this.editor) {
+			return
+		}
 
-		if (expandLeft === null && expandRight === null) {
-			if (this.props.defaultEdit) {
-				expandLeft = false
-				expandRight = true
-			} else {
-				expandLeft = true
-				expandRight = false
+		if (!this.curUuid) {
+			this.curUuid = this.props.uuid
+		}
+
+		if (this.curUuid != this.props.uuid) {
+			this.states[this.curUuid] = {
+				model: this.editor.getModel(),
+				view: this.editor.saveViewState(),
 			}
-		}
 
-		if (!expandLeft && !expandRight) {
-			expandIconClass = "bp5-button bp5-large bp5-minimal bp5-icon-maximize"
-		} else {
-			expandIconClass = "bp5-button bp5-large bp5-minimal bp5-icon-minimize"
+			let newState = this.states[this.props.uuid]
+			if (newState) {
+				this.editor.setModel(newState.model)
+				this.editor.restoreViewState(newState.view)
+			} else {
+				let model = this.monaco.editor.createModel(
+					this.props.value, "markdown",
+				)
+				this.editor.setModel(model)
+			}
+
+			this.curUuid = this.props.uuid
 		}
+	}
+
+	render(): JSX.Element {
+		this.updateState()
+
+		let expandLeft = this.props.expandLeft
+		let expandRight = this.props.expandRight
+		let markdown: JSX.Element
+		let leftGroupStyle: React.CSSProperties = css.group
 
 		if (!expandRight) {
 			markdown = <Markdown
@@ -152,33 +184,6 @@ export default class ServiceEditor extends React.Component<Props, State> {
 					}
 				}}
 			/>
-
-			if (expandLeft) {
-				markdownButton = <button
-					disabled={this.props.disabled}
-					className="bp5-button bp5-icon-edit"
-					style={css.buttonEdit}
-					onClick={(): void => {
-						this.setState({
-							...this.state,
-							expandLeft: false,
-							expandRight: true,
-						})
-					}}
-				>Edit Spec</button>
-			} else {
-				markdownButton = <button
-					className={expandIconClass}
-					style={css.buttonRight}
-					onClick={(): void => {
-						this.setState({
-							...this.state,
-							expandLeft: !expandLeft,
-							expandRight: false,
-						})
-					}}
-				/>
-			}
 		}
 
 		let val = (this.props.value || "")
@@ -196,62 +201,58 @@ export default class ServiceEditor extends React.Component<Props, State> {
 			}
 		}
 
+		let editor: JSX.Element;
+		if (!this.props.readOnly) {
+			editor = <MonacoEditor.Editor
+				height="900px"
+				width="100%"
+				defaultLanguage="markdown"
+				theme={Theme.editorTheme()}
+				defaultValue={this.props.value}
+				beforeMount={CompletionEngine.handleBeforeMount}
+				onMount={(editor: Monaco.editor.IStandaloneCodeEditor,
+						monaco: MonacoEditor.Monaco): void => {
+					this.monaco = monaco
+					this.editor = editor
+					this.updateState()
+
+					CompletionEngine.handleAfterMount(editor, monaco)
+				}}
+				options={{
+					folding: false,
+					fontSize: 14,
+					fontFamily: "'Roboto Mono', Consolas, Menlo, 'DejaVu Sans Mono'",
+					fontWeight: "500",
+					tabSize: 4,
+					detectIndentation: false,
+					rulers: [80],
+					scrollBeyondLastLine: false,
+					minimap: {
+						enabled: expandRight,
+					},
+					wordWrap: "on",
+				}}
+				onChange={(val): void => {
+					this.props.onChange(val)
+				}}
+			/>
+		}
+
 		return <div className="layout horizontal flex" style={css.editorBox}>
 			<div
 				ref={this.markdown}
 				style={leftGroupStyle}
 				hidden={expandRight}
 			>
-				{markdownButton}
 				{markdown}
 			</div>
-			<div style={css.group} hidden={expandLeft}>
-				<button
-					className={expandIconClass}
-					style={css.buttonRight}
-					onClick={(): void => {
-						this.setState({
-							...this.state,
-							expandLeft: false,
-							expandRight: !expandRight,
-						})
-					}}
-				/>
-				<label
-					className="bp5-label flex"
-					style={css.editorBox}
-				>
-					Service Spec
-					<Help
-						title="Spec"
-						content="Spec file for service."
-					/>
-					<div style={css.editor}>
-						<MonacoEditor.Editor
-							height="800px"
-							width="100%"
-							defaultLanguage="markdown"
-							theme={Theme.editorTheme()}
-							defaultValue={this.props.value}
-							options={{
-								folding: false,
-								fontSize: 14,
-								fontFamily: "'DejaVu Sans Mono', Monaco, Menlo, 'Ubuntu Mono', Consolas, source-code-pro, monospace",
-								tabSize: 4,
-								detectIndentation: false,
-								rulers: [80],
-								scrollBeyondLastLine: false,
-								minimap: {
-									enabled: expandRight,
-								},
-								wordWrap: "on",
-							}}
-							onChange={(val): void => {
-								this.props.onChange(val)
-							}}
-						/>
-					</div>
-				</label>
+			<div
+				style={expandRight ? css.group : css.groupSplit}
+				hidden={expandLeft}
+			>
+				<div style={css.editor}>
+					{editor}
+				</div>
 			</div>
 		</div>;
 	}
