@@ -11,11 +11,11 @@ import (
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
-	"github.com/pritunl/pritunl-cloud/domain"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/pool"
 	"github.com/pritunl/pritunl-cloud/qemu"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
@@ -25,31 +25,31 @@ import (
 )
 
 type State struct {
-	nodeSelf         *node.Node
-	nodes            []*node.Node
-	nodeDatacenter   primitive.ObjectID
-	nodeZone         *zone.Zone
-	nodeHostBlock    *block.Block
-	vxlan            bool
-	zoneMap          map[primitive.ObjectID]*zone.Zone
-	namespaces       []string
-	interfaces       []string
-	interfacesSet    set.Set
-	nodeFirewall     []*firewall.Rule
-	firewalls        map[string][]*firewall.Rule
-	disks            []*disk.Disk
-	virtsMap         map[primitive.ObjectID]*vm.VirtualMachine
-	instances        []*instance.Instance
-	instancesMap     map[primitive.ObjectID]*instance.Instance
-	instanceDisks    map[primitive.ObjectID][]*disk.Disk
-	domainRecordsMap map[primitive.ObjectID][]*domain.Record
-	vpcs             []*vpc.Vpc
-	vpcsMap          map[primitive.ObjectID]*vpc.Vpc
-	vpcIpsMap        map[primitive.ObjectID][]*vpc.VpcIp
-	arpRecords       map[string]set.Set
-	addInstances     set.Set
-	remInstances     set.Set
-	running          []string
+	nodeSelf       *node.Node
+	nodes          []*node.Node
+	nodeDatacenter primitive.ObjectID
+	nodeZone       *zone.Zone
+	nodeHostBlock  *block.Block
+	vxlan          bool
+	zoneMap        map[primitive.ObjectID]*zone.Zone
+	namespaces     []string
+	interfaces     []string
+	interfacesSet  set.Set
+	nodeFirewall   []*firewall.Rule
+	firewalls      map[string][]*firewall.Rule
+	pools          []*pool.Pool
+	disks          []*disk.Disk
+	virtsMap       map[primitive.ObjectID]*vm.VirtualMachine
+	instances      []*instance.Instance
+	instancesMap   map[primitive.ObjectID]*instance.Instance
+	instanceDisks  map[primitive.ObjectID][]*disk.Disk
+	vpcs           []*vpc.Vpc
+	vpcsMap        map[primitive.ObjectID]*vpc.Vpc
+	vpcIpsMap      map[primitive.ObjectID][]*vpc.VpcIp
+	arpRecords     map[string]set.Set
+	addInstances   set.Set
+	remInstances   set.Set
+	running        []string
 }
 
 func (s *State) Node() *node.Node {
@@ -237,7 +237,15 @@ func (s *State) init() (err error) {
 	s.interfaces = interfaces
 	s.interfacesSet = interfacesSet
 
-	disks, err := disk.GetNode(db, s.nodeSelf.Id)
+	pools, err := pool.GetAll(db, &bson.M{
+		"zone": s.nodeSelf.Zone,
+	})
+	if err != nil {
+		return
+	}
+	s.pools = pools
+
+	disks, err := disk.GetNode(db, s.nodeSelf.Id, s.nodeSelf.Pools)
 	if err != nil {
 		return
 	}
@@ -255,7 +263,7 @@ func (s *State) init() (err error) {
 
 	instances, err := instance.GetAllVirtMapped(db, &bson.M{
 		"node": s.nodeSelf.Id,
-	}, instanceDisks)
+	}, s.pools, instanceDisks)
 	if err != nil {
 		return
 	}
