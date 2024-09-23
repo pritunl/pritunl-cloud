@@ -13,12 +13,19 @@ import (
 var yamlSpec = regexp.MustCompile("(?s)```yaml(.*?)```")
 
 type Unit struct {
-	Id       primitive.ObjectID `bson:"_id" json:"id"`
-	Name     string             `bson:"name" json:"name"`
-	Kind     string             `bson:"kind" json:"kind"`
-	Data     interface{}        `bson:"data" json:"data"`
-	Deployed interface{}        `bson:"deployed" json:"deployed"`
-	Spec     string             `bson:"spec" json:"spec"`
+	Id          primitive.ObjectID `bson:"_id" json:"id"`
+	Name        string             `bson:"name" json:"name"`
+	Kind        string             `bson:"kind" json:"kind"`
+	Count       int                `bson:"count" json:"count"`
+	Deployments []*Deployment      `bson:"deployments" json:"deployments"`
+	Spec        string             `bson:"spec" json:"spec"`
+	Instance    *Instance          `bson:"instance,omitempty" json:"instance,omitempty"`
+}
+
+type Deployment struct {
+	Node  primitive.ObjectID `bson:"node" json:"node"`
+	State string             `bson:"state" json:"state"` // reserved, deployed
+	Data  interface{}        `bson:"data" json:"data"`
 }
 
 type Instance struct {
