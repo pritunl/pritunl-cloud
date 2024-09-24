@@ -13,13 +13,19 @@ import (
 var yamlSpec = regexp.MustCompile("(?s)```yaml(.*?)```")
 
 type Unit struct {
-	Id          primitive.ObjectID `bson:"_id" json:"id"`
+	Id          primitive.ObjectID `bson:"id" json:"id"`
 	Name        string             `bson:"name" json:"name"`
 	Kind        string             `bson:"kind" json:"kind"`
 	Count       int                `bson:"count" json:"count"`
 	Deployments []*Deployment      `bson:"deployments" json:"deployments"`
 	Spec        string             `bson:"spec" json:"spec"`
 	Instance    *Instance          `bson:"instance,omitempty" json:"instance,omitempty"`
+}
+
+type UnitInput struct {
+	Id   primitive.ObjectID `bson:"id" json:"id"`
+	Name string             `bson:"name" json:"name"`
+	Spec string             `bson:"spec" json:"spec"`
 }
 
 type Deployment struct {
@@ -167,6 +173,8 @@ func (u *Unit) Parse(db *database.Database, srvc *Service) (
 			data.Image = resources.Image.Id
 		}
 	}
+
+	u.Instance = data
 
 	return
 }
