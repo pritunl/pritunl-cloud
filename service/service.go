@@ -27,6 +27,18 @@ func (p *Service) Validate(db *database.Database) (
 	return
 }
 
+func (p *Service) InitUnits(units []*UnitInput) {
+	p.Units = []*Unit{}
+
+	for _, unitData := range units {
+		p.Units = append(p.Units, &Unit{
+			Id:   primitive.NewObjectID(),
+			Name: unitData.Name,
+			Spec: unitData.Spec,
+		})
+	}
+}
+
 func (p *Service) CommitFieldsUnits(db *database.Database,
 	units []*UnitInput, fields set.Set) (
 	errData *errortypes.ErrorData, err error) {
