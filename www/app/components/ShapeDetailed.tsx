@@ -276,12 +276,10 @@ export default class ShapeDetailed extends React.Component<Props, State> {
 		let shape: ShapeTypes.Shape = this.state.shape ||
 			this.props.shape;
 
-		let defaultDatacenter = '';
 		let hasDatacenters = false;
 		let datacentersSelect: JSX.Element[] = [];
 		if (this.props.datacenters.length) {
 			hasDatacenters = true;
-			defaultDatacenter = this.props.datacenters[0].id;
 			for (let datacenter of this.props.datacenters) {
 				datacentersSelect.push(
 					<option
@@ -295,31 +293,6 @@ export default class ShapeDetailed extends React.Component<Props, State> {
 		if (!hasDatacenters) {
 			datacentersSelect.push(
 				<option key="null" value="">No Datacenters</option>);
-		}
-
-		let datacenter = this.state.datacenter || defaultDatacenter;
-		let hasZones = false;
-		let zonesSelect: JSX.Element[] = [];
-		if (this.props.zones.length) {
-			zonesSelect.push(<option key="null" value="">Select Zone</option>);
-
-			for (let zone of this.props.zones) {
-				if (!this.props.shape.zone && zone.datacenter !== datacenter) {
-					continue;
-				}
-				hasZones = true;
-
-				zonesSelect.push(
-					<option
-						key={zone.id}
-						value={zone.id}
-					>{zone.name}</option>,
-				);
-			}
-		}
-
-		if (!hasZones) {
-			zonesSelect = [<option key="null" value="">No Zones</option>];
 		}
 
 		let hasPools = false;
@@ -437,60 +410,15 @@ export default class ShapeDetailed extends React.Component<Props, State> {
 						}}
 					/>
 					<PageSelect
-						disabled={this.state.disabled || !hasDatacenters}
-						hidden={!!shape.zone}
+						disabled={!!shape.datacenter || this.state.disabled || !hasDatacenters}
 						label="Datacenter"
-						help="Shape datacenter."
-						value={this.state.datacenter}
+						help="Shape datacenter, cannot be changed once set."
+						value={shape.datacenter}
 						onChange={(val): void => {
-							if (this.state.changed) {
-								shape = {
-									...this.state.shape,
-								};
-							} else {
-								shape = {
-									...this.props.shape,
-								};
-							}
-
-							this.setState({
-								...this.state,
-								changed: true,
-								shape: shape,
-								datacenter: val,
-								zone: '',
-							});
+							this.set('datacenter', val);
 						}}
 					>
 						{datacentersSelect}
-					</PageSelect>
-					<PageSelect
-						disabled={!!shape.zone || this.state.disabled ||
-							!hasZones}
-						label="Zone"
-						help="Shape zone, cannot be changed once set. Clear shape ID in configuration file to reset shape."
-						value={shape.zone ? shape.zone : this.state.zone}
-						onChange={(val): void => {
-							let shape: ShapeTypes.Shape;
-							if (this.state.changed) {
-								shape = {
-									...this.state.shape,
-								};
-							} else {
-								shape = {
-									...this.props.shape,
-								};
-							}
-
-							this.setState({
-								...this.state,
-								changed: true,
-								shape: shape,
-								zone: val,
-							});
-						}}
-					>
-						{zonesSelect}
 					</PageSelect>
 					<PageSelect
 						disabled={this.state.disabled}
