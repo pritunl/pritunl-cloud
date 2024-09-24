@@ -367,45 +367,14 @@ export default class ShapeNew extends React.Component<Props, State> {
 						/>
 						<PageSelect
 							disabled={this.state.disabled || !hasDatacenters}
-							hidden={!!shape.zone}
 							label="Datacenter"
-							help="Shape datacenter."
+							help="Shape datacenter, cannot be changed once set."
 							value={this.state.datacenter}
 							onChange={(val): void => {
-								let shape = {
-									...this.state.shape,
-								};
-
-								this.setState({
-									...this.state,
-									changed: true,
-									shape: shape,
-									datacenter: val,
-									zone: '',
-								});
+								this.set('datacenter', val);
 							}}
 						>
 							{datacentersSelect}
-						</PageSelect>
-						<PageSelect
-							disabled={!!shape.zone || this.state.disabled || !hasZones}
-							label="Zone"
-							help="Shape zone, cannot be changed once set. Clear shape ID in configuration file to reset shape."
-							value={shape.zone ? shape.zone : this.state.zone}
-							onChange={(val): void => {
-								let shape = {
-									...this.state.shape,
-								};
-
-								this.setState({
-									...this.state,
-									changed: true,
-									shape: shape,
-									zone: val,
-								});
-							}}
-						>
-							{zonesSelect}
 						</PageSelect>
 						<PageSelect
 							disabled={this.state.disabled}
