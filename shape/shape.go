@@ -52,7 +52,17 @@ func (s *Shape) Validate(db *database.Database) (
 func (s *Shape) FindNode(db *database.Database, processors, memory int) (
 	nde *node.Node, err error) {
 
-	ndes, err := node.GetAllShape(db, s.Zone, s.Roles)
+	zones, err := zone.GetAllDatacenter(db, s.Datacenter)
+	if err != nil {
+		return
+	}
+
+	zoneIds := []primitive.ObjectID{}
+	for _, zne := range zones {
+		zoneIds = append(zoneIds, zne.Id)
+	}
+
+	ndes, err := node.GetAllShape(db, zoneIds, s.Roles)
 	if err != nil {
 		return
 	}
