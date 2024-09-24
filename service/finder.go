@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/domain"
@@ -63,61 +64,96 @@ func (r *Resources) Find(db *database.Database, token string) (err error) {
 
 	switch kind {
 	case DomainKind:
-		r.Domain, err = domain.GetOrgName(db, r.Organization, resource)
+		r.Domain, err = domain.GetOne(db, &bson.M{
+			"name":         resource,
+			"organization": r.Organization,
+		})
 		if err != nil {
 			return
 		}
 		break
 	case VpcKind:
-		r.Vpc, err = vpc.GetOrgName(db, r.Organization, resource)
+		r.Vpc, err = vpc.GetOne(db, &bson.M{
+			"name":         resource,
+			"organization": r.Organization,
+		})
 		if err != nil {
 			return
 		}
 		break
 	case DatacenterKind:
-		r.Datacenter, err = datacenter.GetName(db, resource)
+		r.Datacenter, err = datacenter.GetOne(db, &bson.M{
+			"name": resource,
+		})
 		if err != nil {
 			return
 		}
 		break
 	case NodeKind:
-		r.Node, err = node.GetName(db, resource)
+		r.Node, err = node.GetOne(db, &bson.M{
+			"name": resource,
+		})
 		if err != nil {
 			return
 		}
 		break
 	case PoolKind:
-		r.Pool, err = pool.GetName(db, resource)
+		r.Pool, err = pool.GetOne(db, &bson.M{
+			"name": resource,
+		})
 		if err != nil {
 			return
 		}
 		break
 	case ZoneKind:
-		r.Zone, err = zone.GetName(db, resource)
+		r.Zone, err = zone.GetOne(db, &bson.M{
+			"name": resource,
+		})
 		if err != nil {
 			return
 		}
 		break
 	case ShapeKind:
-		r.Shape, err = shape.GetName(db, resource)
+		r.Shape, err = shape.GetOne(db, &bson.M{
+			"name": resource,
+			"zone": r.Zone,
+		})
 		if err != nil {
 			return
 		}
 		break
 	case ImageKind:
-		r.Image, err = image.GetOrgPublicName(db, r.Organization, resource)
+		r.Image, err = image.GetOne(db, &bson.M{
+			"name": resource,
+			"$or": []*bson.M{
+				&bson.M{
+					"organization": r.Organization,
+				},
+				&bson.M{
+					"organization": &bson.M{
+						"$exists": false,
+					},
+				},
+			},
+		})
 		if err != nil {
 			return
 		}
 		break
 	case InstanceKind:
-		r.Instance, err = instance.GetOrgName(db, r.Organization, resource)
+		r.Instance, err = instance.GetOne(db, &bson.M{
+			"name":         resource,
+			"organization": r.Organization,
+		})
 		if err != nil {
 			return
 		}
 		break
 	case PlanKind:
-		r.Plan, err = plan.GetOrgName(db, r.Organization, resource)
+		r.Plan, err = plan.GetOne(db, &bson.M{
+			"name":         resource,
+			"organization": r.Organization,
+		})
 		if err != nil {
 			return
 		}
