@@ -8,6 +8,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/pritunl-cloud/zone"
 )
 
 type Shape struct {
@@ -16,7 +17,7 @@ type Shape struct {
 	Comment          string             `bson:"comment" json:"comment"`
 	Type             string             `bson:"type" json:"type"`
 	DeleteProtection bool               `bson:"delete_protection" json:"delete_protection"`
-	Zone             primitive.ObjectID `bson:"zone" json:"zone"`
+	Datacenter       primitive.ObjectID `bson:"datacenter" json:"datacenter"`
 	Roles            []string           `bson:"roles" json:"roles"`
 	Flexible         bool               `bson:"flexible" json:"flexible"`
 	DiskType         string             `bson:"disk_type" json:"disk_type"`
