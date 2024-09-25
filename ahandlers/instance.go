@@ -44,7 +44,6 @@ type instanceData struct {
 	DiskPool            primitive.ObjectID `json:"disk_pool"`
 	Image               primitive.ObjectID `json:"image"`
 	ImageBacking        bool               `json:"image_backing"`
-	Domain              primitive.ObjectID `json:"domain"`
 	Name                string             `json:"name"`
 	Comment             string             `json:"comment"`
 	State               string             `json:"state"`
@@ -141,7 +140,6 @@ func instancePut(c *gin.Context) {
 	inst.Vnc = dta.Vnc
 	inst.Spice = dta.Spice
 	inst.Gui = dta.Gui
-	inst.Domain = dta.Domain
 	inst.NoPublicAddress = dta.NoPublicAddress
 	inst.NoPublicAddress6 = dta.NoPublicAddress6
 	inst.NoHostAddress = dta.NoHostAddress
@@ -182,7 +180,6 @@ func instancePut(c *gin.Context) {
 		"spice_port",
 		"spice_password",
 		"gui",
-		"domain",
 		"no_public_address",
 		"no_public_address6",
 		"no_host_address",
@@ -371,7 +368,6 @@ func instancePost(c *gin.Context) {
 			Vnc:                 dta.Vnc,
 			Spice:               dta.Spice,
 			Gui:                 dta.Gui,
-			Domain:              dta.Domain,
 			NoPublicAddress:     dta.NoPublicAddress,
 			NoPublicAddress6:    dta.NoPublicAddress6,
 			NoHostAddress:       dta.NoHostAddress,
