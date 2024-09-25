@@ -8,14 +8,13 @@ import (
 )
 
 type Deployment struct {
-	Id         primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Service    primitive.ObjectID `bson:"service" json:"service"`
-	Unit       primitive.ObjectID `bson:"unit" json:"unit"`
-	Deployment primitive.ObjectID `bson:"deployment" json:"deployment"`
-	Kind       string             `bson:"kind" json:"kind"`
-	State      string             `bson:"state" json:"state"`
-	Node       primitive.ObjectID `bson:"node" json:"node"`
-	Instance   primitive.ObjectID `bson:"instance" json:"instance"`
+	Id       primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Service  primitive.ObjectID `bson:"service" json:"service"`
+	Unit     primitive.ObjectID `bson:"unit" json:"unit"`
+	Kind     string             `bson:"kind" json:"kind"`
+	State    string             `bson:"state" json:"state"`
+	Node     primitive.ObjectID `bson:"node,omitempty" json:"node"`
+	Instance primitive.ObjectID `bson:"instance,omitempty" json:"instance"`
 }
 
 func (d *Deployment) Validate(db *database.Database) (
@@ -51,11 +50,13 @@ func (d *Deployment) CommitFields(db *database.Database, fields set.Set) (
 func (d *Deployment) Insert(db *database.Database) (err error) {
 	coll := db.Deployments()
 
-	_, err = coll.InsertOne(db, d)
+	resp, err := coll.InsertOne(db, d)
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
+
+	d.Id = resp.InsertedID.(primitive.ObjectID)
 
 	return
 }
