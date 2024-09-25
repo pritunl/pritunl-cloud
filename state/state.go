@@ -43,6 +43,7 @@ type State struct {
 	firewalls      map[string][]*firewall.Rule
 	pools          []*pool.Pool
 	disks          []*disk.Disk
+	units          []*service.Unit
 	virtsMap       map[primitive.ObjectID]*vm.VirtualMachine
 	instances      []*instance.Instance
 	instancesMap   map[primitive.ObjectID]*instance.Instance
@@ -94,6 +95,10 @@ func (s *State) HasInterfaces(iface string) bool {
 
 func (s *State) Instances() []*instance.Instance {
 	return s.instances
+}
+
+func (s *State) Units() []*service.Unit {
+	return s.units
 }
 
 func (s *State) NodeFirewall() []*firewall.Rule {
@@ -345,6 +350,23 @@ func (s *State) init() (err error) {
 	s.vpcIpsMap = vpcIpsMap
 
 	s.arpRecords = arp.BuildState(s.instances, s.vpcIpsMap)
+
+	services, err := service.GetAll(db, &bson.M{})
+	if err != nil {
+		return
+	}
+
+	units := []*service.Unit{}
+	for _, srvc := range services {
+		for unit := range srvc.IterInstances() {
+			if unit.Instance.Node == node.Self.Id ||
+				s.nodeShapesId.Contains(unit.Instance.Shape) {
+
+				units = append(units, unit)
+			}
+		}
+	}
+	s.units = units
 
 	items, err := ioutil.ReadDir("/var/run")
 	if err != nil {
