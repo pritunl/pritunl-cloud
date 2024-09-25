@@ -112,6 +112,36 @@ func (u *Unit) Reserve(db *database.Database) (
 	return
 }
 
+func (u *Unit) UpdateDeployement(db *database.Database,
+	deploymentId primitive.ObjectID, state string) (updated bool, err error) {
+
+	coll := db.Services()
+
+	updateOpts := options.Update().SetArrayFilters(options.ArrayFilters{
+		Filters: []interface{}{
+			bson.M{"elem.id": u.Id},
+			bson.M{"deploy.id": deploymentId},
+		},
+	})
+	resp, err := coll.UpdateOne(db, bson.M{
+		"_id": u.Service.Id,
+	}, bson.M{
+		"$set": bson.M{
+			"units.$[elem].deployments.$[deploy].state": state,
+		},
+	}, updateOpts)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	if resp.MatchedCount == 1 && resp.ModifiedCount == 1 {
+		updated = true
+	}
+
+	return
+}
+
 func (u *Unit) ExtractSpec() (spec string, err error) {
 	matches := yamlSpec.FindStringSubmatch(u.Spec)
 	if len(matches) > 1 {
