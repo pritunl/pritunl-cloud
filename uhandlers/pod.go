@@ -15,6 +15,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
+	"github.com/pritunl/pritunl-cloud/service"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -23,11 +24,8 @@ type serviceData struct {
 	Name             string             `json:"name"`
 	Comment          string             `json:"comment"`
 	Organization     primitive.ObjectID `json:"organization"`
-	Type             string             `json:"type"`
 	DeleteProtection bool               `json:"delete_protection"`
-	Zone             primitive.ObjectID `json:"zone"`
-	Roles            []string           `json:"roles"`
-	Spec             string             `json:"spec"`
+	Units            []*service.Unit    `json:"units"`
 }
 
 type servicesData struct {
@@ -67,21 +65,13 @@ func servicePut(c *gin.Context) {
 
 	pd.Name = data.Name
 	pd.Comment = data.Comment
-	pd.Type = data.Type
 	pd.DeleteProtection = data.DeleteProtection
-	pd.Zone = data.Zone
-	pd.Roles = data.Roles
-	pd.Spec = data.Spec
 
 	fields := set.NewSet(
 		"id",
 		"name",
 		"comment",
-		"type",
 		"delete_protection",
-		"zone",
-		"roles",
-		"spec",
 	)
 
 	errData, err := pd.Validate(db)
@@ -130,11 +120,8 @@ func servicePost(c *gin.Context) {
 		Name:             data.Name,
 		Comment:          data.Comment,
 		Organization:     userOrg,
-		Type:             data.Type,
 		DeleteProtection: data.DeleteProtection,
-		Zone:             data.Zone,
-		Roles:            data.Roles,
-		Spec:             data.Spec,
+		Units:            data.Units,
 	}
 
 	errData, err := pd.Validate(db)
