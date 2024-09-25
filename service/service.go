@@ -170,3 +170,22 @@ func (p *Service) Insert(db *database.Database) (err error) {
 
 	return
 }
+
+func (p *Service) IterInstances() <-chan *Unit {
+	iter := make(chan *Unit)
+
+	go func() {
+		defer close(iter)
+
+		for _, unit := range p.Units {
+			if unit.Kind != "instance" {
+				continue
+			}
+
+			unit.Service = p
+			iter <- unit
+		}
+	}()
+
+	return iter
+}
