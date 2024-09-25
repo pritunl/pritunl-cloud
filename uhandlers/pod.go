@@ -20,12 +20,12 @@ import (
 )
 
 type serviceData struct {
-	Id               primitive.ObjectID `json:"id"`
-	Name             string             `json:"name"`
-	Comment          string             `json:"comment"`
-	Organization     primitive.ObjectID `json:"organization"`
-	DeleteProtection bool               `json:"delete_protection"`
-	Units            []*service.Unit    `json:"units"`
+	Id               primitive.ObjectID   `json:"id"`
+	Name             string               `json:"name"`
+	Comment          string               `json:"comment"`
+	Organization     primitive.ObjectID   `json:"organization"`
+	DeleteProtection bool                 `json:"delete_protection"`
+	Units            []*service.UnitInput `bson:"units" json:"units"`
 }
 
 type servicesData struct {
@@ -85,9 +85,14 @@ func servicePut(c *gin.Context) {
 		return
 	}
 
-	err = pd.CommitFields(db, fields)
+	errData, err = pd.CommitFieldsUnits(db, data.Units, fields)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		c.JSON(400, errData)
 		return
 	}
 
@@ -121,8 +126,9 @@ func servicePost(c *gin.Context) {
 		Comment:          data.Comment,
 		Organization:     userOrg,
 		DeleteProtection: data.DeleteProtection,
-		Units:            data.Units,
 	}
+
+	pd.InitUnits(data.Units)
 
 	errData, err := pd.Validate(db)
 	if err != nil {
