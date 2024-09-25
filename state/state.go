@@ -17,6 +17,8 @@ import (
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/pool"
 	"github.com/pritunl/pritunl-cloud/qemu"
+	"github.com/pritunl/pritunl-cloud/service"
+	"github.com/pritunl/pritunl-cloud/shape"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
@@ -30,6 +32,8 @@ type State struct {
 	nodeDatacenter primitive.ObjectID
 	nodeZone       *zone.Zone
 	nodeHostBlock  *block.Block
+	nodeShapes     []*shape.Shape
+	nodeShapesId   set.Set
 	vxlan          bool
 	zoneMap        map[primitive.ObjectID]*zone.Zone
 	namespaces     []string
@@ -297,6 +301,22 @@ func (s *State) init() (err error) {
 	}
 	s.nodeFirewall = nodeFirewall
 	s.firewalls = firewalls
+
+	shapes, err := shape.GetAll(db, &bson.M{
+		"roles": &bson.M{
+			"$in": node.Self.NetworkRoles,
+		},
+	})
+	if err != nil {
+		return
+	}
+	s.nodeShapes = shapes
+
+	nodeShapesId := set.NewSet()
+	for _, shape := range shapes {
+		nodeShapesId.Add(shape.Id)
+	}
+	s.nodeShapesId = nodeShapesId
 
 	vpcs := []*vpc.Vpc{}
 	vpcsId := []primitive.ObjectID{}
