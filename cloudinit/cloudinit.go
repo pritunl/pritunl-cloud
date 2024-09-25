@@ -16,10 +16,12 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/authority"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
+	"github.com/pritunl/pritunl-cloud/service"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
@@ -86,8 +88,9 @@ growpart:
 runcmd:
   - [ sysctl, -w, net.ipv4.conf.eth0.send_redirects=0 ]
   - 'chmod 600 /etc/ssh/*_key'
-  - [ systemctl, restart, sshd ]{{if .RunScript}}
-  - [ /etc/cloudinit_script ]{{else}}{{end}}
+  - [ systemctl, restart, sshd ]{{if .DeployScript}}
+  - [ /etc/pritunl-deploy-init ]{{else}}{{end}}{{if .RunScript}}
+  - [ /etc/cloudinit-script ]{{else}}{{end}}
 users:
   - name: root
     {{if eq .RootPasswd ""}}lock-passwd: true{{else}}lock-passwd: false
@@ -111,8 +114,9 @@ write_files:{{.WriteFiles}}
 runcmd:
   - [ sysctl, net.inet.ip.redirect=0 ]
   - [ ifconfig, vtnet0, inet6, {{.Address6}}/64 ]
-  - [ route, -6, add, default, {{.Gateway6}} ]{{if .RunScript}}
-  - [ /etc/cloudinit_script ]{{else}}{{end}}
+  - [ route, -6, add, default, {{.Gateway6}} ]{{if .DeployScript}}
+  - [ /etc/pritunl-deploy-init ]{{else}}{{end}}{{if .RunScript}}
+  - [ /etc/cloudinit-script ]{{else}}{{end}}
 users:
   - name: root
     {{if eq .RootPasswd ""}}lock-passwd: true{{else}}lock-passwd: false
@@ -125,6 +129,18 @@ users:
     ssh-authorized-keys:
 {{range .Keys}}      - {{.}}
 {{end}}`
+
+const deploymentScript = `#!/bin/bash
+set -e
+
+mkdir /iso
+mount /dev/sr0 /iso
+/iso/pritunl-cloud-engine
+
+sync
+umount /iso
+rm -rf /iso
+`
 
 var (
 	cloudConfig    = template.Must(template.New("cloud").Parse(cloudConfigTmpl))
@@ -151,19 +167,20 @@ type netConfigData struct {
 }
 
 type cloudConfigData struct {
-	Hostname   string
-	RootPasswd string
-	LockPasswd string
-	WriteFiles string
-	RunScript  bool
-	Address6   string
-	Gateway6   string
-	Keys       []string
+	Hostname     string
+	RootPasswd   string
+	LockPasswd   string
+	WriteFiles   string
+	RunScript    bool
+	DeployScript bool
+	Address6     string
+	Gateway6     string
+	Keys         []string
 }
 
 func getUserData(db *database.Database, inst *instance.Instance,
-	virt *vm.VirtualMachine, initial bool, addr6, gateway6 net.IP) (
-	usrData string, err error) {
+	virt *vm.VirtualMachine, deployUnit *service.Unit, initial bool,
+	addr6, gateway6 net.IP) (usrData string, err error) {
 
 	authrs, err := authority.GetOrgRoles(db, inst.Organization,
 		inst.NetworkRoles)
@@ -231,8 +248,24 @@ func getUserData(db *database.Database, inst *instance.Instance,
 		writeFiles = append(writeFiles, &fileData{
 			Content:     inst.CloudScript,
 			Owner:       owner,
-			Path:        "/etc/cloudinit_script",
+			Path:        "/etc/cloudinit-script",
 			Permissions: "0755",
+		})
+	}
+
+	if deployUnit != nil {
+		data.DeployScript = true
+		writeFiles = append(writeFiles, &fileData{
+			Content:     deploymentScript,
+			Owner:       owner,
+			Path:        "/etc/pritunl-deploy-init",
+			Permissions: "0755",
+		})
+		writeFiles = append(writeFiles, &fileData{
+			Content:     deployUnit.Spec,
+			Owner:       owner,
+			Path:        "/etc/pritunl-deploy.md",
+			Permissions: "0600",
 		})
 	}
 
@@ -470,6 +503,29 @@ func Write(db *database.Database, inst *instance.Instance,
 
 	defer os.RemoveAll(tempDir)
 
+	var deployUnit *service.Unit
+	if !virt.Deployment.IsZero() {
+		deply, e := deployment.Get(db, virt.Deployment)
+		if e != nil {
+			err = e
+			return
+		}
+
+		servc, e := service.Get(db, deply.Service)
+		if e != nil {
+			err = e
+			return
+		}
+
+		deployUnit = servc.GetUnit(deply.Unit)
+		if deployUnit == nil {
+			err = &errortypes.NotFoundError{
+				errors.Newf("cloudinit: Service unit not found"),
+			}
+			return
+		}
+	}
+
 	err = utils.ExistsMkdir(paths.GetInitsPath(), 0755)
 	if err != nil {
 		return
@@ -485,7 +541,8 @@ func Write(db *database.Database, inst *instance.Instance,
 		return
 	}
 
-	usrData, err := getUserData(db, inst, virt, initial, addr6, gateway6)
+	usrData, err := getUserData(db, inst, virt, deployUnit,
+		initial, addr6, gateway6)
 	if err != nil {
 		return
 	}
@@ -523,6 +580,10 @@ func Write(db *database.Database, inst *instance.Instance,
 
 	if !virt.DhcpServer {
 		args = append(args, "network-config")
+	}
+
+	if deployUnit != nil {
+		args = append(args, "/usr/bin/pritunl-cloud-engine")
 	}
 
 	_, err = utils.ExecCombinedOutputLoggedDir(
