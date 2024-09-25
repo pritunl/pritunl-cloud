@@ -1,7 +1,9 @@
 package deploy
 
 import (
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/service"
@@ -16,12 +18,29 @@ type Services struct {
 func (s *Services) DeployUnit(db *database.Database,
 	unit *service.Unit) (err error) {
 
-	deployementId, reserved, err := unit.Reserve(db)
+	deply := &deployment.Deployment{
+		Service: unit.Service.Id,
+		Unit:    unit.Id,
+		Node:    node.Self.Id,
+		Kind:    deployment.Instance,
+		State:   deployment.Reserved,
+	}
+
+	err = deply.Insert(db)
+	if err != nil {
+		return
+	}
+
+	reserved, err := unit.Reserve(db, deply.Id)
 	if err != nil {
 		return
 	}
 
 	if !reserved {
+		err = deployment.Remove(db, deply.Id)
+		if err != nil {
+			return
+		}
 		return
 	}
 
@@ -50,6 +69,7 @@ func (s *Services) DeployUnit(db *database.Database,
 		NoPublicAddress:     false,
 		NoPublicAddress6:    false,
 		NoHostAddress:       false,
+		Deployment:          deply.Id,
 	}
 
 	errData, err := inst.Validate(db)
@@ -70,18 +90,11 @@ func (s *Services) DeployUnit(db *database.Database,
 		return
 	}
 
-	updated, err := unit.UpdateDeployement(
-		db, deployementId, service.Deployed)
+	deply.State = deployment.Deployed
+	deply.Instance = inst.Id
+	err = deply.CommitFields(db, set.NewSet("state", "instance"))
 	if err != nil {
 		return
-	}
-
-	if !updated {
-		logrus.WithFields(logrus.Fields{
-			"service_id":    unit.Service.Id.Hex(),
-			"unit_id":       unit.Id.Hex(),
-			"instance_name": inst.Name,
-		}).Error("deploy: Failed to update instance deployment")
 	}
 
 	return
@@ -89,8 +102,18 @@ func (s *Services) DeployUnit(db *database.Database,
 
 func (s *Services) Deploy(db *database.Database) (err error) {
 	units := s.stat.Units()
+	deplyIds := s.stat.DeploymentIds()
 
 	for _, unit := range units {
+		for _, deply := range unit.Deployments {
+			if !deplyIds.Contains(deply.Id) {
+				err = unit.RemoveDeployement(db, deply.Id)
+				if err != nil {
+					return
+				}
+			}
+		}
+
 		if len(unit.Deployments) < unit.Count {
 			err = s.DeployUnit(db, unit)
 			if err != nil {
