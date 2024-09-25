@@ -23,6 +23,7 @@ import (
 const (
 	DomainKind     = "domain"
 	VpcKind        = "vpc"
+	SubnetKind     = "subnet"
 	DatacenterKind = "datacenter"
 	NodeKind       = "node"
 	PoolKind       = "pool"
@@ -50,7 +51,9 @@ type Resources struct {
 
 var tokenRe = regexp.MustCompile(`{{\.([a-zA-Z0-9-]*)\.([a-zA-Z0-9-]*)}}`)
 
-func (r *Resources) Find(db *database.Database, token string) (err error) {
+func (r *Resources) Find(db *database.Database, token string) (
+	kind string, err error) {
+
 	matches := tokenRe.FindStringSubmatch(token)
 	if len(matches) < 3 {
 		err = &errortypes.ParseError{
@@ -59,7 +62,7 @@ func (r *Resources) Find(db *database.Database, token string) (err error) {
 		return
 	}
 
-	kind := matches[1]
+	kind = matches[1]
 	resource := matches[2]
 
 	switch kind {
@@ -79,6 +82,12 @@ func (r *Resources) Find(db *database.Database, token string) (err error) {
 		})
 		if err != nil {
 			return
+		}
+		break
+	case SubnetKind:
+		if r.Vpc != nil {
+			subnet := r.Vpc.GetSubnetName(resource)
+			r.Subnet = subnet
 		}
 		break
 	case DatacenterKind:
