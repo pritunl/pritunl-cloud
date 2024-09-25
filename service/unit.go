@@ -10,7 +10,6 @@ import (
 	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"github.com/pritunl/pritunl-cloud/node"
 	"gopkg.in/yaml.v3"
 )
 
@@ -34,9 +33,7 @@ type UnitInput struct {
 }
 
 type Deployment struct {
-	Id    primitive.ObjectID `bson:"id" json:"id"`
-	Node  primitive.ObjectID `bson:"node" json:"node"`
-	State string             `bson:"state" json:"state"`
+	Id primitive.ObjectID `bson:"id" json:"id"`
 }
 
 type Instance struct {
@@ -68,16 +65,14 @@ type InstanceYaml struct {
 	DiskSize   int      `yaml:"disk_size"`
 }
 
-func (u *Unit) Reserve(db *database.Database) (
-	deployementId primitive.ObjectID, reserved bool, err error) {
+func (u *Unit) Reserve(db *database.Database, deployId primitive.ObjectID) (
+	reserved bool, err error) {
 
 	coll := db.Services()
 
 	if len(u.Deployments) >= u.Count {
 		return
 	}
-
-	deployementId = primitive.NewObjectID()
 
 	updateOpts := options.Update().SetArrayFilters(options.ArrayFilters{
 		Filters: []interface{}{
@@ -95,9 +90,7 @@ func (u *Unit) Reserve(db *database.Database) (
 	}, bson.M{
 		"$push": bson.M{
 			"units.$[elem].deployments": &Deployment{
-				Id:    deployementId,
-				Node:  node.Self.Id,
-				State: Reserved,
+				Id: deployId,
 			},
 		},
 	}, updateOpts)
