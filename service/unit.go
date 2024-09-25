@@ -17,6 +17,7 @@ import (
 var yamlSpec = regexp.MustCompile("(?s)```yaml(.*?)```")
 
 type Unit struct {
+	Service     *Service           `bson:"-" json:"-"`
 	Id          primitive.ObjectID `bson:"id" json:"id"`
 	Name        string             `bson:"name" json:"name"`
 	Kind        string             `bson:"kind" json:"kind"`
@@ -179,79 +180,147 @@ func (u *Unit) Parse(db *database.Database, srvc *Service) (
 		return
 	}
 
-	if dataYaml.Zone != "" {
-		resources := &Resources{
-			Organization: srvc.Organization,
+	if dataYaml.Name == "" {
+		errData = &errortypes.ErrorData{
+			Error:   "unit_name_missing",
+			Message: "Unit name is missing",
 		}
-		err = resources.Find(db, dataYaml.Zone)
-		if err != nil {
+		return
+	}
+
+	if dataYaml.Kind != "instance" {
+		errData = &errortypes.ErrorData{
+			Error:   "unit_kind_invalid",
+			Message: "Unit kind is invalid",
+		}
+		return
+	}
+
+	if dataYaml.Count == 0 {
+		errData = &errortypes.ErrorData{
+			Error:   "unit_count_missing",
+			Message: "Unit count is missing",
+		}
+		return
+	}
+
+	resources := &Resources{
+		Organization: srvc.Organization,
+	}
+
+	if dataYaml.Zone != "" {
+		kind, e := resources.Find(db, dataYaml.Zone)
+		if e != nil {
+			err = e
 			return
 		}
-		if resources.Zone != nil {
+		if kind == "zone" && resources.Zone != nil {
 			data.Zone = resources.Zone.Id
 		}
 	}
-	if dataYaml.Node != "" {
-		resources := &Resources{
-			Organization: srvc.Organization,
+
+	if data.Zone.IsZero() {
+		errData = &errortypes.ErrorData{
+			Error:   "unit_zone_missing",
+			Message: "Unit zone is missing",
 		}
-		err = resources.Find(db, dataYaml.Node)
-		if err != nil {
+		return
+	}
+
+	if dataYaml.Node != "" {
+		kind, e := resources.Find(db, dataYaml.Node)
+		if e != nil {
+			err = e
 			return
 		}
-		if resources.Node != nil {
+		if kind == "node" && resources.Node != nil {
 			data.Node = resources.Node.Id
 		}
 	}
 	if dataYaml.Shape != "" {
-		resources := &Resources{
-			Organization: srvc.Organization,
-		}
-		err = resources.Find(db, dataYaml.Shape)
-		if err != nil {
+		kind, e := resources.Find(db, dataYaml.Shape)
+		if e != nil {
+			err = e
 			return
 		}
-		if resources.Shape != nil {
+		if kind == "shape" && resources.Shape != nil {
 			data.Shape = resources.Shape.Id
 		}
 	}
-	if dataYaml.Vpc != "" {
-		resources := &Resources{
-			Organization: srvc.Organization,
+
+	if data.Node.IsZero() && data.Shape.IsZero() {
+		errData = &errortypes.ErrorData{
+			Error:   "unit_node_missing",
+			Message: "Unit node or shape is missing",
 		}
-		err = resources.Find(db, dataYaml.Vpc)
-		if err != nil {
+		return
+	}
+
+	if dataYaml.Vpc != "" {
+		kind, e := resources.Find(db, dataYaml.Vpc)
+		if e != nil {
+			err = e
 			return
 		}
-		if resources.Vpc != nil {
+		if kind == "vpc" && resources.Vpc != nil {
 			data.Vpc = resources.Vpc.Id
 		}
 	}
-	if dataYaml.Subnet != "" {
-		resources := &Resources{
-			Organization: srvc.Organization,
+
+	if data.Node.IsZero() && data.Shape.IsZero() {
+		errData = &errortypes.ErrorData{
+			Error:   "unit_vpc_missing",
+			Message: "Unit VPC is missing",
 		}
-		err = resources.Find(db, dataYaml.Subnet)
-		if err != nil {
+		return
+	}
+
+	if dataYaml.Subnet != "" {
+		kind, e := resources.Find(db, dataYaml.Subnet)
+		if e != nil {
+			err = e
 			return
 		}
-		if resources.Subnet != nil {
+		if kind == "subnet" && resources.Subnet != nil {
 			data.Subnet = resources.Subnet.Id
 		}
 	}
-	if dataYaml.Image != "" {
-		resources := &Resources{
-			Organization: srvc.Organization,
+
+	if data.Node.IsZero() && data.Shape.IsZero() {
+		errData = &errortypes.ErrorData{
+			Error:   "unit_vpc_missing",
+			Message: "Unit subnet is missing",
 		}
-		err = resources.Find(db, dataYaml.Image)
-		if err != nil {
+		return
+	}
+
+	if dataYaml.Image != "" {
+		kind, e := resources.Find(db, dataYaml.Image)
+		if e != nil {
+			err = e
 			return
 		}
-		if resources.Image != nil {
+		if kind == "image" && resources.Image != nil {
 			data.Image = resources.Image.Id
 		}
 	}
 
+	if data.Node.IsZero() && data.Shape.IsZero() {
+		errData = &errortypes.ErrorData{
+			Error:   "unit_image_missing",
+			Message: "Unit image is missing",
+		}
+		return
+	}
+
+	data.Roles = dataYaml.Roles
+	data.Processors = dataYaml.Processors
+	data.Memory = dataYaml.Memory
+	data.DiskSize = dataYaml.DiskSize
+
+	u.Name = dataYaml.Name
+	u.Kind = dataYaml.Kind
+	u.Count = dataYaml.Count
 	u.Instance = data
 
 	return
