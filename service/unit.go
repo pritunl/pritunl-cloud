@@ -2,11 +2,15 @@ package service
 
 import (
 	"regexp"
+	"strings"
 
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/node"
 	"gopkg.in/yaml.v3"
 )
 
@@ -29,13 +33,12 @@ type UnitInput struct {
 }
 
 type Deployment struct {
+	Id    primitive.ObjectID `bson:"id" json:"id"`
 	Node  primitive.ObjectID `bson:"node" json:"node"`
-	State string             `bson:"state" json:"state"` // reserved, deployed
-	Data  interface{}        `bson:"data" json:"data"`
+	State string             `bson:"state" json:"state"`
 }
 
 type Instance struct {
-	Name       string             `bson:"name" json:"name"`
 	Zone       primitive.ObjectID `bson:"zone" json:"zone"`
 	Node       primitive.ObjectID `bson:"node,omitempty" json:"node"`
 	Shape      primitive.ObjectID `bson:"shape,omitempty" json:"shape"`
@@ -51,7 +54,7 @@ type Instance struct {
 type InstanceYaml struct {
 	Name       string   `yaml:"name"`
 	Kind       string   `yaml:"kind"`
-	Count      int      `yaml:"number"`
+	Count      int      `yaml:"count"`
 	Zone       string   `yaml:"zone"`
 	Node       string   `yaml:"node,omitempty"`
 	Shape      string   `yaml:"shape,omitempty"`
@@ -62,6 +65,51 @@ type InstanceYaml struct {
 	Memory     int      `yaml:"memory"`
 	Image      string   `yaml:"image"`
 	DiskSize   int      `yaml:"disk_size"`
+}
+
+func (u *Unit) Reserve(db *database.Database) (
+	deployementId primitive.ObjectID, reserved bool, err error) {
+
+	coll := db.Services()
+
+	if len(u.Deployments) >= u.Count {
+		return
+	}
+
+	deployementId = primitive.NewObjectID()
+
+	updateOpts := options.Update().SetArrayFilters(options.ArrayFilters{
+		Filters: []interface{}{
+			bson.M{
+				"elem.id":    u.Id,
+				"elem.count": u.Count,
+				"elem.deployments": bson.M{
+					"$size": len(u.Deployments),
+				},
+			},
+		},
+	})
+	resp, err := coll.UpdateOne(db, bson.M{
+		"_id": u.Service.Id,
+	}, bson.M{
+		"$push": bson.M{
+			"units.$[elem].deployments": &Deployment{
+				Id:    deployementId,
+				Node:  node.Self.Id,
+				State: Reserved,
+			},
+		},
+	}, updateOpts)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	if resp.MatchedCount == 1 && resp.ModifiedCount == 1 {
+		reserved = true
+	}
+
+	return
 }
 
 func (u *Unit) ExtractSpec() (spec string, err error) {
