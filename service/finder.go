@@ -123,10 +123,15 @@ func (r *Resources) Find(db *database.Database, token string) (
 		}
 		break
 	case ShapeKind:
-		r.Shape, err = shape.GetOne(db, &bson.M{
+		query := bson.M{
 			"name": resource,
-			"zone": r.Zone,
-		})
+		}
+		if r.Datacenter != nil {
+			query["datacenter"] = r.Datacenter.Id
+		} else if r.Zone != nil {
+			query["datacenter"] = r.Zone.Datacenter
+		}
+		r.Shape, err = shape.GetOne(db, &query)
 		if err != nil {
 			return
 		}
