@@ -67,13 +67,23 @@ func (p *Service) CommitFieldsUnits(db *database.Database,
 		curUnit := curUnitsMap[unitData.Id]
 		if curUnit == nil {
 			unit := &Unit{
-				Id:   primitive.NewObjectID(),
-				Name: unitData.Name,
-				Spec: unitData.Spec,
+				Id:          primitive.NewObjectID(),
+				Name:        unitData.Name,
+				Spec:        unitData.Spec,
+				Deployments: []*Deployment{},
 			}
 			curUnitsSet.Add(unit.Id)
 			curUnitsMap[unit.Id] = unit
 			newUnitsSet.Add(unit.Id)
+
+			errData, err = unit.Parse(db, p)
+			if err != nil {
+				return
+			}
+			if errData != nil {
+				return
+			}
+
 			p.Units = append(p.Units, unit)
 
 			arraySelect.Push(unit)
@@ -85,9 +95,20 @@ func (p *Service) CommitFieldsUnits(db *database.Database,
 		curUnit.Name = unitData.Name
 		curUnit.Spec = unitData.Spec
 
+		errData, err = curUnit.Parse(db, p)
+		if err != nil {
+			return
+		}
+		if errData != nil {
+			return
+		}
+
 		arraySelect.Update(unitData.Id, bson.M{
-			"name": unitData.Name,
-			"spec": unitData.Spec,
+			"name":     curUnit.Name,
+			"kind":     curUnit.Kind,
+			"count":    curUnit.Count,
+			"spec":     curUnit.Spec,
+			"instance": curUnit.Instance,
 		})
 	}
 
