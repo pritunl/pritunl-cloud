@@ -171,6 +171,15 @@ func (p *Service) Insert(db *database.Database) (err error) {
 	return
 }
 
+func (p *Service) GetUnit(unitId primitive.ObjectID) *Unit {
+	for _, unit := range p.Units {
+		if unit.Id == unitId {
+			return unit
+		}
+	}
+	return nil
+}
+
 func (p *Service) IterInstances() <-chan *Unit {
 	iter := make(chan *Unit)
 
