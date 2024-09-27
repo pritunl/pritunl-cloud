@@ -3,13 +3,6 @@ import * as React from 'react';
 import * as Constants from '../Constants';
 import * as ServiceTypes from '../types/ServiceTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
-import * as DomainTypes from '../types/DomainTypes';
-import * as DatacenterTypes from '../types/DatacenterTypes';
-import * as NodeTypes from '../types/NodeTypes';
-import * as VpcTypes from '../types/VpcTypes';
-import * as PoolTypes from '../types/PoolTypes';
-import * as ZoneTypes from '../types/ZoneTypes';
-import * as ShapeTypes from '../types/ShapeTypes';
 import * as ServiceActions from '../actions/ServiceActions';
 import PageInput from './PageInput';
 import PageInputButton from './PageInputButton';
@@ -19,19 +12,10 @@ import PageSwitch from "./PageSwitch";
 import PageNumInput from './PageNumInput';
 import ServiceWorkspace from './ServiceWorkspace';
 import Help from './Help';
-import OrganizationsStore from "../stores/OrganizationsStore";
 import PageTextArea from "./PageTextArea";
-import ShapesStore from "../stores/ShapesStore";
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
-	domains: DomainTypes.DomainsRo;
-	vpcs: VpcTypes.VpcsRo;
-	datacenters: DatacenterTypes.DatacentersRo;
-	nodes: NodeTypes.NodesRo;
-	pools: PoolTypes.PoolsRo;
-	zones: ZoneTypes.ZonesRo;
-	shapes: ShapeTypes.ShapesRo;
 	onClose: () => void;
 }
 
@@ -265,14 +249,6 @@ export default class ServiceNew extends React.Component<Props, State> {
 				</div>
 				<ServiceWorkspace
 					service={service}
-					organizations={this.props.organizations}
-					domains={this.props.domains}
-					vpcs={this.props.vpcs}
-					datacenters={this.props.datacenters}
-					nodes={this.props.nodes}
-					pools={this.props.pools}
-					zones={this.props.zones}
-					shapes={this.props.shapes}
 					disabled={this.state.disabled}
 				/>
 				<PageCreate
