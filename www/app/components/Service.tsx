@@ -5,23 +5,9 @@ import * as ServiceTypes from '../types/ServiceTypes';
 import * as OrganizationTypes from "../types/OrganizationTypes";
 import OrganizationsStore from '../stores/OrganizationsStore';
 import ServiceDetailed from './ServiceDetailed';
-import * as DomainTypes from "../types/DomainTypes";
-import * as VpcTypes from "../types/VpcTypes";
-import * as DatacenterTypes from "../types/DatacenterTypes";
-import * as NodeTypes from "../types/NodeTypes";
-import * as PoolTypes from "../types/PoolTypes";
-import * as ZoneTypes from "../types/ZoneTypes";
-import * as ShapeTypes from "../types/ShapeTypes";
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
-	domains: DomainTypes.DomainsRo;
-	vpcs: VpcTypes.VpcsRo;
-	datacenters: DatacenterTypes.DatacentersRo;
-	nodes: NodeTypes.NodesRo;
-	pools: PoolTypes.PoolsRo;
-	zones: ZoneTypes.ZonesRo;
-	shapes: ShapeTypes.ShapesRo;
 	service: ServiceTypes.ServiceRo;
 	selected: boolean;
 	onSelect: (shift: boolean) => void;
@@ -101,13 +87,6 @@ export default class Service extends React.Component<Props, {}> {
 			>
 				<ServiceDetailed
 					organizations={this.props.organizations}
-					domains={this.props.domains}
-					vpcs={this.props.vpcs}
-					datacenters={this.props.datacenters}
-					nodes={this.props.nodes}
-					pools={this.props.pools}
-					zones={this.props.zones}
-					shapes={this.props.shapes}
 					service={this.props.service}
 					selected={this.props.selected}
 					onSelect={this.props.onSelect}
@@ -121,19 +100,6 @@ export default class Service extends React.Component<Props, {}> {
 		let cardStyle = {
 			...css.card,
 		};
-
-		let role: JSX.Element[] = [];
-		for (let networkRole of (service.roles || [])) {
-			role.push(
-				<div
-					className="bp5-tag bp5-intent-primary"
-					style={css.tag}
-					key={networkRole}
-				>
-					{networkRole}
-				</div>,
-			);
-		}
 
 		let orgName = '';
 		if (!MiscUtils.objectIdNil(service.organization)) {
@@ -186,9 +152,6 @@ export default class Service extends React.Component<Props, {}> {
 						service.organization ? 'bp5-icon-people' : 'bp5-icon-layers')}
 				/>
 				{orgName}
-			</div>
-			<div className="flex bp5-cell" style={css.roles}>
-				{role}
 			</div>
 		</div>;
 	}
