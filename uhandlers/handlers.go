@@ -146,6 +146,13 @@ func Register(engine *gin.Engine) {
 	orgGroup.POST("/secret", secretPost)
 	orgGroup.DELETE("/secret/:secr_id", secretDelete)
 
+	orgGroup.GET("/service", servicesGet)
+	orgGroup.GET("/service/:service_id", serviceGet)
+	orgGroup.PUT("/service/:service_id", servicePut)
+	orgGroup.POST("/service", servicePost)
+	orgGroup.DELETE("/service", servicesDelete)
+	orgGroup.DELETE("/service/:service_id", serviceDelete)
+
 	csrfGroup.GET("/organization", organizationsGet)
 
 	csrfGroup.PUT("/theme", themePut)
