@@ -15,26 +15,11 @@ import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
 import Help from './Help';
 import PageTextArea from "./PageTextArea";
-import * as DomainTypes from "../types/DomainTypes";
-import * as VpcTypes from "../types/VpcTypes";
-import * as DatacenterTypes from "../types/DatacenterTypes";
-import * as NodeTypes from "../types/NodeTypes";
-import * as PoolTypes from "../types/PoolTypes";
-import * as ZoneTypes from "../types/ZoneTypes";
-import * as ShapeTypes from "../types/ShapeTypes";
-import * as Theme from "../Theme";
 
 interface Props {
-	organizations: OrganizationTypes.OrganizationsRo;
-	domains: DomainTypes.DomainsRo;
-	vpcs: VpcTypes.VpcsRo;
-	datacenters: DatacenterTypes.DatacentersRo;
-	nodes: NodeTypes.NodesRo;
-	pools: PoolTypes.PoolsRo;
-	zones: ZoneTypes.ZonesRo;
-	shapes: ShapeTypes.ShapesRo;
 	service: ServiceTypes.ServiceRo;
 	disabled: boolean;
+	onChange?: (value: string) => void;
 	onEdit?: () => void;
 }
 
@@ -196,7 +181,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 		let tabsElem: JSX.Element[] = []
 		for (let i = 0; i < units.length; ++i) {
 			let unit = units[i]
-			tabsElem.push(<Blueprint.Tab id={i} style={css.tab}>
+			tabsElem.push(<Blueprint.Tab id={i} style={css.tab} key={i}>
 				<Blueprint.Icon icon="document" style={css.editButtonIcon}/>
 				{unit.name}
 				<button
@@ -217,7 +202,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 			<Blueprint.Navbar>
 				<Blueprint.NavbarGroup align={"left"}>
 					<Blueprint.Tabs
-						id="TODO"
+						id={this.props.service.id}
 						fill={true}
 						onChange={(newTabId, prevTabId): void => {
 							this.setState({
@@ -261,6 +246,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 				value={units[this.state.activeUnit].spec}
 				onChange={(val: string): void => {
 					this.onChange(val)
+					this.props.onChange(val)
 				}}
 				onEdit={this.onEdit}
 			/>
