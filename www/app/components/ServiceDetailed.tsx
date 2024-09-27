@@ -13,23 +13,9 @@ import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
 import Help from './Help';
 import PageTextArea from "./PageTextArea";
-import * as DomainTypes from "../types/DomainTypes";
-import * as VpcTypes from "../types/VpcTypes";
-import * as DatacenterTypes from "../types/DatacenterTypes";
-import * as NodeTypes from "../types/NodeTypes";
-import * as PoolTypes from "../types/PoolTypes";
-import * as ZoneTypes from "../types/ZoneTypes";
-import * as ShapeTypes from "../types/ShapeTypes";
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
-	domains: DomainTypes.DomainsRo;
-	vpcs: VpcTypes.VpcsRo;
-	datacenters: DatacenterTypes.DatacentersRo;
-	nodes: NodeTypes.NodesRo;
-	pools: PoolTypes.PoolsRo;
-	zones: ZoneTypes.ZonesRo;
-	shapes: ShapeTypes.ShapesRo;
 	service: ServiceTypes.ServiceRo;
 	selected: boolean;
 	onSelect: (shift: boolean) => void;
@@ -325,15 +311,26 @@ export default class ServiceDetailed extends React.Component<Props, State> {
 			</div>
 			<ServiceWorkspace
 					service={service}
-					organizations={this.props.organizations}
-					domains={this.props.domains}
-					vpcs={this.props.vpcs}
-					datacenters={this.props.datacenters}
-					nodes={this.props.nodes}
-					pools={this.props.pools}
-					zones={this.props.zones}
-					shapes={this.props.shapes}
 					disabled={this.state.disabled}
+					onChange={(val: string): void => {
+						let service: any;
+
+						if (this.state.changed) {
+							service = {
+								...this.state.service,
+							};
+						} else {
+							service = {
+								...this.props.service,
+							};
+						}
+
+						this.setState({
+							...this.state,
+							changed: true,
+							service: service,
+						});
+					}}
 			/>
 			<PageSave
 				style={css.save}
