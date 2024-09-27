@@ -153,6 +153,8 @@ func Register(engine *gin.Engine) {
 	orgGroup.DELETE("/service", servicesDelete)
 	orgGroup.DELETE("/service/:service_id", serviceDelete)
 
+	csrfGroup.GET("/shape", shapesGet)
+
 	csrfGroup.GET("/organization", organizationsGet)
 
 	csrfGroup.PUT("/theme", themePut)
