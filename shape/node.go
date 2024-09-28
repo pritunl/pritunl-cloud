@@ -20,6 +20,6 @@ func (n Nodes) Swap(i, j int) {
 	n[i], n[j] = n[j], n[i]
 }
 
-func NodeUsageSort(ndes Nodes) {
-	sort.Sort(ndes)
+func (n Nodes) Sort() {
+	sort.Sort(n)
 }

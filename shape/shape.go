@@ -67,11 +67,42 @@ func (s *Shape) FindNode(db *database.Database, processors, memory int) (
 		return
 	}
 
-	NodeUsageSort(ndes)
+	Nodes(ndes).Sort()
 
 	for _, nd := range ndes {
 		nde = nd
 		return
+	}
+
+	err = &errortypes.NotFoundError{
+		errors.New("shape: Failed to find available node"),
+	}
+	return
+}
+
+func (s *Shape) GetAllNodes(db *database.Database, processors, memory int) (
+	ndes Nodes, err error) {
+
+	zones, err := zone.GetAllDatacenter(db, s.Datacenter)
+	if err != nil {
+		return
+	}
+
+	zoneIds := []primitive.ObjectID{}
+	for _, zne := range zones {
+		zoneIds = append(zoneIds, zne.Id)
+	}
+
+	allNdes, err := node.GetAllShape(db, zoneIds, s.Roles)
+	if err != nil {
+		return
+	}
+
+	ndes = Nodes{}
+	for _, nde := range allNdes {
+		if nde.IsOnline() {
+			ndes = append(ndes, nde)
+		}
 	}
 
 	err = &errortypes.NotFoundError{
