@@ -141,20 +141,9 @@ export default class ShapeNew extends React.Component<Props, State> {
 			...this.state.shape,
 		};
 
-		let zone = this.state.zone;
-		if (!zone && this.props.datacenters.length &&
-			this.props.zones.length) {
-			let datacenter = this.state.datacenter ||
+		if (!shape.datacenter && this.props.datacenters.length) {
+			shape.datacenter = this.state.datacenter ||
 				this.props.datacenters[0].id;
-			for (let zne of this.props.zones) {
-				if (zne.datacenter === datacenter) {
-					zone = zne.id;
-				}
-			}
-		}
-
-		if (zone) {
-			shape.zone = zone;
 		}
 
 		ShapeActions.create(shape).then((): void => {
