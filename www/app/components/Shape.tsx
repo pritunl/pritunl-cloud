@@ -7,6 +7,7 @@ import * as ZoneTypes from '../types/ZoneTypes';
 import ShapeDetailed from './ShapeDetailed';
 import ZonesStore from "../stores/ZonesStore";
 import * as PoolTypes from "../types/PoolTypes";
+import DatacentersStore from "../stores/DatacentersStore";
 
 interface Props {
 	datacenters: DatacenterTypes.DatacentersRo;
@@ -107,8 +108,8 @@ export default class Shape extends React.Component<Props, {}> {
 			...css.card,
 		};
 
-		let zone = ZonesStore.zone(this.props.shape.zone);
-		let zoneName = zone ? zone.name : null;
+		let datacenter = DatacentersStore.datacenter(this.props.shape.datacenter);
+		let datacenterName = datacenter ? datacenter.name : null;
 
 		return <div
 			className="bp5-card bp5-row"
@@ -149,10 +150,10 @@ export default class Shape extends React.Component<Props, {}> {
 			<div className="bp5-cell" style={css.item}>
 				<span
 					style={css.icon}
-					hidden={!zoneName}
-					className="bp5-icon-standard bp5-text-muted bp5-icon-layout-circle"
+					hidden={!datacenterName}
+					className="bp5-icon-standard bp5-text-muted bp5-icon-cloud"
 				/>
-				{zoneName}
+				{datacenterName}
 			</div>
 		</div>;
 	}
