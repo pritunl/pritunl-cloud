@@ -60,13 +60,13 @@ func scheduleUnits(db *database.Database) (err error) {
 	}
 
 	for _, unit := range units {
-		switch unit.Kind {
-		case service.InstanceKind:
-			schd := scheduler.NewInstanceUnit(unit)
-			err = schd.Schedule(db)
-			if err != nil {
-				return
-			}
+		if len(unit.Deployments) >= unit.Count {
+			continue
+		}
+
+		err = scheduler.Schedule(db, unit)
+		if err != nil {
+			return
 		}
 	}
 
@@ -85,9 +85,11 @@ func scheduleHandler(db *database.Database) (err error) {
 	}
 
 	for _, schd := range schds {
-		err = schd.Commit(db)
-		if err != nil {
-			return
+		if schd.Consumed >= schd.Count {
+			err = scheduler.Remove(db, schd.Id)
+			if err != nil {
+				return
+			}
 		}
 	}
 
