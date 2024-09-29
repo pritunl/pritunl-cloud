@@ -130,12 +130,24 @@ users:
 {{range .Keys}}      - {{.}}
 {{end}}`
 
+const deploymentScriptInit = `#!/bin/bash
+set -e
+
+mkdir /iso
+mount /dev/sr0 /iso
+/iso/pritunl-cloud-engine initial
+
+sync
+umount /iso
+rm -rf /iso
+`
+
 const deploymentScript = `#!/bin/bash
 set -e
 
 mkdir /iso
 mount /dev/sr0 /iso
-/iso/pritunl-cloud-engine
+/iso/pritunl-cloud-engine post
 
 sync
 umount /iso
@@ -255,14 +267,23 @@ func getUserData(db *database.Database, inst *instance.Instance,
 
 	if deployUnit != nil {
 		data.DeployScript = true
+		if initial {
+			writeFiles = append(writeFiles, &fileData{
+				Content:     deploymentScriptInit,
+				Owner:       owner,
+				Path:        "/etc/pritunl-deploy-init",
+				Permissions: "0755",
+			})
+		} else {
+			writeFiles = append(writeFiles, &fileData{
+				Content:     deploymentScript,
+				Owner:       owner,
+				Path:        "/etc/pritunl-deploy-init",
+				Permissions: "0755",
+			})
+		}
 		writeFiles = append(writeFiles, &fileData{
-			Content:     deploymentScript,
-			Owner:       owner,
-			Path:        "/etc/pritunl-deploy-init",
-			Permissions: "0755",
-		})
-		writeFiles = append(writeFiles, &fileData{
-			Content:     deployUnit.Spec,
+			Content:     deployUnit.Spec + "\n",
 			Owner:       owner,
 			Path:        "/etc/pritunl-deploy.md",
 			Permissions: "0600",
