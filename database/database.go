@@ -123,6 +123,11 @@ func (d *Database) Services() (coll *Collection) {
 	return
 }
 
+func (d *Database) Deployments() (coll *Collection) {
+	coll = d.getCollection("deployments")
+	return
+}
+
 func (d *Database) Sessions() (coll *Collection) {
 	coll = d.getCollection("sessions")
 	return
