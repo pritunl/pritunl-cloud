@@ -2,11 +2,31 @@ package scheduler
 
 import (
 	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/service"
 )
 
-func Get(db *database.Database, schdId primitive.ObjectID) (
+func Exists(db *database.Database, schdId Resource) (
+	exists bool, err error) {
+
+	coll := db.Schedulers()
+	schd := &Scheduler{}
+
+	err = coll.FindOneId(schdId, schd)
+	if err != nil {
+		if _, ok := err.(*database.NotFoundError); ok {
+			err = nil
+		} else {
+			return
+		}
+		return
+	}
+
+	exists = true
+	return
+}
+
+func Get(db *database.Database, schdId Resource) (
 	schd *Scheduler, err error) {
 
 	coll := db.Schedulers()
@@ -51,7 +71,40 @@ func GetAll(db *database.Database) (schds []*Scheduler, err error) {
 	return
 }
 
-func Remove(db *database.Database, schdId primitive.ObjectID) (err error) {
+func GetAllActive(db *database.Database) (schds []*Scheduler, err error) {
+	coll := db.Schedulers()
+	schds = []*Scheduler{}
+
+	cursor, err := coll.Find(db, bson.M{})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		schd := &Scheduler{}
+		err = cursor.Decode(schd)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		if schd.Consumed < schd.Count {
+			schds = append(schds, schd)
+		}
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func Remove(db *database.Database, schdId Resource) (err error) {
 	coll := db.Schedulers()
 
 	_, err = coll.DeleteOne(db, &bson.M{
