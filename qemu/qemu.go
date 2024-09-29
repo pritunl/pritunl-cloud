@@ -507,19 +507,18 @@ func (q *Qemu) Marshal() (output string, err error) {
 		}
 	}
 
-	count := 0
-	for _, network := range q.Networks {
+	for i, network := range q.Networks {
 		cmd = append(cmd, "-device")
 		cmd = append(cmd, fmt.Sprintf(
 			"virtio-net-pci,netdev=net%d,mac=%s",
-			count,
+			i,
 			network.MacAddress,
 		))
 
 		cmd = append(cmd, "-netdev")
 		cmd = append(cmd, fmt.Sprintf(
 			"tap,id=net%d,ifname=%s,script=no,vhost=on,queues=%d",
-			count,
+			i,
 			network.Iface,
 			q.GetNetworkQueues(),
 		))
