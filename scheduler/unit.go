@@ -1,6 +1,8 @@
 package scheduler
 
 import (
+	"time"
+
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -11,6 +13,7 @@ import (
 
 type InstanceUnit struct {
 	unit  *service.Unit
+	count int
 	nodes shape.Nodes
 }
 
@@ -36,9 +39,14 @@ func (u *InstanceUnit) Schedule(db *database.Database) (err error) {
 		return
 	}
 
+	u.count = u.unit.Count - len(u.unit.Deployments)
 	schd := &Scheduler{
-		Id:    u.unit.Id,
-		Count: u.unit.Count,
+		Id: Resource{
+			Service: u.unit.Service.Id,
+			Unit:    u.unit.Id,
+		},
+		Kind:  InstanceUnitKind,
+		Count: u.count,
 	}
 
 	shpe, err := shape.Get(db, u.unit.Instance.Shape)
@@ -61,10 +69,17 @@ func (u *InstanceUnit) Schedule(db *database.Database) (err error) {
 		return
 	}
 
+	if u.count == 0 {
+		err = &errortypes.ParseError{
+			errors.New("scheduler: Cannot schedule zero count unit"),
+		}
+		return
+	}
+
 	primaryNodes, backupNodes := u.processNodes(u.nodes)
 
 	var tickets TicketsStore
-	if u.unit.Count < len(primaryNodes) {
+	if u.count < len(primaryNodes) {
 		tickets, err = u.scheduleSimple(db, primaryNodes, backupNodes)
 		if err != nil {
 			return
@@ -77,6 +92,28 @@ func (u *InstanceUnit) Schedule(db *database.Database) (err error) {
 	}
 
 	schd.Tickets = tickets
+	schd.Created = time.Now()
+	schd.Modified = time.Now()
+
+	logrus.WithFields(logrus.Fields{
+		"service":       u.unit.Service.Id.Hex(),
+		"unit":          u.unit.Id.Hex(),
+		"shape":         shpe.Id.Hex(),
+		"count":         u.count,
+		"primary_nodes": len(primaryNodes),
+		"backup_nodes":  len(backupNodes),
+		"tickets":       len(tickets),
+	}).Info("scheduler: Scheduling unit")
+
+	err = schd.Insert(db)
+	if err != nil {
+		if _, ok := err.(*database.NotFoundError); ok {
+			err = nil
+		} else {
+			return
+		}
+		return
+	}
 
 	return
 }
@@ -99,16 +136,16 @@ func (u *InstanceUnit) processNodes(nodes shape.Nodes) (
 	return
 }
 
-func (i *InstanceUnit) scheduleSimple(db *database.Database,
+func (u *InstanceUnit) scheduleSimple(db *database.Database,
 	primaryNodes, backupNodes shape.Nodes) (tickets TicketsStore, err error) {
 
 	tickets = TicketsStore{}
-	count := i.unit.Count
+	count := u.count
 	offset := 0
 
 	for _, nde := range primaryNodes {
 		if count <= 0 {
-			count = i.unit.Count
+			count = u.count
 			if offset == 0 {
 				offset += OffsetInit
 			} else {
@@ -125,7 +162,7 @@ func (i *InstanceUnit) scheduleSimple(db *database.Database,
 
 	for _, nde := range backupNodes {
 		if count <= 0 {
-			count = i.unit.Count
+			count = u.count
 			if offset == 0 {
 				offset += OffsetInit
 			} else {
@@ -147,7 +184,7 @@ func (u *InstanceUnit) scheduleComplex(db *database.Database,
 	primaryNodes, backupNodes shape.Nodes) (tickets TicketsStore, err error) {
 
 	tickets = TicketsStore{}
-	count := u.unit.Count
+	count := u.count
 	offset := 0
 	overscheduled := 0
 
@@ -185,62 +222,73 @@ func (u *InstanceUnit) scheduleComplex(db *database.Database,
 	}
 
 	for i := 0; i < OffsetCount; i++ {
-		for {
-			primaryNodes, _ = u.processNodes(u.nodes)
-			if primaryNodes.Len() == 0 {
+		attempts := 0
+		for attempts = 0; attempts < 100; attempts++ {
+			if count <= 0 {
 				break
 			}
 
-			for _, nde := range primaryNodes {
-				tickets[nde.Id] = append(tickets[nde.Id], &Ticket{
-					Node:   nde.Id,
-					Offset: offset,
-				})
-				count -= 1
+			for {
+				primaryNodes, _ = u.processNodes(u.nodes)
+				if primaryNodes.Len() == 0 {
+					break
+				}
 
-				nde.CpuUnitsRes += u.unit.Instance.Processors
-				nde.MemoryUnitsRes += u.unit.Instance.MemoryUnits()
-				break
+				for _, nde := range primaryNodes {
+					tickets[nde.Id] = append(tickets[nde.Id], &Ticket{
+						Node:   nde.Id,
+						Offset: offset,
+					})
+					count -= 1
+
+					nde.CpuUnitsRes += u.unit.Instance.Processors
+					nde.MemoryUnitsRes += u.unit.Instance.MemoryUnits()
+					break
+				}
+
+				if count <= 0 {
+					break
+				}
 			}
 
 			if count <= 0 {
 				break
 			}
-		}
 
-		for {
-			_, backupNodes = u.processNodes(u.nodes)
+			for {
+				_, backupNodes = u.processNodes(u.nodes)
+				if backupNodes.Len() == 0 {
+					break
+				}
 
-			if backupNodes.Len() == 0 {
-				break
-			}
+				for _, nde := range backupNodes {
+					tickets[nde.Id] = append(tickets[nde.Id], &Ticket{
+						Node:   nde.Id,
+						Offset: offset,
+					})
+					count -= 1
+					overscheduled += 1
 
-			for _, nde := range backupNodes {
-				tickets[nde.Id] = append(tickets[nde.Id], &Ticket{
-					Node:   nde.Id,
-					Offset: offset,
-				})
-				count -= 1
-				overscheduled += 1
+					nde.CpuUnitsRes += u.unit.Instance.Processors
+					nde.MemoryUnitsRes += u.unit.Instance.MemoryUnits()
+					break
+				}
 
-				nde.CpuUnitsRes += u.unit.Instance.Processors
-				nde.MemoryUnitsRes += u.unit.Instance.MemoryUnits()
-				break
-			}
-
-			if count <= 0 {
-				break
+				if count <= 0 {
+					break
+				}
 			}
 		}
 
 		if count != 0 {
 			err = &errortypes.ParseError{
-				errors.New("schedule: Count remaining after complex schedule"),
+				errors.Newf("schedule: Count %d remaining after %d "+
+					"complex schedule attempts", count, attempts),
 			}
 			return
 		}
 
-		count = u.unit.Count
+		count = u.count
 		if offset == 0 {
 			offset += OffsetInit
 		} else {
