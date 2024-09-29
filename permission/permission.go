@@ -1,7 +1,9 @@
 package permission
 
 import (
+	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -67,7 +69,15 @@ func InitVirt(virt *vm.VirtualMachine) (err error) {
 	}
 
 	for _, device := range virt.DriveDevices {
-		err = chown(virt, paths.GetDrivePath(device.Id))
+		drivePth := ""
+		if device.Type == vm.Lvm {
+			drivePth = filepath.Join("/dev/mapper",
+				fmt.Sprintf("%s-%s", device.VgName, device.LvName))
+		} else {
+			drivePth = paths.GetDrivePath(device.Id)
+		}
+
+		err = chown(virt, drivePth)
 		if err != nil {
 			return
 		}
