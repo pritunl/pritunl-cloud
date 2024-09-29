@@ -1,7 +1,6 @@
 package task
 
 import (
-	"github.com/sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
@@ -9,13 +8,14 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/storage"
+	"github.com/sirupsen/logrus"
 )
 
 var storageSync = &Task{
 	Name: "storage_renew",
 	Hours: []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
 		12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23},
-	Mins:       []int{0, 14, 29, 44, 59},
+	Minutes:    []int{0, 14, 29, 44, 59},
 	Handler:    storageSyncHandler,
 	RunOnStart: true,
 }

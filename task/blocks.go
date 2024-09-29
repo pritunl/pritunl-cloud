@@ -1,19 +1,19 @@
 package task
 
 import (
-	"github.com/sirupsen/logrus"
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/sirupsen/logrus"
 )
 
 var blocksCheck = &Task{
 	Name:    "blocks_check",
 	Hours:   []int{7},
-	Mins:    []int{30},
+	Minutes: []int{30},
 	Handler: blocksCheckHandler,
 }
 

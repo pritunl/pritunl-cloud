@@ -8,20 +8,20 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/sirupsen/logrus"
 )
 
 var cacheClean = &Task{
 	Name: "cache_clean",
 	Hours: []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
 		13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23},
-	Mins:    []int{0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55},
+	Minutes: []int{0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55},
 	Handler: cacheCleanHandler,
 }
 

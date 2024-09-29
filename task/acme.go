@@ -1,16 +1,16 @@
 package task
 
 import (
-	"github.com/sirupsen/logrus"
 	"github.com/pritunl/pritunl-cloud/acme"
 	"github.com/pritunl/pritunl-cloud/certificate"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/sirupsen/logrus"
 )
 
 var acmeRenew = &Task{
 	Name:    "acme_renew",
 	Hours:   []int{7},
-	Mins:    []int{45},
+	Minutes: []int{45},
 	Handler: acmeRenewHandler,
 }
 
