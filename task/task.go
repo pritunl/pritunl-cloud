@@ -6,6 +6,7 @@ import (
 
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -16,7 +17,8 @@ var (
 type Task struct {
 	Name       string
 	Hours      []int
-	Mins       []int
+	Minutes    []int
+	Seconds    time.Duration
 	Retry      bool
 	Handler    func(*database.Database) error
 	RunOnStart bool
@@ -25,7 +27,7 @@ type Task struct {
 func (t *Task) scheduled(hour, min int) bool {
 	for _, h := range t.Hours {
 		if h == hour {
-			for _, m := range t.Mins {
+			for _, m := range t.Minutes {
 				if m == min {
 					return true
 				}
@@ -39,9 +41,13 @@ func (t *Task) run(now time.Time) {
 	db := database.GetDatabase()
 	defer db.Close()
 
+	id := fmt.Sprintf("%s-%d", t.Name, now.Unix()-int64(now.Second()))
+	if t.Seconds != 0 {
+		id += fmt.Sprintf("-%d", GetBlock(now, t.Seconds))
+	}
+
 	job := &Job{
-		Id: fmt.Sprintf(
-			"%s-%d", t.Name, now.Unix()-int64(now.Second())),
+		Id:        id,
 		Name:      t.Name,
 		State:     Running,
 		Retry:     t.Retry,
@@ -79,19 +85,40 @@ func runScheduler() {
 	now := time.Now()
 	curHour := now.Hour()
 	curMin := now.Minute()
+	curSecBlocks := map[time.Duration]int{}
 
 	for _, task := range registry {
+		if task.Seconds != 0 {
+			curSecBlocks[task.Seconds] = GetBlock(now, task.Seconds)
+		}
+
 		if task.RunOnStart {
 			go task.run(now)
 		}
 	}
 
 	for {
-		time.Sleep(1 * time.Second)
+		time.Sleep(time.Duration(utils.RandInt(200, 3000)) * time.Millisecond)
 
 		now = time.Now()
 		hour := now.Hour()
 		min := now.Minute()
+
+		for block, curSecBlock := range curSecBlocks {
+			secBlock := GetBlock(now, block)
+
+			if curSecBlock != secBlock {
+				for _, task := range registry {
+					if task.Seconds == block && task.scheduled(hour, min) {
+						go func(task *Task, now time.Time) {
+							task.run(now)
+						}(task, now)
+					}
+				}
+			}
+
+			curSecBlocks[block] = secBlock
+		}
 
 		if curHour == hour && curMin == min {
 			continue
@@ -100,7 +127,7 @@ func runScheduler() {
 		curMin = min
 
 		for _, task := range registry {
-			if task.scheduled(hour, min) {
+			if task.Seconds == 0 && task.scheduled(hour, min) {
 				go func(task *Task, now time.Time) {
 					task.run(now)
 				}(task, now)
@@ -115,4 +142,9 @@ func register(task *Task) {
 
 func Init() {
 	go runScheduler()
+}
+
+func GetBlock(n time.Time, d time.Duration) int {
+	s := int(d.Seconds())
+	return (n.Second() / s) * s
 }
