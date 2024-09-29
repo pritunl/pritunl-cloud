@@ -10,6 +10,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/arp"
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/firewall"
@@ -44,6 +45,7 @@ type State struct {
 	pools          []*pool.Pool
 	disks          []*disk.Disk
 	units          []*service.Unit
+	deploymentIds  set.Set
 	virtsMap       map[primitive.ObjectID]*vm.VirtualMachine
 	instances      []*instance.Instance
 	instancesMap   map[primitive.ObjectID]*instance.Instance
@@ -99,6 +101,10 @@ func (s *State) Instances() []*instance.Instance {
 
 func (s *State) Units() []*service.Unit {
 	return s.units
+}
+
+func (s *State) DeploymentIds() set.Set {
+	return s.deploymentIds
 }
 
 func (s *State) NodeFirewall() []*firewall.Rule {
@@ -367,6 +373,12 @@ func (s *State) init() (err error) {
 		}
 	}
 	s.units = units
+
+	deploymentIds, err := deployment.GetAllIds(db)
+	if err != nil {
+		return
+	}
+	s.deploymentIds = deploymentIds
 
 	items, err := ioutil.ReadDir("/var/run")
 	if err != nil {
