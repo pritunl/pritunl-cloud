@@ -4,19 +4,26 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 )
 
 type Scheduler struct {
-	Id       primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Kind     string             `bson:"kind" json:"kind"`
-	Created  time.Time          `bson:"created" json:"created"`
-	Modified time.Time          `bson:"modified" json:"modified"`
-	Count    int                `bson:"int" json:"int"`
-	Consumed int                `bson:"consumed" json:"consumed"`
-	Tickets  TicketsStore       `bson:"tickets" json:"tickets"`
+	Id       Resource     `bson:"_id" json:"id"`
+	Kind     string       `bson:"kind" json:"kind"`
+	Created  time.Time    `bson:"created" json:"created"`
+	Modified time.Time    `bson:"modified" json:"modified"`
+	Count    int          `bson:"count" json:"count"`
+	Consumed int          `bson:"consumed" json:"consumed"`
+	Tickets  TicketsStore `bson:"tickets" json:"tickets"`
+}
+
+type Resource struct {
+	Service primitive.ObjectID `bson:"service,omitempty" json:"service"`
+	Unit    primitive.ObjectID `bson:"unit,omitempty" json:"unit"`
 }
 
 type Ticket struct {

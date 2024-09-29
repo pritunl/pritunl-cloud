@@ -1,7 +1,8 @@
 package scheduler
 
 const (
-	Instance = "instance"
+	UnitKind         = "unit"
+	InstanceUnitKind = "unit-instance"
 
 	OffsetCount = 3
 	OffsetInit  = 15
