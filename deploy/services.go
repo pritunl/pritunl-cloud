@@ -1,18 +1,93 @@
 package deploy
 
 import (
+	"time"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/scheduler"
 	"github.com/pritunl/pritunl-cloud/service"
 	"github.com/pritunl/pritunl-cloud/state"
+	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/sirupsen/logrus"
+)
+
+var (
+	servicesLock    = utils.NewMultiTimeoutLock(3 * time.Minute)
+	servicesLimiter = utils.NewLimiter(50)
 )
 
 type Services struct {
 	stat *state.State
+}
+
+func (s *Services) processSchedule(schd *scheduler.Scheduler) {
+	if !servicesLimiter.Acquire() {
+		return
+	}
+
+	acquired, lockId := instancesLock.LockOpen(schd.Id.Unit.Hex())
+	if !acquired {
+		return
+	}
+
+	go func() {
+		defer func() {
+			time.Sleep(1 * time.Second)
+			instancesLock.Unlock(schd.Id.Unit.Hex(), lockId)
+			servicesLimiter.Release()
+		}()
+
+		db := database.GetDatabase()
+		defer db.Close()
+
+		servc, err := service.Get(db, schd.Id.Service)
+		if err != nil {
+			return
+		}
+
+		unit := servc.GetUnit(schd.Id.Unit)
+		if unit == nil {
+			logrus.WithFields(logrus.Fields{
+				"service": schd.Id.Service.Hex(),
+				"unit":    schd.Id.Unit.Hex(),
+			}).Error("deploy: Service deploy unit lookup failed")
+			return
+		}
+
+		tickets := schd.Tickets[s.stat.Node().Id]
+		if tickets != nil && len(tickets) > 0 {
+			now := time.Now()
+			for _, ticket := range tickets {
+				start := schd.Created.Add(
+					time.Duration(ticket.Offset) * time.Second)
+				if now.After(start) {
+					exists, e := schd.Refresh(db)
+					if e != nil {
+						err = e
+						return
+					}
+
+					if !exists || schd.Consumed >= schd.Count {
+						return
+					}
+
+					err = s.DeployUnit(db, unit)
+					if err != nil {
+						return
+					}
+
+					err = schd.Consume(db)
+					if err != nil {
+						return
+					}
+				}
+			}
+		}
+	}()
 }
 
 func (s *Services) DeployUnit(db *database.Database,
@@ -101,23 +176,23 @@ func (s *Services) DeployUnit(db *database.Database,
 }
 
 func (s *Services) Deploy(db *database.Database) (err error) {
-	units := s.stat.Units()
-	deplyIds := s.stat.DeploymentIds()
+	schds := s.stat.Schedulers()
 
-	for _, unit := range units {
-		for _, deply := range unit.Deployments {
-			if !deplyIds.Contains(deply.Id) {
-				err = unit.RemoveDeployement(db, deply.Id)
-				if err != nil {
-					return
-				}
-			}
+	for _, schd := range schds {
+		if schd.Kind != scheduler.InstanceUnitKind {
+			continue
 		}
 
-		if len(unit.Deployments) < unit.Count {
-			err = s.DeployUnit(db, unit)
-			if err != nil {
-				return
+		tickets := schd.Tickets[s.stat.Node().Id]
+		if tickets != nil && len(tickets) > 0 {
+			now := time.Now()
+			for _, ticket := range tickets {
+				start := schd.Created.Add(
+					time.Duration(ticket.Offset) * time.Second)
+				if now.After(start) {
+					s.processSchedule(schd)
+					break
+				}
 			}
 		}
 	}
