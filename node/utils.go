@@ -151,6 +151,49 @@ func GetAllHypervisors(db *database.Database, query *bson.M) (
 	return
 }
 
+func GetAllPool(db *database.Database, poolId primitive.ObjectID) (
+	nodes []*Node, err error) {
+
+	coll := db.Nodes()
+	nodes = []*Node{}
+
+	cursor, err := coll.Find(
+		db,
+		&bson.M{
+			"pools": poolId,
+		},
+		&options.FindOptions{
+			Projection: &bson.D{
+				{"name", 1},
+			},
+		},
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		nde := &Node{}
+		err = cursor.Decode(nde)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		nodes = append(nodes, nde)
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetAllPaged(db *database.Database, query *bson.M,
 	page, pageCount int64) (nodes []*Node, count int64, err error) {
 
