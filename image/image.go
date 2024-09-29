@@ -43,7 +43,7 @@ func (i *Image) Validate(db *database.Database) (
 	return
 }
 
-func (i *Image) Json() {
+func (i *Image) Parse() {
 	if i.Name == "" {
 		i.Name = i.Key
 	}
@@ -229,6 +229,10 @@ func (i *Image) Json() {
 	}
 }
 
+func (i *Image) Json() {
+	i.Parse()
+}
+
 func (i *Image) Commit(db *database.Database) (err error) {
 	coll := db.Images()
 
@@ -303,6 +307,8 @@ func (i *Image) Upsert(db *database.Database) (err error) {
 
 func (i *Image) Sync(db *database.Database) (err error) {
 	coll := db.Images()
+
+	i.Parse()
 
 	if strings.HasPrefix(i.Key, "backup/") ||
 		strings.HasPrefix(i.Key, "snapshot/") {
