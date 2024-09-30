@@ -163,6 +163,11 @@ func (d *Database) Rokeys() (coll *Collection) {
 	return
 }
 
+func (d *Database) Schedulers() (coll *Collection) {
+	coll = d.getCollection("schedulers")
+	return
+}
+
 func (d *Database) Settings() (coll *Collection) {
 	coll = d.getCollection("settings")
 	return
