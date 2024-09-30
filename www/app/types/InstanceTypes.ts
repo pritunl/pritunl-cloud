@@ -60,7 +60,6 @@ export interface Instance {
 	spice_password?: string;
 	spice_port?: number;
 	gui?: boolean;
-	domain?: string;
 	no_public_address?: boolean;
 	no_public_address6?: boolean;
 	no_host_address?: boolean;
