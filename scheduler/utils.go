@@ -121,3 +121,31 @@ func Remove(db *database.Database, schdId Resource) (err error) {
 
 	return
 }
+
+func Schedule(db *database.Database, item interface{}) (err error) {
+	if unit, ok := item.(*service.Unit); ok {
+		exists, e := Exists(db, Resource{
+			Service: unit.Service.Id,
+			Unit:    unit.Id,
+		})
+		if e != nil {
+			err = e
+			return
+		}
+
+		if exists {
+			return
+		}
+
+		switch unit.Kind {
+		case service.InstanceKind:
+			schd := NewInstanceUnit(unit)
+			err = schd.Schedule(db)
+			if err != nil {
+				return
+			}
+		}
+	}
+
+	return
+}
