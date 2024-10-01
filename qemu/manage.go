@@ -93,14 +93,14 @@ func GetVmInfo(db *database.Database, vmId primitive.ObjectID,
 			return
 		}
 
-		_ = UpdateVmState(virt)
+		_ = UpdateVirtState(virt)
 	} else {
 		virt = &virtStore.Virt
 
 		if force || virt.State != vm.Running ||
 			time.Since(virtStore.Timestamp) > 6*time.Second {
 
-			_ = UpdateVmState(virt)
+			_ = UpdateVirtState(virt)
 		}
 	}
 
@@ -116,7 +116,7 @@ func GetVmInfo(db *database.Database, vmId primitive.ObjectID,
 					if e != nil {
 						if i < 9 {
 							time.Sleep(300 * time.Millisecond)
-							_ = UpdateVmState(virt)
+							_ = UpdateVirtState(virt)
 							continue
 						}
 
@@ -167,7 +167,7 @@ func GetVmInfo(db *database.Database, vmId primitive.ObjectID,
 					if e != nil {
 						if i < 9 {
 							time.Sleep(300 * time.Millisecond)
-							_ = UpdateVmState(virt)
+							_ = UpdateVirtState(virt)
 							continue
 						}
 
@@ -268,7 +268,7 @@ func GetVmInfo(db *database.Database, vmId primitive.ObjectID,
 	return
 }
 
-func updateVmState(virt *vm.VirtualMachine, retry bool) (err error) {
+func updateVirtState(virt *vm.VirtualMachine, retry bool) (err error) {
 	unitName := paths.GetUnitName(virt.Id)
 	state, timestamp, err := systemd.GetState(unitName)
 	if err != nil {
@@ -294,7 +294,7 @@ func updateVmState(virt *vm.VirtualMachine, retry bool) (err error) {
 	default:
 		if retry {
 			time.Sleep(2 * time.Second)
-			err = updateVmState(virt, false)
+			err = updateVirtState(virt, false)
 			return
 		} else {
 			logrus.WithFields(logrus.Fields{
@@ -313,8 +313,8 @@ func updateVmState(virt *vm.VirtualMachine, retry bool) (err error) {
 	return
 }
 
-func UpdateVmState(virt *vm.VirtualMachine) (err error) {
-	err = updateVmState(virt, true)
+func UpdateVirtState(virt *vm.VirtualMachine) (err error) {
+	err = updateVirtState(virt, true)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"instance_id": virt.Id.Hex(),
@@ -326,7 +326,7 @@ func UpdateVmState(virt *vm.VirtualMachine) (err error) {
 	return
 }
 
-func SetVmState(virt *vm.VirtualMachine, state string) {
+func SetVirtState(virt *vm.VirtualMachine, state string) {
 	virt.State = state
 	store.SetVirt(virt.Id, virt)
 }
@@ -382,7 +382,7 @@ func GetVms(db *database.Database,
 
 			if virt != nil {
 				inst := instMap[vmId]
-				if inst != nil && inst.VmState == vm.Running &&
+				if inst != nil && inst.VirtState == vm.Running &&
 					(virt.State == vm.Stopped || virt.State == vm.Failed) {
 
 					inst.State = instance.Cleanup
@@ -412,7 +412,7 @@ func Wait(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	unitName := paths.GetUnitName(virt.Id)
 
 	for i := 0; i < settings.Hypervisor.StartTimeout; i++ {
-		err = UpdateVmState(virt)
+		err = UpdateVirtState(virt)
 		if err != nil {
 			return
 		}

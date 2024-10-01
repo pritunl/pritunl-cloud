@@ -156,10 +156,10 @@ func (v *VirtualMachine) Commit(db *database.Database) (err error) {
 	}
 
 	data := bson.M{
-		"vm_state":     v.State,
-		"vm_timestamp": v.Timestamp,
-		"public_ips":   addrs,
-		"public_ips6":  addrs6,
+		"virt_state":     v.State,
+		"virt_timestamp": v.Timestamp,
+		"public_ips":     addrs,
+		"public_ips6":    addrs6,
 	}
 
 	if v.QemuVersion != "" {
@@ -233,11 +233,11 @@ func (v *VirtualMachine) CommitState(db *database.Database, state string) (
 	}
 
 	data := bson.M{
-		"state":        state,
-		"vm_state":     v.State,
-		"vm_timestamp": v.Timestamp,
-		"public_ips":   addrs,
-		"public_ips6":  addrs6,
+		"state":          state,
+		"virt_state":     v.State,
+		"virt_timestamp": v.Timestamp,
+		"public_ips":     addrs,
+		"public_ips6":    addrs6,
 	}
 
 	if v.QemuVersion != "" {

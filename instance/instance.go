@@ -57,8 +57,8 @@ type Instance struct {
 	Uptime              string             `bson:"-" json:"uptime"`
 	State               string             `bson:"state" json:"state"`
 	PublicMac           string             `bson:"-" json:"public_mac"`
-	VmState             string             `bson:"vm_state" json:"vm_state"`
-	VmTimestamp         time.Time          `bson:"vm_timestamp" json:"vm_timestamp"`
+	VirtState           string             `bson:"virt_state" json:"virt_state"`
+	VirtTimestamp       time.Time          `bson:"virt_timestamp" json:"virt_timestamp"`
 	Restart             bool               `bson:"restart" json:"restart"`
 	RestartBlockIp      bool               `bson:"restart_block_ip" json:"restart_block_ip"`
 	Uefi                bool               `bson:"uefi" json:"uefi"`
@@ -544,7 +544,7 @@ func (i *Instance) Json() {
 		if i.Restart || i.RestartBlockIp {
 			i.Status = "Restart Required"
 		} else {
-			switch i.VmState {
+			switch i.VirtState {
 			case vm.Starting:
 				i.Status = "Starting"
 				break
@@ -570,7 +570,7 @@ func (i *Instance) Json() {
 		}
 		break
 	case Cleanup:
-		switch i.VmState {
+		switch i.VirtState {
 		case vm.Starting:
 			i.Status = "Stopping"
 			break
@@ -595,7 +595,7 @@ func (i *Instance) Json() {
 		}
 		break
 	case Stop:
-		switch i.VmState {
+		switch i.VirtState {
 		case vm.Starting:
 			i.Status = "Stopping"
 			break
@@ -628,10 +628,10 @@ func (i *Instance) Json() {
 	}
 
 	i.PublicMac = vm.GetMacAddrExternal(i.Id, i.Vpc)
-	if i.VmTimestamp.IsZero() {
+	if i.VirtTimestamp.IsZero() {
 		i.Uptime = ""
 	} else {
-		i.Uptime = systemd.FormatUptime(i.VmTimestamp)
+		i.Uptime = systemd.FormatUptime(i.VirtTimestamp)
 	}
 
 	if i.IscsiDevices != nil {
@@ -642,8 +642,8 @@ func (i *Instance) Json() {
 }
 
 func (i *Instance) IsActive() bool {
-	return i.State == Start || i.VmState == vm.Running ||
-		i.VmState == vm.Starting || i.VmState == vm.Provisioning
+	return i.State == Start || i.VirtState == vm.Running ||
+		i.VirtState == vm.Starting || i.VirtState == vm.Provisioning
 }
 
 func (i *Instance) IsIpv6Only() bool {

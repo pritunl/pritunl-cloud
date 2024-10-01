@@ -18,8 +18,8 @@ export interface Instance {
 	status?: string;
 	uptime?: string;
 	state?: string;
-	vm_state?: string;
-	vm_timestamp?: string;
+	virt_state?: string;
+	virt_timestamp?: string;
 	uefi?: boolean;
 	secure_boot?: boolean;
 	tpm?: boolean;
@@ -148,7 +148,7 @@ export interface InstanceDispatch {
 	type: string;
 	data?: {
 		id?: string;
-		node?: string;
+		scope?: string;
 		instance?: Instance;
 		instances?: Instances;
 		page?: number;

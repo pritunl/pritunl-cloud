@@ -15,7 +15,7 @@ func UpdateVmUsb(virt *vm.VirtualMachine) (err error) {
 			if e != nil {
 				if i < 9 {
 					time.Sleep(300 * time.Millisecond)
-					_ = UpdateVmState(virt)
+					_ = UpdateVirtState(virt)
 					continue
 				}
 				err = e

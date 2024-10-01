@@ -103,7 +103,7 @@ func (c *Check) instances(db *database.Database) (err error) {
 	})
 
 	for _, inst := range insts {
-		if inst.VmState != vm.Running {
+		if inst.VirtState != vm.Running {
 			continue
 		}
 
