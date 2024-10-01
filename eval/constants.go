@@ -9,4 +9,5 @@ type GreaterEqual struct{}
 type If struct{}
 type And struct{}
 type Or struct{}
+type For struct{}
 type Then struct{}
