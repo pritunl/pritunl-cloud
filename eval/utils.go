@@ -5,7 +5,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/imds/server/errortypes"
 )
 
-func ValidateEval(statement string) (err error) {
+func Validate(statement string) (err error) {
 	if len(statement) == 0 {
 		err = &errortypes.ParseError{
 			errors.New("eval: Empty statement"),
