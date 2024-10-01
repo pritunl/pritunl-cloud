@@ -4,14 +4,18 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-
-	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/pritunl-cloud/errortypes"
 )
 
 type Data map[string]map[string]interface{}
 
-func parseRef(data Data, ref string, pos int) (val interface{}, err error) {
+type Parser struct {
+	statement string
+	parts     []string
+	partsLen  int
+	data      Data
+}
+
+func (p *Parser) parseRef(ref string, pos int) (val interface{}, err error) {
 	n := len(ref)
 	if n == 0 {
 		return
@@ -19,9 +23,13 @@ func parseRef(data Data, ref string, pos int) (val interface{}, err error) {
 
 	if ref[0] == '\'' {
 		if ref[n-1] != '\'' {
-			err = &errortypes.ParseError{
-				errors.Newf("eval: Invalid string (%d)", pos),
-			}
+			err = NewEvalError(
+				p.statement,
+				pos,
+				pos,
+				p.partsLen,
+				"eval: Invalid string {{.ErrIndex}}",
+			)
 			return
 		}
 		val = ref[1 : n-1]
@@ -62,6 +70,9 @@ func parseRef(data Data, ref string, pos int) (val interface{}, err error) {
 	case "OR":
 		val = Or{}
 		return
+	case "FOR":
+		val = For{}
+		return
 	case "THEN":
 		val = Then{}
 		return
@@ -89,25 +100,37 @@ func parseRef(data Data, ref string, pos int) (val interface{}, err error) {
 
 	split := strings.Split(ref, ".")
 	if len(split) != 2 {
-		err = &errortypes.ParseError{
-			errors.Newf("eval: Invalid reference (%d)", pos),
-		}
+		err = NewEvalError(
+			p.statement,
+			pos,
+			pos,
+			p.partsLen,
+			"eval: Invalid reference {{.ErrIndex}}",
+		)
 		return
 	}
 
-	group := data[split[0]]
+	group := p.data[split[0]]
 	if group == nil {
-		err = &errortypes.ParseError{
-			errors.Newf("eval: Invalid reference group (%d)", pos),
-		}
+		err = NewEvalError(
+			p.statement,
+			pos,
+			pos,
+			p.partsLen,
+			"eval: Invalid reference group {{.ErrIndex}}",
+		)
 		return
 	}
 
 	groupVal := group[split[1]]
 	if groupVal == nil {
-		err = &errortypes.ParseError{
-			errors.Newf("eval: Invalid reference group key (%d)", pos),
-		}
+		err = NewEvalError(
+			p.statement,
+			pos,
+			pos,
+			p.partsLen,
+			"eval: Invalid reference group key {{.ErrIndex}}",
+		)
 		return
 	} else {
 		val = groupVal
@@ -116,7 +139,7 @@ func parseRef(data Data, ref string, pos int) (val interface{}, err error) {
 	return
 }
 
-func parseComp(left, right, comp interface{}) bool {
+func (p *Parser) parseComp(left, right, comp interface{}) bool {
 	if reflect.TypeOf(left) != reflect.TypeOf(right) {
 		return false
 	}
@@ -197,30 +220,46 @@ func parseComp(left, right, comp interface{}) bool {
 	return false
 }
 
-func Eval(data Data, statement string) (resp string, err error) {
-	parts := strings.Fields(statement)
-	partsLen := len(parts)
-	if partsLen < 6 {
-		err = &errortypes.ParseError{
-			errors.Newf("eval: Statement missing parts"),
-		}
+func (p *Parser) Eval() (resp string, dur int, err error) {
+	p.parts = strings.Fields(p.statement)
+	p.partsLen = len(p.parts)
+	if p.partsLen < 6 {
+		err = NewEvalError(
+			p.statement,
+			0,
+			0,
+			p.partsLen,
+			"eval: Statement under min parts",
+		)
 		return
-	} else if partsLen > 30 {
-		err = &errortypes.ParseError{
-			errors.Newf("eval: Statement has too many parts"),
-		}
+	} else if p.partsLen > 30 {
+		err = NewEvalError(
+			p.statement,
+			0,
+			0,
+			p.partsLen,
+			"eval: Statement exceeds max parts",
+		)
 		return
-	} else if len(statement) > 1024 {
-		err = &errortypes.ParseError{
-			errors.Newf("eval: Statement too long"),
-		}
+	} else if len(p.statement) > 1024 {
+		err = NewEvalError(
+			p.statement,
+			0,
+			0,
+			p.partsLen,
+			"eval: Statement exceeds max length",
+		)
 		return
 	}
 
-	if parts[0] != "IF" {
-		err = &errortypes.ParseError{
-			errors.Newf("eval: Statement part (0) invalid"),
-		}
+	if p.parts[0] != "IF" {
+		err = NewEvalError(
+			p.statement,
+			0,
+			0,
+			p.partsLen,
+			"eval: Statement part {{.ErrorIndex}} invalid",
+		)
 		return
 	}
 
@@ -229,31 +268,35 @@ func Eval(data Data, statement string) (resp string, err error) {
 	results := []bool{}
 	final := false
 	for x := 0; x < 100; x++ {
-		if partsLen < i+4 {
-			err = &errortypes.ParseError{
-				errors.Newf("eval: Incomplete expression (%d)", i),
-			}
+		if p.partsLen < i+4 {
+			err = NewEvalError(
+				p.statement,
+				i,
+				i,
+				p.partsLen,
+				"eval: Incomplete expression",
+			)
 			return
 		}
 		index := i
 		i += 4
 
-		leftOp, e := parseRef(data, parts[index], index)
+		leftOp, e := p.parseRef(p.parts[index], index)
 		if e != nil {
 			err = e
 			return
 		}
-		comp, e := parseRef(data, parts[index+1], index+1)
+		comp, e := p.parseRef(p.parts[index+1], index+1)
 		if e != nil {
 			err = e
 			return
 		}
-		rightOp, e := parseRef(data, parts[index+2], index+2)
+		rightOp, e := p.parseRef(p.parts[index+2], index+2)
 		if e != nil {
 			err = e
 			return
 		}
-		next, e := parseRef(data, parts[index+3], index+3)
+		next, e := p.parseRef(p.parts[index+3], index+3)
 		if e != nil {
 			err = e
 			return
@@ -269,9 +312,13 @@ func Eval(data Data, statement string) (resp string, err error) {
 		case bool:
 			break
 		default:
-			err = &errortypes.ParseError{
-				errors.Newf("eval: Invalid left operator (%d)", index),
-			}
+			err = NewEvalError(
+				p.statement,
+				index,
+				index,
+				p.partsLen,
+				"eval: Invalid left operator {{.ErrIndex}}",
+			)
 			return
 		}
 
@@ -285,9 +332,13 @@ func Eval(data Data, statement string) (resp string, err error) {
 		case bool:
 			break
 		default:
-			err = &errortypes.ParseError{
-				errors.Newf("eval: Invalid right operator (%d)", index+2),
-			}
+			err = NewEvalError(
+				p.statement,
+				index,
+				index+2,
+				p.partsLen,
+				"eval: Invalid right operator {{.ErrIndex}}",
+			)
 			return
 		}
 
@@ -305,23 +356,82 @@ func Eval(data Data, statement string) (resp string, err error) {
 		case GreaterEqual:
 			break
 		default:
-			err = &errortypes.ParseError{
-				errors.Newf("eval: Invalid right operator (%d)", index+2),
-			}
+			err = NewEvalError(
+				p.statement,
+				index,
+				index+1,
+				p.partsLen,
+				"eval: Invalid comparison operator {{.ErrIndex}}",
+			)
 			return
 		}
 
-		result := parseComp(leftOp, rightOp, comp)
+		result := p.parseComp(leftOp, rightOp, comp)
 		results = append(results, result)
+
+		if _, ok := next.(For); ok {
+			if index+6 != p.partsLen-1 {
+				err = NewEvalError(
+					p.statement,
+					index,
+					index+6,
+					p.partsLen,
+					"eval: Expected %d length", index+6,
+				)
+				return
+			}
+
+			next, e = p.parseRef(p.parts[index+5], index+5)
+			if e != nil {
+				err = e
+				return
+			}
+
+			if _, ok := next.(Then); !ok {
+				err = NewEvalError(
+					p.statement,
+					index,
+					index+5,
+					p.partsLen,
+					"eval: Expected THAN at {{.ErrIndex}}",
+				)
+				return
+			}
+
+			forVal, e := p.parseRef(p.parts[index+4], index+4)
+			if e != nil {
+				err = e
+				return
+			}
+
+			if forInt, ok := forVal.(int); ok {
+				dur = forInt
+			} else {
+				err = NewEvalError(
+					p.statement,
+					index,
+					index+4,
+					p.partsLen,
+					"eval: Expected FOR value to be int",
+				)
+				return
+			}
+
+			index += 2
+		}
 
 		switch next.(type) {
 		case And:
 			if expr == nil {
 				expr = And{}
 			} else if _, ok := expr.(And); !ok {
-				err = &errortypes.ParseError{
-					errors.Newf("eval: Cannot mix OR AND (%d)", index+2),
-				}
+				err = NewEvalError(
+					p.statement,
+					index,
+					index+2,
+					p.partsLen,
+					"eval: Cannot mix OR with AND",
+				)
 				return
 			}
 			break
@@ -329,17 +439,25 @@ func Eval(data Data, statement string) (resp string, err error) {
 			if expr == nil {
 				expr = Or{}
 			} else if _, ok := expr.(Or); !ok {
-				err = &errortypes.ParseError{
-					errors.Newf("eval: Cannot mix OR AND (%d)", index+2),
-				}
+				err = NewEvalError(
+					p.statement,
+					index,
+					index+2,
+					p.partsLen,
+					"eval: Cannot mix OR with AND",
+				)
 				return
 			}
 			break
 		case Then:
-			if i+4 < partsLen-1 {
-				err = &errortypes.ParseError{
-					errors.Newf("eval: Missing result (%d)", index+4),
-				}
+			if index+4 != p.partsLen-1 {
+				err = NewEvalError(
+					p.statement,
+					index,
+					index,
+					p.partsLen,
+					"eval: Expected %d length", index+4,
+				)
 				return
 			}
 
@@ -365,7 +483,7 @@ func Eval(data Data, statement string) (resp string, err error) {
 			}
 
 			if final {
-				respInf, e := parseRef(data, parts[index+4], index+4)
+				respInf, e := p.parseRef(p.parts[index+4], index+4)
 				if e != nil {
 					err = e
 					return
@@ -373,23 +491,49 @@ func Eval(data Data, statement string) (resp string, err error) {
 				if respStr, ok := respInf.(string); ok {
 					resp = respStr
 				} else {
-					err = &errortypes.ParseError{
-						errors.Newf("eval: Result must be string (%d)",
-							index+4),
-					}
+					err = NewEvalError(
+						p.statement,
+						index,
+						index+4,
+						p.partsLen,
+						"eval: Result must be string",
+					)
+					return
 				}
 			}
 			return
 		default:
-			err = &errortypes.ParseError{
-				errors.Newf("eval: Invalid continuation (%d)", index+3),
-			}
+			err = NewEvalError(
+				p.statement,
+				index,
+				index+3,
+				p.partsLen,
+				"eval: Invalid continuation",
+			)
 			return
 		}
 	}
 
-	err = &errortypes.ParseError{
-		errors.Newf("eval: Infinite loop"),
+	err = NewEvalError(
+		p.statement,
+		0,
+		0,
+		p.partsLen,
+		"eval: Infinite loop",
+	)
+	return
+}
+
+func Eval(data Data, statement string) (resp string, dur int, err error) {
+	parsr := &Parser{
+		statement: statement,
+		data:      data,
 	}
+
+	resp, dur, err = parsr.Eval()
+	if err != nil {
+		return
+	}
+
 	return
 }
