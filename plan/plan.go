@@ -6,6 +6,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/eval"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -15,6 +16,12 @@ type Plan struct {
 	Comment      string             `bson:"comment" json:"comment"`
 	Organization primitive.ObjectID `bson:"organization,omitempty" json:"organization"`
 	Type         string             `bson:"type" json:"type"`
+	Statements   []*Statement       `bson:"statement" json:"statement"`
+}
+
+type Statement struct {
+	Id        primitive.ObjectID `bson:"id" json:"id"`
+	Statement string             `bson:"statement" json:"statement"`
 }
 
 func (p *Plan) Validate(db *database.Database) (
@@ -42,6 +49,27 @@ func (p *Plan) Validate(db *database.Database) (
 			Message: "Type invalid",
 		}
 		return
+	}
+
+	emptyData, err := GetEmtpyData()
+	if err != nil {
+		return
+	}
+
+	for _, statement := range p.Statements {
+		if statement.Id.IsZero() {
+			statement.Id = primitive.NewObjectID()
+		}
+
+		err = eval.Validate(statement.Statement)
+		if err != nil {
+			return
+		}
+
+		_, _, err = eval.Eval(emptyData, statement.Statement)
+		if err != nil {
+			return
+		}
 	}
 
 	return
