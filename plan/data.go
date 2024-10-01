@@ -9,20 +9,30 @@ import (
 )
 
 type Data struct {
+	Service  Service  `json:"service"`
+	Unit     Unit     `json:"unit"`
 	Instance Instance `json:"instance"`
 }
 
+type Service struct {
+	Name string `json:"name"`
+}
+
+type Unit struct {
+	Name  string `json:"name"`
+	Count int    `json:"count"`
+}
+
 type Instance struct {
+	Name       string `json:"name"`
 	State      string `json:"state"`
 	VirtState  string `json:"virt_state"`
 	Processors int    `json:"processors"`
 	Memory     int    `json:"memory"`
 }
 
-func GetEmtpyData() (data eval.Data, err error) {
-	dataStrct := Data{}
-
-	dataByt, err := json.Marshal(dataStrct)
+func (d *Data) Export() (data eval.Data, err error) {
+	dataByt, err := json.Marshal(d)
 	if err != nil {
 		err = &errortypes.ParseError{
 			errors.Wrap(err, "plan: Failed to marshal"),
@@ -37,6 +47,17 @@ func GetEmtpyData() (data eval.Data, err error) {
 		err = &errortypes.ParseError{
 			errors.Wrap(err, "plan: Failed to unmarshal"),
 		}
+		return
+	}
+
+	return
+}
+
+func GetEmtpyData() (data eval.Data, err error) {
+	dataStrct := Data{}
+
+	data, err = dataStrct.Export()
+	if err != nil {
 		return
 	}
 
