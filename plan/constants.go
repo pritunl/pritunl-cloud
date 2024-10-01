@@ -1,6 +1,19 @@
 package plan
 
+import (
+	"github.com/dropbox/godropbox/container/set"
+)
+
 const (
-	Destroy = "destroy"
+	Start   = "start"
+	Stop    = "stop"
 	Restart = "restart"
+	Destroy = "destroy"
+)
+
+var actions = set.NewSet(
+	Start,
+	Stop,
+	Restart,
+	Destroy,
 )
