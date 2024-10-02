@@ -220,8 +220,8 @@ export default class ServiceEditor extends React.Component<Props, State> {
 				}}
 				options={{
 					folding: false,
-					fontSize: 14,
-					fontFamily: "'Roboto Mono', Consolas, Menlo, 'DejaVu Sans Mono'",
+					fontSize: 12,
+					fontFamily: Theme.monospaceFont,
 					fontWeight: "500",
 					tabSize: 4,
 					detectIndentation: false,

@@ -7,6 +7,7 @@ import * as ZoneTypes from '../types/ZoneTypes';
 import * as NodeActions from '../actions/NodeActions';
 import * as BlockTypes from '../types/BlockTypes';
 import * as MiscUtils from '../utils/MiscUtils';
+import * as Theme from '../Theme';
 import Help from './Help';
 import PageInput from './PageInput';
 import PageInputButton from './PageInputButton';
@@ -68,8 +69,8 @@ const css = {
 	textarea: {
 		width: '100%',
 		resize: 'none',
-		fontSize: '12px',
-		fontFamily: '"Lucida Console", Monaco, monospace',
+		fontSize: Theme.monospaceSize,
+		fontFamily: Theme.monospaceFont,
 	} as React.CSSProperties,
 };
 

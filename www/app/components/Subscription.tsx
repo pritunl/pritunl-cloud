@@ -6,6 +6,7 @@ import SubscriptionStore from '../stores/SubscriptionStore';
 import * as Alert from '../Alert';
 import * as MiscUtils from '../utils/MiscUtils';
 import ConfirmButton from './ConfirmButton';
+import * as Theme from '../Theme';
 
 interface State {
 	subscription: SubscriptionTypes.SubscriptionRo;
@@ -46,7 +47,8 @@ const css = {
 		height: '130px',
 		margin: '0 0 10px 0',
 		resize: 'none',
-		fontFamily: '"Lucida Console", Monaco, monospace',
+		fontSize: Theme.monospaceSize,
+		fontFamily: Theme.monospaceFont,
 	} as React.CSSProperties,
 	button: {
 		width: '150px',

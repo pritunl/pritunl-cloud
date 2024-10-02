@@ -9,6 +9,9 @@ export interface Callback {
 	(): void;
 }
 
+export const monospaceSize = "12px"
+export const monospaceFont = "Consolas, Menlo, 'Roboto Mono', 'DejaVu Sans Mono'"
+
 let callbacks: Set<Callback> = new Set<Callback>();
 export let theme = 'dark';
 
