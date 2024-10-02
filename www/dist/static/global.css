@@ -18,8 +18,14 @@
 }
 
 body {
-  background-color: #f5f8fa;
   font-family: Roboto, Noto, sans-serif;
+}
+
+body {
+  background-color: #f6f7f9;
+}
+body.bp5-dark {
+  background-color: #252a31;
 }
 
 code {
@@ -37,10 +43,6 @@ h5 {
 
 .no-select {
   user-select: none;
-}
-
-body.bp5-dark {
-  background-color: #293742;
 }
 
 .logo-dark {
