@@ -10,6 +10,8 @@ import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
 import PageSelect from "./PageSelect";
 import PageTextArea from "./PageTextArea";
+import PlanStatement from "./PlanStatement";
+import PlanEditor from "./PlanEditor";
 import * as Constants from "../Constants";
 import * as SecretTypes from "../types/SecretTypes";
 import Help from "./Help";
@@ -61,6 +63,10 @@ const css = {
 	} as React.CSSProperties,
 	group: {
 		flex: 1,
+		minWidth: '280px',
+		margin: '0 10px',
+	} as React.CSSProperties,
+	wideGroup: {
 		minWidth: '280px',
 		margin: '0 10px',
 	} as React.CSSProperties,
@@ -128,6 +134,91 @@ export default class PlanDetailed extends React.Component<Props, State> {
 		this.setState({
 			...this.state,
 			changed: true,
+			plan: plan,
+		});
+	}
+
+	onAddStatement = (): void => {
+		let plan: PlanTypes.Plan;
+
+		if (this.state.changed) {
+			plan = {
+				...this.state.plan,
+			};
+		} else {
+			plan = {
+				...this.props.plan,
+			};
+		}
+
+		let statements = [
+			...(plan.statements || []),
+			{},
+		];
+
+		plan.statements = statements;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			plan: plan,
+		});
+	}
+
+	onChangeStatement(i: number, state: PlanTypes.Statement): void {
+		let plan: PlanTypes.Plan;
+
+		if (this.state.changed) {
+			plan = {
+				...this.state.plan,
+			};
+		} else {
+			plan = {
+				...this.props.plan,
+			};
+		}
+
+		let statements = [
+			...(plan.statements || []),
+		];
+
+		statements[i] = state;
+		plan.statements = statements;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			plan: plan,
+		});
+	}
+
+	onRemoveStatement(i: number): void {
+		let plan: PlanTypes.Plan;
+
+		if (this.state.changed) {
+			plan = {
+				...this.state.plan,
+			};
+		} else {
+			plan = {
+				...this.props.plan,
+			};
+		}
+
+		let statements = [
+			...(plan.statements || []),
+		];
+
+		statements.splice(i, 1);
+
+		plan.statements = statements;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
 			plan: plan,
 		});
 	}
@@ -211,6 +302,25 @@ export default class PlanDetailed extends React.Component<Props, State> {
 		if (!hasOrganizations) {
 			organizationsSelect.push(
 				<option key="null" value="">No Organizations</option>);
+		}
+
+		let statements: JSX.Element[] = [];
+		for (let i = 0; i < (plan.statements || []).length; i++) {
+			let index = i;
+
+			statements.push(
+				<PlanStatement
+					key={index}
+					disabled={this.state.disabled}
+					statement={plan.statements[index]}
+					onChange={(state: PlanTypes.Statement): void => {
+						this.onChangeStatement(index, state);
+					}}
+					onRemove={(): void => {
+						this.onRemoveStatement(index);
+					}}
+				/>,
+			);
 		}
 
 		return <td
@@ -305,17 +415,26 @@ export default class PlanDetailed extends React.Component<Props, State> {
 					>
 						{organizationsSelect}
 					</PageSelect>
-					<PageSelect
-						label="Type"
-						help="Plan type."
-						value={plan.type}
-						onChange={(val): void => {
-							this.set('type', val);
-						}}
+				</div>
+			</div>
+			<div className="layout horizontal wrap">
+				<div className="flex" style={css.wideGroup}>
+					<label style={css.itemsLabel}>
+						Statements
+						<Help
+							title="Statements"
+							content="Plan statements."
+						/>
+					</label>
+					{statements}
+					<button
+						className="bp5-button bp5-intent-success bp5-icon-add"
+						style={css.itemsAdd}
+						type="button"
+						onClick={this.onAddStatement}
 					>
-						<option value="rolling">Rolling</option>
-						<option value="recreate">Recreate</option>
-					</PageSelect>
+						Add Statement
+					</button>
 				</div>
 			</div>
 			<PageSave
