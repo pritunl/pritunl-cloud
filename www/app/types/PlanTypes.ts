@@ -11,6 +11,12 @@ export interface Plan {
 	comment?: string;
 	organization?: string;
 	type?: string;
+	statements?: Statement[];
+}
+
+export interface Statement {
+	id?: string;
+	statement?: string;
 }
 
 export interface Filter {
