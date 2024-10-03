@@ -138,91 +138,6 @@ export default class PlanDetailed extends React.Component<Props, State> {
 		});
 	}
 
-	onAddStatement = (): void => {
-		let plan: PlanTypes.Plan;
-
-		if (this.state.changed) {
-			plan = {
-				...this.state.plan,
-			};
-		} else {
-			plan = {
-				...this.props.plan,
-			};
-		}
-
-		let statements = [
-			...(plan.statements || []),
-			{},
-		];
-
-		plan.statements = statements;
-
-		this.setState({
-			...this.state,
-			changed: true,
-			message: '',
-			plan: plan,
-		});
-	}
-
-	onChangeStatement(i: number, state: PlanTypes.Statement): void {
-		let plan: PlanTypes.Plan;
-
-		if (this.state.changed) {
-			plan = {
-				...this.state.plan,
-			};
-		} else {
-			plan = {
-				...this.props.plan,
-			};
-		}
-
-		let statements = [
-			...(plan.statements || []),
-		];
-
-		statements[i] = state;
-		plan.statements = statements;
-
-		this.setState({
-			...this.state,
-			changed: true,
-			message: '',
-			plan: plan,
-		});
-	}
-
-	onRemoveStatement(i: number): void {
-		let plan: PlanTypes.Plan;
-
-		if (this.state.changed) {
-			plan = {
-				...this.state.plan,
-			};
-		} else {
-			plan = {
-				...this.props.plan,
-			};
-		}
-
-		let statements = [
-			...(plan.statements || []),
-		];
-
-		statements.splice(i, 1);
-
-		plan.statements = statements;
-
-		this.setState({
-			...this.state,
-			changed: true,
-			message: '',
-			plan: plan,
-		});
-	}
-
 	onSave = (): void => {
 		this.setState({
 			...this.state,
@@ -302,25 +217,6 @@ export default class PlanDetailed extends React.Component<Props, State> {
 		if (!hasOrganizations) {
 			organizationsSelect.push(
 				<option key="null" value="">No Organizations</option>);
-		}
-
-		let statements: JSX.Element[] = [];
-		for (let i = 0; i < (plan.statements || []).length; i++) {
-			let index = i;
-
-			statements.push(
-				<PlanStatement
-					key={index}
-					disabled={this.state.disabled}
-					statement={plan.statements[index]}
-					onChange={(state: PlanTypes.Statement): void => {
-						this.onChangeStatement(index, state);
-					}}
-					onRemove={(): void => {
-						this.onRemoveStatement(index);
-					}}
-				/>,
-			);
 		}
 
 		return <td
@@ -426,15 +322,33 @@ export default class PlanDetailed extends React.Component<Props, State> {
 							content="Plan statements."
 						/>
 					</label>
-					{statements}
-					<button
-						className="bp5-button bp5-intent-success bp5-icon-add"
-						style={css.itemsAdd}
-						type="button"
-						onClick={this.onAddStatement}
-					>
-						Add Statement
-					</button>
+					<PlanEditor
+						disabled={this.state.disabled}
+						statements={plan.statements}
+						onChange={(statements) => {
+							let plan: PlanTypes.Plan;
+
+							if (this.state.changed) {
+								plan = {
+									...this.state.plan,
+								};
+							} else {
+								plan = {
+									...this.props.plan,
+								};
+							}
+
+							plan.statements = statements;
+
+							this.setState({
+								...this.state,
+								changed: true,
+								message: '',
+								plan: plan,
+							});
+
+						}}
+					/>
 				</div>
 			</div>
 			<PageSave
