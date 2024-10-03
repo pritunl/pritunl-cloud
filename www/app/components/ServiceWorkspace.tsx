@@ -1,11 +1,13 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
 import * as Blueprint from '@blueprintjs/core';
+import * as Icons from '@blueprintjs/icons';
 import * as Constants from '../Constants';
 import * as ServiceTypes from '../types/ServiceTypes';
 import * as ServiceActions from '../actions/ServiceActions';
 import * as OrganizationTypes from "../types/OrganizationTypes";
 import * as MiscUtils from '../utils/MiscUtils';
+import * as Theme from '../Theme';
 import PageInput from './PageInput';
 import PageSelect from './PageSelect';
 import PageInfo from './PageInfo';
@@ -50,9 +52,6 @@ const css = {
 	} as React.CSSProperties,
 	documentIcon: {
 		margin: "2px 0 0 0",
-		fontSize: "12px",
-	} as React.CSSProperties,
-	editButtonIcon: {
 		fontSize: "12px",
 	} as React.CSSProperties,
 	button: {
@@ -115,6 +114,13 @@ const css = {
 	} as React.CSSProperties,
 	rules: {
 		marginBottom: '15px',
+	} as React.CSSProperties,
+	settingsOpen: {
+		marginLeft: '10px',
+	} as React.CSSProperties,
+	settingsMenu: {
+		maxHeight: '400px',
+		overflowY: "scroll",
 	} as React.CSSProperties,
 };
 
@@ -192,9 +198,42 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 					onClick={(): void => {
 						console.log("test")
 					}}
-				><Blueprint.Icon icon="cog" style={css.editButtonIcon}/></button>
+				><Blueprint.Icon icon={<Icons.Cog size={12}/>}/></button>
 			</Blueprint.Tab>)
 		}
+
+		let curEditorTheme = Theme.getEditorTheme()
+		let fontMenuItems: JSX.Element[] = []
+		for (let editorTheme in Theme.editorThemeNames) {
+			let className = ""
+			let themeName = Theme.editorThemeNames[editorTheme]
+
+			if (editorTheme === curEditorTheme) {
+				className = "bp5-intent-primary"
+			}
+
+			let menuItem = <Blueprint.MenuItem
+				className={className}
+				icon={<Icons.Font/>}
+				onClick={(): void => {
+					Theme.setEditorTheme(editorTheme)
+					Theme.save()
+					this.setState({
+						...this.state,
+					})
+				}}
+				text={themeName}
+			/>
+			fontMenuItems.push(menuItem)
+		}
+
+		let settingsMenu = <Blueprint.Menu style={css.settingsMenu}>
+			<li className="bp5-menu-header">
+				<h6 className="bp5-heading">Editor Theme</h6>
+			</li>
+			<Blueprint.MenuDivider/>
+			{fontMenuItems}
+		</Blueprint.Menu>
 
 		return <div
 			style={css.card}
@@ -235,6 +274,19 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 							})
 						}}
 					/>
+					<Blueprint.Popover
+						content={settingsMenu}
+						placement="bottom"
+					>
+						<Blueprint.Button
+							alignText="left"
+							icon={<Icons.Application/>}
+							rightIcon={<Icons.CaretDown/>}
+							text="Settings"
+							style={css.settingsOpen}
+							hidden={this.state.readOnly}
+						/>
+					</Blueprint.Popover>
 				</Blueprint.NavbarGroup>
 			</Blueprint.Navbar>
 			<ServiceEditor
