@@ -9,10 +9,13 @@ export interface Service {
 	name?: string;
 	comment?: string;
 	organization?: string;
-	type?: string;
 	delete_protection?: boolean;
-	zone?: string;
-	roles?: string[];
+	units?: Unit[];
+}
+
+export interface Unit {
+	id?: string;
+	name?: string;
 	spec?: string;
 }
 
