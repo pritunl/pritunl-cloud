@@ -15,8 +15,7 @@ type Plan struct {
 	Name         string             `bson:"name" json:"name"`
 	Comment      string             `bson:"comment" json:"comment"`
 	Organization primitive.ObjectID `bson:"organization,omitempty" json:"organization"`
-	Type         string             `bson:"type" json:"type"`
-	Statements   []*Statement       `bson:"statement" json:"statement"`
+	Statements   []*Statement       `bson:"statements" json:"statements"`
 }
 
 type Statement struct {
@@ -37,23 +36,13 @@ func (p *Plan) Validate(db *database.Database) (
 		return
 	}
 
-	switch p.Type {
-	case Rolling, "":
-		p.Type = Rolling
-		break
-	case Recreate:
-		break
-	default:
-		errData = &errortypes.ErrorData{
-			Error:   "type_invalid",
-			Message: "Type invalid",
-		}
-		return
-	}
-
 	emptyData, err := GetEmtpyData()
 	if err != nil {
 		return
+	}
+
+	if p.Statements == nil {
+		p.Statements = []*Statement{}
 	}
 
 	for _, statement := range p.Statements {
@@ -71,6 +60,39 @@ func (p *Plan) Validate(db *database.Database) (
 			return
 		}
 	}
+
+	return
+}
+
+func (p *Plan) UpdateStatements(inStatements []*Statement) (err error) {
+	curStatements := map[primitive.ObjectID]*Statement{}
+	for _, statement := range p.Statements {
+		curStatements[statement.Id] = statement
+	}
+
+	newStatements := []*Statement{}
+	for _, statement := range inStatements {
+		curStatement := curStatements[statement.Id]
+		if curStatement != nil {
+			if statement.Statement == curStatement.Statement {
+				newStatements = append(newStatements, curStatement)
+			} else {
+				newStatement := &Statement{
+					Id:        primitive.NewObjectID(),
+					Statement: statement.Statement,
+				}
+				newStatements = append(newStatements, newStatement)
+			}
+		} else {
+			newStatement := &Statement{
+				Id:        primitive.NewObjectID(),
+				Statement: statement.Statement,
+			}
+			newStatements = append(newStatements, newStatement)
+		}
+	}
+
+	p.Statements = newStatements
 
 	return
 }
