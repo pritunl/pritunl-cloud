@@ -23,8 +23,7 @@ export interface Record {
 	sub_domain?: string;
 	type?: string;
 	value?: string;
-	update?: boolean;
-	delete?: boolean;
+	operation?: string;
 }
 
 export interface Filter {
