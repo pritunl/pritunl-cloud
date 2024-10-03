@@ -1,24 +1,159 @@
 package deployment
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
-	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type Deployment struct {
-	Id       primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Service  primitive.ObjectID `bson:"service" json:"service"`
-	Unit     primitive.ObjectID `bson:"unit" json:"unit"`
-	Kind     string             `bson:"kind" json:"kind"`
-	State    string             `bson:"state" json:"state"`
-	Node     primitive.ObjectID `bson:"node,omitempty" json:"node"`
-	Instance primitive.ObjectID `bson:"instance,omitempty" json:"instance"`
+	Id       primitive.ObjectID             `bson:"_id,omitempty" json:"id"`
+	Service  primitive.ObjectID             `bson:"service" json:"service"`
+	Unit     primitive.ObjectID             `bson:"unit" json:"unit"`
+	Kind     string                         `bson:"kind" json:"kind"`
+	State    string                         `bson:"state" json:"state"`
+	Node     primitive.ObjectID             `bson:"node,omitempty" json:"node"`
+	Instance primitive.ObjectID             `bson:"instance,omitempty" json:"instance"`
+	Actions  map[primitive.ObjectID]*Action `bson:"actions,omitempty", json:"actions"`
 }
 
-func (d *Deployment) Validate(db *database.Database) (
-	errData *errortypes.ErrorData, err error) {
+type Action struct {
+	Statement primitive.ObjectID `bson:"statement" json:"statement"`
+	Since     time.Time          `bson:"since" json:"since"`
+	Executed  time.Time          `bson:"executed" json:"executed"`
+	Action    string             `bson:"action" json:"action"`
+}
+
+func (d *Deployment) Validate(db *database.Database) (err error) {
+	if d.Actions == nil {
+		d.Actions = map[primitive.ObjectID]*Action{}
+	}
+
+	return
+}
+
+func (d *Deployment) HandleStatement(db *database.Database,
+	statementId primitive.ObjectID, thresholdSec int, action string) (
+	newAction string, err error) {
+
+	thresholdSec = utils.Max(ThresholdMin, thresholdSec)
+	threshold := time.Duration(thresholdSec) * time.Second
+
+	if action != "" {
+		curAction := d.Actions[statementId]
+		if curAction == nil {
+			err = d.CommitAction(db, &Action{
+				Statement: statementId,
+				Since:     time.Now(),
+				Action:    action,
+			})
+			if err != nil {
+				return
+			}
+
+			newAction = ""
+			return
+		} else if curAction.Action != action {
+			if !curAction.Executed.IsZero() && time.Since(
+				curAction.Executed) < ActionLimit {
+
+				newAction = ""
+				return
+			}
+
+			curAction.Since = time.Now()
+			curAction.Executed = time.Time{}
+			curAction.Action = action
+
+			err = d.CommitAction(db, curAction)
+			if err != nil {
+				return
+			}
+
+			newAction = ""
+			return
+		} else if time.Since(curAction.Since) >= threshold {
+			if !curAction.Executed.IsZero() && time.Since(
+				curAction.Executed) < ActionLimit {
+
+				newAction = ""
+				return
+			}
+
+			curAction.Executed = time.Now()
+
+			err = d.CommitAction(db, curAction)
+			if err != nil {
+				return
+			}
+
+			newAction = action
+			return
+		}
+	} else {
+		curAction := d.Actions[statementId]
+		if curAction != nil {
+			if !curAction.Executed.IsZero() && time.Since(
+				curAction.Executed) < ActionLimit {
+
+				newAction = ""
+				return
+			}
+
+			err = d.RemoveAction(db, curAction)
+			if err != nil {
+				return
+			}
+		}
+
+		newAction = ""
+		return
+	}
+
+	return
+}
+
+func (d *Deployment) CommitAction(db *database.Database,
+	action *Action) (err error) {
+
+	coll := db.Deployments()
+
+	_, err = coll.UpdateOne(db, bson.M{
+		"_id": d.Id,
+	}, bson.M{
+		"$set": bson.M{
+			fmt.Sprintf("actions.%s", action.Statement.Hex()): action,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func (d *Deployment) RemoveAction(db *database.Database,
+	action *Action) (err error) {
+
+	coll := db.Deployments()
+
+	_, err = coll.UpdateOne(db, bson.M{
+		"_id": d.Id,
+	}, bson.M{
+		"$unset": bson.M{
+			fmt.Sprintf("actions.%s", action.Statement.Hex()): "",
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
 
 	return
 }
