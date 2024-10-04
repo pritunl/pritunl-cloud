@@ -162,7 +162,7 @@ func ApplyState(namespace string, oldState, newState set.Set) (
 			},
 			"ip", "netns", "exec", namespace,
 			"ip", "neighbor",
-			"add", recrd.Ip,
+			"replace", recrd.Ip,
 			"lladdr", recrd.Mac,
 			"dev", "br0",
 			"nud", "permanent",
