@@ -36,6 +36,8 @@ type hypervisor struct {
 	RefreshRate         int    `bson:"refresh_rate" default:"90"`
 	SplashTime          int    `bson:"splash_time" default:"60"`
 	NoIpv6PingInit      bool   `bson:"no_ipv6_ping_init"`
+	ImdsAddress         string `bson:"imds_address" default:"169.254.169.254/16"`
+	ImdsPort            int    `bson:"imds_port" default:"80"`
 	DnsServerPrimary    string `bson:"dns_server_primary" default:"8.8.8.8"`
 	DnsServerSecondary  string `bson:"dns_server_secondary" default:"8.8.4.4"`
 	DnsServerPrimary6   string `bson:"dns_server_primary6" default:"2001:4860:4860::8888"`
