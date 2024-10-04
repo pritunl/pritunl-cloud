@@ -9,7 +9,9 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/arp"
 	"github.com/pritunl/pritunl-cloud/block"
+	"github.com/pritunl/pritunl-cloud/certificate"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/firewall"
@@ -18,6 +20,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/pool"
 	"github.com/pritunl/pritunl-cloud/qemu"
 	"github.com/pritunl/pritunl-cloud/scheduler"
+	"github.com/pritunl/pritunl-cloud/service"
 	"github.com/pritunl/pritunl-cloud/shape"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
@@ -27,34 +30,38 @@ import (
 )
 
 type State struct {
-	nodeSelf       *node.Node
-	nodes          []*node.Node
-	nodeDatacenter primitive.ObjectID
-	nodeZone       *zone.Zone
-	nodeHostBlock  *block.Block
-	nodeShapes     []*shape.Shape
-	nodeShapesId   set.Set
-	vxlan          bool
-	zoneMap        map[primitive.ObjectID]*zone.Zone
-	namespaces     []string
-	interfaces     []string
-	interfacesSet  set.Set
-	nodeFirewall   []*firewall.Rule
-	firewalls      map[string][]*firewall.Rule
-	pools          []*pool.Pool
-	disks          []*disk.Disk
-	schedulers     []*scheduler.Scheduler
-	virtsMap       map[primitive.ObjectID]*vm.VirtualMachine
-	instances      []*instance.Instance
-	instancesMap   map[primitive.ObjectID]*instance.Instance
-	instanceDisks  map[primitive.ObjectID][]*disk.Disk
-	vpcs           []*vpc.Vpc
-	vpcsMap        map[primitive.ObjectID]*vpc.Vpc
-	vpcIpsMap      map[primitive.ObjectID][]*vpc.VpcIp
-	arpRecords     map[string]set.Set
-	addInstances   set.Set
-	remInstances   set.Set
-	running        []string
+	nodeSelf         *node.Node
+	nodes            []*node.Node
+	nodeDatacenter   primitive.ObjectID
+	nodeZone         *zone.Zone
+	nodeHostBlock    *block.Block
+	nodeShapes       []*shape.Shape
+	nodeShapesId     set.Set
+	vxlan            bool
+	zoneMap          map[primitive.ObjectID]*zone.Zone
+	namespaces       []string
+	interfaces       []string
+	interfacesSet    set.Set
+	nodeFirewall     []*firewall.Rule
+	firewalls        map[string][]*firewall.Rule
+	pools            []*pool.Pool
+	disks            []*disk.Disk
+	schedulers       []*scheduler.Scheduler
+	deploymentsMap   map[primitive.ObjectID]*deployment.Deployment
+	servicesMap      map[primitive.ObjectID]*service.Service
+	servicesUnitsMap map[primitive.ObjectID]*service.Unit
+	servicesCertsMap map[primitive.ObjectID]*certificate.Certificate
+	virtsMap         map[primitive.ObjectID]*vm.VirtualMachine
+	instances        []*instance.Instance
+	instancesMap     map[primitive.ObjectID]*instance.Instance
+	instanceDisks    map[primitive.ObjectID][]*disk.Disk
+	vpcs             []*vpc.Vpc
+	vpcsMap          map[primitive.ObjectID]*vpc.Vpc
+	vpcIpsMap        map[primitive.ObjectID][]*vpc.VpcIp
+	arpRecords       map[string]set.Set
+	addInstances     set.Set
+	remInstances     set.Set
+	running          []string
 }
 
 func (s *State) Node() *node.Node {
@@ -119,6 +126,24 @@ func (s *State) Disks() []*disk.Disk {
 
 func (s *State) GetInstaceDisks(instId primitive.ObjectID) []*disk.Disk {
 	return s.instanceDisks[instId]
+}
+
+func (s *State) Deployment(deplyId primitive.ObjectID) *deployment.Deployment {
+	return s.deploymentsMap[deplyId]
+}
+
+func (s *State) Service(srvcId primitive.ObjectID) *service.Service {
+	return s.servicesMap[srvcId]
+}
+
+func (s *State) Unit(unitId primitive.ObjectID) *service.Unit {
+	return s.servicesUnitsMap[unitId]
+}
+
+func (s *State) ServiceCert(
+	certId primitive.ObjectID) *certificate.Certificate {
+
+	return s.servicesCertsMap[certId]
 }
 
 func (s *State) Vpc(vpcId primitive.ObjectID) *vpc.Vpc {
@@ -350,6 +375,82 @@ func (s *State) init() (err error) {
 	s.vpcIpsMap = vpcIpsMap
 
 	s.arpRecords = arp.BuildState(s.instances, s.vpcIpsMap)
+
+	deployments, err := deployment.GetAll(db, &bson.M{
+		"node": node.Self.Id,
+	})
+	if err != nil {
+		return
+	}
+
+	deploymentsMap := map[primitive.ObjectID]*deployment.Deployment{}
+	serviceIds := []primitive.ObjectID{}
+	unitIds := set.NewSet()
+	serviceIdsSet := set.NewSet()
+	for _, deply := range deployments {
+		deploymentsMap[deply.Id] = deply
+		serviceIdsSet.Add(deply.Service)
+		unitIds.Add(deply.Unit)
+	}
+	s.deploymentsMap = deploymentsMap
+
+	for serviceId := range serviceIdsSet.Iter() {
+		serviceIds = append(serviceIds, serviceId.(primitive.ObjectID))
+	}
+
+	services, err := service.GetAll(db, &bson.M{
+		"_id": &bson.M{
+			"$in": serviceIds,
+		},
+	})
+	if err != nil {
+		return
+	}
+
+	serviceCertsSet := set.NewSet()
+	servicesMap := map[primitive.ObjectID]*service.Service{}
+	servicesUnitsMap := map[primitive.ObjectID]*service.Unit{}
+	for _, srvc := range services {
+		servicesMap[srvc.Id] = srvc
+
+		for _, unit := range srvc.Units {
+			if !unitIds.Contains(unit.Id) ||
+				unit.Kind != service.InstanceKind ||
+				unit.Instance == nil {
+
+				continue
+			}
+			servicesUnitsMap[unit.Id] = unit
+
+			if unit.Instance.Certificates != nil {
+				for _, certId := range unit.Instance.Certificates {
+					serviceCertsSet.Add(certId)
+				}
+			}
+		}
+	}
+	s.servicesMap = servicesMap
+	s.servicesUnitsMap = servicesUnitsMap
+
+	serviceCertIds := []primitive.ObjectID{}
+	for certId := range serviceCertsSet.Iter() {
+		serviceCertIds = append(serviceCertIds, certId.(primitive.ObjectID))
+	}
+
+	servicesCertsMap := map[primitive.ObjectID]*certificate.Certificate{}
+	serviceCerts, err := certificate.GetAll(db, &bson.M{
+		"_id": &bson.M{
+			"$in": serviceCertIds,
+		},
+	})
+	if err != nil {
+		return
+	}
+
+	for _, serviceCert := range serviceCerts {
+		servicesCertsMap[serviceCert.Id] = serviceCert
+	}
+	s.servicesCertsMap = servicesCertsMap
 
 	schedulers, err := scheduler.GetAll(db)
 	if err != nil {
