@@ -325,6 +325,22 @@ func (u *Unit) Parse(db *database.Database, srvc *Service) (
 		}
 	}
 
+	if dataYaml.Certificates != nil {
+		for _, cert := range dataYaml.Certificates {
+			kind, e := resources.Find(db, cert)
+			if e != nil {
+				err = e
+				return
+			}
+			if kind == "certificate" && resources.Certificate != nil {
+				data.Certificates = append(
+					data.Certificates,
+					resources.Certificate.Id,
+				)
+			}
+		}
+	}
+
 	if data.Node.IsZero() && data.Shape.IsZero() {
 		errData = &errortypes.ErrorData{
 			Error:   "unit_image_missing",
