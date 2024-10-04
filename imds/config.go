@@ -10,6 +10,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/permission"
+	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 )
 
@@ -20,6 +21,12 @@ type Config struct {
 
 func (c *Config) Write(virt *vm.VirtualMachine) (err error) {
 	pth := paths.GetImdsConfPath(virt.Id)
+
+	imdsDir := paths.GetImdsPath()
+	err = utils.ExistsMkdir(imdsDir, 0755)
+	if err != nil {
+		return
+	}
 
 	data, err := json.MarshalIndent(c, "", "\t")
 	if err != nil {
@@ -40,6 +47,17 @@ func (c *Config) Write(virt *vm.VirtualMachine) (err error) {
 	err = permission.InitImds(virt)
 	if err != nil {
 		return
+	}
+
+	return
+}
+
+func BuildConfig(inst *instance.Instance, virt *vm.VirtualMachine,
+	certs []*certificate.Certificate) (conf *Config, err error) {
+
+	conf = &Config{
+		Instance:     inst,
+		Certificates: certs,
 	}
 
 	return
