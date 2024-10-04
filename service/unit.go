@@ -10,6 +10,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/shape"
 	"gopkg.in/yaml.v3"
 )
 
@@ -18,6 +19,7 @@ var yamlSpec = regexp.MustCompile("(?s)```yaml(.*?)```")
 type Unit struct {
 	Service     *Service           `bson:"-" json:"-"`
 	Id          primitive.ObjectID `bson:"id" json:"id"`
+	Parent      primitive.ObjectID `bson:"parent" json:"parent"`
 	Name        string             `bson:"name" json:"name"`
 	Kind        string             `bson:"kind" json:"kind"`
 	Count       int                `bson:"count" json:"count"`
@@ -36,33 +38,50 @@ type Deployment struct {
 	Id primitive.ObjectID `bson:"id" json:"id"`
 }
 
+// TODO Add firewalls
+// TODO Add secrets
+// TODO Add certificates
+
+// firewall:
+//   - open
+//      port: 22
+//      protocol: tcp
+
 type Instance struct {
-	Zone       primitive.ObjectID `bson:"zone" json:"zone"`
-	Node       primitive.ObjectID `bson:"node,omitempty" json:"node"`
-	Shape      primitive.ObjectID `bson:"shape,omitempty" json:"shape"`
-	Vpc        primitive.ObjectID `bson:"vpc" json:"vpc"`
-	Subnet     primitive.ObjectID `bson:"subnet" json:"subnet"`
-	Roles      []string           `bson:"roles" json:"roles"`
-	Processors int                `bson:"processors" json:"processors"`
-	Memory     int                `bson:"memory" json:"memory"`
-	Image      primitive.ObjectID `bson:"image" json:"image"`
-	DiskSize   int                `bson:"disk_size" json:"disk_size"`
+	Plan         primitive.ObjectID   `bson:"plan,omitempty" json:"shape"`
+	Zone         primitive.ObjectID   `bson:"zone" json:"zone"`
+	Node         primitive.ObjectID   `bson:"node,omitempty" json:"node"`
+	Shape        primitive.ObjectID   `bson:"shape,omitempty" json:"shape"`
+	Vpc          primitive.ObjectID   `bson:"vpc" json:"vpc"`
+	Subnet       primitive.ObjectID   `bson:"subnet" json:"subnet"`
+	Roles        []string             `bson:"roles" json:"roles"`
+	Processors   int                  `bson:"processors" json:"processors"`
+	Memory       int                  `bson:"memory" json:"memory"`
+	Image        primitive.ObjectID   `bson:"image" json:"image"`
+	DiskSize     int                  `bson:"disk_size" json:"disk_size"`
+	Certificates []primitive.ObjectID `bson:"certificates" json:"certificates"`
+}
+
+func (i *Instance) MemoryUnits() float64 {
+	return float64(i.Memory) / float64(1024)
 }
 
 type InstanceYaml struct {
-	Name       string   `yaml:"name"`
-	Kind       string   `yaml:"kind"`
-	Count      int      `yaml:"count"`
-	Zone       string   `yaml:"zone"`
-	Node       string   `yaml:"node,omitempty"`
-	Shape      string   `yaml:"shape,omitempty"`
-	Vpc        string   `yaml:"vpc"`
-	Subnet     string   `yaml:"subnet"`
-	Roles      []string `yaml:"roles"`
-	Processors int      `yaml:"processors"`
-	Memory     int      `yaml:"memory"`
-	Image      string   `yaml:"image"`
-	DiskSize   int      `yaml:"disk_size"`
+	Name         string   `yaml:"name"`
+	Kind         string   `yaml:"kind"`
+	Count        int      `yaml:"count"`
+	Plan         string   `yaml:"plan"`
+	Zone         string   `yaml:"zone"`
+	Node         string   `yaml:"node,omitempty"`
+	Shape        string   `yaml:"shape,omitempty"`
+	Vpc          string   `yaml:"vpc"`
+	Subnet       string   `yaml:"subnet"`
+	Roles        []string `yaml:"roles"`
+	Processors   int      `yaml:"processors"`
+	Memory       int      `yaml:"memory"`
+	Image        string   `yaml:"image"`
+	Certificates []string `yaml:"certificates"`
+	DiskSize     int      `yaml:"disk_size"`
 }
 
 func (u *Unit) Reserve(db *database.Database, deployId primitive.ObjectID) (
@@ -189,8 +208,11 @@ func (u *Unit) Parse(db *database.Database, srvc *Service) (
 		return
 	}
 
+	spec = strings.TrimSpace(spec)
+
 	data := &Instance{}
 	dataYaml := &InstanceYaml{}
+	var shpe *shape.Shape
 
 	err = yaml.Unmarshal([]byte(spec), dataYaml)
 	if err != nil {
@@ -264,6 +286,7 @@ func (u *Unit) Parse(db *database.Database, srvc *Service) (
 			return
 		}
 		if kind == "shape" && resources.Shape != nil {
+			shpe = resources.Shape
 			data.Shape = resources.Shape.Id
 		}
 	}
@@ -349,9 +372,23 @@ func (u *Unit) Parse(db *database.Database, srvc *Service) (
 		return
 	}
 
+	if shpe != nil {
+		data.Processors = shpe.Processors
+		data.Memory = shpe.Memory
+		if shpe.Flexible {
+			if dataYaml.Processors != 0 {
+				data.Processors = dataYaml.Processors
+			}
+			if dataYaml.Memory != 0 {
+				data.Memory = dataYaml.Memory
+			}
+		}
+	} else {
+		data.Processors = dataYaml.Processors
+		data.Memory = dataYaml.Memory
+	}
+
 	data.Roles = dataYaml.Roles
-	data.Processors = dataYaml.Processors
-	data.Memory = dataYaml.Memory
 	data.DiskSize = dataYaml.DiskSize
 
 	u.Name = dataYaml.Name
