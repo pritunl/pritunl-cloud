@@ -1,9 +1,18 @@
 package constants
 
-var (
+import (
+	"time"
+)
+
+const (
+	Version       = "1.0.3229.20"
 	Authenticated = false
 	AuthKey       = "test"
-	Version       = "1.0.3229.20"
-	Host          = "127.0.0.1"
-	Port          = 9748
+	ConfRefresh   = 500 * time.Millisecond
+)
+
+var (
+	Host      = "127.0.0.1"
+	Port      = 80
+	Interrupt = false
 )
