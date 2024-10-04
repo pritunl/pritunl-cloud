@@ -908,6 +908,16 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 
 				s.restart(inst)
 				continue
+			} else if curVirt.State == vm.Stopped ||
+				curVirt.State == vm.Failed {
+
+				inst.State = instance.Start
+				err = inst.CommitFields(db, set.NewSet("state"))
+				if err != nil {
+					return
+				}
+
+				continue
 			}
 			break
 		}
