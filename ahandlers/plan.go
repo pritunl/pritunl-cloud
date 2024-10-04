@@ -22,7 +22,7 @@ type planData struct {
 	Name         string             `json:"name"`
 	Comment      string             `json:"comment"`
 	Organization primitive.ObjectID `json:"organization"`
-	Type         string             `json:"type"`
+	Statements   []*plan.Statement  `json:"statements"`
 }
 
 type plansData struct {
@@ -50,25 +50,30 @@ func planPut(c *gin.Context) {
 		return
 	}
 
-	domn, err := plan.Get(db, planId)
+	pln, err := plan.Get(db, planId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	domn.Name = data.Name
-	domn.Comment = data.Comment
-	domn.Organization = data.Organization
-	domn.Type = data.Type
+	pln.Name = data.Name
+	pln.Comment = data.Comment
+	pln.Organization = data.Organization
+
+	err = pln.UpdateStatements(data.Statements)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
 
 	fields := set.NewSet(
 		"name",
 		"comment",
 		"organization",
-		"type",
+		"statements",
 	)
 
-	errData, err := domn.Validate(db)
+	errData, err := pln.Validate(db)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -79,7 +84,7 @@ func planPut(c *gin.Context) {
 		return
 	}
 
-	err = domn.CommitFields(db, fields)
+	err = pln.CommitFields(db, fields)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -87,7 +92,7 @@ func planPut(c *gin.Context) {
 
 	event.PublishDispatch(db, "plan.change")
 
-	c.JSON(200, domn)
+	c.JSON(200, pln)
 }
 
 func planPost(c *gin.Context) {
@@ -97,7 +102,7 @@ func planPost(c *gin.Context) {
 
 	db := c.MustGet("db").(*database.Database)
 	data := &planData{
-		Name: "new.plan",
+		Name: "New Plan",
 	}
 
 	err := c.Bind(data)
@@ -106,14 +111,19 @@ func planPost(c *gin.Context) {
 		return
 	}
 
-	domn := &plan.Plan{
+	pln := &plan.Plan{
 		Name:         data.Name,
 		Comment:      data.Comment,
 		Organization: data.Organization,
-		Type:         data.Type,
 	}
 
-	errData, err := domn.Validate(db)
+	err = pln.UpdateStatements(data.Statements)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	errData, err := pln.Validate(db)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -124,7 +134,7 @@ func planPost(c *gin.Context) {
 		return
 	}
 
-	err = domn.Insert(db)
+	err = pln.Insert(db)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -132,7 +142,7 @@ func planPost(c *gin.Context) {
 
 	event.PublishDispatch(db, "plan.change")
 
-	c.JSON(200, domn)
+	c.JSON(200, pln)
 }
 
 func planDelete(c *gin.Context) {
@@ -193,13 +203,13 @@ func planGet(c *gin.Context) {
 		return
 	}
 
-	domn, err := plan.Get(db, planId)
+	pln, err := plan.Get(db, planId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	c.JSON(200, domn)
+	c.JSON(200, pln)
 }
 
 func plansGet(c *gin.Context) {
@@ -208,13 +218,13 @@ func plansGet(c *gin.Context) {
 	if c.Query("names") == "true" {
 		query := &bson.M{}
 
-		domns, err := plan.GetAllName(db, query)
+		plns, err := plan.GetAllName(db, query)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
 			return
 		}
 
-		c.JSON(200, domns)
+		c.JSON(200, plns)
 	} else {
 		page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
 		pageCount, _ := strconv.ParseInt(c.Query("page_count"), 10, 0)
