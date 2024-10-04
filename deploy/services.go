@@ -101,6 +101,11 @@ func (s *Services) DeployUnit(db *database.Database,
 		State:   deployment.Reserved,
 	}
 
+	err = deply.Validate(db)
+	if err != nil {
+		return
+	}
+
 	err = deply.Insert(db)
 	if err != nil {
 		return
