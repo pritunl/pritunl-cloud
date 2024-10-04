@@ -88,8 +88,8 @@ growpart:
 runcmd:
   - [ sysctl, -w, net.ipv4.conf.eth0.send_redirects=0 ]
   - 'chmod 600 /etc/ssh/*_key'
-  - [ systemctl, restart, sshd ]{{if .DeployScript}}
-  - [ /etc/pritunl-deploy-init ]{{else}}{{end}}{{if .RunScript}}
+  - [ systemctl, restart, sshd ]
+  - [ {{.DeployCommand}} ]{{if .RunScript}}
   - [ /etc/cloudinit-script ]{{else}}{{end}}
 users:
   - name: root
@@ -114,8 +114,8 @@ write_files:{{.WriteFiles}}
 runcmd:
   - [ sysctl, net.inet.ip.redirect=0 ]
   - [ ifconfig, vtnet0, inet6, {{.Address6}}/64 ]
-  - [ route, -6, add, default, {{.Gateway6}} ]{{if .DeployScript}}
-  - [ /etc/pritunl-deploy-init ]{{else}}{{end}}{{if .RunScript}}
+  - [ route, -6, add, default, {{.Gateway6}} ]
+  - [ {{.DeployCommand}} ]{{if .RunScript}}
   - [ /etc/cloudinit-script ]{{else}}{{end}}
 users:
   - name: root
@@ -130,28 +130,15 @@ users:
 {{range .Keys}}      - {{.}}
 {{end}}`
 
-const deploymentScriptInit = `#!/bin/bash
+const deploymentScriptTmpl = `#!/bin/bash
 set -e
-
-mkdir /iso
+mkdir -p /iso
 mount /dev/sr0 /iso
-/iso/pritunl-cloud-engine initial
-
+cp /iso/pci %s
 sync
 umount /iso
 rm -rf /iso
-`
-
-const deploymentScript = `#!/bin/bash
-set -e
-
-mkdir /iso
-mount /dev/sr0 /iso
-/iso/pritunl-cloud-engine post
-
-sync
-umount /iso
-rm -rf /iso
+rm -- "$0"%s
 `
 
 var (
@@ -179,15 +166,15 @@ type netConfigData struct {
 }
 
 type cloudConfigData struct {
-	Hostname     string
-	RootPasswd   string
-	LockPasswd   string
-	WriteFiles   string
-	RunScript    bool
-	DeployScript bool
-	Address6     string
-	Gateway6     string
-	Keys         []string
+	Hostname      string
+	RootPasswd    string
+	LockPasswd    string
+	WriteFiles    string
+	RunScript     bool
+	DeployCommand string
+	Address6      string
+	Gateway6      string
+	Keys          []string
 }
 
 func getUserData(db *database.Database, inst *instance.Instance,
@@ -206,10 +193,11 @@ func getUserData(db *database.Database, inst *instance.Instance,
 	writeFiles := []*fileData{}
 
 	data := cloudConfigData{
-		Keys:     []string{},
-		Hostname: strings.Replace(inst.Name, " ", "_", -1),
-		Address6: addr6.String(),
-		Gateway6: gateway6.String(),
+		Keys:          []string{},
+		Hostname:      strings.Replace(inst.Name, " ", "_", -1),
+		Address6:      addr6.String(),
+		Gateway6:      gateway6.String(),
+		DeployCommand: settings.Hypervisor.InitGuestPath,
 	}
 
 	if inst.RootEnabled {
@@ -265,22 +253,26 @@ func getUserData(db *database.Database, inst *instance.Instance,
 		})
 	}
 
+	deploymentScript := ""
 	if deployUnit != nil {
-		data.DeployScript = true
 		if initial {
-			writeFiles = append(writeFiles, &fileData{
-				Content:     deploymentScriptInit,
-				Owner:       owner,
-				Path:        "/etc/pritunl-deploy-init",
-				Permissions: "0755",
-			})
+			deploymentScript = fmt.Sprintf(
+				deploymentScriptTmpl,
+				settings.Hypervisor.CliGuestPath,
+				fmt.Sprintf(
+					" && %s initial",
+					settings.Hypervisor.CliGuestPath,
+				),
+			)
 		} else {
-			writeFiles = append(writeFiles, &fileData{
-				Content:     deploymentScript,
-				Owner:       owner,
-				Path:        "/etc/pritunl-deploy-init",
-				Permissions: "0755",
-			})
+			deploymentScript = fmt.Sprintf(
+				deploymentScriptTmpl,
+				settings.Hypervisor.CliGuestPath,
+				fmt.Sprintf(
+					" && %s post",
+					settings.Hypervisor.CliGuestPath,
+				),
+			)
 		}
 		writeFiles = append(writeFiles, &fileData{
 			Content:     deployUnit.Spec + "\n",
@@ -288,7 +280,20 @@ func getUserData(db *database.Database, inst *instance.Instance,
 			Path:        "/etc/pritunl-deploy.md",
 			Permissions: "0600",
 		})
+	} else {
+		deploymentScript = fmt.Sprintf(
+			deploymentScriptTmpl,
+			settings.Hypervisor.CliGuestPath,
+			"",
+		)
 	}
+
+	writeFiles = append(writeFiles, &fileData{
+		Content:     deploymentScript,
+		Owner:       owner,
+		Path:        settings.Hypervisor.InitGuestPath,
+		Permissions: "0755",
+	})
 
 	for _, authr := range authrs {
 		switch authr.Type {
@@ -520,6 +525,7 @@ func Write(db *database.Database, inst *instance.Instance,
 	metaPath := path.Join(tempDir, "meta-data")
 	userPath := path.Join(tempDir, "user-data")
 	netPath := path.Join(tempDir, "network-config")
+	pciPath := path.Join(tempDir, "pci")
 	initPath := paths.GetInitPath(inst.Id)
 
 	defer os.RemoveAll(tempDir)
@@ -590,6 +596,11 @@ func Write(db *database.Database, inst *instance.Instance,
 		return
 	}
 
+	err = utils.Exec("", "cp", settings.Hypervisor.CliHostPath, pciPath)
+	if err != nil {
+		return
+	}
+
 	args := []string{
 		"-output", initPath,
 		"-volid", "cidata",
@@ -604,7 +615,7 @@ func Write(db *database.Database, inst *instance.Instance,
 	}
 
 	if deployUnit != nil {
-		args = append(args, "/usr/bin/pritunl-cloud-engine")
+		args = append(args, pciPath)
 	}
 
 	_, err = utils.ExecCombinedOutputLoggedDir(
