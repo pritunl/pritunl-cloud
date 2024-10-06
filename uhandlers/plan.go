@@ -2,6 +2,10 @@ package uhandlers
 
 import (
 	"fmt"
+	"regexp"
+	"strconv"
+	"strings"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/mongo-go-driver/bson"
@@ -11,16 +15,13 @@ import (
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/plan"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"regexp"
-	"strconv"
-	"strings"
 )
 
 type planData struct {
-	Id      primitive.ObjectID `json:"id"`
-	Name    string             `json:"name"`
-	Comment string             `json:"comment"`
-	Type    string             `json:"type"`
+	Id         primitive.ObjectID `json:"id"`
+	Name       string             `json:"name"`
+	Comment    string             `json:"comment"`
+	Statements []*plan.Statement  `json:"statements"`
 }
 
 type plansData struct {
@@ -49,23 +50,28 @@ func planPut(c *gin.Context) {
 		return
 	}
 
-	domn, err := plan.GetOrg(db, userOrg, planId)
+	pln, err := plan.GetOrg(db, userOrg, planId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	domn.Name = data.Name
-	domn.Comment = data.Comment
-	domn.Type = data.Type
+	pln.Name = data.Name
+	pln.Comment = data.Comment
+
+	err = pln.UpdateStatements(data.Statements)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
 
 	fields := set.NewSet(
 		"name",
 		"comment",
-		"type",
+		"statements",
 	)
 
-	errData, err := domn.Validate(db)
+	errData, err := pln.Validate(db)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -76,7 +82,7 @@ func planPut(c *gin.Context) {
 		return
 	}
 
-	err = domn.CommitFields(db, fields)
+	err = pln.CommitFields(db, fields)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -84,7 +90,7 @@ func planPut(c *gin.Context) {
 
 	event.PublishDispatch(db, "plan.change")
 
-	c.JSON(200, domn)
+	c.JSON(200, pln)
 }
 
 func planPost(c *gin.Context) {
@@ -104,14 +110,19 @@ func planPost(c *gin.Context) {
 		return
 	}
 
-	domn := &plan.Plan{
+	pln := &plan.Plan{
 		Name:         data.Name,
 		Comment:      data.Comment,
 		Organization: userOrg,
-		Type:         data.Type,
 	}
 
-	errData, err := domn.Validate(db)
+	err = pln.UpdateStatements(data.Statements)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	errData, err := pln.Validate(db)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -122,7 +133,7 @@ func planPost(c *gin.Context) {
 		return
 	}
 
-	err = domn.Insert(db)
+	err = pln.Insert(db)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -130,7 +141,7 @@ func planPost(c *gin.Context) {
 
 	event.PublishDispatch(db, "plan.change")
 
-	c.JSON(200, domn)
+	c.JSON(200, pln)
 }
 
 func planDelete(c *gin.Context) {
@@ -194,13 +205,13 @@ func planGet(c *gin.Context) {
 		return
 	}
 
-	domn, err := plan.GetOrg(db, userOrg, planId)
+	pln, err := plan.GetOrg(db, userOrg, planId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	c.JSON(200, domn)
+	c.JSON(200, pln)
 }
 
 func plansGet(c *gin.Context) {
@@ -212,13 +223,13 @@ func plansGet(c *gin.Context) {
 			"organization": userOrg,
 		}
 
-		domns, err := plan.GetAllName(db, &query)
+		plns, err := plan.GetAllName(db, &query)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
 			return
 		}
 
-		c.JSON(200, domns)
+		c.JSON(200, plns)
 	} else {
 		page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
 		pageCount, _ := strconv.ParseInt(c.Query("page_count"), 10, 0)
