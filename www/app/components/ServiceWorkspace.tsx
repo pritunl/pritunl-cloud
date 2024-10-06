@@ -45,7 +45,7 @@ const css = {
 		minWidth: "18px",
 		height: "18px",
 		width: "18px",
-		padding: "4px 0 0 4px",
+		padding: "0 0 0 1px",
 	} as React.CSSProperties,
 	tab: {
 		marginRight: "10px",
@@ -188,7 +188,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 		for (let i = 0; i < units.length; ++i) {
 			let unit = units[i]
 			tabsElem.push(<Blueprint.Tab id={i} style={css.tab} key={i}>
-				<Blueprint.Icon icon="document" style={css.editButtonIcon}/>
+				<Blueprint.Icon icon={<Icons.Document size={12}/>}/>
 				{unit.name}
 				<button
 					className="bp5-button bp5-minimal bp5-small"
