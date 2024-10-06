@@ -135,7 +135,8 @@ loader.init().then((monaco: any) => {
     let editorTheme = EditorThemes.editorThemes[themeName]
     monaco.editor.defineTheme(themeName, editorTheme)
 
-    let formattedThemeName = MiscUtils.titleCase(themeName.replace("-", " "))
+    let formattedThemeName = MiscUtils.titleCase(
+		themeName.replaceAll("-", " "))
     editorThemeNames[themeName] = formattedThemeName
   }
 })
