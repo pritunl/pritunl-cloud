@@ -9,4 +9,7 @@ const (
 	Provisioning = "provisioning"
 	Bridge       = "bridge"
 	Vxlan        = "vxlan"
+
+	Physical = "physical"
+	Lvm      = "lvm"
 )
