@@ -24,6 +24,7 @@ import ShapesStore from "../stores/ShapesStore";
 import InstancesStore from "../stores/InstancesStore";
 import ImagesStore from "../stores/ImagesStore";
 import PlansStore from "../stores/PlansStore";
+import CertificatesStore from "../stores/CertificatesStore";
 import CompletionStore from "../completion/Store"
 import * as VpcTypes from "../types/VpcTypes";
 import * as DatacenterTypes from "../types/DatacenterTypes";
@@ -34,6 +35,7 @@ import * as ShapeTypes from "../types/ShapeTypes";
 import * as ImageTypes from "../types/ImageTypes";
 import * as InstanceTypes from "../types/InstanceTypes";
 import * as PlanTypes from "../types/PlanTypes";
+import * as CertificateTypes from "../types/CertificateTypes";
 import * as DomainActions from "../actions/DomainActions";
 import * as VpcActions from "../actions/VpcActions";
 import * as DatacenterActions from "../actions/DatacenterActions";
@@ -44,6 +46,7 @@ import * as ShapeActions from "../actions/ShapeActions";
 import * as ImageActions from "../actions/ImageActions";
 import * as InstanceActions from "../actions/InstanceActions";
 import * as PlanActions from "../actions/PlanActions";
+import * as CertificateActions from "../actions/CertificateActions";
 import * as DomainTypes from "../types/DomainTypes";
 
 interface Selected {
@@ -68,6 +71,7 @@ interface State {
 	images: ImageTypes.ImagesRo;
 	instances: InstanceTypes.InstancesRo;
 	plans: PlanTypes.PlansRo;
+	certificates: CertificateTypes.CertificatesRo;
 	selected: Selected;
 	opened: Opened;
 	newOpened: boolean;
@@ -121,6 +125,7 @@ export default class Services extends React.Component<{}, State> {
 			images: ImagesStore.images,
 			instances: InstancesStore.instances,
 			plans: PlansStore.plans,
+			certificates: CertificatesStore.certificates,
 			selected: {},
 			opened: {},
 			newOpened: false,
@@ -150,6 +155,7 @@ export default class Services extends React.Component<{}, State> {
 		ImagesStore.addChangeListener(this.onChange);
 		InstancesStore.addChangeListener(this.onChange);
 		PlansStore.addChangeListener(this.onChange);
+		CertificatesStore.addChangeListener(this.onChange);
 		ServiceActions.sync();
 		OrganizationActions.sync();
 		DomainActions.syncName();
@@ -162,6 +168,7 @@ export default class Services extends React.Component<{}, State> {
 		ImageActions.sync();
 		InstanceActions.sync();
 		PlanActions.sync();
+		CertificateActions.sync();
 	}
 
 	componentWillUnmount(): void {
@@ -177,6 +184,7 @@ export default class Services extends React.Component<{}, State> {
 		ImagesStore.removeChangeListener(this.onChange);
 		InstancesStore.removeChangeListener(this.onChange);
 		PlansStore.removeChangeListener(this.onChange);
+		CertificatesStore.removeChangeListener(this.onChange);
 	}
 
 	onChange = (): void => {
@@ -192,6 +200,7 @@ export default class Services extends React.Component<{}, State> {
 			images: ImagesStore.images,
 			instances: InstancesStore.instances,
 			plans: PlansStore.plans,
+			certificates: CertificatesStore.certificates,
 		})
 
 		let services = ServicesStore.services;
@@ -224,6 +233,7 @@ export default class Services extends React.Component<{}, State> {
 			images: ImagesStore.images,
 			instances: InstancesStore.instances,
 			plans: PlansStore.plans,
+			certificates: CertificatesStore.certificates,
 			selected: selected,
 			opened: opened,
 		});
