@@ -6,6 +6,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type Zone struct {
@@ -18,6 +19,8 @@ type Zone struct {
 
 func (z *Zone) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
+
+	z.Name = utils.FilterName(z.Name)
 
 	if z.Datacenter.IsZero() {
 		errData = &errortypes.ErrorData{
