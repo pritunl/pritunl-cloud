@@ -481,14 +481,13 @@ export default class InstanceNew extends React.Component<Props, State> {
 			zonesSelect = [<option key="null" value="">No Zones</option>];
 		}
 
-		let zone = instance ? instance.zone : "";
 		let hasShapes = false;
 		let shapesSelect: JSX.Element[] = [];
 		if (this.props.shapes && this.props.shapes.length) {
 			shapesSelect.push(<option key="null" value="">Select Shape</option>);
 
 			for (let shape of this.props.shapes) {
-				if (shape.zone !== zone) {
+				if (shape.datacenter !== datacenter) {
 					continue;
 				}
 				hasShapes = true;
@@ -911,17 +910,6 @@ export default class InstanceNew extends React.Component<Props, State> {
 							}}
 						>
 							{oracleSubnetsSelect}
-						</PageSelect>
-						<PageSelect
-							disabled={this.state.disabled}
-							label="DNS Domain"
-							help="Domain to create DNS name using instance name."
-							value={instance.domain}
-							onChange={(val): void => {
-								this.set('domain', val);
-							}}
-						>
-							{domainsSelect}
 						</PageSelect>
 						<PageSelect
 							disabled={this.state.disabled}
