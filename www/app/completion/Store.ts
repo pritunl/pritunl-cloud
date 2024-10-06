@@ -56,7 +56,9 @@ class CompletionStore extends EventEmitter {
 
 	_reset(): void {
 		this._kinds = []
+		this._kindMap = {}
 		this._resources = {}
+		this._resourceMap = {}
 	}
 
 	_callback(action: CompletionTypes.Dispatch): void {
@@ -298,6 +300,26 @@ class CompletionStore extends EventEmitter {
 			})
 		}
 		this._resources["plan"] = resourceList
+
+		this._kinds.push({
+			name: "certificate",
+			label: "Certificate",
+			title: "**Certificate**",
+		})
+		resourceList = []
+		for (let item of resources.certificates) {
+			resourceList.push({
+				id: item.id,
+				name: item.name,
+				info: [
+					{
+						label: "**Name**",
+						value: item.name,
+					},
+				],
+			})
+		}
+		this._resources["certificate"] = resourceList
 
 		this._kindMap = {}
 		for (let i = 0; i < this._kinds.length; i++) {
