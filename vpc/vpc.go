@@ -462,6 +462,21 @@ func (v *Vpc) GetSubnet(id primitive.ObjectID) (sub *Subnet) {
 	return
 }
 
+func (v *Vpc) GetSubnetName(name string) (sub *Subnet) {
+	if v.Subnets == nil || name == "" {
+		return
+	}
+
+	for _, s := range v.Subnets {
+		if s.Name == name {
+			sub = s
+			return
+		}
+	}
+
+	return
+}
+
 func (v *Vpc) GetNetwork() (network *net.IPNet, err error) {
 	_, network, err = net.ParseCIDR(v.Network)
 	if err != nil {
