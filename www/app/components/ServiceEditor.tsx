@@ -48,7 +48,7 @@ const css = {
 		flex: 1,
 		minWidth: '280px',
 		margin: '0',
-		padding: '0 0 0 0 ', // TODO
+		padding: '0 0 0 0 ',
 	} as React.CSSProperties,
 	groupSplit: {
 		position: 'relative',
@@ -114,6 +114,7 @@ export default class ServiceEditor extends React.Component<Props, State> {
 				}
 			})
 		}
+		Theme.addChangeListener(this.onThemeChange);
 	}
 
 	componentDidUpdate(): void {
@@ -126,6 +127,17 @@ export default class ServiceEditor extends React.Component<Props, State> {
 				}
 			})
 		}
+	}
+
+	componentWillUnmount(): void {
+		Theme.removeChangeListener(this.onThemeChange);
+	}
+
+	onThemeChange = (): void => {
+		if (!this.monaco) {
+			return
+		}
+		this.monaco.editor.setTheme(Theme.getEditorTheme())
 	}
 
 	updateState(): void {
@@ -207,7 +219,7 @@ export default class ServiceEditor extends React.Component<Props, State> {
 				height="900px"
 				width="100%"
 				defaultLanguage="markdown"
-				theme={Theme.editorTheme()}
+				theme={Theme.getEditorTheme()}
 				defaultValue={this.props.value}
 				beforeMount={CompletionEngine.handleBeforeMount}
 				onMount={(editor: Monaco.editor.IStandaloneCodeEditor,
