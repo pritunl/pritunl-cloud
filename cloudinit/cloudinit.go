@@ -253,6 +253,13 @@ func getUserData(db *database.Database, inst *instance.Instance,
 		})
 	}
 
+	writeFiles = append(writeFiles, &fileData{
+		Content:     virt.ImdsSecret,
+		Owner:       owner,
+		Path:        "/etc/pritunl-imds-secret",
+		Permissions: "0600",
+	})
+
 	deploymentScript := ""
 	if deployUnit != nil {
 		if initial {
