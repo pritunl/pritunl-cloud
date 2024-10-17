@@ -63,4 +63,8 @@ func Register(engine *gin.Engine) {
 	engine.Use(Errors)
 
 	engine.GET("/instance", instanceGet)
+	engine.GET("/vpc", vpcGet)
+	engine.GET("/subnet", subnetGet)
+	engine.GET("/certificate", certificatesGet)
+	engine.PUT("/heartbeat", heartbeatPut)
 }
