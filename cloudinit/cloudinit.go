@@ -3,6 +3,7 @@ package cloudinit
 import (
 	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"mime/multipart"
 	"net"
@@ -177,6 +178,12 @@ type cloudConfigData struct {
 	Keys          []string
 }
 
+type imdsConfig struct {
+	Address string `json:"address"`
+	Port    int    `json:"port"`
+	Secret  string `json:"secret"`
+}
+
 func getUserData(db *database.Database, inst *instance.Instance,
 	virt *vm.VirtualMachine, deployUnit *service.Unit, initial bool,
 	addr6, gateway6 net.IP) (usrData string, err error) {
@@ -253,10 +260,24 @@ func getUserData(db *database.Database, inst *instance.Instance,
 		})
 	}
 
+	imdsConf := &imdsConfig{
+		Address: strings.Split(settings.Hypervisor.ImdsAddress, "/")[0],
+		Port:    settings.Hypervisor.ImdsPort,
+		Secret:  virt.ImdsSecret,
+	}
+
+	imdsConfContent, err := json.Marshal(imdsConf)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "cloudinit: Failed to marshal imds conf"),
+		}
+		return
+	}
+
 	writeFiles = append(writeFiles, &fileData{
-		Content:     virt.ImdsSecret,
+		Content:     string(imdsConfContent),
 		Owner:       owner,
-		Path:        "/etc/pritunl-imds-secret",
+		Path:        "/etc/pritunl-imds.json",
 		Permissions: "0600",
 	})
 
@@ -267,7 +288,7 @@ func getUserData(db *database.Database, inst *instance.Instance,
 				deploymentScriptTmpl,
 				settings.Hypervisor.CliGuestPath,
 				fmt.Sprintf(
-					" && %s initial",
+					" && %s engine initial",
 					settings.Hypervisor.CliGuestPath,
 				),
 			)
@@ -276,7 +297,7 @@ func getUserData(db *database.Database, inst *instance.Instance,
 				deploymentScriptTmpl,
 				settings.Hypervisor.CliGuestPath,
 				fmt.Sprintf(
-					" && %s post",
+					" && %s engine post",
 					settings.Hypervisor.CliGuestPath,
 				),
 			)
@@ -603,7 +624,7 @@ func Write(db *database.Database, inst *instance.Instance,
 		return
 	}
 
-	err = utils.Exec("", "cp", settings.Hypervisor.CliHostPath, pciPath)
+	err = utils.Exec("", "cp", settings.Hypervisor.AgentHostPath, pciPath)
 	if err != nil {
 		return
 	}
