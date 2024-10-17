@@ -3,11 +3,9 @@ package ahandlers
 import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/event"
-	"github.com/pritunl/pritunl-cloud/secondary"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
@@ -122,26 +120,29 @@ func settingsPut(c *gin.Context) {
 	}
 
 	for _, provider := range data.AuthProviders {
-		provider.Label = utils.FilterStr(provider.Label, 32)
+		errData, err := provider.Validate(db)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
 
-		if provider.Id.IsZero() {
-			provider.Id = primitive.NewObjectID()
+		if errData != nil {
+			c.JSON(400, errData)
+			return
 		}
 	}
 	settings.Auth.Providers = data.AuthProviders
 
 	for _, provider := range data.AuthSecondaryProviders {
-		provider.Name = utils.FilterStr(provider.Name, 32)
-		provider.Label = utils.FilterStr(provider.Label, 32)
-
-		if provider.Id.IsZero() {
-			provider.Id = primitive.NewObjectID()
+		errData, err := provider.Validate(db)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
 		}
 
-		if provider.Type == secondary.OneLogin &&
-			provider.OneLoginRegion == "" {
-
-			provider.OneLoginRegion = "us"
+		if errData != nil {
+			c.JSON(400, errData)
+			return
 		}
 	}
 	settings.Auth.SecondaryProviders = data.AuthSecondaryProviders
