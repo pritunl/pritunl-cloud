@@ -5,19 +5,21 @@ import (
 	"io/ioutil"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/pritunl-cloud/certificate"
 	"github.com/pritunl/pritunl-cloud/imds/server/errortypes"
 	"github.com/pritunl/pritunl-cloud/imds/server/utils"
-	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/pritunl/pritunl-cloud/imds/types"
 )
 
-var Path = ""
+var Path = "/cloud/pritunl-cloud.json"
 var Config = &ConfigData{}
 
 type ConfigData struct {
-	loaded       bool                       `json:"-"`
-	Instance     *instance.Instance         `json:"instance"`
-	Certificates []*certificate.Certificate `json:"certificates"`
+	loaded       bool                 `json:"-"`
+	ClientIps    []string             `json:"client_ips"`
+	Instance     *types.Instance      `json:"instance"`
+	Vpc          *types.Vpc           `json:"vpc"`
+	Subnet       *types.Subnet        `json:"subnet"`
+	Certificates []*types.Certificate `json:"certificates"`
 }
 
 func Load() (err error) {

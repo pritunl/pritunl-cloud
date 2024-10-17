@@ -7,16 +7,21 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/certificate"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/permission"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
+	"github.com/pritunl/pritunl-cloud/vpc"
 )
 
 type Config struct {
-	Instance     *instance.Instance         `json:"instance"`
-	Certificates []*certificate.Certificate `json:"certificates"`
+	ClientIps    []string             `json:"client_ips"`
+	Instance     *types.Instance      `json:"instance"`
+	Vpc          *types.Vpc           `json:"vpc"`
+	Subnet       *types.Subnet        `json:"subnet"`
+	Certificates []*types.Certificate `json:"certificates"`
 }
 
 func (c *Config) Write(virt *vm.VirtualMachine) (err error) {
@@ -53,11 +58,15 @@ func (c *Config) Write(virt *vm.VirtualMachine) (err error) {
 }
 
 func BuildConfig(inst *instance.Instance, virt *vm.VirtualMachine,
+	vc *vpc.Vpc, subnet *vpc.Subnet,
 	certs []*certificate.Certificate) (conf *Config, err error) {
 
 	conf = &Config{
-		Instance:     inst,
-		Certificates: certs,
+		ClientIps:    inst.PrivateIps,
+		Instance:     types.NewInstance(inst),
+		Vpc:          types.NewVpc(vc),
+		Subnet:       types.NewSubnet(subnet),
+		Certificates: types.NewCertificates(certs),
 	}
 
 	return
