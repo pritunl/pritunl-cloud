@@ -11,13 +11,22 @@ func Query(resrc string, keys ...string) (val string, err error) {
 
 	switch resrc {
 	case "instance":
-		resrcInf = config.Config.Instance
+		if len(keys) == 1 {
+			key = keys[0]
+			resrcInf = config.Config.Instance
+		}
 		break
 	case "vpc":
-		resrcInf = config.Config.Vpc
+		if len(keys) == 1 {
+			key = keys[0]
+			resrcInf = config.Config.Vpc
+		}
 		break
 	case "subnet":
-		resrcInf = config.Config.Subnet
+		if len(keys) == 1 {
+			key = keys[0]
+			resrcInf = config.Config.Subnet
+		}
 		break
 	case "secrets":
 		if len(keys) != 2 {
@@ -69,6 +78,21 @@ func Query(resrc string, keys ...string) (val string, err error) {
 					resrcInf = srvc
 				}
 				break
+			}
+		}
+		break
+	case "units":
+		if len(keys) != 2 {
+			break
+		}
+		key = keys[1]
+
+		for _, srvc := range config.Config.Services {
+			for _, unit := range srvc.Units {
+				if unit.Name == keys[0] {
+					resrcInf = unit
+					break
+				}
 			}
 		}
 		break
