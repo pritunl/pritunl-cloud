@@ -1,11 +1,14 @@
 package deploy
 
 import (
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/certificate"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/imds"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/secret"
+	"github.com/pritunl/pritunl-cloud/service"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/vpc"
 )
@@ -32,8 +35,10 @@ func (s *Imds) buildInstance(db *database.Database,
 	conf, err := imds.BuildConfig(
 		inst, virt,
 		vc, subnet,
-		[]*certificate.Certificate{},
+		[]*service.Service{},
+		map[primitive.ObjectID]*deployment.Deployment{},
 		[]*secret.Secret{},
+		[]*certificate.Certificate{},
 	)
 	if err != nil {
 		return
@@ -82,7 +87,7 @@ func (s *Imds) buildDeployInstance(db *database.Database,
 	certs := []*certificate.Certificate{}
 	for _, certId := range unit.Instance.Certificates {
 		cert := s.stat.ServiceCert(certId)
-		if cert.Organization != inst.Organization {
+		if cert == nil || cert.Organization != inst.Organization {
 			continue
 		}
 
@@ -92,18 +97,34 @@ func (s *Imds) buildDeployInstance(db *database.Database,
 	secrs := []*secret.Secret{}
 	for _, secrId := range unit.Instance.Secrets {
 		secr := s.stat.ServiceSecret(secrId)
-		if secr.Organization != inst.Organization {
+		if secr == nil || secr.Organization != inst.Organization {
 			continue
 		}
 
 		secrs = append(secrs, secr)
 	}
 
+	services := []*service.Service{}
+	instSrvc := s.stat.Service(deply.Service)
+	if instSrvc != nil {
+		services = append(services, instSrvc)
+	}
+	for _, serviceId := range unit.Instance.Services {
+		servc := s.stat.ServiceService(serviceId)
+		if servc == nil || servc.Organization != inst.Organization {
+			continue
+		}
+
+		services = append(services, servc)
+	}
+
 	conf, err := imds.BuildConfig(
 		inst, virt,
 		vc, subnet,
-		certs,
+		services,
+		s.stat.Deployments(),
 		secrs,
+		certs,
 	)
 	if err != nil {
 		return
