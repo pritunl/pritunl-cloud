@@ -555,6 +555,18 @@ func (s *Instances) diff(db *database.Database,
 	inst *instance.Instance) (err error) {
 
 	curVirt := s.stat.GetVirt(inst.Id)
+	if curVirt == nil {
+		err = &errortypes.ReadError{
+			errors.New("deploy: Failed to load virt"),
+		}
+		logrus.WithFields(logrus.Fields{
+			"instance_id": inst.Id.Hex(),
+			"error":       err,
+		}).Error("deploy: Failed to load virt")
+		err = nil
+		return
+	}
+
 	changed := inst.Changed(curVirt)
 	addDisks, remDisks := inst.DiskChanged(curVirt)
 	addUsbs, remUsbs := inst.UsbChanged(curVirt)
@@ -824,7 +836,7 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 					"instance_id": inst.Id.Hex(),
 				}).Info("deploy: Delete protection ignore instance destroy")
 
-				if curVirt.State == vm.Running {
+				if curVirt != nil && curVirt.State == vm.Running {
 					inst.State = instance.Start
 				} else {
 					inst.State = instance.Stop
