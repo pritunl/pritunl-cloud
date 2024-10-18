@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/pritunl-cloud/config"
 	"github.com/pritunl/pritunl-cloud/imds/server/constants"
 	"github.com/pritunl/pritunl-cloud/imds/server/errortypes"
 	"github.com/pritunl/pritunl-cloud/imds/server/logger"
@@ -16,7 +15,7 @@ var (
 )
 
 func GetModTime() (mod time.Time, err error) {
-	stat, err := os.Stat(constants.ConfPath)
+	stat, err := os.Stat(Path)
 	if err != nil {
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "config: Failed to stat conf file"),
@@ -34,7 +33,7 @@ func SyncConfig() (err error) {
 		return
 	}
 
-	mod, err := config.GetModTime()
+	mod, err := GetModTime()
 	if err != nil {
 		return
 	}
@@ -42,12 +41,12 @@ func SyncConfig() (err error) {
 	if mod != curMod {
 		time.Sleep(100 * time.Millisecond)
 
-		mod, err = config.GetModTime()
+		mod, err = GetModTime()
 		if err != nil {
 			return
 		}
 
-		err = config.Load()
+		err = Load()
 		if err != nil {
 			return
 		}
