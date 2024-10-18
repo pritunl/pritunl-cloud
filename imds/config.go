@@ -5,12 +5,16 @@ import (
 	"io/ioutil"
 
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/certificate"
+	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/permission"
+	"github.com/pritunl/pritunl-cloud/secret"
+	"github.com/pritunl/pritunl-cloud/service"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
@@ -22,6 +26,8 @@ type Config struct {
 	Vpc          *types.Vpc           `json:"vpc"`
 	Subnet       *types.Subnet        `json:"subnet"`
 	Certificates []*types.Certificate `json:"certificates"`
+	Secrets      []*types.Secret      `json:"secrets"`
+	Services     []*types.Service     `json:"services"`
 }
 
 func (c *Config) Write(virt *vm.VirtualMachine) (err error) {
@@ -58,14 +64,18 @@ func (c *Config) Write(virt *vm.VirtualMachine) (err error) {
 }
 
 func BuildConfig(inst *instance.Instance, virt *vm.VirtualMachine,
-	vc *vpc.Vpc, subnet *vpc.Subnet,
-	certs []*certificate.Certificate) (conf *Config, err error) {
+	vc *vpc.Vpc, subnet *vpc.Subnet, services []*service.Service,
+	deployments map[primitive.ObjectID]*deployment.Deployment,
+	secrs []*secret.Secret, certs []*certificate.Certificate) (
+	conf *Config, err error) {
 
 	conf = &Config{
 		ClientIps:    inst.PrivateIps,
 		Instance:     types.NewInstance(inst),
 		Vpc:          types.NewVpc(vc),
 		Subnet:       types.NewSubnet(subnet),
+		Services:     types.NewServices(services, deployments),
+		Secrets:      types.NewSecrets(secrs),
 		Certificates: types.NewCertificates(certs),
 	}
 
