@@ -6,10 +6,17 @@ import (
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/pritunl-cloud/imds/server/config"
 	"github.com/pritunl/pritunl-cloud/imds/server/constants"
 	"github.com/pritunl/pritunl-cloud/imds/server/errortypes"
 	"github.com/pritunl/pritunl-cloud/imds/server/logger"
+	"github.com/pritunl/pritunl-cloud/imds/server/utils"
 )
+
+type AuthenticationError struct {
+	Error   string `json:"error"`
+	Message string `json:"message"`
+}
 
 func Recovery(c *gin.Context) {
 	defer func() {
@@ -37,19 +44,26 @@ func Errors(c *gin.Context) {
 }
 
 func Auth(c *gin.Context) {
-	token := ""
-	if constants.Authenticated {
-		token = c.Request.Header.Get("Auth-Token")
-		if token == "" {
-			token = c.Query("token")
-		}
+	token := c.Request.Header.Get("Auth-Token")
+	if token == "" {
+		token = c.Query("token")
+	}
+
+	addr := utils.StripPort(c.Request.RemoteAddr)
+	if !utils.StringsContains(config.Config.ClientIps, addr) {
+		c.AbortWithStatusJSON(401, &AuthenticationError{
+			Error:   "authentication",
+			Message: "Source IP address invalid",
+		})
+		return
 	}
 
 	if c.Request.Header.Get("Origin") != "" ||
 		c.Request.Header.Get("Referer") != "" ||
 		c.Request.Header.Get("User-Agent") != "pritunl-imds" ||
-		(constants.Authenticated && subtle.ConstantTimeCompare([]byte(token),
-			[]byte(constants.AuthKey)) != 1) {
+		constants.Secret == "" ||
+		(subtle.ConstantTimeCompare([]byte(token),
+			[]byte(constants.Secret)) != 1) {
 
 		c.AbortWithStatus(401)
 		return
@@ -62,9 +76,13 @@ func Register(engine *gin.Engine) {
 	engine.Use(Recovery)
 	engine.Use(Errors)
 
+	engine.GET("/query/:resource", queryGet)
+	engine.GET("/query/:resource/:name", queryGet)
+	engine.GET("/query/:resource/:name/:key", queryGet)
 	engine.GET("/instance", instanceGet)
 	engine.GET("/vpc", vpcGet)
 	engine.GET("/subnet", subnetGet)
 	engine.GET("/certificate", certificatesGet)
+	engine.GET("/secret", secretsGet)
 	engine.PUT("/heartbeat", heartbeatPut)
 }
