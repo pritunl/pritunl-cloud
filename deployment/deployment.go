@@ -12,14 +12,20 @@ import (
 )
 
 type Deployment struct {
-	Id       primitive.ObjectID             `bson:"_id,omitempty" json:"id"`
-	Service  primitive.ObjectID             `bson:"service" json:"service"`
-	Unit     primitive.ObjectID             `bson:"unit" json:"unit"`
-	Kind     string                         `bson:"kind" json:"kind"`
-	State    string                         `bson:"state" json:"state"`
-	Node     primitive.ObjectID             `bson:"node,omitempty" json:"node"`
-	Instance primitive.ObjectID             `bson:"instance,omitempty" json:"instance"`
-	Actions  map[primitive.ObjectID]*Action `bson:"actions,omitempty", json:"actions"`
+	Id               primitive.ObjectID             `bson:"_id,omitempty" json:"id"`
+	Service          primitive.ObjectID             `bson:"service" json:"service"`
+	Unit             primitive.ObjectID             `bson:"unit" json:"unit"`
+	Kind             string                         `bson:"kind" json:"kind"`
+	State            string                         `bson:"state" json:"state"`
+	Node             primitive.ObjectID             `bson:"node,omitempty" json:"node"`
+	Instance         primitive.ObjectID             `bson:"instance,omitempty" json:"instance"`
+	PublicIps        []string                       `bson:"public_ips" json:"public_ips"`
+	PublicIps6       []string                       `bson:"public_ips6" json:"public_ips6"`
+	PrivateIps       []string                       `bson:"private_ips" json:"private_ips"`
+	PrivateIps6      []string                       `bson:"private_ips6" json:"private_ips6"`
+	OraclePrivateIps []string                       `bson:"oracle_private_ips" json:"oracle_private_ips"`
+	OraclePublicIps  []string                       `bson:"oracle_public_ips" json:"oracle_public_ips"`
+	Actions          map[primitive.ObjectID]*Action `bson:"actions,omitempty", json:"actions"`
 }
 
 type Action struct {
