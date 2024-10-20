@@ -10,6 +10,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/scheduler"
 	"github.com/pritunl/pritunl-cloud/service"
+	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/sirupsen/logrus"
@@ -58,6 +59,14 @@ func (s *Services) processSchedule(schd *scheduler.Scheduler) {
 			return
 		}
 
+		spc, err := spec.Get(db, spec.Hash{
+			Unit: unit.Id,
+			Hash: unit.Hash,
+		})
+		if err != nil {
+			return
+		}
+
 		tickets := schd.Tickets[s.stat.Node().Id]
 		if tickets != nil && len(tickets) > 0 {
 			now := time.Now()
@@ -75,7 +84,7 @@ func (s *Services) processSchedule(schd *scheduler.Scheduler) {
 						return
 					}
 
-					err = s.DeployUnit(db, unit)
+					err = s.DeploySpec(db, unit, spc)
 					if err != nil {
 						return
 					}
@@ -90,12 +99,13 @@ func (s *Services) processSchedule(schd *scheduler.Scheduler) {
 	}()
 }
 
-func (s *Services) DeployUnit(db *database.Database,
-	unit *service.Unit) (err error) {
+func (s *Services) DeploySpec(db *database.Database,
+	unit *service.Unit, spc *spec.Spec) (err error) {
 
 	deply := &deployment.Deployment{
 		Service: unit.Service.Id,
 		Unit:    unit.Id,
+		Spec:    spc.Id.Hash,
 		Node:    node.Self.Id,
 		Kind:    deployment.Instance,
 		State:   deployment.Reserved,
@@ -126,12 +136,12 @@ func (s *Services) DeployUnit(db *database.Database,
 
 	inst := &instance.Instance{
 		Organization: unit.Service.Organization,
-		Zone:         unit.Instance.Zone,
-		Vpc:          unit.Instance.Vpc,
-		Subnet:       unit.Instance.Subnet,
-		//Shape:               unit.Instance.Shape,
+		Zone:         spc.Instance.Zone,
+		Vpc:          spc.Instance.Vpc,
+		Subnet:       spc.Instance.Subnet,
+		//Shape:               spc.Instance.Shape,
 		Node:                node.Self.Id,
-		Image:               unit.Instance.Image,
+		Image:               spc.Instance.Image,
 		Uefi:                true,
 		SecureBoot:          true,
 		Tpm:                 false,
@@ -140,12 +150,12 @@ func (s *Services) DeployUnit(db *database.Database,
 		CloudScript:         "",
 		DeleteProtection:    false,
 		SkipSourceDestCheck: false,
-		Name:                unit.Name,
+		Name:                spc.Name,
 		Comment:             "",
 		InitDiskSize:        10,
 		Memory:              2048,
 		Processors:          2,
-		NetworkRoles:        unit.Instance.Roles,
+		NetworkRoles:        spc.Instance.Roles,
 		NoPublicAddress:     false,
 		NoPublicAddress6:    false,
 		NoHostAddress:       false,
