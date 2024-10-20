@@ -76,8 +76,8 @@ func (s *Imds) buildDeployInstance(db *database.Database,
 		return
 	}
 
-	unit := s.stat.Unit(deply.Unit)
-	if unit == nil {
+	spc := s.stat.Spec(deply.GetSpecHash())
+	if spc == nil {
 		println("**************************************************2")
 		println(inst.Id.Hex())
 		println("**************************************************2")
@@ -85,8 +85,8 @@ func (s *Imds) buildDeployInstance(db *database.Database,
 	}
 
 	certs := []*certificate.Certificate{}
-	for _, certId := range unit.Instance.Certificates {
-		cert := s.stat.ServiceCert(certId)
+	for _, certId := range spc.Instance.Certificates {
+		cert := s.stat.SpecCert(certId)
 		if cert == nil || cert.Organization != inst.Organization {
 			continue
 		}
@@ -95,8 +95,8 @@ func (s *Imds) buildDeployInstance(db *database.Database,
 	}
 
 	secrs := []*secret.Secret{}
-	for _, secrId := range unit.Instance.Secrets {
-		secr := s.stat.ServiceSecret(secrId)
+	for _, secrId := range spc.Instance.Secrets {
+		secr := s.stat.SpecSecret(secrId)
 		if secr == nil || secr.Organization != inst.Organization {
 			continue
 		}
@@ -109,8 +109,8 @@ func (s *Imds) buildDeployInstance(db *database.Database,
 	if instSrvc != nil {
 		services = append(services, instSrvc)
 	}
-	for _, serviceId := range unit.Instance.Services {
-		servc := s.stat.ServiceService(serviceId)
+	for _, serviceId := range spc.Instance.Services {
+		servc := s.stat.SpecService(serviceId)
 		if servc == nil || servc.Organization != inst.Organization {
 			continue
 		}
