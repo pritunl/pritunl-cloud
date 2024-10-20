@@ -23,6 +23,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/secret"
 	"github.com/pritunl/pritunl-cloud/service"
 	"github.com/pritunl/pritunl-cloud/shape"
+	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
@@ -31,41 +32,44 @@ import (
 )
 
 type State struct {
-	nodeSelf               *node.Node
-	nodes                  []*node.Node
-	nodeDatacenter         primitive.ObjectID
-	nodeZone               *zone.Zone
-	nodeHostBlock          *block.Block
-	nodeShapes             []*shape.Shape
-	nodeShapesId           set.Set
-	vxlan                  bool
-	zoneMap                map[primitive.ObjectID]*zone.Zone
-	namespaces             []string
-	interfaces             []string
-	interfacesSet          set.Set
-	nodeFirewall           []*firewall.Rule
-	firewalls              map[string][]*firewall.Rule
-	pools                  []*pool.Pool
-	disks                  []*disk.Disk
-	schedulers             []*scheduler.Scheduler
-	deploymentsMap         map[primitive.ObjectID]*deployment.Deployment
-	servicesMap            map[primitive.ObjectID]*service.Service
-	servicesUnitsMap       map[primitive.ObjectID]*service.Unit
-	servicesServicesMap    map[primitive.ObjectID]*service.Service
-	servicesDeploymentsMap map[primitive.ObjectID]*deployment.Deployment
-	servicesSecretsMap     map[primitive.ObjectID]*secret.Secret
-	servicesCertsMap       map[primitive.ObjectID]*certificate.Certificate
-	virtsMap               map[primitive.ObjectID]*vm.VirtualMachine
-	instances              []*instance.Instance
-	instancesMap           map[primitive.ObjectID]*instance.Instance
-	instanceDisks          map[primitive.ObjectID][]*disk.Disk
-	vpcs                   []*vpc.Vpc
-	vpcsMap                map[primitive.ObjectID]*vpc.Vpc
-	vpcIpsMap              map[primitive.ObjectID][]*vpc.VpcIp
-	arpRecords             map[string]set.Set
-	addInstances           set.Set
-	remInstances           set.Set
-	running                []string
+	nodeSelf         *node.Node
+	nodes            []*node.Node
+	nodeDatacenter   primitive.ObjectID
+	nodeZone         *zone.Zone
+	nodeHostBlock    *block.Block
+	nodeShapes       []*shape.Shape
+	nodeShapesId     set.Set
+	vxlan            bool
+	zoneMap          map[primitive.ObjectID]*zone.Zone
+	namespaces       []string
+	interfaces       []string
+	interfacesSet    set.Set
+	nodeFirewall     []*firewall.Rule
+	firewalls        map[string][]*firewall.Rule
+	pools            []*pool.Pool
+	disks            []*disk.Disk
+	schedulers       []*scheduler.Scheduler
+	deploymentsMap   map[primitive.ObjectID]*deployment.Deployment
+	servicesMap      map[primitive.ObjectID]*service.Service
+	servicesUnitsMap map[primitive.ObjectID]*service.Unit
+
+	specsMap            map[spec.Hash]*spec.Spec
+	specsServicesMap    map[primitive.ObjectID]*service.Service
+	specsDeploymentsMap map[primitive.ObjectID]*deployment.Deployment
+	specsSecretsMap     map[primitive.ObjectID]*secret.Secret
+	specsCertsMap       map[primitive.ObjectID]*certificate.Certificate
+
+	virtsMap      map[primitive.ObjectID]*vm.VirtualMachine
+	instances     []*instance.Instance
+	instancesMap  map[primitive.ObjectID]*instance.Instance
+	instanceDisks map[primitive.ObjectID][]*disk.Disk
+	vpcs          []*vpc.Vpc
+	vpcsMap       map[primitive.ObjectID]*vpc.Vpc
+	vpcIpsMap     map[primitive.ObjectID][]*vpc.VpcIp
+	arpRecords    map[string]set.Set
+	addInstances  set.Set
+	remInstances  set.Set
+	running       []string
 }
 
 func (s *State) Node() *node.Node {
@@ -151,18 +155,20 @@ func (s *State) Unit(unitId primitive.ObjectID) *service.Unit {
 	return s.servicesUnitsMap[unitId]
 }
 
-func (s *State) ServiceService(srvcId primitive.ObjectID) *service.Service {
-	return s.servicesServicesMap[srvcId]
+func (s *State) Spec(hash spec.Hash) *spec.Spec {
+	return s.specsMap[hash]
 }
 
-func (s *State) ServiceSecret(secrID primitive.ObjectID) *secret.Secret {
-	return s.servicesSecretsMap[secrID]
+func (s *State) SpecService(srvcId primitive.ObjectID) *service.Service {
+	return s.specsServicesMap[srvcId]
 }
 
-func (s *State) ServiceCert(
-	certId primitive.ObjectID) *certificate.Certificate {
+func (s *State) SpecSecret(secrID primitive.ObjectID) *secret.Secret {
+	return s.specsSecretsMap[secrID]
+}
 
-	return s.servicesCertsMap[certId]
+func (s *State) SpecCert(certId primitive.ObjectID) *certificate.Certificate {
+	return s.specsCertsMap[certId]
 }
 
 func (s *State) Vpc(vpcId primitive.ObjectID) *vpc.Vpc {
@@ -404,13 +410,105 @@ func (s *State) init() (err error) {
 
 	deploymentsMap := map[primitive.ObjectID]*deployment.Deployment{}
 	serviceIds := []primitive.ObjectID{}
-	unitIds := set.NewSet()
 	serviceIdsSet := set.NewSet()
+	unitIds := set.NewSet()
+	specIdsSet := set.NewSet()
 	for _, deply := range deployments {
 		deploymentsMap[deply.Id] = deply
 		serviceIdsSet.Add(deply.Service)
 		unitIds.Add(deply.Unit)
+		specIdsSet.Add(deply.GetSpecHash())
 	}
+
+	specIds := []spec.Hash{}
+	for specId := range specIdsSet.Iter() {
+		specIds = append(specIds, specId.(spec.Hash))
+	}
+
+	specs, err := spec.GetAll(db, &bson.M{
+		"_id": &bson.M{
+			"$in": specIds,
+		},
+	})
+	if err != nil {
+		return
+	}
+
+	specSecretsSet := set.NewSet()
+	specCertsSet := set.NewSet()
+	specServicesSet := set.NewSet()
+	specsMap := map[spec.Hash]*spec.Spec{}
+	for _, spc := range specs {
+		specsMap[spc.Id] = spc
+
+		if spc.Instance.Services != nil {
+			for _, srvcId := range spc.Instance.Services {
+				specServicesSet.Add(srvcId)
+			}
+		}
+
+		if spc.Instance.Secrets != nil {
+			for _, secrId := range spc.Instance.Secrets {
+				specSecretsSet.Add(secrId)
+			}
+		}
+
+		if spc.Instance.Certificates != nil {
+			for _, certId := range spc.Instance.Certificates {
+				specCertsSet.Add(certId)
+			}
+		}
+	}
+	s.specsMap = specsMap
+
+	specServiceIds := []primitive.ObjectID{}
+	for srvcId := range specServicesSet.Iter() {
+		specServiceIds = append(specServiceIds, srvcId.(primitive.ObjectID))
+	}
+
+	specDeploymentsSet := set.NewSet()
+	specsServicesMap := map[primitive.ObjectID]*service.Service{}
+	specServices, err := service.GetAll(db, &bson.M{
+		"_id": &bson.M{
+			"$in": specServiceIds,
+		},
+	})
+	if err != nil {
+		return
+	}
+
+	for _, specService := range specServices {
+		specsServicesMap[specService.Id] = specService
+
+		for _, unit := range specService.Units {
+			for _, deply := range unit.Deployments {
+				specDeploymentsSet.Add(deply.Id)
+			}
+		}
+	}
+	s.specsServicesMap = specsServicesMap
+
+	specDeploymentIds := []primitive.ObjectID{}
+	for deplyIdInf := range specDeploymentsSet.Iter() {
+		deplyId := deplyIdInf.(primitive.ObjectID)
+		if _, exists := deploymentsMap[deplyId]; !exists {
+			specDeploymentIds = append(specDeploymentIds, deplyId)
+		}
+	}
+
+	specDeployments, err := deployment.GetAll(db, &bson.M{
+		"_id": &bson.M{
+			"$in": specDeploymentIds,
+		},
+	})
+	if err != nil {
+		return
+	}
+
+	for _, specDeployment := range specDeployments {
+		deploymentsMap[specDeployment.Id] = specDeployment
+	}
+	s.deploymentsMap = deploymentsMap
 
 	for serviceId := range serviceIdsSet.Iter() {
 		serviceIds = append(serviceIds, serviceId.(primitive.ObjectID))
@@ -425,9 +523,6 @@ func (s *State) init() (err error) {
 		return
 	}
 
-	serviceSecretsSet := set.NewSet()
-	serviceCertsSet := set.NewSet()
-	serviceServicesSet := set.NewSet()
 	serviceDeploymentsSet := set.NewSet()
 	servicesMap := map[primitive.ObjectID]*service.Service{}
 	servicesUnitsMap := map[primitive.ObjectID]*service.Unit{}
@@ -436,8 +531,7 @@ func (s *State) init() (err error) {
 
 		for _, unit := range srvc.Units {
 			if !unitIds.Contains(unit.Id) ||
-				unit.Kind != service.InstanceKind ||
-				unit.Instance == nil {
+				unit.Kind != spec.InstanceKind {
 
 				continue
 			}
@@ -446,54 +540,10 @@ func (s *State) init() (err error) {
 			for _, deply := range unit.Deployments {
 				serviceDeploymentsSet.Add(deply.Id)
 			}
-
-			if unit.Instance.Services != nil {
-				for _, srvcId := range unit.Instance.Services {
-					serviceServicesSet.Add(srvcId)
-				}
-			}
-
-			if unit.Instance.Secrets != nil {
-				for _, secrId := range unit.Instance.Secrets {
-					serviceSecretsSet.Add(secrId)
-				}
-			}
-
-			if unit.Instance.Certificates != nil {
-				for _, certId := range unit.Instance.Certificates {
-					serviceCertsSet.Add(certId)
-				}
-			}
 		}
 	}
 	s.servicesMap = servicesMap
 	s.servicesUnitsMap = servicesUnitsMap
-
-	serviceServiceIds := []primitive.ObjectID{}
-	for srvcId := range serviceServicesSet.Iter() {
-		serviceServiceIds = append(serviceServiceIds, srvcId.(primitive.ObjectID))
-	}
-
-	servicesServicesMap := map[primitive.ObjectID]*service.Service{}
-	serviceServices, err := service.GetAll(db, &bson.M{
-		"_id": &bson.M{
-			"$in": serviceServiceIds,
-		},
-	})
-	if err != nil {
-		return
-	}
-
-	for _, serviceService := range serviceServices {
-		servicesServicesMap[serviceService.Id] = serviceService
-
-		for _, unit := range serviceService.Units {
-			for _, deply := range unit.Deployments {
-				serviceDeploymentsSet.Add(deply.Id)
-			}
-		}
-	}
-	s.servicesServicesMap = servicesServicesMap
 
 	serviceDeploymentIds := []primitive.ObjectID{}
 	for deplyIdInf := range serviceDeploymentsSet.Iter() {
@@ -516,46 +566,6 @@ func (s *State) init() (err error) {
 		deploymentsMap[serviceDeployment.Id] = serviceDeployment
 	}
 	s.deploymentsMap = deploymentsMap
-
-	serviceSecretIds := []primitive.ObjectID{}
-	for secrId := range serviceSecretsSet.Iter() {
-		serviceSecretIds = append(serviceSecretIds, secrId.(primitive.ObjectID))
-	}
-
-	servicesSecretsMap := map[primitive.ObjectID]*secret.Secret{}
-	serviceSecrets, err := secret.GetAll(db, &bson.M{
-		"_id": &bson.M{
-			"$in": serviceSecretIds,
-		},
-	})
-	if err != nil {
-		return
-	}
-
-	for _, serviceSecret := range serviceSecrets {
-		servicesSecretsMap[serviceSecret.Id] = serviceSecret
-	}
-	s.servicesSecretsMap = servicesSecretsMap
-
-	serviceCertIds := []primitive.ObjectID{}
-	for certId := range serviceCertsSet.Iter() {
-		serviceCertIds = append(serviceCertIds, certId.(primitive.ObjectID))
-	}
-
-	servicesCertsMap := map[primitive.ObjectID]*certificate.Certificate{}
-	serviceCerts, err := certificate.GetAll(db, &bson.M{
-		"_id": &bson.M{
-			"$in": serviceCertIds,
-		},
-	})
-	if err != nil {
-		return
-	}
-
-	for _, serviceCert := range serviceCerts {
-		servicesCertsMap[serviceCert.Id] = serviceCert
-	}
-	s.servicesCertsMap = servicesCertsMap
 
 	schedulers, err := scheduler.GetAll(db)
 	if err != nil {
