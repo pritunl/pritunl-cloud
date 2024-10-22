@@ -7,6 +7,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -24,31 +25,58 @@ func (p *Service) Validate(db *database.Database) (
 
 	p.Name = utils.FilterName(p.Name)
 
+	if p.Organization.IsZero() {
+		errData = &errortypes.ErrorData{
+			Error:   "missing_organization",
+			Message: "Missing organization",
+		}
+		return
+	}
+
 	return
 }
 
-func (p *Service) InitUnits(units []*UnitInput) {
+func (p *Service) InitUnits(db *database.Database, units []*UnitInput) (
+	errData *errortypes.ErrorData, err error) {
+
 	p.Units = []*Unit{}
 
 	for _, unitData := range units {
-		p.Units = append(p.Units, &Unit{
-			Id:   primitive.NewObjectID(),
-			Name: unitData.Name,
-			Spec: unitData.Spec,
-		})
+		unit := &Unit{
+			Service:     p,
+			Id:          primitive.NewObjectID(),
+			Name:        unitData.Name,
+			Spec:        unitData.Spec,
+			Deployments: []*Deployment{},
+		}
+
+		errData, err = unit.Parse(db)
+		if err != nil {
+			return
+		}
+		if errData != nil {
+			return
+		}
+
+		p.Units = append(p.Units, unit)
 	}
+
+	return
 }
 
 func (p *Service) CommitFieldsUnits(db *database.Database,
 	units []*UnitInput, fields set.Set) (
 	errData *errortypes.ErrorData, err error) {
 
-	arraySelect := database.NewArraySelectFields(p, "units", fields)
+	arraySelectSet := database.NewArraySelectFields(p, "units", fields)
+	arraySelectPush := database.NewArraySelectFields(p, "units", fields)
+	arraySelectPull := database.NewArraySelectFields(p, "units", fields)
 
 	curUnitsSet := set.NewSet()
 	curUnitsMap := map[primitive.ObjectID]*Unit{}
 	for _, unit := range p.Units {
 		curUnitsSet.Add(unit.Id)
+		unit.Service = p
 		curUnitsMap[unit.Id] = unit
 	}
 
@@ -56,6 +84,11 @@ func (p *Service) CommitFieldsUnits(db *database.Database,
 	newUnitsSet := set.NewSet()
 
 	for _, unitData := range units {
+		if unitData.Delete {
+			arraySelectPull.Delete(unitData.Id)
+			continue
+		}
+
 		if unitsName.Contains(unitData.Name) {
 			errData = &errortypes.ErrorData{
 				Error:   "unit_duplicate_name",
@@ -67,6 +100,7 @@ func (p *Service) CommitFieldsUnits(db *database.Database,
 		curUnit := curUnitsMap[unitData.Id]
 		if curUnit == nil {
 			unit := &Unit{
+				Service:     p,
 				Id:          primitive.NewObjectID(),
 				Name:        unitData.Name,
 				Spec:        unitData.Spec,
@@ -76,7 +110,7 @@ func (p *Service) CommitFieldsUnits(db *database.Database,
 			curUnitsMap[unit.Id] = unit
 			newUnitsSet.Add(unit.Id)
 
-			errData, err = unit.Parse(db, p)
+			errData, err = unit.Parse(db)
 			if err != nil {
 				return
 			}
@@ -86,7 +120,7 @@ func (p *Service) CommitFieldsUnits(db *database.Database,
 
 			p.Units = append(p.Units, unit)
 
-			arraySelect.Push(unit)
+			arraySelectPush.Push(unit)
 
 			continue
 		}
@@ -95,7 +129,7 @@ func (p *Service) CommitFieldsUnits(db *database.Database,
 		curUnit.Name = unitData.Name
 		curUnit.Spec = unitData.Spec
 
-		errData, err = curUnit.Parse(db, p)
+		errData, err = curUnit.Parse(db)
 		if err != nil {
 			return
 		}
@@ -103,33 +137,60 @@ func (p *Service) CommitFieldsUnits(db *database.Database,
 			return
 		}
 
-		arraySelect.Update(unitData.Id, bson.M{
-			"name":     curUnit.Name,
-			"kind":     curUnit.Kind,
-			"count":    curUnit.Count,
-			"spec":     curUnit.Spec,
-			"instance": curUnit.Instance,
+		arraySelectSet.Update(unitData.Id, bson.M{
+			"name":  curUnit.Name,
+			"kind":  curUnit.Kind,
+			"count": curUnit.Count,
+			"spec":  curUnit.Spec,
+			"hash":  curUnit.Hash,
 		})
 	}
 
-	curUnitsSet.Subtract(newUnitsSet)
-	for unitIdInf := range curUnitsSet.Iter() {
-		arraySelect.Delete(unitIdInf.(primitive.ObjectID))
-	}
-
-	updateQuery, arrayFilters := arraySelect.GetQuery()
-
 	coll := db.Services()
 
-	updateOpts := options.Update().SetArrayFilters(options.ArrayFilters{
-		Filters: arrayFilters,
-	})
-	_, err = coll.UpdateOne(db, &bson.M{
-		"_id": p.Id,
-	}, updateQuery, updateOpts)
-	if err != nil {
-		err = database.ParseError(err)
-		return
+	if arraySelectPull.Modified() {
+		updateQuery, arrayFilters := arraySelectPull.GetQuery()
+
+		updateOpts := options.Update().SetArrayFilters(options.ArrayFilters{
+			Filters: arrayFilters,
+		})
+		_, err = coll.UpdateOne(db, &bson.M{
+			"_id": p.Id,
+		}, updateQuery, updateOpts)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+	}
+
+	if arraySelectPush.Modified() {
+		updateQuery, arrayFilters := arraySelectPush.GetQuery()
+
+		updateOpts := options.Update().SetArrayFilters(options.ArrayFilters{
+			Filters: arrayFilters,
+		})
+		_, err = coll.UpdateOne(db, &bson.M{
+			"_id": p.Id,
+		}, updateQuery, updateOpts)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+	}
+
+	if arraySelectSet.Modified() {
+		updateQuery, arrayFilters := arraySelectSet.GetQuery()
+
+		updateOpts := options.Update().SetArrayFilters(options.ArrayFilters{
+			Filters: arrayFilters,
+		})
+		_, err = coll.UpdateOne(db, &bson.M{
+			"_id": p.Id,
+		}, updateQuery, updateOpts)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
 	}
 
 	return
@@ -174,6 +235,7 @@ func (p *Service) Insert(db *database.Database) (err error) {
 func (p *Service) GetUnit(unitId primitive.ObjectID) *Unit {
 	for _, unit := range p.Units {
 		if unit.Id == unitId {
+			unit.Service = p
 			return unit
 		}
 	}
@@ -187,7 +249,7 @@ func (p *Service) IterInstances() <-chan *Unit {
 		defer close(iter)
 
 		for _, unit := range p.Units {
-			if unit.Kind != "instance" {
+			if unit.Kind != spec.InstanceKind {
 				continue
 			}
 
