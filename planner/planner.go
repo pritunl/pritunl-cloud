@@ -10,6 +10,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/plan"
 	"github.com/pritunl/pritunl-cloud/service"
+	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/sirupsen/logrus"
 )
 
@@ -88,7 +89,7 @@ func (p *Planner) checkInstance(db *database.Database,
 			"instance":   deply.Instance.Hex(),
 			"service":    deply.Service.Hex(),
 			"unit":       deply.Unit.Hex(),
-		}).Info("scheduler: Failed to find service for deployment")
+		}).Error("scheduler: Failed to find service for deployment")
 
 		// err = deployment.Remove(db, deply.Id)
 		// if err != nil {
@@ -105,7 +106,7 @@ func (p *Planner) checkInstance(db *database.Database,
 			"instance":   deply.Instance.Hex(),
 			"service":    deply.Service.Hex(),
 			"unit":       deply.Unit.Hex(),
-		}).Info("scheduler: Failed to find unit for deployment")
+		}).Error("scheduler: Failed to find unit for deployment")
 
 		// err = deployment.Remove(db, deply.Id)
 		// if err != nil {
@@ -115,11 +116,16 @@ func (p *Planner) checkInstance(db *database.Database,
 		return
 	}
 
-	if unit.Kind != service.InstanceKind || unit.Instance == nil {
+	spc, err := spec.Get(db, deply.GetSpecHash())
+	if err != nil {
 		return
 	}
 
-	pln, err := plan.Get(db, unit.Instance.Plan)
+	if unit.Kind != spec.InstanceKind || spc.Instance == nil {
+		return
+	}
+
+	pln, err := plan.Get(db, spc.Instance.Plan)
 	if pln == nil {
 		logrus.WithFields(logrus.Fields{
 			"deployment": deply.Id.Hex(),
@@ -143,20 +149,31 @@ func (p *Planner) checkInstance(db *database.Database,
 
 	var statement *plan.Statement
 	action := ""
-	ttl := 0
+	threshold := 0
 	for _, statement = range pln.Statements {
-		action, ttl, err = eval.Eval(data, statement.Statement)
+		action, threshold, err = eval.Eval(data, statement.Statement)
 		if err != nil {
 			return
 		}
 
-		// TODO Finish ttl
-		// TODO Perform action only once every 1+ min
+		log := false
+		if action != "" {
+			log = true
+			println("**************************************************")
+			println(action)
+			println(threshold)
+		}
 
-		println("**************************************************")
-		println(statement.Statement)
-		println(action)
-		println("**************************************************")
+		action, err = deply.HandleStatement(
+			db, statement.Id, threshold, action)
+		if err != nil {
+			return
+		}
+
+		if log {
+			println(action)
+			println("**************************************************")
+		}
 
 		if action != "" {
 			break
@@ -170,7 +187,7 @@ func (p *Planner) checkInstance(db *database.Database,
 			"service":    deply.Service.Hex(),
 			"unit":       deply.Unit.Hex(),
 			"statement":  statement.Statement,
-			"ttl":        ttl,
+			"threshold":  threshold,
 			"action":     action,
 		}).Info("scheduler: Handling plan action")
 
@@ -206,7 +223,7 @@ func (p *Planner) checkInstance(db *database.Database,
 				"service":    deply.Service.Hex(),
 				"unit":       deply.Unit.Hex(),
 				"statement":  statement.Statement,
-				"ttl":        ttl,
+				"threshold":  threshold,
 				"action":     action,
 			}).Error("scheduler: Unknown plan action")
 		}
@@ -216,7 +233,7 @@ func (p *Planner) checkInstance(db *database.Database,
 }
 
 func (p *Planner) ApplyPlans(db *database.Database) (err error) {
-	deployments, err := deployment.GetAll(db)
+	deployments, err := deployment.GetAll(db, &bson.M{})
 	if err != nil {
 		return
 	}
