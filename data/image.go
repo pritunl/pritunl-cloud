@@ -3,8 +3,11 @@ package data
 import (
 	"context"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 
@@ -38,6 +41,329 @@ var (
 	backingImageLock = utils.NewMultiTimeoutLock(5 * time.Minute)
 )
 
+func getImageS3(db *database.Database, store *storage.Storage,
+	img *image.Image) (tmpPth string, err error) {
+
+	tmpPth = paths.GetImageTempPath()
+
+	logrus.WithFields(logrus.Fields{
+		"image_id":   img.Id.Hex(),
+		"storage_id": store.Id.Hex(),
+		"key":        img.Key,
+		"temp_path":  tmpPth,
+	}).Info("data: Downloading s3 image")
+
+	client, err := minio.New(store.Endpoint, &minio.Options{
+		Creds: credentials.NewStaticV4(
+			store.AccessKey,
+			store.SecretKey,
+			"",
+		),
+		Secure: !store.Insecure,
+	})
+	if err != nil {
+		err = &errortypes.ConnectionError{
+			errors.Wrap(err, "data: Failed to connect to storage"),
+		}
+		return
+	}
+
+	err = client.FGetObject(context.Background(), store.Bucket,
+		img.Key, tmpPth, minio.GetObjectOptions{})
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "data: Failed to download image"),
+		}
+		return
+	}
+
+	return
+}
+
+type Progress struct {
+	db         *database.Database
+	img        *image.Image
+	Total      int64
+	Wrote      int64
+	LastWrote  int64
+	LastReport int
+	LastTime   time.Time
+}
+
+func humanReadableSpeed(bytesPerSecond float64) string {
+	switch {
+	case bytesPerSecond >= 1<<30:
+		return fmt.Sprintf("%.2f GB/s", bytesPerSecond/(1<<30))
+	case bytesPerSecond >= 1<<20:
+		return fmt.Sprintf("%.2f MB/s", bytesPerSecond/(1<<20))
+	case bytesPerSecond >= 1<<10:
+		return fmt.Sprintf("%.2f KB/s", bytesPerSecond/(1<<10))
+	default:
+		return fmt.Sprintf("%.2f B/s", bytesPerSecond)
+	}
+}
+
+func (p *Progress) Write(data []byte) (n int, err error) {
+	n = len(data)
+	p.Wrote += int64(n)
+
+	percent := int(float64(p.Wrote) / float64(p.Total) * 100)
+	if percent >= p.LastReport+10 {
+		now := time.Now()
+		elapsed := now.Sub(p.LastTime).Seconds()
+
+		speed := float64(p.Wrote-p.LastWrote) / elapsed
+		speedStr := humanReadableSpeed(speed)
+
+		p.LastTime = now
+		p.LastWrote = p.Wrote
+		p.LastReport = percent - (percent % 10)
+
+		logrus.WithFields(logrus.Fields{
+			"key": p.img.Key,
+		}).Infof("data: Downloading web image %d%% %s",
+			p.LastReport, speedStr)
+	}
+
+	return
+}
+
+func getImageWeb(db *database.Database, store *storage.Storage,
+	img *image.Image) (tmpPth string, err error) {
+
+	tmpPth = paths.GetImageTempPath()
+
+	logrus.WithFields(logrus.Fields{
+		"image_id":   img.Id.Hex(),
+		"storage_id": store.Id.Hex(),
+		"key":        img.Key,
+		"temp_path":  tmpPth,
+	}).Info("data: Downloading web image")
+
+	u := store.GetWebUrl()
+	u.Path += "/" + img.Key
+
+	req, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		err = &errortypes.RequestError{
+			errors.Wrap(err, "data: Failed to create file request"),
+		}
+		return
+	}
+
+	req.Header.Set("User-Agent", "pritunl-cloud")
+
+	resp, err := clientLarge.Do(req)
+	if err != nil {
+		err = &errortypes.RequestError{
+			errors.Wrap(err, "data: File request error"),
+		}
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		err = &errortypes.RequestError{
+			errors.Newf(
+				"data: Bad status %d from file request",
+				resp.StatusCode,
+			),
+		}
+		return
+	}
+
+	contentLen, err := strconv.ParseInt(
+		resp.Header.Get("Content-Length"), 10, 64)
+	if err != nil {
+		err = &errortypes.RequestError{
+			errors.Wrap(err, "data: Invalid content length from file request"),
+		}
+		return
+	}
+
+	if contentLen <= 0 {
+		err = &errortypes.RequestError{
+			errors.Wrap(err, "data: Zero content length from file request"),
+		}
+		return
+	}
+
+	out, err := os.Create(tmpPth)
+	if err != nil {
+		err = &errortypes.RequestError{
+			errors.Wrap(err, "data: Failed to create temporary file"),
+		}
+		return
+	}
+	defer out.Close()
+
+	prog := &Progress{
+		db:       db,
+		img:      img,
+		Total:    contentLen,
+		LastTime: time.Now(),
+	}
+
+	_, err = io.Copy(out, io.TeeReader(resp.Body, prog))
+	if err != nil {
+		err = &errortypes.RequestError{
+			errors.Wrap(err, "data: Failed to download file"),
+		}
+		return
+	}
+
+	return
+}
+
+func checkImageSigS3(db *database.Database, store *storage.Storage,
+	img *image.Image, tmpPth string) (err error) {
+
+	sigPth := tmpPth + ".sig"
+	defer os.Remove(sigPth)
+
+	client, err := minio.New(store.Endpoint, &minio.Options{
+		Creds: credentials.NewStaticV4(
+			store.AccessKey,
+			store.SecretKey,
+			"",
+		),
+		Secure: !store.Insecure,
+	})
+	if err != nil {
+		err = &errortypes.ConnectionError{
+			errors.Wrap(err, "data: Failed to connect to storage"),
+		}
+		return
+	}
+
+	err = client.FGetObject(context.Background(), store.Bucket,
+		img.Key+".sig", sigPth, minio.GetObjectOptions{})
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "data: Failed to download image signature"),
+		}
+		return
+	}
+
+	signature, err := os.Open(sigPth)
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "data: Failed to open image signature"),
+		}
+		return
+	}
+	defer signature.Close()
+
+	tmpImg, err := os.Open(tmpPth)
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "data: Failed to open image"),
+		}
+		return
+	}
+	defer tmpImg.Close()
+
+	keyring, err := openpgp.ReadArmoredKeyRing(
+		strings.NewReader(constants.PritunlKeyring))
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "data: Failed to parse Pritunl keyring"),
+		}
+		return
+	}
+
+	entity, err := openpgp.CheckArmoredDetachedSignature(
+		keyring, tmpImg, signature)
+	if err != nil || entity == nil {
+		err = &errortypes.VerificationError{
+			errors.Wrap(err, "data: Image signature verification failed"),
+		}
+		return
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"id":         img.Id.Hex(),
+		"storage_id": store.Id.Hex(),
+		"key":        img.Key,
+	}).Info("data: Image signature successfully validated")
+
+	return
+}
+
+func checkImageSigWeb(db *database.Database, store *storage.Storage,
+	img *image.Image, tmpPth string) (err error) {
+
+	sigPth := tmpPth + ".sig"
+	defer os.Remove(sigPth)
+
+	u := store.GetWebUrl()
+	u.Path += "/" + img.Key + ".sig"
+
+	req, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		err = &errortypes.RequestError{
+			errors.Wrap(err, "data: Failed to create file request"),
+		}
+		return
+	}
+
+	req.Header.Set("User-Agent", "pritunl-cloud")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		err = &errortypes.RequestError{
+			errors.Wrap(err, "data: File request error"),
+		}
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		err = &errortypes.RequestError{
+			errors.Newf(
+				"data: Bad status %d from file request",
+				resp.StatusCode,
+			),
+		}
+		return
+	}
+
+	tmpImg, err := os.Open(tmpPth)
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "data: Failed to open image"),
+		}
+		return
+	}
+	defer tmpImg.Close()
+
+	keyring, err := openpgp.ReadArmoredKeyRing(
+		strings.NewReader(constants.PritunlKeyring))
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "data: Failed to parse Pritunl keyring"),
+		}
+		return
+	}
+
+	entity, err := openpgp.CheckArmoredDetachedSignature(
+		keyring, tmpImg, resp.Body)
+	if err != nil || entity == nil {
+		err = &errortypes.VerificationError{
+			errors.Wrap(err, "data: Image signature verification failed"),
+		}
+		return
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"id":         img.Id.Hex(),
+		"storage_id": store.Id.Hex(),
+		"key":        img.Key,
+	}).Info("data: Image signature successfully validated")
+
+	return
+}
+
 func getImage(db *database.Database, img *image.Image,
 	pth string) (err error) {
 
@@ -61,111 +387,57 @@ func getImage(db *database.Database, img *image.Image,
 		return
 	}
 
-	tmpPth := paths.GetImageTempPath()
-
 	store, err := storage.Get(db, img.Storage)
 	if err != nil {
 		return
+	}
+
+	tmpPth := ""
+	if img.Type == storage.Web {
+		tmpPth, err = getImageWeb(db, store, img)
+		if err != nil {
+			if tmpPth != "" {
+				os.Remove(tmpPth)
+			}
+			return
+		}
+	} else {
+		tmpPth, err = getImageS3(db, store, img)
+		if err != nil {
+			if tmpPth != "" {
+				os.Remove(tmpPth)
+			}
+			return
+		}
+	}
+
+	if img.Signed || store.Endpoint == "images.pritunl.com" {
+		if img.Type == storage.Web {
+			err = checkImageSigWeb(db, store, img, tmpPth)
+			if err != nil {
+				if tmpPth != "" {
+					os.Remove(tmpPth)
+				}
+				return
+			}
+		} else {
+			err = checkImageSigS3(db, store, img, tmpPth)
+			if err != nil {
+				if tmpPth != "" {
+					os.Remove(tmpPth)
+				}
+				return
+			}
+		}
 	}
 
 	logrus.WithFields(logrus.Fields{
 		"image_id":   img.Id.Hex(),
 		"storage_id": store.Id.Hex(),
 		"key":        img.Key,
+		"temp_path":  tmpPth,
 		"path":       pth,
-	}).Info("data: Downloading image")
-
-	client, err := minio.New(store.Endpoint, &minio.Options{
-		Creds: credentials.NewStaticV4(
-			store.AccessKey,
-			store.SecretKey,
-			"",
-		),
-		Secure: !store.Insecure,
-	})
-	if err != nil {
-		err = &errortypes.ConnectionError{
-			errors.Wrap(err, "data: Failed to connect to storage"),
-		}
-		return
-	}
-
-	err = client.FGetObject(context.Background(), store.Bucket,
-		img.Key, tmpPth, minio.GetObjectOptions{})
-	if err != nil {
-		os.Remove(tmpPth)
-
-		err = &errortypes.ReadError{
-			errors.Wrap(err, "data: Failed to download image"),
-		}
-		return
-	}
-
-	if strings.Contains(store.Endpoint, "images.pritunl.com") {
-		sigPth := tmpPth + ".sig"
-		defer os.Remove(sigPth)
-
-		err = client.FGetObject(context.Background(), store.Bucket,
-			img.Key+".sig", sigPth, minio.GetObjectOptions{})
-		if err != nil {
-			os.Remove(tmpPth)
-
-			err = &errortypes.ReadError{
-				errors.Wrap(err, "data: Failed to download image signature"),
-			}
-			return
-		}
-
-		signature, e := os.Open(sigPth)
-		if e != nil {
-			os.Remove(tmpPth)
-
-			err = &errortypes.ReadError{
-				errors.Wrap(e, "data: Failed to open image signature"),
-			}
-			return
-		}
-		defer signature.Close()
-
-		tmpImg, e := os.Open(tmpPth)
-		if e != nil {
-			os.Remove(tmpPth)
-
-			err = &errortypes.ReadError{
-				errors.Wrap(e, "data: Failed to open image"),
-			}
-			return
-		}
-		defer tmpImg.Close()
-
-		keyring, e := openpgp.ReadArmoredKeyRing(
-			strings.NewReader(constants.PritunlKeyring))
-		if e != nil {
-			os.Remove(tmpPth)
-
-			err = &errortypes.ParseError{
-				errors.Wrap(e, "data: Failed to parse Pritunl keyring"),
-			}
-			return
-		}
-
-		entity, e := openpgp.CheckArmoredDetachedSignature(
-			keyring, tmpImg, signature)
-		if e != nil || entity == nil {
-			os.Remove(tmpPth)
-
-			err = &errortypes.VerificationError{
-				errors.Wrap(e, "data: Image signature verification failed"),
-			}
-			return
-		}
-
-		logrus.WithFields(logrus.Fields{
-			"id":         img.Id.Hex(),
-			"storage_id": store.Id.Hex(),
-			"key":        img.Key,
-		}).Info("data: Image signature successfully validated")
-	}
+	}).Info("data: Downloaded image")
 
 	err = utils.Exec("", "mv", tmpPth, pth)
 	if err != nil {
@@ -242,7 +514,7 @@ func writeImageQcow(db *database.Database, dsk *disk.Disk) (
 		}
 	}
 
-	if img.Type == storage.Public {
+	if img.Type == storage.Public || img.Type == storage.Web {
 		cacheDir := node.Self.GetCachePath()
 
 		imagePth := path.Join(
@@ -536,7 +808,7 @@ func DeleteImage(db *database.Database, imgId primitive.ObjectID) (
 		return
 	}
 
-	if img.Type == storage.Public {
+	if img.Type == storage.Public || img.Type == storage.Web {
 		return
 	}
 
@@ -623,7 +895,7 @@ func DeleteImageOrg(db *database.Database, orgId, imgId primitive.ObjectID) (
 		return
 	}
 
-	if img.Type == storage.Public {
+	if img.Type == storage.Public || img.Type == storage.Web {
 		return
 	}
 
@@ -705,6 +977,13 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk,
 			logrus.WithFields(logrus.Fields{
 				"disk_id": dsk.Id.Hex(),
 			}).Error("data: Cannot snapshot disk without private storage")
+		}
+		return
+	}
+
+	if store.Type != storage.Private {
+		err = &errortypes.ConnectionError{
+			errors.New("data: Cannot upload to non-private storage"),
 		}
 		return
 	}
@@ -872,6 +1151,13 @@ func CreateBackup(db *database.Database, dsk *disk.Disk,
 		return
 	}
 
+	if store.Type != storage.Private {
+		err = &errortypes.ConnectionError{
+			errors.New("data: Cannot upload to non-private storage"),
+		}
+		return
+	}
+
 	logrus.WithFields(logrus.Fields{
 		"disk_id":    dsk.Id.Hex(),
 		"storage_id": store.Id.Hex(),
@@ -1011,6 +1297,13 @@ func RestoreBackup(db *database.Database, dsk *disk.Disk) (err error) {
 		return
 	}
 
+	if store.Type != storage.Private {
+		err = &errortypes.ConnectionError{
+			errors.New("data: Cannot restore from non-private storage"),
+		}
+		return
+	}
+
 	logrus.WithFields(logrus.Fields{
 		"disk_id":    dsk.Id.Hex(),
 		"image_id":   img.Id.Hex(),
@@ -1063,6 +1356,11 @@ func RestoreBackup(db *database.Database, dsk *disk.Disk) (err error) {
 
 func ImageAvailable(store *storage.Storage, img *image.Image) (
 	available bool, err error) {
+
+	if img.Type == storage.Web {
+		available = true
+		return
+	}
 
 	if strings.Contains(strings.ToLower(store.Endpoint), "oracle") {
 		client, e := minio.New(store.Endpoint, &minio.Options{
