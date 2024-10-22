@@ -21,16 +21,15 @@ import PageTextArea from "./PageTextArea";
 interface Props {
 	service: ServiceTypes.ServiceRo;
 	disabled: boolean;
-	onChange?: (value: string) => void;
+	unitChanged: boolean;
 	onEdit?: () => void;
+	onChange?: (units: ServiceTypes.Unit[]) => void;
 }
 
 interface State {
-	units: ServiceTypes.Unit[]
-	readOnly: boolean;
 	expandLeft: boolean;
 	expandRight: boolean;
-	activeUnit: number;
+	activeUnitId: string;
 }
 
 const css = {
@@ -115,6 +114,9 @@ const css = {
 	rules: {
 		marginBottom: '15px',
 	} as React.CSSProperties,
+	navButton: {
+		marginLeft: '10px',
+	} as React.CSSProperties,
 	settingsOpen: {
 		marginLeft: '10px',
 	} as React.CSSProperties,
@@ -128,56 +130,124 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 	constructor(props: any, context: any) {
 		super(props, context);
 		this.state = {
-			units: null,
-			readOnly: true,
 			expandLeft: true,
 			expandRight: false,
-			activeUnit: 0,
+			activeUnitId: "",
 		};
 	}
 
-	onEdit = (): void => {
-		let units = this.props.service.units || []
+	getActiveUnit = (): ServiceTypes.Unit => {
+		let units = [
+			...(this.props.service.units || []),
+		]
 
-		for (let unit of units) {
-			if (!unit.id) {
-				unit.id = MiscUtils.uuid()
+		let activeUnit = units.find(unit => unit.id === this.state.activeUnitId)
+		if (!activeUnit) {
+			for (let unit of units) {
+				if (!unit.delete) {
+					activeUnit = unit
+					break
+				}
+			}
+		}
+
+		return activeUnit
+	}
+
+	getActiveUnitIndex = (): number => {
+		let units = [
+			...(this.props.service.units || []),
+		]
+
+		let activeIndex = units.findIndex(
+			unit => unit.id === this.state.activeUnitId)
+		if (activeIndex === -1) {
+			for (let i = 0; i < units.length; i++) {
+				if (!units[i].delete) {
+					activeIndex = i
+					break
+				}
+			}
+		}
+
+		return activeIndex
+	}
+
+	onEdit = (): void => {
+		let units = [
+			...(this.props.service.units || []),
+		]
+
+		this.setState({
+			...this.state,
+			expandLeft: false,
+			expandRight: true,
+		})
+		this.props.onChange(units)
+	}
+
+	onNew = (): void => {
+		let units = [
+			...(this.props.service.units || []),
+		]
+
+		units.push({
+			id: MiscUtils.objectId(),
+			name: "new-unit",
+			spec: "",
+		})
+
+		this.props.onChange(units)
+	}
+
+	onDelete = (): void => {
+		let units = [
+			...(this.props.service.units || []),
+		]
+
+		let index = this.getActiveUnitIndex()
+		if (index !== -1) {
+			let unit = units[index]
+			units[index] = {
+				id: unit.id,
+				delete: true,
 			}
 		}
 
 		this.setState({
 			...this.state,
-			readOnly: false,
-			expandLeft: false,
-			expandRight: true,
-			units: units,
+			activeUnitId: "",
 		})
+		this.props.onChange(units)
 	}
 
 	onChange = (val: string): void => {
-		let units = this.props.service.units || []
+		let units = [
+			...(this.props.service.units || []),
+		]
 
-		for (let unit of units) {
-			if (!unit.id) {
-				unit.id = MiscUtils.uuid()
-			}
+		let index = this.getActiveUnitIndex()
+		if (index !== -1) {
+			units[index].spec = val
 		}
 
-		units[this.state.activeUnit].spec = val
-
-		this.setState({
-			...this.state,
-			units: units,
-		})
+		this.props.onChange(units)
 	}
 
 	render(): JSX.Element {
-		let units = this.state.units || this.props.service.units || [];
+		let units = [
+			...(this.props.service.units || []),
+		]
+		let activeUnit = this.getActiveUnit()
 
 		let expandLeft = this.state.expandLeft
 		let expandRight = this.state.expandRight
-		let expandIconClass: string
+		if (!this.props.unitChanged) {
+			expandLeft = true
+			expandRight = false
+		}
 
+		let expandIconClass: string
 		if (!expandLeft && !expandRight) {
 			expandIconClass = "bp5-button bp5-minimal bp5-icon-maximize"
 		} else {
@@ -187,18 +257,13 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 		let tabsElem: JSX.Element[] = []
 		for (let i = 0; i < units.length; ++i) {
 			let unit = units[i]
-			tabsElem.push(<Blueprint.Tab id={i} style={css.tab} key={i}>
+			if (unit.delete) {
+				continue
+			}
+
+			tabsElem.push(<Blueprint.Tab id={unit.id} style={css.tab} key={unit.id}>
 				<Blueprint.Icon icon={<Icons.Document size={12}/>}/>
 				{unit.name}
-				<button
-					className="bp5-button bp5-minimal bp5-small"
-					type="button"
-					style={css.editButton}
-					disabled={this.props.disabled}
-					onClick={(): void => {
-						console.log("test")
-					}}
-				><Blueprint.Icon icon={<Icons.Cog size={12}/>}/></button>
 			</Blueprint.Tab>)
 		}
 
@@ -213,6 +278,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 			}
 
 			let menuItem = <Blueprint.MenuItem
+				key={editorTheme}
 				className={className}
 				icon={<Icons.Font/>}
 				onClick={(): void => {
@@ -242,11 +308,12 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 				<Blueprint.NavbarGroup align={"left"}>
 					<Blueprint.Tabs
 						id={this.props.service.id}
+						selectedTabId={activeUnit ? activeUnit.id : null}
 						fill={true}
-						onChange={(newTabId, prevTabId): void => {
+						onChange={(newTabId): void => {
 							this.setState({
 								...this.state,
-								activeUnit: newTabId.valueOf() as number,
+								activeUnitId: newTabId.valueOf() as string,
 							})
 						}}
 					>
@@ -257,14 +324,14 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 					<Blueprint.NavbarDivider/>
 					<button
 						disabled={this.props.disabled}
-						hidden={!this.state.readOnly}
+						hidden={this.props.unitChanged}
 						className="bp5-button bp5-icon-edit"
 						onClick={(): void => {
 							this.onEdit()
 						}}
 					>Edit Spec</button>
 					<button
-						hidden={this.state.readOnly}
+						hidden={!this.props.unitChanged}
 						className={expandIconClass}
 						onClick={(): void => {
 							this.setState({
@@ -272,6 +339,32 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 								expandLeft: false,
 								expandRight: !expandRight,
 							})
+						}}
+					/>
+					<button
+						disabled={this.props.disabled}
+						hidden={!this.props.unitChanged}
+						style={css.navButton}
+						className="bp5-button bp5-icon-plus"
+						onClick={(): void => {
+							this.onNew()
+						}}
+					>New Unit</button>
+					<ConfirmButton
+						safe={true}
+						className="bp5-intent-danger bp5-icon-trash"
+						progressClassName="bp5-intent-danger"
+						dialogClassName="bp5-intent-danger bp5-icon-delete"
+						dialogLabel="Delete Unit"
+						label="Delete Unit"
+						confirmMsg="Permanently delete this unit"
+						confirmInput={false}
+						items={[activeUnit ? activeUnit.name : "null"]}
+						hidden={!this.props.unitChanged || !activeUnit}
+						style={css.navButton}
+						disabled={this.props.disabled}
+						onConfirm={(): void => {
+							this.onDelete()
 						}}
 					/>
 					<Blueprint.Popover
@@ -284,7 +377,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 							rightIcon={<Icons.CaretDown/>}
 							text="Settings"
 							style={css.settingsOpen}
-							hidden={this.state.readOnly}
+							hidden={!this.props.unitChanged}
 						/>
 					</Blueprint.Popover>
 				</Blueprint.NavbarGroup>
@@ -293,12 +386,11 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 				expandLeft={expandLeft}
 				expandRight={expandRight}
 				disabled={this.props.disabled}
-				readOnly={this.state.readOnly}
-				uuid={units[this.state.activeUnit].id}
-				value={units[this.state.activeUnit].spec}
+				readOnly={!this.props.unitChanged}
+				uuid={activeUnit ? activeUnit.id : null}
+				value={activeUnit ? activeUnit.spec : null}
 				onChange={(val: string): void => {
 					this.onChange(val)
-					this.props.onChange(val)
 				}}
 				onEdit={this.onEdit}
 			/>
