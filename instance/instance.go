@@ -66,6 +66,7 @@ type Instance struct {
 	Tpm                 bool               `bson:"tpm" json:"tpm"`
 	TpmSecret           string             `bson:"tpm_secret" json:"-"`
 	DhcpServer          bool               `bson:"dhcp_server" json:"dhcp_server"`
+	Pod                 bool               `bson:"pod" json:"pod"`
 	CloudType           string             `bson:"cloud_type" json:"cloud_type"`
 	CloudScript         string             `bson:"cloud_script" json:"cloud_script"`
 	DeleteProtection    bool               `bson:"delete_protection" json:"delete_protection"`
@@ -106,6 +107,7 @@ type Instance struct {
 	SpicePassword       string             `bson:"spice_password" json:"spice_password"`
 	SpicePort           int                `bson:"spice_port" json:"spice_port"`
 	Gui                 bool               `bson:"gui" json:"gui"`
+	Deployment          primitive.ObjectID `bson:"deployment" json:"deployment"`
 	Virt                *vm.VirtualMachine `bson:"-" json:"-"`
 	curVpc              primitive.ObjectID `bson:"-" json:"-"`
 	curSubnet           primitive.ObjectID `bson:"-" json:"-"`
@@ -816,6 +818,7 @@ func (i *Instance) LoadVirt(poolsMap map[primitive.ObjectID]*pool.Pool,
 		SecureBoot:       i.SecureBoot,
 		Tpm:              i.Tpm,
 		DhcpServer:       i.DhcpServer,
+		Deployment:       i.Deployment,
 		CloudType:        i.CloudType,
 		NoPublicAddress:  i.NoPublicAddress,
 		NoPublicAddress6: i.NoPublicAddress6,
