@@ -25,6 +25,7 @@ interface Props {
 interface State {
 	disabled: boolean;
 	changed: boolean;
+	unitChanged: boolean;
 	message: string;
 	service: ServiceTypes.Service;
 }
@@ -104,6 +105,7 @@ export default class ServiceDetailed extends React.Component<Props, State> {
 		this.state = {
 			disabled: false,
 			changed: false,
+			unitChanged: false,
 			message: '',
 			service: null,
 		};
@@ -131,7 +133,6 @@ export default class ServiceDetailed extends React.Component<Props, State> {
 		});
 	}
 
-
 	onSave = (): void => {
 		this.setState({
 			...this.state,
@@ -142,6 +143,7 @@ export default class ServiceDetailed extends React.Component<Props, State> {
 				...this.state,
 				message: 'Your changes have been saved',
 				changed: false,
+				unitChanged: false,
 				disabled: false,
 			});
 
@@ -151,6 +153,7 @@ export default class ServiceDetailed extends React.Component<Props, State> {
 						...this.state,
 						service: null,
 						changed: false,
+						unitChanged: false,
 					});
 				}
 			}, 1000);
@@ -310,27 +313,51 @@ export default class ServiceDetailed extends React.Component<Props, State> {
 				</div>
 			</div>
 			<ServiceWorkspace
-					service={service}
-					disabled={this.state.disabled}
-					onChange={(val: string): void => {
-						let service: any;
+				service={service}
+				disabled={this.state.disabled}
+				unitChanged={this.state.unitChanged}
+				onEdit={(): void => {
+					let service: any;
 
-						if (this.state.changed) {
-							service = {
-								...this.state.service,
-							};
-						} else {
-							service = {
-								...this.props.service,
-							};
-						}
+					if (this.state.changed) {
+						service = {
+							...this.state.service,
+						};
+					} else {
+						service = {
+							...this.props.service,
+						};
+					}
 
-						this.setState({
-							...this.state,
-							changed: true,
-							service: service,
-						});
-					}}
+					this.setState({
+						...this.state,
+						changed: true,
+						unitChanged: true,
+						service: service,
+					});
+				}}
+				onChange={(units: ServiceTypes.Unit[]): void => {
+					let service: any;
+
+					if (this.state.changed) {
+						service = {
+							...this.state.service,
+						};
+					} else {
+						service = {
+							...this.props.service,
+						};
+					}
+
+					service.units = units
+
+					this.setState({
+						...this.state,
+						changed: true,
+						unitChanged: true,
+						service: service,
+					});
+				}}
 			/>
 			<PageSave
 				style={css.save}
@@ -343,6 +370,7 @@ export default class ServiceDetailed extends React.Component<Props, State> {
 					this.setState({
 						...this.state,
 						changed: false,
+						unitChanged: false,
 						service: null,
 					});
 				}}
