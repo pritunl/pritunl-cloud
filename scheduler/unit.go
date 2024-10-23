@@ -8,31 +8,33 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/service"
 	"github.com/pritunl/pritunl-cloud/shape"
+	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/sirupsen/logrus"
 )
 
 type InstanceUnit struct {
 	unit  *service.Unit
+	spec  *spec.Spec
 	count int
 	nodes shape.Nodes
 }
 
 func (u *InstanceUnit) Schedule(db *database.Database) (err error) {
-	if u.unit.Kind != service.InstanceKind {
+	if u.unit.Kind != spec.InstanceKind {
 		err = &errortypes.ParseError{
 			errors.New("scheduler: Invalid unit kind"),
 		}
 		return
 	}
 
-	if u.unit.Instance == nil {
+	if u.spec.Instance == nil {
 		err = &errortypes.ParseError{
 			errors.New("scheduler: Missing instance data"),
 		}
 		return
 	}
 
-	if u.unit.Instance.Shape.IsZero() {
+	if u.spec.Instance.Shape.IsZero() {
 		err = &errortypes.ParseError{
 			errors.New("scheduler: Missing shape"),
 		}
@@ -49,13 +51,13 @@ func (u *InstanceUnit) Schedule(db *database.Database) (err error) {
 		Count: u.count,
 	}
 
-	shpe, err := shape.Get(db, u.unit.Instance.Shape)
+	shpe, err := shape.Get(db, u.spec.Instance.Shape)
 	if err != nil {
 		return
 	}
 
-	u.nodes, err = shpe.GetAllNodes(db, u.unit.Instance.Processors,
-		u.unit.Instance.Memory)
+	u.nodes, err = shpe.GetAllNodes(db, u.spec.Instance.Processors,
+		u.spec.Instance.Memory)
 	if err != nil {
 		return
 	}
@@ -64,7 +66,7 @@ func (u *InstanceUnit) Schedule(db *database.Database) (err error) {
 		logrus.WithFields(logrus.Fields{
 			"service": u.unit.Service.Id.Hex(),
 			"unit":    u.unit.Id.Hex(),
-			"shape":   u.unit.Instance.Shape.Hex(),
+			"shape":   u.spec.Instance.Shape.Hex(),
 		}).Error("scheduler: Failed to find nodes to schedule")
 		return
 	}
@@ -124,8 +126,8 @@ func (u *InstanceUnit) processNodes(nodes shape.Nodes) (
 	nodes.Sort()
 
 	for _, nde := range nodes {
-		if nde.SizeResource(u.unit.Instance.Memory,
-			u.unit.Instance.Processors) {
+		if nde.SizeResource(u.spec.Instance.Memory,
+			u.spec.Instance.Processors) {
 
 			primaryNodes = append(primaryNodes, nde)
 		} else {
@@ -196,8 +198,8 @@ func (u *InstanceUnit) scheduleComplex(db *database.Database,
 			})
 			count -= 1
 
-			nde.CpuUnitsRes += u.unit.Instance.Processors
-			nde.MemoryUnitsRes += u.unit.Instance.MemoryUnits()
+			nde.CpuUnitsRes += u.spec.Instance.Processors
+			nde.MemoryUnitsRes += u.spec.Instance.MemoryUnits()
 
 			if count <= 0 {
 				break
@@ -212,8 +214,8 @@ func (u *InstanceUnit) scheduleComplex(db *database.Database,
 			count -= 1
 			overscheduled += 1
 
-			nde.CpuUnitsRes += u.unit.Instance.Processors
-			nde.MemoryUnitsRes += u.unit.Instance.MemoryUnits()
+			nde.CpuUnitsRes += u.spec.Instance.Processors
+			nde.MemoryUnitsRes += u.spec.Instance.MemoryUnits()
 
 			if count <= 0 {
 				break
@@ -241,8 +243,8 @@ func (u *InstanceUnit) scheduleComplex(db *database.Database,
 					})
 					count -= 1
 
-					nde.CpuUnitsRes += u.unit.Instance.Processors
-					nde.MemoryUnitsRes += u.unit.Instance.MemoryUnits()
+					nde.CpuUnitsRes += u.spec.Instance.Processors
+					nde.MemoryUnitsRes += u.spec.Instance.MemoryUnits()
 					break
 				}
 
@@ -267,10 +269,12 @@ func (u *InstanceUnit) scheduleComplex(db *database.Database,
 						Offset: offset,
 					})
 					count -= 1
-					overscheduled += 1
+					if i == 0 {
+						overscheduled += 1
+					}
 
-					nde.CpuUnitsRes += u.unit.Instance.Processors
-					nde.MemoryUnitsRes += u.unit.Instance.MemoryUnits()
+					nde.CpuUnitsRes += u.spec.Instance.Processors
+					nde.MemoryUnitsRes += u.spec.Instance.MemoryUnits()
 					break
 				}
 
@@ -300,7 +304,7 @@ func (u *InstanceUnit) scheduleComplex(db *database.Database,
 		logrus.WithFields(logrus.Fields{
 			"service":       u.unit.Service.Id.Hex(),
 			"unit":          u.unit.Id.Hex(),
-			"shape":         u.unit.Instance.Shape.Hex(),
+			"shape":         u.spec.Instance.Shape.Hex(),
 			"overscheduled": overscheduled,
 		}).Info("scheduler: Overscheduled unit")
 	}
@@ -308,11 +312,12 @@ func (u *InstanceUnit) scheduleComplex(db *database.Database,
 	return
 }
 
-func NewInstanceUnit(unit *service.Unit) (
+func NewInstanceUnit(unit *service.Unit, spc *spec.Spec) (
 	instUnit *InstanceUnit) {
 
 	instUnit = &InstanceUnit{
 		unit: unit,
+		spec: spc,
 	}
 
 	return
