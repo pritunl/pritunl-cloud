@@ -25,6 +25,7 @@ import InstancesStore from "../stores/InstancesStore";
 import ImagesStore from "../stores/ImagesStore";
 import PlansStore from "../stores/PlansStore";
 import CertificatesStore from "../stores/CertificatesStore";
+import SecretsStore from "../stores/SecretsStore";
 import CompletionStore from "../completion/Store"
 import * as VpcTypes from "../types/VpcTypes";
 import * as DatacenterTypes from "../types/DatacenterTypes";
@@ -36,6 +37,7 @@ import * as ImageTypes from "../types/ImageTypes";
 import * as InstanceTypes from "../types/InstanceTypes";
 import * as PlanTypes from "../types/PlanTypes";
 import * as CertificateTypes from "../types/CertificateTypes";
+import * as SecretTypes from "../types/SecretTypes";
 import * as DomainActions from "../actions/DomainActions";
 import * as VpcActions from "../actions/VpcActions";
 import * as DatacenterActions from "../actions/DatacenterActions";
@@ -47,6 +49,7 @@ import * as ImageActions from "../actions/ImageActions";
 import * as InstanceActions from "../actions/InstanceActions";
 import * as PlanActions from "../actions/PlanActions";
 import * as CertificateActions from "../actions/CertificateActions";
+import * as SecretActions from "../actions/SecretActions";
 import * as DomainTypes from "../types/DomainTypes";
 
 interface Selected {
@@ -72,6 +75,7 @@ interface State {
 	instances: InstanceTypes.InstancesRo;
 	plans: PlanTypes.PlansRo;
 	certificates: CertificateTypes.CertificatesRo;
+	secrets: SecretTypes.SecretsRo;
 	selected: Selected;
 	opened: Opened;
 	newOpened: boolean;
@@ -126,6 +130,7 @@ export default class Services extends React.Component<{}, State> {
 			instances: InstancesStore.instances,
 			plans: PlansStore.plans,
 			certificates: CertificatesStore.certificates,
+			secrets: SecretsStore.secrets,
 			selected: {},
 			opened: {},
 			newOpened: false,
@@ -156,6 +161,7 @@ export default class Services extends React.Component<{}, State> {
 		InstancesStore.addChangeListener(this.onChange);
 		PlansStore.addChangeListener(this.onChange);
 		CertificatesStore.addChangeListener(this.onChange);
+		SecretsStore.addChangeListener(this.onChange);
 		ServiceActions.sync();
 		OrganizationActions.sync();
 		DomainActions.syncName();
@@ -169,6 +175,7 @@ export default class Services extends React.Component<{}, State> {
 		InstanceActions.sync();
 		PlanActions.sync();
 		CertificateActions.sync();
+		SecretActions.sync();
 	}
 
 	componentWillUnmount(): void {
@@ -185,6 +192,7 @@ export default class Services extends React.Component<{}, State> {
 		InstancesStore.removeChangeListener(this.onChange);
 		PlansStore.removeChangeListener(this.onChange);
 		CertificatesStore.removeChangeListener(this.onChange);
+		SecretsStore.removeChangeListener(this.onChange);
 	}
 
 	onChange = (): void => {
@@ -201,6 +209,8 @@ export default class Services extends React.Component<{}, State> {
 			instances: InstancesStore.instances,
 			plans: PlansStore.plans,
 			certificates: CertificatesStore.certificates,
+			secrets: SecretsStore.secrets,
+			services: ServicesStore.services,
 		})
 
 		let services = ServicesStore.services;
@@ -234,6 +244,7 @@ export default class Services extends React.Component<{}, State> {
 			instances: InstancesStore.instances,
 			plans: PlansStore.plans,
 			certificates: CertificatesStore.certificates,
+			secrets: SecretsStore.secrets,
 			selected: selected,
 			opened: opened,
 		});
@@ -368,7 +379,7 @@ export default class Services extends React.Component<{}, State> {
 			}
 		}
 
-		return <Page>
+		return <Page wide={true}>
 			<PageHeader>
 				<div className="layout horizontal wrap" style={css.header}>
 					<h2 style={css.heading}>Services</h2>
