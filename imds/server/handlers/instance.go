@@ -2,17 +2,9 @@ package handlers
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/pritunl-cloud/imds/server/config"
 )
 
-type instanceData struct {
-	Name  string `json:"name"`
-	State string `json:"state"`
-}
-
 func instanceGet(c *gin.Context) {
-	data := &instanceData{
-		Name:  "test",
-		State: "start",
-	}
-	c.JSON(200, data)
+	c.JSON(200, config.Config.Instance)
 }

@@ -8,6 +8,7 @@ import (
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/pritunl-cloud/imds/server/config"
 	"github.com/pritunl/pritunl-cloud/imds/server/constants"
 	"github.com/pritunl/pritunl-cloud/imds/server/errortypes"
 	"github.com/pritunl/pritunl-cloud/imds/server/handlers"
@@ -20,6 +21,7 @@ type Router struct {
 
 func (r *Router) Run() (err error) {
 	logger.WithFields(logger.Fields{
+		"config":  config.Path,
 		"host":    constants.Host,
 		"port":    constants.Port,
 		"version": constants.Version,
@@ -58,7 +60,11 @@ func (r *Router) Init() {
 	handlers.Register(router)
 
 	r.server = &http.Server{
-		Addr:           fmt.Sprintf("%s:%d", constants.Host, constants.Port),
+		Addr: fmt.Sprintf(
+			"%s:%d",
+			constants.Host,
+			constants.Port,
+		),
 		Handler:        router,
 		ReadTimeout:    30 * time.Second,
 		WriteTimeout:   30 * time.Second,

@@ -19,7 +19,9 @@ type ConfigData struct {
 	Instance     *types.Instance      `json:"instance"`
 	Vpc          *types.Vpc           `json:"vpc"`
 	Subnet       *types.Subnet        `json:"subnet"`
+	Secrets      []*types.Secret      `json:"secrets"`
 	Certificates []*types.Certificate `json:"certificates"`
+	Services     []*types.Service     `json:"services"`
 }
 
 func Load() (err error) {

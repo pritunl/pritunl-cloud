@@ -77,8 +77,10 @@ func Register(engine *gin.Engine) {
 	engine.Use(Errors)
 
 	engine.GET("/query/:resource", queryGet)
-	engine.GET("/query/:resource/:name", queryGet)
-	engine.GET("/query/:resource/:name/:key", queryGet)
+	engine.GET("/query/:resource/:key1", queryGet)
+	engine.GET("/query/:resource/:key1/:key2", queryGet)
+	engine.GET("/query/:resource/:key1/:key2/:key3", queryGet)
+	engine.GET("/query/:resource/:key1/:key2/:key3/:key4", queryGet)
 	engine.GET("/instance", instanceGet)
 	engine.GET("/vpc", vpcGet)
 	engine.GET("/subnet", subnetGet)

@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/pritunl/pritunl-cloud/imds/server/config"
@@ -29,6 +30,9 @@ func main() {
 	port := 0
 	flag.IntVar(&port, "port", 80, "Server bind port")
 
+	client := ""
+	flag.StringVar(&host, "client", "127.0.0.1", "Client address")
+
 	confPath := ""
 	flag.StringVar(&confPath, "conf", "", "Configuration path")
 
@@ -38,6 +42,8 @@ func main() {
 	case "start":
 		constants.Host = strings.Split(host, "/")[0]
 		constants.Port = port
+		constants.Client = client
+		constants.Secret = os.Getenv("SECRET")
 		config.Path = confPath
 
 		routr := &router.Router{}

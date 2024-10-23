@@ -5,14 +5,14 @@ import (
 )
 
 const (
-	Version       = "1.0.3229.20"
-	Authenticated = false
-	AuthKey       = "test"
-	ConfRefresh   = 500 * time.Millisecond
+	Version     = "1.0.3229.20"
+	ConfRefresh = 500 * time.Millisecond
 )
 
 var (
 	Host      = "127.0.0.1"
 	Port      = 80
+	Client    = "127.0.0.1"
+	Secret    = ""
 	Interrupt = false
 )
