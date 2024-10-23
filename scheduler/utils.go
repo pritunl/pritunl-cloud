@@ -4,6 +4,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/service"
+	"github.com/pritunl/pritunl-cloud/spec"
 )
 
 func Exists(db *database.Database, schdId Resource) (
@@ -122,28 +123,36 @@ func Remove(db *database.Database, schdId Resource) (err error) {
 	return
 }
 
-func Schedule(db *database.Database, item interface{}) (err error) {
-	if unit, ok := item.(*service.Unit); ok {
-		exists, e := Exists(db, Resource{
-			Service: unit.Service.Id,
-			Unit:    unit.Id,
-		})
-		if e != nil {
-			err = e
-			return
-		}
+func Schedule(db *database.Database, unit *service.Unit) (err error) {
+	exists, e := Exists(db, Resource{
+		Service: unit.Service.Id,
+		Unit:    unit.Id,
+	})
+	if e != nil {
+		err = e
+		return
+	}
 
-		if exists {
-			return
-		}
+	if exists {
+		return
+	}
 
-		switch unit.Kind {
-		case service.InstanceKind:
-			schd := NewInstanceUnit(unit)
-			err = schd.Schedule(db)
-			if err != nil {
-				return
-			}
+	if unit.Hash == "" {
+		// TODO
+		return
+	}
+
+	spc, err := spec.Get(db, unit.GetSpecHash())
+	if err != nil {
+		return
+	}
+
+	switch unit.Kind {
+	case spec.InstanceKind:
+		schd := NewInstanceUnit(unit, spc)
+		err = schd.Schedule(db)
+		if err != nil {
+			return
 		}
 	}
 
