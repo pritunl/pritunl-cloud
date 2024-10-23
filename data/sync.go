@@ -2,6 +2,9 @@ package data
 
 import (
 	"context"
+	"crypto/tls"
+	"encoding/json"
+	"net/http"
 	"strings"
 	"time"
 
@@ -18,16 +21,27 @@ import (
 )
 
 var (
-	syncLock = utils.NewMultiTimeoutLock(1 * time.Minute)
+	syncLock        = utils.NewMultiTimeoutLock(1 * time.Minute)
+	clientTransport = &http.Transport{
+		DisableKeepAlives:   true,
+		TLSHandshakeTimeout: 10 * time.Second,
+		TLSClientConfig: &tls.Config{
+			MinVersion: tls.VersionTLS12,
+			MaxVersion: tls.VersionTLS13,
+		},
+	}
+	client = &http.Client{
+		Transport: clientTransport,
+		Timeout:   30 * time.Second,
+	}
+	clientLarge = &http.Client{
+		Transport: clientTransport,
+		Timeout:   30 * time.Minute,
+	}
 )
 
-func Sync(db *database.Database, store *storage.Storage) (err error) {
-	if store.Endpoint == "" {
-		return
-	}
-
-	lockId := syncLock.Lock(store.Id.Hex())
-	defer syncLock.Unlock(store.Id.Hex(), lockId)
+func getImagesS3(db *database.Database, store *storage.Storage) (
+	images []*image.Image, err error) {
 
 	client, err := minio.New(store.Endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(store.AccessKey, store.SecretKey, ""),
@@ -40,16 +54,14 @@ func Sync(db *database.Database, store *storage.Storage) (err error) {
 		return
 	}
 
-	images := []*image.Image{}
+	images = []*image.Image{}
 	signedKeys := set.NewSet()
-	remoteKeys := set.NewSet()
 	for object := range client.ListObjects(
 		context.Background(),
 		store.Bucket, minio.ListObjectsOptions{
 			Recursive: true,
 		},
 	) {
-
 		if object.Err != nil {
 			err = &errortypes.RequestError{
 				errors.Wrap(object.Err, "storage: Failed to list objects"),
@@ -61,7 +73,6 @@ func Sync(db *database.Database, store *storage.Storage) (err error) {
 			signedKeys.Add(strings.TrimRight(object.Key, ".sig"))
 		} else if strings.HasSuffix(object.Key, ".qcow2") {
 			etag := image.GetEtag(object)
-			remoteKeys.Add(object.Key)
 
 			img := &image.Image{
 				Storage:      store.Id,
@@ -93,6 +104,114 @@ func Sync(db *database.Database, store *storage.Storage) (err error) {
 
 	for _, img := range images {
 		img.Signed = signedKeys.Contains(img.Key)
+	}
+
+	return
+}
+
+type Files struct {
+	Version int `json:"version"`
+	Files   []File
+}
+
+type File struct {
+	Name         string    `json:"name"`
+	Signed       bool      `json:"signed"`
+	Hash         string    `json:"hash"`
+	LastModified time.Time `json:"last_modified"`
+}
+
+func getImagesWeb(db *database.Database, store *storage.Storage) (
+	images []*image.Image, err error) {
+
+	u := store.GetWebUrl()
+	u.Path += "/files.json"
+
+	req, e := http.NewRequest("GET", u.String(), nil)
+	if e != nil {
+		err = &errortypes.RequestError{
+			errors.Wrap(e, "data: Failed to file listing request"),
+		}
+		return
+	}
+
+	req.Header.Set("User-Agent", "pritunl-cloud")
+
+	resp, e := client.Do(req)
+	if e != nil {
+		err = &errortypes.RequestError{
+			errors.Wrap(e, "data: File listing request error"),
+		}
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		err = &errortypes.RequestError{
+			errors.Newf(
+				"data: Bad status %d from file listing request",
+				resp.StatusCode,
+			),
+		}
+		return
+	}
+
+	filesData := &Files{}
+	err = json.NewDecoder(resp.Body).Decode(filesData)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(
+				err, "data: Failed to unmarshal file listing",
+			),
+		}
+		return
+	}
+
+	images = []*image.Image{}
+	for _, object := range filesData.Files {
+		if strings.HasSuffix(object.Name, ".qcow2") {
+			img := &image.Image{
+				Storage:      store.Id,
+				Key:          object.Name,
+				Firmware:     image.Unknown,
+				Etag:         object.Hash,
+				Type:         storage.Web,
+				Signed:       object.Signed,
+				LastModified: object.LastModified,
+			}
+
+			images = append(images, img)
+		}
+	}
+
+	return
+}
+
+func Sync(db *database.Database, store *storage.Storage) (err error) {
+	if store.Endpoint == "" {
+		return
+	}
+
+	lockId := syncLock.Lock(store.Id.Hex())
+	defer syncLock.Unlock(store.Id.Hex(), lockId)
+
+	var images []*image.Image
+
+	if store.Type == storage.Web || store.Endpoint == "images.pritunl.com" {
+		images, err = getImagesWeb(db, store)
+		if err != nil {
+			return
+		}
+	} else {
+		images, err = getImagesS3(db, store)
+		if err != nil {
+			return
+		}
+	}
+
+	remoteKeys := set.NewSet()
+	for _, img := range images {
+		remoteKeys.Add(img.Key)
 
 		if img.Signed {
 			if strings.Contains(img.Key, "_efi") ||
