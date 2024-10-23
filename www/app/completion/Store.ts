@@ -321,6 +321,46 @@ class CompletionStore extends EventEmitter {
 		}
 		this._resources["certificate"] = resourceList
 
+		this._kinds.push({
+			name: "secret",
+			label: "Secret",
+			title: "**Secret**",
+		})
+		resourceList = []
+		for (let item of resources.secrets) {
+			resourceList.push({
+				id: item.id,
+				name: item.name,
+				info: [
+					{
+						label: "**Name**",
+						value: item.name,
+					},
+				],
+			})
+		}
+		this._resources["secret"] = resourceList
+
+		this._kinds.push({
+			name: "service",
+			label: "Service",
+			title: "**Service**",
+		})
+		resourceList = []
+		for (let item of resources.services) {
+			resourceList.push({
+				id: item.id,
+				name: item.name,
+				info: [
+					{
+						label: "**Name**",
+						value: item.name,
+					},
+				],
+			})
+		}
+		this._resources["service"] = resourceList
+
 		this._kindMap = {}
 		for (let i = 0; i < this._kinds.length; i++) {
 			this._kindMap[this._kinds[i].name] = i
