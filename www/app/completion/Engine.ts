@@ -67,7 +67,7 @@ export function handleAfterMount(
 			const lineContent = model.getLineContent(position.lineNumber)
 
 			const match = lineContent.match(
-				/{{\.([a-zA-Z0-9-]*)\.([a-zA-Z0-9-]*)}}/)
+				/{{\/([a-zA-Z0-9-]*)\/([a-zA-Z0-9-]*)}}/)
 			if (!match) {
 				return null
 			}
@@ -107,7 +107,7 @@ export function handleAfterMount(
 	})
 
 	monaco.languages.registerCompletionItemProvider("markdown", {
-		triggerCharacters: ["{", ".", "}"],
+		triggerCharacters: ["{", "/", "}"],
 		provideCompletionItems: (model, position) => {
 			const textBeforeCursor = model.getValueInRange({
 				startLineNumber: position.lineNumber,
@@ -116,7 +116,7 @@ export function handleAfterMount(
 				endColumn: position.column,
 			})
 
-			const resourceMatch = textBeforeCursor.match(/{{\.([a-zA-Z0-9-]*)\.$/)
+			const resourceMatch = textBeforeCursor.match(/{{\/([a-zA-Z0-9-]*)\/$/)
 			if (resourceMatch) {
 				let kind = CompletionStore.kind(resourceMatch[1])
 				if (!kind) {
@@ -148,7 +148,7 @@ export function handleAfterMount(
 				}
 			}
 
-			const kindMatch = textBeforeCursor.match(/{{\.$/)
+			const kindMatch = textBeforeCursor.match(/{{\/$/)
 			if (kindMatch) {
 				const range = {
 					startLineNumber: position.lineNumber,
