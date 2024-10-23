@@ -42,61 +42,83 @@ func (s *Services) processSchedule(schd *scheduler.Scheduler) {
 			servicesLimiter.Release()
 		}()
 
-		db := database.GetDatabase()
-		defer db.Close()
-
-		servc, err := service.Get(db, schd.Id.Service)
+		err := s.deploySchedule(schd)
 		if err != nil {
-			return
-		}
-
-		unit := servc.GetUnit(schd.Id.Unit)
-		if unit == nil {
 			logrus.WithFields(logrus.Fields{
 				"service": schd.Id.Service.Hex(),
 				"unit":    schd.Id.Unit.Hex(),
-			}).Error("deploy: Service deploy unit lookup failed")
+				"error":   err,
+			}).Error("deploy: Service deploy failed")
 			return
 		}
+	}()
+}
 
-		spc, err := spec.Get(db, spec.Hash{
-			Unit: unit.Id,
-			Hash: unit.Hash,
-		})
-		if err != nil {
-			return
-		}
+func (s *Services) deploySchedule(schd *scheduler.Scheduler) (err error) {
+	db := database.GetDatabase()
+	defer db.Close()
 
-		tickets := schd.Tickets[s.stat.Node().Id]
-		if tickets != nil && len(tickets) > 0 {
-			now := time.Now()
-			for _, ticket := range tickets {
-				start := schd.Created.Add(
-					time.Duration(ticket.Offset) * time.Second)
-				if now.After(start) {
-					exists, e := schd.Refresh(db)
-					if e != nil {
-						err = e
-						return
-					}
+	servc, err := service.Get(db, schd.Id.Service)
+	if err != nil {
+		return
+	}
 
-					if !exists || schd.Consumed >= schd.Count {
-						return
-					}
+	unit := servc.GetUnit(schd.Id.Unit)
+	if unit == nil {
+		logrus.WithFields(logrus.Fields{
+			"service": schd.Id.Service.Hex(),
+			"unit":    schd.Id.Unit.Hex(),
+		}).Info("deploy: Service deploy nil unit")
+		return
+	}
 
-					err = s.DeploySpec(db, unit, spc)
-					if err != nil {
-						return
-					}
+	spc, err := spec.Get(db, spec.Hash{
+		Unit: unit.Id,
+		Hash: unit.Hash,
+	})
+	if err != nil {
+		return
+	}
 
-					err = schd.Consume(db)
-					if err != nil {
-						return
-					}
+	tickets := schd.Tickets[s.stat.Node().Id]
+	if tickets != nil && len(tickets) > 0 {
+		now := time.Now()
+		for _, ticket := range tickets {
+			start := schd.Created.Add(
+				time.Duration(ticket.Offset) * time.Second)
+			if now.After(start) {
+				exists, e := schd.Refresh(db)
+				if e != nil {
+					err = e
+					return
+				}
+
+				if !exists {
+					logrus.WithFields(logrus.Fields{
+						"service": schd.Id.Service.Hex(),
+						"unit":    schd.Id.Unit.Hex(),
+					}).Info("deploy: Service deploy schedule lost")
+					return
+				}
+
+				if schd.Consumed >= schd.Count {
+					return
+				}
+
+				err = s.DeploySpec(db, unit, spc)
+				if err != nil {
+					return
+				}
+
+				err = schd.Consume(db)
+				if err != nil {
+					return
 				}
 			}
 		}
-	}()
+	}
+
+	return
 }
 
 func (s *Services) DeploySpec(db *database.Database,
