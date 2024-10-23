@@ -35,6 +35,7 @@ const css = {
 		flex: 1,
 		minWidth: '280px',
 		margin: '0',
+		fontSize: '12px',
 	} as React.CSSProperties,
 	groupSpaced: {
 		position: 'relative',
@@ -42,6 +43,7 @@ const css = {
 		minWidth: '280px',
 		margin: '0',
 		padding: '8px 0 0 0 ',
+		fontSize: '12px',
 	} as React.CSSProperties,
 	groupSpacedExt: {
 		position: 'relative',
@@ -49,6 +51,7 @@ const css = {
 		minWidth: '280px',
 		margin: '0',
 		padding: '0 0 0 0 ',
+		fontSize: '12px',
 	} as React.CSSProperties,
 	groupSplit: {
 		position: 'relative',
@@ -131,6 +134,9 @@ export default class ServiceEditor extends React.Component<Props, State> {
 
 	componentWillUnmount(): void {
 		Theme.removeChangeListener(this.onThemeChange);
+		this.editor = undefined
+		this.monaco = undefined
+		this.states = {}
 	}
 
 	onThemeChange = (): void => {
@@ -141,7 +147,7 @@ export default class ServiceEditor extends React.Component<Props, State> {
 	}
 
 	updateState(): void {
-		if (!this.editor) {
+		if (!this.editor || !this.editor.getModel()) {
 			return
 		}
 
@@ -226,6 +232,11 @@ export default class ServiceEditor extends React.Component<Props, State> {
 						monaco: MonacoEditor.Monaco): void => {
 					this.monaco = monaco
 					this.editor = editor
+					this.editor.onDidDispose((): void => {
+						this.editor = undefined
+						this.monaco = undefined
+						this.states = {}
+					})
 					this.updateState()
 
 					CompletionEngine.handleAfterMount(editor, monaco)
@@ -234,7 +245,7 @@ export default class ServiceEditor extends React.Component<Props, State> {
 					folding: false,
 					fontSize: 12,
 					fontFamily: Theme.monospaceFont,
-					fontWeight: "500",
+					fontWeight: Theme.monospaceWeight,
 					tabSize: 4,
 					detectIndentation: false,
 					rulers: [80],
