@@ -8,6 +8,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type VirtualMachine struct {
@@ -49,6 +50,7 @@ type VirtualMachine struct {
 	PciDevices          []*PciDevice       `json:"pci_devices"`
 	DriveDevices        []*DriveDevice     `json:"drive_devices"`
 	IscsiDevices        []*IscsiDevice     `json:"iscsi_devices"`
+	ImdsSecret          string             `json:"-"`
 }
 
 func (v *VirtualMachine) HasExternalNetwork() bool {
@@ -66,6 +68,15 @@ func (v *VirtualMachine) ProtectTmp() bool {
 
 func (v *VirtualMachine) Running() bool {
 	return v.State == Starting || v.State == Running
+}
+
+func (v *VirtualMachine) GenerateImdsSecret() (err error) {
+	v.ImdsSecret, err = utils.RandStr(32)
+	if err != nil {
+		return
+	}
+
+	return
 }
 
 type Disk struct {
