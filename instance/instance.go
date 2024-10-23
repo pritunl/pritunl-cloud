@@ -66,7 +66,6 @@ type Instance struct {
 	Tpm                 bool               `bson:"tpm" json:"tpm"`
 	TpmSecret           string             `bson:"tpm_secret" json:"-"`
 	DhcpServer          bool               `bson:"dhcp_server" json:"dhcp_server"`
-	Pod                 bool               `bson:"pod" json:"pod"`
 	CloudType           string             `bson:"cloud_type" json:"cloud_type"`
 	CloudScript         string             `bson:"cloud_script" json:"cloud_script"`
 	DeleteProtection    bool               `bson:"delete_protection" json:"delete_protection"`
@@ -765,9 +764,9 @@ func (i *Instance) Insert(db *database.Database) (err error) {
 	}
 
 	for n := 0; n < 2000; n++ {
-		_, err = coll.InsertOne(db, i)
-		if err != nil {
-			err = database.ParseError(err)
+		resp, e := coll.InsertOne(db, i)
+		if e != nil {
+			err = database.ParseError(e)
 			if _, ok := err.(*database.DuplicateKeyError); ok {
 				i.GenerateUnixId()
 				err = nil
@@ -776,6 +775,7 @@ func (i *Instance) Insert(db *database.Database) (err error) {
 			return
 		}
 
+		i.Id = resp.InsertedID.(primitive.ObjectID)
 		return
 	}
 
@@ -834,6 +834,10 @@ func (i *Instance) LoadVirt(poolsMap map[primitive.ObjectID]*pool.Pool,
 		for _, dsk := range disks {
 			switch dsk.Type {
 			case disk.Lvm:
+				if poolsMap == nil {
+					continue
+				}
+
 				pl := poolsMap[dsk.Pool]
 				if pl == nil {
 					continue
