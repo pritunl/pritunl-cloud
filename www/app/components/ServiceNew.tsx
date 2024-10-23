@@ -4,6 +4,7 @@ import * as Constants from '../Constants';
 import * as ServiceTypes from '../types/ServiceTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import * as ServiceActions from '../actions/ServiceActions';
+import * as MiscUtils from '../utils/MiscUtils';
 import PageInput from './PageInput';
 import PageInputButton from './PageInputButton';
 import PageCreate from './PageCreate';
@@ -23,6 +24,7 @@ interface State {
 	closed: boolean;
 	disabled: boolean;
 	changed: boolean;
+	unitChanged: boolean;
 	message: string;
 	service: ServiceTypes.Service;
 }
@@ -89,6 +91,7 @@ export default class ServiceNew extends React.Component<Props, State> {
 			closed: false,
 			disabled: false,
 			changed: false,
+			unitChanged: false,
 			message: '',
 			service: this.default,
 		};
@@ -110,6 +113,13 @@ export default class ServiceNew extends React.Component<Props, State> {
 		return {
 			id: null,
 			name: 'New service',
+			units: [
+				{
+					id: MiscUtils.objectId(),
+					name: "new-unit",
+					spec: "",
+				}
+			]
 		};
 	}
 
@@ -137,15 +147,12 @@ export default class ServiceNew extends React.Component<Props, State> {
 			...this.state.service,
 		};
 
-		if (this.props.organizations.length && !service.organization) {
-			service.organization = this.props.organizations[0].id;
-		}
-
 		ServiceActions.create(service).then((): void => {
 			this.setState({
 				...this.state,
 				message: 'Service created successfully',
 				changed: false,
+				unitChanged: false,
 			});
 
 			setTimeout((): void => {
@@ -153,6 +160,7 @@ export default class ServiceNew extends React.Component<Props, State> {
 					...this.state,
 					disabled: false,
 					changed: true,
+					unitChanged: true,
 				});
 			}, 2000);
 		}).catch((): void => {
@@ -250,6 +258,28 @@ export default class ServiceNew extends React.Component<Props, State> {
 				<ServiceWorkspace
 					service={service}
 					disabled={this.state.disabled}
+					unitChanged={this.state.unitChanged}
+					onEdit={(): void => {
+						this.setState({
+							...this.state,
+							changed: true,
+							unitChanged: true,
+						});
+					}}
+					onChange={(units: ServiceTypes.Unit[]): void => {
+						let service = {
+							...this.state.service,
+						};
+
+						service.units = units
+
+						this.setState({
+							...this.state,
+							changed: true,
+							unitChanged: true,
+							service: service,
+						});
+					}}
 				/>
 				<PageCreate
 					style={css.save}
