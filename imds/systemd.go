@@ -3,8 +3,10 @@ package imds
 import (
 	"fmt"
 
+	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/features"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/permission"
@@ -22,6 +24,7 @@ After=network.target
 [Service]
 Type=simple
 User=%s
+Environment="SECRET=%s"
 ExecStart=/usr/bin/pritunl-cloud-imds -conf=%s -host=%s -port=%d start
 PrivateTmp=true
 ProtectHome=true
@@ -39,6 +42,7 @@ After=network.target
 [Service]
 Type=simple
 User=root
+Environment="SECRET=%s"
 ExecStart=/usr/sbin/ip netns exec %s /usr/bin/pritunl-cloud-imds -conf=%s -host=%s -port=%d start
 PrivateTmp=true
 ProtectHome=true
@@ -48,19 +52,25 @@ ProtectKernelTunables=true
 AmbientCapabilities=CAP_NET_BIND_SERVICE
 `
 
-// TODO Adjust netns firewall to limit access
-
-func WriteService(vmId primitive.ObjectID, namespace string,
+func WriteService(vmId primitive.ObjectID, namespace, secret string,
 	systemdNamespace bool) (err error) {
 
 	unitPath := paths.GetUnitPathImds(vmId)
 	confPath := paths.GetImdsConfPath(vmId)
+
+	if secret == "" {
+		err = &errortypes.ParseError{
+			errors.New("imds: Cannot start imds with empty secret"),
+		}
+		return
+	}
 
 	output := ""
 	if systemdNamespace {
 		output = fmt.Sprintf(
 			systemdNamespaceTemplate,
 			permission.GetUserName(vmId),
+			secret,
 			confPath,
 			settings.Hypervisor.ImdsAddress,
 			settings.Hypervisor.ImdsPort,
@@ -69,6 +79,7 @@ func WriteService(vmId primitive.ObjectID, namespace string,
 	} else {
 		output = fmt.Sprintf(
 			systemdTemplate,
+			secret,
 			namespace,
 			confPath,
 			settings.Hypervisor.ImdsAddress,
@@ -76,7 +87,7 @@ func WriteService(vmId primitive.ObjectID, namespace string,
 		)
 	}
 
-	err = utils.CreateWrite(unitPath, output, 0644)
+	err = utils.CreateWrite(unitPath, output, 0600)
 	if err != nil {
 		return
 	}
@@ -97,7 +108,8 @@ func Start(db *database.Database, virt *vm.VirtualMachine) (err error) {
 
 	_ = systemd.Stop(unit)
 
-	err = WriteService(virt.Id, namespace, hasSystemdNamespace)
+	err = WriteService(virt.Id, namespace, virt.ImdsSecret,
+		hasSystemdNamespace)
 	if err != nil {
 		return
 	}
