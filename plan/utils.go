@@ -61,6 +61,19 @@ func ExistsOrg(db *database.Database, orgId, plnId primitive.ObjectID) (
 	return
 }
 
+func GetOne(db *database.Database, query *bson.M) (pln *Plan, err error) {
+	coll := db.Plans()
+	pln = &Plan{}
+
+	err = coll.FindOne(db, query).Decode(pln)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetAll(db *database.Database, query *bson.M) (
 	plns []*Plan, err error) {
 

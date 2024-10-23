@@ -22,6 +22,19 @@ func Get(db *database.Database, poolId primitive.ObjectID) (
 	return
 }
 
+func GetOne(db *database.Database, query *bson.M) (pl *Pool, err error) {
+	coll := db.Pools()
+	pl = &Pool{}
+
+	err = coll.FindOne(db, query).Decode(pl)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetAll(db *database.Database, query *bson.M) (
 	pools []*Pool, err error) {
 

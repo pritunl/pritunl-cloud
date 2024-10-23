@@ -9,12 +9,12 @@ import (
 )
 
 func Get(db *database.Database, serviceId primitive.ObjectID) (
-	pd *Service, err error) {
+	srvc *Service, err error) {
 
 	coll := db.Services()
-	pd = &Service{}
+	srvc = &Service{}
 
-	err = coll.FindOneId(serviceId, pd)
+	err = coll.FindOneId(serviceId, srvc)
 	if err != nil {
 		return
 	}
@@ -22,16 +22,29 @@ func Get(db *database.Database, serviceId primitive.ObjectID) (
 	return
 }
 
-func GetOrg(db *database.Database, orgId, pdId primitive.ObjectID) (
-	pd *Service, err error) {
+func GetOrg(db *database.Database, orgId, srvcId primitive.ObjectID) (
+	srvc *Service, err error) {
 
 	coll := db.Services()
-	pd = &Service{}
+	srvc = &Service{}
 
 	err = coll.FindOne(db, &bson.M{
-		"_id":          pdId,
+		"_id":          srvcId,
 		"organization": orgId,
-	}).Decode(pd)
+	}).Decode(srvc)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func GetOne(db *database.Database, query *bson.M) (srvc *Service, err error) {
+	coll := db.Services()
+	srvc = &Service{}
+
+	err = coll.FindOne(db, query).Decode(srvc)
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -54,14 +67,14 @@ func GetAll(db *database.Database, query *bson.M) (
 	defer cursor.Close(db)
 
 	for cursor.Next(db) {
-		nde := &Service{}
-		err = cursor.Decode(nde)
+		srvc := &Service{}
+		err = cursor.Decode(srvc)
 		if err != nil {
 			err = database.ParseError(err)
 			return
 		}
 
-		services = append(services, nde)
+		services = append(services, srvc)
 	}
 
 	err = cursor.Err()
@@ -118,14 +131,14 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	defer cursor.Close(db)
 
 	for cursor.Next(db) {
-		pd := &Service{}
-		err = cursor.Decode(pd)
+		srvc := &Service{}
+		err = cursor.Decode(srvc)
 		if err != nil {
 			err = database.ParseError(err)
 			return
 		}
 
-		services = append(services, pd)
+		services = append(services, srvc)
 	}
 
 	err = cursor.Err()

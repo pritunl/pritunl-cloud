@@ -38,11 +38,26 @@ func GetOrg(db *database.Database, orgId, certId primitive.ObjectID) (
 	return
 }
 
-func GetAll(db *database.Database) (certs []*Certificate, err error) {
+func GetOne(db *database.Database, query *bson.M) (cert *Certificate, err error) {
+	coll := db.Certificates()
+	cert = &Certificate{}
+
+	err = coll.FindOne(db, query).Decode(cert)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func GetAll(db *database.Database,
+	query *bson.M) (certs []*Certificate, err error) {
+
 	coll := db.Certificates()
 	certs = []*Certificate{}
 
-	cursor, err := coll.Find(db, bson.M{})
+	cursor, err := coll.Find(db, query)
 	if err != nil {
 		err = database.ParseError(err)
 		return

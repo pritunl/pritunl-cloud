@@ -21,6 +21,19 @@ func Get(db *database.Database, zoneId primitive.ObjectID) (
 	return
 }
 
+func GetOne(db *database.Database, query *bson.M) (zne *Zone, err error) {
+	coll := db.Zones()
+	zne = &Zone{}
+
+	err = coll.FindOne(db, query).Decode(zne)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetAll(db *database.Database) (zones []*Zone, err error) {
 	coll := db.Zones()
 	zones = []*Zone{}

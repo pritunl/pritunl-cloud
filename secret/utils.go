@@ -29,6 +29,19 @@ func Get(db *database.Database, secrId primitive.ObjectID) (
 	return
 }
 
+func GetOne(db *database.Database, query *bson.M) (secr *Secret, err error) {
+	coll := db.Secrets()
+	secr = &Secret{}
+
+	err = coll.FindOne(db, query).Decode(secr)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetOrg(db *database.Database, orgId, secrId primitive.ObjectID) (
 	secr *Secret, err error) {
 
@@ -47,11 +60,13 @@ func GetOrg(db *database.Database, orgId, secrId primitive.ObjectID) (
 	return
 }
 
-func GetAll(db *database.Database) (secrs []*Secret, err error) {
+func GetAll(db *database.Database, query *bson.M) (
+	secrs []*Secret, err error) {
+
 	coll := db.Secrets()
 	secrs = []*Secret{}
 
-	cursor, err := coll.Find(db, bson.M{})
+	cursor, err := coll.Find(db, query)
 	if err != nil {
 		err = database.ParseError(err)
 		return

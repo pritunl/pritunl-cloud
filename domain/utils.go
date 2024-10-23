@@ -40,6 +40,19 @@ func GetOrg(db *database.Database, orgId, domnId primitive.ObjectID) (
 	return
 }
 
+func GetOne(db *database.Database, query *bson.M) (domn *Domain, err error) {
+	coll := db.Domains()
+	domn = &Domain{}
+
+	err = coll.FindOne(db, query).Decode(domn)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func ExistsOrg(db *database.Database, orgId, domnId primitive.ObjectID) (
 	exists bool, err error) {
 

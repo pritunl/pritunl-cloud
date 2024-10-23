@@ -54,6 +54,19 @@ func GetAll(db *database.Database) (nodes []*Node, err error) {
 	return
 }
 
+func GetOne(db *database.Database, query *bson.M) (nde *Node, err error) {
+	coll := db.Nodes()
+	nde = &Node{}
+
+	err = coll.FindOne(db, query).Decode(nde)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetAllNamesMap(db *database.Database, query *bson.M) (
 	nodeNames map[primitive.ObjectID]string, err error) {
 
@@ -259,14 +272,16 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	return
 }
 
-func GetAllShape(db *database.Database, zone primitive.ObjectID,
+func GetAllShape(db *database.Database, zones []primitive.ObjectID,
 	roles []string) (nodes []*Node, err error) {
 
 	coll := db.Nodes()
 	nodes = []*Node{}
 
 	query := &bson.M{
-		"zone": zone,
+		"zone": &bson.M{
+			"$in": zones,
+		},
 		"network_roles": &bson.M{
 			"$in": roles,
 		},

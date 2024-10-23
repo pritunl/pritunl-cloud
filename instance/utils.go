@@ -61,6 +61,19 @@ func GetOrg(db *database.Database, orgId, instId primitive.ObjectID) (
 	return
 }
 
+func GetOne(db *database.Database, query *bson.M) (inst *Instance, err error) {
+	coll := db.Instances()
+	inst = &Instance{}
+
+	err = coll.FindOne(db, query).Decode(inst)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func ExistsOrg(db *database.Database, orgId, instId primitive.ObjectID) (
 	exists bool, err error) {
 

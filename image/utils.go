@@ -89,6 +89,19 @@ func GetOrgPublic(db *database.Database, orgId, imgId primitive.ObjectID) (
 	return
 }
 
+func GetOne(db *database.Database, query *bson.M) (img *Image, err error) {
+	coll := db.Images()
+	img = &Image{}
+
+	err = coll.FindOne(db, query).Decode(img)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func Distinct(db *database.Database, storeId primitive.ObjectID) (
 	keys []string, err error) {
 

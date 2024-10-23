@@ -22,6 +22,19 @@ func Get(db *database.Database, shapeId primitive.ObjectID) (
 	return
 }
 
+func GetOne(db *database.Database, query *bson.M) (shpe *Shape, err error) {
+	coll := db.Shapes()
+	shpe = &Shape{}
+
+	err = coll.FindOne(db, query).Decode(shpe)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetAll(db *database.Database, query *bson.M) (
 	shapes []*Shape, err error) {
 

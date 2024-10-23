@@ -214,6 +214,19 @@ func GetAll(db *database.Database, query *bson.M) (
 	return
 }
 
+func GetOne(db *database.Database, query *bson.M) (vc *Vpc, err error) {
+	coll := db.Vpcs()
+	vc = &Vpc{}
+
+	err = coll.FindOne(db, query).Decode(vc)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetAllNames(db *database.Database, query *bson.M) (
 	vpcs []*Vpc, err error) {
 

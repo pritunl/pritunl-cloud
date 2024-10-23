@@ -79,6 +79,19 @@ func GetAll(db *database.Database) (dcs []*Datacenter, err error) {
 	return
 }
 
+func GetOne(db *database.Database, query *bson.M) (dc *Datacenter, err error) {
+	coll := db.Datacenters()
+	dc = &Datacenter{}
+
+	err = coll.FindOne(db, query).Decode(dc)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetAllNamesOrg(db *database.Database, orgId primitive.ObjectID) (
 	dcs []*Datacenter, err error) {
 
