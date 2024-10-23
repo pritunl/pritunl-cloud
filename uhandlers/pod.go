@@ -128,9 +128,18 @@ func servicePost(c *gin.Context) {
 		DeleteProtection: data.DeleteProtection,
 	}
 
-	pd.InitUnits(data.Units)
-
 	errData, err := pd.Validate(db)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		c.JSON(400, errData)
+		return
+	}
+
+	errData, err = pd.InitUnits(db, data.Units)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
