@@ -4,6 +4,7 @@ import * as Constants from '../Constants';
 import * as ServiceTypes from '../types/ServiceTypes';
 import * as ServiceActions from '../actions/ServiceActions';
 import * as OrganizationTypes from "../types/OrganizationTypes";
+import ServicesStore from '../stores/ServicesStore';
 import PageInput from './PageInput';
 import PageSelect from './PageSelect';
 import PageInfo from './PageInfo';
@@ -27,6 +28,7 @@ interface State {
 	changed: boolean;
 	unitChanged: boolean;
 	message: string;
+	mode: string;
 	service: ServiceTypes.Service;
 }
 
@@ -107,6 +109,7 @@ export default class ServiceDetailed extends React.Component<Props, State> {
 			changed: false,
 			unitChanged: false,
 			message: '',
+			mode: "view",
 			service: null,
 		};
 	}
@@ -138,6 +141,19 @@ export default class ServiceDetailed extends React.Component<Props, State> {
 			...this.state,
 			disabled: true,
 		});
+
+		ServicesStore.addChangeListen((): void => {
+			if (!this.state.changed) {
+				this.setState({
+					...this.state,
+					service: null,
+					changed: false,
+					unitChanged: false,
+					mode: "view",
+				});
+			}
+		});
+
 		ServiceActions.commit(this.state.service).then((): void => {
 			this.setState({
 				...this.state,
@@ -151,15 +167,13 @@ export default class ServiceDetailed extends React.Component<Props, State> {
 				if (!this.state.changed) {
 					this.setState({
 						...this.state,
+						message: '',
 						service: null,
 						changed: false,
 						unitChanged: false,
+						mode: "view",
 					});
-				}
-			}, 1000);
-
-			setTimeout((): void => {
-				if (!this.state.changed) {
+				} else {
 					this.setState({
 						...this.state,
 						message: '',
@@ -316,24 +330,11 @@ export default class ServiceDetailed extends React.Component<Props, State> {
 				service={service}
 				disabled={this.state.disabled}
 				unitChanged={this.state.unitChanged}
-				onEdit={(): void => {
-					let service: any;
-
-					if (this.state.changed) {
-						service = {
-							...this.state.service,
-						};
-					} else {
-						service = {
-							...this.props.service,
-						};
-					}
-
+				mode={this.state.mode}
+				onMode={(mode: string): void => {
 					this.setState({
 						...this.state,
-						changed: true,
-						unitChanged: true,
-						service: service,
+						mode: mode,
 					});
 				}}
 				onChange={(units: ServiceTypes.Unit[]): void => {
@@ -355,6 +356,7 @@ export default class ServiceDetailed extends React.Component<Props, State> {
 						...this.state,
 						changed: true,
 						unitChanged: true,
+						mode: "edit",
 						service: service,
 					});
 				}}
