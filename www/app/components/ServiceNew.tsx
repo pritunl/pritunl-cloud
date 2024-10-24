@@ -5,6 +5,7 @@ import * as ServiceTypes from '../types/ServiceTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import * as ServiceActions from '../actions/ServiceActions';
 import * as MiscUtils from '../utils/MiscUtils';
+import ServicesStore from '../stores/ServicesStore';
 import PageInput from './PageInput';
 import PageInputButton from './PageInputButton';
 import PageCreate from './PageCreate';
@@ -26,6 +27,7 @@ interface State {
 	changed: boolean;
 	unitChanged: boolean;
 	message: string;
+	mode: string;
 	service: ServiceTypes.Service;
 }
 
@@ -93,6 +95,7 @@ export default class ServiceNew extends React.Component<Props, State> {
 			changed: false,
 			unitChanged: false,
 			message: '',
+			mode: "view",
 			service: this.default,
 		};
 	}
@@ -154,15 +157,6 @@ export default class ServiceNew extends React.Component<Props, State> {
 				changed: false,
 				unitChanged: false,
 			});
-
-			setTimeout((): void => {
-				this.setState({
-					...this.state,
-					disabled: false,
-					changed: true,
-					unitChanged: true,
-				});
-			}, 2000);
 		}).catch((): void => {
 			this.setState({
 				...this.state,
@@ -259,11 +253,11 @@ export default class ServiceNew extends React.Component<Props, State> {
 					service={service}
 					disabled={this.state.disabled}
 					unitChanged={this.state.unitChanged}
-					onEdit={(): void => {
+					mode={this.state.mode}
+					onMode={(mode: string): void => {
 						this.setState({
 							...this.state,
-							changed: true,
-							unitChanged: true,
+							mode: mode,
 						});
 					}}
 					onChange={(units: ServiceTypes.Unit[]): void => {
