@@ -12,6 +12,7 @@ import (
 type csrfData struct {
 	Token         string `json:"token"`
 	Theme         string `json:"theme"`
+	EditorTheme   string `json:"editor_theme"`
 	OracleLicense bool   `json:"oracle_license"`
 }
 
@@ -39,6 +40,7 @@ func csrfGet(c *gin.Context) {
 	data := &csrfData{
 		Token:         token,
 		Theme:         usr.Theme,
+		EditorTheme:   usr.EditorTheme,
 		OracleLicense: oracleLicense,
 	}
 	c.JSON(200, data)
