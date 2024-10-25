@@ -3,6 +3,13 @@ export function uuid(): string {
 	return (+new Date() + Math.floor(Math.random() * 999999)).toString(36);
 }
 
+export function objectId(): string {
+    const timestamp = Math.floor(Date.now() / 1000).toString(16);
+    const randomBytes = Math.random().toString(16).substring(2, 12);
+    const counter = Math.floor(Math.random() * 0xffffff).toString(16);
+    return (timestamp + randomBytes + counter).padEnd(24, '0');
+}
+
 export function objectIdNil(objId: string): boolean {
 	return !objId || objId == '000000000000000000000000';
 }
