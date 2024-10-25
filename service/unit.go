@@ -21,9 +21,10 @@ type Unit struct {
 }
 
 type UnitInput struct {
-	Id   primitive.ObjectID `bson:"id" json:"id"`
-	Name string             `bson:"name" json:"name"`
-	Spec string             `bson:"spec" json:"spec"`
+	Id     primitive.ObjectID `json:"id"`
+	Name   string             `json:"name"`
+	Spec   string             `json:"spec"`
+	Delete bool               `json:"delete"`
 }
 
 type Deployment struct {
