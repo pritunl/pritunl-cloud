@@ -40,6 +40,7 @@ type VirtualMachine struct {
 	SecureBoot          bool               `json:"secure_boot"`
 	Tpm                 bool               `json:"tpm"`
 	DhcpServer          bool               `json:"dhcp_server"`
+	Deployment          primitive.ObjectID `json:"deployment"`
 	CloudType           string             `json:"cloud_type"`
 	NoPublicAddress     bool               `json:"no_public_address"`
 	NoPublicAddress6    bool               `json:"no_public_address6"`
@@ -189,6 +190,21 @@ func (v *VirtualMachine) Commit(db *database.Database) (err error) {
 		}
 	}
 
+	if !v.Deployment.IsZero() {
+		coll = db.Deployments()
+
+		err = coll.UpdateId(v.Deployment, &bson.M{
+			"$set": &bson.M{
+				"public_ips":  addrs,
+				"public_ips6": addrs6,
+			},
+		})
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+	}
+
 	return
 }
 
@@ -221,6 +237,21 @@ func (v *VirtualMachine) CommitOracleIps(db *database.Database) (err error) {
 	if err != nil {
 		err = database.ParseError(err)
 		return
+	}
+
+	if !v.Deployment.IsZero() {
+		coll = db.Deployments()
+
+		err = coll.UpdateId(v.Deployment, &bson.M{
+			"$set": &bson.M{
+				"oracle_private_ips": []string{v.OraclePrivateIp},
+				"oracle_public_ips":  []string{v.OraclePublicIp},
+			},
+		})
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
 	}
 
 	return
