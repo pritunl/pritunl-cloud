@@ -42,6 +42,7 @@ type NetConf struct {
 	SpaceHostIface       string
 	SpaceOracleIface     string
 	SpaceOracleVirtIface string
+	SpaceImdsIface       string
 
 	BridgeInternalIface string
 
@@ -64,6 +65,7 @@ type NetConf struct {
 
 	SpaceHostIfaceMtu  string
 	SystemHostIfaceMtu string
+	ImdsIfaceMtu       string
 
 	VirtIfaceMtu string
 

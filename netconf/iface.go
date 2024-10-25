@@ -100,6 +100,7 @@ func (n *NetConf) Iface2(db *database.Database, clean bool) (err error) {
 	n.SpaceHostIface = vm.GetIfaceHost(n.Virt.Id, 0)
 	n.SpaceOracleIface = vm.GetIfaceOracle(n.Virt.Id, 0)
 	n.SpaceOracleVirtIface = vm.GetIfaceOracleVirt(n.Virt.Id, 0)
+	n.SpaceImdsIface = "imds0"
 
 	n.BridgeInternalIface = vm.GetIfaceVlan(n.Virt.Id, 0)
 
@@ -132,6 +133,7 @@ func (n *NetConf) Iface2(db *database.Database, clean bool) (err error) {
 
 		n.SpaceHostIfaceMtu = strconv.Itoa(mtuSizeInternal)
 		n.SystemHostIfaceMtu = strconv.Itoa(mtuSizeInternal)
+		n.ImdsIfaceMtu = strconv.Itoa(mtuSizeInternal)
 
 		if n.Vxlan {
 			mtuSizeExternal -= 50
