@@ -22,6 +22,7 @@ type Task struct {
 	Retry      bool
 	Handler    func(*database.Database) error
 	RunOnStart bool
+	DebugNodes []string
 }
 
 func (t *Task) scheduled(hour, min int) bool {
@@ -40,6 +41,18 @@ func (t *Task) scheduled(hour, min int) bool {
 func (t *Task) run(now time.Time) {
 	db := database.GetDatabase()
 	defer db.Close()
+
+	if t.DebugNodes != nil {
+		matched := false
+		for _, ndeName := range t.DebugNodes {
+			if node.Self.Name == ndeName {
+				matched = true
+			}
+		}
+		if !matched {
+			return
+		}
+	}
 
 	id := fmt.Sprintf("%s-%d", t.Name, now.Unix()-int64(now.Second()))
 	if t.Seconds != 0 {
