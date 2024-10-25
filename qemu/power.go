@@ -7,6 +7,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/dhcps"
+	"github.com/pritunl/pritunl-cloud/imds"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/qmp"
@@ -55,6 +56,11 @@ func PowerOn(db *database.Database, inst *instance.Instance,
 	}
 
 	err = utils.ExistsMkdir(settings.Hypervisor.RunPath, 0755)
+	if err != nil {
+		return
+	}
+
+	err = virt.GenerateImdsSecret()
 	if err != nil {
 		return
 	}
@@ -138,6 +144,11 @@ func PowerOn(db *database.Database, inst *instance.Instance,
 	}
 
 	err = NetworkConf(db, virt)
+	if err != nil {
+		return
+	}
+
+	err = imds.Start(db, virt)
 	if err != nil {
 		return
 	}

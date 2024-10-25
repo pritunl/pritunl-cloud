@@ -19,6 +19,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
+	"github.com/pritunl/pritunl-cloud/imds"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/iproute"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -578,6 +579,11 @@ func Create(db *database.Database, inst *instance.Instance,
 		}
 	}
 
+	err = virt.GenerateImdsSecret()
+	if err != nil {
+		return
+	}
+
 	err = cloudinit.Write(db, inst, virt, true)
 	if err != nil {
 		return
@@ -663,6 +669,11 @@ func Create(db *database.Database, inst *instance.Instance,
 	}
 
 	err = NetworkConf(db, virt)
+	if err != nil {
+		return
+	}
+
+	err = imds.Start(db, virt)
 	if err != nil {
 		return
 	}
