@@ -190,10 +190,17 @@ type ArraySelectFields struct {
 	pull        []primitive.ObjectID
 	rootKey     string
 	idKey       string
+	modified    bool
+}
+
+func (a *ArraySelectFields) Modified() bool {
+	return a.modified
 }
 
 func (a *ArraySelectFields) Update(docId primitive.ObjectID,
 	update bson.M) {
+
+	a.modified = true
 
 	matchKey := fmt.Sprintf("elem%d", a.count)
 	a.count += 1
@@ -210,16 +217,19 @@ func (a *ArraySelectFields) Update(docId primitive.ObjectID,
 }
 
 func (a *ArraySelectFields) Push(doc interface{}) {
+	a.modified = true
 	a.push = append(a.push, doc)
 }
 
 func (a *ArraySelectFields) Delete(docId primitive.ObjectID) {
+	a.modified = true
 	a.pull = append(a.pull, docId)
 }
 
 func (a *ArraySelectFields) GetQuery() (query bson.M, filters []interface{}) {
-	query = bson.M{
-		"$set": a.setFields,
+	query = bson.M{}
+	if len(a.setFields) > 0 {
+		query["$set"] = a.setFields
 	}
 	if len(a.unsetFields) > 0 {
 		query["$unset"] = a.unsetFields
