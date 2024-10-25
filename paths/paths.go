@@ -109,6 +109,15 @@ func GetImageTempPath() string {
 		fmt.Sprintf("image-%s", primitive.NewObjectID().Hex()))
 }
 
+func GetImdsPath() string {
+	return path.Join(node.Self.GetVirtPath(), "imds")
+}
+
+func GetImdsConfPath(instId primitive.ObjectID) string {
+	return path.Join(GetImdsPath(),
+		fmt.Sprintf("%s.json", instId.Hex()))
+}
+
 func GetDiskMountPath() string {
 	return path.Join(GetTempPath(), primitive.NewObjectID().Hex())
 }
@@ -171,6 +180,15 @@ func GetUnitNameTpm(virtId primitive.ObjectID) string {
 func GetUnitPathTpm(virtId primitive.ObjectID) string {
 	return path.Join(settings.Hypervisor.SystemdPath,
 		GetUnitNameTpm(virtId))
+}
+
+func GetUnitNameImds(virtId primitive.ObjectID) string {
+	return fmt.Sprintf("pritunl_imds_%s.service", virtId.Hex())
+}
+
+func GetUnitPathImds(virtId primitive.ObjectID) string {
+	return path.Join(settings.Hypervisor.SystemdPath,
+		GetUnitNameImds(virtId))
 }
 
 func GetPidPath(virtId primitive.ObjectID) string {
