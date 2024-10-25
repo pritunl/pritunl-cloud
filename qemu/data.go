@@ -10,6 +10,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/hugepages"
+	"github.com/pritunl/pritunl-cloud/imds"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/permission"
 	"github.com/pritunl/pritunl-cloud/qmp"
@@ -125,6 +126,7 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	unitPathServer6 := paths.GetUnitPathDhcp6(virt.Id, 0)
 	unitPathServerNdp := paths.GetUnitPathNdp(virt.Id, 0)
 	tpmPath := paths.GetTpmPath(virt.Id)
+	imdsPath := paths.GetImdsConfPath(virt.Id)
 	unitPathTpm := paths.GetUnitPathTpm(virt.Id)
 	sockPath := paths.GetSockPath(virt.Id)
 	sockQmpPath := paths.GetQmpSockPath(virt.Id)
@@ -145,6 +147,7 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	}).Info("qemu: Destroying virtual machine")
 
 	_ = tpm.Stop(db, virt)
+	_ = imds.Stop(db, virt)
 	_ = dhcps.Stop(db, virt)
 
 	exists, err := utils.Exists(unitPath)
@@ -318,6 +321,11 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	}
 
 	err = utils.RemoveAll(tpmPath)
+	if err != nil {
+		return
+	}
+
+	err = utils.RemoveAll(imdsPath)
 	if err != nil {
 		return
 	}
