@@ -8,6 +8,7 @@ import * as ServiceActions from '../actions/ServiceActions';
 import ServicesUnitStore from '../stores/ServicesUnitStore';
 import * as MiscUtils from '../utils/MiscUtils';
 import * as Theme from '../Theme';
+import * as Alert from '../Alert';
 import PageInput from './PageInput';
 import PageSelect from './PageSelect';
 import PageInfo from './PageInfo';
@@ -29,10 +30,17 @@ interface Props {
 }
 
 interface State {
+	disabled: boolean;
 	expandLeft: boolean;
 	expandRight: boolean;
 	activeUnitId: string;
+	selectedDeployments: Selected;
+	lastSelectedDeployment: string;
 	unit: ServiceTypes.ServiceUnit;
+}
+
+interface Selected {
+	[key: string]: boolean;
 }
 
 const css = {
@@ -134,12 +142,17 @@ const css = {
 };
 
 export default class ServiceWorkspace extends React.Component<Props, State> {
+	interval: NodeJS.Timer;
+
 	constructor(props: any, context: any) {
 		super(props, context);
 		this.state = {
+			disabled: false,
 			expandLeft: true,
 			expandRight: false,
 			activeUnitId: "",
+			selectedDeployments: {},
+			lastSelectedDeployment: null,
 			unit: null,
 		};
 	}
@@ -150,10 +163,22 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 		if (activeUnit && !activeUnit.new) {
 			ServiceActions.syncUnit(this.props.service.id, activeUnit.id);
 		}
+
+		this.interval = setInterval(() => {
+			let activeUnit = this.getActiveUnit()
+			if (activeUnit && !activeUnit.new) {
+				ServiceActions.syncUnit(this.props.service.id, activeUnit.id);
+			}
+		}, 3000);
 	}
 
 	componentWillUnmount(): void {
 		ServicesUnitStore.removeChangeListener(this.onChange);
+		clearInterval(this.interval);
+	}
+
+	get selectedDeployments(): boolean {
+		return !!Object.keys(this.state.selectedDeployments).length;
 	}
 
 	onChange = (): void => {
@@ -166,9 +191,51 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 			unit = null
 		}
 
+		let selectedDeployments: Selected = {};
+		let curSelectedDeployments = this.state.selectedDeployments;
+
+		if (activeUnit) {
+			let deployments = unit.deployments || []
+			deployments.forEach((deployment: ServiceTypes.Deployment): void => {
+				if (curSelectedDeployments[deployment.id]) {
+					selectedDeployments[deployment.id] = true;
+				}
+			})
+		}
+
 		this.setState({
 			...this.state,
+			selectedDeployments: selectedDeployments,
 			unit: unit,
+		});
+	}
+
+	onDeleteDeployments = (): void => {
+		let activeUnit = this.getActiveUnit()
+		if (!activeUnit) {
+			return
+		}
+
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+		ServiceActions.removeMultiUnit(
+				this.props.service.id, activeUnit.id,
+				Object.keys(this.state.selectedDeployments)).then((): void => {
+
+			Alert.success('Successfully deleted deployments');
+
+			this.setState({
+				...this.state,
+				selectedDeployments: {},
+				disabled: false,
+			});
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
 		});
 	}
 
@@ -365,6 +432,11 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 			{fontMenuItems}
 		</Blueprint.Menu>
 
+		let selectedNames: string[] = [];
+		for (let deploymentId of Object.keys(this.state.selectedDeployments)) {
+			selectedNames.push(deploymentId)
+		}
+
 		return <div
 			style={css.card}
 		>
@@ -395,6 +467,19 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 					<Blueprint.NavbarDivider
 						style={css.divider}
 					/>
+					<ConfirmButton
+						label="Delete Selected"
+						className="bp5-intent-danger bp5-icon-delete"
+						progressClassName="bp5-intent-danger"
+						hidden={this.props.mode !== "unit"}
+						safe={true}
+						style={css.navButton}
+						confirmMsg="Permanently delete the selected deployments"
+						confirmInput={true}
+						items={selectedNames}
+						disabled={!this.selectedDeployments || this.state.disabled}
+						onConfirm={this.onDeleteDeployments}
+					/>
 					<button
 						hidden={this.props.mode !== "edit"}
 						style={css.navButton}
@@ -421,7 +506,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 						/>
 					</Blueprint.Popover>
 					<button
-						disabled={this.props.disabled}
+						disabled={this.props.disabled || this.state.disabled}
 						hidden={this.props.mode === "view"}
 						style={css.navButton}
 						className="bp5-button bp5-icon-document-open"
@@ -430,7 +515,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 						}}
 					>View Spec</button>
 					<button
-						disabled={this.props.disabled}
+						disabled={this.props.disabled || this.state.disabled}
 						hidden={this.props.mode === "edit" || !activeUnit}
 						style={css.navButton}
 						className="bp5-button bp5-icon-edit"
@@ -439,7 +524,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 						}}
 					>Edit Spec</button>
 					<button
-						disabled={this.props.disabled}
+						disabled={this.props.disabled || this.state.disabled}
 						hidden={this.props.mode === "unit"}
 						style={css.navButton}
 						className="bp5-button bp5-icon-dashboard"
@@ -448,7 +533,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 						}}
 					>Deployments</button>
 					<button
-						disabled={this.props.disabled}
+						disabled={this.props.disabled || this.state.disabled}
 						style={css.navButton}
 						className="bp5-button bp5-icon-plus"
 						onClick={(): void => {
@@ -467,7 +552,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 						items={[activeUnit ? activeUnit.name : "null"]}
 						hidden={!activeUnit}
 						style={css.navButton}
-						disabled={this.props.disabled}
+						disabled={this.props.disabled || this.state.disabled}
 						onConfirm={(): void => {
 							this.onDelete()
 						}}
@@ -478,7 +563,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 				hidden={this.props.mode === "unit"}
 				expandLeft={expandLeft}
 				expandRight={expandRight}
-				disabled={this.props.disabled}
+				disabled={this.props.disabled || this.state.disabled}
 				readOnly={this.props.mode === "view"}
 				uuid={activeUnit ? activeUnit.id : null}
 				value={activeUnit ? activeUnit.spec : null}
@@ -489,8 +574,17 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 			/>
 			<ServiceUnit
 				hidden={this.props.mode !== "unit"}
-				disabled={this.props.disabled}
+				disabled={this.props.disabled || this.state.disabled}
+				selected={this.state.selectedDeployments}
+				lastSelected={this.state.lastSelectedDeployment}
 				unit={this.state.unit}
+				onSelect={(selected: Selected, lastSelected: string): void => {
+					this.setState({
+						...this.state,
+						lastSelectedDeployment: lastSelected,
+						selectedDeployments: selected,
+					});
+				}}
 			/>
 		</div>;
 	}
