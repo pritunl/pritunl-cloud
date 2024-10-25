@@ -6,6 +6,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/instance"
 )
 
 func Get(db *database.Database, deplyId primitive.ObjectID) (
@@ -22,11 +23,13 @@ func Get(db *database.Database, deplyId primitive.ObjectID) (
 	return
 }
 
-func GetAll(db *database.Database) (deplys []*Deployment, err error) {
+func GetAll(db *database.Database, query *bson.M) (
+	deplys []*Deployment, err error) {
+
 	coll := db.Deployments()
 	deplys = []*Deployment{}
 
-	cursor, err := coll.Find(db, bson.M{})
+	cursor, err := coll.Find(db, query)
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -104,6 +107,60 @@ func Remove(db *database.Database, deplyId primitive.ObjectID) (err error) {
 			err = nil
 		} else {
 			return
+		}
+	}
+
+	return
+}
+
+func RemoveMulti(db *database.Database, serviceId primitive.ObjectID,
+	unitId primitive.ObjectID, deplyIds []primitive.ObjectID) (err error) {
+
+	deplys, err := GetAll(db, &bson.M{
+		"_id": &bson.M{
+			"$in": deplyIds,
+		},
+		"service": serviceId,
+		"unit":    unitId,
+	})
+	if err != nil {
+		return
+	}
+
+	for _, deply := range deplys {
+		inst, e := instance.Get(db, deply.Instance)
+		if e != nil {
+			err = e
+			if _, ok := e.(*database.NotFoundError); ok {
+				err = nil
+				inst = nil
+			} else {
+				return
+			}
+		}
+
+		if inst != nil {
+			if inst.DeleteProtection {
+				continue
+			}
+
+			err = instance.Delete(db, inst.Id)
+			if err != nil {
+				if _, ok := e.(*database.NotFoundError); !ok {
+					err = nil
+				} else {
+					return
+				}
+			}
+		}
+
+		err = Remove(db, deply.Id)
+		if err != nil {
+			if _, ok := e.(*database.NotFoundError); !ok {
+				err = nil
+			} else {
+				return
+			}
 		}
 	}
 
