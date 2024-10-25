@@ -10,6 +10,9 @@ import ServicesStore from '../stores/ServicesStore';
 import * as MiscUtils from '../utils/MiscUtils';
 
 let syncId: string;
+let syncUnitId: string;
+let lastServiceId: string;
+let lastUnitId: string
 
 export function sync(noLoading?: boolean): Promise<void> {
 	let curSyncId = MiscUtils.uuid();
@@ -202,10 +205,97 @@ export function removeMulti(serviceIds: string[]): Promise<void> {
 	});
 }
 
+export function syncUnit(serviceId?: string, unitId?: string): Promise<void> {
+	if (!serviceId) {
+		serviceId = lastServiceId
+	} else {
+		lastServiceId = serviceId
+	}
+
+	if (!unitId) {
+		unitId = lastUnitId
+	} else {
+		lastUnitId = unitId
+	}
+
+	if (!serviceId || !unitId) {
+		return Promise.resolve();
+	}
+
+	let curSyncId = MiscUtils.uuid();
+	syncUnitId = curSyncId;
+
+	return new Promise<void>((resolve, reject): void => {
+		SuperAgent
+			.get('/service/' + serviceId + "/unit/" + unitId)
+			.set('Accept', 'application/json')
+			.set('Csrf-Token', Csrf.token)
+			.end((err: any, res: SuperAgent.Response): void => {
+				if (res && res.status === 401) {
+					window.location.href = '/login';
+					resolve();
+					return;
+				}
+
+				if (curSyncId !== syncUnitId) {
+					resolve();
+					return;
+				}
+
+				if (err) {
+					Alert.errorRes(res, 'Failed to load service unit');
+					reject(err);
+					return;
+				}
+
+				Dispatcher.dispatch({
+					type: ServiceTypes.SYNC_UNIT,
+					data: {
+						unit: res.body,
+					},
+				});
+
+				resolve();
+			});
+	});
+}
+
+export function removeMultiUnit(serviceId: string, unitId: string,
+	deploymentIds: string[]): Promise<void> {
+
+	let loader = new Loader().loading();
+
+	return new Promise<void>((resolve, reject): void => {
+		SuperAgent
+			.delete('/service/' + serviceId + "/unit/" + unitId + "/deployment")
+			.send(deploymentIds)
+			.set('Accept', 'application/json')
+			.set('Csrf-Token', Csrf.token)
+			.end((err: any, res: SuperAgent.Response): void => {
+				loader.done();
+
+				if (res && res.status === 401) {
+					window.location.href = '/login';
+					resolve();
+					return;
+				}
+
+				if (err) {
+					Alert.errorRes(res, 'Failed to delete deployments');
+					reject(err);
+					return;
+				}
+
+				resolve();
+			});
+	});
+}
+
 EventDispatcher.register((action: ServiceTypes.ServiceDispatch) => {
 	switch (action.type) {
 		case ServiceTypes.CHANGE:
 			sync();
+			syncUnit();
 			break;
 	}
 });
