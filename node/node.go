@@ -376,6 +376,20 @@ func (n *Node) Usage() int {
 	return int(totalUsage * 100)
 }
 
+func (n *Node) SizeResource(memory, processors int) bool {
+	memoryUnits := float64(memory) / float64(1024)
+
+	if memoryUnits+n.MemoryUnitsRes > n.MemoryUnits {
+		return false
+	}
+
+	if processors+n.CpuUnitsRes > n.CpuUnits*2 {
+		return false
+	}
+
+	return true
+}
+
 func (n *Node) GetOracleAuthProvider() (pv *NodeOracleAuthProvider) {
 	pv = &NodeOracleAuthProvider{
 		nde: n,
