@@ -14,6 +14,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/aggregate"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
+	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/service"
@@ -333,4 +334,55 @@ func serviceUnitGet(c *gin.Context) {
 	}
 
 	c.JSON(200, srvcUnit)
+}
+
+func serviceUnitDeploymentDelete(c *gin.Context) {
+	if demo.Blocked(c) {
+		return
+	}
+
+	db := c.MustGet("db").(*database.Database)
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	data := []primitive.ObjectID{}
+
+	serviceId, ok := utils.ParseObjectId(c.Param("service_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	unitId, ok := utils.ParseObjectId(c.Param("unit_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	err := c.Bind(&data)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	srvc, err := service.GetOrg(db, userOrg, serviceId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	unit := srvc.GetUnit(unitId)
+	if unit == nil {
+		utils.AbortWithStatus(c, 404)
+		return
+	}
+
+	err = deployment.RemoveMulti(db, srvc.Id, unit.Id, data)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	event.PublishDispatch(db, "instance.change")
+	event.PublishDispatch(db, "service.change")
+
+	c.JSON(200, nil)
 }
