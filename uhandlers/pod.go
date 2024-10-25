@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/pritunl-cloud/aggregate"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -283,4 +284,53 @@ func servicesGet(c *gin.Context) {
 	}
 
 	c.JSON(200, data)
+}
+
+type ServiceUnit struct {
+	Id          primitive.ObjectID      `json:"id"`
+	Service     primitive.ObjectID      `json:"service"`
+	Deployments []*aggregate.Deployment `json:"deployments"`
+}
+
+func serviceUnitGet(c *gin.Context) {
+	db := c.MustGet("db").(*database.Database)
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
+
+	serviceId, ok := utils.ParseObjectId(c.Param("service_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	unitId, ok := utils.ParseObjectId(c.Param("unit_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	srvc, err := service.GetOrg(db, userOrg, serviceId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	unit := srvc.GetUnit(unitId)
+	if unit == nil {
+		utils.AbortWithStatus(c, 404)
+		return
+	}
+
+	deploys, err := aggregate.GetDeployments(db, unit.Id)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	srvcUnit := &ServiceUnit{
+		Id:          unit.Id,
+		Service:     srvc.Id,
+		Deployments: deploys,
+	}
+
+	c.JSON(200, srvcUnit)
 }
