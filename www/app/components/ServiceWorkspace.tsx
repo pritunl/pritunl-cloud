@@ -15,6 +15,7 @@ import PageInfo from './PageInfo';
 import PageInputButton from './PageInputButton';
 import ServiceEditor from './ServiceEditor';
 import ServiceUnit from './ServiceUnit';
+import ServiceDeploy from './ServiceDeploy';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
 import Help from './Help';
@@ -398,44 +399,153 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 			</Blueprint.Tab>)
 		}
 
-		let curEditorTheme = Theme.getEditorTheme()
-		let fontMenuItems: JSX.Element[] = []
-		for (let editorTheme in Theme.editorThemeNames) {
-			let className = ""
-			let themeName = Theme.editorThemeNames[editorTheme]
+		let menuItems: JSX.Element[] = []
 
-			if (editorTheme === curEditorTheme) {
-				className = "bp5-intent-primary"
-			}
+		menuItems.push(<li className="bp5-menu-header">
+			<h6 className="bp5-heading">Units</h6>
+		</li>)
+		menuItems.push(<Blueprint.MenuDivider/>)
 
-			let menuItem = <Blueprint.MenuItem
-				key={editorTheme}
-				className={className}
-				icon={<Icons.Font/>}
+		menuItems.push(<Blueprint.MenuItem
+			key="menu-new-unit"
+			className=""
+			disabled={this.props.disabled || this.state.disabled}
+			icon={<Icons.Plus/>}
+			onClick={(): void => {
+				this.onNew()
+			}}
+			text={"New Unit"}
+		/>)
+
+		menuItems.push(<ConfirmButton
+			safe={true}
+			menuItem={true}
+			className="bp5-intent-danger bp5-icon-trash"
+			progressClassName="bp5-intent-danger"
+			dialogClassName="bp5-intent-danger bp5-icon-delete"
+			dialogLabel="Delete Unit"
+			label="Delete Unit"
+			confirmMsg="Permanently delete this unit"
+			confirmInput={false}
+			items={[activeUnit ? activeUnit.name : "null"]}
+			hidden={!activeUnit}
+			style={css.navButton}
+			disabled={this.props.disabled || this.state.disabled}
+			onConfirm={(): void => {
+				this.onDelete()
+			}}
+		/>)
+
+		menuItems.push(<li className="bp5-menu-header">
+			<h6 className="bp5-heading">Deployments</h6>
+		</li>)
+		menuItems.push(<Blueprint.MenuDivider/>)
+
+		if (this.props.mode !== "unit") {
+			menuItems.push(<Blueprint.MenuItem
+				key="menu-deployments"
+				className=""
+				disabled={this.props.disabled || this.state.disabled}
+				icon={<Icons.Dashboard/>}
 				onClick={(): void => {
-					Theme.setEditorTheme(editorTheme)
-					Theme.save()
-					this.setState({
-						...this.state,
-					})
+					this.onUnit()
 				}}
-				text={themeName}
-			/>
-			fontMenuItems.push(menuItem)
+				text={"View Deployments"}
+			/>)
+		}
+
+		if (this.props.mode === "unit") {
+			let selectedNames: string[] = [];
+			for (let deploymentId of Object.keys(this.state.selectedDeployments)) {
+				selectedNames.push(deploymentId)
+			}
+			menuItems.push(<ServiceDeploy
+				key="menu-service-deploy"
+				service={this.props.service}
+				unit={activeUnit}
+			/>)
+			menuItems.push(<ConfirmButton
+				key="menu-delete-deployments"
+				label="Delete Selected"
+				className="bp5-intent-danger bp5-icon-delete"
+				safe={true}
+				menuItem={true}
+				style={css.navButton}
+				confirmMsg="Permanently delete the selected deployments"
+				confirmInput={true}
+				items={selectedNames}
+				disabled={!this.selectedDeployments || this.state.disabled}
+				onConfirm={this.onDeleteDeployments}
+			/>)
+		}
+
+		menuItems.push(<li className="bp5-menu-header">
+			<h6 className="bp5-heading">Specs</h6>
+		</li>)
+		menuItems.push(<Blueprint.MenuDivider/>)
+
+		if (this.props.mode !== "view") {
+			menuItems.push(<Blueprint.MenuItem
+				key="menu-view-spec"
+				className=""
+				disabled={this.props.disabled || this.state.disabled}
+				icon={<Icons.DocumentOpen/>}
+				onClick={(): void => {
+					this.onView()
+				}}
+				text={"View Spec"}
+			/>)
+		}
+
+		if (this.props.mode !== "edit") {
+			menuItems.push(<Blueprint.MenuItem
+				key="menu-edit-spec"
+				className=""
+				disabled={this.props.disabled || this.state.disabled}
+				hidden={!activeUnit}
+				icon={<Icons.Edit/>}
+				onClick={(): void => {
+					this.onEdit()
+				}}
+				text={"Edit Spec"}
+			/>)
+		}
+
+		if (this.props.mode === "edit") {
+			menuItems.push(<li className="bp5-menu-header">
+				<h6 className="bp5-heading">Editor Theme</h6>
+			</li>)
+			menuItems.push(<Blueprint.MenuDivider/>)
+
+			let curEditorTheme = Theme.getEditorTheme()
+			for (let editorTheme in Theme.editorThemeNames) {
+				let className = ""
+				let themeName = Theme.editorThemeNames[editorTheme]
+
+				if (editorTheme === curEditorTheme) {
+					className = "bp5-intent-primary"
+				}
+
+				let menuItem = <Blueprint.MenuItem
+					key={"menu-theme-" + editorTheme}
+					className={className}
+					icon={<Icons.Font/>}
+					onClick={(): void => {
+						Theme.setEditorTheme(editorTheme)
+						Theme.save()
+						this.setState({
+							...this.state,
+						})
+					}}
+					text={themeName}
+				/>
+				menuItems.push(menuItem)
+			}
 		}
 
 		let settingsMenu = <Blueprint.Menu style={css.settingsMenu}>
-			<li className="bp5-menu-header">
-				<h6 className="bp5-heading">Editor Theme</h6>
-			</li>
-			<Blueprint.MenuDivider/>
-			{fontMenuItems}
+			{menuItems}
 		</Blueprint.Menu>
-
-		let selectedNames: string[] = [];
-		for (let deploymentId of Object.keys(this.state.selectedDeployments)) {
-			selectedNames.push(deploymentId)
-		}
 
 		return <div
 			style={css.card}
@@ -467,19 +577,6 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 					<Blueprint.NavbarDivider
 						style={css.divider}
 					/>
-					<ConfirmButton
-						label="Delete Selected"
-						className="bp5-intent-danger bp5-icon-delete"
-						progressClassName="bp5-intent-danger"
-						hidden={this.props.mode !== "unit"}
-						safe={true}
-						style={css.navButton}
-						confirmMsg="Permanently delete the selected deployments"
-						confirmInput={true}
-						items={selectedNames}
-						disabled={!this.selectedDeployments || this.state.disabled}
-						onConfirm={this.onDeleteDeployments}
-					/>
 					<button
 						hidden={this.props.mode !== "edit"}
 						style={css.navButton}
@@ -502,61 +599,8 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 							rightIcon={<Icons.CaretDown/>}
 							text="Settings"
 							style={css.settingsOpen}
-							hidden={this.props.mode !== "edit"}
 						/>
 					</Blueprint.Popover>
-					<button
-						disabled={this.props.disabled || this.state.disabled}
-						hidden={this.props.mode === "view"}
-						style={css.navButton}
-						className="bp5-button bp5-icon-document-open"
-						onClick={(): void => {
-							this.onView()
-						}}
-					>View Spec</button>
-					<button
-						disabled={this.props.disabled || this.state.disabled}
-						hidden={this.props.mode === "edit" || !activeUnit}
-						style={css.navButton}
-						className="bp5-button bp5-icon-edit"
-						onClick={(): void => {
-							this.onEdit()
-						}}
-					>Edit Spec</button>
-					<button
-						disabled={this.props.disabled || this.state.disabled}
-						hidden={this.props.mode === "unit"}
-						style={css.navButton}
-						className="bp5-button bp5-icon-dashboard"
-						onClick={(): void => {
-							this.onUnit()
-						}}
-					>Deployments</button>
-					<button
-						disabled={this.props.disabled || this.state.disabled}
-						style={css.navButton}
-						className="bp5-button bp5-icon-plus"
-						onClick={(): void => {
-							this.onNew()
-						}}
-					>New Unit</button>
-					<ConfirmButton
-						safe={true}
-						className="bp5-intent-danger bp5-icon-trash"
-						progressClassName="bp5-intent-danger"
-						dialogClassName="bp5-intent-danger bp5-icon-delete"
-						dialogLabel="Delete Unit"
-						label="Delete Unit"
-						confirmMsg="Permanently delete this unit"
-						confirmInput={false}
-						items={[activeUnit ? activeUnit.name : "null"]}
-						hidden={!activeUnit}
-						style={css.navButton}
-						disabled={this.props.disabled || this.state.disabled}
-						onConfirm={(): void => {
-							this.onDelete()
-						}}
-					/>
 				</Blueprint.NavbarGroup>
 			</Blueprint.Navbar>
 			<ServiceEditor
