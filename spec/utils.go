@@ -8,11 +8,9 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 )
 
-func New(serviceId, unitId primitive.ObjectID, data string) (spc *Spec) {
-	spc = &Spec{
-		Id: Hash{
-			Unit: unitId,
-		},
+func New(serviceId, unitId primitive.ObjectID, data string) (spc *Commit) {
+	spc = &Commit{
+		Unit:    unitId,
 		Service: serviceId,
 		Data:    data,
 	}
@@ -20,13 +18,13 @@ func New(serviceId, unitId primitive.ObjectID, data string) (spc *Spec) {
 	return
 }
 
-func Get(db *database.Database, hash Hash) (
-	spc *Spec, err error) {
+func Get(db *database.Database, commitId primitive.ObjectID) (
+	spc *Commit, err error) {
 
 	coll := db.Specs()
-	spc = &Spec{}
+	spc = &Commit{}
 
-	err = coll.FindOneId(hash, spc)
+	err = coll.FindOneId(commitId, spc)
 	if err != nil {
 		return
 	}
@@ -35,10 +33,10 @@ func Get(db *database.Database, hash Hash) (
 }
 
 func GetAll(db *database.Database, query *bson.M) (
-	spcs []*Spec, err error) {
+	spcs []*Commit, err error) {
 
 	coll := db.Specs()
-	spcs = []*Spec{}
+	spcs = []*Commit{}
 
 	cursor, err := coll.Find(db, query)
 	if err != nil {
@@ -48,7 +46,7 @@ func GetAll(db *database.Database, query *bson.M) (
 	defer cursor.Close(db)
 
 	for cursor.Next(db) {
-		spc := &Spec{}
+		spc := &Commit{}
 		err = cursor.Decode(spc)
 		if err != nil {
 			err = database.ParseError(err)
@@ -67,9 +65,9 @@ func GetAll(db *database.Database, query *bson.M) (
 	return
 }
 
-func GetAllIds(db *database.Database) (hashes set.Set, err error) {
+func GetAllIds(db *database.Database) (specIds set.Set, err error) {
 	coll := db.Specs()
-	hashes = set.NewSet()
+	specIds = set.NewSet()
 
 	cursor, err := coll.Find(
 		db,
@@ -87,14 +85,14 @@ func GetAllIds(db *database.Database) (hashes set.Set, err error) {
 	defer cursor.Close(db)
 
 	for cursor.Next(db) {
-		spc := &Spec{}
+		spc := &Commit{}
 		err = cursor.Decode(spc)
 		if err != nil {
 			err = database.ParseError(err)
 			return
 		}
 
-		hashes.Add(spc.Id)
+		specIds.Add(spc.Id)
 	}
 
 	err = cursor.Err()
@@ -106,11 +104,11 @@ func GetAllIds(db *database.Database) (hashes set.Set, err error) {
 	return
 }
 
-func Remove(db *database.Database, hash Hash) (err error) {
+func Remove(db *database.Database, commitId primitive.ObjectID) (err error) {
 	coll := db.Specs()
 
 	_, err = coll.DeleteOne(db, &bson.M{
-		"_id": hash,
+		"_id": commitId,
 	})
 	if err != nil {
 		err = database.ParseError(err)
