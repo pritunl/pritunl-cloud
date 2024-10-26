@@ -43,11 +43,12 @@ func (p *Service) InitUnits(db *database.Database, units []*UnitInput) (
 
 	for _, unitData := range units {
 		unit := &Unit{
-			Service:     p,
-			Id:          primitive.NewObjectID(),
-			Name:        unitData.Name,
-			Spec:        unitData.Spec,
-			Deployments: []*Deployment{},
+			Service:      p,
+			Id:           primitive.NewObjectID(),
+			Name:         unitData.Name,
+			Spec:         unitData.Spec,
+			DeployCommit: unitData.DeployCommit,
+			Deployments:  []*Deployment{},
 		}
 
 		errData, err = unit.Parse(db)
@@ -100,11 +101,12 @@ func (p *Service) CommitFieldsUnits(db *database.Database,
 		curUnit := curUnitsMap[unitData.Id]
 		if curUnit == nil {
 			unit := &Unit{
-				Service:     p,
-				Id:          primitive.NewObjectID(),
-				Name:        unitData.Name,
-				Spec:        unitData.Spec,
-				Deployments: []*Deployment{},
+				Service:      p,
+				Id:           primitive.NewObjectID(),
+				Name:         unitData.Name,
+				Spec:         unitData.Spec,
+				DeployCommit: unitData.DeployCommit,
+				Deployments:  []*Deployment{},
 			}
 			curUnitsSet.Add(unit.Id)
 			curUnitsMap[unit.Id] = unit
@@ -128,6 +130,7 @@ func (p *Service) CommitFieldsUnits(db *database.Database,
 		newUnitsSet.Add(unitData.Id)
 		curUnit.Name = unitData.Name
 		curUnit.Spec = unitData.Spec
+		curUnit.DeployCommit = unitData.DeployCommit
 
 		errData, err = curUnit.Parse(db)
 		if err != nil {
@@ -138,11 +141,12 @@ func (p *Service) CommitFieldsUnits(db *database.Database,
 		}
 
 		arraySelectSet.Update(unitData.Id, bson.M{
-			"name":  curUnit.Name,
-			"kind":  curUnit.Kind,
-			"count": curUnit.Count,
-			"spec":  curUnit.Spec,
-			"hash":  curUnit.Hash,
+			"name":          curUnit.Name,
+			"kind":          curUnit.Kind,
+			"count":         curUnit.Count,
+			"spec":          curUnit.Spec,
+			"deploy_commit": curUnit.DeployCommit,
+			"hash":          curUnit.Hash,
 		})
 	}
 
