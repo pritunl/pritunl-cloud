@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/mongo-go-driver/mongo/options"
@@ -10,32 +11,27 @@ import (
 )
 
 type Unit struct {
-	Service     *Service           `bson:"-" json:"-"`
-	Id          primitive.ObjectID `bson:"id" json:"id"`
-	Name        string             `bson:"name" json:"name"`
-	Kind        string             `bson:"kind" json:"kind"`
-	Count       int                `bson:"count" json:"count"`
-	Deployments []*Deployment      `bson:"deployments" json:"deployments"`
-	Spec        string             `bson:"spec" json:"spec"`
-	Hash        string             `bson:"hash" json:"hash"`
+	Service      *Service           `bson:"-" json:"-"`
+	Id           primitive.ObjectID `bson:"id" json:"id"`
+	Name         string             `bson:"name" json:"name"`
+	Kind         string             `bson:"kind" json:"kind"`
+	Count        int                `bson:"count" json:"count"`
+	Deployments  []*Deployment      `bson:"deployments" json:"deployments"`
+	Spec         string             `bson:"spec" json:"spec"`
+	DeployCommit primitive.ObjectID `bson:"deploy_commit" json:"deploy_commit"`
+	Hash         string             `bson:"hash" json:"hash"`
 }
 
 type UnitInput struct {
-	Id     primitive.ObjectID `json:"id"`
-	Name   string             `json:"name"`
-	Spec   string             `json:"spec"`
-	Delete bool               `json:"delete"`
+	Id           primitive.ObjectID `json:"id"`
+	Name         string             `json:"name"`
+	Spec         string             `json:"spec"`
+	DeployCommit primitive.ObjectID `json:"deploy_commit"`
+	Delete       bool               `json:"delete"`
 }
 
 type Deployment struct {
 	Id primitive.ObjectID `bson:"id" json:"id"`
-}
-
-func (u *Unit) GetSpecHash() spec.Hash {
-	return spec.Hash{
-		Unit: u.Id,
-		Hash: u.Hash,
-	}
 }
 
 func (u *Unit) Reserve(db *database.Database, deployId primitive.ObjectID) (
@@ -149,14 +145,32 @@ func (u *Unit) Parse(db *database.Database) (
 		return
 	}
 
-	if u.Hash != spc.Id.Hash {
+	if u.Hash != spc.Hash {
 		u.Name = spc.Name
 		u.Kind = spc.Kind
 		u.Count = spc.Count
 		u.Spec = spc.Data
-		u.Hash = spc.Id.Hash
 
 		err = spc.Insert(db)
+		if err != nil {
+			return
+		}
+
+		if u.DeployCommit.IsZero() {
+			u.DeployCommit = spc.Id
+		}
+	} else if u.Name != spc.Name || u.Count != spc.Count {
+		curSpc, e := spec.Get(db, u.LastCommit)
+		if e != nil {
+			err = e
+			return
+		}
+
+		curSpc.Name = u.Name
+		curSpc.Count = u.Count
+		curSpc.Data = u.Spec
+
+		err = curSpc.CommitFields(db, set.NewSet("name", "count", "data"))
 		if err != nil {
 			return
 		}
