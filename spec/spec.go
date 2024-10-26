@@ -15,23 +15,20 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type Spec struct {
-	Id        Hash               `bson:"_id" json:"id"`
+type Commit struct {
+	Id        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Service   primitive.ObjectID `bson:"service" json:"service"`
+	Unit      primitive.ObjectID `bson:"unit" json:"unit"`
 	Timestamp time.Time          `bson:"timestamp" json:"timestamp"`
 	Name      string             `bson:"name" json:"name"`
 	Kind      string             `bson:"kind" json:"kind"`
 	Count     int                `bson:"count" json:"count"`
+	Hash      string             `bson:"hash" json:"hash"`
 	Data      string             `bson:"data" json:"data"`
 	Instance  *Instance          `bson:"instance,omitempty" json:"instance,omitempty"`
 }
 
-type Hash struct {
-	Unit primitive.ObjectID `bson:"unit" json:"unit"`
-	Hash string             `bson:"hash" json:"hash"`
-}
-
-func (s *Spec) Validate(db *database.Database) (err error) {
+func (s *Commit) Validate(db *database.Database) (err error) {
 	if s.Timestamp.IsZero() {
 		s.Timestamp = time.Now()
 	}
@@ -39,7 +36,7 @@ func (s *Spec) Validate(db *database.Database) (err error) {
 	return
 }
 
-func (u *Spec) ExtractResources() (resources string, err error) {
+func (u *Commit) ExtractResources() (resources string, err error) {
 	matches := resourcesRe.FindStringSubmatch(u.Data)
 	if len(matches) > 1 {
 		resources = matches[1]
@@ -50,13 +47,14 @@ func (u *Spec) ExtractResources() (resources string, err error) {
 	return
 }
 
-func (u *Spec) Parse(db *database.Database,
+func (u *Commit) Parse(db *database.Database,
 	orgId primitive.ObjectID) (errData *errortypes.ErrorData, err error) {
 
+	// TODO Remove name and count from hash
 	hash := sha1.New()
 	hash.Write([]byte(u.Data))
 	hashBytes := hash.Sum(nil)
-	u.Id.Hash = fmt.Sprintf("%x", hashBytes)
+	u.Hash = fmt.Sprintf("%x", hashBytes)
 
 	resourcesSpec, err := u.ExtractResources()
 	if err != nil {
@@ -303,7 +301,7 @@ func (u *Spec) Parse(db *database.Database,
 	return
 }
 
-func (s *Spec) Commit(db *database.Database) (err error) {
+func (s *Commit) Commit(db *database.Database) (err error) {
 	coll := db.Specs()
 
 	err = coll.Commit(s.Id, s)
@@ -314,7 +312,7 @@ func (s *Spec) Commit(db *database.Database) (err error) {
 	return
 }
 
-func (s *Spec) CommitFields(db *database.Database, fields set.Set) (
+func (s *Commit) CommitFields(db *database.Database, fields set.Set) (
 	err error) {
 
 	coll := db.Specs()
@@ -327,14 +325,16 @@ func (s *Spec) CommitFields(db *database.Database, fields set.Set) (
 	return
 }
 
-func (s *Spec) Insert(db *database.Database) (err error) {
+func (s *Commit) Insert(db *database.Database) (err error) {
 	coll := db.Specs()
 
-	_, err = coll.InsertOne(db, s)
+	resp, err := coll.InsertOne(db, s)
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
+
+	s.Id = resp.InsertedID.(primitive.ObjectID)
 
 	return
 }
