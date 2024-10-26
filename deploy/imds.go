@@ -76,7 +76,7 @@ func (s *Imds) buildDeployInstance(db *database.Database,
 		return
 	}
 
-	spc := s.stat.Spec(deply.GetSpecHash())
+	spc := s.stat.Spec(deply.Spec)
 	if spc == nil {
 		println("**************************************************2")
 		println(inst.Id.Hex())

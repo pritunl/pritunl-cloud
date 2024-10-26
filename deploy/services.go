@@ -72,10 +72,7 @@ func (s *Services) deploySchedule(schd *scheduler.Scheduler) (err error) {
 		return
 	}
 
-	spc, err := spec.Get(db, spec.Hash{
-		Unit: unit.Id,
-		Hash: unit.Hash,
-	})
+	spc, err := spec.Get(db, unit.DeployCommit)
 	if err != nil {
 		return
 	}
@@ -122,12 +119,12 @@ func (s *Services) deploySchedule(schd *scheduler.Scheduler) (err error) {
 }
 
 func (s *Services) DeploySpec(db *database.Database,
-	unit *service.Unit, spc *spec.Spec) (err error) {
+	unit *service.Unit, spc *spec.Commit) (err error) {
 
 	deply := &deployment.Deployment{
 		Service: unit.Service.Id,
 		Unit:    unit.Id,
-		Spec:    spc.Id.Hash,
+		Spec:    spc.Id,
 		Node:    node.Self.Id,
 		Kind:    deployment.Instance,
 		State:   deployment.Reserved,
