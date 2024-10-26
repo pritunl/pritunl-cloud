@@ -53,7 +53,7 @@ type State struct {
 	servicesMap      map[primitive.ObjectID]*service.Service
 	servicesUnitsMap map[primitive.ObjectID]*service.Unit
 
-	specsMap            map[spec.Hash]*spec.Spec
+	specsMap            map[primitive.ObjectID]*spec.Commit
 	specsServicesMap    map[primitive.ObjectID]*service.Service
 	specsDeploymentsMap map[primitive.ObjectID]*deployment.Deployment
 	specsSecretsMap     map[primitive.ObjectID]*secret.Secret
@@ -155,8 +155,8 @@ func (s *State) Unit(unitId primitive.ObjectID) *service.Unit {
 	return s.servicesUnitsMap[unitId]
 }
 
-func (s *State) Spec(hash spec.Hash) *spec.Spec {
-	return s.specsMap[hash]
+func (s *State) Spec(commitId primitive.ObjectID) *spec.Commit {
+	return s.specsMap[commitId]
 }
 
 func (s *State) SpecService(srvcId primitive.ObjectID) *service.Service {
@@ -417,12 +417,12 @@ func (s *State) init() (err error) {
 		deploymentsMap[deply.Id] = deply
 		serviceIdsSet.Add(deply.Service)
 		unitIds.Add(deply.Unit)
-		specIdsSet.Add(deply.GetSpecHash())
+		specIdsSet.Add(deply.Spec)
 	}
 
-	specIds := []spec.Hash{}
+	specIds := []primitive.ObjectID{}
 	for specId := range specIdsSet.Iter() {
-		specIds = append(specIds, specId.(spec.Hash))
+		specIds = append(specIds, specId.(primitive.ObjectID))
 	}
 
 	specs, err := spec.GetAll(db, &bson.M{
@@ -437,7 +437,7 @@ func (s *State) init() (err error) {
 	specSecretsSet := set.NewSet()
 	specCertsSet := set.NewSet()
 	specServicesSet := set.NewSet()
-	specsMap := map[spec.Hash]*spec.Spec{}
+	specsMap := map[primitive.ObjectID]*spec.Commit{}
 	for _, spc := range specs {
 		specsMap[spc.Id] = spc
 
