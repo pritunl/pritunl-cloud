@@ -195,6 +195,9 @@ func Register(engine *gin.Engine) {
 	csrfGroup.POST("/service", servicePost)
 	csrfGroup.DELETE("/service", servicesDelete)
 	csrfGroup.DELETE("/service/:service_id", serviceDelete)
+	csrfGroup.GET("/service/:service_id/unit/:unit_id", serviceUnitGet)
+	csrfGroup.DELETE("/service/:service_id/unit/:unit_id/deployment",
+		serviceUnitDeploymentDelete)
 
 	csrfGroup.GET("/shape", shapesGet)
 	csrfGroup.GET("/shape/:shape_id", shapeGet)
