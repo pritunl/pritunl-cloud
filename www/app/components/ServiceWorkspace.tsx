@@ -38,6 +38,7 @@ interface State {
 	selectedDeployments: Selected;
 	lastSelectedDeployment: string;
 	unit: ServiceTypes.ServiceUnit;
+	diffCommit: ServiceTypes.Commit
 }
 
 interface Selected {
@@ -138,7 +139,13 @@ const css = {
 	} as React.CSSProperties,
 	settingsMenu: {
 		maxHeight: '400px',
-		overflowY: "scroll",
+		overflowY: "auto",
+	} as React.CSSProperties,
+	commitsMenu: {
+		maxHeight: '400px',
+		overflowY: "auto",
+		fontFamily: Theme.monospaceFont,
+		fontWeight: Theme.monospaceWeight,
 	} as React.CSSProperties,
 };
 
@@ -155,6 +162,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 			selectedDeployments: {},
 			lastSelectedDeployment: null,
 			unit: null,
+			diffCommit: null,
 		};
 	}
 
@@ -361,7 +369,10 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 
 		let index = this.getActiveUnitIndex()
 		if (index !== -1) {
-			units[index].spec = val
+			units[index] = {
+				...units[index],
+				spec: val,
+			}
 		}
 
 		this.props.onChange(units)
@@ -372,6 +383,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 			...(this.props.service.units || []),
 		]
 		let activeUnit = this.getActiveUnit()
+		let diffCommit = this.state.diffCommit
 
 		let expandLeft = this.state.expandLeft
 		let expandRight = this.state.expandRight
@@ -401,10 +413,15 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 
 		let menuItems: JSX.Element[] = []
 
-		menuItems.push(<li className="bp5-menu-header">
+		menuItems.push(<li
+			key="menu-unit-header"
+			className="bp5-menu-header"
+		>
 			<h6 className="bp5-heading">Units</h6>
 		</li>)
-		menuItems.push(<Blueprint.MenuDivider/>)
+		menuItems.push(<Blueprint.MenuDivider
+			key="menu-unit-divider"
+		/>)
 
 		menuItems.push(<Blueprint.MenuItem
 			key="menu-new-unit"
@@ -418,6 +435,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 		/>)
 
 		menuItems.push(<ConfirmButton
+			key="menu-delete-unit"
 			safe={true}
 			menuItem={true}
 			className="bp5-intent-danger bp5-icon-trash"
@@ -436,10 +454,15 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 			}}
 		/>)
 
-		menuItems.push(<li className="bp5-menu-header">
+		menuItems.push(<li
+			key="menu-deployments-header"
+			className="bp5-menu-header"
+		>
 			<h6 className="bp5-heading">Deployments</h6>
 		</li>)
-		menuItems.push(<Blueprint.MenuDivider/>)
+		menuItems.push(<Blueprint.MenuDivider
+			key="menu-deployments-divider"
+		/>)
 
 		if (this.props.mode !== "unit") {
 			menuItems.push(<Blueprint.MenuItem
@@ -479,10 +502,15 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 			/>)
 		}
 
-		menuItems.push(<li className="bp5-menu-header">
+		menuItems.push(<li
+			key="menu-spec-header"
+			className="bp5-menu-header"
+		>
 			<h6 className="bp5-heading">Specs</h6>
 		</li>)
-		menuItems.push(<Blueprint.MenuDivider/>)
+		menuItems.push(<Blueprint.MenuDivider
+			key="menu-spec-divider"
+		/>)
 
 		if (this.props.mode !== "view") {
 			menuItems.push(<Blueprint.MenuItem
@@ -511,11 +539,65 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 			/>)
 		}
 
+		let commitMenu: JSX.Element
 		if (this.props.mode === "edit") {
-			menuItems.push(<li className="bp5-menu-header">
+			if (this.state.unit &&
+				activeUnit &&
+				this.state.unit.id === activeUnit.id &&
+				this.state.unit.commits &&
+				this.state.unit.commits.length > 0) {
+
+				let commitMenuItems: JSX.Element[] = []
+
+				this.state.unit.commits.forEach((commit): void => {
+					let className = ""
+					let disabled = false
+					if (activeUnit && activeUnit.last_commit == commit.id) {
+						className = "bp5-text-intent-primary"
+						disabled = true
+					}
+
+					commitMenuItems.push(<Blueprint.MenuItem
+						key={"diff-" + commit.id}
+						disabled={disabled || this.props.disabled || this.state.disabled}
+						icon={<Icons.GitCommit/>}
+						onClick={(): void => {
+							this.setState({
+								...this.state,
+								diffCommit: commit,
+							})
+						}}
+						text={commit.id.substring(0, 12)}
+						textClassName={className}
+						label={MiscUtils.formatDateLocal(commit.timestamp)}
+					/>)
+				})
+
+				commitMenu = <Blueprint.Popover
+					content={<Blueprint.Menu style={css.commitsMenu}>
+						{commitMenuItems}
+					</Blueprint.Menu>}
+					placement="bottom"
+				>
+					<Blueprint.Button
+						alignText="left"
+						icon={<Icons.GitRepo/>}
+						rightIcon={<Icons.CaretDown/>}
+						text="Diff"
+						style={css.settingsOpen}
+					/>
+				</Blueprint.Popover>
+			}
+
+			menuItems.push(<li
+				key="menu-theme-header"
+				className="bp5-menu-header"
+			>
 				<h6 className="bp5-heading">Editor Theme</h6>
 			</li>)
-			menuItems.push(<Blueprint.MenuDivider/>)
+			menuItems.push(<Blueprint.MenuDivider
+				key="menu-theme-divider"
+			/>)
 
 			let curEditorTheme = Theme.getEditorTheme()
 			for (let editorTheme in Theme.editorThemeNames) {
@@ -563,6 +645,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 							this.setState({
 								...this.state,
 								activeUnitId: activeUnitId,
+								diffCommit: null,
 							})
 
 							if (activeUnit && !activeUnit.new) {
@@ -578,7 +661,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 						style={css.divider}
 					/>
 					<button
-						hidden={this.props.mode !== "edit"}
+						hidden={!(this.props.mode === "edit" && !this.state.diffCommit)}
 						style={css.navButton}
 						className={expandIconClass}
 						onClick={(): void => {
@@ -589,6 +672,18 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 							})
 						}}
 					/>
+					<button
+						hidden={!(this.props.mode === "edit" && this.state.diffCommit)}
+						style={css.navButton}
+						className="bp5-button bp5-icon-edit"
+						onClick={(): void => {
+							this.setState({
+								...this.state,
+								diffCommit: null,
+							})
+						}}
+					>Apply Edit</button>
+					{commitMenu}
 					<Blueprint.Popover
 						content={settingsMenu}
 						placement="bottom"
@@ -611,6 +706,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 				readOnly={this.props.mode === "view"}
 				uuid={activeUnit ? activeUnit.id : null}
 				value={activeUnit ? activeUnit.spec : null}
+				diffValue={diffCommit ? diffCommit.data : null}
 				onChange={(val: string): void => {
 					this.onUnitEdit(val)
 				}}
