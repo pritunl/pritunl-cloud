@@ -18,7 +18,7 @@ type Deployment struct {
 	Id                 primitive.ObjectID `bson:"_id" json:"id"`
 	Service            primitive.ObjectID `bson:"service" json:"service"`
 	Unit               primitive.ObjectID `bson:"unit" json:"unit"`
-	Spec               string             `bson:"spec" json:"spec"`
+	Spec               primitive.ObjectID `bson:"spec" json:"spec"`
 	Kind               string             `bson:"kind" json:"kind"`
 	State              string             `bson:"state" json:"state"`
 	Node               primitive.ObjectID `bson:"node" json:"node"`
