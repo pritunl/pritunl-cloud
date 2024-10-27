@@ -4,6 +4,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/acme"
 	"github.com/pritunl/pritunl-cloud/certificate"
@@ -222,7 +223,7 @@ func certificateGet(c *gin.Context) {
 func certificatesGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 
-	certs, err := certificate.GetAll(db)
+	certs, err := certificate.GetAll(db, &bson.M{})
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
