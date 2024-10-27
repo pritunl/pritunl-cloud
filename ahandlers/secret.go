@@ -4,6 +4,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
@@ -196,7 +197,7 @@ func secretGet(c *gin.Context) {
 func secretsGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 
-	secrs, err := secret.GetAll(db)
+	secrs, err := secret.GetAll(db, &bson.M{})
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
