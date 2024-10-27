@@ -50,5 +50,17 @@ func Deploy(stat *state.State) (err error) {
 		return
 	}
 
+	services := NewServices(stat)
+	err = services.Deploy(db)
+	if err != nil {
+		return
+	}
+
+	imds := NewImds(stat)
+	err = imds.Deploy(db)
+	if err != nil {
+		return
+	}
+
 	return
 }
