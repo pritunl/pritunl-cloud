@@ -8,7 +8,6 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
-	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -16,7 +15,7 @@ type Deployment struct {
 	Id               primitive.ObjectID             `bson:"_id,omitempty" json:"id"`
 	Service          primitive.ObjectID             `bson:"service" json:"service"`
 	Unit             primitive.ObjectID             `bson:"unit" json:"unit"`
-	Spec             string                         `bson:"spec" json:"spec"`
+	Spec             primitive.ObjectID             `bson:"spec" json:"spec"`
 	Kind             string                         `bson:"kind" json:"kind"`
 	State            string                         `bson:"state" json:"state"`
 	Node             primitive.ObjectID             `bson:"node,omitempty" json:"node"`
@@ -35,13 +34,6 @@ type Action struct {
 	Since     time.Time          `bson:"since" json:"since"`
 	Executed  time.Time          `bson:"executed" json:"executed"`
 	Action    string             `bson:"action" json:"action"`
-}
-
-func (d *Deployment) GetSpecHash() spec.Hash {
-	return spec.Hash{
-		Unit: d.Unit,
-		Hash: d.Spec,
-	}
 }
 
 func (d *Deployment) Validate(db *database.Database) (err error) {
