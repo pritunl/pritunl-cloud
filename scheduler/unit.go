@@ -14,7 +14,7 @@ import (
 
 type InstanceUnit struct {
 	unit  *service.Unit
-	spec  *spec.Spec
+	spec  *spec.Commit
 	count int
 	nodes shape.Nodes
 }
@@ -312,7 +312,7 @@ func (u *InstanceUnit) scheduleComplex(db *database.Database,
 	return
 }
 
-func NewInstanceUnit(unit *service.Unit, spc *spec.Spec) (
+func NewInstanceUnit(unit *service.Unit, spc *spec.Commit) (
 	instUnit *InstanceUnit) {
 
 	instUnit = &InstanceUnit{
