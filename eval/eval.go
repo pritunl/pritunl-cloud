@@ -220,7 +220,7 @@ func (p *Parser) parseComp(left, right, comp interface{}) bool {
 	return false
 }
 
-func (p *Parser) Eval() (resp string, dur int, err error) {
+func (p *Parser) Eval() (resp string, threshold int, err error) {
 	p.parts = strings.Fields(p.statement)
 	p.partsLen = len(p.parts)
 	if p.partsLen < 6 {
@@ -405,7 +405,7 @@ func (p *Parser) Eval() (resp string, dur int, err error) {
 			}
 
 			if forInt, ok := forVal.(int); ok {
-				dur = forInt
+				threshold = forInt
 			} else {
 				err = NewEvalError(
 					p.statement,
@@ -524,13 +524,15 @@ func (p *Parser) Eval() (resp string, dur int, err error) {
 	return
 }
 
-func Eval(data Data, statement string) (resp string, dur int, err error) {
+func Eval(data Data, statement string) (resp string,
+	threshold int, err error) {
+
 	parsr := &Parser{
 		statement: statement,
 		data:      data,
 	}
 
-	resp, dur, err = parsr.Eval()
+	resp, threshold, err = parsr.Eval()
 	if err != nil {
 		return
 	}
