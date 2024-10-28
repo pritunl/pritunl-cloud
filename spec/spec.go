@@ -25,7 +25,7 @@ type Commit struct {
 	Count     int                `bson:"count" json:"count"`
 	Hash      string             `bson:"hash" json:"hash"`
 	Data      string             `bson:"data" json:"data"`
-	Instance  *Instance          `bson:"instance,omitempty" json:"instance,omitempty"`
+	Instance  *Instance          `bson:"instance,omitempty" json:"-"`
 }
 
 func (s *Commit) Validate(db *database.Database) (err error) {
