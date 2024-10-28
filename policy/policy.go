@@ -8,13 +8,13 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/pritunl-cloud/agent"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/subscription"
 	"github.com/pritunl/pritunl-cloud/user"
+	"github.com/pritunl/pritunl-cloud/useragent"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/sirupsen/logrus"
 )
@@ -122,7 +122,7 @@ func (p *Policy) ValidateUser(db *database.Database, usr *user.User,
 		return
 	}
 
-	agnt, err := agent.Parse(db, r)
+	agnt, err := useragent.Parse(db, r)
 	if err != nil {
 		return
 	}
