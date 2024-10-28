@@ -553,7 +553,14 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 					let className = ""
 					let disabled = false
 					if (activeUnit && activeUnit.last_commit == commit.id) {
-						className = "bp5-text-intent-primary"
+						if (diffCommit) {
+							className = "bp5-text-intent-success"
+						} else {
+							className = "bp5-text-intent-primary"
+						}
+						disabled = true
+					} else if (diffCommit && diffCommit.id == commit.id) {
+						className = "bp5-text-intent-danger"
 						disabled = true
 					}
 
