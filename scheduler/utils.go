@@ -142,7 +142,7 @@ func Schedule(db *database.Database, unit *service.Unit) (err error) {
 		return
 	}
 
-	spc, err := spec.Get(db, unit.GetSpecHash())
+	spc, err := spec.Get(db, unit.DeployCommit)
 	if err != nil {
 		return
 	}
