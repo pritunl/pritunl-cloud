@@ -159,7 +159,9 @@ func (u *Unit) Parse(db *database.Database) (
 
 		u.Hash = spc.Hash
 		u.LastCommit = spc.Id
-		u.DeployCommit = spc.Id
+		if u.DeployCommit.IsZero() {
+			u.DeployCommit = spc.Id
+		}
 	} else if u.Name != spc.Name || u.Count != spc.Count {
 		curSpc, e := spec.Get(db, u.LastCommit)
 		if e != nil {
