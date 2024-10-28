@@ -539,7 +539,7 @@ func (i *Instance) Format() {
 	// TODO Sort VPC IDs
 }
 
-func (i *Instance) Json() {
+func (i *Instance) Json(short bool) {
 	switch i.State {
 	case Start:
 		if i.Restart || i.RestartBlockIp {
@@ -632,7 +632,11 @@ func (i *Instance) Json() {
 	if i.VirtTimestamp.IsZero() {
 		i.Uptime = ""
 	} else {
-		i.Uptime = systemd.FormatUptime(i.VirtTimestamp)
+		if short {
+			i.Uptime = systemd.FormatUptimeShort(i.VirtTimestamp)
+		} else {
+			i.Uptime = systemd.FormatUptime(i.VirtTimestamp)
+		}
 	}
 
 	if i.IscsiDevices != nil {
