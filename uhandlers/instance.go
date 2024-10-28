@@ -697,7 +697,7 @@ func instancesGet(c *gin.Context) {
 		}
 
 		for _, inst := range instances {
-			inst.Json()
+			inst.Json(false)
 
 			if demo.IsDemo() {
 				inst.State = instance.Start
