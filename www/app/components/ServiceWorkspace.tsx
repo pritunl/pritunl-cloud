@@ -28,6 +28,7 @@ interface Props {
 	mode: string;
 	onMode: (mode: string) => void;
 	onChange: (units: ServiceTypes.Unit[]) => void;
+	onEdit: (units: ServiceTypes.Unit[]) => void;
 }
 
 interface State {
@@ -295,7 +296,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 			expandLeft: false,
 			expandRight: true,
 		})
-		this.props.onChange(units)
+		this.props.onEdit(units)
 	}
 
 	onView = (): void => {
@@ -333,7 +334,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 			expandLeft: false,
 			expandRight: true,
 		})
-		this.props.onChange(units)
+		this.props.onEdit(units)
 	}
 
 	onDelete = (): void => {
@@ -354,7 +355,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 			...this.state,
 			activeUnitId: "",
 		})
-		this.props.onChange(units)
+		this.props.onEdit(units)
 
 		let activeUnit = this.getActiveUnit()
 		if (activeUnit && !activeUnit.new) {
@@ -372,6 +373,22 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 			units[index] = {
 				...units[index],
 				spec: val,
+			}
+		}
+
+		this.props.onEdit(units)
+	}
+
+	onUnitDeploy = (val: string): void => {
+		let units = [
+			...(this.props.service.units || []),
+		]
+
+		let index = this.getActiveUnitIndex()
+		if (index !== -1) {
+			units[index] = {
+				...units[index],
+				deploy_commit: val,
 			}
 		}
 
@@ -477,7 +494,60 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 			/>)
 		}
 
+		let commitMenu: JSX.Element
 		if (this.props.mode === "unit") {
+			if (this.state.unit && activeUnit &&
+				this.state.unit.id === activeUnit.id &&
+				this.state.unit.commits &&
+				this.state.unit.commits.length > 0) {
+
+				let commitMenuItems: JSX.Element[] = []
+
+				this.state.unit.commits.forEach((commit): void => {
+					let className = ""
+					let disabled = false
+					let selected = false
+					if (activeUnit && activeUnit.deploy_commit == commit.id) {
+						// disabled = true
+						className = "bp5-text-intent-primary bp5-intent-primary"
+						selected = true
+					}
+
+					commitMenuItems.push(<Blueprint.MenuItem
+						key={"diff-" + commit.id}
+						disabled={disabled || this.props.disabled || this.state.disabled}
+						selected={selected}
+						roleStructure="listoption"
+						icon={<Icons.GitCommit
+							className={className}
+						/>}
+						onClick={(): void => {
+							this.onUnitDeploy(commit.id)
+						}}
+						text={commit.id.substring(0, 12)}
+						textClassName={className}
+						labelElement={<span
+							className={className}
+						>{MiscUtils.formatDateLocal(commit.timestamp)}</span>}
+					/>)
+				})
+
+				commitMenu = <Blueprint.Popover
+					content={<Blueprint.Menu style={css.commitsMenu}>
+						{commitMenuItems}
+					</Blueprint.Menu>}
+					placement="bottom"
+				>
+					<Blueprint.Button
+						alignText="left"
+						icon={<Icons.GitRepo/>}
+						rightIcon={<Icons.CaretDown/>}
+						text="Default Commit"
+						style={css.settingsOpen}
+					/>
+				</Blueprint.Popover>
+			}
+
 			let selectedNames: string[] = [];
 			for (let deploymentId of Object.keys(this.state.selectedDeployments)) {
 				selectedNames.push(deploymentId)
@@ -539,7 +609,6 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 			/>)
 		}
 
-		let commitMenu: JSX.Element
 		if (this.props.mode === "edit") {
 			if (this.state.unit &&
 				activeUnit &&
