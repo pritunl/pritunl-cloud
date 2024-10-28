@@ -68,6 +68,54 @@ func GetAll(db *database.Database, query *bson.M) (
 	return
 }
 
+func GetAllProjectSorted(db *database.Database, query *bson.M) (
+	spcs []*Commit, err error) {
+
+	coll := db.Specs()
+	spcs = []*Commit{}
+
+	cursor, err := coll.Find(
+		db,
+		query,
+		&options.FindOptions{
+			Projection: bson.M{
+				"_id":       1,
+				"unit":      1,
+				"timestamp": 1,
+				"hash":      1,
+				"data":      1,
+			},
+			Sort: &bson.D{
+				{"timestamp", -1},
+			},
+		},
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		spc := &Commit{}
+		err = cursor.Decode(spc)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		spcs = append(spcs, spc)
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetAllIds(db *database.Database) (specIds set.Set, err error) {
 	coll := db.Specs()
 	specIds = set.NewSet()
