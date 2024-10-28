@@ -321,6 +321,21 @@ func (n *NetConf) ipDatabase(db *database.Database) (err error) {
 		}
 	}
 
+	if !n.Virt.Deployment.IsZero() {
+		coll = db.Deployments()
+
+		err = coll.UpdateId(n.Virt.Deployment, &bson.M{
+			"$set": &bson.M{
+				"private_ips":  []string{n.InternalAddr.String()},
+				"private_ips6": []string{n.InternalAddr6.String()},
+			},
+		})
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+	}
+
 	return
 }
 
