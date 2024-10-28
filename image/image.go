@@ -330,6 +330,9 @@ func (i *Image) Sync(db *database.Database) (err error) {
 					"last_modified": i.LastModified,
 					"storage_class": i.StorageClass,
 				},
+				"$setOnInsert": &bson.M{
+					"name": i.Name,
+				},
 			},
 		)
 		if err != nil {
@@ -352,6 +355,7 @@ func (i *Image) Sync(db *database.Database) (err error) {
 			},
 			&bson.M{
 				"$set": &bson.M{
+					"name":          i.Name,
 					"storage":       i.Storage,
 					"key":           i.Key,
 					"signed":        i.Signed,
