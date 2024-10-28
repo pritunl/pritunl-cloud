@@ -148,6 +148,13 @@ func GetAllNames(db *database.Database, query *bson.M) (
 			Projection: &bson.D{
 				{"_id", 1},
 				{"name", 1},
+				{"type", 1},
+				{"zone", 1},
+				{"flexible", 1},
+				{"disk_type", 1},
+				{"disk_pool", 1},
+				{"memory", 1},
+				{"processors", 1},
 			},
 		},
 	)
@@ -204,9 +211,9 @@ func RemoveMulti(db *database.Database, shapeIds []primitive.ObjectID) (
 
 	_, err = coll.DeleteMany(db, &bson.M{
 		"_id": &bson.M{
-			"$in":               shapeIds,
-			"delete_protection": false,
+			"$in": shapeIds,
 		},
+		"delete_protection": false,
 	})
 	if err != nil {
 		err = database.ParseError(err)
