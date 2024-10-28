@@ -30,7 +30,7 @@ type Deployment struct {
 	Id               primitive.ObjectID `json:"id"`
 	Service          primitive.ObjectID `json:"service"`
 	Unit             primitive.ObjectID `json:"unit"`
-	Spec             string             `json:"spec"`
+	Spec             primitive.ObjectID `json:"spec"`
 	Kind             string             `json:"kind"`
 	State            string             `json:"state"`
 	Node             primitive.ObjectID `json:"node"`
