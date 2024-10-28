@@ -40,8 +40,16 @@ func (s *Shape) Validate(db *database.Database) (
 		break
 	default:
 		errData = &errortypes.ErrorData{
-			Error:   "invalid_secret_type",
+			Error:   "invalid_shape_type",
 			Message: "Shape type invalid",
+		}
+		return
+	}
+
+	if s.Datacenter.IsZero() {
+		errData = &errortypes.ErrorData{
+			Error:   "missing_datacenter",
+			Message: "Shape datacenter required",
 		}
 		return
 	}
@@ -105,9 +113,6 @@ func (s *Shape) GetAllNodes(db *database.Database, processors, memory int) (
 		}
 	}
 
-	err = &errortypes.NotFoundError{
-		errors.New("shape: Failed to find available node"),
-	}
 	return
 }
 
