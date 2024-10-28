@@ -1,6 +1,8 @@
 package spec
 
 import (
+	"time"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
@@ -10,9 +12,10 @@ import (
 
 func New(serviceId, unitId primitive.ObjectID, data string) (spc *Commit) {
 	spc = &Commit{
-		Unit:    unitId,
-		Service: serviceId,
-		Data:    data,
+		Unit:      unitId,
+		Service:   serviceId,
+		Timestamp: time.Now(),
+		Data:      data,
 	}
 
 	return
