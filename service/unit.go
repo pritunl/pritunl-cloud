@@ -18,6 +18,7 @@ type Unit struct {
 	Count        int                `bson:"count" json:"count"`
 	Deployments  []*Deployment      `bson:"deployments" json:"deployments"`
 	Spec         string             `bson:"spec" json:"spec"`
+	LastCommit   primitive.ObjectID `bson:"last_commit" json:"last_commit"`
 	DeployCommit primitive.ObjectID `bson:"deploy_commit" json:"deploy_commit"`
 	Hash         string             `bson:"hash" json:"hash"`
 }
@@ -156,9 +157,9 @@ func (u *Unit) Parse(db *database.Database) (
 			return
 		}
 
-		if u.DeployCommit.IsZero() {
-			u.DeployCommit = spc.Id
-		}
+		u.Hash = spc.Hash
+		u.LastCommit = spc.Id
+		u.DeployCommit = spc.Id
 	} else if u.Name != spc.Name || u.Count != spc.Count {
 		curSpc, e := spec.Get(db, u.LastCommit)
 		if e != nil {

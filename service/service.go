@@ -145,6 +145,7 @@ func (p *Service) CommitFieldsUnits(db *database.Database,
 			"kind":          curUnit.Kind,
 			"count":         curUnit.Count,
 			"spec":          curUnit.Spec,
+			"last_commit":   curUnit.LastCommit,
 			"deploy_commit": curUnit.DeployCommit,
 			"hash":          curUnit.Hash,
 		})
