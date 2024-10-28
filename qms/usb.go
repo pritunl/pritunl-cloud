@@ -3,7 +3,9 @@ package qms
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"net"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -11,9 +13,67 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/usb"
+	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/sirupsen/logrus"
 )
+
+func getUsbBusPath(vendorID, productID string) (
+	deviceName, devicePath string, err error) {
+
+	basePath := "/sys/bus/usb/devices/"
+
+	files, err := ioutil.ReadDir(basePath)
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrapf(err, "qms: Failed to read dir '%s'", basePath),
+		}
+		return
+	}
+
+	for _, file := range files {
+		devName := file.Name()
+		devPath := filepath.Join(basePath, devName)
+		vendorFile := filepath.Join(devPath, "idVendor")
+		productFile := filepath.Join(devPath, "idProduct")
+
+		vendorExists, e := utils.Exists(vendorFile)
+		if e != nil {
+			err = e
+			return
+		}
+		productExists, e := utils.Exists(productFile)
+		if e != nil {
+			err = e
+			return
+		}
+
+		if vendorExists && productExists {
+			vendor, e := utils.Read(vendorFile)
+			if e != nil {
+				err = e
+				return
+			}
+
+			product, e := utils.Read(productFile)
+			if e != nil {
+				err = e
+				return
+			}
+
+			vendor = strings.TrimSpace(vendor)
+			product = strings.TrimSpace(product)
+
+			if vendor == vendorID && product == productID {
+				deviceName = devName
+				devicePath = devPath
+				return
+			}
+		}
+	}
+
+	return
+}
 
 func GetUsbDevices(vmId primitive.ObjectID) (
 	devices []*vm.UsbDevice, err error) {
@@ -157,12 +217,28 @@ func AddUsb(vmId primitive.ObjectID, device *vm.UsbDevice) (err error) {
 		return
 	}
 
+	vendor := usb.FilterId(device.Vendor)
+	product := usb.FilterId(device.Product)
+	bus := usb.FilterAddr(device.Bus)
+	address := usb.FilterAddr(device.Address)
+	deviceName := ""
+	devicePath := ""
+
+	if vendor != "" && product != "" {
+		deviceName, devicePath, err = getUsbBusPath(vendor, product)
+		if err != nil {
+			return
+		}
+	}
+
 	logrus.WithFields(logrus.Fields{
 		"instance_id": vmId.Hex(),
-		"usb_vendor":  device.Vendor,
-		"usb_product": device.Product,
-		"usb_bus":     device.Bus,
-		"usb_address": device.Address,
+		"usb_vendor":  vendor,
+		"usb_product": product,
+		"usb_bus":     bus,
+		"usb_address": address,
+		"usb_name":    deviceName,
+		"usb_path":    devicePath,
 	}).Info("qemu: Connecting virtual machine usb")
 
 	lockId := socketsLock.Lock(vmId.Hex())
@@ -188,11 +264,6 @@ func AddUsb(vmId primitive.ObjectID, device *vm.UsbDevice) (err error) {
 		}
 		return
 	}
-
-	vendor := usb.FilterId(device.Vendor)
-	product := usb.FilterId(device.Product)
-	bus := usb.FilterAddr(device.Bus)
-	address := usb.FilterAddr(device.Address)
 
 	deviceLine := ""
 	if vendor != "" && product != "" {
