@@ -116,7 +116,7 @@ func (p *Planner) checkInstance(db *database.Database,
 		return
 	}
 
-	spc, err := spec.Get(db, deply.GetSpecHash())
+	spc, err := spec.Get(db, deply.Spec)
 	if err != nil {
 		return
 	}
