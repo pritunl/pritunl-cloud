@@ -18,6 +18,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/service"
+	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -290,6 +291,7 @@ func servicesGet(c *gin.Context) {
 type ServiceUnit struct {
 	Id          primitive.ObjectID      `json:"id"`
 	Service     primitive.ObjectID      `json:"service"`
+	Commits     []*spec.Commit          `json:"commits"`
 	Deployments []*aggregate.Deployment `json:"deployments"`
 }
 
@@ -327,9 +329,18 @@ func serviceUnitGet(c *gin.Context) {
 		return
 	}
 
+	commits, err := spec.GetAllProjectSorted(db, &bson.M{
+		"unit": unitId,
+	})
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
 	srvcUnit := &ServiceUnit{
 		Id:          unit.Id,
 		Service:     srvc.Id,
+		Commits:     commits,
 		Deployments: deploys,
 	}
 
