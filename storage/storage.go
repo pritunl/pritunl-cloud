@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"net/url"
 	"strings"
 
 	"github.com/dropbox/godropbox/container/set"
@@ -25,6 +26,20 @@ type Storage struct {
 
 func (s *Storage) IsOracle() bool {
 	return strings.Contains(strings.ToLower(s.Endpoint), "oracle")
+}
+
+func (s *Storage) GetWebUrl() (u *url.URL) {
+	u = &url.URL{}
+
+	if s.Insecure {
+		u.Scheme = "http"
+	} else {
+		u.Scheme = "https"
+	}
+	u.Host = s.Endpoint
+	u.Path = "/" + s.Bucket
+
+	return
 }
 
 func (s *Storage) Validate(db *database.Database) (
