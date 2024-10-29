@@ -169,13 +169,24 @@ func (u *Unit) Parse(db *database.Database) (
 			return
 		}
 
-		curSpc.Name = u.Name
-		curSpc.Count = u.Count
-		curSpc.Data = u.Spec
+		curSpc.Name = spc.Name
+		curSpc.Count = spc.Count
+		curSpc.Data = spc.Data
 
 		err = curSpc.CommitFields(db, set.NewSet("name", "count", "data"))
 		if err != nil {
 			return
+		}
+
+		u.Name = curSpc.Name
+		u.Kind = curSpc.Kind
+		u.Count = curSpc.Count
+		u.Spec = curSpc.Data
+
+		u.Hash = curSpc.Hash
+		u.LastCommit = curSpc.Id
+		if u.DeployCommit.IsZero() {
+			u.DeployCommit = curSpc.Id
 		}
 	}
 
