@@ -16,16 +16,29 @@ export interface Service {
 
 export interface Unit {
 	id?: string;
-	new?: boolean;
 	name?: string;
 	spec?: string;
 	delete?: boolean;
+	new?: boolean;
 }
 
 export interface ServiceUnit {
 	id?: string;
 	service?: string;
+	commits?: Commit[]
 	deployments?: Deployment[];
+}
+
+export interface Commit {
+	id?: string
+	service?: string
+	unit?: string
+	timestamp?: string
+	name?: string
+	kind?: string
+	count?: number
+	hash?: string
+	data?: string
 }
 
 export interface Deployment {
