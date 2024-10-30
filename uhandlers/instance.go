@@ -390,6 +390,7 @@ func instancePost(c *gin.Context) {
 			Tpm:                 dta.Tpm,
 			DhcpServer:          dta.DhcpServer,
 			CloudType:           dta.CloudType,
+			CloudScript:         dta.CloudScript,
 			DeleteProtection:    dta.DeleteProtection,
 			SkipSourceDestCheck: dta.SkipSourceDestCheck,
 			Name:                name,
