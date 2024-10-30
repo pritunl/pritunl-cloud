@@ -204,9 +204,9 @@ func RemoveMulti(db *database.Database, poolIds []primitive.ObjectID) (
 
 	_, err = coll.DeleteMany(db, &bson.M{
 		"_id": &bson.M{
-			"$in":               poolIds,
-			"delete_protection": false,
+			"$in": poolIds,
 		},
+		"delete_protection": false,
 	})
 	if err != nil {
 		err = database.ParseError(err)
