@@ -126,7 +126,7 @@ func GetDeployments(db *database.Database, unitId primitive.ObjectID) (
 
 		if len(doc.InstanceDocs) > 0 {
 			inst := doc.InstanceDocs[0]
-			inst.Json()
+			inst.Json(true)
 
 			deply.InstanceName = inst.Name
 			deply.InstanceRoles = inst.NetworkRoles
