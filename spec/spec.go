@@ -50,9 +50,8 @@ func (u *Commit) ExtractResources() (resources string, err error) {
 func (u *Commit) Parse(db *database.Database,
 	orgId primitive.ObjectID) (errData *errortypes.ErrorData, err error) {
 
-	// TODO Remove name and count from hash
 	hash := sha1.New()
-	hash.Write([]byte(u.Data))
+	hash.Write([]byte(filterSpecHash(u.Data)))
 	hashBytes := hash.Sum(nil)
 	u.Hash = fmt.Sprintf("%x", hashBytes)
 

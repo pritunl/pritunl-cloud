@@ -1,6 +1,8 @@
 package spec
 
 import (
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
@@ -9,6 +11,29 @@ import (
 	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 )
+
+var (
+	yamlBlockRe = regexp.MustCompile("(?s)^```yaml\\n(.*?)```")
+)
+
+func filterSpecHash(input string) string {
+	return yamlBlockRe.ReplaceAllStringFunc(input, func(block string) string {
+		lines := strings.Split(block, "\n")
+		result := []string{}
+
+		for _, line := range lines {
+			line = strings.TrimSpace(line)
+			if strings.HasPrefix(line, "name:") ||
+				strings.HasPrefix(line, "count:") {
+
+				continue
+			}
+			result = append(result, line)
+		}
+
+		return strings.Join(result, "\n")
+	})
+}
 
 func New(serviceId, unitId primitive.ObjectID, data string) (spc *Commit) {
 	spc = &Commit{
