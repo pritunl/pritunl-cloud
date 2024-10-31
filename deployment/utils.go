@@ -116,52 +116,22 @@ func Remove(db *database.Database, deplyId primitive.ObjectID) (err error) {
 func RemoveMulti(db *database.Database, serviceId primitive.ObjectID,
 	unitId primitive.ObjectID, deplyIds []primitive.ObjectID) (err error) {
 
-	deplys, err := GetAll(db, &bson.M{
+	coll := db.Deployments()
+
+	_, err = coll.UpdateMany(db, &bson.M{
 		"_id": &bson.M{
 			"$in": deplyIds,
 		},
 		"service": serviceId,
 		"unit":    unitId,
+	}, &bson.M{
+		"$set": &bson.M{
+			"state": Destroy,
+		},
 	})
 	if err != nil {
+		err = database.ParseError(err)
 		return
-	}
-
-	for _, deply := range deplys {
-		inst, e := instance.Get(db, deply.Instance)
-		if e != nil {
-			err = e
-			if _, ok := e.(*database.NotFoundError); ok {
-				err = nil
-				inst = nil
-			} else {
-				return
-			}
-		}
-
-		if inst != nil {
-			if inst.DeleteProtection {
-				continue
-			}
-
-			err = instance.Delete(db, inst.Id)
-			if err != nil {
-				if _, ok := e.(*database.NotFoundError); !ok {
-					err = nil
-				} else {
-					return
-				}
-			}
-		}
-
-		err = Remove(db, deply.Id)
-		if err != nil {
-			if _, ok := e.(*database.NotFoundError); !ok {
-				err = nil
-			} else {
-				return
-			}
-		}
 	}
 
 	return
