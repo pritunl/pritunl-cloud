@@ -122,7 +122,7 @@ func (s *Imds) buildDeployInstance(db *database.Database,
 		inst, virt,
 		vc, subnet,
 		services,
-		s.stat.Deployments(),
+		s.stat.DeploymentsDeployed(),
 		secrs,
 		certs,
 	)
