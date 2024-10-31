@@ -142,14 +142,16 @@ export default class ServiceDetailed extends React.Component<Props, State> {
 			disabled: true,
 		});
 
+		let changed = false
 		ServicesStore.addChangeListen((): void => {
+			changed = true
 			if (!this.state.changed) {
 				this.setState({
 					...this.state,
 					service: null,
 					changed: false,
 					unitChanged: false,
-					mode: "view",
+					mode: this.state.mode === "edit" ? "view" : this.state.mode,
 				});
 			}
 		});
@@ -164,14 +166,14 @@ export default class ServiceDetailed extends React.Component<Props, State> {
 			});
 
 			setTimeout((): void => {
-				if (!this.state.changed) {
+				if (!changed && !this.state.changed) {
 					this.setState({
 						...this.state,
 						message: '',
 						service: null,
 						changed: false,
 						unitChanged: false,
-						mode: "view",
+						mode: this.state.mode === "edit" ? "view" : this.state.mode,
 					});
 				} else {
 					this.setState({
@@ -356,6 +358,28 @@ export default class ServiceDetailed extends React.Component<Props, State> {
 						...this.state,
 						changed: true,
 						unitChanged: true,
+						service: service,
+					});
+				}}
+				onEdit={(units: ServiceTypes.Unit[]): void => {
+					let service: any;
+
+					if (this.state.changed) {
+						service = {
+							...this.state.service,
+						};
+					} else {
+						service = {
+							...this.props.service,
+						};
+					}
+
+					service.units = units
+
+					this.setState({
+						...this.state,
+						changed: true,
+						unitChanged: true,
 						mode: "edit",
 						service: service,
 					});
@@ -373,6 +397,7 @@ export default class ServiceDetailed extends React.Component<Props, State> {
 						...this.state,
 						changed: false,
 						unitChanged: false,
+						mode: "view",
 						service: null,
 					});
 				}}
