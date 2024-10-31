@@ -130,8 +130,16 @@ func (s *Services) DeploySpec(db *database.Database,
 		State:   deployment.Reserved,
 	}
 
-	err = deply.Validate(db)
+	errData, err := deply.Validate(db)
 	if err != nil {
+		return
+	}
+
+	if errData != nil {
+		logrus.WithFields(logrus.Fields{
+			"error_code":    errData.Error,
+			"error_message": errData.Message,
+		}).Error("deploy: Failed to validate deployment")
 		return
 	}
 
@@ -181,7 +189,7 @@ func (s *Services) DeploySpec(db *database.Database,
 		Deployment:          deply.Id,
 	}
 
-	errData, err := inst.Validate(db)
+	errData, err = inst.Validate(db)
 	if err != nil {
 		return
 	}
