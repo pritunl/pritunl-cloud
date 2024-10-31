@@ -4,6 +4,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 )
@@ -136,6 +137,8 @@ func GetDeployments(db *database.Database, unitId primitive.ObjectID) (
 			deply.InstanceUptime = inst.Uptime
 			deply.InstanceState = inst.State
 			deply.InstanceState = inst.VirtState
+		} else if deply.State == deployment.Destroy {
+			deply.InstanceStatus = "Destroyed"
 		}
 
 		deplys = append(deplys, deply)
