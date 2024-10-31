@@ -3,7 +3,6 @@ package setup
 import (
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/pritunl-cloud/database"
-	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/ipset"
@@ -35,14 +34,9 @@ func Iptables() (err error) {
 		}
 	}
 
-	disks, err := disk.GetNode(db, node.Self.Id)
-	if err != nil {
-		return
-	}
-
 	instances, err := instance.GetAllVirt(db, &bson.M{
 		"node": node.Self.Id,
-	}, disks)
+	}, nil, nil)
 	if err != nil {
 		return
 	}
