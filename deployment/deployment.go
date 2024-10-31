@@ -8,6 +8,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -36,9 +37,37 @@ type Action struct {
 	Action    string             `bson:"action" json:"action"`
 }
 
-func (d *Deployment) Validate(db *database.Database) (err error) {
+func (d *Deployment) Validate(db *database.Database) (
+	errData *errortypes.ErrorData, err error) {
+
 	if d.Actions == nil {
 		d.Actions = map[primitive.ObjectID]*Action{}
+	}
+
+	switch d.State {
+	case Reserved:
+		break
+	case Deployed:
+		break
+	case Destroy:
+		break
+	default:
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_state",
+			Message: "Deployment state is invalid",
+		}
+		return
+	}
+
+	switch d.Kind {
+	case Instance:
+		break
+	default:
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_kind",
+			Message: "Deployment kind is invalid",
+		}
+		return
 	}
 
 	return
