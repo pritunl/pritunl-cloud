@@ -32,26 +32,28 @@ import (
 )
 
 type State struct {
-	nodeSelf         *node.Node
-	nodes            []*node.Node
-	nodeDatacenter   primitive.ObjectID
-	nodeZone         *zone.Zone
-	nodeHostBlock    *block.Block
-	nodeShapes       []*shape.Shape
-	nodeShapesId     set.Set
-	vxlan            bool
-	zoneMap          map[primitive.ObjectID]*zone.Zone
-	namespaces       []string
-	interfaces       []string
-	interfacesSet    set.Set
-	nodeFirewall     []*firewall.Rule
-	firewalls        map[string][]*firewall.Rule
-	pools            []*pool.Pool
-	disks            []*disk.Disk
-	schedulers       []*scheduler.Scheduler
-	deploymentsMap   map[primitive.ObjectID]*deployment.Deployment
-	servicesMap      map[primitive.ObjectID]*service.Service
-	servicesUnitsMap map[primitive.ObjectID]*service.Unit
+	nodeSelf               *node.Node
+	nodes                  []*node.Node
+	nodeDatacenter         primitive.ObjectID
+	nodeZone               *zone.Zone
+	nodeHostBlock          *block.Block
+	nodeShapes             []*shape.Shape
+	nodeShapesId           set.Set
+	vxlan                  bool
+	zoneMap                map[primitive.ObjectID]*zone.Zone
+	namespaces             []string
+	interfaces             []string
+	interfacesSet          set.Set
+	nodeFirewall           []*firewall.Rule
+	firewalls              map[string][]*firewall.Rule
+	pools                  []*pool.Pool
+	disks                  []*disk.Disk
+	schedulers             []*scheduler.Scheduler
+	deploymentsReservedMap map[primitive.ObjectID]*deployment.Deployment
+	deploymentsDeployedMap map[primitive.ObjectID]*deployment.Deployment
+	deploymentsDestroyMap  map[primitive.ObjectID]*deployment.Deployment
+	servicesMap            map[primitive.ObjectID]*service.Service
+	servicesUnitsMap       map[primitive.ObjectID]*service.Unit
 
 	specsMap            map[primitive.ObjectID]*spec.Commit
 	specsServicesMap    map[primitive.ObjectID]*service.Service
@@ -136,14 +138,57 @@ func (s *State) GetInstaceDisks(instId primitive.ObjectID) []*disk.Disk {
 	return s.instanceDisks[instId]
 }
 
-func (s *State) Deployment(deplyId primitive.ObjectID) *deployment.Deployment {
-	return s.deploymentsMap[deplyId]
+func (s *State) DeploymentReserved(deplyId primitive.ObjectID) *deployment.Deployment {
+	return s.deploymentsReservedMap[deplyId]
 }
 
-func (s *State) Deployments() (
+func (s *State) DeploymentsReserved() (
 	deplys map[primitive.ObjectID]*deployment.Deployment) {
 
-	deplys = s.deploymentsMap
+	deplys = s.deploymentsReservedMap
+	return
+}
+
+func (s *State) DeploymentDeployed(deplyId primitive.ObjectID) *deployment.Deployment {
+	return s.deploymentsDeployedMap[deplyId]
+}
+
+func (s *State) DeploymentsDeployed() (
+	deplys map[primitive.ObjectID]*deployment.Deployment) {
+
+	deplys = s.deploymentsDeployedMap
+	return
+}
+
+func (s *State) DeploymentDestroy(deplyId primitive.ObjectID) *deployment.Deployment {
+	return s.deploymentsDestroyMap[deplyId]
+}
+
+func (s *State) DeploymentsDestroy() (
+	deplys map[primitive.ObjectID]*deployment.Deployment) {
+
+	deplys = s.deploymentsDestroyMap
+	return
+}
+
+func (s *State) Deployment(deplyId primitive.ObjectID) (
+	deply *deployment.Deployment) {
+
+	deply = s.deploymentsDeployedMap[deplyId]
+	if deply != nil {
+		return
+	}
+
+	deply = s.deploymentsReservedMap[deplyId]
+	if deply != nil {
+		return
+	}
+
+	deply = s.deploymentsDestroyMap[deplyId]
+	if deply != nil {
+		return
+	}
+
 	return
 }
 
@@ -408,13 +453,28 @@ func (s *State) init() (err error) {
 		return
 	}
 
-	deploymentsMap := map[primitive.ObjectID]*deployment.Deployment{}
+	deploymentsReservedMap := map[primitive.ObjectID]*deployment.Deployment{}
+	deploymentsDeployedMap := map[primitive.ObjectID]*deployment.Deployment{}
+	deploymentsDestroyMap := map[primitive.ObjectID]*deployment.Deployment{}
+	deploymentsIdSet := set.NewSet()
 	serviceIds := []primitive.ObjectID{}
 	serviceIdsSet := set.NewSet()
 	unitIds := set.NewSet()
 	specIdsSet := set.NewSet()
 	for _, deply := range deployments {
-		deploymentsMap[deply.Id] = deply
+		deploymentsIdSet.Add(deply.Id)
+		switch deply.State {
+		case deployment.Reserved:
+			deploymentsReservedMap[deply.Id] = deply
+			break
+		case deployment.Deployed:
+			deploymentsDeployedMap[deply.Id] = deply
+			break
+		case deployment.Destroy:
+			deploymentsDestroyMap[deply.Id] = deply
+			break
+		}
+
 		serviceIdsSet.Add(deply.Service)
 		unitIds.Add(deply.Unit)
 		specIdsSet.Add(deply.Spec)
@@ -491,7 +551,7 @@ func (s *State) init() (err error) {
 	specDeploymentIds := []primitive.ObjectID{}
 	for deplyIdInf := range specDeploymentsSet.Iter() {
 		deplyId := deplyIdInf.(primitive.ObjectID)
-		if _, exists := deploymentsMap[deplyId]; !exists {
+		if !deploymentsIdSet.Contains(deplyId) {
 			specDeploymentIds = append(specDeploymentIds, deplyId)
 		}
 	}
@@ -506,9 +566,19 @@ func (s *State) init() (err error) {
 	}
 
 	for _, specDeployment := range specDeployments {
-		deploymentsMap[specDeployment.Id] = specDeployment
+		deploymentsIdSet.Add(specDeployment.Id)
+		switch specDeployment.State {
+		case deployment.Reserved:
+			deploymentsReservedMap[specDeployment.Id] = specDeployment
+			break
+		case deployment.Deployed:
+			deploymentsDeployedMap[specDeployment.Id] = specDeployment
+			break
+		case deployment.Destroy:
+			deploymentsDestroyMap[specDeployment.Id] = specDeployment
+			break
+		}
 	}
-	s.deploymentsMap = deploymentsMap
 
 	for serviceId := range serviceIdsSet.Iter() {
 		serviceIds = append(serviceIds, serviceId.(primitive.ObjectID))
@@ -548,7 +618,7 @@ func (s *State) init() (err error) {
 	serviceDeploymentIds := []primitive.ObjectID{}
 	for deplyIdInf := range serviceDeploymentsSet.Iter() {
 		deplyId := deplyIdInf.(primitive.ObjectID)
-		if _, exists := deploymentsMap[deplyId]; !exists {
+		if !deploymentsIdSet.Contains(deplyId) {
 			serviceDeploymentIds = append(serviceDeploymentIds, deplyId)
 		}
 	}
@@ -563,9 +633,22 @@ func (s *State) init() (err error) {
 	}
 
 	for _, serviceDeployment := range serviceDeployments {
-		deploymentsMap[serviceDeployment.Id] = serviceDeployment
+		deploymentsIdSet.Add(serviceDeployment.Id)
+		switch serviceDeployment.State {
+		case deployment.Reserved:
+			deploymentsReservedMap[serviceDeployment.Id] = serviceDeployment
+			break
+		case deployment.Deployed:
+			deploymentsDeployedMap[serviceDeployment.Id] = serviceDeployment
+			break
+		case deployment.Destroy:
+			deploymentsDestroyMap[serviceDeployment.Id] = serviceDeployment
+			break
+		}
 	}
-	s.deploymentsMap = deploymentsMap
+	s.deploymentsReservedMap = deploymentsReservedMap
+	s.deploymentsDeployedMap = deploymentsDeployedMap
+	s.deploymentsDestroyMap = deploymentsDestroyMap
 
 	schedulers, err := scheduler.GetAll(db)
 	if err != nil {
