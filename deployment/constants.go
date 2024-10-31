@@ -7,6 +7,7 @@ import (
 const (
 	Reserved = "reserved"
 	Deployed = "deployed"
+	Destroy  = "destroy"
 
 	Instance = "instance"
 
