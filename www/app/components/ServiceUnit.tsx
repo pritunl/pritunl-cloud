@@ -61,6 +61,12 @@ const css = {
 		minWidth: "30px",
 		margin: " 0 5px",
 	} as React.CSSProperties,
+	specHover: {
+		padding: "10px",
+		fontSize: "12px",
+		fontFamily: Theme.monospaceFont,
+		fontWeight: Theme.monospaceWeight,
+	} as React.CSSProperties,
 }
 
 export default class ServiceUnit extends React.Component<Props, State> {
@@ -97,6 +103,15 @@ export default class ServiceUnit extends React.Component<Props, State> {
 			</div>
 		}
 
+		let commitMap: Record<string, number> = {}
+		if (this.props.unit.commits) {
+			let count = 0
+			for (let commit of this.props.unit.commits) {
+				commitMap[commit.id] = count
+				count -= 1
+			}
+		}
+
 		deployments.forEach((deployment: ServiceTypes.Deployment): void => {
 			let publicIps = deployment.public_ips
 			if (!publicIps || !publicIps.length) {
@@ -117,6 +132,35 @@ export default class ServiceUnit extends React.Component<Props, State> {
 			if (!privateIps6 || !privateIps6.length) {
 				privateIps6 = ["-"]
 			}
+
+			let commitIndex = commitMap[deployment.spec]
+			let commitClass = commitIndex === 0 ? "bp5-text-intent-success" :
+				"bp5-text-intent-danger"
+
+			let specHover = <div
+				className="bp5-content-popover"
+				style={css.specHover}
+			>
+				<PageInfo
+					compact={true}
+					style={css.info}
+					fields={[
+						{
+							label: "Commit",
+							value: deployment.spec.substring(0, 24) || "-",
+						},
+						{
+							label: "Tag",
+							value: "1.2.5823.344",
+						},
+						{
+							label: "Behind",
+							value: commitIndex,
+							valueClass: commitClass,
+						},
+					]}
+				/>
+			</div>
 
 			cards.push(<Blueprint.Card
 				key={deployment.id}
@@ -183,8 +227,10 @@ export default class ServiceUnit extends React.Component<Props, State> {
 									value: deployment.id,
 								},
 								{
-									label: "Uptime",
-									value: deployment.instance_uptime || "-",
+									label: "Commit ID",
+									value: deployment.spec.substring(0, 12),
+									hover: specHover,
+									valueClass: commitClass,
 								},
 							]}
 						/>
