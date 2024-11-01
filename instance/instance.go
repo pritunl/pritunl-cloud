@@ -2,7 +2,6 @@ package instance
 
 import (
 	"fmt"
-	"io"
 	"math/rand"
 	"net/http"
 	"regexp"
@@ -1262,7 +1261,33 @@ func (i *Instance) VncConnect(db *database.Database,
 				wait <- true
 			}
 		}()
-		io.Copy(backConn.UnderlyingConn(), frontConn.UnderlyingConn())
+
+		for {
+			msgType, msg, err := frontConn.ReadMessage()
+			if err != nil {
+				closeMsg := websocket.FormatCloseMessage(
+					websocket.CloseNormalClosure, fmt.Sprintf("%v", err))
+				if e, ok := err.(*websocket.CloseError); ok {
+					if e.Code != websocket.CloseNoStatusReceived {
+						closeMsg = websocket.FormatCloseMessage(e.Code, e.Text)
+					}
+				}
+				_ = backConn.WriteMessage(websocket.CloseMessage, closeMsg)
+				break
+			}
+
+			err = backConn.WriteMessage(msgType, msg)
+			if err != nil {
+				err = &errortypes.ReadError{
+					errors.Wrap(err, "instance: WebSocket VNC write error"),
+				}
+				logrus.WithFields(logrus.Fields{
+					"error": err,
+				}).Error("instance: WebSocket VNC back write error")
+				break
+			}
+		}
+
 		wait <- true
 	}()
 	go func() {
@@ -1275,7 +1300,33 @@ func (i *Instance) VncConnect(db *database.Database,
 				wait <- true
 			}
 		}()
-		io.Copy(frontConn.UnderlyingConn(), backConn.UnderlyingConn())
+
+		for {
+			msgType, msg, err := backConn.ReadMessage()
+			if err != nil {
+				closeMsg := websocket.FormatCloseMessage(
+					websocket.CloseNormalClosure, fmt.Sprintf("%v", err))
+				if e, ok := err.(*websocket.CloseError); ok {
+					if e.Code != websocket.CloseNoStatusReceived {
+						closeMsg = websocket.FormatCloseMessage(e.Code, e.Text)
+					}
+				}
+				_ = frontConn.WriteMessage(websocket.CloseMessage, closeMsg)
+				break
+			}
+
+			err = frontConn.WriteMessage(msgType, msg)
+			if err != nil {
+				err = &errortypes.ReadError{
+					errors.Wrap(err, "instance: WebSocket VNC write error"),
+				}
+				logrus.WithFields(logrus.Fields{
+					"error": err,
+				}).Error("instance: WebSocket VNC back write error")
+				break
+			}
+		}
+
 		wait <- true
 	}()
 	<-wait
