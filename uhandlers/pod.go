@@ -347,7 +347,7 @@ func serviceUnitGet(c *gin.Context) {
 	c.JSON(200, srvcUnit)
 }
 
-func serviceUnitDeploymentDelete(c *gin.Context) {
+func serviceUnitDeploymentPut(c *gin.Context) {
 	if demo.Blocked(c) {
 		return
 	}
@@ -386,10 +386,29 @@ func serviceUnitDeploymentDelete(c *gin.Context) {
 		return
 	}
 
-	err = deployment.RemoveMulti(db, srvc.Id, unit.Id, data)
-	if err != nil {
-		utils.AbortWithError(c, 500, err)
-		return
+	state := c.Query("state")
+	switch state {
+	case deployment.Archive:
+		err = deployment.ArchiveMulti(db, srvc.Id, unit.Id, data)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+		break
+	case deployment.Restore:
+		err = deployment.RestoreMulti(db, srvc.Id, unit.Id, data)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+		break
+	case deployment.Destroy:
+		err = deployment.RemoveMulti(db, srvc.Id, unit.Id, data)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+		break
 	}
 
 	event.PublishDispatch(db, "instance.change")
