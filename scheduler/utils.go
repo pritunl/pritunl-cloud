@@ -137,11 +137,6 @@ func Schedule(db *database.Database, unit *service.Unit) (err error) {
 		return
 	}
 
-	if unit.Hash == "" {
-		// TODO
-		return
-	}
-
 	spc, err := spec.Get(db, unit.DeployCommit)
 	if err != nil {
 		return
