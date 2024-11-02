@@ -88,7 +88,7 @@ func (u *Unit) Reserve(db *database.Database, deployId primitive.ObjectID) (
 	return
 }
 
-func (u *Unit) UpdateDeployement(db *database.Database,
+func (u *Unit) UpdateDeployementOld(db *database.Database,
 	deploymentId primitive.ObjectID, state string) (updated bool, err error) {
 
 	coll := db.Services()
@@ -113,6 +113,35 @@ func (u *Unit) UpdateDeployement(db *database.Database,
 
 	if resp.MatchedCount == 1 && resp.ModifiedCount == 1 {
 		updated = true
+	}
+
+	return
+}
+
+func (u *Unit) RestoreDeployment(db *database.Database,
+	deployId primitive.ObjectID) (err error) {
+
+	coll := db.Services()
+
+	updateOpts := options.Update().SetArrayFilters(options.ArrayFilters{
+		Filters: []interface{}{
+			bson.M{
+				"elem.id": u.Id,
+			},
+		},
+	})
+	_, err = coll.UpdateOne(db, bson.M{
+		"_id": u.Service.Id,
+	}, bson.M{
+		"$push": bson.M{
+			"units.$[elem].deployments": &Deployment{
+				Id: deployId,
+			},
+		},
+	}, updateOpts)
+	if err != nil {
+		err = database.ParseError(err)
+		return
 	}
 
 	return
