@@ -72,7 +72,7 @@ func (p *Planner) checkInstance(db *database.Database,
 			"instance":   deply.Instance.Hex(),
 			"service":    deply.Service.Hex(),
 			"unit":       deply.Unit.Hex(),
-		}).Info("scheduler: Removing deployment for missing instance")
+		}).Info("scheduler: Removing deployment for destroyed instance")
 
 		err = deployment.Remove(db, deply.Id)
 		if err != nil {
@@ -114,6 +114,65 @@ func (p *Planner) checkInstance(db *database.Database,
 		// }
 
 		return
+	}
+
+	if deply.State == deployment.Archive && !inst.IsActive() {
+		deply.State = deployment.Archived
+		err = deply.CommitFields(db, set.NewSet("state"))
+		if err != nil {
+			return
+		}
+	}
+
+	if deply.State == deployment.Archived && inst.State != instance.Stop {
+		logrus.WithFields(logrus.Fields{
+			"instance_id": inst.Id.Hex(),
+		}).Info("deploy: Stopping instance for archived deployment")
+
+		err = instance.SetState(db, inst.Id, instance.Stop)
+		if err != nil {
+			return
+		}
+	}
+
+	if deply.State == deployment.Restore && inst.IsActive() {
+		deply.State = deployment.Deployed
+		err = deply.CommitFields(db, set.NewSet("state"))
+		if err != nil {
+			return
+		}
+	}
+
+	switch deply.State {
+	case deployment.Archive, deployment.Archived, deployment.Restore:
+		return
+	}
+
+	if deply.State == deployment.Deployed && !inst.IsActive() {
+		logrus.WithFields(logrus.Fields{
+			"instance_id": inst.Id.Hex(),
+		}).Info("deploy: Starting instance for active deployment")
+
+		err = instance.SetState(db, inst.Id, instance.Start)
+		if err != nil {
+			return
+		}
+
+		return
+	}
+
+	if deply.State == deployment.Deployed && !unit.HasDeployment(deply.Id) {
+		logrus.WithFields(logrus.Fields{
+			"deployment": deply.Id.Hex(),
+			"instance":   deply.Instance.Hex(),
+			"service":    deply.Service.Hex(),
+			"unit":       deply.Unit.Hex(),
+		}).Info("scheduler: Restoring deployment")
+
+		err = unit.RestoreDeployment(db, deply.Id)
+		if err != nil {
+			return
+		}
 	}
 
 	spc, err := spec.Get(db, deply.Spec)
