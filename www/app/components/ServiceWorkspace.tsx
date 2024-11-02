@@ -220,6 +220,66 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 		});
 	}
 
+	onArchiveDeployments = (): void => {
+		let activeUnit = this.getActiveUnit()
+		if (!activeUnit) {
+			return
+		}
+
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+		ServiceActions.updateMultiUnitState(
+				this.props.service.id, activeUnit.id,
+				Object.keys(this.state.selectedDeployments),
+			  "archive").then((): void => {
+
+			Alert.success('Successfully archived deployments');
+
+			this.setState({
+				...this.state,
+				selectedDeployments: {},
+				disabled: false,
+			});
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		});
+	}
+
+	onRestoreDeployments = (): void => {
+		let activeUnit = this.getActiveUnit()
+		if (!activeUnit) {
+			return
+		}
+
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+		ServiceActions.updateMultiUnitState(
+				this.props.service.id, activeUnit.id,
+				Object.keys(this.state.selectedDeployments),
+			  "restore").then((): void => {
+
+			Alert.success('Successfully restored deployments');
+
+			this.setState({
+				...this.state,
+				selectedDeployments: {},
+				disabled: false,
+			});
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		});
+	}
+
 	onDeleteDeployments = (): void => {
 		let activeUnit = this.getActiveUnit()
 		if (!activeUnit) {
@@ -230,9 +290,10 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 			...this.state,
 			disabled: true,
 		});
-		ServiceActions.removeMultiUnit(
+		ServiceActions.updateMultiUnitState(
 				this.props.service.id, activeUnit.id,
-				Object.keys(this.state.selectedDeployments)).then((): void => {
+				Object.keys(this.state.selectedDeployments),
+			  "destroy").then((): void => {
 
 			Alert.success('Successfully deleted deployments');
 
@@ -556,6 +617,32 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 				key="menu-service-deploy"
 				service={this.props.service}
 				unit={activeUnit}
+			/>)
+			menuItems.push(<ConfirmButton
+				key="menu-restore-deployments"
+				label="Restore Selected"
+				className="bp5-intent-success bp5-icon-unarchive"
+				safe={true}
+				menuItem={true}
+				style={css.navButton}
+				confirmMsg="Restore the selected archived deployments"
+				confirmInput={false}
+				items={selectedNames}
+				disabled={!this.selectedDeployments || this.state.disabled}
+				onConfirm={this.onRestoreDeployments}
+			/>)
+			menuItems.push(<ConfirmButton
+				key="menu-archive-deployments"
+				label="Archive Selected"
+				className="bp5-intent-warning bp5-icon-archive"
+				safe={true}
+				menuItem={true}
+				style={css.navButton}
+				confirmMsg="Archive the selected deployments, use restore to reactivate"
+				confirmInput={false}
+				items={selectedNames}
+				disabled={!this.selectedDeployments || this.state.disabled}
+				onConfirm={this.onArchiveDeployments}
 			/>)
 			menuItems.push(<ConfirmButton
 				key="menu-delete-deployments"
