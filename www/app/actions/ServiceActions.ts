@@ -260,14 +260,23 @@ export function syncUnit(serviceId?: string, unitId?: string): Promise<void> {
 	});
 }
 
-export function removeMultiUnit(serviceId: string, unitId: string,
-	deploymentIds: string[]): Promise<void> {
+export function deployUnit(serviceId: string, unitId: string,
+	specId: string, count: number): Promise<void> {
+
+	return Promise.resolve()
+}
+
+export function updateMultiUnitState(serviceId: string, unitId: string,
+	deploymentIds: string[], state: string): Promise<void> {
 
 	let loader = new Loader().loading();
 
 	return new Promise<void>((resolve, reject): void => {
 		SuperAgent
-			.delete('/service/' + serviceId + "/unit/" + unitId + "/deployment")
+			.put('/service/' + serviceId + "/unit/" + unitId + "/deployment")
+			.query({
+				state: state,
+			})
 			.send(deploymentIds)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
