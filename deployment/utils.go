@@ -184,3 +184,52 @@ func RemoveMulti(db *database.Database, serviceId primitive.ObjectID,
 
 	return
 }
+
+func ArchiveMulti(db *database.Database, serviceId primitive.ObjectID,
+	unitId primitive.ObjectID, deplyIds []primitive.ObjectID) (err error) {
+
+	coll := db.Deployments()
+
+	_, err = coll.UpdateMany(db, &bson.M{
+		"_id": &bson.M{
+			"$in": deplyIds,
+		},
+		"service": serviceId,
+		"unit":    unitId,
+	}, &bson.M{
+		"$set": &bson.M{
+			"state": Archive,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func RestoreMulti(db *database.Database, serviceId primitive.ObjectID,
+	unitId primitive.ObjectID, deplyIds []primitive.ObjectID) (err error) {
+
+	coll := db.Deployments()
+
+	_, err = coll.UpdateMany(db, &bson.M{
+		"_id": &bson.M{
+			"$in": deplyIds,
+		},
+		"service": serviceId,
+		"unit":    unitId,
+		"state":   Archived,
+	}, &bson.M{
+		"$set": &bson.M{
+			"state": Restore,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
