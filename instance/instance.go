@@ -628,7 +628,7 @@ func (i *Instance) Json(short bool) {
 	}
 
 	i.PublicMac = vm.GetMacAddrExternal(i.Id, i.Vpc)
-	if i.VirtTimestamp.IsZero() {
+	if i.VirtTimestamp.IsZero() || !i.IsActive() {
 		i.Uptime = ""
 	} else {
 		if short {
