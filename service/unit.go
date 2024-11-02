@@ -35,6 +35,18 @@ type Deployment struct {
 	Id primitive.ObjectID `bson:"id" json:"id"`
 }
 
+func (u *Unit) HasDeployment(deployId primitive.ObjectID) bool {
+	if u.Deployments != nil {
+		for _, deply := range u.Deployments {
+			if deply.Id == deployId {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
 func (u *Unit) Reserve(db *database.Database, deployId primitive.ObjectID) (
 	reserved bool, err error) {
 
