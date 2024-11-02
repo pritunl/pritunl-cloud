@@ -24,6 +24,7 @@ type Shape struct {
 	DiskPool         primitive.ObjectID `bson:"disk_pool" json:"disk_pool"`
 	Memory           int                `bson:"memory" json:"memory"`
 	Processors       int                `bson:"processors" json:"processors"`
+	NodeCount        int                `bson:"-" json:"node_count"`
 }
 
 func (s *Shape) Validate(db *database.Database) (
