@@ -622,10 +622,10 @@ func (n *Node) Validate(db *database.Database) (
 		for _, blckAttch := range n.Blocks {
 			blck, e := block.Get(db, blckAttch.Block)
 			if e != nil {
-				if _, ok := e.(*database.NotFoundError); ok {
-					e = nil
+				err = e
+				if _, ok := err.(*database.NotFoundError); ok {
+					err = nil
 				} else {
-					err = e
 					return
 				}
 			}
@@ -663,10 +663,10 @@ func (n *Node) Validate(db *database.Database) (
 		for _, blckAttch := range n.Blocks6 {
 			blck, e := block.Get(db, blckAttch.Block)
 			if e != nil {
-				if _, ok := e.(*database.NotFoundError); ok {
-					e = nil
+				err = e
+				if _, ok := err.(*database.NotFoundError); ok {
+					err = nil
 				} else {
-					err = e
 					return
 				}
 			}
@@ -708,10 +708,10 @@ func (n *Node) Validate(db *database.Database) (
 	if !n.HostBlock.IsZero() {
 		blck, e := block.Get(db, n.HostBlock)
 		if e != nil {
-			if _, ok := e.(*database.NotFoundError); ok {
-				e = nil
+			err = e
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = nil
 			} else {
-				err = e
 				return
 			}
 		}
