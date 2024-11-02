@@ -51,7 +51,7 @@ type State struct {
 	schedulers             []*scheduler.Scheduler
 	deploymentsReservedMap map[primitive.ObjectID]*deployment.Deployment
 	deploymentsDeployedMap map[primitive.ObjectID]*deployment.Deployment
-	deploymentsDestroyMap  map[primitive.ObjectID]*deployment.Deployment
+	deploymentsInactiveMap map[primitive.ObjectID]*deployment.Deployment
 	servicesMap            map[primitive.ObjectID]*service.Service
 	servicesUnitsMap       map[primitive.ObjectID]*service.Unit
 
@@ -160,14 +160,21 @@ func (s *State) DeploymentsDeployed() (
 	return
 }
 
-func (s *State) DeploymentDestroy(deplyId primitive.ObjectID) *deployment.Deployment {
-	return s.deploymentsDestroyMap[deplyId]
-}
-
 func (s *State) DeploymentsDestroy() (
 	deplys map[primitive.ObjectID]*deployment.Deployment) {
 
-	deplys = s.deploymentsDestroyMap
+	deplys = s.deploymentsInactiveMap
+	return
+}
+
+func (s *State) DeploymentInactive(deplyId primitive.ObjectID) *deployment.Deployment {
+	return s.deploymentsInactiveMap[deplyId]
+}
+
+func (s *State) DeploymentsInactive() (
+	deplys map[primitive.ObjectID]*deployment.Deployment) {
+
+	deplys = s.deploymentsInactiveMap
 	return
 }
 
@@ -184,7 +191,7 @@ func (s *State) Deployment(deplyId primitive.ObjectID) (
 		return
 	}
 
-	deply = s.deploymentsDestroyMap[deplyId]
+	deply = s.deploymentsInactiveMap[deplyId]
 	if deply != nil {
 		return
 	}
@@ -455,7 +462,7 @@ func (s *State) init() (err error) {
 
 	deploymentsReservedMap := map[primitive.ObjectID]*deployment.Deployment{}
 	deploymentsDeployedMap := map[primitive.ObjectID]*deployment.Deployment{}
-	deploymentsDestroyMap := map[primitive.ObjectID]*deployment.Deployment{}
+	deploymentsInactiveMap := map[primitive.ObjectID]*deployment.Deployment{}
 	deploymentsIdSet := set.NewSet()
 	serviceIds := []primitive.ObjectID{}
 	serviceIdsSet := set.NewSet()
@@ -470,8 +477,10 @@ func (s *State) init() (err error) {
 		case deployment.Deployed:
 			deploymentsDeployedMap[deply.Id] = deply
 			break
-		case deployment.Destroy:
-			deploymentsDestroyMap[deply.Id] = deply
+		case deployment.Destroy, deployment.Archive,
+			deployment.Archived, deployment.Restore:
+
+			deploymentsInactiveMap[deply.Id] = deply
 			break
 		}
 
@@ -574,8 +583,10 @@ func (s *State) init() (err error) {
 		case deployment.Deployed:
 			deploymentsDeployedMap[specDeployment.Id] = specDeployment
 			break
-		case deployment.Destroy:
-			deploymentsDestroyMap[specDeployment.Id] = specDeployment
+		case deployment.Destroy, deployment.Archive,
+			deployment.Archived, deployment.Restore:
+
+			deploymentsInactiveMap[specDeployment.Id] = specDeployment
 			break
 		}
 	}
@@ -641,14 +652,16 @@ func (s *State) init() (err error) {
 		case deployment.Deployed:
 			deploymentsDeployedMap[serviceDeployment.Id] = serviceDeployment
 			break
-		case deployment.Destroy:
-			deploymentsDestroyMap[serviceDeployment.Id] = serviceDeployment
+		case deployment.Destroy, deployment.Archive,
+			deployment.Archived, deployment.Restore:
+
+			deploymentsInactiveMap[serviceDeployment.Id] = serviceDeployment
 			break
 		}
 	}
 	s.deploymentsReservedMap = deploymentsReservedMap
 	s.deploymentsDeployedMap = deploymentsDeployedMap
-	s.deploymentsDestroyMap = deploymentsDestroyMap
+	s.deploymentsInactiveMap = deploymentsInactiveMap
 
 	schedulers, err := scheduler.GetAll(db)
 	if err != nil {
