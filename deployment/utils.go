@@ -6,7 +6,6 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
-	"github.com/pritunl/pritunl-cloud/instance"
 )
 
 func Get(db *database.Database, deplyId primitive.ObjectID) (
@@ -56,13 +55,20 @@ func GetAll(db *database.Database, query *bson.M) (
 	return
 }
 
-func GetAllIds(db *database.Database) (deplyIds set.Set, err error) {
+func GetAllActiveIds(db *database.Database) (deplyIds set.Set, err error) {
 	coll := db.Deployments()
 	deplyIds = set.NewSet()
 
 	cursor, err := coll.Find(
 		db,
-		bson.M{},
+		bson.M{
+			"state": bson.M{
+				"$in": []string{
+					Reserved,
+					Deployed,
+				},
+			},
+		},
 		&options.FindOptions{
 			Projection: bson.M{
 				"_id": 1,
@@ -84,6 +90,48 @@ func GetAllIds(db *database.Database) (deplyIds set.Set, err error) {
 		}
 
 		deplyIds.Add(deply.Id)
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func GetAllStates(db *database.Database) (
+	deplysMap map[primitive.ObjectID]*Deployment, err error) {
+
+	coll := db.Deployments()
+	deplysMap = map[primitive.ObjectID]*Deployment{}
+
+	cursor, err := coll.Find(
+		db,
+		bson.M{},
+		&options.FindOptions{
+			Projection: bson.M{
+				"_id":   1,
+				"state": 1,
+			},
+		},
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		deply := &Deployment{}
+		err = cursor.Decode(deply)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		deplysMap[deply.Id] = deply
 	}
 
 	err = cursor.Err()
