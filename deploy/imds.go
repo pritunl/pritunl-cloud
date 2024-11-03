@@ -10,7 +10,12 @@ import (
 	"github.com/pritunl/pritunl-cloud/secret"
 	"github.com/pritunl/pritunl-cloud/service"
 	"github.com/pritunl/pritunl-cloud/state"
+	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vpc"
+)
+
+var (
+	Hashes = map[primitive.ObjectID]uint32{}
 )
 
 type Imds struct {
@@ -44,10 +49,19 @@ func (s *Imds) buildInstance(db *database.Database,
 		return
 	}
 
-	// TODO Only write on change
-	err = conf.Write(virt)
+	confHash, err := utils.CrcHash(conf)
 	if err != nil {
 		return
+	}
+
+	curHash := Hashes[inst.Id]
+	if curHash == 0 || confHash != curHash {
+		err = conf.Write(virt)
+		if err != nil {
+			return
+		}
+
+		Hashes[inst.Id] = confHash
 	}
 
 	return
@@ -130,10 +144,19 @@ func (s *Imds) buildDeployInstance(db *database.Database,
 		return
 	}
 
-	// TODO Only write on change
-	err = conf.Write(virt)
+	confHash, err := utils.CrcHash(conf)
 	if err != nil {
 		return
+	}
+
+	curHash := Hashes[inst.Id]
+	if curHash == 0 || confHash != curHash {
+		err = conf.Write(virt)
+		if err != nil {
+			return
+		}
+
+		Hashes[inst.Id] = confHash
 	}
 
 	return
