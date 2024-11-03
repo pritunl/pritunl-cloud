@@ -2,6 +2,7 @@ package state
 
 import (
 	"io/ioutil"
+	"time"
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
@@ -273,10 +274,12 @@ func (s *State) GetInstace(instId primitive.ObjectID) *instance.Instance {
 	return s.instancesMap[instId]
 }
 
-func (s *State) init() (err error) {
+func (s *State) init(runtimes *Runtimes) (err error) {
 	db := database.GetDatabase()
 	defer db.Close()
 
+	start := time.Now()
+	totalStart := time.Now()
 	s.nodeSelf = node.Self.Copy()
 
 	zneId := s.nodeSelf.Zone
@@ -331,6 +334,9 @@ func (s *State) init() (err error) {
 		s.nodeHostBlock = hostBlock
 	}
 
+	runtimes.State1 = time.Since(start)
+	start = time.Now()
+
 	namespaces, err := utils.GetNamespaces()
 	if err != nil {
 		return
@@ -343,6 +349,9 @@ func (s *State) init() (err error) {
 	}
 	s.interfaces = interfaces
 	s.interfacesSet = interfacesSet
+
+	runtimes.State2 = time.Since(start)
+	start = time.Now()
 
 	pools, err := pool.GetAll(db, &bson.M{
 		"zone": s.nodeSelf.Zone,
@@ -385,6 +394,9 @@ func (s *State) init() (err error) {
 	}
 	s.instancesMap = instancesMap
 
+	runtimes.State3 = time.Since(start)
+	start = time.Now()
+
 	curVirts, err := qemu.GetVms(db, instancesMap)
 	if err != nil {
 		return
@@ -400,6 +412,9 @@ func (s *State) init() (err error) {
 		virtsMap[virt.Id] = virt
 	}
 	s.virtsMap = virtsMap
+
+	runtimes.State4 = time.Since(start)
+	start = time.Now()
 
 	nodeFirewall, firewalls, err := firewall.GetAllIngress(
 		db, s.nodeSelf, instances)
@@ -450,6 +465,9 @@ func (s *State) init() (err error) {
 		}
 	}
 	s.vpcIpsMap = vpcIpsMap
+
+	runtimes.State5 = time.Since(start)
+	start = time.Now()
 
 	s.arpRecords = arp.BuildState(s.instances, s.vpcIpsMap)
 
@@ -669,6 +687,9 @@ func (s *State) init() (err error) {
 	}
 	s.schedulers = schedulers
 
+	runtimes.State6 = time.Since(start)
+	start = time.Now()
+
 	items, err := ioutil.ReadDir("/var/run")
 	if err != nil {
 		err = &errortypes.ReadError{
@@ -685,13 +706,16 @@ func (s *State) init() (err error) {
 	}
 	s.running = running
 
+	runtimes.State7 = time.Since(start)
+	runtimes.State = time.Since(totalStart)
+
 	return
 }
 
-func GetState() (stat *State, err error) {
+func GetState(runtimes *Runtimes) (stat *State, err error) {
 	stat = &State{}
 
-	err = stat.init()
+	err = stat.init(runtimes)
 	if err != nil {
 		return
 	}
