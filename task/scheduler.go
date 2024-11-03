@@ -37,7 +37,7 @@ func scheduleUnits(db *database.Database) (err error) {
 		}
 	}
 
-	deploymentIds, err := deployment.GetAllIds(db)
+	deploymentIds, err := deployment.GetAllActiveIds(db)
 	if err != nil {
 		return
 	}
@@ -49,7 +49,7 @@ func scheduleUnits(db *database.Database) (err error) {
 					"service":    unit.Service.Id.Hex(),
 					"unit":       unit.Id.Hex(),
 					"deployment": deply.Id.Hex(),
-				}).Info("deploy: Removing unknown deployment")
+				}).Info("deploy: Removing deployment")
 
 				err = unit.RemoveDeployement(db, deply.Id)
 				if err != nil {
