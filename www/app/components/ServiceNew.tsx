@@ -274,6 +274,21 @@ export default class ServiceNew extends React.Component<Props, State> {
 							service: service,
 						});
 					}}
+					onEdit={(units: ServiceTypes.Unit[]): void => {
+						let service = {
+							...this.state.service,
+						};
+
+						service.units = units
+
+						this.setState({
+							...this.state,
+							changed: true,
+							unitChanged: true,
+							mode: "edit",
+							service: service,
+						});
+					}}
 				/>
 				<PageCreate
 					style={css.save}
