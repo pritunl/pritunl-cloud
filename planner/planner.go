@@ -1,6 +1,8 @@
 package planner
 
 import (
+	"sync"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
@@ -10,6 +12,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/plan"
 	"github.com/pritunl/pritunl-cloud/service"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/sirupsen/logrus"
 )
@@ -308,23 +311,36 @@ func (p *Planner) ApplyPlans(db *database.Database) (err error) {
 		p.servicesMap[srvc.Id] = srvc
 	}
 
+	var waiters sync.WaitGroup
+	batch := make(chan struct{}, settings.System.PlannerBatchSize)
+
 	for _, deply := range deployments {
-		switch deply.Kind {
-		case deployment.Instance:
-			err = p.checkInstance(db, deply)
-			if err != nil {
-				logrus.WithFields(logrus.Fields{
-					"deployment": deply.Id.Hex(),
-					"instance":   deply.Instance.Hex(),
-					"service":    deply.Service.Hex(),
-					"unit":       deply.Unit.Hex(),
-					"error":      err,
-				}).Error("scheduler: Failed to check instance deployment")
-				err = nil
+		waiters.Add(1)
+		batch <- struct{}{}
+
+		go func(deply *deployment.Deployment) {
+			defer func() {
+				<-batch
+				waiters.Done()
+			}()
+
+			switch deply.Kind {
+			case deployment.Instance:
+				e := p.checkInstance(db, deply)
+				if e != nil {
+					logrus.WithFields(logrus.Fields{
+						"deployment": deply.Id.Hex(),
+						"instance":   deply.Instance.Hex(),
+						"service":    deply.Service.Hex(),
+						"unit":       deply.Unit.Hex(),
+						"error":      e,
+					}).Error("scheduler: Failed to check instance deployment")
+				}
+				break
 			}
-			break
-		}
+		}(deply)
 	}
 
+	waiters.Wait()
 	return
 }
