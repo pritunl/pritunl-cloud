@@ -24,6 +24,32 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+func initDirs(virt *vm.VirtualMachine) (err error) {
+	vmPath := paths.GetVmPath(virt.Id)
+
+	err = utils.ExistsMkdir(settings.Hypervisor.LibPath, 0755)
+	if err != nil {
+		return
+	}
+
+	err = utils.ExistsMkdir(settings.Hypervisor.RunPath, 0755)
+	if err != nil {
+		return
+	}
+
+	err = utils.ExistsMkdir(paths.GetImdsPath(), 0755)
+	if err != nil {
+		return
+	}
+
+	err = utils.ExistsMkdir(vmPath, 0755)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func initHugepage(virt *vm.VirtualMachine) (err error) {
 	if !virt.Hugepages {
 		return

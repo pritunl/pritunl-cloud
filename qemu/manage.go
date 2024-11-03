@@ -31,7 +31,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/store"
 	"github.com/pritunl/pritunl-cloud/systemd"
 	"github.com/pritunl/pritunl-cloud/tpm"
-	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/sirupsen/logrus"
 )
@@ -444,7 +443,6 @@ func Wait(db *database.Database, virt *vm.VirtualMachine) (err error) {
 func Create(db *database.Database, inst *instance.Instance,
 	virt *vm.VirtualMachine) (err error) {
 
-	vmPath := paths.GetVmPath(virt.Id)
 	unitName := paths.GetUnitName(virt.Id)
 
 	if constants.Interrupt {
@@ -483,17 +481,7 @@ func Create(db *database.Database, inst *instance.Instance,
 		virt.SpicePort = inst.SpicePort
 	}
 
-	err = utils.ExistsMkdir(settings.Hypervisor.LibPath, 0755)
-	if err != nil {
-		return
-	}
-
-	err = utils.ExistsMkdir(settings.Hypervisor.RunPath, 0755)
-	if err != nil {
-		return
-	}
-
-	err = utils.ExistsMkdir(vmPath, 0755)
+	err = initDirs(virt)
 	if err != nil {
 		return
 	}

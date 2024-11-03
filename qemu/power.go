@@ -16,7 +16,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/store"
 	"github.com/pritunl/pritunl-cloud/systemd"
 	"github.com/pritunl/pritunl-cloud/tpm"
-	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/sirupsen/logrus"
 )
@@ -55,7 +54,7 @@ func PowerOn(db *database.Database, inst *instance.Instance,
 		virt.SpicePort = inst.SpicePort
 	}
 
-	err = utils.ExistsMkdir(settings.Hypervisor.RunPath, 0755)
+	err = initDirs(virt)
 	if err != nil {
 		return
 	}
