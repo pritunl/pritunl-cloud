@@ -15,16 +15,20 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func deployState() (err error) {
-	stat, err := state.GetState()
+func deployState(runtimes *state.Runtimes) (err error) {
+	start := time.Now()
+
+	stat, err := state.GetState(runtimes)
 	if err != nil {
 		return
 	}
 
-	err = deploy.Deploy(stat)
+	err = deploy.Deploy(stat, runtimes)
 	if err != nil {
 		return
 	}
+
+	runtimes.Total = time.Since(start)
 
 	return
 }
@@ -79,8 +83,19 @@ func vmRunner() {
 		"production": constants.Production,
 	}).Info("sync: Starting hypervisor")
 
+	runtimes := &state.Runtimes{}
 	for {
-		time.Sleep(2500 * time.Millisecond)
+		if runtimes.Total > 1500*time.Millisecond {
+			runtimes.Log()
+		}
+
+		delay := (2500 * time.Millisecond) - runtimes.Total
+		if delay < 50*time.Millisecond {
+			delay = 50 * time.Millisecond
+		}
+		time.Sleep(delay)
+		runtimes = &state.Runtimes{}
+
 		if constants.Shutdown {
 			return
 		}
@@ -90,7 +105,7 @@ func vmRunner() {
 			continue
 		}
 
-		err := deployState()
+		err := deployState(runtimes)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
