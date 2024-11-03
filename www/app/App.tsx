@@ -24,7 +24,9 @@ Csrf.load().then((): void => {
 	hljs.registerLanguage('yaml', yaml)
 
 	ReactDOM.render(
-		<div><Main/></div>,
+		<Blueprint.OverlaysProvider>
+			<div><Main/></div>
+		</Blueprint.OverlaysProvider>,
 		document.getElementById('app'),
 	);
 });
