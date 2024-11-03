@@ -41,6 +41,10 @@ const css = {
 	card: {
 		padding: "5px 5px 3px 5px",
 	} as React.CSSProperties,
+	cardInactive: {
+		padding: "5px 5px 3px 5px",
+		opacity: 0.6,
+	} as React.CSSProperties,
 	check: {
 		margin: "0 0 0 0",
 	} as React.CSSProperties,
@@ -113,6 +117,56 @@ export default class ServiceUnit extends React.Component<Props, State> {
 		}
 
 		deployments.forEach((deployment: ServiceTypes.Deployment): void => {
+			let cardStyle = css.card
+			if (deployment.state === "archived") {
+				cardStyle = css.cardInactive
+			}
+
+			let stateValue = MiscUtils.capitalize(deployment.state) || "-"
+			let stateClass = ""
+			switch (deployment.state) {
+				case "deployed":
+					stateClass = "bp5-text-intent-success"
+					break
+				case "reserved":
+					stateClass = "bp5-text-intent-primary"
+					break
+				case "restore":
+					stateValue = "Restoring"
+					stateClass = "bp5-text-intent-primary"
+					break
+				case "destroy":
+					stateValue = "Destroying"
+					stateClass = "bp5-text-intent-danger"
+					break
+				case "archive":
+					stateValue = "Archiving"
+					stateClass = "bp5-text-intent-warning"
+					break
+				case "archived":
+					stateClass = "bp5-text-intent-warning"
+					break
+			}
+
+			let statusClass = ""
+			switch (deployment.instance_status) {
+				case "Running":
+					statusClass = "bp5-text-intent-success"
+					break
+				case "Starting":
+				case "Restarting":
+				case "Updating":
+				case "Provisioning":
+					statusClass = "bp5-text-intent-primary"
+					break
+				case "Failed":
+				case "Stopping":
+				case "Destroying":
+				case "Stopped":
+					statusClass = "bp5-text-intent-danger"
+					break
+			}
+
 			let publicIps = deployment.public_ips
 			if (!publicIps || !publicIps.length) {
 				publicIps = ["-"]
@@ -165,7 +219,7 @@ export default class ServiceUnit extends React.Component<Props, State> {
 			cards.push(<Blueprint.Card
 				key={deployment.id}
 				compact={true}
-				style={css.card}
+				style={cardStyle}
 			>
 				<div className="layout horizontal">
 					<div className="layout center" style={css.checkBox}>
