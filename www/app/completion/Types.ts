@@ -10,6 +10,9 @@ import * as ShapeTypes from "../types/ShapeTypes";
 import * as ImageTypes from "../types/ImageTypes";
 import * as InstanceTypes from "../types/InstanceTypes";
 import * as PlanTypes from "../types/PlanTypes";
+import * as CertificateTypes from "../types/CertificateTypes";
+import * as SecretTypes from "../types/SecretTypes";
+import * as ServiceTypes from "../types/ServiceTypes";
 
 export interface Resources {
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -23,6 +26,9 @@ export interface Resources {
 	images: ImageTypes.ImagesRo;
 	instances: InstanceTypes.InstancesRo;
 	plans: PlanTypes.PlansRo;
+	certificates: CertificateTypes.CertificatesRo;
+	secrets: SecretTypes.SecretsRo;
+	services: ServiceTypes.ServicesRo;
 }
 
 export interface Kind {
