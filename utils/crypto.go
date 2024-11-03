@@ -5,8 +5,10 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/base64"
+	"encoding/gob"
 	"encoding/pem"
 	"fmt"
+	"hash/crc32"
 	"math"
 	"math/big"
 	mathrand "math/rand"
@@ -23,6 +25,22 @@ var (
 	randPasswdRe = regexp.MustCompile(
 		"[^23456789abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ]+")
 )
+
+func CrcHash(input interface{}) (sum uint32, err error) {
+	hash := crc32.NewIEEE()
+	enc := gob.NewEncoder(hash)
+
+	err = enc.Encode(input)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "utils: Failed to encode crc input"),
+		}
+		return
+	}
+
+	sum = hash.Sum32()
+	return
+}
 
 func RandStr(n int) (str string, err error) {
 	for i := 0; i < 10; i++ {
