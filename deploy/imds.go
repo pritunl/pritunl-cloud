@@ -10,8 +10,8 @@ import (
 	"github.com/pritunl/pritunl-cloud/secret"
 	"github.com/pritunl/pritunl-cloud/service"
 	"github.com/pritunl/pritunl-cloud/state"
-	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vpc"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -49,19 +49,28 @@ func (s *Imds) buildInstance(db *database.Database,
 		return
 	}
 
-	confHash, err := utils.CrcHash(conf)
+	err = conf.ComputeHash()
 	if err != nil {
 		return
 	}
 
 	curHash := Hashes[inst.Id]
-	if curHash == 0 || confHash != curHash {
+	if curHash == 0 || conf.Hash != curHash {
 		err = conf.Write(virt)
 		if err != nil {
 			return
 		}
 
-		Hashes[inst.Id] = confHash
+		Hashes[inst.Id] = conf.Hash
+	}
+
+	err = imds.Sync(db, inst)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"instance": inst.Id.Hex(),
+			"error":    err,
+		}).Error("acme: Failed to sync instance imds")
+		err = nil
 	}
 
 	return
@@ -144,19 +153,28 @@ func (s *Imds) buildDeployInstance(db *database.Database,
 		return
 	}
 
-	confHash, err := utils.CrcHash(conf)
+	err = conf.ComputeHash()
 	if err != nil {
 		return
 	}
 
 	curHash := Hashes[inst.Id]
-	if curHash == 0 || confHash != curHash {
+	if curHash == 0 || conf.Hash != curHash {
 		err = conf.Write(virt)
 		if err != nil {
 			return
 		}
 
-		Hashes[inst.Id] = confHash
+		Hashes[inst.Id] = conf.Hash
+	}
+
+	err = imds.Sync(db, inst)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"instance": inst.Id.Hex(),
+			"error":    err,
+		}).Error("acme: Failed to sync instance imds")
+		err = nil
 	}
 
 	return
