@@ -119,6 +119,83 @@ func (m *Imds) Get(query string) (val string, err error) {
 	return
 }
 
+type SyncResp struct {
+	Hash uint32 `json:"hash"`
+}
+
+func (m *Imds) Sync() (err error) {
+	data, err := GetState()
+	if err != nil {
+		return
+	}
+
+	req, err := m.NewRequest("PUT", "/sync", data)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		err = &errortypes.RequestError{
+			errors.Wrap(err, "agent: Imds request failed"),
+		}
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		body := ""
+		data, _ := ioutil.ReadAll(resp.Body)
+		if data != nil {
+			body = string(data)
+		}
+
+		errData := &errortypes.ErrorData{}
+		err = json.Unmarshal(data, errData)
+		if err != nil || errData.Error == "" {
+			errData = nil
+		}
+
+		if errData != nil && errData.Message != "" {
+			body = errData.Message
+		}
+
+		err = &errortypes.RequestError{
+			errors.Newf("agent: Imds server sync error %d - %s",
+				resp.StatusCode, body),
+		}
+		return
+	}
+
+	respData := &SyncResp{}
+	err = json.NewDecoder(resp.Body).Decode(respData)
+	if err != nil {
+		err = &errortypes.RequestError{
+			errors.Wrap(err, "agent: Failed to decode imds sync resp"),
+		}
+		return
+	}
+
+	if curSyncHash == 0 {
+		curSyncHash = respData.Hash
+	} else if respData.Hash != curSyncHash {
+		curSyncHash = respData.Hash
+		fmt.Println("hash:", respData.Hash)
+	}
+
+	return
+}
+
+func (m *Imds) Run() (err error) {
+	for {
+		err = m.Sync()
+		if err != nil {
+			logger.WithFields(logger.Fields{
+				"error": err,
+			}).Error("agent: Failed to sync")
+		}
+
+		time.Sleep(1 * time.Second)
+	}
+}
+
 func (m *Imds) Init() (err error) {
 	confData, err := utils.Read(constants.ImdsConfPath)
 	if err != nil {
