@@ -548,6 +548,46 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 	}
 	s.specsMap = specsMap
 
+	specCertIds := []primitive.ObjectID{}
+	for certId := range specCertsSet.Iter() {
+		specCertIds = append(specCertIds, certId.(primitive.ObjectID))
+	}
+
+	specsCertsMap := map[primitive.ObjectID]*certificate.Certificate{}
+	specCerts, err := certificate.GetAll(db, &bson.M{
+		"_id": &bson.M{
+			"$in": specCertIds,
+		},
+	})
+	if err != nil {
+		return
+	}
+
+	for _, specCert := range specCerts {
+		specsCertsMap[specCert.Id] = specCert
+	}
+	s.specsCertsMap = specsCertsMap
+
+	specSecretIds := []primitive.ObjectID{}
+	for secrId := range specSecretsSet.Iter() {
+		specSecretIds = append(specSecretIds, secrId.(primitive.ObjectID))
+	}
+
+	specsSecretsMap := map[primitive.ObjectID]*secret.Secret{}
+	specSecrets, err := secret.GetAll(db, &bson.M{
+		"_id": &bson.M{
+			"$in": specSecretIds,
+		},
+	})
+	if err != nil {
+		return
+	}
+
+	for _, specSecret := range specSecrets {
+		specsSecretsMap[specSecret.Id] = specSecret
+	}
+	s.specsSecretsMap = specsSecretsMap
+
 	specServiceIds := []primitive.ObjectID{}
 	for srvcId := range specServicesSet.Iter() {
 		specServiceIds = append(specServiceIds, srvcId.(primitive.ObjectID))
