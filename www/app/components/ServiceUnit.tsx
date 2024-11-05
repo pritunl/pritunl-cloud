@@ -191,7 +191,7 @@ export default class ServiceUnit extends React.Component<Props, State> {
 			let commitClass = commitIndex === 0 ? "bp5-text-intent-success" :
 				"bp5-text-intent-danger"
 
-			let specHover = <div
+				let specHover = <div
 				className="bp5-content-popover"
 				style={css.specHover}
 			>
@@ -211,6 +211,27 @@ export default class ServiceUnit extends React.Component<Props, State> {
 							label: "Behind",
 							value: commitIndex,
 							valueClass: commitClass,
+						},
+					]}
+				/>
+			</div>
+
+			let heartbeat = MiscUtils.formatSinceLocalIntent(
+				deployment.instance_heartbeat, 20)
+
+			let heartbeatHover = <div
+				className="bp5-content-popover"
+				style={css.specHover}
+			>
+				<PageInfo
+					compact={true}
+					style={css.info}
+					fields={[
+						{
+							label: "Heartbeat Timestamp",
+							value: MiscUtils.formatDateLocal(
+								deployment.instance_heartbeat) || "-",
+							valueClass: heartbeat[1],
 						},
 					]}
 				/>
@@ -311,12 +332,33 @@ export default class ServiceUnit extends React.Component<Props, State> {
 							style={css.info}
 							fields={[
 								{
-									label: "Status",
-									value: deployment.instance_status || "-",
+									label: "State",
+									value: stateValue,
+									valueClass: stateClass,
 								},
 								{
-									label: "State",
-									value: MiscUtils.capitalize(deployment.state) || "-",
+									label: "Status",
+									value: deployment.instance_status || "-",
+									valueClass: statusClass,
+								},
+							]}
+						/>
+					</div>
+					<div style={css.item}>
+						<PageInfo
+							compact={true}
+							style={css.info}
+							fields={[
+								{
+									label: "Last Heartbeat",
+									value: MiscUtils.formatSinceLocal(
+										deployment.instance_heartbeat) || "-",
+									hover: heartbeatHover,
+									valueClass: heartbeat[1],
+								},
+								{
+									label: "Uptime",
+									value: deployment.instance_uptime || "-",
 								},
 							]}
 						/>
