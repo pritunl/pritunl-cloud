@@ -115,7 +115,12 @@ func GetImdsPath() string {
 
 func GetImdsConfPath(instId primitive.ObjectID) string {
 	return path.Join(GetImdsPath(),
-		fmt.Sprintf("%s.json", instId.Hex()))
+		fmt.Sprintf("%s-conf.json", instId.Hex()))
+}
+
+func GetImdsStatePath(instId primitive.ObjectID) string {
+	return path.Join(GetImdsPath(),
+		fmt.Sprintf("%s-state.json", instId.Hex()))
 }
 
 func GetDiskMountPath() string {
