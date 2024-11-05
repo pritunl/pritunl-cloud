@@ -9,6 +9,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/imds/server/config"
 	"github.com/pritunl/pritunl-cloud/imds/server/constants"
 	"github.com/pritunl/pritunl-cloud/imds/server/router"
+	"github.com/pritunl/pritunl-cloud/imds/server/state"
 )
 
 const help = `
@@ -36,6 +37,9 @@ func main() {
 	confPath := ""
 	flag.StringVar(&confPath, "conf", "", "Configuration path")
 
+	statePath := ""
+	flag.StringVar(&statePath, "state", "", "State path")
+
 	flag.Parse()
 
 	switch flag.Arg(0) {
@@ -45,11 +49,18 @@ func main() {
 		constants.Client = client
 		constants.Secret = os.Getenv("SECRET")
 		config.Path = confPath
+		state.Path = statePath
+		config.Path = confPath
 
 		routr := &router.Router{}
 		routr.Init()
 
 		err := config.Init()
+		if err != nil {
+			panic(err)
+		}
+
+		err = state.Init()
 		if err != nil {
 			panic(err)
 		}
