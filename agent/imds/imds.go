@@ -1,8 +1,10 @@
 package imds
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -12,12 +14,14 @@ import (
 	"github.com/pritunl/pritunl-cloud/agent/constants"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/tools/logger"
 )
 
 var (
 	client = &http.Client{
 		Timeout: 10 * time.Second,
 	}
+	curSyncHash uint32
 )
 
 type Imds struct {
@@ -26,22 +30,47 @@ type Imds struct {
 	Secret  string `json:"secret"`
 }
 
-func (m *Imds) Get(query string) (val string, err error) {
-	u := url.URL{}
+func (m *Imds) NewRequest(method, pth string, data interface{}) (
+	req *http.Request, err error) {
+
+	u := &url.URL{}
 	u.Scheme = "http"
 	u.Host = fmt.Sprintf("%s:%d", m.Address, m.Port)
-	u.Path = "/query" + query
+	u.Path = pth
 
-	req, e := http.NewRequest("GET", u.String(), nil)
-	if e != nil {
+	var body io.Reader
+	if data != nil {
+		reqDataBuf := &bytes.Buffer{}
+		err = json.NewEncoder(reqDataBuf).Encode(data)
+		if err != nil {
+			err = &errortypes.ParseError{
+				errors.Wrap(err, "agent: Failed to parse request data"),
+			}
+			return
+		}
+
+		body = reqDataBuf
+	}
+
+	req, err = http.NewRequest(method, u.String(), body)
+	if err != nil {
 		err = &errortypes.RequestError{
-			errors.Wrap(e, "agent: Failed to create imds request"),
+			errors.Wrap(err, "agent: Failed to create imds request"),
 		}
 		return
 	}
 
 	req.Header.Set("User-Agent", "pritunl-imds")
 	req.Header.Set("Auth-Token", m.Secret)
+	if data != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	return
+}
+
+func (m *Imds) Get(query string) (val string, err error) {
+	req, err := m.NewRequest("GET", "/query"+query, nil)
 
 	resp, e := client.Do(req)
 	if e != nil {
