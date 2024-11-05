@@ -28,6 +28,17 @@ type Config struct {
 	Certificates []*types.Certificate `json:"certificates"`
 	Secrets      []*types.Secret      `json:"secrets"`
 	Services     []*types.Service     `json:"services"`
+	Hash         uint32               `json:"hash"`
+}
+
+func (c *Config) ComputeHash() (err error) {
+	confHash, err := utils.CrcHash(c)
+	if err != nil {
+		return
+	}
+
+	c.Hash = confHash
+	return
 }
 
 func (c *Config) Write(virt *vm.VirtualMachine) (err error) {
@@ -55,7 +66,7 @@ func (c *Config) Write(virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	err = permission.InitImds(virt)
+	err = permission.InitImdsConf(virt)
 	if err != nil {
 		return
 	}
