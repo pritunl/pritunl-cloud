@@ -127,10 +127,31 @@ func InitTpmPwd(virt *vm.VirtualMachine) (err error) {
 	return
 }
 
-func InitImds(virt *vm.VirtualMachine) (err error) {
-	imdsPath := paths.GetImdsConfPath(virt.Id)
+func InitImdsConf(virt *vm.VirtualMachine) (err error) {
+	imdsConfPath := paths.GetImdsConfPath(virt.Id)
+	err = chown(virt, imdsConfPath)
+	if err != nil {
+		return
+	}
 
-	err = chown(virt, imdsPath)
+	return
+}
+
+func InitImds(virt *vm.VirtualMachine) (err error) {
+	imdsConfPath := paths.GetImdsConfPath(virt.Id)
+	err = touchChown(virt, imdsConfPath)
+	if err != nil {
+		return
+	}
+
+	imdsStatePath := paths.GetImdsStatePath(virt.Id)
+	err = touchChown(virt, imdsStatePath)
+	if err != nil {
+		return
+	}
+
+	imdsStateTempPath := paths.GetImdsStateTempPath(virt.Id)
+	err = touchChown(virt, imdsStateTempPath)
 	if err != nil {
 		return
 	}
