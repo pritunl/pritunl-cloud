@@ -135,6 +135,63 @@ export function formatDate(dateStr: string): string {
 	return str;
 }
 
+export function formatSinceLocal(dateStr: string): string {
+	if (!dateStr || dateStr === "0001-01-01T00:00:00Z") {
+		return "";
+	}
+
+	const now = new Date();
+	let date = new Date(dateStr);
+	date = new Date(date.getTime());
+	const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+	if (seconds < 60) {
+		return `${seconds} seconds ago`;
+	} else if (seconds < 3600) {
+		const minutes = Math.floor(seconds / 60);
+		return `${minutes} minutes ago`;
+	} else if (seconds < 86400) {
+		const hours = Math.floor(seconds / 3600);
+		return `${hours} hours ago`;
+	} else {
+		const days = Math.floor(seconds / 86400);
+		return `${days} days ago`;
+	}
+}
+
+export function formatSinceLocalIntent(dateStr: string,
+	ttl: number): [string, string] {
+
+	if (!dateStr || dateStr === "0001-01-01T00:00:00Z") {
+		return ["", ""];
+	}
+
+	const now = new Date();
+	let date = new Date(dateStr);
+	date = new Date(date.getTime());
+	const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+	let className = ""
+	if (seconds < ttl) {
+		className = "bp5-text-intent-success"
+	} else {
+		className = "bp5-text-intent-danger"
+	}
+
+	if (seconds < 60) {
+		return [`${seconds} seconds ago`, className];
+	} else if (seconds < 3600) {
+		const minutes = Math.floor(seconds / 60);
+		return [`${minutes} minutes ago`, className];
+	} else if (seconds < 86400) {
+		const hours = Math.floor(seconds / 3600);
+		return [`${hours} hours ago`, className];
+	} else {
+		const days = Math.floor(seconds / 86400);
+		return [`${days} days ago`, className];
+	}
+}
+
 export function formatDateLocal(dateStr: string): string {
 	if (!dateStr || dateStr === '0001-01-01T00:00:00Z') {
 		return '';
