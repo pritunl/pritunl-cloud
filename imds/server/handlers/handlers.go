@@ -86,5 +86,5 @@ func Register(engine *gin.Engine) {
 	engine.GET("/subnet", subnetGet)
 	engine.GET("/certificate", certificatesGet)
 	engine.GET("/secret", secretsGet)
-	engine.PUT("/heartbeat", heartbeatPut)
+	engine.PUT("/sync", syncPut)
 }
