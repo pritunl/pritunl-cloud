@@ -9,8 +9,8 @@ import (
 	"github.com/pritunl/pritunl-cloud/imds/server/config"
 	"github.com/pritunl/pritunl-cloud/imds/server/constants"
 	"github.com/pritunl/pritunl-cloud/imds/server/errortypes"
-	"github.com/pritunl/pritunl-cloud/imds/server/logger"
 	"github.com/pritunl/pritunl-cloud/imds/server/utils"
+	"github.com/pritunl/tools/logger"
 )
 
 type AuthenticationError struct {

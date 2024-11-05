@@ -12,7 +12,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/imds/server/constants"
 	"github.com/pritunl/pritunl-cloud/imds/server/errortypes"
 	"github.com/pritunl/pritunl-cloud/imds/server/handlers"
-	"github.com/pritunl/pritunl-cloud/imds/server/logger"
+	"github.com/pritunl/tools/logger"
 )
 
 type Router struct {
