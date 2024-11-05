@@ -45,6 +45,7 @@ type Instance struct {
 	Zone                primitive.ObjectID `bson:"zone" json:"zone"`
 	Vpc                 primitive.ObjectID `bson:"vpc" json:"vpc"`
 	Subnet              primitive.ObjectID `bson:"subnet" json:"subnet"`
+	Guest               *GuestData         `bson:"guest" json:"guest"`
 	OracleSubnet        string             `bson:"oracle_subnet" json:"oracle_subnet"`
 	OracleVnic          string             `bson:"oracle_vnic" json:"oracle_vnic"`
 	OracleVnicAttach    string             `bson:"oracle_vnic_attach" json:"oracle_vnic_attach"`
@@ -113,6 +114,15 @@ type Instance struct {
 	curState            string             `bson:"-" json:"-"`
 	curNoPublicAddress  bool               `bson:"-" json:"-"`
 	curNoHostAddress    bool               `bson:"-" json:"-"`
+}
+
+type GuestData struct {
+	Heartbeat time.Time `bson:"heartbeat" json:"heartbeat"`
+	Memory    float64   `bson:"memory" json:"memory"`
+	HugePages float64   `bson:"hugepages" json:"hugepages"`
+	Load1     float64   `bson:"load1" json:"load1"`
+	Load5     float64   `bson:"load5" json:"load5"`
+	Load15    float64   `bson:"load15" json:"load15"`
 }
 
 func (i *Instance) Validate(db *database.Database) (
