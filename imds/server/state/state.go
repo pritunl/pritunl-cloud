@@ -3,7 +3,6 @@ package state
 import (
 	"encoding/json"
 	"io/ioutil"
-	"os"
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
@@ -11,11 +10,15 @@ import (
 )
 
 var Path = ""
-var tempPath = ""
 var State = &StateData{}
 
 type StateData struct {
-	SyncTimestamp time.Time `json:"sync_timestamp"`
+	Memory    float64   `json:"memory"`
+	HugePages float64   `json:"hugepages"`
+	Load1     float64   `json:"load1"`
+	Load5     float64   `json:"load5"`
+	Load15    float64   `json:"load15"`
+	Timestamp time.Time `json:"timestamp"`
 }
 
 func (s *StateData) Save() (err error) {
@@ -27,18 +30,10 @@ func (s *StateData) Save() (err error) {
 		return
 	}
 
-	err = ioutil.WriteFile(tempPath, data, 0600)
+	err = ioutil.WriteFile(Path, data, 0600)
 	if err != nil {
 		err = &errortypes.WriteError{
 			errors.Wrap(err, "state: File write error"),
-		}
-		return
-	}
-
-	err = os.Rename(tempPath, Path)
-	if err != nil {
-		err = &errortypes.WriteError{
-			errors.Wrap(err, "state: File rename error"),
 		}
 		return
 	}
@@ -47,7 +42,5 @@ func (s *StateData) Save() (err error) {
 }
 
 func Init() (err error) {
-	tempPath = Path + ".tmp"
-
 	return
 }
