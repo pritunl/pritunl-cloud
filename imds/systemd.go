@@ -25,7 +25,7 @@ After=network.target
 Type=simple
 User=%s
 Environment="SECRET=%s"
-ExecStart=/usr/bin/pritunl-cloud-imds -conf=%s -host=%s -port=%d start
+ExecStart=/usr/bin/pritunl-cloud-imds -conf=%s -state=%s -host=%s -port=%d start
 PrivateTmp=true
 ProtectHome=true
 ProtectSystem=full
@@ -43,7 +43,7 @@ After=network.target
 Type=simple
 User=root
 Environment="SECRET=%s"
-ExecStart=/usr/sbin/ip netns exec %s /usr/bin/pritunl-cloud-imds -conf=%s -host=%s -port=%d start
+ExecStart=/usr/sbin/ip netns exec %s /usr/bin/pritunl-cloud-imds -conf=%s -state=%s -host=%s -port=%d start
 PrivateTmp=true
 ProtectHome=true
 ProtectSystem=full
@@ -57,6 +57,7 @@ func WriteService(vmId primitive.ObjectID, namespace, secret string,
 
 	unitPath := paths.GetUnitPathImds(vmId)
 	confPath := paths.GetImdsConfPath(vmId)
+	statePath := paths.GetImdsStatePath(vmId)
 
 	if secret == "" {
 		err = &errortypes.ParseError{
@@ -72,6 +73,7 @@ func WriteService(vmId primitive.ObjectID, namespace, secret string,
 			permission.GetUserName(vmId),
 			secret,
 			confPath,
+			statePath,
 			settings.Hypervisor.ImdsAddress,
 			settings.Hypervisor.ImdsPort,
 			namespace,
@@ -82,6 +84,7 @@ func WriteService(vmId primitive.ObjectID, namespace, secret string,
 			secret,
 			namespace,
 			confPath,
+			statePath,
 			settings.Hypervisor.ImdsAddress,
 			settings.Hypervisor.ImdsPort,
 		)
