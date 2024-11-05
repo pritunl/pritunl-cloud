@@ -22,6 +22,7 @@ type ConfigData struct {
 	Secrets      []*types.Secret      `json:"secrets"`
 	Certificates []*types.Certificate `json:"certificates"`
 	Services     []*types.Service     `json:"services"`
+	Hash         uint32               `json:"hash"`
 }
 
 func Load() (err error) {
