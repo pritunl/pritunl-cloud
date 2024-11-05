@@ -1,6 +1,8 @@
 package aggregate
 
 import (
+	"time"
+
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -36,6 +38,7 @@ type Deployment struct {
 	InstanceProcessors int                `bson:"-" json:"instance_processors"`
 	InstanceStatus     string             `bson:"-" json:"instance_status"`
 	InstanceUptime     string             `bson:"-" json:"instance_uptime"`
+	InstanceHeartbeat  time.Time          `bson:"-" json:"instance_heartbeat"`
 	InstanceState      string             `bson:"-" json:"instance_state"`
 	InstanceVirtState  string             `bson:"-" json:"instance_virt_state"`
 }
@@ -73,7 +76,6 @@ func GetDeployments(db *database.Database, unitId primitive.ObjectID) (
 				"as":           "node_docs",
 			},
 		},
-
 		&bson.M{
 			"$project": &bson.D{
 				{"_id", 1},
@@ -99,6 +101,7 @@ func GetDeployments(db *database.Database, unitId primitive.ObjectID) (
 				{"instance_docs.virt_timestamp", 1},
 				{"instance_docs.restart", 1},
 				{"instance_docs.restart_block_ip", 1},
+				{"instance_docs.guest", 1},
 				{"node_docs.name", 1},
 			},
 		},
@@ -136,6 +139,10 @@ func GetDeployments(db *database.Database, unitId primitive.ObjectID) (
 			deply.InstanceUptime = inst.Uptime
 			deply.InstanceState = inst.State
 			deply.InstanceState = inst.VirtState
+
+			if inst.Guest != nil {
+				deply.InstanceHeartbeat = inst.Guest.Heartbeat
+			}
 		}
 
 		deplys = append(deplys, deply)
