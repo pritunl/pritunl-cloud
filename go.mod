@@ -20,6 +20,7 @@ require (
 	github.com/minio/minio-go/v7 v7.0.76
 	github.com/oracle/oci-go-sdk/v65 v65.74.0
 	github.com/pritunl/mongo-go-driver v1.16.1
+	github.com/pritunl/tools v1.2.0
 	github.com/pritunl/webauthn v1.0.2
 	github.com/sirupsen/logrus v1.9.3
 	github.com/twilio/twilio-go v1.23.0
