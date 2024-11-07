@@ -26,6 +26,11 @@ interface Selected {
 }
 
 const css = {
+	container: {
+		height: "900px",
+		overflowY: "auto",
+		marginBottom: "10px",
+	} as React.CSSProperties,
 	box: {
 		flex: 1,
 		minWidth: "280px",
@@ -399,7 +404,7 @@ export default class ServiceUnit extends React.Component<Props, State> {
 			</Blueprint.Card>)
 		})
 
-		return <div className="layout horizontal wrap">
+		return <div className="layout horizontal wrap" style={css.container}>
 			<div style={css.box}>
 				<Blueprint.CardList>
 					{cards}
