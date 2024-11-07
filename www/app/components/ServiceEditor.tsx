@@ -227,8 +227,23 @@ export default class ServiceEditor extends React.Component<Props, State> {
 						let {children, className, node, ...rest} = props
 						let match = (className || "").match(langRe)
 
+						let phase = ""
+						if (node && node.data) {
+							let nodeData = node.data as any
+							if (nodeData && nodeData.meta) {
+								let metaAttrs = parseCodeBlockHeader(nodeData.meta)
+								phase = metaAttrs["phase"]
+							}
+						}
+
 						if (match && !hljs.getLanguage(match[1])) {
 							className = "language-plaintext"
+						}
+
+						if (phase === "reboot") {
+							className += " intent-secondary"
+						} else if (phase === "reload") {
+							className += " intent-primary"
 						}
 
 						return <code {...rest} className={className}>
@@ -355,4 +370,29 @@ export default class ServiceEditor extends React.Component<Props, State> {
 			</div>
 		</div>;
 	}
+}
+
+const codeBlockRe = /^\{([^}]+)\}?$/;
+
+function parseCodeBlockHeader(input: string): Record<string, string> {
+  const attrs: Record<string, string> = {};
+
+  const matches = input.match(codeBlockRe);
+  if (!matches) {
+    return attrs;
+  }
+
+  const attrPairs = matches[1].split(",");
+  for (let pair of attrPairs) {
+    pair = pair.trim();
+
+    const keyValue = pair.split("=", 2);
+    if (keyValue.length === 2) {
+      const key = keyValue[0].trim();
+      const value = keyValue[1].trim().replace(/^"|"$/g, "");
+      attrs[key] = value;
+    }
+  }
+
+	return attrs;
 }
