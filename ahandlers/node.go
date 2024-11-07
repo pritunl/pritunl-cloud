@@ -43,7 +43,6 @@ type nodeData struct {
 	AdminDomain             string                  `json:"admin_domain"`
 	UserDomain              string                  `json:"user_domain"`
 	WebauthnDomain          string                  `json:"webauthn_domain"`
-	Services                []primitive.ObjectID    `json:"services"`
 	ExternalInterfaces      []string                `json:"external_interfaces"`
 	ExternalInterfaces6     []string                `json:"external_interfaces6"`
 	InternalInterfaces      []string                `json:"internal_interfaces"`
