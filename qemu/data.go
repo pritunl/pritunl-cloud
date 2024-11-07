@@ -86,6 +86,11 @@ func initPermissions(virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
+	err = permission.InitImds(virt)
+	if err != nil {
+		return
+	}
+
 	return
 }
 
@@ -154,7 +159,6 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	tpmPath := paths.GetTpmPath(virt.Id)
 	imdsConfPath := paths.GetImdsConfPath(virt.Id)
 	imdsStatePath := paths.GetImdsStatePath(virt.Id)
-	imdsStateTempPath := paths.GetImdsStateTempPath(virt.Id)
 	unitPathTpm := paths.GetUnitPathTpm(virt.Id)
 	sockPath := paths.GetSockPath(virt.Id)
 	sockQmpPath := paths.GetQmpSockPath(virt.Id)
@@ -359,11 +363,6 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	}
 
 	err = utils.RemoveAll(imdsStatePath)
-	if err != nil {
-		return
-	}
-
-	err = utils.RemoveAll(imdsStateTempPath)
 	if err != nil {
 		return
 	}
