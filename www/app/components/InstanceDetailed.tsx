@@ -1573,6 +1573,39 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			},
 		);
 
+		let resourceBars: PageInfos.Bar[] = []
+		if (this.props.instance.guest) {
+			resourceBars.push({
+				progressClass: 'bp5-no-stripes bp5-intent-success',
+				label: 'Load1',
+				value: this.props.instance.guest.load1 || 0,
+			})
+			resourceBars.push({
+				progressClass: 'bp5-no-stripes bp5-intent-warning',
+				label: 'Load5',
+				value: this.props.instance.guest.load5 || 0,
+			})
+			resourceBars.push({
+				progressClass: 'bp5-no-stripes bp5-intent-danger',
+				label: 'Load15',
+				value: this.props.instance.guest.load15 || 0,
+			})
+			resourceBars.push({
+				progressClass: 'bp5-no-stripes bp5-intent-primary',
+				label: 'Memory',
+				value: this.props.instance.guest.memory || 0,
+			})
+
+			if (this.props.instance.guest.hugepages) {
+				resourceBars.push({
+					progressClass: 'bp5-no-stripes bp5-intent-primary',
+					label: 'HugePages',
+					value: this.props.instance.guest.hugepages || 0,
+					color: '#7207d4',
+				});
+			}
+		}
+
 		let vncStyle = {
 			height: this.state.vncHeight ? this.state.vncHeight + 'px' : '100%',
 			marginBottom: '10px',
@@ -2030,6 +2063,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				<div style={css.group}>
 					<PageInfo
 						fields={fields}
+						bars={resourceBars}
 					/>
 				</div>
 			</div>
