@@ -150,11 +150,5 @@ func InitImds(virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	imdsStateTempPath := paths.GetImdsStateTempPath(virt.Id)
-	err = touchChown(virt, imdsStateTempPath)
-	if err != nil {
-		return
-	}
-
 	return
 }
