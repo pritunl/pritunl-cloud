@@ -1,5 +1,6 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
+import * as Blueprint from "@blueprintjs/core"
 import CopyButton from './CopyButton';
 
 export interface Field {
@@ -7,6 +8,7 @@ export interface Field {
 	valueClasses?: string[];
 	label: string;
 	value: string | number | string[];
+	hover?: JSX.Element;
 	copy?: boolean;
 }
 
@@ -22,6 +24,7 @@ export interface Props {
 	hidden?: boolean;
 	fields?: Field[];
 	bars?: Bar[];
+	compact?: boolean;
 }
 
 const css = {
@@ -33,7 +36,12 @@ const css = {
 		wordWrap: 'break-word',
 	} as React.CSSProperties,
 	item: {
+		marginTop: '0px',
 		marginBottom: '5px',
+	} as React.CSSProperties,
+	itemCompact: {
+		marginTop: '0px',
+		marginBottom: '2px',
 	} as React.CSSProperties,
 	bar: {
 		maxWidth: '280px',
@@ -53,6 +61,7 @@ export default class PageInfo extends React.Component<Props, {}> {
 	render(): JSX.Element {
 		let fields: JSX.Element[] = [];
 		let bars: JSX.Element[] = [];
+		let itemStyle = this.props.compact ? css.itemCompact : css.item;
 
 		for (let field of this.props.fields || []) {
 			if (field == null) {
@@ -102,17 +111,39 @@ export default class PageInfo extends React.Component<Props, {}> {
 				}
 			}
 
-			fields.push(
-				<div key={field.label} style={css.item}>
-					{field.label}
-					<div
-						className={field.valueClass || 'bp5-text-muted'}
-						style={css.value}
-					>
-						{value}{copyBtn}
-					</div>
-				</div>,
-			);
+			if (field.hover) {
+				fields.push(
+					<Blueprint.Popover
+						key={field.label}
+						interactionKind="hover"
+						placement="bottom"
+						content={field.hover}
+						renderTarget={({isOpen, ...targetProps}): JSX.Element => {
+								return <div {...targetProps} style={itemStyle}>
+								{field.label}
+								<div
+									className={field.valueClass || 'bp5-text-muted'}
+									style={css.value}
+								>
+									{value}{copyBtn}
+								</div>
+							</div>
+						}}
+					/>,
+				);
+			} else {
+				fields.push(
+					<div key={field.label} style={itemStyle}>
+						{field.label}
+						<div
+							className={field.valueClass || 'bp5-text-muted'}
+							style={css.value}
+						>
+							{value}{copyBtn}
+						</div>
+					</div>,
+				);
+			}
 		}
 
 		for (let bar of this.props.bars || []) {
@@ -125,7 +156,7 @@ export default class PageInfo extends React.Component<Props, {}> {
 			}
 
 			bars.push(
-				<div key={bar.label} style={css.item}>
+				<div key={bar.label} style={itemStyle}>
 					{bar.label}
 					<div
 						className={'bp5-progress-bar ' + (bar.progressClass || '')}
