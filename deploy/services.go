@@ -6,6 +6,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
+	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/scheduler"
@@ -213,6 +214,8 @@ func (s *Services) DeploySpec(db *database.Database,
 	if err != nil {
 		return
 	}
+
+	event.PublishDispatch(db, "service.change")
 
 	return
 }
