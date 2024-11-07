@@ -65,9 +65,14 @@ export interface Deployment {
 	instance_processors?: number;
 	instance_status?: string;
 	instance_uptime?: string;
-	instance_heartbeat?: string;
 	instance_state?: string;
 	instance_virt_state?: string;
+	instance_heartbeat?: string;
+	instance_memory_usage?: number;
+	instance_hugepages?: number;
+	instance_load1?: number;
+	instance_load5?: number;
+	instance_load15?: number;
 }
 
 export interface Filter {
