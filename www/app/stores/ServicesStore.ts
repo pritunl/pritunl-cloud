@@ -77,6 +77,10 @@ class ServicesStore extends EventEmitter {
 		this.removeListener(GlobalTypes.CHANGE, callback);
 	}
 
+	addChangeListen(callback: () => void): void {
+		this.once(GlobalTypes.CHANGE, callback);
+	}
+
 	_traverse(page: number): void {
 		this._page = Math.min(this.pages, page);
 	}
