@@ -383,7 +383,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 		let imageName = this.imagesMap.get(val);
 
 		instance.image = val;
-		if (imageName.indexOf('BSD') !== -1) {
+		if (imageName.toLowerCase().indexOf('bsd') !== -1) {
 			instance.secure_boot = false;
 			instance.cloud_type = 'bsd';
 		} else {
