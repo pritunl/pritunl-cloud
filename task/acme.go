@@ -1,6 +1,7 @@
 package task
 
 import (
+	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/pritunl-cloud/acme"
 	"github.com/pritunl/pritunl-cloud/certificate"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -15,7 +16,7 @@ var acmeRenew = &Task{
 }
 
 func acmeRenewHandler(db *database.Database) (err error) {
-	certs, err := certificate.GetAll(db)
+	certs, err := certificate.GetAll(db, &bson.M{})
 	if err != nil {
 		return
 	}
