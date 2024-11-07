@@ -169,6 +169,10 @@ func RandObjectId() (oid primitive.ObjectID, err error) {
 	return
 }
 
+func RandInt(min, max int) int {
+	return mathrand.Intn(max-min+1) + min
+}
+
 func init() {
 	n, err := rand.Int(rand.Reader, big.NewInt(9223372036854775806))
 	if err != nil {
