@@ -90,7 +90,7 @@ func (n *Namespace) Deploy() (err error) {
 		}
 	}
 
-	firstRun = true
+	firstRun = false
 
 	for _, iface := range ifaces {
 		if len(iface) != 14 || !strings.HasPrefix(iface, "v") {
