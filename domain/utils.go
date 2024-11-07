@@ -155,6 +155,11 @@ func GetAllPaged(db *database.Database, query *bson.M,
 			return
 		}
 
+		err = dmn.LoadRecords(db)
+		if err != nil {
+			return
+		}
+
 		domns = append(domns, dmn)
 	}
 
