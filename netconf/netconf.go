@@ -155,6 +155,11 @@ func (n *NetConf) Init(db *database.Database) (err error) {
 		return
 	}
 
+	err = n.Imds(db)
+	if err != nil {
+		return
+	}
+
 	err = n.Ip(db)
 	if err != nil {
 		return
