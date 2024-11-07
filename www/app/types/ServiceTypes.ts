@@ -65,6 +65,7 @@ export interface Deployment {
 	instance_processors?: number;
 	instance_status?: string;
 	instance_uptime?: string;
+	instance_heartbeat?: string;
 	instance_state?: string;
 	instance_virt_state?: string;
 }
