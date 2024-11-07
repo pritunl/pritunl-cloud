@@ -12,6 +12,7 @@ import (
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/agent/constants"
+	"github.com/pritunl/pritunl-cloud/agent/engine"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/tools/logger"
@@ -25,9 +26,10 @@ var (
 )
 
 type Imds struct {
-	Address string `json:"address"`
-	Port    int    `json:"port"`
-	Secret  string `json:"secret"`
+	Address string         `json:"address"`
+	Port    int            `json:"port"`
+	Secret  string         `json:"secret"`
+	engine  *engine.Engine `json:"-"`
 }
 
 func (m *Imds) NewRequest(method, pth string, data interface{}) (
@@ -100,7 +102,7 @@ func (m *Imds) Get(query string) (val string, err error) {
 
 		err = &errortypes.RequestError{
 			errors.Newf(
-				"agent: Imds server error %d - %s",
+				"agent: Imds server get error %d - %s",
 				resp.StatusCode, body),
 		}
 		return
@@ -177,13 +179,27 @@ func (m *Imds) Sync() (err error) {
 		curSyncHash = respData.Hash
 	} else if respData.Hash != curSyncHash {
 		curSyncHash = respData.Hash
-		fmt.Println("hash:", respData.Hash)
+
+		logger.WithFields(logger.Fields{
+			"hash": int(respData.Hash),
+		}).Info("agent: Running engine reload")
+
+		err = m.engine.Run(engine.Reload)
+		if err != nil {
+			logger.WithFields(logger.Fields{
+				"hash":  int(respData.Hash),
+				"error": err,
+			}).Error("agent: Failed to run engine reload")
+			err = nil
+		}
 	}
 
 	return
 }
 
-func (m *Imds) Run() (err error) {
+func (m *Imds) Run(eng *engine.Engine) (err error) {
+	m.engine = eng
+
 	for {
 		err = m.Sync()
 		if err != nil {
