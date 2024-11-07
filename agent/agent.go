@@ -80,7 +80,7 @@ func main() {
 			panic(err)
 		}
 
-		err = eng.Init(flag.Arg(1))
+		err = eng.Init()
 		if err != nil {
 			logger.WithFields(logger.Fields{
 				"error": err,
@@ -88,7 +88,17 @@ func main() {
 			panic(err)
 		}
 
-		err = ids.Run()
+		phase := engine.Reboot
+		if flag.Arg(1) == engine.Initial {
+			phase = engine.Initial
+		}
+
+		err = eng.Run(phase)
+		if err != nil {
+			return
+		}
+
+		err = ids.Run(eng)
 		if err != nil {
 			logger.WithFields(logger.Fields{
 				"error": err,
