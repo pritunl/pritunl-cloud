@@ -37,6 +37,7 @@ const css = {
 		position: 'relative',
 		padding: '48px 10px 0 10px',
 		width: '100%',
+		height: '1232px',
 	} as React.CSSProperties,
 	button: {
 		height: '30px',
