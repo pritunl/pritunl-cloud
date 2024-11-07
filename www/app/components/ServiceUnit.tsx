@@ -8,6 +8,7 @@ import * as ServiceActions from "../actions/ServiceActions"
 import * as MiscUtils from '../utils/MiscUtils';
 import NonState from './NonState';
 import PageInfo from "./PageInfo"
+import * as PageInfos from './PageInfo';
 
 interface Props {
 	hidden: boolean
@@ -34,7 +35,7 @@ const css = {
 	box: {
 		flex: 1,
 		minWidth: "280px",
-		margin: "10px 10px 20px 10px",
+		margin: "10px",
 		fontSize: "11px",
 		fontFamily: Theme.monospaceFont,
 		fontWeight: Theme.monospaceWeight,
@@ -67,6 +68,11 @@ const css = {
 	} as React.CSSProperties,
 	item: {
 		flex: "1 1 auto",
+		minWidth: "30px",
+		margin: " 0 5px",
+	} as React.CSSProperties,
+	itemLast: {
+		flex: "0 1 auto",
 		minWidth: "30px",
 		margin: " 0 5px",
 	} as React.CSSProperties,
@@ -242,12 +248,31 @@ export default class ServiceUnit extends React.Component<Props, State> {
 				/>
 			</div>
 
+			let resourceBars: PageInfos.Bar[] = []
+			resourceBars.push({
+				label: "Instance Resources",
+				progressClass: 'bp5-no-stripes bp5-intent-success',
+				value: deployment.instance_load1 || 0,
+			})
+			resourceBars.push({
+				progressClass: 'bp5-no-stripes bp5-intent-warning',
+				value: deployment.instance_load5 || 0,
+			})
+			resourceBars.push({
+				progressClass: 'bp5-no-stripes bp5-intent-danger',
+				value: deployment.instance_load15 || 0,
+			})
+			resourceBars.push({
+				progressClass: 'bp5-no-stripes bp5-intent-primary',
+				value: deployment.instance_memory_usage || 0,
+			})
+
 			cards.push(<Blueprint.Card
 				key={deployment.id}
 				compact={true}
 				style={cardStyle}
 			>
-				<div className="layout horizontal">
+				<div className="layout horizontal flex">
 					<div className="layout center" style={css.checkBox}>
 						<Blueprint.Checkbox
 							style={css.check}
@@ -398,6 +423,13 @@ export default class ServiceUnit extends React.Component<Props, State> {
 									value: privateIps6,
 								},
 							]}
+						/>
+					</div>
+					<div style={css.itemLast}>
+						<PageInfo
+							compact={true}
+							style={css.info}
+							bars={resourceBars}
 						/>
 					</div>
 				</div>
