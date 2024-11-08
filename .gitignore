@@ -12,3 +12,5 @@ Thumbs.db
 build_keys.json
 /pritunl-cloud
 /builder/builder
+/agent/agent
+/imds/server/server
