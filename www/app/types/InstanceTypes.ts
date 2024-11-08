@@ -67,6 +67,7 @@ export interface Instance {
 	subnet?: string;
 	oracle_subnet?: string;
 	count?: number;
+	guest?: Guest;
 	info?: Info;
 }
 
@@ -120,6 +121,15 @@ export interface DriveDevice {
 export interface OracleSubnet {
 	id?: string;
 	name?: string;
+}
+
+export interface Guest {
+	heartbeat?: string;
+	memory?: number;
+	hugepages?: number;
+	load1?: number;
+	load5?: number;
+	load15?: number;
 }
 
 export interface Info {
