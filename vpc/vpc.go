@@ -21,7 +21,6 @@ import (
 type Route struct {
 	Destination string `bson:"destination" json:"destination"`
 	Target      string `bson:"target" json:"target"`
-	Link        bool   `bson:"link" json:"link"`
 }
 
 type Map struct {
