@@ -25,7 +25,7 @@ export function save(): Promise<void> {
 			.put('/theme')
 			.send({
 				theme: theme + `-${themeVer}`,
-        editor_theme: editorThemeName,
+				editor_theme: editorThemeName,
 			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
