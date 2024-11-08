@@ -288,7 +288,7 @@ func getUserData(db *database.Database, inst *instance.Instance,
 				deploymentScriptTmpl,
 				settings.Hypervisor.CliGuestPath,
 				fmt.Sprintf(
-					" && %s engine initial",
+					" && %s engine initial&",
 					settings.Hypervisor.CliGuestPath,
 				),
 			)
@@ -297,7 +297,7 @@ func getUserData(db *database.Database, inst *instance.Instance,
 				deploymentScriptTmpl,
 				settings.Hypervisor.CliGuestPath,
 				fmt.Sprintf(
-					" && %s engine post",
+					" && %s engine post&",
 					settings.Hypervisor.CliGuestPath,
 				),
 			)
