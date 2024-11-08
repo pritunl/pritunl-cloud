@@ -10,7 +10,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/imds/types"
 )
 
-var Path = "/cloud/pritunl-cloud.json"
+var Path = ""
 var Config = &ConfigData{}
 
 type ConfigData struct {
