@@ -47,13 +47,19 @@ func (u *Unit) HasDeployment(deployId primitive.ObjectID) bool {
 	return false
 }
 
-func (u *Unit) Reserve(db *database.Database, deployId primitive.ObjectID) (
-	reserved bool, err error) {
+func (u *Unit) Reserve(db *database.Database, deployId primitive.ObjectID,
+	overrideCount int) (reserved bool, err error) {
 
 	coll := db.Services()
 
-	if len(u.Deployments) >= u.Count {
-		return
+	if overrideCount == 0 {
+		if len(u.Deployments) >= u.Count {
+			return
+		}
+	} else {
+		if len(u.Deployments) >= overrideCount {
+			return
+		}
 	}
 
 	updateOpts := options.Update().SetArrayFilters(options.ArrayFilters{
