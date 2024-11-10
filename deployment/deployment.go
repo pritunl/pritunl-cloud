@@ -38,6 +38,10 @@ type Action struct {
 	Action    string             `bson:"action" json:"action"`
 }
 
+func (d *Deployment) IsHealthy() bool {
+	return d.Status == Healthy
+}
+
 func (d *Deployment) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
