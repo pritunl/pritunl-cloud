@@ -103,7 +103,7 @@ func (s *Services) deploySchedule(schd *scheduler.Scheduler) (err error) {
 					return
 				}
 
-				err = s.DeploySpec(db, unit, spc)
+				err = s.DeploySpec(db, schd, unit, spc)
 				if err != nil {
 					return
 				}
@@ -120,7 +120,8 @@ func (s *Services) deploySchedule(schd *scheduler.Scheduler) (err error) {
 }
 
 func (s *Services) DeploySpec(db *database.Database,
-	unit *service.Unit, spc *spec.Commit) (err error) {
+	schd *scheduler.Scheduler, unit *service.Unit,
+	spc *spec.Commit) (err error) {
 
 	deply := &deployment.Deployment{
 		Service: unit.Service.Id,
@@ -149,7 +150,7 @@ func (s *Services) DeploySpec(db *database.Database,
 		return
 	}
 
-	reserved, err := unit.Reserve(db, deply.Id)
+	reserved, err := unit.Reserve(db, deply.Id, schd.OverrideCount)
 	if err != nil {
 		return
 	}
