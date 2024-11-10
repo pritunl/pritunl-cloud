@@ -263,7 +263,34 @@ export function syncUnit(serviceId?: string, unitId?: string): Promise<void> {
 export function deployUnit(serviceId: string, unitId: string,
 	specId: string, count: number): Promise<void> {
 
-	return Promise.resolve()
+	let loader = new Loader().loading();
+
+	return new Promise<void>((resolve, reject): void => {
+		SuperAgent
+			.post('/service/' + serviceId + "/unit/" + unitId + "/deployment")
+			.send({
+				count: count,
+			})
+			.set('Accept', 'application/json')
+			.set('Csrf-Token', Csrf.token)
+			.end((err: any, res: SuperAgent.Response): void => {
+				loader.done();
+
+				if (res && res.status === 401) {
+					window.location.href = '/login';
+					resolve();
+					return;
+				}
+
+				if (err) {
+					Alert.errorRes(res, 'Failed to delete deployments');
+					reject(err);
+					return;
+				}
+
+				resolve();
+			});
+	});
 }
 
 export function updateMultiUnitState(serviceId: string, unitId: string,
