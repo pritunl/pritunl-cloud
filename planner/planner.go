@@ -2,6 +2,7 @@ package planner
 
 import (
 	"sync"
+	"time"
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/bson"
@@ -141,6 +142,23 @@ func (p *Planner) checkInstance(db *database.Database,
 	if deply.State == deployment.Restore && inst.IsActive() {
 		deply.State = deployment.Deployed
 		err = deply.CommitFields(db, set.NewSet("state"))
+		if err != nil {
+			return
+		}
+	}
+
+	status := deployment.Unhealthy
+	if inst.Guest != nil {
+		heartbeatTtl := time.Duration(
+			settings.System.InstanceTimestampTtl) * time.Second
+		if time.Since(inst.Guest.Heartbeat) <= heartbeatTtl {
+			status = deployment.Healthy
+		}
+	}
+
+	if deply.Status != status {
+		deply.Status = status
+		err = deply.CommitFields(db, set.NewSet("status"))
 		if err != nil {
 			return
 		}
