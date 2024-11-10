@@ -14,6 +14,9 @@ const (
 
 	Instance = "instance"
 
+	Healthy   = "healthy"
+	Unhealthy = "unhealthy"
+
 	ThresholdMin = 10
 	ActionLimit  = 1 * time.Minute
 )
