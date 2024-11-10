@@ -38,9 +38,6 @@ type Unit struct {
 	Deployments               []*Deployment      `json:"deployments"`
 }
 
-// TODO Add web server on port 9738 to recieve hearthbeat updates from imds
-// TODO server when host pritunl-cloud process is offline
-
 type Deployment struct {
 	Id                        primitive.ObjectID `json:"id"`
 	Service                   primitive.ObjectID `json:"service"`
