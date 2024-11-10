@@ -1,8 +1,10 @@
 package scheduler
 
 import (
+	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/service"
 	"github.com/pritunl/pritunl-cloud/spec"
 )
@@ -145,10 +147,52 @@ func Schedule(db *database.Database, unit *service.Unit) (err error) {
 	switch unit.Kind {
 	case spec.InstanceKind:
 		schd := NewInstanceUnit(unit, spc)
-		err = schd.Schedule(db)
+		err = schd.Schedule(db, 0)
 		if err != nil {
 			return
 		}
+	}
+
+	return
+}
+
+func ManualSchedule(db *database.Database, unit *service.Unit, count int) (
+	errData *errortypes.ErrorData, err error) {
+
+	exists, e := Exists(db, Resource{
+		Service: unit.Service.Id,
+		Unit:    unit.Id,
+	})
+	if e != nil {
+		err = e
+		return
+	}
+
+	if exists {
+		errData = &errortypes.ErrorData{
+			Error:   "scheduler_active",
+			Message: "Cannot schedule deployments while scheduler is active",
+		}
+		return
+	}
+
+	spc, err := spec.Get(db, unit.DeployCommit)
+	if err != nil {
+		return
+	}
+
+	switch unit.Kind {
+	case spec.InstanceKind:
+		schd := NewInstanceUnit(unit, spc)
+		err = schd.Schedule(db, count)
+		if err != nil {
+			return
+		}
+	default:
+		err = &errortypes.ParseError{
+			errors.Newf("scheduler: Unknown unit kind %s", unit.Kind),
+		}
+		return
 	}
 
 	return
