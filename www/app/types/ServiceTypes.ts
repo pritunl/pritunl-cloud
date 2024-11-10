@@ -50,6 +50,7 @@ export interface Deployment {
 	spec?: string;
 	kind?: string;
 	state?: string;
+	status?: string;
 	node?: string;
 	instance?: string;
 	public_ips?: string[];
