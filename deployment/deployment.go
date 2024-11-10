@@ -19,6 +19,7 @@ type Deployment struct {
 	Spec             primitive.ObjectID             `bson:"spec" json:"spec"`
 	Kind             string                         `bson:"kind" json:"kind"`
 	State            string                         `bson:"state" json:"state"`
+	Status           string                         `bson:"status" json:"status"`
 	Node             primitive.ObjectID             `bson:"node,omitempty" json:"node"`
 	Instance         primitive.ObjectID             `bson:"instance,omitempty" json:"instance"`
 	PublicIps        []string                       `bson:"public_ips" json:"public_ips"`
@@ -55,6 +56,22 @@ func (d *Deployment) Validate(db *database.Database) (
 		errData = &errortypes.ErrorData{
 			Error:   "invalid_state",
 			Message: "Deployment state is invalid",
+		}
+		return
+	}
+
+	switch d.Status {
+	case Healthy:
+		break
+	case Unhealthy:
+		break
+	case "":
+		d.Status = Unhealthy
+		break
+	default:
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_status",
+			Message: "Deployment status is invalid",
 		}
 		return
 	}
