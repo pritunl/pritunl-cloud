@@ -19,7 +19,7 @@ type InstanceUnit struct {
 	nodes shape.Nodes
 }
 
-func (u *InstanceUnit) Schedule(db *database.Database) (err error) {
+func (u *InstanceUnit) Schedule(db *database.Database, count int) (err error) {
 	if u.unit.Kind != spec.InstanceKind {
 		err = &errortypes.ParseError{
 			errors.New("scheduler: Invalid unit kind"),
@@ -41,14 +41,22 @@ func (u *InstanceUnit) Schedule(db *database.Database) (err error) {
 		return
 	}
 
-	u.count = u.unit.Count - len(u.unit.Deployments)
+	overrideCount := 0
+	if count == 0 {
+		u.count = u.unit.Count - len(u.unit.Deployments)
+	} else {
+		u.count = count
+		overrideCount = len(u.unit.Deployments) + count
+	}
+
 	schd := &Scheduler{
 		Id: Resource{
 			Service: u.unit.Service.Id,
 			Unit:    u.unit.Id,
 		},
-		Kind:  InstanceUnitKind,
-		Count: u.count,
+		Kind:          InstanceUnitKind,
+		Count:         u.count,
+		OverrideCount: overrideCount,
 	}
 
 	shpe, err := shape.Get(db, u.spec.Instance.Shape)
