@@ -17,6 +17,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
+	"github.com/pritunl/pritunl-cloud/scheduler"
 	"github.com/pritunl/pritunl-cloud/service"
 	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -28,7 +29,8 @@ type serviceData struct {
 	Comment          string               `json:"comment"`
 	Organization     primitive.ObjectID   `json:"organization"`
 	DeleteProtection bool                 `json:"delete_protection"`
-	Units            []*service.UnitInput `bson:"units" json:"units"`
+	Units            []*service.UnitInput `json:"units"`
+	Count            int                  `json:"count"`
 }
 
 type servicesData struct {
@@ -409,6 +411,62 @@ func serviceUnitDeploymentPut(c *gin.Context) {
 			return
 		}
 		break
+	}
+
+	event.PublishDispatch(db, "instance.change")
+	event.PublishDispatch(db, "service.change")
+
+	c.JSON(200, nil)
+}
+
+func serviceUnitDeploymentPost(c *gin.Context) {
+	if demo.Blocked(c) {
+		return
+	}
+
+	db := c.MustGet("db").(*database.Database)
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	data := &serviceData{}
+
+	serviceId, ok := utils.ParseObjectId(c.Param("service_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	unitId, ok := utils.ParseObjectId(c.Param("unit_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	err := c.Bind(&data)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	srvc, err := service.GetOrg(db, userOrg, serviceId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	unit := srvc.GetUnit(unitId)
+	if unit == nil {
+		utils.AbortWithStatus(c, 404)
+		return
+	}
+
+	errData, err := scheduler.ManualSchedule(db, unit, data.Count)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		c.JSON(400, errData)
+		return
 	}
 
 	event.PublishDispatch(db, "instance.change")
