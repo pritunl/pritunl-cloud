@@ -23,6 +23,7 @@ type Deployment struct {
 	Spec                primitive.ObjectID `bson:"spec" json:"spec"`
 	Kind                string             `bson:"kind" json:"kind"`
 	State               string             `bson:"state" json:"state"`
+	Status              string             `bson:"status" json:"status"`
 	Node                primitive.ObjectID `bson:"node" json:"node"`
 	Instance            primitive.ObjectID `bson:"instance" json:"instance"`
 	PublicIps           []string           `bson:"public_ips" json:"public_ips"`
@@ -89,6 +90,7 @@ func GetDeployments(db *database.Database, unitId primitive.ObjectID) (
 				{"spec", 1},
 				{"kind", 1},
 				{"state", 1},
+				{"status", 1},
 				{"node", 1},
 				{"instance", 1},
 				{"public_ips", 1},
