@@ -227,8 +227,13 @@ export default class ServiceUnit extends React.Component<Props, State> {
 				/>
 			</div>
 
-			let heartbeat = MiscUtils.formatSinceLocalIntent(
-				deployment.instance_heartbeat, 20)
+			let deplyStatus = MiscUtils.capitalize(deployment.status) || "-"
+			let heartbeatClass = ""
+			if (deployment.status === "healthy") {
+				heartbeatClass = "bp5-text-intent-success"
+			} else {
+				heartbeatClass = "bp5-text-intent-danger"
+			}
 
 			let heartbeatHover = <div
 				className="bp5-content-popover"
@@ -239,10 +244,15 @@ export default class ServiceUnit extends React.Component<Props, State> {
 					style={css.info}
 					fields={[
 						{
+							label: "Status",
+							value: deplyStatus,
+							valueClass: heartbeatClass,
+						},
+						{
 							label: "Heartbeat Timestamp",
 							value: MiscUtils.formatDateLocal(
 								deployment.instance_heartbeat) || "-",
-							valueClass: heartbeat[1],
+							valueClass: heartbeatClass,
 						},
 					]}
 				/>
@@ -384,7 +394,7 @@ export default class ServiceUnit extends React.Component<Props, State> {
 									value: MiscUtils.formatSinceLocal(
 										deployment.instance_heartbeat) || "-",
 									hover: heartbeatHover,
-									valueClass: heartbeat[1],
+									valueClass: heartbeatClass,
 								},
 								{
 									label: "Uptime",
