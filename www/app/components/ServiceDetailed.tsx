@@ -37,7 +37,7 @@ const css = {
 		position: 'relative',
 		padding: '48px 10px 0 10px',
 		width: '100%',
-		height: '1232px',
+		height: '1195px',
 	} as React.CSSProperties,
 	button: {
 		height: '30px',
@@ -295,26 +295,6 @@ export default class ServiceDetailed extends React.Component<Props, State> {
 							this.set('name', val);
 						}}
 					/>
-					<PageTextArea
-						label="Comment"
-						help="Service comment."
-						placeholder="Service comment"
-						rows={3}
-						value={service.comment}
-						onChange={(val: string): void => {
-							this.set('comment', val);
-						}}
-					/>
-				</div>
-				<div style={css.group}>
-					<PageInfo
-						fields={[
-							{
-								label: 'ID',
-								value: this.props.service.id || 'Unknown',
-							},
-						]}
-					/>
 					<PageSelect
 						disabled={this.state.disabled || !hasOrganizations}
 						hidden={Constants.user}
@@ -327,6 +307,16 @@ export default class ServiceDetailed extends React.Component<Props, State> {
 					>
 						{organizationsSelect}
 					</PageSelect>
+				</div>
+				<div style={css.group}>
+					<PageInfo
+						fields={[
+							{
+								label: 'ID',
+								value: this.props.service.id || 'Unknown',
+							},
+						]}
+					/>
 				</div>
 			</div>
 			<ServiceWorkspace
