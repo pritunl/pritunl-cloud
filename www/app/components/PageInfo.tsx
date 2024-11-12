@@ -14,7 +14,7 @@ export interface Field {
 
 export interface Bar {
 	progressClass?: string;
-	label: string;
+	label?: string;
 	value: number;
 	color?: string;
 }
@@ -146,26 +146,30 @@ export default class PageInfo extends React.Component<Props, {}> {
 			}
 		}
 
-		for (let bar of this.props.bars || []) {
-			let style: React.CSSProperties = {
-				width: (bar.value || 0) + '%',
-			};
+		if (this.props.bars) {
+			for (let i = 0; i < this.props.bars.length; i++) {
+				let bar = this.props.bars[i]
 
-			if (bar.color) {
-				style.backgroundColor = bar.color;
+				let style: React.CSSProperties = {
+					width: (bar.value || 0) + '%',
+				};
+
+				if (bar.color) {
+					style.backgroundColor = bar.color;
+				}
+
+				bars.push(
+					<div key={bar.label || i} style={itemStyle}>
+						{bar.label}
+						<div
+							className={'bp5-progress-bar ' + (bar.progressClass || '')}
+							style={css.bar}
+						>
+							<div className="bp5-progress-meter" style={style}/>
+						</div>
+					</div>,
+				);
 			}
-
-			bars.push(
-				<div key={bar.label} style={itemStyle}>
-					{bar.label}
-					<div
-						className={'bp5-progress-bar ' + (bar.progressClass || '')}
-						style={css.bar}
-					>
-						<div className="bp5-progress-meter" style={style}/>
-					</div>
-				</div>,
-			);
 		}
 
 		let labelStyle: React.CSSProperties;
