@@ -17,7 +17,7 @@ const css = {
 		margin: '0 auto',
 		padding: '30px 20px',
 		minWidth: '200px',
-		maxWidth: '1250px',
+		maxWidth: '1400px',
 	} as React.CSSProperties,
 };
 
