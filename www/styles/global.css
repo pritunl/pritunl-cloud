@@ -170,6 +170,10 @@ code.intent-secondary {
   animation: bp5-loading-bar-frames 2s linear infinite;
 }
 
+label.bp5-label .bp5-button-group {
+  margin-top: 5px !important;
+}
+
 @keyframes bp5-loading-bar-frames {
   from {
     left: -200px;
