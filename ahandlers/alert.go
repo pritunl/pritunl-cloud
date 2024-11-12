@@ -22,6 +22,7 @@ import (
 type alertData struct {
 	Id           primitive.ObjectID `json:"id"`
 	Name         string             `json:"name"`
+	Comment      string             `json:"comment"`
 	Organization primitive.ObjectID `json:"organization"`
 	Roles        []string           `json:"roles"`
 	Resource     string             `json:"resource"`
@@ -67,6 +68,7 @@ func alertPut(c *gin.Context) {
 	}
 
 	alrt.Name = data.Name
+	alrt.Comment = data.Comment
 	alrt.Organization = data.Organization
 	alrt.Roles = data.Roles
 	alrt.Resource = data.Resource
@@ -78,6 +80,7 @@ func alertPut(c *gin.Context) {
 
 	fields := set.NewSet(
 		"name",
+		"comment",
 		"organization",
 		"roles",
 		"resource",
@@ -133,6 +136,7 @@ func alertPost(c *gin.Context) {
 
 	alrt := &alert.Alert{
 		Name:         data.Name,
+		Comment:      data.Comment,
 		Organization: data.Organization,
 		Roles:        data.Roles,
 		Resource:     data.Resource,
