@@ -12,7 +12,7 @@ type system struct {
 	AdminCookieCryptoKey []byte `bson:"admin_cookie_crypto_key"`
 	UserCookieAuthKey    []byte `bson:"user_cookie_auth_key"`
 	UserCookieCryptoKey  []byte `bson:"user_cookie_crypto_key"`
-	NodeTimestampTtl     int    `bson:"node_timestamp_ttl" default:"10"`
+	NodeTimestampTtl     int    `bson:"node_timestamp_ttl" default:"15"`
 	InstanceTimestampTtl int    `bson:"instance_timestamp_ttl" default:"10"`
 	AcmeKeyAlgorithm     string `bson:"acme_key_algorithm" default:"rsa"`
 	DiskBackupWindow     int    `bson:"disk_backup_window" default:"6"`
