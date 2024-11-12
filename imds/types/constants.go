@@ -1,4 +1,4 @@
-package imds
+package types
 
 const (
 	Initializing = "initializing"
