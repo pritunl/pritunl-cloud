@@ -96,14 +96,6 @@ func (u *Commit) Parse(db *database.Database,
 		return
 	}
 
-	if dataYaml.Count == 0 {
-		errData = &errortypes.ErrorData{
-			Error:   "unit_count_missing",
-			Message: "Unit count is missing",
-		}
-		return
-	}
-
 	resources := &Resources{
 		Organization: orgId,
 	}
