@@ -18,6 +18,9 @@ type Pool struct {
 	VgName           string             `bson:"vg_name" json:"vg_name"`
 }
 
+func (p *Pool) Json(nodeNames map[primitive.ObjectID]string) {
+}
+
 func (p *Pool) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
