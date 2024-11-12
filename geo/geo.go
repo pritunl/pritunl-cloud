@@ -122,7 +122,7 @@ func Get(db *database.Database, addr string) (ge *Geo, err error) {
 
 		if ge != nil {
 			ge.Timestamp = time.Now()
-			coll.InsertOne(db, ge)
+			_, _ = coll.InsertOne(db, ge)
 		} else {
 			ge = &Geo{}
 		}
