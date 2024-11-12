@@ -1,11 +1,17 @@
 package imds
 
 import (
+	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/tools/logger"
 )
 
+var (
+	curStatus = types.Initializing
+)
+
 type StateData struct {
+	Status    string  `json:"status"`
 	Memory    float64 `json:"memory"`
 	HugePages float64 `json:"hugepages"`
 	Load1     float64 `json:"load1"`
@@ -14,7 +20,9 @@ type StateData struct {
 }
 
 func GetState() (data *StateData, err error) {
-	data = &StateData{}
+	data = &StateData{
+		Status: curStatus,
+	}
 
 	mem, err := utils.GetMemInfo()
 	if err != nil {
@@ -38,4 +46,8 @@ func GetState() (data *StateData, err error) {
 	}
 
 	return
+}
+
+func SetStatus(status string) {
+	curStatus = status
 }
