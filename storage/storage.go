@@ -47,8 +47,22 @@ func (s *Storage) Validate(db *database.Database) (
 
 	s.Name = utils.FilterName(s.Name)
 
-	if s.Type == "" {
+	switch s.Type {
+	case Public:
+		break
+	case Private:
+		break
+	case Web:
+		break
+	case "":
 		s.Type = Public
+		break
+	default:
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_type",
+			Message: "Storage type is invalid",
+		}
+		return
 	}
 
 	return
