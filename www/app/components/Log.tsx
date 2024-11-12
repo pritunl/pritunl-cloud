@@ -63,6 +63,7 @@ const css = {
 		resize: 'none',
 		fontSize: Theme.monospaceSize,
 		fontFamily: Theme.monospaceFont,
+		fontWeight: Theme.monospaceWeight,
 		marginBottom: 0,
 	} as React.CSSProperties,
 };
