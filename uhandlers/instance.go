@@ -654,7 +654,14 @@ func instancesGet(c *gin.Context) {
 
 		networkRole := strings.TrimSpace(c.Query("network_role"))
 		if networkRole != "" {
-			query["network_roles"] = networkRole
+			if strings.HasPrefix(networkRole, "!") {
+				networkRole = strings.TrimLeft(networkRole, "!")
+				query["network_roles"] = &bson.M{
+					"$ne": networkRole,
+				}
+			} else {
+				query["network_roles"] = networkRole
+			}
 		}
 
 		networkNamespace := strings.TrimSpace(c.Query("network_namespace"))
