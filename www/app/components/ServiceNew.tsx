@@ -214,16 +214,6 @@ export default class ServiceNew extends React.Component<Props, State> {
 								this.set('name', val);
 							}}
 						/>
-						<PageTextArea
-							label="Comment"
-							help="Service comment."
-							placeholder="Service comment"
-							rows={3}
-							value={service.comment}
-							onChange={(val: string): void => {
-								this.set('comment', val);
-							}}
-						/>
 						<PageSelect
 							disabled={this.state.disabled || !hasOrganizations}
 							hidden={Constants.user}
