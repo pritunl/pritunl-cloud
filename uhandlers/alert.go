@@ -22,6 +22,7 @@ import (
 type alertData struct {
 	Id        primitive.ObjectID `json:"id"`
 	Name      string             `json:"name"`
+	Comment   string             `json:"comment"`
 	Roles     []string           `json:"roles"`
 	Resource  string             `json:"resource"`
 	Level     int                `json:"level"`
@@ -67,6 +68,7 @@ func alertPut(c *gin.Context) {
 	}
 
 	alrt.Name = data.Name
+	alrt.Comment = data.Comment
 	alrt.Roles = data.Roles
 	alrt.Resource = data.Resource
 	alrt.Level = data.Level
@@ -77,6 +79,7 @@ func alertPut(c *gin.Context) {
 
 	fields := set.NewSet(
 		"name",
+		"comment",
 		"roles",
 		"resource",
 		"level",
@@ -132,6 +135,7 @@ func alertPost(c *gin.Context) {
 
 	alrt := &alert.Alert{
 		Name:         data.Name,
+		Comment:      data.Comment,
 		Organization: userOrg,
 		Roles:        data.Roles,
 		Resource:     data.Resource,
@@ -246,6 +250,14 @@ func alertsGet(c *gin.Context) {
 	role := strings.TrimSpace(c.Query("role"))
 	if role != "" {
 		query["roles"] = role
+	}
+
+	comment := strings.TrimSpace(c.Query("comment"))
+	if comment != "" {
+		query["comment"] = &bson.M{
+			"$regex":   fmt.Sprintf(".*%s.*", comment),
+			"$options": "i",
+		}
 	}
 
 	alerts, count, err := alert.GetAllPaged(
