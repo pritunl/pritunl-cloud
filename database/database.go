@@ -545,6 +545,16 @@ func addIndexes() (err error) {
 	if err != nil {
 		return
 	}
+	index = &Index{
+		Collection: db.Nodes(),
+		Keys: &bson.D{
+			{"pools", 1},
+		},
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
 
 	index = &Index{
 		Collection: db.Nonces(),
