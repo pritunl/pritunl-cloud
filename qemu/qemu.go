@@ -3,6 +3,7 @@ package qemu
 import (
 	"crypto/md5"
 	"fmt"
+	"math"
 	"path"
 	"path/filepath"
 	"strings"
@@ -99,7 +100,7 @@ type Qemu struct {
 }
 
 func (q *Qemu) GetDiskQueues() (queues int) {
-	queues = q.Cpus
+	queues = int(math.Ceil(float64(q.Cores) / 2))
 
 	if queues > settings.Hypervisor.DiskQueuesMax {
 		queues = settings.Hypervisor.DiskQueuesMax
@@ -111,13 +112,27 @@ func (q *Qemu) GetDiskQueues() (queues int) {
 }
 
 func (q *Qemu) GetNetworkQueues() (queues int) {
-	queues = q.Cpus
+	queues = int(math.Ceil(float64(q.Cores) / 2))
 
 	if queues > settings.Hypervisor.NetworkQueuesMax {
 		queues = settings.Hypervisor.NetworkQueuesMax
 	} else if queues < settings.Hypervisor.NetworkQueuesMin {
 		queues = settings.Hypervisor.NetworkQueuesMin
 	}
+
+	return
+}
+
+func (q *Qemu) GetNetworkVectors() (vectors int) {
+	vectors = int(math.Ceil(float64(q.Cores) / 2))
+
+	if vectors > settings.Hypervisor.NetworkQueuesMax {
+		vectors = settings.Hypervisor.NetworkQueuesMax
+	} else if vectors < settings.Hypervisor.NetworkQueuesMin {
+		vectors = settings.Hypervisor.NetworkQueuesMin
+	}
+
+	vectors = (2 * vectors) + 2
 
 	return
 }
@@ -510,9 +525,10 @@ func (q *Qemu) Marshal() (output string, err error) {
 	for i, network := range q.Networks {
 		cmd = append(cmd, "-device")
 		cmd = append(cmd, fmt.Sprintf(
-			"virtio-net-pci,netdev=net%d,mac=%s",
+			"virtio-net-pci,netdev=net%d,mac=%s,mq=on,vectors=%d",
 			i,
 			network.MacAddress,
+			q.GetNetworkVectors(),
 		))
 
 		cmd = append(cmd, "-netdev")
