@@ -195,9 +195,18 @@ func (u *Unit) Parse(db *database.Database) (
 
 	if u.Hash != spc.Hash {
 		u.Name = spc.Name
-		u.Kind = spc.Kind
 		u.Count = spc.Count
 		u.Spec = spc.Data
+
+		if u.Kind == "" {
+			u.Kind = spc.Kind
+		} else if u.Kind != spc.Kind {
+			errData = &errortypes.ErrorData{
+				Error:   "spec_kind_invalid",
+				Message: "Cannot change spec kind",
+			}
+			return
+		}
 
 		err = spc.Insert(db)
 		if err != nil {
@@ -226,9 +235,18 @@ func (u *Unit) Parse(db *database.Database) (
 		}
 
 		u.Name = curSpc.Name
-		u.Kind = curSpc.Kind
 		u.Count = curSpc.Count
 		u.Spec = curSpc.Data
+
+		if u.Kind == "" {
+			u.Kind = spc.Kind
+		} else if u.Kind != spc.Kind {
+			errData = &errortypes.ErrorData{
+				Error:   "spec_kind_invalid",
+				Message: "Cannot change spec kind",
+			}
+			return
+		}
 
 		u.Hash = curSpc.Hash
 		u.LastCommit = curSpc.Id
