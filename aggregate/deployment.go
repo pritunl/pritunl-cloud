@@ -6,6 +6,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 )
@@ -17,36 +18,31 @@ type DeploymentPipe struct {
 }
 
 type Deployment struct {
-	Id                  primitive.ObjectID `bson:"_id" json:"id"`
-	Service             primitive.ObjectID `bson:"service" json:"service"`
-	Unit                primitive.ObjectID `bson:"unit" json:"unit"`
-	Spec                primitive.ObjectID `bson:"spec" json:"spec"`
-	Kind                string             `bson:"kind" json:"kind"`
-	State               string             `bson:"state" json:"state"`
-	Status              string             `bson:"status" json:"status"`
-	Node                primitive.ObjectID `bson:"node" json:"node"`
-	Instance            primitive.ObjectID `bson:"instance" json:"instance"`
-	PublicIps           []string           `bson:"public_ips" json:"public_ips"`
-	PublicIps6          []string           `bson:"public_ips6" json:"public_ips6"`
-	PrivateIps          []string           `bson:"private_ips" json:"private_ips"`
-	PrivateIps6         []string           `bson:"private_ips6" json:"private_ips6"`
-	OraclePrivateIps    []string           `bson:"oracle_private_ips" json:"oracle_private_ips"`
-	OraclePublicIps     []string           `bson:"oracle_public_ips" json:"oracle_public_ips"`
-	NodeName            string             `bson:"-" json:"node_name"`
-	InstanceName        string             `bson:"-" json:"instance_name"`
-	InstanceRoles       []string           `bson:"-" json:"instance_roles"`
-	InstanceMemory      int                `bson:"-" json:"instance_memory"`
-	InstanceProcessors  int                `bson:"-" json:"instance_processors"`
-	InstanceStatus      string             `bson:"-" json:"instance_status"`
-	InstanceUptime      string             `bson:"-" json:"instance_uptime"`
-	InstanceState       string             `bson:"-" json:"instance_state"`
-	InstanceVirtState   string             `bson:"-" json:"instance_virt_state"`
-	InstanceHeartbeat   time.Time          `bson:"-" json:"instance_heartbeat"`
-	InstanceMemoryUsage float64            `bson:"-" json:"instance_memory_usage"`
-	InstanceHugePages   float64            `bson:"-" json:"instance_hugepages"`
-	InstanceLoad1       float64            `bson:"-" json:"instance_load1"`
-	InstanceLoad5       float64            `bson:"-" json:"instance_load5"`
-	InstanceLoad15      float64            `bson:"-" json:"instance_load15"`
+	Id                  primitive.ObjectID     `bson:"_id" json:"id"`
+	Service             primitive.ObjectID     `bson:"service" json:"service"`
+	Unit                primitive.ObjectID     `bson:"unit" json:"unit"`
+	Spec                primitive.ObjectID     `bson:"spec" json:"spec"`
+	Kind                string                 `bson:"kind" json:"kind"`
+	State               string                 `bson:"state" json:"state"`
+	Status              string                 `bson:"status" json:"status"`
+	Node                primitive.ObjectID     `bson:"node" json:"node"`
+	Instance            primitive.ObjectID     `bson:"instance" json:"instance"`
+	InstanceData        *deployment.Deployment `bson:"instance_data" json:"instance_data"`
+	NodeName            string                 `bson:"-" json:"node_name"`
+	InstanceName        string                 `bson:"-" json:"instance_name"`
+	InstanceRoles       []string               `bson:"-" json:"instance_roles"`
+	InstanceMemory      int                    `bson:"-" json:"instance_memory"`
+	InstanceProcessors  int                    `bson:"-" json:"instance_processors"`
+	InstanceStatus      string                 `bson:"-" json:"instance_status"`
+	InstanceUptime      string                 `bson:"-" json:"instance_uptime"`
+	InstanceState       string                 `bson:"-" json:"instance_state"`
+	InstanceVirtState   string                 `bson:"-" json:"instance_virt_state"`
+	InstanceHeartbeat   time.Time              `bson:"-" json:"instance_heartbeat"`
+	InstanceMemoryUsage float64                `bson:"-" json:"instance_memory_usage"`
+	InstanceHugePages   float64                `bson:"-" json:"instance_hugepages"`
+	InstanceLoad1       float64                `bson:"-" json:"instance_load1"`
+	InstanceLoad5       float64                `bson:"-" json:"instance_load5"`
+	InstanceLoad15      float64                `bson:"-" json:"instance_load15"`
 }
 
 func GetDeployments(db *database.Database, unitId primitive.ObjectID) (
@@ -93,12 +89,7 @@ func GetDeployments(db *database.Database, unitId primitive.ObjectID) (
 				{"status", 1},
 				{"node", 1},
 				{"instance", 1},
-				{"public_ips", 1},
-				{"public_ips6", 1},
-				{"private_ips", 1},
-				{"private_ips6", 1},
-				{"oracle_private_ips", 1},
-				{"oracle_public_ips", 1},
+				{"instance_data", 1},
 				{"instance_docs.name", 1},
 				{"instance_docs.network_roles", 1},
 				{"instance_docs.memory", 1},
