@@ -13,6 +13,7 @@ const (
 	Restore  = "restore"
 
 	Instance = "instance"
+	Image    = "image"
 
 	Healthy   = "healthy"
 	Unhealthy = "unhealthy"

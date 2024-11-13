@@ -22,6 +22,7 @@ type Deployment struct {
 	Status       string                         `bson:"status" json:"status"`
 	Node         primitive.ObjectID             `bson:"node,omitempty" json:"node"`
 	Instance     primitive.ObjectID             `bson:"instance,omitempty" json:"instance"`
+	Image        primitive.ObjectID             `bson:"image,omitempty" json:"image"`
 	InstanceData *InstanceData                  `bson:"instance_data,omitempty" json:"instance_data"`
 	Actions      map[primitive.ObjectID]*Action `bson:"actions,omitempty", json:"actions"`
 }
