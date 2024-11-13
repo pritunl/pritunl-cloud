@@ -107,12 +107,17 @@ func NewServices(services []*service.Service,
 
 			for _, unitDeply := range srvcUnit.Deployments {
 				deply := deployments[unitDeply.Id]
+				data := deply.InstanceData
+				if data == nil {
+					data = &deployment.InstanceData{}
+				}
+
 				if deply != nil {
-					publicIps := deply.PublicIps
+					publicIps := data.PublicIps
 					if publicIps == nil {
 						publicIps = []string{}
 					}
-					publicIps6 := deply.PublicIps6
+					publicIps6 := data.PublicIps6
 					if publicIps6 == nil {
 						publicIps6 = []string{}
 					}
@@ -121,11 +126,11 @@ func NewServices(services []*service.Service,
 					healthyPublicIps6 := []string{}
 					unhealthyPublicIps6 := []string{}
 
-					privateIps := deply.PrivateIps
+					privateIps := data.PrivateIps
 					if privateIps == nil {
 						privateIps = []string{}
 					}
-					privateIps6 := deply.PrivateIps6
+					privateIps6 := data.PrivateIps6
 					if privateIps6 == nil {
 						privateIps6 = []string{}
 					}
@@ -134,11 +139,11 @@ func NewServices(services []*service.Service,
 					healthyPrivateIps6 := []string{}
 					unhealthyPrivateIps6 := []string{}
 
-					oraclePublicIps := deply.OraclePublicIps
+					oraclePublicIps := data.OraclePublicIps
 					if oraclePublicIps == nil {
 						oraclePublicIps = []string{}
 					}
-					oraclePrivateIps := deply.OraclePrivateIps
+					oraclePrivateIps := data.OraclePrivateIps
 					if oraclePrivateIps == nil {
 						oraclePrivateIps = []string{}
 					}
