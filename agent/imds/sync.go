@@ -11,18 +11,13 @@ var (
 )
 
 type StateData struct {
-	Status    string  `json:"status"`
-	Memory    float64 `json:"memory"`
-	HugePages float64 `json:"hugepages"`
-	Load1     float64 `json:"load1"`
-	Load5     float64 `json:"load5"`
-	Load15    float64 `json:"load15"`
+	*types.State
 }
 
 func GetState() (data *StateData, err error) {
-	data = &StateData{
-		Status: curStatus,
-	}
+	data = &StateData{}
+
+	data.Status = curStatus
 
 	mem, err := utils.GetMemInfo()
 	if err != nil {
