@@ -326,8 +326,12 @@ func (n *NetConf) ipDatabase(db *database.Database) (err error) {
 
 		err = coll.UpdateId(n.Virt.Deployment, &bson.M{
 			"$set": &bson.M{
-				"private_ips":  []string{n.InternalAddr.String()},
-				"private_ips6": []string{n.InternalAddr6.String()},
+				"instance_data.private_ips": []string{
+					n.InternalAddr.String(),
+				},
+				"instance_data.private_ips6": []string{
+					n.InternalAddr6.String(),
+				},
 			},
 		})
 		if err != nil {
