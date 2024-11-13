@@ -5,24 +5,15 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
-	"time"
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/imds/server/errortypes"
+	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/paths"
 )
 
-type StateData struct {
-	Memory    float64   `json:"memory"`
-	HugePages float64   `json:"hugepages"`
-	Load1     float64   `json:"load1"`
-	Load5     float64   `json:"load5"`
-	Load15    float64   `json:"load15"`
-	Timestamp time.Time `json:"timestamp"`
-}
-
-func Read(instId primitive.ObjectID) (data *StateData, err error) {
+func Read(instId primitive.ObjectID) (data *types.State, err error) {
 	file, err := ioutil.ReadFile(paths.GetImdsStatePath(instId))
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -41,7 +32,7 @@ func Read(instId primitive.ObjectID) (data *StateData, err error) {
 		return
 	}
 
-	data = &StateData{}
+	data = &types.State{}
 	err = json.Unmarshal(file, data)
 	if err != nil {
 		err = &errortypes.ReadError{
