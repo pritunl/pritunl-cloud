@@ -6,8 +6,8 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -254,7 +254,9 @@ func (p *Service) IterInstances() <-chan *Unit {
 		defer close(iter)
 
 		for _, unit := range p.Units {
-			if unit.Kind != spec.InstanceKind {
+			if unit.Kind != deployment.Instance &&
+				unit.Kind != deployment.Image {
+
 				continue
 			}
 
