@@ -3,22 +3,17 @@ package state
 import (
 	"encoding/json"
 	"io/ioutil"
-	"time"
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/imds/server/errortypes"
+	"github.com/pritunl/pritunl-cloud/imds/types"
 )
 
 var Path = ""
 var State = &StateData{}
 
 type StateData struct {
-	Memory    float64   `json:"memory"`
-	HugePages float64   `json:"hugepages"`
-	Load1     float64   `json:"load1"`
-	Load5     float64   `json:"load5"`
-	Load15    float64   `json:"load15"`
-	Timestamp time.Time `json:"timestamp"`
+	*types.State
 }
 
 func (s *StateData) Save() (err error) {
