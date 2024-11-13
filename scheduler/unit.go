@@ -5,6 +5,7 @@ import (
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/service"
 	"github.com/pritunl/pritunl-cloud/shape"
@@ -20,7 +21,7 @@ type InstanceUnit struct {
 }
 
 func (u *InstanceUnit) Schedule(db *database.Database, count int) (err error) {
-	if u.unit.Kind != spec.InstanceKind {
+	if u.unit.Kind != deployment.Instance && u.unit.Kind != deployment.Image {
 		err = &errortypes.ParseError{
 			errors.New("scheduler: Invalid unit kind"),
 		}
@@ -312,6 +313,7 @@ func (u *InstanceUnit) scheduleComplex(db *database.Database,
 		logrus.WithFields(logrus.Fields{
 			"service":       u.unit.Service.Id.Hex(),
 			"unit":          u.unit.Id.Hex(),
+			"kind":          u.unit.Kind,
 			"shape":         u.spec.Instance.Shape.Hex(),
 			"overscheduled": overscheduled,
 		}).Info("scheduler: Overscheduled unit")
