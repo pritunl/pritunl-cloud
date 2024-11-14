@@ -24,6 +24,7 @@ func Sync(db *database.Database, inst *instance.Instance) (err error) {
 	}, bson.M{
 		"$set": &bson.M{
 			"guest": &instance.GuestData{
+				Status:    data.Status,
 				Heartbeat: data.Timestamp,
 				Memory:    data.Memory,
 				HugePages: data.HugePages,
