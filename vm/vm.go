@@ -195,8 +195,8 @@ func (v *VirtualMachine) Commit(db *database.Database) (err error) {
 
 		err = coll.UpdateId(v.Deployment, &bson.M{
 			"$set": &bson.M{
-				"public_ips":  addrs,
-				"public_ips6": addrs6,
+				"instance_data.public_ips":  addrs,
+				"instance_data.public_ips6": addrs6,
 			},
 		})
 		if err != nil {
@@ -244,8 +244,12 @@ func (v *VirtualMachine) CommitOracleIps(db *database.Database) (err error) {
 
 		err = coll.UpdateId(v.Deployment, &bson.M{
 			"$set": &bson.M{
-				"oracle_private_ips": []string{v.OraclePrivateIp},
-				"oracle_public_ips":  []string{v.OraclePublicIp},
+				"instance_data.oracle_private_ips": []string{
+					v.OraclePrivateIp,
+				},
+				"instance_data.oracle_public_ips": []string{
+					v.OraclePublicIp,
+				},
 			},
 		})
 		if err != nil {
