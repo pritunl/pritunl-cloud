@@ -4,6 +4,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/service"
 	"github.com/pritunl/pritunl-cloud/spec"
@@ -145,7 +146,7 @@ func Schedule(db *database.Database, unit *service.Unit) (err error) {
 	}
 
 	switch unit.Kind {
-	case spec.InstanceKind:
+	case deployment.Instance, deployment.Image:
 		schd := NewInstanceUnit(unit, spc)
 		err = schd.Schedule(db, 0)
 		if err != nil {
@@ -182,7 +183,7 @@ func ManualSchedule(db *database.Database, unit *service.Unit, count int) (
 	}
 
 	switch unit.Kind {
-	case spec.InstanceKind:
+	case deployment.Instance:
 		schd := NewInstanceUnit(unit, spc)
 		err = schd.Schedule(db, count)
 		if err != nil {
