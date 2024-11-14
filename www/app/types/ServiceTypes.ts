@@ -53,12 +53,7 @@ export interface Deployment {
 	status?: string;
 	node?: string;
 	instance?: string;
-	public_ips?: string[];
-	public_ips6?: string[];
-	private_ips?: string[];
-	private_ips6?: string[];
-	oracle_private_ips?: string[];
-	oracle_public_ips?: string[];
+	instance_data?: InstanceData;
 	node_name?: string;
 	instance_name?: string;
 	instance_roles?: string[];
@@ -74,6 +69,15 @@ export interface Deployment {
 	instance_load1?: number;
 	instance_load5?: number;
 	instance_load15?: number;
+}
+
+export interface InstanceData {
+	public_ips?: string[];
+	public_ips6?: string[];
+	private_ips?: string[];
+	private_ips6?: string[];
+	oracle_private_ips?: string[];
+	oracle_public_ips?: string[];
 }
 
 export interface Filter {
