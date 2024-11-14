@@ -178,22 +178,24 @@ export default class ServiceUnit extends React.Component<Props, State> {
 					break
 			}
 
-			let publicIps = deployment.public_ips
+			let instData = deployment.instance_data || {}
+
+			let publicIps = instData.public_ips
 			if (!publicIps || !publicIps.length) {
 				publicIps = ["-"]
 			}
 
-			let publicIps6 = deployment.public_ips6
+			let publicIps6 = instData.public_ips6
 			if (!publicIps6 || !publicIps6.length) {
 				publicIps6 = ["-"]
 			}
 
-			let privateIps = deployment.private_ips
+			let privateIps = instData.private_ips
 			if (!privateIps || !privateIps.length) {
 				privateIps = ["-"]
 			}
 
-			let privateIps6 = deployment.private_ips6
+			let privateIps6 = instData.private_ips6
 			if (!privateIps6 || !privateIps6.length) {
 				privateIps6 = ["-"]
 			}
