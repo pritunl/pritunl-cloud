@@ -169,7 +169,10 @@ func (p *Planner) checkInstance(db *database.Database,
 		return
 	}
 
-	if deply.State == deployment.Deployed && !inst.IsActive() {
+	if deply.Kind != deployment.Image &&
+		deply.State == deployment.Deployed &&
+		!inst.IsActive() {
+
 		logrus.WithFields(logrus.Fields{
 			"instance_id": inst.Id.Hex(),
 		}).Info("deploy: Starting instance for active deployment")
@@ -201,7 +204,7 @@ func (p *Planner) checkInstance(db *database.Database,
 		return
 	}
 
-	if unit.Kind != spec.InstanceKind || spc.Instance == nil {
+	if spc.Instance == nil {
 		return
 	}
 
@@ -343,7 +346,7 @@ func (p *Planner) ApplyPlans(db *database.Database) (err error) {
 			}()
 
 			switch deply.Kind {
-			case deployment.Instance:
+			case deployment.Instance, deployment.Image:
 				e := p.checkInstance(db, deply)
 				if e != nil {
 					logrus.WithFields(logrus.Fields{
