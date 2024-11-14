@@ -12,6 +12,7 @@ import (
 )
 
 type syncData struct {
+	Status    string  `json:"status"`
 	Memory    float64 `json:"memory"`
 	HugePages float64 `json:"hugepages"`
 	Load1     float64 `json:"load1"`
@@ -35,6 +36,7 @@ func syncPut(c *gin.Context) {
 		return
 	}
 
+	state.State.Status = data.Status
 	state.State.Timestamp = time.Now()
 	state.State.Memory = data.Memory
 	state.State.HugePages = data.HugePages
