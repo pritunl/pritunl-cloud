@@ -10,7 +10,9 @@ import (
 )
 
 var Path = ""
-var State = &StateData{}
+var State = &StateData{
+	&types.State{},
+}
 
 type StateData struct {
 	*types.State
