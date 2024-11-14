@@ -128,7 +128,7 @@ func (s *Services) DeploySpec(db *database.Database,
 		Unit:    unit.Id,
 		Spec:    spc.Id,
 		Node:    node.Self.Id,
-		Kind:    deployment.Instance,
+		Kind:    unit.Kind,
 		State:   deployment.Reserved,
 	}
 
