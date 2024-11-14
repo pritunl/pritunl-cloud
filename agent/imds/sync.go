@@ -15,7 +15,9 @@ type StateData struct {
 }
 
 func GetState() (data *StateData, err error) {
-	data = &StateData{}
+	data = &StateData{
+		&types.State{},
+	}
 
 	data.Status = curStatus
 
