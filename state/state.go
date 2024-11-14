@@ -669,9 +669,7 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 		servicesMap[srvc.Id] = srvc
 
 		for _, unit := range srvc.Units {
-			if !unitIds.Contains(unit.Id) ||
-				unit.Kind != spec.InstanceKind {
-
+			if !unitIds.Contains(unit.Id) {
 				continue
 			}
 			servicesUnitsMap[unit.Id] = unit
