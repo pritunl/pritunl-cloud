@@ -88,6 +88,8 @@ func (d *Deployment) Validate(db *database.Database) (
 	switch d.Kind {
 	case Instance:
 		break
+	case Image:
+		break
 	default:
 		errData = &errortypes.ErrorData{
 			Error:   "invalid_kind",
