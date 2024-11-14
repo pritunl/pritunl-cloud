@@ -107,12 +107,13 @@ func NewServices(services []*service.Service,
 
 			for _, unitDeply := range srvcUnit.Deployments {
 				deply := deployments[unitDeply.Id]
-				data := deply.InstanceData
-				if data == nil {
-					data = &deployment.InstanceData{}
-				}
 
 				if deply != nil {
+					data := deply.InstanceData
+					if data == nil {
+						data = &deployment.InstanceData{}
+					}
+
 					publicIps := data.PublicIps
 					if publicIps == nil {
 						publicIps = []string{}
