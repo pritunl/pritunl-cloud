@@ -18,31 +18,31 @@ type DeploymentPipe struct {
 }
 
 type Deployment struct {
-	Id                  primitive.ObjectID     `bson:"_id" json:"id"`
-	Service             primitive.ObjectID     `bson:"service" json:"service"`
-	Unit                primitive.ObjectID     `bson:"unit" json:"unit"`
-	Spec                primitive.ObjectID     `bson:"spec" json:"spec"`
-	Kind                string                 `bson:"kind" json:"kind"`
-	State               string                 `bson:"state" json:"state"`
-	Status              string                 `bson:"status" json:"status"`
-	Node                primitive.ObjectID     `bson:"node" json:"node"`
-	Instance            primitive.ObjectID     `bson:"instance" json:"instance"`
-	InstanceData        *deployment.Deployment `bson:"instance_data" json:"instance_data"`
-	NodeName            string                 `bson:"-" json:"node_name"`
-	InstanceName        string                 `bson:"-" json:"instance_name"`
-	InstanceRoles       []string               `bson:"-" json:"instance_roles"`
-	InstanceMemory      int                    `bson:"-" json:"instance_memory"`
-	InstanceProcessors  int                    `bson:"-" json:"instance_processors"`
-	InstanceStatus      string                 `bson:"-" json:"instance_status"`
-	InstanceUptime      string                 `bson:"-" json:"instance_uptime"`
-	InstanceState       string                 `bson:"-" json:"instance_state"`
-	InstanceVirtState   string                 `bson:"-" json:"instance_virt_state"`
-	InstanceHeartbeat   time.Time              `bson:"-" json:"instance_heartbeat"`
-	InstanceMemoryUsage float64                `bson:"-" json:"instance_memory_usage"`
-	InstanceHugePages   float64                `bson:"-" json:"instance_hugepages"`
-	InstanceLoad1       float64                `bson:"-" json:"instance_load1"`
-	InstanceLoad5       float64                `bson:"-" json:"instance_load5"`
-	InstanceLoad15      float64                `bson:"-" json:"instance_load15"`
+	Id                  primitive.ObjectID       `bson:"_id" json:"id"`
+	Service             primitive.ObjectID       `bson:"service" json:"service"`
+	Unit                primitive.ObjectID       `bson:"unit" json:"unit"`
+	Spec                primitive.ObjectID       `bson:"spec" json:"spec"`
+	Kind                string                   `bson:"kind" json:"kind"`
+	State               string                   `bson:"state" json:"state"`
+	Status              string                   `bson:"status" json:"status"`
+	Node                primitive.ObjectID       `bson:"node" json:"node"`
+	Instance            primitive.ObjectID       `bson:"instance" json:"instance"`
+	InstanceData        *deployment.InstanceData `bson:"instance_data" json:"instance_data"`
+	NodeName            string                   `bson:"-" json:"node_name"`
+	InstanceName        string                   `bson:"-" json:"instance_name"`
+	InstanceRoles       []string                 `bson:"-" json:"instance_roles"`
+	InstanceMemory      int                      `bson:"-" json:"instance_memory"`
+	InstanceProcessors  int                      `bson:"-" json:"instance_processors"`
+	InstanceStatus      string                   `bson:"-" json:"instance_status"`
+	InstanceUptime      string                   `bson:"-" json:"instance_uptime"`
+	InstanceState       string                   `bson:"-" json:"instance_state"`
+	InstanceVirtState   string                   `bson:"-" json:"instance_virt_state"`
+	InstanceHeartbeat   time.Time                `bson:"-" json:"instance_heartbeat"`
+	InstanceMemoryUsage float64                  `bson:"-" json:"instance_memory_usage"`
+	InstanceHugePages   float64                  `bson:"-" json:"instance_hugepages"`
+	InstanceLoad1       float64                  `bson:"-" json:"instance_load1"`
+	InstanceLoad5       float64                  `bson:"-" json:"instance_load5"`
+	InstanceLoad15      float64                  `bson:"-" json:"instance_load15"`
 }
 
 func GetDeployments(db *database.Database, unitId primitive.ObjectID) (
