@@ -10,6 +10,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/shape"
 	"gopkg.in/yaml.v2"
@@ -88,7 +89,12 @@ func (u *Commit) Parse(db *database.Database,
 		return
 	}
 
-	if dataYaml.Kind != "instance" {
+	switch dataYaml.Kind {
+	case deployment.Instance:
+		break
+	case deployment.Image:
+		break
+	default:
 		errData = &errortypes.ErrorData{
 			Error:   "unit_kind_invalid",
 			Message: "Unit kind is invalid",
@@ -288,6 +294,15 @@ func (u *Commit) Parse(db *database.Database,
 	u.Kind = dataYaml.Kind
 	u.Count = dataYaml.Count
 	u.Instance = data
+
+	u.Count = dataYaml.Count
+	if u.Kind == ImageKind && u.Count != 0 {
+		errData = &errortypes.ErrorData{
+			Error:   "count_invalid",
+			Message: "Count not valid for image kind",
+		}
+		return
+	}
 
 	return
 }
