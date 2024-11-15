@@ -283,7 +283,16 @@ func getUserData(db *database.Database, inst *instance.Instance,
 
 	deploymentScript := ""
 	if deployUnit != nil {
-		if initial {
+		if deployUnit.Kind == deployment.Image {
+			deploymentScript = fmt.Sprintf(
+				deploymentScriptTmpl,
+				settings.Hypervisor.CliGuestPath,
+				fmt.Sprintf(
+					" && %s engine image&",
+					settings.Hypervisor.CliGuestPath,
+				),
+			)
+		} else if initial {
 			deploymentScript = fmt.Sprintf(
 				deploymentScriptTmpl,
 				settings.Hypervisor.CliGuestPath,
