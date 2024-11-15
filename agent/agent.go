@@ -9,6 +9,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/agent/engine"
 	"github.com/pritunl/pritunl-cloud/agent/imds"
 	"github.com/pritunl/pritunl-cloud/agent/logging"
+	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/tools/logger"
 )
 
@@ -88,9 +89,16 @@ func main() {
 			panic(err)
 		}
 
+		image := false
 		phase := engine.Reboot
-		if flag.Arg(1) == engine.Initial {
+		switch flag.Arg(1) {
+		case engine.Image:
+			image = true
 			phase = engine.Initial
+			break
+		case engine.Initial:
+			phase = engine.Initial
+			break
 		}
 
 		err = eng.Run(phase)
@@ -98,11 +106,27 @@ func main() {
 			return
 		}
 
-		err = ids.Run(eng)
+		if !image {
+			err = ids.Run(eng)
+			if err != nil {
+				logger.WithFields(logger.Fields{
+					"error": err,
+				}).Error("agent: Failed to run")
+				panic(err)
+			}
+		}
+
+		break
+	case "image":
+		ids := &imds.Imds{}
+
+		err := ids.Init()
 		if err != nil {
-			logger.WithFields(logger.Fields{
-				"error": err,
-			}).Error("agent: Failed to run")
+			panic(err)
+		}
+
+		err = ids.SyncStatus(types.Imaged)
+		if err != nil {
 			panic(err)
 		}
 
