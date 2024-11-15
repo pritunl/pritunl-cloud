@@ -4,4 +4,5 @@ const (
 	Initializing = "initializing"
 	Reloading    = "reloading"
 	Running      = "running"
+	Imaged       = "imaged"
 )
