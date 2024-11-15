@@ -183,7 +183,11 @@ func ManualSchedule(db *database.Database, unit *service.Unit, count int) (
 	}
 
 	switch unit.Kind {
-	case deployment.Instance:
+	case deployment.Instance, deployment.Image:
+		if unit.Kind == deployment.Image {
+			count = 1
+		}
+
 		schd := NewInstanceUnit(unit, spc)
 		err = schd.Schedule(db, count)
 		if err != nil {
