@@ -122,7 +122,12 @@ func SelectFields(obj interface{}, fields set.Set) (data bson.M) {
 			(field.Kind() == reflect.Pointer &&
 				field.Elem().Kind() == reflect.Struct) {
 
-			val := reflect.ValueOf(field.Interface()).Elem()
+			var val reflect.Value
+			if field.Kind() == reflect.Struct {
+				val = field
+			} else {
+				val = reflect.ValueOf(field.Interface()).Elem()
+			}
 
 			x := val.NumField()
 			for j := 0; j < x; j++ {
@@ -210,7 +215,12 @@ func SelectFieldsAll(obj interface{}, fields set.Set) (data bson.M) {
 			(field.Kind() == reflect.Pointer &&
 				field.Elem().Kind() == reflect.Struct) {
 
-			val := reflect.ValueOf(field.Interface()).Elem()
+			var val reflect.Value
+			if field.Kind() == reflect.Struct {
+				val = field
+			} else {
+				val = reflect.ValueOf(field.Interface()).Elem()
+			}
 
 			x := val.NumField()
 			for j := 0; j < x; j++ {
