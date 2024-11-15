@@ -219,6 +219,20 @@ func (m *Imds) Run(eng *engine.Engine) (err error) {
 	}
 }
 
+func (m *Imds) SyncStatus(status string) (err error) {
+	SetStatus(status)
+
+	err = m.Sync()
+	if err != nil {
+		logger.WithFields(logger.Fields{
+			"status": status,
+			"error":  err,
+		}).Error("agent: Failed to sync status")
+	}
+
+	return
+}
+
 func (m *Imds) Init() (err error) {
 	confData, err := utils.Read(constants.ImdsConfPath)
 	if err != nil {
