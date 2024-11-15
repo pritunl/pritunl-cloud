@@ -5,6 +5,7 @@ import (
 
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
+	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/sirupsen/logrus"
@@ -118,7 +119,51 @@ func (d *Deployments) restore(db *database.Database,
 	return
 }
 
+func (d *Deployments) image(db *database.Database,
+	deply *deployment.Deployment) (err error) {
+
+	if deply.Node != d.stat.Node().Id {
+		return
+	}
+
+	inst := d.stat.GetInstace(deply.Instance)
+	if inst == nil {
+		return
+	}
+
+	if inst.Guest == nil {
+		return
+	}
+
+	if inst.IsActive() && inst.Guest.Status == types.Imaged {
+		if inst.State != instance.Stop {
+			logrus.WithFields(logrus.Fields{
+				"instance_id": inst.Id.Hex(),
+			}).Info("deploy: Stopping instance for deployment image")
+
+			err = instance.SetState(db, inst.Id, instance.Stop)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"instance_id": inst.Id.Hex(),
+					"error":       err,
+				}).Error("deploy: Failed to set instance state")
+
+				return
+			}
+		}
+	}
+
+	if !inst.IsActive() && inst.Guest.Status == types.Imaged {
+		logrus.WithFields(logrus.Fields{
+			"instance_id": inst.Id.Hex(),
+		}).Info("deploy: Creating deployment image")
+	}
+
+	return
+}
+
 func (d *Deployments) Deploy(db *database.Database) (err error) {
+	activeDeployments := d.stat.DeploymentsDeployed()
 	inactiveDeployments := d.stat.DeploymentsInactive()
 
 	for _, deply := range inactiveDeployments {
@@ -141,6 +186,17 @@ func (d *Deployments) Deploy(db *database.Database) (err error) {
 				return
 			}
 			break
+		}
+	}
+
+	for _, deply := range activeDeployments {
+		if deply.Kind != deployment.Image {
+			continue
+		}
+
+		err = d.image(db, deply)
+		if err != nil {
+			return
 		}
 	}
 
