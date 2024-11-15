@@ -31,6 +31,7 @@ type Disk struct {
 	Organization     primitive.ObjectID `bson:"organization,omitempty" json:"organization"`
 	Instance         primitive.ObjectID `bson:"instance,omitempty" json:"instance"`
 	SourceInstance   primitive.ObjectID `bson:"source_instance,omitempty" json:"source_instance"`
+	Deployment       primitive.ObjectID `bson:"deployment,omitempty" json:"deployment"`
 	DeleteProtection bool               `bson:"delete_protection" json:"delete_protection"`
 	Image            primitive.ObjectID `bson:"image,omitempty" json:"image"`
 	RestoreImage     primitive.ObjectID `bson:"restore_image,omitempty" json:"restore_image"`
