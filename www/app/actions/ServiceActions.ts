@@ -283,7 +283,7 @@ export function deployUnit(serviceId: string, unitId: string,
 				}
 
 				if (err) {
-					Alert.errorRes(res, 'Failed to delete deployments');
+					Alert.errorRes(res, 'Failed to create deployments');
 					reject(err);
 					return;
 				}
