@@ -1,6 +1,6 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
-import * as ReactRouter from 'react-router-dom';
+import RouterLink from './RouterLink';
 import * as MiscUtils from '../utils/MiscUtils';
 import * as UserTypes from '../types/UserTypes';
 
@@ -124,9 +124,9 @@ export default class User extends React.Component<Props, {}> {
 						/>
 						<span className="bp5-control-indicator"/>
 					</label>
-					<ReactRouter.Link to={'/user/' + user.id} style={css.nameLink}>
+					<RouterLink to={'/user/' + user.id} style={css.nameLink}>
 						{user.username}
-					</ReactRouter.Link>
+					</RouterLink>
 				</div>
 			</div>
 			<div className="bp5-cell" style={css.type}>
