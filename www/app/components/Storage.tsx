@@ -260,6 +260,7 @@ export default class Storage extends React.Component<Props, State> {
 					>
 						<option value="public">Public</option>
 						<option value="private">Private</option>
+						<option value="web">Web</option>
 					</PageSelect>
 					<PageInput
 						disabled={this.state.disabled}
