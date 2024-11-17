@@ -106,7 +106,7 @@ type Instance struct {
 	SpicePassword       string             `bson:"spice_password" json:"spice_password"`
 	SpicePort           int                `bson:"spice_port" json:"spice_port"`
 	Gui                 bool               `bson:"gui" json:"gui"`
-	Deployment          primitive.ObjectID `bson:"deployment" json:"deployment"`
+	Deployment          primitive.ObjectID `bson:"deployment,omitempty" json:"deployment"`
 	Virt                *vm.VirtualMachine `bson:"-" json:"-"`
 	curVpc              primitive.ObjectID `bson:"-" json:"-"`
 	curSubnet           primitive.ObjectID `bson:"-" json:"-"`
