@@ -8,6 +8,7 @@ export const CHANGE = 'alert.change';
 export interface Alert {
 	id: string;
 	name?: string;
+	comment?: string;
 	organization?: string;
 	roles?: string[];
 	resource?: string;
@@ -21,6 +22,7 @@ export interface Alert {
 export interface Filter {
 	id?: string;
 	name?: string;
+	comment?: string;
 	role?: string;
 	organization?: string;
 }
