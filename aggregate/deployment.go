@@ -137,7 +137,7 @@ func GetDeployments(db *database.Database, unitId primitive.ObjectID) (
 			deply.InstanceStatus = inst.Status
 			deply.InstanceUptime = inst.Uptime
 			deply.InstanceState = inst.State
-			deply.InstanceState = inst.VirtState
+			deply.InstanceVirtState = inst.VirtState
 
 			if inst.Guest != nil {
 				deply.InstanceGuestStatus = inst.Guest.Status
