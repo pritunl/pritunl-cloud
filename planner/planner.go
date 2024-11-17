@@ -10,6 +10,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/eval"
+	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/plan"
 	"github.com/pritunl/pritunl-cloud/service"
@@ -151,7 +152,9 @@ func (p *Planner) checkInstance(db *database.Database,
 	if inst.Guest != nil {
 		heartbeatTtl := time.Duration(
 			settings.System.InstanceTimestampTtl) * time.Second
-		if time.Since(inst.Guest.Heartbeat) <= heartbeatTtl {
+		if inst.Guest.Status == types.Running &&
+			time.Since(inst.Guest.Heartbeat) <= heartbeatTtl {
+
 			status = deployment.Healthy
 		}
 	}
