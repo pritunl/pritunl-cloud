@@ -22,6 +22,7 @@ const css = {
 		resize: 'none',
 		fontSize: Theme.monospaceSize,
 		fontFamily: Theme.monospaceFont,
+		fontWeight: Theme.monospaceWeight,
 	} as React.CSSProperties,
 };
 
