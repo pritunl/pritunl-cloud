@@ -38,6 +38,7 @@ type InstanceData struct {
 }
 
 type ImageData struct {
+	State string `bson:"state" json:"state"`
 }
 
 type Action struct {
