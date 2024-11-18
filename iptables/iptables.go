@@ -730,6 +730,90 @@ func generateVirt(vc *vpc.Vpc, namespace, iface, addr, addr6 string,
 		Holds6:           [][]string{},
 	}
 
+	cmd := rules.newCommand()
+	cmd = append(cmd,
+		"-p", "ipv6-icmp",
+	)
+	if rules.Interface != "host" {
+		cmd = append(cmd,
+			"-m", "physdev",
+			"--physdev-out", rules.Interface,
+			"--physdev-is-bridged",
+		)
+	}
+	cmd = append(cmd,
+		"-m", "icmp6",
+		"--icmpv6-type", "133",
+	)
+	cmd = rules.commentCommandHeader(cmd)
+	cmd = append(cmd,
+		"-j", "ACCEPT",
+	)
+	rules.Header6 = append(rules.Header6, cmd)
+
+	cmd = rules.newCommand()
+	cmd = append(cmd,
+		"-p", "ipv6-icmp",
+	)
+	if rules.Interface != "host" {
+		cmd = append(cmd,
+			"-m", "physdev",
+			"--physdev-out", rules.Interface,
+			"--physdev-is-bridged",
+		)
+	}
+	cmd = append(cmd,
+		"-m", "icmp6",
+		"--icmpv6-type", "134",
+	)
+	cmd = rules.commentCommandHeader(cmd)
+	cmd = append(cmd,
+		"-j", "ACCEPT",
+	)
+	rules.Header6 = append(rules.Header6, cmd)
+
+	cmd = rules.newCommand()
+	cmd = append(cmd,
+		"-p", "ipv6-icmp",
+	)
+	if rules.Interface != "host" {
+		cmd = append(cmd,
+			"-m", "physdev",
+			"--physdev-out", rules.Interface,
+			"--physdev-is-bridged",
+		)
+	}
+	cmd = append(cmd,
+		"-m", "icmp6",
+		"--icmpv6-type", "135",
+	)
+	cmd = rules.commentCommandHeader(cmd)
+	cmd = append(cmd,
+		"-j", "ACCEPT",
+	)
+	rules.Header6 = append(rules.Header6, cmd)
+
+	cmd = rules.newCommand()
+	cmd = append(cmd,
+		"-p", "ipv6-icmp",
+	)
+	if rules.Interface != "host" {
+		cmd = append(cmd,
+			"-m", "physdev",
+			"--physdev-out", rules.Interface,
+			"--physdev-is-bridged",
+		)
+	}
+	cmd = append(cmd,
+		"-m", "icmp6",
+		"--icmpv6-type", "136",
+	)
+	cmd = rules.commentCommandHeader(cmd)
+	cmd = append(cmd,
+		"-j", "ACCEPT",
+	)
+	rules.Header6 = append(rules.Header6, cmd)
+
 	if sourceDestCheck {
 		if addr != "" {
 			cmd := rules.newCommand()
@@ -806,7 +890,7 @@ func generateVirt(vc *vpc.Vpc, namespace, iface, addr, addr6 string,
 		rules.SourceDestCheck6 = append(rules.SourceDestCheck6, cmd)
 	}
 
-	cmd := rules.newCommand()
+	cmd = rules.newCommand()
 	if rules.Interface != "host" {
 		cmd = append(cmd,
 			"-m", "physdev",
@@ -1136,6 +1220,74 @@ func generateInternal(namespace, iface string, nat, nat6, dhcp, dhcp6 bool,
 		)
 	}
 	cmd = append(cmd,
+		"-p", "ipv6-icmp",
+		"-m", "icmp6",
+		"--icmpv6-type", "133",
+	)
+	cmd = rules.commentCommandHeader(cmd)
+	cmd = append(cmd,
+		"-j", "ACCEPT",
+	)
+	rules.Header6 = append(rules.Header6, cmd)
+
+	cmd = rules.newCommand()
+	if rules.Interface != "host" {
+		cmd = append(cmd,
+			"-i", rules.Interface,
+		)
+	}
+	cmd = append(cmd,
+		"-p", "ipv6-icmp",
+		"-m", "icmp6",
+		"--icmpv6-type", "134",
+	)
+	cmd = rules.commentCommandHeader(cmd)
+	cmd = append(cmd,
+		"-j", "ACCEPT",
+	)
+	rules.Header6 = append(rules.Header6, cmd)
+
+	cmd = rules.newCommand()
+	if rules.Interface != "host" {
+		cmd = append(cmd,
+			"-i", rules.Interface,
+		)
+	}
+	cmd = append(cmd,
+		"-p", "ipv6-icmp",
+		"-m", "icmp6",
+		"--icmpv6-type", "135",
+	)
+	cmd = rules.commentCommandHeader(cmd)
+	cmd = append(cmd,
+		"-j", "ACCEPT",
+	)
+	rules.Header6 = append(rules.Header6, cmd)
+
+	cmd = rules.newCommand()
+	if rules.Interface != "host" {
+		cmd = append(cmd,
+			"-i", rules.Interface,
+		)
+	}
+	cmd = append(cmd,
+		"-p", "ipv6-icmp",
+		"-m", "icmp6",
+		"--icmpv6-type", "136",
+	)
+	cmd = rules.commentCommandHeader(cmd)
+	cmd = append(cmd,
+		"-j", "ACCEPT",
+	)
+	rules.Header6 = append(rules.Header6, cmd)
+
+	cmd = rules.newCommand()
+	if rules.Interface != "host" {
+		cmd = append(cmd,
+			"-i", rules.Interface,
+		)
+	}
+	cmd = append(cmd,
 		"-m", "conntrack",
 		"--ctstate", "RELATED,ESTABLISHED",
 	)
@@ -1400,6 +1552,74 @@ func generate(namespace, iface string, ingress []*firewall.Rule) (
 	}
 
 	cmd := rules.newCommand()
+	if rules.Interface != "host" {
+		cmd = append(cmd,
+			"-o", rules.Interface,
+		)
+	}
+	cmd = append(cmd,
+		"-p", "ipv6-icmp",
+		"-m", "icmp6",
+		"--icmpv6-type", "133",
+	)
+	cmd = rules.commentCommandHeader(cmd)
+	cmd = append(cmd,
+		"-j", "ACCEPT",
+	)
+	rules.Header6 = append(rules.Header6, cmd)
+
+	cmd = rules.newCommand()
+	if rules.Interface != "host" {
+		cmd = append(cmd,
+			"-o", rules.Interface,
+		)
+	}
+	cmd = append(cmd,
+		"-p", "ipv6-icmp",
+		"-m", "icmp6",
+		"--icmpv6-type", "134",
+	)
+	cmd = rules.commentCommandHeader(cmd)
+	cmd = append(cmd,
+		"-j", "ACCEPT",
+	)
+	rules.Header6 = append(rules.Header6, cmd)
+
+	cmd = rules.newCommand()
+	if rules.Interface != "host" {
+		cmd = append(cmd,
+			"-o", rules.Interface,
+		)
+	}
+	cmd = append(cmd,
+		"-p", "ipv6-icmp",
+		"-m", "icmp6",
+		"--icmpv6-type", "135",
+	)
+	cmd = rules.commentCommandHeader(cmd)
+	cmd = append(cmd,
+		"-j", "ACCEPT",
+	)
+	rules.Header6 = append(rules.Header6, cmd)
+
+	cmd = rules.newCommand()
+	if rules.Interface != "host" {
+		cmd = append(cmd,
+			"-o", rules.Interface,
+		)
+	}
+	cmd = append(cmd,
+		"-p", "ipv6-icmp",
+		"-m", "icmp6",
+		"--icmpv6-type", "136",
+	)
+	cmd = rules.commentCommandHeader(cmd)
+	cmd = append(cmd,
+		"-j", "ACCEPT",
+	)
+	rules.Header6 = append(rules.Header6, cmd)
+
+	cmd = rules.newCommand()
 	if rules.Interface != "host" {
 		cmd = append(cmd,
 			"-o", rules.Interface,
