@@ -3,8 +3,10 @@ package deploy
 import (
 	"time"
 
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
+	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/state"
@@ -135,28 +137,72 @@ func (d *Deployments) image(db *database.Database,
 		return
 	}
 
-	if inst.IsActive() && inst.Guest.Status == types.Imaged {
-		if inst.State != instance.Stop {
+	if inst.IsActive() && inst.Guest.Status == types.Imaged &&
+		inst.State != instance.Stop {
+
+		logrus.WithFields(logrus.Fields{
+			"instance_id": inst.Id.Hex(),
+		}).Info("deploy: Stopping instance for deployment image")
+
+		err = instance.SetState(db, inst.Id, instance.Stop)
+		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"instance_id": inst.Id.Hex(),
-			}).Info("deploy: Stopping instance for deployment image")
+				"error":       err,
+			}).Error("deploy: Failed to set instance state")
 
-			err = instance.SetState(db, inst.Id, instance.Stop)
+			return
+		}
+
+		if deply.GetImageState() == "" {
+			deply.SetImageState(deployment.Ready)
+			err = deply.CommitFields(db, set.NewSet("image_data.state"))
 			if err != nil {
-				logrus.WithFields(logrus.Fields{
-					"instance_id": inst.Id.Hex(),
-					"error":       err,
-				}).Error("deploy: Failed to set instance state")
-
 				return
 			}
 		}
 	}
 
-	if !inst.IsActive() && inst.Guest.Status == types.Imaged {
+	if deply.State == deployment.Deployed &&
+		deply.GetImageState() == deployment.Ready &&
+		!inst.IsActive() && inst.Guest.Status == types.Imaged {
+
 		logrus.WithFields(logrus.Fields{
 			"instance_id": inst.Id.Hex(),
 		}).Info("deploy: Creating deployment image")
+
+		dsk, e := disk.GetInstanceIndex(db, inst.Id, "0")
+		if e != nil {
+			if _, ok := e.(*database.NotFoundError); ok {
+				logrus.WithFields(logrus.Fields{
+					"instance_id": inst.Id.Hex(),
+					"error":       err,
+				}).Error("deploy: Failed to find instance disk for image")
+
+				deply.SetImageState(deployment.Failed)
+				err = deply.CommitFields(db, set.NewSet("image_data.state"))
+				if err != nil {
+					return
+				}
+
+				dsk = nil
+				err = nil
+			} else {
+				return
+			}
+		}
+
+		dsk.State = disk.Snapshot
+		err = dsk.CommitFields(db, set.NewSet("state"))
+		if err != nil {
+			return
+		}
+
+		deply.SetImageState(deployment.Snapshot)
+		err = deply.CommitFields(db, set.NewSet("image_data.state"))
+		if err != nil {
+			return
+		}
 	}
 
 	return
