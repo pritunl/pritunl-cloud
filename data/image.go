@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	minio "github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
@@ -18,6 +19,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
+	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
@@ -1007,6 +1009,7 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk,
 		Name: fmt.Sprintf("%s-%s", dsk.Name,
 			time.Now().Format("2006-01-02T15:04:05")),
 		Organization: dsk.Organization,
+		Deployment:   dsk.Deployment,
 		Type:         storage.Private,
 		Firmware:     image.Unknown,
 		Storage:      store.Id,
@@ -1098,6 +1101,22 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk,
 	err = img.Upsert(db)
 	if err != nil {
 		return
+	}
+
+	if !dsk.Deployment.IsZero() {
+		deply, e := deployment.Get(db, dsk.Deployment)
+		if e != nil {
+			err = e
+			return
+		}
+
+		deply.Image = img.Id
+		deply.SetImageState(deployment.Complete)
+		err = deply.CommitFields(db, set.NewSet(
+			"image", "image_data.state"))
+		if err != nil {
+			return
+		}
 	}
 
 	event.PublishDispatch(db, "image.change")
