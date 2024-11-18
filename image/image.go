@@ -20,7 +20,7 @@ type Image struct {
 	Disk         primitive.ObjectID `bson:"disk,omitempty" json:"disk"`
 	Name         string             `bson:"name" json:"name"`
 	Comment      string             `bson:"comment" json:"comment"`
-	Organization primitive.ObjectID `bson:"organization" json:"organization"`
+	Organization primitive.ObjectID `bson:"organization,omitempty" json:"organization"`
 	Signed       bool               `bson:"signed" json:"signed"`
 	Type         string             `bson:"type" json:"type"`
 	Firmware     string             `bson:"firmware" json:"firmware"`
