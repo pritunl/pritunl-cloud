@@ -64,7 +64,7 @@ func main() {
 			panic(err)
 		}
 
-		for i := 0; i < 150; i++ {
+		for i := 0; i < 900; i++ {
 			time.Sleep(200 * time.Millisecond)
 
 			err = ids.Sync()
