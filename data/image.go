@@ -1119,6 +1119,13 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk,
 		}
 	}
 
+	logrus.WithFields(logrus.Fields{
+		"disk_id":    dsk.Id.Hex(),
+		"disk_path":  dskPth,
+		"storage_id": store.Id.Hex(),
+		"object_key": img.Key,
+	}).Info("data: Uploaded disk snapshot")
+
 	event.PublishDispatch(db, "image.change")
 
 	return
