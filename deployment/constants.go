@@ -12,6 +12,11 @@ const (
 	Archived = "archived"
 	Restore  = "restore"
 
+	Ready    = "ready"
+	Snapshot = "snapshot"
+	Complete = "complete"
+	Failed   = "failed"
+
 	Instance = "instance"
 	Image    = "image"
 
