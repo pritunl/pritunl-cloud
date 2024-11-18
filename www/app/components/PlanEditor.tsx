@@ -63,7 +63,7 @@ export default class PlanStatement extends React.Component<Props, {}> {
 					folding: false,
 					fontSize: 12,
 					fontFamily: Theme.monospaceFont,
-					fontWeight: "500",
+					fontWeight: Theme.monospaceWeight,
 					tabSize: 4,
 					detectIndentation: false,
 					scrollBeyondLastLine: false,
