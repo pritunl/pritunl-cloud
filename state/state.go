@@ -469,7 +469,7 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 	runtimes.State5 = time.Since(start)
 	start = time.Now()
 
-	s.arpRecords = arp.BuildState(s.instances, s.vpcIpsMap)
+	s.arpRecords = arp.BuildState(s.instances, s.vpcsMap, s.vpcIpsMap)
 
 	deployments, err := deployment.GetAll(db, &bson.M{
 		"node": node.Self.Id,
