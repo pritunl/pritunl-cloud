@@ -379,6 +379,64 @@ func (v *Vpc) Validate(db *database.Database) (
 	}
 	v.Maps = maps
 
+	arps := []*Arp{}
+	ips := set.NewSet()
+	for _, ap := range v.Arps {
+		if ap.Ip == "" && ap.Mac == "" {
+			continue
+		}
+
+		arpIp := net.ParseIP(ap.Ip)
+		if arpIp == nil {
+			errData = &errortypes.ErrorData{
+				Error:   "arp_ip_invalid",
+				Message: "Arp IP invalid",
+			}
+			return
+		}
+		ap.Ip = arpIp.String()
+
+		if ips.Contains(ap.Ip) {
+			errData = &errortypes.ErrorData{
+				Error:   "arp_duplicate_destination",
+				Message: "Duplicate arp destinations",
+			}
+			return
+		}
+		ips.Add(ap.Ip)
+
+		arpMac, e := net.ParseMAC(ap.Mac)
+		if e != nil {
+			errData = &errortypes.ErrorData{
+				Error:   "arp_mac_invalid",
+				Message: "Arp mac invalid",
+			}
+			return
+		}
+		ap.Mac = arpMac.String()
+
+		if !strings.Contains(ap.Ip, ":") {
+			if !network.Contains(arpIp) {
+				errData = &errortypes.ErrorData{
+					Error:   "arp_ip_subnet_invalid",
+					Message: "ARP IP outside of VPC network",
+				}
+				return
+			}
+		} else {
+			if !network6.Contains(arpIp) {
+				errData = &errortypes.ErrorData{
+					Error:   "arp_ip6_subnet_invalid",
+					Message: "ARP IP outside of VPC network",
+				}
+				return
+			}
+		}
+
+		arps = append(arps, ap)
+	}
+	v.Arps = arps
+
 	return
 }
 
