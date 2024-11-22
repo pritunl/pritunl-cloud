@@ -17,6 +17,7 @@ export interface Vpc {
 	datacenter?: string;
 	routes?: Route[];
 	maps?: Map[];
+	arps?: Arp[];
 }
 
 export interface Subnet {
@@ -33,6 +34,11 @@ export interface Route {
 export interface Map {
 	destination?: string;
 	target?: string;
+}
+
+export interface Arp {
+	ip?: string;
+	mac?: string;
 }
 
 export interface Filter {
