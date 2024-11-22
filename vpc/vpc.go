@@ -29,6 +29,11 @@ type Map struct {
 	Target      string `bson:"target" json:"target"`
 }
 
+type Arp struct {
+	Ip  string `bson:"ip" json:"ip"`
+	Mac string `bson:"mac" json:"mac"`
+}
+
 type Vpc struct {
 	Id               primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Name             string             `bson:"name" json:"name"`
@@ -41,6 +46,7 @@ type Vpc struct {
 	Datacenter       primitive.ObjectID `bson:"datacenter" json:"datacenter"`
 	Routes           []*Route           `bson:"routes" json:"routes"`
 	Maps             []*Map             `bson:"maps" json:"maps"`
+	Arps             []*Arp             `bson:"arps" json:"arps"`
 	DeleteProtection bool               `bson:"delete_protection" json:"delete_protection"`
 	curSubnets       []*Subnet          `bson:"-" json:"-"`
 }
