@@ -73,6 +73,7 @@ func GetRecords(namespace string) (records set.Set, err error) {
 }
 
 func BuildState(instances []*instance.Instance,
+	vpcsMap map[primitive.ObjectID]*vpc.Vpc,
 	vpcIpsMap map[primitive.ObjectID][]*vpc.VpcIp) (
 	recrds map[string]set.Set) {
 
@@ -85,6 +86,7 @@ func BuildState(instances []*instance.Instance,
 
 		for i, adapter := range inst.Virt.NetworkAdapters {
 			namespace := vm.GetNamespace(inst.Id, i)
+			vc := vpcsMap[adapter.Vpc]
 			vpcIps := vpcIpsMap[adapter.Vpc]
 
 			newRecrds := set.NewSet()
@@ -105,6 +107,15 @@ func BuildState(instances []*instance.Instance,
 					Ip:  addr.String(),
 					Mac: vm.GetMacAddr(vpcIp.Instance, adapter.Vpc),
 				})
+			}
+
+			if vc != nil && vc.Arps != nil {
+				for _, ap := range vc.Arps {
+					newRecrds.Add(Record{
+						Ip:  ap.Ip,
+						Mac: ap.Mac,
+					})
+				}
 			}
 
 			recrds[namespace] = newRecrds
