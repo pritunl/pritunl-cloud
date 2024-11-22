@@ -302,6 +302,26 @@ func (v *Vpc) Validate(db *database.Database) (
 			return
 		}
 
+		_, destination, e := net.ParseCIDR(mp.Destination)
+		if e != nil {
+			errData = &errortypes.ErrorData{
+				Error:   "map_destination_invalid",
+				Message: "Map destination invalid",
+			}
+			return
+		}
+		mp.Destination = destination.String()
+
+		target := net.ParseIP(mp.Target)
+		if target == nil {
+			errData = &errortypes.ErrorData{
+				Error:   "map_target_invalid",
+				Message: "Map target invalid",
+			}
+			return
+		}
+		mp.Target = target.String()
+
 		if destinations.Contains(mp.Destination) {
 			errData = &errortypes.ErrorData{
 				Error:   "map_duplicate_destination",
@@ -321,16 +341,6 @@ func (v *Vpc) Validate(db *database.Database) (
 			return
 		}
 
-		_, destination, e := net.ParseCIDR(mp.Destination)
-		if e != nil {
-			errData = &errortypes.ErrorData{
-				Error:   "map_destination_invalid",
-				Message: "Map destination invalid",
-			}
-			return
-		}
-		mp.Destination = destination.String()
-
 		if mp.Destination == "0.0.0.0/0" || mp.Destination == "::/0" {
 			errData = &errortypes.ErrorData{
 				Error:   "map_destination_invalid",
@@ -338,16 +348,6 @@ func (v *Vpc) Validate(db *database.Database) (
 			}
 			return
 		}
-
-		target := net.ParseIP(mp.Target)
-		if target == nil {
-			errData = &errortypes.ErrorData{
-				Error:   "map_target_invalid",
-				Message: "Map target invalid",
-			}
-			return
-		}
-		mp.Target = target.String()
 
 		if mp.Target == "0.0.0.0" {
 			errData = &errortypes.ErrorData{
