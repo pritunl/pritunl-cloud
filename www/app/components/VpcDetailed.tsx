@@ -8,6 +8,7 @@ import DatacentersStore from "../stores/DatacentersStore";
 import OrganizationsStore from "../stores/OrganizationsStore";
 import VpcRoute from './VpcRoute';
 import VpcMap from './VpcMap';
+import VpcArp from './VpcArp';
 import VpcSubnet from './VpcSubnet';
 import PageInput from './PageInput';
 import PageInfo from './PageInfo';
@@ -423,6 +424,106 @@ export default class VpcDetailed extends React.Component<Props, State> {
 		});
 	}
 
+	onAddArp = (i: number): void => {
+		let vpc: VpcTypes.Vpc;
+
+		if (this.state.changed) {
+			vpc = {
+				...this.state.vpc,
+			};
+		} else {
+			vpc = {
+				...this.props.vpc,
+			};
+		}
+
+		let arps = [
+			...(vpc.arps || []),
+		];
+
+		if (arps.length === 0) {
+			arps = [{}];
+		}
+
+		arps.splice(i + 1, 0, {} as VpcTypes.Arp);
+		vpc.arps = arps;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			vpc: vpc,
+		});
+	}
+
+	onChangeArp(i: number, arp: VpcTypes.Arp): void {
+		let vpc: VpcTypes.Vpc;
+
+		if (this.state.changed) {
+			vpc = {
+				...this.state.vpc,
+			};
+		} else {
+			vpc = {
+				...this.props.vpc,
+			};
+		}
+
+		let arps = [
+			...(vpc.arps || []),
+		];
+
+		if (arps.length === 0) {
+			arps = [{}];
+		}
+
+		arps[i] = arp;
+
+		vpc.arps = arps;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			vpc: vpc,
+		});
+	}
+
+	onRemoveArp(i: number): void {
+		let vpc: VpcTypes.Vpc;
+
+		if (this.state.changed) {
+			vpc = {
+				...this.state.vpc,
+			};
+		} else {
+			vpc = {
+				...this.props.vpc,
+			};
+		}
+
+		let arps = [
+			...(vpc.arps || []),
+		];
+
+		if (arps.length !== 0) {
+			arps.splice(i, 1);
+		}
+
+		if (arps.length === 0) {
+			arps = [{}];
+		}
+
+		vpc.arps = arps;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			vpc: vpc,
+		});
+	}
+
 	onSave = (): void => {
 		this.setState({
 			...this.state,
@@ -576,6 +677,32 @@ export default class VpcDetailed extends React.Component<Props, State> {
 			);
 		}
 
+		let arps = (vpc.arps || []);
+		if (arps.length === 0) {
+			arps.push({});
+		}
+
+		let arpsElem: JSX.Element[] = [];
+		for (let i = 0; i < arps.length; i++) {
+			let index = i;
+
+			arpsElem.push(
+				<VpcArp
+					key={index}
+					arp={arps[index]}
+					onChange={(state: VpcTypes.Arp): void => {
+						this.onChangeArp(index, state);
+					}}
+					onAdd={(): void => {
+						this.onAddArp(index);
+					}}
+					onRemove={(): void => {
+						this.onRemoveArp(index);
+					}}
+				/>,
+			);
+		}
+
 		let fields: PageInfos.Field[] = [
 			{
 				label: 'ID',
@@ -714,6 +841,16 @@ export default class VpcDetailed extends React.Component<Props, State> {
 					</label>
 					<div style={css.list}>
 						{routes}
+					</div>
+					<label style={css.itemsLabel}>
+						Custom ARP
+						<Help
+							title="Custom ARP"
+							content="Custom ARP entries for external resources on VPC VLAN."
+						/>
+					</label>
+					<div style={css.list}>
+						{arpsElem}
 					</div>
 				</div>
 			</div>
