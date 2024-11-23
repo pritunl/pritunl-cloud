@@ -17,6 +17,7 @@ export interface Service {
 export interface Unit {
 	id?: string;
 	name?: string;
+	kind?: string;
 	spec?: string;
 	last_commit?: string;
 	deploy_commit?: string;
