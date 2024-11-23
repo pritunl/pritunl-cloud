@@ -5,6 +5,7 @@ pritunl-cloud changelog
 
 Add secrets storage
 Add LVM storage pools
+Add DNS TXT verification for Lets Encrypt
 Add support for custom vpc arp entries
 
 Version 1.2.2933.86 2023-12-05
