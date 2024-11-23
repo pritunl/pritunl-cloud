@@ -13,6 +13,36 @@ func (n *NetConf) bridgeNet(db *database.Database) (err error) {
 		return
 	}
 
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", n.Namespace,
+		"sysctl", "-w",
+		"net.ipv4.conf.br0.arp_accept=0",
+	)
+	if err != nil {
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", n.Namespace,
+		"sysctl", "-w",
+		"net.ipv4.conf.br0.arp_ignore=2",
+	)
+	if err != nil {
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", n.Namespace,
+		"sysctl", "-w",
+		"net.ipv4.conf.br0.arp_filter=1",
+	)
+	if err != nil {
+		return
+	}
+
 	return
 }
 
