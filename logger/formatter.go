@@ -5,8 +5,8 @@ import (
 	"sort"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/pritunl/pritunl-cloud/colorize"
+	"github.com/sirupsen/logrus"
 )
 
 var (
