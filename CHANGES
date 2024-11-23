@@ -4,6 +4,7 @@ pritunl-cloud changelog
 <%= version %>
 
 Add secrets storage
+Add LVM storage pools
 Add support for custom vpc arp entries
 
 Version 1.2.2933.86 2023-12-05
