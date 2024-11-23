@@ -96,6 +96,13 @@ export default class ServiceUnit extends React.Component<Props, State> {
 			return <div></div>
 		}
 
+		let label = "deployment"
+		let labelTitle = "Deployment"
+		if (this.props.unit.kind == "image") {
+			label = "image"
+			labelTitle = "Image"
+		}
+
 		let cards: JSX.Element[] = []
 		let deployments: ServiceTypes.Deployment[]
 		if (this.props.unit && this.props.unit.deployments) {
@@ -110,8 +117,9 @@ export default class ServiceUnit extends React.Component<Props, State> {
 					<NonState
 						hidden={false}
 						iconClass="bp5-icon-dashboard"
-						title="No deployments"
-						description="Update unit spec to create deployments."
+						title={"No " + label + "s"}
+						description={"Update unit spec to create " +
+							label + "s."}
 						noDelay={true}
 					/>
 				</div>
