@@ -1007,7 +1007,7 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk,
 	img := &image.Image{
 		Id: imgId,
 		Name: fmt.Sprintf("%s-%s", dsk.Name,
-			time.Now().Format("2006-01-02T15:04:05")),
+			time.Now().Format("20060102-150405")),
 		Organization: dsk.Organization,
 		Deployment:   dsk.Deployment,
 		Type:         storage.Private,
