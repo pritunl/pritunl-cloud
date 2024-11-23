@@ -531,11 +531,16 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 			}}
 		/>)
 
+		let deploymentsLabel = "Deployments"
+		if (activeUnit && activeUnit.kind === "image") {
+			deploymentsLabel = "Builds"
+		}
+
 		menuItems.push(<li
 			key="menu-deployments-header"
 			className="bp5-menu-header"
 		>
-			<h6 className="bp5-heading">Deployments</h6>
+			<h6 className="bp5-heading">{deploymentsLabel}</h6>
 		</li>)
 		menuItems.push(<Blueprint.MenuDivider
 			key="menu-deployments-divider"
@@ -550,7 +555,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 				onClick={(): void => {
 					this.onUnit()
 				}}
-				text={"View Deployments"}
+				text={"View " + deploymentsLabel}
 			/>)
 		}
 
