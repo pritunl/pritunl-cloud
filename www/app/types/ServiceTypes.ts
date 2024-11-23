@@ -27,6 +27,7 @@ export interface Unit {
 
 export interface ServiceUnit {
 	id?: string;
+	kind?: string;
 	service?: string;
 	commits?: Commit[]
 	deployments?: Deployment[];
