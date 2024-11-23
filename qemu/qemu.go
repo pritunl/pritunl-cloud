@@ -328,7 +328,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 		cmd = append(cmd, q.Cpu)
 	}
 
-	cmd = append(cmd, "-no-hpet")
+	//cmd = append(cmd, "-no-hpet")
 	cmd = append(cmd, "-rtc", "base=utc,driftfix=slew")
 	cmd = append(cmd, "-msg", "timestamp=on")
 	cmd = append(cmd, "-global", "kvm-pit.lost_tick_policy=delay")
