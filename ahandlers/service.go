@@ -281,6 +281,7 @@ func servicesGet(c *gin.Context) {
 type ServiceUnit struct {
 	Id          primitive.ObjectID      `json:"id"`
 	Service     primitive.ObjectID      `json:"service"`
+	Kind        string                  `bson:"kind" json:"kind"`
 	Commits     []*spec.Commit          `json:"commits"`
 	Deployments []*aggregate.Deployment `json:"deployments"`
 }
@@ -329,6 +330,7 @@ func serviceUnitGet(c *gin.Context) {
 	srvcUnit := &ServiceUnit{
 		Id:          unit.Id,
 		Service:     srvc.Id,
+		Kind:        unit.Kind,
 		Commits:     commits,
 		Deployments: deploys,
 	}
