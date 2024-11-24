@@ -18,6 +18,10 @@ const css = {
 		width: '200px',
 		margin: '5px',
 	} as React.CSSProperties,
+	shortInput: {
+		width: '180px',
+		margin: '5px',
+	} as React.CSSProperties,
 	role: {
 		width: '150px',
 		margin: '5px',
@@ -93,6 +97,24 @@ export default class AlertsFilter extends React.Component<Props, {}> {
 						filter.role = val;
 					} else {
 						delete filter.role;
+					}
+
+					this.props.onFilter(filter);
+				}}
+			/>
+			<SearchInput
+				style={css.shortInput}
+				placeholder="Comment"
+				value={this.props.filter.comment}
+				onChange={(val: string): void => {
+					let filter = {
+						...this.props.filter,
+					};
+
+					if (val) {
+						filter.comment = val;
+					} else {
+						delete filter.comment;
 					}
 
 					this.props.onFilter(filter);
