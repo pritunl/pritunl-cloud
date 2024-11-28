@@ -8,6 +8,7 @@ import * as PageInfos from './PageInfo';
 import PageInput from './PageInput';
 import PageSave from './PageSave';
 import PageInfo from './PageInfo';
+import PageTextArea from './PageTextArea';
 import ConfirmButton from './ConfirmButton';
 import PageInputButton from './PageInputButton';
 import Help from './Help';
@@ -532,6 +533,16 @@ export default class AlertDetailed extends React.Component<Props, State> {
 						value={alert.name}
 						onChange={(val): void => {
 							this.set('name', val);
+						}}
+					/>
+					<PageTextArea
+						label="Comment"
+						help="Alert comment."
+						placeholder="Alert comment"
+						rows={3}
+						value={alert.comment}
+						onChange={(val: string): void => {
+							this.set('comment', val);
 						}}
 					/>
 					<label className="bp5-label">
