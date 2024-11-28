@@ -88,7 +88,7 @@ export default class ServiceDeploy extends React.Component<Props, State> {
 		});
 	}
 
-	render(): JSX.Element {
+	renderDeploy(): JSX.Element {
 		let dialogElem = <Blueprint.Dialog
 			title="Create Deployment"
 			style={css.dialog}
@@ -145,5 +145,55 @@ export default class ServiceDeploy extends React.Component<Props, State> {
 			/>
 			{dialogElem}
 		</div>
+	}
+
+	renderImage(): JSX.Element {
+		let dialogElem = <Blueprint.Dialog
+			title="Create Image"
+			style={css.dialog}
+			isOpen={this.state.dialog}
+			usePortal={true}
+			portalContainer={document.body}
+			onClose={this.closeDialog}
+		>
+			<div className="bp5-dialog-footer">
+				<div className="bp5-dialog-footer-actions">
+					<button
+						className="bp5-button"
+						type="button"
+						onClick={this.closeDialog}
+					>Cancel</button>
+					<button
+						className="bp5-button"
+						type="button"
+						disabled={this.state.disabled}
+						onClick={this.onCreate}
+					>Create</button>
+				</div>
+			</div>
+		</Blueprint.Dialog>
+
+		return <div>
+			<Blueprint.MenuItem
+				key="menu-new-deployment"
+				disabled={this.state.disabled}
+				icon={<Icons.Plus/>}
+				onClick={(evt): void => {
+					evt.preventDefault()
+					evt.stopPropagation()
+					this.openDialog()
+				}}
+				text="New Image"
+			/>
+			{dialogElem}
+		</div>
+	}
+
+	render(): JSX.Element {
+		if (this.props.unit.kind === "image") {
+			return this.renderImage()
+		} else {
+			return this.renderDeploy()
+		}
 	}
 }
