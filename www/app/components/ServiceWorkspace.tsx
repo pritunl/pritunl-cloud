@@ -559,13 +559,17 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 			/>)
 		}
 
+		let commits: ServiceTypes.Commit[];
 		let commitMenu: JSX.Element
 		if (this.props.mode === "unit") {
-			if (this.state.unit && activeUnit &&
-				this.state.unit.id === activeUnit.id &&
-				this.state.unit.commits &&
-				this.state.unit.commits.length > 0) {
+			if (this.state.unit &&
+				this.state.unit.id === activeUnit?.id &&
+				this.state.unit.commits?.length > 0) {
 
+				commits = this.state.unit.commits
+			}
+
+			if (commits) {
 				let commitMenuItems: JSX.Element[] = []
 
 				this.state.unit.commits.forEach((commit): void => {
@@ -621,6 +625,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 				key="menu-service-deploy"
 				service={this.props.service}
 				unit={activeUnit}
+				commits={commits}
 			/>)
 			menuItems.push(<ConfirmButton
 				key="menu-restore-deployments"
