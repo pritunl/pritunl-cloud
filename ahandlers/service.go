@@ -427,6 +427,8 @@ func serviceUnitDeploymentPost(c *gin.Context) {
 		return
 	}
 
+	specId, _ := utils.ParseObjectId(c.Param("spec"))
+
 	err := c.Bind(&data)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
@@ -445,7 +447,7 @@ func serviceUnitDeploymentPost(c *gin.Context) {
 		return
 	}
 
-	errData, err := scheduler.ManualSchedule(db, unit, data.Count)
+	errData, err := scheduler.ManualSchedule(db, unit, specId, data.Count)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
