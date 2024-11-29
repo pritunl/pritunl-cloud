@@ -83,9 +83,13 @@ export default class ServiceDeploy extends React.Component<Props, State> {
 			...this.state,
 			disabled: true,
 		});
+
+		let deployCommit = this.props.unit.kind === "image" ?
+			this.state.deployCommit?.id || this.props.commits?.[0]?.id : null
+
 		ServiceActions.deployUnit(
 				this.props.service.id, this.props.unit.id,
-				this.state.specId, this.state.count).then((): void => {
+				deployCommit, this.state.count).then((): void => {
 
 			Alert.success('Successfully created deployments');
 
