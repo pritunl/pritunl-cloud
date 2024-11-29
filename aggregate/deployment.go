@@ -7,6 +7,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
+	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 )
@@ -15,6 +16,7 @@ type DeploymentPipe struct {
 	Deployment   `bson:",inline"`
 	InstanceDocs []*instance.Instance `bson:"instance_docs"`
 	NodeDocs     []*node.Node         `bson:"node_docs"`
+	ImageDocs    []*image.Image       `bson:"image_docs"`
 }
 
 type Deployment struct {
@@ -28,6 +30,8 @@ type Deployment struct {
 	Node                primitive.ObjectID       `bson:"node" json:"node"`
 	Instance            primitive.ObjectID       `bson:"instance" json:"instance"`
 	InstanceData        *deployment.InstanceData `bson:"instance_data" json:"instance_data"`
+	ImageId             primitive.ObjectID       `bson:"image_id" json:"image_id"`
+	ImageName           string                   `bson:"image_name" json:"image_name"`
 	NodeName            string                   `bson:"-" json:"node_name"`
 	InstanceName        string                   `bson:"-" json:"instance_name"`
 	InstanceRoles       []string                 `bson:"-" json:"instance_roles"`
@@ -80,6 +84,14 @@ func GetDeployments(db *database.Database, unitId primitive.ObjectID) (
 			},
 		},
 		&bson.M{
+			"$lookup": &bson.M{
+				"from":         "images",
+				"localField":   "_id",
+				"foreignField": "deployment",
+				"as":           "image_docs",
+			},
+		},
+		&bson.M{
 			"$project": &bson.D{
 				{"_id", 1},
 				{"service", 1},
@@ -102,6 +114,8 @@ func GetDeployments(db *database.Database, unitId primitive.ObjectID) (
 				{"instance_docs.restart_block_ip", 1},
 				{"instance_docs.guest", 1},
 				{"node_docs.name", 1},
+				{"image_docs._id", 1},
+				{"image_docs.name", 1},
 			},
 		},
 	})
@@ -150,6 +164,13 @@ func GetDeployments(db *database.Database, unitId primitive.ObjectID) (
 					deply.InstanceLoad15 = inst.Guest.Load15
 				}
 			}
+		}
+
+		if len(doc.ImageDocs) > 0 {
+			img := doc.ImageDocs[0]
+
+			deply.ImageId = img.Id
+			deply.ImageName = img.Name
 		}
 
 		deplys = append(deplys, deply)
