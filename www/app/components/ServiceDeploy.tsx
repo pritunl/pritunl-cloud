@@ -25,7 +25,7 @@ interface State {
 
 const css = {
 	dialog: {
-		width: '340px',
+		width: '430px',
 		position: 'absolute',
 	} as React.CSSProperties,
 	label: {
