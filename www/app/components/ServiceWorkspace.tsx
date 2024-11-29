@@ -569,7 +569,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 				commits = this.state.unit.commits
 			}
 
-			if (commits) {
+			if (commits && this.state.unit?.kind !== "image") {
 				let commitMenuItems: JSX.Element[] = []
 
 				this.state.unit.commits.forEach((commit): void => {
@@ -627,32 +627,34 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 				unit={activeUnit}
 				commits={commits}
 			/>)
-			menuItems.push(<ConfirmButton
-				key="menu-restore-deployments"
-				label="Restore Selected"
-				className="bp5-intent-success bp5-icon-unarchive"
-				safe={true}
-				menuItem={true}
-				style={css.navButton}
-				confirmMsg="Restore the selected archived deployments"
-				confirmInput={false}
-				items={selectedNames}
-				disabled={!this.selectedDeployments || this.state.disabled}
-				onConfirm={this.onRestoreDeployments}
-			/>)
-			menuItems.push(<ConfirmButton
-				key="menu-archive-deployments"
-				label="Archive Selected"
-				className="bp5-intent-warning bp5-icon-archive"
-				safe={true}
-				menuItem={true}
-				style={css.navButton}
-				confirmMsg="Archive the selected deployments, use restore to reactivate"
-				confirmInput={false}
-				items={selectedNames}
-				disabled={!this.selectedDeployments || this.state.disabled}
-				onConfirm={this.onArchiveDeployments}
-			/>)
+			if (this.state.unit?.kind !== "image") {
+				menuItems.push(<ConfirmButton
+					key="menu-restore-deployments"
+					label="Restore Selected"
+					className="bp5-intent-success bp5-icon-unarchive"
+					safe={true}
+					menuItem={true}
+					style={css.navButton}
+					confirmMsg="Restore the selected archived deployments"
+					confirmInput={false}
+					items={selectedNames}
+					disabled={!this.selectedDeployments || this.state.disabled}
+					onConfirm={this.onRestoreDeployments}
+				/>)
+				menuItems.push(<ConfirmButton
+					key="menu-archive-deployments"
+					label="Archive Selected"
+					className="bp5-intent-warning bp5-icon-archive"
+					safe={true}
+					menuItem={true}
+					style={css.navButton}
+					confirmMsg="Archive the selected deployments, use restore to reactivate"
+					confirmInput={false}
+					items={selectedNames}
+					disabled={!this.selectedDeployments || this.state.disabled}
+					onConfirm={this.onArchiveDeployments}
+				/>)
+			}
 			menuItems.push(<ConfirmButton
 				key="menu-delete-deployments"
 				label="Delete Selected"
