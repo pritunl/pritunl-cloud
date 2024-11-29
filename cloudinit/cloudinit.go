@@ -24,6 +24,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/service"
 	"github.com/pritunl/pritunl-cloud/settings"
+	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
@@ -185,8 +186,9 @@ type imdsConfig struct {
 }
 
 func getUserData(db *database.Database, inst *instance.Instance,
-	virt *vm.VirtualMachine, deployUnit *service.Unit, initial bool,
-	addr6, gateway6 net.IP) (usrData string, err error) {
+	virt *vm.VirtualMachine, deployUnit *service.Unit,
+	deploySpec *spec.Commit, initial bool, addr6, gateway6 net.IP) (
+	usrData string, err error) {
 
 	authrs, err := authority.GetOrgRoles(db, inst.Organization,
 		inst.NetworkRoles)
@@ -282,7 +284,7 @@ func getUserData(db *database.Database, inst *instance.Instance,
 	})
 
 	deploymentScript := ""
-	if deployUnit != nil {
+	if deployUnit != nil && deploySpec != nil {
 		if deployUnit.Kind == deployment.Image {
 			deploymentScript = fmt.Sprintf(
 				deploymentScriptTmpl,
@@ -311,8 +313,9 @@ func getUserData(db *database.Database, inst *instance.Instance,
 				),
 			)
 		}
+
 		writeFiles = append(writeFiles, &fileData{
-			Content:     deployUnit.Spec + "\n",
+			Content:     deploySpec.Data + "\n",
 			Owner:       owner,
 			Path:        "/etc/pritunl-deploy.md",
 			Permissions: "0600",
@@ -568,10 +571,16 @@ func Write(db *database.Database, inst *instance.Instance,
 	defer os.RemoveAll(tempDir)
 
 	var deployUnit *service.Unit
+	var deploySpec *spec.Commit
 	if !virt.Deployment.IsZero() {
 		deply, e := deployment.Get(db, virt.Deployment)
 		if e != nil {
 			err = e
+			return
+		}
+
+		deploySpec, err = spec.Get(db, deply.Spec)
+		if err != nil {
 			return
 		}
 
@@ -605,7 +614,7 @@ func Write(db *database.Database, inst *instance.Instance,
 		return
 	}
 
-	usrData, err := getUserData(db, inst, virt, deployUnit,
+	usrData, err := getUserData(db, inst, virt, deployUnit, deploySpec,
 		initial, addr6, gateway6)
 	if err != nil {
 		return
