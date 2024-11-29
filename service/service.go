@@ -8,6 +8,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -43,12 +44,11 @@ func (p *Service) InitUnits(db *database.Database, units []*UnitInput) (
 
 	for _, unitData := range units {
 		unit := &Unit{
-			Service:      p,
-			Id:           primitive.NewObjectID(),
-			Name:         unitData.Name,
-			Spec:         unitData.Spec,
-			DeployCommit: unitData.DeployCommit,
-			Deployments:  []*Deployment{},
+			Service:     p,
+			Id:          primitive.NewObjectID(),
+			Name:        unitData.Name,
+			Spec:        unitData.Spec,
+			Deployments: []*Deployment{},
 		}
 
 		errData, err = unit.Parse(db)
@@ -101,12 +101,11 @@ func (p *Service) CommitFieldsUnits(db *database.Database,
 		curUnit := curUnitsMap[unitData.Id]
 		if curUnit == nil {
 			unit := &Unit{
-				Service:      p,
-				Id:           primitive.NewObjectID(),
-				Name:         unitData.Name,
-				Spec:         unitData.Spec,
-				DeployCommit: unitData.DeployCommit,
-				Deployments:  []*Deployment{},
+				Service:     p,
+				Id:          primitive.NewObjectID(),
+				Name:        unitData.Name,
+				Spec:        unitData.Spec,
+				Deployments: []*Deployment{},
 			}
 			curUnitsSet.Add(unit.Id)
 			curUnitsMap[unit.Id] = unit
@@ -127,10 +126,19 @@ func (p *Service) CommitFieldsUnits(db *database.Database,
 			continue
 		}
 
+		deploySpec, e := spec.Get(db, unitData.DeployCommit)
+		if e != nil || deploySpec.Unit != curUnit.Id {
+			errData = &errortypes.ErrorData{
+				Error:   "unit_default_commit_invalid",
+				Message: "Invalid unit default commit",
+			}
+			return
+		}
+
 		newUnitsSet.Add(unitData.Id)
 		curUnit.Name = unitData.Name
 		curUnit.Spec = unitData.Spec
-		curUnit.DeployCommit = unitData.DeployCommit
+		curUnit.DeployCommit = deploySpec.Id
 
 		errData, err = curUnit.Parse(db)
 		if err != nil {
