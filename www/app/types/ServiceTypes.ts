@@ -72,6 +72,8 @@ export interface Deployment {
 	instance_load1?: number;
 	instance_load5?: number;
 	instance_load15?: number;
+	image_id?: string;
+	image_name?: string;
 }
 
 export interface InstanceData {
