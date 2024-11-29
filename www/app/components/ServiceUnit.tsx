@@ -293,173 +293,296 @@ export default class ServiceUnit extends React.Component<Props, State> {
 				value: deployment.instance_memory_usage || 0,
 			})
 
-			cards.push(<Blueprint.Card
-				key={deployment.id}
-				compact={true}
-				style={cardStyle}
-			>
-				<div className="layout horizontal flex">
-					<div className="layout center" style={css.checkBox}>
-						<Blueprint.Checkbox
-							style={css.check}
-							checked={!!this.props.selected[deployment.id]}
-							onClick={(evt): void => {
-								let selected = {
-									...this.props.selected,
-								};
+			if (deployment.kind === "image" && deployment.image_id) {
+				cards.push(<Blueprint.Card
+					key={deployment.id}
+					compact={true}
+					style={cardStyle}
+				>
+					<div className="layout horizontal flex">
+						<div className="layout center" style={css.checkBox}>
+							<Blueprint.Checkbox
+								style={css.check}
+								checked={!!this.props.selected[deployment.id]}
+								onClick={(evt): void => {
+									let selected = {
+										...this.props.selected,
+									};
 
-								if (evt.shiftKey) {
-									let deployments = this.props.unit.deployments;
-									let start: number;
-									let end: number;
+									if (evt.shiftKey) {
+										let deployments = this.props.unit.deployments;
+										let start: number;
+										let end: number;
 
-									for (let i = 0; i < deployments.length; i++) {
-										let deply = deployments[i];
+										for (let i = 0; i < deployments.length; i++) {
+											let deply = deployments[i];
 
-										if (deply.id === deployment.id) {
-											start = i;
-										} else if (deply.id === this.props.lastSelected) {
-											end = i;
+											if (deply.id === deployment.id) {
+												start = i;
+											} else if (deply.id === this.props.lastSelected) {
+												end = i;
+											}
+										}
+
+										if (start !== undefined && end !== undefined) {
+											if (start > end) {
+												end = [start, start = end][0];
+											}
+
+											for (let i = start; i <= end; i++) {
+												selected[deployments[i].id] = true;
+											}
+
+											this.props.onSelect(selected, deployment.id)
+
+											return;
 										}
 									}
 
-									if (start !== undefined && end !== undefined) {
-										if (start > end) {
-											end = [start, start = end][0];
-										}
-
-										for (let i = start; i <= end; i++) {
-											selected[deployments[i].id] = true;
-										}
-
-										this.props.onSelect(selected, deployment.id)
-
-										return;
+									if (selected[deployment.id]) {
+										delete selected[deployment.id];
+									} else {
+										selected[deployment.id] = true;
 									}
-								}
 
-								if (selected[deployment.id]) {
-									delete selected[deployment.id];
-								} else {
-									selected[deployment.id] = true;
-								}
+									this.props.onSelect(selected, deployment.id)
+								}}
+							/>
+						</div>
+						<div style={css.itemFirst}>
+							<PageInfo
+								compact={true}
+								style={css.info}
+								fields={[
+									{
+										label: "Image ID",
+										value: deployment.id,
+									},
+								]}
+							/>
+						</div>
+						<div style={css.item}>
+							<PageInfo
+								compact={true}
+								style={css.info}
+								fields={[
+									{
+										label: "Commit ID",
+										value: deployment.spec.substring(0, 12),
+										hover: specHover,
+										valueClass: commitClass,
+									},
+								]}
+							/>
+						</div>
+						<div style={css.item}>
+							<PageInfo
+								compact={true}
+								style={css.info}
+								fields={[
+									{
+										label: "Image ID",
+										value: deployment.image_id || "-",
+									},
+								]}
+							/>
+						</div>
+						<div style={css.item}>
+							<PageInfo
+								compact={true}
+								style={css.info}
+								fields={[
+									{
+										label: "Image Name",
+										value: deployment.image_name || "-",
+									},
+								]}
+							/>
+						</div>
+						<div style={css.item}>
+							<PageInfo
+								compact={true}
+								style={css.info}
+								fields={[
+									{
+										label: "Timestamp",
+										value: MiscUtils.formatDateLocal(
+											deployment.instance_heartbeat) || "-",
+									},
+								]}
+							/>
+						</div>
+					</div>
+				</Blueprint.Card>)
+			} else {
+				cards.push(<Blueprint.Card
+					key={deployment.id}
+					compact={true}
+					style={cardStyle}
+				>
+					<div className="layout horizontal flex">
+						<div className="layout center" style={css.checkBox}>
+							<Blueprint.Checkbox
+								style={css.check}
+								checked={!!this.props.selected[deployment.id]}
+								onClick={(evt): void => {
+									let selected = {
+										...this.props.selected,
+									};
 
-								this.props.onSelect(selected, deployment.id)
-							}}
-						/>
+									if (evt.shiftKey) {
+										let deployments = this.props.unit.deployments;
+										let start: number;
+										let end: number;
+
+										for (let i = 0; i < deployments.length; i++) {
+											let deply = deployments[i];
+
+											if (deply.id === deployment.id) {
+												start = i;
+											} else if (deply.id === this.props.lastSelected) {
+												end = i;
+											}
+										}
+
+										if (start !== undefined && end !== undefined) {
+											if (start > end) {
+												end = [start, start = end][0];
+											}
+
+											for (let i = start; i <= end; i++) {
+												selected[deployments[i].id] = true;
+											}
+
+											this.props.onSelect(selected, deployment.id)
+
+											return;
+										}
+									}
+
+									if (selected[deployment.id]) {
+										delete selected[deployment.id];
+									} else {
+										selected[deployment.id] = true;
+									}
+
+									this.props.onSelect(selected, deployment.id)
+								}}
+							/>
+						</div>
+						<div style={css.itemFirst}>
+							<PageInfo
+								compact={true}
+								style={css.info}
+								fields={[
+									{
+										label: "Deployment ID",
+										value: deployment.id,
+									},
+									{
+										label: "Commit ID",
+										value: deployment.spec.substring(0, 12),
+										hover: specHover,
+										valueClass: commitClass,
+									},
+								]}
+							/>
+						</div>
+						<div style={css.item}>
+							<PageInfo
+								compact={true}
+								style={css.info}
+								fields={[
+									{
+										label: "Node",
+										value: deployment.node_name || "-",
+									},
+									{
+										label: "Instance",
+										value: deployment.instance_name || "-",
+									},
+								]}
+							/>
+						</div>
+						<div style={css.item}>
+							<PageInfo
+								compact={true}
+								style={css.info}
+								fields={[
+									{
+										label: "State",
+										value: stateValue,
+										valueClass: stateClass,
+									},
+									{
+										label: "Status",
+										value: deployment.instance_status || "-",
+										valueClass: statusClass,
+									},
+								]}
+							/>
+						</div>
+						<div style={css.item}>
+							<PageInfo
+								compact={true}
+								style={css.info}
+								fields={[
+									{
+										label: "Last Heartbeat",
+										value: MiscUtils.formatSinceLocal(
+											deployment.instance_heartbeat) || "-",
+										hover: heartbeatHover,
+										valueClass: heartbeatClass,
+									},
+									{
+										label: "Uptime",
+										value: deployment.instance_uptime || "-",
+									},
+								]}
+							/>
+						</div>
+						<div style={css.item}>
+							<PageInfo
+								compact={true}
+								style={css.info}
+								fields={[
+									{
+										label: 'Public IPv4',
+										value: publicIps,
+									},
+									{
+										label: 'Private IPv4',
+										value: privateIps,
+									},
+								]}
+							/>
+						</div>
+						<div style={css.item}>
+							<PageInfo
+								compact={true}
+								style={css.info}
+								fields={[
+									{
+										label: 'Public IPv6',
+										value: publicIps6,
+									},
+									{
+										label: 'Private IPv6',
+										value: privateIps6,
+									},
+								]}
+							/>
+						</div>
+						<div style={css.itemLast}>
+							<PageInfo
+								compact={true}
+								style={css.info}
+								bars={resourceBars}
+							/>
+						</div>
 					</div>
-					<div style={css.itemFirst}>
-						<PageInfo
-							compact={true}
-							style={css.info}
-							fields={[
-								{
-									label: "Deployment ID",
-									value: deployment.id,
-								},
-								{
-									label: "Commit ID",
-									value: deployment.spec.substring(0, 12),
-									hover: specHover,
-									valueClass: commitClass,
-								},
-							]}
-						/>
-					</div>
-					<div style={css.item}>
-						<PageInfo
-							compact={true}
-							style={css.info}
-							fields={[
-								{
-									label: "Node",
-									value: deployment.node_name || "-",
-								},
-								{
-									label: "Instance",
-									value: deployment.instance_name || "-",
-								},
-							]}
-						/>
-					</div>
-					<div style={css.item}>
-						<PageInfo
-							compact={true}
-							style={css.info}
-							fields={[
-								{
-									label: "State",
-									value: stateValue,
-									valueClass: stateClass,
-								},
-								{
-									label: "Status",
-									value: deployment.instance_status || "-",
-									valueClass: statusClass,
-								},
-							]}
-						/>
-					</div>
-					<div style={css.item}>
-						<PageInfo
-							compact={true}
-							style={css.info}
-							fields={[
-								{
-									label: "Last Heartbeat",
-									value: MiscUtils.formatSinceLocal(
-										deployment.instance_heartbeat) || "-",
-									hover: heartbeatHover,
-									valueClass: heartbeatClass,
-								},
-								{
-									label: "Uptime",
-									value: deployment.instance_uptime || "-",
-								},
-							]}
-						/>
-					</div>
-					<div style={css.item}>
-						<PageInfo
-							compact={true}
-							style={css.info}
-							fields={[
-								{
-									label: 'Public IPv4',
-									value: publicIps,
-								},
-								{
-									label: 'Private IPv4',
-									value: privateIps,
-								},
-							]}
-						/>
-					</div>
-					<div style={css.item}>
-						<PageInfo
-							compact={true}
-							style={css.info}
-							fields={[
-								{
-									label: 'Public IPv6',
-									value: publicIps6,
-								},
-								{
-									label: 'Private IPv6',
-									value: privateIps6,
-								},
-							]}
-						/>
-					</div>
-					<div style={css.itemLast}>
-						<PageInfo
-							compact={true}
-							style={css.info}
-							bars={resourceBars}
-						/>
-					</div>
-				</div>
-			</Blueprint.Card>)
+				</Blueprint.Card>)
+			}
 		})
 
 		return <div className="layout horizontal wrap" style={css.container}>
