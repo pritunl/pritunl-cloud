@@ -41,7 +41,10 @@ const css = {
 	} as React.CSSProperties,
 	commit: {
 		fontFamily: Theme.monospaceFont,
-		fontWeight: Theme.monospaceWeight,
+	} as React.CSSProperties,
+	commitButton: {
+		width: '400px',
+		fontFamily: Theme.monospaceFont,
 	} as React.CSSProperties,
 };
 
@@ -235,6 +238,7 @@ export default class ServiceDeploy extends React.Component<Props, State> {
 					alignText="left"
 					icon={<Icons.GitCommit/>}
 					rightIcon={<Icons.CaretDown/>}
+					style={css.commitButton}
 					text={deployCommit?.id.substring(0, 12) + " " +
 						MiscUtils.formatDateLocal(deployCommit?.timestamp)}
 				/>
