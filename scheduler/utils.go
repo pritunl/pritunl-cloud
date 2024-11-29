@@ -3,6 +3,7 @@ package scheduler
 import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -157,7 +158,8 @@ func Schedule(db *database.Database, unit *service.Unit) (err error) {
 	return
 }
 
-func ManualSchedule(db *database.Database, unit *service.Unit, count int) (
+func ManualSchedule(db *database.Database, unit *service.Unit,
+	specId primitive.ObjectID, count int) (
 	errData *errortypes.ErrorData, err error) {
 
 	exists, e := Exists(db, Resource{
@@ -177,8 +179,20 @@ func ManualSchedule(db *database.Database, unit *service.Unit, count int) (
 		return
 	}
 
-	spc, err := spec.Get(db, unit.DeployCommit)
+	if specId.IsZero() {
+		specId = unit.DeployCommit
+	}
+
+	spc, err := spec.Get(db, specId)
 	if err != nil {
+		return
+	}
+
+	if spc.Unit != unit.Id {
+		errData = &errortypes.ErrorData{
+			Error:   "unit_deploy_commit_invalid",
+			Message: "Invalid unit deployment commit",
+		}
 		return
 	}
 
