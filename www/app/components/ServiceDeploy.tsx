@@ -201,7 +201,7 @@ export default class ServiceDeploy extends React.Component<Props, State> {
 				evt.stopPropagation()
 				handleClick(evt)
 			}}
-			text={commit.id.substring(0, 12)}
+			text={MiscUtils.highlightMatch(commit.id.substring(0, 12), query)}
 			textClassName={className}
 			labelElement={<span
 				className={className}
