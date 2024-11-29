@@ -181,7 +181,7 @@ export default class ServiceDeploy extends React.Component<Props, State> {
 		let selected = false
 		if (this.state.deployCommit?.id == commit.id ||
 			(!this.state.deployCommit && index === 0)) {
-			// disabled = true
+
 			className = "bp5-text-intent-primary bp5-intent-primary"
 			selected = true
 		}
