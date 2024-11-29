@@ -170,8 +170,8 @@ export default class ServiceDeploy extends React.Component<Props, State> {
 		}
 	}
 
-	renderCommit: BpSelect.ItemRenderer<ServiceTypes.Commit> = (
-		commit, {handleClick, handleFocus, modifiers, query, index}): JSX.Element => {
+	renderCommit: BpSelect.ItemRenderer<ServiceTypes.Commit> = (commit,
+		{handleClick, handleFocus, modifiers, query, index}): JSX.Element => {
 
 		if (!modifiers.matchesPredicate) {
 			return null;
