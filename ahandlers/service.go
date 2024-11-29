@@ -36,6 +36,11 @@ type servicesData struct {
 	Count    int64              `json:"count"`
 }
 
+type servicesDeployData struct {
+	Count int                `json:"count"`
+	Spec  primitive.ObjectID `json:"spec"`
+}
+
 func servicePut(c *gin.Context) {
 	if demo.Blocked(c) {
 		return
@@ -413,7 +418,7 @@ func serviceUnitDeploymentPost(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	data := &serviceData{}
+	data := &servicesDeployData{}
 
 	serviceId, ok := utils.ParseObjectId(c.Param("service_id"))
 	if !ok {
@@ -426,8 +431,6 @@ func serviceUnitDeploymentPost(c *gin.Context) {
 		utils.AbortWithStatus(c, 400)
 		return
 	}
-
-	specId, _ := utils.ParseObjectId(c.Param("spec"))
 
 	err := c.Bind(&data)
 	if err != nil {
@@ -447,7 +450,7 @@ func serviceUnitDeploymentPost(c *gin.Context) {
 		return
 	}
 
-	errData, err := scheduler.ManualSchedule(db, unit, specId, data.Count)
+	errData, err := scheduler.ManualSchedule(db, unit, data.Spec, data.Count)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
