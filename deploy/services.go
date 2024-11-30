@@ -73,7 +73,7 @@ func (s *Services) deploySchedule(schd *scheduler.Scheduler) (err error) {
 		return
 	}
 
-	spc, err := spec.Get(db, unit.DeployCommit)
+	spc, err := spec.Get(db, schd.Spec)
 	if err != nil {
 		return
 	}
