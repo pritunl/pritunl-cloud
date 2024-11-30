@@ -285,6 +285,7 @@ func (i *Image) Upsert(db *database.Database) (err error) {
 			"$set": &bson.M{
 				"disk":          i.Disk,
 				"name":          i.Name,
+				"deployment":    i.Deployment,
 				"organization":  i.Organization,
 				"signed":        i.Signed,
 				"type":          i.Type,
