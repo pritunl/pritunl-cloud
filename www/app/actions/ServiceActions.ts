@@ -270,6 +270,7 @@ export function deployUnit(serviceId: string, unitId: string,
 			.post('/service/' + serviceId + "/unit/" + unitId + "/deployment")
 			.send({
 				count: count,
+				spec: specId,
 			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
