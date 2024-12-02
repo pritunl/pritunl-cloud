@@ -250,7 +250,7 @@ export default class ServiceDeploy extends React.Component<Props, State> {
 		}
 
 		let dialogElem = <Blueprint.Dialog
-			title="Create Image"
+			title="Create Image Build"
 			style={css.dialog}
 			isOpen={this.state.dialog}
 			usePortal={true}
