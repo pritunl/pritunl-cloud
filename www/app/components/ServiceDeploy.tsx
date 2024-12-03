@@ -221,7 +221,11 @@ export default class ServiceDeploy extends React.Component<Props, State> {
 	renderImage(): JSX.Element {
 		let commitsSelect: JSX.Element
 		if (this.props.commits) {
-			let deployCommit = this.state.deployCommit || this.props.commits[0]
+			let deployCommit = this.state.deployCommit || this.props.commits?.[0]
+			let deployClass = ""
+			if (deployCommit && deployCommit.id === this.props.commits?.[0]?.id) {
+				deployClass = "bp5-text-intent-success"
+			}
 
 			commitsSelect = <BpSelect.Select<ServiceTypes.Commit>
 				items={this.props.commits}
@@ -245,6 +249,7 @@ export default class ServiceDeploy extends React.Component<Props, State> {
 					icon={<Icons.GitCommit/>}
 					rightIcon={<Icons.CaretDown/>}
 					style={css.commitButton}
+					textClassName={deployClass}
 					text={deployCommit?.id.substring(0, 12) + " " +
 						MiscUtils.formatDateLocal(deployCommit?.timestamp)}
 				/>
