@@ -191,6 +191,8 @@ export default class ServiceDeploy extends React.Component<Props, State> {
 
 			className = "bp5-text-intent-primary bp5-intent-primary"
 			selected = true
+		} else if (index === 0) {
+			className = "bp5-text-intent-success bp5-intent-success"
 		}
 
 		return <Blueprint.MenuItem
