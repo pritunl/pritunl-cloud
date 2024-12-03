@@ -708,8 +708,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 		}
 
 		if (this.props.mode === "edit") {
-			if (this.state.unit &&
-				activeUnit &&
+			if (this.state.unit && activeUnit &&
 				this.state.unit.id === activeUnit.id &&
 				this.state.unit.commits &&
 				this.state.unit.commits.length > 0) {
