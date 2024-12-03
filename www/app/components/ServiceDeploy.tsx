@@ -269,7 +269,7 @@ export default class ServiceDeploy extends React.Component<Props, State> {
 					className="bp5-label"
 					style={css.label}
 				>
-					Image Commit
+					Target Commit
 					{commitsSelect}
 				</label>
 			</div>
