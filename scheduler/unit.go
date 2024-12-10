@@ -56,6 +56,7 @@ func (u *InstanceUnit) Schedule(db *database.Database, count int) (err error) {
 			Unit:    u.unit.Id,
 		},
 		Kind:          InstanceUnitKind,
+		Spec:          u.spec.Id,
 		Count:         u.count,
 		OverrideCount: overrideCount,
 	}
