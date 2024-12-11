@@ -12,14 +12,15 @@ import (
 )
 
 type Scheduler struct {
-	Id            Resource     `bson:"_id" json:"id"`
-	Kind          string       `bson:"kind" json:"kind"`
-	Created       time.Time    `bson:"created" json:"created"`
-	Modified      time.Time    `bson:"modified" json:"modified"`
-	Count         int          `bson:"count" json:"count"`
-	OverrideCount int          `bson:"override_count" json:"override_count"`
-	Consumed      int          `bson:"consumed" json:"consumed"`
-	Tickets       TicketsStore `bson:"tickets" json:"tickets"`
+	Id            Resource           `bson:"_id" json:"id"`
+	Kind          string             `bson:"kind" json:"kind"`
+	Created       time.Time          `bson:"created" json:"created"`
+	Modified      time.Time          `bson:"modified" json:"modified"`
+	Count         int                `bson:"count" json:"count"`
+	Spec          primitive.ObjectID `bson:"spec" json:"spec"`
+	OverrideCount int                `bson:"override_count" json:"override_count"`
+	Consumed      int                `bson:"consumed" json:"consumed"`
+	Tickets       TicketsStore       `bson:"tickets" json:"tickets"`
 }
 
 type Resource struct {
