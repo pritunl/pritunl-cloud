@@ -8,6 +8,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/imds/server/config"
 	"github.com/pritunl/pritunl-cloud/imds/server/errortypes"
 	"github.com/pritunl/pritunl-cloud/imds/server/state"
+	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -25,7 +26,7 @@ type syncRespData struct {
 }
 
 func syncPut(c *gin.Context) {
-	data := &syncData{}
+	data := &types.State{}
 
 	err := c.Bind(data)
 	if err != nil {
