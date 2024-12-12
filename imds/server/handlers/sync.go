@@ -37,21 +37,16 @@ func syncPut(c *gin.Context) {
 		return
 	}
 
-	state.State.Status = data.Status
-	state.State.Timestamp = time.Now()
-	state.State.Memory = data.Memory
-	state.State.HugePages = data.HugePages
-	state.State.Load1 = data.Load1
-	state.State.Load5 = data.Load5
-	state.State.Load15 = data.Load15
+	state.Global.State.Status = data.Status
+	state.Global.State.Timestamp = time.Now()
+	state.Global.State.Memory = data.Memory
+	state.Global.State.HugePages = data.HugePages
+	state.Global.State.Load1 = data.Load1
+	state.Global.State.Load5 = data.Load5
+	state.Global.State.Load15 = data.Load15
 
-	err = state.State.Save()
-	if err != nil {
-		err = &errortypes.ParseError{
-			errors.Wrap(err, "handler: Bind error"),
-		}
-		utils.AbortWithError(c, 500, err)
-		return
+	for _, entry := range data.Output {
+		state.Global.AppendOutput(entry)
 	}
 
 	c.JSON(200, &syncRespData{
