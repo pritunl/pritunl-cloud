@@ -9,11 +9,13 @@ import (
 	"github.com/pritunl/pritunl-cloud/imds/types"
 )
 
-var Path = ""
-var Global = &Store{
-	State:  &types.State{},
-	output: make(chan *types.Entry, 10000),
-}
+var (
+	Path   = ""
+	Global = &Store{
+		State:  &types.State{},
+		output: make(chan *types.Entry, 10000),
+	}
+)
 
 type Store struct {
 	State  *types.State
@@ -25,6 +27,17 @@ func (s *Store) AppendOutput(entry *types.Entry) {
 		return
 	}
 	s.output <- entry
+}
+
+func (s *Store) GetOutput() (entries []*types.Entry) {
+	for {
+		select {
+		case entry := <-s.output:
+			entries = append(entries, entry)
+		default:
+			return
+		}
+	}
 }
 
 func (s *Store) Save() (err error) {
