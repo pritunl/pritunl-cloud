@@ -11,11 +11,20 @@ import (
 
 var Path = ""
 var Global = &Store{
-	State: &types.State{},
+	State:  &types.State{},
+	output: make(chan *types.Entry, 10000),
 }
 
 type Store struct {
-	State *types.State
+	State  *types.State
+	output chan *types.Entry
+}
+
+func (s *Store) AppendOutput(entry *types.Entry) {
+	if len(s.output) > 9000 {
+		return
+	}
+	s.output <- entry
 }
 
 func (s *Store) Save() (err error) {
