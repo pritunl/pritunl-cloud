@@ -202,21 +202,19 @@ func (m *Imds) Sync() (err error) {
 	return
 }
 
-func (m *Imds) Run(eng *engine.Engine) (err error) {
-	m.engine = eng
+func (m *Imds) RunSync() {
+	go func() {
+		for {
+			err := m.Sync()
+			if err != nil {
+				logger.WithFields(logger.Fields{
+					"error": err,
+				}).Error("agent: Failed to sync")
+			}
 
-	SetStatus(types.Running)
-
-	for {
-		err = m.Sync()
-		if err != nil {
-			logger.WithFields(logger.Fields{
-				"error": err,
-			}).Error("agent: Failed to sync")
+			time.Sleep(1 * time.Second)
 		}
-
-		time.Sleep(1 * time.Second)
-	}
+	}()
 }
 
 func (m *Imds) SyncStatus(status string) (err error) {
