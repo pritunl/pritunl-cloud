@@ -12,7 +12,7 @@ type State struct {
 	Load5     float64   `json:"load5"`
 	Load15    float64   `json:"load15"`
 	Timestamp time.Time `json:"timestamp"`
-	Output    []*Entry  `json:"output"`
+	Output    []*Entry  `json:"output,omitempty"`
 }
 
 type Entry struct {
