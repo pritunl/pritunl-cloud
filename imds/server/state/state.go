@@ -10,16 +10,16 @@ import (
 )
 
 var Path = ""
-var State = &StateData{
-	&types.State{},
+var Global = &Store{
+	State: &types.State{},
 }
 
-type StateData struct {
-	*types.State
+type Store struct {
+	State *types.State
 }
 
-func (s *StateData) Save() (err error) {
-	data, err := json.MarshalIndent(s, "", "\t")
+func (s *Store) Save() (err error) {
+	data, err := json.MarshalIndent(s.State, "", "\t")
 	if err != nil {
 		err = &errortypes.WriteError{
 			errors.Wrap(err, "state: File marshal error"),
