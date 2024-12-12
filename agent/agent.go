@@ -101,19 +101,23 @@ func main() {
 			break
 		}
 
+		ids.RunSync()
+
 		err = eng.Run(phase)
 		if err != nil {
 			return
 		}
 
 		if !image {
-			err = ids.Run(eng)
+			err = ids.SyncStatus(types.Running)
 			if err != nil {
 				logger.WithFields(logger.Fields{
 					"error": err,
 				}).Error("agent: Failed to run")
 				panic(err)
 			}
+		} else {
+			ids.SetEngine(eng)
 		}
 
 		break
