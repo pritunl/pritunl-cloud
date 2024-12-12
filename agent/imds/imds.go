@@ -178,7 +178,7 @@ func (m *Imds) Sync() (err error) {
 
 	if curSyncHash == 0 {
 		curSyncHash = respData.Hash
-	} else if respData.Hash != curSyncHash {
+	} else if respData.Hash != curSyncHash && m.engine != nil {
 		curSyncHash = respData.Hash
 
 		logger.WithFields(logger.Fields{
@@ -200,6 +200,10 @@ func (m *Imds) Sync() (err error) {
 	}
 
 	return
+}
+
+func (m *Imds) SetEngine(eng *engine.Engine) {
+	m.engine = eng
 }
 
 func (m *Imds) RunSync() {
