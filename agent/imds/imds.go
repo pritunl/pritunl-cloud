@@ -129,10 +129,14 @@ type SyncResp struct {
 	Hash uint32 `json:"hash"`
 }
 
-func (m *Imds) Sync() (err error) {
-	data, err := GetState()
+func (m *Imds) Sync() (ready bool, err error) {
+	data, err := m.GetState()
 	if err != nil {
 		return
+	}
+
+	if m.engine != nil {
+		data.Output = m.engine.GetOutput()
 	}
 
 	req, err := m.NewRequest("PUT", "/sync", data)
@@ -179,9 +183,14 @@ func (m *Imds) Sync() (err error) {
 		return
 	}
 
-	if curSyncHash == 0 {
+	ready = true
+	if respData.Hash == 0 {
+		ready = false
+	} else if curSyncHash == 0 {
 		curSyncHash = respData.Hash
-	} else if respData.Hash != curSyncHash && m.engine != nil {
+	} else if respData.Hash != curSyncHash &&
+		m.engine != nil && m.initialized {
+
 		curSyncHash = respData.Hash
 
 		logger.WithFields(logger.Fields{
