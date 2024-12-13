@@ -71,7 +71,7 @@ func Auth(c *gin.Context) {
 	c.Next()
 }
 
-func Register(engine *gin.Engine) {
+func RegisterVirt(engine *gin.Engine) {
 	engine.Use(Auth)
 	engine.Use(Recovery)
 	engine.Use(Errors)
@@ -87,4 +87,12 @@ func Register(engine *gin.Engine) {
 	engine.GET("/certificate", certificatesGet)
 	engine.GET("/secret", secretsGet)
 	engine.PUT("/sync", syncPut)
+}
+
+func RegisterHost(engine *gin.Engine) {
+	engine.Use(Auth)
+	engine.Use(Recovery)
+	engine.Use(Errors)
+
+	engine.PUT("/sync", hostSyncPut)
 }
