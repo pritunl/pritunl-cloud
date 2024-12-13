@@ -12,15 +12,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
-type syncData struct {
-	Status    string  `json:"status"`
-	Memory    float64 `json:"memory"`
-	HugePages float64 `json:"hugepages"`
-	Load1     float64 `json:"load1"`
-	Load5     float64 `json:"load5"`
-	Load15    float64 `json:"load15"`
-}
-
 type syncRespData struct {
 	Hash uint32 `json:"hash"`
 }
@@ -45,11 +36,35 @@ func syncPut(c *gin.Context) {
 	state.Global.State.Load5 = data.Load5
 	state.Global.State.Load15 = data.Load15
 
-	for _, entry := range data.Output {
-		state.Global.AppendOutput(entry)
+	if data.Output != nil {
+		for _, entry := range data.Output {
+			state.Global.AppendOutput(entry)
+		}
 	}
 
 	c.JSON(200, &syncRespData{
 		Hash: config.Config.Hash,
 	})
+}
+
+func hostSyncPut(c *gin.Context) {
+	data := &types.Config{}
+
+	err := c.Bind(data)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "handler: Bind error"),
+		}
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if data.Hash != 0 {
+		config.Config = data
+	}
+
+	ste := state.Global.State.Copy()
+	ste.Output = state.Global.GetOutput()
+
+	c.JSON(200, ste)
 }
