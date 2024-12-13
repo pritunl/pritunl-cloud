@@ -6,12 +6,12 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/imds"
+	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/secret"
 	"github.com/pritunl/pritunl-cloud/service"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/vpc"
-	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -23,7 +23,7 @@ type Imds struct {
 }
 
 func (s *Imds) buildInstance(db *database.Database,
-	inst *instance.Instance) (err error) {
+	inst *instance.Instance) (conf *types.Config, err error) {
 
 	virt := s.stat.GetVirt(inst.Id)
 	if virt == nil {
@@ -37,7 +37,7 @@ func (s *Imds) buildInstance(db *database.Database,
 		subnet = vc.GetSubnet(inst.Subnet)
 	}
 
-	conf, err := imds.BuildConfig(
+	conf, err = imds.BuildConfig(
 		inst, virt,
 		vc, subnet,
 		[]*service.Service{},
@@ -54,30 +54,11 @@ func (s *Imds) buildInstance(db *database.Database,
 		return
 	}
 
-	curHash := Hashes[inst.Id]
-	if curHash == 0 || conf.Hash != curHash {
-		err = conf.Write(virt)
-		if err != nil {
-			return
-		}
-
-		Hashes[inst.Id] = conf.Hash
-	}
-
-	err = imds.Sync(db, inst)
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"instance": inst.Id.Hex(),
-			"error":    err,
-		}).Error("acme: Failed to sync instance imds")
-		err = nil
-	}
-
 	return
 }
 
 func (s *Imds) buildDeployInstance(db *database.Database,
-	inst *instance.Instance) (err error) {
+	inst *instance.Instance) (conf *types.Config, err error) {
 
 	virt := s.stat.GetVirt(inst.Id)
 	if virt == nil {
@@ -141,7 +122,7 @@ func (s *Imds) buildDeployInstance(db *database.Database,
 		services = append(services, servc)
 	}
 
-	conf, err := imds.BuildConfig(
+	conf, err = imds.BuildConfig(
 		inst, virt,
 		vc, subnet,
 		services,
@@ -158,44 +139,33 @@ func (s *Imds) buildDeployInstance(db *database.Database,
 		return
 	}
 
-	curHash := Hashes[inst.Id]
-	if curHash == 0 || conf.Hash != curHash {
-		err = conf.Write(virt)
-		if err != nil {
-			return
-		}
-
-		Hashes[inst.Id] = conf.Hash
-	}
-
-	err = imds.Sync(db, inst)
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"instance": inst.Id.Hex(),
-			"error":    err,
-		}).Error("acme: Failed to sync instance imds")
-		err = nil
-	}
-
 	return
 }
 
 func (s *Imds) Deploy(db *database.Database) (err error) {
 	instances := s.stat.Instances()
 
+	confs := map[primitive.ObjectID]*types.Config{}
 	for _, inst := range instances {
+		var conf *types.Config
 		if inst.Deployment.IsZero() {
-			err = s.buildInstance(db, inst)
+			conf, err = s.buildInstance(db, inst)
 			if err != nil {
 				return
 			}
 		} else {
-			err = s.buildDeployInstance(db, inst)
+			conf, err = s.buildDeployInstance(db, inst)
 			if err != nil {
 				return
 			}
 		}
+
+		if conf != nil {
+			confs[inst.Id] = conf
+		}
 	}
+
+	imds.SetConfigs(confs)
 
 	return
 }
