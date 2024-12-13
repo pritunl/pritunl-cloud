@@ -187,6 +187,20 @@ func (d *Deployment) HandleStatement(db *database.Database,
 	return
 }
 
+func (d *Deployment) SetImageState(state string) {
+	if d.ImageData == nil {
+		d.ImageData = &ImageData{}
+	}
+	d.ImageData.State = state
+}
+
+func (d *Deployment) GetImageState() string {
+	if d.ImageData == nil {
+		return ""
+	}
+	return d.ImageData.State
+}
+
 func (d *Deployment) CommitAction(db *database.Database,
 	action *Action) (err error) {
 
