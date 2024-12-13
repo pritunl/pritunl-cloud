@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"sync"
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
@@ -27,10 +28,12 @@ var (
 )
 
 type Imds struct {
-	Address string         `json:"address"`
-	Port    int            `json:"port"`
-	Secret  string         `json:"secret"`
-	engine  *engine.Engine `json:"-"`
+	Address     string         `json:"address"`
+	Port        int            `json:"port"`
+	Secret      string         `json:"secret"`
+	engine      *engine.Engine `json:"-"`
+	initialized bool           `json:"-"`
+	waiter      sync.WaitGroup `json:"-"`
 }
 
 func (m *Imds) NewRequest(method, pth string, data interface{}) (
@@ -207,9 +210,13 @@ func (m *Imds) SetEngine(eng *engine.Engine) {
 }
 
 func (m *Imds) RunSync() {
+	m.waiter.Add(1)
+
 	go func() {
+		defer m.waiter.Done()
+
 		for {
-			err := m.Sync()
+			_, err := m.Sync()
 			if err != nil {
 				logger.WithFields(logger.Fields{
 					"error": err,
@@ -224,7 +231,7 @@ func (m *Imds) RunSync() {
 func (m *Imds) SyncStatus(status string) (err error) {
 	SetStatus(status)
 
-	err = m.Sync()
+	_, err = m.Sync()
 	if err != nil {
 		logger.WithFields(logger.Fields{
 			"status": status,
@@ -235,7 +242,15 @@ func (m *Imds) SyncStatus(status string) (err error) {
 	return
 }
 
-func (m *Imds) Init() (err error) {
+func (m *Imds) Wait() (err error) {
+	m.waiter.Wait()
+
+	return
+}
+
+func (m *Imds) Init(eng *engine.Engine) (err error) {
+	m.engine = eng
+
 	confData, err := utils.Read(constants.ImdsConfPath)
 	if err != nil {
 		return
