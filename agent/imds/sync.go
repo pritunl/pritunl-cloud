@@ -14,7 +14,7 @@ type StateData struct {
 	*types.State
 }
 
-func GetState() (data *StateData, err error) {
+func (m *Imds) GetState() (data *StateData, err error) {
 	data = &StateData{
 		&types.State{},
 	}
