@@ -214,8 +214,8 @@ func (m *Imds) Sync() (ready bool, err error) {
 	return
 }
 
-func (m *Imds) SetEngine(eng *engine.Engine) {
-	m.engine = eng
+func (m *Imds) SetInitialized() {
+	m.initialized = true
 }
 
 func (m *Imds) RunSync() {
