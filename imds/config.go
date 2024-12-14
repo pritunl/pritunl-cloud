@@ -26,13 +26,14 @@ func BuildConfig(inst *instance.Instance, virt *vm.VirtualMachine,
 	conf *types.Config, err error) {
 
 	conf = &types.Config{
-		ClientIps:    inst.PrivateIps,
-		Instance:     types.NewInstance(inst),
-		Vpc:          types.NewVpc(vc),
-		Subnet:       types.NewSubnet(subnet),
-		Services:     types.NewServices(services, deployments),
-		Secrets:      types.NewSecrets(secrs),
-		Certificates: types.NewCertificates(certs),
+		ImdsHostSecret: virt.ImdsHostSecret,
+		ClientIps:      inst.PrivateIps,
+		Instance:       types.NewInstance(inst),
+		Vpc:            types.NewVpc(vc),
+		Subnet:         types.NewSubnet(subnet),
+		Services:       types.NewServices(services, deployments),
+		Secrets:        types.NewSecrets(secrs),
+		Certificates:   types.NewCertificates(certs),
 	}
 
 	return
