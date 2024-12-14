@@ -157,8 +157,7 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	unitPathServer6 := paths.GetUnitPathDhcp6(virt.Id, 0)
 	unitPathServerNdp := paths.GetUnitPathNdp(virt.Id, 0)
 	tpmPath := paths.GetTpmPath(virt.Id)
-	imdsConfPath := paths.GetImdsConfPath(virt.Id)
-	imdsStatePath := paths.GetImdsStatePath(virt.Id)
+	runPath := paths.GetInstRunPath(virt.Id)
 	unitPathTpm := paths.GetUnitPathTpm(virt.Id)
 	sockPath := paths.GetSockPath(virt.Id)
 	sockQmpPath := paths.GetQmpSockPath(virt.Id)
@@ -357,12 +356,7 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	err = utils.RemoveAll(imdsConfPath)
-	if err != nil {
-		return
-	}
-
-	err = utils.RemoveAll(imdsStatePath)
+	err = utils.RemoveAll(runPath)
 	if err != nil {
 		return
 	}
