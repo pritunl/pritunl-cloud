@@ -43,7 +43,7 @@ func Errors(c *gin.Context) {
 	}
 }
 
-func Auth(c *gin.Context) {
+func AuthVirt(c *gin.Context) {
 	token := c.Request.Header.Get("Auth-Token")
 	if token == "" {
 		token = c.Query("token")
@@ -71,8 +71,20 @@ func Auth(c *gin.Context) {
 	c.Next()
 }
 
+func AuthHost(c *gin.Context) {
+	if c.Request.Header.Get("Origin") != "" ||
+		c.Request.Header.Get("Referer") != "" ||
+		c.Request.Header.Get("User-Agent") != "pritunl-imds" ||
+		constants.Secret == "" {
+
+		c.AbortWithStatus(401)
+		return
+	}
+	c.Next()
+}
+
 func RegisterVirt(engine *gin.Engine) {
-	engine.Use(Auth)
+	engine.Use(AuthVirt)
 	engine.Use(Recovery)
 	engine.Use(Errors)
 
@@ -90,7 +102,7 @@ func RegisterVirt(engine *gin.Engine) {
 }
 
 func RegisterHost(engine *gin.Engine) {
-	engine.Use(Auth)
+	engine.Use(AuthHost)
 	engine.Use(Recovery)
 	engine.Use(Errors)
 
