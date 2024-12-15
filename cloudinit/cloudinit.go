@@ -265,7 +265,7 @@ func getUserData(db *database.Database, inst *instance.Instance,
 	imdsConf := &imdsConfig{
 		Address: strings.Split(settings.Hypervisor.ImdsAddress, "/")[0],
 		Port:    settings.Hypervisor.ImdsPort,
-		Secret:  virt.ImdsSecret,
+		Secret:  virt.ImdsClientSecret,
 	}
 
 	imdsConfContent, err := json.Marshal(imdsConf)
