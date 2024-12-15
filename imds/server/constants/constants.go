@@ -10,9 +10,11 @@ const (
 )
 
 var (
-	Host      = "127.0.0.1"
-	Port      = 80
-	Client    = "127.0.0.1"
-	Secret    = ""
-	Interrupt = false
+	Sock         = ""
+	Host         = "127.0.0.1"
+	Port         = 80
+	Client       = "127.0.0.1"
+	ClientSecret = ""
+	HostSecret   = ""
+	Interrupt    = false
 )
