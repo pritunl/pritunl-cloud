@@ -11,6 +11,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/secret"
 	"github.com/pritunl/pritunl-cloud/service"
 	"github.com/pritunl/pritunl-cloud/state"
+	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
 )
 
@@ -23,12 +24,8 @@ type Imds struct {
 }
 
 func (s *Imds) buildInstance(db *database.Database,
-	inst *instance.Instance) (conf *types.Config, err error) {
-
-	virt := s.stat.GetVirt(inst.Id)
-	if virt == nil {
-		return
-	}
+	inst *instance.Instance, virt *vm.VirtualMachine) (
+	conf *types.Config, err error) {
 
 	vc := s.stat.Vpc(inst.Vpc)
 
@@ -58,12 +55,8 @@ func (s *Imds) buildInstance(db *database.Database,
 }
 
 func (s *Imds) buildDeployInstance(db *database.Database,
-	inst *instance.Instance) (conf *types.Config, err error) {
-
-	virt := s.stat.GetVirt(inst.Id)
-	if virt == nil {
-		return
-	}
+	inst *instance.Instance, virt *vm.VirtualMachine) (
+	conf *types.Config, err error) {
 
 	vc := s.stat.Vpc(inst.Vpc)
 
@@ -147,14 +140,23 @@ func (s *Imds) Deploy(db *database.Database) (err error) {
 
 	confs := map[primitive.ObjectID]*types.Config{}
 	for _, inst := range instances {
+		virt := s.stat.GetVirt(inst.Id)
+		if virt == nil {
+			continue
+		}
+
+		if virt.ImdsVersion < 1 {
+			continue
+		}
+
 		var conf *types.Config
 		if inst.Deployment.IsZero() {
-			conf, err = s.buildInstance(db, inst)
+			conf, err = s.buildInstance(db, inst, virt)
 			if err != nil {
 				return
 			}
 		} else {
-			conf, err = s.buildDeployInstance(db, inst)
+			conf, err = s.buildDeployInstance(db, inst, virt)
 			if err != nil {
 				return
 			}
