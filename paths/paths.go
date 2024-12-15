@@ -118,9 +118,8 @@ func GetImdsConfPath(instId primitive.ObjectID) string {
 		fmt.Sprintf("%s-conf.json", instId.Hex()))
 }
 
-func GetImdsStatePath(instId primitive.ObjectID) string {
-	return path.Join(GetImdsPath(),
-		fmt.Sprintf("%s-state.json", instId.Hex()))
+func GetInstRunPath(instId primitive.ObjectID) string {
+	return path.Join(settings.Hypervisor.RunPath, instId.Hex())
 }
 
 func GetDiskMountPath() string {
