@@ -74,6 +74,7 @@ func Sync(db *database.Database, instId primitive.ObjectID,
 	}
 
 	req.Header.Set("User-Agent", "pritunl-imds")
+	req.Header.Set("Auth-Token", conf.ImdsHostSecret)
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
