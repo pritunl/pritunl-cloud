@@ -5,14 +5,15 @@ import (
 )
 
 type Config struct {
-	ClientIps    []string       `json:"client_ips"`
-	Instance     *Instance      `json:"instance"`
-	Vpc          *Vpc           `json:"vpc"`
-	Subnet       *Subnet        `json:"subnet"`
-	Certificates []*Certificate `json:"certificates"`
-	Secrets      []*Secret      `json:"secrets"`
-	Services     []*Service     `json:"services"`
-	Hash         uint32         `json:"hash"`
+	ImdsHostSecret string         `json:"-"`
+	ClientIps      []string       `json:"client_ips"`
+	Instance       *Instance      `json:"instance"`
+	Vpc            *Vpc           `json:"vpc"`
+	Subnet         *Subnet        `json:"subnet"`
+	Certificates   []*Certificate `json:"certificates"`
+	Secrets        []*Secret      `json:"secrets"`
+	Services       []*Service     `json:"services"`
+	Hash           uint32         `json:"hash"`
 }
 
 func (c *Config) ComputeHash() (err error) {
