@@ -22,6 +22,7 @@ type Task struct {
 	Retry      bool
 	Handler    func(*database.Database) error
 	RunOnStart bool
+	Local      bool
 	DebugNodes []string
 }
 
@@ -94,6 +95,37 @@ func (t *Task) run(now time.Time) {
 	_ = job.Finished(db)
 }
 
+func (t *Task) runLocal(now time.Time) {
+	db := database.GetDatabase()
+	defer db.Close()
+
+	if t.DebugNodes != nil {
+		matched := false
+		for _, ndeName := range t.DebugNodes {
+			if node.Self.Name == ndeName {
+				matched = true
+			}
+		}
+		if !matched {
+			return
+		}
+	}
+
+	id := fmt.Sprintf("%s-%d", t.Name, now.Unix()-int64(now.Second()))
+	if t.Seconds != 0 {
+		id += fmt.Sprintf("-%d", GetBlock(now, t.Seconds))
+	}
+
+	err := t.Handler(db)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"task":  t.Name,
+			"error": err,
+		}).Error("task: Local task failed")
+		return
+	}
+}
+
 func runScheduler() {
 	now := time.Now()
 	curHour := now.Hour()
@@ -124,7 +156,11 @@ func runScheduler() {
 				for _, task := range registry {
 					if task.Seconds == block && task.scheduled(hour, min) {
 						go func(task *Task, now time.Time) {
-							task.run(now)
+							if task.Local {
+								task.runLocal(now)
+							} else {
+								task.run(now)
+							}
 						}(task, now)
 					}
 				}
@@ -142,7 +178,11 @@ func runScheduler() {
 		for _, task := range registry {
 			if task.Seconds == 0 && task.scheduled(hour, min) {
 				go func(task *Task, now time.Time) {
-					task.run(now)
+					if task.Local {
+						task.runLocal(now)
+					} else {
+						task.run(now)
+					}
 				}(task, now)
 			}
 		}
