@@ -72,10 +72,17 @@ func AuthVirt(c *gin.Context) {
 }
 
 func AuthHost(c *gin.Context) {
+	token := c.Request.Header.Get("Auth-Token")
+	if token == "" {
+		token = c.Query("token")
+	}
+
 	if c.Request.Header.Get("Origin") != "" ||
 		c.Request.Header.Get("Referer") != "" ||
 		c.Request.Header.Get("User-Agent") != "pritunl-imds" ||
-		constants.Secret == "" {
+		constants.HostSecret == "" ||
+		(subtle.ConstantTimeCompare([]byte(token),
+			[]byte(constants.HostSecret)) != 1) {
 
 		c.AbortWithStatus(401)
 		return
