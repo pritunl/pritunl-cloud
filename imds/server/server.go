@@ -6,7 +6,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/pritunl/pritunl-cloud/imds/server/config"
 	"github.com/pritunl/pritunl-cloud/imds/server/constants"
 	"github.com/pritunl/pritunl-cloud/imds/server/router"
 	"github.com/pritunl/pritunl-cloud/imds/server/state"
@@ -34,11 +33,8 @@ func main() {
 	client := ""
 	flag.StringVar(&host, "client", "127.0.0.1", "Client address")
 
-	confPath := ""
-	flag.StringVar(&confPath, "conf", "", "Configuration path")
-
-	statePath := ""
-	flag.StringVar(&statePath, "state", "", "State path")
+	sockPath := ""
+	flag.StringVar(&sockPath, "sock", "", "Socket path")
 
 	flag.Parse()
 
@@ -46,6 +42,7 @@ func main() {
 	case "start":
 		constants.Host = strings.Split(host, "/")[0]
 		constants.Port = port
+		constants.Sock = sockPath
 		constants.Client = client
 		constants.Secret = os.Getenv("SECRET")
 		config.Path = confPath
