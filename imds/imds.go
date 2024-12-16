@@ -152,7 +152,7 @@ func Sync(db *database.Database, instId primitive.ObjectID,
 		}
 
 		for _, entry := range ste.Output {
-			fmt.Printf("[%s]: %s", instId.Hex(), entry.Message)
+			fmt.Printf("[%s]: %s", conf.Instance.Name, entry.Message)
 		}
 	}
 
