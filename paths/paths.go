@@ -122,6 +122,10 @@ func GetInstRunPath(instId primitive.ObjectID) string {
 	return path.Join(settings.Hypervisor.RunPath, instId.Hex())
 }
 
+func GetImdsSockPath(instId primitive.ObjectID) string {
+	return path.Join(GetInstRunPath(instId), "imds.sock")
+}
+
 func GetDiskMountPath() string {
 	return path.Join(GetTempPath(), primitive.NewObjectID().Hex())
 }
