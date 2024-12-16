@@ -51,7 +51,8 @@ type VirtualMachine struct {
 	PciDevices          []*PciDevice       `json:"pci_devices"`
 	DriveDevices        []*DriveDevice     `json:"drive_devices"`
 	IscsiDevices        []*IscsiDevice     `json:"iscsi_devices"`
-	ImdsSecret          string             `json:"-"`
+	ImdsClientSecret    string             `json:"-"`
+	ImdsHostSecret      string             `json:"imds_host_secret"`
 }
 
 func (v *VirtualMachine) HasExternalNetwork() bool {
@@ -72,7 +73,12 @@ func (v *VirtualMachine) Running() bool {
 }
 
 func (v *VirtualMachine) GenerateImdsSecret() (err error) {
-	v.ImdsSecret, err = utils.RandStr(32)
+	v.ImdsClientSecret, err = utils.RandStr(32)
+	if err != nil {
+		return
+	}
+
+	v.ImdsHostSecret, err = utils.RandStr(32)
 	if err != nil {
 		return
 	}
