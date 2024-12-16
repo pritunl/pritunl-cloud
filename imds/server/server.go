@@ -44,10 +44,8 @@ func main() {
 		constants.Port = port
 		constants.Sock = sockPath
 		constants.Client = client
-		constants.Secret = os.Getenv("SECRET")
-		config.Path = confPath
-		state.Path = statePath
-		config.Path = confPath
+		constants.ClientSecret = os.Getenv("CLIENT_SECRET")
+		constants.HostSecret = os.Getenv("HOST_SECRET")
 
 		routr := &router.Router{}
 		routr.Init()
