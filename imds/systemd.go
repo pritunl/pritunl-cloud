@@ -24,7 +24,8 @@ After=network.target
 [Service]
 Type=simple
 User=%s
-Environment="SECRET=%s"
+Environment="CLIENT_SECRET=%s"
+Environment="HOST_SECRET=%s"
 ExecStart=/usr/bin/pritunl-cloud-imds -sock=%s -host=%s -port=%d start
 PrivateTmp=true
 ProtectHome=true
@@ -42,7 +43,8 @@ After=network.target
 [Service]
 Type=simple
 User=root
-Environment="SECRET=%s"
+Environment="CLIENT_SECRET=%s"
+Environment="HOST_SECRET=%s"
 ExecStart=/usr/sbin/ip netns exec %s /usr/bin/pritunl-cloud-imds -sock=%s -host=%s -port=%d start
 PrivateTmp=true
 ProtectHome=true
@@ -52,13 +54,14 @@ ProtectKernelTunables=true
 AmbientCapabilities=CAP_NET_BIND_SERVICE
 `
 
-func WriteService(vmId primitive.ObjectID, namespace, secret string,
+func WriteService(vmId primitive.ObjectID,
+	namespace, clientSecret, hostSecret string,
 	systemdNamespace bool) (err error) {
 
 	unitPath := paths.GetUnitPathImds(vmId)
 	sockPath := paths.GetImdsSockPath(vmId)
 
-	if secret == "" {
+	if clientSecret == "" || hostSecret == "" {
 		err = &errortypes.ParseError{
 			errors.New("imds: Cannot start imds with empty secret"),
 		}
@@ -70,7 +73,8 @@ func WriteService(vmId primitive.ObjectID, namespace, secret string,
 		output = fmt.Sprintf(
 			systemdNamespaceTemplate,
 			permission.GetUserName(vmId),
-			secret,
+			clientSecret,
+			hostSecret,
 			sockPath,
 			settings.Hypervisor.ImdsAddress,
 			settings.Hypervisor.ImdsPort,
@@ -79,7 +83,8 @@ func WriteService(vmId primitive.ObjectID, namespace, secret string,
 	} else {
 		output = fmt.Sprintf(
 			systemdTemplate,
-			secret,
+			clientSecret,
+			hostSecret,
 			namespace,
 			sockPath,
 			settings.Hypervisor.ImdsAddress,
@@ -108,8 +113,8 @@ func Start(db *database.Database, virt *vm.VirtualMachine) (err error) {
 
 	_ = systemd.Stop(unit)
 
-	err = WriteService(virt.Id, namespace, virt.ImdsSecret,
-		hasSystemdNamespace)
+	err = WriteService(virt.Id, namespace, virt.ImdsClientSecret,
+		virt.ImdsHostSecret, hasSystemdNamespace)
 	if err != nil {
 		return
 	}
