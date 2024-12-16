@@ -7,9 +7,9 @@ import (
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/agent/constants"
-	"github.com/pritunl/pritunl-cloud/agent/engine"
 	"github.com/pritunl/pritunl-cloud/agent/imds"
 	"github.com/pritunl/pritunl-cloud/agent/logging"
+	"github.com/pritunl/pritunl-cloud/engine"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/tools/logger"
