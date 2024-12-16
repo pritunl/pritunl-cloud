@@ -50,12 +50,7 @@ func main() {
 		routr := &router.Router{}
 		routr.Init()
 
-		err := config.Init()
-		if err != nil {
-			panic(err)
-		}
-
-		err = state.Init()
+		err := state.Init()
 		if err != nil {
 			panic(err)
 		}
