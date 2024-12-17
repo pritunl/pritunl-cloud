@@ -17,6 +17,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
+	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/scheduler"
 	"github.com/pritunl/pritunl-cloud/service"
 	"github.com/pritunl/pritunl-cloud/spec"
@@ -503,6 +504,7 @@ func serviceUnitDeploymentLogGet(c *gin.Context) {
 	}
 
 	resource := c.Query("resource")
+	_ = resource
 
 	srvc, err := service.GetOrg(db, userOrg, serviceId)
 	if err != nil {
@@ -527,7 +529,7 @@ func serviceUnitDeploymentLogGet(c *gin.Context) {
 		return
 	}
 
-	data, err := deply.GetLog(c, db, resource)
+	data, err := instance.GetAgentLog(c, db, deply.Instance)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
