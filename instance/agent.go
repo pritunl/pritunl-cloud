@@ -1,11 +1,15 @@
 package instance
 
 import (
+	"context"
 	"fmt"
 	"time"
 
+	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/settings"
 )
 
 type AgentLog struct {
@@ -30,6 +34,56 @@ func (l *AgentLog) Insert(db *database.Database) (err error) {
 	if err != nil {
 		err = database.ParseError(err)
 		return
+	}
+
+	return
+}
+
+func GetAgentLog(c context.Context, db *database.Database,
+	instId primitive.ObjectID) (output []string, err error) {
+
+	coll := db.InstancesAgent()
+
+	limit := int64(settings.Hypervisor.ImdsLogDisplayLimit)
+
+	cursor, err := coll.Find(
+		c,
+		&bson.M{
+			"i": instId,
+		},
+		&options.FindOptions{
+			Limit: &limit,
+			Sort: &bson.D{
+				{"timestamp", -1},
+			},
+		},
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(c)
+
+	outputRevrse := []string{}
+	for cursor.Next(c) {
+		doc := &AgentLog{}
+		err = cursor.Decode(doc)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		outputRevrse = append(outputRevrse, doc.String())
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	for i := len(outputRevrse); i >= 0; i-- {
+		output = append(output, outputRevrse[i])
 	}
 
 	return
