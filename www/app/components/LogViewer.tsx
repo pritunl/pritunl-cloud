@@ -7,6 +7,7 @@ import * as Monaco from "monaco-editor";
 interface Props {
 	itemId: string;
 	resource: string;
+	title: string;
 	action: (itemId: string, resource: string) => Promise<any>;
 	cancel: () => void;
 	disabled: boolean;
@@ -146,6 +147,7 @@ export default class LogViewer extends React.Component<Props, State> {
 
 		return <div>
 			<div className="layout horizontal wrap bp5-border" style={css.header}>
+				<h3 style={css.heading}>{this.props.title}</h3>
 				<div className="flex"/>
 				<div style={css.buttons}>
 					<button
