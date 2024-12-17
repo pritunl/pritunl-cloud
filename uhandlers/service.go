@@ -479,3 +479,59 @@ func serviceUnitDeploymentPost(c *gin.Context) {
 
 	c.JSON(200, nil)
 }
+
+func serviceUnitDeploymentLogGet(c *gin.Context) {
+	db := c.MustGet("db").(*database.Database)
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
+
+	serviceId, ok := utils.ParseObjectId(c.Param("service_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	unitId, ok := utils.ParseObjectId(c.Param("unit_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	deplyId, ok := utils.ParseObjectId(c.Param("deployment_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	resource := c.Query("resource")
+
+	srvc, err := service.GetOrg(db, userOrg, serviceId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	unit := srvc.GetUnit(unitId)
+	if unit == nil {
+		utils.AbortWithStatus(c, 404)
+		return
+	}
+
+	if !unit.HasDeployment(deplyId) {
+		utils.AbortWithStatus(c, 404)
+		return
+	}
+
+	deply, err := deployment.Get(db, deplyId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	data, err := deply.GetLog(c, db, resource)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	c.JSON(200, data)
+}
