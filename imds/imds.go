@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net"
@@ -152,7 +151,16 @@ func Sync(db *database.Database, instId primitive.ObjectID,
 		}
 
 		for _, entry := range ste.Output {
-			fmt.Printf("[%s]: %s", conf.Instance.Name, entry.Message)
+			log := &instance.AgentLog{
+				Instance:  instId,
+				Timestamp: entry.Timestamp,
+				Message:   entry.Message,
+			}
+
+			err = log.Insert(db)
+			if err != nil {
+				return
+			}
 		}
 	}
 
