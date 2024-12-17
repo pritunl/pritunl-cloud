@@ -131,6 +131,13 @@ export default class LogViewer extends React.Component<Props, State> {
 			return <div/>;
 		}
 
+		if (!this.loaded) {
+			this.loaded = true;
+			setTimeout((): void => {
+				this.update();
+			});
+		}
+
 		let refreshDisabled = false;
 		let refreshLabel = '';
 		let refreshClass = 'bp5-button';
