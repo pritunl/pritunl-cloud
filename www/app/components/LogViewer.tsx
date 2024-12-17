@@ -8,6 +8,7 @@ interface Props {
 	itemId: string;
 	resource: string;
 	action: (itemId: string, resource: string) => Promise<any>;
+	cancel: () => void;
 	disabled: boolean;
 }
 
@@ -153,7 +154,11 @@ export default class LogViewer extends React.Component<Props, State> {
 						disabled={refreshDisabled}
 						type="button"
 						onClick={(): void => {
-							this.update();
+							if (Object.entries(this.state.cancelable).length) {
+								this.props.cancel();
+							} else {
+								this.update();
+							}
 						}}
 					>
 						{refreshLabel}
