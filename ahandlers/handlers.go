@@ -200,6 +200,10 @@ func Register(engine *gin.Engine) {
 		serviceUnitDeploymentPut)
 	csrfGroup.POST("/service/:service_id/unit/:unit_id/deployment",
 		serviceUnitDeploymentPost)
+	csrfGroup.GET(
+		"/service/:service_id/unit/:unit_id/deployment/:deployment_id/log",
+		serviceUnitDeploymentLogGet,
+	)
 
 	csrfGroup.GET("/shape", shapesGet)
 	csrfGroup.GET("/shape/:shape_id", shapeGet)
