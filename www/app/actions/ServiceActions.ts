@@ -13,6 +13,7 @@ let syncId: string;
 let syncUnitId: string;
 let lastServiceId: string;
 let lastUnitId: string
+let dataSyncReqs: {[key: string]: SuperAgent.Request} = {};
 
 export function sync(noLoading?: boolean): Promise<void> {
 	let curSyncId = MiscUtils.uuid();
@@ -368,6 +369,12 @@ export function log(deply: ServiceTypes.Deployment,
 			resolve(res.body);
 		});
 	});
+}
+
+export function dataCancel(): void {
+	for (let [key, val] of Object.entries(dataSyncReqs)) {
+		val.abort();
+	}
 }
 
 EventDispatcher.register((action: ServiceTypes.ServiceDispatch) => {
