@@ -356,8 +356,6 @@ func GetAllPaged(db *database.Database, query *bson.M,
 }
 
 func Remove(db *database.Database, instId primitive.ObjectID) (err error) {
-	coll := db.Instances()
-
 	inst, err := Get(db, instId)
 	if err != nil {
 		return
@@ -379,6 +377,23 @@ func Remove(db *database.Database, instId primitive.ObjectID) (err error) {
 	if err != nil {
 		return
 	}
+
+	coll := db.InstancesAgent()
+
+	_, err = coll.DeleteMany(db, &bson.M{
+		"i": instId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		switch err.(type) {
+		case *database.NotFoundError:
+			err = nil
+		default:
+			return
+		}
+	}
+
+	coll = db.Instances()
 
 	_, err = coll.DeleteOne(db, &bson.M{
 		"_id": instId,
