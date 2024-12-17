@@ -153,6 +153,7 @@ export default class LogViewer extends React.Component<Props, State> {
 						disabled={refreshDisabled}
 						type="button"
 						onClick={(): void => {
+							this.update();
 						}}
 					>
 						{refreshLabel}
