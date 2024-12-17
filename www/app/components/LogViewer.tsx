@@ -5,6 +5,9 @@ import * as MonacoEditor from "@monaco-editor/react"
 import * as Monaco from "monaco-editor";
 
 interface Props {
+	itemId: string;
+	resource: string;
+	action: (itemId: string, resource: string) => Promise<any>;
 	disabled: boolean;
 }
 
@@ -82,6 +85,42 @@ export default class LogViewer extends React.Component<Props, State> {
 			...this.state,
 			loading: false,
 			cancelable: false,
+		});
+	}
+
+	update(): void {
+		let loading = true;
+		this.setLoading();
+
+		this.props.action(
+			this.props.itemId,
+			this.props.resource,
+		).then((data: string[]): void => {
+			if (loading) {
+				loading = false;
+				this.setLoaded();
+			}
+
+			this.setState({
+				...this.state,
+				data: data.join(''),
+			});
+
+			const model = this.editor.getModel()
+			if (model) {
+				model.setValue(data.join(''))
+				const lineCount = model.getLineCount()
+				this.editor.revealLine(lineCount)
+				this.editor.setPosition({
+					lineNumber: lineCount,
+					column: model.getLineMaxColumn(lineCount),
+				})
+			}
+		}).catch((): void => {
+			if (loading) {
+				loading = false;
+				this.setLoaded();
+			}
 		});
 	}
 
