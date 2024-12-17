@@ -5,10 +5,10 @@ import * as MonacoEditor from "@monaco-editor/react"
 import * as Monaco from "monaco-editor";
 
 interface Props {
-	itemId: string;
-	resource: string;
+	resource: any;
+	kind: string;
 	title: string;
-	action: (itemId: string, resource: string) => Promise<any>;
+	action: (resource: any, kind: string) => Promise<any>;
 	cancel: () => void;
 	disabled: boolean;
 }
@@ -95,8 +95,8 @@ export default class LogViewer extends React.Component<Props, State> {
 		this.setLoading();
 
 		this.props.action(
-			this.props.itemId,
 			this.props.resource,
+			this.props.kind,
 		).then((data: string[]): void => {
 			if (loading) {
 				loading = false;
