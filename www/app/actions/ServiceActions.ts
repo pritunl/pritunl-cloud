@@ -328,6 +328,48 @@ export function updateMultiUnitState(serviceId: string, unitId: string,
 	});
 }
 
+export function log(deply: ServiceTypes.Deployment,
+	resource: string): Promise<any> {
+
+	let curDataSyncId = MiscUtils.uuid();
+
+	let loader = new Loader().loading();
+
+	return new Promise<any>((resolve, reject): void => {
+		let req = SuperAgent.get('/service/' + deply.service +
+				"/unit/" + deply.unit + "/deployment/" + deply.id + "/log")
+			.query({
+				resource: resource,
+			})
+			.set('Accept', 'application/json')
+			.set('Csrf-Token', Csrf.token)
+			.on('abort', () => {
+				loader.done();
+				resolve(null);
+			});
+		dataSyncReqs[curDataSyncId] = req;
+
+		req.end((err: any, res: SuperAgent.Response): void => {
+			delete dataSyncReqs[curDataSyncId];
+			loader.done();
+
+			if (res && res.status === 401) {
+				window.location.href = '/login';
+				resolve(null);
+				return;
+			}
+
+			if (err) {
+				Alert.errorRes(res, 'Failed to load check log');
+				reject(err);
+				return;
+			}
+
+			resolve(res.body);
+		});
+	});
+}
+
 EventDispatcher.register((action: ServiceTypes.ServiceDispatch) => {
 	switch (action.type) {
 		case ServiceTypes.CHANGE:
