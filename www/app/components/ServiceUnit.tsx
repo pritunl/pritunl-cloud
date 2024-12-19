@@ -259,12 +259,6 @@ export default class ServiceUnit extends React.Component<Props, State> {
 							valueClass: heartbeatClass,
 						},
 						{
-							label: "Agent Status",
-							value: MiscUtils.capitalize(
-								deployment.instance_guest_status) || "-",
-							valueClass: heartbeatClass,
-						},
-						{
 							label: "Heartbeat Timestamp",
 							value: MiscUtils.formatDateLocal(
 								deployment.instance_heartbeat) || "-",
@@ -531,6 +525,12 @@ export default class ServiceUnit extends React.Component<Props, State> {
 								compact={true}
 								style={css.info}
 								fields={[
+									{
+										label: "Agent Status",
+										value: MiscUtils.capitalize(
+											deployment.instance_guest_status) || "-",
+										valueClass: heartbeatClass,
+									},
 									{
 										label: "Last Heartbeat",
 										value: MiscUtils.formatSinceLocal(
