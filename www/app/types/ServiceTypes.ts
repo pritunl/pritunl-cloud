@@ -56,6 +56,7 @@ export interface Deployment {
 	node?: string;
 	instance?: string;
 	instance_data?: InstanceData;
+	zone_name?: string;
 	node_name?: string;
 	instance_name?: string;
 	instance_roles?: string[];
