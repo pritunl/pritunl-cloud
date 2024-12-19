@@ -20,6 +20,7 @@ type Deployment struct {
 	Kind         string                         `bson:"kind" json:"kind"`
 	State        string                         `bson:"state" json:"state"`
 	Status       string                         `bson:"status" json:"status"`
+	Zone         primitive.ObjectID             `bson:"zone,omitempty" json:"zone"`
 	Node         primitive.ObjectID             `bson:"node,omitempty" json:"node"`
 	Instance     primitive.ObjectID             `bson:"instance,omitempty" json:"instance"`
 	Image        primitive.ObjectID             `bson:"image,omitempty" json:"image"`
