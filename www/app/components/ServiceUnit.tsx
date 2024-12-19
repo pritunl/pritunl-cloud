@@ -494,6 +494,10 @@ export default class ServiceUnit extends React.Component<Props, State> {
 								style={css.info}
 								fields={[
 									{
+										label: "Zone",
+										value: deployment.zone_name || "-",
+									},
+									{
 										label: "Node",
 										value: deployment.node_name || "-",
 									},
