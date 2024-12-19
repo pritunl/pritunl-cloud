@@ -10,11 +10,13 @@ import (
 	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/zone"
 )
 
 type DeploymentPipe struct {
 	Deployment   `bson:",inline"`
 	InstanceDocs []*instance.Instance `bson:"instance_docs"`
+	ZoneDocs     []*zone.Zone         `bson:"zone_docs"`
 	NodeDocs     []*node.Node         `bson:"node_docs"`
 	ImageDocs    []*image.Image       `bson:"image_docs"`
 }
@@ -32,6 +34,7 @@ type Deployment struct {
 	InstanceData        *deployment.InstanceData `bson:"instance_data" json:"instance_data"`
 	ImageId             primitive.ObjectID       `bson:"image_id" json:"image_id"`
 	ImageName           string                   `bson:"image_name" json:"image_name"`
+	ZoneName            string                   `bson:"-" json:"zone_name"`
 	NodeName            string                   `bson:"-" json:"node_name"`
 	InstanceName        string                   `bson:"-" json:"instance_name"`
 	InstanceRoles       []string                 `bson:"-" json:"instance_roles"`
@@ -77,6 +80,14 @@ func GetDeployments(db *database.Database, unitId primitive.ObjectID) (
 		},
 		&bson.M{
 			"$lookup": &bson.M{
+				"from":         "zones",
+				"localField":   "zone",
+				"foreignField": "_id",
+				"as":           "zone_docs",
+			},
+		},
+		&bson.M{
+			"$lookup": &bson.M{
 				"from":         "nodes",
 				"localField":   "node",
 				"foreignField": "_id",
@@ -113,6 +124,7 @@ func GetDeployments(db *database.Database, unitId primitive.ObjectID) (
 				{"instance_docs.restart", 1},
 				{"instance_docs.restart_block_ip", 1},
 				{"instance_docs.guest", 1},
+				{"zone_docs.name", 1},
 				{"node_docs.name", 1},
 				{"image_docs._id", 1},
 				{"image_docs.name", 1},
@@ -134,6 +146,11 @@ func GetDeployments(db *database.Database, unitId primitive.ObjectID) (
 		}
 
 		deply := &doc.Deployment
+
+		if len(doc.ZoneDocs) > 0 {
+			zne := doc.ZoneDocs[0]
+			deply.ZoneName = zne.Name
+		}
 
 		if len(doc.NodeDocs) > 0 {
 			nde := doc.NodeDocs[0]
