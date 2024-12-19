@@ -105,8 +105,14 @@ func FormatHostPort(hostname string, port int) string {
 }
 
 func ParseObjectId(strId string) (objId primitive.ObjectID, ok bool) {
+	if strId == "" {
+		objId = primitive.NilObjectID
+		return
+	}
+
 	objectId, err := primitive.ObjectIDFromHex(strId)
 	if err != nil {
+		objId = primitive.NilObjectID
 		return
 	}
 
