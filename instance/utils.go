@@ -393,6 +393,21 @@ func Remove(db *database.Database, instId primitive.ObjectID) (err error) {
 		}
 	}
 
+	coll = db.InstancesKmsg()
+
+	_, err = coll.DeleteMany(db, &bson.M{
+		"i": instId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		switch err.(type) {
+		case *database.NotFoundError:
+			err = nil
+		default:
+			return
+		}
+	}
+
 	coll = db.Instances()
 
 	_, err = coll.DeleteOne(db, &bson.M{
