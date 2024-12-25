@@ -21,7 +21,6 @@ interface Props {
 }
 
 interface State {
-	logs: string
 	logsOpen: boolean
 }
 
@@ -90,7 +89,6 @@ export default class ServiceDeployment extends React.Component<Props, State> {
 	constructor(props: any, context: any) {
 		super(props, context)
 		this.state = {
-			logs: "",
 			logsOpen: false,
 		}
 	}
@@ -270,7 +268,6 @@ export default class ServiceDeployment extends React.Component<Props, State> {
 		let editor: JSX.Element
 		if (this.state.logsOpen) {
 			editor = <Editor
-				value={this.state.logs}
 				height="500px"
 				interval={1000}
 				autoScroll={true}
