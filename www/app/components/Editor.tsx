@@ -1,8 +1,8 @@
 /// <reference path="../References.d.ts"/>
 import * as React from "react"
 import * as Theme from "../Theme"
-
 import * as MonacoEditor from "@monaco-editor/react"
+import * as Monaco from "monaco-editor"
 
 interface Props {
 	disabled?: boolean
@@ -12,6 +12,8 @@ interface Props {
 	fontSize?: number
 	height?: string
 	width?: string
+	interval?: number
+	refresh?: () => Promise<string>
 	onChange?: (value: string) => void
 }
 
@@ -31,9 +33,36 @@ const css = {
 }
 
 export default class Editor extends React.Component<Props, State> {
+	editor: Monaco.editor.IStandaloneCodeEditor
+	monaco: MonacoEditor.Monaco
+	interval: NodeJS.Timer;
+
 	constructor(props: any, context: any) {
 		super(props, context)
 		this.state = {
+		}
+	}
+
+	componentDidMount(): void {
+		if (this.props.interval) {
+			this.interval = setInterval(() => {
+				this.props.refresh().then((val) => {
+					this.update(val)
+				})
+			}, this.props.interval);
+		}
+	}
+
+	componentWillUnmount(): void {
+		if (this.interval) {
+			clearInterval(this.interval)
+		}
+	}
+
+	update(val: string): void {
+		const model = this.editor.getModel()
+		if (model) {
+			model.setValue(val)
 		}
 	}
 
@@ -46,6 +75,11 @@ export default class Editor extends React.Component<Props, State> {
 					defaultLanguage="markdown"
 					theme={Theme.getEditorTheme()}
 					value={this.props.value}
+					onMount={(editor: Monaco.editor.IStandaloneCodeEditor,
+							monaco: MonacoEditor.Monaco): void => {
+						this.monaco = monaco
+						this.editor = editor
+					}}
 					options={{
 						folding: false,
 						fontSize: this.props.fontSize,
