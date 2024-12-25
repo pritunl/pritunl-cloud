@@ -22,9 +22,6 @@ interface State {
 }
 
 const css = {
-	editorBox: {
-		margin: "10px 0",
-	} as React.CSSProperties,
 	editor: {
 		margin: "11px 0 10px 0",
 		borderRadius: "3px",
@@ -89,41 +86,39 @@ export default class Editor extends React.Component<Props, State> {
 	}
 
 	render(): JSX.Element {
-		return <div className="layout horizontal flex" style={css.editorBox}>
-			<div style={css.editor}>
-				<MonacoEditor.Editor
-					height={this.props.height}
-					width={this.props.width}
-					defaultLanguage="markdown"
-					theme={Theme.getEditorTheme()}
-					value={this.props.value}
-					onMount={(editor: Monaco.editor.IStandaloneCodeEditor,
-							monaco: MonacoEditor.Monaco): void => {
-						this.monaco = monaco
-						this.editor = editor
-					}}
-					options={{
-						folding: false,
-						fontSize: this.props.fontSize,
-						fontFamily: Theme.monospaceFont,
-						fontWeight: Theme.monospaceWeight,
-						tabSize: 4,
-						detectIndentation: false,
-						readOnly: this.props.readOnly,
-						//rulers: [80],
-						scrollBeyondLastLine: false,
-						minimap: {
-							enabled: false,
-						},
-						wordWrap: "on",
-					}}
-					onChange={(val): void => {
-						if (this.props.onChange) {
-							this.props.onChange(val)
-						}
-					}}
-				/>
-			</div>
+		return <div style={css.editor}>
+			<MonacoEditor.Editor
+				height={this.props.height}
+				width={this.props.width}
+				defaultLanguage="markdown"
+				theme={Theme.getEditorTheme()}
+				value={this.props.value}
+				onMount={(editor: Monaco.editor.IStandaloneCodeEditor,
+						monaco: MonacoEditor.Monaco): void => {
+					this.monaco = monaco
+					this.editor = editor
+				}}
+				options={{
+					folding: false,
+					fontSize: this.props.fontSize || 12,
+					fontFamily: Theme.monospaceFont,
+					fontWeight: Theme.monospaceWeight,
+					tabSize: 4,
+					detectIndentation: false,
+					readOnly: this.props.readOnly,
+					//rulers: [80],
+					scrollBeyondLastLine: false,
+					minimap: {
+						enabled: false,
+					},
+					wordWrap: "on",
+				}}
+				onChange={(val): void => {
+					if (this.props.onChange) {
+						this.props.onChange(val)
+					}
+				}}
+			/>
 		</div>
 	}
 }
