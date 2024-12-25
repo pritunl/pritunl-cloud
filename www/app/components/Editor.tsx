@@ -13,6 +13,7 @@ interface Props {
 	height?: string
 	width?: string
 	interval?: number
+	autoScroll?: boolean
 	refresh?: () => Promise<string>
 	onChange?: (value: string) => void
 }
@@ -70,6 +71,15 @@ export default class Editor extends React.Component<Props, State> {
 		const model = this.editor.getModel()
 		if (model) {
 			model.setValue(val)
+
+			if (this.props.autoScroll) {
+				const lineCount = model.getLineCount()
+				this.editor.revealLine(lineCount)
+				this.editor.setPosition({
+					lineNumber: lineCount,
+					column: model.getLineMaxColumn(lineCount),
+				})
+			}
 		}
 	}
 
