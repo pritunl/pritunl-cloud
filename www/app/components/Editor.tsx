@@ -6,7 +6,7 @@ import * as Monaco from "monaco-editor"
 
 interface Props {
 	disabled?: boolean
-	value: string
+	value?: string
 	readOnly?: boolean
 	mode?: string
 	fontSize?: number
@@ -52,6 +52,11 @@ export default class Editor extends React.Component<Props, State> {
 					this.update(val)
 				})
 			}, this.props.interval);
+		}
+		if (!this.props.value && this.props.refresh) {
+			this.props.refresh().then((val) => {
+				this.update(val)
+			})
 		}
 	}
 
