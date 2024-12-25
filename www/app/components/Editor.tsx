@@ -35,6 +35,7 @@ const css = {
 export default class Editor extends React.Component<Props, State> {
 	editor: Monaco.editor.IStandaloneCodeEditor
 	monaco: MonacoEditor.Monaco
+	value: string
 	interval: NodeJS.Timer;
 
 	constructor(props: any, context: any) {
@@ -60,6 +61,12 @@ export default class Editor extends React.Component<Props, State> {
 	}
 
 	update(val: string): void {
+		let curValue = this.value || this.props.value
+		if (curValue === val) {
+			return
+		}
+		this.value = val;
+
 		const model = this.editor.getModel()
 		if (model) {
 			model.setValue(val)
