@@ -294,6 +294,14 @@ export default class ServiceDeployment extends React.Component<Props, State> {
 			value: deployment.instance_memory_usage || 0,
 		})
 
+		let editor: JSX.Element
+		if (this.state.logsOpen) {
+			editor = <Editor
+				value={this.state.logs}
+				height="500px"
+			/>
+		}
+
 		if (deployment.kind === "image" && deployment.image_id) {
 			return <Blueprint.Card
 				key={deployment.id}
@@ -518,6 +526,7 @@ export default class ServiceDeployment extends React.Component<Props, State> {
 						</div>
 					</div>
 					<div className="layout horizontal flex">
+						{editor}
 					</div>
 				</div>
 			</Blueprint.Card>
