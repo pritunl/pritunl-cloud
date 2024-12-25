@@ -21,6 +21,8 @@ interface Props {
 }
 
 interface State {
+	logs: string
+	logsOpen: boolean
 }
 
 const css = {
@@ -85,9 +87,45 @@ const css = {
 }
 
 export default class ServiceDeployment extends React.Component<Props, State> {
+	interval: NodeJS.Timer;
+
 	constructor(props: any, context: any) {
 		super(props, context)
 		this.state = {
+			logs: "",
+			logsOpen: false,
+		}
+	}
+
+	componentWillUnmount(): void {
+		if (this.interval) {
+			clearInterval(this.interval)
+		}
+	}
+
+	onLogsToggle = (): void => {
+		if (this.state.logsOpen) {
+			if (this.interval) {
+				clearInterval(this.interval)
+			}
+			this.setState({
+				...this.state,
+				logsOpen: false,
+			})
+		} else {
+			this.interval = setInterval(() => {
+				ServiceActions.log(
+					this.props.deployment, "agent").then((logs) => {
+						this.setState({
+							...this.state,
+							logs: logs.join(""),
+						})
+					});
+			}, 1000);
+			this.setState({
+				...this.state,
+				logsOpen: true,
+			})
 		}
 	}
 
