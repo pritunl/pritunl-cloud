@@ -87,8 +87,6 @@ const css = {
 }
 
 export default class ServiceDeployment extends React.Component<Props, State> {
-	interval: NodeJS.Timer;
-
 	constructor(props: any, context: any) {
 		super(props, context)
 		this.state = {
@@ -97,36 +95,11 @@ export default class ServiceDeployment extends React.Component<Props, State> {
 		}
 	}
 
-	componentWillUnmount(): void {
-		if (this.interval) {
-			clearInterval(this.interval)
-		}
-	}
-
 	onLogsToggle = (): void => {
-		if (this.state.logsOpen) {
-			if (this.interval) {
-				clearInterval(this.interval)
-			}
-			this.setState({
-				...this.state,
-				logsOpen: false,
-			})
-		} else {
-			this.interval = setInterval(() => {
-				ServiceActions.log(
-					this.props.deployment, "agent").then((logs) => {
-						this.setState({
-							...this.state,
-							logs: logs.join(""),
-						})
-					});
-			}, 1000);
-			this.setState({
-				...this.state,
-				logsOpen: true,
-			})
-		}
+		this.setState({
+			...this.state,
+			logsOpen: !this.state.logsOpen,
+		})
 	}
 
 	render(): JSX.Element {
@@ -299,6 +272,16 @@ export default class ServiceDeployment extends React.Component<Props, State> {
 			editor = <Editor
 				value={this.state.logs}
 				height="500px"
+				interval={1000}
+				autoScroll={true}
+				refresh={async (): Promise<string> => {
+					try {
+						let logs = await ServiceActions.log(this.props.deployment, "agent")
+						return logs.join("")
+					} catch (error) {
+						return ""
+					}
+				}}
 			/>
 		}
 
