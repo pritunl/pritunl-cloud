@@ -5,10 +5,12 @@ import * as Theme from '../Theme';
 import Help from "./Help"
 import * as ServiceTypes from "../types/ServiceTypes"
 import * as ServiceActions from "../actions/ServiceActions"
+import * as InstanceActions from '../actions/InstanceActions';
 import * as MiscUtils from '../utils/MiscUtils';
 import NonState from './NonState';
 import PageInfo from "./PageInfo"
 import Editor from "./Editor"
+import * as Router from "../Router";
 import * as PageInfos from './PageInfo';
 
 interface Props {
@@ -511,6 +513,16 @@ export default class ServiceDeployment extends React.Component<Props, State> {
 								style={css.info}
 								bars={resourceBars}
 							/>
+							<button
+								className="bp5-button bp5-small"
+								style={css.cardButton}
+								onClick={(): void => {
+									InstanceActions.filter({
+										id: deployment.instance
+									})
+									Router.setLocation("/instances")
+								}}
+							>View Instance</button>
 						</div>
 					</div>
 					<div className="layout horizontal flex">
