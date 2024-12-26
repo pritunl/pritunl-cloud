@@ -400,8 +400,15 @@ export default class ServiceDeployment extends React.Component<Props, State> {
 							<button
 								className="bp5-button bp5-small"
 								style={css.cardButton}
+								hidden={this.state.logsOpen}
 								onClick={this.onLogsToggle}
-							>Logs</button>
+							>Open Logs</button>
+							<button
+								className="bp5-button bp5-small bp5-intent-danger"
+								style={css.cardButton}
+								hidden={!this.state.logsOpen}
+								onClick={this.onLogsToggle}
+							>Close Logs</button>
 						</div>
 						<div style={css.item}>
 							<PageInfo
