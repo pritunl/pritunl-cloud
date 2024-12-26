@@ -15,6 +15,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/imds/server/utils"
 	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/paths"
@@ -30,6 +31,15 @@ func Sync(db *database.Database, instId primitive.ObjectID,
 	conf *types.Config) (err error) {
 
 	sockPath := paths.GetImdsSockPath(instId)
+
+	exists, err := utils.Exists(sockPath)
+	if err != nil {
+		return
+	}
+
+	if !exists {
+		return
+	}
 
 	client := &http.Client{
 		Transport: &http.Transport{
