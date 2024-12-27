@@ -26,34 +26,37 @@ func (d *Deployments) destroy(db *database.Database,
 	}
 
 	inst := d.stat.GetInstace(deply.Instance)
-	if inst == nil {
-		return
-	}
+	if inst != nil {
+		if inst.DeleteProtection {
+			logrus.WithFields(logrus.Fields{
+				"deployment": deply.Id.Hex(),
+				"instance":   inst.Id.Hex(),
+			}).Warning("deploy: Cannot destroy deployment with " +
+				"instance delete protection")
+			return
+		}
 
-	if inst.DeleteProtection {
-		logrus.WithFields(logrus.Fields{
-			"deployment": deply.Id.Hex(),
-			"instance":   inst.Id.Hex(),
-		}).Warning("deploy: Cannot destroy deployment with " +
-			"instance delete protection")
-		return
-	}
+		if inst.State != instance.Destroy {
+			logrus.WithFields(logrus.Fields{
+				"deployment": deply.Id.Hex(),
+				"instance":   inst.Id.Hex(),
+			}).Info("deploy: Delete deployment instance")
 
-	if inst.State != instance.Destroy {
-		logrus.WithFields(logrus.Fields{
-			"deployment": deply.Id.Hex(),
-			"instance":   inst.Id.Hex(),
-		}).Info("deploy: Delete deployment instance")
+			time.Sleep(5 * time.Second)
 
-		time.Sleep(5 * time.Second)
-
-		err = instance.Delete(db, inst.Id)
-		if err != nil {
-			if _, ok := err.(*database.NotFoundError); !ok {
-				err = nil
-			} else {
-				return
+			err = instance.Delete(db, inst.Id)
+			if err != nil {
+				if _, ok := err.(*database.NotFoundError); !ok {
+					err = nil
+				} else {
+					return
+				}
 			}
+		}
+	} else {
+		err = deployment.Remove(db, deply.Id)
+		if err != nil {
+			return
 		}
 	}
 
