@@ -293,78 +293,95 @@ export default class ServiceDeployment extends React.Component<Props, State> {
 				compact={true}
 				style={cardStyle}
 			>
-				<div className="layout horizontal flex">
-					<div className="layout center" style={css.checkBox}>
-						<Blueprint.Checkbox
-							style={css.check}
-							checked={this.props.selected}
-							onClick={(evt): void => {
-								this.props.onSelect(evt.shiftKey)
-							}}
-						/>
+				<div className="layout vertical flex">
+					<div className="layout horizontal flex">
+						<div className="layout center" style={css.checkBox}>
+							<Blueprint.Checkbox
+								style={css.check}
+								checked={this.props.selected}
+								onClick={(evt): void => {
+									this.props.onSelect(evt.shiftKey)
+								}}
+							/>
+						</div>
+						<div style={css.itemFirst}>
+							<PageInfo
+								compact={true}
+								style={css.info}
+								fields={[
+									{
+										label: "Image ID",
+										value: deployment.id,
+									},
+								]}
+							/>
+							<button
+								className="bp5-button bp5-small"
+								style={css.cardButton}
+								hidden={this.state.logsOpen}
+								onClick={this.onLogsToggle}
+							>Open Logs</button>
+							<button
+								className="bp5-button bp5-small bp5-intent-danger"
+								style={css.cardButton}
+								hidden={!this.state.logsOpen}
+								onClick={this.onLogsToggle}
+							>Close Logs</button>
+						</div>
+						<div style={css.item}>
+							<PageInfo
+								compact={true}
+								style={css.info}
+								fields={[
+									{
+										label: "Commit ID",
+										value: deployment.spec.substring(0, 12),
+										hover: specHover,
+										valueClass: commitClass,
+									},
+								]}
+							/>
+						</div>
+						<div style={css.item}>
+							<PageInfo
+								compact={true}
+								style={css.info}
+								fields={[
+									{
+										label: "Image ID",
+										value: deployment.image_id || "-",
+									},
+								]}
+							/>
+						</div>
+						<div style={css.item}>
+							<PageInfo
+								compact={true}
+								style={css.info}
+								fields={[
+									{
+										label: "Image Name",
+										value: deployment.image_name || "-",
+									},
+								]}
+							/>
+						</div>
+						<div style={css.item}>
+							<PageInfo
+								compact={true}
+								style={css.info}
+								fields={[
+									{
+										label: "Timestamp",
+										value: MiscUtils.formatDateLocal(
+											deployment.instance_heartbeat) || "-",
+									},
+								]}
+							/>
+						</div>
 					</div>
-					<div style={css.itemFirst}>
-						<PageInfo
-							compact={true}
-							style={css.info}
-							fields={[
-								{
-									label: "Image ID",
-									value: deployment.id,
-								},
-							]}
-						/>
-					</div>
-					<div style={css.item}>
-						<PageInfo
-							compact={true}
-							style={css.info}
-							fields={[
-								{
-									label: "Commit ID",
-									value: deployment.spec.substring(0, 12),
-									hover: specHover,
-									valueClass: commitClass,
-								},
-							]}
-						/>
-					</div>
-					<div style={css.item}>
-						<PageInfo
-							compact={true}
-							style={css.info}
-							fields={[
-								{
-									label: "Image ID",
-									value: deployment.image_id || "-",
-								},
-							]}
-						/>
-					</div>
-					<div style={css.item}>
-						<PageInfo
-							compact={true}
-							style={css.info}
-							fields={[
-								{
-									label: "Image Name",
-									value: deployment.image_name || "-",
-								},
-							]}
-						/>
-					</div>
-					<div style={css.item}>
-						<PageInfo
-							compact={true}
-							style={css.info}
-							fields={[
-								{
-									label: "Timestamp",
-									value: MiscUtils.formatDateLocal(
-										deployment.instance_heartbeat) || "-",
-								},
-							]}
-						/>
+					<div className="layout horizontal flex">
+						{editor}
 					</div>
 				</div>
 			</Blueprint.Card>
