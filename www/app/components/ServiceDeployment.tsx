@@ -83,6 +83,9 @@ const css = {
 		fontWeight: Theme.monospaceWeight,
 	} as React.CSSProperties,
 	cardButton: {
+		marginTop: "1px",
+	} as React.CSSProperties,
+	cardButtonRight: {
 		marginTop: "6px",
 	} as React.CSSProperties,
 }
@@ -515,7 +518,7 @@ export default class ServiceDeployment extends React.Component<Props, State> {
 							/>
 							<button
 								className="bp5-button bp5-small"
-								style={css.cardButton}
+								style={css.cardButtonRight}
 								onClick={(): void => {
 									InstanceActions.filter({
 										id: deployment.instance
