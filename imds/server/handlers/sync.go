@@ -68,3 +68,10 @@ func hostSyncPut(c *gin.Context) {
 
 	c.JSON(200, ste)
 }
+
+func hostSyncGet(c *gin.Context) {
+	ste := state.Global.State.Copy()
+	ste.Output = state.Global.GetOutput()
+
+	c.JSON(200, ste)
+}
