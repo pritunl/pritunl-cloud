@@ -82,7 +82,7 @@ func GetAgentLog(c context.Context, db *database.Database,
 		return
 	}
 
-	for i := len(outputRevrse); i >= 0; i-- {
+	for i := len(outputRevrse) - 1; i >= 0; i-- {
 		output = append(output, outputRevrse[i])
 	}
 
