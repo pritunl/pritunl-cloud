@@ -7,6 +7,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/disk"
+	"github.com/pritunl/pritunl-cloud/imds"
 	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/state"
@@ -133,6 +134,8 @@ func (d *Deployments) image(db *database.Database,
 		return
 	}
 
+	virt := d.stat.GetVirt(inst.Id)
+
 	if inst.Guest == nil {
 		return
 	}
@@ -143,6 +146,11 @@ func (d *Deployments) image(db *database.Database,
 		logrus.WithFields(logrus.Fields{
 			"instance_id": inst.Id.Hex(),
 		}).Info("deploy: Stopping instance for deployment image")
+
+		err = imds.Pull(db, inst.Id, virt.ImdsHostSecret)
+		if err != nil {
+			return
+		}
 
 		err = instance.SetState(db, inst.Id, instance.Stop)
 		if err != nil {
