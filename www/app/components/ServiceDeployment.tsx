@@ -83,7 +83,7 @@ const css = {
 		fontWeight: Theme.monospaceWeight,
 	} as React.CSSProperties,
 	cardButton: {
-		marginTop: "2px",
+		marginTop: "6px",
 	} as React.CSSProperties,
 }
 
