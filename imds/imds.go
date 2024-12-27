@@ -176,3 +176,122 @@ func Sync(db *database.Database, instId primitive.ObjectID,
 
 	return
 }
+
+func Pull(db *database.Database, instId primitive.ObjectID,
+	imdsHostSecret string) (err error) {
+
+	sockPath := paths.GetImdsSockPath(instId)
+
+	exists, err := utils.Exists(sockPath)
+	if err != nil {
+		return
+	}
+
+	if !exists {
+		return
+	}
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			DialContext: func(_ context.Context,
+				_, _ string) (net.Conn, error) {
+
+				return net.Dial("unix", sockPath)
+			},
+		},
+		Timeout: 6 * time.Second,
+	}
+
+	req, err := http.NewRequest("GET", "http://unix/sync", nil)
+	if err != nil {
+		err = &errortypes.RequestError{
+			errors.Wrap(err, "agent: Failed to create imds request"),
+		}
+		return
+	}
+
+	req.Header.Set("User-Agent", "pritunl-imds")
+	req.Header.Set("Auth-Token", imdsHostSecret)
+
+	resp, e := client.Do(req)
+	if e != nil {
+		err = &errortypes.RequestError{
+			errors.Wrap(e, "agent: Imds request failed"),
+		}
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		body := ""
+		data, _ := ioutil.ReadAll(resp.Body)
+		if data != nil {
+			body = string(data)
+		}
+
+		errData := &errortypes.ErrorData{}
+		err = json.Unmarshal(data, errData)
+		if err != nil || errData.Error == "" {
+			errData = nil
+		}
+
+		if errData != nil && errData.Message != "" {
+			body = errData.Message
+		}
+
+		err = &errortypes.RequestError{
+			errors.Newf(
+				"agent: Imds host sync error %d - %s",
+				resp.StatusCode, body),
+		}
+		return
+	}
+
+	ste := &types.State{}
+	err = json.NewDecoder(resp.Body).Decode(ste)
+	if err != nil {
+		err = &errortypes.RequestError{
+			errors.Wrap(err, "agent: Failed to decode imds host sync resp"),
+		}
+		return
+	}
+
+	if ste.Status != "" {
+		coll := db.Instances()
+
+		_, err = coll.UpdateOne(db, &bson.M{
+			"_id": instId,
+		}, bson.M{
+			"$set": &bson.M{
+				"guest": &instance.GuestData{
+					Status:    ste.Status,
+					Heartbeat: ste.Timestamp,
+					Memory:    ste.Memory,
+					HugePages: ste.HugePages,
+					Load1:     ste.Load1,
+					Load5:     ste.Load5,
+					Load15:    ste.Load15,
+				},
+			},
+		})
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		for _, entry := range ste.Output {
+			log := &instance.AgentLog{
+				Instance:  instId,
+				Timestamp: entry.Timestamp,
+				Message:   entry.Message,
+			}
+
+			err = log.Insert(db)
+			if err != nil {
+				return
+			}
+		}
+	}
+
+	return
+}
