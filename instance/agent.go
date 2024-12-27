@@ -54,7 +54,7 @@ func GetAgentLog(c context.Context, db *database.Database,
 		&options.FindOptions{
 			Limit: &limit,
 			Sort: &bson.D{
-				{"timestamp", -1},
+				{"t", -1},
 			},
 		},
 	)
