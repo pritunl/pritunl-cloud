@@ -11,6 +11,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
@@ -373,6 +374,22 @@ func (i *Image) Sync(db *database.Database) (err error) {
 			err = database.ParseError(err)
 			return
 		}
+	}
+
+	return
+}
+
+func (i *Image) Remove(db *database.Database) (err error) {
+	if !i.Deployment.IsZero() {
+		err = deployment.Remove(db, i.Deployment)
+		if err != nil {
+			return
+		}
+	}
+
+	err = Remove(db, i.Id)
+	if err != nil {
+		return
 	}
 
 	return
