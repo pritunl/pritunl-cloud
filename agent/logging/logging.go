@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"time"
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/agent/constants"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/imds/types"
 )
 
 type Redirect struct {
@@ -16,6 +18,18 @@ type Redirect struct {
 	writer     io.Writer
 	origStout  *os.File
 	origStderr *os.File
+	output     chan *types.Entry
+}
+
+func (r *Redirect) GetOutput() (entries []*types.Entry) {
+	for {
+		select {
+		case entry := <-r.output:
+			entries = append(entries, entry)
+		default:
+			return
+		}
+	}
 }
 
 func (r *Redirect) Open() (err error) {
@@ -31,6 +45,7 @@ func (r *Redirect) Open() (err error) {
 		return
 	}
 
+	r.output = make(chan *types.Entry, 10000)
 	r.writer = io.MultiWriter(r.file, os.Stdout)
 	r.origStout = os.Stdout
 	r.origStderr = os.Stderr
@@ -52,6 +67,13 @@ func (r *Redirect) Open() (err error) {
 			line := scanner.Text()
 
 			fmt.Fprintln(r.writer, line)
+
+			if len(r.output) < 9000 {
+				r.output <- &types.Entry{
+					Timestamp: time.Now(),
+					Message:   line,
+				}
+			}
 		}
 	}()
 
