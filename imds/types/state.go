@@ -15,6 +15,13 @@ type State struct {
 	Output    []*Entry  `json:"output,omitempty"`
 }
 
+func (s *State) Final() bool {
+	if s.Status == Imaged {
+		return true
+	}
+	return false
+}
+
 func (s *State) Copy() *State {
 	return &State{
 		Status:    s.Status,
