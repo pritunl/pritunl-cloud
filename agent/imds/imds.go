@@ -218,7 +218,7 @@ func (m *Imds) SetInitialized() {
 	m.initialized = true
 }
 
-func (m *Imds) RunSync() {
+func (m *Imds) RunSync(fast bool) {
 	m.waiter.Add(1)
 
 	go func() {
@@ -232,7 +232,11 @@ func (m *Imds) RunSync() {
 				}).Error("agent: Failed to sync")
 			}
 
-			time.Sleep(1 * time.Second)
+			if fast {
+				time.Sleep(500 * time.Millisecond)
+			} else {
+				time.Sleep(1 * time.Second)
+			}
 		}
 	}()
 }
