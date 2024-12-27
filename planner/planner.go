@@ -72,16 +72,18 @@ func (p *Planner) checkInstance(db *database.Database,
 	}
 
 	if inst == nil {
-		logrus.WithFields(logrus.Fields{
-			"deployment": deply.Id.Hex(),
-			"instance":   deply.Instance.Hex(),
-			"service":    deply.Service.Hex(),
-			"unit":       deply.Unit.Hex(),
-		}).Info("scheduler: Removing deployment for destroyed instance")
+		if deply.Kind == deployment.Instance {
+			logrus.WithFields(logrus.Fields{
+				"deployment": deply.Id.Hex(),
+				"instance":   deply.Instance.Hex(),
+				"service":    deply.Service.Hex(),
+				"unit":       deply.Unit.Hex(),
+			}).Info("scheduler: Removing deployment for destroyed instance")
 
-		err = deployment.Remove(db, deply.Id)
-		if err != nil {
-			return
+			err = deployment.Remove(db, deply.Id)
+			if err != nil {
+				return
+			}
 		}
 
 		return
