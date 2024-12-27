@@ -276,7 +276,7 @@ func (i *Image) Upsert(db *database.Database) (err error) {
 
 	opts := &options.UpdateOptions{}
 	opts.SetUpsert(true)
-	_, err = coll.UpdateOne(
+	resp, err := coll.UpdateOne(
 		db,
 		&bson.M{
 			"storage": i.Storage,
@@ -305,6 +305,10 @@ func (i *Image) Upsert(db *database.Database) (err error) {
 		return
 	}
 
+	if resp.UpsertedID != nil {
+		i.Id = resp.UpsertedID.(primitive.ObjectID)
+	}
+
 	return
 }
 
@@ -316,7 +320,7 @@ func (i *Image) Sync(db *database.Database) (err error) {
 	if strings.HasPrefix(i.Key, "backup/") ||
 		strings.HasPrefix(i.Key, "snapshot/") {
 
-		_, err = coll.UpdateOne(
+		resp, e := coll.UpdateOne(
 			db,
 			&bson.M{
 				"storage": i.Storage,
@@ -338,8 +342,8 @@ func (i *Image) Sync(db *database.Database) (err error) {
 				},
 			},
 		)
-		if err != nil {
-			err = database.ParseError(err)
+		if e != nil {
+			err = database.ParseError(e)
 			if _, ok := err.(*database.NotFoundError); ok {
 				err = &LostImageError{
 					errors.Wrap(err, "image: Lost image"),
@@ -347,10 +351,14 @@ func (i *Image) Sync(db *database.Database) (err error) {
 			}
 			return
 		}
+
+		if resp.UpsertedID != nil {
+			i.Id = resp.UpsertedID.(primitive.ObjectID)
+		}
 	} else {
 		opts := &options.UpdateOptions{}
 		opts.SetUpsert(true)
-		_, err = coll.UpdateOne(
+		resp, e := coll.UpdateOne(
 			db,
 			&bson.M{
 				"storage": i.Storage,
@@ -370,9 +378,13 @@ func (i *Image) Sync(db *database.Database) (err error) {
 			},
 			opts,
 		)
-		if err != nil {
-			err = database.ParseError(err)
+		if e != nil {
+			err = database.ParseError(e)
 			return
+		}
+
+		if resp.UpsertedID != nil {
+			i.Id = resp.UpsertedID.(primitive.ObjectID)
 		}
 	}
 
