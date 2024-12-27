@@ -109,6 +109,7 @@ func imageDelete(c *gin.Context) {
 	}
 
 	event.PublishDispatch(db, "image.change")
+	event.PublishDispatch(db, "service.change")
 
 	c.JSON(200, nil)
 }
@@ -134,6 +135,7 @@ func imagesDelete(c *gin.Context) {
 	}
 
 	event.PublishDispatch(db, "image.change")
+	event.PublishDispatch(db, "service.change")
 
 	c.JSON(200, nil)
 }
