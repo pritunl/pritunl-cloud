@@ -13,6 +13,7 @@ import (
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/agent/constants"
+	"github.com/pritunl/pritunl-cloud/agent/logging"
 	"github.com/pritunl/pritunl-cloud/engine"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/imds/types"
@@ -28,12 +29,13 @@ var (
 )
 
 type Imds struct {
-	Address     string         `json:"address"`
-	Port        int            `json:"port"`
-	Secret      string         `json:"secret"`
-	engine      *engine.Engine `json:"-"`
-	initialized bool           `json:"-"`
-	waiter      sync.WaitGroup `json:"-"`
+	Address     string            `json:"address"`
+	Port        int               `json:"port"`
+	Secret      string            `json:"secret"`
+	engine      *engine.Engine    `json:"-"`
+	initialized bool              `json:"-"`
+	waiter      sync.WaitGroup    `json:"-"`
+	logger      *logging.Redirect `json:"-"`
 }
 
 func (m *Imds) NewRequest(method, pth string, data interface{}) (
@@ -135,8 +137,8 @@ func (m *Imds) Sync() (ready bool, err error) {
 		return
 	}
 
-	if m.engine != nil {
-		data.Output = m.engine.GetOutput()
+	if m.logger != nil {
+		data.Output = m.logger.GetOutput()
 	}
 
 	req, err := m.NewRequest("PUT", "/sync", data)
@@ -263,6 +265,12 @@ func (m *Imds) Wait() (err error) {
 
 func (m *Imds) Init(eng *engine.Engine) (err error) {
 	m.engine = eng
+	m.logger = &logging.Redirect{}
+
+	err = m.logger.Open()
+	if err != nil {
+		return
+	}
 
 	confData, err := utils.Read(constants.ImdsConfPath)
 	if err != nil {
@@ -278,4 +286,8 @@ func (m *Imds) Init(eng *engine.Engine) (err error) {
 	}
 
 	return
+}
+
+func (m *Imds) Close() {
+	m.logger.Close()
 }
