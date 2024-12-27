@@ -44,6 +44,24 @@ func Get(db *database.Database, imgId primitive.ObjectID) (
 	return
 }
 
+func GetKey(db *database.Database, storeId primitive.ObjectID, key string) (
+	img *Image, err error) {
+
+	coll := db.Images()
+	img = &Image{}
+
+	err = coll.FindOne(db, &bson.M{
+		"storage": storeId,
+		"key":     key,
+	}).Decode(img)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetOrg(db *database.Database, orgId, imgId primitive.ObjectID) (
 	img *Image, err error) {
 
