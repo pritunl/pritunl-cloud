@@ -8,6 +8,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/event"
+	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/imds"
 	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/instance"
@@ -30,6 +31,30 @@ func (d *Deployments) destroy(db *database.Database,
 
 	if deply.Node != d.stat.Node().Id {
 		return
+	}
+
+	if deply.Kind == deployment.Image && !deply.Image.IsZero() {
+		img, e := image.Get(db, deply.Image)
+		if e != nil {
+			err = e
+			if _, ok := err.(*database.NotFoundError); ok {
+				img = nil
+				err = nil
+			} else {
+				return
+			}
+
+			return
+		}
+
+		if img != nil {
+			err = img.Remove(db)
+			if err != nil {
+				return
+			}
+
+			event.PublishDispatch(db, "image.change")
+		}
 	}
 
 	inst := d.stat.GetInstace(deply.Instance)
