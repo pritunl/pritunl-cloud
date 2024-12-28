@@ -123,6 +123,10 @@ func (p *Planner) checkInstance(db *database.Database,
 		return
 	}
 
+	if inst == nil {
+		return
+	}
+
 	if deply.State == deployment.Archive && !inst.IsActive() {
 		deply.State = deployment.Archived
 		err = deply.CommitFields(db, set.NewSet("state"))
