@@ -24,6 +24,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/image"
+	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/lock"
 	"github.com/pritunl/pritunl-cloud/lvm"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -1114,6 +1115,11 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk,
 		deply.SetImageState(deployment.Complete)
 		err = deply.CommitFields(db, set.NewSet(
 			"image", "image_data.state"))
+		if err != nil {
+			return
+		}
+
+		err = instance.Delete(db, deply.Instance)
 		if err != nil {
 			return
 		}
