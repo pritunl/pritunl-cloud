@@ -8,7 +8,6 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/agent/constants"
 	"github.com/pritunl/pritunl-cloud/agent/imds"
-	"github.com/pritunl/pritunl-cloud/agent/logging"
 	"github.com/pritunl/pritunl-cloud/engine"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/imds/types"
@@ -38,6 +37,7 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
+		defer ids.Close()
 
 		val, err := ids.Get(flag.Arg(1))
 		if err != nil {
@@ -50,21 +50,15 @@ func main() {
 	case "engine":
 		eng := &engine.Engine{}
 		ids := &imds.Imds{}
-		log := &logging.Redirect{}
 
-		err := log.Open()
-		if err != nil {
-			panic(err)
-		}
-		defer log.Close()
-
-		err = ids.Init(eng)
+		err := ids.Init(eng)
 		if err != nil {
 			logger.WithFields(logger.Fields{
 				"error": err,
 			}).Error("agent: Failed to init imds")
 			panic(err)
 		}
+		defer ids.Close()
 
 		ready := false
 		for i := 0; i < 900; i++ {
