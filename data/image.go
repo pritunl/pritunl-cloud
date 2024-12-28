@@ -836,7 +836,7 @@ func DeleteImage(db *database.Database, imgId primitive.ObjectID) (
 		return
 	}
 
-	err = image.Remove(db, img.Id)
+	err = img.Remove(db)
 	if err != nil {
 		return
 	}
@@ -923,7 +923,7 @@ func DeleteImageOrg(db *database.Database, orgId, imgId primitive.ObjectID) (
 		return
 	}
 
-	err = image.Remove(db, img.Id)
+	err = img.Remove(db)
 	if err != nil {
 		return
 	}
