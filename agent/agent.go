@@ -106,7 +106,7 @@ func main() {
 			break
 		}
 
-		ids.RunSync()
+		ids.RunSync(image)
 
 		err = eng.Run(phase)
 		if err != nil {
