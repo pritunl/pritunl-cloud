@@ -247,14 +247,28 @@ func Sync(db *database.Database, store *storage.Storage) (err error) {
 	}
 	removeKeysSet.Subtract(remoteKeys)
 
-	removeKeys := []string{}
-	for key := range removeKeysSet.Iter() {
-		removeKeys = append(removeKeys, key.(string))
-	}
+	for keyInf := range removeKeysSet.Iter() {
+		key := keyInf.(string)
 
-	err = image.RemoveKeys(db, store.Id, removeKeys)
-	if err != nil {
-		return
+		img, e := image.GetKey(db, store.Id, key)
+		if e != nil {
+			err = e
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = nil
+			} else {
+				return
+			}
+		}
+
+		logrus.WithFields(logrus.Fields{
+			"bucket": store.Bucket,
+			"key":    img.Key,
+		}).Info("data: Remote image deleted, removing local")
+
+		err = img.Remove(db)
+		if err != nil {
+			return
+		}
 	}
 
 	return
