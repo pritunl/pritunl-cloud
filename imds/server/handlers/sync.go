@@ -28,7 +28,9 @@ func syncPut(c *gin.Context) {
 		return
 	}
 
-	state.Global.State.Status = data.Status
+	if !state.Global.State.Final() {
+		state.Global.State.Status = data.Status
+	}
 	state.Global.State.Timestamp = time.Now()
 	state.Global.State.Memory = data.Memory
 	state.Global.State.HugePages = data.HugePages
