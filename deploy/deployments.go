@@ -90,6 +90,8 @@ func (d *Deployments) destroy(db *database.Database,
 		if err != nil {
 			return
 		}
+
+		event.PublishDispatch(db, "service.change")
 	}
 
 	return
