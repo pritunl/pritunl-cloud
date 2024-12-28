@@ -66,11 +66,17 @@ func (r *Redirect) Open() (err error) {
 		for scanner.Scan() {
 			line := scanner.Text()
 
-			fmt.Fprintln(r.writer, line)
+			timestamp := time.Now()
+
+			fmt.Fprint(r.writer, fmt.Sprintf(
+				"[%s] %s\n",
+				timestamp.Format("Mon Jan _2 15:04:05 2006"),
+				line,
+			))
 
 			if len(r.output) < 9000 {
 				r.output <- &types.Entry{
-					Timestamp: time.Now(),
+					Timestamp: timestamp,
 					Message:   line,
 				}
 			}
