@@ -35,6 +35,7 @@ type Imds struct {
 	engine      *engine.Engine    `json:"-"`
 	initialized bool              `json:"-"`
 	waiter      sync.WaitGroup    `json:"-"`
+	syncLock    sync.Mutex        `json:"-"`
 	logger      *logging.Redirect `json:"-"`
 }
 
@@ -132,6 +133,9 @@ type SyncResp struct {
 }
 
 func (m *Imds) Sync() (ready bool, err error) {
+	m.syncLock.Lock()
+	defer m.syncLock.Unlock()
+
 	data, err := m.GetState()
 	if err != nil {
 		return
