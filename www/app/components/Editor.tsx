@@ -23,7 +23,7 @@ interface State {
 
 const css = {
 	editor: {
-		margin: "11px 0 10px 0",
+		margin: "0",
 		borderRadius: "3px",
 		overflow: "hidden",
 		width: "100%",
