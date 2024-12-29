@@ -344,21 +344,3 @@ func Remove(db *database.Database, imgId primitive.ObjectID) (err error) {
 
 	return
 }
-
-func RemoveKeys(db *database.Database, storeId primitive.ObjectID,
-	keys []string) (err error) {
-	coll := db.Images()
-
-	_, err = coll.DeleteMany(db, &bson.M{
-		"storage": storeId,
-		"key": &bson.M{
-			"$in": keys,
-		},
-	})
-	if err != nil {
-		err = database.ParseError(err)
-		return
-	}
-
-	return
-}
