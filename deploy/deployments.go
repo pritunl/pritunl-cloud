@@ -74,8 +74,6 @@ func (d *Deployments) destroy(db *database.Database,
 				"instance":   inst.Id.Hex(),
 			}).Info("deploy: Delete deployment instance")
 
-			time.Sleep(5 * time.Second)
-
 			err = instance.Delete(db, inst.Id)
 			if err != nil {
 				if _, ok := err.(*database.NotFoundError); !ok {
