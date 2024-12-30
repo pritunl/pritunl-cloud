@@ -20,10 +20,12 @@ export default class RouterRoutes extends React.Component<Props, State> {
 
 	componentDidMount() {
 		window.addEventListener("router_update", this.refresh)
+		window.addEventListener("hashchange", this.refresh)
 	}
 
 	componentWillUnmount() {
 		window.removeEventListener("router_update", this.refresh)
+		window.removeEventListener("hashchange", this.refresh)
 	}
 
 	refresh = () => {
