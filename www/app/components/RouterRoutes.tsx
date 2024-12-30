@@ -29,10 +29,13 @@ export default class RouterRoutes extends React.Component<Props, State> {
 	}
 
 	refresh = () => {
-		this.setState({
-			...this.state,
-			path: window.location.hash,
-		})
+		let newPath = window.location.hash
+		if (this.state.path !== newPath) {
+			this.setState({
+				...this.state,
+				path: window.location.hash,
+			})
+		}
 	}
 
 	render(): JSX.Element {
