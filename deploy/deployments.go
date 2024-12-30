@@ -161,7 +161,7 @@ func (d *Deployments) imageShutdown(deply *deployment.Deployment,
 	virt *vm.VirtualMachine) {
 
 	acquired, lockId := deploymentsLock.LockOpenTimeout(
-		virt.Id.Hex(), 10*time.Minute)
+		virt.Id.Hex(), 5*time.Minute)
 	if !acquired {
 		return
 	}
