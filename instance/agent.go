@@ -21,7 +21,7 @@ type AgentLog struct {
 
 func (l *AgentLog) String() string {
 	return fmt.Sprintf(
-		"[%s]%s\n",
+		"[%s] %s\n",
 		l.Timestamp.Format("Mon Jan _2 15:04:05 2006"),
 		l.Message,
 	)
