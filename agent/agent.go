@@ -133,6 +133,16 @@ func main() {
 			}
 		}
 
+		time.Sleep(500 * time.Millisecond)
+
+		_, err = ids.Sync()
+		if err != nil {
+			logger.WithFields(logger.Fields{
+				"error": err,
+			}).Error("agent: Failed to sync")
+			panic(err)
+		}
+
 		break
 	case "image":
 		ids := &imds.Imds{}
