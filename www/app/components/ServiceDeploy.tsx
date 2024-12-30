@@ -300,7 +300,7 @@ export default class ServiceDeploy extends React.Component<Props, State> {
 					evt.stopPropagation()
 					this.openDialog()
 				}}
-				text="New Image"
+				text="New Build"
 			/>
 			{dialogElem}
 		</div>
