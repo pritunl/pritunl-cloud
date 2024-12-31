@@ -615,7 +615,7 @@ func Create(db *database.Database, inst *instance.Instance,
 			return
 		}
 	} else {
-		err = dhcps.Stop(db, virt)
+		err = dhcps.Stop(virt)
 		if err != nil {
 			return
 		}
@@ -627,7 +627,7 @@ func Create(db *database.Database, inst *instance.Instance,
 			return
 		}
 	} else {
-		err = tpm.Stop(db, virt)
+		err = tpm.Stop(virt)
 		if err != nil {
 			return
 		}

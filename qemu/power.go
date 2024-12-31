@@ -100,7 +100,7 @@ func PowerOn(db *database.Database, inst *instance.Instance,
 			return
 		}
 	} else {
-		err = dhcps.Stop(db, virt)
+		err = dhcps.Stop(virt)
 		if err != nil {
 			return
 		}
@@ -112,7 +112,7 @@ func PowerOn(db *database.Database, inst *instance.Instance,
 			return
 		}
 	} else {
-		err = tpm.Stop(db, virt)
+		err = tpm.Stop(virt)
 		if err != nil {
 			return
 		}
@@ -238,9 +238,9 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		}
 	}
 
-	_ = tpm.Stop(db, virt)
-	_ = imds.Stop(db, virt)
-	_ = dhcps.Stop(db, virt)
+	_ = tpm.Stop(virt)
+	_ = imds.Stop(virt)
+	_ = dhcps.Stop(virt)
 
 	err = NetworkConfClear(db, virt)
 	if err != nil {
@@ -279,9 +279,9 @@ func ForcePowerOffErr(db *database.Database, virt *vm.VirtualMachine,
 		return
 	}
 
-	_ = tpm.Stop(db, virt)
-	_ = imds.Stop(db, virt)
-	_ = dhcps.Stop(db, virt)
+	_ = tpm.Stop(virt)
+	_ = imds.Stop(virt)
+	_ = dhcps.Stop(virt)
 
 	err = NetworkConfClear(db, virt)
 	if err != nil {
@@ -319,9 +319,9 @@ func ForcePowerOff(db *database.Database, virt *vm.VirtualMachine) (
 		return
 	}
 
-	_ = tpm.Stop(db, virt)
-	_ = imds.Stop(db, virt)
-	_ = dhcps.Stop(db, virt)
+	_ = tpm.Stop(virt)
+	_ = imds.Stop(virt)
+	_ = dhcps.Stop(virt)
 
 	err = NetworkConfClear(db, virt)
 	if err != nil {

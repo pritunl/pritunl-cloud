@@ -10,7 +10,7 @@ import (
 func NetworkConfClear(db *database.Database,
 	virt *vm.VirtualMachine) (err error) {
 
-	err = dhcps.Stop(db, virt)
+	err = dhcps.Stop(virt)
 	if err != nil {
 		return
 	}

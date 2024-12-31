@@ -216,9 +216,9 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"id": virt.Id.Hex(),
 	}).Info("qemu: Destroying virtual machine")
 
-	_ = tpm.Stop(db, virt)
-	_ = imds.Stop(db, virt)
-	_ = dhcps.Stop(db, virt)
+	_ = tpm.Stop(virt)
+	_ = imds.Stop(virt)
+	_ = dhcps.Stop(virt)
 
 	exists, err := utils.Exists(unitPath)
 	if err != nil {
@@ -507,9 +507,9 @@ func Cleanup(db *database.Database, virt *vm.VirtualMachine) {
 		"id": virt.Id.Hex(),
 	}).Info("qemu: Stopped virtual machine")
 
-	_ = tpm.Stop(db, virt)
-	_ = imds.Stop(db, virt)
-	_ = dhcps.Stop(db, virt)
+	_ = tpm.Stop(virt)
+	_ = imds.Stop(virt)
+	_ = dhcps.Stop(virt)
 
 	err := NetworkConfClear(db, virt)
 	if err != nil {
