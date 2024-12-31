@@ -59,6 +59,11 @@ func PowerOn(db *database.Database, inst *instance.Instance,
 		return
 	}
 
+	err = cleanRun(virt)
+	if err != nil {
+		return
+	}
+
 	err = virt.GenerateImdsSecret()
 	if err != nil {
 		return

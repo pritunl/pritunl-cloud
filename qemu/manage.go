@@ -486,6 +486,11 @@ func Create(db *database.Database, inst *instance.Instance,
 		return
 	}
 
+	err = cleanRun(virt)
+	if err != nil {
+		return
+	}
+
 	dsk, err := disk.GetInstanceIndex(db, inst.Id, "0")
 	if err != nil {
 		if _, ok := err.(*database.NotFoundError); ok {
