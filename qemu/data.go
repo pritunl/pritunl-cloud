@@ -468,6 +468,10 @@ func Cleanup(db *database.Database, virt *vm.VirtualMachine) {
 		"id": virt.Id.Hex(),
 	}).Info("qemu: Stopped virtual machine")
 
+	_ = tpm.Stop(db, virt)
+	_ = imds.Stop(db, virt)
+	_ = dhcps.Stop(db, virt)
+
 	err := NetworkConfClear(db, virt)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
