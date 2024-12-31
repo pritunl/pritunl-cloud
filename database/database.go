@@ -228,16 +228,6 @@ func (d *Database) Instances() (coll *Collection) {
 	return
 }
 
-func (d *Database) InstancesAgent() (coll *Collection) {
-	coll = d.getCollection("instances_agent")
-	return
-}
-
-func (d *Database) InstancesKmsg() (coll *Collection) {
-	coll = d.getCollection("instances_kmsg")
-	return
-}
-
 func (d *Database) Pools() (coll *Collection) {
 	coll = d.getCollection("pools")
 	return
