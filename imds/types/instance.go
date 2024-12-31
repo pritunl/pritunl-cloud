@@ -46,6 +46,7 @@ type Instance struct {
 	Vnc                 bool               `json:"vnc"`
 	Spice               bool               `json:"spice"`
 	Gui                 bool               `json:"gui"`
+	Deployment          primitive.ObjectID `json:"deployment"`
 }
 
 func NewInstance(inst *instance.Instance) *Instance {
@@ -94,5 +95,6 @@ func NewInstance(inst *instance.Instance) *Instance {
 		Vnc:                 inst.Vnc,
 		Spice:               inst.Spice,
 		Gui:                 inst.Gui,
+		Deployment:          inst.Deployment,
 	}
 }
