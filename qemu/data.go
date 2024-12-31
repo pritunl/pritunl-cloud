@@ -66,6 +66,45 @@ func initHugepage(virt *vm.VirtualMachine) (err error) {
 	return
 }
 
+func cleanRun(virt *vm.VirtualMachine) (err error) {
+	_ = tpm.Stop(virt)
+	_ = imds.Stop(virt)
+	_ = dhcps.Stop(virt)
+
+	runPath := paths.GetInstRunPath(virt.Id)
+	pidPath := paths.GetPidPath(virt.Id)
+	sockPath := paths.GetSockPath(virt.Id)
+	qmpSockPath := paths.GetQmpSockPath(virt.Id)
+	guestPath := paths.GetGuestPath(virt.Id)
+
+	err = utils.RemoveAll(runPath)
+	if err != nil {
+		return
+	}
+
+	err = utils.RemoveAll(pidPath)
+	if err != nil {
+		return
+	}
+
+	err = utils.RemoveAll(sockPath)
+	if err != nil {
+		return
+	}
+
+	err = utils.RemoveAll(qmpSockPath)
+	if err != nil {
+		return
+	}
+
+	err = utils.RemoveAll(guestPath)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func initCache(virt *vm.VirtualMachine) (err error) {
 	err = utils.ExistsMkdir(paths.GetCachesDir(), 0755)
 	if err != nil {
