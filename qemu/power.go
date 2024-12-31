@@ -238,6 +238,10 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		}
 	}
 
+	_ = tpm.Stop(db, virt)
+	_ = imds.Stop(db, virt)
+	_ = dhcps.Stop(db, virt)
+
 	err = NetworkConfClear(db, virt)
 	if err != nil {
 		return
