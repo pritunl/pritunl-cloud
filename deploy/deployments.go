@@ -181,7 +181,7 @@ func (d *Deployments) imageShutdown(deply *deployment.Deployment,
 
 		time.Sleep(3 * time.Second)
 
-		err := imds.Pull(db, virt.Id, virt.ImdsHostSecret)
+		err := imds.Pull(db, virt.Id, virt.Deployment, virt.ImdsHostSecret)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"instance_id": virt.Id.Hex(),
