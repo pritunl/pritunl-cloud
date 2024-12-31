@@ -15,7 +15,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/event"
-	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/pritunl/pritunl-cloud/journal"
 	"github.com/pritunl/pritunl-cloud/scheduler"
 	"github.com/pritunl/pritunl-cloud/service"
 	"github.com/pritunl/pritunl-cloud/spec"
@@ -515,7 +515,7 @@ func serviceUnitDeploymentLogGet(c *gin.Context) {
 		return
 	}
 
-	data, err := instance.GetAgentLog(c, db, deply.Instance)
+	data, err := journal.GetOutput(c, db, deply.Id, journal.DeploymentAgent)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
