@@ -18,6 +18,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/imds/server/utils"
 	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/pritunl/pritunl-cloud/journal"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/tools/errors"
 )
@@ -27,7 +28,7 @@ var (
 	hashesLock = sync.Mutex{}
 )
 
-func Sync(db *database.Database, instId primitive.ObjectID,
+func Sync(db *database.Database, instId, deplyId primitive.ObjectID,
 	conf *types.Config) (err error) {
 
 	sockPath := paths.GetImdsSockPath(instId)
@@ -160,14 +161,25 @@ func Sync(db *database.Database, instId primitive.ObjectID,
 			return
 		}
 
+		var kind int
+		var resource primitive.ObjectID
+		if !deplyId.IsZero() {
+			kind = journal.DeploymentAgent
+			resource = deplyId
+		} else {
+			kind = journal.InstanceAgent
+			resource = instId
+		}
+
 		for _, entry := range ste.Output {
-			log := &instance.AgentLog{
-				Instance:  instId,
+			jrnl := &journal.Journal{
+				Resource:  resource,
+				Kind:      kind,
 				Timestamp: entry.Timestamp,
 				Message:   entry.Message,
 			}
 
-			err = log.Insert(db)
+			err = jrnl.Insert(db)
 			if err != nil {
 				return
 			}
@@ -177,7 +189,7 @@ func Sync(db *database.Database, instId primitive.ObjectID,
 	return
 }
 
-func Pull(db *database.Database, instId primitive.ObjectID,
+func Pull(db *database.Database, instId, deplyId primitive.ObjectID,
 	imdsHostSecret string) (err error) {
 
 	sockPath := paths.GetImdsSockPath(instId)
@@ -279,14 +291,25 @@ func Pull(db *database.Database, instId primitive.ObjectID,
 			return
 		}
 
+		var kind int
+		var resource primitive.ObjectID
+		if !deplyId.IsZero() {
+			kind = journal.DeploymentAgent
+			resource = deplyId
+		} else {
+			kind = journal.InstanceAgent
+			resource = instId
+		}
+
 		for _, entry := range ste.Output {
-			log := &instance.AgentLog{
-				Instance:  instId,
+			jrnl := &journal.Journal{
+				Resource:  resource,
+				Kind:      kind,
 				Timestamp: entry.Timestamp,
 				Message:   entry.Message,
 			}
 
-			err = log.Insert(db)
+			err = jrnl.Insert(db)
 			if err != nil {
 				return
 			}
