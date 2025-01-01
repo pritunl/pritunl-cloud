@@ -6,6 +6,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/journal"
 )
 
 func Get(db *database.Database, deplyId primitive.ObjectID) (
@@ -145,6 +146,11 @@ func GetAllStates(db *database.Database) (
 
 func Remove(db *database.Database, deplyId primitive.ObjectID) (err error) {
 	coll := db.Deployments()
+
+	err = journal.Remove(db, deplyId, journal.DeploymentAgent)
+	if err != nil {
+		return
+	}
 
 	_, err = coll.DeleteOne(db, &bson.M{
 		"_id": deplyId,
