@@ -132,7 +132,7 @@ func Start(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	return
 }
 
-func Stop(db *database.Database, virt *vm.VirtualMachine) (err error) {
+func Stop(virt *vm.VirtualMachine) (err error) {
 	unit := paths.GetUnitNameImds(virt.Id)
 
 	_ = systemd.Stop(unit)
