@@ -7,6 +7,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
+	"github.com/pritunl/pritunl-cloud/journal"
 	"github.com/pritunl/pritunl-cloud/pool"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -378,37 +379,12 @@ func Remove(db *database.Database, instId primitive.ObjectID) (err error) {
 		return
 	}
 
-	coll := db.InstancesAgent()
-
-	_, err = coll.DeleteMany(db, &bson.M{
-		"i": instId,
-	})
+	err = journal.Remove(db, instId, journal.InstanceAgent)
 	if err != nil {
-		err = database.ParseError(err)
-		switch err.(type) {
-		case *database.NotFoundError:
-			err = nil
-		default:
-			return
-		}
+		return
 	}
 
-	coll = db.InstancesKmsg()
-
-	_, err = coll.DeleteMany(db, &bson.M{
-		"i": instId,
-	})
-	if err != nil {
-		err = database.ParseError(err)
-		switch err.(type) {
-		case *database.NotFoundError:
-			err = nil
-		default:
-			return
-		}
-	}
-
-	coll = db.Instances()
+	coll := db.Instances()
 
 	_, err = coll.DeleteOne(db, &bson.M{
 		"_id": instId,
