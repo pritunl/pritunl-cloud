@@ -511,7 +511,7 @@ func Start(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	return
 }
 
-func Stop(db *database.Database, virt *vm.VirtualMachine) (err error) {
+func Stop(virt *vm.VirtualMachine) (err error) {
 	namespace := vm.GetNamespace(virt.Id, 0)
 	unitServer4 := paths.GetUnitNameDhcp4(virt.Id, 0)
 	unitServer6 := paths.GetUnitNameDhcp6(virt.Id, 0)
