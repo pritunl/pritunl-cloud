@@ -253,6 +253,11 @@ func (d *Database) LvmLock() (coll *Collection) {
 	return
 }
 
+func (d *Database) Journal() (coll *Collection) {
+	coll = d.getCollection("journal")
+	return
+}
+
 func (d *Database) Firewalls() (coll *Collection) {
 	coll = d.getCollection("firewalls")
 	return
