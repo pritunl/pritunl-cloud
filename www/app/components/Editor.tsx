@@ -14,6 +14,7 @@ interface Props {
 	width?: string
 	interval?: number
 	autoScroll?: boolean
+	style?: React.CSSProperties
 	refresh?: () => Promise<string>
 	onChange?: (value: string) => void
 }
@@ -86,7 +87,17 @@ export default class Editor extends React.Component<Props, State> {
 	}
 
 	render(): JSX.Element {
-		return <div style={css.editor}>
+		let style: React.CSSProperties
+		if (this.props.style) {
+			style = {
+				...css.editor,
+				...this.props.style,
+			}
+		} else {
+			style = css.editor
+		}
+
+		return <div style={style}>
 			<MonacoEditor.Editor
 				height={this.props.height}
 				width={this.props.width}
