@@ -26,9 +26,7 @@ func imdsSyncHandler(db *database.Database) (err error) {
 	confs := imds.GetConfigs()
 
 	for _, conf := range confs {
-		instId := conf.Instance.Id
-
-		err := imds.Sync(db, instId, conf)
+		err := imds.Sync(db, conf.Instance.Id, conf.Instance.Deployment, conf)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
