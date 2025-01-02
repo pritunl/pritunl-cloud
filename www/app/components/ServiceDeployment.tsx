@@ -88,6 +88,9 @@ const css = {
 	cardButtonRight: {
 		marginTop: "6px",
 	} as React.CSSProperties,
+	editor: {
+		marginTop: "5px",
+	} as React.CSSProperties,
 }
 
 export default class ServiceDeployment extends React.Component<Props, State> {
@@ -275,6 +278,7 @@ export default class ServiceDeployment extends React.Component<Props, State> {
 			editor = <Editor
 				height="500px"
 				interval={1000}
+				style={css.editor}
 				autoScroll={true}
 				refresh={async (): Promise<string> => {
 					try {
