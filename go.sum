@@ -200,8 +200,6 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/pritunl/mongo-go-driver v1.16.1 h1:dDxCFCZ2blFLX/eoMYsXvILyCGAHdLWW+AiQPi/8VU4=
 github.com/pritunl/mongo-go-driver v1.16.1/go.mod h1:tJaf7vRIo114IpjW35IPm67rpyrTmBlJjZLGZmo6ygo=
-github.com/pritunl/tools v1.2.0 h1:zXS8JL7Nzg0rAPZJyUqxj2htQEypnBWnwKayfqpeBTo=
-github.com/pritunl/tools v1.2.0/go.mod h1:BiNzTb2ZCesQ5k/Mx0mhOwGXNJNdZk+4jqg39GjRXKU=
 github.com/pritunl/tools v1.2.1 h1:1ilNS5LkGcMYoyppO2QkIAeHfMWhfAgI7P7MEfTCRlU=
 github.com/pritunl/tools v1.2.1/go.mod h1:BiNzTb2ZCesQ5k/Mx0mhOwGXNJNdZk+4jqg39GjRXKU=
 github.com/pritunl/webauthn v1.0.2 h1:dEHCPxEx4mZTIKl8bAMWT3Kgs1SzSRZsPdFg4ECqIuI=
