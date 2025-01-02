@@ -3,6 +3,8 @@ import * as Monaco from "monaco-editor"
 import * as MonacoEditor from "@monaco-editor/react"
 import CompletionStore from "./Store"
 
+let registered = false
+
 export type Match = Monaco.languages.ProviderResult<
 	Monaco.languages.CompletionList>
 
@@ -61,6 +63,11 @@ export function handleBeforeMount(
 export function handleAfterMount(
 		editor: Monaco.editor.IStandaloneCodeEditor,
 		monaco: MonacoEditor.Monaco): void {
+
+	if (registered) {
+		return
+	}
+	registered = true
 
 	monaco.languages.registerHoverProvider("markdown", {
 		provideHover: (model, position, token) => {
