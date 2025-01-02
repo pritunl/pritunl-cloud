@@ -38,6 +38,7 @@ type hypervisor struct {
 	NoIpv6PingInit      bool   `bson:"no_ipv6_ping_init"`
 	ImdsAddress         string `bson:"imds_address" default:"169.254.169.254/16"`
 	ImdsPort            int    `bson:"imds_port" default:"80"`
+	JournalDisplayLimit int64  `bson:"journal_display_limit" default:"5000"`
 	ImdsLogDisplayLimit int64  `bson:"imds_log_display_limit" default:"5000"`
 	KmsgLogDisplayLimit int64  `bson:"kmsg_log_display_limit" default:"5000"`
 	DnsServerPrimary    string `bson:"dns_server_primary" default:"8.8.8.8"`
