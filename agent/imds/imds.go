@@ -269,12 +269,6 @@ func (m *Imds) Wait() (err error) {
 
 func (m *Imds) Init(eng *engine.Engine) (err error) {
 	m.engine = eng
-	m.logger = &logging.Redirect{}
-
-	err = m.logger.Open()
-	if err != nil {
-		return
-	}
 
 	confData, err := utils.Read(constants.ImdsConfPath)
 	if err != nil {
