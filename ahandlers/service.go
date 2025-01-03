@@ -489,8 +489,16 @@ func serviceUnitDeploymentLogGet(c *gin.Context) {
 		return
 	}
 
+	kind := 0
 	resource := c.Query("resource")
-	_ = resource
+	switch resource {
+	case "agent":
+		kind = journal.DeploymentAgent
+		break
+	default:
+		utils.AbortWithStatus(c, 404)
+		return
+	}
 
 	srvc, err := service.Get(db, serviceId)
 	if err != nil {
@@ -515,7 +523,7 @@ func serviceUnitDeploymentLogGet(c *gin.Context) {
 		return
 	}
 
-	data, err := journal.GetOutput(c, db, deply.Id, journal.DeploymentAgent)
+	data, err := journal.GetOutput(c, db, deply.Id, kind)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
