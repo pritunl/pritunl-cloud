@@ -280,6 +280,7 @@ export default class ServiceDeployment extends React.Component<Props, State> {
 				interval={1000}
 				style={css.editor}
 				autoScroll={true}
+				readOnly={true}
 				refresh={async (first: boolean): Promise<string> => {
 					try {
 						let logs = await ServiceActions.log(
