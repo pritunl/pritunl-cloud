@@ -64,6 +64,11 @@ func main() {
 		}
 		defer ids.Close()
 
+		err = ids.OpenLog()
+		if err != nil {
+			return
+		}
+
 		ready := false
 		for i := 0; i < 900; i++ {
 			time.Sleep(200 * time.Millisecond)
