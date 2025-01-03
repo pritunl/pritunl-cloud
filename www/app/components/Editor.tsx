@@ -15,7 +15,7 @@ interface Props {
 	interval?: number
 	autoScroll?: boolean
 	style?: React.CSSProperties
-	refresh?: () => Promise<string>
+	refresh?: (first: boolean) => Promise<string>
 	onChange?: (value: string) => void
 }
 
@@ -46,13 +46,13 @@ export default class Editor extends React.Component<Props, State> {
 	componentDidMount(): void {
 		if (this.props.interval) {
 			this.interval = setInterval(() => {
-				this.props.refresh().then((val) => {
+				this.props.refresh(false).then((val) => {
 					this.update(val)
 				})
 			}, this.props.interval);
 		}
 		if (!this.props.value && this.props.refresh) {
-			this.props.refresh().then((val) => {
+			this.props.refresh(true).then((val) => {
 				this.update(val)
 			})
 		}
