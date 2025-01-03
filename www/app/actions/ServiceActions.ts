@@ -330,11 +330,14 @@ export function updateMultiUnitState(serviceId: string, unitId: string,
 }
 
 export function log(deply: ServiceTypes.Deployment,
-	resource: string): Promise<any> {
+	resource: string, noLoading?: boolean): Promise<any> {
 
 	let curDataSyncId = MiscUtils.uuid();
 
-	let loader = new Loader().loading();
+	let loader: Loader;
+	if (!noLoading) {
+		loader = new Loader().loading();
+	}
 
 	return new Promise<any>((resolve, reject): void => {
 		let req = SuperAgent.get('/service/' + deply.service +
@@ -345,14 +348,18 @@ export function log(deply: ServiceTypes.Deployment,
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.on('abort', () => {
-				loader.done();
+				if (loader) {
+					loader.done();
+				}
 				resolve(null);
 			});
 		dataSyncReqs[curDataSyncId] = req;
 
 		req.end((err: any, res: SuperAgent.Response): void => {
 			delete dataSyncReqs[curDataSyncId];
-			loader.done();
+			if (loader) {
+				loader.done();
+			}
 
 			if (res && res.status === 401) {
 				window.location.href = '/login';
