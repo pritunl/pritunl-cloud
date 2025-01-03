@@ -280,9 +280,10 @@ export default class ServiceDeployment extends React.Component<Props, State> {
 				interval={1000}
 				style={css.editor}
 				autoScroll={true}
-				refresh={async (): Promise<string> => {
+				refresh={async (first: boolean): Promise<string> => {
 					try {
-						let logs = await ServiceActions.log(this.props.deployment, "agent")
+						let logs = await ServiceActions.log(
+							this.props.deployment, "agent", !first)
 						return logs.join("")
 					} catch (error) {
 						return ""
