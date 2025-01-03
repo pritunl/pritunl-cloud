@@ -2,6 +2,7 @@ package journal
 
 import (
 	"context"
+	"strings"
 
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
@@ -56,7 +57,11 @@ func GetOutput(c context.Context, db *database.Database,
 	}
 
 	for i := len(outputRevrse) - 1; i >= 0; i-- {
-		output = append(output, outputRevrse[i])
+		if i == 0 {
+			output = append(output, strings.TrimSuffix(outputRevrse[i], "\n"))
+		} else {
+			output = append(output, outputRevrse[i])
+		}
 	}
 
 	return
