@@ -1,4 +1,4 @@
-package service
+package pod
 
 const (
 	Reserved = "reserved"

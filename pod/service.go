@@ -1,4 +1,4 @@
-package service
+package pod
 
 import (
 	"github.com/dropbox/godropbox/container/set"

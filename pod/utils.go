@@ -1,4 +1,4 @@
-package service
+package pod
 
 import (
 	"github.com/pritunl/mongo-go-driver/bson"
