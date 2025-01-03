@@ -286,6 +286,17 @@ func (m *Imds) Init(eng *engine.Engine) (err error) {
 	return
 }
 
+func (m *Imds) OpenLog() (err error) {
+	m.logger = &logging.Redirect{}
+
+	err = m.logger.Open()
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func (m *Imds) Close() {
 	m.logger.Close()
 }
