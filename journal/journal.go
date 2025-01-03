@@ -19,7 +19,7 @@ type Journal struct {
 func (j *Journal) String() string {
 	return fmt.Sprintf(
 		"[%s] %s\n",
-		j.Timestamp.Format("Mon Jan _2 15:04:05 2006"),
+		j.Timestamp.Format("2006-01-02 15:04:05"),
 		j.Message,
 	)
 }
