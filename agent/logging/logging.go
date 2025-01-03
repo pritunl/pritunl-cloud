@@ -70,7 +70,7 @@ func (r *Redirect) Open() (err error) {
 
 			fmt.Fprint(r.writer, fmt.Sprintf(
 				"[%s] %s\n",
-				timestamp.Format("Mon Jan _2 15:04:05 2006"),
+				timestamp.Format("2006-01-02 15:04:05"),
 				line,
 			))
 
