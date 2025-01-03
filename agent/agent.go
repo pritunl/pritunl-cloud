@@ -29,6 +29,10 @@ func main() {
 
 	flag.Parse()
 
+	logger.Init(
+		logger.SetTimeFormat(""),
+	)
+
 	switch flag.Arg(0) {
 	case "get":
 		ids := &imds.Imds{}
