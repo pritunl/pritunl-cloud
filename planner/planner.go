@@ -13,14 +13,14 @@ import (
 	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/plan"
-	"github.com/pritunl/pritunl-cloud/service"
+	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/sirupsen/logrus"
 )
 
 type Planner struct {
-	servicesMap map[primitive.ObjectID]*service.Service
+	podsMap map[primitive.ObjectID]*pod.Pod
 }
 
 func (p *Planner) setInstanceState(db *database.Database,
@@ -38,7 +38,7 @@ func (p *Planner) setInstanceState(db *database.Database,
 		logrus.WithFields(logrus.Fields{
 			"deployment":    deply.Id.Hex(),
 			"instance":      deply.Instance.Hex(),
-			"service":       deply.Service.Hex(),
+			"pod":           deply.Pod.Hex(),
 			"unit":          deply.Unit.Hex(),
 			"error_code":    errData.Error,
 			"error_message": errData.Message,
@@ -75,7 +75,7 @@ func (p *Planner) checkInstance(db *database.Database,
 		logrus.WithFields(logrus.Fields{
 			"deployment": deply.Id.Hex(),
 			"instance":   deply.Instance.Hex(),
-			"service":    deply.Service.Hex(),
+			"pod":        deply.Pod.Hex(),
 			"unit":       deply.Unit.Hex(),
 		}).Info("scheduler: Removing deployment for destroyed instance")
 
@@ -87,14 +87,14 @@ func (p *Planner) checkInstance(db *database.Database,
 		return
 	}
 
-	srvc := p.servicesMap[deply.Service]
-	if srvc == nil {
+	pd := p.podsMap[deply.Pod]
+	if pd == nil {
 		logrus.WithFields(logrus.Fields{
 			"deployment": deply.Id.Hex(),
 			"instance":   deply.Instance.Hex(),
-			"service":    deply.Service.Hex(),
+			"pod":        deply.Pod.Hex(),
 			"unit":       deply.Unit.Hex(),
-		}).Error("scheduler: Failed to find service for deployment")
+		}).Error("scheduler: Failed to find pod for deployment")
 
 		// err = deployment.Remove(db, deply.Id)
 		// if err != nil {
@@ -104,12 +104,12 @@ func (p *Planner) checkInstance(db *database.Database,
 		return
 	}
 
-	unit := srvc.GetUnit(deply.Unit)
+	unit := pd.GetUnit(deply.Unit)
 	if unit == nil {
 		logrus.WithFields(logrus.Fields{
 			"deployment": deply.Id.Hex(),
 			"instance":   deply.Instance.Hex(),
-			"service":    deply.Service.Hex(),
+			"pod":        deply.Pod.Hex(),
 			"unit":       deply.Unit.Hex(),
 		}).Error("scheduler: Failed to find unit for deployment")
 
@@ -196,7 +196,7 @@ func (p *Planner) checkInstance(db *database.Database,
 		logrus.WithFields(logrus.Fields{
 			"deployment": deply.Id.Hex(),
 			"instance":   deply.Instance.Hex(),
-			"service":    deply.Service.Hex(),
+			"pod":        deply.Pod.Hex(),
 			"unit":       deply.Unit.Hex(),
 		}).Info("scheduler: Restoring deployment")
 
@@ -220,7 +220,7 @@ func (p *Planner) checkInstance(db *database.Database,
 		logrus.WithFields(logrus.Fields{
 			"deployment": deply.Id.Hex(),
 			"instance":   deply.Instance.Hex(),
-			"service":    deply.Service.Hex(),
+			"pod":        deply.Pod.Hex(),
 			"unit":       deply.Unit.Hex(),
 		}).Info("scheduler: Failed to find plan for deployment")
 
@@ -232,7 +232,7 @@ func (p *Planner) checkInstance(db *database.Database,
 		return
 	}
 
-	data, err := buildEvalData(srvc, unit, inst)
+	data, err := buildEvalData(pd, unit, inst)
 	if err != nil {
 		return
 	}
@@ -274,7 +274,7 @@ func (p *Planner) checkInstance(db *database.Database,
 		logrus.WithFields(logrus.Fields{
 			"deployment": deply.Id.Hex(),
 			"instance":   deply.Instance.Hex(),
-			"service":    deply.Service.Hex(),
+			"pod":        deply.Pod.Hex(),
 			"unit":       deply.Unit.Hex(),
 			"statement":  statement.Statement,
 			"threshold":  threshold,
@@ -310,7 +310,7 @@ func (p *Planner) checkInstance(db *database.Database,
 			logrus.WithFields(logrus.Fields{
 				"deployment": deply.Id.Hex(),
 				"instance":   deply.Instance.Hex(),
-				"service":    deply.Service.Hex(),
+				"pod":        deply.Pod.Hex(),
 				"unit":       deply.Unit.Hex(),
 				"statement":  statement.Statement,
 				"threshold":  threshold,
@@ -328,15 +328,15 @@ func (p *Planner) ApplyPlans(db *database.Database) (err error) {
 		return
 	}
 
-	services, err := service.GetAll(db, &bson.M{})
+	pods, err := pod.GetAll(db, &bson.M{})
 	if err != nil {
 		return
 	}
 
-	p.servicesMap = map[primitive.ObjectID]*service.Service{}
+	p.podsMap = map[primitive.ObjectID]*pod.Pod{}
 
-	for _, srvc := range services {
-		p.servicesMap[srvc.Id] = srvc
+	for _, pd := range pods {
+		p.podsMap[pd.Id] = pd
 	}
 
 	var waiters sync.WaitGroup
@@ -359,7 +359,7 @@ func (p *Planner) ApplyPlans(db *database.Database) (err error) {
 					logrus.WithFields(logrus.Fields{
 						"deployment": deply.Id.Hex(),
 						"instance":   deply.Instance.Hex(),
-						"service":    deply.Service.Hex(),
+						"pod":        deply.Pod.Hex(),
 						"unit":       deply.Unit.Hex(),
 						"error":      e,
 					}).Error("scheduler: Failed to check instance deployment")

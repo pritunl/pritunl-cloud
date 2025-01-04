@@ -4,14 +4,14 @@ import (
 	"github.com/pritunl/pritunl-cloud/eval"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/plan"
-	"github.com/pritunl/pritunl-cloud/service"
+	"github.com/pritunl/pritunl-cloud/pod"
 )
 
-func buildEvalData(servc *service.Service, unit *service.Unit,
+func buildEvalData(servc *pod.Pod, unit *pod.Unit,
 	inst *instance.Instance) (data eval.Data, err error) {
 
 	dataStrct := plan.Data{
-		Service: plan.Service{
+		Pod: plan.Pod{
 			Name: servc.Name,
 		},
 		Unit: plan.Unit{
