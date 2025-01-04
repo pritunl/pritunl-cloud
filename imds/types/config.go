@@ -12,7 +12,7 @@ type Config struct {
 	Subnet         *Subnet        `json:"subnet"`
 	Certificates   []*Certificate `json:"certificates"`
 	Secrets        []*Secret      `json:"secrets"`
-	Services       []*Service     `json:"services"`
+	Pods           []*Pod         `json:"pods"`
 	Hash           uint32         `json:"hash"`
 }
 

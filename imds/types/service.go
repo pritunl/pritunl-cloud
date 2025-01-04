@@ -3,10 +3,10 @@ package types
 import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/deployment"
-	"github.com/pritunl/pritunl-cloud/service"
+	"github.com/pritunl/pritunl-cloud/pod"
 )
 
-type Service struct {
+type Pod struct {
 	Id    primitive.ObjectID `json:"id"`
 	Name  string             `json:"name"`
 	Units []*Unit            `json:"units"`
@@ -40,7 +40,7 @@ type Unit struct {
 
 type Deployment struct {
 	Id                        primitive.ObjectID `json:"id"`
-	Service                   primitive.ObjectID `json:"service"`
+	Pod                       primitive.ObjectID `json:"pod"`
 	Unit                      primitive.ObjectID `json:"unit"`
 	Spec                      primitive.ObjectID `json:"spec"`
 	Kind                      string             `json:"kind"`
@@ -67,23 +67,23 @@ type Deployment struct {
 	UnhealthyOraclePrivateIps []string           `json:"unhealthy_oracle_private_ips"`
 }
 
-func NewServices(services []*service.Service,
-	deployments map[primitive.ObjectID]*deployment.Deployment) []*Service {
+func NewPods(pods []*pod.Pod,
+	deployments map[primitive.ObjectID]*deployment.Deployment) []*Pod {
 
-	datas := []*Service{}
+	datas := []*Pod{}
 
-	for _, servc := range services {
+	for _, servc := range pods {
 		if servc == nil {
 			continue
 		}
 
 		units := []*Unit{}
-		for _, srvcUnit := range servc.Units {
+		for _, pdUnit := range servc.Units {
 			unit := &Unit{
-				Id:                        srvcUnit.Id,
-				Name:                      srvcUnit.Name,
-				Kind:                      srvcUnit.Kind,
-				Count:                     srvcUnit.Count,
+				Id:                        pdUnit.Id,
+				Name:                      pdUnit.Name,
+				Kind:                      pdUnit.Kind,
+				Count:                     pdUnit.Count,
 				PublicIps:                 []string{},
 				PublicIps6:                []string{},
 				HealthyPublicIps:          []string{},
@@ -105,7 +105,7 @@ func NewServices(services []*service.Service,
 				Deployments:               []*Deployment{},
 			}
 
-			for _, unitDeply := range srvcUnit.Deployments {
+			for _, unitDeply := range pdUnit.Deployments {
 				deply := deployments[unitDeply.Id]
 
 				if deply != nil {
@@ -218,7 +218,7 @@ func NewServices(services []*service.Service,
 
 					unit.Deployments = append(unit.Deployments, &Deployment{
 						Id:                        deply.Id,
-						Service:                   deply.Service,
+						Pod:                       deply.Pod,
 						Unit:                      deply.Unit,
 						Spec:                      deply.Spec,
 						Kind:                      deply.Kind,
@@ -250,7 +250,7 @@ func NewServices(services []*service.Service,
 			units = append(units, unit)
 		}
 
-		data := &Service{
+		data := &Pod{
 			Id:    servc.Id,
 			Name:  servc.Name,
 			Units: units,
