@@ -28,7 +28,7 @@ import Images from './Images';
 import Pools from './Pools';
 import Disks from './Disks';
 import Instances from './Instances';
-import Services from './Services';
+import Pods from './Pods';
 import Firewalls from './Firewalls';
 import Authorities from './Authorities';
 import Logs from './Logs';
@@ -61,7 +61,7 @@ import * as ImageActions from '../actions/ImageActions';
 import * as PoolActions from '../actions/PoolActions';
 import * as DiskActions from '../actions/DiskActions';
 import * as InstanceActions from '../actions/InstanceActions';
-import * as ServiceActions from '../actions/ServiceActions';
+import * as PodActions from '../actions/PodActions';
 import * as FirewallActions from '../actions/FirewallActions';
 import * as AuthorityActions from '../actions/AuthorityActions';
 import * as LogActions from '../actions/LogActions';
@@ -329,9 +329,9 @@ export default class Main extends React.Component<{}, State> {
 					<RouterLink
 						className="bp5-button bp5-minimal bp5-icon-cube"
 						style={css.link}
-						to="/services"
+						to="/pods"
 					>
-						Services
+						Pods
 					</RouterLink>
 					<RouterLink
 						className="bp5-button bp5-minimal bp5-icon-shield"
@@ -712,8 +712,8 @@ export default class Main extends React.Component<{}, State> {
 										disabled: false,
 									});
 								});
-							} else if (pathname === '/services') {
-								ServiceActions.sync().then((): void => {
+							} else if (pathname === '/pods') {
+								PodActions.sync().then((): void => {
 									this.setState({
 										...this.state,
 										disabled: false,
@@ -891,8 +891,8 @@ export default class Main extends React.Component<{}, State> {
 				<RouterRoute path="/instances" render={() => (
 					<Instances/>
 				)}/>
-				<RouterRoute path="/services" render={() => (
-					<Services/>
+				<RouterRoute path="/pods" render={() => (
+					<Pods/>
 				)}/>
 				<RouterRoute path="/firewalls" render={() => (
 					<Firewalls/>
