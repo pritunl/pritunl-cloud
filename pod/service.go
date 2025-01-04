@@ -12,7 +12,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
-type Service struct {
+type Pod struct {
 	Id               primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Name             string             `bson:"name" json:"name"`
 	Comment          string             `bson:"comment" json:"comment"`
@@ -21,7 +21,7 @@ type Service struct {
 	Units            []*Unit            `bson:"units" json:"units"`
 }
 
-func (p *Service) Validate(db *database.Database) (
+func (p *Pod) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
 	p.Name = utils.FilterName(p.Name)
@@ -37,14 +37,14 @@ func (p *Service) Validate(db *database.Database) (
 	return
 }
 
-func (p *Service) InitUnits(db *database.Database, units []*UnitInput) (
+func (p *Pod) InitUnits(db *database.Database, units []*UnitInput) (
 	errData *errortypes.ErrorData, err error) {
 
 	p.Units = []*Unit{}
 
 	for _, unitData := range units {
 		unit := &Unit{
-			Service:     p,
+			Pod:         p,
 			Id:          primitive.NewObjectID(),
 			Name:        unitData.Name,
 			Spec:        unitData.Spec,
@@ -65,7 +65,7 @@ func (p *Service) InitUnits(db *database.Database, units []*UnitInput) (
 	return
 }
 
-func (p *Service) CommitFieldsUnits(db *database.Database,
+func (p *Pod) CommitFieldsUnits(db *database.Database,
 	units []*UnitInput, fields set.Set) (
 	errData *errortypes.ErrorData, err error) {
 
@@ -77,7 +77,7 @@ func (p *Service) CommitFieldsUnits(db *database.Database,
 	curUnitsMap := map[primitive.ObjectID]*Unit{}
 	for _, unit := range p.Units {
 		curUnitsSet.Add(unit.Id)
-		unit.Service = p
+		unit.Pod = p
 		curUnitsMap[unit.Id] = unit
 	}
 
@@ -101,7 +101,7 @@ func (p *Service) CommitFieldsUnits(db *database.Database,
 		curUnit := curUnitsMap[unitData.Id]
 		if curUnit == nil {
 			unit := &Unit{
-				Service:     p,
+				Pod:         p,
 				Id:          primitive.NewObjectID(),
 				Name:        unitData.Name,
 				Spec:        unitData.Spec,
@@ -209,8 +209,8 @@ func (p *Service) CommitFieldsUnits(db *database.Database,
 	return
 }
 
-func (p *Service) Commit(db *database.Database) (err error) {
-	coll := db.Services()
+func (p *Pod) Commit(db *database.Database) (err error) {
+	coll := db.Pods()
 
 	err = coll.Commit(p.Id, p)
 	if err != nil {
@@ -220,10 +220,10 @@ func (p *Service) Commit(db *database.Database) (err error) {
 	return
 }
 
-func (p *Service) CommitFields(db *database.Database, fields set.Set) (
+func (p *Pod) CommitFields(db *database.Database, fields set.Set) (
 	err error) {
 
-	coll := db.Services()
+	coll := db.Pods()
 
 	err = coll.CommitFields(p.Id, p, fields)
 	if err != nil {
@@ -233,8 +233,8 @@ func (p *Service) CommitFields(db *database.Database, fields set.Set) (
 	return
 }
 
-func (p *Service) Insert(db *database.Database) (err error) {
-	coll := db.Services()
+func (p *Pod) Insert(db *database.Database) (err error) {
+	coll := db.Pods()
 
 	_, err = coll.InsertOne(db, p)
 	if err != nil {
@@ -245,17 +245,17 @@ func (p *Service) Insert(db *database.Database) (err error) {
 	return
 }
 
-func (p *Service) GetUnit(unitId primitive.ObjectID) *Unit {
+func (p *Pod) GetUnit(unitId primitive.ObjectID) *Unit {
 	for _, unit := range p.Units {
 		if unit.Id == unitId {
-			unit.Service = p
+			unit.Pod = p
 			return unit
 		}
 	}
 	return nil
 }
 
-func (p *Service) IterInstances() <-chan *Unit {
+func (p *Pod) IterInstances() <-chan *Unit {
 	iter := make(chan *Unit)
 
 	go func() {
@@ -268,7 +268,7 @@ func (p *Service) IterInstances() <-chan *Unit {
 				continue
 			}
 
-			unit.Service = p
+			unit.Pod = p
 			iter <- unit
 		}
 	}()

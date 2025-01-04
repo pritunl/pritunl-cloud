@@ -8,13 +8,13 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
-func Get(db *database.Database, serviceId primitive.ObjectID) (
-	srvc *Service, err error) {
+func Get(db *database.Database, podId primitive.ObjectID) (
+	pd *Pod, err error) {
 
-	coll := db.Services()
-	srvc = &Service{}
+	coll := db.Pods()
+	pd = &Pod{}
 
-	err = coll.FindOneId(serviceId, srvc)
+	err = coll.FindOneId(podId, pd)
 	if err != nil {
 		return
 	}
@@ -22,16 +22,16 @@ func Get(db *database.Database, serviceId primitive.ObjectID) (
 	return
 }
 
-func GetOrg(db *database.Database, orgId, srvcId primitive.ObjectID) (
-	srvc *Service, err error) {
+func GetOrg(db *database.Database, orgId, pdId primitive.ObjectID) (
+	pd *Pod, err error) {
 
-	coll := db.Services()
-	srvc = &Service{}
+	coll := db.Pods()
+	pd = &Pod{}
 
 	err = coll.FindOne(db, &bson.M{
-		"_id":          srvcId,
+		"_id":          pdId,
 		"organization": orgId,
-	}).Decode(srvc)
+	}).Decode(pd)
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -40,11 +40,11 @@ func GetOrg(db *database.Database, orgId, srvcId primitive.ObjectID) (
 	return
 }
 
-func GetOne(db *database.Database, query *bson.M) (srvc *Service, err error) {
-	coll := db.Services()
-	srvc = &Service{}
+func GetOne(db *database.Database, query *bson.M) (pd *Pod, err error) {
+	coll := db.Pods()
+	pd = &Pod{}
 
-	err = coll.FindOne(db, query).Decode(srvc)
+	err = coll.FindOne(db, query).Decode(pd)
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -54,10 +54,10 @@ func GetOne(db *database.Database, query *bson.M) (srvc *Service, err error) {
 }
 
 func GetAll(db *database.Database, query *bson.M) (
-	services []*Service, err error) {
+	pods []*Pod, err error) {
 
-	coll := db.Services()
-	services = []*Service{}
+	coll := db.Pods()
+	pods = []*Pod{}
 
 	cursor, err := coll.Find(db, query)
 	if err != nil {
@@ -67,14 +67,14 @@ func GetAll(db *database.Database, query *bson.M) (
 	defer cursor.Close(db)
 
 	for cursor.Next(db) {
-		srvc := &Service{}
-		err = cursor.Decode(srvc)
+		pd := &Pod{}
+		err = cursor.Decode(pd)
 		if err != nil {
 			err = database.ParseError(err)
 			return
 		}
 
-		services = append(services, srvc)
+		pods = append(pods, pd)
 	}
 
 	err = cursor.Err()
@@ -87,10 +87,10 @@ func GetAll(db *database.Database, query *bson.M) (
 }
 
 func GetAllPaged(db *database.Database, query *bson.M,
-	page, pageCount int64) (services []*Service, count int64, err error) {
+	page, pageCount int64) (pods []*Pod, count int64, err error) {
 
-	coll := db.Services()
-	services = []*Service{}
+	coll := db.Pods()
+	pods = []*Pod{}
 
 	if len(*query) == 0 {
 		count, err = coll.EstimatedDocumentCount(db)
@@ -131,14 +131,14 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	defer cursor.Close(db)
 
 	for cursor.Next(db) {
-		srvc := &Service{}
-		err = cursor.Decode(srvc)
+		pd := &Pod{}
+		err = cursor.Decode(pd)
 		if err != nil {
 			err = database.ParseError(err)
 			return
 		}
 
-		services = append(services, srvc)
+		pods = append(pods, pd)
 	}
 
 	err = cursor.Err()
@@ -150,11 +150,11 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	return
 }
 
-func Remove(db *database.Database, serviceId primitive.ObjectID) (err error) {
-	coll := db.Services()
+func Remove(db *database.Database, podId primitive.ObjectID) (err error) {
+	coll := db.Pods()
 
 	_, err = coll.DeleteOne(db, &bson.M{
-		"_id":               serviceId,
+		"_id":               podId,
 		"delete_protection": false,
 	})
 	if err != nil {
@@ -170,13 +170,13 @@ func Remove(db *database.Database, serviceId primitive.ObjectID) (err error) {
 	return
 }
 
-func RemoveOrg(db *database.Database, orgId, serviceId primitive.ObjectID) (
+func RemoveOrg(db *database.Database, orgId, podId primitive.ObjectID) (
 	err error) {
 
-	coll := db.Services()
+	coll := db.Pods()
 
 	_, err = coll.DeleteOne(db, &bson.M{
-		"_id":          serviceId,
+		"_id":          podId,
 		"organization": orgId,
 	})
 	if err != nil {
@@ -192,14 +192,14 @@ func RemoveOrg(db *database.Database, orgId, serviceId primitive.ObjectID) (
 	return
 }
 
-func RemoveMulti(db *database.Database, serviceIds []primitive.ObjectID) (
+func RemoveMulti(db *database.Database, podIds []primitive.ObjectID) (
 	err error) {
 
-	coll := db.Services()
+	coll := db.Pods()
 
 	_, err = coll.DeleteMany(db, &bson.M{
 		"_id": &bson.M{
-			"$in": serviceIds,
+			"$in": podIds,
 		},
 		"delete_protection": false,
 	})
@@ -212,13 +212,13 @@ func RemoveMulti(db *database.Database, serviceIds []primitive.ObjectID) (
 }
 
 func RemoveMultiOrg(db *database.Database, orgId primitive.ObjectID,
-	serviceIds []primitive.ObjectID) (err error) {
+	podIds []primitive.ObjectID) (err error) {
 
-	coll := db.Services()
+	coll := db.Pods()
 
 	_, err = coll.DeleteMany(db, &bson.M{
 		"_id": &bson.M{
-			"$in": serviceIds,
+			"$in": podIds,
 		},
 		"organization": orgId,
 	})

@@ -11,7 +11,7 @@ import (
 )
 
 type Unit struct {
-	Service      *Service           `bson:"-" json:"-"`
+	Pod          *Pod               `bson:"-" json:"-"`
 	Id           primitive.ObjectID `bson:"id" json:"id"`
 	Name         string             `bson:"name" json:"name"`
 	Kind         string             `bson:"kind" json:"kind"`
@@ -50,7 +50,7 @@ func (u *Unit) HasDeployment(deployId primitive.ObjectID) bool {
 func (u *Unit) Reserve(db *database.Database, deployId primitive.ObjectID,
 	overrideCount int) (reserved bool, err error) {
 
-	coll := db.Services()
+	coll := db.Pods()
 
 	if overrideCount == 0 {
 		if len(u.Deployments) >= u.Count {
@@ -74,7 +74,7 @@ func (u *Unit) Reserve(db *database.Database, deployId primitive.ObjectID,
 		},
 	})
 	resp, err := coll.UpdateOne(db, bson.M{
-		"_id": u.Service.Id,
+		"_id": u.Pod.Id,
 	}, bson.M{
 		"$push": bson.M{
 			"units.$[elem].deployments": &Deployment{
@@ -97,7 +97,7 @@ func (u *Unit) Reserve(db *database.Database, deployId primitive.ObjectID,
 func (u *Unit) UpdateDeployementOld(db *database.Database,
 	deploymentId primitive.ObjectID, state string) (updated bool, err error) {
 
-	coll := db.Services()
+	coll := db.Pods()
 
 	updateOpts := options.Update().SetArrayFilters(options.ArrayFilters{
 		Filters: []interface{}{
@@ -106,7 +106,7 @@ func (u *Unit) UpdateDeployementOld(db *database.Database,
 		},
 	})
 	resp, err := coll.UpdateOne(db, bson.M{
-		"_id": u.Service.Id,
+		"_id": u.Pod.Id,
 	}, bson.M{
 		"$set": bson.M{
 			"units.$[elem].deployments.$[deploy].state": state,
@@ -127,7 +127,7 @@ func (u *Unit) UpdateDeployementOld(db *database.Database,
 func (u *Unit) RestoreDeployment(db *database.Database,
 	deployId primitive.ObjectID) (err error) {
 
-	coll := db.Services()
+	coll := db.Pods()
 
 	updateOpts := options.Update().SetArrayFilters(options.ArrayFilters{
 		Filters: []interface{}{
@@ -137,7 +137,7 @@ func (u *Unit) RestoreDeployment(db *database.Database,
 		},
 	})
 	_, err = coll.UpdateOne(db, bson.M{
-		"_id": u.Service.Id,
+		"_id": u.Pod.Id,
 	}, bson.M{
 		"$push": bson.M{
 			"units.$[elem].deployments": &Deployment{
@@ -156,7 +156,7 @@ func (u *Unit) RestoreDeployment(db *database.Database,
 func (u *Unit) RemoveDeployement(db *database.Database,
 	deployId primitive.ObjectID) (err error) {
 
-	coll := db.Services()
+	coll := db.Pods()
 
 	updateOpts := options.Update().SetArrayFilters(options.ArrayFilters{
 		Filters: []interface{}{
@@ -164,7 +164,7 @@ func (u *Unit) RemoveDeployement(db *database.Database,
 		},
 	})
 	_, err = coll.UpdateOne(db, bson.M{
-		"_id": u.Service.Id,
+		"_id": u.Pod.Id,
 	}, bson.M{
 		"$pull": bson.M{
 			"units.$[elem].deployments": &bson.M{
@@ -183,9 +183,9 @@ func (u *Unit) RemoveDeployement(db *database.Database,
 func (u *Unit) Parse(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
-	spc := spec.New(u.Service.Id, u.Id, u.Spec)
+	spc := spec.New(u.Pod.Id, u.Id, u.Spec)
 
-	errData, err = spc.Parse(db, u.Service.Organization)
+	errData, err = spc.Parse(db, u.Pod.Organization)
 	if err != nil {
 		return
 	}
