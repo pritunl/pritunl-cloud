@@ -5,13 +5,13 @@ import EventDispatcher from '../dispatcher/EventDispatcher';
 import * as Alert from '../Alert';
 import * as Csrf from '../Csrf';
 import Loader from '../Loader';
-import * as ServiceTypes from '../types/ServiceTypes';
-import ServicesStore from '../stores/ServicesStore';
+import * as PodTypes from '../types/PodTypes';
+import PodsStore from '../stores/PodsStore';
 import * as MiscUtils from '../utils/MiscUtils';
 
 let syncId: string;
 let syncUnitId: string;
-let lastServiceId: string;
+let lastPodId: string;
 let lastUnitId: string
 let dataSyncReqs: {[key: string]: SuperAgent.Request} = {};
 
@@ -26,11 +26,11 @@ export function sync(noLoading?: boolean): Promise<void> {
 
 	return new Promise<void>((resolve, reject): void => {
 		SuperAgent
-			.get('/service')
+			.get('/pod')
 			.query({
-				...ServicesStore.filter,
-				page: ServicesStore.page,
-				page_count: ServicesStore.pageCount,
+				...PodsStore.filter,
+				page: PodsStore.page,
+				page_count: PodsStore.pageCount,
 			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
@@ -51,15 +51,15 @@ export function sync(noLoading?: boolean): Promise<void> {
 				}
 
 				if (err) {
-					Alert.errorRes(res, 'Failed to load services');
+					Alert.errorRes(res, 'Failed to load pods');
 					reject(err);
 					return;
 				}
 
 				Dispatcher.dispatch({
-					type: ServiceTypes.SYNC,
+					type: PodTypes.SYNC,
 					data: {
-						services: res.body.services,
+						pods: res.body.pods,
 						count: res.body.count,
 					},
 				});
@@ -71,7 +71,7 @@ export function sync(noLoading?: boolean): Promise<void> {
 
 export function traverse(page: number): Promise<void> {
 	Dispatcher.dispatch({
-		type: ServiceTypes.TRAVERSE,
+		type: PodTypes.TRAVERSE,
 		data: {
 			page: page,
 		},
@@ -80,9 +80,9 @@ export function traverse(page: number): Promise<void> {
 	return sync();
 }
 
-export function filter(filt: ServiceTypes.Filter): Promise<void> {
+export function filter(filt: PodTypes.Filter): Promise<void> {
 	Dispatcher.dispatch({
-		type: ServiceTypes.FILTER,
+		type: PodTypes.FILTER,
 		data: {
 			filter: filt,
 		},
@@ -91,13 +91,13 @@ export function filter(filt: ServiceTypes.Filter): Promise<void> {
 	return sync();
 }
 
-export function commit(service: ServiceTypes.Service): Promise<void> {
+export function commit(pod: PodTypes.Pod): Promise<void> {
 	let loader = new Loader().loading();
 
 	return new Promise<void>((resolve, reject): void => {
 		SuperAgent
-			.put('/service/' + service.id)
-			.send(service)
+			.put('/pod/' + pod.id)
+			.send(pod)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.end((err: any, res: SuperAgent.Response): void => {
@@ -110,7 +110,7 @@ export function commit(service: ServiceTypes.Service): Promise<void> {
 				}
 
 				if (err) {
-					Alert.errorRes(res, 'Failed to save service');
+					Alert.errorRes(res, 'Failed to save pod');
 					reject(err);
 					return;
 				}
@@ -120,13 +120,13 @@ export function commit(service: ServiceTypes.Service): Promise<void> {
 	});
 }
 
-export function create(service: ServiceTypes.Service): Promise<void> {
+export function create(pod: PodTypes.Pod): Promise<void> {
 	let loader = new Loader().loading();
 
 	return new Promise<void>((resolve, reject): void => {
 		SuperAgent
-			.post('/service')
-			.send(service)
+			.post('/pod')
+			.send(pod)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.end((err: any, res: SuperAgent.Response): void => {
@@ -139,7 +139,7 @@ export function create(service: ServiceTypes.Service): Promise<void> {
 				}
 
 				if (err) {
-					Alert.errorRes(res, 'Failed to create service');
+					Alert.errorRes(res, 'Failed to create pod');
 					reject(err);
 					return;
 				}
@@ -149,12 +149,12 @@ export function create(service: ServiceTypes.Service): Promise<void> {
 	});
 }
 
-export function remove(serviceId: string): Promise<void> {
+export function remove(podId: string): Promise<void> {
 	let loader = new Loader().loading();
 
 	return new Promise<void>((resolve, reject): void => {
 		SuperAgent
-			.delete('/service/' + serviceId)
+			.delete('/pod/' + podId)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.end((err: any, res: SuperAgent.Response): void => {
@@ -167,7 +167,7 @@ export function remove(serviceId: string): Promise<void> {
 				}
 
 				if (err) {
-					Alert.errorRes(res, 'Failed to delete service');
+					Alert.errorRes(res, 'Failed to delete pod');
 					reject(err);
 					return;
 				}
@@ -177,13 +177,13 @@ export function remove(serviceId: string): Promise<void> {
 	});
 }
 
-export function removeMulti(serviceIds: string[]): Promise<void> {
+export function removeMulti(podIds: string[]): Promise<void> {
 	let loader = new Loader().loading();
 
 	return new Promise<void>((resolve, reject): void => {
 		SuperAgent
-			.delete('/service')
-			.send(serviceIds)
+			.delete('/pod')
+			.send(podIds)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.end((err: any, res: SuperAgent.Response): void => {
@@ -196,7 +196,7 @@ export function removeMulti(serviceIds: string[]): Promise<void> {
 				}
 
 				if (err) {
-					Alert.errorRes(res, 'Failed to delete services');
+					Alert.errorRes(res, 'Failed to delete pods');
 					reject(err);
 					return;
 				}
@@ -206,11 +206,11 @@ export function removeMulti(serviceIds: string[]): Promise<void> {
 	});
 }
 
-export function syncUnit(serviceId?: string, unitId?: string): Promise<void> {
-	if (!serviceId) {
-		serviceId = lastServiceId
+export function syncUnit(podId?: string, unitId?: string): Promise<void> {
+	if (!podId) {
+		podId = lastPodId
 	} else {
-		lastServiceId = serviceId
+		lastPodId = podId
 	}
 
 	if (!unitId) {
@@ -219,7 +219,7 @@ export function syncUnit(serviceId?: string, unitId?: string): Promise<void> {
 		lastUnitId = unitId
 	}
 
-	if (!serviceId || !unitId) {
+	if (!podId || !unitId) {
 		return Promise.resolve();
 	}
 
@@ -228,7 +228,7 @@ export function syncUnit(serviceId?: string, unitId?: string): Promise<void> {
 
 	return new Promise<void>((resolve, reject): void => {
 		SuperAgent
-			.get('/service/' + serviceId + "/unit/" + unitId)
+			.get('/pod/' + podId + "/unit/" + unitId)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.end((err: any, res: SuperAgent.Response): void => {
@@ -244,13 +244,13 @@ export function syncUnit(serviceId?: string, unitId?: string): Promise<void> {
 				}
 
 				if (err) {
-					Alert.errorRes(res, 'Failed to load service unit');
+					Alert.errorRes(res, 'Failed to load pod unit');
 					reject(err);
 					return;
 				}
 
 				Dispatcher.dispatch({
-					type: ServiceTypes.SYNC_UNIT,
+					type: PodTypes.SYNC_UNIT,
 					data: {
 						unit: res.body,
 					},
@@ -261,14 +261,14 @@ export function syncUnit(serviceId?: string, unitId?: string): Promise<void> {
 	});
 }
 
-export function deployUnit(serviceId: string, unitId: string,
+export function deployUnit(podId: string, unitId: string,
 	specId: string, count: number): Promise<void> {
 
 	let loader = new Loader().loading();
 
 	return new Promise<void>((resolve, reject): void => {
 		SuperAgent
-			.post('/service/' + serviceId + "/unit/" + unitId + "/deployment")
+			.post('/pod/' + podId + "/unit/" + unitId + "/deployment")
 			.send({
 				count: count,
 				spec: specId,
@@ -295,14 +295,14 @@ export function deployUnit(serviceId: string, unitId: string,
 	});
 }
 
-export function updateMultiUnitState(serviceId: string, unitId: string,
+export function updateMultiUnitState(podId: string, unitId: string,
 	deploymentIds: string[], state: string): Promise<void> {
 
 	let loader = new Loader().loading();
 
 	return new Promise<void>((resolve, reject): void => {
 		SuperAgent
-			.put('/service/' + serviceId + "/unit/" + unitId + "/deployment")
+			.put('/pod/' + podId + "/unit/" + unitId + "/deployment")
 			.query({
 				state: state,
 			})
@@ -329,7 +329,7 @@ export function updateMultiUnitState(serviceId: string, unitId: string,
 	});
 }
 
-export function log(deply: ServiceTypes.Deployment,
+export function log(deply: PodTypes.Deployment,
 	resource: string, noLoading?: boolean): Promise<any> {
 
 	let curDataSyncId = MiscUtils.uuid();
@@ -340,7 +340,7 @@ export function log(deply: ServiceTypes.Deployment,
 	}
 
 	return new Promise<any>((resolve, reject): void => {
-		let req = SuperAgent.get('/service/' + deply.service +
+		let req = SuperAgent.get('/pod/' + deply.pod +
 				"/unit/" + deply.unit + "/deployment/" + deply.id + "/log")
 			.query({
 				resource: resource,
@@ -384,9 +384,9 @@ export function dataCancel(): void {
 	}
 }
 
-EventDispatcher.register((action: ServiceTypes.ServiceDispatch) => {
+EventDispatcher.register((action: PodTypes.PodDispatch) => {
 	switch (action.type) {
-		case ServiceTypes.CHANGE:
+		case PodTypes.CHANGE:
 			sync();
 			syncUnit();
 			break;
