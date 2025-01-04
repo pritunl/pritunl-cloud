@@ -342,12 +342,12 @@ class CompletionStore extends EventEmitter {
 		this._resources["secret"] = resourceList
 
 		this._kinds.push({
-			name: "service",
-			label: "Service",
-			title: "**Service**",
+			name: "pod",
+			label: "Pod",
+			title: "**Pod**",
 		})
 		resourceList = []
-		for (let item of resources.services) {
+		for (let item of resources.pods) {
 			resourceList.push({
 				id: item.id,
 				name: item.name,
@@ -359,7 +359,7 @@ class CompletionStore extends EventEmitter {
 				],
 			})
 		}
-		this._resources["service"] = resourceList
+		this._resources["pod"] = resourceList
 
 		this._kindMap = {}
 		for (let i = 0; i < this._kinds.length; i++) {

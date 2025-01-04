@@ -12,7 +12,7 @@ import * as InstanceTypes from "../types/InstanceTypes";
 import * as PlanTypes from "../types/PlanTypes";
 import * as CertificateTypes from "../types/CertificateTypes";
 import * as SecretTypes from "../types/SecretTypes";
-import * as ServiceTypes from "../types/ServiceTypes";
+import * as PodTypes from "../types/PodTypes";
 
 export interface Resources {
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -28,7 +28,7 @@ export interface Resources {
 	plans: PlanTypes.PlansRo;
 	certificates: CertificateTypes.CertificatesRo;
 	secrets: SecretTypes.SecretsRo;
-	services: ServiceTypes.ServicesRo;
+	pods: PodTypes.PodsRo;
 }
 
 export interface Kind {
