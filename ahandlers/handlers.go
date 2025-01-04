@@ -189,20 +189,20 @@ func Register(engine *gin.Engine) {
 	csrfGroup.GET("/settings", settingsGet)
 	csrfGroup.PUT("/settings", settingsPut)
 
-	csrfGroup.GET("/service", servicesGet)
-	csrfGroup.GET("/service/:service_id", serviceGet)
-	csrfGroup.PUT("/service/:service_id", servicePut)
-	csrfGroup.POST("/service", servicePost)
-	csrfGroup.DELETE("/service", servicesDelete)
-	csrfGroup.DELETE("/service/:service_id", serviceDelete)
-	csrfGroup.GET("/service/:service_id/unit/:unit_id", serviceUnitGet)
-	csrfGroup.PUT("/service/:service_id/unit/:unit_id/deployment",
-		serviceUnitDeploymentPut)
-	csrfGroup.POST("/service/:service_id/unit/:unit_id/deployment",
-		serviceUnitDeploymentPost)
+	csrfGroup.GET("/pod", podsGet)
+	csrfGroup.GET("/pod/:pod_id", podGet)
+	csrfGroup.PUT("/pod/:pod_id", podPut)
+	csrfGroup.POST("/pod", podPost)
+	csrfGroup.DELETE("/pod", podsDelete)
+	csrfGroup.DELETE("/pod/:pod_id", podDelete)
+	csrfGroup.GET("/pod/:pod_id/unit/:unit_id", podUnitGet)
+	csrfGroup.PUT("/pod/:pod_id/unit/:unit_id/deployment",
+		podUnitDeploymentPut)
+	csrfGroup.POST("/pod/:pod_id/unit/:unit_id/deployment",
+		podUnitDeploymentPost)
 	csrfGroup.GET(
-		"/service/:service_id/unit/:unit_id/deployment/:deployment_id/log",
-		serviceUnitDeploymentLogGet,
+		"/pod/:pod_id/unit/:unit_id/deployment/:deployment_id/log",
+		podUnitDeploymentLogGet,
 	)
 
 	csrfGroup.GET("/shape", shapesGet)
