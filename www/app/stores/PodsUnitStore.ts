@@ -1,11 +1,11 @@
 /// <reference path="../References.d.ts"/>
 import Dispatcher from '../dispatcher/Dispatcher';
 import EventEmitter from '../EventEmitter';
-import * as ServiceTypes from '../types/ServiceTypes';
+import * as PodTypes from '../types/PodTypes';
 import * as GlobalTypes from '../types/GlobalTypes';
 
-class ServicesUnitStore extends EventEmitter {
-	_units: {[key: string]: ServiceTypes.ServiceUnit} = {};
+class PodsUnitStore extends EventEmitter {
+	_units: {[key: string]: PodTypes.PodUnit} = {};
 	_token = Dispatcher.register((this._callback).bind(this));
 
 	_reset(): void {
@@ -13,7 +13,7 @@ class ServicesUnitStore extends EventEmitter {
 		this.emitChange();
 	}
 
-	unit(unitId: string): ServiceTypes.ServiceUnit {
+	unit(unitId: string): PodTypes.PodUnit {
 		return this._units[unitId];
 	}
 
@@ -29,22 +29,22 @@ class ServicesUnitStore extends EventEmitter {
 		this.removeListener(GlobalTypes.CHANGE, callback);
 	}
 
-	_sync(unit: ServiceTypes.ServiceUnit): void {
+	_sync(unit: PodTypes.PodUnit): void {
 		this._units[unit.id] = Object.freeze(unit);
 		this.emitChange();
 	}
 
-	_callback(action: ServiceTypes.ServiceUnitDispatch): void {
+	_callback(action: PodTypes.PodUnitDispatch): void {
 		switch (action.type) {
 			case GlobalTypes.RESET:
 				this._reset();
 				break;
 
-			case ServiceTypes.SYNC_UNIT:
+			case PodTypes.SYNC_UNIT:
 				this._sync(action.data.unit);
 				break;
 		}
 	}
 }
 
-export default new ServicesUnitStore();
+export default new PodsUnitStore();
