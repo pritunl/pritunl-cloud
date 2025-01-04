@@ -54,7 +54,7 @@ func Query(resrc string, keys ...string) (val string, err error) {
 			}
 		}
 		break
-	case "services":
+	case "pods":
 		if len(keys) == 2 {
 			key = keys[1]
 		} else if len(keys) == 4 {
@@ -63,11 +63,11 @@ func Query(resrc string, keys ...string) (val string, err error) {
 			break
 		}
 
-		for _, srvc := range config.Config.Services {
-			if srvc.Name == keys[0] {
+		for _, pd := range config.Config.Pods {
+			if pd.Name == keys[0] {
 				if len(keys) == 4 {
 					if keys[1] == "units" {
-						for _, unit := range srvc.Units {
+						for _, unit := range pd.Units {
 							if unit.Name == keys[2] {
 								resrcInf = unit
 								break
@@ -75,7 +75,7 @@ func Query(resrc string, keys ...string) (val string, err error) {
 						}
 					}
 				} else {
-					resrcInf = srvc
+					resrcInf = pd
 				}
 				break
 			}
@@ -87,8 +87,8 @@ func Query(resrc string, keys ...string) (val string, err error) {
 		}
 		key = keys[1]
 
-		for _, srvc := range config.Config.Services {
-			for _, unit := range srvc.Units {
+		for _, pd := range config.Config.Pods {
+			for _, unit := range pd.Units {
 				if unit.Name == keys[0] {
 					resrcInf = unit
 					break
