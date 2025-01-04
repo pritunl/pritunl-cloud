@@ -9,12 +9,12 @@ import (
 )
 
 type Data struct {
-	Service  Service  `json:"service"`
+	Pod      Pod      `json:"pod"`
 	Unit     Unit     `json:"unit"`
 	Instance Instance `json:"instance"`
 }
 
-type Service struct {
+type Pod struct {
 	Name string `json:"name"`
 }
 
