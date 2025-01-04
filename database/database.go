@@ -118,8 +118,8 @@ func (d *Database) AlertsEventLock() (coll *Collection) {
 	return
 }
 
-func (d *Database) Services() (coll *Collection) {
-	coll = d.getCollection("services")
+func (d *Database) Pods() (coll *Collection) {
+	coll = d.getCollection("pods")
 	return
 }
 
