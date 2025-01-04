@@ -167,7 +167,7 @@ func Remove(db *database.Database, deplyId primitive.ObjectID) (err error) {
 	return
 }
 
-func RemoveMulti(db *database.Database, serviceId primitive.ObjectID,
+func RemoveMulti(db *database.Database, podId primitive.ObjectID,
 	unitId primitive.ObjectID, deplyIds []primitive.ObjectID) (err error) {
 
 	coll := db.Deployments()
@@ -176,8 +176,8 @@ func RemoveMulti(db *database.Database, serviceId primitive.ObjectID,
 		"_id": &bson.M{
 			"$in": deplyIds,
 		},
-		"service": serviceId,
-		"unit":    unitId,
+		"pod":  podId,
+		"unit": unitId,
 	}, &bson.M{
 		"$set": &bson.M{
 			"state": Destroy,
@@ -191,7 +191,7 @@ func RemoveMulti(db *database.Database, serviceId primitive.ObjectID,
 	return
 }
 
-func ArchiveMulti(db *database.Database, serviceId primitive.ObjectID,
+func ArchiveMulti(db *database.Database, podId primitive.ObjectID,
 	unitId primitive.ObjectID, deplyIds []primitive.ObjectID) (err error) {
 
 	coll := db.Deployments()
@@ -200,8 +200,8 @@ func ArchiveMulti(db *database.Database, serviceId primitive.ObjectID,
 		"_id": &bson.M{
 			"$in": deplyIds,
 		},
-		"service": serviceId,
-		"unit":    unitId,
+		"pod":  podId,
+		"unit": unitId,
 	}, &bson.M{
 		"$set": &bson.M{
 			"state": Archive,
@@ -215,7 +215,7 @@ func ArchiveMulti(db *database.Database, serviceId primitive.ObjectID,
 	return
 }
 
-func RestoreMulti(db *database.Database, serviceId primitive.ObjectID,
+func RestoreMulti(db *database.Database, podId primitive.ObjectID,
 	unitId primitive.ObjectID, deplyIds []primitive.ObjectID) (err error) {
 
 	coll := db.Deployments()
@@ -224,9 +224,9 @@ func RestoreMulti(db *database.Database, serviceId primitive.ObjectID,
 		"_id": &bson.M{
 			"$in": deplyIds,
 		},
-		"service": serviceId,
-		"unit":    unitId,
-		"state":   Archived,
+		"pod":   podId,
+		"unit":  unitId,
+		"state": Archived,
 	}, &bson.M{
 		"$set": &bson.M{
 			"state": Restore,

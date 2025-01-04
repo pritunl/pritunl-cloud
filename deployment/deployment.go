@@ -14,7 +14,7 @@ import (
 
 type Deployment struct {
 	Id           primitive.ObjectID             `bson:"_id,omitempty" json:"id"`
-	Service      primitive.ObjectID             `bson:"service" json:"service"`
+	Pod          primitive.ObjectID             `bson:"pod" json:"pod"`
 	Unit         primitive.ObjectID             `bson:"unit" json:"unit"`
 	Spec         primitive.ObjectID             `bson:"spec" json:"spec"`
 	Kind         string                         `bson:"kind" json:"kind"`
