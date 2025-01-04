@@ -18,11 +18,11 @@ import (
 	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/pool"
 	"github.com/pritunl/pritunl-cloud/qemu"
 	"github.com/pritunl/pritunl-cloud/scheduler"
 	"github.com/pritunl/pritunl-cloud/secret"
-	"github.com/pritunl/pritunl-cloud/service"
 	"github.com/pritunl/pritunl-cloud/shape"
 	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -53,11 +53,11 @@ type State struct {
 	deploymentsReservedMap map[primitive.ObjectID]*deployment.Deployment
 	deploymentsDeployedMap map[primitive.ObjectID]*deployment.Deployment
 	deploymentsInactiveMap map[primitive.ObjectID]*deployment.Deployment
-	servicesMap            map[primitive.ObjectID]*service.Service
-	servicesUnitsMap       map[primitive.ObjectID]*service.Unit
+	podsMap                map[primitive.ObjectID]*pod.Pod
+	podsUnitsMap           map[primitive.ObjectID]*pod.Unit
 
 	specsMap            map[primitive.ObjectID]*spec.Commit
-	specsServicesMap    map[primitive.ObjectID]*service.Service
+	specsPodsMap        map[primitive.ObjectID]*pod.Pod
 	specsDeploymentsMap map[primitive.ObjectID]*deployment.Deployment
 	specsSecretsMap     map[primitive.ObjectID]*secret.Secret
 	specsCertsMap       map[primitive.ObjectID]*certificate.Certificate
@@ -200,20 +200,20 @@ func (s *State) Deployment(deplyId primitive.ObjectID) (
 	return
 }
 
-func (s *State) Service(srvcId primitive.ObjectID) *service.Service {
-	return s.servicesMap[srvcId]
+func (s *State) Pod(pdId primitive.ObjectID) *pod.Pod {
+	return s.podsMap[pdId]
 }
 
-func (s *State) Unit(unitId primitive.ObjectID) *service.Unit {
-	return s.servicesUnitsMap[unitId]
+func (s *State) Unit(unitId primitive.ObjectID) *pod.Unit {
+	return s.podsUnitsMap[unitId]
 }
 
 func (s *State) Spec(commitId primitive.ObjectID) *spec.Commit {
 	return s.specsMap[commitId]
 }
 
-func (s *State) SpecService(srvcId primitive.ObjectID) *service.Service {
-	return s.specsServicesMap[srvcId]
+func (s *State) SpecPod(pdId primitive.ObjectID) *pod.Pod {
+	return s.specsPodsMap[pdId]
 }
 
 func (s *State) SpecSecret(secrID primitive.ObjectID) *secret.Secret {
@@ -482,8 +482,8 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 	deploymentsDeployedMap := map[primitive.ObjectID]*deployment.Deployment{}
 	deploymentsInactiveMap := map[primitive.ObjectID]*deployment.Deployment{}
 	deploymentsIdSet := set.NewSet()
-	serviceIds := []primitive.ObjectID{}
-	serviceIdsSet := set.NewSet()
+	podIds := []primitive.ObjectID{}
+	podIdsSet := set.NewSet()
 	unitIds := set.NewSet()
 	specIdsSet := set.NewSet()
 	for _, deply := range deployments {
@@ -502,7 +502,7 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 			break
 		}
 
-		serviceIdsSet.Add(deply.Service)
+		podIdsSet.Add(deply.Pod)
 		unitIds.Add(deply.Unit)
 		specIdsSet.Add(deply.Spec)
 	}
@@ -523,14 +523,14 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 
 	specSecretsSet := set.NewSet()
 	specCertsSet := set.NewSet()
-	specServicesSet := set.NewSet()
+	specPodsSet := set.NewSet()
 	specsMap := map[primitive.ObjectID]*spec.Commit{}
 	for _, spc := range specs {
 		specsMap[spc.Id] = spc
 
-		if spc.Instance.Services != nil {
-			for _, srvcId := range spc.Instance.Services {
-				specServicesSet.Add(srvcId)
+		if spc.Instance.Pods != nil {
+			for _, pdId := range spc.Instance.Pods {
+				specPodsSet.Add(pdId)
 			}
 		}
 
@@ -588,32 +588,32 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 	}
 	s.specsSecretsMap = specsSecretsMap
 
-	specServiceIds := []primitive.ObjectID{}
-	for srvcId := range specServicesSet.Iter() {
-		specServiceIds = append(specServiceIds, srvcId.(primitive.ObjectID))
+	specPodIds := []primitive.ObjectID{}
+	for pdId := range specPodsSet.Iter() {
+		specPodIds = append(specPodIds, pdId.(primitive.ObjectID))
 	}
 
 	specDeploymentsSet := set.NewSet()
-	specsServicesMap := map[primitive.ObjectID]*service.Service{}
-	specServices, err := service.GetAll(db, &bson.M{
+	specsPodsMap := map[primitive.ObjectID]*pod.Pod{}
+	specPods, err := pod.GetAll(db, &bson.M{
 		"_id": &bson.M{
-			"$in": specServiceIds,
+			"$in": specPodIds,
 		},
 	})
 	if err != nil {
 		return
 	}
 
-	for _, specService := range specServices {
-		specsServicesMap[specService.Id] = specService
+	for _, specPod := range specPods {
+		specsPodsMap[specPod.Id] = specPod
 
-		for _, unit := range specService.Units {
+		for _, unit := range specPod.Units {
 			for _, deply := range unit.Deployments {
 				specDeploymentsSet.Add(deply.Id)
 			}
 		}
 	}
-	s.specsServicesMap = specsServicesMap
+	s.specsPodsMap = specsPodsMap
 
 	specDeploymentIds := []primitive.ObjectID{}
 	for deplyIdInf := range specDeploymentsSet.Iter() {
@@ -649,69 +649,69 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 		}
 	}
 
-	for serviceId := range serviceIdsSet.Iter() {
-		serviceIds = append(serviceIds, serviceId.(primitive.ObjectID))
+	for podId := range podIdsSet.Iter() {
+		podIds = append(podIds, podId.(primitive.ObjectID))
 	}
 
-	services, err := service.GetAll(db, &bson.M{
+	pods, err := pod.GetAll(db, &bson.M{
 		"_id": &bson.M{
-			"$in": serviceIds,
+			"$in": podIds,
 		},
 	})
 	if err != nil {
 		return
 	}
 
-	serviceDeploymentsSet := set.NewSet()
-	servicesMap := map[primitive.ObjectID]*service.Service{}
-	servicesUnitsMap := map[primitive.ObjectID]*service.Unit{}
-	for _, srvc := range services {
-		servicesMap[srvc.Id] = srvc
+	podDeploymentsSet := set.NewSet()
+	podsMap := map[primitive.ObjectID]*pod.Pod{}
+	podsUnitsMap := map[primitive.ObjectID]*pod.Unit{}
+	for _, pd := range pods {
+		podsMap[pd.Id] = pd
 
-		for _, unit := range srvc.Units {
+		for _, unit := range pd.Units {
 			if !unitIds.Contains(unit.Id) {
 				continue
 			}
-			servicesUnitsMap[unit.Id] = unit
+			podsUnitsMap[unit.Id] = unit
 
 			for _, deply := range unit.Deployments {
-				serviceDeploymentsSet.Add(deply.Id)
+				podDeploymentsSet.Add(deply.Id)
 			}
 		}
 	}
-	s.servicesMap = servicesMap
-	s.servicesUnitsMap = servicesUnitsMap
+	s.podsMap = podsMap
+	s.podsUnitsMap = podsUnitsMap
 
-	serviceDeploymentIds := []primitive.ObjectID{}
-	for deplyIdInf := range serviceDeploymentsSet.Iter() {
+	podDeploymentIds := []primitive.ObjectID{}
+	for deplyIdInf := range podDeploymentsSet.Iter() {
 		deplyId := deplyIdInf.(primitive.ObjectID)
 		if !deploymentsIdSet.Contains(deplyId) {
-			serviceDeploymentIds = append(serviceDeploymentIds, deplyId)
+			podDeploymentIds = append(podDeploymentIds, deplyId)
 		}
 	}
 
-	serviceDeployments, err := deployment.GetAll(db, &bson.M{
+	podDeployments, err := deployment.GetAll(db, &bson.M{
 		"_id": &bson.M{
-			"$in": serviceDeploymentIds,
+			"$in": podDeploymentIds,
 		},
 	})
 	if err != nil {
 		return
 	}
 
-	for _, serviceDeployment := range serviceDeployments {
-		deploymentsIdSet.Add(serviceDeployment.Id)
-		switch serviceDeployment.State {
+	for _, podDeployment := range podDeployments {
+		deploymentsIdSet.Add(podDeployment.Id)
+		switch podDeployment.State {
 		case deployment.Reserved:
-			deploymentsReservedMap[serviceDeployment.Id] = serviceDeployment
+			deploymentsReservedMap[podDeployment.Id] = podDeployment
 			break
 		case deployment.Deployed:
-			deploymentsDeployedMap[serviceDeployment.Id] = serviceDeployment
+			deploymentsDeployedMap[podDeployment.Id] = podDeployment
 			break
 		case deployment.Destroy, deployment.Archive,
 			deployment.Archived, deployment.Restore:
 
-			deploymentsInactiveMap[serviceDeployment.Id] = serviceDeployment
+			deploymentsInactiveMap[podDeployment.Id] = podDeployment
 			break
 		}
 	}
