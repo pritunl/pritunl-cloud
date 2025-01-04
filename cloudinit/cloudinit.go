@@ -22,7 +22,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
-	"github.com/pritunl/pritunl-cloud/service"
+	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -186,7 +186,7 @@ type imdsConfig struct {
 }
 
 func getUserData(db *database.Database, inst *instance.Instance,
-	virt *vm.VirtualMachine, deployUnit *service.Unit,
+	virt *vm.VirtualMachine, deployUnit *pod.Unit,
 	deploySpec *spec.Commit, initial bool, addr6, gateway6 net.IP) (
 	usrData string, err error) {
 
@@ -570,7 +570,7 @@ func Write(db *database.Database, inst *instance.Instance,
 
 	defer os.RemoveAll(tempDir)
 
-	var deployUnit *service.Unit
+	var deployUnit *pod.Unit
 	var deploySpec *spec.Commit
 	if !virt.Deployment.IsZero() {
 		deply, e := deployment.Get(db, virt.Deployment)
@@ -584,7 +584,7 @@ func Write(db *database.Database, inst *instance.Instance,
 			return
 		}
 
-		servc, e := service.Get(db, deply.Service)
+		servc, e := pod.Get(db, deply.Pod)
 		if e != nil {
 			err = e
 			return
@@ -593,7 +593,7 @@ func Write(db *database.Database, inst *instance.Instance,
 		deployUnit = servc.GetUnit(deply.Unit)
 		if deployUnit == nil {
 			err = &errortypes.NotFoundError{
-				errors.Newf("cloudinit: Service unit not found"),
+				errors.Newf("cloudinit: Pod unit not found"),
 			}
 			return
 		}
