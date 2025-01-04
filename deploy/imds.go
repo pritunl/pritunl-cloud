@@ -8,8 +8,8 @@ import (
 	"github.com/pritunl/pritunl-cloud/imds"
 	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/secret"
-	"github.com/pritunl/pritunl-cloud/service"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
@@ -37,7 +37,7 @@ func (s *Imds) buildInstance(db *database.Database,
 	conf, err = imds.BuildConfig(
 		inst, virt,
 		vc, subnet,
-		[]*service.Service{},
+		[]*pod.Pod{},
 		map[primitive.ObjectID]*deployment.Deployment{},
 		[]*secret.Secret{},
 		[]*certificate.Certificate{},
@@ -101,24 +101,24 @@ func (s *Imds) buildDeployInstance(db *database.Database,
 		secrs = append(secrs, secr)
 	}
 
-	services := []*service.Service{}
-	instSrvc := s.stat.Service(deply.Service)
-	if instSrvc != nil {
-		services = append(services, instSrvc)
+	pods := []*pod.Pod{}
+	instPd := s.stat.Pod(deply.Pod)
+	if instPd != nil {
+		pods = append(pods, instPd)
 	}
-	for _, serviceId := range spc.Instance.Services {
-		servc := s.stat.SpecService(serviceId)
+	for _, podId := range spc.Instance.Pods {
+		servc := s.stat.SpecPod(podId)
 		if servc == nil || servc.Organization != inst.Organization {
 			continue
 		}
 
-		services = append(services, servc)
+		pods = append(pods, servc)
 	}
 
 	conf, err = imds.BuildConfig(
 		inst, virt,
 		vc, subnet,
-		services,
+		pods,
 		s.stat.DeploymentsDeployed(),
 		secrs,
 		certs,

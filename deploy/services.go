@@ -9,8 +9,8 @@ import (
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/scheduler"
-	"github.com/pritunl/pritunl-cloud/service"
 	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -18,16 +18,16 @@ import (
 )
 
 var (
-	servicesLock    = utils.NewMultiTimeoutLock(3 * time.Minute)
-	servicesLimiter = utils.NewLimiter(50)
+	podsLock    = utils.NewMultiTimeoutLock(3 * time.Minute)
+	podsLimiter = utils.NewLimiter(50)
 )
 
-type Services struct {
+type Pods struct {
 	stat *state.State
 }
 
-func (s *Services) processSchedule(schd *scheduler.Scheduler) {
-	if !servicesLimiter.Acquire() {
+func (s *Pods) processSchedule(schd *scheduler.Scheduler) {
+	if !podsLimiter.Acquire() {
 		return
 	}
 
@@ -40,36 +40,36 @@ func (s *Services) processSchedule(schd *scheduler.Scheduler) {
 		defer func() {
 			time.Sleep(1 * time.Second)
 			instancesLock.Unlock(schd.Id.Unit.Hex(), lockId)
-			servicesLimiter.Release()
+			podsLimiter.Release()
 		}()
 
 		err := s.deploySchedule(schd)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"service": schd.Id.Service.Hex(),
-				"unit":    schd.Id.Unit.Hex(),
-				"error":   err,
-			}).Error("deploy: Service deploy failed")
+				"pod":   schd.Id.Pod.Hex(),
+				"unit":  schd.Id.Unit.Hex(),
+				"error": err,
+			}).Error("deploy: Pod deploy failed")
 			return
 		}
 	}()
 }
 
-func (s *Services) deploySchedule(schd *scheduler.Scheduler) (err error) {
+func (s *Pods) deploySchedule(schd *scheduler.Scheduler) (err error) {
 	db := database.GetDatabase()
 	defer db.Close()
 
-	servc, err := service.Get(db, schd.Id.Service)
+	pd, err := pod.Get(db, schd.Id.Pod)
 	if err != nil {
 		return
 	}
 
-	unit := servc.GetUnit(schd.Id.Unit)
+	unit := pd.GetUnit(schd.Id.Unit)
 	if unit == nil {
 		logrus.WithFields(logrus.Fields{
-			"service": schd.Id.Service.Hex(),
-			"unit":    schd.Id.Unit.Hex(),
-		}).Info("deploy: Service deploy nil unit")
+			"pod":  schd.Id.Pod.Hex(),
+			"unit": schd.Id.Unit.Hex(),
+		}).Info("deploy: Pod deploy nil unit")
 		return
 	}
 
@@ -93,9 +93,9 @@ func (s *Services) deploySchedule(schd *scheduler.Scheduler) (err error) {
 
 				if !exists {
 					logrus.WithFields(logrus.Fields{
-						"service": schd.Id.Service.Hex(),
-						"unit":    schd.Id.Unit.Hex(),
-					}).Info("deploy: Service deploy schedule lost")
+						"pod":  schd.Id.Pod.Hex(),
+						"unit": schd.Id.Unit.Hex(),
+					}).Info("deploy: Pod deploy schedule lost")
 					return
 				}
 
@@ -119,18 +119,18 @@ func (s *Services) deploySchedule(schd *scheduler.Scheduler) (err error) {
 	return
 }
 
-func (s *Services) DeploySpec(db *database.Database,
-	schd *scheduler.Scheduler, unit *service.Unit,
+func (s *Pods) DeploySpec(db *database.Database,
+	schd *scheduler.Scheduler, unit *pod.Unit,
 	spc *spec.Commit) (err error) {
 
 	deply := &deployment.Deployment{
-		Service: unit.Service.Id,
-		Unit:    unit.Id,
-		Spec:    spc.Id,
-		Zone:    node.Self.Zone,
-		Node:    node.Self.Id,
-		Kind:    unit.Kind,
-		State:   deployment.Reserved,
+		Pod:   unit.Pod.Id,
+		Unit:  unit.Id,
+		Spec:  spc.Id,
+		Zone:  node.Self.Zone,
+		Node:  node.Self.Id,
+		Kind:  unit.Kind,
+		State: deployment.Reserved,
 	}
 
 	errData, err := deply.Validate(db)
@@ -165,7 +165,7 @@ func (s *Services) DeploySpec(db *database.Database,
 	}
 
 	inst := &instance.Instance{
-		Organization: unit.Service.Organization,
+		Organization: unit.Pod.Organization,
 		Zone:         spc.Instance.Zone,
 		Vpc:          spc.Instance.Vpc,
 		Subnet:       spc.Instance.Subnet,
@@ -217,12 +217,12 @@ func (s *Services) DeploySpec(db *database.Database,
 		return
 	}
 
-	event.PublishDispatch(db, "service.change")
+	event.PublishDispatch(db, "pod.change")
 
 	return
 }
 
-func (s *Services) Deploy(db *database.Database) (err error) {
+func (s *Pods) Deploy(db *database.Database) (err error) {
 	schds := s.stat.Schedulers()
 
 	for _, schd := range schds {
@@ -247,8 +247,8 @@ func (s *Services) Deploy(db *database.Database) (err error) {
 	return
 }
 
-func NewServices(stat *state.State) *Services {
-	return &Services{
+func NewPods(stat *state.State) *Pods {
+	return &Pods{
 		stat: stat,
 	}
 }

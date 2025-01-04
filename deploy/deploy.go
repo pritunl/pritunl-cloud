@@ -65,12 +65,12 @@ func Deploy(stat *state.State, runtimes *state.Runtimes) (err error) {
 	runtimes.Namespaces = time.Since(start)
 
 	start = time.Now()
-	services := NewServices(stat)
-	err = services.Deploy(db)
+	pods := NewPods(stat)
+	err = pods.Deploy(db)
 	if err != nil {
 		return
 	}
-	runtimes.Services = time.Since(start)
+	runtimes.Pods = time.Since(start)
 
 	start = time.Now()
 	deployments := NewDeployments(stat)

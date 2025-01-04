@@ -89,7 +89,7 @@ func (d *Deployments) destroy(db *database.Database,
 			return
 		}
 
-		event.PublishDispatch(db, "service.change")
+		event.PublishDispatch(db, "pod.change")
 	}
 
 	return
@@ -211,7 +211,7 @@ func (d *Deployments) imageShutdown(deply *deployment.Deployment,
 			}
 		}
 
-		event.PublishDispatch(db, "service.change")
+		event.PublishDispatch(db, "pod.change")
 	}()
 }
 
