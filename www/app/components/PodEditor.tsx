@@ -101,7 +101,7 @@ const hashRe = /^( {0,3})#+\s+\S+/
 const blockRe = /^( {4}|\s*`)/
 const langRe = /^language-(.+)$/
 
-export default class ServiceEditor extends React.Component<Props, State> {
+export default class PodEditor extends React.Component<Props, State> {
 	markdown: React.RefObject<HTMLDivElement>
 	curUuid: string
 	editor: Monaco.editor.IStandaloneCodeEditor

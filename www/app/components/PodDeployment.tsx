@@ -3,8 +3,8 @@ import * as React from "react"
 import * as Blueprint from "@blueprintjs/core"
 import * as Theme from '../Theme';
 import Help from "./Help"
-import * as ServiceTypes from "../types/ServiceTypes"
-import * as ServiceActions from "../actions/ServiceActions"
+import * as PodTypes from "../types/PodTypes"
+import * as PodActions from "../actions/PodActions"
 import * as InstanceActions from '../actions/InstanceActions';
 import * as MiscUtils from '../utils/MiscUtils';
 import NonState from './NonState';
@@ -18,7 +18,7 @@ interface Props {
 	disabled?: boolean
 	selected: boolean
 	commitMap: Record<string, number>
-	deployment: ServiceTypes.Deployment
+	deployment: PodTypes.Deployment
 	onSelect: (shift: boolean) => void
 }
 
@@ -93,7 +93,7 @@ const css = {
 	} as React.CSSProperties,
 }
 
-export default class ServiceDeployment extends React.Component<Props, State> {
+export default class PodDeployment extends React.Component<Props, State> {
 	constructor(props: any, context: any) {
 		super(props, context)
 		this.state = {
@@ -283,7 +283,7 @@ export default class ServiceDeployment extends React.Component<Props, State> {
 				readOnly={true}
 				refresh={async (first: boolean): Promise<string> => {
 					try {
-						let logs = await ServiceActions.log(
+						let logs = await PodActions.log(
 							this.props.deployment, "agent", !first)
 						return logs.join("")
 					} catch (error) {

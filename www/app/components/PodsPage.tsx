@@ -1,7 +1,7 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
-import ServicesStore from '../stores/ServicesStore';
-import * as ServiceActions from '../actions/ServiceActions';
+import PodsStore from '../stores/PodsStore';
+import * as PodActions from '../actions/PodActions';
 
 interface Props {
 	onPage?: () => void;
@@ -33,32 +33,32 @@ const css = {
 	} as React.CSSProperties,
 };
 
-export default class ServicesPage extends React.Component<Props, State> {
+export default class PodsPage extends React.Component<Props, State> {
 	constructor(props: any, context: any) {
 		super(props, context);
 		this.state = {
-			page: ServicesStore.page,
-			pageCount: ServicesStore.pageCount,
-			pages: ServicesStore.pages,
-			count: ServicesStore.count,
+			page: PodsStore.page,
+			pageCount: PodsStore.pageCount,
+			pages: PodsStore.pages,
+			count: PodsStore.count,
 		};
 	}
 
 	componentDidMount(): void {
-		ServicesStore.addChangeListener(this.onChange);
+		PodsStore.addChangeListener(this.onChange);
 	}
 
 	componentWillUnmount(): void {
-		ServicesStore.removeChangeListener(this.onChange);
+		PodsStore.removeChangeListener(this.onChange);
 	}
 
 	onChange = (): void => {
 		this.setState({
 			...this.state,
-			page: ServicesStore.page,
-			pageCount: ServicesStore.pageCount,
-			pages: ServicesStore.pages,
-			count: ServicesStore.count,
+			page: PodsStore.page,
+			pageCount: PodsStore.pageCount,
+			pages: PodsStore.pages,
+			count: PodsStore.count,
 		});
 	}
 
@@ -82,7 +82,7 @@ export default class ServicesPage extends React.Component<Props, State> {
 					...css.current,
 				} : css.link}
 				onClick={(): void => {
-					ServiceActions.traverse(i);
+					PodActions.traverse(i);
 					if (this.props.onPage) {
 						this.props.onPage();
 					}
@@ -99,7 +99,7 @@ export default class ServicesPage extends React.Component<Props, State> {
 				disabled={page === 0}
 				type="button"
 				onClick={(): void => {
-					ServiceActions.traverse(0);
+					PodActions.traverse(0);
 					if (this.props.onPage) {
 						this.props.onPage();
 					}
@@ -111,7 +111,7 @@ export default class ServicesPage extends React.Component<Props, State> {
 				disabled={page === 0}
 				type="button"
 				onClick={(): void => {
-					ServiceActions.traverse(Math.max(0, this.state.page - 1));
+					PodActions.traverse(Math.max(0, this.state.page - 1));
 					if (this.props.onPage) {
 						this.props.onPage();
 					}
@@ -124,7 +124,7 @@ export default class ServicesPage extends React.Component<Props, State> {
 				disabled={page === pages - 1}
 				type="button"
 				onClick={(): void => {
-					ServiceActions.traverse(Math.min(
+					PodActions.traverse(Math.min(
 						this.state.pages - 1, this.state.page + 1));
 					if (this.props.onPage) {
 						this.props.onPage();
@@ -137,7 +137,7 @@ export default class ServicesPage extends React.Component<Props, State> {
 				disabled={page === pages - 1}
 				type="button"
 				onClick={(): void => {
-					ServiceActions.traverse(this.state.pages - 1);
+					PodActions.traverse(this.state.pages - 1);
 					if (this.props.onPage) {
 						this.props.onPage();
 					}

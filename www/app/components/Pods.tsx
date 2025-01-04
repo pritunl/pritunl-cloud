@@ -1,15 +1,15 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
-import * as ServiceTypes from '../types/ServiceTypes';
+import * as PodTypes from '../types/PodTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
-import ServicesStore from '../stores/ServicesStore';
+import PodsStore from '../stores/PodsStore';
 import OrganizationsStore from '../stores/OrganizationsStore';
-import * as ServiceActions from '../actions/ServiceActions';
+import * as PodActions from '../actions/PodActions';
 import * as OrganizationActions from '../actions/OrganizationActions';
-import Service from './Service';
-import ServiceNew from './ServiceNew';
-import ServicesFilter from './ServicesFilter';
-import ServicesPage from './ServicesPage';
+import Pod from './Pod';
+import PodNew from './PodNew';
+import PodsFilter from './PodsFilter';
+import PodsPage from './PodsPage';
 import Page from './Page';
 import PageHeader from './PageHeader';
 import NonState from './NonState';
@@ -61,8 +61,8 @@ interface Opened {
 }
 
 interface State {
-	services: ServiceTypes.ServicesRo;
-	filter: ServiceTypes.Filter;
+	pods: PodTypes.PodsRo;
+	filter: PodTypes.Filter;
 	organizations: OrganizationTypes.OrganizationsRo;
 	domains: DomainTypes.DomainsRo;
 	vpcs: VpcTypes.VpcsRo;
@@ -112,12 +112,12 @@ const css = {
 	} as React.CSSProperties,
 };
 
-export default class Services extends React.Component<{}, State> {
+export default class Pods extends React.Component<{}, State> {
 	constructor(props: any, context: any) {
 		super(props, context);
 		this.state = {
-			services: ServicesStore.services,
-			filter: ServicesStore.filter,
+			pods: PodsStore.pods,
+			filter: PodsStore.filter,
 			organizations: OrganizationsStore.organizations,
 			domains: DomainsNameStore.domains,
 			vpcs: VpcsNameStore.vpcs,
@@ -148,7 +148,7 @@ export default class Services extends React.Component<{}, State> {
 	}
 
 	componentDidMount(): void {
-		ServicesStore.addChangeListener(this.onChange);
+		PodsStore.addChangeListener(this.onChange);
 		OrganizationsStore.addChangeListener(this.onChange);
 		DomainsNameStore.addChangeListener(this.onChange);
 		VpcsNameStore.addChangeListener(this.onChange);
@@ -162,7 +162,7 @@ export default class Services extends React.Component<{}, State> {
 		PlansStore.addChangeListener(this.onChange);
 		CertificatesStore.addChangeListener(this.onChange);
 		SecretsStore.addChangeListener(this.onChange);
-		ServiceActions.sync();
+		PodActions.sync();
 		OrganizationActions.sync();
 		DomainActions.syncName();
 		VpcActions.syncNames();
@@ -179,7 +179,7 @@ export default class Services extends React.Component<{}, State> {
 	}
 
 	componentWillUnmount(): void {
-		ServicesStore.removeChangeListener(this.onChange);
+		PodsStore.removeChangeListener(this.onChange);
 		OrganizationsStore.removeChangeListener(this.onChange);
 		DomainsNameStore.removeChangeListener(this.onChange);
 		VpcsNameStore.removeChangeListener(this.onChange);
@@ -210,28 +210,28 @@ export default class Services extends React.Component<{}, State> {
 			plans: PlansStore.plans,
 			certificates: CertificatesStore.certificates,
 			secrets: SecretsStore.secrets,
-			services: ServicesStore.services,
+			pods: PodsStore.pods,
 		})
 
-		let services = ServicesStore.services;
+		let pods = PodsStore.pods;
 		let selected: Selected = {};
 		let curSelected = this.state.selected;
 		let opened: Opened = {};
 		let curOpened = this.state.opened;
 
-		services.forEach((service: ServiceTypes.Service): void => {
-			if (curSelected[service.id]) {
-				selected[service.id] = true;
+		pods.forEach((pod: PodTypes.Pod): void => {
+			if (curSelected[pod.id]) {
+				selected[pod.id] = true;
 			}
-			if (curOpened[service.id]) {
-				opened[service.id] = true;
+			if (curOpened[pod.id]) {
+				opened[pod.id] = true;
 			}
 		});
 
 		this.setState({
 			...this.state,
-			services: services,
-			filter: ServicesStore.filter,
+			pods: pods,
+			filter: PodsStore.filter,
 			organizations: OrganizationsStore.organizations,
 			domains: DomainsNameStore.domains,
 			vpcs: VpcsNameStore.vpcs,
@@ -255,7 +255,7 @@ export default class Services extends React.Component<{}, State> {
 			...this.state,
 			disabled: true,
 		});
-		ServiceActions.removeMulti(
+		PodActions.removeMulti(
 				Object.keys(this.state.selected)).then((): void => {
 			this.setState({
 				...this.state,
@@ -271,30 +271,30 @@ export default class Services extends React.Component<{}, State> {
 	}
 
 	render(): JSX.Element {
-		let servicesDom: JSX.Element[] = [];
+		let podsDom: JSX.Element[] = [];
 
-		this.state.services.forEach((
-				service: ServiceTypes.ServiceRo): void => {
-			servicesDom.push(<Service
-				key={service.id}
-				service={service}
+		this.state.pods.forEach((
+				pod: PodTypes.PodRo): void => {
+			podsDom.push(<Pod
+				key={pod.id}
+				pod={pod}
 				organizations={this.state.organizations}
-				selected={!!this.state.selected[service.id]}
-				open={!!this.state.opened[service.id]}
+				selected={!!this.state.selected[pod.id]}
+				open={!!this.state.opened[pod.id]}
 				onSelect={(shift: boolean): void => {
 					let selected = {
 						...this.state.selected,
 					};
 
 					if (shift) {
-						let services = this.state.services;
+						let pods = this.state.pods;
 						let start: number;
 						let end: number;
 
-						for (let i = 0; i < services.length; i++) {
-							let usr = services[i];
+						for (let i = 0; i < pods.length; i++) {
+							let usr = pods[i];
 
-							if (usr.id === service.id) {
+							if (usr.id === pod.id) {
 								start = i;
 							} else if (usr.id === this.state.lastSelected) {
 								end = i;
@@ -307,12 +307,12 @@ export default class Services extends React.Component<{}, State> {
 							}
 
 							for (let i = start; i <= end; i++) {
-								selected[services[i].id] = true;
+								selected[pods[i].id] = true;
 							}
 
 							this.setState({
 								...this.state,
-								lastSelected: service.id,
+								lastSelected: pod.id,
 								selected: selected,
 							});
 
@@ -320,15 +320,15 @@ export default class Services extends React.Component<{}, State> {
 						}
 					}
 
-					if (selected[service.id]) {
-						delete selected[service.id];
+					if (selected[pod.id]) {
+						delete selected[pod.id];
 					} else {
-						selected[service.id] = true;
+						selected[pod.id] = true;
 					}
 
 					this.setState({
 						...this.state,
-						lastSelected: service.id,
+						lastSelected: pod.id,
 						selected: selected,
 					});
 				}}
@@ -337,10 +337,10 @@ export default class Services extends React.Component<{}, State> {
 						...this.state.opened,
 					};
 
-					if (opened[service.id]) {
-						delete opened[service.id];
+					if (opened[pod.id]) {
+						delete opened[pod.id];
 					} else {
-						opened[service.id] = true;
+						opened[pod.id] = true;
 					}
 
 					this.setState({
@@ -351,9 +351,9 @@ export default class Services extends React.Component<{}, State> {
 			/>);
 		});
 
-		let newServiceDom: JSX.Element;
+		let newPodDom: JSX.Element;
 		if (this.state.newOpened) {
-			newServiceDom = <ServiceNew
+			newPodDom = <PodNew
 				organizations={this.state.organizations}
 				onClose={(): void => {
 					this.setState({
@@ -371,7 +371,7 @@ export default class Services extends React.Component<{}, State> {
 
 		let selectedNames: string[] = [];
 		for (let instId of Object.keys(this.state.selected)) {
-			let inst = ServicesStore.service(instId);
+			let inst = PodsStore.pod(instId);
 			if (inst) {
 				selectedNames.push(inst.name || instId);
 			} else {
@@ -382,7 +382,7 @@ export default class Services extends React.Component<{}, State> {
 		return <Page wide={true}>
 			<PageHeader>
 				<div className="layout horizontal wrap" style={css.header}>
-					<h2 style={css.heading}>Services</h2>
+					<h2 style={css.heading}>Pods</h2>
 					<div className="flex"/>
 					<div style={css.buttons}>
 						<button
@@ -391,9 +391,9 @@ export default class Services extends React.Component<{}, State> {
 							type="button"
 							onClick={(): void => {
 								if (this.state.filter === null) {
-									ServiceActions.filter({});
+									PodActions.filter({});
 								} else {
-									ServiceActions.filter(null);
+									PodActions.filter(null);
 								}
 							}}
 						>
@@ -419,7 +419,7 @@ export default class Services extends React.Component<{}, State> {
 							progressClassName="bp5-intent-danger"
 							safe={true}
 							style={css.button}
-							confirmMsg="Permanently delete the selected services"
+							confirmMsg="Permanently delete the selected pods"
 							confirmInput={true}
 							items={selectedNames}
 							disabled={!this.selected || this.state.disabled}
@@ -440,29 +440,29 @@ export default class Services extends React.Component<{}, State> {
 					</div>
 				</div>
 			</PageHeader>
-			<ServicesFilter
+			<PodsFilter
 				filter={this.state.filter}
 				onFilter={(filter): void => {
-					ServiceActions.filter(filter);
+					PodActions.filter(filter);
 				}}
 				organizations={this.state.organizations}
 			/>
 			<div style={css.itemsBox}>
 				<div style={css.items}>
-					{newServiceDom}
-					{servicesDom}
+					{newPodDom}
+					{podsDom}
 					<tr className="bp5-card bp5-row" style={css.placeholder}>
 						<td colSpan={5} style={css.placeholder}/>
 					</tr>
 				</div>
 			</div>
 			<NonState
-				hidden={!!servicesDom.length}
+				hidden={!!podsDom.length}
 				iconClass="bp5-icon-cube"
-				title="No services"
-				description="Add a new service to get started."
+				title="No pods"
+				description="Add a new pod to get started."
 			/>
-			<ServicesPage
+			<PodsPage
 				onPage={(): void => {
 					this.setState({
 						...this.state,

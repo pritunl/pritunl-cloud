@@ -1,14 +1,14 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
 import * as MiscUtils from '../utils/MiscUtils';
-import * as ServiceTypes from '../types/ServiceTypes';
+import * as PodTypes from '../types/PodTypes';
 import * as OrganizationTypes from "../types/OrganizationTypes";
 import OrganizationsStore from '../stores/OrganizationsStore';
-import ServiceDetailed from './ServiceDetailed';
+import PodDetailed from './PodDetailed';
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
-	service: ServiceTypes.ServiceRo;
+	pod: PodTypes.PodRo;
 	selected: boolean;
 	onSelect: (shift: boolean) => void;
 	open: boolean;
@@ -76,18 +76,18 @@ const css = {
 	} as React.CSSProperties,
 };
 
-export default class Service extends React.Component<Props, {}> {
+export default class Pod extends React.Component<Props, {}> {
 	render(): JSX.Element {
-		let service = this.props.service;
+		let pod = this.props.pod;
 
 		if (this.props.open) {
 			return <div
 				className="bp5-card bp5-row"
 				style={css.cardOpen}
 			>
-				<ServiceDetailed
+				<PodDetailed
 					organizations={this.props.organizations}
-					service={this.props.service}
+					pod={this.props.pod}
 					selected={this.props.selected}
 					onSelect={this.props.onSelect}
 					onClose={(): void => {
@@ -102,11 +102,11 @@ export default class Service extends React.Component<Props, {}> {
 		};
 
 		let orgName = '';
-		if (!MiscUtils.objectIdNil(service.organization)) {
-			let org = OrganizationsStore.organization(service.organization);
-			orgName = org ? org.name : service.organization;
+		if (!MiscUtils.objectIdNil(pod.organization)) {
+			let org = OrganizationsStore.organization(pod.organization);
+			orgName = org ? org.name : pod.organization;
 		} else {
-			orgName = 'Node Service';
+			orgName = 'Node Pod';
 		}
 
 		return <div
@@ -141,7 +141,7 @@ export default class Service extends React.Component<Props, {}> {
 						<span className="bp5-control-indicator open-ignore"/>
 					</label>
 					<div style={css.nameSpan}>
-						{service.name}
+						{pod.name}
 					</div>
 				</div>
 			</div>
@@ -149,7 +149,7 @@ export default class Service extends React.Component<Props, {}> {
 				<span
 					style={css.icon}
 					className={'bp5-icon-standard bp5-text-muted ' + (
-						service.organization ? 'bp5-icon-people' : 'bp5-icon-layers')}
+						pod.organization ? 'bp5-icon-people' : 'bp5-icon-layers')}
 				/>
 				{orgName}
 			</div>

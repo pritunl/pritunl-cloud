@@ -1,13 +1,13 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
 import * as Constants from '../Constants';
-import * as ServiceTypes from '../types/ServiceTypes';
+import * as PodTypes from '../types/PodTypes';
 import SearchInput from './SearchInput';
 import * as OrganizationTypes from "../types/OrganizationTypes";
 
 interface Props {
-	filter: ServiceTypes.Filter;
-	onFilter: (filter: ServiceTypes.Filter) => void;
+	filter: PodTypes.Filter;
+	onFilter: (filter: PodTypes.Filter) => void;
 	organizations: OrganizationTypes.OrganizationsRo;
 }
 
@@ -35,7 +35,7 @@ const css = {
 	} as React.CSSProperties,
 };
 
-export default class ServicesFilter extends React.Component<Props, {}> {
+export default class PodsFilter extends React.Component<Props, {}> {
 	constructor(props: any, context: any) {
 		super(props, context);
 		this.state = {
@@ -65,7 +65,7 @@ export default class ServicesFilter extends React.Component<Props, {}> {
 		return <div className="layout horizontal wrap" style={css.filters}>
 			<SearchInput
 				style={css.input}
-				placeholder="Service ID"
+				placeholder="Pod ID"
 				value={this.props.filter.id}
 				onChange={(val: string): void => {
 					let filter = {

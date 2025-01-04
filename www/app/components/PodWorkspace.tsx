@@ -3,9 +3,9 @@ import * as React from 'react';
 import * as Blueprint from '@blueprintjs/core';
 import * as Icons from '@blueprintjs/icons';
 import * as Constants from '../Constants';
-import * as ServiceTypes from '../types/ServiceTypes';
-import * as ServiceActions from '../actions/ServiceActions';
-import ServicesUnitStore from '../stores/ServicesUnitStore';
+import * as PodTypes from '../types/PodTypes';
+import * as PodActions from '../actions/PodActions';
+import PodsUnitStore from '../stores/PodsUnitStore';
 import * as MiscUtils from '../utils/MiscUtils';
 import * as Theme from '../Theme';
 import * as Alert from '../Alert';
@@ -13,22 +13,22 @@ import PageInput from './PageInput';
 import PageSelect from './PageSelect';
 import PageInfo from './PageInfo';
 import PageInputButton from './PageInputButton';
-import ServiceEditor from './ServiceEditor';
-import ServiceUnit from './ServiceUnit';
-import ServiceDeploy from './ServiceDeploy';
+import PodEditor from './PodEditor';
+import PodUnit from './PodUnit';
+import PodDeploy from './PodDeploy';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
 import Help from './Help';
 import PageTextArea from "./PageTextArea";
 
 interface Props {
-	service: ServiceTypes.ServiceRo;
+	pod: PodTypes.PodRo;
 	disabled: boolean;
 	unitChanged: boolean;
 	mode: string;
 	onMode: (mode: string) => void;
-	onChange: (units: ServiceTypes.Unit[]) => void;
-	onEdit: (units: ServiceTypes.Unit[]) => void;
+	onChange: (units: PodTypes.Unit[]) => void;
+	onEdit: (units: PodTypes.Unit[]) => void;
 }
 
 interface State {
@@ -38,8 +38,8 @@ interface State {
 	activeUnitId: string;
 	selectedDeployments: Selected;
 	lastSelectedDeployment: string;
-	unit: ServiceTypes.ServiceUnit;
-	diffCommit: ServiceTypes.Commit
+	unit: PodTypes.PodUnit;
+	diffCommit: PodTypes.Commit
 }
 
 interface Selected {
@@ -149,7 +149,7 @@ const css = {
 	} as React.CSSProperties,
 };
 
-export default class ServiceWorkspace extends React.Component<Props, State> {
+export default class PodWorkspace extends React.Component<Props, State> {
 	interval: NodeJS.Timer;
 
 	constructor(props: any, context: any) {
@@ -167,22 +167,22 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 	}
 
 	componentDidMount(): void {
-		ServicesUnitStore.addChangeListener(this.onChange);
+		PodsUnitStore.addChangeListener(this.onChange);
 		let activeUnit = this.getActiveUnit()
 		if (activeUnit && !activeUnit.new) {
-			ServiceActions.syncUnit(this.props.service.id, activeUnit.id);
+			PodActions.syncUnit(this.props.pod.id, activeUnit.id);
 		}
 
 		this.interval = setInterval(() => {
 			let activeUnit = this.getActiveUnit()
 			if (activeUnit && !activeUnit.new) {
-				ServiceActions.syncUnit(this.props.service.id, activeUnit.id);
+				PodActions.syncUnit(this.props.pod.id, activeUnit.id);
 			}
 		}, 3000);
 	}
 
 	componentWillUnmount(): void {
-		ServicesUnitStore.removeChangeListener(this.onChange);
+		PodsUnitStore.removeChangeListener(this.onChange);
 		clearInterval(this.interval);
 	}
 
@@ -191,11 +191,11 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 	}
 
 	onChange = (): void => {
-		let unit: ServiceTypes.ServiceUnit
+		let unit: PodTypes.PodUnit
 		let activeUnit = this.getActiveUnit()
 
 		if (activeUnit && !activeUnit.new) {
-			unit = ServicesUnitStore.unit(activeUnit.id)
+			unit = PodsUnitStore.unit(activeUnit.id)
 		} else {
 			unit = null
 		}
@@ -205,7 +205,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 
 		if (activeUnit) {
 			let deployments = unit.deployments || []
-			deployments.forEach((deployment: ServiceTypes.Deployment): void => {
+			deployments.forEach((deployment: PodTypes.Deployment): void => {
 				if (curSelectedDeployments[deployment.id]) {
 					selectedDeployments[deployment.id] = true;
 				}
@@ -229,8 +229,8 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 			...this.state,
 			disabled: true,
 		});
-		ServiceActions.updateMultiUnitState(
-				this.props.service.id, activeUnit.id,
+		PodActions.updateMultiUnitState(
+				this.props.pod.id, activeUnit.id,
 				Object.keys(this.state.selectedDeployments),
 			  "archive").then((): void => {
 
@@ -259,8 +259,8 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 			...this.state,
 			disabled: true,
 		});
-		ServiceActions.updateMultiUnitState(
-				this.props.service.id, activeUnit.id,
+		PodActions.updateMultiUnitState(
+				this.props.pod.id, activeUnit.id,
 				Object.keys(this.state.selectedDeployments),
 			  "restore").then((): void => {
 
@@ -289,8 +289,8 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 			...this.state,
 			disabled: true,
 		});
-		ServiceActions.updateMultiUnitState(
-				this.props.service.id, activeUnit.id,
+		PodActions.updateMultiUnitState(
+				this.props.pod.id, activeUnit.id,
 				Object.keys(this.state.selectedDeployments),
 			  "destroy").then((): void => {
 
@@ -309,9 +309,9 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 		});
 	}
 
-	getActiveUnit = (): ServiceTypes.Unit => {
+	getActiveUnit = (): PodTypes.Unit => {
 		let units = [
-			...(this.props.service.units || []),
+			...(this.props.pod.units || []),
 		]
 
 		let activeUnit = units.find(unit => unit.id === this.state.activeUnitId)
@@ -329,7 +329,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 
 	getActiveUnitIndex = (): number => {
 		let units = [
-			...(this.props.service.units || []),
+			...(this.props.pod.units || []),
 		]
 
 		let activeIndex = units.findIndex(
@@ -348,7 +348,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 
 	onEdit = (): void => {
 		let units = [
-			...(this.props.service.units || []),
+			...(this.props.pod.units || []),
 		]
 
 		this.setState({
@@ -379,7 +379,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 
 	onNew = (): void => {
 		let units = [
-			...(this.props.service.units || []),
+			...(this.props.pod.units || []),
 		]
 
 		units.push({
@@ -399,7 +399,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 
 	onDelete = (): void => {
 		let units = [
-			...(this.props.service.units || []),
+			...(this.props.pod.units || []),
 		]
 
 		let index = this.getActiveUnitIndex()
@@ -419,13 +419,13 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 
 		let activeUnit = this.getActiveUnit()
 		if (activeUnit && !activeUnit.new) {
-			ServiceActions.syncUnit(this.props.service.id, activeUnit.id);
+			PodActions.syncUnit(this.props.pod.id, activeUnit.id);
 		}
 	}
 
 	onUnitEdit = (val: string): void => {
 		let units = [
-			...(this.props.service.units || []),
+			...(this.props.pod.units || []),
 		]
 
 		let index = this.getActiveUnitIndex()
@@ -441,7 +441,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 
 	onUnitDeploy = (val: string): void => {
 		let units = [
-			...(this.props.service.units || []),
+			...(this.props.pod.units || []),
 		]
 
 		let index = this.getActiveUnitIndex()
@@ -457,7 +457,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 
 	render(): JSX.Element {
 		let units = [
-			...(this.props.service.units || []),
+			...(this.props.pod.units || []),
 		]
 		let activeUnit = this.getActiveUnit()
 		let diffCommit = this.state.diffCommit
@@ -559,7 +559,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 			/>)
 		}
 
-		let commits: ServiceTypes.Commit[];
+		let commits: PodTypes.Commit[];
 		let commitMenu: JSX.Element
 		if (this.props.mode === "unit") {
 			if (this.state.unit &&
@@ -621,9 +621,9 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 			for (let deploymentId of Object.keys(this.state.selectedDeployments)) {
 				selectedNames.push(deploymentId)
 			}
-			menuItems.push(<ServiceDeploy
-				key="menu-service-deploy"
-				service={this.props.service}
+			menuItems.push(<PodDeploy
+				key="menu-pod-deploy"
+				pod={this.props.pod}
 				unit={activeUnit}
 				commits={commits}
 			/>)
@@ -808,7 +808,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 			<Blueprint.Navbar>
 				<Blueprint.NavbarGroup align={"left"}>
 					<Blueprint.Tabs
-						id={this.props.service.id}
+						id={this.props.pod.id}
 						selectedTabId={activeUnit ? activeUnit.id : null}
 						fill={true}
 						onChange={(newTabId): void => {
@@ -822,7 +822,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 							})
 
 							if (activeUnit && !activeUnit.new) {
-								ServiceActions.syncUnit(this.props.service.id, activeUnitId);
+								PodActions.syncUnit(this.props.pod.id, activeUnitId);
 							}
 						}}
 					>
@@ -871,7 +871,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 					</Blueprint.Popover>
 				</Blueprint.NavbarGroup>
 			</Blueprint.Navbar>
-			<ServiceEditor
+			<PodEditor
 				hidden={this.props.mode === "unit"}
 				expandLeft={expandLeft}
 				expandRight={expandRight}
@@ -885,7 +885,7 @@ export default class ServiceWorkspace extends React.Component<Props, State> {
 				}}
 				onEdit={this.onEdit}
 			/>
-			<ServiceUnit
+			<PodUnit
 				hidden={this.props.mode !== "unit"}
 				disabled={this.props.disabled || this.state.disabled}
 				selected={this.state.selectedDeployments}

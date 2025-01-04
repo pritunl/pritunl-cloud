@@ -3,23 +3,23 @@ import * as React from 'react';
 import * as Blueprint from '@blueprintjs/core';
 import * as BpSelect from '@blueprintjs/select';
 import * as Icons from '@blueprintjs/icons';
-import * as ServiceTypes from '../types/ServiceTypes';
-import * as ServiceActions from '../actions/ServiceActions';
+import * as PodTypes from '../types/PodTypes';
+import * as PodActions from '../actions/PodActions';
 import * as Alert from '../Alert';
 import * as Theme from '../Theme';
 import * as MiscUtils from '../utils/MiscUtils';
 
 interface Props {
-	service: ServiceTypes.ServiceRo;
-	unit: ServiceTypes.ServiceUnit;
-	commits: ServiceTypes.Commit[];
+	pod: PodTypes.PodRo;
+	unit: PodTypes.PodUnit;
+	commits: PodTypes.Commit[];
 }
 
 interface State {
 	dialog: boolean;
 	disabled: boolean;
 	specId: string;
-	deployCommit: ServiceTypes.Commit;
+	deployCommit: PodTypes.Commit;
 	count: number;
 }
 
@@ -48,7 +48,7 @@ const css = {
 	} as React.CSSProperties,
 };
 
-export default class ServiceDeploy extends React.Component<Props, State> {
+export default class PodDeploy extends React.Component<Props, State> {
 	interval: NodeJS.Timer;
 
 	constructor(props: any, context: any) {
@@ -87,8 +87,8 @@ export default class ServiceDeploy extends React.Component<Props, State> {
 		let deployCommit = this.props.unit.kind === "image" ?
 			this.state.deployCommit?.id || this.props.commits?.[0]?.id : null
 
-		ServiceActions.deployUnit(
-				this.props.service.id, this.props.unit.id,
+		PodActions.deployUnit(
+				this.props.pod.id, this.props.unit.id,
 				deployCommit, this.state.count).then((): void => {
 
 			Alert.success('Successfully created deployments');
@@ -167,7 +167,7 @@ export default class ServiceDeploy extends React.Component<Props, State> {
 		</div>
 	}
 
-	filterCommit: BpSelect.ItemPredicate<ServiceTypes.Commit> = (
+	filterCommit: BpSelect.ItemPredicate<PodTypes.Commit> = (
 		query, commit, _index, exactMatch) => {
 
 		if (exactMatch) {
@@ -177,7 +177,7 @@ export default class ServiceDeploy extends React.Component<Props, State> {
 		}
 	}
 
-	renderCommit: BpSelect.ItemRenderer<ServiceTypes.Commit> = (commit,
+	renderCommit: BpSelect.ItemRenderer<PodTypes.Commit> = (commit,
 		{handleClick, handleFocus, modifiers, query, index}): JSX.Element => {
 
 		if (!modifiers.matchesPredicate) {
@@ -227,7 +227,7 @@ export default class ServiceDeploy extends React.Component<Props, State> {
 				deployClass = "bp5-text-intent-success"
 			}
 
-			commitsSelect = <BpSelect.Select<ServiceTypes.Commit>
+			commitsSelect = <BpSelect.Select<PodTypes.Commit>
 				items={this.props.commits}
 				itemPredicate={this.filterCommit}
 				itemRenderer={this.renderCommit}

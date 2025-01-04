@@ -3,12 +3,12 @@ import * as React from "react"
 import * as Blueprint from "@blueprintjs/core"
 import * as Theme from '../Theme';
 import Help from "./Help"
-import * as ServiceTypes from "../types/ServiceTypes"
-import * as ServiceActions from "../actions/ServiceActions"
+import * as PodTypes from "../types/PodTypes"
+import * as PodActions from "../actions/PodActions"
 import * as MiscUtils from '../utils/MiscUtils';
 import NonState from './NonState';
 import PageInfo from "./PageInfo"
-import ServiceDeployment from "./ServiceDeployment"
+import PodDeployment from "./PodDeployment"
 import * as PageInfos from './PageInfo';
 
 interface Props {
@@ -17,7 +17,7 @@ interface Props {
 	selected: Selected
 	lastSelected: string
 	onSelect: (selected: Selected, lastSelected: string) => void
-	unit: ServiceTypes.ServiceUnit
+	unit: PodTypes.PodUnit
 }
 
 interface State {
@@ -85,7 +85,7 @@ const css = {
 	} as React.CSSProperties,
 }
 
-export default class ServiceUnit extends React.Component<Props, State> {
+export default class PodUnit extends React.Component<Props, State> {
 	constructor(props: any, context: any) {
 		super(props, context)
 		this.state = {
@@ -105,7 +105,7 @@ export default class ServiceUnit extends React.Component<Props, State> {
 		}
 
 		let cards: JSX.Element[] = []
-		let deployments: ServiceTypes.Deployment[]
+		let deployments: PodTypes.Deployment[]
 		if (this.props.unit && this.props.unit.deployments) {
 			deployments = this.props.unit.deployments
 		} else {
@@ -136,8 +136,8 @@ export default class ServiceUnit extends React.Component<Props, State> {
 			}
 		}
 
-		deployments.forEach((deployment: ServiceTypes.Deployment): void => {
-			cards.push(<ServiceDeployment
+		deployments.forEach((deployment: PodTypes.Deployment): void => {
+			cards.push(<PodDeployment
 				key={deployment.id}
 				hidden={this.props.hidden}
 				disabled={this.props.disabled}

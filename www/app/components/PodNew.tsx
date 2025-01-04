@@ -1,18 +1,18 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
 import * as Constants from '../Constants';
-import * as ServiceTypes from '../types/ServiceTypes';
+import * as PodTypes from '../types/PodTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
-import * as ServiceActions from '../actions/ServiceActions';
+import * as PodActions from '../actions/PodActions';
 import * as MiscUtils from '../utils/MiscUtils';
-import ServicesStore from '../stores/ServicesStore';
+import PodsStore from '../stores/PodsStore';
 import PageInput from './PageInput';
 import PageInputButton from './PageInputButton';
 import PageCreate from './PageCreate';
 import PageSelect from './PageSelect';
 import PageSwitch from "./PageSwitch";
 import PageNumInput from './PageNumInput';
-import ServiceWorkspace from './ServiceWorkspace';
+import PodWorkspace from './PodWorkspace';
 import Help from './Help';
 import PageTextArea from "./PageTextArea";
 
@@ -28,7 +28,7 @@ interface State {
 	unitChanged: boolean;
 	message: string;
 	mode: string;
-	service: ServiceTypes.Service;
+	pod: PodTypes.Pod;
 }
 
 const css = {
@@ -86,7 +86,7 @@ const css = {
 	} as React.CSSProperties,
 };
 
-export default class ServiceNew extends React.Component<Props, State> {
+export default class PodNew extends React.Component<Props, State> {
 	constructor(props: any, context: any) {
 		super(props, context);
 		this.state = {
@@ -96,7 +96,7 @@ export default class ServiceNew extends React.Component<Props, State> {
 			unitChanged: false,
 			message: '',
 			mode: "view",
-			service: this.default,
+			pod: this.default,
 		};
 	}
 
@@ -112,10 +112,10 @@ export default class ServiceNew extends React.Component<Props, State> {
 		});
 	}
 
-	get default(): ServiceTypes.Service {
+	get default(): PodTypes.Pod {
 		return {
 			id: null,
-			name: 'New service',
+			name: 'New pod',
 			units: [
 				{
 					id: MiscUtils.objectId(),
@@ -127,16 +127,16 @@ export default class ServiceNew extends React.Component<Props, State> {
 	}
 
 	set(name: string, val: any): void {
-		let service: any = {
-			...this.state.service,
+		let pod: any = {
+			...this.state.pod,
 		};
 
-		service[name] = val;
+		pod[name] = val;
 
 		this.setState({
 			...this.state,
 			changed: true,
-			service: service,
+			pod: pod,
 		});
 	}
 
@@ -146,14 +146,14 @@ export default class ServiceNew extends React.Component<Props, State> {
 			disabled: true,
 		});
 
-		let service: any = {
-			...this.state.service,
+		let pod: any = {
+			...this.state.pod,
 		};
 
-		ServiceActions.create(service).then((): void => {
+		PodActions.create(pod).then((): void => {
 			this.setState({
 				...this.state,
-				message: 'Service created successfully',
+				message: 'Pod created successfully',
 				changed: false,
 				unitChanged: false,
 			});
@@ -167,7 +167,7 @@ export default class ServiceNew extends React.Component<Props, State> {
 	}
 
 	render(): JSX.Element {
-		let service = this.state.service;
+		let pod = this.state.pod;
 
 		let hasOrganizations = !!this.props.organizations.length;
 		let organizationsSelect: JSX.Element[] = [];
@@ -205,11 +205,11 @@ export default class ServiceNew extends React.Component<Props, State> {
 						</div>
 						<PageInput
 							label="Name"
-							help="Name of service. String formatting such as %d or %02d can be used to add the service number or zero padded number."
+							help="Name of pod. String formatting such as %d or %02d can be used to add the pod number or zero padded number."
 							type="text"
 							placeholder="Enter name"
 							disabled={this.state.disabled}
-							value={service.name}
+							value={pod.name}
 							onChange={(val): void => {
 								this.set('name', val);
 							}}
@@ -218,8 +218,8 @@ export default class ServiceNew extends React.Component<Props, State> {
 							disabled={this.state.disabled || !hasOrganizations}
 							hidden={Constants.user}
 							label="Organization"
-							help="Organization for service."
-							value={service.organization}
+							help="Organization for pod."
+							value={pod.organization}
 							onChange={(val): void => {
 								this.set('organization', val);
 							}}
@@ -229,18 +229,18 @@ export default class ServiceNew extends React.Component<Props, State> {
 						<PageSwitch
 							disabled={this.state.disabled}
 							label="Delete protection"
-							help="Block service and any attached disks from being deleted."
-							checked={service.delete_protection}
+							help="Block pod and any attached disks from being deleted."
+							checked={pod.delete_protection}
 							onToggle={(): void => {
-								this.set('delete_protection', !service.delete_protection);
+								this.set('delete_protection', !pod.delete_protection);
 							}}
 						/>
 					</div>
 					<div style={css.group}>
 					</div>
 				</div>
-				<ServiceWorkspace
-					service={service}
+				<PodWorkspace
+					pod={pod}
 					disabled={this.state.disabled}
 					unitChanged={this.state.unitChanged}
 					mode={this.state.mode}
@@ -250,39 +250,39 @@ export default class ServiceNew extends React.Component<Props, State> {
 							mode: mode,
 						});
 					}}
-					onChange={(units: ServiceTypes.Unit[]): void => {
-						let service = {
-							...this.state.service,
+					onChange={(units: PodTypes.Unit[]): void => {
+						let pod = {
+							...this.state.pod,
 						};
 
-						service.units = units
+						pod.units = units
 
 						this.setState({
 							...this.state,
 							changed: true,
 							unitChanged: true,
-							service: service,
+							pod: pod,
 						});
 					}}
-					onEdit={(units: ServiceTypes.Unit[]): void => {
-						let service = {
-							...this.state.service,
+					onEdit={(units: PodTypes.Unit[]): void => {
+						let pod = {
+							...this.state.pod,
 						};
 
-						service.units = units
+						pod.units = units
 
 						this.setState({
 							...this.state,
 							changed: true,
 							unitChanged: true,
 							mode: "edit",
-							service: service,
+							pod: pod,
 						});
 					}}
 				/>
 				<PageCreate
 					style={css.save}
-					hidden={!this.state.service}
+					hidden={!this.state.pod}
 					message={this.state.message}
 					changed={this.state.changed}
 					disabled={this.state.disabled}
