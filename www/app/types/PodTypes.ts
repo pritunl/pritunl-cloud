@@ -1,11 +1,11 @@
 /// <reference path="../References.d.ts"/>
-export const SYNC = 'service.sync';
-export const SYNC_UNIT = 'service.sync_unit';
-export const TRAVERSE = 'service.traverse';
-export const FILTER = 'service.filter';
-export const CHANGE = 'service.change';
+export const SYNC = 'pod.sync';
+export const SYNC_UNIT = 'pod.sync_unit';
+export const TRAVERSE = 'pod.traverse';
+export const FILTER = 'pod.filter';
+export const CHANGE = 'pod.change';
 
-export interface Service {
+export interface Pod {
 	id?: string;
 	name?: string;
 	comment?: string;
@@ -25,17 +25,17 @@ export interface Unit {
 	new?: boolean;
 }
 
-export interface ServiceUnit {
+export interface PodUnit {
 	id?: string;
 	kind?: string;
-	service?: string;
+	pod?: string;
 	commits?: Commit[]
 	deployments?: Deployment[];
 }
 
 export interface Commit {
 	id?: string
-	service?: string
+	pod?: string
 	unit?: string
 	timestamp?: string
 	name?: string
@@ -47,7 +47,7 @@ export interface Commit {
 
 export interface Deployment {
 	id?: string;
-	service?: string;
+	pod?: string;
 	unit?: string;
 	spec?: string;
 	kind?: string;
@@ -94,17 +94,17 @@ export interface Filter {
 	organization?: string;
 }
 
-export type Services = Service[];
+export type Pods = Pod[];
 
-export type ServiceRo = Readonly<Service>;
-export type ServicesRo = ReadonlyArray<ServiceRo>;
+export type PodRo = Readonly<Pod>;
+export type PodsRo = ReadonlyArray<PodRo>;
 
-export interface ServiceDispatch {
+export interface PodDispatch {
 	type: string;
 	data?: {
 		id?: string;
-		service?: Service;
-		services?: Services;
+		pod?: Pod;
+		pods?: Pods;
 		page?: number;
 		pageCount?: number;
 		filter?: Filter;
@@ -112,10 +112,10 @@ export interface ServiceDispatch {
 	};
 }
 
-export interface ServiceUnitDispatch {
+export interface PodUnitDispatch {
 	type: string;
 	data?: {
 		unit_id?: string;
-		unit?: ServiceUnit;
+		unit?: PodUnit;
 	};
 }
