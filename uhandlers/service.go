@@ -378,6 +378,9 @@ func podUnitDeploymentsPut(c *gin.Context) {
 
 	err := c.Bind(&data)
 	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "handler: Bind error"),
+		}
 		utils.AbortWithError(c, 500, err)
 		return
 	}
@@ -448,6 +451,9 @@ func podUnitDeploymentPost(c *gin.Context) {
 
 	err := c.Bind(&data)
 	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "handler: Bind error"),
+		}
 		utils.AbortWithError(c, 500, err)
 		return
 	}
