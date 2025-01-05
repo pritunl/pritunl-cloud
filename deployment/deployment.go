@@ -57,6 +57,10 @@ func (d *Deployment) IsHealthy() bool {
 func (d *Deployment) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
+	if d.Tags == nil {
+		d.Tags = []string{}
+	}
+
 	if d.Actions == nil {
 		d.Actions = map[primitive.ObjectID]*Action{}
 	}
