@@ -20,7 +20,7 @@ func Get(db *database.Database, policyId primitive.ObjectID) (
 	return
 }
 
-func GetService(db *database.Database, serviceId primitive.ObjectID) (
+func GetService(db *database.Database, podId primitive.ObjectID) (
 	policies []*Policy, err error) {
 
 	coll := db.Policies()
@@ -29,7 +29,7 @@ func GetService(db *database.Database, serviceId primitive.ObjectID) (
 	cursor, err := coll.Find(
 		db,
 		&bson.M{
-			"services": serviceId,
+			"pods": podId,
 		},
 	)
 	if err != nil {
