@@ -425,7 +425,7 @@ func podUnitDeploymentPut(c *gin.Context) {
 	c.JSON(200, nil)
 }
 
-func podUnitDeploymentPost(c *gin.Context) {
+func podUnitDeploymentsPost(c *gin.Context) {
 	if demo.Blocked(c) {
 		return
 	}

@@ -156,7 +156,7 @@ func Register(engine *gin.Engine) {
 	orgGroup.PUT("/pod/:pod_id/unit/:unit_id/deployment",
 		podUnitDeploymentPut)
 	orgGroup.POST("/pod/:pod_id/unit/:unit_id/deployment",
-		podUnitDeploymentPost)
+		podUnitDeploymentsPost)
 	orgGroup.GET(
 		"/pod/:pod_id/unit/:unit_id/deployment/:deployment_id/log",
 		podUnitDeploymentLogGet,
