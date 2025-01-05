@@ -18,7 +18,7 @@ import (
 
 type Commit struct {
 	Id        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Service   primitive.ObjectID `bson:"service" json:"service"`
+	Pod       primitive.ObjectID `bson:"pod" json:"pod"`
 	Unit      primitive.ObjectID `bson:"unit" json:"unit"`
 	Timestamp time.Time          `bson:"timestamp" json:"timestamp"`
 	Name      string             `bson:"name" json:"name"`
@@ -76,7 +76,7 @@ func (u *Commit) Parse(db *database.Database,
 	err = yaml.Unmarshal([]byte(resourcesSpec), dataYaml)
 	if err != nil {
 		err = &errortypes.ParseError{
-			errors.Wrap(err, "service: Failed to parse yaml resources"),
+			errors.Wrap(err, "pod: Failed to parse yaml resources"),
 		}
 		return
 	}
@@ -247,17 +247,17 @@ func (u *Commit) Parse(db *database.Database,
 		}
 	}
 
-	if dataYaml.Services != nil {
-		for _, cert := range dataYaml.Services {
+	if dataYaml.Pods != nil {
+		for _, cert := range dataYaml.Pods {
 			kind, e := resources.Find(db, cert)
 			if e != nil {
 				err = e
 				return
 			}
-			if kind == "service" && resources.Service != nil {
-				data.Services = append(
-					data.Services,
-					resources.Service.Id,
+			if kind == "pod" && resources.Pod != nil {
+				data.Pods = append(
+					data.Pods,
+					resources.Pod.Id,
 				)
 			}
 		}

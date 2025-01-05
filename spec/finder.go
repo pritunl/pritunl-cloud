@@ -36,7 +36,7 @@ const (
 	PlanKind        = "plan"
 	CertificateKind = "certificate"
 	SecretKind      = "secret"
-	ServiceKind     = "service"
+	PodKind         = "spec"
 )
 
 type Resources struct {
@@ -54,7 +54,7 @@ type Resources struct {
 	Domain       *domain.Domain
 	Certificate  *certificate.Certificate
 	Secret       *secret.Secret
-	Service      *ServiceBase
+	Pod          *PodBase
 }
 
 var tokenRe = regexp.MustCompile(`{{\/([a-zA-Z0-9-]*)\/([a-zA-Z0-9-]*)}}`)
@@ -65,7 +65,7 @@ func (r *Resources) Find(db *database.Database, token string) (
 	matches := tokenRe.FindStringSubmatch(token)
 	if len(matches) < 3 {
 		err = &errortypes.ParseError{
-			errors.Newf("service: Invalid token '%s'", token),
+			errors.Newf("spec: Invalid token '%s'", token),
 		}
 		return
 	}
@@ -198,8 +198,8 @@ func (r *Resources) Find(db *database.Database, token string) (
 			return
 		}
 		break
-	case ServiceKind:
-		r.Service, err = GetServiceBase(db, &bson.M{
+	case PodKind:
+		r.Pod, err = GetPodBase(db, &bson.M{
 			"name":         resource,
 			"organization": r.Organization,
 		})
@@ -209,7 +209,7 @@ func (r *Resources) Find(db *database.Database, token string) (
 		break
 	default:
 		err = &errortypes.ParseError{
-			errors.Newf("service: Unknown kind '%s'", kind),
+			errors.Newf("spec: Unknown kind '%s'", kind),
 		}
 		return
 	}
@@ -217,18 +217,18 @@ func (r *Resources) Find(db *database.Database, token string) (
 	return
 }
 
-type ServiceBase struct {
+type PodBase struct {
 	Id   primitive.ObjectID `bson:"_id,omitempty"`
 	Name string             `bson:"name"`
 }
 
-func GetServiceBase(db *database.Database, query *bson.M) (
-	srvc *ServiceBase, err error) {
+func GetPodBase(db *database.Database, query *bson.M) (
+	pd *PodBase, err error) {
 
-	coll := db.Services()
-	srvc = &ServiceBase{}
+	coll := db.Pods()
+	pd = &PodBase{}
 
-	err = coll.FindOne(db, query).Decode(srvc)
+	err = coll.FindOne(db, query).Decode(pd)
 	if err != nil {
 		err = database.ParseError(err)
 		return

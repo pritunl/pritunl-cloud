@@ -18,7 +18,7 @@ type Instance struct {
 	DiskSize     int                  `bson:"disk_size" json:"disk_size"`       // hard
 	Certificates []primitive.ObjectID `bson:"certificates" json:"certificates"` // soft
 	Secrets      []primitive.ObjectID `bson:"secrets" json:"secrets"`           // soft
-	Services     []primitive.ObjectID `bson:"services" json:"services"`         // soft
+	Pods         []primitive.ObjectID `bson:"pods" json:"pods"`                 // soft
 }
 
 func (i *Instance) MemoryUnits() float64 {
@@ -41,6 +41,6 @@ type InstanceYaml struct {
 	Image        string   `yaml:"image"`
 	Certificates []string `yaml:"certificates"`
 	Secrets      []string `yaml:"secrets"`
-	Services     []string `yaml:"services"`
+	Pods         []string `yaml:"pods"`
 	DiskSize     int      `yaml:"disk_size"`
 }
