@@ -146,20 +146,20 @@ func Register(engine *gin.Engine) {
 	orgGroup.POST("/secret", secretPost)
 	orgGroup.DELETE("/secret/:secr_id", secretDelete)
 
-	orgGroup.GET("/service", servicesGet)
-	orgGroup.GET("/service/:service_id", serviceGet)
-	orgGroup.PUT("/service/:service_id", servicePut)
-	orgGroup.POST("/service", servicePost)
-	orgGroup.DELETE("/service", servicesDelete)
-	orgGroup.DELETE("/service/:service_id", serviceDelete)
-	orgGroup.GET("/service/:service_id/unit/:unit_id", serviceUnitGet)
-	orgGroup.PUT("/service/:service_id/unit/:unit_id/deployment",
-		serviceUnitDeploymentPut)
-	orgGroup.POST("/service/:service_id/unit/:unit_id/deployment",
-		serviceUnitDeploymentPost)
+	orgGroup.GET("/pod", podsGet)
+	orgGroup.GET("/pod/:pod_id", podGet)
+	orgGroup.PUT("/pod/:pod_id", podPut)
+	orgGroup.POST("/pod", podPost)
+	orgGroup.DELETE("/pod", podsDelete)
+	orgGroup.DELETE("/pod/:pod_id", podDelete)
+	orgGroup.GET("/pod/:pod_id/unit/:unit_id", podUnitGet)
+	orgGroup.PUT("/pod/:pod_id/unit/:unit_id/deployment",
+		podUnitDeploymentPut)
+	orgGroup.POST("/pod/:pod_id/unit/:unit_id/deployment",
+		podUnitDeploymentPost)
 	orgGroup.GET(
-		"/service/:service_id/unit/:unit_id/deployment/:deployment_id/log",
-		serviceUnitDeploymentLogGet,
+		"/pod/:pod_id/unit/:unit_id/deployment/:deployment_id/log",
+		podUnitDeploymentLogGet,
 	)
 
 	csrfGroup.GET("/shape", shapesGet)
