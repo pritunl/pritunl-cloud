@@ -159,7 +159,7 @@ func (p *Pod) CommitFieldsUnits(db *database.Database,
 		})
 	}
 
-	coll := db.Services()
+	coll := db.Pods()
 
 	if arraySelectPull.Modified() {
 		updateQuery, arrayFilters := arraySelectPull.GetQuery()
