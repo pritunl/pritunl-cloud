@@ -154,9 +154,9 @@ func Register(engine *gin.Engine) {
 	orgGroup.DELETE("/pod/:pod_id", podDelete)
 	orgGroup.GET("/pod/:pod_id/unit/:unit_id", podUnitGet)
 	orgGroup.PUT("/pod/:pod_id/unit/:unit_id/deployment",
-		podUnitDeploymentPut)
+		podUnitDeploymentsPut)
 	orgGroup.POST("/pod/:pod_id/unit/:unit_id/deployment",
-		podUnitDeploymentsPost)
+		podUnitDeploymentPost)
 	orgGroup.GET(
 		"/pod/:pod_id/unit/:unit_id/deployment/:deployment_id/log",
 		podUnitDeploymentLogGet,

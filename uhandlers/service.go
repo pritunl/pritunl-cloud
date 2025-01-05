@@ -355,7 +355,7 @@ func podUnitGet(c *gin.Context) {
 	c.JSON(200, pdUnit)
 }
 
-func podUnitDeploymentPut(c *gin.Context) {
+func podUnitDeploymentsPut(c *gin.Context) {
 	if demo.Blocked(c) {
 		return
 	}
@@ -425,7 +425,7 @@ func podUnitDeploymentPut(c *gin.Context) {
 	c.JSON(200, nil)
 }
 
-func podUnitDeploymentsPost(c *gin.Context) {
+func podUnitDeploymentPost(c *gin.Context) {
 	if demo.Blocked(c) {
 		return
 	}
