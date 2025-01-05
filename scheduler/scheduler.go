@@ -24,8 +24,8 @@ type Scheduler struct {
 }
 
 type Resource struct {
-	Service primitive.ObjectID `bson:"service,omitempty" json:"service"`
-	Unit    primitive.ObjectID `bson:"unit,omitempty" json:"unit"`
+	Pod  primitive.ObjectID `bson:"pod,omitempty" json:"pod"`
+	Unit primitive.ObjectID `bson:"unit,omitempty" json:"unit"`
 }
 
 type Ticket struct {
