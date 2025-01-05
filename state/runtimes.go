@@ -22,7 +22,7 @@ type Runtimes struct {
 	Disks       time.Duration
 	Instances   time.Duration
 	Namespaces  time.Duration
-	Services    time.Duration
+	Pods        time.Duration
 	Deployments time.Duration
 	Imds        time.Duration
 	Total       time.Duration
@@ -43,7 +43,7 @@ func (r *Runtimes) Log() {
 		"iptables":    fmt.Sprintf("%v", r.Iptables),
 		"disks":       fmt.Sprintf("%v", r.Disks),
 		"namespaces":  fmt.Sprintf("%v", r.Namespaces),
-		"services":    fmt.Sprintf("%v", r.Services),
+		"pods":        fmt.Sprintf("%v", r.Pods),
 		"deployments": fmt.Sprintf("%v", r.Deployments),
 		"imds":        fmt.Sprintf("%v", r.Imds),
 		"total":       fmt.Sprintf("%v", r.Total),
