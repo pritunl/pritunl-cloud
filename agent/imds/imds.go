@@ -298,5 +298,7 @@ func (m *Imds) OpenLog() (err error) {
 }
 
 func (m *Imds) Close() {
-	m.logger.Close()
+	if m.logger != nil {
+		m.logger.Close()
+	}
 }
