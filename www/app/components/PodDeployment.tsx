@@ -6,11 +6,7 @@ import * as PodTypes from "../types/PodTypes"
 import * as PodActions from "../actions/PodActions"
 import * as InstanceActions from '../actions/InstanceActions';
 import * as MiscUtils from '../utils/MiscUtils';
-import PageInput from './PageInput';
-import PageSave from './PageSave';
-import PageInputButton from './PageInputButton';
-import NonState from './NonState';
-import Help from "./Help"
+import PodDeploymentEdit from "./PodDeploymentEdit";
 import PageInfo from "./PageInfo"
 import Editor from "./Editor"
 import * as Router from "../Router";
@@ -26,13 +22,8 @@ interface Props {
 }
 
 interface State {
-	disabled: boolean
-	changed: boolean
-	message: string
-	deployment: PodTypes.Deployment
 	logsOpen: boolean
-	settingsOpen: boolean
-	addTag: string
+	editOpen: boolean
 }
 
 const css = {
@@ -116,54 +107,9 @@ export default class PodDeployment extends React.Component<Props, State> {
 	constructor(props: any, context: any) {
 		super(props, context)
 		this.state = {
-			disabled: false,
-			changed: false,
-			message: "",
-			deployment: null,
 			logsOpen: false,
-			settingsOpen: false,
-			addTag: "",
+			editOpen: false,
 		}
-	}
-
-	onSave = (): void => {
-		this.setState({
-			...this.state,
-			disabled: true,
-		});
-		PodActions.commitDeployment(this.state.deployment).then((): void => {
-			this.setState({
-				...this.state,
-				message: 'Your changes have been saved',
-				changed: false,
-				disabled: false,
-			});
-
-			setTimeout((): void => {
-				if (!this.state.changed) {
-					this.setState({
-						...this.state,
-						deployment: null,
-						changed: false,
-					});
-				}
-			}, 1000);
-
-			setTimeout((): void => {
-				if (!this.state.changed) {
-					this.setState({
-						...this.state,
-						message: '',
-					});
-				}
-			}, 3000);
-		}).catch((): void => {
-			this.setState({
-				...this.state,
-				message: '',
-				disabled: false,
-			});
-		});
 	}
 
 	onLogsToggle = (): void => {
@@ -176,79 +122,8 @@ export default class PodDeployment extends React.Component<Props, State> {
 	onSettingsToggle = (): void => {
 		this.setState({
 			...this.state,
-			settingsOpen: !this.state.settingsOpen,
+			editOpen: !this.state.editOpen,
 		})
-	}
-
-	onAddTag = (): void => {
-		let deployment: PodTypes.Deployment;
-
-		if (!this.state.addTag) {
-			return;
-		}
-
-		if (this.state.changed) {
-			deployment = {
-				...this.state.deployment,
-			};
-		} else {
-			deployment = {
-				...this.props.deployment,
-			};
-		}
-
-		let tags = [
-			...(deployment.tags || []),
-		];
-
-		if (tags.indexOf(this.state.addTag) === -1) {
-			tags.push(this.state.addTag);
-		}
-
-		tags.sort();
-		deployment.tags = tags;
-
-		this.setState({
-			...this.state,
-			changed: true,
-			message: '',
-			addTag: '',
-			deployment: deployment,
-		});
-	}
-
-	onRemoveTag = (tag: string): void => {
-		let deployment: PodTypes.Deployment;
-
-		if (this.state.changed) {
-			deployment = {
-				...this.state.deployment,
-			};
-		} else {
-			deployment = {
-				...this.props.deployment,
-			};
-		}
-
-		let tags = [
-			...(deployment.tags || []),
-		];
-
-		let i = tags.indexOf(tag);
-		if (i === -1) {
-			return;
-		}
-
-		tags.splice(i, 1);
-		deployment.tags = tags;
-
-		this.setState({
-			...this.state,
-			changed: true,
-			message: '',
-			addTag: '',
-			deployment: deployment,
-		});
 	}
 
 	render(): JSX.Element {
@@ -436,75 +311,6 @@ export default class PodDeployment extends React.Component<Props, State> {
 			/>
 		}
 
-		let settings: JSX.Element
-		if (this.state.settingsOpen) {
-			let deply = this.state.deployment || deployment
-
-			let tags: JSX.Element[] = [];
-			for (let tag of (deply.tags || [])) {
-				tags.push(
-					<div
-						className="bp5-tag bp5-tag-removable bp5-intent-primary"
-						style={css.role}
-						key={tag}
-					>
-						{tag}
-						<button
-							className="bp5-tag-remove"
-							disabled={this.state.disabled}
-							onMouseUp={(): void => {
-								this.onRemoveTag(tag);
-							}}
-						/>
-					</div>,
-				);
-			}
-
-			settings = <div style={css.settings}>
-				<label className="bp5-label">
-					Tags
-					<Help
-						title="Tags"
-						content="Deployment tags."
-					/>
-					<div>
-						{tags}
-					</div>
-				</label>
-				<PageInputButton
-					disabled={this.state.disabled}
-					buttonClass="bp5-intent-success bp5-icon-add"
-					label="Add"
-					type="text"
-					placeholder="Add role"
-					value={this.state.addTag}
-					onChange={(val): void => {
-						this.setState({
-							...this.state,
-							addTag: val,
-						});
-					}}
-					onSubmit={this.onAddTag}
-				/>
-				<PageSave
-					style={css.save}
-					hidden={!this.state.deployment && !this.state.message}
-					message={this.state.message}
-					changed={this.state.changed}
-					disabled={this.state.disabled}
-					light={true}
-					onCancel={(): void => {
-						this.setState({
-							...this.state,
-							changed: false,
-							deployment: null,
-						});
-					}}
-					onSave={this.onSave}
-				/>
-			</div>
-		}
-
 		if (deployment.kind === "image" && deployment.image_id) {
 			return <Blueprint.Card
 				key={deployment.id}
@@ -548,7 +354,7 @@ export default class PodDeployment extends React.Component<Props, State> {
 							<button
 								className="bp5-button bp5-small"
 								style={css.cardButton}
-								hidden={this.state.settingsOpen}
+								hidden={this.state.editOpen}
 								onClick={this.onSettingsToggle}
 							>Edit</button>
 						</div>
@@ -606,9 +412,12 @@ export default class PodDeployment extends React.Component<Props, State> {
 					<div className="layout horizontal flex">
 						{editor}
 					</div>
-					<div className="layout horizontal flex">
-						{settings}
-					</div>
+					<PodDeploymentEdit
+						disabled={this.props.disabled}
+						commitMap={this.props.commitMap}
+						deployment={this.props.deployment}
+						open={this.state.editOpen}
+					/>
 				</div>
 			</Blueprint.Card>
 		} else {
@@ -660,7 +469,7 @@ export default class PodDeployment extends React.Component<Props, State> {
 							<button
 								className="bp5-button bp5-small"
 								style={css.cardButton}
-								hidden={this.state.settingsOpen}
+								hidden={this.state.editOpen}
 								onClick={this.onSettingsToggle}
 							>Edit</button>
 						</div>
@@ -780,9 +589,12 @@ export default class PodDeployment extends React.Component<Props, State> {
 					<div className="layout horizontal flex">
 						{editor}
 					</div>
-					<div className="layout horizontal flex">
-						{settings}
-					</div>
+					<PodDeploymentEdit
+						disabled={this.props.disabled}
+						commitMap={this.props.commitMap}
+						deployment={this.props.deployment}
+						open={this.state.editOpen}
+					/>
 				</div>
 			</Blueprint.Card>
 		}
