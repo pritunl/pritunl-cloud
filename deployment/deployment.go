@@ -61,6 +61,17 @@ func (d *Deployment) Validate(db *database.Database) (
 		d.Tags = []string{}
 	}
 
+	tags := []string{}
+	for _, tag := range d.Tags {
+		tag = utils.FilterName(tag)
+		if tag == "" {
+			continue
+		}
+
+		tags = append(tags, tag)
+	}
+	d.Tags = tags
+
 	if d.Actions == nil {
 		d.Actions = map[primitive.ObjectID]*Action{}
 	}
