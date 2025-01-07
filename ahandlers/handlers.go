@@ -200,6 +200,8 @@ func Register(engine *gin.Engine) {
 		podUnitDeploymentsPut)
 	csrfGroup.POST("/pod/:pod_id/unit/:unit_id/deployment",
 		podUnitDeploymentPost)
+	csrfGroup.PUT("/pod/:pod_id/unit/:unit_id/deployment/:deployment_id",
+		podUnitDeploymentPut)
 	csrfGroup.GET(
 		"/pod/:pod_id/unit/:unit_id/deployment/:deployment_id/log",
 		podUnitDeploymentLogGet,
