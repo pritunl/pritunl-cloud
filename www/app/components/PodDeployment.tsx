@@ -378,9 +378,8 @@ export default class PodDeployment extends React.Component<Props, State> {
 								style={css.info}
 								fields={[
 									{
-										label: "Timestamp",
-										value: MiscUtils.formatDateLocal(
-											deployment.instance_heartbeat) || "-",
+										label: "Tags",
+										value: deployment.tags || "-",
 									},
 								]}
 							/>
