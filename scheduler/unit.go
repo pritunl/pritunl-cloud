@@ -7,14 +7,14 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"github.com/pritunl/pritunl-cloud/service"
+	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/shape"
 	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/sirupsen/logrus"
 )
 
 type InstanceUnit struct {
-	unit  *service.Unit
+	unit  *pod.Unit
 	spec  *spec.Commit
 	count int
 	nodes shape.Nodes
@@ -52,8 +52,8 @@ func (u *InstanceUnit) Schedule(db *database.Database, count int) (err error) {
 
 	schd := &Scheduler{
 		Id: Resource{
-			Service: u.unit.Service.Id,
-			Unit:    u.unit.Id,
+			Pod:  u.unit.Pod.Id,
+			Unit: u.unit.Id,
 		},
 		Kind:          InstanceUnitKind,
 		Spec:          u.spec.Id,
@@ -74,9 +74,9 @@ func (u *InstanceUnit) Schedule(db *database.Database, count int) (err error) {
 
 	if len(u.nodes) == 0 {
 		logrus.WithFields(logrus.Fields{
-			"service": u.unit.Service.Id.Hex(),
-			"unit":    u.unit.Id.Hex(),
-			"shape":   u.spec.Instance.Shape.Hex(),
+			"pod":   u.unit.Pod.Id.Hex(),
+			"unit":  u.unit.Id.Hex(),
+			"shape": u.spec.Instance.Shape.Hex(),
 		}).Error("scheduler: Failed to find nodes to schedule")
 		return
 	}
@@ -108,7 +108,7 @@ func (u *InstanceUnit) Schedule(db *database.Database, count int) (err error) {
 	schd.Modified = time.Now()
 
 	logrus.WithFields(logrus.Fields{
-		"service":       u.unit.Service.Id.Hex(),
+		"pod":           u.unit.Pod.Id.Hex(),
 		"unit":          u.unit.Id.Hex(),
 		"shape":         shpe.Id.Hex(),
 		"count":         u.count,
@@ -312,7 +312,7 @@ func (u *InstanceUnit) scheduleComplex(db *database.Database,
 
 	if overscheduled > 0 {
 		logrus.WithFields(logrus.Fields{
-			"service":       u.unit.Service.Id.Hex(),
+			"pod":           u.unit.Pod.Id.Hex(),
 			"unit":          u.unit.Id.Hex(),
 			"kind":          u.unit.Kind,
 			"shape":         u.spec.Instance.Shape.Hex(),
@@ -323,7 +323,7 @@ func (u *InstanceUnit) scheduleComplex(db *database.Database,
 	return
 }
 
-func NewInstanceUnit(unit *service.Unit, spc *spec.Commit) (
+func NewInstanceUnit(unit *pod.Unit, spc *spec.Commit) (
 	instUnit *InstanceUnit) {
 
 	instUnit = &InstanceUnit{
