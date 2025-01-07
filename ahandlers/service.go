@@ -543,6 +543,11 @@ func podUnitDeploymentPut(c *gin.Context) {
 		return
 	}
 
+	if deply.Unit != unit.Id {
+		utils.AbortWithStatus(c, 404)
+		return
+	}
+
 	deply.Tags = data.Tags
 
 	fields := set.NewSet(
