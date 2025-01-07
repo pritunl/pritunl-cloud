@@ -44,6 +44,11 @@ type podsDeployData struct {
 	Spec  primitive.ObjectID `json:"spec"`
 }
 
+type deploymentData struct {
+	Id   primitive.ObjectID `json:"id"`
+	Tags []string           `json:"tags"`
+}
+
 func podPut(c *gin.Context) {
 	if demo.Blocked(c) {
 		return
@@ -478,6 +483,93 @@ func podUnitDeploymentPost(c *gin.Context) {
 
 	if errData != nil {
 		c.JSON(400, errData)
+		return
+	}
+
+	event.PublishDispatch(db, "instance.change")
+	event.PublishDispatch(db, "pod.change")
+
+	c.JSON(200, nil)
+}
+
+func podUnitDeploymentPut(c *gin.Context) {
+	if demo.Blocked(c) {
+		return
+	}
+
+	db := c.MustGet("db").(*database.Database)
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	data := &deploymentData{}
+
+	podId, ok := utils.ParseObjectId(c.Param("pod_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	unitId, ok := utils.ParseObjectId(c.Param("unit_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	deplyId, ok := utils.ParseObjectId(c.Param("deployment_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	err := c.Bind(data)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "handler: Bind error"),
+		}
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	pd, err := pod.GetOrg(db, userOrg, podId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	unit := pd.GetUnit(unitId)
+	if unit == nil {
+		utils.AbortWithStatus(c, 404)
+		return
+	}
+
+	deply, err := deployment.Get(db, deplyId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if deply.Unit != unit.Id {
+		utils.AbortWithStatus(c, 404)
+		return
+	}
+
+	deply.Tags = data.Tags
+
+	fields := set.NewSet(
+		"tags",
+	)
+
+	errData, err := deply.Validate(db)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		c.JSON(400, errData)
+		return
+	}
+
+	err = deply.CommitFields(db, fields)
+	if err != nil {
 		return
 	}
 
