@@ -73,6 +73,9 @@ const css = {
 	settings: {
 		marginTop: "10px",
 	} as React.CSSProperties,
+	save: {
+		paddingBottom: '10px',
+	} as React.CSSProperties,
 	itemFirst: {
 		flex: "1 1 auto",
 		minWidth: "100px",
@@ -121,6 +124,46 @@ export default class PodDeployment extends React.Component<Props, State> {
 			settingsOpen: false,
 			addTag: "",
 		}
+	}
+
+	onSave = (): void => {
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+		PodActions.commitDeployment(this.state.deployment).then((): void => {
+			this.setState({
+				...this.state,
+				message: 'Your changes have been saved',
+				changed: false,
+				disabled: false,
+			});
+
+			setTimeout((): void => {
+				if (!this.state.changed) {
+					this.setState({
+						...this.state,
+						deployment: null,
+						changed: false,
+					});
+				}
+			}, 1000);
+
+			setTimeout((): void => {
+				if (!this.state.changed) {
+					this.setState({
+						...this.state,
+						message: '',
+					});
+				}
+			}, 3000);
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				message: '',
+				disabled: false,
+			});
+		});
 	}
 
 	onLogsToggle = (): void => {
@@ -442,6 +485,22 @@ export default class PodDeployment extends React.Component<Props, State> {
 						});
 					}}
 					onSubmit={this.onAddTag}
+				/>
+				<PageSave
+					style={css.save}
+					hidden={!this.state.deployment && !this.state.message}
+					message={this.state.message}
+					changed={this.state.changed}
+					disabled={this.state.disabled}
+					light={true}
+					onCancel={(): void => {
+						this.setState({
+							...this.state,
+							changed: false,
+							deployment: null,
+						});
+					}}
+					onSave={this.onSave}
 				/>
 			</div>
 		}
