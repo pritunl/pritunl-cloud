@@ -7,7 +7,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"github.com/pritunl/pritunl-cloud/service"
+	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/spec"
 )
 
@@ -127,10 +127,10 @@ func Remove(db *database.Database, schdId Resource) (err error) {
 	return
 }
 
-func Schedule(db *database.Database, unit *service.Unit) (err error) {
+func Schedule(db *database.Database, unit *pod.Unit) (err error) {
 	exists, e := Exists(db, Resource{
-		Service: unit.Service.Id,
-		Unit:    unit.Id,
+		Pod:  unit.Pod.Id,
+		Unit: unit.Id,
 	})
 	if e != nil {
 		err = e
@@ -158,13 +158,13 @@ func Schedule(db *database.Database, unit *service.Unit) (err error) {
 	return
 }
 
-func ManualSchedule(db *database.Database, unit *service.Unit,
+func ManualSchedule(db *database.Database, unit *pod.Unit,
 	specId primitive.ObjectID, count int) (
 	errData *errortypes.ErrorData, err error) {
 
 	exists, e := Exists(db, Resource{
-		Service: unit.Service.Id,
-		Unit:    unit.Id,
+		Pod:  unit.Pod.Id,
+		Unit: unit.Id,
 	})
 	if e != nil {
 		err = e
