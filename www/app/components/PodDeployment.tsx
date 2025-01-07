@@ -24,6 +24,7 @@ interface Props {
 
 interface State {
 	logsOpen: boolean
+	settingsOpen: boolean
 }
 
 const css = {
@@ -333,6 +334,12 @@ export default class PodDeployment extends React.Component<Props, State> {
 								hidden={!this.state.logsOpen}
 								onClick={this.onLogsToggle}
 							>Close Logs</button>
+							<button
+								className="bp5-button bp5-small"
+								style={css.cardButton}
+								hidden={this.state.settingsOpen}
+								onClick={this.onSettingsToggle}
+							>Edit</button>
 						</div>
 						<div style={css.item}>
 							<PageInfo
@@ -436,6 +443,12 @@ export default class PodDeployment extends React.Component<Props, State> {
 								hidden={!this.state.logsOpen}
 								onClick={this.onLogsToggle}
 							>Close Logs</button>
+							<button
+								className="bp5-button bp5-small"
+								style={css.cardButton}
+								hidden={this.state.settingsOpen}
+								onClick={this.onSettingsToggle}
+							>Edit</button>
 						</div>
 						<div style={css.item}>
 							<PageInfo
