@@ -26,6 +26,7 @@ type Deployment struct {
 	Pod                 primitive.ObjectID       `bson:"pod" json:"pod"`
 	Unit                primitive.ObjectID       `bson:"unit" json:"unit"`
 	Spec                primitive.ObjectID       `bson:"spec" json:"spec"`
+	Tags                []string                 `bson:"tags" json:"tags"`
 	Kind                string                   `bson:"kind" json:"kind"`
 	State               string                   `bson:"state" json:"state"`
 	Status              string                   `bson:"status" json:"status"`
@@ -107,6 +108,7 @@ func GetDeployments(db *database.Database, unitId primitive.ObjectID) (
 				{"_id", 1},
 				{"pod", 1},
 				{"unit", 1},
+				{"tags", 1},
 				{"spec", 1},
 				{"kind", 1},
 				{"state", 1},
@@ -137,6 +139,7 @@ func GetDeployments(db *database.Database, unitId primitive.ObjectID) (
 	}
 	defer cursor.Close(db)
 
+	latest := true
 	for cursor.Next(db) {
 		doc := &DeploymentPipe{}
 		err = cursor.Decode(doc)
@@ -146,6 +149,14 @@ func GetDeployments(db *database.Database, unitId primitive.ObjectID) (
 		}
 
 		deply := &doc.Deployment
+
+		if deply.Tags == nil {
+			deply.Tags = []string{}
+		}
+		if latest {
+			latest = false
+			deply.Tags = append([]string{"latest"}, deply.Tags...)
+		}
 
 		if len(doc.ZoneDocs) > 0 {
 			zne := doc.ZoneDocs[0]
