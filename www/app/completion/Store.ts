@@ -361,6 +361,26 @@ class CompletionStore extends EventEmitter {
 		}
 		this._resources["pod"] = resourceList
 
+		this._kinds.push({
+			name: "unit",
+			label: "Unit",
+			title: "**Unit**",
+		})
+		resourceList = []
+		for (let item of resources.units) {
+			resourceList.push({
+				id: item.id,
+				name: item.name,
+				info: [
+					{
+						label: "**Name**",
+						value: item.name,
+					},
+				],
+			})
+		}
+		this._resources["unit"] = resourceList
+
 		this._kindMap = {}
 		for (let i = 0; i < this._kinds.length; i++) {
 			this._kindMap[this._kinds[i].name] = i
