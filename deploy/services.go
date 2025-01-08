@@ -124,13 +124,14 @@ func (s *Pods) DeploySpec(db *database.Database,
 	spc *spec.Commit) (err error) {
 
 	deply := &deployment.Deployment{
-		Pod:   unit.Pod.Id,
-		Unit:  unit.Id,
-		Spec:  spc.Id,
-		Zone:  node.Self.Zone,
-		Node:  node.Self.Id,
-		Kind:  unit.Kind,
-		State: deployment.Reserved,
+		Pod:       unit.Pod.Id,
+		Unit:      unit.Id,
+		Timestamp: time.Now(),
+		Spec:      spc.Id,
+		Zone:      node.Self.Zone,
+		Node:      node.Self.Id,
+		Kind:      unit.Kind,
+		State:     deployment.Reserved,
 	}
 
 	errData, err := deply.Validate(db)
