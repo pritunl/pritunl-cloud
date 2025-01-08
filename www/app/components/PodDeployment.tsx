@@ -119,7 +119,7 @@ export default class PodDeployment extends React.Component<Props, State> {
 		})
 	}
 
-	onSettingsToggle = (): void => {
+	onEditToggle = (): void => {
 		this.setState({
 			...this.state,
 			editOpen: !this.state.editOpen,
@@ -355,8 +355,14 @@ export default class PodDeployment extends React.Component<Props, State> {
 								className="bp5-button bp5-small"
 								style={css.cardButton}
 								hidden={this.state.editOpen}
-								onClick={this.onSettingsToggle}
-							>Edit</button>
+								onClick={this.onEditToggle}
+							>Open Edit</button>
+							<button
+								className="bp5-button bp5-small bp5-intent-danger"
+								style={css.cardButton}
+								hidden={!this.state.editOpen}
+								onClick={this.onEditToggle}
+							>Close Edit</button>
 						</div>
 						<div style={css.item}>
 							<PageInfo
@@ -470,8 +476,14 @@ export default class PodDeployment extends React.Component<Props, State> {
 								className="bp5-button bp5-small"
 								style={css.cardButton}
 								hidden={this.state.editOpen}
-								onClick={this.onSettingsToggle}
-							>Edit</button>
+								onClick={this.onEditToggle}
+							>Open Edit</button>
+							<button
+								className="bp5-button bp5-small bp5-intent-danger"
+								style={css.cardButton}
+								hidden={!this.state.editOpen}
+								onClick={this.onEditToggle}
+							>Close Edit</button>
 						</div>
 						<div style={css.item}>
 							<PageInfo
