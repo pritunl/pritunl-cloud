@@ -29,6 +29,7 @@ export interface Resources {
 	certificates: CertificateTypes.CertificatesRo;
 	secrets: SecretTypes.SecretsRo;
 	pods: PodTypes.PodsRo;
+	units: PodTypes.UnitsRo;
 }
 
 export interface Kind {
