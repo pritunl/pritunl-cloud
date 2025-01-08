@@ -14,6 +14,7 @@ interface Props {
 	commitMap: Record<string, number>
 	deployment: PodTypes.Deployment
 	open: boolean
+	onClose: () => void
 }
 
 interface State {
