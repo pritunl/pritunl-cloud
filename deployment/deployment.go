@@ -16,6 +16,7 @@ type Deployment struct {
 	Id           primitive.ObjectID             `bson:"_id,omitempty" json:"id"`
 	Pod          primitive.ObjectID             `bson:"pod" json:"pod"`
 	Unit         primitive.ObjectID             `bson:"unit" json:"unit"`
+	Timestamp    time.Time                      `bson:"timestamp" json:"timestamp"`
 	Tags         []string                       `bson:"tags" json:"tags"`
 	Spec         primitive.ObjectID             `bson:"spec" json:"spec"`
 	Kind         string                         `bson:"kind" json:"kind"`
@@ -56,6 +57,10 @@ func (d *Deployment) IsHealthy() bool {
 
 func (d *Deployment) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
+
+	if d.Timestamp.IsZero() {
+		d.Timestamp = time.Now()
+	}
 
 	if d.Tags == nil {
 		d.Tags = []string{}
