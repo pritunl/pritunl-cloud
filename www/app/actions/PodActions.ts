@@ -329,6 +329,36 @@ export function updateMultiUnitState(podId: string, unitId: string,
 	});
 }
 
+export function commitDeployment(deply: PodTypes.Deployment): Promise<void> {
+	let loader = new Loader().loading();
+
+	return new Promise<void>((resolve, reject): void => {
+		SuperAgent
+			.put('/pod/' + deply.pod + "/unit/" + deply.unit +
+				"/deployment/" + deply.id)
+			.send(deply)
+			.set('Accept', 'application/json')
+			.set('Csrf-Token', Csrf.token)
+			.end((err: any, res: SuperAgent.Response): void => {
+				loader.done();
+
+				if (res && res.status === 401) {
+					window.location.href = '/login';
+					resolve();
+					return;
+				}
+
+				if (err) {
+					Alert.errorRes(res, 'Failed to save deployment');
+					reject(err);
+					return;
+				}
+
+				resolve();
+			});
+	});
+}
+
 export function log(deply: PodTypes.Deployment,
 	resource: string, noLoading?: boolean): Promise<any> {
 
