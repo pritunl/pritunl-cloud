@@ -26,6 +26,7 @@ type Deployment struct {
 	Pod                 primitive.ObjectID       `bson:"pod" json:"pod"`
 	Unit                primitive.ObjectID       `bson:"unit" json:"unit"`
 	Spec                primitive.ObjectID       `bson:"spec" json:"spec"`
+	Timestamp           time.Time                `bson:"timestamp" json:"timestamp"`
 	Tags                []string                 `bson:"tags" json:"tags"`
 	Kind                string                   `bson:"kind" json:"kind"`
 	State               string                   `bson:"state" json:"state"`
