@@ -200,6 +200,10 @@ export default class PodDeploymentEdit extends React.Component<Props, State> {
 	}
 
 	render(): JSX.Element {
+		if (!this.props.open) {
+			return <div></div>
+		}
+
 		let deployment = this.state.deployment || this.props.deployment
 
 		let tags: JSX.Element[] = [];
