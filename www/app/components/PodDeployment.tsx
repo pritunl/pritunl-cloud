@@ -58,12 +58,6 @@ const css = {
 	info: {
 		marginBottom: "0px",
 	} as React.CSSProperties,
-	settings: {
-		marginTop: "10px",
-	} as React.CSSProperties,
-	save: {
-		paddingBottom: '10px',
-	} as React.CSSProperties,
 	itemFirst: {
 		flex: "1 1 auto",
 		minWidth: "100px",
