@@ -196,6 +196,26 @@ export default class Pods extends React.Component<{}, State> {
 	}
 
 	onChange = (): void => {
+		let pods = PodsStore.pods;
+		let selected: Selected = {};
+		let curSelected = this.state.selected;
+		let opened: Opened = {};
+		let curOpened = this.state.opened;
+		let units: PodTypes.Units = []
+
+		pods.forEach((pod: PodTypes.Pod): void => {
+			pod.units.forEach((unit: PodTypes.Unit): void => {
+				units.push(unit)
+			})
+
+			if (curSelected[pod.id]) {
+				selected[pod.id] = true;
+			}
+			if (curOpened[pod.id]) {
+				opened[pod.id] = true;
+			}
+		});
+
 		CompletionStore.update({
 			organizations: OrganizationsStore.organizations,
 			domains: DomainsNameStore.domains,
@@ -211,22 +231,8 @@ export default class Pods extends React.Component<{}, State> {
 			certificates: CertificatesStore.certificates,
 			secrets: SecretsStore.secrets,
 			pods: PodsStore.pods,
+			units: units,
 		})
-
-		let pods = PodsStore.pods;
-		let selected: Selected = {};
-		let curSelected = this.state.selected;
-		let opened: Opened = {};
-		let curOpened = this.state.opened;
-
-		pods.forEach((pod: PodTypes.Pod): void => {
-			if (curSelected[pod.id]) {
-				selected[pod.id] = true;
-			}
-			if (curOpened[pod.id]) {
-				opened[pod.id] = true;
-			}
-		});
 
 		this.setState({
 			...this.state,
