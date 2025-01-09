@@ -85,6 +85,7 @@ const css = {
 	} as React.CSSProperties,
 	cardButton: {
 		marginTop: "1px",
+		marginRight: "5px",
 	} as React.CSSProperties,
 	cardButtonRight: {
 		marginTop: "6px",
