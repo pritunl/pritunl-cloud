@@ -49,7 +49,8 @@ const css = {
 		marginBottom: "0px",
 	} as React.CSSProperties,
 	settings: {
-		marginTop: "10px",
+		padding: "0 7px",
+		marginTop: "12px",
 	} as React.CSSProperties,
 	save: {
 		paddingBottom: '10px',
