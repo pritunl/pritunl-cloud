@@ -14,7 +14,7 @@ import * as PageInfos from './PageInfo';
 
 interface Props {
 	hidden: boolean
-	disabled?: boolean
+	disabled: boolean
 	selected: boolean
 	commitMap: Record<string, number>
 	deployment: PodTypes.Deployment
