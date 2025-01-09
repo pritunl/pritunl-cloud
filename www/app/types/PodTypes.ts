@@ -100,6 +100,11 @@ export type Pods = Pod[];
 export type PodRo = Readonly<Pod>;
 export type PodsRo = ReadonlyArray<PodRo>;
 
+export type Units = Unit[];
+
+export type UnitRo = Readonly<Unit>;
+export type UnitsRo = ReadonlyArray<UnitRo>;
+
 export interface PodDispatch {
 	type: string;
 	data?: {
