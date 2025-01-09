@@ -69,7 +69,7 @@ func GetDeployments(db *database.Database, unitId primitive.ObjectID) (
 		},
 		&bson.M{
 			"$sort": &bson.M{
-				"_id": 1,
+				"timestamp": -1,
 			},
 		},
 		&bson.M{
@@ -109,6 +109,7 @@ func GetDeployments(db *database.Database, unitId primitive.ObjectID) (
 				{"_id", 1},
 				{"pod", 1},
 				{"unit", 1},
+				{"timestamp", 1},
 				{"tags", 1},
 				{"spec", 1},
 				{"kind", 1},
