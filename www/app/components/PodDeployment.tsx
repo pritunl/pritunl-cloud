@@ -123,6 +123,13 @@ export default class PodDeployment extends React.Component<Props, State> {
 		})
 	}
 
+	onEditClose = (): void => {
+		this.setState({
+			...this.state,
+			editOpen: false,
+		})
+	}
+
 	render(): JSX.Element {
 		if (this.props.hidden) {
 			return <div></div>
@@ -420,6 +427,7 @@ export default class PodDeployment extends React.Component<Props, State> {
 						commitMap={this.props.commitMap}
 						deployment={this.props.deployment}
 						open={this.state.editOpen}
+						onClose={this.onEditClose}
 					/>
 				</div>
 			</Blueprint.Card>
