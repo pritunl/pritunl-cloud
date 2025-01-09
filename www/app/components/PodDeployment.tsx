@@ -33,9 +33,6 @@ const css = {
 		marginBottom: "10px",
 	} as React.CSSProperties,
 	box: {
-		flex: 1,
-		minWidth: "280px",
-		margin: "10px",
 		fontSize: "11px",
 		fontFamily: Theme.monospaceFont,
 		fontWeight: Theme.monospaceWeight,
