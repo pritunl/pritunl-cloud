@@ -16,7 +16,6 @@ type policyData struct {
 	Name                 string                  `json:"name"`
 	Comment              string                  `json:"comment"`
 	Disabled             bool                    `json:"disabled"`
-	Services             []primitive.ObjectID    `json:"services"`
 	Authorities          []primitive.ObjectID    `json:"authorities"`
 	Roles                []string                `json:"roles"`
 	Rules                map[string]*policy.Rule `json:"rules"`
