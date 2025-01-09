@@ -322,7 +322,7 @@ export default class PodDeployment extends React.Component<Props, State> {
 				style={cardStyle}
 			>
 				<div className="layout vertical flex">
-					<div className="layout horizontal flex">
+					<div className="layout horizontal flex" style={css.box}>
 						<div className="layout center" style={css.checkBox}>
 							<Blueprint.Checkbox
 								style={css.check}
@@ -438,7 +438,7 @@ export default class PodDeployment extends React.Component<Props, State> {
 				style={cardStyle}
 			>
 				<div className="layout vertical flex">
-					<div className="layout horizontal flex">
+					<div className="layout horizontal flex" style={css.box}>
 						<div className="layout center" style={css.checkBox}>
 							<Blueprint.Checkbox
 								style={css.check}
@@ -611,6 +611,7 @@ export default class PodDeployment extends React.Component<Props, State> {
 						commitMap={this.props.commitMap}
 						deployment={this.props.deployment}
 						open={this.state.editOpen}
+						onClose={this.onEditClose}
 					/>
 				</div>
 			</Blueprint.Card>
