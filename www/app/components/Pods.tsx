@@ -15,45 +15,9 @@ import PageHeader from './PageHeader';
 import NonState from './NonState';
 import ConfirmButton from './ConfirmButton';
 import CompletionStore from "../stores/CompletionStore";
-import DomainsNameStore from "../stores/DomainsNameStore";
-import VpcsNameStore from "../stores/VpcsNameStore";
-import DatacentersStore from "../stores/DatacentersStore";
-import NodesStore from "../stores/NodesStore";
-import PoolsStore from "../stores/PoolsStore";
-import ZonesStore from "../stores/ZonesStore";
-import ShapesStore from "../stores/ShapesStore";
-import InstancesStore from "../stores/InstancesStore";
-import ImagesStore from "../stores/ImagesStore";
-import PlansStore from "../stores/PlansStore";
-import CertificatesStore from "../stores/CertificatesStore";
-import SecretsStore from "../stores/SecretsStore";
 import CompletionCache from "../completion/Cache"
 import * as CompletionTypes from "../types/CompletionTypes";
-import * as VpcTypes from "../types/VpcTypes";
-import * as DatacenterTypes from "../types/DatacenterTypes";
-import * as NodeTypes from "../types/NodeTypes";
-import * as PoolTypes from "../types/PoolTypes";
-import * as ZoneTypes from "../types/ZoneTypes";
-import * as ShapeTypes from "../types/ShapeTypes";
-import * as ImageTypes from "../types/ImageTypes";
-import * as InstanceTypes from "../types/InstanceTypes";
-import * as PlanTypes from "../types/PlanTypes";
-import * as CertificateTypes from "../types/CertificateTypes";
-import * as SecretTypes from "../types/SecretTypes";
 import * as CompletionActions from "../actions/CompletionActions";
-import * as DomainActions from "../actions/DomainActions";
-import * as VpcActions from "../actions/VpcActions";
-import * as DatacenterActions from "../actions/DatacenterActions";
-import * as NodeActions from "../actions/NodeActions";
-import * as PoolActions from "../actions/PoolActions";
-import * as ZoneActions from "../actions/ZoneActions";
-import * as ShapeActions from "../actions/ShapeActions";
-import * as ImageActions from "../actions/ImageActions";
-import * as InstanceActions from "../actions/InstanceActions";
-import * as PlanActions from "../actions/PlanActions";
-import * as CertificateActions from "../actions/CertificateActions";
-import * as SecretActions from "../actions/SecretActions";
-import * as DomainTypes from "../types/DomainTypes";
 
 interface Selected {
 	[key: string]: boolean;
@@ -67,19 +31,7 @@ interface State {
 	pods: PodTypes.PodsRo;
 	filter: PodTypes.Filter;
 	organizations: OrganizationTypes.OrganizationsRo;
-	completion: CompletionTypes.Completion
-	domains: DomainTypes.DomainsRo;
-	vpcs: VpcTypes.VpcsRo;
-	datacenters: DatacenterTypes.DatacentersRo;
-	nodes: NodeTypes.NodesRo;
-	pools: PoolTypes.PoolsRo;
-	zones: ZoneTypes.ZonesRo;
-	shapes: ShapeTypes.ShapesRo;
-	images: ImageTypes.ImagesRo;
-	instances: InstanceTypes.InstancesRo;
-	plans: PlanTypes.PlansRo;
-	certificates: CertificateTypes.CertificatesRo;
-	secrets: SecretTypes.SecretsRo;
+	completion: CompletionTypes.Completion;
 	selected: Selected;
 	opened: Opened;
 	newOpened: boolean;
@@ -124,18 +76,6 @@ export default class Pods extends React.Component<{}, State> {
 			filter: PodsStore.filter,
 			organizations: OrganizationsStore.organizations,
 			completion: CompletionStore.completion,
-			domains: DomainsNameStore.domains,
-			vpcs: VpcsNameStore.vpcs,
-			datacenters: DatacentersStore.datacenters,
-			nodes: NodesStore.nodes,
-			pools: PoolsStore.pools,
-			zones: ZonesStore.zones,
-			shapes: ShapesStore.shapes,
-			images: ImagesStore.images,
-			instances: InstancesStore.instances,
-			plans: PlansStore.plans,
-			certificates: CertificatesStore.certificates,
-			secrets: SecretsStore.secrets,
 			selected: {},
 			opened: {},
 			newOpened: false,
@@ -156,51 +96,15 @@ export default class Pods extends React.Component<{}, State> {
 		PodsStore.addChangeListener(this.onChange);
 		OrganizationsStore.addChangeListener(this.onChange);
 		CompletionStore.addChangeListener(this.onChange);
-		DomainsNameStore.addChangeListener(this.onChange);
-		VpcsNameStore.addChangeListener(this.onChange);
-		DatacentersStore.addChangeListener(this.onChange);
-		NodesStore.addChangeListener(this.onChange);
-		PoolsStore.addChangeListener(this.onChange);
-		ZonesStore.addChangeListener(this.onChange);
-		ShapesStore.addChangeListener(this.onChange);
-		ImagesStore.addChangeListener(this.onChange);
-		InstancesStore.addChangeListener(this.onChange);
-		PlansStore.addChangeListener(this.onChange);
-		CertificatesStore.addChangeListener(this.onChange);
-		SecretsStore.addChangeListener(this.onChange);
 		PodActions.sync();
 		OrganizationActions.sync();
 		CompletionActions.sync();
-		DomainActions.syncName();
-		VpcActions.syncNames();
-		DatacenterActions.sync();
-		NodeActions.sync();
-		PoolActions.sync();
-		ZoneActions.sync();
-		ShapeActions.sync();
-		ImageActions.sync();
-		InstanceActions.sync();
-		PlanActions.sync();
-		CertificateActions.sync();
-		SecretActions.sync();
 	}
 
 	componentWillUnmount(): void {
 		PodsStore.removeChangeListener(this.onChange);
 		OrganizationsStore.removeChangeListener(this.onChange);
 		CompletionStore.removeChangeListener(this.onChange);
-		DomainsNameStore.removeChangeListener(this.onChange);
-		VpcsNameStore.removeChangeListener(this.onChange);
-		DatacentersStore.removeChangeListener(this.onChange);
-		NodesStore.removeChangeListener(this.onChange);
-		PoolsStore.removeChangeListener(this.onChange);
-		ZonesStore.removeChangeListener(this.onChange);
-		ShapesStore.removeChangeListener(this.onChange);
-		ImagesStore.removeChangeListener(this.onChange);
-		InstancesStore.removeChangeListener(this.onChange);
-		PlansStore.removeChangeListener(this.onChange);
-		CertificatesStore.removeChangeListener(this.onChange);
-		SecretsStore.removeChangeListener(this.onChange);
 	}
 
 	onChange = (): void => {
@@ -216,18 +120,6 @@ export default class Pods extends React.Component<{}, State> {
 			pods: PodsStore.pods,
 			filter: PodsStore.filter,
 			organizations: OrganizationsStore.organizations,
-			domains: DomainsNameStore.domains,
-			vpcs: VpcsNameStore.vpcs,
-			datacenters: DatacentersStore.datacenters,
-			nodes: NodesStore.nodes,
-			pools: PoolsStore.pools,
-			zones: ZonesStore.zones,
-			shapes: ShapesStore.shapes,
-			images: ImagesStore.images,
-			instances: InstancesStore.instances,
-			plans: PlansStore.plans,
-			certificates: CertificatesStore.certificates,
-			secrets: SecretsStore.secrets,
 			selected: selected,
 			opened: opened,
 		});
