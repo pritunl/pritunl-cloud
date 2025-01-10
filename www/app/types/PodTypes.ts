@@ -49,6 +49,7 @@ export interface Deployment {
 	id?: string;
 	pod?: string;
 	unit?: string;
+	timestamp?: string;
 	tags?: string[];
 	spec?: string;
 	kind?: string;
