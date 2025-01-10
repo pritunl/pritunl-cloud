@@ -14,6 +14,7 @@ import Page from './Page';
 import PageHeader from './PageHeader';
 import NonState from './NonState';
 import ConfirmButton from './ConfirmButton';
+import CompletionStore from "../stores/CompletionStore";
 import DomainsNameStore from "../stores/DomainsNameStore";
 import VpcsNameStore from "../stores/VpcsNameStore";
 import DatacentersStore from "../stores/DatacentersStore";
@@ -26,7 +27,8 @@ import ImagesStore from "../stores/ImagesStore";
 import PlansStore from "../stores/PlansStore";
 import CertificatesStore from "../stores/CertificatesStore";
 import SecretsStore from "../stores/SecretsStore";
-import CompletionStore from "../completion/Store"
+import CompletionCache from "../completion/Cache"
+import * as CompletionTypes from "../types/CompletionTypes";
 import * as VpcTypes from "../types/VpcTypes";
 import * as DatacenterTypes from "../types/DatacenterTypes";
 import * as NodeTypes from "../types/NodeTypes";
@@ -38,6 +40,7 @@ import * as InstanceTypes from "../types/InstanceTypes";
 import * as PlanTypes from "../types/PlanTypes";
 import * as CertificateTypes from "../types/CertificateTypes";
 import * as SecretTypes from "../types/SecretTypes";
+import * as CompletionActions from "../actions/CompletionActions";
 import * as DomainActions from "../actions/DomainActions";
 import * as VpcActions from "../actions/VpcActions";
 import * as DatacenterActions from "../actions/DatacenterActions";
@@ -64,6 +67,7 @@ interface State {
 	pods: PodTypes.PodsRo;
 	filter: PodTypes.Filter;
 	organizations: OrganizationTypes.OrganizationsRo;
+	completion: CompletionTypes.Completion
 	domains: DomainTypes.DomainsRo;
 	vpcs: VpcTypes.VpcsRo;
 	datacenters: DatacenterTypes.DatacentersRo;
@@ -119,6 +123,7 @@ export default class Pods extends React.Component<{}, State> {
 			pods: PodsStore.pods,
 			filter: PodsStore.filter,
 			organizations: OrganizationsStore.organizations,
+			completion: CompletionStore.completion,
 			domains: DomainsNameStore.domains,
 			vpcs: VpcsNameStore.vpcs,
 			datacenters: DatacentersStore.datacenters,
@@ -150,6 +155,7 @@ export default class Pods extends React.Component<{}, State> {
 	componentDidMount(): void {
 		PodsStore.addChangeListener(this.onChange);
 		OrganizationsStore.addChangeListener(this.onChange);
+		CompletionStore.addChangeListener(this.onChange);
 		DomainsNameStore.addChangeListener(this.onChange);
 		VpcsNameStore.addChangeListener(this.onChange);
 		DatacentersStore.addChangeListener(this.onChange);
@@ -164,6 +170,7 @@ export default class Pods extends React.Component<{}, State> {
 		SecretsStore.addChangeListener(this.onChange);
 		PodActions.sync();
 		OrganizationActions.sync();
+		CompletionActions.sync();
 		DomainActions.syncName();
 		VpcActions.syncNames();
 		DatacenterActions.sync();
@@ -181,6 +188,7 @@ export default class Pods extends React.Component<{}, State> {
 	componentWillUnmount(): void {
 		PodsStore.removeChangeListener(this.onChange);
 		OrganizationsStore.removeChangeListener(this.onChange);
+		CompletionStore.removeChangeListener(this.onChange);
 		DomainsNameStore.removeChangeListener(this.onChange);
 		VpcsNameStore.removeChangeListener(this.onChange);
 		DatacentersStore.removeChangeListener(this.onChange);
@@ -196,47 +204,16 @@ export default class Pods extends React.Component<{}, State> {
 	}
 
 	onChange = (): void => {
-		let pods = PodsStore.pods;
 		let selected: Selected = {};
 		let curSelected = this.state.selected;
 		let opened: Opened = {};
 		let curOpened = this.state.opened;
-		let units: PodTypes.Units = []
 
-		pods.forEach((pod: PodTypes.Pod): void => {
-			pod.units.forEach((unit: PodTypes.Unit): void => {
-				units.push(unit)
-			})
-
-			if (curSelected[pod.id]) {
-				selected[pod.id] = true;
-			}
-			if (curOpened[pod.id]) {
-				opened[pod.id] = true;
-			}
-		});
-
-		CompletionStore.update({
-			organizations: OrganizationsStore.organizations,
-			domains: DomainsNameStore.domains,
-			vpcs: VpcsNameStore.vpcs,
-			datacenters: DatacentersStore.datacenters,
-			nodes: NodesStore.nodes,
-			pools: PoolsStore.pools,
-			zones: ZonesStore.zones,
-			shapes: ShapesStore.shapes,
-			images: ImagesStore.images,
-			instances: InstancesStore.instances,
-			plans: PlansStore.plans,
-			certificates: CertificatesStore.certificates,
-			secrets: SecretsStore.secrets,
-			pods: PodsStore.pods,
-			units: units,
-		})
+		CompletionCache.update(CompletionStore.completion)
 
 		this.setState({
 			...this.state,
-			pods: pods,
+			pods: PodsStore.pods,
 			filter: PodsStore.filter,
 			organizations: OrganizationsStore.organizations,
 			domains: DomainsNameStore.domains,
