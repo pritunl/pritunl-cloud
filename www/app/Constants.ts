@@ -21,7 +21,6 @@ export const u2fErrorCodes: {[index: number]: string} = {
 
 export const sessionTypes: {[key: string]: string} = {
 	admin: 'Admin',
-	proxy: 'Service',
 	user: 'User',
 };
 
