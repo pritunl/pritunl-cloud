@@ -149,9 +149,10 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 		db.Datacenters(),
 		&bson.M{},
 		&bson.M{
-			"_id":           1,
-			"name":          1,
-			"organizations": 1,
+			"_id":                 1,
+			"name":                1,
+			"match_organizations": 1,
+			"organizations":       1,
 		},
 		func() interface{} {
 			return &datacenter.Datacenter{}
@@ -172,8 +173,15 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 		db.Nodes(),
 		&bson.M{},
 		&bson.M{
-			"_id":  1,
-			"name": 1,
+			"_id":              1,
+			"name":             1,
+			"zone":             1,
+			"types":            1,
+			"timestamp":        1,
+			"cpu_units":        1,
+			"memory_units":     1,
+			"cpu_units_res":    1,
+			"memory_units_res": 1,
 		},
 		func() interface{} {
 			return &node.Node{}
@@ -203,6 +211,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			"_id":          1,
 			"name":         1,
 			"organization": 1,
+			"zone":         1,
 		},
 		func() interface{} {
 			return &pool.Pool{}
@@ -223,8 +232,9 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 		db.Zones(),
 		&bson.M{},
 		&bson.M{
-			"_id":  1,
-			"name": 1,
+			"_id":        1,
+			"name":       1,
+			"datacenter": 1,
 		},
 		func() interface{} {
 			return &zone.Zone{}
@@ -245,8 +255,12 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 		db.Shapes(),
 		&bson.M{},
 		&bson.M{
-			"_id":  1,
-			"name": 1,
+			"_id":        1,
+			"name":       1,
+			"datacenter": 1,
+			"flexible":   1,
+			"memory":     1,
+			"processors": 1,
 		},
 		func() interface{} {
 			return &shape.Shape{}
@@ -270,6 +284,10 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			"_id":          1,
 			"name":         1,
 			"organization": 1,
+			"type":         1,
+			"firmware":     1,
+			"key":          1,
+			"storage":      1,
 		},
 		func() interface{} {
 			return &image.Image{}
