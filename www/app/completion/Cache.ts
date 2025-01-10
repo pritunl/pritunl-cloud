@@ -1,25 +1,46 @@
 /// <reference path="../References.d.ts"/>
 import Dispatcher from '../dispatcher/Dispatcher'
 import EventEmitter from "../EventEmitter"
-import * as CompletionTypes from "./Types"
+import * as CompletionTypes from "../types/CompletionTypes"
 import * as GlobalTypes from "../types/GlobalTypes"
 
-class CompletionStore extends EventEmitter {
+export interface Kind {
+	name: string
+	label: string
+	title: string
+}
+
+export interface Resource {
+	id: string
+	name: string
+	info: ResourceInfo[]
+}
+
+export interface ResourceInfo {
+	label: string
+	value: string | number
+}
+
+export interface Dispatch {
+	type: string
+}
+
+class CompletionCache extends EventEmitter {
 	_kindMap: Record<string, number> = {}
-	_kinds: CompletionTypes.Kind[] = []
+	_kinds: Kind[] = []
 	_resourceMap: Record<string, Record<string, number>> = {}
-	_resources: Record<string, CompletionTypes.Resource[]> = {}
+	_resources: Record<string, Resource[]> = {}
 	_token = Dispatcher.register((this._callback).bind(this))
 
 	constructor() {
 		super()
 	}
 
-	get kinds(): CompletionTypes.Kind[] {
+	get kinds(): Kind[] {
 		return this._kinds
 	}
 
-	kind(name: string): CompletionTypes.Kind {
+	kind(name: string): Kind {
 		const i = this._kindMap[name]
 		if (i === undefined) {
 			return null
@@ -28,7 +49,7 @@ class CompletionStore extends EventEmitter {
 		return this._kinds[i]
 	}
 
-	resource(kindName: string, name: string): CompletionTypes.Resource {
+	resource(kindName: string, name: string): Resource {
 		const kindResourceMap = this._resourceMap[kindName]
 		if (!kindResourceMap) {
 			return null
@@ -42,7 +63,7 @@ class CompletionStore extends EventEmitter {
 		return this._resources[kindName][i]
 	}
 
-	resources(kind: string): CompletionTypes.Resource[] {
+	resources(kind: string): Resource[] {
 		return (this._resources[kind] || [])
 	}
 
@@ -61,7 +82,7 @@ class CompletionStore extends EventEmitter {
 		this._resourceMap = {}
 	}
 
-	_callback(action: CompletionTypes.Dispatch): void {
+	_callback(action: Dispatch): void {
 		switch (action.type) {
 			case GlobalTypes.RESET:
 				this._reset()
@@ -69,7 +90,7 @@ class CompletionStore extends EventEmitter {
 		}
 	}
 
-	update(resources: CompletionTypes.Resources): void {
+	update(resources: CompletionTypes.Completion): void {
 		this._kinds = []
 		this._resources = {}
 
@@ -78,8 +99,8 @@ class CompletionStore extends EventEmitter {
 			label: "Organization",
 			title: "**Organization**",
 		})
-		let resourceList: CompletionTypes.Resource[] = []
-		for (let item of resources.organizations) {
+		let resourceList: Resource[] = []
+		for (let item of (resources.organizations ||[])) {
 			resourceList.push({
 				id: item.id,
 				name: item.name,
@@ -99,7 +120,7 @@ class CompletionStore extends EventEmitter {
 			title: "**Domain**",
 		})
 		resourceList = []
-		for (let item of resources.domains) {
+		for (let item of (resources.domains ||[])) {
 			resourceList.push({
 				id: item.id,
 				name: item.name,
@@ -119,7 +140,7 @@ class CompletionStore extends EventEmitter {
 			title: "**VPC**",
 		})
 		resourceList = []
-		for (let item of resources.vpcs) {
+		for (let item of (resources.vpcs ||[])) {
 			resourceList.push({
 				id: item.id,
 				name: item.name,
@@ -139,7 +160,7 @@ class CompletionStore extends EventEmitter {
 			title: "**Datacenter**",
 		})
 		resourceList = []
-		for (let item of resources.datacenters) {
+		for (let item of (resources.datacenters ||[])) {
 			resourceList.push({
 				id: item.id,
 				name: item.name,
@@ -159,7 +180,7 @@ class CompletionStore extends EventEmitter {
 			title: "**Node**",
 		})
 		resourceList = []
-		for (let item of resources.nodes) {
+		for (let item of (resources.nodes ||[])) {
 			resourceList.push({
 				id: item.id,
 				name: item.name,
@@ -179,7 +200,7 @@ class CompletionStore extends EventEmitter {
 			title: "**Pool**",
 		})
 		resourceList = []
-		for (let item of resources.pools) {
+		for (let item of (resources.pools ||[])) {
 			resourceList.push({
 				id: item.id,
 				name: item.name,
@@ -199,7 +220,7 @@ class CompletionStore extends EventEmitter {
 			title: "**Zone**",
 		})
 		resourceList = []
-		for (let item of resources.zones) {
+		for (let item of (resources.zones ||[])) {
 			resourceList.push({
 				id: item.id,
 				name: item.name,
@@ -219,7 +240,7 @@ class CompletionStore extends EventEmitter {
 			title: "**Shapes**",
 		})
 		resourceList = []
-		for (let item of resources.shapes) {
+		for (let item of (resources.shapes ||[])) {
 			resourceList.push({
 				id: item.id,
 				name: item.name,
@@ -239,7 +260,7 @@ class CompletionStore extends EventEmitter {
 			title: "**Image**",
 		})
 		resourceList = []
-		for (let item of resources.images) {
+		for (let item of (resources.images ||[])) {
 			resourceList.push({
 				id: item.id,
 				name: item.name,
@@ -259,7 +280,7 @@ class CompletionStore extends EventEmitter {
 			title: "**Instance**",
 		})
 		resourceList = []
-		for (let item of resources.instances) {
+		for (let item of (resources.instances ||[])) {
 			resourceList.push({
 				id: item.id,
 				name: item.name,
@@ -287,7 +308,7 @@ class CompletionStore extends EventEmitter {
 			title: "**Plan**",
 		})
 		resourceList = []
-		for (let item of resources.plans) {
+		for (let item of (resources.plans ||[])) {
 			resourceList.push({
 				id: item.id,
 				name: item.name,
@@ -307,7 +328,7 @@ class CompletionStore extends EventEmitter {
 			title: "**Certificate**",
 		})
 		resourceList = []
-		for (let item of resources.certificates) {
+		for (let item of (resources.certificates ||[])) {
 			resourceList.push({
 				id: item.id,
 				name: item.name,
@@ -327,7 +348,7 @@ class CompletionStore extends EventEmitter {
 			title: "**Secret**",
 		})
 		resourceList = []
-		for (let item of resources.secrets) {
+		for (let item of (resources.secrets ||[])) {
 			resourceList.push({
 				id: item.id,
 				name: item.name,
@@ -347,7 +368,7 @@ class CompletionStore extends EventEmitter {
 			title: "**Pod**",
 		})
 		resourceList = []
-		for (let item of resources.pods) {
+		for (let item of (resources.pods ||[])) {
 			resourceList.push({
 				id: item.id,
 				name: item.name,
@@ -367,7 +388,7 @@ class CompletionStore extends EventEmitter {
 			title: "**Unit**",
 		})
 		resourceList = []
-		for (let item of resources.units) {
+		for (let item of (resources.units ||[])) {
 			resourceList.push({
 				id: item.id,
 				name: item.name,
@@ -397,4 +418,4 @@ class CompletionStore extends EventEmitter {
 	}
 }
 
-export default new CompletionStore()
+export default new CompletionCache()
