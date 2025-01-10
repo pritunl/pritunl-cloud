@@ -1,7 +1,7 @@
 /// <reference path="../References.d.ts"/>
 import * as Monaco from "monaco-editor"
 import * as MonacoEditor from "@monaco-editor/react"
-import CompletionStore from "./Store"
+import CompletionCache from "./Cache"
 
 let registered = false
 
@@ -81,8 +81,8 @@ export function handleAfterMount(
 
 			let kindName = match[1]
 			let resourceName = match[2]
-			let kind = CompletionStore.kind(kindName)
-			let resource = CompletionStore.resource(kindName, resourceName)
+			let kind = CompletionCache.kind(kindName)
+			let resource = CompletionCache.resource(kindName, resourceName)
 
 			if (kind && resource) {
 				let contents = [
@@ -125,7 +125,7 @@ export function handleAfterMount(
 
 			const resourceMatch = textBeforeCursor.match(/{{\/([a-zA-Z0-9-]*)\/$/)
 			if (resourceMatch) {
-				let kind = CompletionStore.kind(resourceMatch[1])
+				let kind = CompletionCache.kind(resourceMatch[1])
 				if (!kind) {
 					return noMatch
 				}
@@ -139,7 +139,7 @@ export function handleAfterMount(
 
 				let suggestions: Monaco.languages.CompletionItem[] = []
 
-				for (const resource of (CompletionStore.resources(kind.name))) {
+				for (const resource of (CompletionCache.resources(kind.name))) {
 					suggestions.push({
 						label: resource.name,
 						kind: CompletionItemKind.Struct,
@@ -166,7 +166,7 @@ export function handleAfterMount(
 
 				let suggestions: Monaco.languages.CompletionItem[] = []
 
-				for (const kind of CompletionStore.kinds) {
+				for (const kind of CompletionCache.kinds) {
 					suggestions.push({
 						label: kind.name,
 						kind: CompletionItemKind.Class,
