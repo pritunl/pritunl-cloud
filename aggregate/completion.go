@@ -381,15 +381,22 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			"_id":          1,
 			"name":         1,
 			"organization": 1,
+			"units":        1,
 		},
 		func() interface{} {
 			return &pod.Pod{}
 		},
 		func(item interface{}) {
+			pd := item.(*pod.Pod)
+
 			cmpl.Pods = append(
 				cmpl.Pods,
-				item.(*pod.Pod),
+				pd,
 			)
+
+			for _, unit := range pd.Units {
+				cmpl.Units = append(cmpl.Units, unit)
+			}
 		},
 	)
 	if err != nil {
