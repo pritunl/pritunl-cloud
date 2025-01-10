@@ -343,7 +343,7 @@ export default class PodDeployment extends React.Component<Props, State> {
 								style={css.cardButton}
 								hidden={this.state.logsOpen}
 								onClick={this.onLogsToggle}
-							>Open Logs</button>
+							>Logs</button>
 							<button
 								className="bp5-button bp5-small bp5-intent-danger"
 								style={css.cardButton}
@@ -465,7 +465,7 @@ export default class PodDeployment extends React.Component<Props, State> {
 								style={css.cardButton}
 								hidden={this.state.logsOpen}
 								onClick={this.onLogsToggle}
-							>Open Logs</button>
+							>Logs</button>
 							<button
 								className="bp5-button bp5-small bp5-intent-danger"
 								style={css.cardButton}
