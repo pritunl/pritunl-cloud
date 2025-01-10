@@ -69,7 +69,7 @@ func (d *Deployment) Validate(db *database.Database) (
 	tags := []string{}
 	for _, tag := range d.Tags {
 		tag = utils.FilterName(tag)
-		if tag == "" {
+		if tag == "" || tag == "latest" {
 			continue
 		}
 
