@@ -16,8 +16,6 @@ export function sync(): Promise<void> {
 	let curSyncId = MiscUtils.uuid();
 	syncId = curSyncId;
 
-	let loader = new Loader().loading();
-
 	return new Promise<void>((resolve, reject): void => {
 		SuperAgent
 			.get('/completion')
@@ -27,8 +25,6 @@ export function sync(): Promise<void> {
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.end((err: any, res: SuperAgent.Response): void => {
-				loader.done();
-
 				if (res && res.status === 401) {
 					window.location.href = '/login';
 					resolve();
