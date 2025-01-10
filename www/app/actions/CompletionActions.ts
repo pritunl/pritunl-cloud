@@ -53,3 +53,22 @@ export function sync(): Promise<void> {
 			});
 	});
 }
+
+export function filter(filt: CompletionTypes.Filter): Promise<void> {
+	Dispatcher.dispatch({
+		type: CompletionTypes.FILTER,
+		data: {
+			filter: filt,
+		},
+	});
+
+	return sync();
+}
+
+EventDispatcher.register((action: CompletionTypes.CompletionDispatch) => {
+	switch (action.type) {
+		case CompletionTypes.CHANGE:
+				sync();
+			break;
+	}
+});
