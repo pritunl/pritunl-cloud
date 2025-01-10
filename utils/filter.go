@@ -70,6 +70,7 @@ var nameSafeChar = set.NewSet(
 	'8',
 	'9',
 	'-',
+	'.',
 )
 
 func FilterName(s string) string {
