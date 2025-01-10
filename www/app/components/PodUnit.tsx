@@ -37,9 +37,6 @@ const css = {
 		flex: 1,
 		minWidth: "280px",
 		margin: "10px",
-		fontSize: "11px",
-		fontFamily: Theme.monospaceFont,
-		fontWeight: Theme.monospaceWeight,
 	} as React.CSSProperties,
 	boxEmpty: {
 		flex: 1,
