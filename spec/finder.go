@@ -36,7 +36,7 @@ const (
 	PlanKind        = "plan"
 	CertificateKind = "certificate"
 	SecretKind      = "secret"
-	PodKind         = "spec"
+	PodKind         = "pod"
 )
 
 type Resources struct {
