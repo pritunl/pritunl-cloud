@@ -7,8 +7,10 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
@@ -42,6 +44,7 @@ import (
 var (
 	imageLock        = utils.NewMultiTimeoutLock(10 * time.Minute)
 	backingImageLock = utils.NewMultiTimeoutLock(5 * time.Minute)
+	nbdLock          = sync.Mutex{}
 )
 
 func getImageS3(db *database.Database, store *storage.Storage,
@@ -464,6 +467,76 @@ func copyBackingImage(imagePth, backingImagePth string) (err error) {
 	}
 
 	err = utils.Exec("", "cp", imagePth, backingImagePth)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func writeFsQcow(db *database.Database, dsk *disk.Disk) (err error) {
+	nbdLock.Lock()
+	defer func() {
+		utils.Exec("", "qemu-nbd", "--disconnect", "/dev/nbd6")
+		nbdLock.Unlock()
+	}()
+
+	diskPath := paths.GetDiskPath(dsk.Id)
+
+	err = utils.Exec("", "qemu-img", "create",
+		"-f", "qcow2", diskPath, fmt.Sprintf("%dG", dsk.Size))
+	if err != nil {
+		return
+	}
+
+	err = utils.Chmod(diskPath, 0600)
+	if err != nil {
+		return
+	}
+
+	err = utils.Exec("", "modprobe", "nbd")
+	if err != nil {
+		return
+	}
+
+	err = utils.Exec("", "qemu-nbd", "--disconnect", "/dev/nbd6")
+	if err != nil {
+		return
+	}
+
+	err = utils.Exec("", "qemu-nbd", "--connect", "/dev/nbd6", diskPath)
+	if err != nil {
+		return
+	}
+
+	err = utils.Exec("", "parted", "--script", "/dev/nbd6", "mklabel", "gpt")
+	if err != nil {
+		return
+	}
+
+	err = utils.Exec("", "parted", "--script", "/dev/nbd6", "mkpart",
+		"primary", dsk.FileSystem, "1MiB", "100%")
+	if err != nil {
+		return
+	}
+
+	time.Sleep(1 * time.Second)
+
+	err = utils.Exec("", "mkfs", "-t", dsk.FileSystem, "/dev/nbd6p1")
+	if err != nil {
+		return
+	}
+
+	time.Sleep(100 * time.Millisecond)
+
+	output, err := utils.ExecOutput("", "blkid", "-s", "UUID",
+		"-o", "value", "/dev/nbd6p1")
+	if err != nil {
+		return
+	}
+
+	dsk.Uuid = strings.TrimSpace(output)
+	err = dsk.CommitFields(db, set.NewSet("uuid"))
 	if err != nil {
 		return
 	}
