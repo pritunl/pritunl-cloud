@@ -11,4 +11,7 @@ const (
 
 	Qcow2 = "qcow2"
 	Lvm   = "lvm"
+
+	Xfs  = "xfs"
+	Ext4 = "ext4"
 )
