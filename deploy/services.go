@@ -6,6 +6,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
+	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -191,6 +192,30 @@ func (s *Pods) DeploySpec(db *database.Database,
 		NoPublicAddress6:    false,
 		NoHostAddress:       false,
 		Deployment:          deply.Id,
+	}
+
+	index := 0
+	for _, mount := range spc.Instance.Mounts {
+		index += 1
+
+		for _, dskId := range mount.Disks {
+			dsk, e := disk.Get(db, dskId)
+			if e != nil {
+				err = e
+				return
+			}
+
+			if !dsk.Instance.IsZero() {
+				continue
+			}
+
+			err = dsk.Reserve(db, inst.Id, index)
+			if err != nil {
+				return
+			}
+
+			break
+		}
 	}
 
 	errData, err = inst.Validate(db)
