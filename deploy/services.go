@@ -196,6 +196,11 @@ func (s *Pods) DeploySpec(db *database.Database,
 
 	inst.GenerateId()
 
+	errData, err = inst.Validate(db)
+	if err != nil {
+		return
+	}
+
 	index := 0
 	reservedDisks := []*disk.Disk{}
 	for _, mount := range spc.Instance.Mounts {
@@ -236,11 +241,6 @@ func (s *Pods) DeploySpec(db *database.Database,
 			}).Error("deploy: Failed to reserve disk for mount")
 			return
 		}
-	}
-
-	errData, err = inst.Validate(db)
-	if err != nil {
-		return
 	}
 
 	if errData != nil {
