@@ -194,6 +194,8 @@ func (s *Pods) DeploySpec(db *database.Database,
 		Deployment:          deply.Id,
 	}
 
+	inst.GenerateId()
+
 	index := 0
 	reservedDisks := []*disk.Disk{}
 	for _, mount := range spc.Instance.Mounts {
