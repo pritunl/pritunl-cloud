@@ -31,6 +31,7 @@ const (
 	PoolKind        = "pool"
 	ZoneKind        = "zone"
 	ShapeKind       = "shape"
+	DiskKind        = "disk"
 	ImageKind       = "image"
 	InstanceKind    = "instance"
 	PlanKind        = "plan"
