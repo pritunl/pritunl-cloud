@@ -228,6 +228,30 @@ func (d Disk) Reserve(db *database.Database,
 	return
 }
 
+func (d Disk) Unreserve(db *database.Database,
+	instId primitive.ObjectID) (err error) {
+
+	coll := db.Disks()
+
+	_, err = coll.UpdateOne(db, &bson.M{
+		"_id":      d.Id,
+		"instance": instId,
+	}, &bson.M{
+		"$set": &bson.M{
+			"index": fmt.Sprintf("hold_%s", primitive.NewObjectID().Hex()),
+		},
+		"$unset": &bson.M{
+			"instance": instId,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func (d *Disk) Commit(db *database.Database) (err error) {
 	coll := db.Disks()
 
