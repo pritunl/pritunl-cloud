@@ -201,6 +201,14 @@ func (s *Pods) DeploySpec(db *database.Database,
 		return
 	}
 
+	if errData != nil {
+		logrus.WithFields(logrus.Fields{
+			"error_code":    errData.Error,
+			"error_message": errData.Message,
+		}).Error("deploy: Failed to deploy instance")
+		return
+	}
+
 	index := 0
 	reservedDisks := []*disk.Disk{}
 	for _, mount := range spc.Instance.Mounts {
@@ -241,14 +249,6 @@ func (s *Pods) DeploySpec(db *database.Database,
 			}).Error("deploy: Failed to reserve disk for mount")
 			return
 		}
-	}
-
-	if errData != nil {
-		logrus.WithFields(logrus.Fields{
-			"error_code":    errData.Error,
-			"error_message": errData.Message,
-		}).Error("deploy: Failed to deploy instance")
-		return
 	}
 
 	err = inst.Insert(db)
