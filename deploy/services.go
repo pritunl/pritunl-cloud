@@ -195,8 +195,10 @@ func (s *Pods) DeploySpec(db *database.Database,
 	}
 
 	index := 0
+	reservedDisks := []*disk.Disk{}
 	for _, mount := range spc.Instance.Mounts {
 		index += 1
+		reserved := false
 
 		for _, dskId := range mount.Disks {
 			dsk, e := disk.Get(db, dskId)
@@ -214,7 +216,23 @@ func (s *Pods) DeploySpec(db *database.Database,
 				return
 			}
 
+			reserved = true
+			reservedDisks = append(reservedDisks, dsk)
 			break
+		}
+
+		if !reserved {
+			for _, dsk := range reservedDisks {
+				err = dsk.Unreserve(db, inst.Id)
+				if err != nil {
+					return
+				}
+			}
+
+			logrus.WithFields(logrus.Fields{
+				"mount_path": mount.Path,
+			}).Error("deploy: Failed to reserve disk for mount")
+			return
 		}
 	}
 
