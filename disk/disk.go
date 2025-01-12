@@ -204,6 +204,30 @@ func (d *Disk) PreCommit() {
 	d.curInstance = d.Instance
 }
 
+func (d Disk) Reserve(db *database.Database,
+	instId primitive.ObjectID, index int) (err error) {
+
+	coll := db.Disks()
+
+	_, err = coll.UpdateOne(db, &bson.M{
+		"_id": d.Id,
+		"instance": &bson.M{
+			"$exists": false,
+		},
+	}, &bson.M{
+		"$set": &bson.M{
+			"instance": instId,
+			"index":    index,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func (d *Disk) Commit(db *database.Database) (err error) {
 	coll := db.Disks()
 
