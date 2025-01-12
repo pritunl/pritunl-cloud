@@ -215,6 +215,28 @@ func (u *Commit) Parse(db *database.Database,
 		}
 	}
 
+	if dataYaml.Mounts != nil {
+		for _, mount := range dataYaml.Mounts {
+			mnt := Mount{
+				Path:  mount.Path,
+				Disks: []primitive.ObjectID{},
+			}
+
+			for _, dsk := range mount.Disks {
+				kind, e := resources.Find(db, dsk)
+				if e != nil {
+					err = e
+					return
+				}
+				if kind == "disk" && resources.Disk != nil {
+					mnt.Disks = append(mnt.Disks, resources.Disk.Id)
+				}
+			}
+
+			data.Mounts = append(data.Mounts, mnt)
+		}
+	}
+
 	if dataYaml.Certificates != nil {
 		for _, cert := range dataYaml.Certificates {
 			kind, e := resources.Find(db, cert)
