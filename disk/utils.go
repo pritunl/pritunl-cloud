@@ -25,6 +25,19 @@ func Get(db *database.Database, diskId primitive.ObjectID) (
 	return
 }
 
+func GetOne(db *database.Database, query *bson.M) (dsk *Disk, err error) {
+	coll := db.Disks()
+	dsk = &Disk{}
+
+	err = coll.FindOne(db, query).Decode(dsk)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetOrg(db *database.Database, orgId, diskId primitive.ObjectID) (
 	dsk *Disk, err error) {
 
