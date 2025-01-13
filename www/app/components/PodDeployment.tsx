@@ -355,13 +355,13 @@ export default class PodDeployment extends React.Component<Props, State> {
 								style={css.cardButton}
 								hidden={this.state.editOpen}
 								onClick={this.onEditToggle}
-							>Open Edit</button>
+							>Settings</button>
 							<button
 								className="bp5-button bp5-small bp5-intent-danger"
 								style={css.cardButton}
 								hidden={!this.state.editOpen}
 								onClick={this.onEditToggle}
-							>Close Edit</button>
+							>Close Settings</button>
 						</div>
 						<div style={css.item}>
 							<PageInfo
@@ -477,13 +477,13 @@ export default class PodDeployment extends React.Component<Props, State> {
 								style={css.cardButton}
 								hidden={this.state.editOpen}
 								onClick={this.onEditToggle}
-							>Open Edit</button>
+							>Settings</button>
 							<button
 								className="bp5-button bp5-small bp5-intent-danger"
 								style={css.cardButton}
 								hidden={!this.state.editOpen}
 								onClick={this.onEditToggle}
-							>Close Edit</button>
+							>Close Settings</button>
 						</div>
 						<div style={css.item}>
 							<PageInfo
