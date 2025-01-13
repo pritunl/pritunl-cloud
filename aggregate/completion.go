@@ -311,6 +311,10 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			"_id":          1,
 			"name":         1,
 			"organization": 1,
+			"zone":         1,
+			"vpc":          1,
+			"subnet":       1,
+			"node":         1,
 		},
 		func() interface{} {
 			return &instance.Instance{}
