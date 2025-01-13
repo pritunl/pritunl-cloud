@@ -436,6 +436,13 @@ export default class DiskDetailed extends React.Component<Props, State> {
 			},
 		];
 
+		if (this.props.disk.file_system) {
+			fields.splice(3, 0, {
+				label: 'File System',
+				value: this.props.disk.file_system,
+			});
+		}
+
 		let backingImage = this.props.disk.backing_image;
 		if (backingImage) {
 			backingImage = backingImage.replace('-', '\n');
