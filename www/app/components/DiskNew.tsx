@@ -159,6 +159,21 @@ export default class DiskNew extends React.Component<Props, State> {
 		});
 	}
 
+	setUnset(name: string, val: any, unset: string): void {
+		let disk: any = {
+			...this.state.disk,
+		};
+
+		disk[name] = val;
+		disk[unset] = null;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			disk: disk,
+		});
+	}
+
 	onCreate = (): void => {
 		this.setState({
 			...this.state,
@@ -538,6 +553,19 @@ export default class DiskNew extends React.Component<Props, State> {
 							}}
 						>
 							{imagesSelect}
+						</PageSelect>
+						<PageSelect
+							disabled={this.state.disabled}
+							label="File System"
+							help="Starting file system for disk."
+							value={disk.file_system}
+							onChange={(val): void => {
+								this.setUnset('file_system', val, 'image');
+							}}
+						>
+							<option value="">None</option>
+							<option value="xfs">XFS</option>
+							<option value="ext4">ext4</option>
 						</PageSelect>
 						<PageSwitch
 							label="Show hidden images"
