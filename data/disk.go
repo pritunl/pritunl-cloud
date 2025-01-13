@@ -23,6 +23,11 @@ func createDiskQcow(db *database.Database, dsk *disk.Disk) (
 		if err != nil {
 			return
 		}
+	} else if dsk.FileSystem != "" {
+		err = writeFsQcow(db, dsk)
+		if err != nil {
+			return
+		}
 	} else {
 		err = utils.Exec("", "qemu-img", "create",
 			"-f", "qcow2", diskPath, fmt.Sprintf("%dG", dsk.Size))
