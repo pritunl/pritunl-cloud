@@ -15,6 +15,7 @@ export interface Disk {
 	state?: string;
 	instance?: string;
 	delete_protection?: boolean;
+	file_system?: string;
 	image?: string;
 	restore_image?: string;
 	backing?: boolean;
