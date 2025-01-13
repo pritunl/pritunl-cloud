@@ -9,6 +9,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/certificate"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
+	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/domain"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/image"
@@ -50,6 +51,7 @@ type Resources struct {
 	Node         *node.Node
 	Pool         *pool.Pool
 	Image        *image.Image
+	Disk         *disk.Disk
 	Instance     *instance.Instance
 	Plan         *plan.Plan
 	Domain       *domain.Domain
@@ -158,6 +160,15 @@ func (r *Resources) Find(db *database.Database, token string) (
 					},
 				},
 			},
+		})
+		if err != nil {
+			return
+		}
+		break
+	case DiskKind:
+		r.Disk, err = disk.GetOne(db, &bson.M{
+			"name":         resource,
+			"organization": r.Organization,
 		})
 		if err != nil {
 			return
