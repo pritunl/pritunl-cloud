@@ -16,6 +16,7 @@ type Instance struct {
 	Memory       int                  `bson:"memory" json:"memory"`             // soft
 	Image        primitive.ObjectID   `bson:"image" json:"image"`               // hard
 	DiskSize     int                  `bson:"disk_size" json:"disk_size"`       // hard
+	Mounts       []Mount              `bson:"mounts" json:"mounts"`             // hard
 	Certificates []primitive.ObjectID `bson:"certificates" json:"certificates"` // soft
 	Secrets      []primitive.ObjectID `bson:"secrets" json:"secrets"`           // soft
 	Pods         []primitive.ObjectID `bson:"pods" json:"pods"`                 // soft
@@ -23,6 +24,11 @@ type Instance struct {
 
 func (i *Instance) MemoryUnits() float64 {
 	return float64(i.Memory) / float64(1024)
+}
+
+type Mount struct {
+	Path  string               `bson:"path" json:"path"`
+	Disks []primitive.ObjectID `bson:"disks" json:"disks"`
 }
 
 type InstanceYaml struct {
