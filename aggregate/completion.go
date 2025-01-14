@@ -361,6 +361,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			"_id":          1,
 			"name":         1,
 			"organization": 1,
+			"type":         1,
 		},
 		func() interface{} {
 			return &certificate.Certificate{}
@@ -384,6 +385,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			"_id":          1,
 			"name":         1,
 			"organization": 1,
+			"type":         1,
 		},
 		func() interface{} {
 			return &secret.Secret{}
