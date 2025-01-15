@@ -549,7 +549,7 @@ export default class DiskNew extends React.Component<Props, State> {
 							help="Starting image for disk."
 							value={disk.image}
 							onChange={(val): void => {
-								this.set('image', val);
+								this.setUnset('image', val, 'file_system');
 							}}
 						>
 							{imagesSelect}
