@@ -9,6 +9,7 @@ export interface Disk {
 	name?: string;
 	comment?: string;
 	type?: string;
+	uuid?: string;
 	node?: string;
 	pool?: string;
 	organization?: string;
