@@ -419,10 +419,6 @@ export default class DiskDetailed extends React.Component<Props, State> {
 				value: this.props.disk.id || 'Unknown',
 			},
 			{
-				label: 'Image',
-				value: this.props.disk.image || 'Blank Disk',
-			},
-			{
 				label: 'Organization',
 				value: org ? org.name : this.props.disk.organization,
 			},
@@ -440,6 +436,13 @@ export default class DiskDetailed extends React.Component<Props, State> {
 			fields.splice(3, 0, {
 				label: 'File System',
 				value: this.props.disk.file_system,
+			});
+		}
+
+		if (this.props.disk.image) {
+			fields.splice(2, 0, {
+				label: 'Image',
+				value: this.props.disk.image || 'Blank Disk',
 			});
 		}
 
