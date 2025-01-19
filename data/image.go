@@ -33,6 +33,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/pool"
 	"github.com/pritunl/pritunl-cloud/qmp"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/storage"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
@@ -475,9 +476,11 @@ func copyBackingImage(imagePth, backingImagePth string) (err error) {
 }
 
 func writeFsQcow(db *database.Database, dsk *disk.Disk) (err error) {
+	ndbPath := settings.Hypervisor.NbdPath
+
 	nbdLock.Lock()
 	defer func() {
-		utils.Exec("", "qemu-nbd", "--disconnect", "/dev/nbd6")
+		utils.Exec("", "qemu-nbd", "--disconnect", ndbPath)
 		nbdLock.Unlock()
 	}()
 
@@ -499,22 +502,22 @@ func writeFsQcow(db *database.Database, dsk *disk.Disk) (err error) {
 		return
 	}
 
-	err = utils.Exec("", "qemu-nbd", "--disconnect", "/dev/nbd6")
+	err = utils.Exec("", "qemu-nbd", "--disconnect", ndbPath)
 	if err != nil {
 		return
 	}
 
-	err = utils.Exec("", "qemu-nbd", "--connect", "/dev/nbd6", diskPath)
+	err = utils.Exec("", "qemu-nbd", "--connect", ndbPath, diskPath)
 	if err != nil {
 		return
 	}
 
-	err = utils.Exec("", "parted", "--script", "/dev/nbd6", "mklabel", "gpt")
+	err = utils.Exec("", "parted", "--script", ndbPath, "mklabel", "gpt")
 	if err != nil {
 		return
 	}
 
-	err = utils.Exec("", "parted", "--script", "/dev/nbd6", "mkpart",
+	err = utils.Exec("", "parted", "--script", ndbPath, "mkpart",
 		"primary", dsk.FileSystem, "1MiB", "100%")
 	if err != nil {
 		return
