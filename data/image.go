@@ -776,6 +776,74 @@ func writeImageQcow(db *database.Database, dsk *disk.Disk) (
 	return
 }
 
+func writeFsLvm(db *database.Database, dsk *disk.Disk,
+	pl *pool.Pool) (err error) {
+
+	size := dsk.Size
+	vgName := pl.VgName
+	lvName := dsk.Id.Hex()
+	sourcePth := ""
+	diskTempPath := paths.GetDiskTempPath()
+	defer utils.Remove(diskTempPath)
+
+	acquired, err := lock.LvmLock(db, vgName, lvName)
+	if err != nil {
+		return
+	}
+
+	if !acquired {
+		err = &errortypes.WriteError{
+			errors.New("data: Failed to acquire LVM lock"),
+		}
+		return
+	}
+	defer func() {
+		err2 := lock.LvmUnlock(db, vgName, lvName)
+		if err2 != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": err2,
+			}).Error("data: Failed to unlock lvm")
+		}
+	}()
+
+	err = lvm.CreateLv(vgName, lvName, size)
+	if err != nil {
+		return
+	}
+
+	err = lvm.ActivateLv(vgName, lvName)
+	if err != nil {
+		return
+	}
+
+	err = lvm.WriteLv(vgName, lvName, sourcePth)
+	if err != nil {
+		return
+	}
+
+	diskPath := filepath.Join("/dev/mapper",
+		fmt.Sprintf("%s-%s", vgName, lvName))
+
+	err = utils.Exec("", "mkfs", "-t", dsk.FileSystem, diskPath)
+	if err != nil {
+		return
+	}
+
+	output, err := utils.ExecOutput("", "blkid", "-s", "UUID",
+		"-o", "value", diskPath)
+	if err != nil {
+		return
+	}
+
+	dsk.Uuid = strings.TrimSpace(output)
+	err = dsk.CommitFields(db, set.NewSet("uuid"))
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func writeImageLvm(db *database.Database, dsk *disk.Disk,
 	pl *pool.Pool) (newSize int, err error) {
 
