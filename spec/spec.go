@@ -8,11 +8,15 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
+	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/shape"
+	"github.com/pritunl/pritunl-cloud/zone"
 	"gopkg.in/yaml.v2"
 )
 
@@ -27,6 +31,96 @@ type Commit struct {
 	Hash      string             `bson:"hash" json:"hash"`
 	Data      string             `bson:"data" json:"data"`
 	Instance  *Instance          `bson:"instance_data,omitempty" json:"-"`
+}
+
+func (c *Commit) GetAllNodes(db *database.Database,
+	orgId primitive.ObjectID) (ndes Nodes,
+	offlineCount, noMountCount int, err error) {
+
+	shpe, err := shape.Get(db, c.Instance.Shape)
+	if err != nil {
+		return
+	}
+
+	zones, err := zone.GetAllDatacenter(db, shpe.Datacenter)
+	if err != nil {
+		return
+	}
+
+	zoneIds := []primitive.ObjectID{}
+	for _, zne := range zones {
+		zoneIds = append(zoneIds, zne.Id)
+	}
+
+	allNdes, err := node.GetAllShape(db, zoneIds, shpe.Roles)
+	if err != nil {
+		return
+	}
+
+	var mountNodes []set.Set
+	if c.Instance.Mounts != nil && len(c.Instance.Mounts) > 0 {
+		diskIds := []primitive.ObjectID{}
+		for _, mount := range c.Instance.Mounts {
+			if mount.Disks == nil {
+				continue
+			}
+			diskIds = append(diskIds, mount.Disks...)
+		}
+
+		disksMap, e := disk.GetAllMap(db, &bson.M{
+			"_id": &bson.M{
+				"$in": diskIds,
+			},
+			"organization": orgId,
+		})
+		if e != nil {
+			err = e
+			return
+		}
+
+		for _, mount := range c.Instance.Mounts {
+			mountSet := set.NewSet()
+
+			if mount.Disks != nil {
+				for _, dskId := range mount.Disks {
+					dsk := disksMap[dskId]
+					if dsk == nil {
+						continue
+					}
+					mountSet.Add(dsk.Node)
+				}
+			}
+
+			mountNodes = append(mountNodes, mountSet)
+		}
+	}
+
+	ndes = Nodes{}
+	for _, nde := range allNdes {
+		if !nde.IsOnline() {
+			offlineCount += 1
+			continue
+		}
+
+		if mountNodes != nil {
+			match := true
+			for _, mountSet := range mountNodes {
+				if !mountSet.Contains(nde.Id) {
+					match = false
+					break
+				}
+			}
+
+			if !match {
+				noMountCount += 1
+				continue
+			}
+		}
+
+		ndes = append(ndes, nde)
+	}
+
+	return
 }
 
 func (s *Commit) Validate(db *database.Database) (err error) {
