@@ -93,7 +93,8 @@ func (s *Shape) FindNode(db *database.Database, processors, memory int) (
 }
 
 func (s *Shape) GetAllNodes(db *database.Database, orgId primitive.ObjectID,
-	processors, memory int, mounts []spec.Mount) (ndes Nodes, err error) {
+	processors, memory int, mounts []spec.Mount) (ndes Nodes,
+	offlineCount, noMountCount int, err error) {
 
 	zones, err := zone.GetAllDatacenter(db, s.Datacenter)
 	if err != nil {
@@ -151,6 +152,7 @@ func (s *Shape) GetAllNodes(db *database.Database, orgId primitive.ObjectID,
 	ndes = Nodes{}
 	for _, nde := range allNdes {
 		if !nde.IsOnline() {
+			offlineCount += 1
 			continue
 		}
 
@@ -164,6 +166,7 @@ func (s *Shape) GetAllNodes(db *database.Database, orgId primitive.ObjectID,
 			}
 
 			if !match {
+				noMountCount += 1
 				continue
 			}
 		}
