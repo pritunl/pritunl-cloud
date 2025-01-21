@@ -8,7 +8,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/pod"
-	"github.com/pritunl/pritunl-cloud/shape"
 	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/sirupsen/logrus"
 )
@@ -127,8 +126,8 @@ func (u *InstanceUnit) Schedule(db *database.Database, count int) (err error) {
 	return
 }
 
-func (u *InstanceUnit) processNodes(nodes shape.Nodes) (
-	primaryNodes, backupNodes shape.Nodes) {
+func (u *InstanceUnit) processNodes(nodes spec.Nodes) (
+	primaryNodes, backupNodes spec.Nodes) {
 
 	nodes.Sort()
 
@@ -146,7 +145,7 @@ func (u *InstanceUnit) processNodes(nodes shape.Nodes) (
 }
 
 func (u *InstanceUnit) scheduleSimple(db *database.Database,
-	primaryNodes, backupNodes shape.Nodes) (tickets TicketsStore, err error) {
+	primaryNodes, backupNodes spec.Nodes) (tickets TicketsStore, err error) {
 
 	tickets = TicketsStore{}
 	count := u.count
@@ -190,7 +189,7 @@ func (u *InstanceUnit) scheduleSimple(db *database.Database,
 }
 
 func (u *InstanceUnit) scheduleComplex(db *database.Database,
-	primaryNodes, backupNodes shape.Nodes) (tickets TicketsStore, err error) {
+	primaryNodes, backupNodes spec.Nodes) (tickets TicketsStore, err error) {
 
 	tickets = TicketsStore{}
 	count := u.count
