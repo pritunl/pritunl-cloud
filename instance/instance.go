@@ -114,6 +114,7 @@ type Instance struct {
 	curState            string             `bson:"-" json:"-"`
 	curNoPublicAddress  bool               `bson:"-" json:"-"`
 	curNoHostAddress    bool               `bson:"-" json:"-"`
+	newId               bool               `bson:"-" json:"-"`
 }
 
 type GuestData struct {
@@ -128,6 +129,7 @@ type GuestData struct {
 
 func (i *Instance) GenerateId() {
 	i.Id = primitive.NewObjectID()
+	i.newId = true
 }
 
 func (i *Instance) Validate(db *database.Database) (
@@ -774,7 +776,7 @@ func (i *Instance) CommitFields(db *database.Database, fields set.Set) (
 func (i *Instance) Insert(db *database.Database) (err error) {
 	coll := db.Instances()
 
-	if !i.Id.IsZero() {
+	if !i.Id.IsZero() && !i.newId {
 		err = &errortypes.DatabaseError{
 			errors.New("instance: Instance already exists"),
 		}
