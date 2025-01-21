@@ -192,7 +192,7 @@ export default class PodDetailed extends React.Component<Props, State> {
 		});
 	}
 
-	onSaveUnits = (units: PodTypes.Unit[]): void => {
+	onChangeCommit = (unitId: string, commit: string): void => {
 		this.setState({
 			...this.state,
 			disabled: true,
@@ -201,7 +201,14 @@ export default class PodDetailed extends React.Component<Props, State> {
 		let pod: PodTypes.Pod = {
 			...this.props.pod,
 		}
-		pod.units = units
+		pod.units = [...pod.units]
+
+		for (let i = 0; i < pod.units.length; i++) {
+			if (pod.units[i].id === unitId) {
+				pod.units[i].deploy_commit = commit
+				break
+			}
+		}
 
 		PodActions.commit(pod).then((): void => {
 			this.setState({
@@ -363,9 +370,7 @@ export default class PodDetailed extends React.Component<Props, State> {
 						mode: mode,
 					});
 				}}
-				onChange={(units: PodTypes.Unit[]): void => {
-					this.onSaveUnits(units)
-				}}
+				onChangeCommit={this.onChangeCommit}
 				onEdit={(units: PodTypes.Unit[]): void => {
 					let pod: any;
 
