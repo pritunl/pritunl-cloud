@@ -192,6 +192,39 @@ export default class PodDetailed extends React.Component<Props, State> {
 		});
 	}
 
+	onSaveUnits = (units: PodTypes.Unit[]): void => {
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+
+		let pod: PodTypes.Pod = {
+			...this.props.pod,
+		}
+		pod.units = units
+
+		PodActions.commit(pod).then((): void => {
+			this.setState({
+				...this.state,
+				message: 'Your changes have been saved',
+				disabled: false,
+			});
+
+			setTimeout((): void => {
+				this.setState({
+					...this.state,
+					message: '',
+				});
+			}, 3000);
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				message: '',
+				disabled: false,
+			});
+		});
+	}
+
 	onDelete = (): void => {
 		this.setState({
 			...this.state,
@@ -331,26 +364,7 @@ export default class PodDetailed extends React.Component<Props, State> {
 					});
 				}}
 				onChange={(units: PodTypes.Unit[]): void => {
-					let pod: any;
-
-					if (this.state.changed) {
-						pod = {
-							...this.state.pod,
-						};
-					} else {
-						pod = {
-							...this.props.pod,
-						};
-					}
-
-					pod.units = units
-
-					this.setState({
-						...this.state,
-						changed: true,
-						unitChanged: true,
-						pod: pod,
-					});
+					this.onSaveUnits(units)
 				}}
 				onEdit={(units: PodTypes.Unit[]): void => {
 					let pod: any;
