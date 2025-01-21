@@ -17,7 +17,7 @@ type InstanceUnit struct {
 	unit  *pod.Unit
 	spec  *spec.Commit
 	count int
-	nodes shape.Nodes
+	nodes spec.Nodes
 }
 
 func (u *InstanceUnit) Schedule(db *database.Database, count int) (err error) {
@@ -61,22 +61,20 @@ func (u *InstanceUnit) Schedule(db *database.Database, count int) (err error) {
 		OverrideCount: overrideCount,
 	}
 
-	shpe, err := shape.Get(db, u.spec.Instance.Shape)
+	ndes, offlineCount, noMountCount, err := u.spec.GetAllNodes(
+		db, u.unit.Pod.Organization)
 	if err != nil {
 		return
 	}
-
-	u.nodes, err = shpe.GetAllNodes(db, u.spec.Instance.Processors,
-		u.spec.Instance.Memory)
-	if err != nil {
-		return
-	}
+	u.nodes = ndes
 
 	if len(u.nodes) == 0 {
 		logrus.WithFields(logrus.Fields{
-			"pod":   u.unit.Pod.Id.Hex(),
-			"unit":  u.unit.Id.Hex(),
-			"shape": u.spec.Instance.Shape.Hex(),
+			"pod":                 u.unit.Pod.Id.Hex(),
+			"unit":                u.unit.Id.Hex(),
+			"shape":               u.spec.Instance.Shape.Hex(),
+			"offline_count":       offlineCount,
+			"missing_mount_count": noMountCount,
 		}).Error("scheduler: Failed to find nodes to schedule")
 		return
 	}
@@ -110,7 +108,6 @@ func (u *InstanceUnit) Schedule(db *database.Database, count int) (err error) {
 	logrus.WithFields(logrus.Fields{
 		"pod":           u.unit.Pod.Id.Hex(),
 		"unit":          u.unit.Id.Hex(),
-		"shape":         shpe.Id.Hex(),
 		"count":         u.count,
 		"primary_nodes": len(primaryNodes),
 		"backup_nodes":  len(backupNodes),
