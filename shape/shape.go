@@ -3,10 +3,13 @@ package shape
 import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/zone"
 )
@@ -89,8 +92,8 @@ func (s *Shape) FindNode(db *database.Database, processors, memory int) (
 	return
 }
 
-func (s *Shape) GetAllNodes(db *database.Database, processors, memory int) (
-	ndes Nodes, err error) {
+func (s *Shape) GetAllNodes(db *database.Database, orgId primitive.ObjectID,
+	processors, memory int, mounts []spec.Mount) (ndes Nodes, err error) {
 
 	zones, err := zone.GetAllDatacenter(db, s.Datacenter)
 	if err != nil {
@@ -107,11 +110,65 @@ func (s *Shape) GetAllNodes(db *database.Database, processors, memory int) (
 		return
 	}
 
+	var mountNodes []set.Set
+	if mounts != nil && len(mounts) > 0 {
+		diskIds := []primitive.ObjectID{}
+		for _, mount := range mounts {
+			if mount.Disks == nil {
+				continue
+			}
+			diskIds = append(diskIds, mount.Disks...)
+		}
+
+		disksMap, e := disk.GetAllMap(db, &bson.M{
+			"_id": &bson.M{
+				"$in": diskIds,
+			},
+			"organization": orgId,
+		})
+		if e != nil {
+			err = e
+			return
+		}
+
+		for _, mount := range mounts {
+			mountSet := set.NewSet()
+
+			if mount.Disks != nil {
+				for _, dskId := range mount.Disks {
+					dsk := disksMap[dskId]
+					if dsk == nil {
+						continue
+					}
+					mountSet.Add(dsk.Node)
+				}
+			}
+
+			mountNodes = append(mountNodes, mountSet)
+		}
+	}
+
 	ndes = Nodes{}
 	for _, nde := range allNdes {
-		if nde.IsOnline() {
-			ndes = append(ndes, nde)
+		if !nde.IsOnline() {
+			continue
 		}
+
+		if mountNodes != nil {
+			match := true
+			for _, mountSet := range mountNodes {
+				if !mountSet.Contains(nde.Id) {
+					match = false
+					break
+				}
+			}
+
+			if !match {
+				continue
+			}
+		}
+
+		ndes = append(ndes, nde)
 	}
 
 	return
