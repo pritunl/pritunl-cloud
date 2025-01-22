@@ -27,7 +27,7 @@ interface Props {
 	unitChanged: boolean;
 	mode: string;
 	onMode: (mode: string) => void;
-	onChange: (units: PodTypes.Unit[]) => void;
+	onChangeCommit: (unitId: string, commit: string) => void;
 	onEdit: (units: PodTypes.Unit[]) => void;
 }
 
@@ -440,19 +440,10 @@ export default class PodWorkspace extends React.Component<Props, State> {
 	}
 
 	onUnitDeploy = (val: string): void => {
-		let units = [
-			...(this.props.pod.units || []),
-		]
-
 		let index = this.getActiveUnitIndex()
 		if (index !== -1) {
-			units[index] = {
-				...units[index],
-				deploy_commit: val,
-			}
+			this.props.onChangeCommit(this.props.pod.units[index].id, val)
 		}
-
-		this.props.onChange(units)
 	}
 
 	render(): JSX.Element {
