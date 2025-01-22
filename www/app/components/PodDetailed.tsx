@@ -193,12 +193,36 @@ export default class PodDetailed extends React.Component<Props, State> {
 	}
 
 	onChangeCommit = (unitId: string, commit: string): void => {
-		this.setState({
-			...this.state,
-			disabled: true,
-		});
+		let pod: PodTypes.Pod
 
-		let pod: PodTypes.Pod = {
+		if (this.state.changed) {
+			pod = {
+				...this.state.pod,
+			};
+			pod.units = [...(pod.units || [])]
+
+			for (let i = 0; i < pod.units.length; i++) {
+				if (pod.units[i].id === unitId) {
+					pod.units[i].deploy_commit = commit
+					break
+				}
+			}
+
+			this.setState({
+				...this.state,
+				disabled: true,
+				changed: true,
+				unitChanged: true,
+				pod: pod,
+			})
+		} else {
+			this.setState({
+				...this.state,
+				disabled: true,
+			})
+		}
+
+		pod = {
 			...this.props.pod,
 		}
 		pod.units = [...pod.units]
