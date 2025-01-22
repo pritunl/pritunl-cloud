@@ -57,6 +57,11 @@ func createDiskLvm(db *database.Database, dsk *disk.Disk) (
 		if err != nil {
 			return
 		}
+	} else if dsk.FileSystem != "" {
+		err = writeFsLvm(db, dsk, pl)
+		if err != nil {
+			return
+		}
 	} else {
 		err = lvm.CreateLv(pl.VgName, dsk.Id.Hex(), dsk.Size)
 		if err != nil {
