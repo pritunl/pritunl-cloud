@@ -108,10 +108,20 @@ export default class Pods extends React.Component<{}, State> {
 	}
 
 	onChange = (): void => {
+		let pods = PodsStore.pods;
 		let selected: Selected = {};
 		let curSelected = this.state.selected;
 		let opened: Opened = {};
 		let curOpened = this.state.opened;
+
+		pods.forEach((pod: PodTypes.Pod): void => {
+			if (curSelected[pod.id]) {
+				selected[pod.id] = true;
+			}
+			if (curOpened[pod.id]) {
+				opened[pod.id] = true;
+			}
+		});
 
 		CompletionCache.update(CompletionStore.completion)
 
