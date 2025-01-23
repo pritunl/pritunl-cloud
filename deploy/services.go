@@ -194,7 +194,10 @@ func (s *Pods) DeploySpec(db *database.Database,
 		Deployment:          deply.Id,
 	}
 
-	inst.GenerateId()
+	err = inst.GenerateId()
+	if err != nil {
+		return
+	}
 
 	errData, err = inst.Validate(db)
 	if err != nil {
