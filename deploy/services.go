@@ -233,7 +233,7 @@ func (s *Pods) DeploySpec(db *database.Database,
 				return
 			}
 
-			if !dsk.Instance.IsZero() {
+			if dsk.Node != node.Self.Id || !dsk.Instance.IsZero() {
 				continue
 			}
 
