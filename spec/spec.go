@@ -3,6 +3,7 @@ package spec
 import (
 	"crypto/sha1"
 	"fmt"
+	"io"
 	"path/filepath"
 	"strings"
 	"time"
@@ -32,6 +33,7 @@ type Commit struct {
 	Hash      string             `bson:"hash" json:"hash"`
 	Data      string             `bson:"data" json:"data"`
 	Instance  *Instance          `bson:"instance,omitempty" json:"-"`
+	Firewall  *Firewall          `bson:"firewall,omitempty" json:"-"`
 }
 
 func (c *Commit) GetAllNodes(db *database.Database,
@@ -143,38 +145,67 @@ func (u *Commit) ExtractResources() (resources string, err error) {
 	return
 }
 
-func (u *Commit) Parse(db *database.Database,
-	orgId primitive.ObjectID) (errData *errortypes.ErrorData, err error) {
+func (u *Commit) parseFirewall(db *database.Database,
+	orgId primitive.ObjectID, dataYaml *FirewallYaml) (
+	errData *errortypes.ErrorData, err error) {
 
-	hash := sha1.New()
-	hash.Write([]byte(filterSpecHash(u.Data)))
-	hashBytes := hash.Sum(nil)
-	u.Hash = fmt.Sprintf("%x", hashBytes)
-
-	resourcesSpec, err := u.ExtractResources()
-	if err != nil {
-		return
+	data := &Firewall{
+		Ingress: []*Rule{},
 	}
 
-	if resourcesSpec == "" {
+	if dataYaml.Kind != deployment.Firewall {
 		errData = &errortypes.ErrorData{
-			Error:   "unit_resources_block_missing",
-			Message: "Unit missing yaml resources block",
+			Error:   "unit_kind_mismatch",
+			Message: "Unit kind unexpected",
 		}
 		return
 	}
+
+	resources := &Resources{
+		Organization: orgId,
+	}
+
+	for _, ruleYaml := range dataYaml.Ingress {
+		if ruleYaml.Source == nil {
+			continue
+		}
+
+		rule := &Rule{
+			Protocol: ruleYaml.Protocol,
+			Port:     ruleYaml.Port,
+		}
+
+		for _, source := range ruleYaml.Source {
+			kind, e := resources.Find(db, source)
+			if e != nil {
+				err = e
+				return
+			}
+
+			if kind == "unit" && resources.Unit != nil {
+				rule.Units = append(rule.Units, resources.Unit.Id)
+			}
+		}
+
+		data.Ingress = append(data.Ingress, rule)
+	}
+
+	errData, err = data.Validate()
+	if err != nil || errData != nil {
+		return
+	}
+
+	u.Firewall = data
+
+	return
+}
+
+func (u *Commit) parseInstance(db *database.Database,
+	orgId primitive.ObjectID, dataYaml *InstanceYaml) (
+	errData *errortypes.ErrorData, err error) {
 
 	data := &Instance{}
-	dataYaml := &InstanceYaml{}
 	var shpe *shape.Shape
-
-	err = yaml.Unmarshal([]byte(resourcesSpec), dataYaml)
-	if err != nil {
-		err = &errortypes.ParseError{
-			errors.Wrap(err, "pod: Failed to parse yaml resources"),
-		}
-		return
-	}
 
 	if dataYaml.Name == "" {
 		errData = &errortypes.ErrorData{
@@ -191,8 +222,8 @@ func (u *Commit) Parse(db *database.Database,
 		break
 	default:
 		errData = &errortypes.ErrorData{
-			Error:   "unit_kind_invalid",
-			Message: "Unit kind is invalid",
+			Error:   "unit_kind_mismatch",
+			Message: "Unit kind unexpected",
 		}
 		return
 	}
@@ -421,6 +452,90 @@ func (u *Commit) Parse(db *database.Database,
 			Message: "Count not valid for image kind",
 		}
 		return
+	}
+
+	return
+}
+
+func (u *Commit) Parse(db *database.Database,
+	orgId primitive.ObjectID) (errData *errortypes.ErrorData, err error) {
+
+	hash := sha1.New()
+	hash.Write([]byte(filterSpecHash(u.Data)))
+	hashBytes := hash.Sum(nil)
+	u.Hash = fmt.Sprintf("%x", hashBytes)
+
+	resourcesSpec, err := u.ExtractResources()
+	if err != nil {
+		return
+	}
+
+	if resourcesSpec == "" {
+		errData = &errortypes.ErrorData{
+			Error:   "unit_resources_block_missing",
+			Message: "Unit missing yaml resources block",
+		}
+		return
+	}
+
+	baseDecode := yaml.NewDecoder(strings.NewReader(resourcesSpec))
+	decoder := yaml.NewDecoder(strings.NewReader(resourcesSpec))
+	for {
+		baseDoc := &Base{}
+
+		err = baseDecode.Decode(baseDoc)
+		if err != nil {
+			if err == io.EOF {
+				err = nil
+				break
+			}
+
+			err = &errortypes.ParseError{
+				errors.Wrap(err, "spec: Failed to decode yaml doc"),
+			}
+			return
+		}
+
+		switch baseDoc.Kind {
+		case deployment.Instance, deployment.Image:
+			instYaml := &InstanceYaml{}
+
+			err = decoder.Decode(instYaml)
+			if err != nil {
+				err = &errortypes.ParseError{
+					errors.Wrap(err,
+						"spec: Failed to decode instance yaml doc"),
+				}
+				return
+			}
+
+			errData, err = u.parseInstance(db, orgId, instYaml)
+			if err != nil || errData != nil {
+				return
+			}
+		case deployment.Firewall:
+			fireYaml := &FirewallYaml{}
+
+			err = decoder.Decode(fireYaml)
+			if err != nil {
+				err = &errortypes.ParseError{
+					errors.Wrap(err,
+						"spec: Failed to decode firewall yaml doc"),
+				}
+				return
+			}
+
+			errData, err = u.parseFirewall(db, orgId, fireYaml)
+			if err != nil || errData != nil {
+				return
+			}
+		default:
+			errData = &errortypes.ErrorData{
+				Error:   "unit_kind_invalid",
+				Message: "Unit kind is invalid",
+			}
+			return
+		}
 	}
 
 	return
