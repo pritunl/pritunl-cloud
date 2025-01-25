@@ -30,7 +30,7 @@ type Commit struct {
 	Count     int                `bson:"count" json:"count"`
 	Hash      string             `bson:"hash" json:"hash"`
 	Data      string             `bson:"data" json:"data"`
-	Instance  *Instance          `bson:"instance_data,omitempty" json:"-"`
+	Instance  *Instance          `bson:"instance,omitempty" json:"-"`
 }
 
 func (c *Commit) GetAllNodes(db *database.Database,
