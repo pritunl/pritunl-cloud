@@ -205,12 +205,13 @@ func (d *Disk) PreCommit() {
 	d.curInstance = d.Instance
 }
 
-func (d Disk) Reserve(db *database.Database, instId primitive.ObjectID, index int,
-	deplyId primitive.ObjectID) (err error) {
+func (d Disk) Reserve(db *database.Database,
+	instId primitive.ObjectID, index int,
+	deplyId primitive.ObjectID) (reserved bool, err error) {
 
 	coll := db.Disks()
 
-	_, err = coll.UpdateOne(db, &bson.M{
+	resp, err := coll.UpdateOne(db, &bson.M{
 		"_id": d.Id,
 		"instance": &bson.M{
 			"$exists": false,
