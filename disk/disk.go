@@ -205,8 +205,8 @@ func (d *Disk) PreCommit() {
 	d.curInstance = d.Instance
 }
 
-func (d Disk) Reserve(db *database.Database,
-	instId primitive.ObjectID, index int) (err error) {
+func (d Disk) Reserve(db *database.Database, instId primitive.ObjectID, index int,
+	deplyId primitive.ObjectID) (err error) {
 
 	coll := db.Disks()
 
@@ -217,8 +217,9 @@ func (d Disk) Reserve(db *database.Database,
 		},
 	}, &bson.M{
 		"$set": &bson.M{
-			"instance": instId,
-			"index":    index,
+			"instance":   instId,
+			"index":      strconv.Itoa(index),
+			"deployment": deplyId,
 		},
 	})
 	if err != nil {
@@ -226,23 +227,29 @@ func (d Disk) Reserve(db *database.Database,
 		return
 	}
 
+	if resp.MatchedCount == 1 && resp.ModifiedCount == 1 {
+		reserved = true
+	}
+
 	return
 }
 
 func (d Disk) Unreserve(db *database.Database,
-	instId primitive.ObjectID) (err error) {
+	instId primitive.ObjectID, deplyId primitive.ObjectID) (err error) {
 
 	coll := db.Disks()
 
 	_, err = coll.UpdateOne(db, &bson.M{
-		"_id":      d.Id,
-		"instance": instId,
+		"_id":        d.Id,
+		"instance":   instId,
+		"deployment": deplyId,
 	}, &bson.M{
 		"$set": &bson.M{
 			"index": fmt.Sprintf("hold_%s", primitive.NewObjectID().Hex()),
 		},
 		"$unset": &bson.M{
-			"instance": instId,
+			"instance":   1,
+			"deployment": 1,
 		},
 	})
 	if err != nil {
