@@ -323,8 +323,10 @@ func (u *Commit) Parse(db *database.Database,
 					err = e
 					return
 				}
-				if kind == "disk" && resources.Disk != nil {
-					mnt.Disks = append(mnt.Disks, resources.Disk.Id)
+				if kind == "disk" && resources.Disks != nil {
+					for _, dskRes := range resources.Disks {
+						mnt.Disks = append(mnt.Disks, dskRes.Id)
+					}
 				}
 			}
 
