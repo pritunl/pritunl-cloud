@@ -10,6 +10,7 @@ import (
 	"net/textproto"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"text/template"
 
@@ -104,8 +105,16 @@ users:
     sudo: ALL=(ALL) NOPASSWD:ALL
     lock-passwd: {{.LockPasswd}}
     ssh-authorized-keys:
-{{range .Keys}}      - {{.}}
-{{end}}`
+{{- range .Keys}}
+      - {{.}}
+{{- end}}
+{{- if .HasMounts}}
+mounts:
+{{- range .Mounts}}
+  - [ "UUID={{.Uuid}}", "{{.Path}}", "auto", "defaults", "0", "2" ]
+{{- end}}
+{{- end}}
+`
 
 const cloudBsdConfigTmpl = `#cloud-config
 hostname: {{.Hostname}}
@@ -129,8 +138,16 @@ users:
     sudo: ALL=(ALL) NOPASSWD:ALL
     lock-passwd: {{.LockPasswd}}
     ssh-authorized-keys:
-{{range .Keys}}      - {{.}}
-{{end}}`
+{{- range .Keys}}
+      - {{.}}
+{{- end}}
+{{- if .HasMounts}}
+mounts:
+{{- range .Mounts}}
+  - [ "UUID={{.Uuid}}", "{{.Path}}", "auto", "defaults", "0", "2" ]
+{{- end}}
+{{- end}}
+`
 
 const deploymentScriptTmpl = `#!/bin/bash
 set -e
@@ -177,6 +194,13 @@ type cloudConfigData struct {
 	Address6      string
 	Gateway6      string
 	Keys          []string
+	HasMounts     bool
+	Mounts        []cloudMount
+}
+
+type cloudMount struct {
+	Uuid string
+	Path string
 }
 
 type imdsConfig struct {
@@ -186,9 +210,9 @@ type imdsConfig struct {
 }
 
 func getUserData(db *database.Database, inst *instance.Instance,
-	virt *vm.VirtualMachine, deployUnit *pod.Unit,
-	deploySpec *spec.Commit, initial bool, addr6, gateway6 net.IP) (
-	usrData string, err error) {
+	virt *vm.VirtualMachine, deply *deployment.Deployment,
+	deployUnit *pod.Unit, deploySpec *spec.Commit, initial bool,
+	addr6, gateway6 net.IP) (usrData string, err error) {
 
 	authrs, err := authority.GetOrgRoles(db, inst.Organization,
 		inst.NetworkRoles)
@@ -207,6 +231,7 @@ func getUserData(db *database.Database, inst *instance.Instance,
 		Address6:      addr6.String(),
 		Gateway6:      gateway6.String(),
 		DeployCommand: settings.Hypervisor.InitGuestPath,
+		Mounts:        []cloudMount{},
 	}
 
 	if inst.RootEnabled {
@@ -284,7 +309,17 @@ func getUserData(db *database.Database, inst *instance.Instance,
 	})
 
 	deploymentScript := ""
-	if deployUnit != nil && deploySpec != nil {
+	if deply != nil && deployUnit != nil && deploySpec != nil {
+		if deply.Mounts != nil && len(deply.Mounts) > 0 {
+			data.HasMounts = true
+			for _, mnt := range deply.Mounts {
+				data.Mounts = append(data.Mounts, cloudMount{
+					Uuid: mnt.Uuid,
+					Path: filepath.Clean(mnt.Path),
+				})
+			}
+		}
+
 		if deployUnit.Kind == deployment.Image {
 			deploymentScript = fmt.Sprintf(
 				deploymentScriptTmpl,
@@ -570,12 +605,12 @@ func Write(db *database.Database, inst *instance.Instance,
 
 	defer os.RemoveAll(tempDir)
 
+	var deply *deployment.Deployment
 	var deployUnit *pod.Unit
 	var deploySpec *spec.Commit
 	if !virt.Deployment.IsZero() {
-		deply, e := deployment.Get(db, virt.Deployment)
-		if e != nil {
-			err = e
+		deply, err = deployment.Get(db, virt.Deployment)
+		if err != nil {
 			return
 		}
 
@@ -614,7 +649,7 @@ func Write(db *database.Database, inst *instance.Instance,
 		return
 	}
 
-	usrData, err := getUserData(db, inst, virt, deployUnit, deploySpec,
+	usrData, err := getUserData(db, inst, virt, deply, deployUnit, deploySpec,
 		initial, addr6, gateway6)
 	if err != nil {
 		return
