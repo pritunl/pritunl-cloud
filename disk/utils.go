@@ -278,8 +278,10 @@ func Detach(db *database.Database, dskIds primitive.ObjectID) (err error) {
 
 	err = coll.UpdateId(dskIds, &bson.M{
 		"$set": &bson.M{
-			"instance": "",
-			"index":    fmt.Sprintf("hold_%s", primitive.NewObjectID().Hex()),
+			"index": fmt.Sprintf("hold_%s", primitive.NewObjectID().Hex()),
+		},
+		"$unset": &bson.M{
+			"instance": 1,
 		},
 	})
 	if err != nil {
