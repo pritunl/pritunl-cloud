@@ -3,6 +3,7 @@ package spec
 import (
 	"crypto/sha1"
 	"fmt"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -312,7 +313,7 @@ func (u *Commit) Parse(db *database.Database,
 	if dataYaml.Mounts != nil {
 		for _, mount := range dataYaml.Mounts {
 			mnt := Mount{
-				Path:  mount.Path,
+				Path:  filepath.Clean(mount.Path),
 				Disks: []primitive.ObjectID{},
 			}
 
