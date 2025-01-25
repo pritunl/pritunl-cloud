@@ -32,21 +32,27 @@ type Mount struct {
 }
 
 type InstanceYaml struct {
-	Name         string   `yaml:"name"`
-	Kind         string   `yaml:"kind"`
-	Count        int      `yaml:"count"`
-	Plan         string   `yaml:"plan"`
-	Zone         string   `yaml:"zone"`
-	Node         string   `yaml:"node,omitempty"`
-	Shape        string   `yaml:"shape,omitempty"`
-	Vpc          string   `yaml:"vpc"`
-	Subnet       string   `yaml:"subnet"`
-	Roles        []string `yaml:"roles"`
-	Processors   int      `yaml:"processors"`
-	Memory       int      `yaml:"memory"`
-	Image        string   `yaml:"image"`
-	Certificates []string `yaml:"certificates"`
-	Secrets      []string `yaml:"secrets"`
-	Pods         []string `yaml:"pods"`
-	DiskSize     int      `yaml:"disk_size"`
+	Name         string              `yaml:"name"`
+	Kind         string              `yaml:"kind"`
+	Count        int                 `yaml:"count"`
+	Plan         string              `yaml:"plan"`
+	Zone         string              `yaml:"zone"`
+	Node         string              `yaml:"node,omitempty"`
+	Shape        string              `yaml:"shape,omitempty"`
+	Vpc          string              `yaml:"vpc"`
+	Subnet       string              `yaml:"subnet"`
+	Roles        []string            `yaml:"roles"`
+	Processors   int                 `yaml:"processors"`
+	Memory       int                 `yaml:"memory"`
+	Image        string              `yaml:"image"`
+	Mounts       []InstanceMountYaml `yaml:"mounts"`
+	Certificates []string            `yaml:"certificates"`
+	Secrets      []string            `yaml:"secrets"`
+	Pods         []string            `yaml:"pods"`
+	DiskSize     int                 `yaml:"disk_size"`
+}
+
+type InstanceMountYaml struct {
+	Path  string   `yaml:"path"`
+	Disks []string `yaml:"disks"`
 }
