@@ -214,6 +214,8 @@ func (s *Pods) DeploySpec(db *database.Database,
 
 	index := 0
 	reservedDisks := []*disk.Disk{}
+	deplyMounts := []*deployment.Mount{}
+
 	for _, mount := range spc.Instance.Mounts {
 		index += 1
 		reserved := false
@@ -247,6 +249,12 @@ func (s *Pods) DeploySpec(db *database.Database,
 				}
 				return
 			}
+
+			deplyMounts = append(deplyMounts, &deployment.Mount{
+				Disk: dsk.Id,
+				Path: mount.Path,
+				Uuid: dsk.Uuid,
+			})
 
 			reserved = true
 			reservedDisks = append(reservedDisks, dsk)
@@ -282,7 +290,9 @@ func (s *Pods) DeploySpec(db *database.Database,
 
 	deply.State = deployment.Deployed
 	deply.Instance = inst.Id
-	err = deply.CommitFields(db, set.NewSet("state", "instance"))
+	deply.Mounts = deplyMounts
+
+	err = deply.CommitFields(db, set.NewSet("state", "instance", "mounts"))
 	if err != nil {
 		return
 	}
