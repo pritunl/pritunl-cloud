@@ -205,7 +205,7 @@ func (d *Disk) PreCommit() {
 	d.curInstance = d.Instance
 }
 
-func (d Disk) Reserve(db *database.Database,
+func (d *Disk) Reserve(db *database.Database,
 	instId primitive.ObjectID, index int,
 	deplyId primitive.ObjectID) (reserved bool, err error) {
 
@@ -235,7 +235,7 @@ func (d Disk) Reserve(db *database.Database,
 	return
 }
 
-func (d Disk) Unreserve(db *database.Database,
+func (d *Disk) Unreserve(db *database.Database,
 	instId primitive.ObjectID, deplyId primitive.ObjectID) (err error) {
 
 	coll := db.Disks()
