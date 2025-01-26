@@ -84,9 +84,9 @@ func (f *Firewall) Validate() (errData *errortypes.ErrorData, err error) {
 			return
 		}
 
-		if rule.Protocol == Multicast || rule.Protocol == Broadcast {
-			rule.Units = []primitive.ObjectID{}
-		} else if rule.Units == nil {
+		if rule.Protocol == Multicast || rule.Protocol == Broadcast ||
+			rule.Units == nil {
+
 			rule.Units = []primitive.ObjectID{}
 		}
 	}
