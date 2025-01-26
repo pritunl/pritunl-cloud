@@ -52,7 +52,7 @@ type Resources struct {
 	Node         *node.Node
 	Pool         *pool.Pool
 	Image        *image.Image
-	Disk         *disk.Disk
+	Disks        []*disk.Disk
 	Instance     *instance.Instance
 	Plan         *plan.Plan
 	Domain       *domain.Domain
@@ -168,7 +168,7 @@ func (r *Resources) Find(db *database.Database, token string) (
 		}
 		break
 	case DiskKind:
-		r.Disk, err = disk.GetOne(db, &bson.M{
+		r.Disks, err = disk.GetAll(db, &bson.M{
 			"name":         resource,
 			"organization": r.Organization,
 		})
