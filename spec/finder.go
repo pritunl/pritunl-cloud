@@ -222,7 +222,7 @@ func (r *Resources) Find(db *database.Database, token string) (
 		}
 		break
 	case UnitKind:
-		r.Unit, err = GetUnitBase(db, r.Organization, resource)
+		r.Pod, r.Unit, err = GetUnitBase(db, r.Organization, resource)
 		if err != nil {
 			return
 		}
@@ -264,10 +264,10 @@ func GetPodBase(db *database.Database, query *bson.M) (
 }
 
 func GetUnitBase(db *database.Database, orgId primitive.ObjectID,
-	name string) (unt *UnitBase, err error) {
+	name string) (pd *PodBase, unt *UnitBase, err error) {
 
 	coll := db.Pods()
-	pd := &PodBase{}
+	pd = &PodBase{}
 
 	err = coll.FindOne(db, &bson.M{
 		"organization": orgId,
@@ -285,5 +285,6 @@ func GetUnitBase(db *database.Database, orgId primitive.ObjectID,
 		}
 	}
 
+	pd = nil
 	return
 }
