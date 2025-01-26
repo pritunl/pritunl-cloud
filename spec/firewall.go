@@ -15,6 +15,7 @@ type Firewall struct {
 type Rule struct {
 	Protocol string               `bson:"protocol" json:"protocol"`
 	Port     string               `bson:"port" json:"port"`
+	Pods     []primitive.ObjectID `bson:"pods" json:"pods"`
 	Units    []primitive.ObjectID `bson:"units" json:"units"`
 }
 
@@ -87,6 +88,7 @@ func (f *Firewall) Validate() (errData *errortypes.ErrorData, err error) {
 		if rule.Protocol == Multicast || rule.Protocol == Broadcast ||
 			rule.Units == nil {
 
+			rule.Pods = []primitive.ObjectID{}
 			rule.Units = []primitive.ObjectID{}
 		}
 	}
