@@ -104,14 +104,17 @@ func (s *Pods) deploySchedule(schd *scheduler.Scheduler) (err error) {
 					return
 				}
 
-				err = s.DeploySpec(db, schd, unit, spc)
-				if err != nil {
+				reserved, e := s.DeploySpec(db, schd, unit, spc)
+				if e != nil {
+					err = e
 					return
 				}
 
-				err = schd.Consume(db)
-				if err != nil {
-					return
+				if reserved {
+					err = schd.Consume(db)
+					if err != nil {
+						return
+					}
 				}
 			}
 		}
@@ -122,7 +125,7 @@ func (s *Pods) deploySchedule(schd *scheduler.Scheduler) (err error) {
 
 func (s *Pods) DeploySpec(db *database.Database,
 	schd *scheduler.Scheduler, unit *pod.Unit,
-	spc *spec.Commit) (err error) {
+	spc *spec.Commit) (reserved bool, err error) {
 
 	deply := &deployment.Deployment{
 		Pod:       unit.Pod.Id,
@@ -153,7 +156,7 @@ func (s *Pods) DeploySpec(db *database.Database,
 		return
 	}
 
-	reserved, err := unit.Reserve(db, deply.Id, schd.OverrideCount)
+	reserved, err = unit.Reserve(db, deply.Id, schd.OverrideCount)
 	if err != nil {
 		return
 	}
@@ -218,7 +221,7 @@ func (s *Pods) DeploySpec(db *database.Database,
 
 	for _, mount := range spc.Instance.Mounts {
 		index += 1
-		reserved := false
+		diskReserved := false
 
 		for _, dskId := range mount.Disks {
 			dsk, e := disk.Get(db, dskId)
@@ -239,7 +242,7 @@ func (s *Pods) DeploySpec(db *database.Database,
 				continue
 			}
 
-			err = dsk.Reserve(db, inst.Id, index)
+			diskReserved, err = dsk.Reserve(db, inst.Id, index, deply.Id)
 			if err != nil {
 				for _, dsk := range reservedDisks {
 					err = dsk.Unreserve(db, inst.Id)
@@ -248,6 +251,10 @@ func (s *Pods) DeploySpec(db *database.Database,
 					}
 				}
 				return
+			}
+
+			if !diskReserved {
+				continue
 			}
 
 			deplyMounts = append(deplyMounts, &deployment.Mount{
@@ -261,7 +268,7 @@ func (s *Pods) DeploySpec(db *database.Database,
 			break
 		}
 
-		if !reserved {
+		if !diskReserved {
 			for _, dsk := range reservedDisks {
 				err = dsk.Unreserve(db, inst.Id)
 				if err != nil {
