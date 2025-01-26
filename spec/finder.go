@@ -39,6 +39,7 @@ const (
 	CertificateKind = "certificate"
 	SecretKind      = "secret"
 	PodKind         = "pod"
+	UnitKind        = "unit"
 )
 
 type Resources struct {
@@ -58,6 +59,7 @@ type Resources struct {
 	Certificate  *certificate.Certificate
 	Secret       *secret.Secret
 	Pod          *PodBase
+	Unit         *UnitBase
 }
 
 var tokenRe = regexp.MustCompile(`{{\/([a-zA-Z0-9-]*)\/([a-zA-Z0-9-]*)}}`)
@@ -219,6 +221,12 @@ func (r *Resources) Find(db *database.Database, token string) (
 			return
 		}
 		break
+	case UnitKind:
+		r.Unit, err = GetUnitBase(db, r.Organization, resource)
+		if err != nil {
+			return
+		}
+		break
 	default:
 		err = &errortypes.ParseError{
 			errors.Newf("spec: Unknown kind '%s'", kind),
@@ -230,7 +238,13 @@ func (r *Resources) Find(db *database.Database, token string) (
 }
 
 type PodBase struct {
-	Id   primitive.ObjectID `bson:"_id,omitempty"`
+	Id    primitive.ObjectID `bson:"_id,omitempty"`
+	Name  string             `bson:"name"`
+	Units []*UnitBase        `bson:"units" json:"units"`
+}
+
+type UnitBase struct {
+	Id   primitive.ObjectID `bson:"id,omitempty"`
 	Name string             `bson:"name"`
 }
 
@@ -244,6 +258,31 @@ func GetPodBase(db *database.Database, query *bson.M) (
 	if err != nil {
 		err = database.ParseError(err)
 		return
+	}
+
+	return
+}
+
+func GetUnitBase(db *database.Database, orgId primitive.ObjectID,
+	name string) (unt *UnitBase, err error) {
+
+	coll := db.Pods()
+	pd := &PodBase{}
+
+	err = coll.FindOne(db, &bson.M{
+		"organization": orgId,
+		"units.name":   name,
+	}).Decode(pd)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	for _, unit := range pd.Units {
+		if unit.Name == name {
+			unt = unit
+			return
+		}
 	}
 
 	return
