@@ -410,8 +410,8 @@ func MergeIngress(fires []*Firewall) (rules []*Rule) {
 }
 
 func GetAllIngress(db *database.Database, nodeSelf *node.Node,
-	instances []*instance.Instance) (nodeFirewall []*Rule,
-	firewalls map[string][]*Rule, err error) {
+	instances []*instance.Instance, specRules map[string][]*Rule) (
+	nodeFirewall []*Rule, firewalls map[string][]*Rule, err error) {
 
 	if nodeSelf.Firewall {
 		fires, e := GetRoles(db, nodeSelf.NetworkRoles)
@@ -430,21 +430,24 @@ func GetAllIngress(db *database.Database, nodeSelf *node.Node,
 			continue
 		}
 
+		namespaces := []string{}
 		for i := range inst.Virt.NetworkAdapters {
-			namespace := vm.GetNamespace(inst.Id, i)
+			namespaces = append(namespaces, vm.GetNamespace(inst.Id, i))
+		}
 
-			fires, e := GetOrgRoles(db,
-				inst.Organization, inst.NetworkRoles)
-			if e != nil {
-				err = e
-				return
-			}
+		fires, e := GetOrgRoles(db,
+			inst.Organization, inst.NetworkRoles)
+		if e != nil {
+			err = e
+			return
+		}
+		ingress := MergeIngress(fires)
 
+		for _, namespace := range namespaces {
 			_, ok := firewalls[namespace]
 			if ok {
 				logrus.WithFields(logrus.Fields{
 					"instance_id": inst.Id.Hex(),
-					"index":       i,
 					"namespace":   namespace,
 				}).Error("firewall: Namespace conflict")
 
@@ -454,8 +457,13 @@ func GetAllIngress(db *database.Database, nodeSelf *node.Node,
 				return
 			}
 
-			ingress := MergeIngress(fires)
 			firewalls[namespace] = ingress
+		}
+	}
+
+	if specRules != nil {
+		for namespace, rules := range specRules {
+			firewalls[namespace] = append(firewalls[namespace], rules...)
 		}
 	}
 
