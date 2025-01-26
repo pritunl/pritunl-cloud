@@ -229,7 +229,7 @@ func (s *Pods) DeploySpec(db *database.Database,
 				err = e
 
 				for _, dsk := range reservedDisks {
-					err = dsk.Unreserve(db, inst.Id)
+					err = dsk.Unreserve(db, inst.Id, deply.Id)
 					if err != nil {
 						return
 					}
@@ -245,7 +245,7 @@ func (s *Pods) DeploySpec(db *database.Database,
 			diskReserved, err = dsk.Reserve(db, inst.Id, index, deply.Id)
 			if err != nil {
 				for _, dsk := range reservedDisks {
-					err = dsk.Unreserve(db, inst.Id)
+					err = dsk.Unreserve(db, inst.Id, deply.Id)
 					if err != nil {
 						return
 					}
@@ -270,7 +270,7 @@ func (s *Pods) DeploySpec(db *database.Database,
 
 		if !diskReserved {
 			for _, dsk := range reservedDisks {
-				err = dsk.Unreserve(db, inst.Id)
+				err = dsk.Unreserve(db, inst.Id, deply.Id)
 				if err != nil {
 					return
 				}
