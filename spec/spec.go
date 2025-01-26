@@ -174,6 +174,7 @@ func (u *Commit) parseFirewall(db *database.Database,
 			Protocol: ruleYaml.Protocol,
 			Port:     ruleYaml.Port,
 		}
+		pods := set.NewSet()
 		units := set.NewSet()
 
 		for _, source := range ruleYaml.Source {
@@ -183,11 +184,17 @@ func (u *Commit) parseFirewall(db *database.Database,
 				return
 			}
 
-			if kind == "unit" && resources.Unit != nil {
+			if kind == "unit" && resources.Pod != nil &&
+				resources.Unit != nil {
+
+				pods.Add(resources.Pod.Id)
 				units.Add(resources.Unit.Id)
 			}
 		}
 
+		for podId := range pods.Iter() {
+			rule.Pods = append(rule.Pods, podId.(primitive.ObjectID))
+		}
 		for unitId := range units.Iter() {
 			rule.Units = append(rule.Units, unitId.(primitive.ObjectID))
 		}
