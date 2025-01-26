@@ -109,6 +109,10 @@ users:
       - {{.}}
 {{- end}}
 {{- if .HasMounts}}
+bootcmd:
+{{- range .Mounts}}
+  - [ "mkdir", "-p", "{{.Path}}" ]
+{{- end}}
 mounts:
 {{- range .Mounts}}
   - [ "UUID={{.Uuid}}", "{{.Path}}", "auto", "defaults", "0", "2" ]
@@ -142,6 +146,10 @@ users:
       - {{.}}
 {{- end}}
 {{- if .HasMounts}}
+bootcmd:
+{{- range .Mounts}}
+  - [ "mkdir", "-p", "{{.Path}}" ]
+{{- end}}
 mounts:
 {{- range .Mounts}}
   - [ "UUID={{.Uuid}}", "{{.Path}}", "auto", "defaults", "0", "2" ]
