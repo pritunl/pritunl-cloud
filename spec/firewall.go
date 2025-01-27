@@ -4,7 +4,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 )
 
@@ -13,10 +12,9 @@ type Firewall struct {
 }
 
 type Rule struct {
-	Protocol string               `bson:"protocol" json:"protocol"`
-	Port     string               `bson:"port" json:"port"`
-	Pods     []primitive.ObjectID `bson:"pods" json:"pods"`
-	Units    []primitive.ObjectID `bson:"units" json:"units"`
+	Protocol string      `bson:"protocol" json:"protocol"`
+	Port     string      `bson:"port" json:"port"`
+	Sources  []*Refrence `bson:"sources" json:"sources"`
 }
 
 func (f *Firewall) Validate() (errData *errortypes.ErrorData, err error) {
@@ -86,10 +84,9 @@ func (f *Firewall) Validate() (errData *errortypes.ErrorData, err error) {
 		}
 
 		if rule.Protocol == Multicast || rule.Protocol == Broadcast ||
-			rule.Units == nil {
+			rule.Sources == nil {
 
-			rule.Pods = []primitive.ObjectID{}
-			rule.Units = []primitive.ObjectID{}
+			rule.Sources = []*Refrence{}
 		}
 	}
 
