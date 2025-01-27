@@ -58,6 +58,7 @@ type State struct {
 
 	specsMap            map[primitive.ObjectID]*spec.Commit
 	specsPodsMap        map[primitive.ObjectID]*pod.Pod
+	specsPodsUnitsMap   map[primitive.ObjectID]*pod.Unit
 	specsDeploymentsMap map[primitive.ObjectID]*deployment.Deployment
 	specsSecretsMap     map[primitive.ObjectID]*secret.Secret
 	specsCertsMap       map[primitive.ObjectID]*certificate.Certificate
@@ -214,6 +215,10 @@ func (s *State) Spec(commitId primitive.ObjectID) *spec.Commit {
 
 func (s *State) SpecPod(pdId primitive.ObjectID) *pod.Pod {
 	return s.specsPodsMap[pdId]
+}
+
+func (s *State) SpecUnit(unitId primitive.ObjectID) *pod.Unit {
+	return s.specsPodsUnitsMap[unitId]
 }
 
 func (s *State) SpecSecret(secrID primitive.ObjectID) *secret.Secret {
@@ -416,14 +421,6 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 	runtimes.State4 = time.Since(start)
 	start = time.Now()
 
-	nodeFirewall, firewalls, err := firewall.GetAllIngress(
-		db, s.nodeSelf, instances)
-	if err != nil {
-		return
-	}
-	s.nodeFirewall = nodeFirewall
-	s.firewalls = firewalls
-
 	shapes, err := shape.GetAll(db, &bson.M{
 		"roles": &bson.M{
 			"$in": node.Self.NetworkRoles,
@@ -478,6 +475,7 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 		return
 	}
 
+	deploymentsNode := map[primitive.ObjectID]*deployment.Deployment{}
 	deploymentsReservedMap := map[primitive.ObjectID]*deployment.Deployment{}
 	deploymentsDeployedMap := map[primitive.ObjectID]*deployment.Deployment{}
 	deploymentsInactiveMap := map[primitive.ObjectID]*deployment.Deployment{}
@@ -487,6 +485,8 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 	unitIds := set.NewSet()
 	specIdsSet := set.NewSet()
 	for _, deply := range deployments {
+		deploymentsNode[deply.Id] = deply
+
 		deploymentsIdSet.Add(deply.Id)
 		switch deply.State {
 		case deployment.Reserved:
@@ -528,21 +528,31 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 	for _, spc := range specs {
 		specsMap[spc.Id] = spc
 
-		if spc.Instance.Pods != nil {
-			for _, pdId := range spc.Instance.Pods {
-				specPodsSet.Add(pdId)
+		if spc.Instance != nil {
+			if spc.Instance.Pods != nil {
+				for _, pdId := range spc.Instance.Pods {
+					specPodsSet.Add(pdId)
+				}
+			}
+
+			if spc.Instance.Secrets != nil {
+				for _, secrId := range spc.Instance.Secrets {
+					specSecretsSet.Add(secrId)
+				}
+			}
+
+			if spc.Instance.Certificates != nil {
+				for _, certId := range spc.Instance.Certificates {
+					specCertsSet.Add(certId)
+				}
 			}
 		}
 
-		if spc.Instance.Secrets != nil {
-			for _, secrId := range spc.Instance.Secrets {
-				specSecretsSet.Add(secrId)
-			}
-		}
-
-		if spc.Instance.Certificates != nil {
-			for _, certId := range spc.Instance.Certificates {
-				specCertsSet.Add(certId)
+		if spc.Firewall != nil {
+			for _, rule := range spc.Firewall.Ingress {
+				for _, ref := range rule.Sources {
+					specPodsSet.Add(ref.Realm)
+				}
 			}
 		}
 	}
@@ -595,6 +605,7 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 
 	specDeploymentsSet := set.NewSet()
 	specsPodsMap := map[primitive.ObjectID]*pod.Pod{}
+	specsPodsUnitsMap := map[primitive.ObjectID]*pod.Unit{}
 	specPods, err := pod.GetAll(db, &bson.M{
 		"_id": &bson.M{
 			"$in": specPodIds,
@@ -608,12 +619,14 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 		specsPodsMap[specPod.Id] = specPod
 
 		for _, unit := range specPod.Units {
+			specsPodsUnitsMap[unit.Id] = unit
 			for _, deply := range unit.Deployments {
 				specDeploymentsSet.Add(deply.Id)
 			}
 		}
 	}
 	s.specsPodsMap = specsPodsMap
+	s.specsPodsUnitsMap = specsPodsUnitsMap
 
 	specDeploymentIds := []primitive.ObjectID{}
 	for deplyIdInf := range specDeploymentsSet.Iter() {
@@ -719,13 +732,30 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 	s.deploymentsDeployedMap = deploymentsDeployedMap
 	s.deploymentsInactiveMap = deploymentsInactiveMap
 
+	runtimes.State6 = time.Since(start)
+	start = time.Now()
+
+	specRules, err := firewall.GetSpecRules(instances, deploymentsNode,
+		specsMap, specsPodsUnitsMap, deploymentsDeployedMap)
+	if err != nil {
+		return
+	}
+
+	nodeFirewall, firewalls, err := firewall.GetAllIngress(
+		db, s.nodeSelf, instances, specRules)
+	if err != nil {
+		return
+	}
+	s.nodeFirewall = nodeFirewall
+	s.firewalls = firewalls
+
 	schedulers, err := scheduler.GetAll(db)
 	if err != nil {
 		return
 	}
 	s.schedulers = schedulers
 
-	runtimes.State6 = time.Since(start)
+	runtimes.State7 = time.Since(start)
 	start = time.Now()
 
 	items, err := ioutil.ReadDir("/var/run")
@@ -744,7 +774,7 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 	}
 	s.running = running
 
-	runtimes.State7 = time.Since(start)
+	runtimes.State8 = time.Since(start)
 	runtimes.State = time.Since(totalStart)
 
 	return
