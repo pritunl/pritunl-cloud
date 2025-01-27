@@ -26,6 +26,7 @@ type Deployment struct {
 	Node         primitive.ObjectID             `bson:"node,omitempty" json:"node"`
 	Instance     primitive.ObjectID             `bson:"instance,omitempty" json:"instance"`
 	Image        primitive.ObjectID             `bson:"image,omitempty" json:"image"`
+	Mounts       []*Mount                       `bson:"mounts" json:"mounts"`
 	InstanceData *InstanceData                  `bson:"instance_data,omitempty" json:"instance_data"`
 	ImageData    *ImageData                     `bson:"image_data,omitempty" json:"image_data"`
 	Actions      map[primitive.ObjectID]*Action `bson:"actions,omitempty", json:"actions"`
@@ -42,6 +43,12 @@ type InstanceData struct {
 
 type ImageData struct {
 	State string `bson:"state" json:"state"`
+}
+
+type Mount struct {
+	Disk primitive.ObjectID `bson:"disk" json:"disk"`
+	Path string             `bson:"path" json:"path"`
+	Uuid string             `bson:"uuid" json:"uuid"`
 }
 
 type Action struct {
