@@ -7,11 +7,13 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/disk"
+	"github.com/pritunl/pritunl-cloud/domain"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/imds"
 	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
@@ -285,6 +287,123 @@ func (d *Deployments) image(db *database.Database,
 	return
 }
 
+func (d *Deployments) domain(db *database.Database,
+	deply *deployment.Deployment, spc *spec.Commit) (err error) {
+
+	if spc.Domain != nil {
+		for _, specRec := range spc.Domain.Records {
+			if deply.InstanceData == nil {
+				continue
+			}
+
+			domn := d.stat.SpecDomain(specRec.Domain)
+			if domn == nil {
+				continue
+			}
+
+			newRecs := []*domain.Record{}
+
+			switch specRec.Type {
+			case spec.Public:
+				for _, val := range deply.InstanceData.PublicIps {
+					rec := &domain.Record{
+						Domain:     specRec.Domain,
+						SubDomain:  specRec.Name,
+						Deployment: deply.Id,
+						Type:       domain.A,
+						Value:      val,
+					}
+					newRecs = append(newRecs, rec)
+				}
+				break
+			case spec.Public6:
+				for _, val := range deply.InstanceData.PublicIps6 {
+					rec := &domain.Record{
+						Domain:     specRec.Domain,
+						SubDomain:  specRec.Name,
+						Deployment: deply.Id,
+						Type:       domain.AAAA,
+						Value:      val,
+					}
+					newRecs = append(newRecs, rec)
+				}
+				break
+			case spec.Private:
+				for _, val := range deply.InstanceData.PrivateIps {
+					rec := &domain.Record{
+						Domain:     specRec.Domain,
+						SubDomain:  specRec.Name,
+						Deployment: deply.Id,
+						Type:       domain.A,
+						Value:      val,
+					}
+					newRecs = append(newRecs, rec)
+				}
+				break
+			case spec.Private6:
+				for _, val := range deply.InstanceData.PrivateIps6 {
+					rec := &domain.Record{
+						Domain:     specRec.Domain,
+						SubDomain:  specRec.Name,
+						Deployment: deply.Id,
+						Type:       domain.AAAA,
+						Value:      val,
+					}
+					newRecs = append(newRecs, rec)
+				}
+				break
+			case spec.OraclePublic:
+				for _, val := range deply.InstanceData.OraclePublicIps {
+					rec := &domain.Record{
+						Domain:     specRec.Domain,
+						SubDomain:  specRec.Name,
+						Deployment: deply.Id,
+						Type:       domain.A,
+						Value:      val,
+					}
+					newRecs = append(newRecs, rec)
+				}
+				break
+			case spec.OraclePrivate:
+				for _, val := range deply.InstanceData.OraclePrivateIps {
+					rec := &domain.Record{
+						Domain:     specRec.Domain,
+						SubDomain:  specRec.Name,
+						Deployment: deply.Id,
+						Type:       domain.A,
+						Value:      val,
+					}
+
+					errData, e := rec.Validate(db)
+					if e != nil {
+						err = e
+						return
+					}
+					if errData != nil {
+						err = errData.GetError()
+						return
+					}
+
+					newRecs = append(newRecs, rec)
+				}
+				break
+			}
+
+			changed := domn.MergeRecords(deply.Id, newRecs)
+			if changed {
+				err = domn.CommitRecords(db)
+				if err != nil {
+					return
+				}
+
+				event.PublishDispatch(db, "domain.change")
+			}
+		}
+	}
+
+	return
+}
+
 func (d *Deployments) Deploy(db *database.Database) (err error) {
 	activeDeployments := d.stat.DeploymentsDeployed()
 	inactiveDeployments := d.stat.DeploymentsInactive()
@@ -313,14 +432,23 @@ func (d *Deployments) Deploy(db *database.Database) (err error) {
 	}
 
 	for _, deply := range activeDeployments {
-		if deply.Kind != deployment.Image {
-			continue
+		if deply.Kind == deployment.Instance {
+			spec := d.stat.Spec(deply.Spec)
+			if spec != nil && spec.Domain != nil {
+				err = d.domain(db, deply, spec)
+				if err != nil {
+					return
+				}
+			}
 		}
 
-		err = d.image(db, deply)
-		if err != nil {
-			return
+		if deply.Kind == deployment.Image {
+			err = d.image(db, deply)
+			if err != nil {
+				return
+			}
 		}
+
 	}
 
 	return
