@@ -2,6 +2,8 @@ package spec
 
 import (
 	"regexp"
+
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 )
 
 var resourcesRe = regexp.MustCompile("(?s)```yaml(.*?)```")
@@ -17,4 +19,15 @@ const (
 
 type Base struct {
 	Kind string `yaml:"kind"`
+}
+
+const (
+	Unit = "unit"
+)
+
+type Refrence struct {
+	Id       primitive.ObjectID `bson:"id" json:"id"`
+	Realm    primitive.ObjectID `bson:"realm" json:"realm"`
+	Kind     string             `bson:"kind" json:"kind"`
+	Selector string             `bson:"selector" json:"selector"`
 }
