@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"strings"
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
@@ -10,23 +9,25 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type Record struct {
-	Id        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Domain    primitive.ObjectID `bson:"domain" json:"domain"`
-	Resource  primitive.ObjectID `bson:"resource" json:"resource"`
-	Timestamp time.Time          `bson:"timestamp" json:"timestamp"`
-	SubDomain string             `bson:"sub_domain" json:"sub_domain"`
-	Type      string             `bson:"type" json:"type"`
-	Value     string             `bson:"value" json:"value"`
-	Operation string             `bson:"-" json:"operation"`
+	Id         primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Domain     primitive.ObjectID `bson:"domain" json:"domain"`
+	Resource   primitive.ObjectID `bson:"resource" json:"resource"`
+	Deployment primitive.ObjectID `bson:"deployment,omitempty" json:"deployment"`
+	Timestamp  time.Time          `bson:"timestamp" json:"timestamp"`
+	SubDomain  string             `bson:"sub_domain" json:"sub_domain"`
+	Type       string             `bson:"type" json:"type"`
+	Value      string             `bson:"value" json:"value"`
+	Operation  string             `bson:"-" json:"operation"`
 }
 
 func (r *Record) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
-	r.SubDomain = strings.ToLower(r.SubDomain)
+	r.SubDomain = utils.FilterDomain(r.SubDomain)
 
 	if r.Domain.IsZero() {
 		errData = &errortypes.ErrorData{
