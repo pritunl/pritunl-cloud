@@ -287,6 +287,40 @@ func (d *Deployments) image(db *database.Database,
 	return
 }
 
+func (d *Deployments) domainCommit(deply *deployment.Deployment,
+	domn *domain.Domain) {
+
+	acquired, lockId := deploymentsLock.LockOpenTimeout(
+		domn.Id.Hex(), 3*time.Minute)
+	if !acquired {
+		return
+	}
+
+	go func() {
+		defer func() {
+			deploymentsLock.Unlock(domn.Id.Hex(), lockId)
+		}()
+
+		db := database.GetDatabase()
+		defer db.Close()
+
+		logrus.WithFields(logrus.Fields{
+			"domain_id": domn.Id.Hex(),
+		}).Info("deploy: Committing domain records")
+
+		err := domn.CommitRecords(db)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"domain_id": domn.Id.Hex(),
+				"error":     err,
+			}).Error("deploy: Failed to commit domain records")
+			return
+		}
+
+		event.PublishDispatch(db, "domain.change")
+	}()
+}
+
 func (d *Deployments) domain(db *database.Database,
 	deply *deployment.Deployment, spc *spec.Commit) (err error) {
 
@@ -389,14 +423,9 @@ func (d *Deployments) domain(db *database.Database,
 				break
 			}
 
-			changed := domn.MergeRecords(deply.Id, newRecs)
-			if changed {
-				err = domn.CommitRecords(db)
-				if err != nil {
-					return
-				}
-
-				event.PublishDispatch(db, "domain.change")
+			changedDomn := domn.MergeRecords(deply.Id, newRecs)
+			if changedDomn != nil {
+				d.domainCommit(deply, changedDomn)
 			}
 		}
 	}
