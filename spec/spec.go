@@ -18,6 +18,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/shape"
+	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/zone"
 	"gopkg.in/yaml.v2"
 )
@@ -34,6 +35,7 @@ type Commit struct {
 	Data      string             `bson:"data" json:"data"`
 	Instance  *Instance          `bson:"instance,omitempty" json:"-"`
 	Firewall  *Firewall          `bson:"firewall,omitempty" json:"-"`
+	Domain    *Domain            `bson:"domain,omitempty" json:"-"`
 }
 
 func (c *Commit) GetAllNodes(db *database.Database,
@@ -465,6 +467,59 @@ func (u *Commit) parseInstance(db *database.Database,
 		}
 		return
 	}
+
+	return
+}
+
+func (u *Commit) parseDomain(db *database.Database,
+	orgId primitive.ObjectID, dataYaml *DomainYaml) (
+	errData *errortypes.ErrorData, err error) {
+
+	data := &Domain{
+		Records: []*Record{},
+	}
+
+	if dataYaml.Kind != deployment.Domain {
+		errData = &errortypes.ErrorData{
+			Error:   "unit_kind_mismatch",
+			Message: "Unit kind unexpected",
+		}
+		return
+	}
+
+	resources := &Resources{
+		Organization: orgId,
+	}
+
+	for _, recordYaml := range dataYaml.Records {
+		if recordYaml.Name == "" || recordYaml.Value == "" {
+			continue
+		}
+
+		record := &Record{
+			Name: utils.FilterName(recordYaml.Name),
+		}
+
+		kind, e := resources.Find(db, recordYaml.Value)
+		if e != nil {
+			err = e
+			return
+		}
+
+		if kind == "unit" && resources.Pod != nil &&
+			resources.Unit != nil {
+
+			record.Values = append(record.Values, &Refrence{
+				Id:    resources.Unit.Id,
+				Realm: resources.Pod.Id,
+				Kind:  Unit,
+			})
+		}
+
+		data.Records = append(data.Records, record)
+	}
+
+	u.Domain = data
 
 	return
 }
