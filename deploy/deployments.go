@@ -342,18 +342,14 @@ func (d *Deployments) domainCommit(deply *deployment.Deployment,
 func (d *Deployments) domain(db *database.Database,
 	deply *deployment.Deployment, spc *spec.Commit) (err error) {
 
-	if spc.Domain != nil {
-		for _, specRec := range spc.Domain.Records {
-			if deply.InstanceData == nil {
-				continue
-			}
+	if spc.Domain != nil && deply.InstanceData != nil {
+		newRecs := map[primitive.ObjectID][]*domain.Record{}
 
+		for _, specRec := range spc.Domain.Records {
 			domn := d.stat.SpecDomain(specRec.Domain)
 			if domn == nil {
 				continue
 			}
-
-			newRecs := []*domain.Record{}
 
 			switch specRec.Type {
 			case spec.Public:
@@ -365,7 +361,18 @@ func (d *Deployments) domain(db *database.Database,
 						Type:       domain.A,
 						Value:      val,
 					}
-					newRecs = append(newRecs, rec)
+
+					errData, e := rec.Validate(db)
+					if e != nil {
+						err = e
+						return
+					}
+					if errData != nil {
+						err = errData.GetError()
+						return
+					}
+
+					newRecs[domn.Id] = append(newRecs[domn.Id], rec)
 				}
 				break
 			case spec.Public6:
@@ -377,7 +384,18 @@ func (d *Deployments) domain(db *database.Database,
 						Type:       domain.AAAA,
 						Value:      val,
 					}
-					newRecs = append(newRecs, rec)
+
+					errData, e := rec.Validate(db)
+					if e != nil {
+						err = e
+						return
+					}
+					if errData != nil {
+						err = errData.GetError()
+						return
+					}
+
+					newRecs[domn.Id] = append(newRecs[domn.Id], rec)
 				}
 				break
 			case spec.Private:
@@ -389,7 +407,18 @@ func (d *Deployments) domain(db *database.Database,
 						Type:       domain.A,
 						Value:      val,
 					}
-					newRecs = append(newRecs, rec)
+
+					errData, e := rec.Validate(db)
+					if e != nil {
+						err = e
+						return
+					}
+					if errData != nil {
+						err = errData.GetError()
+						return
+					}
+
+					newRecs[domn.Id] = append(newRecs[domn.Id], rec)
 				}
 				break
 			case spec.Private6:
@@ -401,7 +430,18 @@ func (d *Deployments) domain(db *database.Database,
 						Type:       domain.AAAA,
 						Value:      val,
 					}
-					newRecs = append(newRecs, rec)
+
+					errData, e := rec.Validate(db)
+					if e != nil {
+						err = e
+						return
+					}
+					if errData != nil {
+						err = errData.GetError()
+						return
+					}
+
+					newRecs[domn.Id] = append(newRecs[domn.Id], rec)
 				}
 				break
 			case spec.OraclePublic:
@@ -413,7 +453,18 @@ func (d *Deployments) domain(db *database.Database,
 						Type:       domain.A,
 						Value:      val,
 					}
-					newRecs = append(newRecs, rec)
+
+					errData, e := rec.Validate(db)
+					if e != nil {
+						err = e
+						return
+					}
+					if errData != nil {
+						err = errData.GetError()
+						return
+					}
+
+					newRecs[domn.Id] = append(newRecs[domn.Id], rec)
 				}
 				break
 			case spec.OraclePrivate:
@@ -436,14 +487,21 @@ func (d *Deployments) domain(db *database.Database,
 						return
 					}
 
-					newRecs = append(newRecs, rec)
+					newRecs[domn.Id] = append(newRecs[domn.Id], rec)
 				}
 				break
 			}
+		}
 
-			changedDomn := domn.MergeRecords(deply.Id, newRecs)
+		for domnId, domnNewRecs := range newRecs {
+			domn := d.stat.SpecDomain(domnId)
+			if domn == nil {
+				continue
+			}
+
+			changedDomn := domn.MergeRecords(deply.Id, domnNewRecs)
 			if changedDomn != nil {
-				d.domainCommit(deply, changedDomn)
+				d.domainCommit(deply, changedDomn, domnNewRecs)
 			}
 		}
 	}
