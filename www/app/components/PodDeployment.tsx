@@ -228,8 +228,8 @@ export default class PodDeployment extends React.Component<Props, State> {
 						value: deployment.spec.substring(0, 24) || "-",
 					},
 					{
-						label: "Tag",
-						value: "1.2.5823.344",
+						label: "Timestamp",
+						value: MiscUtils.formatDateLocal(commit.timestamp),
 					},
 					{
 						label: "Behind",
