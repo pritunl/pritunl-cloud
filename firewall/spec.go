@@ -48,6 +48,12 @@ func GetSpecRules(instances []*instance.Instance,
 		}
 
 		for _, specRule := range spc.Firewall.Ingress {
+			rule := &Rule{
+				Protocol:  specRule.Protocol,
+				Port:      specRule.Port,
+				SourceIps: specRule.SourceIps,
+			}
+
 			for _, ref := range specRule.Sources {
 				if ref.Kind != spec.Unit {
 					continue
@@ -56,11 +62,6 @@ func GetSpecRules(instances []*instance.Instance,
 				ruleUnit := unitsMap[ref.Id]
 				if ruleUnit == nil {
 					continue
-				}
-
-				rule := &Rule{
-					Protocol: specRule.Protocol,
-					Port:     specRule.Port,
 				}
 
 				for _, ruleDeplyRec := range ruleUnit.Deployments {
@@ -83,14 +84,14 @@ func GetSpecRules(instances []*instance.Instance,
 						}
 					}
 				}
+			}
 
-				if len(rule.SourceIps) == 0 {
-					continue
-				}
+			if len(rule.SourceIps) == 0 {
+				continue
+			}
 
-				for _, namespace := range namespaces {
-					firewalls[namespace] = append(firewalls[namespace], rule)
-				}
+			for _, namespace := range namespaces {
+				firewalls[namespace] = append(firewalls[namespace], rule)
 			}
 		}
 	}
