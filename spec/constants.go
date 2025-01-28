@@ -15,6 +15,13 @@ const (
 	Udp       = "udp"
 	Multicast = "multicast"
 	Broadcast = "broadcast"
+
+	Private       = "private"
+	Private6      = "private6"
+	Public        = "public"
+	Public6       = "public6"
+	OraclePublic  = "oracle_public"
+	OraclePrivate = "oracle_private"
 )
 
 type Base struct {
