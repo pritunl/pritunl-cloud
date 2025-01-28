@@ -29,12 +29,12 @@ func GetSpecRules(instances []*instance.Instance,
 			continue
 		}
 
-		spec := specsMap[deply.Spec]
-		if spec == nil {
+		spc := specsMap[deply.Spec]
+		if spc == nil {
 			continue
 		}
 
-		if spec.Firewall == nil || spec.Firewall.Ingress == nil {
+		if spc.Firewall == nil || spc.Firewall.Ingress == nil {
 			continue
 		}
 
@@ -47,9 +47,13 @@ func GetSpecRules(instances []*instance.Instance,
 			namespaces = append(namespaces, vm.GetNamespace(inst.Id, i))
 		}
 
-		for _, specRule := range spec.Firewall.Ingress {
-			for _, ruleUnitId := range specRule.Units {
-				ruleUnit := unitsMap[ruleUnitId]
+		for _, specRule := range spc.Firewall.Ingress {
+			for _, ref := range specRule.Sources {
+				if ref.Kind != spec.Unit {
+					continue
+				}
+
+				ruleUnit := unitsMap[ref.Id]
 				if ruleUnit == nil {
 					continue
 				}
@@ -70,11 +74,13 @@ func GetSpecRules(instances []*instance.Instance,
 						continue
 					}
 
-					for _, ip := range instData.PrivateIps {
-						rule.SourceIps = append(
-							rule.SourceIps,
-							strings.Split(ip, "/")[0]+"/32",
-						)
+					if ref.Selector == "" || ref.Selector == "private_ips" {
+						for _, ip := range instData.PrivateIps {
+							rule.SourceIps = append(
+								rule.SourceIps,
+								strings.Split(ip, "/")[0]+"/32",
+							)
+						}
 					}
 				}
 
