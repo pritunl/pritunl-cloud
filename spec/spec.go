@@ -177,29 +177,32 @@ func (u *Commit) parseFirewall(db *database.Database,
 			Protocol: ruleYaml.Protocol,
 			Port:     ruleYaml.Port,
 		}
-		pods := set.NewSet()
-		units := set.NewSet()
 
+		refs := map[primitive.ObjectID]primitive.ObjectID{}
 		for _, source := range ruleYaml.Source {
-			kind, e := resources.Find(db, source)
-			if e != nil {
-				err = e
-				return
-			}
+			if strings.HasPrefix(source, TokenPrefix) {
+				kind, e := resources.Find(db, source)
+				if e != nil {
+					err = e
+					return
+				}
 
-			if kind == "unit" && resources.Pod != nil &&
-				resources.Unit != nil {
+				if kind == UnitKind && resources.Pod != nil &&
+					resources.Unit != nil {
 
-				pods.Add(resources.Pod.Id)
-				units.Add(resources.Unit.Id)
+					refs[resources.Unit.Id] = resources.Pod.Id
+				}
+			} else {
+				rule.SourceIps = append(rule.SourceIps, source)
 			}
 		}
 
-		for podId := range pods.Iter() {
-			rule.Pods = append(rule.Pods, podId.(primitive.ObjectID))
-		}
-		for unitId := range units.Iter() {
-			rule.Units = append(rule.Units, unitId.(primitive.ObjectID))
+		for unitId, podId := range refs {
+			rule.Sources = append(rule.Sources, &Refrence{
+				Id:    unitId,
+				Realm: podId,
+				Kind:  Unit,
+			})
 		}
 
 		data.Ingress = append(data.Ingress, rule)
