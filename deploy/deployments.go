@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/disk"
@@ -288,7 +289,7 @@ func (d *Deployments) image(db *database.Database,
 }
 
 func (d *Deployments) domainCommit(deply *deployment.Deployment,
-	domn *domain.Domain) {
+	domn *domain.Domain, newRecs []*domain.Record) {
 
 	acquired, lockId := deploymentsLock.LockOpenTimeout(
 		domn.Id.Hex(), 3*time.Minute)
@@ -308,12 +309,29 @@ func (d *Deployments) domainCommit(deply *deployment.Deployment,
 			"domain_id": domn.Id.Hex(),
 		}).Info("deploy: Committing domain records")
 
+		recs := []*deployment.RecordData{}
+		for _, rec := range newRecs {
+			recs = append(recs, &deployment.RecordData{
+				Domain: rec.SubDomain + "." + domn.RootDomain,
+				Value:  rec.Value,
+			})
+		}
+		domnData := &deployment.DomainData{
+			Records: recs,
+		}
+
 		err := domn.CommitRecords(db)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"domain_id": domn.Id.Hex(),
 				"error":     err,
 			}).Error("deploy: Failed to commit domain records")
+			return
+		}
+
+		deply.DomainData = domnData
+		err = deply.CommitFields(db, set.NewSet("domain_data"))
+		if err != nil {
 			return
 		}
 
