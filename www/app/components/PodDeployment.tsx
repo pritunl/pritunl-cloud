@@ -16,7 +16,7 @@ interface Props {
 	hidden: boolean
 	disabled: boolean
 	selected: boolean
-	commitMap: Record<string, number>
+	commitMap: Record<string, PodTypes.Commit>
 	deployment: PodTypes.Deployment
 	onSelect: (shift: boolean) => void
 }
@@ -211,8 +211,8 @@ export default class PodDeployment extends React.Component<Props, State> {
 			privateIps6 = ["-"]
 		}
 
-		let commitIndex = this.props.commitMap[deployment.spec]
-		let commitClass = commitIndex === 0 ? "bp5-text-intent-success" :
+		let commit = this.props.commitMap[deployment.spec]
+		let commitClass = commit.offset === 0 ? "bp5-text-intent-success" :
 			"bp5-text-intent-danger"
 
 			let specHover = <div
@@ -233,7 +233,7 @@ export default class PodDeployment extends React.Component<Props, State> {
 					},
 					{
 						label: "Behind",
-						value: commitIndex,
+						value: commit.offset,
 						valueClass: commitClass,
 					},
 				]}
@@ -419,7 +419,6 @@ export default class PodDeployment extends React.Component<Props, State> {
 					</div>
 					<PodDeploymentEdit
 						disabled={this.props.disabled}
-						commitMap={this.props.commitMap}
 						deployment={this.props.deployment}
 						open={this.state.editOpen}
 						onClose={this.onEditClose}
@@ -603,7 +602,6 @@ export default class PodDeployment extends React.Component<Props, State> {
 					</div>
 					<PodDeploymentEdit
 						disabled={this.props.disabled}
-						commitMap={this.props.commitMap}
 						deployment={this.props.deployment}
 						open={this.state.editOpen}
 						onClose={this.onEditClose}
