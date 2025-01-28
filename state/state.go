@@ -14,6 +14,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/disk"
+	"github.com/pritunl/pritunl-cloud/domain"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/instance"
@@ -60,6 +61,7 @@ type State struct {
 	specsPodsMap        map[primitive.ObjectID]*pod.Pod
 	specsPodsUnitsMap   map[primitive.ObjectID]*pod.Unit
 	specsDeploymentsMap map[primitive.ObjectID]*deployment.Deployment
+	specsDomainsMap     map[primitive.ObjectID]*domain.Domain
 	specsSecretsMap     map[primitive.ObjectID]*secret.Secret
 	specsCertsMap       map[primitive.ObjectID]*certificate.Certificate
 
@@ -219,6 +221,10 @@ func (s *State) SpecPod(pdId primitive.ObjectID) *pod.Pod {
 
 func (s *State) SpecUnit(unitId primitive.ObjectID) *pod.Unit {
 	return s.specsPodsUnitsMap[unitId]
+}
+
+func (s *State) SpecDomain(domnId primitive.ObjectID) *domain.Domain {
+	return s.specsDomainsMap[domnId]
 }
 
 func (s *State) SpecSecret(secrID primitive.ObjectID) *secret.Secret {
@@ -524,6 +530,7 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 	specSecretsSet := set.NewSet()
 	specCertsSet := set.NewSet()
 	specPodsSet := set.NewSet()
+	specDomainsSet := set.NewSet()
 	specsMap := map[primitive.ObjectID]*spec.Commit{}
 	for _, spc := range specs {
 		specsMap[spc.Id] = spc
@@ -553,6 +560,12 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 				for _, ref := range rule.Sources {
 					specPodsSet.Add(ref.Realm)
 				}
+			}
+		}
+
+		if spc.Domain != nil {
+			for _, record := range spc.Domain.Records {
+				specDomainsSet.Add(record.Domain)
 			}
 		}
 	}
@@ -627,6 +640,22 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 	}
 	s.specsPodsMap = specsPodsMap
 	s.specsPodsUnitsMap = specsPodsUnitsMap
+
+	specDomainIds := []primitive.ObjectID{}
+	for pdId := range specDomainsSet.Iter() {
+		specDomainIds = append(specDomainIds, pdId.(primitive.ObjectID))
+	}
+
+	specsDomainsMap := map[primitive.ObjectID]*domain.Domain{}
+	specDomains, err := domain.GetLoadedAllIds(db, specDomainIds)
+	if err != nil {
+		return
+	}
+
+	for _, specDomain := range specDomains {
+		specsDomainsMap[specDomain.Id] = specDomain
+	}
+	s.specsDomainsMap = specsDomainsMap
 
 	specDeploymentIds := []primitive.ObjectID{}
 	for deplyIdInf := range specDeploymentsSet.Iter() {
