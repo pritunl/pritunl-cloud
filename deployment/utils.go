@@ -6,6 +6,8 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/domain"
+	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/journal"
 )
 
@@ -152,6 +154,59 @@ func Remove(db *database.Database, deplyId primitive.ObjectID) (err error) {
 		return
 	}
 
+	recs, err := domain.GetRecordAll(db, &bson.M{
+		"deployment": deplyId,
+	})
+	if err != nil {
+		return
+	}
+
+	domnIdsSet := set.NewSet()
+	for _, rec := range recs {
+		domnIdsSet.Add(rec.Domain)
+	}
+
+	domnIds := []primitive.ObjectID{}
+	for domnIdInf := range domnIdsSet.Iter() {
+		domnIds = append(domnIds, domnIdInf.(primitive.ObjectID))
+	}
+
+	if len(domnIds) > 0 {
+		domns, e := domain.GetAll(db, &bson.M{
+			"_id": &bson.M{
+				"$in": domnIds,
+			},
+		})
+		if e != nil {
+			err = e
+			return
+		}
+
+		for _, domn := range domns {
+			err = domn.LoadRecords(db)
+			if err != nil {
+				return
+			}
+
+			domn.PreCommit()
+
+			changed := false
+			for _, rec := range domn.Records {
+				if rec.Deployment == deplyId {
+					changed = true
+					rec.Operation = domain.DELETE
+				}
+			}
+
+			if changed {
+				err = domn.CommitRecords(db)
+				if err != nil {
+					return
+				}
+			}
+		}
+	}
+
 	_, err = coll.DeleteOne(db, &bson.M{
 		"_id": deplyId,
 	})
@@ -163,6 +218,9 @@ func Remove(db *database.Database, deplyId primitive.ObjectID) (err error) {
 			return
 		}
 	}
+
+	event.PublishDispatch(db, "domain.change")
+	event.PublishDispatch(db, "pod.change")
 
 	return
 }
