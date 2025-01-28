@@ -1,6 +1,7 @@
 package spec
 
 import (
+	"net"
 	"strconv"
 	"strings"
 
@@ -12,9 +13,10 @@ type Firewall struct {
 }
 
 type Rule struct {
-	Protocol string      `bson:"protocol" json:"protocol"`
-	Port     string      `bson:"port" json:"port"`
-	Sources  []*Refrence `bson:"sources" json:"sources"`
+	Protocol  string      `bson:"protocol" json:"protocol"`
+	Port      string      `bson:"port" json:"port"`
+	SourceIps []string    `bson:"source_ips" json:"source_ips"`
+	Sources   []*Refrence `bson:"sources" json:"sources"`
 }
 
 func (f *Firewall) Validate() (errData *errortypes.ErrorData, err error) {
@@ -83,10 +85,46 @@ func (f *Firewall) Validate() (errData *errortypes.ErrorData, err error) {
 			return
 		}
 
-		if rule.Protocol == Multicast || rule.Protocol == Broadcast ||
-			rule.Sources == nil {
-
+		if rule.Sources == nil {
 			rule.Sources = []*Refrence{}
+		}
+
+		if rule.SourceIps == nil {
+			rule.SourceIps = []string{}
+		}
+
+		for i, sourceIp := range rule.SourceIps {
+			if sourceIp == "" {
+				errData = &errortypes.ErrorData{
+					Error:   "invalid_ingress_rule_source_ip",
+					Message: "Empty ingress rule source IP",
+				}
+				return
+			}
+
+			if !strings.Contains(sourceIp, "/") {
+				if strings.Contains(sourceIp, ":") {
+					sourceIp += "/128"
+				} else {
+					sourceIp += "/32"
+				}
+			}
+
+			_, sourceCidr, e := net.ParseCIDR(sourceIp)
+			if e != nil {
+				errData = &errortypes.ErrorData{
+					Error:   "invalid_ingress_rule_source_ip",
+					Message: "Invalid ingress rule source IP",
+				}
+				return
+			}
+
+			rule.SourceIps[i] = sourceCidr.String()
+		}
+
+		if rule.Protocol == Multicast || rule.Protocol == Broadcast {
+			rule.Sources = []*Refrence{}
+			rule.SourceIps = []string{}
 		}
 	}
 
