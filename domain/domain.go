@@ -225,6 +225,52 @@ func (d *Domain) UpdateRecords(db *database.Database, secr *secret.Secret,
 	return
 }
 
+func (d *Domain) MergeRecords(deplyId primitive.ObjectID,
+	newRecs []*Record) (newDomn *Domain) {
+	recMap := map[string]map[string]*Record{}
+
+	for _, rec := range d.Records {
+		if rec.Deployment != deplyId {
+			continue
+		}
+
+		if recMap[rec.SubDomain] == nil {
+			recMap[rec.SubDomain] = map[string]*Record{}
+		}
+		recMap[rec.SubDomain][rec.Value] = rec
+	}
+
+	for _, newRec := range newRecs {
+		subRecs := recMap[newRec.SubDomain]
+
+		rec := subRecs[newRec.Value]
+		if rec == nil {
+			if newDomn == nil {
+				newDomn = d.Copy()
+				d = newDomn
+				d.PreCommit()
+			}
+			newRec.Operation = INSERT
+			d.Records = append(d.Records, newRec)
+		} else {
+			delete(subRecs, newRec.Value)
+		}
+	}
+
+	for _, subRecs := range recMap {
+		for _, rec := range subRecs {
+			if newDomn == nil {
+				newDomn = d.Copy()
+				d = newDomn
+				d.PreCommit()
+			}
+			rec.Operation = DELETE
+		}
+	}
+
+	return
+}
+
 func (d *Domain) Commit(db *database.Database) (err error) {
 	coll := db.Domains()
 
