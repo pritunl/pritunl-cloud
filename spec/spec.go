@@ -256,7 +256,7 @@ func (u *Commit) parseInstance(db *database.Database,
 			err = e
 			return
 		}
-		if kind == "plan" && resources.Plan != nil {
+		if kind == PlanKind && resources.Plan != nil {
 			data.Plan = resources.Plan.Id
 		}
 	}
@@ -267,7 +267,7 @@ func (u *Commit) parseInstance(db *database.Database,
 			err = e
 			return
 		}
-		if kind == "zone" && resources.Zone != nil {
+		if kind == ZoneKind && resources.Zone != nil {
 			data.Zone = resources.Zone.Id
 		}
 	}
@@ -286,7 +286,7 @@ func (u *Commit) parseInstance(db *database.Database,
 			err = e
 			return
 		}
-		if kind == "node" && resources.Node != nil {
+		if kind == NodeKind && resources.Node != nil {
 			data.Node = resources.Node.Id
 		}
 	}
@@ -296,7 +296,7 @@ func (u *Commit) parseInstance(db *database.Database,
 			err = e
 			return
 		}
-		if kind == "shape" && resources.Shape != nil {
+		if kind == ShapeKind && resources.Shape != nil {
 			shpe = resources.Shape
 			data.Shape = resources.Shape.Id
 		}
@@ -316,7 +316,7 @@ func (u *Commit) parseInstance(db *database.Database,
 			err = e
 			return
 		}
-		if kind == "vpc" && resources.Vpc != nil {
+		if kind == VpcKind && resources.Vpc != nil {
 			data.Vpc = resources.Vpc.Id
 		}
 	}
@@ -335,7 +335,7 @@ func (u *Commit) parseInstance(db *database.Database,
 			err = e
 			return
 		}
-		if kind == "subnet" && resources.Subnet != nil {
+		if kind == SubnetKind && resources.Subnet != nil {
 			data.Subnet = resources.Subnet.Id
 		}
 	}
@@ -354,7 +354,7 @@ func (u *Commit) parseInstance(db *database.Database,
 			err = e
 			return
 		}
-		if kind == "image" && resources.Image != nil {
+		if kind == ImageKind && resources.Image != nil {
 			data.Image = resources.Image.Id
 		}
 	}
@@ -372,7 +372,7 @@ func (u *Commit) parseInstance(db *database.Database,
 					err = e
 					return
 				}
-				if kind == "disk" && resources.Disks != nil {
+				if kind == DiskKind && resources.Disks != nil {
 					for _, dskRes := range resources.Disks {
 						mnt.Disks = append(mnt.Disks, dskRes.Id)
 					}
@@ -390,7 +390,7 @@ func (u *Commit) parseInstance(db *database.Database,
 				err = e
 				return
 			}
-			if kind == "certificate" && resources.Certificate != nil {
+			if kind == CertificateKind && resources.Certificate != nil {
 				data.Certificates = append(
 					data.Certificates,
 					resources.Certificate.Id,
@@ -406,7 +406,7 @@ func (u *Commit) parseInstance(db *database.Database,
 				err = e
 				return
 			}
-			if kind == "secret" && resources.Secret != nil {
+			if kind == SecretKind && resources.Secret != nil {
 				data.Secrets = append(
 					data.Secrets,
 					resources.Secret.Id,
@@ -422,7 +422,7 @@ func (u *Commit) parseInstance(db *database.Database,
 				err = e
 				return
 			}
-			if kind == "pod" && resources.Pod != nil {
+			if kind == PodKind && resources.Pod != nil {
 				data.Pods = append(
 					data.Pods,
 					resources.Pod.Id,
