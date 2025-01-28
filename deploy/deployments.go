@@ -30,72 +30,97 @@ type Deployments struct {
 }
 
 func (d *Deployments) destroy(db *database.Database,
-	deply *deployment.Deployment) (err error) {
+	deply *deployment.Deployment) {
 
-	if deply.Node != d.stat.Node().Id {
+	acquired, lockId := deploymentsLock.LockOpenTimeout(
+		deply.Id.Hex(), 3*time.Minute)
+	if !acquired {
 		return
 	}
 
-	if deply.Kind == deployment.Image && !deply.Image.IsZero() {
-		img, e := image.Get(db, deply.Image)
-		if e != nil {
-			err = e
-			if _, ok := err.(*database.NotFoundError); ok {
-				img = nil
-				err = nil
-			} else {
-				return
-			}
+	go func() {
+		defer func() {
+			deploymentsLock.Unlock(deply.Id.Hex(), lockId)
+		}()
 
+		if deply.Node != d.stat.Node().Id {
 			return
 		}
 
-		if img != nil {
-			err = img.Remove(db)
+		if deply.Kind == deployment.Image && !deply.Image.IsZero() {
+			img, err := image.Get(db, deply.Image)
 			if err != nil {
-				return
-			}
-
-			event.PublishDispatch(db, "image.change")
-		}
-	}
-
-	inst := d.stat.GetInstace(deply.Instance)
-	if inst != nil {
-		if inst.DeleteProtection {
-			logrus.WithFields(logrus.Fields{
-				"deployment": deply.Id.Hex(),
-				"instance":   inst.Id.Hex(),
-			}).Warning("deploy: Cannot destroy deployment with " +
-				"instance delete protection")
-			return
-		}
-
-		if inst.State != instance.Destroy {
-			logrus.WithFields(logrus.Fields{
-				"deployment": deply.Id.Hex(),
-				"instance":   inst.Id.Hex(),
-			}).Info("deploy: Delete deployment instance")
-
-			err = instance.Delete(db, inst.Id)
-			if err != nil {
-				if _, ok := err.(*database.NotFoundError); !ok {
+				if _, ok := err.(*database.NotFoundError); ok {
+					img = nil
 					err = nil
 				} else {
+					logrus.WithFields(logrus.Fields{
+						"deployment_id": deply.Id.Hex(),
+						"error":         err,
+					}).Error("deploy: Failed to get image")
 					return
 				}
 			}
-		}
-	} else {
-		err = deployment.Remove(db, deply.Id)
-		if err != nil {
-			return
+
+			if img != nil {
+				err = img.Remove(db)
+				if err != nil {
+					logrus.WithFields(logrus.Fields{
+						"deployment_id": deply.Id.Hex(),
+						"error":         err,
+					}).Error("deploy: Failed to remove deployment image")
+					return
+				}
+
+				event.PublishDispatch(db, "image.change")
+			}
 		}
 
-		event.PublishDispatch(db, "pod.change")
-	}
+		inst := d.stat.GetInstace(deply.Instance)
+		if inst != nil {
+			if inst.DeleteProtection {
+				logrus.WithFields(logrus.Fields{
+					"deployment": deply.Id.Hex(),
+					"instance":   inst.Id.Hex(),
+				}).Warning("deploy: Cannot destroy deployment with " +
+					"instance delete protection")
+				return
+			}
 
-	return
+			if inst.State != instance.Destroy {
+				logrus.WithFields(logrus.Fields{
+					"deployment": deply.Id.Hex(),
+					"instance":   inst.Id.Hex(),
+				}).Info("deploy: Delete deployment instance")
+
+				err := instance.Delete(db, inst.Id)
+				if err != nil {
+					if _, ok := err.(*database.NotFoundError); !ok {
+						err = nil
+					} else {
+						logrus.WithFields(logrus.Fields{
+							"deployment_id": deply.Id.Hex(),
+							"error":         err,
+						}).Error("deploy: Failed to delete instance")
+						return
+					}
+				}
+			}
+		} else {
+			err := deployment.Remove(db, deply.Id)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"deployment_id": deply.Id.Hex(),
+					"error":         err,
+				}).Error("deploy: Failed to remove deployment")
+				return
+			}
+
+			event.PublishDispatch(db, "pod.change")
+		}
+
+		return
+	}()
 }
 
 func (d *Deployments) archive(db *database.Database,
