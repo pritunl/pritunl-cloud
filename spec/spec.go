@@ -496,28 +496,23 @@ func (u *Commit) parseDomain(db *database.Database,
 	}
 
 	for _, recordYaml := range dataYaml.Records {
-		if recordYaml.Name == "" || recordYaml.Value == "" {
+		if recordYaml.Name == "" || recordYaml.Type == "" {
 			continue
 		}
 
 		record := &Record{
 			Name: utils.FilterName(recordYaml.Name),
+			Type: recordYaml.Type,
 		}
 
-		kind, e := resources.Find(db, recordYaml.Value)
+		kind, e := resources.Find(db, recordYaml.Domain)
 		if e != nil {
 			err = e
 			return
 		}
 
-		if kind == "unit" && resources.Pod != nil &&
-			resources.Unit != nil {
-
-			record.Values = append(record.Values, &Refrence{
-				Id:    resources.Unit.Id,
-				Realm: resources.Pod.Id,
-				Kind:  Unit,
-			})
+		if kind == DomainKind && resources.Domain != nil {
+			record.Domain = resources.Domain.Id
 		}
 
 		data.Records = append(data.Records, record)
