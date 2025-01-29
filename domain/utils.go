@@ -107,6 +107,74 @@ func GetAll(db *database.Database, query *bson.M) (
 	return
 }
 
+func GetLoadedAllIds(db *database.Database, domnIds []primitive.ObjectID) (
+	domns []*Domain, err error) {
+
+	coll := db.DomainsRecords()
+	domainRecs := map[primitive.ObjectID][]*Record{}
+
+	cursor, err := coll.Find(db, &bson.M{
+		"domain": &bson.M{
+			"$in": domnIds,
+		},
+	}, &options.FindOptions{
+		Sort: &bson.D{
+			{"sub_domain", 1},
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		rec := &Record{}
+		err = cursor.Decode(rec)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		domainRecs[rec.Domain] = append(domainRecs[rec.Domain], rec)
+	}
+
+	coll = db.Domains()
+	domns = []*Domain{}
+
+	cursor, err = coll.Find(db, &bson.M{
+		"_id": &bson.M{
+			"$in": domnIds,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		dmn := &Domain{}
+		err = cursor.Decode(dmn)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		dmn.preloadRecords(domainRecs[dmn.Id])
+
+		domns = append(domns, dmn)
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetAllPaged(db *database.Database, query *bson.M,
 	page, pageCount int64) (domns []*Domain, count int64, err error) {
 
