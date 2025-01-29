@@ -12,10 +12,10 @@ import (
 )
 
 func GetSpecRules(instances []*instance.Instance,
-	deploymentsMap map[primitive.ObjectID]*deployment.Deployment,
+	deploymentsNode map[primitive.ObjectID]*deployment.Deployment,
 	specsMap map[primitive.ObjectID]*spec.Commit,
-	unitsMap map[primitive.ObjectID]*pod.Unit,
-	specDeployments map[primitive.ObjectID]*deployment.Deployment) (
+	specsPodsUnitsMap map[primitive.ObjectID]*pod.Unit,
+	deploymentsDeployedMap map[primitive.ObjectID]*deployment.Deployment) (
 	firewalls map[string][]*Rule, err error) {
 
 	firewalls = map[string][]*Rule{}
@@ -24,7 +24,7 @@ func GetSpecRules(instances []*instance.Instance,
 			continue
 		}
 
-		deply := deploymentsMap[inst.Deployment]
+		deply := deploymentsNode[inst.Deployment]
 		if deply == nil {
 			continue
 		}
@@ -59,13 +59,13 @@ func GetSpecRules(instances []*instance.Instance,
 					continue
 				}
 
-				ruleUnit := unitsMap[ref.Id]
+				ruleUnit := specsPodsUnitsMap[ref.Id]
 				if ruleUnit == nil {
 					continue
 				}
 
 				for _, ruleDeplyRec := range ruleUnit.Deployments {
-					ruleDeply := specDeployments[ruleDeplyRec.Id]
+					ruleDeply := deploymentsDeployedMap[ruleDeplyRec.Id]
 					if ruleDeply == nil {
 						continue
 					}
