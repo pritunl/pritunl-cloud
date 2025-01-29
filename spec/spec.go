@@ -595,6 +595,22 @@ func (u *Commit) Parse(db *database.Database,
 			if err != nil || errData != nil {
 				return
 			}
+		case deployment.Domain:
+			domnYaml := &DomainYaml{}
+
+			err = decoder.Decode(domnYaml)
+			if err != nil {
+				err = &errortypes.ParseError{
+					errors.Wrap(err,
+						"spec: Failed to decode domain yaml doc"),
+				}
+				return
+			}
+
+			errData, err = u.parseDomain(db, orgId, domnYaml)
+			if err != nil || errData != nil {
+				return
+			}
 		default:
 			errData = &errortypes.ErrorData{
 				Error:   "unit_kind_invalid",
