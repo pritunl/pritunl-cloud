@@ -77,7 +77,7 @@ const css = {
 		margin: '9px 5px 0 5px',
 		height: '20px',
 	} as React.CSSProperties,
-	specHover: {
+	hoverInfo: {
 		padding: "10px",
 		fontSize: "12px",
 		fontFamily: Theme.monospaceFont,
@@ -215,9 +215,9 @@ export default class PodDeployment extends React.Component<Props, State> {
 		let commitClass = commit.offset === 0 ? "bp5-text-intent-success" :
 			"bp5-text-intent-danger"
 
-			let specHover = <div
+		let specHover = <div
 			className="bp5-content-popover"
-			style={css.specHover}
+			style={css.hoverInfo}
 		>
 			<PageInfo
 				compact={true}
@@ -240,6 +240,36 @@ export default class PodDeployment extends React.Component<Props, State> {
 			/>
 		</div>
 
+		let domainInfo: PageInfos.Field
+		if (deployment?.domain_data?.records) {
+			let domainFields: PageInfos.Field[] = [];
+
+			for (let rec of deployment.domain_data.records) {
+				domainFields.push({
+					label: rec.domain,
+					value: rec.value,
+				})
+			}
+
+			let domainHover = <div
+				className="bp5-content-popover"
+				style={css.hoverInfo}
+			>
+				<PageInfo
+					compact={true}
+					style={css.info}
+					fields={domainFields}
+				/>
+			</div>
+
+			domainInfo = {
+				label: "Domains",
+				value: "Registered",
+				valueClass: "bp5-text-intent-success",
+				hover: domainHover,
+			}
+		}
+
 		let deplyStatus = MiscUtils.capitalize(deployment.status) || "-"
 		let heartbeatClass = ""
 		if (deployment.status === "healthy") {
@@ -250,7 +280,7 @@ export default class PodDeployment extends React.Component<Props, State> {
 
 		let heartbeatHover = <div
 			className="bp5-content-popover"
-			style={css.specHover}
+			style={css.hoverInfo}
 		>
 			<PageInfo
 				compact={true}
@@ -519,6 +549,7 @@ export default class PodDeployment extends React.Component<Props, State> {
 										value: deployment.instance_status || "-",
 										valueClass: statusClass,
 									},
+									domainInfo,
 								]}
 							/>
 						</div>
