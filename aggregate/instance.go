@@ -19,6 +19,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/pci"
 	"github.com/pritunl/pritunl-cloud/usb"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/zone"
 )
 
@@ -307,6 +308,45 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 			if roleAuthrs != nil {
 				for _, authr := range roleAuthrs {
 					authrNames.Add(authr.Name)
+				}
+			}
+		}
+
+		if !doc.Instance.Deployment.IsZero() {
+			doc.Instance.LoadVirt(nil, nil)
+
+			specRules, e := firewall.GetSpecRulesSlow(
+				db, doc.Instance.Node, []*instance.Instance{&doc.Instance})
+			if e != nil {
+				err = e
+				return
+			}
+
+			instNamespace := vm.GetNamespace(doc.Instance.Id, 0)
+			for namespace, rules := range specRules {
+				if namespace != instNamespace {
+					continue
+				}
+
+				for _, rule := range rules {
+					key := rule.Protocol
+					if rule.Port != "" {
+						key += ":" + rule.Port
+					}
+
+					rules := firewallRules[key]
+					if rules == nil {
+						rules = set.NewSet()
+						firewallRules[key] = rules
+						firewallRulesKeys = append(
+							firewallRulesKeys,
+							key,
+						)
+					}
+
+					for _, sourceIp := range rule.SourceIps {
+						rules.Add(sourceIp)
+					}
 				}
 			}
 		}
