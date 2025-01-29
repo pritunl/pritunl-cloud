@@ -189,7 +189,7 @@ func (d *Deployments) imageShutdown(deply *deployment.Deployment,
 	virt *vm.VirtualMachine) {
 
 	acquired, lockId := deploymentsLock.LockOpenTimeout(
-		virt.Id.Hex(), 5*time.Minute)
+		deply.Id.Hex(), 5*time.Minute)
 	if !acquired {
 		return
 	}
@@ -197,7 +197,7 @@ func (d *Deployments) imageShutdown(deply *deployment.Deployment,
 	go func() {
 		defer func() {
 			time.Sleep(3 * time.Second)
-			deploymentsLock.Unlock(virt.Id.Hex(), lockId)
+			deploymentsLock.Unlock(deply.Id.Hex(), lockId)
 		}()
 
 		db := database.GetDatabase()
@@ -317,14 +317,14 @@ func (d *Deployments) domainCommit(deply *deployment.Deployment,
 	domn *domain.Domain, newRecs []*domain.Record) {
 
 	acquired, lockId := deploymentsLock.LockOpenTimeout(
-		domn.Id.Hex(), 3*time.Minute)
+		deply.Id.Hex(), 3*time.Minute)
 	if !acquired {
 		return
 	}
 
 	go func() {
 		defer func() {
-			deploymentsLock.Unlock(domn.Id.Hex(), lockId)
+			deploymentsLock.Unlock(deply.Id.Hex(), lockId)
 		}()
 
 		db := database.GetDatabase()
@@ -541,10 +541,7 @@ func (d *Deployments) Deploy(db *database.Database) (err error) {
 	for _, deply := range inactiveDeployments {
 		switch deply.State {
 		case deployment.Destroy:
-			err = d.destroy(db, deply)
-			if err != nil {
-				return
-			}
+			d.destroy(db, deply)
 			break
 		case deployment.Archive:
 			err = d.archive(db, deply)
@@ -562,7 +559,9 @@ func (d *Deployments) Deploy(db *database.Database) (err error) {
 	}
 
 	for _, deply := range activeDeployments {
-		if deply.Kind == deployment.Instance {
+		if deply.State == deployment.Deployed &&
+			deply.Kind == deployment.Instance {
+
 			spec := d.stat.Spec(deply.Spec)
 			if spec != nil && spec.Domain != nil {
 				err = d.domain(db, deply, spec)
