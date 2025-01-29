@@ -60,6 +60,11 @@ const css = {
 	heading: {
 		margin: '19px 0 0 0',
 	} as React.CSSProperties,
+	headingBeta: {
+		position: "relative",
+		top: "-4px",
+		left: "6px",
+	} as React.CSSProperties,
 	button: {
 		margin: '8px 0 0 8px',
 	} as React.CSSProperties,
@@ -267,7 +272,12 @@ export default class Pods extends React.Component<{}, State> {
 		return <Page wide={true}>
 			<PageHeader>
 				<div className="layout horizontal wrap" style={css.header}>
-					<h2 style={css.heading}>Pods</h2>
+					<h2 style={css.heading}>Pods
+						<span
+							style={css.headingBeta}
+							className="bp5-tag bp5-intent-primary"
+						>Beta</span>
+					</h2>
 					<div className="flex"/>
 					<div style={css.buttons}>
 						<button
