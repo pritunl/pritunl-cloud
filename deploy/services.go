@@ -212,6 +212,7 @@ func (s *Pods) DeploySpec(db *database.Database,
 			"error_code":    errData.Error,
 			"error_message": errData.Message,
 		}).Error("deploy: Failed to deploy instance")
+		reserved = false
 		return
 	}
 
@@ -263,7 +264,6 @@ func (s *Pods) DeploySpec(db *database.Database,
 				Uuid: dsk.Uuid,
 			})
 
-			reserved = true
 			reservedDisks = append(reservedDisks, dsk)
 			break
 		}
@@ -279,6 +279,14 @@ func (s *Pods) DeploySpec(db *database.Database,
 			logrus.WithFields(logrus.Fields{
 				"mount_path": mount.Path,
 			}).Error("deploy: Failed to reserve disk for mount")
+
+			err = deployment.Remove(db, deply.Id)
+			if err != nil {
+				return
+			}
+
+			reserved = false
+
 			return
 		}
 	}
@@ -286,7 +294,7 @@ func (s *Pods) DeploySpec(db *database.Database,
 	err = inst.Insert(db)
 	if err != nil {
 		for _, dsk := range reservedDisks {
-			err = dsk.Unreserve(db, inst.Id)
+			err = dsk.Unreserve(db, inst.Id, deply.Id)
 			if err != nil {
 				return
 			}
