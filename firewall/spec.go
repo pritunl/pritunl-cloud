@@ -9,7 +9,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/instance"
-	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/vm"
@@ -103,11 +102,12 @@ func GetSpecRules(instances []*instance.Instance,
 	return
 }
 
-func GetSpecRulesSlow(db *database.Database, instances []*instance.Instance) (
+func GetSpecRulesSlow(db *database.Database,
+	nodeId primitive.ObjectID, instances []*instance.Instance) (
 	firewalls map[string][]*Rule, err error) {
 
 	deployments, err := deployment.GetAll(db, &bson.M{
-		"node": node.Self.Id,
+		"node": nodeId,
 	})
 	if err != nil {
 		return
