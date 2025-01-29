@@ -29,6 +29,7 @@ type Deployment struct {
 	Mounts       []*Mount                       `bson:"mounts" json:"mounts"`
 	InstanceData *InstanceData                  `bson:"instance_data,omitempty" json:"instance_data"`
 	ImageData    *ImageData                     `bson:"image_data,omitempty" json:"image_data"`
+	DomainData   *DomainData                    `bson:"domain_data,omitempty" json:"domain_data"`
 	Actions      map[primitive.ObjectID]*Action `bson:"actions,omitempty", json:"actions"`
 }
 
@@ -39,6 +40,15 @@ type InstanceData struct {
 	PrivateIps6      []string `bson:"private_ips6" json:"private_ips6"`
 	OraclePrivateIps []string `bson:"oracle_private_ips" json:"oracle_private_ips"`
 	OraclePublicIps  []string `bson:"oracle_public_ips" json:"oracle_public_ips"`
+}
+
+type DomainData struct {
+	Records []*RecordData `bson:"records" json:"records"`
+}
+
+type RecordData struct {
+	Domain string `bson:"domain" json:"domain"`
+	Value  string `bson:"value" json:"value"`
 }
 
 type ImageData struct {
