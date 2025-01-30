@@ -20,6 +20,7 @@ const (
 	Instance = "instance"
 	Image    = "image"
 	Firewall = "firewall"
+	Domain   = "domain"
 
 	Healthy   = "healthy"
 	Unhealthy = "unhealthy"
