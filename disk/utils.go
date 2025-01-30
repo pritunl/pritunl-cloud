@@ -89,6 +89,39 @@ func GetAll(db *database.Database, query *bson.M) (
 	return
 }
 
+func GetAllMap(db *database.Database, query *bson.M) (
+	disks map[primitive.ObjectID]*Disk, err error) {
+
+	coll := db.Disks()
+	disks = map[primitive.ObjectID]*Disk{}
+
+	cursor, err := coll.Find(db, query)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		dsk := &Disk{}
+		err = cursor.Decode(dsk)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		disks[dsk.Id] = dsk
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetAllPaged(db *database.Database, query *bson.M,
 	page, pageCount int64) (disks []*Disk, count int64, err error) {
 
