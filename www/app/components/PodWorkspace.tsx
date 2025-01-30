@@ -16,6 +16,7 @@ import PageInputButton from './PageInputButton';
 import PodEditor from './PodEditor';
 import PodUnit from './PodUnit';
 import PodDeploy from './PodDeploy';
+import PodMigrate from './PodMigrate';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
 import Help from './Help';
@@ -644,6 +645,20 @@ export default class PodWorkspace extends React.Component<Props, State> {
 					items={selectedNames}
 					disabled={!this.selectedDeployments || this.state.disabled}
 					onConfirm={this.onArchiveDeployments}
+				/>)
+				menuItems.push(<PodMigrate
+					disabled={!this.selectedDeployments || this.state.disabled}
+					pod={this.props.pod}
+					unit={activeUnit}
+					commits={commits}
+					selectedDeployments={Object.keys(this.state.selectedDeployments)}
+					onClear={(): void => {
+						this.setState({
+							...this.state,
+							selectedDeployments: {},
+							disabled: false,
+						});
+					}}
 				/>)
 			}
 			menuItems.push(<ConfirmButton
