@@ -41,8 +41,13 @@ func Iptables() (err error) {
 		return
 	}
 
+	specRules, err := firewall.GetSpecRulesSlow(db, node.Self.Id, instances)
+	if err != nil {
+		return
+	}
+
 	nodeFirewall, firewalls, err := firewall.GetAllIngress(
-		db, node.Self, instances)
+		db, node.Self, instances, specRules)
 	if err != nil {
 		return
 	}
