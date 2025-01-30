@@ -41,6 +41,7 @@ export interface Commit {
 	name?: string
 	kind?: string
 	count?: number
+	offset?: number
 	hash?: string
 	data?: string
 }
