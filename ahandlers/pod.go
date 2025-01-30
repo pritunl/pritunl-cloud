@@ -424,6 +424,29 @@ func podUnitDeploymentsPut(c *gin.Context) {
 			return
 		}
 		break
+	case deployment.Migrate:
+		commitId, ok := utils.ParseObjectId(c.Query("commit"))
+		if !ok {
+			utils.AbortWithStatus(c, 400)
+			return
+		}
+
+		spc, err := spec.Get(db, commitId)
+		if err != nil {
+			return
+		}
+
+		if spc.Pod != pd.Id || spc.Unit != unit.Id {
+			utils.AbortWithStatus(c, 404)
+			return
+		}
+
+		err = deployment.MigrateMulti(db, pd.Id, unit.Id, spc.Id, data)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+		break
 	}
 
 	event.PublishDispatch(db, "instance.change")
