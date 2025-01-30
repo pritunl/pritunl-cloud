@@ -297,3 +297,30 @@ func RestoreMulti(db *database.Database, podId primitive.ObjectID,
 
 	return
 }
+
+func MigrateMulti(db *database.Database,
+	podId, unitId, specId primitive.ObjectID,
+	deplyIds []primitive.ObjectID) (err error) {
+
+	coll := db.Deployments()
+
+	_, err = coll.UpdateMany(db, &bson.M{
+		"_id": &bson.M{
+			"$in": deplyIds,
+		},
+		"pod":   podId,
+		"unit":  unitId,
+		"state": Deployed,
+	}, &bson.M{
+		"$set": &bson.M{
+			"state":    Migrate,
+			"new_spec": specId,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
