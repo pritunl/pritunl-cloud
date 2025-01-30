@@ -296,7 +296,7 @@ export function deployUnit(podId: string, unitId: string,
 }
 
 export function updateMultiUnitState(podId: string, unitId: string,
-	deploymentIds: string[], state: string): Promise<void> {
+	deploymentIds: string[], state: string, commit?: string): Promise<void> {
 
 	let loader = new Loader().loading();
 
@@ -305,6 +305,7 @@ export function updateMultiUnitState(podId: string, unitId: string,
 			.put('/pod/' + podId + "/unit/" + unitId + "/deployment")
 			.query({
 				state: state,
+				commit: commit,
 			})
 			.send(deploymentIds)
 			.set('Accept', 'application/json')
