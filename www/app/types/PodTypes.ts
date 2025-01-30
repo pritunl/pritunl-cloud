@@ -59,6 +59,7 @@ export interface Deployment {
 	node?: string;
 	instance?: string;
 	instance_data?: InstanceData;
+	domain_data?: DomainData;
 	zone_name?: string;
 	node_name?: string;
 	instance_name?: string;
@@ -87,6 +88,15 @@ export interface InstanceData {
 	private_ips6?: string[];
 	oracle_private_ips?: string[];
 	oracle_public_ips?: string[];
+}
+
+export interface DomainData {
+	records?: RecordData[];
+}
+
+export interface RecordData {
+	domain?: string;
+	value?: string;
 }
 
 export interface Filter {
