@@ -23,7 +23,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type Commit struct {
+type Spec struct {
 	Id        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Pod       primitive.ObjectID `bson:"pod" json:"pod"`
 	Unit      primitive.ObjectID `bson:"unit" json:"unit"`
@@ -39,11 +39,11 @@ type Commit struct {
 	Domain    *Domain            `bson:"domain,omitempty" json:"-"`
 }
 
-func (c *Commit) GetAllNodes(db *database.Database,
+func (s *Spec) GetAllNodes(db *database.Database,
 	orgId primitive.ObjectID) (ndes Nodes,
 	offlineCount, noMountCount int, err error) {
 
-	shpe, err := shape.Get(db, c.Instance.Shape)
+	shpe, err := shape.Get(db, s.Instance.Shape)
 	if err != nil {
 		return
 	}
@@ -64,9 +64,9 @@ func (c *Commit) GetAllNodes(db *database.Database,
 	}
 
 	var mountNodes []set.Set
-	if c.Instance.Mounts != nil && len(c.Instance.Mounts) > 0 {
+	if s.Instance.Mounts != nil && len(s.Instance.Mounts) > 0 {
 		diskIds := []primitive.ObjectID{}
-		for _, mount := range c.Instance.Mounts {
+		for _, mount := range s.Instance.Mounts {
 			if mount.Disks == nil {
 				continue
 			}
@@ -84,7 +84,7 @@ func (c *Commit) GetAllNodes(db *database.Database,
 			return
 		}
 
-		for _, mount := range c.Instance.Mounts {
+		for _, mount := range s.Instance.Mounts {
 			mountSet := set.NewSet()
 
 			if mount.Disks != nil {
@@ -129,7 +129,7 @@ func (c *Commit) GetAllNodes(db *database.Database,
 	return
 }
 
-func (s *Commit) Validate(db *database.Database) (err error) {
+func (s *Spec) Validate(db *database.Database) (err error) {
 	if s.Timestamp.IsZero() {
 		s.Timestamp = time.Now()
 	}
@@ -137,8 +137,8 @@ func (s *Commit) Validate(db *database.Database) (err error) {
 	return
 }
 
-func (u *Commit) ExtractResources() (resources string, err error) {
-	matches := resourcesRe.FindStringSubmatch(u.Data)
+func (s *Spec) ExtractResources() (resources string, err error) {
+	matches := resourcesRe.FindStringSubmatch(s.Data)
 	if len(matches) > 1 {
 		resources = matches[1]
 		resources = strings.TrimSpace(resources)
@@ -148,7 +148,7 @@ func (u *Commit) ExtractResources() (resources string, err error) {
 	return
 }
 
-func (u *Commit) parseFirewall(db *database.Database,
+func (s *Spec) parseFirewall(db *database.Database,
 	orgId primitive.ObjectID, dataYaml *FirewallYaml) (
 	errData *errortypes.ErrorData, err error) {
 
@@ -213,12 +213,12 @@ func (u *Commit) parseFirewall(db *database.Database,
 		return
 	}
 
-	u.Firewall = data
+	s.Firewall = data
 
 	return
 }
 
-func (u *Commit) parseInstance(db *database.Database,
+func (s *Spec) parseInstance(db *database.Database,
 	orgId primitive.ObjectID, dataYaml *InstanceYaml) (
 	errData *errortypes.ErrorData, err error) {
 
@@ -458,13 +458,13 @@ func (u *Commit) parseInstance(db *database.Database,
 	data.Roles = dataYaml.Roles
 	data.DiskSize = dataYaml.DiskSize
 
-	u.Name = dataYaml.Name
-	u.Kind = dataYaml.Kind
-	u.Count = dataYaml.Count
-	u.Instance = data
+	s.Name = dataYaml.Name
+	s.Kind = dataYaml.Kind
+	s.Count = dataYaml.Count
+	s.Instance = data
 
-	u.Count = dataYaml.Count
-	if u.Kind == ImageKind && u.Count != 0 {
+	s.Count = dataYaml.Count
+	if s.Kind == ImageKind && s.Count != 0 {
 		errData = &errortypes.ErrorData{
 			Error:   "count_invalid",
 			Message: "Count not valid for image kind",
@@ -475,7 +475,7 @@ func (u *Commit) parseInstance(db *database.Database,
 	return
 }
 
-func (u *Commit) parseDomain(db *database.Database,
+func (s *Spec) parseDomain(db *database.Database,
 	orgId primitive.ObjectID, dataYaml *DomainYaml) (
 	errData *errortypes.ErrorData, err error) {
 
@@ -518,20 +518,20 @@ func (u *Commit) parseDomain(db *database.Database,
 		data.Records = append(data.Records, record)
 	}
 
-	u.Domain = data
+	s.Domain = data
 
 	return
 }
 
-func (u *Commit) Parse(db *database.Database,
+func (s *Spec) Parse(db *database.Database,
 	orgId primitive.ObjectID) (errData *errortypes.ErrorData, err error) {
 
 	hash := sha1.New()
-	hash.Write([]byte(filterSpecHash(u.Data)))
+	hash.Write([]byte(filterSpecHash(s.Data)))
 	hashBytes := hash.Sum(nil)
-	u.Hash = fmt.Sprintf("%x", hashBytes)
+	s.Hash = fmt.Sprintf("%x", hashBytes)
 
-	resourcesSpec, err := u.ExtractResources()
+	resourcesSpec, err := s.ExtractResources()
 	if err != nil {
 		return
 	}
@@ -575,7 +575,7 @@ func (u *Commit) Parse(db *database.Database,
 				return
 			}
 
-			errData, err = u.parseInstance(db, orgId, instYaml)
+			errData, err = s.parseInstance(db, orgId, instYaml)
 			if err != nil || errData != nil {
 				return
 			}
@@ -591,7 +591,7 @@ func (u *Commit) Parse(db *database.Database,
 				return
 			}
 
-			errData, err = u.parseFirewall(db, orgId, fireYaml)
+			errData, err = s.parseFirewall(db, orgId, fireYaml)
 			if err != nil || errData != nil {
 				return
 			}
@@ -607,7 +607,7 @@ func (u *Commit) Parse(db *database.Database,
 				return
 			}
 
-			errData, err = u.parseDomain(db, orgId, domnYaml)
+			errData, err = s.parseDomain(db, orgId, domnYaml)
 			if err != nil || errData != nil {
 				return
 			}
@@ -623,8 +623,8 @@ func (u *Commit) Parse(db *database.Database,
 	return
 }
 
-func (s *Commit) CanMigrate(db *database.Database, orgId primitive.ObjectID,
-	spc *Commit) (valid bool, errData *errortypes.ErrorData, err error) {
+func (s *Spec) CanMigrate(db *database.Database, orgId primitive.ObjectID,
+	spc *Spec) (valid bool, errData *errortypes.ErrorData, err error) {
 
 	errData, err = s.Parse(db, orgId)
 	if err != nil || errData != nil {
@@ -751,7 +751,7 @@ func (s *Commit) CanMigrate(db *database.Database, orgId primitive.ObjectID,
 	return
 }
 
-func (s *Commit) Commit(db *database.Database) (err error) {
+func (s *Spec) Commit(db *database.Database) (err error) {
 	coll := db.Specs()
 
 	err = coll.Commit(s.Id, s)
@@ -762,7 +762,7 @@ func (s *Commit) Commit(db *database.Database) (err error) {
 	return
 }
 
-func (s *Commit) CommitFields(db *database.Database, fields set.Set) (
+func (s *Spec) CommitFields(db *database.Database, fields set.Set) (
 	err error) {
 
 	coll := db.Specs()
@@ -775,7 +775,7 @@ func (s *Commit) CommitFields(db *database.Database, fields set.Set) (
 	return
 }
 
-func (s *Commit) Insert(db *database.Database) (err error) {
+func (s *Spec) Insert(db *database.Database) (err error) {
 	coll := db.Specs()
 
 	resp, err := coll.InsertOne(db, s)
