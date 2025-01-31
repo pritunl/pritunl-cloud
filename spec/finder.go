@@ -85,7 +85,11 @@ func (r *Resources) Find(db *database.Database, token string) (
 			"organization": r.Organization,
 		})
 		if err != nil {
-			return
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = nil
+			} else {
+				return
+			}
 		}
 		break
 	case VpcKind:
@@ -94,7 +98,11 @@ func (r *Resources) Find(db *database.Database, token string) (
 			"organization": r.Organization,
 		})
 		if err != nil {
-			return
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = nil
+			} else {
+				return
+			}
 		}
 		break
 	case SubnetKind:
@@ -108,7 +116,11 @@ func (r *Resources) Find(db *database.Database, token string) (
 			"name": resource,
 		})
 		if err != nil {
-			return
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = nil
+			} else {
+				return
+			}
 		}
 		break
 	case NodeKind:
@@ -116,7 +128,11 @@ func (r *Resources) Find(db *database.Database, token string) (
 			"name": resource,
 		})
 		if err != nil {
-			return
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = nil
+			} else {
+				return
+			}
 		}
 		break
 	case PoolKind:
@@ -124,7 +140,11 @@ func (r *Resources) Find(db *database.Database, token string) (
 			"name": resource,
 		})
 		if err != nil {
-			return
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = nil
+			} else {
+				return
+			}
 		}
 		break
 	case ZoneKind:
@@ -132,7 +152,11 @@ func (r *Resources) Find(db *database.Database, token string) (
 			"name": resource,
 		})
 		if err != nil {
-			return
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = nil
+			} else {
+				return
+			}
 		}
 		break
 	case ShapeKind:
@@ -146,7 +170,11 @@ func (r *Resources) Find(db *database.Database, token string) (
 		}
 		r.Shape, err = shape.GetOne(db, &query)
 		if err != nil {
-			return
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = nil
+			} else {
+				return
+			}
 		}
 		break
 	case ImageKind:
@@ -164,7 +192,11 @@ func (r *Resources) Find(db *database.Database, token string) (
 			},
 		})
 		if err != nil {
-			return
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = nil
+			} else {
+				return
+			}
 		}
 		break
 	case DiskKind:
@@ -173,7 +205,11 @@ func (r *Resources) Find(db *database.Database, token string) (
 			"organization": r.Organization,
 		})
 		if err != nil {
-			return
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = nil
+			} else {
+				return
+			}
 		}
 		break
 	case InstanceKind:
@@ -182,7 +218,11 @@ func (r *Resources) Find(db *database.Database, token string) (
 			"organization": r.Organization,
 		})
 		if err != nil {
-			return
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = nil
+			} else {
+				return
+			}
 		}
 		break
 	case PlanKind:
@@ -191,7 +231,11 @@ func (r *Resources) Find(db *database.Database, token string) (
 			"organization": r.Organization,
 		})
 		if err != nil {
-			return
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = nil
+			} else {
+				return
+			}
 		}
 		break
 	case CertificateKind:
@@ -200,7 +244,11 @@ func (r *Resources) Find(db *database.Database, token string) (
 			"organization": r.Organization,
 		})
 		if err != nil {
-			return
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = nil
+			} else {
+				return
+			}
 		}
 		break
 	case SecretKind:
@@ -209,7 +257,11 @@ func (r *Resources) Find(db *database.Database, token string) (
 			"organization": r.Organization,
 		})
 		if err != nil {
-			return
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = nil
+			} else {
+				return
+			}
 		}
 		break
 	case PodKind:
@@ -218,13 +270,21 @@ func (r *Resources) Find(db *database.Database, token string) (
 			"organization": r.Organization,
 		})
 		if err != nil {
-			return
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = nil
+			} else {
+				return
+			}
 		}
 		break
 	case UnitKind:
 		r.Pod, r.Unit, err = GetUnitBase(db, r.Organization, resource)
 		if err != nil {
-			return
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = nil
+			} else {
+				return
+			}
 		}
 		break
 	default:
