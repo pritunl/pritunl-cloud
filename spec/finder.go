@@ -40,6 +40,8 @@ const (
 	SecretKind      = "secret"
 	PodKind         = "pod"
 	UnitKind        = "unit"
+
+	TokenPrefix = "{{"
 )
 
 type Resources struct {
