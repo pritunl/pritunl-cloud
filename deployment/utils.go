@@ -7,8 +7,11 @@ import (
 	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/domain"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/journal"
+	"github.com/pritunl/pritunl-cloud/spec"
+	"github.com/pritunl/tools/errors"
 )
 
 func Get(db *database.Database, deplyId primitive.ObjectID) (
@@ -299,10 +302,42 @@ func RestoreMulti(db *database.Database, podId primitive.ObjectID,
 }
 
 func MigrateMulti(db *database.Database,
-	podId, unitId, specId primitive.ObjectID,
-	deplyIds []primitive.ObjectID) (err error) {
+	orgId, podId, unitId, specId primitive.ObjectID,
+	deplyIds []primitive.ObjectID) (
+	errData *errortypes.ErrorData, err error) {
 
 	coll := db.Deployments()
+
+	spc, err := spec.Get(db, specId)
+	if err != nil {
+		return
+	}
+
+	if spc.Pod != podId || spc.Unit != unitId {
+		err = &errortypes.ParseError{
+			errors.Newf("spec: Invalid unit"),
+		}
+		return
+	}
+
+	deplys, err := GetAll(db, &bson.M{
+		"_id": &bson.M{
+			"$in": deplyIds,
+		},
+		"pod":   podId,
+		"unit":  unitId,
+		"state": Deployed,
+	})
+	if err != nil {
+		return
+	}
+
+	for _, deply := range deplys {
+		errData, err = deply.CanMigrate(db, orgId, spc)
+		if err != nil || errData != nil {
+			return
+		}
+	}
 
 	_, err = coll.UpdateMany(db, &bson.M{
 		"_id": &bson.M{
