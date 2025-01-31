@@ -30,7 +30,6 @@ const css = {
 	} as React.CSSProperties,
 	label: {
 		width: '100%',
-		maxWidth: '220px',
 		margin: '18px 0 0 0',
 	} as React.CSSProperties,
 	input: {
@@ -43,8 +42,15 @@ const css = {
 		fontFamily: Theme.monospaceFont,
 	} as React.CSSProperties,
 	commitButton: {
+		marginTop: "5px",
 		width: '400px',
 		fontFamily: Theme.monospaceFont,
+	} as React.CSSProperties,
+	commitsMenu: {
+		maxHeight: '400px',
+		overflowY: "auto",
+		fontFamily: Theme.monospaceFont,
+		fontWeight: Theme.monospaceWeight,
 	} as React.CSSProperties,
 };
 
@@ -167,59 +173,8 @@ export default class PodDeploy extends React.Component<Props, State> {
 		</div>
 	}
 
-	filterCommit: BpSelect.ItemPredicate<PodTypes.Commit> = (
-		query, commit, _index, exactMatch) => {
-
-		if (exactMatch) {
-			return commit.id == query
-		} else {
-			return commit.id.indexOf(query) !== -1
-		}
-	}
-
-	renderCommit: BpSelect.ItemRenderer<PodTypes.Commit> = (commit,
-		{handleClick, handleFocus, modifiers, query, index}): JSX.Element => {
-
-		if (!modifiers.matchesPredicate) {
-			return null;
-		}
-
-		let className = ""
-		let selected = false
-		if (this.state.deployCommit?.id == commit.id ||
-			(!this.state.deployCommit && index === 0)) {
-
-			className = "bp5-text-intent-primary bp5-intent-primary"
-			selected = true
-		} else if (index === 0) {
-			className = "bp5-text-intent-success bp5-intent-success"
-		}
-
-		return <Blueprint.MenuItem
-			key={"diff-" + commit.id}
-			style={css.commit}
-			selected={selected}
-			disabled={this.state.disabled}
-			roleStructure="listoption"
-			icon={<Icons.GitCommit
-				className={className}
-			/>}
-			onFocus={handleFocus}
-			onClick={(evt): void => {
-				evt.preventDefault()
-				evt.stopPropagation()
-				handleClick(evt)
-			}}
-			text={MiscUtils.highlightMatch(commit.id.substring(0, 12), query)}
-			textClassName={className}
-			labelElement={<span
-				className={className}
-			>{MiscUtils.formatDateLocal(commit.timestamp)}</span>}
-		/>
-	}
-
 	renderImage(): JSX.Element {
-		let commitsSelect: JSX.Element
+		let commitSelect: JSX.Element
 		if (this.props.commits) {
 			let deployCommit = this.state.deployCommit || this.props.commits?.[0]
 			let deployClass = ""
@@ -227,22 +182,50 @@ export default class PodDeploy extends React.Component<Props, State> {
 				deployClass = "bp5-text-intent-success"
 			}
 
-			commitsSelect = <BpSelect.Select<PodTypes.Commit>
-				items={this.props.commits}
-				itemPredicate={this.filterCommit}
-				itemRenderer={this.renderCommit}
-				noResults={<Blueprint.MenuItem
-					disabled={true}
-					style={css.commit}
-					text="No results."
+			let commitMenuItems: JSX.Element[] = []
+			this.props.commits.forEach((commit, index): void => {
+				let className = ""
+				let disabled = false
+				let selected = false
+
+				if (this.state.deployCommit?.id == commit.id ||
+					(!this.state.deployCommit && index === 0)) {
+
+					className = "bp5-text-intent-primary bp5-intent-primary"
+					selected = true
+				} else if (index === 0) {
+					className = "bp5-text-intent-success bp5-intent-success"
+				}
+
+				commitMenuItems.push(<Blueprint.MenuItem
+					key={"diff-" + commit.id}
+					disabled={disabled || this.state.disabled}
+					selected={selected}
 					roleStructure="listoption"
-				/>}
-				onItemSelect={(commit) => {
-					this.setState({
-						...this.state,
-						deployCommit: commit,
-					})
-				}}
+					icon={<Icons.GitCommit
+						className={className}
+					/>}
+					onClick={(): void => {
+						this.setState({
+							...this.state,
+							deployCommit: commit,
+						})
+					}}
+					text={commit.id.substring(0, 12)}
+					textClassName={className}
+					labelElement={<span
+						className={className}
+					>{MiscUtils.formatDateLocal(commit.timestamp)}</span>}
+				/>)
+			})
+
+			commitSelect = <Blueprint.Popover
+				content={<div>
+					<Blueprint.Menu style={css.commitsMenu}>
+						{commitMenuItems}
+					</Blueprint.Menu>
+				</div>}
+				placement="bottom"
 			>
 				<Blueprint.Button
 					alignText="left"
@@ -253,7 +236,7 @@ export default class PodDeploy extends React.Component<Props, State> {
 					text={deployCommit?.id.substring(0, 12) + " " +
 						MiscUtils.formatDateLocal(deployCommit?.timestamp)}
 				/>
-			</BpSelect.Select>
+			</Blueprint.Popover>
 		}
 
 		let dialogElem = <Blueprint.Dialog
@@ -270,8 +253,14 @@ export default class PodDeploy extends React.Component<Props, State> {
 					style={css.label}
 				>
 					Target Commit
-					{commitsSelect}
 				</label>
+				<div
+					onClick={(e) => {
+						e.stopPropagation();
+					}}
+				>
+					{commitSelect}
+				</div>
 			</div>
 			<div className="bp5-dialog-footer">
 				<div className="bp5-dialog-footer-actions">
