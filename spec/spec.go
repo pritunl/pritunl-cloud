@@ -16,6 +16,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/finder"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/shape"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -156,7 +157,7 @@ func (s *Spec) parseFirewall(db *database.Database,
 		Ingress: []*Rule{},
 	}
 
-	if dataYaml.Kind != deployment.Firewall {
+	if dataYaml.Kind != finder.FirewallKind {
 		errData = &errortypes.ErrorData{
 			Error:   "unit_kind_mismatch",
 			Message: "Unit kind unexpected",
@@ -164,7 +165,7 @@ func (s *Spec) parseFirewall(db *database.Database,
 		return
 	}
 
-	resources := &Resources{
+	resources := &finder.Resources{
 		Organization: orgId,
 	}
 
@@ -187,7 +188,7 @@ func (s *Spec) parseFirewall(db *database.Database,
 					return
 				}
 
-				if kind == UnitKind && resources.Pod != nil &&
+				if kind == finder.UnitKind && resources.Pod != nil &&
 					resources.Unit != nil {
 
 					refs[resources.Unit.Id] = resources.Pod.Id
@@ -234,9 +235,9 @@ func (s *Spec) parseInstance(db *database.Database,
 	}
 
 	switch dataYaml.Kind {
-	case deployment.Instance:
+	case finder.InstanceKind:
 		break
-	case deployment.Image:
+	case finder.ImageKind:
 		break
 	default:
 		errData = &errortypes.ErrorData{
@@ -246,7 +247,7 @@ func (s *Spec) parseInstance(db *database.Database,
 		return
 	}
 
-	resources := &Resources{
+	resources := &finder.Resources{
 		Organization: orgId,
 	}
 
@@ -256,7 +257,7 @@ func (s *Spec) parseInstance(db *database.Database,
 			err = e
 			return
 		}
-		if kind == PlanKind && resources.Plan != nil {
+		if kind == finder.PlanKind && resources.Plan != nil {
 			data.Plan = resources.Plan.Id
 		}
 	}
@@ -267,7 +268,7 @@ func (s *Spec) parseInstance(db *database.Database,
 			err = e
 			return
 		}
-		if kind == ZoneKind && resources.Zone != nil {
+		if kind == finder.ZoneKind && resources.Zone != nil {
 			data.Zone = resources.Zone.Id
 		}
 	}
@@ -286,7 +287,7 @@ func (s *Spec) parseInstance(db *database.Database,
 			err = e
 			return
 		}
-		if kind == NodeKind && resources.Node != nil {
+		if kind == finder.NodeKind && resources.Node != nil {
 			data.Node = resources.Node.Id
 		}
 	}
@@ -296,7 +297,7 @@ func (s *Spec) parseInstance(db *database.Database,
 			err = e
 			return
 		}
-		if kind == ShapeKind && resources.Shape != nil {
+		if kind == finder.ShapeKind && resources.Shape != nil {
 			shpe = resources.Shape
 			data.Shape = resources.Shape.Id
 		}
@@ -316,7 +317,7 @@ func (s *Spec) parseInstance(db *database.Database,
 			err = e
 			return
 		}
-		if kind == VpcKind && resources.Vpc != nil {
+		if kind == finder.VpcKind && resources.Vpc != nil {
 			data.Vpc = resources.Vpc.Id
 		}
 	}
@@ -335,7 +336,7 @@ func (s *Spec) parseInstance(db *database.Database,
 			err = e
 			return
 		}
-		if kind == SubnetKind && resources.Subnet != nil {
+		if kind == finder.SubnetKind && resources.Subnet != nil {
 			data.Subnet = resources.Subnet.Id
 		}
 	}
@@ -354,7 +355,7 @@ func (s *Spec) parseInstance(db *database.Database,
 			err = e
 			return
 		}
-		if kind == ImageKind && resources.Image != nil {
+		if kind == finder.ImageKind && resources.Image != nil {
 			data.Image = resources.Image.Id
 		}
 	}
@@ -372,7 +373,7 @@ func (s *Spec) parseInstance(db *database.Database,
 					err = e
 					return
 				}
-				if kind == DiskKind && resources.Disks != nil {
+				if kind == finder.DiskKind && resources.Disks != nil {
 					for _, dskRes := range resources.Disks {
 						mnt.Disks = append(mnt.Disks, dskRes.Id)
 					}
@@ -390,7 +391,7 @@ func (s *Spec) parseInstance(db *database.Database,
 				err = e
 				return
 			}
-			if kind == CertificateKind && resources.Certificate != nil {
+			if kind == finder.CertificateKind && resources.Certificate != nil {
 				data.Certificates = append(
 					data.Certificates,
 					resources.Certificate.Id,
@@ -406,7 +407,7 @@ func (s *Spec) parseInstance(db *database.Database,
 				err = e
 				return
 			}
-			if kind == SecretKind && resources.Secret != nil {
+			if kind == finder.SecretKind && resources.Secret != nil {
 				data.Secrets = append(
 					data.Secrets,
 					resources.Secret.Id,
@@ -422,7 +423,7 @@ func (s *Spec) parseInstance(db *database.Database,
 				err = e
 				return
 			}
-			if kind == PodKind && resources.Pod != nil {
+			if kind == finder.PodKind && resources.Pod != nil {
 				data.Pods = append(
 					data.Pods,
 					resources.Pod.Id,
@@ -464,7 +465,7 @@ func (s *Spec) parseInstance(db *database.Database,
 	s.Instance = data
 
 	s.Count = dataYaml.Count
-	if s.Kind == ImageKind && s.Count != 0 {
+	if s.Kind == finder.ImageKind && s.Count != 0 {
 		errData = &errortypes.ErrorData{
 			Error:   "count_invalid",
 			Message: "Count not valid for image kind",
@@ -483,7 +484,7 @@ func (s *Spec) parseDomain(db *database.Database,
 		Records: []*Record{},
 	}
 
-	if dataYaml.Kind != deployment.Domain {
+	if dataYaml.Kind != finder.DomainKind {
 		errData = &errortypes.ErrorData{
 			Error:   "unit_kind_mismatch",
 			Message: "Unit kind unexpected",
@@ -491,7 +492,7 @@ func (s *Spec) parseDomain(db *database.Database,
 		return
 	}
 
-	resources := &Resources{
+	resources := &finder.Resources{
 		Organization: orgId,
 	}
 
@@ -511,7 +512,7 @@ func (s *Spec) parseDomain(db *database.Database,
 			return
 		}
 
-		if kind == DomainKind && resources.Domain != nil {
+		if kind == finder.DomainKind && resources.Domain != nil {
 			record.Domain = resources.Domain.Id
 		}
 
@@ -563,7 +564,7 @@ func (s *Spec) Parse(db *database.Database,
 		}
 
 		switch baseDoc.Kind {
-		case deployment.Instance, deployment.Image:
+		case finder.InstanceKind, finder.ImageKind:
 			instYaml := &InstanceYaml{}
 
 			err = decoder.Decode(instYaml)
@@ -579,7 +580,7 @@ func (s *Spec) Parse(db *database.Database,
 			if err != nil || errData != nil {
 				return
 			}
-		case deployment.Firewall:
+		case finder.FirewallKind:
 			fireYaml := &FirewallYaml{}
 
 			err = decoder.Decode(fireYaml)
@@ -595,7 +596,7 @@ func (s *Spec) Parse(db *database.Database,
 			if err != nil || errData != nil {
 				return
 			}
-		case deployment.Domain:
+		case finder.DomainKind:
 			domnYaml := &DomainYaml{}
 
 			err = decoder.Decode(domnYaml)
