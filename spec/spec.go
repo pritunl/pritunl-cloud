@@ -623,6 +623,134 @@ func (u *Commit) Parse(db *database.Database,
 	return
 }
 
+func (s *Commit) CanMigrate(db *database.Database, orgId primitive.ObjectID,
+	spc *Commit) (valid bool, errData *errortypes.ErrorData, err error) {
+
+	errData, err = s.Parse(db, orgId)
+	if err != nil || errData != nil {
+		return
+	}
+
+	errData, err = spc.Parse(db, orgId)
+	if err != nil || errData != nil {
+		return
+	}
+
+	if s.Pod != spc.Pod || s.Unit != spc.Unit {
+		err = &errortypes.ParseError{
+			errors.Newf("spec: Invalid unit"),
+		}
+		return
+	}
+
+	if s.Kind != spc.Kind {
+		errData = &errortypes.ErrorData{
+			Error:   "unit_kind_conflict",
+			Message: "Cannot migrate to different kind",
+		}
+		return
+	}
+
+	if s.Instance == nil || spc.Instance == nil {
+		err = &errortypes.ParseError{
+			errors.Newf("spec: Instance not found"),
+		}
+		return
+	}
+
+	if s.Instance.Zone != spc.Instance.Zone {
+		errData = &errortypes.ErrorData{
+			Error:   "instance_zone_conflict",
+			Message: "Cannot migrate to different instance zone",
+		}
+		return
+	}
+
+	if s.Instance.Node != spc.Instance.Node {
+		errData = &errortypes.ErrorData{
+			Error:   "instance_node_coflict",
+			Message: "Cannot migrate to different instance node",
+		}
+		return
+	}
+
+	if s.Instance.Shape != spc.Instance.Shape {
+		errData = &errortypes.ErrorData{
+			Error:   "instance_shape_coflict",
+			Message: "Cannot migrate to different instance shape",
+		}
+		return
+	}
+
+	if s.Instance.Subnet != spc.Instance.Subnet {
+		errData = &errortypes.ErrorData{
+			Error:   "instance_subnet_coflict",
+			Message: "Cannot migrate to different instance subnet",
+		}
+		return
+	}
+
+	if s.Instance.Image != spc.Instance.Image {
+		errData = &errortypes.ErrorData{
+			Error:   "instance_image_coflict",
+			Message: "Cannot migrate to different instance image",
+		}
+		return
+	}
+
+	if s.Instance.DiskSize != spc.Instance.DiskSize {
+		errData = &errortypes.ErrorData{
+			Error:   "instance_disk_size_coflict",
+			Message: "Cannot migrate to different instance disk size",
+		}
+		return
+	}
+
+	curMountPaths := set.NewSet()
+	curMountDisks := map[string]set.Set{}
+	for _, mnt := range s.Instance.Mounts {
+		curMountPaths.Add(mnt.Path)
+		mntDisks := set.NewSet()
+		for _, dskId := range mnt.Disks {
+			mntDisks.Add(dskId)
+		}
+		curMountDisks[mnt.Path] = mntDisks
+	}
+
+	newMountPaths := set.NewSet()
+	for _, mnt := range spc.Instance.Mounts {
+		newMountPaths.Add(mnt.Path)
+		curMntDisks := curMountDisks[mnt.Path]
+		if curMntDisks == nil {
+			errData = &errortypes.ErrorData{
+				Error:   "instance_mount_coflict",
+				Message: "Cannot migrate to different instance mounts",
+			}
+			return
+		}
+
+		for _, dskId := range mnt.Disks {
+			if !curMntDisks.Contains(dskId) {
+				errData = &errortypes.ErrorData{
+					Error:   "instance_mount_disk_coflict",
+					Message: "Cannot migrate to instance with fewer disks",
+				}
+				return
+			}
+		}
+	}
+
+	if !curMountPaths.IsEqual(newMountPaths) {
+		errData = &errortypes.ErrorData{
+			Error:   "instance_mount_coflict",
+			Message: "Cannot migrate to different instance mounts",
+		}
+		return
+	}
+
+	return
+}
+
 func (s *Commit) Commit(db *database.Database) (err error) {
 	coll := db.Specs()
 
