@@ -6,8 +6,10 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/spec"
+	"github.com/pritunl/tools/errors"
 )
 
 type Unit struct {
@@ -172,6 +174,76 @@ func (u *Unit) RemoveDeployement(db *database.Database,
 			},
 		},
 	}, updateOpts)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func (u *Unit) MigrateDeployements(db *database.Database,
+	newSpecId primitive.ObjectID, deplyIds []primitive.ObjectID) (
+	errData *errortypes.ErrorData, err error) {
+
+	coll := db.Deployments()
+
+	newSpc, err := spec.Get(db, newSpecId)
+	if err != nil {
+		return
+	}
+
+	if newSpc.Pod != u.Pod.Id || newSpc.Unit != u.Id {
+		err = &errortypes.ParseError{
+			errors.Newf("spec: Invalid unit"),
+		}
+		return
+	}
+
+	deplys, err := deployment.GetAll(db, &bson.M{
+		"_id": &bson.M{
+			"$in": deplyIds,
+		},
+		"pod":   u.Pod.Id,
+		"unit":  u.Id,
+		"state": Deployed,
+	})
+	if err != nil {
+		return
+	}
+
+	spcMap := map[primitive.ObjectID]*spec.Spec{}
+
+	for _, deply := range deplys {
+		oldSpc := spcMap[deply.Spec]
+		if oldSpc == nil {
+			oldSpc, err = spec.Get(db, deply.Spec)
+			if err != nil {
+				return
+			}
+
+			spcMap[oldSpc.Id] = oldSpc
+		}
+
+		errData, err = oldSpc.CanMigrate(db, u.Pod.Organization, newSpc)
+		if err != nil || errData != nil {
+			return
+		}
+	}
+
+	_, err = coll.UpdateMany(db, &bson.M{
+		"_id": &bson.M{
+			"$in": deplyIds,
+		},
+		"pod":   u.Pod.Id,
+		"unit":  u.Id,
+		"state": Deployed,
+	}, &bson.M{
+		"$set": &bson.M{
+			"state":    deployment.Migrate,
+			"new_spec": newSpc.Id,
+		},
+	})
 	if err != nil {
 		err = database.ParseError(err)
 		return
