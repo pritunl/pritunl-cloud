@@ -57,7 +57,7 @@ type State struct {
 	podsMap                map[primitive.ObjectID]*pod.Pod
 	podsUnitsMap           map[primitive.ObjectID]*pod.Unit
 
-	specsMap            map[primitive.ObjectID]*spec.Commit
+	specsMap            map[primitive.ObjectID]*spec.Spec
 	specsPodsMap        map[primitive.ObjectID]*pod.Pod
 	specsPodsUnitsMap   map[primitive.ObjectID]*pod.Unit
 	specsDeploymentsMap map[primitive.ObjectID]*deployment.Deployment
@@ -211,7 +211,7 @@ func (s *State) Unit(unitId primitive.ObjectID) *pod.Unit {
 	return s.podsUnitsMap[unitId]
 }
 
-func (s *State) Spec(commitId primitive.ObjectID) *spec.Commit {
+func (s *State) Spec(commitId primitive.ObjectID) *spec.Spec {
 	return s.specsMap[commitId]
 }
 
@@ -531,7 +531,7 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 	specCertsSet := set.NewSet()
 	specPodsSet := set.NewSet()
 	specDomainsSet := set.NewSet()
-	specsMap := map[primitive.ObjectID]*spec.Commit{}
+	specsMap := map[primitive.ObjectID]*spec.Spec{}
 	for _, spc := range specs {
 		specsMap[spc.Id] = spc
 
@@ -616,9 +616,6 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 		specPodIds = append(specPodIds, pdId.(primitive.ObjectID))
 	}
 
-	specDeploymentsSet := set.NewSet()
-	specsPodsMap := map[primitive.ObjectID]*pod.Pod{}
-	specsPodsUnitsMap := map[primitive.ObjectID]*pod.Unit{}
 	specPods, err := pod.GetAll(db, &bson.M{
 		"_id": &bson.M{
 			"$in": specPodIds,
@@ -628,6 +625,9 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 		return
 	}
 
+	specDeploymentsSet := set.NewSet()
+	specsPodsMap := map[primitive.ObjectID]*pod.Pod{}
+	specsPodsUnitsMap := map[primitive.ObjectID]*pod.Unit{}
 	for _, specPod := range specPods {
 		specsPodsMap[specPod.Id] = specPod
 
