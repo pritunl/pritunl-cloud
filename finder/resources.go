@@ -9,6 +9,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/certificate"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
+	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/domain"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -39,11 +40,13 @@ type Resources struct {
 	Domain       *domain.Domain
 	Certificate  *certificate.Certificate
 	Secret       *secret.Secret
+	Deployment   *deployment.Deployment
 	Pod          *PodBase
 	Unit         *UnitBase
 }
 
-var tokenRe = regexp.MustCompile(`{{\/([a-zA-Z0-9-]*)\/([a-zA-Z0-9-]*)}}`)
+var tokenRe = regexp.MustCompile(
+	`{{\/([a-zA-Z0-9-]*)\/([a-zA-Z0-9-]*)(?::([a-zA-Z0-9-_.]*))?}}`)
 
 func (r *Resources) Find(db *database.Database, token string) (
 	kind string, err error) {
@@ -58,6 +61,7 @@ func (r *Resources) Find(db *database.Database, token string) (
 
 	kind = matches[1]
 	resource := matches[2]
+	tag := matches[3]
 
 	switch kind {
 	case DomainKind:
@@ -177,6 +181,55 @@ func (r *Resources) Find(db *database.Database, token string) (
 				err = nil
 			} else {
 				return
+			}
+		}
+		break
+	case BuildKind:
+		r.Pod, r.Unit, err = GetUnitBase(db, r.Organization, resource)
+		if err != nil {
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = nil
+			} else {
+				return
+			}
+		}
+
+		if tag == "" || tag == "latest" {
+			deplys, e := deployment.GetAllSorted(db, &bson.M{
+				"pod":  r.Pod.Id,
+				"unit": r.Unit.Id,
+			})
+			if e != nil {
+				err = e
+				if _, ok := err.(*database.NotFoundError); ok {
+					err = nil
+				} else {
+					return
+				}
+			}
+
+			for _, deply := range deplys {
+				r.Deployment = deply
+				break
+			}
+		} else {
+			deplys, e := deployment.GetAllSorted(db, &bson.M{
+				"pod":  r.Pod.Id,
+				"unit": r.Unit.Id,
+				"tags": tag,
+			})
+			if e != nil {
+				err = e
+				if _, ok := err.(*database.NotFoundError); ok {
+					err = nil
+				} else {
+					return
+				}
+			}
+
+			for _, deply := range deplys {
+				r.Deployment = deply
+				break
 			}
 		}
 		break
