@@ -1,12 +1,15 @@
 package completion
 
 import (
+	"time"
+
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/certificate"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
+	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/domain"
 	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/instance"
@@ -31,12 +34,26 @@ type Completion struct {
 	Zones         []*zone.Zone                 `json:"zones"`
 	Shapes        []*shape.Shape               `json:"shapes"`
 	Images        []*image.Image               `json:"images"`
+	Builds        []*Build                     `json:"builds"`
 	Instances     []*instance.Instance         `json:"instances"`
 	Plans         []*plan.Plan                 `json:"plans"`
 	Certificates  []*certificate.Certificate   `json:"certificates"`
 	Secrets       []*secret.Secret             `json:"secrets"`
 	Pods          []*pod.Pod                   `json:"pods"`
 	Units         []*pod.Unit                  `json:"units"`
+}
+
+type Build struct {
+	Id           primitive.ObjectID `json:"id"`
+	Name         string             `json:"name"`
+	Pod          primitive.ObjectID `json:"pod"`
+	Organization primitive.ObjectID `json:"organization"`
+	Tags         []*BuildTag        `json:"tags"`
+}
+
+type BuildTag struct {
+	Tag       string    `json:"tag"`
+	Timestamp time.Time `json:"timestamp"`
 }
 
 func get(db *database.Database, coll *database.Collection,
@@ -422,6 +439,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 		return
 	}
 
+	unitsMap := map[primitive.ObjectID]*pod.Unit{}
 	err = get(
 		db,
 		db.Pods(),
@@ -445,12 +463,82 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			)
 
 			for _, unit := range pd.Units {
+				unit.Pod = pd
 				cmpl.Units = append(cmpl.Units, unit)
+				unitsMap[unit.Id] = unit
 			}
 		},
 	)
 	if err != nil {
 		return
+	}
+
+	buildsMap := map[primitive.ObjectID]*Build{}
+	err = get(
+		db,
+		db.Deployments(),
+		query,
+		&bson.M{
+			"_id":          1,
+			"name":         1,
+			"pod":          1,
+			"unit":         1,
+			"organization": 1,
+			"kind":         1,
+			"state":        1,
+			"status":       1,
+			"image_id":     1,
+			"image_name":   1,
+			"tags":         1,
+		},
+		&bson.M{
+			"timestamp": -1,
+		},
+		func() interface{} {
+			return &deployment.Deployment{}
+		},
+		func(item interface{}) {
+			deply := item.(*deployment.Deployment)
+			if !deply.ImageReady() {
+				return
+			}
+
+			unit := unitsMap[deply.Unit]
+			if unit == nil {
+				return
+			}
+
+			build := buildsMap[deply.Unit]
+			if build == nil {
+				build = &Build{
+					Id:           deply.Unit,
+					Name:         unit.Name,
+					Pod:          unit.Pod.Id,
+					Organization: unit.Pod.Organization,
+					Tags: []*BuildTag{
+						&BuildTag{
+							Tag:       "latest",
+							Timestamp: deply.Timestamp,
+						},
+					},
+				}
+				buildsMap[deply.Unit] = build
+			}
+
+			for _, tag := range deply.Tags {
+				build.Tags = append(build.Tags, &BuildTag{
+					Tag:       tag,
+					Timestamp: deply.Timestamp,
+				})
+			}
+		},
+	)
+	if err != nil {
+		return
+	}
+
+	for _, build := range buildsMap {
+		cmpl.Builds = append(cmpl.Builds, build)
 	}
 
 	return
