@@ -40,7 +40,7 @@ type Completion struct {
 }
 
 func get(db *database.Database, coll *database.Collection,
-	query, projection *bson.M, sort *bson.M, new func() interface{},
+	query bson.M, projection *bson.M, sort *bson.M, new func() interface{},
 	add func(interface{})) (err error) {
 
 	opts := &options.FindOptions{
@@ -75,12 +75,15 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 	cmpl *Completion, err error) {
 
 	cmpl = &Completion{}
-	query := &bson.M{}
+	query := bson.M{}
+	if !orgId.IsZero() {
+		query["organization"] = orgId
+	}
 
 	err = get(
 		db,
 		db.Organizations(),
-		&bson.M{},
+		bson.M{},
 		&bson.M{
 			"_id":  1,
 			"name": 1,
@@ -155,7 +158,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 	err = get(
 		db,
 		db.Datacenters(),
-		&bson.M{},
+		bson.M{},
 		&bson.M{
 			"_id":                 1,
 			"name":                1,
@@ -180,7 +183,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 	err = get(
 		db,
 		db.Nodes(),
-		&bson.M{},
+		bson.M{},
 		&bson.M{
 			"_id":              1,
 			"name":             1,
@@ -241,7 +244,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 	err = get(
 		db,
 		db.Zones(),
-		&bson.M{},
+		bson.M{},
 		&bson.M{
 			"_id":        1,
 			"name":       1,
@@ -265,7 +268,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 	err = get(
 		db,
 		db.Shapes(),
-		&bson.M{},
+		bson.M{},
 		&bson.M{
 			"_id":        1,
 			"name":       1,
