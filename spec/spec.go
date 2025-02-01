@@ -525,8 +525,8 @@ func (s *Spec) parseDomain(db *database.Database,
 	return
 }
 
-func (s *Spec) Parse(db *database.Database,
-	orgId primitive.ObjectID) (errData *errortypes.ErrorData, err error) {
+func (s *Spec) Parse(db *database.Database) (
+	errData *errortypes.ErrorData, err error) {
 
 	hash := sha1.New()
 	hash.Write([]byte(filterSpecHash(s.Data)))
@@ -577,7 +577,7 @@ func (s *Spec) Parse(db *database.Database,
 				return
 			}
 
-			errData, err = s.parseInstance(db, orgId, instYaml)
+			errData, err = s.parseInstance(db, s.Organization, instYaml)
 			if err != nil || errData != nil {
 				return
 			}
@@ -593,7 +593,7 @@ func (s *Spec) Parse(db *database.Database,
 				return
 			}
 
-			errData, err = s.parseFirewall(db, orgId, fireYaml)
+			errData, err = s.parseFirewall(db, s.Organization, fireYaml)
 			if err != nil || errData != nil {
 				return
 			}
@@ -609,7 +609,7 @@ func (s *Spec) Parse(db *database.Database,
 				return
 			}
 
-			errData, err = s.parseDomain(db, orgId, domnYaml)
+			errData, err = s.parseDomain(db, s.Organization, domnYaml)
 			if err != nil || errData != nil {
 				return
 			}
