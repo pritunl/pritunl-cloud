@@ -43,10 +43,14 @@ const css = {
 	commit: {
 		fontFamily: Theme.monospaceFont,
 	} as React.CSSProperties,
+	muted: {
+		opacity: 0.75,
+	} as React.CSSProperties,
 	commitButton: {
 		marginTop: "5px",
 		width: '400px',
 		fontFamily: Theme.monospaceFont,
+		fontWeight: Theme.monospaceWeight,
 	} as React.CSSProperties,
 	commitsMenu: {
 		maxHeight: '400px',
@@ -116,14 +120,20 @@ export default class PodMigrate extends React.Component<Props, State> {
 		let commitSelect: JSX.Element
 		if (this.props.commits) {
 			let migrateCommit = this.state.migrateCommit || this.props.commits?.[0]
-			let deployClass = ""
+			let selectButtonClass = ""
+			let selectLabelClass = ""
+			let selectLabelStyle: React.CSSProperties
 			if (migrateCommit && migrateCommit.id === this.props.commits?.[0]?.id) {
-				deployClass = "bp5-text-intent-success"
+				selectButtonClass = "bp5-text-intent-success"
+				selectLabelStyle = css.muted
+			} else {
+				selectLabelClass = "bp5-text-muted"
 			}
 
 			let commitMenuItems: JSX.Element[] = []
 			this.props.commits.forEach((commit, index): void => {
 				let className = ""
+				let styles: React.CSSProperties
 				let disabled = false
 				let selected = false
 
@@ -131,9 +141,11 @@ export default class PodMigrate extends React.Component<Props, State> {
 					(!this.state.migrateCommit && index === 0)) {
 
 					className = "bp5-text-intent-primary bp5-intent-primary"
+					styles = css.muted
 					selected = true
 				} else if (index === 0) {
 					className = "bp5-text-intent-success bp5-intent-success"
+					styles = css.muted
 				}
 
 				commitMenuItems.push(<Blueprint.MenuItem
@@ -154,6 +166,7 @@ export default class PodMigrate extends React.Component<Props, State> {
 					textClassName={className}
 					labelElement={<span
 						className={className}
+						style={styles}
 					>{MiscUtils.formatDateLocal(commit.timestamp)}</span>}
 				/>)
 			})
@@ -171,10 +184,16 @@ export default class PodMigrate extends React.Component<Props, State> {
 					icon={<Icons.GitCommit/>}
 					rightIcon={<Icons.CaretDown/>}
 					style={css.commitButton}
-					textClassName={deployClass}
-					text={migrateCommit?.id.substring(0, 12) + " " +
-						MiscUtils.formatDateLocal(migrateCommit?.timestamp)}
-				/>
+					textClassName={selectButtonClass}
+				>
+					<span>{migrateCommit?.id.substring(0, 12)}</span>
+					<span
+						className={selectLabelClass}
+						style={selectLabelStyle}
+					>
+						{" " + MiscUtils.formatDateLocal(migrateCommit?.timestamp)}
+					</span>
+				</Blueprint.Button>
 			</Blueprint.Popover>
 		}
 
