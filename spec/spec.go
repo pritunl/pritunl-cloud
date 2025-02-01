@@ -520,6 +520,11 @@ func (s *Spec) parseDomain(db *database.Database,
 		data.Records = append(data.Records, record)
 	}
 
+	errData, err = data.Validate()
+	if err != nil || errData != nil {
+		return
+	}
+
 	s.Domain = data
 
 	return
