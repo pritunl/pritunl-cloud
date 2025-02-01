@@ -129,6 +129,7 @@ func (m *Imds) Get(query string) (val string, err error) {
 }
 
 type SyncResp struct {
+	Spec string `json:"spec"`
 	Hash uint32 `json:"hash"`
 }
 
@@ -136,7 +137,7 @@ func (m *Imds) Sync() (ready bool, err error) {
 	m.syncLock.Lock()
 	defer m.syncLock.Unlock()
 
-	data, err := m.GetState()
+	data, err := m.GetState(curSyncHash)
 	if err != nil {
 		return
 	}
@@ -146,6 +147,9 @@ func (m *Imds) Sync() (ready bool, err error) {
 	}
 
 	req, err := m.NewRequest("PUT", "/sync", data)
+	if err != nil {
+		return
+	}
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -194,16 +198,27 @@ func (m *Imds) Sync() (ready bool, err error) {
 		ready = false
 	} else if curSyncHash == 0 {
 		curSyncHash = respData.Hash
-	} else if respData.Hash != curSyncHash &&
+	} else if respData.Hash != curSyncHash && respData.Spec != "" &&
 		m.engine != nil && m.initialized {
 
 		curSyncHash = respData.Hash
 
 		logger.WithFields(logger.Fields{
-			"hash": int(respData.Hash),
+			"spec_len": len(respData.Spec),
+			"hash":     int(respData.Hash),
 		}).Info("agent: Running engine reload")
 
 		SetStatus(types.Reloading)
+
+		err = m.engine.UpdateSpec(respData.Spec)
+		if err != nil {
+			logger.WithFields(logger.Fields{
+				"spec_len": len(respData.Spec),
+				"hash":     int(respData.Hash),
+				"error":    err,
+			}).Error("agent: Failed to run engine spec update")
+			err = nil
+		}
 
 		err = m.engine.Run(engine.Reload)
 		if err != nil {
