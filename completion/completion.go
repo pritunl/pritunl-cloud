@@ -40,12 +40,17 @@ type Completion struct {
 }
 
 func get(db *database.Database, coll *database.Collection,
-	query, projection *bson.M, new func() interface{},
+	query, projection *bson.M, sort *bson.M, new func() interface{},
 	add func(interface{})) (err error) {
 
-	cursor, err := coll.Find(db, query, &options.FindOptions{
+	opts := &options.FindOptions{
 		Projection: projection,
-	})
+	}
+	if sort != nil {
+		opts.Sort = sort
+	}
+
+	cursor, err := coll.Find(db, query)
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -80,6 +85,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			"_id":  1,
 			"name": 1,
 		},
+		nil,
 		func() interface{} {
 			return &organization.Organization{}
 		},
@@ -103,6 +109,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			"name":         1,
 			"organization": 1,
 		},
+		nil,
 		func() interface{} {
 			return &domain.Domain{}
 		},
@@ -130,6 +137,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			"subnets":      1,
 			"datacenter":   1,
 		},
+		nil,
 		func() interface{} {
 			return &vpc.Vpc{}
 		},
@@ -154,6 +162,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			"match_organizations": 1,
 			"organizations":       1,
 		},
+		nil,
 		func() interface{} {
 			return &datacenter.Datacenter{}
 		},
@@ -183,6 +192,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			"cpu_units_res":    1,
 			"memory_units_res": 1,
 		},
+		nil,
 		func() interface{} {
 			return &node.Node{}
 		},
@@ -213,6 +223,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			"organization": 1,
 			"zone":         1,
 		},
+		nil,
 		func() interface{} {
 			return &pool.Pool{}
 		},
@@ -236,6 +247,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			"name":       1,
 			"datacenter": 1,
 		},
+		nil,
 		func() interface{} {
 			return &zone.Zone{}
 		},
@@ -262,6 +274,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			"memory":     1,
 			"processors": 1,
 		},
+		nil,
 		func() interface{} {
 			return &shape.Shape{}
 		},
@@ -289,6 +302,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			"key":          1,
 			"storage":      1,
 		},
+		nil,
 		func() interface{} {
 			return &image.Image{}
 		},
@@ -316,6 +330,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			"subnet":       1,
 			"node":         1,
 		},
+		nil,
 		func() interface{} {
 			return &instance.Instance{}
 		},
@@ -339,6 +354,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			"name":         1,
 			"organization": 1,
 		},
+		nil,
 		func() interface{} {
 			return &plan.Plan{}
 		},
@@ -363,6 +379,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			"organization": 1,
 			"type":         1,
 		},
+		nil,
 		func() interface{} {
 			return &certificate.Certificate{}
 		},
@@ -387,6 +404,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			"organization": 1,
 			"type":         1,
 		},
+		nil,
 		func() interface{} {
 			return &secret.Secret{}
 		},
@@ -411,6 +429,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			"organization": 1,
 			"units":        1,
 		},
+		nil,
 		func() interface{} {
 			return &pod.Pod{}
 		},
