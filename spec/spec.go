@@ -630,15 +630,15 @@ func (s *Spec) Parse(db *database.Database) (
 	return
 }
 
-func (s *Spec) CanMigrate(db *database.Database, orgId primitive.ObjectID,
-	spc *Spec) (valid bool, errData *errortypes.ErrorData, err error) {
+func (s *Spec) CanMigrate(db *database.Database, spc *Spec) (
+	errData *errortypes.ErrorData, err error) {
 
-	errData, err = s.Parse(db, orgId)
+	errData, err = s.Parse(db)
 	if err != nil || errData != nil {
 		return
 	}
 
-	errData, err = spc.Parse(db, orgId)
+	errData, err = spc.Parse(db)
 	if err != nil || errData != nil {
 		return
 	}
