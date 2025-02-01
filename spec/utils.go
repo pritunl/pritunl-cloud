@@ -35,12 +35,13 @@ func filterSpecHash(input string) string {
 	})
 }
 
-func New(podId, unitId primitive.ObjectID, data string) (spc *Commit) {
-	spc = &Commit{
-		Unit:      unitId,
-		Pod:       podId,
-		Timestamp: time.Now(),
-		Data:      data,
+func New(podId, unitId, orgId primitive.ObjectID, data string) (spc *Spec) {
+	spc = &Spec{
+		Unit:         unitId,
+		Pod:          podId,
+		Organization: orgId,
+		Timestamp:    time.Now(),
+		Data:         data,
 	}
 
 	return
