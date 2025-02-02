@@ -58,6 +58,47 @@ func GetAll(db *database.Database, query *bson.M) (
 	return
 }
 
+func GetAllSorted(db *database.Database, query *bson.M) (
+	deplys []*Deployment, err error) {
+
+	coll := db.Deployments()
+	deplys = []*Deployment{}
+
+	cursor, err := coll.Find(
+		db,
+		query,
+		&options.FindOptions{
+			Sort: &bson.D{
+				{"timestamp", -1},
+			},
+		},
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		deply := &Deployment{}
+		err = cursor.Decode(deply)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		deplys = append(deplys, deply)
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetAllActiveIds(db *database.Database) (deplyIds set.Set, err error) {
 	coll := db.Deployments()
 	deplyIds = set.NewSet()
