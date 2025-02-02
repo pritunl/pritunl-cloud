@@ -19,6 +19,7 @@ type Deployment struct {
 	Timestamp    time.Time                      `bson:"timestamp" json:"timestamp"`
 	Tags         []string                       `bson:"tags" json:"tags"`
 	Spec         primitive.ObjectID             `bson:"spec" json:"spec"`
+	NewSpec      primitive.ObjectID             `bson:"new_spec" json:"new_spec"`
 	Kind         string                         `bson:"kind" json:"kind"`
 	State        string                         `bson:"state" json:"state"`
 	Status       string                         `bson:"status" json:"status"`
