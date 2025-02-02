@@ -143,6 +143,16 @@ const css = {
 		maxHeight: '400px',
 		overflowY: "auto",
 	} as React.CSSProperties,
+	muted: {
+		opacity: 0.75,
+	} as React.CSSProperties,
+	commitsButton: {
+		marginLeft: '10px',
+		maxHeight: '400px',
+		overflowY: "auto",
+		fontFamily: Theme.monospaceFont,
+		fontWeight: Theme.monospaceWeight,
+	} as React.CSSProperties,
 	commitsMenu: {
 		maxHeight: '400px',
 		overflowY: "auto",
@@ -844,25 +854,45 @@ export default class PodWorkspace extends React.Component<Props, State> {
 			if (commits) {
 				let commitMenuItems: JSX.Element[] = []
 
+				let selectButton = <Blueprint.Button
+					alignText="left"
+					icon={<Icons.GitRepo/>}
+					rightIcon={<Icons.CaretDown/>}
+					text="View Commit"
+					style={css.settingsOpen}
+				/>
+
 				this.state.unit.commits.forEach((commit, index): void => {
 					let className = ""
-					let disabled = false
 					let selected = false
 					if (viewLatestCommit && index === 0) {
-						// disabled = true
 						className = "bp5-text-intent-primary bp5-intent-primary"
 						selected = true
 					} else if (!viewLatestCommit && commit.unit === activeUnit?.id &&
 						this.state.viewCommit?.id === commit.id) {
 
-						// disabled = true
 						className = "bp5-text-intent-primary bp5-intent-primary"
 						selected = true
+
+						selectButton = <Blueprint.Button
+							alignText="left"
+							icon={<Icons.GitCommit/>}
+							rightIcon={<Icons.CaretDown/>}
+							style={css.commitsButton}
+						>
+							<span>{this.state.viewCommit.id.substring(0, 12)}</span>
+							<span
+								className="bp5-text-muted"
+							>
+								{" " + MiscUtils.formatDateLocal(
+									this.state.viewCommit.timestamp)}
+							</span>
+						</Blueprint.Button>
 					}
 
 					commitMenuItems.push(<Blueprint.MenuItem
 						key={"diff-" + commit.id}
-						disabled={disabled || this.props.disabled || this.state.disabled}
+						disabled={this.props.disabled || this.state.disabled}
 						selected={selected}
 						roleStructure="listoption"
 						icon={<Icons.GitCommit
@@ -885,13 +915,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 					</Blueprint.Menu>}
 					placement="bottom"
 				>
-					<Blueprint.Button
-						alignText="left"
-						icon={<Icons.GitRepo/>}
-						rightIcon={<Icons.CaretDown/>}
-						text="View Commit"
-						style={css.settingsOpen}
-					/>
+					{selectButton}
 				</Blueprint.Popover>
 			}
 		}
