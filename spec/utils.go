@@ -48,10 +48,10 @@ func New(podId, unitId, orgId primitive.ObjectID, data string) (spc *Spec) {
 }
 
 func Get(db *database.Database, commitId primitive.ObjectID) (
-	spc *Commit, err error) {
+	spc *Spec, err error) {
 
 	coll := db.Specs()
-	spc = &Commit{}
+	spc = &Spec{}
 
 	err = coll.FindOneId(commitId, spc)
 	if err != nil {
@@ -62,10 +62,10 @@ func Get(db *database.Database, commitId primitive.ObjectID) (
 }
 
 func GetAll(db *database.Database, query *bson.M) (
-	spcs []*Commit, err error) {
+	spcs []*Spec, err error) {
 
 	coll := db.Specs()
-	spcs = []*Commit{}
+	spcs = []*Spec{}
 
 	cursor, err := coll.Find(db, query)
 	if err != nil {
@@ -75,7 +75,7 @@ func GetAll(db *database.Database, query *bson.M) (
 	defer cursor.Close(db)
 
 	for cursor.Next(db) {
-		spc := &Commit{}
+		spc := &Spec{}
 		err = cursor.Decode(spc)
 		if err != nil {
 			err = database.ParseError(err)
@@ -95,10 +95,10 @@ func GetAll(db *database.Database, query *bson.M) (
 }
 
 func GetAllProjectSorted(db *database.Database, query *bson.M) (
-	spcs []*Commit, err error) {
+	spcs []*Spec, err error) {
 
 	coll := db.Specs()
-	spcs = []*Commit{}
+	spcs = []*Spec{}
 
 	cursor, err := coll.Find(
 		db,
@@ -123,7 +123,7 @@ func GetAllProjectSorted(db *database.Database, query *bson.M) (
 	defer cursor.Close(db)
 
 	for cursor.Next(db) {
-		spc := &Commit{}
+		spc := &Spec{}
 		err = cursor.Decode(spc)
 		if err != nil {
 			err = database.ParseError(err)
@@ -162,7 +162,7 @@ func GetAllIds(db *database.Database) (specIds set.Set, err error) {
 	defer cursor.Close(db)
 
 	for cursor.Next(db) {
-		spc := &Commit{}
+		spc := &Spec{}
 		err = cursor.Decode(spc)
 		if err != nil {
 			err = database.ParseError(err)
