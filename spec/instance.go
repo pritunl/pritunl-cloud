@@ -5,7 +5,7 @@ import (
 )
 
 type Instance struct {
-	Plan         primitive.ObjectID   `bson:"plan,omitempty" json:"shape"`      // clear
+	Plan         primitive.ObjectID   `bson:"plan,omitempty" json:"plan"`       // clear
 	Zone         primitive.ObjectID   `bson:"zone" json:"zone"`                 // hard
 	Node         primitive.ObjectID   `bson:"node,omitempty" json:"node"`       // hard
 	Shape        primitive.ObjectID   `bson:"shape,omitempty" json:"shape"`     // hard
