@@ -41,6 +41,7 @@ interface State {
 	lastSelectedDeployment: string;
 	unit: PodTypes.PodUnit;
 	diffCommit: PodTypes.Commit
+	viewCommit: PodTypes.Commit
 }
 
 interface Selected {
@@ -164,6 +165,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 			lastSelectedDeployment: null,
 			unit: null,
 			diffCommit: null,
+			viewCommit: null,
 		};
 	}
 
@@ -444,6 +446,20 @@ export default class PodWorkspace extends React.Component<Props, State> {
 		let index = this.getActiveUnitIndex()
 		if (index !== -1) {
 			this.props.onChangeCommit(this.props.pod.units[index].id, val)
+		}
+	}
+
+	onViewCommit = (commit: PodTypes.Commit): void => {
+		if (commit.offset === 0) {
+			this.setState({
+				...this.state,
+				viewCommit: null,
+			})
+		} else {
+			this.setState({
+				...this.state,
+				viewCommit: commit,
+			})
 		}
 	}
 
@@ -804,6 +820,82 @@ export default class PodWorkspace extends React.Component<Props, State> {
 			}
 		}
 
+		let editorVal = ""
+		let viewLatestCommit = true
+		if (activeUnit) {
+			if (this.props.mode === "view" &&
+				this.state.viewCommit?.unit === activeUnit.id) {
+
+					editorVal = this.state.viewCommit.data
+					viewLatestCommit = false
+			} else {
+				editorVal = activeUnit.spec
+			}
+		}
+
+		if (this.props.mode === "view") {
+			if (this.state.unit &&
+				this.state.unit.id === activeUnit?.id &&
+				this.state.unit.commits?.length > 0) {
+
+				commits = this.state.unit.commits
+			}
+
+			if (commits) {
+				let commitMenuItems: JSX.Element[] = []
+
+				this.state.unit.commits.forEach((commit, index): void => {
+					let className = ""
+					let disabled = false
+					let selected = false
+					if (viewLatestCommit && index === 0) {
+						// disabled = true
+						className = "bp5-text-intent-primary bp5-intent-primary"
+						selected = true
+					} else if (!viewLatestCommit && commit.unit === activeUnit?.id &&
+						this.state.viewCommit?.id === commit.id) {
+
+						// disabled = true
+						className = "bp5-text-intent-primary bp5-intent-primary"
+						selected = true
+					}
+
+					commitMenuItems.push(<Blueprint.MenuItem
+						key={"diff-" + commit.id}
+						disabled={disabled || this.props.disabled || this.state.disabled}
+						selected={selected}
+						roleStructure="listoption"
+						icon={<Icons.GitCommit
+							className={className}
+						/>}
+						onClick={(): void => {
+							this.onViewCommit(commit)
+						}}
+						text={commit.id.substring(0, 12)}
+						textClassName={className}
+						labelElement={<span
+							className={className}
+						>{MiscUtils.formatDateLocal(commit.timestamp)}</span>}
+					/>)
+				})
+
+				commitMenu = <Blueprint.Popover
+					content={<Blueprint.Menu style={css.commitsMenu}>
+						{commitMenuItems}
+					</Blueprint.Menu>}
+					placement="bottom"
+				>
+					<Blueprint.Button
+						alignText="left"
+						icon={<Icons.GitRepo/>}
+						rightIcon={<Icons.CaretDown/>}
+						text="View Commit"
+						style={css.settingsOpen}
+					/>
+				</Blueprint.Popover>
+			}
+		}
+
 		let settingsMenu = <Blueprint.Menu style={css.settingsMenu}>
 			{menuItems}
 		</Blueprint.Menu>
@@ -884,7 +976,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 				disabled={this.props.disabled || this.state.disabled}
 				readOnly={this.props.mode === "view"}
 				uuid={activeUnit ? activeUnit.id : null}
-				value={activeUnit ? activeUnit.spec : null}
+				value={editorVal}
 				diffValue={diffCommit ? diffCommit.data : null}
 				onChange={(val: string): void => {
 					this.onUnitEdit(val)
