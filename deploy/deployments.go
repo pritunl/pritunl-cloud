@@ -29,6 +29,96 @@ type Deployments struct {
 	stat *state.State
 }
 
+func (d *Deployments) migrate(db *database.Database,
+	deply *deployment.Deployment) {
+
+	acquired, lockId := deploymentsLock.LockOpenTimeout(
+		deply.Id.Hex(), 3*time.Minute)
+	if !acquired {
+		return
+	}
+
+	go func() {
+		defer func() {
+			deploymentsLock.Unlock(deply.Id.Hex(), lockId)
+		}()
+
+		if deply.Node != d.stat.Node().Id {
+			return
+		}
+
+		curSpec, err := spec.Get(db, deply.Spec)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"deployment_id": deply.Id.Hex(),
+				"cur_spec_id":   curSpec.Id.Hex(),
+				"new_spec_id":   deply.NewSpec.Hex(),
+				"error":         err,
+			}).Error("deploy: Failed to get current spec")
+			return
+		}
+
+		newSpec, err := spec.Get(db, deply.NewSpec)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"deployment_id": deply.Id.Hex(),
+				"cur_spec_id":   curSpec.Id.Hex(),
+				"new_spec_id":   newSpec.Id.Hex(),
+				"error":         err,
+			}).Error("deploy: Failed to get new spec")
+			return
+		}
+
+		errData, err := curSpec.CanMigrate(db, newSpec)
+		if err != nil || errData != nil {
+			logrus.WithFields(logrus.Fields{
+				"deployment_id": deply.Id.Hex(),
+				"cur_spec_id":   curSpec.Id.Hex(),
+				"new_spec_id":   newSpec.Id.Hex(),
+				"error":         err,
+				"error_data":    errData,
+			}).Error("deploy: Incompatible migrate")
+
+			deply.State = deployment.Deployed
+			deply.NewSpec = primitive.NilObjectID
+			err = deply.CommitFields(db, set.NewSet("state", "new_spec"))
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"deployment_id": deply.Id.Hex(),
+					"cur_spec_id":   curSpec.Id.Hex(),
+					"new_spec_id":   newSpec.Id.Hex(),
+					"error":         err,
+				}).Error("deploy: Failed to commit deployment")
+				return
+			}
+
+			return
+		}
+
+		deply.State = deployment.Deployed
+		deply.Spec = newSpec.Id
+		deply.NewSpec = primitive.NilObjectID
+		err = deply.CommitFields(db, set.NewSet("state", "spec", "new_spec"))
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"deployment_id": deply.Id.Hex(),
+				"cur_spec_id":   curSpec.Id.Hex(),
+				"new_spec_id":   newSpec.Id.Hex(),
+				"error":         err,
+			}).Error("deploy: Failed to commit deployment")
+			return
+		}
+
+		logrus.WithFields(logrus.Fields{
+			"deployment_id": deply.Id.Hex(),
+			"cur_spec_id":   curSpec.Id.Hex(),
+			"new_spec_id":   newSpec.Id.Hex(),
+		}).Info("deploy: Migrated deployment")
+
+		return
+	}()
+}
+
 func (d *Deployments) destroy(db *database.Database,
 	deply *deployment.Deployment) {
 
