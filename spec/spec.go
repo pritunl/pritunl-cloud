@@ -804,6 +804,18 @@ func (s *Spec) CommitFields(db *database.Database, fields set.Set) (
 	return
 }
 
+func (s *Spec) CommitData(db *database.Database) (err error) {
+	coll := db.Specs()
+
+	err = coll.CommitFields(s.Id, s, set.NewSet(
+		"name", "count", "data", "instance", "firewall", "domain"))
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func (s *Spec) Insert(db *database.Database) (err error) {
 	coll := db.Specs()
 
