@@ -537,6 +537,22 @@ func (s *Spec) parseDomain(db *database.Database,
 	return
 }
 
+func (s *Spec) Refresh(db *database.Database) (
+	errData *errortypes.ErrorData, err error) {
+
+	errData, err = s.Parse(db)
+	if err != nil || errData != nil {
+		return
+	}
+
+	err = s.CommitData(db)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func (s *Spec) Parse(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
