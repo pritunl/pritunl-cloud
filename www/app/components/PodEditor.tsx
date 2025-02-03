@@ -121,31 +121,6 @@ export default class PodEditor extends React.Component<Props, State> {
 		this.states = {}
 	}
 
-	componentDidMount(): void {
-		if (this.markdown.current) {
-			const codeElems = this.markdown.current.querySelectorAll('pre code')
-
-			Array.from(codeElems).forEach((element: HTMLElement) => {
-				if (!element.dataset.highlighted) {
-					hljs.highlightElement(element)
-				}
-			})
-		}
-		Theme.addChangeListener(this.onThemeChange);
-	}
-
-	componentDidUpdate(): void {
-		if (this.markdown.current) {
-			const codeElems = this.markdown.current.querySelectorAll('pre code')
-
-			Array.from(codeElems).forEach((element: HTMLElement) => {
-				if (!element.dataset.highlighted) {
-					hljs.highlightElement(element)
-				}
-			})
-		}
-	}
-
 	componentWillUnmount(): void {
 		Theme.removeChangeListener(this.onThemeChange);
 		this.curUuid = undefined
@@ -246,9 +221,18 @@ export default class PodEditor extends React.Component<Props, State> {
 							className += " intent-primary"
 						}
 
-						return <code {...rest} className={className}>
+						const codeRef = React.useRef<HTMLElement>(null);
+						React.useEffect(() => {
+								if (codeRef.current) {
+										hljs.highlightElement(codeRef.current);
+								}
+						}, [children]);
+
+						let elem = <code ref={codeRef} {...rest} className={className}>
 							{children}
 						</code>
+
+						return elem
 					}
 				}}
 			/>
