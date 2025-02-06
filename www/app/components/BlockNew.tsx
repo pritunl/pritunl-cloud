@@ -4,7 +4,7 @@ import * as BlockTypes from '../types/BlockTypes';
 import * as BlockActions from '../actions/BlockActions';
 import PageInput from './PageInput';
 import PageInfo from './PageInfo';
-import PageSave from './PageSave';
+import PageCreate from './PageCreate';
 import PageInputButton from './PageInputButton';
 import ConfirmButton from './ConfirmButton';
 import * as Alert from "../Alert";
@@ -13,13 +13,11 @@ import PageSelect from "./PageSelect";
 import PageTextArea from "./PageTextArea";
 
 interface Props {
-	block: BlockTypes.BlockRo;
-	selected: boolean;
-	onSelect: (shift: boolean) => void;
 	onClose: () => void;
 }
 
 interface State {
+	closed: boolean;
 	disabled: boolean;
 	changed: boolean;
 	message: string;
@@ -30,9 +28,16 @@ interface State {
 }
 
 const css = {
+	row: {
+		display: 'table-row',
+		width: '100%',
+		padding: 0,
+		boxShadow: 'none',
+		position: 'relative',
+	} as React.CSSProperties,
 	card: {
 		position: 'relative',
-		padding: '48px 10px 0 10px',
+		padding: '10px 10px 0 10px',
 		width: '100%',
 	} as React.CSSProperties,
 	remove: {
@@ -78,14 +83,9 @@ const css = {
 		height: '30px',
 	} as React.CSSProperties,
 	buttons: {
-		cursor: 'pointer',
 		position: 'absolute',
-		top: 0,
-		left: 0,
-		right: 0,
-		padding: '4px',
-		height: '39px',
-		backgroundColor: 'rgba(0, 0, 0, 0.13)',
+		top: '5px',
+		right: '5px',
 	} as React.CSSProperties,
 	select: {
 		margin: '7px 0px 0px 6px',
@@ -97,28 +97,23 @@ export default class BlockDetailed extends React.Component<Props, State> {
 	constructor(props: any, context: any) {
 		super(props, context);
 		this.state = {
+			closed: false,
 			disabled: false,
 			changed: false,
 			message: '',
 			addSubnet: '',
 			addSubnet6: '',
 			addExclude: '',
-			block: null,
+			block: {
+				name: 'New Block',
+			},
 		};
 	}
 
 	set(name: string, val: any): void {
-		let block: any;
-
-		if (this.state.changed) {
-			block = {
-				...this.state.block,
-			};
-		} else {
-			block = {
-				...this.props.block,
-			};
-		}
+		let block: any = {
+			...this.state.block,
+		};
 
 		block[name] = val;
 
@@ -129,29 +124,30 @@ export default class BlockDetailed extends React.Component<Props, State> {
 		});
 	}
 
-	onSave = (): void => {
+	onCreate = (): void => {
 		this.setState({
 			...this.state,
 			disabled: true,
 		});
-		BlockActions.commit(this.state.block).then((): void => {
+
+		let block: any = {
+			...this.state.block,
+		};
+
+		BlockActions.create(block).then((): void => {
 			this.setState({
 				...this.state,
-				message: 'Your changes have been saved',
+				message: 'Block created successfully',
 				changed: false,
-				disabled: false,
 			});
 
 			setTimeout((): void => {
-				if (!this.state.changed) {
-					this.setState({
-						...this.state,
-						message: '',
-						changed: false,
-						block: null,
-					});
-				}
-			}, 3000);
+				this.setState({
+					...this.state,
+					disabled: false,
+					changed: true,
+				});
+			}, 2000);
 		}).catch((): void => {
 			this.setState({
 				...this.state,
@@ -161,59 +157,15 @@ export default class BlockDetailed extends React.Component<Props, State> {
 		});
 	}
 
-	onSync = (): void => {
-		this.setState({
-			...this.state,
-			disabled: true,
-		});
-		BlockActions.commit(this.props.block).then((): void => {
-			this.setState({
-				...this.state,
-				disabled: false,
-			});
-
-			Alert.success('Block sync started');
-		}).catch((): void => {
-			this.setState({
-				...this.state,
-				disabled: false,
-			});
-		});
-	}
-
-	onDelete = (): void => {
-		this.setState({
-			...this.state,
-			disabled: true,
-		});
-		BlockActions.remove(this.props.block.id).then((): void => {
-			this.setState({
-				...this.state,
-				disabled: false,
-			});
-		}).catch((): void => {
-			this.setState({
-				...this.state,
-				disabled: false,
-			});
-		});
-	}
-
 	onAddSubnet = (): void => {
 		let block: BlockTypes.Block;
 
+		block = {
+			...this.state.block,
+		};
+
 		if (!this.state.addSubnet) {
 			return;
-		}
-
-		if (this.state.changed) {
-			block = {
-				...this.state.block,
-			};
-		} else {
-			block = {
-				...this.props.block,
-			};
 		}
 
 		let subnets = [
@@ -240,15 +192,9 @@ export default class BlockDetailed extends React.Component<Props, State> {
 	onRemoveSubnet = (subnet: string): void => {
 		let block: BlockTypes.Block;
 
-		if (this.state.changed) {
-			block = {
-				...this.state.block,
-			};
-		} else {
-			block = {
-				...this.props.block,
-			};
-		}
+		block = {
+			...this.state.block,
+		};
 
 		let subnets = [
 			...(block.subnets || []),
@@ -273,18 +219,12 @@ export default class BlockDetailed extends React.Component<Props, State> {
 	onAddSubnet6 = (): void => {
 		let block: BlockTypes.Block;
 
+		block = {
+			...this.state.block,
+		};
+
 		if (!this.state.addSubnet6) {
 			return;
-		}
-
-		if (this.state.changed) {
-			block = {
-				...this.state.block,
-			};
-		} else {
-			block = {
-				...this.props.block,
-			};
 		}
 
 		let subnets6 = [
@@ -311,15 +251,9 @@ export default class BlockDetailed extends React.Component<Props, State> {
 	onRemoveSubnet6 = (subnet: string): void => {
 		let block: BlockTypes.Block;
 
-		if (this.state.changed) {
-			block = {
-				...this.state.block,
-			};
-		} else {
-			block = {
-				...this.props.block,
-			};
-		}
+		block = {
+			...this.state.block,
+		};
 
 		let subnets6 = [
 			...(block.subnets6 || []),
@@ -348,15 +282,9 @@ export default class BlockDetailed extends React.Component<Props, State> {
 			return;
 		}
 
-		if (this.state.changed) {
-			block = {
-				...this.state.block,
-			};
-		} else {
-			block = {
-				...this.props.block,
-			};
-		}
+		block = {
+			...this.state.block,
+		};
 
 		let excludes = [
 			...(block.excludes || []),
@@ -382,15 +310,9 @@ export default class BlockDetailed extends React.Component<Props, State> {
 	onRemoveExclude = (exclude: string): void => {
 		let block: BlockTypes.Block;
 
-		if (this.state.changed) {
-			block = {
-				...this.state.block,
-			};
-		} else {
-			block = {
-				...this.props.block,
-			};
-		}
+		block = {
+			...this.state.block,
+		};
 
 		let excludes = [
 			...(block.excludes || []),
@@ -413,8 +335,7 @@ export default class BlockDetailed extends React.Component<Props, State> {
 	}
 
 	render(): JSX.Element {
-		let block: BlockTypes.Block = this.state.block ||
-			this.props.block;
+		let block: BlockTypes.Block = this.state.block;
 
 		let subnets: JSX.Element[] = [];
 		for (let subnet of (block.subnets || [])) {
@@ -476,55 +397,18 @@ export default class BlockDetailed extends React.Component<Props, State> {
 			);
 		}
 
-		return <td
+		return <div
+			className="bp5-card bp5-row"
+			style={css.row}
+		>
+		<td
 			className="bp5-cell"
 			colSpan={2}
 			style={css.card}
 		>
 			<div className="layout horizontal wrap">
 				<div style={css.group}>
-					<div
-						className="layout horizontal tab-close"
-						style={css.buttons}
-						onClick={(evt): void => {
-							let target = evt.target as HTMLElement;
-
-							if (target.className.indexOf('tab-close') !== -1) {
-								this.props.onClose();
-							}
-						}}
-					>
-						<div>
-							<label
-								className="bp5-control bp5-checkbox"
-								style={css.select}
-							>
-								<input
-									type="checkbox"
-									checked={this.props.selected}
-									onChange={(evt): void => {
-									}}
-									onClick={(evt): void => {
-										this.props.onSelect(evt.shiftKey);
-									}}
-								/>
-								<span className="bp5-control-indicator"/>
-							</label>
-						</div>
-						<div className="flex tab-close"/>
-						<ConfirmButton
-							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
-							style={css.button}
-							safe={true}
-							progressClassName="bp5-intent-danger"
-							dialogClassName="bp5-intent-danger bp5-icon-delete"
-							dialogLabel="Delete Block"
-							confirmMsg="Permanently delete this block"
-							confirmInput={true}
-							items={[block.name]}
-							disabled={this.state.disabled}
-							onConfirm={this.onDelete}
-						/>
+					<div style={css.buttons}>
 					</div>
 					<PageInput
 						disabled={this.state.disabled}
@@ -631,14 +515,6 @@ export default class BlockDetailed extends React.Component<Props, State> {
 					/>
 				</div>
 				<div style={css.group}>
-					<PageInfo
-						fields={[
-							{
-								label: 'ID',
-								value: this.props.block.id || 'None',
-							},
-						]}
-					/>
 					<PageInput
 						disabled={this.state.disabled}
 						hidden={block.type === 'ipv6'}
@@ -694,22 +570,18 @@ export default class BlockDetailed extends React.Component<Props, State> {
 					/>
 				</div>
 			</div>
-			<PageSave
+			<PageCreate
 				style={css.save}
 				hidden={!this.state.block}
 				message={this.state.message}
 				changed={this.state.changed}
 				disabled={this.state.disabled}
+				closed={this.state.closed}
 				light={true}
-				onCancel={(): void => {
-					this.setState({
-						...this.state,
-						changed: false,
-						block: null,
-					});
-				}}
-				onSave={this.onSave}
+				onCancel={this.props.onClose}
+				onCreate={this.onCreate}
 			/>
-		</td>;
+		</td>
+		</div>;
 	}
 }
