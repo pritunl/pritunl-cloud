@@ -14,6 +14,9 @@ import PageTextArea from "./PageTextArea";
 
 interface Props {
 	block: BlockTypes.BlockRo;
+	selected: boolean;
+	onSelect: (shift: boolean) => void;
+	onClose: () => void;
 }
 
 interface State {
@@ -29,8 +32,8 @@ interface State {
 const css = {
 	card: {
 		position: 'relative',
-		padding: '10px 10px 0 10px',
-		marginBottom: '5px',
+		padding: '48px 10px 0 10px',
+		width: '100%',
 	} as React.CSSProperties,
 	remove: {
 		position: 'absolute',
@@ -71,9 +74,26 @@ const css = {
 	controlButton: {
 		marginRight: '10px',
 	} as React.CSSProperties,
+	button: {
+		height: '30px',
+	} as React.CSSProperties,
+	buttons: {
+		cursor: 'pointer',
+		position: 'absolute',
+		top: 0,
+		left: 0,
+		right: 0,
+		padding: '4px',
+		height: '39px',
+		backgroundColor: 'rgba(0, 0, 0, 0.13)',
+	} as React.CSSProperties,
+	select: {
+		margin: '7px 0px 0px 6px',
+		paddingTop: '3px',
+	} as React.CSSProperties,
 };
 
-export default class Block extends React.Component<Props, State> {
+export default class BlockDetailed extends React.Component<Props, State> {
 	constructor(props: any, context: any) {
 		super(props, context);
 		this.state = {
@@ -456,16 +476,46 @@ export default class Block extends React.Component<Props, State> {
 			);
 		}
 
-		return <div
-			className="bp5-card"
+		return <td
+			className="bp5-cell"
+			colSpan={2}
 			style={css.card}
 		>
 			<div className="layout horizontal wrap">
 				<div style={css.group}>
-					<div style={css.remove}>
+					<div
+						className="layout horizontal tab-close"
+						style={css.buttons}
+						onClick={(evt): void => {
+							let target = evt.target as HTMLElement;
+
+							if (target.className.indexOf('tab-close') !== -1) {
+								this.props.onClose();
+							}
+						}}
+					>
+						<div>
+							<label
+								className="bp5-control bp5-checkbox"
+								style={css.select}
+							>
+								<input
+									type="checkbox"
+									checked={this.props.selected}
+									onChange={(evt): void => {
+									}}
+									onClick={(evt): void => {
+										this.props.onSelect(evt.shiftKey);
+									}}
+								/>
+								<span className="bp5-control-indicator"/>
+							</label>
+						</div>
+						<div className="flex tab-close"/>
 						<ConfirmButton
-							safe={true}
 							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
+							style={css.button}
+							safe={true}
 							progressClassName="bp5-intent-danger"
 							dialogClassName="bp5-intent-danger bp5-icon-delete"
 							dialogLabel="Delete Block"
@@ -660,6 +710,6 @@ export default class Block extends React.Component<Props, State> {
 				}}
 				onSave={this.onSave}
 			/>
-		</div>;
+		</td>;
 	}
 }
