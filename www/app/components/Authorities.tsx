@@ -7,6 +7,7 @@ import OrganizationsStore from '../stores/OrganizationsStore';
 import * as AuthorityActions from '../actions/AuthorityActions';
 import * as OrganizationActions from '../actions/OrganizationActions';
 import Authority from './Authority';
+import AuthorityNew from './AuthorityNew';
 import AuthoritiesFilter from './AuthoritiesFilter';
 import AuthoritiesPage from './AuthoritiesPage';
 import Page from './Page';
@@ -239,6 +240,19 @@ export default class Authorities extends React.Component<{}, State> {
 			}
 		}
 
+		let newAuthorityDom: JSX.Element;
+		if (this.state.newOpened) {
+			newAuthorityDom = <AuthorityNew
+				organizations={this.state.organizations}
+				onClose={(): void => {
+					this.setState({
+						...this.state,
+						newOpened: false,
+					});
+				}}
+			/>;
+		}
+
 		return <Page>
 			<PageHeader>
 				<div className="layout horizontal wrap" style={css.header}>
@@ -288,25 +302,12 @@ export default class Authorities extends React.Component<{}, State> {
 						<button
 							className="bp5-button bp5-intent-success bp5-icon-add"
 							style={css.button}
-							disabled={this.state.disabled}
+							disabled={this.state.disabled || this.state.newOpened}
 							type="button"
 							onClick={(): void => {
 								this.setState({
 									...this.state,
-									disabled: true,
-								});
-								AuthorityActions.create({
-									name: 'New Authority',
-								} as AuthorityTypes.Authority).then((): void => {
-									this.setState({
-										...this.state,
-										disabled: false,
-									});
-								}).catch((): void => {
-									this.setState({
-										...this.state,
-										disabled: false,
-									});
+									newOpened: true,
 								});
 							}}
 						>New</button>
@@ -322,6 +323,7 @@ export default class Authorities extends React.Component<{}, State> {
 			/>
 			<div style={css.itemsBox}>
 				<div style={css.items}>
+					{newAuthorityDom}
 					{authoritiesDom}
 					<tr className="bp5-card bp5-row" style={css.placeholder}>
 						<td colSpan={5} style={css.placeholder}/>
