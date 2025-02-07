@@ -7,6 +7,7 @@ import OrganizationsStore from '../stores/OrganizationsStore';
 import * as FirewallActions from '../actions/FirewallActions';
 import * as OrganizationActions from '../actions/OrganizationActions';
 import Firewall from './Firewall';
+import FirewallNew from './FirewallNew';
 import FirewallsFilter from './FirewallsFilter';
 import FirewallsPage from './FirewallsPage';
 import Page from './Page';
@@ -239,6 +240,19 @@ export default class Firewalls extends React.Component<{}, State> {
 			}
 		}
 
+		let newFireDom: JSX.Element;
+		if (this.state.newOpened) {
+			newFireDom = <FirewallNew
+				organizations={this.state.organizations}
+				onClose={(): void => {
+					this.setState({
+						...this.state,
+						newOpened: false,
+					});
+				}}
+			/>;
+		}
+
 		return <Page>
 			<PageHeader>
 				<div className="layout horizontal wrap" style={css.header}>
@@ -288,49 +302,12 @@ export default class Firewalls extends React.Component<{}, State> {
 						<button
 							className="bp5-button bp5-intent-success bp5-icon-add"
 							style={css.button}
-							disabled={this.state.disabled}
+							disabled={this.state.disabled || this.state.newOpened}
 							type="button"
 							onClick={(): void => {
 								this.setState({
 									...this.state,
-									disabled: true,
-								});
-
-								let orgId = '';
-								if (this.state.organizations.length) {
-									orgId = this.state.organizations[0].id;
-								}
-
-								FirewallActions.create({
-									organization: orgId,
-									ingress: [
-										{
-											source_ips: [
-												'0.0.0.0/0',
-												'::/0',
-											],
-											protocol: 'icmp',
-										} as FirewallTypes.Rule,
-										{
-											source_ips: [
-												'0.0.0.0/0',
-												'::/0',
-											],
-											protocol: 'tcp',
-											port: '22',
-										} as FirewallTypes.Rule,
-									],
-									comment: '22/tcp - SSH connections'
-								} as FirewallTypes.Firewall).then((): void => {
-									this.setState({
-										...this.state,
-										disabled: false,
-									});
-								}).catch((): void => {
-									this.setState({
-										...this.state,
-										disabled: false,
-									});
+									newOpened: true,
 								});
 							}}
 						>New</button>
@@ -346,6 +323,7 @@ export default class Firewalls extends React.Component<{}, State> {
 			/>
 			<div style={css.itemsBox}>
 				<div style={css.items}>
+					{newFireDom}
 					{firewallsDom}
 					<tr className="bp5-card bp5-row" style={css.placeholder}>
 						<td colSpan={5} style={css.placeholder}/>
