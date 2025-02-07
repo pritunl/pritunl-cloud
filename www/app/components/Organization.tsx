@@ -1,326 +1,145 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
+import * as MiscUtils from '../utils/MiscUtils';
 import * as OrganizationTypes from '../types/OrganizationTypes';
-import * as OrganizationActions from '../actions/OrganizationActions';
-import PageInput from './PageInput';
-import PageInfo from './PageInfo';
-import PageSave from './PageSave';
-import PageInputButton from './PageInputButton';
-import ConfirmButton from './ConfirmButton';
-import Help from './Help';
-import PageTextArea from "./PageTextArea";
+import OrganizationDetailed from './OrganizationDetailed';
 
 interface Props {
 	organization: OrganizationTypes.OrganizationRo;
-}
-
-interface State {
-	disabled: boolean;
-	changed: boolean;
-	message: string;
-	addRole: string;
-	organization: OrganizationTypes.Organization;
+	selected: boolean;
+	onSelect: (shift: boolean) => void;
+	open: boolean;
+	onOpen: () => void;
 }
 
 const css = {
 	card: {
+		display: 'table-row',
+		width: '100%',
+		padding: 0,
+		boxShadow: 'none',
+		cursor: 'pointer',
+	} as React.CSSProperties,
+	cardOpen: {
+		display: 'table-row',
+		width: '100%',
+		padding: 0,
+		boxShadow: 'none',
 		position: 'relative',
-		padding: '10px 10px 0 10px',
-		marginBottom: '5px',
 	} as React.CSSProperties,
-	remove: {
-		position: 'absolute',
-		top: '5px',
-		right: '5px',
+	select: {
+		margin: '2px 0 0 0',
+		paddingTop: '3px',
+		minHeight: '18px',
 	} as React.CSSProperties,
-	role: {
-		margin: '9px 5px 0 5px',
+	name: {
+		verticalAlign: 'top',
+		display: 'table-cell',
+		padding: '8px',
+	} as React.CSSProperties,
+	nameSpan: {
+		margin: '1px 5px 0 0',
+	} as React.CSSProperties,
+	item: {
+		verticalAlign: 'top',
+		display: 'table-cell',
+		padding: '9px',
+		whiteSpace: 'nowrap',
+	} as React.CSSProperties,
+	icon: {
+		marginRight: '3px',
+	} as React.CSSProperties,
+	bars: {
+		verticalAlign: 'top',
+		display: 'table-cell',
+		padding: '8px',
+		width: '30px',
+	} as React.CSSProperties,
+	bar: {
+		height: '6px',
+		marginBottom: '1px',
+	} as React.CSSProperties,
+	barLast: {
+		height: '6px',
+	} as React.CSSProperties,
+	roles: {
+		verticalAlign: 'top',
+		display: 'table-cell',
+		padding: '0 8px 8px 8px',
+	} as React.CSSProperties,
+	tag: {
+		margin: '8px 5px 0 5px',
 		height: '20px',
-	} as React.CSSProperties,
-	group: {
-		flex: 1,
-		minWidth: '280px',
-		margin: '0 10px',
-	} as React.CSSProperties,
-	save: {
-		paddingBottom: '10px',
 	} as React.CSSProperties,
 };
 
-export default class Organization extends React.Component<Props, State> {
-	constructor(props: any, context: any) {
-		super(props, context);
-		this.state = {
-			disabled: false,
-			changed: false,
-			message: '',
-			addRole: '',
-			organization: null,
-		};
-	}
-
-	set(name: string, val: any): void {
-		let organization: any;
-
-		if (this.state.changed) {
-			organization = {
-				...this.state.organization,
-			};
-		} else {
-			organization = {
-				...this.props.organization,
-			};
-		}
-
-		organization[name] = val;
-
-		this.setState({
-			...this.state,
-			changed: true,
-			organization: organization,
-		});
-	}
-
-	onAddRole = (): void => {
-		let organization: OrganizationTypes.Organization;
-
-		if (this.state.changed) {
-			organization = {
-				...this.state.organization,
-			};
-		} else {
-			organization = {
-				...this.props.organization,
-			};
-		}
-
-		let roles = [
-			...organization.roles,
-		];
-
-		if (!this.state.addRole) {
-			return;
-		}
-
-		if (roles.indexOf(this.state.addRole) === -1) {
-			roles.push(this.state.addRole);
-		}
-
-		roles.sort();
-
-		organization.roles = roles;
-
-		this.setState({
-			...this.state,
-			changed: true,
-			message: '',
-			addRole: '',
-			organization: organization,
-		});
-	}
-
-	onRemoveRole(role: string): void {
-		let organization: OrganizationTypes.Organization;
-
-		if (this.state.changed) {
-			organization = {
-				...this.state.organization,
-			};
-		} else {
-			organization = {
-				...this.props.organization,
-			};
-		}
-
-		let roles = [
-			...organization.roles,
-		];
-
-		let i = roles.indexOf(role);
-		if (i === -1) {
-			return;
-		}
-
-		roles.splice(i, 1);
-
-		organization.roles = roles;
-
-		this.setState({
-			...this.state,
-			changed: true,
-			message: '',
-			addRole: '',
-			organization: organization,
-		});
-	}
-
-	onSave = (): void => {
-		this.setState({
-			...this.state,
-			disabled: true,
-		});
-		OrganizationActions.commit(this.state.organization).then((): void => {
-			this.setState({
-				...this.state,
-				message: 'Your changes have been saved',
-				changed: false,
-				disabled: false,
-			});
-
-			setTimeout((): void => {
-				if (!this.state.changed) {
-					this.setState({
-						...this.state,
-						message: '',
-						changed: false,
-						organization: null,
-					});
-				}
-			}, 3000);
-		}).catch((): void => {
-			this.setState({
-				...this.state,
-				message: '',
-				disabled: false,
-			});
-		});
-	}
-
-	onDelete = (): void => {
-		this.setState({
-			...this.state,
-			disabled: true,
-		});
-		OrganizationActions.remove(this.props.organization.id).then((): void => {
-			this.setState({
-				...this.state,
-				disabled: false,
-			});
-		}).catch((): void => {
-			this.setState({
-				...this.state,
-				disabled: false,
-			});
-		});
-	}
-
+export default class Organization extends React.Component<Props, {}> {
 	render(): JSX.Element {
-		let org: OrganizationTypes.Organization = this.state.organization ||
-			this.props.organization;
+		let organization = this.props.organization;
 
-		let roles: JSX.Element[] = [];
-		for (let role of (org.roles || [])) {
-			roles.push(
-				<div
-					className="bp5-tag bp5-tag-removable bp5-intent-primary"
-					style={css.role}
-					key={role}
-				>
-					{role}
-					<button
-						className="bp5-tag-remove"
-						disabled={this.state.disabled}
-						onMouseUp={(): void => {
-							this.onRemoveRole(role);
-						}}
-					/>
-				</div>,
-			);
+		if (this.props.open) {
+			return <div
+				className="bp5-card bp5-row"
+				style={css.cardOpen}
+			>
+				<OrganizationDetailed
+					organization={this.props.organization}
+					selected={this.props.selected}
+					onSelect={this.props.onSelect}
+					onClose={(): void => {
+						this.props.onOpen();
+					}}
+				/>
+			</div>;
 		}
+
+		let cardStyle = {
+			...css.card,
+		};
 
 		return <div
-			className="bp5-card"
-			style={css.card}
+			className="bp5-card bp5-row"
+			style={cardStyle}
+			onClick={(evt): void => {
+				let target = evt.target as HTMLElement;
+
+				if (target.className.indexOf('open-ignore') !== -1) {
+					return;
+				}
+
+				this.props.onOpen();
+			}}
 		>
-			<div className="layout horizontal wrap">
-				<div style={css.group}>
-					<div style={css.remove}>
-						<ConfirmButton
-							safe={true}
-							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
-							progressClassName="bp5-intent-danger"
-							dialogClassName="bp5-intent-danger bp5-icon-delete"
-							dialogLabel="Delete Organization"
-							confirmMsg="Permanently delete this organization"
-							confirmInput={true}
-							items={[org.name]}
-							disabled={this.state.disabled}
-							onConfirm={this.onDelete}
+			<div className="bp5-cell" style={css.name}>
+				<div className="layout horizontal">
+					<label
+						className="bp5-control bp5-checkbox open-ignore"
+						style={css.select}
+					>
+						<input
+							type="checkbox"
+							className="open-ignore"
+							checked={this.props.selected}
+							onChange={(evt): void => {
+							}}
+							onClick={(evt): void => {
+								this.props.onSelect(evt.shiftKey);
+							}}
 						/>
-					</div>
-					<PageInput
-						label="Name"
-						help="Name of organization"
-						type="text"
-						placeholder="Name"
-						value={org.name}
-						onChange={(val): void => {
-							this.set('name', val);
-						}}
-					/>
-					<PageTextArea
-						label="Comment"
-						help="Organization comment."
-						placeholder="Organization comment"
-						rows={3}
-						value={org.comment}
-						onChange={(val: string): void => {
-							this.set('comment', val);
-						}}
-					/>
-				</div>
-				<div style={css.group}>
-					<PageInfo
-						fields={[
-							{
-								label: 'ID',
-								value: this.props.organization.id || 'None',
-							},
-						]}
-					/>
-					<label className="bp5-label">
-						Roles
-						<Help
-							title="Roles"
-							content="User roles will be used to match with organization roles. A user must have a matching role to access an organization."
-						/>
-						<div>
-							{roles}
-						</div>
+						<span className="bp5-control-indicator open-ignore"/>
 					</label>
-					<PageInputButton
-						disabled={this.state.disabled}
-						buttonClass="bp5-intent-success bp5-icon-add"
-						label="Add"
-						type="text"
-						placeholder="Add role"
-						value={this.state.addRole}
-						onChange={(val): void => {
-							this.setState({
-								...this.state,
-								addRole: val,
-							});
-						}}
-						onSubmit={this.onAddRole}
-					/>
+					<div style={css.nameSpan}>
+						{organization.name}
+					</div>
 				</div>
 			</div>
-			<PageSave
-				style={css.save}
-				hidden={!this.state.organization}
-				message={this.state.message}
-				changed={this.state.changed}
-				disabled={this.state.disabled}
-				light={true}
-				onCancel={(): void => {
-					this.setState({
-						...this.state,
-						changed: false,
-						organization: null,
-					});
-				}}
-				onSave={this.onSave}
-			/>
+			<div className="bp5-cell" style={css.item}>
+				<span
+					style={css.icon}
+					className="bp5-icon-standard bp5-text-muted bp5-icon-code"
+				/>
+				{organization.id}
+			</div>
 		</div>;
 	}
 }
