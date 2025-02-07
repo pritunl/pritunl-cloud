@@ -8,11 +8,13 @@ import OrganizationsStore from '../stores/OrganizationsStore';
 import * as VpcActions from '../actions/VpcActions';
 import * as OrganizationActions from '../actions/OrganizationActions';
 import Vpc from './Vpc';
+import VpcNew from './VpcNew';
 import VpcsFilter from './VpcsFilter';
 import VpcsPage from './VpcsPage';
 import Page from './Page';
 import PageHeader from './PageHeader';
 import NonState from './NonState';
+import ConfirmButton from './ConfirmButton';
 import DatacentersStore from "../stores/DatacentersStore";
 import * as DatacenterActions from "../actions/DatacenterActions";
 import * as DatacenterTypes from "../types/DatacenterTypes";
@@ -316,6 +318,30 @@ export default class Vpcs extends React.Component<{}, State> {
 			filterClass += 'bp5-active';
 		}
 
+		let selectedNames: string[] = [];
+		for (let vpcId of Object.keys(this.state.selected)) {
+			let inst = VpcsStore.vpc(vpcId);
+			if (inst) {
+				selectedNames.push(inst.name || vpcId);
+			} else {
+				selectedNames.push(vpcId);
+			}
+		}
+
+		let newVpcDom: JSX.Element;
+		if (this.state.newOpened) {
+			newVpcDom = <VpcNew
+				organizations={this.state.organizations}
+				datacenters={this.state.datacenters}
+				onClose={(): void => {
+					this.setState({
+						...this.state,
+						newOpened: false,
+					});
+				}}
+			/>;
+		}
+
 		return <Page>
 			<PageHeader>
 				<div className="layout horizontal wrap" style={css.header}>
@@ -336,94 +362,44 @@ export default class Vpcs extends React.Component<{}, State> {
 						>
 							Filters
 						</button>
-					</div>
-					<div style={Constants.user ? css.groupBoxUser : css.groupBox}>
-						<div
-							className="bp5-control-group"
-							style={css.group}
+						<button
+							className="bp5-button bp5-intent-warning bp5-icon-chevron-up"
+							style={css.button}
+							disabled={!this.opened}
+							type="button"
+							onClick={(): void => {
+								this.setState({
+									...this.state,
+									opened: {},
+								});
+							}}
 						>
-							<input
-								className="bp5-input"
-								style={css.input}
-								type="text"
-								disabled={!hasOrganizations || this.state.disabled}
-								autoCapitalize="off"
-								spellCheck={false}
-								placeholder="Enter network"
-								value={this.state.network}
-								onChange={(evt): void => {
-									this.setState({
-										...this.state,
-										network: evt.target.value,
-									});
-								}}
-							/>
-							<div style={css.selectBox} hidden={Constants.user}>
-								<div className="bp5-select" style={css.selectFirst}>
-									<select
-										style={css.selectInner}
-										disabled={!hasOrganizations || this.state.disabled}
-										value={this.state.organization}
-										onChange={(evt): void => {
-											this.setState({
-												...this.state,
-												organization: evt.target.value,
-											});
-										}}
-									>
-										{organizationsSelect}
-									</select>
-								</div>
-							</div>
-							<div style={css.selectBox}>
-								<div className="bp5-select" style={css.select}>
-									<select
-										style={css.selectInner}
-										disabled={!hasDatacenters || this.state.disabled}
-										value={this.state.datacenter}
-										onChange={(evt): void => {
-											this.setState({
-												...this.state,
-												datacenter: evt.target.value,
-											});
-										}}
-									>
-										{datacentersSelect}
-									</select>
-								</div>
-							</div>
-							<button
-								className="bp5-button bp5-intent-success bp5-icon-add"
-								disabled={!hasDatacenters || !hasOrganizations ||
-									this.state.disabled}
-								type="button"
-								onClick={(): void => {
-									this.setState({
-										...this.state,
-										disabled: true,
-									});
-									VpcActions.create({
-										id: null,
-										network: this.state.network,
-										organization: this.state.organization ||
-											this.state.organizations[0].id,
-										datacenter: this.state.datacenter ||
-											this.state.datacenters[0].id,
-									}).then((): void => {
-										this.setState({
-											...this.state,
-											network: '',
-											disabled: false,
-										});
-									}).catch((): void => {
-										this.setState({
-											...this.state,
-											disabled: false,
-										});
-									});
-								}}
-							>New</button>
-						</div>
+							Collapse All
+						</button>
+						<ConfirmButton
+							label="Delete Selected"
+							className="bp5-intent-danger bp5-icon-delete"
+							progressClassName="bp5-intent-danger"
+							safe={true}
+							style={css.button}
+							confirmMsg="Permanently delete the selected VPCs"
+							confirmInput={true}
+							items={selectedNames}
+							disabled={!this.selected || this.state.disabled}
+							onConfirm={this.onDelete}
+						/>
+						<button
+							className="bp5-button bp5-intent-success bp5-icon-add"
+							style={css.button}
+							disabled={this.state.disabled || this.state.newOpened}
+							type="button"
+							onClick={(): void => {
+								this.setState({
+									...this.state,
+									newOpened: true,
+								});
+							}}
+						>New</button>
 					</div>
 				</div>
 			</PageHeader>
@@ -437,6 +413,7 @@ export default class Vpcs extends React.Component<{}, State> {
 			/>
 			<div style={css.itemsBox}>
 				<div style={css.items}>
+					{newVpcDom}
 					{vpcsDom}
 					<tr className="bp5-card bp5-row" style={css.placeholder}>
 						<td colSpan={6} style={css.placeholder}/>
