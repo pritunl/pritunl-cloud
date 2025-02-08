@@ -425,6 +425,25 @@ func podUnitDeploymentsPut(c *gin.Context) {
 			return
 		}
 		break
+	case deployment.Migrate:
+		commitId, ok := utils.ParseObjectId(c.Query("commit"))
+		if !ok {
+			utils.AbortWithStatus(c, 400)
+			return
+		}
+
+		errData, err := unit.MigrateDeployements(db, commitId, data)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		if errData != nil {
+			c.JSON(400, errData)
+			return
+		}
+
+		break
 	}
 
 	event.PublishDispatch(db, "instance.change")
