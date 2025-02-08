@@ -352,16 +352,14 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
 
 		let hasOrganizations = !!this.props.organizations.length;
 		let organizationsSelect: JSX.Element[] = [];
-		if (this.props.organizations.length) {
-			for (let organization of this.props.organizations) {
-				organizationsSelect.push(
-					<option
-						key={organization.id}
-						value={organization.id}
-					>{organization.name}</option>,
-				);
-			}
-		}
+		(this.props.organizations || []).forEach((org) => {
+			organizationsSelect.push(
+				<option
+					key={org.id}
+					value={org.id}
+				>{org.name}</option>,
+			);
+		})
 
 		if (!hasOrganizations) {
 			organizationsSelect.push(
@@ -369,7 +367,7 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
 		}
 
 		let roles: JSX.Element[] = [];
-		for (let role of (authority.roles || [])) {
+		(authority.roles || []).forEach((role) => {
 			roles.push(
 				<div
 					className="bp5-tag bp5-tag-removable bp5-intent-primary"
@@ -386,27 +384,27 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
 					/>
 				</div>,
 			);
-		}
+		})
 
 		let networkRoles: JSX.Element[] = [];
-		for (let networkRole of (authority.network_roles || [])) {
+		(authority.network_roles || []).forEach((role) => {
 			networkRoles.push(
 				<div
 					className="bp5-tag bp5-tag-removable bp5-intent-primary"
 					style={css.role}
-					key={networkRole}
+					key={role}
 				>
-					{networkRole}
+					{role}
 					<button
 						className="bp5-tag-remove"
 						disabled={this.state.disabled}
 						onMouseUp={(): void => {
-							this.onRemoveNetworkRole(networkRole);
+							this.onRemoveNetworkRole(role);
 						}}
 					/>
 				</div>,
 			);
-		}
+		})
 
 		return <td
 			className="bp5-cell"
