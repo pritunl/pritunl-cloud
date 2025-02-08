@@ -114,7 +114,7 @@ export function handleAfterMount(
 	})
 
 	monaco.languages.registerCompletionItemProvider("markdown", {
-		triggerCharacters: ["{", "/", "}"],
+		triggerCharacters: ["{", "/", ":", "}"],
 		provideCompletionItems: (model, position) => {
 			const textBeforeCursor = model.getValueInRange({
 				startLineNumber: position.lineNumber,
@@ -122,6 +122,40 @@ export function handleAfterMount(
 				endLineNumber: position.lineNumber,
 				endColumn: position.column,
 			})
+
+			const tagMatch = textBeforeCursor.match(/{{\/([a-zA-Z0-9-]*)\/([a-zA-Z0-9-]*):$/)
+			if (tagMatch) {
+				let kindName = tagMatch[1]
+				let resourceName = tagMatch[2]
+				let resource = CompletionCache.resource(kindName, resourceName)
+				if (!resource || !resource.tags) {
+					return noMatch
+				}
+
+				const range = {
+					startLineNumber: position.lineNumber,
+					endLineNumber: position.lineNumber,
+					startColumn: position.column,
+					endColumn: position.column,
+				}
+
+				let suggestions: Monaco.languages.CompletionItem[] = []
+
+				for (const tag of resource.tags) {
+					suggestions.push({
+						label: tag.name,
+						kind: CompletionItemKind.Struct,
+						insertText: tag.name,
+						insertTextRules: CompletionItemInsertTextRule.InsertAsSnippet,
+						documentation: "Tag",
+						range: range,
+					})
+				}
+
+				return {
+					suggestions: suggestions,
+				}
+			}
 
 			const resourceMatch = textBeforeCursor.match(/{{\/([a-zA-Z0-9-]*)\/$/)
 			if (resourceMatch) {
