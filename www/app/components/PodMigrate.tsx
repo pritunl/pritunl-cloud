@@ -88,6 +88,107 @@ export default class PodMigrate extends React.Component<Props, State> {
 		});
 	}
 
+	filterCommit: BpSelect.ItemPredicate<PodTypes.Commit> = (
+		query, commit, _index, exactMatch) => {
+		if (exactMatch) {
+			return commit.id == query
+		} else {
+			return commit.id.indexOf(query) !== -1
+		}
+	}
+	renderCommit: BpSelect.ItemRenderer<PodTypes.Commit> = (commit,
+		{handleClick, handleFocus, modifiers, query, index}): JSX.Element => {
+		if (!modifiers.matchesPredicate) {
+			return null;
+		}
+		let className = ""
+		let selected = false
+		if (this.state.migrateCommit?.id == commit.id ||
+			(!this.state.migrateCommit && index === 0)) {
+			className = "bp5-text-intent-primary bp5-intent-primary"
+			selected = true
+		} else if (index === 0) {
+			className = "bp5-text-intent-success bp5-intent-success"
+		}
+		return <Blueprint.MenuItem
+			key={"diff-" + commit.id}
+			style={css.commit}
+			selected={selected}
+			disabled={this.state.disabled}
+			roleStructure="listoption"
+			icon={<Icons.GitCommit
+				className={className}
+			/>}
+			onFocus={handleFocus}
+			onClick={(evt): void => {
+				evt.preventDefault()
+				evt.stopPropagation()
+				handleClick(evt)
+			}}
+			text={MiscUtils.highlightMatch(commit.id.substring(0, 12), query)}
+			textClassName={className}
+			labelElement={<span
+				className={className}
+			>{MiscUtils.formatDateLocal(commit.timestamp)}</span>}
+		/>
+	}
+	renderCommitSelect = () => {
+		let commitSelect: JSX.Element
+		if (this.props.commits) {
+			let migrateCommit = this.state.migrateCommit || this.props.commits?.[0]
+			let deployClass = ""
+			if (migrateCommit && migrateCommit.id === this.props.commits?.[0]?.id) {
+				deployClass = "bp5-text-intent-success"
+			}
+
+			commitSelect = <BpSelect.Select<PodTypes.Commit>
+				items={this.props.commits}
+				itemPredicate={this.filterCommit}
+				itemRenderer={this.renderCommit}
+				itemListRenderer={({items, itemsParentRef,
+						query, renderItem, menuProps}) => {
+
+					const renderedItems = items.map(renderItem).filter(
+						item => item != null)
+					return <Blueprint.Menu
+						role="listbox"
+						ulRef={itemsParentRef}
+						{...menuProps}
+					>
+						<Blueprint.MenuItem
+							disabled={true}
+							text={`Found ${renderedItems.length} items matching "${query}"`}
+							roleStructure="listoption"
+						/>
+						{renderedItems}
+					</Blueprint.Menu>
+				}}
+				noResults={<Blueprint.MenuItem
+					disabled={true}
+					style={css.commit}
+					text="No results."
+					roleStructure="listoption"
+				/>}
+				onItemSelect={(commit) => {
+					this.setState({
+						...this.state,
+						migrateCommit: commit,
+					})
+				}}
+			>
+				<Blueprint.Button
+					alignText="left"
+					icon={<Icons.GitCommit/>}
+					rightIcon={<Icons.CaretDown/>}
+					style={css.commitButton}
+					textClassName={deployClass}
+					text={migrateCommit?.id.substring(0, 12) + " " +
+						MiscUtils.formatDateLocal(migrateCommit?.timestamp)}
+				/>
+			</BpSelect.Select>
+		}
+	}
+
 	onMigrate = (): void => {
 		let migrateCommit = this.state.migrateCommit || this.props.commits?.[0]
 
