@@ -377,41 +377,37 @@ export default class FirewallDetailed extends React.Component<Props, State> {
 		let organizationsSelect: JSX.Element[] = [];
 		organizationsSelect.push(
 			<option key="null" value="">Node Firewall</option>);
-		if (this.props.organizations.length) {
-			for (let organization of this.props.organizations) {
-				organizationsSelect.push(
-					<option
-						key={organization.id}
-						value={organization.id}
-					>{organization.name}</option>,
-				);
-			}
-		}
+		(this.props.organizations || []).forEach((org, index) => {
+			organizationsSelect.push(
+				<option
+					key={org.id}
+					value={org.id}
+				>{org.name}</option>,
+			);
+		});
 
 		let networkRoles: JSX.Element[] = [];
-		for (let networkRole of (firewall.network_roles || [])) {
+		(firewall.network_roles || []).forEach((role, index) => {
 			networkRoles.push(
 				<div
 					className="bp5-tag bp5-tag-removable bp5-intent-primary"
 					style={css.role}
-					key={networkRole}
+					key={role}
 				>
-					{networkRole}
+					{role}
 					<button
 						className="bp5-tag-remove"
 						disabled={this.state.disabled}
 						onMouseUp={(): void => {
-							this.onRemoveNetworkRole(networkRole);
+							this.onRemoveNetworkRole(role);
 						}}
 					/>
 				</div>,
 			);
-		}
+		})
 
 		let rules: JSX.Element[] = [];
-		for (let i = 0; i < firewall.ingress.length; i++) {
-			let index = i;
-
+		(firewall.ingress || []).forEach((rule, index) => {
 			rules.push(
 				<FirewallRule
 					key={index}
@@ -427,7 +423,7 @@ export default class FirewallDetailed extends React.Component<Props, State> {
 					}}
 				/>,
 			);
-		}
+		})
 
 		return <td
 			className="bp5-cell"
