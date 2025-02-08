@@ -406,13 +406,11 @@ export default class BalancerNew extends React.Component<Props, State> {
 		}
 
 		let domains: JSX.Element[] = [];
-		for (let i = 0; i < balancer.domains.length; i++) {
-			let index = i;
-
+		(balancer.domains || []).forEach((domn, index) => {
 			domains.push(
 				<BalancerDomain
 					key={index}
-					domain={balancer.domains[index]}
+					domain={domn}
 					onChange={(state: BalancerTypes.Domain): void => {
 						this.onChangeDomain(index, state);
 					}}
@@ -421,16 +419,14 @@ export default class BalancerNew extends React.Component<Props, State> {
 					}}
 				/>,
 			);
-		}
+		})
 
 		let backends: JSX.Element[] = [];
-		for (let i = 0; i < balancer.backends.length; i++) {
-			let index = i;
-
+		(balancer.backends || []).forEach((backend, index) => {
 			backends.push(
 				<BalancerBackend
 					key={index}
-					backend={balancer.backends[index]}
+					backend={backend}
 					onChange={(state: BalancerTypes.Backend): void => {
 						this.onChangeBackend(index, state);
 					}}
@@ -439,7 +435,7 @@ export default class BalancerNew extends React.Component<Props, State> {
 					}}
 				/>,
 			);
-		}
+		})
 
 		let certificates: JSX.Element[] = [];
 		for (let certId of (balancer.certificates || [])) {
@@ -468,7 +464,7 @@ export default class BalancerNew extends React.Component<Props, State> {
 
 		let hasCertificates = false;
 		let certificatesSelect: JSX.Element[] = [];
-		if (this.props.certificates.length) {
+		if (this.props.certificates) {
 			for (let certificate of this.props.certificates) {
 				if (certificate.organization !== balancer.organization) {
 					continue;
