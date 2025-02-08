@@ -237,23 +237,14 @@ export default class PodDetailed extends React.Component<Props, State> {
 		PodActions.commit(pod).then((): void => {
 			this.setState({
 				...this.state,
-				message: 'Your changes have been saved',
 				disabled: false,
-			});
-
-			setTimeout((): void => {
-				this.setState({
-					...this.state,
-					message: '',
-				});
-			}, 3000);
+			})
 		}).catch((): void => {
 			this.setState({
 				...this.state,
-				message: '',
 				disabled: false,
-			});
-		});
+			})
+		})
 	}
 
 	onDelete = (): void => {
