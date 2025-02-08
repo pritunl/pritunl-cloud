@@ -1,6 +1,7 @@
 package resource
 
 import (
+	"github.com/pritunl/pritunl-cloud/finder"
 	"github.com/pritunl/pritunl-cloud/imds/server/config"
 )
 
@@ -10,25 +11,25 @@ func Query(resrc string, keys ...string) (val string, err error) {
 	key := ""
 
 	switch resrc {
-	case "instance":
+	case finder.InstanceKind:
 		if len(keys) == 1 {
 			key = keys[0]
 			resrcInf = config.Config.Instance
 		}
 		break
-	case "vpc":
+	case finder.VpcKind:
 		if len(keys) == 1 {
 			key = keys[0]
 			resrcInf = config.Config.Vpc
 		}
 		break
-	case "subnet":
+	case finder.SubnetKind:
 		if len(keys) == 1 {
 			key = keys[0]
 			resrcInf = config.Config.Subnet
 		}
 		break
-	case "secrets":
+	case finder.SecretKind:
 		if len(keys) != 2 {
 			break
 		}
@@ -41,7 +42,7 @@ func Query(resrc string, keys ...string) (val string, err error) {
 			}
 		}
 		break
-	case "certificates":
+	case finder.CertificateKind:
 		if len(keys) != 2 {
 			break
 		}
@@ -54,7 +55,7 @@ func Query(resrc string, keys ...string) (val string, err error) {
 			}
 		}
 		break
-	case "pods":
+	case finder.PodKind:
 		if len(keys) == 2 {
 			key = keys[1]
 		} else if len(keys) == 4 {
@@ -66,7 +67,7 @@ func Query(resrc string, keys ...string) (val string, err error) {
 		for _, pd := range config.Config.Pods {
 			if pd.Name == keys[0] {
 				if len(keys) == 4 {
-					if keys[1] == "units" {
+					if keys[1] == finder.UnitKind {
 						for _, unit := range pd.Units {
 							if unit.Name == keys[2] {
 								resrcInf = unit
@@ -81,7 +82,7 @@ func Query(resrc string, keys ...string) (val string, err error) {
 			}
 		}
 		break
-	case "units":
+	case finder.UnitKind:
 		if len(keys) != 2 {
 			break
 		}
