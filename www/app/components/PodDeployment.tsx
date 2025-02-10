@@ -150,6 +150,9 @@ export default class PodDeployment extends React.Component<Props, State> {
 			case "deployed":
 				stateClass = "bp5-text-intent-success"
 				break
+			case "migrate":
+				stateClass = "bp5-text-intent-warning"
+				break
 			case "reserved":
 				stateClass = "bp5-text-intent-primary"
 				break
