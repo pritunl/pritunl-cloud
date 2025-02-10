@@ -179,7 +179,7 @@ func (s *Spec) parseFirewall(db *database.Database,
 			Port:     ruleYaml.Port,
 		}
 
-		refs := map[primitive.ObjectID]primitive.ObjectID{}
+		refs := set.NewSet()
 		for _, source := range ruleYaml.Source {
 			if strings.HasPrefix(source, TokenPrefix) {
 				kind, e := resources.Find(db, source)
@@ -191,19 +191,25 @@ func (s *Spec) parseFirewall(db *database.Database,
 				if kind == finder.UnitKind && resources.Pod != nil &&
 					resources.Unit != nil {
 
-					refs[resources.Unit.Id] = resources.Pod.Id
+					selector := resources.Selector
+					if selector == "" {
+						selector = "private_ips"
+					}
+
+					refs.Add(Refrence{
+						Id:    resources.Unit.Id,
+						Realm: resources.Pod.Id,
+						Kind:  selector,
+					})
 				}
 			} else {
 				rule.SourceIps = append(rule.SourceIps, source)
 			}
 		}
 
-		for unitId, podId := range refs {
-			rule.Sources = append(rule.Sources, &Refrence{
-				Id:    unitId,
-				Realm: podId,
-				Kind:  Unit,
-			})
+		for refInf := range refs.Iter() {
+			ref := refInf.(Refrence)
+			rule.Sources = append(rule.Sources, &ref)
 		}
 
 		data.Ingress = append(data.Ingress, rule)
