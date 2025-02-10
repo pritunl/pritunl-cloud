@@ -498,7 +498,7 @@ func (d *Deployments) domainCommit(deply *deployment.Deployment,
 }
 
 func (d *Deployments) domain(db *database.Database,
-	deply *deployment.Deployment, spc *spec.Commit) (err error) {
+	deply *deployment.Deployment, spc *spec.Spec) (err error) {
 
 	if spc.Domain != nil && deply.InstanceData != nil {
 		newRecs := map[primitive.ObjectID][]*domain.Record{}
@@ -692,6 +692,11 @@ func (d *Deployments) Deploy(db *database.Database) (err error) {
 	}
 
 	for _, deply := range activeDeployments {
+		if deply.State == deployment.Migrate {
+			d.migrate(db, deply)
+			break
+		}
+
 		if deply.State == deployment.Deployed &&
 			deply.Kind == deployment.Instance {
 
