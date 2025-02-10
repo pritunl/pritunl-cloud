@@ -14,6 +14,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/imds"
 	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/pritunl/pritunl-cloud/shape"
 	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -32,6 +33,9 @@ type Deployments struct {
 func (d *Deployments) migrate(db *database.Database,
 	deply *deployment.Deployment) {
 
+	inst := d.stat.GetInstace(deply.Instance)
+	nodeId := d.stat.Node().Id
+
 	acquired, lockId := deploymentsLock.LockOpenTimeout(
 		deply.Id.Hex(), 3*time.Minute)
 	if !acquired {
@@ -43,7 +47,7 @@ func (d *Deployments) migrate(db *database.Database,
 			deploymentsLock.Unlock(deply.Id.Hex(), lockId)
 		}()
 
-		if deply.Node != d.stat.Node().Id {
+		if deply.Node != nodeId {
 			return
 		}
 
@@ -93,6 +97,45 @@ func (d *Deployments) migrate(db *database.Database,
 			}
 
 			return
+		}
+
+		if curSpec.Instance.Processors != newSpec.Instance.Processors ||
+			curSpec.Instance.Memory != newSpec.Instance.Memory {
+
+			flexible := true
+			if !newSpec.Instance.Shape.IsZero() {
+				shp, e := shape.Get(db, newSpec.Instance.Shape)
+				if e != nil {
+					err = e
+
+					logrus.WithFields(logrus.Fields{
+						"deployment_id": deply.Id.Hex(),
+						"cur_spec_id":   curSpec.Id.Hex(),
+						"new_spec_id":   newSpec.Id.Hex(),
+						"error":         err,
+					}).Error("deploy: Failed to get spec shape")
+					return
+				}
+
+				flexible = shp.Flexible
+			}
+
+			if flexible && inst != nil {
+				inst.Processors = newSpec.Instance.Processors
+				inst.Memory = newSpec.Instance.Memory
+
+				err = inst.CommitFields(
+					db, set.NewSet("processors", "memory"))
+				if err != nil {
+					logrus.WithFields(logrus.Fields{
+						"deployment_id": deply.Id.Hex(),
+						"cur_spec_id":   curSpec.Id.Hex(),
+						"new_spec_id":   newSpec.Id.Hex(),
+						"error":         err,
+					}).Error("deploy: Failed to migrate instance")
+					return
+				}
+			}
 		}
 
 		deply.State = deployment.Deployed
