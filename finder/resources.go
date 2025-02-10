@@ -2,6 +2,7 @@ package finder
 
 import (
 	"regexp"
+	"strings"
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
@@ -43,10 +44,11 @@ type Resources struct {
 	Deployment   *deployment.Deployment
 	Pod          *PodBase
 	Unit         *UnitBase
+	Selector     string
 }
 
 var tokenRe = regexp.MustCompile(
-	`{{\/([a-zA-Z0-9-]*)\/([a-zA-Z0-9-]*)(?::([a-zA-Z0-9-_.]*))?}}`)
+	`\+\/([a-zA-Z0-9-]*)\/([a-zA-Z0-9-]*)(?:(?:\/|\:)([a-zA-Z0-9-_.]*)(?:\/([a-zA-Z0-9-_.]*))?)?`)
 
 func (r *Resources) Find(db *database.Database, token string) (
 	kind string, err error) {
@@ -61,7 +63,19 @@ func (r *Resources) Find(db *database.Database, token string) (
 
 	kind = matches[1]
 	resource := matches[2]
-	tag := matches[3]
+	tag := ""
+	r.Selector = ""
+
+	if len(matches) > 3 {
+		if strings.Contains(token, ":") {
+			tag = matches[3]
+			if len(matches) > 4 {
+				r.Selector = matches[4]
+			}
+		} else {
+			r.Selector = matches[3]
+		}
+	}
 
 	switch kind {
 	case DomainKind:
