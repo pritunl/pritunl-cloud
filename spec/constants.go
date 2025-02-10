@@ -22,6 +22,8 @@ const (
 	Public6       = "public6"
 	OraclePublic  = "oracle_public"
 	OraclePrivate = "oracle_private"
+
+	TokenPrefix = "{{"
 )
 
 type Base struct {
