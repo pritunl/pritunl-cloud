@@ -241,6 +241,11 @@ func (d *Deployment) GetImageState() string {
 	return d.ImageData.State
 }
 
+func (d *Deployment) ImageReady() bool {
+	return !d.Image.IsZero() && d.ImageData != nil &&
+		d.ImageData.State == Complete
+}
+
 func (d *Deployment) CommitAction(db *database.Database,
 	action *Action) (err error) {
 
