@@ -366,7 +366,7 @@ export default class PodDeployment extends React.Component<Props, State> {
 								style={css.info}
 								fields={[
 									{
-										label: "Image ID",
+										label: "Build ID",
 										value: deployment.id,
 									},
 								]}
