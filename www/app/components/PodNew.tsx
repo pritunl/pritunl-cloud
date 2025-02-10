@@ -239,47 +239,6 @@ export default class PodNew extends React.Component<Props, State> {
 					<div style={css.group}>
 					</div>
 				</div>
-				<PodWorkspace
-					pod={pod}
-					disabled={this.state.disabled}
-					unitChanged={this.state.unitChanged}
-					mode={this.state.mode}
-					onMode={(mode: string): void => {
-						this.setState({
-							...this.state,
-							mode: mode,
-						});
-					}}
-					onChange={(units: PodTypes.Unit[]): void => {
-						let pod = {
-							...this.state.pod,
-						};
-
-						pod.units = units
-
-						this.setState({
-							...this.state,
-							changed: true,
-							unitChanged: true,
-							pod: pod,
-						});
-					}}
-					onEdit={(units: PodTypes.Unit[]): void => {
-						let pod = {
-							...this.state.pod,
-						};
-
-						pod.units = units
-
-						this.setState({
-							...this.state,
-							changed: true,
-							unitChanged: true,
-							mode: "edit",
-							pod: pod,
-						});
-					}}
-				/>
 				<PageCreate
 					style={css.save}
 					hidden={!this.state.pod}
