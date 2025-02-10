@@ -1,11 +1,9 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
 import Help from "./Help";
+import MarkdownMemo from "./MarkdownMemo";
 import * as Theme from "../Theme";
 import * as CompletionEngine from "../completion/Engine"
-
-import Markdown from 'react-markdown';
-import hljs from "highlight.js/lib/core";
 
 import * as MonacoEditor from "@monaco-editor/react"
 import * as Monaco from "monaco-editor";
@@ -99,10 +97,8 @@ const css = {
 
 const hashRe = /^( {0,3})#+\s+\S+/
 const blockRe = /^( {4}|\s*`)/
-const langRe = /^language-(.+)$/
 
 export default class PodEditor extends React.Component<Props, State> {
-	markdown: React.RefObject<HTMLDivElement>
 	curUuid: string
 	editor: Monaco.editor.IStandaloneCodeEditor
 	monaco: MonacoEditor.Monaco
@@ -117,7 +113,6 @@ export default class PodEditor extends React.Component<Props, State> {
 		this.state = {
 		}
 
-		this.markdown = React.createRef();
 		this.states = {}
 	}
 
@@ -195,47 +190,7 @@ export default class PodEditor extends React.Component<Props, State> {
 		let leftGroupStyle: React.CSSProperties = css.group
 
 		if (!expandRight) {
-			markdown = <Markdown
-				children={this.props.value}
-				components={{
-					code(props) {
-						let {children, className, node, ...rest} = props
-						let match = (className || "").match(langRe)
-
-						let phase = ""
-						if (node && node.data) {
-							let nodeData = node.data as any
-							if (nodeData && nodeData.meta) {
-								let metaAttrs = parseCodeBlockHeader(nodeData.meta)
-								phase = metaAttrs["phase"]
-							}
-						}
-
-						if (match && !hljs.getLanguage(match[1])) {
-							className = "language-plaintext"
-						}
-
-						if (phase === "reboot") {
-							className += " intent-secondary"
-						} else if (phase === "reload") {
-							className += " intent-primary"
-						}
-
-						const codeRef = React.useRef<HTMLElement>(null);
-						React.useEffect(() => {
-								if (codeRef.current) {
-										hljs.highlightElement(codeRef.current);
-								}
-						}, [children]);
-
-						let elem = <code ref={codeRef} {...rest} className={className}>
-							{children}
-						</code>
-
-						return elem
-					}
-				}}
-			/>
+			markdown = <MarkdownMemo value={this.props.value}/>
 		}
 
 		let val = (this.props.value || "")
@@ -338,7 +293,6 @@ export default class PodEditor extends React.Component<Props, State> {
 
 		return <div className="layout horizontal flex" style={css.editorBox}>
 			<div
-				ref={this.markdown}
 				style={leftGroupStyle}
 				hidden={expandRight}
 			>
@@ -354,29 +308,4 @@ export default class PodEditor extends React.Component<Props, State> {
 			</div>
 		</div>;
 	}
-}
-
-const codeBlockRe = /^\{([^}]+)\}?$/;
-
-function parseCodeBlockHeader(input: string): Record<string, string> {
-  const attrs: Record<string, string> = {};
-
-  const matches = input.match(codeBlockRe);
-  if (!matches) {
-    return attrs;
-  }
-
-  const attrPairs = matches[1].split(",");
-  for (let pair of attrPairs) {
-    pair = pair.trim();
-
-    const keyValue = pair.split("=", 2);
-    if (keyValue.length === 2) {
-      const key = keyValue[0].trim();
-      const value = keyValue[1].trim().replace(/^"|"$/g, "");
-      attrs[key] = value;
-    }
-  }
-
-	return attrs;
 }
