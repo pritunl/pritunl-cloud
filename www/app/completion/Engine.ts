@@ -74,7 +74,7 @@ export function handleAfterMount(
 			const lineContent = model.getLineContent(position.lineNumber)
 
 			const match = lineContent.match(
-				/{{\/([a-zA-Z0-9-]*)\/([a-zA-Z0-9-]*)}}/)
+				/\+\/([a-zA-Z0-9-]*)\/([a-zA-Z0-9-]*)/)
 			if (!match) {
 				return null
 			}
@@ -103,7 +103,7 @@ export function handleAfterMount(
 						startLineNumber: position.lineNumber,
 						endLineNumber: position.lineNumber,
 						startColumn: match.index + 1,
-						endColumn: match.index + kindName.length + resourceName.length + 7,
+						endColumn: match.index + kindName.length + resourceName.length + 5,
 					},
 					contents: contents,
 				}
@@ -114,7 +114,7 @@ export function handleAfterMount(
 	})
 
 	monaco.languages.registerCompletionItemProvider("markdown", {
-		triggerCharacters: ["{", "/", ":", "}"],
+		triggerCharacters: ["+", "/", ":", "}"],
 		provideCompletionItems: (model, position) => {
 			const textBeforeCursor = model.getValueInRange({
 				startLineNumber: position.lineNumber,
@@ -123,7 +123,7 @@ export function handleAfterMount(
 				endColumn: position.column,
 			})
 
-			const tagMatch = textBeforeCursor.match(/{{\/([a-zA-Z0-9-]*)\/([a-zA-Z0-9-]*):$/)
+			const tagMatch = textBeforeCursor.match(/\+\/([a-zA-Z0-9-]*)\/([a-zA-Z0-9-]*):$/)
 			if (tagMatch) {
 				let kindName = tagMatch[1]
 				let resourceName = tagMatch[2]
@@ -157,7 +157,7 @@ export function handleAfterMount(
 				}
 			}
 
-			const resourceMatch = textBeforeCursor.match(/{{\/([a-zA-Z0-9-]*)\/$/)
+			const resourceMatch = textBeforeCursor.match(/\+\/([a-zA-Z0-9-]*)\/$/)
 			if (resourceMatch) {
 				let kind = CompletionCache.kind(resourceMatch[1])
 				if (!kind) {
@@ -189,7 +189,7 @@ export function handleAfterMount(
 				}
 			}
 
-			const kindMatch = textBeforeCursor.match(/{{\/$/)
+			const kindMatch = textBeforeCursor.match(/\+\/$/)
 			if (kindMatch) {
 				const range = {
 					startLineNumber: position.lineNumber,
