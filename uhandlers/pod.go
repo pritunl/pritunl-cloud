@@ -304,7 +304,7 @@ func podsGet(c *gin.Context) {
 type PodUnit struct {
 	Id          primitive.ObjectID      `json:"id"`
 	Pod         primitive.ObjectID      `json:"pod"`
-	Commits     []*spec.Commit          `json:"commits"`
+	Commits     []*spec.Spec            `json:"commits"`
 	Deployments []*aggregate.Deployment `json:"deployments"`
 }
 
