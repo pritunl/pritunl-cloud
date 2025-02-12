@@ -304,7 +304,7 @@ type PodUnit struct {
 	Id          primitive.ObjectID      `json:"id"`
 	Pod         primitive.ObjectID      `json:"pod"`
 	Kind        string                  `bson:"kind" json:"kind"`
-	Commits     []*spec.Commit          `json:"commits"`
+	Commits     []*spec.Spec            `json:"commits"`
 	Deployments []*aggregate.Deployment `json:"deployments"`
 }
 
@@ -431,21 +431,17 @@ func podUnitDeploymentsPut(c *gin.Context) {
 			return
 		}
 
-		spc, err := spec.Get(db, commitId)
-		if err != nil {
-			return
-		}
-
-		if spc.Pod != pd.Id || spc.Unit != unit.Id {
-			utils.AbortWithStatus(c, 404)
-			return
-		}
-
-		err = deployment.MigrateMulti(db, pd.Id, unit.Id, spc.Id, data)
+		errData, err := unit.MigrateDeployements(db, commitId, data)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
 			return
 		}
+
+		if errData != nil {
+			c.JSON(400, errData)
+			return
+		}
+
 		break
 	}
 
