@@ -125,17 +125,18 @@ func (s *Pods) deploySchedule(schd *scheduler.Scheduler) (err error) {
 
 func (s *Pods) DeploySpec(db *database.Database,
 	schd *scheduler.Scheduler, unit *pod.Unit,
-	spc *spec.Commit) (reserved bool, err error) {
+	spc *spec.Spec) (reserved bool, err error) {
 
 	deply := &deployment.Deployment{
-		Pod:       unit.Pod.Id,
-		Unit:      unit.Id,
-		Timestamp: time.Now(),
-		Spec:      spc.Id,
-		Zone:      node.Self.Zone,
-		Node:      node.Self.Id,
-		Kind:      unit.Kind,
-		State:     deployment.Reserved,
+		Pod:          unit.Pod.Id,
+		Unit:         unit.Id,
+		Organization: unit.Pod.Organization,
+		Timestamp:    time.Now(),
+		Spec:         spc.Id,
+		Zone:         node.Self.Zone,
+		Node:         node.Self.Id,
+		Kind:         unit.Kind,
+		State:        deployment.Reserved,
 	}
 
 	errData, err := deply.Validate(db)
