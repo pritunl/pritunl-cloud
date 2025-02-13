@@ -21,11 +21,16 @@ type writeFileData struct {
 }
 
 const writeFileTmpl = `{{range .Files}}
+{{- if eq .Content ""}}
+  - content: ""
+{{- else}}
   - encoding: base64
     content: {{.Content}}
+{{- end}}
     owner: {{.Owner}}
     path: {{.Path}}
-    permissions: "{{.Permissions}}"{{end}}`
+    permissions: "{{.Permissions}}"
+{{- end}}`
 
 var (
 	writeFile = template.Must(template.New("write_file").Parse(writeFileTmpl))
