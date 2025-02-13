@@ -8,6 +8,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/agent/constants"
 	"github.com/pritunl/pritunl-cloud/agent/imds"
+	"github.com/pritunl/pritunl-cloud/agent/utils"
 	"github.com/pritunl/pritunl-cloud/engine"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/imds/types"
@@ -161,9 +162,19 @@ func main() {
 			panic(err)
 		}
 
+		err = utils.Sanitize()
+		if err != nil {
+			return
+		}
+
 		err = ids.SyncStatus(types.Imaged)
 		if err != nil {
 			panic(err)
+		}
+
+		err = utils.SanitizeImds()
+		if err != nil {
+			return
 		}
 
 		break
