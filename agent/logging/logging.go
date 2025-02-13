@@ -13,12 +13,18 @@ import (
 	"github.com/pritunl/pritunl-cloud/imds/types"
 )
 
+const maxCapacity = 128 * 1024
+
 type Redirect struct {
-	file       *os.File
-	writer     io.Writer
-	origStout  *os.File
-	origStderr *os.File
-	output     chan *types.Entry
+	file         *os.File
+	writer       io.Writer
+	origStout    *os.File
+	origStderr   *os.File
+	output       chan *types.Entry
+	stdoutReader *os.File
+	stdoutWriter *os.File
+	stderrReader *os.File
+	stderrWriter *os.File
 }
 
 func (r *Redirect) GetOutput() (entries []*types.Entry) {
@@ -28,6 +34,31 @@ func (r *Redirect) GetOutput() (entries []*types.Entry) {
 			entries = append(entries, entry)
 		default:
 			return
+		}
+	}
+}
+
+func (r *Redirect) handleOutput(reader *os.File, level int) {
+	scanner := bufio.NewScanner(reader)
+	buf := make([]byte, maxCapacity)
+	scanner.Buffer(buf, maxCapacity)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		timestamp := time.Now()
+
+		fmt.Fprintf(
+			r.writer, "[%s] %s\n",
+			timestamp.Format("2006-01-02 15:04:05"),
+			line,
+		)
+
+		if len(r.output) < 9000 {
+			r.output <- &types.Entry{
+				Timestamp: timestamp,
+				Level:     level,
+				Message:   line,
+			}
 		}
 	}
 }
@@ -50,38 +81,27 @@ func (r *Redirect) Open() (err error) {
 	r.origStout = os.Stdout
 	r.origStderr = os.Stderr
 
-	reader, writer, err := os.Pipe()
+	r.stdoutReader, r.stdoutWriter, err = os.Pipe()
 	if err != nil {
 		err = &errortypes.WriteError{
-			errors.Wrap(err, "agent: Failed to create log pipe"),
+			errors.Wrap(err, "agent: Failed to create stdout pipe"),
 		}
 		return
 	}
 
-	os.Stdout = writer
-	os.Stderr = writer
-
-	go func() {
-		scanner := bufio.NewScanner(reader)
-		for scanner.Scan() {
-			line := scanner.Text()
-
-			timestamp := time.Now()
-
-			fmt.Fprint(r.writer, fmt.Sprintf(
-				"[%s] %s\n",
-				timestamp.Format("2006-01-02 15:04:05"),
-				line,
-			))
-
-			if len(r.output) < 9000 {
-				r.output <- &types.Entry{
-					Timestamp: timestamp,
-					Message:   line,
-				}
-			}
+	r.stderrReader, r.stderrWriter, err = os.Pipe()
+	if err != nil {
+		err = &errortypes.WriteError{
+			errors.Wrap(err, "agent: Failed to create stderr pipe"),
 		}
-	}()
+		return
+	}
+
+	os.Stdout = r.stdoutWriter
+	os.Stderr = r.stderrWriter
+
+	go r.handleOutput(r.stdoutReader, types.Info)
+	go r.handleOutput(r.stderrReader, types.Error)
 
 	return
 }
@@ -89,6 +109,19 @@ func (r *Redirect) Open() (err error) {
 func (r *Redirect) Close() (err error) {
 	os.Stdout = r.origStout
 	os.Stderr = r.origStderr
+
+	if r.stdoutWriter != nil {
+		r.stdoutWriter.Close()
+	}
+	if r.stdoutReader != nil {
+		r.stdoutReader.Close()
+	}
+	if r.stderrWriter != nil {
+		r.stderrWriter.Close()
+	}
+	if r.stderrReader != nil {
+		r.stderrReader.Close()
+	}
 
 	err = r.file.Close()
 	if err != nil {
