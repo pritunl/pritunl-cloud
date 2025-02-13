@@ -282,6 +282,39 @@ func GetAllName(db *database.Database, query *bson.M) (
 	return
 }
 
+func GetRecordAll(db *database.Database, query *bson.M) (
+	recs []*Record, err error) {
+
+	coll := db.DomainsRecords()
+	recs = []*Record{}
+
+	cursor, err := coll.Find(db, query)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		rec := &Record{}
+		err = cursor.Decode(rec)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		recs = append(recs, rec)
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func Remove(db *database.Database, domnId primitive.ObjectID) (err error) {
 	coll := db.Domains()
 
