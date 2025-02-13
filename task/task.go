@@ -24,6 +24,7 @@ type Task struct {
 	RunOnStart bool
 	Local      bool
 	DebugNodes []string
+	running    bool
 }
 
 func (t *Task) scheduled(hour, min int) bool {
@@ -156,6 +157,14 @@ func runScheduler() {
 				for _, task := range registry {
 					if task.Seconds == block && task.scheduled(hour, min) {
 						go func(task *Task, now time.Time) {
+							if task.running {
+								return
+							}
+							task.running = true
+							defer func() {
+								task.running = false
+							}()
+
 							if task.Local {
 								task.runLocal(now)
 							} else {
@@ -178,6 +187,14 @@ func runScheduler() {
 		for _, task := range registry {
 			if task.Seconds == 0 && task.scheduled(hour, min) {
 				go func(task *Task, now time.Time) {
+					if task.running {
+						return
+					}
+					task.running = true
+					defer func() {
+						task.running = false
+					}()
+
 					if task.Local {
 						task.runLocal(now)
 					} else {
