@@ -110,6 +110,7 @@ func GetAllActiveIds(db *database.Database) (deplyIds set.Set, err error) {
 				"$in": []string{
 					Reserved,
 					Deployed,
+					Migrate,
 				},
 			},
 		},
