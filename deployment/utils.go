@@ -187,13 +187,8 @@ func GetAllStates(db *database.Database) (
 	return
 }
 
-func Remove(db *database.Database, deplyId primitive.ObjectID) (err error) {
-	coll := db.Deployments()
-
-	err = journal.Remove(db, deplyId, journal.DeploymentAgent)
-	if err != nil {
-		return
-	}
+func RemoveDomains(db *database.Database, deplyId primitive.ObjectID) (
+	err error) {
 
 	recs, err := domain.GetRecordAll(db, &bson.M{
 		"deployment": deplyId,
@@ -246,6 +241,24 @@ func Remove(db *database.Database, deplyId primitive.ObjectID) (err error) {
 				}
 			}
 		}
+	}
+
+	event.PublishDispatch(db, "domain.change")
+
+	return
+}
+
+func Remove(db *database.Database, deplyId primitive.ObjectID) (err error) {
+	coll := db.Deployments()
+
+	err = journal.Remove(db, deplyId, journal.DeploymentAgent)
+	if err != nil {
+		return
+	}
+
+	err = RemoveDomains(db, deplyId)
+	if err != nil {
+		return
 	}
 
 	_, err = coll.DeleteOne(db, &bson.M{
