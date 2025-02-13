@@ -5,7 +5,6 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"github.com/pritunl/pritunl-cloud/utils"
 	"io"
 	"strings"
 	"time"
@@ -15,6 +14,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -53,6 +53,9 @@ func (c *Certificate) Validate(db *database.Database) (
 	if c.Type == "" {
 		c.Type = Text
 	}
+
+	c.Key = strings.TrimSpace(c.Key)
+	c.Certificate = strings.TrimSpace(c.Certificate)
 
 	if c.Type == LetsEncrypt {
 		switch c.AcmeType {
