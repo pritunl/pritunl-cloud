@@ -463,6 +463,20 @@ func (d *Deployments) domainCommit(deply *deployment.Deployment,
 		db := database.GetDatabase()
 		defer db.Close()
 
+		time.Sleep(500 * time.Millisecond)
+
+		deply, err := deployment.Get(db, deply.Id)
+		if err != nil {
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = nil
+			}
+			return
+		}
+
+		if deply.State != deployment.Deployed {
+			return
+		}
+
 		logrus.WithFields(logrus.Fields{
 			"domain_id": domn.Id.Hex(),
 		}).Info("deploy: Committing domain records")
@@ -478,7 +492,7 @@ func (d *Deployments) domainCommit(deply *deployment.Deployment,
 			Records: recs,
 		}
 
-		err := domn.CommitRecords(db)
+		err = domn.CommitRecords(db)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"domain_id": domn.Id.Hex(),
@@ -494,6 +508,30 @@ func (d *Deployments) domainCommit(deply *deployment.Deployment,
 		}
 
 		event.PublishDispatch(db, "domain.change")
+		event.PublishDispatch(db, "pod.change")
+
+		time.Sleep(500 * time.Millisecond)
+
+		newDeply, err := deployment.Get(db, deply.Id)
+		if err != nil {
+			if _, ok := err.(*database.NotFoundError); ok {
+				newDeply = nil
+				err = nil
+			} else {
+				return
+			}
+		}
+
+		if newDeply == nil || newDeply.State != deployment.Deployed {
+			logrus.WithFields(logrus.Fields{
+				"domain_id": domn.Id.Hex(),
+			}).Info("deploy: Undo domains commit for deactivated deployment")
+
+			err = deployment.RemoveDomains(db, deply.Id)
+			if err != nil {
+				return
+			}
+		}
 	}()
 }
 
