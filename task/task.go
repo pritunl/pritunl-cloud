@@ -2,6 +2,7 @@ package task
 
 import (
 	"fmt"
+	"runtime/debug"
 	"time"
 
 	"github.com/pritunl/pritunl-cloud/database"
@@ -24,7 +25,7 @@ type Task struct {
 	RunOnStart bool
 	Local      bool
 	DebugNodes []string
-	running    bool
+	timestamp  time.Time
 }
 
 func (t *Task) scheduled(hour, min int) bool {
@@ -40,9 +41,25 @@ func (t *Task) scheduled(hour, min int) bool {
 	return false
 }
 
-func (t *Task) run(now time.Time) {
+func (t *Task) runShared(now time.Time) {
+	defer func() {
+		panc := recover()
+		if panc != nil {
+			logrus.WithFields(logrus.Fields{
+				"trace": string(debug.Stack()),
+				"panic": panc,
+			}).Error("sync: Panic in run task")
+		}
+	}()
+
 	db := database.GetDatabase()
 	defer db.Close()
+
+	if t.Seconds == 0 {
+		time.Sleep(time.Duration(utils.RandInt(0, 1000)) * time.Millisecond)
+	} else {
+		time.Sleep(time.Duration(utils.RandInt(0, 300)) * time.Millisecond)
+	}
 
 	if t.DebugNodes != nil {
 		matched := false
@@ -97,6 +114,16 @@ func (t *Task) run(now time.Time) {
 }
 
 func (t *Task) runLocal(now time.Time) {
+	defer func() {
+		panc := recover()
+		if panc != nil {
+			logrus.WithFields(logrus.Fields{
+				"trace": string(debug.Stack()),
+				"panic": panc,
+			}).Error("sync: Panic in run local task")
+		}
+	}()
+
 	db := database.GetDatabase()
 	defer db.Close()
 
@@ -127,6 +154,31 @@ func (t *Task) runLocal(now time.Time) {
 	}
 }
 
+func (t *Task) run(now time.Time) {
+	go func() {
+		curTimestamp := t.timestamp
+		if !curTimestamp.IsZero() {
+			if time.Since(curTimestamp) > 10*time.Minute {
+				logrus.WithFields(logrus.Fields{
+					"task_name": t.Name,
+					"runtime":   time.Since(curTimestamp),
+				}).Error("task: Task stuck running")
+			}
+			return
+		}
+		t.timestamp = time.Now()
+		defer func() {
+			t.timestamp = time.Time{}
+		}()
+
+		if t.Local {
+			t.runLocal(now)
+		} else {
+			t.runShared(now)
+		}
+	}()
+}
+
 func runScheduler() {
 	now := time.Now()
 	curHour := now.Hour()
@@ -144,7 +196,7 @@ func runScheduler() {
 	}
 
 	for {
-		time.Sleep(time.Duration(utils.RandInt(200, 3000)) * time.Millisecond)
+		time.Sleep(1 * time.Second)
 
 		now = time.Now()
 		hour := now.Hour()
@@ -155,22 +207,10 @@ func runScheduler() {
 
 			if curSecBlock != secBlock {
 				for _, task := range registry {
-					if task.Seconds == block && task.scheduled(hour, min) {
-						go func(task *Task, now time.Time) {
-							if task.running {
-								return
-							}
-							task.running = true
-							defer func() {
-								task.running = false
-							}()
+					if task.Seconds != 0 && task.Seconds == block &&
+						task.scheduled(hour, min) {
 
-							if task.Local {
-								task.runLocal(now)
-							} else {
-								task.run(now)
-							}
-						}(task, now)
+						task.run(now)
 					}
 				}
 			}
@@ -186,21 +226,7 @@ func runScheduler() {
 
 		for _, task := range registry {
 			if task.Seconds == 0 && task.scheduled(hour, min) {
-				go func(task *Task, now time.Time) {
-					if task.running {
-						return
-					}
-					task.running = true
-					defer func() {
-						task.running = false
-					}()
-
-					if task.Local {
-						task.runLocal(now)
-					} else {
-						task.run(now)
-					}
-				}(task, now)
+				task.run(now)
 			}
 		}
 	}
