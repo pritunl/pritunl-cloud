@@ -116,6 +116,21 @@ func (d *Disk) Validate(db *database.Database) (
 		return
 	}
 
+	switch d.FileSystem {
+	case Xfs:
+		break
+	case Ext4:
+		break
+	case "":
+		break
+	default:
+		errData = &errortypes.ErrorData{
+			Error:   "unknown_file_system",
+			Message: "Unknown disk file system",
+		}
+		return
+	}
+
 	if d.Backup && d.BackingImage != "" {
 		errData = &errortypes.ErrorData{
 			Error:   "backing_image_backup",
