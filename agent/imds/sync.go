@@ -14,11 +14,12 @@ type StateData struct {
 	*types.State
 }
 
-func (m *Imds) GetState() (data *StateData, err error) {
+func (m *Imds) GetState(curHash uint32) (data *StateData, err error) {
 	data = &StateData{
 		&types.State{},
 	}
 
+	data.Hash = curHash
 	data.Status = curStatus
 
 	mem, err := utils.GetMemInfo()
