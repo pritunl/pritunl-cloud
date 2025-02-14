@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 	"sync"
 	"time"
 
@@ -79,6 +80,8 @@ func (m *Imds) NewRequest(method, pth string, data interface{}) (
 }
 
 func (m *Imds) Get(query string) (val string, err error) {
+	query = strings.TrimPrefix(query, "+")
+
 	req, err := m.NewRequest("GET", "/query"+query, nil)
 
 	resp, e := client.Do(req)
