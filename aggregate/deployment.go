@@ -159,7 +159,9 @@ func GetDeployments(db *database.Database, unitId primitive.ObjectID) (
 		}
 		if latest {
 			latest = false
-			deply.Tags = append([]string{"latest"}, deply.Tags...)
+			if doc.Kind == deployment.Image {
+				deply.Tags = append([]string{"latest"}, deply.Tags...)
+			}
 		}
 
 		if len(doc.ZoneDocs) > 0 {
