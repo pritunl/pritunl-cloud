@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"encoding/binary"
 	"runtime"
 
 	"github.com/dropbox/godropbox/errors"
@@ -29,43 +30,46 @@ type MemInfo struct {
 	HugePageSize         uint64
 }
 
+func getSysctlUint64(name string) (uint64, error) {
+	value32, err := unix.SysctlUint32(name)
+	if err == nil {
+		return uint64(value32), nil
+	}
+	return unix.SysctlUint64(name)
+}
+
 func GetMemInfo() (info *MemInfo, err error) {
 	info = &MemInfo{}
 
-	totalMem, err := unix.SysctlUint64("hw.physmem")
+	totalMem, err := getSysctlUint64("hw.physmem")
 	if err != nil {
-		err = &errortypes.ReadError{
+		return nil, &errortypes.ReadError{
 			errors.Wrap(err, "utils: Failed to read physmem"),
 		}
-		return
 	}
 	info.Total = totalMem / 1024
 
-	pageSize, err := unix.SysctlUint64("hw.pagesize")
+	pageSize, err := getSysctlUint64("hw.pagesize")
 	if err != nil {
-		err = &errortypes.ReadError{
+		return nil, &errortypes.ReadError{
 			errors.Wrap(err, "utils: Failed to read pagesize"),
 		}
-		return
 	}
 
-	freePages, err := unix.SysctlUint64("vm.stats.vm.v_free_count")
+	freePages, err := getSysctlUint64("vm.stats.vm.v_free_count")
 	if err != nil {
-		err = &errortypes.ReadError{
+		return nil, &errortypes.ReadError{
 			errors.Wrap(err, "utils: Failed to read freecount"),
 		}
-		return
 	}
-	info.Free = (freePages * pageSize) / 1024
 
+	info.Free = (uint64(freePages) * uint64(pageSize)) / 1024
 	info.Available = info.Free
-
 	info.Used = info.Total - info.Free
+
 	if info.Total > 0 {
 		info.UsedPercent = float64(info.Used) / float64(info.Total) * 100.0
 	}
-
-	info.HugePageSize = pageSize / 1024
 
 	return info, nil
 }
@@ -80,23 +84,26 @@ type LoadStat struct {
 func LoadAverage() (ld *LoadStat, err error) {
 	count := runtime.NumCPU()
 	countFloat := float64(count)
-	loads := make([]float64, 3)
 
-	n, err := unix.Getloadavg(loads)
+	loadavgRaw, err := unix.SysctlRaw("vm.loadavg")
 	if err != nil {
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "utils: Failed to read loadavg"),
 		}
 		return
 	}
-	if n < 3 {
-		err = &errortypes.ParseError{
-			errors.Wrap(err, "utils: Failed to parse loadavg"),
+
+	if len(loadavgRaw) < 12 {
+		err = &errortypes.ReadError{
+			errors.New("utils: Invalid loadavg size"),
 		}
 		return
 	}
 
-	load1, load5, load15 := loads[0], loads[1], loads[2]
+	const fscale = 1 << 16
+	load1 := float64(binary.LittleEndian.Uint32(loadavgRaw[0:4])) / fscale
+	load5 := float64(binary.LittleEndian.Uint32(loadavgRaw[4:8])) / fscale
+	load15 := float64(binary.LittleEndian.Uint32(loadavgRaw[8:12])) / fscale
 
 	ld = &LoadStat{
 		CpuUnits: count,
