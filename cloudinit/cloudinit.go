@@ -168,6 +168,17 @@ rm -rf /iso
 rm -- "$0"%s
 `
 
+const deploymentScriptBsdTmpl = `#!/bin/sh
+set -e
+mkdir -p /iso
+mount -t cd9660 /dev/cd0 /iso
+cp /iso/pci %s
+sync
+umount /iso
+rm -rf /iso
+rm -- "$0"%s
+`
+
 var (
 	cloudConfig    = template.Must(template.New("cloud").Parse(cloudConfigTmpl))
 	cloudBsdConfig = template.Must(template.New("cloud_bsd").Parse(
@@ -316,7 +327,15 @@ func getUserData(db *database.Database, inst *instance.Instance,
 		Permissions: "0600",
 	})
 
-	deploymentScript := ""
+	deployScript := ""
+	deployScriptTmpl := ""
+
+	if virt.CloudType == instance.BSD {
+		deployScriptTmpl = deploymentScriptBsdTmpl
+	} else {
+		deployScriptTmpl = deploymentScriptTmpl
+	}
+
 	if deply != nil && deployUnit != nil && deploySpec != nil {
 		if deply.Mounts != nil && len(deply.Mounts) > 0 {
 			data.HasMounts = true
@@ -329,30 +348,30 @@ func getUserData(db *database.Database, inst *instance.Instance,
 		}
 
 		if deployUnit.Kind == deployment.Image {
-			deploymentScript = fmt.Sprintf(
-				deploymentScriptTmpl,
-				settings.Hypervisor.CliGuestPath,
+			deployScript = fmt.Sprintf(
+				deployScriptTmpl,
+				settings.Hypervisor.AgentGuestPath,
 				fmt.Sprintf(
 					" && %s engine image&",
-					settings.Hypervisor.CliGuestPath,
+					settings.Hypervisor.AgentGuestPath,
 				),
 			)
 		} else if initial {
-			deploymentScript = fmt.Sprintf(
-				deploymentScriptTmpl,
-				settings.Hypervisor.CliGuestPath,
+			deployScript = fmt.Sprintf(
+				deployScriptTmpl,
+				settings.Hypervisor.AgentGuestPath,
 				fmt.Sprintf(
 					" && %s engine initial&",
-					settings.Hypervisor.CliGuestPath,
+					settings.Hypervisor.AgentGuestPath,
 				),
 			)
 		} else {
-			deploymentScript = fmt.Sprintf(
-				deploymentScriptTmpl,
-				settings.Hypervisor.CliGuestPath,
+			deployScript = fmt.Sprintf(
+				deployScriptTmpl,
+				settings.Hypervisor.AgentGuestPath,
 				fmt.Sprintf(
 					" && %s engine post&",
-					settings.Hypervisor.CliGuestPath,
+					settings.Hypervisor.AgentGuestPath,
 				),
 			)
 		}
@@ -364,15 +383,15 @@ func getUserData(db *database.Database, inst *instance.Instance,
 			Permissions: "0600",
 		})
 	} else {
-		deploymentScript = fmt.Sprintf(
-			deploymentScriptTmpl,
-			settings.Hypervisor.CliGuestPath,
+		deployScript = fmt.Sprintf(
+			deployScriptTmpl,
+			settings.Hypervisor.AgentGuestPath,
 			"",
 		)
 	}
 
 	writeFiles = append(writeFiles, &fileData{
-		Content:     deploymentScript,
+		Content:     deployScript,
 		Owner:       owner,
 		Path:        settings.Hypervisor.InitGuestPath,
 		Permissions: "0755",
@@ -685,9 +704,18 @@ func Write(db *database.Database, inst *instance.Instance,
 		return
 	}
 
-	err = utils.Exec("", "cp", settings.Hypervisor.AgentHostPath, pciPath)
-	if err != nil {
-		return
+	if virt.CloudType == instance.BSD {
+		err = utils.Exec("", "cp",
+			settings.Hypervisor.AgentBsdHostPath, pciPath)
+		if err != nil {
+			return
+		}
+	} else {
+		err = utils.Exec("", "cp",
+			settings.Hypervisor.AgentHostPath, pciPath)
+		if err != nil {
+			return
+		}
 	}
 
 	args := []string{
@@ -703,9 +731,7 @@ func Write(db *database.Database, inst *instance.Instance,
 		args = append(args, "network-config")
 	}
 
-	if deployUnit != nil {
-		args = append(args, pciPath)
-	}
+	args = append(args, pciPath)
 
 	_, err = utils.ExecCombinedOutputLoggedDir(
 		nil, tempDir,
