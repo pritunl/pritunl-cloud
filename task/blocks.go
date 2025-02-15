@@ -22,7 +22,11 @@ func blocksCheckHandler(db *database.Database) (err error) {
 	ipColl := db.BlocksIp()
 	instColl := db.Instances()
 
-	ipBlocksInf, err := ipColl.Distinct(db, "block", &bson.M{})
+	ipBlocksInf, err := ipColl.Distinct(db, "block", &bson.M{
+		"type": &bson.M{
+			"$ne": block.Host,
+		},
+	})
 	if err != nil {
 		err = database.ParseError(err)
 		return
