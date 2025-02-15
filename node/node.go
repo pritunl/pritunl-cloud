@@ -921,13 +921,24 @@ func (n *Node) GetStaticAddr6(db *database.Database,
 func (n *Node) GetStaticHostAddr(db *database.Database,
 	instId primitive.ObjectID) (blck *block.Block, ip net.IP, err error) {
 
-	blck, blckIp, err := block.GetInstanceIp(db, instId, block.Host)
+	blck, err = block.GetNodeBlock(n.Id)
+	if err != nil {
+		return
+	}
+
+	blckIp, err := block.GetInstanceHostIp(db, instId)
 	if err != nil {
 		return
 	}
 
 	if blckIp != nil {
-		if n.HostBlock == blck.Id {
+		contains, e := blck.Contains(blckIp)
+		if e != nil {
+			err = e
+			return
+		}
+
+		if contains {
 			ip = blckIp.GetIp()
 			return
 		}
@@ -936,11 +947,6 @@ func (n *Node) GetStaticHostAddr(db *database.Database,
 		if err != nil {
 			return
 		}
-	}
-
-	blck, err = block.Get(db, n.HostBlock)
-	if err != nil {
-		return
 	}
 
 	ip, err = blck.GetIp(db, instId, block.Host)
