@@ -42,14 +42,14 @@ func (n *NetConf) Iface1(db *database.Database) (err error) {
 	if n.Virt.NoPublicAddress6 {
 		n.NetworkMode6 = node.Disabled
 	}
-	n.HostBlock = node.Self.HostBlock
-	if !n.HostBlock.IsZero() && !n.Virt.NoHostAddress {
+
+	if !node.Self.NoHostNetwork && !n.Virt.NoHostAddress {
 		n.HostNetwork = true
 		if node.Self.HostNat {
 			n.HostNat = true
 		}
 
-		blck, e := block.Get(db, n.HostBlock)
+		blck, e := block.GetNodeBlock(node.Self.Id)
 		if e != nil {
 			err = e
 			return
