@@ -182,6 +182,41 @@ func (b *Block) Validate(db *database.Database) (
 	return
 }
 
+func (b *Block) Contains(blckIp *BlockIp) (contains bool, err error) {
+	ip := blckIp.GetIp()
+
+	for _, exclude := range b.Excludes {
+		_, network, e := net.ParseCIDR(exclude)
+		if e != nil {
+			err = &errortypes.ParseError{
+				errors.Wrap(e, "block: Failed to parse block exclude"),
+			}
+			return
+		}
+
+		if network.Contains(ip) {
+			return
+		}
+	}
+
+	for _, subnet := range b.Subnets {
+		_, network, e := net.ParseCIDR(subnet)
+		if e != nil {
+			err = &errortypes.ParseError{
+				errors.Wrap(e, "block: Failed to parse block subnet"),
+			}
+			return
+		}
+
+		if network.Contains(ip) {
+			contains = true
+			return
+		}
+	}
+
+	return
+}
+
 func (b *Block) GetGateway() net.IP {
 	return net.ParseIP(b.Gateway)
 }
