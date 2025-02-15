@@ -86,7 +86,7 @@ type Node struct {
 	Pools                   []primitive.ObjectID `bson:"pools" json:"pools"`
 	AvailableDrives         []*drive.Device      `bson:"available_drives" json:"available_drives"`
 	InstanceDrives          []*drive.Device      `bson:"instance_drives" json:"instance_drives"`
-	HostBlock               primitive.ObjectID   `bson:"host_block,omitempty" json:"host_block"`
+	NoHostNetwork           bool                 `bson:"no_host_network" json:"no_host_network"`
 	HostNat                 bool                 `bson:"host_nat" json:"host_nat"`
 	DefaultNoPublicAddress  bool                 `bson:"default_no_public_address" json:"default_no_public_address"`
 	DefaultNoPublicAddress6 bool                 `bson:"default_no_public_address6" json:"default_no_public_address6"`
@@ -123,7 +123,6 @@ type Node struct {
 	OracleUser              string               `bson:"oracle_user" json:"oracle_user"`
 	OraclePrivateKey        string               `bson:"oracle_private_key" json:"-"`
 	OraclePublicKey         string               `bson:"oracle_public_key" json:"oracle_public_key"`
-	OracleHostRoute         bool                 `bson:"oracle_host_route" json:"oracle_host_route"`
 	Operation               string               `bson:"operation" json:"operation"`
 	oracleSubnetsNamed      []*OracleSubnet      `bson:"-" json:"-"`
 	reqLock                 sync.Mutex           `bson:"-" json:"-"`
@@ -181,7 +180,7 @@ func (n *Node) Copy() *Node {
 		Pools:                   n.Pools,
 		AvailableDrives:         n.AvailableDrives,
 		InstanceDrives:          n.InstanceDrives,
-		HostBlock:               n.HostBlock,
+		NoHostNetwork:           n.NoHostNetwork,
 		HostNat:                 n.HostNat,
 		DefaultNoPublicAddress:  n.DefaultNoPublicAddress,
 		DefaultNoPublicAddress6: n.DefaultNoPublicAddress6,
@@ -217,7 +216,6 @@ func (n *Node) Copy() *Node {
 		OracleUser:              n.OracleUser,
 		OraclePrivateKey:        n.OraclePrivateKey,
 		OraclePublicKey:         n.OraclePublicKey,
-		OracleHostRoute:         n.OracleHostRoute,
 		Operation:               n.Operation,
 		dcId:                    n.dcId,
 		dcZoneId:                n.dcZoneId,
@@ -705,33 +703,7 @@ func (n *Node) Validate(db *database.Database) (
 		n.ExternalInterfaces = []string{}
 	}
 
-	if !n.HostBlock.IsZero() {
-		blck, e := block.Get(db, n.HostBlock)
-		if e != nil {
-			err = e
-			if _, ok := err.(*database.NotFoundError); ok {
-				err = nil
-			} else {
-				return
-			}
-		}
-
-		if blck == nil || blck.Type != block.IPv4 {
-			errData = &errortypes.ErrorData{
-				Error:   "invalid_host_block",
-				Message: "Host block invalid",
-			}
-			return
-		}
-	}
-
-	if n.HostBlock.IsZero() && n.HostNat {
-		n.HostNat = false
-	}
-
-	if n.OracleHostRoute || n.NetworkMode == Oracle ||
-		n.NetworkMode6 == Oracle {
-
+	if n.NetworkMode == Oracle || n.NetworkMode6 == Oracle {
 		if n.OracleUser == "" {
 			errData = &errortypes.ErrorData{
 				Error:   "missing_oracle_user",
@@ -1084,7 +1056,7 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.Blocks = nde.Blocks
 	n.Blocks6 = nde.Blocks6
 	n.InstanceDrives = nde.InstanceDrives
-	n.HostBlock = nde.HostBlock
+	n.NoHostNetwork = nde.NoHostNetwork
 	n.HostNat = nde.HostNat
 	n.DefaultNoPublicAddress = nde.DefaultNoPublicAddress
 	n.DefaultNoPublicAddress6 = nde.DefaultNoPublicAddress6
@@ -1103,7 +1075,6 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.OracleUser = nde.OracleUser
 	n.OraclePrivateKey = nde.OraclePrivateKey
 	n.OraclePublicKey = nde.OraclePublicKey
-	n.OracleHostRoute = nde.OracleHostRoute
 	n.Operation = nde.Operation
 
 	return
