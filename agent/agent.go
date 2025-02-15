@@ -40,13 +40,21 @@ func main() {
 
 		err := ids.Init(nil)
 		if err != nil {
-			panic(err)
+			logger.WithFields(logger.Fields{
+				"error": err,
+			}).Error("agent: Initialize failed")
+			utils.DelayExit(1, 1*time.Second)
+			return
 		}
 		defer ids.Close()
 
 		val, err := ids.Get(flag.Arg(1))
 		if err != nil {
-			panic(err)
+			logger.WithFields(logger.Fields{
+				"error": err,
+			}).Error("agent: Get imds failed")
+			utils.DelayExit(1, 1*time.Second)
+			return
 		}
 
 		fmt.Print(val)
@@ -61,7 +69,8 @@ func main() {
 			logger.WithFields(logger.Fields{
 				"error": err,
 			}).Error("agent: Failed to init imds")
-			panic(err)
+			utils.DelayExit(1, 1*time.Second)
+			return
 		}
 		defer ids.Close()
 
@@ -85,7 +94,8 @@ func main() {
 			logger.WithFields(logger.Fields{
 				"error": err,
 			}).Error("agent: Failed to sync imds initial")
-			panic(err)
+			utils.DelayExit(1, 1*time.Second)
+			return
 		} else if !ready {
 			err = &errortypes.RequestError{
 				errors.New("agent: Initial config timeout"),
@@ -93,7 +103,8 @@ func main() {
 			logger.WithFields(logger.Fields{
 				"error": err,
 			}).Error("agent: Timeout waiting for imds initial config")
-			panic(err)
+			utils.DelayExit(1, 1*time.Second)
+			return
 		}
 
 		err = eng.Init()
@@ -101,7 +112,8 @@ func main() {
 			logger.WithFields(logger.Fields{
 				"error": err,
 			}).Error("agent: Failed to init engine")
-			panic(err)
+			utils.DelayExit(1, 1*time.Second)
+			return
 		}
 
 		image := false
@@ -120,6 +132,10 @@ func main() {
 
 		err = eng.Run(phase)
 		if err != nil {
+			logger.WithFields(logger.Fields{
+				"error": err,
+			}).Error("agent: Engine run failed")
+			utils.DelayExit(1, 1*time.Second)
 			return
 		}
 
@@ -131,7 +147,8 @@ func main() {
 				logger.WithFields(logger.Fields{
 					"error": err,
 				}).Error("agent: Failed to sync status")
-				panic(err)
+				utils.DelayExit(1, 1*time.Second)
+				return
 			}
 
 			err = ids.Wait()
@@ -139,7 +156,8 @@ func main() {
 				logger.WithFields(logger.Fields{
 					"error": err,
 				}).Error("agent: Failed to run")
-				panic(err)
+				utils.DelayExit(1, 1*time.Second)
+				return
 			}
 		}
 
@@ -150,7 +168,8 @@ func main() {
 			logger.WithFields(logger.Fields{
 				"error": err,
 			}).Error("agent: Failed to sync")
-			panic(err)
+			utils.DelayExit(1, 1*time.Second)
+			return
 		}
 
 		break
@@ -159,21 +178,37 @@ func main() {
 
 		err := ids.Init(nil)
 		if err != nil {
-			panic(err)
+			logger.WithFields(logger.Fields{
+				"error": err,
+			}).Error("agent: Iniatilize failed")
+			utils.DelayExit(1, 1*time.Second)
+			return
 		}
 
 		err = utils.Sanitize()
 		if err != nil {
+			logger.WithFields(logger.Fields{
+				"error": err,
+			}).Error("agent: Sanitize failed")
+			utils.DelayExit(1, 1*time.Second)
 			return
 		}
 
 		err = ids.SyncStatus(types.Imaged)
 		if err != nil {
-			panic(err)
+			logger.WithFields(logger.Fields{
+				"error": err,
+			}).Error("agent: Sync status failed")
+			utils.DelayExit(1, 1*time.Second)
+			return
 		}
 
 		err = utils.SanitizeImds()
 		if err != nil {
+			logger.WithFields(logger.Fields{
+				"error": err,
+			}).Error("agent: Sanitize imds failed")
+			utils.DelayExit(1, 1*time.Second)
 			return
 		}
 
@@ -184,4 +219,6 @@ func main() {
 	default:
 		fmt.Printf(help)
 	}
+
+	return
 }
