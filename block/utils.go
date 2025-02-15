@@ -1,11 +1,44 @@
 package block
 
 import (
+	"net"
+
+	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/settings"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
+
+func GetNodeBlock(ndeId primitive.ObjectID) (blck *Block, err error) {
+	hostNetwork := settings.Hypervisor.HostNetwork
+
+	hostAddr, hostNet, err := net.ParseCIDR(hostNetwork)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "block: Failed to parse host network"),
+		}
+		return
+	}
+
+	utils.IncIpAddress(hostAddr)
+
+	blck = &Block{
+		Id:   ndeId,
+		Name: "node-block",
+		Type: Host,
+		Subnets: []string{
+			hostNetwork,
+		},
+		Netmask: net.IP(hostNet.Mask).String(),
+		Gateway: hostAddr.String(),
+	}
+
+	return
+}
 
 func Get(db *database.Database, blockId primitive.ObjectID) (
 	block *Block, err error) {
