@@ -309,6 +309,7 @@ func nodeInitPost(c *gin.Context) {
 	}
 
 	fields := set.NewSet(
+		"host_nat",
 		"zone",
 		"network_mode",
 		"network_mode6",
@@ -317,6 +318,7 @@ func nodeInitPost(c *gin.Context) {
 	)
 
 	nde.Zone = data.Zone
+	nde.HostNat = true
 
 	if data.Provider == "phoenixnap" {
 		fields.Add("default_no_public_address")
@@ -363,61 +365,6 @@ func nodeInitPost(c *gin.Context) {
 	}
 
 	event.PublishDispatch(db, "zone.change")
-
-	var hostBlck *block.Block
-	if data.HostNetwork != "" {
-		_, hostnet, err := net.ParseCIDR(data.HostNetwork)
-		if err != nil {
-			errData := &errortypes.ErrorData{
-				Error:   "invalid_host_network",
-				Message: "Invalid host IPv4 network",
-			}
-			c.JSON(400, errData)
-			return
-		}
-
-		hostnetGateway := hostnet.IP
-		utils.IncIpAddress(hostnetGateway)
-
-		hostBlck = &block.Block{
-			Name: nde.Name + "-host",
-			Type: block.IPv4,
-			Netmask: fmt.Sprintf(
-				"%d.%d.%d.%d",
-				hostnet.Mask[0],
-				hostnet.Mask[1],
-				hostnet.Mask[2],
-				hostnet.Mask[3],
-			),
-			Subnets: []string{
-				data.HostNetwork,
-			},
-			Gateway: hostnetGateway.String(),
-		}
-
-		errData, err := hostBlck.Validate(db)
-		if err != nil {
-			utils.AbortWithError(c, 500, err)
-			return
-		}
-
-		if errData != nil {
-			c.JSON(400, errData)
-			return
-		}
-
-		err = hostBlck.Insert(db)
-		if err != nil {
-			utils.AbortWithError(c, 500, err)
-			return
-		}
-
-		nde.HostNat = true
-		nde.HostBlock = hostBlck.Id
-
-		fields.Add("host_nat")
-		fields.Add("host_block")
-	}
 
 	if data.Provider == "phoenixnap" {
 		publicBlck := &block.Block{
@@ -478,17 +425,11 @@ func nodeInitPost(c *gin.Context) {
 
 	errData, err := nde.Validate(db)
 	if err != nil {
-		if hostBlck != nil {
-			block.Remove(db, hostBlck.Id)
-		}
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
 	if errData != nil {
-		if hostBlck != nil {
-			block.Remove(db, hostBlck.Id)
-		}
 		c.JSON(400, errData)
 		return
 	}
@@ -587,9 +528,6 @@ func nodeInitPost(c *gin.Context) {
 
 	err = nde.CommitFields(db, fields)
 	if err != nil {
-		if hostBlck != nil {
-			block.Remove(db, hostBlck.Id)
-		}
 		utils.AbortWithError(c, 500, err)
 		return
 	}
