@@ -40,6 +40,33 @@ func GetNodeBlock(ndeId primitive.ObjectID) (blck *Block, err error) {
 	return
 }
 
+func GetNodePortBlock(ndeId primitive.ObjectID) (blck *Block, err error) {
+	portNetwork := settings.Hypervisor.NodePortNetwork
+
+	portAddr, portNet, err := net.ParseCIDR(portNetwork)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "block: Failed to parse node port network"),
+		}
+		return
+	}
+
+	utils.IncIpAddress(portAddr)
+
+	blck = &Block{
+		Id:   ndeId,
+		Name: "node-port-block",
+		Type: NodePort,
+		Subnets: []string{
+			portNetwork,
+		},
+		Netmask: net.IP(portNet.Mask).String(),
+		Gateway: portAddr.String(),
+	}
+
+	return
+}
+
 func Get(db *database.Database, blockId primitive.ObjectID) (
 	block *Block, err error) {
 
