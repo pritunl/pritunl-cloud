@@ -18,7 +18,6 @@ type NetConf struct {
 	HostNetwork         bool
 	HostNat             bool
 	HostSubnet          string
-	HostBlock           primitive.ObjectID
 	OracleSubnets       set.Set
 	JumboFramesExternal bool
 	JumboFramesInternal bool
