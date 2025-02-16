@@ -52,7 +52,7 @@ type nodeData struct {
 	Blocks                  []*node.BlockAttachment `json:"blocks"`
 	Blocks6                 []*node.BlockAttachment `json:"blocks6"`
 	InstanceDrives          []*drive.Device         `json:"instance_drives"`
-	HostBlock               primitive.ObjectID      `json:"host_block"`
+	NoHostNetwork           bool                    `json:"no_host_network"`
 	HostNat                 bool                    `json:"host_nat"`
 	DefaultNoPublicAddress  bool                    `json:"default_no_public_address"`
 	DefaultNoPublicAddress6 bool                    `json:"default_no_public_address6"`
@@ -68,7 +68,6 @@ type nodeData struct {
 	Firewall                bool                    `json:"firewall"`
 	NetworkRoles            []string                `json:"network_roles"`
 	OracleUser              string                  `json:"oracle_user"`
-	OracleHostRoute         bool                    `json:"oracle_host_route"`
 }
 
 type nodesData struct {
@@ -82,7 +81,6 @@ type nodeInitData struct {
 	Firewall          bool               `json:"firewall"`
 	InternalInterface string             `json:"internal_interface"`
 	ExternalInterface string             `json:"external_interface"`
-	HostNetwork       string             `json:"host_network"`
 	BlockGateway      string             `json:"block_gateway"`
 	BlockNetmask      string             `json:"block_netmask"`
 	BlockSubnets      []string           `json:"block_subnets"`
@@ -139,7 +137,7 @@ func nodePut(c *gin.Context) {
 	nde.Blocks = data.Blocks
 	nde.Blocks6 = data.Blocks6
 	nde.InstanceDrives = data.InstanceDrives
-	nde.HostBlock = data.HostBlock
+	nde.NoHostNetwork = data.NoHostNetwork
 	nde.HostNat = data.HostNat
 	nde.DefaultNoPublicAddress = data.DefaultNoPublicAddress
 	nde.DefaultNoPublicAddress6 = data.DefaultNoPublicAddress6
@@ -155,7 +153,6 @@ func nodePut(c *gin.Context) {
 	nde.Firewall = data.Firewall
 	nde.NetworkRoles = data.NetworkRoles
 	nde.OracleUser = data.OracleUser
-	nde.OracleHostRoute = data.OracleHostRoute
 
 	fields := set.NewSet(
 		"name",
@@ -184,7 +181,7 @@ func nodePut(c *gin.Context) {
 		"blocks",
 		"blocks6",
 		"instance_drives",
-		"host_block",
+		"no_host_network",
 		"host_nat",
 		"default_no_public_address",
 		"default_no_public_address6",
@@ -200,7 +197,6 @@ func nodePut(c *gin.Context) {
 		"firewall",
 		"network_roles",
 		"oracle_user",
-		"oracle_host_route",
 	)
 
 	if !data.Zone.IsZero() && data.Zone != nde.Zone {
