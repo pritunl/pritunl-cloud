@@ -140,6 +140,28 @@ func GetInstanceHostIp(db *database.Database,
 	return
 }
 
+func GetInstanceNodePortIp(db *database.Database,
+	instId primitive.ObjectID) (blckIp *BlockIp, err error) {
+
+	coll := db.BlocksIp()
+	blckIp = &BlockIp{}
+
+	err = coll.FindOne(db, &bson.M{
+		"instance": instId,
+		"type":     NodePort,
+	}).Decode(blckIp)
+	if err != nil {
+		err = database.ParseError(err)
+		blckIp = nil
+		if _, ok := err.(*database.NotFoundError); ok {
+			err = nil
+		}
+		return
+	}
+
+	return
+}
+
 func GetInstanceIp(db *database.Database, instId primitive.ObjectID,
 	typ string) (blck *Block, blckIp *BlockIp, err error) {
 
