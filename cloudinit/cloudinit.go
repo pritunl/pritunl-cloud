@@ -230,7 +230,7 @@ type imdsConfig struct {
 
 func getUserData(db *database.Database, inst *instance.Instance,
 	virt *vm.VirtualMachine, deply *deployment.Deployment,
-	deployUnit *pod.Unit, deploySpec *spec.Commit, initial bool,
+	deployUnit *pod.Unit, deploySpec *spec.Spec, initial bool,
 	addr6, gateway6 net.IP) (usrData string, err error) {
 
 	authrs, err := authority.GetOrgRoles(db, inst.Organization,
@@ -634,7 +634,7 @@ func Write(db *database.Database, inst *instance.Instance,
 
 	var deply *deployment.Deployment
 	var deployUnit *pod.Unit
-	var deploySpec *spec.Commit
+	var deploySpec *spec.Spec
 	if !virt.Deployment.IsZero() {
 		deply, err = deployment.Get(db, virt.Deployment)
 		if err != nil {
