@@ -105,7 +105,27 @@ func GetMacAddrHost(id primitive.ObjectID,
 		}
 	}
 
-	return "06:" + macBuf.String()
+	return "03:" + macBuf.String()
+}
+
+func GetMacAddrNodePort(id primitive.ObjectID,
+	secondId primitive.ObjectID) string {
+
+	hash := md5.New()
+	hash.Write([]byte(id.Hex()))
+	hash.Write([]byte(secondId.Hex()))
+	macHash := fmt.Sprintf("%x", hash.Sum(nil))
+	macHash = macHash[:10]
+	macBuf := bytes.Buffer{}
+
+	for i, run := range macHash {
+		macBuf.WriteRune(run)
+		if i%2 == 1 && i != len(macHash)-1 {
+			macBuf.WriteRune(':')
+		}
+	}
+
+	return "05:" + macBuf.String()
 }
 
 func GetIface(id primitive.ObjectID, n int) string {
