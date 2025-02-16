@@ -127,9 +127,18 @@ type GuestData struct {
 	Load15    float64   `bson:"load15" json:"load15"`
 }
 
-func (i *Instance) GenerateId() {
-	i.Id = primitive.NewObjectID()
+func (i *Instance) GenerateId() (err error) {
+	if !i.Id.IsZero() {
+		err = &errortypes.DatabaseError{
+			errors.New("instance: Instance already exists"),
+		}
+		return
+	}
+
 	i.newId = true
+	i.Id = primitive.NewObjectID()
+
+	return
 }
 
 func (i *Instance) Validate(db *database.Database) (
