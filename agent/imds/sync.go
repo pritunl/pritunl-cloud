@@ -1,6 +1,8 @@
 package imds
 
 import (
+	"time"
+
 	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/tools/logger"
@@ -26,7 +28,7 @@ func (m *Imds) GetState(curHash uint32) (data *StateData, err error) {
 	if err != nil {
 		logger.WithFields(logger.Fields{
 			"error": err,
-		}).Error("imds: Failed to get memory")
+		}).Limit(30 * time.Minute).Error("imds: Failed to get memory")
 	} else {
 		data.Memory = utils.ToFixed(mem.UsedPercent, 2)
 		data.HugePages = utils.ToFixed(mem.HugePagesUsedPercent, 2)
@@ -36,7 +38,7 @@ func (m *Imds) GetState(curHash uint32) (data *StateData, err error) {
 	if err != nil {
 		logger.WithFields(logger.Fields{
 			"error": err,
-		}).Error("imds: Failed to get load")
+		}).Limit(30 * time.Minute).Error("imds: Failed to get load")
 	} else {
 		data.Load1 = load.Load1
 		data.Load5 = load.Load5
