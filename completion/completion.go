@@ -317,6 +317,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			"_id":          1,
 			"name":         1,
 			"organization": 1,
+			"deployment":   1,
 			"type":         1,
 			"firmware":     1,
 			"key":          1,
