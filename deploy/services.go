@@ -145,7 +145,20 @@ func (s *Pods) DeploySpec(db *database.Database,
 		State:        deployment.Reserved,
 	}
 
-	errData, err := deply.Validate(db)
+	errData, err := spc.Refresh(db)
+	if err != nil {
+		return
+	}
+
+	if errData != nil {
+		logrus.WithFields(logrus.Fields{
+			"error_code":    errData.Error,
+			"error_message": errData.Message,
+		}).Error("deploy: Failed to refresh spec")
+		return
+	}
+
+	errData, err = deply.Validate(db)
 	if err != nil {
 		return
 	}
