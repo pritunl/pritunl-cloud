@@ -14,4 +14,7 @@ const (
 
 	Xfs  = "xfs"
 	Ext4 = "ext4"
+
+	Linux = "linux"
+	Bsd   = "bsd"
 )
