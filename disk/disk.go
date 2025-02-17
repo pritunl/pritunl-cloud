@@ -27,6 +27,7 @@ type Disk struct {
 	Comment          string             `bson:"comment" json:"comment"`
 	State            string             `bson:"state" json:"state"`
 	Type             string             `bson:"type" json:"type"`
+	SystemType       string             `bson:"system_type" json:"system_type"`
 	Uuid             string             `bson:"uuid" json:"uuid"`
 	Node             primitive.ObjectID `bson:"node,omitempty" json:"node"`
 	Pool             primitive.ObjectID `bson:"pool,omitempty" json:"pool"`
