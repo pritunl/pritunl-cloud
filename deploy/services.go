@@ -8,6 +8,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/event"
+	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/pod"
@@ -127,6 +128,11 @@ func (s *Pods) DeploySpec(db *database.Database,
 	schd *scheduler.Scheduler, unit *pod.Unit,
 	spc *spec.Spec) (reserved bool, err error) {
 
+	img, err := image.Get(db, spc.Instance.Image)
+	if err != nil {
+		return
+	}
+
 	deply := &deployment.Deployment{
 		Pod:          unit.Pod.Id,
 		Unit:         unit.Id,
@@ -196,6 +202,14 @@ func (s *Pods) DeploySpec(db *database.Database,
 		NoPublicAddress6:    false,
 		NoHostAddress:       false,
 		Deployment:          deply.Id,
+	}
+
+	if img.GetSystemType() == image.Bsd {
+		inst.CloudType = instance.BSD
+		inst.SecureBoot = false
+	} else {
+		inst.CloudType = instance.Linux
+		inst.SecureBoot = true
 	}
 
 	err = inst.GenerateId()
