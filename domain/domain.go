@@ -28,6 +28,24 @@ type Domain struct {
 	OrigRecords  []*Record          `bson:"-" json:"-"`
 }
 
+func (d *Domain) Copy() *Domain {
+	domn := *d
+
+	recs := make([]*Record, len(domn.Records))
+	for i, rec := range domn.Records {
+		recs[i] = rec.Copy()
+	}
+	domn.Records = recs
+
+	origRecs := make([]*Record, len(domn.OrigRecords))
+	for i, rec := range domn.OrigRecords {
+		origRecs[i] = rec.Copy()
+	}
+	domn.OrigRecords = origRecs
+
+	return &domn
+}
+
 func (d *Domain) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
