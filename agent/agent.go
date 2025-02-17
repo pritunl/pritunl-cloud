@@ -20,6 +20,7 @@ Usage: pci COMMAND
 
 Commands:
   get          Get value from IMDS
+  image        Sanitize host files and initiate shutdown for imaging
   version      Show version
 `
 
