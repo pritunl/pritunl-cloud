@@ -28,7 +28,7 @@ func GetNodeBlock(ndeId primitive.ObjectID) (blck *Block, err error) {
 
 	blck = &Block{
 		Id:   ndeId,
-		Name: "node-block",
+		Name: "host-block",
 		Type: Host,
 		Subnets: []string{
 			hostNetwork,
