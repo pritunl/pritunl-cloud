@@ -106,6 +106,8 @@ func (d *Deployment) Validate(db *database.Database) (
 		break
 	case Destroy:
 		break
+	case Migrate:
+		break
 	default:
 		errData = &errortypes.ErrorData{
 			Error:   "invalid_state",
