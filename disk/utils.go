@@ -314,7 +314,8 @@ func Detach(db *database.Database, dskIds primitive.ObjectID) (err error) {
 			"index": fmt.Sprintf("hold_%s", primitive.NewObjectID().Hex()),
 		},
 		"$unset": &bson.M{
-			"instance": 1,
+			"instance":   1,
+			"deployment": 1,
 		},
 	})
 	if err != nil {
