@@ -188,6 +188,11 @@ func (d *Database) Nodes() (coll *Collection) {
 	return
 }
 
+func (d *Database) NodePorts() (coll *Collection) {
+	coll = d.getCollection("node_ports")
+	return
+}
+
 func (d *Database) Organizations() (coll *Collection) {
 	coll = d.getCollection("organizations")
 	return
