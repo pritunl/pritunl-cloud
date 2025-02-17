@@ -117,6 +117,19 @@ func (d *Disk) Validate(db *database.Database) (
 		return
 	}
 
+	switch d.SystemType {
+	case Linux:
+		break
+	case Bsd:
+		break
+	default:
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_system_type",
+			Message: "Disk system type invalid",
+		}
+		return
+	}
+
 	switch d.FileSystem {
 	case Xfs:
 		break
