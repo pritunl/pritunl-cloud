@@ -49,7 +49,7 @@ type InstanceYaml struct {
 	Certificates []string            `yaml:"certificates"`
 	Secrets      []string            `yaml:"secrets"`
 	Pods         []string            `yaml:"pods"`
-	DiskSize     int                 `yaml:"disk_size"`
+	DiskSize     int                 `yaml:"disk-size"`
 }
 
 type InstanceMountYaml struct {
