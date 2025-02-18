@@ -40,8 +40,6 @@ func LoadState(nodeSelf *node.Node, vpcs []*vpc.Vpc,
 		state.Interfaces["0-host"] = generate("0", "host", nodeFirewall)
 	}
 
-	hostNetwork := !nodeSelf.HostBlock.IsZero()
-
 	for _, inst := range instances {
 		if !inst.IsActive() {
 			continue
@@ -49,7 +47,7 @@ func LoadState(nodeSelf *node.Node, vpcs []*vpc.Vpc,
 
 		namespace := vm.GetNamespace(inst.Id, 0)
 		iface := vm.GetIface(inst.Id, 0)
-		ifaceHost := vm.GetIfaceHost(inst.Id, 0)
+		ifaceHost := vm.GetIfaceHost(inst.Id, 1)
 
 		ifaceExternal := vm.GetIfaceExternal(inst.Id, 0)
 
@@ -137,13 +135,11 @@ func LoadState(nodeSelf *node.Node, vpcs []*vpc.Vpc,
 			state.Interfaces[namespace+"-"+oracleIface] = rules
 		}
 
-		if hostNetwork {
-			rules := generateInternal(namespace, ifaceHost,
-				false, false, false, false, "", "", "", "", "", ingress)
-			state.Interfaces[namespace+"-"+ifaceHost] = rules
-		}
+		rules := generateInternal(namespace, ifaceHost,
+			false, false, false, false, "", "", "", "", "", ingress)
+		state.Interfaces[namespace+"-"+ifaceHost] = rules
 
-		rules := generateVirt(vpcsMap[inst.Vpc], namespace, iface, addr,
+		rules = generateVirt(vpcsMap[inst.Vpc], namespace, iface, addr,
 			addr6, !inst.SkipSourceDestCheck, ingress)
 		state.Interfaces[namespace+"-"+iface] = rules
 	}
