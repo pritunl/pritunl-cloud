@@ -18,6 +18,8 @@ type NetConf struct {
 	HostNetwork         bool
 	HostNat             bool
 	HostSubnet          string
+	NodePortNetwork     bool
+	NodePortSubnet      string
 	OracleSubnets       set.Set
 	JumboFramesExternal bool
 	JumboFramesInternal bool
@@ -39,6 +41,7 @@ type NetConf struct {
 	SpaceExternalIface   string
 	SpaceInternalIface   string
 	SpaceHostIface       string
+	SpaceNodePortIface   string
 	SpaceOracleIface     string
 	SpaceOracleVirtIface string
 	SpaceImdsIface       string
@@ -48,12 +51,14 @@ type NetConf struct {
 	SystemExternalIface string
 	SystemInternalIface string
 	SystemHostIface     string
+	SystemNodePortIface string
 
 	PhysicalExternalIface       string
 	PhysicalExternalIfaceBridge bool
 	PhysicalInternalIface       string
 	PhysicalInternalIfaceBridge bool
 	PhysicalHostIface           string
+	PhysicalNodePortIface       string
 
 	SpaceExternalIfaceMtu  string
 	SystemExternalIfaceMtu string
@@ -65,6 +70,9 @@ type NetConf struct {
 	SpaceHostIfaceMtu  string
 	SystemHostIfaceMtu string
 	ImdsIfaceMtu       string
+
+	SpaceNodePortIfaceMtu  string
+	SystemNodePortIfaceMtu string
 
 	VirtIfaceMtu string
 
@@ -83,9 +91,13 @@ type NetConf struct {
 	HostAddrCidr    string
 	HostGatewayAddr net.IP
 
+	NodePortAddr     net.IP
+	NodePortAddrCidr string
+
 	ExternalMacAddr string
 	InternalMacAddr string
 	HostMacAddr     string
+	NodePortMacAddr string
 }
 
 func (n *NetConf) Init(db *database.Database) (err error) {
