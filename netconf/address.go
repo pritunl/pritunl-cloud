@@ -45,6 +45,7 @@ func (n *NetConf) Address(db *database.Database) (err error) {
 	n.ExternalMacAddr = vm.GetMacAddrExternal(n.Virt.Id, vc.Id)
 	n.InternalMacAddr = vm.GetMacAddrInternal(n.Virt.Id, vc.Id)
 	n.HostMacAddr = vm.GetMacAddrHost(n.Virt.Id, vc.Id)
+	n.NodePortMacAddr = vm.GetMacAddrNodePort(n.Virt.Id, vc.Id)
 
 	if n.NetworkMode == node.Dhcp {
 		n.PhysicalExternalIface = interfaces.GetExternal(
@@ -122,6 +123,30 @@ func (n *NetConf) Address(db *database.Database) (err error) {
 
 		n.HostAddrCidr = hostStaticCidr
 		n.HostGatewayAddr = hostStaticGateway
+	}
+
+	if n.NodePortNetwork {
+		blck, staticAddr, e := node.Self.GetStaticNodePortAddr(db, n.Virt.Id)
+		if e != nil {
+			err = e
+			return
+		}
+
+		n.NodePortAddr = staticAddr
+
+		nodePortStaticMask := blck.GetMask()
+		if nodePortStaticMask == nil {
+			err = &errortypes.ParseError{
+				errors.New("qemu: Invalid block gateway cidr"),
+			}
+			return
+		}
+
+		nodePortStaticSize, _ := nodePortStaticMask.Size()
+		nodePortStaticCidr := fmt.Sprintf(
+			"%s/%d", staticAddr.String(), nodePortStaticSize)
+
+		n.NodePortAddrCidr = nodePortStaticCidr
 	}
 
 	return
