@@ -63,6 +63,23 @@ func (n *NetConf) Iface1(db *database.Database) (err error) {
 		n.HostSubnet = hostNetwork.String()
 	}
 
+	if !node.Self.NoNodePortNetwork && len(n.Virt.NodePorts) > 0 {
+		n.NodePortNetwork = true
+
+		blck, e := block.GetNodePortBlock(node.Self.Id)
+		if e != nil {
+			err = e
+			return
+		}
+
+		nodePortNetwork, e := blck.GetNetwork()
+		if e != nil {
+			err = e
+			return
+		}
+		n.NodePortSubnet = nodePortNetwork.String()
+	}
+
 	n.OracleSubnets = set.NewSet()
 	if node.Self.OracleSubnets != nil {
 		for _, subnet := range node.Self.OracleSubnets {
@@ -84,20 +101,23 @@ func (n *NetConf) Iface1(db *database.Database) (err error) {
 	}
 	n.VmAdapter = n.Virt.NetworkAdapters[0]
 
-	n.SystemExternalIface = vm.GetIfaceVirt(n.Virt.Id, 0)
+	n.SystemExternalIface = vm.GetIfaceNodeExternal(n.Virt.Id, 0)
 
 	return
 }
 
 func (n *NetConf) Iface2(db *database.Database, clean bool) (err error) {
 	n.PhysicalHostIface = settings.Hypervisor.HostNetworkName
+	n.PhysicalNodePortIface = settings.Hypervisor.NodePortNetworkName
 
 	n.VirtIface = vm.GetIface(n.Virt.Id, 0)
-	n.SystemInternalIface = vm.GetIfaceVirt(n.Virt.Id, 1)
-	n.SystemHostIface = vm.GetIfaceVirt(n.Virt.Id, 2)
+	n.SystemInternalIface = vm.GetIfaceNodeInternal(n.Virt.Id, 0)
+	n.SystemHostIface = vm.GetIfaceHost(n.Virt.Id, 0)
+	n.SystemNodePortIface = vm.GetIfaceNodePort(n.Virt.Id, 0)
 	n.SpaceExternalIface = vm.GetIfaceExternal(n.Virt.Id, 0)
 	n.SpaceInternalIface = vm.GetIfaceInternal(n.Virt.Id, 0)
-	n.SpaceHostIface = vm.GetIfaceHost(n.Virt.Id, 0)
+	n.SpaceHostIface = vm.GetIfaceHost(n.Virt.Id, 1)
+	n.SpaceNodePortIface = vm.GetIfaceNodePort(n.Virt.Id, 1)
 	n.SpaceOracleIface = vm.GetIfaceOracle(n.Virt.Id, 0)
 	n.SpaceOracleVirtIface = vm.GetIfaceOracleVirt(n.Virt.Id, 0)
 	n.SpaceImdsIface = "imds0"
@@ -132,7 +152,9 @@ func (n *NetConf) Iface2(db *database.Database, clean bool) (err error) {
 		n.SystemExternalIfaceMtu = strconv.Itoa(mtuSizeExternal)
 
 		n.SpaceHostIfaceMtu = strconv.Itoa(mtuSizeInternal)
+		n.SpaceNodePortIfaceMtu = strconv.Itoa(mtuSizeInternal)
 		n.SystemHostIfaceMtu = strconv.Itoa(mtuSizeInternal)
+		n.SystemNodePortIfaceMtu = strconv.Itoa(mtuSizeInternal)
 		n.ImdsIfaceMtu = strconv.Itoa(mtuSizeInternal)
 
 		if n.Vxlan {
