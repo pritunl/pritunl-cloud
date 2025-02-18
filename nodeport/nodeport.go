@@ -8,6 +8,7 @@ import (
 type NodePort struct {
 	Id         primitive.ObjectID `bson:"id" json:"id"`
 	Datacenter primitive.ObjectID `bson:"datacenter" json:"datacenter"`
+	Protocol   string             `bson:"protocol" json:"protocol"`
 	Port       int                `bson:"port" json:"port"`
 	Resource   primitive.ObjectID `bson:"resource" json:"resource"`
 }
