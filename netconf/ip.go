@@ -16,7 +16,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/store"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/sirupsen/logrus"
 )
 
@@ -28,11 +27,8 @@ func (n *NetConf) ipStartDhClient(db *database.Database) (err error) {
 		return
 	}
 
-	ifaceExternal := vm.GetIfaceExternal(n.Virt.Id, 0)
-	pidPath := fmt.Sprintf("/var/run/dhclient-%s.pid", ifaceExternal)
-
 	pid := ""
-	pidData, _ := ioutil.ReadFile(pidPath)
+	pidData, _ := ioutil.ReadFile(n.DhcpPidPath)
 	if pidData != nil {
 		pid = strings.TrimSpace(string(pidData))
 	}
@@ -41,7 +37,19 @@ func (n *NetConf) ipStartDhClient(db *database.Database) (err error) {
 		_, _ = utils.ExecCombinedOutput("", "kill", pid)
 	}
 
-	_ = utils.RemoveAll(pidPath)
+	_ = utils.RemoveAll(n.DhcpPidPath)
+
+	pid = ""
+	pidData, _ = ioutil.ReadFile(n.Dhcp6PidPath)
+	if pidData != nil {
+		pid = strings.TrimSpace(string(pidData))
+	}
+
+	if pid != "" {
+		_, _ = utils.ExecCombinedOutput("", "kill", pid)
+	}
+
+	_ = utils.RemoveAll(n.Dhcp6PidPath)
 
 	return
 }
