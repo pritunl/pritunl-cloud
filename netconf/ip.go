@@ -163,6 +163,23 @@ func (n *NetConf) ipHost(db *database.Database) (err error) {
 	return
 }
 
+func (n *NetConf) ipNodePort(db *database.Database) (err error) {
+	if n.NodePortNetwork {
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{"File exists"},
+			"ip", "netns", "exec", n.Namespace,
+			"ip", "addr",
+			"add", n.NodePortAddrCidr,
+			"dev", n.SpaceNodePortIface,
+		)
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
 func (n *NetConf) ipDetect(db *database.Database) (err error) {
 	time.Sleep(2 * time.Second)
 
@@ -447,6 +464,11 @@ func (n *NetConf) Ip(db *database.Database) (err error) {
 	}
 
 	err = n.ipHost(db)
+	if err != nil {
+		return
+	}
+
+	err = n.ipNodePort(db)
 	if err != nil {
 		return
 	}
