@@ -132,6 +132,11 @@ func (n *NetConf) Iface2(db *database.Database, clean bool) (err error) {
 		n.SpaceExternalIface,
 	)
 	n.DhcpLeasePath = paths.GetLeasePath(n.Virt.Id)
+	n.Dhcp6PidPath = fmt.Sprintf(
+		"/var/run/dhclient6-%s.pid",
+		n.SpaceExternalIface,
+	)
+	n.Dhcp6LeasePath = paths.GetLease6Path(n.Virt.Id)
 
 	if n.JumboFramesExternal || n.JumboFramesInternal || n.Vxlan {
 		mtuSizeExternal := 0
