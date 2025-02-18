@@ -81,10 +81,10 @@ func (n *NetConf) ipExternal(db *database.Database) (err error) {
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
 			"ip", "netns", "exec", n.Namespace,
-			"dhclient",
-			"-pf", n.DhcpPidPath,
-			"-lf", n.DhcpLeasePath,
-			n.SpaceExternalIface,
+			"unshare", "--mount",
+			"sh", "-c", fmt.Sprintf(
+				"mount -t tmpfs none /etc && dhclient -4 -pf %s -lf %s %s",
+				n.DhcpPidPath, n.DhcpLeasePath, n.SpaceExternalIface),
 		)
 		if err != nil {
 			return
