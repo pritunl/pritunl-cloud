@@ -105,7 +105,7 @@ func GetMacAddrHost(id primitive.ObjectID,
 		}
 	}
 
-	return "03:" + macBuf.String()
+	return "06:" + macBuf.String()
 }
 
 func GetMacAddrNodePort(id primitive.ObjectID,
@@ -125,7 +125,7 @@ func GetMacAddrNodePort(id primitive.ObjectID,
 		}
 	}
 
-	return "05:" + macBuf.String()
+	return "0a:" + macBuf.String()
 }
 
 func GetIface(id primitive.ObjectID, n int) string {
