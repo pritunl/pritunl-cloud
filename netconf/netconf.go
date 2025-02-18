@@ -4,7 +4,6 @@ import (
 	"net"
 
 	"github.com/dropbox/godropbox/container/set"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/vm"
 )
@@ -25,7 +24,9 @@ type NetConf struct {
 	JumboFramesInternal bool
 	Namespace           string
 	DhcpPidPath         string
+	Dhcp6PidPath        string
 	DhcpLeasePath       string
+	Dhcp6LeasePath      string
 	VmAdapter           *vm.NetworkAdapter
 
 	PublicAddress  string
