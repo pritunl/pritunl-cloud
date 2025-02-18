@@ -1,14 +1,17 @@
 package nodeport
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/pritunl-cloud/bridges"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/imds/server/errortypes"
+	"github.com/pritunl/pritunl-cloud/iproute"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/tools/set"
@@ -136,6 +139,93 @@ func New(db *database.Database, dcId primitive.ObjectID,
 		err = &errortypes.NotFoundError{
 			errors.New("nodeport: No available node ports found"),
 		}
+		return
+	}
+
+	return
+}
+
+func create() (err error) {
+	err = iproute.BridgeAdd("", settings.Hypervisor.NodePortNetworkName)
+	if err != nil {
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "link", "set",
+		"dev", settings.Hypervisor.NodePortNetworkName, "up",
+	)
+	if err != nil {
+		return
+	}
+
+	bridges.ClearCache()
+
+	return
+}
+
+func getAddr() (addr string, err error) {
+	address, _, err := iproute.AddressGetIface(
+		"", settings.Hypervisor.NodePortNetworkName)
+	if err != nil {
+		return
+	}
+
+	if address != nil {
+		addr = address.Local + fmt.Sprintf("/%d", address.Prefix)
+	}
+
+	return
+}
+
+func setAddr(addr string) (err error) {
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "link", "set",
+		"dev", settings.Hypervisor.NodePortNetworkName, "up",
+	)
+	if err != nil {
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "addr", "flush",
+		"dev", settings.Hypervisor.NodePortNetworkName,
+	)
+	if err != nil {
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "addr", "add", addr,
+		"dev", settings.Hypervisor.NodePortNetworkName,
+	)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func clearAddr() (err error) {
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "link", "set",
+		"dev", settings.Hypervisor.NodePortNetworkName, "up",
+	)
+	if err != nil {
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "addr", "flush",
+		"dev", settings.Hypervisor.NodePortNetworkName,
+	)
+	if err != nil {
 		return
 	}
 
