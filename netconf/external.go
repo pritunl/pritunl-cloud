@@ -112,6 +112,17 @@ func (n *NetConf) externalSysctl(db *database.Database) (err error) {
 		if err != nil {
 			return
 		}
+
+		if n.NetworkMode6 != node.Slaac && n.NetworkMode6 != node.DhcpSlaac {
+			_, err = utils.ExecCombinedOutputLogged(
+				nil, "sysctl", "-w",
+				fmt.Sprintf("net.ipv6.conf.%s.addr_gen_mode=1",
+					n.PhysicalExternalIface),
+			)
+			if err != nil {
+				return
+			}
+		}
 	}
 
 	return
