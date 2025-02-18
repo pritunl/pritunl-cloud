@@ -116,6 +116,18 @@ func (n *NetConf) ipExternal(db *database.Database) (err error) {
 				return
 			}
 		}
+	} else if n.NetworkMode6 == node.Dhcp || n.NetworkMode6 == node.DhcpSlaac {
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", n.Namespace,
+			"unshare", "--mount",
+			"sh", "-c", fmt.Sprintf(
+				"mount -t tmpfs none /etc && dhclient -6 -pf %s -lf %s %s",
+				n.Dhcp6PidPath, n.Dhcp6LeasePath, n.SpaceExternalIface),
+		)
+		if err != nil {
+			return
+		}
 	}
 
 	return
