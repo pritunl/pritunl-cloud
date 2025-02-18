@@ -149,11 +149,25 @@ func GetIfaceExternal(id primitive.ObjectID, n int) string {
 	return fmt.Sprintf("e%s%d", strings.ToLower(hashSum), n)
 }
 
+func GetIfaceNodeExternal(id primitive.ObjectID, n int) string {
+	hash := md5.New()
+	hash.Write([]byte(id.Hex()))
+	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
+	return fmt.Sprintf("r%s%d", strings.ToLower(hashSum), n)
+}
+
 func GetIfaceInternal(id primitive.ObjectID, n int) string {
 	hash := md5.New()
 	hash.Write([]byte(id.Hex()))
 	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
 	return fmt.Sprintf("i%s%d", strings.ToLower(hashSum), n)
+}
+
+func GetIfaceNodeInternal(id primitive.ObjectID, n int) string {
+	hash := md5.New()
+	hash.Write([]byte(id.Hex()))
+	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
+	return fmt.Sprintf("j%s%d", strings.ToLower(hashSum), n)
 }
 
 func GetIfaceHost(id primitive.ObjectID, n int) string {
