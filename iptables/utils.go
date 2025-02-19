@@ -370,7 +370,7 @@ func loadIptables(namespace, instIface string, state *State,
 		cmd = cmd[1:]
 
 		if mapComment && namespace == "0" {
-			if cmd[0] != "PREROUTING" {
+			if cmd[0] != "PREROUTING" && cmd[0] != "POSTROUTING" {
 				logrus.WithFields(logrus.Fields{
 					"iptables_rule": line,
 				}).Error("iptables: Invalid iptables map chain")
