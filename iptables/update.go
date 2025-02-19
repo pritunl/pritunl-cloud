@@ -229,18 +229,20 @@ func (u *Update) reload() (err error) {
 		return
 	}
 
-	specRules, err := firewall.GetSpecRulesSlow(db, node.Self.Id, instances)
+	specRules, nodePortsMap, err := firewall.GetSpecRulesSlow(
+		db, node.Self.Id, instances)
 	if err != nil {
 		return
 	}
 
-	nodeFirewall, firewalls, err := firewall.GetAllIngress(
-		db, node.Self, instances, specRules)
+	nodeFirewall, firewalls, firewallMaps, err := firewall.GetAllIngress(
+		db, node.Self, instances, specRules, nodePortsMap)
 	if err != nil {
 		return
 	}
 
-	err = Init(namespaces, vpcs, instances, nodeFirewall, firewalls)
+	err = Init(namespaces, vpcs, instances, nodeFirewall,
+		firewalls, firewallMaps)
 	if err != nil {
 		return
 	}
@@ -273,9 +275,11 @@ func ApplyUpdate(newState *State, namespaces []string, recover bool) {
 
 func UpdateState(nodeSelf *node.Node, vpcs []*vpc.Vpc,
 	instances []*instance.Instance, namespaces []string,
-	nodeFirewall []*firewall.Rule, firewalls map[string][]*firewall.Rule) {
+	nodeFirewall []*firewall.Rule, firewalls map[string][]*firewall.Rule,
+	firewallMaps map[string][]*firewall.Mapping) {
 
-	newState := LoadState(nodeSelf, vpcs, instances, nodeFirewall, firewalls)
+	newState := LoadState(nodeSelf, vpcs, instances, nodeFirewall,
+		firewalls, firewallMaps)
 
 	ApplyUpdate(newState, namespaces, false)
 
@@ -284,9 +288,11 @@ func UpdateState(nodeSelf *node.Node, vpcs []*vpc.Vpc,
 
 func UpdateStateRecover(nodeSelf *node.Node, vpcs []*vpc.Vpc,
 	instances []*instance.Instance, namespaces []string,
-	nodeFirewall []*firewall.Rule, firewalls map[string][]*firewall.Rule) {
+	nodeFirewall []*firewall.Rule, firewalls map[string][]*firewall.Rule,
+	firewallMaps map[string][]*firewall.Mapping) {
 
-	newState := LoadState(nodeSelf, vpcs, instances, nodeFirewall, firewalls)
+	newState := LoadState(nodeSelf, vpcs, instances, nodeFirewall,
+		firewalls, firewallMaps)
 
 	ApplyUpdate(newState, namespaces, true)
 
