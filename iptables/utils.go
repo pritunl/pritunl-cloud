@@ -369,7 +369,43 @@ func loadIptables(namespace, instIface string, state *State,
 		}
 		cmd = cmd[1:]
 
-		if mapComment {
+		if mapComment && namespace == "0" {
+			if cmd[0] != "PREROUTING" {
+				logrus.WithFields(logrus.Fields{
+					"iptables_rule": line,
+				}).Error("iptables: Invalid iptables map chain")
+
+				err = &errortypes.ParseError{
+					errors.New("iptables: Invalid iptables map chain"),
+				}
+				return
+			}
+
+			rules := state.Interfaces[namespace+"-host"]
+			if rules == nil {
+				rules = &Rules{
+					Namespace:        namespace,
+					Interface:        "host",
+					Header:           [][]string{},
+					Header6:          [][]string{},
+					SourceDestCheck:  [][]string{},
+					SourceDestCheck6: [][]string{},
+					Ingress:          [][]string{},
+					Ingress6:         [][]string{},
+					Maps:             [][]string{},
+					Maps6:            [][]string{},
+					Holds:            [][]string{},
+					Holds6:           [][]string{},
+				}
+				state.Interfaces[namespace+"-host"] = rules
+			}
+
+			if ipv6 {
+				rules.Maps6 = append(rules.Maps6, cmd)
+			} else {
+				rules.Maps = append(rules.Maps, cmd)
+			}
+		} else if mapComment {
 			iface := instIface
 
 			for i, item := range cmd {
