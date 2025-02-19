@@ -39,10 +39,7 @@ func LoadState(nodeSelf *node.Node, vpcs []*vpc.Vpc,
 		Interfaces: map[string]*Rules{},
 	}
 
-	if nodeFirewall != nil {
-		state.Interfaces["0-host"] = generate("0", "host", nodeFirewall)
-	}
-
+	hostNodePortMappings := map[string][]*firewall.Mapping{}
 	nodePortGateway, err := block.GetNodePortGateway()
 	if err != nil {
 		return
@@ -75,6 +72,12 @@ func LoadState(nodeSelf *node.Node, vpcs []*vpc.Vpc,
 		if len(inst.PublicIps6) != 0 {
 			pubAddr6 = inst.PublicIps6[0]
 		}
+
+		nodePortAddr := ""
+		if len(inst.NodePortIps) != 0 {
+			nodePortAddr = inst.NodePortIps[0]
+		}
+		hostNodePortMappings[nodePortAddr] = firewallMaps[namespace]
 
 		oracleAddr := ""
 		oracleIface := vm.GetIfaceOracle(inst.Id, 0)
@@ -156,6 +159,11 @@ func LoadState(nodeSelf *node.Node, vpcs []*vpc.Vpc,
 		rules = generateVirt(vpcsMap[inst.Vpc], namespace, iface, addr,
 			addr6, !inst.SkipSourceDestCheck, ingress)
 		state.Interfaces[namespace+"-"+iface] = rules
+	}
+
+	if nodeFirewall != nil {
+		state.Interfaces["0-host"] = generateHost("0", "host",
+			nodeSelf.ExternalInterfaces, nodeFirewall, hostNodePortMappings)
 	}
 
 	return
