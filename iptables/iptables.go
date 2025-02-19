@@ -42,6 +42,14 @@ func (r *Rules) newCommandMap() (cmd []string) {
 	return
 }
 
+func (r *Rules) newCommandMapPost() (cmd []string) {
+	cmd = []string{
+		"POSTROUTING",
+	}
+
+	return
+}
+
 func (r *Rules) commentCommand(inCmd []string, hold bool) (cmd []string) {
 	comment := ""
 	if hold {
