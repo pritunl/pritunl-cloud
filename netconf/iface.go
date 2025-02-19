@@ -63,7 +63,7 @@ func (n *NetConf) Iface1(db *database.Database) (err error) {
 		n.HostSubnet = hostNetwork.String()
 	}
 
-	if !node.Self.NoNodePortNetwork && len(n.Virt.NodePorts) > 0 {
+	if !node.Self.NoNodePortNetwork {
 		n.NodePortNetwork = true
 
 		blck, e := block.GetNodePortBlock(node.Self.Id)
