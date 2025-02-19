@@ -1,6 +1,7 @@
 package iptables
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -1511,8 +1512,125 @@ func generateInternal(namespace, iface string, nat, nat6, dhcp, dhcp6 bool,
 	return
 }
 
-func generate(namespace, iface string, ingress []*firewall.Rule) (
-	rules *Rules) {
+func generateNodePort(namespace, iface string, addr, nodePortGateway string,
+	firewallMaps []*firewall.Mapping) (rules *Rules) {
+
+	rules = &Rules{
+		Namespace:        namespace,
+		Interface:        iface,
+		Header:           [][]string{},
+		Header6:          [][]string{},
+		SourceDestCheck:  [][]string{},
+		SourceDestCheck6: [][]string{},
+		Ingress:          [][]string{},
+		Ingress6:         [][]string{},
+		Maps:             [][]string{},
+		Maps6:            [][]string{},
+		Holds:            [][]string{},
+		Holds6:           [][]string{},
+	}
+
+	cmd := rules.newCommand()
+	if rules.Interface != "host" {
+		cmd = append(cmd,
+			"-i", rules.Interface,
+		)
+	}
+	cmd = append(cmd,
+		"-m", "conntrack",
+		"--ctstate", "RELATED,ESTABLISHED",
+	)
+	cmd = rules.commentCommand(cmd, false)
+	cmd = append(cmd,
+		"-j", "ACCEPT",
+	)
+	rules.Ingress = append(rules.Ingress, cmd)
+
+	for _, mapping := range firewallMaps {
+		if mapping.Protocol != firewall.Tcp &&
+			mapping.Protocol != firewall.Udp {
+
+			continue
+		}
+
+		cmd = rules.newCommandMap()
+		cmd = append(cmd,
+			"-i", iface,
+			"-p", mapping.Protocol,
+			"-m", mapping.Protocol,
+			"--dport", fmt.Sprintf("%d", mapping.ExternalPort),
+		)
+		cmd = rules.commentCommandMap(cmd)
+		cmd = append(cmd,
+			"-j", "DNAT",
+			"--to-destination", fmt.Sprintf(
+				"%s:%d",
+				addr,
+				mapping.InternalPort,
+			),
+		)
+		rules.Maps = append(rules.Maps, cmd)
+
+		cmd = rules.newCommand()
+		cmd = append(cmd,
+			"-s", nodePortGateway+"/32",
+		)
+
+		if rules.Interface != "host" {
+			cmd = append(cmd,
+				"-i", rules.Interface,
+			)
+		}
+
+		cmd = append(cmd,
+			"-p", mapping.Protocol,
+			"-m", mapping.Protocol,
+			"--dport", fmt.Sprintf("%d", mapping.InternalPort),
+			"-m", "conntrack",
+			"--ctstate", "NEW",
+		)
+
+		cmd = rules.commentCommand(cmd, false)
+		cmd = append(cmd,
+			"-j", "ACCEPT",
+		)
+
+		rules.Ingress = append(rules.Ingress, cmd)
+	}
+
+	cmd = rules.newCommand()
+	if rules.Interface != "host" {
+		cmd = append(cmd,
+			"-i", rules.Interface,
+		)
+	}
+	cmd = append(cmd,
+		"-m", "conntrack",
+		"--ctstate", "INVALID",
+	)
+	cmd = rules.commentCommand(cmd, false)
+	cmd = append(cmd,
+		"-j", "DROP",
+	)
+	rules.Ingress = append(rules.Ingress, cmd)
+
+	cmd = rules.newCommand()
+	if rules.Interface != "host" {
+		cmd = append(cmd,
+			"-i", rules.Interface,
+		)
+	}
+	cmd = rules.commentCommand(cmd, false)
+	cmd = append(cmd,
+		"-j", "DROP",
+	)
+	rules.Ingress = append(rules.Ingress, cmd)
+
+	return
+}
+
+func generate(namespace, iface string, ingress []*firewall.Rule,
+	nodePortMappings map[string][]*firewall.Mapping) (rules *Rules) {
 
 	rules = &Rules{
 		Namespace:        namespace,
