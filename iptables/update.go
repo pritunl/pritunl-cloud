@@ -78,10 +78,21 @@ func (u *Update) Apply() {
 
 		oldRules := u.OldState.Interfaces[rules.Namespace+"-"+rules.Interface]
 
-		if (rules.Nat || rules.Nat6 || rules.OracleNat) &&
-			(oldRules == nil || diffRulesNat(oldRules, rules)) {
+		natChanged := false
+		reason := ""
+		if rules.Nat || rules.Nat6 || rules.OracleNat {
+			if oldRules != nil {
+				natChanged, reason = diffRulesNat(oldRules, rules)
+			} else {
+				natChanged = true
+				reason = "new"
+			}
+		}
 
-			logrus.Info("iptables: Updating iptables nat")
+		if natChanged {
+			logrus.WithFields(logrus.Fields{
+				"reason": reason,
+			}).Info("iptables: Updating iptables nat")
 
 			if oldRules != nil {
 				err := oldRules.RemoveNat()
