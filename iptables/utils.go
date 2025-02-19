@@ -98,21 +98,44 @@ func diffRules(a, b *Rules) bool {
 	return false
 }
 
-func diffRulesNat(a, b *Rules) bool {
-	if a.Nat != b.Nat ||
-		a.NatAddr != b.NatAddr ||
-		a.NatPubAddr != b.NatPubAddr ||
-		a.Nat6 != b.Nat6 ||
-		a.NatAddr6 != b.NatAddr6 ||
-		a.NatPubAddr6 != b.NatPubAddr6 ||
-		a.OracleNat != b.OracleNat ||
-		a.OracleNatAddr != b.OracleNatAddr ||
-		a.OracleNatPubAddr != b.OracleNatPubAddr {
-
-		return true
+func diffRulesNat(a, b *Rules) (bool, string) {
+	if a.Nat != b.Nat {
+		return true, "nat"
 	}
 
-	return false
+	if a.NatAddr != b.NatAddr {
+		return true, "nat_addr"
+	}
+
+	if a.NatPubAddr != b.NatPubAddr {
+		return true, "nat_pub_addr"
+	}
+
+	if a.Nat6 != b.Nat6 {
+		return true, "nat6"
+	}
+
+	if a.NatAddr6 != b.NatAddr6 {
+		return true, "nat_addr6"
+	}
+
+	if a.NatPubAddr6 != b.NatPubAddr6 {
+		return true, "nat_pub_addr6"
+	}
+
+	if a.OracleNat != b.OracleNat {
+		return true, "oracle_nat"
+	}
+
+	if a.OracleNatAddr != b.OracleNatAddr {
+		return true, "oracle_nat_addr"
+	}
+
+	if a.OracleNatPubAddr != b.OracleNatPubAddr {
+		return true, "oracle_nat_pub_addr"
+	}
+
+	return false, ""
 }
 
 func getIptablesCmd(ipv6 bool) string {
