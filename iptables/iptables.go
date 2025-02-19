@@ -1629,7 +1629,8 @@ func generateNodePort(namespace, iface string, addr, nodePortGateway string,
 	return
 }
 
-func generate(namespace, iface string, ingress []*firewall.Rule,
+func generateHost(namespace, iface string,
+	externalIfaces []string, ingress []*firewall.Rule,
 	nodePortMappings map[string][]*firewall.Mapping) (rules *Rules) {
 
 	rules = &Rules{
@@ -1963,6 +1964,36 @@ func generate(namespace, iface string, ingress []*firewall.Rule,
 		"-j", "DROP",
 	)
 	rules.Ingress6 = append(rules.Ingress6, cmd)
+
+	for nodePortAddr, mappings := range nodePortMappings {
+		for _, mapping := range mappings {
+			if mapping.Protocol != firewall.Tcp &&
+				mapping.Protocol != firewall.Udp {
+
+				continue
+			}
+
+			for _, externalIface := range externalIfaces {
+				cmd = rules.newCommandMap()
+				cmd = append(cmd,
+					"-i", externalIface,
+					"-p", mapping.Protocol,
+					"-m", mapping.Protocol,
+					"--dport", fmt.Sprintf("%d", mapping.ExternalPort),
+				)
+				cmd = rules.commentCommandMap(cmd)
+				cmd = append(cmd,
+					"-j", "DNAT",
+					"--to-destination", fmt.Sprintf(
+						"%s:%d",
+						nodePortAddr,
+						mapping.ExternalPort,
+					),
+				)
+				rules.Maps = append(rules.Maps, cmd)
+			}
+		}
+	}
 
 	return
 }
