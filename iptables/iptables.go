@@ -8,6 +8,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/firewall"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vpc"
 	"github.com/sirupsen/logrus"
@@ -1629,8 +1630,8 @@ func generateNodePort(namespace, iface string, addr, nodePortGateway string,
 	return
 }
 
-func generateHost(namespace, iface string,
-	externalIfaces []string, ingress []*firewall.Rule,
+func generateHost(namespace, iface string, nodePortNetwork bool,
+	nodePortGateway string, externalIfaces []string, ingress []*firewall.Rule,
 	nodePortMappings map[string][]*firewall.Mapping) (rules *Rules) {
 
 	rules = &Rules{
@@ -1965,34 +1966,47 @@ func generateHost(namespace, iface string,
 	)
 	rules.Ingress6 = append(rules.Ingress6, cmd)
 
-	for nodePortAddr, mappings := range nodePortMappings {
-		for _, mapping := range mappings {
-			if mapping.Protocol != firewall.Tcp &&
-				mapping.Protocol != firewall.Udp {
+	if nodePortNetwork {
+		for nodePortAddr, mappings := range nodePortMappings {
+			for _, mapping := range mappings {
+				if mapping.Protocol != firewall.Tcp &&
+					mapping.Protocol != firewall.Udp {
 
-				continue
-			}
+					continue
+				}
 
-			for _, externalIface := range externalIfaces {
-				cmd = rules.newCommandMap()
-				cmd = append(cmd,
-					"-i", externalIface,
-					"-p", mapping.Protocol,
-					"-m", mapping.Protocol,
-					"--dport", fmt.Sprintf("%d", mapping.ExternalPort),
-				)
-				cmd = rules.commentCommandMap(cmd)
-				cmd = append(cmd,
-					"-j", "DNAT",
-					"--to-destination", fmt.Sprintf(
-						"%s:%d",
-						nodePortAddr,
-						mapping.ExternalPort,
-					),
-				)
-				rules.Maps = append(rules.Maps, cmd)
+				for _, externalIface := range externalIfaces {
+					cmd = rules.newCommandMap()
+					cmd = append(cmd,
+						"-i", externalIface,
+						"-p", mapping.Protocol,
+						"-m", mapping.Protocol,
+						"--dport", fmt.Sprintf("%d", mapping.ExternalPort),
+					)
+					cmd = rules.commentCommandMap(cmd)
+					cmd = append(cmd,
+						"-j", "DNAT",
+						"--to-destination", fmt.Sprintf(
+							"%s:%d",
+							nodePortAddr,
+							mapping.ExternalPort,
+						),
+					)
+					rules.Maps = append(rules.Maps, cmd)
+				}
 			}
 		}
+
+		cmd = rules.newCommandMapPost()
+		cmd = append(cmd,
+			"-o", settings.Hypervisor.NodePortNetworkName,
+		)
+		cmd = rules.commentCommandMap(cmd)
+		cmd = append(cmd,
+			"-j", "SNAT",
+			"--to-source", nodePortGateway,
+		)
+		rules.Maps = append(rules.Maps, cmd)
 	}
 
 	return
