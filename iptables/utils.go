@@ -372,6 +372,24 @@ func loadIptables(namespace, instIface string, state *State,
 		if mapComment {
 			iface := instIface
 
+			for i, item := range cmd {
+				if item == "-i" {
+					if len(cmd) < i+2 {
+						logrus.WithFields(logrus.Fields{
+							"iptables_rule": line,
+						}).Error("iptables: Invalid iptables interface")
+
+						err = &errortypes.ParseError{
+							errors.New(
+								"iptables: Invalid iptables interface"),
+						}
+						return
+					}
+					iface = cmd[i+1]
+					break
+				}
+			}
+
 			if iface == "" {
 				logrus.WithFields(logrus.Fields{
 					"namespace":     namespace,
@@ -707,7 +725,8 @@ func RecoverNode() (err error) {
 
 func Init(namespaces []string, vpcs []*vpc.Vpc,
 	instances []*instance.Instance, nodeFirewall []*firewall.Rule,
-	firewalls map[string][]*firewall.Rule) (err error) {
+	firewalls map[string][]*firewall.Rule,
+	firewallMaps map[string][]*firewall.Mapping) (err error) {
 
 	_, err = utils.ExecCombinedOutputLogged(
 		nil, "sysctl", "-w", "net.ipv6.conf.all.accept_ra=2",
@@ -802,7 +821,7 @@ func Init(namespaces []string, vpcs []*vpc.Vpc,
 	curState = state
 
 	UpdateState(node.Self, vpcs, instances,
-		namespaces, nodeFirewall, firewalls)
+		namespaces, nodeFirewall, firewalls, firewallMaps)
 
 	return
 }
