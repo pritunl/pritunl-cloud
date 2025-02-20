@@ -798,6 +798,14 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 
 		newRecords := s.stat.ArpRecords(namespace)
 
+		if curRecords == nil || newRecords == nil {
+			logrus.WithFields(logrus.Fields{
+				"cur_records_nil": curRecords == nil,
+				"new_records_nil": newRecords == nil,
+			}).Error("deploy: Missing arp records")
+			return
+		}
+
 		changed, err = arp.ApplyState(namespace, curRecords, newRecords)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
