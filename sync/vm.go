@@ -60,7 +60,8 @@ func syncNodeFirewall() {
 
 	if !node.Self.Firewall {
 		iptables.UpdateState(node.Self, []*vpc.Vpc{}, []*instance.Instance{},
-			[]string{}, nil, map[string][]*firewall.Rule{})
+			[]string{}, nil, map[string][]*firewall.Rule{},
+			map[string][]*firewall.Mapping{})
 		return
 	}
 
@@ -77,7 +78,7 @@ func syncNodeFirewall() {
 
 		iptables.UpdateStateRecover(node.Self, []*vpc.Vpc{},
 			[]*instance.Instance{}, []string{}, ingress,
-			map[string][]*firewall.Rule{})
+			map[string][]*firewall.Rule{}, map[string][]*firewall.Mapping{})
 
 		break
 	}
