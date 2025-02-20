@@ -3,8 +3,10 @@ package task
 import (
 	"time"
 
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/imds"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/sirupsen/logrus"
 )
 
@@ -22,17 +24,36 @@ var imdsSync = &Task{
 	Handler: imdsSyncHandler,
 }
 
+var (
+	failTime = map[primitive.ObjectID]time.Time{}
+)
+
 func imdsSyncHandler(db *database.Database) (err error) {
 	confs := imds.GetConfigs()
+	timeout := time.Duration(
+		settings.Hypervisor.ImdsSyncLogTimeout) * time.Second
 
+	newFailTime := map[primitive.ObjectID]time.Time{}
 	for _, conf := range confs {
+		if conf.Instance == nil {
+			continue
+		}
+
 		err := imds.Sync(db, conf.Instance.Id, conf.Instance.Deployment, conf)
 		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"error": err,
-			}).Error("agent: Failed to sync imds")
+			if failTime[conf.Instance.Id].IsZero() {
+				newFailTime[conf.Instance.Id] = time.Now()
+			} else if time.Since(failTime[conf.Instance.Id]) > timeout {
+				logrus.WithFields(logrus.Fields{
+					"error": err,
+				}).Error("agent: Failed to sync imds")
+			} else {
+				newFailTime[conf.Instance.Id] = failTime[conf.Instance.Id]
+			}
 		}
 	}
+
+	failTime = newFailTime
 
 	return
 }
