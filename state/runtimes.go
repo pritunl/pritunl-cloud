@@ -16,6 +16,11 @@ type Runtimes struct {
 	State5      time.Duration
 	State6      time.Duration
 	State7      time.Duration
+	State8      time.Duration
+	State9      time.Duration
+	State10     time.Duration
+	State11     time.Duration
+	State12     time.Duration
 	Network     time.Duration
 	Ipset       time.Duration
 	Iptables    time.Duration
@@ -38,6 +43,11 @@ func (r *Runtimes) Log() {
 		"state5":      fmt.Sprintf("%v", r.State5),
 		"state6":      fmt.Sprintf("%v", r.State6),
 		"state7":      fmt.Sprintf("%v", r.State7),
+		"state8":      fmt.Sprintf("%v", r.State8),
+		"state9":      fmt.Sprintf("%v", r.State9),
+		"state10":     fmt.Sprintf("%v", r.State10),
+		"state11":     fmt.Sprintf("%v", r.State11),
+		"state12":     fmt.Sprintf("%v", r.State12),
 		"network":     fmt.Sprintf("%v", r.Network),
 		"ipset":       fmt.Sprintf("%v", r.Ipset),
 		"iptables":    fmt.Sprintf("%v", r.Iptables),
