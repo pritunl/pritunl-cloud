@@ -1,6 +1,7 @@
 package sync
 
 import (
+	"runtime/debug"
 	"time"
 
 	"github.com/pritunl/pritunl-cloud/constants"
@@ -16,6 +17,16 @@ import (
 )
 
 func deployState(runtimes *state.Runtimes) (err error) {
+	defer func() {
+		panc := recover()
+		if panc != nil {
+			logrus.WithFields(logrus.Fields{
+				"trace": string(debug.Stack()),
+				"panic": panc,
+			}).Error("sync: Panic in state deploy")
+		}
+	}()
+
 	start := time.Now()
 
 	stat, err := state.GetState(runtimes)
@@ -34,6 +45,16 @@ func deployState(runtimes *state.Runtimes) (err error) {
 }
 
 func syncNodeFirewall() {
+	defer func() {
+		panc := recover()
+		if panc != nil {
+			logrus.WithFields(logrus.Fields{
+				"trace": string(debug.Stack()),
+				"panic": panc,
+			}).Error("sync: Panic in node firewall")
+		}
+	}()
+
 	db := database.GetDatabase()
 	defer db.Close()
 
