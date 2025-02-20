@@ -47,6 +47,7 @@ type State struct {
 	interfacesSet          set.Set
 	nodeFirewall           []*firewall.Rule
 	firewalls              map[string][]*firewall.Rule
+	firewallMaps           map[string][]*firewall.Mapping
 	pools                  []*pool.Pool
 	disks                  []*disk.Disk
 	schedulers             []*scheduler.Scheduler
@@ -123,6 +124,10 @@ func (s *State) NodeFirewall() []*firewall.Rule {
 
 func (s *State) Firewalls() map[string][]*firewall.Rule {
 	return s.firewalls
+}
+
+func (s *State) FirewallMaps() map[string][]*firewall.Mapping {
+	return s.firewallMaps
 }
 
 func (s *State) Running() []string {
@@ -740,7 +745,60 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 	s.deploymentsDeployedMap = deploymentsDeployedMap
 	s.deploymentsInactiveMap = deploymentsInactiveMap
 
-	runtimes.State6 = time.Since(start)
+	runtimes.State8 = time.Since(start)
+	start = time.Now()
+
+	instances, err := instance.GetAllVirtMapped(db, &bson.M{
+		"node": s.nodeSelf.Id,
+	}, s.pools, instanceDisks)
+	if err != nil {
+		return
+	}
+
+	s.instances = instances
+
+	nodePortsMap := map[string][]*nodeport.Mapping{}
+
+	instId := set.NewSet()
+	instancesMap := map[primitive.ObjectID]*instance.Instance{}
+	for _, inst := range instances {
+		instId.Add(inst.Id)
+		instancesMap[inst.Id] = inst
+
+		nodePortsMap[inst.NetworkNamespace] = append(
+			nodePortsMap[inst.NetworkNamespace], inst.NodePorts...)
+
+		if !inst.Deployment.IsZero() {
+			nodePortsMap[inst.NetworkNamespace] = append(
+				nodePortsMap[inst.NetworkNamespace],
+				nodePortsDeployments[inst.Deployment]...,
+			)
+		}
+	}
+	s.instancesMap = instancesMap
+
+	runtimes.State9 = time.Since(start)
+	start = time.Now()
+
+	curVirts, err := qemu.GetVms(db, instancesMap)
+	if err != nil {
+		return
+	}
+
+	virtsMap := map[primitive.ObjectID]*vm.VirtualMachine{}
+	for _, virt := range curVirts {
+		if !instId.Contains(virt.Id) {
+			logrus.WithFields(logrus.Fields{
+				"id": virt.Id.Hex(),
+			}).Info("sync: Unknown instance")
+		}
+		virtsMap[virt.Id] = virt
+	}
+	s.virtsMap = virtsMap
+
+	s.arpRecords = arp.BuildState(s.instances, s.vpcsMap, s.vpcIpsMap)
+
+	runtimes.State10 = time.Since(start)
 	start = time.Now()
 
 	specRules, err := firewall.GetSpecRules(instances, deploymentsNode,
@@ -749,13 +807,14 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 		return
 	}
 
-	nodeFirewall, firewalls, err := firewall.GetAllIngress(
-		db, s.nodeSelf, instances, specRules)
+	nodeFirewall, firewalls, firewallMaps, err := firewall.GetAllIngress(
+		db, s.nodeSelf, instances, specRules, nodePortsMap)
 	if err != nil {
 		return
 	}
 	s.nodeFirewall = nodeFirewall
 	s.firewalls = firewalls
+	s.firewallMaps = firewallMaps
 
 	schedulers, err := scheduler.GetAll(db)
 	if err != nil {
