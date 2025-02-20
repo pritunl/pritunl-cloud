@@ -448,7 +448,7 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 		case deployment.Reserved:
 			deploymentsReservedMap[deply.Id] = deply
 			break
-		case deployment.Deployed:
+		case deployment.Deployed, deployment.Migrate:
 			deploymentsDeployedMap[deply.Id] = deply
 			break
 		case deployment.Destroy, deployment.Archive,
@@ -652,7 +652,7 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 		case deployment.Reserved:
 			deploymentsReservedMap[specDeployment.Id] = specDeployment
 			break
-		case deployment.Deployed:
+		case deployment.Deployed, deployment.Migrate:
 			deploymentsDeployedMap[specDeployment.Id] = specDeployment
 			break
 		case deployment.Destroy, deployment.Archive,
@@ -732,7 +732,7 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 		case deployment.Reserved:
 			deploymentsReservedMap[podDeployment.Id] = podDeployment
 			break
-		case deployment.Deployed:
+		case deployment.Deployed, deployment.Migrate:
 			deploymentsDeployedMap[podDeployment.Id] = podDeployment
 			break
 		case deployment.Destroy, deployment.Archive,
