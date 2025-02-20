@@ -372,52 +372,20 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 	}
 	s.instanceDisks = instanceDisks
 
-	instances, err := instance.GetAllVirtMapped(db, &bson.M{
-		"node": s.nodeSelf.Id,
-	}, s.pools, instanceDisks)
-	if err != nil {
-		return
-	}
-
-	s.instances = instances
-
-	instId := set.NewSet()
-	instancesMap := map[primitive.ObjectID]*instance.Instance{}
-	for _, inst := range instances {
-		instId.Add(inst.Id)
-		instancesMap[inst.Id] = inst
-	}
-	s.instancesMap = instancesMap
-
 	runtimes.State3 = time.Since(start)
 	start = time.Now()
 
-	curVirts, err := qemu.GetVms(db, instancesMap)
-	if err != nil {
-		return
-	}
-
-	virtsMap := map[primitive.ObjectID]*vm.VirtualMachine{}
-	for _, virt := range curVirts {
-		if !instId.Contains(virt.Id) {
-			logrus.WithFields(logrus.Fields{
-				"id": virt.Id.Hex(),
-			}).Info("sync: Unknown instance")
+	shapes := []*shape.Shape{}
+	nodeNetworkRoles := node.Self.NetworkRoles
+	if len(nodeNetworkRoles) > 0 {
+		shapes, err = shape.GetAll(db, &bson.M{
+			"roles": &bson.M{
+				"$in": nodeNetworkRoles,
+			},
+		})
+		if err != nil {
+			return
 		}
-		virtsMap[virt.Id] = virt
-	}
-	s.virtsMap = virtsMap
-
-	runtimes.State4 = time.Since(start)
-	start = time.Now()
-
-	shapes, err := shape.GetAll(db, &bson.M{
-		"roles": &bson.M{
-			"$in": node.Self.NetworkRoles,
-		},
-	})
-	if err != nil {
-		return
 	}
 	s.nodeShapes = shapes
 
@@ -453,10 +421,8 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 	}
 	s.vpcIpsMap = vpcIpsMap
 
-	runtimes.State5 = time.Since(start)
+	runtimes.State4 = time.Since(start)
 	start = time.Now()
-
-	s.arpRecords = arp.BuildState(s.instances, s.vpcsMap, s.vpcIpsMap)
 
 	deployments, err := deployment.GetAll(db, &bson.M{
 		"node": node.Self.Id,
@@ -497,18 +463,24 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 		specIdsSet.Add(deply.Spec)
 	}
 
+	runtimes.State5 = time.Since(start)
+	start = time.Now()
+
 	specIds := []primitive.ObjectID{}
 	for specId := range specIdsSet.Iter() {
 		specIds = append(specIds, specId.(primitive.ObjectID))
 	}
 
-	specs, err := spec.GetAll(db, &bson.M{
-		"_id": &bson.M{
-			"$in": specIds,
-		},
-	})
-	if err != nil {
-		return
+	specs := []*spec.Spec{}
+	if len(specIds) > 0 {
+		specs, err = spec.GetAll(db, &bson.M{
+			"_id": &bson.M{
+				"$in": specIds,
+			},
+		})
+		if err != nil {
+			return
+		}
 	}
 
 	specSecretsSet := set.NewSet()
@@ -561,13 +533,16 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 	}
 
 	specsCertsMap := map[primitive.ObjectID]*certificate.Certificate{}
-	specCerts, err := certificate.GetAll(db, &bson.M{
-		"_id": &bson.M{
-			"$in": specCertIds,
-		},
-	})
-	if err != nil {
-		return
+	specCerts := []*certificate.Certificate{}
+	if len(specCertIds) > 0 {
+		specCerts, err = certificate.GetAll(db, &bson.M{
+			"_id": &bson.M{
+				"$in": specCertIds,
+			},
+		})
+		if err != nil {
+			return
+		}
 	}
 
 	for _, specCert := range specCerts {
@@ -580,14 +555,21 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 		specSecretIds = append(specSecretIds, secrId.(primitive.ObjectID))
 	}
 
+	runtimes.State6 = time.Since(start)
+	start = time.Now()
+
 	specsSecretsMap := map[primitive.ObjectID]*secret.Secret{}
-	specSecrets, err := secret.GetAll(db, &bson.M{
-		"_id": &bson.M{
-			"$in": specSecretIds,
-		},
-	})
-	if err != nil {
-		return
+
+	specSecrets := []*secret.Secret{}
+	if len(specSecretIds) > 0 {
+		specSecrets, err = secret.GetAll(db, &bson.M{
+			"_id": &bson.M{
+				"$in": specSecretIds,
+			},
+		})
+		if err != nil {
+			return
+		}
 	}
 
 	for _, specSecret := range specSecrets {
@@ -600,13 +582,16 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 		specPodIds = append(specPodIds, pdId.(primitive.ObjectID))
 	}
 
-	specPods, err := pod.GetAll(db, &bson.M{
-		"_id": &bson.M{
-			"$in": specPodIds,
-		},
-	})
-	if err != nil {
-		return
+	specPods := []*pod.Pod{}
+	if len(specPodIds) > 0 {
+		specPods, err = pod.GetAll(db, &bson.M{
+			"_id": &bson.M{
+				"$in": specPodIds,
+			},
+		})
+		if err != nil {
+			return
+		}
 	}
 
 	specDeploymentsSet := set.NewSet()
@@ -649,13 +634,16 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 		}
 	}
 
-	specDeployments, err := deployment.GetAll(db, &bson.M{
-		"_id": &bson.M{
-			"$in": specDeploymentIds,
-		},
-	})
-	if err != nil {
-		return
+	specDeployments := []*deployment.Deployment{}
+	if len(specDeploymentIds) > 0 {
+		specDeployments, err = deployment.GetAll(db, &bson.M{
+			"_id": &bson.M{
+				"$in": specDeploymentIds,
+			},
+		})
+		if err != nil {
+			return
+		}
 	}
 
 	for _, specDeployment := range specDeployments {
@@ -675,19 +663,26 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 		}
 	}
 
+	runtimes.State7 = time.Since(start)
+	start = time.Now()
+
 	for podId := range podIdsSet.Iter() {
 		podIds = append(podIds, podId.(primitive.ObjectID))
 	}
 
-	pods, err := pod.GetAll(db, &bson.M{
-		"_id": &bson.M{
-			"$in": podIds,
-		},
-	})
-	if err != nil {
-		return
+	pods := []*pod.Pod{}
+	if len(podIds) > 0 {
+		pods, err = pod.GetAll(db, &bson.M{
+			"_id": &bson.M{
+				"$in": podIds,
+			},
+		})
+		if err != nil {
+			return
+		}
 	}
 
+	nodePortsDeployments := map[primitive.ObjectID][]*nodeport.Mapping{}
 	podDeploymentsSet := set.NewSet()
 	podsMap := map[primitive.ObjectID]*pod.Pod{}
 	podsUnitsMap := map[primitive.ObjectID]*pod.Unit{}
@@ -701,6 +696,9 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 			podsUnitsMap[unit.Id] = unit
 
 			for _, deply := range unit.Deployments {
+				nodePortsDeployments[deply.Id] = append(
+					nodePortsDeployments[deply.Id], unit.NodePorts...)
+
 				podDeploymentsSet.Add(deply.Id)
 			}
 		}
@@ -716,13 +714,16 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 		}
 	}
 
-	podDeployments, err := deployment.GetAll(db, &bson.M{
-		"_id": &bson.M{
-			"$in": podDeploymentIds,
-		},
-	})
-	if err != nil {
-		return
+	podDeployments := []*deployment.Deployment{}
+	if len(podDeploymentIds) > 0 {
+		podDeployments, err = deployment.GetAll(db, &bson.M{
+			"_id": &bson.M{
+				"$in": podDeploymentIds,
+			},
+		})
+		if err != nil {
+			return
+		}
 	}
 
 	for _, podDeployment := range podDeployments {
@@ -822,7 +823,7 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 	}
 	s.schedulers = schedulers
 
-	runtimes.State7 = time.Since(start)
+	runtimes.State11 = time.Since(start)
 	start = time.Now()
 
 	items, err := ioutil.ReadDir("/var/run")
@@ -841,7 +842,7 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 	}
 	s.running = running
 
-	runtimes.State8 = time.Since(start)
+	runtimes.State12 = time.Since(start)
 	runtimes.State = time.Since(totalStart)
 
 	return
