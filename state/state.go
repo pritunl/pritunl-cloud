@@ -9,7 +9,6 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/arp"
-	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/certificate"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
@@ -19,6 +18,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/nodeport"
 	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/pool"
 	"github.com/pritunl/pritunl-cloud/qemu"
@@ -38,7 +38,6 @@ type State struct {
 	nodes                  []*node.Node
 	nodeDatacenter         primitive.ObjectID
 	nodeZone               *zone.Zone
-	nodeHostBlock          *block.Block
 	nodeShapes             []*shape.Shape
 	nodeShapesId           set.Set
 	vxlan                  bool
@@ -92,10 +91,6 @@ func (s *State) VxLan() bool {
 
 func (s *State) NodeZone() *zone.Zone {
 	return s.nodeZone
-}
-
-func (s *State) NodeHostBlock() *block.Block {
-	return s.nodeHostBlock
 }
 
 func (s *State) GetZone(zneId primitive.ObjectID) *zone.Zone {
@@ -327,22 +322,6 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 		}
 
 		s.nodes = ndes
-	}
-
-	hostBlockId := s.nodeSelf.HostBlock
-	if !hostBlockId.IsZero() {
-		hostBlock, e := block.Get(db, hostBlockId)
-		if e != nil {
-			err = e
-			if _, ok := err.(*database.NotFoundError); ok {
-				hostBlock = nil
-				err = nil
-			} else {
-				return
-			}
-		}
-
-		s.nodeHostBlock = hostBlock
 	}
 
 	runtimes.State1 = time.Since(start)
