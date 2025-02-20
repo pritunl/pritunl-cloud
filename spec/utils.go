@@ -122,6 +122,7 @@ func GetAllProjectSorted(db *database.Database, query *bson.M) (
 	}
 	defer cursor.Close(db)
 
+	offset := 0
 	for cursor.Next(db) {
 		spc := &Spec{}
 		err = cursor.Decode(spc)
@@ -129,6 +130,9 @@ func GetAllProjectSorted(db *database.Database, query *bson.M) (
 			err = database.ParseError(err)
 			return
 		}
+
+		spc.Offset = offset
+		offset -= 1
 
 		spcs = append(spcs, spc)
 	}
