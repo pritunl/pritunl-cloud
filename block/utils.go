@@ -67,6 +67,21 @@ func GetNodePortBlock(ndeId primitive.ObjectID) (blck *Block, err error) {
 	return
 }
 
+func GetNodePortGateway() (gateway string, err error) {
+	portAddr, _, err := net.ParseCIDR(settings.Hypervisor.NodePortNetwork)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "block: Failed to parse node port network"),
+		}
+		return
+	}
+
+	utils.IncIpAddress(portAddr)
+
+	gateway = portAddr.String()
+	return
+}
+
 func Get(db *database.Database, blockId primitive.ObjectID) (
 	block *Block, err error) {
 
