@@ -42,3 +42,10 @@ func (n *NodePort) Insert(db *database.Database) (err error) {
 
 	return
 }
+
+type Mapping struct {
+	NodePort     primitive.ObjectID `bson:"node_port" json:"node_port"`
+	Protocol     string             `bson:"protocol" json:"protocol"`
+	ExternalPort int                `bson:"external_port" json:"external_port"`
+	InternalPort int                `bson:"internal_port" json:"internal_port"`
+}
