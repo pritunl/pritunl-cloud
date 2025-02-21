@@ -36,6 +36,10 @@ func main() {
 		logger.SetTimeFormat(""),
 	)
 
+	logger.AddHandler(func(record *logger.Record) {
+		fmt.Print(record.String())
+	})
+
 	switch flag.Arg(0) {
 	case "get":
 		ids := &imds.Imds{}
