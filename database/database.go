@@ -567,6 +567,30 @@ func addIndexes() (err error) {
 	}
 
 	index = &Index{
+		Collection: db.NodePorts(),
+		Keys: &bson.D{
+			{"datacenter", 1},
+			{"protocol", 1},
+			{"port", 1},
+		},
+		Unique: true,
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
+	index = &Index{
+		Collection: db.NodePorts(),
+		Keys: &bson.D{
+			{"resource", 1},
+		},
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
+
+	index = &Index{
 		Collection: db.Nonces(),
 		Keys: &bson.D{
 			{"timestamp", 1},
