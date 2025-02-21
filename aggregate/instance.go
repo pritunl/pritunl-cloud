@@ -315,7 +315,7 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 		if !doc.Instance.Deployment.IsZero() {
 			doc.Instance.LoadVirt(nil, nil)
 
-			specRules, e := firewall.GetSpecRulesSlow(
+			specRules, _, e := firewall.GetSpecRulesSlow(
 				db, doc.Instance.Node, []*instance.Instance{&doc.Instance})
 			if e != nil {
 				err = e
