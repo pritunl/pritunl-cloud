@@ -12,6 +12,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/engine"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/imds/types"
+	pritunl_utils "github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/tools/logger"
 )
 
@@ -213,6 +214,53 @@ func main() {
 			return
 		}
 
+		break
+	case "status":
+		mem, err := pritunl_utils.GetMemInfo()
+		if err != nil {
+			logger.WithFields(logger.Fields{
+				"error": err,
+			}).Error("imds: Failed to get memory")
+			utils.DelayExit(1, 1*time.Second)
+			return
+		}
+
+		fmt.Println("Memory Information:")
+		fmt.Printf("  Total Memory:           %d KB\n", mem.Total)
+		fmt.Printf("  Free Memory:            %d KB\n", mem.Free)
+		fmt.Printf("  Available Memory:       %d KB\n", mem.Available)
+		fmt.Printf("  Buffers:                %d KB\n", mem.Buffers)
+		fmt.Printf("  Cached:                 %d KB\n", mem.Cached)
+		fmt.Printf("  Used Memory:            %d KB\n", mem.Used)
+		fmt.Printf("  Used Percentage:        %.2f%%\n", mem.UsedPercent)
+		fmt.Printf("  Dirty:                  %d KB\n", mem.Dirty)
+		fmt.Println("\nSwap Information:")
+		fmt.Printf("  Swap Total:             %d KB\n", mem.SwapTotal)
+		fmt.Printf("  Swap Free:              %d KB\n", mem.SwapFree)
+		fmt.Printf("  Swap Used:              %d KB\n", mem.SwapUsed)
+		fmt.Printf("  Swap Used Percentage:   %.2f%%\n", mem.SwapUsedPercent)
+		fmt.Println("\nHugePages Information:")
+		fmt.Printf("  HugePages Total:        %d\n", mem.HugePagesTotal)
+		fmt.Printf("  HugePages Free:         %d\n", mem.HugePagesFree)
+		fmt.Printf("  HugePages Reserved:     %d\n", mem.HugePagesReserved)
+		fmt.Printf("  HugePages Used:         %d\n", mem.HugePagesUsed)
+		fmt.Printf("  HugePages Used Percent: %.2f%%\n", mem.HugePagesUsedPercent)
+		fmt.Printf("  HugePage Size:          %d KB\n", mem.HugePageSize)
+
+		load, err := pritunl_utils.LoadAverage()
+		if err != nil {
+			logger.WithFields(logger.Fields{
+				"error": err,
+			}).Error("imds: Failed to get load")
+			utils.DelayExit(1, 1*time.Second)
+			return
+		}
+
+		fmt.Println("\nLoad Average Information:")
+		fmt.Printf("  CPU Units:              %d\n", load.CpuUnits)
+		fmt.Printf("  Load Average (1 min):   %.2f%%\n", load.Load1)
+		fmt.Printf("  Load Average (5 min):   %.2f%%\n", load.Load5)
+		fmt.Printf("  Load Average (15 min):  %.2f%%\n", load.Load15)
 		break
 	case "version":
 		fmt.Printf("pci v%s\n", constants.Version)
