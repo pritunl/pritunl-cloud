@@ -54,11 +54,6 @@ func (n *Namespace) Deploy() (err error) {
 		externalNetwork = true
 	}
 
-	hostNetwork := false
-	if !node.Self.HostBlock.IsZero() {
-		hostNetwork = true
-	}
-
 	for _, inst := range instances {
 		if !inst.IsActive() {
 			continue
@@ -66,17 +61,19 @@ func (n *Namespace) Deploy() (err error) {
 
 		curNamespaces.Add(vm.GetNamespace(inst.Id, 0))
 		if externalNetwork {
-			curVirtIfaces.Add(vm.GetIfaceVirt(inst.Id, 0))
+			curVirtIfaces.Add(vm.GetIfaceNodeExternal(inst.Id, 0))
 		}
-		curVirtIfaces.Add(vm.GetIfaceVirt(inst.Id, 1))
-		if hostNetwork {
-			curVirtIfaces.Add(vm.GetIfaceVirt(inst.Id, 2))
-		}
+		curVirtIfaces.Add(vm.GetIfaceNodeInternal(inst.Id, 0))
+		curVirtIfaces.Add(vm.GetIfaceHost(inst.Id, 0))
 		if externalNetwork {
 			curExternalIfaces.Add(vm.GetIfaceExternal(inst.Id, 0))
 		}
+		curVirtIfaces.Add(vm.GetIfaceNodePort(inst.Id, 0))
 
 		// TODO Upgrade code
+		curVirtIfaces.Add(vm.GetIfaceVirt(inst.Id, 0))
+		curVirtIfaces.Add(vm.GetIfaceVirt(inst.Id, 1))
+		curVirtIfaces.Add(vm.GetIfaceVirt(inst.Id, 2))
 		if firstRun {
 			namespace := vm.GetNamespace(inst.Id, 0)
 			iface := vm.GetIfaceExternal(inst.Id, 1)
@@ -93,7 +90,11 @@ func (n *Namespace) Deploy() (err error) {
 	firstRun = false
 
 	for _, iface := range ifaces {
-		if len(iface) != 14 || !strings.HasPrefix(iface, "v") {
+		if len(iface) != 14 || !(strings.HasPrefix(iface, "j") ||
+			strings.HasPrefix(iface, "r") ||
+			utils.HasPreSuf(iface, "h", "0") ||
+			utils.HasPreSuf(iface, "m", "0")) {
+
 			continue
 		}
 
