@@ -16,9 +16,10 @@ func (t *Iptables) Deploy() (err error) {
 	namespaces := t.stat.Namespaces()
 	nodeFirewall := t.stat.NodeFirewall()
 	firewalls := t.stat.Firewalls()
+	firewallMaps := t.stat.FirewallMaps()
 
 	iptables.UpdateStateRecover(nodeSelf, vpcs, instaces, namespaces,
-		nodeFirewall, firewalls)
+		nodeFirewall, firewalls, firewallMaps)
 
 	return
 }
