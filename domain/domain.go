@@ -260,7 +260,6 @@ func (d *Domain) MergeRecords(deplyId primitive.ObjectID,
 
 	for _, newRec := range newRecs {
 		subRecs := recMap[newRec.SubDomain]
-
 		rec := subRecs[newRec.Value]
 		if rec == nil {
 			if newDomn == nil {
@@ -270,7 +269,7 @@ func (d *Domain) MergeRecords(deplyId primitive.ObjectID,
 			}
 			newRec.Operation = INSERT
 			d.Records = append(d.Records, newRec)
-		} else {
+		} else if subRecs != nil {
 			delete(subRecs, newRec.Value)
 		}
 	}
