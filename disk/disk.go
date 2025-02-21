@@ -291,6 +291,13 @@ func (d *Disk) Unreserve(db *database.Database,
 	return
 }
 
+func (d *Disk) IsAavailabe() bool {
+	if d.State == Available && d.Instance.IsZero() {
+		return true
+	}
+	return false
+}
+
 func (d *Disk) Commit(db *database.Database) (err error) {
 	coll := db.Disks()
 
