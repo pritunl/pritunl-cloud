@@ -20,6 +20,12 @@ type Rule struct {
 	Port      string   `bson:"port" json:"port"`
 }
 
+type Mapping struct {
+	Protocol     string `bson:"protocol" json:"protocol"`
+	ExternalPort int    `bson:"external_port" json:"external_port"`
+	InternalPort int    `bson:"internal_port" json:"internal_port"`
+}
+
 func (r *Rule) SetName(ipv6 bool) (name string) {
 	switch r.Protocol {
 	case All:
