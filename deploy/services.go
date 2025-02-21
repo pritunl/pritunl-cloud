@@ -11,11 +11,13 @@ import (
 	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/nodeport"
 	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/scheduler"
 	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/pritunl-cloud/zone"
 	"github.com/sirupsen/logrus"
 )
 
@@ -175,6 +177,18 @@ func (s *Pods) DeploySpec(db *database.Database,
 	if err != nil {
 		return
 	}
+
+	defer func() {
+		if err != nil {
+			e := deployment.Remove(db, deply.Id)
+			if e != nil {
+				logrus.WithFields(logrus.Fields{
+					"error": e,
+				}).Error("deploy: Failed to cleanup deployment")
+				return
+			}
+		}
+	}()
 
 	reserved, err = unit.Reserve(db, deply.Id, schd.OverrideCount)
 	if err != nil {
