@@ -24,6 +24,11 @@ type Record struct {
 	Operation  string             `bson:"-" json:"operation"`
 }
 
+func (r *Record) Copy() *Record {
+	rec := *r
+	return &rec
+}
+
 func (r *Record) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
