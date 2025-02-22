@@ -268,6 +268,11 @@ func (d *Database) Firewalls() (coll *Collection) {
 	return
 }
 
+func (d *Database) Versions() (coll *Collection) {
+	coll = d.getCollection("versions")
+	return
+}
+
 func (d *Database) Plans() (coll *Collection) {
 	coll = d.getCollection("plans")
 	return
