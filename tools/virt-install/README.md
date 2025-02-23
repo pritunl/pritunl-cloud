@@ -45,19 +45,22 @@ sudo setenforce 0
 sudo dnf -y install qemu-kvm qemu-img libguestfs-tools genisoimage edk2-ovmf virt-install
 
 sudo curl -o /root/setup.sh https://raw.githubusercontent.com/pritunl/pritunl-cloud/refs/heads/master/tools/virt-install/setup/debian.sh
-echo "6c5648e442a0027d2f2ac15ea3104155086af4f1df5b2cb2e59fb04cecf639ec /root/setup.sh" | sha256sum -c && sudo bash /root/setup.sh
+echo "72ad46a18da1a52776a423cf42c0bf644faed80c32bf6a50f1c3bcfac8a992c4 /root/setup.sh" | sha256sum -c && sudo bash /root/setup.sh
+
+curl -o /root/setup.sh https://raw.githubusercontent.com/pritunl/pritunl-cloud/refs/heads/master/tools/virt-install/setup/fedora.sh
+echo "0cc31951dd1d1ae8530842e410a81359b8eed19db8984b0dca18c86286d685d4 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
 
 fetch -o /root/setup.sh https://raw.githubusercontent.com/pritunl/pritunl-cloud/refs/heads/master/tools/virt-install/setup/freebsd.sh
-echo "63ed214e2d6b5622114fc282af7921e6f4fbff8b47e600ec3136fd9bef23617d /root/setup.sh" | sha256sum -c && sh /root/setup.sh
+[ "$(sha256sum /root/setup.sh)" = "6ed364390594913597d563330057a63baf894474c9b0649cf3b62ebb480d30e1  /root/setup.sh" ] && sh /root/setup.sh
 
 curl -o /root/setup.sh https://raw.githubusercontent.com/pritunl/pritunl-cloud/refs/heads/master/tools/virt-install/setup/rhel7.sh
-echo "6553eae61cbfe23d58d6a7c462a0fd12a20e2e3e4387facbf09226519fc421e1 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
+echo "168073816704bd6243e018a1692281b7bb6e3d10aa671d65124813539e18c4cc /root/setup.sh" | sha256sum -c && bash /root/setup.sh
 
 curl -o /root/setup.sh https://raw.githubusercontent.com/pritunl/pritunl-cloud/refs/heads/master/tools/virt-install/setup/rhel8.sh
-echo "2773694d6a523643a1d100d46dffd177df8e868fde6fb663af8b8a37be32d786 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
+echo "5b4428d0d16fefa1857f88ae737d4a775f39b6732df1188ad180df14f29c40a6 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
 
 curl -o /root/setup.sh https://raw.githubusercontent.com/pritunl/pritunl-cloud/refs/heads/master/tools/virt-install/setup/rhel9.sh
-echo "930c1304036d3eec02d7ccad08308182a7bdf4fd17d99f770dc2b2c173661260 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
+echo "4f2f2556618aaffc53261a404cc8220cbe55accf3a10da40213df3fb315f1755 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
 
 mkdir -p ~/Shared/images
 scp $BUILD_IP:/var/lib/virt/images/* ~/Shared/images/
