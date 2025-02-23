@@ -18,8 +18,7 @@ truncate -s 0 /etc/yum/vars/ociregion || true
 
 dnf clean all
 dnf -y update
-dnf -y install yum-utils
-dnf -y install bash-completion qemu-guest-agent yum-utils cloud-init cloud-utils-growpart chrony openssh-server
+dnf -y install bash-completion qemu-guest-agent cloud-init cloud-utils-growpart chrony openssh-server
 dnf -y remove cockpit-ws
 
 sed -i 's/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=0/g' /etc/default/grub

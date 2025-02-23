@@ -14,6 +14,8 @@ env PAGER=/bin/cat freebsd-update fetch
 freebsd-update install || true
 pkg upgrade -y
 
+sysrc -f /boot/loader.conf autoboot_delay=0
+
 pkg search cloud-init
 pkg install -y dual-dhclient py311-cloud-init
 sysrc dhclient_program="/usr/local/sbin/dual-dhclient"

@@ -19,8 +19,7 @@ EOF
 
 yum clean all
 yum -y update
-yum -y install yum-utils
-yum -y install bash-completion qemu-guest-agent yum-utils cloud-init cloud-utils-growpart chrony openssh-server
+yum -y install bash-completion qemu-guest-agent cloud-init cloud-utils-growpart chrony openssh-server
 yum -y remove cockpit-ws
 
 sed -i 's/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=0/g' /etc/default/grub
