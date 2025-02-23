@@ -2,6 +2,7 @@ package iptables
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -1983,14 +1984,19 @@ func generateHost(namespace, iface string, nodePortNetwork bool,
 	rules.Ingress6 = append(rules.Ingress6, cmd)
 
 	if nodePortNetwork {
-		for nodePortAddr, mappings := range nodePortMappings {
+		nodePortKeys := make([]string, 0, len(nodePortMappings))
+		for k := range nodePortMappings {
+			nodePortKeys = append(nodePortKeys, k)
+		}
+		sort.Strings(nodePortKeys)
+
+		for _, nodePortAddr := range nodePortKeys {
+			mappings := nodePortMappings[nodePortAddr]
 			for _, mapping := range mappings {
 				if mapping.Protocol != firewall.Tcp &&
 					mapping.Protocol != firewall.Udp {
-
 					continue
 				}
-
 				for _, externalIface := range externalIfaces {
 					cmd = rules.newCommandMap()
 					cmd = append(cmd,
