@@ -103,6 +103,13 @@ func Sanitize() (err error) {
 		PipeErr: true,
 	})
 
+	_, _ = commander.Exec(&commander.Opt{
+		Name:    "fstrim",
+		Args:    []string{"-av"},
+		PipeOut: true,
+		PipeErr: true,
+	})
+
 	return
 }
 
