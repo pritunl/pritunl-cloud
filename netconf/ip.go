@@ -267,6 +267,8 @@ func (n *NetConf) ipHostIptables(db *database.Database) (err error) {
 			"-A", "POSTROUTING",
 			"-s", n.InternalAddr.String()+"/32",
 			"-d", n.InternalAddr.String()+"/32",
+			"-m", "comment",
+			"--comment", "pritunl_cloud_host_nat",
 			"-j", "SNAT",
 			"--to", n.HostAddr.String(),
 		)
@@ -284,6 +286,8 @@ func (n *NetConf) ipHostIptables(db *database.Database) (err error) {
 				"-A", "POSTROUTING",
 				"-s", n.InternalAddr.String()+"/32",
 				"-o", n.SpaceHostIface,
+				"-m", "comment",
+				"--comment", "pritunl_cloud_host_nat",
 				"-j", "MASQUERADE",
 			)
 			iptables.Unlock()
@@ -300,6 +304,8 @@ func (n *NetConf) ipHostIptables(db *database.Database) (err error) {
 				"-s", n.InternalAddr.String()+"/32",
 				"-d", n.HostSubnet,
 				"-o", n.SpaceHostIface,
+				"-m", "comment",
+				"--comment", "pritunl_cloud_host_nat",
 				"-j", "MASQUERADE",
 			)
 			iptables.Unlock()
@@ -315,6 +321,8 @@ func (n *NetConf) ipHostIptables(db *database.Database) (err error) {
 			"iptables", "-t", "nat",
 			"-A", "PREROUTING",
 			"-d", n.HostAddr.String()+"/32",
+			"-m", "comment",
+			"--comment", "pritunl_cloud_host_nat",
 			"-j", "DNAT",
 			"--to-destination", n.InternalAddr.String(),
 		)
