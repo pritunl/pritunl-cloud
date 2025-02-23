@@ -47,6 +47,9 @@ sudo dnf -y install qemu-kvm qemu-img libguestfs-tools genisoimage edk2-ovmf vir
 sudo curl -o /root/setup.sh https://raw.githubusercontent.com/pritunl/pritunl-cloud/refs/heads/master/tools/virt-install/setup/debian.sh
 echo "6c5648e442a0027d2f2ac15ea3104155086af4f1df5b2cb2e59fb04cecf639ec /root/setup.sh" | sha256sum -c && sudo bash /root/setup.sh
 
+fetch -o /root/setup.sh https://raw.githubusercontent.com/pritunl/pritunl-cloud/refs/heads/master/tools/virt-install/setup/freebsd.sh
+echo "63ed214e2d6b5622114fc282af7921e6f4fbff8b47e600ec3136fd9bef23617d /root/setup.sh" | sha256sum -c && sh /root/setup.sh
+
 curl -o /root/setup.sh https://raw.githubusercontent.com/pritunl/pritunl-cloud/refs/heads/master/tools/virt-install/setup/rhel7.sh
 echo "6553eae61cbfe23d58d6a7c462a0fd12a20e2e3e4387facbf09226519fc421e1 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
 
@@ -60,4 +63,5 @@ mkdir -p ~/Shared/images
 scp $BUILD_IP:/var/lib/virt/images/* ~/Shared/images/
 
 find ~/Shared/images/ -name "*.qcow2" -type f -exec gpg --default-key 055C08A4 --armor --output {}.sig --detach-sig {} \;
+sha256sum ~/Shared/images/*
 ```

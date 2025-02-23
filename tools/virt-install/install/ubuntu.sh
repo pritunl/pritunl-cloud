@@ -9,8 +9,8 @@ sudo mkdir -p /var/lib/virt/ks
 sudo mkdir -p /var/lib/virt/images
 sudo mkdir -p /var/lib/virt/init
 
-sudo virsh destroy ${NAME} | true
-sudo virsh undefine ${NAME} --nvram | true
+sudo virsh destroy ${NAME} || true
+sudo virsh undefine ${NAME} --nvram || true
 sudo rm -f /var/lib/virt/${NAME}.qcow2
 
 if [ ! -f "/var/lib/virt/iso/$(basename ${ISO_URL})" ]; then

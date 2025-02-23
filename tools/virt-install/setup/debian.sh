@@ -79,18 +79,18 @@ sleep 1
 find /var/log -mtime -1 -type f -exec truncate -s 0 {} \;
 rm -rf /var/tmp/dnf-*
 rm -rf /home/cloud/.cache
-shred -u /etc/ssh/*_key /etc/ssh/*_key.pub | true
-shred -u /root/.ssh/authorized_keys | true
-shred -u /root/.bash_history | true
-shred -u /home/cloud/.bash_history | true
-shred -u /var/log/lastlog | true
-shred -u /var/log/secure | true
-shred -u /var/log/utmp | true
-shred -u /var/log/wtmp | true
-shred -u /var/log/btmp | true
-shred -u /var/log/dmesg | true
-shred -u /var/log/dmesg.old | true
-shred -u /var/lib/systemd/random-seed | true
+shred -u /etc/ssh/*_key /etc/ssh/*_key.pub || true
+shred -u /root/.ssh/authorized_keys || true
+shred -u /root/.bash_history || true
+shred -u /home/cloud/.bash_history || true
+shred -u /var/log/lastlog || true
+shred -u /var/log/secure || true
+shred -u /var/log/utmp || true
+shred -u /var/log/wtmp || true
+shred -u /var/log/btmp || true
+shred -u /var/log/dmesg || true
+shred -u /var/log/dmesg.old || true
+shred -u /var/lib/systemd/random-seed || true
 rm -rf /var/log/*.gz
 rm -rf /var/log/*.[0-9]
 rm -rf /var/log/*-????????
