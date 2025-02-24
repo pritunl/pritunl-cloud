@@ -8,6 +8,7 @@ type hypervisor struct {
 	LibPath             string `bson:"lib_path" default:"/var/lib/pritunl-cloud"`
 	RunPath             string `bson:"run_path" default:"/var/run/pritunl-cloud"`
 	AgentHostPath       string `bson:"agent_host_path" default:"/usr/bin/pritunl-cloud-agent"`
+	AgentBsdHostPath    string `bson:"agent_bsd_host_path" default:"/usr/bin/pritunl-cloud-agent-bsd"`
 	AgentGuestPath      string `bson:"agent_guest_path" default:"/usr/bin/pci"`
 	InitGuestPath       string `bson:"init_guest_path" default:"/etc/pritunl-cloud-init"`
 	HugepagesPath       string `bson:"hugepages_path" default:"/dev/hugepages/pritunl"`
