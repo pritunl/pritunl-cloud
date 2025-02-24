@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/state"
@@ -217,111 +218,95 @@ func ApplyState(stat *state.State) (err error) {
 		}
 	}
 
-	hostBlock := stat.NodeHostBlock()
-	if hostBlock != nil {
-		gatewayCidr := hostBlock.GetGatewayCidr()
-		if gatewayCidr == "" {
-			logrus.WithFields(logrus.Fields{
-				"host_block": hostBlock.Id.Hex(),
-			}).Error("hnetwork: Host network block gateway is invalid")
+	hostBlock, err := block.GetNodeBlock(stat.Node().Id)
+	if err != nil {
+		return
+	}
 
-			err = removeNetwork(stat)
-			if err != nil {
-				return
-			}
+	gatewayCidr := hostBlock.GetGatewayCidr()
+	if gatewayCidr == "" {
+		logrus.WithFields(logrus.Fields{
+			"host_block": hostBlock.Id.Hex(),
+		}).Error("hnetwork: Host network block gateway is invalid")
 
-			return
-		}
-
-		if curGateway != gatewayCidr {
-			logrus.WithFields(logrus.Fields{
-				"host_block":         hostBlock.Id.Hex(),
-				"host_block_gateway": gatewayCidr,
-			}).Info("hnetwork: Updating host network bridge")
-
-			err = setAddr(gatewayCidr)
-			if err != nil {
-				return
-			}
-
-			curGateway = gatewayCidr
-		}
-
-		if stat.Node().HostNat {
-			hostNet, e := hostBlock.GetNetwork()
-			if e != nil {
-				logrus.WithFields(logrus.Fields{
-					"host_block": hostBlock.Id.Hex(),
-					"error":      e,
-				}).Error("hnetwork: Host nat block network invalid")
-			} else {
-				newRule := &IptablesRule{
-					Source: hostNet.String(),
-					Output: stat.Node().DefaultInterface,
-				}
-
-				if curRule == nil || curRule.Source != newRule.Source ||
-					curRule.Output != newRule.Output {
-
-					logrus.WithFields(logrus.Fields{
-						"host_block":  hostBlock.Id.Hex(),
-						"host_source": newRule.Source,
-						"host_output": newRule.Output,
-					}).Info("hnetwork: Updating host network nat")
-
-					if curRule != nil {
-						err = curRule.Remove()
-						if err != nil {
-							return
-						}
-						curRule = nil
-					}
-
-					err = newRule.Add()
-					if err != nil {
-						logrus.WithFields(logrus.Fields{
-							"host_block":  hostBlock.Id.Hex(),
-							"host_source": newRule.Source,
-							"host_output": newRule.Output,
-							"error":       err,
-						}).Error("hnetwork: Host nat add rule failed")
-						err = nil
-					} else {
-						curRule = newRule
-					}
-				}
-			}
-		} else if curRule != nil {
-			logrus.WithFields(logrus.Fields{
-				"host_block":  hostBlock.Id.Hex(),
-				"host_source": curRule.Source,
-				"host_output": curRule.Output,
-			}).Info("hnetwork: Updating host network nat")
-
-			err = curRule.Remove()
-			if err != nil {
-				return
-			}
-			curRule = nil
-		}
-	} else {
 		err = removeNetwork(stat)
 		if err != nil {
 			return
 		}
 
-		if curRule != nil {
-			logrus.WithFields(logrus.Fields{
-				"host_source": curRule.Source,
-				"host_output": curRule.Output,
-			}).Info("hnetwork: Updating host network nat")
+		return
+	}
 
-			err = curRule.Remove()
-			if err != nil {
-				return
-			}
-			curRule = nil
+	if curGateway != gatewayCidr {
+		logrus.WithFields(logrus.Fields{
+			"host_block":         hostBlock.Id.Hex(),
+			"host_block_gateway": gatewayCidr,
+		}).Info("hnetwork: Updating host network bridge")
+
+		err = setAddr(gatewayCidr)
+		if err != nil {
+			return
 		}
+
+		curGateway = gatewayCidr
+	}
+
+	if stat.Node().HostNat {
+		hostNet, e := hostBlock.GetNetwork()
+		if e != nil {
+			logrus.WithFields(logrus.Fields{
+				"host_block": hostBlock.Id.Hex(),
+				"error":      e,
+			}).Error("hnetwork: Host nat block network invalid")
+		} else {
+			newRule := &IptablesRule{
+				Source: hostNet.String(),
+				Output: stat.Node().DefaultInterface,
+			}
+
+			if curRule == nil || curRule.Source != newRule.Source ||
+				curRule.Output != newRule.Output {
+
+				logrus.WithFields(logrus.Fields{
+					"host_block":  hostBlock.Id.Hex(),
+					"host_source": newRule.Source,
+					"host_output": newRule.Output,
+				}).Info("hnetwork: Updating host network nat")
+
+				if curRule != nil {
+					err = curRule.Remove()
+					if err != nil {
+						return
+					}
+					curRule = nil
+				}
+
+				err = newRule.Add()
+				if err != nil {
+					logrus.WithFields(logrus.Fields{
+						"host_block":  hostBlock.Id.Hex(),
+						"host_source": newRule.Source,
+						"host_output": newRule.Output,
+						"error":       err,
+					}).Error("hnetwork: Host nat add rule failed")
+					err = nil
+				} else {
+					curRule = newRule
+				}
+			}
+		}
+	} else if curRule != nil {
+		logrus.WithFields(logrus.Fields{
+			"host_block":  hostBlock.Id.Hex(),
+			"host_source": curRule.Source,
+			"host_output": curRule.Output,
+		}).Info("hnetwork: Updating host network nat")
+
+		err = curRule.Remove()
+		if err != nil {
+			return
+		}
+		curRule = nil
 	}
 
 	return
