@@ -118,7 +118,8 @@ func (d *Disk) Validate(db *database.Database) (
 	}
 
 	switch d.SystemType {
-	case Linux:
+	case Linux, "":
+		d.SystemType = Linux
 		break
 	case Bsd:
 		break
