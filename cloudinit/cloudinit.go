@@ -260,7 +260,7 @@ func getUserData(db *database.Database, inst *instance.Instance,
 		}
 	}
 
-	if !initial {
+	if !initial || !settings.Hypervisor.LockCloudPass {
 		data.LockPasswd = "false"
 	} else {
 		data.LockPasswd = "true"
