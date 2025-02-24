@@ -13,6 +13,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/nodeport"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/sirupsen/logrus"
@@ -410,8 +411,10 @@ func MergeIngress(fires []*Firewall) (rules []*Rule) {
 }
 
 func GetAllIngress(db *database.Database, nodeSelf *node.Node,
-	instances []*instance.Instance, specRules map[string][]*Rule) (
-	nodeFirewall []*Rule, firewalls map[string][]*Rule, err error) {
+	instances []*instance.Instance, specRules map[string][]*Rule,
+	nodePortsMap map[string][]*nodeport.Mapping) (
+	nodeFirewall []*Rule, firewalls map[string][]*Rule,
+	mappings map[string][]*Mapping, err error) {
 
 	if nodeSelf.Firewall {
 		fires, e := GetRoles(db, nodeSelf.NetworkRoles)
@@ -464,6 +467,17 @@ func GetAllIngress(db *database.Database, nodeSelf *node.Node,
 	if specRules != nil {
 		for namespace, rules := range specRules {
 			firewalls[namespace] = append(firewalls[namespace], rules...)
+		}
+	}
+
+	mappings = map[string][]*Mapping{}
+	for namespace, ndePorts := range nodePortsMap {
+		for _, ndePort := range ndePorts {
+			mappings[namespace] = append(mappings[namespace], &Mapping{
+				Protocol:     ndePort.Protocol,
+				ExternalPort: ndePort.ExternalPort,
+				InternalPort: ndePort.InternalPort,
+			})
 		}
 	}
 
