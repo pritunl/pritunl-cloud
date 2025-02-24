@@ -10,6 +10,7 @@ echo '#############################################################'
 echo 'starting alpine setup'
 echo '#############################################################'
 
+echo "iso9660" > /etc/filesystems
 sed -i 's/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=0/g' /etc/default/grub
 grub-mkconfig -o /boot/grub/grub.cfg
 
@@ -38,6 +39,7 @@ touch /etc/ssh/principals
 
 mkdir -p /home/alpine
 chown alpine:alpine /home/alpine
+chmod 700 /home/alpine
 usermod -l cloud alpine
 usermod -m -d /home/cloud cloud
 groupmod -n cloud alpine
@@ -45,7 +47,6 @@ usermod -aG adm,wheel cloud
 passwd -d root
 passwd -l root
 passwd -d cloud
-passwd -l cloud
 mkdir -p /home/cloud/.ssh
 chown cloud:cloud /home/cloud/.ssh
 touch /home/cloud/.ssh/authorized_keys
@@ -56,6 +57,10 @@ sed -i '/^%wheel/d' /etc/sudoers
 tee -a /etc/sudoers << EOF
 %wheel ALL=(ALL) NOPASSWD:ALL
 EOF
+
+cloud_password=$(tr -dc 'A-Za-z0-9!@#$%^&*()_+~' < /dev/urandom | head -c 64)
+echo "cloud:$cloud_password" | chpasswd
+passwd -u cloud
 
 cloud-init clean --machine-id
 tee /etc/resolv.conf << EOF

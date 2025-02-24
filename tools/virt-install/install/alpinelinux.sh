@@ -38,6 +38,7 @@ packages:
   - dosfstools
   - grub-efi
   - xfsprogs
+  - xfsprogs-extra
   - sudo
   - chrony
   - openssh
