@@ -3,7 +3,7 @@ set -e
 
 if [ $(whoami) != "root" ]; then
   echo "Must be run as root"
-  exit
+  exit 1
 fi
 
 echo '#############################################################'
