@@ -11,6 +11,7 @@ type hypervisor struct {
 	AgentGuestPath      string `bson:"agent_guest_path" default:"/usr/bin/pci"`
 	InitGuestPath       string `bson:"init_guest_path" default:"/etc/pritunl-cloud-init"`
 	HugepagesPath       string `bson:"hugepages_path" default:"/dev/hugepages/pritunl"`
+	LockCloudPass       bool   `bson:"lock_cloud_pass"`
 	DesktopEnv          string `bson:"desktop_env" default:"gnome"`
 	OvmfCodePath        string `bson:"ovmf_code_path"`
 	OvmfVarsPath        string `bson:"ovmf_vars_path"`
