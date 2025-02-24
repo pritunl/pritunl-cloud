@@ -75,13 +75,143 @@ func getImageS3(db *database.Database, store *storage.Storage,
 		return
 	}
 
+	stat, err := client.StatObject(context.Background(), store.Bucket,
+		img.Key, minio.StatObjectOptions{})
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "data: Failed to stat s3 image"),
+		}
+		return
+	}
+
+	prog := NewProgressS3(db, dsk, img, tmpPth, stat.Size)
+	prog.Start()
+	defer prog.Stop()
+
 	err = client.FGetObject(context.Background(), store.Bucket,
 		img.Key, tmpPth, minio.GetObjectOptions{})
 	if err != nil {
 		err = &errortypes.ReadError{
-			errors.Wrap(err, "data: Failed to download image"),
+			errors.Wrap(err, "data: Failed to download s3 image"),
 		}
 		return
+	}
+
+	prog.Stop()
+
+	logrus.WithFields(logrus.Fields{
+		"image_id":   img.Id.Hex(),
+		"storage_id": store.Id.Hex(),
+		"key":        img.Key,
+		"temp_path":  tmpPth,
+	}).Info("data: Downloaded s3 image")
+
+	return
+}
+
+type ProgressS3 struct {
+	db         *database.Database
+	disk       *disk.Disk
+	img        *image.Image
+	done       chan bool
+	stopOnce   sync.Once
+	baseDir    string
+	outPrefix  string
+	Total      int64
+	Wrote      int64
+	LastWrote  int64
+	LastReport int
+	LastTime   time.Time
+}
+
+func NewProgressS3(db *database.Database, dsk *disk.Disk, img *image.Image,
+	outPath string, size int64) (prog *ProgressS3) {
+
+	prog = &ProgressS3{
+		db:        db,
+		disk:      dsk,
+		img:       img,
+		done:      make(chan bool),
+		baseDir:   filepath.Dir(outPath),
+		outPrefix: filepath.Base(outPath),
+		Total:     size,
+		LastTime:  time.Now(),
+	}
+
+	return
+}
+
+func (p *ProgressS3) Start() {
+	go func() {
+		ticker := time.NewTicker(1 * time.Second)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-p.done:
+				return
+			case <-ticker.C:
+				p.calculateProgress()
+				p.syncProgress()
+			}
+		}
+	}()
+}
+
+func (p *ProgressS3) Stop() {
+	p.stopOnce.Do(func() {
+		p.done <- true
+		close(p.done)
+	})
+}
+
+func (p *ProgressS3) calculateProgress() {
+	var totalBytes int64 = 0
+
+	files, err := os.ReadDir(p.baseDir)
+	if err != nil {
+		return
+	}
+
+	for _, file := range files {
+		if !file.IsDir() && strings.HasPrefix(file.Name(), p.outPrefix) {
+			info, err := file.Info()
+			if err != nil {
+				continue
+			}
+			totalBytes += info.Size()
+		}
+	}
+
+	p.Wrote = totalBytes
+}
+
+func (p *ProgressS3) syncProgress() {
+	percent := int(float64(p.Wrote) / float64(p.Total) * 100)
+	if percent > 100 {
+		percent = 100
+	}
+
+	if percent >= p.LastReport+10 {
+		now := time.Now()
+		elapsed := now.Sub(p.LastTime).Seconds()
+
+		speed := float64(p.Wrote-p.LastWrote) / elapsed
+		speedStr := humanReadableSpeed(speed)
+
+		p.LastTime = now
+		p.LastWrote = p.Wrote
+		p.LastReport = percent - (percent % 10)
+
+		if p.disk != nil && !p.disk.Instance.IsZero() {
+			_ = instance.SetDownloadProgress(
+				p.db, p.disk.Instance, p.LastReport)
+		}
+
+		logrus.WithFields(logrus.Fields{
+			"key": p.img.Key,
+		}).Infof("data: Downloading s3 image %d%% %s",
+			p.LastReport, speedStr)
 	}
 
 	return
