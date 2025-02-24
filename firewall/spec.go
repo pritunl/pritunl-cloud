@@ -9,6 +9,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/pritunl/pritunl-cloud/nodeport"
 	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/vm"
@@ -16,7 +17,7 @@ import (
 
 func GetSpecRules(instances []*instance.Instance,
 	deploymentsNode map[primitive.ObjectID]*deployment.Deployment,
-	specsMap map[primitive.ObjectID]*spec.Commit,
+	specsMap map[primitive.ObjectID]*spec.Spec,
 	specsPodsUnitsMap map[primitive.ObjectID]*pod.Unit,
 	deploymentsDeployedMap map[primitive.ObjectID]*deployment.Deployment) (
 	firewalls map[string][]*Rule, err error) {
@@ -104,7 +105,8 @@ func GetSpecRules(instances []*instance.Instance,
 
 func GetSpecRulesSlow(db *database.Database,
 	nodeId primitive.ObjectID, instances []*instance.Instance) (
-	firewalls map[string][]*Rule, err error) {
+	firewalls map[string][]*Rule, nodePortsMap map[string][]*nodeport.Mapping,
+	err error) {
 
 	deployments, err := deployment.GetAll(db, &bson.M{
 		"node": nodeId,
@@ -123,7 +125,9 @@ func GetSpecRulesSlow(db *database.Database,
 		deploymentsNode[deply.Id] = deply
 		deploymentsIdSet.Add(deply.Id)
 
-		if deply.State == deployment.Deployed {
+		if deply.State == deployment.Deployed ||
+			deply.State == deployment.Migrate {
+
 			deploymentsDeployedMap[deply.Id] = deply
 		}
 
@@ -147,7 +151,7 @@ func GetSpecRulesSlow(db *database.Database,
 	}
 
 	specPodsSet := set.NewSet()
-	specsMap := map[primitive.ObjectID]*spec.Commit{}
+	specsMap := map[primitive.ObjectID]*spec.Spec{}
 	for _, spc := range specs {
 		specsMap[spc.Id] = spc
 
@@ -208,7 +212,9 @@ func GetSpecRulesSlow(db *database.Database,
 	for _, specDeployment := range specDeployments {
 		deploymentsIdSet.Add(specDeployment.Id)
 
-		if specDeployment.State == deployment.Deployed {
+		if specDeployment.State == deployment.Deployed ||
+			specDeployment.State == deployment.Migrate {
+
 			deploymentsDeployedMap[specDeployment.Id] = specDeployment
 		}
 	}
@@ -227,6 +233,7 @@ func GetSpecRulesSlow(db *database.Database,
 		return
 	}
 
+	nodePortsDeployments := map[primitive.ObjectID][]*nodeport.Mapping{}
 	podDeploymentsSet := set.NewSet()
 	podsMap := map[primitive.ObjectID]*pod.Pod{}
 	podsUnitsMap := map[primitive.ObjectID]*pod.Unit{}
@@ -240,6 +247,9 @@ func GetSpecRulesSlow(db *database.Database,
 			podsUnitsMap[unit.Id] = unit
 
 			for _, deply := range unit.Deployments {
+				nodePortsDeployments[deply.Id] = append(
+					nodePortsDeployments[deply.Id], unit.NodePorts...)
+
 				podDeploymentsSet.Add(deply.Id)
 			}
 		}
@@ -265,15 +275,26 @@ func GetSpecRulesSlow(db *database.Database,
 	for _, podDeployment := range podDeployments {
 		deploymentsIdSet.Add(podDeployment.Id)
 
-		if podDeployment.State == deployment.Deployed {
+		if podDeployment.State == deployment.Deployed ||
+			podDeployment.State == deployment.Migrate {
+
 			deploymentsDeployedMap[podDeployment.Id] = podDeployment
 		}
 	}
 
+	nodePortsMap = map[string][]*nodeport.Mapping{}
 	firewalls = map[string][]*Rule{}
 	for _, inst := range instances {
+		nodePortsMap[inst.NetworkNamespace] = append(
+			nodePortsMap[inst.NetworkNamespace], inst.NodePorts...)
+
 		if inst.Deployment.IsZero() {
 			continue
+		} else {
+			nodePortsMap[inst.NetworkNamespace] = append(
+				nodePortsMap[inst.NetworkNamespace],
+				nodePortsDeployments[inst.Deployment]...,
+			)
 		}
 
 		deply := deploymentsNode[inst.Deployment]
