@@ -49,7 +49,7 @@ var (
 )
 
 func getImageS3(db *database.Database, store *storage.Storage,
-	img *image.Image) (tmpPth string, err error) {
+	dsk *disk.Disk, img *image.Image) (tmpPth string, err error) {
 
 	tmpPth = paths.GetImageTempPath()
 
@@ -89,6 +89,7 @@ func getImageS3(db *database.Database, store *storage.Storage,
 
 type Progress struct {
 	db         *database.Database
+	disk       *disk.Disk
 	img        *image.Image
 	Total      int64
 	Wrote      int64
@@ -126,6 +127,11 @@ func (p *Progress) Write(data []byte) (n int, err error) {
 		p.LastWrote = p.Wrote
 		p.LastReport = percent - (percent % 10)
 
+		if p.disk != nil && !p.disk.Instance.IsZero() {
+			_ = instance.SetDownloadProgress(
+				p.db, p.disk.Instance, p.LastReport)
+		}
+
 		logrus.WithFields(logrus.Fields{
 			"key": p.img.Key,
 		}).Infof("data: Downloading web image %d%% %s",
@@ -136,7 +142,7 @@ func (p *Progress) Write(data []byte) (n int, err error) {
 }
 
 func getImageWeb(db *database.Database, store *storage.Storage,
-	img *image.Image) (tmpPth string, err error) {
+	dsk *disk.Disk, img *image.Image) (tmpPth string, err error) {
 
 	tmpPth = paths.GetImageTempPath()
 
@@ -206,6 +212,7 @@ func getImageWeb(db *database.Database, store *storage.Storage,
 
 	prog := &Progress{
 		db:       db,
+		disk:     dsk,
 		img:      img,
 		Total:    contentLen,
 		LastTime: time.Now(),
@@ -371,7 +378,7 @@ func checkImageSigWeb(db *database.Database, store *storage.Storage,
 	return
 }
 
-func getImage(db *database.Database, img *image.Image,
+func getImage(db *database.Database, dsk *disk.Disk, img *image.Image,
 	pth string) (err error) {
 
 	if imageLock.Locked(pth) {
@@ -401,7 +408,7 @@ func getImage(db *database.Database, img *image.Image,
 
 	tmpPth := ""
 	if img.Type == storage.Web {
-		tmpPth, err = getImageWeb(db, store, img)
+		tmpPth, err = getImageWeb(db, store, dsk, img)
 		if err != nil {
 			if tmpPth != "" {
 				os.Remove(tmpPth)
@@ -409,7 +416,7 @@ func getImage(db *database.Database, img *image.Image,
 			return
 		}
 	} else {
-		tmpPth, err = getImageS3(db, store, img)
+		tmpPth, err = getImageS3(db, store, dsk, img)
 		if err != nil {
 			if tmpPth != "" {
 				os.Remove(tmpPth)
@@ -607,7 +614,7 @@ func writeImageQcow(db *database.Database, dsk *disk.Disk) (
 		}
 
 		if !backingImageExists {
-			err = getImage(db, img, imagePth)
+			err = getImage(db, dsk, img, imagePth)
 			if err != nil {
 				return
 			}
@@ -696,12 +703,12 @@ func writeImageQcow(db *database.Database, dsk *disk.Disk) (
 		}
 	} else {
 		if dsk.Backing {
-			err = getImage(db, img, backingImagePth)
+			err = getImage(db, dsk, img, backingImagePth)
 			if err != nil {
 				return
 			}
 		} else {
-			err = getImage(db, img, diskTempPath)
+			err = getImage(db, dsk, img, diskTempPath)
 			if err != nil {
 				return
 			}
@@ -881,7 +888,7 @@ func writeImageLvm(db *database.Database, dsk *disk.Disk,
 			return
 		}
 
-		err = getImage(db, img, imagePth)
+		err = getImage(db, dsk, img, imagePth)
 		if err != nil {
 			return
 		}
@@ -896,7 +903,7 @@ func writeImageLvm(db *database.Database, dsk *disk.Disk,
 			newSize = 10
 		}
 	} else {
-		err = getImage(db, img, diskTempPath)
+		err = getImage(db, dsk, img, diskTempPath)
 		if err != nil {
 			return
 		}
