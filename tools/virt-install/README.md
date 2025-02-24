@@ -44,26 +44,36 @@ sudo setenforce 0
 
 sudo dnf -y install qemu-kvm qemu-img libguestfs-tools genisoimage edk2-ovmf virt-install
 
+# alpine linux
+curl -o /root/setup.sh https://raw.githubusercontent.com/pritunl/pritunl-cloud/refs/heads/master/tools/virt-install/setup/alpine.sh
+echo "0fdea310d3380b8eadb360a4529bdb70302f740e01aca4bdbe950639f12386ee /root/setup.sh" | sha256sum -c && sudo sh /root/setup.sh
+
+# debian
 sudo curl -o /root/setup.sh https://raw.githubusercontent.com/pritunl/pritunl-cloud/refs/heads/master/tools/virt-install/setup/debian.sh
-echo "72ad46a18da1a52776a423cf42c0bf644faed80c32bf6a50f1c3bcfac8a992c4 /root/setup.sh" | sha256sum -c && sudo bash /root/setup.sh
+echo "181e0a2c0faddc79d8e2565782b58c0e94683904fa0dd41f63f8b6ddfcea6ab0 /root/setup.sh" | sha256sum -c && sudo bash /root/setup.sh
 
+# fedora
 curl -o /root/setup.sh https://raw.githubusercontent.com/pritunl/pritunl-cloud/refs/heads/master/tools/virt-install/setup/fedora.sh
-echo "0cc31951dd1d1ae8530842e410a81359b8eed19db8984b0dca18c86286d685d4 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
+echo "96a21a8a4d46225263bf2679a7aacf0feeefd42c87e2c87d3dc5b3ff53833b06 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
 
+# freebsd
 fetch -o /root/setup.sh https://raw.githubusercontent.com/pritunl/pritunl-cloud/refs/heads/master/tools/virt-install/setup/freebsd.sh
-[ "$(sha256sum /root/setup.sh)" = "6ed364390594913597d563330057a63baf894474c9b0649cf3b62ebb480d30e1  /root/setup.sh" ] && sh /root/setup.sh
+[ "$(sha256sum /root/setup.sh)" = "f6f9445e3cd6eb04575593d0c98136251f9860c1ea684f63f927bb52f5f0c702  /root/setup.sh" ] && sh /root/setup.sh
 
+# rhel7
 curl -o /root/setup.sh https://raw.githubusercontent.com/pritunl/pritunl-cloud/refs/heads/master/tools/virt-install/setup/rhel7.sh
-echo "168073816704bd6243e018a1692281b7bb6e3d10aa671d65124813539e18c4cc /root/setup.sh" | sha256sum -c && bash /root/setup.sh
+echo "7f89af3f4553ae500bec9fa154bf86d2c22e4ef79fdfd514841c24dcbdcc95d3 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
 
+# rhel8
 curl -o /root/setup.sh https://raw.githubusercontent.com/pritunl/pritunl-cloud/refs/heads/master/tools/virt-install/setup/rhel8.sh
-echo "5b4428d0d16fefa1857f88ae737d4a775f39b6732df1188ad180df14f29c40a6 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
+echo "422045cc0beb1756489b67f237325b44d05db869b3b2e77f68db65e5cf7566e1 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
 
+# rhel9
 curl -o /root/setup.sh https://raw.githubusercontent.com/pritunl/pritunl-cloud/refs/heads/master/tools/virt-install/setup/rhel9.sh
-echo "4f2f2556618aaffc53261a404cc8220cbe55accf3a10da40213df3fb315f1755 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
+echo "38301f86bb05072ee041b53004266d38622a6503d2438b6ecb2865771c9fda84 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
 
 mkdir -p ~/Shared/images
-scp $BUILD_IP:/var/lib/virt/images/* ~/Shared/images/
+scp 26.194.86.161:/var/lib/virt/images/* ~/Shared/images/
 
 find ~/Shared/images/ -name "*.qcow2" -type f -exec gpg --default-key 055C08A4 --armor --output {}.sig --detach-sig {} \;
 sha256sum ~/Shared/images/*
