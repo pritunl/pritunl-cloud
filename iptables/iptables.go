@@ -948,7 +948,7 @@ func generateInternal(namespace, iface string, nat, nat6, dhcp, dhcp6 bool,
 		Holds6:           [][]string{},
 	}
 
-	if nat {
+	if nat && natAddr != "" && natPubAddr != "" {
 		cmd := rules.newCommandNatPre()
 		cmd = append(cmd,
 			"-d", natPubAddr+"/32",
@@ -984,7 +984,7 @@ func generateInternal(namespace, iface string, nat, nat6, dhcp, dhcp6 bool,
 		rules.Nats = append(rules.Nats, cmd)
 	}
 
-	if nat6 {
+	if nat6 && natAddr6 != "" && natPubAddr6 != "" {
 		cmd := rules.newCommandNatPre()
 		cmd = append(cmd,
 			"-d", natPubAddr6+"/128",
