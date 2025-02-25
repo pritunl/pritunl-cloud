@@ -84,7 +84,14 @@ func (u *Update) Apply() {
 
 			if !changed {
 				changed = true
-				logrus.Info("iptables: Updating iptables")
+				logrus.WithFields(logrus.Fields{
+					"ingress":  rules.IngressDiff,
+					"ingress6": rules.Ingress6Diff,
+					"nats":     rules.NatsDiff,
+					"nats6":    rules.Nats6Diff,
+					"maps":     rules.MapsDiff,
+					"maps6":    rules.Maps6Diff,
+				}).Info("iptables: Updating iptables")
 			}
 
 			if (rules.IngressDiff || rules.Ingress6Diff) &&
