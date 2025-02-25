@@ -1,7 +1,6 @@
 package netconf
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/dropbox/godropbox/container/set"
@@ -120,22 +119,17 @@ func (n *NetConf) Iface2(db *database.Database, clean bool) (err error) {
 	n.SpaceNodePortIface = vm.GetIfaceNodePort(n.Virt.Id, 1)
 	n.SpaceOracleIface = vm.GetIfaceOracle(n.Virt.Id, 0)
 	n.SpaceOracleVirtIface = vm.GetIfaceOracleVirt(n.Virt.Id, 0)
-	n.SpaceImdsIface = "imds0"
+	n.SpaceBridgeIface = settings.Hypervisor.BridgeIfaceName
+	n.SpaceImdsIface = settings.Hypervisor.ImdsIfaceName
 
 	n.BridgeInternalIface = vm.GetIfaceVlan(n.Virt.Id, 0)
 
 	n.PhysicalInternalIface = interfaces.GetInternal(
 		n.SystemInternalIface, n.Vxlan)
 
-	n.DhcpPidPath = fmt.Sprintf(
-		"/var/run/dhclient-%s.pid",
-		n.SpaceExternalIface,
-	)
+	n.DhcpPidPath = paths.GetDhcpPidPath(n.Virt.Id, 0)
 	n.DhcpLeasePath = paths.GetLeasePath(n.Virt.Id)
-	n.Dhcp6PidPath = fmt.Sprintf(
-		"/var/run/dhclient6-%s.pid",
-		n.SpaceExternalIface,
-	)
+	n.Dhcp6PidPath = paths.GetDhcp6PidPath(n.Virt.Id, 1)
 	n.Dhcp6LeasePath = paths.GetLease6Path(n.Virt.Id)
 
 	if n.JumboFramesExternal || n.JumboFramesInternal || n.Vxlan {

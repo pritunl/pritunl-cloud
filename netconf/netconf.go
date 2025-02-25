@@ -38,6 +38,7 @@ type NetConf struct {
 	OracleRouterAddress string
 	OracleMetal         bool
 
+	SpaceBridgeIface     string
 	VirtIface            string
 	SpaceExternalIface   string
 	SpaceInternalIface   string

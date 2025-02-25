@@ -8,7 +8,7 @@ import (
 )
 
 func (n *NetConf) bridgeNet(db *database.Database) (err error) {
-	err = iproute.BridgeAdd(n.Namespace, "br0")
+	err = iproute.BridgeAdd(n.Namespace, n.SpaceBridgeIface)
 	if err != nil {
 		return
 	}
@@ -51,7 +51,7 @@ func (n *NetConf) bridgeMaster(db *database.Database) (err error) {
 		nil,
 		"ip", "netns", "exec", n.Namespace,
 		"ip", "link", "set",
-		n.BridgeInternalIface, "master", "br0",
+		n.BridgeInternalIface, "master", n.SpaceBridgeIface,
 	)
 	if err != nil {
 		return
@@ -61,7 +61,7 @@ func (n *NetConf) bridgeMaster(db *database.Database) (err error) {
 		nil,
 		"ip", "netns", "exec", n.Namespace,
 		"ip", "link", "set",
-		n.VirtIface, "master", "br0",
+		n.VirtIface, "master", n.SpaceBridgeIface,
 	)
 	if err != nil {
 		return
@@ -76,7 +76,7 @@ func (n *NetConf) bridgeRoute(db *database.Database) (err error) {
 		"ip", "netns", "exec", n.Namespace,
 		"ip", "addr",
 		"add", n.InternalGatewayAddrCidr,
-		"dev", "br0",
+		"dev", n.SpaceBridgeIface,
 	)
 	if err != nil {
 		return
@@ -87,7 +87,7 @@ func (n *NetConf) bridgeRoute(db *database.Database) (err error) {
 		"ip", "netns", "exec", n.Namespace,
 		"ip", "-6", "addr",
 		"add", n.InternalGatewayAddr6.String()+"/64",
-		"dev", "br0",
+		"dev", n.SpaceBridgeIface,
 	)
 	if err != nil {
 		return
@@ -201,7 +201,7 @@ func (n *NetConf) bridgeUp(db *database.Database) (err error) {
 		nil,
 		"ip", "netns", "exec", n.Namespace,
 		"ip", "link",
-		"set", "dev", "br0", "up",
+		"set", "dev", n.SpaceBridgeIface, "up",
 	)
 	if err != nil {
 		return
