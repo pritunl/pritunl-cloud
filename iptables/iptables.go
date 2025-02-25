@@ -35,6 +35,22 @@ func (r *Rules) newCommand() (cmd []string) {
 	return
 }
 
+func (r *Rules) newCommandNatPre() (cmd []string) {
+	cmd = []string{
+		"PREROUTING",
+	}
+
+	return
+}
+
+func (r *Rules) newCommandNatPost() (cmd []string) {
+	cmd = []string{
+		"POSTROUTING",
+	}
+
+	return
+}
+
 func (r *Rules) newCommandMap() (cmd []string) {
 	cmd = []string{
 		"PREROUTING",
@@ -80,6 +96,15 @@ func (r *Rules) commentCommandSdc(inCmd []string) (cmd []string) {
 	cmd = append(inCmd,
 		"-m", "comment",
 		"--comment", "pritunl_cloud_sdc",
+	)
+
+	return
+}
+
+func (r *Rules) commentCommandNat(inCmd []string) (cmd []string) {
+	cmd = append(inCmd,
+		"-m", "comment",
+		"--comment", "pritunl_cloud_nat",
 	)
 
 	return
@@ -191,6 +216,16 @@ func (r *Rules) Apply() (err error) {
 		return
 	}
 
+	err = r.run("nat", r.Nats, "-A", false)
+	if err != nil {
+		return
+	}
+
+	err = r.run("nat", r.Nats6, "-A", true)
+	if err != nil {
+		return
+	}
+
 	err = r.run("nat", r.Maps, "-A", false)
 	if err != nil {
 		return
@@ -212,175 +247,6 @@ func (r *Rules) Apply() (err error) {
 		return
 	}
 	r.Holds6 = [][]string{}
-
-	return
-}
-
-func (r *Rules) ApplyNat() (err error) {
-	iptablesCmd := getIptablesCmd(false)
-	if r.Nat {
-		_, err = utils.ExecCombinedOutputLogged(
-			[]string{
-				"matching rule exist",
-			},
-			"ip", "netns", "exec", r.Namespace, iptablesCmd,
-			"-t", "nat",
-			"-A", "PREROUTING",
-			"-d", r.NatPubAddr+"/32",
-			"-m", "comment",
-			"--comment", "pritunl_cloud_nat",
-			"-j", "DNAT",
-			"--to-destination", r.NatAddr,
-		)
-		if err != nil {
-			return
-		}
-
-		_, err = utils.ExecCombinedOutputLogged(
-			[]string{
-				"matching rule exist",
-			},
-			"ip", "netns", "exec", r.Namespace, iptablesCmd,
-			"-t", "nat",
-			"-A", "POSTROUTING",
-			"-s", r.NatAddr+"/32",
-			"-d", r.NatAddr+"/32",
-			"-m", "comment",
-			"--comment", "pritunl_cloud_nat",
-			"-j", "SNAT",
-			"--to", r.NatPubAddr,
-		)
-		if err != nil {
-			return
-		}
-
-		_, err = utils.ExecCombinedOutputLogged(
-			[]string{
-				"matching rule exist",
-			},
-			"ip", "netns", "exec", r.Namespace, iptablesCmd,
-			"-t", "nat",
-			"-A", "POSTROUTING",
-			"-s", r.NatAddr+"/32",
-			"-o", r.Interface,
-			"-m", "comment",
-			"--comment", "pritunl_cloud_nat",
-			"-j", "MASQUERADE",
-		)
-		if err != nil {
-			return
-		}
-	}
-
-	iptablesCmd = getIptablesCmd(true)
-	if r.Nat6 {
-		_, err = utils.ExecCombinedOutputLogged(
-			[]string{
-				"matching rule exist",
-			},
-			"ip", "netns", "exec", r.Namespace, iptablesCmd,
-			"-t", "nat",
-			"-A", "PREROUTING",
-			"-d", r.NatPubAddr6+"/128",
-			"-m", "comment",
-			"--comment", "pritunl_cloud_nat",
-			"-j", "DNAT",
-			"--to-destination", r.NatAddr6,
-		)
-		if err != nil {
-			return
-		}
-
-		_, err = utils.ExecCombinedOutputLogged(
-			[]string{
-				"matching rule exist",
-			},
-			"ip", "netns", "exec", r.Namespace, iptablesCmd,
-			"-t", "nat",
-			"-A", "POSTROUTING",
-			"-s", r.NatAddr6+"/128",
-			"-d", r.NatAddr6+"/128",
-			"-m", "comment",
-			"--comment", "pritunl_cloud_nat",
-			"-j", "SNAT",
-			"--to", r.NatPubAddr6,
-		)
-		if err != nil {
-			return
-		}
-
-		_, err = utils.ExecCombinedOutputLogged(
-			[]string{
-				"matching rule exist",
-			},
-			"ip", "netns", "exec", r.Namespace, iptablesCmd,
-			"-t", "nat",
-			"-A", "POSTROUTING",
-			"-s", r.NatAddr6+"/128",
-			"-o", r.Interface,
-			"-m", "comment",
-			"--comment", "pritunl_cloud_nat",
-			"-j", "MASQUERADE",
-		)
-		if err != nil {
-			return
-		}
-	}
-
-	iptablesCmd = getIptablesCmd(false)
-	if r.OracleNat {
-		_, err = utils.ExecCombinedOutputLogged(
-			[]string{
-				"matching rule exist",
-			},
-			"ip", "netns", "exec", r.Namespace, iptablesCmd,
-			"-t", "nat",
-			"-A", "PREROUTING",
-			"-d", r.OracleNatPubAddr+"/32",
-			"-m", "comment",
-			"--comment", "pritunl_cloud_oracle_nat",
-			"-j", "DNAT",
-			"--to-destination", r.OracleNatAddr,
-		)
-		if err != nil {
-			return
-		}
-
-		_, err = utils.ExecCombinedOutputLogged(
-			[]string{
-				"matching rule exist",
-			},
-			"ip", "netns", "exec", r.Namespace, iptablesCmd,
-			"-t", "nat",
-			"-A", "POSTROUTING",
-			"-s", r.OracleNatAddr+"/32",
-			"-d", r.OracleNatAddr+"/32",
-			"-m", "comment",
-			"--comment", "pritunl_cloud_oracle_nat",
-			"-j", "SNAT",
-			"--to", r.OracleNatPubAddr,
-		)
-		if err != nil {
-			return
-		}
-
-		_, err = utils.ExecCombinedOutputLogged(
-			[]string{
-				"matching rule exist",
-			},
-			"ip", "netns", "exec", r.Namespace, iptablesCmd,
-			"-t", "nat",
-			"-A", "POSTROUTING",
-			"-s", r.OracleNatAddr+"/32",
-			"-o", r.Interface,
-			"-m", "comment",
-			"--comment", "pritunl_cloud_oracle_nat",
-			"-j", "MASQUERADE",
-		)
-		if err != nil {
-			return
-		}
-	}
 
 	return
 }
@@ -520,6 +386,18 @@ func (r *Rules) Remove() (err error) {
 	}
 	r.Ingress6 = [][]string{}
 
+	err = r.run("nat", r.Nats, "-D", false)
+	if err != nil {
+		return
+	}
+	r.Nats = [][]string{}
+
+	err = r.run("nat", r.Nats6, "-D", true)
+	if err != nil {
+		return
+	}
+	r.Nats6 = [][]string{}
+
 	err = r.run("nat", r.Maps, "-D", false)
 	if err != nil {
 		return
@@ -543,190 +421,6 @@ func (r *Rules) Remove() (err error) {
 		return
 	}
 	r.Holds6 = [][]string{}
-
-	return
-}
-
-func (r *Rules) RemoveNat() (err error) {
-	iptablesCmd := getIptablesCmd(false)
-	if r.NatPubAddr != "" && r.NatAddr != "" {
-		_, err = utils.ExecCombinedOutputLogged(
-			[]string{
-				"matching rule exist",
-				"match by that name",
-			},
-			"ip", "netns", "exec", r.Namespace, iptablesCmd,
-			"-t", "nat",
-			"-D", "PREROUTING",
-			"-d", r.NatPubAddr+"/32",
-			"-m", "comment",
-			"--comment", "pritunl_cloud_nat",
-			"-j", "DNAT",
-			"--to-destination", r.NatAddr,
-		)
-		if err != nil {
-			return
-		}
-
-		_, err = utils.ExecCombinedOutputLogged(
-			[]string{
-				"matching rule exist",
-				"match by that name",
-			},
-			"ip", "netns", "exec", r.Namespace, iptablesCmd,
-			"-t", "nat",
-			"-D", "POSTROUTING",
-			"-s", r.NatAddr+"/32",
-			"-d", r.NatAddr+"/32",
-			"-m", "comment",
-			"--comment", "pritunl_cloud_nat",
-			"-j", "SNAT",
-			"--to", r.NatPubAddr,
-		)
-		if err != nil {
-			return
-		}
-	}
-
-	if r.NatAddr != "" {
-		_, err = utils.ExecCombinedOutputLogged(
-			[]string{
-				"matching rule exist",
-				"match by that name",
-			},
-			"ip", "netns", "exec", r.Namespace, iptablesCmd,
-			"-t", "nat",
-			"-D", "POSTROUTING",
-			"-s", r.NatAddr+"/32",
-			"-o", r.Interface,
-			"-m", "comment",
-			"--comment", "pritunl_cloud_nat",
-			"-j", "MASQUERADE",
-		)
-		if err != nil {
-			return
-		}
-	}
-
-	iptablesCmd = getIptablesCmd(true)
-	if r.NatPubAddr6 != "" && r.NatAddr6 != "" {
-		_, err = utils.ExecCombinedOutputLogged(
-			[]string{
-				"matching rule exist",
-				"match by that name",
-			},
-			"ip", "netns", "exec", r.Namespace, iptablesCmd,
-			"-t", "nat",
-			"-D", "PREROUTING",
-			"-d", r.NatPubAddr6+"/128",
-			"-m", "comment",
-			"--comment", "pritunl_cloud_nat",
-			"-j", "DNAT",
-			"--to-destination", r.NatAddr6,
-		)
-		if err != nil {
-			return
-		}
-
-		_, err = utils.ExecCombinedOutputLogged(
-			[]string{
-				"matching rule exist",
-				"match by that name",
-			},
-			"ip", "netns", "exec", r.Namespace, iptablesCmd,
-			"-t", "nat",
-			"-D", "POSTROUTING",
-			"-s", r.NatAddr6+"/128",
-			"-d", r.NatAddr6+"/128",
-			"-m", "comment",
-			"--comment", "pritunl_cloud_nat",
-			"-j", "SNAT",
-			"--to", r.NatPubAddr6,
-		)
-		if err != nil {
-			return
-		}
-	}
-
-	if r.NatAddr6 != "" {
-		_, err = utils.ExecCombinedOutputLogged(
-			[]string{
-				"matching rule exist",
-				"match by that name",
-			},
-			"ip", "netns", "exec", r.Namespace, iptablesCmd,
-			"-t", "nat",
-			"-D", "POSTROUTING",
-			"-s", r.NatAddr6+"/128",
-			"-o", r.Interface,
-			"-m", "comment",
-			"--comment", "pritunl_cloud_nat",
-			"-j", "MASQUERADE",
-		)
-		if err != nil {
-			return
-		}
-	}
-
-	iptablesCmd = getIptablesCmd(false)
-	if r.OracleNatPubAddr != "" && r.OracleNatAddr != "" {
-		_, err = utils.ExecCombinedOutputLogged(
-			[]string{
-				"matching rule exist",
-				"match by that name",
-			},
-			"ip", "netns", "exec", r.Namespace, iptablesCmd,
-			"-t", "nat",
-			"-D", "PREROUTING",
-			"-d", r.OracleNatPubAddr+"/32",
-			"-m", "comment",
-			"--comment", "pritunl_cloud_oracle_nat",
-			"-j", "DNAT",
-			"--to-destination", r.OracleNatAddr,
-		)
-		if err != nil {
-			return
-		}
-
-		_, err = utils.ExecCombinedOutputLogged(
-			[]string{
-				"matching rule exist",
-				"match by that name",
-			},
-			"ip", "netns", "exec", r.Namespace, iptablesCmd,
-			"-t", "nat",
-			"-D", "POSTROUTING",
-			"-s", r.OracleNatAddr+"/32",
-			"-d", r.OracleNatAddr+"/32",
-			"-m", "comment",
-			"--comment", "pritunl_cloud_oracle_nat",
-			"-j", "SNAT",
-			"--to", r.OracleNatPubAddr,
-		)
-		if err != nil {
-			return
-		}
-	}
-
-	if r.OracleNatAddr != "" {
-		_, err = utils.ExecCombinedOutputLogged(
-			[]string{
-				"matching rule exist",
-				"match by that name",
-			},
-			"ip", "netns", "exec", r.Namespace, iptablesCmd,
-			"-t", "nat",
-			"-D", "POSTROUTING",
-			"-s", r.OracleNatAddr+"/32",
-			"-o", r.Interface,
-			"-m", "comment",
-			"--comment", "pritunl_cloud_oracle_nat",
-			"-j", "MASQUERADE",
-		)
-		if err != nil {
-			return
-		}
-	}
 
 	return
 }
@@ -1193,7 +887,7 @@ func generateVirt(vc *vpc.Vpc, namespace, iface, addr, addr6 string,
 
 func generateInternal(namespace, iface string, nat, nat6, dhcp, dhcp6 bool,
 	natAddr, natPubAddr, natAddr6, natPubAddr6 string,
-	oracleNatPubAddr string, ingress []*firewall.Rule) (rules *Rules) {
+	ingress []*firewall.Rule) (rules *Rules) {
 
 	rules = &Rules{
 		Namespace:        namespace,
@@ -1211,25 +905,75 @@ func generateInternal(namespace, iface string, nat, nat6, dhcp, dhcp6 bool,
 	}
 
 	if nat {
-		if natAddr != "" && natPubAddr != "" {
-			rules.Nat = true
-			rules.NatAddr = natAddr
-			rules.NatPubAddr = natPubAddr
-		}
+		cmd := rules.newCommandNatPre()
+		cmd = append(cmd,
+			"-d", natPubAddr+"/32",
+		)
+		cmd = rules.commentCommandNat(cmd)
+		cmd = append(cmd,
+			"-j", "DNAT",
+			"--to-destination", natAddr,
+		)
+		rules.Nats = append(rules.Nats, cmd)
 
-		if natAddr != "" && oracleNatPubAddr != "" {
-			rules.OracleNat = true
-			rules.OracleNatAddr = natAddr
-			rules.OracleNatPubAddr = oracleNatPubAddr
-		}
+		cmd = rules.newCommandNatPost()
+		cmd = append(cmd,
+			"-s", natAddr+"/32",
+			"-d", natAddr+"/32",
+		)
+		cmd = rules.commentCommandNat(cmd)
+		cmd = append(cmd,
+			"-j", "SNAT",
+			"--to-source", natPubAddr,
+		)
+		rules.Nats = append(rules.Nats, cmd)
+
+		cmd = rules.newCommandNatPost()
+		cmd = append(cmd,
+			"-s", natAddr+"/32",
+			"-o", iface,
+		)
+		cmd = rules.commentCommandNat(cmd)
+		cmd = append(cmd,
+			"-j", "MASQUERADE",
+		)
+		rules.Nats = append(rules.Nats, cmd)
 	}
 
 	if nat6 {
-		if natAddr6 != "" && natPubAddr6 != "" {
-			rules.Nat6 = true
-			rules.NatAddr6 = natAddr6
-			rules.NatPubAddr6 = natPubAddr6
-		}
+		cmd := rules.newCommandNatPre()
+		cmd = append(cmd,
+			"-d", natPubAddr6+"/128",
+		)
+		cmd = rules.commentCommandNat(cmd)
+		cmd = append(cmd,
+			"-j", "DNAT",
+			"--to-destination", natAddr6,
+		)
+		rules.Nats6 = append(rules.Nats6, cmd)
+
+		cmd = rules.newCommandNatPost()
+		cmd = append(cmd,
+			"-s", natAddr6+"/128",
+			"-d", natAddr6+"/128",
+		)
+		cmd = rules.commentCommandNat(cmd)
+		cmd = append(cmd,
+			"-j", "SNAT",
+			"--to-source", natPubAddr6,
+		)
+		rules.Nats6 = append(rules.Nats6, cmd)
+
+		cmd = rules.newCommandNatPost()
+		cmd = append(cmd,
+			"-s", natAddr6+"/128",
+			"-o", iface,
+		)
+		cmd = rules.commentCommandNat(cmd)
+		cmd = append(cmd,
+			"-j", "MASQUERADE",
+		)
+		rules.Nats6 = append(rules.Nats6, cmd)
 	}
 
 	cmd := rules.newCommand()

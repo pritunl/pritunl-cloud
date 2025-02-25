@@ -36,6 +36,8 @@ func diffRules(a, b *Rules) bool {
 		len(a.SourceDestCheck6) != len(b.SourceDestCheck6) ||
 		len(a.Ingress) != len(b.Ingress) ||
 		len(a.Ingress6) != len(b.Ingress6) ||
+		len(a.Nats) != len(b.Nats) ||
+		len(a.Nats6) != len(b.Nats6) ||
 		len(a.Maps) != len(b.Maps) ||
 		len(a.Maps6) != len(b.Maps6) ||
 		len(a.Holds) != len(b.Holds) ||
@@ -74,6 +76,16 @@ func diffRules(a, b *Rules) bool {
 			return true
 		}
 	}
+	for i := range a.Nats {
+		if diffCmd(a.Nats[i], b.Nats[i]) {
+			return true
+		}
+	}
+	for i := range a.Nats6 {
+		if diffCmd(a.Nats6[i], b.Nats6[i]) {
+			return true
+		}
+	}
 	for i := range a.Maps {
 		if diffCmd(a.Maps[i], b.Maps[i]) {
 			return true
@@ -96,46 +108,6 @@ func diffRules(a, b *Rules) bool {
 	}
 
 	return false
-}
-
-func diffRulesNat(a, b *Rules) (bool, string) {
-	if a.Nat != b.Nat {
-		return true, "nat"
-	}
-
-	if a.NatAddr != b.NatAddr {
-		return true, "nat_addr"
-	}
-
-	if a.NatPubAddr != b.NatPubAddr {
-		return true, "nat_pub_addr"
-	}
-
-	if a.Nat6 != b.Nat6 {
-		return true, "nat6"
-	}
-
-	if a.NatAddr6 != b.NatAddr6 {
-		return true, "nat_addr6"
-	}
-
-	if a.NatPubAddr6 != b.NatPubAddr6 {
-		return true, "nat_pub_addr6"
-	}
-
-	if a.OracleNat != b.OracleNat {
-		return true, "oracle_nat"
-	}
-
-	if a.OracleNatAddr != b.OracleNatAddr {
-		return true, "oracle_nat_addr"
-	}
-
-	if a.OracleNatPubAddr != b.OracleNatPubAddr {
-		return true, "oracle_nat_pub_addr"
-	}
-
-	return false, ""
 }
 
 func getIptablesCmd(ipv6 bool) string {
@@ -343,10 +315,8 @@ func loadIptables(namespace, instIface string, state *State,
 		}
 	}
 
-	preAddr := ""
-	prePubAddr := ""
-	postAddr := ""
 	postIface := ""
+	natRules := [][]string{}
 
 	for _, line := range strings.Split(output, "\n") {
 		natComment := strings.Contains(line, "pritunl_cloud_nat")
@@ -469,58 +439,20 @@ func loadIptables(namespace, instIface string, state *State,
 					rules.Maps = append(rules.Maps, cmd)
 				}
 			}
-		} else {
-			switch cmd[0] {
-			case "PREROUTING":
-				for i, item := range cmd {
-					if item == "-d" {
-						if len(cmd) < i+2 {
-							logrus.WithFields(logrus.Fields{
-								"iptables_rule": line,
-							}).Error("iptables: Invalid iptables pub addr")
+		} else if natComment {
+			if cmd[0] != "PREROUTING" && cmd[0] != "POSTROUTING" {
+				logrus.WithFields(logrus.Fields{
+					"iptables_rule": line,
+				}).Error("iptables: Invalid iptables map chain")
 
-							err = &errortypes.ParseError{
-								errors.New(
-									"iptables: Invalid iptables pub addr"),
-							}
-							return
-						}
-						prePubAddr = strings.Split(cmd[i+1], "/")[0]
-					}
-
-					if item == "--to-destination" {
-						if len(cmd) < i+2 {
-							logrus.WithFields(logrus.Fields{
-								"iptables_rule": line,
-							}).Error("iptables: Invalid iptables addr")
-
-							err = &errortypes.ParseError{
-								errors.New(
-									"iptables: Invalid iptables addr"),
-							}
-							return
-						}
-						preAddr = strings.Split(cmd[i+1], "/")[0]
-					}
+				err = &errortypes.ParseError{
+					errors.New("iptables: Invalid iptables map chain"),
 				}
-				break
-			case "POSTROUTING":
+				return
+			}
+
+			if cmd[0] == "POSTROUTING" {
 				for i, item := range cmd {
-					if item == "-s" {
-						if len(cmd) < i+2 {
-							logrus.WithFields(logrus.Fields{
-								"iptables_rule": line,
-							}).Error("iptables: Invalid iptables pub addr")
-
-							err = &errortypes.ParseError{
-								errors.New(
-									"iptables: Invalid iptables pub addr"),
-							}
-							return
-						}
-						postAddr = strings.Split(cmd[i+1], "/")[0]
-					}
-
 					if item == "-o" {
 						if len(cmd) < i+2 {
 							logrus.WithFields(logrus.Fields{
@@ -536,15 +468,14 @@ func loadIptables(namespace, instIface string, state *State,
 						postIface = cmd[i+1]
 					}
 				}
-				break
 			}
+
+			natRules = append(natRules, cmd)
 		}
 	}
 
-	oraclePreAddr := ""
-	oraclePrePubAddr := ""
-	oraclePostAddr := ""
 	oraclePostIface := ""
+	oracleNatRules := [][]string{}
 
 	for _, line := range strings.Split(output, "\n") {
 		if !strings.Contains(line, "pritunl_cloud_oracle_nat") {
@@ -564,57 +495,19 @@ func loadIptables(namespace, instIface string, state *State,
 		}
 		cmd = cmd[1:]
 
-		switch cmd[0] {
-		case "PREROUTING":
-			for i, item := range cmd {
-				if item == "-d" {
-					if len(cmd) < i+2 {
-						logrus.WithFields(logrus.Fields{
-							"iptables_rule": line,
-						}).Error("iptables: Invalid iptables pub addr")
+		if cmd[0] != "PREROUTING" && cmd[0] != "POSTROUTING" {
+			logrus.WithFields(logrus.Fields{
+				"iptables_rule": line,
+			}).Error("iptables: Invalid iptables map chain")
 
-						err = &errortypes.ParseError{
-							errors.New(
-								"iptables: Invalid iptables pub addr"),
-						}
-						return
-					}
-					oraclePrePubAddr = strings.Split(cmd[i+1], "/")[0]
-				}
-
-				if item == "--to-destination" {
-					if len(cmd) < i+2 {
-						logrus.WithFields(logrus.Fields{
-							"iptables_rule": line,
-						}).Error("iptables: Invalid iptables addr")
-
-						err = &errortypes.ParseError{
-							errors.New(
-								"iptables: Invalid iptables addr"),
-						}
-						return
-					}
-					oraclePreAddr = strings.Split(cmd[i+1], "/")[0]
-				}
+			err = &errortypes.ParseError{
+				errors.New("iptables: Invalid iptables map chain"),
 			}
-			break
-		case "POSTROUTING":
+			return
+		}
+
+		if cmd[0] == "POSTROUTING" {
 			for i, item := range cmd {
-				if item == "-s" {
-					if len(cmd) < i+2 {
-						logrus.WithFields(logrus.Fields{
-							"iptables_rule": line,
-						}).Error("iptables: Invalid iptables pub addr")
-
-						err = &errortypes.ParseError{
-							errors.New(
-								"iptables: Invalid iptables pub addr"),
-						}
-						return
-					}
-					oraclePostAddr = strings.Split(cmd[i+1], "/")[0]
-				}
-
 				if item == "-o" {
 					if len(cmd) < i+2 {
 						logrus.WithFields(logrus.Fields{
@@ -630,13 +523,12 @@ func loadIptables(namespace, instIface string, state *State,
 					oraclePostIface = cmd[i+1]
 				}
 			}
-			break
 		}
+
+		oracleNatRules = append(oracleNatRules, cmd)
 	}
 
-	if preAddr != "" && prePubAddr != "" && postIface != "" &&
-		postAddr == preAddr {
-
+	if postIface != "" {
 		rules := state.Interfaces[namespace+"-"+postIface]
 		if rules == nil {
 			rules = &Rules{
@@ -654,20 +546,14 @@ func loadIptables(namespace, instIface string, state *State,
 			state.Interfaces[namespace+"-"+postIface] = rules
 		}
 
-		if !ipv6 {
-			rules.Nat = true
-			rules.NatAddr = preAddr
-			rules.NatPubAddr = prePubAddr
+		if ipv6 {
+			rules.Nats6 = append(rules.Nats6, natRules...)
 		} else {
-			rules.Nat6 = true
-			rules.NatAddr6 = preAddr
-			rules.NatPubAddr6 = prePubAddr
+			rules.Nats = append(rules.Nats, natRules...)
 		}
 	}
 
-	if oraclePreAddr != "" && oraclePrePubAddr != "" &&
-		oraclePostIface != "" && oraclePostAddr == oraclePreAddr {
-
+	if oraclePostIface != "" {
 		rules := state.Interfaces[namespace+"-"+oraclePostIface]
 		if rules == nil {
 			rules = &Rules{
@@ -685,12 +571,10 @@ func loadIptables(namespace, instIface string, state *State,
 			state.Interfaces[namespace+"-"+oraclePostIface] = rules
 		}
 
-		if oraclePreAddr != "" && oraclePrePubAddr != "" &&
-			oraclePostIface != "" && oraclePostAddr == oraclePreAddr {
-
-			rules.OracleNat = true
-			rules.OracleNatAddr = oraclePreAddr
-			rules.OracleNatPubAddr = oraclePrePubAddr
+		if ipv6 {
+			rules.Nats6 = append(rules.Nats6, oracleNatRules...)
+		} else {
+			rules.Nats = append(rules.Nats, oracleNatRules...)
 		}
 	}
 

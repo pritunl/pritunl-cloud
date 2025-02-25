@@ -77,48 +77,6 @@ func (u *Update) Apply() {
 		}
 
 		oldRules := u.OldState.Interfaces[rules.Namespace+"-"+rules.Interface]
-
-		natChanged := false
-		reason := ""
-		if rules.Nat || rules.Nat6 || rules.OracleNat {
-			if oldRules != nil {
-				natChanged, reason = diffRulesNat(oldRules, rules)
-			} else {
-				natChanged = true
-				reason = "new"
-			}
-		}
-
-		if natChanged {
-			logrus.WithFields(logrus.Fields{
-				"reason": reason,
-			}).Info("iptables: Updating iptables nat")
-
-			if oldRules != nil {
-				err := oldRules.RemoveNat()
-				if err != nil {
-					logrus.WithFields(logrus.Fields{
-						"namespace": rules.Namespace,
-						"error":     err,
-					}).Error("iptables: Namespace remove nat error")
-
-					u.FailedNamespaces.Add(rules.Namespace)
-					continue
-				}
-			}
-
-			err := rules.ApplyNat()
-			if err != nil {
-				logrus.WithFields(logrus.Fields{
-					"namespace": rules.Namespace,
-					"error":     err,
-				}).Error("iptables: Namespace apply nat error")
-
-				u.FailedNamespaces.Add(rules.Namespace)
-				continue
-			}
-		}
-
 		if oldRules != nil {
 			if !diffRules(oldRules, rules) {
 				continue
