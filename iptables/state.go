@@ -103,8 +103,6 @@ func LoadState(nodeSelf *node.Node, vpcs []*vpc.Vpc,
 			continue
 		}
 
-		// TODO Move to netconf
-
 		dhcp := false
 		dhcp6 := false
 
