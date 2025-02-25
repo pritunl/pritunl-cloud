@@ -5,6 +5,7 @@ import (
 )
 
 type State struct {
+	Hash      uint32    `json:"hash"`
 	Status    string    `json:"status"`
 	Memory    float64   `json:"memory"`
 	HugePages float64   `json:"hugepages"`
@@ -24,6 +25,7 @@ func (s *State) Final() bool {
 
 func (s *State) Copy() *State {
 	return &State{
+		Hash:      s.Hash,
 		Status:    s.Status,
 		Memory:    s.Memory,
 		HugePages: s.HugePages,
@@ -36,5 +38,11 @@ func (s *State) Copy() *State {
 
 type Entry struct {
 	Timestamp time.Time `json:"t"`
+	Level     int       `json:"l"`
 	Message   string    `json:"m"`
 }
+
+const (
+	Error = 3
+	Info  = 5
+)
