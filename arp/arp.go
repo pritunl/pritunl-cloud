@@ -9,6 +9,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
@@ -51,7 +52,7 @@ func GetRecords(namespace string) (records set.Set, err error) {
 	}
 
 	for _, ent := range entries {
-		if ent.Dev != "br0" {
+		if ent.Dev != settings.Hypervisor.BridgeIfaceName {
 			continue
 		}
 
@@ -148,7 +149,7 @@ func ApplyState(namespace string, oldState, newState set.Set) (
 			"ip", "netns", "exec", namespace,
 			"ip", "neighbor",
 			"del", recrd.Ip,
-			"dev", "br0",
+			"dev", settings.Hypervisor.BridgeIfaceName,
 		)
 	}
 
@@ -165,7 +166,7 @@ func ApplyState(namespace string, oldState, newState set.Set) (
 			"ip", "netns", "exec", namespace,
 			"ip", "neighbor",
 			"del", recrd.Ip,
-			"dev", "br0",
+			"dev", settings.Hypervisor.BridgeIfaceName,
 		)
 
 		_, err = utils.ExecCombinedOutputLogged(
@@ -176,7 +177,7 @@ func ApplyState(namespace string, oldState, newState set.Set) (
 			"ip", "neighbor",
 			"replace", recrd.Ip,
 			"lladdr", recrd.Mac,
-			"dev", "br0",
+			"dev", settings.Hypervisor.BridgeIfaceName,
 			"nud", "permanent",
 		)
 		if err != nil {
