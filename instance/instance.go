@@ -682,7 +682,7 @@ func (i *Instance) IsActive() bool {
 func (i *Instance) IsIpv6Only() bool {
 	return (node.Self.NetworkMode == node.Disabled || i.NoPublicAddress) &&
 		(node.Self.NetworkMode6 != node.Disabled && !i.NoPublicAddress6) &&
-		(node.Self.HostBlock.IsZero() || i.NoHostAddress)
+		(node.Self.NoHostNetwork || i.NoHostAddress)
 }
 
 func (i *Instance) PreCommit() {
