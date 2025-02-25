@@ -140,6 +140,10 @@ func (s *Imds) Deploy(db *database.Database) (err error) {
 
 	confs := map[primitive.ObjectID]*types.Config{}
 	for _, inst := range instances {
+		if !inst.IsActive() {
+			continue
+		}
+
 		virt := s.stat.GetVirt(inst.Id)
 		if virt == nil {
 			continue
