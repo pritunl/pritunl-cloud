@@ -32,6 +32,7 @@ type Instance struct {
 	OraclePrivateIps    []string           `json:"oracle_private_ips"`
 	OraclePublicIps     []string           `json:"oracle_public_ips"`
 	HostIps             []string           `json:"host_ips"`
+	NodePortIps         []string           `json:"node_port_ips"`
 	NetworkNamespace    string             `json:"network_namespace"`
 	NoPublicAddress     bool               `json:"no_public_address"`
 	NoPublicAddress6    bool               `json:"no_public_address6"`
@@ -81,6 +82,7 @@ func NewInstance(inst *instance.Instance) *Instance {
 		OraclePrivateIps:    inst.OraclePrivateIps,
 		OraclePublicIps:     inst.OraclePublicIps,
 		HostIps:             inst.HostIps,
+		NodePortIps:         inst.NodePortIps,
 		NetworkNamespace:    inst.NetworkNamespace,
 		NoPublicAddress:     inst.NoPublicAddress,
 		NoPublicAddress6:    inst.NoPublicAddress6,
