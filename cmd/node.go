@@ -57,7 +57,10 @@ func Node(testing bool) (err error) {
 	routr := &router.Router{}
 	routr.Init()
 
-	task.Init()
+	err = task.Init()
+	if err != nil {
+		return
+	}
 
 	go func() {
 		err = routr.Run()
