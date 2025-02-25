@@ -12,7 +12,7 @@ type Vpc struct {
 	Name     string             `json:"name"`
 	VpcId    int                `json:"vpc_id"`
 	Network  string             `json:"network"`
-	Network6 string             `etwork6"`
+	Network6 string             `json:"network6"`
 	Subnets  []*Subnet          `json:"subnets"`
 	Routes   []*Route           `json:"routes"`
 }
