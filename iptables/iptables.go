@@ -185,68 +185,92 @@ func (r *Rules) run(table string, cmds [][]string,
 	return
 }
 
-func (r *Rules) Apply() (err error) {
-	err = r.run("", r.Header, "-A", false)
-	if err != nil {
-		return
+func (r *Rules) Apply(all bool) (err error) {
+	if all || r.HeaderDiff {
+		err = r.run("", r.Header, "-A", false)
+		if err != nil {
+			return
+		}
 	}
 
-	err = r.run("", r.Header6, "-A", true)
-	if err != nil {
-		return
+	if all || r.Header6Diff {
+		err = r.run("", r.Header6, "-A", true)
+		if err != nil {
+			return
+		}
 	}
 
-	err = r.run("", r.SourceDestCheck, "-A", false)
-	if err != nil {
-		return
+	if all || r.SourceDestCheckDiff {
+		err = r.run("", r.SourceDestCheck, "-A", false)
+		if err != nil {
+			return
+		}
 	}
 
-	err = r.run("", r.SourceDestCheck6, "-A", true)
-	if err != nil {
-		return
+	if all || r.SourceDestCheck6Diff {
+		err = r.run("", r.SourceDestCheck6, "-A", true)
+		if err != nil {
+			return
+		}
 	}
 
-	err = r.run("", r.Ingress, "-A", false)
-	if err != nil {
-		return
+	if all || r.IngressDiff {
+		err = r.run("", r.Ingress, "-A", false)
+		if err != nil {
+			return
+		}
 	}
 
-	err = r.run("", r.Ingress6, "-A", true)
-	if err != nil {
-		return
+	if all || r.Ingress6Diff {
+		err = r.run("", r.Ingress6, "-A", true)
+		if err != nil {
+			return
+		}
 	}
 
-	err = r.run("nat", r.Nats, "-A", false)
-	if err != nil {
-		return
+	if all || r.NatsDiff {
+		err = r.run("nat", r.Nats, "-A", false)
+		if err != nil {
+			return
+		}
 	}
 
-	err = r.run("nat", r.Nats6, "-A", true)
-	if err != nil {
-		return
+	if all || r.Nats6Diff {
+		err = r.run("nat", r.Nats6, "-A", true)
+		if err != nil {
+			return
+		}
 	}
 
-	err = r.run("nat", r.Maps, "-A", false)
-	if err != nil {
-		return
+	if all || r.MapsDiff {
+		err = r.run("nat", r.Maps, "-A", false)
+		if err != nil {
+			return
+		}
 	}
 
-	err = r.run("nat", r.Maps6, "-A", true)
-	if err != nil {
-		return
+	if all || r.Maps6Diff {
+		err = r.run("nat", r.Maps6, "-A", true)
+		if err != nil {
+			return
+		}
 	}
 
-	err = r.run("", r.Holds, "-D", false)
-	if err != nil {
-		return
+	if all || r.IngressDiff {
+		err = r.run("", r.Holds, "-D", false)
+		if err != nil {
+			return
+		}
+		r.Holds = [][]string{}
 	}
-	r.Holds = [][]string{}
 
-	err = r.run("", r.Holds6, "-D", true)
-	if err != nil {
-		return
+	if all || r.Ingress6Diff {
+		err = r.run("", r.Holds6, "-D", true)
+		if err != nil {
+			return
+		}
+		r.Holds6 = [][]string{}
 	}
-	r.Holds6 = [][]string{}
 
 	return
 }
@@ -349,66 +373,86 @@ func (r *Rules) Hold() (err error) {
 	return
 }
 
-func (r *Rules) Remove() (err error) {
-	err = r.run("", r.Header, "-D", false)
-	if err != nil {
-		return
+func (r *Rules) Remove(all bool) (err error) {
+	if all || r.HeaderDiff {
+		err = r.run("", r.Header, "-D", false)
+		if err != nil {
+			return
+		}
+		r.Header = [][]string{}
 	}
-	r.Header = [][]string{}
 
-	err = r.run("", r.Header6, "-D", true)
-	if err != nil {
-		return
+	if all || r.Header6Diff {
+		err = r.run("", r.Header6, "-D", true)
+		if err != nil {
+			return
+		}
+		r.Header6 = [][]string{}
 	}
-	r.Header6 = [][]string{}
 
-	err = r.run("", r.SourceDestCheck, "-D", false)
-	if err != nil {
-		return
+	if all || r.SourceDestCheckDiff {
+		err = r.run("", r.SourceDestCheck, "-D", false)
+		if err != nil {
+			return
+		}
+		r.SourceDestCheck = [][]string{}
 	}
-	r.SourceDestCheck = [][]string{}
 
-	err = r.run("", r.SourceDestCheck6, "-D", true)
-	if err != nil {
-		return
+	if all || r.SourceDestCheck6Diff {
+		err = r.run("", r.SourceDestCheck6, "-D", true)
+		if err != nil {
+			return
+		}
+		r.SourceDestCheck6 = [][]string{}
 	}
-	r.SourceDestCheck6 = [][]string{}
 
-	err = r.run("", r.Ingress, "-D", false)
-	if err != nil {
-		return
+	if all || r.IngressDiff {
+		err = r.run("", r.Ingress, "-D", false)
+		if err != nil {
+			return
+		}
+		r.Ingress = [][]string{}
 	}
-	r.Ingress = [][]string{}
 
-	err = r.run("", r.Ingress6, "-D", true)
-	if err != nil {
-		return
+	if all || r.Ingress6Diff {
+		err = r.run("", r.Ingress6, "-D", true)
+		if err != nil {
+			return
+		}
+		r.Ingress6 = [][]string{}
 	}
-	r.Ingress6 = [][]string{}
 
-	err = r.run("nat", r.Nats, "-D", false)
-	if err != nil {
-		return
+	if all || r.NatsDiff {
+		err = r.run("nat", r.Nats, "-D", false)
+		if err != nil {
+			return
+		}
+		r.Nats = [][]string{}
 	}
-	r.Nats = [][]string{}
 
-	err = r.run("nat", r.Nats6, "-D", true)
-	if err != nil {
-		return
+	if all || r.Nats6Diff {
+		err = r.run("nat", r.Nats6, "-D", true)
+		if err != nil {
+			return
+		}
+		r.Nats6 = [][]string{}
 	}
-	r.Nats6 = [][]string{}
 
-	err = r.run("nat", r.Maps, "-D", false)
-	if err != nil {
-		return
+	if all || r.MapsDiff {
+		err = r.run("nat", r.Maps, "-D", false)
+		if err != nil {
+			return
+		}
+		r.Maps = [][]string{}
 	}
-	r.Maps = [][]string{}
 
-	err = r.run("nat", r.Maps6, "-D", true)
-	if err != nil {
-		return
+	if all || r.Maps6Diff {
+		err = r.run("nat", r.Maps6, "-D", true)
+		if err != nil {
+			return
+		}
+		r.Maps6 = [][]string{}
 	}
-	r.Maps6 = [][]string{}
 
 	err = r.run("", r.Holds, "-D", false)
 	if err != nil {

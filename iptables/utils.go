@@ -30,84 +30,180 @@ func diffCmd(a, b []string) bool {
 }
 
 func diffRules(a, b *Rules) bool {
-	if len(a.Header) != len(b.Header) ||
-		len(a.Header6) != len(b.Header6) ||
-		len(a.SourceDestCheck) != len(b.SourceDestCheck) ||
-		len(a.SourceDestCheck6) != len(b.SourceDestCheck6) ||
-		len(a.Ingress) != len(b.Ingress) ||
-		len(a.Ingress6) != len(b.Ingress6) ||
-		len(a.Nats) != len(b.Nats) ||
-		len(a.Nats6) != len(b.Nats6) ||
-		len(a.Maps) != len(b.Maps) ||
-		len(a.Maps6) != len(b.Maps6) ||
-		len(a.Holds) != len(b.Holds) ||
-		len(a.Holds6) != len(b.Holds6) {
+	changed := false
 
-		return true
-	}
+	ingressChanged := false
+	ingress6Changed := false
 
-	for i := range a.Header {
-		if diffCmd(a.Header[i], b.Header[i]) {
-			return true
-		}
-	}
-	for i := range a.Header6 {
-		if diffCmd(a.Header6[i], b.Header6[i]) {
-			return true
-		}
-	}
-	for i := range a.SourceDestCheck {
-		if diffCmd(a.SourceDestCheck[i], b.SourceDestCheck[i]) {
-			return true
-		}
-	}
-	for i := range a.SourceDestCheck6 {
-		if diffCmd(a.SourceDestCheck6[i], b.SourceDestCheck6[i]) {
-			return true
-		}
-	}
-	for i := range a.Ingress {
-		if diffCmd(a.Ingress[i], b.Ingress[i]) {
-			return true
-		}
-	}
-	for i := range a.Ingress6 {
-		if diffCmd(a.Ingress6[i], b.Ingress6[i]) {
-			return true
-		}
-	}
-	for i := range a.Nats {
-		if diffCmd(a.Nats[i], b.Nats[i]) {
-			return true
-		}
-	}
-	for i := range a.Nats6 {
-		if diffCmd(a.Nats6[i], b.Nats6[i]) {
-			return true
-		}
-	}
-	for i := range a.Maps {
-		if diffCmd(a.Maps[i], b.Maps[i]) {
-			return true
-		}
-	}
-	for i := range a.Maps6 {
-		if diffCmd(a.Maps6[i], b.Maps6[i]) {
-			return true
-		}
-	}
-	for i := range a.Holds {
-		if diffCmd(a.Holds[i], b.Holds[i]) {
-			return true
-		}
-	}
-	for i := range a.Holds6 {
-		if diffCmd(a.Holds6[i], b.Holds6[i]) {
-			return true
+	if len(a.Header) != len(b.Header) {
+		ingressChanged = true
+	} else {
+		for i := range a.Header {
+			if diffCmd(a.Header[i], b.Header[i]) {
+				ingressChanged = true
+				break
+			}
 		}
 	}
 
-	return false
+	if len(a.Header6) != len(b.Header6) {
+		ingress6Changed = true
+	} else {
+		for i := range a.Header6 {
+			if diffCmd(a.Header6[i], b.Header6[i]) {
+				ingress6Changed = true
+				break
+			}
+		}
+	}
+
+	if len(a.SourceDestCheck) != len(b.SourceDestCheck) {
+		ingressChanged = true
+	} else {
+		for i := range a.SourceDestCheck {
+			if diffCmd(a.SourceDestCheck[i], b.SourceDestCheck[i]) {
+				ingressChanged = true
+				break
+			}
+		}
+	}
+
+	if len(a.SourceDestCheck6) != len(b.SourceDestCheck6) {
+		ingress6Changed = true
+	} else {
+		for i := range a.SourceDestCheck6 {
+			if diffCmd(a.SourceDestCheck6[i], b.SourceDestCheck6[i]) {
+				ingress6Changed = true
+				break
+			}
+		}
+	}
+
+	if len(a.Ingress) != len(b.Ingress) {
+		ingressChanged = true
+	} else {
+		for i := range a.Ingress {
+			if diffCmd(a.Ingress[i], b.Ingress[i]) {
+				ingressChanged = true
+				break
+			}
+		}
+	}
+
+	if len(a.Ingress6) != len(b.Ingress6) {
+		ingress6Changed = true
+	} else {
+		for i := range a.Ingress6 {
+			if diffCmd(a.Ingress6[i], b.Ingress6[i]) {
+				ingress6Changed = true
+				break
+			}
+		}
+	}
+
+	if ingressChanged {
+		a.HeaderDiff = true
+		a.SourceDestCheckDiff = true
+		a.IngressDiff = true
+		b.HeaderDiff = true
+		b.SourceDestCheckDiff = true
+		b.IngressDiff = true
+		changed = true
+	}
+
+	if ingress6Changed {
+		a.Header6Diff = true
+		a.SourceDestCheck6Diff = true
+		a.Ingress6Diff = true
+		b.Header6Diff = true
+		b.SourceDestCheck6Diff = true
+		b.Ingress6Diff = true
+		changed = true
+	}
+
+	if len(a.Nats) != len(b.Nats) {
+		a.NatsDiff = true
+		b.NatsDiff = true
+		changed = true
+	} else {
+		for i := range a.Nats {
+			if diffCmd(a.Nats[i], b.Nats[i]) {
+				a.NatsDiff = true
+				b.NatsDiff = true
+				changed = true
+				break
+			}
+		}
+	}
+
+	if len(a.Nats6) != len(b.Nats6) {
+		a.Nats6Diff = true
+		b.Nats6Diff = true
+		changed = true
+	} else {
+		for i := range a.Nats6 {
+			if diffCmd(a.Nats6[i], b.Nats6[i]) {
+				a.Nats6Diff = true
+				b.Nats6Diff = true
+				changed = true
+				break
+			}
+		}
+	}
+
+	if len(a.Maps) != len(b.Maps) {
+		a.MapsDiff = true
+		b.MapsDiff = true
+		changed = true
+	} else {
+		for i := range a.Maps {
+			if diffCmd(a.Maps[i], b.Maps[i]) {
+				a.MapsDiff = true
+				b.MapsDiff = true
+				changed = true
+				break
+			}
+		}
+	}
+
+	if len(a.Maps6) != len(b.Maps6) {
+		a.Maps6Diff = true
+		b.Maps6Diff = true
+		changed = true
+	} else {
+		for i := range a.Maps6 {
+			if diffCmd(a.Maps6[i], b.Maps6[i]) {
+				a.Maps6Diff = true
+				b.Maps6Diff = true
+				changed = true
+				break
+			}
+		}
+	}
+
+	if len(a.Holds) != len(b.Holds) {
+		changed = true
+	} else {
+		for i := range a.Holds {
+			if diffCmd(a.Holds[i], b.Holds[i]) {
+				changed = true
+				break
+			}
+		}
+	}
+
+	if len(a.Holds6) != len(b.Holds6) {
+		changed = true
+	} else {
+		for i := range a.Holds6 {
+			if diffCmd(a.Holds6[i], b.Holds6[i]) {
+				changed = true
+				break
+			}
+		}
+	}
+
+	return changed
 }
 
 func getIptablesCmd(ipv6 bool) string {

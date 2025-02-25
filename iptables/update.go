@@ -40,7 +40,7 @@ func (u *Update) Apply() {
 
 	oldIfaces.Subtract(newIfaces)
 	for iface := range oldIfaces.Iter() {
-		err := u.OldState.Interfaces[iface.(string)].Remove()
+		err := u.OldState.Interfaces[iface.(string)].Remove(true)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"iface": iface,
@@ -87,7 +87,9 @@ func (u *Update) Apply() {
 				logrus.Info("iptables: Updating iptables")
 			}
 
-			if rules.Interface != "host" {
+			if (rules.IngressDiff || rules.Ingress6Diff) &&
+				rules.Interface != "host" {
+
 				err := rules.Hold()
 				if err != nil {
 					logrus.WithFields(logrus.Fields{
@@ -100,7 +102,7 @@ func (u *Update) Apply() {
 				}
 			}
 
-			err := oldRules.Remove()
+			err := oldRules.Remove(false)
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
 					"namespace": rules.Namespace,
@@ -117,7 +119,7 @@ func (u *Update) Apply() {
 			logrus.Info("iptables: Updating iptables")
 		}
 
-		err := rules.Apply()
+		err := rules.Apply(oldRules == nil)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"namespace": rules.Namespace,
