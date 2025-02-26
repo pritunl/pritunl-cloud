@@ -71,7 +71,7 @@ func UpdateEbtables(vmId primitive.ObjectID, namespace string) (err error) {
 		"iptables",
 		"-t", "mangle",
 		"-A", "POSTROUTING",
-		"-o", "br0",
+		"-o", settings.Hypervisor.BridgeIfaceName,
 		"-p", "udp",
 		"-m", "udp",
 		"--sport", "67",
@@ -87,7 +87,7 @@ func UpdateEbtables(vmId primitive.ObjectID, namespace string) (err error) {
 		"ip6tables",
 		"-t", "mangle",
 		"-A", "POSTROUTING",
-		"-o", "br0",
+		"-o", settings.Hypervisor.BridgeIfaceName,
 		"-p", "udp",
 		"-m", "udp",
 		"--sport", "547",
@@ -194,7 +194,7 @@ func ClearEbtables(vmId primitive.ObjectID, namespace string) (err error) {
 		"iptables",
 		"-t", "mangle",
 		"-D", "POSTROUTING",
-		"-o", "br0",
+		"-o", settings.Hypervisor.BridgeIfaceName,
 		"-p", "udp",
 		"-m", "udp",
 		"--sport", "67",
@@ -207,7 +207,7 @@ func ClearEbtables(vmId primitive.ObjectID, namespace string) (err error) {
 		"ip6tables",
 		"-t", "mangle",
 		"-D", "POSTROUTING",
-		"-o", "br0",
+		"-o", settings.Hypervisor.BridgeIfaceName,
 		"-p", "udp",
 		"-m", "udp",
 		"--sport", "547",
@@ -427,7 +427,7 @@ func Start(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	}
 
 	server4 := &Server4{
-		Iface:     "br0",
+		Iface:     settings.Hypervisor.BridgeIfaceName,
 		ClientIp:  addr.String(),
 		GatewayIp: gatewayAddr.String(),
 		PrefixLen: cidr,
@@ -439,7 +439,7 @@ func Start(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		Lifetime: 60,
 	}
 	server6 := &Server6{
-		Iface:     "br0",
+		Iface:     settings.Hypervisor.BridgeIfaceName,
 		ClientIp:  addr6.String(),
 		GatewayIp: gatewayAddr6.String(),
 		PrefixLen: 64,
@@ -451,7 +451,7 @@ func Start(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		Lifetime: 60,
 	}
 	serverNdp := &ServerNdp{
-		Iface:     "br0",
+		Iface:     settings.Hypervisor.BridgeIfaceName,
 		ClientIp:  addr6.String(),
 		GatewayIp: gatewayAddr6.String(),
 		PrefixLen: 64,
