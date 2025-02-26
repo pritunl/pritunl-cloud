@@ -101,6 +101,20 @@ func (n *Namespace) Deploy(db *database.Database) (err error) {
 		externalNetwork = true
 	}
 
+	now := time.Now()
+	nde := n.stat.Node()
+	hasDhcp6 := nde.NetworkMode6 == node.Dhcp ||
+		nde.NetworkMode6 == node.DhcpSlaac
+	dhcpTtl := settings.Hypervisor.Dhcp6RefreshTtl
+	dhcpRefresh := time.Duration(dhcpTtl) * time.Second
+
+	if hasDhcp6 && !netconf.DhTimestampsLoaded {
+		err = netconf.LoadDhTimestamps(instances)
+		if err != nil {
+			return
+		}
+	}
+
 	for _, inst := range instances {
 		if !inst.IsActive() {
 			continue
