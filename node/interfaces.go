@@ -31,6 +31,7 @@ func GetInterfaces() (ifaces []string, err error) {
 		if len(iface) == 14 || iface == "lo" ||
 			strings.Contains(iface, "br") ||
 			iface == settings.Hypervisor.HostNetworkName ||
+			iface == settings.Hypervisor.NodePortNetworkName ||
 			iface == "" {
 
 			continue
