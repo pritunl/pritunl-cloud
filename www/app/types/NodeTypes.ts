@@ -75,7 +75,6 @@ export interface Node {
 	hostname?: string;
 	oracle_user?: string;
 	oracle_public_key?: string;
-	oracle_host_route?: boolean;
 }
 
 export interface Vpc {
