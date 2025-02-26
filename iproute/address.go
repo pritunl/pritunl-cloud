@@ -77,8 +77,8 @@ func AddressGetIface(namespace, name string) (
 		return
 	}
 
+	dynamic6 := false
 	if label != "" {
-		dynamic6 := true
 		for _, iface := range ifaces {
 			if iface.Name == name && iface.Addresses != nil {
 				for _, addr := range iface.Addresses {
@@ -87,14 +87,13 @@ func AddressGetIface(namespace, name string) (
 
 						if address == nil && addr.Family == "inet" {
 							address = addr
-						} else if (address6 == nil || dynamic6) &&
-							addr.Family == "inet6" {
-
-							if !addr.Dynamic {
-								dynamic6 = false
+						} else if addr.Family == "inet6" {
+							if addr.Dynamic && !dynamic6 {
+								address6 = addr
+								dynamic6 = true
+							} else if address6 == nil {
+								address6 = addr
 							}
-
-							address6 = addr
 						}
 					}
 				}
@@ -102,21 +101,19 @@ func AddressGetIface(namespace, name string) (
 		}
 	}
 
-	dynamic6 := true
 	for _, iface := range ifaces {
 		if iface.Name == name && iface.Addresses != nil {
 			for _, addr := range iface.Addresses {
 				if addr.Scope == "global" && !addr.Deprecated {
 					if address == nil && addr.Family == "inet" {
 						address = addr
-					} else if (address6 == nil || dynamic6) &&
-						addr.Family == "inet6" {
-
-						if !addr.Dynamic {
-							dynamic6 = false
+					} else if addr.Family == "inet6" {
+						if addr.Dynamic && !dynamic6 {
+							address6 = addr
+							dynamic6 = true
+						} else if address6 == nil {
+							address6 = addr
 						}
-
-						address6 = addr
 					}
 				}
 			}
