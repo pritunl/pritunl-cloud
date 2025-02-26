@@ -87,6 +87,7 @@ type Node struct {
 	AvailableDrives         []*drive.Device      `bson:"available_drives" json:"available_drives"`
 	InstanceDrives          []*drive.Device      `bson:"instance_drives" json:"instance_drives"`
 	NoHostNetwork           bool                 `bson:"no_host_network" json:"no_host_network"`
+	NoNodePortNetwork       bool                 `bson:"no_node_port_network" json:"no_node_port_network"`
 	HostNat                 bool                 `bson:"host_nat" json:"host_nat"`
 	DefaultNoPublicAddress  bool                 `bson:"default_no_public_address" json:"default_no_public_address"`
 	DefaultNoPublicAddress6 bool                 `bson:"default_no_public_address6" json:"default_no_public_address6"`
