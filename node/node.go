@@ -356,6 +356,16 @@ func (n *Node) IsOnline() bool {
 	return true
 }
 
+func (n *Node) IsDhcp() bool {
+	return n.NetworkMode == Dhcp ||
+		n.NetworkMode == DhcpSlaac
+}
+
+func (n *Node) IsDhcp6() bool {
+	return n.NetworkMode6 == Dhcp ||
+		n.NetworkMode6 == DhcpSlaac
+}
+
 func (n *Node) Usage() int {
 	memoryUsage := float64(n.MemoryUnitsRes) / float64(n.MemoryUnits)
 	if memoryUsage > 1.0 {
