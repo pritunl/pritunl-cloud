@@ -18,11 +18,13 @@ const (
 	Sdl = "sdl"
 	Gtk = "gtk"
 
-	Disabled = "disabled"
-	Dhcp     = "dhcp"
-	Static   = "static"
-	Internal = "internal"
-	Oracle   = "oracle"
+	Disabled  = "disabled"
+	Dhcp      = "dhcp"
+	DhcpSlaac = "dhcp_slaac"
+	Slaac     = "slaac"
+	Static    = "static"
+	Internal  = "internal"
+	Oracle    = "oracle"
 
 	Restart = "restart"
 )
