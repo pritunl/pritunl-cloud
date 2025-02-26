@@ -1223,23 +1223,6 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			}
 		}
 
-		let hostBlocksSelect: JSX.Element[] = [
-			<option key="null" value="">
-				Disabled
-			</option>,
-		];
-		for (let blck of (this.props.blocks || [])) {
-			if (blck.type !== 'ipv4') {
-				continue;
-			}
-
-			hostBlocksSelect.push(
-				<option key={blck.id} value={blck.id}>
-					{blck.name}
-				</option>,
-			);
-		}
-
 		let availableDrives: JSX.Element[] = [];
 		for (let device of (node.instance_drives || [])) {
 			availableDrives.push(
@@ -1828,20 +1811,18 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					>
 						{availableSubnetsSelect}
 					</PageSelectButton>
-					<PageSelect
-						disabled={this.state.disabled}
-						label="Host Network Block"
-						help="IP address block to use for static address on host network."
-						value={node.host_block}
-						onChange={(val): void => {
-							this.set('host_block', val);
-						}}
-					>
-						{hostBlocksSelect}
-					</PageSelect>
 					<PageSwitch
 						disabled={this.state.disabled}
-						hidden={!node.host_block}
+						label="Host Network"
+						help="Enable host networking to allow host to instance communication. Required for instance NAT."
+						checked={!node.no_host_network}
+						onToggle={(): void => {
+							this.set('no_host_network', !node.no_host_network);
+						}}
+					/>
+					<PageSwitch
+						disabled={this.state.disabled}
+						hidden={node.no_host_network}
 						label="Host Network NAT"
 						help="Enable NAT to on the host network."
 						checked={node.host_nat}
@@ -1849,20 +1830,9 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							this.set('host_nat', !node.host_nat);
 						}}
 					/>
-					<PageSwitch
-						disabled={this.state.disabled}
-						hidden={!node.host_block}
-						label="Oracle Cloud host routing"
-						help="Automatically update Oracle Cloud routing tables with host network."
-						checked={node.oracle_host_route}
-						onToggle={(): void => {
-							this.set('oracle_host_route', !node.oracle_host_route);
-						}}
-					/>
 					<PageInput
 						disabled={this.state.disabled}
-						hidden={!node.oracle_host_route &&
-							node.network_mode !== 'oracle' &&
+						hidden={node.network_mode !== 'oracle' &&
 							node.network_mode6 !== 'oracle'}
 						label="Oracle Cloud User OCID"
 						help="User OCID for Oracle Cloud API authentication."
@@ -1875,8 +1845,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					/>
 					<PageTextArea
 						disabled={this.state.disabled}
-						hidden={!node.oracle_host_route &&
-							node.network_mode !== 'oracle' &&
+						hidden={node.network_mode !== 'oracle' &&
 							node.network_mode6 !== 'oracle'}
 						label="Oracle Cloud Public Key"
 						help="Public key for Oracle Cloud API authentication."
