@@ -7,26 +7,73 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/interfaces"
+	"github.com/pritunl/pritunl-cloud/netconf"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
+	"github.com/sirupsen/logrus"
 )
 
 var (
-	firstRun = true
+	firstRun         = true
+	namespaceLock    = utils.NewMultiTimeoutLock(5 * time.Minute)
+	namespaceLimiter = utils.NewLimiter(5)
 )
 
 type Namespace struct {
 	stat *state.State
 }
 
-func (n *Namespace) Deploy() (err error) {
+func (n *Namespace) restartDhcp(inst *instance.Instance) {
+	virt := n.stat.GetVirt(inst.Id)
+	if virt == nil {
+		return
+	}
+	nc := netconf.New(virt)
+
+	if !namespaceLimiter.Acquire() {
+		return
+	}
+
+	acquired, lockId := namespaceLock.LockOpenTimeout(
+		inst.Id.Hex(), 10*time.Minute)
+	if !acquired {
+		namespaceLimiter.Release()
+		return
+	}
+
+	go func() {
+		defer func() {
+			time.Sleep(3 * time.Second)
+			namespaceLock.Unlock(inst.Id.Hex(), lockId)
+			namespaceLimiter.Release()
+		}()
+
+		db := database.GetDatabase()
+		defer db.Close()
+
+		logrus.WithFields(logrus.Fields{
+			"instance_id": inst.Id.Hex(),
+		}).Debug("deploy: Restarting instance dhclient6")
+
+		err := nc.RestartDhcp6(db)
+		if err != nil {
+			return
+		}
+	}()
+}
+
+func (n *Namespace) Deploy(db *database.Database) (err error) {
 	instances := n.stat.Instances()
 	namespaces := n.stat.Namespaces()
 	ifaces := n.stat.Interfaces()
