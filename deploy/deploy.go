@@ -58,7 +58,7 @@ func Deploy(stat *state.State, runtimes *state.Runtimes) (err error) {
 
 	start = time.Now()
 	namespaces := NewNamespace(stat)
-	err = namespaces.Deploy()
+	err = namespaces.Deploy(db)
 	if err != nil {
 		return
 	}
