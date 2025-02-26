@@ -68,6 +68,7 @@ export interface Node {
 	load15?: number;
 	public_ips?: string[];
 	public_ips6?: string[];
+	private_ips?: string[];
 	forwarded_for_header?: string;
 	forwarded_proto_header?: string;
 	software_version?: string;
