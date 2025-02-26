@@ -1097,6 +1097,11 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			publicIps6 = 'None';
 		}
 
+		let privateIps: any = this.props.node.private_ips;
+		if (!privateIps || !privateIps.length) {
+			privateIps = 'None';
+		}
+
 		let resourceBars: PageInfos.Bar[] = [
 			{
 				progressClass: 'bp5-no-stripes bp5-intent-success',
@@ -2068,6 +2073,11 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							{
 								label: 'Hostname',
 								value: node.hostname || 'Unknown',
+							},
+							{
+								label: 'Private IPv4',
+								value: privateIps,
+								copy: true,
 							},
 							{
 								label: 'Public IPv4',
