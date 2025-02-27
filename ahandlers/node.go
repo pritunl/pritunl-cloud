@@ -53,6 +53,7 @@ type nodeData struct {
 	Blocks6                 []*node.BlockAttachment `json:"blocks6"`
 	InstanceDrives          []*drive.Device         `json:"instance_drives"`
 	NoHostNetwork           bool                    `json:"no_host_network"`
+	NoNodePortNetwork       bool                    `json:"no_node_port_network"`
 	HostNat                 bool                    `json:"host_nat"`
 	DefaultNoPublicAddress  bool                    `json:"default_no_public_address"`
 	DefaultNoPublicAddress6 bool                    `json:"default_no_public_address6"`
@@ -138,6 +139,7 @@ func nodePut(c *gin.Context) {
 	nde.Blocks6 = data.Blocks6
 	nde.InstanceDrives = data.InstanceDrives
 	nde.NoHostNetwork = data.NoHostNetwork
+	nde.NoNodePortNetwork = data.NoNodePortNetwork
 	nde.HostNat = data.HostNat
 	nde.DefaultNoPublicAddress = data.DefaultNoPublicAddress
 	nde.DefaultNoPublicAddress6 = data.DefaultNoPublicAddress6
@@ -182,6 +184,7 @@ func nodePut(c *gin.Context) {
 		"blocks6",
 		"instance_drives",
 		"no_host_network",
+		"no_node_port_network",
 		"host_nat",
 		"default_no_public_address",
 		"default_no_public_address6",
