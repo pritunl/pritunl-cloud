@@ -157,6 +157,15 @@ func (r *Resources) Find(db *database.Database, token string) (
 				return
 			}
 		}
+
+		r.Datacenter, err = datacenter.Get(db, r.Zone.Datacenter)
+		if err != nil {
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = nil
+			} else {
+				return
+			}
+		}
 		break
 	case ShapeKind:
 		query := bson.M{
