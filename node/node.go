@@ -1124,6 +1124,7 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.Blocks6 = nde.Blocks6
 	n.InstanceDrives = nde.InstanceDrives
 	n.NoHostNetwork = nde.NoHostNetwork
+	n.NoNodePortNetwork = nde.NoNodePortNetwork
 	n.HostNat = nde.HostNat
 	n.DefaultNoPublicAddress = nde.DefaultNoPublicAddress
 	n.DefaultNoPublicAddress6 = nde.DefaultNoPublicAddress6
