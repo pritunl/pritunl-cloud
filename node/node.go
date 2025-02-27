@@ -971,7 +971,57 @@ func (n *Node) GetStaticHostAddr(db *database.Database,
 
 	if ip == nil {
 		err = &errortypes.NotFoundError{
-			errors.New("node: No host block addresses available"),
+			errors.New("node: No host addresses available"),
+		}
+		return
+	}
+
+	return
+}
+
+func (n *Node) GetStaticNodePortAddr(db *database.Database,
+	instId primitive.ObjectID) (blck *block.Block, ip net.IP, err error) {
+
+	blck, err = block.GetNodePortBlock(n.Id)
+	if err != nil {
+		return
+	}
+
+	blckIp, err := block.GetInstanceNodePortIp(db, instId)
+	if err != nil {
+		return
+	}
+
+	if blckIp != nil {
+		contains, e := blck.Contains(blckIp)
+		if e != nil {
+			err = e
+			return
+		}
+
+		if contains {
+			ip = blckIp.GetIp()
+			return
+		}
+
+		err = block.RemoveIp(db, blckIp.Id)
+		if err != nil {
+			return
+		}
+	}
+
+	ip, err = blck.GetIp(db, instId, block.NodePort)
+	if err != nil {
+		if _, ok := err.(*block.BlockFull); ok {
+			err = nil
+		} else {
+			return
+		}
+	}
+
+	if ip == nil {
+		err = &errortypes.NotFoundError{
+			errors.New("node: No node port addresses available"),
 		}
 		return
 	}
