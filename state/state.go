@@ -11,6 +11,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/arp"
 	"github.com/pritunl/pritunl-cloud/certificate"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/domain"
@@ -36,11 +37,12 @@ import (
 type State struct {
 	nodeSelf               *node.Node
 	nodes                  []*node.Node
-	nodeDatacenter         primitive.ObjectID
+	nodeDatacenter         *datacenter.Datacenter
 	nodeZone               *zone.Zone
 	nodeShapes             []*shape.Shape
 	nodeShapesId           set.Set
 	vxlan                  bool
+	datacenterMap          map[primitive.ObjectID]*datacenter.Datacenter
 	zoneMap                map[primitive.ObjectID]*zone.Zone
 	namespaces             []string
 	interfaces             []string
@@ -90,8 +92,16 @@ func (s *State) VxLan() bool {
 	return s.vxlan
 }
 
+func (s *State) NodeDatacenter() *datacenter.Datacenter {
+	return s.nodeDatacenter
+}
+
 func (s *State) NodeZone() *zone.Zone {
 	return s.nodeZone
+}
+
+func (s *State) GetDatacenter(dcId primitive.ObjectID) *datacenter.Datacenter {
+	return s.datacenterMap[dcId]
 }
 
 func (s *State) GetZone(zneId primitive.ObjectID) *zone.Zone {
@@ -293,6 +303,17 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 	totalStart := time.Now()
 	s.nodeSelf = node.Self.Copy()
 
+	dcId := s.nodeSelf.Zone
+	if !dcId.IsZero() {
+		dc, e := datacenter.Get(db, dcId)
+		if e != nil {
+			err = e
+			return
+		}
+
+		s.nodeDatacenter = dc
+	}
+
 	zneId := s.nodeSelf.Zone
 	if !zneId.IsZero() {
 		zne, e := zone.Get(db, zneId)
@@ -302,13 +323,14 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 		}
 
 		s.nodeZone = zne
-		s.nodeDatacenter = s.nodeZone.Datacenter
 	}
 
-	if s.nodeZone != nil && s.nodeZone.NetworkMode == zone.VxlanVlan {
+	if s.nodeDatacenter != nil &&
+		s.nodeDatacenter.NetworkMode == zone.VxlanVlan {
+
 		s.vxlan = true
 
-		znes, e := zone.GetAllDatacenter(db, s.nodeZone.Datacenter)
+		znes, e := zone.GetAllDatacenter(db, s.nodeDatacenter.Id)
 		if e != nil {
 			err = e
 			return
@@ -398,8 +420,8 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 	vpcs := []*vpc.Vpc{}
 	vpcsId := []primitive.ObjectID{}
 	vpcsMap := map[primitive.ObjectID]*vpc.Vpc{}
-	if !s.nodeDatacenter.IsZero() {
-		vpcs, err = vpc.GetDatacenter(db, s.nodeDatacenter)
+	if s.nodeDatacenter != nil {
+		vpcs, err = vpc.GetDatacenter(db, s.nodeDatacenter.Id)
 		if err != nil {
 			return
 		}
@@ -413,7 +435,7 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 	s.vpcsMap = vpcsMap
 
 	vpcIpsMap := map[primitive.ObjectID][]*vpc.VpcIp{}
-	if !s.nodeDatacenter.IsZero() {
+	if s.nodeDatacenter != nil {
 		vpcIpsMap, err = vpc.GetIpsMapped(db, vpcsId)
 		if err != nil {
 			return
