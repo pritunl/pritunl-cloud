@@ -92,7 +92,7 @@ func (s *Spec) GetAllNodes(db *database.Database,
 			if mount.Disks != nil {
 				for _, dskId := range mount.Disks {
 					dsk := disksMap[dskId]
-					if dsk == nil {
+					if dsk == nil || !dsk.IsAavailabe() {
 						continue
 					}
 					mountSet.Add(dsk.Node)
