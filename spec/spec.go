@@ -198,9 +198,10 @@ func (s *Spec) parseFirewall(db *database.Database,
 					}
 
 					refs.Add(Refrence{
-						Id:    resources.Unit.Id,
-						Realm: resources.Pod.Id,
-						Kind:  selector,
+						Id:       resources.Unit.Id,
+						Realm:    resources.Pod.Id,
+						Kind:     Unit,
+						Selector: selector,
 					})
 				}
 			} else {
