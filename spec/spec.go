@@ -17,6 +17,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/finder"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/shape"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/zone"
@@ -661,9 +662,11 @@ func (s *Spec) Parse(db *database.Database) (
 func (s *Spec) CanMigrate(db *database.Database, spc *Spec) (
 	errData *errortypes.ErrorData, err error) {
 
-	errData, err = s.Parse(db)
-	if err != nil || errData != nil {
-		return
+	if !settings.System.NoMigrateRefresh {
+		errData, err = s.Parse(db)
+		if err != nil || errData != nil {
+			return
+		}
 	}
 
 	errData, err = spc.Parse(db)
