@@ -1502,6 +1502,11 @@ func (n *Node) Init() (err error) {
 		bsonSet["external_interfaces"] = ifaces
 	}
 
+	err = dataUpgradeZone(db)
+	if err != nil {
+		return
+	}
+
 	opts := &options.UpdateOptions{}
 	opts.SetUpsert(true)
 
