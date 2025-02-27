@@ -1,5 +1,7 @@
 /// <reference path="../References.d.ts"/>
 export const SYNC = 'datacenter.sync';
+export const TRAVERSE = 'datacenter.traverse';
+export const FILTER = 'datacenter.filter';
 export const CHANGE = 'datacenter.change';
 
 export interface Datacenter {
@@ -13,6 +15,11 @@ export interface Datacenter {
 	private_storage_class?: string;
 	backup_storage?: string;
 	backup_storage_class?: string;
+
+export interface Filter {
+	id?: string;
+	name?: string;
+	comment?: string;
 }
 
 export type Datacenters = Datacenter[];
@@ -26,5 +33,9 @@ export interface DatacenterDispatch {
 		id?: string;
 		datacenter?: Datacenter;
 		datacenters?: Datacenters;
+		page?: number;
+		pageCount?: number;
+		filter?: Filter;
+		count?: number;
 	};
 }
