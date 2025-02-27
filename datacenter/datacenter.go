@@ -36,6 +36,22 @@ func (d *Datacenter) Validate(db *database.Database) (
 		d.PublicStorages = []primitive.ObjectID{}
 	}
 
+	switch d.NetworkMode {
+	case Default:
+		break
+	case VxlanVlan:
+		break
+	case "":
+		d.NetworkMode = Default
+		break
+	default:
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_network_mode",
+			Message: "Network mode invalid",
+		}
+		return
+	}
+
 	return
 }
 
