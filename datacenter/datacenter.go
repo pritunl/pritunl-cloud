@@ -15,6 +15,7 @@ type Datacenter struct {
 	Comment             string               `bson:"comment" json:"comment"`
 	MatchOrganizations  bool                 `bson:"match_organizations" json:"match_organizations"`
 	Organizations       []primitive.ObjectID `bson:"organizations" json:"organizations"`
+	NetworkMode         string               `bson:"network_mode" json:"network_mode"`
 	PublicStorages      []primitive.ObjectID `bson:"public_storages" json:"public_storages"`
 	PrivateStorage      primitive.ObjectID   `bson:"private_storage,omitempty" json:"private_storage"`
 	PrivateStorageClass string               `bson:"private_storage_class" json:"private_storage_class"`
