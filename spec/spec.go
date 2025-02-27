@@ -277,6 +277,7 @@ func (s *Spec) parseInstance(db *database.Database,
 			return
 		}
 		if kind == finder.ZoneKind && resources.Zone != nil {
+			data.Datacenter = resources.Datacenter.Id
 			data.Zone = resources.Zone.Id
 		}
 	}
