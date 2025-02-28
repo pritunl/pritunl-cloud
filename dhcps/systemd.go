@@ -8,6 +8,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/features"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -371,7 +372,7 @@ func Start(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"id": virt.Id.Hex(),
 	}).Info("dhcps: Starting virtual machine dhcp server")
 
-	zne, err := zone.Get(db, node.Self.Zone)
+	dc, err := datacenter.Get(db, node.Self.Datacenter)
 	if err != nil {
 		return
 	}
@@ -407,7 +408,7 @@ func Start(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	jumboFramesExternal := node.Self.JumboFrames
 	jumboFramesInternal := node.Self.JumboFrames ||
 		node.Self.JumboFramesInternal
-	vxlan := zne.NetworkMode == zone.VxlanVlan
+	vxlan := dc.NetworkMode == zone.VxlanVlan
 	mtu := 0
 
 	if jumboFramesExternal || jumboFramesInternal || vxlan {
