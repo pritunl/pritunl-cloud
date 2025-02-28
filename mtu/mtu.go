@@ -62,6 +62,8 @@ func (c *Check) host(db *database.Database) (err error) {
 
 		if iface.Ifname == settings.Hypervisor.HostNetworkName {
 			mtu = c.mtuHost
+		} else if iface.Ifname == settings.Hypervisor.NodePortNetworkName {
+			mtu = c.mtuHost
 		} else if internalIfaces.Contains(iface.Ifname) {
 			mtu = c.mtuHost
 		} else if externalIfaces.Contains(iface.Ifname) {
