@@ -124,7 +124,7 @@ func (c *Check) instances(db *database.Database) (err error) {
 		for _, iface := range ifaces {
 			mtu := 0
 
-			if iface.Ifname == "br0" {
+			if iface.Ifname == settings.Hypervisor.BridgeIfaceName {
 				mtu = c.mtuInstance
 			} else if iface.Ifname == "lo" {
 				continue
@@ -137,6 +137,8 @@ func (c *Check) instances(db *database.Database) (err error) {
 			} else if strings.HasPrefix(iface.Ifname, "x") {
 				mtu = c.mtuInternal
 			} else if strings.HasPrefix(iface.Ifname, "h") {
+				mtu = c.mtuHost
+			} else if strings.HasPrefix(iface.Ifname, "m") {
 				mtu = c.mtuHost
 			} else {
 				fmt.Println("◆◆◆UNKNOWN IFACE◆◆◆")
