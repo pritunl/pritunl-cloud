@@ -10,13 +10,13 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/config"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/ip"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/vm"
-	"github.com/pritunl/pritunl-cloud/zone"
 )
 
 type Check struct {
@@ -176,7 +176,7 @@ func (c *Check) Run() (err error) {
 		return
 	}
 
-	zne, err := zone.Get(db, c.node.Zone)
+	dc, err := datacenter.Get(db, c.node.Datacenter)
 	if err != nil {
 		return
 	}
@@ -196,7 +196,7 @@ func (c *Check) Run() (err error) {
 		c.mtuHost = settings.Hypervisor.NormalMtu
 	}
 
-	if zne.NetworkMode == zone.VxlanVlan {
+	if dc.NetworkMode == datacenter.VxlanVlan {
 		c.mtuInternal -= 50
 		c.mtuInstance -= 54
 	}
