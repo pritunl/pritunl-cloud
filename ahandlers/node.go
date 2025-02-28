@@ -13,6 +13,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/drive"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -21,7 +22,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"github.com/pritunl/pritunl-cloud/zone"
 )
 
 type nodeData struct {
@@ -353,15 +353,15 @@ func nodeInitPost(c *gin.Context) {
 		}
 	}
 
-	zne, err := zone.Get(db, nde.Zone)
+	dc, err := datacenter.Get(db, nde.Datacenter)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	zne.NetworkMode = zone.Default
+	dc.NetworkMode = datacenter.Default
 
-	err = zne.CommitFields(db, set.NewSet("network_mode"))
+	err = dc.CommitFields(db, set.NewSet("network_mode"))
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
