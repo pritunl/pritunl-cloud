@@ -222,15 +222,15 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			};
 		}
 
-		let zoneId = node.zone;
-		if (this.state.zone) {
-			zoneId = this.state.zone;
+		let dcId = node.datacenter;
+		if (this.state.datacenter) {
+			dcId = this.state.datacenter;
 		}
 
 		let vxlan = false;
-		for (let zne of this.props.zones) {
-			if (zne.id === zoneId) {
-				if (zne.network_mode === 'vxlan_vlan') {
+		for (let dc of this.props.datacenters) {
+			if (dc.id === dcId) {
+				if (dc.network_mode === 'vxlan_vlan') {
 					vxlan = true;
 				}
 				break;
