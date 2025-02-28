@@ -147,6 +147,7 @@ func initDatacenter(db *database.Database) (
 
 		dc := &datacenter.Datacenter{
 			Name:           "us-west-1",
+			NetworkMode:    zone.VxlanVlan,
 			PublicStorages: publicStorages,
 		}
 
@@ -199,9 +200,8 @@ func initZone(db *database.Database, defaultDc primitive.ObjectID) (
 
 	if len(zones) == 0 {
 		zne := &zone.Zone{
-			Name:        "us-west-1a",
-			NetworkMode: zone.VxlanVlan,
-			Datacenter:  defaultDc,
+			Name:       "us-west-1a",
+			Datacenter: defaultDc,
 		}
 
 		errData, e := zne.Validate(db)
