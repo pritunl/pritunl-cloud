@@ -10,6 +10,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/authority"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/drive"
 	"github.com/pritunl/pritunl-cloud/firewall"
@@ -20,14 +21,13 @@ import (
 	"github.com/pritunl/pritunl-cloud/usb"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
-	"github.com/pritunl/pritunl-cloud/zone"
 )
 
 type InstancePipe struct {
 	instance.Instance `bson:",inline"`
-	NodeDocs          []*node.Node `bson:"node_docs"`
-	ZoneDocs          []*zone.Zone `bson:"zone_docs"`
-	DiskDocs          []*disk.Disk `bson:"disk_docs"`
+	NodeDocs          []*node.Node             `bson:"node_docs"`
+	DatacenterDocs    []*datacenter.Datacenter `bson:"datacenter_docs"`
+	DiskDocs          []*disk.Disk             `bson:"disk_docs"`
 }
 
 type InstanceInfo struct {
@@ -102,10 +102,10 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 		},
 		&bson.M{
 			"$lookup": &bson.M{
-				"from":         "zones",
-				"localField":   "zone",
+				"from":         "datacenters",
+				"localField":   "datacenter",
 				"foreignField": "_id",
-				"as":           "zone_docs",
+				"as":           "datacenter_docs",
 			},
 		},
 		&bson.M{
@@ -171,14 +171,14 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 		}
 
 		var nde *node.Node
-		var zne *zone.Zone
+		var dc *datacenter.Datacenter
 
 		if len(doc.NodeDocs) > 0 {
 			nde = doc.NodeDocs[0]
 		}
 
-		if len(doc.ZoneDocs) > 0 {
-			zne = doc.ZoneDocs[0]
+		if len(doc.DatacenterDocs) > 0 {
+			dc = doc.DatacenterDocs[0]
 		}
 
 		if nde != nil {
@@ -205,10 +205,10 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 			}
 		}
 
-		if nde != nil && zne != nil {
+		if nde != nil && dc != nil {
 			info.Mtu = instance.GetInstanceMtu(
 				nde.JumboFrames || nde.JumboFramesInternal,
-				zne.NetworkMode == zone.VxlanVlan,
+				dc.NetworkMode == datacenter.VxlanVlan,
 			)
 		}
 
