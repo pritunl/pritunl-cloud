@@ -74,14 +74,12 @@ func (c *Check) host(db *database.Database) (err error) {
 			mtu = c.mtuInternal
 		} else if strings.HasPrefix(iface.Ifname, "k") {
 			mtu = c.mtuInternal
-		} else if strings.HasPrefix(iface.Ifname, "v") {
-			if strings.HasSuffix(iface.Ifname, "0") {
-				mtu = c.mtuExternal
-			} else if strings.HasSuffix(iface.Ifname, "1") {
-				mtu = c.mtuInternal
-			} else if strings.HasSuffix(iface.Ifname, "2") {
-				mtu = c.mtuHost
-			}
+		} else if strings.HasPrefix(iface.Ifname, "r") {
+			mtu = c.mtuExternal
+		} else if strings.HasPrefix(iface.Ifname, "j") {
+			mtu = c.mtuInternal
+		} else if strings.HasPrefix(iface.Ifname, "k") {
+			mtu = c.mtuInternal
 		} else {
 			continue
 		}
