@@ -7,23 +7,23 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/interfaces"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/vm"
-	"github.com/pritunl/pritunl-cloud/zone"
 )
 
 func (n *NetConf) Iface1(db *database.Database) (err error) {
-	zne, err := zone.Get(db, node.Self.Zone)
+	dc, err := datacenter.Get(db, node.Self.Datacenter)
 	if err != nil {
 		return
 	}
 
 	n.Vxlan = false
-	if zne.NetworkMode == zone.VxlanVlan {
+	if dc.NetworkMode == datacenter.VxlanVlan {
 		n.Vxlan = true
 	}
 
