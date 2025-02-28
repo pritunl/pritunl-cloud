@@ -18,6 +18,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/authority"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/instance"
@@ -541,7 +542,7 @@ func getNetData(db *database.Database, inst *instance.Instance,
 		return
 	}
 
-	zne, err := zone.Get(db, node.Self.Zone)
+	dc, err := datacenter.Get(db, node.Self.Datacenter)
 	if err != nil {
 		return
 	}
@@ -598,7 +599,7 @@ func getNetData(db *database.Database, inst *instance.Instance,
 
 	data.Mtu = fmt.Sprintf(netMtu, instance.GetInstanceMtu(
 		node.Self.JumboFrames || node.Self.JumboFramesInternal,
-		zne.NetworkMode == zone.VxlanVlan,
+		dc.NetworkMode == zone.VxlanVlan,
 	))
 
 	output := &bytes.Buffer{}
