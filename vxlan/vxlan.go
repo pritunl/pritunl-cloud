@@ -142,6 +142,11 @@ func initDatabase(stat *state.State, internaIfaces []string) (err error) {
 
 	nodeSelf := stat.Node()
 
+	nodeDc := stat.NodeDatacenter()
+	if nodeDc == nil {
+		return
+	}
+
 	nodes := stat.Nodes()
 	if nodes == nil {
 		nodes = []*node.Node{}
@@ -149,14 +154,9 @@ func initDatabase(stat *state.State, internaIfaces []string) (err error) {
 
 	newDb := set.NewSet()
 	for _, nde := range nodes {
-		if nde.Id == nodeSelf.Id || nde.Zone.IsZero() ||
-			nde.PrivateIps == nil {
+		if nde.Id == nodeSelf.Id || nde.Datacenter != nodeDc.Id ||
+			nde.PrivateIps == nil || nodeDc.NetworkMode != zone.VxlanVlan {
 
-			continue
-		}
-
-		ndeZone := stat.GetZone(nde.Zone)
-		if ndeZone == nil || ndeZone.NetworkMode != zone.VxlanVlan {
 			continue
 		}
 
@@ -415,6 +415,11 @@ func syncDatabase(stat *state.State, internaIfaces []string) (err error) {
 		nodes = []*node.Node{}
 	}
 
+	nodeDc := stat.NodeDatacenter()
+	if nodeDc == nil {
+		return
+	}
+
 	newIfaces := set.NewSet()
 	if internaIfaces != nil {
 		for _, iface := range internaIfaces {
@@ -424,14 +429,9 @@ func syncDatabase(stat *state.State, internaIfaces []string) (err error) {
 
 	newDb := set.NewSet()
 	for _, nde := range nodes {
-		if nde.Id == nodeSelf.Id || nde.Zone.IsZero() ||
-			nde.PrivateIps == nil {
+		if nde.Id == nodeSelf.Id || nde.Datacenter != nodeDc.Id ||
+			nde.PrivateIps == nil || nodeDc.NetworkMode != zone.VxlanVlan {
 
-			continue
-		}
-
-		ndeZone := stat.GetZone(nde.Zone)
-		if ndeZone == nil || ndeZone.NetworkMode != zone.VxlanVlan {
 			continue
 		}
 
