@@ -57,7 +57,6 @@ func blockPut(c *gin.Context) {
 
 	blck.Name = dta.Name
 	blck.Comment = dta.Comment
-	blck.Type = dta.Type
 	blck.Subnets = dta.Subnets
 	blck.Subnets6 = dta.Subnets6
 	blck.Excludes = dta.Excludes
@@ -68,7 +67,6 @@ func blockPut(c *gin.Context) {
 	fields := set.NewSet(
 		"name",
 		"comment",
-		"type",
 		"subnets",
 		"subnets6",
 		"excludes",
