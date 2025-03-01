@@ -303,7 +303,7 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 	totalStart := time.Now()
 	s.nodeSelf = node.Self.Copy()
 
-	dcId := s.nodeSelf.Zone
+	dcId := s.nodeSelf.Datacenter
 	if !dcId.IsZero() {
 		dc, e := datacenter.Get(db, dcId)
 		if e != nil {
