@@ -147,7 +147,7 @@ func initDatacenter(db *database.Database) (
 
 		dc := &datacenter.Datacenter{
 			Name:           "us-west-1",
-			NetworkMode:    zone.VxlanVlan,
+			NetworkMode:    datacenter.VxlanVlan,
 			PublicStorages: publicStorages,
 		}
 
