@@ -548,7 +548,7 @@ export default class BlockDetailed extends React.Component<Props, State> {
 						}}
 					/>
 					<PageSelect
-						disabled={this.state.disabled}
+						disabled={true}
 						label="Network Mode"
 						help="Network mode IP block."
 						value={block.type}
