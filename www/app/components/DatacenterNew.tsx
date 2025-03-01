@@ -434,6 +434,18 @@ export default class DatacenterDetailed extends React.Component<Props, State> {
 						/>
 						<PageSelect
 							disabled={this.state.disabled}
+							label="Network Mode"
+							help="Network mode for internal VPC networking. If layer 2 networking with VLAN support isn't available VXLan must be used. A network bridge is required for the node internal interfaces when using default."
+							value={datacenter.network_mode}
+							onChange={(val): void => {
+								this.set('network_mode', val);
+							}}
+						>
+							<option value="default">Default</option>
+							<option value="vxlan_vlan">VXLAN</option>
+						</PageSelect>
+						<PageSelect
+							disabled={this.state.disabled}
 							label="Private Storage"
 							help="Private storage that will store instance snapshots."
 							value={datacenter.private_storage}
