@@ -44,6 +44,7 @@ var (
 
 type Node struct {
 	Id                      primitive.ObjectID   `bson:"_id" json:"id"`
+	Datacenter              primitive.ObjectID   `bson:"datacenter,omitempty" json:"datacenter"`
 	Zone                    primitive.ObjectID   `bson:"zone,omitempty" json:"zone"`
 	Name                    string               `bson:"name" json:"name"`
 	Comment                 string               `bson:"comment" json:"comment"`
@@ -140,6 +141,7 @@ type OracleSubnet struct {
 func (n *Node) Copy() *Node {
 	nde := &Node{
 		Id:                      n.Id,
+		Datacenter:              n.Datacenter,
 		Zone:                    n.Zone,
 		Name:                    n.Name,
 		Comment:                 n.Comment,
