@@ -9,7 +9,6 @@ export interface Zone {
 	datacenter?: string;
 	name?: string;
 	comment?: string;
-	network_mode?: string;
 }
 
 export interface Filter {
