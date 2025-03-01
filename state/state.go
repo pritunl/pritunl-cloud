@@ -326,7 +326,7 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 	}
 
 	if s.nodeDatacenter != nil &&
-		s.nodeDatacenter.NetworkMode == zone.VxlanVlan {
+		s.nodeDatacenter.NetworkMode == datacenter.VxlanVlan {
 
 		s.vxlan = true
 

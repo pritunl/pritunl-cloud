@@ -19,7 +19,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
-	"github.com/pritunl/pritunl-cloud/zone"
 	"github.com/sirupsen/logrus"
 )
 
@@ -408,7 +407,7 @@ func Start(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	jumboFramesExternal := node.Self.JumboFrames
 	jumboFramesInternal := node.Self.JumboFrames ||
 		node.Self.JumboFramesInternal
-	vxlan := dc.NetworkMode == zone.VxlanVlan
+	vxlan := dc.NetworkMode == datacenter.VxlanVlan
 	mtu := 0
 
 	if jumboFramesExternal || jumboFramesInternal || vxlan {

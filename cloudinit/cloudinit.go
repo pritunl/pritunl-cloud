@@ -30,7 +30,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
-	"github.com/pritunl/pritunl-cloud/zone"
 )
 
 const metaDataTmpl = `instance-id: %s
@@ -599,7 +598,7 @@ func getNetData(db *database.Database, inst *instance.Instance,
 
 	data.Mtu = fmt.Sprintf(netMtu, instance.GetInstanceMtu(
 		node.Self.JumboFrames || node.Self.JumboFramesInternal,
-		dc.NetworkMode == zone.VxlanVlan,
+		dc.NetworkMode == datacenter.VxlanVlan,
 	))
 
 	output := &bytes.Buffer{}

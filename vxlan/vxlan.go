@@ -6,6 +6,7 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/iproute"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -13,7 +14,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
-	"github.com/pritunl/pritunl-cloud/zone"
 	"github.com/sirupsen/logrus"
 )
 
@@ -155,7 +155,8 @@ func initDatabase(stat *state.State, internaIfaces []string) (err error) {
 	newDb := set.NewSet()
 	for _, nde := range nodes {
 		if nde.Id == nodeSelf.Id || nde.Datacenter != nodeDc.Id ||
-			nde.PrivateIps == nil || nodeDc.NetworkMode != zone.VxlanVlan {
+			nde.PrivateIps == nil ||
+			nodeDc.NetworkMode != datacenter.VxlanVlan {
 
 			continue
 		}
@@ -430,7 +431,8 @@ func syncDatabase(stat *state.State, internaIfaces []string) (err error) {
 	newDb := set.NewSet()
 	for _, nde := range nodes {
 		if nde.Id == nodeSelf.Id || nde.Datacenter != nodeDc.Id ||
-			nde.PrivateIps == nil || nodeDc.NetworkMode != zone.VxlanVlan {
+			nde.PrivateIps == nil ||
+			nodeDc.NetworkMode != datacenter.VxlanVlan {
 
 			continue
 		}
