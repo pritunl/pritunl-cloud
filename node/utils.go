@@ -332,6 +332,7 @@ func GetAllNet(db *database.Database) (nodes []*Node, err error) {
 
 	opts := &options.FindOptions{
 		Projection: &bson.D{
+			{"datacenter", 1},
 			{"zone", 1},
 			{"private_ips", 1},
 		},
