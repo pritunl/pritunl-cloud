@@ -3,6 +3,7 @@ package arp
 import (
 	"encoding/json"
 	"fmt"
+	"net"
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
@@ -65,10 +66,13 @@ func GetRecords(namespace string) (records set.Set, err error) {
 			}
 		}
 
-		records.Add(Record{
-			Ip:  ent.Dst,
-			Mac: mac,
-		})
+		ip := net.ParseIP(ent.Dst)
+		if ip != nil {
+			records.Add(Record{
+				Ip:  ip.String(),
+				Mac: mac,
+			})
+		}
 	}
 
 	return
