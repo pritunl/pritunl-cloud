@@ -2,7 +2,6 @@ package guest
 
 import (
 	"encoding/json"
-	"io"
 	"net"
 	"time"
 
@@ -80,13 +79,7 @@ func Shutdown(vmId primitive.ObjectID) (err error) {
 	buffer := make([]byte, 8192)
 	n, err := conn.Read(buffer)
 	if err != nil {
-		if err == io.EOF {
-			err = nil
-		} else {
-			err = &errortypes.ReadError{
-				errors.Wrap(err, "guest: Failed to read socket"),
-			}
-		}
+		err = nil
 		return
 	}
 
