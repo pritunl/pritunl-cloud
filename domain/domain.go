@@ -354,6 +354,14 @@ func (d *Domain) GetDnsService(db *database.Database) (
 	return
 }
 
+func (d *Domain) preloadRecords(recs []*Record) {
+	if recs == nil {
+		d.Records = []*Record{}
+	} else {
+		d.Records = recs
+	}
+}
+
 func (d *Domain) LoadRecords(db *database.Database) (err error) {
 	coll := db.DomainsRecords()
 	recs := []*Record{}
