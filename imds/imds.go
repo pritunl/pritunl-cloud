@@ -175,6 +175,7 @@ func Sync(db *database.Database, instId, deplyId primitive.ObjectID,
 			jrnl := &journal.Journal{
 				Resource:  resource,
 				Kind:      kind,
+				Level:     entry.Level,
 				Timestamp: entry.Timestamp,
 				Message:   entry.Message,
 			}
@@ -305,6 +306,7 @@ func Pull(db *database.Database, instId, deplyId primitive.ObjectID,
 			jrnl := &journal.Journal{
 				Resource:  resource,
 				Kind:      kind,
+				Level:     entry.Level,
 				Timestamp: entry.Timestamp,
 				Message:   entry.Message,
 			}
