@@ -137,22 +137,6 @@ func (n *Namespace) Deploy(db *database.Database) (err error) {
 				n.restartDhcp(inst)
 			}
 		}
-
-		// TODO Upgrade code
-		curVirtIfaces.Add(vm.GetIfaceVirt(inst.Id, 0))
-		curVirtIfaces.Add(vm.GetIfaceVirt(inst.Id, 1))
-		curVirtIfaces.Add(vm.GetIfaceVirt(inst.Id, 2))
-		if firstRun {
-			namespace := vm.GetNamespace(inst.Id, 0)
-			iface := vm.GetIfaceExternal(inst.Id, 1)
-
-			_, _ = utils.ExecCombinedOutput("",
-				"ip", "netns", "exec", namespace,
-				"ip", "link", "set", iface, "down")
-			_, _ = utils.ExecCombinedOutput("",
-				"ip", "netns", "exec", namespace,
-				"ip", "link", "del", iface)
-		}
 	}
 
 	firstRun = false
