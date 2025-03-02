@@ -43,6 +43,19 @@ func (i *Image) Validate(db *database.Database) (
 		i.Firmware = Unknown
 	}
 
+	switch i.SystemType {
+	case Linux:
+		break
+	case Bsd:
+		break
+	default:
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_system_type",
+			Message: "Image system type invalid",
+		}
+		return
+	}
+
 	return
 }
 
