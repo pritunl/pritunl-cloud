@@ -245,6 +245,18 @@ func (i *Image) Parse() {
 	}
 }
 
+func (i *Image) GetSystemType() string {
+	if i.SystemType != "" {
+		return i.SystemType
+	}
+
+	name := strings.ToLower(i.Name)
+	if strings.Contains(name, "bsd") {
+		return Bsd
+	}
+	return Linux
+}
+
 func (i *Image) Json() {
 	i.Parse()
 }
@@ -304,6 +316,7 @@ func (i *Image) Upsert(db *database.Database) (err error) {
 				"organization":  i.Organization,
 				"signed":        i.Signed,
 				"type":          i.Type,
+				"system_type":   i.SystemType,
 				"firmware":      i.Firmware,
 				"storage":       i.Storage,
 				"key":           i.Key,
