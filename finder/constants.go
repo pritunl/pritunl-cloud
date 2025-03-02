@@ -11,6 +11,7 @@ const (
 	ShapeKind       = "shape"
 	DiskKind        = "disk"
 	ImageKind       = "image"
+	BuildKind       = "build"
 	InstanceKind    = "instance"
 	FirewallKind    = "firewall"
 	PlanKind        = "plan"
