@@ -13,6 +13,7 @@ import (
 )
 
 type syncRespData struct {
+	Spec string `json:"spec"`
 	Hash uint32 `json:"hash"`
 }
 
@@ -44,9 +45,16 @@ func syncPut(c *gin.Context) {
 		}
 	}
 
-	c.JSON(200, &syncRespData{
-		Hash: config.Config.Hash,
-	})
+	if data.Hash != config.Config.Hash {
+		c.JSON(200, &syncRespData{
+			Spec: config.Config.SpecData,
+			Hash: config.Config.Hash,
+		})
+	} else {
+		c.JSON(200, &syncRespData{
+			Hash: config.Config.Hash,
+		})
+	}
 }
 
 func hostSyncPut(c *gin.Context) {
