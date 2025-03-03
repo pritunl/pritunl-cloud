@@ -56,6 +56,7 @@ type Instance struct {
 	DiskType            string              `bson:"disk_type" json:"disk_type"`
 	DiskPool            primitive.ObjectID  `bson:"disk_pool,omitempty" json:"disk_pool"`
 	Status              string              `bson:"-" json:"status"`
+	StatusInfo          *StatusInfo         `bson:"-" json:"status_info"`
 	Uptime              string              `bson:"-" json:"uptime"`
 	State               string              `bson:"state" json:"state"`
 	PublicMac           string              `bson:"-" json:"public_mac"`
@@ -119,6 +120,10 @@ type Instance struct {
 	curNoPublicAddress  bool                `bson:"-" json:"-"`
 	curNoHostAddress    bool                `bson:"-" json:"-"`
 	newId               bool                `bson:"-" json:"-"`
+}
+
+type StatusInfo struct {
+	DownloadProgress int `bson:"download_progress,omitempty" json:"download_progress"`
 }
 
 type GuestData struct {
