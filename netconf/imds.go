@@ -8,7 +8,9 @@ import (
 
 func (n *NetConf) imdsNet(db *database.Database) (err error) {
 	_, err = utils.ExecCombinedOutputLogged(
-		nil,
+		[]string{
+			"File exists",
+		},
 		"ip", "netns", "exec", n.Namespace,
 		"ip", "link",
 		"add", n.SpaceImdsIface,
