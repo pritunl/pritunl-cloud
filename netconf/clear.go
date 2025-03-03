@@ -44,10 +44,22 @@ func (n *NetConf) ClearAll(db *database.Database) (err error) {
 	}
 
 	ifaceExternal := vm.GetIfaceExternal(n.Virt.Id, 0)
-	pidPath := fmt.Sprintf("/var/run/dhclient-%s.pid", ifaceExternal)
+	pidPath := fmt.Sprintf(n.DhcpPidPath, ifaceExternal)
 
 	pid := ""
 	pidData, _ := ioutil.ReadFile(pidPath)
+	if pidData != nil {
+		pid = strings.TrimSpace(string(pidData))
+	}
+
+	if pid != "" {
+		_, _ = utils.ExecCombinedOutput("", "kill", pid)
+	}
+
+	pidPath = fmt.Sprintf(n.Dhcp6PidPath, ifaceExternal)
+
+	pid = ""
+	pidData, _ = ioutil.ReadFile(pidPath)
 	if pidData != nil {
 		pid = strings.TrimSpace(string(pidData))
 	}
