@@ -12,22 +12,43 @@ func Query(resrc string, keys ...string) (val string, err error) {
 
 	switch resrc {
 	case finder.InstanceKind:
-		if len(keys) == 1 {
+		if len(keys) == 2 {
+			if keys[0] != "local" {
+				break
+			}
+			key = keys[1]
+		} else if len(keys) == 1 {
 			key = keys[0]
-			resrcInf = config.Config.Instance
+		} else {
+			break
 		}
+		resrcInf = config.Config.Instance
 		break
 	case finder.VpcKind:
-		if len(keys) == 1 {
+		if len(keys) == 2 {
+			if keys[0] != "local" {
+				break
+			}
+			key = keys[1]
+		} else if len(keys) == 1 {
 			key = keys[0]
-			resrcInf = config.Config.Vpc
+		} else {
+			break
 		}
+		resrcInf = config.Config.Vpc
 		break
 	case finder.SubnetKind:
-		if len(keys) == 1 {
+		if len(keys) == 2 {
+			if keys[0] != "local" {
+				break
+			}
+			key = keys[1]
+		} else if len(keys) == 1 {
 			key = keys[0]
-			resrcInf = config.Config.Subnet
+		} else {
+			break
 		}
+		resrcInf = config.Config.Subnet
 		break
 	case finder.SecretKind:
 		if len(keys) != 2 {
