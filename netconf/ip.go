@@ -345,6 +345,11 @@ func (n *NetConf) ipDatabase(db *database.Database) (err error) {
 		hostIps = append(hostIps, n.HostAddr.String())
 	}
 
+	nodePortIps := []string{}
+	if n.NodePortAddr != nil {
+		nodePortIps = append(nodePortIps, n.NodePortAddr.String())
+	}
+
 	coll := db.Instances()
 	err = coll.UpdateId(n.Virt.Id, &bson.M{
 		"$set": &bson.M{
@@ -355,6 +360,7 @@ func (n *NetConf) ipDatabase(db *database.Database) (err error) {
 				n.InternalGatewayAddr6.String() + "/64"},
 			"network_namespace": n.Namespace,
 			"host_ips":          hostIps,
+			"node_port_ips":     nodePortIps,
 		},
 	})
 	if err != nil {
