@@ -398,7 +398,10 @@ func (n *NetConf) ipInit6(db *database.Database) (err error) {
 	if n.NetworkMode6 != node.Disabled && n.NetworkMode6 != node.Oracle &&
 		n.PublicAddress6 != "" && !settings.Hypervisor.NoIpv6PingInit {
 
-		_, e := utils.DnsLookup("2001:4860:4860::8888", "app6.pritunl.com")
+		_, e := utils.DnsLookup(
+			settings.Hypervisor.DnsServerPrimary6,
+			"app6.pritunl.com",
+		)
 		if e != nil {
 			logrus.WithFields(logrus.Fields{
 				"instance_id": n.Virt.Id.Hex(),
@@ -412,7 +415,7 @@ func (n *NetConf) ipInit6(db *database.Database) (err error) {
 			"",
 			"ip", "netns", "exec", n.Namespace,
 			"ping6", "-c", "3", "-i", "0.5", "-w", "6",
-			"2001:4860:4860::8888",
+			settings.Hypervisor.Ipv6PingHost,
 		)
 		if e != nil {
 			logrus.WithFields(logrus.Fields{
@@ -431,7 +434,10 @@ func (n *NetConf) ipInit6Alt(db *database.Database) (err error) {
 	if n.NetworkMode6 != node.Disabled && n.NetworkMode6 != node.Oracle &&
 		n.PublicAddress6 != "" && !settings.Hypervisor.NoIpv6PingInit {
 
-		addrs, e := utils.DnsLookup("2001:4860:4860::8888", "app6.pritunl.com")
+		addrs, e := utils.DnsLookup(
+			settings.Hypervisor.DnsServerPrimary6,
+			"app6.pritunl.com",
+		)
 		if e != nil {
 			logrus.WithFields(logrus.Fields{
 				"instance_id": n.Virt.Id.Hex(),
