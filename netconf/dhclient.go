@@ -16,6 +16,7 @@ import (
 var (
 	dhTimestamps       = map[primitive.ObjectID]time.Time{}
 	dhTimestampsLock   = sync.Mutex{}
+	dhCleanTimestamp   = time.Now()
 	DhTimestampsLoaded = false
 )
 
@@ -33,6 +34,25 @@ func getDhTimestamp(instId primitive.ObjectID) (timestamp time.Time) {
 	}
 
 	return
+}
+
+func cleanupOldEntries() {
+	now := time.Now()
+
+	if now.Sub(dhCleanTimestamp) < time.Hour {
+		return
+	}
+
+	dhTimestampsLock.Lock()
+	defer dhTimestampsLock.Unlock()
+
+	for instId, timestamp := range dhTimestamps {
+		if now.Sub(timestamp) > 1*time.Hour {
+			delete(dhTimestamps, instId)
+		}
+	}
+
+	dhCleanTimestamp = now
 }
 
 func LoadDhTimestamps(instances []*instance.Instance) (err error) {
@@ -55,6 +75,8 @@ func LoadDhTimestamps(instances []*instance.Instance) (err error) {
 }
 
 func GetDhTimestamp(instId primitive.ObjectID) (timestamp time.Time) {
+	cleanupOldEntries()
+
 	dhTimestampsLock.Lock()
 	timestamp, ok := dhTimestamps[instId]
 	dhTimestampsLock.Unlock()
