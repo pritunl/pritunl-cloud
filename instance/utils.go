@@ -8,6 +8,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/journal"
+	"github.com/pritunl/pritunl-cloud/nodeport"
 	"github.com/pritunl/pritunl-cloud/pool"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -375,6 +376,11 @@ func Remove(db *database.Database, instId primitive.ObjectID) (err error) {
 	}
 
 	err = vpc.RemoveInstanceIps(db, instId)
+	if err != nil {
+		return
+	}
+
+	err = nodeport.RemoveResource(db, instId)
 	if err != nil {
 		return
 	}
