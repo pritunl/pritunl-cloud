@@ -82,13 +82,47 @@ func (n *NetConf) ClearAll(db *database.Database) (err error) {
 	return
 }
 
-func clearIface(iface string) {
+func clearIface(namespace, iface string) {
 	if iface == "" {
 		return
 	}
 
-	_, _ = utils.ExecCombinedOutput(
-		"", "ip", "link", "set", iface, "down")
-	_, _ = utils.ExecCombinedOutput(
-		"", "ip", "link", "del", iface)
+	if namespace != "" {
+		commander.Exec(&commander.Opt{
+			Name: "ip",
+			Args: []string{
+				"netns", "exec", namespace,
+				"ip", "link", "set", iface, "down",
+			},
+			PipeOut: true,
+			PipeErr: true,
+		})
+		commander.Exec(&commander.Opt{
+			Name: "ip",
+			Args: []string{
+				"netns", "exec", namespace,
+				"ip", "link", "del", iface,
+			},
+			PipeOut: true,
+			PipeErr: true,
+		})
+	} else {
+		commander.Exec(&commander.Opt{
+			Name: "ip",
+			Args: []string{
+				"link", "set", iface, "down",
+			},
+			PipeOut: true,
+			PipeErr: true,
+		})
+		commander.Exec(&commander.Opt{
+			Name: "ip",
+			Args: []string{
+				"link", "del", iface,
+			},
+			PipeOut: true,
+			PipeErr: true,
+		})
+	}
+
 }
