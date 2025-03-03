@@ -43,6 +43,7 @@ type Instance struct {
 	Id                  primitive.ObjectID  `bson:"_id,omitempty" json:"id"`
 	Organization        primitive.ObjectID  `bson:"organization" json:"organization"`
 	UnixId              int                 `bson:"unix_id" json:"unix_id"`
+	Datacenter          primitive.ObjectID  `bson:"datacenter" json:"datacenter"`
 	Zone                primitive.ObjectID  `bson:"zone" json:"zone"`
 	Vpc                 primitive.ObjectID  `bson:"vpc" json:"vpc"`
 	Subnet              primitive.ObjectID  `bson:"subnet" json:"subnet"`
