@@ -570,3 +570,23 @@ func SetState(db *database.Database, instId primitive.ObjectID,
 
 	return
 }
+
+func SetDownloadProgress(db *database.Database,
+	instId primitive.ObjectID, progress int) (err error) {
+
+	coll := db.Instances()
+
+	_, err = coll.UpdateOne(db, &bson.M{
+		"_id": instId,
+	}, &bson.M{
+		"$set": &bson.M{
+			"status_info.download_progress": progress,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
