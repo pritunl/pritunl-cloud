@@ -12,27 +12,25 @@ import (
 	"github.com/pritunl/pritunl-cloud/store"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
+	"github.com/pritunl/tools/commander"
 )
 
 func (n *NetConf) Clear(db *database.Database) (err error) {
-	_, err = utils.ExecCombinedOutputLogged(
-		[]string{"File exists"},
-		"ip", "netns",
-		"add", n.Namespace,
-	)
-	if err != nil {
-		return
-	}
+	clearIface("", n.SystemExternalIface)
+	clearIface("", n.SystemInternalIface)
+	clearIface("", n.SystemHostIface)
+	clearIface("", n.SystemNodePortIface)
+	clearIface("", n.SpaceExternalIface)
+	clearIface("", n.SpaceInternalIface)
+	clearIface("", n.SpaceHostIface)
+	clearIface("", n.SpaceNodePortIface)
 
-	clearIface(n.SystemExternalIface)
-	clearIface(n.SystemInternalIface)
-	clearIface(n.SystemHostIface)
-	clearIface(n.SpaceExternalIface)
-	clearIface(n.SpaceInternalIface)
-	clearIface(n.SpaceHostIface)
+	clearIface(n.Namespace, n.SpaceBridgeIface)
+	clearIface(n.Namespace, n.SpaceImdsIface)
 
 	interfaces.RemoveVirtIface(n.SystemExternalIface)
 	interfaces.RemoveVirtIface(n.SystemInternalIface)
+	interfaces.RemoveVirtIface(n.SystemNodePortIface)
 
 	return
 }
