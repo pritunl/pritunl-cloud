@@ -15,6 +15,7 @@ type Journal struct {
 	Level     int                `bson:"l" json:"l"`
 	Timestamp time.Time          `bson:"t" json:"t"`
 	Message   string             `bson:"m" json:"m"`
+	Fields    map[string]string  `bson:"f,omitempty" json:"f"`
 }
 
 func (j *Journal) String() string {
