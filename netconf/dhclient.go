@@ -1,6 +1,7 @@
 package netconf
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -8,9 +9,14 @@ import (
 	"time"
 
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
+	"github.com/pritunl/pritunl-cloud/store"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/tools/commander"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -19,6 +25,85 @@ var (
 	dhCleanTimestamp   = time.Now()
 	DhTimestampsLoaded = false
 )
+
+func (n *NetConf) RestartDhClient(db *database.Database) (err error) {
+	err = n.Iface1(db)
+	if err != nil {
+		return
+	}
+
+	err = n.Iface2(db, true)
+	if err != nil {
+		return
+	}
+
+	// pid := ""
+	// pidData, _ := ioutil.ReadFile(n.DhcpPidPath)
+	// if pidData != nil {
+	// 	pid = strings.TrimSpace(string(pidData))
+	// }
+
+	// if pid != "" {
+	// 	_, _ = utils.ExecCombinedOutput("", "kill", pid)
+	// }
+
+	// _ = utils.RemoveAll(n.DhcpPidPath)
+
+	pid := ""
+	pidData, _ := os.ReadFile(n.Dhcp6PidPath)
+	if pidData != nil {
+		pid = strings.TrimSpace(string(pidData))
+	}
+
+	if pid != "" {
+		_, _ = utils.ExecCombinedOutput("", "kill", pid)
+	}
+
+	_ = utils.RemoveAll(n.Dhcp6PidPath)
+
+	// if n.NetworkMode == node.Dhcp {
+	// 	_, err = utils.ExecCombinedOutputLogged(
+	// 		nil,
+	// 		"ip", "netns", "exec", n.Namespace,
+	// 		"unshare", "--mount",
+	// 		"sh", "-c", fmt.Sprintf(
+	// 			"mount -t tmpfs none /etc && dhclient -4 -pf %s -lf %s %s",
+	// 			n.DhcpPidPath, n.DhcpLeasePath, n.SpaceExternalIface),
+	// 	)
+	// 	if err != nil {
+	// 		return
+	// 	}
+	// }
+
+	if n.NetworkMode6 == node.Dhcp || n.NetworkMode6 == node.DhcpSlaac {
+		resp, e := commander.Exec(&commander.Opt{
+			Name: "ip",
+			Args: []string{
+				"netns", "exec", n.Namespace,
+				"unshare", "--mount",
+				"sh", "-c", fmt.Sprintf(
+					"mount -t tmpfs none /etc && dhclient -6 -pf %s -lf %s %s",
+					n.Dhcp6PidPath, n.Dhcp6LeasePath, n.SpaceExternalIface),
+			},
+			PipeOut: true,
+			PipeErr: true,
+		})
+		if e != nil {
+			if resp != nil {
+				logrus.WithFields(resp.Map()).Error(
+					"netconf: Failed to start ipv6 dhclient")
+			}
+			err = e
+			return
+		}
+	}
+
+	SetDhTimestamp(n.Virt.Id, time.Now())
+
+	store.SetAddressExpireMulti(n.Virt.Id, 10*time.Second, 20*time.Second)
+
+	return
+}
 
 func getDhTimestamp(instId primitive.ObjectID) (timestamp time.Time) {
 	pid := 0
