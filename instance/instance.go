@@ -56,7 +56,7 @@ type Instance struct {
 	DiskType            string              `bson:"disk_type" json:"disk_type"`
 	DiskPool            primitive.ObjectID  `bson:"disk_pool,omitempty" json:"disk_pool"`
 	Status              string              `bson:"-" json:"status"`
-	StatusInfo          *StatusInfo         `bson:"-" json:"status_info"`
+	StatusInfo          *StatusInfo         `bson:"status_info,omitempty" json:"status_info"`
 	Uptime              string              `bson:"-" json:"uptime"`
 	State               string              `bson:"state" json:"state"`
 	PublicMac           string              `bson:"-" json:"public_mac"`
