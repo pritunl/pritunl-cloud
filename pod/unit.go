@@ -8,21 +8,23 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/nodeport"
 	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/tools/errors"
 )
 
 type Unit struct {
-	Pod          *Pod               `bson:"-" json:"-"`
-	Id           primitive.ObjectID `bson:"id" json:"id"`
-	Name         string             `bson:"name" json:"name"`
-	Kind         string             `bson:"kind" json:"kind"`
-	Count        int                `bson:"count" json:"count"`
-	Deployments  []*Deployment      `bson:"deployments" json:"deployments"`
-	Spec         string             `bson:"spec" json:"spec"`
-	LastCommit   primitive.ObjectID `bson:"last_commit" json:"last_commit"`
-	DeployCommit primitive.ObjectID `bson:"deploy_commit" json:"deploy_commit"`
-	Hash         string             `bson:"hash" json:"hash"`
+	Pod          *Pod                `bson:"-" json:"-"`
+	Id           primitive.ObjectID  `bson:"id" json:"id"`
+	Name         string              `bson:"name" json:"name"`
+	Kind         string              `bson:"kind" json:"kind"`
+	Count        int                 `bson:"count" json:"count"`
+	Deployments  []*Deployment       `bson:"deployments" json:"deployments"`
+	Spec         string              `bson:"spec" json:"spec"`
+	LastCommit   primitive.ObjectID  `bson:"last_commit" json:"last_commit"`
+	DeployCommit primitive.ObjectID  `bson:"deploy_commit" json:"deploy_commit"`
+	Hash         string              `bson:"hash" json:"hash"`
+	NodePorts    []*nodeport.Mapping `bson:"node_ports" json:"node_ports"`
 }
 
 type UnitInput struct {
@@ -35,6 +37,11 @@ type UnitInput struct {
 
 type Deployment struct {
 	Id primitive.ObjectID `bson:"id" json:"id"`
+}
+
+type NodePortMapping struct {
+	NodePort     primitive.ObjectID `bson:"node_port" json:"node_port"`
+	InternalPort int                `bson:"internal_port" json:"internal_port"`
 }
 
 func (u *Unit) HasDeployment(deployId primitive.ObjectID) bool {
