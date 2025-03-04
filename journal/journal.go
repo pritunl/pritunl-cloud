@@ -12,6 +12,7 @@ type Journal struct {
 	Id        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Resource  primitive.ObjectID `bson:"r" json:"r"`
 	Kind      int                `bson:"k" json:"k"`
+	Level     int                `bson:"l" json:"l"`
 	Timestamp time.Time          `bson:"t" json:"t"`
 	Message   string             `bson:"m" json:"m"`
 }
@@ -26,6 +27,10 @@ func (j *Journal) String() string {
 
 func (j *Journal) Insert(db *database.Database) (err error) {
 	coll := db.Journal()
+
+	if j.Level == 0 {
+		j.Level = Info
+	}
 
 	_, err = coll.InsertOne(db, j)
 	if err != nil {
