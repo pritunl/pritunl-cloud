@@ -202,10 +202,5 @@ func (n *NetConf) Clean(db *database.Database) (err error) {
 		return
 	}
 
-	err = n.Clear(db)
-	if err != nil {
-		return
-	}
-
 	return
 }
