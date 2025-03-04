@@ -176,6 +176,8 @@ func (n *NetConf) spaceForward(db *database.Database) (err error) {
 			"-I", "FORWARD", "1",
 			"!", "-d", n.InternalAddr.String()+"/32",
 			"-i", n.SpaceExternalIface,
+			"-m", "comment",
+			"--comment", "pritunl_cloud_base",
 			"-j", "DROP",
 		)
 		iptables.Unlock()
@@ -192,6 +194,8 @@ func (n *NetConf) spaceForward(db *database.Database) (err error) {
 			"-m", "set",
 			"!", "--match-set", "prx_inst6", "dst",
 			"-i", n.SpaceExternalIface,
+			"-m", "comment",
+			"--comment", "pritunl_cloud_base",
 			"-j", "DROP",
 		)
 		iptables.Unlock()
@@ -209,6 +213,8 @@ func (n *NetConf) spaceForward(db *database.Database) (err error) {
 			"-I", "FORWARD", "1",
 			"!", "-d", n.InternalAddr.String()+"/32",
 			"-i", n.SpaceHostIface,
+			"-m", "comment",
+			"--comment", "pritunl_cloud_base",
 			"-j", "DROP",
 		)
 		iptables.Unlock()
