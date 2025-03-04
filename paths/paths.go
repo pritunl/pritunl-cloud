@@ -167,6 +167,11 @@ func GetLeasePath(instId primitive.ObjectID) string {
 		fmt.Sprintf("%s.leases", instId.Hex()))
 }
 
+func GetLease6Path(instId primitive.ObjectID) string {
+	return path.Join(GetLeasesPath(),
+		fmt.Sprintf("%s_ipv6.leases", instId.Hex()))
+}
+
 func GetUnitName(virtId primitive.ObjectID) string {
 	return fmt.Sprintf("pritunl_cloud_%s.service", virtId.Hex())
 }
