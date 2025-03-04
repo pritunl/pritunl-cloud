@@ -129,8 +129,8 @@ func (p *Pod) CommitFieldsUnits(db *database.Database,
 		deploySpec, e := spec.Get(db, unitData.DeployCommit)
 		if e != nil || deploySpec.Unit != curUnit.Id {
 			errData = &errortypes.ErrorData{
-				Error:   "unit_default_commit_invalid",
-				Message: "Invalid unit default commit",
+				Error:   "unit_deploy_commit_invalid",
+				Message: "Invalid unit deployment commit",
 			}
 			return
 		}
