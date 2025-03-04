@@ -261,9 +261,9 @@ func (u *Unit) MigrateDeployements(db *database.Database,
 func (u *Unit) Parse(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
-	spc := spec.New(u.Pod.Id, u.Id, u.Spec)
+	spc := spec.New(u.Pod.Id, u.Id, u.Pod.Organization, u.Spec)
 
-	errData, err = spc.Parse(db, u.Pod.Organization)
+	errData, err = spc.Parse(db)
 	if err != nil {
 		return
 	}
@@ -307,7 +307,7 @@ func (u *Unit) Parse(db *database.Database) (
 		curSpc.Count = spc.Count
 		curSpc.Data = spc.Data
 
-		err = curSpc.CommitFields(db, set.NewSet("name", "count", "data"))
+		err = curSpc.CommitData(db)
 		if err != nil {
 			return
 		}
