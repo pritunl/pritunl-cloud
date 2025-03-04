@@ -13,6 +13,7 @@ type Pool struct {
 	Name             string             `bson:"name" json:"name"`
 	Comment          string             `bson:"comment" json:"comment"`
 	DeleteProtection bool               `bson:"delete_protection" json:"delete_protection"`
+	Datacenter       primitive.ObjectID `bson:"datacenter" json:"datacenter"`
 	Zone             primitive.ObjectID `bson:"zone" json:"zone"`
 	Type             string             `bson:"type" json:"type"`
 	VgName           string             `bson:"vg_name" json:"vg_name"`
