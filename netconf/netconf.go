@@ -153,6 +153,11 @@ func (n *NetConf) Init(db *database.Database) (err error) {
 		return
 	}
 
+	err = n.NodePort(db)
+	if err != nil {
+		return
+	}
+
 	err = n.Space(db)
 	if err != nil {
 		return
