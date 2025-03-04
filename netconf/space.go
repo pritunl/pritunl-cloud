@@ -102,6 +102,19 @@ func (n *NetConf) spaceSysctl(db *database.Database) (err error) {
 		}
 	}
 
+	if n.NodePortNetwork {
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", n.Namespace,
+			"sysctl", "-w",
+			fmt.Sprintf("net.ipv6.conf.%s.disable_ipv6=1",
+				n.SpaceNodePortIface),
+		)
+		if err != nil {
+			return
+		}
+	}
+
 	if (n.NetworkMode != node.Disabled && n.NetworkMode != node.Oracle) &&
 		(n.NetworkMode6 == node.Disabled || n.NetworkMode6 == node.Oracle) {
 
