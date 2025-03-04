@@ -87,6 +87,9 @@ func (n *NetConf) RestartDhClient(db *database.Database) (err error) {
 			},
 			PipeOut: true,
 			PipeErr: true,
+			Ignore: []string{
+				"does not exist",
+			},
 		})
 		if e != nil {
 			if resp != nil {
