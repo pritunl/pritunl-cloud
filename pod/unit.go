@@ -1,7 +1,6 @@
 package pod
 
 import (
-	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/mongo-go-driver/mongo/options"
@@ -232,7 +231,7 @@ func (u *Unit) MigrateDeployements(db *database.Database,
 			spcMap[oldSpc.Id] = oldSpc
 		}
 
-		errData, err = oldSpc.CanMigrate(db, u.Pod.Organization, newSpc)
+		errData, err = oldSpc.CanMigrate(db, newSpc)
 		if err != nil || errData != nil {
 			return
 		}
