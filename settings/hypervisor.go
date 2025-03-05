@@ -22,6 +22,7 @@ type hypervisor struct {
 	DiskAio             string `bson:"disk_aio"`
 	NoSandbox           bool   `bson:"no_sandbox"`
 	BridgeIfaceName     string `bson:"bridge_iface_name" default:"br0"`
+	ImdsIfaceName       string `bson:"imds_iface_name" default:"imds0"`
 	NormalMtu           int    `bson:"normal_mtu" default:"1500"`
 	JumboMtu            int    `bson:"jumbo_mtu" default:"9000"`
 	DiskQueuesMin       int    `bson:"disk_queues_min" default:"1"`
