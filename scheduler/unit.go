@@ -14,7 +14,7 @@ import (
 
 type InstanceUnit struct {
 	unit  *pod.Unit
-	spec  *spec.Commit
+	spec  *spec.Spec
 	count int
 	nodes spec.Nodes
 }
