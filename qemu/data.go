@@ -9,6 +9,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/dhcps"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/guest"
 	"github.com/pritunl/pritunl-cloud/hugepages"
 	"github.com/pritunl/pritunl-cloud/imds"
 	"github.com/pritunl/pritunl-cloud/paths"
@@ -233,12 +234,26 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		}
 
 		if vrt != nil && vrt.State == vm.Running {
-			shutdown := false
+			guestShutdown := true
+			err = guest.Shutdown(virt.Id)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"instance_id": virt.Id.Hex(),
+					"error":       err,
+				}).Warn("qemu: Failed to send shutdown to guest agent")
+				err = nil
+				guestShutdown = false
+			}
 
 			logged := false
 			for i := 0; i < 10; i++ {
 				err = qmp.Shutdown(virt.Id)
 				if err == nil {
+					break
+				}
+
+				if guestShutdown {
+					err = nil
 					break
 				}
 
@@ -254,6 +269,7 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 				time.Sleep(500 * time.Millisecond)
 			}
 
+			shutdown := false
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
 					"id":    virt.Id.Hex(),
