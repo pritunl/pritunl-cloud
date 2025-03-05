@@ -7,6 +7,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/dhcps"
+	"github.com/pritunl/pritunl-cloud/guest"
 	"github.com/pritunl/pritunl-cloud/imds"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/paths"
@@ -174,10 +175,26 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"id": virt.Id.Hex(),
 	}).Info("qemu: Stopping virtual machine")
 
+	guestShutdown := true
+	err = guest.Shutdown(virt.Id)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"instance_id": virt.Id.Hex(),
+			"error":       err,
+		}).Warn("qemu: Failed to send shutdown to guest agent")
+		err = nil
+		guestShutdown = false
+	}
+
 	logged := false
 	for i := 0; i < 10; i++ {
 		err = qmp.Shutdown(virt.Id)
 		if err == nil {
+			break
+		}
+
+		if guestShutdown {
+			err = nil
 			break
 		}
 
@@ -274,6 +291,7 @@ func ForcePowerOffErr(db *database.Database, virt *vm.VirtualMachine,
 		"error":       e,
 	}).Error("qemu: Force power off virtual machine")
 
+	go guest.Shutdown(virt.Id)
 	go qmp.Shutdown(virt.Id)
 	go qms.Shutdown(virt.Id)
 
@@ -314,6 +332,7 @@ func ForcePowerOff(db *database.Database, virt *vm.VirtualMachine) (
 		"instance_id": virt.Id.Hex(),
 	}).Warning("qemu: Force power off virtual machine")
 
+	go guest.Shutdown(virt.Id)
 	go qmp.Shutdown(virt.Id)
 	go qms.Shutdown(virt.Id)
 
