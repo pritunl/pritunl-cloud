@@ -19,6 +19,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
+	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/imds"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/iproute"
@@ -532,6 +533,14 @@ func Create(db *database.Database, inst *instance.Instance,
 				return
 			}
 		} else {
+			img, e := image.Get(db, dsk.Image)
+			if e != nil {
+				err = e
+				return
+			}
+
+			dsk.SystemType = img.GetSystemType()
+
 			newSize, backingImage, err = data.WriteImage(db, dsk)
 			if err != nil {
 				return
