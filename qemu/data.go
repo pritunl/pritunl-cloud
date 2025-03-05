@@ -328,7 +328,7 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	for i, dsk := range virt.Disks {
+	for _, dsk := range virt.Disks {
 		ds, e := disk.Get(db, dsk.GetId())
 		if e != nil {
 			err = e
@@ -339,7 +339,7 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			return
 		}
 
-		if i == 0 && ds.SourceInstance == virt.Id {
+		if ds.Index == "0" && ds.SourceInstance == virt.Id {
 			err = disk.Delete(db, ds.Id)
 			if err != nil {
 				if _, ok := err.(*database.NotFoundError); ok {
