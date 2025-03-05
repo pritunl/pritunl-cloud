@@ -2,10 +2,12 @@ package ahandlers
 
 import (
 	"fmt"
-	"github.com/pritunl/pritunl-cloud/node"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/zone"
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
@@ -109,10 +111,16 @@ func poolPost(c *gin.Context) {
 		return
 	}
 
+	zne, err := zone.Get(db, data.Zone)
+	if err != nil {
+		return
+	}
+
 	pl := &pool.Pool{
 		Name:             data.Name,
 		Comment:          data.Comment,
 		DeleteProtection: data.DeleteProtection,
+		Datacenter:       zne.Datacenter,
 		Zone:             data.Zone,
 		Type:             data.Type,
 		VgName:           data.VgName,
