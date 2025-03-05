@@ -319,7 +319,7 @@ func (u *InstanceUnit) scheduleComplex(db *database.Database,
 	return
 }
 
-func NewInstanceUnit(unit *pod.Unit, spc *spec.Commit) (
+func NewInstanceUnit(unit *pod.Unit, spc *spec.Spec) (
 	instUnit *InstanceUnit) {
 
 	instUnit = &InstanceUnit{
