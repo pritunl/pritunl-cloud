@@ -226,8 +226,15 @@ func GetVmInfo(db *database.Database, vmId primitive.ObjectID,
 			address, address6, e := iproute.AddressGetIface(
 				namespace, ifaceExternal)
 			if e != nil {
-				err = e
-				_ = ForcePowerOffErr(db, virt, err)
+				if addrStore != nil {
+					if len(virt.NetworkAdapters) > 0 {
+						virt.NetworkAdapters[0].IpAddress = addrStore.Addr
+						virt.NetworkAdapters[0].IpAddress6 = addrStore.Addr6
+					}
+				} else {
+					err = e
+					_ = ForcePowerOffErr(db, virt, err)
+				}
 				return
 			}
 
@@ -244,8 +251,15 @@ func GetVmInfo(db *database.Database, vmId primitive.ObjectID,
 			_, address6, e := iproute.AddressGetIface(
 				namespace, ifaceExternal)
 			if e != nil {
-				err = e
-				_ = ForcePowerOffErr(db, virt, err)
+				if addrStore != nil {
+					if len(virt.NetworkAdapters) > 0 {
+						virt.NetworkAdapters[0].IpAddress = addrStore.Addr
+						virt.NetworkAdapters[0].IpAddress6 = addrStore.Addr6
+					}
+				} else {
+					err = e
+					_ = ForcePowerOffErr(db, virt, err)
+				}
 				return
 			}
 
