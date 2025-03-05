@@ -18,6 +18,7 @@ type hypervisor struct {
 	OvmfVarsPath        string `bson:"ovmf_vars_path"`
 	OvmfSecureCodePath  string `bson:"ovmf_secure_code_path"`
 	OvmfSecureVarsPath  string `bson:"ovmf_secure_vars_path"`
+	NbdPath             string `bson:"nbd_path" default:"/dev/nbd6"`
 	DiskAio             string `bson:"disk_aio"`
 	NoSandbox           bool   `bson:"no_sandbox"`
 	NormalMtu           int    `bson:"normal_mtu" default:"1500"`
