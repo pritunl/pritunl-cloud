@@ -8,6 +8,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/pritunl-cloud/version"
 	"github.com/sirupsen/logrus"
 )
 
@@ -17,6 +18,7 @@ var (
 
 type Task struct {
 	Name       string
+	Version    int
 	Hours      []int
 	Minutes    []int
 	Seconds    time.Duration
@@ -156,6 +158,28 @@ func (t *Task) runLocal(now time.Time) {
 
 func (t *Task) run(now time.Time) {
 	go func() {
+		db := database.GetDatabase()
+		defer db.Close()
+
+		if t.Version != 0 {
+			supported, err := version.Check(db, t.Name, t.Version)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"task":  t.Name,
+					"error": err,
+				}).Error("task: Version check failed")
+				return
+			}
+
+			if !supported {
+				logrus.WithFields(logrus.Fields{
+					"task":    t.Name,
+					"version": t.Version,
+				}).Info("task: Skipping incompatible task")
+				return
+			}
+		}
+
 		curTimestamp := t.timestamp
 		if !curTimestamp.IsZero() {
 			if time.Since(curTimestamp) > 10*time.Minute {
@@ -236,8 +260,26 @@ func register(task *Task) {
 	registry = append(registry, task)
 }
 
-func Init() {
+func Init() (err error) {
+	for _, task := range registry {
+		if task.Version == 0 {
+			continue
+		}
+
+		err = version.Set(database.GetDatabase(), task.Name, task.Version)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"task":    task.Name,
+				"version": task.Version,
+				"error":   err,
+			}).Error("task: Failed to set task version")
+			return
+		}
+	}
+
 	go runScheduler()
+
+	return
 }
 
 func GetBlock(n time.Time, d time.Duration) int {
