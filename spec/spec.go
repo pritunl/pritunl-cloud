@@ -698,6 +698,14 @@ func (s *Spec) CanMigrate(db *database.Database, spc *Spec) (
 		return
 	}
 
+	if s.Instance.Datacenter != spc.Instance.Datacenter {
+		errData = &errortypes.ErrorData{
+			Error:   "instance_datacenter_conflict",
+			Message: "Cannot migrate to different instance datacenter",
+		}
+		return
+	}
+
 	if s.Instance.Zone != spc.Instance.Zone {
 		errData = &errortypes.ErrorData{
 			Error:   "instance_zone_conflict",
