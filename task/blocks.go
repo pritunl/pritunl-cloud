@@ -12,6 +12,7 @@ import (
 
 var blocksCheck = &Task{
 	Name:    "blocks_check",
+	Version: 1,
 	Hours:   []int{7},
 	Minutes: []int{30},
 	Handler: blocksCheckHandler,
