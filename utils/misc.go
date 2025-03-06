@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"strings"
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
@@ -226,4 +227,8 @@ func Int8Str(arr []int8) string {
 		b = append(b, byte(v))
 	}
 	return string(b)
+}
+
+func HasPreSuf(src, pre, suf string) bool {
+	return strings.HasPrefix(src, pre) && strings.HasSuffix(src, suf)
 }
