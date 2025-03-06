@@ -25,7 +25,11 @@ func blocksCheckHandler(db *database.Database) (err error) {
 
 	ipBlocksInf, err := ipColl.Distinct(db, "block", &bson.M{
 		"type": &bson.M{
-			"$ne": block.Host,
+			"$in": []string{
+				block.External,
+				block.IPv4,
+				block.IPv6,
+			},
 		},
 	})
 	if err != nil {
