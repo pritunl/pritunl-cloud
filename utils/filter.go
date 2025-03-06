@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"strings"
+
 	"github.com/dropbox/godropbox/container/set"
 )
 
@@ -76,6 +78,10 @@ var nameSafeChar = set.NewSet(
 func FilterName(s string) string {
 	if len(s) == 0 {
 		return ""
+	}
+
+	if s == "local" {
+		s = "invalid-name"
 	}
 
 	if len(s) > nameSafeLimit {
