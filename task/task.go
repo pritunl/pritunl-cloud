@@ -43,7 +43,7 @@ func (t *Task) scheduled(hour, min int) bool {
 	return false
 }
 
-func (t *Task) runShared(now time.Time) {
+func (t *Task) runShared(db *database.Database, now time.Time) {
 	defer func() {
 		panc := recover()
 		if panc != nil {
@@ -53,9 +53,6 @@ func (t *Task) runShared(now time.Time) {
 			}).Error("sync: Panic in run task")
 		}
 	}()
-
-	db := database.GetDatabase()
-	defer db.Close()
 
 	if t.Seconds == 0 {
 		time.Sleep(time.Duration(utils.RandInt(0, 1000)) * time.Millisecond)
@@ -115,7 +112,7 @@ func (t *Task) runShared(now time.Time) {
 	_ = job.Finished(db)
 }
 
-func (t *Task) runLocal(now time.Time) {
+func (t *Task) runLocal(db *database.Database, now time.Time) {
 	defer func() {
 		panc := recover()
 		if panc != nil {
@@ -125,9 +122,6 @@ func (t *Task) runLocal(now time.Time) {
 			}).Error("sync: Panic in run local task")
 		}
 	}()
-
-	db := database.GetDatabase()
-	defer db.Close()
 
 	if t.DebugNodes != nil {
 		matched := false
@@ -196,9 +190,9 @@ func (t *Task) run(now time.Time) {
 		}()
 
 		if t.Local {
-			t.runLocal(now)
+			t.runLocal(db, now)
 		} else {
-			t.runShared(now)
+			t.runShared(db, now)
 		}
 	}()
 }
