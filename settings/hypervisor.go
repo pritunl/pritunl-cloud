@@ -40,6 +40,7 @@ type hypervisor struct {
 	NodePortRanges      string `bson:"node_port_ranges" default:"30000-32767"`
 	NodePortNetworkName string `bson:"node_port_network_name" default:"pritunlport0"`
 	HostNetworkName     string `bson:"host_network_name" default:"pritunlhost0"`
+	AddressRefreshTtl   int    `bson:"address_refresh_ttl" default:"1800"`
 	StartTimeout        int    `bson:"start_timeout" default:"45"`
 	StopTimeout         int    `bson:"stop_timeout" default:"180"`
 	RefreshRate         int    `bson:"refresh_rate" default:"90"`
