@@ -38,6 +38,7 @@ type hypervisor struct {
 	IpTimeout6          int    `bson:"ip_timeout6" default:"15"`
 	NodePortNetwork     string `bson:"node_port_network" default:"198.19.96.0/23"`
 	NodePortRanges      string `bson:"node_port_ranges" default:"30000-32767"`
+	NodePortNetworkName string `bson:"node_port_network_name" default:"pritunlport0"`
 	HostNetworkName     string `bson:"host_network_name" default:"pritunlhost0"`
 	StartTimeout        int    `bson:"start_timeout" default:"45"`
 	StopTimeout         int    `bson:"stop_timeout" default:"180"`
