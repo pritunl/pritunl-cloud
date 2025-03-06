@@ -45,7 +45,8 @@ func imdsSyncHandler(db *database.Database) (err error) {
 				newFailTime[conf.Instance.Id] = time.Now()
 			} else if time.Since(failTime[conf.Instance.Id]) > timeout {
 				logrus.WithFields(logrus.Fields{
-					"error": err,
+					"instance": conf.Instance.Id.Hex(),
+					"error":    err,
 				}).Error("agent: Failed to sync imds")
 			} else {
 				newFailTime[conf.Instance.Id] = failTime[conf.Instance.Id]
