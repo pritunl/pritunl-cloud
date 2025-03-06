@@ -97,3 +97,7 @@ func FilterName(s string) string {
 
 	return ns
 }
+
+func FilterDomain(s string) string {
+	return FilterName(strings.ToLower(s))
+}
