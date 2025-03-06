@@ -27,6 +27,9 @@ func specsHandler(db *database.Database) (err error) {
 
 	specIdsSet := set.NewSet()
 	for _, deply := range deplys {
+		if deply.Kind != deployment.Instance {
+			continue
+		}
 		specIdsSet.Add(deply.Spec)
 	}
 
