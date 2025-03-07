@@ -160,6 +160,20 @@ func main() {
 			panic(err)
 		}
 		return
+	case "start-instance":
+		InitLimited()
+		err := cmd.StartInstance(flag.Args()[1])
+		if err != nil {
+			panic(err)
+		}
+		return
+	case "stop-instance":
+		InitLimited()
+		err := cmd.StopInstance(flag.Args()[1])
+		if err != nil {
+			panic(err)
+		}
+		return
 	}
 
 	fmt.Printf(help)
