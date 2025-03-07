@@ -47,6 +47,7 @@ type hypervisor struct {
 	SplashTime          int    `bson:"splash_time" default:"60"`
 	Dhcp6RefreshTtl     int    `bson:"dhcp6_refresh_ttl" default:"600"`
 	NoIpv6PingInit      bool   `bson:"no_ipv6_ping_init"`
+	Ipv6PingHost        string `bson:"ipv6_ping_host" default:"2001:4860:4860::8888"`
 	ImdsAddress         string `bson:"imds_address" default:"169.254.169.254/16"`
 	ImdsPort            int    `bson:"imds_port" default:"80"`
 	JournalDisplayLimit int64  `bson:"journal_display_limit" default:"5000"`
