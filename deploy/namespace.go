@@ -66,7 +66,7 @@ func (n *Namespace) restartDhcp(inst *instance.Instance) {
 			"instance_id": inst.Id.Hex(),
 		}).Debug("deploy: Restarting instance dhclient6")
 
-		err := nc.RestartDhcp6(db)
+		err := nc.RestartDhClient(db)
 		if err != nil {
 			return
 		}
