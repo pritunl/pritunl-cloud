@@ -5,11 +5,19 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/tools/commander"
 	"github.com/sirupsen/logrus"
+)
+
+var (
+	clockTicks = 0
 )
 
 func Exec(dir, name string, arg ...string) (err error) {
@@ -429,6 +437,104 @@ func ExecOutputLogged(ignores []string, name string, arg ...string) (
 		}).Error("utils: Process exec error")
 		return
 	}
+
+	return
+}
+
+func getClockTicks() (ticks int) {
+	if clockTicks != 0 {
+		ticks = clockTicks
+		return
+	}
+
+	resp, err := commander.Exec(&commander.Opt{
+		Name:    "getconf",
+		Args:    []string{"CLK_TCK"},
+		PipeOut: true,
+		PipeErr: true,
+	})
+	if err != nil {
+		ticks = 100
+		clockTicks = 100
+		return
+	}
+
+	if resp.Output != nil {
+		ticks, _ = strconv.Atoi(strings.TrimSpace(string(resp.Output)))
+	}
+
+	if ticks == 0 {
+		ticks = 100
+		clockTicks = 100
+		return
+	}
+
+	clockTicks = ticks
+	return
+}
+
+func GetProcessTimestamp(pid int) (timestamp time.Time, err error) {
+	procPath := filepath.Join("/proc", strconv.Itoa(pid))
+
+	_, err = os.Stat(procPath)
+	if os.IsNotExist(err) {
+		err = nil
+		return
+	}
+
+	statPath := filepath.Join(procPath, "stat")
+	statData, err := os.ReadFile(statPath)
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "utils: Failed to read process stat"),
+		}
+		return
+	}
+
+	statFields := strings.Fields(string(statData))
+	if len(statFields) < 22 {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "utils: Invalid process state format"),
+		}
+		return
+	}
+
+	startTimeTicks, err := strconv.ParseInt(statFields[21], 10, 64)
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "utils: Failed to process stat"),
+		}
+		return
+	}
+
+	uptimeData, err := os.ReadFile("/proc/uptime")
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "utils: Failed to read uptime"),
+		}
+		return
+	}
+
+	uptimeFields := strings.Fields(string(uptimeData))
+	if len(uptimeFields) < 1 {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "utils: Invalid uptime format"),
+		}
+		return
+	}
+
+	systemUptimeSec, err := strconv.ParseFloat(uptimeFields[0], 64)
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "utils: Failed to process uptime"),
+		}
+		return
+	}
+
+	processStartTimeSec := float64(startTimeTicks) / float64(getClockTicks())
+	processUptimeSec := systemUptimeSec - processStartTimeSec
+	timestamp = time.Now().Add(
+		time.Duration(processUptimeSec * -float64(time.Second)))
 
 	return
 }
