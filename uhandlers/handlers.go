@@ -82,6 +82,8 @@ func Register(engine *gin.Engine) {
 
 	authGroup.GET("/csrf", csrfGet)
 
+	csrfGroup.GET("/completion", completionGet)
+
 	orgGroup.GET("/datacenter", datacentersGet)
 
 	csrfGroup.GET("/device", devicesGet)
