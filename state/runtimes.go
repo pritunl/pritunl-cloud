@@ -57,5 +57,5 @@ func (r *Runtimes) Log() {
 		"deployments": fmt.Sprintf("%v", r.Deployments),
 		"imds":        fmt.Sprintf("%v", r.Imds),
 		"total":       fmt.Sprintf("%v", r.Total),
-	}).Warn("sync: Excess state sync runtime")
+	}).Warn("sync: High state sync runtime")
 }
