@@ -25,6 +25,8 @@ Commands:
   default-password  Get default administrator password
   reset-password    Reset administrator password
   disable-policies  Disable all policies
+  start-instance    Start instance by name
+  stop-instance     Stop instance by name
   mtu-check         Check and show instance MTUs
   backup            Backup local data
 `
