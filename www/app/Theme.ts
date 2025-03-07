@@ -54,6 +54,11 @@ export function themeVer3(): void {
     "blueprint5-theme") as HTMLLinkElement
   blueprintTheme3.disabled = false;
   blueprintTheme5.disabled = true;
+	if (theme === "dark") {
+		document.body.className = 'bp3-theme bp5-dark';
+	} else {
+		document.body.className = 'bp3-theme';
+	}
   themeVer = 3;
 }
 
@@ -64,12 +69,21 @@ export function themeVer5(): void {
     "blueprint5-theme") as HTMLLinkElement
   blueprintTheme3.disabled = true;
   blueprintTheme5.disabled = false;
+	if (theme === "dark") {
+		document.body.className = 'bp5-dark';
+	} else {
+		document.body.className = '';
+	}
   themeVer = 5;
 }
 
 export function light(): void {
 	theme = 'light';
-	document.body.className = '';
+	if (themeVer === 3) {
+		document.body.className = 'bp3-theme';
+	} else {
+		document.body.className = '';
+	}
 	callbacks.forEach((callback: Callback): void => {
 		callback();
 	});
@@ -77,7 +91,11 @@ export function light(): void {
 
 export function dark(): void {
 	theme = 'dark';
-	document.body.className = 'bp5-dark';
+	if (themeVer === 3) {
+		document.body.className = 'bp3-theme bp5-dark';
+	} else {
+		document.body.className = 'bp5-dark';
+	}
 	callbacks.forEach((callback: Callback): void => {
 		callback();
 	});
