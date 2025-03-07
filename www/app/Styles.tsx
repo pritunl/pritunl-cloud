@@ -1,5 +1,6 @@
 /// <reference path="./References.d.ts"/>
 import * as React from 'react';
+import * as Theme from './Theme';
 import * as Blueprint from '@blueprintjs/core';
 
 interface Colors {
@@ -91,7 +92,7 @@ interface Styles {
 	colors: Colors;
 }
 
-const colors = {
+export const colors = {
 	white: Blueprint.Colors.WHITE,
 	black: Blueprint.Colors.BLACK,
 	blue1: Blueprint.Colors.BLUE1,
@@ -176,8 +177,11 @@ const colors = {
 	violet5: Blueprint.Colors.VIOLET5,
 };
 
-const styles = {
-	colors: colors as Colors,
-};
+export const fixedHeight = 1000
 
-export default styles
+export const headerShift = (): string => {
+	if (Theme.theme === "dark") {
+		return "rgba(0, 0, 0, 0.13)"
+	}
+	return "rgba(0, 0, 0, 0.04)"
+}
