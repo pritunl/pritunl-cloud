@@ -14,11 +14,17 @@ export interface Resource {
 	id: string
 	name: string
 	info: ResourceInfo[]
+	tags?: Tag[]
 }
 
 export interface ResourceInfo {
 	label: string
 	value: string | number
+}
+
+export interface Tag {
+	name: string
+	label: string
 }
 
 export interface Dispatch {
@@ -273,6 +279,35 @@ class CompletionCache extends EventEmitter {
 			})
 		}
 		this._resources["image"] = resourceList
+
+		this._kinds.push({
+			name: "build",
+			label: "Build",
+			title: "**Build**",
+		})
+		resourceList = []
+		for (let item of (resources.builds ||[])) {
+			let tags: Tag[] = []
+			for (let tag of (item.tags || [])) {
+				tags.push({
+					name: tag.tag,
+					label: tag.tag,
+				})
+			}
+
+			resourceList.push({
+				id: item.id,
+				name: item.name,
+				info: [
+					{
+						label: "**Name**",
+						value: item.name,
+					},
+				],
+				tags: tags,
+			})
+		}
+		this._resources["build"] = resourceList
 
 		this._kinds.push({
 			name: "instance",
