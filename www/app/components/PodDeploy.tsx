@@ -94,8 +94,8 @@ export default class PodDeploy extends React.Component<Props, State> {
 			disabled: true,
 		});
 
-		let deployCommit = this.props.unit.kind === "image" ?
-			this.state.deployCommit?.id || this.props.commits?.[0]?.id : null
+		let deployCommit = this.state.deployCommit?.id ||
+			this.props.commits?.[0]?.id
 
 		PodActions.deployUnit(
 				this.props.pod.id, this.props.unit.id,
