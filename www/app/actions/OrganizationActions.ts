@@ -7,7 +7,9 @@ import * as Csrf from '../Csrf';
 import Loader from '../Loader';
 import * as GlobalTypes from '../types/GlobalTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
+import OrganizationsStore from '../stores/OrganizationsStore';
 import * as MiscUtils from '../utils/MiscUtils';
+import * as Constants from "../Constants";
 
 let syncId: string;
 
@@ -20,6 +22,11 @@ export function sync(): Promise<void> {
 	return new Promise<void>((resolve, reject): void => {
 		SuperAgent
 			.get('/organization')
+			.query({
+				...OrganizationsStore.filter,
+				page: OrganizationsStore.page,
+				page_count: OrganizationsStore.pageCount,
+			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
 			.end((err: any, res: SuperAgent.Response): void => {
@@ -46,12 +53,33 @@ export function sync(): Promise<void> {
 					type: OrganizationTypes.SYNC,
 					data: {
 						organizations: res.body,
+						count: res.body.count,
 					},
 				});
 
 				resolve();
 			});
 	});
+}
+
+export function traverse(page: number): Promise<void> {
+	Dispatcher.dispatch({
+		type: OrganizationTypes.TRAVERSE,
+		data: {
+			page: page,
+		},
+	});
+	return sync();
+}
+
+export function filter(filt: OrganizationTypes.Filter): Promise<void> {
+	Dispatcher.dispatch({
+		type: OrganizationTypes.FILTER,
+		data: {
+			filter: filt,
+		},
+	});
+	return sync();
 }
 
 export function commit(org: OrganizationTypes.Organization): Promise<void> {
@@ -140,6 +168,35 @@ export function remove(orgId: string): Promise<void> {
 	});
 }
 
+export function removeMulti(organizationIds: string[]): Promise<void> {
+	let loader = new Loader().loading();
+
+	return new Promise<void>((resolve, reject): void => {
+		SuperAgent
+			.delete('/organization')
+			.send(organizationIds)
+			.set('Accept', 'application/json')
+			.set('Csrf-Token', Csrf.token)
+			.end((err: any, res: SuperAgent.Response): void => {
+				loader.done();
+
+				if (res && res.status === 401) {
+					window.location.href = '/login';
+					resolve();
+					return;
+				}
+
+				if (err) {
+					Alert.errorRes(res, 'Failed to delete organizations');
+					reject(err);
+					return;
+				}
+
+				resolve();
+			});
+	});
+}
+
 export function setCurrent(current: string): void {
 	Dispatcher.dispatch({
 		type: GlobalTypes.RESET,
@@ -158,7 +215,9 @@ export function setCurrent(current: string): void {
 EventDispatcher.register((action: OrganizationTypes.OrganizationDispatch) => {
 	switch (action.type) {
 		case OrganizationTypes.CHANGE:
-			sync();
+			if (!Constants.user) {
+				sync();
+			}
 			break;
 	}
 });
