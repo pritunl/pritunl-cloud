@@ -143,7 +143,7 @@ export default class BalancerNew extends React.Component<Props, State> {
 		};
 
 		let backends = [
-			...balancer.backends,
+			...(balancer.backends || []),
 			{
 				protocol: 'http',
 				hostname: '',
@@ -169,7 +169,7 @@ export default class BalancerNew extends React.Component<Props, State> {
 		};
 
 		let backends = [
-			...balancer.backends,
+			...(balancer.backends || []),
 		];
 
 		backends[i] = state;
@@ -192,7 +192,7 @@ export default class BalancerNew extends React.Component<Props, State> {
 		};
 
 		let backends = [
-			...balancer.backends,
+			...(balancer.backends || []),
 		];
 
 		backends.splice(i, 1);
@@ -283,7 +283,7 @@ export default class BalancerNew extends React.Component<Props, State> {
 		};
 
 		let domains = [
-			...balancer.domains,
+			...(balancer.domains || []),
 			{},
 		];
 
@@ -305,7 +305,7 @@ export default class BalancerNew extends React.Component<Props, State> {
 		};
 
 		let domains = [
-			...balancer.domains,
+			...(balancer.domains || []),
 		];
 
 		domains[i] = state;
@@ -328,7 +328,7 @@ export default class BalancerNew extends React.Component<Props, State> {
 		};
 
 		let domains = [
-			...balancer.domains,
+			...(balancer.domains || []),
 		];
 
 		domains.splice(i, 1);
