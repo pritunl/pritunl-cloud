@@ -1,4 +1,5 @@
 /// <reference path="../References.d.ts"/>
+import * as CompletionTypes from "../types/CompletionTypes";
 import * as OrganizationTypes from "../types/OrganizationTypes";
 import * as DomainTypes from "../types/DomainTypes";
 import * as VpcTypes from "../types/VpcTypes";
@@ -53,101 +54,358 @@ export interface Dispatch {
 	type: string
 }
 
-export const Values: Record<string, string[]> = {
-	"instance": [
-		"id",
-		"organization",
-		"zone",
-		"vpc",
-		"subnet",
-		"oracle_subnet",
-		"oracle_vnic",
-		"image",
-		"state",
-		"uefi",
-		"secure_boot",
-		"tpm",
-		"dhcp_server",
-		"cloud_type",
-		"delete_protection",
-		"skip_source_dest_check",
-		"qemu_version",
-		"public_ips",
-		"public_ips6",
-		"private_ips",
-		"private_ips6",
-		"gateway_ips",
-		"gateway_ips6",
-		"oracle_private_ips",
-		"oracle_public_ips",
-		"host_ips",
-		"network_namespace",
-		"no_public_address",
-		"no_public_address6",
-		"no_host_address",
-		"node",
-		"shape",
-		"name",
-		"root_enabled",
-		"memory",
-		"processors",
-		"network_roles",
-		"vnc",
-		"spice",
-		"gui",
-		"deployment",
-	],
-	"vpc": [
-		"id",
-		"name",
-		"vpc_id",
-		"network",
-		"network6",
-	],
-	"subnet": [
-		"id",
-		"name",
-		"network",
-	],
-	"certificate": [
-		"id",
-		"name",
-		"type",
-		"key",
-		"certificate",
-	],
-	"secret": [
-		"id",
-		"name",
-		"type",
-		"key",
-		"value",
-		"region",
-		"public_key",
-		"private_key",
-	],
-	"unit": [
-		"id",
-		"name",
-		"kind",
-		"count",
-		"public_ips",
-		"public_ips6",
-		"healthy_public_ips",
-		"healthy_public_ips6",
-		"unhealthy_public_ips",
-		"unhealthy_public_ips6",
-		"private_ips",
-		"private_ips6",
-		"healthy_private_ips",
-		"healthy_private_ips6",
-		"unhealthy_private_ips",
-		"unhealthy_private_ips6",
-		"oracle_private_ips",
-		"oracle_public_ips",
-		"healthy_oracle_public_ips",
-		"healthy_oracle_private_ips",
-		"unhealthy_oracle_public_ips",
-		"unhealthy_oracle_private_ips",
-	],
+export type SelectorInfo = {
+	label: string;
+	tooltip: string;
 }
+
+export const Selectors: Record<string, Record<string, SelectorInfo>> = {
+	"instance": {
+		"id": {
+			label: "ID",
+			tooltip: "Unique identifier of the instance"
+		},
+		"organization": {
+			label: "Organization",
+			tooltip: "Organization the instance belongs to"
+		},
+		"zone": {
+			label: "Zone",
+			tooltip: "Availability zone where the instance is deployed"
+		},
+		"vpc": {
+			label: "VPC",
+			tooltip: "Virtual Private Cloud network the instance is connected to"
+		},
+		"subnet": {
+			label: "Subnet",
+			tooltip: "Subnet within the VPC where the instance resides"
+		},
+		"oracle_subnet": {
+			label: "Oracle Subnet",
+			tooltip: "Oracle Cloud subnet configuration"
+		},
+		"oracle_vnic": {
+			label: "Oracle VNIC",
+			tooltip: "Oracle Virtual Network Interface Card details"
+		},
+		"image": {
+			label: "Image",
+			tooltip: "Base image used for the instance"
+		},
+		"state": {
+			label: "State",
+			tooltip: "Current operational state of the instance"
+		},
+		"uefi": {
+			label: "UEFI",
+			tooltip: "Unified Extensible Firmware Interface status"
+		},
+		"secure_boot": {
+			label: "Secure Boot",
+			tooltip: "Status of secure boot feature"
+		},
+		"tpm": {
+			label: "TPM",
+			tooltip: "Trusted Platform Module status"
+		},
+		"dhcp_server": {
+			label: "DHCP Server",
+			tooltip: "Dynamic Host Configuration Protocol server status"
+		},
+		"cloud_type": {
+			label: "Cloud Type",
+			tooltip: "Type of cloud infrastructure being used"
+		},
+		"delete_protection": {
+			label: "Delete Protection",
+			tooltip: "Status of deletion protection feature"
+		},
+		"skip_source_dest_check": {
+			label: "Skip Source/Dest Check",
+			tooltip: "Status of source/destination checking"
+		},
+		"qemu_version": {
+			label: "QEMU Version",
+			tooltip: "Version of QEMU virtualization software"
+		},
+		"public_ips": {
+			label: "Public IPs",
+			tooltip: "List of public IPv4 addresses"
+		},
+		"public_ips6": {
+			label: "Public IPv6",
+			tooltip: "List of public IPv6 addresses"
+		},
+		"private_ips": {
+			label: "Private IPs",
+			tooltip: "List of private IPv4 addresses"
+		},
+		"private_ips6": {
+			label: "Private IPv6",
+			tooltip: "List of private IPv6 addresses"
+		},
+		"gateway_ips": {
+			label: "Gateway IPs",
+			tooltip: "IPv4 gateway addresses"
+		},
+		"gateway_ips6": {
+			label: "Gateway IPv6",
+			tooltip: "IPv6 gateway addresses"
+		},
+		"oracle_private_ips": {
+			label: "Oracle Private IPs",
+			tooltip: "Oracle Cloud private IP addresses"
+		},
+		"oracle_public_ips": {
+			label: "Oracle Public IPs",
+			tooltip: "Oracle Cloud public IP addresses"
+		},
+		"host_ips": {
+			label: "Host IPs",
+			tooltip: "IP addresses of the host machine"
+		},
+		"network_namespace": {
+			label: "Network Namespace",
+			tooltip: "Network namespace configuration"
+		},
+		"no_public_address": {
+			label: "No Public Address",
+			tooltip: "Indicates if public IPv4 addressing is disabled"
+		},
+		"no_public_address6": {
+			label: "No Public IPv6",
+			tooltip: "Indicates if public IPv6 addressing is disabled"
+		},
+		"no_host_address": {
+			label: "No Host Address",
+			tooltip: "Indicates if host addressing is disabled"
+		},
+		"node": {
+			label: "Node",
+			tooltip: "Physical or virtual node where the instance runs"
+		},
+		"shape": {
+			label: "Shape",
+			tooltip: "Instance type and size configuration"
+		},
+		"name": {
+			label: "Name",
+			tooltip: "Display name of the instance"
+		},
+		"root_enabled": {
+			label: "Root Enabled",
+			tooltip: "Status of root access"
+		},
+		"memory": {
+			label: "Memory",
+			tooltip: "Allocated RAM"
+		},
+		"processors": {
+			label: "Processors",
+			tooltip: "Number of allocated CPU cores"
+		},
+		"network_roles": {
+			label: "Network Roles",
+			tooltip: "Network access roles assigned to the instance"
+		},
+		"vnc": {
+			label: "VNC",
+			tooltip: "Virtual Network Computing status"
+		},
+		"spice": {
+			label: "SPICE",
+			tooltip: "Simple Protocol for Independent Computing Environments status"
+		},
+		"gui": {
+			label: "GUI",
+			tooltip: "Graphical User Interface status"
+		},
+		"deployment": {
+			label: "Deployment",
+			tooltip: "Deployment configuration details"
+		}
+	},
+	"vpc": {
+		"id": {
+			label: "ID",
+			tooltip: "Unique identifier of the VPC"
+		},
+		"name": {
+			label: "Name",
+			tooltip: "Display name of the VPC"
+		},
+		"vpc_id": {
+			label: "VPC ID",
+			tooltip: "Cloud provider's VPC identifier"
+		},
+		"network": {
+			label: "Network",
+			tooltip: "IPv4 network configuration"
+		},
+		"network6": {
+			label: "Network IPv6",
+			tooltip: "IPv6 network configuration"
+		}
+	},
+	"subnet": {
+		"id": {
+			label: "ID",
+			tooltip: "Unique identifier of the subnet"
+		},
+		"name": {
+			label: "Name",
+			tooltip: "Display name of the subnet"
+		},
+		"network": {
+			label: "Network",
+			tooltip: "Network address range of the subnet"
+		}
+	},
+	"certificate": {
+		"id": {
+			label: "ID",
+			tooltip: "Unique identifier of the certificate"
+		},
+		"name": {
+			label: "Name",
+			tooltip: "Display name of the certificate"
+		},
+		"type": {
+			label: "Type",
+			tooltip: "Type of certificate"
+		},
+		"key": {
+			label: "Key",
+			tooltip: "Certificate key information"
+		},
+		"certificate": {
+			label: "Certificate",
+			tooltip: "Certificate content"
+		}
+	},
+	"secret": {
+		"id": {
+			label: "ID",
+			tooltip: "Unique identifier of the secret"
+		},
+		"name": {
+			label: "Name",
+			tooltip: "Display name of the secret"
+		},
+		"type": {
+			label: "Type",
+			tooltip: "Type of secret"
+		},
+		"key": {
+			label: "Key",
+			tooltip: "Secret key identifier"
+		},
+		"value": {
+			label: "Value",
+			tooltip: "Protected secret value"
+		},
+		"region": {
+			label: "Region",
+			tooltip: "Region where the secret is stored"
+		},
+		"public_key": {
+			label: "Public Key",
+			tooltip: "Public key component"
+		},
+		"private_key": {
+			label: "Private Key",
+			tooltip: "Private key component"
+		}
+	},
+	"unit": {
+		"id": {
+			label: "ID",
+			tooltip: "Unique identifier of the unit"
+		},
+		"name": {
+			label: "Name",
+			tooltip: "Display name of the unit"
+		},
+		"kind": {
+			label: "Kind",
+			tooltip: "Type of unit"
+		},
+		"count": {
+			label: "Count",
+			tooltip: "Number of instances in the unit"
+		},
+		"public_ips": {
+			label: "Public IPs",
+			tooltip: "List of public IPv4 addresses"
+		},
+		"public_ips6": {
+			label: "Public IPv6",
+			tooltip: "List of public IPv6 addresses"
+		},
+		"healthy_public_ips": {
+			label: "Healthy Public IPs",
+			tooltip: "List of healthy public IPv4 addresses"
+		},
+		"healthy_public_ips6": {
+			label: "Healthy Public IPv6",
+			tooltip: "List of healthy public IPv6 addresses"
+		},
+		"unhealthy_public_ips": {
+			label: "Unhealthy Public IPs",
+			tooltip: "List of unhealthy public IPv4 addresses"
+		},
+		"unhealthy_public_ips6": {
+			label: "Unhealthy Public IPv6",
+			tooltip: "List of unhealthy public IPv6 addresses"
+		},
+		"private_ips": {
+			label: "Private IPs",
+			tooltip: "List of private IPv4 addresses"
+		},
+		"private_ips6": {
+			label: "Private IPv6",
+			tooltip: "List of private IPv6 addresses"
+		},
+		"healthy_private_ips": {
+			label: "Healthy Private IPs",
+			tooltip: "List of healthy private IPv4 addresses"
+		},
+		"healthy_private_ips6": {
+			label: "Healthy Private IPv6",
+			tooltip: "List of healthy private IPv6 addresses"
+		},
+		"unhealthy_private_ips": {
+			label: "Unhealthy Private IPs",
+			tooltip: "List of unhealthy private IPv4 addresses"
+		},
+		"unhealthy_private_ips6": {
+			label: "Unhealthy Private IPv6",
+			tooltip: "List of unhealthy private IPv6 addresses"
+		},
+		"oracle_private_ips": {
+			label: "Oracle Private IPs",
+			tooltip: "List of Oracle Cloud private IP addresses"
+		},
+		"oracle_public_ips": {
+			label: "Oracle Public IPs",
+			tooltip: "List of Oracle Cloud public IP addresses"
+		},
+		"healthy_oracle_public_ips": {
+			label: "Healthy Oracle Public IPs",
+			tooltip: "List of healthy Oracle Cloud public IP addresses"
+		},
+		"healthy_oracle_private_ips": {
+			label: "Healthy Oracle Private IPs",
+			tooltip: "List of healthy Oracle Cloud private IP addresses"
+		},
+		"unhealthy_oracle_public_ips": {
+			label: "Unhealthy Oracle Public IPs",
+			tooltip: "List of unhealthy Oracle Cloud public IP addresses"
+		},
+		"unhealthy_oracle_private_ips": {
+			label: "Unhealthy Oracle Private IPs",
+			tooltip: "List of unhealthy Oracle Cloud private IP addresses"
+		}
+	}
+};
