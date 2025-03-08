@@ -1,5 +1,6 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
+import * as Styles from '../Styles';
 import Help from "./Help";
 import MarkdownMemo from "./MarkdownMemo";
 import * as Theme from "../Theme";
@@ -34,7 +35,7 @@ const css = {
 		position: 'relative',
 		flex: 1,
 		minWidth: '280px',
-		height: '900px',
+		height: Styles.fixedHeight - 295 + "px",
 		overflowY: 'auto',
 		margin: '0',
 		fontSize: '12px',
@@ -43,7 +44,7 @@ const css = {
 		position: 'relative',
 		flex: 1,
 		minWidth: '280px',
-		height: '900px',
+		height: Styles.fixedHeight - 295 + "px",
 		overflowY: 'auto',
 		margin: '0',
 		padding: '8px 0 0 0 ',
@@ -53,7 +54,7 @@ const css = {
 		position: 'relative',
 		flex: 1,
 		minWidth: '280px',
-		height: '900px',
+		height: Styles.fixedHeight - 295 + "px",
 		overflowY: 'auto',
 		margin: '0',
 		padding: '0 0 0 0 ',
@@ -63,7 +64,7 @@ const css = {
 		position: 'relative',
 		flex: 1,
 		minWidth: '280px',
-		height: '900px',
+		height: Styles.fixedHeight - 295 + "px",
 		overflowY: 'auto',
 		margin: '0 0 0 10px',
 	} as React.CSSProperties,
@@ -211,7 +212,7 @@ export default class PodEditor extends React.Component<Props, State> {
 		let editor: JSX.Element;
 		if (!this.props.readOnly && !this.props.diffValue) {
 			editor = <MonacoEditor.Editor
-				height="900px"
+				height={Styles.fixedHeight - 295 + "px"}
 				width="100%"
 				defaultLanguage="markdown"
 				theme={Theme.getEditorTheme()}
@@ -251,7 +252,7 @@ export default class PodEditor extends React.Component<Props, State> {
 			/>
 		} else if (!this.props.readOnly && this.props.diffValue) {
 			editor = <MonacoEditor.DiffEditor
-				height="900px"
+				height={Styles.fixedHeight - 295 + "px"}
 				width="100%"
 				theme={Theme.getEditorTheme()}
 				original={this.props.diffValue}
