@@ -68,6 +68,23 @@ const css = {
 		overflowY: 'auto',
 		margin: '0 0 0 10px',
 	} as React.CSSProperties,
+	groupEdit: {
+		position: 'relative',
+		flex: 1,
+		minWidth: '280px',
+		height: Styles.fixedHeight - 295 + "px",
+		overflowY: 'hidden',
+		margin: '0',
+		fontSize: '12px',
+	} as React.CSSProperties,
+	groupEditSplit: {
+		position: 'relative',
+		flex: 1,
+		minWidth: '280px',
+		height: Styles.fixedHeight - 295 + "px",
+		overflowY: 'hidden',
+		margin: '0 0 0 10px',
+	} as React.CSSProperties,
 	editorBox: {
 		margin: '0 0 10px 0',
 	} as React.CSSProperties,
@@ -209,6 +226,13 @@ export default class PodEditor extends React.Component<Props, State> {
 			}
 		}
 
+		let rightStyle: React.CSSProperties
+		if (!this.props.readOnly) {
+			rightStyle = expandRight ? css.groupEdit : css.groupEditSplit
+		} else {
+			rightStyle = expandRight ? css.group : css.groupSplit
+		}
+
 		let editor: JSX.Element;
 		if (!this.props.readOnly && !this.props.diffValue) {
 			editor = <MonacoEditor.Editor
@@ -303,7 +327,7 @@ export default class PodEditor extends React.Component<Props, State> {
 				style={expandRight ? css.group : css.groupSplit}
 				hidden={expandLeft}
 			>
-				<div style={css.editor}>
+				<div style={rightStyle}>
 					{editor}
 				</div>
 			</div>
