@@ -2,6 +2,7 @@
 import * as Monaco from "monaco-editor"
 import * as MonacoEditor from "@monaco-editor/react"
 import CompletionCache from "./Cache"
+import * as Types from "./Types"
 
 let registered = false
 
@@ -113,8 +114,18 @@ export function handleAfterMount(
 		}
 	})
 
+	editor.updateOptions({
+    suggest: {
+        preview: true,
+    }
+	});
+
+	monaco.languages.setLanguageConfiguration("markdown", {
+		wordPattern: /[^+\/:]+/g,
+	});
+
 	monaco.languages.registerCompletionItemProvider("markdown", {
-		triggerCharacters: ["+", "/", ":", "}"],
+		triggerCharacters: ["+", "/", ":"],
 		provideCompletionItems: (model, position) => {
 			const textBeforeCursor = model.getValueInRange({
 				startLineNumber: position.lineNumber,
@@ -123,7 +134,73 @@ export function handleAfterMount(
 				endColumn: position.column,
 			})
 
-			const tagMatch = textBeforeCursor.match(/\+\/([a-zA-Z0-9-]*)\/([a-zA-Z0-9-]*):$/)
+			const selectorWithTagMatch = textBeforeCursor.match(
+				/\+\/([a-zA-Z0-9-]*)\/([a-zA-Z0-9-]*):([a-zA-Z0-9-]*)\/$/);
+			const selectorDirectMatch = textBeforeCursor.match(
+				/\+\/([a-zA-Z0-9-]*)\/([a-zA-Z0-9-]*)\/$/);
+
+			if (selectorWithTagMatch || selectorDirectMatch) {
+				const match = selectorWithTagMatch || selectorDirectMatch;
+				const kindName = match[1];
+				const resourceName = match[2];
+
+				let selectorKey = "";
+				switch (kindName) {
+					case "instance":
+						selectorKey = "instance";
+						break;
+					case "vpc":
+						selectorKey = "vpc";
+						break;
+					case "subnet":
+						selectorKey = "subnet";
+						break;
+					case "certificate":
+						selectorKey = "certificate";
+						break;
+					case "secret":
+						selectorKey = "secret";
+						break;
+					case "unit":
+						selectorKey = "unit";
+						break;
+					default:
+						return noMatch;
+				}
+
+				const selectors = Types.Selectors[selectorKey];
+				if (!selectors) {
+					return noMatch;
+				}
+
+				const range = {
+					startLineNumber: position.lineNumber,
+					endLineNumber: position.lineNumber,
+					startColumn: position.column,
+					endColumn: position.column,
+				}
+
+				let suggestions: Monaco.languages.CompletionItem[] = [];
+
+				for (const [key, info] of Object.entries(selectors)) {
+					suggestions.push({
+						label: key,
+						kind: CompletionItemKind.Value,
+						insertText: key,
+						insertTextRules: CompletionItemInsertTextRule.InsertAsSnippet,
+						documentation: info.tooltip,
+						detail: info.tooltip,
+						range: range,
+					})
+				}
+
+				return {
+					suggestions: suggestions,
+				}
+			}
+
+			const tagMatch = textBeforeCursor.match(
+				/\+\/([a-zA-Z0-9-]*)\/([a-zA-Z0-9-]*):$/);
 			if (tagMatch) {
 				let kindName = tagMatch[1]
 				let resourceName = tagMatch[2]
@@ -144,7 +221,7 @@ export function handleAfterMount(
 				for (const tag of resource.tags) {
 					suggestions.push({
 						label: tag.name,
-						kind: CompletionItemKind.Struct,
+						kind: CompletionItemKind.Field,
 						insertText: tag.name,
 						insertTextRules: CompletionItemInsertTextRule.InsertAsSnippet,
 						documentation: "Tag",
@@ -176,7 +253,7 @@ export function handleAfterMount(
 				for (const resource of (CompletionCache.resources(kind.name))) {
 					suggestions.push({
 						label: resource.name,
-						kind: CompletionItemKind.Struct,
+						kind: CompletionItemKind.Property,
 						insertText: resource.name,
 						insertTextRules: CompletionItemInsertTextRule.InsertAsSnippet,
 						documentation: kind.title,
@@ -217,6 +294,6 @@ export function handleAfterMount(
 			}
 
 			return noMatch
-		}
+		},
 	})
 }
