@@ -441,7 +441,7 @@ export default class PodDeployment extends React.Component<Props, State> {
 								fields={[
 									{
 										label: "Tags",
-										value: deployment.tags || "-",
+										value: deployment.tags.length ? deployment.tags : "-",
 									},
 								]}
 							/>
