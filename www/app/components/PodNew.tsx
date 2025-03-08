@@ -114,15 +114,8 @@ export default class PodNew extends React.Component<Props, State> {
 
 	get default(): PodTypes.Pod {
 		return {
-			id: null,
 			name: 'New pod',
-			units: [
-				{
-					id: MiscUtils.objectId(),
-					name: "new-unit",
-					spec: "",
-				}
-			]
+			units: [],
 		};
 	}
 
@@ -157,6 +150,14 @@ export default class PodNew extends React.Component<Props, State> {
 				changed: false,
 				unitChanged: false,
 			});
+
+			setTimeout((): void => {
+				this.setState({
+					...this.state,
+					disabled: false,
+					changed: true,
+				});
+			}, 2000);
 		}).catch((): void => {
 			this.setState({
 				...this.state,
