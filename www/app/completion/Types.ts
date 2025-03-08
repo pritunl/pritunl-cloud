@@ -25,6 +25,7 @@ export interface Resources {
 	zones: ZoneTypes.ZonesRo;
 	shapes: ShapeTypes.ShapesRo;
 	images: ImageTypes.ImagesRo;
+	builds: CompletionTypes.Build[];
 	instances: InstanceTypes.InstancesRo;
 	plans: PlanTypes.PlansRo;
 	certificates: CertificateTypes.CertificatesRo;
