@@ -1830,6 +1830,15 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							this.set('host_nat', !node.host_nat);
 						}}
 					/>
+					<PageSwitch
+						disabled={this.state.disabled}
+						label="Node Port Network"
+						help="Enable node port networking to allow instances to use node ports."
+						checked={!node.no_node_port_network}
+						onToggle={(): void => {
+							this.set('no_node_port_network', !node.no_node_port_network);
+						}}
+					/>
 					<PageInput
 						disabled={this.state.disabled}
 						hidden={node.network_mode !== 'oracle' &&
