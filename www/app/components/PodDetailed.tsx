@@ -401,11 +401,18 @@ export default class PodDetailed extends React.Component<Props, State> {
 
 					pod.units = units
 
+					let newMode = "view"
+					for (let unit of units) {
+						if (!unit.delete) {
+							newMode = "edit"
+						}
+					}
+
 					this.setState({
 						...this.state,
 						changed: true,
 						unitChanged: true,
-						mode: "edit",
+						mode: newMode,
 						pod: pod,
 					});
 				}}
