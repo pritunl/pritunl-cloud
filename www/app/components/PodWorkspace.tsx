@@ -160,6 +160,9 @@ const css = {
 		fontFamily: Theme.monospaceFont,
 		fontWeight: Theme.monospaceWeight,
 	} as React.CSSProperties,
+	nonState: {
+		padding: "80px 0",
+	} as React.CSSProperties,
 };
 
 export default class PodWorkspace extends React.Component<Props, State> {
