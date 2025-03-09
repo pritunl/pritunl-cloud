@@ -29,12 +29,26 @@ export interface Completion {
 	zones?: ZoneTypes.Zone[]
 	shapes?: ShapeTypes.Shape[]
 	images?: ImageTypes.Image[]
+	builds?: Build[];
 	instances?: InstanceTypes.Instance[]
 	plans?: PlanTypes.Plan[]
 	certificates?: CertificateTypes.Certificate[]
 	secrets?: SecretTypes.Secret[]
 	pods?: PodTypes.Pod[]
 	units?: PodTypes.Unit[]
+}
+
+export interface Build {
+	id?: string
+	name?: string
+	pod?: string
+	organization?: string
+	tags?: BuildTag[]
+}
+
+export interface BuildTag {
+	tag?: string
+	timestamp?: string
 }
 
 export interface Filter {
