@@ -758,7 +758,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 			/>)
 		}
 
-		if (this.props.mode !== "edit") {
+		if (mode !== "edit") {
 			menuItems.push(<Blueprint.MenuItem
 				key="menu-edit-spec"
 				className=""
@@ -772,7 +772,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 			/>)
 		}
 
-		if (this.props.mode === "edit") {
+		if (mode === "edit") {
 			if (this.state.unit && activeUnit &&
 				this.state.unit.id === activeUnit.id &&
 				this.state.unit.commits &&
@@ -866,7 +866,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 		let editorVal = ""
 		let viewLatestCommit = true
 		if (activeUnit) {
-			if (this.props.mode === "view" &&
+			if (mode === "view" &&
 				this.state.viewCommit?.unit === activeUnit.id) {
 
 					editorVal = this.state.viewCommit.data
@@ -876,7 +876,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 			}
 		}
 
-		if (this.props.mode === "view") {
+		if (mode === "view") {
 			if (this.state.unit &&
 				this.state.unit.id === activeUnit?.id &&
 				this.state.unit.commits?.length > 0) {
@@ -989,7 +989,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 						style={css.divider}
 					/>
 					<button
-						hidden={!(this.props.mode === "edit" && !this.state.diffCommit)}
+						hidden={!(mode === "edit" && !this.state.diffCommit)}
 						style={css.navButton}
 						className={expandIconClass}
 						onClick={(): void => {
@@ -1001,7 +1001,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 						}}
 					/>
 					<button
-						hidden={!(this.props.mode === "edit" && this.state.diffCommit)}
+						hidden={!(mode === "edit" && this.state.diffCommit)}
 						style={css.navButton}
 						className="bp5-button bp5-icon-edit"
 						onClick={(): void => {
@@ -1037,11 +1037,11 @@ export default class PodWorkspace extends React.Component<Props, State> {
 				/>
 			</div>
 			<PodEditor
-				hidden={this.props.mode === "unit"}
+				hidden={mode === "unit"}
 				expandLeft={expandLeft}
 				expandRight={expandRight}
 				disabled={this.props.disabled || this.state.disabled}
-				readOnly={this.props.mode === "view"}
+				readOnly={mode === "view"}
 				uuid={activeUnit ? activeUnit.id : null}
 				value={editorVal}
 				diffValue={diffCommit ? diffCommit.data : null}
@@ -1051,7 +1051,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 				onEdit={this.onEdit}
 			/>
 			<PodUnit
-				hidden={this.props.mode !== "unit"}
+				hidden={mode !== "unit"}
 				disabled={this.props.disabled || this.state.disabled}
 				selected={this.state.selectedDeployments}
 				lastSelected={this.state.lastSelectedDeployment}
