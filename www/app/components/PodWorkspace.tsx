@@ -479,6 +479,17 @@ export default class PodWorkspace extends React.Component<Props, State> {
 		]
 		let activeUnit = this.getActiveUnit()
 		let diffCommit = this.state.diffCommit
+		let mode = this.props.mode
+		let noUnits = true
+		for (let unit of units) {
+			if (!unit.delete) {
+				noUnits = false
+				break
+			}
+		}
+		if (noUnits) {
+			mode = "view"
+		}
 
 		let expandLeft = this.state.expandLeft
 		let expandRight = this.state.expandRight
@@ -554,32 +565,34 @@ export default class PodWorkspace extends React.Component<Props, State> {
 			deploymentsLabel = "Builds"
 		}
 
-		menuItems.push(<li
-			key="menu-deployments-header"
-			className="bp5-menu-header"
-		>
-			<h6 className="bp5-heading">{deploymentsLabel}</h6>
-		</li>)
-		menuItems.push(<Blueprint.MenuDivider
-			key="menu-deployments-divider"
-		/>)
-
-		if (this.props.mode !== "unit") {
-			menuItems.push(<Blueprint.MenuItem
-				key="menu-deployments"
-				className=""
-				disabled={this.props.disabled || this.state.disabled}
-				icon={<Icons.Dashboard/>}
-				onClick={(): void => {
-					this.onUnit()
-				}}
-				text={"View " + deploymentsLabel}
+		if (!noUnits) {
+			menuItems.push(<li
+				key="menu-deployments-header"
+				className="bp5-menu-header"
+			>
+				<h6 className="bp5-heading">{deploymentsLabel}</h6>
+			</li>)
+			menuItems.push(<Blueprint.MenuDivider
+				key="menu-deployments-divider"
 			/>)
+
+			if (mode !== "unit") {
+				menuItems.push(<Blueprint.MenuItem
+					key="menu-deployments"
+					className=""
+					disabled={this.props.disabled || this.state.disabled}
+					icon={<Icons.Dashboard/>}
+					onClick={(): void => {
+						this.onUnit()
+					}}
+					text={"View " + deploymentsLabel}
+				/>)
+			}
 		}
 
 		let commits: PodTypes.Commit[];
 		let commitMenu: JSX.Element
-		if (this.props.mode === "unit") {
+		if (mode === "unit") {
 			if (this.state.unit &&
 				this.state.unit.id === activeUnit?.id &&
 				this.state.unit.commits?.length > 0) {
@@ -702,17 +715,32 @@ export default class PodWorkspace extends React.Component<Props, State> {
 			/>)
 		}
 
-		menuItems.push(<li
-			key="menu-spec-header"
-			className="bp5-menu-header"
-		>
-			<h6 className="bp5-heading">Specs</h6>
-		</li>)
-		menuItems.push(<Blueprint.MenuDivider
-			key="menu-spec-divider"
-		/>)
+		let newUnit: JSX.Element
+		if (noUnits) {
+			newUnit = <Blueprint.Button
+				alignText="left"
+				icon={<Icons.Plus/>}
+				text="New Unit"
+				style={css.settingsOpen}
+				onClick={() => {
+					this.onNew()
+				}}
+			/>
+		}
 
-		if (this.props.mode !== "view") {
+		if (!noUnits) {
+			menuItems.push(<li
+				key="menu-spec-header"
+				className="bp5-menu-header"
+			>
+				<h6 className="bp5-heading">Specs</h6>
+			</li>)
+			menuItems.push(<Blueprint.MenuDivider
+				key="menu-spec-divider"
+			/>)
+		}
+
+		if (mode !== "view") {
 			menuItems.push(<Blueprint.MenuItem
 				key="menu-view-spec"
 				className=""
@@ -978,6 +1006,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 							})
 						}}
 					>Apply Edit</button>
+					{newUnit}
 					{commitMenu}
 					<Blueprint.Popover
 						content={settingsMenu}
