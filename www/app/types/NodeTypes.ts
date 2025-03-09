@@ -45,6 +45,7 @@ export interface Node {
 	available_drives?: Drive[];
 	instance_drives?: Drive[];
 	no_host_network?: boolean;
+	no_node_port_network?: boolean;
 	host_nat?: boolean;
 	default_no_public_address?: boolean;
 	default_no_public_address6?: boolean;
