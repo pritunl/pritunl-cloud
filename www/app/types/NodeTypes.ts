@@ -8,6 +8,7 @@ export const CHANGE = 'node.change';
 export interface Node {
 	id?: string;
 	types?: string[];
+	datacenter?: string;
 	zone?: string;
 	name?: string;
 	comment?: string;
