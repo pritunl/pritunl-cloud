@@ -17,6 +17,7 @@ import PodEditor from './PodEditor';
 import PodUnit from './PodUnit';
 import PodDeploy from './PodDeploy';
 import PodMigrate from './PodMigrate';
+import NonState from './NonState';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
 import Help from './Help';
@@ -1022,6 +1023,15 @@ export default class PodWorkspace extends React.Component<Props, State> {
 					</Blueprint.Popover>
 				</Blueprint.NavbarGroup>
 			</Blueprint.Navbar>
+			<div style={css.nonState} hidden={!noUnits}>
+				<NonState
+					hidden={!noUnits}
+					noDelay={true}
+					iconClass="bp5-icon-server"
+					title="No units"
+					description="Add a new unit to get started."
+				/>
+			</div>
 			<PodEditor
 				hidden={this.props.mode === "unit"}
 				expandLeft={expandLeft}
