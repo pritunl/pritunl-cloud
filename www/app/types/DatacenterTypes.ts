@@ -15,6 +15,8 @@ export interface Datacenter {
 	private_storage_class?: string;
 	backup_storage?: string;
 	backup_storage_class?: string;
+	network_mode?: string;
+}
 
 export interface Filter {
 	id?: string;
