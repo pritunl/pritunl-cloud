@@ -220,7 +220,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 		let selectedDeployments: Selected = {};
 		let curSelectedDeployments = this.state.selectedDeployments;
 
-		if (activeUnit) {
+		if (activeUnit && unit) {
 			let deployments = unit.deployments || []
 			deployments.forEach((deployment: PodTypes.Deployment): void => {
 				if (curSelectedDeployments[deployment.id]) {
@@ -646,7 +646,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 						alignText="left"
 						icon={<Icons.GitRepo/>}
 						rightIcon={<Icons.CaretDown/>}
-						text="Default Commit"
+						text="Deployment Commit"
 						style={css.settingsOpen}
 					/>
 				</Blueprint.Popover>
@@ -690,6 +690,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 					onConfirm={this.onArchiveDeployments}
 				/>)
 				menuItems.push(<PodMigrate
+					key="menu-migrate"
 					disabled={!this.selectedDeployments || this.state.disabled}
 					pod={this.props.pod}
 					unit={activeUnit}
