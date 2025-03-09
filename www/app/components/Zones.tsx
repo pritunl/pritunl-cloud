@@ -7,39 +7,61 @@ import ZonesStore from '../stores/ZonesStore';
 import DatacentersStore from "../stores/DatacentersStore";
 import * as ZoneActions from '../actions/ZoneActions';
 import * as DatacenterActions from '../actions/DatacenterActions';
-import NonState from './NonState';
 import Zone from './Zone';
+import ZoneNew from './ZoneNew';
+import ZonesFilter from './ZonesFilter';
+import ZonesPage from './ZonesPage';
 import Page from './Page';
 import PageHeader from './PageHeader';
+import NonState from './NonState';
+import ConfirmButton from './ConfirmButton';
+
+interface Selected {
+	[key: string]: boolean;
+}
+
+interface Opened {
+	[key: string]: boolean;
+}
 
 interface State {
 	zones: ZoneTypes.ZonesRo;
 	datacenters: DatacenterTypes.DatacentersRo;
-	datacenter: string;
+	filter: ZoneTypes.Filter;
+	selected: Selected;
+	opened: Opened;
+	newOpened: boolean;
+	lastSelected: string;
 	disabled: boolean;
 }
 
 const css = {
+	items: {
+		width: '100%',
+		marginTop: '-5px',
+		display: 'table',
+		tableLayout: 'fixed',
+		borderSpacing: '0 5px',
+	} as React.CSSProperties,
+	itemsBox: {
+		width: '100%',
+		overflowY: 'auto',
+	} as React.CSSProperties,
+	placeholder: {
+		opacity: 0,
+		width: '100%',
+	} as React.CSSProperties,
 	header: {
 		marginTop: '-19px',
 	} as React.CSSProperties,
 	heading: {
 		margin: '19px 0 0 0',
 	} as React.CSSProperties,
-	group: {
-		margin: '15px 0 0 0',
-		width: '220px',
+	button: {
+		margin: '8px 0 0 8px',
 	} as React.CSSProperties,
-	select: {
-		width: '100%',
-		borderTopLeftRadius: '3px',
-		borderBottomLeftRadius: '3px',
-	} as React.CSSProperties,
-	selectInner: {
-		width: '100%',
-	} as React.CSSProperties,
-	selectBox: {
-		flex: '1',
+	buttons: {
+		marginTop: '8px',
 	} as React.CSSProperties,
 };
 
@@ -49,9 +71,21 @@ export default class Zones extends React.Component<{}, State> {
 		this.state = {
 			zones: ZonesStore.zones,
 			datacenters: DatacentersStore.datacenters,
-			datacenter: '',
+			filter: ZonesStore.filter,
+			selected: {},
+			opened: {},
+			newOpened: false,
+			lastSelected: null,
 			disabled: false,
 		};
+	}
+
+	get selected(): boolean {
+		return !!Object.keys(this.state.selected).length;
+	}
+
+	get opened(): boolean {
+		return !!Object.keys(this.state.opened).length;
 	}
 
 	componentDidMount(): void {
@@ -67,10 +101,48 @@ export default class Zones extends React.Component<{}, State> {
 	}
 
 	onChange = (): void => {
+		let zones = ZonesStore.zones;
+		let selected: Selected = {};
+		let curSelected = this.state.selected;
+		let opened: Opened = {};
+		let curOpened = this.state.opened;
+
+		zones.forEach((zone: ZoneTypes.Zone): void => {
+			if (curSelected[zone.id]) {
+				selected[zone.id] = true;
+			}
+			if (curOpened[zone.id]) {
+				opened[zone.id] = true;
+			}
+		});
+
 		this.setState({
 			...this.state,
-			zones: ZonesStore.zones,
+			zones: zones,
 			datacenters: DatacentersStore.datacenters,
+			filter: ZonesStore.filter,
+			selected: selected,
+			opened: opened,
+		});
+	}
+
+	onDelete = (): void => {
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+		ZoneActions.removeMulti(
+				Object.keys(this.state.selected)).then((): void => {
+			this.setState({
+				...this.state,
+				selected: {},
+				disabled: false,
+			});
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
 		});
 	}
 
@@ -82,28 +154,105 @@ export default class Zones extends React.Component<{}, State> {
 			zonesDom.push(<Zone
 				key={zone.id}
 				zone={zone}
+				datacenters={this.state.datacenters}
+				selected={!!this.state.selected[zone.id]}
+				open={!!this.state.opened[zone.id]}
+				onSelect={(shift: boolean): void => {
+					let selected = {
+						...this.state.selected,
+					};
+
+					if (shift) {
+						let zones = this.state.zones;
+						let start: number;
+						let end: number;
+
+						for (let i = 0; i < zones.length; i++) {
+							let usr = zones[i];
+
+							if (usr.id === zone.id) {
+								start = i;
+							} else if (usr.id === this.state.lastSelected) {
+								end = i;
+							}
+						}
+
+						if (start !== undefined && end !== undefined) {
+							if (start > end) {
+								end = [start, start = end][0];
+							}
+
+							for (let i = start; i <= end; i++) {
+								selected[zones[i].id] = true;
+							}
+
+							this.setState({
+								...this.state,
+								lastSelected: zone.id,
+								selected: selected,
+							});
+
+							return;
+						}
+					}
+
+					if (selected[zone.id]) {
+						delete selected[zone.id];
+					} else {
+						selected[zone.id] = true;
+					}
+
+					this.setState({
+						...this.state,
+						lastSelected: zone.id,
+						selected: selected,
+					});
+				}}
+				onOpen={(): void => {
+					let opened = {
+						...this.state.opened,
+					};
+
+					if (opened[zone.id]) {
+						delete opened[zone.id];
+					} else {
+						opened[zone.id] = true;
+					}
+
+					this.setState({
+						...this.state,
+						opened: opened,
+					});
+				}}
 			/>);
 		});
 
-		let hasDatacenters = false;
-		let datacentersSelect: JSX.Element[] = [];
-		if (this.state.datacenters.length) {
-			hasDatacenters = true;
-			for (let datacenter of this.state.datacenters) {
-				datacentersSelect.push(
-					<option
-						key={datacenter.id}
-						value={datacenter.id}
-					>{datacenter.name}</option>,
-				);
+		let filterClass = 'bp5-button bp5-intent-primary bp5-icon-filter ';
+		if (this.state.filter) {
+			filterClass += 'bp5-active';
+		}
+
+		let selectedNames: string[] = [];
+		for (let instId of Object.keys(this.state.selected)) {
+			let inst = ZonesStore.zone(instId);
+			if (inst) {
+				selectedNames.push(inst.name || instId);
+			} else {
+				selectedNames.push(instId);
 			}
-		} else {
-			datacentersSelect.push(
-				<option
-					key="null"
-					value=""
-				>No Datacenters</option>,
-			);
+		}
+
+		let newZoneDom: JSX.Element;
+		if (this.state.newOpened) {
+			newZoneDom = <ZoneNew
+				datacenters={this.state.datacenters}
+				onClose={(): void => {
+					this.setState({
+						...this.state,
+						newOpened: false,
+					});
+				}}
+			/>;
 		}
 
 		return <Page>
@@ -111,67 +260,91 @@ export default class Zones extends React.Component<{}, State> {
 				<div className="layout horizontal wrap" style={css.header}>
 					<h2 style={css.heading}>Zones</h2>
 					<div className="flex"/>
-					<div>
-						<div
-							className="bp5-control-group"
-							style={css.group}
+					<div style={css.buttons}>
+						<button
+							className={filterClass}
+							style={css.button}
+							type="button"
+							onClick={(): void => {
+								if (this.state.filter === null) {
+									ZoneActions.filter({});
+								} else {
+									ZoneActions.filter(null);
+								}
+							}}
 						>
-							<div style={css.selectBox}>
-								<div className="bp5-select" style={css.select}>
-									<select
-										style={css.selectInner}
-										disabled={!hasDatacenters || this.state.disabled}
-										value={this.state.datacenter}
-										onChange={(evt): void => {
-											this.setState({
-												...this.state,
-												datacenter: evt.target.value,
-											});
-										}}
-									>
-										{datacentersSelect}
-									</select>
-								</div>
-							</div>
-							<button
-								className="bp5-button bp5-intent-success bp5-icon-add"
-								disabled={!hasDatacenters || this.state.disabled}
-								type="button"
-								onClick={(): void => {
-									this.setState({
-										...this.state,
-										disabled: true,
-									});
-									ZoneActions.create({
-										id: null,
-										network_mode: 'vxlan_vlan',
-										datacenter: this.state.datacenter ||
-											this.state.datacenters[0].id,
-									}).then((): void => {
-										this.setState({
-											...this.state,
-											disabled: false,
-										});
-									}).catch((): void => {
-										this.setState({
-											...this.state,
-											disabled: false,
-										});
-									});
-								}}
-							>New</button>
-						</div>
+							Filters
+						</button>
+						<button
+							className="bp5-button bp5-intent-warning bp5-icon-chevron-up"
+							style={css.button}
+							disabled={!this.opened}
+							type="button"
+							onClick={(): void => {
+								this.setState({
+									...this.state,
+									opened: {},
+								});
+							}}
+						>
+							Collapse All
+						</button>
+						<ConfirmButton
+							label="Delete Selected"
+							className="bp5-intent-danger bp5-icon-delete"
+							progressClassName="bp5-intent-danger"
+							safe={true}
+							style={css.button}
+							confirmMsg="Permanently delete the selected zones"
+							confirmInput={true}
+							items={selectedNames}
+							disabled={!this.selected || this.state.disabled}
+							onConfirm={this.onDelete}
+						/>
+						<button
+							className="bp5-button bp5-intent-success bp5-icon-add"
+							style={css.button}
+							disabled={this.state.disabled || this.state.newOpened}
+							type="button"
+							onClick={(): void => {
+								this.setState({
+									...this.state,
+									newOpened: true,
+								});
+							}}
+						>New</button>
 					</div>
 				</div>
 			</PageHeader>
-			<div>
-				{zonesDom}
+			<ZonesFilter
+				filter={this.state.filter}
+				onFilter={(filter): void => {
+					ZoneActions.filter(filter);
+				}}
+			/>
+			<div style={css.itemsBox}>
+				<div style={css.items}>
+					{newZoneDom}
+					{zonesDom}
+					<tr className="bp5-card bp5-row" style={css.placeholder}>
+						<td colSpan={2} style={css.placeholder}/>
+					</tr>
+				</div>
 			</div>
 			<NonState
 				hidden={!!zonesDom.length}
-				iconClass="bp5-icon-layout-circle"
+				iconClass="bp5-icon-ip-address"
 				title="No zones"
 				description="Add a new zone to get started."
+			/>
+			<ZonesPage
+				onPage={(): void => {
+					this.setState({
+						...this.state,
+						selected: {},
+						lastSelected: null,
+					});
+				}}
 			/>
 		</Page>;
 	}
