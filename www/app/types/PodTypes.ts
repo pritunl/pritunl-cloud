@@ -107,6 +107,14 @@ export interface Filter {
 	organization?: string;
 }
 
+export interface Build {
+	id?: string;
+	name?: string;
+	pod?: string;
+	unit?: string;
+	tags?: string;
+}
+
 export type Pods = Pod[];
 
 export type PodRo = Readonly<Pod>;
