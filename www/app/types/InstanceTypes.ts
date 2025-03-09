@@ -16,6 +16,7 @@ export interface Instance {
 	disk_type?: string;
 	disk_pool?: string;
 	status?: string;
+	status_info?: StatusInfo;
 	uptime?: string;
 	state?: string;
 	virt_state?: string;
@@ -83,6 +84,10 @@ export interface Filter {
 	zone?: string;
 	vpc?: string;
 	subnet?: string;
+}
+
+export interface StatusInfo {
+	download_progress: number;
 }
 
 export interface Iso {
