@@ -84,27 +84,29 @@ func (u *Update) Apply() {
 			}
 		}
 
+		var diff *RulesDiff
 		oldRules := u.OldState.Interfaces[rules.Namespace+"-"+rules.Interface]
 		if oldRules != nil {
-			if !diffRules(oldRules, rules) {
+			diff = diffRules(oldRules, rules)
+			if diff == nil {
 				continue
 			}
 
 			if !changed {
 				changed = true
 				logrus.WithFields(logrus.Fields{
-					"ingress":  rules.IngressDiff,
-					"ingress6": rules.Ingress6Diff,
-					"nats":     rules.NatsDiff,
-					"nats6":    rules.Nats6Diff,
-					"maps":     rules.MapsDiff,
-					"maps6":    rules.Maps6Diff,
-					"holds":    rules.HoldsDiff,
-					"holds6":   rules.Holds6Diff,
+					"ingress":  diff.IngressDiff,
+					"ingress6": diff.Ingress6Diff,
+					"nats":     diff.NatsDiff,
+					"nats6":    diff.Nats6Diff,
+					"maps":     diff.MapsDiff,
+					"maps6":    diff.Maps6Diff,
+					"holds":    diff.HoldsDiff,
+					"holds6":   diff.Holds6Diff,
 				}).Info("iptables: Updating iptables")
 			}
 
-			if (rules.IngressDiff || rules.Ingress6Diff) &&
+			if (diff.IngressDiff || diff.Ingress6Diff) &&
 				rules.Interface != "host" {
 
 				err := rules.Hold()
@@ -119,7 +121,7 @@ func (u *Update) Apply() {
 				}
 			}
 
-			err := oldRules.Remove(false)
+			err := oldRules.Remove(diff)
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
 					"namespace": rules.Namespace,
@@ -136,7 +138,7 @@ func (u *Update) Apply() {
 			logrus.Info("iptables: Updating iptables")
 		}
 
-		err := rules.Apply(oldRules == nil)
+		err := rules.Apply(diff)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"namespace": rules.Namespace,

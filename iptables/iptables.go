@@ -185,78 +185,78 @@ func (r *Rules) run(table string, cmds [][]string,
 	return
 }
 
-func (r *Rules) Apply(all bool) (err error) {
-	if all || r.HeaderDiff {
+func (r *Rules) Apply(diff *RulesDiff) (err error) {
+	if diff == nil || diff.HeaderDiff {
 		err = r.run("", r.Header, "-A", false)
 		if err != nil {
 			return
 		}
 	}
 
-	if all || r.Header6Diff {
+	if diff == nil || diff.Header6Diff {
 		err = r.run("", r.Header6, "-A", true)
 		if err != nil {
 			return
 		}
 	}
 
-	if all || r.SourceDestCheckDiff {
+	if diff == nil || diff.SourceDestCheckDiff {
 		err = r.run("", r.SourceDestCheck, "-A", false)
 		if err != nil {
 			return
 		}
 	}
 
-	if all || r.SourceDestCheck6Diff {
+	if diff == nil || diff.SourceDestCheck6Diff {
 		err = r.run("", r.SourceDestCheck6, "-A", true)
 		if err != nil {
 			return
 		}
 	}
 
-	if all || r.IngressDiff {
+	if diff == nil || diff.IngressDiff {
 		err = r.run("", r.Ingress, "-A", false)
 		if err != nil {
 			return
 		}
 	}
 
-	if all || r.Ingress6Diff {
+	if diff == nil || diff.Ingress6Diff {
 		err = r.run("", r.Ingress6, "-A", true)
 		if err != nil {
 			return
 		}
 	}
 
-	if all || r.NatsDiff {
+	if diff == nil || diff.NatsDiff {
 		err = r.run("nat", r.Nats, "-A", false)
 		if err != nil {
 			return
 		}
 	}
 
-	if all || r.Nats6Diff {
+	if diff == nil || diff.Nats6Diff {
 		err = r.run("nat", r.Nats6, "-A", true)
 		if err != nil {
 			return
 		}
 	}
 
-	if all || r.MapsDiff {
+	if diff == nil || diff.MapsDiff {
 		err = r.run("nat", r.Maps, "-A", false)
 		if err != nil {
 			return
 		}
 	}
 
-	if all || r.Maps6Diff {
+	if diff == nil || diff.Maps6Diff {
 		err = r.run("nat", r.Maps6, "-A", true)
 		if err != nil {
 			return
 		}
 	}
 
-	if all || r.IngressDiff {
+	if diff == nil || diff.IngressDiff {
 		err = r.run("", r.Holds, "-D", false)
 		if err != nil {
 			return
@@ -264,7 +264,7 @@ func (r *Rules) Apply(all bool) (err error) {
 		r.Holds = [][]string{}
 	}
 
-	if all || r.Ingress6Diff {
+	if diff == nil || diff.Ingress6Diff {
 		err = r.run("", r.Holds6, "-D", true)
 		if err != nil {
 			return
@@ -373,8 +373,8 @@ func (r *Rules) Hold() (err error) {
 	return
 }
 
-func (r *Rules) Remove(all bool) (err error) {
-	if all || r.HeaderDiff {
+func (r *Rules) Remove(diff *RulesDiff) (err error) {
+	if diff == nil || diff.HeaderDiff {
 		err = r.run("", r.Header, "-D", false)
 		if err != nil {
 			return
@@ -382,7 +382,7 @@ func (r *Rules) Remove(all bool) (err error) {
 		r.Header = [][]string{}
 	}
 
-	if all || r.Header6Diff {
+	if diff == nil || diff.Header6Diff {
 		err = r.run("", r.Header6, "-D", true)
 		if err != nil {
 			return
@@ -390,7 +390,7 @@ func (r *Rules) Remove(all bool) (err error) {
 		r.Header6 = [][]string{}
 	}
 
-	if all || r.SourceDestCheckDiff {
+	if diff == nil || diff.SourceDestCheckDiff {
 		err = r.run("", r.SourceDestCheck, "-D", false)
 		if err != nil {
 			return
@@ -398,7 +398,7 @@ func (r *Rules) Remove(all bool) (err error) {
 		r.SourceDestCheck = [][]string{}
 	}
 
-	if all || r.SourceDestCheck6Diff {
+	if diff == nil || diff.SourceDestCheck6Diff {
 		err = r.run("", r.SourceDestCheck6, "-D", true)
 		if err != nil {
 			return
@@ -406,7 +406,7 @@ func (r *Rules) Remove(all bool) (err error) {
 		r.SourceDestCheck6 = [][]string{}
 	}
 
-	if all || r.IngressDiff {
+	if diff == nil || diff.IngressDiff {
 		err = r.run("", r.Ingress, "-D", false)
 		if err != nil {
 			return
@@ -414,7 +414,7 @@ func (r *Rules) Remove(all bool) (err error) {
 		r.Ingress = [][]string{}
 	}
 
-	if all || r.Ingress6Diff {
+	if diff == nil || diff.Ingress6Diff {
 		err = r.run("", r.Ingress6, "-D", true)
 		if err != nil {
 			return
@@ -422,7 +422,7 @@ func (r *Rules) Remove(all bool) (err error) {
 		r.Ingress6 = [][]string{}
 	}
 
-	if all || r.NatsDiff {
+	if diff == nil || diff.NatsDiff {
 		err = r.run("nat", r.Nats, "-D", false)
 		if err != nil {
 			return
@@ -430,7 +430,7 @@ func (r *Rules) Remove(all bool) (err error) {
 		r.Nats = [][]string{}
 	}
 
-	if all || r.Nats6Diff {
+	if diff == nil || diff.Nats6Diff {
 		err = r.run("nat", r.Nats6, "-D", true)
 		if err != nil {
 			return
@@ -438,7 +438,7 @@ func (r *Rules) Remove(all bool) (err error) {
 		r.Nats6 = [][]string{}
 	}
 
-	if all || r.MapsDiff {
+	if diff == nil || diff.MapsDiff {
 		err = r.run("nat", r.Maps, "-D", false)
 		if err != nil {
 			return
@@ -446,7 +446,7 @@ func (r *Rules) Remove(all bool) (err error) {
 		r.Maps = [][]string{}
 	}
 
-	if all || r.Maps6Diff {
+	if diff == nil || diff.Maps6Diff {
 		err = r.run("nat", r.Maps6, "-D", true)
 		if err != nil {
 			return

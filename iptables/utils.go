@@ -29,132 +29,95 @@ func diffCmd(a, b []string) bool {
 	return false
 }
 
-func diffRules(a, b *Rules) bool {
+func diffRules(a, b *Rules) *RulesDiff {
+	diff := &RulesDiff{}
 	changed := false
 
-	a.HeaderDiff = false
-	b.HeaderDiff = false
-	a.Header6Diff = false
-	b.Header6Diff = false
-	a.SourceDestCheckDiff = false
-	b.SourceDestCheckDiff = false
-	a.SourceDestCheck6Diff = false
-	b.SourceDestCheck6Diff = false
-	a.IngressDiff = false
-	b.IngressDiff = false
-	a.Ingress6Diff = false
-	b.Ingress6Diff = false
-	a.NatsDiff = false
-	b.NatsDiff = false
-	a.Nats6Diff = false
-	b.Nats6Diff = false
-	a.MapsDiff = false
-	b.MapsDiff = false
-	a.Maps6Diff = false
-	b.Maps6Diff = false
-	a.HoldsDiff = false
-	b.HoldsDiff = false
-	a.Holds6Diff = false
-	b.Holds6Diff = false
-
-	ingressChanged := false
-	ingress6Changed := false
-
 	if len(a.Header) != len(b.Header) {
-		ingressChanged = true
+		diff.HeaderDiff = true
+		changed = true
 	} else {
 		for i := range a.Header {
 			if diffCmd(a.Header[i], b.Header[i]) {
-				ingressChanged = true
+				diff.HeaderDiff = true
+				changed = true
 				break
 			}
 		}
 	}
 
 	if len(a.Header6) != len(b.Header6) {
-		ingress6Changed = true
+		diff.Header6Diff = true
+		changed = true
 	} else {
 		for i := range a.Header6 {
 			if diffCmd(a.Header6[i], b.Header6[i]) {
-				ingress6Changed = true
+				diff.Header6Diff = true
+				changed = true
 				break
 			}
 		}
 	}
 
 	if len(a.SourceDestCheck) != len(b.SourceDestCheck) {
-		ingressChanged = true
+		diff.SourceDestCheckDiff = true
+		changed = true
 	} else {
 		for i := range a.SourceDestCheck {
 			if diffCmd(a.SourceDestCheck[i], b.SourceDestCheck[i]) {
-				ingressChanged = true
+				diff.SourceDestCheckDiff = true
+				changed = true
 				break
 			}
 		}
 	}
 
 	if len(a.SourceDestCheck6) != len(b.SourceDestCheck6) {
-		ingress6Changed = true
+		diff.SourceDestCheck6Diff = true
+		changed = true
 	} else {
 		for i := range a.SourceDestCheck6 {
 			if diffCmd(a.SourceDestCheck6[i], b.SourceDestCheck6[i]) {
-				ingress6Changed = true
+				diff.SourceDestCheck6Diff = true
+				changed = true
 				break
 			}
 		}
 	}
 
 	if len(a.Ingress) != len(b.Ingress) {
-		ingressChanged = true
+		diff.IngressDiff = true
+		changed = true
 	} else {
 		for i := range a.Ingress {
 			if diffCmd(a.Ingress[i], b.Ingress[i]) {
-				ingressChanged = true
+				diff.IngressDiff = true
+				changed = true
 				break
 			}
 		}
 	}
 
 	if len(a.Ingress6) != len(b.Ingress6) {
-		ingress6Changed = true
+		diff.Ingress6Diff = true
+		changed = true
 	} else {
 		for i := range a.Ingress6 {
 			if diffCmd(a.Ingress6[i], b.Ingress6[i]) {
-				ingress6Changed = true
+				diff.Ingress6Diff = true
+				changed = true
 				break
 			}
 		}
 	}
 
-	if ingressChanged {
-		a.HeaderDiff = true
-		a.SourceDestCheckDiff = true
-		a.IngressDiff = true
-		b.HeaderDiff = true
-		b.SourceDestCheckDiff = true
-		b.IngressDiff = true
-		changed = true
-	}
-
-	if ingress6Changed {
-		a.Header6Diff = true
-		a.SourceDestCheck6Diff = true
-		a.Ingress6Diff = true
-		b.Header6Diff = true
-		b.SourceDestCheck6Diff = true
-		b.Ingress6Diff = true
-		changed = true
-	}
-
 	if len(a.Nats) != len(b.Nats) {
-		a.NatsDiff = true
-		b.NatsDiff = true
+		diff.NatsDiff = true
 		changed = true
 	} else {
 		for i := range a.Nats {
 			if diffCmd(a.Nats[i], b.Nats[i]) {
-				a.NatsDiff = true
-				b.NatsDiff = true
+				diff.NatsDiff = true
 				changed = true
 				break
 			}
@@ -162,14 +125,12 @@ func diffRules(a, b *Rules) bool {
 	}
 
 	if len(a.Nats6) != len(b.Nats6) {
-		a.Nats6Diff = true
-		b.Nats6Diff = true
+		diff.Nats6Diff = true
 		changed = true
 	} else {
 		for i := range a.Nats6 {
 			if diffCmd(a.Nats6[i], b.Nats6[i]) {
-				a.Nats6Diff = true
-				b.Nats6Diff = true
+				diff.Nats6Diff = true
 				changed = true
 				break
 			}
@@ -177,14 +138,12 @@ func diffRules(a, b *Rules) bool {
 	}
 
 	if len(a.Maps) != len(b.Maps) {
-		a.MapsDiff = true
-		b.MapsDiff = true
+		diff.MapsDiff = true
 		changed = true
 	} else {
 		for i := range a.Maps {
 			if diffCmd(a.Maps[i], b.Maps[i]) {
-				a.MapsDiff = true
-				b.MapsDiff = true
+				diff.MapsDiff = true
 				changed = true
 				break
 			}
@@ -192,14 +151,12 @@ func diffRules(a, b *Rules) bool {
 	}
 
 	if len(a.Maps6) != len(b.Maps6) {
-		a.Maps6Diff = true
-		b.Maps6Diff = true
+		diff.Maps6Diff = true
 		changed = true
 	} else {
 		for i := range a.Maps6 {
 			if diffCmd(a.Maps6[i], b.Maps6[i]) {
-				a.Maps6Diff = true
-				b.Maps6Diff = true
+				diff.Maps6Diff = true
 				changed = true
 				break
 			}
@@ -207,14 +164,12 @@ func diffRules(a, b *Rules) bool {
 	}
 
 	if len(a.Holds) != len(b.Holds) {
-		a.HoldsDiff = true
-		b.HoldsDiff = true
+		diff.HoldsDiff = true
 		changed = true
 	} else {
 		for i := range a.Holds {
 			if diffCmd(a.Holds[i], b.Holds[i]) {
-				a.HoldsDiff = true
-				b.HoldsDiff = true
+				diff.HoldsDiff = true
 				changed = true
 				break
 			}
@@ -222,21 +177,23 @@ func diffRules(a, b *Rules) bool {
 	}
 
 	if len(a.Holds6) != len(b.Holds6) {
-		a.Holds6Diff = true
-		b.Holds6Diff = true
+		diff.Holds6Diff = true
 		changed = true
 	} else {
 		for i := range a.Holds6 {
 			if diffCmd(a.Holds6[i], b.Holds6[i]) {
-				a.Holds6Diff = true
-				b.Holds6Diff = true
+				diff.Holds6Diff = true
 				changed = true
 				break
 			}
 		}
 	}
 
-	return changed
+	if !changed {
+		return nil
+	}
+
+	return diff
 }
 
 func getIptablesCmd(ipv6 bool) string {
