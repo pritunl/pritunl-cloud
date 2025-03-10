@@ -148,7 +148,7 @@ func (n *NetConf) ipExternal(db *database.Database) (err error) {
 			_, err = utils.ExecCombinedOutputLogged(
 				[]string{"File exists"},
 				"ip", "netns", "exec", n.Namespace,
-				"ip", "-6", "addr",
+				"ip", "addr",
 				"add", n.ExternalAddrCidr6,
 				"dev", n.SpaceExternalIface,
 			)
