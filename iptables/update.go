@@ -23,6 +23,7 @@ type Update struct {
 
 func (u *Update) Apply() {
 	changed := false
+	var removed []string
 	oldIfaces := set.NewSet()
 	newIfaces := set.NewSet()
 
@@ -40,6 +41,7 @@ func (u *Update) Apply() {
 
 	oldIfaces.Subtract(newIfaces)
 	for iface := range oldIfaces.Iter() {
+		removed = append(removed, iface.(string))
 		err := u.OldState.Interfaces[iface.(string)].Remove(true)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
@@ -47,6 +49,12 @@ func (u *Update) Apply() {
 				"error": err,
 			}).Error("iptables: Failed to delete removed interface iptables")
 		}
+	}
+
+	if removed != nil {
+		logrus.WithFields(logrus.Fields{
+			"ifaces": removed,
+		}).Info("iptables: Removed iptables")
 	}
 
 	for _, rules := range u.NewState.Interfaces {
