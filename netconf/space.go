@@ -77,15 +77,28 @@ func (n *NetConf) spaceSysctl(db *database.Database) (err error) {
 	}
 
 	if n.NetworkMode6 != node.Disabled && n.NetworkMode6 != node.Oracle {
-		_, err = utils.ExecCombinedOutputLogged(
-			nil,
-			"ip", "netns", "exec", n.Namespace,
-			"sysctl", "-w",
-			fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2",
-				n.SpaceExternalIface),
-		)
-		if err != nil {
-			return
+		if n.SpaceExternalIfaceMod6 == "" {
+			_, err = utils.ExecCombinedOutputLogged(
+				nil,
+				"ip", "netns", "exec", n.Namespace,
+				"sysctl", "-w",
+				fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2",
+					n.SpaceExternalIface),
+			)
+			if err != nil {
+				return
+			}
+		} else {
+			_, err = utils.ExecCombinedOutputLogged(
+				nil,
+				"ip", "netns", "exec", n.Namespace,
+				"sysctl", "-w",
+				fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2",
+					n.SpaceExternalIfaceMod6),
+			)
+			if err != nil {
+				return
+			}
 		}
 	}
 
@@ -175,7 +188,7 @@ func (n *NetConf) spaceForward(db *database.Database) (err error) {
 			"iptables",
 			"-I", "FORWARD", "1",
 			"!", "-d", n.InternalAddr.String()+"/32",
-			"-i", n.SpaceExternalIface,
+			"-i", n.SpaceExternalIface+"+",
 			"-m", "comment",
 			"--comment", "pritunl_cloud_base",
 			"-j", "DROP",
@@ -193,7 +206,7 @@ func (n *NetConf) spaceForward(db *database.Database) (err error) {
 			"-I", "FORWARD", "1",
 			"-m", "set",
 			"!", "--match-set", "prx_inst6", "dst",
-			"-i", n.SpaceExternalIface,
+			"-i", n.SpaceExternalIface+"+",
 			"-m", "comment",
 			"--comment", "pritunl_cloud_base",
 			"-j", "DROP",

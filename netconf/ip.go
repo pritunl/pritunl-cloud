@@ -56,27 +56,54 @@ func (n *NetConf) ipStartDhClient(db *database.Database) (err error) {
 
 func (n *NetConf) ipExternal(db *database.Database) (err error) {
 	if n.NetworkMode == node.Static {
-		_, err = utils.ExecCombinedOutputLogged(
-			[]string{"File exists"},
-			"ip", "netns", "exec", n.Namespace,
-			"ip", "addr",
-			"add", n.ExternalAddrCidr,
-			"dev", n.SpaceExternalIface,
-		)
-		if err != nil {
-			return
+		if n.SpaceExternalIfaceMod != "" {
+			_, err = utils.ExecCombinedOutputLogged(
+				[]string{"File exists"},
+				"ip", "netns", "exec", n.Namespace,
+				"ip", "addr",
+				"add", n.ExternalAddrCidr,
+				"dev", n.SpaceExternalIfaceMod,
+			)
+			if err != nil {
+				return
+			}
+
+			_, err = utils.ExecCombinedOutputLogged(
+				[]string{"File exists"},
+				"ip", "netns", "exec", n.Namespace,
+				"ip", "route",
+				"add", "default",
+				"via", n.ExternalGatewayAddr.String(),
+				"dev", n.SpaceExternalIfaceMod,
+			)
+			if err != nil {
+				return
+			}
+		} else {
+			_, err = utils.ExecCombinedOutputLogged(
+				[]string{"File exists"},
+				"ip", "netns", "exec", n.Namespace,
+				"ip", "addr",
+				"add", n.ExternalAddrCidr,
+				"dev", n.SpaceExternalIface,
+			)
+			if err != nil {
+				return
+			}
+
+			_, err = utils.ExecCombinedOutputLogged(
+				[]string{"File exists"},
+				"ip", "netns", "exec", n.Namespace,
+				"ip", "route",
+				"add", "default",
+				"via", n.ExternalGatewayAddr.String(),
+				"dev", n.SpaceExternalIface,
+			)
+			if err != nil {
+				return
+			}
 		}
 
-		_, err = utils.ExecCombinedOutputLogged(
-			[]string{"File exists"},
-			"ip", "netns", "exec", n.Namespace,
-			"ip", "route",
-			"add", "default",
-			"via", n.ExternalGatewayAddr.String(),
-		)
-		if err != nil {
-			return
-		}
 	} else if n.NetworkMode == node.Dhcp {
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
@@ -92,28 +119,55 @@ func (n *NetConf) ipExternal(db *database.Database) (err error) {
 	}
 
 	if n.NetworkMode6 == node.Static {
-		_, err = utils.ExecCombinedOutputLogged(
-			[]string{"File exists"},
-			"ip", "netns", "exec", n.Namespace,
-			"ip", "-6", "addr",
-			"add", n.ExternalAddrCidr6,
-			"dev", n.SpaceExternalIface,
-		)
-		if err != nil {
-			return
-		}
-
-		if n.ExternalGatewayAddr6 != nil {
+		if n.SpaceExternalIfaceMod6 != "" {
 			_, err = utils.ExecCombinedOutputLogged(
 				[]string{"File exists"},
 				"ip", "netns", "exec", n.Namespace,
-				"ip", "-6", "route",
-				"add", "default",
-				"via", n.ExternalGatewayAddr6.String(),
+				"ip", "addr",
+				"add", n.ExternalAddrCidr6,
+				"dev", n.SpaceExternalIfaceMod6,
+			)
+			if err != nil {
+				return
+			}
+
+			if n.ExternalGatewayAddr6 != nil {
+				_, err = utils.ExecCombinedOutputLogged(
+					[]string{"File exists"},
+					"ip", "netns", "exec", n.Namespace,
+					"ip", "-6", "route",
+					"add", "default",
+					"via", n.ExternalGatewayAddr6.String(),
+					"dev", n.SpaceExternalIfaceMod6,
+				)
+				if err != nil {
+					return
+				}
+			}
+		} else {
+			_, err = utils.ExecCombinedOutputLogged(
+				[]string{"File exists"},
+				"ip", "netns", "exec", n.Namespace,
+				"ip", "-6", "addr",
+				"add", n.ExternalAddrCidr6,
 				"dev", n.SpaceExternalIface,
 			)
 			if err != nil {
 				return
+			}
+
+			if n.ExternalGatewayAddr6 != nil {
+				_, err = utils.ExecCombinedOutputLogged(
+					[]string{"File exists"},
+					"ip", "netns", "exec", n.Namespace,
+					"ip", "-6", "route",
+					"add", "default",
+					"via", n.ExternalGatewayAddr6.String(),
+					"dev", n.SpaceExternalIface,
+				)
+				if err != nil {
+					return
+				}
 			}
 		}
 	} else if n.NetworkMode6 == node.Dhcp || n.NetworkMode6 == node.DhcpSlaac {
@@ -190,7 +244,7 @@ func (n *NetConf) ipDetect(db *database.Database) (err error) {
 	pubAddr6 := ""
 	if n.NetworkMode != node.Disabled && n.NetworkMode != node.Oracle {
 		for i := 0; i < ipTimeout; i++ {
-			address, address6, e := iproute.AddressGetIface(
+			address, address6, e := iproute.AddressGetIfaceMod(
 				n.Namespace, n.SpaceExternalIface)
 			if e != nil {
 				err = e
@@ -228,7 +282,7 @@ func (n *NetConf) ipDetect(db *database.Database) (err error) {
 		n.NetworkMode6 != node.Oracle {
 
 		for i := 0; i < ipTimeout6; i++ {
-			_, address6, e := iproute.AddressGetIface(
+			_, address6, e := iproute.AddressGetIfaceMod(
 				n.Namespace, n.SpaceExternalIface)
 			if e != nil {
 				err = e

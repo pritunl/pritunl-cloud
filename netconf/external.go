@@ -2,6 +2,7 @@ package netconf
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -185,6 +186,84 @@ func (n *NetConf) externalSpaceUp(db *database.Database) (err error) {
 	return
 }
 
+func (n *NetConf) externalMod(db *database.Database) (err error) {
+	if n.SpaceExternalIfaceMod != "" {
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{"File exists"},
+			"ip", "netns", "exec", n.Namespace,
+			"ip", "link",
+			"add", "link", n.SpaceExternalIface,
+			"name", n.SpaceExternalIfaceMod,
+			"type", "vlan",
+			"id", strconv.Itoa(n.ExternalVlan),
+		)
+		if err != nil {
+			return
+		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", n.Namespace,
+			"ip", "link",
+			"set", "dev", n.SpaceExternalIfaceMod,
+			"mtu", n.SpaceExternalIfaceMtu,
+		)
+		if err != nil {
+			return
+		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", n.Namespace,
+			"ip", "link",
+			"set", "dev", n.SpaceExternalIfaceMod, "up",
+		)
+		if err != nil {
+			return
+		}
+	}
+
+	if n.SpaceExternalIfaceMod6 != "" &&
+		n.SpaceExternalIfaceMod6 != n.SpaceExternalIfaceMod {
+
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{"File exists"},
+			"ip", "netns", "exec", n.Namespace,
+			"ip", "link",
+			"add", "link", n.SpaceExternalIface,
+			"name", n.SpaceExternalIfaceMod6,
+			"type", "vlan",
+			"id", strconv.Itoa(n.ExternalVlan6),
+		)
+		if err != nil {
+			return
+		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", n.Namespace,
+			"ip", "link",
+			"set", "dev", n.SpaceExternalIfaceMod6,
+			"mtu", n.SpaceExternalIfaceMtu,
+		)
+		if err != nil {
+			return
+		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", n.Namespace,
+			"ip", "link",
+			"set", "dev", n.SpaceExternalIfaceMod6, "up",
+		)
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
 func (n *NetConf) External(db *database.Database) (err error) {
 	err = n.externalNet(db)
 	if err != nil {
@@ -217,6 +296,11 @@ func (n *NetConf) External(db *database.Database) (err error) {
 	}
 
 	err = n.externalSpaceUp(db)
+	if err != nil {
+		return
+	}
+
+	err = n.externalMod(db)
 	if err != nil {
 		return
 	}

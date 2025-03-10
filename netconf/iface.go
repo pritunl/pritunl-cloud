@@ -100,16 +100,8 @@ func (n *NetConf) Iface1(db *database.Database) (err error) {
 	}
 	n.VmAdapter = n.Virt.NetworkAdapters[0]
 
-	n.SystemExternalIface = vm.GetIfaceNodeExternal(n.Virt.Id, 0)
-
-	return
-}
-
-func (n *NetConf) Iface2(db *database.Database, clean bool) (err error) {
-	n.PhysicalHostIface = settings.Hypervisor.HostNetworkName
-	n.PhysicalNodePortIface = settings.Hypervisor.NodePortNetworkName
-
 	n.VirtIface = vm.GetIface(n.Virt.Id, 0)
+	n.SystemExternalIface = vm.GetIfaceNodeExternal(n.Virt.Id, 0)
 	n.SystemInternalIface = vm.GetIfaceNodeInternal(n.Virt.Id, 0)
 	n.SystemHostIface = vm.GetIfaceHost(n.Virt.Id, 0)
 	n.SystemNodePortIface = vm.GetIfaceNodePort(n.Virt.Id, 0)
@@ -121,6 +113,13 @@ func (n *NetConf) Iface2(db *database.Database, clean bool) (err error) {
 	n.SpaceOracleVirtIface = vm.GetIfaceOracleVirt(n.Virt.Id, 0)
 	n.SpaceBridgeIface = settings.Hypervisor.BridgeIfaceName
 	n.SpaceImdsIface = settings.Hypervisor.ImdsIfaceName
+
+	return
+}
+
+func (n *NetConf) Iface2(db *database.Database, clean bool) (err error) {
+	n.PhysicalHostIface = settings.Hypervisor.HostNetworkName
+	n.PhysicalNodePortIface = settings.Hypervisor.NodePortNetworkName
 
 	n.BridgeInternalIface = vm.GetIfaceVlan(n.Virt.Id, 0)
 

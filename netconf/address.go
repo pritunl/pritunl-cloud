@@ -73,6 +73,11 @@ func (n *NetConf) Address(db *database.Database) (err error) {
 		staticCidr := fmt.Sprintf(
 			"%s/%d", staticAddr.String(), staticSize)
 
+		n.ExternalVlan = blck.Vlan
+		if n.ExternalVlan != 0 {
+			n.SpaceExternalIfaceMod = n.SpaceExternalIface + "x"
+		}
+
 		n.ExternalAddrCidr = staticCidr
 		n.ExternalGatewayAddr = staticGateway
 	} else if n.NetworkMode6 != node.Disabled &&
@@ -90,10 +95,29 @@ func (n *NetConf) Address(db *database.Database) (err error) {
 			return
 		}
 
+		if n.PhysicalExternalIface != "" && n.PhysicalExternalIface != iface {
+			err = &errortypes.ParseError{
+				errors.Newf(
+					"netconf: Unsupported mismatched external "+
+						"IPv4 and IPv6 iface %s - %s",
+					n.PhysicalExternalIface, iface,
+				),
+			}
+			return
+		}
 		n.PhysicalExternalIface = iface
 
 		staticCidr6 := fmt.Sprintf("%s/%d", staticAddr.String(), prefix)
 		gateway6 := blck.GetGateway6()
+
+		n.ExternalVlan6 = blck.Vlan
+		if n.ExternalVlan6 != 0 {
+			if n.ExternalVlan == n.ExternalVlan6 {
+				n.SpaceExternalIfaceMod6 = n.SpaceExternalIfaceMod
+			} else {
+				n.SpaceExternalIfaceMod6 = n.SpaceExternalIface + "y"
+			}
+		}
 
 		n.ExternalAddrCidr6 = staticCidr6
 		n.ExternalGatewayAddr6 = gateway6
