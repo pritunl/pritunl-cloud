@@ -223,7 +223,7 @@ func GetVmInfo(db *database.Database, vmId primitive.ObjectID,
 		if nodeNetworkMode != node.Disabled &&
 			nodeNetworkMode != node.Oracle {
 
-			address, address6, e := iproute.AddressGetIface(
+			address, address6, e := iproute.AddressGetIfaceMod(
 				namespace, ifaceExternal)
 			if e != nil {
 				if addrStore != nil {
@@ -248,7 +248,7 @@ func GetVmInfo(db *database.Database, vmId primitive.ObjectID,
 		} else if nodeNetworkMode6 != node.Disabled &&
 			nodeNetworkMode6 != node.Oracle {
 
-			_, address6, e := iproute.AddressGetIface(
+			_, address6, e := iproute.AddressGetIfaceMod(
 				namespace, ifaceExternal)
 			if e != nil {
 				if addrStore != nil {
