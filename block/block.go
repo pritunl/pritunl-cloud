@@ -22,6 +22,7 @@ type Block struct {
 	Name     string             `bson:"name" json:"name"`
 	Comment  string             `bson:"comment" json:"comment"`
 	Type     string             `bson:"type" json:"type"`
+	Vlan     int                `bson:"vlan" json:"vlan"`
 	Subnets  []string           `bson:"subnets" json:"subnets"`
 	Subnets6 []string           `bson:"subnets6" json:"subnets6"`
 	Excludes []string           `bson:"excludes" json:"excludes"`
@@ -37,6 +38,14 @@ func (b *Block) Validate(db *database.Database) (
 
 	if b.Type == "" {
 		b.Type = IPv4
+	}
+
+	if b.Vlan < 0 || b.Vlan > 4095 {
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_blan",
+			Message: "VLan is invalid",
+		}
+		return
 	}
 
 	if b.Subnets == nil {
