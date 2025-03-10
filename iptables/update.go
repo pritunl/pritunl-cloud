@@ -42,7 +42,7 @@ func (u *Update) Apply() {
 	oldIfaces.Subtract(newIfaces)
 	for iface := range oldIfaces.Iter() {
 		removed = append(removed, iface.(string))
-		err := u.OldState.Interfaces[iface.(string)].Remove(true)
+		err := u.OldState.Interfaces[iface.(string)].Remove(nil)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"iface": iface,
