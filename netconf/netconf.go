@@ -38,15 +38,17 @@ type NetConf struct {
 	OracleRouterAddress string
 	OracleMetal         bool
 
-	SpaceBridgeIface     string
-	VirtIface            string
-	SpaceExternalIface   string
-	SpaceInternalIface   string
-	SpaceHostIface       string
-	SpaceNodePortIface   string
-	SpaceOracleIface     string
-	SpaceOracleVirtIface string
-	SpaceImdsIface       string
+	SpaceBridgeIface       string
+	VirtIface              string
+	SpaceExternalIface     string
+	SpaceExternalIfaceMod  string
+	SpaceExternalIfaceMod6 string
+	SpaceInternalIface     string
+	SpaceHostIface         string
+	SpaceNodePortIface     string
+	SpaceOracleIface       string
+	SpaceOracleVirtIface   string
+	SpaceImdsIface         string
 
 	BridgeInternalIface string
 
@@ -84,8 +86,10 @@ type NetConf struct {
 	InternalAddr6           net.IP
 	InternalGatewayAddr6    net.IP
 
+	ExternalVlan         int
 	ExternalAddrCidr     string
 	ExternalGatewayAddr  net.IP
+	ExternalVlan6        int
 	ExternalAddrCidr6    string
 	ExternalGatewayAddr6 net.IP
 
