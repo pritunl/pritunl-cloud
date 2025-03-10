@@ -91,6 +91,8 @@ func (u *Update) Apply() {
 					"nats6":    rules.Nats6Diff,
 					"maps":     rules.MapsDiff,
 					"maps6":    rules.Maps6Diff,
+					"holds":    rules.HoldsDiff,
+					"holds6":   rules.Holds6Diff,
 				}).Info("iptables: Updating iptables")
 			}
 

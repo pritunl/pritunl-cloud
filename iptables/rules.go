@@ -24,5 +24,7 @@ type Rules struct {
 	Maps6                [][]string
 	Maps6Diff            bool
 	Holds                [][]string
+	HoldsDiff            bool
 	Holds6               [][]string
+	Holds6Diff           bool
 }

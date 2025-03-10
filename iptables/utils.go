@@ -52,6 +52,10 @@ func diffRules(a, b *Rules) bool {
 	b.MapsDiff = false
 	a.Maps6Diff = false
 	b.Maps6Diff = false
+	a.HoldsDiff = false
+	b.HoldsDiff = false
+	a.Holds6Diff = false
+	b.Holds6Diff = false
 
 	ingressChanged := false
 	ingress6Changed := false
@@ -203,10 +207,14 @@ func diffRules(a, b *Rules) bool {
 	}
 
 	if len(a.Holds) != len(b.Holds) {
+		a.HoldsDiff = true
+		b.HoldsDiff = true
 		changed = true
 	} else {
 		for i := range a.Holds {
 			if diffCmd(a.Holds[i], b.Holds[i]) {
+				a.HoldsDiff = true
+				b.HoldsDiff = true
 				changed = true
 				break
 			}
@@ -214,10 +222,14 @@ func diffRules(a, b *Rules) bool {
 	}
 
 	if len(a.Holds6) != len(b.Holds6) {
+		a.Holds6Diff = true
+		b.Holds6Diff = true
 		changed = true
 	} else {
 		for i := range a.Holds6 {
 			if diffCmd(a.Holds6[i], b.Holds6[i]) {
+				a.Holds6Diff = true
+				b.Holds6Diff = true
 				changed = true
 				break
 			}
