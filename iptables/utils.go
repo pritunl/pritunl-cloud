@@ -32,6 +32,27 @@ func diffCmd(a, b []string) bool {
 func diffRules(a, b *Rules) bool {
 	changed := false
 
+	a.HeaderDiff = false
+	b.HeaderDiff = false
+	a.Header6Diff = false
+	b.Header6Diff = false
+	a.SourceDestCheckDiff = false
+	b.SourceDestCheckDiff = false
+	a.SourceDestCheck6Diff = false
+	b.SourceDestCheck6Diff = false
+	a.IngressDiff = false
+	b.IngressDiff = false
+	a.Ingress6Diff = false
+	b.Ingress6Diff = false
+	a.NatsDiff = false
+	b.NatsDiff = false
+	a.Nats6Diff = false
+	b.Nats6Diff = false
+	a.MapsDiff = false
+	b.MapsDiff = false
+	a.Maps6Diff = false
+	b.Maps6Diff = false
+
 	ingressChanged := false
 	ingress6Changed := false
 
