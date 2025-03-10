@@ -408,12 +408,6 @@ func loadIptables(namespace, instIface string, state *State,
 			} else {
 				rules.SourceDestCheck = append(rules.SourceDestCheck, cmd)
 			}
-		} else if sdcComment {
-			if ipv6 {
-				rules.SourceDestCheck6 = append(rules.SourceDestCheck6, cmd)
-			} else {
-				rules.SourceDestCheck = append(rules.SourceDestCheck, cmd)
-			}
 		} else {
 			if headComment {
 				if ipv6 {
