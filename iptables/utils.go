@@ -318,7 +318,7 @@ func loadIptables(namespace, instIface string, state *State,
 						}
 						return
 					}
-					iface = cmd[i+1]
+					iface = strings.Trim(cmd[i+1], "+")
 					break
 				}
 			}
@@ -347,7 +347,7 @@ func loadIptables(namespace, instIface string, state *State,
 						}
 						return
 					}
-					iface = cmd[i+1]
+					iface = strings.Trim(cmd[i+1], "+")
 					break
 				}
 			}
@@ -520,7 +520,7 @@ func loadIptables(namespace, instIface string, state *State,
 						}
 						return
 					}
-					iface = cmd[i+1]
+					iface = strings.Trim(cmd[i+1], "+")
 					break
 				}
 			}
@@ -594,7 +594,7 @@ func loadIptables(namespace, instIface string, state *State,
 							}
 							return
 						}
-						postIface = cmd[i+1]
+						postIface = strings.Trim(cmd[i+1], "+")
 					}
 				}
 			}
@@ -649,7 +649,7 @@ func loadIptables(namespace, instIface string, state *State,
 						}
 						return
 					}
-					oraclePostIface = cmd[i+1]
+					oraclePostIface = strings.Trim(cmd[i+1], "+")
 				}
 			}
 		}

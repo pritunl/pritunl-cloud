@@ -280,7 +280,7 @@ func (r *Rules) Hold() (err error) {
 	if r.Interface != "host" {
 		if strings.HasPrefix(r.Interface, "e") {
 			cmd = append(cmd,
-				"-i", r.Interface,
+				"-i", r.Interface+"+",
 			)
 		} else if strings.HasPrefix(r.Interface, "h") {
 			cmd = append(cmd,
@@ -322,7 +322,7 @@ func (r *Rules) Hold() (err error) {
 	if r.Interface != "host" {
 		if strings.HasPrefix(r.Interface, "e") {
 			cmd = append(cmd,
-				"-i", r.Interface,
+				"-i", r.Interface+"+",
 			)
 		} else if strings.HasPrefix(r.Interface, "h") {
 			cmd = append(cmd,
@@ -948,6 +948,10 @@ func generateInternal(namespace, iface string, nat, nat6, dhcp, dhcp6 bool,
 		Holds6:           [][]string{},
 	}
 
+	if strings.HasPrefix(iface, "e") {
+		iface = iface + "+"
+	}
+
 	if nat && natAddr != "" && natPubAddr != "" {
 		cmd := rules.newCommandNatPre()
 		cmd = append(cmd,
@@ -1021,9 +1025,9 @@ func generateInternal(namespace, iface string, nat, nat6, dhcp, dhcp6 bool,
 	}
 
 	cmd := rules.newCommand()
-	if rules.Interface != "host" {
+	if iface != "host" {
 		cmd = append(cmd,
-			"-i", rules.Interface,
+			"-i", iface,
 		)
 	}
 	cmd = append(cmd,
@@ -1038,9 +1042,9 @@ func generateInternal(namespace, iface string, nat, nat6, dhcp, dhcp6 bool,
 	rules.Header6 = append(rules.Header6, cmd)
 
 	cmd = rules.newCommand()
-	if rules.Interface != "host" {
+	if iface != "host" {
 		cmd = append(cmd,
-			"-i", rules.Interface,
+			"-i", iface,
 		)
 	}
 	cmd = append(cmd,
@@ -1055,9 +1059,9 @@ func generateInternal(namespace, iface string, nat, nat6, dhcp, dhcp6 bool,
 	rules.Header6 = append(rules.Header6, cmd)
 
 	cmd = rules.newCommand()
-	if rules.Interface != "host" {
+	if iface != "host" {
 		cmd = append(cmd,
-			"-i", rules.Interface,
+			"-i", iface,
 		)
 	}
 	cmd = append(cmd,
@@ -1072,9 +1076,9 @@ func generateInternal(namespace, iface string, nat, nat6, dhcp, dhcp6 bool,
 	rules.Header6 = append(rules.Header6, cmd)
 
 	cmd = rules.newCommand()
-	if rules.Interface != "host" {
+	if iface != "host" {
 		cmd = append(cmd,
-			"-i", rules.Interface,
+			"-i", iface,
 		)
 	}
 	cmd = append(cmd,
@@ -1089,9 +1093,9 @@ func generateInternal(namespace, iface string, nat, nat6, dhcp, dhcp6 bool,
 	rules.Header6 = append(rules.Header6, cmd)
 
 	cmd = rules.newCommand()
-	if rules.Interface != "host" {
+	if iface != "host" {
 		cmd = append(cmd,
-			"-i", rules.Interface,
+			"-i", iface,
 		)
 	}
 	cmd = append(cmd,
@@ -1105,9 +1109,9 @@ func generateInternal(namespace, iface string, nat, nat6, dhcp, dhcp6 bool,
 	rules.Ingress = append(rules.Ingress, cmd)
 
 	cmd = rules.newCommand()
-	if rules.Interface != "host" {
+	if iface != "host" {
 		cmd = append(cmd,
-			"-i", rules.Interface,
+			"-i", iface,
 		)
 	}
 	cmd = append(cmd,
@@ -1161,9 +1165,9 @@ func generateInternal(namespace, iface string, nat, nat6, dhcp, dhcp6 bool,
 
 			cmd = rules.newCommand()
 
-			if rules.Interface != "host" {
+			if iface != "host" {
 				cmd = append(cmd,
-					"-i", rules.Interface,
+					"-i", iface,
 				)
 			}
 
@@ -1260,9 +1264,9 @@ func generateInternal(namespace, iface string, nat, nat6, dhcp, dhcp6 bool,
 	}
 
 	cmd = rules.newCommand()
-	if rules.Interface != "host" {
+	if iface != "host" {
 		cmd = append(cmd,
-			"-i", rules.Interface,
+			"-i", iface,
 		)
 	}
 	cmd = append(cmd,
@@ -1276,9 +1280,9 @@ func generateInternal(namespace, iface string, nat, nat6, dhcp, dhcp6 bool,
 	rules.Ingress = append(rules.Ingress, cmd)
 
 	cmd = rules.newCommand()
-	if rules.Interface != "host" {
+	if iface != "host" {
 		cmd = append(cmd,
-			"-i", rules.Interface,
+			"-i", iface,
 		)
 	}
 	cmd = append(cmd,
@@ -1292,9 +1296,9 @@ func generateInternal(namespace, iface string, nat, nat6, dhcp, dhcp6 bool,
 	rules.Ingress6 = append(rules.Ingress6, cmd)
 
 	cmd = rules.newCommand()
-	if rules.Interface != "host" {
+	if iface != "host" {
 		cmd = append(cmd,
-			"-i", rules.Interface,
+			"-i", iface,
 		)
 	}
 	cmd = rules.commentCommand(cmd, false)
@@ -1304,9 +1308,9 @@ func generateInternal(namespace, iface string, nat, nat6, dhcp, dhcp6 bool,
 	rules.Ingress = append(rules.Ingress, cmd)
 
 	cmd = rules.newCommand()
-	if rules.Interface != "host" {
+	if iface != "host" {
 		cmd = append(cmd,
-			"-i", rules.Interface,
+			"-i", iface,
 		)
 	}
 	cmd = rules.commentCommand(cmd, false)
