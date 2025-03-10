@@ -306,7 +306,11 @@ func (n *NetConf) ipDetect(db *database.Database) (err error) {
 	}
 
 	n.PublicAddress = pubAddr
-	n.PublicAddress6 = pubAddr6
+	if n.ExternalAddrCidr6 != "" {
+		n.PublicAddress6 = n.ExternalAddrCidr6
+	} else {
+		n.PublicAddress6 = pubAddr6
+	}
 
 	return
 }

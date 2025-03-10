@@ -45,63 +45,6 @@ func (n *NetConf) spaceSysctl(db *database.Database) (err error) {
 		return
 	}
 
-	_, err = utils.ExecCombinedOutputLogged(
-		nil,
-		"ip", "netns", "exec", n.Namespace,
-		"sysctl", "-w", "net.ipv6.conf.all.accept_ra=0",
-	)
-	if err != nil {
-		return
-	}
-
-	_, err = utils.ExecCombinedOutputLogged(
-		nil,
-		"ip", "netns", "exec", n.Namespace,
-		"sysctl", "-w", "net.ipv6.conf.default.accept_ra=0",
-	)
-	if err != nil {
-		return
-	}
-
-	if n.NetworkMode6 == node.Static {
-		_, err = utils.ExecCombinedOutputLogged(
-			nil,
-			"ip", "netns", "exec", n.Namespace,
-			"sysctl", "-w",
-			fmt.Sprintf("net.ipv6.conf.%s.autoconf=0",
-				n.SpaceExternalIface),
-		)
-		if err != nil {
-			return
-		}
-	}
-
-	if n.NetworkMode6 != node.Disabled && n.NetworkMode6 != node.Oracle {
-		if n.SpaceExternalIfaceMod6 == "" {
-			_, err = utils.ExecCombinedOutputLogged(
-				nil,
-				"ip", "netns", "exec", n.Namespace,
-				"sysctl", "-w",
-				fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2",
-					n.SpaceExternalIface),
-			)
-			if err != nil {
-				return
-			}
-		} else {
-			_, err = utils.ExecCombinedOutputLogged(
-				nil,
-				"ip", "netns", "exec", n.Namespace,
-				"sysctl", "-w",
-				fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2",
-					n.SpaceExternalIfaceMod6),
-			)
-			if err != nil {
-				return
-			}
-		}
-	}
-
 	if n.HostNetwork {
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
@@ -122,21 +65,6 @@ func (n *NetConf) spaceSysctl(db *database.Database) (err error) {
 			"sysctl", "-w",
 			fmt.Sprintf("net.ipv6.conf.%s.disable_ipv6=1",
 				n.SpaceNodePortIface),
-		)
-		if err != nil {
-			return
-		}
-	}
-
-	if (n.NetworkMode != node.Disabled && n.NetworkMode != node.Oracle) &&
-		(n.NetworkMode6 == node.Disabled || n.NetworkMode6 == node.Oracle) {
-
-		_, err = utils.ExecCombinedOutputLogged(
-			nil,
-			"ip", "netns", "exec", n.Namespace,
-			"sysctl", "-w",
-			fmt.Sprintf("net.ipv6.conf.%s.disable_ipv6=1",
-				n.SpaceExternalIface),
 		)
 		if err != nil {
 			return
