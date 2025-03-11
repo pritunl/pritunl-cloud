@@ -19,6 +19,7 @@ type Vnic struct {
 	PrivateIp           string
 	PrivateIpId         string
 	PublicIp            string
+	PublicIp6           string
 	SkipSourceDestCheck bool
 }
 
@@ -92,6 +93,9 @@ func GetVnic(pv *Provider, vnicId string) (vnic *Vnic, err error) {
 	if orcVnic.PublicIp != nil {
 		vnic.PublicIp = *orcVnic.PublicIp
 	}
+	if len(orcVnic.Ipv6Addresses) > 0 {
+		vnic.PublicIp6 = orcVnic.Ipv6Addresses[0]
+	}
 	if orcVnic.SkipSourceDestCheck != nil {
 		vnic.SkipSourceDestCheck = *orcVnic.SkipSourceDestCheck
 	}
@@ -151,8 +155,8 @@ func getVnicAttachment(pv *Provider, attachmentId string) (
 	return
 }
 
-func CreateVnic(pv *Provider, name string, subnetId string) (
-	vnicId, vnicAttachId string, err error) {
+func CreateVnic(pv *Provider, name, subnetId string,
+	publicIp, publicIp6 bool) (vnicId, vnicAttachId string, err error) {
 
 	client, err := pv.GetComputeClient()
 	if err != nil {
@@ -164,7 +168,8 @@ func CreateVnic(pv *Provider, name string, subnetId string) (
 			InstanceId:  utils.PointerString(pv.Metadata.InstanceOcid),
 			DisplayName: utils.PointerString(name),
 			CreateVnicDetails: &core.CreateVnicDetails{
-				AssignPublicIp: utils.PointerBool(true),
+				AssignPublicIp: utils.PointerBool(publicIp),
+				AssignIpv6Ip:   utils.PointerBool(publicIp6),
 				DisplayName:    utils.PointerString(name),
 				SubnetId:       utils.PointerString(subnetId),
 			},
