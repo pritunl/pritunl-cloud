@@ -36,6 +36,7 @@ type VirtualMachine struct {
 	OracleVnicAttach    string             `json:"oracle_vnic_attach"`
 	OraclePrivateIp     string             `json:"oracle_private_ip"`
 	OraclePublicIp      string             `json:"oracle_public_ip"`
+	OraclePublicIp6     string             `json:"oracle_public_ip6"`
 	Uefi                bool               `json:"uefi"`
 	SecureBoot          bool               `json:"secure_boot"`
 	Tpm                 bool               `json:"tpm"`
@@ -237,10 +238,26 @@ func (v *VirtualMachine) CommitOracleVnic(db *database.Database) (err error) {
 func (v *VirtualMachine) CommitOracleIps(db *database.Database) (err error) {
 	coll := db.Instances()
 
+	oraclePivateAddrs := []string{}
+	if v.OraclePrivateIp != "" {
+		oraclePivateAddrs = append(oraclePivateAddrs, v.OraclePrivateIp)
+	}
+
+	oraclePublicAddrs := []string{}
+	if v.OraclePublicIp != "" {
+		oraclePublicAddrs = append(oraclePublicAddrs, v.OraclePublicIp)
+	}
+
+	oraclePublicAddrs6 := []string{}
+	if v.OraclePublicIp6 != "" {
+		oraclePublicAddrs6 = append(oraclePublicAddrs6, v.OraclePublicIp6)
+	}
+
 	err = coll.UpdateId(v.Id, &bson.M{
 		"$set": &bson.M{
-			"oracle_private_ips": []string{v.OraclePrivateIp},
-			"oracle_public_ips":  []string{v.OraclePublicIp},
+			"oracle_private_ips": oraclePivateAddrs,
+			"oracle_public_ips":  oraclePublicAddrs,
+			"oracle_public_ips6": oraclePublicAddrs6,
 		},
 	})
 	if err != nil {
@@ -253,12 +270,9 @@ func (v *VirtualMachine) CommitOracleIps(db *database.Database) (err error) {
 
 		err = coll.UpdateId(v.Deployment, &bson.M{
 			"$set": &bson.M{
-				"instance_data.oracle_private_ips": []string{
-					v.OraclePrivateIp,
-				},
-				"instance_data.oracle_public_ips": []string{
-					v.OraclePublicIp,
-				},
+				"instance_data.oracle_private_ips": oraclePivateAddrs,
+				"instance_data.oracle_public_ips":  oraclePublicAddrs,
+				"instance_data.oracle_public_ips6": oraclePublicAddrs6,
 			},
 		})
 		if err != nil {
