@@ -21,6 +21,7 @@ const (
 	Public        = "public"
 	Public6       = "public6"
 	OraclePublic  = "oracle_public"
+	OraclePublic6 = "oracle_public6"
 	OraclePrivate = "oracle_private"
 
 	TokenPrefix = "+/"
