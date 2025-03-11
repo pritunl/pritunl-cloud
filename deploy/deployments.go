@@ -663,6 +663,29 @@ func (d *Deployments) domain(db *database.Database,
 					newRecs[domn.Id] = append(newRecs[domn.Id], rec)
 				}
 				break
+			case spec.OraclePublic6:
+				for _, val := range deply.InstanceData.OraclePublicIps6 {
+					rec := &domain.Record{
+						Domain:     specRec.Domain,
+						SubDomain:  specRec.Name,
+						Deployment: deply.Id,
+						Type:       domain.AAAA,
+						Value:      val,
+					}
+
+					errData, e := rec.Validate(db)
+					if e != nil {
+						err = e
+						return
+					}
+					if errData != nil {
+						err = errData.GetError()
+						return
+					}
+
+					newRecs[domn.Id] = append(newRecs[domn.Id], rec)
+				}
+				break
 			case spec.OraclePrivate:
 				for _, val := range deply.InstanceData.OraclePrivateIps {
 					rec := &domain.Record{
