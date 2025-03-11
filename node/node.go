@@ -123,6 +123,7 @@ type Node struct {
 	CachePath               string               `bson:"cache_path" json:"cache_path"`
 	TempPath                string               `bson:"temp_path" json:"temp_path"`
 	OracleUser              string               `bson:"oracle_user" json:"oracle_user"`
+	OracleTenancy           string               `bson:"oracle_tenancy" json:"oracle_tenancy"`
 	OraclePrivateKey        string               `bson:"oracle_private_key" json:"-"`
 	OraclePublicKey         string               `bson:"oracle_public_key" json:"oracle_public_key"`
 	Operation               string               `bson:"operation" json:"operation"`
@@ -217,6 +218,7 @@ func (n *Node) Copy() *Node {
 		CachePath:               n.CachePath,
 		TempPath:                n.TempPath,
 		OracleUser:              n.OracleUser,
+		OracleTenancy:           n.OracleTenancy,
 		OraclePrivateKey:        n.OraclePrivateKey,
 		OraclePublicKey:         n.OraclePublicKey,
 		Operation:               n.Operation,
@@ -724,8 +726,16 @@ func (n *Node) Validate(db *database.Database) (
 			}
 			return
 		}
+		if n.OracleTenancy == "" {
+			errData = &errortypes.ErrorData{
+				Error:   "missing_oracle_tenancy",
+				Message: "Oracle tenancy OCID required for host routing",
+			}
+			return
+		}
 	} else {
 		n.OracleUser = ""
+		n.OracleTenancy = ""
 		n.OracleSubnets = []string{}
 		n.AvailableVpcs = []*cloud.Vpc{}
 	}
@@ -1143,6 +1153,7 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.CachePath = nde.CachePath
 	n.TempPath = nde.TempPath
 	n.OracleUser = nde.OracleUser
+	n.OracleTenancy = nde.OracleTenancy
 	n.OraclePrivateKey = nde.OraclePrivateKey
 	n.OraclePublicKey = nde.OraclePublicKey
 	n.Operation = nde.Operation
