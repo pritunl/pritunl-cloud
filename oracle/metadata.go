@@ -20,15 +20,16 @@ type Metadata struct {
 }
 
 type OciMetaVnic struct {
-	Id                  string `json:"vnicId"`
-	VlanTag             int    `json:"vlanTag"`
-	MacAddr             string `json:"macAddr"`
-	PrivateIp           string `json:"privateIp"`
-	VirtualRouterIp     string `json:"virtualRouterIp"`
-	SubnetCidrBlock     string `json:"subnetCidrBlock"`
-	Ipv6SubnetCidrBlock string `json:"ipv6SubnetCidrBlock"`
-	Ipv6VirtualRouterIp string `json:"ipv6VirtualRouterIp"`
-	NicIndex            int    `json:"nicIndex"`
+	Id                  string   `json:"vnicId"`
+	VlanTag             int      `json:"vlanTag"`
+	MacAddr             string   `json:"macAddr"`
+	PrivateIp           string   `json:"privateIp"`
+	VirtualRouterIp     string   `json:"virtualRouterIp"`
+	SubnetCidrBlock     string   `json:"subnetCidrBlock"`
+	Ipv6Addresses       []string `json:"ipv6Addresses"`
+	Ipv6SubnetCidrBlock string   `json:"ipv6SubnetCidrBlock"`
+	Ipv6VirtualRouterIp string   `json:"ipv6VirtualRouterIp"`
+	NicIndex            int      `json:"nicIndex"`
 }
 
 type OciMetaInstance struct {
@@ -53,6 +54,7 @@ func (o *OciMeta) IsBareMetal() bool {
 
 func GetMetadata(authPv AuthProvider) (mdata *Metadata, err error) {
 	userOcid := authPv.OracleUser()
+	tenancyOcid := authPv.OracleTenancy()
 	privateKey := authPv.OraclePrivateKey()
 
 	output, err := utils.ExecOutput("", "oci-metadata", "--json")
@@ -89,7 +91,7 @@ func GetMetadata(authPv AuthProvider) (mdata *Metadata, err error) {
 		UserOcid:        userOcid,
 		PrivateKey:      privateKey,
 		RegionName:      data.Instance.RegionName,
-		TenancyOcid:     data.Instance.CompartmentId,
+		TenancyOcid:     tenancyOcid,
 		CompartmentOcid: data.Instance.CompartmentId,
 		InstanceOcid:    data.Instance.Id,
 		VnicOcid:        vnicOcid,

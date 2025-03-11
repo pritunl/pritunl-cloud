@@ -64,8 +64,13 @@ func GetVcns(pv *Provider) (vcns []*Vcn, err error) {
 		return
 	}
 
+	compartmentId, err := pv.CompartmentOCID()
+	if err != nil {
+		return
+	}
+
 	req := core.ListVcnsRequest{
-		CompartmentId: utils.PointerString(pv.tenancy),
+		CompartmentId: &compartmentId,
 		Limit:         utils.PointerInt(100),
 	}
 
@@ -112,8 +117,13 @@ func GetSubnets(pv *Provider, vcnId string) (subnets []*Subnet, err error) {
 		return
 	}
 
+	compartmentId, err := pv.CompartmentOCID()
+	if err != nil {
+		return
+	}
+
 	req := core.ListSubnetsRequest{
-		CompartmentId: utils.PointerString(pv.tenancy),
+		CompartmentId: &compartmentId,
 		VcnId:         utils.PointerString(vcnId),
 		Limit:         utils.PointerInt(256),
 	}
