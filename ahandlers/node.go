@@ -69,6 +69,7 @@ type nodeData struct {
 	Firewall                bool                    `json:"firewall"`
 	NetworkRoles            []string                `json:"network_roles"`
 	OracleUser              string                  `json:"oracle_user"`
+	OracleTenancy           string                  `json:"oracle_tenancy"`
 }
 
 type nodesData struct {
@@ -155,6 +156,7 @@ func nodePut(c *gin.Context) {
 	nde.Firewall = data.Firewall
 	nde.NetworkRoles = data.NetworkRoles
 	nde.OracleUser = data.OracleUser
+	nde.OracleTenancy = data.OracleTenancy
 
 	fields := set.NewSet(
 		"name",
@@ -200,6 +202,7 @@ func nodePut(c *gin.Context) {
 		"firewall",
 		"network_roles",
 		"oracle_user",
+		"oracle_tenancy",
 	)
 
 	if !data.Zone.IsZero() && data.Zone != nde.Zone {
