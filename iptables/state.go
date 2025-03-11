@@ -71,6 +71,8 @@ func LoadState(nodeSelf *node.Node, vpcs []*vpc.Vpc,
 		}
 		if len(inst.PublicIps6) != 0 {
 			pubAddr6 = inst.PublicIps6[0]
+		} else if len(inst.OraclePublicIps6) != 0 {
+			pubAddr6 = inst.OraclePublicIps6[0]
 		}
 
 		nodePortAddr := ""
@@ -137,8 +139,12 @@ func LoadState(nodeSelf *node.Node, vpcs []*vpc.Vpc,
 		}
 
 		if nodeNetworkMode == node.Oracle {
+			if nodeNetworkMode6 == node.Oracle {
+				nat6 = true
+			}
+
 			rules := generateInternal(namespace, oracleIface,
-				true, false, false, false, addr, oracleAddr, addr6, "",
+				true, nat6, false, false, addr, oracleAddr, addr6, pubAddr6,
 				ingress)
 
 			state.Interfaces[namespace+"-"+oracleIface] = rules
