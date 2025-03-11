@@ -82,6 +82,7 @@ type Instance struct {
 	GatewayIps6         []string            `bson:"gateway_ips6" json:"gateway_ips6"`
 	OraclePrivateIps    []string            `bson:"oracle_private_ips" json:"oracle_private_ips"`
 	OraclePublicIps     []string            `bson:"oracle_public_ips" json:"oracle_public_ips"`
+	OraclePublicIps6    []string            `bson:"oracle_public_ips6" json:"oracle_public_ips6"`
 	HostIps             []string            `bson:"host_ips" json:"host_ips"`
 	NodePortIps         []string            `bson:"node_port_ips" json:"node_port_ips"`
 	NodePorts           []*nodeport.Mapping `bson:"node_ports" json:"node_ports"`
