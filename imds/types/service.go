@@ -29,11 +29,14 @@ type Unit struct {
 	HealthyPrivateIps6        []string           `json:"healthy_private_ips6"`
 	UnhealthyPrivateIps       []string           `json:"unhealthy_private_ips"`
 	UnhealthyPrivateIps6      []string           `json:"unhealthy_private_ips6"`
-	OraclePrivateIps          []string           `json:"oracle_private_ips"`
 	OraclePublicIps           []string           `json:"oracle_public_ips"`
+	OraclePublicIps6          []string           `json:"oracle_public_ips6"`
+	OraclePrivateIps          []string           `json:"oracle_private_ips"`
 	HealthyOraclePublicIps    []string           `json:"healthy_oracle_public_ips"`
+	HealthyOraclePublicIps6   []string           `json:"healthy_oracle_public_ips6"`
 	HealthyOraclePrivateIps   []string           `json:"healthy_oracle_private_ips"`
 	UnhealthyOraclePublicIps  []string           `json:"unhealthy_oracle_public_ips"`
+	UnhealthyOraclePublicIps6 []string           `json:"unhealthy_oracle_public_ips6"`
 	UnhealthyOraclePrivateIps []string           `json:"unhealthy_oracle_private_ips"`
 	Deployments               []*Deployment      `json:"deployments"`
 }
@@ -60,10 +63,13 @@ type Deployment struct {
 	UnhealthyPrivateIps       []string           `json:"unhealthy_private_ips"`
 	UnhealthyPrivateIps6      []string           `json:"unhealthy_private_ips6"`
 	OraclePublicIps           []string           `json:"oracle_public_ips"`
+	OraclePublicIps6          []string           `json:"oracle_public_ips6"`
 	OraclePrivateIps          []string           `json:"oracle_private_ips"`
 	HealthyOraclePublicIps    []string           `json:"healthy_oracle_public_ips"`
+	HealthyOraclePublicIps6   []string           `json:"healthy_oracle_public_ips6"`
 	HealthyOraclePrivateIps   []string           `json:"healthy_oracle_private_ips"`
 	UnhealthyOraclePublicIps  []string           `json:"unhealthy_oracle_public_ips"`
+	UnhealthyOraclePublicIps6 []string           `json:"unhealthy_oracle_public_ips6"`
 	UnhealthyOraclePrivateIps []string           `json:"unhealthy_oracle_private_ips"`
 }
 
@@ -97,10 +103,13 @@ func NewPods(pods []*pod.Pod,
 				UnhealthyPrivateIps:       []string{},
 				UnhealthyPrivateIps6:      []string{},
 				OraclePublicIps:           []string{},
+				OraclePublicIps6:          []string{},
 				OraclePrivateIps:          []string{},
 				HealthyOraclePublicIps:    []string{},
+				HealthyOraclePublicIps6:   []string{},
 				HealthyOraclePrivateIps:   []string{},
 				UnhealthyOraclePublicIps:  []string{},
+				UnhealthyOraclePublicIps6: []string{},
 				UnhealthyOraclePrivateIps: []string{},
 				Deployments:               []*Deployment{},
 			}
@@ -144,12 +153,18 @@ func NewPods(pods []*pod.Pod,
 					if oraclePublicIps == nil {
 						oraclePublicIps = []string{}
 					}
+					oraclePublicIps6 := data.OraclePublicIps6
+					if oraclePublicIps6 == nil {
+						oraclePublicIps6 = []string{}
+					}
 					oraclePrivateIps := data.OraclePrivateIps
 					if oraclePrivateIps == nil {
 						oraclePrivateIps = []string{}
 					}
 					healthyOraclePublicIps := []string{}
 					unhealthyOraclePublicIps := []string{}
+					healthyOraclePublicIps6 := []string{}
+					unhealthyOraclePublicIps6 := []string{}
 					healthyOraclePrivateIps := []string{}
 					unhealthyOraclePrivateIps := []string{}
 
@@ -159,6 +174,7 @@ func NewPods(pods []*pod.Pod,
 						healthyPrivateIps = privateIps
 						healthyPrivateIps6 = privateIps6
 						healthyOraclePublicIps = oraclePublicIps
+						healthyOraclePublicIps6 = oraclePublicIps6
 						healthyOraclePrivateIps = oraclePrivateIps
 					} else {
 						unhealthyPublicIps = publicIps
@@ -166,6 +182,7 @@ func NewPods(pods []*pod.Pod,
 						unhealthyPrivateIps = privateIps
 						unhealthyPrivateIps6 = privateIps6
 						unhealthyOraclePublicIps = oraclePublicIps
+						unhealthyOraclePublicIps6 = oraclePublicIps6
 						unhealthyOraclePrivateIps = oraclePrivateIps
 					}
 
@@ -205,6 +222,16 @@ func NewPods(pods []*pod.Pod,
 						unit.UnhealthyOraclePublicIps,
 						unhealthyOraclePublicIps...,
 					)
+					unit.OraclePublicIps6 = append(
+						unit.OraclePublicIps6, oraclePublicIps6...)
+					unit.HealthyOraclePublicIps6 = append(
+						unit.HealthyOraclePublicIps6,
+						healthyOraclePublicIps6...,
+					)
+					unit.UnhealthyOraclePublicIps6 = append(
+						unit.UnhealthyOraclePublicIps6,
+						unhealthyOraclePublicIps6...,
+					)
 					unit.OraclePrivateIps = append(
 						unit.OraclePrivateIps, oraclePrivateIps...)
 					unit.HealthyOraclePrivateIps = append(
@@ -240,6 +267,9 @@ func NewPods(pods []*pod.Pod,
 						OraclePublicIps:           oraclePublicIps,
 						HealthyOraclePublicIps:    healthyOraclePublicIps,
 						UnhealthyOraclePublicIps:  unhealthyOraclePublicIps,
+						OraclePublicIps6:          oraclePublicIps6,
+						HealthyOraclePublicIps6:   healthyOraclePublicIps6,
+						UnhealthyOraclePublicIps6: unhealthyOraclePublicIps6,
 						OraclePrivateIps:          oraclePrivateIps,
 						HealthyOraclePrivateIps:   healthyOraclePrivateIps,
 						UnhealthyOraclePrivateIps: unhealthyOraclePrivateIps,
