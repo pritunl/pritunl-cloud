@@ -49,10 +49,17 @@ func Generate(db *database.Database, cert *certificate.Certificate) (
 
 	var dnsSvc dns.Service
 	if acmeType == certificate.AcmeDNS {
-		secr, e := secret.GetOrg(db, cert.Organization, cert.AcmeSecret)
-		if e != nil {
-			err = e
-			return
+		var secr *secret.Secret
+		if cert.Organization.IsZero() {
+			secr, err = secret.Get(db, cert.AcmeSecret)
+			if err != nil {
+				return
+			}
+		} else {
+			secr, err = secret.GetOrg(db, cert.Organization, cert.AcmeSecret)
+			if err != nil {
+				return
+			}
 		}
 
 		if secr == nil {
