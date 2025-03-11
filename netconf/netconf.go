@@ -32,11 +32,14 @@ type NetConf struct {
 	PublicAddress  string
 	PublicAddress6 string
 
-	OracleVlan          int
-	OracleAddress       string
-	OracleAddressSubnet string
-	OracleRouterAddress string
-	OracleMetal         bool
+	OracleVlan           int
+	OracleAddress        string
+	OracleAddressSubnet  string
+	OracleRouterAddress  string
+	OracleAddress6       string
+	OracleAddressSubnet6 string
+	OracleRouterAddress6 string
+	OracleMetal          bool
 
 	SpaceBridgeIface       string
 	VirtIface              string

@@ -69,7 +69,8 @@ func (n *NetConf) oracleInitVnic(db *database.Database) (err error) {
 
 	if !found {
 		vnicId, vnicAttachId, e := oracle.CreateVnic(
-			pv, n.Virt.Id.Hex(), n.Virt.OracleSubnet)
+			pv, n.Virt.Id.Hex(), n.Virt.OracleSubnet, !n.Virt.NoPublicAddress,
+			!n.Virt.NoPublicAddress6)
 		if e != nil {
 			err = e
 			return
@@ -139,6 +140,12 @@ func (n *NetConf) oracleConfVnicMetal(db *database.Database) (err error) {
 				n.OracleAddressSubnet = vnic.SubnetCidrBlock
 				n.OracleRouterAddress = vnic.VirtualRouterIp
 
+				if len(vnic.Ipv6Addresses) > 0 {
+					n.OracleAddress6 = vnic.Ipv6Addresses[0]
+					n.OracleAddressSubnet6 = vnic.Ipv6SubnetCidrBlock
+					n.OracleRouterAddress6 = vnic.Ipv6VirtualRouterIp
+				}
+
 				nicIndex = vnic.NicIndex
 				macAddr = strings.ToLower(vnic.MacAddr)
 
@@ -187,6 +194,7 @@ func (n *NetConf) oracleConfVnicMetal(db *database.Database) (err error) {
 	}
 
 	n.Virt.OraclePublicIp = vnic.PublicIp
+	n.Virt.OraclePublicIp6 = vnic.PublicIp6
 
 	err = n.Virt.CommitOracleIps(db)
 	if err != nil {
@@ -279,6 +287,12 @@ func (n *NetConf) oracleConfVnicVirt(db *database.Database) (err error) {
 				n.OracleAddressSubnet = vnic.SubnetCidrBlock
 				n.OracleRouterAddress = vnic.VirtualRouterIp
 
+				if len(vnic.Ipv6Addresses) > 0 {
+					n.OracleAddress6 = vnic.Ipv6Addresses[0]
+					n.OracleAddressSubnet6 = vnic.Ipv6SubnetCidrBlock
+					n.OracleRouterAddress6 = vnic.Ipv6VirtualRouterIp
+				}
+
 				oracleMacAddr = strings.ToLower(vnic.MacAddr)
 
 				found = true
@@ -304,6 +318,7 @@ func (n *NetConf) oracleConfVnicVirt(db *database.Database) (err error) {
 	}
 
 	n.Virt.OraclePublicIp = vnic.PublicIp
+	n.Virt.OraclePublicIp6 = vnic.PublicIp6
 
 	err = n.Virt.CommitOracleIps(db)
 	if err != nil {
@@ -416,6 +431,28 @@ func (n *NetConf) oracleIp(db *database.Database) (err error) {
 		return
 	}
 
+	if n.OracleAddress6 != "" {
+		subnetSplit6 := strings.Split(n.OracleAddressSubnet6, "/")
+		if len(subnetSplit6) != 2 {
+			err = &errortypes.ParseError{
+				errors.Newf("netconf: Failed to get oracle cidr6 %s",
+					n.OracleAddressSubnet6),
+			}
+			return
+		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{"File exists"},
+			"ip", "netns", "exec", n.Namespace,
+			"ip", "addr",
+			"add", n.OracleAddress6+"/"+subnetSplit6[1],
+			"dev", n.SpaceOracleIface,
+		)
+		if err != nil {
+			return
+		}
+	}
+
 	return
 }
 
@@ -456,6 +493,20 @@ func (n *NetConf) oracleRoute(db *database.Database) (err error) {
 	)
 	if err != nil {
 		return
+	}
+
+	if n.OracleAddress6 != "" && n.OracleRouterAddress6 != "" {
+		_, err = utils.ExecCombinedOutputLogged(
+			[]string{"File exists"},
+			"ip", "netns", "exec", n.Namespace,
+			"ip", "-6", "route",
+			"add", "default",
+			"via", n.OracleRouterAddress6,
+			"dev", n.SpaceOracleIface,
+		)
+		if err != nil {
+			return
+		}
 	}
 
 	return
