@@ -16,6 +16,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/store"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/tools/commander"
 	"github.com/sirupsen/logrus"
 )
 
@@ -456,32 +457,63 @@ func (n *NetConf) ipInit6(db *database.Database) (err error) {
 	if n.NetworkMode6 != node.Disabled && n.NetworkMode6 != node.Oracle &&
 		n.PublicAddress6 != "" && !settings.Hypervisor.NoIpv6PingInit {
 
-		_, e := utils.DnsLookup(
-			settings.Hypervisor.DnsServerPrimary6,
-			"app6.pritunl.com",
-		)
-		if e != nil {
-			logrus.WithFields(logrus.Fields{
-				"instance_id": n.Virt.Id.Hex(),
-				"namespace":   n.Namespace,
-				"address6":    n.PublicAddress6,
-				"error":       e,
-			}).Warn("netconf: Failed to initialize IPv6 network DNS lookup")
-		}
+		for i := 0; i < 3; i++ {
+			time.Sleep(200 * time.Millisecond)
 
-		output, e := utils.ExecCombinedOutput(
-			"",
-			"ip", "netns", "exec", n.Namespace,
-			"ping6", "-c", "3", "-i", "0.5", "-w", "6",
-			settings.Hypervisor.Ipv6PingHost,
-		)
-		if e != nil {
-			logrus.WithFields(logrus.Fields{
-				"instance_id": n.Virt.Id.Hex(),
-				"namespace":   n.Namespace,
-				"address6":    n.PublicAddress6,
-				"output":      output,
-			}).Warn("netconf: Failed to initialize IPv6 network ping")
+			resp, e := commander.Exec(&commander.Opt{
+				Name: "ip",
+				Args: []string{
+					"netns", "exec", n.Namespace, "dig",
+					"@" + settings.Hypervisor.DnsServerPrimary6,
+					"app6.pritunl.com",
+					"AAAA",
+				},
+				Timeout: 5 * time.Second,
+				PipeOut: true,
+				PipeErr: true,
+			})
+			if e != nil {
+				output := ""
+				if resp != nil {
+					output = string(resp.Output)
+				}
+
+				logrus.WithFields(logrus.Fields{
+					"instance_id": n.Virt.Id.Hex(),
+					"namespace":   n.Namespace,
+					"address6":    n.PublicAddress6,
+					"output":      output,
+				}).Warn("netconf: IPv6 network DNS lookup test failed")
+				continue
+			}
+
+			resp, e = commander.Exec(&commander.Opt{
+				Name: "ip",
+				Args: []string{
+					"netns", "exec", n.Namespace, "ping6",
+					"-c", "3", "-i", "0.5", "-w", "6",
+					settings.Hypervisor.Ipv6PingHost,
+				},
+				Timeout: 6 * time.Second,
+				PipeOut: true,
+				PipeErr: true,
+			})
+			if e != nil {
+				output := ""
+				if resp != nil {
+					output = string(resp.Output)
+				}
+
+				logrus.WithFields(logrus.Fields{
+					"instance_id": n.Virt.Id.Hex(),
+					"namespace":   n.Namespace,
+					"address6":    n.PublicAddress6,
+					"output":      output,
+				}).Warn("netconf: IPv6 network DNS lookup test failed")
+				continue
+			}
+
+			break
 		}
 	}
 
