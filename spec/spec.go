@@ -16,6 +16,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/finder"
+	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/shape"
@@ -471,6 +472,35 @@ func (s *Spec) parseInstance(db *database.Database,
 		data.Processors = dataYaml.Processors
 		data.Memory = dataYaml.Memory
 	}
+
+	data.Uefi = dataYaml.Uefi
+	data.SecureBoot = dataYaml.SecureBoot
+
+	switch dataYaml.CloudType {
+	case instance.Linux:
+		data.CloudType = instance.Linux
+		break
+	case instance.BSD:
+		data.CloudType = instance.BSD
+		break
+	case "":
+		break
+	default:
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_unit_cloud_type",
+			Message: "Unit instance cloud type is invalid",
+		}
+		return
+	}
+
+	data.Tpm = dataYaml.Tpm
+	data.Vnc = dataYaml.Vnc
+	data.DeleteProtection = dataYaml.DeleteProtection
+	data.SkipSourceDestCheck = dataYaml.SkipSourceDestCheck
+	data.HostAddress = dataYaml.HostAddress
+	data.PublicAddress = dataYaml.PublicAddress
+	data.PublicAddress6 = dataYaml.PublicAddress6
+	data.DhcpServer = dataYaml.DhcpServer
 
 	data.Roles = dataYaml.Roles
 	data.DiskSize = dataYaml.DiskSize
