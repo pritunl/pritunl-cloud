@@ -153,6 +153,14 @@ func certificatePost(c *gin.Context) {
 		cert.Certificate = data.Certificate
 	}
 
+	if !cert.AcmeSecret.IsZero() {
+		_, err = secret.GetOrg(db, userOrg, cert.AcmeSecret)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+	}
+
 	errData, err := cert.Validate(db)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
