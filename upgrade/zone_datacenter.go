@@ -1,4 +1,4 @@
-package node
+package upgrade
 
 import (
 	"github.com/pritunl/mongo-go-driver/bson"
@@ -11,7 +11,7 @@ type zoneUgradeDoc struct {
 	Zone       primitive.ObjectID `bson:"zone"`
 }
 
-func dataUpgradeZone(db *database.Database) (err error) {
+func zoneDatacenterUpgrade(db *database.Database) (err error) {
 	zoneColl := db.Zones()
 
 	zoneDatacenterMap := make(map[primitive.ObjectID]primitive.ObjectID)
