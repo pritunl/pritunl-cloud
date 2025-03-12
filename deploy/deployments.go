@@ -294,7 +294,17 @@ func (d *Deployments) destroy(db *database.Database,
 					"deployment": deply.Id.Hex(),
 					"instance":   inst.Id.Hex(),
 				}).Warning("deploy: Cannot destroy deployment with " +
-					"instance delete protection")
+					"instance delete protection, archiving...")
+
+				deply.State = deployment.Archive
+				err := deply.CommitFields(db, set.NewSet("state"))
+				if err != nil {
+					logrus.WithFields(logrus.Fields{
+						"deployment_id": deply.Id.Hex(),
+						"error":         err,
+					}).Error("deploy: Failed to commit deployment")
+					return
+				}
 				return
 			}
 
