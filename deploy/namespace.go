@@ -131,9 +131,13 @@ func (n *Namespace) Deploy(db *database.Database) (err error) {
 		}
 		curVirtIfaces.Add(vm.GetIfaceNodePort(inst.Id, 0))
 
-		if inst.VirtState == vm.Running && hasDhcp6 && dhcpTtl != 0 {
+		if inst.VirtState == vm.Running && hasDhcp6 && dhcpTtl != 0 &&
+			!inst.VirtTimestamp.IsZero() {
+
 			timestamp := netconf.GetDhTimestamp(inst.Id)
-			if now.Sub(timestamp) > dhcpRefresh {
+			if now.Sub(inst.VirtTimestamp) > dhcpRefresh &&
+				now.Sub(timestamp) > dhcpRefresh {
+
 				n.restartDhcp(inst)
 			}
 		}
