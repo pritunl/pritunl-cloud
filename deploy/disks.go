@@ -347,17 +347,9 @@ func (d *Disks) restore(dsk *disk.Disk) {
 }
 
 func (d *Disks) destroy(db *database.Database, dsk *disk.Disk) {
-	if dsk.DeleteProtection {
-		logrus.WithFields(logrus.Fields{
-			"disk_id": dsk.Id.Hex(),
-		}).Info("deploy: Delete protection ignore disk destroy")
-
-		dsk.State = disk.Available
-		_ = dsk.CommitFields(db, set.NewSet("state"))
-
-		event.PublishDispatch(db, "disk.change")
-
-		return
+	var inst *instance.Instance
+	if !dsk.Instance.IsZero() {
+		inst = d.stat.GetInstace(dsk.Instance)
 	}
 
 	if d.stat.DiskInUse(dsk.Instance, dsk.Id) {
@@ -376,6 +368,32 @@ func (d *Disks) destroy(db *database.Database, dsk *disk.Disk) {
 		defer db.Close()
 
 		if constants.Interrupt {
+			return
+		}
+
+		if dsk.DeleteProtection {
+			logrus.WithFields(logrus.Fields{
+				"disk_id": dsk.Id.Hex(),
+			}).Info("deploy: Delete protection ignore disk destroy")
+
+			dsk.State = disk.Available
+			_ = dsk.CommitFields(db, set.NewSet("state"))
+
+			event.PublishDispatch(db, "disk.change")
+
+			return
+		}
+
+		if inst != nil && inst.DeleteProtection {
+			logrus.WithFields(logrus.Fields{
+				"disk_id": dsk.Id.Hex(),
+			}).Info("deploy: Instance delete protection ignore disk destroy")
+
+			dsk.State = disk.Available
+			_ = dsk.CommitFields(db, set.NewSet("state"))
+
+			event.PublishDispatch(db, "disk.change")
+
 			return
 		}
 
