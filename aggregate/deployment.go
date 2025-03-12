@@ -46,6 +46,7 @@ type Deployment struct {
 	InstanceStatus      string                   `bson:"-" json:"instance_status"`
 	InstanceUptime      string                   `bson:"-" json:"instance_uptime"`
 	InstanceState       string                   `bson:"-" json:"instance_state"`
+	InstanceAction      string                   `bson:"-" json:"instance_action"`
 	InstanceVirtState   string                   `bson:"-" json:"instance_virt_state"`
 	InstanceGuestStatus string                   `bson:"-" json:"instance_guest_status"`
 	InstanceHeartbeat   time.Time                `bson:"-" json:"instance_heartbeat"`
@@ -185,6 +186,7 @@ func GetDeployments(db *database.Database, unitId primitive.ObjectID) (
 			deply.InstanceStatus = inst.Status
 			deply.InstanceUptime = inst.Uptime
 			deply.InstanceState = inst.State
+			deply.InstanceAction = inst.Action
 			deply.InstanceVirtState = inst.VirtState
 
 			if inst.Guest != nil {

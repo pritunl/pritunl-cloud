@@ -23,11 +23,11 @@ type Planner struct {
 	podsMap map[primitive.ObjectID]*pod.Pod
 }
 
-func (p *Planner) setInstanceState(db *database.Database,
+func (p *Planner) setInstanceAction(db *database.Database,
 	deply *deployment.Deployment, inst *instance.Instance,
-	state string) (err error) {
+	action string) (err error) {
 
-	inst.State = state
+	inst.Action = action
 	errData, e := inst.Validate(db)
 	if e != nil {
 		err = e
@@ -46,7 +46,7 @@ func (p *Planner) setInstanceState(db *database.Database,
 		return
 	}
 
-	err = inst.CommitFields(db, set.NewSet("state"))
+	err = inst.CommitFields(db, set.NewSet("action"))
 	if err != nil {
 		return
 	}
@@ -133,12 +133,12 @@ func (p *Planner) checkInstance(db *database.Database,
 		}
 	}
 
-	if deply.State == deployment.Archived && inst.State != instance.Stop {
+	if deply.State == deployment.Archived && inst.Action != instance.Stop {
 		logrus.WithFields(logrus.Fields{
 			"instance_id": inst.Id.Hex(),
 		}).Info("deploy: Stopping instance for archived deployment")
 
-		err = instance.SetState(db, inst.Id, instance.Stop)
+		err = instance.SetAction(db, inst.Id, instance.Stop)
 		if err != nil {
 			return
 		}
@@ -184,7 +184,7 @@ func (p *Planner) checkInstance(db *database.Database,
 			"instance_id": inst.Id.Hex(),
 		}).Info("deploy: Starting instance for active deployment")
 
-		err = instance.SetState(db, inst.Id, instance.Start)
+		err = instance.SetAction(db, inst.Id, instance.Start)
 		if err != nil {
 			return
 		}
@@ -283,25 +283,25 @@ func (p *Planner) checkInstance(db *database.Database,
 
 		switch action {
 		case plan.Start:
-			err = p.setInstanceState(db, deply, inst, instance.Start)
+			err = p.setInstanceAction(db, deply, inst, instance.Start)
 			if err != nil {
 				return
 			}
 			break
 		case plan.Stop:
-			err = p.setInstanceState(db, deply, inst, instance.Stop)
+			err = p.setInstanceAction(db, deply, inst, instance.Stop)
 			if err != nil {
 				return
 			}
 			break
 		case plan.Restart:
-			err = p.setInstanceState(db, deply, inst, instance.Restart)
+			err = p.setInstanceAction(db, deply, inst, instance.Restart)
 			if err != nil {
 				return
 			}
 			break
 		case plan.Destroy:
-			err = p.setInstanceState(db, deply, inst, instance.Destroy)
+			err = p.setInstanceAction(db, deply, inst, instance.Destroy)
 			if err != nil {
 				return
 			}

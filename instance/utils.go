@@ -551,8 +551,8 @@ func UpdateMultiOrg(db *database.Database, orgId primitive.ObjectID,
 	return
 }
 
-func SetState(db *database.Database, instId primitive.ObjectID,
-	state string) (err error) {
+func SetAction(db *database.Database, instId primitive.ObjectID,
+	action string) (err error) {
 
 	coll := db.Instances()
 
@@ -560,7 +560,7 @@ func SetState(db *database.Database, instId primitive.ObjectID,
 		"_id": instId,
 	}, &bson.M{
 		"$set": &bson.M{
-			"state": state,
+			"action": action,
 		},
 	})
 	if err != nil {

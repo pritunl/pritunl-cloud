@@ -284,7 +284,7 @@ func (v *VirtualMachine) CommitOracleIps(db *database.Database) (err error) {
 	return
 }
 
-func (v *VirtualMachine) CommitState(db *database.Database, state string) (
+func (v *VirtualMachine) CommitState(db *database.Database, action string) (
 	err error) {
 
 	coll := db.Instances()
@@ -302,7 +302,7 @@ func (v *VirtualMachine) CommitState(db *database.Database, state string) (
 	}
 
 	data := bson.M{
-		"state":          state,
+		"action":         action,
 		"virt_state":     v.State,
 		"virt_timestamp": v.Timestamp,
 		"public_ips":     addrs,

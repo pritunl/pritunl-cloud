@@ -59,6 +59,7 @@ type Instance struct {
 	StatusInfo          *StatusInfo         `bson:"status_info,omitempty" json:"status_info"`
 	Uptime              string              `bson:"-" json:"uptime"`
 	State               string              `bson:"state" json:"state"`
+	Action              string              `bson:"action" json:"action"`
 	PublicMac           string              `bson:"-" json:"public_mac"`
 	VirtState           string              `bson:"virt_state" json:"virt_state"`
 	VirtTimestamp       time.Time           `bson:"virt_timestamp" json:"virt_timestamp"`
@@ -117,7 +118,7 @@ type Instance struct {
 	curVpc              primitive.ObjectID  `bson:"-" json:"-"`
 	curSubnet           primitive.ObjectID  `bson:"-" json:"-"`
 	curDeleteProtection bool                `bson:"-" json:"-"`
-	curState            string              `bson:"-" json:"-"`
+	curAction           string              `bson:"-" json:"-"`
 	curNoPublicAddress  bool                `bson:"-" json:"-"`
 	curNoHostAddress    bool                `bson:"-" json:"-"`
 	newId               bool                `bson:"-" json:"-"`
@@ -157,10 +158,14 @@ func (i *Instance) Validate(db *database.Database) (
 	i.Name = utils.FilterName(i.Name)
 
 	if i.State == "" {
-		i.State = Start
+		i.State = Provision
 	}
 
-	if i.State != Start {
+	if i.Action == "" {
+		i.Action = Start
+	}
+
+	if i.Action != Start {
 		i.Restart = false
 		i.RestartBlockIp = false
 	}
@@ -169,6 +174,14 @@ func (i *Instance) Validate(db *database.Database) (
 		errData = &errortypes.ErrorData{
 			Error:   "invalid_state",
 			Message: "Invalid instance state",
+		}
+		return
+	}
+
+	if !ValidActions.Contains(i.Action) {
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_action",
+			Message: "Invalid instance action",
 		}
 		return
 	}
@@ -575,7 +588,7 @@ func (i *Instance) Format() {
 }
 
 func (i *Instance) Json(short bool) {
-	switch i.State {
+	switch i.Action {
 	case Start:
 		if i.Restart || i.RestartBlockIp {
 			i.Status = "Restart Required"
@@ -682,7 +695,7 @@ func (i *Instance) Json(short bool) {
 }
 
 func (i *Instance) IsActive() bool {
-	return i.State == Start || i.VirtState == vm.Running ||
+	return i.Action == Start || i.VirtState == vm.Running ||
 		i.VirtState == vm.Starting || i.VirtState == vm.Provisioning
 }
 
@@ -696,7 +709,7 @@ func (i *Instance) PreCommit() {
 	i.curVpc = i.Vpc
 	i.curSubnet = i.Subnet
 	i.curDeleteProtection = i.DeleteProtection
-	i.curState = i.State
+	i.curAction = i.Action
 	i.curNoPublicAddress = i.NoPublicAddress
 	i.curNoHostAddress = i.NoHostAddress
 }
@@ -722,8 +735,8 @@ func (i *Instance) PostCommit(db *database.Database) (
 		}
 	}
 
-	if i.curState != i.State && (i.State == Stop || i.State == Start ||
-		i.State == Restart) {
+	if i.curAction != i.Action && (i.Action == Stop || i.Action == Start ||
+		i.Action == Restart) {
 
 		i.Restart = false
 		i.RestartBlockIp = false

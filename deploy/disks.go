@@ -147,8 +147,8 @@ func (d *Disks) expand(dsk *disk.Disk) {
 
 		inst := d.stat.GetInstace(dsk.Instance)
 		if inst != nil {
-			if inst.State != instance.Stop {
-				inst.State = instance.Stop
+			if inst.Action != instance.Stop {
+				inst.Action = instance.Stop
 
 				logrus.WithFields(logrus.Fields{
 					"instance_id": inst.Id.Hex(),

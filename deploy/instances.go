@@ -65,7 +65,7 @@ func (s *Instances) create(inst *instance.Instance) {
 				"error":       err,
 			}).Error("deploy: Failed to create instance")
 
-			err = instance.SetState(db, inst.Id, instance.Stop)
+			err = instance.SetAction(db, inst.Id, instance.Stop)
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
 					"instance_id": inst.Id.Hex(),
@@ -126,7 +126,7 @@ func (s *Instances) start(inst *instance.Instance) {
 				"error":       err,
 			}).Error("deploy: Failed to start instance")
 
-			err = instance.SetState(db, inst.Id, instance.Stop)
+			err = instance.SetAction(db, inst.Id, instance.Stop)
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
 					"instance_id": inst.Id.Hex(),
@@ -168,7 +168,7 @@ func (s *Instances) cleanup(inst *instance.Instance) {
 
 		qemu.Cleanup(db, inst.Virt)
 
-		err := instance.SetState(db, inst.Id, instance.Stop)
+		err := instance.SetAction(db, inst.Id, instance.Stop)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"instance_id": inst.Id.Hex(),
@@ -268,7 +268,7 @@ func (s *Instances) restart(inst *instance.Instance) {
 				"error":       err,
 			}).Error("deploy: Failed to restart instance")
 
-			err = instance.SetState(db, inst.Id, instance.Stop)
+			err = instance.SetAction(db, inst.Id, instance.Stop)
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
 					"instance_id": inst.Id.Hex(),
@@ -283,8 +283,8 @@ func (s *Instances) restart(inst *instance.Instance) {
 			return
 		}
 
-		inst.State = instance.Start
-		err = inst.CommitFields(db, set.NewSet("state"))
+		inst.Action = instance.Start
+		err = inst.CommitFields(db, set.NewSet("action"))
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"instance_id": inst.Id.Hex(),
@@ -838,18 +838,18 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 	for _, inst := range instances {
 		curVirt := s.stat.GetVirt(inst.Id)
 
-		if inst.State == instance.Destroy {
+		if inst.Action == instance.Destroy {
 			if inst.DeleteProtection {
 				logrus.WithFields(logrus.Fields{
 					"instance_id": inst.Id.Hex(),
 				}).Info("deploy: Delete protection ignore instance destroy")
 
 				if curVirt != nil && curVirt.State == vm.Running {
-					inst.State = instance.Start
+					inst.Action = instance.Start
 				} else {
-					inst.State = instance.Stop
+					inst.Action = instance.Stop
 				}
-				err = inst.CommitFields(db, set.NewSet("state"))
+				err = inst.CommitFields(db, set.NewSet("action"))
 				if err != nil {
 					return
 				}
@@ -865,14 +865,14 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 		memoryUnits += float64(inst.Memory) / float64(1024)
 
 		if curVirt == nil {
-			if inst.State == instance.Start {
+			if inst.Action == instance.Start {
 				s.create(inst)
 			}
 
 			continue
 		}
 
-		switch inst.State {
+		switch inst.Action {
 		case instance.Start:
 			if curVirt.State == vm.Stopped || curVirt.State == vm.Failed {
 				dsks := s.stat.GetInstaceDisks(inst.Id)
@@ -931,8 +931,8 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 			} else if curVirt.State == vm.Stopped ||
 				curVirt.State == vm.Failed {
 
-				inst.State = instance.Start
-				err = inst.CommitFields(db, set.NewSet("state"))
+				inst.Action = instance.Start
+				err = inst.CommitFields(db, set.NewSet("action"))
 				if err != nil {
 					return
 				}

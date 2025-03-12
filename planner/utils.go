@@ -21,6 +21,7 @@ func buildEvalData(servc *pod.Pod, unit *pod.Unit,
 		Instance: plan.Instance{
 			Name:      inst.Name,
 			State:     inst.State,
+			Action:    inst.Action,
 			VirtState: inst.VirtState,
 		},
 	}

@@ -17,13 +17,13 @@ func StartInstance(name string) (err error) {
 	})
 
 	for _, inst := range instances {
-		if inst.State != instance.Start {
+		if inst.Action != instance.Start {
 			logrus.WithFields(logrus.Fields{
 				"instance_id": inst.Id.Hex(),
 			}).Info("cmd: Starting instance")
 
-			inst.State = instance.Start
-			err = inst.CommitFields(db, set.NewSet("state"))
+			inst.Action = instance.Start
+			err = inst.CommitFields(db, set.NewSet("action"))
 			if err != nil {
 				return
 			}
@@ -42,13 +42,13 @@ func StopInstance(name string) (err error) {
 	})
 
 	for _, inst := range instances {
-		if inst.State != instance.Stop {
+		if inst.Action != instance.Stop {
 			logrus.WithFields(logrus.Fields{
 				"instance_id": inst.Id.Hex(),
 			}).Info("cmd: Stopping instance")
 
-			inst.State = instance.Stop
-			err = inst.CommitFields(db, set.NewSet("state"))
+			inst.Action = instance.Stop
+			err = inst.CommitFields(db, set.NewSet("action"))
 			if err != nil {
 				return
 			}

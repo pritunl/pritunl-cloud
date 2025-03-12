@@ -23,6 +23,7 @@ type Deployment struct {
 	NewSpec      primitive.ObjectID             `bson:"new_spec" json:"new_spec"`
 	Kind         string                         `bson:"kind" json:"kind"`
 	State        string                         `bson:"state" json:"state"`
+	Action       string                         `bson:"action" json:"action"`
 	Status       string                         `bson:"status" json:"status"`
 	Datacenter   primitive.ObjectID             `bson:"datacenter,omitempty" json:"datacenter"`
 	Zone         primitive.ObjectID             `bson:"zone,omitempty" json:"zone"`

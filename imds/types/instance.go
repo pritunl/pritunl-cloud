@@ -15,6 +15,7 @@ type Instance struct {
 	OracleVnic          string             `json:"oracle_vnic"`
 	Image               primitive.ObjectID `json:"image"`
 	State               string             `json:"state"`
+	Action              string             `json:"action"`
 	Uefi                bool               `json:"uefi"`
 	SecureBoot          bool               `json:"secure_boot"`
 	Tpm                 bool               `json:"tpm"`
@@ -66,6 +67,7 @@ func NewInstance(inst *instance.Instance) *Instance {
 		OracleVnic:          inst.OracleVnic,
 		Image:               inst.Image,
 		State:               inst.State,
+		Action:              inst.Action,
 		Uefi:                inst.Uefi,
 		SecureBoot:          inst.SecureBoot,
 		Tpm:                 inst.Tpm,

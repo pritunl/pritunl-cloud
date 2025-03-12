@@ -46,7 +46,7 @@ type instanceData struct {
 	ImageBacking        bool               `json:"image_backing"`
 	Name                string             `json:"name"`
 	Comment             string             `json:"comment"`
-	State               string             `json:"state"`
+	Action              string             `json:"action"`
 	RootEnabled         bool               `json:"root_enabled"`
 	Uefi                bool               `json:"uefi"`
 	SecureBoot          bool               `json:"secure_boot"`
@@ -75,8 +75,8 @@ type instanceData struct {
 }
 
 type instanceMultiData struct {
-	Ids   []primitive.ObjectID `json:"ids"`
-	State string               `json:"state"`
+	Ids    []primitive.ObjectID `json:"ids"`
+	Action string               `json:"action"`
 }
 
 type instancesData struct {
@@ -117,8 +117,8 @@ func instancePut(c *gin.Context) {
 	inst.Vpc = dta.Vpc
 	inst.Subnet = dta.Subnet
 	inst.OracleSubnet = dta.OracleSubnet
-	if dta.State != "" {
-		inst.State = dta.State
+	if dta.Action != "" {
+		inst.Action = dta.Action
 	}
 	inst.Uefi = dta.Uefi
 	inst.SecureBoot = dta.SecureBoot
@@ -333,7 +333,7 @@ func instancePost(c *gin.Context) {
 		}
 
 		inst := &instance.Instance{
-			State:               dta.State,
+			Action:              dta.Action,
 			Organization:        dta.Organization,
 			Zone:                dta.Zone,
 			Vpc:                 dta.Vpc,
@@ -417,10 +417,10 @@ func instancesPut(c *gin.Context) {
 	}
 
 	doc := bson.M{
-		"state": dta.State,
+		"action": dta.Action,
 	}
 
-	if dta.State != instance.Start {
+	if dta.Action != instance.Start {
 		doc["restart"] = false
 		doc["restart_block_ip"] = false
 	}
@@ -527,7 +527,8 @@ func instanceGet(c *gin.Context) {
 	}
 
 	if demo.IsDemo() {
-		inst.State = instance.Start
+		inst.State = instance.Active
+		inst.Action = instance.Start
 		inst.VirtState = vm.Running
 		inst.Status = "Running"
 		inst.PublicIps = []string{
@@ -670,7 +671,8 @@ func instancesGet(c *gin.Context) {
 			inst.Json(false)
 
 			if demo.IsDemo() {
-				inst.State = instance.Start
+				inst.State = instance.Active
+				inst.Action = instance.Start
 				inst.VirtState = vm.Running
 				inst.Status = "Running"
 				inst.PublicIps = []string{

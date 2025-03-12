@@ -308,7 +308,7 @@ func (d *Deployments) destroy(db *database.Database,
 				return
 			}
 
-			if inst.State != instance.Destroy {
+			if inst.Action != instance.Destroy {
 				logrus.WithFields(logrus.Fields{
 					"deployment": deply.Id.Hex(),
 					"instance":   inst.Id.Hex(),
@@ -356,12 +356,12 @@ func (d *Deployments) archive(db *database.Database,
 		return
 	}
 
-	if inst.State != instance.Stop {
+	if inst.Action != instance.Stop {
 		logrus.WithFields(logrus.Fields{
 			"instance_id": inst.Id.Hex(),
 		}).Info("deploy: Stopping instance for deployment archive")
 
-		err = instance.SetState(db, inst.Id, instance.Stop)
+		err = instance.SetAction(db, inst.Id, instance.Stop)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"instance_id": inst.Id.Hex(),
@@ -387,12 +387,12 @@ func (d *Deployments) restore(db *database.Database,
 		return
 	}
 
-	if inst.State != instance.Start {
+	if inst.Action != instance.Start {
 		logrus.WithFields(logrus.Fields{
 			"instance_id": inst.Id.Hex(),
 		}).Info("deploy: Starting instance for deployment restore")
 
-		err = instance.SetState(db, inst.Id, instance.Start)
+		err = instance.SetAction(db, inst.Id, instance.Start)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"instance_id": inst.Id.Hex(),
@@ -438,7 +438,7 @@ func (d *Deployments) imageShutdown(deply *deployment.Deployment,
 			}).Error("deploy: Failed to pull imds state for shutdown")
 		}
 
-		err = instance.SetState(db, virt.Id, instance.Stop)
+		err = instance.SetAction(db, virt.Id, instance.Stop)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"instance_id": virt.Id.Hex(),
@@ -483,7 +483,7 @@ func (d *Deployments) image(db *database.Database,
 	}
 
 	if inst.IsActive() && inst.Guest.Status == types.Imaged &&
-		inst.State != instance.Stop {
+		inst.Action != instance.Stop {
 
 		d.imageShutdown(deply, virt)
 		return

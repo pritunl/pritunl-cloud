@@ -6,18 +6,23 @@ import (
 
 const (
 	Provision = "provision"
-	Start     = "start"
-	Stop      = "stop"
-	Cleanup   = "cleanup"
-	Restart   = "restart"
-	Destroy   = "destroy"
-	Linux     = "linux"
-	BSD       = "bsd"
+	Active    = "active"
+
+	Start   = "start"
+	Stop    = "stop"
+	Cleanup = "cleanup"
+	Restart = "restart"
+	Destroy = "destroy"
+	Linux   = "linux"
+	BSD     = "bsd"
 )
 
 var (
 	ValidStates = set.NewSet(
 		Provision,
+		Active,
+	)
+	ValidActions = set.NewSet(
 		Start,
 		Stop,
 		Cleanup,

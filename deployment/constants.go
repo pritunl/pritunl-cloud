@@ -5,13 +5,15 @@ import (
 )
 
 const (
-	Reserved = "reserved"
-	Deployed = "deployed"
-	Destroy  = "destroy"
-	Archive  = "archive"
-	Archived = "archived"
-	Restore  = "restore"
-	Migrate  = "migrate"
+	Provision = "provision"
+	Reserved  = "reserved"
+	Deployed  = "deployed"
+	Archived  = "archived"
+
+	Destroy = "destroy"
+	Archive = "archive"
+	Migrate = "migrate"
+	Restore = "restore"
 
 	Ready    = "ready"
 	Snapshot = "snapshot"

@@ -400,7 +400,7 @@ func GetVms(db *database.Database,
 				if inst != nil && inst.VirtState == vm.Running &&
 					(virt.State == vm.Stopped || virt.State == vm.Failed) {
 
-					inst.State = instance.Cleanup
+					inst.Action = instance.Cleanup
 					e = virt.CommitState(db, instance.Cleanup)
 				} else {
 					e = virt.Commit(db)
