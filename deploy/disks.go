@@ -113,8 +113,8 @@ func (d *Disks) snapshot(dsk *disk.Disk) {
 			}
 		}
 
-		dsk.State = disk.Available
-		err := dsk.CommitFields(db, set.NewSet("state"))
+		dsk.Action = ""
+		err := dsk.CommitFields(db, set.NewSet("action"))
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"disk_id":   dsk.Id.Hex(),
@@ -181,9 +181,9 @@ func (d *Disks) expand(dsk *disk.Disk) {
 			}).Error("deploy: Failed to expand disk")
 		}
 
-		dsk.State = disk.Available
+		dsk.Action = ""
 		dsk.NewSize = 0
-		err = dsk.CommitFields(db, set.NewSet("state", "size", "new_size"))
+		err = dsk.CommitFields(db, set.NewSet("action", "size", "new_size"))
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
@@ -247,8 +247,8 @@ func (d *Disks) backup(dsk *disk.Disk) {
 			}
 		}
 
-		dsk.State = disk.Available
-		err := dsk.CommitFields(db, set.NewSet("state"))
+		dsk.Action = ""
+		err := dsk.CommitFields(db, set.NewSet("action"))
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
@@ -331,8 +331,8 @@ func (d *Disks) restore(dsk *disk.Disk) {
 			}
 		}
 
-		dsk.State = disk.Available
-		err := dsk.CommitFields(db, set.NewSet("state"))
+		dsk.Action = ""
+		err := dsk.CommitFields(db, set.NewSet("action"))
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"disk_id": dsk.Id.Hex(),
@@ -376,8 +376,8 @@ func (d *Disks) destroy(db *database.Database, dsk *disk.Disk) {
 				"disk_id": dsk.Id.Hex(),
 			}).Info("deploy: Delete protection ignore disk destroy")
 
-			dsk.State = disk.Available
-			_ = dsk.CommitFields(db, set.NewSet("state"))
+			dsk.Action = ""
+			_ = dsk.CommitFields(db, set.NewSet("action"))
 
 			event.PublishDispatch(db, "disk.change")
 
@@ -389,8 +389,8 @@ func (d *Disks) destroy(db *database.Database, dsk *disk.Disk) {
 				"disk_id": dsk.Id.Hex(),
 			}).Info("deploy: Instance delete protection ignore disk destroy")
 
-			dsk.State = disk.Available
-			_ = dsk.CommitFields(db, set.NewSet("state"))
+			dsk.Action = ""
+			_ = dsk.CommitFields(db, set.NewSet("action"))
 
 			event.PublishDispatch(db, "disk.change")
 
@@ -439,7 +439,7 @@ func (d *Disks) scheduleBackup(dsk *disk.Disk) {
 			return
 		}
 
-		if dsk.State != disk.Available {
+		if !dsk.IsActive() || dsk.Action != "" {
 			return
 		}
 
@@ -447,9 +447,9 @@ func (d *Disks) scheduleBackup(dsk *disk.Disk) {
 			"disk_id": dsk.Id.Hex(),
 		}).Info("deploy: Scheduling automatic disk backup")
 
-		dsk.State = disk.Backup
+		dsk.Action = disk.Backup
 		dsk.LastBackup = time.Now()
-		err := dsk.CommitFields(db, set.NewSet("state", "last_backup"))
+		err := dsk.CommitFields(db, set.NewSet("action", "last_backup"))
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
@@ -479,8 +479,8 @@ func (d *Disks) scheduleBackup(dsk *disk.Disk) {
 			}).Error("deploy: Failed to backup disk")
 		}
 
-		dsk.State = disk.Available
-		err = dsk.CommitFields(db, set.NewSet("state"))
+		dsk.Action = ""
+		err = dsk.CommitFields(db, set.NewSet("action"))
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
@@ -506,30 +506,31 @@ func (d *Disks) Deploy(db *database.Database) (err error) {
 	}
 
 	for _, dsk := range disks {
-		switch dsk.State {
-		case disk.Provision:
+		if dsk.State == disk.Provision {
 			d.provision(dsk)
-			break
-		case disk.Snapshot:
-			d.snapshot(dsk)
-			break
-		case disk.Backup:
-			d.backup(dsk)
-			break
-		case disk.Restore:
-			d.restore(dsk)
-			break
-		case disk.Expand:
-			d.expand(dsk)
-			break
-		case disk.Destroy:
-			d.destroy(db, dsk)
-			break
-		case disk.Available:
-			if backupActive && dsk.Backup {
-				d.scheduleBackup(dsk)
+		} else if dsk.IsActive() {
+			switch dsk.Action {
+			case disk.Snapshot:
+				d.snapshot(dsk)
+				break
+			case disk.Backup:
+				d.backup(dsk)
+				break
+			case disk.Restore:
+				d.restore(dsk)
+				break
+			case disk.Expand:
+				d.expand(dsk)
+				break
+			case disk.Destroy:
+				d.destroy(db, dsk)
+				break
+			default:
+				if backupActive && dsk.Backup {
+					d.scheduleBackup(dsk)
+				}
+				break
 			}
-			break
 		}
 	}
 

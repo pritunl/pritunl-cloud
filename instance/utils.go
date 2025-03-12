@@ -142,15 +142,16 @@ func GetAllVirt(db *database.Database, query *bson.M,
 	instanceDisks := map[primitive.ObjectID][]*disk.Disk{}
 	if disks != nil {
 		for _, dsk := range disks {
-			if dsk.State == disk.Destroy && dsk.DeleteProtection {
-				logrus.WithFields(logrus.Fields{
-					"disk_id": dsk.Id.Hex(),
-				}).Info("instance: Delete protection ignore disk detach")
+			if dsk.Action == disk.Destroy {
+				if dsk.DeleteProtection {
+					logrus.WithFields(logrus.Fields{
+						"disk_id": dsk.Id.Hex(),
+					}).Info("instance: Delete protection ignore disk detach")
+				} else {
+					continue
+				}
 			} else if dsk.State != disk.Available &&
-				dsk.State != disk.Snapshot &&
-				dsk.State != disk.Backup &&
-				dsk.State != disk.Restore &&
-				dsk.State != disk.Expand {
+				dsk.State != disk.Attached {
 
 				continue
 			}
@@ -226,15 +227,16 @@ func GetAllVirtMapped(db *database.Database, query *bson.M,
 		dsks := instanceDisks[inst.Id]
 		if dsks != nil {
 			for _, dsk := range dsks {
-				if dsk.State == disk.Destroy && dsk.DeleteProtection {
-					logrus.WithFields(logrus.Fields{
-						"disk_id": dsk.Id.Hex(),
-					}).Info("instance: Delete protection ignore disk detach")
+				if dsk.Action == disk.Destroy {
+					if dsk.DeleteProtection {
+						logrus.WithFields(logrus.Fields{
+							"disk_id": dsk.Id.Hex(),
+						}).Info("instance: Delete protection ignore disk detach")
+					} else {
+						continue
+					}
 				} else if dsk.State != disk.Available &&
-					dsk.State != disk.Snapshot &&
-					dsk.State != disk.Backup &&
-					dsk.State != disk.Restore &&
-					dsk.State != disk.Expand {
+					dsk.State != disk.Attached {
 
 					continue
 				}

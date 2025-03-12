@@ -518,8 +518,8 @@ func (d *Deployments) image(db *database.Database,
 			}
 		}
 
-		dsk.State = disk.Snapshot
-		err = dsk.CommitFields(db, set.NewSet("state"))
+		dsk.Action = disk.Snapshot
+		err = dsk.CommitFields(db, set.NewSet("action"))
 		if err != nil {
 			return
 		}

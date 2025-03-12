@@ -26,6 +26,7 @@ type Disk struct {
 	Name             string             `bson:"name" json:"name"`
 	Comment          string             `bson:"comment" json:"comment"`
 	State            string             `bson:"state" json:"state"`
+	Action           string             `bson:"action" json:"action"`
 	Type             string             `bson:"type" json:"type"`
 	SystemType       string             `bson:"system_type" json:"system_type"`
 	Uuid             string             `bson:"uuid" json:"uuid"`
@@ -48,6 +49,17 @@ type Disk struct {
 	LastBackup       time.Time          `bson:"last_backup" json:"last_backup"`
 	curIndex         string             `bson:"-" json:"-"`
 	curInstance      primitive.ObjectID `bson:"-" json:"-"`
+}
+
+func (d *Disk) IsActive() bool {
+	return d.State == Available || d.State == Attached
+}
+
+func (d *Disk) IsAvailable() bool {
+	if d.State == Available && d.Action == "" && d.Instance.IsZero() {
+		return true
+	}
+	return false
 }
 
 func (d *Disk) Validate(db *database.Database) (
@@ -154,7 +166,7 @@ func (d *Disk) Validate(db *database.Database) (
 		return
 	}
 
-	if d.State == Restore && d.RestoreImage.IsZero() {
+	if d.Action == Restore && d.RestoreImage.IsZero() {
 		errData = &errortypes.ErrorData{
 			Error:   "restore_missing_image",
 			Message: "Cannot restore without image set",
@@ -192,7 +204,7 @@ func (d *Disk) Validate(db *database.Database) (
 		d.Size = 10
 	}
 
-	if d.State == Expand {
+	if d.Action == Expand {
 		if d.NewSize == 0 {
 			errData = &errortypes.ErrorData{
 				Error:   "new_size_missing",
@@ -292,13 +304,6 @@ func (d *Disk) Unreserve(db *database.Database,
 	return
 }
 
-func (d *Disk) IsAavailabe() bool {
-	if d.State == Available && d.Instance.IsZero() {
-		return true
-	}
-	return false
-}
-
 func (d *Disk) Commit(db *database.Database) (err error) {
 	coll := db.Disks()
 
@@ -343,8 +348,8 @@ func (d *Disk) Destroy(db *database.Database) (err error) {
 			"disk_id": d.Id.Hex(),
 		}).Info("disk: Delete protection ignore disk destroy")
 
-		d.State = Available
-		err = d.CommitFields(db, set.NewSet("state"))
+		d.Action = ""
+		err = d.CommitFields(db, set.NewSet("action"))
 		if err != nil {
 			return
 		}

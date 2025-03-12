@@ -9,7 +9,6 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/arp"
 	"github.com/pritunl/pritunl-cloud/database"
-	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/instance"
@@ -878,7 +877,7 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 				dsks := s.stat.GetInstaceDisks(inst.Id)
 
 				for _, dsk := range dsks {
-					if dsk.State != disk.Available {
+					if !dsk.IsActive() || dsk.Action != "" {
 						continue
 					}
 				}
@@ -921,7 +920,7 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 				dsks := s.stat.GetInstaceDisks(inst.Id)
 
 				for _, dsk := range dsks {
-					if dsk.State != disk.Available {
+					if !dsk.IsActive() || dsk.Action != "" {
 						continue
 					}
 				}

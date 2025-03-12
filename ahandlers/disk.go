@@ -39,15 +39,15 @@ type diskData struct {
 	Image            primitive.ObjectID `json:"image"`
 	RestoreImage     primitive.ObjectID `json:"restore_image"`
 	Backing          bool               `json:"backing"`
-	State            string             `json:"state"`
+	Action           string             `json:"action"`
 	Size             int                `json:"size"`
 	NewSize          int                `json:"new_size"`
 	Backup           bool               `json:"backup"`
 }
 
 type disksMultiData struct {
-	Ids   []primitive.ObjectID `json:"ids"`
-	State string               `json:"state"`
+	Ids    []primitive.ObjectID `json:"ids"`
+	Action string               `json:"action"`
 }
 
 type disksData struct {
@@ -104,27 +104,27 @@ func diskPut(c *gin.Context) {
 	dsk.Index = dta.Index
 	dsk.Backup = dta.Backup
 
-	if dsk.State == disk.Available && dta.State == disk.Snapshot {
-		dsk.State = disk.Snapshot
-		fields.Add("state")
-	} else if dsk.State == disk.Available && dta.State == disk.Backup {
-		dsk.State = disk.Backup
-		fields.Add("state")
-	} else if dsk.State == disk.Available && dta.State == disk.Expand {
-		dsk.State = disk.Expand
-		dsk.NewSize = dta.NewSize
-		fields.Add("state")
-	} else if dta.State == disk.Restore {
-		if dsk.State != disk.Available {
-			errData := &errortypes.ErrorData{
-				Error:   "disk_restore_active",
-				Message: "Disk restore already active",
-			}
-
-			c.JSON(400, errData)
-			return
+	if dta.Action != "" && dsk.Action != "" {
+		errData := &errortypes.ErrorData{
+			Error:   "disk_actin_active",
+			Message: "Disk action already active",
 		}
 
+		c.JSON(400, errData)
+		return
+	}
+
+	if dsk.IsActive() && dta.Action == disk.Snapshot {
+		dsk.Action = disk.Snapshot
+		fields.Add("action")
+	} else if dsk.IsActive() && dta.Action == disk.Backup {
+		dsk.Action = disk.Backup
+		fields.Add("action")
+	} else if dsk.IsActive() && dta.Action == disk.Expand {
+		dsk.Action = disk.Expand
+		dsk.NewSize = dta.NewSize
+		fields.Add("action")
+	} else if dsk.IsActive() && dta.Action == disk.Restore {
 		img, err := image.Get(db, dta.RestoreImage)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
@@ -141,10 +141,10 @@ func diskPut(c *gin.Context) {
 			return
 		}
 
-		dsk.State = disk.Restore
+		dsk.Action = disk.Restore
 		dsk.RestoreImage = img.Id
 
-		fields.Add("state")
+		fields.Add("action")
 		fields.Add("restore_image")
 	}
 
@@ -286,10 +286,10 @@ func disksPut(c *gin.Context) {
 		return
 	}
 
-	if data.State != disk.Snapshot && data.State != disk.Backup {
+	if data.Action != disk.Snapshot && data.Action != disk.Backup {
 		errData := &errortypes.ErrorData{
-			Error:   "invalid_state",
-			Message: "Invalid disk state",
+			Error:   "invalid_action",
+			Message: "Invalid disk action",
 		}
 
 		c.JSON(400, errData)
@@ -297,7 +297,7 @@ func disksPut(c *gin.Context) {
 	}
 
 	doc := bson.M{
-		"state": data.State,
+		"action": data.Action,
 	}
 
 	err = disk.UpdateMulti(db, data.Ids, &doc)
