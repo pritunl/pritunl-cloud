@@ -19,6 +19,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/image"
+	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/storage"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
@@ -337,6 +338,25 @@ func diskDelete(c *gin.Context) {
 
 		c.JSON(400, errData)
 		return
+	}
+
+	if !dsk.Instance.IsZero() {
+		inst, e := instance.Get(db, dsk.Instance)
+		if e != nil {
+			err = e
+			return
+		}
+
+		if inst.DeleteProtection {
+			errData := &errortypes.ErrorData{
+				Error: "instance_delete_protection",
+				Message: "Cannot delete disk attached to " +
+					"instance with delete protection",
+			}
+
+			c.JSON(400, errData)
+			return
+		}
 	}
 
 	err = disk.Delete(db, diskId)
