@@ -392,6 +392,25 @@ func diskDelete(c *gin.Context) {
 		return
 	}
 
+	if !dsk.Instance.IsZero() {
+		inst, e := instance.Get(db, dsk.Instance)
+		if e != nil {
+			err = e
+			return
+		}
+
+		if inst.DeleteProtection {
+			errData := &errortypes.ErrorData{
+				Error: "instance_delete_protection",
+				Message: "Cannot delete disk attached to " +
+					"instance with delete protection",
+			}
+
+			c.JSON(400, errData)
+			return
+		}
+	}
+
 	err = disk.DeleteOrg(db, userOrg, diskId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
