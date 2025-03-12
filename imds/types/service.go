@@ -48,6 +48,7 @@ type Deployment struct {
 	Spec                      primitive.ObjectID `json:"spec"`
 	Kind                      string             `json:"kind"`
 	State                     string             `json:"state"`
+	Action                    string             `json:"action"`
 	Node                      primitive.ObjectID `json:"node"`
 	Instance                  primitive.ObjectID `json:"instance"`
 	PublicIps                 []string           `json:"public_ips"`
@@ -250,6 +251,7 @@ func NewPods(pods []*pod.Pod,
 						Spec:                      deply.Spec,
 						Kind:                      deply.Kind,
 						State:                     deply.State,
+						Action:                    deply.Action,
 						Node:                      deply.Node,
 						Instance:                  deply.Instance,
 						PublicIps:                 publicIps,

@@ -401,8 +401,8 @@ func podUnitDeploymentsPut(c *gin.Context) {
 		return
 	}
 
-	state := c.Query("state")
-	switch state {
+	action := c.Query("action")
+	switch action {
 	case deployment.Archive:
 		err = deployment.ArchiveMulti(db, pd.Id, unit.Id, data)
 		if err != nil {

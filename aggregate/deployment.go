@@ -8,6 +8,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/image"
+	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/zone"
@@ -30,6 +31,7 @@ type Deployment struct {
 	Tags                []string                 `bson:"tags" json:"tags"`
 	Kind                string                   `bson:"kind" json:"kind"`
 	State               string                   `bson:"state" json:"state"`
+	Action              string                   `bson:"action" json:"action"`
 	Status              string                   `bson:"status" json:"status"`
 	Node                primitive.ObjectID       `bson:"node" json:"node"`
 	Instance            primitive.ObjectID       `bson:"instance" json:"instance"`
@@ -116,6 +118,7 @@ func GetDeployments(db *database.Database, unitId primitive.ObjectID) (
 				{"spec", 1},
 				{"kind", 1},
 				{"state", 1},
+				{"action", 1},
 				{"status", 1},
 				{"node", 1},
 				{"instance", 1},
@@ -198,6 +201,8 @@ func GetDeployments(db *database.Database, unitId primitive.ObjectID) (
 					deply.InstanceLoad1 = inst.Guest.Load1
 					deply.InstanceLoad5 = inst.Guest.Load5
 					deply.InstanceLoad15 = inst.Guest.Load15
+				} else {
+					deply.InstanceGuestStatus = types.Offline
 				}
 			}
 		}

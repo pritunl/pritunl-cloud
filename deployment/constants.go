@@ -2,6 +2,8 @@ package deployment
 
 import (
 	"time"
+
+	"github.com/dropbox/godropbox/container/set"
 )
 
 const (
@@ -30,4 +32,20 @@ const (
 
 	ThresholdMin = 10
 	ActionLimit  = 1 * time.Minute
+)
+
+var (
+	ValidStates = set.NewSet(
+		Provision,
+		Reserved,
+		Deployed,
+		Archived,
+	)
+	ValidActions = set.NewSet(
+		"",
+		Destroy,
+		Archive,
+		Migrate,
+		Restore,
+	)
 )

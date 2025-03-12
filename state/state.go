@@ -470,12 +470,18 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 		case deployment.Reserved:
 			deploymentsReservedMap[deply.Id] = deply
 			break
-		case deployment.Deployed, deployment.Migrate:
-			deploymentsDeployedMap[deply.Id] = deply
-			break
-		case deployment.Destroy, deployment.Archive,
-			deployment.Archived, deployment.Restore:
+		case deployment.Deployed:
+			switch deply.Action {
+			case deployment.Destroy, deployment.Archive,
+				deployment.Restore:
 
+				deploymentsInactiveMap[deply.Id] = deply
+				break
+			default:
+				deploymentsDeployedMap[deply.Id] = deply
+			}
+			break
+		case deployment.Archived:
 			deploymentsInactiveMap[deply.Id] = deply
 			break
 		}
@@ -670,16 +676,23 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 
 	for _, specDeployment := range specDeployments {
 		deploymentsIdSet.Add(specDeployment.Id)
+
 		switch specDeployment.State {
 		case deployment.Reserved:
 			deploymentsReservedMap[specDeployment.Id] = specDeployment
 			break
-		case deployment.Deployed, deployment.Migrate:
-			deploymentsDeployedMap[specDeployment.Id] = specDeployment
-			break
-		case deployment.Destroy, deployment.Archive,
-			deployment.Archived, deployment.Restore:
+		case deployment.Deployed:
+			switch specDeployment.Action {
+			case deployment.Destroy, deployment.Archive,
+				deployment.Restore:
 
+				deploymentsInactiveMap[specDeployment.Id] = specDeployment
+				break
+			default:
+				deploymentsDeployedMap[specDeployment.Id] = specDeployment
+			}
+			break
+		case deployment.Archived:
 			deploymentsInactiveMap[specDeployment.Id] = specDeployment
 			break
 		}
@@ -750,16 +763,23 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 
 	for _, podDeployment := range podDeployments {
 		deploymentsIdSet.Add(podDeployment.Id)
+
 		switch podDeployment.State {
 		case deployment.Reserved:
 			deploymentsReservedMap[podDeployment.Id] = podDeployment
 			break
-		case deployment.Deployed, deployment.Migrate:
-			deploymentsDeployedMap[podDeployment.Id] = podDeployment
-			break
-		case deployment.Destroy, deployment.Archive,
-			deployment.Archived, deployment.Restore:
+		case deployment.Deployed:
+			switch podDeployment.Action {
+			case deployment.Destroy, deployment.Archive,
+				deployment.Restore:
 
+				deploymentsInactiveMap[podDeployment.Id] = podDeployment
+				break
+			default:
+				deploymentsDeployedMap[podDeployment.Id] = podDeployment
+			}
+			break
+		case deployment.Archived:
 			deploymentsInactiveMap[podDeployment.Id] = podDeployment
 			break
 		}

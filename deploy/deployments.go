@@ -296,8 +296,8 @@ func (d *Deployments) destroy(db *database.Database,
 				}).Warning("deploy: Cannot destroy deployment with " +
 					"instance delete protection, archiving...")
 
-				deply.State = deployment.Archive
-				err := deply.CommitFields(db, set.NewSet("state"))
+				deply.Action = deployment.Archive
+				err := deply.CommitFields(db, set.NewSet("action"))
 				if err != nil {
 					logrus.WithFields(logrus.Fields{
 						"deployment_id": deply.Id.Hex(),
@@ -821,7 +821,7 @@ func (d *Deployments) Deploy(db *database.Database) (err error) {
 	inactiveDeployments := d.stat.DeploymentsInactive()
 
 	for _, deply := range inactiveDeployments {
-		switch deply.State {
+		switch deply.Action {
 		case deployment.Destroy:
 			d.destroy(db, deply)
 			break
@@ -841,7 +841,7 @@ func (d *Deployments) Deploy(db *database.Database) (err error) {
 	}
 
 	for _, deply := range activeDeployments {
-		if deply.State == deployment.Migrate {
+		if deply.Action == deployment.Migrate {
 			d.migrate(db, deply)
 			break
 		}

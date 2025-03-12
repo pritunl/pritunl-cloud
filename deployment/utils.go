@@ -110,7 +110,6 @@ func GetAllActiveIds(db *database.Database) (deplyIds set.Set, err error) {
 				"$in": []string{
 					Reserved,
 					Deployed,
-					Migrate,
 				},
 			},
 		},
@@ -157,8 +156,9 @@ func GetAllStates(db *database.Database) (
 		bson.M{},
 		&options.FindOptions{
 			Projection: bson.M{
-				"_id":   1,
-				"state": 1,
+				"_id":    1,
+				"state":  1,
+				"action": 1,
 			},
 		},
 	)
@@ -293,7 +293,7 @@ func RemoveMulti(db *database.Database, podId primitive.ObjectID,
 		"unit": unitId,
 	}, &bson.M{
 		"$set": &bson.M{
-			"state": Destroy,
+			"action": Destroy,
 		},
 	})
 	if err != nil {
@@ -317,7 +317,7 @@ func ArchiveMulti(db *database.Database, podId primitive.ObjectID,
 		"unit": unitId,
 	}, &bson.M{
 		"$set": &bson.M{
-			"state": Archive,
+			"action": Archive,
 		},
 	})
 	if err != nil {
@@ -342,7 +342,7 @@ func RestoreMulti(db *database.Database, podId primitive.ObjectID,
 		"state": Archived,
 	}, &bson.M{
 		"$set": &bson.M{
-			"state": Restore,
+			"action": Restore,
 		},
 	})
 	if err != nil {

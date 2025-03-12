@@ -125,9 +125,7 @@ func GetSpecRulesSlow(db *database.Database,
 		deploymentsNode[deply.Id] = deply
 		deploymentsIdSet.Add(deply.Id)
 
-		if deply.State == deployment.Deployed ||
-			deply.State == deployment.Migrate {
-
+		if deply.State == deployment.Deployed {
 			deploymentsDeployedMap[deply.Id] = deply
 		}
 
@@ -212,9 +210,7 @@ func GetSpecRulesSlow(db *database.Database,
 	for _, specDeployment := range specDeployments {
 		deploymentsIdSet.Add(specDeployment.Id)
 
-		if specDeployment.State == deployment.Deployed ||
-			specDeployment.State == deployment.Migrate {
-
+		if specDeployment.State == deployment.Deployed {
 			deploymentsDeployedMap[specDeployment.Id] = specDeployment
 		}
 	}
@@ -275,9 +271,7 @@ func GetSpecRulesSlow(db *database.Database,
 	for _, podDeployment := range podDeployments {
 		deploymentsIdSet.Add(podDeployment.Id)
 
-		if podDeployment.State == deployment.Deployed ||
-			podDeployment.State == deployment.Migrate {
-
+		if podDeployment.State == deployment.Deployed {
 			deploymentsDeployedMap[podDeployment.Id] = podDeployment
 		}
 	}

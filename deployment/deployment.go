@@ -103,19 +103,18 @@ func (d *Deployment) Validate(db *database.Database) (
 		d.Actions = map[primitive.ObjectID]*Action{}
 	}
 
-	switch d.State {
-	case Reserved:
-		break
-	case Deployed:
-		break
-	case Destroy:
-		break
-	case Migrate:
-		break
-	default:
+	if !ValidStates.Contains(d.State) {
 		errData = &errortypes.ErrorData{
 			Error:   "invalid_state",
-			Message: "Deployment state is invalid",
+			Message: "Invalid deployment state",
+		}
+		return
+	}
+
+	if !ValidActions.Contains(d.Action) {
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_action",
+			Message: "Invalid deployment action",
 		}
 		return
 	}
