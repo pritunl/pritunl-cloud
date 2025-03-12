@@ -99,6 +99,69 @@ func (d *Deployments) migrate(db *database.Database,
 			return
 		}
 
+		instFields := set.NewSet()
+
+		if curSpec.Instance.Uefi != newSpec.Instance.Uefi {
+			if newSpec.Instance.Uefi != nil {
+				instFields.Add("uefi")
+				inst.Uefi = *newSpec.Instance.Uefi
+			}
+		}
+		if curSpec.Instance.SecureBoot != newSpec.Instance.SecureBoot {
+			if newSpec.Instance.SecureBoot != nil {
+				instFields.Add("secure_boot")
+				inst.SecureBoot = *newSpec.Instance.SecureBoot
+			}
+		}
+		if curSpec.Instance.CloudType != newSpec.Instance.CloudType {
+			if newSpec.Instance.CloudType != "" {
+				instFields.Add("cloud_type")
+				inst.CloudType = newSpec.Instance.CloudType
+			}
+		}
+		if curSpec.Instance.Tpm != newSpec.Instance.Tpm {
+			instFields.Add("tpm")
+			inst.Tpm = newSpec.Instance.Tpm
+		}
+		if curSpec.Instance.Vnc != newSpec.Instance.Vnc {
+			instFields.Add("vnc")
+			inst.Vnc = newSpec.Instance.Vnc
+		}
+		if curSpec.Instance.DeleteProtection !=
+			newSpec.Instance.DeleteProtection {
+
+			instFields.Add("delete_protection")
+			inst.DeleteProtection = newSpec.Instance.DeleteProtection
+		}
+		if curSpec.Instance.SkipSourceDestCheck !=
+			newSpec.Instance.SkipSourceDestCheck {
+
+			instFields.Add("skip_source_dest_check")
+			inst.SkipSourceDestCheck = newSpec.Instance.SkipSourceDestCheck
+		}
+		if curSpec.Instance.HostAddress != newSpec.Instance.HostAddress {
+			if newSpec.Instance.HostAddress != nil {
+				instFields.Add("no_host_address")
+				inst.NoHostAddress = !*newSpec.Instance.HostAddress
+			}
+		}
+		if curSpec.Instance.PublicAddress != newSpec.Instance.PublicAddress {
+			if newSpec.Instance.PublicAddress != nil {
+				instFields.Add("no_public_address")
+				inst.NoPublicAddress = !*newSpec.Instance.PublicAddress
+			}
+		}
+		if curSpec.Instance.PublicAddress6 != newSpec.Instance.PublicAddress6 {
+			if newSpec.Instance.PublicAddress6 != nil {
+				instFields.Add("no_public_address6")
+				inst.NoPublicAddress6 = !*newSpec.Instance.PublicAddress6
+			}
+		}
+		if curSpec.Instance.DhcpServer != newSpec.Instance.DhcpServer {
+			instFields.Add("dhcp_server")
+			inst.DhcpServer = newSpec.Instance.DhcpServer
+		}
+
 		if curSpec.Instance.Processors != newSpec.Instance.Processors ||
 			curSpec.Instance.Memory != newSpec.Instance.Memory {
 
@@ -122,19 +185,34 @@ func (d *Deployments) migrate(db *database.Database,
 
 			if flexible && inst != nil {
 				inst.Processors = newSpec.Instance.Processors
+				instFields.Add("processors")
 				inst.Memory = newSpec.Instance.Memory
+				instFields.Add("memory")
+			}
+		}
 
-				err = inst.CommitFields(
-					db, set.NewSet("processors", "memory"))
-				if err != nil {
-					logrus.WithFields(logrus.Fields{
-						"deployment_id": deply.Id.Hex(),
-						"cur_spec_id":   curSpec.Id.Hex(),
-						"new_spec_id":   newSpec.Id.Hex(),
-						"error":         err,
-					}).Error("deploy: Failed to migrate instance")
-					return
-				}
+		if instFields.Len() > 0 {
+			errData, err = inst.Validate(db)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"deployment_id": deply.Id.Hex(),
+					"cur_spec_id":   curSpec.Id.Hex(),
+					"new_spec_id":   newSpec.Id.Hex(),
+					"error":         err,
+					"error_data":    errData,
+				}).Error("deploy: Migrate failed, invalid instance options")
+				return
+			}
+
+			err = inst.CommitFields(db, instFields)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"deployment_id": deply.Id.Hex(),
+					"cur_spec_id":   curSpec.Id.Hex(),
+					"new_spec_id":   newSpec.Id.Hex(),
+					"error":         err,
+				}).Error("deploy: Failed to migrate instance")
+				return
 			}
 		}
 

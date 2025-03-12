@@ -213,11 +213,12 @@ func (s *Pods) DeploySpec(db *database.Database,
 		Node:                node.Self.Id,
 		Image:               spc.Instance.Image,
 		Uefi:                true,
-		Tpm:                 false,
-		DhcpServer:          false,
+		Tpm:                 spc.Instance.Tpm,
+		Vnc:                 spc.Instance.Vnc,
+		DhcpServer:          spc.Instance.DhcpServer,
 		CloudScript:         "",
-		DeleteProtection:    false,
-		SkipSourceDestCheck: false,
+		DeleteProtection:    spc.Instance.DeleteProtection,
+		SkipSourceDestCheck: spc.Instance.SkipSourceDestCheck,
 		Name:                spc.Name,
 		Comment:             "",
 		InitDiskSize:        10,
@@ -236,6 +237,25 @@ func (s *Pods) DeploySpec(db *database.Database,
 	} else {
 		inst.CloudType = instance.Linux
 		inst.SecureBoot = true
+	}
+
+	if spc.Instance.Uefi != nil {
+		inst.Uefi = *spc.Instance.Uefi
+	}
+	if spc.Instance.SecureBoot != nil {
+		inst.SecureBoot = *spc.Instance.SecureBoot
+	}
+	if spc.Instance.CloudType != "" {
+		inst.CloudType = spc.Instance.CloudType
+	}
+	if spc.Instance.HostAddress != nil {
+		inst.NoHostAddress = !*spc.Instance.HostAddress
+	}
+	if spc.Instance.PublicAddress != nil {
+		inst.NoPublicAddress = !*spc.Instance.PublicAddress
+	}
+	if spc.Instance.PublicAddress6 != nil {
+		inst.NoPublicAddress6 = !*spc.Instance.PublicAddress6
 	}
 
 	err = inst.GenerateId()
