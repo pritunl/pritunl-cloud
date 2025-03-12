@@ -19,6 +19,7 @@ export interface Instance {
 	status_info?: StatusInfo;
 	uptime?: string;
 	state?: string;
+	action?: string;
 	virt_state?: string;
 	virt_timestamp?: string;
 	uefi?: boolean;

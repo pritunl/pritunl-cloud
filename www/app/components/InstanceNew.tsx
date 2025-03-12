@@ -937,12 +937,12 @@ export default class InstanceNew extends React.Component<Props, State> {
 							disabled={this.state.disabled}
 							label="Start instance"
 							help="Automatically start instance. Disable to get the public MAC address before instance is started for first time."
-							checked={!instance.state}
+							checked={!instance.action}
 							onToggle={(): void => {
-								if (instance.state === 'stop') {
-									this.set('state', '');
+								if (instance.action === 'stop') {
+									this.set('action', '');
 								} else {
-									this.set('state', 'stop');
+									this.set('action', 'stop');
 								}
 							}}
 						/>

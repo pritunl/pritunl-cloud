@@ -939,7 +939,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		});
 		InstanceActions.commit({
 			...this.state.instance,
-			state: null,
+			action: null,
 		}).then((): void => {
 			this.setState({
 				...this.state,
@@ -1390,7 +1390,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			},
 			{
 				label: 'State',
-				value: (this.props.instance.state || 'None') + ':' + (
+				value: (this.props.instance.action || 'None') + ':' + (
 					this.props.instance.virt_state || 'None'),
 			},
 			{
@@ -2089,7 +2089,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					className="bp5-intent-success bp5-icon-power"
 					progressClassName="bp5-intent-success"
 					style={css.controlButton}
-					hidden={this.props.instance.state !== 'stop'}
+					hidden={this.props.instance.action !== 'stop'}
 					disabled={this.state.disabled}
 					onConfirm={(): void => {
 						this.update('start');
@@ -2100,7 +2100,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					className="bp5-intent-danger bp5-icon-power"
 					progressClassName="bp5-intent-danger"
 					style={css.controlButton}
-					hidden={this.props.instance.state !== 'start'}
+					hidden={this.props.instance.action !== 'start'}
 					disabled={this.state.disabled}
 					onConfirm={(): void => {
 						this.update('stop');
