@@ -210,9 +210,8 @@ func (u *Unit) MigrateDeployements(db *database.Database,
 		"_id": &bson.M{
 			"$in": deplyIds,
 		},
-		"pod":   u.Pod.Id,
-		"unit":  u.Id,
-		"state": Deployed,
+		"pod":  u.Pod.Id,
+		"unit": u.Id,
 	})
 	if err != nil {
 		return
@@ -241,12 +240,11 @@ func (u *Unit) MigrateDeployements(db *database.Database,
 		"_id": &bson.M{
 			"$in": deplyIds,
 		},
-		"pod":   u.Pod.Id,
-		"unit":  u.Id,
-		"state": Deployed,
+		"pod":  u.Pod.Id,
+		"unit": u.Id,
 	}, &bson.M{
 		"$set": &bson.M{
-			"state":    deployment.Migrate,
+			"action":   deployment.Migrate,
 			"new_spec": newSpc.Id,
 		},
 	})
