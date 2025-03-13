@@ -43,6 +43,37 @@ type NodePortMapping struct {
 	InternalPort int                `bson:"internal_port" json:"internal_port"`
 }
 
+func (u *Unit) Refresh(db *database.Database) (err error) {
+	coll := db.Pods()
+
+	pd := &Pod{}
+	err = coll.FindOne(db, &bson.M{
+		"_id":      u.Pod.Id,
+		"units.id": u.Id,
+	}, database.FindOneProject(
+		"units.$",
+	)).Decode(pd)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	for _, unit := range pd.Units {
+		if unit.Id != u.Id {
+			continue
+		}
+
+		unit.Pod = u.Pod
+		*u = *unit
+		return
+	}
+
+	err = &errortypes.DatabaseError{
+		errors.New("pod: Unit refresh failed to find unit"),
+	}
+	return
+}
+
 func (u *Unit) HasDeployment(deployId primitive.ObjectID) bool {
 	if u.Deployments != nil {
 		for _, deply := range u.Deployments {
