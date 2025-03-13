@@ -179,6 +179,57 @@ func main() {
 		}
 
 		break
+	case "agent":
+		ids := &imds.Imds{}
+
+		err := ids.Init(nil)
+		if err != nil {
+			logger.WithFields(logger.Fields{
+				"error": err,
+			}).Error("agent: Failed to init imds")
+			utils.DelayExit(1, 1*time.Second)
+			return
+		}
+		defer ids.Close()
+
+		err = ids.OpenLog()
+		if err != nil {
+			return
+		}
+
+		ids.RunSync(false)
+		ids.SetInitialized()
+
+		err = ids.SyncStatus(types.Running)
+		if err != nil {
+			logger.WithFields(logger.Fields{
+				"error": err,
+			}).Error("agent: Failed to sync status")
+			utils.DelayExit(1, 1*time.Second)
+			return
+		}
+
+		err = ids.Wait()
+		if err != nil {
+			logger.WithFields(logger.Fields{
+				"error": err,
+			}).Error("agent: Failed to run")
+			utils.DelayExit(1, 1*time.Second)
+			return
+		}
+
+		time.Sleep(500 * time.Millisecond)
+
+		_, err = ids.Sync()
+		if err != nil {
+			logger.WithFields(logger.Fields{
+				"error": err,
+			}).Error("agent: Failed to sync")
+			utils.DelayExit(1, 1*time.Second)
+			return
+		}
+
+		break
 	case "image":
 		ids := &imds.Imds{}
 
