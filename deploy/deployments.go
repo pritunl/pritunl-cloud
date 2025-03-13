@@ -30,9 +30,7 @@ type Deployments struct {
 	stat *state.State
 }
 
-func (d *Deployments) migrate(db *database.Database,
-	deply *deployment.Deployment) {
-
+func (d *Deployments) migrate(deply *deployment.Deployment) {
 	inst := d.stat.GetInstace(deply.Instance)
 	nodeId := d.stat.Node().Id
 
@@ -46,6 +44,9 @@ func (d *Deployments) migrate(db *database.Database,
 		defer func() {
 			deploymentsLock.Unlock(deply.Id.Hex(), lockId)
 		}()
+
+		db := database.GetDatabase()
+		defer db.Close()
 
 		if deply.Node != nodeId {
 			return
@@ -216,10 +217,10 @@ func (d *Deployments) migrate(db *database.Database,
 			}
 		}
 
-		deply.State = deployment.Deployed
+		deply.Action = ""
 		deply.Spec = newSpec.Id
 		deply.NewSpec = primitive.NilObjectID
-		err = deply.CommitFields(db, set.NewSet("state", "spec", "new_spec"))
+		err = deply.CommitFields(db, set.NewSet("action", "spec", "new_spec"))
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"deployment_id": deply.Id.Hex(),
@@ -240,9 +241,7 @@ func (d *Deployments) migrate(db *database.Database,
 	}()
 }
 
-func (d *Deployments) destroy(db *database.Database,
-	deply *deployment.Deployment) {
-
+func (d *Deployments) destroy(deply *deployment.Deployment) {
 	acquired, lockId := deploymentsLock.LockOpenTimeout(
 		deply.Id.Hex(), 3*time.Minute)
 	if !acquired {
@@ -253,6 +252,9 @@ func (d *Deployments) destroy(db *database.Database,
 		defer func() {
 			deploymentsLock.Unlock(deply.Id.Hex(), lockId)
 		}()
+
+		db := database.GetDatabase()
+		defer db.Close()
 
 		if deply.Node != d.stat.Node().Id {
 			return
@@ -344,71 +346,161 @@ func (d *Deployments) destroy(db *database.Database,
 	}()
 }
 
-func (d *Deployments) archive(db *database.Database,
-	deply *deployment.Deployment) (err error) {
-
-	if deply.Node != d.stat.Node().Id {
-		return
-	}
-
+func (d *Deployments) archive(deply *deployment.Deployment) (err error) {
 	inst := d.stat.GetInstace(deply.Instance)
-	if inst == nil {
+	nodeId := d.stat.Node().Id
+
+	acquired, lockId := deploymentsLock.LockOpenTimeout(
+		deply.Id.Hex(), 3*time.Minute)
+	if !acquired {
 		return
 	}
 
-	if inst.Action != instance.Stop {
-		logrus.WithFields(logrus.Fields{
-			"instance_id": inst.Id.Hex(),
-		}).Info("deploy: Stopping instance for deployment archive")
+	go func() {
+		defer func() {
+			deploymentsLock.Unlock(deply.Id.Hex(), lockId)
+		}()
 
-		err = instance.SetAction(db, inst.Id, instance.Stop)
-		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"instance_id": inst.Id.Hex(),
-				"error":       err,
-			}).Error("deploy: Failed to set instance state")
+		db := database.GetDatabase()
+		defer db.Close()
+
+		if deply.Node != nodeId {
+			return
+		}
+
+		if !inst.IsActive() {
+			deply.Action = ""
+			err = deply.CommitFields(db, set.NewSet("action"))
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"deployment_id": deply.Id.Hex(),
+					"error":         err,
+				}).Error("deploy: Failed to commit deployment")
+				return
+			}
 
 			return
 		}
-	}
+
+		if inst.Action != instance.Stop {
+			logrus.WithFields(logrus.Fields{
+				"instance_id": inst.Id.Hex(),
+			}).Info("deploy: Stopping instance for deployment archive")
+
+			err = instance.SetAction(db, inst.Id, instance.Stop)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"instance_id": inst.Id.Hex(),
+					"error":       err,
+				}).Error("deploy: Failed to set instance state")
+
+				return
+			}
+		}
+	}()
 
 	return
 }
 
-func (d *Deployments) restore(db *database.Database,
-	deply *deployment.Deployment) (err error) {
-
-	if deply.Node != d.stat.Node().Id {
-		return
-	}
-
+func (d *Deployments) restore(deply *deployment.Deployment) (err error) {
 	inst := d.stat.GetInstace(deply.Instance)
-	if inst == nil {
+	nodeId := d.stat.Node().Id
+
+	acquired, lockId := deploymentsLock.LockOpenTimeout(
+		deply.Id.Hex(), 3*time.Minute)
+	if !acquired {
 		return
 	}
 
-	if inst.Action != instance.Start {
-		logrus.WithFields(logrus.Fields{
-			"instance_id": inst.Id.Hex(),
-		}).Info("deploy: Starting instance for deployment restore")
+	go func() {
+		defer func() {
+			deploymentsLock.Unlock(deply.Id.Hex(), lockId)
+		}()
 
-		err = instance.SetAction(db, inst.Id, instance.Start)
-		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"instance_id": inst.Id.Hex(),
-				"error":       err,
-			}).Error("deploy: Failed to set instance state")
+		db := database.GetDatabase()
+		defer db.Close()
+
+		if deply.Node != nodeId {
+			return
+		}
+
+		if inst.IsActive() {
+			deply.Action = ""
+			err = deply.CommitFields(db, set.NewSet("action"))
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"deployment_id": deply.Id.Hex(),
+					"error":         err,
+				}).Error("deploy: Failed to commit deployment")
+				return
+			}
 
 			return
 		}
-	}
+
+		if inst.Action != instance.Start {
+			logrus.WithFields(logrus.Fields{
+				"instance_id": inst.Id.Hex(),
+			}).Info("deploy: Starting instance for deployment restore")
+
+			err = instance.SetAction(db, inst.Id, instance.Start)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"instance_id": inst.Id.Hex(),
+					"error":       err,
+				}).Error("deploy: Failed to set instance state")
+
+				return
+			}
+		}
+	}()
 
 	return
 }
 
-func (d *Deployments) imageShutdown(deply *deployment.Deployment,
-	virt *vm.VirtualMachine) {
+func (d *Deployments) imageShutdown(db *database.Database,
+	deply *deployment.Deployment, virt *vm.VirtualMachine) {
 
+	logrus.WithFields(logrus.Fields{
+		"instance_id": virt.Id.Hex(),
+	}).Info("deploy: Stopping instance for deployment image")
+
+	time.Sleep(3 * time.Second)
+
+	err := imds.Pull(db, virt.Id, virt.Deployment, virt.ImdsHostSecret)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"instance_id": virt.Id.Hex(),
+			"error":       err,
+		}).Error("deploy: Failed to pull imds state for shutdown")
+	}
+
+	err = instance.SetAction(db, virt.Id, instance.Stop)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"instance_id": virt.Id.Hex(),
+			"error":       err,
+		}).Error("deploy: Failed to set instance state")
+
+		return
+	}
+
+	if deply.GetImageState() == "" {
+		deply.SetImageState(deployment.Ready)
+		err = deply.CommitFields(db, set.NewSet("image_data.state"))
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"instance_id": virt.Id.Hex(),
+				"error":       err,
+			}).Error("deploy: Failed to commit deployment state")
+			return
+		}
+	}
+
+	event.PublishDispatch(db, "pod.change")
+}
+
+func (d *Deployments) image(deply *deployment.Deployment) (err error) {
 	acquired, lockId := deploymentsLock.LockOpenTimeout(
 		deply.Id.Hex(), 5*time.Minute)
 	if !acquired {
@@ -424,112 +516,70 @@ func (d *Deployments) imageShutdown(deply *deployment.Deployment,
 		db := database.GetDatabase()
 		defer db.Close()
 
-		logrus.WithFields(logrus.Fields{
-			"instance_id": virt.Id.Hex(),
-		}).Info("deploy: Stopping instance for deployment image")
-
-		time.Sleep(3 * time.Second)
-
-		err := imds.Pull(db, virt.Id, virt.Deployment, virt.ImdsHostSecret)
-		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"instance_id": virt.Id.Hex(),
-				"error":       err,
-			}).Error("deploy: Failed to pull imds state for shutdown")
-		}
-
-		err = instance.SetAction(db, virt.Id, instance.Stop)
-		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"instance_id": virt.Id.Hex(),
-				"error":       err,
-			}).Error("deploy: Failed to set instance state")
-
+		if deply.Node != d.stat.Node().Id {
 			return
 		}
 
-		if deply.GetImageState() == "" {
-			deply.SetImageState(deployment.Ready)
-			err = deply.CommitFields(db, set.NewSet("image_data.state"))
-			if err != nil {
-				logrus.WithFields(logrus.Fields{
-					"instance_id": virt.Id.Hex(),
-					"error":       err,
-				}).Error("deploy: Failed to commit deployment state")
-				return
-			}
+		inst := d.stat.GetInstace(deply.Instance)
+		if inst == nil {
+			return
 		}
 
-		event.PublishDispatch(db, "pod.change")
-	}()
-}
+		virt := d.stat.GetVirt(inst.Id)
 
-func (d *Deployments) image(db *database.Database,
-	deply *deployment.Deployment) (err error) {
+		if inst.Guest == nil {
+			return
+		}
 
-	if deply.Node != d.stat.Node().Id {
-		return
-	}
+		if inst.IsActive() && inst.Guest.Status == types.Imaged &&
+			inst.Action != instance.Stop {
 
-	inst := d.stat.GetInstace(deply.Instance)
-	if inst == nil {
-		return
-	}
+			d.imageShutdown(db, deply, virt)
+			return
+		}
 
-	virt := d.stat.GetVirt(inst.Id)
+		if deply.State == deployment.Deployed &&
+			deply.GetImageState() == deployment.Ready &&
+			!inst.IsActive() && inst.Guest.Status == types.Imaged {
 
-	if inst.Guest == nil {
-		return
-	}
+			logrus.WithFields(logrus.Fields{
+				"instance_id": inst.Id.Hex(),
+			}).Info("deploy: Creating deployment image")
 
-	if inst.IsActive() && inst.Guest.Status == types.Imaged &&
-		inst.Action != instance.Stop {
+			dsk, e := disk.GetInstanceIndex(db, inst.Id, "0")
+			if e != nil {
+				if _, ok := e.(*database.NotFoundError); ok {
+					logrus.WithFields(logrus.Fields{
+						"instance_id": inst.Id.Hex(),
+						"error":       err,
+					}).Error("deploy: Failed to find instance disk for image")
 
-		d.imageShutdown(deply, virt)
-		return
-	}
+					deply.SetImageState(deployment.Failed)
+					err = deply.CommitFields(db, set.NewSet("image_data.state"))
+					if err != nil {
+						return
+					}
 
-	if deply.State == deployment.Deployed &&
-		deply.GetImageState() == deployment.Ready &&
-		!inst.IsActive() && inst.Guest.Status == types.Imaged {
-
-		logrus.WithFields(logrus.Fields{
-			"instance_id": inst.Id.Hex(),
-		}).Info("deploy: Creating deployment image")
-
-		dsk, e := disk.GetInstanceIndex(db, inst.Id, "0")
-		if e != nil {
-			if _, ok := e.(*database.NotFoundError); ok {
-				logrus.WithFields(logrus.Fields{
-					"instance_id": inst.Id.Hex(),
-					"error":       err,
-				}).Error("deploy: Failed to find instance disk for image")
-
-				deply.SetImageState(deployment.Failed)
-				err = deply.CommitFields(db, set.NewSet("image_data.state"))
-				if err != nil {
+					dsk = nil
+					err = nil
+				} else {
 					return
 				}
+			}
 
-				dsk = nil
-				err = nil
-			} else {
+			dsk.Action = disk.Snapshot
+			err = dsk.CommitFields(db, set.NewSet("action"))
+			if err != nil {
+				return
+			}
+
+			deply.SetImageState(deployment.Snapshot)
+			err = deply.CommitFields(db, set.NewSet("image_data.state"))
+			if err != nil {
 				return
 			}
 		}
-
-		dsk.Action = disk.Snapshot
-		err = dsk.CommitFields(db, set.NewSet("action"))
-		if err != nil {
-			return
-		}
-
-		deply.SetImageState(deployment.Snapshot)
-		err = deply.CommitFields(db, set.NewSet("image_data.state"))
-		if err != nil {
-			return
-		}
-	}
+	}()
 
 	return
 }
@@ -822,17 +872,20 @@ func (d *Deployments) Deploy(db *database.Database) (err error) {
 
 	for _, deply := range inactiveDeployments {
 		switch deply.Action {
+		case deployment.Migrate:
+			d.migrate(deply)
+			break
 		case deployment.Destroy:
-			d.destroy(db, deply)
+			d.destroy(deply)
 			break
 		case deployment.Archive:
-			err = d.archive(db, deply)
+			err = d.archive(deply)
 			if err != nil {
 				return
 			}
 			break
 		case deployment.Restore:
-			err = d.restore(db, deply)
+			err = d.restore(deply)
 			if err != nil {
 				return
 			}
@@ -842,7 +895,7 @@ func (d *Deployments) Deploy(db *database.Database) (err error) {
 
 	for _, deply := range activeDeployments {
 		if deply.Action == deployment.Migrate {
-			d.migrate(db, deply)
+			d.migrate(deply)
 			break
 		}
 
@@ -859,12 +912,11 @@ func (d *Deployments) Deploy(db *database.Database) (err error) {
 		}
 
 		if deply.Kind == deployment.Image {
-			err = d.image(db, deply)
+			err = d.image(deply)
 			if err != nil {
 				return
 			}
 		}
-
 	}
 
 	return
