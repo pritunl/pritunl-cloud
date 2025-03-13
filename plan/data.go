@@ -24,12 +24,13 @@ type Unit struct {
 }
 
 type Instance struct {
-	Name       string `json:"name"`
-	State      string `json:"state"`
-	Action     string `json:"action"`
-	VirtState  string `json:"virt_state"`
-	Processors int    `json:"processors"`
-	Memory     int    `json:"memory"`
+	Name          string `json:"name"`
+	State         string `json:"state"`
+	Action        string `json:"action"`
+	VirtState     string `json:"virt_state"`
+	Processors    int    `json:"processors"`
+	Memory        int    `json:"memory"`
+	LastHeartbeat int    `json:"last_heartbeat"`
 }
 
 func (d *Data) Export() (data eval.Data, err error) {
