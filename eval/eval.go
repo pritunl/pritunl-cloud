@@ -173,9 +173,9 @@ func (p *Parser) parseComp(left, right, comp interface{}) bool {
 		case LessEqual:
 			return leftVal <= right.(string)
 		case Greater:
-			return leftVal < right.(string)
+			return leftVal > right.(string)
 		case GreaterEqual:
-			return leftVal <= right.(string)
+			return leftVal >= right.(string)
 		default:
 			panic("Invalid comp")
 		}
@@ -190,9 +190,9 @@ func (p *Parser) parseComp(left, right, comp interface{}) bool {
 		case LessEqual:
 			return leftVal <= right.(int)
 		case Greater:
-			return leftVal < right.(int)
+			return leftVal > right.(int)
 		case GreaterEqual:
-			return leftVal <= right.(int)
+			return leftVal >= right.(int)
 		default:
 			panic("Invalid comp")
 		}
@@ -207,9 +207,9 @@ func (p *Parser) parseComp(left, right, comp interface{}) bool {
 		case LessEqual:
 			return leftVal <= right.(float64)
 		case Greater:
-			return leftVal < right.(float64)
+			return leftVal > right.(float64)
 		case GreaterEqual:
-			return leftVal <= right.(float64)
+			return leftVal >= right.(float64)
 		default:
 			panic("Invalid comp")
 		}
