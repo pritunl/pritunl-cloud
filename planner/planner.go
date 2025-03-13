@@ -233,12 +233,6 @@ func (p *Planner) checkInstance(db *database.Database,
 			"pod":        deply.Pod.Hex(),
 			"unit":       deply.Unit.Hex(),
 		}).Info("scheduler: Failed to find plan for deployment")
-
-		// err = deployment.Remove(db, deply.Id)
-		// if err != nil {
-		// 	return
-		// }
-
 		return
 	}
 
@@ -256,23 +250,10 @@ func (p *Planner) checkInstance(db *database.Database,
 			return
 		}
 
-		log := false
-		if action != "" {
-			log = true
-			println("**************************************************")
-			println(action)
-			println(threshold)
-		}
-
 		action, err = deply.HandleStatement(
 			db, statement.Id, threshold, action)
 		if err != nil {
 			return
-		}
-
-		if log {
-			println(action)
-			println("**************************************************")
 		}
 
 		if action != "" {
