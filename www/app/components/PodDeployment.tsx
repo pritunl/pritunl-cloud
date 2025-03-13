@@ -150,11 +150,18 @@ export default class PodDeployment extends React.Component<Props, State> {
 			case "deployed":
 				stateClass = "bp5-text-intent-success"
 				break
-			case "migrate":
-				stateClass = "bp5-text-intent-warning"
-				break
 			case "reserved":
 				stateClass = "bp5-text-intent-primary"
+				break
+			case "archived":
+				stateClass = "bp5-text-intent-warning"
+				break
+		}
+
+		switch (deployment.action) {
+			case "migrate":
+				stateValue = "Migrating"
+				stateClass = "bp5-text-intent-warning"
 				break
 			case "restore":
 				stateValue = "Restoring"
@@ -166,9 +173,6 @@ export default class PodDeployment extends React.Component<Props, State> {
 				break
 			case "archive":
 				stateValue = "Archiving"
-				stateClass = "bp5-text-intent-warning"
-				break
-			case "archived":
 				stateClass = "bp5-text-intent-warning"
 				break
 		}

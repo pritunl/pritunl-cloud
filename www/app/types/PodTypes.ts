@@ -55,6 +55,7 @@ export interface Deployment {
 	spec?: string;
 	kind?: string;
 	state?: string;
+	action?: string;
 	status?: string;
 	node?: string;
 	instance?: string;

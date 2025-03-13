@@ -245,7 +245,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 			...this.state,
 			disabled: true,
 		});
-		PodActions.updateMultiUnitState(
+		PodActions.updateMultiUnitAction(
 				this.props.pod.id, activeUnit.id,
 				Object.keys(this.state.selectedDeployments),
 			  "archive").then((): void => {
@@ -275,7 +275,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 			...this.state,
 			disabled: true,
 		});
-		PodActions.updateMultiUnitState(
+		PodActions.updateMultiUnitAction(
 				this.props.pod.id, activeUnit.id,
 				Object.keys(this.state.selectedDeployments),
 			  "restore").then((): void => {
@@ -305,7 +305,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 			...this.state,
 			disabled: true,
 		});
-		PodActions.updateMultiUnitState(
+		PodActions.updateMultiUnitAction(
 				this.props.pod.id, activeUnit.id,
 				Object.keys(this.state.selectedDeployments),
 			  "destroy").then((): void => {

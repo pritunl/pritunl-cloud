@@ -206,7 +206,7 @@ export default class DiskDetailed extends React.Component<Props, State> {
 		};
 
 		if (this.state.resizeDisk && disk.new_size > disk.size) {
-			disk.state = 'expand';
+			disk.action = 'expand';
 		}
 
 		DiskActions.commit(disk).then((): void => {
@@ -291,7 +291,7 @@ export default class DiskDetailed extends React.Component<Props, State> {
 			};
 		}
 
-		disk.state = 'restore';
+		disk.action = 'restore';
 		disk.restore_image = restoreImage;
 
 		DiskActions.commit(disk).then((): void => {
@@ -391,6 +391,13 @@ export default class DiskDetailed extends React.Component<Props, State> {
 				}
 				statusClass += ' bp5-text-intent-success';
 				break;
+			case 'attached':
+				statusText = 'Connected';
+				statusClass += ' bp5-text-intent-success';
+				break;
+		}
+
+		switch (this.props.disk.action) {
 			case 'destroy':
 				statusText = 'Destroying';
 				statusClass += ' bp5-text-intent-danger';

@@ -14,6 +14,7 @@ export interface Disk {
 	pool?: string;
 	organization?: string;
 	state?: string;
+	action?: string;
 	instance?: string;
 	delete_protection?: boolean;
 	file_system?: string;

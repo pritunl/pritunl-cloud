@@ -196,12 +196,12 @@ export default class PodMigrate extends React.Component<Props, State> {
 			...this.state,
 			disabled: true,
 		});
-		PodActions.updateMultiUnitState(
+		PodActions.updateMultiUnitAction(
 				this.props.pod.id, this.props.unit.id,
 				this.props.selectedDeployments,
 				"migrate", migrateCommit.id).then((): void => {
 
-			Alert.success('Successfully migrated deployments');
+			Alert.success('Successfully initiated deployment migration');
 
 			this.setState({
 				...this.state,

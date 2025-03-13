@@ -295,8 +295,8 @@ export function deployUnit(podId: string, unitId: string,
 	});
 }
 
-export function updateMultiUnitState(podId: string, unitId: string,
-	deploymentIds: string[], state: string, commit?: string): Promise<void> {
+export function updateMultiUnitAction(podId: string, unitId: string,
+	deploymentIds: string[], action: string, commit?: string): Promise<void> {
 
 	let loader = new Loader().loading();
 
@@ -304,7 +304,7 @@ export function updateMultiUnitState(podId: string, unitId: string,
 		SuperAgent
 			.put('/pod/' + podId + "/unit/" + unitId + "/deployment")
 			.query({
-				state: state,
+				action: action,
 				commit: commit,
 			})
 			.send(deploymentIds)
