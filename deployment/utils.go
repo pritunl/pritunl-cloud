@@ -313,8 +313,9 @@ func ArchiveMulti(db *database.Database, podId primitive.ObjectID,
 		"_id": &bson.M{
 			"$in": deplyIds,
 		},
-		"pod":  podId,
-		"unit": unitId,
+		"pod":   podId,
+		"unit":  unitId,
+		"state": Deployed,
 	}, &bson.M{
 		"$set": &bson.M{
 			"action": Archive,
