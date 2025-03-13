@@ -369,8 +369,9 @@ func (d *Deployments) archive(deply *deployment.Deployment) (err error) {
 		}
 
 		if !inst.IsActive() {
+			deply.State = deployment.Archived
 			deply.Action = ""
-			err = deply.CommitFields(db, set.NewSet("action"))
+			err = deply.CommitFields(db, set.NewSet("state", "action"))
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
 					"deployment_id": deply.Id.Hex(),
@@ -425,8 +426,9 @@ func (d *Deployments) restore(deply *deployment.Deployment) (err error) {
 		}
 
 		if inst.IsActive() {
+			deply.State = deployment.Deployed
 			deply.Action = ""
-			err = deply.CommitFields(db, set.NewSet("action"))
+			err = deply.CommitFields(db, set.NewSet("state", "action"))
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
 					"deployment_id": deply.Id.Hex(),
