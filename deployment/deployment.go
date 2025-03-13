@@ -38,6 +38,7 @@ type Deployment struct {
 }
 
 type InstanceData struct {
+	HostIps          []string `bson:"host_ips" json:"host_ips"`
 	PublicIps        []string `bson:"public_ips" json:"public_ips"`
 	PublicIps6       []string `bson:"public_ips6" json:"public_ips6"`
 	PrivateIps       []string `bson:"private_ips" json:"private_ips"`

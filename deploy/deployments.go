@@ -732,6 +732,29 @@ func (d *Deployments) domain(db *database.Database,
 					newRecs[domn.Id] = append(newRecs[domn.Id], rec)
 				}
 				break
+			case spec.Host:
+				for _, val := range deply.InstanceData.HostIps {
+					rec := &domain.Record{
+						Domain:     specRec.Domain,
+						SubDomain:  specRec.Name,
+						Deployment: deply.Id,
+						Type:       domain.A,
+						Value:      val,
+					}
+
+					errData, e := rec.Validate(db)
+					if e != nil {
+						err = e
+						return
+					}
+					if errData != nil {
+						err = errData.GetError()
+						return
+					}
+
+					newRecs[domn.Id] = append(newRecs[domn.Id], rec)
+				}
+				break
 			case spec.Private:
 				for _, val := range deply.InstanceData.PrivateIps {
 					rec := &domain.Record{

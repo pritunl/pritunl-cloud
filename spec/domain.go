@@ -15,6 +15,8 @@ func (d *Domain) Validate() (errData *errortypes.ErrorData, err error) {
 		rec.Name = utils.FilterDomain(rec.Name)
 
 		switch rec.Type {
+		case Host:
+			break
 		case Private:
 			break
 		case Private6:

@@ -16,6 +16,7 @@ const (
 	Multicast = "multicast"
 	Broadcast = "broadcast"
 
+	Host          = "host"
 	Private       = "private"
 	Private6      = "private6"
 	Public        = "public"

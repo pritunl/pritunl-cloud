@@ -434,14 +434,24 @@ func (n *NetConf) ipDatabase(db *database.Database) (err error) {
 	if !n.Virt.Deployment.IsZero() {
 		coll = db.Deployments()
 
+		hostIps := []string{}
+		if n.HostAddr != nil {
+			hostIps = append(hostIps, n.HostAddr.String())
+		}
+		privateIps := []string{}
+		if n.InternalAddr != nil {
+			privateIps = append(privateIps, n.InternalAddr.String())
+		}
+		privateIps6 := []string{}
+		if n.InternalAddr6 != nil {
+			privateIps6 = append(privateIps6, n.InternalAddr6.String())
+		}
+
 		err = coll.UpdateId(n.Virt.Deployment, &bson.M{
 			"$set": &bson.M{
-				"instance_data.private_ips": []string{
-					n.InternalAddr.String(),
-				},
-				"instance_data.private_ips6": []string{
-					n.InternalAddr6.String(),
-				},
+				"instance_data.host_ips":     hostIps,
+				"instance_data.private_ips":  privateIps,
+				"instance_data.private_ips6": privateIps6,
 			},
 		})
 		if err != nil {
