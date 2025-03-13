@@ -133,7 +133,15 @@ func (p *Parser) parseRef(ref string, pos int) (val interface{}, err error) {
 		)
 		return
 	} else {
-		val = groupVal
+		if fVal, ok := groupVal.(float64); ok {
+			if fVal == float64(int(fVal)) {
+				val = int(fVal)
+			} else {
+				val = fVal
+			}
+		} else {
+			val = groupVal
+		}
 	}
 
 	return
