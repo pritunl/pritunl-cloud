@@ -386,7 +386,10 @@ func getUserData(db *database.Database, inst *instance.Instance,
 		deployScript = fmt.Sprintf(
 			deployScriptTmpl,
 			settings.Hypervisor.AgentGuestPath,
-			"",
+			fmt.Sprintf(
+				" && %s agent&",
+				settings.Hypervisor.AgentGuestPath,
+			),
 		)
 	}
 
