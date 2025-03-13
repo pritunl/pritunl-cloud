@@ -415,7 +415,7 @@ func Delete(db *database.Database, instId primitive.ObjectID) (err error) {
 
 	err = coll.UpdateId(instId, &bson.M{
 		"$set": &bson.M{
-			"state": Destroy,
+			"action": Destroy,
 		},
 	})
 	if err != nil {
@@ -433,7 +433,7 @@ func DeleteOrg(db *database.Database, orgId, instId primitive.ObjectID) (
 
 	err = coll.UpdateId(instId, &bson.M{
 		"$set": &bson.M{
-			"state": Destroy,
+			"action": Destroy,
 		},
 		"organization": orgId,
 	})
@@ -459,7 +459,7 @@ func DeleteMulti(db *database.Database, instIds []primitive.ObjectID) (
 		},
 	}, &bson.M{
 		"$set": &bson.M{
-			"state": Destroy,
+			"action": Destroy,
 		},
 	})
 	if err != nil {
@@ -485,7 +485,7 @@ func DeleteMultiOrg(db *database.Database, orgId primitive.ObjectID,
 		},
 	}, &bson.M{
 		"$set": &bson.M{
-			"state": Destroy,
+			"action": Destroy,
 		},
 	})
 	if err != nil {
@@ -507,7 +507,7 @@ func UpdateMulti(db *database.Database, instIds []primitive.ObjectID,
 		},
 	}
 
-	if (*doc)["state"] == Destroy {
+	if (*doc)["action"] == Destroy {
 		(*query)["delete_protection"] = &bson.M{
 			"$ne": true,
 		}
@@ -536,7 +536,7 @@ func UpdateMultiOrg(db *database.Database, orgId primitive.ObjectID,
 		"organization": orgId,
 	}
 
-	if (*doc)["state"] == Destroy {
+	if (*doc)["action"] == Destroy {
 		(*query)["delete_protection"] = &bson.M{
 			"$ne": true,
 		}
