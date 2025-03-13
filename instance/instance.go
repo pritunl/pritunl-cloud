@@ -130,6 +130,7 @@ type StatusInfo struct {
 
 type GuestData struct {
 	Status    string    `bson:"status" json:"status"`
+	Timestamp time.Time `bson:"timestamp" json:"timestamp"`
 	Heartbeat time.Time `bson:"heartbeat" json:"heartbeat"`
 	Memory    float64   `bson:"memory" json:"memory"`
 	HugePages float64   `bson:"hugepages" json:"hugepages"`
