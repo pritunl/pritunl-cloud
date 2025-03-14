@@ -197,7 +197,6 @@ func (p *ProgressS3) syncProgress() {
 		elapsed := now.Sub(p.LastTime).Seconds()
 
 		speed := float64(p.Wrote-p.LastWrote) / elapsed
-		speedStr := humanReadableSpeed(speed)
 
 		p.LastTime = now
 		p.LastWrote = p.Wrote
@@ -205,13 +204,13 @@ func (p *ProgressS3) syncProgress() {
 
 		if p.disk != nil && !p.disk.Instance.IsZero() {
 			_ = instance.SetDownloadProgress(
-				p.db, p.disk.Instance, p.LastReport)
+				p.db, p.disk.Instance, p.LastReport, speed/1_000_000.0)
 		}
 
 		logrus.WithFields(logrus.Fields{
 			"key": p.img.Key,
 		}).Infof("data: Downloading s3 image %d%% %s",
-			p.LastReport, speedStr)
+			p.LastReport, humanReadableSpeed(speed))
 	}
 
 	return
@@ -230,12 +229,12 @@ type Progress struct {
 
 func humanReadableSpeed(bytesPerSecond float64) string {
 	switch {
-	case bytesPerSecond >= 1<<30:
-		return fmt.Sprintf("%.2f GB/s", bytesPerSecond/(1<<30))
-	case bytesPerSecond >= 1<<20:
-		return fmt.Sprintf("%.2f MB/s", bytesPerSecond/(1<<20))
-	case bytesPerSecond >= 1<<10:
-		return fmt.Sprintf("%.2f KB/s", bytesPerSecond/(1<<10))
+	case bytesPerSecond >= 1_000_000_000:
+		return fmt.Sprintf("%.2f GB/s", bytesPerSecond/1_000_000_000)
+	case bytesPerSecond >= 1_000_000:
+		return fmt.Sprintf("%.2f MB/s", bytesPerSecond/1_000_000)
+	case bytesPerSecond >= 1_000:
+		return fmt.Sprintf("%.2f KB/s", bytesPerSecond/1_000)
 	default:
 		return fmt.Sprintf("%.2f B/s", bytesPerSecond)
 	}
@@ -251,7 +250,6 @@ func (p *Progress) Write(data []byte) (n int, err error) {
 		elapsed := now.Sub(p.LastTime).Seconds()
 
 		speed := float64(p.Wrote-p.LastWrote) / elapsed
-		speedStr := humanReadableSpeed(speed)
 
 		p.LastTime = now
 		p.LastWrote = p.Wrote
@@ -259,13 +257,13 @@ func (p *Progress) Write(data []byte) (n int, err error) {
 
 		if p.disk != nil && !p.disk.Instance.IsZero() {
 			_ = instance.SetDownloadProgress(
-				p.db, p.disk.Instance, p.LastReport)
+				p.db, p.disk.Instance, p.LastReport, speed/1_000_000.0)
 		}
 
 		logrus.WithFields(logrus.Fields{
 			"key": p.img.Key,
 		}).Infof("data: Downloading web image %d%% %s",
-			p.LastReport, speedStr)
+			p.LastReport, humanReadableSpeed(speed))
 	}
 
 	return
