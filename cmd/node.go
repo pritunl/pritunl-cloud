@@ -17,6 +17,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/setup"
 	"github.com/pritunl/pritunl-cloud/sync"
 	"github.com/pritunl/pritunl-cloud/task"
+	"github.com/pritunl/pritunl-cloud/upgrade"
 	"github.com/sirupsen/logrus"
 )
 
@@ -43,6 +44,11 @@ func Node(testing bool) (err error) {
 	}
 
 	err = defaults.Defaults()
+	if err != nil {
+		return
+	}
+
+	err = upgrade.Upgrade()
 	if err != nil {
 		return
 	}
