@@ -80,7 +80,7 @@ func FilterName(s string) string {
 		return ""
 	}
 
-	if s == "local" {
+	if s == "self" {
 		s = "invalid-name"
 	}
 

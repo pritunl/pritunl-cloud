@@ -13,7 +13,7 @@ func Query(resrc string, keys ...string) (val string, err error) {
 	switch resrc {
 	case finder.InstanceKind:
 		if len(keys) == 2 {
-			if keys[0] != "local" {
+			if keys[0] != "self" {
 				break
 			}
 			key = keys[1]
@@ -26,7 +26,7 @@ func Query(resrc string, keys ...string) (val string, err error) {
 		break
 	case finder.VpcKind:
 		if len(keys) == 2 {
-			if keys[0] != "local" {
+			if keys[0] != "self" {
 				break
 			}
 			key = keys[1]
@@ -39,7 +39,7 @@ func Query(resrc string, keys ...string) (val string, err error) {
 		break
 	case finder.SubnetKind:
 		if len(keys) == 2 {
-			if keys[0] != "local" {
+			if keys[0] != "self" {
 				break
 			}
 			key = keys[1]
