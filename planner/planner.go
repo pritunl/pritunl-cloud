@@ -136,7 +136,7 @@ func (p *Planner) checkInstance(db *database.Database,
 
 	if (deply.Action == deployment.Archive ||
 		deply.State == deployment.Archived) &&
-		inst.Action != instance.Stop {
+		inst.IsActive() {
 
 		logrus.WithFields(logrus.Fields{
 			"instance_id": inst.Id.Hex(),
@@ -159,12 +159,16 @@ func (p *Planner) checkInstance(db *database.Database,
 
 	status := deployment.Unhealthy
 	if inst.Guest != nil {
-		heartbeatTtl := time.Duration(
-			settings.System.InstanceTimestampTtl) * time.Second
-		if inst.Guest.Status == types.Running &&
-			time.Since(inst.Guest.Heartbeat) <= heartbeatTtl {
+		if inst.Guest.Status == types.Running {
+			now := time.Now()
+			heartbeatTtl := time.Duration(
+				settings.System.InstanceTimestampTtl) * time.Second
 
-			status = deployment.Healthy
+			if now.Sub(inst.Guest.Heartbeat) <= heartbeatTtl {
+				status = deployment.Healthy
+			} else if now.Sub(inst.Guest.Timestamp) > heartbeatTtl {
+				status = deployment.Unknown
+			}
 		}
 	}
 
@@ -222,6 +226,10 @@ func (p *Planner) checkInstance(db *database.Database,
 	}
 
 	if spc.Instance == nil {
+		return
+	}
+
+	if deply.State != deployment.Deployed || deply.Action != "" {
 		return
 	}
 
