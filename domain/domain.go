@@ -29,6 +29,7 @@ type Domain struct {
 	RootDomain    string             `bson:"root_domain" json:"root_domain"`
 	LockId        primitive.ObjectID `bson:"lock_id,omitempty" json:"lock_id"`
 	LockTimestamp time.Time          `bson:"lock_timestamp" json:"lock_timestamp"`
+	LastUpdate    time.Time          `bson:"last_update" json:"last_update"`
 	Records       []*Record          `bson:"-" json:"records"`
 	OrigRecords   []*Record          `bson:"-" json:"-"`
 }
@@ -137,6 +138,12 @@ func (d *Domain) CommitRecords(db *database.Database) (err error) {
 		}
 		time.Sleep(200 * time.Millisecond)
 	}
+	if !acquired {
+		err = &errortypes.RequestError{
+			errors.New("domain: Failed to acquire domain lock"),
+		}
+		return
+	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -203,6 +210,12 @@ func (d *Domain) CommitRecords(db *database.Database) (err error) {
 			batches[batchKey] = map[string]*Record{}
 		}
 		batches[batchKey][record.Value] = record
+	}
+
+	d.LastUpdate = time.Now()
+	err = d.CommitFields(db, set.NewSet("last_update"))
+	if err != nil {
+		return
 	}
 
 	for _, recordMap := range batches {
