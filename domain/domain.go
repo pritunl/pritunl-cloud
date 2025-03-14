@@ -135,14 +135,22 @@ func (d *Domain) CommitRecords(db *database.Database) (err error) {
 	}
 	d.Records = newRecords
 
-	batches := map[string][]*Record{}
+	batches := map[string]map[string]*Record{}
 
 	for _, record := range d.Records {
 		batchKey := record.SubDomain + ":" + record.Type
-		batches[batchKey] = append(batches[batchKey], record)
+		if batches[batchKey] == nil {
+			batches[batchKey] = map[string]*Record{}
+		}
+		batches[batchKey][record.Value] = record
 	}
 
-	for _, records := range batches {
+	for _, recordMap := range batches {
+		records := make([]*Record, 0, len(recordMap))
+		for _, record := range recordMap {
+			records = append(records, record)
+		}
+
 		err = d.UpdateRecords(db, secr, records)
 		if err != nil {
 			return
@@ -243,45 +251,64 @@ func (d *Domain) UpdateRecords(db *database.Database, secr *secret.Secret,
 	return
 }
 
-func (d *Domain) MergeRecords(deplyId primitive.ObjectID,
+func (d *Domain) MergeRecords(deployId primitive.ObjectID,
 	newRecs []*Record) (newDomn *Domain) {
-	recMap := map[string]map[string]*Record{}
+
+	recMap := map[string]map[string]map[string]*Record{}
 
 	for _, rec := range d.Records {
-		if rec.Deployment != deplyId {
+		if rec.Deployment != deployId {
 			continue
 		}
 
 		if recMap[rec.SubDomain] == nil {
-			recMap[rec.SubDomain] = map[string]*Record{}
+			recMap[rec.SubDomain] = map[string]map[string]*Record{}
 		}
-		recMap[rec.SubDomain][rec.Value] = rec
+		if recMap[rec.SubDomain][rec.Type] == nil {
+			recMap[rec.SubDomain][rec.Type] = map[string]*Record{}
+		}
+		recMap[rec.SubDomain][rec.Type][rec.Value] = rec
 	}
 
 	for _, newRec := range newRecs {
-		subRecs := recMap[newRec.SubDomain]
-		rec := subRecs[newRec.Value]
+		if recMap[newRec.SubDomain] == nil {
+			recMap[newRec.SubDomain] = map[string]map[string]*Record{}
+		}
+		if recMap[newRec.SubDomain][newRec.Type] == nil {
+			recMap[newRec.SubDomain][newRec.Type] = map[string]*Record{}
+		}
+
+		rec := recMap[newRec.SubDomain][newRec.Type][newRec.Value]
 		if rec == nil {
 			if newDomn == nil {
 				newDomn = d.Copy()
-				d = newDomn
-				d.PreCommit()
+				newDomn.PreCommit()
 			}
 			newRec.Operation = INSERT
-			d.Records = append(d.Records, newRec)
-		} else if subRecs != nil {
-			delete(subRecs, newRec.Value)
+			newDomn.Records = append(newDomn.Records, newRec)
+		} else {
+			delete(recMap[newRec.SubDomain][newRec.Type], newRec.Value)
 		}
 	}
 
-	for _, subRecs := range recMap {
-		for _, rec := range subRecs {
-			if newDomn == nil {
-				newDomn = d.Copy()
-				d = newDomn
-				d.PreCommit()
+	for subDomain, typeMap := range recMap {
+		for typeName, valueMap := range typeMap {
+			for value, _ := range valueMap {
+				for i, domainRec := range newDomn.Records {
+					if domainRec.SubDomain == subDomain &&
+						domainRec.Type == typeName &&
+						domainRec.Value == value {
+
+						if newDomn == nil {
+							newDomn = d.Copy()
+							newDomn.PreCommit()
+						}
+
+						newDomn.Records[i].Operation = DELETE
+						break
+					}
+				}
 			}
-			rec.Operation = DELETE
 		}
 	}
 
