@@ -30,6 +30,7 @@ type Instance struct {
 	VirtState     string `json:"virt_state"`
 	Processors    int    `json:"processors"`
 	Memory        int    `json:"memory"`
+	LastTimestamp int    `json:"last_timestamp"`
 	LastHeartbeat int    `json:"last_heartbeat"`
 }
 
