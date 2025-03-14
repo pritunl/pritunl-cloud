@@ -13,14 +13,17 @@ import (
 func buildEvalData(servc *pod.Pod, unit *pod.Unit,
 	inst *instance.Instance) (data eval.Data, err error) {
 
+	lastTimestamp := 0
 	lastHeartbeat := 0
 	if inst.IsActive() {
 		now := time.Now()
 
 		uptime := int(now.Sub(inst.VirtTimestamp).Seconds())
 		if inst.Guest != nil {
+			lastTimestamp = int(now.Sub(inst.Guest.Timestamp).Seconds())
 			lastHeartbeat = int(now.Sub(inst.Guest.Heartbeat).Seconds())
 		}
+		lastTimestamp = utils.Min(lastTimestamp, uptime)
 		lastHeartbeat = utils.Min(lastHeartbeat, uptime)
 	}
 
@@ -37,6 +40,7 @@ func buildEvalData(servc *pod.Pod, unit *pod.Unit,
 			State:         inst.State,
 			Action:        inst.Action,
 			VirtState:     inst.VirtState,
+			LastTimestamp: lastTimestamp,
 			LastHeartbeat: lastHeartbeat,
 		},
 	}
