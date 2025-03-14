@@ -574,7 +574,7 @@ func SetAction(db *database.Database, instId primitive.ObjectID,
 }
 
 func SetDownloadProgress(db *database.Database,
-	instId primitive.ObjectID, progress int) (err error) {
+	instId primitive.ObjectID, progress int, speedMb float64) (err error) {
 
 	coll := db.Instances()
 
@@ -583,6 +583,7 @@ func SetDownloadProgress(db *database.Database,
 	}, &bson.M{
 		"$set": &bson.M{
 			"status_info.download_progress": progress,
+			"status_info.download_speed":    speedMb,
 		},
 	})
 	if err != nil {

@@ -125,7 +125,8 @@ type Instance struct {
 }
 
 type StatusInfo struct {
-	DownloadProgress int `bson:"download_progress,omitempty" json:"download_progress"`
+	DownloadProgress int     `bson:"download_progress,omitempty" json:"download_progress"`
+	DownloadSpeed    float64 `bson:"download_speed,omitempty" json:"download_speed"`
 }
 
 type GuestData struct {
