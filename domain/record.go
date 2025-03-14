@@ -7,6 +7,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -15,7 +16,7 @@ import (
 type Record struct {
 	Id         primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Domain     primitive.ObjectID `bson:"domain" json:"domain"`
-	Resource   primitive.ObjectID `bson:"resource" json:"resource"`
+	Resource   primitive.ObjectID `bson:"resource,omitempty" json:"resource"`
 	Deployment primitive.ObjectID `bson:"deployment,omitempty" json:"deployment"`
 	Timestamp  time.Time          `bson:"timestamp" json:"timestamp"`
 	SubDomain  string             `bson:"sub_domain" json:"sub_domain"`
@@ -111,20 +112,25 @@ func (r *Record) Remove(db *database.Database) (err error) {
 func (r *Record) Insert(db *database.Database) (err error) {
 	coll := db.DomainsRecords()
 
-	if !r.Id.IsZero() {
-		err = &errortypes.DatabaseError{
-			errors.New("domain: Record already exists"),
-		}
-		return
-	}
+	opts := options.FindOneAndUpdate().
+		SetUpsert(true).
+		SetReturnDocument(options.After)
 
-	r.Id = primitive.NewObjectID()
-
-	_, err = coll.InsertOne(db, r)
+	newRec := &Record{}
+	err = coll.FindOneAndUpdate(db, &bson.M{
+		"domain":     r.Domain,
+		"sub_domain": r.SubDomain,
+		"type":       r.Type,
+		"value":      r.Value,
+	}, &bson.M{
+		"$set": r,
+	}, opts).Decode(&newRec)
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
+
+	r.Id = newRec.Id
 
 	return
 }
