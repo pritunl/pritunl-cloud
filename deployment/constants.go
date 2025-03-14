@@ -28,6 +28,7 @@ const (
 	Domain   = "domain"
 
 	Healthy   = "healthy"
+	Unknown   = "unknown"
 	Unhealthy = "unhealthy"
 
 	ThresholdMin = 10

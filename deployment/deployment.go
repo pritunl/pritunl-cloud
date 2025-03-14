@@ -125,6 +125,8 @@ func (d *Deployment) Validate(db *database.Database) (
 		break
 	case Unhealthy:
 		break
+	case Unknown:
+		break
 	case "":
 		d.Status = Unhealthy
 		break
