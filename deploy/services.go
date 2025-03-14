@@ -191,6 +191,11 @@ func (s *Pods) DeploySpec(db *database.Database,
 		}
 	}()
 
+	err = unit.Refresh(db)
+	if err != nil {
+		return
+	}
+
 	reserved, err = unit.Reserve(db, deply.Id, schd.OverrideCount)
 	if err != nil {
 		return
