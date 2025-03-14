@@ -57,6 +57,18 @@ func (d *Domain) Copy() *Domain {
 	return &domn
 }
 
+func (d *Domain) Json() {
+	newRecords := make([]*Record, 0, len(d.Records))
+
+	for _, rec := range d.Records {
+		if !rec.IsDeleted() {
+			newRecords = append(newRecords, rec)
+		}
+	}
+
+	d.Records = newRecords
+}
+
 func (d *Domain) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
@@ -188,7 +200,8 @@ func (d *Domain) CommitRecords(db *database.Database) (err error) {
 
 	newRecords := []*Record{}
 	for _, record := range d.Records {
-		if record.Operation == DELETE {
+		if record.Operation == DELETE || record.IsDeleted() {
+			record.Operation = DELETE
 			for _, origRecord := range d.OrigRecords {
 				if record.Id == origRecord.Id {
 					record = origRecord

@@ -1,12 +1,61 @@
 package domain
 
 import (
+	"time"
+
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/sirupsen/logrus"
 )
+
+func Refresh(db *database.Database, domnId primitive.ObjectID) {
+	coll := db.Domains()
+	domn := &Domain{}
+
+	err := coll.FindOne(db, &bson.M{
+		"_id": domnId,
+	}).Decode(domn)
+	if err != nil {
+		err = database.ParseError(err)
+		logrus.WithFields(logrus.Fields{
+			"domain": domn.Id.Hex(),
+			"error":  err,
+		}).Error("domain: Domain refresh failed to find domain")
+		return
+	}
+
+	if domn.Locked() {
+		logrus.WithFields(logrus.Fields{
+			"domain": domn.Id.Hex(),
+		}).Info("domain: Skipping refresh on locked domain")
+		return
+	}
+
+	err = domn.LoadRecords(db)
+	if err != nil {
+		return
+	}
+
+	err = domn.CommitRecords(db)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"domain": domn.Id.Hex(),
+			"error":  err,
+		}).Error("domain: Domain refresh failed")
+		return
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"domain": domn.Id.Hex(),
+		"name":   domn.Name,
+	}).Info("domain: Refresh")
+
+	return
+}
 
 func Get(db *database.Database, domnId primitive.ObjectID) (
 	domn *Domain, err error) {
