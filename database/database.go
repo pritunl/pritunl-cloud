@@ -845,6 +845,21 @@ func addIndexes() (err error) {
 	}
 
 	index = &Index{
+		Collection: db.DomainsRecords(),
+		Keys: &bson.D{
+			{"domain", 1},
+			{"sub_domain", 1},
+			{"type", 1},
+			{"value", 1},
+		},
+		Unique: true,
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
+
+	index = &Index{
 		Collection: db.Datacenters(),
 		Keys: &bson.D{
 			{"organization", 1},
