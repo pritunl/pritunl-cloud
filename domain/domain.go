@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"context"
 	"strings"
 	"time"
 
@@ -13,19 +14,28 @@ import (
 	"github.com/pritunl/pritunl-cloud/dns"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/secret"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/sirupsen/logrus"
 )
 
 type Domain struct {
-	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Name         string             `bson:"name" json:"name"`
-	Comment      string             `bson:"comment" json:"comment"`
-	Organization primitive.ObjectID `bson:"organization,omitempty" json:"organization"`
-	Type         string             `bson:"type" json:"type"`
-	Secret       primitive.ObjectID `bson:"secret" json:"secret"`
-	RootDomain   string             `bson:"root_domain" json:"root_domain"`
-	Records      []*Record          `bson:"-" json:"records"`
-	OrigRecords  []*Record          `bson:"-" json:"-"`
+	Id            primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name          string             `bson:"name" json:"name"`
+	Comment       string             `bson:"comment" json:"comment"`
+	Organization  primitive.ObjectID `bson:"organization,omitempty" json:"organization"`
+	Type          string             `bson:"type" json:"type"`
+	Secret        primitive.ObjectID `bson:"secret" json:"secret"`
+	RootDomain    string             `bson:"root_domain" json:"root_domain"`
+	LockId        primitive.ObjectID `bson:"lock_id,omitempty" json:"lock_id"`
+	LockTimestamp time.Time          `bson:"lock_timestamp" json:"lock_timestamp"`
+	Records       []*Record          `bson:"-" json:"records"`
+	OrigRecords   []*Record          `bson:"-" json:"-"`
+}
+
+func (d *Domain) Locked() bool {
+	return !d.LockId.IsZero() && time.Since(d.LockTimestamp) < time.Duration(
+		settings.System.DomainLockTtl)*time.Second
 }
 
 func (d *Domain) Copy() *Domain {
@@ -114,6 +124,56 @@ func (d *Domain) PreCommit() {
 }
 
 func (d *Domain) CommitRecords(db *database.Database) (err error) {
+	acquired := false
+	var lockId primitive.ObjectID
+	for i := 0; i < 60; i++ {
+		lockId, acquired, err = Lock(db, d.Id)
+		if err != nil {
+			return
+		}
+
+		if acquired {
+			break
+		}
+		time.Sleep(200 * time.Millisecond)
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	defer func() {
+		cancel()
+
+		time.Sleep(3 * time.Second)
+
+		e := Unlock(db, d.Id, lockId)
+		if e != nil {
+			logrus.WithFields(logrus.Fields{
+				"domain": d.Id.Hex(),
+				"error":  e,
+			}).Error("domain: Failed to unlock domain")
+		}
+	}()
+
+	go func() {
+		ticker := time.NewTicker(1 * time.Second)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				e := Relock(db, d.Id, lockId)
+				if e != nil {
+					logrus.WithFields(logrus.Fields{
+						"domain": d.Id.Hex(),
+						"error":  e,
+					}).Error("domain: Failed to relock domain")
+				}
+			}
+		}
+	}()
+
 	secr, err := secret.GetOrg(db, d.Organization, d.Secret)
 	if err != nil {
 		return

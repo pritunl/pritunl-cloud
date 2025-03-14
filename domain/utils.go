@@ -315,6 +315,94 @@ func GetRecordAll(db *database.Database, query *bson.M) (
 	return
 }
 
+func Lock(db *database.Database, domnId primitive.ObjectID) (
+	lockId primitive.ObjectID, acquired bool, err error) {
+
+	coll := db.Domains()
+
+	newLockId := primitive.NewObjectID()
+	now := time.Now()
+	ttl := now.Add(-time.Duration(
+		settings.System.DomainLockTtl) * time.Second)
+
+	_, err = coll.UpdateOne(db, &bson.M{
+		"_id": domnId,
+		"$or": []bson.M{
+			{"lock_id": bson.M{"$exists": false}},
+			{"lock_timestamp": bson.M{"$lt": ttl}},
+		},
+	}, &bson.M{
+		"$set": &bson.M{
+			"lock_id":        newLockId,
+			"lock_timestamp": now,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		if _, ok := err.(*database.NotFoundError); ok {
+			err = nil
+			return
+		}
+		return
+	}
+
+	lockId = newLockId
+	acquired = true
+
+	return
+}
+
+func Relock(db *database.Database, domnId,
+	lockId primitive.ObjectID) (err error) {
+
+	coll := db.Domains()
+
+	_, err = coll.UpdateOne(db, &bson.M{
+		"_id":     domnId,
+		"lock_id": lockId,
+	}, &bson.M{
+		"$set": &bson.M{
+			"lock_timestamp": time.Now(),
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		if _, ok := err.(*database.NotFoundError); ok {
+			err = nil
+			return
+		}
+		return
+	}
+
+	return
+}
+
+func Unlock(db *database.Database, domnId,
+	lockId primitive.ObjectID) (err error) {
+
+	coll := db.Domains()
+
+	_, err = coll.UpdateOne(db, &bson.M{
+		"_id":     domnId,
+		"lock_id": lockId,
+	}, &bson.M{
+		"$unset": &bson.M{
+			"lock_id":        1,
+			"lock_timestamp": 1,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		if _, ok := err.(*database.NotFoundError); ok {
+			err = nil
+			return
+		}
+		return
+	}
+
+	return
+}
+
 func Remove(db *database.Database, domnId primitive.ObjectID) (err error) {
 	coll := db.Domains()
 
