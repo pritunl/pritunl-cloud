@@ -459,6 +459,15 @@ func instancesPut(c *gin.Context) {
 		return
 	}
 
+	if !instance.ValidActions.Contains(dta.Action) {
+		errData := &errortypes.ErrorData{
+			Error:   "invalid_action",
+			Message: "Invalid instance action",
+		}
+		c.JSON(400, errData)
+		return
+	}
+
 	doc := bson.M{
 		"action": dta.Action,
 	}
