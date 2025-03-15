@@ -206,11 +206,6 @@ func (p *ProgressS3) syncProgress() {
 			_ = instance.SetDownloadProgress(
 				p.db, p.disk.Instance, p.LastReport, speed/1_000_000.0)
 		}
-
-		logrus.WithFields(logrus.Fields{
-			"key": p.img.Key,
-		}).Infof("data: Downloading s3 image %d%% %s",
-			p.LastReport, humanReadableSpeed(speed))
 	}
 
 	return
@@ -259,11 +254,6 @@ func (p *Progress) Write(data []byte) (n int, err error) {
 			_ = instance.SetDownloadProgress(
 				p.db, p.disk.Instance, p.LastReport, speed/1_000_000.0)
 		}
-
-		logrus.WithFields(logrus.Fields{
-			"key": p.img.Key,
-		}).Infof("data: Downloading web image %d%% %s",
-			p.LastReport, humanReadableSpeed(speed))
 	}
 
 	return
