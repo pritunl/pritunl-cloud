@@ -14,6 +14,8 @@ type system struct {
 	UserCookieCryptoKey  []byte `bson:"user_cookie_crypto_key"`
 	NodeTimestampTtl     int    `bson:"node_timestamp_ttl" default:"15"`
 	InstanceTimestampTtl int    `bson:"instance_timestamp_ttl" default:"10"`
+	DomainLockTtl        int    `bson:"domain_lock_ttl" default:"30"`
+	DomainDeleteTtl      int    `bson:"domain_delete_ttl" default:"200"`
 	AcmeKeyAlgorithm     string `bson:"acme_key_algorithm" default:"rsa"`
 	DiskBackupWindow     int    `bson:"disk_backup_window" default:"6"`
 	DiskBackupTime       int    `bson:"disk_backup_time" default:"10"`
