@@ -96,6 +96,11 @@ func Register(engine *gin.Engine) {
 	csrfGroup.POST("/device/:device_id/register", deviceWanRegisterPost)
 
 	orgGroup.GET("/domain", domainsGet)
+	orgGroup.GET("/domain/:domain_id", domainGet)
+	orgGroup.PUT("/domain/:domain_id", domainPut)
+	orgGroup.POST("/domain", domainPost)
+	orgGroup.DELETE("/domain", domainsDelete)
+	orgGroup.DELETE("/domain/:domain_id", domainDelete)
 
 	orgGroup.GET("/disk", disksGet)
 	orgGroup.GET("/disk/:disk_id", diskGet)
