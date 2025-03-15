@@ -7,6 +7,7 @@ import * as VpcTypes from '../types/VpcTypes';
 import * as DomainTypes from '../types/DomainTypes';
 import * as PageInfos from './PageInfo';
 import * as Csrf from '../Csrf';
+import * as MiscUtils from '../utils/MiscUtils';
 import OrganizationsStore from '../stores/OrganizationsStore';
 import ZonesStore from '../stores/ZonesStore';
 import InstanceIscsiDevice from './InstanceIscsiDevice';
@@ -45,6 +46,7 @@ interface State {
 	addUsbDevice: string;
 	addPciDevice: string;
 	forwardedChecked: boolean;
+	showSettings: boolean;
 	vnc: boolean;
 	vncCtrl: boolean;
 	vncAlt: boolean;
@@ -147,6 +149,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			addUsbDevice: '',
 			addPciDevice: '',
 			forwardedChecked: false,
+			showSettings: false,
 			vnc: false,
 			vncCtrl: false,
 			vncAlt: false,
@@ -993,13 +996,13 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		});
 	}
 
-	update(state: string): void {
+	update(action: string): void {
 		this.setState({
 			...this.state,
 			disabled: true,
 		});
 		InstanceActions.updateMulti([this.props.instance.id],
-				state).then((): void => {
+				action).then((): void => {
 			setTimeout((): void => {
 				this.setState({
 					...this.state,
@@ -1066,6 +1069,10 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		if (!oraclePublicIps || !oraclePublicIps.length) {
 			oraclePublicIps = null;
 		}
+		let oraclePublicIps6: any = this.props.instance.oracle_public_ips6;
+		if (!oraclePublicIps6 || !oraclePublicIps6.length) {
+			oraclePublicIps6 = null;
+		}
 
 		let statusClass = 'no-select tab-close';
 		switch (instance.status) {
@@ -1108,7 +1115,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			vpcsSelect.push(<option key="null" value="">Select Vpc</option>);
 
 			for (let vpc of this.props.vpcs) {
-				if (vpc.organization !== instance.organization) {
+				if (vpc.organization != instance.organization) {
 					continue;
 				}
 
@@ -1132,7 +1139,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			subnetSelect.push(<option key="null" value="">Select Subnet</option>);
 
 			for (let vpc of this.props.vpcs) {
-				if (vpc.organization !== instance.organization) {
+				if (vpc.organization != instance.organization) {
 					continue;
 				}
 
@@ -1172,7 +1179,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		];
 		if (this.props.domains && this.props.domains.length) {
 			for (let domain of this.props.domains) {
-				if (domain.organization !== instance.organization) {
+				if (domain.organization != instance.organization) {
 					continue;
 				}
 
@@ -1397,60 +1404,41 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				label: 'Uptime',
 				value: this.props.instance.uptime || '-',
 			},
-			{
-				label: 'Public MAC Address',
-				value: this.props.instance.public_mac || 'Unknown',
-				copy: true,
-			},
-			{
-				label: 'QEMU Version',
-				value: this.props.instance.qemu_version || 'Unknown',
-			},
-			{
-				label: 'Platform',
-				value: (this.props.instance.uefi ? 'UEFI' : 'BIOS'),
-			},
-			{
-				label: 'SecureBoot',
-				value: (this.props.instance.secure_boot ? 'Enabled' : 'Disabled'),
-			},
-			{
-				label: 'Public IPv4',
-				value: publicIps,
-				copy: true,
-			},
-			{
-				label: 'Public IPv6',
-				value: publicIps6,
-				copy: true,
-			},
-			{
-				label: 'Private IPv4',
-				value: privateIps,
-				copy: true,
-			},
-			{
-				label: 'Private IPv6',
-				value: privateIps6,
-				copy: true,
-			},
-			{
-				label: 'Gateway IPv4',
-				value: gatewayIps,
-				copy: true,
-			},
-			{
-				label: 'Gateway IPv6',
-				value: gatewayIps6,
-				copy: true,
-			},
-		];
+		]
+
+		if (publicIps) {
+			fields.push(
+				{
+					label: 'Public IPv4',
+					value: publicIps,
+					copy: true,
+				},
+			);
+		}
+		if (publicIps6) {
+			fields.push(
+				{
+					label: 'Public IPv6',
+					value: publicIps6,
+					copy: true,
+				},
+			)
+		}
 
 		if (oraclePublicIps) {
 			fields.push(
 				{
 					label: 'Oracle Public IPv4',
 					value: oraclePublicIps,
+					copy: true,
+				},
+			);
+		}
+		if (oraclePublicIps6) {
+			fields.push(
+				{
+					label: 'Oracle Public IPv6',
+					value: oraclePublicIps6,
 					copy: true,
 				},
 			);
@@ -1467,78 +1455,154 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 
 		fields.push(
 			{
-				label: 'Host IPv4',
-				value: hostIps,
+				label: 'Private IPv4',
+				value: privateIps,
+				copy: true,
+			},
+			{
+				label: 'Private IPv6',
+				value: privateIps6,
 				copy: true,
 			},
 		);
-
-		if (this.props.instance.info.mtu) {
-			fields.push(
-				{
-					label: 'Network MTU',
-					value: this.props.instance.info.mtu,
-					copy: true,
-				},
-			);
-		}
 
 		fields.push(
 			{
-				label: 'Network Namespace',
-				value: this.props.instance.network_namespace || 'None',
-				copy: true,
+				label: 'Instance Details',
+				value: 'Hover to Expand',
+				valueClass: 'bp5-text-intent-primary',
+				embedded: {
+					fields: [
+						{
+							label: 'QEMU Version',
+							value: this.props.instance.qemu_version || 'Unknown',
+						},
+						{
+							label: 'Platform',
+							value: (this.props.instance.uefi ? 'UEFI' : 'BIOS'),
+						},
+						{
+							label: 'SecureBoot',
+							value: (this.props.instance.secure_boot ? 'Enabled' : 'Disabled'),
+						},
+						{
+							label: 'Disks',
+							value: info.disks || '',
+						},
+						{
+							label: 'Authorities',
+							value: this.props.instance.info.authorities?.join(', ') || '',
+						},
+					],
+				},
+			},
+			{
+				label: 'Networking',
+				value: 'Hover to Expand',
+				valueClass: 'bp5-text-intent-primary',
+				embedded: {
+					fields: [
+						{
+							label: 'Host IPv4',
+							value: hostIps,
+							copy: true,
+						},
+						{
+							label: 'Gateway IPv4',
+							value: gatewayIps,
+							copy: true,
+						},
+						{
+							label: 'Gateway IPv6',
+							value: gatewayIps6,
+							copy: true,
+						},
+						{
+							label: 'Public MAC Address',
+							value: this.props.instance.public_mac || '-',
+							copy: true,
+						},
+						{
+							label: 'Network MTU',
+							value: this.props.instance.info?.mtu || '-',
+						},
+						{
+							label: 'Network Namespace',
+							value: this.props.instance.network_namespace || '-',
+							copy: true,
+						},
+					],
+				},
 			},
 		);
 
-		if (this.props.instance.root_enabled) {
-			fields.push(
-				{
-					label: 'Root Password',
-					value: this.props.instance.root_passwd,
-					copy: true,
-				},
-			);
-		}
+		if (this.props.instance.root_enabled ||
+				this.props.instance.vnc || this.props.instance.spice) {
 
-		if (this.props.instance.vnc) {
-			if (this.props.instance.info.node_public_ip) {
-				fields.push(
+			let accessFields: PageInfos.Field[] = []
+
+			if (this.props.instance.root_enabled) {
+				accessFields.push(
 					{
-						label: 'VNC IP',
-						value: this.props.instance.info.node_public_ip,
+						label: 'Root Password',
+						value: this.props.instance.root_passwd,
 						copy: true,
 					},
 				);
 			}
 
-			let vncPort;
-			if (this.props.instance.vnc_display) {
-				vncPort = this.props.instance.vnc_display + 5900;
-			} else {
-				vncPort = '-';
+			if (this.props.instance.vnc) {
+				if (this.props.instance.info.node_public_ip) {
+					accessFields.push(
+						{
+							label: 'VNC IP',
+							value: this.props.instance.info.node_public_ip,
+							copy: true,
+						},
+					);
+				}
+
+				let vncPort;
+				if (this.props.instance.vnc_display) {
+					vncPort = this.props.instance.vnc_display + 5900;
+				} else {
+					vncPort = '-';
+				}
+
+				accessFields.push(
+					{
+						label: 'VNC Port',
+						value: vncPort,
+						copy: true,
+					},
+					{
+						label: 'VNC Password',
+						value: this.props.instance.vnc_password,
+						copy: true,
+					},
+				);
 			}
 
-			fields.push(
-				{
-					label: 'VNC Port',
-					value: vncPort,
-					copy: true,
-				},
-				{
-					label: 'VNC Password',
-					value: this.props.instance.vnc_password,
-					copy: true,
-				},
-			);
-		}
+			if (this.props.instance.spice) {
+				if (this.props.instance.info.node_public_ip) {
+					fields.push(
+						{
+							label: 'Spice IP',
+							value: this.props.instance.info.node_public_ip,
+							copy: true,
+						},
+					);
+				}
 
-		if (this.props.instance.spice) {
-			if (this.props.instance.info.node_public_ip) {
 				fields.push(
 					{
-						label: 'Spice IP',
-						value: this.props.instance.info.node_public_ip,
+						label: 'Spice Port',
+						value: this.props.instance.spice_port || '-',
+						copy: true,
+					},
+					{
+						label: 'Spice Password',
+						value: this.props.instance.spice_password,
 						copy: true,
 					},
 				);
@@ -1546,30 +1610,24 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 
 			fields.push(
 				{
-					label: 'Spice Port',
-					value: this.props.instance.spice_port || '-',
-					copy: true,
-				},
-				{
-					label: 'Spice Password',
-					value: this.props.instance.spice_password,
-					copy: true,
+					label: 'Remote Access',
+					value: 'Hover to Expand',
+					valueClass: 'bp5-text-intent-primary',
+					embedded: {
+						fields: accessFields,
+					},
 				},
 			);
 		}
 
 		fields.push(
-			{
-				label: 'Disks',
-				value: info.disks || '',
-			},
 			{
 				label: 'Firewall Rules',
-				value: this.props.instance.info.firewall_rules || '',
-			},
-			{
-				label: 'Authorities',
-				value: this.props.instance.info.authorities || '',
+				value: 'Hover to Expand',
+				valueClass: 'bp5-text-intent-primary',
+				embedded: {
+					fields: InstanceTypes.FirewallFields(this.props.instance.info),
+				},
 			},
 		);
 
@@ -1619,7 +1677,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			<div className="layout horizontal wrap">
 				<div style={css.group}>
 					<div
-						className="layout horizontal tab-close"
+						className="layout horizontal tab-close bp5-card-header"
 						style={css.buttons}
 						onClick={(evt): void => {
 							let target = evt.target as HTMLElement;
@@ -1742,150 +1800,6 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						}}
 						onSubmit={this.onAddNetworkRole}
 					/>
-					<label
-						className="bp5-label"
-						style={css.label}
-						hidden={!isos.length && !isosSelect.length}
-					>
-						ISO Images
-						<Help
-							title="ISO Images"
-							content="ISO images to attach to instance."
-						/>
-						<div>
-							{isos}
-						</div>
-					</label>
-					<PageSelectButton
-						hidden={!isosSelect.length}
-						label="Add ISO"
-						value={this.state.addIso}
-						disabled={this.state.disabled}
-						buttonClass="bp5-intent-success"
-						onChange={(val: string): void => {
-							this.setState({
-								...this.state,
-								addIso: val,
-							});
-						}}
-						onSubmit={this.onAddIso}
-					>
-						{isosSelect}
-					</PageSelectButton>
-					<label
-						className="bp5-label"
-						style={css.label}
-						hidden={!driveDevices.length && !driveDevicesSelect.length}
-					>
-						Disk Passthrough Devices
-						<Help
-							title="Disk Passthrough Devices"
-							content="Passthrough node disk to instance."
-						/>
-						<div>
-							{driveDevices}
-						</div>
-					</label>
-					<PageSelectButton
-						hidden={!driveDevicesSelect.length}
-						label="Add Device"
-						value={this.state.addDriveDevice}
-						disabled={this.state.disabled}
-						buttonClass="bp5-intent-success"
-						onChange={(val: string): void => {
-							this.setState({
-								...this.state,
-								addDriveDevice: val,
-							});
-						}}
-						onSubmit={this.onAddDriveDevice}
-					>
-						{driveDevicesSelect}
-					</PageSelectButton>
-					<label
-						hidden={!info.iscsi &&
-							(!this.props.instance.iscsi_devices ||
-							this.props.instance.iscsi_devices.length === 0)}
-						style={css.itemsLabel}
-					>
-						iSCSI Devices
-						<Help
-							title="iSCSI Devices"
-							content="Mount iSCSI disks with URI, below are examples without and with authentication."
-							examples={[
-								'iscsi://10.0.0.1/iqn.2001-04.com.example/lun',
-								'iscsi://username:password@10.0.0.1/iqn.2001-04.com.example/lun',
-							]}
-						/>
-					</label>
-					<div
-						hidden={!info.iscsi &&
-							(!this.props.instance.iscsi_devices ||
-							this.props.instance.iscsi_devices.length === 0)}
-						style={css.list}
-					>
-						{iscsiDevicesElem}
-					</div>
-					<label
-						className="bp5-label"
-						style={css.label}
-						hidden={!pciDevices.length && !pciDevicesSelect.length}
-					>
-						PCI Devices
-						<Help
-							title="PCI Devices"
-							content="PCI devices to for host passthrough to instance."
-						/>
-						<div>
-							{pciDevices}
-						</div>
-					</label>
-					<PageSelectButton
-						hidden={!pciDevicesSelect.length}
-						label="Add Device"
-						value={this.state.addPciDevice}
-						disabled={this.state.disabled}
-						buttonClass="bp5-intent-success"
-						onChange={(val: string): void => {
-							this.setState({
-								...this.state,
-								addPciDevice: val,
-							});
-						}}
-						onSubmit={this.onAddPciDevice}
-					>
-						{pciDevicesSelect}
-					</PageSelectButton>
-					<label
-						className="bp5-label"
-						style={css.label}
-						hidden={infoUsbDevices === null}
-					>
-						USB Devices
-						<Help
-							title="USB Devices"
-							content="USB devices to for host passthrough to instance."
-						/>
-						<div>
-							{usbDevices}
-						</div>
-					</label>
-					<PageSelectButton
-						hidden={infoUsbDevices === null}
-						label="Add Device"
-						value={this.state.addUsbDevice}
-						disabled={!usbDevicesSelect.length || this.state.disabled}
-						buttonClass="bp5-intent-success"
-						onChange={(val: string): void => {
-							this.setState({
-								...this.state,
-								addUsbDevice: val,
-							});
-						}}
-						onSubmit={this.onAddUsbDevice}
-					>
-						{usbDevicesSelect}
-					</PageSelectButton>
 					<PageSelect
 						disabled={this.state.disabled || !hasVpcs}
 						label="VPC"
@@ -1920,8 +1834,159 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					>
 						{oracleSubnetsSelect}
 					</PageSelect>
+					<label
+						className="bp5-label"
+						style={css.label}
+						hidden={!this.state.showSettings ||
+							(!isos.length && !isosSelect.length)}
+					>
+						ISO Images
+						<Help
+							title="ISO Images"
+							content="ISO images to attach to instance."
+						/>
+						<div>
+							{isos}
+						</div>
+					</label>
+					<PageSelectButton
+						hidden={!this.state.showSettings ||
+							(!isos.length && !isosSelect.length)}
+						label="Add ISO"
+						value={this.state.addIso}
+						disabled={this.state.disabled}
+						buttonClass="bp5-intent-success"
+						onChange={(val: string): void => {
+							this.setState({
+								...this.state,
+								addIso: val,
+							});
+						}}
+						onSubmit={this.onAddIso}
+					>
+						{isosSelect}
+					</PageSelectButton>
+					<label
+						className="bp5-label"
+						style={css.label}
+						hidden={!this.state.showSettings ||
+							(!driveDevices.length && !driveDevicesSelect.length)}
+					>
+						Disk Passthrough Devices
+						<Help
+							title="Disk Passthrough Devices"
+							content="Passthrough node disk to instance."
+						/>
+						<div>
+							{driveDevices}
+						</div>
+					</label>
+					<PageSelectButton
+						hidden={!this.state.showSettings ||
+							(!driveDevices.length && !driveDevicesSelect.length)}
+						label="Add Device"
+						value={this.state.addDriveDevice}
+						disabled={this.state.disabled}
+						buttonClass="bp5-intent-success"
+						onChange={(val: string): void => {
+							this.setState({
+								...this.state,
+								addDriveDevice: val,
+							});
+						}}
+						onSubmit={this.onAddDriveDevice}
+					>
+						{driveDevicesSelect}
+					</PageSelectButton>
+					<label
+						hidden={!this.state.showSettings || (!info.iscsi &&
+							(!this.props.instance.iscsi_devices ||
+							this.props.instance.iscsi_devices.length === 0))}
+						style={css.itemsLabel}
+					>
+						iSCSI Devices
+						<Help
+							title="iSCSI Devices"
+							content="Mount iSCSI disks with URI, below are examples without and with authentication."
+							examples={[
+								'iscsi://10.0.0.1/iqn.2001-04.com.example/lun',
+								'iscsi://username:password@10.0.0.1/iqn.2001-04.com.example/lun',
+							]}
+						/>
+					</label>
+					<div
+						hidden={!this.state.showSettings || (!info.iscsi &&
+							(!this.props.instance.iscsi_devices ||
+							this.props.instance.iscsi_devices.length === 0))}
+						style={css.list}
+					>
+						{iscsiDevicesElem}
+					</div>
+					<label
+						className="bp5-label"
+						style={css.label}
+						hidden={!this.state.showSettings ||
+							(!pciDevices.length && !pciDevicesSelect.length)}
+					>
+						PCI Devices
+						<Help
+							title="PCI Devices"
+							content="PCI devices to for host passthrough to instance."
+						/>
+						<div>
+							{pciDevices}
+						</div>
+					</label>
+					<PageSelectButton
+						hidden={!this.state.showSettings ||
+							(!pciDevices.length && !pciDevicesSelect.length)}
+						label="Add Device"
+						value={this.state.addPciDevice}
+						disabled={this.state.disabled}
+						buttonClass="bp5-intent-success"
+						onChange={(val: string): void => {
+							this.setState({
+								...this.state,
+								addPciDevice: val,
+							});
+						}}
+						onSubmit={this.onAddPciDevice}
+					>
+						{pciDevicesSelect}
+					</PageSelectButton>
+					<label
+						className="bp5-label"
+						style={css.label}
+						hidden={!this.state.showSettings || infoUsbDevices === null}
+					>
+						USB Devices
+						<Help
+							title="USB Devices"
+							content="USB devices to for host passthrough to instance."
+						/>
+						<div>
+							{usbDevices}
+						</div>
+					</label>
+					<PageSelectButton
+						hidden={!this.state.showSettings || infoUsbDevices === null}
+						label="Add Device"
+						value={this.state.addUsbDevice}
+						disabled={!usbDevicesSelect.length || this.state.disabled}
+						buttonClass="bp5-intent-success"
+						onChange={(val: string): void => {
+							this.setState({
+								...this.state,
+								addUsbDevice: val,
+							});
+						}}
+						onSubmit={this.onAddUsbDevice}
+					>
+						{usbDevicesSelect}
+					</PageSelectButton>
 					<PageSelect
 						disabled={this.state.disabled}
+						hidden={!this.state.showSettings}
 						label="CloudInit Type"
 						help="Target operating system for cloud init"
 						value={instance.cloud_type}
@@ -1937,6 +2002,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						help="Script to run on instance startup. These commands will run on every startup. File must start with #! such as `#!/bin/bash` to specify code interpreter."
 						placeholder="Startup script"
 						rows={3}
+						hidden={!this.state.showSettings}
 						value={instance.cloud_script}
 						onChange={(val: string): void => {
 							this.set('cloud_script', val);
@@ -1944,6 +2010,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
+						hidden={!this.state.showSettings}
 						label="VNC server"
 						help="Enable VNC server for remote control of instance."
 						checked={instance.vnc}
@@ -1953,6 +2020,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
+						hidden={!this.state.showSettings}
 						label="Spice server"
 						help="Enable Spice server for remote control of instance."
 						checked={instance.spice}
@@ -1962,6 +2030,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
+						hidden={!this.state.showSettings}
 						label="Desktop GUI"
 						help="Enable desktop GUI window for instance display."
 						checked={instance.gui}
@@ -1971,6 +2040,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
+						hidden={!this.state.showSettings}
 						label="Root enabled"
 						help="Enable root unix account for VNC/Spice access. Random password will be generated."
 						checked={instance.root_enabled}
@@ -1980,6 +2050,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
+						hidden={!this.state.showSettings}
 						label="UEFI"
 						help="Enable UEFI boot, requires OVMF package for UEFI image."
 						checked={instance.uefi}
@@ -1989,7 +2060,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
-						hidden={!instance.uefi}
+						hidden={!this.state.showSettings || !instance.uefi}
 						label="SecureBoot"
 						help="Enable secure boot, requires OVMF package for UEFI image."
 						checked={instance.secure_boot}
@@ -1999,7 +2070,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
-						hidden={!instance.uefi}
+						hidden={!this.state.showSettings || !instance.uefi}
 						label="TPM"
 						help="Enable TPM, requires swtpm and OVMF package."
 						checked={instance.tpm}
@@ -2011,6 +2082,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						disabled={this.state.disabled}
 						label="DHCP server"
 						help="Enable instance DHCP server, use for instances without cloud init network configuration support."
+						hidden={!this.state.showSettings}
 						checked={instance.dhcp_server}
 						onToggle={(): void => {
 							this.set('dhcp_server', !instance.dhcp_server);
@@ -2020,6 +2092,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						disabled={this.state.disabled}
 						label="Delete protection"
 						help="Block instance and any attached disks from being deleted."
+						hidden={!this.state.showSettings}
 						checked={instance.delete_protection}
 						onToggle={(): void => {
 							this.set('delete_protection', !instance.delete_protection);
@@ -2028,6 +2101,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					<PageSwitch
 						label="Public IPv4 address"
 						help="Enable or disable public IPv4 address for instance. Node must have network mode configured to assign public address."
+						hidden={!this.state.showSettings}
 						checked={!instance.no_public_address}
 						onToggle={(): void => {
 							this.set('no_public_address', !instance.no_public_address);
@@ -2036,6 +2110,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					<PageSwitch
 						label="Public IPv6 address"
 						help="Enable or disable public IPv6 address for instance. Node must have network mode configured to assign public address."
+						hidden={!this.state.showSettings}
 						checked={!instance.no_public_address6}
 						onToggle={(): void => {
 							this.set('no_public_address6', !instance.no_public_address6);
@@ -2044,6 +2119,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					<PageSwitch
 						label="Host address"
 						help="Enable or disable host address for instance. Node must have host networking configured to assign host address."
+						hidden={!this.state.showSettings}
 						checked={!instance.no_host_address}
 						onToggle={(): void => {
 							this.set('no_host_address', !instance.no_host_address);
@@ -2053,6 +2129,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						disabled={this.state.disabled}
 						label="Skip source/destination check"
 						help="Allow network traffic from non-instance addresses."
+						hidden={!this.state.showSettings}
 						checked={instance.skip_source_dest_check}
 						onToggle={(): void => {
 							this.set('skip_source_dest_check',
@@ -2084,6 +2161,20 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				}}
 				onSave={this.onSave}
 			>
+				<button
+					className={"bp5-button bp5-icon-cog " + (this.state.showSettings ?
+						"bp5-intent-danger" : "bp5-intent-primary")}
+					type="button"
+					style={css.controlButton}
+					onClick={(): void => {
+						this.setState({
+							...this.state,
+							showSettings: !this.state.showSettings,
+						})
+					}}
+				>
+					{this.state.showSettings ? "Collapse" : "Expand"} Settings
+				</button>
 				<ConfirmButton
 					label="Start"
 					className="bp5-intent-success bp5-icon-power"
