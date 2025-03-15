@@ -227,6 +227,8 @@ func domainGet(c *gin.Context) {
 		return
 	}
 
+	domn.Json()
+
 	c.JSON(200, domn)
 }
 
