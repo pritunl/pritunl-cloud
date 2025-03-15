@@ -139,7 +139,7 @@ func (d *Domain) PreCommit() {
 func (d *Domain) CommitRecords(db *database.Database) (err error) {
 	acquired := false
 	var lockId primitive.ObjectID
-	for i := 0; i < 60; i++ {
+	for i := 0; i < 100; i++ {
 		lockId, acquired, err = Lock(db, d.Id)
 		if err != nil {
 			return
@@ -162,7 +162,7 @@ func (d *Domain) CommitRecords(db *database.Database) (err error) {
 	defer func() {
 		cancel()
 
-		time.Sleep(3 * time.Second)
+		time.Sleep(100 * time.Millisecond)
 
 		e := Unlock(db, d.Id, lockId)
 		if e != nil {

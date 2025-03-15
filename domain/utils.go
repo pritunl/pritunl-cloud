@@ -369,7 +369,7 @@ func Lock(db *database.Database, domnId primitive.ObjectID) (
 	ttl := now.Add(-time.Duration(
 		settings.System.DomainLockTtl) * time.Second)
 
-	_, err = coll.UpdateOne(db, &bson.M{
+	resp, err := coll.UpdateOne(db, &bson.M{
 		"_id": domnId,
 		"$or": []bson.M{
 			{"lock_id": bson.M{"$exists": false}},
@@ -390,8 +390,10 @@ func Lock(db *database.Database, domnId primitive.ObjectID) (
 		return
 	}
 
-	lockId = newLockId
-	acquired = true
+	if resp.ModifiedCount > 0 {
+		lockId = newLockId
+		acquired = true
+	}
 
 	return
 }
