@@ -283,11 +283,6 @@ func balancersGet(c *gin.Context) {
 		}
 	}
 
-	organization, ok := utils.ParseObjectId(c.Query("organization"))
-	if ok {
-		query["organization"] = organization
-	}
-
 	datacenter, ok := utils.ParseObjectId(c.Query("datacenter"))
 	if ok {
 		query["datacenter"] = datacenter
