@@ -6,6 +6,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/domain"
+	"github.com/pritunl/pritunl-cloud/settings"
 )
 
 var domains = &Task{
@@ -22,11 +23,17 @@ var domains = &Task{
 }
 
 func domainsHandler(db *database.Database) (err error) {
+	refreshTtl := time.Duration(
+		settings.System.DomainRefreshTtl) * time.Second
+
 	domns, err := domain.GetAll(db, &bson.M{
 		"last_update": &bson.M{
-			"$gte": time.Now().Add(-5 * time.Minute),
+			"$gte": time.Now().Add(-refreshTtl),
 		},
 	})
+	if err != nil {
+		return
+	}
 
 	for _, domn := range domns {
 		domain.Refresh(db, domn.Id)
