@@ -36,7 +36,7 @@ type InstanceInfo struct {
 	Mtu           int                  `json:"mtu"`
 	Iscsi         bool                 `json:"iscsi"`
 	Disks         []string             `json:"disks"`
-	FirewallRules []string             `json:"firewall_rules"`
+	FirewallRules map[string]string    `json:"firewall_rules"`
 	Authorities   []string             `json:"authorities"`
 	Isos          []*iso.Iso           `json:"isos"`
 	UsbDevices    []*usb.Device        `json:"usb_devices"`
@@ -165,7 +165,7 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 		info := &InstanceInfo{
 			Node:          "Unknown",
 			Disks:         []string{},
-			FirewallRules: []string{},
+			FirewallRules: map[string]string{},
 			Authorities:   []string{},
 			OracleSubnets: []*node.OracleSubnet{},
 		}
@@ -361,10 +361,7 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 			}
 			sort.Strings(vals)
 
-			info.FirewallRules = append(
-				info.FirewallRules,
-				key+" - "+strings.Join(vals, ", "),
-			)
+			info.FirewallRules[key] = strings.Join(vals, ", ")
 		}
 
 		for authr := range authrNames.Iter() {
