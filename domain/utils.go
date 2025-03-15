@@ -49,11 +49,6 @@ func Refresh(db *database.Database, domnId primitive.ObjectID) {
 		return
 	}
 
-	logrus.WithFields(logrus.Fields{
-		"domain": domn.Id.Hex(),
-		"name":   domn.Name,
-	}).Info("domain: Refresh")
-
 	return
 }
 
