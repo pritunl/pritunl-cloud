@@ -1048,12 +1048,12 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 
 		let publicIps: any = this.props.instance.public_ips;
 		if (!publicIps || !publicIps.length) {
-			publicIps = 'None';
+			publicIps = null;
 		}
 
 		let publicIps6: any = this.props.instance.public_ips6;
 		if (!publicIps6 || !publicIps6.length) {
-			publicIps6 = 'None';
+			publicIps6 = null;
 		}
 
 		let hostIps: any = this.props.instance.host_ips;
@@ -1377,6 +1377,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			);
 		}
 
+		let showMore = false
 		let fields: PageInfos.Field[] = [
 			{
 				label: 'ID',
@@ -1406,53 +1407,6 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			},
 		]
 
-		if (publicIps) {
-			fields.push(
-				{
-					label: 'Public IPv4',
-					value: publicIps,
-					copy: true,
-				},
-			);
-		}
-		if (publicIps6) {
-			fields.push(
-				{
-					label: 'Public IPv6',
-					value: publicIps6,
-					copy: true,
-				},
-			)
-		}
-
-		if (oraclePublicIps) {
-			fields.push(
-				{
-					label: 'Oracle Public IPv4',
-					value: oraclePublicIps,
-					copy: true,
-				},
-			);
-		}
-		if (oraclePublicIps6) {
-			fields.push(
-				{
-					label: 'Oracle Public IPv6',
-					value: oraclePublicIps6,
-					copy: true,
-				},
-			);
-		}
-		if (oraclePrivateIps) {
-			fields.push(
-				{
-					label: 'Oracle Private IPv4',
-					value: oraclePrivateIps,
-					copy: true,
-				},
-			);
-		}
-
 		fields.push(
 			{
 				label: 'Private IPv4',
@@ -1465,6 +1419,106 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				copy: true,
 			},
 		);
+
+		if (!oraclePublicIps) {
+			fields.push(
+				{
+					label: 'Public IPv4',
+					value: publicIps || 'None',
+					copy: true,
+				},
+			);
+		}
+		if (!oraclePublicIps6) {
+			fields.push(
+				{
+					label: 'Public IPv6',
+					value: publicIps6 || 'None',
+					copy: true,
+				},
+			)
+		}
+
+		if (oraclePrivateIps || oraclePublicIps || oraclePublicIps6) {
+			fields.push(
+				{
+					label: 'Oracle Private IPv4',
+					value: oraclePrivateIps || 'None',
+					copy: true,
+				},
+			);
+		}
+		if (oraclePrivateIps || oraclePublicIps || oraclePublicIps6) {
+			fields.push(
+				{
+					label: 'Oracle Public IPv4',
+					value: oraclePublicIps || 'None',
+					copy: true,
+				},
+			);
+		}
+		if (oraclePrivateIps || oraclePublicIps || oraclePublicIps6) {
+			fields.push(
+				{
+					label: 'Oracle Public IPv6',
+					value: oraclePublicIps6 || 'None',
+					copy: true,
+				},
+			);
+		}
+
+		let networkFields: PageInfos.Field[] = []
+
+		if (oraclePublicIps && publicIps) {
+			networkFields.push(
+				{
+					label: 'Public IPv4',
+					value: publicIps || 'None',
+					copy: true,
+				},
+			);
+		}
+		if (oraclePublicIps6 && publicIps6) {
+			networkFields.push(
+				{
+					label: 'Public IPv6',
+					value: publicIps6 || 'None',
+					copy: true,
+				},
+			)
+		}
+
+		networkFields.push(
+			{
+				label: 'Host IPv4',
+				value: hostIps,
+				copy: true,
+			},
+			{
+				label: 'Gateway IPv4',
+				value: gatewayIps,
+				copy: true,
+			},
+			{
+				label: 'Gateway IPv6',
+				value: gatewayIps6,
+				copy: true,
+			},
+			{
+				label: 'Public MAC Address',
+				value: this.props.instance.public_mac || '-',
+				copy: true,
+			},
+			{
+				label: 'Network MTU',
+				value: this.props.instance.info?.mtu || '-',
+			},
+			{
+				label: 'Network Namespace',
+				value: this.props.instance.network_namespace || '-',
+				copy: true,
+			},
+		)
 
 		fields.push(
 			{
@@ -1501,37 +1555,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				value: 'Hover to Expand',
 				valueClass: 'bp5-text-intent-primary',
 				embedded: {
-					fields: [
-						{
-							label: 'Host IPv4',
-							value: hostIps,
-							copy: true,
-						},
-						{
-							label: 'Gateway IPv4',
-							value: gatewayIps,
-							copy: true,
-						},
-						{
-							label: 'Gateway IPv6',
-							value: gatewayIps6,
-							copy: true,
-						},
-						{
-							label: 'Public MAC Address',
-							value: this.props.instance.public_mac || '-',
-							copy: true,
-						},
-						{
-							label: 'Network MTU',
-							value: this.props.instance.info?.mtu || '-',
-						},
-						{
-							label: 'Network Namespace',
-							value: this.props.instance.network_namespace || '-',
-							copy: true,
-						},
-					],
+					fields: networkFields,
 				},
 			},
 		);
@@ -1655,6 +1679,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			})
 
 			if (this.props.instance.guest.hugepages) {
+				showMore = !(oraclePrivateIps || oraclePublicIps || oraclePublicIps6)
 				resourceBars.push({
 					progressClass: 'bp5-no-stripes bp5-intent-primary',
 					label: 'HugePages',
@@ -2010,7 +2035,31 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
-						hidden={!this.state.showSettings}
+						label="Delete protection"
+						help="Block instance and any attached disks from being deleted."
+						checked={instance.delete_protection}
+						onToggle={(): void => {
+							this.set('delete_protection', !instance.delete_protection);
+						}}
+					/>
+					<PageSwitch
+						label="Public IPv4 address"
+						help="Enable or disable public IPv4 address for instance. Node must have network mode configured to assign public address."
+						checked={!instance.no_public_address}
+						onToggle={(): void => {
+							this.set('no_public_address', !instance.no_public_address);
+						}}
+					/>
+					<PageSwitch
+						label="Public IPv6 address"
+						help="Enable or disable public IPv6 address for instance. Node must have network mode configured to assign public address."
+						checked={!instance.no_public_address6}
+						onToggle={(): void => {
+							this.set('no_public_address6', !instance.no_public_address6);
+						}}
+					/>
+					<PageSwitch
+						disabled={this.state.disabled}
 						label="VNC server"
 						help="Enable VNC server for remote control of instance."
 						checked={instance.vnc}
@@ -2089,34 +2138,6 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						}}
 					/>
 					<PageSwitch
-						disabled={this.state.disabled}
-						label="Delete protection"
-						help="Block instance and any attached disks from being deleted."
-						hidden={!this.state.showSettings}
-						checked={instance.delete_protection}
-						onToggle={(): void => {
-							this.set('delete_protection', !instance.delete_protection);
-						}}
-					/>
-					<PageSwitch
-						label="Public IPv4 address"
-						help="Enable or disable public IPv4 address for instance. Node must have network mode configured to assign public address."
-						hidden={!this.state.showSettings}
-						checked={!instance.no_public_address}
-						onToggle={(): void => {
-							this.set('no_public_address', !instance.no_public_address);
-						}}
-					/>
-					<PageSwitch
-						label="Public IPv6 address"
-						help="Enable or disable public IPv6 address for instance. Node must have network mode configured to assign public address."
-						hidden={!this.state.showSettings}
-						checked={!instance.no_public_address6}
-						onToggle={(): void => {
-							this.set('no_public_address6', !instance.no_public_address6);
-						}}
-					/>
-					<PageSwitch
 						label="Host address"
 						help="Enable or disable host address for instance. Node must have host networking configured to assign host address."
 						hidden={!this.state.showSettings}
@@ -2129,7 +2150,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						disabled={this.state.disabled}
 						label="Skip source/destination check"
 						help="Allow network traffic from non-instance addresses."
-						hidden={!this.state.showSettings}
+						hidden={!this.state.showSettings && !showMore}
 						checked={instance.skip_source_dest_check}
 						onToggle={(): void => {
 							this.set('skip_source_dest_check',
