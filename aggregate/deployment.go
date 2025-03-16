@@ -130,6 +130,7 @@ func GetDeployments(db *database.Database, unitId primitive.ObjectID) (
 				{"instance_docs.memory", 1},
 				{"instance_docs.processors", 1},
 				{"instance_docs.state", 1},
+				{"instance_docs.action", 1},
 				{"instance_docs.virt_state", 1},
 				{"instance_docs.virt_timestamp", 1},
 				{"instance_docs.restart", 1},
