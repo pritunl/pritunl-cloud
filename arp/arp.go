@@ -2,7 +2,6 @@ package arp
 
 import (
 	"encoding/json"
-	"fmt"
 	"net"
 
 	"github.com/dropbox/godropbox/container/set"
@@ -144,8 +143,6 @@ func ApplyState(namespace string, oldState, newState set.Set) (
 		recrd := recordInf.(Record)
 		changed = true
 
-		fmt.Printf("[DEL][%s] %s -> %s\n", namespace, recrd.Ip, recrd.Mac)
-
 		utils.ExecCombinedOutputLogged(
 			[]string{
 				"No such file",
@@ -160,8 +157,6 @@ func ApplyState(namespace string, oldState, newState set.Set) (
 	for recordInf := range addRecords.Iter() {
 		recrd := recordInf.(Record)
 		changed = true
-
-		fmt.Printf("[ADD][%s] %s -> %s\n", namespace, recrd.Ip, recrd.Mac)
 
 		utils.ExecCombinedOutputLogged(
 			[]string{
