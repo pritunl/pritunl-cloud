@@ -505,6 +505,9 @@ func UpdateMulti(db *database.Database, instIds []primitive.ObjectID,
 		"_id": &bson.M{
 			"$in": instIds,
 		},
+		"action": &bson.M{
+			"$ne": Destroy,
+		},
 	}
 
 	if (*doc)["action"] == Destroy {
@@ -534,6 +537,9 @@ func UpdateMultiOrg(db *database.Database, orgId primitive.ObjectID,
 			"$in": instIds,
 		},
 		"organization": orgId,
+		"action": &bson.M{
+			"$ne": Destroy,
+		},
 	}
 
 	if (*doc)["action"] == Destroy {
@@ -560,6 +566,9 @@ func SetAction(db *database.Database, instId primitive.ObjectID,
 
 	_, err = coll.UpdateOne(db, &bson.M{
 		"_id": instId,
+		"action": &bson.M{
+			"$ne": Destroy,
+		},
 	}, &bson.M{
 		"$set": &bson.M{
 			"action": action,
