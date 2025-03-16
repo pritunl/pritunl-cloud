@@ -109,10 +109,10 @@ func GetAllActive(db *database.Database) (schds []*Scheduler, err error) {
 	return
 }
 
-func Remove(db *database.Database, schdId Resource) (err error) {
+func Remove(db *database.Database, schdId Resource) (deleted bool, err error) {
 	coll := db.Schedulers()
 
-	_, err = coll.DeleteOne(db, &bson.M{
+	resp, err := coll.DeleteOne(db, &bson.M{
 		"_id": schdId,
 	})
 	if err != nil {
@@ -122,6 +122,10 @@ func Remove(db *database.Database, schdId Resource) (err error) {
 		} else {
 			return
 		}
+	}
+
+	if resp.DeletedCount > 0 {
+		deleted = true
 	}
 
 	return

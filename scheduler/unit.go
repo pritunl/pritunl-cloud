@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -58,6 +59,7 @@ func (u *InstanceUnit) Schedule(db *database.Database, count int) (err error) {
 		Spec:          u.spec.Id,
 		Count:         u.count,
 		OverrideCount: overrideCount,
+		Failures:      map[primitive.ObjectID]int{},
 	}
 
 	ndes, offlineCount, noMountCount, err := u.spec.GetAllNodes(
