@@ -104,6 +104,7 @@ func ExecInput(dir, input, name string, arg ...string) (err error) {
 	}
 
 	if wrErr != nil {
+		err = wrErr
 		return
 	}
 
@@ -174,6 +175,7 @@ func ExecInputOutput(input, name string, arg ...string) (
 	}
 
 	if wrErr != nil {
+		err = wrErr
 		return
 	}
 
