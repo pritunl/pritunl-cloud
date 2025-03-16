@@ -103,29 +103,29 @@ func initIfaces(stat *state.State, internaIfaces []string) (err error) {
 				return
 			}
 		} else if strings.HasPrefix(iface, "b") {
-			parentIface := parentBrIfaces[iface]
-			if parentIface == "" {
-				continue
-			}
+			// parentIface := parentBrIfaces[iface]
+			// if parentIface == "" {
+			// 	continue
+			// }
 
-			_, err = utils.ExecCombinedOutputLogged(
-				nil,
-				"ip", "link", "set",
-				vm.GetHostVxlanIface(parentIface), "master", iface,
-			)
-			if err != nil {
-				return
-			}
+			// _, err = utils.ExecCombinedOutputLogged(
+			// 	nil,
+			// 	"ip", "link", "set",
+			// 	vm.GetHostVxlanIface(parentIface), "master", iface,
+			// )
+			// if err != nil {
+			// 	return
+			// }
 
-			_, err = utils.ExecCombinedOutputLogged(
-				nil,
-				"ip", "link",
-				"set", "dev",
-				iface, "up",
-			)
-			if err != nil {
-				return
-			}
+			// _, err = utils.ExecCombinedOutputLogged(
+			// 	nil,
+			// 	"ip", "link",
+			// 	"set", "dev",
+			// 	iface, "up",
+			// )
+			// if err != nil {
+			// 	return
+			// }
 		}
 	}
 
