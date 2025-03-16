@@ -69,6 +69,31 @@ func (s *Scheduler) Refresh(db *database.Database) (exists bool, err error) {
 	return
 }
 
+func (s *Scheduler) ClearTickets(db *database.Database) (err error) {
+	coll := db.Schedulers()
+	schd := &Scheduler{}
+
+	err = coll.FindOneAndUpdate(db, bson.M{
+		"_id": s.Id,
+	}, bson.M{
+		"$unset": bson.M{
+			"tickets." + node.Self.Id.Hex(): "",
+		},
+	}, options.FindOneAndUpdate().SetReturnDocument(
+		options.After)).Decode(schd)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	s.Count = schd.Count
+	s.Consumed = schd.Consumed
+	s.Tickets = schd.Tickets
+	s.Failures = schd.Failures
+
+	return
+}
+
 func (s *Scheduler) Failure(db *database.Database) (limit bool, err error) {
 	coll := db.Schedulers()
 	schd := &Scheduler{}
