@@ -367,6 +367,18 @@ export function formatDateShortTime(dateStr: string): string {
 	return str;
 }
 
+export function humanReadableSpeedMb(speedMb: number): string {
+  if (!speedMb || speedMb <= 0) {
+    return '';
+  }
+
+  if (speedMb >= 1000) {
+    return `${(speedMb / 1000).toFixed(1)} GB/s`;
+  } else {
+    return `${speedMb.toFixed(1)} MB/s`;
+  }
+}
+
 export function highlightMatch(input: string, query: string): React.ReactNode {
 	if (!query) {
 		return input;
