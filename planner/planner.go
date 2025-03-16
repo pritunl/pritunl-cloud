@@ -180,8 +180,7 @@ func (p *Planner) checkInstance(db *database.Database,
 		}
 	}
 
-	switch deply.Action {
-	case deployment.Archive, deployment.Restore:
+	if deply.Action != "" {
 		return
 	}
 
@@ -229,7 +228,7 @@ func (p *Planner) checkInstance(db *database.Database,
 		return
 	}
 
-	if deply.State != deployment.Deployed || deply.Action != "" {
+	if deply.State != deployment.Deployed {
 		return
 	}
 
