@@ -9,18 +9,21 @@ import (
 	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/settings"
 )
 
 type Scheduler struct {
-	Id            Resource           `bson:"_id" json:"id"`
-	Kind          string             `bson:"kind" json:"kind"`
-	Created       time.Time          `bson:"created" json:"created"`
-	Modified      time.Time          `bson:"modified" json:"modified"`
-	Count         int                `bson:"count" json:"count"`
-	Spec          primitive.ObjectID `bson:"spec" json:"spec"`
-	OverrideCount int                `bson:"override_count" json:"override_count"`
-	Consumed      int                `bson:"consumed" json:"consumed"`
-	Tickets       TicketsStore       `bson:"tickets" json:"tickets"`
+	Id            Resource                   `bson:"_id" json:"id"`
+	Kind          string                     `bson:"kind" json:"kind"`
+	Created       time.Time                  `bson:"created" json:"created"`
+	Modified      time.Time                  `bson:"modified" json:"modified"`
+	Count         int                        `bson:"count" json:"count"`
+	Spec          primitive.ObjectID         `bson:"spec" json:"spec"`
+	OverrideCount int                        `bson:"override_count" json:"override_count"`
+	Consumed      int                        `bson:"consumed" json:"consumed"`
+	Tickets       TicketsStore               `bson:"tickets" json:"tickets"`
+	Failures      map[primitive.ObjectID]int `bson:"failures" json:"failures"`
 }
 
 type Resource struct {
@@ -44,6 +47,8 @@ func (s *Scheduler) Refresh(db *database.Database) (exists bool, err error) {
 	}, database.FindOneProject(
 		"count",
 		"consumed",
+		"tickets",
+		"failures",
 	)).Decode(schd)
 	if err != nil {
 		err = database.ParseError(err)
@@ -58,6 +63,47 @@ func (s *Scheduler) Refresh(db *database.Database) (exists bool, err error) {
 	exists = true
 	s.Count = schd.Count
 	s.Consumed = schd.Consumed
+	s.Tickets = schd.Tickets
+	s.Failures = schd.Failures
+
+	return
+}
+
+func (s *Scheduler) Failure(db *database.Database) (limit bool, err error) {
+	coll := db.Schedulers()
+	schd := &Scheduler{}
+
+	if s.Failures == nil {
+		s.Failures = map[primitive.ObjectID]int{}
+	}
+	s.Failures[node.Self.Id] += 1
+
+	update := bson.M{
+		"$inc": bson.M{
+			"failures." + node.Self.Id.Hex(): 1,
+		},
+	}
+
+	if s.Failures[node.Self.Id] >= settings.Hypervisor.MaxDeploymentFailures {
+		limit = true
+		update["$unset"] = bson.M{
+			"tickets." + node.Self.Id.Hex(): "",
+		}
+	}
+
+	err = coll.FindOneAndUpdate(db, bson.M{
+		"_id": s.Id,
+	}, update, options.FindOneAndUpdate().SetReturnDocument(
+		options.After)).Decode(schd)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	s.Count = schd.Count
+	s.Consumed = schd.Consumed
+	s.Tickets = schd.Tickets
+	s.Failures = schd.Failures
 
 	return
 }
@@ -87,6 +133,7 @@ func (s *Scheduler) Consume(db *database.Database) (err error) {
 
 	s.Count = schd.Count
 	s.Consumed = schd.Consumed
+	s.Failures = schd.Failures
 
 	return
 }
