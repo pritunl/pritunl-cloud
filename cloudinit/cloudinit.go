@@ -89,9 +89,9 @@ growpart:
     devices: ["/"]
     ignore_growroot_disabled: false
 runcmd:
-  - [ sysctl, -w, net.ipv4.conf.eth0.send_redirects=0 ]
-  - 'chmod 600 /etc/ssh/*_key'
-  - [ systemctl, restart, sshd ]
+  - 'sysctl -w net.ipv4.conf.eth0.send_redirects=0 || true'
+  - 'chmod 600 /etc/ssh/*_key || true'
+  - 'systemctl restart sshd || true'
   - [ {{.DeployCommand}} ]{{if .RunScript}}
   - [ /etc/cloudinit-script ]{{else}}{{end}}
 users:
@@ -157,7 +157,7 @@ mounts:
 {{- end}}
 `
 
-const deploymentScriptTmpl = `#!/bin/bash
+const deploymentScriptTmpl = `#!/bin/sh
 set -e
 mkdir -p /iso
 mount /dev/sr0 /iso
