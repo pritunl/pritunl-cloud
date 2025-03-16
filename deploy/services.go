@@ -107,6 +107,19 @@ func (s *Pods) deploySchedule(schd *scheduler.Scheduler) (err error) {
 					return
 				}
 
+				if !schd.Ready() {
+					logrus.WithFields(logrus.Fields{
+						"pod":  schd.Id.Pod.Hex(),
+						"unit": schd.Id.Unit.Hex(),
+					}).Info("deploy: Reached maximum schedule attempts")
+
+					err = schd.ClearTickets(db)
+					if err != nil {
+						return
+					}
+					return
+				}
+
 				reserved, e := s.DeploySpec(db, schd, unit, spc)
 				if e != nil {
 					err = e
@@ -117,6 +130,19 @@ func (s *Pods) deploySchedule(schd *scheduler.Scheduler) (err error) {
 					err = schd.Consume(db)
 					if err != nil {
 						return
+					}
+				} else {
+					limit, e := schd.Failure(db)
+					if e != nil {
+						err = e
+						return
+					}
+
+					if limit {
+						logrus.WithFields(logrus.Fields{
+							"pod":  schd.Id.Pod.Hex(),
+							"unit": schd.Id.Unit.Hex(),
+						}).Info("deploy: Reached maximum schedule attempts")
 					}
 				}
 			}
@@ -389,6 +415,21 @@ func (s *Pods) Deploy(db *database.Database) (err error) {
 	for _, schd := range schds {
 		if schd.Kind != scheduler.InstanceUnitKind {
 			continue
+		}
+
+		if len(schd.Tickets) == 0 {
+			deleted, e := scheduler.Remove(db, schd.Id)
+			if e != nil {
+				err = e
+				return
+			}
+
+			if deleted {
+				logrus.WithFields(logrus.Fields{
+					"pod":  schd.Id.Pod.Hex(),
+					"unit": schd.Id.Unit.Hex(),
+				}).Error("deploy: All nodes failed to schedule deployment")
+			}
 		}
 
 		tickets := schd.Tickets[s.stat.Node().Id]
