@@ -19,6 +19,31 @@ rc-update add chronyd default
 rc-update add qemu-guest-agent default
 setup-cloud-init
 
+tee /etc/init.d/cloud-fix << EOF
+#!/sbin/openrc-run
+
+description="cloud-init final fix stage"
+
+depend() {
+  after cloud-config
+  provide cloud-fix
+}
+
+start() {
+  if grep -q 'cloud-init=disabled' /proc/cmdline; then
+    ewarn "\$RC_SVCNAME is disabled via /proc/cmdline."
+  elif test -e /etc/cloud/cloud-init.disabled; then
+    ewarn "\$RC_SVCNAME is disabled via cloud-init.disabled file"
+  else
+    ebegin "cloud-init fix"
+    cloud-init modules --mode final
+    eend \$?
+  fi
+}
+EOF
+chmod +x /etc/init.d/cloud-fix
+rc-update add cloud-fix default
+
 sed -i '/^PermitRootLogin/d' /etc/ssh/sshd_config
 sed -i '/^PasswordAuthentication/d' /etc/ssh/sshd_config
 sed -i '/^ChallengeResponseAuthentication/d' /etc/ssh/sshd_config
