@@ -87,7 +87,7 @@ func scheduleHandler(db *database.Database) (err error) {
 
 	for _, schd := range schds {
 		if schd.Consumed >= schd.Count {
-			err = scheduler.Remove(db, schd.Id)
+			_, err = scheduler.Remove(db, schd.Id)
 			if err != nil {
 				return
 			}
