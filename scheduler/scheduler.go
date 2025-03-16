@@ -133,6 +133,13 @@ func (s *Scheduler) Failure(db *database.Database) (limit bool, err error) {
 	return
 }
 
+func (s *Scheduler) Ready() bool {
+	if s.Failures == nil {
+		return true
+	}
+	return s.Failures[node.Self.Id] < settings.Hypervisor.MaxDeploymentFailures
+}
+
 func (s *Scheduler) Consume(db *database.Database) (err error) {
 	coll := db.Schedulers()
 	schd := &Scheduler{}
