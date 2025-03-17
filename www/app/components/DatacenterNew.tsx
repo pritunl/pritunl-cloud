@@ -179,8 +179,15 @@ export default class DatacenterDetailed extends React.Component<Props, State> {
 			return;
 		}
 
-		let storageId = this.state.addStorage ||
-			this.props.storages[0].id;
+		let storageId = this.state.addStorage;
+		if (!storageId) {
+			for (let store of this.props.storages) {
+				if (store.type === "public" || store.type === "web") {
+					storageId = store.id
+					break
+				}
+			}
+		}
 
 		datacenter = {
 			...this.state.datacenter,
@@ -368,7 +375,7 @@ export default class DatacenterDetailed extends React.Component<Props, State> {
 		let publicStoragesSelect: JSX.Element[] = [];
 		if (this.props.storages.length) {
 			for (let storage of this.props.storages) {
-				if (storage.type === 'public') {
+				if (storage.type === 'public' || storage.type === 'web') {
 					hasStorages = true;
 					publicStoragesSelect.push(
 						<option
