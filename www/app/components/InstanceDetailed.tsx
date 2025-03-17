@@ -1656,6 +1656,23 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		);
 
 		let resourceBars: PageInfos.Bar[] = []
+		if (this.props.instance.status === "Provisioning" &&
+			this.props.instance.status_info?.download_progress) {
+
+			let speedLabel = ""
+			if (this.props.instance.status_info?.download_speed) {
+				speedLabel = ` (${MiscUtils.humanReadableSpeedMb(
+					this.props.instance.status_info?.download_speed
+				)})`
+			}
+
+			resourceBars.push({
+				progressClass: 'bp5-no-stripes bp5-intent-primary',
+				label: 'Image Download' + speedLabel,
+				value: this.props.instance.status_info.download_progress || 0,
+			})
+		}
+
 		if (this.props.instance.guest) {
 			resourceBars.push({
 				progressClass: 'bp5-no-stripes bp5-intent-success',
