@@ -561,6 +561,17 @@ export default class BlockDetailed extends React.Component<Props, State> {
 					</PageSelect>
 					<PageInput
 						disabled={this.state.disabled}
+						label="VLAN"
+						help="VLAN of IP block, used for when provider supplies IP addresses on a VLAN."
+						type="text"
+						placeholder="Enter VLAN"
+						value={block.vlan || ""}
+						onChange={(val): void => {
+							this.set('vlan', parseInt(val, 10));
+						}}
+					/>
+					<PageInput
+						disabled={this.state.disabled}
 						hidden={block.type === 'ipv6'}
 						label="Netmask"
 						help="Netmask of IP block"
