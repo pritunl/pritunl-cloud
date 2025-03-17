@@ -36,19 +36,24 @@ func FormatUptimeShort(timestamp time.Time) (uptime string) {
 	hours := (minutes % 1440) / 60
 	minutes = (minutes % 1440) % 60
 
-	if days > 0 {
-		uptime = fmt.Sprintf("%d dy", days)
-	}
-	if hours > 0 || uptime != "" {
-		if uptime != "" {
-			uptime += " "
+	if days > 3 {
+		uptime = fmt.Sprintf("%d days", days)
+	} else {
+		if days > 0 {
+			hours += days * 24
 		}
-		uptime += fmt.Sprintf("%d hr", hours)
+
+		if hours > 0 {
+			uptime += fmt.Sprintf("%d hr", hours)
+		}
+
+		if minutes > 0 {
+			if uptime != "" {
+				uptime += " "
+			}
+			uptime += fmt.Sprintf("%d mn", minutes)
+		}
 	}
-	if uptime != "" {
-		uptime += " "
-	}
-	uptime += fmt.Sprintf("%d mn", minutes)
 
 	return
 }
