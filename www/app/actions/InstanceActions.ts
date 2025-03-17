@@ -242,7 +242,7 @@ export function forceRemoveMulti(instanceIds: string[]): Promise<void> {
 }
 
 export function updateMulti(instanceIds: string[],
-		state: string): Promise<void> {
+		action: string): Promise<void> {
 	let loader = new Loader().loading();
 
 	return new Promise<void>((resolve, reject): void => {
@@ -250,7 +250,7 @@ export function updateMulti(instanceIds: string[],
 			.put('/instance')
 			.send({
 				"ids": instanceIds,
-				"state": state,
+				"action": action,
 			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
