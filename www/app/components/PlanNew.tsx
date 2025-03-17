@@ -215,17 +215,6 @@ export default class PlanNew extends React.Component<Props, State> {
 						>
 							{organizationsSelect}
 						</PageSelect>
-						<PageSelect
-							label="Type"
-							help="Plan type."
-							value={plan.type}
-							onChange={(val): void => {
-								this.set('type', val);
-							}}
-						>
-							<option value="rolling">Rolling</option>
-							<option value="recreate">Recreate</option>
-						</PageSelect>
 					</div>
 				</div>
 				<PageCreate
