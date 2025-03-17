@@ -1852,6 +1852,19 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							this.set('oracle_user', val);
 						}}
 					/>
+					<PageInput
+						disabled={this.state.disabled}
+						hidden={node.network_mode !== 'oracle' &&
+							node.network_mode6 !== 'oracle'}
+						label="Oracle Cloud User Tenancy"
+						help="Tenancy OCID for Oracle Cloud API authentication."
+						type="text"
+						placeholder="Enter tenancy OCID"
+						value={node.oracle_tenancy}
+						onChange={(val): void => {
+							this.set('oracle_tenancy', val);
+						}}
+					/>
 					<PageTextArea
 						disabled={this.state.disabled}
 						hidden={node.network_mode !== 'oracle' &&
