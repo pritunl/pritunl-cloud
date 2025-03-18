@@ -57,20 +57,39 @@ const css = {
 	} as React.CSSProperties,
 	info: {
 		marginBottom: "0px",
+		fontSize: "11px",
+		fontFamily: Theme.monospaceFont,
+		fontWeight: Theme.monospaceWeight,
 	} as React.CSSProperties,
 	itemFirst: {
 		flex: "1 1 auto",
 		minWidth: "100px",
+		maxWidth: "170px",
 		margin: "0 5px 0 -4px",
 	} as React.CSSProperties,
 	item: {
 		flex: "1 1 auto",
-		minWidth: "30px",
+		width: 0,
+		margin: " 0 5px",
+	} as React.CSSProperties,
+	itemSmall: {
+		flex: "0.7 1 auto",
+		width: 0,
+		margin: " 0 5px",
+	} as React.CSSProperties,
+	itemMedium: {
+		flex: "0.8 1 auto",
+		width: 0,
+		margin: " 0 5px",
+	} as React.CSSProperties,
+	itemFull: {
+		flex: "2 1 auto",
+		width: 0,
 		margin: " 0 5px",
 	} as React.CSSProperties,
 	itemLast: {
 		flex: "0 1 auto",
-		minWidth: "30px",
+		minWidth: "123px",
 		margin: " 0 5px",
 	} as React.CSSProperties,
 	role: {
@@ -521,7 +540,7 @@ export default class PodDeployment extends React.Component<Props, State> {
 								onClick={this.onEditToggle}
 							>Close Settings</button>
 						</div>
-						<div style={css.item}>
+						<div style={css.itemMedium}>
 							<PageInfo
 								compact={true}
 								style={css.info}
@@ -541,7 +560,7 @@ export default class PodDeployment extends React.Component<Props, State> {
 								]}
 							/>
 						</div>
-						<div style={css.item}>
+						<div style={css.itemSmall}>
 							<PageInfo
 								compact={true}
 								style={css.info}
@@ -601,7 +620,7 @@ export default class PodDeployment extends React.Component<Props, State> {
 								]}
 							/>
 						</div>
-						<div style={css.item}>
+						<div style={css.itemFull}>
 							<PageInfo
 								compact={true}
 								style={css.info}
