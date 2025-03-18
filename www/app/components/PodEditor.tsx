@@ -32,64 +32,61 @@ interface EditorState {
 
 const css = {
 	group: {
-		position: 'relative',
 		flex: 1,
 		minWidth: '280px',
-		height: Styles.fixedHeight - 295 + "px",
+		height: '100%',
 		overflowY: 'auto',
 		margin: '0',
 		fontSize: '12px',
 	} as React.CSSProperties,
 	groupSpaced: {
-		position: 'relative',
 		flex: 1,
 		minWidth: '280px',
-		height: Styles.fixedHeight - 295 + "px",
+		height: '100%',
 		overflowY: 'auto',
 		margin: '0',
 		padding: '8px 0 0 0 ',
 		fontSize: '12px',
 	} as React.CSSProperties,
 	groupSpacedExt: {
-		position: 'relative',
 		flex: 1,
 		minWidth: '280px',
-		height: Styles.fixedHeight - 295 + "px",
+		height: '100%',
 		overflowY: 'auto',
 		margin: '0',
 		padding: '0 0 0 0 ',
 		fontSize: '12px',
 	} as React.CSSProperties,
 	groupSplit: {
-		position: 'relative',
 		flex: 1,
 		minWidth: '280px',
-		height: Styles.fixedHeight - 295 + "px",
+		height: '100%',
 		overflowY: 'auto',
 		margin: '0 0 0 10px',
 	} as React.CSSProperties,
 	groupEdit: {
-		position: 'relative',
 		flex: 1,
 		minWidth: '280px',
-		height: Styles.fixedHeight - 295 + "px",
+		height: '100%',
 		overflowY: 'hidden',
 		margin: '0',
 		fontSize: '12px',
 	} as React.CSSProperties,
 	groupEditSplit: {
-		position: 'relative',
 		flex: 1,
 		minWidth: '280px',
-		height: Styles.fixedHeight - 295 + "px",
+		height: '100%',
 		overflowY: 'hidden',
 		margin: '0 0 0 10px',
 	} as React.CSSProperties,
 	editorBox: {
-		margin: '0 0 10px 0',
+		flexGrow: 1,
+		minHeight: 0,
+		maxHeight: '100%',
+		margin: '0',
 	} as React.CSSProperties,
 	editor: {
-		margin: '0 0 10px 0',
+		margin: '0',
 		borderRadius: '3px',
 		overflow: 'hidden',
 	} as React.CSSProperties,
@@ -236,7 +233,7 @@ export default class PodEditor extends React.Component<Props, State> {
 		let editor: JSX.Element;
 		if (!this.props.readOnly && !this.props.diffValue) {
 			editor = <MonacoEditor.Editor
-				height={Styles.fixedHeight - 295 + "px"}
+				height="100%"
 				width="100%"
 				defaultLanguage="markdown"
 				theme={Theme.getEditorTheme()}
@@ -276,7 +273,7 @@ export default class PodEditor extends React.Component<Props, State> {
 			/>
 		} else if (!this.props.readOnly && this.props.diffValue) {
 			editor = <MonacoEditor.DiffEditor
-				height={Styles.fixedHeight - 295 + "px"}
+				height="100%"
 				width="100%"
 				theme={Theme.getEditorTheme()}
 				original={this.props.diffValue}
@@ -316,7 +313,7 @@ export default class PodEditor extends React.Component<Props, State> {
 			/>
 		}
 
-		return <div className="layout horizontal flex" style={css.editorBox}>
+		return <div className="layout horizontal" style={css.editorBox}>
 			<div
 				style={leftGroupStyle}
 				hidden={expandRight}
