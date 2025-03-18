@@ -124,6 +124,13 @@ export default class Disk extends React.Component<Props, {}> {
 				}
 				statusClass += ' bp5-text-intent-success';
 				break;
+			case 'attached':
+				statusText = 'Connected';
+				statusClass += ' bp5-text-intent-success';
+				break;
+		}
+
+		switch (disk.action) {
 			case 'destroy':
 				statusText = 'Destroying';
 				statusClass += ' bp5-text-intent-danger';
