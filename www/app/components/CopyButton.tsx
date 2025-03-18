@@ -14,17 +14,26 @@ interface State {
 
 const css = {
 	copy: {
+		verticalAlign: 'middle',
 		cursor: 'pointer',
 		marginLeft: '3px',
+		position: 'relative',
+		top: '-1px',
 	} as React.CSSProperties,
 	copyHover: {
+		verticalAlign: 'middle',
 		cursor: 'pointer',
 		marginLeft: '3px',
+		position: 'relative',
+		top: '-1px',
 		opacity: 0.7,
 	} as React.CSSProperties,
 	copyClicked: {
+		verticalAlign: 'middle',
 		cursor: 'pointer',
 		marginLeft: '3px',
+		position: 'relative',
+		top: '-1px',
 		opacity: 0.5,
 	} as React.CSSProperties,
 };
