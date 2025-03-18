@@ -1,9 +1,11 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
 import * as Constants from '../Constants';
+import * as Styles from '../Styles';
 import * as PodTypes from '../types/PodTypes';
 import * as PodActions from '../actions/PodActions';
 import * as OrganizationTypes from "../types/OrganizationTypes";
+import OrganizationsStore from '../stores/OrganizationsStore';
 import PodsStore from '../stores/PodsStore';
 import PageInput from './PageInput';
 import PageSelect from './PageSelect';
@@ -18,9 +20,12 @@ import PageTextArea from "./PageTextArea";
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
 	pod: PodTypes.PodRo;
-	selected: boolean;
-	onSelect: (shift: boolean) => void;
-	onClose: () => void;
+	mode: string;
+	onMode: (mode: string) => void;
+	settings: boolean;
+	toggleSettings: () => void;
+	sidebar: boolean;
+	toggleSidebar: () => void;
 }
 
 interface State {
@@ -28,7 +33,6 @@ interface State {
 	changed: boolean;
 	unitChanged: boolean;
 	message: string;
-	mode: string;
 	pod: PodTypes.Pod;
 }
 
@@ -37,20 +41,18 @@ const css = {
 		position: 'relative',
 		padding: '48px 10px 0 10px',
 		width: '100%',
-		height: '1195px',
+		height: 'calc(100dvh - 231px)',
 	} as React.CSSProperties,
 	button: {
 		height: '30px',
 	} as React.CSSProperties,
 	buttons: {
-		cursor: 'pointer',
 		position: 'absolute',
 		top: 0,
 		left: 0,
 		right: 0,
 		padding: '4px',
 		height: '39px',
-		backgroundColor: 'rgba(0, 0, 0, 0.13)',
 	} as React.CSSProperties,
 	item: {
 		margin: '9px 5px 0 5px',
@@ -67,8 +69,13 @@ const css = {
 		minWidth: '280px',
 		margin: '0 10px',
 	} as React.CSSProperties,
+	title: {
+		cursor: 'pointer',
+		margin: '3px',
+	} as React.CSSProperties,
 	save: {
-		paddingBottom: '10px',
+		marginTop: '10px',
+		marginBottom: '10px',
 	} as React.CSSProperties,
 	label: {
 		width: '100%',
@@ -110,7 +117,6 @@ export default class PodDetailed extends React.Component<Props, State> {
 			changed: false,
 			unitChanged: false,
 			message: '',
-			mode: "view",
 			pod: null,
 		};
 	}
@@ -152,8 +158,9 @@ export default class PodDetailed extends React.Component<Props, State> {
 					pod: null,
 					changed: false,
 					unitChanged: false,
-					mode: this.state.mode === "edit" ? "view" : this.state.mode,
 				});
+				this.props.onMode(this.props.mode === "edit" ?
+					"view" : this.props.mode);
 			}
 		});
 
@@ -174,8 +181,9 @@ export default class PodDetailed extends React.Component<Props, State> {
 						pod: null,
 						changed: false,
 						unitChanged: false,
-						mode: this.state.mode === "edit" ? "view" : this.state.mode,
 					});
+					this.props.onMode(this.props.mode === "edit" ?
+						"view" : this.props.mode);
 				} else {
 					this.setState({
 						...this.state,
@@ -290,42 +298,51 @@ export default class PodDetailed extends React.Component<Props, State> {
 				<option key="null" value="">No Organizations</option>);
 		}
 
-		return <td
-			className="bp5-cell"
-			colSpan={5}
+		let orgName = '';
+		if (pod.organization) {
+			let org = OrganizationsStore.organization(pod.organization);
+			orgName = org ? org.name : pod.organization;
+		}
+
+		return <div
 			style={css.card}
+			className="bp5-card layout vertical"
 		>
 			<div className="layout horizontal wrap">
 				<div style={css.group}>
 					<div
-						className="layout horizontal tab-close"
+						className="layout horizontal bp5-card-header"
 						style={css.buttons}
-						onClick={(evt): void => {
-							let target = evt.target as HTMLElement;
-
-							if (target.className.indexOf('tab-close') !== -1) {
-								this.props.onClose();
-							}
-						}}
 					>
-						<div>
-							<label
-								className="bp5-control bp5-checkbox"
-								style={css.select}
-							>
-								<input
-									type="checkbox"
-									checked={this.props.selected}
-									onChange={(evt): void => {
-									}}
-									onClick={(evt): void => {
-										this.props.onSelect(evt.shiftKey);
-									}}
-								/>
-								<span className="bp5-control-indicator"/>
-							</label>
+						<button
+							className={"bp5-button bp5-minimal " + (
+								this.props.sidebar ? "bp5-icon-drawer-right" :
+								"bp5-icon-drawer-left")}
+							type="button"
+							onClick={this.props.toggleSidebar}
+						/>
+						<div
+							className="bp5-tag bp5-intent-primary no-select"
+							style={css.title}
+							onClick={this.props.toggleSettings}
+						>
+							<b>Name:</b>&nbsp;{pod.name}
 						</div>
-						<div className="flex tab-close"/>
+						<div
+							hidden={!orgName}
+							className="bp5-tag no-select"
+							style={css.title}
+							onClick={this.props.toggleSettings}
+						>
+							<b>Organization:</b>&nbsp;{orgName}
+						</div>
+						<div className="flex"/>
+						<button
+							className={"bp5-button bp5-minimal bp5-icon-cog" + (
+								this.props.settings ? " bp5-intent-danger" : " bp5-intent-primary")}
+							type="button"
+							onClick={this.props.toggleSettings}
+						>{this.props.settings ? "Close" : ""} Pod Settings</button>
 						<ConfirmButton
 							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
 							style={css.button}
@@ -341,6 +358,7 @@ export default class PodDetailed extends React.Component<Props, State> {
 						/>
 					</div>
 					<PageInput
+						hidden={!this.props.settings}
 						label="Name"
 						help="Name of pod"
 						type="text"
@@ -352,7 +370,7 @@ export default class PodDetailed extends React.Component<Props, State> {
 					/>
 					<PageSelect
 						disabled={this.state.disabled || !hasOrganizations}
-						hidden={Constants.user}
+						hidden={!this.props.settings || Constants.user}
 						label="Organization"
 						help="Organization for pod."
 						value={pod.organization}
@@ -365,6 +383,7 @@ export default class PodDetailed extends React.Component<Props, State> {
 				</div>
 				<div style={css.group}>
 					<PageInfo
+						hidden={!this.props.settings}
 						fields={[
 							{
 								label: 'ID',
@@ -378,12 +397,9 @@ export default class PodDetailed extends React.Component<Props, State> {
 				pod={pod}
 				disabled={this.state.disabled}
 				unitChanged={this.state.unitChanged}
-				mode={this.state.mode}
+				mode={this.props.mode}
 				onMode={(mode: string): void => {
-					this.setState({
-						...this.state,
-						mode: mode,
-					});
+					this.props.onMode(mode)
 				}}
 				onChangeCommit={this.onChangeCommit}
 				onEdit={(units: PodTypes.Unit[]): void => {
@@ -412,9 +428,9 @@ export default class PodDetailed extends React.Component<Props, State> {
 						...this.state,
 						changed: true,
 						unitChanged: true,
-						mode: newMode,
 						pod: pod,
 					});
+					this.props.onMode(newMode)
 				}}
 			/>
 			<PageSave
@@ -429,12 +445,12 @@ export default class PodDetailed extends React.Component<Props, State> {
 						...this.state,
 						changed: false,
 						unitChanged: false,
-						mode: "view",
 						pod: null,
 					});
+					this.props.onMode("view")
 				}}
 				onSave={this.onSave}
 			/>
-		</td>;
+		</div>;
 	}
 }
