@@ -29,14 +29,14 @@ interface Selected {
 
 const css = {
 	container: {
-		height: "900px",
+		height: "100%",
 		overflowY: "auto",
 		marginBottom: "10px",
 	} as React.CSSProperties,
 	box: {
 		flex: 1,
 		minWidth: "280px",
-		margin: "10px",
+		margin: "10px 0 0 0",
 	} as React.CSSProperties,
 	boxEmpty: {
 		flex: 1,
@@ -94,6 +94,10 @@ export default class PodUnit extends React.Component<Props, State> {
 			return <div></div>
 		}
 
+		if (!this.props.unit) {
+			return <div style={css.container}></div>
+		}
+
 		let label = "deployment"
 		let labelTitle = "Deployment"
 		if (this.props.unit.kind == "image") {
@@ -124,12 +128,10 @@ export default class PodUnit extends React.Component<Props, State> {
 			</div>
 		}
 
-		let commitMap: Record<string, number> = {}
+		let commitMap: Record<string, PodTypes.Commit> = {}
 		if (this.props.unit.commits) {
-			let count = 0
 			for (let commit of this.props.unit.commits) {
-				commitMap[commit.id] = count
-				count -= 1
+				commitMap[commit.id] = commit
 			}
 		}
 
