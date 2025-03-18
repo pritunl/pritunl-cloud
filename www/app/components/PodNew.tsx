@@ -19,6 +19,8 @@ import PageTextArea from "./PageTextArea";
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
 	onClose: () => void;
+	sidebar: boolean;
+	toggleSidebar: () => void;
 }
 
 interface State {
@@ -33,11 +35,10 @@ interface State {
 
 const css = {
 	row: {
-		display: 'table-row',
-		width: '100%',
-		padding: 0,
-		boxShadow: 'none',
 		position: 'relative',
+		padding: '48px 10px 0 10px',
+		width: '100%',
+		height: 'calc(100dvh - 231px)',
 	} as React.CSSProperties,
 	card: {
 		position: 'relative',
@@ -46,8 +47,11 @@ const css = {
 	} as React.CSSProperties,
 	buttons: {
 		position: 'absolute',
-		top: '5px',
-		right: '5px',
+		top: 0,
+		left: 0,
+		right: 0,
+		padding: '4px',
+		height: '39px',
 	} as React.CSSProperties,
 	item: {
 		margin: '9px 5px 0 5px',
@@ -192,17 +196,22 @@ export default class PodNew extends React.Component<Props, State> {
 		}
 
 		return <div
-			className="bp5-card bp5-row"
+			className="bp5-card"
 			style={css.row}
 		>
-			<td
-				className="bp5-cell"
-				colSpan={6}
-				style={css.card}
-			>
 				<div className="layout horizontal wrap">
 					<div style={css.group}>
-						<div style={css.buttons}>
+						<div
+							className="layout horizontal bp5-card-header"
+							style={css.buttons}
+						>
+							<button
+								className={"bp5-button bp5-minimal " + (
+									this.props.sidebar ? "bp5-icon-drawer-right" : "bp5-icon-drawer-left")}
+								type="button"
+								onClick={this.props.toggleSidebar}
+							/>
+							<div className="flex"/>
 						</div>
 						<PageInput
 							label="Name"
@@ -251,7 +260,6 @@ export default class PodNew extends React.Component<Props, State> {
 					onCancel={this.props.onClose}
 					onCreate={this.onCreate}
 				/>
-			</td>
 		</div>;
 	}
 }
