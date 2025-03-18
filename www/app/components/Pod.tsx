@@ -4,7 +4,6 @@ import * as MiscUtils from '../utils/MiscUtils';
 import * as PodTypes from '../types/PodTypes';
 import * as OrganizationTypes from "../types/OrganizationTypes";
 import OrganizationsStore from '../stores/OrganizationsStore';
-import PodDetailed from './PodDetailed';
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -17,14 +16,12 @@ interface Props {
 
 const css = {
 	card: {
-		display: 'table-row',
 		width: '100%',
 		padding: 0,
-		boxShadow: 'none',
 		cursor: 'pointer',
+		margin: '5px 0',
 	} as React.CSSProperties,
 	cardOpen: {
-		display: 'table-row',
 		width: '100%',
 		padding: 0,
 		boxShadow: 'none',
@@ -37,8 +34,8 @@ const css = {
 	} as React.CSSProperties,
 	name: {
 		verticalAlign: 'top',
-		display: 'table-cell',
-		padding: '8px',
+		padding: '6px',
+		lineHeight: '1.3',
 	} as React.CSSProperties,
 	nameSpan: {
 		margin: '1px 5px 0 0',
@@ -80,23 +77,6 @@ export default class Pod extends React.Component<Props, {}> {
 	render(): JSX.Element {
 		let pod = this.props.pod;
 
-		if (this.props.open) {
-			return <div
-				className="bp5-card bp5-row"
-				style={css.cardOpen}
-			>
-				<PodDetailed
-					organizations={this.props.organizations}
-					pod={this.props.pod}
-					selected={this.props.selected}
-					onSelect={this.props.onSelect}
-					onClose={(): void => {
-						this.props.onOpen();
-					}}
-				/>
-			</div>;
-		}
-
 		let cardStyle = {
 			...css.card,
 		};
@@ -110,7 +90,7 @@ export default class Pod extends React.Component<Props, {}> {
 		}
 
 		return <div
-			className="bp5-card bp5-row"
+			className="bp5-card"
 			style={cardStyle}
 			onClick={(evt): void => {
 				let target = evt.target as HTMLElement;
@@ -122,7 +102,7 @@ export default class Pod extends React.Component<Props, {}> {
 				this.props.onOpen();
 			}}
 		>
-			<div className="bp5-cell" style={css.name}>
+			<div className={this.props.open ? "bp5-callout" : ""} style={css.name}>
 				<div className="layout horizontal">
 					<label
 						className="bp5-control bp5-checkbox open-ignore"
@@ -144,14 +124,6 @@ export default class Pod extends React.Component<Props, {}> {
 						{pod.name}
 					</div>
 				</div>
-			</div>
-			<div className="bp5-cell" style={css.item}>
-				<span
-					style={css.icon}
-					className={'bp5-icon-standard bp5-text-muted ' + (
-						pod.organization ? 'bp5-icon-people' : 'bp5-icon-layers')}
-				/>
-				{orgName}
 			</div>
 		</div>;
 	}
