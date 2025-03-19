@@ -208,6 +208,8 @@ func Register(engine *gin.Engine) {
 		"/pod/:pod_id/unit/:unit_id/deployment/:deployment_id/log",
 		podUnitDeploymentLogGet,
 	)
+	csrfGroup.GET("/pod/:pod_id/unit/:unit_id/spec", podUnitSpecsGet)
+	csrfGroup.GET("/pod/:pod_id/unit/:unit_id/spec/:spec_id", podUnitSpecGet)
 
 	csrfGroup.GET("/shape", shapesGet)
 	csrfGroup.GET("/shape/:shape_id", shapeGet)
