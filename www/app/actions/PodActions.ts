@@ -409,6 +409,48 @@ export function log(deply: PodTypes.Deployment,
 	});
 }
 
+export function syncSpecs(podId: string, unitId: string, page: number,
+	pageCount: number, noLoading?: boolean): Promise<PodTypes.CommitData> {
+
+	let loader: Loader;
+	if (!noLoading) {
+		loader = new Loader().loading();
+	}
+
+	return new Promise<PodTypes.CommitData>((resolve, reject): void => {
+		SuperAgent
+			.get("/pod/" + podId + "/unit/" + unitId + "/spec")
+			.query({
+				page: page,
+				page_count: pageCount,
+			})
+			.set('Accept', 'application/json')
+			.set('Csrf-Token', Csrf.token)
+			.end((err: any, res: SuperAgent.Response): void => {
+				if (loader) {
+					loader.done();
+				}
+
+				if (res && res.status === 401) {
+					window.location.href = '/login';
+					resolve(null);
+					return;
+				}
+
+				if (err) {
+					Alert.errorRes(res, 'Failed to load unit commits');
+					reject(err);
+					return;
+				}
+
+				res.body.unit = unitId
+				res.body.page = page
+				res.body.page_count = pageCount
+				resolve(res.body as PodTypes.CommitData);
+			});
+	});
+}
+
 export function dataCancel(): void {
 	for (let [key, val] of Object.entries(dataSyncReqs)) {
 		val.abort();
