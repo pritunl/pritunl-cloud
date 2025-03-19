@@ -51,8 +51,11 @@ interface Selected {
 
 const css = {
 	card: {
-		padding: '10px 10px 0 10px',
+		padding: '0',
 		width: '100%',
+		flexGrow: 1,
+		minHeight: 0,
+		maxHeight: '100%',
 	} as React.CSSProperties,
 	editButton: {
 		margin: "0 0 0 3px",
@@ -957,6 +960,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 		</Blueprint.Menu>
 
 		return <div
+			className="layout vertical"
 			style={css.card}
 		>
 			<Blueprint.Navbar>
