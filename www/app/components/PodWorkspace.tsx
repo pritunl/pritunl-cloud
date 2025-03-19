@@ -42,6 +42,7 @@ interface State {
 	lastSelectedDeployment: string;
 	unit: PodTypes.PodUnit;
 	diffCommit: PodTypes.Commit
+	diffChanged: boolean
 	viewCommit: PodTypes.Commit
 }
 
@@ -181,6 +182,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 			lastSelectedDeployment: null,
 			unit: null,
 			diffCommit: null,
+			diffChanged: false,
 			viewCommit: null,
 		};
 	}
@@ -791,8 +793,9 @@ export default class PodWorkspace extends React.Component<Props, State> {
 						} else {
 							className = "bp5-text-intent-primary"
 						}
-						disabled = true
-					} else if (diffCommit && diffCommit.id == commit.id) {
+					}
+
+					if (diffCommit && diffCommit.id == commit.id) {
 						className = "bp5-text-intent-danger"
 						disabled = true
 					}
@@ -805,6 +808,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 							this.setState({
 								...this.state,
 								diffCommit: commit,
+								diffChanged: false,
 							})
 						}}
 						text={commit.id.substring(0, 12)}
@@ -977,6 +981,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 								...this.state,
 								activeUnitId: activeUnitId,
 								diffCommit: null,
+								diffChanged: false,
 							})
 
 							if (activeUnit && !activeUnit.new) {
@@ -1006,14 +1011,15 @@ export default class PodWorkspace extends React.Component<Props, State> {
 					<button
 						hidden={!(mode === "edit" && this.state.diffCommit)}
 						style={css.navButton}
-						className="bp5-button bp5-icon-edit"
+						className="bp5-button bp5-icon-cross bp5-intent-danger"
 						onClick={(): void => {
 							this.setState({
 								...this.state,
 								diffCommit: null,
+								diffChanged: false,
 							})
 						}}
-					>Apply Edit</button>
+					>Close Diff</button>
 					{newUnit}
 					{commitMenu}
 					<Blueprint.Popover
@@ -1050,6 +1056,14 @@ export default class PodWorkspace extends React.Component<Props, State> {
 				diffValue={diffCommit ? diffCommit.data : null}
 				onChange={(val: string): void => {
 					this.onUnitEdit(val)
+				}}
+				onDiffChange={(): void => {
+					if (this.state.diffCommit && !this.state.diffChanged) {
+						this.setState({
+							...this.state,
+							diffChanged: true,
+						})
+					}
 				}}
 				onEdit={this.onEdit}
 			/>
