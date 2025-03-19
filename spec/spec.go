@@ -30,13 +30,13 @@ type Spec struct {
 	Pod          primitive.ObjectID `bson:"pod" json:"pod"`
 	Unit         primitive.ObjectID `bson:"unit" json:"unit"`
 	Organization primitive.ObjectID `bson:"organization" json:"organization"`
+	Index        int                `bson:"index" json:"index"`
 	Timestamp    time.Time          `bson:"timestamp" json:"timestamp"`
 	Name         string             `bson:"name" json:"name"`
 	Kind         string             `bson:"kind" json:"kind"`
 	Count        int                `bson:"count" json:"count"`
 	Hash         string             `bson:"hash" json:"hash"`
 	Data         string             `bson:"data" json:"data"`
-	Offset       int                `bson:"-" json:"offset"`
 	Instance     *Instance          `bson:"instance,omitempty" json:"-"`
 	Firewall     *Firewall          `bson:"firewall,omitempty" json:"-"`
 	Domain       *Domain            `bson:"domain,omitempty" json:"-"`
