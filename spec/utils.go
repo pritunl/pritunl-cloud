@@ -62,6 +62,21 @@ func Get(db *database.Database, commitId primitive.ObjectID) (
 	return
 }
 
+func GetOne(db *database.Database, query *bson.M) (
+	spc *Spec, err error) {
+
+	coll := db.Specs()
+	spc = &Spec{}
+
+	err = coll.FindOne(db, query).Decode(spc)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetAllPaged(db *database.Database, query *bson.M,
 	page, pageCount int64) (spcs []*Spec, count int64, err error) {
 
