@@ -688,3 +688,37 @@ func podUnitSpecsGet(c *gin.Context) {
 
 	c.JSON(200, data)
 }
+
+func podUnitSpecGet(c *gin.Context) {
+	db := c.MustGet("db").(*database.Database)
+
+	podId, ok := utils.ParseObjectId(c.Param("pod_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	unitId, ok := utils.ParseObjectId(c.Param("unit_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	specId, ok := utils.ParseObjectId(c.Param("spec_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	spec, err := spec.GetOne(db, &bson.M{
+		"_id":  specId,
+		"pod":  podId,
+		"unit": unitId,
+	})
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	c.JSON(200, spec)
+}
