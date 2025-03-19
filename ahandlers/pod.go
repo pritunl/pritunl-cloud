@@ -339,7 +339,7 @@ func podUnitGet(c *gin.Context) {
 		return
 	}
 
-	deploys, err := aggregate.GetDeployments(db, unit.Id)
+	deploys, err := aggregate.GetDeployments(db, unit)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -672,20 +672,9 @@ func podUnitSpecsGet(c *gin.Context) {
 		return
 	}
 
-	pd, err := pod.Get(db, podId)
-	if err != nil {
-		utils.AbortWithError(c, 500, err)
-		return
-	}
-
-	unit := pd.GetUnit(unitId)
-	if unit == nil {
-		utils.AbortWithStatus(c, 404)
-		return
-	}
-
 	specs, count, err := spec.GetAllPaged(db, &bson.M{
-		"unit": unit.Id,
+		"pod":  podId,
+		"unit": unitId,
 	}, page, pageCount)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
