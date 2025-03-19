@@ -1,6 +1,9 @@
 package pod
 
 import (
+	"time"
+
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/mongo-go-driver/mongo/options"
@@ -13,17 +16,19 @@ import (
 )
 
 type Unit struct {
-	Pod          *Pod                `bson:"-" json:"-"`
-	Id           primitive.ObjectID  `bson:"id" json:"id"`
-	Name         string              `bson:"name" json:"name"`
-	Kind         string              `bson:"kind" json:"kind"`
-	Count        int                 `bson:"count" json:"count"`
-	Deployments  []*Deployment       `bson:"deployments" json:"deployments"`
-	Spec         string              `bson:"spec" json:"spec"`
-	LastCommit   primitive.ObjectID  `bson:"last_commit" json:"last_commit"`
-	DeployCommit primitive.ObjectID  `bson:"deploy_commit" json:"deploy_commit"`
-	Hash         string              `bson:"hash" json:"hash"`
-	NodePorts    []*nodeport.Mapping `bson:"node_ports" json:"node_ports"`
+	Pod           *Pod                `bson:"-" json:"-"`
+	Id            primitive.ObjectID  `bson:"id" json:"id"`
+	Name          string              `bson:"name" json:"name"`
+	Kind          string              `bson:"kind" json:"kind"`
+	Count         int                 `bson:"count" json:"count"`
+	Deployments   []*Deployment       `bson:"deployments" json:"deployments"`
+	Spec          string              `bson:"spec" json:"spec"`
+	SpecIndex     int                 `bson:"spec_index" json:"spec_index"`
+	SpecTimestamp time.Time           `bson:"spec_timestamp" json:"-"`
+	LastCommit    primitive.ObjectID  `bson:"last_commit" json:"last_commit"`
+	DeployCommit  primitive.ObjectID  `bson:"deploy_commit" json:"deploy_commit"`
+	Hash          string              `bson:"hash" json:"hash"`
+	NodePorts     []*nodeport.Mapping `bson:"node_ports" json:"node_ports"`
 }
 
 type UnitInput struct {
@@ -279,6 +284,46 @@ func (u *Unit) MigrateDeployements(db *database.Database,
 			"new_spec": newSpc.Id,
 		},
 	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func (u *Unit) CommitFields(db *database.Database,
+	fields set.Set) (err error) {
+
+	coll := db.Pods()
+
+	update := database.SelectFieldsAll(u, fields)
+
+	if setDoc, ok := update["$set"].(bson.M); ok {
+		newSetDoc := bson.M{}
+		for key, val := range setDoc {
+			newSetDoc["units.$[elem]."+key] = val
+		}
+		update["$set"] = newSetDoc
+	}
+	if unsetDoc, ok := update["$unset"].(bson.M); ok {
+		newUnsetDoc := bson.M{}
+		for key, val := range unsetDoc {
+			newUnsetDoc["units.$[elem]."+key] = val
+		}
+		update["$unset"] = newUnsetDoc
+	}
+
+	updateOpts := options.Update().SetArrayFilters(options.ArrayFilters{
+		Filters: []interface{}{
+			bson.M{
+				"elem.id": u.Id,
+			},
+		},
+	})
+	_, err = coll.UpdateOne(db, bson.M{
+		"_id": u.Pod.Id,
+	}, update, updateOpts)
 	if err != nil {
 		err = database.ParseError(err)
 		return
