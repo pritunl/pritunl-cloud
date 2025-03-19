@@ -41,6 +41,7 @@ interface State {
 	selectedDeployments: Selected;
 	lastSelectedDeployment: string;
 	unit: PodTypes.PodUnit;
+	commits: PodTypes.CommitData;
 	diffCommit: PodTypes.Commit
 	diffChanged: boolean
 	viewCommit: PodTypes.Commit
@@ -181,6 +182,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 			selectedDeployments: {},
 			lastSelectedDeployment: null,
 			unit: null,
+			commits: null,
 			diffCommit: null,
 			diffChanged: false,
 			viewCommit: null,
@@ -191,7 +193,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 		PodsUnitStore.addChangeListener(this.onChange);
 		let activeUnit = this.getActiveUnit()
 		if (activeUnit && !activeUnit.new) {
-			PodActions.syncUnit(this.props.pod.id, activeUnit.id);
+			this.syncUnit(activeUnit.id)
 		}
 
 		this.interval = setInterval(() => {
@@ -209,6 +211,32 @@ export default class PodWorkspace extends React.Component<Props, State> {
 
 	get selectedDeployments(): boolean {
 		return !!Object.keys(this.state.selectedDeployments).length;
+	}
+
+	syncUnit = async (unitId: string, more?: boolean): Promise<void> => {
+		PodActions.syncUnit(this.props.pod.id, unitId);
+
+		let specsPage = 0
+		if (more && this.state.commits?.unit == unitId) {
+			specsPage += this.state.commits.page + 1
+		}
+
+		let commitData = await PodActions.syncSpecs(
+			this.props.pod.id, unitId, specsPage, 10)
+
+		if (more && this.state.commits?.unit == unitId &&
+			commitData.page > this.state.commits?.page) {
+
+			commitData.specs = [
+				...this.state.commits.specs,
+				...commitData.specs,
+			]
+		}
+
+		this.setState({
+			...this.state,
+			commits: commitData,
+		})
 	}
 
 	onChange = (): void => {
@@ -599,19 +627,16 @@ export default class PodWorkspace extends React.Component<Props, State> {
 		}
 
 		let commits: PodTypes.Commit[];
+		if (this.state.commits?.unit === activeUnit?.id) {
+			commits = this.state.commits.specs
+		}
+
 		let commitMenu: JSX.Element
 		if (mode === "unit") {
-			if (this.state.unit &&
-				this.state.unit.id === activeUnit?.id &&
-				this.state.unit.commits?.length > 0) {
-
-				commits = this.state.unit.commits
-			}
-
 			if (commits && this.state.unit?.kind !== "image") {
 				let commitMenuItems: JSX.Element[] = []
 
-				this.state.unit.commits.forEach((commit): void => {
+				commits.forEach((commit): void => {
 					let className = ""
 					let disabled = false
 					let selected = false
@@ -639,6 +664,21 @@ export default class PodWorkspace extends React.Component<Props, State> {
 						>{MiscUtils.formatDateLocal(commit.timestamp)}</span>}
 					/>)
 				})
+
+				if (commits.length < this.state.commits?.count) {
+					commitMenuItems.push(<Blueprint.MenuItem
+						key={"diff-more"}
+						disabled={this.props.disabled || this.state.disabled}
+						roleStructure="listoption"
+						icon={<Icons.BringData/>}
+						onClick={(): void => {
+							this.syncUnit(activeUnit.id, true)
+						}}
+						text="Load More..."
+						textClassName="bp5-text-muted"
+						shouldDismissPopover={false}
+					/>)
+				}
 
 				commitMenu = <Blueprint.Popover
 					content={<Blueprint.Menu style={css.commitsMenu}>
@@ -778,13 +818,11 @@ export default class PodWorkspace extends React.Component<Props, State> {
 
 		if (mode === "edit") {
 			if (this.state.unit && activeUnit &&
-				this.state.unit.id === activeUnit.id &&
-				this.state.unit.commits &&
-				this.state.unit.commits.length > 0) {
+				this.state.unit.id === activeUnit.id && commits) {
 
 				let commitMenuItems: JSX.Element[] = []
 
-				this.state.unit.commits.forEach((commit): void => {
+				commits.forEach((commit): void => {
 					let className = ""
 					let disabled = false
 					if (activeUnit && activeUnit.last_commit == commit.id) {
@@ -816,6 +854,21 @@ export default class PodWorkspace extends React.Component<Props, State> {
 						label={MiscUtils.formatDateLocal(commit.timestamp)}
 					/>)
 				})
+
+				if (commits.length < this.state.commits?.count) {
+					commitMenuItems.push(<Blueprint.MenuItem
+						key={"diff-more"}
+						disabled={this.props.disabled || this.state.disabled}
+						roleStructure="listoption"
+						icon={<Icons.BringData/>}
+						onClick={(): void => {
+							this.syncUnit(activeUnit.id, true)
+						}}
+						text="Load More..."
+						textClassName="bp5-text-muted"
+						shouldDismissPopover={false}
+					/>)
+				}
 
 				commitMenu = <Blueprint.Popover
 					content={<Blueprint.Menu style={css.commitsMenu}>
@@ -883,13 +936,6 @@ export default class PodWorkspace extends React.Component<Props, State> {
 		}
 
 		if (mode === "view") {
-			if (this.state.unit &&
-				this.state.unit.id === activeUnit?.id &&
-				this.state.unit.commits?.length > 0) {
-
-				commits = this.state.unit.commits
-			}
-
 			if (commits) {
 				let commitMenuItems: JSX.Element[] = []
 
@@ -901,7 +947,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 					style={css.settingsOpen}
 				/>
 
-				this.state.unit.commits.forEach((commit, index): void => {
+				commits.forEach((commit, index): void => {
 					let className = ""
 					let selected = false
 					if (viewLatestCommit && index === 0) {
@@ -948,6 +994,21 @@ export default class PodWorkspace extends React.Component<Props, State> {
 					/>)
 				})
 
+				if (commits.length < this.state.commits?.count) {
+					commitMenuItems.push(<Blueprint.MenuItem
+						key={"diff-more"}
+						disabled={this.props.disabled || this.state.disabled}
+						roleStructure="listoption"
+						icon={<Icons.BringData/>}
+						onClick={(): void => {
+							this.syncUnit(activeUnit.id, true)
+						}}
+						text="Load More..."
+						textClassName="bp5-text-muted"
+						shouldDismissPopover={false}
+					/>)
+				}
+
 				commitMenu = <Blueprint.Popover
 					content={<Blueprint.Menu style={css.commitsMenu}>
 						{commitMenuItems}
@@ -985,7 +1046,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 							})
 
 							if (activeUnit && !activeUnit.new) {
-								PodActions.syncUnit(this.props.pod.id, activeUnitId);
+								this.syncUnit(activeUnitId)
 							}
 						}}
 					>
