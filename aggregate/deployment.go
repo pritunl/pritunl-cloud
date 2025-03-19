@@ -11,11 +11,14 @@ import (
 	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/pod"
+	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/zone"
 )
 
 type DeploymentPipe struct {
 	Deployment   `bson:",inline"`
+	SpecDocs     []*spec.Spec         `bson:"spec_docs"`
 	InstanceDocs []*instance.Instance `bson:"instance_docs"`
 	ZoneDocs     []*zone.Zone         `bson:"zone_docs"`
 	NodeDocs     []*node.Node         `bson:"node_docs"`
@@ -27,6 +30,9 @@ type Deployment struct {
 	Pod                 primitive.ObjectID       `bson:"pod" json:"pod"`
 	Unit                primitive.ObjectID       `bson:"unit" json:"unit"`
 	Spec                primitive.ObjectID       `bson:"spec" json:"spec"`
+	SpecOffset          int                      `bson:"spec_offset" json:"spec_offset"`
+	SpecIndex           int                      `bson:"spec_index" json:"spec_index"`
+	SpecTimestamp       time.Time                `bson:"spec_timestamp" json:"spec_timestamp"`
 	Timestamp           time.Time                `bson:"timestamp" json:"timestamp"`
 	Tags                []string                 `bson:"tags" json:"tags"`
 	Kind                string                   `bson:"kind" json:"kind"`
@@ -60,7 +66,7 @@ type Deployment struct {
 	InstanceLoad15      float64                  `bson:"-" json:"instance_load15"`
 }
 
-func GetDeployments(db *database.Database, unitId primitive.ObjectID) (
+func GetDeployments(db *database.Database, unit *pod.Unit) (
 	deplys []*Deployment, err error) {
 
 	coll := db.Deployments()
@@ -69,12 +75,20 @@ func GetDeployments(db *database.Database, unitId primitive.ObjectID) (
 	cursor, err := coll.Aggregate(db, []*bson.M{
 		&bson.M{
 			"$match": &bson.M{
-				"unit": unitId,
+				"unit": unit.Id,
 			},
 		},
 		&bson.M{
 			"$sort": &bson.M{
 				"timestamp": -1,
+			},
+		},
+		&bson.M{
+			"$lookup": &bson.M{
+				"from":         "specs",
+				"localField":   "spec",
+				"foreignField": "_id",
+				"as":           "spec_docs",
 			},
 		},
 		&bson.M{
@@ -125,6 +139,8 @@ func GetDeployments(db *database.Database, unitId primitive.ObjectID) (
 				{"instance", 1},
 				{"instance_data", 1},
 				{"domain_data", 1},
+				{"spec_docs.index", 1},
+				{"spec_docs.timestamp", 1},
 				{"instance_docs.name", 1},
 				{"instance_docs.network_roles", 1},
 				{"instance_docs.memory", 1},
@@ -178,6 +194,14 @@ func GetDeployments(db *database.Database, unitId primitive.ObjectID) (
 		if len(doc.NodeDocs) > 0 {
 			nde := doc.NodeDocs[0]
 			deply.NodeName = nde.Name
+		}
+
+		if len(doc.SpecDocs) > 0 {
+			spc := doc.SpecDocs[0]
+
+			deply.SpecOffset = spc.Index - unit.SpecIndex
+			deply.SpecIndex = spc.Index
+			deply.SpecTimestamp = spc.Timestamp
 		}
 
 		if len(doc.InstanceDocs) > 0 {
