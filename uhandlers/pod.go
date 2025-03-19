@@ -49,6 +49,11 @@ type deploymentData struct {
 	Tags []string           `json:"tags"`
 }
 
+type specsData struct {
+	Specs []*spec.Spec `json:"specs"`
+	Count int64        `json:"count"`
+}
+
 func podPut(c *gin.Context) {
 	if demo.Blocked(c) {
 		return
@@ -304,7 +309,6 @@ func podsGet(c *gin.Context) {
 type PodUnit struct {
 	Id          primitive.ObjectID      `json:"id"`
 	Pod         primitive.ObjectID      `json:"pod"`
-	Commits     []*spec.Spec            `json:"commits"`
 	Deployments []*aggregate.Deployment `json:"deployments"`
 }
 
@@ -342,18 +346,9 @@ func podUnitGet(c *gin.Context) {
 		return
 	}
 
-	commits, err := spec.GetAllProjectSorted(db, &bson.M{
-		"unit": unitId,
-	})
-	if err != nil {
-		utils.AbortWithError(c, 500, err)
-		return
-	}
-
 	pdUnit := &PodUnit{
 		Id:          unit.Id,
 		Pod:         pd.Id,
-		Commits:     commits,
 		Deployments: deploys,
 	}
 
@@ -658,6 +653,53 @@ func podUnitDeploymentLogGet(c *gin.Context) {
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
+	}
+
+	c.JSON(200, data)
+}
+
+func podUnitSpecsGet(c *gin.Context) {
+	db := c.MustGet("db").(*database.Database)
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
+
+	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
+	pageCount, _ := strconv.ParseInt(c.Query("page_count"), 10, 0)
+
+	podId, ok := utils.ParseObjectId(c.Param("pod_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	unitId, ok := utils.ParseObjectId(c.Param("unit_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	pd, err := pod.GetOrg(db, userOrg, podId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	unit := pd.GetUnit(unitId)
+	if unit == nil {
+		utils.AbortWithStatus(c, 404)
+		return
+	}
+
+	specs, count, err := spec.GetAllPaged(db, &bson.M{
+		"unit": unit.Id,
+	}, page, pageCount)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	data := &specsData{
+		Specs: specs,
+		Count: count,
 	}
 
 	c.JSON(200, data)
