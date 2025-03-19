@@ -7,6 +7,7 @@ import OrganizationsStore from '../stores/OrganizationsStore';
 import * as PodActions from '../actions/PodActions';
 import * as OrganizationActions from '../actions/OrganizationActions';
 import Pod from './Pod';
+import PodDetailed from './PodDetailed';
 import PodNew from './PodNew';
 import PodsFilter from './PodsFilter';
 import PodsPage from './PodsPage';
@@ -23,32 +24,39 @@ interface Selected {
 	[key: string]: boolean;
 }
 
-interface Opened {
-	[key: string]: boolean;
-}
-
 interface State {
+	pod: PodTypes.PodRo;
 	pods: PodTypes.PodsRo;
 	filter: PodTypes.Filter;
 	organizations: OrganizationTypes.OrganizationsRo;
 	completion: CompletionTypes.Completion;
 	selected: Selected;
-	opened: Opened;
 	newOpened: boolean;
 	lastSelected: string;
 	disabled: boolean;
+	sidebar: boolean;
+	settings: boolean;
+	mode: string;
 }
 
 const css = {
+	layout: {
+		height: 'calc(100dvh - 230px)',
+		maxHeight: 'calc(100dvh - 230px)',
+	} as React.CSSProperties,
 	items: {
-		width: '100%',
-		marginTop: '-5px',
-		display: 'table',
+		width: '200px',
 		borderSpacing: '0 5px',
+		padding: '0 5px'
 	} as React.CSSProperties,
 	itemsBox: {
 		width: '100%',
 		overflowY: 'auto',
+	} as React.CSSProperties,
+	pods: {
+		flexGrow: 1,
+		minWidth: 0,
+		maxWidth: '100%',
 	} as React.CSSProperties,
 	placeholder: {
 		opacity: 0,
@@ -71,30 +79,34 @@ const css = {
 	buttons: {
 		marginTop: '8px',
 	} as React.CSSProperties,
+	nonState: {
+		justifyContent: 'center',
+		height: '100%',
+	} as React.CSSProperties,
 };
 
 export default class Pods extends React.Component<{}, State> {
 	constructor(props: any, context: any) {
 		super(props, context);
 		this.state = {
+			pod: null,
 			pods: PodsStore.pods,
 			filter: PodsStore.filter,
 			organizations: OrganizationsStore.organizations,
 			completion: CompletionStore.completion,
 			selected: {},
-			opened: {},
 			newOpened: false,
 			lastSelected: null,
 			disabled: false,
+			sidebar: true,
+			settings: false,
+			mode: "view",
 		};
+		this.handleKeyDown = this.handleKeyDown.bind(this);
 	}
 
 	get selected(): boolean {
 		return !!Object.keys(this.state.selected).length;
-	}
-
-	get opened(): boolean {
-		return !!Object.keys(this.state.opened).length;
 	}
 
 	componentDidMount(): void {
@@ -104,27 +116,34 @@ export default class Pods extends React.Component<{}, State> {
 		PodActions.sync();
 		OrganizationActions.sync();
 		CompletionActions.sync();
+		document.addEventListener('keydown', this.handleKeyDown);
 	}
 
 	componentWillUnmount(): void {
 		PodsStore.removeChangeListener(this.onChange);
 		OrganizationsStore.removeChangeListener(this.onChange);
 		CompletionStore.removeChangeListener(this.onChange);
+		document.removeEventListener('keydown', this.handleKeyDown);
+	}
+
+	handleKeyDown(event: KeyboardEvent) {
+		if (event.ctrlKey && event.key === "e") {
+			this.setState({
+				...this.state,
+				sidebar: !this.state.sidebar,
+			})
+			event.preventDefault();
+		}
 	}
 
 	onChange = (): void => {
 		let pods = PodsStore.pods;
 		let selected: Selected = {};
 		let curSelected = this.state.selected;
-		let opened: Opened = {};
-		let curOpened = this.state.opened;
 
 		pods.forEach((pod: PodTypes.Pod): void => {
 			if (curSelected[pod.id]) {
 				selected[pod.id] = true;
-			}
-			if (curOpened[pod.id]) {
-				opened[pod.id] = true;
 			}
 		});
 
@@ -136,7 +155,6 @@ export default class Pods extends React.Component<{}, State> {
 			filter: PodsStore.filter,
 			organizations: OrganizationsStore.organizations,
 			selected: selected,
-			opened: opened,
 		});
 	}
 
@@ -170,7 +188,7 @@ export default class Pods extends React.Component<{}, State> {
 				pod={pod}
 				organizations={this.state.organizations}
 				selected={!!this.state.selected[pod.id]}
-				open={!!this.state.opened[pod.id]}
+				open={this.state.pod?.id === pod.id}
 				onSelect={(shift: boolean): void => {
 					let selected = {
 						...this.state.selected,
@@ -223,27 +241,23 @@ export default class Pods extends React.Component<{}, State> {
 					});
 				}}
 				onOpen={(): void => {
-					let opened = {
-						...this.state.opened,
-					};
-
-					if (opened[pod.id]) {
-						delete opened[pod.id];
-					} else {
-						opened[pod.id] = true;
+					let newMode = this.state.mode
+					if (this.state.mode === "edit") {
+						newMode = "view"
 					}
-
 					this.setState({
 						...this.state,
-						opened: opened,
+						pod: pod,
+						newOpened: false,
+						mode: newMode,
 					});
 				}}
 			/>);
 		});
 
-		let newPodDom: JSX.Element;
+		let podElem: JSX.Element;
 		if (this.state.newOpened) {
-			newPodDom = <PodNew
+			podElem = <PodNew
 				organizations={this.state.organizations}
 				onClose={(): void => {
 					this.setState({
@@ -251,7 +265,50 @@ export default class Pods extends React.Component<{}, State> {
 						newOpened: false,
 					});
 				}}
+				sidebar={this.state.sidebar}
+				toggleSidebar={() => {
+					this.setState({
+						...this.state,
+						sidebar: !this.state.sidebar,
+					})
+				}}
 			/>;
+		} else if (!podsDom.length) {
+			podElem = <div className="layout vertical" style={css.nonState}>
+				<NonState
+					hidden={false}
+					iconClass="bp5-icon-cube"
+					title="No pods"
+					description="Add a new pod to get started."
+				/>
+			</div>
+		} else if (this.state.pod) {
+			podElem = <PodDetailed
+				key={this.state.pod?.id}
+				organizations={this.state.organizations}
+				pod={this.state.pod}
+				mode={this.state.mode}
+				onMode={(mode: string) => {
+					this.setState({
+						...this.state,
+						mode: mode,
+					})
+				}}
+				settings={this.state.settings}
+				toggleSettings={() => {
+					this.setState({
+						...this.state,
+						settings: !this.state.settings,
+					})
+				}}
+				sidebar={this.state.sidebar}
+				toggleSidebar={() => {
+					this.setState({
+						...this.state,
+						sidebar: !this.state.sidebar,
+					})
+				}}
+			/>
 		}
 
 		let filterClass = 'bp5-button bp5-intent-primary bp5-icon-filter ';
@@ -269,7 +326,7 @@ export default class Pods extends React.Component<{}, State> {
 			}
 		}
 
-		return <Page wide={true}>
+		return <Page full={true}>
 			<PageHeader>
 				<div className="layout horizontal wrap" style={css.header}>
 					<h2 style={css.heading}>Pods
@@ -280,6 +337,16 @@ export default class Pods extends React.Component<{}, State> {
 					</h2>
 					<div className="flex"/>
 					<div style={css.buttons}>
+						<button
+							className="bp5-button bp5-icon-help"
+							style={css.button}
+							type="button"
+							onClick={(): void => {
+								console.log("TODO")
+							}}
+						>
+							Help
+						</button>
 						<button
 							className={filterClass}
 							style={css.button}
@@ -293,20 +360,6 @@ export default class Pods extends React.Component<{}, State> {
 							}}
 						>
 							Filters
-						</button>
-						<button
-							className="bp5-button bp5-intent-warning bp5-icon-chevron-up"
-							style={css.button}
-							disabled={!this.opened}
-							type="button"
-							onClick={(): void => {
-								this.setState({
-									...this.state,
-									opened: {},
-								});
-							}}
-						>
-							Collapse All
 						</button>
 						<ConfirmButton
 							label="Delete Selected"
@@ -342,21 +395,21 @@ export default class Pods extends React.Component<{}, State> {
 				}}
 				organizations={this.state.organizations}
 			/>
-			<div style={css.itemsBox}>
-				<div style={css.items}>
-					{newPodDom}
+			<div className="layout horizontal" style={css.layout}>
+				<div
+					className="bp5-menu"
+					style={css.items}
+					hidden={!this.state.sidebar}
+				>
 					{podsDom}
 					<tr className="bp5-card bp5-row" style={css.placeholder}>
-						<td colSpan={5} style={css.placeholder}/>
+						<td colSpan={1} style={css.placeholder}/>
 					</tr>
 				</div>
+				<div style={css.pods}>
+					{podElem}
+				</div>
 			</div>
-			<NonState
-				hidden={!!podsDom.length}
-				iconClass="bp5-icon-cube"
-				title="No pods"
-				description="Add a new pod to get started."
-			/>
 			<PodsPage
 				onPage={(): void => {
 					this.setState({
