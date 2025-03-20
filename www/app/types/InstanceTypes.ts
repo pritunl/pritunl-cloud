@@ -5,6 +5,8 @@ export const TRAVERSE = 'instance.traverse';
 export const FILTER = 'instance.filter';
 export const CHANGE = 'instance.change';
 
+import * as PageInfos from '../components/PageInfo';
+
 export interface Instance {
 	id?: string;
 	organization?: string;
@@ -151,6 +153,17 @@ export interface Info {
 	pci_devices?: PciDevice[];
 	drive_devices?: DriveDevice[];
 	oracle_subnets?: OracleSubnet[];
+}
+
+export function FirewallFields(info: Info): PageInfos.Field[] {
+	if (!info.firewall_rules) {
+		return [];
+	}
+
+	return Object.entries(info.firewall_rules).map(([key, value]) => ({
+		label: key,
+		value: value,
+	}));
 }
 
 export type Instances = Instance[];
