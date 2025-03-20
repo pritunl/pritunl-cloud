@@ -46,6 +46,14 @@ export interface Commit {
 	data?: string
 }
 
+export interface CommitData {
+	unit?: string;
+	specs?: Commit[];
+	count?: number;
+	page?: number;
+	page_count?: number;
+}
+
 export interface Deployment {
 	id?: string;
 	pod?: string;
