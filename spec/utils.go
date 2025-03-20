@@ -180,6 +180,53 @@ func GetAll(db *database.Database, query *bson.M) (
 	return
 }
 
+func GetAllIndexes(db *database.Database, query *bson.M) (
+	spcs []*Spec, err error) {
+
+	coll := db.Specs()
+	spcs = []*Spec{}
+
+	cursor, err := coll.Find(
+		db,
+		query,
+		&options.FindOptions{
+			Projection: &bson.M{
+				"_id":       1,
+				"unit":      1,
+				"index":     1,
+				"timestamp": 1,
+			},
+			Sort: &bson.D{
+				{"timestamp", 1},
+			},
+		},
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		spc := &Spec{}
+		err = cursor.Decode(spc)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		spcs = append(spcs, spc)
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetAllProjectSorted(db *database.Database, query *bson.M) (
 	spcs []*Spec, err error) {
 
@@ -193,6 +240,7 @@ func GetAllProjectSorted(db *database.Database, query *bson.M) (
 			Projection: &bson.M{
 				"_id":       1,
 				"unit":      1,
+				"index":     1,
 				"timestamp": 1,
 				"hash":      1,
 				"data":      1,
@@ -208,7 +256,6 @@ func GetAllProjectSorted(db *database.Database, query *bson.M) (
 	}
 	defer cursor.Close(db)
 
-	offset := 0
 	for cursor.Next(db) {
 		spc := &Spec{}
 		err = cursor.Decode(spc)
@@ -216,9 +263,6 @@ func GetAllProjectSorted(db *database.Database, query *bson.M) (
 			err = database.ParseError(err)
 			return
 		}
-
-		spc.Offset = offset
-		offset -= 1
 
 		spcs = append(spcs, spc)
 	}
