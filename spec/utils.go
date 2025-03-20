@@ -111,6 +111,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 			Projection: &bson.M{
 				"_id":       1,
 				"unit":      1,
+				"index":     1,
 				"timestamp": 1,
 			},
 			Sort: &bson.D{
@@ -127,14 +128,14 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	defer cursor.Close(db)
 
 	for cursor.Next(db) {
-		scp := &Spec{}
-		err = cursor.Decode(scp)
+		spc := &Spec{}
+		err = cursor.Decode(spc)
 		if err != nil {
 			err = database.ParseError(err)
 			return
 		}
 
-		spcs = append(spcs, scp)
+		spcs = append(spcs, spc)
 	}
 
 	err = cursor.Err()
