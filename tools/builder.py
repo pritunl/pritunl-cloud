@@ -29,7 +29,7 @@ CONSTANTS_PATH = 'constants/constants.go'
 CHANGES_PATH = 'CHANGES'
 STABLE_PACUR_PATH = '../pritunl-pacur'
 TEST_PACUR_PATH = '../pritunl-pacur-test'
-BUILD_KEYS_PATH = 'build_keys.json'
+BUILD_KEYS_PATH = 'tools/build_keys.json'
 BUILD_TARGETS = ('pritunl-cloud',)
 REPO_NAME = 'pritunl-cloud'
 
