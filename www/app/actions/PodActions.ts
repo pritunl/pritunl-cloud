@@ -451,6 +451,32 @@ export function syncSpecs(podId: string, unitId: string, page: number,
 	});
 }
 
+export function spec(podId: string, unitId: string,
+	specId: string): Promise<PodTypes.Commit> {
+
+	return new Promise<PodTypes.Commit>((resolve, reject): void => {
+		SuperAgent
+			.get("/pod/" + podId + "/unit/" + unitId + "/spec/" + specId)
+			.set('Accept', 'application/json')
+			.set('Csrf-Token', Csrf.token)
+			.end((err: any, res: SuperAgent.Response): void => {
+				if (res && res.status === 401) {
+					window.location.href = '/login';
+					resolve(null);
+					return;
+				}
+
+				if (err) {
+					Alert.errorRes(res, 'Failed to load unit commits');
+					reject(err);
+					return;
+				}
+
+				resolve(res.body as PodTypes.Commit);
+			});
+	});
+}
+
 export function dataCancel(): void {
 	for (let [key, val] of Object.entries(dataSyncReqs)) {
 		val.abort();
