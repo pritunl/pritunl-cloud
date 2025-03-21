@@ -73,12 +73,14 @@ func Register(engine *gin.Engine) {
 	csrfGroup.GET("/block/:block_id", blockGet)
 	csrfGroup.PUT("/block/:block_id", blockPut)
 	csrfGroup.POST("/block", blockPost)
+	csrfGroup.DELETE("/block", blocksDelete)
 	csrfGroup.DELETE("/block/:block_id", blockDelete)
 
 	csrfGroup.GET("/certificate", certificatesGet)
 	csrfGroup.GET("/certificate/:cert_id", certificateGet)
 	csrfGroup.PUT("/certificate/:cert_id", certificatePut)
 	csrfGroup.POST("/certificate", certificatePost)
+	csrfGroup.DELETE("/certificate", certificatesDelete)
 	csrfGroup.DELETE("/certificate/:cert_id", certificateDelete)
 
 	engine.GET("/check", checkGet)
@@ -91,6 +93,7 @@ func Register(engine *gin.Engine) {
 	csrfGroup.GET("/datacenter/:dc_id", datacenterGet)
 	csrfGroup.PUT("/datacenter/:dc_id", datacenterPut)
 	csrfGroup.POST("/datacenter", datacenterPost)
+	csrfGroup.DELETE("/datacenter", datacentersDelete)
 	csrfGroup.DELETE("/datacenter/:dc_id", datacenterDelete)
 
 	csrfGroup.GET("/device/:user_id", devicesGet)
@@ -170,6 +173,7 @@ func Register(engine *gin.Engine) {
 	csrfGroup.GET("/policy/:policy_id", policyGet)
 	csrfGroup.PUT("/policy/:policy_id", policyPut)
 	csrfGroup.POST("/policy", policyPost)
+	csrfGroup.DELETE("/policy", policiesDelete)
 	csrfGroup.DELETE("/policy/:policy_id", policyDelete)
 
 	csrfGroup.GET("/pool", poolsGet)
@@ -183,6 +187,7 @@ func Register(engine *gin.Engine) {
 	csrfGroup.GET("/secret/:secr_id", secretGet)
 	csrfGroup.PUT("/secret/:secr_id", secretPut)
 	csrfGroup.POST("/secret", secretPost)
+	csrfGroup.DELETE("/secret", secretsDelete)
 	csrfGroup.DELETE("/secret/:secr_id", secretDelete)
 
 	csrfGroup.GET("/session/:user_id", sessionsGet)
@@ -222,6 +227,7 @@ func Register(engine *gin.Engine) {
 	csrfGroup.GET("/storage/:store_id", storageGet)
 	csrfGroup.PUT("/storage/:store_id", storagePut)
 	csrfGroup.POST("/storage", storagePost)
+	csrfGroup.DELETE("/storage", storagesDelete)
 	csrfGroup.DELETE("/storage/:store_id", storageDelete)
 
 	csrfGroup.GET("/subscription", subscriptionGet)
@@ -249,6 +255,7 @@ func Register(engine *gin.Engine) {
 	csrfGroup.GET("/zone/:zone_id", zoneGet)
 	csrfGroup.PUT("/zone/:zone_id", zonePut)
 	csrfGroup.POST("/zone", zonePost)
+	csrfGroup.DELETE("/zone", zonesDelete)
 	csrfGroup.DELETE("/zone/:zone_id", zoneDelete)
 
 	engine.GET("/robots.txt", middlewear.RobotsGet)
