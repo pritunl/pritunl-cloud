@@ -1,9 +1,15 @@
 package ahandlers
 
 import (
+	"fmt"
+	"regexp"
+	"strconv"
+	"strings"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -25,6 +31,11 @@ type blockData struct {
 	Netmask  string             `json:"netmask"`
 	Gateway  string             `json:"gateway"`
 	Gateway6 string             `json:"gateway6"`
+}
+
+type blocksData struct {
+	Blocks []*block.Block `json:"blocks"`
+	Count  int64          `json:"count"`
 }
 
 func blockPut(c *gin.Context) {
@@ -178,6 +189,34 @@ func blockDelete(c *gin.Context) {
 	c.JSON(200, nil)
 }
 
+func blocksDelete(c *gin.Context) {
+	if demo.Blocked(c) {
+		return
+	}
+
+	db := c.MustGet("db").(*database.Database)
+	data := []primitive.ObjectID{}
+
+	err := c.Bind(&data)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "handler: Bind error"),
+		}
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	err = block.RemoveMulti(db, data)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	event.PublishDispatch(db, "block.change")
+
+	c.JSON(200, nil)
+}
+
 func blockGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 
@@ -199,11 +238,42 @@ func blockGet(c *gin.Context) {
 func blocksGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 
-	blcks, err := block.GetAll(db)
+	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
+	pageCount, _ := strconv.ParseInt(c.Query("page_count"), 10, 0)
+
+	query := bson.M{}
+
+	blockId, ok := utils.ParseObjectId(c.Query("id"))
+	if ok {
+		query["_id"] = blockId
+	}
+
+	name := strings.TrimSpace(c.Query("name"))
+	if name != "" {
+		query["name"] = &bson.M{
+			"$regex":   fmt.Sprintf(".*%s.*", regexp.QuoteMeta(name)),
+			"$options": "i",
+		}
+	}
+
+	comment := strings.TrimSpace(c.Query("comment"))
+	if comment != "" {
+		query["comment"] = &bson.M{
+			"$regex":   fmt.Sprintf(".*%s.*", comment),
+			"$options": "i",
+		}
+	}
+
+	blcks, count, err := block.GetAllPaged(db, &query, page, pageCount)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	c.JSON(200, blcks)
+	data := &blocksData{
+		Blocks: blcks,
+		Count:  count,
+	}
+
+	c.JSON(200, data)
 }
