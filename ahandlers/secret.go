@@ -1,6 +1,11 @@
 package ahandlers
 
 import (
+	"fmt"
+	"regexp"
+	"strconv"
+	"strings"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
@@ -23,6 +28,11 @@ type secretData struct {
 	Key          string             `json:"key"`
 	Value        string             `json:"value"`
 	Region       string             `json:"region"`
+}
+
+type secretsData struct {
+	Secrets []*secret.Secret `json:"secrets"`
+	Count   int64            `json:"count"`
 }
 
 func secretPut(c *gin.Context) {
@@ -171,6 +181,34 @@ func secretDelete(c *gin.Context) {
 	c.JSON(200, nil)
 }
 
+func secretsDelete(c *gin.Context) {
+	if demo.Blocked(c) {
+		return
+	}
+
+	db := c.MustGet("db").(*database.Database)
+	data := []primitive.ObjectID{}
+
+	err := c.Bind(&data)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "handler: Bind error"),
+		}
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	err = secret.RemoveMulti(db, data)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	event.PublishDispatch(db, "secret.change")
+
+	c.JSON(200, nil)
+}
+
 func secretGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 
@@ -197,18 +235,47 @@ func secretGet(c *gin.Context) {
 func secretsGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 
-	secrs, err := secret.GetAll(db, &bson.M{})
+	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
+	pageCount, _ := strconv.ParseInt(c.Query("page_count"), 10, 0)
+
+	query := bson.M{}
+
+	secretId, ok := utils.ParseObjectId(c.Query("id"))
+	if ok {
+		query["_id"] = secretId
+	}
+
+	name := strings.TrimSpace(c.Query("name"))
+	if name != "" {
+		query["name"] = &bson.M{
+			"$regex":   fmt.Sprintf(".*%s.*", regexp.QuoteMeta(name)),
+			"$options": "i",
+		}
+	}
+
+	organization, ok := utils.ParseObjectId(c.Query("organization"))
+	if ok {
+		query["organization"] = organization
+	}
+
+	comment := strings.TrimSpace(c.Query("comment"))
+	if comment != "" {
+		query["comment"] = &bson.M{
+			"$regex":   fmt.Sprintf(".*%s.*", comment),
+			"$options": "i",
+		}
+	}
+
+	secrs, count, err := secret.GetAllPaged(db, &query, page, pageCount)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	if demo.IsDemo() {
-		for _, secr := range secrs {
-			secr.Key = "demo"
-			secr.Value = "demo"
-		}
+	data := &secretsData{
+		Secrets: secrs,
+		Count:   count,
 	}
 
-	c.JSON(200, secrs)
+	c.JSON(200, data)
 }
