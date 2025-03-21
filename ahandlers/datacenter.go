@@ -1,9 +1,15 @@
 package ahandlers
 
 import (
+	"fmt"
+	"regexp"
+	"strconv"
+	"strings"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
@@ -25,6 +31,11 @@ type datacenterData struct {
 	PrivateStorageClass string               `json:"private_storage_class"`
 	BackupStorage       primitive.ObjectID   `json:"backup_storage"`
 	BackupStorageClass  string               `json:"backup_storage_class"`
+}
+
+type datacentersData struct {
+	Datacenters []*datacenter.Datacenter `json:"datacenters"`
+	Count       int64                    `json:"count"`
 }
 
 func datacenterPut(c *gin.Context) {
@@ -180,6 +191,34 @@ func datacenterDelete(c *gin.Context) {
 	c.JSON(200, nil)
 }
 
+func datacentersDelete(c *gin.Context) {
+	if demo.Blocked(c) {
+		return
+	}
+
+	db := c.MustGet("db").(*database.Database)
+	data := []primitive.ObjectID{}
+
+	err := c.Bind(&data)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "handler: Bind error"),
+		}
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	err = datacenter.RemoveMulti(db, data)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	event.PublishDispatch(db, "datacenter.change")
+
+	c.JSON(200, nil)
+}
+
 func datacenterGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 
@@ -201,11 +240,47 @@ func datacenterGet(c *gin.Context) {
 func datacentersGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 
-	dcs, err := datacenter.GetAll(db)
+	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
+	pageCount, _ := strconv.ParseInt(c.Query("page_count"), 10, 0)
+
+	query := bson.M{}
+
+	datacenterId, ok := utils.ParseObjectId(c.Query("id"))
+	if ok {
+		query["_id"] = datacenterId
+	}
+
+	name := strings.TrimSpace(c.Query("name"))
+	if name != "" {
+		query["name"] = &bson.M{
+			"$regex":   fmt.Sprintf(".*%s.*", regexp.QuoteMeta(name)),
+			"$options": "i",
+		}
+	}
+
+	organization, ok := utils.ParseObjectId(c.Query("organization"))
+	if ok {
+		query["organization"] = organization
+	}
+
+	comment := strings.TrimSpace(c.Query("comment"))
+	if comment != "" {
+		query["comment"] = &bson.M{
+			"$regex":   fmt.Sprintf(".*%s.*", comment),
+			"$options": "i",
+		}
+	}
+
+	dc, count, err := datacenter.GetAllPaged(db, &query, page, pageCount)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	c.JSON(200, dcs)
+	data := &datacentersData{
+		Datacenters: dc,
+		Count:       count,
+	}
+
+	c.JSON(200, data)
 }
