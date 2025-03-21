@@ -162,7 +162,7 @@ func zonesDelete(c *gin.Context) {
 
 	db := c.MustGet("db").(*database.Database)
 	data := []primitive.ObjectID{}
-	
+
 	err := c.Bind(&data)
 	if err != nil {
 		err = &errortypes.ParseError{
