@@ -1,11 +1,19 @@
 package ahandlers
 
 import (
+	"fmt"
+	"regexp"
+	"strconv"
+	"strings"
+
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/zone"
@@ -16,6 +24,11 @@ type zoneData struct {
 	Datacenter primitive.ObjectID `json:"datacenter"`
 	Name       string             `json:"name"`
 	Comment    string             `json:"comment"`
+}
+
+type zonesData struct {
+	Zones []*zone.Zone `json:"zones"`
+	Count int64        `json:"count"`
 }
 
 func zonePut(c *gin.Context) {
@@ -142,6 +155,34 @@ func zoneDelete(c *gin.Context) {
 	c.JSON(200, nil)
 }
 
+func zonesDelete(c *gin.Context) {
+	if demo.Blocked(c) {
+		return
+	}
+
+	db := c.MustGet("db").(*database.Database)
+	data := []primitive.ObjectID{}
+	
+	err := c.Bind(&data)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "handler: Bind error"),
+		}
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	err = zone.RemoveMulti(db, data)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	event.PublishDispatch(db, "zone.change")
+
+	c.JSON(200, nil)
+}
+
 func zoneGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 
@@ -163,11 +204,52 @@ func zoneGet(c *gin.Context) {
 func zonesGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 
-	zones, err := zone.GetAll(db)
+	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
+	pageCount, _ := strconv.ParseInt(c.Query("page_count"), 10, 0)
+
+	query := bson.M{}
+
+	zoneId, ok := utils.ParseObjectId(c.Query("id"))
+	if ok {
+		query["_id"] = zoneId
+	}
+
+	name := strings.TrimSpace(c.Query("name"))
+	if name != "" {
+		query["name"] = &bson.M{
+			"$regex":   fmt.Sprintf(".*%s.*", regexp.QuoteMeta(name)),
+			"$options": "i",
+		}
+	}
+
+	organization, ok := utils.ParseObjectId(c.Query("organization"))
+	if ok {
+		query["organization"] = organization
+	}
+
+	datacenter, ok := utils.ParseObjectId(c.Query("datacenter"))
+	if ok {
+		query["datacenter"] = datacenter
+	}
+
+	comment := strings.TrimSpace(c.Query("comment"))
+	if comment != "" {
+		query["comment"] = &bson.M{
+			"$regex":   fmt.Sprintf(".*%s.*", comment),
+			"$options": "i",
+		}
+	}
+
+	znes, count, err := zone.GetAllPaged(db, &query, page, pageCount)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	c.JSON(200, zones)
+	data := &zonesData{
+		Zones: znes,
+		Count: count,
+	}
+
+	c.JSON(200, data)
 }
