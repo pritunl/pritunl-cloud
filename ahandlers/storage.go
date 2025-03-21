@@ -1,12 +1,20 @@
 package ahandlers
 
 import (
+	"fmt"
+	"regexp"
+	"strconv"
+	"strings"
+
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/storage"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -23,6 +31,11 @@ type storageData struct {
 	AccessKey string             `json:"access_key"`
 	SecretKey string             `json:"secret_key"`
 	Insecure  bool               `json:"insecure"`
+}
+
+type storagesData struct {
+	Storages []*storage.Storage `json:"storages"`
+	Count    int64              `json:"count"`
 }
 
 func storagePut(c *gin.Context) {
@@ -180,6 +193,34 @@ func storageDelete(c *gin.Context) {
 	c.JSON(200, nil)
 }
 
+func storagesDelete(c *gin.Context) {
+	if demo.Blocked(c) {
+		return
+	}
+
+	db := c.MustGet("db").(*database.Database)
+	data := []primitive.ObjectID{}
+
+	err := c.Bind(&data)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "handler: Bind error"),
+		}
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	err = storage.RemoveMulti(db, data)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	event.PublishDispatch(db, "storage.change")
+
+	c.JSON(200, nil)
+}
+
 func storageGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 
@@ -210,7 +251,43 @@ func storageGet(c *gin.Context) {
 func storagesGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 
-	stores, err := storage.GetAll(db)
+	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
+	pageCount, _ := strconv.ParseInt(c.Query("page_count"), 10, 0)
+
+	query := bson.M{}
+
+	storageId, ok := utils.ParseObjectId(c.Query("id"))
+	if ok {
+		query["_id"] = storageId
+	}
+
+	name := strings.TrimSpace(c.Query("name"))
+	if name != "" {
+		query["name"] = &bson.M{
+			"$regex":   fmt.Sprintf(".*%s.*", regexp.QuoteMeta(name)),
+			"$options": "i",
+		}
+	}
+
+	organization, ok := utils.ParseObjectId(c.Query("organization"))
+	if ok {
+		query["organization"] = organization
+	}
+
+	datacenter, ok := utils.ParseObjectId(c.Query("datacenter"))
+	if ok {
+		query["datacenter"] = datacenter
+	}
+
+	comment := strings.TrimSpace(c.Query("comment"))
+	if comment != "" {
+		query["comment"] = &bson.M{
+			"$regex":   fmt.Sprintf(".*%s.*", comment),
+			"$options": "i",
+		}
+	}
+
+	stores, count, err := storage.GetAllPaged(db, &query, page, pageCount)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -227,5 +304,10 @@ func storagesGet(c *gin.Context) {
 		}
 	}
 
-	c.JSON(200, stores)
+	data := &storagesData{
+		Storages: stores,
+		Count:    count,
+	}
+
+	c.JSON(200, data)
 }
