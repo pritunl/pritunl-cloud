@@ -46,7 +46,7 @@ sudo dnf -y install qemu-kvm qemu-img libguestfs-tools genisoimage edk2-ovmf vir
 
 # alpine linux
 curl -o /root/setup.sh https://raw.githubusercontent.com/pritunl/pritunl-cloud/refs/heads/master/tools/virt-install/setup/alpine.sh
-echo "0fdea310d3380b8eadb360a4529bdb70302f740e01aca4bdbe950639f12386ee /root/setup.sh" | sha256sum -c && sudo sh /root/setup.sh
+echo "45b5e4f7821a34bbb858a664066e5c71f6bc586903ca3dc7f5e6429a3b4ba84f /root/setup.sh" | sha256sum -c && sudo sh /root/setup.sh
 
 # debian
 sudo curl -o /root/setup.sh https://raw.githubusercontent.com/pritunl/pritunl-cloud/refs/heads/master/tools/virt-install/setup/debian.sh
