@@ -92,6 +92,7 @@ export interface Filter {
 
 export interface StatusInfo {
 	download_progress: number;
+	download_speed: number;
 }
 
 export interface Iso {
