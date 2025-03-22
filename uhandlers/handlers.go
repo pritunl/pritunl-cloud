@@ -76,6 +76,7 @@ func Register(engine *gin.Engine) {
 	orgGroup.GET("/certificate/:cert_id", certificateGet)
 	orgGroup.PUT("/certificate/:cert_id", certificatePut)
 	orgGroup.POST("/certificate", certificatePost)
+	orgGroup.DELETE("/certificate/", certificatesDelete)
 	orgGroup.DELETE("/certificate/:cert_id", certificateDelete)
 
 	engine.GET("/check", checkGet)
@@ -151,6 +152,7 @@ func Register(engine *gin.Engine) {
 	orgGroup.GET("/secret/:secr_id", secretGet)
 	orgGroup.PUT("/secret/:secr_id", secretPut)
 	orgGroup.POST("/secret", secretPost)
+	orgGroup.DELETE("/secret", secretsDelete)
 	orgGroup.DELETE("/secret/:secr_id", secretDelete)
 
 	orgGroup.GET("/pod", podsGet)
