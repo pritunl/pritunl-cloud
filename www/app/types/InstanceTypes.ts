@@ -148,7 +148,7 @@ export interface Info {
 	node_public_ip?: string;
 	mtu?: number;
 	iscsi?: boolean;
-	firewall_rules?: string[];
+	firewall_rules?: Record<string, string>;
 	authorities?: string[];
 	disks?: string[];
 	isos?: Iso[];
