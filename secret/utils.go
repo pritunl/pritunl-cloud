@@ -11,8 +11,10 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 func Get(db *database.Database, secrId primitive.ObjectID) (
@@ -126,6 +128,70 @@ func GetAllOrg(db *database.Database, orgId primitive.ObjectID) (
 	return
 }
 
+func GetAllPaged(db *database.Database, query *bson.M,
+	page, pageCount int64) (secrs []*Secret, count int64, err error) {
+
+	coll := db.Secrets()
+	secrs = []*Secret{}
+
+	if len(*query) == 0 {
+		count, err = coll.EstimatedDocumentCount(db)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+	} else {
+		count, err = coll.CountDocuments(db, query)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+	}
+
+	maxPage := count / pageCount
+	if count == pageCount {
+		maxPage = 0
+	}
+	page = utils.Min64(page, maxPage)
+	skip := utils.Min64(page*pageCount, count)
+
+	cursor, err := coll.Find(
+		db,
+		query,
+		&options.FindOptions{
+			Sort: &bson.D{
+				{"name", 1},
+			},
+			Skip:  &skip,
+			Limit: &pageCount,
+		},
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		secr := &Secret{}
+		err = cursor.Decode(secr)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		secrs = append(secrs, secr)
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func ExistsOrg(db *database.Database, orgId, secrId primitive.ObjectID) (
 	exists bool, err error) {
 
@@ -179,6 +245,42 @@ func RemoveOrg(db *database.Database, orgId, secrId primitive.ObjectID) (
 		default:
 			return
 		}
+	}
+
+	return
+}
+
+func RemoveMulti(db *database.Database, secrIds []primitive.ObjectID) (
+	err error) {
+	coll := db.Secrets()
+
+	_, err = coll.DeleteMany(db, &bson.M{
+		"_id": &bson.M{
+			"$in": secrIds,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func RemoveMultiOrg(db *database.Database, orgId primitive.ObjectID,
+	secrIds []primitive.ObjectID) (err error) {
+
+	coll := db.Secrets()
+
+	_, err = coll.DeleteMany(db, &bson.M{
+		"_id": &bson.M{
+			"$in": secrIds,
+		},
+		"organization": orgId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
 	}
 
 	return
