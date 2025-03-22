@@ -134,6 +134,7 @@ export interface OracleSubnet {
 }
 
 export interface Guest {
+	timestamp?: string;
 	heartbeat?: string;
 	memory?: number;
 	hugepages?: number;
