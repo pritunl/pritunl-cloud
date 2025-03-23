@@ -19,6 +19,13 @@ type PortRange struct {
 	End   int
 }
 
+func (r *PortRange) Contains(port int) bool {
+	if port >= r.Start && port <= r.End {
+		return true
+	}
+	return false
+}
+
 func GetResource(db *database.Database, resourceId primitive.ObjectID) (
 	ndePrt *NodePort, err error) {
 
