@@ -488,6 +488,13 @@ func (i *Instance) Validate(db *database.Database) (
 		i.SpicePassword = ""
 	}
 
+	for _, mapping := range i.NodePorts {
+		errData, err = mapping.Validate(db)
+		if err != nil {
+			return
+		}
+	}
+
 	return
 }
 
