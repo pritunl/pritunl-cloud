@@ -50,3 +50,19 @@ type Mapping struct {
 	InternalPort int                `bson:"internal_port" json:"internal_port"`
 	Delete       bool               `bson:"-" json:"internal_port"`
 }
+
+func (m *Mapping) Diff(mapping *Mapping) bool {
+	if m.Protocol != mapping.Protocol {
+		return true
+	}
+
+	if m.ExternalPort != mapping.ExternalPort {
+		return true
+	}
+
+	if m.InternalPort != mapping.InternalPort {
+		return true
+	}
+
+	return false
+}
