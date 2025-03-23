@@ -26,13 +26,14 @@ func (r *PortRange) Contains(port int) bool {
 	return false
 }
 
-func GetResource(db *database.Database, resourceId primitive.ObjectID) (
+func Get(db *database.Database, resourceId, ndePrtId primitive.ObjectID) (
 	ndePrt *NodePort, err error) {
 
 	coll := db.NodePorts()
 	ndePrt = &NodePort{}
 
 	err = coll.FindOne(db, &bson.M{
+		"_id":      ndePrtId,
 		"resource": resourceId,
 	}).Decode(ndePrt)
 	if err != nil {
