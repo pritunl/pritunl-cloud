@@ -48,4 +48,5 @@ type Mapping struct {
 	Protocol     string             `bson:"protocol" json:"protocol"`
 	ExternalPort int                `bson:"external_port" json:"external_port"`
 	InternalPort int                `bson:"internal_port" json:"internal_port"`
+	Delete       bool               `bson:"-" json:"internal_port"`
 }
