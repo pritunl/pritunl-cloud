@@ -51,6 +51,52 @@ type Mapping struct {
 	Delete       bool               `bson:"-" json:"internal_port"`
 }
 
+func (m *Mapping) Validate(db *database.Database) (
+	errData *errortypes.ErrorData, err error) {
+
+	switch m.Protocol {
+	case Tcp, Udp:
+		break
+	default:
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_protocol",
+			Message: "Invalid node port protocol",
+		}
+		return
+	}
+
+	portRanges, err := GetPortRanges()
+	if err != nil {
+		return
+	}
+
+	matched := false
+	for _, ports := range portRanges {
+		if ports.Contains(m.ExternalPort) {
+			matched = true
+			break
+		}
+	}
+
+	if !matched {
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_external_port",
+			Message: "Invalid external node port",
+		}
+		return
+	}
+
+	if m.InternalPort <= 0 || m.InternalPort > 65535 {
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_internal_port",
+			Message: "Invalid internal node port",
+		}
+		return
+	}
+
+	return
+}
+
 func (m *Mapping) Diff(mapping *Mapping) bool {
 	if m.Protocol != mapping.Protocol {
 		return true
