@@ -224,14 +224,13 @@ func New(db *database.Database, dcId, orgId primitive.ObjectID,
 	return
 }
 
-func RemoveOrg(db *database.Database, orgId, ndePrtId primitive.ObjectID) (
+func Remove(db *database.Database, ndePrtId primitive.ObjectID) (
 	err error) {
 
 	coll := db.NodePorts()
 
 	_, err = coll.DeleteOne(db, &bson.M{
-		"_id":          ndePrtId,
-		"organization": orgId,
+		"_id": ndePrtId,
 	})
 	if err != nil {
 		err = database.ParseError(err)
