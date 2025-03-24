@@ -8,11 +8,11 @@ import (
 )
 
 type NodePort struct {
-	Id         primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Datacenter primitive.ObjectID `bson:"datacenter" json:"datacenter"`
-	Protocol   string             `bson:"protocol" json:"protocol"`
-	Port       int                `bson:"port" json:"port"`
-	Resource   primitive.ObjectID `bson:"resource" json:"resource"`
+	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Datacenter   primitive.ObjectID `bson:"datacenter" json:"datacenter"`
+	Organization primitive.ObjectID `bson:"organization" json:"organization"`
+	Protocol     string             `bson:"protocol" json:"protocol"`
+	Port         int                `bson:"port" json:"port"`
 }
 
 func (n *NodePort) Validate(db *database.Database) (
@@ -36,7 +36,7 @@ func (n *NodePort) Validate(db *database.Database) (
 
 	matched := false
 	for _, ports := range portRanges {
-		if ports.Contains(m.ExternalPort) {
+		if ports.Contains(n.Port) {
 			matched = true
 			break
 		}
@@ -44,8 +44,8 @@ func (n *NodePort) Validate(db *database.Database) (
 
 	if !matched {
 		errData = &errortypes.ErrorData{
-			Error:   "invalid_external_port",
-			Message: "Invalid external node port",
+			Error:   "invalid_port",
+			Message: "Invalid node port",
 		}
 		return
 	}

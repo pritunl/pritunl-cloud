@@ -26,15 +26,15 @@ func (r *PortRange) Contains(port int) bool {
 	return false
 }
 
-func Get(db *database.Database, resourceId, ndePrtId primitive.ObjectID) (
+func Get(db *database.Database, orgId, ndePrtId primitive.ObjectID) (
 	ndePrt *NodePort, err error) {
 
 	coll := db.NodePorts()
 	ndePrt = &NodePort{}
 
 	err = coll.FindOne(db, &bson.M{
-		"_id":      ndePrtId,
-		"resource": resourceId,
+		"_id":          ndePrtId,
+		"organization": orgId,
 	}).Decode(ndePrt)
 	if err != nil {
 		err = database.ParseError(err)
@@ -44,19 +44,29 @@ func Get(db *database.Database, resourceId, ndePrtId primitive.ObjectID) (
 	return
 }
 
-func Available(db *database.Database, datacenterId,
-	resourceId primitive.ObjectID, protocol string, port int) (
-	available bool, err error) {
+func GetPort(db *database.Database, dcId, orgId primitive.ObjectID,
+	protocol string, port int) (ndePrt *NodePort, err error) {
 
 	coll := db.NodePorts()
-	ndePrt := &NodePort{}
+	ndePrt = &NodePort{}
 
 	err = coll.FindOne(db, &bson.M{
-		"datacenter": datacenterId,
+		"datacenter": dcId,
 		"port":       port,
 	}).Decode(ndePrt)
 	if err != nil {
 		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func Available(db *database.Database, datacenterId, orgId primitive.ObjectID,
+	protocol string, port int) (available bool, err error) {
+
+	ndePrt, err := GetPort(db, datacenterId, orgId, protocol, port)
+	if err != nil {
 		if _, ok := err.(*database.NotFoundError); ok {
 			available = true
 			err = nil
@@ -65,7 +75,7 @@ func Available(db *database.Database, datacenterId,
 		return
 	}
 
-	if ndePrt.Resource == resourceId {
+	if ndePrt.Organization == orgId {
 		available = true
 		return
 	}
@@ -130,8 +140,8 @@ func GetPortRanges() (ranges []*PortRange, err error) {
 	return
 }
 
-func New(db *database.Database, dcId primitive.ObjectID,
-	resourceId primitive.ObjectID, protocol string, requestPort int) (
+func New(db *database.Database, dcId, orgId primitive.ObjectID,
+	protocol string, requestPort int) (
 	ndePrt *NodePort, errData *errortypes.ErrorData, err error) {
 
 	maxAttempts := settings.Hypervisor.NodePortMaxAttempts
@@ -142,9 +152,9 @@ func New(db *database.Database, dcId primitive.ObjectID,
 	}
 
 	ndPt := &NodePort{
-		Datacenter: dcId,
-		Resource:   resourceId,
-		Protocol:   protocol,
+		Datacenter:   dcId,
+		Organization: orgId,
+		Protocol:     protocol,
 	}
 
 	errData, err = ndPt.Validate(db)
@@ -186,35 +196,14 @@ func New(db *database.Database, dcId primitive.ObjectID,
 	return
 }
 
-func Remove(db *database.Database, resourceId, ndePrtId primitive.ObjectID) (
+func RemoveOrg(db *database.Database, orgId, ndePrtId primitive.ObjectID) (
 	err error) {
 
 	coll := db.NodePorts()
 
 	_, err = coll.DeleteOne(db, &bson.M{
-		"_id":      ndePrtId,
-		"resource": resourceId,
-	})
-	if err != nil {
-		err = database.ParseError(err)
-		switch err.(type) {
-		case *database.NotFoundError:
-			err = nil
-		default:
-			return
-		}
-	}
-
-	return
-}
-
-func RemoveResource(db *database.Database, resourceId primitive.ObjectID) (
-	err error) {
-
-	coll := db.NodePorts()
-
-	_, err = coll.DeleteMany(db, &bson.M{
-		"resource": resourceId,
+		"_id":          ndePrtId,
+		"organization": orgId,
 	})
 	if err != nil {
 		err = database.ParseError(err)
