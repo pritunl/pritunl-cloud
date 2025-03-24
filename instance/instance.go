@@ -754,6 +754,12 @@ func (i *Instance) PreCommit() {
 	i.curAction = i.Action
 	i.curNoPublicAddress = i.NoPublicAddress
 	i.curNoHostAddress = i.NoHostAddress
+
+	nodePortMap := map[primitive.ObjectID]*nodeport.Mapping{}
+	for _, mapping := range i.NodePorts {
+		nodePortMap[mapping.NodePort] = mapping
+	}
+	i.curNodePorts = nodePortMap
 }
 
 func (i *Instance) PostCommit(db *database.Database) (
