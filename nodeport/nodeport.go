@@ -126,25 +126,28 @@ func (m *Mapping) Validate(db *database.Database) (
 		return
 	}
 
-	portRanges, err := GetPortRanges()
-	if err != nil {
-		return
-	}
-
-	matched := false
-	for _, ports := range portRanges {
-		if ports.Contains(m.ExternalPort) {
-			matched = true
-			break
+	if m.ExternalPort != 0 {
+		portRanges, e := GetPortRanges()
+		if e != nil {
+			err = e
+			return
 		}
-	}
 
-	if !matched {
-		errData = &errortypes.ErrorData{
-			Error:   "invalid_external_port",
-			Message: "Invalid external node port",
+		matched := false
+		for _, ports := range portRanges {
+			if ports.Contains(m.ExternalPort) {
+				matched = true
+				break
+			}
 		}
-		return
+
+		if !matched {
+			errData = &errortypes.ErrorData{
+				Error:   "invalid_external_port",
+				Message: "Invalid external node port",
+			}
+			return
+		}
 	}
 
 	if m.InternalPort <= 0 || m.InternalPort > 65535 {
