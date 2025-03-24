@@ -44,6 +44,35 @@ func Get(db *database.Database, resourceId, ndePrtId primitive.ObjectID) (
 	return
 }
 
+func Available(db *database.Database, datacenterId,
+	resourceId primitive.ObjectID, port int) (
+	available bool, err error) {
+
+	coll := db.NodePorts()
+	ndePrt := &NodePort{}
+
+	err = coll.FindOne(db, &bson.M{
+		"datacenter": datacenterId,
+		"port":       port,
+	}).Decode(ndePrt)
+	if err != nil {
+		err = database.ParseError(err)
+		if _, ok := err.(*database.NotFoundError); ok {
+			available = true
+			err = nil
+			return
+		}
+		return
+	}
+
+	if ndePrt.Resource == resourceId {
+		available = true
+		return
+	}
+
+	return
+}
+
 func GetPortRanges() (ranges []*PortRange, err error) {
 	ranges = []*PortRange{}
 	parts := strings.Split(settings.Hypervisor.NodePortRanges, ",")
