@@ -29,6 +29,27 @@ func (n *NodePort) Validate(db *database.Database) (
 		return
 	}
 
+	portRanges, err := GetPortRanges()
+	if err != nil {
+		return
+	}
+
+	matched := false
+	for _, ports := range portRanges {
+		if ports.Contains(m.ExternalPort) {
+			matched = true
+			break
+		}
+	}
+
+	if !matched {
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_external_port",
+			Message: "Invalid external node port",
+		}
+		return
+	}
+
 	return
 }
 
@@ -62,7 +83,7 @@ type Mapping struct {
 	Protocol     string             `bson:"protocol" json:"protocol"`
 	ExternalPort int                `bson:"external_port" json:"external_port"`
 	InternalPort int                `bson:"internal_port" json:"internal_port"`
-	Delete       bool               `bson:"-" json:"internal_port"`
+	Delete       bool               `bson:"-" json:"delete"`
 }
 
 func (m *Mapping) Validate(db *database.Database) (
