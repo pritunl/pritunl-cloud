@@ -115,13 +115,16 @@ type Instance struct {
 	Gui                 bool                `bson:"gui" json:"gui"`
 	Deployment          primitive.ObjectID  `bson:"deployment,omitempty" json:"deployment"`
 	Virt                *vm.VirtualMachine  `bson:"-" json:"-"`
-	curVpc              primitive.ObjectID  `bson:"-" json:"-"`
-	curSubnet           primitive.ObjectID  `bson:"-" json:"-"`
-	curDeleteProtection bool                `bson:"-" json:"-"`
-	curAction           string              `bson:"-" json:"-"`
-	curNoPublicAddress  bool                `bson:"-" json:"-"`
-	curNoHostAddress    bool                `bson:"-" json:"-"`
-	newId               bool                `bson:"-" json:"-"`
+
+	curVpc              primitive.ObjectID                       `bson:"-" json:"-"`
+	curSubnet           primitive.ObjectID                       `bson:"-" json:"-"`
+	curDeleteProtection bool                                     `bson:"-" json:"-"`
+	curAction           string                                   `bson:"-" json:"-"`
+	curNoPublicAddress  bool                                     `bson:"-" json:"-"`
+	curNoHostAddress    bool                                     `bson:"-" json:"-"`
+	curNodePorts        map[primitive.ObjectID]*nodeport.Mapping `bson:"-" json:"-"`
+	removedNodePorts    []primitive.ObjectID                     `bson:"-" json:"-"`
+	newId               bool                                     `bson:"-" json:"-"`
 }
 
 type StatusInfo struct {
