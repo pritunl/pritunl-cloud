@@ -186,6 +186,28 @@ func New(db *database.Database, dcId primitive.ObjectID,
 	return
 }
 
+func Remove(db *database.Database, resourceId, ndePrtId primitive.ObjectID) (
+	err error) {
+
+	coll := db.NodePorts()
+
+	_, err = coll.DeleteOne(db, &bson.M{
+		"_id":      ndePrtId,
+		"resource": resourceId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		switch err.(type) {
+		case *database.NotFoundError:
+			err = nil
+		default:
+			return
+		}
+	}
+
+	return
+}
+
 func RemoveResource(db *database.Database, resourceId primitive.ObjectID) (
 	err error) {
 
