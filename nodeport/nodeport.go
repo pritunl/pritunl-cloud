@@ -29,25 +29,28 @@ func (n *NodePort) Validate(db *database.Database) (
 		return
 	}
 
-	portRanges, err := GetPortRanges()
-	if err != nil {
-		return
-	}
-
-	matched := false
-	for _, ports := range portRanges {
-		if ports.Contains(n.Port) {
-			matched = true
-			break
+	if n.Port != 0 {
+		portRanges, e := GetPortRanges()
+		if e != nil {
+			err = e
+			return
 		}
-	}
 
-	if !matched {
-		errData = &errortypes.ErrorData{
-			Error:   "invalid_port",
-			Message: "Invalid node port",
+		matched := false
+		for _, ports := range portRanges {
+			if ports.Contains(n.Port) {
+				matched = true
+				break
+			}
 		}
-		return
+
+		if !matched {
+			errData = &errortypes.ErrorData{
+				Error:   "invalid_port",
+				Message: "Invalid node port",
+			}
+			return
+		}
 	}
 
 	return
