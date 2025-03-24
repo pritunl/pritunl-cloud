@@ -1,6 +1,7 @@
 package nodeport
 
 import (
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -25,6 +26,19 @@ func (n *NodePort) Validate(db *database.Database) (
 			Error:   "invalid_protocol",
 			Message: "Invalid node port protocol",
 		}
+		return
+	}
+
+	return
+}
+
+func (n *NodePort) CommitFields(db *database.Database, fields set.Set) (
+	err error) {
+
+	coll := db.NodePorts()
+
+	err = coll.CommitFields(n.Id, n, fields)
+	if err != nil {
 		return
 	}
 
