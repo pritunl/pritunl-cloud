@@ -45,7 +45,7 @@ func Get(db *database.Database, resourceId, ndePrtId primitive.ObjectID) (
 }
 
 func Available(db *database.Database, datacenterId,
-	resourceId primitive.ObjectID, port int) (
+	resourceId primitive.ObjectID, protocol string, port int) (
 	available bool, err error) {
 
 	coll := db.NodePorts()
