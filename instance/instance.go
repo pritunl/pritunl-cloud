@@ -491,9 +491,39 @@ func (i *Instance) Validate(db *database.Database) (
 		i.SpicePassword = ""
 	}
 
+	externalNodePorts := set.NewSet()
 	for _, mapping := range i.NodePorts {
+		extPortKey := fmt.Sprintf("%s:%d",
+			mapping.Protocol, mapping.ExternalPort)
+
+		if !mapping.Delete {
+			if externalNodePorts.Contains(extPortKey) {
+				errData = &errortypes.ErrorData{
+					Error:   "node_port_external_duplicate",
+					Message: "Duplicate external node port",
+				}
+				return
+			}
+		}
+		externalNodePorts.Add(extPortKey)
+
 		errData, err = mapping.Validate(db)
 		if err != nil {
+			return
+		}
+
+		available, e := nodeport.Available(db, i.Datacenter, i.Organization,
+			mapping.Protocol, mapping.ExternalPort)
+		if e != nil {
+			err = e
+			return
+		}
+
+		if !available {
+			errData = &errortypes.ErrorData{
+				Error:   "node_port_unavailable",
+				Message: "External node port is unavailable",
+			}
 			return
 		}
 	}
