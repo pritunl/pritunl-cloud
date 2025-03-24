@@ -26,7 +26,24 @@ func (r *PortRange) Contains(port int) bool {
 	return false
 }
 
-func Get(db *database.Database, orgId, ndePrtId primitive.ObjectID) (
+func Get(db *database.Database, ndePrtId primitive.ObjectID) (
+	ndePrt *NodePort, err error) {
+
+	coll := db.NodePorts()
+	ndePrt = &NodePort{}
+
+	err = coll.FindOne(db, &bson.M{
+		"_id": ndePrtId,
+	}).Decode(ndePrt)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func GetOrg(db *database.Database, orgId, ndePrtId primitive.ObjectID) (
 	ndePrt *NodePort, err error) {
 
 	coll := db.NodePorts()
