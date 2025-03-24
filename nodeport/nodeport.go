@@ -94,12 +94,13 @@ func (n *NodePort) CommitFields(db *database.Database, fields set.Set) (
 func (n *NodePort) Insert(db *database.Database) (err error) {
 	coll := db.NodePorts()
 
-	_, err = coll.InsertOne(db, n)
+	resp, err := coll.InsertOne(db, n)
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
 
+	n.Id = resp.InsertedID.(primitive.ObjectID)
 	return
 }
 
