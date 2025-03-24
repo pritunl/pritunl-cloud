@@ -2,6 +2,7 @@ package nodeport
 
 import (
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -49,6 +50,27 @@ func (n *NodePort) Validate(db *database.Database) (
 				Error:   "invalid_port",
 				Message: "Invalid node port",
 			}
+			return
+		}
+	}
+
+	return
+}
+
+func (n *NodePort) Sync(db *database.Database) (err error) {
+	coll := db.Instances()
+
+	count, err := coll.CountDocuments(db, &bson.M{
+		"node_ports.node_port": n.Id,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	if count == 0 {
+		err = Remove(db, n.Id)
+		if err != nil {
 			return
 		}
 	}
