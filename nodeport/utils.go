@@ -172,10 +172,21 @@ func New(db *database.Database, dcId, orgId primitive.ObjectID,
 		Datacenter:   dcId,
 		Organization: orgId,
 		Protocol:     protocol,
+		Port:         requestPort,
 	}
 
 	errData, err = ndPt.Validate(db)
 	if err != nil || errData != nil {
+		return
+	}
+
+	if ndPt.Port != 0 {
+		err = ndPt.Insert(db)
+		if err != nil {
+			return
+		}
+
+		ndePrt = ndPt
 		return
 	}
 
