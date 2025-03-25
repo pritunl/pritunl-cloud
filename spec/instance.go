@@ -29,9 +29,16 @@ type Instance struct {
 	Image               primitive.ObjectID   `bson:"image" json:"image"`                                   // hard
 	DiskSize            int                  `bson:"disk_size" json:"disk_size"`                           // hard
 	Mounts              []Mount              `bson:"mounts" json:"mounts"`                                 // hard
+	NodePorts           []NodePort           `bson:"node_ports" json:"node_ports"`                         // soft
 	Certificates        []primitive.ObjectID `bson:"certificates" json:"certificates"`                     // soft
 	Secrets             []primitive.ObjectID `bson:"secrets" json:"secrets"`                               // soft
 	Pods                []primitive.ObjectID `bson:"pods" json:"pods"`                                     // soft
+}
+
+type NodePort struct {
+	Protocol     string `bson:"protocol" json:"protocol"`
+	ExternalPort int    `bson:"external_port" json:"external_port"`
+	InternalPort int    `bson:"internal_port" json:"internal_port"`
 }
 
 func (i *Instance) MemoryUnits() float64 {
