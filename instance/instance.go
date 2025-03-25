@@ -877,6 +877,44 @@ func (i *Instance) PostCommit(db *database.Database) (
 	return
 }
 
+func (i *Instance) Cleanup(db *database.Database) (err error) {
+	for _, mapping := range i.NodePorts {
+		ndePort, e := nodeport.Get(db, mapping.NodePort)
+		if e != nil {
+			err = e
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = nil
+				continue
+			}
+			return
+		}
+
+		err = ndePort.Sync(db)
+		if err != nil {
+			return
+		}
+	}
+
+	for _, ndePortId := range i.removedNodePorts {
+		ndePort, e := nodeport.Get(db, ndePortId)
+		if e != nil {
+			err = e
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = nil
+				continue
+			}
+			return
+		}
+
+		err = ndePort.Sync(db)
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
 func (i *Instance) Commit(db *database.Database) (err error) {
 	coll := db.Instances()
 
