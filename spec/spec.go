@@ -401,6 +401,36 @@ func (s *Spec) parseInstance(db *database.Database,
 		}
 	}
 
+	if dataYaml.NodePorts != nil {
+		externalNodePorts := set.NewSet()
+		for _, nodePrt := range dataYaml.NodePorts {
+			mapping := NodePort{
+				Protocol:     nodePrt.Protocol,
+				ExternalPort: nodePrt.ExternalPort,
+				InternalPort: nodePrt.InternalPort,
+			}
+
+			extPortKey := fmt.Sprintf("%s:%d",
+				mapping.Protocol, mapping.ExternalPort)
+
+			if externalNodePorts.Contains(extPortKey) {
+				errData = &errortypes.ErrorData{
+					Error:   "node_port_external_duplicate",
+					Message: "Duplicate external node port",
+				}
+				return
+			}
+			externalNodePorts.Add(extPortKey)
+
+			errData, err = mapping.Validate()
+			if err != nil || errData != nil {
+				return
+			}
+
+			data.NodePorts = append(data.NodePorts)
+		}
+	}
+
 	if dataYaml.Certificates != nil {
 		for _, cert := range dataYaml.Certificates {
 			kind, e := resources.Find(db, cert)
