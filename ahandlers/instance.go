@@ -23,6 +23,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/iscsi"
 	"github.com/pritunl/pritunl-cloud/iso"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/nodeport"
 	"github.com/pritunl/pritunl-cloud/pci"
 	"github.com/pritunl/pritunl-cloud/storage"
 	"github.com/pritunl/pritunl-cloud/usb"
@@ -32,46 +33,47 @@ import (
 )
 
 type instanceData struct {
-	Id                  primitive.ObjectID `json:"id"`
-	Organization        primitive.ObjectID `json:"organization"`
-	Zone                primitive.ObjectID `json:"zone"`
-	Vpc                 primitive.ObjectID `json:"vpc"`
-	Subnet              primitive.ObjectID `json:"subnet"`
-	OracleSubnet        string             `json:"oracle_subnet"`
-	Shape               primitive.ObjectID `json:"shape"`
-	Node                primitive.ObjectID `json:"node"`
-	DiskType            string             `json:"disk_type"`
-	DiskPool            primitive.ObjectID `json:"disk_pool"`
-	Image               primitive.ObjectID `json:"image"`
-	ImageBacking        bool               `json:"image_backing"`
-	Name                string             `json:"name"`
-	Comment             string             `json:"comment"`
-	Action              string             `json:"action"`
-	RootEnabled         bool               `json:"root_enabled"`
-	Uefi                bool               `json:"uefi"`
-	SecureBoot          bool               `json:"secure_boot"`
-	Tpm                 bool               `json:"tpm"`
-	DhcpServer          bool               `json:"dhcp_server"`
-	CloudType           string             `json:"cloud_type"`
-	CloudScript         string             `json:"cloud_script"`
-	DeleteProtection    bool               `json:"delete_protection"`
-	SkipSourceDestCheck bool               `json:"skip_source_dest_check"`
-	InitDiskSize        int                `json:"init_disk_size"`
-	Memory              int                `json:"memory"`
-	Processors          int                `json:"processors"`
-	NetworkRoles        []string           `json:"network_roles"`
-	Isos                []*iso.Iso         `json:"isos"`
-	UsbDevices          []*usb.Device      `json:"usb_devices"`
-	PciDevices          []*pci.Device      `json:"pci_devices"`
-	DriveDevices        []*drive.Device    `json:"drive_devices"`
-	IscsiDevices        []*iscsi.Device    `json:"iscsi_devices"`
-	Vnc                 bool               `json:"vnc"`
-	Spice               bool               `json:"spice"`
-	Gui                 bool               `json:"gui"`
-	NoPublicAddress     bool               `json:"no_public_address"`
-	NoPublicAddress6    bool               `json:"no_public_address6"`
-	NoHostAddress       bool               `json:"no_host_address"`
-	Count               int                `json:"count"`
+	Id                  primitive.ObjectID  `json:"id"`
+	Organization        primitive.ObjectID  `json:"organization"`
+	Zone                primitive.ObjectID  `json:"zone"`
+	Vpc                 primitive.ObjectID  `json:"vpc"`
+	Subnet              primitive.ObjectID  `json:"subnet"`
+	OracleSubnet        string              `json:"oracle_subnet"`
+	Shape               primitive.ObjectID  `json:"shape"`
+	Node                primitive.ObjectID  `json:"node"`
+	DiskType            string              `json:"disk_type"`
+	DiskPool            primitive.ObjectID  `json:"disk_pool"`
+	Image               primitive.ObjectID  `json:"image"`
+	ImageBacking        bool                `json:"image_backing"`
+	Name                string              `json:"name"`
+	Comment             string              `json:"comment"`
+	Action              string              `json:"action"`
+	RootEnabled         bool                `json:"root_enabled"`
+	Uefi                bool                `json:"uefi"`
+	SecureBoot          bool                `json:"secure_boot"`
+	Tpm                 bool                `json:"tpm"`
+	DhcpServer          bool                `json:"dhcp_server"`
+	CloudType           string              `json:"cloud_type"`
+	CloudScript         string              `json:"cloud_script"`
+	DeleteProtection    bool                `json:"delete_protection"`
+	SkipSourceDestCheck bool                `json:"skip_source_dest_check"`
+	InitDiskSize        int                 `json:"init_disk_size"`
+	Memory              int                 `json:"memory"`
+	Processors          int                 `json:"processors"`
+	NetworkRoles        []string            `json:"network_roles"`
+	Isos                []*iso.Iso          `json:"isos"`
+	UsbDevices          []*usb.Device       `json:"usb_devices"`
+	PciDevices          []*pci.Device       `json:"pci_devices"`
+	DriveDevices        []*drive.Device     `json:"drive_devices"`
+	IscsiDevices        []*iscsi.Device     `json:"iscsi_devices"`
+	Vnc                 bool                `json:"vnc"`
+	Spice               bool                `json:"spice"`
+	Gui                 bool                `json:"gui"`
+	NodePorts           []*nodeport.Mapping `json:"node_ports"`
+	NoPublicAddress     bool                `json:"no_public_address"`
+	NoPublicAddress6    bool                `json:"no_public_address6"`
+	NoHostAddress       bool                `json:"no_host_address"`
+	Count               int                 `json:"count"`
 }
 
 type instanceMultiData struct {
@@ -140,6 +142,7 @@ func instancePut(c *gin.Context) {
 	inst.Vnc = dta.Vnc
 	inst.Spice = dta.Spice
 	inst.Gui = dta.Gui
+	inst.NodePorts = dta.NodePorts
 	inst.NoPublicAddress = dta.NoPublicAddress
 	inst.NoPublicAddress6 = dta.NoPublicAddress6
 	inst.NoHostAddress = dta.NoHostAddress
@@ -180,6 +183,7 @@ func instancePut(c *gin.Context) {
 		"spice_port",
 		"spice_password",
 		"gui",
+		"node_ports",
 		"no_public_address",
 		"no_public_address6",
 		"no_host_address",
@@ -204,7 +208,14 @@ func instancePut(c *gin.Context) {
 
 	err = inst.CommitFields(db, fields)
 	if err != nil {
+		_ = inst.Cleanup(db)
+
 		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	err = inst.Cleanup(db)
+	if err != nil {
 		return
 	}
 
@@ -368,6 +379,7 @@ func instancePost(c *gin.Context) {
 			Vnc:                 dta.Vnc,
 			Spice:               dta.Spice,
 			Gui:                 dta.Gui,
+			NodePorts:           dta.NodePorts,
 			NoPublicAddress:     dta.NoPublicAddress,
 			NoPublicAddress6:    dta.NoPublicAddress6,
 			NoHostAddress:       dta.NoHostAddress,
@@ -386,7 +398,14 @@ func instancePost(c *gin.Context) {
 
 		err = inst.Insert(db)
 		if err != nil {
+			_ = inst.Cleanup(db)
+
 			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		err = inst.Cleanup(db)
+		if err != nil {
 			return
 		}
 
