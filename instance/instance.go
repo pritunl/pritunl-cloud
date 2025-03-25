@@ -765,6 +765,76 @@ func (i *Instance) PreCommit() {
 func (i *Instance) PostCommit(db *database.Database) (
 	dskChange bool, err error) {
 
+	newNodePorts := []*nodeport.Mapping{}
+	newNodePortIds := set.NewSet()
+	externalPorts := set.NewSet()
+
+	for _, mapping := range i.NodePorts {
+		if !mapping.NodePort.IsZero() {
+			curMapping := i.curNodePorts[mapping.NodePort]
+			if curMapping == nil {
+				continue
+			}
+			newNodePortIds.Add(curMapping.NodePort)
+
+			if mapping.Delete {
+				i.removedNodePorts = append(
+					i.removedNodePorts, curMapping.NodePort)
+				continue
+			}
+
+			curMapping.InternalPort = mapping.InternalPort
+			mapping = curMapping
+		}
+
+		var errData *errortypes.ErrorData
+		var ndePort *nodeport.NodePort
+		if mapping.ExternalPort != 0 {
+			ndePort, err = nodeport.GetPort(db, i.Datacenter, i.Organization,
+				mapping.Protocol, mapping.ExternalPort)
+			if err != nil {
+				if _, ok := err.(*database.NotFoundError); ok {
+					ndePort = nil
+					err = nil
+				} else {
+					return
+				}
+			}
+		}
+
+		if ndePort == nil {
+			ndePort, errData, err = nodeport.New(db, i.Datacenter, i.Organization,
+				mapping.Protocol, mapping.ExternalPort)
+			if err != nil {
+				return
+			}
+			if errData != nil {
+				err = errData.GetError()
+				return
+			}
+		}
+
+		mapping.NodePort = ndePort.Id
+		mapping.ExternalPort = ndePort.Port
+
+		extPortKey := fmt.Sprintf("%s:%d",
+			mapping.Protocol, mapping.ExternalPort)
+		if externalPorts.Contains(extPortKey) {
+			continue
+		}
+		externalPorts.Add(extPortKey)
+
+		newNodePorts = append(newNodePorts, mapping)
+	}
+	i.NodePorts = newNodePorts
+
+	for _, mapping := range i.curNodePorts {
+		if newNodePortIds.Contains(mapping.NodePort) {
+			continue
+		}
+		i.removedNodePorts = append(i.removedNodePorts, mapping.NodePort)
+	}
+
 	if (!i.curVpc.IsZero() && i.curVpc != i.Vpc) ||
 		(!i.curSubnet.IsZero() && i.curSubnet != i.Subnet) {
 
