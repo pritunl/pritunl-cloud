@@ -1193,6 +1193,16 @@ func addIndexes() (err error) {
 	if err != nil {
 		return
 	}
+	index = &Index{
+		Collection: db.Instances(),
+		Keys: &bson.D{
+			{"node_ports.node_port", 1},
+		},
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
 
 	index = &Index{
 		Collection: db.Tasks(),
