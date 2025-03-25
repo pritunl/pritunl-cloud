@@ -41,6 +41,23 @@ type NodePort struct {
 	InternalPort int    `bson:"internal_port" json:"internal_port"`
 }
 
+func (i *Instance) DiffNodePorts(newNodePorts []NodePort) bool {
+	if len(i.NodePorts) != len(newNodePorts) {
+		return false
+	}
+
+	for x := range i.NodePorts {
+		if i.NodePorts[x].Protocol != newNodePorts[x].Protocol ||
+			i.NodePorts[x].ExternalPort != newNodePorts[x].ExternalPort ||
+			i.NodePorts[x].InternalPort != newNodePorts[x].InternalPort {
+
+			return false
+		}
+	}
+
+	return true
+}
+
 func (i *Instance) MemoryUnits() float64 {
 	return float64(i.Memory) / float64(1024)
 }
