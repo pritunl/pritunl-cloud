@@ -76,6 +76,7 @@ type InstanceYaml struct {
 	DhcpServer          bool                `yaml:"dhcp_server"`
 	Image               string              `yaml:"image"`
 	Mounts              []InstanceMountYaml `yaml:"mounts"`
+	NodePorts           []NodePort          `yaml:"node_ports"`
 	Certificates        []string            `yaml:"certificates"`
 	Secrets             []string            `yaml:"secrets"`
 	Pods                []string            `yaml:"pods"`
@@ -85,4 +86,10 @@ type InstanceYaml struct {
 type InstanceMountYaml struct {
 	Path  string   `yaml:"path"`
 	Disks []string `yaml:"disks"`
+}
+
+type InstanceNodePortYaml struct {
+	Protocol     string `yaml:"protocol"`
+	ExternalPort int    `yaml:"external_port"`
+	InternalPort int    `yaml:"internal_port"`
 }
