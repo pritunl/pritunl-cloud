@@ -762,12 +762,14 @@ func (i *Instance) PreCommit() {
 	i.curNodePorts = nodePortMap
 }
 
-func (i *Instance) PostCommit(db *database.Database) (
-	dskChange bool, err error) {
-
+func (i *Instance) SyncNodePorts(db *database.Database) (err error) {
 	newNodePorts := []*nodeport.Mapping{}
 	newNodePortIds := set.NewSet()
 	externalPorts := set.NewSet()
+
+	if i.curNodePorts == nil {
+		i.curNodePorts = map[primitive.ObjectID]*nodeport.Mapping{}
+	}
 
 	for _, mapping := range i.NodePorts {
 		if !mapping.NodePort.IsZero() {
@@ -803,7 +805,8 @@ func (i *Instance) PostCommit(db *database.Database) (
 		}
 
 		if ndePort == nil {
-			ndePort, errData, err = nodeport.New(db, i.Datacenter, i.Organization,
+			ndePort, errData, err = nodeport.New(db,
+				i.Datacenter, i.Organization,
 				mapping.Protocol, mapping.ExternalPort)
 			if err != nil {
 				return
@@ -833,6 +836,17 @@ func (i *Instance) PostCommit(db *database.Database) (
 			continue
 		}
 		i.removedNodePorts = append(i.removedNodePorts, mapping.NodePort)
+	}
+
+	return
+}
+
+func (i *Instance) PostCommit(db *database.Database) (
+	dskChange bool, err error) {
+
+	err = i.SyncNodePorts(db)
+	if err != nil {
+		return
 	}
 
 	if (!i.curVpc.IsZero() && i.curVpc != i.Vpc) ||
