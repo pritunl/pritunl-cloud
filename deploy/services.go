@@ -11,13 +11,11 @@ import (
 	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
-	"github.com/pritunl/pritunl-cloud/nodeport"
 	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/scheduler"
 	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"github.com/pritunl/pritunl-cloud/zone"
 	"github.com/sirupsen/logrus"
 )
 
@@ -385,6 +383,8 @@ func (s *Pods) DeploySpec(db *database.Database,
 
 	err = inst.Insert(db)
 	if err != nil {
+		_ = inst.Cleanup(db)
+
 		for _, dsk := range reservedDisks {
 			err = dsk.Unreserve(db, inst.Id, deply.Id)
 			if err != nil {
@@ -392,6 +392,11 @@ func (s *Pods) DeploySpec(db *database.Database,
 			}
 		}
 
+		return
+	}
+
+	err = inst.Cleanup(db)
+	if err != nil {
 		return
 	}
 
