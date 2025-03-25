@@ -2,6 +2,8 @@ package spec
 
 import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/nodeport"
 )
 
 type Instance struct {
@@ -39,6 +41,53 @@ type NodePort struct {
 	Protocol     string `bson:"protocol" json:"protocol"`
 	ExternalPort int    `bson:"external_port" json:"external_port"`
 	InternalPort int    `bson:"internal_port" json:"internal_port"`
+}
+
+func (m *NodePort) Validate() (
+	errData *errortypes.ErrorData, err error) {
+
+	switch m.Protocol {
+	case Tcp, Udp:
+		break
+	default:
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_protocol",
+			Message: "Invalid node port protocol",
+		}
+		return
+	}
+
+	portRanges, e := nodeport.GetPortRanges()
+	if e != nil {
+		err = e
+		return
+	}
+
+	matched := false
+	for _, ports := range portRanges {
+		if ports.Contains(m.ExternalPort) {
+			matched = true
+			break
+		}
+	}
+
+	if !matched {
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_external_port",
+			Message: "Invalid external node port",
+		}
+		return
+	}
+
+	if m.InternalPort <= 0 || m.InternalPort > 65535 {
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_internal_port",
+			Message: "Invalid internal node port",
+		}
+		return
+	}
+
+	return
 }
 
 func (i *Instance) DiffNodePorts(newNodePorts []NodePort) bool {
