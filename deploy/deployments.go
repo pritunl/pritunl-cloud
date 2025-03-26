@@ -14,6 +14,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/imds"
 	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/pritunl/pritunl-cloud/nodeport"
 	"github.com/pritunl/pritunl-cloud/shape"
 	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/state"
@@ -31,7 +32,6 @@ type Deployments struct {
 }
 
 func (d *Deployments) migrate(deply *deployment.Deployment) {
-	inst := d.stat.GetInstace(deply.Instance)
 	nodeId := d.stat.Node().Id
 
 	acquired, lockId := deploymentsLock.LockOpenTimeout(
@@ -51,6 +51,18 @@ func (d *Deployments) migrate(deply *deployment.Deployment) {
 		if deply.Node != nodeId {
 			return
 		}
+
+		inst, err := instance.Get(db, deply.Instance)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"deployment_id": deply.Id.Hex(),
+				"new_spec_id":   deply.NewSpec.Hex(),
+				"error":         err,
+			}).Error("deploy: Failed to get instance")
+			return
+		}
+
+		inst.PreCommit()
 
 		curSpec, err := spec.Get(db, deply.Spec)
 		if err != nil {
@@ -192,6 +204,21 @@ func (d *Deployments) migrate(deply *deployment.Deployment) {
 			}
 		}
 
+		if curSpec.Instance.DiffNodePorts(newSpec.Instance.NodePorts) {
+			instFields.Add("node_ports")
+
+			newNodePorts := []*nodeport.Mapping{}
+			for _, ndePort := range newSpec.Instance.NodePorts {
+				newNodePorts = append(newNodePorts, &nodeport.Mapping{
+					Protocol:     ndePort.Protocol,
+					ExternalPort: ndePort.ExternalPort,
+					InternalPort: ndePort.InternalPort,
+				})
+			}
+
+			inst.UpsertNodePorts(newNodePorts)
+		}
+
 		if instFields.Len() > 0 {
 			errData, err = inst.Validate(db)
 			if err != nil {
@@ -205,8 +232,22 @@ func (d *Deployments) migrate(deply *deployment.Deployment) {
 				return
 			}
 
+			dskChange, err := inst.PostCommit(db)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"deployment_id": deply.Id.Hex(),
+					"cur_spec_id":   curSpec.Id.Hex(),
+					"new_spec_id":   newSpec.Id.Hex(),
+					"error":         err,
+					"error_data":    errData,
+				}).Error("deploy: Migrate failed, instance post commit error")
+				return
+			}
+
 			err = inst.CommitFields(db, instFields)
 			if err != nil {
+				_ = inst.Cleanup(db)
+
 				logrus.WithFields(logrus.Fields{
 					"deployment_id": deply.Id.Hex(),
 					"cur_spec_id":   curSpec.Id.Hex(),
@@ -214,6 +255,22 @@ func (d *Deployments) migrate(deply *deployment.Deployment) {
 					"error":         err,
 				}).Error("deploy: Failed to migrate instance")
 				return
+			}
+
+			err = inst.Cleanup(db)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"deployment_id": deply.Id.Hex(),
+					"cur_spec_id":   curSpec.Id.Hex(),
+					"new_spec_id":   newSpec.Id.Hex(),
+					"error":         err,
+				}).Error("deploy: Failed to cleanup instance")
+				err = nil
+			}
+
+			event.PublishDispatch(db, "instance.change")
+			if dskChange {
+				event.PublishDispatch(db, "disk.change")
 			}
 		}
 
