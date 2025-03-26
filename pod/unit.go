@@ -360,6 +360,15 @@ func (u *Unit) Parse(db *database.Database) (
 			return
 		}
 
+		timestamp, index, e := NewSpec(db, u.Pod.Id, u.Id)
+		if e != nil {
+			err = e
+			return
+		}
+
+		spc.Index = index
+		spc.Timestamp = timestamp
+
 		err = spc.Insert(db)
 		if err != nil {
 			return
