@@ -11,6 +11,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/nodeport"
 	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/scheduler"
 	"github.com/pritunl/pritunl-cloud/spec"
@@ -287,6 +288,16 @@ func (s *Pods) DeploySpec(db *database.Database,
 		inst.NoPublicAddress6 = !*spc.Instance.PublicAddress6
 	}
 
+	if len(spc.Instance.NodePorts) > 0 {
+		for _, ndePort := range spc.Instance.NodePorts {
+			inst.NodePorts = append(inst.NodePorts, &nodeport.Mapping{
+				Protocol:     ndePort.Protocol,
+				ExternalPort: ndePort.ExternalPort,
+				InternalPort: ndePort.InternalPort,
+			})
+		}
+	}
+
 	err = inst.GenerateId()
 	if err != nil {
 		return
@@ -304,6 +315,13 @@ func (s *Pods) DeploySpec(db *database.Database,
 		}).Error("deploy: Failed to deploy instance")
 		reserved = false
 		return
+	}
+
+	if len(inst.NodePorts) > 0 {
+		err = inst.SyncNodePorts(db)
+		if err != nil {
+			return
+		}
 	}
 
 	index := 0
