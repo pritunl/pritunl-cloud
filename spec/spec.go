@@ -384,6 +384,14 @@ func (s *Spec) parseInstance(db *database.Database,
 				Disks: []primitive.ObjectID{},
 			}
 
+			if mnt.Path == "" {
+				errData = &errortypes.ErrorData{
+					Error:   "mount_path_missing",
+					Message: "Unit mount path is missing",
+				}
+				return
+			}
+
 			for _, dsk := range mount.Disks {
 				kind, e := resources.Find(db, dsk)
 				if e != nil {
