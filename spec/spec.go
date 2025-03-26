@@ -132,14 +132,6 @@ func (s *Spec) GetAllNodes(db *database.Database,
 	return
 }
 
-func (s *Spec) Validate(db *database.Database) (err error) {
-	if s.Timestamp.IsZero() {
-		s.Timestamp = time.Now()
-	}
-
-	return
-}
-
 func (s *Spec) ExtractResources() (resources string, err error) {
 	matches := resourcesRe.FindStringSubmatch(s.Data)
 	if len(matches) > 1 {
@@ -435,7 +427,7 @@ func (s *Spec) parseInstance(db *database.Database,
 				return
 			}
 
-			data.NodePorts = append(data.NodePorts)
+			data.NodePorts = append(data.NodePorts, mapping)
 		}
 	}
 
