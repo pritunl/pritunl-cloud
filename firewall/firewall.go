@@ -21,6 +21,7 @@ type Rule struct {
 }
 
 type Mapping struct {
+	Ipvs         bool   `bson:"ipvs" json:"ipvs"`
 	Protocol     string `bson:"protocol" json:"protocol"`
 	ExternalPort int    `bson:"external_port" json:"external_port"`
 	InternalPort int    `bson:"internal_port" json:"internal_port"`
