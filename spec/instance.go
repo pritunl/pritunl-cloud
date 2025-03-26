@@ -92,7 +92,7 @@ func (m *NodePort) Validate() (
 
 func (i *Instance) DiffNodePorts(newNodePorts []NodePort) bool {
 	if len(i.NodePorts) != len(newNodePorts) {
-		return false
+		return true
 	}
 
 	for x := range i.NodePorts {
@@ -100,11 +100,11 @@ func (i *Instance) DiffNodePorts(newNodePorts []NodePort) bool {
 			i.NodePorts[x].ExternalPort != newNodePorts[x].ExternalPort ||
 			i.NodePorts[x].InternalPort != newNodePorts[x].InternalPort {
 
-			return false
+			return true
 		}
 	}
 
-	return true
+	return false
 }
 
 func (i *Instance) MemoryUnits() float64 {
@@ -117,36 +117,36 @@ type Mount struct {
 }
 
 type InstanceYaml struct {
-	Name                string              `yaml:"name"`
-	Kind                string              `yaml:"kind"`
-	Count               int                 `yaml:"count"`
-	Plan                string              `yaml:"plan"`
-	Zone                string              `yaml:"zone"`
-	Node                string              `yaml:"node,omitempty"`
-	Shape               string              `yaml:"shape,omitempty"`
-	Vpc                 string              `yaml:"vpc"`
-	Subnet              string              `yaml:"subnet"`
-	Roles               []string            `yaml:"roles"`
-	Processors          int                 `yaml:"processors"`
-	Memory              int                 `yaml:"memory"`
-	Uefi                *bool               `yaml:"uefi"`
-	SecureBoot          *bool               `yaml:"secureBoot"`
-	CloudType           string              `yaml:"cloudType"`
-	Tpm                 bool                `yaml:"tpm"`
-	Vnc                 bool                `yaml:"vnc"`
-	DeleteProtection    bool                `yaml:"deleteProtection"`
-	SkipSourceDestCheck bool                `yaml:"skipSourceDestCheck"`
-	HostAddress         *bool               `yaml:"hostAddress"`
-	PublicAddress       *bool               `yaml:"publicAddress"`
-	PublicAddress6      *bool               `yaml:"publicAddress6"`
-	DhcpServer          bool                `yaml:"dhcpServer"`
-	Image               string              `yaml:"image"`
-	Mounts              []InstanceMountYaml `yaml:"mounts"`
-	NodePorts           []NodePort          `yaml:"nodePorts"`
-	Certificates        []string            `yaml:"certificates"`
-	Secrets             []string            `yaml:"secrets"`
-	Pods                []string            `yaml:"pods"`
-	DiskSize            int                 `yaml:"diskSize"`
+	Name                string                 `yaml:"name"`
+	Kind                string                 `yaml:"kind"`
+	Count               int                    `yaml:"count"`
+	Plan                string                 `yaml:"plan"`
+	Zone                string                 `yaml:"zone"`
+	Node                string                 `yaml:"node,omitempty"`
+	Shape               string                 `yaml:"shape,omitempty"`
+	Vpc                 string                 `yaml:"vpc"`
+	Subnet              string                 `yaml:"subnet"`
+	Roles               []string               `yaml:"roles"`
+	Processors          int                    `yaml:"processors"`
+	Memory              int                    `yaml:"memory"`
+	Uefi                *bool                  `yaml:"uefi"`
+	SecureBoot          *bool                  `yaml:"secureBoot"`
+	CloudType           string                 `yaml:"cloudType"`
+	Tpm                 bool                   `yaml:"tpm"`
+	Vnc                 bool                   `yaml:"vnc"`
+	DeleteProtection    bool                   `yaml:"deleteProtection"`
+	SkipSourceDestCheck bool                   `yaml:"skipSourceDestCheck"`
+	HostAddress         *bool                  `yaml:"hostAddress"`
+	PublicAddress       *bool                  `yaml:"publicAddress"`
+	PublicAddress6      *bool                  `yaml:"publicAddress6"`
+	DhcpServer          bool                   `yaml:"dhcpServer"`
+	Image               string                 `yaml:"image"`
+	Mounts              []InstanceMountYaml    `yaml:"mounts"`
+	NodePorts           []InstanceNodePortYaml `yaml:"nodePorts"`
+	Certificates        []string               `yaml:"certificates"`
+	Secrets             []string               `yaml:"secrets"`
+	Pods                []string               `yaml:"pods"`
+	DiskSize            int                    `yaml:"diskSize"`
 }
 
 type InstanceMountYaml struct {
