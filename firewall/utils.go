@@ -471,9 +471,29 @@ func GetAllIngress(db *database.Database, nodeSelf *node.Node,
 	}
 
 	mappings = map[string][]*Mapping{}
+	externalPorts := map[int]string{}
 	for namespace, ndePorts := range nodePortsMap {
 		for _, ndePort := range ndePorts {
+			ipvs := false
+
+			extNamespace := externalPorts[ndePort.ExternalPort]
+			if extNamespace != "" {
+				ipvs = true
+
+				if extNamespace != "-" {
+					for _, mapping := range mappings[extNamespace] {
+						if mapping.ExternalPort == ndePort.ExternalPort {
+							mapping.Ipvs = true
+						}
+					}
+					externalPorts[ndePort.ExternalPort] = "-"
+				}
+			} else {
+				externalPorts[ndePort.ExternalPort] = namespace
+			}
+
 			mappings[namespace] = append(mappings[namespace], &Mapping{
+				Ipvs:         ipvs,
 				Protocol:     ndePort.Protocol,
 				ExternalPort: ndePort.ExternalPort,
 				InternalPort: ndePort.InternalPort,
