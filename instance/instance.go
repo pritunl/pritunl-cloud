@@ -762,6 +762,57 @@ func (i *Instance) PreCommit() {
 	i.curNodePorts = nodePortMap
 }
 
+func (i *Instance) UpsertNodePorts(newNodePorts []*nodeport.Mapping) {
+	if len(i.NodePorts) == 0 {
+		i.NodePorts = newNodePorts
+		return
+	}
+
+	processed := make(map[int]bool)
+	newMappings := []*nodeport.Mapping{}
+
+	for _, newMapping := range newNodePorts {
+		matched := false
+
+		if newMapping.ExternalPort != 0 {
+			for x, curMapping := range i.NodePorts {
+				if curMapping.Protocol == newMapping.Protocol &&
+					curMapping.InternalPort == newMapping.InternalPort &&
+					curMapping.ExternalPort == newMapping.ExternalPort {
+
+					newMapping.NodePort = curMapping.NodePort
+					newMappings = append(newMappings, newMapping)
+
+					processed[x] = true
+					matched = true
+					break
+				}
+			}
+		} else {
+			for x, curMapping := range i.NodePorts {
+				if curMapping.Protocol == newMapping.Protocol &&
+					curMapping.InternalPort == newMapping.InternalPort &&
+					!processed[x] {
+
+					newMapping.NodePort = curMapping.NodePort
+					newMapping.ExternalPort = curMapping.ExternalPort
+					newMappings = append(newMappings, newMapping)
+
+					processed[x] = true
+					matched = true
+					break
+				}
+			}
+		}
+
+		if !matched {
+			newMappings = append(newMappings, newMapping)
+		}
+	}
+
+	i.NodePorts = newMappings
+}
+
 func (i *Instance) SyncNodePorts(db *database.Database) (err error) {
 	newNodePorts := []*nodeport.Mapping{}
 	newNodePortIds := set.NewSet()
