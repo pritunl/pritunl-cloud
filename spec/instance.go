@@ -130,23 +130,23 @@ type InstanceYaml struct {
 	Processors          int                 `yaml:"processors"`
 	Memory              int                 `yaml:"memory"`
 	Uefi                *bool               `yaml:"uefi"`
-	SecureBoot          *bool               `yaml:"secure_boot"`
-	CloudType           string              `yaml:"cloud_type"`
+	SecureBoot          *bool               `yaml:"secureBoot"`
+	CloudType           string              `yaml:"cloudType"`
 	Tpm                 bool                `yaml:"tpm"`
 	Vnc                 bool                `yaml:"vnc"`
-	DeleteProtection    bool                `yaml:"delete_protection"`
-	SkipSourceDestCheck bool                `yaml:"skip_source_dest_check"`
-	HostAddress         *bool               `yaml:"host_address"`
-	PublicAddress       *bool               `yaml:"public_address"`
-	PublicAddress6      *bool               `yaml:"public_address6"`
-	DhcpServer          bool                `yaml:"dhcp_server"`
+	DeleteProtection    bool                `yaml:"deleteProtection"`
+	SkipSourceDestCheck bool                `yaml:"skipSourceDestCheck"`
+	HostAddress         *bool               `yaml:"hostAddress"`
+	PublicAddress       *bool               `yaml:"publicAddress"`
+	PublicAddress6      *bool               `yaml:"publicAddress6"`
+	DhcpServer          bool                `yaml:"dhcpServer"`
 	Image               string              `yaml:"image"`
 	Mounts              []InstanceMountYaml `yaml:"mounts"`
-	NodePorts           []NodePort          `yaml:"node_ports"`
+	NodePorts           []NodePort          `yaml:"nodePorts"`
 	Certificates        []string            `yaml:"certificates"`
 	Secrets             []string            `yaml:"secrets"`
 	Pods                []string            `yaml:"pods"`
-	DiskSize            int                 `yaml:"disk-size"`
+	DiskSize            int                 `yaml:"diskSize"`
 }
 
 type InstanceMountYaml struct {
@@ -156,6 +156,6 @@ type InstanceMountYaml struct {
 
 type InstanceNodePortYaml struct {
 	Protocol     string `yaml:"protocol"`
-	ExternalPort int    `yaml:"external_port"`
-	InternalPort int    `yaml:"internal_port"`
+	ExternalPort int    `yaml:"externalPort"`
+	InternalPort int    `yaml:"internalPort"`
 }
