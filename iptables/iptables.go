@@ -1789,24 +1789,42 @@ func generateHost(namespace, iface string, nodePortNetwork bool,
 					mapping.Protocol != firewall.Udp {
 					continue
 				}
-				for _, externalIface := range externalIfaces {
-					cmd = rules.newCommandMap()
-					cmd = append(cmd,
-						"-i", externalIface,
-						"-p", mapping.Protocol,
-						"-m", mapping.Protocol,
-						"--dport", fmt.Sprintf("%d", mapping.ExternalPort),
-					)
-					cmd = rules.commentCommandMap(cmd)
-					cmd = append(cmd,
-						"-j", "DNAT",
-						"--to-destination", fmt.Sprintf(
-							"%s:%d",
-							nodePortAddr,
-							mapping.ExternalPort,
-						),
-					)
-					rules.Maps = append(rules.Maps, cmd)
+
+				if mapping.Ipvs {
+					// Alternative to full SNAT
+					// cmd = rules.newCommandMapPost()
+					// cmd = append(cmd,
+					// 	"-m", "ipvs",
+					// 	"--vproto", protocolIndex(mapping.Protocol),
+					// 	"--vport", fmt.Sprintf("%d", mapping.ExternalPort),
+					// 	"--vdir", "ORIGINAL",
+					// )
+					// cmd = rules.commentCommandMap(cmd)
+					// cmd = append(cmd,
+					// 	"-j", "SNAT",
+					// 	"--to-source", nodePortGateway,
+					// )
+					// rules.Maps = append(rules.Maps, cmd)
+				} else {
+					for _, externalIface := range externalIfaces {
+						cmd = rules.newCommandMap()
+						cmd = append(cmd,
+							"-i", externalIface,
+							"-p", mapping.Protocol,
+							"-m", mapping.Protocol,
+							"--dport", fmt.Sprintf("%d", mapping.ExternalPort),
+						)
+						cmd = rules.commentCommandMap(cmd)
+						cmd = append(cmd,
+							"-j", "DNAT",
+							"--to-destination", fmt.Sprintf(
+								"%s:%d",
+								nodePortAddr,
+								mapping.ExternalPort,
+							),
+						)
+						rules.Maps = append(rules.Maps, cmd)
+					}
 				}
 			}
 		}
