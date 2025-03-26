@@ -396,6 +396,11 @@ func instancePost(c *gin.Context) {
 			return
 		}
 
+		err = inst.SyncNodePorts(db)
+		if err != nil {
+			return
+		}
+
 		err = inst.Insert(db)
 		if err != nil {
 			_ = inst.Cleanup(db)
