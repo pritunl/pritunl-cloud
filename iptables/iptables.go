@@ -9,6 +9,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/firewall"
+	"github.com/pritunl/pritunl-cloud/ipvs"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vpc"
@@ -1791,6 +1792,20 @@ func generateHost(namespace, iface string, nodePortNetwork bool,
 				}
 
 				if mapping.Ipvs {
+					if rules.Ipvs == nil {
+						rules.Ipvs = &ipvs.State{}
+					}
+
+					ipvsProtocol := ""
+					if mapping.Protocol == firewall.Udp {
+						ipvsProtocol = ipvs.Udp
+					} else {
+						ipvsProtocol = ipvs.Tcp
+					}
+
+					rules.Ipvs.AddTarget("26.194.4.30", mapping.Address,
+						mapping.ExternalPort, ipvsProtocol)
+
 					// Alternative to full SNAT
 					// cmd = rules.newCommandMapPost()
 					// cmd = append(cmd,
