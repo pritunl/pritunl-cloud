@@ -825,3 +825,16 @@ func Init(namespaces []string, vpcs []*vpc.Vpc,
 
 	return
 }
+
+func protocolIndex(proto string) string {
+	switch proto {
+	case "icmp":
+		return "1"
+	case "tcp":
+		return "6"
+	case "udp":
+		return "17"
+	default:
+		return "0"
+	}
+}
