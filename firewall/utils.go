@@ -427,6 +427,7 @@ func GetAllIngress(db *database.Database, nodeSelf *node.Node,
 		nodeFirewall = ingress
 	}
 
+	nodePortIps := map[string]string{}
 	firewalls = map[string][]*Rule{}
 	for _, inst := range instances {
 		if !inst.IsActive() {
@@ -436,6 +437,10 @@ func GetAllIngress(db *database.Database, nodeSelf *node.Node,
 		namespaces := []string{}
 		for i := range inst.Virt.NetworkAdapters {
 			namespaces = append(namespaces, vm.GetNamespace(inst.Id, i))
+		}
+
+		if len(inst.NodePortIps) > 0 && len(namespaces) > 0 {
+			nodePortIps[namespaces[0]] = inst.NodePortIps[0]
 		}
 
 		fires, e := GetOrgRoles(db,
@@ -464,10 +469,8 @@ func GetAllIngress(db *database.Database, nodeSelf *node.Node,
 		}
 	}
 
-	if specRules != nil {
-		for namespace, rules := range specRules {
-			firewalls[namespace] = append(firewalls[namespace], rules...)
-		}
+	for namespace, rules := range specRules {
+		firewalls[namespace] = append(firewalls[namespace], rules...)
 	}
 
 	mappings = map[string][]*Mapping{}
@@ -494,6 +497,7 @@ func GetAllIngress(db *database.Database, nodeSelf *node.Node,
 
 			mappings[namespace] = append(mappings[namespace], &Mapping{
 				Ipvs:         ipvs,
+				Address:      nodePortIps[namespace],
 				Protocol:     ndePort.Protocol,
 				ExternalPort: ndePort.ExternalPort,
 				InternalPort: ndePort.InternalPort,
