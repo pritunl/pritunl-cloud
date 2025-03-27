@@ -1,5 +1,9 @@
 package iptables
 
+import (
+	"github.com/pritunl/pritunl-cloud/ipvs"
+)
+
 type Rules struct {
 	Namespace        string
 	Interface        string
@@ -15,6 +19,7 @@ type Rules struct {
 	Maps6            [][]string
 	Holds            [][]string
 	Holds6           [][]string
+	Ipvs             *ipvs.State
 }
 
 type RulesDiff struct {
