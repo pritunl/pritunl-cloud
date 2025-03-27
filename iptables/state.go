@@ -168,7 +168,8 @@ func LoadState(nodeSelf *node.Node, vpcs []*vpc.Vpc,
 	if nodeFirewall != nil {
 		state.Interfaces["0-host"] = generateHost("0", "host",
 			!nodeSelf.NoNodePortNetwork, nodePortGateway,
-			nodeSelf.ExternalInterfaces, nodeFirewall, hostNodePortMappings)
+			nodeSelf.ExternalInterfaces, nodeSelf.PublicIps,
+			nodeFirewall, hostNodePortMappings)
 	}
 
 	return

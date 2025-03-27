@@ -1441,7 +1441,8 @@ func generateNodePort(namespace, iface string, addr, nodePortGateway string,
 }
 
 func generateHost(namespace, iface string, nodePortNetwork bool,
-	nodePortGateway string, externalIfaces []string, ingress []*firewall.Rule,
+	nodePortGateway string, externalIfaces, puiblicIps []string,
+	ingress []*firewall.Rule,
 	nodePortMappings map[string][]*firewall.Mapping) (rules *Rules) {
 
 	rules = &Rules{
@@ -1803,8 +1804,10 @@ func generateHost(namespace, iface string, nodePortNetwork bool,
 						ipvsProtocol = ipvs.Tcp
 					}
 
-					rules.Ipvs.AddTarget("26.194.4.30", mapping.Address,
-						mapping.ExternalPort, ipvsProtocol)
+					for _, publicIp := range puiblicIps {
+						rules.Ipvs.AddTarget(publicIp, mapping.Address,
+							mapping.ExternalPort, ipvsProtocol)
+					}
 
 					// Alternative to full SNAT
 					// cmd = rules.newCommandMapPost()
