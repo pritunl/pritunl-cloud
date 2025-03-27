@@ -8,6 +8,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/pritunl/pritunl-cloud/ipvs"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vpc"
@@ -147,6 +148,15 @@ func (u *Update) Apply() {
 
 			u.FailedNamespaces.Add(rules.Namespace)
 			continue
+		}
+	}
+
+	if u.NewState.Interfaces["0-host"].Ipvs != nil {
+		err := ipvs.UpdateState(u.NewState.Interfaces["0-host"].Ipvs)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("storage: Failed to update ipvs state")
 		}
 	}
 
