@@ -11,7 +11,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var curState *State
+var (
+	curState *State
+)
 
 type State struct {
 	Services map[string]*Service
@@ -69,10 +71,6 @@ func (s *State) Print() string {
 
 func (s *State) AddTarget(serviceAddr, targetAddr string,
 	port int, protocol string) (err error) {
-
-	if s.Services == nil {
-		s.Services = map[string]*Service{}
-	}
 
 	serviceKey := fmt.Sprintf("%s%s:%d", protocol, serviceAddr, port)
 	service := s.Services[serviceKey]
@@ -380,4 +378,10 @@ func LoadState() (state *State, err error) {
 	}
 
 	return
+}
+
+func New() *State {
+	return &State{
+		Services: map[string]*Service{},
+	}
 }
