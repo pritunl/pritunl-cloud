@@ -151,7 +151,8 @@ func (u *Update) Apply() {
 		}
 	}
 
-	if u.NewState.Interfaces["0-host"].Ipvs != nil {
+	hostIface := u.NewState.Interfaces["0-host"]
+	if hostIface != nil && hostIface.Ipvs != nil {
 		err := ipvs.UpdateState(u.NewState.Interfaces["0-host"].Ipvs)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
