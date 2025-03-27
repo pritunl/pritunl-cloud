@@ -1456,6 +1456,7 @@ func generateHost(namespace, iface string, nodePortNetwork bool,
 		Ingress6:         [][]string{},
 		Holds:            [][]string{},
 		Holds6:           [][]string{},
+		Ipvs:             ipvs.New(),
 	}
 
 	if rules.Interface == "host" {
@@ -1793,10 +1794,6 @@ func generateHost(namespace, iface string, nodePortNetwork bool,
 				}
 
 				if mapping.Ipvs {
-					if rules.Ipvs == nil {
-						rules.Ipvs = &ipvs.State{}
-					}
-
 					ipvsProtocol := ""
 					if mapping.Protocol == firewall.Udp {
 						ipvsProtocol = ipvs.Udp
