@@ -18,6 +18,7 @@ import * as NodeActions from '../actions/NodeActions';
 import ImagesDatacenterStore from '../stores/ImagesDatacenterStore';
 import NodesZoneStore from '../stores/NodesZoneStore';
 import InstanceLicense from './InstanceLicense';
+import InstanceNodePort from './InstanceNodePort';
 import PageInput from './PageInput';
 import PageInputButton from './PageInputButton';
 import PageCreate from './PageCreate';
@@ -372,6 +373,75 @@ export default class InstanceNew extends React.Component<Props, State> {
 			changed: true,
 			message: '',
 			addNetworkRole: '',
+			instance: instance,
+		});
+	}
+
+	onAddNodePort = (): void => {
+		let instance = {
+			...this.state.instance,
+		};
+
+		let nodePorts = [
+			...(instance.node_ports || []),
+			{
+				protocol: "tcp",
+				external_port: 0,
+				internal_port: 0,
+			},
+		];
+
+		instance.node_ports = nodePorts;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			instance: instance,
+		});
+	}
+
+	onChangeNodePort(i: number, state: InstanceTypes.NodePort): void {
+		let instance = {
+			...this.state.instance,
+		};
+
+		let nodePorts = [
+			...instance.node_ports,
+		];
+
+		nodePorts[i] = state;
+
+		instance.node_ports = nodePorts;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			instance: instance,
+		});
+	}
+
+	onRemoveNodePort(i: number): void {
+		let instance = {
+			...this.state.instance,
+		};
+
+		let nodePorts = [
+			...instance.node_ports,
+		];
+
+		nodePorts[i] = {
+			...nodePorts[i],
+			delete: true,
+		};
+
+		instance.node_ports = nodePorts;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
 			instance: instance,
 		});
 	}
@@ -736,6 +806,26 @@ export default class InstanceNew extends React.Component<Props, State> {
 				</div>,
 			);
 		}
+
+		let nodePorts: JSX.Element[] = [];
+		(instance.node_ports || []).forEach((nodePort, index) => {
+			if (nodePort.delete) {
+				return
+			}
+
+			nodePorts.push(
+				<InstanceNodePort
+					key={index}
+					nodePort={nodePort}
+					onChange={(state: InstanceTypes.NodePort): void => {
+						this.onChangeNodePort(index, state);
+					}}
+					onRemove={(): void => {
+						this.onRemoveNodePort(index);
+					}}
+				/>,
+			);
+		})
 
 		if (!hasImages) {
 			imagesSelect = [<option key="null" value="">No Images</option>];
@@ -1164,6 +1254,22 @@ export default class InstanceNew extends React.Component<Props, State> {
 							}}
 							value={instance.count}
 						/>
+						<label style={css.itemsLabel}>
+							Node Ports
+							<Help
+								title="Node Ports"
+								content="Node port mappings from node public IP to internal instance. Acceptable external port range is 30000-32767, leave external port empty to automatically assign a port."
+							/>
+						</label>
+						{nodePorts}
+						<button
+							className="bp5-button bp5-intent-success bp5-icon-add"
+							style={css.itemsAdd}
+							type="button"
+							onClick={this.onAddNodePort}
+						>
+							Add Node Port
+						</button>
 						<PageSwitch
 							disabled={this.state.disabled}
 							label="Public IPv4 address"
