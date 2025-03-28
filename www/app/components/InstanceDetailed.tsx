@@ -11,6 +11,7 @@ import * as MiscUtils from '../utils/MiscUtils';
 import OrganizationsStore from '../stores/OrganizationsStore';
 import ZonesStore from '../stores/ZonesStore';
 import InstanceIscsiDevice from './InstanceIscsiDevice';
+import InstanceNodePort from './InstanceNodePort';
 import PageInput from './PageInput';
 import PageInputButton from './PageInputButton';
 import PageInfo from './PageInfo';
@@ -935,6 +936,99 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		});
 	}
 
+	onAddNodePort = (): void => {
+		let instance: InstanceTypes.Instance;
+
+		if (this.state.changed) {
+			instance = {
+				...this.state.instance,
+			};
+		} else {
+			instance = {
+				...this.props.instance,
+			};
+		}
+
+		let nodePorts = [
+			...(instance.node_ports || []),
+			{
+				protocol: "tcp",
+				external_port: 0,
+				internal_port: 0,
+			},
+		];
+
+		instance.node_ports = nodePorts;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			instance: instance,
+		});
+	}
+
+	onChangeNodePort(i: number, state: InstanceTypes.NodePort): void {
+		let instance: InstanceTypes.Instance;
+
+		if (this.state.changed) {
+			instance = {
+				...this.state.instance,
+			};
+		} else {
+			instance = {
+				...this.props.instance,
+			};
+		}
+
+		let nodePorts = [
+			...instance.node_ports,
+		];
+
+		nodePorts[i] = state;
+
+		instance.node_ports = nodePorts;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			instance: instance,
+		});
+	}
+
+	onRemoveNodePort(i: number): void {
+		let instance: InstanceTypes.Instance;
+
+		if (this.state.changed) {
+			instance = {
+				...this.state.instance,
+			};
+		} else {
+			instance = {
+				...this.props.instance,
+			};
+		}
+
+		let nodePorts = [
+			...instance.node_ports,
+		];
+
+		nodePorts[i] = {
+			...nodePorts[i],
+			delete: true,
+		};
+
+		instance.node_ports = nodePorts;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			instance: instance,
+		});
+	}
+
 	onSave = (): void => {
 		this.setState({
 			...this.state,
@@ -1377,6 +1471,27 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			);
 		}
 
+		let nodePorts: JSX.Element[] = [];
+		(instance.node_ports || []).forEach((nodePort, index) => {
+			if (nodePort.delete) {
+				return
+			}
+
+			nodePorts.push(
+				<InstanceNodePort
+					key={index}
+					hidden={!this.state.showSettings}
+					nodePort={nodePort}
+					onChange={(state: InstanceTypes.NodePort): void => {
+						this.onChangeNodePort(index, state);
+					}}
+					onRemove={(): void => {
+						this.onRemoveNodePort(index);
+					}}
+				/>,
+			);
+		})
+
 		let showMore = false
 		let fields: PageInfos.Field[] = [
 			{
@@ -1519,6 +1634,19 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				copy: true,
 			},
 		)
+
+		if (instance.node_ports) {
+			let fields: string[] = []
+			instance.node_ports.forEach((mapping) => {
+				fields.push(`${mapping.protocol.toUpperCase()} ` +
+					`${mapping.external_port} -> ${mapping.internal_port}`)
+			})
+
+			networkFields.push({
+				label: 'Node Ports',
+				value: fields,
+			})
+		}
 
 		fields.push(
 			{
@@ -2180,6 +2308,23 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						fields={fields}
 						bars={resourceBars}
 					/>
+					<label hidden={!this.state.showSettings} style={css.itemsLabel}>
+						Node Ports
+						<Help
+							title="Node Ports"
+							content="Node port mappings from node public IP to internal instance. Acceptable external port range is 30000-32767, leave external port empty to automatically assign a port."
+						/>
+					</label>
+					{nodePorts}
+					<button
+						className="bp5-button bp5-intent-success bp5-icon-add"
+						hidden={!this.state.showSettings}
+						style={css.itemsAdd}
+						type="button"
+						onClick={this.onAddNodePort}
+					>
+						Add Node Port
+					</button>
 				</div>
 			</div>
 			<PageSave
