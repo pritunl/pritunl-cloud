@@ -83,7 +83,7 @@ func Register(engine *gin.Engine) {
 
 	authGroup.GET("/csrf", csrfGet)
 
-	csrfGroup.GET("/completion", completionGet)
+	orgGroup.GET("/completion", completionGet)
 
 	orgGroup.GET("/datacenter", datacentersGet)
 
@@ -164,7 +164,7 @@ func Register(engine *gin.Engine) {
 	orgGroup.GET("/pod/:pod_id/unit/:unit_id", podUnitGet)
 	orgGroup.PUT("/pod/:pod_id/unit/:unit_id/deployment",
 		podUnitDeploymentsPut)
-	csrfGroup.PUT("/pod/:pod_id/unit/:unit_id/deployment/:deployment_id",
+	orgGroup.PUT("/pod/:pod_id/unit/:unit_id/deployment/:deployment_id",
 		podUnitDeploymentPut)
 	orgGroup.POST("/pod/:pod_id/unit/:unit_id/deployment",
 		podUnitDeploymentPost)
