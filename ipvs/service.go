@@ -8,6 +8,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var (
+	hasSysctl = false
+)
+
 type Service struct {
 	Scheduler string
 	Protocol  string
@@ -23,6 +27,24 @@ func (s *Service) Key() string {
 func (s *Service) Add() (err error) {
 	if s.Scheduler == "" {
 		s.Scheduler = RoundRobin
+	}
+
+	if !hasSysctl {
+		resp, err := commander.Exec(&commander.Opt{
+			Name: "sysctl",
+			Args: []string{
+				"-w", "net.ipv4.vs.conntrack=1",
+			},
+			PipeOut: true,
+			PipeErr: true,
+		})
+		if err != nil {
+			logrus.WithFields(resp.Map()).Error(
+				"ipvs: Failed to set ipvs sysctl")
+			err = nil
+		}
+
+		hasSysctl = true
 	}
 
 	resp, err := commander.Exec(&commander.Opt{
