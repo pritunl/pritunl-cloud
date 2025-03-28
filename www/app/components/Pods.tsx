@@ -25,7 +25,7 @@ interface Selected {
 }
 
 interface State {
-	pod: PodTypes.PodRo;
+	podId: string;
 	pods: PodTypes.PodsRo;
 	filter: PodTypes.Filter;
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -89,7 +89,7 @@ export default class Pods extends React.Component<{}, State> {
 	constructor(props: any, context: any) {
 		super(props, context);
 		this.state = {
-			pod: null,
+			podId: null,
 			pods: PodsStore.pods,
 			filter: PodsStore.filter,
 			organizations: OrganizationsStore.organizations,
@@ -179,16 +179,21 @@ export default class Pods extends React.Component<{}, State> {
 	}
 
 	render(): JSX.Element {
+		let activePod: PodTypes.PodRo;
 		let podsDom: JSX.Element[] = [];
 
 		this.state.pods.forEach((
 				pod: PodTypes.PodRo): void => {
+			if (pod.id === this.state.podId) {
+				activePod = pod
+			}
+
 			podsDom.push(<Pod
 				key={pod.id}
 				pod={pod}
 				organizations={this.state.organizations}
 				selected={!!this.state.selected[pod.id]}
-				open={this.state.pod?.id === pod.id}
+				open={activePod?.id === pod.id}
 				onSelect={(shift: boolean): void => {
 					let selected = {
 						...this.state.selected,
@@ -247,7 +252,7 @@ export default class Pods extends React.Component<{}, State> {
 					}
 					this.setState({
 						...this.state,
-						pod: pod,
+						podId: pod.id,
 						newOpened: false,
 						mode: newMode,
 					});
@@ -282,11 +287,11 @@ export default class Pods extends React.Component<{}, State> {
 					description="Add a new pod to get started."
 				/>
 			</div>
-		} else if (this.state.pod) {
+		} else if (activePod) {
 			podElem = <PodDetailed
-				key={this.state.pod?.id}
+				key={activePod?.id}
 				organizations={this.state.organizations}
-				pod={this.state.pod}
+				pod={activePod}
 				mode={this.state.mode}
 				onMode={(mode: string) => {
 					this.setState({
