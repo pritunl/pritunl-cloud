@@ -2242,6 +2242,29 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 							this.set('root_enabled', !instance.root_enabled);
 						}}
 					/>
+				</div>
+				<div style={css.group}>
+					<PageInfo
+						fields={fields}
+						bars={resourceBars}
+					/>
+					<label hidden={!this.state.showSettings} style={css.itemsLabel}>
+						Node Ports
+						<Help
+							title="Node Ports"
+							content="Node port mappings from node public IP to internal instance. Acceptable external port range is 30000-32767, leave external port empty to automatically assign a port."
+						/>
+					</label>
+					{nodePorts}
+					<button
+						className="bp5-button bp5-intent-success bp5-icon-add"
+						hidden={!this.state.showSettings}
+						style={css.itemsAdd}
+						type="button"
+						onClick={this.onAddNodePort}
+					>
+						Add Node Port
+					</button>
 					<PageSwitch
 						disabled={this.state.disabled}
 						hidden={!this.state.showSettings}
@@ -2302,29 +2325,6 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 								!instance.skip_source_dest_check);
 						}}
 					/>
-				</div>
-				<div style={css.group}>
-					<PageInfo
-						fields={fields}
-						bars={resourceBars}
-					/>
-					<label hidden={!this.state.showSettings} style={css.itemsLabel}>
-						Node Ports
-						<Help
-							title="Node Ports"
-							content="Node port mappings from node public IP to internal instance. Acceptable external port range is 30000-32767, leave external port empty to automatically assign a port."
-						/>
-					</label>
-					{nodePorts}
-					<button
-						className="bp5-button bp5-intent-success bp5-icon-add"
-						hidden={!this.state.showSettings}
-						style={css.itemsAdd}
-						type="button"
-						onClick={this.onAddNodePort}
-					>
-						Add Node Port
-					</button>
 				</div>
 			</div>
 			<PageSave
