@@ -1,5 +1,6 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
+import EventDispatcher from '../dispatcher/EventDispatcher';
 import * as Blueprint from '@blueprintjs/core';
 import * as Icons from '@blueprintjs/icons';
 import * as Constants from '../Constants';
@@ -171,6 +172,7 @@ const css = {
 
 export default class PodWorkspace extends React.Component<Props, State> {
 	interval: NodeJS.Timer;
+	eventToken: string;
 
 	constructor(props: any, context: any) {
 		super(props, context);
@@ -202,11 +204,21 @@ export default class PodWorkspace extends React.Component<Props, State> {
 				PodActions.syncUnit(this.props.pod.id, activeUnit.id);
 			}
 		}, 3000);
+
+		this.eventToken = EventDispatcher.register((action: PodTypes.PodDispatch) => {
+			switch (action.type) {
+				case PodTypes.CHANGE:
+					let activeUnit = this.getActiveUnit()
+					this.syncUnit(activeUnit.id);
+					break;
+			}
+		});
 	}
 
 	componentWillUnmount(): void {
 		PodsUnitStore.removeChangeListener(this.onChange);
 		clearInterval(this.interval);
+		EventDispatcher.unregister(this.eventToken)
 	}
 
 	get selectedDeployments(): boolean {
