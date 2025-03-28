@@ -606,7 +606,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 						continue;
 					}
 				} else {
-					if (vpc.organization !== instance.organization) {
+					if (vpc.organization != instance.organization) {
 						continue;
 					}
 				}
@@ -640,7 +640,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 						continue;
 					}
 				} else {
-					if (vpc.organization !== instance.organization) {
+					if (vpc.organization != instance.organization) {
 						continue;
 					}
 				}
@@ -694,7 +694,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 		if (this.props.domains && this.props.domains.length) {
 			for (let domain of this.props.domains) {
 				if (!Constants.user &&
-						domain.organization !== instance.organization) {
+						domain.organization != instance.organization) {
 					continue;
 				}
 
