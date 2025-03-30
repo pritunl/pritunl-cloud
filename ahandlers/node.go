@@ -21,6 +21,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
+	"github.com/pritunl/pritunl-cloud/subscription"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -112,6 +113,24 @@ func nodePut(c *gin.Context) {
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
+	}
+
+	nodeTypes := set.NewSet()
+	for _, typ := range nde.Types {
+		nodeTypes.Add(typ)
+	}
+
+	for _, typ := range data.Types {
+		if typ == node.User && !nodeTypes.Contains(typ) {
+			if !subscription.Sub.Active {
+				errData := &errortypes.ErrorData{
+					Error:   "subscription_required",
+					Message: "Subscription required for multi-tenant",
+				}
+				c.JSON(400, errData)
+				return
+			}
+		}
 	}
 
 	nde.Name = data.Name
