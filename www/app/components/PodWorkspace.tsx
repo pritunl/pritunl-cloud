@@ -697,7 +697,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 						onClick={(): void => {
 							this.onUnitDeploy(commit.id)
 						}}
-						text={commit.id.substring(0, 12)}
+						text={commit.id.substring(12)}
 						textClassName={className}
 						labelElement={<span
 							className={className}
@@ -890,7 +890,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 							})
 							this.syncDiffCommit(activeUnit.id, commit.id)
 						}}
-						text={commit.id.substring(0, 12)}
+						text={commit.id.substring(12)}
 						textClassName={className}
 						label={MiscUtils.formatDateLocal(commit.timestamp)}
 					/>)
@@ -1007,7 +1007,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 							rightIcon={<Icons.CaretDown/>}
 							style={css.commitsButton}
 						>
-							<span>{this.state.viewCommit.id.substring(0, 12)}</span>
+							<span>{this.state.viewCommit.id.substring(12)}</span>
 							<span
 								className="bp5-text-muted"
 							>
