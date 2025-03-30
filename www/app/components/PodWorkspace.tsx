@@ -1017,6 +1017,11 @@ export default class PodWorkspace extends React.Component<Props, State> {
 						</Blueprint.Button>
 					}
 
+					let offset = 0
+					if (activeUnit.spec_index) {
+						offset = commit.index - activeUnit.spec_index
+					}
+
 					commitMenuItems.push(<Blueprint.MenuItem
 						key={"diff-" + commit.id}
 						disabled={this.props.disabled || this.state.disabled}
@@ -1026,9 +1031,9 @@ export default class PodWorkspace extends React.Component<Props, State> {
 							className={className}
 						/>}
 						onClick={(): void => {
-							this.onViewCommit(commit)
+							this.onViewCommit(activeUnit, commit)
 						}}
-						text={commit.id.substring(0, 12)}
+						text={commit.id.substring(12) + " [" + offset + "]"}
 						textClassName={className}
 						labelElement={<span
 							className={className}
