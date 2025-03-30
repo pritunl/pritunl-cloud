@@ -56,7 +56,7 @@ interface Selected {
 
 const css = {
 	card: {
-		padding: '0',
+		padding: '0 0 10px 0',
 		width: '100%',
 		flexGrow: 1,
 		minHeight: 0,
