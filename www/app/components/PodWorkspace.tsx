@@ -43,6 +43,8 @@ interface State {
 	lastSelectedDeployment: string;
 	unit: PodTypes.PodUnit;
 	commits: PodTypes.CommitData;
+	commitData: PodTypes.Commit
+	diffCommitData: PodTypes.Commit
 	diffCommit: PodTypes.Commit
 	diffChanged: boolean
 	viewCommit: PodTypes.Commit
@@ -185,6 +187,8 @@ export default class PodWorkspace extends React.Component<Props, State> {
 			lastSelectedDeployment: null,
 			unit: null,
 			commits: null,
+			commitData: null,
+			diffCommitData: null,
 			diffCommit: null,
 			diffChanged: false,
 			viewCommit: null,
@@ -248,6 +252,26 @@ export default class PodWorkspace extends React.Component<Props, State> {
 		this.setState({
 			...this.state,
 			commits: commitData,
+		})
+	}
+
+	syncCommit = async (unitId: string, specId: string): Promise<void> => {
+		let spec = await PodActions.spec(
+			this.props.pod.id, unitId, specId)
+
+		this.setState({
+			...this.state,
+			commitData: spec,
+		})
+	}
+
+	syncDiffCommit = async (unitId: string, specId: string): Promise<void> => {
+		let spec = await PodActions.spec(
+			this.props.pod.id, unitId, specId)
+
+		this.setState({
+			...this.state,
+			diffCommitData: spec,
 		})
 	}
 
@@ -507,8 +531,8 @@ export default class PodWorkspace extends React.Component<Props, State> {
 		}
 	}
 
-	onViewCommit = (commit: PodTypes.Commit): void => {
-		if (commit.offset === 0) {
+	onViewCommit = (unit: PodTypes.Unit, commit: PodTypes.Commit): void => {
+		if (commit.index === unit.spec_index) {
 			this.setState({
 				...this.state,
 				viewCommit: null,
@@ -519,6 +543,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 				viewCommit: commit,
 			})
 		}
+		this.syncCommit(unit.id, commit.id)
 	}
 
 	render(): JSX.Element {
@@ -526,7 +551,10 @@ export default class PodWorkspace extends React.Component<Props, State> {
 			...(this.props.pod.units || []),
 		]
 		let activeUnit = this.getActiveUnit()
-		let diffCommit = this.state.diffCommit
+		let diffCommit: PodTypes.Commit
+		if (this.state.diffCommitData?.id === this.state.diffCommit?.id) {
+			diffCommit = this.state.diffCommitData
+		}
 		let mode = this.props.mode
 		let noUnits = true
 		for (let unit of units) {
@@ -860,6 +888,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 								diffCommit: commit,
 								diffChanged: false,
 							})
+							this.syncDiffCommit(activeUnit.id, commit.id)
 						}}
 						text={commit.id.substring(0, 12)}
 						textClassName={className}
@@ -939,8 +968,9 @@ export default class PodWorkspace extends React.Component<Props, State> {
 		if (activeUnit) {
 			if (mode === "view" &&
 				this.state.viewCommit?.unit === activeUnit.id) {
-
-					editorVal = this.state.viewCommit.data
+					if (this.state.commitData?.id == this.state.viewCommit.id) {
+						editorVal = this.state.commitData.data
+					}
 					viewLatestCommit = false
 			} else {
 				editorVal = activeUnit.spec
