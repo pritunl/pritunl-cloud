@@ -75,6 +75,28 @@ func GetOne(db *database.Database, query *bson.M) (inst *Instance, err error) {
 	return
 }
 
+func ExistsIp(db *database.Database, addr string) (exists bool, err error) {
+	coll := db.Instances()
+
+	n, err := coll.CountDocuments(db, &bson.M{
+		"$or": []bson.M{
+			{"public_ips": addr},
+			{"public_ips6": addr},
+			{"host_ips": addr},
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	if n > 0 {
+		exists = true
+	}
+
+	return
+}
+
 func ExistsOrg(db *database.Database, orgId, instId primitive.ObjectID) (
 	exists bool, err error) {
 
