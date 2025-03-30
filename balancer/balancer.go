@@ -97,7 +97,7 @@ func (b *Balancer) Validate(db *database.Database) (
 			return
 		}
 
-		if backend.Port == 0 {
+		if backend.Port < 1 || backend.Port > 65535 {
 			errData = &errortypes.ErrorData{
 				Error:   "balancer_port_invalid",
 				Message: "Invalid balancer backend port",
