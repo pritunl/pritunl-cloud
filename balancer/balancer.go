@@ -1,6 +1,7 @@
 package balancer
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
@@ -9,6 +10,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
@@ -99,6 +101,21 @@ func (b *Balancer) Validate(db *database.Database) (
 			errData = &errortypes.ErrorData{
 				Error:   "balancer_port_invalid",
 				Message: "Invalid balancer backend port",
+			}
+			return
+		}
+
+		exists, e := instance.ExistsIp(db, backend.Hostname)
+		if e != nil {
+			err = e
+			return
+		}
+
+		if !exists {
+			errData = &errortypes.ErrorData{
+				Error: "balancer_hostname_not_found",
+				Message: fmt.Sprintf("Balancer hostname '%s' must "+
+					"match existing instance address", backend.Hostname),
 			}
 			return
 		}
