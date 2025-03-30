@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkpritunl_cloud=self.webpackChunkpritunl_cloud||[]).push([[8901],{49434:(e,t)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.default=void 0;var u={lastWeek:"'ئ‍ۆتكەن' eeee 'دە' p",yesterday:"'تۈنۈگۈن دە' p",today:"'بۈگۈن دە' p",tomorrow:"'ئەتە دە' p",nextWeek:"eeee 'دە' p",other:"P"},r=function(e,t,r,l){return u[e]};t.default=r,e.exports=t.default}}]);
+//# sourceMappingURL=date-fns-locale-ug-_lib-formatRelative-index-js.js.map

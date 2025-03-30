@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkpritunl_cloud=self.webpackChunkpritunl_cloud||[]).push([[14386],{85737:(e,t)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.default=void 0;var u={lastWeek:"eeee 'שעבר בשעה' p",yesterday:"'אתמול בשעה' p",today:"'היום בשעה' p",tomorrow:"'מחר בשעה' p",nextWeek:"eeee 'בשעה' p",other:"P"},r=function(e,t,r,l){return u[e]};t.default=r,e.exports=t.default}}]);
+//# sourceMappingURL=date-fns-locale-he-_lib-formatRelative-index-js.js.map
