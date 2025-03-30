@@ -1,2 +1,0 @@
-"use strict";(self.webpackChunkpritunl_cloud=self.webpackChunkpritunl_cloud||[]).push([[64180],{53303:(e,t)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.default=void 0;var u={lastWeek:"eeee 'گذشته در' p",yesterday:"'دیروز در' p",today:"'امروز در' p",tomorrow:"'فردا در' p",nextWeek:"eeee 'در' p",other:"P"},r=function(e,t,r,l){return u[e]};t.default=r,e.exports=t.default}}]);
-//# sourceMappingURL=date-fns-locale-fa-IR-_lib-formatRelative-index-js.js.map

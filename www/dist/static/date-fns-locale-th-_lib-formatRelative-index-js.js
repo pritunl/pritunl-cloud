@@ -1,2 +1,0 @@
-"use strict";(self.webpackChunkpritunl_cloud=self.webpackChunkpritunl_cloud||[]).push([[59321],{32618:(e,t)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.default=void 0;var u={lastWeek:"eeee'ที่แล้วเวลา' p",yesterday:"'เมื่อวานนี้เวลา' p",today:"'วันนี้เวลา' p",tomorrow:"'พรุ่งนี้เวลา' p",nextWeek:"eeee 'เวลา' p",other:"P"},r=function(e,t,r,l){return u[e]};t.default=r,e.exports=t.default}}]);
-//# sourceMappingURL=date-fns-locale-th-_lib-formatRelative-index-js.js.map

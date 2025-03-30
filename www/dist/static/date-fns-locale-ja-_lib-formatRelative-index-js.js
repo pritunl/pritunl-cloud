@@ -1,2 +1,0 @@
-"use strict";(self.webpackChunkpritunl_cloud=self.webpackChunkpritunl_cloud||[]).push([[97792],{4091:(e,t)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.default=void 0;var u={lastWeek:"先週のeeeeのp",yesterday:"昨日のp",today:"今日のp",tomorrow:"明日のp",nextWeek:"翌週のeeeeのp",other:"P"},r=function(e,t,r,l){return u[e]};t.default=r,e.exports=t.default}}]);
-//# sourceMappingURL=date-fns-locale-ja-_lib-formatRelative-index-js.js.map

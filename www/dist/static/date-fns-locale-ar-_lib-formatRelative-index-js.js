@@ -1,2 +1,0 @@
-"use strict";(self.webpackChunkpritunl_cloud=self.webpackChunkpritunl_cloud||[]).push([[27886],{28625:(e,t)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.default=void 0;var u={lastWeek:"eeee 'الماضي عند الساعة' p",yesterday:"'الأمس عند الساعة' p",today:"'اليوم عند الساعة' p",tomorrow:"'غدا عند الساعة' p",nextWeek:"eeee 'القادم عند الساعة' p",other:"P"},r=function(e){return u[e]};t.default=r,e.exports=t.default}}]);
-//# sourceMappingURL=date-fns-locale-ar-_lib-formatRelative-index-js.js.map
