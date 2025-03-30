@@ -238,7 +238,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 		}
 
 		let commitData = await PodActions.syncSpecs(
-			this.props.pod.id, unitId, specsPage, 10)
+			this.props.pod.id, unitId, specsPage)
 
 		if (more && this.state.commits?.unit == unitId &&
 			commitData.page > this.state.commits?.page) {
