@@ -11,8 +11,8 @@ import (
 	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
-	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/spec"
+	"github.com/pritunl/pritunl-cloud/unit"
 	"github.com/pritunl/pritunl-cloud/zone"
 )
 
@@ -66,7 +66,7 @@ type Deployment struct {
 	InstanceLoad15      float64                  `bson:"-" json:"instance_load15"`
 }
 
-func GetDeployments(db *database.Database, unit *pod.Unit) (
+func GetDeployments(db *database.Database, unt *unit.Unit) (
 	deplys []*Deployment, err error) {
 
 	coll := db.Deployments()
@@ -75,7 +75,7 @@ func GetDeployments(db *database.Database, unit *pod.Unit) (
 	cursor, err := coll.Aggregate(db, []*bson.M{
 		&bson.M{
 			"$match": &bson.M{
-				"unit": unit.Id,
+				"unit": unt.Id,
 			},
 		},
 		&bson.M{
@@ -199,7 +199,7 @@ func GetDeployments(db *database.Database, unit *pod.Unit) (
 		if len(doc.SpecDocs) > 0 {
 			spc := doc.SpecDocs[0]
 
-			deply.SpecOffset = spc.Index - unit.SpecIndex
+			deply.SpecOffset = spc.Index - unt.SpecIndex
 			deply.SpecIndex = spc.Index
 			deply.SpecTimestamp = spc.Timestamp
 		}
