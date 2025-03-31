@@ -1,6 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 const TerserPlugin = require('terser-webpack-plugin');
+const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 
 module.exports = {
   mode: 'development',
@@ -12,8 +13,9 @@ module.exports = {
   },
   output: {
     path: path.resolve(__dirname, 'dist-dev', 'static'),
-    publicPath: '',
+    publicPath: '/static/',
     filename: '[name].js',
+    globalObject: 'self',
   },
   watchOptions: {
     aggregateTimeout: 100,
@@ -28,11 +30,37 @@ module.exports = {
         enforce: 'pre',
         use: ['source-map-loader'],
       },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader'],
+      },
+      {
+        test: /\.(ttf|woff|woff2|eot|svg)$/,
+        type: 'asset/resource',
+      },
     ],
+  },
+  stats: {
+    warningsFilter: [/Failed to parse source map/],
   },
   plugins: [
     new webpack.DefinePlugin({
       'process.env': JSON.stringify({}),
     }),
+    new MonacoWebpackPlugin({
+      publicPath: '/static/',
+      languages: ['markdown', 'yaml', 'python'],
+      features: ['all'],
+      customLanguages: [
+        {
+          label: 'yaml',
+          entry: 'monaco-yaml',
+          worker: {
+            id: 'monaco-yaml/yamlWorker',
+            entry: 'monaco-yaml/yaml.worker',
+          },
+        },
+      ],
+    })
   ],
 };
