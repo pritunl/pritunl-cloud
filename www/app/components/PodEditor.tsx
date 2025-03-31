@@ -112,6 +112,27 @@ const css = {
 
 const hashRe = /^( {0,3})#+\s+\S+/
 const blockRe = /^( {4}|\s*`)/
+const yamlBlockRe = /```yaml([\s\S]*?)```/g;
+const kindRe = /kind:\s*(\w+)/
+const markdownUri = Monaco.Uri.from({
+	scheme: "file",
+	path: "/markdown.md",
+});
+const kindsAll = ["instance", "domain", "firewall"]
+const kindsUri: Record<string, Monaco.Uri> = {
+	"instance": Monaco.Uri.from({
+		scheme: "file",
+		path: "/instance.yaml",
+	}),
+	"domain": Monaco.Uri.from({
+		scheme: "file",
+		path: "/domain.yaml",
+	}),
+	"firewall": Monaco.Uri.from({
+		scheme: "file",
+		path: "/firewall.yaml",
+	}),
+}
 
 export default class PodEditor extends React.Component<Props, State> {
 	curUuid: string
@@ -122,6 +143,8 @@ export default class PodEditor extends React.Component<Props, State> {
 	diffValue: string
 	diffUuid: string
 	states: Record<string, EditorState>
+	syncMarkersTimeout: NodeJS.Timeout
+	parseMarkersTimeout: Record<string, NodeJS.Timeout> = {}
 
 	constructor(props: any, context: any) {
 		super(props, context);
@@ -149,6 +172,126 @@ export default class PodEditor extends React.Component<Props, State> {
 		}
 		if (this.diffMonaco) {
 			this.diffMonaco.editor.setTheme(Theme.getEditorTheme())
+		}
+	}
+
+	syncMarkers(val: string): void {
+    if (this.syncMarkersTimeout) {
+      clearTimeout(this.syncMarkersTimeout);
+    }
+
+    this.syncMarkersTimeout = setTimeout(() => {
+			this._syncMarkers(val)
+      this.syncMarkersTimeout = null
+    }, 300)
+	}
+
+	_syncMarkers(val: string): void {
+		let monaco = this.monaco
+		let editor = this.editor
+		let kinds = new Set(kindsAll)
+
+		let markdownModel = monaco.editor.getModel(markdownUri)
+		if (markdownModel) {
+			markdownModel.setValue(val)
+		} else {
+			markdownModel = monaco.editor.createModel(
+				val,
+				"markdown",
+				markdownUri,
+			)
+		}
+
+		const matches = [...val.matchAll(yamlBlockRe)]
+		if (matches.length > 0) {
+			let match = matches[0]
+
+			const yamlContent = match[1]
+			const yamlContentLines = yamlContent.split('\n')
+
+			const baseLineOffset = markdownModel.getValue().substr(
+				0, match.index).split('\n').length - 1
+
+			const docLineOffsets: number[] = []
+			const yamlDocuments: string[] = []
+
+			if (!yamlContent.trimStart().startsWith("---")) {
+				docLineOffsets.push(0)
+				yamlDocuments.push(yamlContent)
+			} else {
+				let inDocument = false
+				let currentDocLines: string[] = []
+				yamlContentLines.forEach((line, lineIndex) => {
+					if (line.trim() === "---") {
+						if (inDocument && currentDocLines.length > 0) {
+							yamlDocuments.push(currentDocLines.join('\n'))
+							currentDocLines = []
+						}
+
+						inDocument = true
+						docLineOffsets.push(lineIndex + 1)
+					} else if (inDocument) {
+						currentDocLines.push(line)
+					}
+				})
+
+				if (inDocument && currentDocLines.length > 0) {
+					yamlDocuments.push(currentDocLines.join("\n").trim())
+				}
+			}
+
+			yamlDocuments.forEach((docContent, docIndex) => {
+				let kind = docContent.match(kindRe)?.[1]
+				if (!kinds.delete(kind)) {
+					return
+				}
+
+				const modelUri = kindsUri[kind]
+				let yamlModel = monaco.editor.getModel(modelUri)
+				if (yamlModel) {
+					yamlModel.setValue(docContent)
+				} else {
+					yamlModel = monaco.editor.createModel(
+						docContent,
+						"yaml",
+						modelUri,
+					)
+				}
+
+				if (this.parseMarkersTimeout[kind]) {
+					clearTimeout(this.parseMarkersTimeout[kind]);
+				}
+
+				this.parseMarkersTimeout[kind] = setTimeout(() => {
+					const markers = monaco.editor.getModelMarkers({
+						resource: yamlModel.uri,
+					})
+
+					const offset = baseLineOffset + docLineOffsets[docIndex]
+					const adjustedMarkers = markers.map(marker => ({
+						...marker,
+						startLineNumber: marker.startLineNumber + offset,
+						endLineNumber: marker.endLineNumber + offset,
+						resource: markdownModel.uri,
+					}))
+
+					monaco.editor.setModelMarkers(
+						editor.getModel(),
+						`yaml-${kind}`,
+						adjustedMarkers,
+					)
+
+					this.parseMarkersTimeout[kind] = null
+				}, 500)
+			})
+
+			for (const kind of kinds.keys()) {
+				monaco.editor.setModelMarkers(
+					editor.getModel(),
+					`yaml-${kind}`,
+					[],
+				)
+			}
 		}
 	}
 
