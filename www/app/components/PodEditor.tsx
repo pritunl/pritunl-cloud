@@ -1,25 +1,28 @@
 /// <reference path="../References.d.ts"/>
-import * as React from 'react';
-import * as Styles from '../Styles';
-import Help from "./Help";
-import MarkdownMemo from "./MarkdownMemo";
-import * as Theme from "../Theme";
+import * as React from "react"
+import * as Styles from "../Styles"
+import Help from "./Help"
+import MarkdownMemo from "./MarkdownMemo"
+import * as Theme from "../Theme"
+import * as PodActions from "../actions/PodActions"
 import * as CompletionEngine from "../completion/Engine"
 
 import * as MonacoEditor from "@monaco-editor/react"
-import * as Monaco from "monaco-editor";
+import * as Monaco from "monaco-editor"
 
 interface Props {
-	hidden: boolean;
-	readOnly: boolean;
-	expandLeft: boolean;
-	expandRight: boolean;
-	disabled?: boolean;
-	uuid: string;
-	value: string;
-	diffValue: string;
-	onEdit?: () => void;
-	onChange?: (value: string) => void;
+	podId: string
+	hidden: boolean
+	readOnly: boolean
+	expandLeft: boolean
+	expandRight: boolean
+	disabled?: boolean
+	uuid: string
+	value: string
+	diffValue: string
+	onEdit?: () => void
+	onChange?: (value: string) => void
+	onDiffChange?: () => void
 }
 
 interface State {
@@ -33,80 +36,80 @@ interface EditorState {
 const css = {
 	group: {
 		flex: 1,
-		minWidth: '280px',
-		height: '100%',
-		overflowY: 'auto',
-		margin: '0',
-		fontSize: '12px',
+		minWidth: "280px",
+		height: "100%",
+		overflowY: "auto",
+		margin: "0",
+		fontSize: "12px",
 	} as React.CSSProperties,
 	groupSpaced: {
 		flex: 1,
-		minWidth: '280px',
-		height: '100%',
-		overflowY: 'auto',
-		margin: '0',
-		padding: '8px 0 0 0 ',
-		fontSize: '12px',
+		minWidth: "280px",
+		height: "100%",
+		overflowY: "auto",
+		margin: "0",
+		padding: "8px 0 0 0 ",
+		fontSize: "12px",
 	} as React.CSSProperties,
 	groupSpacedExt: {
 		flex: 1,
-		minWidth: '280px',
-		height: '100%',
-		overflowY: 'auto',
-		margin: '0',
-		padding: '0 0 0 0 ',
-		fontSize: '12px',
+		minWidth: "280px",
+		height: "100%",
+		overflowY: "auto",
+		margin: "0",
+		padding: "0 0 0 0 ",
+		fontSize: "12px",
 	} as React.CSSProperties,
 	groupSplit: {
 		flex: 1,
-		minWidth: '280px',
-		height: '100%',
-		overflowY: 'auto',
-		margin: '0 0 0 10px',
+		minWidth: "280px",
+		height: "100%",
+		overflowY: "auto",
+		margin: "0 0 0 10px",
 	} as React.CSSProperties,
 	groupEdit: {
 		flex: 1,
-		minWidth: '280px',
-		height: '100%',
-		overflowY: 'hidden',
-		margin: '0',
-		fontSize: '12px',
+		minWidth: "280px",
+		height: "100%",
+		overflowY: "hidden",
+		margin: "0",
+		fontSize: "12px",
 	} as React.CSSProperties,
 	groupEditSplit: {
 		flex: 1,
-		minWidth: '280px',
-		height: '100%',
-		overflowY: 'hidden',
-		margin: '0 0 0 10px',
+		minWidth: "280px",
+		height: "100%",
+		overflowY: "hidden",
+		margin: "0 0 0 10px",
 	} as React.CSSProperties,
 	editorBox: {
 		flexGrow: 1,
 		minHeight: 0,
-		maxHeight: '100%',
-		margin: '0',
+		maxHeight: "100%",
+		margin: "0",
 	} as React.CSSProperties,
 	editor: {
-		margin: '0',
-		borderRadius: '3px',
-		overflow: 'hidden',
+		margin: "0",
+		borderRadius: "3px",
+		overflow: "hidden",
 	} as React.CSSProperties,
 	buttonEdit: {
-		position: 'absolute',
-		top: '2px',
-		right: '0px',
-		padding: '7px',
+		position: "absolute",
+		top: "2px",
+		right: "0px",
+		padding: "7px",
 	} as React.CSSProperties,
 	buttonLeft: {
-		position: 'absolute',
-		top: '-4px',
-		right: '0px',
-		padding: '7px',
+		position: "absolute",
+		top: "-4px",
+		right: "0px",
+		padding: "7px",
 	} as React.CSSProperties,
 	buttonRight: {
-		position: 'absolute',
-		top: '-4px',
-		right: '0px',
-		padding: '7px',
+		position: "absolute",
+		top: "-4px",
+		right: "0px",
+		padding: "7px",
 	} as React.CSSProperties,
 };
 
@@ -186,7 +189,7 @@ export default class PodEditor extends React.Component<Props, State> {
 
 	syncMarkers(val: string): void {
     if (this.syncMarkersTimeout) {
-      clearTimeout(this.syncMarkersTimeout);
+      clearTimeout(this.syncMarkersTimeout)
     }
 
     this.syncMarkersTimeout = setTimeout(() => {
@@ -216,10 +219,10 @@ export default class PodEditor extends React.Component<Props, State> {
 			let match = matches[0]
 
 			const yamlContent = match[1]
-			const yamlContentLines = yamlContent.split('\n')
+			const yamlContentLines = yamlContent.split("\n")
 
 			const baseLineOffset = markdownModel.getValue().substr(
-				0, match.index).split('\n').length - 1
+				0, match.index).split("\n").length - 1
 
 			const docLineOffsets: number[] = []
 			const yamlDocuments: string[] = []
@@ -233,7 +236,7 @@ export default class PodEditor extends React.Component<Props, State> {
 				yamlContentLines.forEach((line, lineIndex) => {
 					if (line.trim() === "---") {
 						if (inDocument && currentDocLines.length > 0) {
-							yamlDocuments.push(currentDocLines.join('\n'))
+							yamlDocuments.push(currentDocLines.join("\n"))
 							currentDocLines = []
 						}
 
@@ -344,7 +347,7 @@ export default class PodEditor extends React.Component<Props, State> {
 		} else if (!hashRe.test(val)) {
 			leftGroupStyle = css.groupSpaced
 		} else {
-			let valFirst = valTrim.split('\n')[0] || ""
+			let valFirst = valTrim.split("\n")[0] || ""
 			valFirst = valFirst.replace(/#/g, "").trim()
 			if (!valFirst) {
 				leftGroupStyle = css.groupSpacedExt
@@ -358,7 +361,7 @@ export default class PodEditor extends React.Component<Props, State> {
 			rightStyle = expandRight ? css.group : css.groupSplit
 		}
 
-		let editor: JSX.Element;
+		let editor: JSX.Element
 		if (!this.props.readOnly && !this.props.diffValue) {
 			editor = <MonacoEditor.Editor
 				height="100%"
@@ -488,6 +491,6 @@ export default class PodEditor extends React.Component<Props, State> {
 					{editor}
 				</div>
 			</div>
-		</div>;
+		</div>
 	}
 }
