@@ -27,6 +27,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/secret"
 	"github.com/pritunl/pritunl-cloud/shape"
 	"github.com/pritunl/pritunl-cloud/spec"
+	"github.com/pritunl/pritunl-cloud/unit"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
@@ -57,11 +58,12 @@ type State struct {
 	deploymentsDeployedMap map[primitive.ObjectID]*deployment.Deployment
 	deploymentsInactiveMap map[primitive.ObjectID]*deployment.Deployment
 	podsMap                map[primitive.ObjectID]*pod.Pod
-	podsUnitsMap           map[primitive.ObjectID]*pod.Unit
+	unitsMap               map[primitive.ObjectID]*unit.Unit
 
 	specsMap            map[primitive.ObjectID]*spec.Spec
 	specsPodsMap        map[primitive.ObjectID]*pod.Pod
-	specsPodsUnitsMap   map[primitive.ObjectID]*pod.Unit
+	specsPodUnitsMap    map[primitive.ObjectID][]*unit.Unit
+	specsUnitsMap       map[primitive.ObjectID]*unit.Unit
 	specsDeploymentsMap map[primitive.ObjectID]*deployment.Deployment
 	specsDomainsMap     map[primitive.ObjectID]*domain.Domain
 	specsSecretsMap     map[primitive.ObjectID]*secret.Secret
@@ -217,8 +219,8 @@ func (s *State) Pod(pdId primitive.ObjectID) *pod.Pod {
 	return s.podsMap[pdId]
 }
 
-func (s *State) Unit(unitId primitive.ObjectID) *pod.Unit {
-	return s.podsUnitsMap[unitId]
+func (s *State) Unit(unitId primitive.ObjectID) *unit.Unit {
+	return s.unitsMap[unitId]
 }
 
 func (s *State) Spec(commitId primitive.ObjectID) *spec.Spec {
@@ -229,8 +231,12 @@ func (s *State) SpecPod(pdId primitive.ObjectID) *pod.Pod {
 	return s.specsPodsMap[pdId]
 }
 
-func (s *State) SpecUnit(unitId primitive.ObjectID) *pod.Unit {
-	return s.specsPodsUnitsMap[unitId]
+func (s *State) SpecPodUnits(pdId primitive.ObjectID) []*unit.Unit {
+	return s.specsPodUnitsMap[pdId]
+}
+
+func (s *State) SpecUnit(unitId primitive.ObjectID) *unit.Unit {
+	return s.specsUnitsMap[unitId]
 }
 
 func (s *State) SpecDomain(domnId primitive.ObjectID) *domain.Domain {
@@ -458,9 +464,8 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 	deploymentsDeployedMap := map[primitive.ObjectID]*deployment.Deployment{}
 	deploymentsInactiveMap := map[primitive.ObjectID]*deployment.Deployment{}
 	deploymentsIdSet := set.NewSet()
-	podIds := []primitive.ObjectID{}
 	podIdsSet := set.NewSet()
-	unitIds := set.NewSet()
+	unitIdsSet := set.NewSet()
 	specIdsSet := set.NewSet()
 	for _, deply := range deployments {
 		deploymentsNode[deply.Id] = deply
@@ -487,7 +492,7 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 		}
 
 		podIdsSet.Add(deply.Pod)
-		unitIds.Add(deply.Unit)
+		unitIdsSet.Add(deply.Unit)
 		specIdsSet.Add(deply.Spec)
 	}
 
@@ -514,6 +519,7 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 	specSecretsSet := set.NewSet()
 	specCertsSet := set.NewSet()
 	specPodsSet := set.NewSet()
+	specUnitsSet := set.NewSet()
 	specDomainsSet := set.NewSet()
 	specsMap := map[primitive.ObjectID]*spec.Spec{}
 	for _, spc := range specs {
@@ -542,7 +548,7 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 		if spc.Firewall != nil {
 			for _, rule := range spc.Firewall.Ingress {
 				for _, ref := range rule.Sources {
-					specPodsSet.Add(ref.Realm)
+					specUnitsSet.Add(ref.Id)
 				}
 			}
 		}
@@ -622,21 +628,53 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 		}
 	}
 
-	specDeploymentsSet := set.NewSet()
 	specsPodsMap := map[primitive.ObjectID]*pod.Pod{}
-	specsPodsUnitsMap := map[primitive.ObjectID]*pod.Unit{}
 	for _, specPod := range specPods {
 		specsPodsMap[specPod.Id] = specPod
-
-		for _, unit := range specPod.Units {
-			specsPodsUnitsMap[unit.Id] = unit
-			for _, deply := range unit.Deployments {
-				specDeploymentsSet.Add(deply.Id)
-			}
-		}
 	}
 	s.specsPodsMap = specsPodsMap
-	s.specsPodsUnitsMap = specsPodsUnitsMap
+
+	specUnitIds := []primitive.ObjectID{}
+	for unitId := range specUnitsSet.Iter() {
+		specUnitIds = append(specUnitIds, unitId.(primitive.ObjectID))
+	}
+
+	specUnits := []*unit.Unit{}
+	if len(specUnitIds) > 0 || len(specPodIds) > 0 {
+		specUnits, err = unit.GetAll(db, &bson.M{
+			"$or": []*bson.M{
+				&bson.M{
+					"_id": &bson.M{
+						"$in": specUnitIds,
+					},
+				},
+				&bson.M{
+					"pod": &bson.M{
+						"$in": specPodIds,
+					},
+				},
+			},
+		})
+		if err != nil {
+			return
+		}
+	}
+
+	specDeploymentsSet := set.NewSet()
+	specsUnitsMap := map[primitive.ObjectID]*unit.Unit{}
+	specsPodUnitsMap := map[primitive.ObjectID][]*unit.Unit{}
+	for _, specUnit := range specUnits {
+		specsUnitsMap[specUnit.Id] = specUnit
+
+		specsPodUnitsMap[specUnit.Pod] = append(
+			specsPodUnitsMap[specUnit.Pod], specUnit)
+
+		for _, deplyId := range specUnit.Deployments {
+			specDeploymentsSet.Add(deplyId)
+		}
+	}
+	s.specsUnitsMap = specsUnitsMap
+	s.specsPodUnitsMap = specsPodUnitsMap
 
 	specDomainIds := []primitive.ObjectID{}
 	for pdId := range specDomainsSet.Iter() {
@@ -701,6 +739,7 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 	runtimes.State7 = time.Since(start)
 	start = time.Now()
 
+	podIds := []primitive.ObjectID{}
 	for podId := range podIdsSet.Iter() {
 		podIds = append(podIds, podId.(primitive.ObjectID))
 	}
@@ -717,29 +756,40 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 		}
 	}
 
-	nodePortsDeployments := map[primitive.ObjectID][]*nodeport.Mapping{}
-	podDeploymentsSet := set.NewSet()
 	podsMap := map[primitive.ObjectID]*pod.Pod{}
-	podsUnitsMap := map[primitive.ObjectID]*pod.Unit{}
 	for _, pd := range pods {
 		podsMap[pd.Id] = pd
-
-		for _, unit := range pd.Units {
-			if !unitIds.Contains(unit.Id) {
-				continue
-			}
-			podsUnitsMap[unit.Id] = unit
-
-			for _, deply := range unit.Deployments {
-				nodePortsDeployments[deply.Id] = append(
-					nodePortsDeployments[deply.Id], unit.NodePorts...)
-
-				podDeploymentsSet.Add(deply.Id)
-			}
-		}
 	}
 	s.podsMap = podsMap
-	s.podsUnitsMap = podsUnitsMap
+
+	unitIds := []primitive.ObjectID{}
+	for unitId := range unitIdsSet.Iter() {
+		unitIds = append(unitIds, unitId.(primitive.ObjectID))
+	}
+
+	units := []*unit.Unit{}
+	if len(unitIds) > 0 {
+		units, err = unit.GetAll(db, &bson.M{
+			"_id": &bson.M{
+				"$in": unitIds,
+			},
+		})
+		if err != nil {
+			return
+		}
+	}
+
+	unitsMap := map[primitive.ObjectID]*unit.Unit{}
+	podDeploymentsSet := set.NewSet()
+	for _, unt := range units {
+		unitsMap[unt.Id] = unt
+
+		for _, deplyId := range unt.Deployments {
+			podDeploymentsSet.Add(deplyId)
+		}
+
+	}
+	s.unitsMap = unitsMap
 
 	podDeploymentIds := []primitive.ObjectID{}
 	for deplyIdInf := range podDeploymentsSet.Iter() {
@@ -810,13 +860,6 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 
 		nodePortsMap[inst.NetworkNamespace] = append(
 			nodePortsMap[inst.NetworkNamespace], inst.NodePorts...)
-
-		if !inst.Deployment.IsZero() {
-			nodePortsMap[inst.NetworkNamespace] = append(
-				nodePortsMap[inst.NetworkNamespace],
-				nodePortsDeployments[inst.Deployment]...,
-			)
-		}
 	}
 	s.instancesMap = instancesMap
 
@@ -845,7 +888,7 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 	start = time.Now()
 
 	specRules, err := firewall.GetSpecRules(instances, deploymentsNode,
-		specsMap, specsPodsUnitsMap, deploymentsDeployedMap)
+		specsMap, specsUnitsMap, deploymentsDeployedMap)
 	if err != nil {
 		return
 	}
