@@ -192,7 +192,7 @@ export default class PodEditor extends React.Component<Props, State> {
     this.syncMarkersTimeout = setTimeout(() => {
 			this._syncMarkers(val)
       this.syncMarkersTimeout = null
-    }, 300)
+    }, 200)
 	}
 
 	_syncMarkers(val: string): void {
