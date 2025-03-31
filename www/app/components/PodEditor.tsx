@@ -133,6 +133,11 @@ const kindsUri: Record<string, Monaco.Uri> = {
 		path: "/firewall.yaml",
 	}),
 }
+const pathsKind: Record<string, string> = {
+	"/instance.yaml": "instance",
+	"/domain.yaml": "domain",
+	"/firewall.yaml": "firewall",
+}
 
 export default class PodEditor extends React.Component<Props, State> {
 	curUuid: string
@@ -143,8 +148,9 @@ export default class PodEditor extends React.Component<Props, State> {
 	diffValue: string
 	diffUuid: string
 	states: Record<string, EditorState>
+	markerListener: Monaco.IDisposable
+	markersOffset: Record<string, number> = {}
 	syncMarkersTimeout: NodeJS.Timeout
-	parseMarkersTimeout: Record<string, NodeJS.Timeout> = {}
 
 	constructor(props: any, context: any) {
 		super(props, context);
@@ -164,6 +170,9 @@ export default class PodEditor extends React.Component<Props, State> {
 		this.diffMonaco = undefined
 		this.diffValue = undefined
 		this.states = {}
+		if (this.markerListener) {
+			this.markerListener.dispose()
+		}
 	}
 
 	onThemeChange = (): void => {
@@ -258,31 +267,7 @@ export default class PodEditor extends React.Component<Props, State> {
 					)
 				}
 
-				if (this.parseMarkersTimeout[kind]) {
-					clearTimeout(this.parseMarkersTimeout[kind]);
-				}
-
-				this.parseMarkersTimeout[kind] = setTimeout(() => {
-					const markers = monaco.editor.getModelMarkers({
-						resource: yamlModel.uri,
-					})
-
-					const offset = baseLineOffset + docLineOffsets[docIndex]
-					const adjustedMarkers = markers.map(marker => ({
-						...marker,
-						startLineNumber: marker.startLineNumber + offset,
-						endLineNumber: marker.endLineNumber + offset,
-						resource: markdownModel.uri,
-					}))
-
-					monaco.editor.setModelMarkers(
-						editor.getModel(),
-						`yaml-${kind}`,
-						adjustedMarkers,
-					)
-
-					this.parseMarkersTimeout[kind] = null
-				}, 500)
+				this.markersOffset[kind] = baseLineOffset + docLineOffsets[docIndex]
 			})
 
 			for (const kind of kinds.keys()) {
@@ -386,6 +371,37 @@ export default class PodEditor extends React.Component<Props, State> {
 						monaco: MonacoEditor.Monaco): void => {
 					this.editor = editor
 					this.monaco = monaco
+
+					if (this.markerListener) {
+						this.markerListener.dispose()
+					}
+					this.markerListener = monaco.editor.onDidChangeMarkers((uris) => {
+						uris.forEach((uri) => {
+							let kind = pathsKind[uri.path]
+							if (!kind) {
+								return
+							}
+
+							const markers = monaco.editor.getModelMarkers({
+								resource: uri,
+							})
+
+							const offset = this.markersOffset[kind] || 0
+							const adjustedMarkers = markers.map(marker => ({
+								...marker,
+								startLineNumber: marker.startLineNumber + offset,
+								endLineNumber: marker.endLineNumber + offset,
+								resource: uri,
+							}))
+
+							monaco.editor.setModelMarkers(
+								editor.getModel(),
+								`yaml-${kind}`,
+								adjustedMarkers
+							)
+						})
+					})
+
 					this.editor.onDidDispose((): void => {
 						this.editor = undefined
 						this.monaco = undefined
