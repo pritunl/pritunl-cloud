@@ -427,6 +427,7 @@ export default class PodEditor extends React.Component<Props, State> {
 					wordWrap: "on",
 				}}
 				onChange={(val): void => {
+					this.syncMarkers(val)
 					this.props.onChange(val)
 				}}
 			/>
