@@ -457,6 +457,7 @@ export default class PodEditor extends React.Component<Props, State> {
 					modifiedEditor.onDidChangeModelContent((): void => {
 						this.diffUuid = this.props.uuid
 						this.diffValue = modifiedEditor.getValue()
+						this.props.onDiffChange()
 					})
 
 					this.updateState()
