@@ -344,7 +344,6 @@ func podUnitGet(c *gin.Context) {
 		return
 	}
 
-	// TODO Silent fail or return 404 and have client ignore sync when not found
 	unt, err := unit.Get(db, unitId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
