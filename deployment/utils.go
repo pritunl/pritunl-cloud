@@ -25,6 +25,62 @@ func Get(db *database.Database, deplyId primitive.ObjectID) (
 	return
 }
 
+func GetUnit(db *database.Database, unitId, deplyId primitive.ObjectID) (
+	deply *Deployment, err error) {
+
+	coll := db.Deployments()
+	deply = &Deployment{}
+
+	err = coll.FindOne(db, &bson.M{
+		"_id":  deplyId,
+		"unit": unitId,
+	}).Decode(deply)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func GetOrg(db *database.Database, orgId, unitId primitive.ObjectID) (
+	deply *Deployment, err error) {
+
+	coll := db.Deployments()
+	deply = &Deployment{}
+
+	err = coll.FindOne(db, &bson.M{
+		"_id":          unitId,
+		"organization": orgId,
+	}).Decode(deply)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func GetUnitOrg(db *database.Database,
+	orgId, unitId, deplyId primitive.ObjectID) (
+	deply *Deployment, err error) {
+
+	coll := db.Deployments()
+	deply = &Deployment{}
+
+	err = coll.FindOne(db, &bson.M{
+		"_id":          deplyId,
+		"unit":         unitId,
+		"organization": orgId,
+	}).Decode(deply)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetAll(db *database.Database, query *bson.M) (
 	deplys []*Deployment, err error) {
 
