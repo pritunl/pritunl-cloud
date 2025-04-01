@@ -21,6 +21,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/scheduler"
 	"github.com/pritunl/pritunl-cloud/spec"
+	"github.com/pritunl/pritunl-cloud/unit"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -30,13 +31,13 @@ type podData struct {
 	Comment          string             `json:"comment"`
 	Organization     primitive.ObjectID `json:"organization"`
 	DeleteProtection bool               `json:"delete_protection"`
-	Units            []*pod.UnitInput   `json:"units"`
+	Units            []*unit.UnitInput  `json:"units"`
 	Count            int                `json:"count"`
 }
 
 type podsData struct {
-	Pods  []*pod.Pod `json:"pods"`
-	Count int64      `json:"count"`
+	Pods  []*aggregate.PodAggregate `json:"pods"`
+	Count int64                     `json:"count"`
 }
 
 type podsDeployData struct {
@@ -118,6 +119,7 @@ func podPut(c *gin.Context) {
 	}
 
 	event.PublishDispatch(db, "pod.change")
+	event.PublishDispatch(db, "unit.change")
 
 	c.JSON(200, pd)
 }
@@ -130,7 +132,7 @@ func podPost(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
 	data := &podData{
-		Name: "New Pod",
+		Name: "new-pod",
 	}
 
 	err := c.Bind(data)
@@ -160,6 +162,12 @@ func podPost(c *gin.Context) {
 		return
 	}
 
+	err = pd.Insert(db)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
 	errData, err = pd.InitUnits(db, data.Units)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
@@ -171,13 +179,8 @@ func podPost(c *gin.Context) {
 		return
 	}
 
-	err = pd.Insert(db)
-	if err != nil {
-		utils.AbortWithError(c, 500, err)
-		return
-	}
-
 	event.PublishDispatch(db, "pod.change")
+	event.PublishDispatch(db, "unit.change")
 
 	c.JSON(200, pd)
 }
@@ -196,13 +199,22 @@ func podDelete(c *gin.Context) {
 		return
 	}
 
-	err := pod.RemoveOrg(db, userOrg, podId)
+	err := unit.RemoveAll(db, &bson.M{
+		"pod":          podId,
+		"organization": userOrg,
+	})
+	if err != nil {
+		return
+	}
+
+	err = pod.RemoveOrg(db, userOrg, podId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
 	event.PublishDispatch(db, "pod.change")
+	event.PublishDispatch(db, "unit.change")
 
 	c.JSON(200, nil)
 }
@@ -225,6 +237,16 @@ func podsDelete(c *gin.Context) {
 		return
 	}
 
+	err = unit.RemoveAll(db, &bson.M{
+		"pod": &bson.M{
+			"$in": data,
+		},
+		"organization": userOrg,
+	})
+	if err != nil {
+		return
+	}
+
 	err = pod.RemoveMultiOrg(db, userOrg, data)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
@@ -232,6 +254,7 @@ func podsDelete(c *gin.Context) {
 	}
 
 	event.PublishDispatch(db, "pod.change")
+	event.PublishDispatch(db, "unit.change")
 
 	c.JSON(200, nil)
 }
@@ -246,7 +269,10 @@ func podGet(c *gin.Context) {
 		return
 	}
 
-	pd, err := pod.GetOrg(db, userOrg, podId)
+	pd, err := aggregate.GetPod(db, &bson.M{
+		"_id":          podId,
+		"organization": userOrg,
+	})
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -292,7 +318,7 @@ func podsGet(c *gin.Context) {
 		query["role"] = role
 	}
 
-	pods, count, err := pod.GetAllPaged(db, &query, page, pageCount)
+	pods, count, err := aggregate.GetPodsPaged(db, &query, page, pageCount)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -309,6 +335,7 @@ func podsGet(c *gin.Context) {
 type PodUnit struct {
 	Id          primitive.ObjectID      `json:"id"`
 	Pod         primitive.ObjectID      `json:"pod"`
+	Kind        string                  `json:"kind"`
 	Deployments []*aggregate.Deployment `json:"deployments"`
 }
 
@@ -316,39 +343,28 @@ func podUnitGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
-	podId, ok := utils.ParseObjectId(c.Param("pod_id"))
-	if !ok {
-		utils.AbortWithStatus(c, 400)
-		return
-	}
-
 	unitId, ok := utils.ParseObjectId(c.Param("unit_id"))
 	if !ok {
 		utils.AbortWithStatus(c, 400)
 		return
 	}
 
-	pd, err := pod.GetOrg(db, userOrg, podId)
+	unt, err := unit.GetOrg(db, userOrg, unitId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	unit := pd.GetUnit(unitId)
-	if unit == nil {
-		utils.AbortWithStatus(c, 404)
-		return
-	}
-
-	deploys, err := aggregate.GetDeployments(db, unit)
+	deploys, err := aggregate.GetDeployments(db, unt)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
 	pdUnit := &PodUnit{
-		Id:          unit.Id,
-		Pod:         pd.Id,
+		Id:          unt.Id,
+		Pod:         unt.Pod,
+		Kind:        unt.Kind,
 		Deployments: deploys,
 	}
 
@@ -364,12 +380,6 @@ func podUnitDeploymentsPut(c *gin.Context) {
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
 	data := []primitive.ObjectID{}
 
-	podId, ok := utils.ParseObjectId(c.Param("pod_id"))
-	if !ok {
-		utils.AbortWithStatus(c, 400)
-		return
-	}
-
 	unitId, ok := utils.ParseObjectId(c.Param("unit_id"))
 	if !ok {
 		utils.AbortWithStatus(c, 400)
@@ -385,36 +395,30 @@ func podUnitDeploymentsPut(c *gin.Context) {
 		return
 	}
 
-	pd, err := pod.GetOrg(db, userOrg, podId)
+	unt, err := unit.GetOrg(db, userOrg, unitId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	unit := pd.GetUnit(unitId)
-	if unit == nil {
-		utils.AbortWithStatus(c, 404)
-		return
-	}
-
-	state := c.Query("state")
-	switch state {
+	action := c.Query("action")
+	switch action {
 	case deployment.Archive:
-		err = deployment.ArchiveMulti(db, pd.Id, unit.Id, data)
+		err = deployment.ArchiveMulti(db, unt.Id, data)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
 			return
 		}
 		break
 	case deployment.Restore:
-		err = deployment.RestoreMulti(db, pd.Id, unit.Id, data)
+		err = deployment.RestoreMulti(db, unt.Id, data)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
 			return
 		}
 		break
 	case deployment.Destroy:
-		err = deployment.RemoveMulti(db, pd.Id, unit.Id, data)
+		err = deployment.RemoveMulti(db, unt.Id, data)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
 			return
@@ -427,7 +431,7 @@ func podUnitDeploymentsPut(c *gin.Context) {
 			return
 		}
 
-		errData, err := unit.MigrateDeployements(db, commitId, data)
+		errData, err := unt.MigrateDeployements(db, commitId, data)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
 			return
@@ -443,6 +447,7 @@ func podUnitDeploymentsPut(c *gin.Context) {
 
 	event.PublishDispatch(db, "instance.change")
 	event.PublishDispatch(db, "pod.change")
+	event.PublishDispatch(db, "unit.change")
 
 	c.JSON(200, nil)
 }
@@ -455,12 +460,6 @@ func podUnitDeploymentPost(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
 	data := &podsDeployData{}
-
-	podId, ok := utils.ParseObjectId(c.Param("pod_id"))
-	if !ok {
-		utils.AbortWithStatus(c, 400)
-		return
-	}
 
 	unitId, ok := utils.ParseObjectId(c.Param("unit_id"))
 	if !ok {
@@ -477,19 +476,13 @@ func podUnitDeploymentPost(c *gin.Context) {
 		return
 	}
 
-	pd, err := pod.GetOrg(db, userOrg, podId)
+	unt, err := unit.GetOrg(db, userOrg, unitId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	unit := pd.GetUnit(unitId)
-	if unit == nil {
-		utils.AbortWithStatus(c, 404)
-		return
-	}
-
-	errData, err := scheduler.ManualSchedule(db, unit, data.Spec, data.Count)
+	errData, err := scheduler.ManualSchedule(db, unt, data.Spec, data.Count)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -502,6 +495,7 @@ func podUnitDeploymentPost(c *gin.Context) {
 
 	event.PublishDispatch(db, "instance.change")
 	event.PublishDispatch(db, "pod.change")
+	event.PublishDispatch(db, "unit.change")
 
 	c.JSON(200, nil)
 }
@@ -514,12 +508,6 @@ func podUnitDeploymentPut(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
 	data := &deploymentData{}
-
-	podId, ok := utils.ParseObjectId(c.Param("pod_id"))
-	if !ok {
-		utils.AbortWithStatus(c, 400)
-		return
-	}
 
 	unitId, ok := utils.ParseObjectId(c.Param("unit_id"))
 	if !ok {
@@ -542,26 +530,9 @@ func podUnitDeploymentPut(c *gin.Context) {
 		return
 	}
 
-	pd, err := pod.GetOrg(db, userOrg, podId)
+	deply, err := deployment.GetUnitOrg(db, userOrg, unitId, deplyId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
-		return
-	}
-
-	unit := pd.GetUnit(unitId)
-	if unit == nil {
-		utils.AbortWithStatus(c, 404)
-		return
-	}
-
-	deply, err := deployment.Get(db, deplyId)
-	if err != nil {
-		utils.AbortWithError(c, 500, err)
-		return
-	}
-
-	if deply.Unit != unit.Id {
-		utils.AbortWithStatus(c, 404)
 		return
 	}
 
@@ -597,12 +568,6 @@ func podUnitDeploymentLogGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
-	podId, ok := utils.ParseObjectId(c.Param("pod_id"))
-	if !ok {
-		utils.AbortWithStatus(c, 400)
-		return
-	}
-
 	unitId, ok := utils.ParseObjectId(c.Param("unit_id"))
 	if !ok {
 		utils.AbortWithStatus(c, 400)
@@ -626,24 +591,7 @@ func podUnitDeploymentLogGet(c *gin.Context) {
 		return
 	}
 
-	pd, err := pod.GetOrg(db, userOrg, podId)
-	if err != nil {
-		utils.AbortWithError(c, 500, err)
-		return
-	}
-
-	unit := pd.GetUnit(unitId)
-	if unit == nil {
-		utils.AbortWithStatus(c, 404)
-		return
-	}
-
-	if !unit.HasDeployment(deplyId) {
-		utils.AbortWithStatus(c, 404)
-		return
-	}
-
-	deply, err := deployment.Get(db, deplyId)
+	deply, err := deployment.GetUnitOrg(db, userOrg, unitId, deplyId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -665,12 +613,6 @@ func podUnitSpecsGet(c *gin.Context) {
 	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
 	pageCount, _ := strconv.ParseInt(c.Query("page_count"), 10, 0)
 
-	podId, ok := utils.ParseObjectId(c.Param("pod_id"))
-	if !ok {
-		utils.AbortWithStatus(c, 400)
-		return
-	}
-
 	unitId, ok := utils.ParseObjectId(c.Param("unit_id"))
 	if !ok {
 		utils.AbortWithStatus(c, 400)
@@ -678,7 +620,6 @@ func podUnitSpecsGet(c *gin.Context) {
 	}
 
 	specs, count, err := spec.GetAllPaged(db, &bson.M{
-		"pod":          podId,
 		"unit":         unitId,
 		"organization": userOrg,
 	}, page, pageCount)
@@ -699,12 +640,6 @@ func podUnitSpecGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
-	podId, ok := utils.ParseObjectId(c.Param("pod_id"))
-	if !ok {
-		utils.AbortWithStatus(c, 400)
-		return
-	}
-
 	unitId, ok := utils.ParseObjectId(c.Param("unit_id"))
 	if !ok {
 		utils.AbortWithStatus(c, 400)
@@ -719,7 +654,6 @@ func podUnitSpecGet(c *gin.Context) {
 
 	spec, err := spec.GetOne(db, &bson.M{
 		"_id":          specId,
-		"pod":          podId,
 		"unit":         unitId,
 		"organization": userOrg,
 	})
