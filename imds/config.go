@@ -11,6 +11,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/secret"
 	"github.com/pritunl/pritunl-cloud/spec"
+	"github.com/pritunl/pritunl-cloud/unit"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
 )
@@ -21,7 +22,8 @@ var (
 )
 
 func BuildConfig(inst *instance.Instance, virt *vm.VirtualMachine,
-	spc *spec.Spec, vc *vpc.Vpc, subnet *vpc.Subnet, pods []*pod.Pod,
+	spc *spec.Spec, vc *vpc.Vpc, subnet *vpc.Subnet,
+	pods []*pod.Pod, podUnitsMap map[primitive.ObjectID][]*unit.Unit,
 	deployments map[primitive.ObjectID]*deployment.Deployment,
 	secrs []*secret.Secret, certs []*certificate.Certificate) (
 	conf *types.Config, err error) {
@@ -32,7 +34,7 @@ func BuildConfig(inst *instance.Instance, virt *vm.VirtualMachine,
 		Instance:       types.NewInstance(inst),
 		Vpc:            types.NewVpc(vc),
 		Subnet:         types.NewSubnet(subnet),
-		Pods:           types.NewPods(pods, deployments),
+		Pods:           types.NewPods(pods, podUnitsMap, deployments),
 		Secrets:        types.NewSecrets(secrs),
 		Certificates:   types.NewCertificates(certs),
 	}
