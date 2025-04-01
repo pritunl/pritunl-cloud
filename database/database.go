@@ -123,6 +123,11 @@ func (d *Database) Pods() (coll *Collection) {
 	return
 }
 
+func (d *Database) Units() (coll *Collection) {
+	coll = d.getCollection("units")
+	return
+}
+
 func (d *Database) Specs() (coll *Collection) {
 	coll = d.getCollection("specs")
 	return
