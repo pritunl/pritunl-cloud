@@ -208,7 +208,7 @@ func (r *Resources) Find(db *database.Database, token string) (
 		}
 		break
 	case BuildKind:
-		r.Pod, r.Unit, err = GetUnitBase(db, r.Organization, resource)
+		r.Unit, err = GetUnitBase(db, r.Organization, resource)
 		if err != nil {
 			if _, ok := err.(*database.NotFoundError); ok {
 				err = nil
@@ -217,42 +217,42 @@ func (r *Resources) Find(db *database.Database, token string) (
 			}
 		}
 
-		if tag == "" || tag == "latest" {
-			deplys, e := deployment.GetAllSorted(db, &bson.M{
-				"pod":  r.Pod.Id,
-				"unit": r.Unit.Id,
-			})
-			if e != nil {
-				err = e
-				if _, ok := err.(*database.NotFoundError); ok {
-					err = nil
-				} else {
-					return
+		if r.Unit != nil {
+			if tag == "" || tag == "latest" {
+				deplys, e := deployment.GetAllSorted(db, &bson.M{
+					"unit": r.Unit.Id,
+				})
+				if e != nil {
+					err = e
+					if _, ok := err.(*database.NotFoundError); ok {
+						err = nil
+					} else {
+						return
+					}
 				}
-			}
 
-			for _, deply := range deplys {
-				r.Deployment = deply
-				break
-			}
-		} else {
-			deplys, e := deployment.GetAllSorted(db, &bson.M{
-				"pod":  r.Pod.Id,
-				"unit": r.Unit.Id,
-				"tags": tag,
-			})
-			if e != nil {
-				err = e
-				if _, ok := err.(*database.NotFoundError); ok {
-					err = nil
-				} else {
-					return
+				for _, deply := range deplys {
+					r.Deployment = deply
+					break
 				}
-			}
+			} else {
+				deplys, e := deployment.GetAllSorted(db, &bson.M{
+					"unit": r.Unit.Id,
+					"tags": tag,
+				})
+				if e != nil {
+					err = e
+					if _, ok := err.(*database.NotFoundError); ok {
+						err = nil
+					} else {
+						return
+					}
+				}
 
-			for _, deply := range deplys {
-				r.Deployment = deply
-				break
+				for _, deply := range deplys {
+					r.Deployment = deply
+					break
+				}
 			}
 		}
 		break
@@ -335,7 +335,7 @@ func (r *Resources) Find(db *database.Database, token string) (
 		}
 		break
 	case UnitKind:
-		r.Pod, r.Unit, err = GetUnitBase(db, r.Organization, resource)
+		r.Unit, err = GetUnitBase(db, r.Organization, resource)
 		if err != nil {
 			if _, ok := err.(*database.NotFoundError); ok {
 				err = nil
@@ -355,14 +355,16 @@ func (r *Resources) Find(db *database.Database, token string) (
 }
 
 type PodBase struct {
-	Id    primitive.ObjectID `bson:"_id,omitempty"`
-	Name  string             `bson:"name"`
-	Units []*UnitBase        `bson:"units" json:"units"`
+	Id           primitive.ObjectID `bson:"_id,omitempty"`
+	Organization primitive.ObjectID `bson:"organization"`
+	Name         string             `bson:"name"`
 }
 
 type UnitBase struct {
-	Id   primitive.ObjectID `bson:"id,omitempty"`
-	Name string             `bson:"name"`
+	Id           primitive.ObjectID `bson:"_id,omitempty"`
+	Pod          primitive.ObjectID `bson:"pod"`
+	Organization primitive.ObjectID `bson:"organization"`
+	Name         string             `bson:"name"`
 }
 
 func GetPodBase(db *database.Database, query *bson.M) (
@@ -381,27 +383,19 @@ func GetPodBase(db *database.Database, query *bson.M) (
 }
 
 func GetUnitBase(db *database.Database, orgId primitive.ObjectID,
-	name string) (pd *PodBase, unt *UnitBase, err error) {
+	name string) (unt *UnitBase, err error) {
 
-	coll := db.Pods()
-	pd = &PodBase{}
+	coll := db.Units()
+	unt = &UnitBase{}
 
 	err = coll.FindOne(db, &bson.M{
+		"name":         name,
 		"organization": orgId,
-		"units.name":   name,
-	}).Decode(pd)
+	}).Decode(unt)
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
 
-	for _, unit := range pd.Units {
-		if unit.Name == name {
-			unt = unit
-			return
-		}
-	}
-
-	pd = nil
 	return
 }
