@@ -12,10 +12,10 @@ import (
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/nodeport"
-	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/scheduler"
 	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/state"
+	"github.com/pritunl/pritunl-cloud/unit"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/sirupsen/logrus"
 )
@@ -34,7 +34,7 @@ func (s *Pods) processSchedule(schd *scheduler.Scheduler) {
 		return
 	}
 
-	acquired, lockId := instancesLock.LockOpen(schd.Id.Unit.Hex())
+	acquired, lockId := podsLock.LockOpen(schd.Id.Hex())
 	if !acquired {
 		return
 	}
@@ -42,17 +42,16 @@ func (s *Pods) processSchedule(schd *scheduler.Scheduler) {
 	go func() {
 		defer func() {
 			time.Sleep(1 * time.Second)
-			instancesLock.Unlock(schd.Id.Unit.Hex(), lockId)
+			podsLock.Unlock(schd.Id.Hex(), lockId)
 			podsLimiter.Release()
 		}()
 
 		err := s.deploySchedule(schd)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"pod":   schd.Id.Pod.Hex(),
-				"unit":  schd.Id.Unit.Hex(),
+				"unit":  schd.Id.Hex(),
 				"error": err,
-			}).Error("deploy: Pod deploy failed")
+			}).Error("deploy: Unit deploy failed")
 			return
 		}
 	}()
@@ -62,17 +61,8 @@ func (s *Pods) deploySchedule(schd *scheduler.Scheduler) (err error) {
 	db := database.GetDatabase()
 	defer db.Close()
 
-	pd, err := pod.Get(db, schd.Id.Pod)
+	unt, err := unit.Get(db, schd.Id)
 	if err != nil {
-		return
-	}
-
-	unit := pd.GetUnit(schd.Id.Unit)
-	if unit == nil {
-		logrus.WithFields(logrus.Fields{
-			"pod":  schd.Id.Pod.Hex(),
-			"unit": schd.Id.Unit.Hex(),
-		}).Info("deploy: Pod deploy nil unit")
 		return
 	}
 
@@ -82,7 +72,7 @@ func (s *Pods) deploySchedule(schd *scheduler.Scheduler) (err error) {
 	}
 
 	tickets := schd.Tickets[s.stat.Node().Id]
-	if tickets != nil && len(tickets) > 0 {
+	if len(tickets) > 0 {
 		now := time.Now()
 		for _, ticket := range tickets {
 			start := schd.Created.Add(
@@ -96,8 +86,8 @@ func (s *Pods) deploySchedule(schd *scheduler.Scheduler) (err error) {
 
 				if !exists {
 					logrus.WithFields(logrus.Fields{
-						"pod":  schd.Id.Pod.Hex(),
-						"unit": schd.Id.Unit.Hex(),
+						"pod":  unt.Pod.Hex(),
+						"unit": unt.Id.Hex(),
 					}).Info("deploy: Pod deploy schedule lost")
 					return
 				}
@@ -108,8 +98,8 @@ func (s *Pods) deploySchedule(schd *scheduler.Scheduler) (err error) {
 
 				if !schd.Ready() {
 					logrus.WithFields(logrus.Fields{
-						"pod":  schd.Id.Pod.Hex(),
-						"unit": schd.Id.Unit.Hex(),
+						"pod":  unt.Pod.Hex(),
+						"unit": unt.Id.Hex(),
 					}).Info("deploy: Reached maximum schedule attempts")
 
 					err = schd.ClearTickets(db)
@@ -119,9 +109,17 @@ func (s *Pods) deploySchedule(schd *scheduler.Scheduler) (err error) {
 					return
 				}
 
-				reserved, e := s.DeploySpec(db, schd, unit, spc)
+				reserved, e := s.DeploySpec(db, schd, unt, spc)
 				if e != nil {
 					err = e
+
+					limit, _ := schd.Failure(db)
+					if limit {
+						logrus.WithFields(logrus.Fields{
+							"pod":  unt.Pod.Hex(),
+							"unit": unt.Id.Hex(),
+						}).Info("deploy: Reached maximum schedule attempts")
+					}
 					return
 				}
 
@@ -139,8 +137,8 @@ func (s *Pods) deploySchedule(schd *scheduler.Scheduler) (err error) {
 
 					if limit {
 						logrus.WithFields(logrus.Fields{
-							"pod":  schd.Id.Pod.Hex(),
-							"unit": schd.Id.Unit.Hex(),
+							"pod":  unt.Pod.Hex(),
+							"unit": unt.Id.Hex(),
 						}).Info("deploy: Reached maximum schedule attempts")
 					}
 				}
@@ -152,7 +150,7 @@ func (s *Pods) deploySchedule(schd *scheduler.Scheduler) (err error) {
 }
 
 func (s *Pods) DeploySpec(db *database.Database,
-	schd *scheduler.Scheduler, unit *pod.Unit,
+	schd *scheduler.Scheduler, unt *unit.Unit,
 	spc *spec.Spec) (reserved bool, err error) {
 
 	img, err := image.Get(db, spc.Instance.Image)
@@ -161,15 +159,15 @@ func (s *Pods) DeploySpec(db *database.Database,
 	}
 
 	deply := &deployment.Deployment{
-		Pod:          unit.Pod.Id,
-		Unit:         unit.Id,
-		Organization: unit.Pod.Organization,
+		Pod:          unt.Pod,
+		Unit:         unt.Id,
+		Organization: unt.Organization,
 		Timestamp:    time.Now(),
 		Spec:         spc.Id,
 		Datacenter:   node.Self.Datacenter,
 		Zone:         node.Self.Zone,
 		Node:         node.Self.Id,
-		Kind:         unit.Kind,
+		Kind:         unt.Kind,
 		State:        deployment.Reserved,
 	}
 
@@ -216,12 +214,12 @@ func (s *Pods) DeploySpec(db *database.Database,
 		}
 	}()
 
-	err = unit.Refresh(db)
+	err = unt.Refresh(db)
 	if err != nil {
 		return
 	}
 
-	reserved, err = unit.Reserve(db, deply.Id, schd.OverrideCount)
+	reserved, err = unt.Reserve(db, deply.Id, schd.OverrideCount)
 	if err != nil {
 		return
 	}
@@ -235,7 +233,7 @@ func (s *Pods) DeploySpec(db *database.Database,
 	}
 
 	inst := &instance.Instance{
-		Organization:        unit.Pod.Organization,
+		Organization:        unt.Organization,
 		Zone:                spc.Instance.Zone,
 		Vpc:                 spc.Instance.Vpc,
 		Subnet:              spc.Instance.Subnet,
@@ -449,8 +447,7 @@ func (s *Pods) Deploy(db *database.Database) (err error) {
 
 			if deleted {
 				logrus.WithFields(logrus.Fields{
-					"pod":  schd.Id.Pod.Hex(),
-					"unit": schd.Id.Unit.Hex(),
+					"unit": schd.Id.Hex(),
 				}).Error("deploy: All nodes failed to schedule deployment")
 			}
 		}
