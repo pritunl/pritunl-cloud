@@ -12,13 +12,14 @@ import (
 	"github.com/pritunl/pritunl-cloud/nodeport"
 	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/spec"
+	"github.com/pritunl/pritunl-cloud/unit"
 	"github.com/pritunl/pritunl-cloud/vm"
 )
 
 func GetSpecRules(instances []*instance.Instance,
 	deploymentsNode map[primitive.ObjectID]*deployment.Deployment,
 	specsMap map[primitive.ObjectID]*spec.Spec,
-	specsPodsUnitsMap map[primitive.ObjectID]*pod.Unit,
+	specsUnitsMap map[primitive.ObjectID]*unit.Unit,
 	deploymentsDeployedMap map[primitive.ObjectID]*deployment.Deployment) (
 	firewalls map[string][]*Rule, err error) {
 
@@ -63,13 +64,13 @@ func GetSpecRules(instances []*instance.Instance,
 					continue
 				}
 
-				ruleUnit := specsPodsUnitsMap[ref.Id]
+				ruleUnit := specsUnitsMap[ref.Id]
 				if ruleUnit == nil {
 					continue
 				}
 
-				for _, ruleDeplyRec := range ruleUnit.Deployments {
-					ruleDeply := deploymentsDeployedMap[ruleDeplyRec.Id]
+				for _, ruleDeplyId := range ruleUnit.Deployments {
+					ruleDeply := deploymentsDeployedMap[ruleDeplyId]
 					if ruleDeply == nil {
 						continue
 					}
@@ -119,7 +120,7 @@ func GetSpecRulesSlow(db *database.Database,
 	deploymentsDeployedMap := map[primitive.ObjectID]*deployment.Deployment{}
 	deploymentsIdSet := set.NewSet()
 	podIdsSet := set.NewSet()
-	unitIds := set.NewSet()
+	unitIdsSet := set.NewSet()
 	specIdsSet := set.NewSet()
 	for _, deply := range deployments {
 		deploymentsNode[deply.Id] = deply
@@ -130,7 +131,7 @@ func GetSpecRulesSlow(db *database.Database,
 		}
 
 		podIdsSet.Add(deply.Pod)
-		unitIds.Add(deply.Unit)
+		unitIdsSet.Add(deply.Unit)
 		specIdsSet.Add(deply.Spec)
 	}
 
@@ -148,7 +149,7 @@ func GetSpecRulesSlow(db *database.Database,
 		return
 	}
 
-	specPodsSet := set.NewSet()
+	specUnitsSet := set.NewSet()
 	specsMap := map[primitive.ObjectID]*spec.Spec{}
 	for _, spc := range specs {
 		specsMap[spc.Id] = spc
@@ -156,20 +157,20 @@ func GetSpecRulesSlow(db *database.Database,
 		if spc.Firewall != nil {
 			for _, rule := range spc.Firewall.Ingress {
 				for _, ref := range rule.Sources {
-					specPodsSet.Add(ref.Realm)
+					specUnitsSet.Add(ref.Id)
 				}
 			}
 		}
 	}
 
-	specPodIds := []primitive.ObjectID{}
-	for pdId := range specPodsSet.Iter() {
-		specPodIds = append(specPodIds, pdId.(primitive.ObjectID))
+	specUnitIds := []primitive.ObjectID{}
+	for unitId := range specUnitsSet.Iter() {
+		specUnitIds = append(specUnitIds, unitId.(primitive.ObjectID))
 	}
 
-	specPods, err := pod.GetAll(db, &bson.M{
+	specUnits, err := unit.GetAll(db, &bson.M{
 		"_id": &bson.M{
-			"$in": specPodIds,
+			"$in": specUnitIds,
 		},
 	})
 	if err != nil {
@@ -177,16 +178,12 @@ func GetSpecRulesSlow(db *database.Database,
 	}
 
 	specDeploymentsSet := set.NewSet()
-	specsPodsMap := map[primitive.ObjectID]*pod.Pod{}
-	specsPodsUnitsMap := map[primitive.ObjectID]*pod.Unit{}
-	for _, specPod := range specPods {
-		specsPodsMap[specPod.Id] = specPod
+	specsUnitsMap := map[primitive.ObjectID]*unit.Unit{}
+	for _, specUnit := range specUnits {
+		specsUnitsMap[specUnit.Id] = specUnit
 
-		for _, unit := range specPod.Units {
-			specsPodsUnitsMap[unit.Id] = unit
-			for _, deply := range unit.Deployments {
-				specDeploymentsSet.Add(deply.Id)
-			}
+		for _, deplyId := range specUnit.Deployments {
+			specDeploymentsSet.Add(deplyId)
 		}
 	}
 
@@ -229,25 +226,35 @@ func GetSpecRulesSlow(db *database.Database,
 		return
 	}
 
-	nodePortsDeployments := map[primitive.ObjectID][]*nodeport.Mapping{}
-	podDeploymentsSet := set.NewSet()
 	podsMap := map[primitive.ObjectID]*pod.Pod{}
-	podsUnitsMap := map[primitive.ObjectID]*pod.Unit{}
 	for _, pd := range pods {
 		podsMap[pd.Id] = pd
+	}
 
-		for _, unit := range pd.Units {
-			if !unitIds.Contains(unit.Id) {
-				continue
-			}
-			podsUnitsMap[unit.Id] = unit
+	unitIds := []primitive.ObjectID{}
+	for unitId := range unitIdsSet.Iter() {
+		unitIds = append(unitIds, unitId.(primitive.ObjectID))
+	}
 
-			for _, deply := range unit.Deployments {
-				nodePortsDeployments[deply.Id] = append(
-					nodePortsDeployments[deply.Id], unit.NodePorts...)
+	units := []*unit.Unit{}
+	if len(unitIds) > 0 {
+		units, err = unit.GetAll(db, &bson.M{
+			"_id": &bson.M{
+				"$in": unitIds,
+			},
+		})
+		if err != nil {
+			return
+		}
+	}
 
-				podDeploymentsSet.Add(deply.Id)
-			}
+	unitsMap := map[primitive.ObjectID]*unit.Unit{}
+	podDeploymentsSet := set.NewSet()
+	for _, unt := range units {
+		unitsMap[unt.Id] = unt
+
+		for _, deplyId := range unt.Deployments {
+			podDeploymentsSet.Add(deplyId)
 		}
 	}
 
@@ -284,11 +291,6 @@ func GetSpecRulesSlow(db *database.Database,
 
 		if inst.Deployment.IsZero() {
 			continue
-		} else {
-			nodePortsMap[inst.NetworkNamespace] = append(
-				nodePortsMap[inst.NetworkNamespace],
-				nodePortsDeployments[inst.Deployment]...,
-			)
 		}
 
 		deply := deploymentsNode[inst.Deployment]
@@ -326,13 +328,13 @@ func GetSpecRulesSlow(db *database.Database,
 					continue
 				}
 
-				ruleUnit := specsPodsUnitsMap[ref.Id]
+				ruleUnit := specsUnitsMap[ref.Id]
 				if ruleUnit == nil {
 					continue
 				}
 
-				for _, ruleDeplyRec := range ruleUnit.Deployments {
-					ruleDeply := deploymentsDeployedMap[ruleDeplyRec.Id]
+				for _, ruleDeplyId := range ruleUnit.Deployments {
+					ruleDeply := deploymentsDeployedMap[ruleDeplyId]
 					if ruleDeply == nil {
 						continue
 					}
