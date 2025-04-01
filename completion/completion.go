@@ -20,6 +20,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/pool"
 	"github.com/pritunl/pritunl-cloud/secret"
 	"github.com/pritunl/pritunl-cloud/shape"
+	"github.com/pritunl/pritunl-cloud/unit"
 	"github.com/pritunl/pritunl-cloud/vpc"
 	"github.com/pritunl/pritunl-cloud/zone"
 )
@@ -40,7 +41,7 @@ type Completion struct {
 	Certificates  []*certificate.Certificate   `json:"certificates"`
 	Secrets       []*secret.Secret             `json:"secrets"`
 	Pods          []*pod.Pod                   `json:"pods"`
-	Units         []*pod.Unit                  `json:"units"`
+	Units         []*unit.Unit                 `json:"units"`
 }
 
 type Build struct {
@@ -440,7 +441,6 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 		return
 	}
 
-	unitsMap := map[primitive.ObjectID]*pod.Unit{}
 	err = get(
 		db,
 		db.Pods(),
@@ -449,25 +449,47 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			"_id":          1,
 			"name":         1,
 			"organization": 1,
-			"units":        1,
 		},
 		nil,
 		func() interface{} {
 			return &pod.Pod{}
 		},
 		func(item interface{}) {
-			pd := item.(*pod.Pod)
-
 			cmpl.Pods = append(
 				cmpl.Pods,
-				pd,
+				item.(*pod.Pod),
+			)
+		},
+	)
+	if err != nil {
+		return
+	}
+
+	unitsMap := map[primitive.ObjectID]*unit.Unit{}
+	err = get(
+		db,
+		db.Units(),
+		query,
+		&bson.M{
+			"_id":          1,
+			"pod":          1,
+			"organization": 1,
+			"name":         1,
+			"kind":         1,
+		},
+		nil,
+		func() interface{} {
+			return &unit.Unit{}
+		},
+		func(item interface{}) {
+			unt := item.(*unit.Unit)
+
+			cmpl.Units = append(
+				cmpl.Units,
+				unt,
 			)
 
-			for _, unit := range pd.Units {
-				unit.Pod = pd
-				cmpl.Units = append(cmpl.Units, unit)
-				unitsMap[unit.Id] = unit
-			}
+			unitsMap[unt.Id] = unt
 		},
 	)
 	if err != nil {
@@ -504,8 +526,8 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 				return
 			}
 
-			unit := unitsMap[deply.Unit]
-			if unit == nil {
+			unt := unitsMap[deply.Unit]
+			if unt == nil {
 				return
 			}
 
@@ -513,9 +535,9 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			if build == nil {
 				build = &Build{
 					Id:           deply.Unit,
-					Name:         unit.Name,
-					Pod:          unit.Pod.Id,
-					Organization: unit.Pod.Organization,
+					Name:         unt.Name,
+					Pod:          unt.Pod,
+					Organization: unt.Organization,
 					Tags: []*BuildTag{
 						&BuildTag{
 							Tag:       "latest",
