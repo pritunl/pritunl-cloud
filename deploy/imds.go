@@ -11,6 +11,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/secret"
 	"github.com/pritunl/pritunl-cloud/state"
+	"github.com/pritunl/pritunl-cloud/unit"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
 )
@@ -38,6 +39,7 @@ func (s *Imds) buildInstance(db *database.Database,
 		inst, virt, nil,
 		vc, subnet,
 		[]*pod.Pod{},
+		map[primitive.ObjectID][]*unit.Unit{},
 		map[primitive.ObjectID]*deployment.Deployment{},
 		[]*secret.Secret{},
 		[]*certificate.Certificate{},
@@ -102,23 +104,37 @@ func (s *Imds) buildDeployInstance(db *database.Database,
 	}
 
 	pods := []*pod.Pod{}
+	podUnitsMap := map[primitive.ObjectID][]*unit.Unit{}
+
 	instPd := s.stat.Pod(deply.Pod)
 	if instPd != nil {
 		pods = append(pods, instPd)
 	}
+
+	instUnt := s.stat.Unit(deply.Unit)
+	if instUnt != nil {
+		podUnitsMap[deply.Pod] = append(podUnitsMap[deply.Pod], instUnt)
+	}
+
 	for _, podId := range spc.Instance.Pods {
-		servc := s.stat.SpecPod(podId)
-		if servc == nil || servc.Organization != inst.Organization {
+		pd := s.stat.SpecPod(podId)
+		if pd == nil || pd.Organization != inst.Organization {
 			continue
 		}
 
-		pods = append(pods, servc)
+		pods = append(pods, pd)
+
+		podUnits := s.stat.SpecPodUnits(podId)
+		if podUnits != nil {
+			podUnitsMap[podId] = podUnits
+		}
 	}
 
 	conf, err = imds.BuildConfig(
 		inst, virt, spc,
 		vc, subnet,
 		pods,
+		podUnitsMap,
 		s.stat.DeploymentsDeployed(),
 		secrs,
 		certs,
