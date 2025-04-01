@@ -24,9 +24,9 @@ import (
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
-	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/spec"
+	"github.com/pritunl/pritunl-cloud/unit"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
@@ -230,7 +230,7 @@ type imdsConfig struct {
 
 func getUserData(db *database.Database, inst *instance.Instance,
 	virt *vm.VirtualMachine, deply *deployment.Deployment,
-	deployUnit *pod.Unit, deploySpec *spec.Spec, initial bool,
+	deployUnit *unit.Unit, deploySpec *spec.Spec, initial bool,
 	addr6, gateway6 net.IP) (usrData string, err error) {
 
 	authrs, err := authority.GetOrgRoles(db, inst.Organization,
@@ -636,7 +636,7 @@ func Write(db *database.Database, inst *instance.Instance,
 	defer os.RemoveAll(tempDir)
 
 	var deply *deployment.Deployment
-	var deployUnit *pod.Unit
+	var deployUnit *unit.Unit
 	var deploySpec *spec.Spec
 	if !virt.Deployment.IsZero() {
 		deply, err = deployment.Get(db, virt.Deployment)
@@ -649,17 +649,8 @@ func Write(db *database.Database, inst *instance.Instance,
 			return
 		}
 
-		servc, e := pod.Get(db, deply.Pod)
-		if e != nil {
-			err = e
-			return
-		}
-
-		deployUnit = servc.GetUnit(deply.Unit)
-		if deployUnit == nil {
-			err = &errortypes.NotFoundError{
-				errors.Newf("cloudinit: Pod unit not found"),
-			}
+		deployUnit, err = unit.Get(db, deply.Unit)
+		if err != nil {
 			return
 		}
 	}
