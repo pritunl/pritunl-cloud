@@ -4,6 +4,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/pod"
+	"github.com/pritunl/pritunl-cloud/unit"
 )
 
 type Pod struct {
@@ -74,18 +75,18 @@ type Deployment struct {
 	UnhealthyOraclePrivateIps []string           `json:"unhealthy_oracle_private_ips"`
 }
 
-func NewPods(pods []*pod.Pod,
+func NewPods(pods []*pod.Pod, podUnitsMap map[primitive.ObjectID][]*unit.Unit,
 	deployments map[primitive.ObjectID]*deployment.Deployment) []*Pod {
 
 	datas := []*Pod{}
 
-	for _, servc := range pods {
-		if servc == nil {
+	for _, pd := range pods {
+		if pd == nil {
 			continue
 		}
 
 		units := []*Unit{}
-		for _, pdUnit := range servc.Units {
+		for _, pdUnit := range podUnitsMap[pd.Id] {
 			unit := &Unit{
 				Id:                        pdUnit.Id,
 				Name:                      pdUnit.Name,
@@ -115,8 +116,8 @@ func NewPods(pods []*pod.Pod,
 				Deployments:               []*Deployment{},
 			}
 
-			for _, unitDeply := range pdUnit.Deployments {
-				deply := deployments[unitDeply.Id]
+			for _, unitDeplyId := range pdUnit.Deployments {
+				deply := deployments[unitDeplyId]
 
 				if deply != nil {
 					data := deply.InstanceData
@@ -283,8 +284,8 @@ func NewPods(pods []*pod.Pod,
 		}
 
 		data := &Pod{
-			Id:    servc.Id,
-			Name:  servc.Name,
+			Id:    pd.Id,
+			Name:  pd.Name,
 			Units: units,
 		}
 
