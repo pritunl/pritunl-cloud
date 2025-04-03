@@ -7,11 +7,11 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/spec"
+	"github.com/pritunl/pritunl-cloud/unit"
 )
 
-func Exists(db *database.Database, schdId Resource) (
+func Exists(db *database.Database, schdId primitive.ObjectID) (
 	exists bool, err error) {
 
 	coll := db.Schedulers()
@@ -31,7 +31,7 @@ func Exists(db *database.Database, schdId Resource) (
 	return
 }
 
-func Get(db *database.Database, schdId Resource) (
+func Get(db *database.Database, schdId primitive.ObjectID) (
 	schd *Scheduler, err error) {
 
 	coll := db.Schedulers()
@@ -109,7 +109,9 @@ func GetAllActive(db *database.Database) (schds []*Scheduler, err error) {
 	return
 }
 
-func Remove(db *database.Database, schdId Resource) (deleted bool, err error) {
+func Remove(db *database.Database, schdId primitive.ObjectID) (
+	deleted bool, err error) {
+
 	coll := db.Schedulers()
 
 	resp, err := coll.DeleteOne(db, &bson.M{
@@ -131,11 +133,8 @@ func Remove(db *database.Database, schdId Resource) (deleted bool, err error) {
 	return
 }
 
-func Schedule(db *database.Database, unit *pod.Unit) (err error) {
-	exists, e := Exists(db, Resource{
-		Pod:  unit.Pod.Id,
-		Unit: unit.Id,
-	})
+func Schedule(db *database.Database, unt *unit.Unit) (err error) {
+	exists, e := Exists(db, unt.Id)
 	if e != nil {
 		err = e
 		return
@@ -145,14 +144,14 @@ func Schedule(db *database.Database, unit *pod.Unit) (err error) {
 		return
 	}
 
-	spc, err := spec.Get(db, unit.DeployCommit)
+	spc, err := spec.Get(db, unt.DeployCommit)
 	if err != nil {
 		return
 	}
 
-	switch unit.Kind {
+	switch unt.Kind {
 	case deployment.Instance, deployment.Image:
-		schd := NewInstanceUnit(unit, spc)
+		schd := NewInstanceUnit(unt, spc)
 		err = schd.Schedule(db, 0)
 		if err != nil {
 			return
@@ -162,14 +161,11 @@ func Schedule(db *database.Database, unit *pod.Unit) (err error) {
 	return
 }
 
-func ManualSchedule(db *database.Database, unit *pod.Unit,
+func ManualSchedule(db *database.Database, unt *unit.Unit,
 	specId primitive.ObjectID, count int) (
 	errData *errortypes.ErrorData, err error) {
 
-	exists, e := Exists(db, Resource{
-		Pod:  unit.Pod.Id,
-		Unit: unit.Id,
-	})
+	exists, e := Exists(db, unt.Id)
 	if e != nil {
 		err = e
 		return
@@ -184,7 +180,7 @@ func ManualSchedule(db *database.Database, unit *pod.Unit,
 	}
 
 	if specId.IsZero() {
-		specId = unit.DeployCommit
+		specId = unt.DeployCommit
 	}
 
 	spc, err := spec.Get(db, specId)
@@ -192,7 +188,7 @@ func ManualSchedule(db *database.Database, unit *pod.Unit,
 		return
 	}
 
-	if spc.Unit != unit.Id {
+	if spc.Unit != unt.Id {
 		errData = &errortypes.ErrorData{
 			Error:   "unit_deploy_commit_invalid",
 			Message: "Invalid unit deployment commit",
@@ -200,20 +196,20 @@ func ManualSchedule(db *database.Database, unit *pod.Unit,
 		return
 	}
 
-	switch unit.Kind {
+	switch unt.Kind {
 	case deployment.Instance, deployment.Image:
-		if unit.Kind == deployment.Image {
+		if unt.Kind == deployment.Image {
 			count = 1
 		}
 
-		schd := NewInstanceUnit(unit, spc)
+		schd := NewInstanceUnit(unt, spc)
 		err = schd.Schedule(db, count)
 		if err != nil {
 			return
 		}
 	default:
 		err = &errortypes.ParseError{
-			errors.Newf("scheduler: Unknown unit kind %s", unit.Kind),
+			errors.Newf("scheduler: Unknown unit kind %s", unt.Kind),
 		}
 		return
 	}
