@@ -182,9 +182,7 @@ func (s *Spec) parseFirewall(db *database.Database,
 					return
 				}
 
-				if kind == finder.UnitKind && resources.Pod != nil &&
-					resources.Unit != nil {
-
+				if kind == finder.UnitKind && resources.Unit != nil {
 					selector := resources.Selector
 					if selector == "" {
 						selector = "private_ips"
@@ -192,7 +190,7 @@ func (s *Spec) parseFirewall(db *database.Database,
 
 					refs.Add(Refrence{
 						Id:       resources.Unit.Id,
-						Realm:    resources.Pod.Id,
+						Realm:    resources.Unit.Pod,
 						Kind:     Unit,
 						Selector: selector,
 					})
