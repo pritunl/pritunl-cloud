@@ -6,11 +6,11 @@ import (
 	"github.com/pritunl/pritunl-cloud/eval"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/plan"
-	"github.com/pritunl/pritunl-cloud/pod"
+	"github.com/pritunl/pritunl-cloud/unit"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
-func buildEvalData(servc *pod.Pod, unit *pod.Unit,
+func buildEvalData(unt *unit.Unit,
 	inst *instance.Instance) (data eval.Data, err error) {
 
 	lastTimestamp := 0
@@ -28,12 +28,9 @@ func buildEvalData(servc *pod.Pod, unit *pod.Unit,
 	}
 
 	dataStrct := plan.Data{
-		Pod: plan.Pod{
-			Name: servc.Name,
-		},
 		Unit: plan.Unit{
-			Name:  unit.Name,
-			Count: unit.Count,
+			Name:  unt.Name,
+			Count: unt.Count,
 		},
 		Instance: plan.Instance{
 			Name:          inst.Name,
