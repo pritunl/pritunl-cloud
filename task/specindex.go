@@ -4,8 +4,8 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/pritunl-cloud/database"
-	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/spec"
+	"github.com/pritunl/pritunl-cloud/unit"
 )
 
 var specIndex = &Task{
@@ -16,9 +16,9 @@ var specIndex = &Task{
 	Handler: specIndexHandler,
 }
 
-func specIndexSyncUnit(db *database.Database, unit *pod.Unit) (err error) {
+func specIndexSyncUnit(db *database.Database, unt *unit.Unit) (err error) {
 	specs, err := spec.GetAllIndexes(db, &bson.M{
-		"unit": unit.Id,
+		"unit": unt.Id,
 	})
 
 	index := 0
@@ -34,9 +34,9 @@ func specIndexSyncUnit(db *database.Database, unit *pod.Unit) (err error) {
 		}
 	}
 
-	if unit.SpecIndex != index {
-		unit.SpecIndex = index
-		err = unit.CommitFields(db, set.NewSet("spec_index"))
+	if unt.SpecIndex != index {
+		unt.SpecIndex = index
+		err = unt.CommitFields(db, set.NewSet("spec_index"))
 		if err != nil {
 			return
 		}
@@ -46,18 +46,15 @@ func specIndexSyncUnit(db *database.Database, unit *pod.Unit) (err error) {
 }
 
 func specIndexHandler(db *database.Database) (err error) {
-	pods, err := pod.GetAll(db, &bson.M{})
+	units, err := unit.GetAll(db, &bson.M{})
 	if err != nil {
 		return
 	}
 
-	for _, pd := range pods {
-		for _, unit := range pd.Units {
-			unit.Pod = pd
-			err = specIndexSyncUnit(db, unit)
-			if err != nil {
-				return
-			}
+	for _, unt := range units {
+		err = specIndexSyncUnit(db, unt)
+		if err != nil {
+			return
 		}
 	}
 
