@@ -8,13 +8,13 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/spec"
+	"github.com/pritunl/pritunl-cloud/unit"
 	"github.com/sirupsen/logrus"
 )
 
 type InstanceUnit struct {
-	unit  *pod.Unit
+	unit  *unit.Unit
 	spec  *spec.Spec
 	count int
 	nodes spec.Nodes
@@ -51,10 +51,7 @@ func (u *InstanceUnit) Schedule(db *database.Database, count int) (err error) {
 	}
 
 	schd := &Scheduler{
-		Id: Resource{
-			Pod:  u.unit.Pod.Id,
-			Unit: u.unit.Id,
-		},
+		Id:            u.unit.Id,
 		Kind:          InstanceUnitKind,
 		Spec:          u.spec.Id,
 		Count:         u.count,
@@ -63,7 +60,7 @@ func (u *InstanceUnit) Schedule(db *database.Database, count int) (err error) {
 	}
 
 	ndes, offlineCount, noMountCount, err := u.spec.GetAllNodes(
-		db, u.unit.Pod.Organization)
+		db, u.unit.Organization)
 	if err != nil {
 		return
 	}
@@ -71,7 +68,6 @@ func (u *InstanceUnit) Schedule(db *database.Database, count int) (err error) {
 
 	if len(u.nodes) == 0 {
 		logrus.WithFields(logrus.Fields{
-			"pod":                 u.unit.Pod.Id.Hex(),
 			"unit":                u.unit.Id.Hex(),
 			"shape":               u.spec.Instance.Shape.Hex(),
 			"offline_count":       offlineCount,
@@ -107,7 +103,6 @@ func (u *InstanceUnit) Schedule(db *database.Database, count int) (err error) {
 	schd.Modified = time.Now()
 
 	logrus.WithFields(logrus.Fields{
-		"pod":           u.unit.Pod.Id.Hex(),
 		"unit":          u.unit.Id.Hex(),
 		"count":         u.count,
 		"primary_nodes": len(primaryNodes),
@@ -310,7 +305,6 @@ func (u *InstanceUnit) scheduleComplex(db *database.Database,
 
 	if overscheduled > 0 {
 		logrus.WithFields(logrus.Fields{
-			"pod":           u.unit.Pod.Id.Hex(),
 			"unit":          u.unit.Id.Hex(),
 			"kind":          u.unit.Kind,
 			"shape":         u.spec.Instance.Shape.Hex(),
@@ -321,11 +315,11 @@ func (u *InstanceUnit) scheduleComplex(db *database.Database,
 	return
 }
 
-func NewInstanceUnit(unit *pod.Unit, spc *spec.Spec) (
+func NewInstanceUnit(unt *unit.Unit, spc *spec.Spec) (
 	instUnit *InstanceUnit) {
 
 	instUnit = &InstanceUnit{
-		unit: unit,
+		unit: unt,
 		spec: spc,
 	}
 
