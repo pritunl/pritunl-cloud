@@ -1,14 +1,10 @@
 package pod
 
 import (
-	"time"
-
-	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
-	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -230,58 +226,6 @@ func RemoveMultiOrg(db *database.Database, orgId primitive.ObjectID,
 		err = database.ParseError(err)
 		return
 	}
-
-	return
-}
-
-func NewSpec(db *database.Database,
-	podId, unitId primitive.ObjectID) (timestamp time.Time,
-	index int, err error) {
-
-	coll := db.Pods()
-
-	updateOpts := options.FindOneAndUpdate()
-	updateOpts.Projection = &bson.M{
-		"units.id":             1,
-		"units.spec_index":     1,
-		"units.spec_timestamp": 1,
-	}
-	updateOpts.SetArrayFilters(options.ArrayFilters{
-		Filters: []interface{}{
-			bson.M{
-				"elem.id": unitId,
-			},
-		},
-	})
-	updateOpts.SetReturnDocument(options.After)
-
-	pd := &Pod{}
-
-	err = coll.FindOneAndUpdate(db, &bson.M{
-		"_id": podId,
-	}, &bson.M{
-		"$inc": &bson.M{
-			"units.$[elem].spec_index": 1,
-		},
-		"$currentDate": &bson.M{
-			"units.$[elem].spec_timestamp": true,
-		},
-	}, updateOpts).Decode(pd)
-	if err != nil {
-		err = database.ParseError(err)
-		return
-	}
-
-	unit := pd.GetUnit(unitId)
-	if unit == nil {
-		err = &errortypes.NotFoundError{
-			errors.New("pod: Failed to get unit on new spec"),
-		}
-		return
-	}
-
-	index = unit.SpecIndex
-	timestamp = unit.SpecTimestamp
 
 	return
 }
