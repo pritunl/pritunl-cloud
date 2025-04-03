@@ -14,7 +14,7 @@ import (
 )
 
 type Scheduler struct {
-	Id            Resource                   `bson:"_id" json:"id"`
+	Id            primitive.ObjectID         `bson:"_id" json:"id"`
 	Kind          string                     `bson:"kind" json:"kind"`
 	Created       time.Time                  `bson:"created" json:"created"`
 	Modified      time.Time                  `bson:"modified" json:"modified"`
@@ -24,11 +24,6 @@ type Scheduler struct {
 	Consumed      int                        `bson:"consumed" json:"consumed"`
 	Tickets       TicketsStore               `bson:"tickets" json:"tickets"`
 	Failures      map[primitive.ObjectID]int `bson:"failures" json:"failures"`
-}
-
-type Resource struct {
-	Pod  primitive.ObjectID `bson:"pod,omitempty" json:"pod"`
-	Unit primitive.ObjectID `bson:"unit,omitempty" json:"unit"`
 }
 
 type Ticket struct {
