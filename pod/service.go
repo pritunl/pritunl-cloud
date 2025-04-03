@@ -4,11 +4,10 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
-	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/spec"
+	"github.com/pritunl/pritunl-cloud/unit"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -18,7 +17,6 @@ type Pod struct {
 	Comment          string             `bson:"comment" json:"comment"`
 	Organization     primitive.ObjectID `bson:"organization" json:"organization"`
 	DeleteProtection bool               `bson:"delete_protection" json:"delete_protection"`
-	Units            []*Unit            `bson:"units" json:"units"`
 }
 
 func (p *Pod) Validate(db *database.Database) (
@@ -37,21 +35,25 @@ func (p *Pod) Validate(db *database.Database) (
 	return
 }
 
-func (p *Pod) InitUnits(db *database.Database, units []*UnitInput) (
+func (p *Pod) InitUnits(db *database.Database, units []*unit.UnitInput) (
 	errData *errortypes.ErrorData, err error) {
 
-	p.Units = []*Unit{}
-
 	for _, unitData := range units {
-		unit := &Unit{
-			Pod:         p,
-			Id:          primitive.NewObjectID(),
-			Name:        unitData.Name,
-			Spec:        unitData.Spec,
-			Deployments: []*Deployment{},
+		if unitData.Delete {
+			continue
 		}
 
-		errData, err = unit.Parse(db)
+		unt := &unit.Unit{
+			Id:           primitive.NewObjectID(),
+			Pod:          p.Id,
+			Organization: p.Organization,
+			Name:         unitData.Name,
+			Spec:         unitData.Spec,
+			SpecIndex:    1,
+			Deployments:  []primitive.ObjectID{},
+		}
+
+		errData, err = unt.Parse(db, true)
 		if err != nil {
 			return
 		}
@@ -59,70 +61,57 @@ func (p *Pod) InitUnits(db *database.Database, units []*UnitInput) (
 			return
 		}
 
-		p.Units = append(p.Units, unit)
+		err = unt.Insert(db)
+		if err != nil {
+			return
+		}
 	}
 
 	return
 }
 
 func (p *Pod) CommitFieldsUnits(db *database.Database,
-	units []*UnitInput, fields set.Set) (
+	units []*unit.UnitInput, fields set.Set) (
 	errData *errortypes.ErrorData, err error) {
 
-	arraySelectSet := database.NewArraySelectFields(p, "units", fields)
-	arraySelectPush := database.NewArraySelectFields(p, "units", fields)
-	arraySelectPull := database.NewArraySelectFields(p, "units", fields)
-
-	curUnitsSet := set.NewSet()
-	curUnitsMap := map[primitive.ObjectID]*Unit{}
-	for _, unit := range p.Units {
-		curUnitsSet.Add(unit.Id)
-		unit.Pod = p
-		curUnitsMap[unit.Id] = unit
+	curUnitsMap, err := unit.GetAllMap(db, &bson.M{
+		"pod": p.Id,
+	})
+	if err != nil {
+		return
 	}
 
 	unitsName := set.NewSet()
-	newUnitsSet := set.NewSet()
+	for _, unitData := range units {
+		if !unitData.Delete {
+			if unitsName.Contains(unitData.Name) {
+				errData = &errortypes.ErrorData{
+					Error:   "unit_duplicate_name",
+					Message: "Duplicate unit name",
+				}
+				return
+			}
+			unitsName.Add(unitData.Name)
+		}
+
+		if unitData.Delete {
+			if false {
+				errData = &errortypes.ErrorData{
+					Error:   "unit_delete_active_deployments",
+					Message: "Cannot delete unit with active deployments",
+				}
+				return
+			}
+		}
+	}
 
 	for _, unitData := range units {
 		if unitData.Delete {
-			arraySelectPull.Delete(unitData.Id)
 			continue
 		}
 
-		if unitsName.Contains(unitData.Name) {
-			errData = &errortypes.ErrorData{
-				Error:   "unit_duplicate_name",
-				Message: "Duplicate unit name",
-			}
-		}
-		unitsName.Add(unitData.Name)
-
 		curUnit := curUnitsMap[unitData.Id]
 		if curUnit == nil {
-			unit := &Unit{
-				Pod:         p,
-				Id:          primitive.NewObjectID(),
-				Name:        unitData.Name,
-				Spec:        unitData.Spec,
-				Deployments: []*Deployment{},
-			}
-			curUnitsSet.Add(unit.Id)
-			curUnitsMap[unit.Id] = unit
-			newUnitsSet.Add(unit.Id)
-
-			errData, err = unit.Parse(db)
-			if err != nil {
-				return
-			}
-			if errData != nil {
-				return
-			}
-
-			p.Units = append(p.Units, unit)
-
-			arraySelectPush.Push(unit)
-
 			continue
 		}
 
@@ -135,12 +124,11 @@ func (p *Pod) CommitFieldsUnits(db *database.Database,
 			return
 		}
 
-		newUnitsSet.Add(unitData.Id)
 		curUnit.Name = unitData.Name
 		curUnit.Spec = unitData.Spec
 		curUnit.DeployCommit = deploySpec.Id
 
-		errData, err = curUnit.Parse(db)
+		errData, err = curUnit.Parse(db, false)
 		if err != nil {
 			return
 		}
@@ -148,60 +136,56 @@ func (p *Pod) CommitFieldsUnits(db *database.Database,
 			return
 		}
 
-		arraySelectSet.Update(unitData.Id, bson.M{
-			"name":          curUnit.Name,
-			"kind":          curUnit.Kind,
-			"count":         curUnit.Count,
-			"spec":          curUnit.Spec,
-			"last_commit":   curUnit.LastCommit,
-			"deploy_commit": curUnit.DeployCommit,
-			"hash":          curUnit.Hash,
-		})
-	}
+		updateFields := set.NewSet(
+			"name",
+			"kind",
+			"count",
+			"spec",
+			"last_commit",
+			"deploy_commit",
+			"hash",
+		)
 
-	coll := db.Pods()
-
-	if arraySelectPull.Modified() {
-		updateQuery, arrayFilters := arraySelectPull.GetQuery()
-
-		updateOpts := options.Update().SetArrayFilters(options.ArrayFilters{
-			Filters: arrayFilters,
-		})
-		_, err = coll.UpdateOne(db, &bson.M{
-			"_id": p.Id,
-		}, updateQuery, updateOpts)
+		err = curUnit.CommitFields(db, updateFields)
 		if err != nil {
-			err = database.ParseError(err)
 			return
 		}
 	}
 
-	if arraySelectPush.Modified() {
-		updateQuery, arrayFilters := arraySelectPush.GetQuery()
+	for _, unitData := range units {
+		if unitData.Delete {
+			err = unit.Remove(db, unitData.Id)
+			if err != nil {
+				return
+			}
+			continue
+		}
 
-		updateOpts := options.Update().SetArrayFilters(options.ArrayFilters{
-			Filters: arrayFilters,
-		})
-		_, err = coll.UpdateOne(db, &bson.M{
-			"_id": p.Id,
-		}, updateQuery, updateOpts)
+		curUnit := curUnitsMap[unitData.Id]
+		if curUnit != nil {
+			continue
+		}
+
+		unt := &unit.Unit{
+			Id:           primitive.NewObjectID(),
+			Pod:          p.Id,
+			Organization: p.Organization,
+			Name:         unitData.Name,
+			Spec:         unitData.Spec,
+			SpecIndex:    1,
+			Deployments:  []primitive.ObjectID{},
+		}
+
+		errData, err = unt.Parse(db, true)
 		if err != nil {
-			err = database.ParseError(err)
 			return
 		}
-	}
+		if errData != nil {
+			return
+		}
 
-	if arraySelectSet.Modified() {
-		updateQuery, arrayFilters := arraySelectSet.GetQuery()
-
-		updateOpts := options.Update().SetArrayFilters(options.ArrayFilters{
-			Filters: arrayFilters,
-		})
-		_, err = coll.UpdateOne(db, &bson.M{
-			"_id": p.Id,
-		}, updateQuery, updateOpts)
+		err = unt.Insert(db)
 		if err != nil {
-			err = database.ParseError(err)
 			return
 		}
 	}
@@ -243,35 +227,4 @@ func (p *Pod) Insert(db *database.Database) (err error) {
 	}
 
 	return
-}
-
-func (p *Pod) GetUnit(unitId primitive.ObjectID) *Unit {
-	for _, unit := range p.Units {
-		if unit.Id == unitId {
-			unit.Pod = p
-			return unit
-		}
-	}
-	return nil
-}
-
-func (p *Pod) IterInstances() <-chan *Unit {
-	iter := make(chan *Unit)
-
-	go func() {
-		defer close(iter)
-
-		for _, unit := range p.Units {
-			if unit.Kind != deployment.Instance &&
-				unit.Kind != deployment.Image {
-
-				continue
-			}
-
-			unit.Pod = p
-			iter <- unit
-		}
-	}()
-
-	return iter
 }
