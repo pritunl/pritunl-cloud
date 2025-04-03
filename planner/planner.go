@@ -13,14 +13,14 @@ import (
 	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/plan"
-	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/spec"
+	"github.com/pritunl/pritunl-cloud/unit"
 	"github.com/sirupsen/logrus"
 )
 
 type Planner struct {
-	podsMap map[primitive.ObjectID]*pod.Pod
+	unitsMap map[primitive.ObjectID]*unit.Unit
 }
 
 func (p *Planner) setInstanceAction(db *database.Database,
@@ -87,25 +87,8 @@ func (p *Planner) checkInstance(db *database.Database,
 		return
 	}
 
-	pd := p.podsMap[deply.Pod]
-	if pd == nil {
-		logrus.WithFields(logrus.Fields{
-			"deployment": deply.Id.Hex(),
-			"instance":   deply.Instance.Hex(),
-			"pod":        deply.Pod.Hex(),
-			"unit":       deply.Unit.Hex(),
-		}).Error("scheduler: Failed to find pod for deployment")
-
-		// err = deployment.Remove(db, deply.Id)
-		// if err != nil {
-		// 	return
-		// }
-
-		return
-	}
-
-	unit := pd.GetUnit(deply.Unit)
-	if unit == nil {
+	unt := p.unitsMap[deply.Unit]
+	if unt == nil {
 		logrus.WithFields(logrus.Fields{
 			"deployment": deply.Id.Hex(),
 			"instance":   deply.Instance.Hex(),
@@ -205,7 +188,7 @@ func (p *Planner) checkInstance(db *database.Database,
 		return
 	}
 
-	if deply.State == deployment.Deployed && !unit.HasDeployment(deply.Id) {
+	if deply.State == deployment.Deployed && !unt.HasDeployment(deply.Id) {
 		logrus.WithFields(logrus.Fields{
 			"deployment": deply.Id.Hex(),
 			"instance":   deply.Instance.Hex(),
@@ -213,7 +196,7 @@ func (p *Planner) checkInstance(db *database.Database,
 			"unit":       deply.Unit.Hex(),
 		}).Info("scheduler: Restoring deployment")
 
-		err = unit.RestoreDeployment(db, deply.Id)
+		err = unt.RestoreDeployment(db, deply.Id)
 		if err != nil {
 			return
 		}
@@ -243,7 +226,7 @@ func (p *Planner) checkInstance(db *database.Database,
 		return
 	}
 
-	data, err := buildEvalData(pd, unit, inst)
+	data, err := buildEvalData(unt, inst)
 	if err != nil {
 		return
 	}
@@ -326,15 +309,9 @@ func (p *Planner) ApplyPlans(db *database.Database) (err error) {
 		return
 	}
 
-	pods, err := pod.GetAll(db, &bson.M{})
+	p.unitsMap, err = unit.GetAllMap(db, &bson.M{})
 	if err != nil {
 		return
-	}
-
-	p.podsMap = map[primitive.ObjectID]*pod.Pod{}
-
-	for _, pd := range pods {
-		p.podsMap[pd.Id] = pd
 	}
 
 	var waiters sync.WaitGroup
