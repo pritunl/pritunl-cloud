@@ -6,8 +6,8 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
-	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/scheduler"
+	"github.com/pritunl/pritunl-cloud/unit"
 	"github.com/sirupsen/logrus"
 )
 
@@ -26,16 +26,13 @@ var schedule = &Task{
 }
 
 func scheduleUnits(db *database.Database) (err error) {
-	pods, err := pod.GetAll(db, &bson.M{})
+	units, err := unit.GetAll(db, &bson.M{
+		"kind": bson.M{
+			"$in": []string{deployment.Instance, deployment.Image},
+		},
+	})
 	if err != nil {
 		return
-	}
-
-	units := []*pod.Unit{}
-	for _, pd := range pods {
-		for unit := range pd.IterInstances() {
-			units = append(units, unit)
-		}
 	}
 
 	deploymentIds, err := deployment.GetAllActiveIds(db)
@@ -43,16 +40,16 @@ func scheduleUnits(db *database.Database) (err error) {
 		return
 	}
 
-	for _, unit := range units {
-		for _, deply := range unit.Deployments {
-			if !deploymentIds.Contains(deply.Id) {
+	for _, unt := range units {
+		for _, deplyId := range unt.Deployments {
+			if !deploymentIds.Contains(deplyId) {
 				logrus.WithFields(logrus.Fields{
-					"pod":        unit.Pod.Id.Hex(),
-					"unit":       unit.Id.Hex(),
-					"deployment": deply.Id.Hex(),
+					"pod":        unt.Pod.Hex(),
+					"unit":       unt.Id.Hex(),
+					"deployment": deplyId.Hex(),
 				}).Info("deploy: Removing deployment")
 
-				err = unit.RemoveDeployement(db, deply.Id)
+				err = unt.RemoveDeployement(db, deplyId)
 				if err != nil {
 					return
 				}
@@ -60,12 +57,12 @@ func scheduleUnits(db *database.Database) (err error) {
 		}
 	}
 
-	for _, unit := range units {
-		if len(unit.Deployments) >= unit.Count {
+	for _, unt := range units {
+		if len(unt.Deployments) >= unt.Count {
 			continue
 		}
 
-		err = scheduler.Schedule(db, unit)
+		err = scheduler.Schedule(db, unt)
 		if err != nil {
 			return
 		}
