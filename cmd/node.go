@@ -84,7 +84,7 @@ func Node() (err error) {
 	constants.Shutdown = true
 	go routr.Shutdown()
 
-	if constants.Production {
+	if constants.Production && !constants.FastExit {
 		time.Sleep(20 * time.Second)
 	}
 
