@@ -67,11 +67,23 @@ const css = {
 		overflowY: "auto",
 		margin: "0 0 0 10px",
 	} as React.CSSProperties,
+	groupEditor: {
+		flex: 1,
+		minWidth: "280px",
+		height: "100%",
+		margin: "0",
+		fontSize: "12px",
+	} as React.CSSProperties,
+	groupEditorSplit: {
+		flex: 1,
+		minWidth: "280px",
+		height: "100%",
+		margin: "0 0 0 10px",
+	} as React.CSSProperties,
 	groupEdit: {
 		flex: 1,
 		minWidth: "280px",
 		height: "100%",
-		overflowY: "hidden",
 		margin: "0",
 		fontSize: "12px",
 	} as React.CSSProperties,
@@ -79,7 +91,6 @@ const css = {
 		flex: 1,
 		minWidth: "280px",
 		height: "100%",
-		overflowY: "hidden",
 		margin: "0 0 0 10px",
 	} as React.CSSProperties,
 	editorBox: {
@@ -91,7 +102,6 @@ const css = {
 	editor: {
 		margin: "0",
 		borderRadius: "3px",
-		overflow: "hidden",
 	} as React.CSSProperties,
 	buttonEdit: {
 		position: "absolute",
@@ -358,7 +368,7 @@ export default class PodEditor extends React.Component<Props, State> {
 		if (!this.props.readOnly) {
 			rightStyle = expandRight ? css.groupEdit : css.groupEditSplit
 		} else {
-			rightStyle = expandRight ? css.group : css.groupSplit
+			rightStyle = expandRight ? css.groupEditor : css.groupEditorSplit
 		}
 
 		let editor: JSX.Element
@@ -414,6 +424,10 @@ export default class PodEditor extends React.Component<Props, State> {
 					this.updateState()
 
 					CompletionEngine.handleAfterMount(editor, monaco)
+
+					setTimeout(() => {
+						this.syncMarkers(val)
+					}, 500)
 				}}
 				options={{
 					folding: false,
@@ -491,7 +505,7 @@ export default class PodEditor extends React.Component<Props, State> {
 				{markdown}
 			</div>
 			<div
-				style={expandRight ? css.group : css.groupSplit}
+				style={expandRight ? css.groupEditor : css.groupEditorSplit}
 				hidden={expandLeft}
 			>
 				<div style={rightStyle}>
