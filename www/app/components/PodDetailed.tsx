@@ -110,6 +110,8 @@ const css = {
 };
 
 export default class PodDetailed extends React.Component<Props, State> {
+	draftsSyncTimeout: NodeJS.Timeout
+
 	constructor(props: any, context: any) {
 		super(props, context);
 		this.state = {
@@ -164,6 +166,14 @@ export default class PodDetailed extends React.Component<Props, State> {
 			}
 		});
 
+		let pod = this.state.pod
+		if (!pod && this.props.pod.drafts?.length) {
+			pod = {
+				...this.props.pod,
+				units: this.props.pod.drafts,
+			}
+		}
+
 		PodActions.commit(this.state.pod).then((): void => {
 			this.setState({
 				...this.state,
@@ -211,7 +221,7 @@ export default class PodDetailed extends React.Component<Props, State> {
 
 			for (let i = 0; i < pod.units.length; i++) {
 				if (pod.units[i].id === unitId) {
-					pod.units[i].deploy_commit = commit
+					pod.units[i].deploy_spec = commit
 					break
 				}
 			}
@@ -237,7 +247,7 @@ export default class PodDetailed extends React.Component<Props, State> {
 
 		for (let i = 0; i < pod.units.length; i++) {
 			if (pod.units[i].id === unitId) {
-				pod.units[i].deploy_commit = commit
+				pod.units[i].deploy_spec = commit
 				break
 			}
 		}
@@ -274,8 +284,19 @@ export default class PodDetailed extends React.Component<Props, State> {
 	}
 
 	render(): JSX.Element {
-		let pod: PodTypes.Pod = this.state.pod ||
-			this.props.pod;
+		let pod: PodTypes.Pod
+		let hasDrafts = !!this.props.pod.drafts?.length
+
+		if (this.state.pod) {
+			pod = this.state.pod
+		} else if (hasDrafts) {
+			pod = {
+				...this.props.pod,
+				units: this.props.pod.drafts,
+			}
+		} else {
+			pod = this.props.pod
+		}
 
 		let hasOrganizations = !!this.props.organizations.length;
 		let organizationsSelect: JSX.Element[] = [];
@@ -396,7 +417,7 @@ export default class PodDetailed extends React.Component<Props, State> {
 			<PodWorkspace
 				pod={pod}
 				disabled={this.state.disabled}
-				unitChanged={this.state.unitChanged}
+				unitChanged={this.state.unitChanged || hasDrafts}
 				mode={this.props.mode}
 				onMode={(mode: string): void => {
 					this.props.onMode(mode)
@@ -431,16 +452,33 @@ export default class PodDetailed extends React.Component<Props, State> {
 						pod: pod,
 					});
 					this.props.onMode(newMode)
+
+					if (this.draftsSyncTimeout) {
+						clearTimeout(this.draftsSyncTimeout)
+					}
+
+					this.draftsSyncTimeout = setTimeout(() => {
+						PodActions.commitDrafts({
+							...this.props.pod,
+							drafts: units,
+						})
+						this.draftsSyncTimeout = null
+					}, 500)
 				}}
 			/>
 			<PageSave
 				style={css.save}
-				hidden={!this.state.pod && !this.state.message}
+				hidden={!this.state.pod && !this.state.message && !hasDrafts}
 				message={this.state.message}
-				changed={this.state.changed}
+				changed={this.state.changed || hasDrafts}
 				disabled={this.state.disabled}
 				light={true}
 				onCancel={(): void => {
+					PodActions.commitDrafts({
+						...this.props.pod,
+						drafts: [],
+					}, true)
+
 					this.setState({
 						...this.state,
 						changed: false,
