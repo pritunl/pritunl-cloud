@@ -174,14 +174,15 @@ const css = {
 
 export default class PodWorkspace extends React.Component<Props, State> {
 	interval: NodeJS.Timer;
+	draftInterval: NodeJS.Timer;
 	eventToken: string;
 
 	constructor(props: any, context: any) {
 		super(props, context);
 		this.state = {
 			disabled: false,
-			expandLeft: true,
-			expandRight: false,
+			expandLeft: null,
+			expandRight: null,
 			activeUnitId: "",
 			selectedDeployments: {},
 			lastSelectedDeployment: null,
@@ -213,7 +214,9 @@ export default class PodWorkspace extends React.Component<Props, State> {
 			switch (action.type) {
 				case PodTypes.CHANGE:
 					let activeUnit = this.getActiveUnit()
-					this.syncUnit(activeUnit.id);
+					if (activeUnit && !activeUnit.new) {
+						this.syncUnit(activeUnit.id)
+					}
 					break;
 			}
 		});
@@ -569,7 +572,17 @@ export default class PodWorkspace extends React.Component<Props, State> {
 
 		let expandLeft = this.state.expandLeft
 		let expandRight = this.state.expandRight
-		if (!this.props.unitChanged) {
+		if (expandLeft === null) {
+			if (mode === "edit") {
+				expandLeft = false
+				expandRight = true
+			} else {
+				expandLeft = true
+				expandRight = false
+			}
+		}
+
+		if (!this.props.unitChanged && mode !== "edit") {
 			expandLeft = true
 			expandRight = false
 		}
@@ -668,7 +681,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 
 		let commits: PodTypes.Commit[];
 		if (this.state.commits?.unit === activeUnit?.id) {
-			commits = this.state.commits.specs
+			commits = this.state.commits?.specs
 		}
 
 		let commitMenu: JSX.Element
@@ -680,7 +693,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 					let className = ""
 					let disabled = false
 					let selected = false
-					if (activeUnit && activeUnit.deploy_commit == commit.id) {
+					if (activeUnit && activeUnit.deploy_spec == commit.id) {
 						// disabled = true
 						className = "bp5-text-intent-primary bp5-intent-primary"
 						selected = true
@@ -865,7 +878,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 				commits.forEach((commit): void => {
 					let className = ""
 					let disabled = false
-					if (activeUnit && activeUnit.last_commit == commit.id) {
+					if (activeUnit && activeUnit.last_spec == commit.id) {
 						if (diffCommit) {
 							className = "bp5-text-intent-success"
 						} else {
@@ -1017,11 +1030,6 @@ export default class PodWorkspace extends React.Component<Props, State> {
 						</Blueprint.Button>
 					}
 
-					let offset = 0
-					if (activeUnit.spec_index) {
-						offset = commit.index - activeUnit.spec_index
-					}
-
 					commitMenuItems.push(<Blueprint.MenuItem
 						key={"diff-" + commit.id}
 						disabled={this.props.disabled || this.state.disabled}
@@ -1033,7 +1041,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 						onClick={(): void => {
 							this.onViewCommit(activeUnit, commit)
 						}}
-						text={commit.id.substring(12) + " [" + offset + "]"}
+						text={commit.id.substring(12)}
 						textClassName={className}
 						labelElement={<span
 							className={className}
@@ -1154,6 +1162,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 				/>
 			</div>
 			<PodEditor
+				podId={this.props.pod.id}
 				hidden={mode === "unit"}
 				expandLeft={expandLeft}
 				expandRight={expandRight}
