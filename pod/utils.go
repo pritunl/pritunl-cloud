@@ -1,6 +1,8 @@
 package pod
 
 import (
+	"time"
+
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/mongo-go-driver/mongo/options"
@@ -148,6 +150,53 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	}
 
 	return
+}
+
+func UpdateDrafts(db *database.Database, podId, usrId primitive.ObjectID,
+	drafts []*UnitDraft) (err error) {
+
+	for _, draft := range drafts {
+		draft.Timestamp = time.Now()
+	}
+
+	coll := db.Pods()
+	_, err = coll.UpdateOne(db, &bson.M{
+		"_id": podId,
+	}, &bson.M{
+		"$set": &bson.M{
+			"drafts." + usrId.Hex(): drafts,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return nil
+}
+
+func UpdateDraftsOrg(db *database.Database, orgId, podId, usrId primitive.ObjectID,
+	drafts []*UnitDraft) (err error) {
+
+	for _, draft := range drafts {
+		draft.Timestamp = time.Now()
+	}
+
+	coll := db.Pods()
+	_, err = coll.UpdateOne(db, &bson.M{
+		"_id":          podId,
+		"organization": orgId,
+	}, &bson.M{
+		"$set": &bson.M{
+			"drafts." + usrId.Hex(): drafts,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return nil
 }
 
 func Remove(db *database.Database, podId primitive.ObjectID) (err error) {
