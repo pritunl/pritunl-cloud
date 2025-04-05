@@ -12,6 +12,7 @@ export interface Pod {
 	organization?: string;
 	delete_protection?: boolean;
 	units?: Unit[];
+	drafts?: Unit[];
 }
 
 export interface Unit {
