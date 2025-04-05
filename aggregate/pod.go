@@ -3,6 +3,7 @@ package aggregate
 import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/unit"
@@ -19,7 +20,7 @@ type PodAggregate struct {
 	Units []*unit.Unit `json:"units"`
 }
 
-func GetPod(db *database.Database, query *bson.M) (
+func GetPod(db *database.Database, usrId primitive.ObjectID, query *bson.M) (
 	pd *PodAggregate, err error) {
 
 	coll := db.Pods()
@@ -62,6 +63,8 @@ func GetPod(db *database.Database, query *bson.M) (
 		Units: doc.UnitDocs,
 	}
 
+	pd.Json(usrId)
+
 	err = cursor.Err()
 	if err != nil {
 		err = database.ParseError(err)
@@ -71,8 +74,9 @@ func GetPod(db *database.Database, query *bson.M) (
 	return
 }
 
-func GetPodsPaged(db *database.Database, query *bson.M, page,
-	pageCount int64) (pods []*PodAggregate, count int64, err error) {
+func GetPodsPaged(db *database.Database, usrId primitive.ObjectID,
+	query *bson.M, page, pageCount int64) (pods []*PodAggregate,
+	count int64, err error) {
 
 	coll := db.Pods()
 	pods = []*PodAggregate{}
@@ -136,10 +140,14 @@ func GetPodsPaged(db *database.Database, query *bson.M, page,
 			return
 		}
 
-		pods = append(pods, &PodAggregate{
+		pd := &PodAggregate{
 			Pod:   doc.Pod,
 			Units: doc.UnitDocs,
-		})
+		}
+
+		pd.Json(usrId)
+
+		pods = append(pods, pd)
 	}
 
 	err = cursor.Err()
