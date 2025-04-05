@@ -38,11 +38,11 @@ export interface Commit {
 	id?: string
 	pod?: string
 	unit?: string
+	index?: number
 	timestamp?: string
 	name?: string
 	kind?: string
 	count?: number
-	offset?: number
 	hash?: string
 	data?: string
 }
@@ -72,6 +72,9 @@ export interface Deployment {
 	domain_data?: DomainData;
 	zone_name?: string;
 	node_name?: string;
+	spec_offset?: number;
+	spec_index?: number;
+	spec_timestamp?: string;
 	instance_name?: string;
 	instance_roles?: string[];
 	instance_memory?: number;
