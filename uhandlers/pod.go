@@ -12,6 +12,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/aggregate"
+	"github.com/pritunl/pritunl-cloud/authorizer"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/deployment"
@@ -32,6 +33,7 @@ type podData struct {
 	Organization     primitive.ObjectID `json:"organization"`
 	DeleteProtection bool               `json:"delete_protection"`
 	Units            []*unit.UnitInput  `json:"units"`
+	Drafts           []*pod.UnitDraft   `json:"drafts"`
 	Count            int                `json:"count"`
 }
 
@@ -90,7 +92,6 @@ func podPut(c *gin.Context) {
 	pd.DeleteProtection = data.DeleteProtection
 
 	fields := set.NewSet(
-		"id",
 		"name",
 		"comment",
 		"delete_protection",
@@ -122,6 +123,46 @@ func podPut(c *gin.Context) {
 	event.PublishDispatch(db, "unit.change")
 
 	c.JSON(200, pd)
+}
+
+func podDraftsPut(c *gin.Context) {
+	if demo.BlockedSilent(c) {
+		return
+	}
+
+	db := c.MustGet("db").(*database.Database)
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	authr := c.MustGet("authorizer").(*authorizer.Authorizer)
+	data := &podData{}
+
+	podId, ok := utils.ParseObjectId(c.Param("pod_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	err := c.Bind(data)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "handler: Bind error"),
+		}
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	usr, err := authr.GetUser(db)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	err = pod.UpdateDraftsOrg(db, userOrg, podId, usr.Id, data.Drafts)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	c.JSON(200, nil)
 }
 
 func podPost(c *gin.Context) {
@@ -261,6 +302,7 @@ func podsDelete(c *gin.Context) {
 
 func podGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
+	authr := c.MustGet("authorizer").(*authorizer.Authorizer)
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
 	podId, ok := utils.ParseObjectId(c.Param("pod_id"))
@@ -269,7 +311,13 @@ func podGet(c *gin.Context) {
 		return
 	}
 
-	pd, err := aggregate.GetPod(db, &bson.M{
+	usr, err := authr.GetUser(db)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	pd, err := aggregate.GetPod(db, usr.Id, &bson.M{
 		"_id":          podId,
 		"organization": userOrg,
 	})
@@ -283,6 +331,7 @@ func podGet(c *gin.Context) {
 
 func podsGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
+	authr := c.MustGet("authorizer").(*authorizer.Authorizer)
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
 	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
@@ -295,6 +344,12 @@ func podsGet(c *gin.Context) {
 	podId, ok := utils.ParseObjectId(c.Query("id"))
 	if ok {
 		query["_id"] = podId
+	}
+
+	usr, err := authr.GetUser(db)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
 	}
 
 	name := strings.TrimSpace(c.Query("name"))
@@ -318,7 +373,8 @@ func podsGet(c *gin.Context) {
 		query["role"] = role
 	}
 
-	pods, count, err := aggregate.GetPodsPaged(db, &query, page, pageCount)
+	pods, count, err := aggregate.GetPodsPaged(db, usr.Id,
+		&query, page, pageCount)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
