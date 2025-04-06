@@ -294,6 +294,7 @@ export default class PodDetailed extends React.Component<Props, State> {
 
 	render(): JSX.Element {
 		let pod: PodTypes.Pod
+		let podOrig = this.props.pod
 		let hasDrafts = !!this.props.pod.drafts?.length
 
 		if (this.state.pod) {
@@ -425,6 +426,7 @@ export default class PodDetailed extends React.Component<Props, State> {
 			</div>
 			<PodWorkspace
 				pod={pod}
+				podOrig={podOrig}
 				disabled={this.state.disabled}
 				unitChanged={this.state.unitChanged || hasDrafts}
 				mode={this.props.mode}
