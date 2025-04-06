@@ -144,7 +144,7 @@ func Schedule(db *database.Database, unt *unit.Unit) (err error) {
 		return
 	}
 
-	spc, err := spec.Get(db, unt.DeployCommit)
+	spc, err := spec.Get(db, unt.DeploySpec)
 	if err != nil {
 		return
 	}
@@ -180,7 +180,7 @@ func ManualSchedule(db *database.Database, unt *unit.Unit,
 	}
 
 	if specId.IsZero() {
-		specId = unt.DeployCommit
+		specId = unt.DeploySpec
 	}
 
 	spc, err := spec.Get(db, specId)
@@ -190,7 +190,7 @@ func ManualSchedule(db *database.Database, unt *unit.Unit,
 
 	if spc.Unit != unt.Id {
 		errData = &errortypes.ErrorData{
-			Error:   "unit_deploy_commit_invalid",
+			Error:   "unit_deploy_spec_invalid",
 			Message: "Invalid unit deployment commit",
 		}
 		return
