@@ -6,6 +6,7 @@ import * as Alert from '../Alert';
 import * as Csrf from '../Csrf';
 import Loader from '../Loader';
 import * as PodTypes from '../types/PodTypes';
+import OrganizationsStore from '../stores/OrganizationsStore';
 import PodsStore from '../stores/PodsStore';
 import * as MiscUtils from '../utils/MiscUtils';
 
@@ -34,6 +35,7 @@ export function sync(noLoading?: boolean): Promise<void> {
 			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				if (loader) {
 					loader.done();
@@ -100,6 +102,7 @@ export function commit(pod: PodTypes.Pod): Promise<void> {
 			.send(pod)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -163,6 +166,7 @@ export function create(pod: PodTypes.Pod): Promise<void> {
 			.send(pod)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -191,6 +195,7 @@ export function remove(podId: string): Promise<void> {
 			.delete('/pod/' + podId)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -220,6 +225,7 @@ export function removeMulti(podIds: string[]): Promise<void> {
 			.send(podIds)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -265,6 +271,7 @@ export function syncUnit(podId?: string, unitId?: string): Promise<void> {
 			.get('/pod/' + podId + "/unit/" + unitId)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				if (res && res.status === 401) {
 					window.location.href = '/login';
@@ -309,6 +316,7 @@ export function deployUnit(podId: string, unitId: string,
 			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -344,6 +352,7 @@ export function updateMultiUnitAction(podId: string, unitId: string,
 			.send(deploymentIds)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -374,6 +383,7 @@ export function commitDeployment(deply: PodTypes.Deployment): Promise<void> {
 			.send(deply)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -412,6 +422,7 @@ export function log(deply: PodTypes.Deployment,
 			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.on('abort', () => {
 				if (loader) {
 					loader.done();
@@ -444,7 +455,7 @@ export function log(deply: PodTypes.Deployment,
 }
 
 export function syncSpecs(podId: string, unitId: string, page: number,
-	pageCount: number, noLoading?: boolean): Promise<PodTypes.CommitData> {
+	noLoading?: boolean): Promise<PodTypes.CommitData> {
 
 	let loader: Loader;
 	if (!noLoading) {
@@ -456,10 +467,11 @@ export function syncSpecs(podId: string, unitId: string, page: number,
 			.get("/pod/" + podId + "/unit/" + unitId + "/spec")
 			.query({
 				page: page,
-				page_count: pageCount,
+				page_count: 100,
 			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				if (loader) {
 					loader.done();
@@ -479,7 +491,7 @@ export function syncSpecs(podId: string, unitId: string, page: number,
 
 				res.body.unit = unitId
 				res.body.page = page
-				res.body.page_count = pageCount
+				res.body.page_count = 100
 				resolve(res.body as PodTypes.CommitData);
 			});
 	});
@@ -493,6 +505,7 @@ export function spec(podId: string, unitId: string,
 			.get("/pod/" + podId + "/unit/" + unitId + "/spec/" + specId)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				if (res && res.status === 401) {
 					window.location.href = '/login';
