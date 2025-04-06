@@ -26,6 +26,7 @@ import PageTextArea from "./PageTextArea";
 
 interface Props {
 	pod: PodTypes.PodRo;
+	podOrig: PodTypes.PodRo;
 	disabled: boolean;
 	unitChanged: boolean;
 	mode: string;
@@ -415,6 +416,22 @@ export default class PodWorkspace extends React.Component<Props, State> {
 		return activeUnit
 	}
 
+	getActiveUnitOrig = (): PodTypes.Unit => {
+		let units = (this.props.podOrig.units || [])
+
+		let activeUnit = units.find(unit => unit.id === this.state.activeUnitId)
+		if (!activeUnit) {
+			for (let unit of units) {
+				if (!unit.delete) {
+					activeUnit = unit
+					break
+				}
+			}
+		}
+
+		return activeUnit
+	}
+
 	getActiveUnitIndex = (): number => {
 		let units = [
 			...(this.props.pod.units || []),
@@ -687,13 +704,14 @@ export default class PodWorkspace extends React.Component<Props, State> {
 		let commitMenu: JSX.Element
 		if (mode === "unit") {
 			if (commits && this.state.unit?.kind !== "image") {
+				let activeUnitOrig = this.getActiveUnitOrig()
 				let commitMenuItems: JSX.Element[] = []
 
 				commits.forEach((commit): void => {
 					let className = ""
 					let disabled = false
 					let selected = false
-					if (activeUnit && activeUnit.deploy_spec == commit.id) {
+					if (activeUnit && activeUnitOrig.deploy_spec == commit.id) {
 						// disabled = true
 						className = "bp5-text-intent-primary bp5-intent-primary"
 						selected = true
