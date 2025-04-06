@@ -174,7 +174,11 @@ export default class PodDetailed extends React.Component<Props, State> {
 			}
 		}
 
-		PodActions.commit(this.state.pod).then((): void => {
+		for (let unit of pod.units) {
+			unit.deploy_spec = ""
+		}
+
+		PodActions.commit(pod).then((): void => {
 			this.setState({
 				...this.state,
 				message: 'Your changes have been saved',
@@ -234,25 +238,30 @@ export default class PodDetailed extends React.Component<Props, State> {
 				pod: pod,
 			})
 		} else {
+			pod = this.props.pod
+
 			this.setState({
 				...this.state,
 				disabled: true,
 			})
 		}
 
-		pod = {
+		let deployPod: PodTypes.Pod = {
 			...this.props.pod,
+			units: [],
 		}
-		pod.units = [...pod.units]
 
 		for (let i = 0; i < pod.units.length; i++) {
 			if (pod.units[i].id === unitId) {
-				pod.units[i].deploy_spec = commit
+				deployPod.units = [{
+					...pod.units[i],
+					deploy_spec: commit,
+				}]
 				break
 			}
 		}
 
-		PodActions.commit(pod).then((): void => {
+		PodActions.commitDeploy(deployPod).then((): void => {
 			this.setState({
 				...this.state,
 				disabled: false,
