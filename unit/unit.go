@@ -24,17 +24,17 @@ type Unit struct {
 	Spec          string               `bson:"spec" json:"spec"`
 	SpecIndex     int                  `bson:"spec_index" json:"spec_index"`
 	SpecTimestamp time.Time            `bson:"spec_timestamp" json:"-"`
-	LastCommit    primitive.ObjectID   `bson:"last_commit" json:"last_commit"`
-	DeployCommit  primitive.ObjectID   `bson:"deploy_commit" json:"deploy_commit"`
+	LastSpec      primitive.ObjectID   `bson:"last_spec" json:"last_spec"`
+	DeploySpec    primitive.ObjectID   `bson:"deploy_spec" json:"deploy_spec"`
 	Hash          string               `bson:"hash" json:"hash"`
 }
 
 type UnitInput struct {
-	Id           primitive.ObjectID `json:"id"`
-	Name         string             `json:"name"`
-	Spec         string             `json:"spec"`
-	DeployCommit primitive.ObjectID `json:"deploy_commit"`
-	Delete       bool               `json:"delete"`
+	Id         primitive.ObjectID `json:"id"`
+	Name       string             `json:"name"`
+	Spec       string             `json:"spec"`
+	DeploySpec primitive.ObjectID `json:"deploy_spec"`
+	Delete     bool               `json:"delete"`
 }
 
 func (u *Unit) Refresh(db *database.Database) (err error) {
@@ -260,12 +260,12 @@ func (u *Unit) Parse(db *database.Database, new bool) (
 		}
 
 		u.Hash = spc.Hash
-		u.LastCommit = spc.Id
-		if u.DeployCommit.IsZero() {
-			u.DeployCommit = spc.Id
+		u.LastSpec = spc.Id
+		if u.DeploySpec.IsZero() {
+			u.DeploySpec = spc.Id
 		}
 	} else if u.Name != spc.Name || u.Count != spc.Count {
-		curSpc, e := spec.Get(db, u.LastCommit)
+		curSpc, e := spec.Get(db, u.LastSpec)
 		if e != nil {
 			err = e
 			return
@@ -295,9 +295,9 @@ func (u *Unit) Parse(db *database.Database, new bool) (
 		}
 
 		u.Hash = curSpc.Hash
-		u.LastCommit = curSpc.Id
-		if u.DeployCommit.IsZero() {
-			u.DeployCommit = curSpc.Id
+		u.LastSpec = curSpc.Id
+		if u.DeploySpec.IsZero() {
+			u.DeploySpec = curSpc.Id
 		}
 	}
 
