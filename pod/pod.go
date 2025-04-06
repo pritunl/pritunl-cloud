@@ -136,18 +136,31 @@ func (p *Pod) CommitFieldsUnits(db *database.Database,
 			continue
 		}
 
-		deploySpec, e := spec.Get(db, unitData.DeployCommit)
-		if e != nil || deploySpec.Unit != curUnit.Id {
-			errData = &errortypes.ErrorData{
-				Error:   "unit_deploy_commit_invalid",
-				Message: "Invalid unit deployment commit",
-			}
-			return
-		}
+		updateFields := set.NewSet(
+			"name",
+			"kind",
+			"count",
+			"spec",
+			"last_spec",
+			"deploy_spec",
+			"hash",
+		)
 
 		curUnit.Name = unitData.Name
 		curUnit.Spec = unitData.Spec
-		curUnit.DeployCommit = deploySpec.Id
+
+		if !unitData.DeploySpec.IsZero() {
+			deploySpec, e := spec.Get(db, unitData.DeploySpec)
+			if e != nil || deploySpec.Unit != curUnit.Id {
+				errData = &errortypes.ErrorData{
+					Error:   "unit_deploy_spec_invalid",
+					Message: "Invalid unit deployment commit",
+				}
+				return
+			}
+
+			curUnit.DeploySpec = deploySpec.Id
+		}
 
 		errData, err = curUnit.Parse(db, false)
 		if err != nil {
@@ -156,16 +169,6 @@ func (p *Pod) CommitFieldsUnits(db *database.Database,
 		if errData != nil {
 			return
 		}
-
-		updateFields := set.NewSet(
-			"name",
-			"kind",
-			"count",
-			"spec",
-			"last_commit",
-			"deploy_commit",
-			"hash",
-		)
 
 		err = curUnit.CommitFields(db, updateFields)
 		if err != nil {
