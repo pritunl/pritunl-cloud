@@ -165,6 +165,70 @@ func podDraftsPut(c *gin.Context) {
 	c.JSON(200, nil)
 }
 
+func podDeployPut(c *gin.Context) {
+	if demo.BlockedSilent(c) {
+		return
+	}
+
+	db := c.MustGet("db").(*database.Database)
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	data := &podData{}
+
+	podId, ok := utils.ParseObjectId(c.Param("pod_id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	err := c.Bind(data)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "handler: Bind error"),
+		}
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	units, err := unit.GetAll(db, &bson.M{
+		"pod":          podId,
+		"organization": userOrg,
+	})
+	if err != nil {
+		return
+	}
+
+	unitsDataMap := map[primitive.ObjectID]*unit.UnitInput{}
+	for _, unitData := range data.Units {
+		unitsDataMap[unitData.Id] = unitData
+	}
+
+	for _, unt := range units {
+		unitData := unitsDataMap[unt.Id]
+		if unitData == nil || unitData.DeploySpec.IsZero() {
+			continue
+		}
+
+		deploySpec, e := spec.Get(db, unitData.DeploySpec)
+		if e != nil || deploySpec.Unit != unt.Id {
+			errData := &errortypes.ErrorData{
+				Error:   "unit_deploy_spec_invalid",
+				Message: "Invalid unit deployment commit",
+			}
+			c.JSON(400, errData)
+			return
+		}
+
+		unt.DeploySpec = unitData.DeploySpec
+		err = unt.CommitFields(db, set.NewSet("deploy_spec"))
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+	}
+
+	c.JSON(200, nil)
+}
+
 func podPost(c *gin.Context) {
 	if demo.Blocked(c) {
 		return
