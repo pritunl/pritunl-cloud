@@ -64,6 +64,7 @@ func podPut(c *gin.Context) {
 
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	authr := c.MustGet("authorizer").(*authorizer.Authorizer)
 	data := &podData{}
 
 	podId, ok := utils.ParseObjectId(c.Param("pod_id"))
@@ -116,6 +117,18 @@ func podPut(c *gin.Context) {
 
 	if errData != nil {
 		c.JSON(400, errData)
+		return
+	}
+
+	usr, err := authr.GetUser(db)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	err = pod.UpdateDrafts(db, podId, usr.Id, []*pod.UnitDraft{})
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
 		return
 	}
 
