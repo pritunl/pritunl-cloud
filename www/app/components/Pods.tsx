@@ -250,6 +250,11 @@ export default class Pods extends React.Component<{}, State> {
 					if (this.state.mode === "edit") {
 						newMode = "view"
 					}
+
+					if (newMode === "view" && pod.drafts?.length) {
+						newMode = "edit"
+					}
+
 					this.setState({
 						...this.state,
 						podId: pod.id,
