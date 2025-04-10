@@ -392,7 +392,11 @@ func podGet(c *gin.Context) {
 		"_id": podId,
 	})
 	if err != nil {
-		utils.AbortWithError(c, 500, err)
+		if _, ok := err.(*database.NotFoundError); ok {
+			c.AbortWithStatus(404)
+		} else {
+			utils.AbortWithError(c, 500, err)
+		}
 		return
 	}
 
@@ -478,13 +482,21 @@ func podUnitGet(c *gin.Context) {
 
 	unt, err := unit.Get(db, unitId)
 	if err != nil {
-		utils.AbortWithError(c, 500, err)
+		if _, ok := err.(*database.NotFoundError); ok {
+			c.AbortWithStatus(404)
+		} else {
+			utils.AbortWithError(c, 500, err)
+		}
 		return
 	}
 
 	deploys, err := aggregate.GetDeployments(db, unt)
 	if err != nil {
-		utils.AbortWithError(c, 500, err)
+		if _, ok := err.(*database.NotFoundError); ok {
+			c.AbortWithStatus(404)
+		} else {
+			utils.AbortWithError(c, 500, err)
+		}
 		return
 	}
 
@@ -716,13 +728,21 @@ func podUnitDeploymentLogGet(c *gin.Context) {
 
 	deply, err := deployment.GetUnit(db, unitId, deplyId)
 	if err != nil {
-		utils.AbortWithError(c, 500, err)
+		if _, ok := err.(*database.NotFoundError); ok {
+			c.AbortWithStatus(404)
+		} else {
+			utils.AbortWithError(c, 500, err)
+		}
 		return
 	}
 
 	data, err := journal.GetOutput(c, db, deply.Id, kind)
 	if err != nil {
-		utils.AbortWithError(c, 500, err)
+		if _, ok := err.(*database.NotFoundError); ok {
+			c.AbortWithStatus(404)
+		} else {
+			utils.AbortWithError(c, 500, err)
+		}
 		return
 	}
 
@@ -745,7 +765,11 @@ func podUnitSpecsGet(c *gin.Context) {
 		"unit": unitId,
 	}, page, pageCount)
 	if err != nil {
-		utils.AbortWithError(c, 500, err)
+		if _, ok := err.(*database.NotFoundError); ok {
+			c.AbortWithStatus(404)
+		} else {
+			utils.AbortWithError(c, 500, err)
+		}
 		return
 	}
 
@@ -777,7 +801,11 @@ func podUnitSpecGet(c *gin.Context) {
 		"unit": unitId,
 	})
 	if err != nil {
-		utils.AbortWithError(c, 500, err)
+		if _, ok := err.(*database.NotFoundError); ok {
+			c.AbortWithStatus(404)
+		} else {
+			utils.AbortWithError(c, 500, err)
+		}
 		return
 	}
 
