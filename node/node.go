@@ -1054,6 +1054,114 @@ func (n *Node) GetRemoteAddr(r *http.Request) (addr string) {
 	return
 }
 
+func (n *Node) SyncNetwork(clearCache bool) {
+	netLock.Lock()
+	defer netLock.Unlock()
+
+	if clearCache {
+		ClearIfaceCache()
+		bridges.ClearCache()
+	}
+
+	defaultIface, err := getDefaultIface()
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"default_interface": defaultIface,
+			"error":             err,
+		}).Error("node: Failed to get public address")
+	}
+
+	if defaultIface != "" {
+		n.DefaultInterface = defaultIface
+
+		pubAddr, pubAddr6, err := bridges.GetIpAddrs(defaultIface)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"default_interface": defaultIface,
+				"error":             err,
+			}).Error("node: Failed to get public address")
+		}
+
+		if pubAddr != "" {
+			n.PublicIps = []string{
+				pubAddr,
+			}
+		}
+
+		if pubAddr6 != "" {
+			n.PublicIps6 = []string{
+				pubAddr6,
+			}
+		}
+	}
+
+	privateIps := map[string]string{}
+	internalInterfaces := n.InternalInterfaces
+	for _, iface := range internalInterfaces {
+		addr, _, err := bridges.GetIpAddrs(iface)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"internal_interface": iface,
+				"error":              err,
+			}).Error("node: Failed to get private address")
+		}
+
+		if addr != "" {
+			privateIps[iface] = addr
+		}
+	}
+	n.PrivateIps = privateIps
+
+	ifaces, err := GetInterfaces()
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"error": err,
+		}).Error("node: Failed to get interfaces")
+	}
+
+	if ifaces != nil {
+		n.AvailableInterfaces = ifaces
+	} else {
+		n.AvailableInterfaces = []string{}
+	}
+
+	brdgs, err := bridges.GetBridges()
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"error": err,
+		}).Error("node: Failed to get bridge interfaces")
+	}
+
+	if brdgs != nil {
+		n.AvailableBridges = brdgs
+	} else {
+		n.AvailableBridges = []string{}
+	}
+
+	if n.JumboFrames {
+		n.JumboFramesInternal = true
+	}
+
+	if n.NetworkMode == Oracle || n.NetworkMode6 == Oracle {
+		oracleVpcs, e := cloud.GetOracleVpcs(n.GetOracleAuthProvider())
+		if e != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": e,
+			}).Error("node: Failed to get oracle vpcs")
+		}
+
+		if oracleVpcs != nil {
+			n.AvailableVpcs = oracleVpcs
+		} else {
+			n.AvailableVpcs = []*cloud.Vpc{}
+		}
+	} else {
+		n.AvailableVpcs = []*cloud.Vpc{}
+	}
+
+	return
+}
+
 func (n *Node) update(db *database.Database) (err error) {
 	coll := db.Nodes()
 
@@ -1200,103 +1308,7 @@ func (n *Node) sync() {
 		n.Load15 = load.Load15
 	}
 
-	defaultIface, err := getDefaultIface()
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"default_interface": defaultIface,
-			"error":             err,
-		}).Error("node: Failed to get public address")
-	}
-
-	if defaultIface != "" {
-		n.DefaultInterface = defaultIface
-
-		pubAddr, pubAddr6, err := bridges.GetIpAddrs(defaultIface)
-		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"default_interface": defaultIface,
-				"error":             err,
-			}).Error("node: Failed to get public address")
-		}
-
-		if pubAddr != "" {
-			n.PublicIps = []string{
-				pubAddr,
-			}
-		}
-
-		if pubAddr6 != "" {
-			n.PublicIps6 = []string{
-				pubAddr6,
-			}
-		}
-	}
-
-	privateIps := map[string]string{}
-	internalInterfaces := n.InternalInterfaces
-	if internalInterfaces != nil {
-		for _, iface := range internalInterfaces {
-			addr, _, err := bridges.GetIpAddrs(iface)
-			if err != nil {
-				logrus.WithFields(logrus.Fields{
-					"internal_interface": iface,
-					"error":              err,
-				}).Error("node: Failed to get private address")
-			}
-
-			if addr != "" {
-				privateIps[iface] = addr
-			}
-		}
-	}
-	n.PrivateIps = privateIps
-
-	ifaces, err := GetInterfaces()
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"error": err,
-		}).Error("node: Failed to get interfaces")
-	}
-
-	if ifaces != nil {
-		n.AvailableInterfaces = ifaces
-	} else {
-		n.AvailableInterfaces = []string{}
-	}
-
-	brdgs, err := bridges.GetBridges()
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"error": err,
-		}).Error("node: Failed to get bridge interfaces")
-	}
-
-	if brdgs != nil {
-		n.AvailableBridges = brdgs
-	} else {
-		n.AvailableBridges = []string{}
-	}
-
-	if n.JumboFrames {
-		n.JumboFramesInternal = true
-	}
-
-	if n.NetworkMode == Oracle || n.NetworkMode6 == Oracle {
-		oracleVpcs, e := cloud.GetOracleVpcs(n.GetOracleAuthProvider())
-		if e != nil {
-			logrus.WithFields(logrus.Fields{
-				"error": e,
-			}).Error("node: Failed to get oracle vpcs")
-		}
-
-		if oracleVpcs != nil {
-			n.AvailableVpcs = oracleVpcs
-		} else {
-			n.AvailableVpcs = []*cloud.Vpc{}
-		}
-	} else {
-		n.AvailableVpcs = []*cloud.Vpc{}
-	}
+	n.SyncNetwork(false)
 
 	pools, err := lvm.GetAvailablePools(db, n.Zone)
 	if err != nil {

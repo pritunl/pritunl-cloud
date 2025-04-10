@@ -2,6 +2,7 @@ package node
 
 import (
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/pritunl/pritunl-cloud/settings"
@@ -9,11 +10,19 @@ import (
 )
 
 var (
+	netLock           = sync.Mutex{}
 	netIfaces         = []string{}
 	netLastIfacesSync time.Time
 	defaultIface      = ""
 	defaultIfaceSync  time.Time
 )
+
+func ClearIfaceCache() {
+	netLastIfacesSync = time.Time{}
+	netIfaces = []string{}
+	defaultIfaceSync = time.Time{}
+	defaultIface = ""
+}
 
 func GetInterfaces() (ifaces []string, err error) {
 	if time.Since(netLastIfacesSync) < 15*time.Second {
