@@ -47,7 +47,8 @@ const css = {
 	items: {
 		width: '200px',
 		borderSpacing: '0 5px',
-		padding: '0 5px'
+		padding: '0 5px',
+		overflowY: 'auto',
 	} as React.CSSProperties,
 	itemsBox: {
 		width: '100%',
@@ -412,23 +413,21 @@ export default class Pods extends React.Component<{}, State> {
 					hidden={!this.state.sidebar}
 				>
 					{podsDom}
-					<tr className="bp5-card bp5-row" style={css.placeholder}>
-						<td colSpan={1} style={css.placeholder}/>
-					</tr>
+					<PodsPage
+						minimal={true}
+						onPage={(): void => {
+							this.setState({
+								...this.state,
+								selected: {},
+								lastSelected: null,
+							});
+						}}
+					/>
 				</div>
 				<div style={css.pods}>
 					{podElem}
 				</div>
 			</div>
-			<PodsPage
-				onPage={(): void => {
-					this.setState({
-						...this.state,
-						selected: {},
-						lastSelected: null,
-					});
-				}}
-			/>
 		</Page>;
 	}
 }
