@@ -4,6 +4,7 @@ import PodsStore from '../stores/PodsStore';
 import * as PodActions from '../actions/PodActions';
 
 interface Props {
+	minimal?: boolean;
 	onPage?: () => void;
 }
 
@@ -19,6 +20,12 @@ const css = {
 		userSelect: 'none',
 		margin: '0 5px 0 0',
 	} as React.CSSProperties,
+	buttonMinimal: {
+		userSelect: 'none',
+		margin: '0 3px 0 0',
+		width: "20px",
+		minWidth: "20px",
+	} as React.CSSProperties,
 	buttonLast: {
 		userSelect: 'none',
 		margin: '0 0 0 0',
@@ -28,8 +35,16 @@ const css = {
 		userSelect: 'none',
 		margin: '7px 5px 0 0',
 	} as React.CSSProperties,
+	linkMinimal: {
+		cursor: 'pointer',
+		userSelect: 'none',
+		margin: '7px 2px 0 0',
+	} as React.CSSProperties,
 	current: {
 		opacity: 0.5,
+	} as React.CSSProperties,
+	ellipsis: {
+		margin: '7px 2px 0 0',
 	} as React.CSSProperties,
 };
 
@@ -62,6 +77,29 @@ export default class PodsPage extends React.Component<Props, State> {
 		});
 	}
 
+	createPageButton = (pageNum: number): JSX.Element => {
+		const page = this.state.page;
+		const linkStyle = this.props.minimal ? css.linkMinimal : css.link;
+
+		return (
+			<span
+				key={pageNum}
+				style={page === pageNum ? {
+					...linkStyle,
+					...css.current,
+				} : linkStyle}
+				onClick={(): void => {
+					PodActions.traverse(pageNum);
+					if (this.props.onPage) {
+						this.props.onPage();
+					}
+				}}
+			>
+				{pageNum + 1}
+			</span>
+		);
+	}
+
 	render(): JSX.Element {
 		let page = this.state.page;
 		let pages = this.state.pages;
@@ -71,25 +109,39 @@ export default class PodsPage extends React.Component<Props, State> {
 		}
 
 		let links: JSX.Element[] = [];
-		let start = Math.max(0, page - 7);
-		let end = Math.min(pages, start + 15);
 
-		for (let i = start; i < end; i++) {
-			links.push(<span
-				key={i}
-				style={page === i ? {
-					...css.link,
-					...css.current,
-				} : css.link}
-				onClick={(): void => {
-					PodActions.traverse(i);
-					if (this.props.onPage) {
-						this.props.onPage();
-					}
-				}}
-			>
-				{i + 1}
-			</span>);
+		if (this.props.minimal) {
+			links.push(this.createPageButton(0));
+
+			if (pages <= 3) {
+				for (let i = 1; i < pages; i++) {
+					links.push(this.createPageButton(i));
+				}
+			} else if (page <= 1) {
+				if (page === 1) {
+					links.push(this.createPageButton(1));
+				}
+				links.push(<span key="ellipsis1" style={css.ellipsis}>...</span>);
+				links.push(this.createPageButton(pages - 1));
+			} else if (page >= pages - 2) {
+				links.push(<span key="ellipsis1" style={css.ellipsis}>...</span>);
+				if (page === pages - 2) {
+					links.push(this.createPageButton(pages - 2));
+				}
+				links.push(this.createPageButton(pages - 1));
+			} else {
+				links.push(<span key="ellipsis1" style={css.ellipsis}>...</span>);
+				links.push(this.createPageButton(page));
+				links.push(<span key="ellipsis2" style={css.ellipsis}>...</span>);
+				links.push(this.createPageButton(pages - 1));
+			}
+		} else {
+			let start = Math.max(0, page - 7);
+			let end = Math.min(pages, start + 15);
+
+			for (let i = start; i < end; i++) {
+				links.push(this.createPageButton(i));
+			}
 		}
 
 		return <div className="layout horizontal center-justified">
@@ -107,7 +159,7 @@ export default class PodsPage extends React.Component<Props, State> {
 			/>
 			<button
 				className="bp5-button bp5-minimal bp5-icon-chevron-left"
-				style={css.button}
+				style={this.props.minimal ? css.buttonMinimal : css.button}
 				disabled={page === 0}
 				type="button"
 				onClick={(): void => {
@@ -120,7 +172,7 @@ export default class PodsPage extends React.Component<Props, State> {
 			{links}
 			<button
 				className="bp5-button bp5-minimal bp5-icon-chevron-right"
-				style={css.button}
+				style={this.props.minimal ? css.buttonMinimal : css.button}
 				disabled={page === pages - 1}
 				type="button"
 				onClick={(): void => {
