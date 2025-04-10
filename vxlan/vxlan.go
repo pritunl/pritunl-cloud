@@ -251,7 +251,9 @@ func initDatabase(stat *state.State, internaIfaces []string) (err error) {
 	return
 }
 
-func syncIfaces(stat *state.State, internaIfaces []string) (err error) {
+func syncIfaces(stat *state.State, internaIfaces []string,
+	retry bool) (err error) {
+
 	cIfaces := curIfaces
 	nodeSelf := stat.Node()
 
@@ -326,6 +328,12 @@ func syncIfaces(stat *state.State, internaIfaces []string) (err error) {
 			}
 
 			if localIp == "" {
+				if !retry {
+					nodeSelf.SyncNetwork(true)
+					err = syncIfaces(stat, internaIfaces, true)
+					return
+				}
+
 				err = &errortypes.NotFoundError{
 					errors.New("vxlan: Missing private IP for " +
 						"internal interface"),
@@ -544,7 +552,7 @@ func ApplyState(stat *state.State) (err error) {
 		}
 	}
 
-	err = syncIfaces(stat, internaIfaces)
+	err = syncIfaces(stat, internaIfaces, false)
 	if err != nil {
 		return
 	}
