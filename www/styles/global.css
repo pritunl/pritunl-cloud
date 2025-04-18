@@ -231,7 +231,7 @@ label.bp5-label .bp5-button-group {
   position: fixed !important;
 }
 
-.bp5-dark .bp5-datepicker{
+.bp3-theme.bp5-dark .bp5-datepicker {
   background: #30404d !important;
 }
 
@@ -523,27 +523,27 @@ label.bp5-label .bp5-button-group {
   background-color: rgb(47, 52, 60);
 }
 
-.bp5-dark:not(.bp3-theme) .bp5-button:not([class*="bp5-intent-"]) {
+.bp5-dark:not(.bp3-theme) .bp5-button:not([class*="bp5-intent-"]):not(.bp5-datepicker *) {
   background-color: rgb(56, 62, 71);
 }
 
-.bp5-dark:not(.bp3-theme) .bp5-button:not([class*="bp5-intent-"]):hover {
+.bp5-dark:not(.bp3-theme) .bp5-button:not([class*="bp5-intent-"]):not(.bp5-datepicker *):hover {
   background-color: rgb(47, 52, 60);
 }
 
-.bp5-dark:not(.bp3-theme) .bp5-button.bp5-minimal:not([class*="bp5-intent-"]) {
+.bp5-dark:not(.bp3-theme) .bp5-button.bp5-minimal:not([class*="bp5-intent-"]):not(.bp5-datepicker *) {
   background: none;
 }
 
-.bp5-dark:not(.bp3-theme) .bp5-button.bp5-minimal:not([class*="bp5-intent-"]):hover {
+.bp5-dark:not(.bp3-theme) .bp5-button.bp5-minimal:not([class*="bp5-intent-"]):not(.bp5-datepicker *):hover {
   background: rgba(143, 153, 168, 0.15);
 }
 
-.bp5-dark:not(.bp3-theme) .bp5-select select {
+.bp5-dark:not(.bp3-theme) .bp5-select select:not(.bp5-datepicker *) {
   background-color: rgb(56, 62, 71);
 }
 
-.bp5-dark:not(.bp3-theme) .bp5-select select:hover {
+.bp5-dark:not(.bp3-theme) .bp5-select select:not(.bp5-datepicker *):hover {
   background-color: rgb(47, 52, 60);
 }
 
