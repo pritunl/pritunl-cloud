@@ -19,6 +19,7 @@ var (
 	Config            = &ConfigData{}
 	StaticRoot        = ""
 	StaticTestingRoot = ""
+	DefaultMongoUri   = "mongodb://localhost:27017/pritunl-cloud"
 )
 
 type ConfigData struct {
@@ -169,7 +170,7 @@ func init() {
 
 		if Config.MongoUri == "" {
 			save = true
-			Config.MongoUri = "mongodb://localhost:27017/pritunl-cloud"
+			Config.MongoUri = DefaultMongoUri
 		}
 
 		if save {
