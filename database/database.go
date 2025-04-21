@@ -1210,6 +1210,17 @@ func addIndexes() (err error) {
 	}
 
 	index = &Index{
+		Collection: db.Units(),
+		Keys: &bson.D{
+			{"pod", 1},
+		},
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
+
+	index = &Index{
 		Collection: db.Tasks(),
 		Keys: &bson.D{
 			{"timestamp", 1},
