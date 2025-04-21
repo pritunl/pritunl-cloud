@@ -45,6 +45,10 @@ func (p *Pod) Validate(db *database.Database) (
 		return
 	}
 
+	if p.UserDrafts == nil {
+		p.UserDrafts = map[primitive.ObjectID][]*UnitDraft{}
+	}
+
 	return
 }
 
