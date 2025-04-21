@@ -217,6 +217,13 @@ export default class PodWorkspace extends React.Component<Props, State> {
 					let activeUnit = this.getActiveUnit()
 					if (activeUnit && !activeUnit.new) {
 						this.syncUnit(activeUnit.id)
+					} else {
+						setTimeout(() => {
+							let activeUnit = this.getActiveUnit()
+							if (activeUnit && !activeUnit.new) {
+								this.syncUnit(activeUnit.id)
+							}
+						}, 500)
 					}
 					break;
 			}
