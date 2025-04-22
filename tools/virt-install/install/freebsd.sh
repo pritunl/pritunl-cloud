@@ -27,13 +27,11 @@ fi
 # Keymap Selection: Enter
 # Set Hostname: cloud
 # Distribution Select: Enter
-# Partitioning: Enter
-# Partition Scheme: GPT (UEFI)
-# Swap Size: 0
-# ZFS Configuration: Install
-# ZFS Configuration: Enter
-# ZFS Configuration: Space + Enter
-# ZFS Configuration: <- + Enter
+# Partitioning: Auto (UFS)
+# Partition: Enter
+# Partition Scheme: Enter
+# Partition Editor: Delete freebsd-swap
+# Partition Editor: Enter
 # New Password: cloud
 # Retype New Password: cloud
 # Network Configuration: Enter
@@ -47,6 +45,7 @@ fi
 # Time & Date: Skip
 # Time & Date: Skip
 # System Configuration: +ntpd +ntpd_sync_on_start
+# System Hardening: Enter
 # Add User Accounts: Enter
 # Username: cloud
 # Full name: Cloud
