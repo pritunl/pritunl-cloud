@@ -61,12 +61,9 @@ tee -a /etc/sudoers << EOF
 EOF
 
 systemctl enable ssh.service
-systemctl restart ssh.service
 ufw disable
 
 apt clean
-apt update
-apt -y upgrade
 
 rm -f /etc/cloud/cloud.cfg.d/90-installer-network.cfg
 rm -f /etc/cloud/cloud.cfg.d/99-installer.cfg
