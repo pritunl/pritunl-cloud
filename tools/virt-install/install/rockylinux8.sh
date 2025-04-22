@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 export NAME="rockylinux8"
-export ISO_URL="https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-8.10-x86_64-dvd1.iso"
+export ISO_URL="https://sjc.mirror.rackspace.com/rocky/8/isos/x86_64/Rocky-8.10-x86_64-dvd1.iso"
 export ISO_HASH="642ada8a49dbeca8cca6543b31196019ee3d649a0163b5db0e646c7409364eeb"
 
 sudo mkdir -p /var/lib/virt/iso

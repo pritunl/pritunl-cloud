@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 export NAME="rockylinux9"
-export ISO_URL="https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9.5-x86_64-dvd.iso"
+export ISO_URL="https://sjc.mirror.rackspace.com/rocky/9/isos/x86_64/Rocky-9.5-x86_64-dvd.iso"
 export ISO_HASH="ba60c3653640b5747610ddfb4d09520529bef2d1d83c1feb86b0c84dff31e04e"
 
 sudo mkdir -p /var/lib/virt/iso
