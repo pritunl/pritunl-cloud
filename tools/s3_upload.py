@@ -84,7 +84,16 @@ def main():
     uri = f"/{bucket}/{s3_key}"
     method = "PUT"
 
-    content_type = "application/octet-stream"
+    ext = os.path.splitext(source_file_path)[1].lower()
+    if ext == ".html":
+        content_type = "text/html"
+    elif ext == ".json":
+        content_type = "application/json"
+    elif ext == ".sig":
+        content_type = "application/pgp-signature"
+    else:
+        content_type = "application/octet-stream"
+
     content_length = str(os.path.getsize(source_file_path))
     payload_hash = sha256_hexdigest_file(source_file_path)
 
