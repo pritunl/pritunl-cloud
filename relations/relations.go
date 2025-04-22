@@ -1,8 +1,7 @@
 package relations
 
 import (
-	"fmt"
-
+	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -154,7 +153,9 @@ func (r *Query) convertToRelated(relation Relation,
 	return related
 }
 
-func (r *Query) Aggregate(db *database.Database) (*Response, error) {
+func (r *Query) Aggregate(db *database.Database) (
+	resp *Response, err error) {
+
 	coll := db.GetCollection(r.Collection)
 
 	pipeline := []bson.M{
@@ -179,21 +180,25 @@ func (r *Query) Aggregate(db *database.Database) (*Response, error) {
 
 	cursor, err := coll.Aggregate(db, pipeline)
 	if err != nil {
-		return nil, fmt.Errorf("aggregation error: %w", err)
+		err = database.ParseError(err)
+		return
 	}
 	defer cursor.Close(db)
 
 	var results []bson.M
 	err = cursor.All(db, &results)
 	if err != nil {
-		return nil, fmt.Errorf("cursor decode error: %w", err)
+		err = database.ParseError(err)
+		return
 	}
 
 	if len(results) == 0 {
-		return nil, fmt.Errorf("resource with id %v not found", r.Id)
+		err = &database.NotFoundError{
+			errors.New("relations: Resource not found"),
+		}
+		return
 	}
 
-	response := r.convertToResponse(results[0])
-
-	return response, nil
+	resp = r.convertToResponse(results[0])
+	return
 }
