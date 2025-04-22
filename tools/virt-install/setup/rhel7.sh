@@ -32,7 +32,6 @@ rm -f /etc/sysconfig/network-scripts/ifcfg-eth*
 
 sed -i 's/^installonly_limit=.*/installonly_limit=2/g' /etc/yum.conf
 sed -i 's/^SELINUX=.*/SELINUX=enforcing/g' /etc/selinux/config || true
-sed -i 's/^SELINUX=.*/SELINUX=enforcing/g' /etc/sysconfig/selinux || true
 
 sed -i '/^PermitRootLogin/d' /etc/ssh/sshd_config
 sed -i '/^PasswordAuthentication/d' /etc/ssh/sshd_config
@@ -79,7 +78,6 @@ systemctl enable chronyd
 
 yum clean all
 rm -rf /var/cache/yum
-yum -y update
 
 cloud-init clean
 tee /etc/resolv.conf << EOF

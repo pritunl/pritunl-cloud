@@ -31,7 +31,6 @@ rm -f /etc/sysconfig/network-scripts/ifcfg-eth*
 
 sed -i 's/^installonly_limit=.*/installonly_limit=2/g' /etc/yum.conf
 sed -i 's/^SELINUX=.*/SELINUX=enforcing/g' /etc/selinux/config || true
-sed -i 's/^SELINUX=.*/SELINUX=enforcing/g' /etc/sysconfig/selinux || true
 
 sed -i '/^PermitRootLogin/d' /etc/ssh/sshd_config
 sed -i '/^PasswordAuthentication/d' /etc/ssh/sshd_config
@@ -84,8 +83,7 @@ nameserver 8.8.4.4
 EOF
 
 dnf clean all
-rm -rf /var/cache/yum
-dnf -y update
+rm -rf /var/cache/dnf
 
 sync
 sleep 1

@@ -29,7 +29,6 @@ systemctl enable qemu-guest-agent.service
 
 sed -i 's/^installonly_limit=.*/installonly_limit=2/g' /etc/yum.conf
 sed -i 's/^SELINUX=.*/SELINUX=enforcing/g' /etc/selinux/config || true
-sed -i 's/^SELINUX=.*/SELINUX=enforcing/g' /etc/sysconfig/selinux || true
 
 sed -i '/^PermitRootLogin/d' /etc/ssh/sshd_config
 sed -i '/^PasswordAuthentication/d' /etc/ssh/sshd_config
@@ -77,8 +76,7 @@ systemctl start chronyd
 systemctl enable chronyd
 
 dnf clean all
-rm -rf /var/cache/yum
-dnf -y update
+rm -rf /var/cache/dnf
 
 cloud-init clean --machine-id
 rm -rf /etc/NetworkManager/system-connections/*
