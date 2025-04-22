@@ -10,6 +10,7 @@ import time
 class ProgressFileReader:
     def __init__(self, file_path, chunk_size=8192):
         self.file = open(file_path, "rb")
+        self.file_path = file_path
         self.total_size = os.path.getsize(file_path)
         self.read_bytes = 0
         self.chunk_size = chunk_size
@@ -28,8 +29,8 @@ class ProgressFileReader:
         total_mb = self.total_size / (1024 * 1024)
         now = time.time()
         if now - self.last_print > 0.1 or self.read_bytes == self.total_size:
-            print(f"\rUploading... {percent:.1f}% ({read_mb:.2f}/" +
-                f"{total_mb:.2f} MB)", end="", flush=True)
+            print(f"\rUploading {self.file_path}... {percent:.1f}% " +
+                f"({read_mb:.2f}/{total_mb:.2f} MB)", end="", flush=True)
             self.last_print = now
 
     def __len__(self):
@@ -87,7 +88,7 @@ def main():
     content_length = str(os.path.getsize(source_file_path))
     payload_hash = sha256_hexdigest_file(source_file_path)
 
-    now = datetime.datetime.now(datetime.UTC)
+    now = datetime.datetime.utcnow()
     amz_date = now.strftime("%Y%m%dT%H%M%SZ")
     date_stamp = now.strftime("%Y%m%d")
 
@@ -147,7 +148,7 @@ def main():
             print(body, file=sys.stderr)
             sys.exit(1)
         else:
-            print("Upload successful")
+            print(f"Upload successful {dest_path}")
     finally:
         reader.close()
 
