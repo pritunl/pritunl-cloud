@@ -23,8 +23,6 @@ sysrc dhclient_program="/usr/local/sbin/dual-dhclient"
 pw mod user root -w no
 pw mod user cloud -w no
 
-zpool set autoexpand=on zroot
-
 mkdir -p /home/cloud/.ssh
 chown cloud:cloud /home/cloud/.ssh
 touch /home/cloud/.ssh/authorized_keys
@@ -113,11 +111,6 @@ rm -f /root/.bash_history
 rm -f /home/cloud/.bash_history
 find /var/log -mtime -1 -type f -exec truncate -s 0 {} \;
 sync
-zpool trim zroot
-sync
-
-sleep 6
-zpool status -t
 
 echo '#############################################################'
 echo 'finished freebsd setup, clear history and shutdown:'
