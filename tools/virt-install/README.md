@@ -50,27 +50,27 @@ echo "45b5e4f7821a34bbb858a664066e5c71f6bc586903ca3dc7f5e6429a3b4ba84f /root/set
 
 # debian
 sudo curl -o /root/setup.sh https://raw.githubusercontent.com/pritunl/pritunl-cloud/refs/heads/master/tools/virt-install/setup/debian.sh
-echo "181e0a2c0faddc79d8e2565782b58c0e94683904fa0dd41f63f8b6ddfcea6ab0 /root/setup.sh" | sudo sha256sum -c && sudo bash /root/setup.sh
+echo "a4d4c35ec9aa0057373c826830944c7ec1081601f09a9af8ba432b80240210c9 /root/setup.sh" | sudo sha256sum -c && sudo bash /root/setup.sh
 
 # fedora
 curl -o /root/setup.sh https://raw.githubusercontent.com/pritunl/pritunl-cloud/refs/heads/master/tools/virt-install/setup/fedora.sh
-echo "96a21a8a4d46225263bf2679a7aacf0feeefd42c87e2c87d3dc5b3ff53833b06 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
+echo "5577c87991735f802278ad98db35525fff820a7ff5be4b422b29eee27e362e82 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
 
 # freebsd
 fetch -o /root/setup.sh https://raw.githubusercontent.com/pritunl/pritunl-cloud/refs/heads/master/tools/virt-install/setup/freebsd.sh
-[ "$(sha256sum /root/setup.sh)" = "f6f9445e3cd6eb04575593d0c98136251f9860c1ea684f63f927bb52f5f0c702  /root/setup.sh" ] && sh /root/setup.sh
+[ "$(sha256sum /root/setup.sh)" = "4b4bb2618d9b1d5dedc3576ba2b1206176e9bea222de9ce1755f950bacb3fcf6  /root/setup.sh" ] && sh /root/setup.sh
 
 # rhel7
 curl -o /root/setup.sh https://raw.githubusercontent.com/pritunl/pritunl-cloud/refs/heads/master/tools/virt-install/setup/rhel7.sh
-echo "7f89af3f4553ae500bec9fa154bf86d2c22e4ef79fdfd514841c24dcbdcc95d3 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
+echo "b8dc0d838f7f1a25ce1bbc9f7f326bbae1cf775d150f7a4e6bf1cc5014ada614 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
 
 # rhel8
 curl -o /root/setup.sh https://raw.githubusercontent.com/pritunl/pritunl-cloud/refs/heads/master/tools/virt-install/setup/rhel8.sh
-echo "422045cc0beb1756489b67f237325b44d05db869b3b2e77f68db65e5cf7566e1 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
+echo "2ebd5d85cdd4541b9901c59e1b25b270f82c88b03e9cc7d0990037549b15a27d /root/setup.sh" | sha256sum -c && bash /root/setup.sh
 
 # rhel9
 curl -o /root/setup.sh https://raw.githubusercontent.com/pritunl/pritunl-cloud/refs/heads/master/tools/virt-install/setup/rhel9.sh
-echo "38301f86bb05072ee041b53004266d38622a6503d2438b6ecb2865771c9fda84 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
+echo "333507a276497b69da10def3652ce3d44dd4f612578699f7a9ee1b1376855ee9 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
 
 sudo mkdir -p /mnt/images
 sudo chown cloud:cloud /mnt/images
