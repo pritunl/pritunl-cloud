@@ -9,6 +9,7 @@ import (
 	"io"
 	"math/rand"
 	"net/http"
+	"path"
 	"strconv"
 	"strings"
 	"sync"
@@ -21,6 +22,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/ahandlers"
 	"github.com/pritunl/pritunl-cloud/balancer"
 	"github.com/pritunl/pritunl-cloud/constants"
+	"github.com/pritunl/pritunl-cloud/crypto"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
@@ -29,6 +31,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/uhandlers"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/tools/commander"
 	"github.com/sirupsen/logrus"
 )
 
@@ -40,12 +43,14 @@ type Router struct {
 	balancerType     bool
 	port             int
 	noRedirectServer bool
+	redirectSystemd  bool
 	protocol         string
 	adminDomain      string
 	userDomain       string
 	stateLock        sync.Mutex
 	balancers        []*balancer.Balancer
 	certificates     *Certificates
+	box              *crypto.AsymNaclHmac
 	aRouter          *gin.Engine
 	uRouter          *gin.Engine
 	waiter           sync.WaitGroup
@@ -103,46 +108,88 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, re *http.Request) {
 }
 
 func (r *Router) initRedirect() (err error) {
-	r.redirectServer = &http.Server{
-		Addr:           ":80",
-		ReadTimeout:    1 * time.Minute,
-		WriteTimeout:   1 * time.Minute,
-		IdleTimeout:    1 * time.Minute,
-		MaxHeaderBytes: 8192,
-		Handler: http.HandlerFunc(func(
-			w http.ResponseWriter, req *http.Request) {
+	if r.redirectSystemd {
+		r.redirectServer = &http.Server{
+			Addr:           ":80",
+			ReadTimeout:    1 * time.Minute,
+			WriteTimeout:   1 * time.Minute,
+			IdleTimeout:    1 * time.Minute,
+			MaxHeaderBytes: 8192,
+			Handler: http.HandlerFunc(func(
+				w http.ResponseWriter, req *http.Request) {
 
-			if strings.HasPrefix(req.URL.Path, acme.AcmePath) {
-				token := acme.ParsePath(req.URL.Path)
-				token = utils.FilterStr(token, 96)
-				if token != "" {
-					chal, err := acme.GetChallenge(token)
-					if err != nil {
-						utils.WriteStatus(w, 400)
-					} else {
-						logrus.WithFields(logrus.Fields{
-							"token": token,
-						}).Info("router: Acme challenge requested")
-						utils.WriteText(w, 200, chal.Resource)
+				if strings.HasPrefix(req.URL.Path, acme.AcmePath) {
+					token := acme.ParsePath(req.URL.Path)
+					token = utils.FilterStr(token, 96)
+					if token != "" {
+						chal, err := acme.GetChallenge(token)
+						if err != nil {
+							utils.WriteStatus(w, 400)
+						} else {
+							logrus.WithFields(logrus.Fields{
+								"token": token,
+							}).Info("router: Acme challenge requested")
+							utils.WriteText(w, 200, chal.Resource)
+						}
+						return
 					}
+				} else if req.URL.Path == "/check" {
+					utils.WriteText(w, 200, "ok")
 					return
 				}
-			} else if req.URL.Path == "/check" {
-				utils.WriteText(w, 200, "ok")
-				return
+
+				newHost := utils.StripPort(req.Host)
+				if r.port != 443 {
+					newHost += fmt.Sprintf(":%d", r.port)
+				}
+
+				req.URL.Host = newHost
+				req.URL.Scheme = "https"
+
+				http.Redirect(w, req, req.URL.String(),
+					http.StatusMovedPermanently)
+			}),
+		}
+	} else {
+		libPath := settings.Hypervisor.LibPath
+		err = utils.ExistsMkdir(libPath, 0755)
+		if err != nil {
+			return
+		}
+
+		redirectPth := path.Join(libPath, "redirect.conf")
+
+		r.box = &crypto.AsymNaclHmac{}
+		err = r.box.Generate()
+		if err != nil {
+			return
+		}
+
+		privKeyStr, secStr := r.box.Export()
+
+		redirectOutput := &bytes.Buffer{}
+		redirectData := &redirectConfData{
+			WebPort:    r.port,
+			PrivateKey: privKeyStr,
+			Secret:     secStr,
+		}
+
+		err = redirectConf.Execute(redirectOutput, redirectData)
+		if err != nil {
+			err = &errortypes.ParseError{
+				errors.Wrap(err, "router: Failed to exec redirect template"),
 			}
+			return
+		}
 
-			newHost := utils.StripPort(req.Host)
-			if r.port != 443 {
-				newHost += fmt.Sprintf(":%d", r.port)
-			}
-
-			req.URL.Host = newHost
-			req.URL.Scheme = "https"
-
-			http.Redirect(w, req, req.URL.String(),
-				http.StatusMovedPermanently)
-		}),
+		err = utils.CreateWrite(
+			redirectPth,
+			redirectOutput.String(),
+			0600,
+		)
+		if err != nil {
+			return
+		}
 	}
 
 	return
@@ -151,27 +198,45 @@ func (r *Router) initRedirect() (err error) {
 func (r *Router) startRedirect() {
 	defer r.waiter.Done()
 
-	if r.port == 80 || r.noRedirectServer {
-		return
-	}
+	if r.redirectSystemd {
+		resp, e := commander.Exec(&commander.Opt{
+			Name: "systemctl",
+			Args: []string{
+				"restart",
+				"pritunl-zero-redirect.service",
+			},
+			Timeout: 30 * time.Second,
+			PipeOut: true,
+			PipeErr: true,
+		})
+		if e != nil {
+			logrus.WithFields(resp.Map()).Error(
+				"router: Failed to start redirect server")
+			return
+		}
+	} else {
+		if r.port == 80 || r.noRedirectServer {
+			return
+		}
 
-	logrus.WithFields(logrus.Fields{
-		"production": constants.Production,
-		"protocol":   "http",
-		"port":       80,
-	}).Info("router: Starting redirect server")
+		logrus.WithFields(logrus.Fields{
+			"production": constants.Production,
+			"protocol":   "http",
+			"port":       80,
+		}).Info("router: Starting redirect server")
 
-	err := r.redirectServer.ListenAndServe()
-	if err != nil {
-		if err == http.ErrServerClosed {
-			err = nil
-		} else {
-			err = &errortypes.UnknownError{
-				errors.Wrap(err, "router: Server listen failed"),
+		err := r.redirectServer.ListenAndServe()
+		if err != nil {
+			if err == http.ErrServerClosed {
+				err = nil
+			} else {
+				err = &errortypes.UnknownError{
+					errors.Wrap(err, "router: Server listen failed"),
+				}
+				logrus.WithFields(logrus.Fields{
+					"error": err,
+				}).Error("router: Redirect server error")
 			}
-			logrus.WithFields(logrus.Fields{
-				"error": err,
-			}).Error("router: Redirect server error")
 		}
 	}
 }
@@ -183,6 +248,7 @@ func (r *Router) initWeb() (err error) {
 	r.adminDomain = node.Self.AdminDomain
 	r.userDomain = node.Self.UserDomain
 	r.noRedirectServer = node.Self.NoRedirectServer
+	r.redirectSystemd = settings.Router.RedirectServerSystemd
 
 	if r.adminType && !r.userType && !r.balancerType {
 		r.singleType = true
@@ -333,12 +399,12 @@ func (r *Router) initServers() (err error) {
 		return
 	}
 
-	err = r.initRedirect()
+	err = r.initWeb()
 	if err != nil {
 		return
 	}
 
-	err = r.initWeb()
+	err = r.initRedirect()
 	if err != nil {
 		return
 	}
