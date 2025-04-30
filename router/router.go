@@ -428,6 +428,7 @@ func (r *Router) hashNode() []byte {
 	io.WriteString(hash, strconv.Itoa(settings.Router.ReadHeaderTimeout))
 	io.WriteString(hash, strconv.Itoa(settings.Router.WriteTimeout))
 	io.WriteString(hash, strconv.Itoa(settings.Router.IdleTimeout))
+	io.WriteString(hash, strconv.Itoa(settings.Router.MaxHeaderBytes))
 
 	return hash.Sum(nil)
 }
