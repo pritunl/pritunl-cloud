@@ -5,12 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/agent/constants"
 	"github.com/pritunl/pritunl-cloud/agent/imds"
 	"github.com/pritunl/pritunl-cloud/agent/utils"
 	"github.com/pritunl/pritunl-cloud/engine"
-	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/imds/types"
 	pritunl_utils "github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/tools/logger"
@@ -85,30 +83,11 @@ func main() {
 			return
 		}
 
-		ready := false
-		for i := 0; i < 900; i++ {
-			time.Sleep(200 * time.Millisecond)
-
-			ready, err = ids.Sync()
-			if err != nil {
-				continue
-			}
-
-			break
-		}
+		err = ids.SyncReady(5 * time.Minute)
 		if err != nil {
 			logger.WithFields(logger.Fields{
 				"error": err,
 			}).Error("agent: Failed to sync imds initial")
-			utils.DelayExit(1, 1*time.Second)
-			return
-		} else if !ready {
-			err = &errortypes.RequestError{
-				errors.New("agent: Initial config timeout"),
-			}
-			logger.WithFields(logger.Fields{
-				"error": err,
-			}).Error("agent: Timeout waiting for imds initial config")
 			utils.DelayExit(1, 1*time.Second)
 			return
 		}
@@ -197,30 +176,11 @@ func main() {
 			return
 		}
 
-		ready := false
-		for i := 0; i < 900; i++ {
-			time.Sleep(200 * time.Millisecond)
-
-			ready, err = ids.Sync()
-			if err != nil {
-				continue
-			}
-
-			break
-		}
+		err = ids.SyncReady(5 * time.Minute)
 		if err != nil {
 			logger.WithFields(logger.Fields{
 				"error": err,
 			}).Error("agent: Failed to sync imds initial")
-			utils.DelayExit(1, 1*time.Second)
-			return
-		} else if !ready {
-			err = &errortypes.RequestError{
-				errors.New("agent: Initial config timeout"),
-			}
-			logger.WithFields(logger.Fields{
-				"error": err,
-			}).Error("agent: Timeout waiting for imds initial config")
 			utils.DelayExit(1, 1*time.Second)
 			return
 		}
