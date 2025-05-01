@@ -566,6 +566,9 @@ func (r *Router) Restart() {
 		if r.webServer != nil {
 			r.webServer.Close()
 		}
+		if r.redirectCancel != nil {
+			r.redirectCancel()
+		}
 	}()
 
 	event.WebSocketsStop()
