@@ -35,6 +35,12 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var (
+	client = &http.Client{
+		Timeout: 10 * time.Second,
+	}
+)
+
 type Router struct {
 	nodeHash         []byte
 	singleType       bool
@@ -56,6 +62,8 @@ type Router struct {
 	waiter           sync.WaitGroup
 	lock             sync.Mutex
 	redirectServer   *http.Server
+	redirectContext  context.Context
+	redirectCancel   context.CancelFunc
 	webServer        *http.Server
 	proxy            *proxy.Proxy
 	stop             bool
@@ -109,6 +117,46 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, re *http.Request) {
 
 func (r *Router) initRedirect() (err error) {
 	if r.redirectSystemd {
+		libPath := settings.Hypervisor.LibPath
+		err = utils.ExistsMkdir(libPath, 0755)
+		if err != nil {
+			return
+		}
+
+		redirectPth := path.Join(libPath, "redirect.conf")
+
+		r.box = &crypto.AsymNaclHmac{}
+		err = r.box.Generate()
+		if err != nil {
+			return
+		}
+
+		privKeyStr, secStr := r.box.Export()
+
+		redirectOutput := &bytes.Buffer{}
+		redirectData := &redirectConfData{
+			WebPort:    r.port,
+			PrivateKey: privKeyStr,
+			Secret:     secStr,
+		}
+
+		err = redirectConf.Execute(redirectOutput, redirectData)
+		if err != nil {
+			err = &errortypes.ParseError{
+				errors.Wrap(err, "router: Failed to exec redirect template"),
+			}
+			return
+		}
+
+		err = utils.CreateWrite(
+			redirectPth,
+			redirectOutput.String(),
+			0600,
+		)
+		if err != nil {
+			return
+		}
+	} else {
 		r.redirectServer = &http.Server{
 			Addr:           ":80",
 			ReadTimeout:    1 * time.Minute,
@@ -150,49 +198,52 @@ func (r *Router) initRedirect() (err error) {
 					http.StatusMovedPermanently)
 			}),
 		}
-	} else {
-		libPath := settings.Hypervisor.LibPath
-		err = utils.ExistsMkdir(libPath, 0755)
-		if err != nil {
-			return
-		}
-
-		redirectPth := path.Join(libPath, "redirect.conf")
-
-		r.box = &crypto.AsymNaclHmac{}
-		err = r.box.Generate()
-		if err != nil {
-			return
-		}
-
-		privKeyStr, secStr := r.box.Export()
-
-		redirectOutput := &bytes.Buffer{}
-		redirectData := &redirectConfData{
-			WebPort:    r.port,
-			PrivateKey: privKeyStr,
-			Secret:     secStr,
-		}
-
-		err = redirectConf.Execute(redirectOutput, redirectData)
-		if err != nil {
-			err = &errortypes.ParseError{
-				errors.Wrap(err, "router: Failed to exec redirect template"),
-			}
-			return
-		}
-
-		err = utils.CreateWrite(
-			redirectPth,
-			redirectOutput.String(),
-			0600,
-		)
-		if err != nil {
-			return
-		}
 	}
 
 	return
+}
+
+func (r *Router) redirectChallengeListen(ctx context.Context) {
+	db := database.GetDatabase()
+	defer db.Close()
+
+	lst, e := event.SubscribeListener(db, []string{"acme"})
+	if e != nil {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
+
+		logrus.WithFields(logrus.Fields{
+			"error": e,
+		}).Error("acme: Event watch error")
+		return
+	}
+
+	sub := lst.Listen()
+	defer lst.Close()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case msg, ok := <-sub:
+			if !ok {
+				break
+			}
+
+			go func() {
+				err := r.sendChallenge(msg.Data)
+				if err != nil {
+					logrus.WithFields(logrus.Fields{
+						"error": err,
+					}).Error("router: Failed to send challenge " +
+						"to redirect server")
+				}
+			}()
+		}
+	}
 }
 
 func (r *Router) startRedirect() {
@@ -203,7 +254,7 @@ func (r *Router) startRedirect() {
 			Name: "systemctl",
 			Args: []string{
 				"restart",
-				"pritunl-zero-redirect.service",
+				"pritunl-cloud-redirect.service",
 			},
 			Timeout: 30 * time.Second,
 			PipeOut: true,
@@ -213,6 +264,20 @@ func (r *Router) startRedirect() {
 			logrus.WithFields(resp.Map()).Error(
 				"router: Failed to start redirect server")
 			return
+		}
+
+		ctx, cancel := context.WithCancel(context.Background())
+		r.redirectContext = ctx
+		r.redirectCancel = cancel
+
+		for {
+			r.redirectChallengeListen(ctx)
+
+			select {
+			case <-ctx.Done():
+				return
+			default:
+			}
 		}
 	} else {
 		if r.port == 80 || r.noRedirectServer {
@@ -239,6 +304,43 @@ func (r *Router) startRedirect() {
 			}
 		}
 	}
+}
+
+func (r *Router) sendChallenge(chal any) (err error) {
+	encData, err := r.box.SealJson(chal)
+	if err != nil {
+		return
+	}
+
+	req, err := http.NewRequest(
+		"POST",
+		"http://127.0.0.1:80/token",
+		bytes.NewReader([]byte(encData)),
+	)
+	if err != nil {
+		err = &errortypes.RequestError{
+			errors.Wrap(err, "acme: Redirect token request failed"),
+		}
+		return
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		err = &errortypes.RequestError{
+			errors.Wrap(err, "acme: Redirect token request failed"),
+		}
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		logrus.WithFields(logrus.Fields{
+			"status_code": resp.StatusCode,
+		}).Error("acme: Redirect request bad status")
+		return
+	}
+
+	return
 }
 
 func (r *Router) initWeb() (err error) {
@@ -416,7 +518,11 @@ func (r *Router) startServers() {
 	r.lock.Lock()
 	defer r.lock.Unlock()
 
-	if r.redirectServer == nil || r.webServer == nil {
+	if r.webServer == nil {
+		return
+	}
+
+	if !r.redirectSystemd && r.redirectServer == nil {
 		return
 	}
 
