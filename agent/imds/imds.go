@@ -2,6 +2,7 @@ package imds
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -134,6 +135,39 @@ func (m *Imds) Get(query string) (val string, err error) {
 type SyncResp struct {
 	Spec string `json:"spec"`
 	Hash uint32 `json:"hash"`
+}
+
+func (m *Imds) SyncReady(timeout time.Duration) (err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	ticker := time.NewTicker(200 * time.Millisecond)
+	defer ticker.Stop()
+
+	var lastErr error
+	for {
+		select {
+		case <-ctx.Done():
+			if lastErr != nil {
+				err = lastErr
+			} else {
+				err = &errortypes.RequestError{
+					errors.New("agent: Initial config timeout"),
+				}
+			}
+			return
+		case <-ticker.C:
+			ready, e := m.Sync()
+			if e != nil {
+				lastErr = e
+				continue
+			}
+			if !ready {
+				continue
+			}
+			return nil
+		}
+	}
 }
 
 func (m *Imds) Sync() (ready bool, err error) {
