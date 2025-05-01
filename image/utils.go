@@ -3,7 +3,9 @@ package image
 import (
 	"crypto/md5"
 	"fmt"
+	"path/filepath"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
@@ -16,7 +18,9 @@ import (
 )
 
 var (
-	etagReg = regexp.MustCompile("[^a-zA-Z0-9]+")
+	etagReg  = regexp.MustCompile("[^a-zA-Z0-9]+")
+	distroRe = regexp.MustCompile(`^([a-z]+)([0-9]*)`)
+	dateRe   = regexp.MustCompile(`_(\d{2})(\d{2})$`)
 )
 
 func GetEtag(info minio.ObjectInfo) string {
@@ -28,6 +32,37 @@ func GetEtag(info minio.ObjectInfo) string {
 		etag = fmt.Sprintf("%x", modifiedHash.Sum(nil))
 	}
 	return etagReg.ReplaceAllString(etag, "")
+}
+
+func ParseImageName(name string) string {
+	baseName := strings.TrimSuffix(name, filepath.Ext(name))
+
+	dateMatch := dateRe.FindStringSubmatch(baseName)
+	if len(dateMatch) != 3 {
+		return name
+	}
+	yearStr, monthStr := dateMatch[1], dateMatch[2]
+
+	base := strings.TrimSuffix(baseName, dateMatch[0])
+	tokens := strings.Split(base, "_")
+	if len(tokens) == 0 {
+		return name
+	}
+
+	distroMatch := distroRe.FindStringSubmatch(tokens[0])
+	if len(distroMatch) < 2 {
+		return name
+	}
+	distro := distroMatch[1]
+	version := ""
+	if len(distroMatch) >= 3 {
+		version = distroMatch[2]
+	}
+
+	if version == "" {
+		return fmt.Sprintf("%s-%s%s", distro, yearStr, monthStr)
+	}
+	return fmt.Sprintf("%s%s-%s%s", distro, version, yearStr, monthStr)
 }
 
 func Get(db *database.Database, imgId primitive.ObjectID) (
