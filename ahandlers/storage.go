@@ -164,6 +164,20 @@ func storagePost(c *gin.Context) {
 		return
 	}
 
+	go func() {
+		db := database.GetDatabase()
+		defer db.Close()
+
+		err = data.Sync(db, store)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("storage: Failed to sync storage")
+		}
+
+		event.PublishDispatch(db, "image.change")
+	}()
+
 	event.PublishDispatch(db, "storage.change")
 
 	c.JSON(200, store)
