@@ -77,7 +77,7 @@ func getImagesS3(db *database.Database, store *storage.Storage) (
 			img := &image.Image{
 				Storage:      store.Id,
 				Key:          object.Key,
-				Firmware:     image.Unknown,
+				Firmware:     image.Uefi,
 				Etag:         etag,
 				Type:         store.Type,
 				LastModified: object.LastModified,
@@ -173,7 +173,7 @@ func getImagesWeb(db *database.Database, store *storage.Storage) (
 			img := &image.Image{
 				Storage:      store.Id,
 				Key:          object.Name,
-				Firmware:     image.Unknown,
+				Firmware:     image.Uefi,
 				Etag:         object.Hash,
 				Type:         storage.Web,
 				Signed:       object.Signed,
