@@ -1,0 +1,9 @@
+[Unit]
+Description=Pritunl Cloud Daemon
+
+[Service]
+LimitNOFILE=50000
+ExecStart=/usr/bin/pritunl-cloud start
+
+[Install]
+WantedBy=multi-user.target
