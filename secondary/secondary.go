@@ -11,6 +11,8 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/go-webauthn/webauthn/protocol"
+	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/device"
@@ -19,8 +21,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/user"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"github.com/pritunl/webauthn/protocol"
-	"github.com/pritunl/webauthn/webauthn"
 	"github.com/sirupsen/logrus"
 )
 

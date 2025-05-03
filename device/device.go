@@ -8,12 +8,12 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/u2flib"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"github.com/pritunl/webauthn/webauthn"
 )
 
 type Device struct {
