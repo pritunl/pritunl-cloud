@@ -100,7 +100,14 @@ func LoadAverage() (ld *LoadStat, err error) {
 		return
 	}
 
-	const fscale = 1 << 16
+	fscale := float64(1 << 11)
+	if len(loadavgRaw) >= 20 {
+		readFscale := float64(binary.LittleEndian.Uint32(loadavgRaw[16:20]))
+		if readFscale > 0 {
+			fscale = readFscale
+		}
+	}
+
 	load1 := float64(binary.LittleEndian.Uint32(loadavgRaw[0:4])) / fscale
 	load5 := float64(binary.LittleEndian.Uint32(loadavgRaw[4:8])) / fscale
 	load15 := float64(binary.LittleEndian.Uint32(loadavgRaw[8:12])) / fscale
