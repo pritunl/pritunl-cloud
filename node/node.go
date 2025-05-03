@@ -15,6 +15,7 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/mongo-go-driver/mongo/options"
@@ -34,7 +35,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/usb"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/zone"
-	"github.com/pritunl/webauthn/webauthn"
 	"github.com/sirupsen/logrus"
 )
 
@@ -435,7 +435,7 @@ func (n *Node) GetWebauthn(origin string, strict bool) (
 	web, err = webauthn.New(&webauthn.Config{
 		RPDisplayName: "Pritunl Cloud",
 		RPID:          webauthnDomain,
-		RPOrigin:      origin,
+		RPOrigins:     []string{origin},
 	})
 	if err != nil {
 		err = utils.ParseWebauthnError(err)
