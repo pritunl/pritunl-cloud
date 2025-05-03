@@ -214,12 +214,10 @@ func Sync(db *database.Database, store *storage.Storage) (err error) {
 		remoteKeys.Add(img.Key)
 
 		if img.Signed {
-			if strings.Contains(img.Key, "_efi") ||
-				strings.Contains(img.Key, "_uefi") {
-
-				img.Firmware = image.Uefi
-			} else {
+			if strings.Contains(img.Key, "_bios") {
 				img.Firmware = image.Bios
+			} else {
+				img.Firmware = image.Uefi
 			}
 		}
 
