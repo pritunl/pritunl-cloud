@@ -39,7 +39,7 @@ func (i *Image) Validate(db *database.Database) (
 	i.Name = utils.FilterName(i.Name)
 
 	if i.Firmware == "" {
-		i.Firmware = Unknown
+		i.Firmware = Uefi
 	}
 
 	switch i.SystemType {
