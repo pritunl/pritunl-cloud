@@ -468,7 +468,12 @@ export default class PodDetailed extends React.Component<Props, State> {
 						clearTimeout(this.draftsSyncTimeout)
 					}
 
+					PodsStore.setDrafts(pod.id, units)
 					this.draftsSyncTimeout = setTimeout(() => {
+						if (pod.id != this.props.pod?.id) {
+							return
+						}
+
 						PodActions.commitDrafts({
 							...this.props.pod,
 							drafts: units,
