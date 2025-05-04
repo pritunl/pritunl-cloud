@@ -392,6 +392,16 @@ func Connect() (err error) {
 		"mongodb_hosts": mongoUrl.Hosts,
 	}).Info("database: Connected to MongoDB server")
 
+	err = addCollections()
+	if err != nil {
+		return
+	}
+
+	err = addIndexes()
+	if err != nil {
+		return
+	}
+
 	return
 }
 
@@ -1348,16 +1358,6 @@ func init() {
 			}
 
 			time.Sleep(constants.RetryDelay)
-		}
-
-		err = addCollections()
-		if err != nil {
-			return
-		}
-
-		err = addIndexes()
-		if err != nil {
-			return
 		}
 
 		return
