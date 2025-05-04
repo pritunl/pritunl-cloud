@@ -180,13 +180,16 @@ export default class Pods extends React.Component<{}, State> {
 	}
 
 	render(): JSX.Element {
-		let activePod: PodTypes.PodRo;
+		let activePod: PodTypes.Pod;
 		let podsDom: JSX.Element[] = [];
 
 		this.state.pods.forEach((
 				pod: PodTypes.PodRo): void => {
 			if (pod.id === this.state.podId) {
-				activePod = pod
+				activePod = {
+					...pod,
+					drafts: PodsStore.getDrafts(pod.id),
+				}
 			}
 
 			podsDom.push(<Pod
