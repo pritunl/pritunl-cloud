@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/dropbox/godropbox/errors"
+	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"github.com/pritunl/webauthn/protocol"
 )
 
 func ParseWebauthnError(err error) (newErr error) {
