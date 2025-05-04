@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -11,11 +12,12 @@ import (
 )
 
 type Engine struct {
-	cwd    string
-	env    map[string]string
-	blocks []*Block
-	bash   *BashEngine
-	python *PythonEngine
+	cwd        string
+	env        map[string]string
+	blocks     []*Block
+	bash       *BashEngine
+	python     *PythonEngine
+	outputLock sync.Mutex
 }
 
 func (e *Engine) UpdateEnv(key, val string) {
@@ -27,7 +29,9 @@ func (e *Engine) UpdateCwd(cwd string) {
 }
 
 func (e *Engine) ProcessOutput(output string) {
+	e.outputLock.Lock()
 	fmt.Println(output)
+	e.outputLock.Unlock()
 }
 
 func (e *Engine) GetEnv() map[string]string {
