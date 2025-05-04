@@ -149,6 +149,16 @@ func Schedule(db *database.Database, unt *unit.Unit) (err error) {
 		return
 	}
 
+	errData, err := spc.Refresh(db)
+	if err != nil {
+		return
+	}
+
+	if errData != nil {
+		err = errData.GetError()
+		return
+	}
+
 	switch unt.Kind {
 	case deployment.Instance, deployment.Image:
 		schd := NewInstanceUnit(unt, spc)
@@ -185,6 +195,15 @@ func ManualSchedule(db *database.Database, unt *unit.Unit,
 
 	spc, err := spec.Get(db, specId)
 	if err != nil {
+		return
+	}
+
+	errData, err = spc.Refresh(db)
+	if err != nil {
+		return
+	}
+
+	if errData != nil {
 		return
 	}
 
