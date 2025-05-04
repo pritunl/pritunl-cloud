@@ -1,10 +1,13 @@
 package engine
 
 import (
+	"bufio"
 	"io"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
+	"sync"
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
@@ -17,6 +20,8 @@ env
 echo "</STARTER_ENV_EXPORT>"
 `
 
+var colorRe = regexp.MustCompile(`\x1b\[[0-9;]*[a-zA-Z]`)
+
 type BashEngine struct {
 	cmd        *exec.Cmd
 	cwd        string
@@ -24,7 +29,6 @@ type BashEngine struct {
 	stdout     io.ReadCloser
 	stderr     io.ReadCloser
 	curEnvKeys set.Set
-	env        []string
 	starter    *Engine
 }
 
@@ -48,12 +52,91 @@ func (b *BashEngine) Init(strt *Engine) (err error) {
 	return
 }
 
+func (b *BashEngine) streamOut(reader io.Reader) (env []string) {
+	scanner := bufio.NewScanner(reader)
+	envCapture := false
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		cleanLine := colorRe.ReplaceAllString(line, "")
+
+		if envCapture {
+			if strings.HasPrefix(line, "</STARTER_ENV_EXPORT>") {
+				envCapture = false
+			} else {
+				env = append(env, line)
+			}
+		} else {
+			if strings.HasPrefix(line, "<STARTER_ENV_EXPORT>") {
+				envCapture = true
+			} else {
+				if cleanLine != "" {
+					b.starter.ProcessOutput(cleanLine)
+				}
+			}
+		}
+	}
+
+	return
+}
+
+func (b *BashEngine) streamErr(reader io.Reader) {
+	scanner := bufio.NewScanner(reader)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		cleanLine := colorRe.ReplaceAllString(line, "")
+		if cleanLine != "" {
+			b.starter.ProcessOutput(cleanLine)
+		}
+	}
+}
+
 func (b *BashEngine) Run(block string) (err error) {
 	cmd := exec.Command(b.shell, "-c", block+shellEnvExport)
 	cmd.Env = b.starter.GetEnviron()
 	cmd.Dir = b.starter.GetCwd()
 
-	output, err := cmd.CombinedOutput()
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		err = &errortypes.ExecError{
+			errors.Wrap(err, "starter: Failed to create stdout pipe"),
+		}
+		return
+	}
+
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		err = &errortypes.ExecError{
+			errors.Wrap(err, "starter: Failed to create stderr pipe"),
+		}
+		return
+	}
+
+	err = cmd.Start()
+	if err != nil {
+		err = &errortypes.ExecError{
+			errors.Wrap(err, "starter: Failed to start command"),
+		}
+		return
+	}
+
+	env := []string{}
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+
+	go func() {
+		env = b.streamOut(stdout)
+		wg.Done()
+	}()
+
+	go func() {
+		b.streamErr(stderr)
+		wg.Done()
+	}()
+
+	err = cmd.Wait()
 	if err != nil {
 		err = &errortypes.ExecError{
 			errors.Wrap(err, "starter: Exit error in "+b.shell),
@@ -61,26 +144,9 @@ func (b *BashEngine) Run(block string) (err error) {
 		return
 	}
 
-	envBlock := false
-	for _, line := range strings.Split(string(output), "\n") {
-		if envBlock {
-			if strings.HasPrefix(line, "</STARTER_ENV_EXPORT>") {
-				envBlock = false
-			} else {
-				b.env = append(b.env, line)
-			}
-		} else {
-			if strings.HasPrefix(line, "<STARTER_ENV_EXPORT>") {
-				envBlock = true
-			} else {
-				if line != "" {
-					b.starter.ProcessOutput(line)
-				}
-			}
-		}
-	}
+	wg.Wait()
 
-	for _, pairStr := range b.env {
+	for _, pairStr := range env {
 		pair := strings.SplitN(pairStr, "=", 2)
 		if len(pair) != 2 {
 			continue
