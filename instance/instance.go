@@ -353,6 +353,18 @@ func (i *Instance) Validate(db *database.Database) (
 		return
 	}
 
+	if i.Datacenter == primitive.NilObjectID {
+		i.Datacenter = nde.Datacenter
+	}
+
+	if i.Datacenter != vc.Datacenter {
+		errData = &errortypes.ErrorData{
+			Error:   "vpc_invalid_datacenter",
+			Message: "VPC must be in same datacenter as instance",
+		}
+		return
+	}
+
 	if i.OracleSubnet != "" {
 		match := false
 		for _, subnet := range nde.OracleSubnets {
