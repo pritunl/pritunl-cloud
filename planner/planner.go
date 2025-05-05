@@ -10,6 +10,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/eval"
+	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/plan"
@@ -340,6 +341,21 @@ func (p *Planner) ApplyPlans(db *database.Database) (err error) {
 					}).Error("scheduler: Failed to check instance deployment")
 				}
 				break
+			}
+
+			if deply.State == deployment.Reserved &&
+				deply.Action == deployment.Destroy {
+
+				err := deployment.Remove(db, deply.Id)
+				if err != nil {
+					logrus.WithFields(logrus.Fields{
+						"deployment_id": deply.Id.Hex(),
+						"error":         err,
+					}).Error("deploy: Failed to remove deployment")
+					return
+				}
+
+				event.PublishDispatch(db, "pod.change")
 			}
 		}(deply)
 	}
