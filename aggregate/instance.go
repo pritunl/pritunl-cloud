@@ -274,41 +274,37 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 		authrNames := set.NewSet()
 		for _, role := range doc.NetworkRoles {
 			roleFires := fires[role]
-			if roleFires != nil {
-				for _, fire := range roleFires {
-					if curFires.Contains(fire.Id) {
-						continue
+			for _, fire := range roleFires {
+				if curFires.Contains(fire.Id) {
+					continue
+				}
+				curFires.Add(fire.Id)
+
+				for _, rule := range fire.Ingress {
+					key := rule.Protocol
+					if rule.Port != "" {
+						key += ":" + rule.Port
 					}
-					curFires.Add(fire.Id)
 
-					for _, rule := range fire.Ingress {
-						key := rule.Protocol
-						if rule.Port != "" {
-							key += ":" + rule.Port
-						}
+					rules := firewallRules[key]
+					if rules == nil {
+						rules = set.NewSet()
+						firewallRules[key] = rules
+						firewallRulesKeys = append(
+							firewallRulesKeys,
+							key,
+						)
+					}
 
-						rules := firewallRules[key]
-						if rules == nil {
-							rules = set.NewSet()
-							firewallRules[key] = rules
-							firewallRulesKeys = append(
-								firewallRulesKeys,
-								key,
-							)
-						}
-
-						for _, sourceIp := range rule.SourceIps {
-							rules.Add(sourceIp)
-						}
+					for _, sourceIp := range rule.SourceIps {
+						rules.Add(sourceIp)
 					}
 				}
 			}
 
 			roleAuthrs := authrs[role]
-			if roleAuthrs != nil {
-				for _, authr := range roleAuthrs {
-					authrNames.Add(authr.Name)
-				}
+			for _, authr := range roleAuthrs {
+				authrNames.Add(authr.Name)
 			}
 		}
 
