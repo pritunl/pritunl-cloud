@@ -32,6 +32,7 @@ type Deployments struct {
 }
 
 func (d *Deployments) migrate(deply *deployment.Deployment) {
+	nde := d.stat.Node()
 	nodeId := d.stat.Node().Id
 
 	acquired, lockId := deploymentsLock.LockOpenTimeout(
@@ -162,12 +163,18 @@ func (d *Deployments) migrate(deply *deployment.Deployment) {
 			if newSpec.Instance.PublicAddress != nil {
 				instFields.Add("no_public_address")
 				inst.NoPublicAddress = !*newSpec.Instance.PublicAddress
+			} else {
+				instFields.Add("no_public_address")
+				inst.NoPublicAddress = nde.DefaultNoPublicAddress
 			}
 		}
 		if curSpec.Instance.PublicAddress6 != newSpec.Instance.PublicAddress6 {
 			if newSpec.Instance.PublicAddress6 != nil {
 				instFields.Add("no_public_address6")
 				inst.NoPublicAddress6 = !*newSpec.Instance.PublicAddress6
+			} else {
+				instFields.Add("no_public_address6")
+				inst.NoPublicAddress6 = nde.DefaultNoPublicAddress6
 			}
 		}
 		if curSpec.Instance.DhcpServer != newSpec.Instance.DhcpServer {
