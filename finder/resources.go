@@ -92,10 +92,16 @@ func (r *Resources) Find(db *database.Database, token string) (
 		}
 		break
 	case VpcKind:
-		r.Vpc, err = vpc.GetOne(db, &bson.M{
+		query := bson.M{
 			"name":         resource,
 			"organization": r.Organization,
-		})
+		}
+		if r.Datacenter != nil {
+			query["datacenter"] = r.Datacenter.Id
+		} else if r.Zone != nil {
+			query["datacenter"] = r.Zone.Datacenter
+		}
+		r.Vpc, err = vpc.GetOne(db, &query)
 		if err != nil {
 			if _, ok := err.(*database.NotFoundError); ok {
 				err = nil
