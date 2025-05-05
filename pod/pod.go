@@ -218,6 +218,11 @@ func (p *Pod) CommitFieldsUnits(db *database.Database,
 		}
 	}
 
+	err = p.CommitFields(db, fields)
+	if err != nil {
+		return
+	}
+
 	return
 }
 
