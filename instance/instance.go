@@ -114,6 +114,7 @@ type Instance struct {
 	SpicePort           int                 `bson:"spice_port" json:"spice_port"`
 	Gui                 bool                `bson:"gui" json:"gui"`
 	Deployment          primitive.ObjectID  `bson:"deployment,omitempty" json:"deployment"`
+	Info                *Info               `bson:"info" json:"info"`
 	Virt                *vm.VirtualMachine  `bson:"-" json:"-"`
 
 	curVpc              primitive.ObjectID                       `bson:"-" json:"-"`
@@ -141,6 +142,22 @@ type GuestData struct {
 	Load1     float64   `bson:"load1" json:"load1"`
 	Load5     float64   `bson:"load5" json:"load5"`
 	Load15    float64   `bson:"load15" json:"load15"`
+}
+
+type Info struct {
+	Node          string               `bson:"node" json:"node"`
+	NodePublicIp  string               `bson:"node_public_ip" json:"node_public_ip"`
+	Mtu           int                  `bson:"mtu" json:"mtu"`
+	Iscsi         bool                 `bson:"iscsi" json:"iscsi"`
+	Disks         []string             `bson:"disks" json:"disks"`
+	FirewallRules map[string]string    `bson:"firewall_rules" json:"firewall_rules"`
+	Authorities   []string             `bson:"authorities" json:"authorities"`
+	Isos          []*iso.Iso           `bson:"isos" json:"isos"`
+	UsbDevices    []*usb.Device        `bson:"usb_devices" json:"usb_devices"`
+	PciDevices    []*pci.Device        `bson:"pci_devices" json:"pci_devices"`
+	DriveDevices  []*drive.Device      `bson:"drive_devices" json:"drive_devices"`
+	OracleSubnets []*node.OracleSubnet `bson:"oracle_subnets" json:"oracle_subnets"`
+	Timestamp     time.Time            `bson:"timestamp" json:"timestamp"`
 }
 
 func (i *Instance) GenerateId() (err error) {
