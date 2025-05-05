@@ -11,6 +11,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
+	"github.com/pritunl/pritunl-cloud/info"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/netconf"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -18,6 +19,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/qemu"
 	"github.com/pritunl/pritunl-cloud/qmp"
 	"github.com/pritunl/pritunl-cloud/qms"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/store"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -816,6 +818,33 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 
 		if changed {
 			store.RemArp(inst.Id)
+		}
+	}()
+
+	return
+}
+
+func (s *Instances) updateInfo(instances []*instance.Instance) (err error) {
+	acquired, lockId := instancesLock.LockOpen("info")
+	if !acquired {
+		return
+	}
+
+	go func() {
+		defer func() {
+			instancesLock.Unlock("info", lockId)
+		}()
+
+		now := time.Now()
+		ttl := time.Duration(settings.Hypervisor.InfoTtl) * time.Second
+		db := database.GetDatabase()
+		defer db.Close()
+
+		for _, inst := range instances {
+			if inst.Info == nil || now.Sub(inst.Info.Timestamp) > ttl {
+				inst.Info = info.NewInstance(s.stat, inst)
+				err = inst.CommitFields(db, set.NewSet("info"))
+			}
 		}
 	}()
 
