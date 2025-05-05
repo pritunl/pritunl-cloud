@@ -279,6 +279,9 @@ func (s *Pods) DeploySpec(db *database.Database,
 	if spc.Instance.PublicAddress6 != nil {
 		inst.NoPublicAddress6 = !*spc.Instance.PublicAddress6
 	}
+	if spc.Instance.DiskSize != 0 {
+		inst.InitDiskSize = spc.Instance.DiskSize
+	}
 
 	if len(spc.Instance.NodePorts) > 0 {
 		for _, ndePort := range spc.Instance.NodePorts {
