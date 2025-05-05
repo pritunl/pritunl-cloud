@@ -177,10 +177,7 @@ func (s *Pods) DeploySpec(db *database.Database,
 	}
 
 	if errData != nil {
-		logrus.WithFields(logrus.Fields{
-			"error_code":    errData.Error,
-			"error_message": errData.Message,
-		}).Error("deploy: Failed to refresh spec")
+		err = errData.GetError()
 		return
 	}
 
@@ -190,10 +187,7 @@ func (s *Pods) DeploySpec(db *database.Database,
 	}
 
 	if errData != nil {
-		logrus.WithFields(logrus.Fields{
-			"error_code":    errData.Error,
-			"error_message": errData.Message,
-		}).Error("deploy: Failed to validate deployment")
+		err = errData.GetError()
 		return
 	}
 
@@ -307,11 +301,8 @@ func (s *Pods) DeploySpec(db *database.Database,
 	}
 
 	if errData != nil {
-		logrus.WithFields(logrus.Fields{
-			"error_code":    errData.Error,
-			"error_message": errData.Message,
-		}).Error("deploy: Failed to deploy instance")
 		reserved = false
+		err = errData.GetError()
 		return
 	}
 
