@@ -275,9 +275,13 @@ func (s *Pods) DeploySpec(db *database.Database,
 	}
 	if spc.Instance.PublicAddress != nil {
 		inst.NoPublicAddress = !*spc.Instance.PublicAddress
+	} else {
+		inst.NoPublicAddress = node.Self.DefaultNoPublicAddress
 	}
 	if spc.Instance.PublicAddress6 != nil {
 		inst.NoPublicAddress6 = !*spc.Instance.PublicAddress6
+	} else {
+		inst.NoPublicAddress6 = node.Self.DefaultNoPublicAddress6
 	}
 	if spc.Instance.DiskSize != 0 {
 		inst.InitDiskSize = spc.Instance.DiskSize
