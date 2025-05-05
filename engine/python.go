@@ -21,6 +21,7 @@ const pyEngine = `#!/usr/bin/env python3
 import platform
 import os
 import json
+import traceback
 
 def _pystarter_get_startup():
     python_version = platform.python_version()
@@ -54,7 +55,12 @@ while True:
         os.chdir(data["input"])
         print("<PYSTARTER_UPDATE_COMPLETE/>")
     elif data["type"] == "exec":
-        exec(data["input"])
+        try:
+            exec(data["input"])
+        except Exception as err:
+            print(f"An error occurred: {err}")
+            print(f"Exception type: {type(err).__name__}")
+            traceback.print_exc()
         print(f"<PYSTARTER_EXEC_COMPLETE>"
             f"{os.getcwd()}</PYSTARTER_EXEC_COMPLETE>")
 `
