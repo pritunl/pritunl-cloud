@@ -51,6 +51,7 @@ type hypervisor struct {
 	ImdsAddress           string `bson:"imds_address" default:"169.254.169.254/16"`
 	ImdsPort              int    `bson:"imds_port" default:"80"`
 	ImdsSyncLogTimeout    int    `bson:"imds_sync_log_timeout" default:"20"`
+	InfoTtl               int    `bson:"info_ttl" default:"5"`
 	JournalDisplayLimit   int64  `bson:"journal_display_limit" default:"5000"`
 	DnsServerPrimary      string `bson:"dns_server_primary" default:"8.8.8.8"`
 	DnsServerSecondary    string `bson:"dns_server_secondary" default:"8.8.4.4"`
