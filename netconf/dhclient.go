@@ -90,6 +90,7 @@ func (n *NetConf) RestartDhClient(db *database.Database) (err error) {
 			Ignore: []string{
 				"does not exist",
 			},
+			Timeout: 15 * time.Second,
 		})
 		if e != nil {
 			if resp != nil {
