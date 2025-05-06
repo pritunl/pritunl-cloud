@@ -69,17 +69,18 @@ type State struct {
 	specsSecretsMap     map[primitive.ObjectID]*secret.Secret
 	specsCertsMap       map[primitive.ObjectID]*certificate.Certificate
 
-	virtsMap      map[primitive.ObjectID]*vm.VirtualMachine
-	instances     []*instance.Instance
-	instancesMap  map[primitive.ObjectID]*instance.Instance
-	instanceDisks map[primitive.ObjectID][]*disk.Disk
-	vpcs          []*vpc.Vpc
-	vpcsMap       map[primitive.ObjectID]*vpc.Vpc
-	vpcIpsMap     map[primitive.ObjectID][]*vpc.VpcIp
-	arpRecords    map[string]set.Set
-	addInstances  set.Set
-	remInstances  set.Set
-	running       []string
+	virtsMap           map[primitive.ObjectID]*vm.VirtualMachine
+	instances          []*instance.Instance
+	instancesMap       map[primitive.ObjectID]*instance.Instance
+	instanceDisks      map[primitive.ObjectID][]*disk.Disk
+	instanceNamespaces map[primitive.ObjectID][]string
+	vpcs               []*vpc.Vpc
+	vpcsMap            map[primitive.ObjectID]*vpc.Vpc
+	vpcIpsMap          map[primitive.ObjectID][]*vpc.VpcIp
+	arpRecords         map[string]set.Set
+	addInstances       set.Set
+	remInstances       set.Set
+	running            []string
 }
 
 func (s *State) Node() *node.Node {
@@ -152,6 +153,10 @@ func (s *State) Disks() []*disk.Disk {
 
 func (s *State) GetInstaceDisks(instId primitive.ObjectID) []*disk.Disk {
 	return s.instanceDisks[instId]
+}
+
+func (s *State) GetInstanceNamespaces(instId primitive.ObjectID) []string {
+	return s.instanceNamespaces[instId]
 }
 
 func (s *State) DeploymentReserved(deplyId primitive.ObjectID) *deployment.Deployment {
@@ -893,14 +898,16 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 		return
 	}
 
-	nodeFirewall, firewalls, firewallMaps, err := firewall.GetAllIngress(
-		db, s.nodeSelf, instances, specRules, nodePortsMap)
+	nodeFirewall, firewalls, firewallMaps, instNamespaces, err :=
+		firewall.GetAllIngress(db, s.nodeSelf, instances,
+			specRules, nodePortsMap)
 	if err != nil {
 		return
 	}
 	s.nodeFirewall = nodeFirewall
 	s.firewalls = firewalls
 	s.firewallMaps = firewallMaps
+	s.instanceNamespaces = instNamespaces
 
 	schedulers, err := scheduler.GetAll(db)
 	if err != nil {
