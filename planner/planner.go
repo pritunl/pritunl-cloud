@@ -344,7 +344,8 @@ func (p *Planner) ApplyPlans(db *database.Database) (err error) {
 			}
 
 			if deply.State == deployment.Reserved &&
-				deply.Action == deployment.Destroy {
+				deply.Action == deployment.Destroy &&
+				time.Since(deply.Timestamp) > 300*time.Second {
 
 				err := deployment.Remove(db, deply.Id)
 				if err != nil {
