@@ -47,7 +47,7 @@ func Iptables() (err error) {
 		return
 	}
 
-	nodeFirewall, firewalls, firewallMaps, err := firewall.GetAllIngress(
+	nodeFirewall, firewalls, firewallMaps, _, err := firewall.GetAllIngress(
 		db, node.Self, instances, specRules, nodePortsMap)
 	if err != nil {
 		return
