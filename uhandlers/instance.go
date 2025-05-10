@@ -11,7 +11,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/pritunl-cloud/aggregate"
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
@@ -84,8 +83,8 @@ type instanceMultiData struct {
 }
 
 type instancesData struct {
-	Instances []*aggregate.InstanceAggregate `json:"instances"`
-	Count     int64                          `json:"count"`
+	Instances []*instance.Instance `json:"instances"`
+	Count     int64                `json:"count"`
 }
 
 func instancePut(c *gin.Context) {
@@ -731,7 +730,7 @@ func instancesGet(c *gin.Context) {
 			}
 		}
 
-		instances, count, err := aggregate.GetInstancePaged(
+		instances, count, err := instance.GetAllPaged(
 			db, &query, page, pageCount)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
