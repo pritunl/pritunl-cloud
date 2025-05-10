@@ -166,6 +166,7 @@ func instancePut(c *gin.Context) {
 		"unix_id",
 		"name",
 		"comment",
+		"datacenter",
 		"vpc",
 		"subnet",
 		"oracle_subnet",
