@@ -1201,13 +1201,14 @@ export default class PodWorkspace extends React.Component<Props, State> {
 				onChange={(val: string): void => {
 					this.onUnitEdit(val)
 				}}
-				onDiffChange={(): void => {
+				onDiffChange={(val: string): void => {
 					if (this.state.diffCommit && !this.state.diffChanged) {
 						this.setState({
 							...this.state,
 							diffChanged: true,
 						})
 					}
+					this.onUnitEdit(val)
 				}}
 				onEdit={this.onEdit}
 			/>
