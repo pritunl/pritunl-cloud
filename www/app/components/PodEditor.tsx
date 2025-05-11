@@ -22,7 +22,7 @@ interface Props {
 	diffValue: string
 	onEdit?: () => void
 	onChange?: (value: string) => void
-	onDiffChange?: () => void
+	onDiffChange?: (value: string) => void
 }
 
 interface State {
@@ -158,8 +158,6 @@ export default class PodEditor extends React.Component<Props, State> {
 	monaco: MonacoEditor.Monaco
 	diffEditor: Monaco.editor.IStandaloneDiffEditor
 	diffMonaco: MonacoEditor.Monaco
-	diffValue: string
-	diffUuid: string
 	states: Record<string, EditorState>
 	markerListener: Monaco.IDisposable
 	markersOffset: Record<string, number> = {}
@@ -178,10 +176,8 @@ export default class PodEditor extends React.Component<Props, State> {
 		this.curUuid = undefined
 		this.editor = undefined
 		this.monaco = undefined
-		this.diffUuid = undefined
 		this.diffEditor = undefined
 		this.diffMonaco = undefined
-		this.diffValue = undefined
 		this.states = {}
 		if (this.markerListener) {
 			this.markerListener.dispose()
@@ -294,7 +290,7 @@ export default class PodEditor extends React.Component<Props, State> {
 	}
 
 	updateState(): void {
-		if (!this.editor || !this.editor.getModel() || this.props.diffValue) {
+		if (!this.editor?.getModel()) {
 			return
 		}
 
@@ -325,12 +321,6 @@ export default class PodEditor extends React.Component<Props, State> {
 		} else {
 			model = this.editor.getModel()
 		}
-
-		if (this.curUuid === this.diffUuid) {
-			model.setValue(this.diffValue)
-		}
-		this.diffUuid = undefined
-		this.diffValue = undefined
 	}
 
 	render(): JSX.Element {
@@ -472,9 +462,7 @@ export default class PodEditor extends React.Component<Props, State> {
 
 					let modifiedEditor = editor.getModifiedEditor()
 					modifiedEditor.onDidChangeModelContent((): void => {
-						this.diffUuid = this.props.uuid
-						this.diffValue = modifiedEditor.getValue()
-						this.props.onDiffChange()
+						this.props.onDiffChange(modifiedEditor.getValue())
 					})
 
 					this.updateState()
