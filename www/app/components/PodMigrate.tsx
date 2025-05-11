@@ -342,6 +342,15 @@ export default class PodMigrate extends React.Component<Props, State> {
 			</Blueprint.Popover>
 		}
 
+		let itemsList: JSX.Element;
+		if (this.props.selectedDeployments) {
+			let items: JSX.Element[] = [];
+			for (let item in this.props.selectedDeployments) {
+				items.push(<li key={item}>{item}</li>);
+			}
+			itemsList = <ul>{items}</ul>;
+		}
+
 		let editor: JSX.Element
 		if (this.state.currentCommit?.data && this.state.migrateCommit?.data) {
 			editor = <div style={css.editorBox}>
@@ -396,6 +405,8 @@ export default class PodMigrate extends React.Component<Props, State> {
 			onClose={this.closeDialog}
 		>
 			<div className="bp5-dialog-body">
+				Migrate the selected deployments
+				{itemsList}
 				<label
 					className="bp5-label"
 					style={css.label}
