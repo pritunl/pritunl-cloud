@@ -43,7 +43,7 @@ func Parse(data string) (blocks []*Block, err error) {
 				}
 
 				switch lang {
-				case "shell", "bash":
+				case "shell":
 					curBlock = &Block{
 						Type:  "shell",
 						Phase: phase,
