@@ -124,6 +124,45 @@ func GetRoles(db *database.Database, roles []string) (
 	return
 }
 
+func GetMapRoles(db *database.Database, query *bson.M) (
+	authrs map[string][]*Authority, err error) {
+
+	coll := db.Authorities()
+	authrs = map[string][]*Authority{}
+
+	cursor, err := coll.Find(db, query)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		authr := &Authority{}
+		err = cursor.Decode(authr)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		for _, role := range authr.NetworkRoles {
+			roleAuthrs := authrs[role]
+			if roleAuthrs == nil {
+				roleAuthrs = []*Authority{}
+			}
+			authrs[role] = append(roleAuthrs, authr)
+		}
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetOrgMapRoles(db *database.Database, orgId primitive.ObjectID) (
 	authrs map[string][]*Authority, err error) {
 
