@@ -211,6 +211,13 @@ func (d *Deployments) migrate(deply *deployment.Deployment) {
 			}
 		}
 
+		if !utils.CompareStringSlicesUnsorted(curSpec.Instance.Roles,
+			newSpec.Instance.Roles) {
+
+			instFields.Add("network_roles")
+			inst.NetworkRoles = newSpec.Instance.Roles
+		}
+
 		if curSpec.Instance.DiffNodePorts(newSpec.Instance.NodePorts) {
 			instFields.Add("node_ports")
 
