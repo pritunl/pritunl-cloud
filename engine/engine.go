@@ -139,11 +139,6 @@ func (e *Engine) Run(phase string) (err error) {
 			if err != nil {
 				return
 			}
-		} else {
-			err = &errortypes.ParseError{
-				errors.Newf("starter: Unknown block type %s", block.Type),
-			}
-			return
 		}
 	}
 
