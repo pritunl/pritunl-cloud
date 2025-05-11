@@ -9,6 +9,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/arp"
+	"github.com/pritunl/pritunl-cloud/authority"
 	"github.com/pritunl/pritunl-cloud/certificate"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
@@ -74,6 +75,7 @@ type State struct {
 	instancesMap       map[primitive.ObjectID]*instance.Instance
 	instanceDisks      map[primitive.ObjectID][]*disk.Disk
 	instanceNamespaces map[primitive.ObjectID][]string
+	authoritiesMap     map[string][]*authority.Authority
 	vpcs               []*vpc.Vpc
 	vpcsMap            map[primitive.ObjectID]*vpc.Vpc
 	vpcIpsMap          map[primitive.ObjectID][]*vpc.VpcIp
@@ -157,6 +159,23 @@ func (s *State) GetInstaceDisks(instId primitive.ObjectID) []*disk.Disk {
 
 func (s *State) GetInstanceNamespaces(instId primitive.ObjectID) []string {
 	return s.instanceNamespaces[instId]
+}
+
+func (s *State) GetInstaceAuthorities(roles []string) []*authority.Authority {
+	authrSet := set.NewSet()
+	authrs := []*authority.Authority{}
+
+	for _, role := range roles {
+		for _, authr := range s.authoritiesMap[role] {
+			if authrSet.Contains(authr.Id) {
+				continue
+			}
+			authrSet.Add(authr.Id)
+			authrs = append(authrs, authr)
+		}
+	}
+
+	return authrs
 }
 
 func (s *State) DeploymentReserved(deplyId primitive.ObjectID) *deployment.Deployment {
@@ -859,14 +878,34 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 
 	instId := set.NewSet()
 	instancesMap := map[primitive.ObjectID]*instance.Instance{}
+	instancesRolesSet := set.NewSet()
 	for _, inst := range instances {
 		instId.Add(inst.Id)
 		instancesMap[inst.Id] = inst
 
 		nodePortsMap[inst.NetworkNamespace] = append(
 			nodePortsMap[inst.NetworkNamespace], inst.NodePorts...)
+
+		for _, role := range inst.NetworkRoles {
+			instancesRolesSet.Add(role)
+		}
 	}
 	s.instancesMap = instancesMap
+
+	instancesRoles := []string{}
+	for instRoleInf := range instancesRolesSet.Iter() {
+		instancesRoles = append(instancesRoles, instRoleInf.(string))
+	}
+
+	authrsMap, err := authority.GetMapRoles(db, &bson.M{
+		"network_roles": &bson.M{
+			"$in": instancesRoles,
+		},
+	})
+	if err != nil {
+		return
+	}
+	s.authoritiesMap = authrsMap
 
 	runtimes.State9 = time.Since(start)
 	start = time.Now()
