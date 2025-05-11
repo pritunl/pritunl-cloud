@@ -174,8 +174,7 @@ const css = {
 };
 
 export default class PodWorkspace extends React.Component<Props, State> {
-	interval: NodeJS.Timer;
-	draftInterval: NodeJS.Timer;
+	sync: MiscUtils.SyncInterval;
 	eventToken: string;
 
 	constructor(props: any, context: any) {
@@ -204,12 +203,15 @@ export default class PodWorkspace extends React.Component<Props, State> {
 			this.syncUnit(activeUnit.id)
 		}
 
-		this.interval = setInterval(() => {
-			let activeUnit = this.getActiveUnit()
-			if (activeUnit && !activeUnit.new) {
-				PodActions.syncUnit(this.props.pod.id, activeUnit.id);
-			}
-		}, 3000);
+		this.sync = new MiscUtils.SyncInterval(
+			async () => {
+				let activeUnit = this.getActiveUnit()
+				if (activeUnit && !activeUnit.new) {
+					await PodActions.syncUnit(this.props.pod.id, activeUnit.id);
+				}
+			},
+			3000,
+		)
 
 		this.eventToken = EventDispatcher.register((action: PodTypes.PodDispatch) => {
 			switch (action.type) {
@@ -232,7 +234,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 
 	componentWillUnmount(): void {
 		PodsUnitStore.removeChangeListener(this.onChange);
-		clearInterval(this.interval);
+		this.sync?.stop()
 		EventDispatcher.unregister(this.eventToken)
 	}
 
