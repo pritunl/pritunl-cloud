@@ -9,12 +9,15 @@ import * as Alert from '../Alert';
 import * as Theme from '../Theme';
 import * as MiscUtils from '../utils/MiscUtils';
 
+import * as MonacoEditor from "@monaco-editor/react"
+import * as Monaco from "monaco-editor"
+
 interface Props {
 	disabled: boolean;
 	pod: PodTypes.PodRo;
 	unit: PodTypes.PodUnit;
 	commits: PodTypes.Commit[];
-	selectedDeployments: string[];
+	selectedDeployments: {[key: string]: boolean};
 	onClear: () => void;
 }
 
@@ -22,12 +25,14 @@ interface State {
 	dialog: boolean;
 	disabled: boolean;
 	specId: string;
+	currentCommit: PodTypes.Commit;
 	migrateCommit: PodTypes.Commit;
+	mismatchCommits: boolean;
 }
 
 const css = {
 	dialog: {
-		width: '430px',
+		width: '630px',
 		position: 'absolute',
 	} as React.CSSProperties,
 	label: {
@@ -58,6 +63,9 @@ const css = {
 		fontFamily: Theme.monospaceFont,
 		fontWeight: Theme.monospaceWeight,
 	} as React.CSSProperties,
+	editorBox: {
+		marginTop: "10px",
+	} as React.CSSProperties,
 };
 
 export default class PodMigrate extends React.Component<Props, State> {
@@ -69,15 +77,15 @@ export default class PodMigrate extends React.Component<Props, State> {
 			dialog: false,
 			disabled: false,
 			specId: "",
+			currentCommit: null,
 			migrateCommit: null,
+			mismatchCommits: false,
 		};
 	}
 
 	openDialog = (): void => {
-		this.setState({
-			...this.state,
-			dialog: true,
-		});
+		let migrateCommit = this.state.migrateCommit || this.props.commits?.[0]
+		this.onSelectCommit(migrateCommit)
 	}
 
 	closeDialog = (): void => {
@@ -88,6 +96,44 @@ export default class PodMigrate extends React.Component<Props, State> {
 		});
 	}
 
+	onSelectCommit = async (newCommit: PodTypes.Commit): Promise<void> => {
+		let curCommitId: string
+		let mismatchCommits: boolean = false
+		this.props.unit.deployments.forEach((deploy): void => {
+			if (this.props.selectedDeployments[deploy.id]) {
+				if (!curCommitId && !mismatchCommits) {
+					curCommitId = deploy.spec
+				} else if (deploy.spec != curCommitId) {
+					curCommitId = null
+					mismatchCommits = true
+				}
+			}
+		})
+
+		if (curCommitId) {
+			let [curSpec, newSpec] = await Promise.all([
+				PodActions.spec(this.props.pod.id, this.props.unit.id, curCommitId),
+				PodActions.spec(this.props.pod.id, this.props.unit.id, newCommit.id),
+			]);
+
+			this.setState({
+				...this.state,
+				dialog: true,
+				currentCommit: curSpec,
+				migrateCommit: newSpec,
+				mismatchCommits: mismatchCommits,
+			});
+		} else {
+			this.setState({
+				...this.state,
+				dialog: true,
+				currentCommit: null,
+				migrateCommit: newCommit,
+				mismatchCommits: mismatchCommits,
+			});
+		}
+	}
+
 	filterCommit: BpSelect.ItemPredicate<PodTypes.Commit> = (
 		query, commit, _index, exactMatch) => {
 		if (exactMatch) {
@@ -96,6 +142,7 @@ export default class PodMigrate extends React.Component<Props, State> {
 			return commit.id.indexOf(query) !== -1
 		}
 	}
+
 	renderCommit: BpSelect.ItemRenderer<PodTypes.Commit> = (commit,
 		{handleClick, handleFocus, modifiers, query, index}): JSX.Element => {
 		if (!modifiers.matchesPredicate) {
@@ -198,7 +245,7 @@ export default class PodMigrate extends React.Component<Props, State> {
 		});
 		PodActions.updateMultiUnitAction(
 				this.props.pod.id, this.props.unit.id,
-				this.props.selectedDeployments,
+				Object.keys(this.props.selectedDeployments),
 				"migrate", migrateCommit.id).then((): void => {
 
 			Alert.success('Successfully initiated deployment migration');
@@ -258,10 +305,7 @@ export default class PodMigrate extends React.Component<Props, State> {
 						className={className}
 					/>}
 					onClick={(): void => {
-						this.setState({
-							...this.state,
-							migrateCommit: commit,
-						})
+						this.onSelectCommit(commit)
 					}}
 					text={commit.id.substring(0, 12)}
 					textClassName={className}
@@ -298,6 +342,51 @@ export default class PodMigrate extends React.Component<Props, State> {
 			</Blueprint.Popover>
 		}
 
+		let editor: JSX.Element
+		if (this.state.currentCommit?.data && this.state.migrateCommit?.data) {
+			editor = <div style={css.editorBox}>
+				<MonacoEditor.DiffEditor
+					height="500px"
+					width="100%"
+					theme={Theme.getEditorTheme()}
+					original={this.state.currentCommit.data}
+					modified={this.state.migrateCommit.data}
+					originalLanguage="markdown"
+					modifiedLanguage="markdown"
+					options={{
+						folding: false,
+						fontSize: 10,
+						fontFamily: Theme.monospaceFont,
+						fontWeight: Theme.monospaceWeight,
+						renderSideBySide: false,
+						readOnly: true,
+						automaticLayout: true,
+						formatOnPaste: true,
+						formatOnType: true,
+						rulers: [80],
+						scrollBeyondLastLine: false,
+						minimap: {
+							enabled: false,
+						},
+						wordWrap: "on",
+					}}
+				/>
+			</div>
+		} else if (this.state.mismatchCommits) {
+			editor = <div style={css.editorBox}>
+				<Blueprint.Callout
+					intent="primary"
+				>Selected deployments have mismatched current
+				commits, diff available</Blueprint.Callout>
+			</div>
+		} else {
+			editor = <div style={css.editorBox}>
+				<Blueprint.Callout
+					intent="primary"
+				>No migrate commit diff available</Blueprint.Callout>
+			</div>
+		}
+
 		let dialogElem = <Blueprint.Dialog
 			title="Migrate Selected Deployments"
 			style={css.dialog}
@@ -319,6 +408,9 @@ export default class PodMigrate extends React.Component<Props, State> {
 					}}
 				>
 					{commitSelect}
+				</div>
+				<div>
+					{editor}
 				</div>
 			</div>
 			<div className="bp5-dialog-footer">
