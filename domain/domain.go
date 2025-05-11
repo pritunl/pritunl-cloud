@@ -379,16 +379,16 @@ func (d *Domain) MergeRecords(deployId primitive.ObjectID,
 
 	for subDomain, typeMap := range recMap {
 		for typeName, valueMap := range typeMap {
-			for value, _ := range valueMap {
+			for value := range valueMap {
+				if newDomn == nil {
+					newDomn = d.Copy()
+					newDomn.PreCommit()
+				}
+
 				for i, domainRec := range newDomn.Records {
 					if domainRec.SubDomain == subDomain &&
 						domainRec.Type == typeName &&
 						domainRec.Value == value {
-
-						if newDomn == nil {
-							newDomn = d.Copy()
-							newDomn.PreCommit()
-						}
 
 						newDomn.Records[i].Operation = DELETE
 						break
