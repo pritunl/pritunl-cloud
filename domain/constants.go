@@ -5,9 +5,10 @@ const (
 	Cloudflare  = "cloudflare"
 	OracleCloud = "oracle_cloud"
 
-	A    = "A"
-	AAAA = "AAAA"
-	TXT  = "TXT"
+	A     = "A"
+	AAAA  = "AAAA"
+	CNAME = "CNAME"
+	TXT   = "TXT"
 
 	INSERT = "insert"
 	UPDATE = "update"

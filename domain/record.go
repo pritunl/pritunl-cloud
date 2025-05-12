@@ -54,6 +54,8 @@ func (r *Record) Validate(db *database.Database) (
 		break
 	case AAAA:
 		break
+	case CNAME:
+		break
 	default:
 		err = &errortypes.UnknownError{
 			errors.New("domain: Unknown record type"),
