@@ -271,6 +271,12 @@ func (d *Domain) asyncBatches(db *database.Database, secr *secret.Secret,
 	waiters := &sync.WaitGroup{}
 	waiters.Add(len(batches))
 
+	semaphore := make(
+		chan struct{},
+		settings.Acme.DnsMaxConcurrent,
+	)
+	errs := make(chan error, len(batches))
+
 	for _, recordMap := range batches {
 		records := make([]*Record, 0, len(recordMap))
 		for _, record := range recordMap {
@@ -278,18 +284,28 @@ func (d *Domain) asyncBatches(db *database.Database, secr *secret.Secret,
 		}
 
 		go func() {
-			defer waiters.Done()
+			semaphore <- struct{}{}
+			defer func() {
+				<-semaphore
+				waiters.Done()
+			}()
 
-			err = d.UpdateRecords(db, secr, records)
-			if err != nil {
-				return
+			e := d.UpdateRecords(db, secr, records)
+			if e != nil {
+				errs <- e
 			}
 		}()
 	}
 
 	waiters.Wait()
+	close(errs)
 
-	return
+	select {
+	case err = <-errs:
+		return err
+	default:
+		return nil
+	}
 }
 
 func (d *Domain) UpdateRecords(db *database.Database, secr *secret.Secret,
