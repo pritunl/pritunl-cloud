@@ -3,6 +3,7 @@ package domain
 import (
 	"context"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
@@ -231,6 +232,24 @@ func (d *Domain) CommitRecords(db *database.Database) (err error) {
 		return
 	}
 
+	if d.Type == OracleCloud {
+		err = d.asyncBatches(db, secr, batches)
+		if err != nil {
+			return
+		}
+	} else {
+		err = d.syncBatches(db, secr, batches)
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
+func (d *Domain) syncBatches(db *database.Database, secr *secret.Secret,
+	batches map[string]map[string]*Record) (err error) {
+
 	for _, recordMap := range batches {
 		records := make([]*Record, 0, len(recordMap))
 		for _, record := range recordMap {
@@ -242,6 +261,33 @@ func (d *Domain) CommitRecords(db *database.Database) (err error) {
 			return
 		}
 	}
+
+	return
+}
+
+func (d *Domain) asyncBatches(db *database.Database, secr *secret.Secret,
+	batches map[string]map[string]*Record) (err error) {
+
+	waiters := &sync.WaitGroup{}
+	waiters.Add(len(batches))
+
+	for _, recordMap := range batches {
+		records := make([]*Record, 0, len(recordMap))
+		for _, record := range recordMap {
+			records = append(records, record)
+		}
+
+		go func() {
+			defer waiters.Done()
+
+			err = d.UpdateRecords(db, secr, records)
+			if err != nil {
+				return
+			}
+		}()
+	}
+
+	waiters.Wait()
 
 	return
 }
