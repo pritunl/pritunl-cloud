@@ -9,9 +9,9 @@ type acme struct {
 	DnsRetryRate      int    `bson:"dns_retry_rate" default:"3"`
 	DnsTimeout        int    `bson:"dns_timeout" default:"45"`
 	DnsDelay          int    `bson:"dns_delay" default:"15"`
-	DnsAwsTtl         int    `bson:"dns_aws_ttl" default:"3"`
+	DnsAwsTtl         int    `bson:"dns_aws_ttl" default:"10"`
 	DnsCloudflareTtl  int    `bson:"dns_cloudflare_ttl" default:"60"`
-	DnsOracleCloudTtl int    `bson:"dns_oracle_cloud_ttl" default:"3"`
+	DnsOracleCloudTtl int    `bson:"dns_oracle_cloud_ttl" default:"10"`
 }
 
 func newAcme() interface{} {
