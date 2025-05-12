@@ -57,7 +57,7 @@ func (r *Response) Yaml() string {
 		}
 	}
 
-	return output.String()
+	return strings.TrimRight(output.String(), "\n")
 }
 
 func (r Resource) yaml(indent int) string {
