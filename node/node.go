@@ -454,39 +454,37 @@ func (n *Node) Validate(db *database.Database) (
 		n.Hypervisor = Kvm
 	}
 
-	switch n.Vga {
-	case Std, Vmware, Virtio:
-		n.VgaRender = ""
-		break
-	case VirtioEgl, VirtioEglVulkan:
-		if n.VgaRender != "" {
-			found := false
-			for _, rendr := range n.AvailableRenders {
-				if n.VgaRender == rendr {
-					found = true
-					break
-				}
-			}
-
-			if !found {
-				errData = &errortypes.ErrorData{
-					Error:   "node_vga_render_invalid",
-					Message: "Invalid EGL render",
-				}
-				return
-			}
-		}
-		break
-	case "":
+	if n.Vga == "" {
 		n.Vga = Virtio
 		n.VgaRender = ""
-		break
-	default:
+	}
+
+	if !VgaModes.Contains(n.Vga) {
 		errData = &errortypes.ErrorData{
 			Error:   "node_vga_invalid",
 			Message: "Invalid VGA type",
 		}
 		return
+	}
+
+	if VgaRenderModes.Contains(n.Vga) && n.VgaRender != "" {
+		found := false
+		for _, rendr := range n.AvailableRenders {
+			if n.VgaRender == rendr {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			errData = &errortypes.ErrorData{
+				Error:   "node_vga_render_invalid",
+				Message: "Invalid EGL render",
+			}
+			return
+		}
+	} else {
+		n.VgaRender = ""
 	}
 
 	if n.Gui {
