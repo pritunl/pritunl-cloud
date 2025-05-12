@@ -1,5 +1,9 @@
 package node
 
+import (
+	"github.com/dropbox/godropbox/container/set"
+)
+
 const (
 	Admin      = "admin"
 	User       = "user"
@@ -31,4 +35,26 @@ const (
 	Oracle    = "oracle"
 
 	Restart = "restart"
+)
+
+var (
+	VgaModes = set.NewSet(
+		Std,
+		Vmware,
+		Virtio,
+		VirtioPci,
+		VirtioVgaGl,
+		VirtioGl,
+		VirtioGlVulkan,
+		VirtioPciGl,
+		VirtioPciGlVulkan,
+	)
+	VgaRenderModes = set.NewSet(
+		VirtioPci,
+		VirtioVgaGl,
+		VirtioGl,
+		VirtioGlVulkan,
+		VirtioPciGl,
+		VirtioPciGlVulkan,
+	)
 )
