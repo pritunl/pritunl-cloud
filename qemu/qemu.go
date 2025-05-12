@@ -160,7 +160,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 		nodeVga = node.Virtio
 	}
 
-	if nodeVga == node.VirtioEgl || nodeVga == node.VirtioEglVulkan {
+	if node.VgaRenderModes.Contains(nodeVga) {
 		nodeVgaRender := node.Self.VgaRender
 		if nodeVgaRender != "" {
 			nodeVgaRenderPath, err = render.GetRender(nodeVgaRender)
@@ -216,45 +216,58 @@ func (q *Qemu) Marshal() (output string, err error) {
 			cmd = append(cmd, "-display")
 			cmd = append(cmd, fmt.Sprintf(
 				"%s,gl=on,window-close=off", q.GuiMode))
-
-			if nodeVga == node.VirtioEgl {
-				cmd = append(cmd, "-device")
-				cmd = append(cmd, "virtio-vga-gl")
-				cmd = append(cmd, "-vga")
-				cmd = append(cmd, "none")
-			} else if nodeVga == node.VirtioEglVulkan {
-				cmd = append(cmd, "-device")
-				cmd = append(cmd, "virtio-gpu-gl-pci")
-				cmd = append(cmd, "-vga")
-				cmd = append(cmd, "none")
-			} else {
-				cmd = append(cmd, "-vga")
-				cmd = append(cmd, nodeVga)
+		} else if node.VgaRenderModes.Contains(nodeVga) {
+			cmd = append(cmd, "-display")
+			options := "egl-headless"
+			if nodeVgaRenderPath != "" {
+				options += fmt.Sprintf(",rendernode=%s", nodeVgaRenderPath)
 			}
-		} else {
-			if nodeVga == node.VirtioEgl || nodeVga == node.VirtioEglVulkan {
-				cmd = append(cmd, "-display")
-				options := "egl-headless"
-				if nodeVgaRenderPath != "" {
-					options += fmt.Sprintf(",rendernode=%s", nodeVgaRenderPath)
-				}
-				cmd = append(cmd, options)
+			cmd = append(cmd, options)
+		}
 
-				if nodeVga == node.VirtioEglVulkan {
-					cmd = append(cmd, "-device")
-					cmd = append(cmd, "virtio-gpu-gl-pci")
-					cmd = append(cmd, "-vga")
-					cmd = append(cmd, "none")
-				} else {
-					cmd = append(cmd, "-device")
-					cmd = append(cmd, "virtio-vga-gl")
-					cmd = append(cmd, "-vga")
-					cmd = append(cmd, "none")
-				}
-			} else {
-				cmd = append(cmd, "-vga")
-				cmd = append(cmd, nodeVga)
-			}
+		switch nodeVga {
+		case node.Std:
+			cmd = append(cmd, "-vga")
+			cmd = append(cmd, "std")
+		case node.Vmware:
+			cmd = append(cmd, "-vga")
+			cmd = append(cmd, "vmware")
+		case node.Virtio:
+			cmd = append(cmd, "-vga")
+			cmd = append(cmd, "virtio")
+		case node.VirtioPci:
+			cmd = append(cmd, "-device")
+			cmd = append(cmd, "virtio-gpu-pci")
+			cmd = append(cmd, "-vga")
+			cmd = append(cmd, "none")
+		case node.VirtioVgaGl:
+			cmd = append(cmd, "-device")
+			cmd = append(cmd, "virtio-vga-gl")
+			cmd = append(cmd, "-vga")
+			cmd = append(cmd, "none")
+		case node.VirtioGl:
+			cmd = append(cmd, "-device")
+			cmd = append(cmd, "virtio-gpu-gl")
+			cmd = append(cmd, "-vga")
+			cmd = append(cmd, "none")
+		case node.VirtioGlVulkan:
+			cmd = append(cmd, "-device")
+			cmd = append(cmd, "virtio-gpu-gl,venus=true")
+			cmd = append(cmd, "-vga")
+			cmd = append(cmd, "none")
+		case node.VirtioPciGl:
+			cmd = append(cmd, "-device")
+			cmd = append(cmd, "virtio-gpu-gl-pci")
+			cmd = append(cmd, "-vga")
+			cmd = append(cmd, "none")
+		case node.VirtioPciGlVulkan:
+			cmd = append(cmd, "-device")
+			cmd = append(cmd, "virtio-gpu-gl-pci,venus=true")
+			cmd = append(cmd, "-vga")
+			cmd = append(cmd, "none")
+		default:
+			cmd = append(cmd, "-vga")
+			cmd = append(cmd, nodeVga)
 		}
 
 		if q.Vnc {
