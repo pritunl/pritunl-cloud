@@ -183,6 +183,8 @@ func Register(engine *gin.Engine) {
 	csrfGroup.DELETE("/pool", poolsDelete)
 	csrfGroup.DELETE("/pool/:pool_id", poolDelete)
 
+	csrfGroup.GET("/relations/:kind/:id", relationsGet)
+
 	csrfGroup.GET("/secret", secretsGet)
 	csrfGroup.GET("/secret/:secr_id", secretGet)
 	csrfGroup.PUT("/secret/:secr_id", secretPut)
