@@ -537,7 +537,9 @@ func (d *Domain) preloadRecords(recs []*Record) {
 	}
 }
 
-func (d *Domain) LoadRecords(db *database.Database) (err error) {
+func (d *Domain) LoadRecords(db *database.Database,
+	skipDeleted bool) (err error) {
+
 	coll := db.DomainsRecords()
 	recs := []*Record{}
 
@@ -562,6 +564,11 @@ func (d *Domain) LoadRecords(db *database.Database) (err error) {
 			return
 		}
 
+		if skipDeleted && (rec.Operation == DELETE ||
+			!rec.DeleteTimestamp.IsZero()) {
+
+			continue
+		}
 		recs = append(recs, rec)
 	}
 
