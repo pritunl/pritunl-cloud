@@ -20,16 +20,17 @@ import (
 )
 
 type vpcData struct {
-	Id           primitive.ObjectID `json:"id"`
-	Name         string             `json:"name"`
-	Comment      string             `json:"comment"`
-	Network      string             `json:"network"`
-	Subnets      []*vpc.Subnet      `json:"subnets"`
-	Organization primitive.ObjectID `json:"organization"`
-	Datacenter   primitive.ObjectID `json:"datacenter"`
-	Routes       []*vpc.Route       `json:"routes"`
-	Maps         []*vpc.Map         `json:"maps"`
-	Arps         []*vpc.Arp         `json:"arps"`
+	Id            primitive.ObjectID `json:"id"`
+	Name          string             `json:"name"`
+	Comment       string             `json:"comment"`
+	Network       string             `json:"network"`
+	IcmpRedirects bool               `json:"icmp_redirects"`
+	Subnets       []*vpc.Subnet      `json:"subnets"`
+	Organization  primitive.ObjectID `json:"organization"`
+	Datacenter    primitive.ObjectID `json:"datacenter"`
+	Routes        []*vpc.Route       `json:"routes"`
+	Maps          []*vpc.Map         `json:"maps"`
+	Arps          []*vpc.Arp         `json:"arps"`
 }
 
 type vpcsData struct {
@@ -67,6 +68,7 @@ func vpcPut(c *gin.Context) {
 
 	vc.Name = data.Name
 	vc.Comment = data.Comment
+	vc.IcmpRedirects = data.IcmpRedirects
 	vc.Routes = data.Routes
 	vc.Maps = data.Maps
 	vc.Arps = data.Arps
@@ -75,6 +77,7 @@ func vpcPut(c *gin.Context) {
 	fields := set.NewSet(
 		"name",
 		"comment",
+		"icmp_redirects",
 		"routes",
 		"maps",
 		"arps",
@@ -136,15 +139,16 @@ func vpcPost(c *gin.Context) {
 	}
 
 	vc := &vpc.Vpc{
-		Name:         data.Name,
-		Comment:      data.Comment,
-		Network:      data.Network,
-		Subnets:      data.Subnets,
-		Organization: data.Organization,
-		Datacenter:   data.Datacenter,
-		Routes:       data.Routes,
-		Maps:         data.Maps,
-		Arps:         data.Arps,
+		Name:          data.Name,
+		Comment:       data.Comment,
+		Network:       data.Network,
+		Subnets:       data.Subnets,
+		Organization:  data.Organization,
+		Datacenter:    data.Datacenter,
+		IcmpRedirects: data.IcmpRedirects,
+		Routes:        data.Routes,
+		Maps:          data.Maps,
+		Arps:          data.Arps,
 	}
 
 	vc.InitVpc()
