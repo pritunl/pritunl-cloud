@@ -1,13 +1,14 @@
 package uhandlers
 
 import (
-	"github.com/pritunl/pritunl-cloud/auth"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/pritunl-cloud/auth"
 	"github.com/pritunl/pritunl-cloud/authorizer"
 	"github.com/pritunl/pritunl-cloud/config"
 	"github.com/pritunl/pritunl-cloud/constants"
+	"github.com/pritunl/pritunl-cloud/middlewear"
 	"github.com/pritunl/pritunl-cloud/static"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
@@ -124,5 +125,8 @@ func staticTestingGet(c *gin.Context) {
 	}
 
 	c.Writer.Header().Add("Content-Type", static.GetMimeType(pth))
-	fileServer.ServeHTTP(c.Writer, c.Request)
+
+	gzipWriter := middlewear.NewGzipWriter(c)
+	defer gzipWriter.Close()
+	fileServer.ServeHTTP(gzipWriter, c.Request)
 }
