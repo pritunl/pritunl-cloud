@@ -19,14 +19,15 @@ import (
 )
 
 type vpcData struct {
-	Id         primitive.ObjectID `json:"id"`
-	Name       string             `json:"name"`
-	Comment    string             `json:"comment"`
-	Network    string             `json:"network"`
-	Subnets    []*vpc.Subnet      `json:"subnets"`
-	Datacenter primitive.ObjectID `json:"datacenter"`
-	Routes     []*vpc.Route       `json:"routes"`
-	Maps       []*vpc.Map         `json:"maps"`
+	Id            primitive.ObjectID `json:"id"`
+	Name          string             `json:"name"`
+	Comment       string             `json:"comment"`
+	Network       string             `json:"network"`
+	IcmpRedirects bool               `json:"icmp_redirects"`
+	Subnets       []*vpc.Subnet      `json:"subnets"`
+	Datacenter    primitive.ObjectID `json:"datacenter"`
+	Routes        []*vpc.Route       `json:"routes"`
+	Maps          []*vpc.Map         `json:"maps"`
 }
 
 type vpcsData struct {
@@ -80,6 +81,7 @@ func vpcPut(c *gin.Context) {
 
 	vc.Name = data.Name
 	vc.Comment = data.Comment
+	vc.IcmpRedirects = data.IcmpRedirects
 	vc.Routes = data.Routes
 	vc.Maps = data.Maps
 	vc.Subnets = data.Subnets
@@ -87,6 +89,7 @@ func vpcPut(c *gin.Context) {
 	fields := set.NewSet(
 		"name",
 		"comment",
+		"icmp_redirects",
 		"routes",
 		"maps",
 		"subnets",
@@ -155,14 +158,15 @@ func vpcPost(c *gin.Context) {
 	}
 
 	vc := &vpc.Vpc{
-		Name:         data.Name,
-		Comment:      data.Comment,
-		Network:      data.Network,
-		Subnets:      data.Subnets,
-		Organization: userOrg,
-		Datacenter:   data.Datacenter,
-		Routes:       data.Routes,
-		Maps:         data.Maps,
+		Name:          data.Name,
+		Comment:       data.Comment,
+		Network:       data.Network,
+		Subnets:       data.Subnets,
+		Organization:  userOrg,
+		Datacenter:    data.Datacenter,
+		IcmpRedirects: data.IcmpRedirects,
+		Routes:        data.Routes,
+		Maps:          data.Maps,
 	}
 
 	vc.InitVpc()
