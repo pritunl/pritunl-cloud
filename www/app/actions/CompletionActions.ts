@@ -8,6 +8,7 @@ import * as Csrf from '../Csrf';
 import Loader from '../Loader';
 import * as CompletionTypes from '../types/CompletionTypes';
 import CompletionStore from '../stores/CompletionStore';
+import OrganizationsStore from '../stores/OrganizationsStore';
 import * as MiscUtils from '../utils/MiscUtils';
 
 let syncId: string;
@@ -24,6 +25,7 @@ export function sync(): Promise<void> {
 			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
 			.end((err: any, res: SuperAgent.Response): void => {
 				if (res && res.status === 401) {
 					window.location.href = '/login';
