@@ -1,6 +1,7 @@
 package deploy
 
 import (
+	"fmt"
 	"sort"
 	"strings"
 	"time"
@@ -657,12 +658,13 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 		newRoutes := set.NewSet()
 		newRoutes6 := set.NewSet()
 
+		var icmpRedirects bool
 		var routes []vpc.Route
 		var routes6 []vpc.Route
 
 		routesStore, ok := store.GetRoutes(inst.Id)
 		if !ok {
-			routes, routes6, err = qemu.GetRoutes(inst.Id)
+			icmpRedirects, routes, routes6, err = qemu.GetRoutes(inst.Id)
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
 					"instance_id":   inst.Id.Hex(),
@@ -676,8 +678,9 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 				return
 			}
 
-			store.SetRoutes(inst.Id, routes, routes6)
+			store.SetRoutes(inst.Id, icmpRedirects, routes, routes6)
 		} else {
+			icmpRedirects = routesStore.IcmpRedirects
 			routes = routesStore.Routes
 			routes6 = routesStore.Routes6
 		}
@@ -710,6 +713,21 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 		addRoutes6.Subtract(curRoutes6)
 		remRoutes.Subtract(newRoutes)
 		remRoutes6.Subtract(newRoutes6)
+
+		if icmpRedirects != vc.IcmpRedirects {
+			changed = true
+			icmpRedirectsCtl := 0
+			if vc.IcmpRedirects {
+				icmpRedirectsCtl = 1
+			}
+			utils.ExecCombinedOutputLogged(
+				nil,
+				"ip", "netns", "exec", namespace,
+				"sysctl", "-w",
+				fmt.Sprintf("net.ipv4.conf.br0.send_redirects=%d",
+					icmpRedirectsCtl),
+			)
+		}
 
 		for routeInf := range remRoutes.Iter() {
 			route := routeInf.(vpc.Route)
@@ -862,6 +880,8 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 
 	cpuUnits := 0
 	memoryUnits := 0.0
+
+	s.updateInfo(instances)
 
 	for _, inst := range instances {
 		curVirt := s.stat.GetVirt(inst.Id)
