@@ -1,4 +1,11 @@
 /// <reference path="References.d.ts"/>
+import * as Monaco from "monaco-editor";
+import * as MonacoEditor from "@monaco-editor/react";
+
+MonacoEditor.loader.config({
+	monaco: Monaco
+})
+
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import * as Blueprint from '@blueprintjs/core';
