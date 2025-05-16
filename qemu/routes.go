@@ -3,6 +3,7 @@ package qemu
 import (
 	"fmt"
 	"net"
+	"strconv"
 	"strings"
 
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
@@ -11,12 +12,27 @@ import (
 	"github.com/pritunl/pritunl-cloud/vpc"
 )
 
-func GetRoutes(instId primitive.ObjectID) (routes []vpc.Route,
-	routes6 []vpc.Route, err error) {
+func GetRoutes(instId primitive.ObjectID) (icmpRedirects bool,
+	routes []vpc.Route, routes6 []vpc.Route, err error) {
 
 	namespace := vm.GetNamespace(instId, 0)
 
+	icmpRedirects = true
 	output, _ := utils.ExecCombinedOutputLogged(
+		nil,
+		"ip", "netns", "exec", namespace,
+		"sysctl", "net.ipv4.conf.br0.send_redirects",
+	)
+	if output != "" {
+		parts := strings.Split(strings.TrimSpace(output), "=")
+		if len(parts) == 2 {
+			valueStr := strings.TrimSpace(parts[1])
+			value, _ := strconv.Atoi(valueStr)
+			icmpRedirects = value == 1
+		}
+	}
+
+	output, _ = utils.ExecCombinedOutputLogged(
 		[]string{
 			"not configured in this system",
 		},
