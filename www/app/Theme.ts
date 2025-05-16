@@ -5,7 +5,6 @@ import * as Csrf from './Csrf';
 import * as MiscUtils from './utils/MiscUtils';
 import * as EditorThemes from './EditorThemes';
 import * as Monaco from "monaco-editor"
-import loader from "@monaco-editor/loader"
 
 export interface Callback {
 	(): void;
@@ -13,7 +12,7 @@ export interface Callback {
 
 let callbacks: Set<Callback> = new Set<Callback>();
 export let theme = 'dark';
-export let themeVer = 3;
+export let themeVer = 5;
 let editorThemeName = '';
 export const monospaceSize = "12px"
 export const monospaceFont = "Consolas, Menlo, 'Roboto Mono', 'DejaVu Sans Mono'"
@@ -151,19 +150,11 @@ export function removeChangeListener(callback: () => void): void {
 
 export let editorThemeNames: Record<string, string> = {}
 
-loader.config({
-    paths: {
-        vs: "./static/vs",
-    },
-})
+for (let themeName in EditorThemes.editorThemes) {
+	let editorTheme = EditorThemes.editorThemes[themeName]
+	Monaco.editor.defineTheme(themeName, editorTheme)
 
-loader.init().then((monaco: any) => {
-  for (let themeName in EditorThemes.editorThemes) {
-    let editorTheme = EditorThemes.editorThemes[themeName]
-    monaco.editor.defineTheme(themeName, editorTheme)
-
-    let formattedThemeName = MiscUtils.titleCase(
-		themeName.replaceAll("-", " "))
-    editorThemeNames[themeName] = formattedThemeName
-  }
-})
+	let formattedThemeName = MiscUtils.titleCase(
+	themeName.replaceAll("-", " "))
+	editorThemeNames[themeName] = formattedThemeName
+}
