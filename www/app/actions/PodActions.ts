@@ -123,12 +123,14 @@ export function commit(pod: PodTypes.Pod): Promise<void> {
 	});
 }
 
-export function commitDrafts(pod: PodTypes.Pod, resync?: boolean): Promise<void> {
+export function commitDeploy(pod: PodTypes.Pod,
+	resync?: boolean): Promise<void> {
+
 	let loader = new Loader().loading();
 
 	return new Promise<void>((resolve, reject): void => {
 		SuperAgent
-			.put('/pod/' + pod.id + "/drafts")
+			.put('/pod/' + pod.id + "/deploy")
 			.send(pod)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
