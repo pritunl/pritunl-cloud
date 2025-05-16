@@ -276,7 +276,7 @@ func RemoveDomains(db *database.Database, deplyId primitive.ObjectID) (
 		}
 
 		for _, domn := range domns {
-			err = domn.LoadRecords(db)
+			err = domn.LoadRecords(db, false)
 			if err != nil {
 				return
 			}
