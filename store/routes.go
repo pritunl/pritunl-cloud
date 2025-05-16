@@ -14,9 +14,10 @@ var (
 )
 
 type RoutesStore struct {
-	Routes    []vpc.Route
-	Routes6   []vpc.Route
-	Timestamp time.Time
+	IcmpRedirects bool
+	Routes        []vpc.Route
+	Routes6       []vpc.Route
+	Timestamp     time.Time
 }
 
 func GetRoutes(instId primitive.ObjectID) (routesStore RoutesStore, ok bool) {
@@ -31,12 +32,15 @@ func GetRoutes(instId primitive.ObjectID) (routesStore RoutesStore, ok bool) {
 	return
 }
 
-func SetRoutes(instId primitive.ObjectID, routes, routes6 []vpc.Route) {
+func SetRoutes(instId primitive.ObjectID, icmpRedirects bool,
+	routes, routes6 []vpc.Route) {
+
 	routesStoresLock.Lock()
 	routesStores[instId] = RoutesStore{
-		Routes:    append([]vpc.Route{}, routes...),
-		Routes6:   append([]vpc.Route{}, routes6...),
-		Timestamp: time.Now(),
+		IcmpRedirects: icmpRedirects,
+		Routes:        append([]vpc.Route{}, routes...),
+		Routes6:       append([]vpc.Route{}, routes6...),
+		Timestamp:     time.Now(),
 	}
 	routesStoresLock.Unlock()
 }
