@@ -6,10 +6,8 @@ import (
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/pritunl-cloud/imds/server/config"
 	"github.com/pritunl/pritunl-cloud/imds/server/constants"
 	"github.com/pritunl/pritunl-cloud/imds/server/errortypes"
-	"github.com/pritunl/pritunl-cloud/imds/server/utils"
 	"github.com/pritunl/tools/logger"
 )
 
@@ -49,14 +47,17 @@ func AuthVirt(c *gin.Context) {
 		token = c.Query("token")
 	}
 
-	addr := utils.StripPort(c.Request.RemoteAddr)
-	if !utils.StringsContains(config.Config.ClientIps, addr) {
-		c.AbortWithStatusJSON(401, &AuthenticationError{
-			Error:   "authentication",
-			Message: "Source IP address invalid",
-		})
-		return
-	}
+	// TODO config.Config.ClientIps not loaded
+	// addr := utils.StripPort(c.Request.RemoteAddr)
+	// if len(config.Config.ClientIps) != 0 && config.Config.ClientIps[0] == "" &&
+	// 	!utils.StringsContains(config.Config.ClientIps, addr) {
+
+	// 	c.AbortWithStatusJSON(401, &AuthenticationError{
+	// 		Error:   "authentication",
+	// 		Message: "Source IP address invalid",
+	// 	})
+	// 	return
+	// }
 
 	if c.Request.Header.Get("Origin") != "" ||
 		c.Request.Header.Get("Referer") != "" ||
