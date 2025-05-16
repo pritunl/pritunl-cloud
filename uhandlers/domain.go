@@ -59,7 +59,7 @@ func domainPut(c *gin.Context) {
 		return
 	}
 
-	err = domn.LoadRecords(db)
+	err = domn.LoadRecords(db, true)
 	if err != nil {
 		return
 	}
@@ -224,7 +224,7 @@ func domainGet(c *gin.Context) {
 		return
 	}
 
-	err = domn.LoadRecords(db)
+	err = domn.LoadRecords(db, true)
 	if err != nil {
 		return
 	}
