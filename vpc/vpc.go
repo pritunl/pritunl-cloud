@@ -44,6 +44,7 @@ type Vpc struct {
 	Subnets          []*Subnet          `bson:"subnets" json:"subnets"`
 	Organization     primitive.ObjectID `bson:"organization" json:"organization"`
 	Datacenter       primitive.ObjectID `bson:"datacenter" json:"datacenter"`
+	IcmpRedirects    bool               `bson:"icmp_redirects" json:"icmp_redirects"`
 	Routes           []*Route           `bson:"routes" json:"routes"`
 	Maps             []*Map             `bson:"maps" json:"maps"`
 	Arps             []*Arp             `bson:"arps" json:"arps"`
