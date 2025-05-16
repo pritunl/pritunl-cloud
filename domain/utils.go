@@ -35,7 +35,7 @@ func Refresh(db *database.Database, domnId primitive.ObjectID) {
 		return
 	}
 
-	err = domn.LoadRecords(db)
+	err = domn.LoadRecords(db, false)
 	if err != nil {
 		return
 	}
@@ -267,7 +267,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 			return
 		}
 
-		err = dmn.LoadRecords(db)
+		err = dmn.LoadRecords(db, true)
 		if err != nil {
 			return
 		}
