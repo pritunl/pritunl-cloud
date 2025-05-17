@@ -1645,34 +1645,49 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			})
 		}
 
+		let instanceFields: PageInfos.Field[] = [
+			{
+				label: 'QEMU Version',
+				value: this.props.instance.qemu_version || 'Unknown',
+			},
+			{
+				label: 'Platform',
+				value: (this.props.instance.uefi ? 'UEFI' : 'BIOS'),
+			},
+			{
+				label: 'SecureBoot',
+				value: (this.props.instance.secure_boot ? 'Enabled' : 'Disabled'),
+			},
+			{
+				label: 'Disks',
+				value: info.disks || '-',
+			},
+			{
+				label: 'Authorities',
+				value: info.authorities?.join(', ') || '-',
+			},
+		]
+
+		if (this.props.instance.guest) {
+			instanceFields.push({
+				label: 'Agent Heartbeat',
+				value: MiscUtils.formatDateLocal(this.props.instance.guest.heartbeat),
+			})
+			instanceFields.push({
+				label: 'Agent Load',
+				value: `${this.props.instance.guest.load1} ` +
+					`${this.props.instance.guest.load5} ` +
+					`${this.props.instance.guest.load15}`,
+			})
+		}
+
 		fields.push(
 			{
 				label: 'Instance Details',
 				value: 'Hover to Expand',
 				valueClass: 'bp5-text-intent-primary',
 				embedded: {
-					fields: [
-						{
-							label: 'QEMU Version',
-							value: this.props.instance.qemu_version || 'Unknown',
-						},
-						{
-							label: 'Platform',
-							value: (this.props.instance.uefi ? 'UEFI' : 'BIOS'),
-						},
-						{
-							label: 'SecureBoot',
-							value: (this.props.instance.secure_boot ? 'Enabled' : 'Disabled'),
-						},
-						{
-							label: 'Disks',
-							value: info.disks || '',
-						},
-						{
-							label: 'Authorities',
-							value: this.props.instance.info.authorities?.join(', ') || '',
-						},
-					],
+					fields: instanceFields,
 				},
 			},
 			{
