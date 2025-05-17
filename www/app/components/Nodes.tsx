@@ -1,5 +1,6 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
+import * as MiscUtils from '../utils/MiscUtils';
 import * as NodeTypes from '../types/NodeTypes';
 import * as CertificateTypes from '../types/CertificateTypes';
 import * as DatacenterTypes from "../types/DatacenterTypes";
@@ -72,7 +73,7 @@ const css = {
 };
 
 export default class Nodes extends React.Component<{}, State> {
-	interval: NodeJS.Timer;
+	sync: MiscUtils.SyncInterval;
 
 	constructor(props: any, context: any) {
 		super(props, context);
@@ -110,9 +111,10 @@ export default class Nodes extends React.Component<{}, State> {
 		ZoneActions.sync();
 		BlockActions.sync();
 
-		this.interval = setInterval(() => {
-			NodeActions.sync(true);
-		}, 1000);
+		this.sync = new MiscUtils.SyncInterval(
+			() => NodeActions.sync(true),
+			3000,
+		)
 	}
 
 	componentWillUnmount(): void {
@@ -121,7 +123,8 @@ export default class Nodes extends React.Component<{}, State> {
 		DatacentersStore.removeChangeListener(this.onChange);
 		ZonesStore.removeChangeListener(this.onChange);
 		BlocksStore.removeChangeListener(this.onChange);
-		clearInterval(this.interval);
+
+		this.sync?.stop()
 	}
 
 	onChange = (): void => {
