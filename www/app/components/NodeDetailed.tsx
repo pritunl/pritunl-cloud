@@ -2104,21 +2104,40 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						hidden={types.indexOf('hypervisor') === -1}
 						disabled={this.state.disabled}
 						label="Hypervisor VGA Type"
-						help="Type of VGA card to emulate. Virtio provides the best performance. VMware provides better performance then standard. Virtio is required for UEFI guests."
+						help={<div>
+							Type of VGA card to emulate. Virtio provides the best performance.
+							VMware provides better performance then standard. Virtio is
+							required for UEFI guests.
+							<ul>
+								<li>Standard = --vga=std</li>
+								<li>VMware = --vga=vmware</li>
+								<li>Virtio = --display=virtio-vga</li>
+								<li>Virtio GPU PCI = --display=virtio-gpu-pci</li>
+								<li>Virtio VGA OpenGL = --display=virtio-vga-gl</li>
+								<li>Virtio GPU OpenGL = --display=virtio-gpu-gl</li>
+								<li>Virtio GPU Vulkan = --display=virtio-gpu-gl,venus=true</li>
+								<li>Virtio GPU PCI OpenGL = --display=virtio-gpu-gl-pci</li>
+								<li>Virtio GPU PCI Vulkan = --display=virtio-gpu-gl-pci,venus=true</li>
+							</ul>
+						</div>}
 						value={node.vga}
 						onChange={(val): void => {
 							this.set('vga', val);
 						}}
 					>
+						<option value="Std">Standard</option>
+						<option value="VMware">Virtio</option>
 						<option value="virtio">Virtio</option>
-						<option value="virtio_egl">Virtio OpenGL</option>
-						<option value="virtio_egl_vulkan">Virtio OpenGL Vulkan</option>
-						<option value="vmware">VMware</option>
-						<option value="std">Standard</option>
+						<option value="virtio_pci">Virtio GPU PCI</option>
+						<option value="virtio_vga_gl">Virtio VGA OpenGL</option>
+						<option value="virtio_gl">Virtio GPU OpenGL</option>
+						<option value="virtio_gl_vulkan">Virtio GPU Vulkan</option>
+						<option value="virtio_pci_gl">Virtio GPU PCI OpenGL</option>
+						<option value="virtio_pci_gl_vulkan">Virtio GPU PCI Vulkan</option>
 					</PageSelect>
 					<PageSelect
 						hidden={types.indexOf('hypervisor') === -1 ||
-							(node.vga !== 'virtio_egl' && node.vga !== 'virtio_egl_vulkan')}
+							!NodeTypes.RenderModes.has(node.vga)}
 						disabled={this.state.disabled || !hasRenders}
 						label="Hypervisor EGL Render"
 						help="Graphics card to use for EGL rendering."
