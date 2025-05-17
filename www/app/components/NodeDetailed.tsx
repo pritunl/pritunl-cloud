@@ -2181,10 +2181,10 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						{availableDrivesSelect}
 					</PageSelectButton>
 					<label className="bp5-label">
-						Network Roles
+						Roles
 						<Help
-							title="Network Roles"
-							content="Network roles that will be matched with firewall rules. Network roles are case-sensitive. Only firewall roles without an organization will match."
+							title="Roles"
+							content="Roles that will be matched with firewall rules and instance shapes. Roles are case-sensitive. Only node firewall roles without an organization will match."
 						/>
 						<div>
 							{networkRoles}
