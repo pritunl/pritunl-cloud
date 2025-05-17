@@ -437,7 +437,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 
 	onAddDriveDevice = (): void => {
 		let instance: InstanceTypes.Instance;
-		let infoDriveDevices = this.props.instance.info.drive_devices || [];
+		let infoDriveDevices = this.props.instance.info?.drive_devices || [];
 
 		if (!this.state.addDriveDevice && !infoDriveDevices.length) {
 			return;
@@ -531,7 +531,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 
 	onAddIso = (): void => {
 		let instance: InstanceTypes.Instance;
-		let infoIsos = this.props.instance.info.isos || [];
+		let infoIsos = this.props.instance.info?.isos || [];
 
 		if (!this.state.addIso && !infoIsos.length) {
 			return;
@@ -625,7 +625,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 
 	onAddUsbDevice = (): void => {
 		let instance: InstanceTypes.Instance;
-		let infoUsbDevices = this.props.instance.info.usb_devices || [];
+		let infoUsbDevices = this.props.instance.info?.usb_devices || [];
 
 		if (!this.state.addUsbDevice && !infoUsbDevices.length) {
 			return;
@@ -743,7 +743,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 
 	onAddPciDevice = (): void => {
 		let instance: InstanceTypes.Instance;
-		let infoPciDevices = this.props.instance.info.pci_devices || [];
+		let infoPciDevices = this.props.instance.info?.pci_devices || [];
 
 		if (!this.state.addPciDevice && !infoPciDevices.length) {
 			return;
@@ -1257,14 +1257,12 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		let oracleSubnetsSelect: JSX.Element[] = [
 			<option key="null" value="">Disabled</option>,
 		];
-		if (this.props.instance.info.oracle_subnets) {
-			for (let subnet of (this.props.instance.info.oracle_subnets || [])) {
-				oracleSubnetsSelect.push(
-					<option key={subnet.id} value={subnet.id}>
-						{subnet.name}
-					</option>,
-				);
-			}
+		for (let subnet of (info.oracle_subnets || [])) {
+			oracleSubnetsSelect.push(
+				<option key={subnet.id} value={subnet.id}>
+					{subnet.name}
+				</option>,
+			);
 		}
 
 		let domainsSelect: JSX.Element[] = [
@@ -1306,7 +1304,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			);
 		}
 
-		let infoDriveDevices = this.props.instance.info.drive_devices;
+		let infoDriveDevices = info.drive_devices;
 		let driveDevicesSelect: JSX.Element[] = [];
 		for (let i = 0; i < (infoDriveDevices || []).length; i++) {
 			let device = infoDriveDevices[i];
@@ -1341,7 +1339,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			);
 		}
 
-		let infoIsos = this.props.instance.info.isos;
+		let infoIsos = info.isos;
 		let isosSelect: JSX.Element[] = [];
 		for (let i = 0; i < (infoIsos || []).length; i++) {
 			let iso = infoIsos[i];
@@ -1381,7 +1379,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			);
 		}
 
-		let infoUsbDevices = this.props.instance.info.usb_devices;
+		let infoUsbDevices = info.usb_devices;
 		let usbDevicesSelect: JSX.Element[] = [];
 		for (let i = 0; i < (infoUsbDevices || []).length; i++) {
 			let device = infoUsbDevices[i];
@@ -1429,7 +1427,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			);
 		}
 
-		let infoPciDevices = this.props.instance.info.pci_devices;
+		let infoPciDevices = info.pci_devices;
 		let pciDevicesSelect: JSX.Element[] = [];
 		for (let i = 0; i < (infoPciDevices || []).length; i++) {
 			let device = infoPciDevices[i];
@@ -1625,7 +1623,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			},
 			{
 				label: 'Network MTU',
-				value: this.props.instance.info?.mtu || '-',
+				value: info.mtu || '-',
 			},
 			{
 				label: 'Network Namespace',
@@ -1703,11 +1701,11 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			}
 
 			if (this.props.instance.vnc) {
-				if (this.props.instance.info.node_public_ip) {
+				if (info.node_public_ip) {
 					accessFields.push(
 						{
 							label: 'VNC IP',
-							value: this.props.instance.info.node_public_ip,
+							value: info.node_public_ip,
 							copy: true,
 						},
 					);
@@ -1735,11 +1733,11 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			}
 
 			if (this.props.instance.spice) {
-				if (this.props.instance.info.node_public_ip) {
+				if (info.node_public_ip) {
 					fields.push(
 						{
 							label: 'Spice IP',
-							value: this.props.instance.info.node_public_ip,
+							value: info.node_public_ip,
 							copy: true,
 						},
 					);
@@ -1777,7 +1775,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				value: 'Hover to Expand',
 				valueClass: 'bp5-text-intent-primary',
 				embedded: {
-					fields: InstanceTypes.FirewallFields(this.props.instance.info),
+					fields: InstanceTypes.FirewallFields(info),
 				},
 			},
 		);
