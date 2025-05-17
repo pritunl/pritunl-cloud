@@ -313,7 +313,7 @@ export function syncUnit(podId?: string, unitId?: string): Promise<void> {
 					return;
 				}
 
-				if (curSyncId !== syncUnitId) {
+				if (curSyncId !== syncUnitId || (res && res.status === 404)) {
 					resolve();
 					return;
 				}
