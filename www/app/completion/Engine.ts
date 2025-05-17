@@ -332,7 +332,9 @@ export function handleBeforeMount(
 										description: "The protocol for this rule",
 									},
 									port: {
-										type: "string",
+										type: ["number", "string"],
+										minimum: 1,
+										maximum: 65535,
 										description: "Port number or range " +
 											"(e.g. \"80\" or \"80-443\")",
 									},
