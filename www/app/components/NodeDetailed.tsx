@@ -96,6 +96,10 @@ const css = {
 		width: '100%',
 		maxWidth: '280px',
 	} as React.CSSProperties,
+	labelWide: {
+		width: '100%',
+		maxWidth: '400px',
+	} as React.CSSProperties,
 	inputGroup: {
 		width: '100%',
 	} as React.CSSProperties,
@@ -1768,7 +1772,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					<label
 						className="bp5-label"
 						hidden={node.network_mode !== 'static'}
-						style={css.label}
+						style={css.labelWide}
 					>
 						External IPv4 Block Attachments
 						{blocks}
@@ -1776,7 +1780,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					<label
 						className="bp5-label"
 						hidden={node.network_mode6 !== 'static'}
-						style={css.label}
+						style={css.labelWide}
 					>
 						External IPv6 Block Attachments
 						{blocks6}
