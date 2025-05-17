@@ -1,5 +1,6 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
+import * as MiscUtils from '../utils/MiscUtils';
 import * as BalancerTypes from '../types/BalancerTypes';
 import * as CertificateTypes from '../types/CertificateTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
@@ -72,7 +73,7 @@ const css = {
 };
 
 export default class Balancers extends React.Component<{}, State> {
-	interval: NodeJS.Timer;
+	sync: MiscUtils.SyncInterval;
 
 	constructor(props: any, context: any) {
 		super(props, context);
@@ -108,9 +109,10 @@ export default class Balancers extends React.Component<{}, State> {
 		CertificateActions.sync();
 		DatacenterActions.sync();
 
-		this.interval = setInterval(() => {
-			BalancerActions.sync(true);
-		}, 5000);
+		this.sync = new MiscUtils.SyncInterval(
+			() => BalancerActions.sync(true),
+			5000,
+		)
 	}
 
 	componentWillUnmount(): void {
@@ -118,7 +120,8 @@ export default class Balancers extends React.Component<{}, State> {
 		OrganizationsStore.removeChangeListener(this.onChange);
 		CertificatesStore.removeChangeListener(this.onChange);
 		DatacentersStore.removeChangeListener(this.onChange);
-		clearInterval(this.interval);
+
+		this.sync?.stop()
 	}
 
 	onChange = (): void => {
