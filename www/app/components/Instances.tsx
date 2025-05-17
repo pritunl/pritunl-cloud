@@ -1,6 +1,7 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
 import * as Constants from '../Constants';
+import * as MiscUtils from '../utils/MiscUtils';
 import * as InstanceTypes from '../types/InstanceTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import * as DomainTypes from '../types/DomainTypes';
@@ -101,7 +102,7 @@ const css = {
 };
 
 export default class Instances extends React.Component<{}, State> {
-	interval: NodeJS.Timer;
+	sync: MiscUtils.SyncInterval;
 
 	constructor(props: any, context: any) {
 		super(props, context);
@@ -153,11 +154,10 @@ export default class Instances extends React.Component<{}, State> {
 		ZoneActions.sync();
 		ShapeActions.sync();
 
-		this.interval = setInterval(() => {
-			InstanceActions.sync(true);
-			// TODO wait for last sync to finish
-			// TODO requests stack on slow server
-		}, 3000);
+		this.sync = new MiscUtils.SyncInterval(
+			() => InstanceActions.sync(true),
+			3000,
+		)
 	}
 
 	componentWillUnmount(): void {
@@ -170,7 +170,8 @@ export default class Instances extends React.Component<{}, State> {
 		PoolsStore.removeChangeListener(this.onChange);
 		ZonesStore.removeChangeListener(this.onChange);
 		ShapesStore.removeChangeListener(this.onChange);
-		clearInterval(this.interval);
+
+		this.sync?.stop()
 	}
 
 	onChange = (): void => {
