@@ -13,6 +13,7 @@ export interface Kind {
 export interface Resource {
 	id: string
 	name: string
+	label?: string
 	info: ResourceInfo[]
 	tags?: Tag[]
 }
@@ -99,13 +100,15 @@ class CompletionCache extends EventEmitter {
 	update(resources: CompletionTypes.Completion): void {
 		this._kinds = []
 		this._resources = {}
+		let resourceList: Resource[]
+		let subResourceList: Resource[]
 
 		this._kinds.push({
 			name: "organization",
 			label: "Organization",
 			title: "**Organization**",
 		})
-		let resourceList: Resource[] = []
+		resourceList = []
 		for (let item of (resources.organizations ||[])) {
 			resourceList.push({
 				id: item.id,
@@ -145,7 +148,13 @@ class CompletionCache extends EventEmitter {
 			label: "VPC",
 			title: "**VPC**",
 		})
+		this._kinds.push({
+			name: "subnet",
+			label: "Subnet",
+			title: "**Subnet**",
+		})
 		resourceList = []
+		subResourceList = []
 		for (let item of (resources.vpcs ||[])) {
 			resourceList.push({
 				id: item.id,
@@ -157,8 +166,27 @@ class CompletionCache extends EventEmitter {
 					},
 				],
 			})
+
+			for (let subItem of (item.subnets || [])) {
+				subResourceList.push({
+					id: subItem.id,
+					name: subItem.name,
+					label: "[" + item.name + "] " + subItem.name,
+					info: [
+						{
+							label: "**Name**",
+							value: subItem.name,
+						},
+						{
+							label: "**VPC**",
+							value: item.name,
+						},
+					],
+				})
+			}
 		}
 		this._resources["vpc"] = resourceList
+		this._resources["subnet"] = subResourceList
 
 		this._kinds.push({
 			name: "datacenter",
