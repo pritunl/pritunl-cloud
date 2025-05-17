@@ -159,6 +159,38 @@ export function commitDeploy(pod: PodTypes.Pod,
 	});
 }
 
+export function commitDrafts(pod: PodTypes.Pod,
+	resync?: boolean): Promise<void> {
+
+	return new Promise<void>((resolve, reject): void => {
+		SuperAgent
+			.put('/pod/' + pod.id + "/drafts")
+			.send(pod)
+			.set('Accept', 'application/json')
+			.set('Csrf-Token', Csrf.token)
+			.set('Organization', OrganizationsStore.current)
+			.end((err: any, res: SuperAgent.Response): void => {
+				if (res && res.status === 401) {
+					window.location.href = '/login';
+					resolve();
+					return;
+				}
+
+				if (err) {
+					Alert.errorRes(res, 'Failed to save pod');
+					reject(err);
+					return;
+				}
+
+				if (resync) {
+					sync(true)
+				}
+
+				resolve();
+			});
+	});
+}
+
 export function create(pod: PodTypes.Pod): Promise<void> {
 	let loader = new Loader().loading();
 
