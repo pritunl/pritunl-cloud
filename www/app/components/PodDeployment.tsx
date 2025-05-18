@@ -254,11 +254,11 @@ export default class PodDeployment extends React.Component<Props, State> {
 					},
 					{
 						label: "Timestamp",
-						value: MiscUtils.formatDateLocal(commit.timestamp),
+						value: MiscUtils.formatDateLocal(deployment.spec_timestamp),
 					},
 					{
 						label: "Behind",
-						value: commit.offset,
+						value: deployment.spec_offset,
 						valueClass: commitClass,
 					},
 				]}
