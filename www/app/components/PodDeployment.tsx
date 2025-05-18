@@ -251,7 +251,7 @@ export default class PodDeployment extends React.Component<Props, State> {
 				fields={[
 					{
 						label: "Commit",
-						value: deployment.spec.substring(0, 24) || "-",
+						value: deployment.spec.substring(12) || "-",
 					},
 					{
 						label: "Timestamp",
@@ -426,7 +426,7 @@ export default class PodDeployment extends React.Component<Props, State> {
 								fields={[
 									{
 										label: "Commit ID",
-										value: deployment.spec.substring(0, 12),
+										value: deployment.spec.substring(12),
 										hover: specHover,
 										valueClass: commitClass,
 									},
@@ -509,7 +509,7 @@ export default class PodDeployment extends React.Component<Props, State> {
 									},
 									{
 										label: "Commit ID",
-										value: deployment.spec.substring(0, 12),
+										value: deployment.spec.substring(12),
 										hover: specHover,
 										valueClass: commitClass,
 									},
