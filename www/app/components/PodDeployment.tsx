@@ -237,9 +237,8 @@ export default class PodDeployment extends React.Component<Props, State> {
 			privateIps6 = ["-"]
 		}
 
-		let commit = this.props.commitMap[deployment.spec]
-		let commitClass = commit.offset === 0 ? "bp5-text-intent-success" :
-			"bp5-text-intent-danger"
+		let commitClass = deployment.spec_offset === 0 ?
+			"bp5-text-intent-success" :	"bp5-text-intent-danger"
 
 		let specHover = <div
 			className="bp5-content-popover"
