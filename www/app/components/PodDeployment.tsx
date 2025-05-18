@@ -400,11 +400,11 @@ export default class PodDeployment extends React.Component<Props, State> {
 								onClick={this.onLogsToggle}
 							>Logs</button>
 							<button
-								className="bp5-button bp5-small bp5-intent-danger"
+								className="bp5-button bp5-small bp5-active bp5-intent-danger"
 								style={css.cardButton}
 								hidden={!this.state.logsOpen}
 								onClick={this.onLogsToggle}
-							>Close Logs</button>
+							>Logs</button>
 							<button
 								className="bp5-button bp5-small"
 								style={css.cardButton}
@@ -412,11 +412,11 @@ export default class PodDeployment extends React.Component<Props, State> {
 								onClick={this.onEditToggle}
 							>Settings</button>
 							<button
-								className="bp5-button bp5-small bp5-intent-danger"
+								className="bp5-button bp5-small bp5-active bp5-intent-danger"
 								style={css.cardButton}
 								hidden={!this.state.editOpen}
 								onClick={this.onEditToggle}
-							>Close Settings</button>
+							>Settings</button>
 						</div>
 						<div style={css.item}>
 							<PageInfo
@@ -521,11 +521,11 @@ export default class PodDeployment extends React.Component<Props, State> {
 								onClick={this.onLogsToggle}
 							>Logs</button>
 							<button
-								className="bp5-button bp5-small bp5-intent-danger"
+								className="bp5-button bp5-small bp5-active bp5-intent-danger"
 								style={css.cardButton}
 								hidden={!this.state.logsOpen}
 								onClick={this.onLogsToggle}
-							>Close Logs</button>
+							>Logs</button>
 							<button
 								className="bp5-button bp5-small"
 								style={css.cardButton}
@@ -533,11 +533,11 @@ export default class PodDeployment extends React.Component<Props, State> {
 								onClick={this.onEditToggle}
 							>Settings</button>
 							<button
-								className="bp5-button bp5-small bp5-intent-danger"
+								className="bp5-button bp5-small bp5-active bp5-intent-danger"
 								style={css.cardButton}
 								hidden={!this.state.editOpen}
 								onClick={this.onEditToggle}
-							>Close Settings</button>
+							>Settings</button>
 						</div>
 						<div style={css.itemMedium}>
 							<PageInfo
