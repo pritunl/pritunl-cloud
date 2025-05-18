@@ -27,8 +27,9 @@ type Relation struct {
 }
 
 type Project struct {
-	Key   string
-	Label string
+	Key    string
+	Label  string
+	Format func(val any) any
 }
 
 func (r *Query) addRelation(pipeline []bson.M, relation Relation) []bson.M {
@@ -84,6 +85,10 @@ func (r *Query) convertToResponse(doc bson.M) *Response {
 	for _, proj := range r.Project {
 		value, ok := doc[proj.Key]
 		if ok {
+			if proj.Format != nil {
+				value = proj.Format(value)
+			}
+
 			response.Fields = append(response.Fields, Field{
 				Key:   proj.Key,
 				Label: proj.Label,
@@ -129,6 +134,10 @@ func (r *Query) convertToRelated(relation Relation,
 		for _, proj := range relation.Project {
 			value, ok := doc[proj.Key]
 			if ok {
+				if proj.Format != nil {
+					value = proj.Format(value)
+				}
+
 				resource.Fields = append(resource.Fields, Field{
 					Key:   proj.Key,
 					Label: proj.Label,
