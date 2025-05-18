@@ -609,12 +609,12 @@ export default class PodDeployment extends React.Component<Props, State> {
 								style={css.info}
 								fields={[
 									{
-										label: 'Public IPv4',
-										value: publicIps,
-									},
-									{
 										label: 'Private IPv4',
 										value: privateIps,
+									},
+									{
+										label: 'Public IPv4',
+										value: publicIps,
 									},
 								]}
 							/>
@@ -625,12 +625,14 @@ export default class PodDeployment extends React.Component<Props, State> {
 								style={css.info}
 								fields={[
 									{
-										label: 'Public IPv6',
-										value: publicIps6,
-									},
-									{
 										label: 'Private IPv6',
 										value: privateIps6,
+										maxLines: 2,
+									},
+									{
+										label: 'Public IPv6',
+										value: publicIps6,
+										maxLines: 2,
 									},
 								]}
 							/>
