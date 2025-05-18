@@ -650,7 +650,7 @@ func writeFsQcow(db *database.Database, dsk *disk.Disk) (err error) {
 
 	time.Sleep(1 * time.Second)
 
-	err = utils.Exec("", "mkfs", "-t", dsk.FileSystem, "/dev/nbd6p1")
+	err = utils.Exec("", "mkfs", "-t", dsk.FileSystem, ndbPath+"p1")
 	if err != nil {
 		return
 	}
@@ -658,7 +658,7 @@ func writeFsQcow(db *database.Database, dsk *disk.Disk) (err error) {
 	time.Sleep(100 * time.Millisecond)
 
 	output, err := utils.ExecOutput("", "blkid", "-s", "UUID",
-		"-o", "value", "/dev/nbd6p1")
+		"-o", "value", ndbPath+"p1")
 	if err != nil {
 		return
 	}
