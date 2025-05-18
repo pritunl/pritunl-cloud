@@ -11,6 +11,7 @@ import VpcMap from './VpcMap';
 import VpcArp from './VpcArp';
 import VpcSubnet from './VpcSubnet';
 import PageInput from './PageInput';
+import PageSwitch from './PageSwitch';
 import PageInfo from './PageInfo';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
@@ -831,6 +832,15 @@ export default class VpcDetailed extends React.Component<Props, State> {
 				<div style={css.group}>
 					<PageInfo
 						fields={fields}
+					/>
+					<PageSwitch
+						disabled={this.state.disabled}
+						label="ICMP Redirects"
+						help="Enable or disable ICMP redirects for VPC routing table. ICMP redirects will improve the routing path of static routes in the VPC routing table but will be cached by the instance for 5 minutes unless adjusted on the system. If dynamic updates to the VPC routing table are made such as with failover site-to-site systems redirects should be disabled to allow fast failover to the new route. ICMP redirects are not recommended for most configurations."
+						checked={vpc.icmp_redirects}
+						onToggle={(): void => {
+							this.set('icmp_redirects', !vpc.icmp_redirects);
+						}}
 					/>
 					<label style={css.itemsLabel}>
 						Route Table
