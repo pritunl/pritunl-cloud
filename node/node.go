@@ -771,6 +771,19 @@ func (n *Node) Validate(db *database.Database) (
 		n.AvailableVpcs = []*cloud.Vpc{}
 	}
 
+	newShares := []*Share{}
+	for _, share := range n.Shares {
+		share.Type = HostPath
+		share.Path = utils.FilterPath(share.Path)
+
+		if share.Path == "" || len(share.Roles) == 0 {
+			continue
+		}
+
+		newShares = append(newShares, share)
+	}
+	n.Shares = newShares
+
 	n.Format()
 
 	return
