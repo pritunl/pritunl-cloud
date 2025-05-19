@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"sort"
 	"strings"
 	"sync"
@@ -139,6 +140,30 @@ type Share struct {
 	Type  string   `bson:"type" json:"type"`
 	Path  string   `bson:"path" json:"path"`
 	Roles []string `bson:"roles" json:"roles"`
+}
+
+func (s *Share) MatchPath(pth string) bool {
+	sharePath := utils.FilterPath(s.Path) + string(filepath.Separator)
+	pth = utils.FilterPath(pth) + string(filepath.Separator)
+
+	if sharePath == "" || pth == "" {
+		return false
+	}
+
+	if sharePath == pth {
+		return true
+	}
+
+	if !strings.HasPrefix(pth, sharePath) {
+		return false
+	}
+
+	relPath, err := filepath.Rel(sharePath, pth)
+	if err != nil {
+		return false
+	}
+
+	return !strings.HasPrefix(relPath, "..")
 }
 
 type OracleSubnet struct {
