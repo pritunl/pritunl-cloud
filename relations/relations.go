@@ -28,8 +28,9 @@ type Relation struct {
 
 type Project struct {
 	Key    string
+	Keys   []string
 	Label  string
-	Format func(val any) any
+	Format func(values ...any) any
 }
 
 func (r *Query) addRelation(pipeline []bson.M, relation Relation) []bson.M {
@@ -49,7 +50,13 @@ func (r *Query) addRelation(pipeline []bson.M, relation Relation) []bson.M {
 				"_id": 1,
 			}
 			for _, proj := range relation.Project {
-				projection[proj.Key] = 1
+				if len(proj.Keys) > 0 {
+					for _, key := range proj.Keys {
+						projection[key] = 1
+					}
+				} else {
+					projection[proj.Key] = 1
+				}
 			}
 			nestedPipeline = append(nestedPipeline, bson.M{
 				"$project": projection,
@@ -83,17 +90,43 @@ func (r *Query) convertToResponse(doc bson.M) *Response {
 	}
 
 	for _, proj := range r.Project {
-		value, ok := doc[proj.Key]
-		if ok {
-			if proj.Format != nil {
-				value = proj.Format(value)
-			}
+		if len(proj.Keys) > 0 {
+			value, ok := doc[proj.Keys[0]]
+			if ok {
+				if proj.Format != nil {
+					values := []any{}
 
-			response.Fields = append(response.Fields, Field{
-				Key:   proj.Key,
-				Label: proj.Label,
-				Value: value,
-			})
+					for _, key := range proj.Keys {
+						val, ok := doc[key]
+						if !ok {
+							values = append(values, nil)
+						} else {
+							values = append(values, val)
+						}
+					}
+
+					value = proj.Format(values...)
+				}
+
+				response.Fields = append(response.Fields, Field{
+					Key:   proj.Key,
+					Label: proj.Label,
+					Value: value,
+				})
+			}
+		} else {
+			value, ok := doc[proj.Key]
+			if ok {
+				if proj.Format != nil {
+					value = proj.Format(value)
+				}
+
+				response.Fields = append(response.Fields, Field{
+					Key:   proj.Key,
+					Label: proj.Label,
+					Value: value,
+				})
+			}
 		}
 	}
 
@@ -132,17 +165,43 @@ func (r *Query) convertToRelated(relation Relation,
 		}
 
 		for _, proj := range relation.Project {
-			value, ok := doc[proj.Key]
-			if ok {
-				if proj.Format != nil {
-					value = proj.Format(value)
-				}
+			if len(proj.Keys) > 0 {
+				value, ok := doc[proj.Keys[0]]
+				if ok {
+					if proj.Format != nil {
+						values := []any{}
 
-				resource.Fields = append(resource.Fields, Field{
-					Key:   proj.Key,
-					Label: proj.Label,
-					Value: value,
-				})
+						for _, key := range proj.Keys {
+							val, ok := doc[key]
+							if !ok {
+								values = append(values, nil)
+							} else {
+								values = append(values, val)
+							}
+						}
+
+						value = proj.Format(values...)
+					}
+
+					resource.Fields = append(resource.Fields, Field{
+						Key:   proj.Key,
+						Label: proj.Label,
+						Value: value,
+					})
+				}
+			} else {
+				value, ok := doc[proj.Key]
+				if ok {
+					if proj.Format != nil {
+						value = proj.Format(value)
+					}
+
+					resource.Fields = append(resource.Fields, Field{
+						Key:   proj.Key,
+						Label: proj.Label,
+						Value: value,
+					})
+				}
 			}
 		}
 
@@ -178,7 +237,13 @@ func (r *Query) Aggregate(db *database.Database) (
 	if len(r.Project) > 0 {
 		projection := bson.M{"_id": 1}
 		for _, proj := range r.Project {
-			projection[proj.Key] = 1
+			if len(proj.Keys) > 0 {
+				for _, key := range proj.Keys {
+					projection[key] = 1
+				}
+			} else {
+				projection[proj.Key] = 1
+			}
 		}
 		pipeline = append(pipeline, bson.M{"$project": projection})
 	}
