@@ -85,6 +85,7 @@ type Node struct {
 	Blocks                  []*BlockAttachment   `bson:"blocks" json:"blocks"`
 	Blocks6                 []*BlockAttachment   `bson:"blocks6" json:"blocks6"`
 	Pools                   []primitive.ObjectID `bson:"pools" json:"pools"`
+	Shares                  []*Share             `bson:"shares" json:"shares"`
 	AvailableDrives         []*drive.Device      `bson:"available_drives" json:"available_drives"`
 	InstanceDrives          []*drive.Device      `bson:"instance_drives" json:"instance_drives"`
 	NoHostNetwork           bool                 `bson:"no_host_network" json:"no_host_network"`
@@ -134,6 +135,12 @@ type Node struct {
 	dcZoneId                primitive.ObjectID   `bson:"-" json:"-"`
 }
 
+type Share struct {
+	Type  string   `bson:"type" json:"type"`
+	Path  string   `bson:"path" json:"path"`
+	Roles []string `bson:"roles" json:"roles"`
+}
+
 type OracleSubnet struct {
 	Id   string `json:"id"`
 	Name string `json:"name"`
@@ -181,6 +188,7 @@ func (n *Node) Copy() *Node {
 		NetworkMode6:            n.NetworkMode6,
 		Blocks:                  n.Blocks,
 		Blocks6:                 n.Blocks6,
+		Shares:                  n.Shares,
 		Pools:                   n.Pools,
 		AvailableDrives:         n.AvailableDrives,
 		InstanceDrives:          n.InstanceDrives,
