@@ -1286,6 +1286,7 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.NetworkMode6 = nde.NetworkMode6
 	n.Blocks = nde.Blocks
 	n.Blocks6 = nde.Blocks6
+	n.Shares = nde.Shares
 	n.InstanceDrives = nde.InstanceDrives
 	n.NoHostNetwork = nde.NoHostNetwork
 	n.NoNodePortNetwork = nde.NoNodePortNetwork
