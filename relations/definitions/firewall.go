@@ -132,3 +132,7 @@ var Firewall = relations.Query{
 		}},
 	}},
 }
+
+func init() {
+	relations.Register("firewall", Firewall)
+}

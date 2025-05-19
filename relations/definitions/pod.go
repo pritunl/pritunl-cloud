@@ -112,3 +112,7 @@ var Pod = relations.Query{
 		}},
 	}},
 }
+
+func init() {
+	relations.Register("pod", Pod)
+}
