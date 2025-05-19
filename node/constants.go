@@ -35,6 +35,8 @@ const (
 	Oracle    = "oracle"
 
 	Restart = "restart"
+
+	HostPath = "host_path"
 )
 
 var (
