@@ -6,7 +6,6 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/iproute"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -36,17 +35,15 @@ func initIfaces(stat *state.State, internaIfaces []string) (err error) {
 	parentVxIfaces := map[string]string{}
 	parentBrIfaces := map[string]string{}
 	newIfaces := set.NewSet()
-	if internaIfaces != nil {
-		for _, iface := range internaIfaces {
-			vxIface := vm.GetHostVxlanIface(iface)
-			brIface := vm.GetHostBridgeIface(iface)
+	for _, iface := range internaIfaces {
+		vxIface := vm.GetHostVxlanIface(iface)
+		brIface := vm.GetHostBridgeIface(iface)
 
-			parentVxIfaces[vxIface] = iface
-			parentBrIfaces[brIface] = iface
+		parentVxIfaces[vxIface] = iface
+		parentBrIfaces[brIface] = iface
 
-			newIfaces.Add(vxIface)
-			newIfaces.Add(brIface)
-		}
+		newIfaces.Add(vxIface)
+		newIfaces.Add(brIface)
 	}
 
 	remIfaces := newCurIfaces.Copy()
@@ -155,8 +152,7 @@ func initDatabase(stat *state.State, internaIfaces []string) (err error) {
 	newDb := set.NewSet()
 	for _, nde := range nodes {
 		if nde.Id == nodeSelf.Id || nde.Datacenter != nodeDc.Id ||
-			nde.PrivateIps == nil ||
-			nodeDc.NetworkMode != datacenter.VxlanVlan {
+			nde.PrivateIps == nil || !nodeDc.Vxlan() {
 
 			continue
 		}
@@ -430,17 +426,14 @@ func syncDatabase(stat *state.State, internaIfaces []string) (err error) {
 	}
 
 	newIfaces := set.NewSet()
-	if internaIfaces != nil {
-		for _, iface := range internaIfaces {
-			newIfaces.Add(vm.GetHostVxlanIface(iface))
-		}
+	for _, iface := range internaIfaces {
+		newIfaces.Add(vm.GetHostVxlanIface(iface))
 	}
 
 	newDb := set.NewSet()
 	for _, nde := range nodes {
 		if nde.Id == nodeSelf.Id || nde.Datacenter != nodeDc.Id ||
-			nde.PrivateIps == nil ||
-			nodeDc.NetworkMode != datacenter.VxlanVlan {
+			nde.PrivateIps == nil || !nodeDc.Vxlan() {
 
 			continue
 		}
