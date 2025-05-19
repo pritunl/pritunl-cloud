@@ -655,7 +655,7 @@ func (n *Node) Validate(db *database.Database) (
 	instanceDrives := []*drive.Device{}
 	if n.InstanceDrives != nil {
 		for _, device := range n.InstanceDrives {
-			device.Id = utils.FilterPath(device.Id, 512)
+			device.Id = utils.FilterRelPath(device.Id)
 			instanceDrives = append(instanceDrives, device)
 		}
 	}
