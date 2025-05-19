@@ -17,8 +17,6 @@ import (
 func StartAll(db *database.Database,
 	virt *vm.VirtualMachine) (err error) {
 
-	matchPath := false
-	matchRoles := false
 	mounts := []*vm.Mount{}
 
 	if len(virt.Mounts) == 0 {
@@ -38,6 +36,9 @@ func StartAll(db *database.Database,
 	}
 
 	for _, mount := range virt.Mounts {
+		matchPath := false
+		matchRoles := false
+
 		for _, share := range node.Self.Shares {
 			if share.MatchPath(mount.Path) {
 				matchPath = true
