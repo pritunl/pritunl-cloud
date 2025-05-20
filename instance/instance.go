@@ -422,7 +422,7 @@ func (i *Instance) Validate(db *database.Database) (
 		i.Isos = []*iso.Iso{}
 	} else {
 		for _, is := range i.Isos {
-			is.Name = utils.FilterPath(is.Name, 128)
+			is.Name = utils.FilterRelPath(is.Name)
 		}
 	}
 
