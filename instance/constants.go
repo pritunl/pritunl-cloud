@@ -15,6 +15,8 @@ const (
 	Destroy = "destroy"
 	Linux   = "linux"
 	BSD     = "bsd"
+
+	HostPath = "host_path"
 )
 
 var (
