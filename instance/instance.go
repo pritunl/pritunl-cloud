@@ -106,6 +106,7 @@ type Instance struct {
 	PciDevices          []*pci.Device       `bson:"pci_devices" json:"pci_devices"`
 	DriveDevices        []*drive.Device     `bson:"drive_devices" json:"drive_devices"`
 	IscsiDevices        []*iscsi.Device     `bson:"iscsi_devices" json:"iscsi_devices"`
+	Mounts              []*Mount            `bson:"mounts" json:"mounts"`
 	Vnc                 bool                `bson:"vnc" json:"vnc"`
 	VncPassword         string              `bson:"vnc_password" json:"vnc_password"`
 	VncDisplay          int                 `bson:"vnc_display" json:"vnc_display"`
@@ -126,6 +127,12 @@ type Instance struct {
 	curNodePorts        map[primitive.ObjectID]*nodeport.Mapping `bson:"-" json:"-"`
 	removedNodePorts    []primitive.ObjectID                     `bson:"-" json:"-"`
 	newId               bool                                     `bson:"-" json:"-"`
+}
+
+type Mount struct {
+	Name string `bson:"name" json:"name"`
+	Type string `bson:"type" json:"type"`
+	Path string `bson:"path" json:"path"`
 }
 
 type StatusInfo struct {
