@@ -1152,6 +1152,7 @@ func (i *Instance) LoadVirt(poolsMap map[primitive.ObjectID]*pool.Pool,
 		PciDevices:       []*vm.PciDevice{},
 		DriveDevices:     []*vm.DriveDevice{},
 		IscsiDevices:     []*vm.IscsiDevice{},
+		Mounts:           []*vm.Mount{},
 	}
 
 	if disks != nil {
@@ -1249,6 +1250,17 @@ func (i *Instance) LoadVirt(poolsMap map[primitive.ObjectID]*pool.Pool,
 				},
 			)
 		}
+	}
+
+	for _, mount := range i.Mounts {
+		i.Virt.Mounts = append(
+			i.Virt.Mounts,
+			&vm.Mount{
+				Name: mount.Name,
+				Type: mount.Type,
+				Path: mount.Path,
+			},
+		)
 	}
 
 	return
