@@ -206,10 +206,7 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 		}
 
 		if nde != nil && dc != nil {
-			info.Mtu = instance.GetInstanceMtu(
-				nde.JumboFrames || nde.JumboFramesInternal,
-				dc.NetworkMode == datacenter.VxlanVlan,
-			)
+			info.Mtu = dc.GetInstanceMtu()
 		}
 
 		for _, dsk := range doc.DiskDocs {
