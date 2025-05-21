@@ -505,6 +505,20 @@ func (i *Instance) Validate(db *database.Database) (
 	}
 	i.IscsiDevices = iscsiDevices
 
+	newMounts := []*Mount{}
+	for _, mount := range i.Mounts {
+		mount.Name = utils.FilterNameCmd(mount.Name)
+		mount.Type = HostPath
+		mount.Path = utils.FilterPath(mount.Path)
+
+		if mount.Path == "" {
+			continue
+		}
+
+		newMounts = append(newMounts, mount)
+	}
+	i.Mounts = newMounts
+
 	if i.Vnc {
 		if i.VncPassword == "" {
 			i.VncPassword, err = utils.RandPasswd(32)
