@@ -9,26 +9,10 @@ import (
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/journal"
 	"github.com/pritunl/pritunl-cloud/pool"
-	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vpc"
 	"github.com/sirupsen/logrus"
 )
-
-func GetInstanceMtu(jumboFrames bool, vxlan bool) int {
-	mtuSize := 0
-	if jumboFrames {
-		mtuSize = settings.Hypervisor.JumboMtu
-	} else {
-		mtuSize = settings.Hypervisor.NormalMtu
-	}
-
-	if vxlan {
-		mtuSize -= 54
-	}
-
-	return mtuSize
-}
 
 func Get(db *database.Database, instId primitive.ObjectID) (
 	inst *Instance, err error) {
