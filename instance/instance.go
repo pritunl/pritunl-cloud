@@ -1374,6 +1374,25 @@ func (i *Instance) Changed(curVirt *vm.VirtualMachine) bool {
 		}
 	}
 
+	if i.Virt.Mounts != nil {
+		if len(i.Virt.Mounts) > 0 && curVirt.Mounts == nil {
+			return true
+		}
+
+		for i, mount := range i.Virt.Mounts {
+			if len(curVirt.Mounts) <= i {
+				return true
+			}
+
+			if mount.Name != curVirt.Mounts[i].Name ||
+				mount.Type != curVirt.Mounts[i].Type ||
+				mount.Path != curVirt.Mounts[i].Path {
+
+				return true
+			}
+		}
+	}
+
 	return false
 }
 
