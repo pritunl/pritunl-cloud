@@ -52,6 +52,7 @@ type nodeData struct {
 	NetworkMode6            string                  `json:"network_mode6"`
 	Blocks                  []*node.BlockAttachment `json:"blocks"`
 	Blocks6                 []*node.BlockAttachment `json:"blocks6"`
+	Shares                  []*node.Share           `json:"shares"`
 	InstanceDrives          []*drive.Device         `json:"instance_drives"`
 	NoHostNetwork           bool                    `json:"no_host_network"`
 	NoNodePortNetwork       bool                    `json:"no_node_port_network"`
@@ -164,6 +165,7 @@ func nodePut(c *gin.Context) {
 	nde.NetworkMode6 = data.NetworkMode6
 	nde.Blocks = data.Blocks
 	nde.Blocks6 = data.Blocks6
+	nde.Shares = data.Shares
 	nde.InstanceDrives = data.InstanceDrives
 	nde.NoHostNetwork = data.NoHostNetwork
 	nde.NoNodePortNetwork = data.NoNodePortNetwork
@@ -210,6 +212,7 @@ func nodePut(c *gin.Context) {
 		"network_mode6",
 		"blocks",
 		"blocks6",
+		"shares",
 		"instance_drives",
 		"no_host_network",
 		"no_node_port_network",
