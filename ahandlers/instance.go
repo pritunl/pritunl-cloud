@@ -65,6 +65,7 @@ type instanceData struct {
 	PciDevices          []*pci.Device       `json:"pci_devices"`
 	DriveDevices        []*drive.Device     `json:"drive_devices"`
 	IscsiDevices        []*iscsi.Device     `json:"iscsi_devices"`
+	Mounts              []*instance.Mount   `json:"mounts"`
 	Vnc                 bool                `json:"vnc"`
 	Spice               bool                `json:"spice"`
 	Gui                 bool                `json:"gui"`
@@ -137,6 +138,7 @@ func instancePut(c *gin.Context) {
 	inst.PciDevices = dta.PciDevices
 	inst.DriveDevices = dta.DriveDevices
 	inst.IscsiDevices = dta.IscsiDevices
+	inst.Mounts = dta.Mounts
 	inst.RootEnabled = dta.RootEnabled
 	inst.Vnc = dta.Vnc
 	inst.Spice = dta.Spice
@@ -174,6 +176,7 @@ func instancePut(c *gin.Context) {
 		"pci_devices",
 		"drive_devices",
 		"iscsi_devices",
+		"mounts",
 		"root_enabled",
 		"root_passwd",
 		"vnc",
@@ -375,6 +378,7 @@ func instancePost(c *gin.Context) {
 			PciDevices:          dta.PciDevices,
 			DriveDevices:        dta.DriveDevices,
 			IscsiDevices:        dta.IscsiDevices,
+			Mounts:              dta.Mounts,
 			RootEnabled:         dta.RootEnabled,
 			Vnc:                 dta.Vnc,
 			Spice:               dta.Spice,
