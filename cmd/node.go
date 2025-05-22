@@ -13,6 +13,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/defaults"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/relations/definitions"
 	"github.com/pritunl/pritunl-cloud/router"
 	"github.com/pritunl/pritunl-cloud/setup"
 	"github.com/pritunl/pritunl-cloud/sync"
@@ -37,6 +38,8 @@ func Node() (err error) {
 	if err != nil {
 		return
 	}
+
+	definitions.Init()
 
 	err = setup.Iptables()
 	if err != nil {
