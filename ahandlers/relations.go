@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/relations"
-	"github.com/pritunl/pritunl-cloud/relations/definitions"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -24,19 +23,10 @@ func relationsGet(c *gin.Context) {
 		return
 	}
 
-	var err error
-	var resp *relations.Response
-
-	switch kind {
-	case "pod":
-		pod := definitions.Pod
-		pod.Id = resourceId
-
-		resp, err = pod.Aggregate(db)
-		if err != nil {
-			utils.AbortWithError(c, 500, err)
-			return
-		}
+	resp, err := relations.Aggregate(db, kind, resourceId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
 	}
 
 	if resp == nil {
