@@ -1016,6 +1016,28 @@ func writeFsLvm(db *database.Database, dsk *disk.Disk,
 		}
 	}()
 
+	diskFs := ""
+	diskLvm := false
+	switch dsk.FileSystem {
+	case disk.Xfs:
+		diskFs = "xfs"
+		diskLvm = false
+	case disk.LvmXfs:
+		diskFs = "xfs"
+		diskLvm = true
+	case disk.Ext4:
+		diskFs = "ext4"
+		diskLvm = false
+	case disk.LvmExt4:
+		diskFs = "ext4"
+		diskLvm = true
+	default:
+		err = &errortypes.WriteError{
+			errors.Newf("data: Invalid disk filesystem %s", dsk.FileSystem),
+		}
+		return
+	}
+
 	err = lvm.CreateLv(vgName, lvName, size)
 	if err != nil {
 		return
@@ -1034,18 +1056,81 @@ func writeFsLvm(db *database.Database, dsk *disk.Disk,
 	diskPath := filepath.Join("/dev/mapper",
 		fmt.Sprintf("%s-%s", vgName, lvName))
 
-	err = utils.Exec("", "mkfs", "-t", dsk.FileSystem, diskPath)
-	if err != nil {
-		return
+	if diskLvm {
+		vgName := GetVgName(dsk.Id, 0)
+		lvName := GetLvName(dsk.Id, 0)
+
+		err = utils.Exec("", "pvcreate", diskPath)
+		if err != nil {
+			return
+		}
+
+		err = utils.Exec("", "vgcreate", vgName, diskPath)
+		if err != nil {
+			return
+		}
+
+		if dsk.LvSize == dsk.Size {
+			err = utils.Exec("", "lvcreate", "-l", "100%",
+				"-n", lvName, vgName)
+			if err != nil {
+				return
+			}
+		} else {
+			err = utils.Exec("", "lvcreate", "-L",
+				fmt.Sprintf("%dG", dsk.LvSize), "-n", lvName, vgName)
+			if err != nil {
+				return
+			}
+		}
+
+		err = utils.Exec("", "mkfs", "-t", diskFs,
+			fmt.Sprintf("/dev/%s/%s", vgName, lvName))
+		if err != nil {
+			return
+		}
+
+		time.Sleep(100 * time.Millisecond)
+
+		output, e := utils.ExecOutput("", "blkid", "-s", "UUID",
+			"-o", "value", fmt.Sprintf("/dev/%s/%s", vgName, lvName))
+		if e != nil {
+			err = e
+			return
+		}
+
+		dsk.Uuid = strings.TrimSpace(output)
+
+		err = utils.Exec("", "lvchange", "-an",
+			fmt.Sprintf("/dev/%s/%s", vgName, lvName))
+		if err != nil {
+			return
+		}
+
+		time.Sleep(50 * time.Millisecond)
+
+		err = utils.Exec("", "vgchange", "-an", vgName)
+		if err != nil {
+			return
+		}
+
+		time.Sleep(50 * time.Millisecond)
+	} else {
+		err = utils.Exec("", "mkfs", "-t", diskFs, diskPath)
+		if err != nil {
+			return
+		}
+
+		output, e := utils.ExecOutput("", "blkid", "-s", "UUID",
+			"-o", "value", diskPath)
+		if e != nil {
+			err = e
+			return
+		}
+
+		dsk.Uuid = strings.TrimSpace(output)
 	}
 
-	output, err := utils.ExecOutput("", "blkid", "-s", "UUID",
-		"-o", "value", diskPath)
-	if err != nil {
-		return
-	}
-
-	dsk.Uuid = strings.TrimSpace(output)
 	err = dsk.CommitFields(db, set.NewSet("uuid"))
 	if err != nil {
 		return
