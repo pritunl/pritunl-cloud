@@ -599,10 +599,7 @@ func getNetData(db *database.Database, inst *instance.Instance,
 		data.Iface = "eth0"
 	}
 
-	data.Mtu = fmt.Sprintf(netMtu, instance.GetInstanceMtu(
-		node.Self.JumboFrames || node.Self.JumboFramesInternal,
-		dc.NetworkMode == datacenter.VxlanVlan,
-	))
+	data.Mtu = fmt.Sprintf(netMtu, dc.GetInstanceMtu())
 
 	output := &bytes.Buffer{}
 
