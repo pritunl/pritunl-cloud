@@ -44,6 +44,7 @@ type Disk struct {
 	BackingImage     string             `bson:"backing_image" json:"backing_image"`
 	Index            string             `bson:"index" json:"index"`
 	Size             int                `bson:"size" json:"size"`
+	LvSize           int                `bson:"lv_size" json:"lv_size"`
 	NewSize          int                `bson:"new_size" json:"new_size"`
 	Backup           bool               `bson:"backup" json:"backup"`
 	LastBackup       time.Time          `bson:"last_backup" json:"last_backup"`
@@ -144,11 +145,16 @@ func (d *Disk) Validate(db *database.Database) (
 	}
 
 	switch d.FileSystem {
-	case Xfs:
+	case Xfs, Ext4, "":
+		d.LvSize = 0
 		break
-	case Ext4:
-		break
-	case "":
+	case LvmXfs, LvmExt4:
+		if d.LvSize > d.Size {
+			errData = &errortypes.ErrorData{
+				Error:   "lv_size_invalid",
+				Message: "LV size cannot be greater than disk size",
+			}
+		}
 		break
 	default:
 		errData = &errortypes.ErrorData{
