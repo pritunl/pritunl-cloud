@@ -404,27 +404,7 @@ func Start(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	addr6 := vc.GetIp6(addr)
 	gatewayAddr6 := vc.GetGatewayIp6(addr)
 
-	jumboFramesExternal := node.Self.JumboFrames
-	jumboFramesInternal := node.Self.JumboFrames ||
-		node.Self.JumboFramesInternal
-	vxlan := dc.NetworkMode == datacenter.VxlanVlan
-	mtu := 0
-
-	if jumboFramesExternal || jumboFramesInternal || vxlan {
-		mtuSizeInternal := 0
-
-		if jumboFramesInternal {
-			mtuSizeInternal = settings.Hypervisor.JumboMtu
-		} else {
-			mtuSizeInternal = settings.Hypervisor.NormalMtu
-		}
-
-		if vxlan {
-			mtuSizeInternal -= 54
-		}
-
-		mtu = mtuSizeInternal
-	}
+	mtu := dc.GetInstanceMtu()
 
 	server4 := &Server4{
 		Iface:     settings.Hypervisor.BridgeIfaceName,
