@@ -182,7 +182,7 @@ func (d *Disks) expand(dsk *disk.Disk) {
 					"disk_id":     dsk.Id.Hex(),
 				}).Info("deploy: Stopping instance for resize")
 
-				err := inst.CommitFields(db, set.NewSet("state"))
+				err := inst.CommitFields(db, set.NewSet("action"))
 				if err != nil {
 					logrus.WithFields(logrus.Fields{
 						"error": err,
