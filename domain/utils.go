@@ -40,7 +40,7 @@ func Refresh(db *database.Database, domnId primitive.ObjectID) {
 		return
 	}
 
-	err = domn.CommitRecords(db)
+	err = domn.CommitRecordsSilent(db)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"domain": domn.Id.Hex(),
