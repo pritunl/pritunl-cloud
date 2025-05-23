@@ -138,6 +138,26 @@ func (d *Domain) PreCommit() {
 }
 
 func (d *Domain) CommitRecords(db *database.Database) (err error) {
+	err = d.commitRecords(db, true)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func (d *Domain) CommitRecordsSilent(db *database.Database) (err error) {
+	err = d.commitRecords(db, false)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func (d *Domain) commitRecords(db *database.Database,
+	setTtl bool) (err error) {
+
 	acquired := false
 	var lockId primitive.ObjectID
 	for i := 0; i < 100; i++ {
@@ -226,10 +246,12 @@ func (d *Domain) CommitRecords(db *database.Database) (err error) {
 		batches[batchKey][record.Value] = record
 	}
 
-	d.LastUpdate = time.Now()
-	err = d.CommitFields(db, set.NewSet("last_update"))
-	if err != nil {
-		return
+	if setTtl {
+		d.LastUpdate = time.Now()
+		err = d.CommitFields(db, set.NewSet("last_update"))
+		if err != nil {
+			return
+		}
 	}
 
 	if d.Type == OracleCloud {
