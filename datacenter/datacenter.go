@@ -16,6 +16,7 @@ type Datacenter struct {
 	MatchOrganizations  bool                 `bson:"match_organizations" json:"match_organizations"`
 	Organizations       []primitive.ObjectID `bson:"organizations" json:"organizations"`
 	NetworkMode         string               `bson:"network_mode" json:"network_mode"`
+	WgMode              string               `bson:"wg_mode" json:"wg_mode"`
 	PublicStorages      []primitive.ObjectID `bson:"public_storages" json:"public_storages"`
 	PrivateStorage      primitive.ObjectID   `bson:"private_storage,omitempty" json:"private_storage"`
 	PrivateStorageClass string               `bson:"private_storage_class" json:"private_storage_class"`
@@ -41,6 +42,8 @@ func (d *Datacenter) Validate(db *database.Database) (
 		break
 	case VxlanVlan:
 		break
+	case WgVxlanVlan:
+		break
 	case "":
 		d.NetworkMode = Default
 		break
@@ -50,6 +53,26 @@ func (d *Datacenter) Validate(db *database.Database) (
 			Message: "Network mode invalid",
 		}
 		return
+	}
+
+	if d.NetworkMode == WgVxlanVlan {
+		switch d.WgMode {
+		case Wg4:
+			break
+		case Wg6:
+			break
+		case "":
+			d.WgMode = Wg4
+			break
+		default:
+			errData = &errortypes.ErrorData{
+				Error:   "invalid_wg_mode",
+				Message: "WireGuard mode invalid",
+			}
+			return
+		}
+	} else {
+		d.WgMode = ""
 	}
 
 	return
