@@ -44,6 +44,15 @@ func (d *Disks) provision(dsk *disk.Disk) {
 			return
 		}
 
+		dsk, err := disk.Get(db, dsk.Id)
+		if err != nil {
+			return
+		}
+
+		if dsk.State != disk.Provision {
+			return
+		}
+
 		newSize, backingImage, err := data.CreateDisk(db, dsk)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
@@ -87,6 +96,15 @@ func (d *Disks) snapshot(dsk *disk.Disk) {
 			return
 		}
 
+		dsk, err := disk.Get(db, dsk.Id)
+		if err != nil {
+			return
+		}
+
+		if dsk.Action != disk.Snapshot {
+			return
+		}
+
 		if dsk.Type != disk.Qcow2 {
 			logrus.WithFields(logrus.Fields{
 				"disk_id":   dsk.Id.Hex(),
@@ -114,7 +132,7 @@ func (d *Disks) snapshot(dsk *disk.Disk) {
 		}
 
 		dsk.Action = ""
-		err := dsk.CommitFields(db, set.NewSet("action"))
+		err = dsk.CommitFields(db, set.NewSet("action"))
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"disk_id":   dsk.Id.Hex(),
@@ -142,6 +160,15 @@ func (d *Disks) expand(dsk *disk.Disk) {
 		defer db.Close()
 
 		if constants.Interrupt {
+			return
+		}
+
+		dsk, err := disk.Get(db, dsk.Id)
+		if err != nil {
+			return
+		}
+
+		if dsk.Action != disk.Expand {
 			return
 		}
 
@@ -174,7 +201,7 @@ func (d *Disks) expand(dsk *disk.Disk) {
 			}
 		}
 
-		err := data.ExpandDisk(db, dsk)
+		err = data.ExpandDisk(db, dsk)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
@@ -221,6 +248,15 @@ func (d *Disks) backup(dsk *disk.Disk) {
 			return
 		}
 
+		dsk, err := disk.Get(db, dsk.Id)
+		if err != nil {
+			return
+		}
+
+		if dsk.Action != disk.Backup {
+			return
+		}
+
 		if dsk.Type != disk.Qcow2 {
 			logrus.WithFields(logrus.Fields{
 				"disk_id":   dsk.Id.Hex(),
@@ -248,7 +284,7 @@ func (d *Disks) backup(dsk *disk.Disk) {
 		}
 
 		dsk.Action = ""
-		err := dsk.CommitFields(db, set.NewSet("action"))
+		err = dsk.CommitFields(db, set.NewSet("action"))
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
@@ -287,10 +323,19 @@ func (d *Disks) restore(dsk *disk.Disk) {
 			return
 		}
 
+		dsk, err := disk.Get(db, dsk.Id)
+		if err != nil {
+			return
+		}
+
+		if dsk.Action != disk.Restore {
+			return
+		}
+
 		inst := d.stat.GetInstace(dsk.Instance)
 		if inst != nil {
-			if inst.State != instance.Stop {
-				inst.State = instance.Stop
+			if inst.Action != instance.Stop {
+				inst.Action = instance.Stop
 
 				logrus.WithFields(logrus.Fields{
 					"instance_id": inst.Id.Hex(),
@@ -332,7 +377,7 @@ func (d *Disks) restore(dsk *disk.Disk) {
 		}
 
 		dsk.Action = ""
-		err := dsk.CommitFields(db, set.NewSet("action"))
+		err = dsk.CommitFields(db, set.NewSet("action"))
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"disk_id": dsk.Id.Hex(),
@@ -371,6 +416,15 @@ func (d *Disks) destroy(db *database.Database, dsk *disk.Disk) {
 			return
 		}
 
+		dsk, err := disk.Get(db, dsk.Id)
+		if err != nil {
+			return
+		}
+
+		if dsk.Action != disk.Destroy {
+			return
+		}
+
 		if dsk.DeleteProtection {
 			logrus.WithFields(logrus.Fields{
 				"disk_id": dsk.Id.Hex(),
@@ -397,7 +451,7 @@ func (d *Disks) destroy(db *database.Database, dsk *disk.Disk) {
 			return
 		}
 
-		err := dsk.Destroy(db)
+		err = dsk.Destroy(db)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
