@@ -80,6 +80,10 @@ func (d *Datacenter) Validate(db *database.Database) (
 	return
 }
 
+func (d *Datacenter) Vxlan() bool {
+	return d.NetworkMode == VxlanVlan || d.NetworkMode == WgVxlanVlan
+}
+
 func (d *Datacenter) GetBaseInternalMtu() (mtuSize int) {
 	if node.Self.JumboFramesInternal {
 		mtuSize = settings.Hypervisor.JumboMtu
