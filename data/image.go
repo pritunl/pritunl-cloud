@@ -605,6 +605,7 @@ func writeFsQcow(db *database.Database, dsk *disk.Disk) (err error) {
 
 	nbdLock.Lock()
 	defer func() {
+		utils.Exec("", "sync")
 		utils.Exec("", "qemu-nbd", "--disconnect", ndbPath)
 		nbdLock.Unlock()
 	}()
