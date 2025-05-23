@@ -6,6 +6,8 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -73,6 +75,80 @@ func (d *Datacenter) Validate(db *database.Database) (
 		}
 	} else {
 		d.WgMode = ""
+	}
+
+	return
+}
+
+func (d *Datacenter) GetBaseInternalMtu() (mtuSize int) {
+	if node.Self.JumboFramesInternal {
+		mtuSize = settings.Hypervisor.JumboMtu
+	} else {
+		mtuSize = settings.Hypervisor.NormalMtu
+	}
+	return
+}
+
+func (d *Datacenter) GetBaseExternalMtu() (mtuSize int) {
+	if node.Self.JumboFrames {
+		mtuSize = settings.Hypervisor.JumboMtu
+	} else {
+		mtuSize = settings.Hypervisor.NormalMtu
+	}
+	return
+}
+
+func (d *Datacenter) GetOverlayMtu() (mtuSize int) {
+	if d.NetworkMode == WgVxlanVlan {
+		if node.Self.JumboFrames {
+			mtuSize = settings.Hypervisor.JumboMtu
+		} else {
+			mtuSize = settings.Hypervisor.NormalMtu
+		}
+
+		if d.WgMode == Wg6 {
+			mtuSize -= 150
+		} else {
+			mtuSize -= 110
+		}
+	} else {
+		if node.Self.JumboFramesInternal {
+			mtuSize = settings.Hypervisor.JumboMtu
+		} else {
+			mtuSize = settings.Hypervisor.NormalMtu
+		}
+
+		if d.NetworkMode == VxlanVlan {
+			mtuSize -= 50
+		}
+	}
+
+	return
+}
+
+func (d *Datacenter) GetInstanceMtu() (mtuSize int) {
+	if d.NetworkMode == WgVxlanVlan {
+		if node.Self.JumboFrames {
+			mtuSize = settings.Hypervisor.JumboMtu
+		} else {
+			mtuSize = settings.Hypervisor.NormalMtu
+		}
+
+		if d.WgMode == Wg6 {
+			mtuSize -= 154
+		} else {
+			mtuSize -= 114
+		}
+	} else {
+		if node.Self.JumboFramesInternal {
+			mtuSize = settings.Hypervisor.JumboMtu
+		} else {
+			mtuSize = settings.Hypervisor.NormalMtu
+		}
+
+		if d.NetworkMode == VxlanVlan {
+			mtuSize -= 54
+		}
 	}
 
 	return
