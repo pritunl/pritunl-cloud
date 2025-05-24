@@ -10,6 +10,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/pci"
+	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/sirupsen/logrus"
 )
@@ -77,6 +78,7 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 		PciDevices:   []*PciDevice{},
 		DriveDevices: []*DriveDevice{},
 		IscsiDevices: []*IscsiDevice{},
+		Mounts:       []*Mount{},
 	}
 
 	for _, disk := range virt.Disks {
@@ -151,6 +153,17 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 	for _, device := range virt.IscsiDevices {
 		qm.IscsiDevices = append(qm.IscsiDevices, &IscsiDevice{
 			Uri: device.Uri,
+		})
+	}
+
+	for _, mount := range virt.Mounts {
+		shareId := paths.GetShareId(virt.Id, mount.Name)
+		sockPath := paths.GetShareSockPath(virt.Id, shareId)
+
+		qm.Mounts = append(qm.Mounts, &Mount{
+			Id:   shareId,
+			Name: utils.FilterNameCmd(mount.Name),
+			Sock: sockPath,
 		})
 	}
 
