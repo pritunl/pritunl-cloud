@@ -32,6 +32,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/store"
 	"github.com/pritunl/pritunl-cloud/systemd"
 	"github.com/pritunl/pritunl-cloud/tpm"
+	"github.com/pritunl/pritunl-cloud/virtiofs"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/sirupsen/logrus"
 )
@@ -626,13 +627,23 @@ func Create(db *database.Database, inst *instance.Instance,
 		return
 	}
 
-	err = initPermissions(virt)
+	err = initRun(virt)
 	if err != nil {
 		return
 	}
 
 	virt.State = vm.Starting
 	err = virt.Commit(db)
+	if err != nil {
+		return
+	}
+
+	err = virtiofs.StartAll(db, virt)
+	if err != nil {
+		return
+	}
+
+	err = initPermissions(virt)
 	if err != nil {
 		return
 	}
