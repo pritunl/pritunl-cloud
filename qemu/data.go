@@ -21,6 +21,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/systemd"
 	"github.com/pritunl/pritunl-cloud/tpm"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/pritunl-cloud/virtiofs"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/sirupsen/logrus"
 )
@@ -71,6 +72,7 @@ func cleanRun(virt *vm.VirtualMachine) (err error) {
 	_ = tpm.Stop(virt)
 	_ = imds.Stop(virt)
 	_ = dhcps.Stop(virt)
+	_ = virtiofs.StopAll(virt)
 
 	runPath := paths.GetInstRunPath(virt.Id)
 	pidPath := paths.GetPidPath(virt.Id)
@@ -217,10 +219,6 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"id": virt.Id.Hex(),
 	}).Info("qemu: Destroying virtual machine")
 
-	_ = tpm.Stop(virt)
-	_ = imds.Stop(virt)
-	_ = dhcps.Stop(virt)
-
 	exists, err := utils.Exists(unitPath)
 	if err != nil {
 		return
@@ -321,12 +319,19 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		}
 	}
 
-	time.Sleep(3 * time.Second)
+	time.Sleep(1 * time.Second)
+
+	_ = tpm.Stop(virt)
+	_ = imds.Stop(virt)
+	_ = dhcps.Stop(virt)
+	_ = virtiofs.StopAll(virt)
 
 	err = NetworkConfClear(db, virt)
 	if err != nil {
 		return
 	}
+
+	time.Sleep(3 * time.Second)
 
 	for _, dsk := range virt.Disks {
 		ds, e := disk.Get(db, dsk.GetId())
@@ -526,6 +531,7 @@ func Cleanup(db *database.Database, virt *vm.VirtualMachine) {
 	_ = tpm.Stop(virt)
 	_ = imds.Stop(virt)
 	_ = dhcps.Stop(virt)
+	_ = virtiofs.StopAll(virt)
 
 	err := NetworkConfClear(db, virt)
 	if err != nil {
