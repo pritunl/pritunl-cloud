@@ -144,6 +144,15 @@ func initPermissions(virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
+	for _, mount := range virt.Mounts {
+		shareId := paths.GetShareId(virt.Id, mount.Name)
+
+		err = permission.InitMount(virt, shareId)
+		if err != nil {
+			return
+		}
+	}
+
 	return
 }
 
