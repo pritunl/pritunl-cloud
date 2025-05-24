@@ -17,6 +17,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/store"
 	"github.com/pritunl/pritunl-cloud/systemd"
 	"github.com/pritunl/pritunl-cloud/tpm"
+	"github.com/pritunl/pritunl-cloud/virtiofs"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/sirupsen/logrus"
 )
@@ -91,6 +92,16 @@ func PowerOn(db *database.Database, inst *instance.Instance,
 	}
 
 	err = writeService(virt)
+	if err != nil {
+		return
+	}
+
+	err = initRun(virt)
+	if err != nil {
+		return
+	}
+
+	err = virtiofs.StartAll(db, virt)
 	if err != nil {
 		return
 	}
@@ -263,6 +274,7 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	_ = tpm.Stop(virt)
 	_ = imds.Stop(virt)
 	_ = dhcps.Stop(virt)
+	_ = virtiofs.StopAll(virt)
 
 	err = NetworkConfClear(db, virt)
 	if err != nil {
@@ -305,6 +317,7 @@ func ForcePowerOffErr(db *database.Database, virt *vm.VirtualMachine,
 	_ = tpm.Stop(virt)
 	_ = imds.Stop(virt)
 	_ = dhcps.Stop(virt)
+	_ = virtiofs.StopAll(virt)
 
 	err = NetworkConfClear(db, virt)
 	if err != nil {
@@ -346,6 +359,7 @@ func ForcePowerOff(db *database.Database, virt *vm.VirtualMachine) (
 	_ = tpm.Stop(virt)
 	_ = imds.Stop(virt)
 	_ = dhcps.Stop(virt)
+	_ = virtiofs.StopAll(virt)
 
 	err = NetworkConfClear(db, virt)
 	if err != nil {
