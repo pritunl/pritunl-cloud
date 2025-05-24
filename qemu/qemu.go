@@ -57,6 +57,12 @@ type DriveDevice struct {
 	LvName string
 }
 
+type Mount struct {
+	Id   string
+	Name string
+	Sock string
+}
+
 type IscsiDevice struct {
 	Uri string
 }
@@ -97,6 +103,7 @@ type Qemu struct {
 	PciDevices   []*PciDevice
 	DriveDevices []*DriveDevice
 	IscsiDevices []*IscsiDevice
+	Mounts       []*Mount
 }
 
 func (q *Qemu) GetDiskQueues() (queues int) {
