@@ -181,25 +181,8 @@ func (c *Check) Run() (err error) {
 		return
 	}
 
-	if c.node.JumboFrames {
-		c.mtuExternal = settings.Hypervisor.JumboMtu
-	} else {
-		c.mtuExternal = settings.Hypervisor.NormalMtu
-	}
-	if c.node.JumboFrames || c.node.JumboFramesInternal {
-		c.mtuInternal = settings.Hypervisor.JumboMtu
-		c.mtuInstance = settings.Hypervisor.JumboMtu
-		c.mtuHost = settings.Hypervisor.JumboMtu
-	} else {
-		c.mtuInternal = settings.Hypervisor.NormalMtu
-		c.mtuInstance = settings.Hypervisor.NormalMtu
-		c.mtuHost = settings.Hypervisor.NormalMtu
-	}
-
-	if dc.NetworkMode == datacenter.VxlanVlan {
-		c.mtuInternal -= 50
-		c.mtuInstance -= 54
-	}
+	c.mtuInternal -= dc.GetOverlayMtu()
+	c.mtuInstance -= dc.GetInstanceMtu()
 
 	err = c.host(db)
 	if err != nil {
