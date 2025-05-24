@@ -45,7 +45,7 @@ func GetIsos(isoDir string) (isos []*Iso, err error) {
 
 	for _, item := range isoFiles {
 		filename := item.Name()
-		filenameFilt := utils.FilterPath(filename, 128)
+		filenameFilt := utils.FilterRelPath(filename)
 
 		if filenameFilt != filename {
 			logrus.WithFields(logrus.Fields{
