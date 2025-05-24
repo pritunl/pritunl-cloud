@@ -145,7 +145,19 @@ func InitTpmPwd(virt *vm.VirtualMachine) (err error) {
 
 func InitImds(virt *vm.VirtualMachine) (err error) {
 	runPath := paths.GetInstRunPath(virt.Id)
-	err = mkdirChown(virt, runPath)
+
+	err = chown(virt, runPath)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func InitMount(virt *vm.VirtualMachine, shareId string) (err error) {
+	sockPath := paths.GetShareSockPath(virt.Id, shareId)
+
+	err = chown(virt, sockPath)
 	if err != nil {
 		return
 	}
