@@ -2,9 +2,11 @@ package paths
 
 import (
 	"crypto/md5"
+	"encoding/base32"
 	"encoding/hex"
 	"fmt"
 	"path"
+	"strings"
 
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -218,14 +220,40 @@ func GetUnitNameImds(virtId primitive.ObjectID) string {
 	return fmt.Sprintf("pritunl_imds_%s.service", virtId.Hex())
 }
 
+func GetShareId(virtId primitive.ObjectID, shareName string) string {
+	hash := md5.New()
+	hash.Write([]byte(virtId.Hex()))
+	hash.Write([]byte(shareName))
+	return strings.ToLower(base32.StdEncoding.EncodeToString(
+		hash.Sum(nil))[:12])
+}
+
+func GetUnitNameShare(virtId primitive.ObjectID, shareId string) string {
+	return fmt.Sprintf("pritunl_share_%s_%s.service", virtId.Hex(), shareId)
+}
+
+func GetUnitNameShares(virtId primitive.ObjectID) string {
+	return fmt.Sprintf("pritunl_share_%s_*.service", virtId.Hex())
+}
+
 func GetUnitPathImds(virtId primitive.ObjectID) string {
 	return path.Join(settings.Hypervisor.SystemdPath,
 		GetUnitNameImds(virtId))
 }
 
+func GetUnitPathShare(virtId primitive.ObjectID, shareId string) string {
+	return path.Join(settings.Hypervisor.SystemdPath,
+		GetUnitNameShare(virtId, shareId))
+}
+
 func GetPidPath(virtId primitive.ObjectID) string {
 	return path.Join(settings.Hypervisor.RunPath,
 		fmt.Sprintf("%s.pid", virtId.Hex()))
+}
+
+func GetShareSockPath(virtId primitive.ObjectID, shareId string) string {
+	return path.Join(GetInstRunPath(virtId),
+		fmt.Sprintf("virtiofs_%s.sock", shareId))
 }
 
 func GetHugepagePath(virtId primitive.ObjectID) string {
