@@ -608,7 +608,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 				"file=%s,media=cdrom,index=%d",
 				path.Join(
 					localIsosPath,
-					path.Base(utils.FilterPath(iso.Name, 128)),
+					path.Base(utils.FilterRelPath(iso.Name)),
 				),
 				i+1,
 			))
