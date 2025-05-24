@@ -122,6 +122,17 @@ func initCache(virt *vm.VirtualMachine) (err error) {
 	return
 }
 
+func initRun(virt *vm.VirtualMachine) (err error) {
+	runPath := paths.GetInstRunPath(virt.Id)
+
+	err = utils.ExistsMkdir(runPath, 0700)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func initPermissions(virt *vm.VirtualMachine) (err error) {
 	err = permission.InitVirt(virt)
 	if err != nil {
