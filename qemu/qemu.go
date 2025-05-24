@@ -388,14 +388,20 @@ func (q *Qemu) Marshal() (output string, err error) {
 	cmd = append(cmd, "-m")
 	cmd = append(cmd, fmt.Sprintf("%dM", q.Memory))
 
+	memShare := "off"
+	if len(q.Mounts) > 0 {
+		memShare = "on"
+	}
+
 	if q.Hugepages {
 		if memoryBackend {
 			cmd = append(cmd, "-object")
 			cmd = append(cmd, fmt.Sprintf(
 				"memory-backend-file,id=pc.ram,"+
-					"size=%dM,mem-path=%s,prealloc=off,share=off,merge=on",
+					"size=%dM,mem-path=%s,prealloc=off,share=%s,merge=on",
 				q.Memory,
 				paths.GetHugepagePath(q.Id),
+				memShare,
 			))
 		} else {
 			cmd = append(cmd, "-mem-path")
@@ -540,6 +546,35 @@ func (q *Qemu) Marshal() (output string, err error) {
 				dskBusId,
 			))
 		}
+	}
+
+	for _, mount := range q.Mounts {
+		vfsId := fmt.Sprintf("vfs_%s", mount.Id)
+		vfsDevId := fmt.Sprintf("vfsd_%s", mount.Id)
+		vfsBusId := fmt.Sprintf("vfsb_%s", mount.Id)
+		slot += 1
+
+		cmd = append(cmd, "-device")
+		cmd = append(cmd, fmt.Sprintf(
+			"pcie-root-port,id=%s,slot=%d",
+			vfsBusId, slot,
+		))
+
+		cmd = append(cmd, "-chardev")
+		cmd = append(cmd, fmt.Sprintf(
+			"socket,id=%s,path=%s",
+			vfsId,
+			mount.Sock,
+		))
+
+		cmd = append(cmd, "-device")
+		cmd = append(cmd, fmt.Sprintf(
+			"vhost-user-fs-pci,chardev=%s,tag=\"%s\",id=%s,bus=%s",
+			vfsId,
+			mount.Name,
+			vfsDevId,
+			vfsBusId,
+		))
 	}
 
 	for i, network := range q.Networks {
