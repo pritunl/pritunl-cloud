@@ -17,16 +17,6 @@ import (
 )
 
 func (n *NetConf) Iface1(db *database.Database) (err error) {
-	dc, err := datacenter.Get(db, node.Self.Datacenter)
-	if err != nil {
-		return
-	}
-
-	n.Vxlan = false
-	if dc.NetworkMode == datacenter.VxlanVlan {
-		n.Vxlan = true
-	}
-
 	n.NetworkMode = node.Self.NetworkMode
 	if n.NetworkMode == "" {
 		n.NetworkMode = node.Dhcp
@@ -118,6 +108,13 @@ func (n *NetConf) Iface1(db *database.Database) (err error) {
 }
 
 func (n *NetConf) Iface2(db *database.Database, clean bool) (err error) {
+	dc, err := datacenter.Get(db, node.Self.Datacenter)
+	if err != nil {
+		return
+	}
+
+	n.Vxlan = dc.Vxlan()
+
 	n.PhysicalHostIface = settings.Hypervisor.HostNetworkName
 	n.PhysicalNodePortIface = settings.Hypervisor.NodePortNetworkName
 
@@ -131,46 +128,25 @@ func (n *NetConf) Iface2(db *database.Database, clean bool) (err error) {
 	n.Dhcp6PidPath = paths.GetDhcp6PidPath(n.Virt.Id, 1)
 	n.Dhcp6LeasePath = paths.GetLease6Path(n.Virt.Id)
 
-	if n.JumboFramesExternal || n.JumboFramesInternal || n.Vxlan {
-		mtuSizeExternal := 0
-		mtuSizeInternal := 0
+	mtuSizeExternal := dc.GetBaseExternalMtu()
+	mtuSizeInternal := dc.GetBaseInternalMtu()
+	mtuSizeOverlay := dc.GetOverlayMtu()
+	mtuSizeInstance := dc.GetInstanceMtu()
 
-		if n.JumboFramesExternal {
-			mtuSizeExternal = settings.Hypervisor.JumboMtu
-		} else {
-			mtuSizeExternal = settings.Hypervisor.NormalMtu
-		}
-		if n.JumboFramesInternal {
-			mtuSizeInternal = settings.Hypervisor.JumboMtu
-		} else {
-			mtuSizeInternal = settings.Hypervisor.NormalMtu
-		}
+	n.SpaceExternalIfaceMtu = strconv.Itoa(mtuSizeExternal)
+	n.SystemExternalIfaceMtu = strconv.Itoa(mtuSizeExternal)
 
-		n.SpaceExternalIfaceMtu = strconv.Itoa(mtuSizeExternal)
-		n.SystemExternalIfaceMtu = strconv.Itoa(mtuSizeExternal)
+	n.SpaceHostIfaceMtu = strconv.Itoa(mtuSizeInternal)
+	n.SpaceNodePortIfaceMtu = strconv.Itoa(mtuSizeInternal)
+	n.SystemHostIfaceMtu = strconv.Itoa(mtuSizeInternal)
+	n.SystemNodePortIfaceMtu = strconv.Itoa(mtuSizeInternal)
+	n.ImdsIfaceMtu = strconv.Itoa(mtuSizeInternal)
 
-		n.SpaceHostIfaceMtu = strconv.Itoa(mtuSizeInternal)
-		n.SpaceNodePortIfaceMtu = strconv.Itoa(mtuSizeInternal)
-		n.SystemHostIfaceMtu = strconv.Itoa(mtuSizeInternal)
-		n.SystemNodePortIfaceMtu = strconv.Itoa(mtuSizeInternal)
-		n.ImdsIfaceMtu = strconv.Itoa(mtuSizeInternal)
+	n.SpaceInternalIfaceMtu = strconv.Itoa(mtuSizeOverlay)
+	n.BridgeInternalIfaceMtu = strconv.Itoa(mtuSizeOverlay)
+	n.SystemInternalIfaceMtu = strconv.Itoa(mtuSizeOverlay)
 
-		if n.Vxlan {
-			mtuSizeExternal -= 50
-			mtuSizeInternal -= 50
-		}
-
-		n.SpaceInternalIfaceMtu = strconv.Itoa(mtuSizeInternal)
-		n.BridgeInternalIfaceMtu = strconv.Itoa(mtuSizeInternal)
-		n.SystemInternalIfaceMtu = strconv.Itoa(mtuSizeInternal)
-
-		if n.Vxlan {
-			mtuSizeExternal -= 4
-			mtuSizeInternal -= 4
-		}
-
-		n.VirtIfaceMtu = strconv.Itoa(mtuSizeInternal)
-	}
+	n.VirtIfaceMtu = strconv.Itoa(mtuSizeInstance)
 
 	return
 }
