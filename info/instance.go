@@ -5,7 +5,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/state"
@@ -47,10 +46,7 @@ func NewInstance(stat *state.State, inst *instance.Instance) (
 	dc := stat.GetDatacenter(inst.Datacenter)
 
 	if dc != nil {
-		inf.Mtu = instance.GetInstanceMtu(
-			nde.JumboFrames || nde.JumboFramesInternal,
-			dc.NetworkMode == datacenter.VxlanVlan,
-		)
+		inf.Mtu = dc.GetInstanceMtu()
 	}
 
 	instDisks := stat.GetInstaceDisks(inst.Id)
