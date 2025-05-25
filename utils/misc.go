@@ -209,3 +209,17 @@ func CompareStringSlicesUnsorted(a, b []string) bool {
 
 	return aSet.IsEqual(bSet)
 }
+
+func HasMatchingItem(s1, s2 []string) bool {
+	roleMap := make(map[string]struct{})
+	for _, role := range s2 {
+		roleMap[role] = struct{}{}
+	}
+	for _, role := range s1 {
+		_, exists := roleMap[role]
+		if exists {
+			return true
+		}
+	}
+	return false
+}
