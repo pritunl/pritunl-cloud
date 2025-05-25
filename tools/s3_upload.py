@@ -65,12 +65,13 @@ def main():
     source_file_path = sys.argv[1]
     dest_path = sys.argv[2]
 
-    aws_access_key = os.environ.get("AWS_ACCESS_KEY_ID")
-    aws_secret_key = os.environ.get("AWS_SECRET_ACCESS_KEY")
-    cloudflare_account_id = os.environ.get("CLOUDFLARE_ACCOUNT_ID")
+    access_key = os.environ.get("AWS_ACCESS_KEY_ID")
+    secret_key = os.environ.get("AWS_SECRET_ACCESS_KEY")
     region = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
+    storage_class = os.environ.get("AWS_S3_STORAGE_CLASS")
+    cloudflare_account_id = os.environ.get("CLOUDFLARE_ACCOUNT_ID")
 
-    if not aws_access_key or not aws_secret_key or not cloudflare_account_id:
+    if not access_key or not secret_key:
         print("Missing required environment variables", file=sys.stderr)
         sys.exit(1)
 
@@ -80,7 +81,12 @@ def main():
         sys.exit(1)
 
     bucket, s3_key = dest_path.split("/", 1)
-    host = f"{cloudflare_account_id}.r2.cloudflarestorage.com"
+
+    if cloudflare_account_id:
+        host = f"{cloudflare_account_id}.r2.cloudflarestorage.com"
+    else:
+        host = f"s3.{region}.amazonaws.com"
+
     uri = f"/{bucket}/{s3_key}"
     method = "PUT"
 
@@ -110,6 +116,9 @@ def main():
     )
     signed_headers = "content-length;content-type;host;" + \
         "x-amz-content-sha256;x-amz-date"
+    if storage_class:
+        canonical_headers += f"x-amz-storage-class:{storage_class}\n"
+        signed_headers += ";x-amz-storage-class"
     canonical_request = (
         f"{method}\n"
         f"{uri}\n"
@@ -127,23 +136,26 @@ def main():
         f"{hashlib.sha256(canonical_request.encode()).hexdigest()}"
     )
 
-    signing_key = get_signature_key(aws_secret_key, date_stamp, region, "s3")
+    signing_key = get_signature_key(secret_key, date_stamp, region, "s3")
     signature = hmac.new(signing_key, string_to_sign.encode("utf-8"),
         hashlib.sha256).hexdigest()
 
     authorization_header = (
-        f"AWS4-HMAC-SHA256 Credential={aws_access_key}/{credential_scope}, "
+        f"AWS4-HMAC-SHA256 Credential={access_key}/{credential_scope}, "
         f"SignedHeaders={signed_headers}, Signature={signature}"
     )
 
     headers = {
-        "Host": host,
-        "Content-Type": content_type,
-        "Content-Length": content_length,
-        "X-Amz-Date": amz_date,
-        "X-Amz-Content-SHA256": payload_hash,
-        "Authorization": authorization_header
+        "host": host,
+        "content-type": content_type,
+        "content-length": content_length,
+        "x-amz-date": amz_date,
+        "x-amz-content-sha256": payload_hash,
+        "authorization": authorization_header
     }
+
+    if storage_class:
+        headers["x-amz-storage-class"] = storage_class
 
     conn = http.client.HTTPSConnection(host)
     reader = ProgressFileReader(source_file_path)
