@@ -355,9 +355,7 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 		s.nodeZone = zne
 	}
 
-	if s.nodeDatacenter != nil &&
-		s.nodeDatacenter.NetworkMode == datacenter.VxlanVlan {
-
+	if s.nodeDatacenter != nil && s.nodeDatacenter.Vxlan() {
 		s.vxlan = true
 
 		znes, e := zone.GetAllDatacenter(db, s.nodeDatacenter.Id)
