@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/dropbox/godropbox/container/set"
@@ -12,6 +13,122 @@ import (
 )
 
 var invalidPaths = set.NewSet("/", "", ".", "./")
+
+const pathSafeLimit = 256
+
+var pathSafeChars = set.NewSet(
+	'a',
+	'b',
+	'c',
+	'd',
+	'e',
+	'f',
+	'g',
+	'h',
+	'i',
+	'j',
+	'k',
+	'l',
+	'm',
+	'n',
+	'o',
+	'p',
+	'q',
+	'r',
+	's',
+	't',
+	'u',
+	'v',
+	'w',
+	'x',
+	'y',
+	'z',
+	'A',
+	'B',
+	'C',
+	'D',
+	'E',
+	'F',
+	'G',
+	'H',
+	'I',
+	'J',
+	'K',
+	'L',
+	'M',
+	'N',
+	'O',
+	'P',
+	'Q',
+	'R',
+	'S',
+	'T',
+	'U',
+	'V',
+	'W',
+	'X',
+	'Y',
+	'Z',
+	'0',
+	'1',
+	'2',
+	'3',
+	'4',
+	'5',
+	'6',
+	'7',
+	'8',
+	'9',
+	'-',
+	'_',
+	'.',
+	'+',
+	'=',
+	'@',
+	'/',
+)
+
+func FilterPath(pth string) string {
+	if len(pth) > pathSafeLimit {
+		pth = pth[:pathSafeLimit]
+	}
+
+	cleaned := ""
+	for _, c := range pth {
+		if pathSafeChars.Contains(c) {
+			cleaned += string(c)
+		}
+	}
+
+	cleaned = filepath.Clean(cleaned)
+	cleaned, err := filepath.Abs(cleaned)
+	if err != nil {
+		return ""
+	}
+	cleaned = filepath.FromSlash(cleaned)
+	cleaned = strings.ReplaceAll(cleaned, "..", "")
+
+	return cleaned
+}
+
+func FilterRelPath(pth string) string {
+	if len(pth) > pathSafeLimit {
+		pth = pth[:pathSafeLimit]
+	}
+
+	cleaned := ""
+	for _, c := range pth {
+		if pathSafeChars.Contains(c) {
+			cleaned += string(c)
+		}
+	}
+
+	cleaned = filepath.Clean(cleaned)
+	cleaned = filepath.FromSlash(cleaned)
+	cleaned = strings.ReplaceAll(cleaned, "..", "")
+
+	return cleaned
+}
 
 func Chmod(pth string, mode os.FileMode) (err error) {
 	err = os.Chmod(pth, mode)
