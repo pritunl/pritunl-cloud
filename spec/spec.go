@@ -804,14 +804,6 @@ func (s *Spec) CanMigrate(db *database.Database, spc *Spec) (
 		return
 	}
 
-	if s.Instance.DiskSize != spc.Instance.DiskSize {
-		errData = &errortypes.ErrorData{
-			Error:   "instance_disk_size_coflict",
-			Message: "Cannot migrate to different instance disk size",
-		}
-		return
-	}
-
 	curMountPaths := set.NewSet()
 	curMountDisks := map[string]set.Set{}
 	for _, mnt := range s.Instance.Mounts {
