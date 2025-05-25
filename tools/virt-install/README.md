@@ -82,61 +82,61 @@ find /mnt/images/unstable/ -name "*.qcow2" -type f -exec gpg --default-key 055C0
 sha256sum /mnt/images/unstable/*
 
 cd /mnt/images/unstable
-python3 ~/git/pritunl-cloud/tools/generate_files.py
-python3 ~/git/pritunl-cloud/tools/autoindex.py
+python3 ~/tools/generate_files.py
+python3 ~/tools/autoindex.py
 
-python3 ~/git/pritunl-cloud/tools/s3_upload.py almalinux8_2504.qcow2 pritunl-images/unstable/almalinux8_2504.qcow2
-python3 ~/git/pritunl-cloud/tools/s3_upload.py almalinux8_2504.qcow2.sig pritunl-images/unstable/almalinux8_2504.qcow2.sig
-python3 ~/git/pritunl-cloud/tools/s3_upload.py almalinux9_2504.qcow2 pritunl-images/unstable/almalinux9_2504.qcow2
-python3 ~/git/pritunl-cloud/tools/s3_upload.py almalinux9_2504.qcow2.sig pritunl-images/unstable/almalinux9_2504.qcow2.sig
-python3 ~/git/pritunl-cloud/tools/s3_upload.py alpinelinux_2504.qcow2 pritunl-images/unstable/alpinelinux_2504.qcow2
-python3 ~/git/pritunl-cloud/tools/s3_upload.py alpinelinux_2504.qcow2.sig pritunl-images/unstable/alpinelinux_2504.qcow2.sig
-python3 ~/git/pritunl-cloud/tools/s3_upload.py fedora42_2504.qcow2 pritunl-images/unstable/fedora42_2504.qcow2
-python3 ~/git/pritunl-cloud/tools/s3_upload.py fedora42_2504.qcow2.sig pritunl-images/unstable/fedora42_2504.qcow2.sig
-python3 ~/git/pritunl-cloud/tools/s3_upload.py freebsd_2504.qcow2 pritunl-images/unstable/freebsd_2504.qcow2
-python3 ~/git/pritunl-cloud/tools/s3_upload.py freebsd_2504.qcow2.sig pritunl-images/unstable/freebsd_2504.qcow2.sig
-python3 ~/git/pritunl-cloud/tools/s3_upload.py oraclelinux7_2504.qcow2 pritunl-images/unstable/oraclelinux7_2504.qcow2
-python3 ~/git/pritunl-cloud/tools/s3_upload.py oraclelinux7_2504.qcow2.sig pritunl-images/unstable/oraclelinux7_2504.qcow2.sig
-python3 ~/git/pritunl-cloud/tools/s3_upload.py oraclelinux8_2504.qcow2 pritunl-images/unstable/oraclelinux8_2504.qcow2
-python3 ~/git/pritunl-cloud/tools/s3_upload.py oraclelinux8_2504.qcow2.sig pritunl-images/unstable/oraclelinux8_2504.qcow2.sig
-python3 ~/git/pritunl-cloud/tools/s3_upload.py oraclelinux9_2504.qcow2 pritunl-images/unstable/oraclelinux9_2504.qcow2
-python3 ~/git/pritunl-cloud/tools/s3_upload.py oraclelinux9_2504.qcow2.sig pritunl-images/unstable/oraclelinux9_2504.qcow2.sig
-python3 ~/git/pritunl-cloud/tools/s3_upload.py rockylinux8_2504.qcow2 pritunl-images/unstable/rockylinux8_2504.qcow2
-python3 ~/git/pritunl-cloud/tools/s3_upload.py rockylinux8_2504.qcow2.sig pritunl-images/unstable/rockylinux8_2504.qcow2.sig
-python3 ~/git/pritunl-cloud/tools/s3_upload.py rockylinux9_2504.qcow2 pritunl-images/unstable/rockylinux9_2504.qcow2
-python3 ~/git/pritunl-cloud/tools/s3_upload.py rockylinux9_2504.qcow2.sig pritunl-images/unstable/rockylinux9_2504.qcow2.sig
-python3 ~/git/pritunl-cloud/tools/s3_upload.py ubuntu2404_2504.qcow2 pritunl-images/unstable/ubuntu2404_2504.qcow2
-python3 ~/git/pritunl-cloud/tools/s3_upload.py ubuntu2404_2504.qcow2.sig pritunl-images/unstable/ubuntu2404_2504.qcow2.sig
-python3 ~/git/pritunl-cloud/tools/s3_upload.py files.json pritunl-images/unstable/files.json
-python3 ~/git/pritunl-cloud/tools/s3_upload.py index.html pritunl-images/unstable/index.html
+python3 ~/tools/s3_upload.py almalinux8_2504.qcow2 pritunl-images/unstable/almalinux8_2504.qcow2
+python3 ~/tools/s3_upload.py almalinux8_2504.qcow2.sig pritunl-images/unstable/almalinux8_2504.qcow2.sig
+python3 ~/tools/s3_upload.py almalinux9_2504.qcow2 pritunl-images/unstable/almalinux9_2504.qcow2
+python3 ~/tools/s3_upload.py almalinux9_2504.qcow2.sig pritunl-images/unstable/almalinux9_2504.qcow2.sig
+python3 ~/tools/s3_upload.py alpinelinux_2504.qcow2 pritunl-images/unstable/alpinelinux_2504.qcow2
+python3 ~/tools/s3_upload.py alpinelinux_2504.qcow2.sig pritunl-images/unstable/alpinelinux_2504.qcow2.sig
+python3 ~/tools/s3_upload.py fedora42_2504.qcow2 pritunl-images/unstable/fedora42_2504.qcow2
+python3 ~/tools/s3_upload.py fedora42_2504.qcow2.sig pritunl-images/unstable/fedora42_2504.qcow2.sig
+python3 ~/tools/s3_upload.py freebsd_2504.qcow2 pritunl-images/unstable/freebsd_2504.qcow2
+python3 ~/tools/s3_upload.py freebsd_2504.qcow2.sig pritunl-images/unstable/freebsd_2504.qcow2.sig
+python3 ~/tools/s3_upload.py oraclelinux7_2504.qcow2 pritunl-images/unstable/oraclelinux7_2504.qcow2
+python3 ~/tools/s3_upload.py oraclelinux7_2504.qcow2.sig pritunl-images/unstable/oraclelinux7_2504.qcow2.sig
+python3 ~/tools/s3_upload.py oraclelinux8_2504.qcow2 pritunl-images/unstable/oraclelinux8_2504.qcow2
+python3 ~/tools/s3_upload.py oraclelinux8_2504.qcow2.sig pritunl-images/unstable/oraclelinux8_2504.qcow2.sig
+python3 ~/tools/s3_upload.py oraclelinux9_2504.qcow2 pritunl-images/unstable/oraclelinux9_2504.qcow2
+python3 ~/tools/s3_upload.py oraclelinux9_2504.qcow2.sig pritunl-images/unstable/oraclelinux9_2504.qcow2.sig
+python3 ~/tools/s3_upload.py rockylinux8_2504.qcow2 pritunl-images/unstable/rockylinux8_2504.qcow2
+python3 ~/tools/s3_upload.py rockylinux8_2504.qcow2.sig pritunl-images/unstable/rockylinux8_2504.qcow2.sig
+python3 ~/tools/s3_upload.py rockylinux9_2504.qcow2 pritunl-images/unstable/rockylinux9_2504.qcow2
+python3 ~/tools/s3_upload.py rockylinux9_2504.qcow2.sig pritunl-images/unstable/rockylinux9_2504.qcow2.sig
+python3 ~/tools/s3_upload.py ubuntu2404_2504.qcow2 pritunl-images/unstable/ubuntu2404_2504.qcow2
+python3 ~/tools/s3_upload.py ubuntu2404_2504.qcow2.sig pritunl-images/unstable/ubuntu2404_2504.qcow2.sig
+python3 ~/tools/s3_upload.py files.json pritunl-images/unstable/files.json
+python3 ~/tools/s3_upload.py index.html pritunl-images/unstable/index.html
 
 rsync --human-readable --archive --progress --delete /mnt/images/unstable/ /mnt/images/stable/
 cd /mnt/images/stable
-python3 ~/git/pritunl-cloud/tools/generate_files.py
-python3 ~/git/pritunl-cloud/tools/autoindex.py
+python3 ~/tools/generate_files.py
+python3 ~/tools/autoindex.py
 
-python3 ~/git/pritunl-cloud/tools/s3_upload.py almalinux8_2504.qcow2 pritunl-images/stable/almalinux8_2504.qcow2
-python3 ~/git/pritunl-cloud/tools/s3_upload.py almalinux8_2504.qcow2.sig pritunl-images/stable/almalinux8_2504.qcow2.sig
-python3 ~/git/pritunl-cloud/tools/s3_upload.py almalinux9_2504.qcow2 pritunl-images/stable/almalinux9_2504.qcow2
-python3 ~/git/pritunl-cloud/tools/s3_upload.py almalinux9_2504.qcow2.sig pritunl-images/stable/almalinux9_2504.qcow2.sig
-python3 ~/git/pritunl-cloud/tools/s3_upload.py alpinelinux_2504.qcow2 pritunl-images/stable/alpinelinux_2504.qcow2
-python3 ~/git/pritunl-cloud/tools/s3_upload.py alpinelinux_2504.qcow2.sig pritunl-images/stable/alpinelinux_2504.qcow2.sig
-python3 ~/git/pritunl-cloud/tools/s3_upload.py fedora42_2504.qcow2 pritunl-images/stable/fedora42_2504.qcow2
-python3 ~/git/pritunl-cloud/tools/s3_upload.py fedora42_2504.qcow2.sig pritunl-images/stable/fedora42_2504.qcow2.sig
-python3 ~/git/pritunl-cloud/tools/s3_upload.py freebsd_2504.qcow2 pritunl-images/stable/freebsd_2504.qcow2
-python3 ~/git/pritunl-cloud/tools/s3_upload.py freebsd_2504.qcow2.sig pritunl-images/stable/freebsd_2504.qcow2.sig
-python3 ~/git/pritunl-cloud/tools/s3_upload.py oraclelinux7_2504.qcow2 pritunl-images/stable/oraclelinux7_2504.qcow2
-python3 ~/git/pritunl-cloud/tools/s3_upload.py oraclelinux7_2504.qcow2.sig pritunl-images/stable/oraclelinux7_2504.qcow2.sig
-python3 ~/git/pritunl-cloud/tools/s3_upload.py oraclelinux8_2504.qcow2 pritunl-images/stable/oraclelinux8_2504.qcow2
-python3 ~/git/pritunl-cloud/tools/s3_upload.py oraclelinux8_2504.qcow2.sig pritunl-images/stable/oraclelinux8_2504.qcow2.sig
-python3 ~/git/pritunl-cloud/tools/s3_upload.py oraclelinux9_2504.qcow2 pritunl-images/stable/oraclelinux9_2504.qcow2
-python3 ~/git/pritunl-cloud/tools/s3_upload.py oraclelinux9_2504.qcow2.sig pritunl-images/stable/oraclelinux9_2504.qcow2.sig
-python3 ~/git/pritunl-cloud/tools/s3_upload.py rockylinux8_2504.qcow2 pritunl-images/stable/rockylinux8_2504.qcow2
-python3 ~/git/pritunl-cloud/tools/s3_upload.py rockylinux8_2504.qcow2.sig pritunl-images/stable/rockylinux8_2504.qcow2.sig
-python3 ~/git/pritunl-cloud/tools/s3_upload.py rockylinux9_2504.qcow2 pritunl-images/stable/rockylinux9_2504.qcow2
-python3 ~/git/pritunl-cloud/tools/s3_upload.py rockylinux9_2504.qcow2.sig pritunl-images/stable/rockylinux9_2504.qcow2.sig
-python3 ~/git/pritunl-cloud/tools/s3_upload.py ubuntu2404_2504.qcow2 pritunl-images/stable/ubuntu2404_2504.qcow2
-python3 ~/git/pritunl-cloud/tools/s3_upload.py ubuntu2404_2504.qcow2.sig pritunl-images/stable/ubuntu2404_2504.qcow2.sig
-python3 ~/git/pritunl-cloud/tools/s3_upload.py files.json pritunl-images/stable/files.json
-python3 ~/git/pritunl-cloud/tools/s3_upload.py index.html pritunl-images/stable/index.html
+python3 ~/tools/s3_upload.py almalinux8_2504.qcow2 pritunl-images/stable/almalinux8_2504.qcow2
+python3 ~/tools/s3_upload.py almalinux8_2504.qcow2.sig pritunl-images/stable/almalinux8_2504.qcow2.sig
+python3 ~/tools/s3_upload.py almalinux9_2504.qcow2 pritunl-images/stable/almalinux9_2504.qcow2
+python3 ~/tools/s3_upload.py almalinux9_2504.qcow2.sig pritunl-images/stable/almalinux9_2504.qcow2.sig
+python3 ~/tools/s3_upload.py alpinelinux_2504.qcow2 pritunl-images/stable/alpinelinux_2504.qcow2
+python3 ~/tools/s3_upload.py alpinelinux_2504.qcow2.sig pritunl-images/stable/alpinelinux_2504.qcow2.sig
+python3 ~/tools/s3_upload.py fedora42_2504.qcow2 pritunl-images/stable/fedora42_2504.qcow2
+python3 ~/tools/s3_upload.py fedora42_2504.qcow2.sig pritunl-images/stable/fedora42_2504.qcow2.sig
+python3 ~/tools/s3_upload.py freebsd_2504.qcow2 pritunl-images/stable/freebsd_2504.qcow2
+python3 ~/tools/s3_upload.py freebsd_2504.qcow2.sig pritunl-images/stable/freebsd_2504.qcow2.sig
+python3 ~/tools/s3_upload.py oraclelinux7_2504.qcow2 pritunl-images/stable/oraclelinux7_2504.qcow2
+python3 ~/tools/s3_upload.py oraclelinux7_2504.qcow2.sig pritunl-images/stable/oraclelinux7_2504.qcow2.sig
+python3 ~/tools/s3_upload.py oraclelinux8_2504.qcow2 pritunl-images/stable/oraclelinux8_2504.qcow2
+python3 ~/tools/s3_upload.py oraclelinux8_2504.qcow2.sig pritunl-images/stable/oraclelinux8_2504.qcow2.sig
+python3 ~/tools/s3_upload.py oraclelinux9_2504.qcow2 pritunl-images/stable/oraclelinux9_2504.qcow2
+python3 ~/tools/s3_upload.py oraclelinux9_2504.qcow2.sig pritunl-images/stable/oraclelinux9_2504.qcow2.sig
+python3 ~/tools/s3_upload.py rockylinux8_2504.qcow2 pritunl-images/stable/rockylinux8_2504.qcow2
+python3 ~/tools/s3_upload.py rockylinux8_2504.qcow2.sig pritunl-images/stable/rockylinux8_2504.qcow2.sig
+python3 ~/tools/s3_upload.py rockylinux9_2504.qcow2 pritunl-images/stable/rockylinux9_2504.qcow2
+python3 ~/tools/s3_upload.py rockylinux9_2504.qcow2.sig pritunl-images/stable/rockylinux9_2504.qcow2.sig
+python3 ~/tools/s3_upload.py ubuntu2404_2504.qcow2 pritunl-images/stable/ubuntu2404_2504.qcow2
+python3 ~/tools/s3_upload.py ubuntu2404_2504.qcow2.sig pritunl-images/stable/ubuntu2404_2504.qcow2.sig
+python3 ~/tools/s3_upload.py files.json pritunl-images/stable/files.json
+python3 ~/tools/s3_upload.py index.html pritunl-images/stable/index.html
 ```
