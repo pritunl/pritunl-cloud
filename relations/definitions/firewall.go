@@ -16,6 +16,9 @@ var Firewall = relations.Query{
 	Project: []relations.Project{{
 		Key:   "name",
 		Label: "Name",
+	}, {
+		Key:   "network_roles",
+		Label: "Roles",
 	}},
 	Relations: []relations.Relation{{
 		Key:          "instances",
