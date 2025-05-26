@@ -27,6 +27,7 @@ User=%s
 Environment="CLIENT_SECRET=%s"
 Environment="HOST_SECRET=%s"
 ExecStart=/usr/bin/pritunl-cloud-imds -sock=%s -host=%s -port=%d start
+TimeoutStopSec=5
 PrivateTmp=true
 ProtectHome=true
 ProtectSystem=full
@@ -46,6 +47,7 @@ User=root
 Environment="CLIENT_SECRET=%s"
 Environment="HOST_SECRET=%s"
 ExecStart=/usr/sbin/ip netns exec %s /usr/bin/pritunl-cloud-imds -sock=%s -host=%s -port=%d start
+TimeoutStopSec=5
 PrivateTmp=true
 ProtectHome=true
 ProtectSystem=full
