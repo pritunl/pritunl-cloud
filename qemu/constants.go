@@ -11,6 +11,7 @@ Environment=XDG_CACHE_HOME=%s
 Type=simple
 User=root
 ExecStart=%s
+TimeoutStopSec=5
 PrivateTmp=%s
 ProtectHome=%s
 ProtectSystem=full
@@ -31,6 +32,7 @@ Environment=XDG_CACHE_HOME=%s
 Type=simple
 User=root
 ExecStart=%s
+TimeoutStopSec=5
 PrivateTmp=%s
 ProtectHome=%s
 ProtectSystem=full
