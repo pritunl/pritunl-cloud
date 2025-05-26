@@ -23,6 +23,7 @@ export interface Completion {
 	organizations?: OrganizationTypes.Organization[]
 	domains?: DomainTypes.Domain[]
 	vpcs?: VpcTypes.Vpc[]
+	subnets?: VpcTypes.Subnet[]
 	datacenters?: DatacenterTypes.Datacenter[]
 	nodes?: NodeTypes.Node[]
 	pools?: PoolTypes.Pool[]
