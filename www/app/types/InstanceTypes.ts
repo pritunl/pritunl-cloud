@@ -57,6 +57,7 @@ export interface Instance {
 	pci_devices?: PciDevice[];
 	drive_devices?: DriveDevice[];
 	iscsi_devices?: IscsiDevice[];
+	mounts?: Mount[];
 	root_enabled?: boolean;
 	root_passwd?: string;
 	vnc?: boolean;
@@ -123,6 +124,12 @@ export interface IscsiDevice {
 	username?: string;
 	password?: string;
 	uri?: string;
+}
+
+export interface Mount {
+	name?: string;
+	type?: string;
+	host_path?: string;
 }
 
 export interface DriveDevice {
