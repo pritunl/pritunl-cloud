@@ -41,6 +41,7 @@ export interface Node {
 	default_interface?: string;
 	blocks?: BlockAttachment[];
 	blocks6?: BlockAttachment[];
+	shares?: Share[];
 	pools?: string[];
 	available_drives?: Drive[];
 	instance_drives?: Drive[];
@@ -103,6 +104,12 @@ export interface NodeInit {
 	block_gateway?: string;
 	block_netmask?: string;
 	block_subnets?: string[];
+}
+
+export interface Share {
+	type?: string;
+	path?: string;
+	roles?: string[];
 }
 
 export interface Drive {
