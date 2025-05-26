@@ -36,6 +36,7 @@ Environment=CONFIG='%s'
 Type=simple
 User=root
 ExecStart=/usr/sbin/ip netns exec %s %s %s
+TimeoutStopSec=5
 PrivateTmp=true
 ProtectHome=true
 ProtectSystem=full
@@ -53,6 +54,7 @@ Environment=CONFIG='%s'
 Type=simple
 User=%s
 ExecStart=%s %s
+TimeoutStopSec=5
 PrivateTmp=true
 ProtectHome=true
 ProtectSystem=full
