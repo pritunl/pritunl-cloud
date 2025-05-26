@@ -40,7 +40,7 @@ func StartAll(db *database.Database,
 		matchRoles := false
 
 		for _, share := range node.Self.Shares {
-			if share.MatchPath(mount.Path) {
+			if share.MatchPath(mount.HostPath) {
 				matchPath = true
 
 				if utils.HasMatchingItem(share.Roles, org.Roles) {
@@ -53,7 +53,7 @@ func StartAll(db *database.Database,
 		if !matchPath && !matchRoles {
 			err = &errortypes.ParseError{
 				errors.Newf("virtiofs: Failed to find matching "+
-					"share path for mount '%s'", mount.Path),
+					"share path for mount '%s'", mount.HostPath),
 			}
 			return
 		}
@@ -61,7 +61,7 @@ func StartAll(db *database.Database,
 		if !matchPath || !matchRoles {
 			err = &errortypes.ParseError{
 				errors.Newf("virtiofs: Failed to find matching "+
-					"role for mount '%s'", mount.Path),
+					"role for mount '%s'", mount.HostPath),
 			}
 			return
 		}
@@ -72,7 +72,7 @@ func StartAll(db *database.Database,
 	for _, mount := range mounts {
 		shareId := paths.GetShareId(virt.Id, mount.Name)
 
-		err = Start(db, virt, shareId, mount.Path)
+		err = Start(db, virt, shareId, mount.HostPath)
 		if err != nil {
 			return
 		}

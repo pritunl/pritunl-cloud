@@ -136,9 +136,9 @@ type IscsiDevice struct {
 }
 
 type Mount struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
-	Path string `json:"path"`
+	Name     string `json:"name"`
+	Type     string `json:"type"`
+	HostPath string `json:"host_path"`
 }
 
 func (d *Disk) GetId() primitive.ObjectID {

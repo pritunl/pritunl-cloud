@@ -130,9 +130,9 @@ type Instance struct {
 }
 
 type Mount struct {
-	Name string `bson:"name" json:"name"`
-	Type string `bson:"type" json:"type"`
-	Path string `bson:"path" json:"path"`
+	Name     string `bson:"name" json:"name"`
+	Type     string `bson:"type" json:"type"`
+	HostPath string `bson:"host_path" json:"host_path"`
 }
 
 type StatusInfo struct {
@@ -509,9 +509,9 @@ func (i *Instance) Validate(db *database.Database) (
 	for _, mount := range i.Mounts {
 		mount.Name = utils.FilterNameCmd(mount.Name)
 		mount.Type = HostPath
-		mount.Path = utils.FilterPath(mount.Path)
+		mount.HostPath = utils.FilterPath(mount.HostPath)
 
-		if mount.Path == "" {
+		if mount.HostPath == "" {
 			continue
 		}
 
@@ -1256,9 +1256,9 @@ func (i *Instance) LoadVirt(poolsMap map[primitive.ObjectID]*pool.Pool,
 		i.Virt.Mounts = append(
 			i.Virt.Mounts,
 			&vm.Mount{
-				Name: mount.Name,
-				Type: mount.Type,
-				Path: mount.Path,
+				Name:     mount.Name,
+				Type:     mount.Type,
+				HostPath: mount.HostPath,
 			},
 		)
 	}
@@ -1386,7 +1386,7 @@ func (i *Instance) Changed(curVirt *vm.VirtualMachine) bool {
 
 			if mount.Name != curVirt.Mounts[i].Name ||
 				mount.Type != curVirt.Mounts[i].Type ||
-				mount.Path != curVirt.Mounts[i].Path {
+				mount.HostPath != curVirt.Mounts[i].HostPath {
 
 				return true
 			}
