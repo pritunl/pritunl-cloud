@@ -9,6 +9,7 @@ export interface Block {
 	name?: string;
 	comment?: string;
 	type?: string;
+	vlan?: number;
 	subnets?: string[];
 	subnets6?: string[];
 	excludes?: string[];
