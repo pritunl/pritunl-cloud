@@ -45,7 +45,7 @@ func touchChown(virt *vm.VirtualMachine, path string) (err error) {
 
 func mkdirChown(virt *vm.VirtualMachine, path string) (err error) {
 	_, err = utils.ExecCombinedOutputLogged(nil,
-		"mkdir", path,
+		"mkdir", "-p", path,
 	)
 	if err != nil {
 		return
