@@ -53,6 +53,7 @@ type VirtualMachine struct {
 	PciDevices          []*PciDevice       `json:"pci_devices"`
 	DriveDevices        []*DriveDevice     `json:"drive_devices"`
 	IscsiDevices        []*IscsiDevice     `json:"iscsi_devices"`
+	Mounts              []*Mount           `json:"mounts"`
 	ImdsVersion         int                `json:"imds_version"`
 	ImdsClientSecret    string             `json:"-"`
 	ImdsHostSecret      string             `json:"imds_host_secret"`
@@ -132,6 +133,12 @@ type DriveDevice struct {
 
 type IscsiDevice struct {
 	Uri string `json:"iscsi"`
+}
+
+type Mount struct {
+	Name string `json:"name"`
+	Type string `json:"type"`
+	Path string `json:"path"`
 }
 
 func (d *Disk) GetId() primitive.ObjectID {
