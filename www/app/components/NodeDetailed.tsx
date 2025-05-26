@@ -1,5 +1,6 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
+import * as Blueprint from '@blueprintjs/core';
 import * as NodeTypes from '../types/NodeTypes';
 import * as CertificateTypes from '../types/CertificateTypes';
 import * as DatacenterTypes from "../types/DatacenterTypes";
@@ -21,6 +22,7 @@ import PageNumInput from './PageNumInput';
 import PageInfo from './PageInfo';
 import PageSave from './PageSave';
 import NodeBlock from './NodeBlock';
+import NodeShare from './NodeShare';
 import ConfirmButton from './ConfirmButton';
 import Help from './Help';
 
@@ -100,6 +102,11 @@ const css = {
 		width: '100%',
 		maxWidth: '400px',
 	} as React.CSSProperties,
+	labelShares: {
+		width: '100%',
+		maxWidth: '400px',
+		marginBottom: '0',
+	} as React.CSSProperties,
 	inputGroup: {
 		width: '100%',
 	} as React.CSSProperties,
@@ -121,6 +128,10 @@ const css = {
 	} as React.CSSProperties,
 	blocks: {
 		marginBottom: '15px',
+	} as React.CSSProperties,
+	divider: {
+		width: '100%',
+		maxWidth: '270px',
 	} as React.CSSProperties,
 };
 
@@ -993,6 +1004,107 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		});
 	}
 
+	onAddShare = (i: number): void => {
+		let node: NodeTypes.Node;
+
+		if (this.state.changed) {
+			node = {
+				...this.state.node,
+			};
+		} else {
+			node = {
+				...this.props.node,
+			};
+		}
+
+		let shares = [
+			...(node.shares || []),
+		];
+		if (!shares.length) {
+			shares.push({})
+		}
+
+		shares.splice(i + 1, 0, {});
+		node.shares = shares;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			node: node,
+		});
+	}
+
+	onChangeShare(i: number, block: NodeTypes.Share): void {
+		let node: NodeTypes.Node;
+
+		if (this.state.changed) {
+			node = {
+				...this.state.node,
+			};
+		} else {
+			node = {
+				...this.props.node,
+			};
+		}
+
+		let shares = [
+			...(node.shares || []),
+		];
+		if (!shares.length) {
+			shares.push({})
+		}
+
+		shares[i] = block;
+
+		node.shares = shares;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			node: node,
+		});
+	}
+
+	onRemoveShare(i: number): void {
+		let node: NodeTypes.Node;
+
+		if (this.state.changed) {
+			node = {
+				...this.state.node,
+			};
+		} else {
+			node = {
+				...this.props.node,
+			};
+		}
+
+		let shares = [
+			...(node.shares || []),
+		];
+		if (!shares.length) {
+			shares.push({})
+		}
+
+		shares.splice(i, 1);
+
+		if (!shares.length) {
+			shares = [
+				{},
+			];
+		}
+
+		node.shares = shares;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			node: node,
+		});
+	}
+
 	onAddDrive = (): void => {
 		let node: NodeTypes.Node;
 		let availabeDrives = this.props.node.available_drives || [];
@@ -1444,6 +1556,36 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					}}
 				/>,
 			);
+		}
+
+		let nodeShares = node.shares || [];
+		let shares: JSX.Element[] = [];
+		if (nodeShares.length === 0) {
+			nodeShares.push({});
+		}
+		for (let i = 0; i < nodeShares.length; i++) {
+			let index = i;
+
+			shares.push(
+				<NodeShare
+					key={index}
+					disabled={this.state.disabled}
+					share={nodeShares[index]}
+					onChange={(state: NodeTypes.Share): void => {
+						this.onChangeShare(index, state);
+					}}
+					onAdd={(): void => {
+						this.onAddShare(index);
+					}}
+					onRemove={(): void => {
+						this.onRemoveShare(index);
+					}}
+				/>,
+			);
+
+			if (i < nodeShares.length-1) {
+				shares.push(<Blueprint.Divider style={css.divider}/>);
+			}
 		}
 
 		return <td
@@ -2180,6 +2322,19 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					>
 						{availableDrivesSelect}
 					</PageSelectButton>
+					<label
+						className="bp5-label"
+						style={css.labelShares}
+					>
+						Share Paths
+						<Help
+							title="Share Paths"
+							content="Local paths on the host that are available for instances to access through VirtIO-FS sharing. Individual subdirectories do not need to be included. An instance can be configured for any path within the shared path. The instance's organization must have a matching role to access the share."
+						/>
+					</label>
+					<div>
+						{shares}
+					</div>
 					<label className="bp5-label">
 						Roles
 						<Help
