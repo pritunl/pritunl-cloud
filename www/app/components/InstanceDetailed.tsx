@@ -12,6 +12,7 @@ import OrganizationsStore from '../stores/OrganizationsStore';
 import ZonesStore from '../stores/ZonesStore';
 import InstanceIscsiDevice from './InstanceIscsiDevice';
 import InstanceNodePort from './InstanceNodePort';
+import InstanceMount from './InstanceMount';
 import PageInput from './PageInput';
 import PageInputButton from './PageInputButton';
 import PageInfo from './PageInfo';
@@ -1071,6 +1072,107 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		});
 	}
 
+	onAddMount = (i: number): void => {
+		let instance: InstanceTypes.Instance;
+
+		if (this.state.changed) {
+			instance = {
+				...this.state.instance,
+			};
+		} else {
+			instance = {
+				...this.props.instance,
+			};
+		}
+
+		let mounts = [
+			...(instance.mounts || []),
+		];
+		if (!mounts.length) {
+			mounts.push({})
+		}
+
+		mounts.splice(i + 1, 0, {});
+		instance.mounts = mounts;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			instance: instance,
+		});
+	}
+
+	onChangeMount(i: number, block: InstanceTypes.Mount): void {
+		let instance: InstanceTypes.Instance;
+
+		if (this.state.changed) {
+			instance = {
+				...this.state.instance,
+			};
+		} else {
+			instance = {
+				...this.props.instance,
+			};
+		}
+
+		let mounts = [
+			...(instance.mounts || []),
+		];
+		if (!mounts.length) {
+			mounts.push({})
+		}
+
+		mounts[i] = block;
+
+		instance.mounts = mounts;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			instance: instance,
+		});
+	}
+
+	onRemoveMount(i: number): void {
+		let instance: InstanceTypes.Instance;
+
+		if (this.state.changed) {
+			instance = {
+				...this.state.instance,
+			};
+		} else {
+			instance = {
+				...this.props.instance,
+			};
+		}
+
+		let mounts = [
+			...(instance.mounts || []),
+		];
+		if (!mounts.length) {
+			mounts.push({})
+		}
+
+		mounts.splice(i, 1);
+
+		if (!mounts.length) {
+			mounts = [
+				{},
+			];
+		}
+
+		instance.mounts = mounts;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			instance: instance,
+		});
+	}
+
 	onDelete = (): void => {
 		this.setState({
 			...this.state,
@@ -1463,6 +1565,32 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					}}
 					onRemove={(): void => {
 						this.onRemoveIscsiDevice(index);
+					}}
+				/>,
+			);
+		}
+
+		let instanceMounts = instance.mounts || [];
+		let mounts: JSX.Element[] = [];
+		if (instanceMounts.length === 0) {
+			instanceMounts.push({});
+		}
+		for (let i = 0; i < instanceMounts.length; i++) {
+			let index = i;
+
+			mounts.push(
+				<InstanceMount
+					key={index}
+					disabled={this.state.disabled}
+					mount={instanceMounts[index]}
+					onChange={(state: InstanceTypes.Mount): void => {
+						this.onChangeMount(index, state);
+					}}
+					onAdd={(): void => {
+						this.onAddMount(index);
+					}}
+					onRemove={(): void => {
+						this.onRemoveMount(index);
 					}}
 				/>,
 			);
@@ -2179,6 +2307,19 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						<option key="linux" value="linux">Linux</option>,
 						<option key="bsd" value="bsd">BSD</option>,
 					</PageSelect>
+					<label
+						className="bp5-label"
+						style={css.label}
+					>
+						Host Paths
+						<Help
+							title="Host Paths"
+							content="Local paths on the host that are available for instances to access through VirtIO-FS sharing. The path must be match or be a subdirectory of a configured host share path. The instance's organization must have a matching role to access the host share."
+						/>
+					</label>
+					<div>
+						{mounts}
+					</div>
 					<PageTextArea
 						label="Startup Script"
 						help="Script to run on instance startup. These commands will run on every startup. File must start with #! such as `#!/bin/bash` to specify code interpreter."
