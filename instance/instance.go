@@ -132,6 +132,7 @@ type Instance struct {
 type Mount struct {
 	Name     string `bson:"name" json:"name"`
 	Type     string `bson:"type" json:"type"`
+	Path     string `bson:"path" json:"path"`
 	HostPath string `bson:"host_path" json:"host_path"`
 }
 
@@ -1259,6 +1260,7 @@ func (i *Instance) LoadVirt(poolsMap map[primitive.ObjectID]*pool.Pool,
 			&vm.Mount{
 				Name:     mount.Name,
 				Type:     mount.Type,
+				Path:     mount.Path,
 				HostPath: mount.HostPath,
 			},
 		)
