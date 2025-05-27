@@ -509,9 +509,10 @@ func (i *Instance) Validate(db *database.Database) (
 	for _, mount := range i.Mounts {
 		mount.Name = utils.FilterNameCmd(mount.Name)
 		mount.Type = HostPath
+		mount.Path = utils.FilterPath(mount.Path)
 		mount.HostPath = utils.FilterPath(mount.HostPath)
 
-		if mount.HostPath == "" {
+		if mount.Name == "" || mount.HostPath == "" {
 			continue
 		}
 
