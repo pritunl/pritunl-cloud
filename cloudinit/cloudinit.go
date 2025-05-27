@@ -10,7 +10,6 @@ import (
 	"net/textproto"
 	"os"
 	"path"
-	"path/filepath"
 	"strings"
 	"text/template"
 
@@ -115,7 +114,7 @@ bootcmd:
 {{- end}}
 mounts:
 {{- range .Mounts}}
-  - [ "UUID={{.Uuid}}", "{{.Path}}", "auto", "defaults", "0", "2" ]
+  - [ "{{.Tag}}", "{{.Path}}", {{.Type}}, "{{.Opts}}", "0", "{{.Fsck}}" ]
 {{- end}}
 {{- end}}
 `
@@ -152,7 +151,7 @@ bootcmd:
 {{- end}}
 mounts:
 {{- range .Mounts}}
-  - [ "UUID={{.Uuid}}", "{{.Path}}", "auto", "defaults", "0", "2" ]
+  - [ "{{.Tag}}", "{{.Path}}", {{.Type}}, "{{.Opts}}", "0", "{{.Fsck}}" ]
 {{- end}}
 {{- end}}
 `
@@ -218,8 +217,11 @@ type cloudConfigData struct {
 }
 
 type cloudMount struct {
-	Uuid string
+	Tag  string
 	Path string
+	Type string
+	Opts string
+	Fsck string
 }
 
 type imdsConfig struct {
@@ -341,8 +343,11 @@ func getUserData(db *database.Database, inst *instance.Instance,
 			data.HasMounts = true
 			for _, mnt := range deply.Mounts {
 				data.Mounts = append(data.Mounts, cloudMount{
-					Uuid: mnt.Uuid,
-					Path: filepath.Clean(mnt.Path),
+					Tag:  fmt.Sprintf("UUID=%s", mnt.Uuid),
+					Path: utils.FilterPath(mnt.Path),
+					Type: "auto",
+					Opts: "defaults",
+					Fsck: "2",
 				})
 			}
 		}
@@ -391,6 +396,23 @@ func getUserData(db *database.Database, inst *instance.Instance,
 				settings.Hypervisor.AgentGuestPath,
 			),
 		)
+	}
+
+	for _, mnt := range virt.Mounts {
+		data.HasMounts = true
+
+		pth := utils.FilterPath(mnt.Path)
+		if pth == "" {
+			continue
+		}
+
+		data.Mounts = append(data.Mounts, cloudMount{
+			Tag:  mnt.Name,
+			Path: utils.FilterPath(mnt.Path),
+			Type: "virtiofs",
+			Opts: "defaults,_netdev",
+			Fsck: "0",
+		})
 	}
 
 	writeFiles = append(writeFiles, &fileData{
