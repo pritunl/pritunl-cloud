@@ -19,7 +19,7 @@ After=network.target
 [Service]
 Type=simple
 User=root
-ExecStart=/usr/libexec/virtiofsd --socket-path="%s" --shared-dir="%s" --sandbox=namespace
+ExecStart=%s --socket-path="%s" --shared-dir="%s" --sandbox=namespace
 TimeoutStopSec=5
 PrivateTmp=true
 ProtectSystem=full
@@ -35,6 +35,7 @@ func WriteService(vmId primitive.ObjectID,
 
 	output := fmt.Sprintf(
 		systemdTemplate,
+		GetVirtioFsdPath(),
 		sockPath,
 		sharePath,
 	)
