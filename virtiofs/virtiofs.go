@@ -19,6 +19,12 @@ func StartAll(db *database.Database,
 
 	mounts := []*vm.Mount{}
 
+	unitPathShares := paths.GetUnitPathShares(virt.Id)
+	_, err = utils.RemoveWildcard(unitPathShares)
+	if err != nil {
+		return
+	}
+
 	if len(virt.Mounts) == 0 {
 		return
 	}
