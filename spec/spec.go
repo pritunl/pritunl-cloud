@@ -386,7 +386,7 @@ func (s *Spec) parseInstance(db *database.Database,
 	if dataYaml.Mounts != nil {
 		for _, mount := range dataYaml.Mounts {
 			mnt := Mount{
-				Path:  filepath.Clean(mount.Path),
+				Path:  utils.FilterPath(mount.Path),
 				Disks: []primitive.ObjectID{},
 			}
 
@@ -398,17 +398,55 @@ func (s *Spec) parseInstance(db *database.Database,
 				return
 			}
 
-			for _, dsk := range mount.Disks {
-				kind, e := resources.Find(db, dsk)
-				if e != nil {
-					err = e
+			if mount.Type == HostPath {
+				mnt.Name = mount.Name
+				mnt.Type = HostPath
+				mnt.HostPath = utils.FilterPath(mount.HostPath)
+
+				if mnt.Name == "" {
+					errData = &errortypes.ErrorData{
+						Error:   "mount_name_missing",
+						Message: "Unit mount name is missing",
+					}
 					return
 				}
-				if kind == finder.DiskKind && resources.Disks != nil {
-					for _, dskRes := range resources.Disks {
-						mnt.Disks = append(mnt.Disks, dskRes.Id)
+
+				if mnt.HostPath == "" {
+					errData = &errortypes.ErrorData{
+						Error:   "mount_host_path_missing",
+						Message: "Unit mount hostPath is missing",
+					}
+					return
+				}
+			} else if mount.Type == Disk || mount.Type == "" {
+				mnt.Type = Disk
+
+				if mnt.Path == "" {
+					errData = &errortypes.ErrorData{
+						Error:   "mount_path_missing",
+						Message: "Unit mount path is missing",
+					}
+					return
+				}
+
+				for _, dsk := range mount.Disks {
+					kind, e := resources.Find(db, dsk)
+					if e != nil {
+						err = e
+						return
+					}
+					if kind == finder.DiskKind && resources.Disks != nil {
+						for _, dskRes := range resources.Disks {
+							mnt.Disks = append(mnt.Disks, dskRes.Id)
+						}
 					}
 				}
+			} else {
+				errData = &errortypes.ErrorData{
+					Error:   "mount_type_invalid",
+					Message: "Unit mount type is invalid",
+				}
+				return
 			}
 
 			data.Mounts = append(data.Mounts, mnt)
@@ -821,37 +859,13 @@ func (s *Spec) CanMigrate(db *database.Database, spc *Spec) (
 	}
 
 	curMountPaths := set.NewSet()
-	curMountDisks := map[string]set.Set{}
 	for _, mnt := range s.Instance.Mounts {
 		curMountPaths.Add(mnt.Path)
-		mntDisks := set.NewSet()
-		for _, dskId := range mnt.Disks {
-			mntDisks.Add(dskId)
-		}
-		curMountDisks[mnt.Path] = mntDisks
 	}
 
 	newMountPaths := set.NewSet()
 	for _, mnt := range spc.Instance.Mounts {
 		newMountPaths.Add(mnt.Path)
-		curMntDisks := curMountDisks[mnt.Path]
-		if curMntDisks == nil {
-			errData = &errortypes.ErrorData{
-				Error:   "instance_mount_coflict",
-				Message: "Cannot migrate to different instance mounts",
-			}
-			return
-		}
-
-		for _, dskId := range mnt.Disks {
-			if !curMntDisks.Contains(dskId) {
-				errData = &errortypes.ErrorData{
-					Error:   "instance_mount_disk_coflict",
-					Message: "Cannot migrate to instance with fewer disks",
-				}
-				return
-			}
-		}
 	}
 
 	if !curMountPaths.IsEqual(newMountPaths) {
