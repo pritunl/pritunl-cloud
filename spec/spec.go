@@ -4,7 +4,6 @@ import (
 	"crypto/sha1"
 	"fmt"
 	"io"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -18,6 +17,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/finder"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/organization"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/shape"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -42,9 +42,13 @@ type Spec struct {
 	Domain       *Domain            `bson:"domain,omitempty" json:"-"`
 }
 
-func (s *Spec) GetAllNodes(db *database.Database,
-	orgId primitive.ObjectID) (ndes Nodes,
+func (s *Spec) GetAllNodes(db *database.Database) (ndes Nodes,
 	offlineCount, noMountCount int, err error) {
+
+	org, err := organization.Get(db, s.Organization)
+	if err != nil {
+		return
+	}
 
 	shpe, err := shape.Get(db, s.Instance.Shape)
 	if err != nil {
@@ -67,36 +71,48 @@ func (s *Spec) GetAllNodes(db *database.Database,
 	}
 
 	var mountNodes []set.Set
-	if s.Instance.Mounts != nil && len(s.Instance.Mounts) > 0 {
+	if len(s.Instance.Mounts) > 0 {
 		diskIds := []primitive.ObjectID{}
 		for _, mount := range s.Instance.Mounts {
-			if mount.Disks == nil {
+			if mount.Type != Disk {
 				continue
 			}
 			diskIds = append(diskIds, mount.Disks...)
 		}
 
-		disksMap, e := disk.GetAllMap(db, &bson.M{
-			"_id": &bson.M{
-				"$in": diskIds,
-			},
-			"organization": orgId,
-		})
-		if e != nil {
-			err = e
-			return
+		disksMap := map[primitive.ObjectID]*disk.Disk{}
+		if len(diskIds) > 0 {
+			disksMap, err = disk.GetAllMap(db, &bson.M{
+				"_id": &bson.M{
+					"$in": diskIds,
+				},
+				"organization": s.Organization,
+			})
+			if err != nil {
+				return
+			}
 		}
 
 		for _, mount := range s.Instance.Mounts {
 			mountSet := set.NewSet()
 
-			if mount.Disks != nil {
+			if mount.Type == Disk {
 				for _, dskId := range mount.Disks {
 					dsk := disksMap[dskId]
 					if dsk == nil || !dsk.IsAvailable() {
 						continue
 					}
 					mountSet.Add(dsk.Node)
+				}
+			} else if mount.Type == HostPath {
+				for _, nde := range allNdes {
+					for _, share := range nde.Shares {
+						if share.MatchPath(mount.HostPath) &&
+							utils.HasMatchingItem(share.Roles, org.Roles) {
+
+							mountSet.Add(nde.Id)
+						}
+					}
 				}
 			}
 
