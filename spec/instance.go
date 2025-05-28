@@ -112,8 +112,11 @@ func (i *Instance) MemoryUnits() float64 {
 }
 
 type Mount struct {
-	Path  string               `bson:"path" json:"path"`
-	Disks []primitive.ObjectID `bson:"disks" json:"disks"`
+	Name     string               `bson:"name" json:"name"`
+	Type     string               `bson:"type" json:"type"`
+	Path     string               `bson:"path" json:"path"`
+	HostPath string               `bson:"host_path" json:"host_path"`
+	Disks    []primitive.ObjectID `bson:"disks" json:"disks"`
 }
 
 type InstanceYaml struct {
@@ -150,8 +153,11 @@ type InstanceYaml struct {
 }
 
 type InstanceMountYaml struct {
-	Path  string   `yaml:"path"`
-	Disks []string `yaml:"disks"`
+	Name     string   `yaml:"name"`
+	Type     string   `yaml:"type"`
+	Path     string   `yaml:"path"`
+	HostPath string   `yaml:"hostPath"`
+	Disks    []string `yaml:"disks"`
 }
 
 type InstanceNodePortYaml struct {
