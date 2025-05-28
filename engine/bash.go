@@ -94,7 +94,7 @@ func (b *BashEngine) streamErr(reader io.Reader) {
 }
 
 func (b *BashEngine) Run(block string) (err error) {
-	cmd := exec.Command(b.shell, "-c", block+shellEnvExport)
+	cmd := exec.Command(b.shell, "-x", "-c", block+shellEnvExport)
 	cmd.Env = b.starter.GetEnviron()
 	cmd.Dir = b.starter.GetCwd()
 
