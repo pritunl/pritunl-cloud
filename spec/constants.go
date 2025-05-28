@@ -26,6 +26,9 @@ const (
 	OraclePrivate = "oracle_private"
 
 	TokenPrefix = "+/"
+
+	Disk     = "disk"
+	HostPath = "host_path"
 )
 
 type Base struct {
