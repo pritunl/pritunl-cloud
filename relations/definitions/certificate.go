@@ -30,6 +30,21 @@ var Certificate = relations.Query{
 		}, {
 			Key:   "types",
 			Label: "Modes",
+		}, {
+			Key:   "admin_domain",
+			Label: "Admin Domain",
+		}, {
+			Key:   "user_domain",
+			Label: "User Domain",
+		}, {
+			Key:   "webauthn_domain",
+			Label: "WebAuthn Domain",
+		}, {
+			Key:   "network_mode",
+			Label: "Network Mode IPv4",
+		}, {
+			Key:   "network_mode6",
+			Label: "Network Mode IPv6",
 		}},
 	}, {
 		Key:          "balancers",
