@@ -297,6 +297,19 @@ func (s *Pods) DeploySpec(db *database.Database,
 		}
 	}
 
+	for _, mount := range spc.Instance.Mounts {
+		if mount.Type != spec.HostPath {
+			continue
+		}
+
+		inst.Mounts = append(inst.Mounts, &instance.Mount{
+			Name:     mount.Name,
+			Type:     instance.HostPath,
+			Path:     mount.Path,
+			HostPath: mount.HostPath,
+		})
+	}
+
 	err = inst.GenerateId()
 	if err != nil {
 		return
@@ -325,6 +338,10 @@ func (s *Pods) DeploySpec(db *database.Database,
 	deplyMounts := []*deployment.Mount{}
 
 	for _, mount := range spc.Instance.Mounts {
+		if mount.Type != spec.Disk {
+			continue
+		}
+
 		index += 1
 		diskReserved := false
 
