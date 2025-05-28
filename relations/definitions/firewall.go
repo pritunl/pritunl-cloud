@@ -24,8 +24,8 @@ var Firewall = relations.Query{
 		Key:          "instances",
 		Label:        "Instance",
 		From:         "instances",
-		LocalField:   "roles",
-		ForeignField: "roles",
+		LocalField:   "network_roles",
+		ForeignField: "network_roles",
 		Sort: map[string]int{
 			"name": 1,
 		},
@@ -132,6 +132,12 @@ var Firewall = relations.Query{
 
 				return "-"
 			},
+		}, {
+			Key:   "processors",
+			Label: "Processors",
+		}, {
+			Key:   "memory",
+			Label: "Memory",
 		}},
 	}},
 }
