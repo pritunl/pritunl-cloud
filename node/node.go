@@ -776,8 +776,20 @@ func (n *Node) Validate(db *database.Database) (
 		share.Type = HostPath
 		share.Path = utils.FilterPath(share.Path)
 
-		if share.Path == "" || len(share.Roles) == 0 {
-			continue
+		if share.Path == "" {
+			errData = &errortypes.ErrorData{
+				Error:   "share_path_invalid",
+				Message: "Invalid share path",
+			}
+			return
+		}
+
+		if len(share.Roles) == 0 {
+			errData = &errortypes.ErrorData{
+				Error:   "missing_share_path_roles",
+				Message: "Share path missing required roles",
+			}
+			return
 		}
 
 		newShares = append(newShares, share)
