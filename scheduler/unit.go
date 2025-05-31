@@ -59,8 +59,7 @@ func (u *InstanceUnit) Schedule(db *database.Database, count int) (err error) {
 		Failures:      map[primitive.ObjectID]int{},
 	}
 
-	ndes, offlineCount, noMountCount, err := u.spec.GetAllNodes(
-		db, u.unit.Organization)
+	ndes, offlineCount, noMountCount, err := u.spec.GetAllNodes(db)
 	if err != nil {
 		return
 	}
