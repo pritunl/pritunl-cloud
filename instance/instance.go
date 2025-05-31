@@ -513,8 +513,20 @@ func (i *Instance) Validate(db *database.Database) (
 		mount.Path = utils.FilterPath(mount.Path)
 		mount.HostPath = utils.FilterPath(mount.HostPath)
 
-		if mount.Name == "" || mount.HostPath == "" {
-			continue
+		if mount.Name == "" {
+			errData = &errortypes.ErrorData{
+				Error:   "missing_mount_name",
+				Message: "Missing required mount name",
+			}
+			return
+		}
+
+		if mount.HostPath == "" {
+			errData = &errortypes.ErrorData{
+				Error:   "mount_host_path_invalid",
+				Message: "Mount host path invalid",
+			}
+			return
 		}
 
 		newMounts = append(newMounts, mount)
