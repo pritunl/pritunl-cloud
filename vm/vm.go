@@ -138,6 +138,7 @@ type IscsiDevice struct {
 type Mount struct {
 	Name     string `json:"name"`
 	Type     string `json:"type"`
+	Path     string `json:"path"`
 	HostPath string `json:"host_path"`
 }
 
