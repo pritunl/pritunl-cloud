@@ -1401,6 +1401,7 @@ func (i *Instance) Changed(curVirt *vm.VirtualMachine) bool {
 
 			if mount.Name != curVirt.Mounts[i].Name ||
 				mount.Type != curVirt.Mounts[i].Type ||
+				mount.Path != curVirt.Mounts[i].Path ||
 				mount.HostPath != curVirt.Mounts[i].HostPath {
 
 				return true
