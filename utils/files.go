@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bufio"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -265,6 +266,50 @@ func RemoveAll(path string) (err error) {
 	if err != nil {
 		err = &errortypes.WriteError{
 			errors.Wrapf(err, "utils: Failed to remove '%s'", path),
+		}
+		return
+	}
+
+	return
+}
+
+func RemoveWildcard(matchPath string) (n int, err error) {
+	matches, err := filepath.Glob(matchPath)
+	if err != nil {
+		err = &errortypes.WriteError{
+			errors.Wrapf(err, "utils: Error matching path '%s'", matchPath),
+		}
+		return
+	}
+
+	if len(matches) == 0 {
+		return
+	}
+
+	delErrors := []string{}
+	for _, pth := range matches {
+		fileInfo, err := os.Stat(pth)
+		if err != nil {
+			delErrors = append(delErrors, fmt.Sprintf("%s: %v", pth, err))
+			continue
+		}
+
+		if fileInfo.IsDir() {
+			continue
+		}
+
+		err = os.Remove(pth)
+		if err != nil {
+			delErrors = append(delErrors, fmt.Sprintf("%s: %v", pth, err))
+		} else {
+			n += 1
+		}
+	}
+
+	if len(delErrors) > 0 {
+		err = &errortypes.WriteError{
+			errors.Wrapf(err, "utils: Delete errors '%s'",
+				strings.Join(delErrors, ",")),
 		}
 		return
 	}
