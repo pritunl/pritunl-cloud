@@ -44,6 +44,31 @@ func (d *Device) GetQemuId() string {
 	)
 }
 
+func (d *Device) Unbind() (err error) {
+	unbindPath := path.Join(d.DevicePath, "driver", "unbind")
+
+	exists, err := utils.Exists(unbindPath)
+	if err != nil {
+		return
+	}
+
+	if exists {
+		err = ioutil.WriteFile(
+			unbindPath,
+			[]byte(d.DeviceName),
+			0644,
+		)
+		if err != nil {
+			err = &errortypes.WriteError{
+				errors.Wrapf(err, "usb: Failed to unbind '%s'", unbindPath),
+			}
+			return
+		}
+	}
+
+	return
+}
+
 func syncDevices() (err error) {
 	syncLock.Lock()
 	defer syncLock.Unlock()
