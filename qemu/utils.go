@@ -106,11 +106,17 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 	}
 
 	for _, device := range virt.UsbDevices {
+		usbDevice, _ := device.GetDevice()
+		if usbDevice == nil {
+			continue
+		}
+
 		qm.UsbDevices = append(qm.UsbDevices, &UsbDevice{
-			Vendor:  device.Vendor,
-			Product: device.Product,
-			Bus:     device.Bus,
-			Address: device.Address,
+			Id:      usbDevice.GetQemuId(),
+			Vendor:  usbDevice.Vendor,
+			Product: usbDevice.Product,
+			Bus:     usbDevice.Bus,
+			Address: usbDevice.Address,
 		})
 	}
 
