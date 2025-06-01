@@ -315,22 +315,41 @@ func AddUsb(virt *vm.VirtualMachine, device *vm.UsbDevice) (err error) {
 	return
 }
 
-func RemoveUsb(vmId primitive.ObjectID, device *vm.UsbDevice) (err error) {
-	sockPath, err := GetSockPath(vmId)
+func RemoveUsb(virt *vm.VirtualMachine, device *vm.UsbDevice) (err error) {
+	sockPath, err := GetSockPath(virt.Id)
 	if err != nil {
 		return
 	}
 
-	logrus.WithFields(logrus.Fields{
-		"instance_id": vmId.Hex(),
-		"usb_vendor":  device.Vendor,
-		"usb_product": device.Product,
-		"usb_bus":     device.Bus,
-		"usb_address": device.Address,
-	}).Info("qemu: Disconnecting virtual machine usb")
+	usbDevice, err := device.GetDevice()
+	if err != nil {
+		return
+	}
 
-	lockId := socketsLock.Lock(vmId.Hex())
-	defer socketsLock.Unlock(vmId.Hex(), lockId)
+	if usbDevice != nil {
+		logrus.WithFields(logrus.Fields{
+			"instance_id": virt.Id.Hex(),
+			"usb_id":      device.Id,
+			"usb_name":    usbDevice.Name,
+			"usb_vendor":  usbDevice.Vendor,
+			"usb_product": usbDevice.Product,
+			"usb_bus":     usbDevice.Bus,
+			"usb_address": usbDevice.Address,
+			"usb_path":    usbDevice.BusPath,
+		}).Info("qemu: Disconnecting active usb device")
+	} else {
+		logrus.WithFields(logrus.Fields{
+			"instance_id": virt.Id.Hex(),
+			"usb_id":      device.Id,
+			"usb_vendor":  device.Vendor,
+			"usb_product": device.Product,
+			"usb_bus":     device.Bus,
+			"usb_address": device.Address,
+		}).Info("qemu: Disconnecting inactive usb device")
+	}
+
+	lockId := socketsLock.Lock(virt.Id.Hex())
+	defer socketsLock.Unlock(virt.Id.Hex(), lockId)
 
 	conn, err := net.DialTimeout(
 		"unix",
@@ -353,33 +372,25 @@ func RemoveUsb(vmId primitive.ObjectID, device *vm.UsbDevice) (err error) {
 		return
 	}
 
-	vendor := usb.FilterId(device.Vendor)
-	product := usb.FilterId(device.Product)
-	bus := usb.FilterAddr(device.Bus)
-	address := usb.FilterAddr(device.Address)
-
-	deviceId := ""
-	if vendor != "" && product != "" {
-		deviceId = fmt.Sprintf("usbv_%s_%s", vendor, product)
-	} else if bus != "" && address != "" {
-		deviceId = fmt.Sprintf("usbb_%s_%s", bus, address)
-	} else {
-		err = &errortypes.ReadError{
-			errors.Wrap(err, "qemu: Unknown usb device id"),
+	if device.Id != "" {
+		_, err = conn.Write([]byte(
+			fmt.Sprintf("device_del %s\n", device.Id)))
+		if err != nil {
+			err = &errortypes.ReadError{
+				errors.Wrap(err, "qemu: Failed to write socket"),
+			}
+			return
 		}
-		return
-	}
-
-	_, err = conn.Write([]byte(
-		fmt.Sprintf("device_del %s\n", deviceId)))
-	if err != nil {
-		err = &errortypes.ReadError{
-			errors.Wrap(err, "qemu: Failed to write socket"),
-		}
-		return
 	}
 
 	time.Sleep(1 * time.Second)
+
+	if usbDevice != nil && usbDevice.BusPath != "" {
+		err = permission.Restore(usbDevice.BusPath)
+		if err != nil {
+			return
+		}
+	}
 
 	return
 }
