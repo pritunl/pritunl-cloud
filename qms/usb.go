@@ -18,8 +18,13 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func getUsbBusPath(vendorID, productID string) (
-	deviceName, devicePath string, err error) {
+func getUsbBusPath(device *vm.UsbDevice) (
+	deviceName, devicePath, busPath string, err error) {
+
+	if device.Bus != "" && device.Address != "" {
+		busPath = filepath.Join("/dev/bus/usb",
+			usb.FilterAddr(device.Bus), usb.FilterAddr(device.Bus))
+	}
 
 	basePath := "/sys/bus/usb/devices/"
 
@@ -64,9 +69,25 @@ func getUsbBusPath(vendorID, productID string) (
 			vendor = strings.TrimSpace(vendor)
 			product = strings.TrimSpace(product)
 
-			if vendor == vendorID && product == productID {
+			if vendor == device.Vendor && product == device.Product {
 				deviceName = devName
 				devicePath = devPath
+
+				busNumRaw, e := utils.Read(filepath.Join(devPath, "busnum"))
+				if e != nil {
+					err = e
+					return
+				}
+				devNumRaw, e := utils.Read(filepath.Join(devPath, "devnum"))
+				if e != nil {
+					err = e
+					return
+				}
+
+				busNum := fmt.Sprintf("%03s", strings.TrimSpace(busNumRaw))
+				devNum := fmt.Sprintf("%03s", strings.TrimSpace(devNumRaw))
+
+				busPath = filepath.Join("/dev/bus/usb", busNum, devNum)
 				return
 			}
 		}
@@ -172,10 +193,9 @@ func GetUsbDevices(vmId primitive.ObjectID) (
 
 		deviceId := strings.Fields(lineSpl[1])[0]
 
-		device := &vm.UsbDevice{}
-		if strings.HasPrefix(deviceId, "usbv") {
-			lineSpl = strings.Split(deviceId[5:], "_")
-			if len(lineSpl) != 2 {
+		if strings.HasPrefix(deviceId, "usbd_") {
+			lineSpl = strings.Split(deviceId, "_")
+			if len(lineSpl) != 5 && len(lineSpl) != 6 {
 				logrus.WithFields(logrus.Fields{
 					"instance_id": vmId.Hex(),
 					"line":        line,
@@ -183,29 +203,15 @@ func GetUsbDevices(vmId primitive.ObjectID) (
 				continue
 			}
 
-			device.Vendor = lineSpl[0]
-			device.Product = lineSpl[1]
-		} else if strings.HasPrefix(deviceId, "usbb") {
-			lineSpl = strings.Split(deviceId[5:], "_")
-			if len(lineSpl) != 2 {
-				logrus.WithFields(logrus.Fields{
-					"instance_id": vmId.Hex(),
-					"line":        line,
-				}).Error("qemu: Unexpected qemu usb id")
-				continue
+			device := &vm.UsbDevice{
+				Id:      deviceId,
+				Bus:     lineSpl[1],
+				Address: lineSpl[2],
+				Vendor:  lineSpl[3],
+				Product: lineSpl[4],
 			}
-
-			device.Bus = lineSpl[0]
-			device.Address = lineSpl[1]
-		} else {
-			logrus.WithFields(logrus.Fields{
-				"instance_id": vmId.Hex(),
-				"line":        line,
-			}).Error("qemu: Unknown qemu usb id")
-			continue
+			devices = append(devices, device)
 		}
-
-		devices = append(devices, device)
 	}
 
 	return
