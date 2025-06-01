@@ -32,6 +32,16 @@ type Device struct {
 	BusPath    string `bson:"-" json:"-"`
 }
 
+func (d *Device) GetQemuId() string {
+	return fmt.Sprintf("usbd_%s_%s_%s_%s_%d",
+		d.Bus,
+		d.Address,
+		d.Vendor,
+		d.Product,
+		utils.RandInt(1111, 9999),
+	)
+}
+
 func syncDevices() (err error) {
 	syncLock.Lock()
 	defer syncLock.Unlock()
