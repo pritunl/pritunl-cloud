@@ -17,7 +17,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/permission"
 	"github.com/pritunl/pritunl-cloud/render"
 	"github.com/pritunl/pritunl-cloud/settings"
-	"github.com/pritunl/pritunl-cloud/usb"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 )
@@ -39,6 +38,7 @@ type Iso struct {
 }
 
 type UsbDevice struct {
+	Id      string
 	Vendor  string
 	Product string
 	Bus     string
