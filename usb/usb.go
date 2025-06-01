@@ -126,7 +126,8 @@ func syncDevices() (err error) {
 			productDesc = "Unknown Product"
 		}
 
-		name := utils.FilterStr(manufacturerDesc+" "+productDesc, 256)
+		name := utils.FilterStr(strings.TrimSpace(manufacturerDesc)+
+			" "+strings.TrimSpace(productDesc), 256)
 		vendor = strings.TrimSpace(vendor)
 		product = strings.TrimSpace(product)
 		busNum = fmt.Sprintf("%03s", strings.TrimSpace(busNum))
