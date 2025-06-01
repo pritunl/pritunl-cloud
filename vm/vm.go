@@ -8,6 +8,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/usb"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -115,6 +116,15 @@ func (u *UsbDevice) Copy() (device *UsbDevice) {
 		Product: u.Product,
 		Bus:     u.Bus,
 		Address: u.Address,
+	}
+
+	return
+}
+
+func (u *UsbDevice) GetDevice() (device *usb.Device, err error) {
+	device, err = usb.GetDevice(u.Bus, u.Address, u.Vendor, u.Product)
+	if err != nil {
+		return
 	}
 
 	return
