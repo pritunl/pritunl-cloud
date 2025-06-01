@@ -3,6 +3,7 @@ package usb
 import (
 	"fmt"
 	"io/ioutil"
+	"path"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -28,6 +29,7 @@ type Device struct {
 	Product    string `bson:"product" json:"product"`
 	Bus        string `bson:"bus" json:"bus"`
 	Address    string `bson:"address" json:"address"`
+	DeviceName string `bson:"-" json:"-"`
 	DevicePath string `bson:"-" json:"-"`
 	BusPath    string `bson:"-" json:"-"`
 }
@@ -137,14 +139,15 @@ func syncDevices() (err error) {
 			Product:    product,
 			Bus:        busNum,
 			Address:    devNum,
+			DeviceName: devName,
 			DevicePath: devPath,
 			BusPath:    busPath,
 		}
 
 		devices = append(devices, device)
 		devicesIdMap[device.Vendor+":"+device.Product] = device
-		devicesIdMap[device.Bus+"-"+device.Address] = device
-		devicesBusMap[device.BusPath] = device
+		devicesBusMap[device.Bus+"-"+device.Address] = device
+		devicesBusPathMap[device.BusPath] = device
 	}
 
 	devicesCache = devices
@@ -157,7 +160,7 @@ func syncDevices() (err error) {
 }
 
 func GetDevices() (devices []*Device, err error) {
-	if time.Since(syncLast) < 30*time.Second {
+	if time.Since(syncLast) > 30*time.Second {
 		err = syncDevices()
 		if err != nil {
 			return
@@ -170,10 +173,10 @@ func GetDevices() (devices []*Device, err error) {
 	return
 }
 
-func GetDevice(vendor, product, bus, address string) (
+func GetDevice(bus, address, vendor, product string) (
 	device *Device, err error) {
 
-	if time.Since(syncLast) < 10*time.Second {
+	if time.Since(syncLast) > 10*time.Second {
 		err = syncDevices()
 		if err != nil {
 			return
@@ -181,17 +184,27 @@ func GetDevice(vendor, product, bus, address string) (
 	}
 
 	syncLock.Lock()
-	if vendor != "" && product != "" {
-		device = devicesIdMapCache[vendor+":"+product]
-	} else {
+	if bus != "" && address != "" {
 		device = devicesBusMapCache[bus+"-"+address]
+		if device != nil && vendor != "" && product != "" {
+			if device.Vendor != vendor || device.Product != product {
+				device = nil
+			}
+		}
+	} else {
+		device = devicesIdMapCache[vendor+":"+product]
+		if device != nil && bus != "" && address != "" {
+			if device.Bus != bus || device.Address != address {
+				device = nil
+			}
+		}
 	}
 	syncLock.Unlock()
 	return
 }
 
 func GetDeviceId(vendor, product string) (device *Device, err error) {
-	if time.Since(syncLast) < 10*time.Second {
+	if time.Since(syncLast) > 10*time.Second {
 		err = syncDevices()
 		if err != nil {
 			return
@@ -205,7 +218,7 @@ func GetDeviceId(vendor, product string) (device *Device, err error) {
 }
 
 func GetDeviceBus(bus, address string) (device *Device, err error) {
-	if time.Since(syncLast) < 10*time.Second {
+	if time.Since(syncLast) > 10*time.Second {
 		err = syncDevices()
 		if err != nil {
 			return
@@ -219,7 +232,7 @@ func GetDeviceBus(bus, address string) (device *Device, err error) {
 }
 
 func GetDeviceBusPath(busPath string) (device *Device, err error) {
-	if time.Since(syncLast) < 10*time.Second {
+	if time.Since(syncLast) > 10*time.Second {
 		err = syncDevices()
 		if err != nil {
 			return
