@@ -1,6 +1,7 @@
 package vm
 
 import (
+	"fmt"
 	"path"
 	"strings"
 	"time"
@@ -104,14 +105,25 @@ type Iso struct {
 }
 
 type UsbDevice struct {
+	Id      string `json:"id"`
 	Vendor  string `json:"vendor"`
 	Product string `json:"product"`
 	Bus     string `json:"bus"`
 	Address string `json:"address"`
 }
 
+func (u *UsbDevice) Key() string {
+	return fmt.Sprintf("%s_%s_%s_%s",
+		u.Bus,
+		u.Address,
+		u.Vendor,
+		u.Product,
+	)
+}
+
 func (u *UsbDevice) Copy() (device *UsbDevice) {
 	device = &UsbDevice{
+		Id:      u.Id,
 		Vendor:  u.Vendor,
 		Product: u.Product,
 		Bus:     u.Bus,
