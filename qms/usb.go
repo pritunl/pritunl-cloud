@@ -12,6 +12,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/permission"
 	"github.com/pritunl/pritunl-cloud/usb"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
@@ -217,38 +218,60 @@ func GetUsbDevices(vmId primitive.ObjectID) (
 	return
 }
 
-func AddUsb(vmId primitive.ObjectID, device *vm.UsbDevice) (err error) {
-	sockPath, err := GetSockPath(vmId)
+func AddUsb(virt *vm.VirtualMachine, device *vm.UsbDevice) (err error) {
+	sockPath, err := GetSockPath(virt.Id)
 	if err != nil {
 		return
 	}
 
-	vendor := usb.FilterId(device.Vendor)
-	product := usb.FilterId(device.Product)
-	bus := usb.FilterAddr(device.Bus)
-	address := usb.FilterAddr(device.Address)
-	deviceName := ""
-	devicePath := ""
+	usbDevice, err := device.GetDevice()
+	if err != nil {
+		return
+	}
 
-	if vendor != "" && product != "" {
-		deviceName, devicePath, err = getUsbBusPath(vendor, product)
-		if err != nil {
-			return
-		}
+	if usbDevice == nil {
+		logrus.WithFields(logrus.Fields{
+			"instance_id": virt.Id.Hex(),
+			"usb_vendor":  device.Vendor,
+			"usb_product": device.Product,
+			"usb_bus":     device.Bus,
+			"usb_address": device.Address,
+		}).Warn("qemu: Failed to find usb device for attachment")
+		return
+	}
+
+	if usbDevice.Bus == "" || usbDevice.Address == "" ||
+		usbDevice.Vendor == "" || usbDevice.Product == "" {
+
+		logrus.WithFields(logrus.Fields{
+			"instance_id": virt.Id.Hex(),
+			"usb_name":    usbDevice.Name,
+			"usb_vendor":  usbDevice.Vendor,
+			"usb_product": usbDevice.Product,
+			"usb_bus":     usbDevice.Bus,
+			"usb_address": usbDevice.Address,
+			"usb_path":    usbDevice.BusPath,
+		}).Warn("qemu: Failed to load usb device info for attachment")
+		return
 	}
 
 	logrus.WithFields(logrus.Fields{
-		"instance_id": vmId.Hex(),
-		"usb_vendor":  vendor,
-		"usb_product": product,
-		"usb_bus":     bus,
-		"usb_address": address,
-		"usb_name":    deviceName,
-		"usb_path":    devicePath,
+		"instance_id": virt.Id.Hex(),
+		"usb_name":    usbDevice.Name,
+		"usb_vendor":  usbDevice.Vendor,
+		"usb_product": usbDevice.Product,
+		"usb_bus":     usbDevice.Bus,
+		"usb_address": usbDevice.Address,
+		"usb_path":    usbDevice.BusPath,
 	}).Info("qemu: Connecting virtual machine usb")
 
-	lockId := socketsLock.Lock(vmId.Hex())
-	defer socketsLock.Unlock(vmId.Hex(), lockId)
+	err = permission.Chown(virt, usbDevice.BusPath)
+	if err != nil {
+		return
+	}
+
+	lockId := socketsLock.Lock(virt.Id.Hex())
+	defer socketsLock.Unlock(virt.Id.Hex(), lockId)
 
 	conn, err := net.DialTimeout(
 		"unix",
@@ -271,27 +294,12 @@ func AddUsb(vmId primitive.ObjectID, device *vm.UsbDevice) (err error) {
 		return
 	}
 
-	deviceLine := ""
-	if vendor != "" && product != "" {
-		deviceLine = fmt.Sprintf(
-			"usb-host,vendorid=0x%s,productid=0x%s,id=usbv_%s_%s",
-			vendor, product,
-			vendor, product,
-		)
-	} else if bus != "" && address != "" {
-		deviceLine = fmt.Sprintf(
-			"usb-host,hostbus=%s,hostaddr=%s,id=usbb_%s_%s",
-			strings.TrimLeft(bus, "0"),
-			strings.TrimLeft(address, "0"),
-			bus,
-			address,
-		)
-	} else {
-		err = &errortypes.ReadError{
-			errors.Wrap(err, "qemu: Unknown usb device id"),
-		}
-		return
-	}
+	deviceLine := fmt.Sprintf(
+		"usb-host,hostbus=%s,hostaddr=%s,id=%s",
+		strings.TrimLeft(usbDevice.Bus, "0"),
+		strings.TrimLeft(usbDevice.Address, "0"),
+		usbDevice.GetQemuId(),
+	)
 
 	_, err = conn.Write([]byte(
 		fmt.Sprintf("device_add %s\n", deviceLine)))
