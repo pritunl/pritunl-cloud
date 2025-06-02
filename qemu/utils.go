@@ -117,6 +117,7 @@ func NewQemu(virt *vm.VirtualMachine) (qm *Qemu, err error) {
 			Product: usbDevice.Product,
 			Bus:     usbDevice.Bus,
 			Address: usbDevice.Address,
+			BusPath: usbDevice.BusPath,
 		})
 	}
 

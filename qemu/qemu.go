@@ -43,6 +43,7 @@ type UsbDevice struct {
 	Product string
 	Bus     string
 	Address string
+	BusPath string
 }
 
 type PciDevice struct {
@@ -682,9 +683,8 @@ func (q *Qemu) Marshal() (output string, err error) {
 			cmd = append(cmd,
 				"-device",
 				fmt.Sprintf(
-					"usb-host,hostbus=%s,hostaddr=%s,id=%s",
-					strings.TrimLeft(device.Bus, "0"),
-					strings.TrimLeft(device.Address, "0"),
+					"usb-host,hostdevice=%s,id=%s",
+					device.BusPath,
 					device.Id,
 				),
 			)
