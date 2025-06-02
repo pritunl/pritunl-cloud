@@ -366,6 +366,22 @@ func Read(path string) (data string, err error) {
 	return
 }
 
+func ReadExists(path string) (data string, err error) {
+	dataByt, err := ioutil.ReadFile(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return
+		}
+		err = &errortypes.ReadError{
+			errors.Wrapf(err, "utils: Failed to read '%s'", path),
+		}
+		return
+	}
+
+	data = string(dataByt)
+	return
+}
+
 func ReadLines(path string) (lines []string, err error) {
 	file, err := os.Open(path)
 	if err != nil {
