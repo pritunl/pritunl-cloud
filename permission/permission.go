@@ -59,6 +59,29 @@ func mkdirChown(virt *vm.VirtualMachine, path string) (err error) {
 	return
 }
 
+func Restore(pth string) (err error) {
+	err = os.Chown(pth, 0, 0)
+	if err != nil {
+		err = &errortypes.WriteError{
+			errors.Newf(
+				"permission: Failed to set owner of '%s' to '0'", pth,
+			),
+		}
+		return
+	}
+
+	return
+}
+
+func Chown(virt *vm.VirtualMachine, pth string) (err error) {
+	err = chown(virt, pth)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func InitVirt(virt *vm.VirtualMachine) (err error) {
 	err = UserAdd(virt)
 	if err != nil {
