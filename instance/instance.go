@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
@@ -1220,12 +1219,19 @@ func (i *Instance) LoadVirt(poolsMap map[primitive.ObjectID]*pool.Pool,
 
 	if node.Self.UsbPassthrough && i.UsbDevices != nil {
 		for _, device := range i.UsbDevices {
-			i.Virt.UsbDevices = append(i.Virt.UsbDevices, &vm.UsbDevice{
-				Vendor:  device.Vendor,
-				Product: device.Product,
-				Bus:     device.Bus,
-				Address: device.Address,
-			})
+			usbDevice, _ := usb.GetDevice(
+				device.Bus, device.Address,
+				device.Vendor, device.Product,
+			)
+
+			if usbDevice != nil {
+				i.Virt.UsbDevices = append(i.Virt.UsbDevices, &vm.UsbDevice{
+					Vendor:  usbDevice.Vendor,
+					Product: usbDevice.Product,
+					Bus:     usbDevice.Bus,
+					Address: usbDevice.Address,
+				})
+			}
 		}
 	}
 
@@ -1472,71 +1478,39 @@ func (i *Instance) UsbChanged(curVirt *vm.VirtualMachine) (
 		return
 	}
 
-	usbsVendor := set.NewSet()
-	curUsbsVendor := set.NewSet()
-	usbsBus := set.NewSet()
-	curUsbsBus := set.NewSet()
+	usbs := set.NewSet()
+	usbsMap := map[string]*vm.UsbDevice{}
+	curUsbs := set.NewSet()
+	curUsbsMap := map[string]*vm.UsbDevice{}
 
 	if curVirt.UsbDevices != nil {
 		for _, device := range curVirt.UsbDevices {
-			if device.Vendor != "" && device.Product != "" {
-				curUsbsVendor.Add(fmt.Sprintf("%s_%s",
-					device.Vendor, device.Product))
-			} else if device.Bus != "" && device.Address != "" {
-				curUsbsBus.Add(fmt.Sprintf("%s_%s",
-					device.Bus, device.Address))
-			}
+			key := device.Key()
+			curUsbs.Add(key)
+			curUsbsMap[key] = device
 		}
 	}
 
 	if i.Virt.UsbDevices != nil {
 		for _, device := range i.Virt.UsbDevices {
-			if device.Vendor != "" && device.Product != "" {
-				usbsVendor.Add(fmt.Sprintf("%s_%s",
-					device.Vendor, device.Product))
-			} else if device.Bus != "" && device.Address != "" {
-				usbsBus.Add(fmt.Sprintf("%s_%s",
-					device.Bus, device.Address))
-			}
+			key := device.Key()
+			usbs.Add(key)
+			usbsMap[key] = device
 		}
 	}
 
-	addUsbsVendor := usbsVendor.Copy()
-	addUsbsVendor.Subtract(curUsbsVendor)
-	addUsbsBus := usbsBus.Copy()
-	addUsbsBus.Subtract(curUsbsBus)
-	remUsbsVendor := curUsbsVendor.Copy()
-	remUsbsVendor.Subtract(usbsVendor)
-	remUsbsBus := curUsbsBus.Copy()
-	remUsbsBus.Subtract(usbsBus)
+	addUsbsSet := usbs.Copy()
+	addUsbsSet.Subtract(curUsbs)
+	remUsbsSet := curUsbs.Copy()
+	remUsbsSet.Subtract(usbs)
 
-	for deviceInf := range addUsbsVendor.Iter() {
-		device := strings.Split(deviceInf.(string), "_")
-		addUsbs = append(addUsbs, &vm.UsbDevice{
-			Vendor:  device[0],
-			Product: device[1],
-		})
+	for deviceInf := range addUsbsSet.Iter() {
+		device := usbsMap[deviceInf.(string)]
+		addUsbs = append(addUsbs, device)
 	}
-	for deviceInf := range addUsbsBus.Iter() {
-		device := strings.Split(deviceInf.(string), "_")
-		addUsbs = append(addUsbs, &vm.UsbDevice{
-			Bus:     device[0],
-			Address: device[1],
-		})
-	}
-	for deviceInf := range remUsbsVendor.Iter() {
-		device := strings.Split(deviceInf.(string), "_")
-		remUsbs = append(remUsbs, &vm.UsbDevice{
-			Vendor:  device[0],
-			Product: device[1],
-		})
-	}
-	for deviceInf := range remUsbsBus.Iter() {
-		device := strings.Split(deviceInf.(string), "_")
-		remUsbs = append(remUsbs, &vm.UsbDevice{
-			Bus:     device[0],
-			Address: device[1],
-		})
+	for deviceInf := range remUsbsSet.Iter() {
+		device := curUsbsMap[deviceInf.(string)]
+		remUsbs = append(remUsbs, device)
 	}
 
 	return
