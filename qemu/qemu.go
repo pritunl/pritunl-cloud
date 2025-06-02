@@ -670,7 +670,10 @@ func (q *Qemu) Marshal() (output string, err error) {
 			fmt.Sprintf("pcie-root-port,id=usbbus,slot=%d", slot))
 
 		cmd = append(cmd, "-device")
-		cmd = append(cmd, "qemu-xhci,bus=usbbus")
+		cmd = append(cmd, fmt.Sprintf("qemu-xhci,bus=usbbus,p2=%d,p3=%d",
+			settings.Hypervisor.UsbHsPorts,
+			settings.Hypervisor.UsbSsPorts,
+		))
 
 		if q.Vnc || q.Spice {
 			cmd = append(cmd, "-device")
