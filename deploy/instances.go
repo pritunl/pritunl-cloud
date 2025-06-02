@@ -479,7 +479,7 @@ func (s *Instances) usbAdd(inst *instance.Instance, virt *vm.VirtualMachine,
 		defer db.Close()
 
 		for _, device := range addUsbs {
-			e := qms.AddUsb(inst.Id, device)
+			e := qms.AddUsb(virt, device)
 			if e != nil {
 				logrus.WithFields(logrus.Fields{
 					"instance_id": inst.Id.Hex(),
@@ -525,7 +525,7 @@ func (s *Instances) usbRemove(inst *instance.Instance,
 		defer db.Close()
 
 		for _, device := range remUsbs {
-			err := qms.RemoveUsb(inst.Id, device)
+			err := qms.RemoveUsb(virt, device)
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
 					"instance_id": inst.Id.Hex(),
