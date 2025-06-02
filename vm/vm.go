@@ -133,6 +133,16 @@ func (u *UsbDevice) Copy() (device *UsbDevice) {
 	return
 }
 
+func (u *UsbDevice) GetQemuId() string {
+	return fmt.Sprintf("usbd_%s_%s_%s_%s_%d",
+		u.Bus,
+		u.Address,
+		u.Vendor,
+		u.Product,
+		utils.RandInt(1111, 9999),
+	)
+}
+
 func (u *UsbDevice) GetDevice() (device *usb.Device, err error) {
 	device, err = usb.GetDevice(u.Bus, u.Address, u.Vendor, u.Product)
 	if err != nil {
