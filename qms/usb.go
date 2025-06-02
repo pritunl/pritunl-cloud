@@ -295,9 +295,8 @@ func AddUsb(virt *vm.VirtualMachine, device *vm.UsbDevice) (err error) {
 	}
 
 	deviceLine := fmt.Sprintf(
-		"usb-host,hostbus=%s,hostaddr=%s,id=%s",
-		strings.TrimLeft(usbDevice.Bus, "0"),
-		strings.TrimLeft(usbDevice.Address, "0"),
+		"usb-host,hostdevice=%s,id=%s",
+		usbDevice.BusPath,
 		usbDevice.GetQemuId(),
 	)
 
