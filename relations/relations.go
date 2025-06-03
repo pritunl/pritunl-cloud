@@ -24,6 +24,7 @@ type Relation struct {
 	Sort         map[string]int
 	Project      []Project
 	Relations    []Relation
+	BlockDelete  bool
 }
 
 type Project struct {
