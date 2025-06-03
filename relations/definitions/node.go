@@ -132,7 +132,7 @@ var Node = relations.Query{
 		}},
 	}, {
 		Key:          "disks",
-		Label:        "Disks",
+		Label:        "Disk",
 		From:         "disks",
 		LocalField:   "_id",
 		ForeignField: "node",
