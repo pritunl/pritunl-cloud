@@ -3,9 +3,7 @@ package qms
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"net"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -13,89 +11,9 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/permission"
-	"github.com/pritunl/pritunl-cloud/usb"
-	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/sirupsen/logrus"
 )
-
-func getUsbBusPath(device *vm.UsbDevice) (
-	deviceName, devicePath, busPath string, err error) {
-
-	if device.Bus != "" && device.Address != "" {
-		busPath = filepath.Join("/dev/bus/usb",
-			usb.FilterAddr(device.Bus), usb.FilterAddr(device.Bus))
-	}
-
-	basePath := "/sys/bus/usb/devices/"
-
-	files, err := ioutil.ReadDir(basePath)
-	if err != nil {
-		err = &errortypes.ReadError{
-			errors.Wrapf(err, "qms: Failed to read dir '%s'", basePath),
-		}
-		return
-	}
-
-	for _, file := range files {
-		devName := file.Name()
-		devPath := filepath.Join(basePath, devName)
-		vendorFile := filepath.Join(devPath, "idVendor")
-		productFile := filepath.Join(devPath, "idProduct")
-
-		vendorExists, e := utils.Exists(vendorFile)
-		if e != nil {
-			err = e
-			return
-		}
-		productExists, e := utils.Exists(productFile)
-		if e != nil {
-			err = e
-			return
-		}
-
-		if vendorExists && productExists {
-			vendor, e := utils.Read(vendorFile)
-			if e != nil {
-				err = e
-				return
-			}
-
-			product, e := utils.Read(productFile)
-			if e != nil {
-				err = e
-				return
-			}
-
-			vendor = strings.TrimSpace(vendor)
-			product = strings.TrimSpace(product)
-
-			if vendor == device.Vendor && product == device.Product {
-				deviceName = devName
-				devicePath = devPath
-
-				busNumRaw, e := utils.Read(filepath.Join(devPath, "busnum"))
-				if e != nil {
-					err = e
-					return
-				}
-				devNumRaw, e := utils.Read(filepath.Join(devPath, "devnum"))
-				if e != nil {
-					err = e
-					return
-				}
-
-				busNum := fmt.Sprintf("%03s", strings.TrimSpace(busNumRaw))
-				devNum := fmt.Sprintf("%03s", strings.TrimSpace(devNumRaw))
-
-				busPath = filepath.Join("/dev/bus/usb", busNum, devNum)
-				return
-			}
-		}
-	}
-
-	return
-}
 
 func GetUsbDevices(vmId primitive.ObjectID) (
 	devices []*vm.UsbDevice, err error) {
