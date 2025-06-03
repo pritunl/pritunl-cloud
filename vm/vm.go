@@ -134,7 +134,7 @@ func (u *UsbDevice) Copy() (device *UsbDevice) {
 }
 
 func (u *UsbDevice) GetQemuId() string {
-	return fmt.Sprintf("usbd_%s_%s_%s_%s_%d",
+	return fmt.Sprintf("usb_%s_%s_%s_%s_%d",
 		u.Bus,
 		u.Address,
 		u.Vendor,
