@@ -850,14 +850,6 @@ func (s *Spec) CanMigrate(db *database.Database, spc *Spec) (
 		return
 	}
 
-	if s.Instance.Image != spc.Instance.Image {
-		errData = &errortypes.ErrorData{
-			Error:   "instance_image_coflict",
-			Message: "Cannot migrate to different instance image",
-		}
-		return
-	}
-
 	curMountPaths := set.NewSet()
 	for _, mnt := range s.Instance.Mounts {
 		curMountPaths.Add(mnt.Path)
