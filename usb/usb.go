@@ -14,6 +14,10 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
+const (
+	syncInterval = 6 * time.Second
+)
+
 var (
 	syncLast               time.Time
 	syncLock               sync.Mutex
@@ -89,23 +93,21 @@ func syncDevices() (err error) {
 
 	for _, file := range files {
 		devName := file.Name()
-		devPath := filepath.Join(basePath, devName)
-		devNumPth := filepath.Join(devPath, "devnum")
+		if strings.Contains(devName, ":") ||
+			strings.HasPrefix(devName, "usb") {
 
-		devNumExists, e := utils.Exists(devNumPth)
-		if e != nil {
-			err = e
-			return
-		}
-
-		if !devNumExists {
 			continue
 		}
+
+		devPath := filepath.Join(basePath, devName)
 
 		vendor, e := utils.ReadExists(filepath.Join(devPath, "idVendor"))
 		if e != nil {
 			err = e
 			return
+		}
+		if vendor == "" {
+			continue
 		}
 
 		product, e := utils.ReadExists(filepath.Join(devPath, "idProduct"))
@@ -113,17 +115,26 @@ func syncDevices() (err error) {
 			err = e
 			return
 		}
+		if product == "" {
+			continue
+		}
 
 		busNum, e := utils.ReadExists(filepath.Join(devPath, "busnum"))
 		if e != nil {
 			err = e
 			return
 		}
+		if busNum == "" {
+			continue
+		}
 
-		devNum, e := utils.ReadExists(devNumPth)
+		devNum, e := utils.ReadExists(filepath.Join(devPath, "devnum"))
 		if e != nil {
 			err = e
 			return
+		}
+		if devNum == "" {
+			continue
 		}
 
 		manufacturerDesc, e := utils.ReadExists(
@@ -138,10 +149,6 @@ func syncDevices() (err error) {
 		if e != nil {
 			err = e
 			return
-		}
-
-		if vendor == "" || product == "" || busNum == "" || devNum == "" {
-			continue
 		}
 
 		if manufacturerDesc == "" {
@@ -186,7 +193,7 @@ func syncDevices() (err error) {
 }
 
 func GetDevices() (devices []*Device, err error) {
-	if time.Since(syncLast) > 30*time.Second {
+	if time.Since(syncLast) > syncInterval {
 		err = syncDevices()
 		if err != nil {
 			return
@@ -202,7 +209,7 @@ func GetDevices() (devices []*Device, err error) {
 func GetDevice(bus, address, vendor, product string) (
 	device *Device, err error) {
 
-	if time.Since(syncLast) > 10*time.Second {
+	if time.Since(syncLast) > syncInterval {
 		err = syncDevices()
 		if err != nil {
 			return
@@ -230,7 +237,7 @@ func GetDevice(bus, address, vendor, product string) (
 }
 
 func GetDeviceId(vendor, product string) (device *Device, err error) {
-	if time.Since(syncLast) > 10*time.Second {
+	if time.Since(syncLast) > syncInterval {
 		err = syncDevices()
 		if err != nil {
 			return
@@ -244,7 +251,7 @@ func GetDeviceId(vendor, product string) (device *Device, err error) {
 }
 
 func GetDeviceBus(bus, address string) (device *Device, err error) {
-	if time.Since(syncLast) > 10*time.Second {
+	if time.Since(syncLast) > syncInterval {
 		err = syncDevices()
 		if err != nil {
 			return
@@ -258,7 +265,7 @@ func GetDeviceBus(bus, address string) (device *Device, err error) {
 }
 
 func GetDeviceBusPath(busPath string) (device *Device, err error) {
-	if time.Since(syncLast) > 10*time.Second {
+	if time.Since(syncLast) > syncInterval {
 		err = syncDevices()
 		if err != nil {
 			return
