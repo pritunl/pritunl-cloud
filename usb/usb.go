@@ -39,7 +39,7 @@ type Device struct {
 }
 
 func (d *Device) GetQemuId() string {
-	return fmt.Sprintf("usbd_%s_%s_%s_%s_%d",
+	return fmt.Sprintf("usb_%s_%s_%s_%s_%d",
 		d.Bus,
 		d.Address,
 		d.Vendor,
