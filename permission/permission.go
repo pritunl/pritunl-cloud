@@ -122,6 +122,17 @@ func InitVirt(virt *vm.VirtualMachine) (err error) {
 		}
 	}
 
+	for _, device := range virt.UsbDevices {
+		usbDevice, _ := device.GetDevice()
+
+		if usbDevice != nil {
+			err = Chown(virt, usbDevice.BusPath)
+			if err != nil {
+				return
+			}
+		}
+	}
+
 	err = chown(virt, paths.GetCacheDir(virt.Id))
 	if err != nil {
 		return
