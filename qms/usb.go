@@ -112,7 +112,7 @@ func GetUsbDevices(vmId primitive.ObjectID) (
 
 		deviceId := strings.Fields(lineSpl[1])[0]
 
-		if strings.HasPrefix(deviceId, "usbd_") {
+		if strings.HasPrefix(deviceId, "usb_") {
 			lineSpl = strings.Split(deviceId, "_")
 			if len(lineSpl) != 5 && len(lineSpl) != 6 {
 				logrus.WithFields(logrus.Fields{
