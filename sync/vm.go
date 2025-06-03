@@ -107,7 +107,7 @@ func vmRunner() {
 
 	runtimes := &state.Runtimes{}
 	for {
-		if runtimes.Total > 1500*time.Millisecond {
+		if runtimes.Total > 3000*time.Millisecond {
 			runtimes.Log()
 		}
 
