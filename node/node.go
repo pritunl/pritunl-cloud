@@ -1373,7 +1373,9 @@ func (n *Node) sync() {
 
 	pools, err := lvm.GetAvailablePools(db, n.Zone)
 	if err != nil {
-		return
+		logrus.WithFields(logrus.Fields{
+			"error": err,
+		}).Error("node: Failed to get pools")
 	}
 
 	poolIds := []primitive.ObjectID{}
@@ -1384,15 +1386,23 @@ func (n *Node) sync() {
 
 	drives, err := drive.GetDevices()
 	if err != nil {
-		return
+		logrus.WithFields(logrus.Fields{
+			"error": err,
+		}).Error("node: Failed to get drive devices")
+		n.AvailableDrives = []*drive.Device{}
+	} else {
+		n.AvailableDrives = drives
 	}
-	n.AvailableDrives = drives
 
 	renders, err := render.GetRenders()
 	if err != nil {
-		return
+		logrus.WithFields(logrus.Fields{
+			"error": err,
+		}).Error("node: Failed to get renders")
+		n.AvailableRenders = []string{}
+	} else {
+		n.AvailableRenders = renders
 	}
-	n.AvailableRenders = renders
 
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -1407,29 +1417,38 @@ func (n *Node) sync() {
 
 	isos, err := iso.GetIsos(path.Join(n.GetVirtPath(), "isos"))
 	if err != nil {
-		return
+		logrus.WithFields(logrus.Fields{
+			"error": err,
+		}).Error("node: Failed to get isos")
+		n.LocalIsos = []*iso.Iso{}
+	} else {
+		n.LocalIsos = isos
 	}
-	n.LocalIsos = isos
 
 	if n.UsbPassthrough {
-		devices, e := usb.GetDevices()
-		if e != nil {
-			err = e
-			return
+		devices, err := usb.GetDevices()
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("node: Failed to get usb devices")
+			n.UsbDevices = []*usb.Device{}
+		} else {
+			n.UsbDevices = devices
 		}
-
-		n.UsbDevices = devices
 	} else {
 		n.UsbDevices = []*usb.Device{}
 	}
 
 	if n.PciPassthrough {
-		pciDevices, e := pci.GetVfioAll()
+		pciDevices, err := pci.GetVfioAll()
 		if err != nil {
-			err = e
-			return
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("node: Failed to get vfio devices")
+			n.PciDevices = []*pci.Device{}
+		} else {
+			n.PciDevices = pciDevices
 		}
-		n.PciDevices = pciDevices
 	} else {
 		n.PciDevices = []*pci.Device{}
 	}
