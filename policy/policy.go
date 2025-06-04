@@ -90,24 +90,24 @@ func (p *Policy) Validate(db *database.Database) (
 		p.UserSecondary = primitive.NilObjectID
 	}
 
-	hasUserNode := false
+	hasWebAuthn := false
 	nodes, err := node.GetAll(db)
 	if err != nil {
 		return
 	}
 
 	for _, nde := range nodes {
-		if nde.AdminDomain != "" {
-			hasUserNode = true
+		if nde.WebauthnDomain != "" {
+			hasWebAuthn = true
 			break
 		}
 	}
 
-	if (p.AdminDeviceSecondary || p.UserDeviceSecondary) && !hasUserNode {
+	if (p.AdminDeviceSecondary || p.UserDeviceSecondary) && !hasWebAuthn {
 		errData = &errortypes.ErrorData{
-			Error: "user_node_unavailable",
-			Message: "At least one node must have a user domain configured " +
-				"to use secondary device authentication",
+			Error: "webauthn_domain_unavailable",
+			Message: "At least one node must have a WebAuthn domain " +
+				"configured to use WebAuthn device authentication",
 		}
 		return
 	}
