@@ -843,9 +843,9 @@ export default class PodWorkspace extends React.Component<Props, State> {
 					key="menu-migrate"
 					disabled={!this.selectedDeployments || this.state.disabled}
 					pod={this.props.pod}
-					unit={activeUnit}
+					unit={this.state.unit}
 					commits={commits}
-					selectedDeployments={Object.keys(this.state.selectedDeployments)}
+					selectedDeployments={this.state.selectedDeployments}
 					onClear={(): void => {
 						this.setState({
 							...this.state,
