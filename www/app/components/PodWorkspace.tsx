@@ -124,6 +124,9 @@ const css = {
 		overflowY: 'hidden',
 		scrollbarWidth: 'thin',
 	} as React.CSSProperties,
+	navButtons: {
+		height: '52px',
+	} as React.CSSProperties,
 	status: {
 		margin: '6px 0 0 1px',
 	} as React.CSSProperties,
@@ -1192,7 +1195,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 						{tabsElem}
 					</Blueprint.Tabs>
 				</Blueprint.NavbarGroup>
-				<Blueprint.NavbarGroup align={"right"}>
+				<Blueprint.NavbarGroup style={css.navButtons} align={"right"}>
 					<Blueprint.NavbarDivider
 						style={css.divider}
 					/>
