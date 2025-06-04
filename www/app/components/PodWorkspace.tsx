@@ -116,6 +116,11 @@ const css = {
 		width: '100%',
 		maxWidth: '280px',
 	} as React.CSSProperties,
+	tabsBox: {
+		overflowX: 'auto',
+		overflowY: 'hidden',
+		scrollbarWidth: 'thin',
+	} as React.CSSProperties,
 	status: {
 		margin: '6px 0 0 1px',
 	} as React.CSSProperties,
@@ -1110,8 +1115,12 @@ export default class PodWorkspace extends React.Component<Props, State> {
 			className="layout vertical"
 			style={css.card}
 		>
-			<Blueprint.Navbar>
-				<Blueprint.NavbarGroup align={"left"}>
+			<Blueprint.Navbar className="layout horizontal" style={css.navbar}>
+				<Blueprint.NavbarGroup
+					className="flex thin-scroll"
+					style={css.tabsBox}
+					align={"left"}
+				>
 					<Blueprint.Tabs
 						id={this.props.pod.id}
 						selectedTabId={activeUnit ? activeUnit.id : null}
