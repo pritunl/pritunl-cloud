@@ -599,17 +599,21 @@ func (n *Node) Validate(db *database.Database) (
 	}
 
 	if !n.Zone.IsZero() {
-		coll := db.Zones()
-		count, e := coll.CountDocuments(db, &bson.M{
-			"_id": n.Zone,
-		})
+		zne, e := zone.Get(db, n.Zone)
 		if e != nil {
-			err = database.ParseError(e)
-			return
+			err = e
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = nil
+			} else {
+				return
+			}
 		}
 
-		if count == 0 {
+		if zne == nil {
 			n.Zone = primitive.NilObjectID
+		} else {
+			n.Datacenter = zne.Datacenter
+			n.Zone = zne.Id
 		}
 	}
 
