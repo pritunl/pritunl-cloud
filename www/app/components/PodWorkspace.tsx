@@ -112,6 +112,9 @@ const css = {
 	save: {
 		paddingBottom: '10px',
 	} as React.CSSProperties,
+	navbar: {
+		height: '52px',
+	} as React.CSSProperties,
 	label: {
 		width: '100%',
 		maxWidth: '280px',
