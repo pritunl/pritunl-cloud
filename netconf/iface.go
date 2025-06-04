@@ -76,10 +76,6 @@ func (n *NetConf) Iface1(db *database.Database) (err error) {
 		}
 	}
 
-	n.JumboFramesExternal = node.Self.JumboFrames
-	n.JumboFramesInternal = node.Self.JumboFrames ||
-		node.Self.JumboFramesInternal
-
 	n.Namespace = vm.GetNamespace(n.Virt.Id, 0)
 
 	if n.Virt.NetworkAdapters == nil || len(n.Virt.NetworkAdapters) < 1 {

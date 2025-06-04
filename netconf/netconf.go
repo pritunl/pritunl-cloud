@@ -20,8 +20,6 @@ type NetConf struct {
 	NodePortNetwork     bool
 	NodePortSubnet      string
 	OracleSubnets       set.Set
-	JumboFramesExternal bool
-	JumboFramesInternal bool
 	Namespace           string
 	DhcpPidPath         string
 	Dhcp6PidPath        string
