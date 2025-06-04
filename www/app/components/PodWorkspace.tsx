@@ -782,6 +782,21 @@ export default class PodWorkspace extends React.Component<Props, State> {
 						style={css.settingsOpen}
 					/>
 				</Blueprint.Popover>
+			} else {
+				commitMenu = <Blueprint.Popover
+					content={<Blueprint.Menu style={css.commitsMenu}>
+					</Blueprint.Menu>}
+					placement="bottom"
+				>
+					<Blueprint.Button
+						alignText="left"
+						icon={<Icons.GitRepo/>}
+						rightIcon={<Icons.CaretDown/>}
+						text="Deployment Commit"
+						style={css.settingsOpen}
+						disabled={true}
+					/>
+				</Blueprint.Popover>
 			}
 
 			let selectedNames: string[] = [];
@@ -973,6 +988,21 @@ export default class PodWorkspace extends React.Component<Props, State> {
 						style={css.settingsOpen}
 					/>
 				</Blueprint.Popover>
+			} else {
+				commitMenu = <Blueprint.Popover
+					content={<Blueprint.Menu style={css.commitsMenu}>
+					</Blueprint.Menu>}
+					placement="bottom"
+				>
+					<Blueprint.Button
+						alignText="left"
+						icon={<Icons.GitRepo/>}
+						rightIcon={<Icons.CaretDown/>}
+						text="Diff"
+						style={css.settingsOpen}
+						disabled={true}
+					/>
+				</Blueprint.Popover>
 			}
 
 			menuItems.push(<li
@@ -1106,6 +1136,21 @@ export default class PodWorkspace extends React.Component<Props, State> {
 					placement="bottom"
 				>
 					{selectButton}
+				</Blueprint.Popover>
+			} else {
+				commitMenu = <Blueprint.Popover
+					content={<Blueprint.Menu style={css.commitsMenu}>
+					</Blueprint.Menu>}
+					placement="bottom"
+				>
+					<Blueprint.Button
+					alignText="left"
+					icon={<Icons.GitRepo/>}
+					rightIcon={<Icons.CaretDown/>}
+					text="View Commit"
+					style={css.settingsOpen}
+					disabled={true}
+				/>
 				</Blueprint.Popover>
 			}
 		}
