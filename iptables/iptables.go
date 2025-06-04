@@ -696,6 +696,40 @@ func generateVirt(vc *vpc.Vpc, namespace, iface, addr, addr6 string,
 			continue
 		}
 
+		if rule.Protocol == firewall.Multicast ||
+			rule.Protocol == firewall.Broadcast {
+
+			cmd = rules.newCommand()
+
+			cmd = append(cmd,
+				"-p", "udp",
+				"-m", "pkttype",
+				"--pkt-type", rule.Protocol,
+			)
+
+			if rules.Interface != "host" {
+				cmd = append(cmd,
+					"-m", "physdev",
+					"--physdev-out", rules.Interface,
+					"--physdev-is-bridged",
+				)
+			}
+
+			cmd = append(cmd,
+				"-m", "udp",
+				"--dport", strings.Replace(rule.Port, "-", ":", 1),
+			)
+
+			cmd = rules.commentCommandHeader(cmd)
+			cmd = append(cmd,
+				"-j", "ACCEPT",
+			)
+
+			rules.Ingress = append(rules.Ingress, cmd)
+
+			continue
+		}
+
 		for _, sourceIp := range rule.SourceIps {
 			ipv6 := strings.Contains(sourceIp, ":")
 
@@ -1134,6 +1168,39 @@ func generateInternal(namespace, iface string, nat, nat6, dhcp, dhcp6 bool,
 		setName6 := rule.SetName(true)
 
 		if setName == "" || setName6 == "" {
+			continue
+		}
+
+		if rule.Protocol == firewall.Multicast ||
+			rule.Protocol == firewall.Broadcast {
+
+			cmd = rules.newCommand()
+
+			if iface != "host" {
+				cmd = append(cmd,
+					"-i", iface,
+				)
+			}
+
+			cmd = append(cmd,
+				"-p", "udp",
+				"-m", "pkttype",
+				"--pkt-type", rule.Protocol,
+			)
+
+			cmd = append(cmd,
+				"-m", "udp",
+				"--dport", strings.Replace(rule.Port, "-", ":", 1),
+			)
+
+			cmd = rules.commentCommandHeader(cmd)
+			cmd = append(cmd,
+				"-j", "ACCEPT",
+			)
+
+			//rules.Header = append(rules.Header, cmd)
+			rules.Ingress = append(rules.Ingress, cmd)
+
 			continue
 		}
 
@@ -1592,6 +1659,39 @@ func generateHost(namespace, iface string, nodePortNetwork bool,
 		setName6 := rule.SetName(true)
 
 		if setName == "" || setName6 == "" {
+			continue
+		}
+
+		if rule.Protocol == firewall.Multicast ||
+			rule.Protocol == firewall.Broadcast {
+
+			cmd = rules.newCommand()
+
+			if rules.Interface != "host" {
+				cmd = append(cmd,
+					"-o", rules.Interface,
+				)
+			}
+
+			cmd = append(cmd,
+				"-p", "udp",
+				"-m", "pkttype",
+				"--pkt-type", rule.Protocol,
+			)
+
+			cmd = append(cmd,
+				"-m", "udp",
+				"--dport", strings.Replace(rule.Port, "-", ":", 1),
+			)
+
+			cmd = rules.commentCommandHeader(cmd)
+			cmd = append(cmd,
+				"-j", "ACCEPT",
+			)
+
+			//rules.Header = append(rules.Header, cmd)
+			rules.Ingress = append(rules.Ingress, cmd)
+
 			continue
 		}
 
