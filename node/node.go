@@ -624,7 +624,7 @@ func (n *Node) Validate(db *database.Database) (
 		n.CachePath = constants.DefaultCache
 	}
 
-	if n.NetworkRoles == nil || !n.Firewall {
+	if n.NetworkRoles == nil {
 		n.NetworkRoles = []string{}
 	}
 
