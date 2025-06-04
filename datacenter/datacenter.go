@@ -85,7 +85,7 @@ func (d *Datacenter) Vxlan() bool {
 }
 
 func (d *Datacenter) GetBaseInternalMtu() (mtuSize int) {
-	if node.Self.JumboFramesInternal {
+	if node.Self.JumboFrames || node.Self.JumboFramesInternal {
 		mtuSize = settings.Hypervisor.JumboMtu
 	} else {
 		mtuSize = settings.Hypervisor.NormalMtu
@@ -116,7 +116,7 @@ func (d *Datacenter) GetOverlayMtu() (mtuSize int) {
 			mtuSize -= 110
 		}
 	} else {
-		if node.Self.JumboFramesInternal {
+		if node.Self.JumboFrames || node.Self.JumboFramesInternal {
 			mtuSize = settings.Hypervisor.JumboMtu
 		} else {
 			mtuSize = settings.Hypervisor.NormalMtu
@@ -144,7 +144,7 @@ func (d *Datacenter) GetInstanceMtu() (mtuSize int) {
 			mtuSize -= 114
 		}
 	} else {
-		if node.Self.JumboFramesInternal {
+		if node.Self.JumboFrames || node.Self.JumboFramesInternal {
 			mtuSize = settings.Hypervisor.JumboMtu
 		} else {
 			mtuSize = settings.Hypervisor.NormalMtu
