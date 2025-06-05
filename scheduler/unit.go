@@ -8,6 +8,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/unit"
 	"github.com/sirupsen/logrus"
@@ -59,20 +60,30 @@ func (u *InstanceUnit) Schedule(db *database.Database, count int) (err error) {
 		Failures:      map[primitive.ObjectID]int{},
 	}
 
-	ndes, offlineCount, noMountCount, err := u.spec.GetAllNodes(db)
-	if err != nil {
-		return
-	}
-	u.nodes = ndes
+	if !u.spec.Instance.Node.IsZero() {
+		nde, e := node.Get(db, u.spec.Instance.Node)
+		if e != nil {
+			err = e
+			return
+		}
+		u.nodes = []*node.Node{nde}
+	} else {
+		ndes, offlineCount, noMountCount, e := u.spec.GetAllNodes(db)
+		if e != nil {
+			err = e
+			return
+		}
+		u.nodes = ndes
 
-	if len(u.nodes) == 0 {
-		logrus.WithFields(logrus.Fields{
-			"unit":                u.unit.Id.Hex(),
-			"shape":               u.spec.Instance.Shape.Hex(),
-			"offline_count":       offlineCount,
-			"missing_mount_count": noMountCount,
-		}).Error("scheduler: Failed to find nodes to schedule")
-		return
+		if len(u.nodes) == 0 {
+			logrus.WithFields(logrus.Fields{
+				"unit":                u.unit.Id.Hex(),
+				"shape":               u.spec.Instance.Shape.Hex(),
+				"offline_count":       offlineCount,
+				"missing_mount_count": noMountCount,
+			}).Error("scheduler: Failed to find nodes to schedule")
+			return
+		}
 	}
 
 	if u.count == 0 {
