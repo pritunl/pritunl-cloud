@@ -153,6 +153,10 @@ func (d *Deployments) migrate(deply *deployment.Deployment) {
 			instFields.Add("skip_source_dest_check")
 			inst.SkipSourceDestCheck = newSpec.Instance.SkipSourceDestCheck
 		}
+		if curSpec.Instance.Gui != newSpec.Instance.Gui {
+			instFields.Add("gui")
+			inst.Gui = newSpec.Instance.Gui
+		}
 		if curSpec.Instance.HostAddress != newSpec.Instance.HostAddress {
 			if newSpec.Instance.HostAddress != nil {
 				instFields.Add("no_host_address")
