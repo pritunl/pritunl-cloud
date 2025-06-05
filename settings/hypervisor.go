@@ -54,6 +54,7 @@ type hypervisor struct {
 	InfoTtl               int    `bson:"info_ttl" default:"5"`
 	UsbHsPorts            int    `bson:"usb_hs_ports" default:"4"`
 	UsbSsPorts            int    `bson:"usb_ss_ports" default:"4"`
+	VirtioHid             bool   `bson:"virtio_hid"`
 	JournalDisplayLimit   int64  `bson:"journal_display_limit" default:"5000"`
 	DnsServerPrimary      string `bson:"dns_server_primary" default:"8.8.8.8"`
 	DnsServerSecondary    string `bson:"dns_server_secondary" default:"8.8.4.4"`
