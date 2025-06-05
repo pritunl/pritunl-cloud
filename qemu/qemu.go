@@ -676,10 +676,17 @@ func (q *Qemu) Marshal() (output string, err error) {
 		))
 
 		if q.Vnc || q.Spice {
-			cmd = append(cmd, "-device")
-			cmd = append(cmd, "usb-tablet")
-			cmd = append(cmd, "-device")
-			cmd = append(cmd, "usb-kbd")
+			if settings.Hypervisor.VirtioHid {
+				cmd = append(cmd, "-device")
+				cmd = append(cmd, "virtio-mouse-pci")
+				cmd = append(cmd, "-device")
+				cmd = append(cmd, "virtio-keyboard-pci")
+			} else {
+				cmd = append(cmd, "-device")
+				cmd = append(cmd, "usb-tablet")
+				cmd = append(cmd, "-device")
+				cmd = append(cmd, "usb-kbd")
+			}
 		}
 
 		for _, device := range q.UsbDevices {
