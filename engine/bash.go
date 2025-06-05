@@ -69,14 +69,8 @@ func (b *BashEngine) streamOut(reader io.Reader) (env []string) {
 		} else {
 			if strings.HasPrefix(line, "<STARTER_ENV_EXPORT>") {
 				envCapture = true
-			} else if strings.HasPrefix(
-				line, "+ echo '<STARTER_ENV_EXPORT>'") || strings.HasPrefix(
-				line, "+ echo '</STARTER_ENV_EXPORT>'") {
-
-			} else {
-				if cleanLine != "" {
-					b.starter.ProcessOutput(cleanLine)
-				}
+			} else if cleanLine != "" {
+				b.starter.ProcessOutput(cleanLine)
 			}
 		}
 	}
