@@ -36,9 +36,9 @@ func (u *InstanceUnit) Schedule(db *database.Database, count int) (err error) {
 		return
 	}
 
-	if u.spec.Instance.Shape.IsZero() {
+	if u.spec.Instance.Shape.IsZero() && u.spec.Instance.Node.IsZero() {
 		err = &errortypes.ParseError{
-			errors.New("scheduler: Missing shape"),
+			errors.New("scheduler: Missing shape or node"),
 		}
 		return
 	}
