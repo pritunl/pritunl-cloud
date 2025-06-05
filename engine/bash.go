@@ -86,13 +86,26 @@ func (b *BashEngine) streamOut(reader io.Reader) (env []string) {
 
 func (b *BashEngine) streamErr(reader io.Reader) {
 	scanner := bufio.NewScanner(reader)
+	envCapture := false
 
 	for scanner.Scan() {
 		line := scanner.Text()
-
 		cleanLine := colorRe.ReplaceAllString(line, "")
-		if cleanLine != "" {
-			b.starter.ProcessOutput(cleanLine)
+
+		if envCapture {
+			if strings.HasPrefix(line, "echo \"</STARTER_ENV_EXPORT>\"") {
+				envCapture = false
+			} else if strings.TrimSpace(line) == "env" {
+
+			} else if cleanLine != "" {
+				b.starter.ProcessOutput(cleanLine)
+			}
+		} else {
+			if strings.HasPrefix(line, "echo \"<STARTER_ENV_EXPORT>\"") {
+				envCapture = true
+			} else if cleanLine != "" {
+				b.starter.ProcessOutput(cleanLine)
+			}
 		}
 	}
 }
