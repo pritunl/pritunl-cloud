@@ -370,6 +370,7 @@ func ReadExists(path string) (data string, err error) {
 	dataByt, err := ioutil.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
+			err = nil
 			return
 		}
 		err = &errortypes.ReadError{
