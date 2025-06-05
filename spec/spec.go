@@ -338,7 +338,7 @@ func (s *Spec) parseInstance(db *database.Database,
 		}
 	}
 
-	if data.Node.IsZero() && data.Shape.IsZero() {
+	if data.Vpc.IsZero() {
 		errData = &errortypes.ErrorData{
 			Error:   "unit_vpc_missing",
 			Message: "Unit VPC is missing",
@@ -357,9 +357,9 @@ func (s *Spec) parseInstance(db *database.Database,
 		}
 	}
 
-	if data.Node.IsZero() && data.Shape.IsZero() {
+	if data.Subnet.IsZero() {
 		errData = &errortypes.ErrorData{
-			Error:   "unit_vpc_missing",
+			Error:   "unit_subnet_missing",
 			Message: "Unit subnet is missing",
 		}
 		return
