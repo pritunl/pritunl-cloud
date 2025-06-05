@@ -233,6 +233,21 @@ func (d *Deployments) migrate(deply *deployment.Deployment) {
 			inst.UpsertNodePorts(newNodePorts)
 		}
 
+		inst.Mounts = []*instance.Mount{}
+		for _, mount := range newSpec.Instance.Mounts {
+			if mount.Type != spec.HostPath {
+				continue
+			}
+
+			inst.Mounts = append(inst.Mounts, &instance.Mount{
+				Name:     mount.Name,
+				Type:     instance.HostPath,
+				Path:     mount.Path,
+				HostPath: mount.HostPath,
+			})
+		}
+		instFields.Add("mounts")
+
 		if instFields.Len() > 0 {
 			errData, err = inst.Validate(db)
 			if err != nil {
