@@ -852,11 +852,17 @@ func (s *Spec) CanMigrate(db *database.Database, spc *Spec) (
 
 	curMountPaths := set.NewSet()
 	for _, mnt := range s.Instance.Mounts {
+		if mnt.Type == HostPath {
+			continue
+		}
 		curMountPaths.Add(mnt.Path)
 	}
 
 	newMountPaths := set.NewSet()
 	for _, mnt := range spc.Instance.Mounts {
+		if mnt.Type == HostPath {
+			continue
+		}
 		newMountPaths.Add(mnt.Path)
 	}
 
