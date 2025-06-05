@@ -579,6 +579,7 @@ func (s *Spec) parseInstance(db *database.Database,
 	data.Vnc = dataYaml.Vnc
 	data.DeleteProtection = dataYaml.DeleteProtection
 	data.SkipSourceDestCheck = dataYaml.SkipSourceDestCheck
+	data.Gui = dataYaml.Gui
 	data.HostAddress = dataYaml.HostAddress
 	data.PublicAddress = dataYaml.PublicAddress
 	data.PublicAddress6 = dataYaml.PublicAddress6
