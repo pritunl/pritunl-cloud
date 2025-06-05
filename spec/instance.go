@@ -24,6 +24,7 @@ type Instance struct {
 	Vnc                 bool                 `bson:"vnc" json:"vnc"`                                       // soft
 	DeleteProtection    bool                 `bson:"delete_protection" json:"delete_protection"`           // soft
 	SkipSourceDestCheck bool                 `bson:"skip_source_dest_check" json:"skip_source_dest_check"` // soft
+	Gui                 bool                 `bson:"gui" json:"gui"`                                       // soft
 	HostAddress         *bool                `bson:"host_address,omitempty" json:"host_address"`           // soft
 	PublicAddress       *bool                `bson:"public_address,omitempty" json:"public_address"`       // soft
 	PublicAddress6      *bool                `bson:"public_address6,omitempty" json:"public_address6"`     // soft
@@ -139,6 +140,7 @@ type InstanceYaml struct {
 	Vnc                 bool                   `yaml:"vnc"`
 	DeleteProtection    bool                   `yaml:"deleteProtection"`
 	SkipSourceDestCheck bool                   `yaml:"skipSourceDestCheck"`
+	Gui                 bool                   `yaml:"gui"`
 	HostAddress         *bool                  `yaml:"hostAddress"`
 	PublicAddress       *bool                  `yaml:"publicAddress"`
 	PublicAddress6      *bool                  `yaml:"publicAddress6"`
