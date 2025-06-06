@@ -219,7 +219,7 @@ func (v *VirtualMachine) Commit(db *database.Database) (err error) {
 	}
 
 	data := bson.M{
-		"virt_state":     v.State,
+		"state":          v.State,
 		"virt_timestamp": v.Timestamp,
 		"public_ips":     addrs,
 		"public_ips6":    addrs6,
@@ -344,7 +344,7 @@ func (v *VirtualMachine) CommitState(db *database.Database, action string) (
 
 	data := bson.M{
 		"action":         action,
-		"virt_state":     v.State,
+		"state":          v.State,
 		"virt_timestamp": v.Timestamp,
 		"public_ips":     addrs,
 		"public_ips6":    addrs6,
