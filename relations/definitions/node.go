@@ -32,16 +32,16 @@ var Node = relations.Query{
 		}, {
 			Keys: []string{
 				"action",
-				"virt_state",
+				"state",
 			},
 			Label: "Status",
 			Format: func(vals ...any) any {
 				action, _ := vals[0].(string)
-				virtState, _ := vals[1].(string)
+				state, _ := vals[1].(string)
 
 				switch action {
 				case instance.Start:
-					switch virtState {
+					switch state {
 					case vm.Starting:
 						return "Starting"
 					case vm.Running:
@@ -58,7 +58,7 @@ var Node = relations.Query{
 						return "Provisioning"
 					}
 				case instance.Cleanup:
-					switch virtState {
+					switch state {
 					case vm.Starting:
 						return "Stopping"
 					case vm.Running:
@@ -75,7 +75,7 @@ var Node = relations.Query{
 						return "Stopping"
 					}
 				case instance.Stop:
-					switch virtState {
+					switch state {
 					case vm.Starting:
 						return "Stopping"
 					case vm.Running:
@@ -97,22 +97,22 @@ var Node = relations.Query{
 					return "Destroying"
 				}
 
-				return virtState
+				return state
 			},
 		}, {
 			Keys: []string{
 				"virt_timestamp",
 				"action",
-				"virt_state",
+				"state",
 			},
 			Label: "Uptime",
 			Format: func(vals ...any) any {
 				val := vals[0]
 				action, _ := vals[1].(string)
-				virtState, _ := vals[2].(string)
+				state, _ := vals[2].(string)
 				isActive := action == instance.Start ||
-					virtState == vm.Running || virtState == vm.Starting ||
-					virtState == vm.Provisioning
+					state == vm.Running || state == vm.Starting ||
+					state == vm.Provisioning
 
 				if !isActive {
 					return "-"

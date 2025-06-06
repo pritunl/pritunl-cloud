@@ -139,14 +139,8 @@ var Datacenter = relations.Query{
 			Key:   "state",
 			Label: "State",
 		}, {
-			Key:   "state",
-			Label: "State",
-		}, {
 			Key:   "status",
 			Label: "Status",
-		}, {
-			Key:   "virt_state",
-			Label: "Virtual State",
 		}, {
 			Key:   "virt_timestamp",
 			Label: "Virtual Timestamp",
