@@ -22,7 +22,6 @@ type Instance struct {
 	Name          string `json:"name"`
 	State         string `json:"state"`
 	Action        string `json:"action"`
-	VirtState     string `json:"virt_state"`
 	Processors    int    `json:"processors"`
 	Memory        int    `json:"memory"`
 	LastTimestamp int    `json:"last_timestamp"`
