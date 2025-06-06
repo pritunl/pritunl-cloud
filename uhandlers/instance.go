@@ -604,7 +604,7 @@ func instanceGet(c *gin.Context) {
 	if demo.IsDemo() {
 		inst.State = instance.Active
 		inst.Action = instance.Start
-		inst.VirtState = vm.Running
+		inst.State = vm.Running
 		inst.Status = "Running"
 		inst.PublicIps = []string{
 			demo.RandIp(inst.Id),
@@ -748,7 +748,7 @@ func instancesGet(c *gin.Context) {
 			if demo.IsDemo() {
 				inst.State = instance.Active
 				inst.Action = instance.Start
-				inst.VirtState = vm.Running
+				inst.State = vm.Running
 				inst.Status = "Running"
 				inst.PublicIps = []string{
 					demo.RandIp(inst.Id),
