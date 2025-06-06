@@ -60,7 +60,6 @@ type Instance struct {
 	State               string              `bson:"state" json:"state"`
 	Action              string              `bson:"action" json:"action"`
 	PublicMac           string              `bson:"-" json:"public_mac"`
-	VirtState           string              `bson:"virt_state" json:"virt_state"`
 	VirtTimestamp       time.Time           `bson:"virt_timestamp" json:"virt_timestamp"`
 	Restart             bool                `bson:"restart" json:"restart"`
 	RestartBlockIp      bool                `bson:"restart_block_ip" json:"restart_block_ip"`
@@ -702,7 +701,7 @@ func (i *Instance) Json(short bool) {
 		if i.Restart || i.RestartBlockIp {
 			i.Status = "Restart Required"
 		} else {
-			switch i.VirtState {
+			switch i.State {
 			case vm.Starting:
 				i.Status = "Starting"
 				break
@@ -728,7 +727,7 @@ func (i *Instance) Json(short bool) {
 		}
 		break
 	case Cleanup:
-		switch i.VirtState {
+		switch i.State {
 		case vm.Starting:
 			i.Status = "Stopping"
 			break
@@ -753,7 +752,7 @@ func (i *Instance) Json(short bool) {
 		}
 		break
 	case Stop:
-		switch i.VirtState {
+		switch i.State {
 		case vm.Starting:
 			i.Status = "Stopping"
 			break
@@ -804,8 +803,8 @@ func (i *Instance) Json(short bool) {
 }
 
 func (i *Instance) IsActive() bool {
-	return i.Action == Start || i.VirtState == vm.Running ||
-		i.VirtState == vm.Starting || i.VirtState == vm.Provisioning
+	return i.Action == Start || i.State == vm.Running ||
+		i.State == vm.Starting || i.State == vm.Provisioning
 }
 
 func (i *Instance) IsIpv6Only() bool {
