@@ -43,12 +43,12 @@ func (b *Backup) backupDisk(db *database.Database,
 		}
 
 		if inst != nil {
-			if inst.VirtState == vm.Starting {
+			if inst.State == vm.Starting {
 				time.Sleep(5 * time.Second)
 				online = true
 			}
 
-			if inst.VirtState == vm.Running {
+			if inst.State == vm.Running {
 				online = true
 			}
 		}
