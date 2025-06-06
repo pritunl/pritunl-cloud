@@ -22,7 +22,6 @@ export interface Instance {
 	uptime?: string;
 	state?: string;
 	action?: string;
-	virt_state?: string;
 	virt_timestamp?: string;
 	uefi?: boolean;
 	secure_boot?: boolean;
