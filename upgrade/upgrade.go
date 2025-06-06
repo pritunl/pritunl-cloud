@@ -13,7 +13,7 @@ func Upgrade() (err error) {
 		return
 	}
 
-	err = actionUpgrade(db)
+	err = instStateUpgrade(db)
 	if err != nil {
 		return
 	}
