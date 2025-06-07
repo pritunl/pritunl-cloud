@@ -60,14 +60,7 @@ func (p *Planner) setInstanceAction(db *database.Database,
 	}
 
 	if errData != nil {
-		logrus.WithFields(logrus.Fields{
-			"deployment":    deply.Id.Hex(),
-			"instance":      deply.Instance.Hex(),
-			"pod":           deply.Pod.Hex(),
-			"unit":          deply.Unit.Hex(),
-			"error_code":    errData.Error,
-			"error_message": errData.Message,
-		}).Error("scheduler: Validate instance failed")
+		err = errData.GetError()
 		return
 	}
 
