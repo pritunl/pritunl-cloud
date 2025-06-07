@@ -185,10 +185,6 @@ func (i *Instance) Validate(db *database.Database) (
 
 	i.Name = utils.FilterName(i.Name)
 
-	if i.State == "" {
-		i.State = Provision
-	}
-
 	if i.Action == "" {
 		i.Action = Start
 	}
