@@ -213,6 +213,7 @@ func (u *Unit) MigrateDeployements(db *database.Database,
 }
 
 func (u *Unit) Parse(db *database.Database, new bool) (
+	newSpec *spec.Spec, updateSpec *spec.Spec,
 	errData *errortypes.ErrorData, err error) {
 
 	spc := spec.New(u.Pod, u.Id, u.Organization, u.Spec)
@@ -254,10 +255,7 @@ func (u *Unit) Parse(db *database.Database, new bool) (
 			spc.Timestamp = timestamp
 		}
 
-		err = spc.Insert(db)
-		if err != nil {
-			return
-		}
+		newSpec = spc
 
 		u.Hash = spc.Hash
 		u.LastSpec = spc.Id
@@ -275,10 +273,7 @@ func (u *Unit) Parse(db *database.Database, new bool) (
 		curSpc.Count = spc.Count
 		curSpc.Data = spc.Data
 
-		err = curSpc.CommitData(db)
-		if err != nil {
-			return
-		}
+		updateSpec = curSpc
 
 		u.Name = curSpc.Name
 		u.Count = curSpc.Count
