@@ -47,6 +47,10 @@ func (p *Planner) setInstanceAction(db *database.Database,
 		}
 	}
 
+	if inst.Action == action {
+		return
+	}
+
 	inst.Action = action
 	errData, e := inst.Validate(db)
 	if e != nil {
