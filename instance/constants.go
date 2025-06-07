@@ -5,8 +5,14 @@ import (
 )
 
 const (
-	Provision = "provision"
-	Active    = "active"
+	Starting     = "starting"
+	Running      = "running"
+	Stopped      = "stopped"
+	Failed       = "failed"
+	Updating     = "updating"
+	Provisioning = "provisioning"
+	Bridge       = "bridge"
+	Vxlan        = "vxlan"
 
 	Start   = "start"
 	Stop    = "stop"
@@ -21,8 +27,14 @@ const (
 
 var (
 	ValidStates = set.NewSet(
-		Provision,
-		Active,
+		Starting,
+		Running,
+		Stopped,
+		Failed,
+		Updating,
+		Provisioning,
+		Bridge,
+		Vxlan,
 	)
 	ValidActions = set.NewSet(
 		Start,
