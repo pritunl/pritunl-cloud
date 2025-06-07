@@ -64,6 +64,9 @@ func (p *Pod) Json(usrId primitive.ObjectID) {
 func (p *Pod) InitUnits(db *database.Database, units []*unit.UnitInput) (
 	errData *errortypes.ErrorData, err error) {
 
+	newUnits := []*unit.Unit{}
+	newSpecs := []*spec.Spec{}
+	updateSpecs := []*spec.Spec{}
 	for _, unitData := range units {
 		if unitData.Delete {
 			continue
@@ -79,15 +82,41 @@ func (p *Pod) InitUnits(db *database.Database, units []*unit.UnitInput) (
 			Deployments:  []primitive.ObjectID{},
 		}
 
-		errData, err = unt.Parse(db, true)
-		if err != nil {
+		newSpec, updateSpec, ed, e := unt.Parse(db, true)
+		if e != nil {
+			err = e
 			return
 		}
-		if errData != nil {
+		if ed != nil {
+			errData = ed
 			return
 		}
 
+		newUnits = append(newUnits, unt)
+		if newSpec != nil {
+			newSpecs = append(newSpecs, newSpec)
+		}
+		if updateSpec != nil {
+			updateSpecs = append(updateSpecs, updateSpec)
+		}
+	}
+
+	for _, unt := range newUnits {
 		err = unt.Insert(db)
+		if err != nil {
+			return
+		}
+	}
+
+	for _, spc := range newSpecs {
+		err = spc.Insert(db)
+		if err != nil {
+			return
+		}
+	}
+
+	for _, spc := range updateSpecs {
+		err = spc.CommitData(db)
 		if err != nil {
 			return
 		}
