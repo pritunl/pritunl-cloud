@@ -7,6 +7,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/unit"
@@ -107,40 +108,126 @@ func (p *Pod) CommitFieldsUnits(db *database.Database,
 	}
 
 	unitsName := set.NewSet()
+	parsedUnits := []*unit.Unit{}
+	parsedUnitsNew := []*unit.Unit{}
+	parsedUnitsDel := []*unit.Unit{}
 	for _, unitData := range units {
-		if !unitData.Delete {
-			if unitsName.Contains(unitData.Name) {
+		curUnit := curUnitsMap[unitData.Id]
+		if unitData.Delete {
+			if curUnit == nil {
+				continue
+			}
+			parsedUnitsDel = append(parsedUnitsDel, curUnit)
+		} else if curUnit == nil {
+			curUnit := curUnitsMap[unitData.Id]
+			if curUnit != nil {
+				continue
+			}
+
+			unt := &unit.Unit{
+				Id:           primitive.NewObjectID(),
+				Pod:          p.Id,
+				Organization: p.Organization,
+				Name:         unitData.Name,
+				Spec:         unitData.Spec,
+				SpecIndex:    1,
+				Deployments:  []primitive.ObjectID{},
+			}
+
+			errData, err = unt.Parse(db, true)
+			if err != nil {
+				return
+			}
+			if errData != nil {
+				return
+			}
+
+			if unitsName.Contains(unt.Name) {
 				errData = &errortypes.ErrorData{
 					Error:   "unit_duplicate_name",
 					Message: "Duplicate unit name",
 				}
 				return
 			}
-			unitsName.Add(unitData.Name)
-		}
+			unitsName.Add(unt.Name)
 
-		if unitData.Delete {
-			if false {
+			parsedUnitsNew = append(parsedUnitsNew, unt)
+		} else {
+			curUnit.Name = unitData.Name
+			curUnit.Spec = unitData.Spec
+
+			if !unitData.DeploySpec.IsZero() {
+				deploySpec, e := spec.Get(db, unitData.DeploySpec)
+				if e != nil || deploySpec.Unit != curUnit.Id {
+					errData = &errortypes.ErrorData{
+						Error:   "unit_deploy_spec_invalid",
+						Message: "Invalid unit deployment commit",
+					}
+					return
+				}
+
+				curUnit.DeploySpec = deploySpec.Id
+			}
+
+			errData, err = curUnit.Parse(db, false)
+			if err != nil {
+				return
+			}
+			if errData != nil {
+				return
+			}
+
+			if unitsName.Contains(curUnit.Name) {
 				errData = &errortypes.ErrorData{
-					Error:   "unit_delete_active_deployments",
-					Message: "Cannot delete unit with active deployments",
+					Error:   "unit_duplicate_name",
+					Message: "Duplicate unit name",
 				}
 				return
 			}
+			unitsName.Add(curUnit.Name)
+
+			parsedUnits = append(parsedUnits, curUnit)
 		}
 	}
 
-	for _, unitData := range units {
-		if unitData.Delete {
-			continue
+	for _, unt := range parsedUnitsDel {
+		deplys, e := deployment.GetAll(db, &bson.M{
+			"pod":          p.Id,
+			"unit":         unt.Id,
+			"organization": p.Organization,
+		})
+		if e != nil {
+			err = e
+			return
 		}
 
-		curUnit := curUnitsMap[unitData.Id]
-		if curUnit == nil {
-			continue
+		if len(deplys) > 0 {
+			errData = &errortypes.ErrorData{
+				Error:   "unit_delete_active_deployments",
+				Message: "Cannot delete unit with active deployments",
+			}
+			return
 		}
 
-		updateFields := set.NewSet(
+		err = unit.RemoveOrg(db, p.Organization, unt.Id)
+		if err != nil {
+			return
+		}
+	}
+
+	for _, unt := range parsedUnits {
+		if unitsName.Contains(unt.Name) {
+			errData = &errortypes.ErrorData{
+				Error:   "unit_duplicate_name",
+				Message: "Duplicate unit name",
+			}
+			return
+		}
+		unitsName.Add(unt.Name)
+	}
+
+	for _, unt := range parsedUnits {
+		err = unt.CommitFields(db, set.NewSet(
 			"name",
 			"kind",
 			"count",
@@ -148,70 +235,13 @@ func (p *Pod) CommitFieldsUnits(db *database.Database,
 			"last_spec",
 			"deploy_spec",
 			"hash",
-		)
-
-		curUnit.Name = unitData.Name
-		curUnit.Spec = unitData.Spec
-
-		if !unitData.DeploySpec.IsZero() {
-			deploySpec, e := spec.Get(db, unitData.DeploySpec)
-			if e != nil || deploySpec.Unit != curUnit.Id {
-				errData = &errortypes.ErrorData{
-					Error:   "unit_deploy_spec_invalid",
-					Message: "Invalid unit deployment commit",
-				}
-				return
-			}
-
-			curUnit.DeploySpec = deploySpec.Id
-		}
-
-		errData, err = curUnit.Parse(db, false)
-		if err != nil {
-			return
-		}
-		if errData != nil {
-			return
-		}
-
-		err = curUnit.CommitFields(db, updateFields)
+		))
 		if err != nil {
 			return
 		}
 	}
 
-	for _, unitData := range units {
-		if unitData.Delete {
-			err = unit.Remove(db, unitData.Id)
-			if err != nil {
-				return
-			}
-			continue
-		}
-
-		curUnit := curUnitsMap[unitData.Id]
-		if curUnit != nil {
-			continue
-		}
-
-		unt := &unit.Unit{
-			Id:           primitive.NewObjectID(),
-			Pod:          p.Id,
-			Organization: p.Organization,
-			Name:         unitData.Name,
-			Spec:         unitData.Spec,
-			SpecIndex:    1,
-			Deployments:  []primitive.ObjectID{},
-		}
-
-		errData, err = unt.Parse(db, true)
-		if err != nil {
-			return
-		}
-		if errData != nil {
-			return
-		}
-
+	for _, unt := range parsedUnitsNew {
 		err = unt.Insert(db)
 		if err != nil {
 			return
