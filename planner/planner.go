@@ -18,6 +18,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/unit"
+	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -27,7 +28,7 @@ type Planner struct {
 
 func (p *Planner) setInstanceAction(db *database.Database,
 	deply *deployment.Deployment, inst *instance.Instance,
-	action string) (err error) {
+	statement *plan.Statement, threshold int, action string) (err error) {
 
 	disks, e := disk.GetInstance(db, inst.Id)
 	if e != nil {
@@ -281,6 +282,7 @@ func (p *Planner) checkInstance(db *database.Database,
 		if err != nil {
 			return
 		}
+		threshold = utils.Max(deployment.ThresholdMin, threshold)
 
 		action, err = deply.HandleStatement(
 			db, statement.Id, threshold, action)
@@ -294,37 +296,31 @@ func (p *Planner) checkInstance(db *database.Database,
 	}
 
 	if action != "" {
-		logrus.WithFields(logrus.Fields{
-			"deployment": deply.Id.Hex(),
-			"instance":   deply.Instance.Hex(),
-			"pod":        deply.Pod.Hex(),
-			"unit":       deply.Unit.Hex(),
-			"statement":  statement.Statement,
-			"threshold":  threshold,
-			"action":     action,
-		}).Info("scheduler: Handling plan action")
-
 		switch action {
 		case plan.Start:
-			err = p.setInstanceAction(db, deply, inst, instance.Start)
+			err = p.setInstanceAction(db, deply, inst,
+				statement, threshold, instance.Start)
 			if err != nil {
 				return
 			}
 			break
 		case plan.Stop:
-			err = p.setInstanceAction(db, deply, inst, instance.Stop)
+			err = p.setInstanceAction(db, deply, inst,
+				statement, threshold, instance.Stop)
 			if err != nil {
 				return
 			}
 			break
 		case plan.Restart:
-			err = p.setInstanceAction(db, deply, inst, instance.Restart)
+			err = p.setInstanceAction(db, deply, inst,
+				statement, threshold, instance.Restart)
 			if err != nil {
 				return
 			}
 			break
 		case plan.Destroy:
-			err = p.setInstanceAction(db, deply, inst, instance.Destroy)
+			err = p.setInstanceAction(db, deply, inst,
+				statement, threshold, instance.Destroy)
 			if err != nil {
 				return
 			}
