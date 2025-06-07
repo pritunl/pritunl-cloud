@@ -52,6 +52,16 @@ func (p *Planner) setInstanceAction(db *database.Database,
 		return
 	}
 
+	logrus.WithFields(logrus.Fields{
+		"deployment": deply.Id.Hex(),
+		"instance":   deply.Instance.Hex(),
+		"pod":        deply.Pod.Hex(),
+		"unit":       deply.Unit.Hex(),
+		"statement":  statement.Statement,
+		"threshold":  threshold,
+		"action":     action,
+	}).Info("scheduler: Handling plan action")
+
 	inst.Action = action
 	errData, e := inst.Validate(db)
 	if e != nil {
