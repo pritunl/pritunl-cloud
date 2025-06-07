@@ -29,6 +29,24 @@ func (p *Planner) setInstanceAction(db *database.Database,
 	deply *deployment.Deployment, inst *instance.Instance,
 	action string) (err error) {
 
+	disks, e := disk.GetInstance(db, inst.Id)
+	if e != nil {
+		err = e
+		return
+	}
+
+	for _, dsk := range disks {
+		if dsk.Action != "" {
+			logrus.WithFields(logrus.Fields{
+				"instance_id": inst.Id.Hex(),
+				"disk_id":     dsk.Id.Hex(),
+				"disk_action": dsk.Action,
+			}).Info("deploy: Ignoring instance plan action, " +
+				"disk action pending")
+			return
+		}
+	}
+
 	inst.Action = action
 	errData, e := inst.Validate(db)
 	if e != nil {
