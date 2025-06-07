@@ -212,7 +212,87 @@ func (u *Unit) MigrateDeployements(db *database.Database,
 	return
 }
 
-func (u *Unit) Parse(db *database.Database, new bool) (
+func (u *Unit) newSpec(db *database.Database, spc *spec.Spec, newUnit bool) (
+	newSpec *spec.Spec, errData *errortypes.ErrorData, err error) {
+
+	u.Name = spc.Name
+	u.Count = spc.Count
+	u.Spec = spc.Data
+
+	if u.Kind == "" {
+		u.Kind = spc.Kind
+	} else if u.Kind != spc.Kind {
+		errData = &errortypes.ErrorData{
+			Error:   "spec_kind_invalid",
+			Message: "Cannot change spec kind",
+		}
+		return
+	}
+
+	if newUnit {
+		spc.Index = 1
+		spc.Timestamp = time.Now()
+	} else {
+		timestamp, index, e := NewSpec(db, u.Pod, u.Id)
+		if e != nil {
+			err = e
+			return
+		}
+
+		spc.Index = index
+		spc.Timestamp = timestamp
+	}
+
+	newSpec = spc
+
+	u.Hash = spc.Hash
+	u.LastSpec = spc.Id
+	if u.DeploySpec.IsZero() {
+		u.DeploySpec = spc.Id
+	}
+
+	return
+}
+
+func (u *Unit) updateSpec(db *database.Database, spc *spec.Spec) (
+	updateSpec *spec.Spec, errData *errortypes.ErrorData, err error) {
+
+	curSpc, e := spec.Get(db, u.LastSpec)
+	if e != nil {
+		err = e
+		return
+	}
+
+	curSpc.Name = spc.Name
+	curSpc.Count = spc.Count
+	curSpc.Data = spc.Data
+
+	updateSpec = curSpc
+
+	u.Name = curSpc.Name
+	u.Count = curSpc.Count
+	u.Spec = curSpc.Data
+
+	if u.Kind == "" {
+		u.Kind = spc.Kind
+	} else if u.Kind != spc.Kind {
+		errData = &errortypes.ErrorData{
+			Error:   "spec_kind_invalid",
+			Message: "Cannot change spec kind",
+		}
+		return
+	}
+
+	u.Hash = curSpc.Hash
+	u.LastSpec = curSpc.Id
+	if u.DeploySpec.IsZero() {
+		u.DeploySpec = curSpc.Id
+	}
+
+	return
+}
+
+func (u *Unit) Parse(db *database.Database, newUnit bool) (
 	newSpec *spec.Spec, updateSpec *spec.Spec,
 	errData *errortypes.ErrorData, err error) {
 
@@ -226,73 +306,29 @@ func (u *Unit) Parse(db *database.Database, new bool) (
 		return
 	}
 
-	if u.Hash != spc.Hash {
-		u.Name = spc.Name
-		u.Count = spc.Count
-		u.Spec = spc.Data
-
-		if u.Kind == "" {
-			u.Kind = spc.Kind
-		} else if u.Kind != spc.Kind {
-			errData = &errortypes.ErrorData{
-				Error:   "spec_kind_invalid",
-				Message: "Cannot change spec kind",
-			}
-			return
-		}
-
-		if new {
-			spc.Index = 1
-			spc.Timestamp = time.Now()
-		} else {
-			timestamp, index, e := NewSpec(db, u.Pod, u.Id)
-			if e != nil {
-				err = e
+	isNewSpec := u.Hash != spc.Hash
+	if !isNewSpec && u.Name != spc.Name || u.Count != spc.Count {
+		updateSpec, errData, err = u.updateSpec(db, spc)
+		if err != nil {
+			if _, ok := err.(*database.NotFoundError); ok {
+				err = nil
+				isNewSpec = true
+			} else {
 				return
 			}
-
-			spc.Index = index
-			spc.Timestamp = timestamp
 		}
-
-		newSpec = spc
-
-		u.Hash = spc.Hash
-		u.LastSpec = spc.Id
-		if u.DeploySpec.IsZero() {
-			u.DeploySpec = spc.Id
-		}
-	} else if u.Name != spc.Name || u.Count != spc.Count {
-		curSpc, e := spec.Get(db, u.LastSpec)
-		if e != nil {
-			err = e
+		if errData != nil {
 			return
 		}
+	}
 
-		curSpc.Name = spc.Name
-		curSpc.Count = spc.Count
-		curSpc.Data = spc.Data
-
-		updateSpec = curSpc
-
-		u.Name = curSpc.Name
-		u.Count = curSpc.Count
-		u.Spec = curSpc.Data
-
-		if u.Kind == "" {
-			u.Kind = spc.Kind
-		} else if u.Kind != spc.Kind {
-			errData = &errortypes.ErrorData{
-				Error:   "spec_kind_invalid",
-				Message: "Cannot change spec kind",
-			}
+	if isNewSpec {
+		newSpec, errData, err = u.newSpec(db, spc, newUnit)
+		if err != nil {
 			return
 		}
-
-		u.Hash = curSpc.Hash
-		u.LastSpec = curSpc.Id
-		if u.DeploySpec.IsZero() {
-			u.DeploySpec = curSpc.Id
+		if errData != nil {
+			return
 		}
 	}
 
