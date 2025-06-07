@@ -200,40 +200,6 @@ func (p *Planner) checkInstance(db *database.Database,
 		return
 	}
 
-	if deply.Kind != deployment.Image &&
-		deply.State == deployment.Deployed &&
-		!inst.IsActive() {
-
-		disks, e := disk.GetInstance(db, inst.Id)
-		if e != nil {
-			err = e
-			return
-		}
-
-		for _, dsk := range disks {
-			if dsk.Action != "" {
-				logrus.WithFields(logrus.Fields{
-					"instance_id": inst.Id.Hex(),
-					"disk_id":     dsk.Id.Hex(),
-					"disk_action": dsk.Action,
-				}).Info("deploy: Ignoring instance state for active " +
-					"deployment, disk action pending")
-				return
-			}
-		}
-
-		logrus.WithFields(logrus.Fields{
-			"instance_id": inst.Id.Hex(),
-		}).Info("deploy: Starting instance for active deployment")
-
-		err = instance.SetAction(db, inst.Id, instance.Start)
-		if err != nil {
-			return
-		}
-
-		return
-	}
-
 	if deply.State == deployment.Deployed && !unt.HasDeployment(deply.Id) {
 		logrus.WithFields(logrus.Fields{
 			"deployment": deply.Id.Hex(),
