@@ -510,6 +510,13 @@ func getImage(db *database.Database, dsk *disk.Disk, img *image.Image,
 	lockId := imageLock.Lock(pth)
 	defer imageLock.Unlock(pth, lockId)
 
+	tmpPth := ""
+	defer func() {
+		if tmpPth != "" {
+			utils.Remove(tmpPth)
+		}
+	}()
+
 	exists, err := utils.Exists(pth)
 	if err != nil {
 		return
@@ -524,21 +531,14 @@ func getImage(db *database.Database, dsk *disk.Disk, img *image.Image,
 		return
 	}
 
-	tmpPth := ""
 	if img.Type == storage.Web {
 		tmpPth, err = getImageWeb(db, store, dsk, img)
 		if err != nil {
-			if tmpPth != "" {
-				os.Remove(tmpPth)
-			}
 			return
 		}
 	} else {
 		tmpPth, err = getImageS3(db, store, dsk, img)
 		if err != nil {
-			if tmpPth != "" {
-				os.Remove(tmpPth)
-			}
 			return
 		}
 	}
@@ -547,17 +547,11 @@ func getImage(db *database.Database, dsk *disk.Disk, img *image.Image,
 		if img.Type == storage.Web {
 			err = checkImageSigWeb(db, store, img, tmpPth)
 			if err != nil {
-				if tmpPth != "" {
-					os.Remove(tmpPth)
-				}
 				return
 			}
 		} else {
 			err = checkImageSigS3(db, store, img, tmpPth)
 			if err != nil {
-				if tmpPth != "" {
-					os.Remove(tmpPth)
-				}
 				return
 			}
 		}
