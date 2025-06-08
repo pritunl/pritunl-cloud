@@ -209,7 +209,7 @@ func (p *Pod) CommitFieldsUnits(db *database.Database,
 				curUnit.DeploySpec = deploySpec.Id
 			}
 
-			newSpec, updateSpec, ed, e := curUnit.Parse(db, true)
+			newSpec, updateSpec, ed, e := curUnit.Parse(db, false)
 			if e != nil {
 				err = e
 				return
