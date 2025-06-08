@@ -16,7 +16,7 @@ type system struct {
 	InstanceTimestampTtl int    `bson:"instance_timestamp_ttl" default:"10"`
 	DomainLockTtl        int    `bson:"domain_lock_ttl" default:"30"`
 	DomainDeleteTtl      int    `bson:"domain_delete_ttl" default:"200"`
-	DomainRefreshTtl     int    `bson:"domain_refresh_ttl" default:"180"`
+	DomainRefreshTtl     int    `bson:"domain_refresh_ttl" default:"200"`
 	AcmeKeyAlgorithm     string `bson:"acme_key_algorithm" default:"rsa"`
 	DiskBackupWindow     int    `bson:"disk_backup_window" default:"6"`
 	DiskBackupTime       int    `bson:"disk_backup_time" default:"10"`
