@@ -123,6 +123,29 @@ func (i *Image) Insert(db *database.Database) (err error) {
 func (i *Image) Upsert(db *database.Database) (err error) {
 	coll := db.Images()
 
+	fields := bson.M{
+		"name":          i.Name,
+		"signed":        i.Signed,
+		"type":          i.Type,
+		"system_type":   i.SystemType,
+		"firmware":      i.Firmware,
+		"storage":       i.Storage,
+		"key":           i.Key,
+		"last_modified": i.LastModified,
+		"storage_class": i.StorageClass,
+		"etag":          i.Etag,
+	}
+
+	if !i.Disk.IsZero() {
+		fields["disk"] = i.Disk
+	}
+	if !i.Deployment.IsZero() {
+		fields["deployment"] = i.Deployment
+	}
+	if !i.Organization.IsZero() {
+		fields["organization"] = i.Organization
+	}
+
 	opts := &options.UpdateOptions{}
 	opts.SetUpsert(true)
 	resp, err := coll.UpdateOne(
@@ -132,21 +155,7 @@ func (i *Image) Upsert(db *database.Database) (err error) {
 			"key":     i.Key,
 		},
 		&bson.M{
-			"$set": &bson.M{
-				"disk":          i.Disk,
-				"name":          i.Name,
-				"deployment":    i.Deployment,
-				"organization":  i.Organization,
-				"signed":        i.Signed,
-				"type":          i.Type,
-				"system_type":   i.SystemType,
-				"firmware":      i.Firmware,
-				"storage":       i.Storage,
-				"key":           i.Key,
-				"last_modified": i.LastModified,
-				"storage_class": i.StorageClass,
-				"etag":          i.Etag,
-			},
+			"$set": fields,
 		},
 		opts,
 	)
