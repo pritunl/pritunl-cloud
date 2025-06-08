@@ -140,6 +140,8 @@ func (p *Pod) CommitFieldsUnits(db *database.Database,
 	parsedUnits := []*unit.Unit{}
 	parsedUnitsNew := []*unit.Unit{}
 	parsedUnitsDel := []*unit.Unit{}
+	newSpecs := []*spec.Spec{}
+	updateSpecs := []*spec.Spec{}
 	for _, unitData := range units {
 		curUnit := curUnitsMap[unitData.Id]
 		if unitData.Delete {
@@ -163,12 +165,21 @@ func (p *Pod) CommitFieldsUnits(db *database.Database,
 				Deployments:  []primitive.ObjectID{},
 			}
 
-			errData, err = unt.Parse(db, true)
-			if err != nil {
+			newSpec, updateSpec, ed, e := unt.Parse(db, true)
+			if e != nil {
+				err = e
 				return
 			}
-			if errData != nil {
+			if ed != nil {
+				errData = ed
 				return
+			}
+
+			if newSpec != nil {
+				newSpecs = append(newSpecs, newSpec)
+			}
+			if updateSpec != nil {
+				updateSpecs = append(updateSpecs, updateSpec)
 			}
 
 			if unitsName.Contains(unt.Name) {
@@ -198,12 +209,21 @@ func (p *Pod) CommitFieldsUnits(db *database.Database,
 				curUnit.DeploySpec = deploySpec.Id
 			}
 
-			errData, err = curUnit.Parse(db, false)
-			if err != nil {
+			newSpec, updateSpec, ed, e := curUnit.Parse(db, true)
+			if e != nil {
+				err = e
 				return
 			}
-			if errData != nil {
+			if ed != nil {
+				errData = ed
 				return
+			}
+
+			if newSpec != nil {
+				newSpecs = append(newSpecs, newSpec)
+			}
+			if updateSpec != nil {
+				updateSpecs = append(updateSpecs, updateSpec)
 			}
 
 			if unitsName.Contains(curUnit.Name) {
@@ -245,17 +265,6 @@ func (p *Pod) CommitFieldsUnits(db *database.Database,
 	}
 
 	for _, unt := range parsedUnits {
-		if unitsName.Contains(unt.Name) {
-			errData = &errortypes.ErrorData{
-				Error:   "unit_duplicate_name",
-				Message: "Duplicate unit name",
-			}
-			return
-		}
-		unitsName.Add(unt.Name)
-	}
-
-	for _, unt := range parsedUnits {
 		err = unt.CommitFields(db, set.NewSet(
 			"name",
 			"kind",
@@ -272,6 +281,20 @@ func (p *Pod) CommitFieldsUnits(db *database.Database,
 
 	for _, unt := range parsedUnitsNew {
 		err = unt.Insert(db)
+		if err != nil {
+			return
+		}
+	}
+
+	for _, spc := range newSpecs {
+		err = spc.Insert(db)
+		if err != nil {
+			return
+		}
+	}
+
+	for _, spc := range updateSpecs {
+		err = spc.CommitData(db)
 		if err != nil {
 			return
 		}
