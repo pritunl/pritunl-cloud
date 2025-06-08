@@ -243,7 +243,10 @@ func (d *Domain) commitRecords(db *database.Database,
 		if batches[batchKey] == nil {
 			batches[batchKey] = map[string]*Record{}
 		}
-		batches[batchKey][record.Value] = record
+		curRecord := batches[batchKey][record.Value]
+		if curRecord == nil || record.Priority() > curRecord.Priority() {
+			batches[batchKey][record.Value] = record
+		}
 	}
 
 	if setTtl {
