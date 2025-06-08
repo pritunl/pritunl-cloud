@@ -30,6 +30,7 @@ type Image struct {
 	Key          string             `bson:"key" json:"key"`
 	LastModified time.Time          `bson:"last_modified" json:"last_modified"`
 	StorageClass string             `bson:"storage_class" json:"storage_class"`
+	Hash         string             `bson:"hash" json:"hash"`
 	Etag         string             `bson:"etag" json:"etag"`
 }
 
