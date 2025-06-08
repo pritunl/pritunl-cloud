@@ -1480,11 +1480,17 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk,
 		return
 	}
 
+	hash, err := utils.FileSha256(tmpPath)
+	if err != nil {
+		return
+	}
+
 	logrus.WithFields(logrus.Fields{
 		"disk_id":    dsk.Id.Hex(),
 		"disk_path":  dskPth,
 		"storage_id": store.Id.Hex(),
 		"object_key": img.Key,
+		"hash":       hash,
 	}).Info("data: Uploading disk snapshot")
 
 	client, err := minio.New(store.Endpoint, &minio.Options{
@@ -1525,6 +1531,7 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk,
 		return
 	}
 
+	img.Hash = hash
 	img.Etag = image.GetEtag(obj)
 	img.LastModified = obj.LastModified
 
@@ -1680,11 +1687,17 @@ func CreateBackup(db *database.Database, dsk *disk.Disk,
 		return
 	}
 
+	hash, err := utils.FileSha256(tmpPath)
+	if err != nil {
+		return
+	}
+
 	logrus.WithFields(logrus.Fields{
 		"disk_id":    dsk.Id.Hex(),
 		"disk_path":  dskPth,
 		"storage_id": store.Id.Hex(),
 		"object_key": img.Key,
+		"hash":       hash,
 	}).Info("data: Uploading disk backup")
 
 	client, err := minio.New(store.Endpoint, &minio.Options{
@@ -1725,6 +1738,7 @@ func CreateBackup(db *database.Database, dsk *disk.Disk,
 		return
 	}
 
+	img.Hash = hash
 	img.Etag = image.GetEtag(obj)
 	img.LastModified = obj.LastModified
 
