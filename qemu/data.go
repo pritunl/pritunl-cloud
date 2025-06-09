@@ -565,6 +565,9 @@ func Cleanup(db *database.Database, virt *vm.VirtualMachine) {
 	_ = dhcps.Stop(virt)
 	_ = virtiofs.StopAll(virt)
 
+	hugepagesPath := paths.GetHugepagePath(virt.Id)
+	_ = os.Remove(hugepagesPath)
+
 	err := NetworkConfClear(db, virt)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
