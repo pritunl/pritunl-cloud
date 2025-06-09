@@ -557,12 +557,31 @@ func getImage(db *database.Database, dsk *disk.Disk, img *image.Image,
 		}
 	}
 
+	hashed := false
+	if img.Hash != "" {
+		hash, e := utils.FileSha256(tmpPth)
+		if e != nil {
+			err = e
+			return
+		}
+
+		if hash != img.Hash {
+			err = &errortypes.VerificationError{
+				errors.Wrap(err, "data: Image hash verification failed"),
+			}
+			return
+		}
+
+		hashed = true
+	}
+
 	logrus.WithFields(logrus.Fields{
 		"image_id":   img.Id.Hex(),
 		"storage_id": store.Id.Hex(),
 		"key":        img.Key,
 		"temp_path":  tmpPth,
 		"path":       pth,
+		"hashed":     hashed,
 	}).Info("data: Downloaded image")
 
 	err = utils.Exec("", "mv", tmpPth, pth)
@@ -1828,6 +1847,33 @@ func RestoreBackup(db *database.Database, dsk *disk.Disk) (err error) {
 	if err != nil {
 		return
 	}
+
+	hashed := false
+	if img.Hash != "" {
+		hash, e := utils.FileSha256(tmpPath)
+		if e != nil {
+			err = e
+			return
+		}
+
+		if hash != img.Hash {
+			err = &errortypes.VerificationError{
+				errors.Wrap(err, "data: Image hash verification failed"),
+			}
+			return
+		}
+
+		hashed = true
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"image_id":   img.Id.Hex(),
+		"storage_id": store.Id.Hex(),
+		"key":        img.Key,
+		"temp_path":  tmpPath,
+		"disk_path":  dskPth,
+		"hashed":     hashed,
+	}).Info("data: Restored backup")
 
 	err = utils.Exec("", "mv", "-f", tmpPath, dskPth)
 	if err != nil {
