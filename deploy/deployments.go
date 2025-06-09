@@ -5,6 +5,7 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/disk"
@@ -366,7 +367,7 @@ func (d *Deployments) destroy(deply *deployment.Deployment) {
 			}
 
 			if img != nil {
-				err = img.Remove(db)
+				err = data.DeleteImage(db, img.Id)
 				if err != nil {
 					logrus.WithFields(logrus.Fields{
 						"deployment_id": deply.Id.Hex(),
