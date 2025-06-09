@@ -44,7 +44,6 @@ type State struct {
 	nodeShapes             []*shape.Shape
 	nodeShapesId           set.Set
 	vxlan                  bool
-	datacenterMap          map[primitive.ObjectID]*datacenter.Datacenter
 	zoneMap                map[primitive.ObjectID]*zone.Zone
 	namespaces             []string
 	interfaces             []string
@@ -103,10 +102,6 @@ func (s *State) NodeDatacenter() *datacenter.Datacenter {
 
 func (s *State) NodeZone() *zone.Zone {
 	return s.nodeZone
-}
-
-func (s *State) GetDatacenter(dcId primitive.ObjectID) *datacenter.Datacenter {
-	return s.datacenterMap[dcId]
 }
 
 func (s *State) GetZone(zneId primitive.ObjectID) *zone.Zone {
