@@ -569,6 +569,7 @@ func getImage(db *database.Database, dsk *disk.Disk, img *image.Image,
 	if err != nil {
 		return
 	}
+	tmpPth = ""
 
 	return
 }
