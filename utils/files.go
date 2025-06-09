@@ -2,7 +2,9 @@ package utils
 
 import (
 	"bufio"
+	"crypto/sha256"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -475,5 +477,28 @@ func CreateWrite(path string, data string, perm os.FileMode) (err error) {
 		return
 	}
 
+	return
+}
+
+func FileSha256(pth string) (hash string, err error) {
+	file, err := os.Open(pth)
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrapf(err, "utils: Failed to read '%s'", pth),
+		}
+		return
+	}
+	defer file.Close()
+
+	hasher := sha256.New()
+	_, err = io.Copy(hasher, file)
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrapf(err, "utils: Failed to read '%s'", pth),
+		}
+		return
+	}
+
+	hash = fmt.Sprintf("%x", hasher.Sum(nil))
 	return
 }
