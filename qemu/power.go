@@ -1,6 +1,7 @@
 package qemu
 
 import (
+	"os"
 	"time"
 
 	"github.com/pritunl/pritunl-cloud/cloudinit"
@@ -275,6 +276,9 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	_ = imds.Stop(virt)
 	_ = dhcps.Stop(virt)
 	_ = virtiofs.StopAll(virt)
+
+	hugepagesPath := paths.GetHugepagePath(virt.Id)
+	_ = os.Remove(hugepagesPath)
 
 	err = NetworkConfClear(db, virt)
 	if err != nil {
