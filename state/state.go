@@ -976,14 +976,3 @@ func (s *StateOld) init(runtimes *Runtimes) (err error) {
 
 	return
 }
-
-func GetState(runtimes *Runtimes) (stat *State, err error) {
-	stat = &State{}
-
-	err = stat.init(runtimes)
-	if err != nil {
-		return
-	}
-
-	return
-}
