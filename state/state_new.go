@@ -5,6 +5,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/authority"
 	"github.com/pritunl/pritunl-cloud/certificate"
+	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/disk"
@@ -107,4 +108,19 @@ type State struct {
 
 func (s *State) Node() *node.Node {
 	return node.Self
+}
+
+func GetState(runtimes *Runtimes) (stat *State, err error) {
+	db := database.GetDatabase()
+	defer db.Close()
+
+	err = RefreshAll(db)
+	if err != nil {
+		return
+	}
+
+	stat = &State{}
+	ApplyAll(stat)
+
+	return
 }
