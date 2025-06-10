@@ -35,7 +35,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type State struct {
+type StateOld struct {
 	nodeSelf               *node.Node
 	nodes                  []*node.Node
 	nodeDatacenter         *datacenter.Datacenter
@@ -81,79 +81,79 @@ type State struct {
 	running            []string
 }
 
-func (s *State) Node() *node.Node {
+func (s *StateOld) Node() *node.Node {
 	return s.nodeSelf
 }
 
-func (s *State) Nodes() []*node.Node {
+func (s *StateOld) Nodes() []*node.Node {
 	return s.nodes
 }
 
-func (s *State) VxLan() bool {
+func (s *StateOld) VxLan() bool {
 	return s.vxlan
 }
 
-func (s *State) NodeDatacenter() *datacenter.Datacenter {
+func (s *StateOld) NodeDatacenter() *datacenter.Datacenter {
 	return s.nodeDatacenter
 }
 
-func (s *State) NodeZone() *zone.Zone {
+func (s *StateOld) NodeZone() *zone.Zone {
 	return s.nodeZone
 }
 
-func (s *State) GetZone(zneId primitive.ObjectID) *zone.Zone {
+func (s *StateOld) GetZone(zneId primitive.ObjectID) *zone.Zone {
 	return s.zoneMap[zneId]
 }
 
-func (s *State) Namespaces() []string {
+func (s *StateOld) Namespaces() []string {
 	return s.namespaces
 }
 
-func (s *State) Interfaces() []string {
+func (s *StateOld) Interfaces() []string {
 	return s.interfaces
 }
 
-func (s *State) HasInterfaces(iface string) bool {
+func (s *StateOld) HasInterfaces(iface string) bool {
 	return s.interfacesSet.Contains(iface)
 }
 
-func (s *State) Instances() []*instance.Instance {
+func (s *StateOld) Instances() []*instance.Instance {
 	return s.instances
 }
 
-func (s *State) Schedulers() []*scheduler.Scheduler {
+func (s *StateOld) Schedulers() []*scheduler.Scheduler {
 	return s.schedulers
 }
 
-func (s *State) NodeFirewall() []*firewall.Rule {
+func (s *StateOld) NodeFirewall() []*firewall.Rule {
 	return s.nodeFirewall
 }
 
-func (s *State) Firewalls() map[string][]*firewall.Rule {
+func (s *StateOld) Firewalls() map[string][]*firewall.Rule {
 	return s.firewalls
 }
 
-func (s *State) FirewallMaps() map[string][]*firewall.Mapping {
+func (s *StateOld) FirewallMaps() map[string][]*firewall.Mapping {
 	return s.firewallMaps
 }
 
-func (s *State) Running() []string {
+func (s *StateOld) Running() []string {
 	return s.running
 }
 
-func (s *State) Disks() []*disk.Disk {
+func (s *StateOld) Disks() []*disk.Disk {
 	return s.disks
 }
 
-func (s *State) GetInstaceDisks(instId primitive.ObjectID) []*disk.Disk {
+func (s *StateOld) GetInstaceDisks(instId primitive.ObjectID) []*disk.Disk {
 	return s.instanceDisks[instId]
 }
 
-func (s *State) GetInstanceNamespaces(instId primitive.ObjectID) []string {
+func (s *StateOld) GetInstanceNamespaces(instId primitive.ObjectID) []string {
 	return s.instanceNamespaces[instId]
 }
 
-func (s *State) GetInstaceAuthorities(roles []string) []*authority.Authority {
+func (s *StateOld) GetInstaceAuthorities(roles []string) []*authority.Authority {
 	authrSet := set.NewSet()
 	authrs := []*authority.Authority{}
 
@@ -170,47 +170,47 @@ func (s *State) GetInstaceAuthorities(roles []string) []*authority.Authority {
 	return authrs
 }
 
-func (s *State) DeploymentReserved(deplyId primitive.ObjectID) *deployment.Deployment {
+func (s *StateOld) DeploymentReserved(deplyId primitive.ObjectID) *deployment.Deployment {
 	return s.deploymentsReservedMap[deplyId]
 }
 
-func (s *State) DeploymentsReserved() (
+func (s *StateOld) DeploymentsReserved() (
 	deplys map[primitive.ObjectID]*deployment.Deployment) {
 
 	deplys = s.deploymentsReservedMap
 	return
 }
 
-func (s *State) DeploymentDeployed(deplyId primitive.ObjectID) *deployment.Deployment {
+func (s *StateOld) DeploymentDeployed(deplyId primitive.ObjectID) *deployment.Deployment {
 	return s.deploymentsDeployedMap[deplyId]
 }
 
-func (s *State) DeploymentsDeployed() (
+func (s *StateOld) DeploymentsDeployed() (
 	deplys map[primitive.ObjectID]*deployment.Deployment) {
 
 	deplys = s.deploymentsDeployedMap
 	return
 }
 
-func (s *State) DeploymentsDestroy() (
+func (s *StateOld) DeploymentsDestroy() (
 	deplys map[primitive.ObjectID]*deployment.Deployment) {
 
 	deplys = s.deploymentsInactiveMap
 	return
 }
 
-func (s *State) DeploymentInactive(deplyId primitive.ObjectID) *deployment.Deployment {
+func (s *StateOld) DeploymentInactive(deplyId primitive.ObjectID) *deployment.Deployment {
 	return s.deploymentsInactiveMap[deplyId]
 }
 
-func (s *State) DeploymentsInactive() (
+func (s *StateOld) DeploymentsInactive() (
 	deplys map[primitive.ObjectID]*deployment.Deployment) {
 
 	deplys = s.deploymentsInactiveMap
 	return
 }
 
-func (s *State) Deployment(deplyId primitive.ObjectID) (
+func (s *StateOld) Deployment(deplyId primitive.ObjectID) (
 	deply *deployment.Deployment) {
 
 	deply = s.deploymentsDeployedMap[deplyId]
@@ -231,63 +231,63 @@ func (s *State) Deployment(deplyId primitive.ObjectID) (
 	return
 }
 
-func (s *State) Pod(pdId primitive.ObjectID) *pod.Pod {
+func (s *StateOld) Pod(pdId primitive.ObjectID) *pod.Pod {
 	return s.podsMap[pdId]
 }
 
-func (s *State) Unit(unitId primitive.ObjectID) *unit.Unit {
+func (s *StateOld) Unit(unitId primitive.ObjectID) *unit.Unit {
 	return s.unitsMap[unitId]
 }
 
-func (s *State) Spec(commitId primitive.ObjectID) *spec.Spec {
+func (s *StateOld) Spec(commitId primitive.ObjectID) *spec.Spec {
 	return s.specsMap[commitId]
 }
 
-func (s *State) SpecPod(pdId primitive.ObjectID) *pod.Pod {
+func (s *StateOld) SpecPod(pdId primitive.ObjectID) *pod.Pod {
 	return s.specsPodsMap[pdId]
 }
 
-func (s *State) SpecPodUnits(pdId primitive.ObjectID) []*unit.Unit {
+func (s *StateOld) SpecPodUnits(pdId primitive.ObjectID) []*unit.Unit {
 	return s.specsPodUnitsMap[pdId]
 }
 
-func (s *State) SpecUnit(unitId primitive.ObjectID) *unit.Unit {
+func (s *StateOld) SpecUnit(unitId primitive.ObjectID) *unit.Unit {
 	return s.specsUnitsMap[unitId]
 }
 
-func (s *State) SpecDomain(domnId primitive.ObjectID) *domain.Domain {
+func (s *StateOld) SpecDomain(domnId primitive.ObjectID) *domain.Domain {
 	return s.specsDomainsMap[domnId]
 }
 
-func (s *State) SpecSecret(secrID primitive.ObjectID) *secret.Secret {
+func (s *StateOld) SpecSecret(secrID primitive.ObjectID) *secret.Secret {
 	return s.specsSecretsMap[secrID]
 }
 
-func (s *State) SpecCert(certId primitive.ObjectID) *certificate.Certificate {
+func (s *StateOld) SpecCert(certId primitive.ObjectID) *certificate.Certificate {
 	return s.specsCertsMap[certId]
 }
 
-func (s *State) Vpc(vpcId primitive.ObjectID) *vpc.Vpc {
+func (s *StateOld) Vpc(vpcId primitive.ObjectID) *vpc.Vpc {
 	return s.vpcsMap[vpcId]
 }
 
-func (s *State) VpcIps(vpcId primitive.ObjectID) []*vpc.VpcIp {
+func (s *StateOld) VpcIps(vpcId primitive.ObjectID) []*vpc.VpcIp {
 	return s.vpcIpsMap[vpcId]
 }
 
-func (s *State) VpcIpsMap() map[primitive.ObjectID][]*vpc.VpcIp {
+func (s *StateOld) VpcIpsMap() map[primitive.ObjectID][]*vpc.VpcIp {
 	return s.vpcIpsMap
 }
 
-func (s *State) ArpRecords(namespace string) set.Set {
+func (s *StateOld) ArpRecords(namespace string) set.Set {
 	return s.arpRecords[namespace]
 }
 
-func (s *State) Vpcs() []*vpc.Vpc {
+func (s *StateOld) Vpcs() []*vpc.Vpc {
 	return s.vpcs
 }
 
-func (s *State) DiskInUse(instId, dskId primitive.ObjectID) bool {
+func (s *StateOld) DiskInUse(instId, dskId primitive.ObjectID) bool {
 	curVirt := s.virtsMap[instId]
 
 	if curVirt != nil {
@@ -303,21 +303,21 @@ func (s *State) DiskInUse(instId, dskId primitive.ObjectID) bool {
 	return false
 }
 
-func (s *State) GetVirt(instId primitive.ObjectID) *vm.VirtualMachine {
+func (s *StateOld) GetVirt(instId primitive.ObjectID) *vm.VirtualMachine {
 	if instId.IsZero() {
 		return nil
 	}
 	return s.virtsMap[instId]
 }
 
-func (s *State) GetInstace(instId primitive.ObjectID) *instance.Instance {
+func (s *StateOld) GetInstace(instId primitive.ObjectID) *instance.Instance {
 	if instId.IsZero() {
 		return nil
 	}
 	return s.instancesMap[instId]
 }
 
-func (s *State) init(runtimes *Runtimes) (err error) {
+func (s *StateOld) init(runtimes *Runtimes) (err error) {
 	db := database.GetDatabase()
 	defer db.Close()
 
@@ -325,6 +325,7 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 	totalStart := time.Now()
 	s.nodeSelf = node.Self.Copy()
 
+	// Datacenter
 	dcId := s.nodeSelf.Datacenter
 	if !dcId.IsZero() {
 		dc, e := datacenter.Get(db, dcId)
@@ -335,7 +336,9 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 
 		s.nodeDatacenter = dc
 	}
+	// Datacenter
 
+	// Zone
 	zneId := s.nodeSelf.Zone
 	if !zneId.IsZero() {
 		zne, e := zone.Get(db, zneId)
@@ -346,7 +349,9 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 
 		s.nodeZone = zne
 	}
+	// Zone
 
+	// Zones
 	if s.nodeDatacenter != nil && s.nodeDatacenter.Vxlan() {
 		s.vxlan = true
 
@@ -370,10 +375,12 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 
 		s.nodes = ndes
 	}
+	// Zones
 
 	runtimes.State1 = time.Since(start)
 	start = time.Now()
 
+	// Network
 	namespaces, err := utils.GetNamespaces()
 	if err != nil {
 		return
@@ -386,10 +393,12 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 	}
 	s.interfaces = interfaces
 	s.interfacesSet = interfacesSet
+	// Network
 
 	runtimes.State2 = time.Since(start)
 	start = time.Now()
 
+	// Pools
 	pools, err := pool.GetAll(db, &bson.M{
 		"zone": s.nodeSelf.Zone,
 	})
@@ -397,7 +406,9 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 		return
 	}
 	s.pools = pools
+	// Pools
 
+	// Disks
 	disks, err := disk.GetNode(db, s.nodeSelf.Id, s.nodeSelf.Pools)
 	if err != nil {
 		return
@@ -418,6 +429,7 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 	runtimes.State3 = time.Since(start)
 	start = time.Now()
 
+	// Vpcs
 	vpcs := []*vpc.Vpc{}
 	vpcsId := []primitive.ObjectID{}
 	vpcsMap := map[primitive.ObjectID]*vpc.Vpc{}
@@ -443,10 +455,12 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 		}
 	}
 	s.vpcIpsMap = vpcIpsMap
+	// Vpcs
 
 	runtimes.State4 = time.Since(start)
 	start = time.Now()
 
+	// Deployments
 	deployments, err := deployment.GetAll(db, &bson.M{
 		"node": node.Self.Id,
 	})
@@ -832,10 +846,12 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 	s.deploymentsReservedMap = deploymentsReservedMap
 	s.deploymentsDeployedMap = deploymentsDeployedMap
 	s.deploymentsInactiveMap = deploymentsInactiveMap
+	// Deployments
 
 	runtimes.State8 = time.Since(start)
 	start = time.Now()
 
+	// Instances
 	instances, err := instance.GetAllVirtMapped(db, &bson.M{
 		"node": s.nodeSelf.Id,
 	}, s.pools, instanceDisks)
@@ -877,11 +893,13 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 		return
 	}
 	s.authoritiesMap = authrsMap
+	// Instances
 
 	runtimes.State9 = time.Since(start)
 	start = time.Now()
 
-	curVirts, err := qemu.GetVms(db, instancesMap)
+	// Virtuals
+	curVirts, err := qemu.GetVms(db)
 	if err != nil {
 		return
 	}
@@ -896,12 +914,16 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 		virtsMap[virt.Id] = virt
 	}
 	s.virtsMap = virtsMap
+	// Virtuals
 
+	// Firewalls
 	s.arpRecords = arp.BuildState(s.instances, s.vpcsMap, s.vpcIpsMap)
+	// Firewalls
 
 	runtimes.State10 = time.Since(start)
 	start = time.Now()
 
+	// Firewalls
 	specRules, err := firewall.GetSpecRules(instances, deploymentsNode,
 		specsMap, specsUnitsMap, deploymentsDeployedMap)
 	if err != nil {
@@ -918,16 +940,20 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 	s.firewalls = firewalls
 	s.firewallMaps = firewallMaps
 	s.instanceNamespaces = instNamespaces
+	// Firewalls
 
+	// Schedulers
 	schedulers, err := scheduler.GetAll(db)
 	if err != nil {
 		return
 	}
 	s.schedulers = schedulers
+	// Schedulers
 
 	runtimes.State11 = time.Since(start)
 	start = time.Now()
 
+	// Running
 	items, err := ioutil.ReadDir("/var/run")
 	if err != nil {
 		err = &errortypes.ReadError{
@@ -943,6 +969,7 @@ func (s *State) init(runtimes *Runtimes) (err error) {
 		}
 	}
 	s.running = running
+	// Running
 
 	runtimes.State12 = time.Since(start)
 	runtimes.State = time.Since(totalStart)
