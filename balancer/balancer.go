@@ -44,8 +44,8 @@ type Balancer struct {
 	Comment         string               `bson:"comment" json:"comment"`
 	Type            string               `bson:"type" json:"type"`
 	State           bool                 `bson:"state" json:"state"`
-	Organization    primitive.ObjectID   `bson:"organization,omitempty" json:"organization"`
-	Datacenter      primitive.ObjectID   `bson:"datacenter,omitempty" json:"datacenter"`
+	Organization    primitive.ObjectID   `bson:"organization" json:"organization"`
+	Datacenter      primitive.ObjectID   `bson:"datacenter" json:"datacenter"`
 	Certificates    []primitive.ObjectID `bson:"certificates" json:"certificates"`
 	ClientAuthority primitive.ObjectID   `bson:"client_authority" json:"client_authority"`
 	WebSockets      bool                 `bson:"websockets" json:"websockets"`
