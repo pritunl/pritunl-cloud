@@ -843,33 +843,6 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 	return
 }
 
-func (s *Instances) updateInfo(instances []*instance.Instance) (err error) {
-	acquired, lockId := instancesLock.LockOpen("info")
-	if !acquired {
-		return
-	}
-
-	go func() {
-		defer func() {
-			instancesLock.Unlock("info", lockId)
-		}()
-
-		now := time.Now()
-		ttl := time.Duration(settings.Hypervisor.InfoTtl) * time.Second
-		db := database.GetDatabase()
-		defer db.Close()
-
-		for _, inst := range instances {
-			if inst.Info == nil || now.Sub(inst.Info.Timestamp) > ttl {
-				inst.Info = info.NewInstance(s.stat, inst)
-				err = inst.CommitFields(db, set.NewSet("info"))
-			}
-		}
-	}()
-
-	return
-}
-
 func (s *Instances) Deploy(db *database.Database) (err error) {
 	instances := s.stat.Instances()
 	namespaces := s.stat.Namespaces()
@@ -882,8 +855,8 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 	cpuUnits := 0
 	memoryUnits := 0.0
 
-	s.updateInfo(instances)
-
+	now := time.Now()
+	infoTtl := time.Duration(settings.Hypervisor.InfoTtl) * time.Second
 	waiter := sync.WaitGroup{}
 	for _, inst := range instances {
 		virt := s.stat.GetVirt(inst.Id)
@@ -894,6 +867,8 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 
 			waiter.Add(1)
 			go func() {
+				defer utils.RecoverLog()
+				defer waiter.Done()
 				err := virt.CommitState(db, instance.Cleanup)
 				if err != nil {
 					logrus.WithFields(logrus.Fields{
@@ -904,11 +879,30 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 		} else {
 			waiter.Add(1)
 			go func() {
+				defer utils.RecoverLog()
+				defer waiter.Done()
 				err = virt.Commit(db)
 				if err != nil {
 					logrus.WithFields(logrus.Fields{
 						"error": err,
-					}).Error("qemu: Failed to commit VM state")
+					}).Error("qemu: Failed to commit instance state")
+				}
+			}()
+		}
+
+		if inst.Info == nil || now.Sub(inst.Info.Timestamp) > infoTtl {
+			waiter.Add(1)
+			go func() {
+				defer utils.RecoverLog()
+				defer waiter.Done()
+
+				inst.Info = info.NewInstance(s.stat, inst)
+				fmt.Println("info update")
+				err := inst.CommitFields(db, set.NewSet("info"))
+				if err != nil {
+					logrus.WithFields(logrus.Fields{
+						"error": err,
+					}).Error("qemu: Failed to commit instance info")
 				}
 			}()
 		}
