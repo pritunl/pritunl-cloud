@@ -21,7 +21,7 @@ type Image struct {
 	Name         string             `bson:"name" json:"name"`
 	Comment      string             `bson:"comment" json:"comment"`
 	Deployment   primitive.ObjectID `bson:"deployment,omitempty" json:"deployment"`
-	Organization primitive.ObjectID `bson:"organization,omitempty" json:"organization"`
+	Organization primitive.ObjectID `bson:"organization" json:"organization"`
 	Signed       bool               `bson:"signed" json:"signed"`
 	Type         string             `bson:"type" json:"type"`
 	SystemType   string             `bson:"system_type" json:"system_type"`
