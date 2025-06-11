@@ -32,7 +32,7 @@ type Certificate struct {
 	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Name         string             `bson:"name" json:"name"`
 	Comment      string             `bson:"comment" json:"comment"`
-	Organization primitive.ObjectID `bson:"organization,omitempty" json:"organization"`
+	Organization primitive.ObjectID `bson:"organization" json:"organization"`
 	Type         string             `bson:"type" json:"type"`
 	Key          string             `bson:"key" json:"key"`
 	Certificate  string             `bson:"certificate" json:"certificate"`
@@ -42,7 +42,7 @@ type Certificate struct {
 	AcmeDomains  []string           `bson:"acme_domains" json:"acme_domains"`
 	AcmeType     string             `bson:"acme_type" json:"acme_type"`
 	AcmeAuth     string             `bson:"acme_auth" json:"acme_auth"`
-	AcmeSecret   primitive.ObjectID `bson:"acme_secret,omitempty" json:"acme_secret"`
+	AcmeSecret   primitive.ObjectID `bson:"acme_secret" json:"acme_secret"`
 }
 
 func (c *Certificate) Validate(db *database.Database) (
