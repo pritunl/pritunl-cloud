@@ -14,7 +14,7 @@ type Authority struct {
 	Name         string             `bson:"name" json:"name"`
 	Comment      string             `bson:"comment" json:"comment"`
 	Type         string             `bson:"type" json:"type"`
-	Organization primitive.ObjectID `bson:"organization,omitempty" json:"organization"`
+	Organization primitive.ObjectID `bson:"organization" json:"organization"`
 	NetworkRoles []string           `bson:"network_roles" json:"network_roles"`
 	Key          string             `bson:"key" json:"key"`
 	Roles        []string           `bson:"roles" json:"roles"`
