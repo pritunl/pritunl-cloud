@@ -490,9 +490,7 @@ func nodeInitPost(c *gin.Context) {
 		}
 
 		fires, err := firewall.GetAll(db, &bson.M{
-			"organization": &bson.M{
-				"$exists": false,
-			},
+			"organization":  firewall.Global,
 			"network_roles": "firewall",
 		})
 		if err != nil {
