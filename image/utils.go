@@ -122,17 +122,8 @@ func GetOrgPublic(db *database.Database, orgId, imgId primitive.ObjectID) (
 	img = &Image{}
 
 	err = coll.FindOne(db, &bson.M{
-		"_id": imgId,
-		"$or": []*bson.M{
-			&bson.M{
-				"organization": orgId,
-			},
-			&bson.M{
-				"organization": &bson.M{
-					"$exists": false,
-				},
-			},
-		},
+		"_id":          imgId,
+		"organization": Global,
 	}).Decode(img)
 	if err != nil {
 		err = database.ParseError(err)
@@ -184,17 +175,8 @@ func ExistsOrg(db *database.Database, orgId, imgId primitive.ObjectID) (
 	coll := db.Images()
 
 	n, err := coll.CountDocuments(db, &bson.M{
-		"_id": imgId,
-		"$or": []*bson.M{
-			&bson.M{
-				"organization": orgId,
-			},
-			&bson.M{
-				"organization": &bson.M{
-					"$exists": false,
-				},
-			},
-		},
+		"_id":          imgId,
+		"organization": Global,
 	})
 	if err != nil {
 		err = database.ParseError(err)
