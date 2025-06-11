@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
@@ -883,8 +884,40 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 
 	s.updateInfo(instances)
 
+	waiter := sync.WaitGroup{}
 	for _, inst := range instances {
-		curVirt := s.stat.GetVirt(inst.Id)
+		virt := s.stat.GetVirt(inst.Id)
+		if inst.State == vm.Running &&
+			(virt.State == vm.Stopped || virt.State == vm.Failed) {
+
+			inst.Action = instance.Cleanup
+
+			waiter.Add(1)
+			go func() {
+				err := virt.CommitState(db, instance.Cleanup)
+				if err != nil {
+					logrus.WithFields(logrus.Fields{
+						"error": err,
+					}).Error("qemu: Failed to commit VM state")
+				}
+			}()
+		} else {
+			waiter.Add(1)
+			go func() {
+				err = virt.Commit(db)
+				if err != nil {
+					logrus.WithFields(logrus.Fields{
+						"error": err,
+					}).Error("qemu: Failed to commit VM state")
+				}
+			}()
+		}
+	}
+
+	instIds := set.NewSet()
+	for _, inst := range instances {
+		virt := s.stat.GetVirt(inst.Id)
+		instIds.Add(inst.Id)
 
 		if inst.Action == instance.Destroy {
 			if inst.DeleteProtection {
@@ -892,7 +925,7 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 					"instance_id": inst.Id.Hex(),
 				}).Info("deploy: Delete protection ignore instance destroy")
 
-				if curVirt != nil && curVirt.State == vm.Running {
+				if virt != nil && virt.State == vm.Running {
 					inst.Action = instance.Start
 				} else {
 					inst.Action = instance.Stop
@@ -912,7 +945,7 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 		cpuUnits += inst.Processors
 		memoryUnits += float64(inst.Memory) / float64(1024)
 
-		if curVirt == nil {
+		if virt == nil {
 			if inst.Action == instance.Start {
 				s.create(inst)
 			}
@@ -922,7 +955,7 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 
 		switch inst.Action {
 		case instance.Start:
-			if curVirt.State == vm.Stopped || curVirt.State == vm.Failed {
+			if virt.State == vm.Stopped || virt.State == vm.Failed {
 				dsks := s.stat.GetInstaceDisks(inst.Id)
 
 				for _, dsk := range dsks {
@@ -959,13 +992,13 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 			s.cleanup(inst)
 			continue
 		case instance.Stop:
-			if curVirt.State == vm.Running {
+			if virt.State == vm.Running {
 				s.stop(inst)
 				continue
 			}
 			break
 		case instance.Restart:
-			if curVirt.State == vm.Running {
+			if virt.State == vm.Running {
 				dsks := s.stat.GetInstaceDisks(inst.Id)
 
 				for _, dsk := range dsks {
@@ -976,8 +1009,8 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 
 				s.restart(inst)
 				continue
-			} else if curVirt.State == vm.Stopped ||
-				curVirt.State == vm.Failed {
+			} else if virt.State == vm.Stopped ||
+				virt.State == vm.Failed {
 
 				inst.Action = instance.Start
 				err = inst.CommitFields(db, set.NewSet("action"))
@@ -990,6 +1023,17 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 			break
 		}
 	}
+
+	virts := s.stat.VirtsMap()
+	for _, virt := range virts {
+		if !instIds.Contains(virt.Id) {
+			logrus.WithFields(logrus.Fields{
+				"id": virt.Id.Hex(),
+			}).Info("sync: Unknown instance")
+		}
+	}
+
+	waiter.Wait()
 
 	node.Self.CpuUnitsRes = cpuUnits
 	node.Self.MemoryUnitsRes = memoryUnits
