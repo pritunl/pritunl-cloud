@@ -25,11 +25,11 @@ type Deployment struct {
 	State        string                         `bson:"state" json:"state"`
 	Action       string                         `bson:"action" json:"action"`
 	Status       string                         `bson:"status" json:"status"`
-	Datacenter   primitive.ObjectID             `bson:"datacenter,omitempty" json:"datacenter"`
-	Zone         primitive.ObjectID             `bson:"zone,omitempty" json:"zone"`
-	Node         primitive.ObjectID             `bson:"node,omitempty" json:"node"`
-	Instance     primitive.ObjectID             `bson:"instance,omitempty" json:"instance"`
-	Image        primitive.ObjectID             `bson:"image,omitempty" json:"image"`
+	Datacenter   primitive.ObjectID             `bson:"datacenter" json:"datacenter"`
+	Zone         primitive.ObjectID             `bson:"zone" json:"zone"`
+	Node         primitive.ObjectID             `bson:"node" json:"node"`
+	Instance     primitive.ObjectID             `bson:"instance" json:"instance"`
+	Image        primitive.ObjectID             `bson:"image" json:"image"`
 	Mounts       []*Mount                       `bson:"mounts" json:"mounts"`
 	InstanceData *InstanceData                  `bson:"instance_data,omitempty" json:"instance_data"`
 	ImageData    *ImageData                     `bson:"image_data,omitempty" json:"image_data"`
