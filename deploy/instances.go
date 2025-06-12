@@ -884,7 +884,7 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 				if err != nil {
 					logrus.WithFields(logrus.Fields{
 						"error": err,
-					}).Error("qemu: Failed to commit VM state")
+					}).Error("qemu: Failed to commit instance state")
 				}
 			}()
 		} else {
@@ -908,7 +908,6 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 				defer waiter.Done()
 
 				inst.Info = info.NewInstance(s.stat, inst)
-				fmt.Println("info update")
 				err := inst.CommitFields(db, set.NewSet("info"))
 				if err != nil {
 					logrus.WithFields(logrus.Fields{
