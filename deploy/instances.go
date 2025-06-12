@@ -869,50 +869,53 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 	infoTtl := time.Duration(settings.Hypervisor.InfoTtl) * time.Second
 	for _, inst := range instances {
 		virt := s.stat.GetVirt(inst.Id)
-		if inst.State == vm.Running &&
-			(virt.State == vm.Stopped || virt.State == vm.Failed) {
+		if virt != nil {
+			if inst.State == vm.Running &&
+				(virt.State == vm.Stopped || virt.State == vm.Failed) {
 
-			inst.Action = instance.Cleanup
+				inst.Action = instance.Cleanup
 
-			s.stat.WaitAdd()
-			go func() {
-				defer utils.RecoverLog()
-				defer s.stat.WaitDone()
-				err := virt.CommitState(db, instance.Cleanup)
-				if err != nil {
-					logrus.WithFields(logrus.Fields{
-						"error": err,
-					}).Error("qemu: Failed to commit instance state")
-				}
-			}()
-		} else {
-			s.stat.WaitAdd()
-			go func() {
-				defer utils.RecoverLog()
-				defer s.stat.WaitDone()
-				err = virt.Commit(db)
-				if err != nil {
-					logrus.WithFields(logrus.Fields{
-						"error": err,
-					}).Error("qemu: Failed to commit instance state")
-				}
-			}()
+				s.stat.WaitAdd()
+				go func() {
+					defer utils.RecoverLog()
+					defer s.stat.WaitDone()
+					err := virt.CommitState(db, instance.Cleanup)
+					if err != nil {
+						logrus.WithFields(logrus.Fields{
+							"error": err,
+						}).Error("qemu: Failed to commit instance state")
+					}
+				}()
+			} else {
+				s.stat.WaitAdd()
+				go func() {
+					defer utils.RecoverLog()
+					defer s.stat.WaitDone()
+					err = virt.Commit(db)
+					if err != nil {
+						logrus.WithFields(logrus.Fields{
+							"error": err,
+						}).Error("qemu: Failed to commit instance state")
+					}
+				}()
+			}
 		}
 
 		if inst.Info == nil || now.Sub(inst.Info.Timestamp) > infoTtl {
 			s.stat.WaitAdd()
-			go func() {
+			go func(inst *instance.Instance) {
 				defer utils.RecoverLog()
 				defer s.stat.WaitDone()
 
 				inst.Info = info.NewInstance(s.stat, inst)
+				println("update info")
 				err := inst.CommitFields(db, set.NewSet("info"))
 				if err != nil {
 					logrus.WithFields(logrus.Fields{
 						"error": err,
 					}).Error("qemu: Failed to commit instance info")
 				}
-			}()
+			}(inst)
 		}
 	}
 
