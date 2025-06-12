@@ -1,6 +1,8 @@
 package state
 
 import (
+	"sync"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/authority"
@@ -26,6 +28,8 @@ import (
 )
 
 type State struct {
+	waiter sync.WaitGroup
+
 	// Datacenter
 	NodeDatacenter func() *datacenter.Datacenter
 
@@ -108,6 +112,18 @@ type State struct {
 
 func (s *State) Node() *node.Node {
 	return node.Self
+}
+
+func (s *State) WaitAdd() {
+	s.waiter.Add(1)
+}
+
+func (s *State) WaitDone() {
+	s.waiter.Done()
+}
+
+func (s *State) Wait() {
+	s.waiter.Wait()
 }
 
 func GetState(runtimes *Runtimes) (stat *State, err error) {
