@@ -52,6 +52,7 @@ func (s *Instances) create(inst *instance.Instance) {
 	}
 
 	go func() {
+		defer utils.RecoverLog()
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
@@ -99,6 +100,7 @@ func (s *Instances) start(inst *instance.Instance) {
 	}
 
 	go func() {
+		defer utils.RecoverLog()
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
@@ -160,6 +162,7 @@ func (s *Instances) cleanup(inst *instance.Instance) {
 	}
 
 	go func() {
+		defer utils.RecoverLog()
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
@@ -196,6 +199,7 @@ func (s *Instances) stop(inst *instance.Instance) {
 	}
 
 	go func() {
+		defer utils.RecoverLog()
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
@@ -230,6 +234,7 @@ func (s *Instances) restart(inst *instance.Instance) {
 	}
 
 	go func() {
+		defer utils.RecoverLog()
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
@@ -312,6 +317,7 @@ func (s *Instances) destroy(inst *instance.Instance) {
 	}
 
 	go func() {
+		defer utils.RecoverLog()
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
@@ -374,6 +380,7 @@ func (s *Instances) diskAdd(inst *instance.Instance,
 	}
 
 	go func() {
+		defer utils.RecoverLog()
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
@@ -425,6 +432,7 @@ func (s *Instances) diskRemove(inst *instance.Instance,
 	}
 
 	go func() {
+		defer utils.RecoverLog()
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
@@ -471,6 +479,7 @@ func (s *Instances) usbAdd(inst *instance.Instance, virt *vm.VirtualMachine,
 	}
 
 	go func() {
+		defer utils.RecoverLog()
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
@@ -517,6 +526,7 @@ func (s *Instances) usbRemove(inst *instance.Instance,
 	}
 
 	go func() {
+		defer utils.RecoverLog()
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
@@ -635,6 +645,7 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 	}
 
 	go func() {
+		defer utils.RecoverLog()
 		defer func() {
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
 		}()
