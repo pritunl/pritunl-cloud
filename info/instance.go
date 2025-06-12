@@ -47,8 +47,7 @@ func NewInstance(stat *state.State, inst *instance.Instance) (
 		inf.DriveDevices = nde.InstanceDrives
 	}
 
-	dc := stat.GetDatacenter(inst.Datacenter)
-
+	dc := stat.NodeDatacenter()
 	if dc != nil {
 		inf.Mtu = dc.GetInstanceMtu()
 	}
@@ -101,7 +100,7 @@ func NewInstance(stat *state.State, inst *instance.Instance) (
 		inf.FirewallRules[key] = strings.Join(vals, ", ")
 	}
 
-	authrs := stat.GetInstaceAuthorities(inst.NetworkRoles)
+	authrs := stat.GetInstaceAuthorities(inst.Organization, inst.NetworkRoles)
 	for _, authr := range authrs {
 		inf.Authorities = append(inf.Authorities, authr.Name)
 	}
