@@ -88,11 +88,9 @@ growpart:
     devices: ["/"]
     ignore_growroot_disabled: false
 runcmd:
-  - 'sysctl -w net.ipv4.conf.eth0.send_redirects=0 || true'
   - 'chmod 600 /etc/ssh/*_key || true'
   - 'systemctl restart sshd || true'
-  - [ {{.DeployCommand}} ]{{if .RunScript}}
-  - [ /etc/cloudinit-script ]{{else}}{{end}}
+  - [ {{.DeployRun}} ]
 users:
   - name: root
     {{if eq .RootPasswd ""}}lock-passwd: true{{else}}lock-passwd: false
@@ -112,6 +110,9 @@ bootcmd:
 {{- range .Mounts}}
   - [ "mkdir", "-p", "{{.Path}}" ]
 {{- end}}
+  - 'sysctl -w net.ipv4.conf.eth0.send_redirects=0 || true'
+  - [ sh, -c, '{{.DeployBoot}}' ]{{if .RunScript}}
+  - [ /etc/cloudinit-script ]{{else}}{{end}}
 mounts:
 {{- range .Mounts}}
   - [ "{{.Tag}}", "{{.Path}}", {{.Type}}, "{{.Opts}}", "0", "{{.Fsck}}" ]
@@ -126,11 +127,7 @@ ssh_deletekeys: false
 ssh_pwauth: no
 write_files:{{.WriteFiles}}
 runcmd:
-  - [ sysctl, net.inet.ip.redirect=0 ]
-  - [ ifconfig, vtnet0, inet6, {{.Address6}}/64 ]
-  - [ route, -6, add, default, {{.Gateway6}} ]
-  - [ {{.DeployCommand}} ]{{if .RunScript}}
-  - [ /etc/cloudinit-script ]{{else}}{{end}}
+  - [ {{.DeployRun}} ]
 users:
   - name: root
     {{if eq .RootPasswd ""}}lock-passwd: true{{else}}lock-passwd: false
@@ -149,6 +146,11 @@ bootcmd:
 {{- range .Mounts}}
   - [ "mkdir", "-p", "{{.Path}}" ]
 {{- end}}
+  - [ sysctl, net.inet.ip.redirect=0 ]
+  - [ ifconfig, vtnet0, inet6, {{.Address6}}/64 ]
+  - [ route, -6, add, default, {{.Gateway6}} ]
+  - [ sh, -c, '{{.DeployBoot}}' ]{{if .RunScript}}
+  - [ /etc/cloudinit-script ]{{else}}{{end}}
 mounts:
 {{- range .Mounts}}
   - [ "{{.Tag}}", "{{.Path}}", {{.Type}}, "{{.Opts}}", "0", "{{.Fsck}}" ]
@@ -203,17 +205,18 @@ type netConfigData struct {
 }
 
 type cloudConfigData struct {
-	Hostname      string
-	RootPasswd    string
-	LockPasswd    string
-	WriteFiles    string
-	RunScript     bool
-	DeployCommand string
-	Address6      string
-	Gateway6      string
-	Keys          []string
-	HasMounts     bool
-	Mounts        []cloudMount
+	Hostname   string
+	RootPasswd string
+	LockPasswd string
+	WriteFiles string
+	RunScript  bool
+	DeployRun  string
+	DeployBoot string
+	Address6   string
+	Gateway6   string
+	Keys       []string
+	HasMounts  bool
+	Mounts     []cloudMount
 }
 
 type cloudMount struct {
@@ -245,14 +248,16 @@ func getUserData(db *database.Database, inst *instance.Instance,
 	principals := ""
 	authorizedKeys := ""
 	writeFiles := []*fileData{}
+	initGuestPath := utils.FilterPath(settings.Hypervisor.InitGuestPath)
+	agentGuestPath := utils.FilterPath(settings.Hypervisor.AgentGuestPath)
 
 	data := cloudConfigData{
-		Keys:          []string{},
-		Hostname:      strings.Replace(inst.Name, " ", "_", -1),
-		Address6:      addr6.String(),
-		Gateway6:      gateway6.String(),
-		DeployCommand: settings.Hypervisor.InitGuestPath,
-		Mounts:        []cloudMount{},
+		Keys:      []string{},
+		Hostname:  strings.Replace(inst.Name, " ", "_", -1),
+		Address6:  addr6.String(),
+		Gateway6:  gateway6.String(),
+		DeployRun: initGuestPath,
+		Mounts:    []cloudMount{},
 	}
 
 	if inst.RootEnabled {
@@ -355,28 +360,28 @@ func getUserData(db *database.Database, inst *instance.Instance,
 		if deployUnit.Kind == deployment.Image {
 			deployScript = fmt.Sprintf(
 				deployScriptTmpl,
-				settings.Hypervisor.AgentGuestPath,
+				agentGuestPath,
 				fmt.Sprintf(
-					" && %s engine image&",
-					settings.Hypervisor.AgentGuestPath,
+					" && %s --daemon engine image",
+					agentGuestPath,
 				),
 			)
 		} else if initial {
 			deployScript = fmt.Sprintf(
 				deployScriptTmpl,
-				settings.Hypervisor.AgentGuestPath,
+				agentGuestPath,
 				fmt.Sprintf(
-					" && %s engine initial&",
-					settings.Hypervisor.AgentGuestPath,
+					" && %s --daemon engine initial",
+					agentGuestPath,
 				),
 			)
 		} else {
 			deployScript = fmt.Sprintf(
 				deployScriptTmpl,
-				settings.Hypervisor.AgentGuestPath,
+				agentGuestPath,
 				fmt.Sprintf(
-					" && %s engine post&",
-					settings.Hypervisor.AgentGuestPath,
+					" && %s --daemon engine post",
+					agentGuestPath,
 				),
 			)
 		}
@@ -387,14 +392,26 @@ func getUserData(db *database.Database, inst *instance.Instance,
 			Path:        "/etc/pritunl-deploy.md",
 			Permissions: "0600",
 		})
+
+		data.DeployBoot = fmt.Sprintf(
+			"pgrep -f \"^%s\" || %s --daemon engine post",
+			agentGuestPath,
+			agentGuestPath,
+		)
 	} else {
 		deployScript = fmt.Sprintf(
 			deployScriptTmpl,
-			settings.Hypervisor.AgentGuestPath,
+			agentGuestPath,
 			fmt.Sprintf(
-				" && %s agent&",
-				settings.Hypervisor.AgentGuestPath,
+				" && %s --daemon agent",
+				agentGuestPath,
 			),
+		)
+
+		data.DeployBoot = fmt.Sprintf(
+			"pgrep -f \"^%s\" || %s --daemon agent",
+			agentGuestPath,
+			agentGuestPath,
 		)
 	}
 
@@ -418,7 +435,7 @@ func getUserData(db *database.Database, inst *instance.Instance,
 	writeFiles = append(writeFiles, &fileData{
 		Content:     deployScript,
 		Owner:       owner,
-		Path:        settings.Hypervisor.InitGuestPath,
+		Path:        initGuestPath,
 		Permissions: "0755",
 	})
 
