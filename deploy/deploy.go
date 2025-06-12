@@ -88,5 +88,9 @@ func Deploy(stat *state.State, runtimes *state.Runtimes) (err error) {
 	}
 	runtimes.Imds = time.Since(start)
 
+	start = time.Now()
+	stat.Wait()
+	runtimes.Wait = time.Since(start)
+
 	return
 }
