@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"sort"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
@@ -868,7 +867,6 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 
 	now := time.Now()
 	infoTtl := time.Duration(settings.Hypervisor.InfoTtl) * time.Second
-	waiter := sync.WaitGroup{}
 	for _, inst := range instances {
 		virt := s.stat.GetVirt(inst.Id)
 		if inst.State == vm.Running &&
@@ -876,10 +874,10 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 
 			inst.Action = instance.Cleanup
 
-			waiter.Add(1)
+			s.stat.WaitAdd()
 			go func() {
 				defer utils.RecoverLog()
-				defer waiter.Done()
+				defer s.stat.WaitDone()
 				err := virt.CommitState(db, instance.Cleanup)
 				if err != nil {
 					logrus.WithFields(logrus.Fields{
@@ -888,10 +886,10 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 				}
 			}()
 		} else {
-			waiter.Add(1)
+			s.stat.WaitAdd()
 			go func() {
 				defer utils.RecoverLog()
-				defer waiter.Done()
+				defer s.stat.WaitDone()
 				err = virt.Commit(db)
 				if err != nil {
 					logrus.WithFields(logrus.Fields{
@@ -902,10 +900,10 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 		}
 
 		if inst.Info == nil || now.Sub(inst.Info.Timestamp) > infoTtl {
-			waiter.Add(1)
+			s.stat.WaitAdd()
 			go func() {
 				defer utils.RecoverLog()
-				defer waiter.Done()
+				defer s.stat.WaitDone()
 
 				inst.Info = info.NewInstance(s.stat, inst)
 				err := inst.CommitFields(db, set.NewSet("info"))
@@ -1036,8 +1034,6 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 			}).Info("sync: Unknown instance")
 		}
 	}
-
-	waiter.Wait()
 
 	node.Self.CpuUnitsRes = cpuUnits
 	node.Self.MemoryUnitsRes = memoryUnits
