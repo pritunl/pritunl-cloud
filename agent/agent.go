@@ -3,12 +3,16 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
+	"syscall"
 	"time"
 
+	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/agent/constants"
 	"github.com/pritunl/pritunl-cloud/agent/imds"
 	"github.com/pritunl/pritunl-cloud/agent/utils"
 	"github.com/pritunl/pritunl-cloud/engine"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/imds/types"
 	pritunl_utils "github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/tools/logger"
@@ -22,6 +26,10 @@ Commands:
   image        Sanitize host files and initiate shutdown for imaging
   version      Show version
 `
+
+var (
+	daemon = flag.Bool("daemon", false, "Fork agent to background")
+)
 
 func main() {
 	flag.Usage = func() {
@@ -38,7 +46,19 @@ func main() {
 		fmt.Print(record.String())
 	})
 
-	switch flag.Arg(0) {
+	command := flag.Arg(0)
+	if *daemon && (command == "engine" || command == "agent") {
+		err := daemonFork()
+		if err != nil {
+			logger.WithFields(logger.Fields{
+				"error": err,
+			}).Error("agent: Failed to fork to background")
+			utils.DelayExit(1, 1*time.Second)
+			return
+		}
+	}
+
+	switch command {
 	case "get":
 		ids := &imds.Imds{}
 
@@ -312,5 +332,43 @@ func main() {
 		fmt.Printf(help)
 	}
 
+	return
+}
+
+func daemonFork() (err error) {
+	app, err := os.Executable()
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "agent: Failed to get executable path"),
+		}
+		return
+	}
+
+	args := []string{app}
+	args = append(args, flag.Args()...)
+
+	devNull, err := os.OpenFile(os.DevNull, os.O_WRONLY, 0)
+	if err != nil {
+		err = &errortypes.WriteError{
+			errors.Wrap(err, "agent: Failed to open /dev/null"),
+		}
+		return
+	}
+
+	_, err = os.StartProcess(app, args, &os.ProcAttr{
+		Files: []*os.File{nil, devNull, devNull},
+		Sys: &syscall.SysProcAttr{
+			Setsid: true,
+		},
+	})
+	if err != nil {
+		devNull.Close()
+		err = &errortypes.ExecError{
+			errors.Wrap(err, "agent: Failed to fork agent process"),
+		}
+		return
+	}
+
+	os.Exit(0)
 	return
 }
