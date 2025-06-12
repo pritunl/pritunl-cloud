@@ -891,7 +891,7 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 				go func() {
 					defer utils.RecoverLog()
 					defer s.stat.WaitDone()
-					err = virt.Commit(db)
+					err := virt.Commit(db)
 					if err != nil {
 						logrus.WithFields(logrus.Fields{
 							"error": err,
