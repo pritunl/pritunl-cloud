@@ -908,7 +908,6 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 				defer s.stat.WaitDone()
 
 				inst.Info = info.NewInstance(s.stat, inst)
-				println("update info")
 				err := inst.CommitFields(db, set.NewSet("info"))
 				if err != nil {
 					logrus.WithFields(logrus.Fields{
