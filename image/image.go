@@ -137,6 +137,7 @@ func (i *Image) Upsert(db *database.Database) (err error) {
 		"key":           i.Key,
 		"last_modified": i.LastModified,
 		"storage_class": i.StorageClass,
+		"hash":          i.Hash,
 		"etag":          i.Etag,
 	}
 
