@@ -39,40 +39,6 @@ type Unit struct {
 	UnhealthyOraclePublicIps  []string           `json:"unhealthy_oracle_public_ips"`
 	UnhealthyOraclePublicIps6 []string           `json:"unhealthy_oracle_public_ips6"`
 	UnhealthyOraclePrivateIps []string           `json:"unhealthy_oracle_private_ips"`
-	Deployments               []*Deployment      `json:"deployments"`
-}
-
-type Deployment struct {
-	Id                        primitive.ObjectID `json:"id"`
-	Pod                       primitive.ObjectID `json:"pod"`
-	Unit                      primitive.ObjectID `json:"unit"`
-	Spec                      primitive.ObjectID `json:"spec"`
-	Kind                      string             `json:"kind"`
-	State                     string             `json:"state"`
-	Action                    string             `json:"action"`
-	Node                      primitive.ObjectID `json:"node"`
-	Instance                  primitive.ObjectID `json:"instance"`
-	PublicIps                 []string           `json:"public_ips"`
-	PublicIps6                []string           `json:"public_ips6"`
-	HealthyPublicIps          []string           `json:"healthy_public_ips"`
-	HealthyPublicIps6         []string           `json:"healthy_public_ips6"`
-	UnhealthyPublicIps        []string           `json:"unhealthy_public_ips"`
-	UnhealthyPublicIps6       []string           `json:"unhealthy_public_ips6"`
-	PrivateIps                []string           `json:"private_ips"`
-	PrivateIps6               []string           `json:"private_ips6"`
-	HealthyPrivateIps         []string           `json:"healthy_private_ips"`
-	HealthyPrivateIps6        []string           `json:"healthy_private_ips6"`
-	UnhealthyPrivateIps       []string           `json:"unhealthy_private_ips"`
-	UnhealthyPrivateIps6      []string           `json:"unhealthy_private_ips6"`
-	OraclePublicIps           []string           `json:"oracle_public_ips"`
-	OraclePublicIps6          []string           `json:"oracle_public_ips6"`
-	OraclePrivateIps          []string           `json:"oracle_private_ips"`
-	HealthyOraclePublicIps    []string           `json:"healthy_oracle_public_ips"`
-	HealthyOraclePublicIps6   []string           `json:"healthy_oracle_public_ips6"`
-	HealthyOraclePrivateIps   []string           `json:"healthy_oracle_private_ips"`
-	UnhealthyOraclePublicIps  []string           `json:"unhealthy_oracle_public_ips"`
-	UnhealthyOraclePublicIps6 []string           `json:"unhealthy_oracle_public_ips6"`
-	UnhealthyOraclePrivateIps []string           `json:"unhealthy_oracle_private_ips"`
 }
 
 func NewPods(pods []*pod.Pod, podUnitsMap map[primitive.ObjectID][]*unit.Unit,
@@ -113,7 +79,6 @@ func NewPods(pods []*pod.Pod, podUnitsMap map[primitive.ObjectID][]*unit.Unit,
 				UnhealthyOraclePublicIps:  []string{},
 				UnhealthyOraclePublicIps6: []string{},
 				UnhealthyOraclePrivateIps: []string{},
-				Deployments:               []*Deployment{},
 			}
 
 			for _, unitDeplyId := range pdUnit.Deployments {
@@ -244,39 +209,6 @@ func NewPods(pods []*pod.Pod, podUnitsMap map[primitive.ObjectID][]*unit.Unit,
 						unit.UnhealthyOraclePrivateIps,
 						unhealthyOraclePrivateIps...,
 					)
-
-					unit.Deployments = append(unit.Deployments, &Deployment{
-						Id:                        deply.Id,
-						Pod:                       deply.Pod,
-						Unit:                      deply.Unit,
-						Spec:                      deply.Spec,
-						Kind:                      deply.Kind,
-						State:                     deply.State,
-						Action:                    deply.Action,
-						Node:                      deply.Node,
-						Instance:                  deply.Instance,
-						PublicIps:                 publicIps,
-						PublicIps6:                publicIps6,
-						HealthyPublicIps:          healthyPublicIps,
-						HealthyPublicIps6:         healthyPublicIps6,
-						UnhealthyPublicIps:        unhealthyPublicIps,
-						UnhealthyPublicIps6:       unhealthyPublicIps6,
-						PrivateIps:                privateIps,
-						PrivateIps6:               privateIps6,
-						HealthyPrivateIps:         healthyPrivateIps,
-						HealthyPrivateIps6:        healthyPrivateIps6,
-						UnhealthyPrivateIps:       unhealthyPrivateIps,
-						UnhealthyPrivateIps6:      unhealthyPrivateIps6,
-						OraclePublicIps:           oraclePublicIps,
-						HealthyOraclePublicIps:    healthyOraclePublicIps,
-						UnhealthyOraclePublicIps:  unhealthyOraclePublicIps,
-						OraclePublicIps6:          oraclePublicIps6,
-						HealthyOraclePublicIps6:   healthyOraclePublicIps6,
-						UnhealthyOraclePublicIps6: unhealthyOraclePublicIps6,
-						OraclePrivateIps:          oraclePrivateIps,
-						HealthyOraclePrivateIps:   healthyOraclePrivateIps,
-						UnhealthyOraclePrivateIps: unhealthyOraclePrivateIps,
-					})
 				}
 			}
 
