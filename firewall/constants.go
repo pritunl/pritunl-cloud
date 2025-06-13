@@ -1,5 +1,9 @@
 package firewall
 
+import (
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
+)
+
 const (
 	All       = "all"
 	Icmp      = "icmp"
@@ -7,4 +11,8 @@ const (
 	Udp       = "udp"
 	Multicast = "multicast"
 	Broadcast = "broadcast"
+)
+
+var (
+	Global = primitive.NilObjectID
 )
