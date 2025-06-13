@@ -93,16 +93,7 @@ func GetRoles(db *database.Database, roles []string) (
 	cursor, err := coll.Find(
 		db,
 		&bson.M{
-			"$or": []*bson.M{
-				&bson.M{
-					"organization": nil,
-				},
-				&bson.M{
-					"organization": &bson.M{
-						"$exists": false,
-					},
-				},
-			},
+			"organization": Global,
 			"network_roles": &bson.M{
 				"$in": roles,
 			},
