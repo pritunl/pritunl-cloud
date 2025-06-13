@@ -84,7 +84,7 @@ type Firewall struct {
 	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Name         string             `bson:"name" json:"name"`
 	Comment      string             `bson:"comment" json:"comment"`
-	Organization primitive.ObjectID `bson:"organization,omitempty" json:"organization"`
+	Organization primitive.ObjectID `bson:"organization" json:"organization"`
 	NetworkRoles []string           `bson:"network_roles" json:"network_roles"`
 	Ingress      []*Rule            `bson:"ingress" json:"ingress"`
 }
