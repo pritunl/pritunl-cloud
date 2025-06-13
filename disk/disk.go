@@ -261,10 +261,8 @@ func (d *Disk) Reserve(db *database.Database,
 	coll := db.Disks()
 
 	resp, err := coll.UpdateOne(db, &bson.M{
-		"_id": d.Id,
-		"instance": &bson.M{
-			"$exists": false,
-		},
+		"_id":      d.Id,
+		"instance": Vacant,
 	}, &bson.M{
 		"$set": &bson.M{
 			"instance":   instId,
@@ -295,11 +293,9 @@ func (d *Disk) Unreserve(db *database.Database,
 		"deployment": deplyId,
 	}, &bson.M{
 		"$set": &bson.M{
-			"index": fmt.Sprintf("hold_%s", primitive.NewObjectID().Hex()),
-		},
-		"$unset": &bson.M{
-			"instance":   1,
-			"deployment": 1,
+			"index":      fmt.Sprintf("hold_%s", primitive.NewObjectID().Hex()),
+			"instance":   Vacant,
+			"deployment": Vacant,
 		},
 	})
 	if err != nil {
