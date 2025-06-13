@@ -126,7 +126,9 @@ func (i *Image) Upsert(db *database.Database) (err error) {
 
 	fields := bson.M{
 		"name":          i.Name,
+		"deployment":    i.Deployment,
 		"organization":  i.Organization,
+		"disk":          i.Disk,
 		"signed":        i.Signed,
 		"type":          i.Type,
 		"system_type":   i.SystemType,
@@ -136,13 +138,6 @@ func (i *Image) Upsert(db *database.Database) (err error) {
 		"last_modified": i.LastModified,
 		"storage_class": i.StorageClass,
 		"etag":          i.Etag,
-	}
-
-	if !i.Disk.IsZero() {
-		fields["disk"] = i.Disk
-	}
-	if !i.Deployment.IsZero() {
-		fields["deployment"] = i.Deployment
 	}
 
 	opts := &options.UpdateOptions{}
