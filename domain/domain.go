@@ -24,11 +24,11 @@ type Domain struct {
 	Id            primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Name          string             `bson:"name" json:"name"`
 	Comment       string             `bson:"comment" json:"comment"`
-	Organization  primitive.ObjectID `bson:"organization,omitempty" json:"organization"`
+	Organization  primitive.ObjectID `bson:"organization" json:"organization"`
 	Type          string             `bson:"type" json:"type"`
 	Secret        primitive.ObjectID `bson:"secret" json:"secret"`
 	RootDomain    string             `bson:"root_domain" json:"root_domain"`
-	LockId        primitive.ObjectID `bson:"lock_id,omitempty" json:"lock_id"`
+	LockId        primitive.ObjectID `bson:"lock_id" json:"lock_id"`
 	LockTimestamp time.Time          `bson:"lock_timestamp" json:"lock_timestamp"`
 	LastUpdate    time.Time          `bson:"last_update" json:"last_update"`
 	Records       []*Record          `bson:"-" json:"records"`
