@@ -193,8 +193,10 @@ func (r *Resources) Find(db *database.Database, token string) (
 		break
 	case ImageKind:
 		r.Image, err = image.GetOne(db, &bson.M{
-			"name":         resource,
-			"organization": image.Global,
+			"name": resource,
+			"organization": &bson.M{
+				"$in": []primitive.ObjectID{r.Organization, image.Global},
+			},
 		})
 		if err != nil {
 			if _, ok := err.(*database.NotFoundError); ok {
