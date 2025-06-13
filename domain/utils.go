@@ -372,7 +372,7 @@ func Lock(db *database.Database, domnId primitive.ObjectID) (
 	resp, err := coll.UpdateOne(db, &bson.M{
 		"_id": domnId,
 		"$or": []bson.M{
-			{"lock_id": bson.M{"$exists": false}},
+			{"lock_id": Vacant},
 			{"lock_timestamp": bson.M{"$lt": ttl}},
 		},
 	}, &bson.M{
@@ -432,8 +432,10 @@ func Unlock(db *database.Database, domnId,
 		"_id":     domnId,
 		"lock_id": lockId,
 	}, &bson.M{
+		"$set": &bson.M{
+			"lock_id": Vacant,
+		},
 		"$unset": &bson.M{
-			"lock_id":        1,
 			"lock_timestamp": 1,
 		},
 	})
