@@ -107,11 +107,6 @@ func GetRoles(db *database.Database, roles []string) (
 				"$in": roles,
 			},
 		},
-		&options.FindOptions{
-			Sort: &bson.D{
-				{"_id", 1},
-			},
-		},
 	)
 	if err != nil {
 		err = database.ParseError(err)
@@ -192,11 +187,6 @@ func GetOrgRoles(db *database.Database, orgId primitive.ObjectID,
 			"organization": orgId,
 			"network_roles": &bson.M{
 				"$in": roles,
-			},
-		},
-		&options.FindOptions{
-			Sort: &bson.D{
-				{"_id", 1},
 			},
 		},
 	)
