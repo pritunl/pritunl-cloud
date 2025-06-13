@@ -30,16 +30,16 @@ type Disk struct {
 	Type             string             `bson:"type" json:"type"`
 	SystemType       string             `bson:"system_type" json:"system_type"`
 	Uuid             string             `bson:"uuid" json:"uuid"`
-	Node             primitive.ObjectID `bson:"node,omitempty" json:"node"`
-	Pool             primitive.ObjectID `bson:"pool,omitempty" json:"pool"`
-	Organization     primitive.ObjectID `bson:"organization,omitempty" json:"organization"`
-	Instance         primitive.ObjectID `bson:"instance,omitempty" json:"instance"`
-	SourceInstance   primitive.ObjectID `bson:"source_instance,omitempty" json:"source_instance"`
-	Deployment       primitive.ObjectID `bson:"deployment,omitempty" json:"deployment"`
+	Node             primitive.ObjectID `bson:"node" json:"node"`
+	Pool             primitive.ObjectID `bson:"pool" json:"pool"`
+	Organization     primitive.ObjectID `bson:"organization" json:"organization"`
+	Instance         primitive.ObjectID `bson:"instance" json:"instance"`
+	SourceInstance   primitive.ObjectID `bson:"source_instance" json:"source_instance"`
+	Deployment       primitive.ObjectID `bson:"deployment" json:"deployment"`
 	DeleteProtection bool               `bson:"delete_protection" json:"delete_protection"`
 	FileSystem       string             `bson:"file_system" json:"file_system"`
-	Image            primitive.ObjectID `bson:"image,omitempty" json:"image"`
-	RestoreImage     primitive.ObjectID `bson:"restore_image,omitempty" json:"restore_image"`
+	Image            primitive.ObjectID `bson:"image" json:"image"`
+	RestoreImage     primitive.ObjectID `bson:"restore_image" json:"restore_image"`
 	Backing          bool               `bson:"backing" json:"backing"`
 	BackingImage     string             `bson:"backing_image" json:"backing_image"`
 	Index            string             `bson:"index" json:"index"`
