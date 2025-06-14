@@ -53,7 +53,7 @@ type Instance struct {
 	Image               primitive.ObjectID  `bson:"image" json:"image"`
 	ImageBacking        bool                `bson:"image_backing" json:"image_backing"`
 	DiskType            string              `bson:"disk_type" json:"disk_type"`
-	DiskPool            primitive.ObjectID  `bson:"disk_pool,omitempty" json:"disk_pool"`
+	DiskPool            primitive.ObjectID  `bson:"disk_pool" json:"disk_pool"`
 	Status              string              `bson:"-" json:"status"`
 	StatusInfo          *StatusInfo         `bson:"status_info,omitempty" json:"status_info"`
 	Uptime              string              `bson:"-" json:"uptime"`
@@ -89,8 +89,8 @@ type Instance struct {
 	NoPublicAddress     bool                `bson:"no_public_address" json:"no_public_address"`
 	NoPublicAddress6    bool                `bson:"no_public_address6" json:"no_public_address6"`
 	NoHostAddress       bool                `bson:"no_host_address" json:"no_host_address"`
-	Node                primitive.ObjectID  `bson:"node,omitempty" json:"node"`
-	Shape               primitive.ObjectID  `bson:"shape,omitempty" json:"shape"`
+	Node                primitive.ObjectID  `bson:"node" json:"node"`
+	Shape               primitive.ObjectID  `bson:"shape" json:"shape"`
 	Name                string              `bson:"name" json:"name"`
 	Comment             string              `bson:"comment" json:"comment"`
 	RootEnabled         bool                `bson:"root_enabled" json:"root_enabled"`
@@ -112,7 +112,7 @@ type Instance struct {
 	SpicePassword       string              `bson:"spice_password" json:"spice_password"`
 	SpicePort           int                 `bson:"spice_port" json:"spice_port"`
 	Gui                 bool                `bson:"gui" json:"gui"`
-	Deployment          primitive.ObjectID  `bson:"deployment,omitempty" json:"deployment"`
+	Deployment          primitive.ObjectID  `bson:"deployment" json:"deployment"`
 	Info                *Info               `bson:"info" json:"info"`
 	Virt                *vm.VirtualMachine  `bson:"-" json:"-"`
 
