@@ -17,7 +17,7 @@ import (
 
 type Image struct {
 	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Disk         primitive.ObjectID `bson:"disk,omitempty" json:"disk"`
+	Disk         primitive.ObjectID `bson:"disk" json:"disk"`
 	Name         string             `bson:"name" json:"name"`
 	Comment      string             `bson:"comment" json:"comment"`
 	Deployment   primitive.ObjectID `bson:"deployment" json:"deployment"`
