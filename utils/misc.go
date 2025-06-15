@@ -3,10 +3,12 @@ package utils
 import (
 	"io/ioutil"
 	"os/exec"
+	"runtime/debug"
 	"strings"
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
+	"github.com/sirupsen/logrus"
 )
 
 var isSystemd *bool
@@ -222,4 +224,14 @@ func HasMatchingItem(s1, s2 []string) bool {
 		}
 	}
 	return false
+}
+
+func RecoverLog() {
+	panc := recover()
+	if panc != nil {
+		logrus.WithFields(logrus.Fields{
+			"trace": string(debug.Stack()),
+			"panic": panc,
+		}).Error("sync: Panic in goroutine")
+	}
 }
