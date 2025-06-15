@@ -14,7 +14,7 @@ type Plan struct {
 	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Name         string             `bson:"name" json:"name"`
 	Comment      string             `bson:"comment" json:"comment"`
-	Organization primitive.ObjectID `bson:"organization,omitempty" json:"organization"`
+	Organization primitive.ObjectID `bson:"organization" json:"organization"`
 	Statements   []*Statement       `bson:"statements" json:"statements"`
 }
 
