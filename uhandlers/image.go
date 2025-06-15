@@ -188,6 +188,7 @@ func imagesGet(c *gin.Context) {
 		}
 
 		query := &bson.M{
+			"organization": image.Global,
 			"storage": &bson.M{
 				"$in": dc.PublicStorages,
 			},
@@ -227,14 +228,10 @@ func imagesGet(c *gin.Context) {
 		pageCount, _ := strconv.ParseInt(c.Query("page_count"), 10, 0)
 
 		query := bson.M{
-			"$or": []*bson.M{
-				&bson.M{
-					"organization": userOrg,
-				},
-				&bson.M{
-					"organization": &bson.M{
-						"$exists": false,
-					},
+			"organization": &bson.M{
+				"$in": []primitive.ObjectID{
+					image.Global,
+					userOrg,
 				},
 			},
 		}
@@ -249,14 +246,10 @@ func imagesGet(c *gin.Context) {
 			query = bson.M{
 				"$and": []*bson.M{
 					&bson.M{
-						"$or": []*bson.M{
-							&bson.M{
-								"organization": userOrg,
-							},
-							&bson.M{
-								"organization": &bson.M{
-									"$exists": false,
-								},
+						"organization": &bson.M{
+							"$in": []primitive.ObjectID{
+								image.Global,
+								userOrg,
 							},
 						},
 					},
