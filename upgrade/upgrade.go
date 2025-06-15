@@ -18,5 +18,10 @@ func Upgrade() (err error) {
 		return
 	}
 
+	err = objectIdUpgrade(db)
+	if err != nil {
+		return
+	}
+
 	return
 }
