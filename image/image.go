@@ -182,6 +182,9 @@ func (i *Image) Sync(db *database.Database) (err error) {
 			},
 			&bson.M{
 				"$set": &bson.M{
+					"disk":          primitive.NilObjectID,
+					"deployment":    primitive.NilObjectID,
+					"organization":  primitive.NilObjectID,
 					"storage":       i.Storage,
 					"key":           i.Key,
 					"signed":        i.Signed,
