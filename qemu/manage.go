@@ -347,8 +347,7 @@ func SetState(virt *vm.VirtualMachine, state string) {
 	store.SetVirt(virt.Id, virt)
 }
 
-func GetVms(db *database.Database,
-	instMap map[primitive.ObjectID]*instance.Instance) (
+func GetVms(db *database.Database) (
 	virts []*vm.VirtualMachine, err error) {
 
 	systemdPath := settings.Hypervisor.SystemdPath
@@ -397,21 +396,6 @@ func GetVms(db *database.Database,
 			}
 
 			if virt != nil {
-				inst := instMap[vmId]
-				if inst != nil && inst.State == vm.Running &&
-					(virt.State == vm.Stopped || virt.State == vm.Failed) {
-
-					inst.Action = instance.Cleanup
-					e = virt.CommitState(db, instance.Cleanup)
-				} else {
-					e = virt.Commit(db)
-				}
-				if e != nil {
-					logrus.WithFields(logrus.Fields{
-						"error": e,
-					}).Error("qemu: Failed to commit VM state")
-				}
-
 				virtsLock.Lock()
 				virts = append(virts, virt)
 				virtsLock.Unlock()
