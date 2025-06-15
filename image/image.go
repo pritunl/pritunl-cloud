@@ -182,8 +182,6 @@ func (i *Image) Sync(db *database.Database) (err error) {
 			},
 			&bson.M{
 				"$set": &bson.M{
-					"disk":          primitive.NilObjectID,
-					"deployment":    primitive.NilObjectID,
 					"organization":  primitive.NilObjectID,
 					"storage":       i.Storage,
 					"key":           i.Key,
@@ -195,7 +193,9 @@ func (i *Image) Sync(db *database.Database) (err error) {
 					"storage_class": i.StorageClass,
 				},
 				"$setOnInsert": &bson.M{
-					"name": i.Name,
+					"name":       i.Name,
+					"disk":       primitive.NilObjectID,
+					"deployment": primitive.NilObjectID,
 				},
 			},
 		)
@@ -223,8 +223,6 @@ func (i *Image) Sync(db *database.Database) (err error) {
 			},
 			&bson.M{
 				"$set": &bson.M{
-					"disk":          primitive.NilObjectID,
-					"deployment":    primitive.NilObjectID,
 					"organization":  primitive.NilObjectID,
 					"name":          i.Name,
 					"storage":       i.Storage,
@@ -234,6 +232,10 @@ func (i *Image) Sync(db *database.Database) (err error) {
 					"firmware":      i.Firmware,
 					"etag":          i.Etag,
 					"last_modified": i.LastModified,
+				},
+				"$setOnInsert": &bson.M{
+					"disk":       primitive.NilObjectID,
+					"deployment": primitive.NilObjectID,
 				},
 			},
 			opts,
