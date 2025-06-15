@@ -41,14 +41,14 @@ func (p *InstancesState) NodePortsMap() map[string][]*nodeport.Mapping {
 }
 
 func (p *InstancesState) GetInstaceAuthorities(
-	roles []string) []*authority.Authority {
+	orgId primitive.ObjectID, roles []string) []*authority.Authority {
 
 	authrSet := set.NewSet()
 	authrs := []*authority.Authority{}
 
 	for _, role := range roles {
 		for _, authr := range p.authoritiesMap[role] {
-			if authrSet.Contains(authr.Id) {
+			if authrSet.Contains(authr.Id) || authr.Organization != orgId {
 				continue
 			}
 			authrSet.Add(authr.Id)
