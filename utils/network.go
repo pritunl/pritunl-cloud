@@ -272,3 +272,15 @@ func IsInterfaceBridge(iface string) (bridge bool, err error) {
 
 	return
 }
+
+func FilterIp(input string) string {
+	input = strings.TrimSpace(input)
+	if input == "" {
+		return ""
+	}
+	ip := net.ParseIP(input)
+	if ip == nil {
+		return ""
+	}
+	return ip.String()
+}
