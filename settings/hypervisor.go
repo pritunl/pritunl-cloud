@@ -51,7 +51,7 @@ type hypervisor struct {
 	ImdsAddress           string `bson:"imds_address" default:"169.254.169.254/16"`
 	ImdsPort              int    `bson:"imds_port" default:"80"`
 	ImdsSyncLogTimeout    int    `bson:"imds_sync_log_timeout" default:"20"`
-	InfoTtl               int    `bson:"info_ttl" default:"5"`
+	InfoTtl               int    `bson:"info_ttl" default:"10"`
 	UsbHsPorts            int    `bson:"usb_hs_ports" default:"4"`
 	UsbSsPorts            int    `bson:"usb_ss_ports" default:"4"`
 	VirtioHid             bool   `bson:"virtio_hid"`
