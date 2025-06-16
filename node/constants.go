@@ -73,6 +73,13 @@ var (
 		VirtioGlVulkan,
 		VirtioPciGl,
 		VirtioPciGlVulkan,
+		VirtioPrime,
+		VirtioPciPrime,
+		VirtioVgaGlPrime,
+		VirtioGlPrime,
+		VirtioGlVulkanPrime,
+		VirtioPciGlPrime,
+		VirtioPciGlVulkanPrime,
 	)
 	VgaRenderModes = set.NewSet(
 		VirtioPci,
@@ -81,5 +88,11 @@ var (
 		VirtioGlVulkan,
 		VirtioPciGl,
 		VirtioPciGlVulkan,
+		VirtioPciPrime,
+		VirtioVgaGlPrime,
+		VirtioGlPrime,
+		VirtioGlVulkanPrime,
+		VirtioPciGlPrime,
+		VirtioPciGlVulkanPrime,
 	)
 )
