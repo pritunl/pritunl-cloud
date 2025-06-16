@@ -18,7 +18,9 @@ const (
 	ProcDir = "/proc"
 )
 
-func GetEnv(username, driPath string) (envData string, err error) {
+func GetEnv(username, driPath string, driPrime bool) (
+	envData string, err error) {
+
 	desktopEnv := settings.Hypervisor.DesktopEnv
 
 	files, err := ioutil.ReadDir(ProcDir)
@@ -156,6 +158,9 @@ func GetEnv(username, driPath string) (envData string, err error) {
 				"\nEnvironment=\"DRI_RENDER_DEVICE=%s\"",
 				driPath,
 			)
+		}
+		if driPrime {
+			envData += "\nEnvironment=\"DRI_PRIME=1\""
 		}
 
 		return
