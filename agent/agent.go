@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 	"syscall"
 	"time"
 
@@ -47,14 +48,45 @@ func main() {
 	})
 
 	command := flag.Arg(0)
-	if *daemon && (command == "engine" || command == "agent") {
-		err := daemonFork()
-		if err != nil {
-			logger.WithFields(logger.Fields{
-				"error": err,
-			}).Error("agent: Failed to fork to background")
-			utils.DelayExit(1, 1*time.Second)
+	if command == "engine" || command == "agent" {
+		envStateData := os.Getenv("IMDS_STATE")
+		envStateDatas := strings.Split(envStateData, ":")
+		if len(envStateDatas) != 2 {
+			fmt.Println("pritunl-cloud-agent: Invalid state")
+			os.Exit(1)
 			return
+		}
+		stage := envStateDatas[0]
+		envState := envStateDatas[1]
+
+		if stage == "run" {
+			err := imds.SetState(envState)
+			if err != nil {
+				logger.WithFields(logger.Fields{
+					"error": err,
+				}).Error("agent: Failed to write imds state")
+				utils.DelayExit(1, 1*time.Second)
+				return
+			}
+		} else {
+			confState := imds.GetState()
+
+			if envState != "" && confState != envState {
+				fmt.Println("pritunl-cloud-agent: Waiting for state")
+				os.Exit(0)
+				return
+			}
+		}
+
+		if *daemon {
+			err := daemonFork()
+			if err != nil {
+				logger.WithFields(logger.Fields{
+					"error": err,
+				}).Error("agent: Failed to fork to background")
+				utils.DelayExit(1, 1*time.Second)
+				return
+			}
 		}
 	}
 
