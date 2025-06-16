@@ -18,7 +18,7 @@ const (
 	ProcDir = "/proc"
 )
 
-func GetEnv(username string) (envData string, err error) {
+func GetEnv(username, driPath string) (envData string, err error) {
 	desktopEnv := settings.Hypervisor.DesktopEnv
 
 	files, err := ioutil.ReadDir(ProcDir)
@@ -150,6 +150,13 @@ func GetEnv(username string) (envData string, err error) {
 		}
 
 		envData += fmt.Sprintf("\nEnvironment=\"XAUTHORITY=%s\"", xauthEnv)
+
+		if driPath != "" {
+			envData += fmt.Sprintf(
+				"\nEnvironment=\"DRI_RENDER_DEVICE=%s\"",
+				driPath,
+			)
+		}
 
 		return
 	}
