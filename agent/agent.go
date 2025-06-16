@@ -368,6 +368,8 @@ func main() {
 }
 
 func daemonFork() (err error) {
+	fmt.Println("pritunl-cloud-agent: Forking daemon process")
+
 	app, err := os.Executable()
 	if err != nil {
 		err = &errortypes.ReadError{
