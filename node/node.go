@@ -777,6 +777,10 @@ func (n *Node) Validate(db *database.Database) (
 
 	newShares := []*Share{}
 	for _, share := range n.Shares {
+		if share.Type == "" && share.Path == "" {
+			continue
+		}
+
 		share.Type = HostPath
 		share.Path = utils.FilterPath(share.Path)
 
