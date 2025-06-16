@@ -219,6 +219,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 		}
 	}
 
+	vgaPrime := false
 	if !gpuPassthrough && (q.Vnc || q.Spice || q.Gui) {
 		if q.Gui {
 			cmd = append(cmd, "-display")
@@ -248,31 +249,67 @@ func (q *Qemu) Marshal() (output string, err error) {
 			cmd = append(cmd, "virtio-gpu-pci")
 			cmd = append(cmd, "-vga")
 			cmd = append(cmd, "none")
+		case node.VirtioPciPrime:
+			cmd = append(cmd, "-device")
+			cmd = append(cmd, "virtio-gpu-pci")
+			cmd = append(cmd, "-vga")
+			cmd = append(cmd, "none")
+			vgaPrime = true
 		case node.VirtioVgaGl:
 			cmd = append(cmd, "-device")
 			cmd = append(cmd, "virtio-vga-gl")
 			cmd = append(cmd, "-vga")
 			cmd = append(cmd, "none")
+		case node.VirtioVgaGlPrime:
+			cmd = append(cmd, "-device")
+			cmd = append(cmd, "virtio-vga-gl")
+			cmd = append(cmd, "-vga")
+			cmd = append(cmd, "none")
+			vgaPrime = true
 		case node.VirtioGl:
 			cmd = append(cmd, "-device")
 			cmd = append(cmd, "virtio-gpu-gl")
 			cmd = append(cmd, "-vga")
 			cmd = append(cmd, "none")
+		case node.VirtioGlPrime:
+			cmd = append(cmd, "-device")
+			cmd = append(cmd, "virtio-gpu-gl")
+			cmd = append(cmd, "-vga")
+			cmd = append(cmd, "none")
+			vgaPrime = true
 		case node.VirtioGlVulkan:
 			cmd = append(cmd, "-device")
 			cmd = append(cmd, "virtio-gpu-gl,venus=true")
 			cmd = append(cmd, "-vga")
 			cmd = append(cmd, "none")
+		case node.VirtioGlVulkanPrime:
+			cmd = append(cmd, "-device")
+			cmd = append(cmd, "virtio-gpu-gl,venus=true")
+			cmd = append(cmd, "-vga")
+			cmd = append(cmd, "none")
+			vgaPrime = true
 		case node.VirtioPciGl:
 			cmd = append(cmd, "-device")
 			cmd = append(cmd, "virtio-gpu-gl-pci")
 			cmd = append(cmd, "-vga")
 			cmd = append(cmd, "none")
+		case node.VirtioPciGlPrime:
+			cmd = append(cmd, "-device")
+			cmd = append(cmd, "virtio-gpu-gl-pci")
+			cmd = append(cmd, "-vga")
+			cmd = append(cmd, "none")
+			vgaPrime = true
 		case node.VirtioPciGlVulkan:
 			cmd = append(cmd, "-device")
 			cmd = append(cmd, "virtio-gpu-gl-pci,venus=true")
 			cmd = append(cmd, "-vga")
 			cmd = append(cmd, "none")
+		case node.VirtioPciGlVulkanPrime:
+			cmd = append(cmd, "-device")
+			cmd = append(cmd, "virtio-gpu-gl-pci,venus=true")
+			cmd = append(cmd, "-vga")
+			cmd = append(cmd, "none")
+			vgaPrime = true
 		default:
 			cmd = append(cmd, "-vga")
 			cmd = append(cmd, nodeVga)
@@ -703,7 +740,8 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 	compositorEnv := ""
 	if q.Gui {
-		compositorEnv, err = compositor.GetEnv(q.GuiUser)
+		compositorEnv, err = compositor.GetEnv(
+			q.GuiUser, nodeVgaRenderPath, vgaPrime)
 		if err != nil {
 			return
 		}
