@@ -34,6 +34,7 @@ type Imds struct {
 	Address     string            `json:"address"`
 	Port        int               `json:"port"`
 	Secret      string            `json:"secret"`
+	State       string            `json:"state"`
 	engine      *engine.Engine    `json:"-"`
 	initialized bool              `json:"-"`
 	waiter      sync.WaitGroup    `json:"-"`
