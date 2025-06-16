@@ -403,14 +403,25 @@ func getUserData(db *database.Database, inst *instance.Instance,
 			Permissions: "0600",
 		})
 
-		data.DeployBoot = fmt.Sprintf(
-			"[ -f %s ] && ! pgrep -f \"^%s\" && "+
-				"IMDS_STATE=\"boot:%s\" %s --daemon engine post",
-			agentGuestPath,
-			agentGuestPath,
-			stateId,
-			agentGuestPath,
-		)
+		if virt.CloudType == instance.BSD {
+			data.DeployBoot = fmt.Sprintf(
+				"[ -f %s ] && ! pgrep -f \"%s --daemon\" && "+
+					"IMDS_STATE=\"boot:%s\" %s --daemon engine post",
+				agentGuestPath,
+				agentGuestPath,
+				stateId,
+				agentGuestPath,
+			)
+		} else {
+			data.DeployBoot = fmt.Sprintf(
+				"[ -f %s ] && ! pgrep -f \"^%s\" && "+
+					"IMDS_STATE=\"boot:%s\" %s --daemon engine post",
+				agentGuestPath,
+				agentGuestPath,
+				stateId,
+				agentGuestPath,
+			)
+		}
 	} else {
 		deployScript = fmt.Sprintf(
 			deployScriptTmpl,
@@ -422,14 +433,25 @@ func getUserData(db *database.Database, inst *instance.Instance,
 			),
 		)
 
-		data.DeployBoot = fmt.Sprintf(
-			"[ -f %s ] && ! pgrep -f \"^%s\" && "+
-				"IMDS_STATE=\"boot:%s\" %s --daemon agent",
-			agentGuestPath,
-			agentGuestPath,
-			stateId,
-			agentGuestPath,
-		)
+		if virt.CloudType == instance.BSD {
+			data.DeployBoot = fmt.Sprintf(
+				"[ -f %s ] && ! pgrep -f \"%s --daemon\" && "+
+					"IMDS_STATE=\"boot:%s\" %s --daemon agent",
+				agentGuestPath,
+				agentGuestPath,
+				stateId,
+				agentGuestPath,
+			)
+		} else {
+			data.DeployBoot = fmt.Sprintf(
+				"[ -f %s ] && ! pgrep -f \"^%s\" && "+
+					"IMDS_STATE=\"boot:%s\" %s --daemon agent",
+				agentGuestPath,
+				agentGuestPath,
+				stateId,
+				agentGuestPath,
+			)
+		}
 	}
 
 	for _, mnt := range virt.Mounts {
