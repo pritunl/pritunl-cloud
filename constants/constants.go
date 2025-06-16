@@ -35,12 +35,9 @@ var (
 		),
 	}
 	StaticTestingRoot = []string{
-		"www/dist-dev",
+		"/home/cloud/git/pritunl-cloud/www/dist-dev",
+		"/home/cloud/go/src/github.com/pritunl/pritunl-cloud/www/dist-dev",
 		"/usr/share/pritunl-cloud/www",
-		path.Join(
-			build.Default.GOPATH,
-			"src/github.com/pritunl/pritunl-cloud/www",
-		),
 	}
 )
 
