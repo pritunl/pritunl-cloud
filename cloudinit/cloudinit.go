@@ -231,6 +231,7 @@ type imdsConfig struct {
 	Address string `json:"address"`
 	Port    int    `json:"port"`
 	Secret  string `json:"secret"`
+	State   string `json:"state"`
 }
 
 func getUserData(db *database.Database, inst *instance.Instance,
@@ -313,6 +314,12 @@ func getUserData(db *database.Database, inst *instance.Instance,
 		})
 	}
 
+	stateObjId, err := utils.RandObjectId()
+	if err != nil {
+		return
+	}
+	stateId := stateObjId.Hex()
+
 	imdsConf := &imdsConfig{
 		Address: strings.Split(settings.Hypervisor.ImdsAddress, "/")[0],
 		Port:    settings.Hypervisor.ImdsPort,
@@ -362,7 +369,8 @@ func getUserData(db *database.Database, inst *instance.Instance,
 				deployScriptTmpl,
 				agentGuestPath,
 				fmt.Sprintf(
-					" && %s --daemon engine image",
+					" && IMDS_STATE=\"run:%s\" %s --daemon engine image",
+					stateId,
 					agentGuestPath,
 				),
 			)
@@ -371,7 +379,8 @@ func getUserData(db *database.Database, inst *instance.Instance,
 				deployScriptTmpl,
 				agentGuestPath,
 				fmt.Sprintf(
-					" && %s --daemon engine initial",
+					" && IMDS_STATE=\"run:%s\" %s --daemon engine initial",
+					stateId,
 					agentGuestPath,
 				),
 			)
@@ -380,7 +389,8 @@ func getUserData(db *database.Database, inst *instance.Instance,
 				deployScriptTmpl,
 				agentGuestPath,
 				fmt.Sprintf(
-					" && %s --daemon engine post",
+					" && IMDS_STATE=\"run:%s\" %s --daemon engine post",
+					stateId,
 					agentGuestPath,
 				),
 			)
@@ -394,8 +404,11 @@ func getUserData(db *database.Database, inst *instance.Instance,
 		})
 
 		data.DeployBoot = fmt.Sprintf(
-			"pgrep -f \"^%s\" || %s --daemon engine post",
+			"[ -f %s ] && ! pgrep -f \"^%s\" && "+
+				"IMDS_STATE=\"boot:%s\" %s --daemon engine post",
 			agentGuestPath,
+			agentGuestPath,
+			stateId,
 			agentGuestPath,
 		)
 	} else {
@@ -403,14 +416,18 @@ func getUserData(db *database.Database, inst *instance.Instance,
 			deployScriptTmpl,
 			agentGuestPath,
 			fmt.Sprintf(
-				" && %s --daemon agent",
+				" && IMDS_STATE=\"run:%s\" %s --daemon agent",
+				stateId,
 				agentGuestPath,
 			),
 		)
 
 		data.DeployBoot = fmt.Sprintf(
-			"pgrep -f \"^%s\" || %s --daemon agent",
+			"[ -f %s ] && ! pgrep -f \"^%s\" && "+
+				"IMDS_STATE=\"boot:%s\" %s --daemon agent",
 			agentGuestPath,
+			agentGuestPath,
+			stateId,
 			agentGuestPath,
 		)
 	}
