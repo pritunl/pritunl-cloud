@@ -13,15 +13,38 @@ const (
 	Qemu = "qemu"
 	Kvm  = "kvm"
 
-	Std               = "std"
-	Vmware            = "vmware"
-	Virtio            = "virtio"               // virtio-vga
-	VirtioPci         = "virtio_pci"           // virtio-gpu-pci
-	VirtioVgaGl       = "virtio_vga_gl"        // virtio-vga-gl
-	VirtioGl          = "virtio_gl"            // virtio-gpu-gl
-	VirtioGlVulkan    = "virtio_gl_vulkan"     // virtio-gpu-gl,venus=true
-	VirtioPciGl       = "virtio_pci_gl"        // virtio-gpu-gl-pci
-	VirtioPciGlVulkan = "virtio_pci_gl_vulkan" // virtio-gpu-gl-pci,venus=true
+	// std
+	Std = "std"
+	// vmware
+	Vmware = "vmware"
+	// virtio-vga
+	Virtio = "virtio"
+	// virtio-gpu-pci
+	VirtioPci = "virtio_pci"
+	// virtio-vga-gl
+	VirtioVgaGl = "virtio_vga_gl"
+	// virtio-gpu-gl
+	VirtioGl = "virtio_gl"
+	// virtio-gpu-gl,venus=true
+	VirtioGlVulkan = "virtio_gl_vulkan"
+	// virtio-gpu-gl-pci
+	VirtioPciGl = "virtio_pci_gl"
+	// virtio-gpu-gl-pci,venus=true
+	VirtioPciGlVulkan = "virtio_pci_gl_vulkan"
+	// virtio-vga prime=1
+	VirtioPrime = "virtio_prime"
+	// virtio-gpu-pci prime=1
+	VirtioPciPrime = "virtio_pci_prime"
+	// virtio-vga-gl prime=1
+	VirtioVgaGlPrime = "virtio_vga_gl_prime"
+	// virtio-gpu-gl prime=1
+	VirtioGlPrime = "virtio_gl_prime"
+	// virtio-gpu-gl,venus=true prime=1
+	VirtioGlVulkanPrime = "virtio_gl_vulkan_prime"
+	// virtio-gpu-gl-pci prime=1
+	VirtioPciGlPrime = "virtio_pci_gl_prime"
+	// virtio-gpu-gl-pci,venus=true prime=1
+	VirtioPciGlVulkanPrime = "virtio_pci_gl_vulkan_prime"
 
 	Sdl = "sdl"
 	Gtk = "gtk"
