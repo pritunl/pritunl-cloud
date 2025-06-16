@@ -818,7 +818,9 @@ func writeImageQcow(db *database.Database, dsk *disk.Disk) (
 		}
 	}
 
-	if img.Type == storage.Public || img.Type == storage.Web {
+	if img.Type == storage.Public || img.Type == storage.Web ||
+		!img.Deployment.IsZero() {
+
 		cacheDir := node.Self.GetCachePath()
 
 		imagePth := path.Join(
@@ -1178,7 +1180,9 @@ func writeImageLvm(db *database.Database, dsk *disk.Disk,
 
 	largeBase := strings.Contains(img.Key, "fedora")
 
-	if img.Type == storage.Public {
+	if img.Type == storage.Public || img.Type == storage.Web ||
+		!img.Deployment.IsZero() {
+
 		cacheDir := node.Self.GetCachePath()
 
 		imagePth := path.Join(
