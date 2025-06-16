@@ -1275,6 +1275,7 @@ func (n *Node) update(db *database.Database) (err error) {
 	}
 
 	n.Id = nde.Id
+	n.Datacenter = nde.Datacenter
 	n.Zone = nde.Zone
 	n.Name = nde.Name
 	n.Comment = nde.Comment
