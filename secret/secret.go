@@ -21,6 +21,7 @@ type Secret struct {
 	Value        string             `bson:"value" json:"value"`
 	Region       string             `bson:"region" json:"region"`
 	PublicKey    string             `bson:"public_key" json:"public_key"`
+	Data         string             `bson:"data" json:"data"`
 	PrivateKey   string             `bson:"private_key" json:"-"`
 }
 
@@ -44,6 +45,20 @@ func (c *Secret) Validate(db *database.Database) (
 
 		break
 	case OracleCloud:
+		break
+	case Json:
+		c.Key = ""
+		c.Value = ""
+		c.Region = ""
+
+		if !JsonValid(c.Data) {
+			errData = &errortypes.ErrorData{
+				Error:   "invalid_secret_json",
+				Message: "Secret json data invalid",
+			}
+			return
+		}
+
 		break
 	default:
 		errData = &errortypes.ErrorData{
