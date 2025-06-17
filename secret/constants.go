@@ -8,6 +8,7 @@ const (
 	AWS         = "aws"
 	Cloudflare  = "cloudflare"
 	OracleCloud = "oracle_cloud"
+	Json        = "json"
 )
 
 var (
