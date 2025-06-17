@@ -27,6 +27,7 @@ type secretData struct {
 	Type         string             `json:"type"`
 	Key          string             `json:"key"`
 	Value        string             `json:"value"`
+	Data         string             `json:"data"`
 	Region       string             `json:"region"`
 }
 
@@ -70,6 +71,7 @@ func secretPut(c *gin.Context) {
 	secr.Type = data.Type
 	secr.Key = data.Key
 	secr.Value = data.Value
+	secr.Data = data.Data
 	secr.Region = data.Region
 
 	fields := set.NewSet(
@@ -79,6 +81,7 @@ func secretPut(c *gin.Context) {
 		"type",
 		"key",
 		"value",
+		"data",
 		"region",
 		"public_key",
 		"private_key",
@@ -132,6 +135,7 @@ func secretPost(c *gin.Context) {
 		Type:         data.Type,
 		Key:          data.Key,
 		Value:        data.Value,
+		Data:         data.Data,
 		Region:       data.Region,
 	}
 
