@@ -1,14 +1,18 @@
 package resource
 
 import (
+	"strings"
+
 	"github.com/pritunl/pritunl-cloud/finder"
 	"github.com/pritunl/pritunl-cloud/imds/server/config"
+	"github.com/pritunl/pritunl-cloud/secret"
 )
 
 func Query(resrc string, keys ...string) (val string, err error) {
 	var resrcInf interface{}
 
 	key := ""
+	isJson := false
 
 	switch resrc {
 	case finder.InstanceKind:
@@ -59,6 +63,11 @@ func Query(resrc string, keys ...string) (val string, err error) {
 		for _, secr := range config.Config.Secrets {
 			if secr.Name == keys[0] {
 				resrcInf = secr
+				if secr.Type == secret.Json &&
+					strings.HasPrefix(key, "data.") {
+
+					isJson = true
+				}
 				break
 			}
 		}
@@ -126,7 +135,7 @@ func Query(resrc string, keys ...string) (val string, err error) {
 		return
 	}
 
-	val, err = selector(resrcInf, key)
+	val, err = selector(resrcInf, key, isJson)
 	if err != nil {
 		return
 	}
