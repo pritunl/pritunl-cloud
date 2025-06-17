@@ -1,9 +1,7 @@
 package state
 
 import (
-	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/pritunl-cloud/arp"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -19,7 +17,6 @@ type FirewallsState struct {
 	firewalls          map[string][]*firewall.Rule
 	firewallMaps       map[string][]*firewall.Mapping
 	instanceNamespaces map[primitive.ObjectID][]string
-	arpRecords         map[string]set.Set
 }
 
 func (p *FirewallsState) NodeFirewall() []*firewall.Rule {
@@ -40,10 +37,6 @@ func (p *FirewallsState) GetInstanceNamespaces(
 	return p.instanceNamespaces[instId]
 }
 
-func (p *FirewallsState) ArpRecords(namespace string) set.Set {
-	return p.arpRecords[namespace]
-}
-
 func (p *FirewallsState) Refresh(pkg *Package,
 	db *database.Database) (err error) {
 
@@ -54,9 +47,32 @@ func (p *FirewallsState) Refresh(pkg *Package,
 		return
 	}
 
+	_, rolesSet := Instances.GetRoles()
+	firesMap := FirewallsPreload.Firewalls()
+	firewallRolesSet := FirewallsPreload.RolesSet()
+	roles := rolesSet.Copy()
+	roles.Subtract(firewallRolesSet)
+
+	missRoles := []string{}
+	for roleInf := range roles.Iter() {
+		missRoles = append(missRoles, roleInf.(string))
+	}
+
+	if len(missRoles) > 0 {
+		missFiresMap, e := firewall.GetMapRoles(db, missRoles)
+		if e != nil {
+			err = e
+			return
+		}
+
+		for role, fires := range missFiresMap {
+			firesMap[role] = fires
+		}
+	}
+
 	nodeFirewall, firewalls, firewallMaps, instNamespaces, err :=
-		firewall.GetAllIngress(db, node.Self, Instances.Instances(),
-			specRules, Instances.NodePortsMap())
+		firewall.GetAllIngressPreloaded(node.Self, Instances.Instances(),
+			specRules, Instances.NodePortsMap(), firesMap)
 	if err != nil {
 		return
 	}
@@ -64,9 +80,6 @@ func (p *FirewallsState) Refresh(pkg *Package,
 	p.firewalls = firewalls
 	p.firewallMaps = firewallMaps
 	p.instanceNamespaces = instNamespaces
-
-	p.arpRecords = arp.BuildState(Instances.Instances(),
-		Vpcs.VpcsMap(), Vpcs.VpcIpsMap())
 
 	return
 }
@@ -76,11 +89,11 @@ func (p *FirewallsState) Apply(st *State) {
 	st.Firewalls = p.Firewalls
 	st.FirewallMaps = p.FirewallMaps
 	st.GetInstanceNamespaces = p.GetInstanceNamespaces
-	st.ArpRecords = p.ArpRecords
 }
 
 func init() {
 	FirewallsPkg.
+		After(FirewallsPreload).
 		After(Instances).
 		After(Vpcs).
 		After(Deployments)
