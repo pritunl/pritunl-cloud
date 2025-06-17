@@ -5,6 +5,7 @@ import (
 	"crypto/md5"
 	"crypto/rsa"
 	"crypto/x509"
+	"encoding/json"
 	"encoding/pem"
 	"fmt"
 
@@ -16,6 +17,26 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
+
+func JsonValid(data string) bool {
+	var dataMap map[string]any
+
+	err := json.Unmarshal([]byte(data), &dataMap)
+	if err != nil {
+		return false
+	}
+
+	for _, value := range dataMap {
+		switch value.(type) {
+		case string, bool, float64, int, int64, nil:
+			continue
+		default:
+			return false
+		}
+	}
+
+	return true
+}
 
 func Get(db *database.Database, secrId primitive.ObjectID) (
 	secr *Secret, err error) {
