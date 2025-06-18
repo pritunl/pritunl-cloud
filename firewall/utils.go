@@ -534,3 +534,110 @@ func GetAllIngress(db *database.Database, nodeSelf *node.Node,
 
 	return
 }
+
+func GetAllIngressPreloaded(nodeSelf *node.Node,
+	instances []*instance.Instance, specRules map[string][]*Rule,
+	nodePortsMap map[string][]*nodeport.Mapping,
+	firesMap map[string][]*Firewall) (
+	nodeFirewall []*Rule, firewalls map[string][]*Rule,
+	mappings map[string][]*Mapping,
+	instNamespaces map[primitive.ObjectID][]string, err error) {
+
+	if nodeSelf.Firewall {
+		fires := []*Firewall{}
+		for _, role := range nodeSelf.NetworkRoles {
+			for _, fire := range firesMap[role] {
+				if fire.Organization == Global {
+					fires = append(fires, fire)
+				}
+			}
+		}
+
+		ingress := MergeIngress(fires)
+		nodeFirewall = ingress
+	}
+
+	instNamespaces = map[primitive.ObjectID][]string{}
+	nodePortIps := map[string]string{}
+	firewalls = map[string][]*Rule{}
+	for _, inst := range instances {
+		if !inst.IsActive() {
+			continue
+		}
+
+		namespaces := []string{}
+		for i := range inst.Virt.NetworkAdapters {
+			namespaces = append(namespaces, vm.GetNamespace(inst.Id, i))
+		}
+		instNamespaces[inst.Id] = namespaces
+
+		if len(inst.NodePortIps) > 0 && len(namespaces) > 0 {
+			nodePortIps[namespaces[0]] = inst.NodePortIps[0]
+		}
+
+		fires := []*Firewall{}
+		for _, role := range inst.NetworkRoles {
+			for _, fire := range firesMap[role] {
+				if fire.Organization == inst.Organization {
+					fires = append(fires, fire)
+				}
+			}
+		}
+		ingress := MergeIngress(fires)
+
+		for _, namespace := range namespaces {
+			_, ok := firewalls[namespace]
+			if ok {
+				logrus.WithFields(logrus.Fields{
+					"instance_id": inst.Id.Hex(),
+					"namespace":   namespace,
+				}).Error("firewall: Namespace conflict")
+
+				err = &errortypes.ParseError{
+					errors.New("firewall: Namespace conflict"),
+				}
+				return
+			}
+
+			firewalls[namespace] = ingress
+		}
+	}
+
+	for namespace, rules := range specRules {
+		firewalls[namespace] = append(firewalls[namespace], rules...)
+	}
+
+	mappings = map[string][]*Mapping{}
+	externalPorts := map[int]string{}
+	for namespace, ndePorts := range nodePortsMap {
+		for _, ndePort := range ndePorts {
+			ipvs := false
+
+			extNamespace := externalPorts[ndePort.ExternalPort]
+			if extNamespace != "" {
+				ipvs = true
+
+				if extNamespace != "-" {
+					for _, mapping := range mappings[extNamespace] {
+						if mapping.ExternalPort == ndePort.ExternalPort {
+							mapping.Ipvs = true
+						}
+					}
+					externalPorts[ndePort.ExternalPort] = "-"
+				}
+			} else {
+				externalPorts[ndePort.ExternalPort] = namespace
+			}
+
+			mappings[namespace] = append(mappings[namespace], &Mapping{
+				Ipvs:         ipvs,
+				Address:      nodePortIps[namespace],
+				Protocol:     ndePort.Protocol,
+				ExternalPort: ndePort.ExternalPort,
+				InternalPort: ndePort.InternalPort,
+			})
+		}
+	}
+
+	return
+}
