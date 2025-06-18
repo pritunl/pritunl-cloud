@@ -1,8 +1,6 @@
 package state
 
 import (
-	"context"
-
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
@@ -525,18 +523,17 @@ func (p *DeploymentsState) Refresh(pkg *Package, db *database.Database) (err err
 		},
 	}
 
-	ctx := context.Background()
-	cursor, err := db.Deployments().Aggregate(ctx, pipeline)
+	cursor, err := db.Deployments().Aggregate(db, pipeline)
 	if err != nil {
-		return err
+		return
 	}
-	defer cursor.Close(ctx)
+	defer cursor.Close(db)
 
 	result := &DeploymentsResult{}
-	if cursor.Next(ctx) {
+	if cursor.Next(db) {
 		err = cursor.Decode(result)
 		if err != nil {
-			return err
+			return
 		}
 	}
 
