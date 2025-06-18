@@ -27,7 +27,7 @@ func (p *FirewallsPreloadState) RolesSet() set.Set {
 func (p *FirewallsPreloadState) Refresh(pkg *Package,
 	db *database.Database) (err error) {
 
-	roles, rolesSet := Instances.GetRoles()
+	roles, rolesSet := InstancesPreload.GetRoles()
 	if len(roles) == 0 {
 		p.firewalls = map[string][]*firewall.Firewall{}
 		p.firewallsRolesSet = set.NewSet()
@@ -46,5 +46,4 @@ func (p *FirewallsPreloadState) Refresh(pkg *Package,
 }
 
 func (p *FirewallsPreloadState) Apply(st *State) {
-
 }
