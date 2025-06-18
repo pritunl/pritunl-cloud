@@ -28,7 +28,7 @@ func (p *AuthoritiesPreloadState) RolesSet() set.Set {
 func (p *AuthoritiesPreloadState) Refresh(pkg *Package,
 	db *database.Database) (err error) {
 
-	roles, rolesSet := Instances.GetRoles()
+	roles, rolesSet := InstancesPreload.GetRoles()
 	if len(roles) == 0 {
 		p.authoritiesMap = map[string][]*authority.Authority{}
 		p.authoritiesRolesSet = set.NewSet()
