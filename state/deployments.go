@@ -39,12 +39,13 @@ type DeploymentsResult struct {
 	SpecCertIds   []primitive.ObjectID `bson:"spec_cert_ids"`
 	SpecDomainIds []primitive.ObjectID `bson:"spec_domain_ids"`
 
-	SpecIdUnits  []*unit.Unit               `bson:"spec_id_units"`
-	SpecPodUnits []*unit.Unit               `bson:"spec_pod_units"`
-	SpecPods     []*pod.Pod                 `bson:"spec_pods"`
-	SpecSecrets  []*secret.Secret           `bson:"spec_secrets"`
-	SpecCerts    []*certificate.Certificate `bson:"spec_certs"`
-	SpecDomains  []*domain.Domain           `bson:"spec_domains"`
+	SpecIdUnits        []*unit.Unit               `bson:"spec_id_units"`
+	SpecPodUnits       []*unit.Unit               `bson:"spec_pod_units"`
+	SpecPods           []*pod.Pod                 `bson:"spec_pods"`
+	SpecSecrets        []*secret.Secret           `bson:"spec_secrets"`
+	SpecCerts          []*certificate.Certificate `bson:"spec_certs"`
+	SpecDomains        []*domain.Domain           `bson:"spec_domains"`
+	SpecDomainsRecords []*domain.Record           `bson:"spec_domains_records"`
 
 	LinkedDeployments []*deployment.Deployment `bson:"linked_deployments"`
 }
@@ -407,6 +408,15 @@ func (p *DeploymentsState) Refresh(pkg *Package, db *database.Database) (err err
 		},
 
 		bson.M{
+			"$lookup": bson.M{
+				"from":         "domains_records",
+				"localField":   "spec_domain_ids",
+				"foreignField": "domain",
+				"as":           "spec_domains_records",
+			},
+		},
+
+		bson.M{
 			"$addFields": bson.M{
 				"spec_deployment_id_ids": bson.M{
 					"$reduce": bson.M{
@@ -490,25 +500,26 @@ func (p *DeploymentsState) Refresh(pkg *Package, db *database.Database) (err err
 
 		bson.M{
 			"$project": bson.M{
-				"deployment_ids":     1,
-				"pod_ids":            1,
-				"unit_ids":           1,
-				"spec_ids":           1,
-				"deployments":        1,
-				"pods":               1,
-				"units":              1,
-				"specs":              1,
-				"spec_pod_ids":       1,
-				"spec_unit_ids":      1,
-				"spec_secret_ids":    1,
-				"spec_cert_ids":      1,
-				"spec_domain_ids":    1,
-				"spec_id_units":      1,
-				"spec_pod_units":     1,
-				"spec_secrets":       1,
-				"spec_certs":         1,
-				"spec_domains":       1,
-				"linked_deployments": 1,
+				"deployment_ids":       1,
+				"pod_ids":              1,
+				"unit_ids":             1,
+				"spec_ids":             1,
+				"deployments":          1,
+				"pods":                 1,
+				"units":                1,
+				"specs":                1,
+				"spec_pod_ids":         1,
+				"spec_unit_ids":        1,
+				"spec_secret_ids":      1,
+				"spec_cert_ids":        1,
+				"spec_domain_ids":      1,
+				"spec_id_units":        1,
+				"spec_pod_units":       1,
+				"spec_secrets":         1,
+				"spec_certs":           1,
+				"spec_domains":         1,
+				"spec_domains_records": 1,
+				"linked_deployments":   1,
 			},
 		},
 	}
@@ -576,8 +587,10 @@ func (p *DeploymentsState) Refresh(pkg *Package, db *database.Database) (err err
 	}
 	p.specsPodsMap = specsPodsMap
 
+	specDomains := domain.PreloadedRecords(
+		result.SpecDomains, result.SpecDomainsRecords)
 	specsDomainsMap := map[primitive.ObjectID]*domain.Domain{}
-	for _, specDomain := range result.SpecDomains {
+	for _, specDomain := range specDomains {
 		specsDomainsMap[specDomain.Id] = specDomain
 	}
 	p.specsDomainsMap = specsDomainsMap
