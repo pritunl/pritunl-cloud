@@ -47,7 +47,7 @@ func (p *FirewallsState) Refresh(pkg *Package,
 		return
 	}
 
-	_, rolesSet := Instances.GetRoles()
+	_, rolesSet := InstancesPreload.GetRoles()
 	firesMap := FirewallsPreload.Firewalls()
 	firewallRolesSet := FirewallsPreload.RolesSet()
 	roles := rolesSet.Copy()
