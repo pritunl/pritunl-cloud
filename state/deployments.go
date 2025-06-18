@@ -1,6 +1,8 @@
 package state
 
 import (
+	"context"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
@@ -19,6 +21,33 @@ var (
 	Deployments    = &DeploymentsState{}
 	DeploymentsPkg = NewPackage(Deployments)
 )
+
+type DeploymentsResult struct {
+	DeploymentIds []primitive.ObjectID `bson:"deployment_ids"`
+	PodIds        []primitive.ObjectID `bson:"pod_ids"`
+	UnitIds       []primitive.ObjectID `bson:"unit_ids"`
+	SpecIds       []primitive.ObjectID `bson:"spec_ids"`
+
+	Deployments []*deployment.Deployment `bson:"deployments"`
+	Pods        []*pod.Pod               `bson:"pods"`
+	Units       []*unit.Unit             `bson:"units"`
+	Specs       []*spec.Spec             `bson:"specs"`
+
+	SpecPodIds    []primitive.ObjectID `bson:"spec_pod_ids"`
+	SpecUnitIds   []primitive.ObjectID `bson:"spec_unit_ids"`
+	SpecSecretIds []primitive.ObjectID `bson:"spec_secret_ids"`
+	SpecCertIds   []primitive.ObjectID `bson:"spec_cert_ids"`
+	SpecDomainIds []primitive.ObjectID `bson:"spec_domain_ids"`
+
+	SpecIdUnits  []*unit.Unit               `bson:"spec_id_units"`
+	SpecPodUnits []*unit.Unit               `bson:"spec_pod_units"`
+	SpecPods     []*pod.Pod                 `bson:"spec_pods"`
+	SpecSecrets  []*secret.Secret           `bson:"spec_secrets"`
+	SpecCerts    []*certificate.Certificate `bson:"spec_certs"`
+	SpecDomains  []*domain.Domain           `bson:"spec_domains"`
+
+	LinkedDeployments []*deployment.Deployment `bson:"linked_deployments"`
+}
 
 type DeploymentsState struct {
 	podsMap                map[primitive.ObjectID]*pod.Pod
@@ -160,385 +189,455 @@ func (p *DeploymentsState) Deployment(deplyId primitive.ObjectID) (
 	return
 }
 
-func (p *DeploymentsState) Refresh(pkg *Package,
-	db *database.Database) (err error) {
+func (p *DeploymentsState) Refresh(pkg *Package, db *database.Database) (err error) {
+	pipeline := bson.A{
+		bson.M{
+			"$match": bson.M{
+				"node": node.Self.Id,
+			},
+		},
 
-	deployments, err := deployment.GetAll(db, &bson.M{
-		"node": node.Self.Id,
-	})
+		bson.M{
+			"$group": bson.M{
+				"_id":            nil,
+				"deployments":    bson.M{"$push": "$$ROOT"},
+				"deployment_ids": bson.M{"$addToSet": "$_id"},
+				"pod_ids":        bson.M{"$addToSet": "$pod"},
+				"unit_ids":       bson.M{"$addToSet": "$unit"},
+				"spec_ids":       bson.M{"$addToSet": "$spec"},
+			},
+		},
+
+		bson.M{
+			"$lookup": bson.M{
+				"from":         "specs",
+				"localField":   "spec_ids",
+				"foreignField": "_id",
+				"as":           "specs",
+			},
+		},
+
+		bson.M{
+			"$lookup": bson.M{
+				"from":         "units",
+				"localField":   "unit_ids",
+				"foreignField": "_id",
+				"as":           "units",
+			},
+		},
+
+		bson.M{
+			"$lookup": bson.M{
+				"from":         "pods",
+				"localField":   "pod_ids",
+				"foreignField": "_id",
+				"as":           "pods",
+			},
+		},
+
+		bson.M{
+			"$addFields": bson.M{
+				"specs_data": bson.M{
+					"$reduce": bson.M{
+						"input": "$specs",
+						"initialValue": bson.M{
+							"pod_ids":    bson.A{},
+							"secret_ids": bson.A{},
+							"cert_ids":   bson.A{},
+							"domain_ids": bson.A{},
+							"unit_ids":   bson.A{},
+						},
+						"in": bson.M{
+							"pod_ids": bson.M{
+								"$concatArrays": bson.A{
+									"$$value.pod_ids",
+									bson.M{
+										"$ifNull": bson.A{
+											"$$this.instance.pods",
+											bson.A{},
+										},
+									},
+								},
+							},
+							"secret_ids": bson.M{
+								"$concatArrays": bson.A{
+									"$$value.secret_ids",
+									bson.M{
+										"$ifNull": bson.A{
+											"$$this.instance.secrets",
+											bson.A{},
+										},
+									},
+								},
+							},
+							"cert_ids": bson.M{
+								"$concatArrays": bson.A{
+									"$$value.cert_ids",
+									bson.M{
+										"$ifNull": bson.A{
+											"$$this.instance.certificates",
+											bson.A{},
+										},
+									},
+								},
+							},
+							"domain_ids": bson.M{
+								"$concatArrays": bson.A{
+									"$$value.domain_ids",
+									bson.M{
+										"$map": bson.M{
+											"input": bson.M{
+												"$ifNull": bson.A{
+													"$$this.domain.records",
+													bson.A{},
+												},
+											},
+											"as": "record",
+											"in": "$$record.domain",
+										},
+									},
+								},
+							},
+							"unit_ids": bson.M{
+								"$concatArrays": bson.A{
+									"$$value.unit_ids",
+									bson.M{
+										"$reduce": bson.M{
+											"input": bson.M{
+												"$ifNull": bson.A{
+													"$$this.firewall.ingress",
+													bson.A{},
+												},
+											},
+											"initialValue": bson.A{},
+											"in": bson.M{
+												"$concatArrays": bson.A{
+													"$$value",
+													bson.M{
+														"$ifNull": bson.A{
+															bson.M{
+																"$map": bson.M{
+																	"input": bson.M{
+																		"$ifNull": bson.A{
+																			"$$this.sources",
+																			bson.A{},
+																		},
+																	},
+																	"as": "source",
+																	"in": "$$source.id",
+																},
+															},
+															bson.A{},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+
+		bson.M{
+			"$addFields": bson.M{
+				"spec_pod_ids":    "$specs_data.pod_ids",
+				"spec_secret_ids": "$specs_data.secret_ids",
+				"spec_cert_ids":   "$specs_data.cert_ids",
+				"spec_domain_ids": "$specs_data.domain_ids",
+				"spec_unit_ids":   "$specs_data.unit_ids",
+			},
+		},
+
+		bson.M{
+			"$lookup": bson.M{
+				"from":         "units",
+				"localField":   "spec_unit_ids",
+				"foreignField": "_id",
+				"as":           "spec_id_units",
+			},
+		},
+
+		bson.M{
+			"$lookup": bson.M{
+				"from":         "units",
+				"localField":   "spec_pod_ids",
+				"foreignField": "pod",
+				"as":           "spec_pod_units",
+			},
+		},
+
+		bson.M{
+			"$lookup": bson.M{
+				"from":         "pods",
+				"localField":   "spec_pod_ids",
+				"foreignField": "pod",
+				"as":           "spec_pods",
+			},
+		},
+
+		bson.M{
+			"$lookup": bson.M{
+				"from":         "secrets",
+				"localField":   "spec_secret_ids",
+				"foreignField": "_id",
+				"as":           "spec_secrets",
+			},
+		},
+
+		bson.M{
+			"$lookup": bson.M{
+				"from":         "certificates",
+				"localField":   "spec_cert_ids",
+				"foreignField": "_id",
+				"as":           "spec_certs",
+			},
+		},
+
+		bson.M{
+			"$lookup": bson.M{
+				"from":         "domains",
+				"localField":   "spec_domain_ids",
+				"foreignField": "_id",
+				"as":           "spec_domains",
+			},
+		},
+
+		bson.M{
+			"$addFields": bson.M{
+				"spec_deployment_id_ids": bson.M{
+					"$reduce": bson.M{
+						"input":        "$spec_id_units",
+						"initialValue": bson.A{},
+						"in": bson.M{
+							"$concatArrays": bson.A{
+								"$$value",
+								bson.M{
+									"$ifNull": bson.A{
+										"$$this.deployments",
+										bson.A{},
+									},
+								},
+							},
+						},
+					},
+				},
+				"spec_deployment_pod_ids": bson.M{
+					"$reduce": bson.M{
+						"input":        "$spec_pod_units",
+						"initialValue": bson.A{},
+						"in": bson.M{
+							"$concatArrays": bson.A{
+								"$$value",
+								bson.M{
+									"$ifNull": bson.A{
+										"$$this.deployments",
+										bson.A{},
+									},
+								},
+							},
+						},
+					},
+				},
+				"pod_deployment_ids": bson.M{
+					"$reduce": bson.M{
+						"input":        "$units",
+						"initialValue": bson.A{},
+						"in": bson.M{
+							"$setUnion": bson.A{
+								"$$value",
+								bson.M{
+									"$ifNull": bson.A{
+										"$$this.deployments",
+										bson.A{},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+
+		bson.M{
+			"$addFields": bson.M{
+				"linked_deployment_ids": bson.M{
+					"$setDifference": bson.A{
+						bson.M{
+							"$setUnion": bson.A{
+								"$spec_deployment_id_ids",
+								"$spec_deployment_pod_ids",
+								"$pod_deployment_ids",
+							},
+						},
+						"$deployment_ids",
+					},
+				},
+			},
+		},
+
+		bson.M{
+			"$lookup": bson.M{
+				"from":         "deployments",
+				"localField":   "linked_deployment_ids",
+				"foreignField": "_id",
+				"as":           "linked_deployments",
+			},
+		},
+
+		bson.M{
+			"$project": bson.M{
+				"deployment_ids":     1,
+				"pod_ids":            1,
+				"unit_ids":           1,
+				"spec_ids":           1,
+				"deployments":        1,
+				"pods":               1,
+				"units":              1,
+				"specs":              1,
+				"spec_pod_ids":       1,
+				"spec_unit_ids":      1,
+				"spec_secret_ids":    1,
+				"spec_cert_ids":      1,
+				"spec_domain_ids":    1,
+				"spec_id_units":      1,
+				"spec_pod_units":     1,
+				"spec_secrets":       1,
+				"spec_certs":         1,
+				"spec_domains":       1,
+				"linked_deployments": 1,
+			},
+		},
+	}
+
+	ctx := context.Background()
+	cursor, err := db.Deployments().Aggregate(ctx, pipeline)
 	if err != nil {
-		return
+		return err
+	}
+	defer cursor.Close(ctx)
+
+	result := &DeploymentsResult{}
+	if cursor.Next(ctx) {
+		err = cursor.Decode(result)
+		if err != nil {
+			return err
+		}
 	}
 
 	deploymentsNode := map[primitive.ObjectID]*deployment.Deployment{}
 	deploymentsReservedMap := map[primitive.ObjectID]*deployment.Deployment{}
 	deploymentsDeployedMap := map[primitive.ObjectID]*deployment.Deployment{}
 	deploymentsInactiveMap := map[primitive.ObjectID]*deployment.Deployment{}
-	deploymentsIdSet := set.NewSet()
-	podIdsSet := set.NewSet()
-	unitIdsSet := set.NewSet()
-	specIdsSet := set.NewSet()
-	for _, deply := range deployments {
+
+	for _, deply := range result.Deployments {
 		deploymentsNode[deply.Id] = deply
 
-		deploymentsIdSet.Add(deply.Id)
 		switch deply.State {
 		case deployment.Reserved:
 			deploymentsReservedMap[deply.Id] = deply
-			break
 		case deployment.Deployed:
 			switch deply.Action {
-			case deployment.Destroy, deployment.Archive,
-				deployment.Restore:
-
+			case deployment.Destroy, deployment.Archive, deployment.Restore:
 				deploymentsInactiveMap[deply.Id] = deply
-				break
 			default:
 				deploymentsDeployedMap[deply.Id] = deply
 			}
-			break
 		case deployment.Archived:
 			deploymentsInactiveMap[deply.Id] = deply
-			break
 		}
-
-		podIdsSet.Add(deply.Pod)
-		unitIdsSet.Add(deply.Unit)
-		specIdsSet.Add(deply.Spec)
 	}
 	p.deploymentsNode = deploymentsNode
 
-	podIds := []primitive.ObjectID{}
-	for podId := range podIdsSet.Iter() {
-		podIds = append(podIds, podId.(primitive.ObjectID))
-	}
-
-	unitIds := []primitive.ObjectID{}
-	for unitId := range unitIdsSet.Iter() {
-		unitIds = append(unitIds, unitId.(primitive.ObjectID))
-	}
-
-	specIds := []primitive.ObjectID{}
-	for specId := range specIdsSet.Iter() {
-		specIds = append(specIds, specId.(primitive.ObjectID))
-	}
-
-	specs := []*spec.Spec{}
-	if len(specIds) > 0 {
-		specs, err = spec.GetAll(db, &bson.M{
-			"_id": &bson.M{
-				"$in": specIds,
-			},
-		})
-		if err != nil {
-			return
-		}
-	}
-
-	specSecretsSet := set.NewSet()
-	specCertsSet := set.NewSet()
-	specPodsSet := set.NewSet()
-	specUnitsSet := set.NewSet()
-	specDomainsSet := set.NewSet()
 	specsMap := map[primitive.ObjectID]*spec.Spec{}
-	for _, spc := range specs {
-		specsMap[spc.Id] = spc
-
-		if spc.Instance != nil {
-			if spc.Instance.Pods != nil {
-				for _, pdId := range spc.Instance.Pods {
-					specPodsSet.Add(pdId)
-				}
-			}
-
-			if spc.Instance.Secrets != nil {
-				for _, secrId := range spc.Instance.Secrets {
-					specSecretsSet.Add(secrId)
-				}
-			}
-
-			if spc.Instance.Certificates != nil {
-				for _, certId := range spc.Instance.Certificates {
-					specCertsSet.Add(certId)
-				}
-			}
-		}
-
-		if spc.Firewall != nil {
-			for _, rule := range spc.Firewall.Ingress {
-				for _, ref := range rule.Sources {
-					specUnitsSet.Add(ref.Id)
-				}
-			}
-		}
-
-		if spc.Domain != nil {
-			for _, record := range spc.Domain.Records {
-				specDomainsSet.Add(record.Domain)
-			}
-		}
+	for _, spec := range result.Specs {
+		specsMap[spec.Id] = spec
 	}
 	p.specsMap = specsMap
 
-	specCertIds := []primitive.ObjectID{}
-	for certId := range specCertsSet.Iter() {
-		specCertIds = append(specCertIds, certId.(primitive.ObjectID))
-	}
-
-	specSecretIds := []primitive.ObjectID{}
-	for secrId := range specSecretsSet.Iter() {
-		specSecretIds = append(specSecretIds, secrId.(primitive.ObjectID))
-	}
-
-	specPodIds := []primitive.ObjectID{}
-	for pdId := range specPodsSet.Iter() {
-		specPodIds = append(specPodIds, pdId.(primitive.ObjectID))
-	}
-
-	specUnitIds := []primitive.ObjectID{}
-	for unitId := range specUnitsSet.Iter() {
-		specUnitIds = append(specUnitIds, unitId.(primitive.ObjectID))
-	}
-
-	specDomainIds := []primitive.ObjectID{}
-	for pdId := range specDomainsSet.Iter() {
-		specDomainIds = append(specDomainIds, pdId.(primitive.ObjectID))
-	}
-
-	specCerts := []*certificate.Certificate{}
-	if len(specCertIds) > 0 {
-		specCerts, err = certificate.GetAll(db, &bson.M{
-			"_id": &bson.M{
-				"$in": specCertIds,
-			},
-		})
-		if err != nil {
-			return
-		}
-	}
-
 	specsCertsMap := map[primitive.ObjectID]*certificate.Certificate{}
-	for _, specCert := range specCerts {
+	for _, specCert := range result.SpecCerts {
 		specsCertsMap[specCert.Id] = specCert
 	}
 	p.specsCertsMap = specsCertsMap
 
-	specSecrets := []*secret.Secret{}
-	if len(specSecretIds) > 0 {
-		specSecrets, err = secret.GetAll(db, &bson.M{
-			"_id": &bson.M{
-				"$in": specSecretIds,
-			},
-		})
-		if err != nil {
-			return
-		}
-	}
-
 	specsSecretsMap := map[primitive.ObjectID]*secret.Secret{}
-	for _, specSecret := range specSecrets {
+	for _, specSecret := range result.SpecSecrets {
 		specsSecretsMap[specSecret.Id] = specSecret
 	}
 	p.specsSecretsMap = specsSecretsMap
 
-	specPods := []*pod.Pod{}
-	if len(specPodIds) > 0 {
-		specPods, err = pod.GetAll(db, &bson.M{
-			"_id": &bson.M{
-				"$in": specPodIds,
-			},
-		})
-		if err != nil {
-			return
-		}
-	}
-
 	specsPodsMap := map[primitive.ObjectID]*pod.Pod{}
-	for _, specPod := range specPods {
+	for _, specPod := range result.SpecPods {
 		specsPodsMap[specPod.Id] = specPod
 	}
 	p.specsPodsMap = specsPodsMap
 
-	specUnits := []*unit.Unit{}
-	if len(specUnitIds) > 0 || len(specPodIds) > 0 {
-		specUnits, err = unit.GetAll(db, &bson.M{
-			"$or": []*bson.M{
-				&bson.M{
-					"_id": &bson.M{
-						"$in": specUnitIds,
-					},
-				},
-				&bson.M{
-					"pod": &bson.M{
-						"$in": specPodIds,
-					},
-				},
-			},
-		})
-		if err != nil {
-			return
-		}
-	}
-
-	specDeploymentsSet := set.NewSet()
-	specsUnitsMap := map[primitive.ObjectID]*unit.Unit{}
-	specsPodUnitsMap := map[primitive.ObjectID][]*unit.Unit{}
-	for _, specUnit := range specUnits {
-		specsUnitsMap[specUnit.Id] = specUnit
-
-		specsPodUnitsMap[specUnit.Pod] = append(
-			specsPodUnitsMap[specUnit.Pod], specUnit)
-
-		for _, deplyId := range specUnit.Deployments {
-			specDeploymentsSet.Add(deplyId)
-		}
-	}
-	p.specsUnitsMap = specsUnitsMap
-	p.specsPodUnitsMap = specsPodUnitsMap
-
-	specDomains, err := domain.GetLoadedAllIds(db, specDomainIds)
-	if err != nil {
-		return
-	}
-
 	specsDomainsMap := map[primitive.ObjectID]*domain.Domain{}
-	for _, specDomain := range specDomains {
+	for _, specDomain := range result.SpecDomains {
 		specsDomainsMap[specDomain.Id] = specDomain
 	}
 	p.specsDomainsMap = specsDomainsMap
 
-	specDeploymentIds := []primitive.ObjectID{}
-	for deplyIdInf := range specDeploymentsSet.Iter() {
-		deplyId := deplyIdInf.(primitive.ObjectID)
-		if !deploymentsIdSet.Contains(deplyId) {
-			specDeploymentIds = append(specDeploymentIds, deplyId)
+	specUnitsIds := set.NewSet()
+	specsUnitsMap := map[primitive.ObjectID]*unit.Unit{}
+	specsPodUnitsMap := map[primitive.ObjectID][]*unit.Unit{}
+	for _, specUnit := range result.SpecIdUnits {
+		if specUnitsIds.Contains(specUnit.Id) {
+			continue
 		}
-	}
+		specUnitsIds.Add(specUnit.Id)
 
-	specDeployments := []*deployment.Deployment{}
-	if len(specDeploymentIds) > 0 {
-		specDeployments, err = deployment.GetAll(db, &bson.M{
-			"_id": &bson.M{
-				"$in": specDeploymentIds,
-			},
-		})
-		if err != nil {
-			return
+		specsUnitsMap[specUnit.Id] = specUnit
+		specsPodUnitsMap[specUnit.Pod] = append(
+			specsPodUnitsMap[specUnit.Pod], specUnit)
+	}
+	for _, specUnit := range result.SpecPodUnits {
+		if specUnitsIds.Contains(specUnit.Id) {
+			continue
 		}
+		specUnitsIds.Add(specUnit.Id)
+
+		specsUnitsMap[specUnit.Id] = specUnit
+		specsPodUnitsMap[specUnit.Pod] = append(
+			specsPodUnitsMap[specUnit.Pod], specUnit)
 	}
+	p.specsUnitsMap = specsUnitsMap
+	p.specsPodUnitsMap = specsPodUnitsMap
 
-	for _, specDeployment := range specDeployments {
-		deploymentsIdSet.Add(specDeployment.Id)
-
-		switch specDeployment.State {
+	for _, deply := range result.LinkedDeployments {
+		switch deply.State {
 		case deployment.Reserved:
-			deploymentsReservedMap[specDeployment.Id] = specDeployment
-			break
+			deploymentsReservedMap[deply.Id] = deply
 		case deployment.Deployed:
-			switch specDeployment.Action {
-			case deployment.Destroy, deployment.Archive,
-				deployment.Restore:
-
-				deploymentsInactiveMap[specDeployment.Id] = specDeployment
-				break
+			switch deply.Action {
+			case deployment.Destroy, deployment.Archive, deployment.Restore:
+				deploymentsInactiveMap[deply.Id] = deply
 			default:
-				deploymentsDeployedMap[specDeployment.Id] = specDeployment
+				deploymentsDeployedMap[deply.Id] = deply
 			}
-			break
 		case deployment.Archived:
-			deploymentsInactiveMap[specDeployment.Id] = specDeployment
-			break
-		}
-	}
-
-	pods := []*pod.Pod{}
-	if len(podIds) > 0 {
-		pods, err = pod.GetAll(db, &bson.M{
-			"_id": &bson.M{
-				"$in": podIds,
-			},
-		})
-		if err != nil {
-			return
-		}
-	}
-
-	podsMap := map[primitive.ObjectID]*pod.Pod{}
-	for _, pd := range pods {
-		podsMap[pd.Id] = pd
-	}
-	p.podsMap = podsMap
-
-	units := []*unit.Unit{}
-	if len(unitIds) > 0 {
-		units, err = unit.GetAll(db, &bson.M{
-			"_id": &bson.M{
-				"$in": unitIds,
-			},
-		})
-		if err != nil {
-			return
-		}
-	}
-
-	unitsMap := map[primitive.ObjectID]*unit.Unit{}
-	podDeploymentsSet := set.NewSet()
-	for _, unt := range units {
-		unitsMap[unt.Id] = unt
-
-		for _, deplyId := range unt.Deployments {
-			podDeploymentsSet.Add(deplyId)
-		}
-
-	}
-	p.unitsMap = unitsMap
-
-	podDeploymentIds := []primitive.ObjectID{}
-	for deplyIdInf := range podDeploymentsSet.Iter() {
-		deplyId := deplyIdInf.(primitive.ObjectID)
-		if !deploymentsIdSet.Contains(deplyId) {
-			podDeploymentIds = append(podDeploymentIds, deplyId)
-		}
-	}
-
-	podDeployments := []*deployment.Deployment{}
-	if len(podDeploymentIds) > 0 {
-		podDeployments, err = deployment.GetAll(db, &bson.M{
-			"_id": &bson.M{
-				"$in": podDeploymentIds,
-			},
-		})
-		if err != nil {
-			return
-		}
-	}
-
-	for _, podDeployment := range podDeployments {
-		deploymentsIdSet.Add(podDeployment.Id)
-
-		switch podDeployment.State {
-		case deployment.Reserved:
-			deploymentsReservedMap[podDeployment.Id] = podDeployment
-			break
-		case deployment.Deployed:
-			switch podDeployment.Action {
-			case deployment.Destroy, deployment.Archive,
-				deployment.Restore:
-
-				deploymentsInactiveMap[podDeployment.Id] = podDeployment
-				break
-			default:
-				deploymentsDeployedMap[podDeployment.Id] = podDeployment
-			}
-			break
-		case deployment.Archived:
-			deploymentsInactiveMap[podDeployment.Id] = podDeployment
-			break
+			deploymentsInactiveMap[deply.Id] = deply
 		}
 	}
 	p.deploymentsReservedMap = deploymentsReservedMap
 	p.deploymentsDeployedMap = deploymentsDeployedMap
 	p.deploymentsInactiveMap = deploymentsInactiveMap
+
+	podsMap := map[primitive.ObjectID]*pod.Pod{}
+	for _, pd := range result.Pods {
+		podsMap[pd.Id] = pd
+	}
+	p.podsMap = podsMap
+
+	unitsMap := map[primitive.ObjectID]*unit.Unit{}
+	for _, unt := range result.Units {
+		unitsMap[unt.Id] = unt
+	}
+	p.unitsMap = unitsMap
 
 	return
 }
