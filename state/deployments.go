@@ -375,7 +375,7 @@ func (p *DeploymentsState) Refresh(pkg *Package, db *database.Database) (err err
 			"$lookup": bson.M{
 				"from":         "pods",
 				"localField":   "spec_pod_ids",
-				"foreignField": "pod",
+				"foreignField": "_id",
 				"as":           "spec_pods",
 			},
 		},
@@ -515,6 +515,7 @@ func (p *DeploymentsState) Refresh(pkg *Package, db *database.Database) (err err
 				"spec_domain_ids":      1,
 				"spec_id_units":        1,
 				"spec_pod_units":       1,
+				"spec_pods":            1,
 				"spec_secrets":         1,
 				"spec_certs":           1,
 				"spec_domains":         1,
