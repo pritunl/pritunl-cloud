@@ -1,6 +1,7 @@
 package instance
 
 import (
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/mongo-go-driver/mongo/options"
@@ -124,6 +125,44 @@ func GetAll(db *database.Database, query *bson.M) (
 		}
 
 		insts = append(insts, inst)
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func GetAllRoles(db *database.Database, query *bson.M) (
+	insts []*Instance, rolesSet set.Set, err error) {
+
+	coll := db.Instances()
+	insts = []*Instance{}
+	rolesSet = set.NewSet()
+
+	cursor, err := coll.Find(db, query)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		inst := &Instance{}
+		err = cursor.Decode(inst)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		insts = append(insts, inst)
+
+		for _, role := range inst.NetworkRoles {
+			rolesSet.Add(role)
+		}
 	}
 
 	err = cursor.Err()
