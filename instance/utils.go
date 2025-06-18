@@ -302,6 +302,42 @@ func GetAllVirtMapped(db *database.Database, query *bson.M,
 	return
 }
 
+func LoadAllVirt(insts []*Instance, pools []*pool.Pool,
+	instanceDisks map[primitive.ObjectID][]*disk.Disk) []*Instance {
+
+	poolsMap := map[primitive.ObjectID]*pool.Pool{}
+	for _, pl := range pools {
+		poolsMap[pl.Id] = pl
+	}
+
+	for _, inst := range insts {
+		virtDsks := []*disk.Disk{}
+
+		dsks := instanceDisks[inst.Id]
+		for _, dsk := range dsks {
+			if dsk.Action == disk.Destroy {
+				if dsk.DeleteProtection {
+					logrus.WithFields(logrus.Fields{
+						"disk_id": dsk.Id.Hex(),
+					}).Info("instance: Delete protection ignore disk detach")
+				} else {
+					continue
+				}
+			} else if dsk.State != disk.Available &&
+				dsk.State != disk.Attached {
+
+				continue
+			}
+
+			virtDsks = append(virtDsks, dsk)
+		}
+
+		inst.LoadVirt(poolsMap, virtDsks)
+	}
+
+	return insts
+}
+
 func GetAllName(db *database.Database, query *bson.M) (
 	instances []*Instance, err error) {
 
