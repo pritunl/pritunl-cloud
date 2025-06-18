@@ -89,7 +89,8 @@ type State struct {
 	GetInstace            func(instId primitive.ObjectID) *instance.Instance
 	Instances             func() []*instance.Instance
 	NodePortsMap          func() map[string][]*nodeport.Mapping
-	GetInstaceAuthorities func(roles []string) []*authority.Authority
+	GetInstaceAuthorities func(orgId primitive.ObjectID,
+		roles []string) []*authority.Authority
 
 	// Virtuals
 	DiskInUse func(instId, dskId primitive.ObjectID) bool
