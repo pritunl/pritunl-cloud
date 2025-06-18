@@ -39,7 +39,7 @@ func (p *AuthoritiesState) GetInstaceAuthorities(
 func (p *AuthoritiesState) Refresh(pkg *Package,
 	db *database.Database) (err error) {
 
-	_, rolesSet := Instances.GetRoles()
+	_, rolesSet := InstancesPreload.GetRoles()
 	authorities := AuthoritiesPreload.Authorities()
 	preloadRolesSet := AuthoritiesPreload.RolesSet()
 	roles := rolesSet.Copy()
@@ -78,5 +78,5 @@ func (p *AuthoritiesState) Apply(st *State) {
 func init() {
 	AuthoritiesPkg.
 		After(AuthoritiesPreload).
-		After(Instances)
+		After(InstancesPreload)
 }
