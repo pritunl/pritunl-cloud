@@ -2,25 +2,14 @@ package state
 
 import (
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
 )
 
 type Runtimes struct {
-	State       time.Duration
-	State1      time.Duration
-	State2      time.Duration
-	State3      time.Duration
-	State4      time.Duration
-	State5      time.Duration
-	State6      time.Duration
-	State7      time.Duration
-	State8      time.Duration
-	State9      time.Duration
-	State10     time.Duration
-	State11     time.Duration
-	State12     time.Duration
+	State       map[string]time.Duration
 	Network     time.Duration
 	Ipset       time.Duration
 	Iptables    time.Duration
@@ -32,10 +21,21 @@ type Runtimes struct {
 	Imds        time.Duration
 	Wait        time.Duration
 	Total       time.Duration
+	lock        sync.Mutex
+}
+
+func (r *Runtimes) Init() {
+	r.State = map[string]time.Duration{}
+}
+
+func (r *Runtimes) SetState(key string, dur time.Duration) {
+	r.lock.Lock()
+	r.State[key] = dur
+	r.lock.Unlock()
 }
 
 func (r *Runtimes) Log() {
-	logrus.WithFields(logrus.Fields{
+	fields := logrus.Fields{
 		"network":     fmt.Sprintf("%v", r.Network),
 		"ipset":       fmt.Sprintf("%v", r.Ipset),
 		"iptables":    fmt.Sprintf("%v", r.Iptables),
@@ -46,5 +46,11 @@ func (r *Runtimes) Log() {
 		"imds":        fmt.Sprintf("%v", r.Imds),
 		"wait":        fmt.Sprintf("%v", r.Wait),
 		"total":       fmt.Sprintf("%v", r.Total),
-	}).Warn("sync: High state sync runtime")
+	}
+
+	for key, dur := range r.State {
+		fields[key] = fmt.Sprintf("%v", dur)
+	}
+
+	logrus.WithFields(fields).Warn("sync: High state sync runtime")
 }
