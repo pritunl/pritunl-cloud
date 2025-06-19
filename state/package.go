@@ -1,6 +1,7 @@
 package state
 
 import (
+	"reflect"
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
@@ -52,7 +53,7 @@ func NewPackage(handler PackageHandler) *Package {
 	return pkg
 }
 
-func RefreshAll(db *database.Database) (err error) {
+func RefreshAll(db *database.Database, runtimes *Runtimes) (err error) {
 	inDegree := make(map[int]int)
 	dependents := make(map[int][]*Package)
 	refToPackage := make(map[int]*Package)
@@ -88,9 +89,15 @@ func RefreshAll(db *database.Database) (err error) {
 				done <- pkg
 			}()
 
-			if refreshErr := pkg.handler.Refresh(pkg, db); refreshErr != nil {
+			start := time.Now()
+			refreshErr := pkg.handler.Refresh(pkg, db)
+			dur := time.Since(start)
+			if refreshErr != nil {
 				errors <- refreshErr
 			}
+
+			structName := reflect.TypeOf(pkg.handler).Elem().Name()
+			runtimes.SetState(structName, dur)
 		}()
 	}
 
