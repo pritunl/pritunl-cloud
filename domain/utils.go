@@ -219,6 +219,19 @@ func GetLoadedAllIds(db *database.Database, domnIds []primitive.ObjectID) (
 	return
 }
 
+func PreloadedRecords(domns []*Domain, recs []*Record) []*Domain {
+	domainRecs := map[primitive.ObjectID][]*Record{}
+	for _, rec := range recs {
+		domainRecs[rec.Domain] = append(domainRecs[rec.Domain], rec)
+	}
+
+	for _, domn := range domns {
+		domn.preloadRecords(domainRecs[domn.Id])
+	}
+
+	return domns
+}
+
 func GetAllPaged(db *database.Database, query *bson.M,
 	page, pageCount int64) (domns []*Domain, count int64, err error) {
 
