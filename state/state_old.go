@@ -2,7 +2,6 @@ package state
 
 import (
 	"io/ioutil"
-	"time"
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
@@ -317,12 +316,10 @@ func (s *StateOld) GetInstace(instId primitive.ObjectID) *instance.Instance {
 	return s.instancesMap[instId]
 }
 
-func (s *StateOld) init(runtimes *Runtimes) (err error) {
+func (s *StateOld) init() (err error) {
 	db := database.GetDatabase()
 	defer db.Close()
 
-	start := time.Now()
-	totalStart := time.Now()
 	s.nodeSelf = node.Self.Copy()
 
 	// Datacenter
@@ -377,9 +374,6 @@ func (s *StateOld) init(runtimes *Runtimes) (err error) {
 	}
 	// Zones
 
-	runtimes.State1 = time.Since(start)
-	start = time.Now()
-
 	// Network
 	namespaces, err := utils.GetNamespaces()
 	if err != nil {
@@ -394,9 +388,6 @@ func (s *StateOld) init(runtimes *Runtimes) (err error) {
 	s.interfaces = interfaces
 	s.interfacesSet = interfacesSet
 	// Network
-
-	runtimes.State2 = time.Since(start)
-	start = time.Now()
 
 	// Pools
 	pools, err := pool.GetAll(db, &bson.M{
@@ -426,9 +417,6 @@ func (s *StateOld) init(runtimes *Runtimes) (err error) {
 	s.instanceDisks = instanceDisks
 	// Disks
 
-	runtimes.State3 = time.Since(start)
-	start = time.Now()
-
 	// Vpcs
 	vpcs := []*vpc.Vpc{}
 	vpcsId := []primitive.ObjectID{}
@@ -456,9 +444,6 @@ func (s *StateOld) init(runtimes *Runtimes) (err error) {
 	}
 	s.vpcIpsMap = vpcIpsMap
 	// Vpcs
-
-	runtimes.State4 = time.Since(start)
-	start = time.Now()
 
 	// Deployments
 	deployments, err := deployment.GetAll(db, &bson.M{
@@ -504,9 +489,6 @@ func (s *StateOld) init(runtimes *Runtimes) (err error) {
 		unitIdsSet.Add(deply.Unit)
 		specIdsSet.Add(deply.Spec)
 	}
-
-	runtimes.State5 = time.Since(start)
-	start = time.Now()
 
 	specIds := []primitive.ObjectID{}
 	for specId := range specIdsSet.Iter() {
@@ -597,9 +579,6 @@ func (s *StateOld) init(runtimes *Runtimes) (err error) {
 	for secrId := range specSecretsSet.Iter() {
 		specSecretIds = append(specSecretIds, secrId.(primitive.ObjectID))
 	}
-
-	runtimes.State6 = time.Since(start)
-	start = time.Now()
 
 	specsSecretsMap := map[primitive.ObjectID]*secret.Secret{}
 
@@ -745,9 +724,6 @@ func (s *StateOld) init(runtimes *Runtimes) (err error) {
 		}
 	}
 
-	runtimes.State7 = time.Since(start)
-	start = time.Now()
-
 	podIds := []primitive.ObjectID{}
 	for podId := range podIdsSet.Iter() {
 		podIds = append(podIds, podId.(primitive.ObjectID))
@@ -848,9 +824,6 @@ func (s *StateOld) init(runtimes *Runtimes) (err error) {
 	s.deploymentsInactiveMap = deploymentsInactiveMap
 	// Deployments
 
-	runtimes.State8 = time.Since(start)
-	start = time.Now()
-
 	// Instances
 	instances, err := instance.GetAllVirtMapped(db, &bson.M{
 		"node": s.nodeSelf.Id,
@@ -895,9 +868,6 @@ func (s *StateOld) init(runtimes *Runtimes) (err error) {
 	s.authoritiesMap = authrsMap
 	// Instances
 
-	runtimes.State9 = time.Since(start)
-	start = time.Now()
-
 	// Virtuals
 	curVirts, err := qemu.GetVms(db)
 	if err != nil {
@@ -919,9 +889,6 @@ func (s *StateOld) init(runtimes *Runtimes) (err error) {
 	// Firewalls
 	s.arpRecords = arp.BuildState(s.instances, s.vpcsMap, s.vpcIpsMap)
 	// Firewalls
-
-	runtimes.State10 = time.Since(start)
-	start = time.Now()
 
 	// Firewalls
 	specRules, err := firewall.GetSpecRules(instances, deploymentsNode,
@@ -950,9 +917,6 @@ func (s *StateOld) init(runtimes *Runtimes) (err error) {
 	s.schedulers = schedulers
 	// Schedulers
 
-	runtimes.State11 = time.Since(start)
-	start = time.Now()
-
 	// Running
 	items, err := ioutil.ReadDir("/var/run")
 	if err != nil {
@@ -970,9 +934,6 @@ func (s *StateOld) init(runtimes *Runtimes) (err error) {
 	}
 	s.running = running
 	// Running
-
-	runtimes.State12 = time.Since(start)
-	runtimes.State = time.Since(totalStart)
 
 	return
 }
