@@ -17,7 +17,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/imds/server/utils"
 	"github.com/pritunl/pritunl-cloud/imds/types"
-	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/journal"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/tools/errors"
@@ -141,21 +140,25 @@ func Sync(db *database.Database, instId, deplyId primitive.ObjectID,
 	if ste.Status != "" {
 		coll := db.Instances()
 
+		data := bson.M{
+			"guest.status":    ste.Status,
+			"guest.timestamp": time.Now(),
+			"guest.heartbeat": ste.Timestamp,
+			"guest.memory":    ste.Memory,
+			"guest.hugepages": ste.HugePages,
+			"guest.load1":     ste.Load1,
+			"guest.load5":     ste.Load5,
+			"guest.load15":    ste.Load15,
+		}
+
+		if ste.Security != nil {
+			data["guest.security"] = ste.Security
+		}
+
 		_, err = coll.UpdateOne(db, &bson.M{
 			"_id": instId,
 		}, bson.M{
-			"$set": &bson.M{
-				"guest": &instance.GuestData{
-					Status:    ste.Status,
-					Heartbeat: ste.Timestamp,
-					Timestamp: time.Now(),
-					Memory:    ste.Memory,
-					HugePages: ste.HugePages,
-					Load1:     ste.Load1,
-					Load5:     ste.Load5,
-					Load15:    ste.Load15,
-				},
-			},
+			"$set": data,
 		})
 		if err != nil {
 			err = database.ParseError(err)
@@ -273,20 +276,26 @@ func Pull(db *database.Database, instId, deplyId primitive.ObjectID,
 	if ste.Status != "" {
 		coll := db.Instances()
 
+		data := bson.M{
+			"guest.status":    ste.Status,
+			"guest.timestamp": time.Now(),
+			"guest.heartbeat": ste.Timestamp,
+			"guest.memory":    ste.Memory,
+			"guest.hugepages": ste.HugePages,
+			"guest.load1":     ste.Load1,
+			"guest.load5":     ste.Load5,
+			"guest.load15":    ste.Load15,
+		}
+
+		if ste.Security != nil {
+			data["guest.security"] = ste.Security
+		}
+
 		_, err = coll.UpdateOne(db, &bson.M{
 			"_id": instId,
 		}, bson.M{
 			"$set": &bson.M{
-				"guest": &instance.GuestData{
-					Status:    ste.Status,
-					Heartbeat: ste.Timestamp,
-					Timestamp: time.Now(),
-					Memory:    ste.Memory,
-					HugePages: ste.HugePages,
-					Load1:     ste.Load1,
-					Load5:     ste.Load5,
-					Load15:    ste.Load15,
-				},
+				"guest": data,
 			},
 		})
 		if err != nil {
