@@ -11,6 +11,7 @@ type Secret struct {
 	Type       string             `json:"type"`
 	Key        string             `json:"key"`
 	Value      string             `json:"value"`
+	Data       string             `json:"data"`
 	Region     string             `json:"region"`
 	PublicKey  string             `json:"public_key"`
 	PrivateKey string             `json:"private_key"`
@@ -30,6 +31,7 @@ func NewSecrets(secrs []*secret.Secret) []*Secret {
 			Type:       secr.Type,
 			Key:        secr.Key,
 			Value:      secr.Value,
+			Data:       secr.Data,
 			Region:     secr.Region,
 			PublicKey:  secr.PublicKey,
 			PrivateKey: secr.PrivateKey,
