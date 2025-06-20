@@ -16,10 +16,10 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/agent/constants"
 	"github.com/pritunl/pritunl-cloud/agent/logging"
-	"github.com/pritunl/pritunl-cloud/agent/security"
 	"github.com/pritunl/pritunl-cloud/engine"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/imds/types"
+	"github.com/pritunl/pritunl-cloud/telemetry"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/tools/logger"
 )
@@ -282,8 +282,10 @@ func (m *Imds) RunSync(fast bool) {
 	m.waiter.Add(1)
 
 	go func() {
+		defer utils.RecoverLog()
+
 		for {
-			security.Refresh()
+			telemetry.Refresh()
 			time.Sleep(1 * time.Minute)
 		}
 	}()
