@@ -270,10 +270,10 @@ func (n *Node) Copy() *Node {
 }
 
 func (n *Node) AddRequest() {
-	n.reqLock.Lock()
+	n.lock.Lock()
 	back := n.reqCount.Back()
 	back.Value = back.Value.(int) + 1
-	n.reqLock.Unlock()
+	n.lock.Unlock()
 }
 
 func (n *Node) GetVirtPath() string {
@@ -300,10 +300,13 @@ func (n *Node) GetTempPath() string {
 func (n *Node) GetDatacenter(db *database.Database) (
 	dcId primitive.ObjectID, err error) {
 
+	n.lock.Lock()
 	if n.Zone == n.dcZoneId {
 		dcId = n.dcId
+		n.lock.Unlock()
 		return
 	}
+	n.lock.Unlock()
 
 	zne, err := zone.Get(db, n.Zone)
 	if err != nil {
@@ -311,15 +314,19 @@ func (n *Node) GetDatacenter(db *database.Database) (
 	}
 
 	dcId = zne.Datacenter
+	n.lock.Lock()
 	n.dcId = zne.Datacenter
 	n.dcZoneId = n.Zone
+	n.lock.Unlock()
 
 	return
 }
 
 func (n *Node) GetOracleSubnetsName() (subnets []*OracleSubnet) {
-	if n.oracleSubnetsNamed != nil {
-		subnets = n.oracleSubnetsNamed
+	n.lock.Lock()
+	subnets = n.oracleSubnetsNamed
+	n.lock.Unlock()
+	if subnets != nil {
 		return
 	}
 
@@ -350,7 +357,9 @@ func (n *Node) GetOracleSubnetsName() (subnets []*OracleSubnet) {
 		}
 	}
 
+	n.lock.Lock()
 	n.oracleSubnetsNamed = subnets
+	n.lock.Unlock()
 
 	return
 }
@@ -1229,8 +1238,6 @@ func (n *Node) SyncNetwork(clearCache bool) {
 	} else {
 		n.AvailableVpcs = []*cloud.Vpc{}
 	}
-
-	return
 }
 
 func (n *Node) update(db *database.Database) (err error) {
