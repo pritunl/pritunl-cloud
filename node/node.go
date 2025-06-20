@@ -1349,9 +1349,12 @@ func (n *Node) update(db *database.Database) (err error) {
 	return
 }
 
-func (n *Node) sync() {
+func (n *Node) sync() (nde *Node) {
 	db := database.GetDatabase()
 	defer db.Close()
+
+	nde = n.Copy()
+	n = nde
 
 	n.Timestamp = time.Now()
 
@@ -1498,49 +1501,33 @@ func (n *Node) sync() {
 			}
 		}
 	}
-}
 
-func (n *Node) keepalive() {
-	for {
-		if constants.Shutdown {
-			return
+	var reqCount *list.List
+	if Self != nil {
+		Self.lock.Lock()
+		reqCount = utils.CopyList(Self.reqCount)
+		Self.lock.Unlock()
+	} else {
+		reqCount = list.New()
+		for i := 0; i < 60; i++ {
+			reqCount.PushBack(0)
 		}
-
-		n.sync()
-		time.Sleep(1 * time.Second)
 	}
-}
 
-func (n *Node) reqInit() {
-	n.reqLock.Lock()
-	n.reqCount = list.New()
-	for i := 0; i < 60; i++ {
-		n.reqCount.PushBack(0)
+	var count int64
+	for elm := reqCount.Front(); elm != nil; elm = elm.Next() {
+		count += int64(elm.Value.(int))
 	}
-	n.reqLock.Unlock()
-}
+	n.RequestsMin = count
 
-func (n *Node) reqSync() {
-	for {
-		time.Sleep(1 * time.Second)
+	reqCount.Remove(reqCount.Front())
+	reqCount.PushBack(0)
 
-		if constants.Shutdown {
-			return
-		}
+	n.reqCount = reqCount
 
-		n.reqLock.Lock()
+	Self = n
 
-		var count int64
-		for elm := n.reqCount.Front(); elm != nil; elm = elm.Next() {
-			count += int64(elm.Value.(int))
-		}
-		n.RequestsMin = count
-
-		n.reqCount.Remove(n.reqCount.Front())
-		n.reqCount.PushBack(0)
-
-		n.reqLock.Unlock()
-	}
+	return
 }
 
 func (n *Node) Init() (err error) {
@@ -1644,16 +1631,21 @@ func (n *Node) Init() (err error) {
 		return
 	}
 
-	n.reqInit()
-
 	n.sync()
 
 	event.PublishDispatch(db, "node.change")
 
-	Self = n
+	go func() {
+		nde := n
+		for {
+			if constants.Shutdown {
+				return
+			}
 
-	go n.keepalive()
-	go n.reqSync()
+			nde = nde.sync()
+			time.Sleep(1 * time.Second)
+		}
+	}()
 
 	return
 }
