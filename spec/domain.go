@@ -7,7 +7,7 @@ import (
 )
 
 type Domain struct {
-	Records []*Record `bson:"record" json:"record"`
+	Records []*Record `bson:"records" json:"records"`
 }
 
 func (d *Domain) Validate() (errData *errortypes.ErrorData, err error) {
