@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -42,10 +43,15 @@ func (r *Telemetry[Data]) Refresh() (err error) {
 		return
 	}
 
-	data, err := r.Refresher()
-	if err != nil {
-		return
-	}
+	var data Data
+	func() {
+		defer utils.RecoverLog("telemetry: Panic in refresh")
+
+		data, err = r.Refresher()
+		if err != nil {
+			return
+		}
+	}()
 
 	r.Set(data)
 
