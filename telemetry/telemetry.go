@@ -41,9 +41,6 @@ func (r *Telemetry[Data]) Refresh() (err error) {
 	if time.Since(lastRefresh) < r.RefreshRate {
 		return
 	}
-	r.lock.Lock()
-	r.lastRefresh = time.Now()
-	r.lock.Unlock()
 
 	data, err := r.Refresher()
 	if err != nil {
@@ -56,14 +53,18 @@ func (r *Telemetry[Data]) Refresh() (err error) {
 }
 
 func (r *Telemetry[Data]) Set(data Data) {
+	r.lock.Lock()
 	r.data = data
+	r.lastRefresh = time.Now()
+	r.lock.Unlock()
 }
 
 func (r *Telemetry[Data]) Get() Data {
 	r.lock.Lock()
+	lastRefresh := r.lastRefresh
 	lastTransmit := r.lastTransmit
 	r.lock.Unlock()
-	if time.Since(lastTransmit) < r.TransmitRate {
+	if lastRefresh.IsZero() || time.Since(lastTransmit) < r.TransmitRate {
 		var x Data
 		return x
 	}
