@@ -12,6 +12,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gorilla/websocket"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/pritunl-cloud/agent/security"
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
@@ -140,14 +141,15 @@ type StatusInfo struct {
 }
 
 type GuestData struct {
-	Status    string    `bson:"status" json:"status"`
-	Timestamp time.Time `bson:"timestamp" json:"timestamp"`
-	Heartbeat time.Time `bson:"heartbeat" json:"heartbeat"`
-	Memory    float64   `bson:"memory" json:"memory"`
-	HugePages float64   `bson:"hugepages" json:"hugepages"`
-	Load1     float64   `bson:"load1" json:"load1"`
-	Load5     float64   `bson:"load5" json:"load5"`
-	Load15    float64   `bson:"load15" json:"load15"`
+	Status    string           `bson:"status" json:"status"`
+	Timestamp time.Time        `bson:"timestamp" json:"timestamp"`
+	Heartbeat time.Time        `bson:"heartbeat" json:"heartbeat"`
+	Memory    float64          `bson:"memory" json:"memory"`
+	HugePages float64          `bson:"hugepages" json:"hugepages"`
+	Load1     float64          `bson:"load1" json:"load1"`
+	Load5     float64          `bson:"load5" json:"load5"`
+	Load15    float64          `bson:"load15" json:"load15"`
+	Security  *security.Report `bson:"security,omitempty" json:"security"`
 }
 
 type Info struct {
