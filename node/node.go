@@ -130,10 +130,10 @@ type Node struct {
 	OraclePublicKey         string               `bson:"oracle_public_key" json:"oracle_public_key"`
 	Operation               string               `bson:"operation" json:"operation"`
 	oracleSubnetsNamed      []*OracleSubnet      `bson:"-" json:"-"`
-	reqLock                 sync.Mutex           `bson:"-" json:"-"`
 	reqCount                *list.List           `bson:"-" json:"-"`
 	dcId                    primitive.ObjectID   `bson:"-" json:"-"`
 	dcZoneId                primitive.ObjectID   `bson:"-" json:"-"`
+	lock                    sync.Mutex           `bson:"-" json:"-"`
 }
 
 type Share struct {
@@ -172,6 +172,9 @@ type OracleSubnet struct {
 }
 
 func (n *Node) Copy() *Node {
+	n.lock.Lock()
+	defer n.lock.Unlock()
+
 	nde := &Node{
 		Id:                      n.Id,
 		Datacenter:              n.Datacenter,
@@ -196,6 +199,7 @@ func (n *Node) Copy() *Node {
 		SelfCertificateKey:      n.SelfCertificateKey,
 		AdminDomain:             n.AdminDomain,
 		UserDomain:              n.UserDomain,
+		WebauthnDomain:          n.WebauthnDomain,
 		RequestsMin:             n.RequestsMin,
 		ForwardedForHeader:      n.ForwardedForHeader,
 		ForwardedProtoHeader:    n.ForwardedProtoHeader,
@@ -218,6 +222,7 @@ func (n *Node) Copy() *Node {
 		AvailableDrives:         n.AvailableDrives,
 		InstanceDrives:          n.InstanceDrives,
 		NoHostNetwork:           n.NoHostNetwork,
+		NoNodePortNetwork:       n.NoNodePortNetwork,
 		HostNat:                 n.HostNat,
 		DefaultNoPublicAddress:  n.DefaultNoPublicAddress,
 		DefaultNoPublicAddress6: n.DefaultNoPublicAddress6,
@@ -234,6 +239,7 @@ func (n *Node) Copy() *Node {
 		Firewall:                n.Firewall,
 		NetworkRoles:            n.NetworkRoles,
 		Memory:                  n.Memory,
+		HugePagesUsed:           n.HugePagesUsed,
 		Load1:                   n.Load1,
 		Load5:                   n.Load5,
 		Load15:                  n.Load15,
@@ -255,6 +261,7 @@ func (n *Node) Copy() *Node {
 		OraclePrivateKey:        n.OraclePrivateKey,
 		OraclePublicKey:         n.OraclePublicKey,
 		Operation:               n.Operation,
+		oracleSubnetsNamed:      n.oracleSubnetsNamed,
 		dcId:                    n.dcId,
 		dcZoneId:                n.dcZoneId,
 	}
