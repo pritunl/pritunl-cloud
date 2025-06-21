@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"container/list"
 	"io/ioutil"
 	"os/exec"
 	"runtime/debug"
@@ -234,4 +235,12 @@ func RecoverLog(msg string) {
 			"panic": panc,
 		}).Error("sync: Panic in goroutine")
 	}
+}
+
+func CopyList(src *list.List) *list.List {
+	dst := list.New()
+	for x := src.Front(); x != nil; x = x.Next() {
+		dst.PushBack(x.Value)
+	}
+	return dst
 }
