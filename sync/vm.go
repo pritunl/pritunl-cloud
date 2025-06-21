@@ -106,6 +106,7 @@ func vmRunner() {
 	}).Info("sync: Starting hypervisor")
 
 	runtimes := &state.Runtimes{}
+	runtimes.Init()
 	for {
 		if runtimes.Total > 3000*time.Millisecond {
 			runtimes.Log()
@@ -117,6 +118,7 @@ func vmRunner() {
 		}
 		time.Sleep(delay)
 		runtimes = &state.Runtimes{}
+		runtimes.Init()
 
 		if constants.Shutdown {
 			return
