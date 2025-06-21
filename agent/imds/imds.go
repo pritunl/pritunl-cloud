@@ -282,7 +282,7 @@ func (m *Imds) RunSync(fast bool) {
 	m.waiter.Add(1)
 
 	go func() {
-		defer utils.RecoverLog()
+		defer utils.RecoverLog("imds: Panic in telemetry")
 
 		for {
 			telemetry.Refresh()
