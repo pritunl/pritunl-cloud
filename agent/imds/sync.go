@@ -3,15 +3,14 @@ package imds
 import (
 	"time"
 
-	"github.com/pritunl/pritunl-cloud/agent/security"
 	"github.com/pritunl/pritunl-cloud/imds/types"
+	"github.com/pritunl/pritunl-cloud/telemetry"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/tools/logger"
 )
 
 var (
-	curStatus    = types.Initializing
-	lastSecurity = time.Now().Add(-7 * time.Minute)
+	curStatus = types.Initializing
 )
 
 type StateData struct {
@@ -47,10 +46,7 @@ func (m *Imds) GetState(curHash uint32) (data *StateData, err error) {
 		data.Load15 = load.Load15
 	}
 
-	if time.Since(lastSecurity) > 9*time.Minute {
-		data.Security = security.GetReport()
-		lastSecurity = time.Now()
-	}
+	data.Updates = telemetry.Updates.Get()
 
 	return
 }
