@@ -10,6 +10,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/imds/server/errortypes"
 	"github.com/pritunl/pritunl-cloud/imds/server/state"
 	"github.com/pritunl/pritunl-cloud/imds/types"
+	"github.com/pritunl/pritunl-cloud/telemetry"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -45,11 +46,8 @@ func syncPut(c *gin.Context) {
 	state.Global.State.Load5 = data.Load5
 	state.Global.State.Load15 = data.Load15
 
-	if data.Security != nil {
-		if len(data.Security.Updates) > 50 {
-			data.Security.Updates = data.Security.Updates[:50]
-		}
-		state.Global.State.Security = data.Security
+	if data.Updates != nil {
+		telemetry.Updates.Set(data.Updates)
 	}
 
 	if data.Output != nil {
@@ -88,14 +86,7 @@ func hostSyncPut(c *gin.Context) {
 
 	ste := state.Global.State.Copy()
 	ste.Output = state.Global.GetOutput()
-
-	lastSecurityLock.Lock()
-	if time.Since(lastSecurity) > 10*time.Minute {
-		lastSecurity = time.Now()
-	} else {
-		ste.Security = nil
-	}
-	lastSecurityLock.Unlock()
+	ste.Updates = telemetry.Updates.Get()
 
 	c.JSON(200, ste)
 }
@@ -103,14 +94,7 @@ func hostSyncPut(c *gin.Context) {
 func hostSyncGet(c *gin.Context) {
 	ste := state.Global.State.Copy()
 	ste.Output = state.Global.GetOutput()
-
-	lastSecurityLock.Lock()
-	if time.Since(lastSecurity) > 10*time.Minute {
-		lastSecurity = time.Now()
-	} else {
-		ste.Security = nil
-	}
-	lastSecurityLock.Unlock()
+	ste.Updates = telemetry.Updates.Get()
 
 	c.JSON(200, ste)
 }
