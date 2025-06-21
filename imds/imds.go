@@ -151,8 +151,8 @@ func Sync(db *database.Database, instId, deplyId primitive.ObjectID,
 			"guest.load15":    ste.Load15,
 		}
 
-		if ste.Security != nil {
-			data["guest.security"] = ste.Security
+		if ste.Updates != nil {
+			data["guest.updates"] = ste.Updates
 		}
 
 		_, err = coll.UpdateOne(db, &bson.M{
@@ -287,8 +287,8 @@ func Pull(db *database.Database, instId, deplyId primitive.ObjectID,
 			"guest.load15":    ste.Load15,
 		}
 
-		if ste.Security != nil {
-			data["guest.security"] = ste.Security
+		if ste.Updates != nil {
+			data["guest.security"] = ste.Updates
 		}
 
 		_, err = coll.UpdateOne(db, &bson.M{
