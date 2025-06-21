@@ -226,7 +226,7 @@ func HasMatchingItem(s1, s2 []string) bool {
 	return false
 }
 
-func RecoverLog() {
+func RecoverLog(msg string) {
 	panc := recover()
 	if panc != nil {
 		logrus.WithFields(logrus.Fields{
