@@ -19,6 +19,7 @@ type PackageHandler interface {
 }
 
 type Package struct {
+	name    string
 	ref     int
 	after   set.Set
 	ttl     time.Duration
@@ -44,6 +45,7 @@ func NewPackage(handler PackageHandler) *Package {
 	refCounter += 1
 
 	pkg := &Package{
+		name:    reflect.TypeOf(handler).Elem().Name(),
 		ref:     refCounter,
 		handler: handler,
 		after:   set.NewSet(),
@@ -96,8 +98,7 @@ func RefreshAll(db *database.Database, runtimes *Runtimes) (err error) {
 				errors <- refreshErr
 			}
 
-			structName := reflect.TypeOf(pkg.handler).Elem().Name()
-			runtimes.SetState(structName, dur)
+			runtimes.SetState(pkg.name, dur)
 		}()
 	}
 
