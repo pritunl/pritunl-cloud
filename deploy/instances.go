@@ -51,7 +51,7 @@ func (s *Instances) create(inst *instance.Instance) {
 	}
 
 	go func() {
-		defer utils.RecoverLog()
+		defer utils.RecoverLog("deploy: Panic in instance action")
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
@@ -99,7 +99,7 @@ func (s *Instances) start(inst *instance.Instance) {
 	}
 
 	go func() {
-		defer utils.RecoverLog()
+		defer utils.RecoverLog("deploy: Panic in instance action")
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
@@ -161,7 +161,7 @@ func (s *Instances) cleanup(inst *instance.Instance) {
 	}
 
 	go func() {
-		defer utils.RecoverLog()
+		defer utils.RecoverLog("deploy: Panic in instance action")
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
@@ -198,7 +198,7 @@ func (s *Instances) stop(inst *instance.Instance) {
 	}
 
 	go func() {
-		defer utils.RecoverLog()
+		defer utils.RecoverLog("deploy: Panic in instance action")
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
@@ -233,7 +233,7 @@ func (s *Instances) restart(inst *instance.Instance) {
 	}
 
 	go func() {
-		defer utils.RecoverLog()
+		defer utils.RecoverLog("deploy: Panic in instance action")
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
@@ -316,7 +316,7 @@ func (s *Instances) destroy(inst *instance.Instance) {
 	}
 
 	go func() {
-		defer utils.RecoverLog()
+		defer utils.RecoverLog("deploy: Panic in instance action")
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
@@ -379,7 +379,7 @@ func (s *Instances) diskAdd(inst *instance.Instance,
 	}
 
 	go func() {
-		defer utils.RecoverLog()
+		defer utils.RecoverLog("deploy: Panic in instance action")
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
@@ -431,7 +431,7 @@ func (s *Instances) diskRemove(inst *instance.Instance,
 	}
 
 	go func() {
-		defer utils.RecoverLog()
+		defer utils.RecoverLog("deploy: Panic in instance action")
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
@@ -478,7 +478,7 @@ func (s *Instances) usbAdd(inst *instance.Instance, virt *vm.VirtualMachine,
 	}
 
 	go func() {
-		defer utils.RecoverLog()
+		defer utils.RecoverLog("deploy: Panic in instance action")
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
@@ -525,7 +525,7 @@ func (s *Instances) usbRemove(inst *instance.Instance,
 	}
 
 	go func() {
-		defer utils.RecoverLog()
+		defer utils.RecoverLog("deploy: Panic in instance action")
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
@@ -644,7 +644,7 @@ func (s *Instances) routes(inst *instance.Instance) (err error) {
 	}
 
 	go func() {
-		defer utils.RecoverLog()
+		defer utils.RecoverLog("deploy: Panic in instance action")
 		defer func() {
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
 		}()
@@ -877,7 +877,7 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 
 				s.stat.WaitAdd()
 				go func() {
-					defer utils.RecoverLog()
+					defer utils.RecoverLog("deploy: Panic in instance action")
 					defer s.stat.WaitDone()
 					err := virt.CommitState(db, instance.Cleanup)
 					if err != nil {
@@ -889,7 +889,7 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 			} else {
 				s.stat.WaitAdd()
 				go func() {
-					defer utils.RecoverLog()
+					defer utils.RecoverLog("deploy: Panic in instance action")
 					defer s.stat.WaitDone()
 					err := virt.Commit(db)
 					if err != nil {
@@ -904,7 +904,7 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 		if inst.Info == nil || now.Sub(inst.Info.Timestamp) > infoTtl {
 			s.stat.WaitAdd()
 			go func(inst *instance.Instance) {
-				defer utils.RecoverLog()
+				defer utils.RecoverLog("deploy: Panic in instance action")
 				defer s.stat.WaitDone()
 
 				inst.Info = info.NewInstance(s.stat, inst)
