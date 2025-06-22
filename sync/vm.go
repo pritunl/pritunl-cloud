@@ -108,11 +108,11 @@ func vmRunner() {
 	runtimes := &state.Runtimes{}
 	runtimes.Init()
 	for {
-		if runtimes.Total > 3000*time.Millisecond {
+		if runtimes.Total > 1000*time.Millisecond {
 			runtimes.Log()
 		}
 
-		delay := (2500 * time.Millisecond) - runtimes.Total
+		delay := (3000 * time.Millisecond) - runtimes.Total
 		if delay < 50*time.Millisecond {
 			delay = 50 * time.Millisecond
 		}
