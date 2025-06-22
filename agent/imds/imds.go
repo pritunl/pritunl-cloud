@@ -18,7 +18,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/agent/logging"
 	"github.com/pritunl/pritunl-cloud/engine"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/telemetry"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/tools/logger"
@@ -247,28 +246,7 @@ func (m *Imds) Sync() (ready bool, err error) {
 			"hash":     int(respData.Hash),
 		}).Info("agent: Running engine reload")
 
-		SetStatus(types.Reloading)
-
-		err = m.engine.UpdateSpec(respData.Spec)
-		if err != nil {
-			logger.WithFields(logger.Fields{
-				"spec_len": len(respData.Spec),
-				"hash":     int(respData.Hash),
-				"error":    err,
-			}).Error("agent: Failed to run engine spec update")
-			err = nil
-		}
-
-		err = m.engine.Run(engine.Reload)
-		if err != nil {
-			logger.WithFields(logger.Fields{
-				"hash":  int(respData.Hash),
-				"error": err,
-			}).Error("agent: Failed to run engine reload")
-			err = nil
-		}
-
-		SetStatus(types.Running)
+		m.engine.Queue(respData.Spec)
 	}
 
 	return
@@ -276,6 +254,9 @@ func (m *Imds) Sync() (ready bool, err error) {
 
 func (m *Imds) SetInitialized() {
 	m.initialized = true
+	if m.engine != nil {
+		m.engine.StartRunner()
+	}
 }
 
 func (m *Imds) RunSync(fast bool) {
