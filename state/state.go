@@ -131,7 +131,7 @@ func GetState(runtimes *Runtimes) (stat *State, err error) {
 	db := database.GetDatabase()
 	defer db.Close()
 
-	err = RefreshAll(db)
+	err = RefreshAll(db, runtimes)
 	if err != nil {
 		return
 	}
