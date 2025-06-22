@@ -5,10 +5,12 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/agent/utils"
 	"github.com/pritunl/pritunl-cloud/errortypes"
-	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/tools/logger"
 )
 
 type Engine struct {
@@ -17,7 +19,10 @@ type Engine struct {
 	blocks     []*Block
 	bash       *BashEngine
 	python     *PythonEngine
+	lock       sync.Mutex
 	outputLock sync.Mutex
+	startPhase string
+	queue      chan []*Block
 }
 
 func (e *Engine) UpdateEnv(key, val string) {
@@ -59,7 +64,10 @@ func (e *Engine) GetEnviron() (env []string) {
 	return
 }
 
-func (e *Engine) Init() (err error) {
+func (e *Engine) Init(phase string) (err error) {
+	e.startPhase = phase
+	e.queue = make(chan []*Block, QueueSize)
+
 	e.cwd, err = os.Getwd()
 	if err != nil {
 		err = &errortypes.ReadError{
@@ -88,17 +96,22 @@ func (e *Engine) Init() (err error) {
 		}
 	}()
 
-	data, err := utils.ReadLines("/etc/pritunl-deploy.md")
-	if err != nil {
-		return
-	}
-
-	err = e.UpdateSpec(strings.Join(data, "\n"))
-	if err != nil {
-		return
-	}
+	go e.runner()
 
 	return
+}
+
+func (e *Engine) getBlocks() (blocks []*Block) {
+	blocks = <-e.queue
+
+	for {
+		select {
+		case req := <-e.queue:
+			blocks = req
+		default:
+			return blocks
+		}
+	}
 }
 
 func (e *Engine) UpdateSpec(data string) (err error) {
@@ -112,8 +125,39 @@ func (e *Engine) UpdateSpec(data string) (err error) {
 	return
 }
 
-func (e *Engine) Run(phase string) (err error) {
-	for _, block := range e.blocks {
+func (e *Engine) runner() {
+	initialized := false
+
+	for {
+		blocks := e.getBlocks()
+
+		var phase string
+		if !initialized {
+			phase = e.startPhase
+		} else {
+			phase = Reload
+		}
+
+		err := e.run(phase, blocks)
+		if err != nil {
+			if initialized {
+				logger.WithFields(logger.Fields{
+					"error": err,
+				}).Error("agent: Failed to run spec")
+			} else {
+				logger.WithFields(logger.Fields{
+					"error": err,
+				}).Error("agent: Failed to run initial spec")
+				utils.DelayExit(1, 1*time.Second)
+			}
+		}
+
+		initialized = true
+	}
+}
+
+func (e *Engine) run(phase string, blocks []*Block) (err error) {
+	for _, block := range blocks {
 		switch phase {
 		case Initial:
 			break
@@ -143,6 +187,20 @@ func (e *Engine) Run(phase string) (err error) {
 	}
 
 	return
+}
+
+func (e *Engine) Queue(data string) {
+	blocks, err := Parse(data)
+	if err != nil {
+		return
+	}
+
+	e.lock.Lock()
+	if len(e.queue) >= QueueSize-16 {
+		return
+	}
+	e.queue <- blocks
+	e.lock.Unlock()
 }
 
 func (e *Engine) RunBash(block string) (err error) {
