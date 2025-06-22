@@ -5,11 +5,10 @@ import (
 	"os"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/pritunl-cloud/agent/utils"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/tools/logger"
 )
 
@@ -21,8 +20,8 @@ type Engine struct {
 	python     *PythonEngine
 	lock       sync.Mutex
 	outputLock sync.Mutex
-	startPhase string
 	queue      chan []*Block
+	OnStatus   func(status string)
 }
 
 func (e *Engine) UpdateEnv(key, val string) {
@@ -64,8 +63,7 @@ func (e *Engine) GetEnviron() (env []string) {
 	return
 }
 
-func (e *Engine) Init(phase string) (err error) {
-	e.startPhase = phase
+func (e *Engine) Init() (err error) {
 	e.queue = make(chan []*Block, QueueSize)
 
 	e.cwd, err = os.Getwd()
@@ -96,9 +94,11 @@ func (e *Engine) Init(phase string) (err error) {
 		}
 	}()
 
-	go e.runner()
-
 	return
+}
+
+func (e *Engine) StartRunner() {
+	go e.runner()
 }
 
 func (e *Engine) getBlocks() (blocks []*Block) {
@@ -126,38 +126,24 @@ func (e *Engine) UpdateSpec(data string) (err error) {
 }
 
 func (e *Engine) runner() {
-	initialized := false
-
 	for {
 		blocks := e.getBlocks()
+		e.OnStatus(types.Reloading)
 
-		var phase string
-		if !initialized {
-			phase = e.startPhase
-		} else {
-			phase = Reload
-		}
-
-		err := e.run(phase, blocks)
+		_, err := e.Run(Reload, blocks)
 		if err != nil {
-			if initialized {
-				logger.WithFields(logger.Fields{
-					"error": err,
-				}).Error("agent: Failed to run spec")
-			} else {
-				logger.WithFields(logger.Fields{
-					"error": err,
-				}).Error("agent: Failed to run initial spec")
-				utils.DelayExit(1, 1*time.Second)
-			}
+			logger.WithFields(logger.Fields{
+				"error": err,
+			}).Error("agent: Failed to run spec")
+			e.OnStatus(types.Fault)
+		} else {
+			e.OnStatus(types.Running)
 		}
-
-		initialized = true
 	}
 }
 
-func (e *Engine) run(phase string, blocks []*Block) (err error) {
-	for _, block := range blocks {
+func (e *Engine) Run(phase string, blocks []*Block) (fatal bool, err error) {
+	for i, block := range blocks {
 		switch phase {
 		case Initial:
 			break
@@ -173,16 +159,45 @@ func (e *Engine) run(phase string, blocks []*Block) (err error) {
 			break
 		}
 
-		if block.Type == "shell" {
-			err = e.RunBash(block.Code)
-			if err != nil {
-				return
+		err = e.runBlock(block.Type, block.Code)
+		if err != nil {
+			for _, block := range blocks[i:] {
+				switch phase {
+				case Initial:
+					if block.Phase != Reload {
+						fatal = true
+					}
+				case Reboot:
+					if block.Phase != Reboot && block.Phase != Reload {
+						continue
+					}
+					if block.Phase != Reload {
+						fatal = true
+					}
+				case Reload:
+					if block.Phase != Reload {
+						continue
+					}
+				}
 			}
-		} else if block.Type == "python" {
-			err = e.RunPython(block.Code)
-			if err != nil {
-				return
-			}
+			return
+		}
+	}
+
+	return
+}
+
+func (e *Engine) runBlock(blockType, block string) (err error) {
+	switch blockType {
+	case "shell":
+		err = e.bash.Run(block)
+		if err != nil {
+			return
+		}
+	case "python":
+		err = e.python.Run(block)
+		if err != nil {
+			return
 		}
 	}
 
@@ -201,22 +216,4 @@ func (e *Engine) Queue(data string) {
 	}
 	e.queue <- blocks
 	e.lock.Unlock()
-}
-
-func (e *Engine) RunBash(block string) (err error) {
-	err = e.bash.Run(block)
-	if err != nil {
-		return
-	}
-
-	return
-}
-
-func (e *Engine) RunPython(block string) (err error) {
-	err = e.python.Run(block)
-	if err != nil {
-		return
-	}
-
-	return
 }
