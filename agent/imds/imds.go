@@ -244,7 +244,7 @@ func (m *Imds) Sync() (ready bool, err error) {
 		logger.WithFields(logger.Fields{
 			"spec_len": len(respData.Spec),
 			"hash":     int(respData.Hash),
-		}).Info("agent: Running engine reload")
+		}).Info("agent: Queuing engine reload")
 
 		m.engine.Queue(respData.Spec)
 	}
