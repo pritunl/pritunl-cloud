@@ -187,8 +187,10 @@ func main() {
 
 		ids.RunSync(image)
 
+		runStatus := types.Running
 		fatal, err := eng.Run(phase, blocks)
 		if err != nil {
+			runStatus = types.Fault
 			if fatal {
 				logger.WithFields(logger.Fields{
 					"error": err,
@@ -206,7 +208,7 @@ func main() {
 		if !image {
 			ids.SetInitialized()
 
-			err = ids.SyncStatus(types.Running)
+			err = ids.SyncStatus(runStatus)
 			if err != nil {
 				logger.WithFields(logger.Fields{
 					"error": err,
