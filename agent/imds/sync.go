@@ -1,6 +1,7 @@
 package imds
 
 import (
+	"sync"
 	"time"
 
 	"github.com/pritunl/pritunl-cloud/imds/types"
@@ -10,7 +11,8 @@ import (
 )
 
 var (
-	curStatus = types.Initializing
+	curStatus     = types.Initializing
+	curStatusLock sync.Mutex
 )
 
 type StateData struct {
@@ -23,7 +25,9 @@ func (m *Imds) GetState(curHash uint32) (data *StateData, err error) {
 	}
 
 	data.Hash = curHash
+	curStatusLock.Lock()
 	data.Status = curStatus
+	curStatusLock.Unlock()
 
 	mem, err := utils.GetMemInfo()
 	if err != nil {
@@ -52,5 +56,7 @@ func (m *Imds) GetState(curHash uint32) (data *StateData, err error) {
 }
 
 func SetStatus(status string) {
+	curStatusLock.Lock()
 	curStatus = status
+	curStatusLock.Unlock()
 }
