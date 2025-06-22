@@ -117,7 +117,9 @@ func main() {
 
 		break
 	case "engine":
-		eng := &engine.Engine{}
+		eng := &engine.Engine{
+			OnStatus: imds.SetStatus,
+		}
 		ids := &imds.Imds{}
 
 		err := ids.Init(eng)
@@ -144,15 +146,6 @@ func main() {
 			return
 		}
 
-		err = eng.Init()
-		if err != nil {
-			logger.WithFields(logger.Fields{
-				"error": err,
-			}).Error("agent: Failed to init engine")
-			utils.DelayExit(1, 1*time.Second)
-			return
-		}
-
 		image := false
 		phase := engine.Reboot
 		switch flag.Arg(1) {
@@ -165,15 +158,49 @@ func main() {
 			break
 		}
 
-		ids.RunSync(image)
-
-		err = eng.Run(phase)
+		err = eng.Init()
 		if err != nil {
 			logger.WithFields(logger.Fields{
 				"error": err,
-			}).Error("agent: Engine run failed")
+			}).Error("agent: Failed to init engine")
 			utils.DelayExit(1, 1*time.Second)
 			return
+		}
+
+		data, err := utils.Read("/etc/pritunl-deploy.md")
+		if err != nil {
+			logger.WithFields(logger.Fields{
+				"error": err,
+			}).Error("agent: Failed to read deploy spec")
+			utils.DelayExit(1, 1*time.Second)
+			return
+		}
+
+		blocks, err := engine.Parse(data)
+		if err != nil {
+			logger.WithFields(logger.Fields{
+				"error": err,
+			}).Error("agent: Failed to parse deploy spec")
+			utils.DelayExit(1, 1*time.Second)
+			return
+		}
+
+		ids.RunSync(image)
+
+		fatal, err := eng.Run(phase, blocks)
+		if err != nil {
+			if fatal {
+				logger.WithFields(logger.Fields{
+					"error": err,
+				}).Error("agent: Fatal initial engine run error")
+				utils.DelayExit(1, 1*time.Second)
+				return
+			} else {
+				logger.WithFields(logger.Fields{
+					"error": err,
+				}).Error("agent: Non-fatal initial engine run error")
+				err = nil
+			}
 		}
 
 		if !image {
