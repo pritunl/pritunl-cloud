@@ -1505,7 +1505,7 @@ func generateNodePort(namespace, iface string, addr, nodePortGateway string,
 }
 
 func generateHost(namespace, iface string, nodePortNetwork bool,
-	nodePortGateway string, externalIfaces, puiblicIps []string,
+	nodePortGateway, defaultIface string, externalIfaces, puiblicIps []string,
 	ingress []*firewall.Rule,
 	nodePortMappings map[string][]*firewall.Mapping) (rules *Rules) {
 
@@ -1916,7 +1916,17 @@ func generateHost(namespace, iface string, nodePortNetwork bool,
 					// )
 					// rules.Maps = append(rules.Maps, cmd)
 				} else {
-					for _, externalIface := range externalIfaces {
+					nodePortIfaces := []string{}
+					if defaultIface != "" {
+						nodePortIfaces = append(nodePortIfaces, defaultIface)
+					}
+					for _, iface := range externalIfaces {
+						if iface != defaultIface {
+							nodePortIfaces = append(nodePortIfaces, iface)
+						}
+					}
+
+					for _, externalIface := range nodePortIfaces {
 						cmd = rules.newCommandMap()
 						cmd = append(cmd,
 							"-i", externalIface,
@@ -1950,6 +1960,115 @@ func generateHost(namespace, iface string, nodePortNetwork bool,
 		)
 		rules.Maps = append(rules.Maps, cmd)
 	}
+
+	return
+}
+
+func generateHostNodePort(namespace, iface string,
+	nodePortGateway, defaultIface string, externalIfaces, puiblicIps []string,
+	nodePortMappings map[string][]*firewall.Mapping) (rules *Rules) {
+
+	rules = &Rules{
+		Namespace:        namespace,
+		Interface:        iface,
+		Header:           [][]string{},
+		Header6:          [][]string{},
+		SourceDestCheck:  [][]string{},
+		SourceDestCheck6: [][]string{},
+		Ingress:          [][]string{},
+		Ingress6:         [][]string{},
+		Maps:             [][]string{},
+		Maps6:            [][]string{},
+		Holds:            [][]string{},
+		Holds6:           [][]string{},
+		Ipvs:             ipvs.New(),
+	}
+
+	nodePortKeys := make([]string, 0, len(nodePortMappings))
+	for k := range nodePortMappings {
+		nodePortKeys = append(nodePortKeys, k)
+	}
+	sort.Strings(nodePortKeys)
+
+	for _, nodePortAddr := range nodePortKeys {
+		mappings := nodePortMappings[nodePortAddr]
+		for _, mapping := range mappings {
+			if mapping.Protocol != firewall.Tcp &&
+				mapping.Protocol != firewall.Udp {
+				continue
+			}
+
+			if mapping.Ipvs {
+				ipvsProtocol := ""
+				if mapping.Protocol == firewall.Udp {
+					ipvsProtocol = ipvs.Udp
+				} else {
+					ipvsProtocol = ipvs.Tcp
+				}
+
+				for _, publicIp := range puiblicIps {
+					rules.Ipvs.AddTarget(publicIp, mapping.Address,
+						mapping.ExternalPort, ipvsProtocol)
+				}
+
+				// Alternative to full SNAT
+				// cmd = rules.newCommandMapPost()
+				// cmd = append(cmd,
+				// 	"-m", "ipvs",
+				// 	"--vproto", protocolIndex(mapping.Protocol),
+				// 	"--vport", fmt.Sprintf("%d", mapping.ExternalPort),
+				// 	"--vdir", "ORIGINAL",
+				// )
+				// cmd = rules.commentCommandMap(cmd)
+				// cmd = append(cmd,
+				// 	"-j", "SNAT",
+				// 	"--to-source", nodePortGateway,
+				// )
+				// rules.Maps = append(rules.Maps, cmd)
+			} else {
+				nodePortIfaces := []string{}
+				if defaultIface != "" {
+					nodePortIfaces = append(nodePortIfaces, defaultIface)
+				}
+				for _, iface := range externalIfaces {
+					if iface != defaultIface {
+						nodePortIfaces = append(nodePortIfaces, iface)
+					}
+				}
+
+				for _, externalIface := range nodePortIfaces {
+					cmd := rules.newCommandMap()
+					cmd = append(cmd,
+						"-i", externalIface,
+						"-p", mapping.Protocol,
+						"-m", mapping.Protocol,
+						"--dport", fmt.Sprintf("%d", mapping.ExternalPort),
+					)
+					cmd = rules.commentCommandMap(cmd)
+					cmd = append(cmd,
+						"-j", "DNAT",
+						"--to-destination", fmt.Sprintf(
+							"%s:%d",
+							nodePortAddr,
+							mapping.ExternalPort,
+						),
+					)
+					rules.Maps = append(rules.Maps, cmd)
+				}
+			}
+		}
+	}
+
+	cmd := rules.newCommandMapPost()
+	cmd = append(cmd,
+		"-o", settings.Hypervisor.NodePortNetworkName,
+	)
+	cmd = rules.commentCommandMap(cmd)
+	cmd = append(cmd,
+		"-j", "SNAT",
+		"--to-source", nodePortGateway,
+	)
+	rules.Maps = append(rules.Maps, cmd)
 
 	return
 }
