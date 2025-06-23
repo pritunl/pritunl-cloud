@@ -171,7 +171,7 @@ func (p *Planner) checkInstance(db *database.Database,
 	status := deployment.Unhealthy
 	if inst.Guest != nil {
 		if inst.Guest.Status == types.Running ||
-			inst.Guest.Status == types.Reloading {
+			inst.Guest.Status == types.ReloadingClean {
 
 			now := time.Now()
 			heartbeatTtl := time.Duration(
