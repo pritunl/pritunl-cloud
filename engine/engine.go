@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"sync/atomic"
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -20,6 +21,7 @@ type Engine struct {
 	python     *PythonEngine
 	lock       sync.Mutex
 	outputLock sync.Mutex
+	fault      atomic.Value
 	queue      chan []*Block
 	OnStatus   func(status string)
 }
@@ -65,6 +67,7 @@ func (e *Engine) GetEnviron() (env []string) {
 
 func (e *Engine) Init() (err error) {
 	e.queue = make(chan []*Block, QueueSize)
+	e.fault.Store(false)
 
 	e.cwd, err = os.Getwd()
 	if err != nil {
@@ -128,7 +131,12 @@ func (e *Engine) UpdateSpec(data string) (err error) {
 func (e *Engine) runner() {
 	for {
 		blocks := e.getBlocks()
-		e.OnStatus(types.Reloading)
+
+		if !e.fault.Load().(bool) {
+			e.OnStatus(types.ReloadingClean)
+		} else {
+			e.OnStatus(types.ReloadingFault)
+		}
 
 		_, err := e.Run(Reload, blocks)
 		if err != nil {
@@ -180,9 +188,13 @@ func (e *Engine) Run(phase string, blocks []*Block) (fatal bool, err error) {
 					}
 				}
 			}
+
+			e.fault.Store(true)
 			return
 		}
 	}
+
+	e.fault.Store(false)
 
 	return
 }
