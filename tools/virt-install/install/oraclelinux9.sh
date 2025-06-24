@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
 export NAME="oraclelinux9"
-export ISO_URL="https://yum.oracle.com/ISOS/OracleLinux/OL9/u5/x86_64/OracleLinux-R9-U5-x86_64-dvd.iso"
-export ISO_HASH="c2fa76c502cf1d93dfbd084d494d963ab7ea0a6f5535a083b8547b34037e88e1"
+export ISO_URL="https://yum.oracle.com/ISOS/OracleLinux/OL9/u6/x86_64/OracleLinux-R9-U6-x86_64-dvd.iso"
+export ISO_HASH="6aab225832263299c209aa1096b665e36c789ea6d0da77c19920e6ad21620bb7"
 
 sudo mkdir -p /var/lib/virt/iso
 sudo mkdir -p /var/lib/virt/ks
@@ -37,6 +37,7 @@ network --bootproto=dhcp --hostname=cloud --activate
 %packages
 @^minimal-environment
 @standard
+-kexec-tools
 %end
 
 firstboot --enable
@@ -71,6 +72,6 @@ done
 
 echo "Compressing image..."
 
-sudo rm -f /var/lib/virt/images/${NAME}_$(date +%y%m).qcow2
-sudo qemu-img convert -f qcow2 -O qcow2 -c /var/lib/virt/${NAME}.qcow2 /var/lib/virt/images/${NAME}_$(date +%y%m).qcow2
-sha256sum /var/lib/virt/images/${NAME}_$(date +%y%m).qcow2
+sudo rm -f /var/lib/virt/images/${NAME}_$(date +%y%m%d).qcow2
+sudo qemu-img convert -f qcow2 -O qcow2 -c /var/lib/virt/${NAME}.qcow2 /var/lib/virt/images/${NAME}_$(date +%y%m%d).qcow2
+sha256sum /var/lib/virt/images/${NAME}_$(date +%y%m%d).qcow2

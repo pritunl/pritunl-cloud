@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
 export NAME="alpinelinux"
-export ISO_URL="https://dl-cdn.alpinelinux.org/alpine/v3.21/releases/x86_64/alpine-virt-3.21.3-x86_64.iso"
-export ISO_HASH="f28171c35bbf623aa3cbaec4b8b29297f13095b892c1a283b15970f7eb490f2d"
+export ISO_URL="https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/x86_64/alpine-virt-3.22.0-x86_64.iso"
+export ISO_HASH="c935c3715c80ca416e2ce912c552f0cbfd8531219b7973ae4a600873c793eb1b"
 
 sudo mkdir -p /var/lib/virt/iso
 sudo mkdir -p /var/lib/virt/ks
@@ -65,15 +65,12 @@ sudo genisoimage -output /var/lib/virt/init/${NAME}.iso \
   /var/lib/virt/init/${NAME}/user-data \
   /var/lib/virt/init/${NAME}/meta-data
 
-sudo rm -rf /var/lib/virt/init/${NAME}
-
 sudo virt-install \
   --name ${NAME} \
   --vcpus 8 \
   --memory 8192 \
   --boot uefi,firmware.feature0.name=secure-boot,firmware.feature0.enabled=no \
   --disk path=/var/lib/virt/${NAME}.qcow2,size=8,format=qcow2,bus=virtio \
-  --disk path=/var/lib/virt/init/${NAME}.iso,device=cdrom \
   --os-variant alpinelinux3.20 \
   --network network=default \
   --graphics=none \
@@ -86,8 +83,9 @@ while ! sudo virsh domstate ${NAME} 2>/dev/null | grep -q "shut off"; do
   sleep 1
 done
 
+sudo rm -rf /var/lib/virt/init/${NAME}
 echo "Compressing image..."
 
-sudo rm -f /var/lib/virt/images/${NAME}_$(date +%y%m).qcow2
-sudo qemu-img convert -f qcow2 -O qcow2 -c /var/lib/virt/${NAME}.qcow2 /var/lib/virt/images/${NAME}_$(date +%y%m).qcow2
-sha256sum /var/lib/virt/images/${NAME}_$(date +%y%m).qcow2
+sudo rm -f /var/lib/virt/images/${NAME}_$(date +%y%m%d).qcow2
+sudo qemu-img convert -f qcow2 -O qcow2 -c /var/lib/virt/${NAME}.qcow2 /var/lib/virt/images/${NAME}_$(date +%y%m%d).qcow2
+sha256sum /var/lib/virt/images/${NAME}_$(date +%y%m%d).qcow2

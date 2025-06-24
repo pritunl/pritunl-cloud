@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
 export NAME="almalinux9"
-export ISO_URL="https://den.aws.repo.almalinux.org/9.5/isos/x86_64/AlmaLinux-9.5-x86_64-dvd.iso"
-export ISO_HASH="3947accd140a2a1833b1ef2c811f8c0d48cd27624cad343992f86cfabd2474c9"
+export ISO_URL="https://den.aws.repo.almalinux.org/9.6/isos/x86_64/AlmaLinux-9.6-x86_64-dvd.iso"
+export ISO_HASH="db7b45e071b6319d43781eb8d9bec9b8d6b0ac41ad5e49db7fe113c76f0d2ca2"
 
 sudo mkdir -p /var/lib/virt/iso
 sudo mkdir -p /var/lib/virt/ks
@@ -37,6 +37,7 @@ network --bootproto=dhcp --hostname=cloud --activate
 %packages
 @^minimal-environment
 @standard
+-kexec-tools
 %end
 
 firstboot --enable
@@ -49,6 +50,10 @@ part / --fstype="xfs" --ondisk=vda --grow
 timezone Etc/UTC --utc
 
 rootpw --plaintext cloud
+
+%post
+grubby --update-kernel=ALL --remove-args=crashkernel
+%end
 EOF
 
 sudo virt-install \
@@ -71,6 +76,6 @@ done
 
 echo "Compressing image..."
 
-sudo rm -f /var/lib/virt/images/${NAME}_$(date +%y%m).qcow2
-sudo qemu-img convert -f qcow2 -O qcow2 -c /var/lib/virt/${NAME}.qcow2 /var/lib/virt/images/${NAME}_$(date +%y%m).qcow2
-sha256sum /var/lib/virt/images/${NAME}_$(date +%y%m).qcow2
+sudo rm -f /var/lib/virt/images/${NAME}_$(date +%y%m%d).qcow2
+sudo qemu-img convert -f qcow2 -O qcow2 -c /var/lib/virt/${NAME}.qcow2 /var/lib/virt/images/${NAME}_$(date +%y%m%d).qcow2
+sha256sum /var/lib/virt/images/${NAME}_$(date +%y%m%d).qcow2

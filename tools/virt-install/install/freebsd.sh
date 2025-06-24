@@ -83,6 +83,6 @@ done
 
 echo "Compressing image..."
 
-sudo rm -f /var/lib/virt/images/${NAME}_$(date +%y%m).qcow2
-sudo qemu-img convert -f qcow2 -O qcow2 -c /var/lib/virt/${NAME}.qcow2 /var/lib/virt/images/${NAME}_$(date +%y%m).qcow2
-sha256sum /var/lib/virt/images/${NAME}_$(date +%y%m).qcow2
+sudo rm -f /var/lib/virt/images/${NAME}_$(date +%y%m%d).qcow2
+sudo qemu-img convert -f qcow2 -O qcow2 -c /var/lib/virt/${NAME}.qcow2 /var/lib/virt/images/${NAME}_$(date +%y%m%d).qcow2
+sha256sum /var/lib/virt/images/${NAME}_$(date +%y%m%d).qcow2

@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
 export NAME="rockylinux9"
-export ISO_URL="https://sjc.mirror.rackspace.com/rocky/9/isos/x86_64/Rocky-9.5-x86_64-dvd.iso"
-export ISO_HASH="ba60c3653640b5747610ddfb4d09520529bef2d1d83c1feb86b0c84dff31e04e"
+export ISO_URL="https://sjc.mirror.rackspace.com/rocky/9/isos/x86_64/Rocky-9.6-x86_64-dvd.iso"
+export ISO_HASH="8ff2a47e2f3bfe442617fceb7ef289b7b1d2d0502089dbbd505d5368b2b3a90f"
 
 sudo mkdir -p /var/lib/virt/iso
 sudo mkdir -p /var/lib/virt/ks
@@ -37,6 +37,7 @@ network --bootproto=dhcp --hostname=cloud --activate
 %packages
 @^minimal-environment
 @standard
+-kexec-tools
 %end
 
 firstboot --enable
@@ -49,6 +50,10 @@ part / --fstype="xfs" --ondisk=vda --grow
 timezone Etc/UTC --utc
 
 rootpw --plaintext cloud
+
+%post
+grubby --update-kernel=ALL --remove-args=crashkernel
+%end
 EOF
 
 sudo virt-install \
@@ -71,6 +76,6 @@ done
 
 echo "Compressing image..."
 
-sudo rm -f /var/lib/virt/images/${NAME}_$(date +%y%m).qcow2
-sudo qemu-img convert -f qcow2 -O qcow2 -c /var/lib/virt/${NAME}.qcow2 /var/lib/virt/images/${NAME}_$(date +%y%m).qcow2
-sha256sum /var/lib/virt/images/${NAME}_$(date +%y%m).qcow2
+sudo rm -f /var/lib/virt/images/${NAME}_$(date +%y%m%d).qcow2
+sudo qemu-img convert -f qcow2 -O qcow2 -c /var/lib/virt/${NAME}.qcow2 /var/lib/virt/images/${NAME}_$(date +%y%m%d).qcow2
+sha256sum /var/lib/virt/images/${NAME}_$(date +%y%m%d).qcow2
