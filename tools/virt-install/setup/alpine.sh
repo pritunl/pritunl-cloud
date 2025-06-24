@@ -10,6 +10,15 @@ echo '#############################################################'
 echo 'starting alpine setup'
 echo '#############################################################'
 
+tee /etc/motd << EOF
+Welcome to Alpine!
+
+The Alpine Wiki contains a large amount of how-to guides and general
+information about administrating Alpine systems.
+See <https://wiki.alpinelinux.org/>.
+
+EOF
+
 echo "iso9660" > /etc/filesystems
 sed -i 's/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=0/g' /etc/default/grub
 grub-mkconfig -o /boot/grub/grub.cfg

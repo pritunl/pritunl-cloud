@@ -53,6 +53,7 @@ tee /etc/sudoers << EOF
 EOF
 chmod 600 /etc/sudoers
 
+sysrc swapoff="YES"
 sysrc ifconfig_vtnet0=""
 sysrc cloudinit_enable="YES"
 
