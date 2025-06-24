@@ -47,7 +47,7 @@ type Instance struct {
 	Zone                primitive.ObjectID  `bson:"zone" json:"zone"`
 	Vpc                 primitive.ObjectID  `bson:"vpc" json:"vpc"`
 	Subnet              primitive.ObjectID  `bson:"subnet" json:"subnet"`
-	Guest               *GuestData          `bson:"guest" json:"guest"`
+	Guest               *GuestData          `bson:"guest,omitempty" json:"guest"`
 	OracleSubnet        string              `bson:"oracle_subnet" json:"oracle_subnet"`
 	OracleVnic          string              `bson:"oracle_vnic" json:"oracle_vnic"`
 	OracleVnicAttach    string              `bson:"oracle_vnic_attach" json:"oracle_vnic_attach"`
@@ -85,7 +85,7 @@ type Instance struct {
 	OraclePublicIps6    []string            `bson:"oracle_public_ips6" json:"oracle_public_ips6"`
 	HostIps             []string            `bson:"host_ips" json:"host_ips"`
 	NodePortIps         []string            `bson:"node_port_ips" json:"node_port_ips"`
-	NodePorts           []*nodeport.Mapping `bson:"node_ports" json:"node_ports"`
+	NodePorts           []*nodeport.Mapping `bson:"node_ports,omitempty" json:"node_ports"`
 	NetworkNamespace    string              `bson:"network_namespace" json:"network_namespace"`
 	NoPublicAddress     bool                `bson:"no_public_address" json:"no_public_address"`
 	NoPublicAddress6    bool                `bson:"no_public_address6" json:"no_public_address6"`
@@ -100,12 +100,12 @@ type Instance struct {
 	Memory              int                 `bson:"memory" json:"memory"`
 	Processors          int                 `bson:"processors" json:"processors"`
 	NetworkRoles        []string            `bson:"network_roles" json:"network_roles"`
-	Isos                []*iso.Iso          `bson:"isos" json:"isos"`
-	UsbDevices          []*usb.Device       `bson:"usb_devices" json:"usb_devices"`
-	PciDevices          []*pci.Device       `bson:"pci_devices" json:"pci_devices"`
-	DriveDevices        []*drive.Device     `bson:"drive_devices" json:"drive_devices"`
-	IscsiDevices        []*iscsi.Device     `bson:"iscsi_devices" json:"iscsi_devices"`
-	Mounts              []*Mount            `bson:"mounts" json:"mounts"`
+	Isos                []*iso.Iso          `bson:"isos,omitempty" json:"isos"`
+	UsbDevices          []*usb.Device       `bson:"usb_devices,omitempty" json:"usb_devices"`
+	PciDevices          []*pci.Device       `bson:"pci_devices,omitempty" json:"pci_devices"`
+	DriveDevices        []*drive.Device     `bson:"drive_devices,omitempty" json:"drive_devices"`
+	IscsiDevices        []*iscsi.Device     `bson:"iscsi_devices,omitempty" json:"iscsi_devices"`
+	Mounts              []*Mount            `bson:"mounts,omitempty" json:"mounts"`
 	Vnc                 bool                `bson:"vnc" json:"vnc"`
 	VncPassword         string              `bson:"vnc_password" json:"vnc_password"`
 	VncDisplay          int                 `bson:"vnc_display" json:"vnc_display"`
@@ -114,7 +114,7 @@ type Instance struct {
 	SpicePort           int                 `bson:"spice_port" json:"spice_port"`
 	Gui                 bool                `bson:"gui" json:"gui"`
 	Deployment          primitive.ObjectID  `bson:"deployment" json:"deployment"`
-	Info                *Info               `bson:"info" json:"info"`
+	Info                *Info               `bson:"info,omitempty" json:"info"`
 	Virt                *vm.VirtualMachine  `bson:"-" json:"-"`
 
 	curVpc              primitive.ObjectID                       `bson:"-" json:"-"`
