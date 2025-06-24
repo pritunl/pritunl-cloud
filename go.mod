@@ -16,7 +16,6 @@ require (
 	github.com/gorilla/sessions v1.4.0
 	github.com/gorilla/websocket v1.5.3
 	github.com/insomniacslk/dhcp v0.0.0-20240829085014-a3a4c1f04475
-	github.com/manifoldco/promptui v0.9.0
 	github.com/mdlayher/ndp v1.1.0
 	github.com/minio/minio-go/v7 v7.0.76
 	github.com/oracle/oci-go-sdk/v65 v65.74.0
@@ -38,7 +37,6 @@ require (
 	cloud.google.com/go/compute/metadata v0.5.1 // indirect
 	github.com/bytedance/sonic v1.12.2 // indirect
 	github.com/bytedance/sonic/loader v0.2.0 // indirect
-	github.com/chzyer/readline v1.5.1 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
