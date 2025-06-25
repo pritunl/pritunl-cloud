@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/pritunl-cloud/aggregate"
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
@@ -34,8 +35,8 @@ type blockData struct {
 }
 
 type blocksData struct {
-	Blocks []*block.Block `json:"blocks"`
-	Count  int64          `json:"count"`
+	Blocks []*aggregate.BlockAggregate `json:"blocks"`
+	Count  int64                       `json:"count"`
 }
 
 func blockPut(c *gin.Context) {
@@ -264,7 +265,7 @@ func blocksGet(c *gin.Context) {
 		}
 	}
 
-	blcks, count, err := block.GetAllPaged(db, &query, page, pageCount)
+	blcks, count, err := aggregate.GetBlockPaged(db, &query, page, pageCount)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
