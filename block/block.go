@@ -291,6 +291,89 @@ func (b *Block) GetIps(db *database.Database) (blckIps set.Set, err error) {
 	return
 }
 
+func (b *Block) GetIpCount() (count int64, err error) {
+	if b.Type != IPv4 {
+		return
+	}
+
+	gatewayIp := net.ParseIP(b.Gateway)
+
+	excludes := []*net.IPNet{}
+	for _, exclude := range b.Excludes {
+		_, network, e := net.ParseCIDR(exclude)
+		if e != nil {
+			err = &errortypes.ParseError{
+				errors.Wrap(e, "block: Failed to parse block exclude"),
+			}
+			return
+		}
+
+		excludes = append(excludes, network)
+	}
+
+	var totalCount int64
+	for _, subnet := range b.Subnets {
+		_, network, e := net.ParseCIDR(subnet)
+		if e != nil {
+			err = &errortypes.ParseError{
+				errors.Wrap(e, "block: Failed to parse block subnet"),
+			}
+			return
+		}
+
+		ones, bits := network.Mask.Size()
+		hostBits := bits - ones
+		if hostBits <= 1 {
+			if hostBits == 1 {
+				totalCount += 2
+			} else {
+				totalCount += 1
+			}
+		} else {
+			totalCount += (1 << hostBits) - 2
+		}
+	}
+
+	var excludedCount int64
+	for _, excludeNet := range excludes {
+		ones, bits := excludeNet.Mask.Size()
+		hostBits := bits - ones
+		if hostBits <= 1 {
+			if hostBits == 1 {
+				excludedCount += 2
+			} else {
+				excludedCount += 1
+			}
+		} else {
+			excludedCount += (1 << hostBits) - 2
+		}
+	}
+
+	gatewayInSubnet := false
+	if gatewayIp != nil {
+		for _, subnet := range b.Subnets {
+			_, network, e := net.ParseCIDR(subnet)
+			if e != nil {
+				continue
+			}
+			if network.Contains(gatewayIp) {
+				gatewayInSubnet = true
+				break
+			}
+		}
+	}
+
+	count = totalCount - excludedCount
+	if gatewayInSubnet {
+		count--
+	}
+
+	if count < 0 {
+		count = 0
+	}
+	return
+}
+
 func (b *Block) GetIp(db *database.Database,
 	instId primitive.ObjectID, typ string) (ip net.IP, err error) {
 
