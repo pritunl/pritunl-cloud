@@ -20,6 +20,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/storage"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
@@ -190,6 +191,12 @@ func diskPost(c *gin.Context) {
 		return
 	}
 
+	nde, err := node.Get(db, dta.Node)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
 	imgSystemType := ""
 	if !dta.Image.IsZero() {
 		img, err := image.GetOrgPublic(db, dta.Organization, dta.Image)
@@ -235,6 +242,8 @@ func diskPost(c *gin.Context) {
 		Comment:          dta.Comment,
 		Organization:     dta.Organization,
 		Instance:         dta.Instance,
+		Datacenter:       nde.Datacenter,
+		Zone:             nde.Zone,
 		Index:            dta.Index,
 		Type:             dta.Type,
 		SystemType:       imgSystemType,
