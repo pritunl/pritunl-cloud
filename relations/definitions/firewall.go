@@ -138,6 +138,12 @@ var Firewall = relations.Query{
 		}, {
 			Key:   "memory",
 			Label: "Memory",
+		}, {
+			Key:   "private_ips",
+			Label: "Private IPv4",
+		}, {
+			Key:   "public_ips",
+			Label: "Public IPv4",
 		}},
 	}},
 }
