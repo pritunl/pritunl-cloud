@@ -23,6 +23,7 @@ var Node = relations.Query{
 		From:         "instances",
 		LocalField:   "_id",
 		ForeignField: "node",
+		BlockDelete:  true,
 		Sort: map[string]int{
 			"name": 1,
 		},
@@ -136,6 +137,7 @@ var Node = relations.Query{
 		From:         "disks",
 		LocalField:   "_id",
 		ForeignField: "node",
+		BlockDelete:  true,
 		Sort: map[string]int{
 			"name": 1,
 		},
