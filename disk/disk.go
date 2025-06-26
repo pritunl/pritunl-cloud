@@ -91,6 +91,22 @@ func (d *Disk) Validate(db *database.Database) (
 		d.Index = strconv.Itoa(index)
 	}
 
+	if d.Datacenter.IsZero() {
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_datacenter",
+			Message: "Missing required datacenter",
+		}
+		return
+	}
+
+	if d.Zone.IsZero() {
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_zone",
+			Message: "Missing required zone",
+		}
+		return
+	}
+
 	if d.Type == "" {
 		d.Type = Qcow2
 	}
