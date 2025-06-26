@@ -46,6 +46,8 @@ func (i *Image) Validate(db *database.Database) (
 	switch i.SystemType {
 	case Linux:
 		break
+	case LinuxUnsigned:
+		break
 	case Bsd:
 		break
 	default:
