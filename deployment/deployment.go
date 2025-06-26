@@ -34,7 +34,7 @@ type Deployment struct {
 	InstanceData *InstanceData                  `bson:"instance_data,omitempty" json:"instance_data"`
 	ImageData    *ImageData                     `bson:"image_data,omitempty" json:"image_data"`
 	DomainData   *DomainData                    `bson:"domain_data,omitempty" json:"domain_data"`
-	Actions      map[primitive.ObjectID]*Action `bson:"actions,omitempty", json:"actions"`
+	Actions      map[primitive.ObjectID]*Action `bson:"actions,omitempty" json:"actions"`
 }
 
 type InstanceData struct {
