@@ -80,6 +80,11 @@ func (i *Image) GetSystemType() string {
 	if strings.Contains(name, "bsd") {
 		return Bsd
 	}
+
+	if strings.Contains(name, "alpinelinux") {
+		return LinuxUnsigned
+	}
+
 	return Linux
 }
 
