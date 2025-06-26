@@ -30,6 +30,8 @@ type Disk struct {
 	Type             string             `bson:"type" json:"type"`
 	SystemType       string             `bson:"system_type" json:"system_type"`
 	Uuid             string             `bson:"uuid" json:"uuid"`
+	Datacenter       primitive.ObjectID `bson:"datacenter" json:"datacenter"`
+	Zone             primitive.ObjectID `bson:"zone" json:"zone"`
 	Node             primitive.ObjectID `bson:"node" json:"node"`
 	Pool             primitive.ObjectID `bson:"pool" json:"pool"`
 	Organization     primitive.ObjectID `bson:"organization" json:"organization"`
