@@ -22,6 +22,7 @@ Commands:
   start             Start node
   clear-logs        Clear logs
   reset-id          Reset node id with default configuration
+  optimize          Optimize system configuration
   default-password  Get default administrator password
   reset-password    Reset administrator password
   disable-policies  Disable all policies
@@ -78,6 +79,13 @@ func main() {
 	case "mongo":
 		logger.Init()
 		err := cmd.Mongo()
+		if err != nil {
+			panic(err)
+		}
+		return
+	case "optimize":
+		logger.Init()
+		err := cmd.Optimize()
 		if err != nil {
 			panic(err)
 		}
