@@ -9,8 +9,9 @@ const (
 	Bios    = "bios"
 	Unknown = "unknown"
 
-	Linux = "linux"
-	Bsd   = "bsd"
+	Linux         = "linux"
+	LinuxUnsigned = "linux_unsigned"
+	Bsd           = "bsd"
 )
 
 var (
