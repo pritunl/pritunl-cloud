@@ -17,6 +17,7 @@ var Secret = relations.Query{
 		From:         "domains",
 		LocalField:   "_id",
 		ForeignField: "secret",
+		BlockDelete:  true,
 		Sort: map[string]int{
 			"name": 1,
 		},
@@ -33,6 +34,7 @@ var Secret = relations.Query{
 		From:         "certificates",
 		LocalField:   "_id",
 		ForeignField: "acme_secret",
+		BlockDelete:  true,
 		Sort: map[string]int{
 			"name": 1,
 		},
