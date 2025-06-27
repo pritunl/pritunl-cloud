@@ -91,6 +91,10 @@ func (r *Query) convertToResponse(doc bson.M) *Response {
 	}
 
 	for _, proj := range r.Project {
+		if proj.Label == "" {
+			continue
+		}
+
 		if len(proj.Keys) > 0 {
 			value, ok := doc[proj.Keys[0]]
 			if ok {
@@ -166,6 +170,10 @@ func (r *Query) convertToRelated(relation Relation,
 		}
 
 		for _, proj := range relation.Project {
+			if proj.Label == "" {
+				continue
+			}
+
 			if len(proj.Keys) > 0 {
 				value, ok := doc[proj.Keys[0]]
 				if ok {
