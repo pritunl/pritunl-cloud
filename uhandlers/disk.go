@@ -24,7 +24,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/storage"
 	"github.com/pritunl/pritunl-cloud/utils"
-	"github.com/pritunl/pritunl-cloud/zone"
 )
 
 type diskData struct {
@@ -217,13 +216,7 @@ func diskPost(c *gin.Context) {
 		return
 	}
 
-	zne, err := zone.Get(db, nde.Zone)
-	if err != nil {
-		utils.AbortWithError(c, 500, err)
-		return
-	}
-
-	exists, err := datacenter.ExistsOrg(db, userOrg, zne.Datacenter)
+	exists, err := datacenter.ExistsOrg(db, userOrg, nde.Datacenter)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -278,6 +271,8 @@ func diskPost(c *gin.Context) {
 		Comment:          dta.Comment,
 		Organization:     userOrg,
 		Instance:         dta.Instance,
+		Datacenter:       nde.Datacenter,
+		Zone:             nde.Zone,
 		Index:            dta.Index,
 		Type:             dta.Type,
 		SystemType:       imgSystemType,
