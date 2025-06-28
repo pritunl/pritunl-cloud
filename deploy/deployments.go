@@ -486,6 +486,8 @@ func (d *Deployments) archive(deply *deployment.Deployment) (err error) {
 						return
 					}
 				}
+
+				event.PublishDispatch(db, "disk.change")
 			}
 
 			deply.State = deployment.Archived
