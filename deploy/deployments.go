@@ -668,6 +668,10 @@ func (d *Deployments) restore(deply *deployment.Deployment) (err error) {
 				}
 			}
 
+			if len(reservedDisks) > 0 {
+				event.PublishDispatch(db, "disk.change")
+			}
+
 			err = instance.SetAction(db, inst.Id, instance.Start)
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
