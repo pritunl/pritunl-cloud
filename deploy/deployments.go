@@ -1,6 +1,7 @@
 package deploy
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
@@ -15,6 +16,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/imds"
 	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/nodeport"
 	"github.com/pritunl/pritunl-cloud/shape"
 	"github.com/pritunl/pritunl-cloud/spec"
@@ -496,6 +498,8 @@ func (d *Deployments) archive(deply *deployment.Deployment) (err error) {
 
 func (d *Deployments) restore(deply *deployment.Deployment) (err error) {
 	inst := d.stat.GetInstace(deply.Instance)
+	instDisks := d.stat.GetInstaceDisks(deply.Instance)
+	spc := d.stat.Spec(deply.Spec)
 	nodeId := d.stat.Node().Id
 
 	acquired, lockId := deploymentsLock.LockOpenTimeout(
@@ -531,10 +535,110 @@ func (d *Deployments) restore(deply *deployment.Deployment) (err error) {
 			return
 		}
 
+		index := 0
+		curDisks := set.NewSet()
+		for _, dsk := range instDisks {
+			dskIndex, _ := strconv.Atoi(dsk.Index)
+			index = max(index, dskIndex)
+			curDisks.Add(dsk.Id)
+		}
+
 		if inst.Action != instance.Start {
 			logrus.WithFields(logrus.Fields{
 				"instance_id": inst.Id.Hex(),
 			}).Info("deploy: Starting instance for deployment restore")
+
+			reservedDisks := []*disk.Disk{}
+			deplyMounts := []*deployment.Mount{}
+
+			for _, mount := range spc.Instance.Mounts {
+				if mount.Type != spec.Disk {
+					continue
+				}
+
+				index += 1
+				diskReserved := false
+
+				for _, dskId := range mount.Disks {
+					if curDisks.Contains(dskId) {
+						diskReserved = true
+						break
+					}
+				}
+
+				if !diskReserved {
+					for _, dskId := range mount.Disks {
+						dsk, e := disk.Get(db, dskId)
+						if e != nil {
+							err = e
+
+							for _, dsk := range reservedDisks {
+								err = dsk.Unreserve(db, inst.Id, deply.Id)
+								if err != nil {
+									return
+								}
+							}
+
+							return
+						}
+
+						if dsk.Node != node.Self.Id || !dsk.Instance.IsZero() {
+							continue
+						}
+
+						diskReserved, err = dsk.Reserve(
+							db, inst.Id, index, deply.Id)
+						if err != nil {
+							for _, dsk := range reservedDisks {
+								err = dsk.Unreserve(db, inst.Id, deply.Id)
+								if err != nil {
+									return
+								}
+							}
+							return
+						}
+
+						if !diskReserved {
+							continue
+						}
+
+						deplyMounts = append(deplyMounts, &deployment.Mount{
+							Disk: dsk.Id,
+							Path: mount.Path,
+							Uuid: dsk.Uuid,
+						})
+
+						reservedDisks = append(reservedDisks, dsk)
+						break
+					}
+				}
+
+				if !diskReserved {
+					for _, dsk := range reservedDisks {
+						err = dsk.Unreserve(db, inst.Id, deply.Id)
+						if err != nil {
+							return
+						}
+					}
+
+					logrus.WithFields(logrus.Fields{
+						"mount_path": mount.Path,
+					}).Error("deploy: Failed to reserve disk for mount")
+
+					deply.State = deployment.Archived
+					deply.Action = ""
+					err = deply.CommitFields(db, set.NewSet("state", "action"))
+					if err != nil {
+						logrus.WithFields(logrus.Fields{
+							"deployment_id": deply.Id.Hex(),
+							"error":         err,
+						}).Error("deploy: Failed to commit deployment")
+						return
+					}
+
+					return
+				}
+			}
 
 			err = instance.SetAction(db, inst.Id, instance.Start)
 			if err != nil {
