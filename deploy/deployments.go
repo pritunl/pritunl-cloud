@@ -441,6 +441,8 @@ func (d *Deployments) destroy(deply *deployment.Deployment) {
 
 func (d *Deployments) archive(deply *deployment.Deployment) (err error) {
 	inst := d.stat.GetInstace(deply.Instance)
+	disks := d.stat.GetDeploymentDisks(deply.Id)
+	spc := d.stat.Spec(deply.Spec)
 	nodeId := d.stat.Node().Id
 
 	acquired, lockId := deploymentsLock.LockOpenTimeout(
@@ -462,6 +464,30 @@ func (d *Deployments) archive(deply *deployment.Deployment) (err error) {
 		}
 
 		if !inst.IsActive() {
+			if len(disks) > 0 {
+				specDisks := set.NewSet()
+				for _, mount := range spc.Instance.Mounts {
+					if mount.Type != spec.Disk {
+						continue
+					}
+
+					for _, dskId := range mount.Disks {
+						specDisks.Add(dskId)
+					}
+				}
+
+				for _, dsk := range disks {
+					if !specDisks.Contains(dsk.Id) {
+						continue
+					}
+
+					err = dsk.Unreserve(db, inst.Id, deply.Id)
+					if err != nil {
+						return
+					}
+				}
+			}
+
 			deply.State = deployment.Archived
 			deply.Action = ""
 			err = deply.CommitFields(db, set.NewSet("state", "action"))
