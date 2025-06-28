@@ -136,29 +136,6 @@ func (p *Planner) checkInstance(db *database.Database,
 		return
 	}
 
-	if deply.Action == deployment.Archive && !inst.IsActive() {
-		deply.Action = ""
-		deply.State = deployment.Archived
-		err = deply.CommitFields(db, set.NewSet("state", "action"))
-		if err != nil {
-			return
-		}
-	}
-
-	if (deply.Action == deployment.Archive ||
-		deply.State == deployment.Archived) &&
-		inst.IsActive() {
-
-		logrus.WithFields(logrus.Fields{
-			"instance_id": inst.Id.Hex(),
-		}).Info("deploy: Stopping instance for archived deployment")
-
-		err = instance.SetAction(db, inst.Id, instance.Stop)
-		if err != nil {
-			return
-		}
-	}
-
 	if deply.Action == deployment.Restore && inst.IsActive() {
 		deply.Action = ""
 		deply.State = deployment.Deployed
