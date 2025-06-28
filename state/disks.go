@@ -43,11 +43,7 @@ func (p *DisksState) Refresh(pkg *Package,
 
 	instanceDisks := map[primitive.ObjectID][]*disk.Disk{}
 	for _, dsk := range disks {
-		dsks := instanceDisks[dsk.Instance]
-		if dsks == nil {
-			dsks = []*disk.Disk{}
-		}
-		instanceDisks[dsk.Instance] = append(dsks, dsk)
+		instanceDisks[dsk.Instance] = append(instanceDisks[dsk.Instance], dsk)
 	}
 	p.instanceDisks = instanceDisks
 
