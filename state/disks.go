@@ -13,8 +13,9 @@ var (
 )
 
 type DisksState struct {
-	disks         []*disk.Disk
-	instanceDisks map[primitive.ObjectID][]*disk.Disk
+	disks           []*disk.Disk
+	instanceDisks   map[primitive.ObjectID][]*disk.Disk
+	deploymentDisks map[primitive.ObjectID][]*disk.Disk
 }
 
 func (p *DisksState) Disks() []*disk.Disk {
@@ -23,6 +24,12 @@ func (p *DisksState) Disks() []*disk.Disk {
 
 func (p *DisksState) GetInstaceDisks(instId primitive.ObjectID) []*disk.Disk {
 	return p.instanceDisks[instId]
+}
+
+func (p *DisksState) GetDeploymentDisks(
+	deplyId primitive.ObjectID) []*disk.Disk {
+
+	return p.deploymentDisks[deplyId]
 }
 
 func (p *DisksState) InstaceDisksMap() map[primitive.ObjectID][]*disk.Disk {
@@ -42,10 +49,19 @@ func (p *DisksState) Refresh(pkg *Package,
 	p.disks = disks
 
 	instanceDisks := map[primitive.ObjectID][]*disk.Disk{}
+	deploymentDisks := map[primitive.ObjectID][]*disk.Disk{}
 	for _, dsk := range disks {
-		instanceDisks[dsk.Instance] = append(instanceDisks[dsk.Instance], dsk)
+		if !dsk.Instance.IsZero() {
+			instanceDisks[dsk.Instance] = append(
+				instanceDisks[dsk.Instance], dsk)
+		}
+		if !dsk.Deployment.IsZero() {
+			deploymentDisks[dsk.Deployment] = append(
+				deploymentDisks[dsk.Deployment], dsk)
+		}
 	}
 	p.instanceDisks = instanceDisks
+	p.deploymentDisks = deploymentDisks
 
 	return
 }
@@ -53,5 +69,6 @@ func (p *DisksState) Refresh(pkg *Package,
 func (p *DisksState) Apply(st *State) {
 	st.Disks = p.Disks
 	st.GetInstaceDisks = p.GetInstaceDisks
+	st.GetDeploymentDisks = p.GetDeploymentDisks
 	st.InstaceDisksMap = p.InstaceDisksMap
 }
