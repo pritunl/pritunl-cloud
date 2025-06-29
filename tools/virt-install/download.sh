@@ -33,6 +33,11 @@ for script in "$INSTALL_DIR"/*.sh; do
 
     iso_url=$(echo "$iso_url" | sed 's/\${\([^}]*\)}/\1/g' | sed 's/\$\([A-Za-z_][A-Za-z0-9_]*\)/\1/g')
 
+    if [ -f "/var/lib/virt/iso/$(basename ${iso_url})" ]; then
+        echo "  File already exists, skipping"
+        continue
+    fi
+
     echo "  Downloading: $iso_url"
 
     if sudo wget -P /var/lib/virt/iso "$iso_url"; then
