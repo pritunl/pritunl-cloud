@@ -36,7 +36,7 @@ for script in "$INSTALL_DIR"/*.sh; do
     echo "  Downloading: $iso_url"
 
     if sudo wget -P /var/lib/virt/iso "$iso_url"; then
-        echo "  Successfully downloaded: $filename"
+        echo "  Successfully downloaded: $iso_url"
         ((downloaded++))
     else
         echo "  Failed to download from: $iso_url"
