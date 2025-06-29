@@ -115,6 +115,8 @@ s3c oraclelinux8_$(date +%y%m%d).qcow2 pritunl-images/unstable/oraclelinux8_$(da
 s3c oraclelinux8_$(date +%y%m%d).qcow2.sig pritunl-images/unstable/oraclelinux8_$(date +%y%m%d).qcow2.sig
 s3c oraclelinux9_$(date +%y%m%d).qcow2 pritunl-images/unstable/oraclelinux9_$(date +%y%m%d).qcow2
 s3c oraclelinux9_$(date +%y%m%d).qcow2.sig pritunl-images/unstable/oraclelinux9_$(date +%y%m%d).qcow2.sig
+s3c oraclelinux10_$(date +%y%m%d).qcow2 pritunl-images/unstable/oraclelinux10_$(date +%y%m%d).qcow2
+s3c oraclelinux10_$(date +%y%m%d).qcow2.sig pritunl-images/unstable/oraclelinux10_$(date +%y%m%d).qcow2.sig
 s3c rockylinux8_$(date +%y%m%d).qcow2 pritunl-images/unstable/rockylinux8_$(date +%y%m%d).qcow2
 s3c rockylinux8_$(date +%y%m%d).qcow2.sig pritunl-images/unstable/rockylinux8_$(date +%y%m%d).qcow2.sig
 s3c rockylinux9_$(date +%y%m%d).qcow2 pritunl-images/unstable/rockylinux9_$(date +%y%m%d).qcow2
@@ -147,6 +149,8 @@ s3c oraclelinux8_$(date +%y%m%d).qcow2 pritunl-images/stable/oraclelinux8_$(date
 s3c oraclelinux8_$(date +%y%m%d).qcow2.sig pritunl-images/stable/oraclelinux8_$(date +%y%m%d).qcow2.sig
 s3c oraclelinux9_$(date +%y%m%d).qcow2 pritunl-images/stable/oraclelinux9_$(date +%y%m%d).qcow2
 s3c oraclelinux9_$(date +%y%m%d).qcow2.sig pritunl-images/stable/oraclelinux9_$(date +%y%m%d).qcow2.sig
+s3c oraclelinux10_$(date +%y%m%d).qcow2 pritunl-images/stable/oraclelinux10_$(date +%y%m%d).qcow2
+s3c oraclelinux10_$(date +%y%m%d).qcow2.sig pritunl-images/stable/oraclelinux10_$(date +%y%m%d).qcow2.sig
 s3c rockylinux8_$(date +%y%m%d).qcow2 pritunl-images/stable/rockylinux8_$(date +%y%m%d).qcow2
 s3c rockylinux8_$(date +%y%m%d).qcow2.sig pritunl-images/stable/rockylinux8_$(date +%y%m%d).qcow2.sig
 s3c rockylinux9_$(date +%y%m%d).qcow2 pritunl-images/stable/rockylinux9_$(date +%y%m%d).qcow2
