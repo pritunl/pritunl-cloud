@@ -198,10 +198,6 @@ func (d *Disk) Validate(db *database.Database) (
 		return
 	}
 
-	if d.Instance.IsZero() && !strings.HasPrefix(d.Index, "hold") {
-		d.Index = fmt.Sprintf("hold_%s", primitive.NewObjectID().Hex())
-	}
-
 	if !d.Instance.IsZero() {
 		disks, e := GetInstance(db, d.Instance)
 		if e != nil {
@@ -218,6 +214,11 @@ func (d *Disk) Validate(db *database.Database) (
 				return
 			}
 		}
+	} else {
+		if !strings.HasPrefix(d.Index, "hold") {
+			d.Index = fmt.Sprintf("hold_%s", primitive.NewObjectID().Hex())
+		}
+		d.Deployment = Vacant
 	}
 
 	if d.State == "" {
