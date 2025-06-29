@@ -121,6 +121,8 @@ s3c rockylinux8_$(date +%y%m%d).qcow2 pritunl-images/unstable/rockylinux8_$(date
 s3c rockylinux8_$(date +%y%m%d).qcow2.sig pritunl-images/unstable/rockylinux8_$(date +%y%m%d).qcow2.sig
 s3c rockylinux9_$(date +%y%m%d).qcow2 pritunl-images/unstable/rockylinux9_$(date +%y%m%d).qcow2
 s3c rockylinux9_$(date +%y%m%d).qcow2.sig pritunl-images/unstable/rockylinux9_$(date +%y%m%d).qcow2.sig
+s3c rockylinux10_$(date +%y%m%d).qcow2 pritunl-images/unstable/rockylinux10_$(date +%y%m%d).qcow2
+s3c rockylinux10_$(date +%y%m%d).qcow2.sig pritunl-images/unstable/rockylinux10_$(date +%y%m%d).qcow2.sig
 s3c ubuntu2404_$(date +%y%m%d).qcow2 pritunl-images/unstable/ubuntu2404_$(date +%y%m%d).qcow2
 s3c ubuntu2404_$(date +%y%m%d).qcow2.sig pritunl-images/unstable/ubuntu2404_$(date +%y%m%d).qcow2.sig
 s3c files.json pritunl-images/unstable/files.json
@@ -155,6 +157,8 @@ s3c rockylinux8_$(date +%y%m%d).qcow2 pritunl-images/stable/rockylinux8_$(date +
 s3c rockylinux8_$(date +%y%m%d).qcow2.sig pritunl-images/stable/rockylinux8_$(date +%y%m%d).qcow2.sig
 s3c rockylinux9_$(date +%y%m%d).qcow2 pritunl-images/stable/rockylinux9_$(date +%y%m%d).qcow2
 s3c rockylinux9_$(date +%y%m%d).qcow2.sig pritunl-images/stable/rockylinux9_$(date +%y%m%d).qcow2.sig
+s3c rockylinux10_$(date +%y%m%d).qcow2 pritunl-images/stable/rockylinux10_$(date +%y%m%d).qcow2
+s3c rockylinux10_$(date +%y%m%d).qcow2.sig pritunl-images/stable/rockylinux10_$(date +%y%m%d).qcow2.sig
 s3c ubuntu2404_$(date +%y%m%d).qcow2 pritunl-images/stable/ubuntu2404_$(date +%y%m%d).qcow2
 s3c ubuntu2404_$(date +%y%m%d).qcow2.sig pritunl-images/stable/ubuntu2404_$(date +%y%m%d).qcow2.sig
 s3c files.json pritunl-images/stable/files.json
