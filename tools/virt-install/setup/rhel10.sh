@@ -7,7 +7,7 @@ if [ $(whoami) != "root" ]; then
 fi
 
 echo '#############################################################'
-echo 'starting rhel9 setup'
+echo 'starting rhel10 setup'
 echo '#############################################################'
 
 tee /etc/modprobe.d/floppy-blacklist.conf << EOF
@@ -115,6 +115,6 @@ fstrim -av
 sync
 
 echo '#############################################################'
-echo 'finished rhel9 setup, clear history and shutdown:'
+echo 'finished rhel10 setup, clear history and shutdown:'
 echo 'unset HISTFILE && history -c && poweroff'
 echo '#############################################################'
