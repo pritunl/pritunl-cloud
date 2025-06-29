@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
-export NAME="rockylinux9"
-export ISO_URL="https://sjc.mirror.rackspace.com/rocky/9/isos/x86_64/Rocky-9.6-x86_64-dvd.iso"
-export ISO_HASH="8ff2a47e2f3bfe442617fceb7ef289b7b1d2d0502089dbbd505d5368b2b3a90f"
+NAME="rockylinux9"
+ISO_URL="https://sjc.mirror.rackspace.com/rocky/9/isos/x86_64/Rocky-9.6-x86_64-dvd.iso"
+ISO_HASH="8ff2a47e2f3bfe442617fceb7ef289b7b1d2d0502089dbbd505d5368b2b3a90f"
 
 sudo mkdir -p /var/lib/virt/iso
 sudo mkdir -p /var/lib/virt/ks

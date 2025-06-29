@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
-export NAME="freebsd"
-export ISO_URL="https://download.freebsd.org/releases/amd64/amd64/ISO-IMAGES/14.3/FreeBSD-14.3-RELEASE-amd64-dvd1.iso"
-export ISO_HASH="3e285faab79b139a8f75dfdc2650e6a79e68fdbe0aa82645828de8f3cf584da1"
+NAME="freebsd"
+ISO_URL="https://download.freebsd.org/releases/amd64/amd64/ISO-IMAGES/14.3/FreeBSD-14.3-RELEASE-amd64-dvd1.iso"
+ISO_HASH="3e285faab79b139a8f75dfdc2650e6a79e68fdbe0aa82645828de8f3cf584da1"
 
 sudo mkdir -p /var/lib/virt/iso
 sudo mkdir -p /var/lib/virt/ks

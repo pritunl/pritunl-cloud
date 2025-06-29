@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
-export NAME="almalinux9"
-export ISO_URL="https://den.aws.repo.almalinux.org/9.6/isos/x86_64/AlmaLinux-9.6-x86_64-dvd.iso"
-export ISO_HASH="db7b45e071b6319d43781eb8d9bec9b8d6b0ac41ad5e49db7fe113c76f0d2ca2"
+NAME="almalinux9"
+ISO_URL="https://den.aws.repo.almalinux.org/9.6/isos/x86_64/AlmaLinux-9.6-x86_64-dvd.iso"
+ISO_HASH="db7b45e071b6319d43781eb8d9bec9b8d6b0ac41ad5e49db7fe113c76f0d2ca2"
 
 sudo mkdir -p /var/lib/virt/iso
 sudo mkdir -p /var/lib/virt/ks

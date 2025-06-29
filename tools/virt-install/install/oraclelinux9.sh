@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
-export NAME="oraclelinux9"
-export ISO_URL="https://yum.oracle.com/ISOS/OracleLinux/OL9/u6/x86_64/OracleLinux-R9-U6-x86_64-dvd.iso"
-export ISO_HASH="6aab225832263299c209aa1096b665e36c789ea6d0da77c19920e6ad21620bb7"
+NAME="oraclelinux9"
+ISO_URL="https://yum.oracle.com/ISOS/OracleLinux/OL9/u6/x86_64/OracleLinux-R9-U6-x86_64-dvd.iso"
+ISO_HASH="6aab225832263299c209aa1096b665e36c789ea6d0da77c19920e6ad21620bb7"
 
 sudo mkdir -p /var/lib/virt/iso
 sudo mkdir -p /var/lib/virt/ks

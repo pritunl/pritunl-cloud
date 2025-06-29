@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
-export NAME="oraclelinux8"
-export ISO_URL="https://yum.oracle.com/ISOS/OracleLinux/OL8/u10/x86_64/OracleLinux-R8-U10-x86_64-dvd.iso"
-export ISO_HASH="7676a80eeaafa16903eebb2abba147a3afe230b130cc066d56fdd6854d8da900"
+NAME="oraclelinux8"
+ISO_URL="https://yum.oracle.com/ISOS/OracleLinux/OL8/u10/x86_64/OracleLinux-R8-U10-x86_64-dvd.iso"
+ISO_HASH="7676a80eeaafa16903eebb2abba147a3afe230b130cc066d56fdd6854d8da900"
 
 sudo mkdir -p /var/lib/virt/iso
 sudo mkdir -p /var/lib/virt/ks

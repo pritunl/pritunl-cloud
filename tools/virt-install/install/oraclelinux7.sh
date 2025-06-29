@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
-export NAME="oraclelinux7"
-export ISO_URL="https://yum.oracle.com/ISOS/OracleLinux/OL7/u9/x86_64/OracleLinux-R7-U9-Server-x86_64-dvd.iso"
-export ISO_HASH="28d2928ded40baddcd11884b9a6a611429df12897784923c346057ec5cdd1012"
+NAME="oraclelinux7"
+ISO_URL="https://yum.oracle.com/ISOS/OracleLinux/OL7/u9/x86_64/OracleLinux-R7-U9-Server-x86_64-dvd.iso"
+ISO_HASH="28d2928ded40baddcd11884b9a6a611429df12897784923c346057ec5cdd1012"
 
 sudo mkdir -p /var/lib/virt/iso
 sudo mkdir -p /var/lib/virt/ks

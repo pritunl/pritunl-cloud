@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
-export NAME="almalinux8"
-export ISO_URL="https://den.aws.repo.almalinux.org/8.10/isos/x86_64/AlmaLinux-8.10-x86_64-dvd.iso"
-export ISO_HASH="463fa92155b886e31627f6713e1c2824343762245a914715ffd6f2efc300b7a1"
+NAME="almalinux8"
+ISO_URL="https://den.aws.repo.almalinux.org/8.10/isos/x86_64/AlmaLinux-8.10-x86_64-dvd.iso"
+ISO_HASH="463fa92155b886e31627f6713e1c2824343762245a914715ffd6f2efc300b7a1"
 
 sudo mkdir -p /var/lib/virt/iso
 sudo mkdir -p /var/lib/virt/ks
