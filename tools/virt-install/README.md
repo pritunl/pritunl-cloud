@@ -101,6 +101,8 @@ s3c almalinux8_$(date +%y%m%d).qcow2 pritunl-images/unstable/almalinux8_$(date +
 s3c almalinux8_$(date +%y%m%d).qcow2.sig pritunl-images/unstable/almalinux8_$(date +%y%m%d).qcow2.sig
 s3c almalinux9_$(date +%y%m%d).qcow2 pritunl-images/unstable/almalinux9_$(date +%y%m%d).qcow2
 s3c almalinux9_$(date +%y%m%d).qcow2.sig pritunl-images/unstable/almalinux9_$(date +%y%m%d).qcow2.sig
+s3c almalinux10_$(date +%y%m%d).qcow2 pritunl-images/unstable/almalinux10_$(date +%y%m%d).qcow2
+s3c almalinux10_$(date +%y%m%d).qcow2.sig pritunl-images/unstable/almalinux10_$(date +%y%m%d).qcow2.sig
 s3c alpinelinux_$(date +%y%m%d).qcow2 pritunl-images/unstable/alpinelinux_$(date +%y%m%d).qcow2
 s3c alpinelinux_$(date +%y%m%d).qcow2.sig pritunl-images/unstable/alpinelinux_$(date +%y%m%d).qcow2.sig
 s3c fedora42_$(date +%y%m%d).qcow2 pritunl-images/unstable/fedora42_$(date +%y%m%d).qcow2
@@ -131,6 +133,8 @@ s3c almalinux8_$(date +%y%m%d).qcow2 pritunl-images/stable/almalinux8_$(date +%y
 s3c almalinux8_$(date +%y%m%d).qcow2.sig pritunl-images/stable/almalinux8_$(date +%y%m%d).qcow2.sig
 s3c almalinux9_$(date +%y%m%d).qcow2 pritunl-images/stable/almalinux9_$(date +%y%m%d).qcow2
 s3c almalinux9_$(date +%y%m%d).qcow2.sig pritunl-images/stable/almalinux9_$(date +%y%m%d).qcow2.sig
+s3c almalinux10_$(date +%y%m%d).qcow2 pritunl-images/stable/almalinux10_$(date +%y%m%d).qcow2
+s3c almalinux10_$(date +%y%m%d).qcow2.sig pritunl-images/stable/almalinux10_$(date +%y%m%d).qcow2.sig
 s3c alpinelinux_$(date +%y%m%d).qcow2 pritunl-images/stable/alpinelinux_$(date +%y%m%d).qcow2
 s3c alpinelinux_$(date +%y%m%d).qcow2.sig pritunl-images/stable/alpinelinux_$(date +%y%m%d).qcow2.sig
 s3c fedora42_$(date +%y%m%d).qcow2 pritunl-images/stable/fedora42_$(date +%y%m%d).qcow2
