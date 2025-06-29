@@ -76,6 +76,10 @@ echo "2ebd5d85cdd4541b9901c59e1b25b270f82c88b03e9cc7d0990037549b15a27d /root/set
 curl -o /root/setup.sh https://raw.githubusercontent.com/pritunl/pritunl-cloud/refs/heads/master/tools/virt-install/setup/rhel9.sh
 echo "333507a276497b69da10def3652ce3d44dd4f612578699f7a9ee1b1376855ee9 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
 
+# rhel10
+curl -o /root/setup.sh https://raw.githubusercontent.com/pritunl/pritunl-cloud/refs/heads/master/tools/virt-install/setup/rhel10.sh
+echo "13e8912e4cc96b843c49838adf26397cd8c9e2d8fe1e68793ca3fd8327b0f210 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
+
 sudo mkdir -p /mnt/images
 sudo chown cloud:cloud /mnt/images
 mkdir -p /mnt/images/stable
