@@ -50,9 +50,10 @@ type State struct {
 	NodePools func() []*pool.Pool
 
 	// Disks
-	Disks           func() []*disk.Disk
-	GetInstaceDisks func(instId primitive.ObjectID) []*disk.Disk
-	InstaceDisksMap func() map[primitive.ObjectID][]*disk.Disk
+	Disks              func() []*disk.Disk
+	GetInstaceDisks    func(instId primitive.ObjectID) []*disk.Disk
+	GetDeploymentDisks func(deplyId primitive.ObjectID) []*disk.Disk
+	InstaceDisksMap    func() map[primitive.ObjectID][]*disk.Disk
 
 	// Vpcs
 	Vpc       func(vpcId primitive.ObjectID) *vpc.Vpc
