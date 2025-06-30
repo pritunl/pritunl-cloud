@@ -97,73 +97,73 @@ echo "7d14fa361e47ff328bbadac302a06a995f6ab65abbe4efce7d8cde6657ba8dde  /tmp/s3c
 sudo rm /tmp/s3c.py
 
 cd /mnt/images/unstable
-python3 ~/tools/generate_files.py
-python3 ~/tools/autoindex.py
+python3 ~/git/pritunl-cloud/tools/generate_files.py
+python3 ~/git/pritunl-cloud/tools/autoindex.py
 
-s3c almalinux8_$(date +%y%m%d).qcow2 pritunl-images/unstable/almalinux8_$(date +%y%m%d).qcow2
-s3c almalinux8_$(date +%y%m%d).qcow2.sig pritunl-images/unstable/almalinux8_$(date +%y%m%d).qcow2.sig
-s3c almalinux9_$(date +%y%m%d).qcow2 pritunl-images/unstable/almalinux9_$(date +%y%m%d).qcow2
-s3c almalinux9_$(date +%y%m%d).qcow2.sig pritunl-images/unstable/almalinux9_$(date +%y%m%d).qcow2.sig
-s3c almalinux10_$(date +%y%m%d).qcow2 pritunl-images/unstable/almalinux10_$(date +%y%m%d).qcow2
-s3c almalinux10_$(date +%y%m%d).qcow2.sig pritunl-images/unstable/almalinux10_$(date +%y%m%d).qcow2.sig
-s3c alpinelinux_$(date +%y%m%d).qcow2 pritunl-images/unstable/alpinelinux_$(date +%y%m%d).qcow2
-s3c alpinelinux_$(date +%y%m%d).qcow2.sig pritunl-images/unstable/alpinelinux_$(date +%y%m%d).qcow2.sig
-s3c fedora42_$(date +%y%m%d).qcow2 pritunl-images/unstable/fedora42_$(date +%y%m%d).qcow2
-s3c fedora42_$(date +%y%m%d).qcow2.sig pritunl-images/unstable/fedora42_$(date +%y%m%d).qcow2.sig
-s3c freebsd_$(date +%y%m%d).qcow2 pritunl-images/unstable/freebsd_$(date +%y%m%d).qcow2
-s3c freebsd_$(date +%y%m%d).qcow2.sig pritunl-images/unstable/freebsd_$(date +%y%m%d).qcow2.sig
-s3c oraclelinux7_$(date +%y%m%d).qcow2 pritunl-images/unstable/oraclelinux7_$(date +%y%m%d).qcow2
-s3c oraclelinux7_$(date +%y%m%d).qcow2.sig pritunl-images/unstable/oraclelinux7_$(date +%y%m%d).qcow2.sig
-s3c oraclelinux8_$(date +%y%m%d).qcow2 pritunl-images/unstable/oraclelinux8_$(date +%y%m%d).qcow2
-s3c oraclelinux8_$(date +%y%m%d).qcow2.sig pritunl-images/unstable/oraclelinux8_$(date +%y%m%d).qcow2.sig
-s3c oraclelinux9_$(date +%y%m%d).qcow2 pritunl-images/unstable/oraclelinux9_$(date +%y%m%d).qcow2
-s3c oraclelinux9_$(date +%y%m%d).qcow2.sig pritunl-images/unstable/oraclelinux9_$(date +%y%m%d).qcow2.sig
-s3c oraclelinux10_$(date +%y%m%d).qcow2 pritunl-images/unstable/oraclelinux10_$(date +%y%m%d).qcow2
-s3c oraclelinux10_$(date +%y%m%d).qcow2.sig pritunl-images/unstable/oraclelinux10_$(date +%y%m%d).qcow2.sig
-s3c rockylinux8_$(date +%y%m%d).qcow2 pritunl-images/unstable/rockylinux8_$(date +%y%m%d).qcow2
-s3c rockylinux8_$(date +%y%m%d).qcow2.sig pritunl-images/unstable/rockylinux8_$(date +%y%m%d).qcow2.sig
-s3c rockylinux9_$(date +%y%m%d).qcow2 pritunl-images/unstable/rockylinux9_$(date +%y%m%d).qcow2
-s3c rockylinux9_$(date +%y%m%d).qcow2.sig pritunl-images/unstable/rockylinux9_$(date +%y%m%d).qcow2.sig
-s3c rockylinux10_$(date +%y%m%d).qcow2 pritunl-images/unstable/rockylinux10_$(date +%y%m%d).qcow2
-s3c rockylinux10_$(date +%y%m%d).qcow2.sig pritunl-images/unstable/rockylinux10_$(date +%y%m%d).qcow2.sig
-s3c ubuntu2404_$(date +%y%m%d).qcow2 pritunl-images/unstable/ubuntu2404_$(date +%y%m%d).qcow2
-s3c ubuntu2404_$(date +%y%m%d).qcow2.sig pritunl-images/unstable/ubuntu2404_$(date +%y%m%d).qcow2.sig
-s3c files.json pritunl-images/unstable/files.json
-s3c index.html pritunl-images/unstable/index.html
+s3c cp almalinux8_$(date +%y%m%d).qcow2 pritunl-images:/unstable/almalinux8_$(date +%y%m%d).qcow2
+s3c cp almalinux8_$(date +%y%m%d).qcow2.sig pritunl-images:/unstable/almalinux8_$(date +%y%m%d).qcow2.sig
+s3c cp almalinux9_$(date +%y%m%d).qcow2 pritunl-images:/unstable/almalinux9_$(date +%y%m%d).qcow2
+s3c cp almalinux9_$(date +%y%m%d).qcow2.sig pritunl-images:/unstable/almalinux9_$(date +%y%m%d).qcow2.sig
+s3c cp almalinux10_$(date +%y%m%d).qcow2 pritunl-images:/unstable/almalinux10_$(date +%y%m%d).qcow2
+s3c cp almalinux10_$(date +%y%m%d).qcow2.sig pritunl-images:/unstable/almalinux10_$(date +%y%m%d).qcow2.sig
+s3c cp alpinelinux_$(date +%y%m%d).qcow2 pritunl-images:/unstable/alpinelinux_$(date +%y%m%d).qcow2
+s3c cp alpinelinux_$(date +%y%m%d).qcow2.sig pritunl-images:/unstable/alpinelinux_$(date +%y%m%d).qcow2.sig
+s3c cp fedora42_$(date +%y%m%d).qcow2 pritunl-images:/unstable/fedora42_$(date +%y%m%d).qcow2
+s3c cp fedora42_$(date +%y%m%d).qcow2.sig pritunl-images:/unstable/fedora42_$(date +%y%m%d).qcow2.sig
+s3c cp freebsd_$(date +%y%m%d).qcow2 pritunl-images:/unstable/freebsd_$(date +%y%m%d).qcow2
+s3c cp freebsd_$(date +%y%m%d).qcow2.sig pritunl-images:/unstable/freebsd_$(date +%y%m%d).qcow2.sig
+s3c cp oraclelinux7_$(date +%y%m%d).qcow2 pritunl-images:/unstable/oraclelinux7_$(date +%y%m%d).qcow2
+s3c cp oraclelinux7_$(date +%y%m%d).qcow2.sig pritunl-images:/unstable/oraclelinux7_$(date +%y%m%d).qcow2.sig
+s3c cp oraclelinux8_$(date +%y%m%d).qcow2 pritunl-images:/unstable/oraclelinux8_$(date +%y%m%d).qcow2
+s3c cp oraclelinux8_$(date +%y%m%d).qcow2.sig pritunl-images:/unstable/oraclelinux8_$(date +%y%m%d).qcow2.sig
+s3c cp oraclelinux9_$(date +%y%m%d).qcow2 pritunl-images:/unstable/oraclelinux9_$(date +%y%m%d).qcow2
+s3c cp oraclelinux9_$(date +%y%m%d).qcow2.sig pritunl-images:/unstable/oraclelinux9_$(date +%y%m%d).qcow2.sig
+s3c cp oraclelinux10_$(date +%y%m%d).qcow2 pritunl-images:/unstable/oraclelinux10_$(date +%y%m%d).qcow2
+s3c cp oraclelinux10_$(date +%y%m%d).qcow2.sig pritunl-images:/unstable/oraclelinux10_$(date +%y%m%d).qcow2.sig
+s3c cp rockylinux8_$(date +%y%m%d).qcow2 pritunl-images:/unstable/rockylinux8_$(date +%y%m%d).qcow2
+s3c cp rockylinux8_$(date +%y%m%d).qcow2.sig pritunl-images:/unstable/rockylinux8_$(date +%y%m%d).qcow2.sig
+s3c cp rockylinux9_$(date +%y%m%d).qcow2 pritunl-images:/unstable/rockylinux9_$(date +%y%m%d).qcow2
+s3c cp rockylinux9_$(date +%y%m%d).qcow2.sig pritunl-images:/unstable/rockylinux9_$(date +%y%m%d).qcow2.sig
+s3c cp rockylinux10_$(date +%y%m%d).qcow2 pritunl-images:/unstable/rockylinux10_$(date +%y%m%d).qcow2
+s3c cp rockylinux10_$(date +%y%m%d).qcow2.sig pritunl-images:/unstable/rockylinux10_$(date +%y%m%d).qcow2.sig
+s3c cp ubuntu2404_$(date +%y%m%d).qcow2 pritunl-images:/unstable/ubuntu2404_$(date +%y%m%d).qcow2
+s3c cp ubuntu2404_$(date +%y%m%d).qcow2.sig pritunl-images:/unstable/ubuntu2404_$(date +%y%m%d).qcow2.sig
+s3c cp files.json pritunl-images:/unstable/files.json
+s3c cp index.html pritunl-images:/unstable/index.html
 
 rsync --human-readable --archive --progress --delete /mnt/images/unstable/ /mnt/images/stable/
 cd /mnt/images/stable
-python3 ~/tools/generate_files.py
-python3 ~/tools/autoindex.py
+python3 ~/git/pritunl-cloud/tools/generate_files.py
+python3 ~/git/pritunl-cloud/tools/autoindex.py
 
-s3c almalinux8_$(date +%y%m%d).qcow2 pritunl-images/stable/almalinux8_$(date +%y%m%d).qcow2
-s3c almalinux8_$(date +%y%m%d).qcow2.sig pritunl-images/stable/almalinux8_$(date +%y%m%d).qcow2.sig
-s3c almalinux9_$(date +%y%m%d).qcow2 pritunl-images/stable/almalinux9_$(date +%y%m%d).qcow2
-s3c almalinux9_$(date +%y%m%d).qcow2.sig pritunl-images/stable/almalinux9_$(date +%y%m%d).qcow2.sig
-s3c almalinux10_$(date +%y%m%d).qcow2 pritunl-images/stable/almalinux10_$(date +%y%m%d).qcow2
-s3c almalinux10_$(date +%y%m%d).qcow2.sig pritunl-images/stable/almalinux10_$(date +%y%m%d).qcow2.sig
-s3c alpinelinux_$(date +%y%m%d).qcow2 pritunl-images/stable/alpinelinux_$(date +%y%m%d).qcow2
-s3c alpinelinux_$(date +%y%m%d).qcow2.sig pritunl-images/stable/alpinelinux_$(date +%y%m%d).qcow2.sig
-s3c fedora42_$(date +%y%m%d).qcow2 pritunl-images/stable/fedora42_$(date +%y%m%d).qcow2
-s3c fedora42_$(date +%y%m%d).qcow2.sig pritunl-images/stable/fedora42_$(date +%y%m%d).qcow2.sig
-s3c freebsd_$(date +%y%m%d).qcow2 pritunl-images/stable/freebsd_$(date +%y%m%d).qcow2
-s3c freebsd_$(date +%y%m%d).qcow2.sig pritunl-images/stable/freebsd_$(date +%y%m%d).qcow2.sig
-s3c oraclelinux7_$(date +%y%m%d).qcow2 pritunl-images/stable/oraclelinux7_$(date +%y%m%d).qcow2
-s3c oraclelinux7_$(date +%y%m%d).qcow2.sig pritunl-images/stable/oraclelinux7_$(date +%y%m%d).qcow2.sig
-s3c oraclelinux8_$(date +%y%m%d).qcow2 pritunl-images/stable/oraclelinux8_$(date +%y%m%d).qcow2
-s3c oraclelinux8_$(date +%y%m%d).qcow2.sig pritunl-images/stable/oraclelinux8_$(date +%y%m%d).qcow2.sig
-s3c oraclelinux9_$(date +%y%m%d).qcow2 pritunl-images/stable/oraclelinux9_$(date +%y%m%d).qcow2
-s3c oraclelinux9_$(date +%y%m%d).qcow2.sig pritunl-images/stable/oraclelinux9_$(date +%y%m%d).qcow2.sig
-s3c oraclelinux10_$(date +%y%m%d).qcow2 pritunl-images/stable/oraclelinux10_$(date +%y%m%d).qcow2
-s3c oraclelinux10_$(date +%y%m%d).qcow2.sig pritunl-images/stable/oraclelinux10_$(date +%y%m%d).qcow2.sig
-s3c rockylinux8_$(date +%y%m%d).qcow2 pritunl-images/stable/rockylinux8_$(date +%y%m%d).qcow2
-s3c rockylinux8_$(date +%y%m%d).qcow2.sig pritunl-images/stable/rockylinux8_$(date +%y%m%d).qcow2.sig
-s3c rockylinux9_$(date +%y%m%d).qcow2 pritunl-images/stable/rockylinux9_$(date +%y%m%d).qcow2
-s3c rockylinux9_$(date +%y%m%d).qcow2.sig pritunl-images/stable/rockylinux9_$(date +%y%m%d).qcow2.sig
-s3c rockylinux10_$(date +%y%m%d).qcow2 pritunl-images/stable/rockylinux10_$(date +%y%m%d).qcow2
-s3c rockylinux10_$(date +%y%m%d).qcow2.sig pritunl-images/stable/rockylinux10_$(date +%y%m%d).qcow2.sig
-s3c ubuntu2404_$(date +%y%m%d).qcow2 pritunl-images/stable/ubuntu2404_$(date +%y%m%d).qcow2
-s3c ubuntu2404_$(date +%y%m%d).qcow2.sig pritunl-images/stable/ubuntu2404_$(date +%y%m%d).qcow2.sig
-s3c files.json pritunl-images/stable/files.json
-s3c index.html pritunl-images/stable/index.html
+s3c cp almalinux8_$(date +%y%m%d).qcow2 pritunl-images:/stable/almalinux8_$(date +%y%m%d).qcow2
+s3c cp almalinux8_$(date +%y%m%d).qcow2.sig pritunl-images:/stable/almalinux8_$(date +%y%m%d).qcow2.sig
+s3c cp almalinux9_$(date +%y%m%d).qcow2 pritunl-images:/stable/almalinux9_$(date +%y%m%d).qcow2
+s3c cp almalinux9_$(date +%y%m%d).qcow2.sig pritunl-images:/stable/almalinux9_$(date +%y%m%d).qcow2.sig
+s3c cp almalinux10_$(date +%y%m%d).qcow2 pritunl-images:/stable/almalinux10_$(date +%y%m%d).qcow2
+s3c cp almalinux10_$(date +%y%m%d).qcow2.sig pritunl-images:/stable/almalinux10_$(date +%y%m%d).qcow2.sig
+s3c cp alpinelinux_$(date +%y%m%d).qcow2 pritunl-images:/stable/alpinelinux_$(date +%y%m%d).qcow2
+s3c cp alpinelinux_$(date +%y%m%d).qcow2.sig pritunl-images:/stable/alpinelinux_$(date +%y%m%d).qcow2.sig
+s3c cp fedora42_$(date +%y%m%d).qcow2 pritunl-images:/stable/fedora42_$(date +%y%m%d).qcow2
+s3c cp fedora42_$(date +%y%m%d).qcow2.sig pritunl-images:/stable/fedora42_$(date +%y%m%d).qcow2.sig
+s3c cp freebsd_$(date +%y%m%d).qcow2 pritunl-images:/stable/freebsd_$(date +%y%m%d).qcow2
+s3c cp freebsd_$(date +%y%m%d).qcow2.sig pritunl-images:/stable/freebsd_$(date +%y%m%d).qcow2.sig
+s3c cp oraclelinux7_$(date +%y%m%d).qcow2 pritunl-images:/stable/oraclelinux7_$(date +%y%m%d).qcow2
+s3c cp oraclelinux7_$(date +%y%m%d).qcow2.sig pritunl-images:/stable/oraclelinux7_$(date +%y%m%d).qcow2.sig
+s3c cp oraclelinux8_$(date +%y%m%d).qcow2 pritunl-images:/stable/oraclelinux8_$(date +%y%m%d).qcow2
+s3c cp oraclelinux8_$(date +%y%m%d).qcow2.sig pritunl-images:/stable/oraclelinux8_$(date +%y%m%d).qcow2.sig
+s3c cp oraclelinux9_$(date +%y%m%d).qcow2 pritunl-images:/stable/oraclelinux9_$(date +%y%m%d).qcow2
+s3c cp oraclelinux9_$(date +%y%m%d).qcow2.sig pritunl-images:/stable/oraclelinux9_$(date +%y%m%d).qcow2.sig
+s3c cp oraclelinux10_$(date +%y%m%d).qcow2 pritunl-images:/stable/oraclelinux10_$(date +%y%m%d).qcow2
+s3c cp oraclelinux10_$(date +%y%m%d).qcow2.sig pritunl-images:/stable/oraclelinux10_$(date +%y%m%d).qcow2.sig
+s3c cp rockylinux8_$(date +%y%m%d).qcow2 pritunl-images:/stable/rockylinux8_$(date +%y%m%d).qcow2
+s3c cp rockylinux8_$(date +%y%m%d).qcow2.sig pritunl-images:/stable/rockylinux8_$(date +%y%m%d).qcow2.sig
+s3c cp rockylinux9_$(date +%y%m%d).qcow2 pritunl-images:/stable/rockylinux9_$(date +%y%m%d).qcow2
+s3c cp rockylinux9_$(date +%y%m%d).qcow2.sig pritunl-images:/stable/rockylinux9_$(date +%y%m%d).qcow2.sig
+s3c cp rockylinux10_$(date +%y%m%d).qcow2 pritunl-images:/stable/rockylinux10_$(date +%y%m%d).qcow2
+s3c cp rockylinux10_$(date +%y%m%d).qcow2.sig pritunl-images:/stable/rockylinux10_$(date +%y%m%d).qcow2.sig
+s3c cp ubuntu2404_$(date +%y%m%d).qcow2 pritunl-images:/stable/ubuntu2404_$(date +%y%m%d).qcow2
+s3c cp ubuntu2404_$(date +%y%m%d).qcow2.sig pritunl-images:/stable/ubuntu2404_$(date +%y%m%d).qcow2.sig
+s3c cp files.json pritunl-images:/stable/files.json
+s3c cp index.html pritunl-images:/stable/index.html
 ```
