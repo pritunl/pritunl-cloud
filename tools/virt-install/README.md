@@ -44,6 +44,10 @@ sudo setenforce 0
 sudo dnf -y install qemu-kvm qemu-img libguestfs-tools genisoimage edk2-ovmf libvirt virt-install
 sudo systemctl enable --now libvirtd
 
+cd ./setup
+sudo firewall-cmd --zone=libvirt --add-port=8000/tcp --permanent
+python3 -m http.server
+
 # alpine linux
 setup-alpine
 curl -o /root/setup.sh http://192.168.122.1:8000/alpine.sh
