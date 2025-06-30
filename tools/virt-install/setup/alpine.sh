@@ -1,5 +1,5 @@
 #!/bin/sh
-set -e
+set -ev
 
 if [ $(whoami) != "root" ]; then
   echo "Must be run as root"
