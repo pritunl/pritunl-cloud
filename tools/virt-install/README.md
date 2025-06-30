@@ -46,38 +46,38 @@ sudo systemctl enable --now libvirtd
 
 # alpine linux
 setup-alpine
-curl -o /root/setup.sh http://192.168.122.1/alpine.sh
+curl -o /root/setup.sh http://192.168.122.1:8000/alpine.sh
 echo "923052cc9fd8baf7ff7eb6372391b9cb93667e70c5ddd80a6d7b0076284e3314 /root/setup.sh" | sha256sum -c && sudo sh /root/setup.sh
 grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=alpine
 grub-mkconfig -o /boot/grub/grub.cfg
 grub-mkconfig -o /boot/efi/EFI/alpine/grub.cfg
 
 # debian
-sudo curl -o /root/setup.sh http://192.168.122.1/debian.sh
+sudo curl -o /root/setup.sh http://192.168.122.1:8000/debian.sh
 echo "a4d4c35ec9aa0057373c826830944c7ec1081601f09a9af8ba432b80240210c9 /root/setup.sh" | sudo sha256sum -c && sudo bash /root/setup.sh
 
 # fedora
-curl -o /root/setup.sh http://192.168.122.1/fedora.sh
+curl -o /root/setup.sh http://192.168.122.1:8000/fedora.sh
 echo "5577c87991735f802278ad98db35525fff820a7ff5be4b422b29eee27e362e82 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
 
 # freebsd
-fetch -o /root/setup.sh http://192.168.122.1/freebsd.sh
+fetch -o /root/setup.sh http://192.168.122.1:8000/freebsd.sh
 [ "$(sha256sum /root/setup.sh)" = "cd19d514fa5df15b4b7b8b66a0ced4b2ea3b3feeb710baa8cacf7c139af8ce81  /root/setup.sh" ] && sh /root/setup.sh
 
 # rhel7
-curl -o /root/setup.sh http://192.168.122.1/rhel7.sh
+curl -o /root/setup.sh http://192.168.122.1:8000/rhel7.sh
 echo "b8dc0d838f7f1a25ce1bbc9f7f326bbae1cf775d150f7a4e6bf1cc5014ada614 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
 
 # rhel8
-curl -o /root/setup.sh http://192.168.122.1/rhel8.sh
+curl -o /root/setup.sh http://192.168.122.1:8000/rhel8.sh
 echo "2ebd5d85cdd4541b9901c59e1b25b270f82c88b03e9cc7d0990037549b15a27d /root/setup.sh" | sha256sum -c && bash /root/setup.sh
 
 # rhel9
-curl -o /root/setup.sh http://192.168.122.1/rhel9.sh
+curl -o /root/setup.sh http://192.168.122.1:8000/rhel9.sh
 echo "333507a276497b69da10def3652ce3d44dd4f612578699f7a9ee1b1376855ee9 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
 
 # rhel10
-curl -o /root/setup.sh http://192.168.122.1/rhel10.sh
+curl -o /root/setup.sh http://192.168.122.1:8000/rhel10.sh
 echo "13e8912e4cc96b843c49838adf26397cd8c9e2d8fe1e68793ca3fd8327b0f210 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
 
 sudo mkdir -p /mnt/images
