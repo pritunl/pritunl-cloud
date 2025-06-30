@@ -87,7 +87,7 @@ sudo mkdir -p /mnt/images
 sudo chown cloud:cloud /mnt/images
 mkdir -p /mnt/images/stable
 mkdir -p /mnt/images/unstable
-scp 127.0.0.1:/var/lib/virt/images/*_$(date +%y%m%d).qcow2* /mnt/images/unstable
+rsync --human-readable --archive --xattrs --progress 127.0.0.1:/var/lib/virt/images/ /mnt/images/unstable/
 
 sudo wget -P /tmp https://raw.githubusercontent.com/pritunl/toolbox/73aacb9e22b09a34f87d389b3dc301d6c450b0e8/s3c/s3c.py
 echo "7d14fa361e47ff328bbadac302a06a995f6ab65abbe4efce7d8cde6657ba8dde  /tmp/s3c.py" | sha256sum -c - && sudo cp /tmp/s3c.py /usr/local/bin/s3c && sudo chmod +x /usr/local/bin/s3c
