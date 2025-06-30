@@ -144,11 +144,13 @@ export default class InstanceImages extends React.Component<Props, {}> {
 				otherImages.push(image)
 			}
 
-			for (let item of imagesVer.entries()) {
-				let img = item[1][1]
+			const sortedVersionedImages = Array.from(imagesVer.entries())
+				.sort((a, b) => MiscUtils.naturalSort(a[1][1].name, b[1][1].name));
+			for (let [key, [ver, img]] of sortedVersionedImages) {
 				imagesSelect.push(this.parseImage(img));
 			}
 
+			otherImages.sort((a, b) => MiscUtils.naturalSort(a.name, b.name));
 			for (let img of otherImages) {
 				imagesSelect.push(this.parseImage(img));
 			}
