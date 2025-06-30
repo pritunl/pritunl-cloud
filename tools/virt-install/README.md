@@ -51,35 +51,35 @@ python3 -m http.server
 # alpine linux
 setup-alpine
 curl -o /root/setup.sh http://192.168.122.1:8000/alpine.sh
-echo "923052cc9fd8baf7ff7eb6372391b9cb93667e70c5ddd80a6d7b0076284e3314 /root/setup.sh" | sha256sum -c && sudo sh /root/setup.sh
+echo "f39b6192f43c6e62fafe7b9521bc1170bdf19726b71fb6dbb71b77b77dbbee13 /root/setup.sh" | sha256sum -c && sudo sh /root/setup.sh
 
 # debian
 sudo curl -o /root/setup.sh http://192.168.122.1:8000/debian.sh
-echo "a4d4c35ec9aa0057373c826830944c7ec1081601f09a9af8ba432b80240210c9 /root/setup.sh" | sudo sha256sum -c && sudo bash /root/setup.sh
+echo "e950965dcdc2f7a9c415800a2b6fd07877d2b6b4f04ad74f7e5d78bedd6141c2 /root/setup.sh" | sudo sha256sum -c && sudo bash /root/setup.sh
 
 # fedora
 curl -o /root/setup.sh http://192.168.122.1:8000/fedora.sh
-echo "5577c87991735f802278ad98db35525fff820a7ff5be4b422b29eee27e362e82 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
+echo "4863da2df2fe1f14efcebdc28cbbaedf8586ab5c67695142360842e78bd732fd /root/setup.sh" | sha256sum -c && bash /root/setup.sh
 
 # freebsd
 fetch -o /root/setup.sh http://192.168.122.1:8000/freebsd.sh
-[ "$(sha256sum /root/setup.sh)" = "cd19d514fa5df15b4b7b8b66a0ced4b2ea3b3feeb710baa8cacf7c139af8ce81  /root/setup.sh" ] && sh /root/setup.sh
+[ "$(sha256sum /root/setup.sh)" = "2efcf4a3c01618cd47b6955effc4b55600b049fef30c8a04fbf9f79250ad9b32  /root/setup.sh" ] && sh /root/setup.sh
 
 # rhel7
 curl -o /root/setup.sh http://192.168.122.1:8000/rhel7.sh
-echo "b8dc0d838f7f1a25ce1bbc9f7f326bbae1cf775d150f7a4e6bf1cc5014ada614 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
+echo "396426b0db2833d81b4b12e8e7dd9aeca5ed77fc81e696860b86604fd735be31 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
 
 # rhel8
 curl -o /root/setup.sh http://192.168.122.1:8000/rhel8.sh
-echo "2ebd5d85cdd4541b9901c59e1b25b270f82c88b03e9cc7d0990037549b15a27d /root/setup.sh" | sha256sum -c && bash /root/setup.sh
+echo "c4ed6bb54694a9e2fdc1b59806dff75eb789a8ee996b801dd5b39da3db5fddf9 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
 
 # rhel9
 curl -o /root/setup.sh http://192.168.122.1:8000/rhel9.sh
-echo "333507a276497b69da10def3652ce3d44dd4f612578699f7a9ee1b1376855ee9 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
+echo "c482aa3906b9c168d066753855bbff4caf4e2ba3c0ce698edaf57343540b030f /root/setup.sh" | sha256sum -c && bash /root/setup.sh
 
 # rhel10
 curl -o /root/setup.sh http://192.168.122.1:8000/rhel10.sh
-echo "13e8912e4cc96b843c49838adf26397cd8c9e2d8fe1e68793ca3fd8327b0f210 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
+echo "f97af43a199b228a0b7ed08cabfb2cb6b6718a2b089b7ebbf49d655af8430feb /root/setup.sh" | sha256sum -c && bash /root/setup.sh
 
 find /var/lib/virt/images/ -name "*_$(date +%y%m%d).qcow2" -type f -exec sudo GPG_TTY=$(tty) gpg --default-key 055C08A4 --armor --output {}.sig --detach-sig {} \;
 
