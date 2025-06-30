@@ -84,14 +84,13 @@ echo "333507a276497b69da10def3652ce3d44dd4f612578699f7a9ee1b1376855ee9 /root/set
 curl -o /root/setup.sh http://192.168.122.1:8000/rhel10.sh
 echo "13e8912e4cc96b843c49838adf26397cd8c9e2d8fe1e68793ca3fd8327b0f210 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
 
+find /var/lib/virt/images/ -name "*_$(date +%y%m%d).qcow2" -type f -exec sudo GPG_TTY=$(tty) gpg --default-key 055C08A4 --armor --output {}.sig --detach-sig {} \;
+
 sudo mkdir -p /mnt/images
 sudo chown cloud:cloud /mnt/images
 mkdir -p /mnt/images/stable
 mkdir -p /mnt/images/unstable
-
-scp 127.0.01:/var/lib/virt/images/* /mnt/images/unstable
-find /mnt/images/unstable/ -name "*.qcow2" -type f -exec gpg --default-key 055C08A4 --armor --output {}.sig --detach-sig {} \;
-sha256sum /mnt/images/unstable/*
+scp 127.0.0.1:/var/lib/virt/images/*_$(date +%y%m%d).qcow2* /mnt/images/unstable
 
 sudo wget -P /tmp https://raw.githubusercontent.com/pritunl/toolbox/73aacb9e22b09a34f87d389b3dc301d6c450b0e8/s3c/s3c.py
 echo "7d14fa361e47ff328bbadac302a06a995f6ab65abbe4efce7d8cde6657ba8dde  /tmp/s3c.py" | sha256sum -c - && sudo cp /tmp/s3c.py /usr/local/bin/s3c && sudo chmod +x /usr/local/bin/s3c
