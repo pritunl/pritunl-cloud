@@ -52,9 +52,6 @@ python3 -m http.server
 setup-alpine
 curl -o /root/setup.sh http://192.168.122.1:8000/alpine.sh
 echo "923052cc9fd8baf7ff7eb6372391b9cb93667e70c5ddd80a6d7b0076284e3314 /root/setup.sh" | sha256sum -c && sudo sh /root/setup.sh
-grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=alpine
-grub-mkconfig -o /boot/grub/grub.cfg
-grub-mkconfig -o /boot/efi/EFI/alpine/grub.cfg
 
 # debian
 sudo curl -o /root/setup.sh http://192.168.122.1:8000/debian.sh
