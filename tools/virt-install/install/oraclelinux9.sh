@@ -50,6 +50,10 @@ part / --fstype="xfs" --ondisk=vda --grow
 timezone Etc/UTC --utc
 
 rootpw --plaintext cloud
+
+%post
+grubby --update-kernel=ALL --remove-args=crashkernel
+%end
 EOF
 
 sudo virt-install \
