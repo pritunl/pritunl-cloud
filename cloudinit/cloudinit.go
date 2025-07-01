@@ -53,8 +53,8 @@ config:
         dns_nameservers:
           - {{.Dns1}}
           - {{.Dns2}}
-      - type: static
-        address: {{.Address6}}
+      - type: static6
+        address: {{.AddressCidr6}}
         gateway: {{.Gateway6}}
 `
 
@@ -64,8 +64,8 @@ ethernets:
     match:
       macaddress: {{.Mac}}{{.Mtu}}
     addresses:
-      - {{.Address}}
-      - {{.Address6}}
+      - {{.AddressCidr}}
+      - {{.AddressCidr6}}
     gateway4: {{.Gateway}}
     gateway6: {{.Gateway6}}
     nameservers:
