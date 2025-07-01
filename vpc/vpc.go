@@ -747,20 +747,20 @@ func (v *Vpc) GetIp(db *database.Database,
 	return
 }
 
-func (v *Vpc) GetIp6(addr net.IP) net.IP {
-	return GetIp6(v.Id, addr)
+func (v *Vpc) GetIp6(instId primitive.ObjectID) net.IP {
+	return GetIp6(v.Id, instId)
 }
 
-func (v *Vpc) GetLinkIp6(addr net.IP) net.IP {
-	return GetLinkIp6(v.Id, addr)
+func (v *Vpc) GetLinkIp6(instId primitive.ObjectID) net.IP {
+	return GetLinkIp6(v.Id, instId)
 }
 
-func (v *Vpc) GetGatewayIp6(addr net.IP) net.IP {
-	return GetGatewayIp6(v.Id, addr)
+func (v *Vpc) GetGatewayIp6(instId primitive.ObjectID) net.IP {
+	return GetGatewayIp6(v.Id, instId)
 }
 
-func (v *Vpc) GetGatewayLinkIp6(addr net.IP) net.IP {
-	return GetGatewayLinkIp6(v.Id, addr)
+func (v *Vpc) GetGatewayLinkIp6(instId primitive.ObjectID) net.IP {
+	return GetGatewayLinkIp6(v.Id, instId)
 }
 
 func (v *Vpc) RemoveSubnet(db *database.Database, subId primitive.ObjectID) (
