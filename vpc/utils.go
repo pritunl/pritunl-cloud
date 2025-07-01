@@ -42,7 +42,7 @@ func GetGatewayIp6(vpcId, instId primitive.ObjectID) net.IP {
 	netHashSum := fmt.Sprintf("%x", netHash.Sum(nil))[:12]
 
 	instHash := md5.New()
-	instHash.Write(instId[:])
+	instHash.Write([]byte("gateway"))
 	instHash.Write(instId[:])
 	instHashSum := fmt.Sprintf("%x", instHash.Sum(nil))[:16]
 
@@ -87,7 +87,7 @@ func GetGatewayLinkIp6(vpcId, instId primitive.ObjectID) net.IP {
 	netHashSum := fmt.Sprintf("%x", netHash.Sum(nil))[:12]
 
 	instHash := md5.New()
-	instHash.Write(instId[:])
+	instHash.Write([]byte("gateway"))
 	instHash.Write(instId[:])
 	instHashSum := fmt.Sprintf("%x", instHash.Sum(nil))[:16]
 
