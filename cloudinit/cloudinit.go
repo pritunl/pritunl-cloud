@@ -105,14 +105,14 @@ users:
 {{- range .Keys}}
       - {{.}}
 {{- end}}
-{{- if .HasMounts}}
 bootcmd:
 {{- range .Mounts}}
   - [ "mkdir", "-p", "{{.Path}}" ]
 {{- end}}
   - 'sysctl -w net.ipv4.conf.eth0.send_redirects=0 || true'
   - [ sh, -c, '{{.DeployBoot}}' ]{{if .RunScript}}
-  - [ /etc/cloudinit-script ]{{else}}{{end}}
+  - [ /etc/cloudinit-script ]{{end}}
+{{- if .HasMounts}}
 mounts:
 {{- range .Mounts}}
   - [ "{{.Tag}}", "{{.Path}}", {{.Type}}, "{{.Opts}}", "0", "{{.Fsck}}" ]
@@ -141,16 +141,14 @@ users:
 {{- range .Keys}}
       - {{.}}
 {{- end}}
-{{- if .HasMounts}}
 bootcmd:
 {{- range .Mounts}}
   - [ "mkdir", "-p", "{{.Path}}" ]
 {{- end}}
   - [ sysctl, net.inet.ip.redirect=0 ]
-  - [ ifconfig, vtnet0, inet6, {{.Address6}}/64 ]
-  - [ route, -6, add, default, {{.Gateway6}} ]
   - [ sh, -c, '{{.DeployBoot}}' ]{{if .RunScript}}
-  - [ /etc/cloudinit-script ]{{else}}{{end}}
+  - [ /etc/cloudinit-script ]{{end}}
+{{- if .HasMounts}}
 mounts:
 {{- range .Mounts}}
   - [ "{{.Tag}}", "{{.Path}}", {{.Type}}, "{{.Opts}}", "0", "{{.Fsck}}" ]
