@@ -642,8 +642,8 @@ func getNetData(db *database.Database, inst *instance.Instance,
 
 	cidr, _ := vcNet.Mask.Size()
 
-	addr6 = vc.GetIp6(addr)
-	gateway6 = vc.GetGatewayIp6(addr)
+	addr6 = vc.GetIp6(inst.Id)
+	gateway6 = vc.GetGatewayIp6(inst.Id)
 
 	dns1 := ""
 	dns2 := ""
