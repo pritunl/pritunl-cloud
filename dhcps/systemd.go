@@ -403,8 +403,8 @@ func Start(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	addr6 := vc.GetIp6(addr)
-	gatewayAddr6 := vc.GetGatewayIp6(addr)
+	addr6 := vc.GetIp6(virt.Id)
+	gatewayAddr6 := vc.GetGatewayIp6(virt.Id)
 
 	mtu := dc.GetInstanceMtu()
 
