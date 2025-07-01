@@ -111,6 +111,7 @@ export default class InstanceImages extends React.Component<Props, {}> {
 	render(): JSX.Element {
 		let hasImages = false
 		let imagesSelect: JSX.Element[] = []
+		let signedImages: ImageTypes.Image[] = []
 		let otherImages: ImageTypes.Image[] = []
 		let imagesVer = new Map<string, [number, ImageTypes.Image]>()
 		let selectButton: JSX.Element
@@ -124,20 +125,25 @@ export default class InstanceImages extends React.Component<Props, {}> {
 					continue;
 				}
 
-				if (!this.props.showHidden && image.signed) {
-					let imgSpl = image.key.split('_');
+				if (image.signed) {
+					if (!this.props.showHidden) {
+						let imgSpl = image.key.split('_');
 
-					if (imgSpl.length >= 2 && imgSpl[imgSpl.length - 1].length >= 4) {
-						let imgKey = imgSpl[0]
-						let imgVer = parseInt(
-							imgSpl[imgSpl.length - 1].substring(0, 4), 10);
-						if (imgVer) {
-							let curImg = imagesVer.get(imgKey);
-							if (!curImg || imgVer > curImg[0]) {
-								imagesVer.set(imgKey, [imgVer, image]);
+						if (imgSpl.length >= 2 && imgSpl[imgSpl.length - 1].length >= 4) {
+							let imgKey = imgSpl[0]
+							let imgVer = parseInt(
+								imgSpl[imgSpl.length - 1].substring(0, 4), 10);
+							if (imgVer) {
+								let curImg = imagesVer.get(imgKey);
+								if (!curImg || imgVer > curImg[0]) {
+									imagesVer.set(imgKey, [imgVer, image]);
+								}
+								continue
 							}
-							continue;
 						}
+					} else {
+						signedImages.push(image)
+						continue
 					}
 				}
 
@@ -150,7 +156,17 @@ export default class InstanceImages extends React.Component<Props, {}> {
 				imagesSelect.push(this.parseImage(img));
 			}
 
-			otherImages.sort((a, b) => MiscUtils.naturalSort(a.name, b.name));
+			signedImages.sort((a, b) => MiscUtils.naturalSort(a.name, b.name));
+			for (let img of signedImages) {
+				imagesSelect.push(this.parseImage(img));
+			}
+
+			if (imagesSelect.length) {
+				imagesSelect.push(<Blueprint.MenuDivider
+					key="menu-spec-divider"
+				/>)
+			}
+
 			for (let img of otherImages) {
 				imagesSelect.push(this.parseImage(img));
 			}
