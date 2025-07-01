@@ -104,7 +104,7 @@ func BuildState(instances []*instance.Instance,
 				addr := vpcIp.GetIp()
 
 				newRecrds.Add(Record{
-					Ip:  vpc.GetIp6(vpcIp.Vpc, addr).String(),
+					Ip:  vpc.GetIp6(vpcIp.Vpc, vpcIp.Instance).String(),
 					Mac: vm.GetMacAddr(vpcIp.Instance, adapter.Vpc),
 				})
 
