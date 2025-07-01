@@ -88,7 +88,6 @@ growpart:
     devices: ["/"]
     ignore_growroot_disabled: false
 runcmd:
-  - 'chmod 600 /etc/ssh/*_key || true'
   - 'systemctl restart sshd || true'
   - [ {{.DeployRun}} ]
 users:
