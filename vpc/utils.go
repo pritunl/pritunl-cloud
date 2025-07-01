@@ -14,21 +14,16 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
-func GetIp6(vpcId primitive.ObjectID, addr net.IP) net.IP {
+func GetIp6(vpcId, instId primitive.ObjectID) net.IP {
 	netHash := md5.New()
 	netHash.Write(vpcId[:])
 	netHashSum := fmt.Sprintf("%x", netHash.Sum(nil))[:12]
 
-	macHash := md5.New()
-	macHash.Write(addr)
-	macHashSum := fmt.Sprintf("%x", macHash.Sum(nil))[:16]
+	instHash := md5.New()
+	instHash.Write(instId[:])
+	instHashSum := fmt.Sprintf("%x", instHash.Sum(nil))[:16]
 
-	// fd97:2222:2222:2222:3333:3333:4444:4444
-	// 2 = vpc
-	// 3 = subnet
-	// 4 = instance+gateway
-
-	ip := fmt.Sprintf("fd97%s%s", netHashSum, macHashSum)
+	ip := fmt.Sprintf("fd97%s%s", netHashSum, instHashSum)
 	ipBuf := bytes.Buffer{}
 
 	for i, run := range ip {
@@ -41,22 +36,17 @@ func GetIp6(vpcId primitive.ObjectID, addr net.IP) net.IP {
 	return net.ParseIP(ipBuf.String())
 }
 
-func GetGatewayIp6(vpcId primitive.ObjectID, addr net.IP) net.IP {
+func GetGatewayIp6(vpcId, instId primitive.ObjectID) net.IP {
 	netHash := md5.New()
 	netHash.Write(vpcId[:])
 	netHashSum := fmt.Sprintf("%x", netHash.Sum(nil))[:12]
 
-	macHash := md5.New()
-	macHash.Write(addr)
-	macHash.Write(addr)
-	macHashSum := fmt.Sprintf("%x", macHash.Sum(nil))[:16]
+	instHash := md5.New()
+	instHash.Write(instId[:])
+	instHash.Write(instId[:])
+	instHashSum := fmt.Sprintf("%x", instHash.Sum(nil))[:16]
 
-	// fd97:2222:2222:2222:3333:3333:4444:4444
-	// 2 = vpc
-	// 3 = subnet
-	// 4 = instance+gateway
-
-	ip := fmt.Sprintf("fd97%s%s", netHashSum, macHashSum)
+	ip := fmt.Sprintf("fd97%s%s", netHashSum, instHashSum)
 	ipBuf := bytes.Buffer{}
 
 	for i, run := range ip {
@@ -69,21 +59,16 @@ func GetGatewayIp6(vpcId primitive.ObjectID, addr net.IP) net.IP {
 	return net.ParseIP(ipBuf.String())
 }
 
-func GetLinkIp6(vpcId primitive.ObjectID, addr net.IP) net.IP {
+func GetLinkIp6(vpcId, instId primitive.ObjectID) net.IP {
 	netHash := md5.New()
 	netHash.Write(vpcId[:])
 	netHashSum := fmt.Sprintf("%x", netHash.Sum(nil))[:12]
 
-	macHash := md5.New()
-	macHash.Write(addr)
-	macHashSum := fmt.Sprintf("%x", macHash.Sum(nil))[:16]
+	instHash := md5.New()
+	instHash.Write(instId[:])
+	instHashSum := fmt.Sprintf("%x", instHash.Sum(nil))[:16]
 
-	// fe80:2222:2222:2222:3333:3333:4444:4444
-	// 2 = vpc
-	// 3 = subnet
-	// 4 = instance+gateway
-
-	ip := fmt.Sprintf("fe80%s%s", netHashSum, macHashSum)
+	ip := fmt.Sprintf("fd97%s%s", netHashSum, instHashSum)
 	ipBuf := bytes.Buffer{}
 
 	for i, run := range ip {
@@ -96,22 +81,17 @@ func GetLinkIp6(vpcId primitive.ObjectID, addr net.IP) net.IP {
 	return net.ParseIP(ipBuf.String())
 }
 
-func GetGatewayLinkIp6(vpcId primitive.ObjectID, addr net.IP) net.IP {
+func GetGatewayLinkIp6(vpcId, instId primitive.ObjectID) net.IP {
 	netHash := md5.New()
 	netHash.Write(vpcId[:])
 	netHashSum := fmt.Sprintf("%x", netHash.Sum(nil))[:12]
 
-	macHash := md5.New()
-	macHash.Write(addr)
-	macHash.Write(addr)
-	macHashSum := fmt.Sprintf("%x", macHash.Sum(nil))[:16]
+	instHash := md5.New()
+	instHash.Write(instId[:])
+	instHash.Write(instId[:])
+	instHashSum := fmt.Sprintf("%x", instHash.Sum(nil))[:16]
 
-	// fe80:2222:2222:2222:3333:3333:4444:4444
-	// 2 = vpc
-	// 3 = subnet
-	// 4 = instance+gateway
-
-	ip := fmt.Sprintf("fe80%s%s", netHashSum, macHashSum)
+	ip := fmt.Sprintf("fd97%s%s", netHashSum, instHashSum)
 	ipBuf := bytes.Buffer{}
 
 	for i, run := range ip {
