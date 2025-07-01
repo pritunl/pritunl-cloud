@@ -36,8 +36,8 @@ func (n *NetConf) Address(db *database.Database) (err error) {
 	n.InternalGatewayAddrCidr = fmt.Sprintf(
 		"%s/%d", gatewayAddr.String(), cidr)
 
-	n.InternalAddr6 = vc.GetIp6(addr)
-	n.InternalGatewayAddr6 = vc.GetGatewayIp6(addr)
+	n.InternalAddr6 = vc.GetIp6(n.Virt.Id)
+	n.InternalGatewayAddr6 = vc.GetGatewayIp6(n.Virt.Id)
 	if err != nil {
 		return
 	}
