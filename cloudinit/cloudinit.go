@@ -145,6 +145,7 @@ bootcmd:
   - [ "mkdir", "-p", "{{.Path}}" ]
 {{- end}}
   - [ sysctl, net.inet.ip.redirect=0 ]
+  - [ sysctl, net.inet6.ip6.dad_count=0 ]
   - [ sh, -c, '{{.DeployBoot}}' ]{{if .RunScript}}
   - [ /etc/cloudinit-script ]{{end}}
 {{- if .HasMounts}}
