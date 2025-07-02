@@ -192,19 +192,55 @@ func (r *Resources) Find(db *database.Database, token string) (
 		}
 		break
 	case ImageKind:
-		r.Image, err = image.GetOne(db, &bson.M{
-			"name": resource,
-			"organization": &bson.M{
-				"$in": []primitive.ObjectID{r.Organization, image.Global},
-			},
-		})
-		if err != nil {
-			if _, ok := err.(*database.NotFoundError); ok {
-				err = nil
-			} else {
-				return
+		if image.Releases.Contains(resource) {
+			imgs, e := image.GetAll(db, &bson.M{
+				"release": resource,
+				"organization": &bson.M{
+					"$in": []primitive.ObjectID{r.Organization, image.Global},
+				},
+			})
+			if e != nil {
+				err = e
+				if _, ok := err.(*database.NotFoundError); ok {
+					err = nil
+				} else {
+					return
+				}
+			}
+
+			var latestImg *image.Image
+			for _, img := range imgs {
+				if latestImg == nil {
+					latestImg = img
+				} else if img.Build > latestImg.Build {
+					latestImg = img
+				}
+
+				if img.Build == tag {
+					r.Image = img
+					break
+				}
+			}
+
+			if tag == "" || tag == "latest" {
+				r.Image = latestImg
+			}
+		} else {
+			r.Image, err = image.GetOne(db, &bson.M{
+				"name": resource,
+				"organization": &bson.M{
+					"$in": []primitive.ObjectID{r.Organization, image.Global},
+				},
+			})
+			if err != nil {
+				if _, ok := err.(*database.NotFoundError); ok {
+					err = nil
+				} else {
+					return
+				}
 			}
 		}
+
 		break
 	case BuildKind:
 		r.Unit, err = GetUnitBase(db, r.Organization, resource)
