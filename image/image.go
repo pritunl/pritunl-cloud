@@ -20,6 +20,7 @@ type Image struct {
 	Disk         primitive.ObjectID `bson:"disk" json:"disk"`
 	Name         string             `bson:"name" json:"name"`
 	Release      string             `bson:"release" json:"release"`
+	Build        string             `bson:"build" json:"build"`
 	Comment      string             `bson:"comment" json:"comment"`
 	Deployment   primitive.ObjectID `bson:"deployment" json:"deployment"`
 	Organization primitive.ObjectID `bson:"organization" json:"organization"`
@@ -68,7 +69,7 @@ func (i *Image) Parse() {
 	}
 
 	if i.Signed {
-		i.Name, i.Release = ParseImageName(i.Key)
+		i.Name, i.Release, i.Build = ParseImageName(i.Key)
 	}
 }
 
@@ -192,6 +193,7 @@ func (i *Image) Sync(db *database.Database) (err error) {
 				"$set": &bson.M{
 					"organization":  primitive.NilObjectID,
 					"release":       i.Release,
+					"build":         i.Build,
 					"storage":       i.Storage,
 					"key":           i.Key,
 					"signed":        i.Signed,
@@ -235,6 +237,7 @@ func (i *Image) Sync(db *database.Database) (err error) {
 					"organization":  primitive.NilObjectID,
 					"name":          i.Name,
 					"release":       i.Release,
+					"build":         i.Build,
 					"storage":       i.Storage,
 					"key":           i.Key,
 					"signed":        i.Signed,
