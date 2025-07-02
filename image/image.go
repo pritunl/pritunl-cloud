@@ -34,6 +34,7 @@ type Image struct {
 	StorageClass string             `bson:"storage_class" json:"storage_class"`
 	Hash         string             `bson:"hash" json:"hash"`
 	Etag         string             `bson:"etag" json:"etag"`
+	Tags         []string           `bson:"-" json:"tags"`
 }
 
 func (i *Image) Validate(db *database.Database) (
