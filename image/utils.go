@@ -200,7 +200,7 @@ func ExistsOrg(db *database.Database, orgId, imgId primitive.ObjectID) (
 	return
 }
 
-func GetAll(db *database.Database, query *bson.M, page, pageCount int64) (
+func GetAllPaged(db *database.Database, query *bson.M, page, pageCount int64) (
 	imgs []*Image, count int64, err error) {
 
 	coll := db.Images()
