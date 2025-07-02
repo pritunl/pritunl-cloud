@@ -69,7 +69,7 @@ func get(db *database.Database, coll *database.Collection,
 		opts.Sort = sort
 	}
 
-	cursor, err := coll.Find(db, query)
+	cursor, err := coll.Find(db, query, opts)
 	if err != nil {
 		err = database.ParseError(err)
 		return
