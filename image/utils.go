@@ -20,7 +20,7 @@ import (
 var (
 	etagReg  = regexp.MustCompile("[^a-zA-Z0-9]+")
 	distroRe = regexp.MustCompile(`^([a-z]+)([0-9]*)`)
-	dateRe   = regexp.MustCompile(`_(\d{2})(\d{2})$`)
+	dateRe   = regexp.MustCompile(`_(\d{2})(\d{2})(\d{2})?$`)
 )
 
 func GetEtag(info minio.ObjectInfo) string {
@@ -34,24 +34,27 @@ func GetEtag(info minio.ObjectInfo) string {
 	return etagReg.ReplaceAllString(etag, "")
 }
 
-func ParseImageName(name string) string {
-	baseName := strings.TrimSuffix(name, filepath.Ext(name))
+func ParseImageName(key string) (name, release string) {
+	baseName := strings.TrimSuffix(key, filepath.Ext(key))
 
 	dateMatch := dateRe.FindStringSubmatch(baseName)
-	if len(dateMatch) != 3 {
-		return name
+	if len(dateMatch) != 3 && len(dateMatch) != 4 {
+		name = key
+		return
 	}
 	yearStr, monthStr := dateMatch[1], dateMatch[2]
 
 	base := strings.TrimSuffix(baseName, dateMatch[0])
 	tokens := strings.Split(base, "_")
 	if len(tokens) == 0 {
-		return name
+		name = key
+		return
 	}
 
 	distroMatch := distroRe.FindStringSubmatch(tokens[0])
 	if len(distroMatch) < 2 {
-		return name
+		name = key
+		return
 	}
 	distro := distroMatch[1]
 	version := ""
@@ -60,9 +63,16 @@ func ParseImageName(name string) string {
 	}
 
 	if version == "" {
-		return fmt.Sprintf("%s-%s%s", distro, yearStr, monthStr)
+		name = fmt.Sprintf("%s-%s%s", distro, yearStr, monthStr)
+	} else {
+		name = fmt.Sprintf("%s%s-%s%s", distro, version, yearStr, monthStr)
 	}
-	return fmt.Sprintf("%s%s-%s%s", distro, version, yearStr, monthStr)
+
+	if Releases.Contains(distro + version) {
+		release = distro + version
+	}
+
+	return
 }
 
 func Get(db *database.Database, imgId primitive.ObjectID) (
