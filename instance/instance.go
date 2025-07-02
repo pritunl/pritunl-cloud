@@ -782,6 +782,16 @@ func (i *Instance) Json(short bool) {
 		break
 	}
 
+	if !i.IsActive() && i.Guest != nil {
+		i.Guest.Timestamp = time.Time{}
+		i.Guest.Heartbeat = time.Time{}
+		i.Guest.Memory = 0
+		i.Guest.HugePages = 0
+		i.Guest.Load1 = 0
+		i.Guest.Load5 = 0
+		i.Guest.Load15 = 0
+	}
+
 	i.PublicMac = vm.GetMacAddrExternal(i.Id, i.Vpc)
 	if i.VirtTimestamp.IsZero() || !i.IsActive() {
 		i.Uptime = ""
