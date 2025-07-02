@@ -34,7 +34,7 @@ func GetEtag(info minio.ObjectInfo) string {
 	return etagReg.ReplaceAllString(etag, "")
 }
 
-func ParseImageName(key string) (name, release string) {
+func ParseImageName(key string) (name, release, build string) {
 	baseName := strings.TrimSuffix(key, filepath.Ext(key))
 
 	dateMatch := dateRe.FindStringSubmatch(baseName)
@@ -43,6 +43,10 @@ func ParseImageName(key string) (name, release string) {
 		return
 	}
 	yearStr, monthStr := dateMatch[1], dateMatch[2]
+	build = yearStr + monthStr
+	if len(dateMatch) == 4 {
+		build += dateMatch[3]
+	}
 
 	base := strings.TrimSuffix(baseName, dateMatch[0])
 	tokens := strings.Split(base, "_")
