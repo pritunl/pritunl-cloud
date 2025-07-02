@@ -1,6 +1,7 @@
 package completion
 
 import (
+	"sort"
 	"time"
 
 	"github.com/pritunl/mongo-go-driver/bson"
@@ -97,6 +98,9 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 	if !orgId.IsZero() {
 		query["organization"] = orgId
 	}
+
+	releaseImages := map[string][]*image.Image{}
+	otherImages := []*image.Image{}
 
 	err = get(
 		db,
@@ -317,6 +321,8 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 		&bson.M{
 			"_id":          1,
 			"name":         1,
+			"release":      1,
+			"build":        1,
 			"organization": 1,
 			"deployment":   1,
 			"type":         1,
@@ -329,15 +335,45 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			return &image.Image{}
 		},
 		func(item interface{}) {
-			cmpl.Images = append(
-				cmpl.Images,
-				item.(*image.Image),
-			)
+			img := item.(*image.Image)
+			if img.Release != "" {
+				releaseImages[img.Release] = append(
+					releaseImages[img.Release],
+					img,
+				)
+			} else {
+				otherImages = append(otherImages, img)
+			}
 		},
 	)
 	if err != nil {
 		return
 	}
+
+	for _, imgs := range releaseImages {
+		tags := []string{"latest"}
+		var latestImg *image.Image
+
+		for _, img := range imgs {
+			tags = append(tags, img.Build)
+
+			if latestImg == nil {
+				latestImg = img
+			} else if img.Build > latestImg.Build {
+				latestImg = img
+			}
+		}
+
+		latestImg.Name = latestImg.Release
+		latestImg.Tags = tags
+		cmpl.Images = append(cmpl.Images, latestImg)
+	}
+	sort.Sort(image.ImagesSort(cmpl.Images))
+
+	cmpl.Images = append(
+		cmpl.Images,
+		otherImages...,
+	)
 
 	err = get(
 		db,
