@@ -204,6 +204,39 @@ func ExistsOrg(db *database.Database, orgId, imgId primitive.ObjectID) (
 	return
 }
 
+func GetAll(db *database.Database, query *bson.M) (
+	imgs []*Image, err error) {
+
+	coll := db.Images()
+	imgs = []*Image{}
+
+	cursor, err := coll.Find(db, query)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		img := &Image{}
+		err = cursor.Decode(img)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		imgs = append(imgs, img)
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetAllPaged(db *database.Database, query *bson.M, page, pageCount int64) (
 	imgs []*Image, count int64, err error) {
 
