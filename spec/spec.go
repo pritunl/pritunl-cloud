@@ -12,6 +12,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/finder"
@@ -774,8 +775,17 @@ func (s *Spec) Parse(db *database.Database) (
 	return
 }
 
-func (s *Spec) CanMigrate(db *database.Database, spc *Spec) (
+func (s *Spec) CanMigrate(db *database.Database,
+	deply *deployment.Deployment, spc *Spec) (
 	errData *errortypes.ErrorData, err error) {
+
+	var inst *instance.Instance
+	if !deply.Instance.IsZero() {
+		inst, err = instance.Get(db, deply.Instance)
+		if err != nil {
+			return
+		}
+	}
 
 	if !settings.System.NoMigrateRefresh {
 		errData, err = s.Parse(db)
@@ -827,7 +837,10 @@ func (s *Spec) CanMigrate(db *database.Database, spc *Spec) (
 		return
 	}
 
-	if s.Instance.Node != spc.Instance.Node {
+	if s.Instance.Node != spc.Instance.Node &&
+		!spc.Instance.Node.IsZero() &&
+		inst.Node != spc.Instance.Node {
+
 		errData = &errortypes.ErrorData{
 			Error:   "instance_node_coflict",
 			Message: "Cannot migrate to different instance node",
