@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"net/netip"
+	"sync"
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
@@ -27,6 +28,8 @@ type ServerNdp struct {
 	prefixAddr  netip.Addr
 	lifetime    time.Duration
 	delay       time.Duration
+	conn        *ndp.Conn
+	connLock    sync.Mutex
 }
 
 func (s *ServerNdp) Start() (err error) {
@@ -61,8 +64,16 @@ func (s *ServerNdp) Start() (err error) {
 		return
 	}
 
-	prefix, err := netip.ParsePrefix(
-		fmt.Sprintf("%s/%d", s.ClientIp, s.PrefixLen))
+	_, prefixNet, err := net.ParseCIDR(fmt.Sprintf(
+		"%s/%d", s.ClientIp, s.PrefixLen))
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "dhcps: Failed to parse client IP and prefix"),
+		}
+		return
+	}
+
+	prefix, err := netip.ParsePrefix(prefixNet.String())
 	if err != nil {
 		err = &errortypes.ParseError{
 			errors.Wrap(err, "dhcps: Failed to parse client addr and prefix"),
@@ -72,16 +83,12 @@ func (s *ServerNdp) Start() (err error) {
 
 	s.prefixAddr = prefix.Masked().Addr()
 
-	prefix.Addr()
-
 	for {
 		err = s.run()
 		if err != nil {
-			if s.Debug {
-				logrus.WithFields(logrus.Fields{
-					"error": err,
-				}).Error("dhcps: NDP server error")
-			}
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("dhcps: NDP server error")
 		}
 
 		time.Sleep(s.delay)
@@ -89,29 +96,45 @@ func (s *ServerNdp) Start() (err error) {
 }
 
 func (s *ServerNdp) run() (err error) {
+	s.connLock.Lock()
+	defer s.connLock.Unlock()
+
 	conn, _, err := ndp.Listen(s.iface, ndp.LinkLocal)
 	if err != nil {
 		err = &errortypes.NetworkError{
-			errors.Wrap(err, "dhcps: Failed to write NDP message"),
+			errors.Wrap(err, "dhcps: Failed to listen for NDP messages"),
 		}
 		return
 	}
-	defer func() {
-		_ = conn.Close()
-	}()
 
-	err = conn.SetDeadline(time.Now().Add(10 * time.Second))
+	err = conn.JoinGroup(netip.MustParseAddr("ff02::2"))
 	if err != nil {
 		err = &errortypes.NetworkError{
-			errors.Wrap(err, "dhcps: Failed to set deadline"),
+			errors.Wrap(err, "dhcps: Failed to join NDP group"),
 		}
 		return
 	}
 
+	s.conn = conn
+
+	err = s.sendAdvertise(netip.IPv6LinkLocalAllNodes())
+	if err != nil {
+		return
+	}
+
+	if s.conn != nil {
+		s.conn.Close()
+	}
+
+	return
+}
+
+func (s *ServerNdp) sendAdvertise(dst netip.Addr) (err error) {
 	opts := []ndp.Option{
 		&ndp.PrefixInformation{
 			Prefix:                         s.prefixAddr,
 			PrefixLength:                   uint8(s.PrefixLen),
+			OnLink:                         true,
 			AutonomousAddressConfiguration: false,
 			ValidLifetime:                  s.lifetime,
 			PreferredLifetime:              s.lifetime,
@@ -128,33 +151,103 @@ func (s *ServerNdp) run() (err error) {
 		})
 	}
 
+	if len(s.DnsServers) > 0 {
+		dnsAddrs := make([]netip.Addr, 0, len(s.DnsServers))
+		for _, dns := range s.DnsServers {
+			addr, err := netip.ParseAddr(dns)
+			if err == nil && addr.Is6() {
+				dnsAddrs = append(dnsAddrs, addr)
+			}
+		}
+		if len(dnsAddrs) > 0 {
+			opts = append(opts, &ndp.RecursiveDNSServer{
+				Lifetime: s.lifetime,
+				Servers:  dnsAddrs,
+			})
+		}
+	}
+
 	msgRa := &ndp.RouterAdvertisement{
 		CurrentHopLimit:           64,
 		RouterSelectionPreference: ndp.Medium,
-		RouterLifetime:            30 * time.Second,
+		RouterLifetime:            s.lifetime,
 		ManagedConfiguration:      true,
 		OtherConfiguration:        true,
 		Options:                   opts,
 	}
 
-	err = conn.JoinGroup(netip.MustParseAddr("ff02::2"))
-	if err != nil {
-		err = &errortypes.NetworkError{
-			errors.Wrap(err, "dhcps: Failed to join NDP group"),
-		}
-		return
-	}
-
 	if s.Debug {
-		fmt.Println("Send RA")
+		logrus.WithFields(logrus.Fields{
+			"gateway":         s.gatewayAddr.String(),
+			"prefix":          s.prefixAddr.String(),
+			"prefix_len":      s.PrefixLen,
+			"router_lifetime": s.lifetime,
+		}).Info("dhcps: Sending router advertisement")
 	}
 
-	err = conn.WriteTo(msgRa, nil, netip.IPv6LinkLocalAllNodes())
+	err = s.conn.WriteTo(msgRa, nil, dst)
 	if err != nil {
 		err = &errortypes.NetworkError{
 			errors.Wrap(err, "dhcps: Failed to write NDP message"),
 		}
 		return
+	}
+
+	return
+}
+
+func (s *ServerNdp) readSolicitations() (err error) {
+	s.connLock.Lock()
+	defer s.connLock.Unlock()
+
+	if s.Debug {
+		logrus.WithFields(logrus.Fields{
+			"gateway":         s.gatewayAddr.String(),
+			"prefix":          s.prefixAddr.String(),
+			"prefix_len":      s.PrefixLen,
+			"router_lifetime": s.lifetime,
+		}).Info("dhcps: Reading router solicitations")
+	}
+
+	if s.conn == nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "dhcps: Connection unavailable"),
+		}
+		return
+	}
+
+	err = s.conn.SetReadDeadline(time.Now().Add(200 * time.Millisecond))
+	if err != nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "dhcps: Failed to set deadline"),
+		}
+		return
+	}
+
+	msg, _, from, err := s.conn.ReadFrom()
+	if err != nil {
+		if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+			err = nil
+			return
+		}
+
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "dhcps: Failed to read NDP message"),
+		}
+		return
+	}
+
+	if _, ok := msg.(*ndp.RouterSolicitation); ok {
+		if s.Debug {
+			logrus.WithFields(logrus.Fields{
+				"from": from.String(),
+			}).Info("dhcps: Received Router Solicitation")
+		}
+
+		err = s.sendAdvertise(from)
+		if err != nil {
+			return
+		}
 	}
 
 	return
