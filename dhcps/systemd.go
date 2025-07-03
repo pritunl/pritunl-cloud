@@ -418,7 +418,7 @@ func Start(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			settings.Hypervisor.DnsServerSecondary,
 		},
 		Mtu:      mtu,
-		Lifetime: 60,
+		Lifetime: settings.Hypervisor.DhcpLifetime,
 	}
 	server6 := &Server6{
 		Iface:     settings.Hypervisor.BridgeIfaceName,
@@ -430,7 +430,7 @@ func Start(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			settings.Hypervisor.DnsServerSecondary6,
 		},
 		Mtu:      mtu,
-		Lifetime: 60,
+		Lifetime: settings.Hypervisor.DhcpLifetime,
 	}
 	serverNdp := &ServerNdp{
 		Iface:     settings.Hypervisor.BridgeIfaceName,
@@ -442,8 +442,8 @@ func Start(db *database.Database, virt *vm.VirtualMachine) (err error) {
 			settings.Hypervisor.DnsServerSecondary6,
 		},
 		Mtu:      mtu,
-		Lifetime: 60,
-		Delay:    3,
+		Lifetime: settings.Hypervisor.DhcpLifetime,
+		Delay:    settings.Hypervisor.NdpRaInterval,
 	}
 
 	err = UpdateEbtables(virt.Id, namespace)
