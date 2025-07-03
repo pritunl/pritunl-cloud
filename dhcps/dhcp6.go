@@ -26,6 +26,8 @@ type Server6 struct {
 	dnsServersIp []net.IP
 	server       *server6.Server
 	lifetime     time.Duration
+	prefix       *net.IPNet
+	clientAddr   net.IP
 }
 
 func (s *Server6) handler(conn net.PacketConn, peer net.Addr,
@@ -192,7 +194,7 @@ func (s *Server6) process(msg *dhcpv6.Message,
 	}
 
 	oiaAddr := &dhcpv6.OptIAAddress{
-		IPv6Addr:          net.ParseIP(s.ClientIp),
+		IPv6Addr:          s.clientAddr,
 		PreferredLifetime: s.lifetime,
 		ValidLifetime:     s.lifetime,
 	}
@@ -204,6 +206,29 @@ func (s *Server6) process(msg *dhcpv6.Message,
 	}
 
 	resp.AddOption(oia)
+
+	iapd := msg.Options.OneIAPD()
+	if iapd != nil {
+		respIapd := &dhcpv6.OptIAPD{
+			T1: s.lifetime / 2,
+			T2: time.Duration(float32(s.lifetime) / 1.5),
+		}
+		copy(respIapd.IaId[:], iapd.IaId[:])
+
+		prefixOpt := &dhcpv6.OptIAPrefix{
+			PreferredLifetime: s.lifetime,
+			ValidLifetime:     s.lifetime,
+			Prefix:            s.prefix,
+		}
+
+		respIapd.Options = dhcpv6.PDOptions{
+			Options: []dhcpv6.Option{
+				prefixOpt,
+			},
+		}
+
+		resp.AddOption(respIapd)
+	}
 
 	if msg.IsOptionRequested(dhcpv6.OptionDNSRecursiveNameServer) &&
 		s.dnsServersIp != nil {
@@ -246,7 +271,25 @@ func (s *Server6) Start() (err error) {
 		return
 	}
 
-	if s.DnsServers != nil && len(s.DnsServers) > 0 {
+	clientAddr, prefix, err := net.ParseCIDR(fmt.Sprintf(
+		"%s/%d", s.ClientIp, s.PrefixLen))
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "dhcps: Failed to parse client IP and prefix"),
+		}
+		return
+	}
+	s.clientAddr = clientAddr
+	s.prefix = prefix
+
+	if !s.prefix.Contains(s.clientAddr) {
+		err = &errortypes.ParseError{
+			errors.New("dhcps: Client IP not within prefix"),
+		}
+		return
+	}
+
+	if len(s.DnsServers) > 0 {
 		dnsServers := []net.IP{}
 		for _, dnsServer := range s.DnsServers {
 			dnsServers = append(dnsServers, net.ParseIP(dnsServer))
