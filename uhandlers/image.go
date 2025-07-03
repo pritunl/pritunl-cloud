@@ -280,7 +280,7 @@ func imagesGet(c *gin.Context) {
 			query["type"] = typ
 		}
 
-		images, count, err := image.GetAll(db, &query, page, pageCount)
+		images, count, err := image.GetAllPaged(db, &query, page, pageCount)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
 			return
