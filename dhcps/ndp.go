@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net"
 	"net/netip"
-	"sync"
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
@@ -28,8 +27,6 @@ type ServerNdp struct {
 	prefixAddr  netip.Addr
 	lifetime    time.Duration
 	delay       time.Duration
-	conn        *ndp.Conn
-	connLock    sync.Mutex
 }
 
 func (s *ServerNdp) Start() (err error) {
@@ -96,9 +93,6 @@ func (s *ServerNdp) Start() (err error) {
 }
 
 func (s *ServerNdp) run() (err error) {
-	s.connLock.Lock()
-	defer s.connLock.Unlock()
-
 	conn, _, err := ndp.Listen(s.iface, ndp.LinkLocal)
 	if err != nil {
 		err = &errortypes.NetworkError{
@@ -106,6 +100,7 @@ func (s *ServerNdp) run() (err error) {
 		}
 		return
 	}
+	defer conn.Close()
 
 	err = conn.JoinGroup(netip.MustParseAddr("ff02::2"))
 	if err != nil {
@@ -115,21 +110,15 @@ func (s *ServerNdp) run() (err error) {
 		return
 	}
 
-	s.conn = conn
-
-	err = s.sendAdvertise(netip.IPv6LinkLocalAllNodes())
+	err = s.sendAdvertise(conn, netip.IPv6LinkLocalAllNodes())
 	if err != nil {
 		return
-	}
-
-	if s.conn != nil {
-		s.conn.Close()
 	}
 
 	return
 }
 
-func (s *ServerNdp) sendAdvertise(dst netip.Addr) (err error) {
+func (s *ServerNdp) sendAdvertise(conn *ndp.Conn, dst netip.Addr) (err error) {
 	opts := []ndp.Option{
 		&ndp.PrefixInformation{
 			Prefix:                         s.prefixAddr,
@@ -185,7 +174,7 @@ func (s *ServerNdp) sendAdvertise(dst netip.Addr) (err error) {
 		}).Info("dhcps: Sending router advertisement")
 	}
 
-	err = s.conn.WriteTo(msgRa, nil, dst)
+	err = conn.WriteTo(msgRa, nil, dst)
 	if err != nil {
 		err = &errortypes.NetworkError{
 			errors.Wrap(err, "dhcps: Failed to write NDP message"),
@@ -196,10 +185,7 @@ func (s *ServerNdp) sendAdvertise(dst netip.Addr) (err error) {
 	return
 }
 
-func (s *ServerNdp) readSolicitations() (err error) {
-	s.connLock.Lock()
-	defer s.connLock.Unlock()
-
+func (s *ServerNdp) readSolicitations(conn *ndp.Conn) (err error) {
 	if s.Debug {
 		logrus.WithFields(logrus.Fields{
 			"gateway":         s.gatewayAddr.String(),
@@ -209,14 +195,7 @@ func (s *ServerNdp) readSolicitations() (err error) {
 		}).Info("dhcps: Reading router solicitations")
 	}
 
-	if s.conn == nil {
-		err = &errortypes.ReadError{
-			errors.Wrap(err, "dhcps: Connection unavailable"),
-		}
-		return
-	}
-
-	err = s.conn.SetReadDeadline(time.Now().Add(200 * time.Millisecond))
+	err = conn.SetReadDeadline(time.Now().Add(200 * time.Millisecond))
 	if err != nil {
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "dhcps: Failed to set deadline"),
@@ -224,7 +203,7 @@ func (s *ServerNdp) readSolicitations() (err error) {
 		return
 	}
 
-	msg, _, from, err := s.conn.ReadFrom()
+	msg, _, from, err := conn.ReadFrom()
 	if err != nil {
 		if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
 			err = nil
@@ -244,7 +223,7 @@ func (s *ServerNdp) readSolicitations() (err error) {
 			}).Info("dhcps: Received Router Solicitation")
 		}
 
-		err = s.sendAdvertise(from)
+		err = s.sendAdvertise(conn, from)
 		if err != nil {
 			return
 		}
