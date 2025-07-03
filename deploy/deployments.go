@@ -90,7 +90,7 @@ func (d *Deployments) migrate(deply *deployment.Deployment) {
 			return
 		}
 
-		errData, err := curSpec.CanMigrate(db, newSpec)
+		errData, err := curSpec.CanMigrate(db, deply, newSpec)
 		if err != nil || errData != nil {
 			logrus.WithFields(logrus.Fields{
 				"deployment_id": deply.Id.Hex(),
@@ -189,12 +189,12 @@ func (d *Deployments) migrate(deply *deployment.Deployment) {
 			inst.DhcpServer = newSpec.Instance.DhcpServer
 		}
 
-		if curSpec.Instance.Processors != newSpec.Instance.Processors ||
+		if curSpec.Instance.Shape != newSpec.Instance.Shape ||
+			curSpec.Instance.Processors != newSpec.Instance.Processors ||
 			curSpec.Instance.Memory != newSpec.Instance.Memory {
 
-			flexible := true
 			if !newSpec.Instance.Shape.IsZero() {
-				shp, e := shape.Get(db, newSpec.Instance.Shape)
+				shpe, e := shape.Get(db, newSpec.Instance.Shape)
 				if e != nil {
 					err = e
 
@@ -207,10 +207,22 @@ func (d *Deployments) migrate(deply *deployment.Deployment) {
 					return
 				}
 
-				flexible = shp.Flexible
-			}
+				if inst != nil {
+					inst.Processors = shpe.Processors
+					instFields.Add("processors")
+					inst.Memory = shpe.Memory
+					instFields.Add("memory")
 
-			if flexible && inst != nil {
+					if shpe.Flexible {
+						if newSpec.Instance.Processors != 0 {
+							inst.Processors = newSpec.Instance.Processors
+						}
+						if newSpec.Instance.Memory != 0 {
+							inst.Memory = newSpec.Instance.Memory
+						}
+					}
+				}
+			} else if inst != nil {
 				inst.Processors = newSpec.Instance.Processors
 				instFields.Add("processors")
 				inst.Memory = newSpec.Instance.Memory
