@@ -161,6 +161,8 @@ func GetEnv(username, driPath string, driPrime bool) (
 		}
 		if driPrime {
 			envData += "\nEnvironment=\"DRI_PRIME=1\""
+			envData += "\nEnvironment=\"__NV_PRIME_RENDER_OFFLOAD=1\""
+			envData += "\nEnvironment=\"__GLX_VENDOR_LIBRARY_NAME=nvidia\""
 		}
 
 		return
