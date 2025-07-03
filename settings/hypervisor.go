@@ -56,6 +56,8 @@ type hypervisor struct {
 	UsbSsPorts            int    `bson:"usb_ss_ports" default:"4"`
 	VirtioHid             bool   `bson:"virtio_hid"`
 	JournalDisplayLimit   int64  `bson:"journal_display_limit" default:"5000"`
+	DhcpLifetime          int    `bson:"dhcp_lifetime" default:"3600"`
+	NdpRaInterval         int    `bson:"ndp_ra_interval" default:"6"`
 	DnsServerPrimary      string `bson:"dns_server_primary" default:"8.8.8.8"`
 	DnsServerSecondary    string `bson:"dns_server_secondary" default:"8.8.4.4"`
 	DnsServerPrimary6     string `bson:"dns_server_primary6" default:"2001:4860:4860::8888"`
