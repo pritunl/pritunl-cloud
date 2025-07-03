@@ -848,14 +848,6 @@ func (s *Spec) CanMigrate(db *database.Database,
 		return
 	}
 
-	if s.Instance.Shape != spc.Instance.Shape {
-		errData = &errortypes.ErrorData{
-			Error:   "instance_shape_coflict",
-			Message: "Cannot migrate to different instance shape",
-		}
-		return
-	}
-
 	if s.Instance.Subnet != spc.Instance.Subnet {
 		errData = &errortypes.ErrorData{
 			Error:   "instance_subnet_coflict",
