@@ -15,22 +15,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/balancer"
 )
 
-var (
-	checkTransport = &http.Transport{
-		DisableKeepAlives:   true,
-		TLSHandshakeTimeout: 5 * time.Second,
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: true,
-			MinVersion:         tls.VersionTLS12,
-			MaxVersion:         tls.VersionTLS13,
-		},
-	}
-	checkClient = &http.Client{
-		Transport: checkTransport,
-		Timeout:   5 * time.Second,
-	}
-)
-
 type Domain struct {
 	Hash              []byte
 	Requests          *int32
@@ -287,7 +271,7 @@ func (d *Domain) ServeHTTPThird(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (d *Domain) checkHandler(hand *Handler) {
-	resp, err := checkClient.Get(hand.CheckUrl)
+	resp, err := hand.CheckClient.Get(hand.CheckUrl)
 	if err != nil || resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		if hand.State != Offline {
 			d.offlineHandler(hand)
