@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gorilla/websocket"
 	"github.com/pritunl/pritunl-cloud/balancer"
@@ -21,6 +20,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/sirupsen/logrus"
 )
 
 type Handler struct {
@@ -38,6 +38,7 @@ type Handler struct {
 	ForwardedProto     string
 	ForwardedPort      string
 	TlsConfig          *tls.Config
+	Dialer             *StaticDialer
 	WebSockets         bool
 	WebSocketsUpgrader *websocket.Upgrader
 	ErrorHandler       ErrorHandler
@@ -73,6 +74,7 @@ func (h *Handler) ServeWS(rw http.ResponseWriter, r *http.Request) {
 	var err error
 
 	dialer := &websocket.Dialer{
+		NetDialContext: h.Dialer.DialContext,
 		Proxy: func(req *http.Request) (url *url.URL, err error) {
 			if h.RequestHost != "" {
 				req.Host = h.RequestHost
@@ -220,6 +222,26 @@ func NewHandler(index, state int, proxyProto string, proxyPort int,
 		},
 	}
 
+	dialer := NewStaticDialer(&net.Dialer{
+		Timeout:   dialTimeout,
+		KeepAlive: dialKeepAlive,
+		DualStack: true,
+	})
+
+	checkClient := &http.Client{
+		Transport: &http.Transport{
+			DialContext:         dialer.DialContext,
+			DisableKeepAlives:   true,
+			TLSHandshakeTimeout: 5 * time.Second,
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+				MinVersion:         tls.VersionTLS12,
+				MaxVersion:         tls.VersionTLS13,
+			},
+		},
+		Timeout: 5 * time.Second,
+	}
+
 	hand = &Handler{
 		Key:            fmt.Sprintf("%s:%d", backend.Hostname, backend.Port),
 		Index:          index,
@@ -234,6 +256,7 @@ func NewHandler(index, state int, proxyProto string, proxyPort int,
 		ForwardedPort:  proxyPortStr,
 		WebSockets:     domain.Balancer.WebSockets,
 		TlsConfig:      tlsConfig,
+		Dialer:         dialer,
 		ErrorHandler:   errHandler,
 		ReverseProxy: &httputil.ReverseProxy{
 			Director: func(req *http.Request) {
@@ -250,12 +273,8 @@ func NewHandler(index, state int, proxyProto string, proxyPort int,
 			},
 			Transport: &TransportFix{
 				transport: &http.Transport{
-					Proxy: http.ProxyFromEnvironment,
-					DialContext: (&net.Dialer{
-						Timeout:   dialTimeout,
-						KeepAlive: dialKeepAlive,
-						DualStack: true,
-					}).DialContext,
+					Proxy:                 http.ProxyFromEnvironment,
+					DialContext:           dialer.DialContext,
 					MaxIdleConns:          maxIdleConns,
 					MaxIdleConnsPerHost:   maxIdleConnsPerHost,
 					IdleConnTimeout:       idleConnTimeout,
