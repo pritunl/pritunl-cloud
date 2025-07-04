@@ -29,6 +29,7 @@ type Handler struct {
 	State              int
 	Domain             *Domain
 	CheckUrl           string
+	CheckClient        *http.Client
 	LastState          time.Time
 	LastOnlineState    time.Time
 	BackendHost        string
@@ -248,6 +249,7 @@ func NewHandler(index, state int, proxyProto string, proxyPort int,
 		State:          state,
 		Domain:         domain,
 		CheckUrl:       checkUrl.String(),
+		CheckClient:    checkClient,
 		BackendHost:    backendHost,
 		BackendProto:   backendProto,
 		BackendProtoWs: backendProtoWs,
