@@ -186,7 +186,7 @@ func (u *Unit) MigrateDeployements(db *database.Database,
 			spcMap[oldSpc.Id] = oldSpc
 		}
 
-		errData, err = oldSpc.CanMigrate(db, newSpc)
+		errData, err = oldSpc.CanMigrate(db, deply, newSpc)
 		if err != nil || errData != nil {
 			return
 		}
