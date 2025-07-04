@@ -254,5 +254,47 @@ func zoneDatacenterUpgrade(db *database.Database) (err error) {
 		return database.ParseError(err)
 	}
 
+	coll = db.Disks()
+	cursor, err = coll.Find(
+		db,
+		bson.M{
+			"zone":       bson.M{"$exists": false},
+			"datacenter": bson.M{"$exists": false},
+		},
+	)
+	if err != nil {
+		return database.ParseError(err)
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		doc := &zoneUgradeDoc{}
+		err = cursor.Decode(doc)
+		if err != nil {
+			return database.ParseError(err)
+		}
+
+		nde, err := getNode(doc.Node)
+		if err != nil {
+			return err
+		}
+
+		_, err = coll.UpdateOne(
+			db,
+			bson.M{"_id": doc.Id},
+			bson.M{"$set": bson.M{
+				"datacenter": nde.Datacenter,
+				"zone":       nde.Zone,
+			}},
+		)
+		if err != nil {
+			return database.ParseError(err)
+		}
+	}
+	err = cursor.Err()
+	if err != nil {
+		return database.ParseError(err)
+	}
+
 	return nil
 }
