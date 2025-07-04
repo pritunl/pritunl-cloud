@@ -131,13 +131,6 @@ func nodePut(c *gin.Context) {
 				c.JSON(400, errData)
 				return
 			}
-		} else if typ == node.Balancer && !nodeTypes.Contains(typ) {
-			errData := &errortypes.ErrorData{
-				Error:   "load_balancer_disabled",
-				Message: "Load balancer not available, under development",
-			}
-			c.JSON(400, errData)
-			return
 		}
 	}
 
