@@ -2,6 +2,7 @@ package balancer
 
 import (
 	"fmt"
+	"net"
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
@@ -105,19 +106,22 @@ func (b *Balancer) Validate(db *database.Database) (
 			return
 		}
 
-		exists, e := instance.ExistsIp(db, backend.Hostname)
-		if e != nil {
-			err = e
-			return
-		}
-
-		if !exists {
-			errData = &errortypes.ErrorData{
-				Error: "balancer_hostname_not_found",
-				Message: fmt.Sprintf("Balancer hostname '%s' must "+
-					"match existing instance address", backend.Hostname),
+		ip := net.ParseIP(backend.Hostname)
+		if ip != nil {
+			exists, e := instance.ExistsIp(db, backend.Hostname)
+			if e != nil {
+				err = e
+				return
 			}
-			return
+
+			if !exists {
+				errData = &errortypes.ErrorData{
+					Error: "balancer_hostname_not_found",
+					Message: fmt.Sprintf("Balancer hostname '%s' must "+
+						"match existing instance address", backend.Hostname),
+				}
+				return
+			}
 		}
 	}
 
