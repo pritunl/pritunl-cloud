@@ -200,6 +200,7 @@ func NewHandler(index, state int, proxyProto string, proxyPort int,
 	tlsConfig := &tls.Config{
 		MinVersion: tls.VersionTLS12,
 		MaxVersion: tls.VersionTLS13,
+		ServerName: backend.Hostname,
 	}
 	if domain.SkipVerify || net.ParseIP(backend.Hostname) != nil {
 		tlsConfig.InsecureSkipVerify = true
