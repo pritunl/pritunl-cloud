@@ -7,6 +7,8 @@ import (
 )
 
 type zoneUgradeDoc struct {
+	Id         primitive.ObjectID `bson:"_id"`
+	Node       primitive.ObjectID `bson:"node"`
 	Datacenter primitive.ObjectID `bson:"datacenter"`
 	Zone       primitive.ObjectID `bson:"zone"`
 }
@@ -15,8 +17,11 @@ func zoneDatacenterUpgrade(db *database.Database) (err error) {
 	zoneColl := db.Zones()
 
 	zoneDatacenterMap := make(map[primitive.ObjectID]primitive.ObjectID)
+	nodeMap := make(map[primitive.ObjectID]*zoneUgradeDoc)
 
-	getDatacenterForZone := func(zoneID primitive.ObjectID) (primitive.ObjectID, error) {
+	getDatacenterForZone := func(zoneID primitive.ObjectID) (
+		primitive.ObjectID, error) {
+
 		if datacenterID, ok := zoneDatacenterMap[zoneID]; ok {
 			return datacenterID, nil
 		}
@@ -31,6 +36,27 @@ func zoneDatacenterUpgrade(db *database.Database) (err error) {
 
 		zoneDatacenterMap[zoneID] = zne.Datacenter
 		return zne.Datacenter, nil
+	}
+
+	getNode := func(nodeId primitive.ObjectID) (
+		*zoneUgradeDoc, error) {
+
+		if nde, ok := nodeMap[nodeId]; ok {
+			return nde, nil
+		}
+
+		coll := db.Nodes()
+
+		nde := &zoneUgradeDoc{}
+		err := coll.FindOne(db, bson.M{
+			"_id": nodeId,
+		}).Decode(nde)
+		if err != nil {
+			return nil, database.ParseError(err)
+		}
+
+		nodeMap[nodeId] = nde
+		return nde, nil
 	}
 
 	coll := db.Nodes()
@@ -60,7 +86,7 @@ func zoneDatacenterUpgrade(db *database.Database) (err error) {
 
 		_, err = coll.UpdateOne(
 			db,
-			bson.M{"_id": cursor.Current.Lookup("_id").ObjectID()},
+			bson.M{"_id": doc.Id},
 			bson.M{"$set": bson.M{"datacenter": datacenterID}},
 		)
 		if err != nil {
@@ -99,7 +125,7 @@ func zoneDatacenterUpgrade(db *database.Database) (err error) {
 
 		_, err = coll.UpdateOne(
 			db,
-			bson.M{"_id": cursor.Current.Lookup("_id").ObjectID()},
+			bson.M{"_id": doc.Id},
 			bson.M{"$set": bson.M{"datacenter": datacenterID}},
 		)
 		if err != nil {
@@ -138,7 +164,7 @@ func zoneDatacenterUpgrade(db *database.Database) (err error) {
 
 		_, err = coll.UpdateOne(
 			db,
-			bson.M{"_id": cursor.Current.Lookup("_id").ObjectID()},
+			bson.M{"_id": doc.Id},
 			bson.M{"$set": bson.M{"datacenter": datacenterID}},
 		)
 		if err != nil {
@@ -177,7 +203,7 @@ func zoneDatacenterUpgrade(db *database.Database) (err error) {
 
 		_, err = coll.UpdateOne(
 			db,
-			bson.M{"_id": cursor.Current.Lookup("_id").ObjectID()},
+			bson.M{"_id": doc.Id},
 			bson.M{"$set": bson.M{"datacenter": datacenterID}},
 		)
 		if err != nil {
@@ -216,7 +242,7 @@ func zoneDatacenterUpgrade(db *database.Database) (err error) {
 
 		_, err = coll.UpdateOne(
 			db,
-			bson.M{"_id": cursor.Current.Lookup("_id").ObjectID()},
+			bson.M{"_id": doc.Id},
 			bson.M{"$set": bson.M{"datacenter": datacenterID}},
 		)
 		if err != nil {
