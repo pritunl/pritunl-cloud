@@ -706,6 +706,29 @@ func (r *Router) watchNode() {
 	}
 }
 
+func (r *Router) refreshResolver() {
+	db := database.GetDatabase()
+	defer db.Close()
+
+	err := proxy.ResolverRefresh(db)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"error": err,
+		}).Error("proxy: Failed to load proxy state")
+	}
+}
+
+func (r *Router) watchResolver() {
+	for {
+		time.Sleep(time.Duration(
+			settings.Router.ProxyResolverRefresh) * time.Second)
+
+		if node.Self.IsBalancer() {
+			r.refreshResolver()
+		}
+	}
+}
+
 func (r *Router) updateState() (err error) {
 	db := database.GetDatabase()
 	defer db.Close()
@@ -763,6 +786,7 @@ func (r *Router) Run() (err error) {
 	r.nodeHash = r.hashNode()
 	go r.watchNode()
 	go r.watchState()
+	go r.watchResolver()
 
 	for {
 		if !node.Self.IsAdmin() && !node.Self.IsUser() &&
@@ -771,6 +795,8 @@ func (r *Router) Run() (err error) {
 			time.Sleep(500 * time.Millisecond)
 			continue
 		}
+
+		r.refreshResolver()
 
 		err = r.initServers()
 		if err != nil {
