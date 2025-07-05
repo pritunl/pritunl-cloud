@@ -8,7 +8,6 @@ import (
 	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/settings"
-	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -230,71 +229,6 @@ func PreloadedRecords(domns []*Domain, recs []*Record) []*Domain {
 	}
 
 	return domns
-}
-
-func GetAllPaged(db *database.Database, query *bson.M,
-	page, pageCount int64) (domns []*Domain, count int64, err error) {
-
-	coll := db.Domains()
-	domns = []*Domain{}
-
-	if len(*query) == 0 {
-		count, err = coll.EstimatedDocumentCount(db)
-		if err != nil {
-			err = database.ParseError(err)
-			return
-		}
-	} else {
-		count, err = coll.CountDocuments(db, query)
-		if err != nil {
-			err = database.ParseError(err)
-			return
-		}
-	}
-
-	maxPage := count / pageCount
-	if count == pageCount {
-		maxPage = 0
-	}
-	page = utils.Min64(page, maxPage)
-	skip := utils.Min64(page*pageCount, count)
-
-	cursor, err := coll.Find(
-		db,
-		query,
-		&options.FindOptions{
-			Sort: &bson.D{
-				{"name", 1},
-			},
-			Skip:  &skip,
-			Limit: &pageCount,
-		},
-	)
-	defer cursor.Close(db)
-
-	for cursor.Next(db) {
-		dmn := &Domain{}
-		err = cursor.Decode(dmn)
-		if err != nil {
-			err = database.ParseError(err)
-			return
-		}
-
-		err = dmn.LoadRecords(db, true)
-		if err != nil {
-			return
-		}
-
-		domns = append(domns, dmn)
-	}
-
-	err = cursor.Err()
-	if err != nil {
-		err = database.ParseError(err)
-		return
-	}
-
-	return
 }
 
 func GetAllName(db *database.Database, query *bson.M) (
