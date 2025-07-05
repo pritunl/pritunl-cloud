@@ -67,7 +67,11 @@ func ExistsIp(db *database.Database, addr string) (exists bool, err error) {
 		"$or": []bson.M{
 			{"public_ips": addr},
 			{"public_ips6": addr},
+			{"oracle_private_ips": addr},
+			{"oracle_public_ips": addr},
+			{"oracle_public_ips6": addr},
 			{"host_ips": addr},
+			{"node_port_ips": addr},
 		},
 	})
 	if err != nil {
