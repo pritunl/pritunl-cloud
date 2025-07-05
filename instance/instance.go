@@ -442,6 +442,20 @@ func (i *Instance) Validate(db *database.Database) (
 				}
 				return
 			}
+
+			available, e := usb.Available(db, i.Id, device)
+			if e != nil {
+				err = e
+				return
+			}
+
+			if !available {
+				errData = &errortypes.ErrorData{
+					Error:   "usb_device_unavailable",
+					Message: "USB device in use by another instance",
+				}
+				return
+			}
 		}
 	}
 
