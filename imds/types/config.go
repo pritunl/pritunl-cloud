@@ -5,6 +5,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
+// Cannot contain maps for encode order
 type Config struct {
 	Spec           primitive.ObjectID `json:"spec"`
 	SpecData       string             `json:"spec_data" gob:"-"`
