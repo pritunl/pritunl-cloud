@@ -19,6 +19,7 @@ type router struct {
 	ForceRedirectSystemd bool   `bson:"force_redirect_systemd"`
 	SkipVerify           bool   `bson:"skip_verify"`
 	ProxyResolverRefresh int    `bson:"proxy_resolver_refresh" default:"30"`
+	ProxyResolverTtl     int    `bson:"proxy_resolver_ttl" default:"30"`
 }
 
 func newRouter() interface{} {
