@@ -2,7 +2,6 @@ package proxy
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"sync"
 	"time"
@@ -146,14 +145,6 @@ func ResolverValidate(ip net.IP) bool {
 }
 
 func Resolve(hostname string) (remote net.IP, err error) {
-	defer func() {
-		if remote != nil {
-			fmt.Println(hostname, remote.String(), err)
-		} else {
-			fmt.Println(hostname, err)
-		}
-	}()
-
 	ResolverLock.RLock()
 	cached, ok := ResolverCache[hostname]
 	if ok {
