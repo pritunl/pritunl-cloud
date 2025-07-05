@@ -18,6 +18,7 @@ type router struct {
 	MaxHeaderBytes       int    `bson:"max_header_bytes" default:"4194304"`
 	ForceRedirectSystemd bool   `bson:"force_redirect_systemd"`
 	SkipVerify           bool   `bson:"skip_verify"`
+	ProxyResolverRefresh int    `bson:"proxy_resolver_refresh" default:"30"`
 }
 
 func newRouter() interface{} {
