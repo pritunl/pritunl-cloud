@@ -80,8 +80,58 @@ func GetSpecRules(instances []*instance.Instance,
 						continue
 					}
 
-					if ref.Selector == "" || ref.Selector == "private_ips" {
+					switch ref.Selector {
+					case "", "private_ips":
 						for _, ip := range instData.PrivateIps {
+							rule.SourceIps = append(
+								rule.SourceIps,
+								strings.Split(ip, "/")[0]+"/32",
+							)
+						}
+					case "private_ips6":
+						for _, ip := range instData.PrivateIps6 {
+							rule.SourceIps = append(
+								rule.SourceIps,
+								strings.Split(ip, "/")[0]+"/32",
+							)
+						}
+					case "public_ips":
+						for _, ip := range instData.PublicIps {
+							rule.SourceIps = append(
+								rule.SourceIps,
+								strings.Split(ip, "/")[0]+"/32",
+							)
+						}
+					case "public_ips6":
+						for _, ip := range instData.PublicIps6 {
+							rule.SourceIps = append(
+								rule.SourceIps,
+								strings.Split(ip, "/")[0]+"/32",
+							)
+						}
+					case "oracle_private_ips":
+						for _, ip := range instData.OraclePrivateIps {
+							rule.SourceIps = append(
+								rule.SourceIps,
+								strings.Split(ip, "/")[0]+"/32",
+							)
+						}
+					case "oracle_public_ips":
+						for _, ip := range instData.OraclePublicIps {
+							rule.SourceIps = append(
+								rule.SourceIps,
+								strings.Split(ip, "/")[0]+"/32",
+							)
+						}
+					case "oracle_public_ips6":
+						for _, ip := range instData.OraclePublicIps6 {
+							rule.SourceIps = append(
+								rule.SourceIps,
+								strings.Split(ip, "/")[0]+"/32",
+							)
+						}
+					case "host_ips":
+						for _, ip := range instData.HostIps {
 							rule.SourceIps = append(
 								rule.SourceIps,
 								strings.Split(ip, "/")[0]+"/32",
@@ -344,8 +394,58 @@ func GetSpecRulesSlow(db *database.Database,
 						continue
 					}
 
-					if ref.Selector == "" || ref.Selector == "private_ips" {
+					switch ref.Selector {
+					case "", "private_ips":
 						for _, ip := range instData.PrivateIps {
+							rule.SourceIps = append(
+								rule.SourceIps,
+								strings.Split(ip, "/")[0]+"/32",
+							)
+						}
+					case "private_ips6":
+						for _, ip := range instData.PrivateIps6 {
+							rule.SourceIps = append(
+								rule.SourceIps,
+								strings.Split(ip, "/")[0]+"/32",
+							)
+						}
+					case "public_ips":
+						for _, ip := range instData.PublicIps {
+							rule.SourceIps = append(
+								rule.SourceIps,
+								strings.Split(ip, "/")[0]+"/32",
+							)
+						}
+					case "public_ips6":
+						for _, ip := range instData.PublicIps6 {
+							rule.SourceIps = append(
+								rule.SourceIps,
+								strings.Split(ip, "/")[0]+"/32",
+							)
+						}
+					case "oracle_private_ips":
+						for _, ip := range instData.OraclePrivateIps {
+							rule.SourceIps = append(
+								rule.SourceIps,
+								strings.Split(ip, "/")[0]+"/32",
+							)
+						}
+					case "oracle_public_ips":
+						for _, ip := range instData.OraclePublicIps {
+							rule.SourceIps = append(
+								rule.SourceIps,
+								strings.Split(ip, "/")[0]+"/32",
+							)
+						}
+					case "oracle_public_ips6":
+						for _, ip := range instData.OraclePublicIps6 {
+							rule.SourceIps = append(
+								rule.SourceIps,
+								strings.Split(ip, "/")[0]+"/32",
+							)
+						}
+					case "host_ips":
+						for _, ip := range instData.HostIps {
 							rule.SourceIps = append(
 								rule.SourceIps,
 								strings.Split(ip, "/")[0]+"/32",
