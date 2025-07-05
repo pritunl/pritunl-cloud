@@ -25,6 +25,7 @@ After=network.target
 Type=simple
 User=%s
 ExecStart=swtpm socket --tpm2 --key pwdfile=%s,mode=aes-256-cbc,remove=true,kdf=pbkdf2 --tpmstate dir=%s --ctrl type=unixio,path=%s --log level=5
+TimeoutStopSec=5
 PrivateTmp=true
 ProtectHome=true
 ProtectSystem=full
