@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/pritunl-cloud/aggregate"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/domain"
@@ -28,8 +29,8 @@ type domainData struct {
 }
 
 type domainsData struct {
-	Domains []*domain.Domain `json:"domains"`
-	Count   int64            `json:"count"`
+	Domains []*aggregate.Domain `json:"domains"`
+	Count   int64               `json:"count"`
 }
 
 func domainPut(c *gin.Context) {
@@ -269,7 +270,8 @@ func domainsGet(c *gin.Context) {
 			}
 		}
 
-		domains, count, err := domain.GetAllPaged(db, &query, page, pageCount)
+		domains, count, err := aggregate.GetDomainPaged(
+			db, &query, page, pageCount)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
 			return
