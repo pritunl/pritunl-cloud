@@ -61,7 +61,6 @@ type Node struct {
 	Gui                     bool                 `bson:"gui" json:"gui"`
 	GuiUser                 string               `bson:"gui_user" json:"gui_user"`
 	GuiMode                 string               `bson:"gui_mode" json:"gui_mode"`
-	Certificate             primitive.ObjectID   `bson:"certificate" json:"certificate"`
 	Certificates            []primitive.ObjectID `bson:"certificates" json:"certificates"`
 	SelfCertificate         string               `bson:"self_certificate_key" json:"-"`
 	SelfCertificateKey      string               `bson:"self_certificate" json:"-"`
@@ -193,7 +192,6 @@ func (n *Node) Copy() *Node {
 		GuiUser:                 n.GuiUser,
 		GuiMode:                 n.GuiMode,
 		AvailableRenders:        n.AvailableRenders,
-		Certificate:             n.Certificate,
 		Certificates:            n.Certificates,
 		SelfCertificate:         n.SelfCertificate,
 		SelfCertificateKey:      n.SelfCertificateKey,
