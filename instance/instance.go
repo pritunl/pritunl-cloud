@@ -194,6 +194,7 @@ func (i *Instance) Validate(db *database.Database) (
 
 	if i.Action != Start {
 		i.Restart = false
+		i.RestartReason = ""
 		i.RestartBlockIp = false
 	}
 
