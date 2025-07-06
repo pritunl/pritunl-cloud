@@ -23,8 +23,10 @@ var (
 )
 
 func initIfaces(stat *state.State, internaIfaces []string) (err error) {
+	ifaces := set.NewSet()
 	newCurIfaces := set.NewSet()
 	for _, iface := range stat.Interfaces() {
+		ifaces.Add(iface)
 		if len(iface) == 14 && (strings.HasPrefix(iface, "k") ||
 			strings.HasPrefix(iface, "b")) {
 
@@ -100,29 +102,32 @@ func initIfaces(stat *state.State, internaIfaces []string) (err error) {
 				return
 			}
 		} else if strings.HasPrefix(iface, "b") {
-			// parentIface := parentBrIfaces[iface]
-			// if parentIface == "" {
-			// 	continue
-			// }
+			parentIface := parentBrIfaces[iface]
+			if parentIface == "" {
+				continue
+			}
 
-			// _, err = utils.ExecCombinedOutputLogged(
-			// 	nil,
-			// 	"ip", "link", "set",
-			// 	vm.GetHostVxlanIface(parentIface), "master", iface,
-			// )
-			// if err != nil {
-			// 	return
-			// }
+			vxIface := vm.GetHostVxlanIface(parentIface)
+			if ifaces.Contains(vxIface) {
+				_, err = utils.ExecCombinedOutputLogged(
+					nil,
+					"ip", "link", "set",
+					vxIface, "master", iface,
+				)
+				if err != nil {
+					return
+				}
+			}
 
-			// _, err = utils.ExecCombinedOutputLogged(
-			// 	nil,
-			// 	"ip", "link",
-			// 	"set", "dev",
-			// 	iface, "up",
-			// )
-			// if err != nil {
-			// 	return
-			// }
+			_, err = utils.ExecCombinedOutputLogged(
+				nil,
+				"ip", "link",
+				"set", "dev",
+				iface, "up",
+			)
+			if err != nil {
+				return
+			}
 		}
 	}
 
