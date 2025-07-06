@@ -164,6 +164,25 @@ func (n *NetConf) spaceForward(db *database.Database) (err error) {
 		}
 	}
 
+	if n.NodePortNetwork {
+		iptables.Lock()
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", n.Namespace,
+			"iptables",
+			"-I", "FORWARD", "1",
+			"!", "-d", n.InternalAddr.String()+"/32",
+			"-i", n.SpaceNodePortIface,
+			"-m", "comment",
+			"--comment", "pritunl_cloud_base",
+			"-j", "DROP",
+		)
+		iptables.Unlock()
+		if err != nil {
+			return
+		}
+	}
+
 	_, err = utils.ExecCombinedOutputLogged(
 		nil,
 		"ip", "netns", "exec", n.Namespace,
