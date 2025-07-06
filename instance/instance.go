@@ -704,7 +704,6 @@ func (i *Instance) InitVncDisplay(db *database.Database) (err error) {
 }
 
 func (i *Instance) Format() {
-	// TODO Sort VPC IDs
 }
 
 func (i *Instance) Json(short bool) {
