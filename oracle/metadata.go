@@ -3,10 +3,15 @@ package oracle
 import (
 	"encoding/json"
 	"strings"
+	"sync"
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/utils"
+)
+
+var (
+	ociLock sync.Mutex
 )
 
 type Metadata struct {
@@ -101,6 +106,9 @@ func GetMetadata(authPv AuthProvider) (mdata *Metadata, err error) {
 }
 
 func GetOciMetadata() (mdata *OciMeta, err error) {
+	ociLock.Lock()
+	defer ociLock.Unlock()
+
 	output, err := utils.ExecOutput("", "oci-metadata", "--json")
 	if err != nil {
 		return
