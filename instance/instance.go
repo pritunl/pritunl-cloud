@@ -1321,125 +1321,159 @@ func (i *Instance) Changed(curVirt *vm.VirtualMachine) bool {
 		cloudType = Linux
 	}
 
-	if i.Virt.Memory != curVirt.Memory ||
-		i.Virt.Hugepages != curVirt.Hugepages ||
-		i.Virt.Processors != curVirt.Processors ||
-		i.Virt.Vnc != curVirt.Vnc ||
-		i.Virt.VncDisplay != curVirt.VncDisplay ||
-		i.Virt.Spice != curVirt.Spice ||
-		i.Virt.SpicePort != curVirt.SpicePort ||
-		i.Virt.Gui != curVirt.Gui ||
-		i.Virt.Uefi != curVirt.Uefi ||
-		i.Virt.SecureBoot != curVirt.SecureBoot ||
-		i.Virt.Tpm != curVirt.Tpm ||
-		i.Virt.DhcpServer != curVirt.DhcpServer ||
-		cloudType != curCloudType ||
-		i.Virt.NoPublicAddress != curVirt.NoPublicAddress ||
-		i.Virt.NoPublicAddress6 != curVirt.NoPublicAddress6 ||
-		i.Virt.NoHostAddress != curVirt.NoHostAddress {
-
-		return true
+	if i.Virt.Memory != curVirt.Memory {
+		return true, "Memory size changed"
+	}
+	if i.Virt.Hugepages != curVirt.Hugepages {
+		return true, "Hugepages changed"
+	}
+	if i.Virt.Processors != curVirt.Processors {
+		return true, "Processor count changed"
+	}
+	if i.Virt.Vnc != curVirt.Vnc {
+		return true, "VNC changed"
+	}
+	if i.Virt.VncDisplay != curVirt.VncDisplay {
+		return true, "VNC display changed"
+	}
+	if i.Virt.Spice != curVirt.Spice {
+		return true, "SPICE changed"
+	}
+	if i.Virt.SpicePort != curVirt.SpicePort {
+		return true, "SPICE port changed"
+	}
+	if i.Virt.Gui != curVirt.Gui {
+		return true, "GUI changed"
+	}
+	if i.Virt.Uefi != curVirt.Uefi {
+		return true, "UEFI changed"
+	}
+	if i.Virt.SecureBoot != curVirt.SecureBoot {
+		return true, "Secure boot changed"
+	}
+	if i.Virt.Tpm != curVirt.Tpm {
+		return true, "TPM changed"
+	}
+	if i.Virt.DhcpServer != curVirt.DhcpServer {
+		return true, "DHCP server changed"
+	}
+	if cloudType != curCloudType {
+		return true, "Cloud type changed"
+	}
+	if i.Virt.NoPublicAddress != curVirt.NoPublicAddress {
+		return true, "Public address changed"
+	}
+	if i.Virt.NoPublicAddress6 != curVirt.NoPublicAddress6 {
+		return true, "Public IPv6 changed"
+	}
+	if i.Virt.NoHostAddress != curVirt.NoHostAddress {
+		return true, "Host address changed"
 	}
 
 	for i, adapter := range i.Virt.NetworkAdapters {
 		if len(curVirt.NetworkAdapters) <= i {
-			return true
+			return true, "Network adapters changed"
 		}
 
 		if adapter.Vpc != curVirt.NetworkAdapters[i].Vpc {
-			return true
+			return true, "VPC changed"
 		}
 
 		if adapter.Subnet != curVirt.NetworkAdapters[i].Subnet {
-			return true
+			return true, "Subnet changed"
 		}
 	}
 
 	if i.Virt.Isos != nil {
 		if len(i.Virt.Isos) > 0 && curVirt.Isos == nil {
-			return true
+			return true, "ISO devices changed"
 		}
 
 		for i, device := range i.Virt.Isos {
 			if len(curVirt.Isos) <= i {
-				return true
+				return true, "ISO devices changed"
 			}
 
 			if device.Name != curVirt.Isos[i].Name {
-				return true
+				return true, "ISO device changed"
 			}
 		}
 	}
 
 	if i.Virt.PciDevices != nil {
 		if len(i.Virt.PciDevices) > 0 && curVirt.PciDevices == nil {
-			return true
+			return true, "PCI devices changed"
 		}
 
 		for i, device := range i.Virt.PciDevices {
 			if len(curVirt.PciDevices) <= i {
-				return true
+				return true, "PCI devices changed"
 			}
 
 			if device.Slot != curVirt.PciDevices[i].Slot {
-				return true
+				return true, "PCI device slot changed"
 			}
 		}
 	}
 
 	if i.Virt.DriveDevices != nil {
 		if len(i.Virt.DriveDevices) > 0 && curVirt.DriveDevices == nil {
-			return true
+			return true, "Drive devices changed"
 		}
 
 		for i, device := range i.Virt.DriveDevices {
 			if len(curVirt.DriveDevices) <= i {
-				return true
+				return true, "Drive devices changed"
 			}
 
 			if device.Id != curVirt.DriveDevices[i].Id {
-				return true
+				return true, "Drive device changed"
 			}
 		}
 	}
 
 	if i.Virt.IscsiDevices != nil {
 		if len(i.Virt.IscsiDevices) > 0 && curVirt.IscsiDevices == nil {
-			return true
+			return true, "iSCSI devices changed"
 		}
 
 		for i, device := range i.Virt.IscsiDevices {
 			if len(curVirt.IscsiDevices) <= i {
-				return true
+				return true, "iSCSI devices changed"
 			}
 
 			if device.Uri != curVirt.IscsiDevices[i].Uri {
-				return true
+				return true, "iSCSI URI changed"
 			}
 		}
 	}
 
 	if i.Virt.Mounts != nil {
 		if len(i.Virt.Mounts) > 0 && curVirt.Mounts == nil {
-			return true
+			return true, "Mounts changed"
 		}
 
 		for i, mount := range i.Virt.Mounts {
 			if len(curVirt.Mounts) <= i {
-				return true
+				return true, "Mounts changed"
 			}
 
-			if mount.Name != curVirt.Mounts[i].Name ||
-				mount.Type != curVirt.Mounts[i].Type ||
-				mount.Path != curVirt.Mounts[i].Path ||
-				mount.HostPath != curVirt.Mounts[i].HostPath {
-
-				return true
+			if mount.Name != curVirt.Mounts[i].Name {
+				return true, "Mount name changed"
+			}
+			if mount.Type != curVirt.Mounts[i].Type {
+				return true, "Mount type changed"
+			}
+			if mount.Path != curVirt.Mounts[i].Path {
+				return true, "Mount path changed"
+			}
+			if mount.HostPath != curVirt.Mounts[i].HostPath {
+				return true, "Mount host path changed"
 			}
 		}
 	}
 
-	return false
+	return false, ""
 }
 
 func (i *Instance) DiskChanged(curVirt *vm.VirtualMachine) (
