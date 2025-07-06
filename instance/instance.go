@@ -443,7 +443,7 @@ func (i *Instance) Validate(db *database.Database) (
 				return
 			}
 
-			available, e := usb.Available(db, i.Id, device)
+			available, e := usb.Available(db, i.Id, i.Node, device)
 			if e != nil {
 				err = e
 				return
