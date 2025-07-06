@@ -1312,7 +1312,7 @@ func (i *Instance) LoadVirt(poolsMap map[primitive.ObjectID]*pool.Pool,
 	return
 }
 
-func (i *Instance) Changed(curVirt *vm.VirtualMachine) bool {
+func (i *Instance) Changed(curVirt *vm.VirtualMachine) (bool, string) {
 	curCloudType := curVirt.CloudType
 	if curCloudType == "" {
 		curCloudType = Linux
