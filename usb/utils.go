@@ -13,12 +13,14 @@ var (
 	reg = regexp.MustCompile("[^a-z0-9]+")
 )
 
-func Available(db *database.Database, instId primitive.ObjectID,
+func Available(db *database.Database, instId, nodeId primitive.ObjectID,
 	device *Device) (available bool, err error) {
 
 	coll := db.Instances()
 
-	query := bson.M{}
+	query := bson.M{
+		"node": nodeId,
+	}
 
 	if !instId.IsZero() {
 		query["_id"] = &bson.M{
