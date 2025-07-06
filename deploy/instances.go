@@ -579,7 +579,7 @@ func (s *Instances) diff(db *database.Database,
 		return
 	}
 
-	changed := inst.Changed(curVirt)
+	changed, reason := inst.Changed(curVirt)
 	addDisks, remDisks := inst.DiskChanged(curVirt)
 	addUsbs, remUsbs := inst.UsbChanged(curVirt)
 
@@ -589,13 +589,15 @@ func (s *Instances) diff(db *database.Database,
 
 	if changed && !inst.Restart {
 		inst.Restart = true
-		err = inst.CommitFields(db, set.NewSet("restart"))
+		inst.RestartReason = reason
+		err = inst.CommitFields(db, set.NewSet("restart", "restart_reason"))
 		if err != nil {
 			return
 		}
 	} else if !changed && inst.Restart {
 		inst.Restart = false
-		err = inst.CommitFields(db, set.NewSet("restart"))
+		inst.RestartReason = ""
+		err = inst.CommitFields(db, set.NewSet("restart", "restart_reason"))
 		if err != nil {
 			return
 		}
