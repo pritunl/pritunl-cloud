@@ -63,6 +63,7 @@ type Instance struct {
 	PublicMac           string              `bson:"-" json:"public_mac"`
 	VirtTimestamp       time.Time           `bson:"virt_timestamp" json:"virt_timestamp"`
 	Restart             bool                `bson:"restart" json:"restart"`
+	RestartReason       string              `bson:"restart_reason" json:"restart_reason"`
 	RestartBlockIp      bool                `bson:"restart_block_ip" json:"restart_block_ip"`
 	Uefi                bool                `bson:"uefi" json:"uefi"`
 	SecureBoot          bool                `bson:"secure_boot" json:"secure_boot"`
