@@ -713,6 +713,9 @@ func (i *Instance) Json(short bool) {
 	case Start:
 		if i.Restart || i.RestartBlockIp {
 			i.Status = "Restart Required"
+			if i.RestartReason != "" {
+				i.Status += fmt.Sprintf(" (%s)", i.RestartReason)
+			}
 		} else {
 			switch i.State {
 			case vm.Starting:
