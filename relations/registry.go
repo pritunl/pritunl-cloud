@@ -33,6 +33,25 @@ func Aggregate(db *database.Database, kind string, id primitive.ObjectID) (
 	return
 }
 
+func AggregatOrg(db *database.Database, kind string, id primitive.ObjectID,
+	orgId primitive.ObjectID) (resp *Response, err error) {
+
+	definition, ok := registry[kind]
+	if !ok {
+		return
+	}
+
+	definition.Id = id
+	definition.Organization = orgId
+
+	resp, err = definition.Aggregate(db)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func blockDelete(resources []Resource) string {
 	for _, resource := range resources {
 		if resource.BlockDelete {
