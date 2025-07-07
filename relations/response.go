@@ -19,10 +19,11 @@ type Related struct {
 }
 
 type Resource struct {
-	Id        any
-	Type      string
-	Fields    []Field
-	Relations []Related
+	Id          any
+	Type        string
+	Fields      []Field
+	Relations   []Related
+	BlockDelete bool
 }
 
 type Field struct {
