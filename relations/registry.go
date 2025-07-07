@@ -105,3 +105,42 @@ func CanDelete(db *database.Database, kind string, id primitive.ObjectID) (
 
 	return
 }
+
+func CanDeleteOrg(db *database.Database, kind string,
+	id, orgId primitive.ObjectID) (errData *errortypes.ErrorData, err error) {
+
+	definition, ok := registry[kind]
+	if !ok {
+		return
+	}
+
+	definition.Id = id
+	definition.Organization = orgId
+
+	resp, err := definition.Aggregate(db)
+	if err != nil {
+		return
+	}
+
+	labels := []string{}
+	for _, related := range resp.Relations {
+		label := blockDelete(related.Resources)
+		if label != "" {
+			labels = append(labels, label)
+		}
+	}
+
+	if len(labels) > 0 {
+		errData = &errortypes.ErrorData{
+			Error: "related_resources_exist",
+			Message: fmt.Sprintf(
+				"Related [%s] resources must be deleted first. "+
+					"Check resource overview",
+				strings.Join(labels, ", "),
+			),
+		}
+		return
+	}
+
+	return
+}
