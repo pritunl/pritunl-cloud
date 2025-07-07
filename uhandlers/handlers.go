@@ -148,6 +148,8 @@ func Register(engine *gin.Engine) {
 
 	csrfGroup.GET("/pool", poolsGet)
 
+	orgGroup.GET("/relations/:kind/:id", relationsGet)
+
 	orgGroup.GET("/secret", secretsGet)
 	orgGroup.GET("/secret/:secr_id", secretGet)
 	orgGroup.PUT("/secret/:secr_id", secretPut)
