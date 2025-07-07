@@ -33,7 +33,7 @@ func Aggregate(db *database.Database, kind string, id primitive.ObjectID) (
 	return
 }
 
-func AggregatOrg(db *database.Database, kind string,
+func AggregateOrg(db *database.Database, kind string,
 	orgId, id primitive.ObjectID) (resp *Response, err error) {
 
 	definition, ok := registry[kind]
