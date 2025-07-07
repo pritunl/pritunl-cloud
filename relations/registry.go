@@ -34,7 +34,7 @@ func Aggregate(db *database.Database, kind string, id primitive.ObjectID) (
 }
 
 func AggregatOrg(db *database.Database, kind string,
-	id, orgId primitive.ObjectID) (resp *Response, err error) {
+	orgId, id primitive.ObjectID) (resp *Response, err error) {
 
 	definition, ok := registry[kind]
 	if !ok {
@@ -107,7 +107,7 @@ func CanDelete(db *database.Database, kind string, id primitive.ObjectID) (
 }
 
 func CanDeleteOrg(db *database.Database, kind string,
-	id, orgId primitive.ObjectID) (errData *errortypes.ErrorData, err error) {
+	orgId, id primitive.ObjectID) (errData *errortypes.ErrorData, err error) {
 
 	definition, ok := registry[kind]
 	if !ok {
