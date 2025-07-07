@@ -163,10 +163,11 @@ func (r *Query) convertToRelated(relation Relation,
 		}
 
 		resource := Resource{
-			Id:        doc["_id"],
-			Type:      relation.Label,
-			Fields:    []Field{},
-			Relations: []Related{},
+			Id:          doc["_id"],
+			Type:        relation.Label,
+			Fields:      []Field{},
+			Relations:   []Related{},
+			BlockDelete: relation.BlockDelete,
 		}
 
 		for _, proj := range relation.Project {
