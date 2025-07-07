@@ -237,11 +237,16 @@ func (r *Query) Aggregate(db *database.Database) (
 
 	coll := db.GetCollection(r.Collection)
 
+	query := bson.M{
+		"_id": r.Id,
+	}
+	if !r.Organization.IsZero() {
+		query["organization"] = r.Organization
+	}
+
 	pipeline := []bson.M{
 		{
-			"$match": bson.M{
-				"_id": r.Id,
-			},
+			"$match": query,
 		},
 	}
 
