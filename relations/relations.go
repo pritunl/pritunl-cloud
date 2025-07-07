@@ -8,11 +8,12 @@ import (
 )
 
 type Query struct {
-	Id         any
-	Label      string
-	Collection string
-	Project    []Project
-	Relations  []Relation
+	Id           any
+	Organization primitive.ObjectID
+	Label        string
+	Collection   string
+	Project      []Project
+	Relations    []Relation
 }
 
 type Relation struct {
