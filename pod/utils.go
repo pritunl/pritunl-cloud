@@ -7,6 +7,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/mongo-go-driver/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/unit"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -202,6 +203,13 @@ func UpdateDraftsOrg(db *database.Database, orgId, podId, usrId primitive.Object
 func Remove(db *database.Database, podId primitive.ObjectID) (err error) {
 	coll := db.Pods()
 
+	err = unit.RemoveAll(db, &bson.M{
+		"pod": podId,
+	})
+	if err != nil {
+		return
+	}
+
 	_, err = coll.DeleteOne(db, &bson.M{
 		"_id":               podId,
 		"delete_protection": false,
@@ -224,9 +232,18 @@ func RemoveOrg(db *database.Database, orgId, podId primitive.ObjectID) (
 
 	coll := db.Pods()
 
-	_, err = coll.DeleteOne(db, &bson.M{
-		"_id":          podId,
+	err = unit.RemoveAll(db, &bson.M{
+		"pod":          podId,
 		"organization": orgId,
+	})
+	if err != nil {
+		return
+	}
+
+	_, err = coll.DeleteOne(db, &bson.M{
+		"_id":               podId,
+		"organization":      orgId,
+		"delete_protection": false,
 	})
 	if err != nil {
 		err = database.ParseError(err)
@@ -246,6 +263,15 @@ func RemoveMulti(db *database.Database, podIds []primitive.ObjectID) (
 
 	coll := db.Pods()
 
+	err = unit.RemoveAll(db, &bson.M{
+		"pod": &bson.M{
+			"$in": podIds,
+		},
+	})
+	if err != nil {
+		return
+	}
+
 	_, err = coll.DeleteMany(db, &bson.M{
 		"_id": &bson.M{
 			"$in": podIds,
@@ -264,6 +290,16 @@ func RemoveMultiOrg(db *database.Database, orgId primitive.ObjectID,
 	podIds []primitive.ObjectID) (err error) {
 
 	coll := db.Pods()
+
+	err = unit.RemoveAll(db, &bson.M{
+		"pod": &bson.M{
+			"$in": podIds,
+		},
+		"organization": orgId,
+	})
+	if err != nil {
+		return
+	}
 
 	_, err = coll.DeleteMany(db, &bson.M{
 		"_id": &bson.M{
