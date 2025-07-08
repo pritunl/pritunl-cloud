@@ -23,7 +23,6 @@ var Pod = relations.Query{
 		From:         "units",
 		LocalField:   "_id",
 		ForeignField: "pod",
-		BlockDelete:  true,
 		Sort: map[string]int{
 			"name": 1,
 		},
@@ -43,6 +42,7 @@ var Pod = relations.Query{
 			From:         "deployments",
 			LocalField:   "_id",
 			ForeignField: "unit",
+			BlockDelete:  true,
 			Sort: map[string]int{
 				"name": 1,
 			},
@@ -68,6 +68,7 @@ var Pod = relations.Query{
 				From:         "instances",
 				LocalField:   "_id",
 				ForeignField: "deployment",
+				BlockDelete:  true,
 				Sort: map[string]int{
 					"name": 1,
 				},
