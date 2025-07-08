@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -ev
 NAME="alpinelinux"
 ISO_URL="https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/x86_64/alpine-virt-3.22.0-x86_64.iso"
 ISO_HASH="c935c3715c80ca416e2ce912c552f0cbfd8531219b7973ae4a600873c793eb1b"
