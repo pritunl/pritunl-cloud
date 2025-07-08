@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -ev
 NAME="almalinux10"
 ISO_URL="https://den.aws.repo.almalinux.org/10.0/isos/x86_64/AlmaLinux-10.0-x86_64-dvd.iso"
 ISO_HASH="6c443f462b3993d15192a7c43ba8dfa3f232514db47d38796dab007a7455ae1a"
