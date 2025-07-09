@@ -76,7 +76,21 @@ var Zone = relations.Query{
 			Label: "Status",
 		}, {
 			Key:   "timestamp",
-			Label: "Timestamp",
+			Label: "Age",
+			Format: func(vals ...any) any {
+				val := vals[0]
+
+				if mongoTime, ok := val.(primitive.DateTime); ok {
+					valTime := mongoTime.Time()
+					return systemd.FormatUptimeShort(valTime)
+				}
+
+				if goTime, ok := val.(time.Time); ok {
+					return systemd.FormatUptimeShort(goTime)
+				}
+
+				return "-"
+			},
 		}},
 	}, {
 		Key:          "instances",
