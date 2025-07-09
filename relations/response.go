@@ -7,10 +7,11 @@ import (
 )
 
 type Response struct {
-	Id        any
-	Label     string
-	Fields    []Field
-	Relations []Related
+	Id               any
+	Label            string
+	Fields           []Field
+	Relations        []Related
+	DeleteProtection bool
 }
 
 type Related struct {
