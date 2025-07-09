@@ -91,6 +91,11 @@ func (r *Query) convertToResponse(doc bson.M) *Response {
 		Relations: []Related{},
 	}
 
+	deleteProtection, _ := doc["delete_protection"].(bool)
+	if deleteProtection {
+		response.DeleteProtection = true
+	}
+
 	for _, proj := range r.Project {
 		if proj.Label == "" {
 			continue
@@ -251,7 +256,7 @@ func (r *Query) Aggregate(db *database.Database) (
 	}
 
 	if len(r.Project) > 0 {
-		projection := bson.M{"_id": 1}
+		projection := bson.M{"_id": 1, "delete_protection": 1}
 		for _, proj := range r.Project {
 			if len(proj.Keys) > 0 {
 				for _, key := range proj.Keys {
