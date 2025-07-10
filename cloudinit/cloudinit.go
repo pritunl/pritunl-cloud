@@ -29,6 +29,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
+	"github.com/pritunl/pritunl-cloud/zone"
 )
 
 const metaDataTmpl = `instance-id: %s
@@ -625,6 +626,11 @@ func getNetData(db *database.Database, inst *instance.Instance,
 		return
 	}
 
+	zne, err := zone.Get(db, node.Self.Zone)
+	if err != nil {
+		return
+	}
+
 	vc, err := vpc.Get(db, adapter.Vpc)
 	if err != nil {
 		return
@@ -648,11 +654,11 @@ func getNetData(db *database.Database, inst *instance.Instance,
 	dns1 := ""
 	dns2 := ""
 	if inst.IsIpv6Only() {
-		dns1 = utils.FilterIp(settings.Hypervisor.DnsServerPrimary6)
-		dns2 = utils.FilterIp(settings.Hypervisor.DnsServerSecondary6)
+		dns1 = utils.FilterIp(zne.GetDnsServerPrimary6())
+		dns2 = utils.FilterIp(zne.GetDnsServerSecondary6())
 	} else {
-		dns1 = utils.FilterIp(settings.Hypervisor.DnsServerPrimary)
-		dns2 = utils.FilterIp(settings.Hypervisor.DnsServerSecondary)
+		dns1 = utils.FilterIp(zne.GetDnsServerPrimary())
+		dns2 = utils.FilterIp(zne.GetDnsServerSecondary())
 	}
 
 	data := netConfigData{
