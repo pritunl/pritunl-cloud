@@ -19,6 +19,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
+	"github.com/pritunl/pritunl-cloud/zone"
 	"github.com/sirupsen/logrus"
 )
 
@@ -378,6 +379,11 @@ func Start(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
+	zne, err := zone.Get(db, node.Self.Zone)
+	if err != nil {
+		return
+	}
+
 	if virt.NetworkAdapters == nil || len(virt.NetworkAdapters) < 1 {
 		err = &errortypes.ParseError{
 			errors.New("dhcps: Missing virt network adapter"),
@@ -414,8 +420,8 @@ func Start(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		GatewayIp: gatewayAddr.String(),
 		PrefixLen: cidr,
 		DnsServers: []string{
-			settings.Hypervisor.DnsServerPrimary,
-			settings.Hypervisor.DnsServerSecondary,
+			zne.GetDnsServerPrimary(),
+			zne.GetDnsServerSecondary(),
 		},
 		Mtu:      mtu,
 		Lifetime: settings.Hypervisor.DhcpLifetime,
@@ -426,8 +432,8 @@ func Start(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		GatewayIp: gatewayAddr6.String(),
 		PrefixLen: 64,
 		DnsServers: []string{
-			settings.Hypervisor.DnsServerPrimary6,
-			settings.Hypervisor.DnsServerSecondary6,
+			zne.GetDnsServerPrimary6(),
+			zne.GetDnsServerSecondary6(),
 		},
 		Mtu:      mtu,
 		Lifetime: settings.Hypervisor.DhcpLifetime,
@@ -438,8 +444,8 @@ func Start(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		GatewayIp: gatewayAddr6.String(),
 		PrefixLen: 64,
 		DnsServers: []string{
-			settings.Hypervisor.DnsServerPrimary6,
-			settings.Hypervisor.DnsServerSecondary6,
+			zne.GetDnsServerPrimary6(),
+			zne.GetDnsServerSecondary6(),
 		},
 		Mtu:      mtu,
 		Lifetime: settings.Hypervisor.DhcpLifetime,
