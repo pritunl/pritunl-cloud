@@ -33,7 +33,12 @@ func (z *Zone) Validate(db *database.Database) (
 		return
 	}
 
+	dnsServers := []string{}
 	for i, dnsServer := range z.DnsServers {
+		if i > 2 {
+			break
+		}
+
 		ip := net.ParseIP(dnsServer)
 		if ip == nil || ip.To4() == nil {
 			errData = &errortypes.ErrorData{
@@ -42,10 +47,16 @@ func (z *Zone) Validate(db *database.Database) (
 			}
 			return
 		}
-		z.DnsServers[i] = ip.String()
+		dnsServers = append(dnsServers, ip.String())
 	}
+	z.DnsServers = dnsServers
 
+	dnsServers6 := []string{}
 	for i, dnsServer := range z.DnsServers6 {
+		if i > 2 {
+			break
+		}
+
 		ip := net.ParseIP(dnsServer)
 		if ip == nil || ip.To4() != nil {
 			errData = &errortypes.ErrorData{
@@ -54,8 +65,9 @@ func (z *Zone) Validate(db *database.Database) (
 			}
 			return
 		}
-		z.DnsServers6[i] = ip.String()
+		dnsServers6 = append(dnsServers6, ip.String())
 	}
+	z.DnsServers6 = dnsServers6
 
 	return
 }
