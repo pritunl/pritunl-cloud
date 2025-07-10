@@ -8,6 +8,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -35,7 +36,7 @@ func (z *Zone) Validate(db *database.Database) (
 
 	dnsServers := []string{}
 	for i, dnsServer := range z.DnsServers {
-		if i > 2 {
+		if i > 1 {
 			break
 		}
 
@@ -53,7 +54,7 @@ func (z *Zone) Validate(db *database.Database) (
 
 	dnsServers6 := []string{}
 	for i, dnsServer := range z.DnsServers6 {
-		if i > 2 {
+		if i > 1 {
 			break
 		}
 
