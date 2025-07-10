@@ -83,6 +83,14 @@ func CanDelete(db *database.Database, kind string, id primitive.ObjectID) (
 		return
 	}
 
+	if resp.DeleteProtection {
+		errData = &errortypes.ErrorData{
+			Error:   "delete_protected_resource",
+			Message: "Cannot delete resource with delete protection enabled",
+		}
+		return
+	}
+
 	labels := []string{}
 	for _, related := range resp.Relations {
 		label := blockDelete(related.Resources)
@@ -119,6 +127,14 @@ func CanDeleteOrg(db *database.Database, kind string,
 
 	resp, err := definition.Aggregate(db)
 	if err != nil {
+		return
+	}
+
+	if resp.DeleteProtection {
+		errData = &errortypes.ErrorData{
+			Error:   "delete_protected_resource",
+			Message: "Cannot delete resource with delete protection enabled",
+		}
 		return
 	}
 
