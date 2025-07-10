@@ -1,6 +1,8 @@
 package zone
 
 import (
+	"net"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
@@ -29,6 +31,30 @@ func (z *Zone) Validate(db *database.Database) (
 			Message: "Missing required datacenter",
 		}
 		return
+	}
+
+	for i, dnsServer := range z.DnsServers {
+		ip := net.ParseIP(dnsServer)
+		if ip == nil || ip.To4() == nil {
+			errData = &errortypes.ErrorData{
+				Error:   "invalid_dns_server",
+				Message: "DNS IPv4 server address is invalid",
+			}
+			return
+		}
+		z.DnsServers[i] = ip.String()
+	}
+
+	for i, dnsServer := range z.DnsServers6 {
+		ip := net.ParseIP(dnsServer)
+		if ip == nil || ip.To4() != nil {
+			errData = &errortypes.ErrorData{
+				Error:   "invalid_dns_server6",
+				Message: "DNS IPv6 server address is invalid",
+			}
+			return
+		}
+		z.DnsServers6[i] = ip.String()
 	}
 
 	return
