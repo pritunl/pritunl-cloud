@@ -15,6 +15,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/dhcps"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -34,6 +35,8 @@ import (
 	"github.com/pritunl/pritunl-cloud/tpm"
 	"github.com/pritunl/pritunl-cloud/virtiofs"
 	"github.com/pritunl/pritunl-cloud/vm"
+	"github.com/pritunl/pritunl-cloud/vpc"
+	"github.com/pritunl/pritunl-cloud/zone"
 	"github.com/sirupsen/logrus"
 )
 
@@ -583,12 +586,50 @@ func Create(db *database.Database, inst *instance.Instance,
 		}
 	}
 
+	if len(virt.NetworkAdapters) == 0 {
+		err = &errortypes.NotFoundError{
+			errors.Wrap(err, "cloudinit: Instance missing network adapters"),
+		}
+		return
+	}
+
+	adapter := virt.NetworkAdapters[0]
+
+	if adapter.Vpc.IsZero() {
+		err = &errortypes.NotFoundError{
+			errors.Wrap(err, "cloudinit: Instance missing VPC"),
+		}
+		return
+	}
+
+	if adapter.Subnet.IsZero() {
+		err = &errortypes.NotFoundError{
+			errors.Wrap(err, "cloudinit: Instance missing VPC subnet"),
+		}
+		return
+	}
+
+	dc, err := datacenter.Get(db, node.Self.Datacenter)
+	if err != nil {
+		return
+	}
+
+	zne, err := zone.Get(db, node.Self.Zone)
+	if err != nil {
+		return
+	}
+
+	vc, err := vpc.Get(db, adapter.Vpc)
+	if err != nil {
+		return
+	}
+
 	err = virt.GenerateImdsSecret()
 	if err != nil {
 		return
 	}
 
-	err = cloudinit.Write(db, inst, virt, true)
+	err = cloudinit.Write(db, inst, virt, dc, zne, vc, true)
 	if err != nil {
 		return
 	}
@@ -635,7 +676,7 @@ func Create(db *database.Database, inst *instance.Instance,
 	}
 
 	if virt.DhcpServer {
-		err = dhcps.Start(db, virt)
+		err = dhcps.Start(db, virt, dc, zne, vc)
 		if err != nil {
 			return
 		}
