@@ -11,7 +11,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/features"
-	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/permission"
 	"github.com/pritunl/pritunl-cloud/settings"
@@ -365,7 +364,9 @@ func WriteService(vmId primitive.ObjectID, namespace string,
 	return
 }
 
-func Start(db *database.Database, virt *vm.VirtualMachine) (err error) {
+func Start(db *database.Database, virt *vm.VirtualMachine,
+	dc *datacenter.Datacenter, zne *zone.Zone, vc *vpc.Vpc) (err error) {
+
 	namespace := vm.GetNamespace(virt.Id, 0)
 
 	hasSystemdNamespace := features.HasSystemdNamespace()
@@ -374,29 +375,13 @@ func Start(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		"id": virt.Id.Hex(),
 	}).Info("dhcps: Starting virtual machine dhcp server")
 
-	dc, err := datacenter.Get(db, node.Self.Datacenter)
-	if err != nil {
-		return
-	}
-
-	zne, err := zone.Get(db, node.Self.Zone)
-	if err != nil {
-		return
-	}
-
 	if virt.NetworkAdapters == nil || len(virt.NetworkAdapters) < 1 {
 		err = &errortypes.ParseError{
 			errors.New("dhcps: Missing virt network adapter"),
 		}
 		return
 	}
-	vpcId := virt.NetworkAdapters[0].Vpc
 	subnetId := virt.NetworkAdapters[0].Subnet
-
-	vc, err := vpc.Get(db, vpcId)
-	if err != nil {
-		return
-	}
 
 	vcNet, err := vc.GetNetwork()
 	if err != nil {
