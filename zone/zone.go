@@ -10,10 +10,12 @@ import (
 )
 
 type Zone struct {
-	Id         primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Datacenter primitive.ObjectID `bson:"datacenter,omitempty" json:"datacenter"`
-	Name       string             `bson:"name" json:"name"`
-	Comment    string             `bson:"comment" json:"comment"`
+	Id          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Datacenter  primitive.ObjectID `bson:"datacenter" json:"datacenter"`
+	Name        string             `bson:"name" json:"name"`
+	Comment     string             `bson:"comment" json:"comment"`
+	DnsServers  []string           `bson:"dns_servers" json:"dns_servers"`
+	DnsServers6 []string           `bson:"dns_servers6" json:"dns_servers6"`
 }
 
 func (z *Zone) Validate(db *database.Database) (
