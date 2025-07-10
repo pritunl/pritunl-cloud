@@ -332,3 +332,15 @@ func Remove(db *database.Database, commitId primitive.ObjectID) (err error) {
 
 	return
 }
+
+func RemoveAll(db *database.Database, query *bson.M) (err error) {
+	coll := db.Specs()
+
+	_, err = coll.DeleteMany(db, query)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
