@@ -73,6 +73,34 @@ func (z *Zone) Validate(db *database.Database) (
 	return
 }
 
+func (z *Zone) GetDnsServerPrimary() string {
+	if len(z.DnsServers) > 0 {
+		return z.DnsServers[0]
+	}
+	return settings.Hypervisor.DnsServerPrimary
+}
+
+func (z *Zone) GetDnsServerSecondary() string {
+	if len(z.DnsServers) > 1 {
+		return z.DnsServers[1]
+	}
+	return settings.Hypervisor.DnsServerSecondary
+}
+
+func (z *Zone) GetDnsServerPrimary6() string {
+	if len(z.DnsServers6) > 0 {
+		return z.DnsServers6[0]
+	}
+	return settings.Hypervisor.DnsServerPrimary6
+}
+
+func (z *Zone) GetDnsServerSecondary6() string {
+	if len(z.DnsServers6) > 1 {
+		return z.DnsServers6[1]
+	}
+	return settings.Hypervisor.DnsServerSecondary6
+}
+
 func (z *Zone) Commit(db *database.Database) (err error) {
 	coll := db.Zones()
 
