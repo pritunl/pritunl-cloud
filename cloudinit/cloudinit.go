@@ -21,7 +21,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/instance"
-	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/spec"
@@ -234,9 +233,10 @@ type imdsConfig struct {
 }
 
 func getUserData(db *database.Database, inst *instance.Instance,
-	virt *vm.VirtualMachine, deply *deployment.Deployment,
-	deployUnit *unit.Unit, deploySpec *spec.Spec, initial bool,
-	addr6, gateway6 net.IP) (usrData string, err error) {
+	virt *vm.VirtualMachine, dc *datacenter.Datacenter, zne *zone.Zone,
+	vc *vpc.Vpc, deply *deployment.Deployment, deployUnit *unit.Unit,
+	deploySpec *spec.Spec, initial bool, addr6, gateway6 net.IP) (
+	usrData string, err error) {
 
 	authrs, err := authority.GetOrgRoles(db, inst.Organization,
 		inst.NetworkRoles)
@@ -285,14 +285,14 @@ func getUserData(db *database.Database, inst *instance.Instance,
 
 		if inst.IsIpv6Only() {
 			resolvConf += fmt.Sprintf("nameserver %s\n",
-				settings.Hypervisor.DnsServerPrimary6)
+				zne.GetDnsServerPrimary6())
 			resolvConf += fmt.Sprintf("nameserver %s\n",
-				settings.Hypervisor.DnsServerSecondary6)
+				zne.GetDnsServerSecondary6())
 		} else {
 			resolvConf += fmt.Sprintf("nameserver %s\n",
-				settings.Hypervisor.DnsServerPrimary)
+				zne.GetDnsServerPrimary())
 			resolvConf += fmt.Sprintf("nameserver %s\n",
-				settings.Hypervisor.DnsServerSecondary)
+				zne.GetDnsServerSecondary())
 		}
 
 		writeFiles = append(writeFiles, &fileData{
@@ -595,8 +595,8 @@ func getUserData(db *database.Database, inst *instance.Instance,
 }
 
 func getNetData(db *database.Database, inst *instance.Instance,
-	virt *vm.VirtualMachine) (netData string, addr6, gateway6 net.IP,
-	err error) {
+	virt *vm.VirtualMachine, dc *datacenter.Datacenter, zne *zone.Zone,
+	vc *vpc.Vpc) (netData string, addr6, gateway6 net.IP, err error) {
 
 	if len(virt.NetworkAdapters) == 0 {
 		err = &errortypes.NotFoundError{
@@ -618,21 +618,6 @@ func getNetData(db *database.Database, inst *instance.Instance,
 		err = &errortypes.NotFoundError{
 			errors.Wrap(err, "cloudinit: Instance missing VPC subnet"),
 		}
-		return
-	}
-
-	dc, err := datacenter.Get(db, node.Self.Datacenter)
-	if err != nil {
-		return
-	}
-
-	zne, err := zone.Get(db, node.Self.Zone)
-	if err != nil {
-		return
-	}
-
-	vc, err := vpc.Get(db, adapter.Vpc)
-	if err != nil {
 		return
 	}
 
@@ -703,7 +688,8 @@ func getNetData(db *database.Database, inst *instance.Instance,
 }
 
 func Write(db *database.Database, inst *instance.Instance,
-	virt *vm.VirtualMachine, initial bool) (err error) {
+	virt *vm.VirtualMachine, dc *datacenter.Datacenter,
+	zne *zone.Zone, vc *vpc.Vpc, initial bool) (err error) {
 
 	tempDir := paths.GetTempDir()
 	metaPath := path.Join(tempDir, "meta-data")
@@ -744,13 +730,13 @@ func Write(db *database.Database, inst *instance.Instance,
 		return
 	}
 
-	netData, addr6, gateway6, err := getNetData(db, inst, virt)
+	netData, addr6, gateway6, err := getNetData(db, inst, virt, dc, zne, vc)
 	if err != nil {
 		return
 	}
 
-	usrData, err := getUserData(db, inst, virt, deply, deployUnit, deploySpec,
-		initial, addr6, gateway6)
+	usrData, err := getUserData(db, inst, virt, dc, zne, vc,
+		deply, deployUnit, deploySpec, initial, addr6, gateway6)
 	if err != nil {
 		return
 	}
