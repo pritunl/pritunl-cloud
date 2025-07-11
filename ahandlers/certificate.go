@@ -17,6 +17,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
+	"github.com/pritunl/pritunl-cloud/relations"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -196,7 +197,18 @@ func certificateDelete(c *gin.Context) {
 		return
 	}
 
-	err := certificate.Remove(db, certId)
+	errData, err := relations.CanDelete(db, "certificate", certId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		c.JSON(400, errData)
+		return
+	}
+
+	err = certificate.Remove(db, certId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -221,6 +233,17 @@ func certificatesDelete(c *gin.Context) {
 			errors.Wrap(err, "handler: Bind error"),
 		}
 		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	errData, err := relations.CanDeleteAll(db, "certificate", data)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		c.JSON(400, errData)
 		return
 	}
 
