@@ -231,7 +231,7 @@ func vpcDelete(c *gin.Context) {
 		return
 	}
 
-	err = vpc.Remove(db, vpcId)
+	err = vpc.RemoveOrg(db, userOrg, vpcId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
