@@ -356,17 +356,15 @@ func podsDelete(c *gin.Context) {
 		return
 	}
 
-	for _, podId := range data {
-		errData, err := relations.CanDelete(db, "pod", podId)
-		if err != nil {
-			utils.AbortWithError(c, 500, err)
-			return
-		}
+	errData, err := relations.CanDeleteAll(db, "pod", data)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
 
-		if errData != nil {
-			c.JSON(400, errData)
-			return
-		}
+	if errData != nil {
+		c.JSON(400, errData)
+		return
 	}
 
 	err = pod.RemoveMulti(db, data)
