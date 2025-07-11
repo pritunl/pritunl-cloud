@@ -515,6 +515,37 @@ func RemoveMulti(db *database.Database, vcIds []primitive.ObjectID) (err error) 
 	return
 }
 
+func RemoveMultiOrg(db *database.Database, orgId primitive.ObjectID,
+	vcIds []primitive.ObjectID) (err error) {
+
+	coll := db.VpcsIp()
+
+	_, err = coll.DeleteMany(db, &bson.M{
+		"vpc": &bson.M{
+			"$in": vcIds,
+		},
+		"organization": orgId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	coll = db.Vpcs()
+
+	_, err = coll.DeleteMany(db, &bson.M{
+		"_id": &bson.M{
+			"$in": vcIds,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetIpsMapped(db *database.Database, ids []primitive.ObjectID) (
 	vpcsMap map[primitive.ObjectID][]*VpcIp, err error) {
 
