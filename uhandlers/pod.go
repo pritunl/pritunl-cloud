@@ -20,6 +20,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/journal"
 	"github.com/pritunl/pritunl-cloud/pod"
+	"github.com/pritunl/pritunl-cloud/relations"
 	"github.com/pritunl/pritunl-cloud/scheduler"
 	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/unit"
@@ -317,11 +318,14 @@ func podDelete(c *gin.Context) {
 		return
 	}
 
-	err := unit.RemoveAll(db, &bson.M{
-		"pod":          podId,
-		"organization": userOrg,
-	})
+	errData, err := relations.CanDeleteOrg(db, "pod", userOrg, podId)
 	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		c.JSON(400, errData)
 		return
 	}
 
@@ -355,14 +359,17 @@ func podsDelete(c *gin.Context) {
 		return
 	}
 
-	err = unit.RemoveAll(db, &bson.M{
-		"pod": &bson.M{
-			"$in": data,
-		},
-		"organization": userOrg,
-	})
-	if err != nil {
-		return
+	for _, podId := range data {
+		errData, err := relations.CanDeleteOrg(db, "pod", userOrg, podId)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		if errData != nil {
+			c.JSON(400, errData)
+			return
+		}
 	}
 
 	err = pod.RemoveMultiOrg(db, userOrg, data)
