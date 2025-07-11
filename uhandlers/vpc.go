@@ -280,7 +280,7 @@ func vpcsDelete(c *gin.Context) {
 		return
 	}
 
-	err = vpc.RemoveMulti(db, data)
+	err = vpc.RemoveMultiOrg(db, userOrg, data)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
