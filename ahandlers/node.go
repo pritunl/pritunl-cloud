@@ -20,6 +20,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/relations"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/subscription"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -580,7 +581,18 @@ func nodeDelete(c *gin.Context) {
 		return
 	}
 
-	err := node.Remove(db, nodeId)
+	errData, err := relations.CanDelete(db, "node", nodeId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		c.JSON(400, errData)
+		return
+	}
+
+	err = node.Remove(db, nodeId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
