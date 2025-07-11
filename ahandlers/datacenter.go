@@ -16,6 +16,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
+	"github.com/pritunl/pritunl-cloud/relations"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -180,7 +181,18 @@ func datacenterDelete(c *gin.Context) {
 		return
 	}
 
-	err := datacenter.Remove(db, dcId)
+	errData, err := relations.CanDelete(db, "datacenter", dcId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		c.JSON(400, errData)
+		return
+	}
+
+	err = datacenter.Remove(db, dcId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -205,6 +217,17 @@ func datacentersDelete(c *gin.Context) {
 			errors.Wrap(err, "handler: Bind error"),
 		}
 		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	errData, err := relations.CanDeleteAll(db, "datacenter", data)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		c.JSON(400, errData)
 		return
 	}
 
