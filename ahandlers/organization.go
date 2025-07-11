@@ -8,6 +8,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/organization"
+	"github.com/pritunl/pritunl-cloud/relations"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -133,7 +134,18 @@ func organizationDelete(c *gin.Context) {
 		return
 	}
 
-	err := organization.Remove(db, orgId)
+	errData, err := relations.CanDelete(db, "organization", orgId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		c.JSON(400, errData)
+		return
+	}
+
+	err = organization.Remove(db, orgId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
