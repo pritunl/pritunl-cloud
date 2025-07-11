@@ -14,6 +14,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/event"
+	"github.com/pritunl/pritunl-cloud/relations"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vpc"
 )
@@ -219,6 +220,17 @@ func vpcDelete(c *gin.Context) {
 		return
 	}
 
+	errData, err := relations.CanDeleteOrg(db, "vpc", userOrg, vpcId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		c.JSON(400, errData)
+		return
+	}
+
 	err = vpc.Remove(db, vpcId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
@@ -255,6 +267,17 @@ func vpcsDelete(c *gin.Context) {
 			utils.AbortWithStatus(c, 405)
 			return
 		}
+	}
+
+	errData, err := relations.CanDeleteOrgAll(db, "vpc", userOrg, data)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		c.JSON(400, errData)
+		return
 	}
 
 	err = vpc.RemoveMulti(db, data)
