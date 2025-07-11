@@ -14,6 +14,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/firewall"
+	"github.com/pritunl/pritunl-cloud/relations"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -152,7 +153,18 @@ func firewallDelete(c *gin.Context) {
 		return
 	}
 
-	err := firewall.Remove(db, firewallId)
+	errData, err := relations.CanDelete(db, "firewall", firewallId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		c.JSON(400, errData)
+		return
+	}
+
+	err = firewall.Remove(db, firewallId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -174,6 +186,17 @@ func firewallsDelete(c *gin.Context) {
 	err := c.Bind(&data)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	errData, err := relations.CanDeleteAll(db, "firewall", data)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		c.JSON(400, errData)
 		return
 	}
 
