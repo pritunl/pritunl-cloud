@@ -160,3 +160,38 @@ func CanDeleteOrg(db *database.Database, kind string,
 
 	return
 }
+
+func CanDeleteAll(db *database.Database, kind string,
+	ids []primitive.ObjectID) (errData *errortypes.ErrorData, err error) {
+
+	for _, id := range ids {
+		errData, err = CanDelete(db, kind, id)
+		if err != nil {
+			return
+		}
+
+		if errData != nil {
+			return
+		}
+	}
+
+	return
+}
+
+func CanDeleteOrgAll(db *database.Database, kind string,
+	orgId primitive.ObjectID, ids []primitive.ObjectID) (
+	errData *errortypes.ErrorData, err error) {
+
+	for _, id := range ids {
+		errData, err = CanDeleteOrg(db, kind, orgId, id)
+		if err != nil {
+			return
+		}
+
+		if errData != nil {
+			return
+		}
+	}
+
+	return
+}
