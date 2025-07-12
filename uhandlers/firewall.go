@@ -16,6 +16,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/firewall"
+	"github.com/pritunl/pritunl-cloud/relations"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -160,7 +161,18 @@ func firewallDelete(c *gin.Context) {
 		return
 	}
 
-	err := firewall.RemoveOrg(db, userOrg, firewallId)
+	errData, err := relations.CanDeleteOrg(db, "firewall", userOrg, firewallId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		c.JSON(400, errData)
+		return
+	}
+
+	err = firewall.RemoveOrg(db, userOrg, firewallId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -186,6 +198,17 @@ func firewallsDelete(c *gin.Context) {
 			errors.Wrap(err, "handler: Bind error"),
 		}
 		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	errData, err := relations.CanDeleteOrgAll(db, "firewall", userOrg, data)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		c.JSON(400, errData)
 		return
 	}
 
