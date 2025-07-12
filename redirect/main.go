@@ -47,6 +47,10 @@ func runServer() (err error) {
 		Secret:    os.Getenv("SECRET"),
 	}
 
+	os.Unsetenv("PUBLIC_KEY")
+	os.Unsetenv("KEY")
+	os.Unsetenv("SECRET")
+
 	box := &crypto.AsymNaclHmac{}
 
 	err = box.Import(key)
