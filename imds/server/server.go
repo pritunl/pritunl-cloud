@@ -46,8 +46,10 @@ func main() {
 		constants.Client = client
 
 		constants.ClientSecret = os.Getenv("CLIENT_SECRET")
+		constants.DhcpSecret = os.Getenv("DHCP_SECRET")
 		constants.HostSecret = os.Getenv("HOST_SECRET")
 		os.Unsetenv("CLIENT_SECRET")
+		os.Unsetenv("DHCP_SECRET")
 		os.Unsetenv("HOST_SECRET")
 
 		routr := &router.Router{}
