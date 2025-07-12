@@ -15,6 +15,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
+	"github.com/pritunl/pritunl-cloud/relations"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vpc"
 )
@@ -190,7 +191,18 @@ func vpcDelete(c *gin.Context) {
 		return
 	}
 
-	err := vpc.Remove(db, vpcId)
+	errData, err := relations.CanDelete(db, "vpc", vpcId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		c.JSON(400, errData)
+		return
+	}
+
+	err = vpc.Remove(db, vpcId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -212,6 +224,17 @@ func vpcsDelete(c *gin.Context) {
 	err := c.Bind(&data)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	errData, err := relations.CanDeleteAll(db, "vpc", data)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		c.JSON(400, errData)
 		return
 	}
 
