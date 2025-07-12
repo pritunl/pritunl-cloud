@@ -15,6 +15,7 @@ var (
 	Port         = 80
 	Client       = "127.0.0.1"
 	ClientSecret = ""
+	DhcpSecret   = ""
 	HostSecret   = ""
 	Interrupt    = false
 )
