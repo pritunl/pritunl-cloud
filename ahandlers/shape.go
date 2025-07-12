@@ -14,6 +14,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/event"
+	"github.com/pritunl/pritunl-cloud/relations"
 	"github.com/pritunl/pritunl-cloud/shape"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
@@ -176,7 +177,18 @@ func shapeDelete(c *gin.Context) {
 		return
 	}
 
-	err := shape.Remove(db, shapeId)
+	errData, err := relations.CanDelete(db, "shape", shapeId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		c.JSON(400, errData)
+		return
+	}
+
+	err = shape.Remove(db, shapeId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -198,6 +210,17 @@ func shapesDelete(c *gin.Context) {
 	err := c.Bind(&data)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	errData, err := relations.CanDeleteAll(db, "shape", data)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		c.JSON(400, errData)
 		return
 	}
 
