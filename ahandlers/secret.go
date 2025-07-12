@@ -15,6 +15,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
+	"github.com/pritunl/pritunl-cloud/relations"
 	"github.com/pritunl/pritunl-cloud/secret"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
@@ -174,7 +175,18 @@ func secretDelete(c *gin.Context) {
 		return
 	}
 
-	err := secret.Remove(db, secrId)
+	errData, err := relations.CanDelete(db, "secret", secrId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		c.JSON(400, errData)
+		return
+	}
+
+	err = secret.Remove(db, secrId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -199,6 +211,17 @@ func secretsDelete(c *gin.Context) {
 			errors.Wrap(err, "handler: Bind error"),
 		}
 		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	errData, err := relations.CanDeleteAll(db, "secret", data)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	if errData != nil {
+		c.JSON(400, errData)
 		return
 	}
 
