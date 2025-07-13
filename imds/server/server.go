@@ -20,6 +20,13 @@ Commands:
 `
 
 func main() {
+	constants.ClientSecret = os.Getenv("CLIENT_SECRET")
+	constants.DhcpSecret = os.Getenv("DHCP_SECRET")
+	constants.HostSecret = os.Getenv("HOST_SECRET")
+	os.Unsetenv("CLIENT_SECRET")
+	os.Unsetenv("DHCP_SECRET")
+	os.Unsetenv("HOST_SECRET")
+
 	flag.Usage = func() {
 		fmt.Printf(help)
 	}
@@ -44,13 +51,6 @@ func main() {
 		constants.Port = port
 		constants.Sock = sockPath
 		constants.Client = client
-
-		constants.ClientSecret = os.Getenv("CLIENT_SECRET")
-		constants.DhcpSecret = os.Getenv("DHCP_SECRET")
-		constants.HostSecret = os.Getenv("HOST_SECRET")
-		os.Unsetenv("CLIENT_SECRET")
-		os.Unsetenv("DHCP_SECRET")
-		os.Unsetenv("HOST_SECRET")
 
 		routr := &router.Router{}
 		routr.Init()
