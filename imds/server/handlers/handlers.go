@@ -72,6 +72,25 @@ func AuthVirt(c *gin.Context) {
 	c.Next()
 }
 
+func AuthDhcp(c *gin.Context) {
+	token := c.Request.Header.Get("Auth-Token")
+	if token == "" {
+		token = c.Query("token")
+	}
+
+	if c.Request.Header.Get("Origin") != "" ||
+		c.Request.Header.Get("Referer") != "" ||
+		c.Request.Header.Get("User-Agent") != "pritunl-dhcp" ||
+		constants.ClientSecret == "" ||
+		(subtle.ConstantTimeCompare([]byte(token),
+			[]byte(constants.ClientSecret)) != 1) {
+
+		c.AbortWithStatus(401)
+		return
+	}
+	c.Next()
+}
+
 func AuthHost(c *gin.Context) {
 	token := c.Request.Header.Get("Auth-Token")
 	if token == "" {
