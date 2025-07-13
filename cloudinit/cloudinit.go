@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/textproto"
 	"os"
+	"os/exec"
 	"path"
 	"strings"
 	"text/template"
@@ -777,28 +778,61 @@ func Write(db *database.Database, inst *instance.Instance,
 		}
 	}
 
-	args := []string{
-		"-output", initPath,
-		"-volid", "cidata",
-		"-joliet",
-		"-rock",
-		"user-data",
-		"meta-data",
-	}
-
-	if !virt.DhcpServer {
-		args = append(args, "network-config")
-	}
-
-	args = append(args, pciPath)
-
-	_, err = utils.ExecCombinedOutputLoggedDir(
-		nil, tempDir,
-		"genisoimage",
-		args...,
-	)
+	xorrisoPath, err := exec.LookPath("xorriso")
 	if err != nil {
-		return
+		xorrisoPath = ""
+		err = nil
+	}
+
+	if xorrisoPath != "" {
+		args := []string{
+			"-as", "mkisofs",
+			"-output", initPath,
+			"-volid", "cidata",
+			"-joliet",
+			"-rock",
+			"user-data",
+			"meta-data",
+		}
+
+		if !virt.DhcpServer {
+			args = append(args, "network-config")
+		}
+
+		args = append(args, pciPath)
+
+		_, err = utils.ExecCombinedOutputLoggedDir(
+			nil, tempDir,
+			"xorriso",
+			args...,
+		)
+		if err != nil {
+			return
+		}
+	} else {
+		args := []string{
+			"-output", initPath,
+			"-volid", "cidata",
+			"-joliet",
+			"-rock",
+			"user-data",
+			"meta-data",
+		}
+
+		if !virt.DhcpServer {
+			args = append(args, "network-config")
+		}
+
+		args = append(args, pciPath)
+
+		_, err = utils.ExecCombinedOutputLoggedDir(
+			nil, tempDir,
+			"genisoimage",
+			args...,
+		)
+		if err != nil {
+			return
+		}
 	}
 
 	err = utils.Chmod(initPath, 0600)
