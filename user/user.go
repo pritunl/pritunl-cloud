@@ -20,8 +20,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-//ApiRoles        []string           `bson:"api_roles" json:"api_roles"`
-
 type User struct {
 	Id              primitive.ObjectID    `bson:"_id,omitempty" json:"id"`
 	Type            string                `bson:"type" json:"type"`
