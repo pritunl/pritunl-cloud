@@ -1,0 +1,5 @@
+package dhcpc
+
+var (
+	DhcpSecret = ""
+)
