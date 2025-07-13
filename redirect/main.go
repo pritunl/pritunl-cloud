@@ -18,12 +18,19 @@ import (
 )
 
 func main() {
+	publicKey := os.Getenv("PUBLIC_KEY")
+	key := os.Getenv("KEY")
+	secret := os.Getenv("SECRET")
+	os.Unsetenv("PUBLIC_KEY")
+	os.Unsetenv("KEY")
+	os.Unsetenv("SECRET")
+
 	logger.Init()
 	logger.AddHandler(func(record *logger.Record) {
 		fmt.Print(record.String())
 	})
 
-	err := runServer()
+	err := runServer(publicKey, key, secret)
 	if err != nil {
 		logger.WithFields(logger.Fields{
 			"error": err,
@@ -32,7 +39,7 @@ func main() {
 	}
 }
 
-func runServer() (err error) {
+func runServer(publicKey, key, secret string) (err error) {
 	webPort, err := strconv.Atoi(os.Getenv("WEB_PORT"))
 	if err != nil {
 		err = &errortypes.ParseError{
@@ -41,19 +48,15 @@ func runServer() (err error) {
 		return
 	}
 
-	key := crypto.AsymNaclHmacKey{
-		PublicKey: os.Getenv("PUBLIC_KEY"),
-		Key:       os.Getenv("KEY"),
-		Secret:    os.Getenv("SECRET"),
+	naclKey := crypto.AsymNaclHmacKey{
+		PublicKey: publicKey,
+		Key:       key,
+		Secret:    secret,
 	}
-
-	os.Unsetenv("PUBLIC_KEY")
-	os.Unsetenv("KEY")
-	os.Unsetenv("SECRET")
 
 	box := &crypto.AsymNaclHmac{}
 
-	err = box.Import(key)
+	err = box.Import(naclKey)
 	if err != nil {
 		return
 	}
