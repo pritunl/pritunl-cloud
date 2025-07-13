@@ -59,13 +59,13 @@ AmbientCapabilities=CAP_NET_BIND_SERVICE
 `
 
 func WriteService(vmId primitive.ObjectID,
-	namespace, clientSecret, hostSecret string,
+	namespace, clientSecret, dhcpSecret, hostSecret string,
 	systemdNamespace bool) (err error) {
 
 	unitPath := paths.GetUnitPathImds(vmId)
 	sockPath := paths.GetImdsSockPath(vmId)
 
-	if clientSecret == "" || hostSecret == "" {
+	if clientSecret == "" || dhcpSecret == "" || hostSecret == "" {
 		err = &errortypes.ParseError{
 			errors.New("imds: Cannot start imds with empty secret"),
 		}
@@ -78,6 +78,7 @@ func WriteService(vmId primitive.ObjectID,
 			systemdNamespaceTemplate,
 			permission.GetUserName(vmId),
 			clientSecret,
+			dhcpSecret,
 			hostSecret,
 			sockPath,
 			settings.Hypervisor.ImdsAddress,
@@ -88,6 +89,7 @@ func WriteService(vmId primitive.ObjectID,
 		output = fmt.Sprintf(
 			systemdTemplate,
 			clientSecret,
+			dhcpSecret,
 			hostSecret,
 			namespace,
 			sockPath,
@@ -118,7 +120,7 @@ func Start(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	_ = systemd.Stop(unit)
 
 	err = WriteService(virt.Id, namespace, virt.ImdsClientSecret,
-		virt.ImdsHostSecret, hasSystemdNamespace)
+		virt.ImdsDhcpSecret, virt.ImdsHostSecret, hasSystemdNamespace)
 	if err != nil {
 		return
 	}
