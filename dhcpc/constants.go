@@ -1,5 +1,9 @@
 package dhcpc
 
 var (
-	DhcpSecret = ""
+	ImdsAddress = ""
+	ImdsPort    = ""
+	DhcpSecret  = ""
+	DhcpIface   = ""
+	DhcpIface6  = ""
 )
