@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/dhcpc"
 	"github.com/pritunl/pritunl-cloud/dhcps"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/sirupsen/logrus"
@@ -34,6 +35,15 @@ func Dhcp4Server() (err error) {
 
 		time.Sleep(3 * time.Second)
 	}
+}
+
+func Dhcp4Client() (err error) {
+	err = dhcpc.Main()
+	if err != nil {
+		return
+	}
+
+	return
 }
 
 func Dhcp6Server() (err error) {
