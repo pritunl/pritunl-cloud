@@ -58,6 +58,7 @@ type VirtualMachine struct {
 	Mounts              []*Mount           `json:"mounts"`
 	ImdsVersion         int                `json:"imds_version"`
 	ImdsClientSecret    string             `json:"-"`
+	ImdsDhcpSecret      string             `json:"imds_dhcp_secret"`
 	ImdsHostSecret      string             `json:"imds_host_secret"`
 }
 
@@ -82,6 +83,11 @@ func (v *VirtualMachine) GenerateImdsSecret() (err error) {
 	v.ImdsVersion = 1
 
 	v.ImdsClientSecret, err = utils.RandStr(32)
+	if err != nil {
+		return
+	}
+
+	v.ImdsDhcpSecret, err = utils.RandStr(32)
 	if err != nil {
 		return
 	}
