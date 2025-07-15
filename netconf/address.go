@@ -38,9 +38,6 @@ func (n *NetConf) Address(db *database.Database) (err error) {
 
 	n.InternalAddr6 = vc.GetIp6(n.Virt.Id)
 	n.InternalGatewayAddr6 = vc.GetGatewayIp6(n.Virt.Id)
-	if err != nil {
-		return
-	}
 
 	n.ExternalMacAddr = vm.GetMacAddrExternal(n.Virt.Id, vc.Id)
 	n.InternalMacAddr = vm.GetMacAddrInternal(n.Virt.Id, vc.Id)
