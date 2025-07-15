@@ -71,7 +71,7 @@ func extractDhLease(dhLease *nclient4.Lease) (lease *Lease) {
 	ack := dhLease.ACK
 
 	lease = &Lease{
-		Address: net.IPNet{
+		Address: &net.IPNet{
 			IP:   ack.YourIPAddr,
 			Mask: net.IPMask(net.IP{255, 255, 255, 0}),
 		},
