@@ -19,6 +19,26 @@ type Lease struct {
 	TransactionId string
 }
 
+func (l *Lease) IfaceReady() (ready bool) {
+	iface, err := net.InterfaceByName(DhcpIface)
+	if err != nil {
+		return
+	}
+
+	addrs, _ := iface.Addrs()
+	for _, addr := range addrs {
+		ipnet, ok := addr.(*net.IPNet)
+		if ok {
+			if ipnet.IP.Equal(l.Address.IP) {
+				ready = true
+				break
+			}
+		}
+	}
+
+	return
+}
+
 func (l *Lease) Renew() (ok bool, err error) {
 	iface, err := net.InterfaceByName(DhcpIface)
 	if err != nil {
