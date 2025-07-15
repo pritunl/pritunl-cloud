@@ -98,9 +98,18 @@ func (l *Lease) Exchange() (ok bool, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), DhcpTimeout)
 	defer cancel()
 
+	opts := []dhcpv4.Modifier{
+		dhcpv4.WithOption(dhcpv4.OptMaxMessageSize(MaxMessageSize)),
+	}
+
+	if l.Address != nil {
+		opts = append(opts, dhcpv4.WithOption(
+			dhcpv4.OptRequestedIPAddress(l.Address.IP)))
+	}
+
 	nclientLease, err := client.Request(
 		ctx,
-		dhcpv4.WithOption(dhcpv4.OptMaxMessageSize(MaxMessageSize)),
+		opts...,
 	)
 	if err != nil {
 		err = &errortypes.RequestError{
