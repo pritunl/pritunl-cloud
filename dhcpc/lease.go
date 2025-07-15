@@ -129,7 +129,7 @@ func (l *Lease) Exchange() (ok bool, err error) {
 		dhcpv4.WithOption(dhcpv4.OptMaxMessageSize(MaxMessageSize)),
 	}
 
-	if l.Address != nil {
+	if l.Address != nil && l.Address.IP != nil {
 		opts = append(opts, dhcpv4.WithOption(
 			dhcpv4.OptRequestedIPAddress(l.Address.IP)))
 	}
