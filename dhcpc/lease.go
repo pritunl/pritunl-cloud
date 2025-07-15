@@ -12,7 +12,7 @@ import (
 )
 
 type Lease struct {
-	Address       net.IPNet
+	Address       *net.IPNet
 	Gateway       net.IP
 	ServerAddress net.IP
 	LeaseTime     time.Duration
