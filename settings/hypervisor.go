@@ -31,6 +31,7 @@ type hypervisor struct {
 	NetworkQueuesMax      int    `bson:"network_queues_max" default:"8"`
 	CloudInitNetVer       int    `bson:"cloud_init_net_ver" default:"1"`
 	HostNetwork           string `bson:"host_network" default:"198.18.84.0/22"`
+	HostNetworkName       string `bson:"host_network_name" default:"pritunlhost0"`
 	VirtRng               bool   `bson:"virt_rng"`
 	VxlanId               int    `bson:"vxlan_id" default:"9417"`
 	VxlanDestPort         int    `bson:"vxlan_dest_port" default:"4789"`
@@ -39,7 +40,6 @@ type hypervisor struct {
 	NodePortNetwork       string `bson:"node_port_network" default:"198.19.96.0/23"`
 	NodePortRanges        string `bson:"node_port_ranges" default:"30000-32767"`
 	NodePortNetworkName   string `bson:"node_port_network_name" default:"pritunlport0"`
-	HostNetworkName       string `bson:"host_network_name" default:"pritunlhost0"`
 	AddressRefreshTtl     int    `bson:"address_refresh_ttl" default:"1800"`
 	StartTimeout          int    `bson:"start_timeout" default:"45"`
 	StopTimeout           int    `bson:"stop_timeout" default:"180"`
