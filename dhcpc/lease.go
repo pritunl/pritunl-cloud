@@ -40,6 +40,13 @@ func (l *Lease) IfaceReady() (ready bool) {
 }
 
 func (l *Lease) Renew() (ok bool, err error) {
+	if l.Address == nil || l.Address.IP == nil || l.ServerAddress == nil {
+		err = &errortypes.ReadError{
+			errors.Wrap(err, "dhcpc: Cannot call renew with unset address"),
+		}
+		return
+	}
+
 	iface, err := net.InterfaceByName(DhcpIface)
 	if err != nil {
 		err = &errortypes.ReadError{
