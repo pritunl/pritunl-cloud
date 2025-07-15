@@ -81,7 +81,7 @@ func (l *Lease) Renew() (ok bool, err error) {
 	return
 }
 
-func Exchange() (lease *Lease, err error) {
+func (l *Lease) Exchange() (ok bool, err error) {
 	client, err := nclient4.New(
 		DhcpIface,
 		nclient4.WithTimeout(DhcpTimeout),
@@ -109,12 +109,14 @@ func Exchange() (lease *Lease, err error) {
 		return
 	}
 
-	lease = extractDhLease(nclientLease)
-	if lease == nil {
-		err = &errortypes.ParseError{
-			errors.New("dhcpc: IPv4 exchange incomplete"),
-		}
-		return
+	lease := extractDhLease(nclientLease)
+	if lease != nil {
+		ok = true
+		l.Address = lease.Address
+		l.Gateway = lease.Gateway
+		l.ServerAddress = lease.ServerAddress
+		l.LeaseTime = lease.LeaseTime
+		l.TransactionId = lease.TransactionId
 	}
 
 	return
