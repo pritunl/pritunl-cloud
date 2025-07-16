@@ -165,6 +165,12 @@ func main() {
 			panic(err)
 		}
 		return
+	case "dhcp4-client":
+		err := cmd.Dhcp4Client()
+		if err != nil {
+			panic(err)
+		}
+		return
 	case "ndp-server":
 		err := cmd.NdpServer()
 		if err != nil {
