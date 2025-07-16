@@ -481,10 +481,8 @@ func (i *Instance) Validate(db *database.Database) (
 
 	instanceDrives := set.NewSet()
 	nodeInstanceDrives := nde.InstanceDrives
-	if nodeInstanceDrives != nil {
-		for _, device := range nodeInstanceDrives {
-			instanceDrives.Add(device.Id)
-		}
+	for _, device := range nodeInstanceDrives {
+		instanceDrives.Add(device.Id)
 	}
 
 	if i.DriveDevices == nil {
