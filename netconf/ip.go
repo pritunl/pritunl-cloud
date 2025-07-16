@@ -562,6 +562,39 @@ func (n *NetConf) ipArp(db *database.Database) (err error) {
 		})
 	}
 
+	if n.NetworkMode6 == node.Static {
+		addr := strings.Split(n.ExternalAddrCidr6, "/")[0]
+		iface := n.SpaceExternalIfaceMod6
+		if iface == "" {
+			iface = n.SpaceExternalIface
+		}
+
+		_, _ = commander.Exec(&commander.Opt{
+			Name: "ip",
+			Args: []string{
+				"netns", "exec", n.Namespace, "ndisc6",
+				"-r", "3", addr, iface,
+			},
+			Timeout: 6 * time.Second,
+			PipeOut: true,
+			PipeErr: true,
+		})
+
+		if n.ExternalGatewayAddr6 != nil {
+			_, _ = commander.Exec(&commander.Opt{
+				Name: "ip",
+				Args: []string{
+					"netns", "exec", n.Namespace, "ping6",
+					"-c", "3", "-i", "0.5", "-w", "6", "-I", iface,
+					n.ExternalGatewayAddr6.String(),
+				},
+				Timeout: 8 * time.Second,
+				PipeOut: true,
+				PipeErr: true,
+			})
+		}
+	}
+
 	return
 }
 
