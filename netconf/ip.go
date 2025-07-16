@@ -530,6 +530,41 @@ func (n *NetConf) ipInit6(db *database.Database) (err error) {
 	return
 }
 
+func (n *NetConf) ipArp(db *database.Database) (err error) {
+	if n.NetworkMode == node.Static {
+		addr := strings.Split(n.ExternalAddrCidr, "/")[0]
+		iface := n.SpaceExternalIfaceMod
+		if iface == "" {
+			iface = n.SpaceExternalIface
+		}
+
+		_, _ = commander.Exec(&commander.Opt{
+			Name: "ip",
+			Args: []string{
+				"netns", "exec", n.Namespace, "arping",
+				"-U", "-I", iface, "-c", "3", addr,
+			},
+			Timeout: 6 * time.Second,
+			PipeOut: true,
+			PipeErr: true,
+		})
+
+		_, _ = commander.Exec(&commander.Opt{
+			Name: "ip",
+			Args: []string{
+				"netns", "exec", n.Namespace, "arping",
+				"-I", iface, "-c", "3",
+				n.ExternalGatewayAddr.String(),
+			},
+			Timeout: 6 * time.Second,
+			PipeOut: true,
+			PipeErr: true,
+		})
+	}
+
+	return
+}
+
 func (n *NetConf) ipInit6Alt(db *database.Database) (err error) {
 	if n.NetworkMode6 != node.Disabled && n.NetworkMode6 != node.Oracle &&
 		n.PublicAddress6 != "" && !settings.Hypervisor.NoIpv6PingInit {
@@ -604,6 +639,11 @@ func (n *NetConf) Ip(db *database.Database) (err error) {
 	}
 
 	err = n.ipDatabase(db)
+	if err != nil {
+		return
+	}
+
+	err = n.ipArp(db)
 	if err != nil {
 		return
 	}
