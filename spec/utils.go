@@ -3,7 +3,6 @@ package spec
 import (
 	"regexp"
 	"strings"
-	"time"
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/bson"
@@ -41,7 +40,6 @@ func New(podId, unitId, orgId primitive.ObjectID, data string) (spc *Spec) {
 		Unit:         unitId,
 		Pod:          podId,
 		Organization: orgId,
-		Timestamp:    time.Now(),
 		Data:         data,
 	}
 
