@@ -122,7 +122,7 @@ func Unset(db *database.Database, group string, key string) (
 		},
 		&bson.M{
 			"$unset": &bson.M{
-				key: "",
+				key: 1,
 			},
 		},
 		opts,
