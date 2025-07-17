@@ -303,6 +303,26 @@ export default class PodDeployment extends React.Component<Props, State> {
 			heartbeatClass = "bp5-text-intent-danger"
 		}
 
+		let agentStatus = MiscUtils.capitalize(
+			deployment.instance_guest_status) || "-"
+		let agentClass = heartbeatClass
+		switch (deployment.instance_guest_status) {
+			case "initializing":
+				agentClass = "bp5-text-intent-primary"
+				break
+			case "reloading_clean":
+				agentStatus = "Reloading"
+				agentClass = "bp5-text-intent-primary"
+				break
+			case "reloading_fault":
+				agentStatus = "Reloading"
+				agentClass = "bp5-text-intent-danger"
+				break
+			case "fault":
+				agentClass = "bp5-text-intent-danger"
+				break
+		}
+
 		let heartbeatHover = <div
 			className="bp5-content-popover"
 			style={css.hoverInfo}
