@@ -1,5 +1,8 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
+import * as Theme from '../Theme';
+import * as MonacoEditor from "@monaco-editor/react"
+import * as Monaco from "monaco-editor";
 import * as SecretTypes from '../types/SecretTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import * as SecretActions from '../actions/SecretActions';
@@ -83,6 +86,9 @@ const css = {
 };
 
 export default class SecretDetailed extends React.Component<Props, State> {
+	editor: Monaco.editor.IStandaloneCodeEditor
+	monaco: MonacoEditor.Monaco
+
 	constructor(props: any, context: any) {
 		super(props, context);
 		this.state = {
@@ -198,6 +204,7 @@ export default class SecretDetailed extends React.Component<Props, State> {
 		let publicKeyLabel = "";
 		let publicKeyHelp = "";
 		let publicKeyPlaceholder = "";
+		let editor: JSX.Element;
 
 		switch (secr.type) {
 			case "aws":
@@ -347,6 +354,9 @@ export default class SecretDetailed extends React.Component<Props, State> {
 							this.set('region', val);
 						}}
 					/>
+					<div>
+						{editor}
+					</div>
 				</div>
 				<div style={css.group}>
 					<PageInfo
