@@ -6,6 +6,9 @@ import * as RelationsActions from '../actions/RelationsActions';
 import * as Alert from '../Alert';
 import * as Theme from '../Theme';
 
+import * as MonacoEditor from "@monaco-editor/react"
+import * as Monaco from "monaco-editor"
+
 interface State {
 	data: RelationTypes.Relation;
 	disabled: boolean;
@@ -116,14 +119,30 @@ export default class Relations extends React.Component<Props, State> {
 					})
 				}}
 			>
-				<textarea
-					className="bp5-dialog-body bp5-input"
-					style={css.textarea}
-					autoCapitalize="off"
-					spellCheck={false}
-					readOnly={true}
-					value={this.state.data?.data || ""}
-				/>
+				<div style={css.textarea}>
+					<MonacoEditor.Editor
+						height="500px"
+						width="100%"
+						theme={Theme.getEditorTheme()}
+						value={this.state.data?.data || ""}
+						language="yaml"
+						options={{
+							folding: false,
+							fontSize: 10,
+							fontFamily: Theme.monospaceFont,
+							fontWeight: Theme.monospaceWeight,
+							readOnly: true,
+							automaticLayout: true,
+							formatOnPaste: true,
+							formatOnType: true,
+							scrollBeyondLastLine: false,
+							minimap: {
+								enabled: false,
+							},
+							wordWrap: "on",
+						}}
+					/>
+				</div>
 				<div className="bp5-dialog-footer">
 					<div className="bp5-dialog-footer-actions">
 						<button
