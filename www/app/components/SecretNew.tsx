@@ -1,5 +1,8 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
+import * as Theme from '../Theme';
+import * as MonacoEditor from "@monaco-editor/react"
+import * as Monaco from "monaco-editor";
 import * as SecretTypes from '../types/SecretTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import * as SecretActions from '../actions/SecretActions';
@@ -175,6 +178,7 @@ export default class SecretNew extends React.Component<Props, State> {
 		let publicKeyLabel = "";
 		let publicKeyHelp = "";
 		let publicKeyPlaceholder = "";
+		let editor: JSX.Element;
 
 		switch (secr.type) {
 			case "aws":
@@ -220,6 +224,44 @@ export default class SecretNew extends React.Component<Props, State> {
 				publicKeyHelp = "Public key for Oracle Cloud API authentication.";
 				publicKeyPlaceholder = "Oracle Cloud Public Key";
 				break;
+			case "json":
+				keyLabel = "";
+				keyHelp = "";
+				keyPlaceholder = "";
+				valLabel = "";
+				valHelp = "";
+				valPlaceholder = "";
+				regionLabel = "";
+				regionHelp = "";
+				regionPlaceholder = "";
+				publicKeyLabel = "";
+				publicKeyHelp = "";
+				publicKeyPlaceholder = "";
+				editor = <MonacoEditor.Editor
+					height="400px"
+					width="100%"
+					defaultLanguage="json"
+					theme={Theme.getEditorTheme()}
+					defaultValue={secr.data}
+					options={{
+						folding: false,
+						fontSize: 12,
+						fontFamily: Theme.monospaceFont,
+						fontWeight: Theme.monospaceWeight,
+						tabSize: 4,
+						detectIndentation: false,
+						scrollBeyondLastLine: false,
+						minimap: {
+							enabled: false,
+						},
+						suggestOnTriggerCharacters: false,
+						wordWrap: "on",
+						automaticLayout: true,
+					}}
+					onChange={(val): void => {
+						this.set("data", val)
+					}}
+				/>
 		}
 
 		return <div
