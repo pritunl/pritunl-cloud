@@ -12,6 +12,7 @@ export interface Vpc {
 	vpc_id?: number;
 	network?: string;
 	network6?: string;
+	icmp_redirects?: boolean;
 	subnets?: Subnet[];
 	organization?: string;
 	datacenter?: string;
