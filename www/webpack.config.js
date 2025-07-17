@@ -51,7 +51,7 @@ module.exports = {
     }),
     new MonacoWebpackPlugin({
       publicPath: '/static/',
-      languages: ['markdown', 'yaml', 'python'],
+      languages: ['markdown', 'yaml', 'python', 'json'],
       features: ['all'],
       customLanguages: [
         {
