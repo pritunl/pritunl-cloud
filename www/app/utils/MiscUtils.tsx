@@ -1,5 +1,8 @@
 /// <reference path="../References.d.ts"/>
 import React from "react";
+import * as Blueprint from '@blueprintjs/core';
+import * as ImageTypes from '../types/ImageTypes';
+import * as Icons from '@blueprintjs/icons';
 
 export class SyncInterval {
   private timer: number | null = null;
@@ -447,4 +450,36 @@ export function highlightMatch(input: string, query: string): React.ReactNode {
 		<b>{input.substring(index, index + query.length)}</b>
 		{input.substring(index + query.length)}
 	</span>;
+}
+
+export function parseImageDate(dateString: string): string {
+  if (!dateString || typeof dateString !== 'string') {
+		return dateString
+  }
+
+  const cleanedDate = dateString.replace(/\D/g, '');
+
+  if (cleanedDate.length === 6) {
+    const year = cleanedDate.substring(0, 2);
+    const month = cleanedDate.substring(2, 4);
+
+    const monthNum = parseInt(month, 10);
+    if (monthNum < 1 || monthNum > 12) {
+			return dateString
+    }
+
+    return `${month}/${year}`;
+  } else if (cleanedDate.length === 4) {
+    const year = cleanedDate.substring(0, 2);
+    const month = cleanedDate.substring(2, 4);
+
+    const monthNum = parseInt(month, 10);
+    if (monthNum < 1 || monthNum > 12) {
+			return dateString
+    }
+
+    return `${month}/${year}`;
+  }
+
+	return dateString
 }
