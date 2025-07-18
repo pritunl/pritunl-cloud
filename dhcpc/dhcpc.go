@@ -16,11 +16,15 @@ func Main() (err error) {
 	DhcpSecret = os.Getenv("DHCP_SECRET")
 	DhcpIface = os.Getenv("DHCP_IFACE")
 	DhcpIface6 = os.Getenv("DHCP_IFACE6")
+	dhcpIp := os.Getenv("DHCP_IP")
+	dhcpIp6 := os.Getenv("DHCP_IP6")
 	os.Unsetenv("IMDS_ADDRESS")
 	os.Unsetenv("IMDS_PORT")
 	os.Unsetenv("DHCP_SECRET")
 	os.Unsetenv("DHCP_IFACE")
 	os.Unsetenv("DHCP_IFACE6")
+	os.Unsetenv("DHCP_IP")
+	os.Unsetenv("DHCP_IP6")
 
 	logger.Init(
 		logger.SetTimeFormat(""),
