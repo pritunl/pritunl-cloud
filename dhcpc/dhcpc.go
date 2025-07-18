@@ -140,14 +140,18 @@ func Main() (err error) {
 
 	if dhcpIp != "" {
 		ip, ipnet, _ := net.ParseCIDR(dhcpIp)
-		ipnet.IP = ip
-		client.DhcpIp = ipnet
+		if ip != nil && ipnet != nil {
+			ipnet.IP = ip
+			client.DhcpIp = ipnet
+		}
 	}
 
 	if dhcpIp6 != "" {
 		ip, ipnet, _ := net.ParseCIDR(dhcpIp6)
-		ipnet.IP = ip
-		client.DhcpIp6 = ipnet
+		if ip != nil && ipnet != nil {
+			ipnet.IP = ip
+			client.DhcpIp6 = ipnet
+		}
 	}
 
 	return
