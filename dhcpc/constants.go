@@ -13,7 +13,7 @@ const (
 var (
 	ImdsAddress = ""
 	ImdsPort    = ""
-	DhcpSecret  = ""
+	ImdsSecret  = ""
 	DhcpIface   = ""
 	DhcpIface6  = ""
 )
