@@ -22,6 +22,10 @@ func Main() (err error) {
 	os.Unsetenv("DHCP_IFACE")
 	os.Unsetenv("DHCP_IFACE6")
 
+	logger.Init(
+		logger.SetTimeFormat(""),
+	)
+
 	ip4 := false
 	flag.BoolVar(&ip4, "ip4", false, "Enable IPv4")
 
