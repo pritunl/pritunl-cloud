@@ -2,9 +2,11 @@ package dhcpc
 
 import (
 	"flag"
+	"fmt"
 	"net"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/pritunl/tools/logger"
 )
@@ -17,6 +19,85 @@ type Dhcpc struct {
 	DhcpIface6  string
 	DhcpIp      *net.IPNet
 	DhcpIp6     *net.IPNet
+}
+
+func (d *Dhcpc) run() (err error) {
+	lease := &Lease{
+		Iface:   d.DhcpIface,
+		Address: d.DhcpIp,
+	}
+
+	for {
+		for {
+			ok, e := lease.Exchange()
+			if e != nil {
+				logger.WithFields(logger.Fields{
+					"interface": d.DhcpIface,
+					"address":   lease.Address.String(),
+					"error":     e,
+				}).Error("dhcpc: Failed to exchange lease")
+				time.Sleep(500 * time.Millisecond)
+				continue
+			}
+
+			if !ok {
+				logger.WithFields(logger.Fields{
+					"interface": d.DhcpIface,
+				}).Error("dhcpc: Failed to receive lease")
+				time.Sleep(1000 * time.Millisecond)
+			}
+
+			break
+		}
+
+		for {
+			time.Sleep(10 * time.Second)
+
+			ready := lease.IfaceReady()
+			if !ready {
+				logger.WithFields(logger.Fields{
+					"interface": d.DhcpIface,
+					"address":   lease.Address.String(),
+				}).Error("dhcpc: Interface not ready")
+				break
+			}
+
+			ok, e := lease.Renew()
+			if e != nil {
+				logger.WithFields(logger.Fields{
+					"interface": d.DhcpIface,
+					"address":   lease.Address.String(),
+					"error":     e,
+				}).Error("dhcpc: Failed to renew lease")
+				break
+			}
+
+			if !ok {
+				logger.WithFields(logger.Fields{
+					"interface": d.DhcpIface,
+					"address":   lease.Address.String(),
+					"error":     err,
+				}).Error("dhcpc: Failed to receive lease renewal")
+				break
+			}
+		}
+	}
+}
+
+func (d *Dhcpc) Run() {
+	for {
+		err := d.run()
+		if err != nil {
+			logger.WithFields(logger.Fields{
+				"interface": d.DhcpIface,
+				"address":   d.DhcpIp,
+				"address6":  d.DhcpIp6,
+				"error":     err,
+			}).Error("dhcpc: Run error")
+		}
+
+		time.Sleep(3 * time.Second)
+	}
 }
 
 func Main() (err error) {
