@@ -36,8 +36,5 @@ func Main() (err error) {
 	ip6 := false
 	flag.BoolVar(&ip6, "ip6", false, "Enable IPv6")
 
-	iface := ""
-	flag.StringVar(&iface, "iface", "", "Bind interface")
-
 	flag.Parse()
 }
