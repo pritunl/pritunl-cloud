@@ -2,10 +2,8 @@ package dhcpc
 
 import (
 	"flag"
-	"fmt"
 	"net"
 	"os"
-	"strconv"
 
 	"github.com/pritunl/tools/logger"
 )
@@ -37,4 +35,19 @@ func Main() (err error) {
 	flag.BoolVar(&ip6, "ip6", false, "Enable IPv6")
 
 	flag.Parse()
+
+	lease := &Lease{}
+
+	if dhcpIp != "" || dhcpIp6 != "" {
+		ip, ipnet, _ := net.ParseCIDR(dhcpIp)
+		ipnet.IP = ip
+		lease.Address = ipnet
+	}
+
+	_, err = lease.Exchange()
+	if err != nil {
+		return
+	}
+
+	return
 }
