@@ -605,9 +605,8 @@ export default class PodDeployment extends React.Component<Props, State> {
 								fields={[
 									{
 										label: "Agent Status",
-										value: MiscUtils.capitalize(
-											deployment.instance_guest_status) || "-",
-										valueClass: heartbeatClass,
+										value: agentStatus,
+										valueClass: agentClass,
 									},
 									{
 										label: "Last Heartbeat",
