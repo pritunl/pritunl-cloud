@@ -50,6 +50,23 @@ func (d *Dhcpc) run() (err error) {
 			break
 		}
 
+		ready := false
+		for i := 0; i < 20; i++ {
+			ready = lease.IfaceReady()
+			if ready {
+				break
+			}
+
+			time.Sleep(500 * time.Millisecond)
+		}
+
+		if !ready {
+			logger.WithFields(logger.Fields{
+				"interface": d.DhcpIface,
+				"address":   lease.Address.String(),
+			}).Error("dhcpc: Interface ready timeout")
+		}
+
 		for {
 			time.Sleep(10 * time.Second)
 
