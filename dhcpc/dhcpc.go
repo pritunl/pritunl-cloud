@@ -187,5 +187,7 @@ func Main() (err error) {
 		}
 	}
 
+	client.Run()
+
 	return
 }
