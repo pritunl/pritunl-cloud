@@ -50,6 +50,14 @@ func (d *Dhcpc) run() (err error) {
 			break
 		}
 
+		logger.WithFields(logger.Fields{
+			"interface": d.DhcpIface,
+			"address":   lease.Address.String(),
+			"gateway":   lease.Gateway.String(),
+			"server":    lease.ServerAddress.String(),
+			"time":      lease.LeaseTime.String(),
+		}).Info("dhcpc: Exchanged")
+
 		ready := false
 		for i := 0; i < 20; i++ {
 			ready = lease.IfaceReady()
@@ -97,6 +105,14 @@ func (d *Dhcpc) run() (err error) {
 				}).Error("dhcpc: Failed to receive lease renewal")
 				break
 			}
+
+			logger.WithFields(logger.Fields{
+				"interface": d.DhcpIface,
+				"address":   lease.Address.String(),
+				"gateway":   lease.Gateway.String(),
+				"server":    lease.ServerAddress.String(),
+				"time":      lease.LeaseTime.String(),
+			}).Info("dhcpc: Renewed")
 		}
 	}
 }
