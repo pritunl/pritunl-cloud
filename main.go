@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/pritunl/pritunl-cloud/cmd"
@@ -45,14 +46,15 @@ func InitLimited() {
 func main() {
 	defer time.Sleep(500 * time.Millisecond)
 
-	flag.Usage = func() {
-		fmt.Printf(help)
+	firstArg := ""
+	if len(os.Args) > 1 {
+		firstArg = os.Args[1]
 	}
 
-	flag.Parse()
-
-	switch flag.Arg(0) {
+	switch firstArg {
 	case "start":
+		flag.Parse()
+
 		for _, arg := range flag.Args() {
 			switch arg {
 			case "--debug":
