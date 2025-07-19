@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"os"
 	"strings"
 
@@ -11,25 +10,13 @@ import (
 	"github.com/pritunl/pritunl-cloud/imds/server/state"
 )
 
-const help = `
-Usage: pritunl-cloud-imds COMMAND
-
-Commands:
-  version      Show version
-  start        Start IMDS server
-`
-
-func main() {
+func Main() (err error) {
 	constants.ClientSecret = os.Getenv("CLIENT_SECRET")
 	constants.DhcpSecret = os.Getenv("DHCP_SECRET")
 	constants.HostSecret = os.Getenv("HOST_SECRET")
 	os.Unsetenv("CLIENT_SECRET")
 	os.Unsetenv("DHCP_SECRET")
 	os.Unsetenv("HOST_SECRET")
-
-	flag.Usage = func() {
-		fmt.Printf(help)
-	}
 
 	host := ""
 	flag.StringVar(&host, "host", "127.0.0.1", "Server bind address")
@@ -45,28 +32,23 @@ func main() {
 
 	flag.Parse()
 
-	switch flag.Arg(0) {
-	case "start":
-		constants.Host = strings.Split(host, "/")[0]
-		constants.Port = port
-		constants.Sock = sockPath
-		constants.Client = client
+	constants.Host = strings.Split(host, "/")[0]
+	constants.Port = port
+	constants.Sock = sockPath
+	constants.Client = client
 
-		routr := &router.Router{}
-		routr.Init()
+	routr := &router.Router{}
+	routr.Init()
 
-		err := state.Init()
-		if err != nil {
-			panic(err)
-		}
-
-		err = routr.Run()
-		if err != nil {
-			panic(err)
-		}
-		break
-	case "version":
-		fmt.Printf("pritunl-cloud-imds v%s\n", constants.Version)
-		break
+	err = state.Init()
+	if err != nil {
+		return
 	}
+
+	err = routr.Run()
+	if err != nil {
+		return
+	}
+
+	return
 }
