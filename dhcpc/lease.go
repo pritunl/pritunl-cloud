@@ -12,6 +12,7 @@ import (
 )
 
 type Lease struct {
+	Iface         string
 	Address       *net.IPNet
 	Gateway       net.IP
 	ServerAddress net.IP
@@ -20,7 +21,7 @@ type Lease struct {
 }
 
 func (l *Lease) IfaceReady() (ready bool) {
-	iface, err := net.InterfaceByName(DhcpIface)
+	iface, err := net.InterfaceByName(l.Iface)
 	if err != nil {
 		return
 	}
@@ -47,7 +48,7 @@ func (l *Lease) Renew() (ok bool, err error) {
 		return
 	}
 
-	iface, err := net.InterfaceByName(DhcpIface)
+	iface, err := net.InterfaceByName(l.Iface)
 	if err != nil {
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "dhcpc: Failed to find interface"),
@@ -65,7 +66,7 @@ func (l *Lease) Renew() (ok bool, err error) {
 		Port: nclient4.ServerPort,
 	}
 
-	client, err := nclient4.New(DhcpIface,
+	client, err := nclient4.New(l.Iface,
 		nclient4.WithServerAddr(serverAddr),
 		nclient4.WithTimeout(DhcpTimeout),
 		nclient4.WithRetry(DhcpRetries),
@@ -110,7 +111,7 @@ func (l *Lease) Renew() (ok bool, err error) {
 
 func (l *Lease) Exchange() (ok bool, err error) {
 	client, err := nclient4.New(
-		DhcpIface,
+		l.Iface,
 		nclient4.WithTimeout(DhcpTimeout),
 		nclient4.WithRetry(DhcpRetries),
 	)
