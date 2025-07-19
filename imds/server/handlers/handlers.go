@@ -111,21 +111,28 @@ func AuthHost(c *gin.Context) {
 }
 
 func RegisterVirt(engine *gin.Engine) {
-	engine.Use(AuthVirt)
 	engine.Use(Recovery)
 	engine.Use(Errors)
 
-	engine.GET("/query/:resource", queryGet)
-	engine.GET("/query/:resource/:key1", queryGet)
-	engine.GET("/query/:resource/:key1/:key2", queryGet)
-	engine.GET("/query/:resource/:key1/:key2/:key3", queryGet)
-	engine.GET("/query/:resource/:key1/:key2/:key3/:key4", queryGet)
-	engine.GET("/instance", instanceGet)
-	engine.GET("/vpc", vpcGet)
-	engine.GET("/subnet", subnetGet)
-	engine.GET("/certificate", certificatesGet)
-	engine.GET("/secret", secretsGet)
-	engine.PUT("/sync", syncPut)
+	virtGroup := engine.Group("")
+	virtGroup.Use(AuthVirt)
+
+	dhcpGroup := engine.Group("")
+	dhcpGroup.Use(AuthDhcp)
+
+	virtGroup.GET("/query/:resource", queryGet)
+	virtGroup.GET("/query/:resource/:key1", queryGet)
+	virtGroup.GET("/query/:resource/:key1/:key2", queryGet)
+	virtGroup.GET("/query/:resource/:key1/:key2/:key3", queryGet)
+	virtGroup.GET("/query/:resource/:key1/:key2/:key3/:key4", queryGet)
+	virtGroup.GET("/instance", instanceGet)
+	virtGroup.GET("/vpc", vpcGet)
+	virtGroup.GET("/subnet", subnetGet)
+	virtGroup.GET("/certificate", certificatesGet)
+	virtGroup.GET("/secret", secretsGet)
+	virtGroup.PUT("/sync", syncPut)
+
+	dhcpGroup.PUT("/dhcp", syncPut)
 }
 
 func RegisterHost(engine *gin.Engine) {
