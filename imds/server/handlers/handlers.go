@@ -81,9 +81,9 @@ func AuthDhcp(c *gin.Context) {
 	if c.Request.Header.Get("Origin") != "" ||
 		c.Request.Header.Get("Referer") != "" ||
 		c.Request.Header.Get("User-Agent") != "pritunl-dhcp" ||
-		constants.ClientSecret == "" ||
+		constants.DhcpSecret == "" ||
 		(subtle.ConstantTimeCompare([]byte(token),
-			[]byte(constants.ClientSecret)) != 1) {
+			[]byte(constants.DhcpSecret)) != 1) {
 
 		c.AbortWithStatus(401)
 		return
