@@ -153,6 +153,10 @@ func Main() (err error) {
 		logger.SetTimeFormat(""),
 	)
 
+	logger.AddHandler(func(record *logger.Record) {
+		fmt.Print(record.String())
+	})
+
 	ip4 := false
 	flag.BoolVar(&ip4, "ip4", false, "Enable IPv4")
 
