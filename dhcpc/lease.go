@@ -12,12 +12,12 @@ import (
 )
 
 type Lease struct {
-	Iface         string
-	Address       *net.IPNet
-	Gateway       net.IP
-	ServerAddress net.IP
-	LeaseTime     time.Duration
-	TransactionId string
+	Iface         string        `json:"iface"`
+	Address       *net.IPNet    `json:"address"`
+	Gateway       net.IP        `json:"gateway"`
+	ServerAddress net.IP        `json:"server"`
+	LeaseTime     time.Duration `json:"ttl"`
+	TransactionId string        `json:"-"`
 }
 
 func (l *Lease) IfaceReady() (ready bool) {
