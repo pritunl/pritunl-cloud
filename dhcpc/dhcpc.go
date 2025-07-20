@@ -223,6 +223,7 @@ func Main() (err error) {
 		ImdsSecret:  imdsSecret,
 		DhcpIface:   dhcpIface,
 		DhcpIface6:  dhcpIface6,
+		syncTrigger: make(chan struct{}, 1),
 	}
 
 	if dhcpIp != "" {
