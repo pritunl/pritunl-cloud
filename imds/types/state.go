@@ -31,16 +31,17 @@ func (s *State) Final() bool {
 
 func (s *State) Copy() *State {
 	return &State{
-		Hash:      s.Hash,
-		Status:    s.Status,
-		Memory:    s.Memory,
-		HugePages: s.HugePages,
-		Load1:     s.Load1,
-		Load5:     s.Load5,
-		Load15:    s.Load15,
-		DhcpIp:    s.DhcpIp,
-		Updates:   s.Updates,
-		Timestamp: s.Timestamp,
+		Hash:        s.Hash,
+		Status:      s.Status,
+		Memory:      s.Memory,
+		HugePages:   s.HugePages,
+		Load1:       s.Load1,
+		Load5:       s.Load5,
+		Load15:      s.Load15,
+		DhcpIp:      s.DhcpIp,
+		DhcpGateway: s.DhcpGateway,
+		Updates:     s.Updates,
+		Timestamp:   s.Timestamp,
 	}
 }
 
