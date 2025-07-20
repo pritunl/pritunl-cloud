@@ -26,7 +26,7 @@ After=network.target
 Type=simple
 User=%s
 Environment="IMDS_ADDRESS=%s"
-Environment="IMDS_PORT=%s"
+Environment="IMDS_PORT=%d"
 Environment="IMDS_SECRET=%s"
 Environment="DHCP_IFACE=%s"
 Environment="DHCP_IFACE6=%s"
@@ -51,7 +51,7 @@ After=network.target
 Type=simple
 User=root
 Environment="IMDS_ADDRESS=%s"
-Environment="IMDS_PORT=%s"
+Environment="IMDS_PORT=%d"
 Environment="IMDS_SECRET=%s"
 Environment="DHCP_IFACE=%s"
 Environment="DHCP_IFACE6=%s"
