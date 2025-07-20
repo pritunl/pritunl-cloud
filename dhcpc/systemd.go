@@ -144,7 +144,7 @@ func Start(db *database.Database, virt *vm.VirtualMachine,
 	logrus.WithFields(logrus.Fields{
 		"id":           virt.Id.Hex(),
 		"systemd_unit": unit,
-	}).Info("imds: Starting virtual machine imds server")
+	}).Info("dhcpc: Starting virtual machine dhcp client")
 
 	_ = systemd.Stop(unit)
 
