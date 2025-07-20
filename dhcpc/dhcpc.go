@@ -71,8 +71,6 @@ func (d *Dhcpc) run() (err error) {
 		Address: d.DhcpIp,
 	}
 
-	go d.startSync()
-
 	for {
 		for {
 			ok, e := d.lease.Exchange()
@@ -168,6 +166,13 @@ func (d *Dhcpc) run() (err error) {
 }
 
 func (d *Dhcpc) Run() {
+	d.lease = &Lease{
+		Iface:   d.DhcpIface,
+		Address: d.DhcpIp,
+	}
+
+	go d.startSync()
+
 	for {
 		err := d.run()
 		if err != nil {
