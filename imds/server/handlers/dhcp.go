@@ -23,6 +23,7 @@ func dhcpPut(c *gin.Context) {
 
 	state.Global.State.DhcpIp = data.Address
 	state.Global.State.DhcpGateway = data.Gateway
+	state.Global.State.DhcpIp6 = data.Address6
 
 	c.JSON(200, map[string]string{})
 }
