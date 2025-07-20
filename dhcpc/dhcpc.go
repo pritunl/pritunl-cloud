@@ -42,6 +42,14 @@ func (d *Dhcpc) startSync() {
 			time.Sleep(1 * time.Second)
 		}
 
+		logger.WithFields(logger.Fields{
+			"interface": d.DhcpIface,
+			"address":   d.lease.Address.String(),
+			"gateway":   d.lease.Gateway.String(),
+			"server":    d.lease.ServerAddress.String(),
+			"time":      d.lease.LeaseTime.String(),
+		}).Info("dhcpc: Synced")
+
 		select {
 		case <-ticker.C:
 		case <-d.syncTrigger:
