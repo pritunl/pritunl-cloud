@@ -20,6 +20,7 @@ type Dhcpc struct {
 	DhcpIp      *net.IPNet
 	DhcpIp6     *net.IPNet
 	lease       *Lease
+	syncTrigger chan struct{}
 }
 
 func (d *Dhcpc) startSync() {
@@ -28,6 +29,9 @@ func (d *Dhcpc) startSync() {
 		Port:    d.ImdsPort,
 		Secret:  d.ImdsSecret,
 	}
+
+	ticker := time.NewTicker(60 * time.Second)
+	defer ticker.Stop()
 
 	for {
 		e := im.Sync(d.lease)
@@ -38,7 +42,18 @@ func (d *Dhcpc) startSync() {
 			time.Sleep(1 * time.Second)
 		}
 
-		time.Sleep(60 * time.Second)
+		select {
+		case <-ticker.C:
+		case <-d.syncTrigger:
+			ticker.Reset(60 * time.Second)
+		}
+	}
+}
+
+func (d *Dhcpc) sync() {
+	select {
+	case d.syncTrigger <- struct{}{}:
+	default:
 	}
 }
 
@@ -80,6 +95,8 @@ func (d *Dhcpc) run() (err error) {
 			"server":    d.lease.ServerAddress.String(),
 			"time":      d.lease.LeaseTime.String(),
 		}).Info("dhcpc: Exchanged")
+
+		d.sync()
 
 		ready := false
 		for i := 0; i < 20; i++ {
@@ -136,6 +153,8 @@ func (d *Dhcpc) run() (err error) {
 				"server":    d.lease.ServerAddress.String(),
 				"time":      d.lease.LeaseTime.String(),
 			}).Info("dhcpc: Renewed")
+
+			d.sync()
 		}
 	}
 }
