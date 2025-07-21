@@ -331,3 +331,85 @@ func Pull(db *database.Database, instId, deplyId primitive.ObjectID,
 
 	return
 }
+
+func State(db *database.Database, instId primitive.ObjectID,
+	imdsHostSecret string) (ste *types.State, err error) {
+
+	sockPath := paths.GetImdsSockPath(instId)
+
+	exists, err := utils.Exists(sockPath)
+	if err != nil {
+		return
+	}
+
+	if !exists {
+		return
+	}
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			DialContext: func(_ context.Context,
+				_, _ string) (net.Conn, error) {
+
+				return net.Dial("unix", sockPath)
+			},
+		},
+		Timeout: 6 * time.Second,
+	}
+
+	req, err := http.NewRequest("GET", "http://unix/state", nil)
+	if err != nil {
+		err = &errortypes.RequestError{
+			errors.Wrap(err, "agent: Failed to create imds request"),
+		}
+		return
+	}
+
+	req.Header.Set("User-Agent", "pritunl-imds")
+	req.Header.Set("Auth-Token", imdsHostSecret)
+
+	resp, e := client.Do(req)
+	if e != nil {
+		err = &errortypes.RequestError{
+			errors.Wrap(e, "agent: Imds request failed"),
+		}
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		body := ""
+		data, _ := ioutil.ReadAll(resp.Body)
+		if data != nil {
+			body = string(data)
+		}
+
+		errData := &errortypes.ErrorData{}
+		err = json.Unmarshal(data, errData)
+		if err != nil || errData.Error == "" {
+			errData = nil
+		}
+
+		if errData != nil && errData.Message != "" {
+			body = errData.Message
+		}
+
+		err = &errortypes.RequestError{
+			errors.Newf(
+				"agent: Imds host sync error %d - %s",
+				resp.StatusCode, body),
+		}
+		return
+	}
+
+	ste = &types.State{}
+	err = json.NewDecoder(resp.Body).Decode(ste)
+	if err != nil {
+		err = &errortypes.RequestError{
+			errors.Wrap(err, "agent: Failed to decode imds host sync resp"),
+		}
+		return
+	}
+
+	return
+}
