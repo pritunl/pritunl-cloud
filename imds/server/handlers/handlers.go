@@ -132,7 +132,7 @@ func RegisterVirt(engine *gin.Engine) {
 	virtGroup.GET("/secret", secretsGet)
 	virtGroup.PUT("/sync", syncPut)
 
-	dhcpGroup.PUT("/dhcp", syncPut)
+	dhcpGroup.PUT("/dhcp", dhcpPut)
 }
 
 func RegisterHost(engine *gin.Engine) {
