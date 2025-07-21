@@ -151,6 +151,13 @@ func Sync(db *database.Database, instId, deplyId primitive.ObjectID,
 			"guest.load15":    ste.Load15,
 		}
 
+		if ste.DhcpIp != nil {
+			data["dhcp_ip"] = ste.DhcpIp.String()
+		}
+		if ste.DhcpIp6 != nil {
+			data["dhcp_ip6"] = ste.DhcpIp6.String()
+		}
+
 		if ste.Updates != nil {
 			data["guest.updates"] = ste.Updates
 		}
@@ -285,6 +292,13 @@ func Pull(db *database.Database, instId, deplyId primitive.ObjectID,
 			"guest.load1":     ste.Load1,
 			"guest.load5":     ste.Load5,
 			"guest.load15":    ste.Load15,
+		}
+
+		if ste.DhcpIp != nil {
+			data["dhcp_ip"] = ste.DhcpIp.String()
+		}
+		if ste.DhcpIp6 != nil {
+			data["dhcp_ip6"] = ste.DhcpIp6.String()
 		}
 
 		if ste.Updates != nil {
