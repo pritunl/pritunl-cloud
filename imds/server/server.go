@@ -25,7 +25,7 @@ func Main() (err error) {
 	flag.IntVar(&port, "port", 80, "Server bind port")
 
 	client := ""
-	flag.StringVar(&host, "client", "127.0.0.1", "Client address")
+	flag.StringVar(&client, "client", "127.0.0.1", "Client address")
 
 	sockPath := ""
 	flag.StringVar(&sockPath, "sock", "", "Socket path")
