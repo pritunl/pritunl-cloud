@@ -32,7 +32,7 @@ Environment="DHCP_IFACE=%s"
 Environment="DHCP_IFACE6=%s"
 Environment="DHCP_IP=%s"
 Environment="DHCP_IP6=%s"
-ExecStart=/usr/bin/pritunl-cloud dhcp-client %s
+ExecStart=/usr/bin/pritunl-cloud %s dhcp-client
 TimeoutStopSec=5
 PrivateTmp=true
 ProtectHome=true
@@ -57,7 +57,7 @@ Environment="DHCP_IFACE=%s"
 Environment="DHCP_IFACE6=%s"
 Environment="DHCP_IP=%s"
 Environment="DHCP_IP6=%s"
-ExecStart=/usr/sbin/ip netns exec %s /usr/bin/pritunl-cloud dhcp-client %s
+ExecStart=/usr/sbin/ip netns exec %s /usr/bin/pritunl-cloud %s dhcp-client
 TimeoutStopSec=5
 PrivateTmp=true
 ProtectHome=true
