@@ -13,6 +13,15 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+func DhcpClient() (err error) {
+	err = dhcpc.Main()
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func Dhcp4Server() (err error) {
 	config := strings.Trim(os.Getenv("CONFIG"), "'")
 	server4 := &dhcps.Server4{}
@@ -35,15 +44,6 @@ func Dhcp4Server() (err error) {
 
 		time.Sleep(3 * time.Second)
 	}
-}
-
-func Dhcp4Client() (err error) {
-	err = dhcpc.Main()
-	if err != nil {
-		return
-	}
-
-	return
 }
 
 func Dhcp6Server() (err error) {
