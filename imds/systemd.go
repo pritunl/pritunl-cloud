@@ -18,7 +18,7 @@ import (
 )
 
 const systemdNamespaceTemplate = `[Unit]
-Description=Pritunl Cloud IMDS
+Description=Pritunl Cloud IMDS Server
 After=network.target
 
 [Service]
@@ -39,7 +39,7 @@ AmbientCapabilities=CAP_NET_BIND_SERVICE
 `
 
 const systemdTemplate = `[Unit]
-Description=Pritunl Cloud IMDS
+Description=Pritunl Cloud IMDS Server
 After=network.target
 
 [Service]
