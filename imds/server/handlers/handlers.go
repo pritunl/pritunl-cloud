@@ -142,4 +142,5 @@ func RegisterHost(engine *gin.Engine) {
 
 	engine.PUT("/sync", hostSyncPut)
 	engine.GET("/sync", hostSyncGet)
+	engine.GET("/state", hostStateGet)
 }
