@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/pritunl/tools/logger"
@@ -223,7 +224,7 @@ func Main() (err error) {
 	imdsPortInt, _ := strconv.Atoi(imdsPort)
 
 	client := &Dhcpc{
-		ImdsAddress: imdsAddress,
+		ImdsAddress: strings.Split(imdsAddress, "/")[0],
 		ImdsPort:    imdsPortInt,
 		ImdsSecret:  imdsSecret,
 		DhcpIface:   dhcpIface,
