@@ -71,7 +71,7 @@ func WriteService(vmId primitive.ObjectID,
 	namespace, imdsSecret, dhcpIface, dhcpIface6, dhcpIp, dhcpIp6 string,
 	ip4, ip6, systemdNamespace bool) (err error) {
 
-	unitPath := paths.GetUnitPathImds(vmId)
+	unitPath := paths.GetUnitPathDhcpc(vmId)
 
 	if imdsSecret == "" {
 		err = &errortypes.ParseError{
@@ -139,7 +139,7 @@ func Start(db *database.Database, virt *vm.VirtualMachine,
 	namespace := vm.GetNamespace(virt.Id, 0)
 
 	hasSystemdNamespace := features.HasSystemdNamespace()
-	unit := paths.GetUnitNameImds(virt.Id)
+	unit := paths.GetUnitNameDhcpc(virt.Id)
 
 	logrus.WithFields(logrus.Fields{
 		"id":           virt.Id.Hex(),
@@ -168,7 +168,7 @@ func Start(db *database.Database, virt *vm.VirtualMachine,
 }
 
 func Stop(virt *vm.VirtualMachine) (err error) {
-	unit := paths.GetUnitNameImds(virt.Id)
+	unit := paths.GetUnitNameDhcpc(virt.Id)
 
 	_ = systemd.Stop(unit)
 
