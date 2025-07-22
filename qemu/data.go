@@ -6,6 +6,7 @@ import (
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/dhcpc"
 	"github.com/pritunl/pritunl-cloud/dhcps"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -70,6 +71,7 @@ func initHugepage(virt *vm.VirtualMachine) (err error) {
 
 func cleanRun(virt *vm.VirtualMachine) (err error) {
 	_ = tpm.Stop(virt)
+	_ = dhcpc.Stop(virt)
 	_ = imds.Stop(virt)
 	_ = dhcps.Stop(virt)
 	_ = virtiofs.StopAll(virt)
@@ -344,6 +346,7 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	time.Sleep(1 * time.Second)
 
 	_ = tpm.Stop(virt)
+	_ = dhcpc.Stop(virt)
 	_ = imds.Stop(virt)
 	_ = dhcps.Stop(virt)
 	_ = virtiofs.StopAll(virt)
@@ -561,6 +564,7 @@ func Cleanup(db *database.Database, virt *vm.VirtualMachine) {
 	}).Info("qemu: Stopped virtual machine")
 
 	_ = tpm.Stop(virt)
+	_ = dhcpc.Stop(virt)
 	_ = imds.Stop(virt)
 	_ = dhcps.Stop(virt)
 	_ = virtiofs.StopAll(virt)
