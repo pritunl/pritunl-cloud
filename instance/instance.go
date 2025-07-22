@@ -87,6 +87,8 @@ type Instance struct {
 	HostIps             []string            `bson:"host_ips" json:"host_ips"`
 	NodePortIps         []string            `bson:"node_port_ips" json:"node_port_ips"`
 	NodePorts           []*nodeport.Mapping `bson:"node_ports,omitempty" json:"node_ports"`
+	DhcpIp              string              `bson:"dhcp_ip" json:"dhcp_ip"`
+	DhcpIp6             string              `bson:"dhcp_ip6" json:"dhcp_ip6"`
 	NetworkNamespace    string              `bson:"network_namespace" json:"network_namespace"`
 	NoPublicAddress     bool                `bson:"no_public_address" json:"no_public_address"`
 	NoPublicAddress6    bool                `bson:"no_public_address6" json:"no_public_address6"`
