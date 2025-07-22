@@ -210,11 +210,6 @@ func PowerOn(db *database.Database, inst *instance.Instance,
 		return
 	}
 
-	err = imds.Start(db, virt)
-	if err != nil {
-		return
-	}
-
 	store.RemVirt(virt.Id)
 	store.RemDisks(virt.Id)
 
