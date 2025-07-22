@@ -159,6 +159,12 @@ func main() {
 			panic(err)
 		}
 		return
+	case "imds-server":
+		err := cmd.ImdsServer()
+		if err != nil {
+			panic(err)
+		}
+		return
 	case "dhcp4-server":
 		err := cmd.Dhcp4Server()
 		if err != nil {
