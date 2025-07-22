@@ -245,6 +245,11 @@ func GetUnitPathImds(virtId primitive.ObjectID) string {
 		GetUnitNameImds(virtId))
 }
 
+func GetUnitPathDhcpc(virtId primitive.ObjectID) string {
+	return path.Join(settings.Hypervisor.SystemdPath,
+		GetUnitNameDhcpc(virtId))
+}
+
 func GetUnitPathShare(virtId primitive.ObjectID, shareId string) string {
 	return path.Join(settings.Hypervisor.SystemdPath,
 		GetUnitNameShare(virtId, shareId))
