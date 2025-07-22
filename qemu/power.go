@@ -9,6 +9,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
+	"github.com/pritunl/pritunl-cloud/dhcpc"
 	"github.com/pritunl/pritunl-cloud/dhcps"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/guest"
@@ -317,6 +318,7 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	}
 
 	_ = tpm.Stop(virt)
+	_ = dhcpc.Stop(virt)
 	_ = imds.Stop(virt)
 	_ = dhcps.Stop(virt)
 	_ = virtiofs.StopAll(virt)
@@ -363,6 +365,7 @@ func ForcePowerOffErr(db *database.Database, virt *vm.VirtualMachine,
 	}
 
 	_ = tpm.Stop(virt)
+	_ = dhcpc.Stop(virt)
 	_ = imds.Stop(virt)
 	_ = dhcps.Stop(virt)
 	_ = virtiofs.StopAll(virt)
@@ -405,6 +408,7 @@ func ForcePowerOff(db *database.Database, virt *vm.VirtualMachine) (
 	}
 
 	_ = tpm.Stop(virt)
+	_ = dhcpc.Stop(virt)
 	_ = imds.Stop(virt)
 	_ = dhcps.Stop(virt)
 	_ = virtiofs.StopAll(virt)
