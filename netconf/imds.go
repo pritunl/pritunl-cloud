@@ -2,6 +2,7 @@ package netconf
 
 import (
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/imds"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
@@ -68,6 +69,15 @@ func (n *NetConf) imdsUp(db *database.Database) (err error) {
 	return
 }
 
+func (n *NetConf) imdsStart(db *database.Database) (err error) {
+	err = imds.Start(db, n.Virt)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func (n *NetConf) Imds(db *database.Database) (err error) {
 	err = n.imdsNet(db)
 	if err != nil {
@@ -85,6 +95,11 @@ func (n *NetConf) Imds(db *database.Database) (err error) {
 	}
 
 	err = n.imdsUp(db)
+	if err != nil {
+		return
+	}
+
+	err = n.imdsStart(db)
 	if err != nil {
 		return
 	}
