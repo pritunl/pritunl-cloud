@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/pritunl/pritunl-cloud/cmd"
@@ -46,12 +47,15 @@ func InitLimited() {
 func main() {
 	defer time.Sleep(500 * time.Millisecond)
 
-	firstArg := ""
-	if len(os.Args) > 1 {
-		firstArg = os.Args[1]
+	command := ""
+	for _, arg := range os.Args[1:] {
+		if !strings.HasPrefix(arg, "-") {
+			command = arg
+			break
+		}
 	}
 
-	switch firstArg {
+	switch command {
 	case "start":
 		flag.Parse()
 
