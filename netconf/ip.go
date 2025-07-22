@@ -1,7 +1,6 @@
 package netconf
 
 import (
-	"fmt"
 	"io/ioutil"
 	"strings"
 	"time"
@@ -9,7 +8,9 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/dhcpc"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/imds"
 	"github.com/pritunl/pritunl-cloud/iproute"
 	"github.com/pritunl/pritunl-cloud/iptables"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -56,6 +57,65 @@ func (n *NetConf) ipStartDhClient(db *database.Database) (err error) {
 }
 
 func (n *NetConf) ipExternal(db *database.Database) (err error) {
+	if n.NetworkMode == node.Dhcp || n.NetworkMode6 == node.Dhcp ||
+		n.NetworkMode6 == node.DhcpSlaac {
+
+		err = dhcpc.Start(
+			db,
+			n.Virt,
+			n.SpaceExternalIface,
+			n.SpaceExternalIface,
+			n.NetworkMode == node.Dhcp,
+			n.NetworkMode6 == node.Dhcp || n.NetworkMode6 == node.DhcpSlaac,
+		)
+		if err != nil {
+			return
+		}
+
+		ipTimeout := settings.Hypervisor.IpTimeout * 4
+		for i := 0; i < ipTimeout; i++ {
+			stat, e := imds.State(db, n.Virt.Id, n.Virt.ImdsHostSecret)
+			if e != nil {
+				time.Sleep(250 * time.Millisecond)
+				continue
+			}
+
+			if stat == nil {
+				time.Sleep(250 * time.Millisecond)
+				continue
+			}
+
+			if stat.DhcpIp != nil {
+				_, err = utils.ExecCombinedOutputLogged(
+					[]string{"File exists"},
+					"ip", "netns", "exec", n.Namespace,
+					"ip", "addr",
+					"add", stat.DhcpIp.String(),
+					"dev", n.SpaceExternalIface,
+				)
+				if err != nil {
+					return
+				}
+
+				_, err = utils.ExecCombinedOutputLogged(
+					[]string{"File exists"},
+					"ip", "netns", "exec", n.Namespace,
+					"ip", "route",
+					"add", "default",
+					"via", stat.DhcpGateway.String(),
+					"dev", n.SpaceExternalIface,
+				)
+				if err != nil {
+					return
+				}
+
+				break
+			}
+
+			time.Sleep(250 * time.Millisecond)
+		}
+	}
+
 	if n.NetworkMode == node.Static {
 		if n.SpaceExternalIfaceMod != "" {
 			_, err = utils.ExecCombinedOutputLogged(
@@ -105,18 +165,6 @@ func (n *NetConf) ipExternal(db *database.Database) (err error) {
 			}
 		}
 
-	} else if n.NetworkMode == node.Dhcp {
-		_, err = utils.ExecCombinedOutputLogged(
-			nil,
-			"ip", "netns", "exec", n.Namespace,
-			"unshare", "--mount",
-			"sh", "-c", fmt.Sprintf(
-				"mount -t tmpfs none /etc && dhclient -4 -pf %s -lf %s %s",
-				n.DhcpPidPath, n.DhcpLeasePath, n.SpaceExternalIface),
-		)
-		if err != nil {
-			return
-		}
 	}
 
 	if n.NetworkMode6 == node.Static {
