@@ -171,8 +171,8 @@ func main() {
 			panic(err)
 		}
 		return
-	case "dhcp4-client":
-		err := cmd.Dhcp4Client()
+	case "dhcp-client":
+		err := cmd.DhcpClient()
 		if err != nil {
 			panic(err)
 		}
