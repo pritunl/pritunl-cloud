@@ -220,6 +220,10 @@ func GetUnitNameImds(virtId primitive.ObjectID) string {
 	return fmt.Sprintf("pritunl_imds_%s.service", virtId.Hex())
 }
 
+func GetUnitNameDhcpc(virtId primitive.ObjectID) string {
+	return fmt.Sprintf("pritunl_dhcpc_%s.service", virtId.Hex())
+}
+
 func GetShareId(virtId primitive.ObjectID, shareName string) string {
 	hash := md5.New()
 	hash.Write([]byte(virtId.Hex()))
