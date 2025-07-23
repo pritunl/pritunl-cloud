@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -17,9 +19,13 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/imds/server/utils"
 	"github.com/pritunl/pritunl-cloud/imds/types"
+	"github.com/pritunl/pritunl-cloud/iproute"
 	"github.com/pritunl/pritunl-cloud/journal"
 	"github.com/pritunl/pritunl-cloud/paths"
+	"github.com/pritunl/pritunl-cloud/store"
+	pritunlutils "github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/tools/errors"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -27,8 +33,8 @@ var (
 	hashesLock = sync.Mutex{}
 )
 
-func Sync(db *database.Database, instId, deplyId primitive.ObjectID,
-	conf *types.Config) (err error) {
+func Sync(db *database.Database, namespace string,
+	instId, deplyId primitive.ObjectID, conf *types.Config) (err error) {
 
 	sockPath := paths.GetImdsSockPath(instId)
 
@@ -195,6 +201,184 @@ func Sync(db *database.Database, instId, deplyId primitive.ObjectID,
 			if err != nil {
 				return
 			}
+		}
+
+		curIp := ""
+		curIp6 := ""
+		curIpPrefix := ""
+		curIpPrefix6 := ""
+		curIpCached := false
+		curIpCached6 := false
+		newIp := ""
+		newIp6 := ""
+		newIpPrefix := ""
+		newIpPrefix6 := ""
+		clearIpCache := false
+
+		if ste.DhcpIp != nil {
+			addrStore, ok := store.GetAddress(instId)
+			if ok {
+				curIpCached = true
+				curIp = addrStore.Addr
+				if ste.DhcpIface == ste.DhcpIface6 {
+					curIpCached6 = true
+					curIp6 = addrStore.Addr6
+				}
+			} else {
+				address, address6, e := iproute.AddressGetIfaceMod(
+					namespace, ste.DhcpIface)
+				if e == nil && address != nil {
+					curIpCached = false
+					curIp = address.Local
+					curIpPrefix = fmt.Sprintf(
+						"%s/%d", address.Local, address.Prefix)
+					if ste.DhcpIface == ste.DhcpIface6 && address6 != nil {
+						curIpCached6 = false
+						curIp6 = address6.Local
+						curIpPrefix6 = fmt.Sprintf(
+							"%s/%d", address6.Local, address6.Prefix)
+					}
+				}
+			}
+			newIpPrefix = ste.DhcpIp.String()
+			newIp = strings.Split(newIpPrefix, "/")[0]
+		}
+
+		if ste.DhcpIp6 != nil {
+			if curIp6 == "" {
+				addrStore, ok := store.GetAddress(instId)
+				if ok {
+					curIpCached6 = true
+					curIp6 = addrStore.Addr6
+				} else {
+					_, address6, e := iproute.AddressGetIfaceMod(
+						namespace, ste.DhcpIface6)
+					if e == nil && address6 != nil {
+						curIpCached6 = false
+						curIp6 = address6.Local
+						curIpPrefix6 = fmt.Sprintf(
+							"%s/%d", address6.Local, address6.Prefix)
+					}
+				}
+			}
+			newIpPrefix6 = ste.DhcpIp6.String()
+			newIp6 = strings.Split(newIpPrefix6, "/")[0]
+		}
+
+		if newIp != "" && newIp != curIp {
+			if curIpCached {
+				address, address6, e := iproute.AddressGetIfaceMod(
+					namespace, ste.DhcpIface)
+				if e == nil && address != nil {
+					curIpCached = false
+					curIp = address.Local
+					curIpPrefix = fmt.Sprintf(
+						"%s/%d", address.Local, address.Prefix)
+					if ste.DhcpIface == ste.DhcpIface6 && address6 != nil {
+						curIpCached6 = false
+						curIp6 = address6.Local
+						curIpPrefix6 = fmt.Sprintf(
+							"%s/%d", address6.Local, address6.Prefix)
+					}
+				}
+			}
+
+			if newIp != curIp {
+				logrus.WithFields(logrus.Fields{
+					"instance":  instId.Hex(),
+					"namespace": namespace,
+					"cur_ip":    curIpPrefix,
+					"new_ip":    newIpPrefix,
+				}).Info("imds: Updating instance DHCP IPv4 address")
+
+				if curIpPrefix != "" {
+					_, err = pritunlutils.ExecCombinedOutputLogged(
+						[]string{"File exists", "Cannot assign"},
+						"ip", "netns", "exec", namespace,
+						"ip", "addr",
+						"del", curIpPrefix,
+						"dev", ste.DhcpIface,
+					)
+					if err != nil {
+						return
+					}
+				}
+				_, err = pritunlutils.ExecCombinedOutputLogged(
+					[]string{"File exists"},
+					"ip", "netns", "exec", namespace,
+					"ip", "addr",
+					"add", newIpPrefix,
+					"dev", ste.DhcpIface,
+				)
+				if err != nil {
+					return
+				}
+
+				if ste.DhcpGateway != nil {
+					_, err = pritunlutils.ExecCombinedOutputLogged(
+						[]string{"File exists"},
+						"ip", "netns", "exec", namespace,
+						"ip", "route",
+						"add", "default",
+						"via", ste.DhcpGateway.String(),
+						"dev", ste.DhcpIface,
+					)
+					if err != nil {
+						return
+					}
+				}
+				clearIpCache = true
+			}
+		}
+
+		if newIp6 != "" && newIp6 != curIp6 {
+			if curIpCached6 {
+				_, address6, e := iproute.AddressGetIfaceMod(
+					namespace, ste.DhcpIface6)
+				if e == nil && address6 != nil {
+					curIpCached6 = false
+					curIp6 = address6.Local
+					curIpPrefix6 = fmt.Sprintf(
+						"%s/%d", address6.Local, address6.Prefix)
+				}
+			}
+
+			if newIp6 != curIp6 {
+				logrus.WithFields(logrus.Fields{
+					"instance":  instId.Hex(),
+					"namespace": namespace,
+					"cur_ip6":   curIpPrefix6,
+					"new_ip6":   newIpPrefix6,
+				}).Info("imds: Updating instance DHCP IPv6 address")
+
+				if curIpPrefix6 != "" {
+					_, err = pritunlutils.ExecCombinedOutputLogged(
+						[]string{"File exists", "Cannot assign"},
+						"ip", "netns", "exec", namespace,
+						"ip", "addr",
+						"del", curIpPrefix6,
+						"dev", ste.DhcpIface6,
+					)
+					if err != nil {
+						return
+					}
+				}
+				_, err = pritunlutils.ExecCombinedOutputLogged(
+					[]string{"File exists"},
+					"ip", "netns", "exec", namespace,
+					"ip", "addr",
+					"add", newIpPrefix6,
+					"dev", ste.DhcpIface6,
+				)
+				if err != nil {
+					return
+				}
+				clearIpCache = true
+			}
+		}
+
+		if clearIpCache {
+			store.RemAddress(instId)
 		}
 	}
 
