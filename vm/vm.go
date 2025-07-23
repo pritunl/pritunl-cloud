@@ -40,6 +40,8 @@ type VirtualMachine struct {
 	OraclePrivateIp     string             `json:"oracle_private_ip"`
 	OraclePublicIp      string             `json:"oracle_public_ip"`
 	OraclePublicIp6     string             `json:"oracle_public_ip6"`
+	DhcpIp              string             `json:"dhcp_ip"`
+	DhcpIp6             string             `json:"dhcp_ip6"`
 	Uefi                bool               `json:"uefi"`
 	SecureBoot          bool               `json:"secure_boot"`
 	Tpm                 bool               `json:"tpm"`
