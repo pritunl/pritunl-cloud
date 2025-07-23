@@ -74,7 +74,7 @@ func (d *Dhcpc) run() (err error) {
 
 	for {
 		for {
-			ok, e := d.lease.Exchange()
+			ok, e := d.lease.Exchange4()
 			if e != nil {
 				logger.WithFields(logger.Fields{
 					"interface": d.DhcpIface,
@@ -134,7 +134,7 @@ func (d *Dhcpc) run() (err error) {
 				break
 			}
 
-			ok, e := d.lease.Renew()
+			ok, e := d.lease.Renew4()
 			if e != nil {
 				logger.WithFields(logger.Fields{
 					"interface": d.DhcpIface,

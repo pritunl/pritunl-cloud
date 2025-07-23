@@ -10,7 +10,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/imds/server/errortypes"
 )
 
-func (l *Lease) Renew() (ok bool, err error) {
+func (l *Lease) Renew4() (ok bool, err error) {
 	if l.Address == nil || l.Address.IP == nil || l.ServerAddress == nil {
 		err = &errortypes.ReadError{
 			errors.Wrap(err, "dhcpc: Cannot call renew with unset address"),
@@ -79,7 +79,7 @@ func (l *Lease) Renew() (ok bool, err error) {
 	return
 }
 
-func (l *Lease) Exchange() (ok bool, err error) {
+func (l *Lease) Exchange4() (ok bool, err error) {
 	client, err := nclient4.New(
 		l.Iface,
 		nclient4.WithTimeout(DhcpTimeout),
