@@ -340,8 +340,11 @@ func Main() (err error) {
 		logger.SetTimeFormat(""),
 	)
 
+	logLock := sync.Mutex{}
 	logger.AddHandler(func(record *logger.Record) {
+		logLock.Lock()
 		fmt.Print(record.String())
+		logLock.Unlock()
 	})
 
 	ip4 := false
