@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/pritunl/tools/logger"
@@ -66,11 +67,11 @@ func (d *Dhcpc) sync() {
 	}
 }
 
-func (d *Dhcpc) run() (err error) {
-	d.lease = &Lease{
-		Iface:   d.DhcpIface,
-		Address: d.DhcpIp,
-	}
+func (d *Dhcpc) run4() (err error) {
+	d.lease.Gateway = nil
+	d.lease.ServerAddress = nil
+	d.lease.LeaseTime = 0
+	d.lease.TransactionId = ""
 
 	for {
 		for {
@@ -80,7 +81,7 @@ func (d *Dhcpc) run() (err error) {
 					"interface": d.DhcpIface,
 					"address":   d.lease.Address.String(),
 					"error":     e,
-				}).Error("dhcpc: Failed to exchange lease")
+				}).Error("dhcpc: Failed to exchange lease4")
 				time.Sleep(500 * time.Millisecond)
 				continue
 			}
@@ -88,7 +89,7 @@ func (d *Dhcpc) run() (err error) {
 			if !ok {
 				logger.WithFields(logger.Fields{
 					"interface": d.DhcpIface,
-				}).Error("dhcpc: Failed to receive lease")
+				}).Error("dhcpc: Failed to receive lease4")
 				time.Sleep(1000 * time.Millisecond)
 			}
 
@@ -101,36 +102,36 @@ func (d *Dhcpc) run() (err error) {
 			"gateway":   d.lease.Gateway.String(),
 			"server":    d.lease.ServerAddress.String(),
 			"time":      d.lease.LeaseTime.String(),
-		}).Info("dhcpc: Exchanged")
+		}).Info("dhcpc: Exchanged ipv4")
 
 		d.sync()
 
-		ready := false
+		ready4 := false
 		for i := 0; i < 20; i++ {
-			ready = d.lease.IfaceReady()
-			if ready {
+			ready4, _ = d.lease.IfaceReady()
+			if ready4 {
 				break
 			}
 
 			time.Sleep(500 * time.Millisecond)
 		}
 
-		if !ready {
+		if !ready4 {
 			logger.WithFields(logger.Fields{
 				"interface": d.DhcpIface,
 				"address":   d.lease.Address.String(),
-			}).Error("dhcpc: Interface ready timeout")
+			}).Error("dhcpc: Interface4 ready timeout")
 		}
 
 		for {
 			time.Sleep(60 * time.Second)
 
-			ready := d.lease.IfaceReady()
-			if !ready {
+			ready4, _ := d.lease.IfaceReady()
+			if !ready4 {
 				logger.WithFields(logger.Fields{
 					"interface": d.DhcpIface,
 					"address":   d.lease.Address.String(),
-				}).Error("dhcpc: Interface not ready")
+				}).Error("dhcpc: Interface4 not ready")
 				break
 			}
 
@@ -140,7 +141,7 @@ func (d *Dhcpc) run() (err error) {
 					"interface": d.DhcpIface,
 					"address":   d.lease.Address.String(),
 					"error":     e,
-				}).Error("dhcpc: Failed to renew lease")
+				}).Error("dhcpc: Failed to renew lease4")
 				break
 			}
 
@@ -149,7 +150,7 @@ func (d *Dhcpc) run() (err error) {
 					"interface": d.DhcpIface,
 					"address":   d.lease.Address.String(),
 					"error":     err,
-				}).Error("dhcpc: Failed to receive lease renewal")
+				}).Error("dhcpc: Failed to receive lease4 renewal")
 				break
 			}
 
@@ -159,34 +160,164 @@ func (d *Dhcpc) run() (err error) {
 				"gateway":   d.lease.Gateway.String(),
 				"server":    d.lease.ServerAddress.String(),
 				"time":      d.lease.LeaseTime.String(),
-			}).Info("dhcpc: Renewed")
+			}).Info("dhcpc: Renewed ipv4")
 
 			d.sync()
 		}
 	}
 }
 
-func (d *Dhcpc) Run() {
+func (d *Dhcpc) run6() (err error) {
+	d.lease.ServerAddress6 = nil
+	d.lease.LeaseTime6 = 0
+	d.lease.TransactionId6 = ""
+	d.lease.IaId6 = [4]byte{}
+	d.lease.ServerId6 = nil
+
+	for {
+		for {
+			ok, e := d.lease.Exchange6()
+			if e != nil {
+				logger.WithFields(logger.Fields{
+					"interface6": d.DhcpIface6,
+					"address6":   d.lease.Address6.String(),
+					"error":      e,
+				}).Error("dhcpc: Failed to exchange lease6")
+				time.Sleep(500 * time.Millisecond)
+				continue
+			}
+
+			if !ok {
+				logger.WithFields(logger.Fields{
+					"interface6": d.DhcpIface6,
+				}).Error("dhcpc: Failed to receive lease6")
+				time.Sleep(1000 * time.Millisecond)
+			}
+
+			break
+		}
+
+		logger.WithFields(logger.Fields{
+			"interface6": d.DhcpIface6,
+			"address6":   d.lease.Address6.String(),
+			"server6":    d.lease.ServerAddress6.String(),
+			"time6":      d.lease.LeaseTime6.String(),
+		}).Info("dhcpc: Exchanged ipv6")
+
+		d.sync()
+
+		ready6 := false
+		for i := 0; i < 20; i++ {
+			_, ready6 = d.lease.IfaceReady()
+			if ready6 {
+				break
+			}
+
+			time.Sleep(500 * time.Millisecond)
+		}
+
+		if !ready6 {
+			logger.WithFields(logger.Fields{
+				"interface6": d.DhcpIface6,
+				"address6":   d.lease.Address6.String(),
+			}).Error("dhcpc: Interface6 ready timeout")
+		}
+
+		for {
+			time.Sleep(60 * time.Second)
+
+			_, ready6 := d.lease.IfaceReady()
+			if !ready6 {
+				logger.WithFields(logger.Fields{
+					"interface6": d.DhcpIface6,
+					"address6":   d.lease.Address6.String(),
+				}).Error("dhcpc: Interface6 not ready")
+				break
+			}
+
+			ok, e := d.lease.Renew4()
+			if e != nil {
+				logger.WithFields(logger.Fields{
+					"interface6": d.DhcpIface6,
+					"address6":   d.lease.Address6.String(),
+					"error":      e,
+				}).Error("dhcpc: Failed to renew lease6")
+				break
+			}
+
+			if !ok {
+				logger.WithFields(logger.Fields{
+					"interface6": d.DhcpIface6,
+					"address6":   d.lease.Address6.String(),
+					"error":      err,
+				}).Error("dhcpc: Failed to receive lease6 renewal")
+				break
+			}
+
+			logger.WithFields(logger.Fields{
+				"interface6": d.DhcpIface6,
+				"address6":   d.lease.Address6.String(),
+				"server6":    d.lease.ServerAddress6.String(),
+				"time6":      d.lease.LeaseTime6.String(),
+			}).Info("dhcpc: Renewed ipv6")
+
+			d.sync()
+		}
+	}
+}
+
+func (d *Dhcpc) Run(ip4, ip6 bool) {
 	d.lease = &Lease{
-		Iface:   d.DhcpIface,
-		Address: d.DhcpIp,
+		Iface:    d.DhcpIface,
+		Iface6:   d.DhcpIface6,
+		Address:  d.DhcpIp,
+		Address6: d.DhcpIp6,
 	}
 
 	go d.startSync()
 
-	for {
-		err := d.run()
-		if err != nil {
-			logger.WithFields(logger.Fields{
-				"interface": d.DhcpIface,
-				"address":   d.DhcpIp,
-				"address6":  d.DhcpIp6,
-				"error":     err,
-			}).Error("dhcpc: Run error")
-		}
+	waiters := &sync.WaitGroup{}
+	if ip4 {
+		waiters.Add(1)
+		go func() {
+			defer waiters.Done()
+			for {
+				err := d.run4()
+				if err != nil {
+					logger.WithFields(logger.Fields{
+						"interface": d.DhcpIface,
+						"address":   d.DhcpIp,
+						"address6":  d.DhcpIp6,
+						"error":     err,
+					}).Error("dhcpc: Run error")
+				}
 
-		time.Sleep(3 * time.Second)
+				time.Sleep(3 * time.Second)
+			}
+		}()
 	}
+
+	if ip6 {
+		waiters.Add(1)
+		go func() {
+			defer waiters.Done()
+			for {
+				err := d.run6()
+				if err != nil {
+					logger.WithFields(logger.Fields{
+						"interface": d.DhcpIface,
+						"address":   d.DhcpIp,
+						"address6":  d.DhcpIp6,
+						"error":     err,
+					}).Error("dhcpc: Run error")
+				}
+
+				time.Sleep(3 * time.Second)
+			}
+		}()
+	}
+
+	waiters.Wait()
 }
 
 func Main() (err error) {
@@ -248,7 +379,7 @@ func Main() (err error) {
 		}
 	}
 
-	client.Run()
+	client.Run(ip4, ip6)
 
 	return
 }
