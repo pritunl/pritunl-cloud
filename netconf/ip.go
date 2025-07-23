@@ -72,6 +72,8 @@ func (n *NetConf) ipExternal(db *database.Database) (err error) {
 			return
 		}
 
+		ip4 := false
+		ip6 := false
 		ipTimeout := settings.Hypervisor.IpTimeout * 4
 		for i := 0; i < ipTimeout; i++ {
 			stat, e := imds.State(db, n.Virt.Id, n.Virt.ImdsHostSecret)
@@ -108,6 +110,28 @@ func (n *NetConf) ipExternal(db *database.Database) (err error) {
 				if err != nil {
 					return
 				}
+
+				ip4 = true
+			}
+
+			if stat.DhcpIp6 != nil {
+				_, err = utils.ExecCombinedOutputLogged(
+					[]string{"File exists"},
+					"ip", "netns", "exec", n.Namespace,
+					"ip", "addr",
+					"add", stat.DhcpIp6.String(),
+					"dev", n.SpaceExternalIface,
+				)
+				if err != nil {
+					return
+				}
+
+				ip6 = true
+			}
+
+			if (n.NetworkMode != node.Dhcp || ip4) &&
+				((n.NetworkMode6 != node.Dhcp &&
+					n.NetworkMode6 != node.DhcpSlaac) || ip6) {
 
 				break
 			}
@@ -218,18 +242,6 @@ func (n *NetConf) ipExternal(db *database.Database) (err error) {
 					return
 				}
 			}
-		}
-	} else if n.NetworkMode6 == node.Dhcp || n.NetworkMode6 == node.DhcpSlaac {
-		_, err = utils.ExecCombinedOutputLogged(
-			nil,
-			"ip", "netns", "exec", n.Namespace,
-			"unshare", "--mount",
-			"sh", "-c", fmt.Sprintf(
-				"mount -t tmpfs none /etc && dhclient -6 -pf %s -lf %s %s",
-				n.Dhcp6PidPath, n.Dhcp6LeasePath, n.SpaceExternalIface),
-		)
-		if err != nil {
-			return
 		}
 	}
 
