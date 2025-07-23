@@ -139,7 +139,7 @@ func Sync(db *database.Database, namespace string,
 
 	if newHash != 0 && ste.Status != "" {
 		hashesLock.Lock()
-		hashes[instId] = curHash
+		hashes[instId] = newHash
 		hashesLock.Unlock()
 	}
 
