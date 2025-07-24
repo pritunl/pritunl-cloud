@@ -43,6 +43,8 @@ func imdsSyncHandler(db *database.Database) (err error) {
 
 		waiter.Add(1)
 		go func() {
+			defer waiter.Done()
+
 			err := imds.Sync(db, conf.Instance.NetworkNamespace, conf.Instance.Id,
 				conf.Instance.Deployment, conf)
 			if err != nil {
