@@ -1,6 +1,7 @@
 package task
 
 import (
+	"sync"
 	"time"
 
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
@@ -34,26 +35,32 @@ func imdsSyncHandler(db *database.Database) (err error) {
 		settings.Hypervisor.ImdsSyncLogTimeout) * time.Second
 
 	newFailTime := map[primitive.ObjectID]time.Time{}
+	waiter := &sync.WaitGroup{}
 	for _, conf := range confs {
 		if conf.Instance == nil {
 			continue
 		}
 
-		err := imds.Sync(db, conf.Instance.NetworkNamespace, conf.Instance.Id,
-			conf.Instance.Deployment, conf)
-		if err != nil {
-			if failTime[conf.Instance.Id].IsZero() {
-				newFailTime[conf.Instance.Id] = time.Now()
-			} else if time.Since(failTime[conf.Instance.Id]) > timeout {
-				logrus.WithFields(logrus.Fields{
-					"instance": conf.Instance.Id.Hex(),
-					"error":    err,
-				}).Error("agent: Failed to sync imds")
-			} else {
-				newFailTime[conf.Instance.Id] = failTime[conf.Instance.Id]
+		waiter.Add(1)
+		go func() {
+			err := imds.Sync(db, conf.Instance.NetworkNamespace, conf.Instance.Id,
+				conf.Instance.Deployment, conf)
+			if err != nil {
+				if failTime[conf.Instance.Id].IsZero() {
+					newFailTime[conf.Instance.Id] = time.Now()
+				} else if time.Since(failTime[conf.Instance.Id]) > timeout {
+					logrus.WithFields(logrus.Fields{
+						"instance": conf.Instance.Id.Hex(),
+						"error":    err,
+					}).Error("agent: Failed to sync imds")
+				} else {
+					newFailTime[conf.Instance.Id] = failTime[conf.Instance.Id]
+				}
 			}
-		}
+		}()
 	}
+
+	waiter.Wait()
 
 	failTime = newFailTime
 
