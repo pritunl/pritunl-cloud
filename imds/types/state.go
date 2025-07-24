@@ -15,6 +15,8 @@ type State struct {
 	Load1       float64             `json:"load1"`
 	Load5       float64             `json:"load5"`
 	Load15      float64             `json:"load15"`
+	DhcpIface   string              `json:"dhcp_iface"`
+	DhcpIface6  string              `json:"dhcp_iface6"`
 	DhcpIp      *net.IPNet          `json:"dhcp_ip"`
 	DhcpIp6     *net.IPNet          `json:"dhcp_ip6"`
 	DhcpGateway net.IP              `json:"dhcp_gateway"`
@@ -39,6 +41,8 @@ func (s *State) Copy() *State {
 		Load1:       s.Load1,
 		Load5:       s.Load5,
 		Load15:      s.Load15,
+		DhcpIface:   s.DhcpIface,
+		DhcpIface6:  s.DhcpIface6,
 		DhcpIp:      s.DhcpIp,
 		DhcpIp6:     s.DhcpIp6,
 		DhcpGateway: s.DhcpGateway,
