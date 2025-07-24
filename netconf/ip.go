@@ -1,7 +1,6 @@
 package netconf
 
 import (
-	"io/ioutil"
 	"strings"
 	"time"
 
@@ -20,41 +19,6 @@ import (
 	"github.com/pritunl/tools/commander"
 	"github.com/sirupsen/logrus"
 )
-
-func (n *NetConf) ipStartDhClient(db *database.Database) (err error) {
-	if len(n.Virt.NetworkAdapters) == 0 {
-		err = &errortypes.NotFoundError{
-			errors.New("qemu: Missing network interfaces"),
-		}
-		return
-	}
-
-	pid := ""
-	pidData, _ := ioutil.ReadFile(n.DhcpPidPath)
-	if pidData != nil {
-		pid = strings.TrimSpace(string(pidData))
-	}
-
-	if pid != "" {
-		_, _ = utils.ExecCombinedOutput("", "kill", pid)
-	}
-
-	_ = utils.RemoveAll(n.DhcpPidPath)
-
-	pid = ""
-	pidData, _ = ioutil.ReadFile(n.Dhcp6PidPath)
-	if pidData != nil {
-		pid = strings.TrimSpace(string(pidData))
-	}
-
-	if pid != "" {
-		_, _ = utils.ExecCombinedOutput("", "kill", pid)
-	}
-
-	_ = utils.RemoveAll(n.Dhcp6PidPath)
-
-	return
-}
 
 func (n *NetConf) ipExternal(db *database.Database) (err error) {
 	if n.NetworkMode == node.Dhcp || n.NetworkMode6 == node.Dhcp ||
