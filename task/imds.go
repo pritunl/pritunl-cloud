@@ -35,6 +35,7 @@ func imdsSyncHandler(db *database.Database) (err error) {
 		settings.Hypervisor.ImdsSyncLogTimeout) * time.Second
 
 	newFailTime := map[primitive.ObjectID]time.Time{}
+	newFailTimeLock := sync.Mutex{}
 	waiter := &sync.WaitGroup{}
 	for _, conf := range confs {
 		if conf.Instance == nil {
@@ -58,6 +59,7 @@ func imdsSyncHandler(db *database.Database) (err error) {
 				} else {
 					newFailTime[conf.Instance.Id] = failTime[conf.Instance.Id]
 				}
+				newFailTimeLock.Unlock()
 			}
 		}()
 	}
