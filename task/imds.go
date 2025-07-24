@@ -49,6 +49,7 @@ func imdsSyncHandler(db *database.Database) (err error) {
 			err := imds.Sync(db, conf.Instance.NetworkNamespace, conf.Instance.Id,
 				conf.Instance.Deployment, conf)
 			if err != nil {
+				newFailTimeLock.Lock()
 				if failTime[conf.Instance.Id].IsZero() {
 					newFailTime[conf.Instance.Id] = time.Now()
 				} else if time.Since(failTime[conf.Instance.Id]) > timeout {
