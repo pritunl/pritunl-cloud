@@ -21,6 +21,8 @@ func dhcpPut(c *gin.Context) {
 		return
 	}
 
+	state.Global.State.DhcpIface = data.Iface
+	state.Global.State.DhcpIface6 = data.Iface6
 	state.Global.State.DhcpIp = data.Address
 	state.Global.State.DhcpGateway = data.Gateway
 	state.Global.State.DhcpIp6 = data.Address6
