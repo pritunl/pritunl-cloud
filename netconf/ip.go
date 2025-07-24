@@ -36,12 +36,14 @@ func (n *NetConf) ipExternal(db *database.Database) (err error) {
 			return
 		}
 
+		var imdsErr error
 		ip4 := false
 		ip6 := false
 		ipTimeout := settings.Hypervisor.IpTimeout * 4
 		for i := 0; i < ipTimeout; i++ {
 			stat, e := imds.State(db, n.Virt.Id, n.Virt.ImdsHostSecret)
 			if e != nil {
+				imdsErr = e
 				time.Sleep(250 * time.Millisecond)
 				continue
 			}
@@ -101,6 +103,40 @@ func (n *NetConf) ipExternal(db *database.Database) (err error) {
 			}
 
 			time.Sleep(250 * time.Millisecond)
+		}
+
+		if !ip4 && n.NetworkMode == node.Dhcp {
+			if imdsErr != nil {
+				logrus.WithFields(logrus.Fields{
+					"instance": n.Virt.Id.Hex(),
+					"dhcp4":    ip4,
+					"dhcp6":    ip6,
+					"error":    imdsErr,
+				}).Error("netconf: DHCP IPv4 timeout")
+			} else {
+				logrus.WithFields(logrus.Fields{
+					"instance": n.Virt.Id.Hex(),
+				}).Error("netconf: DHCP IPv4 timeout")
+			}
+		}
+
+		if !ip6 && (n.NetworkMode6 == node.Dhcp ||
+			n.NetworkMode6 == node.DhcpSlaac) {
+
+			if imdsErr != nil {
+				logrus.WithFields(logrus.Fields{
+					"instance": n.Virt.Id.Hex(),
+					"dhcp4":    ip4,
+					"dhcp6":    ip6,
+					"error":    imdsErr,
+				}).Error("netconf: DHCP IPv6 timeout")
+			} else {
+				logrus.WithFields(logrus.Fields{
+					"instance": n.Virt.Id.Hex(),
+					"dhcp4":    ip4,
+					"dhcp6":    ip6,
+				}).Error("netconf: DHCP IPv6 timeout")
+			}
 		}
 	}
 
