@@ -59,7 +59,7 @@ type instanceData struct {
 	InitDiskSize        int                 `json:"init_disk_size"`
 	Memory              int                 `json:"memory"`
 	Processors          int                 `json:"processors"`
-	NetworkRoles        []string            `json:"network_roles"`
+	Roles               []string            `json:"roles"`
 	Isos                []*iso.Iso          `json:"isos"`
 	UsbDevices          []*usb.Device       `json:"usb_devices"`
 	PciDevices          []*pci.Device       `json:"pci_devices"`
@@ -132,7 +132,7 @@ func instancePut(c *gin.Context) {
 	inst.SkipSourceDestCheck = dta.SkipSourceDestCheck
 	inst.Memory = dta.Memory
 	inst.Processors = dta.Processors
-	inst.NetworkRoles = dta.NetworkRoles
+	inst.Roles = dta.Roles
 	inst.Isos = dta.Isos
 	inst.UsbDevices = dta.UsbDevices
 	inst.PciDevices = dta.PciDevices
@@ -170,7 +170,7 @@ func instancePut(c *gin.Context) {
 		"skip_source_dest_check",
 		"memory",
 		"processors",
-		"network_roles",
+		"roles",
 		"isos",
 		"usb_devices",
 		"pci_devices",
@@ -372,7 +372,7 @@ func instancePost(c *gin.Context) {
 			InitDiskSize:        dta.InitDiskSize,
 			Memory:              dta.Memory,
 			Processors:          dta.Processors,
-			NetworkRoles:        dta.NetworkRoles,
+			Roles:               dta.Roles,
 			Isos:                dta.Isos,
 			UsbDevices:          dta.UsbDevices,
 			PciDevices:          dta.PciDevices,
@@ -646,15 +646,15 @@ func instancesGet(c *gin.Context) {
 			}
 		}
 
-		networkRole := strings.TrimSpace(c.Query("network_role"))
-		if networkRole != "" {
-			if strings.HasPrefix(networkRole, "!") {
-				networkRole = strings.TrimLeft(networkRole, "!")
-				query["network_roles"] = &bson.M{
-					"$ne": networkRole,
+		role := strings.TrimSpace(c.Query("role"))
+		if role != "" {
+			if strings.HasPrefix(role, "!") {
+				role = strings.TrimLeft(role, "!")
+				query["roles"] = &bson.M{
+					"$ne": role,
 				}
 			} else {
-				query["network_roles"] = networkRole
+				query["roles"] = role
 			}
 		}
 
