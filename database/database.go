@@ -1044,7 +1044,7 @@ func addIndexes() (err error) {
 	index = &Index{
 		Collection: db.Firewalls(),
 		Keys: &bson.D{
-			{"network_roles", 1},
+			{"roles", 1},
 		},
 	}
 	err = index.Create()
@@ -1054,7 +1054,7 @@ func addIndexes() (err error) {
 	index = &Index{
 		Collection: db.Firewalls(),
 		Keys: &bson.D{
-			{"network_roles", 1},
+			{"roles", 1},
 			{"organization", 1},
 		},
 	}
