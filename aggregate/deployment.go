@@ -141,7 +141,7 @@ func GetDeployments(db *database.Database, unt *unit.Unit) (
 				{"spec_docs.index", 1},
 				{"spec_docs.timestamp", 1},
 				{"instance_docs.name", 1},
-				{"instance_docs.network_roles", 1},
+				{"instance_docs.roles", 1},
 				{"instance_docs.memory", 1},
 				{"instance_docs.processors", 1},
 				{"instance_docs.state", 1},
@@ -207,7 +207,7 @@ func GetDeployments(db *database.Database, unt *unit.Unit) (
 			inst.Json(true)
 
 			deply.InstanceName = inst.Name
-			deply.InstanceRoles = inst.NetworkRoles
+			deply.InstanceRoles = inst.Roles
 			deply.InstanceMemory = inst.Memory
 			deply.InstanceProcessors = inst.Processors
 			deply.InstanceStatus = inst.Status
