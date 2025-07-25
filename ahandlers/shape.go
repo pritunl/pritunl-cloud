@@ -274,9 +274,9 @@ func shapesGet(c *gin.Context) {
 		}
 	}
 
-	networkRole := strings.TrimSpace(c.Query("network_role"))
-	if networkRole != "" {
-		query["network_roles"] = networkRole
+	role := strings.TrimSpace(c.Query("role"))
+	if role != "" {
+		query["roles"] = role
 	}
 
 	organization, ok := utils.ParseObjectId(c.Query("organization"))
