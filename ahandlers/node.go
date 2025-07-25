@@ -70,7 +70,7 @@ type nodeData struct {
 	ForwardedForHeader      string                  `json:"forwarded_for_header"`
 	ForwardedProtoHeader    string                  `json:"forwarded_proto_header"`
 	Firewall                bool                    `json:"firewall"`
-	NetworkRoles            []string                `json:"network_roles"`
+	Roles                   []string                `json:"roles"`
 	OracleUser              string                  `json:"oracle_user"`
 	OracleTenancy           string                  `json:"oracle_tenancy"`
 }
@@ -176,7 +176,7 @@ func nodePut(c *gin.Context) {
 	nde.ForwardedForHeader = data.ForwardedForHeader
 	nde.ForwardedProtoHeader = data.ForwardedProtoHeader
 	nde.Firewall = data.Firewall
-	nde.NetworkRoles = data.NetworkRoles
+	nde.Roles = data.Roles
 	nde.OracleUser = data.OracleUser
 	nde.OracleTenancy = data.OracleTenancy
 
@@ -223,7 +223,7 @@ func nodePut(c *gin.Context) {
 		"forwarded_for_header",
 		"forwarded_proto_header",
 		"firewall",
-		"network_roles",
+		"roles",
 		"oracle_user",
 		"oracle_tenancy",
 	)
@@ -467,25 +467,25 @@ func nodeInitPost(c *gin.Context) {
 		nde.Firewall = true
 		fields.Add("firewall")
 
-		if nde.NetworkRoles == nil {
-			nde.NetworkRoles = []string{}
+		if nde.Roles == nil {
+			nde.Roles = []string{}
 		}
 
 		hasRole := false
-		for _, role := range nde.NetworkRoles {
+		for _, role := range nde.Roles {
 			if role == "firewall" {
 				hasRole = true
 			}
 		}
 
 		if !hasRole {
-			nde.NetworkRoles = append(nde.NetworkRoles, "firewall")
-			fields.Add("network_roles")
+			nde.Roles = append(nde.Roles, "firewall")
+			fields.Add("roles")
 		}
 
 		fires, err := firewall.GetAll(db, &bson.M{
-			"organization":  firewall.Global,
-			"network_roles": "firewall",
+			"organization": firewall.Global,
+			"roles":        "firewall",
 		})
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
@@ -496,7 +496,7 @@ func nodeInitPost(c *gin.Context) {
 			fire := &firewall.Firewall{
 				Name:    "node-firewall",
 				Comment: "",
-				NetworkRoles: []string{
+				Roles: []string{
 					"firewall",
 				},
 				Ingress: []*firewall.Rule{
@@ -670,9 +670,9 @@ func nodesGet(c *gin.Context) {
 			query["zone"] = zone
 		}
 
-		networkRole := c.Query("network_role")
-		if networkRole != "" {
-			query["network_roles"] = networkRole
+		role := c.Query("role")
+		if role != "" {
+			query["roles"] = role
 		}
 
 		types := []string{}
