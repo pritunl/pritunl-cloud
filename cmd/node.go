@@ -41,17 +41,17 @@ func Node() (err error) {
 
 	definitions.Init()
 
+	err = upgrade.Upgrade()
+	if err != nil {
+		return
+	}
+
 	err = setup.Iptables()
 	if err != nil {
 		return
 	}
 
 	err = defaults.Defaults()
-	if err != nil {
-		return
-	}
-
-	err = upgrade.Upgrade()
 	if err != nil {
 		return
 	}
