@@ -121,7 +121,7 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 		//		"from": "firewalls",
 		//		"let": &bson.M{
 		//			"organization":  "$organization",
-		//			"network_roles": "$network_roles",
+		//			"roles": "$roles",
 		//		},
 		//		"pipeline": []*bson.M{
 		//			&bson.M{
@@ -230,7 +230,7 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 					}
 
 					roles := set.NewSet()
-					for _, role := range fire.NetworkRoles {
+					for _, role := range fire.Roles {
 						roles.Add(role)
 					}
 					firesRoles[fire.Id] = roles
@@ -269,7 +269,7 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 		firewallRules := map[string]set.Set{}
 		firewallRulesKeys := []string{}
 		authrNames := set.NewSet()
-		for _, role := range doc.NetworkRoles {
+		for _, role := range doc.Roles {
 			roleFires := fires[role]
 			for _, fire := range roleFires {
 				if curFires.Contains(fire.Id) {
