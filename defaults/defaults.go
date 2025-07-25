@@ -315,7 +315,7 @@ func initFirewall(db *database.Database, defaultOrg primitive.ObjectID) (
 		fire := &firewall.Firewall{
 			Name:         "instance",
 			Organization: defaultOrg,
-			NetworkRoles: []string{
+			Roles: []string{
 				"instance",
 			},
 			Ingress: []*firewall.Rule{
