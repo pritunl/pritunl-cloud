@@ -3,6 +3,7 @@ package vxlan
 import (
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
@@ -87,21 +88,14 @@ func initIfaces(stat *state.State, internaIfaces []string) (err error) {
 		}
 	}
 
+	time.Sleep(200 * time.Millisecond)
+
+	// TODO vxIface losing master iface
 	newCurIfaces.Intersect(newIfaces)
 	for ifaceInf := range newCurIfaces.Iter() {
 		iface := ifaceInf.(string)
 
-		if strings.HasPrefix(iface, "k") {
-			_, err = utils.ExecCombinedOutputLogged(
-				nil,
-				"ip", "link",
-				"set", "dev",
-				iface, "up",
-			)
-			if err != nil {
-				return
-			}
-		} else if strings.HasPrefix(iface, "b") {
+		if strings.HasPrefix(iface, "b") {
 			parentIface := parentBrIfaces[iface]
 			if parentIface == "" {
 				continue
@@ -118,7 +112,38 @@ func initIfaces(stat *state.State, internaIfaces []string) (err error) {
 					return
 				}
 			}
+		}
+	}
 
+	time.Sleep(300 * time.Millisecond)
+
+	for ifaceInf := range newCurIfaces.Iter() {
+		iface := ifaceInf.(string)
+
+		if strings.HasPrefix(iface, "b") {
+			parentIface := parentBrIfaces[iface]
+			if parentIface == "" {
+				continue
+			}
+
+			_, err = utils.ExecCombinedOutputLogged(
+				nil,
+				"ip", "link",
+				"set", "dev",
+				iface, "up",
+			)
+			if err != nil {
+				return
+			}
+		}
+	}
+
+	time.Sleep(500 * time.Millisecond)
+
+	for ifaceInf := range newCurIfaces.Iter() {
+		iface := ifaceInf.(string)
+
+		if strings.HasPrefix(iface, "k") {
 			_, err = utils.ExecCombinedOutputLogged(
 				nil,
 				"ip", "link",
