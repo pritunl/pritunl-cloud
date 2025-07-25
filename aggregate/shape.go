@@ -69,7 +69,7 @@ func GetShapePaged(db *database.Database, query *bson.M, page,
 									&bson.M{
 										"$size": &bson.M{
 											"$setIntersection": []interface{}{
-												"$network_roles",
+												"$roles",
 												"$$shape_roles",
 											},
 										},
