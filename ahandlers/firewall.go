@@ -23,7 +23,7 @@ type firewallData struct {
 	Name         string             `json:"name"`
 	Comment      string             `json:"comment"`
 	Organization primitive.ObjectID `json:"organization"`
-	NetworkRoles []string           `json:"network_roles"`
+	Roles        []string           `json:"roles"`
 	Ingress      []*firewall.Rule   `json:"ingress"`
 }
 
@@ -61,14 +61,14 @@ func firewallPut(c *gin.Context) {
 	fire.Name = data.Name
 	fire.Comment = data.Comment
 	fire.Organization = data.Organization
-	fire.NetworkRoles = data.NetworkRoles
+	fire.Roles = data.Roles
 	fire.Ingress = data.Ingress
 
 	fields := set.NewSet(
 		"name",
 		"comment",
 		"organization",
-		"network_roles",
+		"roles",
 		"ingress",
 	)
 
@@ -114,7 +114,7 @@ func firewallPost(c *gin.Context) {
 		Name:         data.Name,
 		Comment:      data.Comment,
 		Organization: data.Organization,
-		NetworkRoles: data.NetworkRoles,
+		Roles:        data.Roles,
 		Ingress:      data.Ingress,
 	}
 
@@ -250,9 +250,9 @@ func firewallsGet(c *gin.Context) {
 		}
 	}
 
-	networkRole := strings.TrimSpace(c.Query("network_role"))
-	if networkRole != "" {
-		query["network_roles"] = networkRole
+	role := strings.TrimSpace(c.Query("role"))
+	if role != "" {
+		query["roles"] = role
 	}
 
 	organization, ok := utils.ParseObjectId(c.Query("organization"))
