@@ -240,7 +240,7 @@ func getUserData(db *database.Database, inst *instance.Instance,
 	usrData string, err error) {
 
 	authrs, err := authority.GetOrgRoles(db, inst.Organization,
-		inst.NetworkRoles)
+		inst.Roles)
 	if err != nil {
 		return
 	}
