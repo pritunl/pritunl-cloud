@@ -85,7 +85,7 @@ type Firewall struct {
 	Name         string             `bson:"name" json:"name"`
 	Comment      string             `bson:"comment" json:"comment"`
 	Organization primitive.ObjectID `bson:"organization" json:"organization"`
-	NetworkRoles []string           `bson:"network_roles" json:"network_roles"`
+	Roles        []string           `bson:"roles" json:"roles"`
 	Ingress      []*Rule            `bson:"ingress" json:"ingress"`
 }
 
@@ -94,8 +94,8 @@ func (f *Firewall) Validate(db *database.Database) (
 
 	f.Name = utils.FilterName(f.Name)
 
-	if f.NetworkRoles == nil {
-		f.NetworkRoles = []string{}
+	if f.Roles == nil {
+		f.Roles = []string{}
 	}
 
 	if f.Ingress == nil {
