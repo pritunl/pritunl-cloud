@@ -94,7 +94,7 @@ func GetRoles(db *database.Database, roles []string) (
 		db,
 		&bson.M{
 			"organization": Global,
-			"network_roles": &bson.M{
+			"roles": &bson.M{
 				"$in": roles,
 			},
 		},
@@ -132,7 +132,7 @@ func GetMapRoles(db *database.Database, roles []string) (
 	fires = map[string][]*Firewall{}
 
 	cursor, err := coll.Find(db, &bson.M{
-		"network_roles": &bson.M{
+		"roles": &bson.M{
 			"$in": roles,
 		},
 	})
@@ -150,7 +150,7 @@ func GetMapRoles(db *database.Database, roles []string) (
 			return
 		}
 
-		for _, role := range fire.NetworkRoles {
+		for _, role := range fire.Roles {
 			roleFires := fires[role]
 			if roleFires == nil {
 				roleFires = []*Firewall{}
@@ -191,7 +191,7 @@ func GetOrgMapRoles(db *database.Database, orgId primitive.ObjectID) (
 			return
 		}
 
-		for _, role := range fire.NetworkRoles {
+		for _, role := range fire.Roles {
 			roleFires := fires[role]
 			if roleFires == nil {
 				roleFires = []*Firewall{}
@@ -219,7 +219,7 @@ func GetOrgRoles(db *database.Database, orgId primitive.ObjectID,
 		db,
 		&bson.M{
 			"organization": orgId,
-			"network_roles": &bson.M{
+			"roles": &bson.M{
 				"$in": roles,
 			},
 		},
@@ -442,7 +442,7 @@ func GetAllIngress(db *database.Database, nodeSelf *node.Node,
 	instNamespaces map[primitive.ObjectID][]string, err error) {
 
 	if nodeSelf.Firewall {
-		fires, e := GetRoles(db, nodeSelf.NetworkRoles)
+		fires, e := GetRoles(db, nodeSelf.Roles)
 		if e != nil {
 			err = e
 			return
@@ -471,7 +471,7 @@ func GetAllIngress(db *database.Database, nodeSelf *node.Node,
 		}
 
 		fires, e := GetOrgRoles(db,
-			inst.Organization, inst.NetworkRoles)
+			inst.Organization, inst.Roles)
 		if e != nil {
 			err = e
 			return
@@ -545,7 +545,7 @@ func GetAllIngressPreloaded(nodeSelf *node.Node,
 
 	if nodeSelf.Firewall {
 		fires := []*Firewall{}
-		for _, role := range nodeSelf.NetworkRoles {
+		for _, role := range nodeSelf.Roles {
 			for _, fire := range firesMap[role] {
 				if fire.Organization == Global {
 					fires = append(fires, fire)
@@ -576,7 +576,7 @@ func GetAllIngressPreloaded(nodeSelf *node.Node,
 		}
 
 		fires := []*Firewall{}
-		for _, role := range inst.NetworkRoles {
+		for _, role := range inst.Roles {
 			for _, fire := range firesMap[role] {
 				if fire.Organization == inst.Organization {
 					fires = append(fires, fire)
