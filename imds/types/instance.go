@@ -45,7 +45,7 @@ type Instance struct {
 	RootEnabled         bool               `json:"root_enabled"`
 	Memory              int                `json:"memory"`
 	Processors          int                `json:"processors"`
-	NetworkRoles        []string           `json:"network_roles"`
+	Roles               []string           `json:"roles"`
 	Vnc                 bool               `json:"vnc"`
 	Spice               bool               `json:"spice"`
 	Gui                 bool               `json:"gui"`
@@ -97,7 +97,7 @@ func NewInstance(inst *instance.Instance) *Instance {
 		RootEnabled:         inst.RootEnabled,
 		Memory:              inst.Memory,
 		Processors:          inst.Processors,
-		NetworkRoles:        inst.NetworkRoles,
+		Roles:               inst.Roles,
 		Vnc:                 inst.Vnc,
 		Spice:               inst.Spice,
 		Gui:                 inst.Gui,
