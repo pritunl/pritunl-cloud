@@ -1,27 +1,16 @@
 package deploy
 
 import (
-	"fmt"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
-	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
-	"github.com/pritunl/pritunl-cloud/errortypes"
-	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/interfaces"
-	"github.com/pritunl/pritunl-cloud/netconf"
 	"github.com/pritunl/pritunl-cloud/node"
-	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
-	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -32,45 +21,6 @@ var (
 
 type Namespace struct {
 	stat *state.State
-}
-
-func (n *Namespace) restartDhcp(inst *instance.Instance) {
-	virt := n.stat.GetVirt(inst.Id)
-	if virt == nil {
-		return
-	}
-	nc := netconf.New(virt)
-
-	if !namespaceLimiter.Acquire() {
-		return
-	}
-
-	acquired, lockId := namespaceLock.LockOpenTimeout(
-		inst.Id.Hex(), 10*time.Minute)
-	if !acquired {
-		namespaceLimiter.Release()
-		return
-	}
-
-	go func() {
-		defer func() {
-			time.Sleep(3 * time.Second)
-			namespaceLock.Unlock(inst.Id.Hex(), lockId)
-			namespaceLimiter.Release()
-		}()
-
-		db := database.GetDatabase()
-		defer db.Close()
-
-		logrus.WithFields(logrus.Fields{
-			"instance_id": inst.Id.Hex(),
-		}).Debug("deploy: Restarting instance dhclient6")
-
-		err := nc.RestartDhClient(db)
-		if err != nil {
-			return
-		}
-	}()
 }
 
 func (n *Namespace) Deploy(db *database.Database) (err error) {
@@ -101,20 +51,6 @@ func (n *Namespace) Deploy(db *database.Database) (err error) {
 		externalNetwork = true
 	}
 
-	now := time.Now()
-	nde := n.stat.Node()
-	hasDhcp6 := nde.NetworkMode6 == node.Dhcp ||
-		nde.NetworkMode6 == node.DhcpSlaac
-	dhcpTtl := settings.Hypervisor.Dhcp6RefreshTtl
-	dhcpRefresh := time.Duration(dhcpTtl) * time.Second
-
-	if hasDhcp6 && !netconf.DhTimestampsLoaded {
-		err = netconf.LoadDhTimestamps(instances)
-		if err != nil {
-			return
-		}
-	}
-
 	for _, inst := range instances {
 		if !inst.IsActive() {
 			continue
@@ -130,17 +66,6 @@ func (n *Namespace) Deploy(db *database.Database) (err error) {
 			curExternalIfaces.Add(vm.GetIfaceExternal(inst.Id, 0))
 		}
 		curVirtIfaces.Add(vm.GetIfaceNodePort(inst.Id, 0))
-
-		if inst.State == vm.Running && hasDhcp6 && dhcpTtl != 0 &&
-			!inst.VirtTimestamp.IsZero() {
-
-			timestamp := netconf.GetDhTimestamp(inst.Id)
-			if now.Sub(inst.VirtTimestamp) > dhcpRefresh &&
-				now.Sub(timestamp) > dhcpRefresh {
-
-				n.restartDhcp(inst)
-			}
-		}
 	}
 
 	firstRun = false
