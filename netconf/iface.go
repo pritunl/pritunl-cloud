@@ -11,7 +11,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/interfaces"
 	"github.com/pritunl/pritunl-cloud/node"
-	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/vm"
 )
@@ -118,11 +117,6 @@ func (n *NetConf) Iface2(db *database.Database, clean bool) (err error) {
 
 	n.PhysicalInternalIface = interfaces.GetInternal(
 		n.SystemInternalIface, n.Vxlan)
-
-	n.DhcpPidPath = paths.GetDhcpPidPath(n.Virt.Id, 0)
-	n.DhcpLeasePath = paths.GetLeasePath(n.Virt.Id)
-	n.Dhcp6PidPath = paths.GetDhcp6PidPath(n.Virt.Id, 1)
-	n.Dhcp6LeasePath = paths.GetLease6Path(n.Virt.Id)
 
 	mtuSizeExternal := dc.GetBaseExternalMtu()
 	mtuSizeInternal := dc.GetBaseInternalMtu()
