@@ -108,42 +108,6 @@ func (n *Namespace) Deploy(db *database.Database) (err error) {
 		}
 	}
 
-	running := n.stat.Running()
-	for _, name := range running {
-		if len(name) != 27 || !strings.HasPrefix(name, "dhclient-i") {
-			continue
-		}
-
-		iface := name[9:23]
-
-		if !curExternalIfaces.Contains(iface) {
-			pth := filepath.Join("/var/run", name)
-
-			pidByt, e := ioutil.ReadFile(pth)
-			if e != nil {
-				err = &errortypes.ReadError{
-					errors.Wrap(e, "namespace: Failed to read dhclient pid"),
-				}
-				return
-			}
-
-			pid, e := strconv.Atoi(strings.TrimSpace(string(pidByt)))
-			if e != nil {
-				err = &errortypes.ParseError{
-					errors.Wrap(e, "namespace: Failed to parse dhclient pid"),
-				}
-				return
-			}
-
-			exists, _ := utils.Exists(fmt.Sprintf("/proc/%d/status", pid))
-			if exists {
-				utils.ExecCombinedOutput("", "kill", "-9", strconv.Itoa(pid))
-			} else {
-				os.Remove(pth)
-			}
-		}
-	}
-
 	return
 }
 
