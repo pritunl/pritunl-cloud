@@ -296,7 +296,7 @@ func (n *NetConf) ipNodePort(db *database.Database) (err error) {
 }
 
 func (n *NetConf) ipDetect(db *database.Database) (err error) {
-	time.Sleep(2 * time.Second)
+	time.Sleep(250 * time.Millisecond)
 
 	ipTimeout := settings.Hypervisor.IpTimeout * 4
 	ipTimeout6 := settings.Hypervisor.IpTimeout6 * 4
