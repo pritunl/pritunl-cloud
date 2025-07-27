@@ -100,7 +100,7 @@ func NewInstance(stat *state.State, inst *instance.Instance) (
 		inf.FirewallRules[key] = strings.Join(vals, ", ")
 	}
 
-	authrs := stat.GetInstaceAuthorities(inst.Organization, inst.NetworkRoles)
+	authrs := stat.GetInstaceAuthorities(inst.Organization, inst.Roles)
 	for _, authr := range authrs {
 		inf.Authorities = append(inf.Authorities, authr.Name)
 	}
