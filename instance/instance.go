@@ -102,7 +102,7 @@ type Instance struct {
 	InitDiskSize        int                 `bson:"init_disk_size" json:"init_disk_size"`
 	Memory              int                 `bson:"memory" json:"memory"`
 	Processors          int                 `bson:"processors" json:"processors"`
-	NetworkRoles        []string            `bson:"network_roles" json:"network_roles"`
+	Roles               []string            `bson:"roles" json:"roles"`
 	Isos                []*iso.Iso          `bson:"isos,omitempty" json:"isos"`
 	UsbDevices          []*usb.Device       `bson:"usb_devices,omitempty" json:"usb_devices"`
 	PciDevices          []*pci.Device       `bson:"pci_devices,omitempty" json:"pci_devices"`
@@ -327,8 +327,8 @@ func (i *Instance) Validate(db *database.Database) (
 		i.Processors = 1
 	}
 
-	if i.NetworkRoles == nil {
-		i.NetworkRoles = []string{}
+	if i.Roles == nil {
+		i.Roles = []string{}
 	}
 
 	if i.PublicIps == nil {
