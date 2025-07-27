@@ -164,7 +164,7 @@ func GetAllRoles(db *database.Database, query *bson.M) (
 
 		insts = append(insts, inst)
 
-		for _, role := range inst.NetworkRoles {
+		for _, role := range inst.Roles {
 			rolesSet.Add(role)
 		}
 	}
