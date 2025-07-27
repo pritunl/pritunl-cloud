@@ -190,6 +190,7 @@ func main() {
 		}
 		return
 	case "start-instance":
+		flag.Parse()
 		InitLimited()
 		err := cmd.StartInstance(flag.Args()[1])
 		if err != nil {
@@ -197,6 +198,7 @@ func main() {
 		}
 		return
 	case "stop-instance":
+		flag.Parse()
 		InitLimited()
 		err := cmd.StopInstance(flag.Args()[1])
 		if err != nil {
