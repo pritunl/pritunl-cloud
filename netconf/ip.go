@@ -701,11 +701,6 @@ func (n *NetConf) ipInit6Alt(db *database.Database) (err error) {
 }
 
 func (n *NetConf) Ip(db *database.Database) (err error) {
-	err = n.ipStartDhClient(db)
-	if err != nil {
-		return
-	}
-
 	err = n.ipExternal(db)
 	if err != nil {
 		return
