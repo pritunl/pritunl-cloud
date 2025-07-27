@@ -1,17 +1,11 @@
 package netconf
 
 import (
-	"fmt"
-	"io/ioutil"
-	"strings"
-
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/interfaces"
 	"github.com/pritunl/pritunl-cloud/store"
-	"github.com/pritunl/pritunl-cloud/utils"
-	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/tools/commander"
 )
 
@@ -44,33 +38,6 @@ func (n *NetConf) ClearAll(db *database.Database) (err error) {
 		}
 		return
 	}
-
-	ifaceExternal := vm.GetIfaceExternal(n.Virt.Id, 0)
-	pidPath := fmt.Sprintf(n.DhcpPidPath, ifaceExternal)
-
-	pid := ""
-	pidData, _ := ioutil.ReadFile(pidPath)
-	if pidData != nil {
-		pid = strings.TrimSpace(string(pidData))
-	}
-
-	if pid != "" {
-		_, _ = utils.ExecCombinedOutput("", "kill", pid)
-	}
-
-	pidPath = fmt.Sprintf(n.Dhcp6PidPath, ifaceExternal)
-
-	pid = ""
-	pidData, _ = ioutil.ReadFile(pidPath)
-	if pidData != nil {
-		pid = strings.TrimSpace(string(pidData))
-	}
-
-	if pid != "" {
-		_, _ = utils.ExecCombinedOutput("", "kill", pid)
-	}
-
-	_ = utils.RemoveAll(pidPath)
 
 	err = n.Clear(db)
 	if err != nil {
