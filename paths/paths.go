@@ -11,7 +11,6 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
-	"github.com/pritunl/pritunl-cloud/vm"
 )
 
 func GetVmUuid(instId primitive.ObjectID) string {
@@ -142,36 +141,8 @@ func GetInitPath(instId primitive.ObjectID) string {
 		fmt.Sprintf("%s.iso", instId.Hex()))
 }
 
-func GetDhcpPidPath(instId primitive.ObjectID, n int) string {
-	return fmt.Sprintf(
-		"/var/run/dhclient-%s.pid",
-		vm.GetIfaceExternal(instId, 0),
-	)
-	return path.Join(GetInstRunPath(instId),
-		fmt.Sprintf("dhclient_%d.pid", n))
-}
-
-func GetDhcp6PidPath(instId primitive.ObjectID, n int) string {
-	return fmt.Sprintf(
-		"/var/run/dhclient6-%s.pid",
-		vm.GetIfaceExternal(instId, 0),
-	)
-	return path.Join(GetInstRunPath(instId),
-		fmt.Sprintf("dhclient6_%d.pid", n))
-}
-
 func GetLeasesPath() string {
 	return path.Join(node.Self.GetVirtPath(), "leases")
-}
-
-func GetLeasePath(instId primitive.ObjectID) string {
-	return path.Join(GetLeasesPath(),
-		fmt.Sprintf("%s.leases", instId.Hex()))
-}
-
-func GetLease6Path(instId primitive.ObjectID) string {
-	return path.Join(GetLeasesPath(),
-		fmt.Sprintf("%s_ipv6.leases", instId.Hex()))
 }
 
 func GetUnitName(virtId primitive.ObjectID) string {
