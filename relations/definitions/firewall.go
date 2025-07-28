@@ -17,15 +17,15 @@ var Firewall = relations.Query{
 		Key:   "name",
 		Label: "Name",
 	}, {
-		Key:   "network_roles",
+		Key:   "roles",
 		Label: "Roles",
 	}},
 	Relations: []relations.Relation{{
 		Key:          "instances",
 		Label:        "Instance",
 		From:         "instances",
-		LocalField:   "network_roles",
-		ForeignField: "network_roles",
+		LocalField:   "roles",
+		ForeignField: "roles",
 		Sort: map[string]int{
 			"name": 1,
 		},
