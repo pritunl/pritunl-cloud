@@ -525,11 +525,6 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	err = utils.RemoveAll(paths.GetLeasePath(virt.Id))
-	if err != nil {
-		return
-	}
-
 	err = utils.RemoveAll(unitPath)
 	if err != nil {
 		return
