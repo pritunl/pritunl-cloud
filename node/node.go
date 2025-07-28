@@ -104,7 +104,7 @@ type Node struct {
 	Hugepages               bool                 `bson:"hugepages" json:"hugepages"`
 	HugepagesSize           int                  `bson:"hugepages_size" json:"hugepages_size"`
 	Firewall                bool                 `bson:"firewall" json:"firewall"`
-	NetworkRoles            []string             `bson:"network_roles" json:"network_roles"`
+	Roles                   []string             `bson:"roles" json:"roles"`
 	Memory                  float64              `bson:"memory" json:"memory"`
 	HugePagesUsed           float64              `bson:"hugepages_used" json:"hugepages_used"`
 	Load1                   float64              `bson:"load1" json:"load1"`
@@ -235,7 +235,7 @@ func (n *Node) Copy() *Node {
 		Hugepages:               n.Hugepages,
 		HugepagesSize:           n.HugepagesSize,
 		Firewall:                n.Firewall,
-		NetworkRoles:            n.NetworkRoles,
+		Roles:                   n.Roles,
 		Memory:                  n.Memory,
 		HugePagesUsed:           n.HugePagesUsed,
 		Load1:                   n.Load1,
@@ -638,11 +638,11 @@ func (n *Node) Validate(db *database.Database) (
 		n.CachePath = constants.DefaultCache
 	}
 
-	if n.NetworkRoles == nil {
-		n.NetworkRoles = []string{}
+	if n.Roles == nil {
+		n.Roles = []string{}
 	}
 
-	if n.Firewall && len(n.NetworkRoles) == 0 {
+	if n.Firewall && len(n.Roles) == 0 {
 		errData = &errortypes.ErrorData{
 			Error:   "firewall_empty_roles",
 			Message: "Cannot enable firewall without network roles",
@@ -1334,7 +1334,7 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.Hugepages = nde.Hugepages
 	n.HugepagesSize = nde.HugepagesSize
 	n.Firewall = nde.Firewall
-	n.NetworkRoles = nde.NetworkRoles
+	n.Roles = nde.Roles
 	n.VirtPath = nde.VirtPath
 	n.CachePath = nde.CachePath
 	n.TempPath = nde.TempPath
