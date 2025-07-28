@@ -21,10 +21,6 @@ type NetConf struct {
 	NodePortSubnet  string
 	OracleSubnets   set.Set
 	Namespace       string
-	DhcpPidPath     string
-	Dhcp6PidPath    string
-	DhcpLeasePath   string
-	Dhcp6LeasePath  string
 	VmAdapter       *vm.NetworkAdapter
 
 	PublicAddress  string
