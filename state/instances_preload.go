@@ -58,7 +58,7 @@ func (p *InstancesPreloadState) Refresh(pkg *Package,
 
 	nde := node.Self
 	if nde.Firewall {
-		roles := nde.NetworkRoles
+		roles := nde.Roles
 		for _, role := range roles {
 			rolesSet.Add(role)
 		}
