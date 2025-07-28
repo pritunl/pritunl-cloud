@@ -282,7 +282,7 @@ func GetAllShape(db *database.Database, zones []primitive.ObjectID,
 		"zone": &bson.M{
 			"$in": zones,
 		},
-		"network_roles": &bson.M{
+		"roles": &bson.M{
 			"$in": roles,
 		},
 	}
