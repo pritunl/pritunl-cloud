@@ -8,18 +8,11 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/iproute"
-	"github.com/pritunl/pritunl-cloud/paths"
-	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 )
 
 func (n *NetConf) Validate() (err error) {
 	namespace := vm.GetNamespace(n.Virt.Id, 0)
-
-	err = utils.ExistsMkdir(paths.GetLeasesPath(), 0755)
-	if err != nil {
-		return
-	}
 
 	if len(n.Virt.NetworkAdapters) == 0 {
 		err = &errortypes.NotFoundError{
