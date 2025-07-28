@@ -25,7 +25,7 @@ var Shape = relations.Query{
 		Label:        "Node",
 		From:         "nodes",
 		LocalField:   "roles",
-		ForeignField: "network_roles",
+		ForeignField: "roles",
 		Sort: map[string]int{
 			"name": 1,
 		},
