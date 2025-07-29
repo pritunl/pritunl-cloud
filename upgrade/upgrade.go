@@ -8,6 +8,11 @@ func Upgrade() (err error) {
 	db := database.GetDatabase()
 	defer db.Close()
 
+	err = rolesUpgrade(db)
+	if err != nil {
+		return
+	}
+
 	err = zoneDatacenterUpgrade(db)
 	if err != nil {
 		return
