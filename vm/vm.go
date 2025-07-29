@@ -227,10 +227,13 @@ func (v *VirtualMachine) Commit(db *database.Database) (err error) {
 	}
 
 	data := bson.M{
-		"state":       v.State,
-		"timestamp":   v.Timestamp,
-		"public_ips":  addrs,
-		"public_ips6": addrs6,
+		"state":      v.State,
+		"timestamp":  v.Timestamp,
+		"public_ips": addrs,
+	}
+
+	if v.State == Running || len(addrs6) > 0 {
+		data["public_ips6"] = addrs6
 	}
 
 	if v.QemuVersion != "" {
@@ -252,11 +255,16 @@ func (v *VirtualMachine) Commit(db *database.Database) (err error) {
 	if !v.Deployment.IsZero() {
 		coll = db.Deployments()
 
+		fields := bson.M{
+			"instance_data.public_ips": addrs,
+		}
+
+		if v.State == Running || len(addrs6) > 0 {
+			fields["instance_data.public_ips6"] = addrs6
+		}
+
 		err = coll.UpdateId(v.Deployment, &bson.M{
-			"$set": &bson.M{
-				"instance_data.public_ips":  addrs,
-				"instance_data.public_ips6": addrs6,
-			},
+			"$set": fields,
 		})
 		if err != nil {
 			err = database.ParseError(err)
