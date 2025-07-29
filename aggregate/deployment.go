@@ -146,7 +146,7 @@ func GetDeployments(db *database.Database, unt *unit.Unit) (
 				{"instance_docs.processors", 1},
 				{"instance_docs.state", 1},
 				{"instance_docs.action", 1},
-				{"instance_docs.virt_timestamp", 1},
+				{"instance_docs.timestamp", 1},
 				{"instance_docs.restart", 1},
 				{"instance_docs.restart_block_ip", 1},
 				{"instance_docs.guest", 1},
