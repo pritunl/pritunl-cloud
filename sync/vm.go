@@ -66,7 +66,7 @@ func syncNodeFirewall() {
 	}
 
 	for i := 0; i < 2; i++ {
-		fires, err := firewall.GetRoles(db, node.Self.NetworkRoles)
+		fires, err := firewall.GetRoles(db, node.Self.Roles)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
