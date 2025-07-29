@@ -43,12 +43,7 @@ fi
 cd redirect
 go install -v
 sudo cp -f ~/go/bin/redirect /usr/bin/pritunl-cloud-redirect
-
 cd ..
-cd imds/server
-go install -v
-sudo cp -f ~/go/bin/server /usr/bin/pritunl-cloud-imds
-cd ../../
 
 go install -v
 sudo cp -f ~/go/bin/pritunl-cloud /usr/bin/pritunl-cloud
