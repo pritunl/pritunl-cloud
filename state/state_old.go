@@ -846,7 +846,7 @@ func (s *StateOld) init() (err error) {
 		nodePortsMap[inst.NetworkNamespace] = append(
 			nodePortsMap[inst.NetworkNamespace], inst.NodePorts...)
 
-		for _, role := range inst.NetworkRoles {
+		for _, role := range inst.Roles {
 			instancesRolesSet.Add(role)
 		}
 	}
