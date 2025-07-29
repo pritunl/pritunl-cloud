@@ -6,9 +6,11 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/organization"
 	"github.com/pritunl/pritunl-cloud/relations"
+	"github.com/pritunl/pritunl-cloud/subscription"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -91,6 +93,23 @@ func organizationPost(c *gin.Context) {
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
+	}
+
+	if !subscription.Sub.Active {
+		count, e := organization.Count(db)
+		if e != nil {
+			utils.AbortWithError(c, 500, e)
+			return
+		}
+
+		if count > 0 {
+			errData := &errortypes.ErrorData{
+				Error:   "subscription_required",
+				Message: "Subscription required for multiple organizations",
+			}
+			c.JSON(400, errData)
+			return
+		}
 	}
 
 	org := &organization.Organization{
