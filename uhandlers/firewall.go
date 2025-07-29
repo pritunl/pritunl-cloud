@@ -21,11 +21,11 @@ import (
 )
 
 type firewallData struct {
-	Id           primitive.ObjectID `json:"id"`
-	Name         string             `json:"name"`
-	Comment      string             `json:"comment"`
-	NetworkRoles []string           `json:"network_roles"`
-	Ingress      []*firewall.Rule   `json:"ingress"`
+	Id      primitive.ObjectID `json:"id"`
+	Name    string             `json:"name"`
+	Comment string             `json:"comment"`
+	Roles   []string           `json:"roles"`
+	Ingress []*firewall.Rule   `json:"ingress"`
 }
 
 type firewallsData struct {
@@ -65,13 +65,13 @@ func firewallPut(c *gin.Context) {
 
 	fire.Name = data.Name
 	fire.Comment = data.Comment
-	fire.NetworkRoles = data.NetworkRoles
+	fire.Roles = data.Roles
 	fire.Ingress = data.Ingress
 
 	fields := set.NewSet(
 		"name",
 		"comment",
-		"network_roles",
+		"roles",
 		"ingress",
 	)
 
@@ -121,7 +121,7 @@ func firewallPost(c *gin.Context) {
 		Name:         data.Name,
 		Comment:      data.Comment,
 		Organization: userOrg,
-		NetworkRoles: data.NetworkRoles,
+		Roles:        data.Roles,
 		Ingress:      data.Ingress,
 	}
 
@@ -274,9 +274,9 @@ func firewallsGet(c *gin.Context) {
 		}
 	}
 
-	networkRole := strings.TrimSpace(c.Query("network_role"))
-	if networkRole != "" {
-		query["network_roles"] = networkRole
+	role := strings.TrimSpace(c.Query("role"))
+	if role != "" {
+		query["roles"] = role
 	}
 
 	firewalls, count, err := firewall.GetAllPaged(db, &query, page, pageCount)
