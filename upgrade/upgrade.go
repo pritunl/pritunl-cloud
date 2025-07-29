@@ -13,6 +13,11 @@ func Upgrade() (err error) {
 		return
 	}
 
+	err = instanceUpgrade(db)
+	if err != nil {
+		return
+	}
+
 	err = zoneDatacenterUpgrade(db)
 	if err != nil {
 		return
