@@ -220,7 +220,7 @@ var Organization = relations.Query{
 			},
 		}, {
 			Keys: []string{
-				"virt_timestamp",
+				"timestamp",
 				"action",
 				"state",
 			},
