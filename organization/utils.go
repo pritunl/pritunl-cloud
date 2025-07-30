@@ -165,3 +165,15 @@ func Remove(db *database.Database, dcId primitive.ObjectID) (err error) {
 
 	return
 }
+
+func Count(db *database.Database) (count int64, err error) {
+	coll := db.Organizations()
+
+	count, err = coll.CountDocuments(db, &bson.M{})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
