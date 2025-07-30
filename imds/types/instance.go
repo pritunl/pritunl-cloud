@@ -1,6 +1,8 @@
 package types
 
 import (
+	"time"
+
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/instance"
 )
@@ -15,6 +17,7 @@ type Instance struct {
 	OracleVnic          string             `json:"oracle_vnic"`
 	Image               primitive.ObjectID `json:"image"`
 	State               string             `json:"state"`
+	Timestamp           time.Time          `json:"timestamp"`
 	Action              string             `json:"action"`
 	Uefi                bool               `json:"uefi"`
 	SecureBoot          bool               `json:"secure_boot"`
@@ -67,6 +70,7 @@ func NewInstance(inst *instance.Instance) *Instance {
 		OracleVnic:          inst.OracleVnic,
 		Image:               inst.Image,
 		State:               inst.State,
+		Timestamp:           inst.Timestamp,
 		Action:              inst.Action,
 		Uefi:                inst.Uefi,
 		SecureBoot:          inst.SecureBoot,
