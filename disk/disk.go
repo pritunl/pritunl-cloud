@@ -25,6 +25,7 @@ type Disk struct {
 	Id               primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Name             string             `bson:"name" json:"name"`
 	Comment          string             `bson:"comment" json:"comment"`
+	Created          time.Time          `bson:"created" json:"created"`
 	State            string             `bson:"state" json:"state"`
 	Action           string             `bson:"action" json:"action"`
 	Type             string             `bson:"type" json:"type"`
@@ -351,6 +352,8 @@ func (d *Disk) CommitFields(db *database.Database, fields set.Set) (
 
 func (d *Disk) Insert(db *database.Database) (err error) {
 	coll := db.Disks()
+
+	d.Created = time.Now()
 
 	_, err = coll.InsertOne(db, d)
 	if err != nil {
