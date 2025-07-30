@@ -141,10 +141,6 @@ func GetInitPath(instId primitive.ObjectID) string {
 		fmt.Sprintf("%s.iso", instId.Hex()))
 }
 
-func GetLeasesPath() string {
-	return path.Join(node.Self.GetVirtPath(), "leases")
-}
-
 func GetUnitName(virtId primitive.ObjectID) string {
 	return fmt.Sprintf("pritunl_cloud_%s.service", virtId.Hex())
 }
