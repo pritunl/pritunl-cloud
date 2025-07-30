@@ -18,7 +18,7 @@ func buildEvalData(unt *unit.Unit,
 	if inst.IsActive() {
 		now := time.Now()
 
-		uptime := int(now.Sub(inst.VirtTimestamp).Seconds())
+		uptime := int(now.Sub(inst.Timestamp).Seconds())
 		if inst.Guest != nil {
 			lastTimestamp = int(now.Sub(inst.Guest.Timestamp).Seconds())
 			lastHeartbeat = int(now.Sub(inst.Guest.Heartbeat).Seconds())
