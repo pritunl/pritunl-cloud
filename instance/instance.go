@@ -62,7 +62,7 @@ type Instance struct {
 	State               string              `bson:"state" json:"state"`
 	Action              string              `bson:"action" json:"action"`
 	PublicMac           string              `bson:"-" json:"public_mac"`
-	VirtTimestamp       time.Time           `bson:"virt_timestamp" json:"virt_timestamp"`
+	Timestamp           time.Time           `bson:"timestamp" json:"timestamp"`
 	Restart             bool                `bson:"restart" json:"restart"`
 	RestartReason       string              `bson:"restart_reason" json:"restart_reason"`
 	RestartBlockIp      bool                `bson:"restart_block_ip" json:"restart_block_ip"`
@@ -812,13 +812,13 @@ func (i *Instance) Json(short bool) {
 	}
 
 	i.PublicMac = vm.GetMacAddrExternal(i.Id, i.Vpc)
-	if i.VirtTimestamp.IsZero() || !i.IsActive() {
+	if i.Timestamp.IsZero() || !i.IsActive() {
 		i.Uptime = ""
 	} else {
 		if short {
-			i.Uptime = systemd.FormatUptimeShort(i.VirtTimestamp)
+			i.Uptime = systemd.FormatUptimeShort(i.Timestamp)
 		} else {
-			i.Uptime = systemd.FormatUptime(i.VirtTimestamp)
+			i.Uptime = systemd.FormatUptime(i.Timestamp)
 		}
 	}
 
