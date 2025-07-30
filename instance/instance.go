@@ -1129,6 +1129,8 @@ func (i *Instance) Insert(db *database.Database) (err error) {
 		return
 	}
 
+	i.Created = time.Now()
+
 	for n := 0; n < 2000; n++ {
 		resp, e := coll.InsertOne(db, i)
 		if e != nil {
