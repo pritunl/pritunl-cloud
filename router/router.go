@@ -60,7 +60,7 @@ type Router struct {
 	box                  *crypto.AsymNaclHmac
 	aRouter              *gin.Engine
 	uRouter              *gin.Engine
-	waiter               sync.WaitGroup
+	waiter               *sync.WaitGroup
 	lock                 sync.Mutex
 	redirectServer       *http.Server
 	redirectContext      context.Context
