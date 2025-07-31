@@ -1042,8 +1042,8 @@ func (d *Deployments) domain(db *database.Database,
 					newRecs[domn.Id] = append(newRecs[domn.Id], rec)
 				}
 				break
-			case spec.OraclePublic:
-				for _, val := range deply.InstanceData.OraclePublicIps {
+			case spec.CloudPublic:
+				for _, val := range deply.InstanceData.CloudPublicIps {
 					rec := &domain.Record{
 						Domain:     specRec.Domain,
 						SubDomain:  specRec.Name,
@@ -1065,8 +1065,8 @@ func (d *Deployments) domain(db *database.Database,
 					newRecs[domn.Id] = append(newRecs[domn.Id], rec)
 				}
 				break
-			case spec.OraclePublic6:
-				for _, val := range deply.InstanceData.OraclePublicIps6 {
+			case spec.CloudPublic6:
+				for _, val := range deply.InstanceData.CloudPublicIps6 {
 					rec := &domain.Record{
 						Domain:     specRec.Domain,
 						SubDomain:  specRec.Name,
@@ -1088,8 +1088,8 @@ func (d *Deployments) domain(db *database.Database,
 					newRecs[domn.Id] = append(newRecs[domn.Id], rec)
 				}
 				break
-			case spec.OraclePrivate:
-				for _, val := range deply.InstanceData.OraclePrivateIps {
+			case spec.CloudPrivate:
+				for _, val := range deply.InstanceData.CloudPrivateIps {
 					rec := &domain.Record{
 						Domain:     specRec.Domain,
 						SubDomain:  specRec.Name,
