@@ -31,18 +31,18 @@ type InstancePipe struct {
 }
 
 type InstanceInfo struct {
-	Node          string               `json:"node"`
-	NodePublicIp  string               `json:"node_public_ip"`
-	Mtu           int                  `json:"mtu"`
-	Iscsi         bool                 `json:"iscsi"`
-	Disks         []string             `json:"disks"`
-	FirewallRules map[string]string    `json:"firewall_rules"`
-	Authorities   []string             `json:"authorities"`
-	Isos          []*iso.Iso           `json:"isos"`
-	UsbDevices    []*usb.Device        `json:"usb_devices"`
-	PciDevices    []*pci.Device        `json:"pci_devices"`
-	DriveDevices  []*drive.Device      `json:"drive_devices"`
-	OracleSubnets []*node.OracleSubnet `json:"oracle_subnets"`
+	Node          string              `json:"node"`
+	NodePublicIp  string              `json:"node_public_ip"`
+	Mtu           int                 `json:"mtu"`
+	Iscsi         bool                `json:"iscsi"`
+	Disks         []string            `json:"disks"`
+	FirewallRules map[string]string   `json:"firewall_rules"`
+	Authorities   []string            `json:"authorities"`
+	Isos          []*iso.Iso          `json:"isos"`
+	UsbDevices    []*usb.Device       `json:"usb_devices"`
+	PciDevices    []*pci.Device       `json:"pci_devices"`
+	DriveDevices  []*drive.Device     `json:"drive_devices"`
+	CloudSubnets  []*node.CloudSubnet `json:"cloud_subnets"`
 }
 
 type InstanceAggregate struct {
@@ -167,7 +167,7 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 			Disks:         []string{},
 			FirewallRules: map[string]string{},
 			Authorities:   []string{},
-			OracleSubnets: []*node.OracleSubnet{},
+			CloudSubnets:  []*node.CloudSubnet{},
 		}
 
 		var nde *node.Node
@@ -190,7 +190,7 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 
 			info.Isos = nde.LocalIsos
 
-			info.OracleSubnets = nde.GetOracleSubnetsName()
+			info.CloudSubnets = nde.GetCloudSubnetsName()
 
 			if nde.UsbPassthrough {
 				info.UsbDevices = nde.UsbDevices
