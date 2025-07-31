@@ -205,7 +205,7 @@ func main() {
 			panic(err)
 		}
 		return
+	default:
+		fmt.Printf(help)
 	}
-
-	fmt.Printf(help)
 }
