@@ -23,6 +23,11 @@ import (
 )
 
 func Node() (err error) {
+	err = upgrade.Upgrade()
+	if err != nil {
+		return
+	}
+
 	objId, err := primitive.ObjectIDFromHex(config.Config.NodeId)
 	if err != nil {
 		err = &errortypes.ParseError{
@@ -40,11 +45,6 @@ func Node() (err error) {
 	}
 
 	definitions.Init()
-
-	err = upgrade.Upgrade()
-	if err != nil {
-		return
-	}
 
 	err = setup.Iptables()
 	if err != nil {
