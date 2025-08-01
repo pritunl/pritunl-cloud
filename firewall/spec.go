@@ -109,22 +109,22 @@ func GetSpecRules(instances []*instance.Instance,
 								strings.Split(ip, "/")[0]+"/32",
 							)
 						}
-					case "oracle_private_ips":
-						for _, ip := range instData.OraclePrivateIps {
+					case "cloud_private_ips":
+						for _, ip := range instData.CloudPrivateIps {
 							rule.SourceIps = append(
 								rule.SourceIps,
 								strings.Split(ip, "/")[0]+"/32",
 							)
 						}
-					case "oracle_public_ips":
-						for _, ip := range instData.OraclePublicIps {
+					case "cloud_public_ips":
+						for _, ip := range instData.CloudPublicIps {
 							rule.SourceIps = append(
 								rule.SourceIps,
 								strings.Split(ip, "/")[0]+"/32",
 							)
 						}
-					case "oracle_public_ips6":
-						for _, ip := range instData.OraclePublicIps6 {
+					case "cloud_public_ips6":
+						for _, ip := range instData.CloudPublicIps6 {
 							rule.SourceIps = append(
 								rule.SourceIps,
 								strings.Split(ip, "/")[0]+"/32",
@@ -423,22 +423,22 @@ func GetSpecRulesSlow(db *database.Database,
 								strings.Split(ip, "/")[0]+"/32",
 							)
 						}
-					case "oracle_private_ips":
-						for _, ip := range instData.OraclePrivateIps {
+					case "cloud_private_ips":
+						for _, ip := range instData.CloudPrivateIps {
 							rule.SourceIps = append(
 								rule.SourceIps,
 								strings.Split(ip, "/")[0]+"/32",
 							)
 						}
-					case "oracle_public_ips":
-						for _, ip := range instData.OraclePublicIps {
+					case "cloud_public_ips":
+						for _, ip := range instData.CloudPublicIps {
 							rule.SourceIps = append(
 								rule.SourceIps,
 								strings.Split(ip, "/")[0]+"/32",
 							)
 						}
-					case "oracle_public_ips6":
-						for _, ip := range instData.OraclePublicIps6 {
+					case "cloud_public_ips6":
+						for _, ip := range instData.CloudPublicIps6 {
 							rule.SourceIps = append(
 								rule.SourceIps,
 								strings.Split(ip, "/")[0]+"/32",
