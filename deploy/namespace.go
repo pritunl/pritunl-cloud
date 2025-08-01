@@ -44,9 +44,9 @@ func (n *Namespace) Deploy(db *database.Database) (err error) {
 
 	externalNetwork := false
 	if (nodeNetworkMode != node.Disabled &&
-		nodeNetworkMode != node.Oracle) ||
+		nodeNetworkMode != node.Cloud) ||
 		(nodeNetworkMode6 != node.Disabled &&
-			nodeNetworkMode6 != node.Oracle) {
+			nodeNetworkMode6 != node.Cloud) {
 
 		externalNetwork = true
 	}
