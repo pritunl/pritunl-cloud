@@ -13,8 +13,8 @@ type Instance struct {
 	Zone                primitive.ObjectID `json:"zone"`
 	Vpc                 primitive.ObjectID `json:"vpc"`
 	Subnet              primitive.ObjectID `json:"subnet"`
-	OracleSubnet        string             `json:"oracle_subnet"`
-	OracleVnic          string             `json:"oracle_vnic"`
+	CloudSubnet         string             `json:"cloud_subnet"`
+	CloudVnic           string             `json:"cloud_vnic"`
 	Image               primitive.ObjectID `json:"image"`
 	State               string             `json:"state"`
 	Timestamp           time.Time          `json:"timestamp"`
@@ -33,9 +33,9 @@ type Instance struct {
 	PrivateIps6         []string           `json:"private_ips6"`
 	GatewayIps          []string           `json:"gateway_ips"`
 	GatewayIps6         []string           `json:"gateway_ips6"`
-	OraclePrivateIps    []string           `json:"oracle_private_ips"`
-	OraclePublicIps     []string           `json:"oracle_public_ips"`
-	OraclePublicIps6    []string           `json:"oracle_public_ips6"`
+	CloudPrivateIps     []string           `json:"cloud_private_ips"`
+	CloudPublicIps      []string           `json:"cloud_public_ips"`
+	CloudPublicIps6     []string           `json:"cloud_public_ips6"`
 	HostIps             []string           `json:"host_ips"`
 	NodePortIps         []string           `json:"node_port_ips"`
 	NetworkNamespace    string             `json:"network_namespace"`
@@ -66,8 +66,8 @@ func NewInstance(inst *instance.Instance) *Instance {
 		Zone:                inst.Zone,
 		Vpc:                 inst.Vpc,
 		Subnet:              inst.Subnet,
-		OracleSubnet:        inst.OracleSubnet,
-		OracleVnic:          inst.OracleVnic,
+		CloudSubnet:         inst.CloudSubnet,
+		CloudVnic:           inst.CloudVnic,
 		Image:               inst.Image,
 		State:               inst.State,
 		Timestamp:           inst.Timestamp,
@@ -86,9 +86,9 @@ func NewInstance(inst *instance.Instance) *Instance {
 		PrivateIps6:         inst.PrivateIps6,
 		GatewayIps:          inst.GatewayIps,
 		GatewayIps6:         inst.GatewayIps6,
-		OraclePrivateIps:    inst.OraclePrivateIps,
-		OraclePublicIps:     inst.OraclePublicIps,
-		OraclePublicIps6:    inst.OraclePublicIps6,
+		CloudPrivateIps:     inst.CloudPrivateIps,
+		CloudPublicIps:      inst.CloudPublicIps,
+		CloudPublicIps6:     inst.CloudPublicIps6,
 		HostIps:             inst.HostIps,
 		NodePortIps:         inst.NodePortIps,
 		NetworkNamespace:    inst.NetworkNamespace,
