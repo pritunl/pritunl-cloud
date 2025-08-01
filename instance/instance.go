@@ -49,9 +49,9 @@ type Instance struct {
 	Subnet              primitive.ObjectID  `bson:"subnet" json:"subnet"`
 	Created             time.Time           `bson:"created" json:"created"`
 	Guest               *GuestData          `bson:"guest,omitempty" json:"guest"`
-	OracleSubnet        string              `bson:"oracle_subnet" json:"oracle_subnet"`
-	OracleVnic          string              `bson:"oracle_vnic" json:"oracle_vnic"`
-	OracleVnicAttach    string              `bson:"oracle_vnic_attach" json:"oracle_vnic_attach"`
+	CloudSubnet         string              `bson:"cloud_subnet" json:"cloud_subnet"`
+	CloudVnic           string              `bson:"cloud_vnic" json:"cloud_vnic"`
+	CloudVnicAttach     string              `bson:"cloud_vnic_attach" json:"cloud_vnic_attach"`
 	Image               primitive.ObjectID  `bson:"image" json:"image"`
 	ImageBacking        bool                `bson:"image_backing" json:"image_backing"`
 	DiskType            string              `bson:"disk_type" json:"disk_type"`
@@ -82,9 +82,9 @@ type Instance struct {
 	PrivateIps6         []string            `bson:"private_ips6" json:"private_ips6"`
 	GatewayIps          []string            `bson:"gateway_ips" json:"gateway_ips"`
 	GatewayIps6         []string            `bson:"gateway_ips6" json:"gateway_ips6"`
-	OraclePrivateIps    []string            `bson:"oracle_private_ips" json:"oracle_private_ips"`
-	OraclePublicIps     []string            `bson:"oracle_public_ips" json:"oracle_public_ips"`
-	OraclePublicIps6    []string            `bson:"oracle_public_ips6" json:"oracle_public_ips6"`
+	CloudPrivateIps     []string            `bson:"cloud_private_ips" json:"cloud_private_ips"`
+	CloudPublicIps      []string            `bson:"cloud_public_ips" json:"cloud_public_ips"`
+	CloudPublicIps6     []string            `bson:"cloud_public_ips6" json:"cloud_public_ips6"`
 	HostIps             []string            `bson:"host_ips" json:"host_ips"`
 	NodePortIps         []string            `bson:"node_port_ips" json:"node_port_ips"`
 	NodePorts           []*nodeport.Mapping `bson:"node_ports,omitempty" json:"node_ports"`
@@ -157,19 +157,19 @@ type GuestData struct {
 }
 
 type Info struct {
-	Node          string               `bson:"node" json:"node"`
-	NodePublicIp  string               `bson:"node_public_ip" json:"node_public_ip"`
-	Mtu           int                  `bson:"mtu" json:"mtu"`
-	Iscsi         bool                 `bson:"iscsi" json:"iscsi"`
-	Disks         []string             `bson:"disks" json:"disks"`
-	FirewallRules map[string]string    `bson:"firewall_rules" json:"firewall_rules"`
-	Authorities   []string             `bson:"authorities" json:"authorities"`
-	Isos          []*iso.Iso           `bson:"isos" json:"isos"`
-	UsbDevices    []*usb.Device        `bson:"usb_devices" json:"usb_devices"`
-	PciDevices    []*pci.Device        `bson:"pci_devices" json:"pci_devices"`
-	DriveDevices  []*drive.Device      `bson:"drive_devices" json:"drive_devices"`
-	OracleSubnets []*node.OracleSubnet `bson:"oracle_subnets" json:"oracle_subnets"`
-	Timestamp     time.Time            `bson:"timestamp" json:"timestamp"`
+	Node          string              `bson:"node" json:"node"`
+	NodePublicIp  string              `bson:"node_public_ip" json:"node_public_ip"`
+	Mtu           int                 `bson:"mtu" json:"mtu"`
+	Iscsi         bool                `bson:"iscsi" json:"iscsi"`
+	Disks         []string            `bson:"disks" json:"disks"`
+	FirewallRules map[string]string   `bson:"firewall_rules" json:"firewall_rules"`
+	Authorities   []string            `bson:"authorities" json:"authorities"`
+	Isos          []*iso.Iso          `bson:"isos" json:"isos"`
+	UsbDevices    []*usb.Device       `bson:"usb_devices" json:"usb_devices"`
+	PciDevices    []*pci.Device       `bson:"pci_devices" json:"pci_devices"`
+	DriveDevices  []*drive.Device     `bson:"drive_devices" json:"drive_devices"`
+	CloudSubnets  []*node.CloudSubnet `bson:"cloud_subnets" json:"cloud_subnets"`
+	Timestamp     time.Time           `bson:"timestamp" json:"timestamp"`
 }
 
 func (i *Instance) GenerateId() (err error) {
@@ -391,10 +391,10 @@ func (i *Instance) Validate(db *database.Database) (
 		return
 	}
 
-	if i.OracleSubnet != "" {
+	if i.CloudSubnet != "" {
 		match := false
-		for _, subnet := range nde.OracleSubnets {
-			if subnet == i.OracleSubnet {
+		for _, subnet := range nde.CloudSubnets {
+			if subnet == i.CloudSubnet {
 				match = true
 				break
 			}
@@ -402,8 +402,8 @@ func (i *Instance) Validate(db *database.Database) (
 
 		if !match {
 			errData = &errortypes.ErrorData{
-				Error:   "oracle_subnet_invalid",
-				Message: "Invalid Oracle subnet",
+				Error:   "cloud_subnet_invalid",
+				Message: "Invalid Cloud subnet",
 			}
 			return
 		}
@@ -1180,9 +1180,9 @@ func (i *Instance) LoadVirt(poolsMap map[primitive.ObjectID]*pool.Pool,
 				Subnet:     i.Subnet,
 			},
 		},
-		OracleSubnet:     i.OracleSubnet,
-		OracleVnic:       i.OracleVnic,
-		OracleVnicAttach: i.OracleVnicAttach,
+		CloudSubnet:      i.CloudSubnet,
+		CloudVnic:        i.CloudVnic,
+		CloudVnicAttach:  i.CloudVnicAttach,
 		DhcpIp:           i.DhcpIp,
 		DhcpIp6:          i.DhcpIp6,
 		Uefi:             i.Uefi,
