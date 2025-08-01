@@ -22,7 +22,7 @@ func NewInstance(stat *state.State, inst *instance.Instance) (
 		Disks:         []string{},
 		FirewallRules: map[string]string{},
 		Authorities:   []string{},
-		OracleSubnets: []*node.OracleSubnet{},
+		CloudSubnets: []*node.CloudSubnet{},
 	}
 
 	nde := stat.Node()
@@ -36,7 +36,7 @@ func NewInstance(stat *state.State, inst *instance.Instance) (
 	}
 	inf.Iscsi = nde.Iscsi
 	inf.Isos = nde.LocalIsos
-	inf.OracleSubnets = nde.GetOracleSubnetsName()
+	inf.CloudSubnets = nde.GetCloudSubnetsName()
 	if nde.UsbPassthrough {
 		inf.UsbDevices = nde.UsbDevices
 	}
