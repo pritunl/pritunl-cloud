@@ -43,9 +43,9 @@ type InstanceData struct {
 	PublicIps6       []string `bson:"public_ips6" json:"public_ips6"`
 	PrivateIps       []string `bson:"private_ips" json:"private_ips"`
 	PrivateIps6      []string `bson:"private_ips6" json:"private_ips6"`
-	OraclePrivateIps []string `bson:"oracle_private_ips" json:"oracle_private_ips"`
-	OraclePublicIps  []string `bson:"oracle_public_ips" json:"oracle_public_ips"`
-	OraclePublicIps6 []string `bson:"oracle_public_ips6" json:"oracle_public_ips6"`
+	CloudPrivateIps []string `bson:"cloud_private_ips" json:"cloud_private_ips"`
+	CloudPublicIps  []string `bson:"cloud_public_ips" json:"cloud_public_ips"`
+	CloudPublicIps6 []string `bson:"cloud_public_ips6" json:"cloud_public_ips6"`
 }
 
 type DomainData struct {
