@@ -68,10 +68,10 @@ func (n *NetConf) Iface1(db *database.Database) (err error) {
 		n.NodePortSubnet = nodePortNetwork.String()
 	}
 
-	n.OracleSubnets = set.NewSet()
-	if node.Self.OracleSubnets != nil {
-		for _, subnet := range node.Self.OracleSubnets {
-			n.OracleSubnets.Add(subnet)
+	n.CloudSubnets = set.NewSet()
+	if node.Self.CloudSubnets != nil {
+		for _, subnet := range node.Self.CloudSubnets {
+			n.CloudSubnets.Add(subnet)
 		}
 	}
 
@@ -94,8 +94,8 @@ func (n *NetConf) Iface1(db *database.Database) (err error) {
 	n.SpaceInternalIface = vm.GetIfaceInternal(n.Virt.Id, 0)
 	n.SpaceHostIface = vm.GetIfaceHost(n.Virt.Id, 1)
 	n.SpaceNodePortIface = vm.GetIfaceNodePort(n.Virt.Id, 1)
-	n.SpaceOracleIface = vm.GetIfaceOracle(n.Virt.Id, 0)
-	n.SpaceOracleVirtIface = vm.GetIfaceOracleVirt(n.Virt.Id, 0)
+	n.SpaceCloudIface = vm.GetIfaceCloud(n.Virt.Id, 0)
+	n.SpaceCloudVirtIface = vm.GetIfaceCloudVirt(n.Virt.Id, 0)
 	n.SpaceBridgeIface = settings.Hypervisor.BridgeIfaceName
 	n.SpaceImdsIface = settings.Hypervisor.ImdsIfaceName
 
