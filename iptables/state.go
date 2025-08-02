@@ -71,8 +71,8 @@ func LoadState(nodeSelf *node.Node, vpcs []*vpc.Vpc,
 		}
 		if len(inst.PublicIps6) != 0 {
 			pubAddr6 = inst.PublicIps6[0]
-		} else if len(inst.OraclePublicIps6) != 0 {
-			pubAddr6 = inst.OraclePublicIps6[0]
+		} else if len(inst.CloudPublicIps6) != 0 {
+			pubAddr6 = inst.CloudPublicIps6[0]
 		}
 
 		nodePortAddr := ""
@@ -81,10 +81,10 @@ func LoadState(nodeSelf *node.Node, vpcs []*vpc.Vpc,
 		}
 		hostNodePortMappings[nodePortAddr] = firewallMaps[namespace]
 
-		oracleAddr := ""
-		oracleIface := vm.GetIfaceOracle(inst.Id, 0)
-		if len(inst.OraclePrivateIps) != 0 {
-			oracleAddr = inst.OraclePrivateIps[0]
+		cloudAddr := ""
+		cloudIface := vm.GetIfaceCloud(inst.Id, 0)
+		if len(inst.CloudPrivateIps) != 0 {
+			cloudAddr = inst.CloudPrivateIps[0]
 		}
 
 		_, ok := state.Interfaces[namespace+"-"+iface]
@@ -117,10 +117,10 @@ func LoadState(nodeSelf *node.Node, vpcs []*vpc.Vpc,
 
 		nat6 := false
 		if nodeNetworkMode != node.Disabled &&
-			nodeNetworkMode != node.Oracle {
+			nodeNetworkMode != node.Cloud {
 
 			if nodeNetworkMode6 != node.Disabled &&
-				nodeNetworkMode6 != node.Oracle {
+				nodeNetworkMode6 != node.Cloud {
 
 				nat6 = true
 			}
@@ -130,7 +130,7 @@ func LoadState(nodeSelf *node.Node, vpcs []*vpc.Vpc,
 				ingress)
 			state.Interfaces[namespace+"-"+ifaceExternal] = rules
 		} else if nodeNetworkMode6 != node.Disabled &&
-			nodeNetworkMode6 != node.Oracle {
+			nodeNetworkMode6 != node.Cloud {
 
 			rules := generateInternal(namespace, ifaceExternal,
 				false, true, dhcp, dhcp6, addr, pubAddr, addr6, pubAddr6,
@@ -138,16 +138,16 @@ func LoadState(nodeSelf *node.Node, vpcs []*vpc.Vpc,
 			state.Interfaces[namespace+"-"+ifaceExternal] = rules
 		}
 
-		if nodeNetworkMode == node.Oracle {
-			if nodeNetworkMode6 == node.Oracle {
+		if nodeNetworkMode == node.Cloud {
+			if nodeNetworkMode6 == node.Cloud {
 				nat6 = true
 			}
 
-			rules := generateInternal(namespace, oracleIface,
-				true, nat6, false, false, addr, oracleAddr, addr6, pubAddr6,
+			rules := generateInternal(namespace, cloudIface,
+				true, nat6, false, false, addr, cloudAddr, addr6, pubAddr6,
 				ingress)
 
-			state.Interfaces[namespace+"-"+oracleIface] = rules
+			state.Interfaces[namespace+"-"+cloudIface] = rules
 		}
 
 		rules := generateInternal(namespace, ifaceHost,
