@@ -19,21 +19,21 @@ type NetConf struct {
 	HostSubnet      string
 	NodePortNetwork bool
 	NodePortSubnet  string
-	OracleSubnets   set.Set
+	CloudSubnets    set.Set
 	Namespace       string
 	VmAdapter       *vm.NetworkAdapter
 
 	PublicAddress  string
 	PublicAddress6 string
 
-	OracleVlan           int
-	OracleAddress        string
-	OracleAddressSubnet  string
-	OracleRouterAddress  string
-	OracleAddress6       string
-	OracleAddressSubnet6 string
-	OracleRouterAddress6 string
-	OracleMetal          bool
+	CloudVlan           int
+	CloudAddress        string
+	CloudAddressSubnet  string
+	CloudRouterAddress  string
+	CloudAddress6       string
+	CloudAddressSubnet6 string
+	CloudRouterAddress6 string
+	CloudMetal          bool
 
 	SpaceBridgeIface       string
 	VirtIface              string
@@ -43,8 +43,8 @@ type NetConf struct {
 	SpaceInternalIface     string
 	SpaceHostIface         string
 	SpaceNodePortIface     string
-	SpaceOracleIface       string
-	SpaceOracleVirtIface   string
+	SpaceCloudIface        string
+	SpaceCloudVirtIface    string
 	SpaceImdsIface         string
 
 	BridgeInternalIface string
