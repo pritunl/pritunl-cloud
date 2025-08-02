@@ -24,14 +24,14 @@ func (n *NetConf) oracleInitVnic(db *database.Database) (err error) {
 	var vnic *oracle.Vnic
 
 	found := false
-	if n.Virt.OracleVnic != "" {
-		vnic, err = oracle.GetVnic(pv, n.Virt.OracleVnic)
+	if n.Virt.CloudVnic != "" {
+		vnic, err = oracle.GetVnic(pv, n.Virt.CloudVnic)
 		if err != nil {
 			if _, ok := err.(*errortypes.NotFoundError); ok {
 				logrus.WithFields(logrus.Fields{
-					"vnic_id": n.Virt.OracleVnic,
+					"vnic_id": n.Virt.CloudVnic,
 					"error":   err,
-				}).Warn("netconf: Oracle vnic not found, creating new vnic")
+				}).Warn("netconf: Cloud vnic not found, creating new vnic")
 
 				err = nil
 			} else {
@@ -41,15 +41,15 @@ func (n *NetConf) oracleInitVnic(db *database.Database) (err error) {
 
 		if vnic == nil {
 			found = false
-		} else if vnic.SubnetId != n.Virt.OracleSubnet {
-			err = oracle.RemoveVnic(pv, n.Virt.OracleVnicAttach)
+		} else if vnic.SubnetId != n.Virt.CloudSubnet {
+			err = oracle.RemoveVnic(pv, n.Virt.CloudVnicAttach)
 			if err != nil {
 				return
 			}
 
 			vnic = nil
-		} else if !n.OracleSubnets.Contains(vnic.SubnetId) {
-			err = oracle.RemoveVnic(pv, n.Virt.OracleVnicAttach)
+		} else if !n.CloudSubnets.Contains(vnic.SubnetId) {
+			err = oracle.RemoveVnic(pv, n.Virt.CloudVnicAttach)
 			if err != nil {
 				return
 			}
@@ -60,25 +60,25 @@ func (n *NetConf) oracleInitVnic(db *database.Database) (err error) {
 		}
 	}
 
-	if !n.OracleSubnets.Contains(n.Virt.OracleSubnet) {
+	if !n.CloudSubnets.Contains(n.Virt.CloudSubnet) {
 		err = &errortypes.NotFoundError{
-			errors.New("netconf: Invalid oracle subnet"),
+			errors.New("netconf: Invalid cloud subnet"),
 		}
 		return
 	}
 
 	if !found {
 		vnicId, vnicAttachId, e := oracle.CreateVnic(
-			pv, n.Virt.Id.Hex(), n.Virt.OracleSubnet, !n.Virt.NoPublicAddress,
+			pv, n.Virt.Id.Hex(), n.Virt.CloudSubnet, !n.Virt.NoPublicAddress,
 			!n.Virt.NoPublicAddress6)
 		if e != nil {
 			err = e
 			return
 		}
 
-		n.Virt.OracleVnic = vnicId
-		n.Virt.OracleVnicAttach = vnicAttachId
-		err = n.Virt.CommitOracleVnic(db)
+		n.Virt.CloudVnic = vnicId
+		n.Virt.CloudVnicAttach = vnicAttachId
+		err = n.Virt.CommitCloudVnic(db)
 		if err != nil {
 			_ = oracle.RemoveVnic(pv, vnicAttachId)
 			return
@@ -95,9 +95,9 @@ func (n *NetConf) oracleConfVnic(db *database.Database) (err error) {
 		return
 	}
 
-	n.OracleMetal = mdata.IsBareMetal()
+	n.CloudMetal = mdata.IsBareMetal()
 
-	if n.OracleMetal {
+	if n.CloudMetal {
 		err = n.oracleConfVnicMetal(db)
 		if err != nil {
 			return
@@ -133,17 +133,17 @@ func (n *NetConf) oracleConfVnicMetal(db *database.Database) (err error) {
 		}
 
 		for _, vnic := range mdata.Vnics {
-			if vnic.Id == n.Virt.OracleVnic {
-				n.Virt.OraclePrivateIp = vnic.PrivateIp
-				n.OracleVlan = vnic.VlanTag
-				n.OracleAddress = vnic.PrivateIp
-				n.OracleAddressSubnet = vnic.SubnetCidrBlock
-				n.OracleRouterAddress = vnic.VirtualRouterIp
+			if vnic.Id == n.Virt.CloudVnic {
+				n.Virt.CloudPrivateIp = vnic.PrivateIp
+				n.CloudVlan = vnic.VlanTag
+				n.CloudAddress = vnic.PrivateIp
+				n.CloudAddressSubnet = vnic.SubnetCidrBlock
+				n.CloudRouterAddress = vnic.VirtualRouterIp
 
 				if len(vnic.Ipv6Addresses) > 0 {
-					n.OracleAddress6 = vnic.Ipv6Addresses[0]
-					n.OracleAddressSubnet6 = vnic.Ipv6SubnetCidrBlock
-					n.OracleRouterAddress6 = vnic.Ipv6VirtualRouterIp
+					n.CloudAddress6 = vnic.Ipv6Addresses[0]
+					n.CloudAddressSubnet6 = vnic.Ipv6SubnetCidrBlock
+					n.CloudRouterAddress6 = vnic.Ipv6VirtualRouterIp
 				}
 
 				nicIndex = vnic.NicIndex
@@ -188,15 +188,15 @@ func (n *NetConf) oracleConfVnicMetal(db *database.Database) (err error) {
 		return
 	}
 
-	vnic, err := oracle.GetVnic(pv, n.Virt.OracleVnic)
+	vnic, err := oracle.GetVnic(pv, n.Virt.CloudVnic)
 	if err != nil {
 		return
 	}
 
-	n.Virt.OraclePublicIp = vnic.PublicIp
-	n.Virt.OraclePublicIp6 = vnic.PublicIp6
+	n.Virt.CloudPublicIp = vnic.PublicIp
+	n.Virt.CloudPublicIp6 = vnic.PublicIp6
 
-	err = n.Virt.CommitOracleIps(db)
+	err = n.Virt.CommitCloudIps(db)
 	if err != nil {
 		return
 	}
@@ -219,7 +219,7 @@ func (n *NetConf) oracleConfVnicMetal(db *database.Database) (err error) {
 
 	if physicalIface == "" {
 		err = &errortypes.NotFoundError{
-			errors.New("netconf: Failed to find oracle physical interface"),
+			errors.New("netconf: Failed to find cloud physical interface"),
 		}
 		return
 	}
@@ -228,7 +228,7 @@ func (n *NetConf) oracleConfVnicMetal(db *database.Database) (err error) {
 		nil,
 		"ip", "link",
 		"add", "link", physicalIface,
-		"name", n.SpaceOracleVirtIface,
+		"name", n.SpaceCloudVirtIface,
 		"address", macAddr,
 		"type", "macvlan",
 	)
@@ -239,7 +239,7 @@ func (n *NetConf) oracleConfVnicMetal(db *database.Database) (err error) {
 	_, err = utils.ExecCombinedOutputLogged(
 		[]string{"File exists"},
 		"ip", "link",
-		"set", "dev", n.SpaceOracleVirtIface,
+		"set", "dev", n.SpaceCloudVirtIface,
 		"netns", n.Namespace,
 	)
 	if err != nil {
@@ -250,10 +250,10 @@ func (n *NetConf) oracleConfVnicMetal(db *database.Database) (err error) {
 		[]string{"File exists"},
 		"ip", "netns", "exec", n.Namespace,
 		"ip", "link",
-		"add", "link", n.SpaceOracleVirtIface,
-		"name", n.SpaceOracleIface,
+		"add", "link", n.SpaceCloudVirtIface,
+		"name", n.SpaceCloudIface,
 		"type", "vlan",
-		"id", strconv.Itoa(n.OracleVlan),
+		"id", strconv.Itoa(n.CloudVlan),
 	)
 	if err != nil {
 		return
@@ -264,7 +264,7 @@ func (n *NetConf) oracleConfVnicMetal(db *database.Database) (err error) {
 
 func (n *NetConf) oracleConfVnicVirt(db *database.Database) (err error) {
 	found := false
-	oracleMacAddr := ""
+	cloudMacAddr := ""
 
 	pv, err := oracle.NewProvider(node.Self.GetOracleAuthProvider())
 	if err != nil {
@@ -281,19 +281,19 @@ func (n *NetConf) oracleConfVnicVirt(db *database.Database) (err error) {
 		}
 
 		for _, vnic := range mdata.Vnics {
-			if vnic.Id == n.Virt.OracleVnic {
-				n.Virt.OraclePrivateIp = vnic.PrivateIp
-				n.OracleAddress = vnic.PrivateIp
-				n.OracleAddressSubnet = vnic.SubnetCidrBlock
-				n.OracleRouterAddress = vnic.VirtualRouterIp
+			if vnic.Id == n.Virt.CloudVnic {
+				n.Virt.CloudPrivateIp = vnic.PrivateIp
+				n.CloudAddress = vnic.PrivateIp
+				n.CloudAddressSubnet = vnic.SubnetCidrBlock
+				n.CloudRouterAddress = vnic.VirtualRouterIp
 
 				if len(vnic.Ipv6Addresses) > 0 {
-					n.OracleAddress6 = vnic.Ipv6Addresses[0]
-					n.OracleAddressSubnet6 = vnic.Ipv6SubnetCidrBlock
-					n.OracleRouterAddress6 = vnic.Ipv6VirtualRouterIp
+					n.CloudAddress6 = vnic.Ipv6Addresses[0]
+					n.CloudAddressSubnet6 = vnic.Ipv6SubnetCidrBlock
+					n.CloudRouterAddress6 = vnic.Ipv6VirtualRouterIp
 				}
 
-				oracleMacAddr = strings.ToLower(vnic.MacAddr)
+				cloudMacAddr = strings.ToLower(vnic.MacAddr)
 
 				found = true
 				break
@@ -312,15 +312,15 @@ func (n *NetConf) oracleConfVnicVirt(db *database.Database) (err error) {
 		return
 	}
 
-	vnic, err := oracle.GetVnic(pv, n.Virt.OracleVnic)
+	vnic, err := oracle.GetVnic(pv, n.Virt.CloudVnic)
 	if err != nil {
 		return
 	}
 
-	n.Virt.OraclePublicIp = vnic.PublicIp
-	n.Virt.OraclePublicIp6 = vnic.PublicIp6
+	n.Virt.CloudPublicIp = vnic.PublicIp
+	n.Virt.CloudPublicIp6 = vnic.PublicIp6
 
-	err = n.Virt.CommitOracleIps(db)
+	err = n.Virt.CommitCloudIps(db)
 	if err != nil {
 		return
 	}
@@ -333,17 +333,17 @@ func (n *NetConf) oracleConfVnicVirt(db *database.Database) (err error) {
 		return
 	}
 
-	oracleIface := ""
+	cloudIface := ""
 	for _, iface := range ifaces {
-		if strings.ToLower(iface.HardwareAddr.String()) == oracleMacAddr {
-			oracleIface = iface.Name
+		if strings.ToLower(iface.HardwareAddr.String()) == cloudMacAddr {
+			cloudIface = iface.Name
 			break
 		}
 	}
 
-	if oracleIface == "" {
+	if cloudIface == "" {
 		err = &errortypes.NotFoundError{
-			errors.New("netconf: Failed to find oracle interface"),
+			errors.New("netconf: Failed to find cloud interface"),
 		}
 		return
 	}
@@ -351,18 +351,18 @@ func (n *NetConf) oracleConfVnicVirt(db *database.Database) (err error) {
 	_, err = utils.ExecCombinedOutputLogged(
 		nil,
 		"ip", "link",
-		"set", "dev", oracleIface, "down",
+		"set", "dev", cloudIface, "down",
 	)
 	if err != nil {
 		return
 	}
 
-	if oracleIface != n.SpaceOracleIface {
+	if cloudIface != n.SpaceCloudIface {
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
 			"ip", "link",
-			"set", "dev", oracleIface,
-			"name", n.SpaceOracleIface,
+			"set", "dev", cloudIface,
+			"name", n.SpaceCloudIface,
 		)
 		if err != nil {
 			return
@@ -372,7 +372,7 @@ func (n *NetConf) oracleConfVnicVirt(db *database.Database) (err error) {
 	_, err = utils.ExecCombinedOutputLogged(
 		[]string{"File exists"},
 		"ip", "link",
-		"set", "dev", n.SpaceOracleIface,
+		"set", "dev", n.SpaceCloudIface,
 		"netns", n.Namespace,
 	)
 	if err != nil {
@@ -383,12 +383,12 @@ func (n *NetConf) oracleConfVnicVirt(db *database.Database) (err error) {
 }
 
 func (n *NetConf) oracleMtu(db *database.Database) (err error) {
-	if n.OracleMetal {
+	if n.CloudMetal {
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
 			"ip", "netns", "exec", n.Namespace,
 			"ip", "link",
-			"set", "dev", n.SpaceOracleVirtIface,
+			"set", "dev", n.SpaceCloudVirtIface,
 			"mtu", "9000",
 		)
 		if err != nil {
@@ -400,7 +400,7 @@ func (n *NetConf) oracleMtu(db *database.Database) (err error) {
 		nil,
 		"ip", "netns", "exec", n.Namespace,
 		"ip", "link",
-		"set", "dev", n.SpaceOracleIface,
+		"set", "dev", n.SpaceCloudIface,
 		"mtu", "9000",
 	)
 	if err != nil {
@@ -411,11 +411,11 @@ func (n *NetConf) oracleMtu(db *database.Database) (err error) {
 }
 
 func (n *NetConf) oracleIp(db *database.Database) (err error) {
-	subnetSplit := strings.Split(n.OracleAddressSubnet, "/")
+	subnetSplit := strings.Split(n.CloudAddressSubnet, "/")
 	if len(subnetSplit) != 2 {
 		err = &errortypes.ParseError{
-			errors.Newf("netconf: Failed to get oracle cidr %s",
-				n.OracleAddressSubnet),
+			errors.Newf("netconf: Failed to get cloud cidr %s",
+				n.CloudAddressSubnet),
 		}
 		return
 	}
@@ -424,19 +424,19 @@ func (n *NetConf) oracleIp(db *database.Database) (err error) {
 		[]string{"File exists"},
 		"ip", "netns", "exec", n.Namespace,
 		"ip", "addr",
-		"add", n.OracleAddress+"/"+subnetSplit[1],
-		"dev", n.SpaceOracleIface,
+		"add", n.CloudAddress+"/"+subnetSplit[1],
+		"dev", n.SpaceCloudIface,
 	)
 	if err != nil {
 		return
 	}
 
-	if n.OracleAddress6 != "" {
-		subnetSplit6 := strings.Split(n.OracleAddressSubnet6, "/")
+	if n.CloudAddress6 != "" {
+		subnetSplit6 := strings.Split(n.CloudAddressSubnet6, "/")
 		if len(subnetSplit6) != 2 {
 			err = &errortypes.ParseError{
-				errors.Newf("netconf: Failed to get oracle cidr6 %s",
-					n.OracleAddressSubnet6),
+				errors.Newf("netconf: Failed to get cloud cidr6 %s",
+					n.CloudAddressSubnet6),
 			}
 			return
 		}
@@ -445,8 +445,8 @@ func (n *NetConf) oracleIp(db *database.Database) (err error) {
 			[]string{"File exists"},
 			"ip", "netns", "exec", n.Namespace,
 			"ip", "addr",
-			"add", n.OracleAddress6+"/"+subnetSplit6[1],
-			"dev", n.SpaceOracleIface,
+			"add", n.CloudAddress6+"/"+subnetSplit6[1],
+			"dev", n.SpaceCloudIface,
 		)
 		if err != nil {
 			return
@@ -457,12 +457,12 @@ func (n *NetConf) oracleIp(db *database.Database) (err error) {
 }
 
 func (n *NetConf) oracleUp(db *database.Database) (err error) {
-	if n.OracleMetal {
+	if n.CloudMetal {
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
 			"ip", "netns", "exec", n.Namespace,
 			"ip", "link",
-			"set", "dev", n.SpaceOracleVirtIface, "up",
+			"set", "dev", n.SpaceCloudVirtIface, "up",
 		)
 		if err != nil {
 			return
@@ -473,7 +473,7 @@ func (n *NetConf) oracleUp(db *database.Database) (err error) {
 		nil,
 		"ip", "netns", "exec", n.Namespace,
 		"ip", "link",
-		"set", "dev", n.SpaceOracleIface, "up",
+		"set", "dev", n.SpaceCloudIface, "up",
 	)
 	if err != nil {
 		return
@@ -488,21 +488,21 @@ func (n *NetConf) oracleRoute(db *database.Database) (err error) {
 		"ip", "netns", "exec", n.Namespace,
 		"ip", "route",
 		"add", "default",
-		"via", n.OracleRouterAddress,
-		"dev", n.SpaceOracleIface,
+		"via", n.CloudRouterAddress,
+		"dev", n.SpaceCloudIface,
 	)
 	if err != nil {
 		return
 	}
 
-	if n.OracleAddress6 != "" && n.OracleRouterAddress6 != "" {
+	if n.CloudAddress6 != "" && n.CloudRouterAddress6 != "" {
 		_, err = utils.ExecCombinedOutputLogged(
 			[]string{"File exists"},
 			"ip", "netns", "exec", n.Namespace,
 			"ip", "-6", "route",
 			"add", "default",
-			"via", n.OracleRouterAddress6,
-			"dev", n.SpaceOracleIface,
+			"via", n.CloudRouterAddress6,
+			"dev", n.SpaceCloudIface,
 		)
 		if err != nil {
 			return
@@ -513,7 +513,7 @@ func (n *NetConf) oracleRoute(db *database.Database) (err error) {
 }
 
 func (n *NetConf) Oracle(db *database.Database) (err error) {
-	if n.NetworkMode != node.Oracle || n.Virt.OracleSubnet == "" {
+	if n.NetworkMode != node.Cloud || n.Virt.CloudSubnet == "" {
 		return
 	}
 
