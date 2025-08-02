@@ -303,7 +303,7 @@ func (n *NetConf) ipDetect(db *database.Database) (err error) {
 
 	pubAddr := ""
 	pubAddr6 := ""
-	if n.NetworkMode != node.Disabled && n.NetworkMode != node.Oracle {
+	if n.NetworkMode != node.Disabled && n.NetworkMode != node.Cloud {
 		for i := 0; i < ipTimeout; i++ {
 			address, address6, e := iproute.AddressGetIfaceMod(
 				n.Namespace, n.SpaceExternalIface)
@@ -313,7 +313,7 @@ func (n *NetConf) ipDetect(db *database.Database) (err error) {
 			}
 
 			if n.NetworkMode6 != node.Disabled &&
-				n.NetworkMode6 != node.Oracle {
+				n.NetworkMode6 != node.Cloud {
 
 				if address != nil {
 					pubAddr = address.Local
@@ -340,7 +340,7 @@ func (n *NetConf) ipDetect(db *database.Database) (err error) {
 			return
 		}
 	} else if n.NetworkMode6 != node.Disabled &&
-		n.NetworkMode6 != node.Oracle {
+		n.NetworkMode6 != node.Cloud {
 
 		for i := 0; i < ipTimeout6; i++ {
 			_, address6, e := iproute.AddressGetIfaceMod(
@@ -524,7 +524,7 @@ func (n *NetConf) ipDatabase(db *database.Database) (err error) {
 }
 
 func (n *NetConf) ipInit6(db *database.Database) (err error) {
-	if n.NetworkMode6 != node.Disabled && n.NetworkMode6 != node.Oracle &&
+	if n.NetworkMode6 != node.Disabled && n.NetworkMode6 != node.Cloud &&
 		n.PublicAddress6 != "" && !settings.Hypervisor.NoIpv6PingInit {
 
 		for i := 0; i < 3; i++ {
@@ -659,7 +659,7 @@ func (n *NetConf) ipArp(db *database.Database) (err error) {
 }
 
 func (n *NetConf) ipInit6Alt(db *database.Database) (err error) {
-	if n.NetworkMode6 != node.Disabled && n.NetworkMode6 != node.Oracle &&
+	if n.NetworkMode6 != node.Disabled && n.NetworkMode6 != node.Cloud &&
 		n.PublicAddress6 != "" && !settings.Hypervisor.NoIpv6PingInit {
 
 		addrs, e := utils.DnsLookup(
