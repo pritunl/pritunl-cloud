@@ -554,11 +554,11 @@ func loadIptables(namespace, instIface string, state *State,
 		}
 	}
 
-	oraclePostIface := ""
-	oracleNatRules := [][]string{}
+	cloudPostIface := ""
+	cloudNatRules := [][]string{}
 
 	for _, line := range strings.Split(output, "\n") {
-		if !strings.Contains(line, "pritunl_cloud_oracle_nat") {
+		if !strings.Contains(line, "pritunl_cloud_cloud_nat") {
 			continue
 		}
 
@@ -600,12 +600,12 @@ func loadIptables(namespace, instIface string, state *State,
 						}
 						return
 					}
-					oraclePostIface = strings.Trim(cmd[i+1], "+")
+					cloudPostIface = strings.Trim(cmd[i+1], "+")
 				}
 			}
 		}
 
-		oracleNatRules = append(oracleNatRules, cmd)
+		cloudNatRules = append(cloudNatRules, cmd)
 	}
 
 	if postIface != "" {
@@ -633,12 +633,12 @@ func loadIptables(namespace, instIface string, state *State,
 		}
 	}
 
-	if oraclePostIface != "" {
-		rules := state.Interfaces[namespace+"-"+oraclePostIface]
+	if cloudPostIface != "" {
+		rules := state.Interfaces[namespace+"-"+cloudPostIface]
 		if rules == nil {
 			rules = &Rules{
 				Namespace:        namespace,
-				Interface:        oraclePostIface,
+				Interface:        cloudPostIface,
 				Header:           [][]string{},
 				Header6:          [][]string{},
 				SourceDestCheck:  [][]string{},
@@ -648,13 +648,13 @@ func loadIptables(namespace, instIface string, state *State,
 				Holds:            [][]string{},
 				Holds6:           [][]string{},
 			}
-			state.Interfaces[namespace+"-"+oraclePostIface] = rules
+			state.Interfaces[namespace+"-"+cloudPostIface] = rules
 		}
 
 		if ipv6 {
-			rules.Nats6 = append(rules.Nats6, oracleNatRules...)
+			rules.Nats6 = append(rules.Nats6, cloudNatRules...)
 		} else {
-			rules.Nats = append(rules.Nats, oracleNatRules...)
+			rules.Nats = append(rules.Nats, cloudNatRules...)
 		}
 	}
 
