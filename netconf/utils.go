@@ -14,7 +14,7 @@ func New(virt *vm.VirtualMachine) *NetConf {
 }
 
 func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
-	if virt.OracleVnicAttach == "" {
+	if virt.CloudVnicAttach == "" {
 		return
 	}
 
@@ -23,7 +23,7 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 		return
 	}
 
-	err = oracle.RemoveVnic(pv, virt.OracleVnicAttach)
+	err = oracle.RemoveVnic(pv, virt.CloudVnicAttach)
 	if err != nil {
 		return
 	}
