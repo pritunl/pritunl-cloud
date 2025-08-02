@@ -78,7 +78,7 @@ func (n *NetConf) Address(db *database.Database) (err error) {
 		n.ExternalAddrCidr = staticCidr
 		n.ExternalGatewayAddr = staticGateway
 	} else if n.NetworkMode6 != node.Disabled &&
-		n.NetworkMode6 != node.Oracle {
+		n.NetworkMode6 != node.Cloud {
 
 		n.PhysicalExternalIface = interfaces.GetExternal(
 			n.SystemExternalIface)
