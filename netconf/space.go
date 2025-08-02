@@ -75,8 +75,8 @@ func (n *NetConf) spaceSysctl(db *database.Database) (err error) {
 }
 
 func (n *NetConf) spaceForward(db *database.Database) (err error) {
-	if (n.NetworkMode != node.Disabled && n.NetworkMode != node.Oracle) ||
-		(n.NetworkMode6 != node.Disabled && n.NetworkMode6 != node.Oracle) {
+	if (n.NetworkMode != node.Disabled && n.NetworkMode != node.Cloud) ||
+		(n.NetworkMode6 != node.Disabled && n.NetworkMode6 != node.Cloud) {
 
 		_, err = utils.ExecCombinedOutputLogged(
 			[]string{"already exists"},
