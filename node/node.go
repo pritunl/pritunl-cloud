@@ -78,7 +78,7 @@ type Node struct {
 	AvailableInterfaces     []string             `bson:"available_interfaces" json:"available_interfaces"`
 	AvailableBridges        []string             `bson:"available_bridges" json:"available_bridges"`
 	AvailableVpcs           []*cloud.Vpc         `bson:"available_vpcs" json:"available_vpcs"`
-	OracleSubnets           []string             `bson:"oracle_subnets" json:"oracle_subnets"`
+	CloudSubnets            []string             `bson:"cloud_subnets" json:"cloud_subnets"`
 	DefaultInterface        string               `bson:"default_interface" json:"default_interface"`
 	NetworkMode             string               `bson:"network_mode" json:"network_mode"`
 	NetworkMode6            string               `bson:"network_mode6" json:"network_mode6"`
@@ -128,7 +128,7 @@ type Node struct {
 	OraclePrivateKey        string               `bson:"oracle_private_key" json:"-"`
 	OraclePublicKey         string               `bson:"oracle_public_key" json:"oracle_public_key"`
 	Operation               string               `bson:"operation" json:"operation"`
-	oracleSubnetsNamed      []*OracleSubnet      `bson:"-" json:"-"`
+	cloudSubnetsNamed       []*CloudSubnet       `bson:"-" json:"-"`
 	reqCount                *list.List           `bson:"-" json:"-"`
 	dcId                    primitive.ObjectID   `bson:"-" json:"-"`
 	dcZoneId                primitive.ObjectID   `bson:"-" json:"-"`
@@ -165,7 +165,7 @@ func (s *Share) MatchPath(pth string) bool {
 	return !strings.HasPrefix(relPath, "..")
 }
 
-type OracleSubnet struct {
+type CloudSubnet struct {
 	Id   string `json:"id"`
 	Name string `json:"name"`
 }
@@ -209,7 +209,7 @@ func (n *Node) Copy() *Node {
 		AvailableInterfaces:     n.AvailableInterfaces,
 		AvailableBridges:        n.AvailableBridges,
 		AvailableVpcs:           n.AvailableVpcs,
-		OracleSubnets:           n.OracleSubnets,
+		CloudSubnets:            n.CloudSubnets,
 		DefaultInterface:        n.DefaultInterface,
 		NetworkMode:             n.NetworkMode,
 		NetworkMode6:            n.NetworkMode6,
@@ -259,7 +259,7 @@ func (n *Node) Copy() *Node {
 		OraclePrivateKey:        n.OraclePrivateKey,
 		OraclePublicKey:         n.OraclePublicKey,
 		Operation:               n.Operation,
-		oracleSubnetsNamed:      n.oracleSubnetsNamed,
+		cloudSubnetsNamed:       n.cloudSubnetsNamed,
 		dcId:                    n.dcId,
 		dcZoneId:                n.dcZoneId,
 	}
@@ -320,9 +320,9 @@ func (n *Node) GetDatacenter(db *database.Database) (
 	return
 }
 
-func (n *Node) GetOracleSubnetsName() (subnets []*OracleSubnet) {
+func (n *Node) GetCloudSubnetsName() (subnets []*CloudSubnet) {
 	n.lock.Lock()
-	subnets = n.oracleSubnetsNamed
+	subnets = n.cloudSubnetsNamed
 	n.lock.Unlock()
 	if subnets != nil {
 		return
@@ -339,16 +339,16 @@ func (n *Node) GetOracleSubnetsName() (subnets []*OracleSubnet) {
 		}
 	}
 
-	subnets = []*OracleSubnet{}
+	subnets = []*CloudSubnet{}
 
-	if n.OracleSubnets != nil {
-		for _, subnetId := range n.OracleSubnets {
+	if n.CloudSubnets != nil {
+		for _, subnetId := range n.CloudSubnets {
 			name := names[subnetId]
 			if name == "" {
 				name = subnetId
 			}
 
-			subnets = append(subnets, &OracleSubnet{
+			subnets = append(subnets, &CloudSubnet{
 				Id:   subnetId,
 				Name: name,
 			})
@@ -356,7 +356,7 @@ func (n *Node) GetOracleSubnetsName() (subnets []*OracleSubnet) {
 	}
 
 	n.lock.Lock()
-	n.oracleSubnetsNamed = subnets
+	n.cloudSubnetsNamed = subnets
 	n.lock.Unlock()
 
 	return
@@ -666,8 +666,8 @@ func (n *Node) Validate(db *database.Database) (
 		n.Blocks6 = []*BlockAttachment{}
 	}
 
-	if n.OracleSubnets == nil {
-		n.OracleSubnets = []string{}
+	if n.CloudSubnets == nil {
+		n.CloudSubnets = []string{}
 	}
 
 	instanceDrives := []*drive.Device{}
@@ -702,7 +702,7 @@ func (n *Node) Validate(db *database.Database) (
 		}
 
 		break
-	case Oracle:
+	case Cloud:
 		n.Blocks = []*BlockAttachment{}
 		break
 	case Dhcp, "":
@@ -743,7 +743,7 @@ func (n *Node) Validate(db *database.Database) (
 		}
 
 		break
-	case Oracle:
+	case Cloud:
 		n.Blocks6 = []*BlockAttachment{}
 		break
 	case Dhcp, "":
@@ -767,7 +767,7 @@ func (n *Node) Validate(db *database.Database) (
 		n.ExternalInterfaces = []string{}
 	}
 
-	if n.NetworkMode == Oracle || n.NetworkMode6 == Oracle {
+	if n.NetworkMode == Cloud || n.NetworkMode6 == Cloud {
 		if n.OracleUser == "" {
 			errData = &errortypes.ErrorData{
 				Error:   "missing_oracle_user",
@@ -785,7 +785,7 @@ func (n *Node) Validate(db *database.Database) (
 	} else {
 		n.OracleUser = ""
 		n.OracleTenancy = ""
-		n.OracleSubnets = []string{}
+		n.CloudSubnets = []string{}
 		n.AvailableVpcs = []*cloud.Vpc{}
 	}
 
@@ -832,7 +832,7 @@ func (n *Node) JsonHypervisor() {
 	vpcs := []*cloud.Vpc{}
 
 	oracleSubnets := set.NewSet()
-	for _, subnet := range n.OracleSubnets {
+	for _, subnet := range n.CloudSubnets {
 		oracleSubnets.Add(subnet)
 	}
 
@@ -1220,7 +1220,7 @@ func (n *Node) SyncNetwork(clearCache bool) {
 		n.JumboFramesInternal = true
 	}
 
-	if n.NetworkMode == Oracle || n.NetworkMode6 == Oracle {
+	if n.NetworkMode == Cloud || n.NetworkMode6 == Cloud {
 		oracleVpcs, e := cloud.GetOracleVpcs(n.GetOracleAuthProvider())
 		if e != nil {
 			logrus.WithFields(logrus.Fields{
@@ -1314,7 +1314,7 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.ExternalInterfaces = nde.ExternalInterfaces
 	n.ExternalInterfaces6 = nde.ExternalInterfaces6
 	n.InternalInterfaces = nde.InternalInterfaces
-	n.OracleSubnets = nde.OracleSubnets
+	n.CloudSubnets = nde.CloudSubnets
 	n.NetworkMode = nde.NetworkMode
 	n.NetworkMode6 = nde.NetworkMode6
 	n.Blocks = nde.Blocks
