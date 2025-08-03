@@ -39,7 +39,7 @@ type instanceData struct {
 	Zone                primitive.ObjectID  `json:"zone"`
 	Vpc                 primitive.ObjectID  `json:"vpc"`
 	Subnet              primitive.ObjectID  `json:"subnet"`
-	OracleSubnet        string              `json:"oracle_subnet"`
+	CloudSubnet         string              `json:"cloud_subnet"`
 	Shape               primitive.ObjectID  `json:"shape"`
 	Node                primitive.ObjectID  `json:"node"`
 	DiskType            string              `json:"disk_type"`
@@ -134,7 +134,7 @@ func instancePut(c *gin.Context) {
 	inst.Comment = dta.Comment
 	inst.Vpc = dta.Vpc
 	inst.Subnet = dta.Subnet
-	inst.OracleSubnet = dta.OracleSubnet
+	inst.CloudSubnet = dta.CloudSubnet
 	if dta.Action != "" {
 		inst.Action = dta.Action
 	}
@@ -171,7 +171,7 @@ func instancePut(c *gin.Context) {
 		"datacenter",
 		"vpc",
 		"subnet",
-		"oracle_subnet",
+		"cloud_subnet",
 		"state",
 		"restart",
 		"restart_block_ip",
@@ -392,7 +392,7 @@ func instancePost(c *gin.Context) {
 			Zone:                dta.Zone,
 			Vpc:                 dta.Vpc,
 			Subnet:              dta.Subnet,
-			OracleSubnet:        dta.OracleSubnet,
+			CloudSubnet:         dta.CloudSubnet,
 			Shape:               dta.Shape,
 			Node:                dta.Node,
 			DiskType:            dta.DiskType,
