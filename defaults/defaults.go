@@ -13,7 +13,9 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/firewall"
+	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/organization"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/storage"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vpc"
@@ -421,6 +423,66 @@ func initAuthority(db *database.Database, defaultOrg primitive.ObjectID) (
 	return
 }
 
+func initNode(db *database.Database, defaultOrg primitive.ObjectID) (
+	err error) {
+
+	if defaultOrg.IsZero() {
+		return
+	}
+
+	if !node.Self.Zone.IsZero() {
+		return
+	}
+
+	dcs, err := datacenter.GetAll(db)
+	if err != nil {
+		return
+	}
+
+	zones, err := zone.GetAll(db)
+	if err != nil {
+		return
+	}
+
+	nodes, err := node.GetAll(db)
+	if err != nil {
+		return
+	}
+
+	if len(dcs) != 1 || len(zones) != 1 || len(nodes) != 1 {
+		return
+	}
+
+	node.Self.Datacenter = zones[0].Datacenter
+	node.Self.Zone = zones[0].Id
+	node.Self.HostNat = true
+	node.Self.InternalInterfaces = []string{
+		settings.Hypervisor.HostNetworkName,
+	}
+
+	errData, err := node.Self.Validate(db)
+	if err != nil {
+		return
+	}
+	if errData != nil {
+		err = errData.GetError()
+		return
+	}
+
+	err = node.Self.Commit(db)
+	if err != nil {
+		return
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"node": node.Self.Id.Hex(),
+	}).Info("defaults: Configured default node")
+
+	event.PublishDispatch(db, "node.change")
+
+	return
+}
+
 func Defaults() (err error) {
 	db := database.GetDatabase()
 	defer db.Close()
@@ -456,6 +518,11 @@ func Defaults() (err error) {
 	}
 
 	err = initAuthority(db, defaultOrg)
+	if err != nil {
+		return
+	}
+
+	err = initNode(db, defaultOrg)
 	if err != nil {
 		return
 	}
