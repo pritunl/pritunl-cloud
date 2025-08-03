@@ -55,7 +55,7 @@ const (
 	Slaac     = "slaac"
 	Static    = "static"
 	Internal  = "internal"
-	Oracle    = "oracle"
+	Cloud     = "cloud"
 
 	Restart = "restart"
 
