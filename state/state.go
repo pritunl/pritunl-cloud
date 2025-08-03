@@ -101,9 +101,6 @@ type State struct {
 	// Schedulers
 	Schedulers func() []*scheduler.Scheduler
 
-	// Running
-	Running func() []string
-
 	// Firewalls
 	NodeFirewall          func() []*firewall.Rule
 	Firewalls             func() map[string][]*firewall.Rule
