@@ -28,7 +28,7 @@ import (
 )
 
 type State struct {
-	waiter sync.WaitGroup
+	waiter *sync.WaitGroup
 
 	// Datacenter
 	NodeDatacenter func() *datacenter.Datacenter
@@ -137,7 +137,9 @@ func GetState(runtimes *Runtimes) (stat *State, err error) {
 		return
 	}
 
-	stat = &State{}
+	stat = &State{
+		waiter: &sync.WaitGroup{},
+	}
 	ApplyAll(stat)
 
 	return
