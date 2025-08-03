@@ -34,12 +34,12 @@ type VirtualMachine struct {
 	Disks               []*Disk            `json:"disks"`
 	DisksAvailable      bool               `json:"-"`
 	NetworkAdapters     []*NetworkAdapter  `json:"network_adapters"`
-	OracleSubnet        string             `json:"oracle_subnet"`
-	OracleVnic          string             `json:"oracle_vnic"`
-	OracleVnicAttach    string             `json:"oracle_vnic_attach"`
-	OraclePrivateIp     string             `json:"oracle_private_ip"`
-	OraclePublicIp      string             `json:"oracle_public_ip"`
-	OraclePublicIp6     string             `json:"oracle_public_ip6"`
+	CloudSubnet         string             `json:"cloud_subnet"`
+	CloudVnic           string             `json:"cloud_vnic"`
+	CloudVnicAttach     string             `json:"cloud_vnic_attach"`
+	CloudPrivateIp      string             `json:"cloud_private_ip"`
+	CloudPublicIp       string             `json:"cloud_public_ip"`
+	CloudPublicIp6      string             `json:"cloud_public_ip6"`
 	DhcpIp              string             `json:"dhcp_ip"`
 	DhcpIp6             string             `json:"dhcp_ip6"`
 	Uefi                bool               `json:"uefi"`
@@ -275,13 +275,13 @@ func (v *VirtualMachine) Commit(db *database.Database) (err error) {
 	return
 }
 
-func (v *VirtualMachine) CommitOracleVnic(db *database.Database) (err error) {
+func (v *VirtualMachine) CommitCloudVnic(db *database.Database) (err error) {
 	coll := db.Instances()
 
 	err = coll.UpdateId(v.Id, &bson.M{
 		"$set": &bson.M{
-			"oracle_vnic":        v.OracleVnic,
-			"oracle_vnic_attach": v.OracleVnicAttach,
+			"cloud_vnic":        v.CloudVnic,
+			"cloud_vnic_attach": v.CloudVnicAttach,
 		},
 	})
 	if err != nil {
@@ -292,29 +292,29 @@ func (v *VirtualMachine) CommitOracleVnic(db *database.Database) (err error) {
 	return
 }
 
-func (v *VirtualMachine) CommitOracleIps(db *database.Database) (err error) {
+func (v *VirtualMachine) CommitCloudIps(db *database.Database) (err error) {
 	coll := db.Instances()
 
-	oraclePivateAddrs := []string{}
-	if v.OraclePrivateIp != "" {
-		oraclePivateAddrs = append(oraclePivateAddrs, v.OraclePrivateIp)
+	cloudPivateAddrs := []string{}
+	if v.CloudPrivateIp != "" {
+		cloudPivateAddrs = append(cloudPivateAddrs, v.CloudPrivateIp)
 	}
 
-	oraclePublicAddrs := []string{}
-	if v.OraclePublicIp != "" {
-		oraclePublicAddrs = append(oraclePublicAddrs, v.OraclePublicIp)
+	cloudPublicAddrs := []string{}
+	if v.CloudPublicIp != "" {
+		cloudPublicAddrs = append(cloudPublicAddrs, v.CloudPublicIp)
 	}
 
-	oraclePublicAddrs6 := []string{}
-	if v.OraclePublicIp6 != "" {
-		oraclePublicAddrs6 = append(oraclePublicAddrs6, v.OraclePublicIp6)
+	cloudPublicAddrs6 := []string{}
+	if v.CloudPublicIp6 != "" {
+		cloudPublicAddrs6 = append(cloudPublicAddrs6, v.CloudPublicIp6)
 	}
 
 	err = coll.UpdateId(v.Id, &bson.M{
 		"$set": &bson.M{
-			"oracle_private_ips": oraclePivateAddrs,
-			"oracle_public_ips":  oraclePublicAddrs,
-			"oracle_public_ips6": oraclePublicAddrs6,
+			"cloud_private_ips": cloudPivateAddrs,
+			"cloud_public_ips":  cloudPublicAddrs,
+			"cloud_public_ips6": cloudPublicAddrs6,
 		},
 	})
 	if err != nil {
@@ -327,9 +327,9 @@ func (v *VirtualMachine) CommitOracleIps(db *database.Database) (err error) {
 
 		err = coll.UpdateId(v.Deployment, &bson.M{
 			"$set": &bson.M{
-				"instance_data.oracle_private_ips": oraclePivateAddrs,
-				"instance_data.oracle_public_ips":  oraclePublicAddrs,
-				"instance_data.oracle_public_ips6": oraclePublicAddrs6,
+				"instance_data.cloud_private_ips": cloudPivateAddrs,
+				"instance_data.cloud_public_ips":  cloudPublicAddrs,
+				"instance_data.cloud_public_ips6": cloudPublicAddrs6,
 			},
 		})
 		if err != nil {
