@@ -41,9 +41,9 @@ func ResolverRefresh(db *database.Database) (err error) {
 			Projection: &bson.M{
 				"public_ips":         1,
 				"public_ips6":        1,
-				"oracle_private_ips": 1,
-				"oracle_public_ips":  1,
-				"oracle_public_ips6": 1,
+				"cloud_private_ips": 1,
+				"cloud_public_ips":  1,
+				"cloud_public_ips6": 1,
 			},
 		},
 	)
@@ -76,21 +76,21 @@ func ResolverRefresh(db *database.Database) (err error) {
 			}
 		}
 
-		for _, ipStr := range inst.OraclePublicIps {
+		for _, ipStr := range inst.CloudPublicIps {
 			ip := net.ParseIP(ipStr)
 			if ip != nil {
 				ipDatabase.Add(ip.String())
 			}
 		}
 
-		for _, ipStr := range inst.OraclePublicIps6 {
+		for _, ipStr := range inst.CloudPublicIps6 {
 			ip := net.ParseIP(ipStr)
 			if ip != nil {
 				ipDatabase.Add(ip.String())
 			}
 		}
 
-		for _, ipStr := range inst.OraclePrivateIps {
+		for _, ipStr := range inst.CloudPrivateIps {
 			ip := net.ParseIP(ipStr)
 			if ip != nil {
 				ipDatabase.Add(ip.String())
