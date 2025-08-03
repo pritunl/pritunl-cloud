@@ -21,9 +21,9 @@ const (
 	Private6      = "private6"
 	Public        = "public"
 	Public6       = "public6"
-	OraclePublic  = "oracle_public"
-	OraclePublic6 = "oracle_public6"
-	OraclePrivate = "oracle_private"
+	CloudPublic  = "cloud_public"
+	CloudPublic6 = "cloud_public6"
+	CloudPrivate = "cloud_private"
 
 	TokenPrefix = "+/"
 
