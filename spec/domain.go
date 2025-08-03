@@ -25,9 +25,9 @@ func (d *Domain) Validate() (errData *errortypes.ErrorData, err error) {
 			break
 		case Public6:
 			break
-		case OraclePublic:
+		case CloudPublic:
 			break
-		case OraclePrivate:
+		case CloudPrivate:
 			break
 		default:
 			errData = &errortypes.ErrorData{
