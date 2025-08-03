@@ -184,14 +184,14 @@ func GetIfaceNodePort(id primitive.ObjectID, n int) string {
 	return fmt.Sprintf("m%s%d", strings.ToLower(hashSum), n)
 }
 
-func GetIfaceOracle(id primitive.ObjectID, n int) string {
+func GetIfaceCloud(id primitive.ObjectID, n int) string {
 	hash := md5.New()
 	hash.Write([]byte(id.Hex()))
 	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
 	return fmt.Sprintf("o%s%d", strings.ToLower(hashSum), n)
 }
 
-func GetIfaceOracleVirt(id primitive.ObjectID, n int) string {
+func GetIfaceCloudVirt(id primitive.ObjectID, n int) string {
 	hash := md5.New()
 	hash.Write([]byte(id.Hex()))
 	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
