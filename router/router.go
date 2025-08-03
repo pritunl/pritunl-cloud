@@ -807,7 +807,7 @@ func (r *Router) Run() (err error) {
 			continue
 		}
 
-		r.waiter = sync.WaitGroup{}
+		r.waiter = &sync.WaitGroup{}
 		r.startServers()
 		r.waiter.Wait()
 
