@@ -16,6 +16,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/organization"
 	"github.com/pritunl/pritunl-cloud/settings"
+	"github.com/pritunl/pritunl-cloud/shape"
 	"github.com/pritunl/pritunl-cloud/storage"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vpc"
@@ -455,6 +456,9 @@ func initNode(db *database.Database, defaultOrg primitive.ObjectID) (
 
 	node.Self.Datacenter = zones[0].Datacenter
 	node.Self.Zone = zones[0].Id
+	node.Self.Roles = []string{
+		"shape-m2",
+	}
 	node.Self.HostNat = true
 	node.Self.InternalInterfaces = []string{
 		settings.Hypervisor.HostNetworkName,
@@ -470,6 +474,33 @@ func initNode(db *database.Database, defaultOrg primitive.ObjectID) (
 	}
 
 	err = node.Self.Commit(db)
+	if err != nil {
+		return
+	}
+
+	shpe := &shape.Shape{
+		Name:       "m2-small",
+		Datacenter: node.Self.Datacenter,
+		Memory:     2048,
+		Processors: 1,
+		Flexible:   true,
+		Roles: []string{
+			"shape-m2",
+		},
+		Type:     shape.Instance,
+		DiskType: shape.Qcow2,
+	}
+
+	errData, err = shpe.Validate(db)
+	if err != nil {
+		return
+	}
+	if errData != nil {
+		err = errData.GetError()
+		return
+	}
+
+	err = shpe.Insert(db)
 	if err != nil {
 		return
 	}
