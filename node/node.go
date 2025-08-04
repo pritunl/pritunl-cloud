@@ -709,11 +709,11 @@ func (n *Node) Validate(db *database.Database) (
 	case Cloud:
 		n.Blocks = []*BlockAttachment{}
 		break
-	case Dhcp, "":
-		n.NetworkMode = Dhcp
+	case Dhcp:
 		n.Blocks = []*BlockAttachment{}
 		break
-	case Disabled:
+	case Disabled, "":
+		n.NetworkMode = Disabled
 		n.Blocks = []*BlockAttachment{}
 		break
 	default:
@@ -750,11 +750,11 @@ func (n *Node) Validate(db *database.Database) (
 	case Cloud:
 		n.Blocks6 = []*BlockAttachment{}
 		break
-	case Dhcp, "":
-		n.NetworkMode6 = Dhcp
+	case Dhcp:
 		n.Blocks6 = []*BlockAttachment{}
 		break
-	case Disabled:
+	case Disabled, "":
+		n.NetworkMode6 = Disabled
 		n.Blocks6 = []*BlockAttachment{}
 		break
 	default:
