@@ -662,6 +662,14 @@ func (n *Node) Validate(db *database.Database) (
 		n.Blocks6 = []*BlockAttachment{}
 	}
 
+	if len(n.InternalInterfaces) == 0 {
+		errData = &errortypes.ErrorData{
+			Error:   "internal_interface_invalid",
+			Message: "Missing required internal interface",
+		}
+		return
+	}
+
 	if n.CloudSubnets == nil {
 		n.CloudSubnets = []string{}
 	}
