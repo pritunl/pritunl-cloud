@@ -29,6 +29,8 @@ Environment="DHCP_SECRET=%s"
 Environment="HOST_SECRET=%s"
 ExecStart=/usr/bin/pritunl-cloud -sock=%s -host=%s -port=%d imds-server
 TimeoutStopSec=5
+Restart=always
+RestartSec=3
 PrivateTmp=true
 ProtectHome=true
 ProtectSystem=full
@@ -50,6 +52,8 @@ Environment="DHCP_SECRET=%s"
 Environment="HOST_SECRET=%s"
 ExecStart=/usr/sbin/ip netns exec %s /usr/bin/pritunl-cloud -sock=%s -host=%s -port=%d imds-server
 TimeoutStopSec=5
+Restart=always
+RestartSec=3
 PrivateTmp=true
 ProtectHome=true
 ProtectSystem=full
