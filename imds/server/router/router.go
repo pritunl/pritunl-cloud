@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -50,6 +51,8 @@ func (r *Router) Run() (err error) {
 
 	go func() {
 		defer waiters.Done()
+
+		_ = os.Remove(constants.Sock)
 
 		listener, e := net.Listen("unix", constants.Sock)
 		if e != nil {
