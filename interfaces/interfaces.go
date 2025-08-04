@@ -43,86 +43,58 @@ func SyncIfaces(vxlan bool) {
 
 	ifacesNew := map[string]set.Set{}
 
-	externalIface := nde.ExternalInterface
 	externalIfaces := nde.ExternalInterfaces
-	internalIface := nde.InternalInterface
 	internalIfaces := nde.InternalInterfaces
 	blocks := nde.Blocks
 
-	if externalIfaces != nil {
-		for _, iface := range externalIfaces {
-			ifaceSet, err := getIfaces(iface)
-			if err != nil {
-				logrus.WithFields(logrus.Fields{
-					"bridge": iface,
-					"error":  err,
-				}).Error("interfaces: Bridge ifaces get failed")
-			} else {
-				ifacesNew[iface] = ifaceSet
-			}
-		}
-	} else if externalIface != "" {
-		ifaceSet, err := getIfaces(externalIface)
+	for _, iface := range externalIfaces {
+		ifaceSet, err := getIfaces(iface)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"bridge": externalIface,
+				"bridge": iface,
 				"error":  err,
 			}).Error("interfaces: Bridge ifaces get failed")
 		} else {
-			ifacesNew[externalIface] = ifaceSet
+			ifacesNew[iface] = ifaceSet
 		}
 	}
 
-	if internalIfaces != nil {
-		for _, iface := range internalIfaces {
-			ifaceSet, err := getIfaces(iface)
-			if err != nil {
-				logrus.WithFields(logrus.Fields{
-					"bridge": iface,
-					"error":  err,
-				}).Error("interfaces: Bridge ifaces get failed")
-			} else {
-				ifacesNew[iface] = ifaceSet
-			}
-
-			brIface := vm.GetHostBridgeIface(iface)
-			ifaceSet, err = getIfaces(brIface)
-			if err != nil {
-				logrus.WithFields(logrus.Fields{
-					"bridge": brIface,
-					"error":  err,
-				}).Error("interfaces: Bridge ifaces get failed")
-			} else {
-				ifacesNew[brIface] = ifaceSet
-			}
-		}
-	} else if internalIface != "" {
-		ifaceSet, err := getIfaces(internalIface)
+	for _, iface := range internalIfaces {
+		ifaceSet, err := getIfaces(iface)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"bridge": internalIface,
+				"bridge": iface,
 				"error":  err,
 			}).Error("interfaces: Bridge ifaces get failed")
 		} else {
-			ifacesNew[internalIface] = ifaceSet
+			ifacesNew[iface] = ifaceSet
+		}
+
+		brIface := vm.GetHostBridgeIface(iface)
+		ifaceSet, err = getIfaces(brIface)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"bridge": brIface,
+				"error":  err,
+			}).Error("interfaces: Bridge ifaces get failed")
+		} else {
+			ifacesNew[brIface] = ifaceSet
 		}
 	}
 
-	if blocks != nil {
-		for _, blck := range blocks {
-			if blck.Interface == "" {
-				continue
-			}
+	for _, blck := range blocks {
+		if blck.Interface == "" {
+			continue
+		}
 
-			ifaceSet, err := getIfaces(blck.Interface)
-			if err != nil {
-				logrus.WithFields(logrus.Fields{
-					"bridge": blck.Interface,
-					"error":  err,
-				}).Error("interfaces: Bridge ifaces get failed")
-			} else {
-				ifacesNew[blck.Interface] = ifaceSet
-			}
+		ifaceSet, err := getIfaces(blck.Interface)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"bridge": blck.Interface,
+				"error":  err,
+			}).Error("interfaces: Bridge ifaces get failed")
+		} else {
+			ifacesNew[blck.Interface] = ifaceSet
 		}
 	}
 
@@ -169,8 +141,6 @@ func GetExternal(virtIface string) (externalIface string) {
 			}
 			ifacesLock.Unlock()
 		}
-	} else {
-		externalIface = node.Self.ExternalInterface
 	}
 
 	return
@@ -180,12 +150,8 @@ func HasExternal() (exists bool) {
 	externalIfaces := node.Self.ExternalInterfaces
 	externalIface := ""
 
-	if externalIfaces != nil {
-		if len(externalIfaces) > 0 {
-			externalIface = externalIfaces[0]
-		}
-	} else {
-		externalIface = node.Self.ExternalInterface
+	if len(externalIfaces) > 0 {
+		externalIface = externalIfaces[0]
 	}
 
 	if externalIface != "" {
@@ -234,8 +200,6 @@ func GetInternal(virtIface string, vxlan bool) (internalIface string) {
 			}
 			ifacesLock.Unlock()
 		}
-	} else if !vxlan {
-		internalIface = node.Self.InternalInterface
 	}
 
 	return
@@ -245,47 +209,29 @@ func GetBridges(nde *node.Node) (bridges set.Set) {
 	bridges = set.NewSet()
 
 	externalIfaces := nde.ExternalInterfaces
-	if externalIfaces != nil {
-		for _, iface := range externalIfaces {
-			bridges.Add(iface)
-		}
-	} else {
-		externalIface := nde.ExternalInterface
-		if externalIface != "" {
-			bridges.Add(externalIface)
-		}
+	for _, iface := range externalIfaces {
+		bridges.Add(iface)
 	}
 
 	internalIfaces := nde.InternalInterfaces
-	if internalIfaces != nil {
-		for _, iface := range internalIfaces {
-			bridges.Add(iface)
-		}
-	} else {
-		internalIface := nde.InternalInterface
-		if internalIface != "" {
-			bridges.Add(internalIface)
-		}
+	for _, iface := range internalIfaces {
+		bridges.Add(iface)
 	}
 
 	ndeBlocks := nde.Blocks
-	if ndeBlocks != nil {
-		for _, blck := range ndeBlocks {
-			if blck.Interface == "" {
-				continue
-			}
-			bridges.Add(blck.Interface)
+	for _, blck := range ndeBlocks {
+		if blck.Interface == "" {
+			continue
 		}
+		bridges.Add(blck.Interface)
 	}
 
 	ndeBlocks6 := nde.Blocks6
-	if ndeBlocks6 != nil {
-		for _, blck := range ndeBlocks6 {
-			if blck.Interface == "" {
-				continue
-			}
-			bridges.Add(blck.Interface)
+	for _, blck := range ndeBlocks6 {
+		if blck.Interface == "" {
+			continue
 		}
+		bridges.Add(blck.Interface)
 	}
 
 	return
@@ -295,15 +241,8 @@ func GetBridgesInternal(nde *node.Node) (bridges set.Set) {
 	bridges = set.NewSet()
 
 	internalIfaces := nde.InternalInterfaces
-	if internalIfaces != nil {
-		for _, iface := range internalIfaces {
-			bridges.Add(iface)
-		}
-	} else {
-		internalIface := nde.InternalInterface
-		if internalIface != "" {
-			bridges.Add(internalIface)
-		}
+	for _, iface := range internalIfaces {
+		bridges.Add(iface)
 	}
 
 	return
@@ -313,35 +252,24 @@ func GetBridgesExternal(nde *node.Node) (bridges set.Set) {
 	bridges = set.NewSet()
 
 	externalIfaces := nde.ExternalInterfaces
-	if externalIfaces != nil {
-		for _, iface := range externalIfaces {
-			bridges.Add(iface)
-		}
-	} else {
-		externalIface := nde.ExternalInterface
-		if externalIface != "" {
-			bridges.Add(externalIface)
-		}
+	for _, iface := range externalIfaces {
+		bridges.Add(iface)
 	}
 
 	ndeBlocks := nde.Blocks
-	if ndeBlocks != nil {
-		for _, blck := range ndeBlocks {
-			if blck.Interface == "" {
-				continue
-			}
-			bridges.Add(blck.Interface)
+	for _, blck := range ndeBlocks {
+		if blck.Interface == "" {
+			continue
 		}
+		bridges.Add(blck.Interface)
 	}
 
 	ndeBlocks6 := nde.Blocks6
-	if ndeBlocks6 != nil {
-		for _, blck := range ndeBlocks6 {
-			if blck.Interface == "" {
-				continue
-			}
-			bridges.Add(blck.Interface)
+	for _, blck := range ndeBlocks6 {
+		if blck.Interface == "" {
+			continue
 		}
+		bridges.Add(blck.Interface)
 	}
 
 	return
