@@ -34,6 +34,8 @@ Environment="DHCP_IP=%s"
 Environment="DHCP_IP6=%s"
 ExecStart=/usr/bin/pritunl-cloud %s dhcp-client
 TimeoutStopSec=5
+Restart=always
+RestartSec=3
 PrivateTmp=true
 ProtectHome=true
 ProtectSystem=full
@@ -59,6 +61,8 @@ Environment="DHCP_IP=%s"
 Environment="DHCP_IP6=%s"
 ExecStart=/usr/sbin/ip netns exec %s /usr/bin/pritunl-cloud %s dhcp-client
 TimeoutStopSec=5
+Restart=always
+RestartSec=3
 PrivateTmp=true
 ProtectHome=true
 ProtectSystem=full
