@@ -1,8 +1,6 @@
 package constants
 
 import (
-	"go/build"
-	"path"
 	"time"
 )
 
@@ -29,10 +27,6 @@ var (
 	StaticRoot   = []string{
 		"www/dist",
 		"/usr/share/pritunl-cloud/www",
-		path.Join(
-			build.Default.GOPATH,
-			"src/github.com/pritunl/pritunl-cloud/www/dist",
-		),
 	}
 	StaticTestingRoot = []string{
 		"/home/cloud/git/pritunl-cloud/www/dist-dev",
