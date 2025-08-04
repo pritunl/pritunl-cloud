@@ -70,8 +70,6 @@ type Node struct {
 	RequestsMin             int64                `bson:"requests_min" json:"requests_min"`
 	ForwardedForHeader      string               `bson:"forwarded_for_header" json:"forwarded_for_header"`
 	ForwardedProtoHeader    string               `bson:"forwarded_proto_header" json:"forwarded_proto_header"`
-	ExternalInterface       string               `bson:"external_interface" json:"external_interface"`
-	InternalInterface       string               `bson:"internal_interface" json:"internal_interface"`
 	ExternalInterfaces      []string             `bson:"external_interfaces" json:"external_interfaces"`
 	ExternalInterfaces6     []string             `bson:"external_interfaces6" json:"external_interfaces6"`
 	InternalInterfaces      []string             `bson:"internal_interfaces" json:"internal_interfaces"`
@@ -201,8 +199,6 @@ func (n *Node) Copy() *Node {
 		RequestsMin:             n.RequestsMin,
 		ForwardedForHeader:      n.ForwardedForHeader,
 		ForwardedProtoHeader:    n.ForwardedProtoHeader,
-		ExternalInterface:       n.ExternalInterface,
-		InternalInterface:       n.InternalInterface,
 		ExternalInterfaces:      n.ExternalInterfaces,
 		ExternalInterfaces6:     n.ExternalInterfaces6,
 		InternalInterfaces:      n.InternalInterfaces,
@@ -1309,8 +1305,6 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.WebauthnDomain = nde.WebauthnDomain
 	n.ForwardedForHeader = nde.ForwardedForHeader
 	n.ForwardedProtoHeader = nde.ForwardedProtoHeader
-	n.ExternalInterface = nde.ExternalInterface
-	n.InternalInterface = nde.InternalInterface
 	n.ExternalInterfaces = nde.ExternalInterfaces
 	n.ExternalInterfaces6 = nde.ExternalInterfaces6
 	n.InternalInterfaces = nde.InternalInterfaces
@@ -1587,28 +1581,6 @@ func (n *Node) Init() (err error) {
 
 		bsonSet["oracle_public_key"] = strings.TrimSpace(string(pubKey))
 		bsonSet["oracle_private_key"] = strings.TrimSpace(string(privKey))
-	}
-
-	// Database upgrade
-	if n.InternalInterfaces == nil {
-		ifaces := []string{}
-		iface := n.InternalInterface
-		if iface != "" {
-			ifaces = append(ifaces, iface)
-		}
-		n.InternalInterfaces = ifaces
-		bsonSet["internal_interfaces"] = ifaces
-	}
-
-	// Database upgrade
-	if n.ExternalInterfaces == nil {
-		ifaces := []string{}
-		iface := n.ExternalInterface
-		if iface != "" {
-			ifaces = append(ifaces, iface)
-		}
-		n.ExternalInterfaces = ifaces
-		bsonSet["external_interfaces"] = ifaces
 	}
 
 	opts := &options.UpdateOptions{}
