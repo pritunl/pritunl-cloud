@@ -16,7 +16,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
-	"github.com/pritunl/pritunl-cloud/organization"
 	"github.com/pritunl/pritunl-cloud/plan"
 	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/pool"
@@ -28,22 +27,24 @@ import (
 )
 
 type Completion struct {
-	Organizations []*organization.Organization `json:"organizations"`
-	Domains       []*domain.Domain             `json:"domains"`
-	Vpcs          []*vpc.Vpc                   `json:"vpcs"`
-	Datacenters   []*datacenter.Datacenter     `json:"datacenters"`
-	Nodes         []*node.Node                 `json:"nodes"`
-	Pools         []*pool.Pool                 `json:"pools"`
-	Zones         []*zone.Zone                 `json:"zones"`
-	Shapes        []*shape.Shape               `json:"shapes"`
-	Images        []*image.Image               `json:"images"`
-	Builds        []*Build                     `json:"builds"`
-	Instances     []*instance.Instance         `json:"instances"`
-	Plans         []*plan.Plan                 `json:"plans"`
-	Certificates  []*certificate.Certificate   `json:"certificates"`
-	Secrets       []*secret.Secret             `json:"secrets"`
-	Pods          []*pod.Pod                   `json:"pods"`
-	Units         []*unit.Unit                 `json:"units"`
+	Organizations []*database.Named         `json:"organizations"`
+	Authorities   []*database.Named         `json:"authorities"`
+	Policies      []*database.Named         `json:"policies"`
+	Domains       []*domain.Completion      `json:"domains"`
+	Vpcs          []*vpc.Completion         `json:"vpcs"`
+	Datacenters   []*datacenter.Completion  `json:"datacenters"`
+	Nodes         []*node.Completion        `json:"nodes"`
+	Pools         []*pool.Completion        `json:"pools"`
+	Zones         []*zone.Completion        `json:"zones"`
+	Shapes        []*shape.Completion       `json:"shapes"`
+	Images        []*image.Completion       `json:"images"`
+	Builds        []*Build                  `json:"builds"`
+	Instances     []*instance.Completion    `json:"instances"`
+	Plans         []*plan.Completion        `json:"plans"`
+	Certificates  []*certificate.Completion `json:"certificates"`
+	Secrets       []*secret.Completion      `json:"secrets"`
+	Pods          []*pod.Completion         `json:"pods"`
+	Units         []*unit.Completion        `json:"units"`
 }
 
 type Build struct {
@@ -100,9 +101,9 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 		query["organization"] = orgId
 	}
 
-	releaseImages := map[string][]*image.Image{}
-	otherImages := []*image.Image{}
-	unitsMap := map[primitive.ObjectID]*unit.Unit{}
+	releaseImages := map[string][]*image.Completion{}
+	otherImages := []*image.Completion{}
+	unitsMap := map[primitive.ObjectID]*unit.Completion{}
 	buildsMap := map[primitive.ObjectID]*Build{}
 	deployments := []*deployment.Deployment{}
 
@@ -113,7 +114,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 	go func() {
 		defer wg.Done()
 
-		var orgs []*organization.Organization
+		var orgs []*database.Named
 		err := get(
 			db,
 			db.Organizations(),
@@ -124,12 +125,12 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			},
 			nil,
 			func() interface{} {
-				return &organization.Organization{}
+				return &database.Named{}
 			},
 			func(item interface{}) {
 				orgs = append(
 					orgs,
-					item.(*organization.Organization),
+					item.(*database.Named),
 				)
 			},
 		)
@@ -144,7 +145,38 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 	go func() {
 		defer wg.Done()
 
-		var domains []*domain.Domain
+		var authrs []*database.Named
+		err := get(
+			db,
+			db.Authorities(),
+			bson.M{},
+			&bson.M{
+				"_id":  1,
+				"name": 1,
+			},
+			nil,
+			func() interface{} {
+				return &database.Named{}
+			},
+			func(item interface{}) {
+				authrs = append(
+					authrs,
+					item.(*database.Named),
+				)
+			},
+		)
+		if err != nil {
+			errChan <- err
+			return
+		}
+		cmpl.Authorities = authrs
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		var domains []*domain.Completion
 		err := get(
 			db,
 			db.Domains(),
@@ -156,12 +188,12 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			},
 			nil,
 			func() interface{} {
-				return &domain.Domain{}
+				return &domain.Completion{}
 			},
 			func(item interface{}) {
 				domains = append(
 					domains,
-					item.(*domain.Domain),
+					item.(*domain.Completion),
 				)
 			},
 		)
@@ -176,7 +208,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 	go func() {
 		defer wg.Done()
 
-		var vpcs []*vpc.Vpc
+		var vpcs []*vpc.Completion
 		err := get(
 			db,
 			db.Vpcs(),
@@ -192,12 +224,12 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			},
 			nil,
 			func() interface{} {
-				return &vpc.Vpc{}
+				return &vpc.Completion{}
 			},
 			func(item interface{}) {
 				vpcs = append(
 					vpcs,
-					item.(*vpc.Vpc),
+					item.(*vpc.Completion),
 				)
 			},
 		)
@@ -212,25 +244,24 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 	go func() {
 		defer wg.Done()
 
-		var datacenters []*datacenter.Datacenter
+		var datacenters []*datacenter.Completion
 		err := get(
 			db,
 			db.Datacenters(),
 			bson.M{},
 			&bson.M{
-				"_id":                 1,
-				"name":                1,
-				"match_organizations": 1,
-				"organizations":       1,
+				"_id":          1,
+				"name":         1,
+				"network_mode": 1,
 			},
 			nil,
 			func() interface{} {
-				return &datacenter.Datacenter{}
+				return &datacenter.Completion{}
 			},
 			func(item interface{}) {
 				datacenters = append(
 					datacenters,
-					item.(*datacenter.Datacenter),
+					item.(*datacenter.Completion),
 				)
 			},
 		)
@@ -245,28 +276,23 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 	go func() {
 		defer wg.Done()
 
-		var nodes []*node.Node
+		var nodes []*node.Completion
 		err := get(
 			db,
 			db.Nodes(),
 			bson.M{},
 			&bson.M{
-				"_id":              1,
-				"name":             1,
-				"zone":             1,
-				"types":            1,
-				"timestamp":        1,
-				"cpu_units":        1,
-				"memory_units":     1,
-				"cpu_units_res":    1,
-				"memory_units_res": 1,
+				"_id":   1,
+				"name":  1,
+				"zone":  1,
+				"types": 1,
 			},
 			nil,
 			func() interface{} {
-				return &node.Node{}
+				return &node.Completion{}
 			},
 			func(item interface{}) {
-				nde := item.(*node.Node)
+				nde := item.(*node.Completion)
 
 				if !nde.IsHypervisor() {
 					return
@@ -289,25 +315,24 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 	go func() {
 		defer wg.Done()
 
-		var pools []*pool.Pool
+		var pools []*pool.Completion
 		err := get(
 			db,
 			db.Pools(),
 			query,
 			&bson.M{
-				"_id":          1,
-				"name":         1,
-				"organization": 1,
-				"zone":         1,
+				"_id":  1,
+				"name": 1,
+				"zone": 1,
 			},
 			nil,
 			func() interface{} {
-				return &pool.Pool{}
+				return &pool.Completion{}
 			},
 			func(item interface{}) {
 				pools = append(
 					pools,
-					item.(*pool.Pool),
+					item.(*pool.Completion),
 				)
 			},
 		)
@@ -322,7 +347,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 	go func() {
 		defer wg.Done()
 
-		var zones []*zone.Zone
+		var zones []*zone.Completion
 		err := get(
 			db,
 			db.Zones(),
@@ -334,12 +359,12 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			},
 			nil,
 			func() interface{} {
-				return &zone.Zone{}
+				return &zone.Completion{}
 			},
 			func(item interface{}) {
 				zones = append(
 					zones,
-					item.(*zone.Zone),
+					item.(*zone.Completion),
 				)
 			},
 		)
@@ -354,7 +379,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 	go func() {
 		defer wg.Done()
 
-		var shapes []*shape.Shape
+		var shapes []*shape.Completion
 		err := get(
 			db,
 			db.Shapes(),
@@ -369,12 +394,12 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			},
 			nil,
 			func() interface{} {
-				return &shape.Shape{}
+				return &shape.Completion{}
 			},
 			func(item interface{}) {
 				shapes = append(
 					shapes,
-					item.(*shape.Shape),
+					item.(*shape.Completion),
 				)
 			},
 		)
@@ -407,10 +432,10 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			},
 			nil,
 			func() interface{} {
-				return &image.Image{}
+				return &image.Completion{}
 			},
 			func(item interface{}) {
-				img := item.(*image.Image)
+				img := item.(*image.Completion)
 				if img.Release != "" {
 					releaseImages[img.Release] = append(
 						releaseImages[img.Release],
@@ -431,7 +456,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 	go func() {
 		defer wg.Done()
 
-		var instances []*instance.Instance
+		var instances []*instance.Completion
 		err := get(
 			db,
 			db.Instances(),
@@ -447,12 +472,12 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			},
 			nil,
 			func() interface{} {
-				return &instance.Instance{}
+				return &instance.Completion{}
 			},
 			func(item interface{}) {
 				instances = append(
 					instances,
-					item.(*instance.Instance),
+					item.(*instance.Completion),
 				)
 			},
 		)
@@ -467,7 +492,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 	go func() {
 		defer wg.Done()
 
-		var plans []*plan.Plan
+		var plans []*plan.Completion
 		err := get(
 			db,
 			db.Plans(),
@@ -479,12 +504,12 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			},
 			nil,
 			func() interface{} {
-				return &plan.Plan{}
+				return &plan.Completion{}
 			},
 			func(item interface{}) {
 				plans = append(
 					plans,
-					item.(*plan.Plan),
+					item.(*plan.Completion),
 				)
 			},
 		)
@@ -499,7 +524,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 	go func() {
 		defer wg.Done()
 
-		var certificates []*certificate.Certificate
+		var certificates []*certificate.Completion
 		err := get(
 			db,
 			db.Certificates(),
@@ -512,12 +537,12 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			},
 			nil,
 			func() interface{} {
-				return &certificate.Certificate{}
+				return &certificate.Completion{}
 			},
 			func(item interface{}) {
 				certificates = append(
 					certificates,
-					item.(*certificate.Certificate),
+					item.(*certificate.Completion),
 				)
 			},
 		)
@@ -532,7 +557,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 	go func() {
 		defer wg.Done()
 
-		var secrets []*secret.Secret
+		var secrets []*secret.Completion
 		err := get(
 			db,
 			db.Secrets(),
@@ -545,12 +570,12 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			},
 			nil,
 			func() interface{} {
-				return &secret.Secret{}
+				return &secret.Completion{}
 			},
 			func(item interface{}) {
 				secrets = append(
 					secrets,
-					item.(*secret.Secret),
+					item.(*secret.Completion),
 				)
 			},
 		)
@@ -565,7 +590,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 	go func() {
 		defer wg.Done()
 
-		var pods []*pod.Pod
+		var pods []*pod.Completion
 		err := get(
 			db,
 			db.Pods(),
@@ -577,12 +602,12 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			},
 			nil,
 			func() interface{} {
-				return &pod.Pod{}
+				return &pod.Completion{}
 			},
 			func(item interface{}) {
 				pods = append(
 					pods,
-					item.(*pod.Pod),
+					item.(*pod.Completion),
 				)
 			},
 		)
@@ -597,7 +622,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 	go func() {
 		defer wg.Done()
 
-		var units []*unit.Unit
+		var units []*unit.Completion
 		err := get(
 			db,
 			db.Units(),
@@ -611,10 +636,10 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			},
 			nil,
 			func() interface{} {
-				return &unit.Unit{}
+				return &unit.Completion{}
 			},
 			func(item interface{}) {
-				unt := item.(*unit.Unit)
+				unt := item.(*unit.Completion)
 
 				units = append(
 					units,
@@ -680,7 +705,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 
 	for _, imgs := range releaseImages {
 		tags := []string{"latest"}
-		var latestImg *image.Image
+		var latestImg *image.Completion
 
 		for _, img := range imgs {
 			tags = append(tags, img.Build)
@@ -696,7 +721,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 		latestImg.Tags = tags
 		cmpl.Images = append(cmpl.Images, latestImg)
 	}
-	sort.Sort(image.ImagesSort(cmpl.Images))
+	sort.Sort(image.CompletionsSort(cmpl.Images))
 
 	cmpl.Images = append(
 		cmpl.Images,
