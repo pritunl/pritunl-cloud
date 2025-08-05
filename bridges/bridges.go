@@ -8,12 +8,13 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/ip"
 	"github.com/pritunl/pritunl-cloud/iproute"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 var (
-	bridges         = []string{}
+	bridges         = []ip.Interface{}
 	lastBridgesSync time.Time
 	curAddr         = map[string]string{}
 	curAddr6        = map[string]string{}
@@ -22,19 +23,24 @@ var (
 
 func ClearCache() {
 	lastBridgesSync = time.Time{}
-	bridges = []string{}
+	bridges = []ip.Interface{}
 }
 
-func GetBridges() (brdgs []string, err error) {
+func GetBridges() (brdgs []ip.Interface, err error) {
 	if time.Since(lastBridgesSync) < 300*time.Second {
 		brdgs = bridges
 		return
 	}
 
-	bridgesNew := []string{}
+	bridgesNew := []ip.Interface{}
 	bridgesSet := set.NewSet()
 
 	ifaces, err := iproute.IfaceGetBridges("")
+	if err != nil {
+		return
+	}
+
+	ifacesData, err := ip.GetIfacesCached("")
 	if err != nil {
 		return
 	}
@@ -44,7 +50,17 @@ func GetBridges() (brdgs []string, err error) {
 			continue
 		}
 
-		bridgesNew = append(bridgesNew, iface.Name)
+		ifaceData := ifacesData[iface.Name]
+		if ifaceData != nil {
+			bridgesNew = append(bridgesNew, ip.Interface{
+				Name:    iface.Name,
+				Address: ifaceData.GetAddress(),
+			})
+		} else {
+			bridgesNew = append(bridgesNew, ip.Interface{
+				Name: iface.Name,
+			})
+		}
 		bridgesSet.Add(iface.Name)
 	}
 
@@ -78,7 +94,9 @@ func GetBridges() (brdgs []string, err error) {
 			}
 
 			if bridgesSet.Contains(names[0]) && !bridgesSet.Contains(name) {
-				bridgesNew = append(bridgesNew, name)
+				bridgesNew = append(bridgesNew, ip.Interface{
+					Name: name,
+				})
 				bridgesSet.Add(name)
 			}
 		}
