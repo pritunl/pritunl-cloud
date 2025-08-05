@@ -51,6 +51,32 @@ export interface Completion {
 	units?: PodTypes.Unit[]
 }
 
+export interface CompletionMap {
+	organizations?: {[key: string]: number}
+	authorities?: {[key: string]: number}
+	policies?: {[key: string]: number}
+	domains?: {[key: string]: number}
+	balancers?: {[key: string]: number}
+	vpcs?: {[key: string]: number}
+	subnets?: {[key: string]: number}
+	datacenters?: {[key: string]: number}
+	blocks?: {[key: string]: number}
+	nodes?: {[key: string]: number}
+	disks?: {[key: string]: number}
+	pools?: {[key: string]: number}
+	zones?: {[key: string]: number}
+	shapes?: {[key: string]: number}
+	images?: {[key: string]: number}
+	builds?: {[key: string]: number}
+	instances?: {[key: string]: number}
+	firewalls?: {[key: string]: number}
+	plans?: {[key: string]: number}
+	certificates?: {[key: string]: number}
+	secrets?: {[key: string]: number}
+	pods?: {[key: string]: number}
+	units?: {[key: string]: number}
+}
+
 export interface Build {
 	id?: string
 	name?: string
