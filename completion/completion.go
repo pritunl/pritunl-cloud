@@ -21,6 +21,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/pool"
 	"github.com/pritunl/pritunl-cloud/secret"
 	"github.com/pritunl/pritunl-cloud/shape"
+	"github.com/pritunl/pritunl-cloud/storage"
 	"github.com/pritunl/pritunl-cloud/unit"
 	"github.com/pritunl/pritunl-cloud/vpc"
 	"github.com/pritunl/pritunl-cloud/zone"
@@ -38,6 +39,7 @@ type Completion struct {
 	Zones         []*zone.Completion        `json:"zones"`
 	Shapes        []*shape.Completion       `json:"shapes"`
 	Images        []*image.Completion       `json:"images"`
+	Storages      []*storage.Completion     `json:"storages"`
 	Builds        []*Build                  `json:"builds"`
 	Instances     []*instance.Completion    `json:"instances"`
 	Plans         []*plan.Completion        `json:"plans"`
@@ -450,6 +452,38 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 			errChan <- err
 			return
 		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		var storages []*storage.Completion
+		err := get(
+			db,
+			db.Storages(),
+			bson.M{},
+			&bson.M{
+				"_id":  1,
+				"name": 1,
+				"type": 1,
+			},
+			nil,
+			func() interface{} {
+				return &storage.Completion{}
+			},
+			func(item interface{}) {
+				storages = append(
+					storages,
+					item.(*storage.Completion),
+				)
+			},
+		)
+		if err != nil {
+			errChan <- err
+			return
+		}
+		cmpl.Storages = storages
 	}()
 
 	wg.Add(1)
