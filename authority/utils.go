@@ -233,6 +233,50 @@ func GetOrgRoles(db *database.Database, orgId primitive.ObjectID,
 	return
 }
 
+func GetAllNames(db *database.Database, query *bson.M) (
+	authrs []*database.Named, err error) {
+
+	coll := db.Authorities()
+	authrs = []*database.Named{}
+
+	cursor, err := coll.Find(
+		db,
+		query,
+		&options.FindOptions{
+			Sort: &bson.D{
+				{"name", 1},
+			},
+			Projection: &bson.D{
+				{"name", 1},
+			},
+		},
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		authr := &database.Named{}
+		err = cursor.Decode(authr)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		authrs = append(authrs, authr)
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetAllPaged(db *database.Database, query *bson.M,
 	page, pageCount int64) (authrs []*Authority, count int64, err error) {
 
