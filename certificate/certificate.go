@@ -45,6 +45,13 @@ type Certificate struct {
 	AcmeSecret   primitive.ObjectID `bson:"acme_secret" json:"acme_secret"`
 }
 
+type Completion struct {
+	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name         string             `bson:"name" json:"name"`
+	Organization primitive.ObjectID `bson:"organization" json:"organization"`
+	Type         string             `bson:"type" json:"type"`
+}
+
 func (c *Certificate) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
