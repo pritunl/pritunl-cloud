@@ -119,6 +119,50 @@ func GetAllOrg(db *database.Database, orgId primitive.ObjectID) (
 	return
 }
 
+func GetAllNames(db *database.Database, query *bson.M) (
+	certs []*database.Named, err error) {
+
+	coll := db.Certificates()
+	certs = []*database.Named{}
+
+	cursor, err := coll.Find(
+		db,
+		query,
+		&options.FindOptions{
+			Sort: &bson.D{
+				{"name", 1},
+			},
+			Projection: &bson.D{
+				{"name", 1},
+			},
+		},
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		crt := &database.Named{}
+		err = cursor.Decode(crt)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		certs = append(certs, crt)
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetAllPaged(db *database.Database, query *bson.M,
 	page, pageCount int64) (certs []*Certificate, count int64, err error) {
 
