@@ -37,6 +37,20 @@ type Image struct {
 	Tags         []string           `bson:"-" json:"tags"`
 }
 
+type Completion struct {
+	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name         string             `bson:"name" json:"name"`
+	Release      string             `bson:"release" json:"release"`
+	Build        string             `bson:"build" json:"build"`
+	Organization primitive.ObjectID `bson:"organization" json:"organization"`
+	Deployment   primitive.ObjectID `bson:"deployment" json:"deployment"`
+	Type         string             `bson:"type" json:"type"`
+	Firmware     string             `bson:"firmware" json:"firmware"`
+	Key          string             `bson:"key" json:"key"`
+	Storage      primitive.ObjectID `bson:"storage" json:"storage"`
+	Tags         []string           `bson:"-" json:"tags"`
+}
+
 func (i *Image) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
