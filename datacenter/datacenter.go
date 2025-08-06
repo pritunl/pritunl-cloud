@@ -26,6 +26,12 @@ type Datacenter struct {
 	BackupStorageClass  string               `bson:"backup_storage_class" json:"backup_storage_class"`
 }
 
+type Completion struct {
+	Id          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name        string             `bson:"name" json:"name"`
+	NetworkMode string             `bson:"network_mode" json:"network_mode"`
+}
+
 func (d *Datacenter) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
