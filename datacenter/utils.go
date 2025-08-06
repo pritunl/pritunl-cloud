@@ -95,10 +95,10 @@ func GetOne(db *database.Database, query *bson.M) (dc *Datacenter, err error) {
 }
 
 func GetAllNamesOrg(db *database.Database, orgId primitive.ObjectID) (
-	dcs []*Datacenter, err error) {
+	dcs []*Completion, err error) {
 
 	coll := db.Datacenters()
-	dcs = []*Datacenter{}
+	dcs = []*Completion{}
 
 	cursor, err := coll.Find(db, &bson.M{
 		"$or": []*bson.M{
@@ -109,6 +109,14 @@ func GetAllNamesOrg(db *database.Database, orgId primitive.ObjectID) (
 				"organizations": orgId,
 			},
 		},
+	}, &options.FindOptions{
+		Sort: &bson.D{
+			{"name", 1},
+		},
+		Projection: &bson.D{
+			{"name", 1},
+			{"network_mode", 1},
+		},
 	})
 	if err != nil {
 		err = database.ParseError(err)
@@ -117,7 +125,52 @@ func GetAllNamesOrg(db *database.Database, orgId primitive.ObjectID) (
 	defer cursor.Close(db)
 
 	for cursor.Next(db) {
-		dc := &Datacenter{}
+		dc := &Completion{}
+		err = cursor.Decode(dc)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		dcs = append(dcs, dc)
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
+func GetAllNames(db *database.Database, query *bson.M) (
+	dcs []*Completion, err error) {
+
+	coll := db.Certificates()
+	dcs = []*Completion{}
+
+	cursor, err := coll.Find(
+		db,
+		query,
+		&options.FindOptions{
+			Sort: &bson.D{
+				{"name", 1},
+			},
+			Projection: &bson.D{
+				{"name", 1},
+				{"network_mode", 1},
+			},
+		},
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		dc := &Completion{}
 		err = cursor.Decode(dc)
 		if err != nil {
 			err = database.ParseError(err)
