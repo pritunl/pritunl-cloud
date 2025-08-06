@@ -132,6 +132,16 @@ type Instance struct {
 	newId               bool                                     `bson:"-" json:"-"`
 }
 
+type Completion struct {
+	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name         string             `bson:"name" json:"name"`
+	Organization primitive.ObjectID `bson:"organization" json:"organization"`
+	Zone         primitive.ObjectID `bson:"zone" json:"zone"`
+	Vpc          primitive.ObjectID `bson:"vpc" json:"vpc"`
+	Subnet       primitive.ObjectID `bson:"subnet" json:"subnet"`
+	Node         primitive.ObjectID `bson:"node" json:"node"`
+}
+
 type Mount struct {
 	Name     string `bson:"name" json:"name"`
 	Type     string `bson:"type" json:"type"`
