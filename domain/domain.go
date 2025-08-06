@@ -35,6 +35,12 @@ type Domain struct {
 	OrigRecords   []*Record          `bson:"-" json:"-"`
 }
 
+type Completion struct {
+	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name         string             `bson:"name" json:"name"`
+	Organization primitive.ObjectID `bson:"organization" json:"organization"`
+}
+
 func (d *Domain) Locked() bool {
 	return !d.LockId.IsZero() && time.Since(d.LockTimestamp) < time.Duration(
 		settings.System.DomainLockTtl)*time.Second
