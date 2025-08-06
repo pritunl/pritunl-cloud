@@ -2,10 +2,19 @@ package ip
 
 import (
 	"encoding/json"
+	"net"
+	"sync"
+	"time"
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/utils"
+)
+
+var (
+	cache     = map[string]map[string]*Iface{}
+	cacheTime = map[string]time.Time{}
+	cacheLock = sync.Mutex{}
 )
 
 type Iface struct {
@@ -66,6 +75,33 @@ func GetIfaces(namespace string) (ifaces []*Iface, err error) {
 		}
 		return
 	}
+
+	return
+}
+
+func GetIfacesCached(namespace string) (ifacesMap map[string]*Iface, err error) {
+	cacheLock.Lock()
+	if time.Since(cacheTime[namespace]) < 5*time.Minute {
+		ifacesMap = cache[namespace]
+		cacheLock.Unlock()
+		return
+	}
+	cacheLock.Unlock()
+
+	ifaces, err := GetIfaces(namespace)
+	if err != nil {
+		return
+	}
+
+	ifacesMap = map[string]*Iface{}
+	for _, iface := range ifaces {
+		ifacesMap[iface.Ifname] = iface
+	}
+
+	cacheLock.Lock()
+	cache[namespace] = ifacesMap
+	cacheTime[namespace] = time.Now()
+	cacheLock.Unlock()
 
 	return
 }
