@@ -24,6 +24,12 @@ type Pod struct {
 	Drafts           []*UnitDraft                        `bson:"-" json:"drafts"`
 }
 
+type Completion struct {
+	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name         string             `bson:"name" json:"name"`
+	Organization primitive.ObjectID `bson:"organization" json:"organization"`
+}
+
 type UnitDraft struct {
 	Id        primitive.ObjectID `bson:"id" json:"id"`
 	Name      string             `bson:"name" json:"name"`
