@@ -42,8 +42,11 @@ func imdsSyncHandler(db *database.Database) (err error) {
 			err := imds.Sync(db, conf.Instance.NetworkNamespace, conf.Instance.Id,
 				conf.Instance.Deployment, conf)
 			if err != nil {
-				if time.Since(conf.Instance.Timestamp) > timeout {
+				ttl := time.Since(conf.Instance.Timestamp)
+				if !conf.Instance.Timestamp.IsZero() && ttl > timeout {
 					logrus.WithFields(logrus.Fields{
+						"action":   conf.Instance.Action,
+						"ttl":      ttl,
 						"instance": conf.Instance.Id.Hex(),
 						"error":    err,
 					}).Error("agent: Failed to sync imds")
