@@ -29,6 +29,14 @@ type Unit struct {
 	Hash          string               `bson:"hash" json:"hash"`
 }
 
+type Completion struct {
+	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Pod          primitive.ObjectID `bson:"pod" json:"pod"`
+	Organization primitive.ObjectID `bson:"organization" json:"organization"`
+	Name         string             `bson:"name" json:"name"`
+	Kind         string             `bson:"kind" json:"kind"`
+}
+
 type UnitInput struct {
 	Id         primitive.ObjectID `json:"id"`
 	Name       string             `json:"name"`
