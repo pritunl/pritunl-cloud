@@ -5,13 +5,14 @@ import (
 	"sync"
 	"time"
 
+	"github.com/pritunl/pritunl-cloud/ip"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 var (
 	netLock           = sync.Mutex{}
-	netIfaces         = []string{}
+	netIfaces         = []ip.Interface{}
 	netLastIfacesSync time.Time
 	defaultIface      = ""
 	defaultIfaceSync  time.Time
@@ -19,19 +20,24 @@ var (
 
 func ClearIfaceCache() {
 	netLastIfacesSync = time.Time{}
-	netIfaces = []string{}
+	netIfaces = []ip.Interface{}
 	defaultIfaceSync = time.Time{}
 	defaultIface = ""
 }
 
-func GetInterfaces() (ifaces []string, err error) {
+func GetInterfaces() (ifaces []ip.Interface, err error) {
 	if time.Since(netLastIfacesSync) < 15*time.Second {
 		ifaces = netIfaces
 		return
 	}
 
-	ifacesNew := []string{}
+	ifacesNew := []ip.Interface{}
 	allIfaces, err := utils.GetInterfaces()
+	if err != nil {
+		return
+	}
+
+	ifacesData, err := ip.GetIfacesCached("")
 	if err != nil {
 		return
 	}
@@ -45,7 +51,18 @@ func GetInterfaces() (ifaces []string, err error) {
 
 			continue
 		}
-		ifacesNew = append(ifacesNew, iface)
+
+		ifaceData := ifacesData[iface]
+		if ifaceData != nil {
+			ifacesNew = append(ifacesNew, ip.Interface{
+				Name:    iface,
+				Address: ifaceData.GetAddress(),
+			})
+		} else {
+			ifacesNew = append(ifacesNew, ip.Interface{
+				Name: iface,
+			})
+		}
 	}
 
 	ifaces = ifacesNew
