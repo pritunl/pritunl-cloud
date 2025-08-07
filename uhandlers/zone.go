@@ -19,7 +19,7 @@ func zonesGet(c *gin.Context) {
 		return
 	}
 
-	zones, err := zone.GetAllDatacenters(db, dcIds)
+	zones, err := zone.GetAllNamedDc(db, dcIds)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
