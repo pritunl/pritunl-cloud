@@ -270,6 +270,19 @@ func certificateGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
+	if c.Query("names") == "true" {
+		certs, err := certificate.GetAllNames(db, &bson.M{
+			"organization": userOrg,
+		})
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+
+		c.JSON(200, certs)
+		return
+	}
+
 	certId, ok := utils.ParseObjectId(c.Param("cert_id"))
 	if !ok {
 		utils.AbortWithStatus(c, 400)
