@@ -25,6 +25,13 @@ type Secret struct {
 	PrivateKey   string             `bson:"private_key" json:"-"`
 }
 
+type Completion struct {
+	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name         string             `bson:"name" json:"name"`
+	Organization primitive.ObjectID `bson:"organization" json:"organization"`
+	Type         string             `bson:"type" json:"type"`
+}
+
 func (c *Secret) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
