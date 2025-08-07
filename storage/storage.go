@@ -24,6 +24,12 @@ type Storage struct {
 	Insecure  bool               `bson:"insecure" json:"insecure"`
 }
 
+type Completion struct {
+	Id   primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name string             `bson:"name" json:"name"`
+	Type string             `bson:"type" json:"type"`
+}
+
 func (s *Storage) IsOracle() bool {
 	return strings.Contains(strings.ToLower(s.Endpoint), "oracle")
 }
