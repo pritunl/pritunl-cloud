@@ -28,6 +28,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/drive"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
+	"github.com/pritunl/pritunl-cloud/ip"
 	"github.com/pritunl/pritunl-cloud/iso"
 	"github.com/pritunl/pritunl-cloud/lvm"
 	"github.com/pritunl/pritunl-cloud/pci"
@@ -73,8 +74,8 @@ type Node struct {
 	ExternalInterfaces      []string             `bson:"external_interfaces" json:"external_interfaces"`
 	ExternalInterfaces6     []string             `bson:"external_interfaces6" json:"external_interfaces6"`
 	InternalInterfaces      []string             `bson:"internal_interfaces" json:"internal_interfaces"`
-	AvailableInterfaces     []string             `bson:"available_interfaces" json:"available_interfaces"`
-	AvailableBridges        []string             `bson:"available_bridges" json:"available_bridges"`
+	AvailableInterfaces     []ip.Interface       `bson:"available_interfaces" json:"available_interfaces"`
+	AvailableBridges        []ip.Interface       `bson:"available_bridges" json:"available_bridges"`
 	AvailableVpcs           []*cloud.Vpc         `bson:"available_vpcs" json:"available_vpcs"`
 	CloudSubnets            []string             `bson:"cloud_subnets" json:"cloud_subnets"`
 	DefaultInterface        string               `bson:"default_interface" json:"default_interface"`
@@ -1204,7 +1205,7 @@ func (n *Node) SyncNetwork(clearCache bool) {
 	if ifaces != nil {
 		n.AvailableInterfaces = ifaces
 	} else {
-		n.AvailableInterfaces = []string{}
+		n.AvailableInterfaces = []ip.Interface{}
 	}
 
 	brdgs, err := bridges.GetBridges()
@@ -1217,7 +1218,7 @@ func (n *Node) SyncNetwork(clearCache bool) {
 	if brdgs != nil {
 		n.AvailableBridges = brdgs
 	} else {
-		n.AvailableBridges = []string{}
+		n.AvailableBridges = []ip.Interface{}
 	}
 
 	if n.JumboFrames {
