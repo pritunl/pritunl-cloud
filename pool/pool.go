@@ -19,6 +19,12 @@ type Pool struct {
 	VgName           string             `bson:"vg_name" json:"vg_name"`
 }
 
+type Completion struct {
+	Id   primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name string             `bson:"name" json:"name"`
+	Zone primitive.ObjectID `bson:"zone" json:"zone"`
+}
+
 func (p *Pool) Json(nodeNames map[primitive.ObjectID]string) {
 }
 
