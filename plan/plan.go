@@ -18,6 +18,12 @@ type Plan struct {
 	Statements   []*Statement       `bson:"statements" json:"statements"`
 }
 
+type Completion struct {
+	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name         string             `bson:"name" json:"name"`
+	Organization primitive.ObjectID `bson:"organization" json:"organization"`
+}
+
 type Statement struct {
 	Id        primitive.ObjectID `bson:"id" json:"id"`
 	Statement string             `bson:"statement" json:"statement"`
