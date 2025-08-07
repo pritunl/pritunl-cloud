@@ -65,6 +65,18 @@ func certificatePut(c *gin.Context) {
 		return
 	}
 
+	if cert.Type == certificate.LetsEncrypt &&
+		cert.AcmeType != certificate.AcmeDNS ||
+		cert.AcmeType == certificate.AcmeHTTP {
+
+		errData := &errortypes.ErrorData{
+			Error:   "acme_type_blocked",
+			Message: "Cannot modify LetsEncrypt HTTP verified certificates",
+		}
+		c.JSON(400, errData)
+		return
+	}
+
 	if !data.AcmeSecret.IsZero() {
 		exists, err := secret.ExistsOrg(db, userOrg, data.AcmeSecret)
 		if err != nil {
