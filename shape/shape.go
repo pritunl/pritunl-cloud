@@ -47,6 +47,19 @@ func (s *Shape) Validate(db *database.Database) (
 		return
 	}
 
+	switch s.DiskType {
+	case Qcow2:
+		break
+	case Lvm:
+		break
+	default:
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_disk_type",
+			Message: "Disk type invalid",
+		}
+		return
+	}
+
 	if s.Datacenter.IsZero() {
 		errData = &errortypes.ErrorData{
 			Error:   "missing_datacenter",
