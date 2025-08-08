@@ -47,6 +47,60 @@ type Iface struct {
 	LinkNetnsid int    `json:"link_netnsid,omitempty"`
 }
 
+func (iface *Iface) GetAddress() string {
+	var addrs []string
+
+	for _, addr := range iface.AddrInfo {
+		if addr.Family != "inet" {
+			continue
+		}
+
+		ip := net.ParseIP(addr.Local)
+		if ip == nil || ip.IsLoopback() {
+			continue
+		}
+
+		switch addr.Scope {
+		case "global":
+			addrs = append([]string{addr.Local}, addrs...)
+		case "link":
+			addrs = append(addrs, addr.Local)
+		}
+	}
+
+	if len(addrs) > 0 {
+		return addrs[0]
+	}
+	return ""
+}
+
+func (iface *Iface) GetAddress6() string {
+	var addrs []string
+
+	for _, addr := range iface.AddrInfo {
+		if addr.Family != "inet6" {
+			continue
+		}
+
+		ip := net.ParseIP(addr.Local)
+		if ip == nil || ip.IsLoopback() || ip.IsLinkLocalUnicast() {
+			continue
+		}
+
+		switch addr.Scope {
+		case "global":
+			addrs = append([]string{addr.Local}, addrs...)
+		case "link":
+			addrs = append(addrs, addr.Local)
+		}
+	}
+
+	if len(addrs) > 0 {
+		return addrs[0]
+	}
+	return ""
+}
+
 func GetIfaces(namespace string) (ifaces []*Iface, err error) {
 	output := ""
 
