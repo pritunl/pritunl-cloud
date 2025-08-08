@@ -21,6 +21,12 @@ type Zone struct {
 	DnsServers6 []string           `bson:"dns_servers6" json:"dns_servers6"`
 }
 
+type Completion struct {
+	Id         primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Datacenter primitive.ObjectID `bson:"datacenter" json:"datacenter"`
+	Name       string             `bson:"name" json:"name"`
+}
+
 func (z *Zone) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
