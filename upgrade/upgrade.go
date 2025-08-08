@@ -8,6 +8,11 @@ func Upgrade() (err error) {
 	db := database.GetDatabase()
 	defer db.Close()
 
+	err = nodeUpgrade(db)
+	if err != nil {
+		return
+	}
+
 	err = rolesUpgrade(db)
 	if err != nil {
 		return
