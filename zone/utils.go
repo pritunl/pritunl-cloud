@@ -226,11 +226,11 @@ func GetAllDatacenter(db *database.Database, dcId primitive.ObjectID) (
 	return
 }
 
-func GetAllDatacenters(db *database.Database, dcIds []primitive.ObjectID) (
-	zones []*Zone, err error) {
+func GetAllNamedDc(db *database.Database, dcIds []primitive.ObjectID) (
+	zones []*Named, err error) {
 
 	coll := db.Zones()
-	zones = []*Zone{}
+	zones = []*Named{}
 
 	cursor, err := coll.Find(
 		db,
@@ -243,6 +243,10 @@ func GetAllDatacenters(db *database.Database, dcIds []primitive.ObjectID) (
 			Sort: &bson.D{
 				{"name", 1},
 			},
+			Projection: &bson.D{
+				{"name", 1},
+				{"datacenter", 1},
+			},
 		},
 	)
 	if err != nil {
@@ -252,7 +256,7 @@ func GetAllDatacenters(db *database.Database, dcIds []primitive.ObjectID) (
 	defer cursor.Close(db)
 
 	for cursor.Next(db) {
-		zne := &Zone{}
+		zne := &Named{}
 		err = cursor.Decode(zne)
 		if err != nil {
 			err = database.ParseError(err)
