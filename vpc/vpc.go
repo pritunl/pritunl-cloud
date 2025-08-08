@@ -52,6 +52,16 @@ type Vpc struct {
 	curSubnets       []*Subnet          `bson:"-" json:"-"`
 }
 
+type Completion struct {
+	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name         string             `bson:"name" json:"name"`
+	Organization primitive.ObjectID `bson:"organization" json:"organization"`
+	VpcId        int                `bson:"vpc_id" json:"vpc_id"`
+	Network      string             `bson:"network" json:"network"`
+	Subnets      []*Subnet          `bson:"subnets" json:"subnets"`
+	Datacenter   primitive.ObjectID `bson:"datacenter" json:"datacenter"`
+}
+
 func (v *Vpc) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
