@@ -134,6 +134,22 @@ type Node struct {
 	lock                    sync.Mutex           `bson:"-" json:"-"`
 }
 
+type Completion struct {
+	Id    primitive.ObjectID `bson:"_id" json:"id"`
+	Name  string             `bson:"name" json:"name"`
+	Zone  primitive.ObjectID `bson:"zone,omitempty" json:"zone"`
+	Types []string           `bson:"types" json:"types"`
+}
+
+func (n *Completion) IsHypervisor() bool {
+	for _, typ := range n.Types {
+		if typ == Hypervisor {
+			return true
+		}
+	}
+	return false
+}
+
 type Share struct {
 	Type  string   `bson:"type" json:"type"`
 	Path  string   `bson:"path" json:"path"`
