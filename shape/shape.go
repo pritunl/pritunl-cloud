@@ -27,6 +27,15 @@ type Shape struct {
 	NodeCount        int                `bson:"-" json:"node_count"`
 }
 
+type Completion struct {
+	Id         primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name       string             `bson:"name" json:"name"`
+	Datacenter primitive.ObjectID `bson:"datacenter" json:"datacenter"`
+	Flexible   bool               `bson:"flexible" json:"flexible"`
+	Memory     int                `bson:"memory" json:"memory"`
+	Processors int                `bson:"processors" json:"processors"`
+}
+
 func (s *Shape) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
