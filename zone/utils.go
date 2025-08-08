@@ -74,6 +74,51 @@ func GetAll(db *database.Database) (zones []*Zone, err error) {
 	return
 }
 
+func GetAllNames(db *database.Database, query *bson.M) (
+	znes []*Completion, err error) {
+
+	coll := db.Certificates()
+	znes = []*Completion{}
+
+	cursor, err := coll.Find(
+		db,
+		query,
+		&options.FindOptions{
+			Sort: &bson.D{
+				{"name", 1},
+			},
+			Projection: &bson.D{
+				{"name", 1},
+				{"datacenter", 1},
+			},
+		},
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		zne := &Completion{}
+		err = cursor.Decode(zne)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		znes = append(znes, zne)
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetAllPaged(db *database.Database, query *bson.M,
 	page, pageCount int64) (znes []*Zone, count int64, err error) {
 
