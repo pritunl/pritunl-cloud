@@ -3,6 +3,7 @@ package ahandlers
 import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
@@ -196,7 +197,7 @@ func organizationGet(c *gin.Context) {
 func organizationsGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 
-	orgs, err := organization.GetAll(db)
+	orgs, err := organization.GetAll(db, &bson.M{})
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
