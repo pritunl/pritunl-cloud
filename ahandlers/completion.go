@@ -11,7 +11,7 @@ import (
 func completionGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 
-	cmpl, err := completion.GetCompletion(db, primitive.NilObjectID)
+	cmpl, err := completion.GetCompletion(db, primitive.NilObjectID, nil)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
