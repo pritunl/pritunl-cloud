@@ -261,11 +261,27 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID,
 	go func() {
 		defer wg.Done()
 
+		var dcQuery bson.M
+		if !orgId.IsZero() {
+			dcQuery = bson.M{
+				"$or": []bson.M{
+					bson.M{
+						"match_organizations": false,
+					},
+					bson.M{
+						"organizations": orgId,
+					},
+				},
+			}
+		} else {
+			dcQuery = bson.M{}
+		}
+
 		var datacenters []*datacenter.Completion
 		err := get(
 			db,
 			db.Datacenters(),
-			bson.M{},
+			dcQuery,
 			&bson.M{
 				"_id":          1,
 				"name":         1,
@@ -474,29 +490,31 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID,
 		defer wg.Done()
 
 		var storages []*storage.Completion
-		err := get(
-			db,
-			db.Storages(),
-			bson.M{},
-			&bson.M{
-				"_id":  1,
-				"name": 1,
-				"type": 1,
-			},
-			nil,
-			func() interface{} {
-				return &storage.Completion{}
-			},
-			func(item interface{}) {
-				storages = append(
-					storages,
-					item.(*storage.Completion),
-				)
-			},
-		)
-		if err != nil {
-			errChan <- err
-			return
+		if orgId.IsZero() {
+			err := get(
+				db,
+				db.Storages(),
+				bson.M{},
+				&bson.M{
+					"_id":  1,
+					"name": 1,
+					"type": 1,
+				},
+				nil,
+				func() interface{} {
+					return &storage.Completion{}
+				},
+				func(item interface{}) {
+					storages = append(
+						storages,
+						item.(*storage.Completion),
+					)
+				},
+			)
+			if err != nil {
+				errChan <- err
+				return
+			}
 		}
 		cmpl.Storages = storages
 	}()
