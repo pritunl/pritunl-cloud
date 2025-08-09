@@ -94,8 +94,8 @@ func get(db *database.Database, coll *database.Collection,
 	return
 }
 
-func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
-	cmpl *Completion, err error) {
+func GetCompletion(db *database.Database, orgId primitive.ObjectID,
+	orgRoles []string) (cmpl *Completion, err error) {
 
 	cmpl = &Completion{}
 	query := bson.M{}
@@ -116,11 +116,26 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 	go func() {
 		defer wg.Done()
 
+		var orgQuery bson.M
+		if !orgId.IsZero() {
+			if orgRoles == nil {
+				orgRoles = []string{}
+			}
+
+			orgQuery = bson.M{
+				"roles": bson.M{
+					"$in": orgRoles,
+				},
+			}
+		} else {
+			orgQuery = bson.M{}
+		}
+
 		var orgs []*database.Named
 		err := get(
 			db,
 			db.Organizations(),
-			bson.M{},
+			orgQuery,
 			&bson.M{
 				"_id":  1,
 				"name": 1,
@@ -151,7 +166,7 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID) (
 		err := get(
 			db,
 			db.Authorities(),
-			bson.M{},
+			query,
 			&bson.M{
 				"_id":  1,
 				"name": 1,
