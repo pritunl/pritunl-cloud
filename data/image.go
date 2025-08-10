@@ -1065,6 +1065,13 @@ func writeFsLvm(db *database.Database, dsk *disk.Disk,
 		return
 	}
 
+	defer func() {
+		err = lvm.DeactivateLv(vgName, lvName)
+		if err != nil {
+			return
+		}
+	}()
+
 	err = lvm.WriteLv(vgName, lvName, sourcePth)
 	if err != nil {
 		return
@@ -1252,6 +1259,13 @@ func writeImageLvm(db *database.Database, dsk *disk.Disk,
 	if err != nil {
 		return
 	}
+
+	defer func() {
+		err = lvm.DeactivateLv(vgName, lvName)
+		if err != nil {
+			return
+		}
+	}()
 
 	err = lvm.WriteLv(vgName, lvName, sourcePth)
 	if err != nil {
