@@ -52,6 +52,11 @@ func createDiskLvm(db *database.Database, dsk *disk.Disk) (
 		return
 	}
 
+	err = lvm.InitLock(pl.VgName)
+	if err != nil {
+		return
+	}
+
 	if !dsk.Image.IsZero() {
 		newSize, err = writeImageLvm(db, dsk, pl)
 		if err != nil {
