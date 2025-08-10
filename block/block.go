@@ -30,6 +30,12 @@ type Block struct {
 	Gateway6 string             `bson:"gateway6" json:"gateway6"`
 }
 
+type Completion struct {
+	Id   primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name string             `bson:"name" json:"name"`
+	Type string             `bson:"type" json:"type"`
+}
+
 func (b *Block) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
