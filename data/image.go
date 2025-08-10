@@ -1328,6 +1328,11 @@ func WriteImage(db *database.Database, dsk *disk.Disk) (
 			return
 		}
 
+		err = lvm.InitLock(pl.VgName)
+		if err != nil {
+			return
+		}
+
 		newSize, err = writeImageLvm(db, dsk, pl)
 		if err != nil {
 			return
