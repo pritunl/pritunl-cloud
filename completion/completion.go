@@ -8,6 +8,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/certificate"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
@@ -34,6 +35,7 @@ type Completion struct {
 	Domains       []*domain.Completion      `json:"domains"`
 	Vpcs          []*vpc.Completion         `json:"vpcs"`
 	Datacenters   []*datacenter.Completion  `json:"datacenters"`
+	Blocks        []*block.Completion       `json:"blocks"`
 	Nodes         []*node.Completion        `json:"nodes"`
 	Pools         []*pool.Completion        `json:"pools"`
 	Zones         []*zone.Completion        `json:"zones"`
@@ -314,6 +316,42 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID,
 		}
 		cmpl.Datacenters = datacenters
 	}()
+
+	if orgId.IsZero() {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			var blocks []*block.Completion
+			err := get(
+				db,
+				db.Blocks(),
+				query,
+				&bson.M{
+					"_id":  1,
+					"name": 1,
+					"type": 1,
+				},
+				&bson.D{
+					{"name", 1},
+				},
+				func() interface{} {
+					return &block.Completion{}
+				},
+				func(item interface{}) {
+					blocks = append(
+						blocks,
+						item.(*block.Completion),
+					)
+				},
+			)
+			if err != nil {
+				errChan <- err
+				return
+			}
+			cmpl.Blocks = blocks
+		}()
+	}
 
 	wg.Add(1)
 	go func() {
