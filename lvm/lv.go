@@ -44,6 +44,16 @@ func ActivateLv(vgName, lvName string) (err error) {
 	return
 }
 
+func DeactivateLv(vgName, lvName string) (err error) {
+	_, err = utils.ExecCombinedOutputLogged(nil,
+		"lvchange", "-an", fmt.Sprintf("%s/%s", vgName, lvName))
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func WriteLv(vgName, lvName, sourcePth string) (err error) {
 	dstPth := filepath.Join("/dev/mapper",
 		fmt.Sprintf("%s-%s", vgName, lvName))
