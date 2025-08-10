@@ -73,7 +73,7 @@ func initStorage(db *database.Database) (err error) {
 func initOrganization(db *database.Database) (
 	defaultOrg primitive.ObjectID, err error) {
 
-	orgs, err := organization.GetAll(db)
+	orgs, err := organization.GetAll(db, &bson.M{})
 	if err != nil {
 		return
 	}
@@ -259,12 +259,16 @@ func initVpc(db *database.Database, defaultOrg,
 			Name:         "vpc",
 			Organization: defaultOrg,
 			Datacenter:   defaultDc,
-			VpcId:        utils.RandInt(1000, 4090),
+			VpcId:        utils.RandInt(1001, 3999),
 			Network:      fmt.Sprintf("10.%d.0.0/14", netNum),
 			Subnets: []*vpc.Subnet{
 				&vpc.Subnet{
 					Name:    "primary",
-					Network: fmt.Sprintf("10.%d.2.0/23", netNum),
+					Network: fmt.Sprintf("10.%d.1.0/24", netNum),
+				},
+				&vpc.Subnet{
+					Name:    "management",
+					Network: fmt.Sprintf("10.%d.2.0/24", netNum),
 				},
 			},
 		}
