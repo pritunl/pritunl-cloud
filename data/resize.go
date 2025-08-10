@@ -3,6 +3,7 @@ package data
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
@@ -146,6 +147,13 @@ func expandDiskLvm(db *database.Database, dsk *disk.Disk) (err error) {
 	if err != nil {
 		return
 	}
+
+	defer func() {
+		err = lvm.DeactivateLv(vgName, lvName)
+		if err != nil {
+			return
+		}
+	}()
 
 	expandSize := dsk.NewSize - curSize
 	err = lvm.ExtendLv(vgName, lvName, expandSize)
