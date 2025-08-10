@@ -97,3 +97,45 @@ func CreateDisk(db *database.Database, dsk *disk.Disk) (
 
 	return
 }
+
+func ActivateDisk(db *database.Database, dsk *disk.Disk) (err error) {
+	if dsk.Type != disk.Lvm {
+		return
+	}
+
+	pl, err := pool.Get(db, dsk.Pool)
+	if err != nil {
+		return
+	}
+
+	vgName := pl.VgName
+	lvName := dsk.Id.Hex()
+
+	err = lvm.ActivateLv(vgName, lvName)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func DeactivateDisk(db *database.Database, dsk *disk.Disk) (err error) {
+	if dsk.Type != disk.Lvm {
+		return
+	}
+
+	pl, err := pool.Get(db, dsk.Pool)
+	if err != nil {
+		return
+	}
+
+	vgName := pl.VgName
+	lvName := dsk.Id.Hex()
+
+	err = lvm.DeactivateLv(vgName, lvName)
+	if err != nil {
+		return
+	}
+
+	return
+}
