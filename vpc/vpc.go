@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"crypto/md5"
 	"fmt"
+	"math/rand/v2"
 	"net"
+	"strconv"
 	"strings"
 
 	"github.com/dropbox/godropbox/container/set"
@@ -15,6 +17,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/requires"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -66,14 +69,6 @@ func (v *Vpc) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
 	v.Name = utils.FilterName(v.Name)
-
-	if v.VpcId == 0 {
-		errData = &errortypes.ErrorData{
-			Error:   "vpc_id_invalid",
-			Message: "Vpc ID invalid",
-		}
-		return
-	}
 
 	if v.Organization.IsZero() {
 		errData = &errortypes.ErrorData{
@@ -589,8 +584,6 @@ func (v *Vpc) GetNetwork6() (network *net.IPNet, err error) {
 }
 
 func (v *Vpc) InitVpc() {
-	v.VpcId = utils.RandInt(1000, 4090)
-
 	if v.Subnets != nil {
 		for _, sub := range v.Subnets {
 			sub.Id = primitive.NewObjectID()
@@ -824,14 +817,75 @@ func (v *Vpc) Insert(db *database.Database) (err error) {
 		return
 	}
 
-	resp, err := coll.InsertOne(db, v)
-	if err != nil {
-		err = database.ParseError(err)
+	vpcIds := []int{}
+	parts := strings.Split(settings.Hypervisor.VlanRanges, ",")
+
+	for _, part := range parts {
+		part = strings.TrimSpace(part)
+		if part == "" {
+			continue
+		}
+
+		bounds := strings.Split(part, "-")
+		if len(bounds) != 2 {
+			err = &errortypes.ParseError{
+				errors.New("vpc: Invalid vlan range format"),
+			}
+			return
+		}
+
+		start, e := strconv.Atoi(strings.TrimSpace(bounds[0]))
+		if e != nil {
+			err = &errortypes.ParseError{
+				errors.Wrap(e, "vpc: Invalid start vlan"),
+			}
+			return
+		}
+
+		end, e := strconv.Atoi(strings.TrimSpace(bounds[1]))
+		if e != nil {
+			err = &errortypes.ParseError{
+				errors.Wrap(e, "vpc: Invalid end vlan"),
+			}
+			return
+		}
+
+		if start >= end {
+			err = &errortypes.ParseError{
+				errors.New("vpc: Start vlan larger than end vlan"),
+			}
+			return
+		}
+
+		for i := start; i <= end; i++ {
+			vpcIds = append(vpcIds, i)
+		}
+	}
+
+	rand.Shuffle(len(vpcIds), func(i, j int) {
+		vpcIds[i], vpcIds[j] = vpcIds[j], vpcIds[i]
+	})
+
+	for _, vpcId := range vpcIds {
+		v.VpcId = vpcId
+
+		resp, e := coll.InsertOne(db, v)
+		if e != nil {
+			err = database.ParseError(e)
+			if _, ok := err.(*database.DuplicateKeyError); ok {
+				err = nil
+				continue
+			}
+			return
+		}
+
+		v.Id = resp.InsertedID.(primitive.ObjectID)
 		return
 	}
 
-	v.Id = resp.InsertedID.(primitive.ObjectID)
-
+	err = &errortypes.DatabaseError{
+		errors.New("vpc: No available vlan IDs"),
+	}
 	return
 }
 
