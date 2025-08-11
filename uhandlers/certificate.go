@@ -184,6 +184,8 @@ func certificatePost(c *gin.Context) {
 			utils.AbortWithError(c, 500, err)
 			return
 		}
+	} else {
+		cert.AcmeSecret = primitive.NilObjectID
 	}
 
 	errData, err := cert.Validate(db)
