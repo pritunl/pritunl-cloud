@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/dhcpc"
 	"github.com/pritunl/pritunl-cloud/dhcps"
@@ -182,6 +183,44 @@ func writeOvmfVars(virt *vm.VirtualMachine) (err error) {
 	err = utils.Chmod(ovmfVarsPath, 0600)
 	if err != nil {
 		return
+	}
+
+	return
+}
+
+func activateDisks(db *database.Database,
+	virt *vm.VirtualMachine) (err error) {
+
+	for _, virtDsk := range virt.Disks {
+		dsk, e := disk.Get(db, virtDsk.Id)
+		if e != nil {
+			err = e
+			return
+		}
+
+		err = data.ActivateDisk(db, dsk)
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
+func deactivateDisks(db *database.Database,
+	virt *vm.VirtualMachine) (err error) {
+
+	for _, virtDsk := range virt.Disks {
+		dsk, e := disk.Get(db, virtDsk.Id)
+		if e != nil {
+			err = e
+			return
+		}
+
+		err = data.DeactivateDisk(db, dsk)
+		if err != nil {
+			return
+		}
 	}
 
 	return
@@ -367,6 +406,11 @@ func Destroy(db *database.Database, virt *vm.VirtualMachine) (err error) {
 				err = nil
 				continue
 			}
+			return
+		}
+
+		err = data.DeactivateDisk(db, ds)
+		if err != nil {
 			return
 		}
 
@@ -582,6 +626,11 @@ func Cleanup(db *database.Database, virt *vm.VirtualMachine) {
 	}
 
 	time.Sleep(3 * time.Second)
+
+	err = deactivateDisks(db, virt)
+	if err != nil {
+		return
+	}
 
 	store.RemVirt(virt.Id)
 	store.RemDisks(virt.Id)
