@@ -21,13 +21,15 @@ func Get(db *database.Database, dcId primitive.ObjectID) (
 	return
 }
 
-func GetAll(db *database.Database) (orgs []*Organization, err error) {
+func GetAll(db *database.Database, query *bson.M) (
+	orgs []*Organization, err error) {
+
 	coll := db.Organizations()
 	orgs = []*Organization{}
 
 	cursor, err := coll.Find(
 		db,
-		&bson.M{},
+		query,
 		&options.FindOptions{
 			Sort: &bson.D{
 				{"name", 1},
