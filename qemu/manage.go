@@ -648,6 +648,11 @@ func Create(db *database.Database, inst *instance.Instance,
 		return
 	}
 
+	err = activateDisks(db, virt)
+	if err != nil {
+		return
+	}
+
 	err = writeService(virt)
 	if err != nil {
 		return
