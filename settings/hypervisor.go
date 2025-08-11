@@ -33,6 +33,7 @@ type hypervisor struct {
 	HostNetwork           string `bson:"host_network" default:"198.18.84.0/22"`
 	HostNetworkName       string `bson:"host_network_name" default:"pritunlhost0"`
 	VirtRng               bool   `bson:"virt_rng"`
+	VlanRanges            string `bson:"vlan_ranges" default:"1001-3999"`
 	VxlanId               int    `bson:"vxlan_id" default:"9417"`
 	VxlanDestPort         int    `bson:"vxlan_dest_port" default:"4789"`
 	IpTimeout             int    `bson:"ip_timeout" default:"30"`
