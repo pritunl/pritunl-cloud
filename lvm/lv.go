@@ -101,3 +101,64 @@ func GetSizeLv(vgName, lvName string) (size int, err error) {
 
 	return
 }
+
+func HasLocking(vgName string) (hasLock bool, err error) {
+	output, err := utils.ExecCombinedOutput("",
+		"vgs", vgName, "-o", "vg_lock_type", "--noheadings")
+	if err != nil {
+		return
+	}
+
+	lockType := strings.TrimSpace(output)
+	hasLock = lockType != "" && lockType != "none"
+
+	return
+}
+
+func IsLockspaceActive(vgName string) (isLocked bool, err error) {
+	output, err := utils.ExecCombinedOutput("",
+		"lvmlockctl", "-i")
+	if err != nil {
+		return
+	}
+
+	lines := strings.Split(output, "\n")
+	for _, line := range lines {
+		if strings.Contains(line, vgName) &&
+			strings.Contains(line, "sanlock") {
+
+			isLocked = true
+			return
+		}
+	}
+
+	return
+}
+
+func InitLock(vgName string) (err error) {
+	hasLock, err := HasLocking(vgName)
+	if err != nil {
+		return
+	}
+
+	if !hasLock {
+		return
+	}
+
+	isLocked, err := IsLockspaceActive(vgName)
+	if err != nil {
+		return
+	}
+
+	if isLocked {
+		return
+	}
+
+	_, err = utils.ExecCombinedOutputLogged(nil,
+		"vgchange", "--lock-start", vgName)
+	if err != nil {
+		return
+	}
+
+	return
+}
