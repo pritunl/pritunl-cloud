@@ -333,6 +333,11 @@ func PowerOff(db *database.Database, virt *vm.VirtualMachine) (err error) {
 
 	time.Sleep(3 * time.Second)
 
+	err = deactivateDisks(db, virt)
+	if err != nil {
+		return
+	}
+
 	store.RemVirt(virt.Id)
 	store.RemDisks(virt.Id)
 
@@ -377,6 +382,11 @@ func ForcePowerOffErr(db *database.Database, virt *vm.VirtualMachine,
 
 	time.Sleep(3 * time.Second)
 
+	err = deactivateDisks(db, virt)
+	if err != nil {
+		return
+	}
+
 	store.RemVirt(virt.Id)
 	store.RemDisks(virt.Id)
 
@@ -419,6 +429,11 @@ func ForcePowerOff(db *database.Database, virt *vm.VirtualMachine) (
 	}
 
 	time.Sleep(3 * time.Second)
+
+	err = deactivateDisks(db, virt)
+	if err != nil {
+		return
+	}
 
 	store.RemVirt(virt.Id)
 	store.RemDisks(virt.Id)
