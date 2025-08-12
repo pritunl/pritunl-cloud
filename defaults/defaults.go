@@ -386,6 +386,113 @@ func initFirewall(db *database.Database, defaultOrg primitive.ObjectID) (
 			return
 		}
 
+		fire = &firewall.Firewall{
+			Name:         "node",
+			Organization: firewall.Global,
+			Comment: "22/tcp - SSH\n" +
+				"80/tcp - HTTP\n" +
+				"443/tcp - HTTPS\n" +
+				"4789/udp - VXLAN cross-node\n" +
+				"20000-25000/tcp - VNC cross-node\n" +
+				"30000-32767/tcp - TCP NodePorts\n" +
+				"30000-32767/udp - UDP NodePorts",
+			Roles: []string{
+				"node-firewall",
+			},
+			Ingress: []*firewall.Rule{
+				&firewall.Rule{
+					SourceIps: []string{
+						"0.0.0.0/0",
+						"::/0",
+					},
+					Protocol: firewall.Icmp,
+				},
+				&firewall.Rule{
+					SourceIps: []string{
+						"0.0.0.0/0",
+						"::/0",
+					},
+					Protocol: firewall.Tcp,
+					Port:     "22",
+				},
+				&firewall.Rule{
+					SourceIps: []string{
+						"0.0.0.0/0",
+						"::/0",
+					},
+					Protocol: firewall.Tcp,
+					Port:     "80",
+				},
+				&firewall.Rule{
+					SourceIps: []string{
+						"0.0.0.0/0",
+						"::/0",
+					},
+					Protocol: firewall.Tcp,
+					Port:     "443",
+				},
+				&firewall.Rule{
+					SourceIps: []string{
+						"10.0.0.0/8",
+						"100.64.0.0/10",
+						"172.16.0.0/12",
+						"192.168.0.0/16",
+						"198.18.0.0/15",
+					},
+					Protocol: firewall.Udp,
+					Port:     "4789",
+				},
+				&firewall.Rule{
+					SourceIps: []string{
+						"10.0.0.0/8",
+						"100.64.0.0/10",
+						"172.16.0.0/12",
+						"192.168.0.0/16",
+						"198.18.0.0/15",
+					},
+					Protocol: firewall.Tcp,
+					Port:     "20000-25000",
+				},
+				&firewall.Rule{
+					SourceIps: []string{
+						"0.0.0.0/0",
+						"::/0",
+					},
+					Protocol: firewall.Tcp,
+					Port:     "30000-32767",
+				},
+				&firewall.Rule{
+					SourceIps: []string{
+						"0.0.0.0/0",
+						"::/0",
+					},
+					Protocol: firewall.Udp,
+					Port:     "30000-32767",
+				},
+			},
+		}
+
+		errData, e = fire.Validate(db)
+		if e != nil {
+			err = e
+			return
+		}
+
+		if errData != nil {
+			err = &errortypes.ApiError{
+				errors.Newf(
+					"defaults: Firewall validate error %s",
+					errData.Message,
+				),
+			}
+			return
+		}
+
+		err = fire.Insert(db)
+		if err != nil {
+			return
+		}
+
 		logrus.WithFields(logrus.Fields{
 			"firewall": fire.Id.Hex(),
 		}).Info("defaults: Created default firewall")
@@ -483,9 +590,20 @@ func initNode(db *database.Database, defaultOrg primitive.ObjectID) (
 	node.Self.Datacenter = zones[0].Datacenter
 	node.Self.Zone = zones[0].Id
 	node.Self.Roles = []string{
+		"node-firewall",
 		"shape-m2",
 	}
 	node.Self.HostNat = true
+
+	fires, err := firewall.GetOrgRoles(db, firewall.Global,
+		[]string{"node-firewall"})
+	if err != nil {
+		return
+	}
+
+	if len(fires) > 0 {
+		node.Self.Firewall = true
+	}
 
 	logrus.Info("defaults: Attempting to load network " +
 		"configuration from cloudinit")
