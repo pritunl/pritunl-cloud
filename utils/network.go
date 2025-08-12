@@ -14,6 +14,191 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 )
 
+var (
+	private10 = net.IPNet{
+		IP:   net.IPv4(10, 0, 0, 0),
+		Mask: net.CIDRMask(8, 32),
+	}
+	private100 = net.IPNet{
+		IP:   net.IPv4(100, 64, 0, 0),
+		Mask: net.CIDRMask(10, 32),
+	}
+	private172 = net.IPNet{
+		IP:   net.IPv4(172, 16, 0, 0),
+		Mask: net.CIDRMask(12, 32),
+	}
+	private192 = net.IPNet{
+		IP:   net.IPv4(192, 168, 0, 0),
+		Mask: net.CIDRMask(16, 32),
+	}
+	private198 = net.IPNet{
+		IP:   net.IPv4(198, 18, 0, 0),
+		Mask: net.CIDRMask(15, 32),
+	}
+	reserved6 = net.IPNet{
+		IP:   net.IPv4(6, 0, 0, 0),
+		Mask: net.CIDRMask(8, 32),
+	}
+	reserved11 = net.IPNet{
+		IP:   net.IPv4(11, 0, 0, 0),
+		Mask: net.CIDRMask(8, 32),
+	}
+	reserved21 = net.IPNet{
+		IP:   net.IPv4(21, 0, 0, 0),
+		Mask: net.CIDRMask(8, 32),
+	}
+	reserved25 = net.IPNet{
+		IP:   net.IPv4(25, 0, 0, 0),
+		Mask: net.CIDRMask(8, 32),
+	}
+	reserved26 = net.IPNet{
+		IP:   net.IPv4(26, 0, 0, 0),
+		Mask: net.CIDRMask(8, 32),
+	}
+	reserved53 = net.IPNet{
+		IP:   net.IPv4(53, 0, 0, 0),
+		Mask: net.CIDRMask(8, 32),
+	}
+	reserved57 = net.IPNet{
+		IP:   net.IPv4(57, 0, 0, 0),
+		Mask: net.CIDRMask(8, 32),
+	}
+
+	loopback127 = net.IPNet{
+		IP:   net.IPv4(127, 0, 0, 0),
+		Mask: net.CIDRMask(8, 32),
+	}
+	linkLocal169 = net.IPNet{
+		IP:   net.IPv4(169, 254, 0, 0),
+		Mask: net.CIDRMask(16, 32),
+	}
+	multicast224 = net.IPNet{
+		IP:   net.IPv4(224, 0, 0, 0),
+		Mask: net.CIDRMask(4, 32),
+	}
+	broadcast255 = net.IPNet{
+		IP:   net.IPv4(255, 255, 255, 255),
+		Mask: net.CIDRMask(32, 32),
+	}
+	zeroconf0 = net.IPNet{
+		IP:   net.IPv4(0, 0, 0, 0),
+		Mask: net.CIDRMask(8, 32),
+	}
+)
+
+func IsPrivateIp(ip net.IP) bool {
+	if ip == nil {
+		return false
+	}
+
+	if ip.To4() == nil {
+		return (ip[0] & 0xfe) == 0xfc
+	}
+
+	if private10.Contains(ip) ||
+		private100.Contains(ip) ||
+		private172.Contains(ip) ||
+		private192.Contains(ip) ||
+		private198.Contains(ip) ||
+		reserved6.Contains(ip) ||
+		reserved11.Contains(ip) ||
+		reserved21.Contains(ip) ||
+		reserved25.Contains(ip) ||
+		reserved26.Contains(ip) ||
+		reserved53.Contains(ip) ||
+		reserved57.Contains(ip) {
+
+		return true
+	}
+
+	return false
+}
+
+func IsPublicIp(ip net.IP) bool {
+	if ip == nil {
+		return false
+	}
+
+	if ip.To4() == nil {
+		if (ip[0] & 0xfe) == 0xfc {
+			return false
+		}
+		if ip[0] == 0xfe && (ip[1]&0xc0) == 0x80 {
+			return false
+		}
+		if ip.Equal(net.IPv6loopback) {
+			return false
+		}
+		if ip.Equal(net.IPv6unspecified) {
+			return false
+		}
+		if ip[0] == 0xff {
+			return false
+		}
+		return true
+	}
+
+	if IsPrivateIp(ip) ||
+		loopback127.Contains(ip) ||
+		linkLocal169.Contains(ip) ||
+		multicast224.Contains(ip) ||
+		broadcast255.Contains(ip) ||
+		zeroconf0.Contains(ip) {
+
+		return false
+	}
+
+	return true
+}
+
+type Address struct {
+	Address net.IP
+	Network *net.IPNet
+	Ip6     bool
+	Private bool
+	Public  bool
+}
+
+func ParseAddress(addrStr string) (addr *Address) {
+	addrStr = strings.TrimSpace(addrStr)
+	if addrStr == "" {
+		return
+	}
+
+	if strings.Contains(addrStr, "/") {
+		ip, network, err := net.ParseCIDR(addrStr)
+		if err != nil {
+			return
+		}
+
+		if ip == nil {
+			return
+		}
+
+		addr = &Address{
+			Address: ip,
+			Network: network,
+			Ip6:     ip.To4() == nil,
+			Private: IsPrivateIp(ip),
+			Public:  IsPublicIp(ip),
+		}
+		return
+	}
+
+	ip := net.ParseIP(addrStr)
+	if ip == nil {
+		return
+	}
+
+	addr = &Address{
+		Address: ip,
+		Ip6:     ip.To4() == nil,
+		Private: IsPrivateIp(ip),
+		Public:  IsPublicIp(ip),
+	}
+	return
+}
+
 func IncIpAddress(ip net.IP) {
 	for j := len(ip) - 1; j >= 0; j-- {
 		ip[j]++
