@@ -3,6 +3,7 @@ package netconf
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -108,7 +109,7 @@ func (n *NetConf) externalSysctl(db *database.Database) (err error) {
 		_, err = utils.ExecCombinedOutputLogged(
 			nil, "sysctl", "-w",
 			fmt.Sprintf("net.ipv6.conf.%s.accept_ra=2",
-				n.PhysicalExternalIface),
+				strings.ReplaceAll(n.PhysicalExternalIface, ".", "/")),
 		)
 		if err != nil {
 			return
@@ -118,7 +119,7 @@ func (n *NetConf) externalSysctl(db *database.Database) (err error) {
 			_, err = utils.ExecCombinedOutputLogged(
 				nil, "sysctl", "-w",
 				fmt.Sprintf("net.ipv6.conf.%s.addr_gen_mode=1",
-					n.PhysicalExternalIface),
+					strings.ReplaceAll(n.PhysicalExternalIface, ".", "/")),
 			)
 			if err != nil {
 				return
