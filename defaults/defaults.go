@@ -3,11 +3,16 @@ package defaults
 import (
 	"fmt"
 	"math/rand"
+	"net"
+	"slices"
 
+	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/authority"
+	"github.com/pritunl/pritunl-cloud/block"
+	"github.com/pritunl/pritunl-cloud/cloudinit"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -458,14 +463,190 @@ func initNode(db *database.Database, defaultOrg primitive.ObjectID) (
 		return
 	}
 
+	dc := dcs[0]
 	node.Self.Datacenter = zones[0].Datacenter
 	node.Self.Zone = zones[0].Id
 	node.Self.Roles = []string{
 		"shape-m2",
 	}
 	node.Self.HostNat = true
-	node.Self.InternalInterfaces = []string{
-		settings.Hypervisor.HostNetworkName,
+
+	logrus.Info("defaults: Attempting to load network " +
+		"configuration from cloudinit")
+
+	internalIface := ""
+	internalJumbo := false
+
+	externalIface := ""
+	externalIp := ""
+	externalNet := ""
+	externalMask := ""
+	externalGateway := ""
+	externalJumbo := false
+
+	cloudConf, err := cloudinit.GetCloudConfig()
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"error": err,
+		}).Warn("defaults: Failed to load cloudinit network config")
+		err = nil
+	} else {
+		for _, iface := range cloudConf.CombinedCloudConfig.Network.Config {
+			for _, addrInfo := range iface.Subnets {
+				addr := utils.ParseAddress(addrInfo.Address)
+				if addr == nil {
+					continue
+				}
+
+				if internalIface == "" && addr.Private && !addr.Ip6 {
+					internalIface = iface.Name
+					internalJumbo = iface.Mtu >= 9000
+
+					logrus.WithFields(logrus.Fields{
+						"iface":   iface.Name,
+						"address": addr.Address.String(),
+						"mode":    addrInfo.Type,
+						"mtu":     iface.Mtu,
+						"type":    iface.Type,
+						"vlan":    iface.VlanId,
+						"jumbo":   internalJumbo,
+					}).Info("defaults: Detected internal interface")
+				}
+
+				if externalIface == "" && addr.Public && !addr.Ip6 &&
+					addr.Network != nil {
+
+					externalIface = iface.Name
+					externalJumbo = iface.Mtu >= 9000
+					externalIp = addr.Address.String()
+					externalNet = addr.Network.String()
+					externalMask = net.IP(addr.Network.Mask).String()
+					externalGateway = addrInfo.Gateway
+
+					logrus.WithFields(logrus.Fields{
+						"iface":      iface.Name,
+						"address":    externalIp,
+						"network":    externalNet,
+						"netmask":    externalMask,
+						"gateway":    externalGateway,
+						"mode":       addrInfo.Type,
+						"mtu":        iface.Mtu,
+						"type":       iface.Type,
+						"vlan":       iface.VlanId,
+						"vlan_iface": iface.VlanLink,
+						"jumbo":      externalJumbo,
+					}).Info("defaults: Detected external interface")
+				}
+			}
+		}
+	}
+
+	if internalIface != "" {
+		node.Self.InternalInterfaces = []string{internalIface}
+		if internalJumbo {
+			node.Self.JumboFramesInternal = true
+
+			dc.NetworkMode = datacenter.VxlanVlan
+
+			errData, e := dc.Validate(db)
+			if e != nil {
+				err = e
+				return
+			}
+			if errData != nil {
+				err = errData.GetError()
+				return
+			}
+
+			err = dc.CommitFields(db, set.NewSet("network_mode"))
+			if err != nil {
+				return
+			}
+		}
+	} else {
+		node.Self.InternalInterfaces = []string{
+			settings.Hypervisor.HostNetworkName,
+		}
+	}
+
+	if externalIface != "" {
+		node.Self.DefaultNoPublicAddress = true
+		if externalJumbo && internalJumbo {
+			node.Self.JumboFrames = true
+			node.Self.JumboFramesInternal = true
+		}
+
+		blcks, e := block.GetAll(db)
+		if e != nil {
+			err = e
+			return
+		}
+
+		var externalBlck *block.Block
+		for _, blck := range blcks {
+			if blck.Netmask == externalMask {
+				for _, subnet := range blck.Subnets {
+					if subnet == externalNet {
+						externalBlck = blck
+						break
+					}
+				}
+
+				if externalBlck != nil {
+					break
+				}
+			}
+		}
+
+		if externalBlck != nil {
+			if externalGateway != "" {
+				externalBlck.Gateway = externalGateway
+			}
+
+			excludeIp := externalIp + "/32"
+			if !slices.Contains(externalBlck.Excludes, excludeIp) {
+				externalBlck.Excludes = append(
+					externalBlck.Excludes, excludeIp)
+			}
+
+			err = externalBlck.CommitFields(
+				db, set.NewSet("gateway", "excludes"))
+			if err != nil {
+				return
+			}
+		} else {
+			externalBlck = &block.Block{
+				Name:     "cloud-public",
+				Type:     block.IPv4,
+				Subnets:  []string{externalNet},
+				Excludes: []string{externalIp + "/32"},
+				Netmask:  externalMask,
+				Gateway:  externalGateway,
+			}
+
+			errData, e := externalBlck.Validate(db)
+			if e != nil {
+				err = e
+				return
+			}
+			if errData != nil {
+				err = errData.GetError()
+				return
+			}
+
+			err = externalBlck.Insert(db)
+			if err != nil {
+				return
+			}
+		}
+
+		node.Self.NetworkMode = node.Static
+		node.Self.Blocks = []*node.BlockAttachment{
+			&node.BlockAttachment{
+				Interface: externalIface,
+				Block:     externalBlck.Id,
+			},
+		}
 	}
 
 	errData, err := node.Self.Validate(db)
