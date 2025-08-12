@@ -679,9 +679,9 @@ func (i *Instance) InitSpicePort(db *database.Database) (err error) {
 }
 
 func (i *Instance) GenerateVncDisplay() {
-	// VNC 10001 - 14999
-	// VNC WebSocket 20001 - 24999
-	i.VncDisplay = rand.Intn(4998) + 4101
+	// VNC 10001 - 14999 (+5900)
+	// VNC WebSocket 20001 - 24999 (+15900)
+	i.VncDisplay = rand.Intn(4999) + 4101
 }
 
 func (i *Instance) InitVncDisplay(db *database.Database) (err error) {
