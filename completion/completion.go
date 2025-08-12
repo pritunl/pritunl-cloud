@@ -799,10 +799,22 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID,
 	go func() {
 		defer wg.Done()
 
+		var deplyQuery bson.M
+		if !orgId.IsZero() {
+			deplyQuery = bson.M{
+				"organizations": orgId,
+				"kind":          "image",
+			}
+		} else {
+			deplyQuery = bson.M{
+				"kind": "image",
+			}
+		}
+
 		err = get(
 			db,
 			db.Deployments(),
-			query,
+			deplyQuery,
 			&bson.M{
 				"_id":          1,
 				"name":         1,
@@ -812,8 +824,8 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID,
 				"kind":         1,
 				"state":        1,
 				"status":       1,
-				"image_id":     1,
-				"image_name":   1,
+				"image":        1,
+				"image_data":   1,
 				"tags":         1,
 			},
 			&bson.D{
