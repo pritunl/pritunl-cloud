@@ -346,6 +346,22 @@ func initFirewall(db *database.Database, defaultOrg primitive.ObjectID) (
 					Protocol: firewall.Tcp,
 					Port:     "22",
 				},
+				&firewall.Rule{
+					SourceIps: []string{
+						"0.0.0.0/0",
+						"::/0",
+					},
+					Protocol: firewall.Tcp,
+					Port:     "80",
+				},
+				&firewall.Rule{
+					SourceIps: []string{
+						"0.0.0.0/0",
+						"::/0",
+					},
+					Protocol: firewall.Tcp,
+					Port:     "443",
+				},
 			},
 		}
 
