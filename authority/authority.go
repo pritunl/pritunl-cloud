@@ -15,9 +15,9 @@ type Authority struct {
 	Comment      string             `bson:"comment" json:"comment"`
 	Type         string             `bson:"type" json:"type"`
 	Organization primitive.ObjectID `bson:"organization" json:"organization"`
-	NetworkRoles []string           `bson:"network_roles" json:"network_roles"`
-	Key          string             `bson:"key" json:"key"`
 	Roles        []string           `bson:"roles" json:"roles"`
+	Key          string             `bson:"key" json:"key"`
+	Principals   []string           `bson:"principals" json:"principals"`
 	Certificate  string             `bson:"certificate" json:"certificate"`
 }
 
@@ -30,13 +30,17 @@ func (f *Authority) Validate(db *database.Database) (
 		f.Roles = []string{}
 	}
 
+	if f.Principals == nil {
+		f.Principals = []string{}
+	}
+
 	if f.Type == "" {
 		f.Type = SshKey
 	}
 
 	switch f.Type {
 	case SshKey:
-		f.Roles = []string{}
+		f.Principals = []string{}
 		f.Certificate = ""
 		break
 	case SshCertificate:
