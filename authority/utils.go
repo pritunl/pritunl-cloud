@@ -81,7 +81,7 @@ func GetRoles(db *database.Database, roles []string) (
 
 	cursor, err := coll.Find(db, &bson.M{
 		"organization": Global,
-		"network_roles": &bson.M{
+		"roles": &bson.M{
 			"$in": roles,
 		},
 	}, &options.FindOptions{
@@ -136,7 +136,7 @@ func GetMapRoles(db *database.Database, query *bson.M) (
 			return
 		}
 
-		for _, role := range authr.NetworkRoles {
+		for _, role := range authr.Roles {
 			roleAuthrs := authrs[role]
 			if roleAuthrs == nil {
 				roleAuthrs = []*Authority{}
@@ -177,7 +177,7 @@ func GetOrgMapRoles(db *database.Database, orgId primitive.ObjectID) (
 			return
 		}
 
-		for _, role := range authr.NetworkRoles {
+		for _, role := range authr.Roles {
 			roleAuthrs := authrs[role]
 			if roleAuthrs == nil {
 				roleAuthrs = []*Authority{}
@@ -203,7 +203,7 @@ func GetOrgRoles(db *database.Database, orgId primitive.ObjectID,
 
 	cursor, err := coll.Find(db, &bson.M{
 		"organization": orgId,
-		"network_roles": &bson.M{
+		"roles": &bson.M{
 			"$in": roles,
 		},
 	}, &options.FindOptions{
