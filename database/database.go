@@ -1128,7 +1128,7 @@ func addIndexes() (err error) {
 	index = &Index{
 		Collection: db.Authorities(),
 		Keys: &bson.D{
-			{"network_roles", 1},
+			{"roles", 1},
 		},
 	}
 	err = index.Create()
@@ -1139,7 +1139,7 @@ func addIndexes() (err error) {
 		Collection: db.Authorities(),
 		Keys: &bson.D{
 			{"organization", 1},
-			{"network_roles", 1},
+			{"roles", 1},
 		},
 	}
 	err = index.Create()
