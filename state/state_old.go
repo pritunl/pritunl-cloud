@@ -858,7 +858,7 @@ func (s *StateOld) init() (err error) {
 	}
 
 	authrsMap, err := authority.GetMapRoles(db, &bson.M{
-		"network_roles": &bson.M{
+		"roles": &bson.M{
 			"$in": instancesRoles,
 		},
 	})
