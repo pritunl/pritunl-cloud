@@ -18,14 +18,14 @@ import (
 )
 
 type authorityData struct {
-	Id           primitive.ObjectID `json:"id"`
-	Name         string             `json:"name"`
-	Comment      string             `json:"comment"`
-	Type         string             `json:"type"`
-	NetworkRoles []string           `json:"network_roles"`
-	Key          string             `json:"key"`
-	Roles        []string           `json:"roles"`
-	Certificate  string             `json:"certificate"`
+	Id          primitive.ObjectID `json:"id"`
+	Name        string             `json:"name"`
+	Comment     string             `json:"comment"`
+	Type        string             `json:"type"`
+	Roles       []string           `json:"roles"`
+	Key         string             `json:"key"`
+	Principals  []string           `json:"principals"`
+	Certificate string             `json:"certificate"`
 }
 
 type authoritiesData struct {
@@ -54,32 +54,32 @@ func authorityPut(c *gin.Context) {
 		return
 	}
 
-	fire, err := authority.GetOrg(db, userOrg, authorityId)
+	authr, err := authority.GetOrg(db, userOrg, authorityId)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	fire.Name = data.Name
-	fire.Comment = data.Comment
-	fire.Type = data.Type
-	fire.NetworkRoles = data.NetworkRoles
-	fire.Key = data.Key
-	fire.Roles = data.Roles
-	fire.Certificate = data.Certificate
+	authr.Name = data.Name
+	authr.Comment = data.Comment
+	authr.Type = data.Type
+	authr.Roles = data.Roles
+	authr.Key = data.Key
+	authr.Principals = data.Principals
+	authr.Certificate = data.Certificate
 
 	fields := set.NewSet(
 		"name",
 		"comment",
 		"type",
 		"organization",
-		"network_roles",
-		"key",
 		"roles",
+		"key",
+		"principals",
 		"certificate",
 	)
 
-	errData, err := fire.Validate(db)
+	errData, err := authr.Validate(db)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -90,7 +90,7 @@ func authorityPut(c *gin.Context) {
 		return
 	}
 
-	err = fire.CommitFields(db, fields)
+	err = authr.CommitFields(db, fields)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
@@ -98,7 +98,7 @@ func authorityPut(c *gin.Context) {
 
 	event.PublishDispatch(db, "authority.change")
 
-	c.JSON(200, fire)
+	c.JSON(200, authr)
 }
 
 func authorityPost(c *gin.Context) {
@@ -123,9 +123,9 @@ func authorityPost(c *gin.Context) {
 		Comment:      data.Comment,
 		Type:         data.Type,
 		Organization: userOrg,
-		NetworkRoles: data.NetworkRoles,
-		Key:          data.Key,
 		Roles:        data.Roles,
+		Key:          data.Key,
+		Principals:   data.Principals,
 		Certificate:  data.Certificate,
 	}
 
@@ -250,9 +250,9 @@ func authoritiesGet(c *gin.Context) {
 		query["roles"] = role
 	}
 
-	networkRole := strings.TrimSpace(c.Query("network_role"))
-	if networkRole != "" {
-		query["network_roles"] = networkRole
+	principal := strings.TrimSpace(c.Query("principal"))
+	if principal != "" {
+		query["principals"] = principal
 	}
 
 	comment := strings.TrimSpace(c.Query("comment"))
