@@ -36,7 +36,7 @@ func (p *AuthoritiesPreloadState) Refresh(pkg *Package,
 	}
 
 	authrsMap, err := authority.GetMapRoles(db, &bson.M{
-		"network_roles": &bson.M{
+		"roles": &bson.M{
 			"$in": roles,
 		},
 	})
