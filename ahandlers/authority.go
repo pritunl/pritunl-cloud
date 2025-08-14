@@ -25,9 +25,9 @@ type authorityData struct {
 	Comment      string             `json:"comment"`
 	Type         string             `json:"type"`
 	Organization primitive.ObjectID `json:"organization"`
-	NetworkRoles []string           `json:"network_roles"`
-	Key          string             `json:"key"`
 	Roles        []string           `json:"roles"`
+	Key          string             `json:"key"`
+	Principals   []string           `json:"principals"`
 	Certificate  string             `json:"certificate"`
 }
 
@@ -69,9 +69,9 @@ func authorityPut(c *gin.Context) {
 	authr.Comment = data.Comment
 	authr.Type = data.Type
 	authr.Organization = data.Organization
-	authr.NetworkRoles = data.NetworkRoles
-	authr.Key = data.Key
 	authr.Roles = data.Roles
+	authr.Key = data.Key
+	authr.Principals = data.Principals
 	authr.Certificate = data.Certificate
 
 	fields := set.NewSet(
@@ -79,9 +79,9 @@ func authorityPut(c *gin.Context) {
 		"comment",
 		"type",
 		"organization",
-		"network_roles",
-		"key",
 		"roles",
+		"key",
+		"principals",
 		"certificate",
 	)
 
@@ -131,9 +131,9 @@ func authorityPost(c *gin.Context) {
 		Comment:      data.Comment,
 		Type:         data.Type,
 		Organization: data.Organization,
-		NetworkRoles: data.NetworkRoles,
-		Key:          data.Key,
 		Roles:        data.Roles,
+		Key:          data.Key,
+		Principals:   data.Principals,
 		Certificate:  data.Certificate,
 	}
 
@@ -255,9 +255,9 @@ func authoritiesGet(c *gin.Context) {
 		query["roles"] = role
 	}
 
-	networkRole := strings.TrimSpace(c.Query("network_role"))
-	if networkRole != "" {
-		query["network_roles"] = networkRole
+	principal := strings.TrimSpace(c.Query("principal"))
+	if principal != "" {
+		query["principals"] = principal
 	}
 
 	organization, ok := utils.ParseObjectId(c.Query("organization"))
