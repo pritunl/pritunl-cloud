@@ -520,7 +520,7 @@ func initAuthority(db *database.Database, defaultOrg primitive.ObjectID) (
 			Name:         "cloud",
 			Type:         authority.SshKey,
 			Organization: defaultOrg,
-			NetworkRoles: []string{
+			Roles: []string{
 				"instance",
 			},
 		}
