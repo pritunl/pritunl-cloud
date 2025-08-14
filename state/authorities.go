@@ -52,7 +52,7 @@ func (p *AuthoritiesState) Refresh(pkg *Package,
 
 	if len(missRoles) > 0 {
 		missAuthorities, e := authority.GetMapRoles(db, &bson.M{
-			"network_roles": &bson.M{
+			"roles": &bson.M{
 				"$in": missRoles,
 			},
 		})
