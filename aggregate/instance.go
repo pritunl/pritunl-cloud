@@ -254,7 +254,7 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 					}
 
 					roles := set.NewSet()
-					for _, role := range authr.NetworkRoles {
+					for _, role := range authr.Roles {
 						roles.Add(role)
 					}
 					authrsRoles[authr.Id] = roles
