@@ -4,6 +4,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/imds"
 	"github.com/pritunl/pritunl-cloud/settings"
@@ -24,11 +25,17 @@ var imdsSync = &Task{
 	Handler: imdsSyncHandler,
 }
 
+var (
+	failTime = map[primitive.ObjectID]time.Time{}
+)
+
 func imdsSyncHandler(db *database.Database) (err error) {
 	confs := imds.GetConfigs()
 	timeout := time.Duration(
 		settings.Hypervisor.ImdsSyncLogTimeout) * time.Second
 
+	newFailTime := map[primitive.ObjectID]time.Time{}
+	newFailTimeLock := sync.Mutex{}
 	waiter := &sync.WaitGroup{}
 	for _, conf := range confs {
 		if conf.Instance == nil {
@@ -42,20 +49,26 @@ func imdsSyncHandler(db *database.Database) (err error) {
 			err := imds.Sync(db, conf.Instance.NetworkNamespace, conf.Instance.Id,
 				conf.Instance.Deployment, conf)
 			if err != nil {
-				ttl := time.Since(conf.Instance.Timestamp)
-				if !conf.Instance.Timestamp.IsZero() && ttl > timeout {
+				newFailTimeLock.Lock()
+				if failTime[conf.Instance.Id].IsZero() {
+					newFailTime[conf.Instance.Id] = time.Now()
+				} else if time.Since(failTime[conf.Instance.Id]) > timeout {
 					logrus.WithFields(logrus.Fields{
 						"action":   conf.Instance.Action,
-						"ttl":      ttl,
 						"instance": conf.Instance.Id.Hex(),
 						"error":    err,
 					}).Error("agent: Failed to sync imds")
+				} else {
+					newFailTime[conf.Instance.Id] = failTime[conf.Instance.Id]
 				}
+				newFailTimeLock.Unlock()
 			}
 		}()
 	}
 
 	waiter.Wait()
+
+	failTime = newFailTime
 
 	return
 }
