@@ -38,11 +38,11 @@ type Deployment struct {
 }
 
 type InstanceData struct {
-	HostIps          []string `bson:"host_ips" json:"host_ips"`
-	PublicIps        []string `bson:"public_ips" json:"public_ips"`
-	PublicIps6       []string `bson:"public_ips6" json:"public_ips6"`
-	PrivateIps       []string `bson:"private_ips" json:"private_ips"`
-	PrivateIps6      []string `bson:"private_ips6" json:"private_ips6"`
+	HostIps         []string `bson:"host_ips" json:"host_ips"`
+	PublicIps       []string `bson:"public_ips" json:"public_ips"`
+	PublicIps6      []string `bson:"public_ips6" json:"public_ips6"`
+	PrivateIps      []string `bson:"private_ips" json:"private_ips"`
+	PrivateIps6     []string `bson:"private_ips6" json:"private_ips6"`
 	CloudPrivateIps []string `bson:"cloud_private_ips" json:"cloud_private_ips"`
 	CloudPublicIps  []string `bson:"cloud_public_ips" json:"cloud_public_ips"`
 	CloudPublicIps6 []string `bson:"cloud_public_ips6" json:"cloud_public_ips6"`
