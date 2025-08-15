@@ -9,6 +9,7 @@ Add DNS TXT verification for Lets Encrypt
 All nodes must be updated to enforce ACME type constraint on limited users
 Add support for custom vpc arp entries
 Add node port support
+Add dhcp client and server
 Cloud script
 
 Version 1.2.2933.86 2023-12-05
