@@ -125,6 +125,7 @@ func RegisterVirt(engine *gin.Engine) {
 	virtGroup.GET("/query/:resource/:key1/:key2", queryGet)
 	virtGroup.GET("/query/:resource/:key1/:key2/:key3", queryGet)
 	virtGroup.GET("/query/:resource/:key1/:key2/:key3/:key4", queryGet)
+	virtGroup.GET("/node", nodeGet)
 	virtGroup.GET("/instance", instanceGet)
 	virtGroup.GET("/vpc", vpcGet)
 	virtGroup.GET("/subnet", subnetGet)
