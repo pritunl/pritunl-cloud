@@ -11,6 +11,7 @@ type Config struct {
 	SpecData       string             `json:"spec_data" gob:"-"`
 	ImdsHostSecret string             `json:"-"`
 	ClientIps      []string           `json:"client_ips"`
+	Node           *Node              `json:"node"`
 	Instance       *Instance          `json:"instance"`
 	Vpc            *Vpc               `json:"vpc"`
 	Subnet         *Subnet            `json:"subnet"`
