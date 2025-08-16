@@ -9,7 +9,7 @@ Add DNS TXT verification for Lets Encrypt
 Add support for custom vpc arp entries
 Add node port support
 Add dhcp client and server
-Cloud script
+Add cloud script support
 
 Version 1.2.2933.86 2023-12-05
 ------------------------------
