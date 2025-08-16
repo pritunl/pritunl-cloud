@@ -152,6 +152,44 @@ func DisablePolicies() (err error) {
 	return
 }
 
+func DisableFirewall() (err error) {
+	db := database.GetDatabase()
+	defer db.Close()
+
+	err = config.Load()
+	if err != nil {
+		return
+	}
+
+	ndeId, err := primitive.ObjectIDFromHex(config.Config.NodeId)
+	if err != nil || ndeId.IsZero() {
+		err = nil
+		logrus.Info("cmd: Node not initialized")
+		return
+	}
+
+	coll := db.Nodes()
+
+	_, err = coll.UpdateMany(db, &bson.M{
+		"_id": ndeId,
+	}, &bson.M{
+		"$set": &bson.M{
+			"firewall": false,
+		},
+	})
+	if err != nil {
+		if _, ok := err.(*database.NotFoundError); ok {
+			err = nil
+		} else {
+			return
+		}
+	}
+
+	logrus.Info("cmd: Firewall disabled")
+
+	return
+}
+
 func SettingsSet() (err error) {
 	group := flag.Arg(1)
 	key := flag.Arg(2)
