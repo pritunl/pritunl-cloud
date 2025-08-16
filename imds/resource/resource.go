@@ -16,55 +16,31 @@ func Query(resrc string, keys ...string) (val string, err error) {
 
 	switch resrc {
 	case finder.NodeKind:
-		if len(keys) == 2 {
-			if keys[0] != "self" {
-				break
-			}
-			key = keys[1]
-		} else if len(keys) == 1 {
-			key = keys[0]
-		} else {
+		if len(keys) != 2 || keys[0] != "self" {
 			break
 		}
+		key = keys[1]
 		resrcInf = config.Config.Node
 		break
 	case finder.InstanceKind:
-		if len(keys) == 2 {
-			if keys[0] != "self" {
-				break
-			}
-			key = keys[1]
-		} else if len(keys) == 1 {
-			key = keys[0]
-		} else {
+		if len(keys) != 2 || keys[0] != "self" {
 			break
 		}
+		key = keys[1]
 		resrcInf = config.Config.Instance
 		break
 	case finder.VpcKind:
-		if len(keys) == 2 {
-			if keys[0] != "self" {
-				break
-			}
-			key = keys[1]
-		} else if len(keys) == 1 {
-			key = keys[0]
-		} else {
+		if len(keys) != 2 || keys[0] != "self" {
 			break
 		}
+		key = keys[1]
 		resrcInf = config.Config.Vpc
 		break
 	case finder.SubnetKind:
-		if len(keys) == 2 {
-			if keys[0] != "self" {
-				break
-			}
-			key = keys[1]
-		} else if len(keys) == 1 {
-			key = keys[0]
-		} else {
+		if len(keys) != 2 || keys[0] != "self" {
 			break
 		}
+		key = keys[1]
 		resrcInf = config.Config.Subnet
 		break
 	case finder.SecretKind:
