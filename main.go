@@ -28,6 +28,7 @@ Commands:
   default-password  Get default administrator password
   reset-password    Reset administrator password
   disable-policies  Disable all policies
+  disable-firewall  Disable firewall on this node
   start-instance    Start instance by name
   stop-instance     Stop instance by name
   mtu-check         Check and show instance MTUs
@@ -120,6 +121,13 @@ func main() {
 	case "disable-policies":
 		InitLimited()
 		err := cmd.DisablePolicies()
+		if err != nil {
+			panic(err)
+		}
+		return
+	case "disable-firewall":
+		InitLimited()
+		err := cmd.DisableFirewall()
 		if err != nil {
 			panic(err)
 		}
