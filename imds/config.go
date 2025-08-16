@@ -8,6 +8,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/secret"
 	"github.com/pritunl/pritunl-cloud/spec"
@@ -31,6 +32,7 @@ func BuildConfig(inst *instance.Instance, virt *vm.VirtualMachine,
 	conf = &types.Config{
 		ImdsHostSecret: virt.ImdsHostSecret,
 		ClientIps:      inst.PrivateIps,
+		Node:           types.NewNode(node.Self),
 		Instance:       types.NewInstance(inst),
 		Vpc:            types.NewVpc(vc),
 		Subnet:         types.NewSubnet(subnet),
