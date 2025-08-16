@@ -154,7 +154,63 @@ var Node = relations.Query{
 			Key:   "size",
 			Label: "Size",
 		}},
-	}},
+	},
+	// {
+	// TODO Match organization
+	// 	Key:          "firewalls",
+	// 	Label:        "Firewall",
+	// 	From:         "firewalls",
+	// 	LocalField:   "roles",
+	// 	ForeignField: "roles",
+	// 	Sort: map[string]int{
+	// 		"name": 1,
+	// 	},
+	// 	Project: []relations.Project{{
+	// 		Key:   "name",
+	// 		Label: "Name",
+	// 	}, {
+	// 		Key:   "roles",
+	// 		Label: "Roles",
+	// 	}, {
+	// 		Key:   "ingress",
+	// 		Label: "Ingress",
+	// 		Format: func(vals ...any) any {
+	// 			rules := vals[0].(primitive.A)
+	// 			rulesStr := []string{}
+
+	// 			for _, ruleInf := range rules {
+	// 				rule := ruleInf.(primitive.M)
+	// 				ruleStr := ""
+
+	// 				protocol := rule["protocol"].(string)
+	// 				port := rule["port"].(string)
+	// 				sourceIps := rule["source_ips"].(primitive.A)
+
+	// 				switch protocol {
+	// 				case firewall.All, firewall.Icmp:
+	// 					ruleStr = protocol
+	// 				default:
+	// 					ruleStr = port + "/" + protocol
+	// 				}
+
+	// 				ruleStr += " ("
+	// 				sourceIpsLen := len(sourceIps)
+	// 				for i, sourceIp := range sourceIps {
+	// 					ruleStr += sourceIp.(string)
+	// 					if i+1 < sourceIpsLen {
+	// 						ruleStr += ", "
+	// 					}
+	// 				}
+	// 				ruleStr += ")"
+
+	// 				rulesStr = append(rulesStr, ruleStr)
+	// 			}
+
+	// 			return rulesStr
+	// 		},
+	// 	}},
+	// }
+	},
 }
 
 func init() {
