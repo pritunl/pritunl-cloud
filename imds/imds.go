@@ -178,7 +178,7 @@ func Sync(db *database.Database, namespace string,
 			return
 		}
 
-		var kind int
+		var kind int32
 		var resource primitive.ObjectID
 		if !deplyId.IsZero() {
 			kind = journal.DeploymentAgent
@@ -501,7 +501,7 @@ func Pull(db *database.Database, instId, deplyId primitive.ObjectID,
 			return
 		}
 
-		var kind int
+		var kind int32
 		var resource primitive.ObjectID
 		if !deplyId.IsZero() {
 			kind = journal.DeploymentAgent
