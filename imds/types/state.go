@@ -53,7 +53,7 @@ func (s *State) Copy() *State {
 
 type Entry struct {
 	Timestamp time.Time `json:"t"`
-	Level     int       `json:"l"`
+	Level     int32     `json:"l"`
 	Message   string    `json:"m"`
 }
 
