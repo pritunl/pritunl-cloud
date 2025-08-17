@@ -24,6 +24,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/subscription"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/pritunl-cloud/zone"
 )
 
 type nodeData struct {
@@ -238,6 +239,15 @@ func nodePut(c *gin.Context) {
 			return
 		}
 		nde.Zone = data.Zone
+
+		zne, e := zone.Get(db, nde.Zone)
+		if e != nil {
+			utils.AbortWithError(c, 500, e)
+			return
+		}
+
+		fields.Add("datacenter")
+		nde.Datacenter = zne.Datacenter
 	}
 
 	errData, err := nde.Validate(db)
