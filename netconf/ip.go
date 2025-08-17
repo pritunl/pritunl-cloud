@@ -55,7 +55,7 @@ func (n *NetConf) ipExternal(db *database.Database) (err error) {
 
 			if stat.DhcpIp != nil {
 				_, err = utils.ExecCombinedOutputLogged(
-					[]string{"File exists"},
+					[]string{"File exists", "already assigned"},
 					"ip", "netns", "exec", n.Namespace,
 					"ip", "addr",
 					"add", stat.DhcpIp.String(),
@@ -82,7 +82,7 @@ func (n *NetConf) ipExternal(db *database.Database) (err error) {
 
 			if stat.DhcpIp6 != nil {
 				_, err = utils.ExecCombinedOutputLogged(
-					[]string{"File exists"},
+					[]string{"File exists", "already assigned"},
 					"ip", "netns", "exec", n.Namespace,
 					"ip", "addr",
 					"add", stat.DhcpIp6.String(),
