@@ -304,7 +304,7 @@ func Sync(db *database.Database, namespace string,
 					}
 				}
 				_, err = pritunlutils.ExecCombinedOutputLogged(
-					[]string{"File exists"},
+					[]string{"File exists", "already assigned"},
 					"ip", "netns", "exec", namespace,
 					"ip", "addr",
 					"add", newIpPrefix,
@@ -364,7 +364,7 @@ func Sync(db *database.Database, namespace string,
 					}
 				}
 				_, err = pritunlutils.ExecCombinedOutputLogged(
-					[]string{"File exists"},
+					[]string{"File exists", "already assigned"},
 					"ip", "netns", "exec", namespace,
 					"ip", "addr",
 					"add", newIpPrefix6,
