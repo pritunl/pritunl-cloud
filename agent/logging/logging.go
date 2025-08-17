@@ -38,7 +38,7 @@ func (r *Redirect) GetOutput() (entries []*types.Entry) {
 	}
 }
 
-func (r *Redirect) handleOutput(reader *os.File, level int) {
+func (r *Redirect) handleOutput(reader *os.File, level int32) {
 	scanner := bufio.NewScanner(reader)
 	buf := make([]byte, maxCapacity)
 	scanner.Buffer(buf, maxCapacity)
