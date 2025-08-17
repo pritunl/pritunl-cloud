@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/pritunl/mongo-go-driver/bson"
@@ -31,6 +32,11 @@ import (
 var (
 	hashes     = map[primitive.ObjectID]uint32{}
 	hashesLock = sync.Mutex{}
+	counter    = atomic.Uint64{}
+)
+
+const (
+	counterMax = 2000000000
 )
 
 func Sync(db *database.Database, namespace string,
@@ -194,6 +200,7 @@ func Sync(db *database.Database, namespace string,
 				Kind:      kind,
 				Level:     entry.Level,
 				Timestamp: entry.Timestamp,
+				Count:     int32(counter.Add(1) % counterMax),
 				Message:   entry.Message,
 			}
 
@@ -517,6 +524,7 @@ func Pull(db *database.Database, instId, deplyId primitive.ObjectID,
 				Kind:      kind,
 				Level:     entry.Level,
 				Timestamp: entry.Timestamp,
+				Count:     int32(counter.Add(1) % counterMax),
 				Message:   entry.Message,
 			}
 
