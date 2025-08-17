@@ -28,7 +28,7 @@ func GetOutput(c context.Context, db *database.Database,
 			Limit: &limit,
 			Sort: &bson.D{
 				{"t", -1},
-				{"_id", -1},
+				{"c", -1},
 			},
 		},
 	)
