@@ -3,6 +3,7 @@ pritunl-cloud changelog
 
 <%= version %>
 
+Add imds service
 Add secrets storage
 Add LVM storage pools
 Add DNS TXT verification for Lets Encrypt
