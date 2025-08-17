@@ -11,8 +11,8 @@ import (
 type Journal struct {
 	Id        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Resource  primitive.ObjectID `bson:"r" json:"r"`
-	Kind      int                `bson:"k" json:"k"`
-	Level     int                `bson:"l" json:"l"`
+	Kind      int32              `bson:"k" json:"k"`
+	Level     int32              `bson:"l" json:"l"`
 	Timestamp time.Time          `bson:"t" json:"t"`
 	Message   string             `bson:"m" json:"m"`
 	Fields    map[string]string  `bson:"f,omitempty" json:"f"`
