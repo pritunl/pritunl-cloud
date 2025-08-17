@@ -14,6 +14,7 @@ type Journal struct {
 	Kind      int32              `bson:"k" json:"k"`
 	Level     int32              `bson:"l" json:"l"`
 	Timestamp time.Time          `bson:"t" json:"t"`
+	Count     int32              `bson:"c" json:"-"`
 	Message   string             `bson:"m" json:"m"`
 	Fields    map[string]string  `bson:"f,omitempty" json:"f"`
 }
