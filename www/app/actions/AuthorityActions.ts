@@ -12,6 +12,7 @@ import * as MiscUtils from '../utils/MiscUtils';
 import * as Constants from "../Constants";
 
 let syncId: string;
+let syncNamesId: string;
 
 export function sync(noLoading?: boolean): Promise<void> {
 	let curSyncId = MiscUtils.uuid();
@@ -60,6 +61,52 @@ export function sync(noLoading?: boolean): Promise<void> {
 					data: {
 						authorities: res.body.authorities,
 						count: res.body.count,
+					},
+				});
+
+				resolve();
+			});
+	});
+}
+
+export function syncNames(): Promise<void> {
+	let curSyncId = MiscUtils.uuid();
+	syncNamesId = curSyncId;
+
+	let loader = new Loader().loading();
+
+	return new Promise<void>((resolve, reject): void => {
+		SuperAgent
+			.get('/authority')
+			.query({
+				names: true,
+			})
+			.set('Accept', 'application/json')
+			.set('Csrf-Token', Csrf.token)
+			.end((err: any, res: SuperAgent.Response): void => {
+				loader.done();
+
+				if (res && res.status === 401) {
+					window.location.href = '/login';
+					resolve();
+					return;
+				}
+
+				if (curSyncId !== syncNamesId) {
+					resolve();
+					return;
+				}
+
+				if (err) {
+					Alert.errorRes(res, 'Failed to load authority names');
+					reject(err);
+					return;
+				}
+
+				Dispatcher.dispatch({
+					type: AuthorityTypes.SYNC_NAMES,
+					data: {
+						authorities: res.body,
 					},
 				});
 
