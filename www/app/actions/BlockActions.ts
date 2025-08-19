@@ -51,7 +51,7 @@ export function sync(): Promise<void> {
 				Dispatcher.dispatch({
 					type: BlockTypes.SYNC,
 					data: {
-						blocks: res.body,
+						blocks: res.body.blocks,
 						count: res.body.count,
 					},
 				});
