@@ -8,8 +8,7 @@ import Loader from '../Loader';
 import * as CertificateTypes from '../types/CertificateTypes';
 import CertificatesStore from '../stores/CertificatesStore';
 import * as MiscUtils from '../utils/MiscUtils';
-import * as Constants from "../Constants";
-import OrganizationsStore from "../stores/OrganizationsStore";
+import CompletionStore from "../stores/CompletionStore";
 
 let syncId: string;
 
@@ -29,7 +28,7 @@ export function sync(): Promise<void> {
 			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
-			.set('Organization', OrganizationsStore.current)
+			.set('Organization', CompletionStore.userOrganization)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -53,7 +52,7 @@ export function sync(): Promise<void> {
 				Dispatcher.dispatch({
 					type: CertificateTypes.SYNC,
 					data: {
-						certificates: res.body,
+						certificates: res.body.certificates,
 						count: res.body.count,
 					},
 				});
@@ -92,7 +91,7 @@ export function commit(cert: CertificateTypes.Certificate): Promise<void> {
 			.send(cert)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
-			.set('Organization', OrganizationsStore.current)
+			.set('Organization', CompletionStore.userOrganization)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -122,7 +121,7 @@ export function create(cert: CertificateTypes.Certificate): Promise<void> {
 			.send(cert)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
-			.set('Organization', OrganizationsStore.current)
+			.set('Organization', CompletionStore.userOrganization)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -151,7 +150,7 @@ export function remove(certId: string): Promise<void> {
 			.delete('/certificate/' + certId)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
-			.set('Organization', OrganizationsStore.current)
+			.set('Organization', CompletionStore.userOrganization)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
