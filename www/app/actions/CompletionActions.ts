@@ -6,6 +6,7 @@ import EventDispatcher from '../dispatcher/EventDispatcher';
 import * as Alert from '../Alert';
 import * as Csrf from '../Csrf';
 import Loader from '../Loader';
+import * as GlobalTypes from '../types/GlobalTypes';
 import * as CompletionTypes from '../types/CompletionTypes';
 import CompletionStore from '../stores/CompletionStore';
 import * as MiscUtils from '../utils/MiscUtils';
@@ -64,6 +65,21 @@ export function filter(filt: CompletionTypes.Filter): Promise<void> {
 	});
 
 	return sync();
+}
+
+export function setUserOrganization(userOrg: string): void {
+	Dispatcher.dispatch({
+		type: GlobalTypes.RESET,
+		data: {
+			organization: userOrg,
+		},
+	});
+	Dispatcher.dispatch({
+		type: GlobalTypes.RELOAD,
+		data: {
+			organization: userOrg,
+		},
+	});
 }
 
 EventDispatcher.register((action: CompletionTypes.CompletionDispatch) => {
