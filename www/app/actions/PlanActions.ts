@@ -7,7 +7,7 @@ import * as Csrf from '../Csrf';
 import Loader from '../Loader';
 import * as PlanTypes from '../types/PlanTypes';
 import PlansStore from '../stores/PlansStore';
-import OrganizationsStore from '../stores/OrganizationsStore';
+import CompletionStore from "../stores/CompletionStore";
 import * as MiscUtils from '../utils/MiscUtils';
 
 let syncId: string;
@@ -32,7 +32,7 @@ export function sync(noLoading?: boolean): Promise<void> {
 			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
-			.set('Organization', OrganizationsStore.current)
+			.set('Organization', CompletionStore.userOrganization)
 			.end((err: any, res: SuperAgent.Response): void => {
 				if (loader) {
 					loader.done();
@@ -82,7 +82,7 @@ export function syncName(): Promise<void> {
 			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
-			.set('Organization', OrganizationsStore.current)
+			.set('Organization', CompletionStore.userOrganization)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -146,7 +146,7 @@ export function commit(plan: PlanTypes.Plan): Promise<void> {
 			.send(plan)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
-			.set('Organization', OrganizationsStore.current)
+			.set('Organization', CompletionStore.userOrganization)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -176,7 +176,7 @@ export function create(plan: PlanTypes.Plan): Promise<void> {
 			.send(plan)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
-			.set('Organization', OrganizationsStore.current)
+			.set('Organization', CompletionStore.userOrganization)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -205,7 +205,7 @@ export function remove(planId: string): Promise<void> {
 			.delete('/plan/' + planId)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
-			.set('Organization', OrganizationsStore.current)
+			.set('Organization', CompletionStore.userOrganization)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -235,7 +235,7 @@ export function removeMulti(planIds: string[]): Promise<void> {
 			.send(planIds)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
-			.set('Organization', OrganizationsStore.current)
+			.set('Organization', CompletionStore.userOrganization)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
