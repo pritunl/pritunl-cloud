@@ -397,7 +397,7 @@ export function updateMultiUnitAction(podId: string, unitId: string,
 				}
 
 				if (err) {
-					Alert.errorRes(res, 'Failed to delete deployments');
+					Alert.errorRes(res, 'Failed to modify deployments');
 					reject(err);
 					return;
 				}
