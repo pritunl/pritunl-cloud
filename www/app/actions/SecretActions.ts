@@ -53,7 +53,7 @@ export function sync(): Promise<void> {
 				Dispatcher.dispatch({
 					type: SecretTypes.SYNC,
 					data: {
-						secrets: res.body,
+						secrets: res.body.secrets,
 						count: res.body.count,
 					},
 				});
