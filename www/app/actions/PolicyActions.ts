@@ -51,7 +51,7 @@ export function sync(): Promise<void> {
 				Dispatcher.dispatch({
 					type: PolicyTypes.SYNC,
 					data: {
-						policies: res.body,
+						policies: res.body.policies,
 						count: res.body.count,
 					},
 				});
