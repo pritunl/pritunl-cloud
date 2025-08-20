@@ -7,7 +7,7 @@ import * as Csrf from '../Csrf';
 import Loader from '../Loader';
 import * as InstanceTypes from '../types/InstanceTypes';
 import InstancesStore from '../stores/InstancesStore';
-import OrganizationsStore from '../stores/OrganizationsStore';
+import CompletionStore from "../stores/CompletionStore";
 import * as MiscUtils from '../utils/MiscUtils';
 
 let syncId: string;
@@ -31,7 +31,7 @@ export function sync(noLoading?: boolean): Promise<void> {
 			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
-			.set('Organization', OrganizationsStore.current)
+			.set('Organization', CompletionStore.userOrganization)
 			.end((err: any, res: SuperAgent.Response): void => {
 				if (loader) {
 					loader.done();
@@ -98,7 +98,7 @@ export function commit(instance: InstanceTypes.Instance): Promise<void> {
 			.send(instance)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
-			.set('Organization', OrganizationsStore.current)
+			.set('Organization', CompletionStore.userOrganization)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -128,7 +128,7 @@ export function create(instance: InstanceTypes.Instance): Promise<void> {
 			.send(instance)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
-			.set('Organization', OrganizationsStore.current)
+			.set('Organization', CompletionStore.userOrganization)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -157,7 +157,7 @@ export function remove(instanceId: string): Promise<void> {
 			.delete('/instance/' + instanceId)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
-			.set('Organization', OrganizationsStore.current)
+			.set('Organization', CompletionStore.userOrganization)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -187,7 +187,7 @@ export function removeMulti(instanceIds: string[]): Promise<void> {
 			.send(instanceIds)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
-			.set('Organization', OrganizationsStore.current)
+			.set('Organization', CompletionStore.userOrganization)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -220,7 +220,7 @@ export function forceRemoveMulti(instanceIds: string[]): Promise<void> {
 			.send(instanceIds)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
-			.set('Organization', OrganizationsStore.current)
+			.set('Organization', CompletionStore.userOrganization)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -254,7 +254,7 @@ export function updateMulti(instanceIds: string[],
 			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
-			.set('Organization', OrganizationsStore.current)
+			.set('Organization', CompletionStore.userOrganization)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -305,7 +305,7 @@ export function syncNode(node: string, pool: string): Promise<void> {
 			.query(query)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
-			.set('Organization', OrganizationsStore.current)
+			.set('Organization', CompletionStore.userOrganization)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
