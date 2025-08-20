@@ -8,8 +8,7 @@ import Loader from '../Loader';
 import * as SecretTypes from '../types/SecretTypes';
 import SecretsStore from '../stores/SecretsStore';
 import * as MiscUtils from '../utils/MiscUtils';
-import * as Constants from "../Constants";
-import OrganizationsStore from "../stores/OrganizationsStore";
+import CompletionStore from "../stores/CompletionStore";
 
 let syncId: string;
 let syncNamesId: string;
@@ -30,7 +29,7 @@ export function sync(): Promise<void> {
 			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
-			.set('Organization', OrganizationsStore.current)
+			.set('Organization', CompletionStore.userOrganization)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -139,7 +138,7 @@ export function commit(secr: SecretTypes.Secret): Promise<void> {
 			.send(secr)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
-			.set('Organization', OrganizationsStore.current)
+			.set('Organization', CompletionStore.userOrganization)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -169,7 +168,7 @@ export function create(secr: SecretTypes.Secret): Promise<void> {
 			.send(secr)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
-			.set('Organization', OrganizationsStore.current)
+			.set('Organization', CompletionStore.userOrganization)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -198,7 +197,7 @@ export function remove(secrId: string): Promise<void> {
 			.delete('/secret/' + secrId)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
-			.set('Organization', OrganizationsStore.current)
+			.set('Organization', CompletionStore.userOrganization)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
