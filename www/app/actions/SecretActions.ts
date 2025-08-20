@@ -12,6 +12,7 @@ import * as Constants from "../Constants";
 import OrganizationsStore from "../stores/OrganizationsStore";
 
 let syncId: string;
+let syncNamesId: string;
 
 export function sync(): Promise<void> {
 	let curSyncId = MiscUtils.uuid();
@@ -55,6 +56,52 @@ export function sync(): Promise<void> {
 					data: {
 						secrets: res.body,
 						count: res.body.count,
+					},
+				});
+
+				resolve();
+			});
+	});
+}
+
+export function syncNames(): Promise<void> {
+	let curSyncId = MiscUtils.uuid();
+	syncNamesId = curSyncId;
+
+	let loader = new Loader().loading();
+
+	return new Promise<void>((resolve, reject): void => {
+		SuperAgent
+			.get('/secret')
+			.query({
+				names: true,
+			})
+			.set('Accept', 'application/json')
+			.set('Csrf-Token', Csrf.token)
+			.end((err: any, res: SuperAgent.Response): void => {
+				loader.done();
+
+				if (res && res.status === 401) {
+					window.location.href = '/login';
+					resolve();
+					return;
+				}
+
+				if (curSyncId !== syncNamesId) {
+					resolve();
+					return;
+				}
+
+				if (err) {
+					Alert.errorRes(res, 'Failed to load secret names');
+					reject(err);
+					return;
+				}
+
+				Dispatcher.dispatch({
+					type: SecretTypes.SYNC_NAMES,
+					data: {
+						secrets: res.body,
 					},
 				});
 
