@@ -7,7 +7,7 @@ import * as Csrf from '../Csrf';
 import Loader from '../Loader';
 import * as NodeTypes from '../types/NodeTypes';
 import NodesStore from '../stores/NodesStore';
-import OrganizationsStore from '../stores/OrganizationsStore';
+import CompletionStore from "../stores/CompletionStore";
 import * as MiscUtils from '../utils/MiscUtils';
 
 let syncId: string;
@@ -32,7 +32,7 @@ export function sync(noLoading?: boolean): Promise<void> {
 			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
-			.set('Organization', OrganizationsStore.current)
+			.set('Organization', CompletionStore.userOrganization)
 			.end((err: any, res: SuperAgent.Response): void => {
 				if (loader) {
 					loader.done();
@@ -93,7 +93,7 @@ export function syncZone(zone: string): Promise<void> {
 			})
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
-			.set('Organization', OrganizationsStore.current)
+			.set('Organization', CompletionStore.userOrganization)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -157,7 +157,7 @@ export function commit(node: NodeTypes.Node): Promise<void> {
 			.send(node)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
-			.set('Organization', OrganizationsStore.current)
+			.set('Organization', CompletionStore.userOrganization)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -186,7 +186,7 @@ export function operation(nodeId: string, operation: string): Promise<void> {
 			.put('/node/' + nodeId + '/' + operation)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
-			.set('Organization', OrganizationsStore.current)
+			.set('Organization', CompletionStore.userOrganization)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -217,7 +217,7 @@ export function init(nodeId: string,
 			.send(data)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
-			.set('Organization', OrganizationsStore.current)
+			.set('Organization', CompletionStore.userOrganization)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -247,7 +247,7 @@ export function create(node: NodeTypes.Node): Promise<void> {
 			.send(node)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
-			.set('Organization', OrganizationsStore.current)
+			.set('Organization', CompletionStore.userOrganization)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
@@ -276,7 +276,7 @@ export function remove(nodeId: string): Promise<void> {
 			.delete('/node/' + nodeId)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
-			.set('Organization', OrganizationsStore.current)
+			.set('Organization', CompletionStore.userOrganization)
 			.end((err: any, res: SuperAgent.Response): void => {
 				loader.done();
 
