@@ -207,9 +207,9 @@ export const Selectors: Record<string, Record<string, SelectorInfo>> = {
 			label: "Processors",
 			tooltip: "Number of allocated CPU cores"
 		},
-		"network_roles": {
-			label: "Network Roles",
-			tooltip: "Network access roles assigned to the instance"
+		"roles": {
+			label: "Roles",
+			tooltip: "Access roles assigned to the instance"
 		},
 		"vnc": {
 			label: "VNC",
