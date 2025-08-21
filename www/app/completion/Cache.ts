@@ -295,6 +295,14 @@ class CompletionCache extends EventEmitter {
 		})
 		resourceList = []
 		for (let item of (resources.images ||[])) {
+			let tags: Tag[] = []
+			for (let tag of (item.tags || [])) {
+				tags.push({
+					name: tag,
+					label: tag,
+				})
+			}
+
 			resourceList.push({
 				id: item.id,
 				name: item.name,
@@ -304,6 +312,7 @@ class CompletionCache extends EventEmitter {
 						value: item.name,
 					},
 				],
+				tags: tags,
 			})
 		}
 		this._resources["image"] = resourceList
