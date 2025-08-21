@@ -53,7 +53,7 @@ export function sync(): Promise<void> {
 				Dispatcher.dispatch({
 					type: ZoneTypes.SYNC,
 					data: {
-						zones: res.body,
+						zones: res.body.zones,
 						count: res.body.count,
 					},
 				});
