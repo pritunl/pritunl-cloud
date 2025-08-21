@@ -178,9 +178,22 @@ export function handleBeforeMount(
 							items: {
 								type: "object",
 								properties: {
+									name: {
+										type: "string",
+										description: "Mount name",
+									},
+									type: {
+										type: "string",
+										enum: ["host_path", "disk"],
+										description: "Mount type",
+									},
 									path: {
 										type: "string",
 										description: "Mount path",
+									},
+									hostPath: {
+										type: "string",
+										description: "Host mount path",
 									},
 									disks: {
 										type: "array",
@@ -190,7 +203,7 @@ export function handleBeforeMount(
 										description: "List of disk identifiers",
 									},
 								},
-								required: ["path", "disks"],
+								required: ["path"],
 								description: "Disk mount configuration",
 							},
 							description: "Disk mounts",
