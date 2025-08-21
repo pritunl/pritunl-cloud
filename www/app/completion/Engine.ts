@@ -562,16 +562,17 @@ export function handleAfterMount(
 
 				let suggestions: Monaco.languages.CompletionItem[] = []
 
-				for (const resource of (CompletionCache.resources(kind.name))) {
+				CompletionCache.resources(kind.name).forEach((resource, index) => {
 					suggestions.push({
-						label: resource.name,
+						label: resource.label || resource.name,
 						kind: CompletionItemKind.Property,
 						insertText: resource.name,
 						insertTextRules: CompletionItemInsertTextRule.InsertAsSnippet,
 						documentation: kind.title,
 						range: range,
+						sortText: index.toString().padStart(3, "0"),
 					})
-				}
+				})
 
 				return {
 					suggestions: suggestions,
