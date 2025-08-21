@@ -149,6 +149,10 @@ export function handleBeforeMount(
 							type: "boolean",
 							description: "Skip source/destination check",
 						},
+						gui: {
+							type: "boolean",
+							description: "Desktop GUI",
+						},
 						hostAddress: {
 							type: "boolean",
 							description: "Allocate host address",
