@@ -19,6 +19,7 @@ export interface Resources {
 	organizations: OrganizationTypes.OrganizationsRo;
 	domains: DomainTypes.DomainsRo;
 	vpcs: VpcTypes.VpcsRo;
+	subnets: VpcTypes.Subnet[];
 	datacenters: DatacenterTypes.DatacentersRo;
 	nodes: NodeTypes.NodesRo;
 	pools: PoolTypes.PoolsRo;
