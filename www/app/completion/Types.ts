@@ -82,13 +82,13 @@ export const Selectors: Record<string, Record<string, SelectorInfo>> = {
 			label: "Subnet",
 			tooltip: "Subnet within the VPC where the instance resides"
 		},
-		"oracle_subnet": {
-			label: "Oracle Subnet",
-			tooltip: "Oracle Cloud subnet configuration"
+		"cloud_subnet": {
+			label: "Cloud Subnet",
+			tooltip: "Cloud Cloud subnet configuration"
 		},
-		"oracle_vnic": {
-			label: "Oracle VNIC",
-			tooltip: "Oracle Virtual Network Interface Card details"
+		"cloud_vnic": {
+			label: "Cloud VNIC",
+			tooltip: "Cloud virtual network interface"
 		},
 		"image": {
 			label: "Image",
@@ -154,13 +154,13 @@ export const Selectors: Record<string, Record<string, SelectorInfo>> = {
 			label: "Gateway IPv6",
 			tooltip: "IPv6 gateway addresses"
 		},
-		"oracle_private_ips": {
-			label: "Oracle Private IPs",
-			tooltip: "Oracle Cloud private IP addresses"
+		"cloud_private_ips": {
+			label: "Cloud Private IPs",
+			tooltip: "Cloud private IP addresses"
 		},
-		"oracle_public_ips": {
-			label: "Oracle Public IPs",
-			tooltip: "Oracle Cloud public IP addresses"
+		"cloud_public_ips": {
+			label: "Cloud Public IPs",
+			tooltip: "Cloud public IP addresses"
 		},
 		"host_ips": {
 			label: "Host IPs",
@@ -384,29 +384,29 @@ export const Selectors: Record<string, Record<string, SelectorInfo>> = {
 			label: "Unhealthy Private IPv6",
 			tooltip: "List of unhealthy private IPv6 addresses"
 		},
-		"oracle_private_ips": {
-			label: "Oracle Private IPs",
-			tooltip: "List of Oracle Cloud private IP addresses"
+		"cloud_private_ips": {
+			label: "Cloud Private IPs",
+			tooltip: "List of cloud private IP addresses"
 		},
-		"oracle_public_ips": {
-			label: "Oracle Public IPs",
-			tooltip: "List of Oracle Cloud public IP addresses"
+		"cloud_public_ips": {
+			label: "Cloud Public IPs",
+			tooltip: "List of cloud public IP addresses"
 		},
-		"healthy_oracle_public_ips": {
-			label: "Healthy Oracle Public IPs",
-			tooltip: "List of healthy Oracle Cloud public IP addresses"
+		"healthy_cloud_public_ips": {
+			label: "Healthy Cloud Public IPs",
+			tooltip: "List of healthy cloud public IP addresses"
 		},
-		"healthy_oracle_private_ips": {
-			label: "Healthy Oracle Private IPs",
-			tooltip: "List of healthy Oracle Cloud private IP addresses"
+		"healthy_cloud_private_ips": {
+			label: "Healthy Cloud Private IPs",
+			tooltip: "List of healthy cloud private IP addresses"
 		},
-		"unhealthy_oracle_public_ips": {
-			label: "Unhealthy Oracle Public IPs",
-			tooltip: "List of unhealthy Oracle Cloud public IP addresses"
+		"unhealthy_cloud_public_ips": {
+			label: "Unhealthy Cloud Public IPs",
+			tooltip: "List of unhealthy cloud public IP addresses"
 		},
-		"unhealthy_oracle_private_ips": {
-			label: "Unhealthy Oracle Private IPs",
-			tooltip: "List of unhealthy Oracle Cloud private IP addresses"
+		"unhealthy_cloud_private_ips": {
+			label: "Unhealthy Cloud Private IPs",
+			tooltip: "List of unhealthy cloud private IP addresses"
 		}
 	}
 };
