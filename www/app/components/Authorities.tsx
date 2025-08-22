@@ -3,9 +3,9 @@ import * as React from 'react';
 import * as AuthorityTypes from '../types/AuthorityTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import AuthoritiesStore from '../stores/AuthoritiesStore';
-import OrganizationsStore from '../stores/OrganizationsStore';
+import CompletionStore from '../stores/CompletionStore';
 import * as AuthorityActions from '../actions/AuthorityActions';
-import * as OrganizationActions from '../actions/OrganizationActions';
+import * as CompletionActions from '../actions/CompletionActions';
 import Authority from './Authority';
 import AuthorityNew from './AuthorityNew';
 import AuthoritiesFilter from './AuthoritiesFilter';
@@ -69,7 +69,7 @@ export default class Authorities extends React.Component<{}, State> {
 		this.state = {
 			authorities: AuthoritiesStore.authorities,
 			filter: AuthoritiesStore.filter,
-			organizations: OrganizationsStore.organizations,
+			organizations: CompletionStore.organizations,
 			selected: {},
 			opened: {},
 			newOpened: false,
@@ -88,14 +88,14 @@ export default class Authorities extends React.Component<{}, State> {
 
 	componentDidMount(): void {
 		AuthoritiesStore.addChangeListener(this.onChange);
-		OrganizationsStore.addChangeListener(this.onChange);
+		CompletionStore.addChangeListener(this.onChange);
 		AuthorityActions.sync();
-		OrganizationActions.sync();
+		CompletionActions.sync();
 	}
 
 	componentWillUnmount(): void {
 		AuthoritiesStore.removeChangeListener(this.onChange);
-		OrganizationsStore.removeChangeListener(this.onChange);
+		CompletionStore.removeChangeListener(this.onChange);
 	}
 
 	onChange = (): void => {
@@ -118,7 +118,7 @@ export default class Authorities extends React.Component<{}, State> {
 			...this.state,
 			authorities: authorities,
 			filter: AuthoritiesStore.filter,
-			organizations: OrganizationsStore.organizations,
+			organizations: CompletionStore.organizations,
 			selected: selected,
 			opened: opened,
 		});
