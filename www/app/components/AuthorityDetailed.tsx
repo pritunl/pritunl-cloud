@@ -413,12 +413,11 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
 			<div className="layout horizontal wrap">
 				<div style={css.group}>
 					<div
-						className="layout horizontal tab-close"
+						className="layout horizontal tab-close bp5-card-header"
 						style={css.buttons}
 						onClick={(evt): void => {
-							let target = evt.target as HTMLElement;
-
-							if (target.className.indexOf('tab-close') !== -1) {
+							if (evt.target instanceof HTMLElement &&
+									evt.target.className.indexOf('tab-close') !== -1) {
 								this.props.onClose();
 							}
 						}}
