@@ -407,7 +407,7 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
 
 		return <td
 			className="bp5-cell"
-			colSpan={5}
+			colSpan={3}
 			style={css.card}
 		>
 			<div className="layout horizontal wrap">
