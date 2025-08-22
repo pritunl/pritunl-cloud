@@ -2,7 +2,7 @@
 import * as React from 'react';
 import * as AuthorityTypes from '../types/AuthorityTypes';
 import * as OrganizationTypes from "../types/OrganizationTypes";
-import OrganizationsStore from '../stores/OrganizationsStore';
+import CompletionStore from '../stores/CompletionStore';
 import AuthorityDetailed from './AuthorityDetailed';
 
 interface Props {
@@ -115,7 +115,7 @@ export default class Authority extends React.Component<Props, {}> {
 
 		let orgName = '';
 		if (authority.organization) {
-			let org = OrganizationsStore.organization(authority.organization);
+			let org = CompletionStore.organization(authority.organization);
 			orgName = org ? org.name : authority.organization;
 		} else {
 			orgName = 'No Organization';
