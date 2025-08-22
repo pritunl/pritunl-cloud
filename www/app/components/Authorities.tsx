@@ -327,7 +327,7 @@ export default class Authorities extends React.Component<{}, State> {
 					{newAuthorityDom}
 					{authoritiesDom}
 					<tr className="bp5-card bp5-row" style={css.placeholder}>
-						<td colSpan={5} style={css.placeholder}/>
+						<td colSpan={3} style={css.placeholder}/>
 					</tr>
 				</div>
 			</div>
