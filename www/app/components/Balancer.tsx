@@ -5,8 +5,7 @@ import * as BalancerTypes from '../types/BalancerTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import * as CertificateTypes from '../types/CertificateTypes';
 import * as DatacenterTypes from '../types/DatacenterTypes';
-import OrganizationsStore from '../stores/OrganizationsStore';
-import DatacentersStore from '../stores/DatacentersStore';
+import CompletionStore from '../stores/CompletionStore';
 import BalancerDetailed from './BalancerDetailed';
 
 interface Props {
@@ -110,11 +109,11 @@ export default class Balancer extends React.Component<Props, {}> {
 
 		let orgName = '';
 		if (!MiscUtils.objectIdNil(balancer.organization)) {
-			let org = OrganizationsStore.organization(balancer.organization);
+			let org = CompletionStore.organization(balancer.organization);
 			orgName = org ? org.name : balancer.organization;
 		}
 
-		let datacenter = DatacentersStore.datacenter(
+		let datacenter = CompletionStore.datacenter(
 			this.props.balancer.datacenter);
 		let datacenterName = datacenter ? datacenter.name : null;
 
