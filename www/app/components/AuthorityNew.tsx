@@ -389,7 +389,7 @@ export default class AuthorityNew extends React.Component<Props, State> {
 							<option value="ssh_certificate">SSH Certificate</option>
 						</PageSelect>
 						<PageTextArea
-							hidden={authority.type !== 'ssh_key'}
+							hidden={authority.type !== 'ssh_key' && !!authority.type}
 							label="SSH Key"
 							help="SSH authorized public key in PEM format."
 							placeholder="Public key"
