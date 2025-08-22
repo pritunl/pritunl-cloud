@@ -8,7 +8,7 @@ import * as CertificateTypes from '../types/CertificateTypes';
 import * as DatacenterTypes from '../types/DatacenterTypes';
 import BalancerDomain from './BalancerDomain';
 import BalancerBackend from './BalancerBackend';
-import CertificatesStore from '../stores/CertificatesStore';
+import CompletionStore from '../stores/CompletionStore';
 import PageInput from './PageInput';
 import PageSelect from './PageSelect';
 import PageInfo from './PageInfo';
@@ -250,7 +250,7 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 		let certId = this.state.addCert;
 		if (!certId) {
 			for (let certificate of this.props.certificates) {
-				if (certificate.organization !== balancer.organization) {
+				if (certificate.organization != balancer.organization) {
 					continue;
 				}
 				certId = certificate.id;
@@ -522,7 +522,7 @@ export default class BalancerDetailed extends React.Component<Props, State> {
 
 		let certificates: JSX.Element[] = [];
 		for (let certId of (balancer.certificates || [])) {
-			let cert = CertificatesStore.certificate(certId);
+			let cert = CompletionStore.certificate(certId);
 			if (!cert) {
 				continue;
 			}
