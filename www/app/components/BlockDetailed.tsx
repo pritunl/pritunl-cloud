@@ -7,6 +7,7 @@ import PageInfo from './PageInfo';
 import PageSave from './PageSave';
 import PageInputButton from './PageInputButton';
 import ConfirmButton from './ConfirmButton';
+import Relations from './Relations';
 import * as Alert from "../Alert";
 import Help from './Help';
 import PageSelect from "./PageSelect";
@@ -512,6 +513,7 @@ export default class BlockDetailed extends React.Component<Props, State> {
 							</label>
 						</div>
 						<div className="flex tab-close"/>
+						<Relations kind="block" id={this.props.block.id}/>
 						<ConfirmButton
 							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
 							style={css.button}
