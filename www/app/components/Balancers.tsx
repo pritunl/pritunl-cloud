@@ -6,11 +6,9 @@ import * as CertificateTypes from '../types/CertificateTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import * as DatacenterTypes from '../types/DatacenterTypes';
 import BalancersStore from '../stores/BalancersStore';
-import OrganizationsStore from '../stores/OrganizationsStore';
-import DatacentersStore from '../stores/DatacentersStore';
+import CompletionStore from '../stores/CompletionStore';
 import * as BalancerActions from '../actions/BalancerActions';
-import * as OrganizationActions from '../actions/OrganizationActions';
-import * as DatacenterActions from '../actions/DatacenterActions';
+import * as CompletionActions from '../actions/CompletionActions';
 import Balancer from './Balancer';
 import BalancerNew from './BalancerNew';
 import BalancersPage from './BalancersPage';
@@ -80,9 +78,9 @@ export default class Balancers extends React.Component<{}, State> {
 		this.state = {
 			balancers: BalancersStore.balancers,
 			filter: BalancersStore.filter,
-			organizations: OrganizationsStore.organizations,
+			organizations: CompletionStore.organizations,
 			certificates: CertificatesStore.certificates,
-			datacenters: DatacentersStore.datacenters,
+			datacenters: CompletionStore.datacenters,
 			selected: {},
 			opened: {},
 			newOpened: false,
@@ -101,13 +99,9 @@ export default class Balancers extends React.Component<{}, State> {
 
 	componentDidMount(): void {
 		BalancersStore.addChangeListener(this.onChange);
-		OrganizationsStore.addChangeListener(this.onChange);
-		CertificatesStore.addChangeListener(this.onChange);
-		DatacentersStore.addChangeListener(this.onChange);
+		CompletionStore.addChangeListener(this.onChange);
 		BalancerActions.sync();
-		OrganizationActions.sync();
-		CertificateActions.sync();
-		DatacenterActions.sync();
+		CompletionActions.sync();
 
 		this.sync = new MiscUtils.SyncInterval(
 			() => BalancerActions.sync(true),
@@ -117,9 +111,7 @@ export default class Balancers extends React.Component<{}, State> {
 
 	componentWillUnmount(): void {
 		BalancersStore.removeChangeListener(this.onChange);
-		OrganizationsStore.removeChangeListener(this.onChange);
-		CertificatesStore.removeChangeListener(this.onChange);
-		DatacentersStore.removeChangeListener(this.onChange);
+		CompletionStore.removeChangeListener(this.onChange);
 
 		this.sync?.stop()
 	}
@@ -144,9 +136,9 @@ export default class Balancers extends React.Component<{}, State> {
 			...this.state,
 			balancers: balancers,
 			filter: BalancersStore.filter,
-			organizations: OrganizationsStore.organizations,
-			certificates: CertificatesStore.certificates,
-			datacenters: DatacentersStore.datacenters,
+			organizations: CompletionStore.organizations,
+			certificates: CompletionStore.certificates,
+			datacenters: CompletionStore.datacenters,
 			selected: selected,
 			opened: opened,
 		});
