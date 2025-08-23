@@ -221,7 +221,7 @@ export default class BalancerNew extends React.Component<Props, State> {
 		let certId = this.state.addCert;
 		if (!certId) {
 			for (let certificate of this.props.certificates) {
-				if (certificate.organization !== balancer.organization) {
+				if (certificate.organization != balancer.organization) {
 					continue;
 				}
 				certId = certificate.id;
@@ -466,7 +466,7 @@ export default class BalancerNew extends React.Component<Props, State> {
 		let certificatesSelect: JSX.Element[] = [];
 		if (this.props.certificates) {
 			for (let certificate of this.props.certificates) {
-				if (certificate.organization !== balancer.organization) {
+				if (certificate.organization != balancer.organization) {
 					continue;
 				}
 				hasCertificates = true;
