@@ -251,7 +251,7 @@ export default class CertificateDetailed extends React.Component<Props, State> {
 						continue;
 					}
 				} else {
-					if (cert.organization !== secret.organization) {
+					if (cert.organization != secret.organization) {
 						continue;
 					}
 				}
