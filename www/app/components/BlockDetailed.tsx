@@ -648,6 +648,14 @@ export default class BlockDetailed extends React.Component<Props, State> {
 								label: 'ID',
 								value: this.props.block.id || 'None',
 							},
+							{
+								label: 'Available',
+								value: this.props.block.available || '-',
+							},
+							{
+								label: 'Capacity',
+								value: this.props.block.capacity || '-',
+							},
 						]}
 					/>
 					<PageInput
