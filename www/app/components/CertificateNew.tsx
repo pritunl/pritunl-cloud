@@ -5,7 +5,7 @@ import * as OrganizationTypes from '../types/OrganizationTypes';
 import * as SecretTypes from '../types/SecretTypes';
 import * as CertificateActions from '../actions/CertificateActions';
 import * as MiscUtils from '../utils/MiscUtils';
-import OrganizationsStore from "../stores/OrganizationsStore";
+import CompletionStore from "../stores/CompletionStore";
 import CertificateDomain from './CertificateDomain';
 import PageInput from './PageInput';
 import PageSelect from './PageSelect';
@@ -247,7 +247,7 @@ export default class CertificateDetailed extends React.Component<Props, State> {
 
 			for (let secret of this.props.secrets) {
 				if (Constants.user) {
-					if (cert.organization !== OrganizationsStore.current) {
+					if (cert.organization !== CompletionStore.userOrganization) {
 						continue;
 					}
 				} else {
