@@ -235,7 +235,7 @@ func (d *Dhcpc) run6() (err error) {
 				break
 			}
 
-			ok, e := d.lease.Renew4()
+			ok, e := d.lease.Renew6()
 			if e != nil {
 				logger.WithFields(logger.Fields{
 					"interface6": d.DhcpIface6,
