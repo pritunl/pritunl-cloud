@@ -8,19 +8,21 @@ import (
 )
 
 type Lease struct {
-	Iface          string        `json:"iface"`
-	Iface6         string        `json:"iface6"`
-	Address        *net.IPNet    `json:"address"`
-	Gateway        net.IP        `json:"gateway"`
-	Address6       *net.IPNet    `json:"address6"`
-	ServerAddress  net.IP        `json:"server"`
-	ServerAddress6 net.IP        `json:"server6"`
-	LeaseTime      time.Duration `json:"ttl"`
-	LeaseTime6     time.Duration `json:"ttl6"`
-	TransactionId  string        `json:"-"`
-	TransactionId6 string        `json:"-"`
-	IaId6          [4]byte       `json:"-"`
-	ServerId6      dhcpv6.DUID   `json:"-"`
+	Iface              string        `json:"iface"`
+	Iface6             string        `json:"iface6"`
+	Address            *net.IPNet    `json:"address"`
+	Gateway            net.IP        `json:"gateway"`
+	Address6           *net.IPNet    `json:"address6"`
+	ServerAddress      net.IP        `json:"server"`
+	ServerAddress6     net.IP        `json:"server6"`
+	LeaseTime          time.Duration `json:"ttl"`
+	LeaseTime6         time.Duration `json:"ttl6"`
+	PreferredLifetime6 time.Duration `json:"-"`
+	ValidLifetime6     time.Duration `json:"-"`
+	TransactionId      string        `json:"-"`
+	TransactionId6     string        `json:"-"`
+	IaId6              [4]byte       `json:"-"`
+	ServerId6          dhcpv6.DUID   `json:"-"`
 }
 
 func (l *Lease) IfaceReady() (ready4, ready6 bool) {
