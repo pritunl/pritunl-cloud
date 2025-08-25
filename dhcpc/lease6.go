@@ -3,7 +3,6 @@ package dhcpc
 import (
 	"context"
 	"net"
-	"time"
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/insomniacslk/dhcp/dhcpv6"
@@ -49,9 +48,14 @@ func (l *Lease) Renew6() (ok bool, err error) {
 	}
 
 	iaAddr := &dhcpv6.OptIAAddress{
-		IPv6Addr:          l.Address6.IP,
-		PreferredLifetime: PreferredTtl,
-		ValidLifetime:     PreferredTtl,
+		IPv6Addr: l.Address6.IP,
+	}
+
+	if l.PreferredLifetime6 > 0 {
+		iaAddr.PreferredLifetime = l.PreferredLifetime6
+	}
+	if l.ValidLifetime6 > 0 {
+		iaAddr.ValidLifetime = l.ValidLifetime6
 	}
 
 	msg, err := dhcpv6.NewMessage()
