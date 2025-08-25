@@ -103,6 +103,8 @@ func (l *Lease) Renew6() (ok bool, err error) {
 		ok = true
 		l.Address6 = renewed.Address6
 		l.ServerAddress6 = renewed.ServerAddress6
+		l.PreferredLifetime6 = renewed.PreferredLifetime6
+		l.ValidLifetime6 = renewed.ValidLifetime6
 		l.LeaseTime6 = renewed.LeaseTime6
 		l.TransactionId6 = renewed.TransactionId6
 		l.ServerId6 = renewed.ServerId6
@@ -183,6 +185,8 @@ func (l *Lease) Exchange6() (ok bool, err error) {
 		ok = true
 		l.Address6 = lease.Address6
 		l.ServerAddress6 = lease.ServerAddress6
+		l.PreferredLifetime6 = lease.PreferredLifetime6
+		l.ValidLifetime6 = lease.ValidLifetime6
 		l.LeaseTime6 = lease.LeaseTime6
 		l.TransactionId6 = lease.TransactionId6
 		l.ServerId6 = lease.ServerId6
@@ -229,8 +233,9 @@ func extractDhcpv6Lease(reply *dhcpv6.Message, ifaceName string) *Lease {
 					IP:   addr.IPv6Addr,
 					Mask: net.CIDRMask(64, 128),
 				}
-				lease.LeaseTime6 = time.Duration(
-					addr.ValidLifetime) * time.Second
+				lease.PreferredLifetime6 = addr.PreferredLifetime
+				lease.ValidLifetime6 = addr.ValidLifetime
+				lease.LeaseTime6 = addr.ValidLifetime
 				break
 			}
 		}
