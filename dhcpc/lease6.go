@@ -89,7 +89,7 @@ func (l *Lease) Renew6() (ok bool, err error) {
 		ctx,
 		serverAddr,
 		msg,
-		nclient6.IsMessageType(dhcpv6.MessageTypeRenew),
+		nclient6.IsMessageType(dhcpv6.MessageTypeReply),
 	)
 	if err != nil {
 		err = &errortypes.RequestError{
