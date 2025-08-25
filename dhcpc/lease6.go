@@ -213,14 +213,24 @@ func extractDhcpv6Lease(reply *dhcpv6.Message, ifaceName string) *Lease {
 	}
 
 	// // Extract server address from relay message or use link-local
-	// reply.Options.RelayMessage
-	// if relayMsg := reply.GetOneOption(dhcpv6.OptionRelayMsg); relayMsg != nil {
+	// relayMsg := reply.GetOneOption(dhcpv6.OptionRelayMsg)
+	// if relayMsg != nil {
 	// 	// Server address might be in relay message
 	// 	if rm, ok := relayMsg.(*dhcpv6.OptRelayMessage); ok && rm.RelayMessage != nil {
 	// 		lease.ServerAddress = rm.RelayMessage.PeerAddr
 	// 	}
 	// }
 
+	// // Extract unicast server address from Option 12 if available
+	// unicastOpt := reply.GetOneOption(dhcpv6.OptionUnicast)
+	// if unicastOpt != nil {
+	// 	// Option 12 contains the server's unicast IPv6 address
+	// 	if unicastData := unicastOpt.ToBytes(); len(unicastData) >= 16 {
+	// 		lease.ServerAddress6 = net.IP(unicastData[:16])
+	// 	}
+	// }
+
+	// Fallback to multicast if unicast not available
 	if lease.ServerAddress6 == nil {
 		lease.ServerAddress6 = dhcpv6.AllDHCPRelayAgentsAndServers
 	}
