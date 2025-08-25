@@ -156,9 +156,7 @@ func (l *Lease) Exchange6() (ok bool, err error) {
 
 	if l.Address6 != nil && l.Address6.IP != nil {
 		iaAddr := &dhcpv6.OptIAAddress{
-			IPv6Addr:          l.Address6.IP,
-			PreferredLifetime: 3600,
-			ValidLifetime:     7200,
+			IPv6Addr: l.Address6.IP,
 		}
 		iaNa := &dhcpv6.OptIANA{
 			IaId: l.IaId6,
