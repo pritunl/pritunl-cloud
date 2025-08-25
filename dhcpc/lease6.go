@@ -69,7 +69,6 @@ func (l *Lease) Renew6() (ok bool, err error) {
 	msg.MessageType = dhcpv6.MessageTypeRenew
 	msg.AddOption(dhcpv6.OptClientID(&dhcpv6.DUIDLLT{
 		HWType:        iana.HWTypeEthernet,
-		Time:          dhcpv6.GetTime(),
 		LinkLayerAddr: iface.HardwareAddr,
 	}))
 	msg.AddOption(dhcpv6.OptServerID(l.ServerId6))
@@ -143,7 +142,6 @@ func (l *Lease) Exchange6() (ok bool, err error) {
 	modifiers := []dhcpv6.Modifier{
 		dhcpv6.WithClientID(&dhcpv6.DUIDLLT{
 			HWType:        iana.HWTypeEthernet,
-			Time:          dhcpv6.GetTime(),
 			LinkLayerAddr: iface.HardwareAddr,
 		}),
 		dhcpv6.WithRequestedOptions(
