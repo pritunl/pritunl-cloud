@@ -72,17 +72,23 @@ func (l *Lease) Renew6() (ok bool, err error) {
 		LinkLayerAddr: iface.HardwareAddr,
 	}))
 	msg.AddOption(dhcpv6.OptServerID(l.ServerId6))
-	msg.AddOption(&dhcpv6.OptIANA{
+	// msg.AddOption(&dhcpv6.OptFQDN{
+	// 	Flags: 0x01,
+	// 	DomainName: &rfc1035label.Labels{
+	// 		Labels: []string{"instance-name"},
+	// 	},
+	// })
+	// msg.AddOption(dhcpv6.OptRequestedOption(
+	// 	dhcpv6.OptionDNSRecursiveNameServer,
+	// 	dhcpv6.OptionDomainSearchList,
+	// ))
+	// msg.AddOption(dhcpv6.OptElapsedTime(0))
+	msg.UpdateOption(&dhcpv6.OptIANA{
 		IaId: l.IaId6,
 		Options: dhcpv6.IdentityOptions{
 			Options: []dhcpv6.Option{iaAddr},
 		},
 	})
-	// msg.AddOption(dhcpv6.OptRequestedOption(
-	// 	dhcpv6.OptionDNSRecursiveNameServer,
-	// 	dhcpv6.OptionDomainSearchList,
-	// ))
-	//msg.AddOption(dhcpv6.OptElapsedTime(0))
 
 	reply, err := client.SendAndRead(
 		ctx,
