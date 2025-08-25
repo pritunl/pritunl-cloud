@@ -154,7 +154,7 @@ func (l *Lease) Exchange6() (ok bool, err error) {
 			dhcpv6.OptionDNSRecursiveNameServer,
 			dhcpv6.OptionDomainSearchList,
 		),
-		dhcpv6.WithFQDN(0, ""),
+		//dhcpv6.WithFQDN(0x01, "instance-name"),
 		dhcpv6.WithIAID(l.IaId6),
 	}
 
