@@ -27,7 +27,8 @@ func (l *Lease) Renew6() (ok bool, err error) {
 		return
 	}
 
-	client, err := nclient6.New(l.Iface,
+	client, err := nclient6.New(
+		l.Iface,
 		nclient6.WithTimeout(DhcpTimeout),
 		nclient6.WithRetry(DhcpRetries),
 	)
