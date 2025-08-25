@@ -14,7 +14,7 @@ type Lease struct {
 	Gateway        net.IP        `json:"gateway"`
 	Address6       *net.IPNet    `json:"address6"`
 	ServerAddress  net.IP        `json:"server"`
-	ServerAddress6 net.IP        `json:"server"`
+	ServerAddress6 net.IP        `json:"server6"`
 	LeaseTime      time.Duration `json:"ttl"`
 	LeaseTime6     time.Duration `json:"ttl6"`
 	TransactionId  string        `json:"-"`
