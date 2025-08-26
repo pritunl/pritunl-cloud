@@ -5,7 +5,8 @@ import (
 )
 
 const (
-	MaxMessageSize = 1500
-	DhcpTimeout    = 10 * time.Second
-	DhcpRetries    = 3
+	MaxMessageSize  = 1500
+	DefaultInterval = 60 * time.Second
+	DhcpTimeout     = 10 * time.Second
+	DhcpRetries     = 3
 )
