@@ -329,6 +329,7 @@ func Main() (err error) {
 	dhcpIface6 := os.Getenv("DHCP_IFACE6")
 	dhcpIp := os.Getenv("DHCP_IP")
 	dhcpIp6 := os.Getenv("DHCP_IP6")
+	internval := os.Getenv("DHCP_INTERVAL")
 	os.Unsetenv("IMDS_ADDRESS")
 	os.Unsetenv("IMDS_PORT")
 	os.Unsetenv("IMDS_SECRET")
@@ -336,6 +337,7 @@ func Main() (err error) {
 	os.Unsetenv("DHCP_IFACE6")
 	os.Unsetenv("DHCP_IP")
 	os.Unsetenv("DHCP_IP6")
+	os.Unsetenv("DHCP_INTERVAL")
 
 	logger.Init(
 		logger.SetTimeFormat(""),
@@ -357,6 +359,7 @@ func Main() (err error) {
 	flag.Parse()
 
 	imdsPortInt, _ := strconv.Atoi(imdsPort)
+	internvalInt, _ := strconv.Atoi(internval)
 
 	client := &Dhcpc{
 		ImdsAddress: strings.Split(imdsAddress, "/")[0],
@@ -365,6 +368,12 @@ func Main() (err error) {
 		DhcpIface:   dhcpIface,
 		DhcpIface6:  dhcpIface6,
 		syncTrigger: make(chan struct{}, 1),
+	}
+
+	if internvalInt != 0 {
+		client.Interval = time.Duration(internvalInt) * time.Second
+	} else {
+		client.Interval = DefaultInterval
 	}
 
 	if dhcpIp != "" {
