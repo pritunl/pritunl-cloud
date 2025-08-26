@@ -143,7 +143,7 @@ func (l *Lease) Exchange6() (ok bool, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), DhcpTimeout)
 	defer cancel()
 
-	l.IaId6 = [4]byte{0, 0, byte(iface.Index >> 8), byte(iface.Index)}
+	l.IaId6 = [4]byte{0, 0, 0, 1}
 
 	modifiers := []dhcpv6.Modifier{
 		dhcpv6.WithClientID(&dhcpv6.DUIDLLT{
