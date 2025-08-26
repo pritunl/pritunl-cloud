@@ -14,6 +14,7 @@ import (
 )
 
 type Dhcpc struct {
+	Interval    time.Duration
 	ImdsAddress string
 	ImdsPort    int
 	ImdsSecret  string
@@ -124,7 +125,7 @@ func (d *Dhcpc) run4() (err error) {
 		}
 
 		for {
-			time.Sleep(60 * time.Second)
+			time.Sleep(d.Interval)
 
 			ready4, _ := d.lease.IfaceReady()
 			if !ready4 {
@@ -224,7 +225,7 @@ func (d *Dhcpc) run6() (err error) {
 		}
 
 		for {
-			time.Sleep(60 * time.Second)
+			time.Sleep(d.Interval)
 
 			_, ready6 := d.lease.IfaceReady()
 			if !ready6 {
