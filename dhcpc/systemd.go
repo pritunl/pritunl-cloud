@@ -32,6 +32,7 @@ Environment="DHCP_IFACE=%s"
 Environment="DHCP_IFACE6=%s"
 Environment="DHCP_IP=%s"
 Environment="DHCP_IP6=%s"
+Environment="DHCP_INTERVAL=%d"
 ExecStart=/usr/bin/pritunl-cloud %s dhcp-client
 TimeoutStopSec=5
 Restart=always
@@ -59,6 +60,7 @@ Environment="DHCP_IFACE=%s"
 Environment="DHCP_IFACE6=%s"
 Environment="DHCP_IP=%s"
 Environment="DHCP_IP6=%s"
+Environment="DHCP_INTERVAL=%d"
 ExecStart=/usr/sbin/ip netns exec %s /usr/bin/pritunl-cloud %s dhcp-client
 TimeoutStopSec=5
 Restart=always
@@ -111,6 +113,7 @@ func WriteService(vmId primitive.ObjectID,
 			dhcpIface6,
 			dhcpIp,
 			dhcpIp6,
+			settings.Hypervisor.DhcpRenewTtl,
 			strings.Join(args, " "),
 			namespace,
 		)
@@ -124,6 +127,7 @@ func WriteService(vmId primitive.ObjectID,
 			dhcpIface6,
 			dhcpIp,
 			dhcpIp6,
+			settings.Hypervisor.DhcpRenewTtl,
 			strings.Join(args, " "),
 			namespace,
 		)
