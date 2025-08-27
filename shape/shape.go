@@ -57,7 +57,8 @@ func (s *Shape) Validate(db *database.Database) (
 	}
 
 	switch s.DiskType {
-	case Qcow2:
+	case "", Qcow2:
+		s.DiskType = Qcow2
 		break
 	case Lvm:
 		break
