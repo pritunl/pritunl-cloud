@@ -270,6 +270,7 @@ export default class ConfirmButton extends React.Component<Props, State> {
 						key="menu-new-unit"
 						className={className}
 						disabled={this.props.disabled}
+						hidden={this.props.hidden}
 						onClick={(evt): void => {
 							evt.preventDefault()
 							evt.stopPropagation()
