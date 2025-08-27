@@ -9,10 +9,8 @@ import CertificatesFilter from './CertificatesFilter';
 import CertificatesPage from './CertificatesPage';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import * as SecretTypes from '../types/SecretTypes';
-import OrganizationsStore from '../stores/OrganizationsStore';
-import SecretsStore from '../stores/SecretsStore';
-import * as OrganizationActions from '../actions/OrganizationActions';
-import * as SecretActions from '../actions/SecretActions';
+import CompletionStore from '../stores/CompletionStore';
+import * as CompletionActions from '../actions/CompletionActions';
 import Page from './Page';
 import PageHeader from './PageHeader';
 import NonState from './NonState';
@@ -72,8 +70,8 @@ export default class Certificates extends React.Component<{}, State> {
 		super(props, context);
 		this.state = {
 			certificates: CertificatesStore.certificates,
-			organizations: OrganizationsStore.organizations,
-			secrets: SecretsStore.secrets,
+			organizations: CompletionStore.organizations,
+			secrets: CompletionStore.secrets,
 			filter: CertificatesStore.filter,
 			selected: {},
 			opened: {},
@@ -93,17 +91,14 @@ export default class Certificates extends React.Component<{}, State> {
 
 	componentDidMount(): void {
 		CertificatesStore.addChangeListener(this.onChange);
-		OrganizationsStore.addChangeListener(this.onChange);
-		SecretsStore.addChangeListener(this.onChange);
+		CompletionStore.addChangeListener(this.onChange);
 		CertificateActions.sync();
-		OrganizationActions.sync();
-		SecretActions.sync();
+		CompletionActions.sync();
 	}
 
 	componentWillUnmount(): void {
 		CertificatesStore.removeChangeListener(this.onChange);
-		OrganizationsStore.removeChangeListener(this.onChange);
-		SecretsStore.removeChangeListener(this.onChange);
+		CompletionStore.removeChangeListener(this.onChange);
 	}
 
 	onChange = (): void => {
@@ -125,8 +120,8 @@ export default class Certificates extends React.Component<{}, State> {
 		this.setState({
 			...this.state,
 			certificates: CertificatesStore.certificates,
-			organizations: OrganizationsStore.organizations,
-			secrets: SecretsStore.secrets,
+			organizations: CompletionStore.organizations,
+			secrets: CompletionStore.secrets,
 			filter: CertificatesStore.filter,
 			selected: selected,
 			opened: opened,
