@@ -401,7 +401,7 @@ export default class CertificateDetailed extends React.Component<Props, State> {
 								this.set('acme_type', val);
 							}}
 						>
-							<option value="acme_http" hidden={Constants.user}>HTTP</option>
+							{Constants.user ? null : <option value="acme_http">HTTP</option>}
 							<option value="acme_dns">DNS TXT</option>
 						</PageSelect>
 						<PageSelect
