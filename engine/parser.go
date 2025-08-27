@@ -36,6 +36,8 @@ func Parse(data string) (blocks []*Block, err error) {
 				phase := Initial
 				if attrs != nil {
 					switch attrs["phase"] {
+					case Initial:
+						phase = Initial
 					case Reboot:
 						phase = Reboot
 					case Reload:
