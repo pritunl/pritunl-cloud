@@ -545,7 +545,7 @@ export default class DatacenterDetailed extends React.Component<Props, State> {
 					<PageSelect
 						disabled={this.state.disabled}
 						label="Private Storage"
-						help="Private storage that will store instance snapshots."
+						help="Private storage that will store instance snapshots and pod images."
 						value={datacenter.private_storage}
 						onChange={(val): void => {
 							this.set('private_storage', val);
