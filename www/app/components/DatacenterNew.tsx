@@ -4,8 +4,7 @@ import * as DatacenterTypes from '../types/DatacenterTypes';
 import * as StorageTypes from '../types/StorageTypes';
 import * as DatacenterActions from '../actions/DatacenterActions';
 import * as OrganizationTypes from "../types/OrganizationTypes";
-import StoragesStore from '../stores/StoragesStore';
-import OrganizationsStore from '../stores/OrganizationsStore';
+import CompletionStore from '../stores/CompletionStore';
 import PageInput from './PageInput';
 import PageInfo from './PageInfo';
 import PageSelect from './PageSelect';
@@ -304,7 +303,7 @@ export default class DatacenterDetailed extends React.Component<Props, State> {
 
 		let organizations: JSX.Element[] = [];
 		for (let organizationId of (datacenter.organizations || [])) {
-			let organization = OrganizationsStore.organization(organizationId);
+			let organization = CompletionStore.organization(organizationId);
 			if (!organization) {
 				continue;
 			}
@@ -342,7 +341,7 @@ export default class DatacenterDetailed extends React.Component<Props, State> {
 
 		let publicStorages: JSX.Element[] = [];
 		for (let storageId of (datacenter.public_storages || [])) {
-			let storage = StoragesStore.storage(storageId);
+			let storage = CompletionStore.storage(storageId);
 			if (!storage) {
 				continue;
 			}
