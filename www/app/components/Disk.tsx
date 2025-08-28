@@ -3,7 +3,7 @@ import * as React from 'react';
 import * as MiscUtils from '../utils/MiscUtils';
 import * as DiskTypes from '../types/DiskTypes';
 import * as OrganizationTypes from "../types/OrganizationTypes";
-import OrganizationsStore from '../stores/OrganizationsStore';
+import CompletionStore from '../stores/CompletionStore';
 import DiskDetailed from './DiskDetailed';
 import NodesStore from "../stores/NodesStore";
 import * as PoolTypes from "../types/PoolTypes";
@@ -103,7 +103,7 @@ export default class Disk extends React.Component<Props, {}> {
 
 		let orgName = '';
 		if (disk.organization) {
-			let org = OrganizationsStore.organization(disk.organization);
+			let org = CompletionStore.organization(disk.organization);
 			orgName = org ? org.name : disk.organization;
 		} else {
 			orgName = 'Unknown Organization';
