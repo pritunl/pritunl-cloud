@@ -12,6 +12,7 @@ import PageSelectButton from './PageSelectButton';
 import PageSwitch from './PageSwitch';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
+import Relations from './Relations';
 import Help from './Help';
 import PageTextArea from "./PageTextArea";
 
@@ -493,6 +494,7 @@ export default class DatacenterDetailed extends React.Component<Props, State> {
 							</label>
 						</div>
 						<div className="flex tab-close"/>
+						<Relations kind="datacenter" id={this.props.datacenter.id}/>
 						<ConfirmButton
 							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
 							style={css.button}
