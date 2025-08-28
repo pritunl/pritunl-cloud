@@ -4,11 +4,9 @@ import * as DatacenterTypes from '../types/DatacenterTypes';
 import * as OrganizationTypes from "../types/OrganizationTypes";
 import * as StorageTypes from '../types/StorageTypes';
 import DatacentersStore from '../stores/DatacentersStore';
-import StoragesStore from '../stores/StoragesStore';
-import OrganizationsStore from "../stores/OrganizationsStore";
+import CompletionStore from '../stores/CompletionStore';
 import * as DatacenterActions from '../actions/DatacenterActions';
-import * as StorageActions from '../actions/StorageActions';
-import * as OrganizationActions from '../actions/OrganizationActions';
+import * as CompletionActions from '../actions/CompletionActions';
 import Datacenter from './Datacenter';
 import DatacenterNew from './DatacenterNew';
 import DatacentersFilter from './DatacentersFilter';
@@ -72,9 +70,9 @@ export default class Datacenters extends React.Component<{}, State> {
 		super(props, context);
 		this.state = {
 			datacenters: DatacentersStore.datacenters,
-			storages: StoragesStore.storages,
-			organizations: OrganizationsStore.organizations,
-			filter: DatacentersStore.filter,
+			storages: CompletionStore.storages,
+			organizations: CompletionStore.organizations,
+			filter: CompletionStore.filter,
 			selected: {},
 			opened: {},
 			newOpened: false,
@@ -93,17 +91,14 @@ export default class Datacenters extends React.Component<{}, State> {
 
 	componentDidMount(): void {
 		DatacentersStore.addChangeListener(this.onChange);
-		StoragesStore.addChangeListener(this.onChange);
-		OrganizationsStore.addChangeListener(this.onChange);
+		CompletionStore.addChangeListener(this.onChange);
 		DatacenterActions.sync();
-		StorageActions.sync();
-		OrganizationActions.sync();
+		CompletionActions.sync();
 	}
 
 	componentWillUnmount(): void {
 		DatacentersStore.removeChangeListener(this.onChange);
-		StoragesStore.removeChangeListener(this.onChange);
-		OrganizationsStore.removeChangeListener(this.onChange);
+		CompletionStore.removeChangeListener(this.onChange);
 	}
 
 	onChange = (): void => {
@@ -125,8 +120,8 @@ export default class Datacenters extends React.Component<{}, State> {
 		this.setState({
 			...this.state,
 			datacenters: DatacentersStore.datacenters,
-			storages: StoragesStore.storages,
-			organizations: OrganizationsStore.organizations,
+			storages: CompletionStore.storages,
+			organizations: CompletionStore.organizations,
 			filter: DatacentersStore.filter,
 			selected: selected,
 			opened: opened,
