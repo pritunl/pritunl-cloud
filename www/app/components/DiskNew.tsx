@@ -566,6 +566,8 @@ export default class DiskNew extends React.Component<Props, State> {
 							<option value="">None</option>
 							<option value="xfs">XFS</option>
 							<option value="ext4">ext4</option>
+							<option value="lvm_xfs">LVM + XFS</option>
+							<option value="lvm_ext4">LVM + ext4</option>
 						</PageSelect>
 						<PageSwitch
 							label="Show hidden images"
