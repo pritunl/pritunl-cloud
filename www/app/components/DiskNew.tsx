@@ -589,6 +589,21 @@ export default class DiskNew extends React.Component<Props, State> {
 							}}
 						/>
 						<PageNumInput
+							label="LV Size"
+							help="Disk size in gigabytes of LVM logical volume. Must be less then disk size."
+							hidden={!disk.file_system?.includes("lvm")}
+							min={10}
+							minorStepSize={1}
+							stepSize={1}
+							majorStepSize={2}
+							disabled={this.state.disabled}
+							selectAllOnFocus={true}
+							value={disk.lv_size}
+							onChange={(val: number): void => {
+								this.set('lv_size', val);
+							}}
+						/>
+						<PageNumInput
 							label="Size"
 							help="Disk size in gigabytes."
 							min={10}
