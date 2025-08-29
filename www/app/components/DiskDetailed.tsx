@@ -13,8 +13,7 @@ import Help from './Help';
 import * as PageInfos from './PageInfo';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
-import NodesStore from '../stores/NodesStore';
-import OrganizationsStore from '../stores/OrganizationsStore';
+import CompletionStore from '../stores/CompletionStore';
 import * as InstanceActions from '../actions/InstanceActions';
 import InstancesNodeStore from '../stores/InstancesNodeStore';
 import * as InstanceTypes from '../types/InstanceTypes';
@@ -313,8 +312,8 @@ export default class DiskDetailed extends React.Component<Props, State> {
 		let disk: DiskTypes.Disk = this.state.disk ||
 			this.props.disk;
 
-		let node = NodesStore.node(this.props.disk.node);
-		let org = OrganizationsStore.organization(this.props.disk.organization);
+		let node = CompletionStore.node(this.props.disk.node);
+		let org = CompletionStore.organization(this.props.disk.organization);
 
 		let hasInstances = false;
 		let instancesSelect: JSX.Element[] = [];
