@@ -11,6 +11,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/session"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/subscription"
+	"github.com/pritunl/pritunl-cloud/user"
 	"github.com/pritunl/pritunl-cloud/useragent"
 )
 
@@ -39,6 +40,42 @@ func BlockedSilent(c *gin.Context) bool {
 
 	c.JSON(200, nil)
 	return true
+}
+
+// Users
+var userId0, _ = primitive.ObjectIDFromHex("5b6cd11857e4a9a88cbf072e")
+var userId1, _ = primitive.ObjectIDFromHex("5a7542190accad1a8a53b568")
+var Users = []*user.User{
+	&user.User{
+		Id:            userId0,
+		Type:          "local",
+		Provider:      primitive.ObjectID{},
+		Username:      "demo",
+		Token:         "",
+		Secret:        "",
+		LastActive:    time.Now(),
+		LastSync:      time.Now(),
+		Roles:         []string{"demo"},
+		Administrator: "super",
+		Disabled:      false,
+		ActiveUntil:   time.Time{},
+		Permissions:   []string{},
+	},
+	&user.User{
+		Id:            userId1,
+		Type:          "local",
+		Provider:      primitive.ObjectID{},
+		Username:      "pritunl",
+		Token:         "",
+		Secret:        "",
+		LastActive:    time.Time{},
+		LastSync:      time.Time{},
+		Roles:         []string{},
+		Administrator: "super",
+		Disabled:      false,
+		ActiveUntil:   time.Time{},
+		Permissions:   []string{},
+	},
 }
 
 var Agent = &useragent.Agent{
