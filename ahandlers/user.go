@@ -38,6 +38,13 @@ type usersData struct {
 }
 
 func userGet(c *gin.Context) {
+	if demo.IsDemo() {
+		usr := demo.Users[0]
+		usr.LastActive = time.Now()
+		c.JSON(200, usr)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 
 	userId, ok := utils.ParseObjectId(c.Param("user_id"))
@@ -50,14 +57,6 @@ func userGet(c *gin.Context) {
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
-	}
-
-	if demo.IsDemo() {
-		if usr.Username == "demo" {
-			usr.LastActive = time.Now()
-		} else {
-			usr.LastActive = time.Time{}
-		}
 	}
 
 	usr.Secret = ""
@@ -247,6 +246,20 @@ func userPost(c *gin.Context) {
 }
 
 func usersGet(c *gin.Context) {
+	if demo.IsDemo() {
+		for _, usr := range demo.Users {
+			usr.LastActive = time.Now()
+		}
+
+		data := &usersData{
+			Users: demo.Users,
+			Count: int64(len(demo.Users)),
+		}
+
+		c.JSON(200, data)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 
 	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
@@ -301,16 +314,6 @@ func usersGet(c *gin.Context) {
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
-	}
-
-	if demo.IsDemo() {
-		for _, usr := range users {
-			if usr.Username == "demo" {
-				usr.LastActive = time.Now()
-			} else {
-				usr.LastActive = time.Time{}
-			}
-		}
 	}
 
 	for _, usr := range users {
