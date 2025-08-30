@@ -13,6 +13,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/subscription"
 	"github.com/pritunl/pritunl-cloud/user"
 	"github.com/pritunl/pritunl-cloud/useragent"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 func IsDemo() bool {
@@ -43,11 +44,9 @@ func BlockedSilent(c *gin.Context) bool {
 }
 
 // Users
-var userId0, _ = primitive.ObjectIDFromHex("5b6cd11857e4a9a88cbf072e")
-var userId1, _ = primitive.ObjectIDFromHex("5a7542190accad1a8a53b568")
 var Users = []*user.User{
 	&user.User{
-		Id:            userId0,
+		Id:            utils.ObjectIdHex("5b6cd11857e4a9a88cbf072e"),
 		Type:          "local",
 		Provider:      primitive.ObjectID{},
 		Username:      "demo",
@@ -62,7 +61,7 @@ var Users = []*user.User{
 		Permissions:   []string{},
 	},
 	&user.User{
-		Id:            userId1,
+		Id:            utils.ObjectIdHex("5a7542190accad1a8a53b568"),
 		Type:          "local",
 		Provider:      primitive.ObjectID{},
 		Username:      "pritunl",
@@ -94,10 +93,9 @@ var Agent = &useragent.Agent{
 	Longitude:       -122.337,
 }
 
-var auditId, _ = primitive.ObjectIDFromHex("5a17f9bf051a45ffacf2b352")
 var Audits = []*audit.Audit{
 	&audit.Audit{
-		Id:        auditId,
+		Id:        utils.ObjectIdHex("5a17f9bf051a45ffacf2b352"),
 		Timestamp: time.Unix(1498018860, 0),
 		Type:      "admin_login",
 		Fields: audit.Fields{
@@ -118,11 +116,9 @@ var Sessions = []*session.Session{
 	},
 }
 
-var logId0, _ = primitive.ObjectIDFromHex("5a18e6ae051a45ffac0e5b67")
-var logId1, _ = primitive.ObjectIDFromHex("5a190b42051a45ffac129bbc")
 var Logs = []*log.Entry{
 	&log.Entry{
-		Id:        logId0,
+		Id:        utils.ObjectIdHex("5a18e6ae051a45ffac0e5b67"),
 		Level:     log.Info,
 		Timestamp: time.Unix(1498018860, 0),
 		Message:   "router: Starting redirect server",
@@ -134,7 +130,7 @@ var Logs = []*log.Entry{
 		},
 	},
 	&log.Entry{
-		Id:        logId1,
+		Id:        utils.ObjectIdHex("5a190b42051a45ffac129bbc"),
 		Level:     log.Info,
 		Timestamp: time.Unix(1498018860, 0),
 		Message:   "router: Starting web server",
