@@ -6,11 +6,18 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/audit"
+	"github.com/pritunl/pritunl-cloud/cloud"
+	"github.com/pritunl/pritunl-cloud/constants"
+	"github.com/pritunl/pritunl-cloud/drive"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/ip"
 	"github.com/pritunl/pritunl-cloud/log"
+	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/pci"
 	"github.com/pritunl/pritunl-cloud/session"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/subscription"
+	"github.com/pritunl/pritunl-cloud/usb"
 	"github.com/pritunl/pritunl-cloud/user"
 	"github.com/pritunl/pritunl-cloud/useragent"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -154,4 +161,132 @@ var Subscription = &subscription.Subscription{
 	CancelAtPeriodEnd: false,
 	Balance:           0,
 	UrlKey:            "demo",
+}
+
+// Nodes
+var Nodes = []*node.Node{
+	{
+		Id:                   utils.ObjectIdHex("689733b2a7a35eae0dbaea09"),
+		Datacenter:           utils.ObjectIdHex("689733b7a7a35eae0dbaea1b"),
+		Zone:                 utils.ObjectIdHex("689733b7a7a35eae0dbaea1e"),
+		Name:                 "pritunl-east0",
+		Comment:              "",
+		Types:                []string{"admin", "hypervisor"},
+		Timestamp:            time.Now(),
+		Port:                 443,
+		NoRedirectServer:     false,
+		Protocol:             "https",
+		Hypervisor:           "kvm",
+		Vga:                  "virtio",
+		VgaRender:            "",
+		AvailableRenders:     []string{},
+		Gui:                  false,
+		GuiUser:              "",
+		GuiMode:              "",
+		Certificates:         []primitive.ObjectID{},
+		AdminDomain:          "",
+		UserDomain:           "",
+		WebauthnDomain:       "",
+		RequestsMin:          23,
+		ForwardedForHeader:   "",
+		ForwardedProtoHeader: "",
+		ExternalInterfaces:   []string{},
+		ExternalInterfaces6:  []string{},
+		InternalInterfaces:   []string{"bond0.2"},
+		AvailableInterfaces: []ip.Interface{
+			{Name: "bond0", Address: ""},
+			{Name: "bond0.2", Address: "10.8.0.11"},
+			{Name: "bond0.4", Address: "125.253.67.90"},
+			{Name: "bonding_masters", Address: ""},
+			{Name: "enp1s0f0", Address: ""},
+			{Name: "enp1s0f1", Address: ""},
+			{Name: "podman0", Address: "10.88.0.1"},
+			{Name: "veth0", Address: ""},
+		},
+		AvailableBridges: []ip.Interface{
+			{Name: "podman0", Address: "10.88.0.1"},
+			{Name: "pritunlhost0", Address: "198.18.84.1"},
+			{Name: "pritunlport0", Address: "198.19.96.1"},
+		},
+		AvailableVpcs:    []*cloud.Vpc{},
+		CloudSubnets:     []string{},
+		DefaultInterface: "bond0.4",
+		NetworkMode:      "static",
+		NetworkMode6:     "static",
+		Blocks: []*node.BlockAttachment{
+			{
+				Interface: "bond0.4",
+				Block:     utils.ObjectIdHex("689733b7a7a35eae0dbaea2f"),
+			},
+		},
+		Blocks6: []*node.BlockAttachment{
+			{
+				Interface: "bond0.4",
+				Block:     utils.ObjectIdHex("68973a47b5844593cf99cc7a"),
+			},
+		},
+		Pools:  []primitive.ObjectID{},
+		Shares: []*node.Share{},
+		AvailableDrives: []*drive.Device{
+			{Id: "nvme-INTEL_27Z1P0FGN"},
+			{Id: "nvme-INTEL_27Z1P0FGN-part1"},
+			{Id: "nvme-INTEL_27Z1P0FGN-part2"},
+			{Id: "nvme-INTEL_27Z1P0FGN-part3"},
+			{Id: "nvme-INTEL_42K1P0FGN"},
+			{Id: "nvme-INTEL_42K1P0FGN-part1"},
+			{Id: "nvme-INTEL_42K1P0FGN-part2"},
+			{Id: "nvme-INTEL_42K1P0FGN-part3"},
+		},
+		InstanceDrives:          []*drive.Device{},
+		NoHostNetwork:           false,
+		NoNodePortNetwork:       false,
+		HostNat:                 true,
+		DefaultNoPublicAddress:  true,
+		DefaultNoPublicAddress6: false,
+		JumboFrames:             true,
+		JumboFramesInternal:     true,
+		Iscsi:                   false,
+		LocalIsos:               nil,
+		UsbPassthrough:          false,
+		UsbDevices:              []*usb.Device{},
+		PciPassthrough:          false,
+		PciDevices:              []*pci.Device{},
+		Hugepages:               false,
+		HugepagesSize:           0,
+		Firewall:                false,
+		Roles:                   []string{"shape-m2"},
+		Memory:                  41.02,
+		HugePagesUsed:           0,
+		Load1:                   43.17,
+		Load5:                   43.33,
+		Load15:                  43.83,
+		CpuUnits:                128,
+		MemoryUnits:             511.7,
+		CpuUnitsRes:             68,
+		MemoryUnitsRes:          68,
+		PublicIps:               []string{"123.123.123.123"},
+		PublicIps6: []string{
+			"2001:db8:85a3:4d2f:1319:8a2e:370:7348",
+		},
+		PrivateIps: map[string]string{
+			"bond0.2": "10.8.0.11",
+		},
+		SoftwareVersion: constants.Version,
+		Hostname:        "pritunl-east0",
+		VirtPath:        "/var/lib/pritunl-cloud",
+		CachePath:       "/var/cache/pritunl-cloud",
+		TempPath:        "",
+		OracleUser:      "",
+		OracleTenancy:   "",
+		OraclePublicKey: `-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxWtYOIzsHsLlBI1jeepJ
+q8dyR1JH3QLdAJ2IFGZDtHCCi46Lvmx7hC8bAutj5s37qOfBrom6UOJf0f9zEP8K
+y8qTb2S4XOAWBHuGpaBqFEhtpW+vIxiy26vdZN85P3xzYle0uodr86+y2bVHMHKB
+0oEHnqu+CmH/r4GedBVFVBASo9C5iILsyISf4oep390V/u23RAXXNfcKvUYR4c2u
+fZBwlSVEDrK+X21ocJc+8VGbbLhXBvMEdqXzs1bbFzFHow8TjduxDNTbntIRpo6W
+0O7xMahUHxDWDro5fAkzvpk6wUBM6yWXXgwkDLLHW50dUnqgFJgOTIHXEtPSt4eU
+2wIDAQAB
+-----END PUBLIC KEY-----`,
+		Operation: "",
+	},
 }
