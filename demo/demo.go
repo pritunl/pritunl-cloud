@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/pritunl-cloud/audit"
+	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/certificate"
 	"github.com/pritunl/pritunl-cloud/cloud"
 	"github.com/pritunl/pritunl-cloud/constants"
@@ -511,5 +512,41 @@ var Shapes = []*shape.Shape{
 		Memory:     8192,
 		Processors: 4,
 		NodeCount:  1,
+	},
+}
+
+// Blocks
+var Blocks = []*block.Block{
+	{
+		Id:      utils.ObjectIdHex("689733b7a7a35eae0dbaea2f"),
+		Name:    "east-public",
+		Comment: "",
+		Type:    "ipv4",
+		Vlan:    0,
+		Subnets: []string{
+			"192.168.45.88/29",
+		},
+		Subnets6: []string{},
+		Excludes: []string{
+			"192.168.45.90/32",
+		},
+		Netmask:  "255.255.255.248",
+		Gateway:  "192.168.45.89",
+		Gateway6: "",
+	},
+	{
+		Id:      utils.ObjectIdHex("68973a47b5844593cf99cc7a"),
+		Name:    "east-public6",
+		Comment: "",
+		Type:    "ipv6",
+		Vlan:    0,
+		Subnets: []string{},
+		Subnets6: []string{
+			"2001:db8:85a3::/64",
+		},
+		Excludes: []string{},
+		Netmask:  "",
+		Gateway:  "",
+		Gateway6: "2001:db8:85a3::1",
 	},
 }
