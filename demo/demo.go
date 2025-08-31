@@ -9,6 +9,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/certificate"
 	"github.com/pritunl/pritunl-cloud/cloud"
 	"github.com/pritunl/pritunl-cloud/constants"
+	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/drive"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/ip"
@@ -421,5 +422,25 @@ var Organizations = []*organization.Organization{
 		},
 		Name:    "pritunl",
 		Comment: "",
+	},
+}
+
+// Datacenters
+var Datacenters = []*datacenter.Datacenter{
+	{
+		Id:                 utils.ObjectIdHex("689733b7a7a35eae0dbaea1b"),
+		Name:               "us-west-1",
+		Comment:            "",
+		MatchOrganizations: false,
+		Organizations:      []primitive.ObjectID{},
+		NetworkMode:        "vxlan_vlan",
+		WgMode:             "",
+		PublicStorages: []primitive.ObjectID{
+			utils.ObjectIdHex("689733b7a7a35eae0dbaea15"),
+		},
+		PrivateStorage:      primitive.ObjectID{},
+		PrivateStorageClass: "",
+		BackupStorage:       primitive.ObjectID{},
+		BackupStorageClass:  "",
 	},
 }
