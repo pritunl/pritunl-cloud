@@ -1,6 +1,11 @@
 package ahandlers
 
 import (
+	"fmt"
+	"regexp"
+	"strconv"
+	"strings"
+
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/mongo-go-driver/bson"
@@ -20,6 +25,11 @@ type organizationData struct {
 	Name    string             `json:"name"`
 	Comment string             `json:"comment"`
 	Roles   []string           `json:"roles"`
+}
+
+type organizationsData struct {
+	Organizations []*organization.Organization `json:"organizations"`
+	Count         int64                        `json:"count"`
 }
 
 func organizationPut(c *gin.Context) {
@@ -197,11 +207,42 @@ func organizationGet(c *gin.Context) {
 func organizationsGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 
-	orgs, err := organization.GetAll(db, &bson.M{})
+	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
+	pageCount, _ := strconv.ParseInt(c.Query("page_count"), 10, 0)
+
+	query := bson.M{}
+
+	organizationId, ok := utils.ParseObjectId(c.Query("id"))
+	if ok {
+		query["_id"] = organizationId
+	}
+
+	name := strings.TrimSpace(c.Query("name"))
+	if name != "" {
+		query["name"] = &bson.M{
+			"$regex":   fmt.Sprintf(".*%s.*", regexp.QuoteMeta(name)),
+			"$options": "i",
+		}
+	}
+
+	comment := strings.TrimSpace(c.Query("comment"))
+	if comment != "" {
+		query["comment"] = &bson.M{
+			"$regex":   fmt.Sprintf(".*%s.*", comment),
+			"$options": "i",
+		}
+	}
+
+	secrs, count, err := organization.GetAllPaged(db, &query, page, pageCount)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return
 	}
 
-	c.JSON(200, orgs)
+	data := &organizationsData{
+		Organizations: secrs,
+		Count:         count,
+	}
+
+	c.JSON(200, data)
 }
