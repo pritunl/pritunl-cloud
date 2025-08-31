@@ -14,6 +14,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/log"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/pci"
+	"github.com/pritunl/pritunl-cloud/policy"
 	"github.com/pritunl/pritunl-cloud/session"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/subscription"
@@ -288,5 +289,38 @@ fZBwlSVEDrK+X21ocJc+8VGbbLhXBvMEdqXzs1bbFzFHow8TjduxDNTbntIRpo6W
 2wIDAQAB
 -----END PUBLIC KEY-----`,
 		Operation: "",
+	},
+}
+
+// Policies
+var Policies = []*policy.Policy{
+	{
+		Id:       utils.ObjectIdHex("67b8a03e4866ba90e6c45a8c"),
+		Name:     "policy",
+		Comment:  "",
+		Disabled: false,
+		Roles: []string{
+			"pritunl",
+		},
+		Rules: map[string]*policy.Rule{
+			"location": {
+				Type:    "location",
+				Disable: false,
+				Values: []string{
+					"US",
+				},
+			},
+			"whitelist_networks": {
+				Type:    "whitelist_networks",
+				Disable: false,
+				Values: []string{
+					"10.0.0.0/8",
+				},
+			},
+		},
+		AdminSecondary:       primitive.ObjectID{},
+		UserSecondary:        primitive.ObjectID{},
+		AdminDeviceSecondary: true,
+		UserDeviceSecondary:  true,
 	},
 }
