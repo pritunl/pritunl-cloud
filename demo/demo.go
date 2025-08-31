@@ -14,6 +14,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/ip"
 	"github.com/pritunl/pritunl-cloud/log"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/organization"
 	"github.com/pritunl/pritunl-cloud/pci"
 	"github.com/pritunl/pritunl-cloud/policy"
 	"github.com/pritunl/pritunl-cloud/secret"
@@ -408,5 +409,17 @@ mK9XwN2HgJ5YdL3RsP8VqT2MxK4NhR3JdY8WwL2TsM5QxN1PqK4YgJ7RxP8VsT3M
 PwIDAQAB
 -----END PUBLIC KEY-----`,
 		Data: "",
+	},
+}
+
+// Organizations
+var Organizations = []*organization.Organization{
+	{
+		Id: utils.ObjectIdHex("5a3245a50accad1a8a53bc82"),
+		Roles: []string{
+			"pritunl",
+		},
+		Name:    "pritunl",
+		Comment: "",
 	},
 }
