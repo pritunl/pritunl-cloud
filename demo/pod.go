@@ -7,6 +7,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/aggregate"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/pod"
+	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/unit"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
@@ -100,8 +101,8 @@ with open("/etc/web.conf", "w") as file:
 systemctl start nginx
 ` + "```",
 		SpecIndex:  2,
-		LastSpec:   primitive.ObjectID{},
-		DeploySpec: primitive.ObjectID{},
+		LastSpec:   utils.ObjectIdHex("688c7cde9da165ffad4b52e4"),
+		DeploySpec: utils.ObjectIdHex("688c7cde9da165ffad4b52e4"),
 		Hash:       "80309b44139a78378c9025d40535c73f52f9d71c",
 	},
 	{
@@ -162,9 +163,262 @@ dnf -y install mongodb-org
 sudo systemctl start mongod
 ` + "```",
 		SpecIndex:  2,
-		LastSpec:   primitive.ObjectID{},
-		DeploySpec: primitive.ObjectID{},
+		LastSpec:   utils.ObjectIdHex("688c7cde9da165ffad4b34f2"),
+		DeploySpec: utils.ObjectIdHex("688c7cde9da165ffad4b34f2"),
 		Hash:       "d0c176ab5dafce10956e0d3d5e1320b2e496acff",
+	},
+}
+
+var Specs = []*spec.Spec{
+	{
+		Id:        utils.ObjectIdHex("688c7cde9da165ffad4b52e4"),
+		Unit:      utils.ObjectIdHex("688c716d9da165ffad4b3682"),
+		Index:     2,
+		Hash:      "80309b44139a78378c9025d40535c73f52f9d71c",
+		Timestamp: time.Now().Add(-5 * time.Minute),
+		Data: "```yaml" + `
+---
+name: web-app
+kind: instance
+zone: +/zone/us-west-1a
+shape: +/shape/m2-small
+processors: 4
+memory: 4096
+vpc: +/vpc/vpc
+subnet: +/subnet/primary
+image: +/image/almalinux9
+roles:
+    - instance
+nodePorts:
+    - protocol: tcp
+      externalPort: 32120
+      internalPort: 80
+
+---
+name: web-app-firewall
+kind: firewall
+ingress:
+    - protocol: tcp
+      port: 22
+      source:
+        - 10.20.0.0/16
+` + "```" + `
+
+## Initialization
+
+* Update system
+* Install nginx
+
+` + "```shell" + `
+dnf -y update
+dnf install -y nginx
+sed -i "s/Test Page/cloud-$(pci get +/instance/self/id)/" /usr/share/nginx/html/index.html
+` + "```" + `
+
+## Configuration
+
+` + "```python {phase=reload}" + `
+import string
+import subprocess
+
+def pci_get(query):
+    return subprocess.run(
+        ["pci", "get", query],
+        stdout=subprocess.PIPE,
+        text=True,
+        check=True,
+    ).stdout.strip()
+
+with open("/etc/web.conf", "w") as file:
+    file.write(pci_get("+/unit/database/private_ips"))
+` + "```" + `
+
+## Startup
+
+` + "```shell {phase=reboot}" + `
+systemctl start nginx
+` + "```",
+	},
+	{
+		Id:        utils.ObjectIdHex("68b67f44ee12c08a1f39fdbe"),
+		Unit:      utils.ObjectIdHex("688c716d9da165ffad4b3682"),
+		Index:     1,
+		Hash:      "7e4a9f2c8b3d6h5j1k9m0n2p4q8r3s7t5v8w2x34",
+		Timestamp: time.Now().Add(-5 * time.Hour),
+		Data: "```yaml" + `
+---
+name: web-app
+kind: instance
+zone: +/zone/us-west-1a
+shape: +/shape/m2-small
+processors: 4
+memory: 4096
+vpc: +/vpc/vpc
+subnet: +/subnet/primary
+image: +/image/almalinux9
+roles:
+    - instance
+nodePorts:
+    - protocol: tcp
+      externalPort: 32120
+      internalPort: 80
+
+---
+name: web-app-firewall
+kind: firewall
+ingress:
+    - protocol: tcp
+      port: 22
+      source:
+        - 10.20.0.0/16
+` + "```" + `
+
+## Initialization
+
+* Update system
+* Install nginx
+
+` + "```shell" + `
+dnf -y update
+dnf install -y nginx
+sed -i "s/Test Page/cloud-$(pci get +/instance/self/id)/" /usr/share/nginx/html/index.html
+` + "```" + `
+
+## Startup
+
+` + "```shell {phase=reboot}" + `
+systemctl start nginx
+` + "```",
+	},
+	{
+		Id:        utils.ObjectIdHex("688c7cde9da165ffad4b34f2"),
+		Unit:      utils.ObjectIdHex("68b67d1aee12c08a1f39f88b"),
+		Index:     2,
+		Hash:      "d0c176ab5dafce10956e0d3d5e1320b2e496acff",
+		Timestamp: time.Now().Add(-10 * time.Minute),
+		Data: "```yaml" + `
+---
+name: database
+kind: instance
+zone: +/zone/us-west-1a
+shape: +/shape/m2-small
+processors: 4
+memory: 4096
+vpc: +/vpc/vpc
+subnet: +/subnet/primary
+image: +/image/almalinux9
+roles:
+    - instance
+
+---
+name: web-app-firewall
+kind: firewall
+ingress:
+    - protocol: tcp
+      port: 27017
+      source:
+        - +/unit/web-app
+` + "```" + `
+
+## Initialization
+
+* Update system
+* Install mongodb
+
+` + "```shell" + `
+dnf -y update
+
+tee /etc/yum.repos.d/mongodb-org.repo << EOF
+[mongodb-org-8.0]
+name=MongoDB Repository
+baseurl=https://repo.mongodb.org/yum/redhat/9/mongodb-org/8.0/x86_64/
+gpgcheck=1
+enabled=1
+gpgkey=https://pgp.mongodb.com/server-8.0.asc
+EOF
+
+dnf -y install mongodb-org
+` + "```" + `
+
+## Startup
+
+` + "```shell {phase=reboot}" + `
+sudo systemctl start mongod
+` + "```",
+	},
+	{
+		Id:        utils.ObjectIdHex("68b67cb1ee12c08a1f39f78b"),
+		Unit:      utils.ObjectIdHex("68b67d1aee12c08a1f39f88b"),
+		Index:     1,
+		Hash:      "3c8f5a1d9e7b2k4m6n0p3q7r9s2t5v8w1x4y6z4d",
+		Timestamp: time.Now().Add(-6 * time.Hour),
+		Data: "```yaml" + `
+---
+name: database
+kind: instance
+zone: +/zone/us-west-1a
+shape: +/shape/m2-small
+processors: 4
+memory: 4096
+vpc: +/vpc/vpc
+subnet: +/subnet/primary
+image: +/image/almalinux9
+roles:
+    - instance
+` + "```" + `
+
+## Initialization
+
+* Update system
+* Install mongodb
+
+` + "```shell" + `
+dnf -y update
+
+tee /etc/yum.repos.d/mongodb-org.repo << EOF
+[mongodb-org-8.0]
+name=MongoDB Repository
+baseurl=https://repo.mongodb.org/yum/redhat/9/mongodb-org/8.0/x86_64/
+gpgcheck=1
+enabled=1
+gpgkey=https://pgp.mongodb.com/server-8.0.asc
+EOF
+
+dnf -y install mongodb-org
+` + "```" + `
+
+## Startup
+
+` + "```shell {phase=reboot}" + `
+sudo systemctl start mongod
+` + "```",
+	},
+}
+
+var SpecsNamed = []*spec.Named{
+	{
+		Id:        Specs[0].Id,
+		Unit:      Specs[0].Unit,
+		Index:     Specs[0].Index,
+		Timestamp: Specs[0].Timestamp,
+	},
+	{
+		Id:        Specs[1].Id,
+		Unit:      Specs[1].Unit,
+		Index:     Specs[1].Index,
+		Timestamp: Specs[1].Timestamp,
+	},
+	{
+		Id:        Specs[2].Id,
+		Unit:      Specs[2].Unit,
+		Index:     Specs[2].Index,
+		Timestamp: Specs[2].Timestamp,
+	},
+	{
+		Id:        Specs[3].Id,
+		Unit:      Specs[3].Unit,
+		Index:     Specs[3].Index,
+		Timestamp: Specs[3].Timestamp,
 	},
 }
 
