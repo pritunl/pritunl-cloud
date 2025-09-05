@@ -16,6 +16,14 @@ NODE_IDS = [
     "689733b2a7a35eae0dbaea0e",
     "689733b2a7a35eae0dbaea0f",
 ]
+NODE_NAMES = [
+    "pritunl-east0",
+    "pritunl-east1",
+    "pritunl-east2",
+    "pritunl-east3",
+    "pritunl-east4",
+    "pritunl-east5",
+]
 
 SHAPE_IDS = {
     "small": "65e6e303ceeebbb3dabaec96",
@@ -27,6 +35,16 @@ IMAGE_IDS = [
     "650a2c36aed15f1f1f5e96e1",
     "650a2c36aed15f1f1f5e96e2",
 ]
+
+POD_ID = "688bf358d978631566998ffc"
+UNIT_IDS = {
+    "web": "688c716d9da165ffad4b3682",
+    "database": "68b67d1aee12c08a1f39f88b",
+}
+SPEC_IDS = {
+    "web": "688c7cde9da165ffad4b52e4",
+    "database": "688c7cde9da165ffad4b34f2",
+}
 
 def generate_ip(subnet_base="10.196"):
     third_octet = random.randint(1, 8)
@@ -95,6 +113,7 @@ def generate_instances(count=20):
         spec = get_instance_spec(instance_type)
 
         node_id = NODE_IDS[i % len(NODE_IDS)]
+        node_name = NODE_NAMES[i % len(NODE_NAMES)]
         image_id = IMAGE_IDS[i % len(IMAGE_IDS)]
 
         load1 = round(random.uniform(10, 60), 2)
@@ -103,6 +122,7 @@ def generate_instances(count=20):
 
         instance = {
             "id": instance_id,
+            "type": instance_type,
             "organization": ORGANIZATION_ID,
             "datacenter": DATACENTER_ID,
             "zone": ZONE_ID,
@@ -118,6 +138,7 @@ def generate_instances(count=20):
             "private_ips6": [generate_priv_ip6(instance_id)],
             "host_ips": [host_ip],
             "node": node_id,
+            "node_name": node_name,
             "shape": SHAPE_IDS[spec["shape"]],
             "name": spec["name"],
             "comment": "",
@@ -143,7 +164,7 @@ def generate_disks(instances):
 
         disk = {
             "id": disk_id,
-            "name": f"{instance['name']}-disk",
+            "name": instance['name'],
             "comment": "",
             "state": "attached",
             "type": "qcow2",
@@ -155,12 +176,47 @@ def generate_disks(instances):
             "image": instance["image"],
             "index": "0",
             "size": instance["init_disk_size"],
-            "created": "2023-10-04T08:12:28Z"
         }
 
         disks.append(disk)
 
     return disks
+
+def generate_deployments(instances):
+    deployments = []
+
+    for i, instance in enumerate(instances):
+        if instance["type"] != "web" and instance["type"] != "database":
+            continue
+
+        deployment_id = f"651d8e7c4cf91e3b53d62d{i:02x}"
+
+        deployment = {
+            "id": deployment_id,
+            "name": instance['name'],
+            "type": instance['type'],
+            "datacenter": instance["datacenter"],
+            "zone": instance["zone"],
+            "node": instance["node"],
+            "node_name": instance["node_name"],
+            "organization": instance["organization"],
+            "instance": instance["id"],
+            "public_ips": instance["public_ips"],
+            "public_ips6": instance["public_ips6"],
+            "private_ips": instance["private_ips"],
+            "private_ips6": instance["private_ips6"],
+            "host_ips": instance["host_ips"],
+            "memory": instance["memory"],
+            "processors": instance["processors"],
+            "mem": instance["mem"],
+            "load1": instance["load1"],
+            "load5": instance["load5"],
+            "load15": instance["load15"],
+        }
+
+        deployments.append(deployment)
+
+    return deployments
 
 def format_go_instance(instance):
     go_code = f"""	{{
@@ -223,9 +279,55 @@ def format_go_disk(disk):
 	}},"""
     return go_code
 
+def format_go_deployment(deployment):
+    go_code = f"""	{{
+		Id:            utils.ObjectIdHex("{deployment['id']}"),
+		Pod:           utils.ObjectIdHex("{POD_ID}"),
+		Unit:          utils.ObjectIdHex("{UNIT_IDS[deployment['type']]}"),
+		Spec:          utils.ObjectIdHex("{SPEC_IDS[deployment['type']]}"),
+		SpecOffset:    0,
+		SpecIndex:     2,
+		SpecTimestamp: time.Now(),
+		Timestamp:     time.Now(),
+		Tags:          []string{{}},
+		Kind:          "instance",
+		State:         "deployed",
+		Action:        "",
+		Status:        "healthy",
+		Node:          utils.ObjectIdHex("{deployment['node']}"),
+		Instance:      utils.ObjectIdHex("{deployment['instance']}"),
+		InstanceData: &deployment.InstanceData{{
+			HostIps:     []string{{"{deployment['host_ips'][0]}"}},
+			PublicIps:   []string{{"{deployment['public_ips'][0]}"}},
+			PublicIps6:  []string{{"{deployment['public_ips6'][0]}"}},
+			PrivateIps:  []string{{"{deployment['private_ips'][0]}"}},
+			PrivateIps6: []string{{"{deployment['private_ips6'][0]}"}},
+		}},
+		ZoneName:            "us-west-1a",
+		NodeName:            "{deployment['node_name']}",
+		InstanceName:        "{deployment['name']}",
+		InstanceRoles:       []string{{"instance"}},
+		InstanceMemory:      {deployment['memory']},
+		InstanceProcessors:  {deployment['processors']},
+		InstanceStatus:      "Running",
+		InstanceUptime:      "5 days",
+		InstanceState:       "running",
+		InstanceAction:      "start",
+		InstanceGuestStatus: "running",
+		InstanceTimestamp:   time.Now(),
+		InstanceHeartbeat:   time.Now(),
+		InstanceMemoryUsage: {deployment['mem']},
+		InstanceHugePages:   0,
+		InstanceLoad1:       {deployment['load1']},
+		InstanceLoad5:       {deployment['load5']},
+		InstanceLoad15:      {deployment['load15']},
+	}},"""
+    return go_code
+
 def main():
     instances = generate_instances(20)
     disks = generate_disks(instances)
+    deployments = generate_deployments(instances)
 
     print("// Instances")
     print("var Instances = []*instance.Instance{")
@@ -238,6 +340,13 @@ def main():
     for i, disk in enumerate(disks):
         print(format_go_disk(disk))
     print("}")
+    print("")
+    print("// Deployments")
+    print("var Deployments = []*aggregate.Deployment{")
+    for i, deployment in enumerate(deployments):
+        print(format_go_deployment(deployment))
+    print("}")
+
 
 if __name__ == "__main__":
     main()
