@@ -383,6 +383,12 @@ func podsDelete(c *gin.Context) {
 }
 
 func podGet(c *gin.Context) {
+	if demo.IsDemo() {
+		pd := demo.Pods[0]
+		c.JSON(200, pd)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 	authr := c.MustGet("authorizer").(*authorizer.Authorizer)
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
@@ -416,6 +422,16 @@ func podGet(c *gin.Context) {
 }
 
 func podsGet(c *gin.Context) {
+	if demo.IsDemo() {
+		data := &podsData{
+			Pods:  demo.Pods,
+			Count: int64(len(demo.Pods)),
+		}
+
+		c.JSON(200, data)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 	authr := c.MustGet("authorizer").(*authorizer.Authorizer)
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
@@ -482,6 +498,39 @@ type PodUnit struct {
 }
 
 func podUnitGet(c *gin.Context) {
+	if demo.IsDemo() {
+		unitId, ok := utils.ParseObjectId(c.Param("unit_id"))
+		if !ok {
+			utils.AbortWithStatus(c, 400)
+			return
+		}
+
+		var unit *unit.Unit
+		for _, unt := range demo.Units {
+			if unt.Id == unitId {
+				unit = unt
+				break
+			}
+		}
+
+		deplys := []*aggregate.Deployment{}
+		for _, deply := range demo.Deployments {
+			if deply.Unit == unit.Id {
+				deplys = append(deplys, deply)
+			}
+		}
+
+		data := &PodUnit{
+			Id:          unit.Id,
+			Pod:         demo.Pods[0].Id,
+			Kind:        unit.Kind,
+			Deployments: deplys,
+		}
+
+		c.JSON(200, data)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
@@ -715,6 +764,11 @@ func podUnitDeploymentPut(c *gin.Context) {
 }
 
 func podUnitDeploymentLogGet(c *gin.Context) {
+	if demo.IsDemo() {
+		c.JSON(200, demo.DeploymentLogs)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
