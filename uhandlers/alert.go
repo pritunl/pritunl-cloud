@@ -219,6 +219,25 @@ func alertsDelete(c *gin.Context) {
 	c.JSON(200, nil)
 }
 
+func alertGet(c *gin.Context) {
+	db := c.MustGet("db").(*database.Database)
+	userOrg := c.MustGet("organization").(primitive.ObjectID)
+
+	alertId, ok := utils.ParseObjectId(c.Query("id"))
+	if !ok {
+		utils.AbortWithStatus(c, 400)
+		return
+	}
+
+	alrt, err := alert.GetOrg(db, userOrg, alertId)
+	if err != nil {
+		utils.AbortWithError(c, 500, err)
+		return
+	}
+
+	c.JSON(200, alrt)
+}
+
 func alertsGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
