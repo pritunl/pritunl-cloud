@@ -12,7 +12,7 @@ var Disks = []*aggregate.DiskAggregate{
 	{
 		Disk: disk.Disk{
 			Id:           utils.ObjectIdHex("651d8e7c4cf9e2e3e4d34f00"),
-			Name:         "web-app-disk",
+			Name:         "web-app",
 			Comment:      "",
 			State:        "attached",
 			Type:         "qcow2",
@@ -30,7 +30,7 @@ var Disks = []*aggregate.DiskAggregate{
 	{
 		Disk: disk.Disk{
 			Id:           utils.ObjectIdHex("651d8e7c4cf9e2e3e4d34f01"),
-			Name:         "web-app-disk",
+			Name:         "web-app",
 			Comment:      "",
 			State:        "attached",
 			Type:         "qcow2",
@@ -48,7 +48,7 @@ var Disks = []*aggregate.DiskAggregate{
 	{
 		Disk: disk.Disk{
 			Id:           utils.ObjectIdHex("651d8e7c4cf9e2e3e4d34f02"),
-			Name:         "web-app-disk",
+			Name:         "web-app",
 			Comment:      "",
 			State:        "attached",
 			Type:         "qcow2",
@@ -66,7 +66,7 @@ var Disks = []*aggregate.DiskAggregate{
 	{
 		Disk: disk.Disk{
 			Id:           utils.ObjectIdHex("651d8e7c4cf9e2e3e4d34f03"),
-			Name:         "web-app-disk",
+			Name:         "web-app",
 			Comment:      "",
 			State:        "attached",
 			Type:         "qcow2",
@@ -84,7 +84,7 @@ var Disks = []*aggregate.DiskAggregate{
 	{
 		Disk: disk.Disk{
 			Id:           utils.ObjectIdHex("651d8e7c4cf9e2e3e4d34f04"),
-			Name:         "web-app-disk",
+			Name:         "web-app",
 			Comment:      "",
 			State:        "attached",
 			Type:         "qcow2",
@@ -102,7 +102,7 @@ var Disks = []*aggregate.DiskAggregate{
 	{
 		Disk: disk.Disk{
 			Id:           utils.ObjectIdHex("651d8e7c4cf9e2e3e4d34f05"),
-			Name:         "web-app-disk",
+			Name:         "web-app",
 			Comment:      "",
 			State:        "attached",
 			Type:         "qcow2",
@@ -120,7 +120,7 @@ var Disks = []*aggregate.DiskAggregate{
 	{
 		Disk: disk.Disk{
 			Id:           utils.ObjectIdHex("651d8e7c4cf9e2e3e4d34f06"),
-			Name:         "web-app-disk",
+			Name:         "web-app",
 			Comment:      "",
 			State:        "attached",
 			Type:         "qcow2",
@@ -138,7 +138,7 @@ var Disks = []*aggregate.DiskAggregate{
 	{
 		Disk: disk.Disk{
 			Id:           utils.ObjectIdHex("651d8e7c4cf9e2e3e4d34f07"),
-			Name:         "web-app-disk",
+			Name:         "web-app",
 			Comment:      "",
 			State:        "attached",
 			Type:         "qcow2",
@@ -156,7 +156,7 @@ var Disks = []*aggregate.DiskAggregate{
 	{
 		Disk: disk.Disk{
 			Id:           utils.ObjectIdHex("651d8e7c4cf9e2e3e4d34f08"),
-			Name:         "web-app-disk",
+			Name:         "web-app",
 			Comment:      "",
 			State:        "attached",
 			Type:         "qcow2",
@@ -174,7 +174,7 @@ var Disks = []*aggregate.DiskAggregate{
 	{
 		Disk: disk.Disk{
 			Id:           utils.ObjectIdHex("651d8e7c4cf9e2e3e4d34f09"),
-			Name:         "web-app-disk",
+			Name:         "web-app",
 			Comment:      "",
 			State:        "attached",
 			Type:         "qcow2",
@@ -192,7 +192,7 @@ var Disks = []*aggregate.DiskAggregate{
 	{
 		Disk: disk.Disk{
 			Id:           utils.ObjectIdHex("651d8e7c4cf9e2e3e4d34f0a"),
-			Name:         "database-disk",
+			Name:         "database",
 			Comment:      "",
 			State:        "attached",
 			Type:         "qcow2",
@@ -210,7 +210,7 @@ var Disks = []*aggregate.DiskAggregate{
 	{
 		Disk: disk.Disk{
 			Id:           utils.ObjectIdHex("651d8e7c4cf9e2e3e4d34f0b"),
-			Name:         "database-disk",
+			Name:         "database",
 			Comment:      "",
 			State:        "attached",
 			Type:         "qcow2",
@@ -228,7 +228,7 @@ var Disks = []*aggregate.DiskAggregate{
 	{
 		Disk: disk.Disk{
 			Id:           utils.ObjectIdHex("651d8e7c4cf9e2e3e4d34f0c"),
-			Name:         "database-disk",
+			Name:         "database",
 			Comment:      "",
 			State:        "attached",
 			Type:         "qcow2",
@@ -246,7 +246,7 @@ var Disks = []*aggregate.DiskAggregate{
 	{
 		Disk: disk.Disk{
 			Id:           utils.ObjectIdHex("651d8e7c4cf9e2e3e4d34f0d"),
-			Name:         "database-disk",
+			Name:         "database",
 			Comment:      "",
 			State:        "attached",
 			Type:         "qcow2",
@@ -264,7 +264,7 @@ var Disks = []*aggregate.DiskAggregate{
 	{
 		Disk: disk.Disk{
 			Id:           utils.ObjectIdHex("651d8e7c4cf9e2e3e4d34f0e"),
-			Name:         "database-disk",
+			Name:         "database",
 			Comment:      "",
 			State:        "attached",
 			Type:         "qcow2",
@@ -282,7 +282,7 @@ var Disks = []*aggregate.DiskAggregate{
 	{
 		Disk: disk.Disk{
 			Id:           utils.ObjectIdHex("651d8e7c4cf9e2e3e4d34f0f"),
-			Name:         "database-disk",
+			Name:         "database",
 			Comment:      "",
 			State:        "attached",
 			Type:         "qcow2",
@@ -300,7 +300,7 @@ var Disks = []*aggregate.DiskAggregate{
 	{
 		Disk: disk.Disk{
 			Id:           utils.ObjectIdHex("651d8e7c4cf9e2e3e4d34f10"),
-			Name:         "search-disk",
+			Name:         "search",
 			Comment:      "",
 			State:        "attached",
 			Type:         "qcow2",
@@ -318,7 +318,7 @@ var Disks = []*aggregate.DiskAggregate{
 	{
 		Disk: disk.Disk{
 			Id:           utils.ObjectIdHex("651d8e7c4cf9e2e3e4d34f11"),
-			Name:         "search-disk",
+			Name:         "search",
 			Comment:      "",
 			State:        "attached",
 			Type:         "qcow2",
@@ -336,7 +336,7 @@ var Disks = []*aggregate.DiskAggregate{
 	{
 		Disk: disk.Disk{
 			Id:           utils.ObjectIdHex("651d8e7c4cf9e2e3e4d34f12"),
-			Name:         "vpn-disk",
+			Name:         "vpn",
 			Comment:      "",
 			State:        "attached",
 			Type:         "qcow2",
@@ -354,7 +354,7 @@ var Disks = []*aggregate.DiskAggregate{
 	{
 		Disk: disk.Disk{
 			Id:           utils.ObjectIdHex("651d8e7c4cf9e2e3e4d34f13"),
-			Name:         "vpn-disk",
+			Name:         "vpn",
 			Comment:      "",
 			State:        "attached",
 			Type:         "qcow2",
