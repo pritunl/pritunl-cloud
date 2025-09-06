@@ -242,6 +242,12 @@ func blocksDelete(c *gin.Context) {
 }
 
 func blockGet(c *gin.Context) {
+	if demo.IsDemo() {
+		blck := demo.Blocks[0]
+		c.JSON(200, blck)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 
 	blckId, ok := utils.ParseObjectId(c.Param("block_id"))
@@ -260,6 +266,16 @@ func blockGet(c *gin.Context) {
 }
 
 func blocksGet(c *gin.Context) {
+	if demo.IsDemo() {
+		data := &blocksData{
+			Blocks: demo.Blocks,
+			Count:  int64(len(demo.Blocks)),
+		}
+
+		c.JSON(200, data)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 
 	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
