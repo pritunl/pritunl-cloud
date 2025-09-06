@@ -219,6 +219,12 @@ func alertsDelete(c *gin.Context) {
 }
 
 func alertGet(c *gin.Context) {
+	if demo.IsDemo() {
+		alrt := demo.Alerts[0]
+		c.JSON(200, alrt)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 
 	alertId, ok := utils.ParseObjectId(c.Query("id"))
@@ -237,6 +243,16 @@ func alertGet(c *gin.Context) {
 }
 
 func alertsGet(c *gin.Context) {
+	if demo.IsDemo() {
+		data := &alertsData{
+			Alerts: demo.Alerts,
+			Count:  int64(len(demo.Alerts)),
+		}
+
+		c.JSON(200, data)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
 	pageCount, _ := strconv.ParseInt(c.Query("page_count"), 10, 0)
