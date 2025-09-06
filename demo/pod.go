@@ -18,7 +18,7 @@ var Pods = []*aggregate.PodAggregate{
 			Id:               utils.ObjectIdHex("688bf358d978631566998ffc"),
 			Name:             "web-app",
 			Comment:          "",
-			Organization:     utils.ObjectIdHex("688ab80d1793930f821f4f2c"),
+			Organization:     utils.ObjectIdHex("5a3245a50accad1a8a53bc82"),
 			DeleteProtection: false,
 			Drafts:           []*pod.UnitDraft{},
 		},
@@ -30,7 +30,7 @@ var Units = []*unit.Unit{
 	{
 		Id:           utils.ObjectIdHex("688c716d9da165ffad4b3682"),
 		Pod:          utils.ObjectIdHex("688bf358d978631566998ffc"),
-		Organization: utils.ObjectIdHex("688ab80d1793930f821f4f2c"),
+		Organization: utils.ObjectIdHex("5a3245a50accad1a8a53bc82"),
 		Name:         "web-app",
 		Kind:         "instance",
 		Count:        0,
@@ -108,7 +108,7 @@ systemctl start nginx
 	{
 		Id:           utils.ObjectIdHex("68b67d1aee12c08a1f39f88b"),
 		Pod:          utils.ObjectIdHex("688bf358d978631566998ffc"),
-		Organization: utils.ObjectIdHex("688ab80d1793930f821f4f2c"),
+		Organization: utils.ObjectIdHex("5a3245a50accad1a8a53bc82"),
 		Name:         "database",
 		Kind:         "instance",
 		Count:        0,
