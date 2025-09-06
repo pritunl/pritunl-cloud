@@ -9,7 +9,7 @@ import (
 var Subscription = &subscription.Subscription{
 	Active:            true,
 	Status:            "active",
-	Plan:              "zero",
+	Plan:              "cloud",
 	Quantity:          1,
 	Amount:            5000,
 	PeriodEnd:         time.Unix(1893499200, 0),
