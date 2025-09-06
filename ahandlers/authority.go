@@ -212,6 +212,12 @@ func authoritiesDelete(c *gin.Context) {
 }
 
 func authorityGet(c *gin.Context) {
+	if demo.IsDemo() {
+		authr := demo.Authorities[0]
+		c.JSON(200, authr)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 
 	authorityId, ok := utils.ParseObjectId(c.Param("authority_id"))
@@ -230,6 +236,16 @@ func authorityGet(c *gin.Context) {
 }
 
 func authoritiesGet(c *gin.Context) {
+	if demo.IsDemo() {
+		data := &authoritiesData{
+			Authorities: demo.Authorities,
+			Count:       int64(len(demo.Authorities)),
+		}
+
+		c.JSON(200, data)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 
 	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
