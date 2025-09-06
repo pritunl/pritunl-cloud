@@ -209,6 +209,12 @@ func domainsDelete(c *gin.Context) {
 }
 
 func domainGet(c *gin.Context) {
+	if demo.IsDemo() {
+		domn := demo.Domains[0]
+		c.JSON(200, domn)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 
 	domainId, ok := utils.ParseObjectId(c.Param("domain_id"))
@@ -234,6 +240,16 @@ func domainGet(c *gin.Context) {
 }
 
 func domainsGet(c *gin.Context) {
+	if demo.IsDemo() {
+		data := &domainsData{
+			Domains: demo.Domains,
+			Count:   int64(len(demo.Domains)),
+		}
+
+		c.JSON(200, data)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 
 	if c.Query("names") == "true" {
