@@ -421,6 +421,12 @@ func disksDelete(c *gin.Context) {
 }
 
 func diskGet(c *gin.Context) {
+	if demo.IsDemo() {
+		dsk := demo.Disks[0]
+		c.JSON(200, dsk)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 
 	diskId, ok := utils.ParseObjectId(c.Param("disk_id"))
@@ -439,6 +445,16 @@ func diskGet(c *gin.Context) {
 }
 
 func disksGet(c *gin.Context) {
+	if demo.IsDemo() {
+		data := &disksData{
+			Disks: demo.Disks,
+			Count: int64(len(demo.Disks)),
+		}
+
+		c.JSON(200, data)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 
 	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
