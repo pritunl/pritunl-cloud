@@ -187,6 +187,12 @@ func organizationDelete(c *gin.Context) {
 }
 
 func organizationGet(c *gin.Context) {
+	if demo.IsDemo() {
+		org := demo.Organizations[0]
+		c.JSON(200, org)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 
 	orgId, ok := utils.ParseObjectId(c.Param("org_id"))
@@ -205,6 +211,16 @@ func organizationGet(c *gin.Context) {
 }
 
 func organizationsGet(c *gin.Context) {
+	if demo.IsDemo() {
+		data := &organizationsData{
+			Organizations: demo.Organizations,
+			Count:         int64(len(demo.Organizations)),
+		}
+
+		c.JSON(200, data)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 
 	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
