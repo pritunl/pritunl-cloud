@@ -198,6 +198,12 @@ func poolsDelete(c *gin.Context) {
 }
 
 func poolGet(c *gin.Context) {
+	if demo.IsDemo() {
+		pl := demo.Pools[0]
+		c.JSON(200, pl)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 
 	poolId, ok := utils.ParseObjectId(c.Param("pool_id"))
@@ -216,6 +222,16 @@ func poolGet(c *gin.Context) {
 }
 
 func poolsGet(c *gin.Context) {
+	if demo.IsDemo() {
+		data := &poolsData{
+			Pools: demo.Pools,
+			Count: int64(len(demo.Pools)),
+		}
+
+		c.JSON(200, data)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 
 	nodeNames, err := node.GetAllNamesMap(db, &bson.M{})
