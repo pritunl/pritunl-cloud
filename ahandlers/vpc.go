@@ -356,6 +356,16 @@ func vpcRoutesPut(c *gin.Context) {
 }
 
 func vpcsGet(c *gin.Context) {
+	if demo.IsDemo() {
+		data := &vpcsData{
+			Vpcs:  demo.Vpcs,
+			Count: int64(len(demo.Vpcs)),
+		}
+
+		c.JSON(200, data)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 
 	if c.Query("names") == "true" {
