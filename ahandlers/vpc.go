@@ -250,6 +250,12 @@ func vpcsDelete(c *gin.Context) {
 }
 
 func vpcGet(c *gin.Context) {
+	if demo.IsDemo() {
+		vc := demo.Vpcs[0]
+		c.JSON(200, vc)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 
 	vpcId, ok := utils.ParseObjectId(c.Param("vpc_id"))
@@ -270,6 +276,12 @@ func vpcGet(c *gin.Context) {
 }
 
 func vpcRoutesGet(c *gin.Context) {
+	if demo.IsDemo() {
+		vc := demo.Vpcs[0]
+		c.JSON(200, vc.Routes)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 
 	vpcId, ok := utils.ParseObjectId(c.Param("vpc_id"))
