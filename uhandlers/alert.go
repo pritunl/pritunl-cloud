@@ -220,6 +220,12 @@ func alertsDelete(c *gin.Context) {
 }
 
 func alertGet(c *gin.Context) {
+	if demo.IsDemo() {
+		alrt := demo.Alerts[0]
+		c.JSON(200, alrt)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
