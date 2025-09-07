@@ -236,6 +236,12 @@ func shapesDelete(c *gin.Context) {
 }
 
 func shapeGet(c *gin.Context) {
+	if demo.IsDemo() {
+		shpe := demo.Shapes[0]
+		c.JSON(200, shpe)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 
 	shapeId, ok := utils.ParseObjectId(c.Param("shape_id"))
@@ -254,6 +260,16 @@ func shapeGet(c *gin.Context) {
 }
 
 func shapesGet(c *gin.Context) {
+	if demo.IsDemo() {
+		data := &shapesData{
+			Shapes: demo.Shapes,
+			Count:  int64(len(demo.Shapes)),
+		}
+
+		c.JSON(200, data)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 
 	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
