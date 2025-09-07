@@ -236,6 +236,12 @@ func storagesDelete(c *gin.Context) {
 }
 
 func storageGet(c *gin.Context) {
+	if demo.IsDemo() {
+		store := demo.Storages[0]
+		c.JSON(200, store)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 
 	storeId, ok := utils.ParseObjectId(c.Param("store_id"))
@@ -263,6 +269,16 @@ func storageGet(c *gin.Context) {
 }
 
 func storagesGet(c *gin.Context) {
+	if demo.IsDemo() {
+		data := &storagesData{
+			Storages: demo.Storages,
+			Count:    int64(len(demo.Storages)),
+		}
+
+		c.JSON(200, data)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 
 	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
