@@ -239,6 +239,12 @@ func balancersDelete(c *gin.Context) {
 }
 
 func balancerGet(c *gin.Context) {
+	if demo.IsDemo() {
+		balnc := demo.Balancers[0]
+		c.JSON(200, balnc)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
@@ -260,6 +266,16 @@ func balancerGet(c *gin.Context) {
 }
 
 func balancersGet(c *gin.Context) {
+	if demo.IsDemo() {
+		data := &balancersData{
+			Balancers: demo.Balancers,
+			Count:     int64(len(demo.Balancers)),
+		}
+
+		c.JSON(200, data)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
