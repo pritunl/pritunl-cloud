@@ -4,11 +4,17 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/mongo-go-driver/bson"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/pool"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 func poolsGet(c *gin.Context) {
+	if demo.IsDemo() {
+		c.JSON(200, demo.Pools)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 
 	pools, err := pool.GetAllNames(db, &bson.M{})
