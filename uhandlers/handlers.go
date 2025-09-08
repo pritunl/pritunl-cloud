@@ -40,6 +40,7 @@ func Register(engine *gin.Engine) {
 	engine.NoRoute(middlewear.NotFound)
 
 	orgGroup.GET("/alert", alertsGet)
+	orgGroup.GET("/alert/:alert_id", alertGet)
 	orgGroup.PUT("/alert/:alert_id", alertPut)
 	orgGroup.POST("/alert", alertPost)
 	orgGroup.DELETE("/alert", alertsDelete)
