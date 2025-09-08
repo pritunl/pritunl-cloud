@@ -224,6 +224,12 @@ func firewallsDelete(c *gin.Context) {
 }
 
 func firewallGet(c *gin.Context) {
+	if demo.IsDemo() {
+		fire := demo.Firewalls[0]
+		c.JSON(200, fire)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
@@ -243,6 +249,16 @@ func firewallGet(c *gin.Context) {
 }
 
 func firewallsGet(c *gin.Context) {
+	if demo.IsDemo() {
+		data := &firewallsData{
+			Firewalls: demo.Firewalls,
+			Count:     int64(len(demo.Firewalls)),
+		}
+
+		c.JSON(200, data)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
