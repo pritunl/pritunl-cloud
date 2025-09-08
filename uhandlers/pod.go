@@ -54,8 +54,8 @@ type deploymentData struct {
 }
 
 type specsData struct {
-	Specs []*spec.Spec `json:"specs"`
-	Count int64        `json:"count"`
+	Specs []*spec.Named `json:"specs"`
+	Count int64         `json:"count"`
 }
 
 func podPut(c *gin.Context) {
@@ -815,6 +815,29 @@ func podUnitDeploymentLogGet(c *gin.Context) {
 }
 
 func podUnitSpecsGet(c *gin.Context) {
+	if demo.IsDemo() {
+		unitId, ok := utils.ParseObjectId(c.Param("unit_id"))
+		if !ok {
+			utils.AbortWithStatus(c, 400)
+			return
+		}
+
+		specs := []*spec.Named{}
+		for _, spc := range demo.SpecsNamed {
+			if spc.Unit == unitId {
+				specs = append(specs, spc)
+			}
+		}
+
+		data := &specsData{
+			Specs: specs,
+			Count: int64(len(specs)),
+		}
+
+		c.JSON(200, data)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
@@ -849,6 +872,24 @@ func podUnitSpecsGet(c *gin.Context) {
 }
 
 func podUnitSpecGet(c *gin.Context) {
+	if demo.IsDemo() {
+		specId, ok := utils.ParseObjectId(c.Param("spec_id"))
+		if !ok {
+			utils.AbortWithStatus(c, 400)
+			return
+		}
+
+		for _, spc := range demo.Specs {
+			if spc.Id == specId {
+				c.JSON(200, spc)
+				return
+			}
+		}
+
+		c.AbortWithStatus(404)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
