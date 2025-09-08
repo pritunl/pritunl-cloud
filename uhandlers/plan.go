@@ -196,6 +196,12 @@ func plansDelete(c *gin.Context) {
 }
 
 func planGet(c *gin.Context) {
+	if demo.IsDemo() {
+		pln := demo.Plans[0]
+		c.JSON(200, pln)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
@@ -215,6 +221,16 @@ func planGet(c *gin.Context) {
 }
 
 func plansGet(c *gin.Context) {
+	if demo.IsDemo() {
+		data := &plansData{
+			Plans: demo.Plans,
+			Count: int64(len(demo.Plans)),
+		}
+
+		c.JSON(200, data)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
