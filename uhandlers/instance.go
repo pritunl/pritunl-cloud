@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
@@ -586,6 +587,14 @@ func instancesDelete(c *gin.Context) {
 }
 
 func instanceGet(c *gin.Context) {
+	if demo.IsDemo() {
+		inst := demo.Instances[0]
+		inst.Guest.Timestamp = time.Now()
+		inst.Guest.Heartbeat = time.Now()
+		c.JSON(200, inst)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
@@ -625,6 +634,21 @@ func instanceGet(c *gin.Context) {
 }
 
 func instancesGet(c *gin.Context) {
+	if demo.IsDemo() {
+		for _, inst := range demo.Instances {
+			inst.Guest.Timestamp = time.Now()
+			inst.Guest.Heartbeat = time.Now()
+		}
+
+		data := &instancesData{
+			Instances: demo.Instances,
+			Count:     int64(len(demo.Instances)),
+		}
+
+		c.JSON(200, data)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(primitive.ObjectID)
 
