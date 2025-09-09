@@ -3,6 +3,7 @@ package spec
 import (
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/bson"
@@ -11,6 +12,13 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
+
+type Named struct {
+	Id        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Unit      primitive.ObjectID `bson:"unit" json:"unit"`
+	Index     int                `bson:"index" json:"index"`
+	Timestamp time.Time          `bson:"timestamp" json:"timestamp"`
+}
 
 var (
 	yamlBlockRe = regexp.MustCompile("(?s)^```yaml\\n(.*?)```")
@@ -76,10 +84,10 @@ func GetOne(db *database.Database, query *bson.M) (
 }
 
 func GetAllPaged(db *database.Database, query *bson.M,
-	page, pageCount int64) (spcs []*Spec, count int64, err error) {
+	page, pageCount int64) (spcs []*Named, count int64, err error) {
 
 	coll := db.Specs()
-	spcs = []*Spec{}
+	spcs = []*Named{}
 
 	if len(*query) == 0 {
 		count, err = coll.EstimatedDocumentCount(db)
@@ -126,7 +134,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	defer cursor.Close(db)
 
 	for cursor.Next(db) {
-		spc := &Spec{}
+		spc := &Named{}
 		err = cursor.Decode(spc)
 		if err != nil {
 			err = database.ParseError(err)
