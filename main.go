@@ -84,6 +84,7 @@ func main() {
 		fmt.Printf("pritunl-cloud v%s\n", constants.Version)
 		return
 	case "mongo":
+		flag.Parse()
 		logger.Init()
 		err := cmd.Mongo()
 		if err != nil {
@@ -140,6 +141,7 @@ func main() {
 		}
 		return
 	case "set":
+		flag.Parse()
 		InitLimited()
 		err := cmd.SettingsSet()
 		if err != nil {
@@ -147,6 +149,7 @@ func main() {
 		}
 		return
 	case "unset":
+		flag.Parse()
 		InitLimited()
 		err := cmd.SettingsUnset()
 		if err != nil {
@@ -161,6 +164,7 @@ func main() {
 		}
 		return
 	case "backup":
+		flag.Parse()
 		InitLimited()
 		err := cmd.Backup()
 		if err != nil {
