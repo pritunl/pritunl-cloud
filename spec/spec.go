@@ -419,7 +419,7 @@ func (s *Spec) parseInstance(db *database.Database,
 					}
 					return
 				}
-			} else if mount.Type == Disk {
+			} else if mount.Type == Disk || mount.Type == "" {
 				mnt.Type = Disk
 
 				if mnt.Path == "" {
