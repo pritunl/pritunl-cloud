@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"flag"
+	"fmt"
+	"os"
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/backup"
@@ -17,6 +19,9 @@ func Backup() (err error) {
 		}
 		return
 	}
+
+	fmt.Println("Feature comming soon")
+	os.Exit(1)
 
 	back := backup.New(dest)
 
