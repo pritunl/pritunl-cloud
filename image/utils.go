@@ -237,6 +237,59 @@ func GetAll(db *database.Database, query *bson.M) (
 	return
 }
 
+func GetAllCompletion(db *database.Database, query *bson.M) (
+	imgs []*Completion, err error) {
+
+	coll := db.Images()
+	imgs = []*Completion{}
+
+	cursor, err := coll.Find(
+		db,
+		query,
+		&options.FindOptions{
+			Sort: &bson.D{
+				{"name", 1},
+			},
+			Projection: &bson.D{
+				{"_id", 1},
+				{"name", 1},
+				{"release", 1},
+				{"build", 1},
+				{"organization", 1},
+				{"deployment", 1},
+				{"type", 1},
+				{"firmware", 1},
+				{"key", 1},
+				{"storage", 1},
+			},
+		},
+	)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		img := &Completion{}
+		err = cursor.Decode(img)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		imgs = append(imgs, img)
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
+}
+
 func GetAllPaged(db *database.Database, query *bson.M, page, pageCount int64) (
 	imgs []*Image, count int64, err error) {
 
