@@ -6,28 +6,28 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type Storage struct {
-	Id        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Name      string             `bson:"name" json:"name"`
-	Comment   string             `bson:"comment" json:"comment"`
-	Type      string             `bson:"type" json:"type"`
-	Endpoint  string             `bson:"endpoint" json:"endpoint"`
-	Bucket    string             `bson:"bucket" json:"bucket"`
-	AccessKey string             `bson:"access_key" json:"access_key"`
-	SecretKey string             `bson:"secret_key" json:"secret_key"`
-	Insecure  bool               `bson:"insecure" json:"insecure"`
+	Id        bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name      string        `bson:"name" json:"name"`
+	Comment   string        `bson:"comment" json:"comment"`
+	Type      string        `bson:"type" json:"type"`
+	Endpoint  string        `bson:"endpoint" json:"endpoint"`
+	Bucket    string        `bson:"bucket" json:"bucket"`
+	AccessKey string        `bson:"access_key" json:"access_key"`
+	SecretKey string        `bson:"secret_key" json:"secret_key"`
+	Insecure  bool          `bson:"insecure" json:"insecure"`
 }
 
 type Completion struct {
-	Id   primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Name string             `bson:"name" json:"name"`
-	Type string             `bson:"type" json:"type"`
+	Id   bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name string        `bson:"name" json:"name"`
+	Type string        `bson:"type" json:"type"`
 }
 
 func (s *Storage) IsOracle() bool {
@@ -114,7 +114,7 @@ func (s *Storage) Insert(db *database.Database) (err error) {
 		return
 	}
 
-	s.Id = resp.InsertedID.(primitive.ObjectID)
+	s.Id = resp.InsertedID.(bson.ObjectID)
 
 	return
 }

@@ -1,7 +1,7 @@
 package spec
 
 import (
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
@@ -42,9 +42,9 @@ func (d *Domain) Validate() (errData *errortypes.ErrorData, err error) {
 }
 
 type Record struct {
-	Name   string             `bson:"name" json:"name"`
-	Domain primitive.ObjectID `bson:"domain" json:"domain"`
-	Type   string             `bson:"type" json:"type"`
+	Name   string        `bson:"name" json:"name"`
+	Domain bson.ObjectID `bson:"domain" json:"domain"`
+	Type   string        `bson:"type" json:"type"`
 }
 
 type DomainYaml struct {

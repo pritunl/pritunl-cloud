@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/dhcpc"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -188,7 +188,6 @@ func (n *NetConf) ipExternal(db *database.Database) (err error) {
 				return
 			}
 		}
-
 	}
 
 	if n.NetworkMode6 == node.Static {

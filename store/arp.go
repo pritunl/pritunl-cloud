@@ -1,14 +1,15 @@
 package store
 
 import (
-	"github.com/dropbox/godropbox/container/set"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"sync"
 	"time"
+
+	"github.com/dropbox/godropbox/container/set"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 )
 
 var (
-	arpStores     = map[primitive.ObjectID]ArpStore{}
+	arpStores     = map[bson.ObjectID]ArpStore{}
 	arpStoresLock = sync.Mutex{}
 )
 
@@ -17,7 +18,7 @@ type ArpStore struct {
 	Timestamp time.Time
 }
 
-func GetArp(instId primitive.ObjectID) (arpStore ArpStore, ok bool) {
+func GetArp(instId bson.ObjectID) (arpStore ArpStore, ok bool) {
 	arpStoresLock.Lock()
 	arpStore, ok = arpStores[instId]
 	arpStoresLock.Unlock()
@@ -29,7 +30,7 @@ func GetArp(instId primitive.ObjectID) (arpStore ArpStore, ok bool) {
 	return
 }
 
-func SetArp(instId primitive.ObjectID, records set.Set) {
+func SetArp(instId bson.ObjectID, records set.Set) {
 	arpStoresLock.Lock()
 	arpStores[instId] = ArpStore{
 		Records:   records.Copy(),
@@ -38,7 +39,7 @@ func SetArp(instId primitive.ObjectID, records set.Set) {
 	arpStoresLock.Unlock()
 }
 
-func RemArp(instId primitive.ObjectID) {
+func RemArp(instId bson.ObjectID) {
 	arpStoresLock.Lock()
 	delete(arpStores, instId)
 	arpStoresLock.Unlock()

@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 )
 
-func GetMacAddr(id primitive.ObjectID, secondId primitive.ObjectID) string {
+func GetMacAddr(id bson.ObjectID, secondId bson.ObjectID) string {
 	hash := md5.New()
 	hash.Write([]byte(id.Hex()))
 	hash.Write([]byte(secondId.Hex()))
@@ -28,8 +28,8 @@ func GetMacAddr(id primitive.ObjectID, secondId primitive.ObjectID) string {
 	return "00:" + macBuf.String()
 }
 
-func GetMacAddrExternal(id primitive.ObjectID,
-	secondId primitive.ObjectID) string {
+func GetMacAddrExternal(id bson.ObjectID,
+	secondId bson.ObjectID) string {
 
 	hash := md5.New()
 	hash.Write([]byte(id.Hex()))
@@ -48,8 +48,8 @@ func GetMacAddrExternal(id primitive.ObjectID,
 	return "02:" + macBuf.String()
 }
 
-func GetMacAddrExternal6(id primitive.ObjectID,
-	secondId primitive.ObjectID) string {
+func GetMacAddrExternal6(id bson.ObjectID,
+	secondId bson.ObjectID) string {
 
 	hash := md5.New()
 	hash.Write([]byte(id.Hex()))
@@ -68,8 +68,8 @@ func GetMacAddrExternal6(id primitive.ObjectID,
 	return "08:" + macBuf.String()
 }
 
-func GetMacAddrInternal(id primitive.ObjectID,
-	secondId primitive.ObjectID) string {
+func GetMacAddrInternal(id bson.ObjectID,
+	secondId bson.ObjectID) string {
 
 	hash := md5.New()
 	hash.Write([]byte(id.Hex()))
@@ -88,8 +88,8 @@ func GetMacAddrInternal(id primitive.ObjectID,
 	return "04:" + macBuf.String()
 }
 
-func GetMacAddrHost(id primitive.ObjectID,
-	secondId primitive.ObjectID) string {
+func GetMacAddrHost(id bson.ObjectID,
+	secondId bson.ObjectID) string {
 
 	hash := md5.New()
 	hash.Write([]byte(id.Hex()))
@@ -108,8 +108,8 @@ func GetMacAddrHost(id primitive.ObjectID,
 	return "06:" + macBuf.String()
 }
 
-func GetMacAddrNodePort(id primitive.ObjectID,
-	secondId primitive.ObjectID) string {
+func GetMacAddrNodePort(id bson.ObjectID,
+	secondId bson.ObjectID) string {
 
 	hash := md5.New()
 	hash.Write([]byte(id.Hex()))
@@ -128,84 +128,84 @@ func GetMacAddrNodePort(id primitive.ObjectID,
 	return "0a:" + macBuf.String()
 }
 
-func GetIface(id primitive.ObjectID, n int) string {
+func GetIface(id bson.ObjectID, n int) string {
 	hash := md5.New()
 	hash.Write([]byte(id.Hex()))
 	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
 	return fmt.Sprintf("p%s%d", strings.ToLower(hashSum), n)
 }
 
-func GetIfaceVirt(id primitive.ObjectID, n int) string {
+func GetIfaceVirt(id bson.ObjectID, n int) string {
 	hash := md5.New()
 	hash.Write([]byte(id.Hex()))
 	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
 	return fmt.Sprintf("v%s%d", strings.ToLower(hashSum), n)
 }
 
-func GetIfaceExternal(id primitive.ObjectID, n int) string {
+func GetIfaceExternal(id bson.ObjectID, n int) string {
 	hash := md5.New()
 	hash.Write([]byte(id.Hex()))
 	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
 	return fmt.Sprintf("e%s%d", strings.ToLower(hashSum), n)
 }
 
-func GetIfaceNodeExternal(id primitive.ObjectID, n int) string {
+func GetIfaceNodeExternal(id bson.ObjectID, n int) string {
 	hash := md5.New()
 	hash.Write([]byte(id.Hex()))
 	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
 	return fmt.Sprintf("r%s%d", strings.ToLower(hashSum), n)
 }
 
-func GetIfaceInternal(id primitive.ObjectID, n int) string {
+func GetIfaceInternal(id bson.ObjectID, n int) string {
 	hash := md5.New()
 	hash.Write([]byte(id.Hex()))
 	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
 	return fmt.Sprintf("i%s%d", strings.ToLower(hashSum), n)
 }
 
-func GetIfaceNodeInternal(id primitive.ObjectID, n int) string {
+func GetIfaceNodeInternal(id bson.ObjectID, n int) string {
 	hash := md5.New()
 	hash.Write([]byte(id.Hex()))
 	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
 	return fmt.Sprintf("j%s%d", strings.ToLower(hashSum), n)
 }
 
-func GetIfaceHost(id primitive.ObjectID, n int) string {
+func GetIfaceHost(id bson.ObjectID, n int) string {
 	hash := md5.New()
 	hash.Write([]byte(id.Hex()))
 	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
 	return fmt.Sprintf("h%s%d", strings.ToLower(hashSum), n)
 }
 
-func GetIfaceNodePort(id primitive.ObjectID, n int) string {
+func GetIfaceNodePort(id bson.ObjectID, n int) string {
 	hash := md5.New()
 	hash.Write([]byte(id.Hex()))
 	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
 	return fmt.Sprintf("m%s%d", strings.ToLower(hashSum), n)
 }
 
-func GetIfaceCloud(id primitive.ObjectID, n int) string {
+func GetIfaceCloud(id bson.ObjectID, n int) string {
 	hash := md5.New()
 	hash.Write([]byte(id.Hex()))
 	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
 	return fmt.Sprintf("o%s%d", strings.ToLower(hashSum), n)
 }
 
-func GetIfaceCloudVirt(id primitive.ObjectID, n int) string {
+func GetIfaceCloudVirt(id bson.ObjectID, n int) string {
 	hash := md5.New()
 	hash.Write([]byte(id.Hex()))
 	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
 	return fmt.Sprintf("t%s%d", strings.ToLower(hashSum), n)
 }
 
-func GetIfaceVlan(id primitive.ObjectID, n int) string {
+func GetIfaceVlan(id bson.ObjectID, n int) string {
 	hash := md5.New()
 	hash.Write([]byte(id.Hex()))
 	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]
 	return fmt.Sprintf("x%s%d", strings.ToLower(hashSum), n)
 }
 
-func GetNamespace(id primitive.ObjectID, n int) string {
+func GetNamespace(id bson.ObjectID, n int) string {
 	hash := md5.New()
 	hash.Write([]byte(id.Hex()))
 	hashSum := base32.StdEncoding.EncodeToString(hash.Sum(nil))[:12]

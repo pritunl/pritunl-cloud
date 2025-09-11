@@ -3,8 +3,7 @@ package aggregate
 import (
 	"time"
 
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/image"
@@ -26,10 +25,10 @@ type DeploymentPipe struct {
 }
 
 type Deployment struct {
-	Id                  primitive.ObjectID       `bson:"_id" json:"id"`
-	Pod                 primitive.ObjectID       `bson:"pod" json:"pod"`
-	Unit                primitive.ObjectID       `bson:"unit" json:"unit"`
-	Spec                primitive.ObjectID       `bson:"spec" json:"spec"`
+	Id                  bson.ObjectID            `bson:"_id" json:"id"`
+	Pod                 bson.ObjectID            `bson:"pod" json:"pod"`
+	Unit                bson.ObjectID            `bson:"unit" json:"unit"`
+	Spec                bson.ObjectID            `bson:"spec" json:"spec"`
 	SpecOffset          int                      `bson:"spec_offset" json:"spec_offset"`
 	SpecIndex           int                      `bson:"spec_index" json:"spec_index"`
 	SpecTimestamp       time.Time                `bson:"spec_timestamp" json:"spec_timestamp"`
@@ -39,11 +38,11 @@ type Deployment struct {
 	State               string                   `bson:"state" json:"state"`
 	Action              string                   `bson:"action" json:"action"`
 	Status              string                   `bson:"status" json:"status"`
-	Node                primitive.ObjectID       `bson:"node" json:"node"`
-	Instance            primitive.ObjectID       `bson:"instance" json:"instance"`
+	Node                bson.ObjectID            `bson:"node" json:"node"`
+	Instance            bson.ObjectID            `bson:"instance" json:"instance"`
 	InstanceData        *deployment.InstanceData `bson:"instance_data" json:"instance_data"`
 	DomainData          *deployment.DomainData   `bson:"domain_data" json:"domain_data"`
-	ImageId             primitive.ObjectID       `bson:"image_id" json:"image_id"`
+	ImageId             bson.ObjectID            `bson:"image_id" json:"image_id"`
 	ImageName           string                   `bson:"image_name" json:"image_name"`
 	ZoneName            string                   `bson:"-" json:"zone_name"`
 	NodeName            string                   `bson:"-" json:"node_name"`

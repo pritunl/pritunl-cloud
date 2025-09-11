@@ -4,22 +4,22 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/sirupsen/logrus"
 )
 
 type TimeoutLock struct {
 	lock      sync.Mutex
-	state     map[primitive.ObjectID]bool
+	state     map[bson.ObjectID]bool
 	stateLock sync.Mutex
 	timeout   time.Duration
 }
 
-func (l *TimeoutLock) Lock() (id primitive.ObjectID) {
-	id = primitive.NewObjectID()
+func (l *TimeoutLock) Lock() (id bson.ObjectID) {
+	id = bson.NewObjectID()
 	l.lock.Lock()
 
 	l.stateLock.Lock()
@@ -58,7 +58,7 @@ func (l *TimeoutLock) Lock() (id primitive.ObjectID) {
 	return
 }
 
-func (l *TimeoutLock) Unlock(id primitive.ObjectID) {
+func (l *TimeoutLock) Unlock(id bson.ObjectID) {
 	l.lock.Unlock()
 	l.stateLock.Lock()
 	delete(l.state, id)
@@ -68,7 +68,7 @@ func (l *TimeoutLock) Unlock(id primitive.ObjectID) {
 func NewTimeoutLock(timeout time.Duration) *TimeoutLock {
 	return &TimeoutLock{
 		lock:      sync.Mutex{},
-		state:     map[primitive.ObjectID]bool{},
+		state:     map[bson.ObjectID]bool{},
 		stateLock: sync.Mutex{},
 		timeout:   timeout,
 	}

@@ -7,8 +7,7 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/instance"
@@ -40,20 +39,20 @@ type State struct {
 }
 
 type Balancer struct {
-	Id              primitive.ObjectID   `bson:"_id,omitempty" json:"id"`
-	Name            string               `bson:"name" json:"name"`
-	Comment         string               `bson:"comment" json:"comment"`
-	Type            string               `bson:"type" json:"type"`
-	State           bool                 `bson:"state" json:"state"`
-	Organization    primitive.ObjectID   `bson:"organization" json:"organization"`
-	Datacenter      primitive.ObjectID   `bson:"datacenter" json:"datacenter"`
-	Certificates    []primitive.ObjectID `bson:"certificates" json:"certificates"`
-	ClientAuthority primitive.ObjectID   `bson:"client_authority" json:"client_authority"`
-	WebSockets      bool                 `bson:"websockets" json:"websockets"`
-	Domains         []*Domain            `bson:"domains" json:"domains"`
-	Backends        []*Backend           `bson:"backends" json:"backends"`
-	States          map[string]*State    `bson:"states" json:"states"`
-	CheckPath       string               `bson:"check_path" json:"check_path"`
+	Id              bson.ObjectID     `bson:"_id,omitempty" json:"id"`
+	Name            string            `bson:"name" json:"name"`
+	Comment         string            `bson:"comment" json:"comment"`
+	Type            string            `bson:"type" json:"type"`
+	State           bool              `bson:"state" json:"state"`
+	Organization    bson.ObjectID     `bson:"organization" json:"organization"`
+	Datacenter      bson.ObjectID     `bson:"datacenter" json:"datacenter"`
+	Certificates    []bson.ObjectID   `bson:"certificates" json:"certificates"`
+	ClientAuthority bson.ObjectID     `bson:"client_authority" json:"client_authority"`
+	WebSockets      bool              `bson:"websockets" json:"websockets"`
+	Domains         []*Domain         `bson:"domains" json:"domains"`
+	Backends        []*Backend        `bson:"backends" json:"backends"`
+	States          map[string]*State `bson:"states" json:"states"`
+	CheckPath       string            `bson:"check_path" json:"check_path"`
 }
 
 func (b *Balancer) Validate(db *database.Database) (
@@ -74,7 +73,7 @@ func (b *Balancer) Validate(db *database.Database) (
 	}
 
 	if b.Certificates == nil {
-		b.Certificates = []primitive.ObjectID{}
+		b.Certificates = []bson.ObjectID{}
 	}
 
 	if b.States == nil {

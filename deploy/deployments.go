@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
@@ -101,7 +101,7 @@ func (d *Deployments) migrate(deply *deployment.Deployment) {
 			}).Error("deploy: Incompatible migrate")
 
 			deply.State = deployment.Deployed
-			deply.NewSpec = primitive.NilObjectID
+			deply.NewSpec = bson.NilObjectID
 			err = deply.CommitFields(db, set.NewSet("state", "new_spec"))
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
@@ -324,7 +324,7 @@ func (d *Deployments) migrate(deply *deployment.Deployment) {
 
 		deply.Action = ""
 		deply.Spec = newSpec.Id
-		deply.NewSpec = primitive.NilObjectID
+		deply.NewSpec = bson.NilObjectID
 		err = deply.CommitFields(db, set.NewSet("action", "spec", "new_spec"))
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
@@ -918,7 +918,7 @@ func (d *Deployments) domain(db *database.Database,
 	deply *deployment.Deployment, spc *spec.Spec) (err error) {
 
 	if spc.Domain != nil && deply.InstanceData != nil {
-		newRecs := map[primitive.ObjectID][]*domain.Record{}
+		newRecs := map[bson.ObjectID][]*domain.Record{}
 
 		for _, specRec := range spc.Domain.Records {
 			domn := d.stat.SpecDomain(specRec.Domain)

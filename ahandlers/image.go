@@ -8,8 +8,7 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
@@ -20,10 +19,10 @@ import (
 )
 
 type imageData struct {
-	Id           primitive.ObjectID `json:"id"`
-	Name         string             `json:"name"`
-	Comment      string             `json:"comment"`
-	Organization primitive.ObjectID `json:"organization"`
+	Id           bson.ObjectID `json:"id"`
+	Name         string        `json:"name"`
+	Comment      string        `json:"comment"`
+	Organization bson.ObjectID `json:"organization"`
 }
 
 type imagesData struct {
@@ -120,7 +119,7 @@ func imagesDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	dta := []primitive.ObjectID{}
+	dta := []bson.ObjectID{}
 
 	err := c.Bind(&dta)
 	if err != nil {
@@ -172,11 +171,11 @@ func imagesGet(c *gin.Context) {
 
 		storages := dc.PublicStorages
 		if storages == nil {
-			storages = []primitive.ObjectID{}
+			storages = []bson.ObjectID{}
 		}
 
 		if len(storages) == 0 {
-			c.JSON(200, []primitive.ObjectID{})
+			c.JSON(200, []bson.ObjectID{})
 			return
 		}
 

@@ -3,7 +3,7 @@ package demo
 import (
 	"time"
 
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/aggregate"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/pod"
@@ -34,7 +34,7 @@ var Units = []*unit.Unit{
 		Name:         "web-app",
 		Kind:         "instance",
 		Count:        0,
-		Deployments: []primitive.ObjectID{
+		Deployments: []bson.ObjectID{
 			utils.ObjectIdHex("688db9219da165ffad4e439c"),
 			utils.ObjectIdHex("688dbc759da165ffad4e4ab0"),
 		},
@@ -112,7 +112,7 @@ systemctl start nginx
 		Name:         "database",
 		Kind:         "instance",
 		Count:        0,
-		Deployments:  []primitive.ObjectID{},
+		Deployments:  []bson.ObjectID{},
 		Spec: "```yaml" + `
 ---
 name: database

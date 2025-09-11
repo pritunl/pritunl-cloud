@@ -1,14 +1,13 @@
 package balancer
 
 import (
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
-func Get(db *database.Database, balncId primitive.ObjectID) (
+func Get(db *database.Database, balncId bson.ObjectID) (
 	balnc *Balancer, err error) {
 
 	coll := db.Balancers()
@@ -22,7 +21,7 @@ func Get(db *database.Database, balncId primitive.ObjectID) (
 	return
 }
 
-func GetOrg(db *database.Database, orgId, balncId primitive.ObjectID) (
+func GetOrg(db *database.Database, orgId, balncId bson.ObjectID) (
 	balnc *Balancer, err error) {
 
 	coll := db.Balancers()
@@ -137,7 +136,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	return
 }
 
-func Remove(db *database.Database, balncId primitive.ObjectID) (err error) {
+func Remove(db *database.Database, balncId bson.ObjectID) (err error) {
 	coll := db.Balancers()
 
 	_, err = coll.DeleteOne(db, &bson.M{
@@ -156,7 +155,7 @@ func Remove(db *database.Database, balncId primitive.ObjectID) (err error) {
 	return
 }
 
-func RemoveOrg(db *database.Database, orgId, balncId primitive.ObjectID) (
+func RemoveOrg(db *database.Database, orgId, balncId bson.ObjectID) (
 	err error) {
 
 	coll := db.Balancers()
@@ -178,7 +177,7 @@ func RemoveOrg(db *database.Database, orgId, balncId primitive.ObjectID) (
 	return
 }
 
-func RemoveMulti(db *database.Database, balncIds []primitive.ObjectID) (
+func RemoveMulti(db *database.Database, balncIds []bson.ObjectID) (
 	err error) {
 	coll := db.Balancers()
 
@@ -195,8 +194,8 @@ func RemoveMulti(db *database.Database, balncIds []primitive.ObjectID) (
 	return
 }
 
-func RemoveMultiOrg(db *database.Database, orgId primitive.ObjectID,
-	balncIds []primitive.ObjectID) (err error) {
+func RemoveMultiOrg(db *database.Database, orgId bson.ObjectID,
+	balncIds []bson.ObjectID) (err error) {
 
 	coll := db.Balancers()
 

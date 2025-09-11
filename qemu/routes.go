@@ -6,13 +6,13 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vpc"
 )
 
-func GetRoutes(instId primitive.ObjectID) (icmpRedirects bool,
+func GetRoutes(instId bson.ObjectID) (icmpRedirects bool,
 	routes []vpc.Route, routes6 []vpc.Route, err error) {
 
 	namespace := vm.GetNamespace(instId, 0)

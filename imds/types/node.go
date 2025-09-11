@@ -1,15 +1,15 @@
 package types
 
 import (
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/node"
 )
 
 type Node struct {
-	Id         primitive.ObjectID `json:"id"`
-	Name       string             `json:"name"`
-	PublicIps  []string           `json:"public_ips"`
-	PublicIps6 []string           `json:"public_ips6"`
+	Id         bson.ObjectID `json:"id"`
+	Name       string        `json:"name"`
+	PublicIps  []string      `json:"public_ips"`
+	PublicIps6 []string      `json:"public_ips6"`
 }
 
 func NewNode(nde *node.Node) *Node {

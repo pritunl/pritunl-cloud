@@ -14,8 +14,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/imds/server/utils"
@@ -30,7 +29,7 @@ import (
 )
 
 var (
-	hashes     = map[primitive.ObjectID]uint32{}
+	hashes     = map[bson.ObjectID]uint32{}
 	hashesLock = sync.Mutex{}
 	counter    = atomic.Uint64{}
 )
@@ -40,7 +39,7 @@ const (
 )
 
 func Sync(db *database.Database, namespace string,
-	instId, deplyId primitive.ObjectID, conf *types.Config) (err error) {
+	instId, deplyId bson.ObjectID, conf *types.Config) (err error) {
 
 	sockPath := paths.GetImdsSockPath(instId)
 
@@ -185,7 +184,7 @@ func Sync(db *database.Database, namespace string,
 		}
 
 		var kind int32
-		var resource primitive.ObjectID
+		var resource bson.ObjectID
 		if !deplyId.IsZero() {
 			kind = journal.DeploymentAgent
 			resource = deplyId
@@ -392,7 +391,7 @@ func Sync(db *database.Database, namespace string,
 	return
 }
 
-func Pull(db *database.Database, instId, deplyId primitive.ObjectID,
+func Pull(db *database.Database, instId, deplyId bson.ObjectID,
 	imdsHostSecret string) (err error) {
 
 	sockPath := paths.GetImdsSockPath(instId)
@@ -509,7 +508,7 @@ func Pull(db *database.Database, instId, deplyId primitive.ObjectID,
 		}
 
 		var kind int32
-		var resource primitive.ObjectID
+		var resource bson.ObjectID
 		if !deplyId.IsZero() {
 			kind = journal.DeploymentAgent
 			resource = deplyId
@@ -538,7 +537,7 @@ func Pull(db *database.Database, instId, deplyId primitive.ObjectID,
 	return
 }
 
-func State(db *database.Database, instId primitive.ObjectID,
+func State(db *database.Database, instId bson.ObjectID,
 	imdsHostSecret string) (ste *types.State, err error) {
 
 	sockPath := paths.GetImdsSockPath(instId)

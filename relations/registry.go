@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/imds/server/errortypes"
 )
@@ -15,7 +15,7 @@ func Register(kind string, definition Query) {
 	registry[kind] = definition
 }
 
-func Aggregate(db *database.Database, kind string, id primitive.ObjectID) (
+func Aggregate(db *database.Database, kind string, id bson.ObjectID) (
 	resp *Response, err error) {
 
 	definition, ok := registry[kind]
@@ -34,7 +34,7 @@ func Aggregate(db *database.Database, kind string, id primitive.ObjectID) (
 }
 
 func AggregateOrg(db *database.Database, kind string,
-	orgId, id primitive.ObjectID) (resp *Response, err error) {
+	orgId, id bson.ObjectID) (resp *Response, err error) {
 
 	definition, ok := registry[kind]
 	if !ok {
@@ -68,7 +68,7 @@ func blockDelete(resources []Resource) string {
 	return ""
 }
 
-func CanDelete(db *database.Database, kind string, id primitive.ObjectID) (
+func CanDelete(db *database.Database, kind string, id bson.ObjectID) (
 	errData *errortypes.ErrorData, err error) {
 
 	definition, ok := registry[kind]
@@ -115,7 +115,7 @@ func CanDelete(db *database.Database, kind string, id primitive.ObjectID) (
 }
 
 func CanDeleteOrg(db *database.Database, kind string,
-	orgId, id primitive.ObjectID) (errData *errortypes.ErrorData, err error) {
+	orgId, id bson.ObjectID) (errData *errortypes.ErrorData, err error) {
 
 	definition, ok := registry[kind]
 	if !ok {
@@ -162,7 +162,7 @@ func CanDeleteOrg(db *database.Database, kind string,
 }
 
 func CanDeleteAll(db *database.Database, kind string,
-	ids []primitive.ObjectID) (errData *errortypes.ErrorData, err error) {
+	ids []bson.ObjectID) (errData *errortypes.ErrorData, err error) {
 
 	for _, id := range ids {
 		errData, err = CanDelete(db, kind, id)
@@ -179,7 +179,7 @@ func CanDeleteAll(db *database.Database, kind string,
 }
 
 func CanDeleteOrgAll(db *database.Database, kind string,
-	orgId primitive.ObjectID, ids []primitive.ObjectID) (
+	orgId bson.ObjectID, ids []bson.ObjectID) (
 	errData *errortypes.ErrorData, err error) {
 
 	for _, id := range ids {

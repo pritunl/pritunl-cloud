@@ -5,8 +5,7 @@ import (
 	"strings"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/settings"
@@ -26,7 +25,7 @@ func (r *PortRange) Contains(port int) bool {
 	return false
 }
 
-func Get(db *database.Database, ndePrtId primitive.ObjectID) (
+func Get(db *database.Database, ndePrtId bson.ObjectID) (
 	ndePrt *NodePort, err error) {
 
 	coll := db.NodePorts()
@@ -43,7 +42,7 @@ func Get(db *database.Database, ndePrtId primitive.ObjectID) (
 	return
 }
 
-func GetOrg(db *database.Database, orgId, ndePrtId primitive.ObjectID) (
+func GetOrg(db *database.Database, orgId, ndePrtId bson.ObjectID) (
 	ndePrt *NodePort, err error) {
 
 	coll := db.NodePorts()
@@ -61,7 +60,7 @@ func GetOrg(db *database.Database, orgId, ndePrtId primitive.ObjectID) (
 	return
 }
 
-func GetPort(db *database.Database, dcId, orgId primitive.ObjectID,
+func GetPort(db *database.Database, dcId, orgId bson.ObjectID,
 	protocol string, port int) (ndePrt *NodePort, err error) {
 
 	coll := db.NodePorts()
@@ -79,7 +78,7 @@ func GetPort(db *database.Database, dcId, orgId primitive.ObjectID,
 	return
 }
 
-func Available(db *database.Database, datacenterId, orgId primitive.ObjectID,
+func Available(db *database.Database, datacenterId, orgId bson.ObjectID,
 	protocol string, port int) (available bool, err error) {
 
 	ndePrt, err := GetPort(db, datacenterId, orgId, protocol, port)
@@ -157,7 +156,7 @@ func GetPortRanges() (ranges []*PortRange, err error) {
 	return
 }
 
-func New(db *database.Database, dcId, orgId primitive.ObjectID,
+func New(db *database.Database, dcId, orgId bson.ObjectID,
 	protocol string, requestPort int) (
 	ndePrt *NodePort, errData *errortypes.ErrorData, err error) {
 
@@ -224,7 +223,7 @@ func New(db *database.Database, dcId, orgId primitive.ObjectID,
 	return
 }
 
-func Remove(db *database.Database, ndePrtId primitive.ObjectID) (
+func Remove(db *database.Database, ndePrtId bson.ObjectID) (
 	err error) {
 
 	coll := db.NodePorts()

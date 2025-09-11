@@ -11,7 +11,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gorilla/websocket"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
@@ -40,22 +40,22 @@ import (
 var scriptReg = regexp.MustCompile("^#!")
 
 type Instance struct {
-	Id                  primitive.ObjectID  `bson:"_id,omitempty" json:"id"`
-	Organization        primitive.ObjectID  `bson:"organization" json:"organization"`
+	Id                  bson.ObjectID       `bson:"_id,omitempty" json:"id"`
+	Organization        bson.ObjectID       `bson:"organization" json:"organization"`
 	UnixId              int                 `bson:"unix_id" json:"unix_id"`
-	Datacenter          primitive.ObjectID  `bson:"datacenter" json:"datacenter"`
-	Zone                primitive.ObjectID  `bson:"zone" json:"zone"`
-	Vpc                 primitive.ObjectID  `bson:"vpc" json:"vpc"`
-	Subnet              primitive.ObjectID  `bson:"subnet" json:"subnet"`
+	Datacenter          bson.ObjectID       `bson:"datacenter" json:"datacenter"`
+	Zone                bson.ObjectID       `bson:"zone" json:"zone"`
+	Vpc                 bson.ObjectID       `bson:"vpc" json:"vpc"`
+	Subnet              bson.ObjectID       `bson:"subnet" json:"subnet"`
 	Created             time.Time           `bson:"created" json:"created"`
 	Guest               *GuestData          `bson:"guest,omitempty" json:"guest"`
 	CloudSubnet         string              `bson:"cloud_subnet" json:"cloud_subnet"`
 	CloudVnic           string              `bson:"cloud_vnic" json:"cloud_vnic"`
 	CloudVnicAttach     string              `bson:"cloud_vnic_attach" json:"cloud_vnic_attach"`
-	Image               primitive.ObjectID  `bson:"image" json:"image"`
+	Image               bson.ObjectID       `bson:"image" json:"image"`
 	ImageBacking        bool                `bson:"image_backing" json:"image_backing"`
 	DiskType            string              `bson:"disk_type" json:"disk_type"`
-	DiskPool            primitive.ObjectID  `bson:"disk_pool" json:"disk_pool"`
+	DiskPool            bson.ObjectID       `bson:"disk_pool" json:"disk_pool"`
 	Status              string              `bson:"-" json:"status"`
 	StatusInfo          *StatusInfo         `bson:"status_info,omitempty" json:"status_info"`
 	Uptime              string              `bson:"-" json:"uptime"`
@@ -94,8 +94,8 @@ type Instance struct {
 	NoPublicAddress     bool                `bson:"no_public_address" json:"no_public_address"`
 	NoPublicAddress6    bool                `bson:"no_public_address6" json:"no_public_address6"`
 	NoHostAddress       bool                `bson:"no_host_address" json:"no_host_address"`
-	Node                primitive.ObjectID  `bson:"node" json:"node"`
-	Shape               primitive.ObjectID  `bson:"shape" json:"shape"`
+	Node                bson.ObjectID       `bson:"node" json:"node"`
+	Shape               bson.ObjectID       `bson:"shape" json:"shape"`
 	Name                string              `bson:"name" json:"name"`
 	Comment             string              `bson:"comment" json:"comment"`
 	RootEnabled         bool                `bson:"root_enabled" json:"root_enabled"`
@@ -117,29 +117,29 @@ type Instance struct {
 	SpicePassword       string              `bson:"spice_password" json:"spice_password"`
 	SpicePort           int                 `bson:"spice_port" json:"spice_port"`
 	Gui                 bool                `bson:"gui" json:"gui"`
-	Deployment          primitive.ObjectID  `bson:"deployment" json:"deployment"`
+	Deployment          bson.ObjectID       `bson:"deployment" json:"deployment"`
 	Info                *Info               `bson:"info,omitempty" json:"info"`
 	Virt                *vm.VirtualMachine  `bson:"-" json:"-"`
 
-	curVpc              primitive.ObjectID                       `bson:"-" json:"-"`
-	curSubnet           primitive.ObjectID                       `bson:"-" json:"-"`
-	curDeleteProtection bool                                     `bson:"-" json:"-"`
-	curAction           string                                   `bson:"-" json:"-"`
-	curNoPublicAddress  bool                                     `bson:"-" json:"-"`
-	curNoHostAddress    bool                                     `bson:"-" json:"-"`
-	curNodePorts        map[primitive.ObjectID]*nodeport.Mapping `bson:"-" json:"-"`
-	removedNodePorts    []primitive.ObjectID                     `bson:"-" json:"-"`
-	newId               bool                                     `bson:"-" json:"-"`
+	curVpc              bson.ObjectID                       `bson:"-" json:"-"`
+	curSubnet           bson.ObjectID                       `bson:"-" json:"-"`
+	curDeleteProtection bool                                `bson:"-" json:"-"`
+	curAction           string                              `bson:"-" json:"-"`
+	curNoPublicAddress  bool                                `bson:"-" json:"-"`
+	curNoHostAddress    bool                                `bson:"-" json:"-"`
+	curNodePorts        map[bson.ObjectID]*nodeport.Mapping `bson:"-" json:"-"`
+	removedNodePorts    []bson.ObjectID                     `bson:"-" json:"-"`
+	newId               bool                                `bson:"-" json:"-"`
 }
 
 type Completion struct {
-	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Name         string             `bson:"name" json:"name"`
-	Organization primitive.ObjectID `bson:"organization" json:"organization"`
-	Zone         primitive.ObjectID `bson:"zone" json:"zone"`
-	Vpc          primitive.ObjectID `bson:"vpc" json:"vpc"`
-	Subnet       primitive.ObjectID `bson:"subnet" json:"subnet"`
-	Node         primitive.ObjectID `bson:"node" json:"node"`
+	Id           bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name         string        `bson:"name" json:"name"`
+	Organization bson.ObjectID `bson:"organization" json:"organization"`
+	Zone         bson.ObjectID `bson:"zone" json:"zone"`
+	Vpc          bson.ObjectID `bson:"vpc" json:"vpc"`
+	Subnet       bson.ObjectID `bson:"subnet" json:"subnet"`
+	Node         bson.ObjectID `bson:"node" json:"node"`
 }
 
 type Mount struct {
@@ -191,7 +191,7 @@ func (i *Instance) GenerateId() (err error) {
 	}
 
 	i.newId = true
-	i.Id = primitive.NewObjectID()
+	i.Id = bson.NewObjectID()
 
 	return
 }
@@ -389,7 +389,7 @@ func (i *Instance) Validate(db *database.Database) (
 		return
 	}
 
-	if i.Datacenter == primitive.NilObjectID {
+	if i.Datacenter == bson.NilObjectID {
 		i.Datacenter = nde.Datacenter
 	}
 
@@ -858,7 +858,7 @@ func (i *Instance) PreCommit() {
 	i.curNoPublicAddress = i.NoPublicAddress
 	i.curNoHostAddress = i.NoHostAddress
 
-	nodePortMap := map[primitive.ObjectID]*nodeport.Mapping{}
+	nodePortMap := map[bson.ObjectID]*nodeport.Mapping{}
 	for _, mapping := range i.NodePorts {
 		nodePortMap[mapping.NodePort] = mapping
 	}
@@ -922,7 +922,7 @@ func (i *Instance) SyncNodePorts(db *database.Database) (err error) {
 	externalPorts := set.NewSet()
 
 	if i.curNodePorts == nil {
-		i.curNodePorts = map[primitive.ObjectID]*nodeport.Mapping{}
+		i.curNodePorts = map[bson.ObjectID]*nodeport.Mapping{}
 	}
 
 	for _, mapping := range i.NodePorts {
@@ -1153,7 +1153,7 @@ func (i *Instance) Insert(db *database.Database) (err error) {
 			return
 		}
 
-		i.Id = resp.InsertedID.(primitive.ObjectID)
+		i.Id = resp.InsertedID.(bson.ObjectID)
 		return
 	}
 
@@ -1163,7 +1163,7 @@ func (i *Instance) Insert(db *database.Database) (err error) {
 	return
 }
 
-func (i *Instance) LoadVirt(poolsMap map[primitive.ObjectID]*pool.Pool,
+func (i *Instance) LoadVirt(poolsMap map[bson.ObjectID]*pool.Pool,
 	disks []*disk.Disk) {
 
 	i.Virt = &vm.VirtualMachine{
@@ -1509,7 +1509,7 @@ func (i *Instance) DiskChanged(curVirt *vm.VirtualMachine) (
 		return
 	}
 
-	disks := map[primitive.ObjectID]*vm.Disk{}
+	disks := map[bson.ObjectID]*vm.Disk{}
 	curDisks := set.NewSet()
 
 	for _, dsk := range i.Virt.Disks {

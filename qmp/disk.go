@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/features"
 	"github.com/pritunl/pritunl-cloud/settings"
@@ -54,7 +54,7 @@ type blockDevEvent struct {
 	Data  blockDevEventData `json:"data"`
 }
 
-func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
+func AddDisk(vmId bson.ObjectID, dsk *vm.Disk) (err error) {
 	dskId := fmt.Sprintf("fd_%s", dsk.Id.Hex())
 	dskFileId := fmt.Sprintf("fdf_%s", dsk.Id.Hex())
 	dskDevId := fmt.Sprintf("fdd_%s", dsk.Id.Hex())
@@ -180,7 +180,7 @@ func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
 	return
 }
 
-func RemoveDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
+func RemoveDisk(vmId bson.ObjectID, dsk *vm.Disk) (err error) {
 	dskId := fmt.Sprintf("fd_%s", dsk.Id.Hex())
 	dskFileId := fmt.Sprintf("fdf_%s", dsk.Id.Hex())
 	dskDevId := fmt.Sprintf("fdd_%s", dsk.Id.Hex())
@@ -378,7 +378,7 @@ type pciQueryDevice struct {
 	QdevId string `json:"qdev_id"`
 }
 
-func GetDisks(vmId primitive.ObjectID) (info *QemuInfo, disks []*vm.Disk,
+func GetDisks(vmId bson.ObjectID) (info *QemuInfo, disks []*vm.Disk,
 	err error) {
 
 	conn := NewConnection(vmId, false)
@@ -406,7 +406,7 @@ func GetDisks(vmId primitive.ObjectID) (info *QemuInfo, disks []*vm.Disk,
 		return
 	}
 
-	disksMap := map[primitive.ObjectID]*vm.Disk{}
+	disksMap := map[bson.ObjectID]*vm.Disk{}
 
 	index := 0
 	for _, disk := range returnData.Return {

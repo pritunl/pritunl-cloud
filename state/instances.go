@@ -2,7 +2,7 @@ package state
 
 import (
 	"github.com/dropbox/godropbox/container/set"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/nodeport"
@@ -15,12 +15,12 @@ var (
 
 type InstancesState struct {
 	instances    []*instance.Instance
-	instancesMap map[primitive.ObjectID]*instance.Instance
+	instancesMap map[bson.ObjectID]*instance.Instance
 	nodePortsMap map[string][]*nodeport.Mapping
 }
 
 func (p *InstancesState) GetInstace(
-	instId primitive.ObjectID) *instance.Instance {
+	instId bson.ObjectID) *instance.Instance {
 
 	if instId.IsZero() {
 		return nil
@@ -46,7 +46,7 @@ func (p *InstancesState) Refresh(pkg *Package,
 	p.instances = instances
 
 	instId := set.NewSet()
-	instancesMap := map[primitive.ObjectID]*instance.Instance{}
+	instancesMap := map[bson.ObjectID]*instance.Instance{}
 	nodePortsMap := map[string][]*nodeport.Mapping{}
 	for _, inst := range instances {
 		instId.Add(inst.Id)

@@ -9,8 +9,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -21,14 +20,14 @@ import (
 )
 
 type secretData struct {
-	Id      primitive.ObjectID `json:"id"`
-	Name    string             `json:"name"`
-	Comment string             `json:"comment"`
-	Type    string             `json:"type"`
-	Key     string             `json:"key"`
-	Value   string             `json:"value"`
-	Data    string             `json:"data"`
-	Region  string             `json:"region"`
+	Id      bson.ObjectID `json:"id"`
+	Name    string        `json:"name"`
+	Comment string        `json:"comment"`
+	Type    string        `json:"type"`
+	Key     string        `json:"key"`
+	Value   string        `json:"value"`
+	Data    string        `json:"data"`
+	Region  string        `json:"region"`
 }
 
 type secretsData struct {
@@ -42,7 +41,7 @@ func secretPut(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 	data := &secretData{}
 
 	secrId, ok := utils.ParseObjectId(c.Param("secr_id"))
@@ -111,7 +110,7 @@ func secretPost(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 	data := &secretData{
 		Name: "New Secret",
 	}
@@ -161,7 +160,7 @@ func secretDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	secrId, ok := utils.ParseObjectId(c.Param("secr_id"))
 	if !ok {
@@ -197,8 +196,8 @@ func secretsDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
-	data := []primitive.ObjectID{}
+	userOrg := c.MustGet("organization").(bson.ObjectID)
+	data := []bson.ObjectID{}
 
 	err := c.Bind(&data)
 	if err != nil {
@@ -239,7 +238,7 @@ func secretGet(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	secrId, ok := utils.ParseObjectId(c.Param("secr_id"))
 	if !ok {
@@ -273,7 +272,7 @@ func secretsGet(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
 	pageCount, _ := strconv.ParseInt(c.Query("page_count"), 10, 0)

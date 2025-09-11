@@ -9,8 +9,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/authority"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
@@ -20,15 +19,15 @@ import (
 )
 
 type authorityData struct {
-	Id           primitive.ObjectID `json:"id"`
-	Name         string             `json:"name"`
-	Comment      string             `json:"comment"`
-	Type         string             `json:"type"`
-	Organization primitive.ObjectID `json:"organization"`
-	Roles        []string           `json:"roles"`
-	Key          string             `json:"key"`
-	Principals   []string           `json:"principals"`
-	Certificate  string             `json:"certificate"`
+	Id           bson.ObjectID `json:"id"`
+	Name         string        `json:"name"`
+	Comment      string        `json:"comment"`
+	Type         string        `json:"type"`
+	Organization bson.ObjectID `json:"organization"`
+	Roles        []string      `json:"roles"`
+	Key          string        `json:"key"`
+	Principals   []string      `json:"principals"`
+	Certificate  string        `json:"certificate"`
 }
 
 type authoritiesData struct {
@@ -189,7 +188,7 @@ func authoritiesDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	data := []primitive.ObjectID{}
+	data := []bson.ObjectID{}
 
 	err := c.Bind(&data)
 	if err != nil {

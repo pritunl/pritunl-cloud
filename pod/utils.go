@@ -3,16 +3,15 @@ package pod
 import (
 	"time"
 
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/unit"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
-func Get(db *database.Database, podId primitive.ObjectID) (
+func Get(db *database.Database, podId bson.ObjectID) (
 	pd *Pod, err error) {
 
 	coll := db.Pods()
@@ -26,7 +25,7 @@ func Get(db *database.Database, podId primitive.ObjectID) (
 	return
 }
 
-func GetOrg(db *database.Database, orgId, pdId primitive.ObjectID) (
+func GetOrg(db *database.Database, orgId, pdId bson.ObjectID) (
 	pd *Pod, err error) {
 
 	coll := db.Pods()
@@ -154,7 +153,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	return
 }
 
-func UpdateDrafts(db *database.Database, podId, usrId primitive.ObjectID,
+func UpdateDrafts(db *database.Database, podId, usrId bson.ObjectID,
 	drafts []*UnitDraft) (err error) {
 
 	for _, draft := range drafts {
@@ -177,7 +176,7 @@ func UpdateDrafts(db *database.Database, podId, usrId primitive.ObjectID,
 	return nil
 }
 
-func UpdateDraftsOrg(db *database.Database, orgId, podId, usrId primitive.ObjectID,
+func UpdateDraftsOrg(db *database.Database, orgId, podId, usrId bson.ObjectID,
 	drafts []*UnitDraft) (err error) {
 
 	for _, draft := range drafts {
@@ -201,7 +200,7 @@ func UpdateDraftsOrg(db *database.Database, orgId, podId, usrId primitive.Object
 	return nil
 }
 
-func Remove(db *database.Database, podId primitive.ObjectID) (err error) {
+func Remove(db *database.Database, podId bson.ObjectID) (err error) {
 	coll := db.Pods()
 
 	err = spec.RemoveAll(db, &bson.M{
@@ -235,7 +234,7 @@ func Remove(db *database.Database, podId primitive.ObjectID) (err error) {
 	return
 }
 
-func RemoveOrg(db *database.Database, orgId, podId primitive.ObjectID) (
+func RemoveOrg(db *database.Database, orgId, podId bson.ObjectID) (
 	err error) {
 
 	coll := db.Pods()
@@ -274,7 +273,7 @@ func RemoveOrg(db *database.Database, orgId, podId primitive.ObjectID) (
 	return
 }
 
-func RemoveMulti(db *database.Database, podIds []primitive.ObjectID) (
+func RemoveMulti(db *database.Database, podIds []bson.ObjectID) (
 	err error) {
 
 	coll := db.Pods()
@@ -311,8 +310,8 @@ func RemoveMulti(db *database.Database, podIds []primitive.ObjectID) (
 	return
 }
 
-func RemoveMultiOrg(db *database.Database, orgId primitive.ObjectID,
-	podIds []primitive.ObjectID) (err error) {
+func RemoveMultiOrg(db *database.Database, orgId bson.ObjectID,
+	podIds []bson.ObjectID) (err error) {
 
 	coll := db.Pods()
 

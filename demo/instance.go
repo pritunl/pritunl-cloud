@@ -7,6 +7,20 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
+var Info = &instance.Info{
+	Node:      "node-name",
+	Timestamp: time.Now(),
+	Disks: []string{
+		"instance-name",
+	},
+	FirewallRules: map[string]string{
+		"icmp":    "0.0.0.0/0, ::/0",
+		"tcp:22":  "0.0.0.0/0, ::/0",
+		"tcp:80":  "0.0.0.0/0, ::/0",
+		"tcp:443": "0.0.0.0/0, ::/0",
+	},
+}
+
 var Instances = []*instance.Instance{
 	{
 		Id:               utils.ObjectIdHex("651d8e7c4cf9e2e3e4d56a00"),

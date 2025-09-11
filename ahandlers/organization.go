@@ -8,8 +8,7 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -21,10 +20,10 @@ import (
 )
 
 type organizationData struct {
-	Id      primitive.ObjectID `json:"id"`
-	Name    string             `json:"name"`
-	Comment string             `json:"comment"`
-	Roles   []string           `json:"roles"`
+	Id      bson.ObjectID `json:"id"`
+	Name    string        `json:"name"`
+	Comment string        `json:"comment"`
+	Roles   []string      `json:"roles"`
 }
 
 type organizationsData struct {

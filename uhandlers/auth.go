@@ -5,7 +5,7 @@ import (
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/audit"
 	"github.com/pritunl/pritunl-cloud/auth"
 	"github.com/pritunl/pritunl-cloud/authorizer"
@@ -117,7 +117,7 @@ func authSessionPost(c *gin.Context) {
 		}
 
 		secType := ""
-		var secProvider primitive.ObjectID
+		var secProvider bson.ObjectID
 		if deviceCount == 0 {
 			if secProviderId.IsZero() {
 				secType = secondary.UserDeviceRegister
@@ -537,7 +537,7 @@ func authCallbackGet(c *gin.Context) {
 		}
 
 		secType := ""
-		var secProvider primitive.ObjectID
+		var secProvider bson.ObjectID
 		if deviceCount == 0 {
 			if secProviderId.IsZero() {
 				secType = secondary.UserDeviceRegister

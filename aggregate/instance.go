@@ -6,8 +6,7 @@ import (
 	"strings"
 
 	"github.com/dropbox/godropbox/container/set"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/authority"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
@@ -149,10 +148,10 @@ func GetInstancePaged(db *database.Database, query *bson.M, page,
 	}
 	defer cursor.Close(db)
 
-	firesOrg := map[primitive.ObjectID]map[string][]*firewall.Firewall{}
-	firesRoles := map[primitive.ObjectID]set.Set{}
-	authrsOrg := map[primitive.ObjectID]map[string][]*authority.Authority{}
-	authrsRoles := map[primitive.ObjectID]set.Set{}
+	firesOrg := map[bson.ObjectID]map[string][]*firewall.Firewall{}
+	firesRoles := map[bson.ObjectID]set.Set{}
+	authrsOrg := map[bson.ObjectID]map[string][]*authority.Authority{}
+	authrsRoles := map[bson.ObjectID]set.Set{}
 
 	for cursor.Next(db) {
 		doc := &InstancePipe{}

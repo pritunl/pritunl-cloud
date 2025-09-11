@@ -9,31 +9,30 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type Block struct {
-	Id       primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Name     string             `bson:"name" json:"name"`
-	Comment  string             `bson:"comment" json:"comment"`
-	Type     string             `bson:"type" json:"type"`
-	Vlan     int                `bson:"vlan" json:"vlan"`
-	Subnets  []string           `bson:"subnets" json:"subnets"`
-	Subnets6 []string           `bson:"subnets6" json:"subnets6"`
-	Excludes []string           `bson:"excludes" json:"excludes"`
-	Netmask  string             `bson:"netmask" json:"netmask"`
-	Gateway  string             `bson:"gateway" json:"gateway"`
-	Gateway6 string             `bson:"gateway6" json:"gateway6"`
+	Id       bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name     string        `bson:"name" json:"name"`
+	Comment  string        `bson:"comment" json:"comment"`
+	Type     string        `bson:"type" json:"type"`
+	Vlan     int           `bson:"vlan" json:"vlan"`
+	Subnets  []string      `bson:"subnets" json:"subnets"`
+	Subnets6 []string      `bson:"subnets6" json:"subnets6"`
+	Excludes []string      `bson:"excludes" json:"excludes"`
+	Netmask  string        `bson:"netmask" json:"netmask"`
+	Gateway  string        `bson:"gateway" json:"gateway"`
+	Gateway6 string        `bson:"gateway6" json:"gateway6"`
 }
 
 type Completion struct {
-	Id   primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Name string             `bson:"name" json:"name"`
-	Type string             `bson:"type" json:"type"`
+	Id   bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name string        `bson:"name" json:"name"`
+	Type string        `bson:"type" json:"type"`
 }
 
 func (b *Block) Validate(db *database.Database) (
@@ -380,7 +379,7 @@ func (b *Block) GetIpCount() (count int64, err error) {
 }
 
 func (b *Block) GetIp(db *database.Database,
-	instId primitive.ObjectID, typ string) (ip net.IP, err error) {
+	instId bson.ObjectID, typ string) (ip net.IP, err error) {
 
 	blckIps, err := b.GetIps(db)
 	if err != nil {
@@ -499,7 +498,7 @@ func (b *Block) GetIp(db *database.Database,
 }
 
 func (b *Block) GetIp6(db *database.Database,
-	instId primitive.ObjectID, vlan int) (ip net.IP, cidr int, err error) {
+	instId bson.ObjectID, vlan int) (ip net.IP, cidr int, err error) {
 
 	subnets6 := b.Subnets6
 	if subnets6 == nil || len(subnets6) < 1 {
@@ -569,7 +568,7 @@ func (b *Block) GetIp6(db *database.Database,
 }
 
 func (b *Block) RemoveIp(db *database.Database,
-	instId primitive.ObjectID) (err error) {
+	instId bson.ObjectID) (err error) {
 
 	coll := db.BlocksIp()
 	_, err = coll.DeleteMany(db, &bson.M{
@@ -745,7 +744,7 @@ func (b *Block) Insert(db *database.Database) (err error) {
 		return
 	}
 
-	b.Id = resp.InsertedID.(primitive.ObjectID)
+	b.Id = resp.InsertedID.(bson.ObjectID)
 
 	return
 }

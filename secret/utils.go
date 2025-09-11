@@ -10,9 +10,8 @@ import (
 	"fmt"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -38,7 +37,7 @@ func JsonValid(data string) bool {
 	return true
 }
 
-func Get(db *database.Database, secrId primitive.ObjectID) (
+func Get(db *database.Database, secrId bson.ObjectID) (
 	secr *Secret, err error) {
 
 	coll := db.Secrets()
@@ -65,7 +64,7 @@ func GetOne(db *database.Database, query *bson.M) (secr *Secret, err error) {
 	return
 }
 
-func GetOrg(db *database.Database, orgId, secrId primitive.ObjectID) (
+func GetOrg(db *database.Database, orgId, secrId bson.ObjectID) (
 	secr *Secret, err error) {
 
 	coll := db.Secrets()
@@ -115,7 +114,7 @@ func GetAll(db *database.Database, query *bson.M) (
 	return
 }
 
-func GetAllOrg(db *database.Database, orgId primitive.ObjectID) (
+func GetAllOrg(db *database.Database, orgId bson.ObjectID) (
 	secrs []*Secret, err error) {
 
 	coll := db.Secrets()
@@ -257,7 +256,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	return
 }
 
-func ExistsOrg(db *database.Database, orgId, secrId primitive.ObjectID) (
+func ExistsOrg(db *database.Database, orgId, secrId bson.ObjectID) (
 	exists bool, err error) {
 
 	coll := db.Secrets()
@@ -279,7 +278,7 @@ func ExistsOrg(db *database.Database, orgId, secrId primitive.ObjectID) (
 	return
 }
 
-func Remove(db *database.Database, secrId primitive.ObjectID) (err error) {
+func Remove(db *database.Database, secrId bson.ObjectID) (err error) {
 	coll := db.Secrets()
 
 	_, err = coll.DeleteMany(db, &bson.M{
@@ -293,7 +292,7 @@ func Remove(db *database.Database, secrId primitive.ObjectID) (err error) {
 	return
 }
 
-func RemoveOrg(db *database.Database, orgId, secrId primitive.ObjectID) (
+func RemoveOrg(db *database.Database, orgId, secrId bson.ObjectID) (
 	err error) {
 
 	coll := db.Secrets()
@@ -315,7 +314,7 @@ func RemoveOrg(db *database.Database, orgId, secrId primitive.ObjectID) (
 	return
 }
 
-func RemoveMulti(db *database.Database, secrIds []primitive.ObjectID) (
+func RemoveMulti(db *database.Database, secrIds []bson.ObjectID) (
 	err error) {
 	coll := db.Secrets()
 
@@ -332,8 +331,8 @@ func RemoveMulti(db *database.Database, secrIds []primitive.ObjectID) (
 	return
 }
 
-func RemoveMultiOrg(db *database.Database, orgId primitive.ObjectID,
-	secrIds []primitive.ObjectID) (err error) {
+func RemoveMultiOrg(db *database.Database, orgId bson.ObjectID,
+	secrIds []bson.ObjectID) (err error) {
 
 	coll := db.Secrets()
 

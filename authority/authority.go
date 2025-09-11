@@ -3,22 +3,22 @@ package authority
 import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type Authority struct {
-	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Name         string             `bson:"name" json:"name"`
-	Comment      string             `bson:"comment" json:"comment"`
-	Type         string             `bson:"type" json:"type"`
-	Organization primitive.ObjectID `bson:"organization" json:"organization"`
-	Roles        []string           `bson:"roles" json:"roles"`
-	Key          string             `bson:"key" json:"key"`
-	Principals   []string           `bson:"principals" json:"principals"`
-	Certificate  string             `bson:"certificate" json:"certificate"`
+	Id           bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name         string        `bson:"name" json:"name"`
+	Comment      string        `bson:"comment" json:"comment"`
+	Type         string        `bson:"type" json:"type"`
+	Organization bson.ObjectID `bson:"organization" json:"organization"`
+	Roles        []string      `bson:"roles" json:"roles"`
+	Key          string        `bson:"key" json:"key"`
+	Principals   []string      `bson:"principals" json:"principals"`
+	Certificate  string        `bson:"certificate" json:"certificate"`
 }
 
 func (f *Authority) Validate(db *database.Database) (
@@ -91,7 +91,7 @@ func (f *Authority) Insert(db *database.Database) (err error) {
 		return
 	}
 
-	f.Id = resp.InsertedID.(primitive.ObjectID)
+	f.Id = resp.InsertedID.(bson.ObjectID)
 
 	return
 }

@@ -2,8 +2,7 @@ package task
 
 import (
 	"github.com/dropbox/godropbox/container/set"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -41,7 +40,7 @@ func blocksCheckHandler(db *database.Database) (err error) {
 	ipBlocks := set.NewSet()
 
 	for _, ipBlockInf := range ipBlocksInf {
-		if ipBlock, ok := ipBlockInf.(primitive.ObjectID); ok {
+		if ipBlock, ok := ipBlockInf.(bson.ObjectID); ok {
 			ipBlocks.Add(ipBlock)
 		}
 	}
@@ -76,7 +75,7 @@ func blocksCheckHandler(db *database.Database) (err error) {
 
 	ipBlocks.Subtract(blocks)
 	for blckIdInf := range ipBlocks.Iter() {
-		blckId := blckIdInf.(primitive.ObjectID)
+		blckId := blckIdInf.(bson.ObjectID)
 
 		cursor2, e := ipColl.Find(db, &bson.M{
 			"block": blckId,

@@ -1,16 +1,15 @@
 package tpm
 
 import (
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type instanceData struct {
-	Id        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	TpmSecret string             `bson:"tpm_secret" json:"-"`
+	Id        bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	TpmSecret string        `bson:"tpm_secret" json:"-"`
 }
 
 func GenerateSecret() (secret string, err error) {
@@ -22,7 +21,7 @@ func GenerateSecret() (secret string, err error) {
 	return
 }
 
-func GetSecret(db *database.Database, vmId primitive.ObjectID) (
+func GetSecret(db *database.Database, vmId bson.ObjectID) (
 	secret string, err error) {
 
 	coll := db.Instances()

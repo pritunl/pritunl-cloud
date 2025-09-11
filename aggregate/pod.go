@@ -2,8 +2,7 @@ package aggregate
 
 import (
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/unit"
@@ -20,7 +19,7 @@ type PodAggregate struct {
 	Units []*unit.Unit `json:"units"`
 }
 
-func GetPod(db *database.Database, usrId primitive.ObjectID, query *bson.M) (
+func GetPod(db *database.Database, usrId bson.ObjectID, query *bson.M) (
 	pd *PodAggregate, err error) {
 
 	coll := db.Pods()
@@ -74,7 +73,7 @@ func GetPod(db *database.Database, usrId primitive.ObjectID, query *bson.M) (
 	return
 }
 
-func GetPodsPaged(db *database.Database, usrId primitive.ObjectID,
+func GetPodsPaged(db *database.Database, usrId bson.ObjectID,
 	query *bson.M, page, pageCount int64) (pods []*PodAggregate,
 	count int64, err error) {
 

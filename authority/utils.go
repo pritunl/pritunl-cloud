@@ -1,14 +1,13 @@
 package authority
 
 import (
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
-func Get(db *database.Database, authrId primitive.ObjectID) (
+func Get(db *database.Database, authrId bson.ObjectID) (
 	authr *Authority, err error) {
 
 	coll := db.Authorities()
@@ -22,7 +21,7 @@ func Get(db *database.Database, authrId primitive.ObjectID) (
 	return
 }
 
-func GetOrg(db *database.Database, orgId, authrId primitive.ObjectID) (
+func GetOrg(db *database.Database, orgId, authrId bson.ObjectID) (
 	authr *Authority, err error) {
 
 	coll := db.Authorities()
@@ -154,7 +153,7 @@ func GetMapRoles(db *database.Database, query *bson.M) (
 	return
 }
 
-func GetOrgMapRoles(db *database.Database, orgId primitive.ObjectID) (
+func GetOrgMapRoles(db *database.Database, orgId bson.ObjectID) (
 	authrs map[string][]*Authority, err error) {
 
 	coll := db.Authorities()
@@ -195,7 +194,7 @@ func GetOrgMapRoles(db *database.Database, orgId primitive.ObjectID) (
 	return
 }
 
-func GetOrgRoles(db *database.Database, orgId primitive.ObjectID,
+func GetOrgRoles(db *database.Database, orgId bson.ObjectID,
 	roles []string) (authrs []*Authority, err error) {
 
 	coll := db.Authorities()
@@ -342,7 +341,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	return
 }
 
-func Remove(db *database.Database, authrId primitive.ObjectID) (err error) {
+func Remove(db *database.Database, authrId bson.ObjectID) (err error) {
 	coll := db.Authorities()
 
 	_, err = coll.DeleteOne(db, &bson.M{
@@ -361,7 +360,7 @@ func Remove(db *database.Database, authrId primitive.ObjectID) (err error) {
 	return
 }
 
-func RemoveOrg(db *database.Database, orgId, authrId primitive.ObjectID) (
+func RemoveOrg(db *database.Database, orgId, authrId bson.ObjectID) (
 	err error) {
 
 	coll := db.Authorities()
@@ -384,7 +383,7 @@ func RemoveOrg(db *database.Database, orgId, authrId primitive.ObjectID) (
 }
 
 func RemoveMulti(db *database.Database,
-	authrIds []primitive.ObjectID) (err error) {
+	authrIds []bson.ObjectID) (err error) {
 
 	coll := db.Authorities()
 
@@ -401,8 +400,8 @@ func RemoveMulti(db *database.Database,
 	return
 }
 
-func RemoveMultiOrg(db *database.Database, orgId primitive.ObjectID,
-	authrIds []primitive.ObjectID) (err error) {
+func RemoveMultiOrg(db *database.Database, orgId bson.ObjectID,
+	authrIds []bson.ObjectID) (err error) {
 
 	coll := db.Authorities()
 

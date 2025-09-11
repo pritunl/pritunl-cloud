@@ -2,14 +2,13 @@ package relations
 
 import (
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 )
 
 type Query struct {
 	Id           any
-	Organization primitive.ObjectID
+	Organization bson.ObjectID
 	Label        string
 	Collection   string
 	Project      []Project
@@ -142,7 +141,7 @@ func (r *Query) convertToResponse(doc bson.M) *Response {
 	}
 
 	for _, relation := range r.Relations {
-		docs, ok := doc[relation.From].(primitive.A)
+		docs, ok := doc[relation.From].(bson.A)
 		if ok {
 			response.Relations = append(
 				response.Relations,
@@ -155,7 +154,7 @@ func (r *Query) convertToResponse(doc bson.M) *Response {
 }
 
 func (r *Query) convertToRelated(relation Relation,
-	docs primitive.A) Related {
+	docs bson.A) Related {
 
 	related := Related{
 		Label:     relation.Label,
@@ -222,7 +221,7 @@ func (r *Query) convertToRelated(relation Relation,
 		}
 
 		for _, relation := range relation.Relations {
-			docs, ok := doc[relation.From].(primitive.A)
+			docs, ok := doc[relation.From].(bson.A)
 			if ok {
 				resource.Relations = append(
 					resource.Relations,

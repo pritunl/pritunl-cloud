@@ -1,16 +1,16 @@
 package types
 
 import (
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/certificate"
 )
 
 type Certificate struct {
-	Id          primitive.ObjectID `json:"id"`
-	Name        string             `json:"name"`
-	Type        string             `json:"type"`
-	Key         string             `json:"key"`
-	Certificate string             `json:"certificate"`
+	Id          bson.ObjectID `json:"id"`
+	Name        string        `json:"name"`
+	Type        string        `json:"type"`
+	Key         string        `json:"key"`
+	Certificate string        `json:"certificate"`
 }
 
 func NewCertificates(certs []*certificate.Certificate) []*Certificate {

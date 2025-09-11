@@ -5,8 +5,7 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/arp"
 	"github.com/pritunl/pritunl-cloud/authority"
 	"github.com/pritunl/pritunl-cloud/certificate"
@@ -40,7 +39,7 @@ type StateOld struct {
 	nodeDatacenter         *datacenter.Datacenter
 	nodeZone               *zone.Zone
 	vxlan                  bool
-	zoneMap                map[primitive.ObjectID]*zone.Zone
+	zoneMap                map[bson.ObjectID]*zone.Zone
 	namespaces             []string
 	interfaces             []string
 	interfacesSet          set.Set
@@ -50,30 +49,30 @@ type StateOld struct {
 	pools                  []*pool.Pool
 	disks                  []*disk.Disk
 	schedulers             []*scheduler.Scheduler
-	deploymentsReservedMap map[primitive.ObjectID]*deployment.Deployment
-	deploymentsDeployedMap map[primitive.ObjectID]*deployment.Deployment
-	deploymentsInactiveMap map[primitive.ObjectID]*deployment.Deployment
-	podsMap                map[primitive.ObjectID]*pod.Pod
-	unitsMap               map[primitive.ObjectID]*unit.Unit
+	deploymentsReservedMap map[bson.ObjectID]*deployment.Deployment
+	deploymentsDeployedMap map[bson.ObjectID]*deployment.Deployment
+	deploymentsInactiveMap map[bson.ObjectID]*deployment.Deployment
+	podsMap                map[bson.ObjectID]*pod.Pod
+	unitsMap               map[bson.ObjectID]*unit.Unit
 
-	specsMap            map[primitive.ObjectID]*spec.Spec
-	specsPodsMap        map[primitive.ObjectID]*pod.Pod
-	specsPodUnitsMap    map[primitive.ObjectID][]*unit.Unit
-	specsUnitsMap       map[primitive.ObjectID]*unit.Unit
-	specsDeploymentsMap map[primitive.ObjectID]*deployment.Deployment
-	specsDomainsMap     map[primitive.ObjectID]*domain.Domain
-	specsSecretsMap     map[primitive.ObjectID]*secret.Secret
-	specsCertsMap       map[primitive.ObjectID]*certificate.Certificate
+	specsMap            map[bson.ObjectID]*spec.Spec
+	specsPodsMap        map[bson.ObjectID]*pod.Pod
+	specsPodUnitsMap    map[bson.ObjectID][]*unit.Unit
+	specsUnitsMap       map[bson.ObjectID]*unit.Unit
+	specsDeploymentsMap map[bson.ObjectID]*deployment.Deployment
+	specsDomainsMap     map[bson.ObjectID]*domain.Domain
+	specsSecretsMap     map[bson.ObjectID]*secret.Secret
+	specsCertsMap       map[bson.ObjectID]*certificate.Certificate
 
-	virtsMap           map[primitive.ObjectID]*vm.VirtualMachine
+	virtsMap           map[bson.ObjectID]*vm.VirtualMachine
 	instances          []*instance.Instance
-	instancesMap       map[primitive.ObjectID]*instance.Instance
-	instanceDisks      map[primitive.ObjectID][]*disk.Disk
-	instanceNamespaces map[primitive.ObjectID][]string
+	instancesMap       map[bson.ObjectID]*instance.Instance
+	instanceDisks      map[bson.ObjectID][]*disk.Disk
+	instanceNamespaces map[bson.ObjectID][]string
 	authoritiesMap     map[string][]*authority.Authority
 	vpcs               []*vpc.Vpc
-	vpcsMap            map[primitive.ObjectID]*vpc.Vpc
-	vpcIpsMap          map[primitive.ObjectID][]*vpc.VpcIp
+	vpcsMap            map[bson.ObjectID]*vpc.Vpc
+	vpcIpsMap          map[bson.ObjectID][]*vpc.VpcIp
 	arpRecords         map[string]set.Set
 	addInstances       set.Set
 	remInstances       set.Set
@@ -100,7 +99,7 @@ func (s *StateOld) NodeZone() *zone.Zone {
 	return s.nodeZone
 }
 
-func (s *StateOld) GetZone(zneId primitive.ObjectID) *zone.Zone {
+func (s *StateOld) GetZone(zneId bson.ObjectID) *zone.Zone {
 	return s.zoneMap[zneId]
 }
 
@@ -144,11 +143,11 @@ func (s *StateOld) Disks() []*disk.Disk {
 	return s.disks
 }
 
-func (s *StateOld) GetInstaceDisks(instId primitive.ObjectID) []*disk.Disk {
+func (s *StateOld) GetInstaceDisks(instId bson.ObjectID) []*disk.Disk {
 	return s.instanceDisks[instId]
 }
 
-func (s *StateOld) GetInstanceNamespaces(instId primitive.ObjectID) []string {
+func (s *StateOld) GetInstanceNamespaces(instId bson.ObjectID) []string {
 	return s.instanceNamespaces[instId]
 }
 
@@ -169,47 +168,47 @@ func (s *StateOld) GetInstaceAuthorities(roles []string) []*authority.Authority 
 	return authrs
 }
 
-func (s *StateOld) DeploymentReserved(deplyId primitive.ObjectID) *deployment.Deployment {
+func (s *StateOld) DeploymentReserved(deplyId bson.ObjectID) *deployment.Deployment {
 	return s.deploymentsReservedMap[deplyId]
 }
 
 func (s *StateOld) DeploymentsReserved() (
-	deplys map[primitive.ObjectID]*deployment.Deployment) {
+	deplys map[bson.ObjectID]*deployment.Deployment) {
 
 	deplys = s.deploymentsReservedMap
 	return
 }
 
-func (s *StateOld) DeploymentDeployed(deplyId primitive.ObjectID) *deployment.Deployment {
+func (s *StateOld) DeploymentDeployed(deplyId bson.ObjectID) *deployment.Deployment {
 	return s.deploymentsDeployedMap[deplyId]
 }
 
 func (s *StateOld) DeploymentsDeployed() (
-	deplys map[primitive.ObjectID]*deployment.Deployment) {
+	deplys map[bson.ObjectID]*deployment.Deployment) {
 
 	deplys = s.deploymentsDeployedMap
 	return
 }
 
 func (s *StateOld) DeploymentsDestroy() (
-	deplys map[primitive.ObjectID]*deployment.Deployment) {
+	deplys map[bson.ObjectID]*deployment.Deployment) {
 
 	deplys = s.deploymentsInactiveMap
 	return
 }
 
-func (s *StateOld) DeploymentInactive(deplyId primitive.ObjectID) *deployment.Deployment {
+func (s *StateOld) DeploymentInactive(deplyId bson.ObjectID) *deployment.Deployment {
 	return s.deploymentsInactiveMap[deplyId]
 }
 
 func (s *StateOld) DeploymentsInactive() (
-	deplys map[primitive.ObjectID]*deployment.Deployment) {
+	deplys map[bson.ObjectID]*deployment.Deployment) {
 
 	deplys = s.deploymentsInactiveMap
 	return
 }
 
-func (s *StateOld) Deployment(deplyId primitive.ObjectID) (
+func (s *StateOld) Deployment(deplyId bson.ObjectID) (
 	deply *deployment.Deployment) {
 
 	deply = s.deploymentsDeployedMap[deplyId]
@@ -230,51 +229,51 @@ func (s *StateOld) Deployment(deplyId primitive.ObjectID) (
 	return
 }
 
-func (s *StateOld) Pod(pdId primitive.ObjectID) *pod.Pod {
+func (s *StateOld) Pod(pdId bson.ObjectID) *pod.Pod {
 	return s.podsMap[pdId]
 }
 
-func (s *StateOld) Unit(unitId primitive.ObjectID) *unit.Unit {
+func (s *StateOld) Unit(unitId bson.ObjectID) *unit.Unit {
 	return s.unitsMap[unitId]
 }
 
-func (s *StateOld) Spec(commitId primitive.ObjectID) *spec.Spec {
+func (s *StateOld) Spec(commitId bson.ObjectID) *spec.Spec {
 	return s.specsMap[commitId]
 }
 
-func (s *StateOld) SpecPod(pdId primitive.ObjectID) *pod.Pod {
+func (s *StateOld) SpecPod(pdId bson.ObjectID) *pod.Pod {
 	return s.specsPodsMap[pdId]
 }
 
-func (s *StateOld) SpecPodUnits(pdId primitive.ObjectID) []*unit.Unit {
+func (s *StateOld) SpecPodUnits(pdId bson.ObjectID) []*unit.Unit {
 	return s.specsPodUnitsMap[pdId]
 }
 
-func (s *StateOld) SpecUnit(unitId primitive.ObjectID) *unit.Unit {
+func (s *StateOld) SpecUnit(unitId bson.ObjectID) *unit.Unit {
 	return s.specsUnitsMap[unitId]
 }
 
-func (s *StateOld) SpecDomain(domnId primitive.ObjectID) *domain.Domain {
+func (s *StateOld) SpecDomain(domnId bson.ObjectID) *domain.Domain {
 	return s.specsDomainsMap[domnId]
 }
 
-func (s *StateOld) SpecSecret(secrID primitive.ObjectID) *secret.Secret {
+func (s *StateOld) SpecSecret(secrID bson.ObjectID) *secret.Secret {
 	return s.specsSecretsMap[secrID]
 }
 
-func (s *StateOld) SpecCert(certId primitive.ObjectID) *certificate.Certificate {
+func (s *StateOld) SpecCert(certId bson.ObjectID) *certificate.Certificate {
 	return s.specsCertsMap[certId]
 }
 
-func (s *StateOld) Vpc(vpcId primitive.ObjectID) *vpc.Vpc {
+func (s *StateOld) Vpc(vpcId bson.ObjectID) *vpc.Vpc {
 	return s.vpcsMap[vpcId]
 }
 
-func (s *StateOld) VpcIps(vpcId primitive.ObjectID) []*vpc.VpcIp {
+func (s *StateOld) VpcIps(vpcId bson.ObjectID) []*vpc.VpcIp {
 	return s.vpcIpsMap[vpcId]
 }
 
-func (s *StateOld) VpcIpsMap() map[primitive.ObjectID][]*vpc.VpcIp {
+func (s *StateOld) VpcIpsMap() map[bson.ObjectID][]*vpc.VpcIp {
 	return s.vpcIpsMap
 }
 
@@ -286,7 +285,7 @@ func (s *StateOld) Vpcs() []*vpc.Vpc {
 	return s.vpcs
 }
 
-func (s *StateOld) DiskInUse(instId, dskId primitive.ObjectID) bool {
+func (s *StateOld) DiskInUse(instId, dskId bson.ObjectID) bool {
 	curVirt := s.virtsMap[instId]
 
 	if curVirt != nil {
@@ -302,14 +301,14 @@ func (s *StateOld) DiskInUse(instId, dskId primitive.ObjectID) bool {
 	return false
 }
 
-func (s *StateOld) GetVirt(instId primitive.ObjectID) *vm.VirtualMachine {
+func (s *StateOld) GetVirt(instId bson.ObjectID) *vm.VirtualMachine {
 	if instId.IsZero() {
 		return nil
 	}
 	return s.virtsMap[instId]
 }
 
-func (s *StateOld) GetInstace(instId primitive.ObjectID) *instance.Instance {
+func (s *StateOld) GetInstace(instId bson.ObjectID) *instance.Instance {
 	if instId.IsZero() {
 		return nil
 	}
@@ -358,7 +357,7 @@ func (s *StateOld) init() (err error) {
 			return
 		}
 
-		zonesMap := map[primitive.ObjectID]*zone.Zone{}
+		zonesMap := map[bson.ObjectID]*zone.Zone{}
 		for _, zne := range znes {
 			zonesMap[zne.Id] = zne
 		}
@@ -406,7 +405,7 @@ func (s *StateOld) init() (err error) {
 	}
 	s.disks = disks
 
-	instanceDisks := map[primitive.ObjectID][]*disk.Disk{}
+	instanceDisks := map[bson.ObjectID][]*disk.Disk{}
 	for _, dsk := range disks {
 		dsks := instanceDisks[dsk.Instance]
 		if dsks == nil {
@@ -419,8 +418,8 @@ func (s *StateOld) init() (err error) {
 
 	// Vpcs
 	vpcs := []*vpc.Vpc{}
-	vpcsId := []primitive.ObjectID{}
-	vpcsMap := map[primitive.ObjectID]*vpc.Vpc{}
+	vpcsId := []bson.ObjectID{}
+	vpcsMap := map[bson.ObjectID]*vpc.Vpc{}
 	if s.nodeDatacenter != nil {
 		vpcs, err = vpc.GetDatacenter(db, s.nodeDatacenter.Id)
 		if err != nil {
@@ -435,7 +434,7 @@ func (s *StateOld) init() (err error) {
 	s.vpcs = vpcs
 	s.vpcsMap = vpcsMap
 
-	vpcIpsMap := map[primitive.ObjectID][]*vpc.VpcIp{}
+	vpcIpsMap := map[bson.ObjectID][]*vpc.VpcIp{}
 	if s.nodeDatacenter != nil {
 		vpcIpsMap, err = vpc.GetIpsMapped(db, vpcsId)
 		if err != nil {
@@ -453,10 +452,10 @@ func (s *StateOld) init() (err error) {
 		return
 	}
 
-	deploymentsNode := map[primitive.ObjectID]*deployment.Deployment{}
-	deploymentsReservedMap := map[primitive.ObjectID]*deployment.Deployment{}
-	deploymentsDeployedMap := map[primitive.ObjectID]*deployment.Deployment{}
-	deploymentsInactiveMap := map[primitive.ObjectID]*deployment.Deployment{}
+	deploymentsNode := map[bson.ObjectID]*deployment.Deployment{}
+	deploymentsReservedMap := map[bson.ObjectID]*deployment.Deployment{}
+	deploymentsDeployedMap := map[bson.ObjectID]*deployment.Deployment{}
+	deploymentsInactiveMap := map[bson.ObjectID]*deployment.Deployment{}
 	deploymentsIdSet := set.NewSet()
 	podIdsSet := set.NewSet()
 	unitIdsSet := set.NewSet()
@@ -490,9 +489,9 @@ func (s *StateOld) init() (err error) {
 		specIdsSet.Add(deply.Spec)
 	}
 
-	specIds := []primitive.ObjectID{}
+	specIds := []bson.ObjectID{}
 	for specId := range specIdsSet.Iter() {
-		specIds = append(specIds, specId.(primitive.ObjectID))
+		specIds = append(specIds, specId.(bson.ObjectID))
 	}
 
 	specs := []*spec.Spec{}
@@ -512,7 +511,7 @@ func (s *StateOld) init() (err error) {
 	specPodsSet := set.NewSet()
 	specUnitsSet := set.NewSet()
 	specDomainsSet := set.NewSet()
-	specsMap := map[primitive.ObjectID]*spec.Spec{}
+	specsMap := map[bson.ObjectID]*spec.Spec{}
 	for _, spc := range specs {
 		specsMap[spc.Id] = spc
 
@@ -552,12 +551,12 @@ func (s *StateOld) init() (err error) {
 	}
 	s.specsMap = specsMap
 
-	specCertIds := []primitive.ObjectID{}
+	specCertIds := []bson.ObjectID{}
 	for certId := range specCertsSet.Iter() {
-		specCertIds = append(specCertIds, certId.(primitive.ObjectID))
+		specCertIds = append(specCertIds, certId.(bson.ObjectID))
 	}
 
-	specsCertsMap := map[primitive.ObjectID]*certificate.Certificate{}
+	specsCertsMap := map[bson.ObjectID]*certificate.Certificate{}
 	specCerts := []*certificate.Certificate{}
 	if len(specCertIds) > 0 {
 		specCerts, err = certificate.GetAll(db, &bson.M{
@@ -575,12 +574,12 @@ func (s *StateOld) init() (err error) {
 	}
 	s.specsCertsMap = specsCertsMap
 
-	specSecretIds := []primitive.ObjectID{}
+	specSecretIds := []bson.ObjectID{}
 	for secrId := range specSecretsSet.Iter() {
-		specSecretIds = append(specSecretIds, secrId.(primitive.ObjectID))
+		specSecretIds = append(specSecretIds, secrId.(bson.ObjectID))
 	}
 
-	specsSecretsMap := map[primitive.ObjectID]*secret.Secret{}
+	specsSecretsMap := map[bson.ObjectID]*secret.Secret{}
 
 	specSecrets := []*secret.Secret{}
 	if len(specSecretIds) > 0 {
@@ -599,9 +598,9 @@ func (s *StateOld) init() (err error) {
 	}
 	s.specsSecretsMap = specsSecretsMap
 
-	specPodIds := []primitive.ObjectID{}
+	specPodIds := []bson.ObjectID{}
 	for pdId := range specPodsSet.Iter() {
-		specPodIds = append(specPodIds, pdId.(primitive.ObjectID))
+		specPodIds = append(specPodIds, pdId.(bson.ObjectID))
 	}
 
 	specPods := []*pod.Pod{}
@@ -616,15 +615,15 @@ func (s *StateOld) init() (err error) {
 		}
 	}
 
-	specsPodsMap := map[primitive.ObjectID]*pod.Pod{}
+	specsPodsMap := map[bson.ObjectID]*pod.Pod{}
 	for _, specPod := range specPods {
 		specsPodsMap[specPod.Id] = specPod
 	}
 	s.specsPodsMap = specsPodsMap
 
-	specUnitIds := []primitive.ObjectID{}
+	specUnitIds := []bson.ObjectID{}
 	for unitId := range specUnitsSet.Iter() {
-		specUnitIds = append(specUnitIds, unitId.(primitive.ObjectID))
+		specUnitIds = append(specUnitIds, unitId.(bson.ObjectID))
 	}
 
 	specUnits := []*unit.Unit{}
@@ -649,8 +648,8 @@ func (s *StateOld) init() (err error) {
 	}
 
 	specDeploymentsSet := set.NewSet()
-	specsUnitsMap := map[primitive.ObjectID]*unit.Unit{}
-	specsPodUnitsMap := map[primitive.ObjectID][]*unit.Unit{}
+	specsUnitsMap := map[bson.ObjectID]*unit.Unit{}
+	specsPodUnitsMap := map[bson.ObjectID][]*unit.Unit{}
 	for _, specUnit := range specUnits {
 		specsUnitsMap[specUnit.Id] = specUnit
 
@@ -664,12 +663,12 @@ func (s *StateOld) init() (err error) {
 	s.specsUnitsMap = specsUnitsMap
 	s.specsPodUnitsMap = specsPodUnitsMap
 
-	specDomainIds := []primitive.ObjectID{}
+	specDomainIds := []bson.ObjectID{}
 	for pdId := range specDomainsSet.Iter() {
-		specDomainIds = append(specDomainIds, pdId.(primitive.ObjectID))
+		specDomainIds = append(specDomainIds, pdId.(bson.ObjectID))
 	}
 
-	specsDomainsMap := map[primitive.ObjectID]*domain.Domain{}
+	specsDomainsMap := map[bson.ObjectID]*domain.Domain{}
 	specDomains, err := domain.GetLoadedAllIds(db, specDomainIds)
 	if err != nil {
 		return
@@ -680,9 +679,9 @@ func (s *StateOld) init() (err error) {
 	}
 	s.specsDomainsMap = specsDomainsMap
 
-	specDeploymentIds := []primitive.ObjectID{}
+	specDeploymentIds := []bson.ObjectID{}
 	for deplyIdInf := range specDeploymentsSet.Iter() {
-		deplyId := deplyIdInf.(primitive.ObjectID)
+		deplyId := deplyIdInf.(bson.ObjectID)
 		if !deploymentsIdSet.Contains(deplyId) {
 			specDeploymentIds = append(specDeploymentIds, deplyId)
 		}
@@ -724,9 +723,9 @@ func (s *StateOld) init() (err error) {
 		}
 	}
 
-	podIds := []primitive.ObjectID{}
+	podIds := []bson.ObjectID{}
 	for podId := range podIdsSet.Iter() {
-		podIds = append(podIds, podId.(primitive.ObjectID))
+		podIds = append(podIds, podId.(bson.ObjectID))
 	}
 
 	pods := []*pod.Pod{}
@@ -741,15 +740,15 @@ func (s *StateOld) init() (err error) {
 		}
 	}
 
-	podsMap := map[primitive.ObjectID]*pod.Pod{}
+	podsMap := map[bson.ObjectID]*pod.Pod{}
 	for _, pd := range pods {
 		podsMap[pd.Id] = pd
 	}
 	s.podsMap = podsMap
 
-	unitIds := []primitive.ObjectID{}
+	unitIds := []bson.ObjectID{}
 	for unitId := range unitIdsSet.Iter() {
-		unitIds = append(unitIds, unitId.(primitive.ObjectID))
+		unitIds = append(unitIds, unitId.(bson.ObjectID))
 	}
 
 	units := []*unit.Unit{}
@@ -764,7 +763,7 @@ func (s *StateOld) init() (err error) {
 		}
 	}
 
-	unitsMap := map[primitive.ObjectID]*unit.Unit{}
+	unitsMap := map[bson.ObjectID]*unit.Unit{}
 	podDeploymentsSet := set.NewSet()
 	for _, unt := range units {
 		unitsMap[unt.Id] = unt
@@ -776,9 +775,9 @@ func (s *StateOld) init() (err error) {
 	}
 	s.unitsMap = unitsMap
 
-	podDeploymentIds := []primitive.ObjectID{}
+	podDeploymentIds := []bson.ObjectID{}
 	for deplyIdInf := range podDeploymentsSet.Iter() {
-		deplyId := deplyIdInf.(primitive.ObjectID)
+		deplyId := deplyIdInf.(bson.ObjectID)
 		if !deploymentsIdSet.Contains(deplyId) {
 			podDeploymentIds = append(podDeploymentIds, deplyId)
 		}
@@ -837,7 +836,7 @@ func (s *StateOld) init() (err error) {
 	nodePortsMap := map[string][]*nodeport.Mapping{}
 
 	instId := set.NewSet()
-	instancesMap := map[primitive.ObjectID]*instance.Instance{}
+	instancesMap := map[bson.ObjectID]*instance.Instance{}
 	instancesRolesSet := set.NewSet()
 	for _, inst := range instances {
 		instId.Add(inst.Id)
@@ -874,7 +873,7 @@ func (s *StateOld) init() (err error) {
 		return
 	}
 
-	virtsMap := map[primitive.ObjectID]*vm.VirtualMachine{}
+	virtsMap := map[bson.ObjectID]*vm.VirtualMachine{}
 	for _, virt := range curVirts {
 		if !instId.Contains(virt.Id) {
 			logrus.WithFields(logrus.Fields{

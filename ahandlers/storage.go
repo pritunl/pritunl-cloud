@@ -9,8 +9,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
@@ -22,15 +21,15 @@ import (
 )
 
 type storageData struct {
-	Id        primitive.ObjectID `json:"id"`
-	Name      string             `json:"name"`
-	Comment   string             `json:"comment"`
-	Type      string             `json:"type"`
-	Endpoint  string             `json:"endpoint"`
-	Bucket    string             `json:"bucket"`
-	AccessKey string             `json:"access_key"`
-	SecretKey string             `json:"secret_key"`
-	Insecure  bool               `json:"insecure"`
+	Id        bson.ObjectID `json:"id"`
+	Name      string        `json:"name"`
+	Comment   string        `json:"comment"`
+	Type      string        `json:"type"`
+	Endpoint  string        `json:"endpoint"`
+	Bucket    string        `json:"bucket"`
+	AccessKey string        `json:"access_key"`
+	SecretKey string        `json:"secret_key"`
+	Insecure  bool          `json:"insecure"`
 }
 
 type storagesData struct {
@@ -213,7 +212,7 @@ func storagesDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	data := []primitive.ObjectID{}
+	data := []bson.ObjectID{}
 
 	err := c.Bind(&data)
 	if err != nil {

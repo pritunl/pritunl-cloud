@@ -5,36 +5,35 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type Deployment struct {
-	Id           primitive.ObjectID             `bson:"_id,omitempty" json:"id"`
-	Pod          primitive.ObjectID             `bson:"pod" json:"pod"`
-	Unit         primitive.ObjectID             `bson:"unit" json:"unit"`
-	Organization primitive.ObjectID             `bson:"organization" json:"organization"`
-	Timestamp    time.Time                      `bson:"timestamp" json:"timestamp"`
-	Tags         []string                       `bson:"tags" json:"tags"`
-	Spec         primitive.ObjectID             `bson:"spec" json:"spec"`
-	NewSpec      primitive.ObjectID             `bson:"new_spec" json:"new_spec"`
-	Kind         string                         `bson:"kind" json:"kind"`
-	State        string                         `bson:"state" json:"state"`
-	Action       string                         `bson:"action" json:"action"`
-	Status       string                         `bson:"status" json:"status"`
-	Datacenter   primitive.ObjectID             `bson:"datacenter" json:"datacenter"`
-	Zone         primitive.ObjectID             `bson:"zone" json:"zone"`
-	Node         primitive.ObjectID             `bson:"node" json:"node"`
-	Instance     primitive.ObjectID             `bson:"instance" json:"instance"`
-	Image        primitive.ObjectID             `bson:"image" json:"image"`
-	Mounts       []*Mount                       `bson:"mounts" json:"mounts"`
-	InstanceData *InstanceData                  `bson:"instance_data,omitempty" json:"instance_data"`
-	ImageData    *ImageData                     `bson:"image_data,omitempty" json:"image_data"`
-	DomainData   *DomainData                    `bson:"domain_data,omitempty" json:"domain_data"`
-	Actions      map[primitive.ObjectID]*Action `bson:"actions,omitempty" json:"actions"`
+	Id           bson.ObjectID             `bson:"_id,omitempty" json:"id"`
+	Pod          bson.ObjectID             `bson:"pod" json:"pod"`
+	Unit         bson.ObjectID             `bson:"unit" json:"unit"`
+	Organization bson.ObjectID             `bson:"organization" json:"organization"`
+	Timestamp    time.Time                 `bson:"timestamp" json:"timestamp"`
+	Tags         []string                  `bson:"tags" json:"tags"`
+	Spec         bson.ObjectID             `bson:"spec" json:"spec"`
+	NewSpec      bson.ObjectID             `bson:"new_spec" json:"new_spec"`
+	Kind         string                    `bson:"kind" json:"kind"`
+	State        string                    `bson:"state" json:"state"`
+	Action       string                    `bson:"action" json:"action"`
+	Status       string                    `bson:"status" json:"status"`
+	Datacenter   bson.ObjectID             `bson:"datacenter" json:"datacenter"`
+	Zone         bson.ObjectID             `bson:"zone" json:"zone"`
+	Node         bson.ObjectID             `bson:"node" json:"node"`
+	Instance     bson.ObjectID             `bson:"instance" json:"instance"`
+	Image        bson.ObjectID             `bson:"image" json:"image"`
+	Mounts       []*Mount                  `bson:"mounts" json:"mounts"`
+	InstanceData *InstanceData             `bson:"instance_data,omitempty" json:"instance_data"`
+	ImageData    *ImageData                `bson:"image_data,omitempty" json:"image_data"`
+	DomainData   *DomainData               `bson:"domain_data,omitempty" json:"domain_data"`
+	Actions      map[bson.ObjectID]*Action `bson:"actions,omitempty" json:"actions"`
 }
 
 type InstanceData struct {
@@ -62,16 +61,16 @@ type ImageData struct {
 }
 
 type Mount struct {
-	Disk primitive.ObjectID `bson:"disk" json:"disk"`
-	Path string             `bson:"path" json:"path"`
-	Uuid string             `bson:"uuid" json:"uuid"`
+	Disk bson.ObjectID `bson:"disk" json:"disk"`
+	Path string        `bson:"path" json:"path"`
+	Uuid string        `bson:"uuid" json:"uuid"`
 }
 
 type Action struct {
-	Statement primitive.ObjectID `bson:"statement" json:"statement"`
-	Since     time.Time          `bson:"since" json:"since"`
-	Executed  time.Time          `bson:"executed" json:"executed"`
-	Action    string             `bson:"action" json:"action"`
+	Statement bson.ObjectID `bson:"statement" json:"statement"`
+	Since     time.Time     `bson:"since" json:"since"`
+	Executed  time.Time     `bson:"executed" json:"executed"`
+	Action    string        `bson:"action" json:"action"`
 }
 
 func (d *Deployment) IsHealthy() bool {
@@ -101,7 +100,7 @@ func (d *Deployment) Validate(db *database.Database) (
 	d.Tags = tags
 
 	if d.Actions == nil {
-		d.Actions = map[primitive.ObjectID]*Action{}
+		d.Actions = map[bson.ObjectID]*Action{}
 	}
 
 	if !ValidStates.Contains(d.State) {
@@ -155,7 +154,7 @@ func (d *Deployment) Validate(db *database.Database) (
 }
 
 func (d *Deployment) HandleStatement(db *database.Database,
-	statementId primitive.ObjectID, thresholdSec int, action string) (
+	statementId bson.ObjectID, thresholdSec int, action string) (
 	newAction string, err error) {
 
 	thresholdSec = utils.Max(ThresholdMin, thresholdSec)
@@ -327,7 +326,7 @@ func (d *Deployment) Insert(db *database.Database) (err error) {
 		return
 	}
 
-	d.Id = resp.InsertedID.(primitive.ObjectID)
+	d.Id = resp.InsertedID.(bson.ObjectID)
 
 	return
 }

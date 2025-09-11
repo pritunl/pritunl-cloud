@@ -1,48 +1,48 @@
 package types
 
 import (
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/unit"
 )
 
 type Pod struct {
-	Id    primitive.ObjectID `json:"id"`
-	Name  string             `json:"name"`
-	Units []*Unit            `json:"units"`
+	Id    bson.ObjectID `json:"id"`
+	Name  string        `json:"name"`
+	Units []*Unit       `json:"units"`
 }
 
 type Unit struct {
-	Id                        primitive.ObjectID `json:"id"`
-	Name                      string             `json:"name"`
-	Kind                      string             `json:"kind"`
-	Count                     int                `json:"count"`
-	PublicIps                 []string           `json:"public_ips"`
-	PublicIps6                []string           `json:"public_ips6"`
-	HealthyPublicIps          []string           `json:"healthy_public_ips"`
-	HealthyPublicIps6         []string           `json:"healthy_public_ips6"`
-	UnhealthyPublicIps        []string           `json:"unhealthy_public_ips"`
-	UnhealthyPublicIps6       []string           `json:"unhealthy_public_ips6"`
-	PrivateIps                []string           `json:"private_ips"`
-	PrivateIps6               []string           `json:"private_ips6"`
-	HealthyPrivateIps         []string           `json:"healthy_private_ips"`
-	HealthyPrivateIps6        []string           `json:"healthy_private_ips6"`
-	UnhealthyPrivateIps       []string           `json:"unhealthy_private_ips"`
-	UnhealthyPrivateIps6      []string           `json:"unhealthy_private_ips6"`
-	CloudPublicIps           []string           `json:"cloud_public_ips"`
-	CloudPublicIps6          []string           `json:"cloud_public_ips6"`
-	CloudPrivateIps          []string           `json:"cloud_private_ips"`
-	HealthyCloudPublicIps    []string           `json:"healthy_cloud_public_ips"`
-	HealthyCloudPublicIps6   []string           `json:"healthy_cloud_public_ips6"`
-	HealthyCloudPrivateIps   []string           `json:"healthy_cloud_private_ips"`
-	UnhealthyCloudPublicIps  []string           `json:"unhealthy_cloud_public_ips"`
-	UnhealthyCloudPublicIps6 []string           `json:"unhealthy_cloud_public_ips6"`
-	UnhealthyCloudPrivateIps []string           `json:"unhealthy_cloud_private_ips"`
+	Id                       bson.ObjectID `json:"id"`
+	Name                     string        `json:"name"`
+	Kind                     string        `json:"kind"`
+	Count                    int           `json:"count"`
+	PublicIps                []string      `json:"public_ips"`
+	PublicIps6               []string      `json:"public_ips6"`
+	HealthyPublicIps         []string      `json:"healthy_public_ips"`
+	HealthyPublicIps6        []string      `json:"healthy_public_ips6"`
+	UnhealthyPublicIps       []string      `json:"unhealthy_public_ips"`
+	UnhealthyPublicIps6      []string      `json:"unhealthy_public_ips6"`
+	PrivateIps               []string      `json:"private_ips"`
+	PrivateIps6              []string      `json:"private_ips6"`
+	HealthyPrivateIps        []string      `json:"healthy_private_ips"`
+	HealthyPrivateIps6       []string      `json:"healthy_private_ips6"`
+	UnhealthyPrivateIps      []string      `json:"unhealthy_private_ips"`
+	UnhealthyPrivateIps6     []string      `json:"unhealthy_private_ips6"`
+	CloudPublicIps           []string      `json:"cloud_public_ips"`
+	CloudPublicIps6          []string      `json:"cloud_public_ips6"`
+	CloudPrivateIps          []string      `json:"cloud_private_ips"`
+	HealthyCloudPublicIps    []string      `json:"healthy_cloud_public_ips"`
+	HealthyCloudPublicIps6   []string      `json:"healthy_cloud_public_ips6"`
+	HealthyCloudPrivateIps   []string      `json:"healthy_cloud_private_ips"`
+	UnhealthyCloudPublicIps  []string      `json:"unhealthy_cloud_public_ips"`
+	UnhealthyCloudPublicIps6 []string      `json:"unhealthy_cloud_public_ips6"`
+	UnhealthyCloudPrivateIps []string      `json:"unhealthy_cloud_private_ips"`
 }
 
-func NewPods(pods []*pod.Pod, podUnitsMap map[primitive.ObjectID][]*unit.Unit,
-	deployments map[primitive.ObjectID]*deployment.Deployment) []*Pod {
+func NewPods(pods []*pod.Pod, podUnitsMap map[bson.ObjectID][]*unit.Unit,
+	deployments map[bson.ObjectID]*deployment.Deployment) []*Pod {
 
 	datas := []*Pod{}
 
@@ -54,22 +54,22 @@ func NewPods(pods []*pod.Pod, podUnitsMap map[primitive.ObjectID][]*unit.Unit,
 		units := []*Unit{}
 		for _, pdUnit := range podUnitsMap[pd.Id] {
 			unit := &Unit{
-				Id:                        pdUnit.Id,
-				Name:                      pdUnit.Name,
-				Kind:                      pdUnit.Kind,
-				Count:                     pdUnit.Count,
-				PublicIps:                 []string{},
-				PublicIps6:                []string{},
-				HealthyPublicIps:          []string{},
-				HealthyPublicIps6:         []string{},
-				UnhealthyPublicIps:        []string{},
-				UnhealthyPublicIps6:       []string{},
-				PrivateIps:                []string{},
-				PrivateIps6:               []string{},
-				HealthyPrivateIps:         []string{},
-				HealthyPrivateIps6:        []string{},
-				UnhealthyPrivateIps:       []string{},
-				UnhealthyPrivateIps6:      []string{},
+				Id:                       pdUnit.Id,
+				Name:                     pdUnit.Name,
+				Kind:                     pdUnit.Kind,
+				Count:                    pdUnit.Count,
+				PublicIps:                []string{},
+				PublicIps6:               []string{},
+				HealthyPublicIps:         []string{},
+				HealthyPublicIps6:        []string{},
+				UnhealthyPublicIps:       []string{},
+				UnhealthyPublicIps6:      []string{},
+				PrivateIps:               []string{},
+				PrivateIps6:              []string{},
+				HealthyPrivateIps:        []string{},
+				HealthyPrivateIps6:       []string{},
+				UnhealthyPrivateIps:      []string{},
+				UnhealthyPrivateIps6:     []string{},
 				CloudPublicIps:           []string{},
 				CloudPublicIps6:          []string{},
 				CloudPrivateIps:          []string{},

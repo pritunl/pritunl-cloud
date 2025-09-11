@@ -6,8 +6,7 @@ import (
 	"fmt"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/config"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -44,7 +43,7 @@ func ResetId() (err error) {
 		return
 	}
 
-	config.Config.NodeId = primitive.NewObjectID().Hex()
+	config.Config.NodeId = bson.NewObjectID().Hex()
 
 	err = config.Save()
 	if err != nil {
@@ -161,7 +160,7 @@ func DisableFirewall() (err error) {
 		return
 	}
 
-	ndeId, err := primitive.ObjectIDFromHex(config.Config.NodeId)
+	ndeId, err := bson.ObjectIDFromHex(config.Config.NodeId)
 	if err != nil || ndeId.IsZero() {
 		err = nil
 		logrus.Info("cmd: Node not initialized")

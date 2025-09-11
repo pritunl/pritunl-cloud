@@ -9,8 +9,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
@@ -22,9 +21,9 @@ import (
 )
 
 type imageData struct {
-	Id      primitive.ObjectID `json:"id"`
-	Name    string             `json:"name"`
-	Comment string             `json:"comment"`
+	Id      bson.ObjectID `json:"id"`
+	Name    string        `json:"name"`
+	Comment string        `json:"comment"`
 }
 
 type imagesData struct {
@@ -38,7 +37,7 @@ func imagePut(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 	dta := &imageData{}
 
 	imageId, ok := utils.ParseObjectId(c.Param("image_id"))
@@ -98,7 +97,7 @@ func imageDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	imageId, ok := utils.ParseObjectId(c.Param("image_id"))
 	if !ok {
@@ -124,8 +123,8 @@ func imagesDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
-	dta := []primitive.ObjectID{}
+	userOrg := c.MustGet("organization").(bson.ObjectID)
+	dta := []bson.ObjectID{}
 
 	err := c.Bind(&dta)
 	if err != nil {
@@ -147,7 +146,7 @@ func imagesDelete(c *gin.Context) {
 
 func imageGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	imageId, ok := utils.ParseObjectId(c.Param("image_id"))
 	if !ok {
@@ -168,7 +167,7 @@ func imageGet(c *gin.Context) {
 
 func imagesGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	dcId, _ := utils.ParseObjectId(c.Query("datacenter"))
 	if !dcId.IsZero() {
@@ -179,11 +178,11 @@ func imagesGet(c *gin.Context) {
 
 		storages := dc.PublicStorages
 		if storages == nil {
-			storages = []primitive.ObjectID{}
+			storages = []bson.ObjectID{}
 		}
 
 		if len(storages) == 0 {
-			c.JSON(200, []primitive.ObjectID{})
+			c.JSON(200, []bson.ObjectID{})
 			return
 		}
 
@@ -229,7 +228,7 @@ func imagesGet(c *gin.Context) {
 
 		query := bson.M{
 			"organization": &bson.M{
-				"$in": []primitive.ObjectID{
+				"$in": []bson.ObjectID{
 					image.Global,
 					userOrg,
 				},
@@ -247,7 +246,7 @@ func imagesGet(c *gin.Context) {
 				"$and": []*bson.M{
 					&bson.M{
 						"organization": &bson.M{
-							"$in": []primitive.ObjectID{
+							"$in": []bson.ObjectID{
 								image.Global,
 								userOrg,
 							},

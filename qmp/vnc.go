@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 )
 
@@ -12,7 +12,7 @@ type vncPasswordArgs struct {
 	Password string `json:"password"`
 }
 
-func VncPassword(vmId primitive.ObjectID, passwd string) (err error) {
+func VncPassword(vmId bson.ObjectID, passwd string) (err error) {
 	cmd := &Command{
 		Execute: "change-vnc-password",
 		Arguments: &vncPasswordArgs{

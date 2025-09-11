@@ -8,8 +8,7 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/event"
@@ -18,10 +17,10 @@ import (
 )
 
 type planData struct {
-	Id         primitive.ObjectID `json:"id"`
-	Name       string             `json:"name"`
-	Comment    string             `json:"comment"`
-	Statements []*plan.Statement  `json:"statements"`
+	Id         bson.ObjectID     `json:"id"`
+	Name       string            `json:"name"`
+	Comment    string            `json:"comment"`
+	Statements []*plan.Statement `json:"statements"`
 }
 
 type plansData struct {
@@ -35,7 +34,7 @@ func planPut(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 	data := &planData{}
 
 	planId, ok := utils.ParseObjectId(c.Param("plan_id"))
@@ -99,7 +98,7 @@ func planPost(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 	data := &planData{
 		Name: "New Plan",
 	}
@@ -150,7 +149,7 @@ func planDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	planId, ok := utils.ParseObjectId(c.Param("plan_id"))
 	if !ok {
@@ -175,8 +174,8 @@ func plansDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
-	data := []primitive.ObjectID{}
+	userOrg := c.MustGet("organization").(bson.ObjectID)
+	data := []bson.ObjectID{}
 
 	err := c.Bind(&data)
 	if err != nil {
@@ -203,7 +202,7 @@ func planGet(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	planId, ok := utils.ParseObjectId(c.Param("plan_id"))
 	if !ok {
@@ -232,7 +231,7 @@ func plansGet(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	if c.Query("names") == "true" {
 		query := bson.M{

@@ -6,11 +6,11 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 )
 
-func VncPassword(vmId primitive.ObjectID, passwd string) (err error) {
+func VncPassword(vmId bson.ObjectID, passwd string) (err error) {
 	sockPath, err := GetSockPath(vmId)
 	if err != nil {
 		return

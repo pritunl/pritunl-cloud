@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/paths"
@@ -34,7 +34,7 @@ ProtectKernelTunables=true
 NetworkNamespacePath=/var/run/netns/%s
 `
 
-func WriteService(vmId primitive.ObjectID, namespace string) (err error) {
+func WriteService(vmId bson.ObjectID, namespace string) (err error) {
 	unitPath := paths.GetUnitPathTpm(vmId)
 	tpmPath := paths.GetTpmPath(vmId)
 	pwdPath := paths.GetTpmPwdPath(vmId)

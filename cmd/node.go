@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/config"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/defaults"
@@ -28,7 +28,7 @@ func Node() (err error) {
 		return
 	}
 
-	objId, err := primitive.ObjectIDFromHex(config.Config.NodeId)
+	objId, err := bson.ObjectIDFromHex(config.Config.NodeId)
 	if err != nil {
 		err = &errortypes.ParseError{
 			errors.Wrap(err, "cmd: Failed to parse ObjectId"),

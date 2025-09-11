@@ -1,7 +1,7 @@
 package demo
 
 import (
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/policy"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
@@ -31,8 +31,8 @@ var Policies = []*policy.Policy{
 				},
 			},
 		},
-		AdminSecondary:       primitive.ObjectID{},
-		UserSecondary:        primitive.ObjectID{},
+		AdminSecondary:       bson.ObjectID{},
+		UserSecondary:        bson.ObjectID{},
 		AdminDeviceSecondary: true,
 		UserDeviceSecondary:  true,
 	},

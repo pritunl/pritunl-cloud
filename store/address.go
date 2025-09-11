@@ -4,13 +4,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
 )
 
 var (
-	addressStores     = map[primitive.ObjectID]*AddressStore{}
+	addressStores     = map[bson.ObjectID]*AddressStore{}
 	addressStoresLock = sync.Mutex{}
 )
 
@@ -21,7 +21,7 @@ type AddressStore struct {
 	Refresh   time.Duration
 }
 
-func GetAddress(virtId primitive.ObjectID) (
+func GetAddress(virtId bson.ObjectID) (
 	addressStore *AddressStore, ok bool) {
 
 	addressStoresLock.Lock()
@@ -38,7 +38,7 @@ func GetAddress(virtId primitive.ObjectID) (
 	return
 }
 
-func SetAddress(virtId primitive.ObjectID, addr, addr6 string) {
+func SetAddress(virtId bson.ObjectID, addr, addr6 string) {
 	addressStoresLock.Lock()
 	now := time.Now()
 
@@ -58,7 +58,7 @@ func SetAddress(virtId primitive.ObjectID, addr, addr6 string) {
 	addressStoresLock.Unlock()
 }
 
-func SetAddressExpire(virtId primitive.ObjectID, ttl time.Duration) {
+func SetAddressExpire(virtId bson.ObjectID, ttl time.Duration) {
 	addressStoresLock.Lock()
 	addressStore, ok := addressStores[virtId]
 	if ok {
@@ -69,7 +69,7 @@ func SetAddressExpire(virtId primitive.ObjectID, ttl time.Duration) {
 	addressStoresLock.Unlock()
 }
 
-func SetAddressExpireMulti(virtId primitive.ObjectID,
+func SetAddressExpireMulti(virtId bson.ObjectID,
 	ttl, ttl2 time.Duration) {
 
 	addressStoresLock.Lock()
@@ -83,7 +83,7 @@ func SetAddressExpireMulti(virtId primitive.ObjectID,
 	addressStoresLock.Unlock()
 }
 
-func RemAddress(addressId primitive.ObjectID) {
+func RemAddress(addressId bson.ObjectID) {
 	addressStoresLock.Lock()
 	delete(addressStores, addressId)
 	addressStoresLock.Unlock()

@@ -2,8 +2,7 @@ package task
 
 import (
 	"github.com/dropbox/godropbox/container/set"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/spec"
@@ -33,9 +32,9 @@ func specsHandler(db *database.Database) (err error) {
 		specIdsSet.Add(deply.Spec)
 	}
 
-	specIds := []primitive.ObjectID{}
+	specIds := []bson.ObjectID{}
 	for specId := range specIdsSet.Iter() {
-		specIds = append(specIds, specId.(primitive.ObjectID))
+		specIds = append(specIds, specId.(bson.ObjectID))
 	}
 
 	specs, err := spec.GetAll(db, &bson.M{

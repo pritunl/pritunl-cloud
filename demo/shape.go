@@ -1,7 +1,7 @@
 package demo
 
 import (
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/shape"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
@@ -19,7 +19,7 @@ var Shapes = []*shape.Shape{
 		},
 		Flexible:   true,
 		DiskType:   "qcow2",
-		DiskPool:   primitive.ObjectID{},
+		DiskPool:   bson.ObjectID{},
 		Memory:     2048,
 		Processors: 1,
 		NodeCount:  1,
@@ -36,7 +36,7 @@ var Shapes = []*shape.Shape{
 		},
 		Flexible:   true,
 		DiskType:   "qcow2",
-		DiskPool:   primitive.ObjectID{},
+		DiskPool:   bson.ObjectID{},
 		Memory:     4096,
 		Processors: 2,
 		NodeCount:  1,
@@ -53,7 +53,7 @@ var Shapes = []*shape.Shape{
 		},
 		Flexible:   true,
 		DiskType:   "qcow2",
-		DiskPool:   primitive.ObjectID{},
+		DiskPool:   bson.ObjectID{},
 		Memory:     8192,
 		Processors: 4,
 		NodeCount:  1,

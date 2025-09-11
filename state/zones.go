@@ -3,7 +3,7 @@ package state
 import (
 	"time"
 
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/zone"
@@ -16,7 +16,7 @@ var (
 
 type ZonesState struct {
 	vxlan   bool
-	zoneMap map[primitive.ObjectID]*zone.Zone
+	zoneMap map[bson.ObjectID]*zone.Zone
 	nodes   []*node.Node
 }
 
@@ -24,7 +24,7 @@ func (p *ZonesState) VxLan() bool {
 	return p.vxlan
 }
 
-func (p *ZonesState) GetZone(zneId primitive.ObjectID) *zone.Zone {
+func (p *ZonesState) GetZone(zneId bson.ObjectID) *zone.Zone {
 	return p.zoneMap[zneId]
 }
 
@@ -52,7 +52,7 @@ func (p *ZonesState) Refresh(pkg *Package,
 		return
 	}
 
-	zonesMap := map[primitive.ObjectID]*zone.Zone{}
+	zonesMap := map[bson.ObjectID]*zone.Zone{}
 	for _, zne := range znes {
 		zonesMap[zne.Id] = zne
 	}

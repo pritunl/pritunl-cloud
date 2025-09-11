@@ -7,14 +7,13 @@ import (
 	"net"
 
 	"github.com/dropbox/godropbox/container/set"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
-func GetIp6(vpcId, instId primitive.ObjectID) net.IP {
+func GetIp6(vpcId, instId bson.ObjectID) net.IP {
 	netHash := md5.New()
 	netHash.Write(vpcId[:])
 	netHashSum := fmt.Sprintf("%x", netHash.Sum(nil))[:12]
@@ -36,52 +35,7 @@ func GetIp6(vpcId, instId primitive.ObjectID) net.IP {
 	return net.ParseIP(ipBuf.String())
 }
 
-func GetGatewayIp6(vpcId, instId primitive.ObjectID) net.IP {
-	netHash := md5.New()
-	netHash.Write(vpcId[:])
-	netHashSum := fmt.Sprintf("%x", netHash.Sum(nil))[:12]
-
-	instHash := md5.New()
-	instHash.Write([]byte("gateway"))
-	instHash.Write(instId[:])
-	instHashSum := fmt.Sprintf("%x", instHash.Sum(nil))[:16]
-
-	ip := fmt.Sprintf("fd97%s%s", netHashSum, instHashSum)
-	ipBuf := bytes.Buffer{}
-
-	for i, run := range ip {
-		if i%4 == 0 && i != 0 && i != len(ip)-1 {
-			ipBuf.WriteRune(':')
-		}
-		ipBuf.WriteRune(run)
-	}
-
-	return net.ParseIP(ipBuf.String())
-}
-
-func GetLinkIp6(vpcId, instId primitive.ObjectID) net.IP {
-	netHash := md5.New()
-	netHash.Write(vpcId[:])
-	netHashSum := fmt.Sprintf("%x", netHash.Sum(nil))[:12]
-
-	instHash := md5.New()
-	instHash.Write(instId[:])
-	instHashSum := fmt.Sprintf("%x", instHash.Sum(nil))[:16]
-
-	ip := fmt.Sprintf("fd97%s%s", netHashSum, instHashSum)
-	ipBuf := bytes.Buffer{}
-
-	for i, run := range ip {
-		if i%4 == 0 && i != 0 && i != len(ip)-1 {
-			ipBuf.WriteRune(':')
-		}
-		ipBuf.WriteRune(run)
-	}
-
-	return net.ParseIP(ipBuf.String())
-}
-
-func GetGatewayLinkIp6(vpcId, instId primitive.ObjectID) net.IP {
+func GetGatewayIp6(vpcId, instId bson.ObjectID) net.IP {
 	netHash := md5.New()
 	netHash.Write(vpcId[:])
 	netHashSum := fmt.Sprintf("%x", netHash.Sum(nil))[:12]
@@ -104,7 +58,52 @@ func GetGatewayLinkIp6(vpcId, instId primitive.ObjectID) net.IP {
 	return net.ParseIP(ipBuf.String())
 }
 
-func Get(db *database.Database, vcId primitive.ObjectID) (
+func GetLinkIp6(vpcId, instId bson.ObjectID) net.IP {
+	netHash := md5.New()
+	netHash.Write(vpcId[:])
+	netHashSum := fmt.Sprintf("%x", netHash.Sum(nil))[:12]
+
+	instHash := md5.New()
+	instHash.Write(instId[:])
+	instHashSum := fmt.Sprintf("%x", instHash.Sum(nil))[:16]
+
+	ip := fmt.Sprintf("fd97%s%s", netHashSum, instHashSum)
+	ipBuf := bytes.Buffer{}
+
+	for i, run := range ip {
+		if i%4 == 0 && i != 0 && i != len(ip)-1 {
+			ipBuf.WriteRune(':')
+		}
+		ipBuf.WriteRune(run)
+	}
+
+	return net.ParseIP(ipBuf.String())
+}
+
+func GetGatewayLinkIp6(vpcId, instId bson.ObjectID) net.IP {
+	netHash := md5.New()
+	netHash.Write(vpcId[:])
+	netHashSum := fmt.Sprintf("%x", netHash.Sum(nil))[:12]
+
+	instHash := md5.New()
+	instHash.Write([]byte("gateway"))
+	instHash.Write(instId[:])
+	instHashSum := fmt.Sprintf("%x", instHash.Sum(nil))[:16]
+
+	ip := fmt.Sprintf("fd97%s%s", netHashSum, instHashSum)
+	ipBuf := bytes.Buffer{}
+
+	for i, run := range ip {
+		if i%4 == 0 && i != 0 && i != len(ip)-1 {
+			ipBuf.WriteRune(':')
+		}
+		ipBuf.WriteRune(run)
+	}
+
+	return net.ParseIP(ipBuf.String())
+}
+
+func Get(db *database.Database, vcId bson.ObjectID) (
 	vc *Vpc, err error) {
 
 	coll := db.Vpcs()
@@ -118,7 +117,7 @@ func Get(db *database.Database, vcId primitive.ObjectID) (
 	return
 }
 
-func GetOrg(db *database.Database, orgId, vcId primitive.ObjectID) (
+func GetOrg(db *database.Database, orgId, vcId bson.ObjectID) (
 	vc *Vpc, err error) {
 
 	coll := db.Vpcs()
@@ -136,7 +135,7 @@ func GetOrg(db *database.Database, orgId, vcId primitive.ObjectID) (
 	return
 }
 
-func ExistsOrg(db *database.Database, orgId, vcId primitive.ObjectID) (
+func ExistsOrg(db *database.Database, orgId, vcId bson.ObjectID) (
 	exists bool, err error) {
 
 	coll := db.Vpcs()
@@ -319,7 +318,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	return
 }
 
-func GetIds(db *database.Database, ids []primitive.ObjectID) (
+func GetIds(db *database.Database, ids []bson.ObjectID) (
 	vcs []*Vpc, err error) {
 
 	coll := db.Vpcs()
@@ -359,7 +358,7 @@ func GetIds(db *database.Database, ids []primitive.ObjectID) (
 	return
 }
 
-func GetDatacenter(db *database.Database, dcId primitive.ObjectID) (
+func GetDatacenter(db *database.Database, dcId bson.ObjectID) (
 	vcs []*Vpc, err error) {
 
 	coll := db.Vpcs()
@@ -397,7 +396,7 @@ func GetDatacenter(db *database.Database, dcId primitive.ObjectID) (
 	return
 }
 
-func DistinctIds(db *database.Database, matchIds []primitive.ObjectID) (
+func DistinctIds(db *database.Database, matchIds []bson.ObjectID) (
 	idsSet set.Set, err error) {
 
 	coll := db.Images()
@@ -418,7 +417,7 @@ func DistinctIds(db *database.Database, matchIds []primitive.ObjectID) (
 	}
 
 	for _, idInf := range idsInf {
-		if id, ok := idInf.(primitive.ObjectID); ok {
+		if id, ok := idInf.(bson.ObjectID); ok {
 			idsSet.Add(id)
 		}
 	}
@@ -426,7 +425,7 @@ func DistinctIds(db *database.Database, matchIds []primitive.ObjectID) (
 	return
 }
 
-func Remove(db *database.Database, vcId primitive.ObjectID) (err error) {
+func Remove(db *database.Database, vcId bson.ObjectID) (err error) {
 	coll := db.VpcsIp()
 
 	_, err = coll.DeleteMany(db, &bson.M{
@@ -455,7 +454,7 @@ func Remove(db *database.Database, vcId primitive.ObjectID) (err error) {
 	return
 }
 
-func RemoveOrg(db *database.Database, orgId, vcId primitive.ObjectID) (
+func RemoveOrg(db *database.Database, orgId, vcId bson.ObjectID) (
 	err error) {
 
 	coll := db.VpcsIp()
@@ -487,7 +486,7 @@ func RemoveOrg(db *database.Database, orgId, vcId primitive.ObjectID) (
 	return
 }
 
-func RemoveMulti(db *database.Database, vcIds []primitive.ObjectID) (err error) {
+func RemoveMulti(db *database.Database, vcIds []bson.ObjectID) (err error) {
 	coll := db.VpcsIp()
 
 	_, err = coll.DeleteMany(db, &bson.M{
@@ -515,8 +514,8 @@ func RemoveMulti(db *database.Database, vcIds []primitive.ObjectID) (err error) 
 	return
 }
 
-func RemoveMultiOrg(db *database.Database, orgId primitive.ObjectID,
-	vcIds []primitive.ObjectID) (err error) {
+func RemoveMultiOrg(db *database.Database, orgId bson.ObjectID,
+	vcIds []bson.ObjectID) (err error) {
 
 	coll := db.VpcsIp()
 
@@ -546,11 +545,11 @@ func RemoveMultiOrg(db *database.Database, orgId primitive.ObjectID,
 	return
 }
 
-func GetIpsMapped(db *database.Database, ids []primitive.ObjectID) (
-	vpcsMap map[primitive.ObjectID][]*VpcIp, err error) {
+func GetIpsMapped(db *database.Database, ids []bson.ObjectID) (
+	vpcsMap map[bson.ObjectID][]*VpcIp, err error) {
 
 	coll := db.VpcsIp()
-	vpcsMap = map[primitive.ObjectID][]*VpcIp{}
+	vpcsMap = map[bson.ObjectID][]*VpcIp{}
 
 	cursor, err := coll.Find(
 		db,
@@ -586,7 +585,7 @@ func GetIpsMapped(db *database.Database, ids []primitive.ObjectID) (
 	return
 }
 
-func RemoveInstanceIps(db *database.Database, instId primitive.ObjectID) (
+func RemoveInstanceIps(db *database.Database, instId bson.ObjectID) (
 	err error) {
 
 	coll := db.VpcsIp()
@@ -612,7 +611,7 @@ func RemoveInstanceIps(db *database.Database, instId primitive.ObjectID) (
 }
 
 func RemoveInstanceIp(db *database.Database, instId,
-	vpcId primitive.ObjectID) (err error) {
+	vpcId bson.ObjectID) (err error) {
 
 	coll := db.VpcsIp()
 

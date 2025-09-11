@@ -6,10 +6,9 @@ import (
 	"strings"
 
 	"github.com/dropbox/godropbox/container/set"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 )
 
 type Collection struct {
@@ -108,7 +107,7 @@ func SelectFields(obj interface{}, fields set.Set) (data bson.M) {
 			val := field.Interface()
 
 			switch valTyp := val.(type) {
-			case primitive.ObjectID:
+			case bson.ObjectID:
 				if valTyp.IsZero() {
 					data[tag] = nil
 				} else {
@@ -150,9 +149,9 @@ func SelectFields(obj interface{}, fields set.Set) (data bson.M) {
 					nestedVal := nestedField.Interface()
 
 					switch nestedValTyp := nestedVal.(type) {
-					case primitive.ObjectID:
+					case bson.ObjectID:
 						if nestedValTyp.IsZero() {
-							data[nestedTag] = primitive.NilObjectID
+							data[nestedTag] = bson.NilObjectID
 						} else {
 							data[nestedTag] = nestedVal
 						}
@@ -196,13 +195,13 @@ func SelectFieldsAll(obj interface{}, fields set.Set) (data bson.M) {
 			val := field.Interface()
 
 			switch valTyp := val.(type) {
-			case primitive.ObjectID:
+			case bson.ObjectID:
 				if valTyp.IsZero() {
 					if omitempty {
 						dataUnset[tag] = 1
 						dataUnseted = true
 					} else {
-						dataSet[tag] = primitive.NilObjectID
+						dataSet[tag] = bson.NilObjectID
 					}
 				} else {
 					dataSet[tag] = val
@@ -244,13 +243,13 @@ func SelectFieldsAll(obj interface{}, fields set.Set) (data bson.M) {
 					nestedVal := nestedField.Interface()
 
 					switch nestedValTyp := nestedVal.(type) {
-					case primitive.ObjectID:
+					case bson.ObjectID:
 						if nestedValTyp.IsZero() {
 							if nestedOmitempty {
 								dataUnset[nestedTag] = 1
 								dataUnseted = true
 							} else {
-								dataSet[nestedTag] = primitive.NilObjectID
+								dataSet[nestedTag] = bson.NilObjectID
 							}
 						} else {
 							dataSet[nestedTag] = nestedVal
@@ -280,7 +279,7 @@ type ArraySelectFields struct {
 	unsetFields bson.M
 	filters     []interface{}
 	push        []interface{}
-	pull        []primitive.ObjectID
+	pull        []bson.ObjectID
 	rootKey     string
 	idKey       string
 	modified    bool
@@ -290,7 +289,7 @@ func (a *ArraySelectFields) Modified() bool {
 	return a.modified
 }
 
-func (a *ArraySelectFields) Update(docId primitive.ObjectID,
+func (a *ArraySelectFields) Update(docId bson.ObjectID,
 	update bson.M) {
 
 	a.modified = true
@@ -314,7 +313,7 @@ func (a *ArraySelectFields) Push(doc interface{}) {
 	a.push = append(a.push, doc)
 }
 
-func (a *ArraySelectFields) Delete(docId primitive.ObjectID) {
+func (a *ArraySelectFields) Delete(docId bson.ObjectID) {
 	a.modified = true
 	a.pull = append(a.pull, docId)
 }
@@ -368,7 +367,7 @@ func NewArraySelectFields(obj interface{}, rootKey string, fields set.Set) (
 		unsetFields: unsetFields,
 		filters:     []interface{}{},
 		push:        []interface{}{},
-		pull:        []primitive.ObjectID{},
+		pull:        []bson.ObjectID{},
 		rootKey:     rootKey,
 		idKey:       "id",
 	}

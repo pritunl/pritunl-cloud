@@ -8,8 +8,8 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/imds/server/errortypes"
 	"github.com/pritunl/pritunl-cloud/instance"
@@ -39,8 +39,8 @@ func ResolverRefresh(db *database.Database) (err error) {
 		&bson.M{},
 		&options.FindOptions{
 			Projection: &bson.M{
-				"public_ips":         1,
-				"public_ips6":        1,
+				"public_ips":        1,
+				"public_ips6":       1,
 				"cloud_private_ips": 1,
 				"cloud_public_ips":  1,
 				"cloud_public_ips6": 1,

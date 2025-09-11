@@ -1,17 +1,17 @@
 package nodeport
 
 import (
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 )
 
 type Mapping struct {
-	NodePort     primitive.ObjectID `bson:"node_port" json:"node_port"`
-	Protocol     string             `bson:"protocol" json:"protocol"`
-	ExternalPort int                `bson:"external_port" json:"external_port"`
-	InternalPort int                `bson:"internal_port" json:"internal_port"`
-	Delete       bool               `bson:"-" json:"delete"`
+	NodePort     bson.ObjectID `bson:"node_port" json:"node_port"`
+	Protocol     string        `bson:"protocol" json:"protocol"`
+	ExternalPort int           `bson:"external_port" json:"external_port"`
+	InternalPort int           `bson:"internal_port" json:"internal_port"`
+	Delete       bool          `bson:"-" json:"delete"`
 }
 
 func (m *Mapping) Validate(db *database.Database) (

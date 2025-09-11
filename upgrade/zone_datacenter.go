@@ -1,26 +1,25 @@
 package upgrade
 
 import (
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 )
 
 type zoneUgradeDoc struct {
-	Id         primitive.ObjectID `bson:"_id"`
-	Node       primitive.ObjectID `bson:"node"`
-	Datacenter primitive.ObjectID `bson:"datacenter"`
-	Zone       primitive.ObjectID `bson:"zone"`
+	Id         bson.ObjectID `bson:"_id"`
+	Node       bson.ObjectID `bson:"node"`
+	Datacenter bson.ObjectID `bson:"datacenter"`
+	Zone       bson.ObjectID `bson:"zone"`
 }
 
 func zoneDatacenterUpgrade(db *database.Database) (err error) {
 	zoneColl := db.Zones()
 
-	zoneDatacenterMap := make(map[primitive.ObjectID]primitive.ObjectID)
-	nodeMap := make(map[primitive.ObjectID]*zoneUgradeDoc)
+	zoneDatacenterMap := make(map[bson.ObjectID]bson.ObjectID)
+	nodeMap := make(map[bson.ObjectID]*zoneUgradeDoc)
 
-	getDatacenterForZone := func(zoneID primitive.ObjectID) (
-		primitive.ObjectID, error) {
+	getDatacenterForZone := func(zoneID bson.ObjectID) (
+		bson.ObjectID, error) {
 
 		if datacenterID, ok := zoneDatacenterMap[zoneID]; ok {
 			return datacenterID, nil
@@ -31,14 +30,14 @@ func zoneDatacenterUpgrade(db *database.Database) (err error) {
 			"_id": zoneID,
 		}).Decode(zne)
 		if err != nil {
-			return primitive.NilObjectID, database.ParseError(err)
+			return bson.NilObjectID, database.ParseError(err)
 		}
 
 		zoneDatacenterMap[zoneID] = zne.Datacenter
 		return zne.Datacenter, nil
 	}
 
-	getNode := func(nodeId primitive.ObjectID) (
+	getNode := func(nodeId bson.ObjectID) (
 		*zoneUgradeDoc, error) {
 
 		if nde, ok := nodeMap[nodeId]; ok {

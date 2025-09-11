@@ -2,18 +2,17 @@ package nodeport
 
 import (
 	"github.com/dropbox/godropbox/container/set"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 )
 
 type NodePort struct {
-	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Datacenter   primitive.ObjectID `bson:"datacenter" json:"datacenter"`
-	Organization primitive.ObjectID `bson:"organization" json:"organization"`
-	Protocol     string             `bson:"protocol" json:"protocol"`
-	Port         int                `bson:"port" json:"port"`
+	Id           bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Datacenter   bson.ObjectID `bson:"datacenter" json:"datacenter"`
+	Organization bson.ObjectID `bson:"organization" json:"organization"`
+	Protocol     string        `bson:"protocol" json:"protocol"`
+	Port         int           `bson:"port" json:"port"`
 }
 
 func (n *NodePort) Validate(db *database.Database) (
@@ -100,6 +99,6 @@ func (n *NodePort) Insert(db *database.Database) (err error) {
 		return
 	}
 
-	n.Id = resp.InsertedID.(primitive.ObjectID)
+	n.Id = resp.InsertedID.(bson.ObjectID)
 	return
 }

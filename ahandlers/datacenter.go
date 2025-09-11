@@ -9,8 +9,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/demo"
@@ -21,17 +20,17 @@ import (
 )
 
 type datacenterData struct {
-	Id                  primitive.ObjectID   `json:"id"`
-	Name                string               `json:"name"`
-	Comment             string               `json:"comment"`
-	NetworkMode         string               `json:"network_mode"`
-	MatchOrganizations  bool                 `json:"match_organizations"`
-	Organizations       []primitive.ObjectID `json:"organizations"`
-	PublicStorages      []primitive.ObjectID `json:"public_storages"`
-	PrivateStorage      primitive.ObjectID   `json:"private_storage"`
-	PrivateStorageClass string               `json:"private_storage_class"`
-	BackupStorage       primitive.ObjectID   `json:"backup_storage"`
-	BackupStorageClass  string               `json:"backup_storage_class"`
+	Id                  bson.ObjectID   `json:"id"`
+	Name                string          `json:"name"`
+	Comment             string          `json:"comment"`
+	NetworkMode         string          `json:"network_mode"`
+	MatchOrganizations  bool            `json:"match_organizations"`
+	Organizations       []bson.ObjectID `json:"organizations"`
+	PublicStorages      []bson.ObjectID `json:"public_storages"`
+	PrivateStorage      bson.ObjectID   `json:"private_storage"`
+	PrivateStorageClass string          `json:"private_storage_class"`
+	BackupStorage       bson.ObjectID   `json:"backup_storage"`
+	BackupStorageClass  string          `json:"backup_storage_class"`
 }
 
 type datacentersData struct {
@@ -209,7 +208,7 @@ func datacentersDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	data := []primitive.ObjectID{}
+	data := []bson.ObjectID{}
 
 	err := c.Bind(&data)
 	if err != nil {

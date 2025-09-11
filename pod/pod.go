@@ -4,8 +4,7 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -15,28 +14,28 @@ import (
 )
 
 type Pod struct {
-	Id               primitive.ObjectID                  `bson:"_id,omitempty" json:"id"`
-	Name             string                              `bson:"name" json:"name"`
-	Comment          string                              `bson:"comment" json:"comment"`
-	Organization     primitive.ObjectID                  `bson:"organization" json:"organization"`
-	DeleteProtection bool                                `bson:"delete_protection" json:"delete_protection"`
-	UserDrafts       map[primitive.ObjectID][]*UnitDraft `bson:"drafts" json:"-"`
-	Drafts           []*UnitDraft                        `bson:"-" json:"drafts"`
+	Id               bson.ObjectID                  `bson:"_id,omitempty" json:"id"`
+	Name             string                         `bson:"name" json:"name"`
+	Comment          string                         `bson:"comment" json:"comment"`
+	Organization     bson.ObjectID                  `bson:"organization" json:"organization"`
+	DeleteProtection bool                           `bson:"delete_protection" json:"delete_protection"`
+	UserDrafts       map[bson.ObjectID][]*UnitDraft `bson:"drafts" json:"-"`
+	Drafts           []*UnitDraft                   `bson:"-" json:"drafts"`
 }
 
 type Completion struct {
-	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Name         string             `bson:"name" json:"name"`
-	Organization primitive.ObjectID `bson:"organization" json:"organization"`
+	Id           bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name         string        `bson:"name" json:"name"`
+	Organization bson.ObjectID `bson:"organization" json:"organization"`
 }
 
 type UnitDraft struct {
-	Id        primitive.ObjectID `bson:"id" json:"id"`
-	Name      string             `bson:"name" json:"name"`
-	Spec      string             `bson:"spec" json:"spec"`
-	Delete    bool               `bson:"delete" json:"delete"`
-	Timestamp time.Time          `bson:"timestamp" json:"timestamp"`
-	New       bool               `bson:"new" json:"new"`
+	Id        bson.ObjectID `bson:"id" json:"id"`
+	Name      string        `bson:"name" json:"name"`
+	Spec      string        `bson:"spec" json:"spec"`
+	Delete    bool          `bson:"delete" json:"delete"`
+	Timestamp time.Time     `bson:"timestamp" json:"timestamp"`
+	New       bool          `bson:"new" json:"new"`
 }
 
 func (p *Pod) Validate(db *database.Database) (
@@ -53,13 +52,13 @@ func (p *Pod) Validate(db *database.Database) (
 	}
 
 	if p.UserDrafts == nil {
-		p.UserDrafts = map[primitive.ObjectID][]*UnitDraft{}
+		p.UserDrafts = map[bson.ObjectID][]*UnitDraft{}
 	}
 
 	return
 }
 
-func (p *Pod) Json(usrId primitive.ObjectID) {
+func (p *Pod) Json(usrId bson.ObjectID) {
 	if p.UserDrafts != nil && p.UserDrafts[usrId] != nil {
 		p.Drafts = p.UserDrafts[usrId]
 	} else {
@@ -79,13 +78,13 @@ func (p *Pod) InitUnits(db *database.Database, units []*unit.UnitInput) (
 		}
 
 		unt := &unit.Unit{
-			Id:           primitive.NewObjectID(),
+			Id:           bson.NewObjectID(),
 			Pod:          p.Id,
 			Organization: p.Organization,
 			Name:         unitData.Name,
 			Spec:         unitData.Spec,
 			SpecIndex:    1,
-			Deployments:  []primitive.ObjectID{},
+			Deployments:  []bson.ObjectID{},
 		}
 
 		newSpec, updateSpec, ed, e := unt.Parse(db, true)
@@ -162,13 +161,13 @@ func (p *Pod) CommitFieldsUnits(db *database.Database,
 			}
 
 			unt := &unit.Unit{
-				Id:           primitive.NewObjectID(),
+				Id:           bson.NewObjectID(),
 				Pod:          p.Id,
 				Organization: p.Organization,
 				Name:         unitData.Name,
 				Spec:         unitData.Spec,
 				SpecIndex:    1,
-				Deployments:  []primitive.ObjectID{},
+				Deployments:  []bson.ObjectID{},
 			}
 
 			newSpec, updateSpec, ed, e := unt.Parse(db, true)

@@ -3,7 +3,7 @@ package definitions
 import (
 	"time"
 
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/relations"
 	"github.com/pritunl/pritunl-cloud/systemd"
@@ -119,7 +119,7 @@ var Node = relations.Query{
 					return "-"
 				}
 
-				if mongoTime, ok := val.(primitive.DateTime); ok {
+				if mongoTime, ok := val.(bson.DateTime); ok {
 					valTime := mongoTime.Time()
 					return systemd.FormatUptimeShort(valTime)
 				}
@@ -175,7 +175,7 @@ var Node = relations.Query{
 	// 		Key:   "ingress",
 	// 		Label: "Ingress",
 	// 		Format: func(vals ...any) any {
-	// 			rules := vals[0].(primitive.A)
+	// 			rules := vals[0].(bson.A)
 	// 			rulesStr := []string{}
 
 	// 			for _, ruleInf := range rules {
@@ -184,7 +184,7 @@ var Node = relations.Query{
 
 	// 				protocol := rule["protocol"].(string)
 	// 				port := rule["port"].(string)
-	// 				sourceIps := rule["source_ips"].(primitive.A)
+	// 				sourceIps := rule["source_ips"].(bson.A)
 
 	// 				switch protocol {
 	// 				case firewall.All, firewall.Icmp:

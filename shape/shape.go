@@ -3,7 +3,7 @@ package shape
 import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -12,28 +12,28 @@ import (
 )
 
 type Shape struct {
-	Id               primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Name             string             `bson:"name" json:"name"`
-	Comment          string             `bson:"comment" json:"comment"`
-	Type             string             `bson:"type" json:"type"`
-	DeleteProtection bool               `bson:"delete_protection" json:"delete_protection"`
-	Datacenter       primitive.ObjectID `bson:"datacenter" json:"datacenter"`
-	Roles            []string           `bson:"roles" json:"roles"`
-	Flexible         bool               `bson:"flexible" json:"flexible"`
-	DiskType         string             `bson:"disk_type" json:"disk_type"`
-	DiskPool         primitive.ObjectID `bson:"disk_pool" json:"disk_pool"`
-	Memory           int                `bson:"memory" json:"memory"`
-	Processors       int                `bson:"processors" json:"processors"`
-	NodeCount        int                `bson:"-" json:"node_count"`
+	Id               bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name             string        `bson:"name" json:"name"`
+	Comment          string        `bson:"comment" json:"comment"`
+	Type             string        `bson:"type" json:"type"`
+	DeleteProtection bool          `bson:"delete_protection" json:"delete_protection"`
+	Datacenter       bson.ObjectID `bson:"datacenter" json:"datacenter"`
+	Roles            []string      `bson:"roles" json:"roles"`
+	Flexible         bool          `bson:"flexible" json:"flexible"`
+	DiskType         string        `bson:"disk_type" json:"disk_type"`
+	DiskPool         bson.ObjectID `bson:"disk_pool" json:"disk_pool"`
+	Memory           int           `bson:"memory" json:"memory"`
+	Processors       int           `bson:"processors" json:"processors"`
+	NodeCount        int           `bson:"-" json:"node_count"`
 }
 
 type Completion struct {
-	Id         primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Name       string             `bson:"name" json:"name"`
-	Datacenter primitive.ObjectID `bson:"datacenter" json:"datacenter"`
-	Flexible   bool               `bson:"flexible" json:"flexible"`
-	Memory     int                `bson:"memory" json:"memory"`
-	Processors int                `bson:"processors" json:"processors"`
+	Id         bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name       string        `bson:"name" json:"name"`
+	Datacenter bson.ObjectID `bson:"datacenter" json:"datacenter"`
+	Flexible   bool          `bson:"flexible" json:"flexible"`
+	Memory     int           `bson:"memory" json:"memory"`
+	Processors int           `bson:"processors" json:"processors"`
 }
 
 func (s *Shape) Validate(db *database.Database) (
@@ -89,7 +89,7 @@ func (s *Shape) FindNode(db *database.Database, processors, memory int) (
 		return
 	}
 
-	zoneIds := []primitive.ObjectID{}
+	zoneIds := []bson.ObjectID{}
 	for _, zne := range zones {
 		zoneIds = append(zoneIds, zne.Id)
 	}

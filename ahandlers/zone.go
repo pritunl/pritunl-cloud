@@ -9,8 +9,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -21,10 +20,10 @@ import (
 )
 
 type zoneData struct {
-	Id         primitive.ObjectID `json:"id"`
-	Datacenter primitive.ObjectID `json:"datacenter"`
-	Name       string             `json:"name"`
-	Comment    string             `json:"comment"`
+	Id         bson.ObjectID `json:"id"`
+	Datacenter bson.ObjectID `json:"datacenter"`
+	Name       string        `json:"name"`
+	Comment    string        `json:"comment"`
 }
 
 type zonesData struct {
@@ -173,7 +172,7 @@ func zonesDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	data := []primitive.ObjectID{}
+	data := []bson.ObjectID{}
 
 	err := c.Bind(&data)
 	if err != nil {

@@ -4,15 +4,14 @@ import (
 	"context"
 	"strings"
 
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/settings"
 )
 
 func GetOutput(c context.Context, db *database.Database,
-	resource primitive.ObjectID, kind int) (output []string, err error) {
+	resource bson.ObjectID, kind int) (output []string, err error) {
 
 	coll := db.Journal()
 
@@ -67,7 +66,7 @@ func GetOutput(c context.Context, db *database.Database,
 	return
 }
 
-func Remove(db *database.Database, resource primitive.ObjectID,
+func Remove(db *database.Database, resource bson.ObjectID,
 	kind int) (err error) {
 
 	coll := db.Journal()

@@ -3,7 +3,7 @@ package demo
 import (
 	"time"
 
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/certificate"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
@@ -13,7 +13,7 @@ var Certificates = []*certificate.Certificate{
 		Id:           utils.ObjectIdHex("67b89ef24866ba90e6c459e8"),
 		Name:         "cloud-pritunl-com",
 		Comment:      "",
-		Organization: primitive.ObjectID{},
+		Organization: bson.ObjectID{},
 		Type:         "lets_encrypt",
 		Key: `-----BEGIN RSA PRIVATE KEY-----
 MIIJKQIBAAKCAgEAx9Y3Lk2AwV6ap7L/Sx9XC5mXaUf8hvMmDbLBqDZ1Y7xKJM2h

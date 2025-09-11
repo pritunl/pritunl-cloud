@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 )
 
@@ -18,7 +18,7 @@ type setPasswordArgs struct {
 	Password string `json:"password"`
 }
 
-func SetPassword(vmId primitive.ObjectID, proto, passwd string) (err error) {
+func SetPassword(vmId bson.ObjectID, proto, passwd string) (err error) {
 	cmd := &Command{
 		Execute: "set_password",
 		Arguments: &setPasswordArgs{

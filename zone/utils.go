@@ -1,14 +1,13 @@
 package zone
 
 import (
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
-func Get(db *database.Database, zoneId primitive.ObjectID) (
+func Get(db *database.Database, zoneId bson.ObjectID) (
 	zne *Zone, err error) {
 
 	coll := db.Zones()
@@ -183,7 +182,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	return
 }
 
-func GetAllDatacenter(db *database.Database, dcId primitive.ObjectID) (
+func GetAllDatacenter(db *database.Database, dcId bson.ObjectID) (
 	zones []*Zone, err error) {
 
 	coll := db.Zones()
@@ -226,7 +225,7 @@ func GetAllDatacenter(db *database.Database, dcId primitive.ObjectID) (
 	return
 }
 
-func GetAllNamedDc(db *database.Database, dcIds []primitive.ObjectID) (
+func GetAllNamedDc(db *database.Database, dcIds []bson.ObjectID) (
 	zones []*Completion, err error) {
 
 	coll := db.Zones()
@@ -275,7 +274,7 @@ func GetAllNamedDc(db *database.Database, dcIds []primitive.ObjectID) (
 	return
 }
 
-func Remove(db *database.Database, zoneId primitive.ObjectID) (err error) {
+func Remove(db *database.Database, zoneId bson.ObjectID) (err error) {
 	coll := db.Zones()
 
 	_, err = coll.DeleteOne(db, &bson.M{
@@ -294,7 +293,7 @@ func Remove(db *database.Database, zoneId primitive.ObjectID) (err error) {
 	return
 }
 
-func RemoveMulti(db *database.Database, zneIds []primitive.ObjectID) (
+func RemoveMulti(db *database.Database, zneIds []bson.ObjectID) (
 	err error) {
 	coll := db.Zones()
 

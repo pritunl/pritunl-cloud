@@ -17,7 +17,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	minio "github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
@@ -1275,7 +1275,7 @@ func writeImageLvm(db *database.Database, dsk *disk.Disk,
 	return
 }
 
-func DeleteImage(db *database.Database, imgId primitive.ObjectID) (
+func DeleteImage(db *database.Database, imgId bson.ObjectID) (
 	err error) {
 
 	img, err := image.Get(db, imgId)
@@ -1354,7 +1354,7 @@ func WriteImage(db *database.Database, dsk *disk.Disk) (
 	return
 }
 
-func DeleteImages(db *database.Database, imgIds []primitive.ObjectID) (
+func DeleteImages(db *database.Database, imgIds []bson.ObjectID) (
 	err error) {
 
 	for _, imgId := range imgIds {
@@ -1367,7 +1367,7 @@ func DeleteImages(db *database.Database, imgIds []primitive.ObjectID) (
 	return
 }
 
-func DeleteImageOrg(db *database.Database, orgId, imgId primitive.ObjectID) (
+func DeleteImageOrg(db *database.Database, orgId, imgId bson.ObjectID) (
 	err error) {
 
 	img, err := image.GetOrg(db, orgId, imgId)
@@ -1409,8 +1409,8 @@ func DeleteImageOrg(db *database.Database, orgId, imgId primitive.ObjectID) (
 	return
 }
 
-func DeleteImagesOrg(db *database.Database, orgId primitive.ObjectID,
-	imgIds []primitive.ObjectID) (err error) {
+func DeleteImagesOrg(db *database.Database, orgId bson.ObjectID,
+	imgIds []bson.ObjectID) (err error) {
 
 	for _, imgId := range imgIds {
 		err = DeleteImageOrg(db, orgId, imgId)
@@ -1479,7 +1479,7 @@ func CreateSnapshot(db *database.Database, dsk *disk.Disk,
 		return
 	}
 
-	imgId := primitive.NewObjectID()
+	imgId := bson.NewObjectID()
 	tmpPath := path.Join(cacheDir,
 		fmt.Sprintf("snapshot-%s", imgId.Hex()))
 	img := &image.Image{
@@ -1686,7 +1686,7 @@ func CreateBackup(db *database.Database, dsk *disk.Disk,
 		return
 	}
 
-	imgId := primitive.NewObjectID()
+	imgId := bson.NewObjectID()
 	tmpPath := path.Join(cacheDir,
 		fmt.Sprintf("backup-%s", imgId.Hex()))
 	img := &image.Image{
@@ -1852,7 +1852,7 @@ func RestoreBackup(db *database.Database, dsk *disk.Disk) (err error) {
 		return
 	}
 
-	imgId := primitive.NewObjectID()
+	imgId := bson.NewObjectID()
 	tmpPath := path.Join(cacheDir,
 		fmt.Sprintf("restore-%s", imgId.Hex()))
 

@@ -5,9 +5,8 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/settings"
@@ -15,16 +14,16 @@ import (
 )
 
 type Record struct {
-	Id              primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Domain          primitive.ObjectID `bson:"domain" json:"domain"`
-	Resource        primitive.ObjectID `bson:"resource,omitempty" json:"resource"`
-	Deployment      primitive.ObjectID `bson:"deployment,omitempty" json:"deployment"`
-	Timestamp       time.Time          `bson:"timestamp" json:"timestamp"`
-	DeleteTimestamp time.Time          `bson:"delete_timestamp,omitempty" json:"delete_timestamp"`
-	SubDomain       string             `bson:"sub_domain" json:"sub_domain"`
-	Type            string             `bson:"type" json:"type"`
-	Value           string             `bson:"value" json:"value"`
-	Operation       string             `bson:"-" json:"operation"`
+	Id              bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Domain          bson.ObjectID `bson:"domain" json:"domain"`
+	Resource        bson.ObjectID `bson:"resource,omitempty" json:"resource"`
+	Deployment      bson.ObjectID `bson:"deployment,omitempty" json:"deployment"`
+	Timestamp       time.Time     `bson:"timestamp" json:"timestamp"`
+	DeleteTimestamp time.Time     `bson:"delete_timestamp,omitempty" json:"delete_timestamp"`
+	SubDomain       string        `bson:"sub_domain" json:"sub_domain"`
+	Type            string        `bson:"type" json:"type"`
+	Value           string        `bson:"value" json:"value"`
+	Operation       string        `bson:"-" json:"operation"`
 }
 
 func (r *Record) Priority() int {

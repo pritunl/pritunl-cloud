@@ -1,7 +1,7 @@
 package demo
 
 import (
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/secret"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
@@ -11,7 +11,7 @@ var Secrets = []*secret.Secret{
 		Id:           utils.ObjectIdHex("67b89e8d4866ba90e6c459ba"),
 		Name:         "cloudflare-pritunl-com",
 		Comment:      "",
-		Organization: primitive.ObjectID{},
+		Organization: bson.ObjectID{},
 		Type:         "cloudflare",
 		Key:          "a7kX9mN2vP8Q-4jL6wS3tR5Y-uH1gF7dZ0xC-vB8nM",
 		Value:        "",

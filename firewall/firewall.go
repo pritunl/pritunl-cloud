@@ -8,7 +8,7 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -81,12 +81,12 @@ func (r *Rule) SetName(ipv6 bool) (name string) {
 }
 
 type Firewall struct {
-	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Name         string             `bson:"name" json:"name"`
-	Comment      string             `bson:"comment" json:"comment"`
-	Organization primitive.ObjectID `bson:"organization" json:"organization"`
-	Roles        []string           `bson:"roles" json:"roles"`
-	Ingress      []*Rule            `bson:"ingress" json:"ingress"`
+	Id           bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name         string        `bson:"name" json:"name"`
+	Comment      string        `bson:"comment" json:"comment"`
+	Organization bson.ObjectID `bson:"organization" json:"organization"`
+	Roles        []string      `bson:"roles" json:"roles"`
+	Ingress      []*Rule       `bson:"ingress" json:"ingress"`
 }
 
 func (f *Firewall) Validate(db *database.Database) (
@@ -240,7 +240,7 @@ func (f *Firewall) Insert(db *database.Database) (err error) {
 		return
 	}
 
-	f.Id = resp.InsertedID.(primitive.ObjectID)
+	f.Id = resp.InsertedID.(bson.ObjectID)
 
 	return
 }

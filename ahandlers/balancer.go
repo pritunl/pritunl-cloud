@@ -9,8 +9,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/balancer"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
@@ -20,18 +19,18 @@ import (
 )
 
 type balancerData struct {
-	Id           primitive.ObjectID   `json:"id"`
-	Name         string               `json:"name"`
-	Comment      string               `json:"comment"`
-	State        bool                 `json:"state"`
-	Type         string               `json:"type"`
-	Organization primitive.ObjectID   `json:"organization"`
-	Datacenter   primitive.ObjectID   `json:"datacenter"`
-	Certificates []primitive.ObjectID `json:"certificates"`
-	WebSockets   bool                 `json:"websockets"`
-	Domains      []*balancer.Domain   `json:"domains"`
-	Backends     []*balancer.Backend  `json:"backends"`
-	CheckPath    string               `json:"check_path"`
+	Id           bson.ObjectID       `json:"id"`
+	Name         string              `json:"name"`
+	Comment      string              `json:"comment"`
+	State        bool                `json:"state"`
+	Type         string              `json:"type"`
+	Organization bson.ObjectID       `json:"organization"`
+	Datacenter   bson.ObjectID       `json:"datacenter"`
+	Certificates []bson.ObjectID     `json:"certificates"`
+	WebSockets   bool                `json:"websockets"`
+	Domains      []*balancer.Domain  `json:"domains"`
+	Backends     []*balancer.Backend `json:"backends"`
+	CheckPath    string              `json:"check_path"`
 }
 
 type balancersData struct {
@@ -205,7 +204,7 @@ func balancersDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	data := []primitive.ObjectID{}
+	data := []bson.ObjectID{}
 
 	err := c.Bind(&data)
 	if err != nil {

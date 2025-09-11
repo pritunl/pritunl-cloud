@@ -6,9 +6,8 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/instance"
@@ -19,7 +18,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func Get(db *database.Database, fireId primitive.ObjectID) (
+func Get(db *database.Database, fireId bson.ObjectID) (
 	fire *Firewall, err error) {
 
 	coll := db.Firewalls()
@@ -33,7 +32,7 @@ func Get(db *database.Database, fireId primitive.ObjectID) (
 	return
 }
 
-func GetOrg(db *database.Database, orgId, fireId primitive.ObjectID) (
+func GetOrg(db *database.Database, orgId, fireId bson.ObjectID) (
 	fire *Firewall, err error) {
 
 	coll := db.Firewalls()
@@ -168,7 +167,7 @@ func GetMapRoles(db *database.Database, roles []string) (
 	return
 }
 
-func GetOrgMapRoles(db *database.Database, orgId primitive.ObjectID) (
+func GetOrgMapRoles(db *database.Database, orgId bson.ObjectID) (
 	fires map[string][]*Firewall, err error) {
 
 	coll := db.Firewalls()
@@ -209,7 +208,7 @@ func GetOrgMapRoles(db *database.Database, orgId primitive.ObjectID) (
 	return
 }
 
-func GetOrgRoles(db *database.Database, orgId primitive.ObjectID,
+func GetOrgRoles(db *database.Database, orgId bson.ObjectID,
 	roles []string) (fires []*Firewall, err error) {
 
 	coll := db.Firewalls()
@@ -314,7 +313,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	return
 }
 
-func Remove(db *database.Database, fireId primitive.ObjectID) (err error) {
+func Remove(db *database.Database, fireId bson.ObjectID) (err error) {
 	coll := db.Firewalls()
 
 	_, err = coll.DeleteOne(db, &bson.M{
@@ -333,7 +332,7 @@ func Remove(db *database.Database, fireId primitive.ObjectID) (err error) {
 	return
 }
 
-func RemoveOrg(db *database.Database, orgId, fireId primitive.ObjectID) (
+func RemoveOrg(db *database.Database, orgId, fireId bson.ObjectID) (
 	err error) {
 
 	coll := db.Firewalls()
@@ -355,7 +354,7 @@ func RemoveOrg(db *database.Database, orgId, fireId primitive.ObjectID) (
 	return
 }
 
-func RemoveMulti(db *database.Database, fireIds []primitive.ObjectID) (
+func RemoveMulti(db *database.Database, fireIds []bson.ObjectID) (
 	err error) {
 
 	coll := db.Firewalls()
@@ -373,8 +372,8 @@ func RemoveMulti(db *database.Database, fireIds []primitive.ObjectID) (
 	return
 }
 
-func RemoveMultiOrg(db *database.Database, orgId primitive.ObjectID,
-	fireIds []primitive.ObjectID) (err error) {
+func RemoveMultiOrg(db *database.Database, orgId bson.ObjectID,
+	fireIds []bson.ObjectID) (err error) {
 
 	coll := db.Firewalls()
 
@@ -439,7 +438,7 @@ func GetAllIngress(db *database.Database, nodeSelf *node.Node,
 	nodePortsMap map[string][]*nodeport.Mapping) (
 	nodeFirewall []*Rule, firewalls map[string][]*Rule,
 	mappings map[string][]*Mapping,
-	instNamespaces map[primitive.ObjectID][]string, err error) {
+	instNamespaces map[bson.ObjectID][]string, err error) {
 
 	if nodeSelf.Firewall {
 		fires, e := GetRoles(db, nodeSelf.Roles)
@@ -452,7 +451,7 @@ func GetAllIngress(db *database.Database, nodeSelf *node.Node,
 		nodeFirewall = ingress
 	}
 
-	instNamespaces = map[primitive.ObjectID][]string{}
+	instNamespaces = map[bson.ObjectID][]string{}
 	nodePortIps := map[string]string{}
 	firewalls = map[string][]*Rule{}
 	for _, inst := range instances {
@@ -541,7 +540,7 @@ func GetAllIngressPreloaded(nodeSelf *node.Node,
 	firesMap map[string][]*Firewall) (
 	nodeFirewall []*Rule, firewalls map[string][]*Rule,
 	mappings map[string][]*Mapping,
-	instNamespaces map[primitive.ObjectID][]string, err error) {
+	instNamespaces map[bson.ObjectID][]string, err error) {
 
 	if nodeSelf.Firewall {
 		fires := []*Firewall{}
@@ -557,7 +556,7 @@ func GetAllIngressPreloaded(nodeSelf *node.Node,
 		nodeFirewall = ingress
 	}
 
-	instNamespaces = map[primitive.ObjectID][]string{}
+	instNamespaces = map[bson.ObjectID][]string{}
 	nodePortIps := map[string]string{}
 	firewalls = map[string][]*Rule{}
 	for _, inst := range instances {

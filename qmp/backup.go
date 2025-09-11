@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/sirupsen/logrus"
@@ -37,7 +37,7 @@ type blockDeviceReturn struct {
 	Error  *CommandError  `json:"error"`
 }
 
-func driveGetDevice(vmId primitive.ObjectID, dsk *disk.Disk) (
+func driveGetDevice(vmId bson.ObjectID, dsk *disk.Disk) (
 	name string, err error) {
 
 	cmd := &Command{
@@ -68,7 +68,7 @@ func driveGetDevice(vmId primitive.ObjectID, dsk *disk.Disk) (
 		idStr := strings.Split(path.Base(
 			blockDev.Inserted.Image.Filename), ".")[0]
 
-		diskId, err := primitive.ObjectIDFromHex(idStr)
+		diskId, err := bson.ObjectIDFromHex(idStr)
 		if err != nil {
 			continue
 		}
@@ -82,7 +82,7 @@ func driveGetDevice(vmId primitive.ObjectID, dsk *disk.Disk) (
 	return
 }
 
-func driveBackup(vmId primitive.ObjectID, dsk *disk.Disk,
+func driveBackup(vmId bson.ObjectID, dsk *disk.Disk,
 	destPth string) (deviceName string, err error) {
 
 	deviceName, err = driveGetDevice(vmId, dsk)
@@ -125,7 +125,7 @@ func driveBackup(vmId primitive.ObjectID, dsk *disk.Disk,
 	return
 }
 
-func driveBackupCheck(vmId primitive.ObjectID, deviceName string) (
+func driveBackupCheck(vmId bson.ObjectID, deviceName string) (
 	complete bool, err error) {
 
 	cmd := &Command{
@@ -166,7 +166,7 @@ func driveBackupCheck(vmId primitive.ObjectID, deviceName string) (
 	return
 }
 
-func BackupDisk(vmId primitive.ObjectID, dsk *disk.Disk,
+func BackupDisk(vmId bson.ObjectID, dsk *disk.Disk,
 	destPth string) (err error) {
 
 	logrus.WithFields(logrus.Fields{

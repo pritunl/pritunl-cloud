@@ -2,8 +2,7 @@ package state
 
 import (
 	"github.com/dropbox/godropbox/container/set"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/authority"
 	"github.com/pritunl/pritunl-cloud/database"
 )
@@ -18,7 +17,7 @@ type AuthoritiesState struct {
 }
 
 func (p *AuthoritiesState) GetInstaceAuthorities(
-	orgId primitive.ObjectID, roles []string) []*authority.Authority {
+	orgId bson.ObjectID, roles []string) []*authority.Authority {
 
 	authrSet := set.NewSet()
 	authrs := []*authority.Authority{}

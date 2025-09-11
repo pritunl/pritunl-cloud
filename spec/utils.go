@@ -6,18 +6,17 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type Named struct {
-	Id        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Unit      primitive.ObjectID `bson:"unit" json:"unit"`
-	Index     int                `bson:"index" json:"index"`
-	Timestamp time.Time          `bson:"timestamp" json:"timestamp"`
+	Id        bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Unit      bson.ObjectID `bson:"unit" json:"unit"`
+	Index     int           `bson:"index" json:"index"`
+	Timestamp time.Time     `bson:"timestamp" json:"timestamp"`
 }
 
 var (
@@ -43,7 +42,7 @@ func filterSpecHash(input string) string {
 	})
 }
 
-func New(podId, unitId, orgId primitive.ObjectID, data string) (spc *Spec) {
+func New(podId, unitId, orgId bson.ObjectID, data string) (spc *Spec) {
 	spc = &Spec{
 		Unit:         unitId,
 		Pod:          podId,
@@ -54,7 +53,7 @@ func New(podId, unitId, orgId primitive.ObjectID, data string) (spc *Spec) {
 	return
 }
 
-func Get(db *database.Database, commitId primitive.ObjectID) (
+func Get(db *database.Database, commitId bson.ObjectID) (
 	spc *Spec, err error) {
 
 	coll := db.Specs()
@@ -321,7 +320,7 @@ func GetAllIds(db *database.Database) (specIds set.Set, err error) {
 	return
 }
 
-func Remove(db *database.Database, commitId primitive.ObjectID) (err error) {
+func Remove(db *database.Database, commitId bson.ObjectID) (err error) {
 	coll := db.Specs()
 
 	_, err = coll.DeleteOne(db, &bson.M{

@@ -4,14 +4,13 @@ import (
 	"strings"
 
 	minio "github.com/minio/minio-go/v7"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
-func Get(db *database.Database, storeId primitive.ObjectID) (
+func Get(db *database.Database, storeId bson.ObjectID) (
 	store *Storage, err error) {
 
 	coll := db.Storages()
@@ -123,7 +122,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	return
 }
 
-func Remove(db *database.Database, storeId primitive.ObjectID) (err error) {
+func Remove(db *database.Database, storeId bson.ObjectID) (err error) {
 	coll := db.Images()
 
 	_, err = coll.DeleteMany(db, &bson.M{
@@ -151,7 +150,7 @@ func Remove(db *database.Database, storeId primitive.ObjectID) (err error) {
 	return
 }
 
-func RemoveMulti(db *database.Database, storeIds []primitive.ObjectID) (
+func RemoveMulti(db *database.Database, storeIds []bson.ObjectID) (
 	err error) {
 
 	coll := db.Images()

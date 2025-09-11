@@ -17,7 +17,7 @@ import (
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/acme"
 	"github.com/pritunl/pritunl-cloud/ahandlers"
 	"github.com/pritunl/pritunl-cloud/balancer"

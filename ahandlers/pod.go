@@ -9,8 +9,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/aggregate"
 	"github.com/pritunl/pritunl-cloud/authorizer"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -28,14 +27,14 @@ import (
 )
 
 type podData struct {
-	Id               primitive.ObjectID `json:"id"`
-	Name             string             `json:"name"`
-	Comment          string             `json:"comment"`
-	Organization     primitive.ObjectID `json:"organization"`
-	DeleteProtection bool               `json:"delete_protection"`
-	Units            []*unit.UnitInput  `json:"units"`
-	Drafts           []*pod.UnitDraft   `json:"drafts"`
-	Count            int                `json:"count"`
+	Id               bson.ObjectID     `json:"id"`
+	Name             string            `json:"name"`
+	Comment          string            `json:"comment"`
+	Organization     bson.ObjectID     `json:"organization"`
+	DeleteProtection bool              `json:"delete_protection"`
+	Units            []*unit.UnitInput `json:"units"`
+	Drafts           []*pod.UnitDraft  `json:"drafts"`
+	Count            int               `json:"count"`
 }
 
 type podsData struct {
@@ -44,13 +43,13 @@ type podsData struct {
 }
 
 type podsDeployData struct {
-	Count int                `json:"count"`
-	Spec  primitive.ObjectID `json:"spec"`
+	Count int           `json:"count"`
+	Spec  bson.ObjectID `json:"spec"`
 }
 
 type deploymentData struct {
-	Id   primitive.ObjectID `json:"id"`
-	Tags []string           `json:"tags"`
+	Id   bson.ObjectID `json:"id"`
+	Tags []string      `json:"tags"`
 }
 
 type specsData struct {
@@ -209,7 +208,7 @@ func podDeployPut(c *gin.Context) {
 		return
 	}
 
-	unitsDataMap := map[primitive.ObjectID]*unit.UnitInput{}
+	unitsDataMap := map[bson.ObjectID]*unit.UnitInput{}
 	for _, unitData := range data.Units {
 		unitsDataMap[unitData.Id] = unitData
 	}
@@ -345,7 +344,7 @@ func podsDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	data := []primitive.ObjectID{}
+	data := []bson.ObjectID{}
 
 	err := c.Bind(&data)
 	if err != nil {
@@ -488,8 +487,8 @@ func podsGet(c *gin.Context) {
 }
 
 type PodUnit struct {
-	Id          primitive.ObjectID      `json:"id"`
-	Pod         primitive.ObjectID      `json:"pod"`
+	Id          bson.ObjectID           `json:"id"`
+	Pod         bson.ObjectID           `json:"pod"`
 	Kind        string                  `json:"kind"`
 	Deployments []*aggregate.Deployment `json:"deployments"`
 }
@@ -572,7 +571,7 @@ func podUnitDeploymentsPut(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	data := []primitive.ObjectID{}
+	data := []bson.ObjectID{}
 
 	unitId, ok := utils.ParseObjectId(c.Param("unit_id"))
 	if !ok {

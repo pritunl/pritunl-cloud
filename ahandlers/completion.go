@@ -2,8 +2,7 @@ package ahandlers
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/certificate"
 	"github.com/pritunl/pritunl-cloud/completion"
@@ -203,7 +202,7 @@ func completionGet(c *gin.Context) {
 		return
 	}
 
-	cmpl, err := completion.GetCompletion(db, primitive.NilObjectID, nil)
+	cmpl, err := completion.GetCompletion(db, bson.NilObjectID, nil)
 	if err != nil {
 		utils.AbortWithError(c, 500, err)
 		return

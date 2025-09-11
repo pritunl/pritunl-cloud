@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/imds"
 	"github.com/pritunl/pritunl-cloud/settings"
@@ -26,7 +26,7 @@ var imdsSync = &Task{
 }
 
 var (
-	failTime = map[primitive.ObjectID]time.Time{}
+	failTime = map[bson.ObjectID]time.Time{}
 )
 
 func imdsSyncHandler(db *database.Database) (err error) {
@@ -34,7 +34,7 @@ func imdsSyncHandler(db *database.Database) (err error) {
 	timeout := time.Duration(
 		settings.Hypervisor.ImdsSyncLogTimeout) * time.Second
 
-	newFailTime := map[primitive.ObjectID]time.Time{}
+	newFailTime := map[bson.ObjectID]time.Time{}
 	newFailTimeLock := sync.Mutex{}
 	waiter := &sync.WaitGroup{}
 	for _, conf := range confs {

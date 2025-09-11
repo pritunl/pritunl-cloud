@@ -2,8 +2,7 @@ package scheduler
 
 import (
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -11,7 +10,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/unit"
 )
 
-func Exists(db *database.Database, schdId primitive.ObjectID) (
+func Exists(db *database.Database, schdId bson.ObjectID) (
 	exists bool, err error) {
 
 	coll := db.Schedulers()
@@ -31,7 +30,7 @@ func Exists(db *database.Database, schdId primitive.ObjectID) (
 	return
 }
 
-func Get(db *database.Database, schdId primitive.ObjectID) (
+func Get(db *database.Database, schdId bson.ObjectID) (
 	schd *Scheduler, err error) {
 
 	coll := db.Schedulers()
@@ -109,7 +108,7 @@ func GetAllActive(db *database.Database) (schds []*Scheduler, err error) {
 	return
 }
 
-func Remove(db *database.Database, schdId primitive.ObjectID) (
+func Remove(db *database.Database, schdId bson.ObjectID) (
 	deleted bool, err error) {
 
 	coll := db.Schedulers()
@@ -172,7 +171,7 @@ func Schedule(db *database.Database, unt *unit.Unit) (err error) {
 }
 
 func ManualSchedule(db *database.Database, unt *unit.Unit,
-	specId primitive.ObjectID, count int) (
+	specId bson.ObjectID, count int) (
 	errData *errortypes.ErrorData, err error) {
 
 	exists, e := Exists(db, unt.Id)

@@ -1,14 +1,13 @@
 package pool
 
 import (
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
-func Get(db *database.Database, poolId primitive.ObjectID) (
+func Get(db *database.Database, poolId bson.ObjectID) (
 	pl *Pool, err error) {
 
 	coll := db.Pools()
@@ -177,7 +176,7 @@ func GetAllNames(db *database.Database, query *bson.M) (
 	return
 }
 
-func Remove(db *database.Database, poolId primitive.ObjectID) (err error) {
+func Remove(db *database.Database, poolId bson.ObjectID) (err error) {
 	coll := db.Pools()
 
 	_, err = coll.DeleteOne(db, &bson.M{
@@ -197,7 +196,7 @@ func Remove(db *database.Database, poolId primitive.ObjectID) (err error) {
 	return
 }
 
-func RemoveMulti(db *database.Database, poolIds []primitive.ObjectID) (
+func RemoveMulti(db *database.Database, poolIds []bson.ObjectID) (
 	err error) {
 
 	coll := db.Pools()

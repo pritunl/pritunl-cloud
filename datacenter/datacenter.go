@@ -3,7 +3,7 @@ package datacenter
 import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -12,24 +12,24 @@ import (
 )
 
 type Datacenter struct {
-	Id                  primitive.ObjectID   `bson:"_id,omitempty" json:"id"`
-	Name                string               `bson:"name" json:"name"`
-	Comment             string               `bson:"comment" json:"comment"`
-	MatchOrganizations  bool                 `bson:"match_organizations" json:"match_organizations"`
-	Organizations       []primitive.ObjectID `bson:"organizations" json:"organizations"`
-	NetworkMode         string               `bson:"network_mode" json:"network_mode"`
-	WgMode              string               `bson:"wg_mode" json:"wg_mode"`
-	PublicStorages      []primitive.ObjectID `bson:"public_storages" json:"public_storages"`
-	PrivateStorage      primitive.ObjectID   `bson:"private_storage,omitempty" json:"private_storage"`
-	PrivateStorageClass string               `bson:"private_storage_class" json:"private_storage_class"`
-	BackupStorage       primitive.ObjectID   `bson:"backup_storage,omitempty" json:"backup_storage"`
-	BackupStorageClass  string               `bson:"backup_storage_class" json:"backup_storage_class"`
+	Id                  bson.ObjectID   `bson:"_id,omitempty" json:"id"`
+	Name                string          `bson:"name" json:"name"`
+	Comment             string          `bson:"comment" json:"comment"`
+	MatchOrganizations  bool            `bson:"match_organizations" json:"match_organizations"`
+	Organizations       []bson.ObjectID `bson:"organizations" json:"organizations"`
+	NetworkMode         string          `bson:"network_mode" json:"network_mode"`
+	WgMode              string          `bson:"wg_mode" json:"wg_mode"`
+	PublicStorages      []bson.ObjectID `bson:"public_storages" json:"public_storages"`
+	PrivateStorage      bson.ObjectID   `bson:"private_storage,omitempty" json:"private_storage"`
+	PrivateStorageClass string          `bson:"private_storage_class" json:"private_storage_class"`
+	BackupStorage       bson.ObjectID   `bson:"backup_storage,omitempty" json:"backup_storage"`
+	BackupStorageClass  string          `bson:"backup_storage_class" json:"backup_storage_class"`
 }
 
 type Completion struct {
-	Id          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Name        string             `bson:"name" json:"name"`
-	NetworkMode string             `bson:"network_mode" json:"network_mode"`
+	Id          bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name        string        `bson:"name" json:"name"`
+	NetworkMode string        `bson:"network_mode" json:"network_mode"`
 }
 
 func (d *Datacenter) Validate(db *database.Database) (
@@ -38,11 +38,11 @@ func (d *Datacenter) Validate(db *database.Database) (
 	d.Name = utils.FilterName(d.Name)
 
 	if d.Organizations == nil || !d.MatchOrganizations {
-		d.Organizations = []primitive.ObjectID{}
+		d.Organizations = []bson.ObjectID{}
 	}
 
 	if d.PublicStorages == nil {
-		d.PublicStorages = []primitive.ObjectID{}
+		d.PublicStorages = []bson.ObjectID{}
 	}
 
 	switch d.NetworkMode {
@@ -204,7 +204,7 @@ func (d *Datacenter) Insert(db *database.Database) (err error) {
 		return
 	}
 
-	d.Id = resp.InsertedID.(primitive.ObjectID)
+	d.Id = resp.InsertedID.(bson.ObjectID)
 
 	return
 }

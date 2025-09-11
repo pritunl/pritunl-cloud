@@ -8,8 +8,7 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/balancer"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
@@ -19,17 +18,17 @@ import (
 )
 
 type balancerData struct {
-	Id           primitive.ObjectID   `json:"id"`
-	Name         string               `json:"name"`
-	Comment      string               `json:"comment"`
-	State        bool                 `json:"state"`
-	Type         string               `json:"type"`
-	Datacenter   primitive.ObjectID   `json:"datacenter"`
-	Certificates []primitive.ObjectID `json:"certificates"`
-	WebSockets   bool                 `json:"websockets"`
-	Domains      []*balancer.Domain   `json:"domains"`
-	Backends     []*balancer.Backend  `json:"backends"`
-	CheckPath    string               `json:"check_path"`
+	Id           bson.ObjectID       `json:"id"`
+	Name         string              `json:"name"`
+	Comment      string              `json:"comment"`
+	State        bool                `json:"state"`
+	Type         string              `json:"type"`
+	Datacenter   bson.ObjectID       `json:"datacenter"`
+	Certificates []bson.ObjectID     `json:"certificates"`
+	WebSockets   bool                `json:"websockets"`
+	Domains      []*balancer.Domain  `json:"domains"`
+	Backends     []*balancer.Backend `json:"backends"`
+	CheckPath    string              `json:"check_path"`
 }
 
 type balancersData struct {
@@ -43,7 +42,7 @@ func balancerPut(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 	data := &balancerData{}
 
 	balancerId, ok := utils.ParseObjectId(c.Param("balancer_id"))
@@ -128,7 +127,7 @@ func balancerPost(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 	data := &balancerData{
 		Name: "New Balancer",
 	}
@@ -193,7 +192,7 @@ func balancerDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	balancerId, ok := utils.ParseObjectId(c.Param("balancer_id"))
 	if !ok {
@@ -218,8 +217,8 @@ func balancersDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
-	data := []primitive.ObjectID{}
+	userOrg := c.MustGet("organization").(bson.ObjectID)
+	data := []bson.ObjectID{}
 
 	err := c.Bind(&data)
 	if err != nil {
@@ -246,7 +245,7 @@ func balancerGet(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	balancerId, ok := utils.ParseObjectId(c.Param("balancer_id"))
 	if !ok {
@@ -277,7 +276,7 @@ func balancersGet(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
 	pageCount, _ := strconv.ParseInt(c.Query("page_count"), 10, 0)

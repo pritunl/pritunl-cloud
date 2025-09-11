@@ -2,7 +2,7 @@ package uhandlers
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/relations"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -16,7 +16,7 @@ type relationsData struct {
 
 func relationsGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	kind := c.Param("kind")
 	resourceId, ok := utils.ParseObjectId(c.Param("id"))

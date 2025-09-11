@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/cloudinit"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/data"
@@ -48,7 +48,7 @@ type InfoCache struct {
 	Virt      *vm.VirtualMachine
 }
 
-func GetVmInfo(db *database.Database, vmId primitive.ObjectID,
+func GetVmInfo(db *database.Database, vmId bson.ObjectID,
 	queryQms, force bool) (virt *vm.VirtualMachine, err error) {
 
 	refreshRate := time.Duration(
@@ -379,7 +379,7 @@ func GetVms(db *database.Database) (
 			continue
 		}
 
-		vmId, err := primitive.ObjectIDFromHex(match[1])
+		vmId, err := bson.ObjectIDFromHex(match[1])
 		if err != nil {
 			continue
 		}
@@ -505,7 +505,7 @@ func Create(db *database.Database, inst *instance.Instance,
 
 	if dsk == nil {
 		dsk = &disk.Disk{
-			Id:               primitive.NewObjectID(),
+			Id:               bson.NewObjectID(),
 			Name:             inst.Name,
 			State:            disk.Available,
 			Type:             virt.DiskType,

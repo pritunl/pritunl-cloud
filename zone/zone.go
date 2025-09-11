@@ -5,7 +5,7 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/settings"
@@ -13,18 +13,18 @@ import (
 )
 
 type Zone struct {
-	Id          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Datacenter  primitive.ObjectID `bson:"datacenter" json:"datacenter"`
-	Name        string             `bson:"name" json:"name"`
-	Comment     string             `bson:"comment" json:"comment"`
-	DnsServers  []string           `bson:"dns_servers" json:"dns_servers"`
-	DnsServers6 []string           `bson:"dns_servers6" json:"dns_servers6"`
+	Id          bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Datacenter  bson.ObjectID `bson:"datacenter" json:"datacenter"`
+	Name        string        `bson:"name" json:"name"`
+	Comment     string        `bson:"comment" json:"comment"`
+	DnsServers  []string      `bson:"dns_servers" json:"dns_servers"`
+	DnsServers6 []string      `bson:"dns_servers6" json:"dns_servers6"`
 }
 
 type Completion struct {
-	Id         primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Datacenter primitive.ObjectID `bson:"datacenter" json:"datacenter"`
-	Name       string             `bson:"name" json:"name"`
+	Id         bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Datacenter bson.ObjectID `bson:"datacenter" json:"datacenter"`
+	Name       string        `bson:"name" json:"name"`
 }
 
 func (z *Zone) Validate(db *database.Database) (
@@ -147,7 +147,7 @@ func (z *Zone) Insert(db *database.Database) (err error) {
 		return
 	}
 
-	z.Id = resp.InsertedID.(primitive.ObjectID)
+	z.Id = resp.InsertedID.(bson.ObjectID)
 
 	return
 }

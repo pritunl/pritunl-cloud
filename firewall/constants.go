@@ -1,8 +1,6 @@
 package firewall
 
-import (
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-)
+import "github.com/pritunl/mongo-go-driver/v2/bson"
 
 const (
 	All       = "all"
@@ -14,5 +12,5 @@ const (
 )
 
 var (
-	Global = primitive.NilObjectID
+	Global = bson.NilObjectID
 )

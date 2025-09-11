@@ -1,7 +1,7 @@
 package deploy
 
 import (
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/certificate"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	Hashes = map[primitive.ObjectID]uint32{}
+	Hashes = map[bson.ObjectID]uint32{}
 )
 
 type Imds struct {
@@ -39,8 +39,8 @@ func (s *Imds) buildInstance(db *database.Database,
 		inst, virt, nil,
 		vc, subnet,
 		[]*pod.Pod{},
-		map[primitive.ObjectID][]*unit.Unit{},
-		map[primitive.ObjectID]*deployment.Deployment{},
+		map[bson.ObjectID][]*unit.Unit{},
+		map[bson.ObjectID]*deployment.Deployment{},
 		[]*secret.Secret{},
 		[]*certificate.Certificate{},
 	)
@@ -104,7 +104,7 @@ func (s *Imds) buildDeployInstance(db *database.Database,
 	}
 
 	pods := []*pod.Pod{}
-	podUnitsMap := map[primitive.ObjectID][]*unit.Unit{}
+	podUnitsMap := map[bson.ObjectID][]*unit.Unit{}
 
 	instPd := s.stat.Pod(deply.Pod)
 	if instPd != nil {
@@ -154,7 +154,7 @@ func (s *Imds) buildDeployInstance(db *database.Database,
 func (s *Imds) Deploy(db *database.Database) (err error) {
 	instances := s.stat.Instances()
 
-	confs := map[primitive.ObjectID]*types.Config{}
+	confs := map[bson.ObjectID]*types.Config{}
 	for _, inst := range instances {
 		if !inst.IsActive() {
 			continue

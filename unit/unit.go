@@ -4,8 +4,7 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -14,35 +13,35 @@ import (
 )
 
 type Unit struct {
-	Id            primitive.ObjectID   `bson:"_id,omitempty" json:"id"`
-	Pod           primitive.ObjectID   `bson:"pod" json:"pod"`
-	Organization  primitive.ObjectID   `bson:"organization" json:"organization"`
-	Name          string               `bson:"name" json:"name"`
-	Kind          string               `bson:"kind" json:"kind"`
-	Count         int                  `bson:"count" json:"count"`
-	Deployments   []primitive.ObjectID `bson:"deployments" json:"deployments"`
-	Spec          string               `bson:"spec" json:"spec"`
-	SpecIndex     int                  `bson:"spec_index" json:"spec_index"`
-	SpecTimestamp time.Time            `bson:"spec_timestamp" json:"-"`
-	LastSpec      primitive.ObjectID   `bson:"last_spec" json:"last_spec"`
-	DeploySpec    primitive.ObjectID   `bson:"deploy_spec" json:"deploy_spec"`
-	Hash          string               `bson:"hash" json:"hash"`
+	Id            bson.ObjectID   `bson:"_id,omitempty" json:"id"`
+	Pod           bson.ObjectID   `bson:"pod" json:"pod"`
+	Organization  bson.ObjectID   `bson:"organization" json:"organization"`
+	Name          string          `bson:"name" json:"name"`
+	Kind          string          `bson:"kind" json:"kind"`
+	Count         int             `bson:"count" json:"count"`
+	Deployments   []bson.ObjectID `bson:"deployments" json:"deployments"`
+	Spec          string          `bson:"spec" json:"spec"`
+	SpecIndex     int             `bson:"spec_index" json:"spec_index"`
+	SpecTimestamp time.Time       `bson:"spec_timestamp" json:"-"`
+	LastSpec      bson.ObjectID   `bson:"last_spec" json:"last_spec"`
+	DeploySpec    bson.ObjectID   `bson:"deploy_spec" json:"deploy_spec"`
+	Hash          string          `bson:"hash" json:"hash"`
 }
 
 type Completion struct {
-	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Pod          primitive.ObjectID `bson:"pod" json:"pod"`
-	Organization primitive.ObjectID `bson:"organization" json:"organization"`
-	Name         string             `bson:"name" json:"name"`
-	Kind         string             `bson:"kind" json:"kind"`
+	Id           bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Pod          bson.ObjectID `bson:"pod" json:"pod"`
+	Organization bson.ObjectID `bson:"organization" json:"organization"`
+	Name         string        `bson:"name" json:"name"`
+	Kind         string        `bson:"kind" json:"kind"`
 }
 
 type UnitInput struct {
-	Id         primitive.ObjectID `json:"id"`
-	Name       string             `json:"name"`
-	Spec       string             `json:"spec"`
-	DeploySpec primitive.ObjectID `json:"deploy_spec"`
-	Delete     bool               `json:"delete"`
+	Id         bson.ObjectID `json:"id"`
+	Name       string        `json:"name"`
+	Spec       string        `json:"spec"`
+	DeploySpec bson.ObjectID `json:"deploy_spec"`
+	Delete     bool          `json:"delete"`
 }
 
 func (u *Unit) Refresh(db *database.Database) (err error) {
@@ -61,7 +60,7 @@ func (u *Unit) Refresh(db *database.Database) (err error) {
 	return
 }
 
-func (u *Unit) HasDeployment(deployId primitive.ObjectID) bool {
+func (u *Unit) HasDeployment(deployId bson.ObjectID) bool {
 	if u.Deployments != nil {
 		for _, deplyId := range u.Deployments {
 			if deplyId == deployId {
@@ -73,7 +72,7 @@ func (u *Unit) HasDeployment(deployId primitive.ObjectID) bool {
 	return false
 }
 
-func (u *Unit) Reserve(db *database.Database, deployId primitive.ObjectID,
+func (u *Unit) Reserve(db *database.Database, deployId bson.ObjectID,
 	overrideCount int) (reserved bool, err error) {
 
 	coll := db.Units()
@@ -113,7 +112,7 @@ func (u *Unit) Reserve(db *database.Database, deployId primitive.ObjectID,
 }
 
 func (u *Unit) RestoreDeployment(db *database.Database,
-	deployId primitive.ObjectID) (err error) {
+	deployId bson.ObjectID) (err error) {
 
 	coll := db.Units()
 
@@ -133,7 +132,7 @@ func (u *Unit) RestoreDeployment(db *database.Database,
 }
 
 func (u *Unit) RemoveDeployement(db *database.Database,
-	deployId primitive.ObjectID) (err error) {
+	deployId bson.ObjectID) (err error) {
 
 	coll := db.Units()
 
@@ -153,7 +152,7 @@ func (u *Unit) RemoveDeployement(db *database.Database,
 }
 
 func (u *Unit) MigrateDeployements(db *database.Database,
-	newSpecId primitive.ObjectID, deplyIds []primitive.ObjectID) (
+	newSpecId bson.ObjectID, deplyIds []bson.ObjectID) (
 	errData *errortypes.ErrorData, err error) {
 
 	coll := db.Deployments()
@@ -181,7 +180,7 @@ func (u *Unit) MigrateDeployements(db *database.Database,
 		return
 	}
 
-	spcMap := map[primitive.ObjectID]*spec.Spec{}
+	spcMap := map[bson.ObjectID]*spec.Spec{}
 
 	for _, deply := range deplys {
 		oldSpc := spcMap[deply.Spec]
@@ -383,7 +382,7 @@ func (u *Unit) Insert(db *database.Database) (err error) {
 		return
 	}
 
-	u.Id = resp.InsertedID.(primitive.ObjectID)
+	u.Id = resp.InsertedID.(bson.ObjectID)
 
 	return
 }

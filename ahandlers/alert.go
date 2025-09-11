@@ -9,8 +9,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/alert"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
@@ -20,17 +19,17 @@ import (
 )
 
 type alertData struct {
-	Id           primitive.ObjectID `json:"id"`
-	Name         string             `json:"name"`
-	Comment      string             `json:"comment"`
-	Organization primitive.ObjectID `json:"organization"`
-	Roles        []string           `json:"roles"`
-	Resource     string             `json:"resource"`
-	Level        int                `json:"level"`
-	Frequency    int                `json:"frequency"`
-	Ignores      []string           `json:"ignores"`
-	ValueInt     int                `json:"value_int"`
-	ValueStr     string             `json:"value_str"`
+	Id           bson.ObjectID `json:"id"`
+	Name         string        `json:"name"`
+	Comment      string        `json:"comment"`
+	Organization bson.ObjectID `json:"organization"`
+	Roles        []string      `json:"roles"`
+	Resource     string        `json:"resource"`
+	Level        int           `json:"level"`
+	Frequency    int           `json:"frequency"`
+	Ignores      []string      `json:"ignores"`
+	ValueInt     int           `json:"value_int"`
+	ValueStr     string        `json:"value_str"`
 }
 
 type alertsData struct {
@@ -199,7 +198,7 @@ func alertsDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	dta := []primitive.ObjectID{}
+	dta := []bson.ObjectID{}
 
 	err := c.Bind(&dta)
 	if err != nil {

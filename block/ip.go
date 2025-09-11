@@ -3,16 +3,16 @@ package block
 import (
 	"net"
 
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type BlockIp struct {
-	Id       primitive.ObjectID `bson:"_id,omitempty"`
-	Block    primitive.ObjectID `bson:"block"`
-	Ip       int64              `bson:"ip"`
-	Instance primitive.ObjectID `bson:"instance"`
-	Type     string             `bson:"type"`
+	Id       bson.ObjectID `bson:"_id,omitempty"`
+	Block    bson.ObjectID `bson:"block"`
+	Ip       int64         `bson:"ip"`
+	Instance bson.ObjectID `bson:"instance"`
+	Type     string        `bson:"type"`
 }
 
 func (b *BlockIp) GetIp() net.IP {

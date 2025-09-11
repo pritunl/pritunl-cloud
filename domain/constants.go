@@ -1,8 +1,6 @@
 package domain
 
-import (
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-)
+import "github.com/pritunl/mongo-go-driver/v2/bson"
 
 const (
 	AWS         = "aws"
@@ -20,5 +18,5 @@ const (
 )
 
 var (
-	Vacant = primitive.NilObjectID
+	Vacant = bson.NilObjectID
 )

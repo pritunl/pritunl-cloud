@@ -9,8 +9,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -21,17 +20,17 @@ import (
 )
 
 type vpcData struct {
-	Id            primitive.ObjectID `json:"id"`
-	Name          string             `json:"name"`
-	Comment       string             `json:"comment"`
-	Network       string             `json:"network"`
-	IcmpRedirects bool               `json:"icmp_redirects"`
-	Subnets       []*vpc.Subnet      `json:"subnets"`
-	Organization  primitive.ObjectID `json:"organization"`
-	Datacenter    primitive.ObjectID `json:"datacenter"`
-	Routes        []*vpc.Route       `json:"routes"`
-	Maps          []*vpc.Map         `json:"maps"`
-	Arps          []*vpc.Arp         `json:"arps"`
+	Id            bson.ObjectID `json:"id"`
+	Name          string        `json:"name"`
+	Comment       string        `json:"comment"`
+	Network       string        `json:"network"`
+	IcmpRedirects bool          `json:"icmp_redirects"`
+	Subnets       []*vpc.Subnet `json:"subnets"`
+	Organization  bson.ObjectID `json:"organization"`
+	Datacenter    bson.ObjectID `json:"datacenter"`
+	Routes        []*vpc.Route  `json:"routes"`
+	Maps          []*vpc.Map    `json:"maps"`
+	Arps          []*vpc.Arp    `json:"arps"`
 }
 
 type vpcsData struct {
@@ -219,7 +218,7 @@ func vpcsDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	data := []primitive.ObjectID{}
+	data := []bson.ObjectID{}
 
 	err := c.Bind(&data)
 	if err != nil {

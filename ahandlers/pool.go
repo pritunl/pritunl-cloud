@@ -11,8 +11,7 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/event"
@@ -21,13 +20,13 @@ import (
 )
 
 type poolData struct {
-	Id               primitive.ObjectID `json:"id"`
-	Name             string             `json:"name"`
-	Comment          string             `json:"comment"`
-	DeleteProtection bool               `json:"delete_protection"`
-	Zone             primitive.ObjectID `json:"zone"`
-	Type             string             `json:"type"`
-	VgName           string             `json:"vg_name"`
+	Id               bson.ObjectID `json:"id"`
+	Name             string        `json:"name"`
+	Comment          string        `json:"comment"`
+	DeleteProtection bool          `json:"delete_protection"`
+	Zone             bson.ObjectID `json:"zone"`
+	Type             string        `json:"type"`
+	VgName           string        `json:"vg_name"`
 }
 
 type poolsData struct {
@@ -178,7 +177,7 @@ func poolsDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	data := []primitive.ObjectID{}
+	data := []bson.ObjectID{}
 
 	err := c.Bind(&data)
 	if err != nil {

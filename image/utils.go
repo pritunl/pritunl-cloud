@@ -10,9 +10,8 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	minio "github.com/minio/minio-go/v7"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
@@ -79,7 +78,7 @@ func ParseImageName(key string) (name, release, build string) {
 	return
 }
 
-func Get(db *database.Database, imgId primitive.ObjectID) (
+func Get(db *database.Database, imgId bson.ObjectID) (
 	img *Image, err error) {
 
 	coll := db.Images()
@@ -93,7 +92,7 @@ func Get(db *database.Database, imgId primitive.ObjectID) (
 	return
 }
 
-func GetKey(db *database.Database, storeId primitive.ObjectID, key string) (
+func GetKey(db *database.Database, storeId bson.ObjectID, key string) (
 	img *Image, err error) {
 
 	coll := db.Images()
@@ -111,7 +110,7 @@ func GetKey(db *database.Database, storeId primitive.ObjectID, key string) (
 	return
 }
 
-func GetOrg(db *database.Database, orgId, imgId primitive.ObjectID) (
+func GetOrg(db *database.Database, orgId, imgId bson.ObjectID) (
 	img *Image, err error) {
 
 	coll := db.Images()
@@ -129,7 +128,7 @@ func GetOrg(db *database.Database, orgId, imgId primitive.ObjectID) (
 	return
 }
 
-func GetOrgPublic(db *database.Database, orgId, imgId primitive.ObjectID) (
+func GetOrgPublic(db *database.Database, orgId, imgId bson.ObjectID) (
 	img *Image, err error) {
 
 	coll := db.Images()
@@ -160,7 +159,7 @@ func GetOne(db *database.Database, query *bson.M) (img *Image, err error) {
 	return
 }
 
-func Distinct(db *database.Database, storeId primitive.ObjectID) (
+func Distinct(db *database.Database, storeId bson.ObjectID) (
 	keys []string, err error) {
 
 	coll := db.Images()
@@ -183,7 +182,7 @@ func Distinct(db *database.Database, storeId primitive.ObjectID) (
 	return
 }
 
-func ExistsOrg(db *database.Database, orgId, imgId primitive.ObjectID) (
+func ExistsOrg(db *database.Database, orgId, imgId bson.ObjectID) (
 	exists bool, err error) {
 
 	coll := db.Images()
@@ -443,7 +442,7 @@ func GetAllKeys(db *database.Database) (keys set.Set, err error) {
 	return
 }
 
-func Remove(db *database.Database, imgId primitive.ObjectID) (err error) {
+func Remove(db *database.Database, imgId bson.ObjectID) (err error) {
 	coll := db.Images()
 
 	_, err = coll.DeleteOne(db, &bson.M{

@@ -2,8 +2,7 @@ package state
 
 import (
 	"github.com/dropbox/godropbox/container/set"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/certificate"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
@@ -21,21 +20,21 @@ var (
 )
 
 type DeploymentsResult struct {
-	DeploymentIds []primitive.ObjectID `bson:"deployment_ids"`
-	PodIds        []primitive.ObjectID `bson:"pod_ids"`
-	UnitIds       []primitive.ObjectID `bson:"unit_ids"`
-	SpecIds       []primitive.ObjectID `bson:"spec_ids"`
+	DeploymentIds []bson.ObjectID `bson:"deployment_ids"`
+	PodIds        []bson.ObjectID `bson:"pod_ids"`
+	UnitIds       []bson.ObjectID `bson:"unit_ids"`
+	SpecIds       []bson.ObjectID `bson:"spec_ids"`
 
 	Deployments []*deployment.Deployment `bson:"deployments"`
 	Pods        []*pod.Pod               `bson:"pods"`
 	Units       []*unit.Unit             `bson:"units"`
 	Specs       []*spec.Spec             `bson:"specs"`
 
-	SpecPodIds    []primitive.ObjectID `bson:"spec_pod_ids"`
-	SpecUnitIds   []primitive.ObjectID `bson:"spec_unit_ids"`
-	SpecSecretIds []primitive.ObjectID `bson:"spec_secret_ids"`
-	SpecCertIds   []primitive.ObjectID `bson:"spec_cert_ids"`
-	SpecDomainIds []primitive.ObjectID `bson:"spec_domain_ids"`
+	SpecPodIds    []bson.ObjectID `bson:"spec_pod_ids"`
+	SpecUnitIds   []bson.ObjectID `bson:"spec_unit_ids"`
+	SpecSecretIds []bson.ObjectID `bson:"spec_secret_ids"`
+	SpecCertIds   []bson.ObjectID `bson:"spec_cert_ids"`
+	SpecDomainIds []bson.ObjectID `bson:"spec_domain_ids"`
 
 	SpecIdUnits        []*unit.Unit               `bson:"spec_id_units"`
 	SpecPodUnits       []*unit.Unit               `bson:"spec_pod_units"`
@@ -49,125 +48,125 @@ type DeploymentsResult struct {
 }
 
 type DeploymentsState struct {
-	podsMap                map[primitive.ObjectID]*pod.Pod
-	unitsMap               map[primitive.ObjectID]*unit.Unit
-	specsMap               map[primitive.ObjectID]*spec.Spec
-	specsPodsMap           map[primitive.ObjectID]*pod.Pod
-	specsPodUnitsMap       map[primitive.ObjectID][]*unit.Unit
-	specsUnitsMap          map[primitive.ObjectID]*unit.Unit
-	specsDeploymentsMap    map[primitive.ObjectID]*deployment.Deployment
-	specsDomainsMap        map[primitive.ObjectID]*domain.Domain
-	specsSecretsMap        map[primitive.ObjectID]*secret.Secret
-	specsCertsMap          map[primitive.ObjectID]*certificate.Certificate
-	deploymentsNode        map[primitive.ObjectID]*deployment.Deployment
-	deploymentsReservedMap map[primitive.ObjectID]*deployment.Deployment
-	deploymentsDeployedMap map[primitive.ObjectID]*deployment.Deployment
-	deploymentsInactiveMap map[primitive.ObjectID]*deployment.Deployment
+	podsMap                map[bson.ObjectID]*pod.Pod
+	unitsMap               map[bson.ObjectID]*unit.Unit
+	specsMap               map[bson.ObjectID]*spec.Spec
+	specsPodsMap           map[bson.ObjectID]*pod.Pod
+	specsPodUnitsMap       map[bson.ObjectID][]*unit.Unit
+	specsUnitsMap          map[bson.ObjectID]*unit.Unit
+	specsDeploymentsMap    map[bson.ObjectID]*deployment.Deployment
+	specsDomainsMap        map[bson.ObjectID]*domain.Domain
+	specsSecretsMap        map[bson.ObjectID]*secret.Secret
+	specsCertsMap          map[bson.ObjectID]*certificate.Certificate
+	deploymentsNode        map[bson.ObjectID]*deployment.Deployment
+	deploymentsReservedMap map[bson.ObjectID]*deployment.Deployment
+	deploymentsDeployedMap map[bson.ObjectID]*deployment.Deployment
+	deploymentsInactiveMap map[bson.ObjectID]*deployment.Deployment
 }
 
-func (p *DeploymentsState) Pod(pdId primitive.ObjectID) *pod.Pod {
+func (p *DeploymentsState) Pod(pdId bson.ObjectID) *pod.Pod {
 	return p.podsMap[pdId]
 }
 
-func (p *DeploymentsState) PodsMap() map[primitive.ObjectID]*pod.Pod {
+func (p *DeploymentsState) PodsMap() map[bson.ObjectID]*pod.Pod {
 	return p.podsMap
 }
 
-func (p *DeploymentsState) Unit(pdId primitive.ObjectID) *unit.Unit {
+func (p *DeploymentsState) Unit(pdId bson.ObjectID) *unit.Unit {
 	return p.unitsMap[pdId]
 }
 
-func (p *DeploymentsState) UnitsMap() map[primitive.ObjectID]*unit.Unit {
+func (p *DeploymentsState) UnitsMap() map[bson.ObjectID]*unit.Unit {
 	return p.unitsMap
 }
 
-func (p *DeploymentsState) Spec(commitId primitive.ObjectID) *spec.Spec {
+func (p *DeploymentsState) Spec(commitId bson.ObjectID) *spec.Spec {
 	return p.specsMap[commitId]
 }
 
-func (p *DeploymentsState) SpecsMap() map[primitive.ObjectID]*spec.Spec {
+func (p *DeploymentsState) SpecsMap() map[bson.ObjectID]*spec.Spec {
 	return p.specsMap
 }
 
-func (p *DeploymentsState) SpecPod(pdId primitive.ObjectID) *pod.Pod {
+func (p *DeploymentsState) SpecPod(pdId bson.ObjectID) *pod.Pod {
 	return p.specsPodsMap[pdId]
 }
 
-func (p *DeploymentsState) SpecPodUnits(pdId primitive.ObjectID) []*unit.Unit {
+func (p *DeploymentsState) SpecPodUnits(pdId bson.ObjectID) []*unit.Unit {
 	return p.specsPodUnitsMap[pdId]
 }
 
-func (p *DeploymentsState) SpecUnit(unitId primitive.ObjectID) *unit.Unit {
+func (p *DeploymentsState) SpecUnit(unitId bson.ObjectID) *unit.Unit {
 	return p.specsUnitsMap[unitId]
 }
 
-func (p *DeploymentsState) SpecsUnitsMap() map[primitive.ObjectID]*unit.Unit {
+func (p *DeploymentsState) SpecsUnitsMap() map[bson.ObjectID]*unit.Unit {
 	return p.specsUnitsMap
 }
 
-func (p *DeploymentsState) SpecDomain(domnId primitive.ObjectID) *domain.Domain {
+func (p *DeploymentsState) SpecDomain(domnId bson.ObjectID) *domain.Domain {
 	return p.specsDomainsMap[domnId]
 }
 
-func (p *DeploymentsState) SpecSecret(secrID primitive.ObjectID) *secret.Secret {
+func (p *DeploymentsState) SpecSecret(secrID bson.ObjectID) *secret.Secret {
 	return p.specsSecretsMap[secrID]
 }
 
 func (p *DeploymentsState) SpecCert(
-	certId primitive.ObjectID) *certificate.Certificate {
+	certId bson.ObjectID) *certificate.Certificate {
 
 	return p.specsCertsMap[certId]
 }
 
-func (p *DeploymentsState) SpecCertMap() map[primitive.ObjectID]*certificate.Certificate {
+func (p *DeploymentsState) SpecCertMap() map[bson.ObjectID]*certificate.Certificate {
 	return p.specsCertsMap
 }
 
-func (p *DeploymentsState) DeploymentsNode() map[primitive.ObjectID]*deployment.Deployment {
+func (p *DeploymentsState) DeploymentsNode() map[bson.ObjectID]*deployment.Deployment {
 	return p.deploymentsNode
 }
 
-func (p *DeploymentsState) DeploymentReserved(deplyId primitive.ObjectID) *deployment.Deployment {
+func (p *DeploymentsState) DeploymentReserved(deplyId bson.ObjectID) *deployment.Deployment {
 	return p.deploymentsReservedMap[deplyId]
 }
 
 func (p *DeploymentsState) DeploymentsReserved() (
-	deplys map[primitive.ObjectID]*deployment.Deployment) {
+	deplys map[bson.ObjectID]*deployment.Deployment) {
 
 	deplys = p.deploymentsReservedMap
 	return
 }
 
-func (p *DeploymentsState) DeploymentDeployed(deplyId primitive.ObjectID) *deployment.Deployment {
+func (p *DeploymentsState) DeploymentDeployed(deplyId bson.ObjectID) *deployment.Deployment {
 	return p.deploymentsDeployedMap[deplyId]
 }
 
 func (p *DeploymentsState) DeploymentsDeployed() (
-	deplys map[primitive.ObjectID]*deployment.Deployment) {
+	deplys map[bson.ObjectID]*deployment.Deployment) {
 
 	deplys = p.deploymentsDeployedMap
 	return
 }
 
 func (p *DeploymentsState) DeploymentsDestroy() (
-	deplys map[primitive.ObjectID]*deployment.Deployment) {
+	deplys map[bson.ObjectID]*deployment.Deployment) {
 
 	deplys = p.deploymentsInactiveMap
 	return
 }
 
-func (p *DeploymentsState) DeploymentInactive(deplyId primitive.ObjectID) *deployment.Deployment {
+func (p *DeploymentsState) DeploymentInactive(deplyId bson.ObjectID) *deployment.Deployment {
 	return p.deploymentsInactiveMap[deplyId]
 }
 
 func (p *DeploymentsState) DeploymentsInactive() (
-	deplys map[primitive.ObjectID]*deployment.Deployment) {
+	deplys map[bson.ObjectID]*deployment.Deployment) {
 
 	deplys = p.deploymentsInactiveMap
 	return
 }
 
-func (p *DeploymentsState) Deployment(deplyId primitive.ObjectID) (
+func (p *DeploymentsState) Deployment(deplyId bson.ObjectID) (
 	deply *deployment.Deployment) {
 
 	deply = p.deploymentsDeployedMap[deplyId]
@@ -537,10 +536,10 @@ func (p *DeploymentsState) Refresh(pkg *Package, db *database.Database) (err err
 		}
 	}
 
-	deploymentsNode := map[primitive.ObjectID]*deployment.Deployment{}
-	deploymentsReservedMap := map[primitive.ObjectID]*deployment.Deployment{}
-	deploymentsDeployedMap := map[primitive.ObjectID]*deployment.Deployment{}
-	deploymentsInactiveMap := map[primitive.ObjectID]*deployment.Deployment{}
+	deploymentsNode := map[bson.ObjectID]*deployment.Deployment{}
+	deploymentsReservedMap := map[bson.ObjectID]*deployment.Deployment{}
+	deploymentsDeployedMap := map[bson.ObjectID]*deployment.Deployment{}
+	deploymentsInactiveMap := map[bson.ObjectID]*deployment.Deployment{}
 
 	for _, deply := range result.Deployments {
 		deploymentsNode[deply.Id] = deply
@@ -561,25 +560,25 @@ func (p *DeploymentsState) Refresh(pkg *Package, db *database.Database) (err err
 	}
 	p.deploymentsNode = deploymentsNode
 
-	specsMap := map[primitive.ObjectID]*spec.Spec{}
+	specsMap := map[bson.ObjectID]*spec.Spec{}
 	for _, spec := range result.Specs {
 		specsMap[spec.Id] = spec
 	}
 	p.specsMap = specsMap
 
-	specsCertsMap := map[primitive.ObjectID]*certificate.Certificate{}
+	specsCertsMap := map[bson.ObjectID]*certificate.Certificate{}
 	for _, specCert := range result.SpecCerts {
 		specsCertsMap[specCert.Id] = specCert
 	}
 	p.specsCertsMap = specsCertsMap
 
-	specsSecretsMap := map[primitive.ObjectID]*secret.Secret{}
+	specsSecretsMap := map[bson.ObjectID]*secret.Secret{}
 	for _, specSecret := range result.SpecSecrets {
 		specsSecretsMap[specSecret.Id] = specSecret
 	}
 	p.specsSecretsMap = specsSecretsMap
 
-	specsPodsMap := map[primitive.ObjectID]*pod.Pod{}
+	specsPodsMap := map[bson.ObjectID]*pod.Pod{}
 	for _, specPod := range result.SpecPods {
 		specsPodsMap[specPod.Id] = specPod
 	}
@@ -587,15 +586,15 @@ func (p *DeploymentsState) Refresh(pkg *Package, db *database.Database) (err err
 
 	specDomains := domain.PreloadedRecords(
 		result.SpecDomains, result.SpecDomainsRecords)
-	specsDomainsMap := map[primitive.ObjectID]*domain.Domain{}
+	specsDomainsMap := map[bson.ObjectID]*domain.Domain{}
 	for _, specDomain := range specDomains {
 		specsDomainsMap[specDomain.Id] = specDomain
 	}
 	p.specsDomainsMap = specsDomainsMap
 
 	specUnitsIds := set.NewSet()
-	specsUnitsMap := map[primitive.ObjectID]*unit.Unit{}
-	specsPodUnitsMap := map[primitive.ObjectID][]*unit.Unit{}
+	specsUnitsMap := map[bson.ObjectID]*unit.Unit{}
+	specsPodUnitsMap := map[bson.ObjectID][]*unit.Unit{}
 	for _, specUnit := range result.SpecIdUnits {
 		if specUnitsIds.Contains(specUnit.Id) {
 			continue
@@ -638,13 +637,13 @@ func (p *DeploymentsState) Refresh(pkg *Package, db *database.Database) (err err
 	p.deploymentsDeployedMap = deploymentsDeployedMap
 	p.deploymentsInactiveMap = deploymentsInactiveMap
 
-	podsMap := map[primitive.ObjectID]*pod.Pod{}
+	podsMap := map[bson.ObjectID]*pod.Pod{}
 	for _, pd := range result.Pods {
 		podsMap[pd.Id] = pd
 	}
 	p.podsMap = podsMap
 
-	unitsMap := map[primitive.ObjectID]*unit.Unit{}
+	unitsMap := map[bson.ObjectID]*unit.Unit{}
 	for _, unt := range result.Units {
 		unitsMap[unt.Id] = unt
 	}

@@ -8,8 +8,7 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/aggregate"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
@@ -19,13 +18,13 @@ import (
 )
 
 type domainData struct {
-	Id         primitive.ObjectID `json:"id"`
-	Name       string             `json:"name"`
-	Comment    string             `json:"comment"`
-	Type       string             `json:"type"`
-	Secret     primitive.ObjectID `json:"secret"`
-	RootDomain string             `json:"root_domain"`
-	Records    []*domain.Record   `json:"records"`
+	Id         bson.ObjectID    `json:"id"`
+	Name       string           `json:"name"`
+	Comment    string           `json:"comment"`
+	Type       string           `json:"type"`
+	Secret     bson.ObjectID    `json:"secret"`
+	RootDomain string           `json:"root_domain"`
+	Records    []*domain.Record `json:"records"`
 }
 
 type domainsData struct {
@@ -39,7 +38,7 @@ func domainPut(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 	data := &domainData{}
 
 	domainId, ok := utils.ParseObjectId(c.Param("domain_id"))
@@ -116,7 +115,7 @@ func domainPost(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 	data := &domainData{
 		Name: "new.domain",
 	}
@@ -164,7 +163,7 @@ func domainDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	domainId, ok := utils.ParseObjectId(c.Param("domain_id"))
 	if !ok {
@@ -189,8 +188,8 @@ func domainsDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
-	data := []primitive.ObjectID{}
+	userOrg := c.MustGet("organization").(bson.ObjectID)
+	data := []bson.ObjectID{}
 
 	err := c.Bind(&data)
 	if err != nil {
@@ -217,7 +216,7 @@ func domainGet(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	domainId, ok := utils.ParseObjectId(c.Param("domain_id"))
 	if !ok {
@@ -253,7 +252,7 @@ func domainsGet(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	if c.Query("names") == "true" {
 		domns, err := domain.GetAllName(db, &bson.M{

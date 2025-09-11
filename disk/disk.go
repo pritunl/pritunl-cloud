@@ -8,8 +8,7 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
@@ -22,37 +21,37 @@ import (
 )
 
 type Disk struct {
-	Id               primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Name             string             `bson:"name" json:"name"`
-	Comment          string             `bson:"comment" json:"comment"`
-	Created          time.Time          `bson:"created" json:"created"`
-	State            string             `bson:"state" json:"state"`
-	Action           string             `bson:"action" json:"action"`
-	Type             string             `bson:"type" json:"type"`
-	SystemType       string             `bson:"system_type" json:"system_type"`
-	Uuid             string             `bson:"uuid" json:"uuid"`
-	Datacenter       primitive.ObjectID `bson:"datacenter" json:"datacenter"`
-	Zone             primitive.ObjectID `bson:"zone" json:"zone"`
-	Node             primitive.ObjectID `bson:"node" json:"node"`
-	Pool             primitive.ObjectID `bson:"pool" json:"pool"`
-	Organization     primitive.ObjectID `bson:"organization" json:"organization"`
-	Instance         primitive.ObjectID `bson:"instance" json:"instance"`
-	SourceInstance   primitive.ObjectID `bson:"source_instance" json:"source_instance"`
-	Deployment       primitive.ObjectID `bson:"deployment" json:"deployment"`
-	DeleteProtection bool               `bson:"delete_protection" json:"delete_protection"`
-	FileSystem       string             `bson:"file_system" json:"file_system"`
-	Image            primitive.ObjectID `bson:"image" json:"image"`
-	RestoreImage     primitive.ObjectID `bson:"restore_image" json:"restore_image"`
-	Backing          bool               `bson:"backing" json:"backing"`
-	BackingImage     string             `bson:"backing_image" json:"backing_image"`
-	Index            string             `bson:"index" json:"index"`
-	Size             int                `bson:"size" json:"size"`
-	LvSize           int                `bson:"lv_size" json:"lv_size"`
-	NewSize          int                `bson:"new_size" json:"new_size"`
-	Backup           bool               `bson:"backup" json:"backup"`
-	LastBackup       time.Time          `bson:"last_backup" json:"last_backup"`
-	curIndex         string             `bson:"-" json:"-"`
-	curInstance      primitive.ObjectID `bson:"-" json:"-"`
+	Id               bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name             string        `bson:"name" json:"name"`
+	Comment          string        `bson:"comment" json:"comment"`
+	Created          time.Time     `bson:"created" json:"created"`
+	State            string        `bson:"state" json:"state"`
+	Action           string        `bson:"action" json:"action"`
+	Type             string        `bson:"type" json:"type"`
+	SystemType       string        `bson:"system_type" json:"system_type"`
+	Uuid             string        `bson:"uuid" json:"uuid"`
+	Datacenter       bson.ObjectID `bson:"datacenter" json:"datacenter"`
+	Zone             bson.ObjectID `bson:"zone" json:"zone"`
+	Node             bson.ObjectID `bson:"node" json:"node"`
+	Pool             bson.ObjectID `bson:"pool" json:"pool"`
+	Organization     bson.ObjectID `bson:"organization" json:"organization"`
+	Instance         bson.ObjectID `bson:"instance" json:"instance"`
+	SourceInstance   bson.ObjectID `bson:"source_instance" json:"source_instance"`
+	Deployment       bson.ObjectID `bson:"deployment" json:"deployment"`
+	DeleteProtection bool          `bson:"delete_protection" json:"delete_protection"`
+	FileSystem       string        `bson:"file_system" json:"file_system"`
+	Image            bson.ObjectID `bson:"image" json:"image"`
+	RestoreImage     bson.ObjectID `bson:"restore_image" json:"restore_image"`
+	Backing          bool          `bson:"backing" json:"backing"`
+	BackingImage     string        `bson:"backing_image" json:"backing_image"`
+	Index            string        `bson:"index" json:"index"`
+	Size             int           `bson:"size" json:"size"`
+	LvSize           int           `bson:"lv_size" json:"lv_size"`
+	NewSize          int           `bson:"new_size" json:"new_size"`
+	Backup           bool          `bson:"backup" json:"backup"`
+	LastBackup       time.Time     `bson:"last_backup" json:"last_backup"`
+	curIndex         string        `bson:"-" json:"-"`
+	curInstance      bson.ObjectID `bson:"-" json:"-"`
 }
 
 func (d *Disk) IsActive() bool {
@@ -114,7 +113,7 @@ func (d *Disk) Validate(db *database.Database) (
 
 	switch d.Type {
 	case Qcow2:
-		d.Pool = primitive.NilObjectID
+		d.Pool = bson.NilObjectID
 		if d.Node.IsZero() {
 			errData = &errortypes.ErrorData{
 				Error:   "node_required",
@@ -124,7 +123,7 @@ func (d *Disk) Validate(db *database.Database) (
 		}
 		break
 	case Lvm:
-		d.Node = primitive.NilObjectID
+		d.Node = bson.NilObjectID
 		if d.Pool.IsZero() {
 			errData = &errortypes.ErrorData{
 				Error:   "pool_required",
@@ -217,7 +216,7 @@ func (d *Disk) Validate(db *database.Database) (
 		}
 	} else {
 		if !strings.HasPrefix(d.Index, "hold") {
-			d.Index = fmt.Sprintf("hold_%s", primitive.NewObjectID().Hex())
+			d.Index = fmt.Sprintf("hold_%s", bson.NewObjectID().Hex())
 		}
 		d.Deployment = Vacant
 	}
@@ -275,8 +274,8 @@ func (d *Disk) PreCommit() {
 }
 
 func (d *Disk) Reserve(db *database.Database,
-	instId primitive.ObjectID, index int,
-	deplyId primitive.ObjectID) (reserved bool, err error) {
+	instId bson.ObjectID, index int,
+	deplyId bson.ObjectID) (reserved bool, err error) {
 
 	coll := db.Disks()
 
@@ -303,7 +302,7 @@ func (d *Disk) Reserve(db *database.Database,
 }
 
 func (d *Disk) Unreserve(db *database.Database,
-	instId primitive.ObjectID, deplyId primitive.ObjectID) (err error) {
+	instId bson.ObjectID, deplyId bson.ObjectID) (err error) {
 
 	coll := db.Disks()
 
@@ -313,7 +312,7 @@ func (d *Disk) Unreserve(db *database.Database,
 		"deployment": deplyId,
 	}, &bson.M{
 		"$set": &bson.M{
-			"index":      fmt.Sprintf("hold_%s", primitive.NewObjectID().Hex()),
+			"index":      fmt.Sprintf("hold_%s", bson.NewObjectID().Hex()),
 			"instance":   Vacant,
 			"deployment": Vacant,
 		},

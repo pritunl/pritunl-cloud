@@ -9,8 +9,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/aggregate"
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -27,29 +26,29 @@ import (
 )
 
 type diskData struct {
-	Id               primitive.ObjectID `json:"id"`
-	Name             string             `json:"name"`
-	Comment          string             `json:"comment"`
-	Instance         primitive.ObjectID `json:"instance"`
-	Index            string             `json:"index"`
-	Type             string             `json:"type"`
-	Node             primitive.ObjectID `json:"node"`
-	Pool             primitive.ObjectID `json:"pool"`
-	DeleteProtection bool               `json:"delete_protection"`
-	FileSystem       string             `json:"file_system"`
-	Image            primitive.ObjectID `json:"image"`
-	RestoreImage     primitive.ObjectID `json:"restore_image"`
-	Backing          bool               `json:"backing"`
-	Action           string             `json:"action"`
-	Size             int                `json:"size"`
-	LvSize           int                `json:"lv_size"`
-	NewSize          int                `json:"new_size"`
-	Backup           bool               `json:"backup"`
+	Id               bson.ObjectID `json:"id"`
+	Name             string        `json:"name"`
+	Comment          string        `json:"comment"`
+	Instance         bson.ObjectID `json:"instance"`
+	Index            string        `json:"index"`
+	Type             string        `json:"type"`
+	Node             bson.ObjectID `json:"node"`
+	Pool             bson.ObjectID `json:"pool"`
+	DeleteProtection bool          `json:"delete_protection"`
+	FileSystem       string        `json:"file_system"`
+	Image            bson.ObjectID `json:"image"`
+	RestoreImage     bson.ObjectID `json:"restore_image"`
+	Backing          bool          `json:"backing"`
+	Action           string        `json:"action"`
+	Size             int           `json:"size"`
+	LvSize           int           `json:"lv_size"`
+	NewSize          int           `json:"new_size"`
+	Backup           bool          `json:"backup"`
 }
 
 type disksMultiData struct {
-	Ids    []primitive.ObjectID `json:"ids"`
-	Action string               `json:"action"`
+	Ids    []bson.ObjectID `json:"ids"`
+	Action string          `json:"action"`
 }
 
 type disksData struct {
@@ -63,7 +62,7 @@ func diskPut(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 	dta := &diskData{}
 
 	diskId, ok := utils.ParseObjectId(c.Param("disk_id"))
@@ -184,7 +183,7 @@ func diskPost(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 	dta := &diskData{
 		Name: "New Disk",
 	}
@@ -315,7 +314,7 @@ func disksPut(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 	data := &disksMultiData{}
 
 	err := c.Bind(data)
@@ -358,7 +357,7 @@ func diskDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	diskId, ok := utils.ParseObjectId(c.Param("disk_id"))
 	if !ok {
@@ -418,8 +417,8 @@ func disksDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
-	dta := []primitive.ObjectID{}
+	userOrg := c.MustGet("organization").(bson.ObjectID)
+	dta := []bson.ObjectID{}
 
 	err := c.Bind(&dta)
 	if err != nil {
@@ -449,7 +448,7 @@ func diskGet(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	diskId, ok := utils.ParseObjectId(c.Param("disk_id"))
 	if !ok {
@@ -478,7 +477,7 @@ func disksGet(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
 	pageCount, _ := strconv.ParseInt(c.Query("page_count"), 10, 0)

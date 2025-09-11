@@ -2,16 +2,15 @@ package deployment
 
 import (
 	"github.com/dropbox/godropbox/container/set"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/domain"
 	"github.com/pritunl/pritunl-cloud/event"
 	"github.com/pritunl/pritunl-cloud/journal"
 )
 
-func Get(db *database.Database, deplyId primitive.ObjectID) (
+func Get(db *database.Database, deplyId bson.ObjectID) (
 	deply *Deployment, err error) {
 
 	coll := db.Deployments()
@@ -25,7 +24,7 @@ func Get(db *database.Database, deplyId primitive.ObjectID) (
 	return
 }
 
-func GetUnit(db *database.Database, unitId, deplyId primitive.ObjectID) (
+func GetUnit(db *database.Database, unitId, deplyId bson.ObjectID) (
 	deply *Deployment, err error) {
 
 	coll := db.Deployments()
@@ -43,7 +42,7 @@ func GetUnit(db *database.Database, unitId, deplyId primitive.ObjectID) (
 	return
 }
 
-func GetOrg(db *database.Database, orgId, unitId primitive.ObjectID) (
+func GetOrg(db *database.Database, orgId, unitId bson.ObjectID) (
 	deply *Deployment, err error) {
 
 	coll := db.Deployments()
@@ -62,7 +61,7 @@ func GetOrg(db *database.Database, orgId, unitId primitive.ObjectID) (
 }
 
 func GetUnitOrg(db *database.Database,
-	orgId, unitId, deplyId primitive.ObjectID) (
+	orgId, unitId, deplyId bson.ObjectID) (
 	deply *Deployment, err error) {
 
 	coll := db.Deployments()
@@ -202,10 +201,10 @@ func GetAllActiveIds(db *database.Database) (deplyIds set.Set, err error) {
 }
 
 func GetAllStates(db *database.Database) (
-	deplysMap map[primitive.ObjectID]*Deployment, err error) {
+	deplysMap map[bson.ObjectID]*Deployment, err error) {
 
 	coll := db.Deployments()
-	deplysMap = map[primitive.ObjectID]*Deployment{}
+	deplysMap = map[bson.ObjectID]*Deployment{}
 
 	cursor, err := coll.Find(
 		db,
@@ -244,7 +243,7 @@ func GetAllStates(db *database.Database) (
 	return
 }
 
-func RemoveDomains(db *database.Database, deplyId primitive.ObjectID) (
+func RemoveDomains(db *database.Database, deplyId bson.ObjectID) (
 	err error) {
 
 	recs, err := domain.GetRecordAll(db, &bson.M{
@@ -259,9 +258,9 @@ func RemoveDomains(db *database.Database, deplyId primitive.ObjectID) (
 		domnIdsSet.Add(rec.Domain)
 	}
 
-	domnIds := []primitive.ObjectID{}
+	domnIds := []bson.ObjectID{}
 	for domnIdInf := range domnIdsSet.Iter() {
-		domnIds = append(domnIds, domnIdInf.(primitive.ObjectID))
+		domnIds = append(domnIds, domnIdInf.(bson.ObjectID))
 	}
 
 	if len(domnIds) > 0 {
@@ -305,7 +304,7 @@ func RemoveDomains(db *database.Database, deplyId primitive.ObjectID) (
 	return
 }
 
-func Remove(db *database.Database, deplyId primitive.ObjectID) (err error) {
+func Remove(db *database.Database, deplyId bson.ObjectID) (err error) {
 	coll := db.Deployments()
 
 	err = journal.Remove(db, deplyId, journal.DeploymentAgent)
@@ -336,8 +335,8 @@ func Remove(db *database.Database, deplyId primitive.ObjectID) (err error) {
 	return
 }
 
-func RemoveMulti(db *database.Database, unitId primitive.ObjectID,
-	deplyIds []primitive.ObjectID) (err error) {
+func RemoveMulti(db *database.Database, unitId bson.ObjectID,
+	deplyIds []bson.ObjectID) (err error) {
 
 	coll := db.Deployments()
 
@@ -359,8 +358,8 @@ func RemoveMulti(db *database.Database, unitId primitive.ObjectID,
 	return
 }
 
-func ArchiveMulti(db *database.Database, unitId primitive.ObjectID,
-	deplyIds []primitive.ObjectID) (err error) {
+func ArchiveMulti(db *database.Database, unitId bson.ObjectID,
+	deplyIds []bson.ObjectID) (err error) {
 
 	coll := db.Deployments()
 
@@ -383,8 +382,8 @@ func ArchiveMulti(db *database.Database, unitId primitive.ObjectID,
 	return
 }
 
-func RestoreMulti(db *database.Database, unitId primitive.ObjectID,
-	deplyIds []primitive.ObjectID) (err error) {
+func RestoreMulti(db *database.Database, unitId bson.ObjectID,
+	deplyIds []bson.ObjectID) (err error) {
 
 	coll := db.Deployments()
 

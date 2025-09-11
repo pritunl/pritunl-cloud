@@ -6,7 +6,7 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/settings"
@@ -78,8 +78,8 @@ func GetRecords(namespace string) (records set.Set, err error) {
 }
 
 func BuildState(instances []*instance.Instance,
-	vpcsMap map[primitive.ObjectID]*vpc.Vpc,
-	vpcIpsMap map[primitive.ObjectID][]*vpc.VpcIp) (
+	vpcsMap map[bson.ObjectID]*vpc.Vpc,
+	vpcIpsMap map[bson.ObjectID][]*vpc.VpcIp) (
 	recrds map[string]set.Set) {
 
 	recrds = map[string]set.Set{}

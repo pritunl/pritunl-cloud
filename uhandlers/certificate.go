@@ -9,8 +9,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/acme"
 	"github.com/pritunl/pritunl-cloud/certificate"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -22,15 +21,15 @@ import (
 )
 
 type certificateData struct {
-	Id          primitive.ObjectID `json:"id"`
-	Name        string             `json:"name"`
-	Comment     string             `json:"comment"`
-	Type        string             `json:"type"`
-	Key         string             `json:"key"`
-	Certificate string             `json:"certificate"`
-	AcmeDomains []string           `json:"acme_domains"`
-	AcmeAuth    string             `json:"acme_auth"`
-	AcmeSecret  primitive.ObjectID `json:"acme_secret"`
+	Id          bson.ObjectID `json:"id"`
+	Name        string        `json:"name"`
+	Comment     string        `json:"comment"`
+	Type        string        `json:"type"`
+	Key         string        `json:"key"`
+	Certificate string        `json:"certificate"`
+	AcmeDomains []string      `json:"acme_domains"`
+	AcmeAuth    string        `json:"acme_auth"`
+	AcmeSecret  bson.ObjectID `json:"acme_secret"`
 }
 
 type certificatesData struct {
@@ -44,7 +43,7 @@ func certificatePut(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 	data := &certificateData{}
 
 	certId, ok := utils.ParseObjectId(c.Param("cert_id"))
@@ -88,7 +87,7 @@ func certificatePut(c *gin.Context) {
 			return
 		}
 	} else {
-		data.AcmeSecret = primitive.NilObjectID
+		data.AcmeSecret = bson.NilObjectID
 	}
 
 	cert.Name = data.Name
@@ -151,7 +150,7 @@ func certificatePost(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 	data := &certificateData{
 		Name: "New Certificate",
 	}
@@ -185,7 +184,7 @@ func certificatePost(c *gin.Context) {
 			return
 		}
 	} else {
-		cert.AcmeSecret = primitive.NilObjectID
+		cert.AcmeSecret = bson.NilObjectID
 	}
 
 	errData, err := cert.Validate(db)
@@ -220,7 +219,7 @@ func certificateDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	certId, ok := utils.ParseObjectId(c.Param("cert_id"))
 	if !ok {
@@ -245,8 +244,8 @@ func certificatesDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
-	data := []primitive.ObjectID{}
+	userOrg := c.MustGet("organization").(bson.ObjectID)
+	data := []bson.ObjectID{}
 
 	err := c.Bind(&data)
 	if err != nil {
@@ -276,7 +275,7 @@ func certificateGet(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	if c.Query("names") == "true" {
 		certs, err := certificate.GetAllNames(db, &bson.M{
@@ -323,7 +322,7 @@ func certificatesGet(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
 	pageCount, _ := strconv.ParseInt(c.Query("page_count"), 10, 0)

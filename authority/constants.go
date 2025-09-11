@@ -1,8 +1,6 @@
 package authority
 
-import (
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-)
+import "github.com/pritunl/mongo-go-driver/v2/bson"
 
 const (
 	SshKey         = "ssh_key"
@@ -10,5 +8,5 @@ const (
 )
 
 var (
-	Global = primitive.NilObjectID
+	Global = bson.NilObjectID
 )

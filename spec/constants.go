@@ -3,7 +3,7 @@ package spec
 import (
 	"regexp"
 
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 )
 
 var resourcesRe = regexp.MustCompile("(?s)```yaml(.*?)```")
@@ -16,11 +16,11 @@ const (
 	Multicast = "multicast"
 	Broadcast = "broadcast"
 
-	Host          = "host"
-	Private       = "private"
-	Private6      = "private6"
-	Public        = "public"
-	Public6       = "public6"
+	Host         = "host"
+	Private      = "private"
+	Private6     = "private6"
+	Public       = "public"
+	Public6      = "public6"
 	CloudPublic  = "cloud_public"
 	CloudPublic6 = "cloud_public6"
 	CloudPrivate = "cloud_private"
@@ -40,8 +40,8 @@ const (
 )
 
 type Refrence struct {
-	Id       primitive.ObjectID `bson:"id" json:"id"`
-	Realm    primitive.ObjectID `bson:"realm" json:"realm"`
-	Kind     string             `bson:"kind" json:"kind"`
-	Selector string             `bson:"selector" json:"selector"`
+	Id       bson.ObjectID `bson:"id" json:"id"`
+	Realm    bson.ObjectID `bson:"realm" json:"realm"`
+	Kind     string        `bson:"kind" json:"kind"`
+	Selector string        `bson:"selector" json:"selector"`
 }

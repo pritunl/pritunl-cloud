@@ -4,8 +4,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 )
 
@@ -13,7 +12,7 @@ var (
 	reg = regexp.MustCompile("[^a-z0-9]+")
 )
 
-func Available(db *database.Database, instId, nodeId primitive.ObjectID,
+func Available(db *database.Database, instId, nodeId bson.ObjectID,
 	device *Device) (available bool, err error) {
 
 	coll := db.Instances()

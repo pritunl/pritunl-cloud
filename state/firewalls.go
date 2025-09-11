@@ -1,7 +1,7 @@
 package state
 
 import (
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -16,7 +16,7 @@ type FirewallsState struct {
 	nodeFirewall       []*firewall.Rule
 	firewalls          map[string][]*firewall.Rule
 	firewallMaps       map[string][]*firewall.Mapping
-	instanceNamespaces map[primitive.ObjectID][]string
+	instanceNamespaces map[bson.ObjectID][]string
 }
 
 func (p *FirewallsState) NodeFirewall() []*firewall.Rule {
@@ -32,7 +32,7 @@ func (p *FirewallsState) FirewallMaps() map[string][]*firewall.Mapping {
 }
 
 func (p *FirewallsState) GetInstanceNamespaces(
-	instId primitive.ObjectID) []string {
+	instId bson.ObjectID) []string {
 
 	return p.instanceNamespaces[instId]
 }

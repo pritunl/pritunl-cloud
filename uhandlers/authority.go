@@ -8,8 +8,7 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/authority"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
@@ -18,14 +17,14 @@ import (
 )
 
 type authorityData struct {
-	Id          primitive.ObjectID `json:"id"`
-	Name        string             `json:"name"`
-	Comment     string             `json:"comment"`
-	Type        string             `json:"type"`
-	Roles       []string           `json:"roles"`
-	Key         string             `json:"key"`
-	Principals  []string           `json:"principals"`
-	Certificate string             `json:"certificate"`
+	Id          bson.ObjectID `json:"id"`
+	Name        string        `json:"name"`
+	Comment     string        `json:"comment"`
+	Type        string        `json:"type"`
+	Roles       []string      `json:"roles"`
+	Key         string        `json:"key"`
+	Principals  []string      `json:"principals"`
+	Certificate string        `json:"certificate"`
 }
 
 type authoritiesData struct {
@@ -39,7 +38,7 @@ func authorityPut(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 	data := &authorityData{}
 
 	authorityId, ok := utils.ParseObjectId(c.Param("authority_id"))
@@ -107,7 +106,7 @@ func authorityPost(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 	data := &authorityData{
 		Name: "New Authority",
 	}
@@ -157,7 +156,7 @@ func authorityDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	authorityId, ok := utils.ParseObjectId(c.Param("authority_id"))
 	if !ok {
@@ -182,8 +181,8 @@ func authoritiesDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
-	data := []primitive.ObjectID{}
+	userOrg := c.MustGet("organization").(bson.ObjectID)
+	data := []bson.ObjectID{}
 
 	err := c.Bind(&data)
 	if err != nil {
@@ -210,7 +209,7 @@ func authorityGet(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	authorityId, ok := utils.ParseObjectId(c.Param("authority_id"))
 	if !ok {
@@ -239,7 +238,7 @@ func authoritiesGet(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
 	pageCount, _ := strconv.ParseInt(c.Query("page_count"), 10, 0)

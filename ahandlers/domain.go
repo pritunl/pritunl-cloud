@@ -8,8 +8,7 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/aggregate"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
@@ -19,14 +18,14 @@ import (
 )
 
 type domainData struct {
-	Id           primitive.ObjectID `json:"id"`
-	Name         string             `json:"name"`
-	Comment      string             `json:"comment"`
-	Organization primitive.ObjectID `json:"organization"`
-	Type         string             `json:"type"`
-	Secret       primitive.ObjectID `json:"secret"`
-	RootDomain   string             `json:"root_domain"`
-	Records      []*domain.Record   `json:"records"`
+	Id           bson.ObjectID    `json:"id"`
+	Name         string           `json:"name"`
+	Comment      string           `json:"comment"`
+	Organization bson.ObjectID    `json:"organization"`
+	Type         string           `json:"type"`
+	Secret       bson.ObjectID    `json:"secret"`
+	RootDomain   string           `json:"root_domain"`
+	Records      []*domain.Record `json:"records"`
 }
 
 type domainsData struct {
@@ -189,7 +188,7 @@ func domainsDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	data := []primitive.ObjectID{}
+	data := []bson.ObjectID{}
 
 	err := c.Bind(&data)
 	if err != nil {

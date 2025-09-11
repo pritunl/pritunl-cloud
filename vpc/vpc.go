@@ -11,9 +11,8 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/requires"
@@ -38,31 +37,31 @@ type Arp struct {
 }
 
 type Vpc struct {
-	Id               primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Name             string             `bson:"name" json:"name"`
-	Comment          string             `bson:"comment" json:"comment"`
-	VpcId            int                `bson:"vpc_id" json:"vpc_id"`
-	Network          string             `bson:"network" json:"network"`
-	Network6         string             `bson:"-" json:"network6"`
-	Subnets          []*Subnet          `bson:"subnets" json:"subnets"`
-	Organization     primitive.ObjectID `bson:"organization" json:"organization"`
-	Datacenter       primitive.ObjectID `bson:"datacenter" json:"datacenter"`
-	IcmpRedirects    bool               `bson:"icmp_redirects" json:"icmp_redirects"`
-	Routes           []*Route           `bson:"routes" json:"routes"`
-	Maps             []*Map             `bson:"maps" json:"maps"`
-	Arps             []*Arp             `bson:"arps" json:"arps"`
-	DeleteProtection bool               `bson:"delete_protection" json:"delete_protection"`
-	curSubnets       []*Subnet          `bson:"-" json:"-"`
+	Id               bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name             string        `bson:"name" json:"name"`
+	Comment          string        `bson:"comment" json:"comment"`
+	VpcId            int           `bson:"vpc_id" json:"vpc_id"`
+	Network          string        `bson:"network" json:"network"`
+	Network6         string        `bson:"-" json:"network6"`
+	Subnets          []*Subnet     `bson:"subnets" json:"subnets"`
+	Organization     bson.ObjectID `bson:"organization" json:"organization"`
+	Datacenter       bson.ObjectID `bson:"datacenter" json:"datacenter"`
+	IcmpRedirects    bool          `bson:"icmp_redirects" json:"icmp_redirects"`
+	Routes           []*Route      `bson:"routes" json:"routes"`
+	Maps             []*Map        `bson:"maps" json:"maps"`
+	Arps             []*Arp        `bson:"arps" json:"arps"`
+	DeleteProtection bool          `bson:"delete_protection" json:"delete_protection"`
+	curSubnets       []*Subnet     `bson:"-" json:"-"`
 }
 
 type Completion struct {
-	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Name         string             `bson:"name" json:"name"`
-	Organization primitive.ObjectID `bson:"organization" json:"organization"`
-	VpcId        int                `bson:"vpc_id" json:"vpc_id"`
-	Network      string             `bson:"network" json:"network"`
-	Subnets      []*Subnet          `bson:"subnets" json:"subnets"`
-	Datacenter   primitive.ObjectID `bson:"datacenter" json:"datacenter"`
+	Id           bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name         string        `bson:"name" json:"name"`
+	Organization bson.ObjectID `bson:"organization" json:"organization"`
+	VpcId        int           `bson:"vpc_id" json:"vpc_id"`
+	Network      string        `bson:"network" json:"network"`
+	Subnets      []*Subnet     `bson:"subnets" json:"subnets"`
+	Datacenter   bson.ObjectID `bson:"datacenter" json:"datacenter"`
 }
 
 func (v *Vpc) Validate(db *database.Database) (
@@ -111,7 +110,7 @@ func (v *Vpc) Validate(db *database.Database) (
 	}
 
 	subnetRanges := []struct {
-		Id    primitive.ObjectID
+		Id    bson.ObjectID
 		Start int64
 		Stop  int64
 	}{}
@@ -172,7 +171,7 @@ func (v *Vpc) Validate(db *database.Database) (
 		}
 
 		subnetRanges = append(subnetRanges, struct {
-			Id    primitive.ObjectID
+			Id    bson.ObjectID
 			Start int64
 			Stop  int64
 		}{
@@ -457,7 +456,7 @@ func (v *Vpc) PreCommit() {
 func (v *Vpc) PostCommit(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
-	curSubnets := map[primitive.ObjectID]*Subnet{}
+	curSubnets := map[bson.ObjectID]*Subnet{}
 	for _, sub := range v.curSubnets {
 		curSubnets[sub.Id] = sub
 	}
@@ -476,7 +475,7 @@ func (v *Vpc) PostCommit(db *database.Database) (
 				return
 			}
 		} else {
-			sub.Id = primitive.NewObjectID()
+			sub.Id = bson.NewObjectID()
 
 			for _, s := range v.curSubnets {
 				if s.Network == sub.Network {
@@ -516,7 +515,7 @@ func (v *Vpc) Json() {
 	v.Network6 = ipBuf.String() + "::/64"
 }
 
-func (v *Vpc) GetSubnet(id primitive.ObjectID) (sub *Subnet) {
+func (v *Vpc) GetSubnet(id bson.ObjectID) (sub *Subnet) {
 	if v.Subnets == nil || id.IsZero() {
 		return
 	}
@@ -586,7 +585,7 @@ func (v *Vpc) GetNetwork6() (network *net.IPNet, err error) {
 func (v *Vpc) InitVpc() {
 	if v.Subnets != nil {
 		for _, sub := range v.Subnets {
-			sub.Id = primitive.NewObjectID()
+			sub.Id = bson.NewObjectID()
 		}
 	}
 }
@@ -616,7 +615,7 @@ func (v *Vpc) GetGateway6() (ip net.IP, err error) {
 }
 
 func (v *Vpc) GetIp(db *database.Database,
-	subId, instId primitive.ObjectID) (instIp, gateIp net.IP, err error) {
+	subId, instId bson.ObjectID) (instIp, gateIp net.IP, err error) {
 
 	subnet := v.GetSubnet(subId)
 	if subnet == nil {
@@ -750,23 +749,23 @@ func (v *Vpc) GetIp(db *database.Database,
 	return
 }
 
-func (v *Vpc) GetIp6(instId primitive.ObjectID) net.IP {
+func (v *Vpc) GetIp6(instId bson.ObjectID) net.IP {
 	return GetIp6(v.Id, instId)
 }
 
-func (v *Vpc) GetLinkIp6(instId primitive.ObjectID) net.IP {
+func (v *Vpc) GetLinkIp6(instId bson.ObjectID) net.IP {
 	return GetLinkIp6(v.Id, instId)
 }
 
-func (v *Vpc) GetGatewayIp6(instId primitive.ObjectID) net.IP {
+func (v *Vpc) GetGatewayIp6(instId bson.ObjectID) net.IP {
 	return GetGatewayIp6(v.Id, instId)
 }
 
-func (v *Vpc) GetGatewayLinkIp6(instId primitive.ObjectID) net.IP {
+func (v *Vpc) GetGatewayLinkIp6(instId bson.ObjectID) net.IP {
 	return GetGatewayLinkIp6(v.Id, instId)
 }
 
-func (v *Vpc) RemoveSubnet(db *database.Database, subId primitive.ObjectID) (
+func (v *Vpc) RemoveSubnet(db *database.Database, subId bson.ObjectID) (
 	err error) {
 
 	coll := db.VpcsIp()
@@ -879,7 +878,7 @@ func (v *Vpc) Insert(db *database.Database) (err error) {
 			return
 		}
 
-		v.Id = resp.InsertedID.(primitive.ObjectID)
+		v.Id = resp.InsertedID.(bson.ObjectID)
 		return
 	}
 

@@ -3,7 +3,7 @@ package demo
 import (
 	"time"
 
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/balancer"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
@@ -17,10 +17,10 @@ var Balancers = []*balancer.Balancer{
 		State:        true,
 		Organization: utils.ObjectIdHex("5a3245a50accad1a8a53bc82"),
 		Datacenter:   utils.ObjectIdHex("689733b7a7a35eae0dbaea1b"),
-		Certificates: []primitive.ObjectID{
+		Certificates: []bson.ObjectID{
 			utils.ObjectIdHex("67b89ef24866ba90e6c459e8"),
 		},
-		ClientAuthority: primitive.ObjectID{},
+		ClientAuthority: bson.ObjectID{},
 		WebSockets:      false,
 		Domains: []*balancer.Domain{
 			{

@@ -6,8 +6,7 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/config"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
@@ -163,7 +162,7 @@ func (c *Check) Run() (err error) {
 	db := database.GetDatabase()
 	defer db.Close()
 
-	ndeId, err := primitive.ObjectIDFromHex(config.Config.NodeId)
+	ndeId, err := bson.ObjectIDFromHex(config.Config.NodeId)
 	if err != nil {
 		err = &errortypes.ParseError{
 			errors.Wrap(err, "backup: Failed to parse ObjectId"),

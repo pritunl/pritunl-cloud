@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/requires"
@@ -166,7 +166,7 @@ func init() {
 
 		if Config.NodeId == "" {
 			save = true
-			Config.NodeId = primitive.NewObjectID().Hex()
+			Config.NodeId = bson.NewObjectID().Hex()
 		}
 
 		if Config.MongoUri == "" {

@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/paths"
@@ -80,9 +80,9 @@ var (
 )
 
 type Connection struct {
-	vmId     primitive.ObjectID
+	vmId     bson.ObjectID
 	sock     net.Conn
-	lockId   primitive.ObjectID
+	lockId   bson.ObjectID
 	deadline time.Duration
 	logging  bool
 	command  interface{}
@@ -361,7 +361,7 @@ func (c *Connection) Connect() (info *QemuInfo, err error) {
 	return
 }
 
-func NewConnection(vmId primitive.ObjectID, logging bool) (conn *Connection) {
+func NewConnection(vmId bson.ObjectID, logging bool) (conn *Connection) {
 	conn = &Connection{
 		vmId:    vmId,
 		logging: logging,
@@ -370,7 +370,7 @@ func NewConnection(vmId primitive.ObjectID, logging bool) (conn *Connection) {
 	return
 }
 
-func RunCommand(vmId primitive.ObjectID, cmd interface{},
+func RunCommand(vmId bson.ObjectID, cmd interface{},
 	resp interface{}) (err error) {
 
 	conn := NewConnection(vmId, true)

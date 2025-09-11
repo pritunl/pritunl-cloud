@@ -1,41 +1,41 @@
 package spec
 
 import (
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/nodeport"
 )
 
 type Instance struct {
-	Plan                primitive.ObjectID   `bson:"plan,omitempty" json:"plan"`                           // clear
-	Datacenter          primitive.ObjectID   `bson:"datacenter" json:"datacenter"`                         // hard
-	Zone                primitive.ObjectID   `bson:"zone" json:"zone"`                                     // hard
-	Node                primitive.ObjectID   `bson:"node,omitempty" json:"node"`                           // hard
-	Shape               primitive.ObjectID   `bson:"shape,omitempty" json:"shape"`                         // hard
-	Vpc                 primitive.ObjectID   `bson:"vpc" json:"vpc"`                                       // hard
-	Subnet              primitive.ObjectID   `bson:"subnet" json:"subnet"`                                 // hard
-	Roles               []string             `bson:"roles" json:"roles"`                                   // soft
-	Processors          int                  `bson:"processors" json:"processors"`                         // soft
-	Memory              int                  `bson:"memory" json:"memory"`                                 // soft
-	Uefi                *bool                `bson:"uefi,omitempty" json:"uefi"`                           // soft
-	SecureBoot          *bool                `bson:"secure_boot,omitempty" json:"secure_boot"`             // soft
-	CloudType           string               `bson:"cloud_type" json:"cloud_type"`                         // soft
-	Tpm                 bool                 `bson:"tpm" json:"tpm"`                                       // soft
-	Vnc                 bool                 `bson:"vnc" json:"vnc"`                                       // soft
-	DeleteProtection    bool                 `bson:"delete_protection" json:"delete_protection"`           // soft
-	SkipSourceDestCheck bool                 `bson:"skip_source_dest_check" json:"skip_source_dest_check"` // soft
-	Gui                 bool                 `bson:"gui" json:"gui"`                                       // soft
-	HostAddress         *bool                `bson:"host_address,omitempty" json:"host_address"`           // soft
-	PublicAddress       *bool                `bson:"public_address,omitempty" json:"public_address"`       // soft
-	PublicAddress6      *bool                `bson:"public_address6,omitempty" json:"public_address6"`     // soft
-	DhcpServer          bool                 `bson:"dhcp_server" json:"dhcp_server"`                       // soft
-	Image               primitive.ObjectID   `bson:"image" json:"image"`                                   // hard
-	DiskSize            int                  `bson:"disk_size" json:"disk_size"`                           // hard
-	Mounts              []Mount              `bson:"mounts" json:"mounts"`                                 // hard
-	NodePorts           []NodePort           `bson:"node_ports" json:"node_ports"`                         // soft
-	Certificates        []primitive.ObjectID `bson:"certificates" json:"certificates"`                     // soft
-	Secrets             []primitive.ObjectID `bson:"secrets" json:"secrets"`                               // soft
-	Pods                []primitive.ObjectID `bson:"pods" json:"pods"`                                     // soft
+	Plan                bson.ObjectID   `bson:"plan,omitempty" json:"plan"`                           // clear
+	Datacenter          bson.ObjectID   `bson:"datacenter" json:"datacenter"`                         // hard
+	Zone                bson.ObjectID   `bson:"zone" json:"zone"`                                     // hard
+	Node                bson.ObjectID   `bson:"node,omitempty" json:"node"`                           // hard
+	Shape               bson.ObjectID   `bson:"shape,omitempty" json:"shape"`                         // hard
+	Vpc                 bson.ObjectID   `bson:"vpc" json:"vpc"`                                       // hard
+	Subnet              bson.ObjectID   `bson:"subnet" json:"subnet"`                                 // hard
+	Roles               []string        `bson:"roles" json:"roles"`                                   // soft
+	Processors          int             `bson:"processors" json:"processors"`                         // soft
+	Memory              int             `bson:"memory" json:"memory"`                                 // soft
+	Uefi                *bool           `bson:"uefi,omitempty" json:"uefi"`                           // soft
+	SecureBoot          *bool           `bson:"secure_boot,omitempty" json:"secure_boot"`             // soft
+	CloudType           string          `bson:"cloud_type" json:"cloud_type"`                         // soft
+	Tpm                 bool            `bson:"tpm" json:"tpm"`                                       // soft
+	Vnc                 bool            `bson:"vnc" json:"vnc"`                                       // soft
+	DeleteProtection    bool            `bson:"delete_protection" json:"delete_protection"`           // soft
+	SkipSourceDestCheck bool            `bson:"skip_source_dest_check" json:"skip_source_dest_check"` // soft
+	Gui                 bool            `bson:"gui" json:"gui"`                                       // soft
+	HostAddress         *bool           `bson:"host_address,omitempty" json:"host_address"`           // soft
+	PublicAddress       *bool           `bson:"public_address,omitempty" json:"public_address"`       // soft
+	PublicAddress6      *bool           `bson:"public_address6,omitempty" json:"public_address6"`     // soft
+	DhcpServer          bool            `bson:"dhcp_server" json:"dhcp_server"`                       // soft
+	Image               bson.ObjectID   `bson:"image" json:"image"`                                   // hard
+	DiskSize            int             `bson:"disk_size" json:"disk_size"`                           // hard
+	Mounts              []Mount         `bson:"mounts" json:"mounts"`                                 // hard
+	NodePorts           []NodePort      `bson:"node_ports" json:"node_ports"`                         // soft
+	Certificates        []bson.ObjectID `bson:"certificates" json:"certificates"`                     // soft
+	Secrets             []bson.ObjectID `bson:"secrets" json:"secrets"`                               // soft
+	Pods                []bson.ObjectID `bson:"pods" json:"pods"`                                     // soft
 }
 
 type NodePort struct {
@@ -113,11 +113,11 @@ func (i *Instance) MemoryUnits() float64 {
 }
 
 type Mount struct {
-	Name     string               `bson:"name" json:"name"`
-	Type     string               `bson:"type" json:"type"`
-	Path     string               `bson:"path" json:"path"`
-	HostPath string               `bson:"host_path" json:"host_path"`
-	Disks    []primitive.ObjectID `bson:"disks" json:"disks"`
+	Name     string          `bson:"name" json:"name"`
+	Type     string          `bson:"type" json:"type"`
+	Path     string          `bson:"path" json:"path"`
+	HostPath string          `bson:"host_path" json:"host_path"`
+	Disks    []bson.ObjectID `bson:"disks" json:"disks"`
 }
 
 type InstanceYaml struct {

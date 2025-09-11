@@ -3,7 +3,7 @@ package plan
 import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/eval"
@@ -11,22 +11,22 @@ import (
 )
 
 type Plan struct {
-	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Name         string             `bson:"name" json:"name"`
-	Comment      string             `bson:"comment" json:"comment"`
-	Organization primitive.ObjectID `bson:"organization" json:"organization"`
-	Statements   []*Statement       `bson:"statements" json:"statements"`
+	Id           bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name         string        `bson:"name" json:"name"`
+	Comment      string        `bson:"comment" json:"comment"`
+	Organization bson.ObjectID `bson:"organization" json:"organization"`
+	Statements   []*Statement  `bson:"statements" json:"statements"`
 }
 
 type Completion struct {
-	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Name         string             `bson:"name" json:"name"`
-	Organization primitive.ObjectID `bson:"organization" json:"organization"`
+	Id           bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name         string        `bson:"name" json:"name"`
+	Organization bson.ObjectID `bson:"organization" json:"organization"`
 }
 
 type Statement struct {
-	Id        primitive.ObjectID `bson:"id" json:"id"`
-	Statement string             `bson:"statement" json:"statement"`
+	Id        bson.ObjectID `bson:"id" json:"id"`
+	Statement string        `bson:"statement" json:"statement"`
 }
 
 func (p *Plan) Validate(db *database.Database) (
@@ -53,7 +53,7 @@ func (p *Plan) Validate(db *database.Database) (
 
 	for _, statement := range p.Statements {
 		if statement.Id.IsZero() {
-			statement.Id = primitive.NewObjectID()
+			statement.Id = bson.NewObjectID()
 		}
 
 		err = eval.Validate(statement.Statement)
@@ -71,7 +71,7 @@ func (p *Plan) Validate(db *database.Database) (
 }
 
 func (p *Plan) UpdateStatements(inStatements []*Statement) (err error) {
-	curStatements := map[primitive.ObjectID]*Statement{}
+	curStatements := map[bson.ObjectID]*Statement{}
 	for _, statement := range p.Statements {
 		curStatements[statement.Id] = statement
 	}
@@ -84,14 +84,14 @@ func (p *Plan) UpdateStatements(inStatements []*Statement) (err error) {
 				newStatements = append(newStatements, curStatement)
 			} else {
 				newStatement := &Statement{
-					Id:        primitive.NewObjectID(),
+					Id:        bson.NewObjectID(),
 					Statement: statement.Statement,
 				}
 				newStatements = append(newStatements, newStatement)
 			}
 		} else {
 			newStatement := &Statement{
-				Id:        primitive.NewObjectID(),
+				Id:        bson.NewObjectID(),
 				Statement: statement.Statement,
 			}
 			newStatements = append(newStatements, newStatement)

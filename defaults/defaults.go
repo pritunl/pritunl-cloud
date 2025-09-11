@@ -8,8 +8,7 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/authority"
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/cloudinit"
@@ -76,7 +75,7 @@ func initStorage(db *database.Database) (err error) {
 }
 
 func initOrganization(db *database.Database) (
-	defaultOrg primitive.ObjectID, err error) {
+	defaultOrg bson.ObjectID, err error) {
 
 	orgs, err := organization.GetAll(db, &bson.M{})
 	if err != nil {
@@ -129,7 +128,7 @@ func initOrganization(db *database.Database) (
 }
 
 func initDatacenter(db *database.Database) (
-	defaultDc primitive.ObjectID, err error) {
+	defaultDc bson.ObjectID, err error) {
 
 	dcs, err := datacenter.GetAll(db)
 	if err != nil {
@@ -143,7 +142,7 @@ func initDatacenter(db *database.Database) (
 			return
 		}
 
-		publicStorages := []primitive.ObjectID{}
+		publicStorages := []bson.ObjectID{}
 		for _, store := range stores {
 			if store.Endpoint == "images.pritunl.com" &&
 				store.Bucket == "stable" {
@@ -198,7 +197,7 @@ func initDatacenter(db *database.Database) (
 	return
 }
 
-func initZone(db *database.Database, defaultDc primitive.ObjectID) (
+func initZone(db *database.Database, defaultDc bson.ObjectID) (
 	err error) {
 
 	zones, err := zone.GetAll(db)
@@ -244,7 +243,7 @@ func initZone(db *database.Database, defaultDc primitive.ObjectID) (
 }
 
 func initVpc(db *database.Database, defaultOrg,
-	defaultDc primitive.ObjectID) (err error) {
+	defaultDc bson.ObjectID) (err error) {
 
 	if defaultOrg.IsZero() {
 		return
@@ -311,7 +310,7 @@ func initVpc(db *database.Database, defaultOrg,
 	return
 }
 
-func initFirewall(db *database.Database, defaultOrg primitive.ObjectID) (
+func initFirewall(db *database.Database, defaultOrg bson.ObjectID) (
 	err error) {
 
 	if defaultOrg.IsZero() {
@@ -503,7 +502,7 @@ func initFirewall(db *database.Database, defaultOrg primitive.ObjectID) (
 	return
 }
 
-func initAuthority(db *database.Database, defaultOrg primitive.ObjectID) (
+func initAuthority(db *database.Database, defaultOrg bson.ObjectID) (
 	err error) {
 
 	if defaultOrg.IsZero() {
@@ -556,7 +555,7 @@ func initAuthority(db *database.Database, defaultOrg primitive.ObjectID) (
 	return
 }
 
-func initNode(db *database.Database, defaultOrg primitive.ObjectID) (
+func initNode(db *database.Database, defaultOrg bson.ObjectID) (
 	err error) {
 
 	if defaultOrg.IsZero() {

@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 )
 
@@ -108,7 +108,7 @@ func jsonValString(value any) string {
 }
 
 func selectString(obj interface{}) string {
-	if oid, ok := obj.(primitive.ObjectID); ok {
+	if oid, ok := obj.(bson.ObjectID); ok {
 		return oid.Hex()
 	}
 

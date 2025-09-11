@@ -9,8 +9,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -21,11 +20,11 @@ import (
 )
 
 type firewallData struct {
-	Id      primitive.ObjectID `json:"id"`
-	Name    string             `json:"name"`
-	Comment string             `json:"comment"`
-	Roles   []string           `json:"roles"`
-	Ingress []*firewall.Rule   `json:"ingress"`
+	Id      bson.ObjectID    `json:"id"`
+	Name    string           `json:"name"`
+	Comment string           `json:"comment"`
+	Roles   []string         `json:"roles"`
+	Ingress []*firewall.Rule `json:"ingress"`
 }
 
 type firewallsData struct {
@@ -39,7 +38,7 @@ func firewallPut(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 	data := &firewallData{}
 
 	firewallId, ok := utils.ParseObjectId(c.Param("firewall_id"))
@@ -103,7 +102,7 @@ func firewallPost(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 	data := &firewallData{
 		Name: "New Firewall",
 	}
@@ -153,7 +152,7 @@ func firewallDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	firewallId, ok := utils.ParseObjectId(c.Param("firewall_id"))
 	if !ok {
@@ -189,8 +188,8 @@ func firewallsDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
-	data := []primitive.ObjectID{}
+	userOrg := c.MustGet("organization").(bson.ObjectID)
+	data := []bson.ObjectID{}
 
 	err := c.Bind(&data)
 	if err != nil {
@@ -231,7 +230,7 @@ func firewallGet(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	firewallId, ok := utils.ParseObjectId(c.Param("firewall_id"))
 	if !ok {
@@ -260,7 +259,7 @@ func firewallsGet(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
 	pageCount, _ := strconv.ParseInt(c.Query("page_count"), 10, 0)

@@ -9,8 +9,7 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/disk"
@@ -27,20 +26,20 @@ import (
 )
 
 type Spec struct {
-	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Pod          primitive.ObjectID `bson:"pod" json:"pod"`
-	Unit         primitive.ObjectID `bson:"unit" json:"unit"`
-	Organization primitive.ObjectID `bson:"organization" json:"organization"`
-	Index        int                `bson:"index" json:"index"`
-	Timestamp    time.Time          `bson:"timestamp" json:"timestamp"`
-	Name         string             `bson:"name" json:"name"`
-	Kind         string             `bson:"kind" json:"kind"`
-	Count        int                `bson:"count" json:"count"`
-	Hash         string             `bson:"hash" json:"hash"`
-	Data         string             `bson:"data" json:"data"`
-	Instance     *Instance          `bson:"instance,omitempty" json:"-"`
-	Firewall     *Firewall          `bson:"firewall,omitempty" json:"-"`
-	Domain       *Domain            `bson:"domain,omitempty" json:"-"`
+	Id           bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Pod          bson.ObjectID `bson:"pod" json:"pod"`
+	Unit         bson.ObjectID `bson:"unit" json:"unit"`
+	Organization bson.ObjectID `bson:"organization" json:"organization"`
+	Index        int           `bson:"index" json:"index"`
+	Timestamp    time.Time     `bson:"timestamp" json:"timestamp"`
+	Name         string        `bson:"name" json:"name"`
+	Kind         string        `bson:"kind" json:"kind"`
+	Count        int           `bson:"count" json:"count"`
+	Hash         string        `bson:"hash" json:"hash"`
+	Data         string        `bson:"data" json:"data"`
+	Instance     *Instance     `bson:"instance,omitempty" json:"-"`
+	Firewall     *Firewall     `bson:"firewall,omitempty" json:"-"`
+	Domain       *Domain       `bson:"domain,omitempty" json:"-"`
 }
 
 func (s *Spec) GetAllNodes(db *database.Database) (ndes Nodes,
@@ -61,7 +60,7 @@ func (s *Spec) GetAllNodes(db *database.Database) (ndes Nodes,
 		return
 	}
 
-	zoneIds := []primitive.ObjectID{}
+	zoneIds := []bson.ObjectID{}
 	for _, zne := range zones {
 		zoneIds = append(zoneIds, zne.Id)
 	}
@@ -73,7 +72,7 @@ func (s *Spec) GetAllNodes(db *database.Database) (ndes Nodes,
 
 	var mountNodes []set.Set
 	if len(s.Instance.Mounts) > 0 {
-		diskIds := []primitive.ObjectID{}
+		diskIds := []bson.ObjectID{}
 		for _, mount := range s.Instance.Mounts {
 			if mount.Type != Disk {
 				continue
@@ -81,7 +80,7 @@ func (s *Spec) GetAllNodes(db *database.Database) (ndes Nodes,
 			diskIds = append(diskIds, mount.Disks...)
 		}
 
-		disksMap := map[primitive.ObjectID]*disk.Disk{}
+		disksMap := map[bson.ObjectID]*disk.Disk{}
 		if len(diskIds) > 0 {
 			disksMap, err = disk.GetAllMap(db, &bson.M{
 				"_id": &bson.M{
@@ -161,7 +160,7 @@ func (s *Spec) ExtractResources() (resources string, err error) {
 }
 
 func (s *Spec) parseFirewall(db *database.Database,
-	orgId primitive.ObjectID, dataYaml *FirewallYaml) (
+	orgId bson.ObjectID, dataYaml *FirewallYaml) (
 	errData *errortypes.ErrorData, err error) {
 
 	data := &Firewall{
@@ -236,7 +235,7 @@ func (s *Spec) parseFirewall(db *database.Database,
 }
 
 func (s *Spec) parseInstance(db *database.Database,
-	orgId primitive.ObjectID, dataYaml *InstanceYaml) (
+	orgId bson.ObjectID, dataYaml *InstanceYaml) (
 	errData *errortypes.ErrorData, err error) {
 
 	data := &Instance{}
@@ -388,7 +387,7 @@ func (s *Spec) parseInstance(db *database.Database,
 		for _, mount := range dataYaml.Mounts {
 			mnt := Mount{
 				Path:  utils.FilterPath(mount.Path),
-				Disks: []primitive.ObjectID{},
+				Disks: []bson.ObjectID{},
 			}
 
 			if mnt.Path == "" {
@@ -607,7 +606,7 @@ func (s *Spec) parseInstance(db *database.Database,
 }
 
 func (s *Spec) parseDomain(db *database.Database,
-	orgId primitive.ObjectID, dataYaml *DomainYaml) (
+	orgId bson.ObjectID, dataYaml *DomainYaml) (
 	errData *errortypes.ErrorData, err error) {
 
 	data := &Domain{
@@ -928,7 +927,7 @@ func (s *Spec) Insert(db *database.Database) (err error) {
 		return
 	}
 
-	s.Id = resp.InsertedID.(primitive.ObjectID)
+	s.Id = resp.InsertedID.(bson.ObjectID)
 
 	return
 }

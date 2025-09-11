@@ -4,14 +4,13 @@ import (
 	"fmt"
 
 	"github.com/dropbox/godropbox/container/set"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
-func Get(db *database.Database, diskId primitive.ObjectID) (
+func Get(db *database.Database, diskId bson.ObjectID) (
 	dsk *Disk, err error) {
 
 	coll := db.Disks()
@@ -38,7 +37,7 @@ func GetOne(db *database.Database, query *bson.M) (dsk *Disk, err error) {
 	return
 }
 
-func GetOrg(db *database.Database, orgId, diskId primitive.ObjectID) (
+func GetOrg(db *database.Database, orgId, diskId bson.ObjectID) (
 	dsk *Disk, err error) {
 
 	coll := db.Disks()
@@ -90,10 +89,10 @@ func GetAll(db *database.Database, query *bson.M) (
 }
 
 func GetAllMap(db *database.Database, query *bson.M) (
-	disks map[primitive.ObjectID]*Disk, err error) {
+	disks map[bson.ObjectID]*Disk, err error) {
 
 	coll := db.Disks()
-	disks = map[primitive.ObjectID]*Disk{}
+	disks = map[bson.ObjectID]*Disk{}
 
 	cursor, err := coll.Find(db, query)
 	if err != nil {
@@ -186,7 +185,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	return
 }
 
-func GetInstance(db *database.Database, instId primitive.ObjectID) (
+func GetInstance(db *database.Database, instId bson.ObjectID) (
 	disks []*Disk, err error) {
 
 	coll := db.Disks()
@@ -229,7 +228,7 @@ func GetInstance(db *database.Database, instId primitive.ObjectID) (
 	return
 }
 
-func GetInstanceIndex(db *database.Database, instId primitive.ObjectID,
+func GetInstanceIndex(db *database.Database, instId bson.ObjectID,
 	index string) (dsk *Disk, err error) {
 
 	coll := db.Disks()
@@ -247,8 +246,8 @@ func GetInstanceIndex(db *database.Database, instId primitive.ObjectID,
 	return
 }
 
-func GetNode(db *database.Database, nodeId primitive.ObjectID,
-	nodePools []primitive.ObjectID) (disks []*Disk, err error) {
+func GetNode(db *database.Database, nodeId bson.ObjectID,
+	nodePools []bson.ObjectID) (disks []*Disk, err error) {
 
 	coll := db.Disks()
 	disks = []*Disk{}
@@ -287,7 +286,7 @@ func GetNode(db *database.Database, nodeId primitive.ObjectID,
 	return
 }
 
-func Remove(db *database.Database, diskId primitive.ObjectID) (err error) {
+func Remove(db *database.Database, diskId bson.ObjectID) (err error) {
 	coll := db.Disks()
 
 	_, err = coll.DeleteOne(db, &bson.M{
@@ -306,12 +305,12 @@ func Remove(db *database.Database, diskId primitive.ObjectID) (err error) {
 	return
 }
 
-func Detach(db *database.Database, dskIds primitive.ObjectID) (err error) {
+func Detach(db *database.Database, dskIds bson.ObjectID) (err error) {
 	coll := db.Disks()
 
 	err = coll.UpdateId(dskIds, &bson.M{
 		"$set": &bson.M{
-			"index":      fmt.Sprintf("hold_%s", primitive.NewObjectID().Hex()),
+			"index":      fmt.Sprintf("hold_%s", bson.NewObjectID().Hex()),
 			"instance":   Vacant,
 			"deployment": Vacant,
 		},
@@ -324,7 +323,7 @@ func Detach(db *database.Database, dskIds primitive.ObjectID) (err error) {
 	return
 }
 
-func Delete(db *database.Database, dskId primitive.ObjectID) (err error) {
+func Delete(db *database.Database, dskId bson.ObjectID) (err error) {
 	coll := db.Disks()
 
 	err = coll.UpdateId(dskId, &bson.M{
@@ -340,7 +339,7 @@ func Delete(db *database.Database, dskId primitive.ObjectID) (err error) {
 	return
 }
 
-func DeleteOrg(db *database.Database, orgId, dskId primitive.ObjectID) (
+func DeleteOrg(db *database.Database, orgId, dskId bson.ObjectID) (
 	err error) {
 
 	coll := db.Disks()
@@ -361,7 +360,7 @@ func DeleteOrg(db *database.Database, orgId, dskId primitive.ObjectID) (
 	return
 }
 
-func DeleteMulti(db *database.Database, dskIds []primitive.ObjectID) (
+func DeleteMulti(db *database.Database, dskIds []bson.ObjectID) (
 	err error) {
 
 	coll := db.Disks()
@@ -386,8 +385,8 @@ func DeleteMulti(db *database.Database, dskIds []primitive.ObjectID) (
 	return
 }
 
-func DeleteMultiOrg(db *database.Database, orgId primitive.ObjectID,
-	dskIds []primitive.ObjectID) (err error) {
+func DeleteMultiOrg(db *database.Database, orgId bson.ObjectID,
+	dskIds []bson.ObjectID) (err error) {
 
 	coll := db.Disks()
 
@@ -412,7 +411,7 @@ func DeleteMultiOrg(db *database.Database, orgId primitive.ObjectID,
 	return
 }
 
-func UpdateMulti(db *database.Database, dskIds []primitive.ObjectID,
+func UpdateMulti(db *database.Database, dskIds []bson.ObjectID,
 	doc *bson.M) (err error) {
 
 	coll := db.Disks()
@@ -440,8 +439,8 @@ func UpdateMulti(db *database.Database, dskIds []primitive.ObjectID,
 	return
 }
 
-func UpdateMultiOrg(db *database.Database, orgId primitive.ObjectID,
-	dskIds []primitive.ObjectID, doc *bson.M) (err error) {
+func UpdateMultiOrg(db *database.Database, orgId bson.ObjectID,
+	dskIds []bson.ObjectID, doc *bson.M) (err error) {
 
 	coll := db.Disks()
 
@@ -474,7 +473,7 @@ func UpdateMultiOrg(db *database.Database, orgId primitive.ObjectID,
 	return
 }
 
-func GetAllKeys(db *database.Database, ndeId primitive.ObjectID) (
+func GetAllKeys(db *database.Database, ndeId bson.ObjectID) (
 	keys set.Set, err error) {
 
 	coll := db.Disks()
@@ -516,7 +515,7 @@ func GetAllKeys(db *database.Database, ndeId primitive.ObjectID) (
 	return
 }
 
-func SetDeleteProtection(db *database.Database, instId primitive.ObjectID,
+func SetDeleteProtection(db *database.Database, instId bson.ObjectID,
 	protection bool) (err error) {
 
 	coll := db.Disks()

@@ -7,7 +7,7 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -26,16 +26,16 @@ type Rule struct {
 }
 
 type Policy struct {
-	Id                   primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Name                 string             `bson:"name" json:"name"`
-	Comment              string             `bson:"comment" json:"comment"`
-	Disabled             bool               `bson:"disabled" json:"disabled"`
-	Roles                []string           `bson:"roles" json:"roles"`
-	Rules                map[string]*Rule   `bson:"rules" json:"rules"`
-	AdminSecondary       primitive.ObjectID `bson:"admin_secondary,omitempty" json:"admin_secondary"`
-	UserSecondary        primitive.ObjectID `bson:"user_secondary,omitempty" json:"user_secondary"`
-	AdminDeviceSecondary bool               `bson:"admin_device_secondary" json:"admin_device_secondary"`
-	UserDeviceSecondary  bool               `bson:"user_device_secondary" json:"user_device_secondary"`
+	Id                   bson.ObjectID    `bson:"_id,omitempty" json:"id"`
+	Name                 string           `bson:"name" json:"name"`
+	Comment              string           `bson:"comment" json:"comment"`
+	Disabled             bool             `bson:"disabled" json:"disabled"`
+	Roles                []string         `bson:"roles" json:"roles"`
+	Rules                map[string]*Rule `bson:"rules" json:"rules"`
+	AdminSecondary       bson.ObjectID    `bson:"admin_secondary,omitempty" json:"admin_secondary"`
+	UserSecondary        bson.ObjectID    `bson:"user_secondary,omitempty" json:"user_secondary"`
+	AdminDeviceSecondary bool             `bson:"admin_device_secondary" json:"admin_device_secondary"`
+	UserDeviceSecondary  bool             `bson:"user_device_secondary" json:"user_device_secondary"`
 }
 
 func (p *Policy) Validate(db *database.Database) (
@@ -82,12 +82,12 @@ func (p *Policy) Validate(db *database.Database) (
 	if !p.AdminSecondary.IsZero() &&
 		settings.Auth.GetSecondaryProvider(p.AdminSecondary) == nil {
 
-		p.AdminSecondary = primitive.NilObjectID
+		p.AdminSecondary = bson.NilObjectID
 	}
 	if !p.UserSecondary.IsZero() &&
 		settings.Auth.GetSecondaryProvider(p.UserSecondary) == nil {
 
-		p.UserSecondary = primitive.NilObjectID
+		p.UserSecondary = bson.NilObjectID
 	}
 
 	hasWebAuthn := false

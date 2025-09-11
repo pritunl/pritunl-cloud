@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/features"
@@ -62,7 +62,7 @@ ProtectKernelTunables=true
 AmbientCapabilities=CAP_NET_BIND_SERVICE
 `
 
-func WriteService(vmId primitive.ObjectID,
+func WriteService(vmId bson.ObjectID,
 	namespace, clientSecret, dhcpSecret, hostSecret string,
 	systemdNamespace bool) (err error) {
 

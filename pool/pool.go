@@ -2,30 +2,30 @@ package pool
 
 import (
 	"github.com/dropbox/godropbox/container/set"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type Pool struct {
-	Id               primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Name             string             `bson:"name" json:"name"`
-	Comment          string             `bson:"comment" json:"comment"`
-	DeleteProtection bool               `bson:"delete_protection" json:"delete_protection"`
-	Datacenter       primitive.ObjectID `bson:"datacenter" json:"datacenter"`
-	Zone             primitive.ObjectID `bson:"zone" json:"zone"`
-	Type             string             `bson:"type" json:"type"`
-	VgName           string             `bson:"vg_name" json:"vg_name"`
+	Id               bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name             string        `bson:"name" json:"name"`
+	Comment          string        `bson:"comment" json:"comment"`
+	DeleteProtection bool          `bson:"delete_protection" json:"delete_protection"`
+	Datacenter       bson.ObjectID `bson:"datacenter" json:"datacenter"`
+	Zone             bson.ObjectID `bson:"zone" json:"zone"`
+	Type             string        `bson:"type" json:"type"`
+	VgName           string        `bson:"vg_name" json:"vg_name"`
 }
 
 type Completion struct {
-	Id   primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Name string             `bson:"name" json:"name"`
-	Zone primitive.ObjectID `bson:"zone" json:"zone"`
+	Id   bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name string        `bson:"name" json:"name"`
+	Zone bson.ObjectID `bson:"zone" json:"zone"`
 }
 
-func (p *Pool) Json(nodeNames map[primitive.ObjectID]string) {
+func (p *Pool) Json(nodeNames map[bson.ObjectID]string) {
 }
 
 func (p *Pool) Validate(db *database.Database) (

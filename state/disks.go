@@ -1,7 +1,7 @@
 package state
 
 import (
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -14,25 +14,25 @@ var (
 
 type DisksState struct {
 	disks           []*disk.Disk
-	instanceDisks   map[primitive.ObjectID][]*disk.Disk
-	deploymentDisks map[primitive.ObjectID][]*disk.Disk
+	instanceDisks   map[bson.ObjectID][]*disk.Disk
+	deploymentDisks map[bson.ObjectID][]*disk.Disk
 }
 
 func (p *DisksState) Disks() []*disk.Disk {
 	return p.disks
 }
 
-func (p *DisksState) GetInstaceDisks(instId primitive.ObjectID) []*disk.Disk {
+func (p *DisksState) GetInstaceDisks(instId bson.ObjectID) []*disk.Disk {
 	return p.instanceDisks[instId]
 }
 
 func (p *DisksState) GetDeploymentDisks(
-	deplyId primitive.ObjectID) []*disk.Disk {
+	deplyId bson.ObjectID) []*disk.Disk {
 
 	return p.deploymentDisks[deplyId]
 }
 
-func (p *DisksState) InstaceDisksMap() map[primitive.ObjectID][]*disk.Disk {
+func (p *DisksState) InstaceDisksMap() map[bson.ObjectID][]*disk.Disk {
 	return p.instanceDisks
 }
 
@@ -48,8 +48,8 @@ func (p *DisksState) Refresh(pkg *Package,
 	}
 	p.disks = disks
 
-	instanceDisks := map[primitive.ObjectID][]*disk.Disk{}
-	deploymentDisks := map[primitive.ObjectID][]*disk.Disk{}
+	instanceDisks := map[bson.ObjectID][]*disk.Disk{}
+	deploymentDisks := map[bson.ObjectID][]*disk.Disk{}
 	for _, dsk := range disks {
 		if !dsk.Instance.IsZero() {
 			instanceDisks[dsk.Instance] = append(

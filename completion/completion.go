@@ -5,9 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/certificate"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -52,11 +51,11 @@ type Completion struct {
 }
 
 type Build struct {
-	Id           primitive.ObjectID `json:"id"`
-	Name         string             `json:"name"`
-	Pod          primitive.ObjectID `json:"pod"`
-	Organization primitive.ObjectID `json:"organization"`
-	Tags         []*BuildTag        `json:"tags"`
+	Id           bson.ObjectID `json:"id"`
+	Name         string        `json:"name"`
+	Pod          bson.ObjectID `json:"pod"`
+	Organization bson.ObjectID `json:"organization"`
+	Tags         []*BuildTag   `json:"tags"`
 }
 
 type BuildTag struct {
@@ -96,7 +95,7 @@ func get(db *database.Database, coll *database.Collection,
 	return
 }
 
-func GetCompletion(db *database.Database, orgId primitive.ObjectID,
+func GetCompletion(db *database.Database, orgId bson.ObjectID,
 	orgRoles []string) (cmpl *Completion, err error) {
 
 	cmpl = &Completion{}
@@ -107,8 +106,8 @@ func GetCompletion(db *database.Database, orgId primitive.ObjectID,
 
 	releaseImages := map[string][]*image.Completion{}
 	otherImages := []*image.Completion{}
-	unitsMap := map[primitive.ObjectID]*unit.Completion{}
-	buildsMap := map[primitive.ObjectID]*Build{}
+	unitsMap := map[bson.ObjectID]*unit.Completion{}
+	buildsMap := map[bson.ObjectID]*Build{}
 	deployments := []*deployment.Deployment{}
 
 	var wg sync.WaitGroup

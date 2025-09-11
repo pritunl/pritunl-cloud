@@ -4,12 +4,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/vm"
 )
 
 var (
-	usbsStores     = map[primitive.ObjectID]UsbsStore{}
+	usbsStores     = map[bson.ObjectID]UsbsStore{}
 	usbsStoresLock = sync.Mutex{}
 )
 
@@ -18,7 +18,7 @@ type UsbsStore struct {
 	Timestamp time.Time
 }
 
-func GetUsbs(virtId primitive.ObjectID) (usbsStore UsbsStore, ok bool) {
+func GetUsbs(virtId bson.ObjectID) (usbsStore UsbsStore, ok bool) {
 	usbsStoresLock.Lock()
 	usbsStore, ok = usbsStores[virtId]
 	usbsStoresLock.Unlock()
@@ -30,7 +30,7 @@ func GetUsbs(virtId primitive.ObjectID) (usbsStore UsbsStore, ok bool) {
 	return
 }
 
-func SetUsbs(virtId primitive.ObjectID, usbs []*vm.UsbDevice) {
+func SetUsbs(virtId bson.ObjectID, usbs []*vm.UsbDevice) {
 	usbsRef := []vm.UsbDevice{}
 	for _, dsk := range usbs {
 		usbsRef = append(usbsRef, *dsk)
@@ -44,7 +44,7 @@ func SetUsbs(virtId primitive.ObjectID, usbs []*vm.UsbDevice) {
 	usbsStoresLock.Unlock()
 }
 
-func RemUsbs(virtId primitive.ObjectID) {
+func RemUsbs(virtId bson.ObjectID) {
 	usbsStoresLock.Lock()
 	delete(usbsStores, virtId)
 	usbsStoresLock.Unlock()

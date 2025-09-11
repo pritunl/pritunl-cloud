@@ -9,8 +9,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/alert"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
@@ -20,16 +19,16 @@ import (
 )
 
 type alertData struct {
-	Id        primitive.ObjectID `json:"id"`
-	Name      string             `json:"name"`
-	Comment   string             `json:"comment"`
-	Roles     []string           `json:"roles"`
-	Resource  string             `json:"resource"`
-	Level     int                `json:"level"`
-	Frequency int                `bson:"frequency" json:"frequency"`
-	Ignores   []string           `bson:"ignores" json:"ignores"`
-	ValueInt  int                `json:"value_int"`
-	ValueStr  string             `json:"value_str"`
+	Id        bson.ObjectID `json:"id"`
+	Name      string        `json:"name"`
+	Comment   string        `json:"comment"`
+	Roles     []string      `json:"roles"`
+	Resource  string        `json:"resource"`
+	Level     int           `json:"level"`
+	Frequency int           `bson:"frequency" json:"frequency"`
+	Ignores   []string      `bson:"ignores" json:"ignores"`
+	ValueInt  int           `json:"value_int"`
+	ValueStr  string        `json:"value_str"`
 }
 
 type alertsData struct {
@@ -43,7 +42,7 @@ func alertPut(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 	data := &alertData{}
 
 	alertId, ok := utils.ParseObjectId(c.Param("alert_id"))
@@ -117,7 +116,7 @@ func alertPost(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 	data := &alertData{
 		Name:     "New Alert",
 		Resource: alert.InstanceOffline,
@@ -174,7 +173,7 @@ func alertDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	alertId, ok := utils.ParseObjectId(c.Param("alert_id"))
 	if !ok {
@@ -199,8 +198,8 @@ func alertsDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
-	dta := []primitive.ObjectID{}
+	userOrg := c.MustGet("organization").(bson.ObjectID)
+	dta := []bson.ObjectID{}
 
 	err := c.Bind(&dta)
 	if err != nil {
@@ -227,7 +226,7 @@ func alertGet(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	alertId, ok := utils.ParseObjectId(c.Query("id"))
 	if !ok {
@@ -246,7 +245,7 @@ func alertGet(c *gin.Context) {
 
 func alertsGet(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
 	pageCount, _ := strconv.ParseInt(c.Query("page_count"), 10, 0)

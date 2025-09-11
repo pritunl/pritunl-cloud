@@ -2,17 +2,17 @@ package lock
 
 import (
 	"fmt"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"time"
+
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/node"
-	"time"
 )
 
 type LvmLocker struct {
-	Id        string             `bson:"_id" json:"_id"`
-	Node      primitive.ObjectID `bson:"node" json:"node"`
-	Timestamp time.Time          `bson:"timestamp" json:"timestamp"`
+	Id        string        `bson:"_id" json:"_id"`
+	Node      bson.ObjectID `bson:"node" json:"node"`
+	Timestamp time.Time     `bson:"timestamp" json:"timestamp"`
 }
 
 func LvmLock(db *database.Database, vgName, lvName string) (

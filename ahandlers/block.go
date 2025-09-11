@@ -9,8 +9,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/aggregate"
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -22,17 +21,17 @@ import (
 )
 
 type blockData struct {
-	Id       primitive.ObjectID `json:"id"`
-	Name     string             `json:"name"`
-	Comment  string             `json:"comment"`
-	Vlan     int                `json:"vlan"`
-	Type     string             `json:"type"`
-	Subnets  []string           `json:"subnets"`
-	Subnets6 []string           `json:"subnets6"`
-	Excludes []string           `json:"excludes"`
-	Netmask  string             `json:"netmask"`
-	Gateway  string             `json:"gateway"`
-	Gateway6 string             `json:"gateway6"`
+	Id       bson.ObjectID `json:"id"`
+	Name     string        `json:"name"`
+	Comment  string        `json:"comment"`
+	Vlan     int           `json:"vlan"`
+	Type     string        `json:"type"`
+	Subnets  []string      `json:"subnets"`
+	Subnets6 []string      `json:"subnets6"`
+	Excludes []string      `json:"excludes"`
+	Netmask  string        `json:"netmask"`
+	Gateway  string        `json:"gateway"`
+	Gateway6 string        `json:"gateway6"`
 }
 
 type blocksData struct {
@@ -208,7 +207,7 @@ func blocksDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	data := []primitive.ObjectID{}
+	data := []bson.ObjectID{}
 
 	err := c.Bind(&data)
 	if err != nil {

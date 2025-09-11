@@ -1,8 +1,6 @@
 package disk
 
-import (
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-)
+import "github.com/pritunl/mongo-go-driver/v2/bson"
 
 const (
 	Provision = "provision"
@@ -28,5 +26,5 @@ const (
 )
 
 var (
-	Vacant = primitive.NilObjectID
+	Vacant = bson.NilObjectID
 )

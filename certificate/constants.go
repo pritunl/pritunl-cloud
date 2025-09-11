@@ -1,8 +1,6 @@
 package certificate
 
-import (
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-)
+import "github.com/pritunl/mongo-go-driver/v2/bson"
 
 const (
 	Text        = "text"
@@ -17,5 +15,5 @@ const (
 )
 
 var (
-	Global = primitive.NilObjectID
+	Global = bson.NilObjectID
 )

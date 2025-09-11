@@ -4,19 +4,19 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 )
 
 type Journal struct {
-	Id        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Resource  primitive.ObjectID `bson:"r" json:"r"`
-	Kind      int32              `bson:"k" json:"k"`
-	Level     int32              `bson:"l" json:"l"`
-	Timestamp time.Time          `bson:"t" json:"t"`
-	Count     int32              `bson:"c" json:"-"`
-	Message   string             `bson:"m" json:"m"`
-	Fields    map[string]string  `bson:"f,omitempty" json:"f"`
+	Id        bson.ObjectID     `bson:"_id,omitempty" json:"id"`
+	Resource  bson.ObjectID     `bson:"r" json:"r"`
+	Kind      int32             `bson:"k" json:"k"`
+	Level     int32             `bson:"l" json:"l"`
+	Timestamp time.Time         `bson:"t" json:"t"`
+	Count     int32             `bson:"c" json:"-"`
+	Message   string            `bson:"m" json:"m"`
+	Fields    map[string]string `bson:"f,omitempty" json:"f"`
 }
 
 func (j *Journal) String() string {

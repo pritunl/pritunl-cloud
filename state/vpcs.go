@@ -1,7 +1,7 @@
 package state
 
 import (
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/vpc"
@@ -14,23 +14,23 @@ var (
 
 type VpcsState struct {
 	vpcs      []*vpc.Vpc
-	vpcsMap   map[primitive.ObjectID]*vpc.Vpc
-	vpcIpsMap map[primitive.ObjectID][]*vpc.VpcIp
+	vpcsMap   map[bson.ObjectID]*vpc.Vpc
+	vpcIpsMap map[bson.ObjectID][]*vpc.VpcIp
 }
 
-func (p *VpcsState) Vpc(vpcId primitive.ObjectID) *vpc.Vpc {
+func (p *VpcsState) Vpc(vpcId bson.ObjectID) *vpc.Vpc {
 	return p.vpcsMap[vpcId]
 }
 
-func (p *VpcsState) VpcsMap() map[primitive.ObjectID]*vpc.Vpc {
+func (p *VpcsState) VpcsMap() map[bson.ObjectID]*vpc.Vpc {
 	return p.vpcsMap
 }
 
-func (p *VpcsState) VpcIps(vpcId primitive.ObjectID) []*vpc.VpcIp {
+func (p *VpcsState) VpcIps(vpcId bson.ObjectID) []*vpc.VpcIp {
 	return p.vpcIpsMap[vpcId]
 }
 
-func (p *VpcsState) VpcIpsMap() map[primitive.ObjectID][]*vpc.VpcIp {
+func (p *VpcsState) VpcIpsMap() map[bson.ObjectID][]*vpc.VpcIp {
 	return p.vpcIpsMap
 }
 
@@ -42,12 +42,12 @@ func (p *VpcsState) Refresh(pkg *Package,
 	db *database.Database) (err error) {
 
 	dcId := node.Self.Datacenter
-	vpcsId := []primitive.ObjectID{}
-	vpcsMap := map[primitive.ObjectID]*vpc.Vpc{}
+	vpcsId := []bson.ObjectID{}
+	vpcsMap := map[bson.ObjectID]*vpc.Vpc{}
 	if dcId.IsZero() {
 		p.vpcs = nil
-		p.vpcsMap = map[primitive.ObjectID]*vpc.Vpc{}
-		p.vpcIpsMap = map[primitive.ObjectID][]*vpc.VpcIp{}
+		p.vpcsMap = map[bson.ObjectID]*vpc.Vpc{}
+		p.vpcIpsMap = map[bson.ObjectID][]*vpc.VpcIp{}
 		return
 	}
 

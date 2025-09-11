@@ -3,7 +3,7 @@ package virtiofs
 import (
 	"fmt"
 
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/systemd"
@@ -27,7 +27,7 @@ ProtectHostname=true
 ProtectKernelTunables=true
 `
 
-func WriteService(vmId primitive.ObjectID,
+func WriteService(vmId bson.ObjectID,
 	shareId, sharePath string) (err error) {
 
 	unitPath := paths.GetUnitPathShare(vmId, shareId)

@@ -7,13 +7,13 @@ import (
 	"strconv"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 )
 
-func GetUserName(vmId primitive.ObjectID) string {
+func GetUserName(vmId bson.ObjectID) string {
 	return fmt.Sprintf("pritunl-%s", vmId.Hex())
 }
 
@@ -65,7 +65,7 @@ func UserDelete(virt *vm.VirtualMachine) (err error) {
 	return
 }
 
-func UserGroupAdd(virtId primitive.ObjectID, group string) (err error) {
+func UserGroupAdd(virtId bson.ObjectID, group string) (err error) {
 	name := GetUserName(virtId)
 
 	_, err = utils.ExecCombinedOutputLogged(
@@ -80,7 +80,7 @@ func UserGroupAdd(virtId primitive.ObjectID, group string) (err error) {
 	return
 }
 
-func UserGroupDelete(virtId primitive.ObjectID, group string) (err error) {
+func UserGroupDelete(virtId bson.ObjectID, group string) (err error) {
 	name := GetUserName(virtId)
 
 	_, err = utils.ExecCombinedOutputLogged(

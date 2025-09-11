@@ -4,9 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/useragent"
@@ -27,7 +26,7 @@ func Get(db *database.Database, adtId string) (
 	return
 }
 
-func GetAll(db *database.Database, userId primitive.ObjectID,
+func GetAll(db *database.Database, userId bson.ObjectID,
 	page, pageCount int64) (audits []*Audit, count int64, err error) {
 
 	coll := db.Audits()
@@ -84,7 +83,7 @@ func GetAll(db *database.Database, userId primitive.ObjectID,
 }
 
 func New(db *database.Database, r *http.Request,
-	userId primitive.ObjectID, typ string, fields Fields) (
+	userId bson.ObjectID, typ string, fields Fields) (
 	err error) {
 
 	if settings.System.Demo {

@@ -8,9 +8,8 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/dns"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -21,24 +20,24 @@ import (
 )
 
 type Domain struct {
-	Id            primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Name          string             `bson:"name" json:"name"`
-	Comment       string             `bson:"comment" json:"comment"`
-	Organization  primitive.ObjectID `bson:"organization" json:"organization"`
-	Type          string             `bson:"type" json:"type"`
-	Secret        primitive.ObjectID `bson:"secret" json:"secret"`
-	RootDomain    string             `bson:"root_domain" json:"root_domain"`
-	LockId        primitive.ObjectID `bson:"lock_id" json:"lock_id"`
-	LockTimestamp time.Time          `bson:"lock_timestamp" json:"lock_timestamp"`
-	LastUpdate    time.Time          `bson:"last_update" json:"last_update"`
-	Records       []*Record          `bson:"-" json:"records"`
-	OrigRecords   []*Record          `bson:"-" json:"-"`
+	Id            bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name          string        `bson:"name" json:"name"`
+	Comment       string        `bson:"comment" json:"comment"`
+	Organization  bson.ObjectID `bson:"organization" json:"organization"`
+	Type          string        `bson:"type" json:"type"`
+	Secret        bson.ObjectID `bson:"secret" json:"secret"`
+	RootDomain    string        `bson:"root_domain" json:"root_domain"`
+	LockId        bson.ObjectID `bson:"lock_id" json:"lock_id"`
+	LockTimestamp time.Time     `bson:"lock_timestamp" json:"lock_timestamp"`
+	LastUpdate    time.Time     `bson:"last_update" json:"last_update"`
+	Records       []*Record     `bson:"-" json:"records"`
+	OrigRecords   []*Record     `bson:"-" json:"-"`
 }
 
 type Completion struct {
-	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Name         string             `bson:"name" json:"name"`
-	Organization primitive.ObjectID `bson:"organization" json:"organization"`
+	Id           bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name         string        `bson:"name" json:"name"`
+	Organization bson.ObjectID `bson:"organization" json:"organization"`
 }
 
 func (d *Domain) Locked() bool {
@@ -165,7 +164,7 @@ func (d *Domain) commitRecords(db *database.Database,
 	setTtl bool) (err error) {
 
 	acquired := false
-	var lockId primitive.ObjectID
+	var lockId bson.ObjectID
 	for i := 0; i < 100; i++ {
 		lockId, acquired, err = Lock(db, d.Id)
 		if err != nil {
@@ -430,7 +429,7 @@ func (d *Domain) UpdateRecords(db *database.Database, secr *secret.Secret,
 	return
 }
 
-func (d *Domain) MergeRecords(deployId primitive.ObjectID,
+func (d *Domain) MergeRecords(deployId bson.ObjectID,
 	newRecs []*Record) (newDomn *Domain) {
 
 	recMap := map[string]map[string]map[string]*Record{}

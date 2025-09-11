@@ -1,14 +1,13 @@
 package node
 
 import (
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
-func Get(db *database.Database, nodeId primitive.ObjectID) (
+func Get(db *database.Database, nodeId bson.ObjectID) (
 	nde *Node, err error) {
 
 	coll := db.Nodes()
@@ -68,10 +67,10 @@ func GetOne(db *database.Database, query *bson.M) (nde *Node, err error) {
 }
 
 func GetAllNamesMap(db *database.Database, query *bson.M) (
-	nodeNames map[primitive.ObjectID]string, err error) {
+	nodeNames map[bson.ObjectID]string, err error) {
 
 	coll := db.Nodes()
-	nodeNames = map[primitive.ObjectID]string{}
+	nodeNames = map[bson.ObjectID]string{}
 
 	cursor, err := coll.Find(
 		db,
@@ -164,7 +163,7 @@ func GetAllHypervisors(db *database.Database, query *bson.M) (
 	return
 }
 
-func GetAllPool(db *database.Database, poolId primitive.ObjectID) (
+func GetAllPool(db *database.Database, poolId bson.ObjectID) (
 	nodes []*Node, err error) {
 
 	coll := db.Nodes()
@@ -272,7 +271,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	return
 }
 
-func GetAllShape(db *database.Database, zones []primitive.ObjectID,
+func GetAllShape(db *database.Database, zones []bson.ObjectID,
 	roles []string) (nodes []*Node, err error) {
 
 	coll := db.Nodes()
@@ -365,7 +364,7 @@ func GetAllNet(db *database.Database) (nodes []*Node, err error) {
 	return
 }
 
-func Remove(db *database.Database, nodeId primitive.ObjectID) (err error) {
+func Remove(db *database.Database, nodeId bson.ObjectID) (err error) {
 	coll := db.Nodes()
 
 	_, err = coll.DeleteOne(db, &bson.M{

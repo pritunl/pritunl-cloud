@@ -1,14 +1,13 @@
 package certificate
 
 import (
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
-func Get(db *database.Database, certId primitive.ObjectID) (
+func Get(db *database.Database, certId bson.ObjectID) (
 	cert *Certificate, err error) {
 
 	coll := db.Certificates()
@@ -22,7 +21,7 @@ func Get(db *database.Database, certId primitive.ObjectID) (
 	return
 }
 
-func GetOrg(db *database.Database, orgId, certId primitive.ObjectID) (
+func GetOrg(db *database.Database, orgId, certId bson.ObjectID) (
 	cert *Certificate, err error) {
 
 	coll := db.Certificates()
@@ -85,7 +84,7 @@ func GetAll(db *database.Database,
 	return
 }
 
-func GetAllOrg(db *database.Database, orgId primitive.ObjectID) (
+func GetAllOrg(db *database.Database, orgId bson.ObjectID) (
 	certs []*Certificate, err error) {
 
 	coll := db.Certificates()
@@ -227,7 +226,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	return
 }
 
-func Remove(db *database.Database, certId primitive.ObjectID) (err error) {
+func Remove(db *database.Database, certId bson.ObjectID) (err error) {
 	coll := db.Certificates()
 
 	_, err = coll.DeleteMany(db, &bson.M{
@@ -241,7 +240,7 @@ func Remove(db *database.Database, certId primitive.ObjectID) (err error) {
 	return
 }
 
-func RemoveOrg(db *database.Database, orgId, certId primitive.ObjectID) (
+func RemoveOrg(db *database.Database, orgId, certId bson.ObjectID) (
 	err error) {
 
 	coll := db.Certificates()
@@ -263,7 +262,7 @@ func RemoveOrg(db *database.Database, orgId, certId primitive.ObjectID) (
 	return
 }
 
-func RemoveMulti(db *database.Database, certIds []primitive.ObjectID) (
+func RemoveMulti(db *database.Database, certIds []bson.ObjectID) (
 	err error) {
 	coll := db.Certificates()
 
@@ -280,8 +279,8 @@ func RemoveMulti(db *database.Database, certIds []primitive.ObjectID) (
 	return
 }
 
-func RemoveMultiOrg(db *database.Database, orgId primitive.ObjectID,
-	certIds []primitive.ObjectID) (err error) {
+func RemoveMultiOrg(db *database.Database, orgId bson.ObjectID,
+	certIds []bson.ObjectID) (err error) {
 
 	coll := db.Certificates()
 

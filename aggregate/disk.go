@@ -1,8 +1,7 @@
 package aggregate
 
 import (
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -15,8 +14,8 @@ type DiskPipe struct {
 }
 
 type DiskBackup struct {
-	Image primitive.ObjectID `json:"image"`
-	Name  string             `json:"name"`
+	Image bson.ObjectID `json:"image"`
+	Name  string        `json:"name"`
 }
 
 type DiskAggregate struct {

@@ -3,9 +3,8 @@ package rokey
 import (
 	"time"
 
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
@@ -67,7 +66,7 @@ func Get(db *database.Database, typ string) (rkey *Rokey, err error) {
 }
 
 func GetId(db *database.Database, typ string,
-	rkeyId primitive.ObjectID) (rkey *Rokey, err error) {
+	rkeyId bson.ObjectID) (rkey *Rokey, err error) {
 
 	rkey = GetCacheId(typ, rkeyId)
 	if rkey != nil {

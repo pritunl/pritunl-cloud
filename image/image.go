@@ -6,9 +6,8 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -16,39 +15,39 @@ import (
 )
 
 type Image struct {
-	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Disk         primitive.ObjectID `bson:"disk" json:"disk"`
-	Name         string             `bson:"name" json:"name"`
-	Release      string             `bson:"release" json:"release"`
-	Build        string             `bson:"build" json:"build"`
-	Comment      string             `bson:"comment" json:"comment"`
-	Deployment   primitive.ObjectID `bson:"deployment" json:"deployment"`
-	Organization primitive.ObjectID `bson:"organization" json:"organization"`
-	Signed       bool               `bson:"signed" json:"signed"`
-	Type         string             `bson:"type" json:"type"`
-	SystemType   string             `bson:"system_type" json:"system_type"`
-	Firmware     string             `bson:"firmware" json:"firmware"`
-	Storage      primitive.ObjectID `bson:"storage" json:"storage"`
-	Key          string             `bson:"key" json:"key"`
-	LastModified time.Time          `bson:"last_modified" json:"last_modified"`
-	StorageClass string             `bson:"storage_class" json:"storage_class"`
-	Hash         string             `bson:"hash" json:"hash"`
-	Etag         string             `bson:"etag" json:"etag"`
-	Tags         []string           `bson:"-" json:"tags"`
+	Id           bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Disk         bson.ObjectID `bson:"disk" json:"disk"`
+	Name         string        `bson:"name" json:"name"`
+	Release      string        `bson:"release" json:"release"`
+	Build        string        `bson:"build" json:"build"`
+	Comment      string        `bson:"comment" json:"comment"`
+	Deployment   bson.ObjectID `bson:"deployment" json:"deployment"`
+	Organization bson.ObjectID `bson:"organization" json:"organization"`
+	Signed       bool          `bson:"signed" json:"signed"`
+	Type         string        `bson:"type" json:"type"`
+	SystemType   string        `bson:"system_type" json:"system_type"`
+	Firmware     string        `bson:"firmware" json:"firmware"`
+	Storage      bson.ObjectID `bson:"storage" json:"storage"`
+	Key          string        `bson:"key" json:"key"`
+	LastModified time.Time     `bson:"last_modified" json:"last_modified"`
+	StorageClass string        `bson:"storage_class" json:"storage_class"`
+	Hash         string        `bson:"hash" json:"hash"`
+	Etag         string        `bson:"etag" json:"etag"`
+	Tags         []string      `bson:"-" json:"tags"`
 }
 
 type Completion struct {
-	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Name         string             `bson:"name" json:"name"`
-	Release      string             `bson:"release" json:"release"`
-	Build        string             `bson:"build" json:"build"`
-	Organization primitive.ObjectID `bson:"organization" json:"organization"`
-	Deployment   primitive.ObjectID `bson:"deployment" json:"deployment"`
-	Type         string             `bson:"type" json:"type"`
-	Firmware     string             `bson:"firmware" json:"firmware"`
-	Key          string             `bson:"key" json:"key"`
-	Storage      primitive.ObjectID `bson:"storage" json:"storage"`
-	Tags         []string           `bson:"-" json:"tags"`
+	Id           bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name         string        `bson:"name" json:"name"`
+	Release      string        `bson:"release" json:"release"`
+	Build        string        `bson:"build" json:"build"`
+	Organization bson.ObjectID `bson:"organization" json:"organization"`
+	Deployment   bson.ObjectID `bson:"deployment" json:"deployment"`
+	Type         string        `bson:"type" json:"type"`
+	Firmware     string        `bson:"firmware" json:"firmware"`
+	Key          string        `bson:"key" json:"key"`
+	Storage      bson.ObjectID `bson:"storage" json:"storage"`
+	Tags         []string      `bson:"-" json:"tags"`
 }
 
 func (i *Image) Validate(db *database.Database) (
@@ -184,7 +183,7 @@ func (i *Image) Upsert(db *database.Database) (err error) {
 	}
 
 	if resp.UpsertedID != nil {
-		i.Id = resp.UpsertedID.(primitive.ObjectID)
+		i.Id = resp.UpsertedID.(bson.ObjectID)
 	}
 
 	return
@@ -206,7 +205,7 @@ func (i *Image) Sync(db *database.Database) (err error) {
 			},
 			&bson.M{
 				"$set": &bson.M{
-					"organization":  primitive.NilObjectID,
+					"organization":  bson.NilObjectID,
 					"release":       i.Release,
 					"build":         i.Build,
 					"storage":       i.Storage,
@@ -220,8 +219,8 @@ func (i *Image) Sync(db *database.Database) (err error) {
 				},
 				"$setOnInsert": &bson.M{
 					"name":       i.Name,
-					"disk":       primitive.NilObjectID,
-					"deployment": primitive.NilObjectID,
+					"disk":       bson.NilObjectID,
+					"deployment": bson.NilObjectID,
 				},
 			},
 		)
@@ -236,7 +235,7 @@ func (i *Image) Sync(db *database.Database) (err error) {
 		}
 
 		if resp.UpsertedID != nil {
-			i.Id = resp.UpsertedID.(primitive.ObjectID)
+			i.Id = resp.UpsertedID.(bson.ObjectID)
 		}
 	} else {
 		opts := &options.UpdateOptions{}
@@ -249,7 +248,7 @@ func (i *Image) Sync(db *database.Database) (err error) {
 			},
 			&bson.M{
 				"$set": &bson.M{
-					"organization":  primitive.NilObjectID,
+					"organization":  bson.NilObjectID,
 					"name":          i.Name,
 					"release":       i.Release,
 					"build":         i.Build,
@@ -262,8 +261,8 @@ func (i *Image) Sync(db *database.Database) (err error) {
 					"last_modified": i.LastModified,
 				},
 				"$setOnInsert": &bson.M{
-					"disk":       primitive.NilObjectID,
-					"deployment": primitive.NilObjectID,
+					"disk":       bson.NilObjectID,
+					"deployment": bson.NilObjectID,
 				},
 			},
 			opts,
@@ -274,7 +273,7 @@ func (i *Image) Sync(db *database.Database) (err error) {
 		}
 
 		if resp.UpsertedID != nil {
-			i.Id = resp.UpsertedID.(primitive.ObjectID)
+			i.Id = resp.UpsertedID.(bson.ObjectID)
 		}
 	}
 

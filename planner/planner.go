@@ -5,8 +5,7 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/disk"
@@ -23,7 +22,7 @@ import (
 )
 
 type Planner struct {
-	unitsMap map[primitive.ObjectID]*unit.Unit
+	unitsMap map[bson.ObjectID]*unit.Unit
 }
 
 func (p *Planner) setInstanceAction(db *database.Database,

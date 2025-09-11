@@ -5,8 +5,7 @@ import (
 	"strings"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/certificate"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
@@ -26,7 +25,7 @@ import (
 )
 
 type Resources struct {
-	Organization primitive.ObjectID
+	Organization bson.ObjectID
 	Datacenter   *datacenter.Datacenter
 	Zone         *zone.Zone
 	Vpc          *vpc.Vpc
@@ -196,7 +195,7 @@ func (r *Resources) Find(db *database.Database, token string) (
 			imgs, e := image.GetAll(db, &bson.M{
 				"release": resource,
 				"organization": &bson.M{
-					"$in": []primitive.ObjectID{r.Organization, image.Global},
+					"$in": []bson.ObjectID{r.Organization, image.Global},
 				},
 			})
 			if e != nil {
@@ -229,7 +228,7 @@ func (r *Resources) Find(db *database.Database, token string) (
 			r.Image, err = image.GetOne(db, &bson.M{
 				"name": resource,
 				"organization": &bson.M{
-					"$in": []primitive.ObjectID{r.Organization, image.Global},
+					"$in": []bson.ObjectID{r.Organization, image.Global},
 				},
 			})
 			if err != nil {
@@ -390,16 +389,16 @@ func (r *Resources) Find(db *database.Database, token string) (
 }
 
 type PodBase struct {
-	Id           primitive.ObjectID `bson:"_id,omitempty"`
-	Organization primitive.ObjectID `bson:"organization"`
-	Name         string             `bson:"name"`
+	Id           bson.ObjectID `bson:"_id,omitempty"`
+	Organization bson.ObjectID `bson:"organization"`
+	Name         string        `bson:"name"`
 }
 
 type UnitBase struct {
-	Id           primitive.ObjectID `bson:"_id,omitempty"`
-	Pod          primitive.ObjectID `bson:"pod"`
-	Organization primitive.ObjectID `bson:"organization"`
-	Name         string             `bson:"name"`
+	Id           bson.ObjectID `bson:"_id,omitempty"`
+	Pod          bson.ObjectID `bson:"pod"`
+	Organization bson.ObjectID `bson:"organization"`
+	Name         string        `bson:"name"`
 }
 
 func GetPodBase(db *database.Database, query *bson.M) (
@@ -417,7 +416,7 @@ func GetPodBase(db *database.Database, query *bson.M) (
 	return
 }
 
-func GetUnitBase(db *database.Database, orgId primitive.ObjectID,
+func GetUnitBase(db *database.Database, orgId bson.ObjectID,
 	name string) (unt *UnitBase, err error) {
 
 	coll := db.Units()

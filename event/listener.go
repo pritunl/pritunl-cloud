@@ -6,10 +6,9 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/mongo-go-driver/mongo"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/sirupsen/logrus"
@@ -34,7 +33,7 @@ func (l *Listener) Close() {
 	})
 }
 
-func (l *Listener) sub(cursorId primitive.ObjectID) {
+func (l *Listener) sub(cursorId bson.ObjectID) {
 	coll := l.db.Events()
 
 	var channelBson interface{}

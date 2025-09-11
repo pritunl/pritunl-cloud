@@ -4,12 +4,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/vm"
 )
 
 var (
-	disksStores     = map[primitive.ObjectID]DisksStore{}
+	disksStores     = map[bson.ObjectID]DisksStore{}
 	disksStoresLock = sync.Mutex{}
 )
 
@@ -18,7 +18,7 @@ type DisksStore struct {
 	Timestamp time.Time
 }
 
-func GetDisks(virtId primitive.ObjectID) (disksStore DisksStore, ok bool) {
+func GetDisks(virtId bson.ObjectID) (disksStore DisksStore, ok bool) {
 	disksStoresLock.Lock()
 	disksStore, ok = disksStores[virtId]
 	disksStoresLock.Unlock()
@@ -30,7 +30,7 @@ func GetDisks(virtId primitive.ObjectID) (disksStore DisksStore, ok bool) {
 	return
 }
 
-func SetDisks(virtId primitive.ObjectID, disks []*vm.Disk) {
+func SetDisks(virtId bson.ObjectID, disks []*vm.Disk) {
 	disksRef := []vm.Disk{}
 	for _, dsk := range disks {
 		disksRef = append(disksRef, *dsk)
@@ -44,7 +44,7 @@ func SetDisks(virtId primitive.ObjectID, disks []*vm.Disk) {
 	disksStoresLock.Unlock()
 }
 
-func RemDisks(virtId primitive.ObjectID) {
+func RemDisks(virtId bson.ObjectID) {
 	disksStoresLock.Lock()
 	delete(disksStores, virtId)
 	disksStoresLock.Unlock()

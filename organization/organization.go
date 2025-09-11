@@ -3,17 +3,17 @@ package organization
 import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type Organization struct {
-	Id      primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Roles   []string           `bson:"roles" json:"roles"`
-	Name    string             `bson:"name" json:"name"`
-	Comment string             `bson:"comment" json:"comment"`
+	Id      bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Roles   []string      `bson:"roles" json:"roles"`
+	Name    string        `bson:"name" json:"name"`
+	Comment string        `bson:"comment" json:"comment"`
 }
 
 func (d *Organization) Validate(db *database.Database) (
@@ -68,7 +68,7 @@ func (c *Organization) Insert(db *database.Database) (err error) {
 		return
 	}
 
-	c.Id = resp.InsertedID.(primitive.ObjectID)
+	c.Id = resp.InsertedID.(bson.ObjectID)
 
 	return
 }

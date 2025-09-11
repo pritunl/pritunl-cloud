@@ -4,16 +4,16 @@ import (
 	"net"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type Subnet struct {
-	Id      primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Name    string             `bson:"name" json:"name"`
-	Network string             `bson:"network" json:"network"`
+	Id      bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name    string        `bson:"name" json:"name"`
+	Network string        `bson:"network" json:"network"`
 }
 
 func (s *Subnet) Validate(db *database.Database) (

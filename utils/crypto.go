@@ -16,7 +16,7 @@ import (
 	"strings"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 )
 
@@ -159,7 +159,7 @@ func GenerateRsaKey() (encodedPriv, encodedPub []byte, err error) {
 	return
 }
 
-func RandObjectId() (oid primitive.ObjectID, err error) {
+func RandObjectId() (oid bson.ObjectID, err error) {
 	rid, err := RandBytes(12)
 	if err != nil {
 		return

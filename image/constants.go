@@ -1,7 +1,7 @@
 package image
 
 import (
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/tools/set"
 )
 
@@ -31,7 +31,7 @@ const (
 )
 
 var (
-	Global   = primitive.NilObjectID
+	Global   = bson.NilObjectID
 	Releases = set.NewSet(
 		AlmaLinux8,
 		AlmaLinux9,

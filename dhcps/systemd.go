@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -64,7 +64,7 @@ NetworkNamespacePath=/var/run/netns/%s
 AmbientCapabilities=%s
 `
 
-func UpdateEbtables(vmId primitive.ObjectID, namespace string) (err error) {
+func UpdateEbtables(vmId bson.ObjectID, namespace string) (err error) {
 	iface := vm.GetIface(vmId, 0)
 
 	_, err = utils.ExecCombinedOutputLogged(
@@ -187,7 +187,7 @@ func UpdateEbtables(vmId primitive.ObjectID, namespace string) (err error) {
 	return
 }
 
-func ClearEbtables(vmId primitive.ObjectID, namespace string) (err error) {
+func ClearEbtables(vmId bson.ObjectID, namespace string) (err error) {
 	iface := vm.GetIface(vmId, 0)
 
 	_, _ = utils.ExecCombinedOutput(
@@ -286,7 +286,7 @@ func ClearEbtables(vmId primitive.ObjectID, namespace string) (err error) {
 	return
 }
 
-func WriteService(vmId primitive.ObjectID, namespace string,
+func WriteService(vmId bson.ObjectID, namespace string,
 	config interface{}, systemdNamespace bool) (err error) {
 
 	param := ""

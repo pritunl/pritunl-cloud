@@ -9,7 +9,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/go-webauthn/webauthn/webauthn"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/u2flib"
@@ -17,8 +17,8 @@ import (
 )
 
 type Device struct {
-	Id                 primitive.ObjectID      `bson:"_id,omitempty" json:"id"`
-	User               primitive.ObjectID      `bson:"user" json:"user"`
+	Id                 bson.ObjectID           `bson:"_id,omitempty" json:"id"`
+	User               bson.ObjectID           `bson:"user" json:"user"`
 	Name               string                  `bson:"name" json:"name"`
 	Type               string                  `bson:"type" json:"type"`
 	Mode               string                  `bson:"mode" json:"mode"`

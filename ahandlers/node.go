@@ -10,8 +10,7 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
@@ -29,8 +28,8 @@ import (
 )
 
 type nodeData struct {
-	Id                      primitive.ObjectID      `json:"id"`
-	Zone                    primitive.ObjectID      `json:"zone"`
+	Id                      bson.ObjectID           `json:"id"`
+	Zone                    bson.ObjectID           `json:"zone"`
 	Name                    string                  `json:"name"`
 	Comment                 string                  `json:"comment"`
 	Types                   []string                `json:"types"`
@@ -43,7 +42,7 @@ type nodeData struct {
 	Gui                     bool                    `json:"gui"`
 	GuiUser                 string                  `json:"gui_user"`
 	GuiMode                 string                  `json:"gui_mode"`
-	Certificates            []primitive.ObjectID    `json:"certificates"`
+	Certificates            []bson.ObjectID         `json:"certificates"`
 	AdminDomain             string                  `json:"admin_domain"`
 	UserDomain              string                  `json:"user_domain"`
 	WebauthnDomain          string                  `json:"webauthn_domain"`
@@ -83,14 +82,14 @@ type nodesData struct {
 }
 
 type nodeInitData struct {
-	Provider          string             `json:"provider"`
-	Zone              primitive.ObjectID `json:"zone"`
-	Firewall          bool               `json:"firewall"`
-	InternalInterface string             `json:"internal_interface"`
-	ExternalInterface string             `json:"external_interface"`
-	BlockGateway      string             `json:"block_gateway"`
-	BlockNetmask      string             `json:"block_netmask"`
-	BlockSubnets      []string           `json:"block_subnets"`
+	Provider          string        `json:"provider"`
+	Zone              bson.ObjectID `json:"zone"`
+	Firewall          bool          `json:"firewall"`
+	InternalInterface string        `json:"internal_interface"`
+	ExternalInterface string        `json:"external_interface"`
+	BlockGateway      string        `json:"block_gateway"`
+	BlockNetmask      string        `json:"block_netmask"`
+	BlockSubnets      []string      `json:"block_subnets"`
 }
 
 func nodePut(c *gin.Context) {

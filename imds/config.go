@@ -3,7 +3,7 @@ package imds
 import (
 	"sync"
 
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/certificate"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/imds/types"
@@ -18,14 +18,14 @@ import (
 )
 
 var (
-	curConfs     = map[primitive.ObjectID]*types.Config{}
+	curConfs     = map[bson.ObjectID]*types.Config{}
 	curConfsLock = sync.Mutex{}
 )
 
 func BuildConfig(inst *instance.Instance, virt *vm.VirtualMachine,
 	spc *spec.Spec, vc *vpc.Vpc, subnet *vpc.Subnet,
-	pods []*pod.Pod, podUnitsMap map[primitive.ObjectID][]*unit.Unit,
-	deployments map[primitive.ObjectID]*deployment.Deployment,
+	pods []*pod.Pod, podUnitsMap map[bson.ObjectID][]*unit.Unit,
+	deployments map[bson.ObjectID]*deployment.Deployment,
 	secrs []*secret.Secret, certs []*certificate.Certificate) (
 	conf *types.Config, err error) {
 
@@ -49,14 +49,14 @@ func BuildConfig(inst *instance.Instance, virt *vm.VirtualMachine,
 	return
 }
 
-func SetConfigs(cnfs map[primitive.ObjectID]*types.Config) {
+func SetConfigs(cnfs map[bson.ObjectID]*types.Config) {
 	curConfsLock.Lock()
 	curConfs = cnfs
 	curConfsLock.Unlock()
 }
 
 func GetConfigs() (
-	cnfs map[primitive.ObjectID]*types.Config) {
+	cnfs map[bson.ObjectID]*types.Config) {
 
 	curConfsLock.Lock()
 	cnfs = curConfs

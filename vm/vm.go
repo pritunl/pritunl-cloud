@@ -6,62 +6,61 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/usb"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type VirtualMachine struct {
-	Id                  primitive.ObjectID `json:"id"`
-	Organization        primitive.ObjectID `json:"organization"`
-	UnixId              int                `json:"unix_id"`
-	State               string             `json:"state"`
-	Timestamp           time.Time          `json:"timestamp"`
-	QemuVersion         string             `json:"qemu_version"`
-	DiskType            string             `json:"disk_type"`
-	DiskPool            primitive.ObjectID `json:"disk_pool"`
-	Image               primitive.ObjectID `json:"image"`
-	Processors          int                `json:"processors"`
-	Memory              int                `json:"memory"`
-	Hugepages           bool               `json:"hugepages"`
-	Vnc                 bool               `json:"vnc"`
-	VncDisplay          int                `json:"vnc_display"`
-	Spice               bool               `json:"spice"`
-	SpicePort           int                `json:"spice_port"`
-	Gui                 bool               `json:"gui"`
-	Disks               []*Disk            `json:"disks"`
-	DisksAvailable      bool               `json:"-"`
-	NetworkAdapters     []*NetworkAdapter  `json:"network_adapters"`
-	CloudSubnet         string             `json:"cloud_subnet"`
-	CloudVnic           string             `json:"cloud_vnic"`
-	CloudVnicAttach     string             `json:"cloud_vnic_attach"`
-	CloudPrivateIp      string             `json:"cloud_private_ip"`
-	CloudPublicIp       string             `json:"cloud_public_ip"`
-	CloudPublicIp6      string             `json:"cloud_public_ip6"`
-	DhcpIp              string             `json:"dhcp_ip"`
-	DhcpIp6             string             `json:"dhcp_ip6"`
-	Uefi                bool               `json:"uefi"`
-	SecureBoot          bool               `json:"secure_boot"`
-	Tpm                 bool               `json:"tpm"`
-	DhcpServer          bool               `json:"dhcp_server"`
-	Deployment          primitive.ObjectID `json:"deployment"`
-	CloudType           string             `json:"cloud_type"`
-	NoPublicAddress     bool               `json:"no_public_address"`
-	NoPublicAddress6    bool               `json:"no_public_address6"`
-	NoHostAddress       bool               `json:"no_host_address"`
-	Isos                []*Iso             `json:"isos"`
-	UsbDevices          []*UsbDevice       `json:"usb_devices"`
-	UsbDevicesAvailable bool               `json:"-"`
-	PciDevices          []*PciDevice       `json:"pci_devices"`
-	DriveDevices        []*DriveDevice     `json:"drive_devices"`
-	IscsiDevices        []*IscsiDevice     `json:"iscsi_devices"`
-	Mounts              []*Mount           `json:"mounts"`
-	ImdsVersion         int                `json:"imds_version"`
-	ImdsClientSecret    string             `json:"-"`
-	ImdsDhcpSecret      string             `json:"imds_dhcp_secret"`
-	ImdsHostSecret      string             `json:"imds_host_secret"`
+	Id                  bson.ObjectID     `json:"id"`
+	Organization        bson.ObjectID     `json:"organization"`
+	UnixId              int               `json:"unix_id"`
+	State               string            `json:"state"`
+	Timestamp           time.Time         `json:"timestamp"`
+	QemuVersion         string            `json:"qemu_version"`
+	DiskType            string            `json:"disk_type"`
+	DiskPool            bson.ObjectID     `json:"disk_pool"`
+	Image               bson.ObjectID     `json:"image"`
+	Processors          int               `json:"processors"`
+	Memory              int               `json:"memory"`
+	Hugepages           bool              `json:"hugepages"`
+	Vnc                 bool              `json:"vnc"`
+	VncDisplay          int               `json:"vnc_display"`
+	Spice               bool              `json:"spice"`
+	SpicePort           int               `json:"spice_port"`
+	Gui                 bool              `json:"gui"`
+	Disks               []*Disk           `json:"disks"`
+	DisksAvailable      bool              `json:"-"`
+	NetworkAdapters     []*NetworkAdapter `json:"network_adapters"`
+	CloudSubnet         string            `json:"cloud_subnet"`
+	CloudVnic           string            `json:"cloud_vnic"`
+	CloudVnicAttach     string            `json:"cloud_vnic_attach"`
+	CloudPrivateIp      string            `json:"cloud_private_ip"`
+	CloudPublicIp       string            `json:"cloud_public_ip"`
+	CloudPublicIp6      string            `json:"cloud_public_ip6"`
+	DhcpIp              string            `json:"dhcp_ip"`
+	DhcpIp6             string            `json:"dhcp_ip6"`
+	Uefi                bool              `json:"uefi"`
+	SecureBoot          bool              `json:"secure_boot"`
+	Tpm                 bool              `json:"tpm"`
+	DhcpServer          bool              `json:"dhcp_server"`
+	Deployment          bson.ObjectID     `json:"deployment"`
+	CloudType           string            `json:"cloud_type"`
+	NoPublicAddress     bool              `json:"no_public_address"`
+	NoPublicAddress6    bool              `json:"no_public_address6"`
+	NoHostAddress       bool              `json:"no_host_address"`
+	Isos                []*Iso            `json:"isos"`
+	UsbDevices          []*UsbDevice      `json:"usb_devices"`
+	UsbDevicesAvailable bool              `json:"-"`
+	PciDevices          []*PciDevice      `json:"pci_devices"`
+	DriveDevices        []*DriveDevice    `json:"drive_devices"`
+	IscsiDevices        []*IscsiDevice    `json:"iscsi_devices"`
+	Mounts              []*Mount          `json:"mounts"`
+	ImdsVersion         int               `json:"imds_version"`
+	ImdsClientSecret    string            `json:"-"`
+	ImdsDhcpSecret      string            `json:"imds_dhcp_secret"`
+	ImdsHostSecret      string            `json:"imds_host_secret"`
 }
 
 func (v *VirtualMachine) HasExternalNetwork() bool {
@@ -103,9 +102,9 @@ func (v *VirtualMachine) GenerateImdsSecret() (err error) {
 }
 
 type Disk struct {
-	Id    primitive.ObjectID `json:"id"`
-	Index int                `json:"index"`
-	Path  string             `json:"path"`
+	Id    bson.ObjectID `json:"id"`
+	Index int           `json:"index"`
+	Path  string        `json:"path"`
 }
 
 type Iso struct {
@@ -182,12 +181,12 @@ type Mount struct {
 	HostPath string `json:"host_path"`
 }
 
-func (d *Disk) GetId() primitive.ObjectID {
+func (d *Disk) GetId() bson.ObjectID {
 	idStr := strings.Split(path.Base(d.Path), ".")[0]
 
-	objId, err := primitive.ObjectIDFromHex(idStr)
+	objId, err := bson.ObjectIDFromHex(idStr)
 	if err != nil {
-		return primitive.NilObjectID
+		return bson.NilObjectID
 	}
 	return objId
 }
@@ -203,12 +202,12 @@ func (d *Disk) Copy() (dsk *Disk) {
 }
 
 type NetworkAdapter struct {
-	Type       string             `json:"type"`
-	MacAddress string             `json:"mac_address"`
-	Vpc        primitive.ObjectID `json:"vpc"`
-	Subnet     primitive.ObjectID `json:"subnet"`
-	IpAddress  string             `json:"ip_address,omitempty"`
-	IpAddress6 string             `json:"ip_address6,omitempty"`
+	Type       string        `json:"type"`
+	MacAddress string        `json:"mac_address"`
+	Vpc        bson.ObjectID `json:"vpc"`
+	Subnet     bson.ObjectID `json:"subnet"`
+	IpAddress  string        `json:"ip_address,omitempty"`
+	IpAddress6 string        `json:"ip_address6,omitempty"`
 }
 
 func (v *VirtualMachine) Commit(db *database.Database) (err error) {

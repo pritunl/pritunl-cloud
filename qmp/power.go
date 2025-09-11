@@ -4,11 +4,11 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 )
 
-func Shutdown(vmId primitive.ObjectID) (err error) {
+func Shutdown(vmId bson.ObjectID) (err error) {
 	cmd := &Command{
 		Execute: "system_powerdown",
 	}

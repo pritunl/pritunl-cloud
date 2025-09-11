@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -18,7 +18,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func GetDisks(vmId primitive.ObjectID) (disks []*vm.Disk, err error) {
+func GetDisks(vmId bson.ObjectID) (disks []*vm.Disk, err error) {
 	disks = []*vm.Disk{}
 
 	sockPath, err := GetSockPath(vmId)
@@ -130,7 +130,7 @@ func GetDisks(vmId primitive.ObjectID) (disks []*vm.Disk, err error) {
 
 			idStr := strings.Split(path.Base(diskPath), ".")[0]
 
-			diskId, err := primitive.ObjectIDFromHex(idStr)
+			diskId, err := bson.ObjectIDFromHex(idStr)
 			if err != nil {
 				continue
 			}
@@ -203,7 +203,7 @@ func GetDisks(vmId primitive.ObjectID) (disks []*vm.Disk, err error) {
 	return
 }
 
-func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk,
+func AddDisk(vmId bson.ObjectID, dsk *vm.Disk,
 	virt *vm.VirtualMachine) (err error) {
 
 	dskId := fmt.Sprintf("disk_%s", dsk.Id.Hex())
@@ -291,7 +291,7 @@ func AddDisk(vmId primitive.ObjectID, dsk *vm.Disk,
 	return
 }
 
-func RemoveDisk(vmId primitive.ObjectID, dsk *vm.Disk) (err error) {
+func RemoveDisk(vmId bson.ObjectID, dsk *vm.Disk) (err error) {
 	sockPath, err := GetSockPath(vmId)
 	if err != nil {
 		return

@@ -8,8 +8,7 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/demo"
@@ -20,15 +19,15 @@ import (
 )
 
 type vpcData struct {
-	Id            primitive.ObjectID `json:"id"`
-	Name          string             `json:"name"`
-	Comment       string             `json:"comment"`
-	Network       string             `json:"network"`
-	IcmpRedirects bool               `json:"icmp_redirects"`
-	Subnets       []*vpc.Subnet      `json:"subnets"`
-	Datacenter    primitive.ObjectID `json:"datacenter"`
-	Routes        []*vpc.Route       `json:"routes"`
-	Maps          []*vpc.Map         `json:"maps"`
+	Id            bson.ObjectID `json:"id"`
+	Name          string        `json:"name"`
+	Comment       string        `json:"comment"`
+	Network       string        `json:"network"`
+	IcmpRedirects bool          `json:"icmp_redirects"`
+	Subnets       []*vpc.Subnet `json:"subnets"`
+	Datacenter    bson.ObjectID `json:"datacenter"`
+	Routes        []*vpc.Route  `json:"routes"`
+	Maps          []*vpc.Map    `json:"maps"`
 }
 
 type vpcsData struct {
@@ -42,7 +41,7 @@ func vpcPut(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 	data := &vpcData{}
 
 	vpcId, ok := utils.ParseObjectId(c.Param("vpc_id"))
@@ -137,7 +136,7 @@ func vpcPost(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 	data := &vpcData{
 		Name: "New VPC",
 	}
@@ -202,7 +201,7 @@ func vpcDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	vpcId, ok := utils.ParseObjectId(c.Param("vpc_id"))
 	if !ok {
@@ -248,8 +247,8 @@ func vpcsDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
-	data := []primitive.ObjectID{}
+	userOrg := c.MustGet("organization").(bson.ObjectID)
+	data := []bson.ObjectID{}
 
 	err := c.Bind(&data)
 	if err != nil {
@@ -299,7 +298,7 @@ func vpcGet(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	vpcId, ok := utils.ParseObjectId(c.Param("vpc_id"))
 	if !ok {
@@ -326,7 +325,7 @@ func vpcRoutesGet(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	vpcId, ok := utils.ParseObjectId(c.Param("vpc_id"))
 	if !ok {
@@ -349,7 +348,7 @@ func vpcRoutesPut(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 	data := []*vpc.Route{}
 
 	vpcId, ok := utils.ParseObjectId(c.Param("vpc_id"))
@@ -412,7 +411,7 @@ func vpcsGet(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	if c.Query("names") == "true" {
 		query := &bson.M{

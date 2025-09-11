@@ -9,8 +9,7 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
@@ -33,17 +32,17 @@ import (
 )
 
 type instanceData struct {
-	Id                  primitive.ObjectID  `json:"id"`
-	Organization        primitive.ObjectID  `json:"organization"`
-	Zone                primitive.ObjectID  `json:"zone"`
-	Vpc                 primitive.ObjectID  `json:"vpc"`
-	Subnet              primitive.ObjectID  `json:"subnet"`
+	Id                  bson.ObjectID       `json:"id"`
+	Organization        bson.ObjectID       `json:"organization"`
+	Zone                bson.ObjectID       `json:"zone"`
+	Vpc                 bson.ObjectID       `json:"vpc"`
+	Subnet              bson.ObjectID       `json:"subnet"`
 	CloudSubnet         string              `json:"cloud_subnet"`
-	Shape               primitive.ObjectID  `json:"shape"`
-	Node                primitive.ObjectID  `json:"node"`
+	Shape               bson.ObjectID       `json:"shape"`
+	Node                bson.ObjectID       `json:"node"`
 	DiskType            string              `json:"disk_type"`
-	DiskPool            primitive.ObjectID  `json:"disk_pool"`
-	Image               primitive.ObjectID  `json:"image"`
+	DiskPool            bson.ObjectID       `json:"disk_pool"`
+	Image               bson.ObjectID       `json:"image"`
 	ImageBacking        bool                `json:"image_backing"`
 	Name                string              `json:"name"`
 	Comment             string              `json:"comment"`
@@ -78,8 +77,8 @@ type instanceData struct {
 }
 
 type instanceMultiData struct {
-	Ids    []primitive.ObjectID `json:"ids"`
-	Action string               `json:"action"`
+	Ids    []bson.ObjectID `json:"ids"`
+	Action string          `json:"action"`
 }
 
 type instancesData struct {
@@ -254,9 +253,9 @@ func instancePost(c *gin.Context) {
 	}
 
 	if !dta.Shape.IsZero() {
-		dta.Node = primitive.NilObjectID
+		dta.Node = bson.NilObjectID
 		dta.DiskType = ""
-		dta.DiskPool = primitive.NilObjectID
+		dta.DiskPool = bson.NilObjectID
 	} else {
 		nde, err := node.Get(db, dta.Node)
 		if err != nil {
@@ -519,7 +518,7 @@ func instancesDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	dta := []primitive.ObjectID{}
+	dta := []bson.ObjectID{}
 
 	err := c.Bind(&dta)
 	if err != nil {
@@ -632,7 +631,7 @@ func instancesGet(c *gin.Context) {
 			return
 		}
 
-		ndeIds := []primitive.ObjectID{}
+		ndeIds := []bson.ObjectID{}
 
 		for _, nde := range nodes {
 			ndeIds = append(ndeIds, nde.Id)

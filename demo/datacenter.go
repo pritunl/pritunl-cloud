@@ -1,7 +1,7 @@
 package demo
 
 import (
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/datacenter"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
@@ -12,15 +12,15 @@ var Datacenters = []*datacenter.Datacenter{
 		Name:               "us-west-1",
 		Comment:            "",
 		MatchOrganizations: false,
-		Organizations:      []primitive.ObjectID{},
+		Organizations:      []bson.ObjectID{},
 		NetworkMode:        "vxlan_vlan",
 		WgMode:             "",
-		PublicStorages: []primitive.ObjectID{
+		PublicStorages: []bson.ObjectID{
 			utils.ObjectIdHex("689733b7a7a35eae0dbaea15"),
 		},
-		PrivateStorage:      primitive.ObjectID{},
+		PrivateStorage:      bson.ObjectID{},
 		PrivateStorageClass: "",
-		BackupStorage:       primitive.ObjectID{},
+		BackupStorage:       bson.ObjectID{},
 		BackupStorageClass:  "",
 	},
 }

@@ -3,15 +3,14 @@ package domain
 import (
 	"time"
 
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/sirupsen/logrus"
 )
 
-func Refresh(db *database.Database, domnId primitive.ObjectID) {
+func Refresh(db *database.Database, domnId bson.ObjectID) {
 	coll := db.Domains()
 	domn := &Domain{}
 
@@ -51,7 +50,7 @@ func Refresh(db *database.Database, domnId primitive.ObjectID) {
 	return
 }
 
-func Get(db *database.Database, domnId primitive.ObjectID) (
+func Get(db *database.Database, domnId bson.ObjectID) (
 	domn *Domain, err error) {
 
 	coll := db.Domains()
@@ -65,7 +64,7 @@ func Get(db *database.Database, domnId primitive.ObjectID) (
 	return
 }
 
-func GetOrg(db *database.Database, orgId, domnId primitive.ObjectID) (
+func GetOrg(db *database.Database, orgId, domnId bson.ObjectID) (
 	domn *Domain, err error) {
 
 	coll := db.Domains()
@@ -96,7 +95,7 @@ func GetOne(db *database.Database, query *bson.M) (domn *Domain, err error) {
 	return
 }
 
-func ExistsOrg(db *database.Database, orgId, domnId primitive.ObjectID) (
+func ExistsOrg(db *database.Database, orgId, domnId bson.ObjectID) (
 	exists bool, err error) {
 
 	coll := db.Domains()
@@ -150,11 +149,11 @@ func GetAll(db *database.Database, query *bson.M) (
 	return
 }
 
-func GetLoadedAllIds(db *database.Database, domnIds []primitive.ObjectID) (
+func GetLoadedAllIds(db *database.Database, domnIds []bson.ObjectID) (
 	domns []*Domain, err error) {
 
 	coll := db.DomainsRecords()
-	domainRecs := map[primitive.ObjectID][]*Record{}
+	domainRecs := map[bson.ObjectID][]*Record{}
 
 	cursor, err := coll.Find(db, &bson.M{
 		"domain": &bson.M{
@@ -219,7 +218,7 @@ func GetLoadedAllIds(db *database.Database, domnIds []primitive.ObjectID) (
 }
 
 func PreloadedRecords(domns []*Domain, recs []*Record) []*Domain {
-	domainRecs := map[primitive.ObjectID][]*Record{}
+	domainRecs := map[bson.ObjectID][]*Record{}
 	for _, rec := range recs {
 		domainRecs[rec.Domain] = append(domainRecs[rec.Domain], rec)
 	}
@@ -306,12 +305,12 @@ func GetRecordAll(db *database.Database, query *bson.M) (
 	return
 }
 
-func Lock(db *database.Database, domnId primitive.ObjectID) (
-	lockId primitive.ObjectID, acquired bool, err error) {
+func Lock(db *database.Database, domnId bson.ObjectID) (
+	lockId bson.ObjectID, acquired bool, err error) {
 
 	coll := db.Domains()
 
-	newLockId := primitive.NewObjectID()
+	newLockId := bson.NewObjectID()
 	now := time.Now()
 	ttl := now.Add(-time.Duration(
 		settings.System.DomainLockTtl) * time.Second)
@@ -346,7 +345,7 @@ func Lock(db *database.Database, domnId primitive.ObjectID) (
 }
 
 func Relock(db *database.Database, domnId,
-	lockId primitive.ObjectID) (err error) {
+	lockId bson.ObjectID) (err error) {
 
 	coll := db.Domains()
 
@@ -371,7 +370,7 @@ func Relock(db *database.Database, domnId,
 }
 
 func Unlock(db *database.Database, domnId,
-	lockId primitive.ObjectID) (err error) {
+	lockId bson.ObjectID) (err error) {
 
 	coll := db.Domains()
 
@@ -398,7 +397,7 @@ func Unlock(db *database.Database, domnId,
 	return
 }
 
-func Remove(db *database.Database, domnId primitive.ObjectID) (err error) {
+func Remove(db *database.Database, domnId bson.ObjectID) (err error) {
 	coll := db.Domains()
 
 	_, err = coll.DeleteOne(db, &bson.M{
@@ -417,7 +416,7 @@ func Remove(db *database.Database, domnId primitive.ObjectID) (err error) {
 	return
 }
 
-func RemoveOrg(db *database.Database, orgId, domnId primitive.ObjectID) (
+func RemoveOrg(db *database.Database, orgId, domnId bson.ObjectID) (
 	err error) {
 
 	coll := db.Domains()
@@ -439,7 +438,7 @@ func RemoveOrg(db *database.Database, orgId, domnId primitive.ObjectID) (
 	return
 }
 
-func RemoveMulti(db *database.Database, domnIds []primitive.ObjectID) (err error) {
+func RemoveMulti(db *database.Database, domnIds []bson.ObjectID) (err error) {
 	coll := db.Domains()
 
 	_, err = coll.DeleteMany(db, &bson.M{
@@ -455,8 +454,8 @@ func RemoveMulti(db *database.Database, domnIds []primitive.ObjectID) (err error
 	return
 }
 
-func RemoveMultiOrg(db *database.Database, orgId primitive.ObjectID,
-	domnIds []primitive.ObjectID) (err error) {
+func RemoveMultiOrg(db *database.Database, orgId bson.ObjectID,
+	domnIds []bson.ObjectID) (err error) {
 
 	coll := db.Domains()
 

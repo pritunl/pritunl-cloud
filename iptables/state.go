@@ -1,7 +1,7 @@
 package iptables
 
 import (
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/firewall"
 	"github.com/pritunl/pritunl-cloud/instance"
@@ -20,7 +20,7 @@ func LoadState(nodeSelf *node.Node, vpcs []*vpc.Vpc,
 	firewalls map[string][]*firewall.Rule,
 	firewallMaps map[string][]*firewall.Mapping) (state *State) {
 
-	vpcsMap := map[primitive.ObjectID]*vpc.Vpc{}
+	vpcsMap := map[bson.ObjectID]*vpc.Vpc{}
 	for _, vc := range vpcs {
 		vpcsMap[vc.Id] = vc
 	}

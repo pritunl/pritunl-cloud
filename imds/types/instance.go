@@ -3,56 +3,56 @@ package types
 import (
 	"time"
 
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/instance"
 )
 
 type Instance struct {
-	Id                  primitive.ObjectID `json:"id"`
-	Organization        primitive.ObjectID `json:"organization"`
-	Zone                primitive.ObjectID `json:"zone"`
-	Vpc                 primitive.ObjectID `json:"vpc"`
-	Subnet              primitive.ObjectID `json:"subnet"`
-	CloudSubnet         string             `json:"cloud_subnet"`
-	CloudVnic           string             `json:"cloud_vnic"`
-	Image               primitive.ObjectID `json:"image"`
-	State               string             `json:"state"`
-	Timestamp           time.Time          `json:"timestamp"`
-	Action              string             `json:"action"`
-	Uefi                bool               `json:"uefi"`
-	SecureBoot          bool               `json:"secure_boot"`
-	Tpm                 bool               `json:"tpm"`
-	DhcpServer          bool               `json:"dhcp_server"`
-	CloudType           string             `json:"cloud_type"`
-	DeleteProtection    bool               `json:"delete_protection"`
-	SkipSourceDestCheck bool               `json:"skip_source_dest_check"`
-	QemuVersion         string             `json:"qemu_version"`
-	PublicIps           []string           `json:"public_ips"`
-	PublicIps6          []string           `json:"public_ips6"`
-	PrivateIps          []string           `json:"private_ips"`
-	PrivateIps6         []string           `json:"private_ips6"`
-	GatewayIps          []string           `json:"gateway_ips"`
-	GatewayIps6         []string           `json:"gateway_ips6"`
-	CloudPrivateIps     []string           `json:"cloud_private_ips"`
-	CloudPublicIps      []string           `json:"cloud_public_ips"`
-	CloudPublicIps6     []string           `json:"cloud_public_ips6"`
-	HostIps             []string           `json:"host_ips"`
-	NodePortIps         []string           `json:"node_port_ips"`
-	NetworkNamespace    string             `json:"network_namespace"`
-	NoPublicAddress     bool               `json:"no_public_address"`
-	NoPublicAddress6    bool               `json:"no_public_address6"`
-	NoHostAddress       bool               `json:"no_host_address"`
-	Node                primitive.ObjectID `json:"node"`
-	Shape               primitive.ObjectID `json:"shape"`
-	Name                string             `json:"name"`
-	RootEnabled         bool               `json:"root_enabled"`
-	Memory              int                `json:"memory"`
-	Processors          int                `json:"processors"`
-	Roles               []string           `json:"roles"`
-	Vnc                 bool               `json:"vnc"`
-	Spice               bool               `json:"spice"`
-	Gui                 bool               `json:"gui"`
-	Deployment          primitive.ObjectID `json:"deployment"`
+	Id                  bson.ObjectID `json:"id"`
+	Organization        bson.ObjectID `json:"organization"`
+	Zone                bson.ObjectID `json:"zone"`
+	Vpc                 bson.ObjectID `json:"vpc"`
+	Subnet              bson.ObjectID `json:"subnet"`
+	CloudSubnet         string        `json:"cloud_subnet"`
+	CloudVnic           string        `json:"cloud_vnic"`
+	Image               bson.ObjectID `json:"image"`
+	State               string        `json:"state"`
+	Timestamp           time.Time     `json:"timestamp"`
+	Action              string        `json:"action"`
+	Uefi                bool          `json:"uefi"`
+	SecureBoot          bool          `json:"secure_boot"`
+	Tpm                 bool          `json:"tpm"`
+	DhcpServer          bool          `json:"dhcp_server"`
+	CloudType           string        `json:"cloud_type"`
+	DeleteProtection    bool          `json:"delete_protection"`
+	SkipSourceDestCheck bool          `json:"skip_source_dest_check"`
+	QemuVersion         string        `json:"qemu_version"`
+	PublicIps           []string      `json:"public_ips"`
+	PublicIps6          []string      `json:"public_ips6"`
+	PrivateIps          []string      `json:"private_ips"`
+	PrivateIps6         []string      `json:"private_ips6"`
+	GatewayIps          []string      `json:"gateway_ips"`
+	GatewayIps6         []string      `json:"gateway_ips6"`
+	CloudPrivateIps     []string      `json:"cloud_private_ips"`
+	CloudPublicIps      []string      `json:"cloud_public_ips"`
+	CloudPublicIps6     []string      `json:"cloud_public_ips6"`
+	HostIps             []string      `json:"host_ips"`
+	NodePortIps         []string      `json:"node_port_ips"`
+	NetworkNamespace    string        `json:"network_namespace"`
+	NoPublicAddress     bool          `json:"no_public_address"`
+	NoPublicAddress6    bool          `json:"no_public_address6"`
+	NoHostAddress       bool          `json:"no_host_address"`
+	Node                bson.ObjectID `json:"node"`
+	Shape               bson.ObjectID `json:"shape"`
+	Name                string        `json:"name"`
+	RootEnabled         bool          `json:"root_enabled"`
+	Memory              int           `json:"memory"`
+	Processors          int           `json:"processors"`
+	Roles               []string      `json:"roles"`
+	Vnc                 bool          `json:"vnc"`
+	Spice               bool          `json:"spice"`
+	Gui                 bool          `json:"gui"`
+	Deployment          bson.ObjectID `json:"deployment"`
 }
 
 func NewInstance(inst *instance.Instance) *Instance {

@@ -2,9 +2,8 @@ package instance
 
 import (
 	"github.com/dropbox/godropbox/container/set"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/disk"
@@ -15,7 +14,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func Get(db *database.Database, instId primitive.ObjectID) (
+func Get(db *database.Database, instId bson.ObjectID) (
 	inst *Instance, err error) {
 
 	coll := db.Instances()
@@ -29,7 +28,7 @@ func Get(db *database.Database, instId primitive.ObjectID) (
 	return
 }
 
-func GetOrg(db *database.Database, orgId, instId primitive.ObjectID) (
+func GetOrg(db *database.Database, orgId, instId bson.ObjectID) (
 	inst *Instance, err error) {
 
 	coll := db.Instances()
@@ -86,7 +85,7 @@ func ExistsIp(db *database.Database, addr string) (exists bool, err error) {
 	return
 }
 
-func ExistsOrg(db *database.Database, orgId, instId primitive.ObjectID) (
+func ExistsOrg(db *database.Database, orgId, instId bson.ObjectID) (
 	exists bool, err error) {
 
 	coll := db.Instances()
@@ -182,12 +181,12 @@ func GetAllVirt(db *database.Database, query *bson.M,
 	pools []*pool.Pool, disks []*disk.Disk) (
 	insts []*Instance, err error) {
 
-	poolsMap := map[primitive.ObjectID]*pool.Pool{}
+	poolsMap := map[bson.ObjectID]*pool.Pool{}
 	for _, pl := range pools {
 		poolsMap[pl.Id] = pl
 	}
 
-	instanceDisks := map[primitive.ObjectID][]*disk.Disk{}
+	instanceDisks := map[bson.ObjectID][]*disk.Disk{}
 	if disks != nil {
 		for _, dsk := range disks {
 			if dsk.Action == disk.Destroy {
@@ -244,7 +243,7 @@ func GetAllVirt(db *database.Database, query *bson.M,
 }
 
 func GetAllVirtMapped(db *database.Database, query *bson.M,
-	pools []*pool.Pool, instanceDisks map[primitive.ObjectID][]*disk.Disk) (
+	pools []*pool.Pool, instanceDisks map[bson.ObjectID][]*disk.Disk) (
 	insts []*Instance, err error) {
 
 	coll := db.Instances()
@@ -257,7 +256,7 @@ func GetAllVirtMapped(db *database.Database, query *bson.M,
 	}
 	defer cursor.Close(db)
 
-	poolsMap := map[primitive.ObjectID]*pool.Pool{}
+	poolsMap := map[bson.ObjectID]*pool.Pool{}
 	for _, pl := range pools {
 		poolsMap[pl.Id] = pl
 	}
@@ -307,9 +306,9 @@ func GetAllVirtMapped(db *database.Database, query *bson.M,
 }
 
 func LoadAllVirt(insts []*Instance, pools []*pool.Pool,
-	instanceDisks map[primitive.ObjectID][]*disk.Disk) []*Instance {
+	instanceDisks map[bson.ObjectID][]*disk.Disk) []*Instance {
 
-	poolsMap := map[primitive.ObjectID]*pool.Pool{}
+	poolsMap := map[bson.ObjectID]*pool.Pool{}
 	for _, pl := range pools {
 		poolsMap[pl.Id] = pl
 	}
@@ -443,7 +442,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	return
 }
 
-func Remove(db *database.Database, instId primitive.ObjectID) (err error) {
+func Remove(db *database.Database, instId bson.ObjectID) (err error) {
 	inst, err := Get(db, instId)
 	if err != nil {
 		return
@@ -491,7 +490,7 @@ func Remove(db *database.Database, instId primitive.ObjectID) (err error) {
 	return
 }
 
-func Delete(db *database.Database, instId primitive.ObjectID) (err error) {
+func Delete(db *database.Database, instId bson.ObjectID) (err error) {
 	coll := db.Instances()
 
 	err = coll.UpdateId(instId, &bson.M{
@@ -507,7 +506,7 @@ func Delete(db *database.Database, instId primitive.ObjectID) (err error) {
 	return
 }
 
-func DeleteOrg(db *database.Database, orgId, instId primitive.ObjectID) (
+func DeleteOrg(db *database.Database, orgId, instId bson.ObjectID) (
 	err error) {
 
 	coll := db.Instances()
@@ -526,7 +525,7 @@ func DeleteOrg(db *database.Database, orgId, instId primitive.ObjectID) (
 	return
 }
 
-func DeleteMulti(db *database.Database, instIds []primitive.ObjectID) (
+func DeleteMulti(db *database.Database, instIds []bson.ObjectID) (
 	err error) {
 
 	coll := db.Instances()
@@ -551,8 +550,8 @@ func DeleteMulti(db *database.Database, instIds []primitive.ObjectID) (
 	return
 }
 
-func DeleteMultiOrg(db *database.Database, orgId primitive.ObjectID,
-	instIds []primitive.ObjectID) (err error) {
+func DeleteMultiOrg(db *database.Database, orgId bson.ObjectID,
+	instIds []bson.ObjectID) (err error) {
 
 	coll := db.Instances()
 
@@ -577,7 +576,7 @@ func DeleteMultiOrg(db *database.Database, orgId primitive.ObjectID,
 	return
 }
 
-func UpdateMulti(db *database.Database, instIds []primitive.ObjectID,
+func UpdateMulti(db *database.Database, instIds []bson.ObjectID,
 	doc *bson.M) (err error) {
 
 	coll := db.Instances()
@@ -608,8 +607,8 @@ func UpdateMulti(db *database.Database, instIds []primitive.ObjectID,
 	return
 }
 
-func UpdateMultiOrg(db *database.Database, orgId primitive.ObjectID,
-	instIds []primitive.ObjectID, doc *bson.M) (err error) {
+func UpdateMultiOrg(db *database.Database, orgId bson.ObjectID,
+	instIds []bson.ObjectID, doc *bson.M) (err error) {
 
 	coll := db.Instances()
 
@@ -640,7 +639,7 @@ func UpdateMultiOrg(db *database.Database, orgId primitive.ObjectID,
 	return
 }
 
-func SetAction(db *database.Database, instId primitive.ObjectID,
+func SetAction(db *database.Database, instId bson.ObjectID,
 	action string) (err error) {
 
 	coll := db.Instances()
@@ -664,7 +663,7 @@ func SetAction(db *database.Database, instId primitive.ObjectID,
 }
 
 func SetDownloadProgress(db *database.Database,
-	instId primitive.ObjectID, progress int, speedMb float64) (err error) {
+	instId bson.ObjectID, progress int, speedMb float64) (err error) {
 
 	coll := db.Instances()
 

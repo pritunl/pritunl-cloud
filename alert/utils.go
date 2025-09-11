@@ -2,14 +2,13 @@ package alert
 
 import (
 	"github.com/dropbox/godropbox/container/set"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
-func Get(db *database.Database, alertId primitive.ObjectID) (
+func Get(db *database.Database, alertId bson.ObjectID) (
 	alrt *Alert, err error) {
 
 	coll := db.Alerts()
@@ -23,7 +22,7 @@ func Get(db *database.Database, alertId primitive.ObjectID) (
 	return
 }
 
-func GetOrg(db *database.Database, orgId, alertId primitive.ObjectID) (
+func GetOrg(db *database.Database, orgId, alertId bson.ObjectID) (
 	alrt *Alert, err error) {
 
 	coll := db.Alerts()
@@ -41,7 +40,7 @@ func GetOrg(db *database.Database, orgId, alertId primitive.ObjectID) (
 	return
 }
 
-func GetMulti(db *database.Database, alertIds []primitive.ObjectID) (
+func GetMulti(db *database.Database, alertIds []bson.ObjectID) (
 	alerts []*Alert, err error) {
 
 	coll := db.Alerts()
@@ -249,7 +248,7 @@ func GetRolesMapped(db *database.Database, rolesSet set.Set) (
 }
 
 func Remove(db *database.Database,
-	alertId primitive.ObjectID) (err error) {
+	alertId bson.ObjectID) (err error) {
 
 	coll := db.Alerts()
 
@@ -264,7 +263,7 @@ func Remove(db *database.Database,
 	return
 }
 
-func RemoveOrg(db *database.Database, orgId, alertId primitive.ObjectID) (
+func RemoveOrg(db *database.Database, orgId, alertId bson.ObjectID) (
 	err error) {
 
 	coll := db.Alerts()
@@ -286,7 +285,7 @@ func RemoveOrg(db *database.Database, orgId, alertId primitive.ObjectID) (
 	return
 }
 
-func RemoveMulti(db *database.Database, alertIds []primitive.ObjectID) (
+func RemoveMulti(db *database.Database, alertIds []bson.ObjectID) (
 	err error) {
 
 	coll := db.Alerts()
@@ -304,8 +303,8 @@ func RemoveMulti(db *database.Database, alertIds []primitive.ObjectID) (
 	return
 }
 
-func RemoveMultiOrg(db *database.Database, orgId primitive.ObjectID,
-	alertIds []primitive.ObjectID) (err error) {
+func RemoveMultiOrg(db *database.Database, orgId bson.ObjectID,
+	alertIds []bson.ObjectID) (err error) {
 
 	coll := db.Alerts()
 

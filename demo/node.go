@@ -3,7 +3,7 @@ package demo
 import (
 	"time"
 
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/cloud"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/drive"
@@ -33,7 +33,7 @@ var Nodes = []*node.Node{
 		Gui:                  false,
 		GuiUser:              "",
 		GuiMode:              "",
-		Certificates:         []primitive.ObjectID{},
+		Certificates:         []bson.ObjectID{},
 		AdminDomain:          "",
 		UserDomain:           "",
 		WebauthnDomain:       "",
@@ -73,7 +73,7 @@ var Nodes = []*node.Node{
 				Block:     utils.ObjectIdHex("68973a47b5844593cf99cc7a"),
 			},
 		},
-		Pools:  []primitive.ObjectID{},
+		Pools:  []bson.ObjectID{},
 		Shares: []*node.Share{},
 		AvailableDrives: []*drive.Device{
 			{Id: "nvme-INTEL_27Z1P0FGN"},
@@ -155,7 +155,7 @@ fZBwlSVEDrK+X21ocJc+8VGbbLhXBvMEdqXzs1bbFzFHow8TjduxDNTbntIRpo6W
 		Gui:                  false,
 		GuiUser:              "",
 		GuiMode:              "",
-		Certificates:         []primitive.ObjectID{},
+		Certificates:         []bson.ObjectID{},
 		AdminDomain:          "",
 		UserDomain:           "",
 		WebauthnDomain:       "",
@@ -195,7 +195,7 @@ fZBwlSVEDrK+X21ocJc+8VGbbLhXBvMEdqXzs1bbFzFHow8TjduxDNTbntIRpo6W
 				Block:     utils.ObjectIdHex("68973a47b5844593cf99cc7a"),
 			},
 		},
-		Pools:  []primitive.ObjectID{},
+		Pools:  []bson.ObjectID{},
 		Shares: []*node.Share{},
 		AvailableDrives: []*drive.Device{
 			{Id: "nvme-INTEL_27Z1P0FGN"},
@@ -277,7 +277,7 @@ PwIDAQAB
 		Gui:                  false,
 		GuiUser:              "",
 		GuiMode:              "",
-		Certificates:         []primitive.ObjectID{},
+		Certificates:         []bson.ObjectID{},
 		AdminDomain:          "",
 		UserDomain:           "",
 		WebauthnDomain:       "",
@@ -317,7 +317,7 @@ PwIDAQAB
 				Block:     utils.ObjectIdHex("68973a47b5844593cf99cc7a"),
 			},
 		},
-		Pools:  []primitive.ObjectID{},
+		Pools:  []bson.ObjectID{},
 		Shares: []*node.Share{},
 		AvailableDrives: []*drive.Device{
 			{Id: "nvme-INTEL_27Z1P0FGN"},
@@ -399,7 +399,7 @@ KwIDAQAB
 		Gui:                  false,
 		GuiUser:              "",
 		GuiMode:              "",
-		Certificates:         []primitive.ObjectID{},
+		Certificates:         []bson.ObjectID{},
 		AdminDomain:          "",
 		UserDomain:           "",
 		WebauthnDomain:       "",
@@ -439,7 +439,7 @@ KwIDAQAB
 				Block:     utils.ObjectIdHex("68973a47b5844593cf99cc7a"),
 			},
 		},
-		Pools:  []primitive.ObjectID{},
+		Pools:  []bson.ObjectID{},
 		Shares: []*node.Share{},
 		AvailableDrives: []*drive.Device{
 			{Id: "nvme-INTEL_27Z1P0FGN"},
@@ -521,7 +521,7 @@ FwIDAQAB
 		Gui:                  false,
 		GuiUser:              "",
 		GuiMode:              "",
-		Certificates:         []primitive.ObjectID{},
+		Certificates:         []bson.ObjectID{},
 		AdminDomain:          "",
 		UserDomain:           "",
 		WebauthnDomain:       "",
@@ -561,7 +561,7 @@ FwIDAQAB
 				Block:     utils.ObjectIdHex("68973a47b5844593cf99cc7a"),
 			},
 		},
-		Pools:  []primitive.ObjectID{},
+		Pools:  []bson.ObjectID{},
 		Shares: []*node.Share{},
 		AvailableDrives: []*drive.Device{
 			{Id: "nvme-INTEL_27Z1P0FGN"},
@@ -643,7 +643,7 @@ RwIDAQAB
 		Gui:                  false,
 		GuiUser:              "",
 		GuiMode:              "",
-		Certificates:         []primitive.ObjectID{},
+		Certificates:         []bson.ObjectID{},
 		AdminDomain:          "",
 		UserDomain:           "",
 		WebauthnDomain:       "",
@@ -683,7 +683,7 @@ RwIDAQAB
 				Block:     utils.ObjectIdHex("68973a47b5844593cf99cc7a"),
 			},
 		},
-		Pools:  []primitive.ObjectID{},
+		Pools:  []bson.ObjectID{},
 		Shares: []*node.Share{},
 		AvailableDrives: []*drive.Device{
 			{Id: "nvme-INTEL_27Z1P0FGN"},

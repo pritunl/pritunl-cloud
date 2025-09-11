@@ -2,8 +2,7 @@ package uhandlers
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/authorizer"
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/certificate"
@@ -212,7 +211,7 @@ func completionGet(c *gin.Context) {
 		return
 	}
 
-	var userOrg primitive.ObjectID
+	var userOrg bson.ObjectID
 	orgIdStr := c.GetHeader("Organization")
 
 	if orgIdStr != "" {

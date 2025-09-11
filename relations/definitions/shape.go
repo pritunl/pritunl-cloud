@@ -3,7 +3,7 @@ package definitions
 import (
 	"time"
 
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/relations"
 	"github.com/pritunl/pritunl-cloud/systemd"
@@ -153,7 +153,7 @@ var Shape = relations.Query{
 					return "-"
 				}
 
-				if mongoTime, ok := val.(primitive.DateTime); ok {
+				if mongoTime, ok := val.(bson.DateTime); ok {
 					valTime := mongoTime.Time()
 					return systemd.FormatUptimeShort(valTime)
 				}

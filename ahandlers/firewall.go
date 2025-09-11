@@ -8,8 +8,7 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/event"
@@ -19,12 +18,12 @@ import (
 )
 
 type firewallData struct {
-	Id           primitive.ObjectID `json:"id"`
-	Name         string             `json:"name"`
-	Comment      string             `json:"comment"`
-	Organization primitive.ObjectID `json:"organization"`
-	Roles        []string           `json:"roles"`
-	Ingress      []*firewall.Rule   `json:"ingress"`
+	Id           bson.ObjectID    `json:"id"`
+	Name         string           `json:"name"`
+	Comment      string           `json:"comment"`
+	Organization bson.ObjectID    `json:"organization"`
+	Roles        []string         `json:"roles"`
+	Ingress      []*firewall.Rule `json:"ingress"`
 }
 
 type firewallsData struct {
@@ -181,7 +180,7 @@ func firewallsDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	data := []primitive.ObjectID{}
+	data := []bson.ObjectID{}
 
 	err := c.Bind(&data)
 	if err != nil {

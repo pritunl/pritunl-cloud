@@ -1,14 +1,13 @@
 package policy
 
 import (
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
-func Get(db *database.Database, policyId primitive.ObjectID) (
+func Get(db *database.Database, policyId bson.ObjectID) (
 	polcy *Policy, err error) {
 
 	coll := db.Policies()
@@ -22,7 +21,7 @@ func Get(db *database.Database, policyId primitive.ObjectID) (
 	return
 }
 
-func GetService(db *database.Database, podId primitive.ObjectID) (
+func GetService(db *database.Database, podId bson.ObjectID) (
 	policies []*Policy, err error) {
 
 	coll := db.Policies()
@@ -202,7 +201,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	return
 }
 
-func Remove(db *database.Database, policyId primitive.ObjectID) (err error) {
+func Remove(db *database.Database, policyId bson.ObjectID) (err error) {
 	coll := db.Policies()
 
 	_, err = coll.DeleteMany(db, &bson.M{
@@ -216,7 +215,7 @@ func Remove(db *database.Database, policyId primitive.ObjectID) (err error) {
 	return
 }
 
-func RemoveMulti(db *database.Database, polcyIds []primitive.ObjectID) (
+func RemoveMulti(db *database.Database, polcyIds []bson.ObjectID) (
 	err error) {
 
 	coll := db.Policies()

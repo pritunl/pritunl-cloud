@@ -2,8 +2,7 @@ package task
 
 import (
 	"github.com/dropbox/godropbox/container/set"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/data"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/event"
@@ -24,7 +23,7 @@ var storageSync = &Task{
 func storageSyncHandler(db *database.Database) (err error) {
 	coll := db.Images()
 
-	imgStoreIdsList := []primitive.ObjectID{}
+	imgStoreIdsList := []bson.ObjectID{}
 
 	storeIdsInf, err := coll.Distinct(
 		db,
@@ -37,7 +36,7 @@ func storageSyncHandler(db *database.Database) (err error) {
 	}
 
 	for _, storeIdInf := range storeIdsInf {
-		if storeId, ok := storeIdInf.(primitive.ObjectID); ok {
+		if storeId, ok := storeIdInf.(bson.ObjectID); ok {
 			imgStoreIdsList = append(imgStoreIdsList, storeId)
 		}
 	}
@@ -68,9 +67,9 @@ func storageSyncHandler(db *database.Database) (err error) {
 
 	imgStoreIds.Subtract(storeIds)
 
-	remStoreIds := []primitive.ObjectID{}
+	remStoreIds := []bson.ObjectID{}
 	for storeIdInf := range imgStoreIds.Iter() {
-		storeId := storeIdInf.(primitive.ObjectID)
+		storeId := storeIdInf.(bson.ObjectID)
 
 		logrus.WithFields(logrus.Fields{
 			"storage_id": storeId.Hex(),

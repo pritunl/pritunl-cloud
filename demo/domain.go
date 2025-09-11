@@ -3,7 +3,7 @@ package demo
 import (
 	"time"
 
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/aggregate"
 	"github.com/pritunl/pritunl-cloud/domain"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -19,7 +19,7 @@ var Domains = []*aggregate.Domain{
 			Type:          "cloudflare",
 			Secret:        utils.ObjectIdHex("67b89e8d4866ba90e6c459ba"),
 			RootDomain:    "pritunl.com",
-			LockId:        primitive.ObjectID{},
+			LockId:        bson.ObjectID{},
 			LockTimestamp: time.Time{},
 			LastUpdate:    time.Now(),
 		},
@@ -27,7 +27,7 @@ var Domains = []*aggregate.Domain{
 			{
 				Id:              utils.ObjectIdHex("68076c9f06fd0087c078dfdc"),
 				Domain:          utils.ObjectIdHex("67b8a1d24866ba90e6c45b5b"),
-				Resource:        primitive.ObjectID{},
+				Resource:        bson.ObjectID{},
 				Deployment:      utils.ObjectIdHex("68076bb954e947708aa6d651"),
 				Timestamp:       time.Now(),
 				DeleteTimestamp: time.Time{},
@@ -39,7 +39,7 @@ var Domains = []*aggregate.Domain{
 			{
 				Id:              utils.ObjectIdHex("68076ca306fd0087c078dfdd"),
 				Domain:          utils.ObjectIdHex("67b8a1d24866ba90e6c45b5b"),
-				Resource:        primitive.ObjectID{},
+				Resource:        bson.ObjectID{},
 				Deployment:      utils.ObjectIdHex("68076bb954e947708aa6d651"),
 				Timestamp:       time.Now(),
 				DeleteTimestamp: time.Time{},
@@ -51,7 +51,7 @@ var Domains = []*aggregate.Domain{
 			{
 				Id:              utils.ObjectIdHex("68076ca406fd0087c078dfde"),
 				Domain:          utils.ObjectIdHex("67b8a1d24866ba90e6c45b5b"),
-				Resource:        primitive.ObjectID{},
+				Resource:        bson.ObjectID{},
 				Deployment:      utils.ObjectIdHex("68076bb954e947708aa6d651"),
 				Timestamp:       time.Now(),
 				DeleteTimestamp: time.Time{},
@@ -63,7 +63,7 @@ var Domains = []*aggregate.Domain{
 			{
 				Id:              utils.ObjectIdHex("6813705806fd0087c078dfe1"),
 				Domain:          utils.ObjectIdHex("67b8a1d24866ba90e6c45b5b"),
-				Resource:        primitive.ObjectID{},
+				Resource:        bson.ObjectID{},
 				Deployment:      utils.ObjectIdHex("68136f7d43b4ac1351f54f0a"),
 				Timestamp:       time.Now(),
 				DeleteTimestamp: time.Time{},
@@ -75,7 +75,7 @@ var Domains = []*aggregate.Domain{
 			{
 				Id:              utils.ObjectIdHex("681e01394230fad44c6a5140"),
 				Domain:          utils.ObjectIdHex("67b8a1d24866ba90e6c45b5b"),
-				Resource:        primitive.ObjectID{},
+				Resource:        bson.ObjectID{},
 				Deployment:      utils.ObjectIdHex("681e01308d67187e275a847a"),
 				Timestamp:       time.Now(),
 				DeleteTimestamp: time.Time{},
@@ -87,7 +87,7 @@ var Domains = []*aggregate.Domain{
 			{
 				Id:              utils.ObjectIdHex("683e86d74230fad44c6a514d"),
 				Domain:          utils.ObjectIdHex("67b8a1d24866ba90e6c45b5b"),
-				Resource:        primitive.ObjectID{},
+				Resource:        bson.ObjectID{},
 				Deployment:      utils.ObjectIdHex("683dcdf13249b43a9cc5ec70"),
 				Timestamp:       time.Now(),
 				DeleteTimestamp: time.Time{},

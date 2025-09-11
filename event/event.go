@@ -5,10 +5,9 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
 	"github.com/pritunl/mongo-go-driver/mongo"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/requires"
@@ -20,21 +19,21 @@ var (
 )
 
 type Event struct {
-	Id        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Channel   string             `bson:"channel" json:"channel"`
-	Timestamp time.Time          `bson:"timestamp" json:"timestamp"`
-	Data      bson.M             `bson:"data" json:"data"`
+	Id        bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Channel   string        `bson:"channel" json:"channel"`
+	Timestamp time.Time     `bson:"timestamp" json:"timestamp"`
+	Data      bson.M        `bson:"data" json:"data"`
 }
 
 type EventPublish struct {
-	Id        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Channel   string             `bson:"channel" json:"channel"`
-	Timestamp time.Time          `bson:"timestamp" json:"timestamp"`
-	Data      interface{}        `bson:"data" json:"data"`
+	Id        bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	Channel   string        `bson:"channel" json:"channel"`
+	Timestamp time.Time     `bson:"timestamp" json:"timestamp"`
+	Data      interface{}   `bson:"data" json:"data"`
 }
 
 type CustomEvent interface {
-	GetId() primitive.ObjectID
+	GetId() bson.ObjectID
 	GetData() interface{}
 }
 
@@ -43,7 +42,7 @@ type Dispatch struct {
 }
 
 func getCursorId(db *database.Database, coll *database.Collection,
-	channels []string) (id primitive.ObjectID, err error) {
+	channels []string) (id bson.ObjectID, err error) {
 
 	msg := &EventPublish{}
 
@@ -98,7 +97,7 @@ func getCursorId(db *database.Database, coll *database.Collection,
 	return
 }
 
-func getCursorIdRetry(channels []string) primitive.ObjectID {
+func getCursorIdRetry(channels []string) bson.ObjectID {
 	db := database.GetDatabase()
 	defer db.Close()
 
@@ -131,7 +130,7 @@ func Publish(db *database.Database, channel string, data interface{}) (
 	coll := db.Events()
 
 	msg := &EventPublish{
-		Id:        primitive.NewObjectID(),
+		Id:        bson.NewObjectID(),
 		Channel:   channel,
 		Timestamp: time.Now(),
 		Data:      data,

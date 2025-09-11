@@ -3,24 +3,24 @@ package types
 import (
 	"fmt"
 
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/vpc"
 )
 
 type Vpc struct {
-	Id       primitive.ObjectID `json:"id"`
-	Name     string             `json:"name"`
-	VpcId    int                `json:"vpc_id"`
-	Network  string             `json:"network"`
-	Network6 string             `json:"network6"`
-	Subnets  []*Subnet          `json:"subnets"`
-	Routes   []*Route           `json:"routes"`
+	Id       bson.ObjectID `json:"id"`
+	Name     string        `json:"name"`
+	VpcId    int           `json:"vpc_id"`
+	Network  string        `json:"network"`
+	Network6 string        `json:"network6"`
+	Subnets  []*Subnet     `json:"subnets"`
+	Routes   []*Route      `json:"routes"`
 }
 
 type Subnet struct {
-	Id      primitive.ObjectID `json:"id"`
-	Name    string             `json:"name"`
-	Network string             `json:"network"`
+	Id      bson.ObjectID `json:"id"`
+	Name    string        `json:"name"`
+	Network string        `json:"network"`
 }
 
 func (s *Subnet) String() string {

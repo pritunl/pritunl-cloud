@@ -1,13 +1,12 @@
 package upgrade
 
 import (
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 )
 
 func objectIdUpgrade(db *database.Database) (err error) {
-	nilObjectID := primitive.NilObjectID
+	nilObjectID := bson.NilObjectID
 
 	coll := db.Alerts()
 	_, err = coll.UpdateMany(db, bson.M{

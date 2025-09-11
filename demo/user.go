@@ -3,7 +3,7 @@ package demo
 import (
 	"time"
 
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/audit"
 	"github.com/pritunl/pritunl-cloud/session"
 	"github.com/pritunl/pritunl-cloud/user"
@@ -15,7 +15,7 @@ var Users = []*user.User{
 	&user.User{
 		Id:            utils.ObjectIdHex("5b6cd11857e4a9a88cbf072e"),
 		Type:          "local",
-		Provider:      primitive.ObjectID{},
+		Provider:      bson.ObjectID{},
 		Username:      "demo",
 		Token:         "",
 		Secret:        "",
@@ -30,7 +30,7 @@ var Users = []*user.User{
 	&user.User{
 		Id:            utils.ObjectIdHex("5a7542190accad1a8a53b568"),
 		Type:          "local",
-		Provider:      primitive.ObjectID{},
+		Provider:      bson.ObjectID{},
 		Username:      "pritunl",
 		Token:         "",
 		Secret:        "",

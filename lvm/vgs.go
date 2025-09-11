@@ -6,8 +6,7 @@ import (
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/pool"
@@ -37,7 +36,7 @@ type vgDetails struct {
 	VgFree    string `json:"vg_free"`
 }
 
-func GetAvailablePools(db *database.Database, zoneId primitive.ObjectID) (
+func GetAvailablePools(db *database.Database, zoneId bson.ObjectID) (
 	availablePools []*pool.Pool, err error) {
 
 	if time.Since(cachedNodePoolsTimestamp) < 30*time.Second {

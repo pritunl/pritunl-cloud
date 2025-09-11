@@ -1,14 +1,13 @@
 package plan
 
 import (
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
-func Get(db *database.Database, plnId primitive.ObjectID) (
+func Get(db *database.Database, plnId bson.ObjectID) (
 	pln *Plan, err error) {
 
 	coll := db.Plans()
@@ -22,7 +21,7 @@ func Get(db *database.Database, plnId primitive.ObjectID) (
 	return
 }
 
-func GetOrg(db *database.Database, orgId, plnId primitive.ObjectID) (
+func GetOrg(db *database.Database, orgId, plnId bson.ObjectID) (
 	pln *Plan, err error) {
 
 	coll := db.Plans()
@@ -40,7 +39,7 @@ func GetOrg(db *database.Database, orgId, plnId primitive.ObjectID) (
 	return
 }
 
-func ExistsOrg(db *database.Database, orgId, plnId primitive.ObjectID) (
+func ExistsOrg(db *database.Database, orgId, plnId bson.ObjectID) (
 	exists bool, err error) {
 
 	coll := db.Plans()
@@ -209,7 +208,7 @@ func GetAllName(db *database.Database, query *bson.M) (
 	return
 }
 
-func Remove(db *database.Database, plnId primitive.ObjectID) (err error) {
+func Remove(db *database.Database, plnId bson.ObjectID) (err error) {
 	coll := db.Plans()
 
 	_, err = coll.DeleteOne(db, &bson.M{
@@ -228,7 +227,7 @@ func Remove(db *database.Database, plnId primitive.ObjectID) (err error) {
 	return
 }
 
-func RemoveOrg(db *database.Database, orgId, plnId primitive.ObjectID) (
+func RemoveOrg(db *database.Database, orgId, plnId bson.ObjectID) (
 	err error) {
 
 	coll := db.Plans()
@@ -250,7 +249,7 @@ func RemoveOrg(db *database.Database, orgId, plnId primitive.ObjectID) (
 	return
 }
 
-func RemoveMulti(db *database.Database, plnIds []primitive.ObjectID) (err error) {
+func RemoveMulti(db *database.Database, plnIds []bson.ObjectID) (err error) {
 	coll := db.Plans()
 
 	_, err = coll.DeleteMany(db, &bson.M{
@@ -266,8 +265,8 @@ func RemoveMulti(db *database.Database, plnIds []primitive.ObjectID) (err error)
 	return
 }
 
-func RemoveMultiOrg(db *database.Database, orgId primitive.ObjectID,
-	plnIds []primitive.ObjectID) (err error) {
+func RemoveMultiOrg(db *database.Database, orgId bson.ObjectID,
+	plnIds []bson.ObjectID) (err error) {
 
 	coll := db.Plans()
 

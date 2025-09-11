@@ -8,14 +8,14 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/permission"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/sirupsen/logrus"
 )
 
-func GetUsbDevices(vmId primitive.ObjectID) (
+func GetUsbDevices(vmId bson.ObjectID) (
 	devices []*vm.UsbDevice, err error) {
 
 	sockPath, err := GetSockPath(vmId)

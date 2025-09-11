@@ -4,9 +4,8 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
@@ -14,24 +13,24 @@ import (
 )
 
 type Scheduler struct {
-	Id            primitive.ObjectID         `bson:"_id" json:"id"`
-	Kind          string                     `bson:"kind" json:"kind"`
-	Created       time.Time                  `bson:"created" json:"created"`
-	Modified      time.Time                  `bson:"modified" json:"modified"`
-	Count         int                        `bson:"count" json:"count"`
-	Spec          primitive.ObjectID         `bson:"spec" json:"spec"`
-	OverrideCount int                        `bson:"override_count" json:"override_count"`
-	Consumed      int                        `bson:"consumed" json:"consumed"`
-	Tickets       TicketsStore               `bson:"tickets" json:"tickets"`
-	Failures      map[primitive.ObjectID]int `bson:"failures" json:"failures"`
+	Id            bson.ObjectID         `bson:"_id" json:"id"`
+	Kind          string                `bson:"kind" json:"kind"`
+	Created       time.Time             `bson:"created" json:"created"`
+	Modified      time.Time             `bson:"modified" json:"modified"`
+	Count         int                   `bson:"count" json:"count"`
+	Spec          bson.ObjectID         `bson:"spec" json:"spec"`
+	OverrideCount int                   `bson:"override_count" json:"override_count"`
+	Consumed      int                   `bson:"consumed" json:"consumed"`
+	Tickets       TicketsStore          `bson:"tickets" json:"tickets"`
+	Failures      map[bson.ObjectID]int `bson:"failures" json:"failures"`
 }
 
 type Ticket struct {
-	Node   primitive.ObjectID `bson:"n" json:"n"`
-	Offset int                `bson:"t" json:"t"`
+	Node   bson.ObjectID `bson:"n" json:"n"`
+	Offset int           `bson:"t" json:"t"`
 }
 
-type TicketsStore map[primitive.ObjectID][]*Ticket
+type TicketsStore map[bson.ObjectID][]*Ticket
 
 func (s *Scheduler) Refresh(db *database.Database) (exists bool, err error) {
 	coll := db.Schedulers()
@@ -94,7 +93,7 @@ func (s *Scheduler) Failure(db *database.Database) (limit bool, err error) {
 	schd := &Scheduler{}
 
 	if s.Failures == nil {
-		s.Failures = map[primitive.ObjectID]int{}
+		s.Failures = map[bson.ObjectID]int{}
 	}
 	s.Failures[node.Self.Id] += 1
 

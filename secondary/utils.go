@@ -4,15 +4,14 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
-func New(db *database.Database, userId primitive.ObjectID, typ string,
-	proivderId primitive.ObjectID) (secd *Secondary, err error) {
+func New(db *database.Database, userId bson.ObjectID, typ string,
+	proivderId bson.ObjectID) (secd *Secondary, err error) {
 
 	token, err := utils.RandStr(64)
 	if err != nil {

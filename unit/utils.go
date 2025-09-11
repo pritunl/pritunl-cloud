@@ -3,13 +3,12 @@ package unit
 import (
 	"time"
 
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 )
 
-func Get(db *database.Database, unitId primitive.ObjectID) (
+func Get(db *database.Database, unitId bson.ObjectID) (
 	unt *Unit, err error) {
 
 	coll := db.Units()
@@ -23,7 +22,7 @@ func Get(db *database.Database, unitId primitive.ObjectID) (
 	return
 }
 
-func GetOrg(db *database.Database, orgId, unitId primitive.ObjectID) (
+func GetOrg(db *database.Database, orgId, unitId bson.ObjectID) (
 	unt *Unit, err error) {
 
 	coll := db.Units()
@@ -73,10 +72,10 @@ func GetAll(db *database.Database, query *bson.M) (units []*Unit, err error) {
 }
 
 func GetAllMap(db *database.Database, query *bson.M) (
-	unitsMap map[primitive.ObjectID]*Unit, err error) {
+	unitsMap map[bson.ObjectID]*Unit, err error) {
 
 	coll := db.Units()
-	unitsMap = map[primitive.ObjectID]*Unit{}
+	unitsMap = map[bson.ObjectID]*Unit{}
 
 	cursor, err := coll.Find(db, query)
 	if err != nil {
@@ -106,7 +105,7 @@ func GetAllMap(db *database.Database, query *bson.M) (
 }
 
 func NewSpec(db *database.Database,
-	podId, unitId primitive.ObjectID) (timestamp time.Time,
+	podId, unitId bson.ObjectID) (timestamp time.Time,
 	index int, err error) {
 
 	coll := db.Units()
@@ -142,7 +141,7 @@ func NewSpec(db *database.Database,
 	return
 }
 
-func Remove(db *database.Database, untId primitive.ObjectID) (err error) {
+func Remove(db *database.Database, untId bson.ObjectID) (err error) {
 	coll := db.Units()
 
 	_, err = coll.DeleteOne(db, &bson.M{
@@ -161,7 +160,7 @@ func Remove(db *database.Database, untId primitive.ObjectID) (err error) {
 	return
 }
 
-func RemoveOrg(db *database.Database, orgId, untId primitive.ObjectID) (
+func RemoveOrg(db *database.Database, orgId, untId bson.ObjectID) (
 	err error) {
 
 	coll := db.Units()
@@ -196,7 +195,7 @@ func RemoveAll(db *database.Database, query *bson.M) (err error) {
 }
 
 func RemoveMulti(db *database.Database,
-	untIds []primitive.ObjectID) (err error) {
+	untIds []bson.ObjectID) (err error) {
 
 	coll := db.Units()
 
@@ -213,8 +212,8 @@ func RemoveMulti(db *database.Database,
 	return
 }
 
-func RemoveMultiOrg(db *database.Database, orgId primitive.ObjectID,
-	untIds []primitive.ObjectID) (err error) {
+func RemoveMultiOrg(db *database.Database, orgId bson.ObjectID,
+	untIds []bson.ObjectID) (err error) {
 
 	coll := db.Units()
 

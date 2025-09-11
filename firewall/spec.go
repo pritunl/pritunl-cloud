@@ -4,8 +4,7 @@ import (
 	"strings"
 
 	"github.com/dropbox/godropbox/container/set"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/deployment"
 	"github.com/pritunl/pritunl-cloud/instance"
@@ -17,10 +16,10 @@ import (
 )
 
 func GetSpecRules(instances []*instance.Instance,
-	deploymentsNode map[primitive.ObjectID]*deployment.Deployment,
-	specsMap map[primitive.ObjectID]*spec.Spec,
-	specsUnitsMap map[primitive.ObjectID]*unit.Unit,
-	deploymentsDeployedMap map[primitive.ObjectID]*deployment.Deployment) (
+	deploymentsNode map[bson.ObjectID]*deployment.Deployment,
+	specsMap map[bson.ObjectID]*spec.Spec,
+	specsUnitsMap map[bson.ObjectID]*unit.Unit,
+	deploymentsDeployedMap map[bson.ObjectID]*deployment.Deployment) (
 	firewalls map[string][]*Rule, err error) {
 
 	firewalls = map[string][]*Rule{}
@@ -155,7 +154,7 @@ func GetSpecRules(instances []*instance.Instance,
 }
 
 func GetSpecRulesSlow(db *database.Database,
-	nodeId primitive.ObjectID, instances []*instance.Instance) (
+	nodeId bson.ObjectID, instances []*instance.Instance) (
 	firewalls map[string][]*Rule, nodePortsMap map[string][]*nodeport.Mapping,
 	err error) {
 
@@ -166,8 +165,8 @@ func GetSpecRulesSlow(db *database.Database,
 		return
 	}
 
-	deploymentsNode := map[primitive.ObjectID]*deployment.Deployment{}
-	deploymentsDeployedMap := map[primitive.ObjectID]*deployment.Deployment{}
+	deploymentsNode := map[bson.ObjectID]*deployment.Deployment{}
+	deploymentsDeployedMap := map[bson.ObjectID]*deployment.Deployment{}
 	deploymentsIdSet := set.NewSet()
 	podIdsSet := set.NewSet()
 	unitIdsSet := set.NewSet()
@@ -185,9 +184,9 @@ func GetSpecRulesSlow(db *database.Database,
 		specIdsSet.Add(deply.Spec)
 	}
 
-	specIds := []primitive.ObjectID{}
+	specIds := []bson.ObjectID{}
 	for specId := range specIdsSet.Iter() {
-		specIds = append(specIds, specId.(primitive.ObjectID))
+		specIds = append(specIds, specId.(bson.ObjectID))
 	}
 
 	specs, err := spec.GetAll(db, &bson.M{
@@ -200,7 +199,7 @@ func GetSpecRulesSlow(db *database.Database,
 	}
 
 	specUnitsSet := set.NewSet()
-	specsMap := map[primitive.ObjectID]*spec.Spec{}
+	specsMap := map[bson.ObjectID]*spec.Spec{}
 	for _, spc := range specs {
 		specsMap[spc.Id] = spc
 
@@ -213,9 +212,9 @@ func GetSpecRulesSlow(db *database.Database,
 		}
 	}
 
-	specUnitIds := []primitive.ObjectID{}
+	specUnitIds := []bson.ObjectID{}
 	for unitId := range specUnitsSet.Iter() {
-		specUnitIds = append(specUnitIds, unitId.(primitive.ObjectID))
+		specUnitIds = append(specUnitIds, unitId.(bson.ObjectID))
 	}
 
 	specUnits, err := unit.GetAll(db, &bson.M{
@@ -228,7 +227,7 @@ func GetSpecRulesSlow(db *database.Database,
 	}
 
 	specDeploymentsSet := set.NewSet()
-	specsUnitsMap := map[primitive.ObjectID]*unit.Unit{}
+	specsUnitsMap := map[bson.ObjectID]*unit.Unit{}
 	for _, specUnit := range specUnits {
 		specsUnitsMap[specUnit.Id] = specUnit
 
@@ -237,9 +236,9 @@ func GetSpecRulesSlow(db *database.Database,
 		}
 	}
 
-	specDeploymentIds := []primitive.ObjectID{}
+	specDeploymentIds := []bson.ObjectID{}
 	for deplyIdInf := range specDeploymentsSet.Iter() {
-		deplyId := deplyIdInf.(primitive.ObjectID)
+		deplyId := deplyIdInf.(bson.ObjectID)
 		if !deploymentsIdSet.Contains(deplyId) {
 			specDeploymentIds = append(specDeploymentIds, deplyId)
 		}
@@ -262,9 +261,9 @@ func GetSpecRulesSlow(db *database.Database,
 		}
 	}
 
-	podIds := []primitive.ObjectID{}
+	podIds := []bson.ObjectID{}
 	for podId := range podIdsSet.Iter() {
-		podIds = append(podIds, podId.(primitive.ObjectID))
+		podIds = append(podIds, podId.(bson.ObjectID))
 	}
 
 	pods, err := pod.GetAll(db, &bson.M{
@@ -276,14 +275,14 @@ func GetSpecRulesSlow(db *database.Database,
 		return
 	}
 
-	podsMap := map[primitive.ObjectID]*pod.Pod{}
+	podsMap := map[bson.ObjectID]*pod.Pod{}
 	for _, pd := range pods {
 		podsMap[pd.Id] = pd
 	}
 
-	unitIds := []primitive.ObjectID{}
+	unitIds := []bson.ObjectID{}
 	for unitId := range unitIdsSet.Iter() {
-		unitIds = append(unitIds, unitId.(primitive.ObjectID))
+		unitIds = append(unitIds, unitId.(bson.ObjectID))
 	}
 
 	units := []*unit.Unit{}
@@ -298,7 +297,7 @@ func GetSpecRulesSlow(db *database.Database,
 		}
 	}
 
-	unitsMap := map[primitive.ObjectID]*unit.Unit{}
+	unitsMap := map[bson.ObjectID]*unit.Unit{}
 	podDeploymentsSet := set.NewSet()
 	for _, unt := range units {
 		unitsMap[unt.Id] = unt
@@ -308,9 +307,9 @@ func GetSpecRulesSlow(db *database.Database,
 		}
 	}
 
-	podDeploymentIds := []primitive.ObjectID{}
+	podDeploymentIds := []bson.ObjectID{}
 	for deplyIdInf := range podDeploymentsSet.Iter() {
-		deplyId := deplyIdInf.(primitive.ObjectID)
+		deplyId := deplyIdInf.(bson.ObjectID)
 		if !deploymentsIdSet.Contains(deplyId) {
 			podDeploymentIds = append(podDeploymentIds, deplyId)
 		}

@@ -4,12 +4,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/vpc"
 )
 
 var (
-	routesStores     = map[primitive.ObjectID]RoutesStore{}
+	routesStores     = map[bson.ObjectID]RoutesStore{}
 	routesStoresLock = sync.Mutex{}
 )
 
@@ -20,7 +20,7 @@ type RoutesStore struct {
 	Timestamp     time.Time
 }
 
-func GetRoutes(instId primitive.ObjectID) (routesStore RoutesStore, ok bool) {
+func GetRoutes(instId bson.ObjectID) (routesStore RoutesStore, ok bool) {
 	routesStoresLock.Lock()
 	routesStore, ok = routesStores[instId]
 	routesStoresLock.Unlock()
@@ -32,7 +32,7 @@ func GetRoutes(instId primitive.ObjectID) (routesStore RoutesStore, ok bool) {
 	return
 }
 
-func SetRoutes(instId primitive.ObjectID, icmpRedirects bool,
+func SetRoutes(instId bson.ObjectID, icmpRedirects bool,
 	routes, routes6 []vpc.Route) {
 
 	routesStoresLock.Lock()
@@ -45,7 +45,7 @@ func SetRoutes(instId primitive.ObjectID, icmpRedirects bool,
 	routesStoresLock.Unlock()
 }
 
-func RemRoutes(instId primitive.ObjectID) {
+func RemRoutes(instId bson.ObjectID) {
 	routesStoresLock.Lock()
 	delete(routesStores, instId)
 	routesStoresLock.Unlock()

@@ -9,8 +9,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/aggregate"
 	"github.com/pritunl/pritunl-cloud/authorizer"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -28,14 +27,14 @@ import (
 )
 
 type podData struct {
-	Id               primitive.ObjectID `json:"id"`
-	Name             string             `json:"name"`
-	Comment          string             `json:"comment"`
-	Organization     primitive.ObjectID `json:"organization"`
-	DeleteProtection bool               `json:"delete_protection"`
-	Units            []*unit.UnitInput  `json:"units"`
-	Drafts           []*pod.UnitDraft   `json:"drafts"`
-	Count            int                `json:"count"`
+	Id               bson.ObjectID     `json:"id"`
+	Name             string            `json:"name"`
+	Comment          string            `json:"comment"`
+	Organization     bson.ObjectID     `json:"organization"`
+	DeleteProtection bool              `json:"delete_protection"`
+	Units            []*unit.UnitInput `json:"units"`
+	Drafts           []*pod.UnitDraft  `json:"drafts"`
+	Count            int               `json:"count"`
 }
 
 type podsData struct {
@@ -44,13 +43,13 @@ type podsData struct {
 }
 
 type podsDeployData struct {
-	Count int                `json:"count"`
-	Spec  primitive.ObjectID `json:"spec"`
+	Count int           `json:"count"`
+	Spec  bson.ObjectID `json:"spec"`
 }
 
 type deploymentData struct {
-	Id   primitive.ObjectID `json:"id"`
-	Tags []string           `json:"tags"`
+	Id   bson.ObjectID `json:"id"`
+	Tags []string      `json:"tags"`
 }
 
 type specsData struct {
@@ -64,7 +63,7 @@ func podPut(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 	authr := c.MustGet("authorizer").(*authorizer.Authorizer)
 	data := &podData{}
 
@@ -145,7 +144,7 @@ func podDraftsPut(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 	authr := c.MustGet("authorizer").(*authorizer.Authorizer)
 	data := &podData{}
 
@@ -185,7 +184,7 @@ func podDeployPut(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 	data := &podData{}
 
 	podId, ok := utils.ParseObjectId(c.Param("pod_id"))
@@ -211,7 +210,7 @@ func podDeployPut(c *gin.Context) {
 		return
 	}
 
-	unitsDataMap := map[primitive.ObjectID]*unit.UnitInput{}
+	unitsDataMap := map[bson.ObjectID]*unit.UnitInput{}
 	for _, unitData := range data.Units {
 		unitsDataMap[unitData.Id] = unitData
 	}
@@ -249,7 +248,7 @@ func podPost(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 	data := &podData{
 		Name: "new-pod",
 	}
@@ -310,7 +309,7 @@ func podDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	podId, ok := utils.ParseObjectId(c.Param("pod_id"))
 	if !ok {
@@ -347,8 +346,8 @@ func podsDelete(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
-	data := []primitive.ObjectID{}
+	userOrg := c.MustGet("organization").(bson.ObjectID)
+	data := []bson.ObjectID{}
 
 	err := c.Bind(&data)
 	if err != nil {
@@ -391,7 +390,7 @@ func podGet(c *gin.Context) {
 
 	db := c.MustGet("db").(*database.Database)
 	authr := c.MustGet("authorizer").(*authorizer.Authorizer)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	podId, ok := utils.ParseObjectId(c.Param("pod_id"))
 	if !ok {
@@ -434,7 +433,7 @@ func podsGet(c *gin.Context) {
 
 	db := c.MustGet("db").(*database.Database)
 	authr := c.MustGet("authorizer").(*authorizer.Authorizer)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
 	pageCount, _ := strconv.ParseInt(c.Query("page_count"), 10, 0)
@@ -491,8 +490,8 @@ func podsGet(c *gin.Context) {
 }
 
 type PodUnit struct {
-	Id          primitive.ObjectID      `json:"id"`
-	Pod         primitive.ObjectID      `json:"pod"`
+	Id          bson.ObjectID           `json:"id"`
+	Pod         bson.ObjectID           `json:"pod"`
 	Kind        string                  `json:"kind"`
 	Deployments []*aggregate.Deployment `json:"deployments"`
 }
@@ -532,7 +531,7 @@ func podUnitGet(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	unitId, ok := utils.ParseObjectId(c.Param("unit_id"))
 	if !ok {
@@ -576,8 +575,8 @@ func podUnitDeploymentsPut(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
-	data := []primitive.ObjectID{}
+	userOrg := c.MustGet("organization").(bson.ObjectID)
+	data := []bson.ObjectID{}
 
 	unitId, ok := utils.ParseObjectId(c.Param("unit_id"))
 	if !ok {
@@ -657,7 +656,7 @@ func podUnitDeploymentPost(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 	data := &podsDeployData{}
 
 	unitId, ok := utils.ParseObjectId(c.Param("unit_id"))
@@ -705,7 +704,7 @@ func podUnitDeploymentPut(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 	data := &deploymentData{}
 
 	unitId, ok := utils.ParseObjectId(c.Param("unit_id"))
@@ -770,7 +769,7 @@ func podUnitDeploymentLogGet(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	unitId, ok := utils.ParseObjectId(c.Param("unit_id"))
 	if !ok {
@@ -839,7 +838,7 @@ func podUnitSpecsGet(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	page, _ := strconv.ParseInt(c.Query("page"), 10, 0)
 	pageCount, _ := strconv.ParseInt(c.Query("page_count"), 10, 0)
@@ -891,7 +890,7 @@ func podUnitSpecGet(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*database.Database)
-	userOrg := c.MustGet("organization").(primitive.ObjectID)
+	userOrg := c.MustGet("organization").(bson.ObjectID)
 
 	unitId, ok := utils.ParseObjectId(c.Param("unit_id"))
 	if !ok {

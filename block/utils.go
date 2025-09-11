@@ -4,16 +4,15 @@ import (
 	"net"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
-func GetNodeBlock(ndeId primitive.ObjectID) (blck *Block, err error) {
+func GetNodeBlock(ndeId bson.ObjectID) (blck *Block, err error) {
 	hostNetwork := settings.Hypervisor.HostNetwork
 
 	hostAddr, hostNet, err := net.ParseCIDR(hostNetwork)
@@ -40,7 +39,7 @@ func GetNodeBlock(ndeId primitive.ObjectID) (blck *Block, err error) {
 	return
 }
 
-func GetNodePortBlock(ndeId primitive.ObjectID) (blck *Block, err error) {
+func GetNodePortBlock(ndeId bson.ObjectID) (blck *Block, err error) {
 	portNetwork := settings.Hypervisor.NodePortNetwork
 
 	portAddr, portNet, err := net.ParseCIDR(portNetwork)
@@ -82,7 +81,7 @@ func GetNodePortGateway() (gateway string, err error) {
 	return
 }
 
-func Get(db *database.Database, blockId primitive.ObjectID) (
+func Get(db *database.Database, blockId bson.ObjectID) (
 	block *Block, err error) {
 
 	coll := db.Blocks()
@@ -134,7 +133,7 @@ func GetAll(db *database.Database) (blocks []*Block, err error) {
 }
 
 func GetInstanceHostIp(db *database.Database,
-	instId primitive.ObjectID) (blckIp *BlockIp, err error) {
+	instId bson.ObjectID) (blckIp *BlockIp, err error) {
 
 	coll := db.BlocksIp()
 	blckIp = &BlockIp{}
@@ -156,7 +155,7 @@ func GetInstanceHostIp(db *database.Database,
 }
 
 func GetInstanceNodePortIp(db *database.Database,
-	instId primitive.ObjectID) (blckIp *BlockIp, err error) {
+	instId bson.ObjectID) (blckIp *BlockIp, err error) {
 
 	coll := db.BlocksIp()
 	blckIp = &BlockIp{}
@@ -177,7 +176,7 @@ func GetInstanceNodePortIp(db *database.Database,
 	return
 }
 
-func GetInstanceIp(db *database.Database, instId primitive.ObjectID,
+func GetInstanceIp(db *database.Database, instId bson.ObjectID,
 	typ string) (blck *Block, blckIp *BlockIp, err error) {
 
 	coll := db.BlocksIp()
@@ -272,7 +271,7 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	return
 }
 
-func Remove(db *database.Database, blockId primitive.ObjectID) (err error) {
+func Remove(db *database.Database, blockId bson.ObjectID) (err error) {
 	coll := db.Blocks()
 	ipColl := db.BlocksIp()
 	instColl := db.Instances()
@@ -320,7 +319,7 @@ func Remove(db *database.Database, blockId primitive.ObjectID) (err error) {
 	_, err = nodeColl.UpdateMany(db, &bson.M{
 		"host_block": blockId,
 	}, &bson.M{"$set": &bson.M{
-		"host_block": primitive.NilObjectID,
+		"host_block": bson.NilObjectID,
 	}})
 	if err != nil {
 		err = database.ParseError(err)
@@ -343,7 +342,7 @@ func Remove(db *database.Database, blockId primitive.ObjectID) (err error) {
 	return
 }
 
-func RemoveIp(db *database.Database, blockIpId primitive.ObjectID) (
+func RemoveIp(db *database.Database, blockIpId bson.ObjectID) (
 	err error) {
 
 	coll := db.BlocksIp()
@@ -364,7 +363,7 @@ func RemoveIp(db *database.Database, blockIpId primitive.ObjectID) (
 	return
 }
 
-func RemoveInstanceIps(db *database.Database, instId primitive.ObjectID) (
+func RemoveInstanceIps(db *database.Database, instId bson.ObjectID) (
 	err error) {
 
 	coll := db.BlocksIp()
@@ -386,7 +385,7 @@ func RemoveInstanceIps(db *database.Database, instId primitive.ObjectID) (
 }
 
 func RemoveInstanceIpsType(db *database.Database,
-	instId primitive.ObjectID, typ string) (err error) {
+	instId bson.ObjectID, typ string) (err error) {
 
 	coll := db.BlocksIp()
 
@@ -407,7 +406,7 @@ func RemoveInstanceIpsType(db *database.Database,
 	return
 }
 
-func RemoveMulti(db *database.Database, blckIds []primitive.ObjectID) (
+func RemoveMulti(db *database.Database, blckIds []bson.ObjectID) (
 	err error) {
 	coll := db.Blocks()
 

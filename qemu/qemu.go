@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/compositor"
 	"github.com/pritunl/pritunl-cloud/drive"
 	"github.com/pritunl/pritunl-cloud/features"
@@ -69,7 +69,7 @@ type IscsiDevice struct {
 }
 
 type Qemu struct {
-	Id           primitive.ObjectID
+	Id           bson.ObjectID
 	Data         string
 	Kvm          bool
 	Machine      string

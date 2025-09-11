@@ -15,7 +15,7 @@ import (
 	"text/template"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/authority"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/datacenter"
@@ -743,7 +743,7 @@ func Write(db *database.Database, inst *instance.Instance,
 	}
 
 	metaData := fmt.Sprintf(metaDataTmpl,
-		primitive.NewObjectID().Hex(),
+		bson.NewObjectID().Hex(),
 		strings.Replace(inst.Name, " ", "_", -1),
 	)
 

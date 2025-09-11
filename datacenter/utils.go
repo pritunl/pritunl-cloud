@@ -1,14 +1,13 @@
 package datacenter
 
 import (
-	"github.com/pritunl/mongo-go-driver/bson"
-	"github.com/pritunl/mongo-go-driver/bson/primitive"
-	"github.com/pritunl/mongo-go-driver/mongo/options"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
-func Get(db *database.Database, dcId primitive.ObjectID) (
+func Get(db *database.Database, dcId bson.ObjectID) (
 	dc *Datacenter, err error) {
 
 	coll := db.Datacenters()
@@ -22,7 +21,7 @@ func Get(db *database.Database, dcId primitive.ObjectID) (
 	return
 }
 
-func ExistsOrg(db *database.Database, orgId, dcId primitive.ObjectID) (
+func ExistsOrg(db *database.Database, orgId, dcId bson.ObjectID) (
 	exists bool, err error) {
 
 	coll := db.Datacenters()
@@ -94,7 +93,7 @@ func GetOne(db *database.Database, query *bson.M) (dc *Datacenter, err error) {
 	return
 }
 
-func GetAllNamesOrg(db *database.Database, orgId primitive.ObjectID) (
+func GetAllNamesOrg(db *database.Database, orgId bson.ObjectID) (
 	dcs []*Completion, err error) {
 
 	coll := db.Datacenters()
@@ -253,11 +252,11 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	return
 }
 
-func DistinctOrg(db *database.Database, orgId primitive.ObjectID) (
-	ids []primitive.ObjectID, err error) {
+func DistinctOrg(db *database.Database, orgId bson.ObjectID) (
+	ids []bson.ObjectID, err error) {
 
 	coll := db.Datacenters()
-	ids = []primitive.ObjectID{}
+	ids = []bson.ObjectID{}
 
 	idsInf, err := coll.Distinct(db, "_id", &bson.M{
 		"$or": []*bson.M{
@@ -275,7 +274,7 @@ func DistinctOrg(db *database.Database, orgId primitive.ObjectID) (
 	}
 
 	for _, idInf := range idsInf {
-		if id, ok := idInf.(primitive.ObjectID); ok {
+		if id, ok := idInf.(bson.ObjectID); ok {
 			ids = append(ids, id)
 		}
 	}
@@ -283,7 +282,7 @@ func DistinctOrg(db *database.Database, orgId primitive.ObjectID) (
 	return
 }
 
-func Remove(db *database.Database, dcId primitive.ObjectID) (err error) {
+func Remove(db *database.Database, dcId bson.ObjectID) (err error) {
 	coll := db.Datacenters()
 
 	_, err = coll.DeleteOne(db, &bson.M{
@@ -302,7 +301,7 @@ func Remove(db *database.Database, dcId primitive.ObjectID) (err error) {
 	return
 }
 
-func RemoveMulti(db *database.Database, dcIds []primitive.ObjectID) (
+func RemoveMulti(db *database.Database, dcIds []bson.ObjectID) (
 	err error) {
 	coll := db.Datacenters()
 
@@ -319,8 +318,8 @@ func RemoveMulti(db *database.Database, dcIds []primitive.ObjectID) (
 	return
 }
 
-func RemoveMultiOrg(db *database.Database, orgId primitive.ObjectID,
-	dcIds []primitive.ObjectID) (err error) {
+func RemoveMultiOrg(db *database.Database, orgId bson.ObjectID,
+	dcIds []bson.ObjectID) (err error) {
 
 	coll := db.Datacenters()
 
