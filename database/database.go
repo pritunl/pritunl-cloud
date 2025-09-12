@@ -10,7 +10,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/mongo-go-driver/v2/mongo/readconcern"
 	"github.com/pritunl/mongo-go-driver/v2/mongo/writeconcern"
-	"github.com/pritunl/mongo-go-driver/x/mongo/driver/connstring"
+	"github.com/pritunl/mongo-go-driver/v2/x/mongo/driver/connstring"
 	"github.com/pritunl/pritunl-cloud/config"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/errortypes"
