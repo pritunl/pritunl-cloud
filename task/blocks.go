@@ -21,8 +21,9 @@ func blocksCheckHandler(db *database.Database) (err error) {
 	coll := db.Blocks()
 	ipColl := db.BlocksIp()
 	instColl := db.Instances()
+	ipBlocks := []bson.ObjectID{}
 
-	ipBlocksInf, err := ipColl.Distinct(db, "block", &bson.M{
+	err = ipColl.Distinct(db, "block", &bson.M{
 		"type": &bson.M{
 			"$in": []string{
 				block.External,
@@ -30,19 +31,17 @@ func blocksCheckHandler(db *database.Database) (err error) {
 				block.IPv6,
 			},
 		},
-	})
+	}).Decode(&ipBlocks)
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
 
 	blocks := set.NewSet()
-	ipBlocks := set.NewSet()
+	ipBlocksSet := set.NewSet()
 
-	for _, ipBlockInf := range ipBlocksInf {
-		if ipBlock, ok := ipBlockInf.(bson.ObjectID); ok {
-			ipBlocks.Add(ipBlock)
-		}
+	for _, ipBlock := range ipBlocks {
+		ipBlocksSet.Add(ipBlock)
 	}
 
 	cursor, err := coll.Find(db, &bson.M{})
@@ -73,8 +72,8 @@ func blocksCheckHandler(db *database.Database) (err error) {
 		return
 	}
 
-	ipBlocks.Subtract(blocks)
-	for blckIdInf := range ipBlocks.Iter() {
+	ipBlocksSet.Subtract(blocks)
+	for blckIdInf := range ipBlocksSet.Iter() {
 		blckId := blckIdInf.(bson.ObjectID)
 
 		cursor2, e := ipColl.Find(db, &bson.M{

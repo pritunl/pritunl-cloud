@@ -25,20 +25,14 @@ func storageSyncHandler(db *database.Database) (err error) {
 
 	imgStoreIdsList := []bson.ObjectID{}
 
-	storeIdsInf, err := coll.Distinct(
+	err = coll.Distinct(
 		db,
 		"storage",
 		&bson.M{},
-	)
+	).Decode(&imgStoreIdsList)
 	if err != nil {
 		err = database.ParseError(err)
 		return
-	}
-
-	for _, storeIdInf := range storeIdsInf {
-		if storeId, ok := storeIdInf.(bson.ObjectID); ok {
-			imgStoreIdsList = append(imgStoreIdsList, storeId)
-		}
 	}
 
 	imgStoreIds := set.NewSet()

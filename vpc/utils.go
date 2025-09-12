@@ -394,9 +394,10 @@ func DistinctIds(db *database.Database, matchIds []bson.ObjectID) (
 	idsSet set.Set, err error) {
 
 	coll := db.Images()
+	ids := []bson.ObjectID{}
 	idsSet = set.NewSet()
 
-	idsInf, err := coll.Distinct(
+	err = coll.Distinct(
 		db,
 		"_id",
 		&bson.M{
@@ -404,16 +405,14 @@ func DistinctIds(db *database.Database, matchIds []bson.ObjectID) (
 				"$in": matchIds,
 			},
 		},
-	)
+	).Decode(&ids)
 	if err != nil {
 		err = database.ParseError(err)
 		return
 	}
 
-	for _, idInf := range idsInf {
-		if id, ok := idInf.(bson.ObjectID); ok {
-			idsSet.Add(id)
-		}
+	for _, id := range ids {
+		idsSet.Add(id)
 	}
 
 	return

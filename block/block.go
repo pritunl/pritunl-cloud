@@ -278,17 +278,22 @@ func (b *Block) GetNetwork() (staticNet *net.IPNet, err error) {
 	return
 }
 
-func (b *Block) GetIps(db *database.Database) (blckIps set.Set, err error) {
+func (b *Block) GetIps(db *database.Database) (blckIpsSet set.Set, err error) {
 	coll := db.BlocksIp()
 
-	ipsInf, err := coll.Distinct(db, "ip", &bson.M{
+	blckIps := []int64{}
+	err = coll.Distinct(db, "ip", bson.M{
 		"block": b.Id,
-	})
+	}).Decode(&blckIps)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
 
-	blckIps = set.NewSet()
-	for _, ipInf := range ipsInf {
-		if ip, ok := ipInf.(int64); ok {
-			blckIps.Add(ip)
+	blckIpsSet = set.NewSet()
+	for _, ipInt := range blckIps {
+		if ipInt != 0 {
+			blckIpsSet.Add(ipInt)
 		}
 	}
 

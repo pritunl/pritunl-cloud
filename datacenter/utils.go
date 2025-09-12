@@ -250,7 +250,7 @@ func DistinctOrg(db *database.Database, orgId bson.ObjectID) (
 	coll := db.Datacenters()
 	ids = []bson.ObjectID{}
 
-	idsInf, err := coll.Distinct(db, "_id", &bson.M{
+	err = coll.Distinct(db, "_id", &bson.M{
 		"$or": []*bson.M{
 			&bson.M{
 				"match_organizations": false,
@@ -259,16 +259,10 @@ func DistinctOrg(db *database.Database, orgId bson.ObjectID) (
 				"organizations": orgId,
 			},
 		},
-	})
+	}).Decode(&ids)
 	if err != nil {
 		err = database.ParseError(err)
 		return
-	}
-
-	for _, idInf := range idsInf {
-		if id, ok := idInf.(bson.ObjectID); ok {
-			ids = append(ids, id)
-		}
 	}
 
 	return

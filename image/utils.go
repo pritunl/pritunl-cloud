@@ -165,18 +165,12 @@ func Distinct(db *database.Database, storeId bson.ObjectID) (
 	coll := db.Images()
 	keys = []string{}
 
-	keysInf, err := coll.Distinct(db, "key", &bson.M{
+	err = coll.Distinct(db, "key", &bson.M{
 		"storage": storeId,
-	})
+	}).Decode(&keys)
 	if err != nil {
 		err = database.ParseError(err)
 		return
-	}
-
-	for _, keyInf := range keysInf {
-		if key, ok := keyInf.(string); ok {
-			keys = append(keys, key)
-		}
 	}
 
 	return
