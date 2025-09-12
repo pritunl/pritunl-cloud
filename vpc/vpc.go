@@ -644,8 +644,8 @@ func (v *Vpc) GetIp(db *database.Database,
 
 	if vpcIp == nil {
 		vpcIp = &VpcIp{}
-		opts := &options.FindOneAndUpdateOptions{}
-		opts.SetReturnDocument(options.After)
+		opts := options.FindOneAndUpdate().
+			SetReturnDocument(options.After)
 
 		err = coll.FindOneAndUpdate(
 			db,
@@ -681,11 +681,8 @@ func (v *Vpc) GetIp(db *database.Database,
 				"vpc":    v.Id,
 				"subnet": subId,
 			},
-			&options.FindOneOptions{
-				Sort: &bson.D{
-					{"ip", -1},
-				},
-			},
+			options.FindOne().
+				SetSort(bson.D{{"ip", -1}}),
 		).Decode(vpcIp)
 		if err != nil {
 			vpcIp = nil

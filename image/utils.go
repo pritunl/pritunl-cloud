@@ -245,11 +245,9 @@ func GetAllCompletion(db *database.Database, query *bson.M) (
 	cursor, err := coll.Find(
 		db,
 		query,
-		&options.FindOptions{
-			Sort: &bson.D{
-				{"name", 1},
-			},
-			Projection: &bson.D{
+		options.Find().
+			SetSort(bson.D{{"name", 1}}).
+			SetProjection(bson.D{
 				{"_id", 1},
 				{"name", 1},
 				{"release", 1},
@@ -260,8 +258,7 @@ func GetAllCompletion(db *database.Database, query *bson.M) (
 				{"firmware", 1},
 				{"key", 1},
 				{"storage", 1},
-			},
-		},
+			}),
 	)
 	if err != nil {
 		err = database.ParseError(err)
@@ -319,13 +316,10 @@ func GetAllPaged(db *database.Database, query *bson.M, page, pageCount int64) (
 	cursor, err := coll.Find(
 		db,
 		query,
-		&options.FindOptions{
-			Sort: &bson.D{
-				{"key", 1},
-			},
-			Skip:  &skip,
-			Limit: &pageCount,
-		},
+		options.Find().
+			SetSort(bson.D{{"key", 1}}).
+			SetSkip(skip).
+			SetLimit(pageCount),
 	)
 	defer cursor.Close(db)
 
@@ -359,17 +353,14 @@ func GetAllNames(db *database.Database, query *bson.M) (
 	cursor, err := coll.Find(
 		db,
 		query,
-		&options.FindOptions{
-			Sort: &bson.D{
-				{"key", 1},
-			},
-			Projection: &bson.D{
+		options.Find().
+			SetSort(bson.D{{"key", 1}}).
+			SetProjection(bson.D{
 				{"name", 1},
 				{"key", 1},
 				{"signed", 1},
 				{"firmware", 1},
-			},
-		},
+			}),
 	)
 	if err != nil {
 		err = database.ParseError(err)
@@ -406,15 +397,12 @@ func GetAllKeys(db *database.Database) (keys set.Set, err error) {
 	cursor, err := coll.Find(
 		db,
 		&bson.M{},
-		&options.FindOptions{
-			Sort: &bson.D{
-				{"key", 1},
-			},
-			Projection: &bson.D{
+		options.Find().
+			SetSort(bson.D{{"key", 1}}).
+			SetProjection(bson.D{
 				{"_id", 1},
 				{"etag", 1},
-			},
-		},
+			}),
 	)
 	if err != nil {
 		err = database.ParseError(err)

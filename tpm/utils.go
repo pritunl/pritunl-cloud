@@ -33,11 +33,8 @@ func GetSecret(db *database.Database, vmId bson.ObjectID) (
 		&bson.M{
 			"_id": vmId,
 		},
-		&options.FindOneOptions{
-			Projection: &bson.D{
-				{"tpm_secret", 1},
-			},
-		},
+		options.FindOne().
+			SetProjection(bson.D{{"tpm_secret", 1}}),
 	).Decode(data)
 
 	secret = data.TpmSecret

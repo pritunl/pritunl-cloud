@@ -40,10 +40,6 @@ func Get(db *database.Database, typ string) (rkey *Rokey, err error) {
 		Secret:    secret,
 	}
 
-	opts := &options.FindOneAndUpdateOptions{}
-	opts.SetUpsert(true)
-	opts.SetReturnDocument(options.After)
-
 	err = coll.FindOneAndUpdate(
 		db,
 		&bson.M{
@@ -53,7 +49,9 @@ func Get(db *database.Database, typ string) (rkey *Rokey, err error) {
 		&bson.M{
 			"$setOnInsert": rkey,
 		},
-		opts,
+		options.FindOneAndUpdate().
+			SetUpsert(true).
+			SetReturnDocument(options.After),
 	).Decode(rkey)
 	if err != nil {
 		err = database.ParseError(err)

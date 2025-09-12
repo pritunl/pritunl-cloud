@@ -136,13 +136,10 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	cursor, err := coll.Find(
 		db,
 		query,
-		&options.FindOptions{
-			Sort: &bson.D{
-				{"name", 1},
-			},
-			Skip:  &skip,
-			Limit: &pageCount,
-		},
+		options.Find().
+			SetSort(bson.D{{"name", 1}}).
+			SetSkip(skip).
+			SetLimit(pageCount),
 	)
 	defer cursor.Close(db)
 
@@ -175,12 +172,11 @@ func GetAllName(db *database.Database, query *bson.M) (
 	cursor, err := coll.Find(
 		db,
 		query,
-		&options.FindOptions{
-			Projection: &bson.D{
+		options.Find().
+			SetProjection(bson.D{
 				{"name", 1},
 				{"organization", 1},
-			},
-		},
+			}),
 	)
 	if err != nil {
 		err = database.ParseError(err)

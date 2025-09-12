@@ -99,11 +99,8 @@ func GetAll(db *database.Database) (blocks []*Block, err error) {
 	coll := db.Blocks()
 	blocks = []*Block{}
 
-	opts := &options.FindOptions{
-		Sort: &bson.D{
-			{"name", 1},
-		},
-	}
+	opts := options.Find().
+		SetSort(bson.D{{"name", 1}})
 
 	cursor, err := coll.Find(db, bson.M{}, opts)
 	if err != nil {
@@ -237,13 +234,10 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	cursor, err := coll.Find(
 		db,
 		query,
-		&options.FindOptions{
-			Sort: &bson.D{
-				{"name", 1},
-			},
-			Skip:  &skip,
-			Limit: &pageCount,
-		},
+		options.Find().
+			SetSort(bson.D{{"name", 1}}).
+			SetSkip(skip).
+			SetLimit(pageCount),
 	)
 	if err != nil {
 		err = database.ParseError(err)

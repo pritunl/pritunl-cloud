@@ -69,12 +69,9 @@ func (c *Collection) CommitFields(id interface{}, data interface{},
 }
 
 func (c *Collection) Upsert(query *bson.M, data interface{}) (err error) {
-	opts := &options.UpdateOptions{}
-	opts.SetUpsert(true)
-
 	_, err = c.UpdateOne(c.db, query, &bson.M{
 		"$set": data,
-	}, opts)
+	}, options.UpdateOne().SetUpsert(true))
 	if err != nil {
 		err = ParseError(err)
 		return

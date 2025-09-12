@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/mongo"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo"
 	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -63,11 +63,8 @@ func getCursorId(db *database.Database, coll *database.Collection,
 		err = coll.FindOne(
 			db,
 			query,
-			&options.FindOneOptions{
-				Sort: &bson.D{
-					{"$natural", -1},
-				},
-			},
+			options.FindOne().
+				SetSort(bson.D{{"$natural", -1}}),
 		).Decode(msg)
 		if err != nil {
 			err = database.ParseError(err)
@@ -178,21 +175,16 @@ func Subscribe(channels []string, duration time.Duration,
 		}
 	}
 
-	queryOpts := &options.FindOptions{
-		Sort: &bson.D{
-			{"$natural", 1},
-		},
-	}
-	queryOpts.SetMaxAwaitTime(duration)
-	queryOpts.SetCursorType(options.TailableAwait)
-
-	query := &bson.M{
-		"_id": &bson.M{
+	queryOpts := options.Find().
+		SetSort(bson.D{{"$natural", 1}}).
+		SetMaxAwaitTime(duration).
+		SetCursorType(options.TailableAwait)
+	query := bson.M{
+		"_id": bson.M{
 			"$gt": cursorId,
 		},
 		"channel": channelBson,
 	}
-
 	var cursor *mongo.Cursor
 	var err error
 	for {
@@ -329,13 +321,10 @@ func SubscribeType(channels []string, duration time.Duration,
 		}
 	}
 
-	queryOpts := &options.FindOptions{
-		Sort: &bson.D{
-			{"$natural", 1},
-		},
-	}
-	queryOpts.SetMaxAwaitTime(duration)
-	queryOpts.SetCursorType(options.TailableAwait)
+	queryOpts := options.Find().
+		SetSort(bson.D{{"$natural", 1}}).
+		SetMaxAwaitTime(duration).
+		SetCursorType(options.TailableAwait)
 
 	query := &bson.M{
 		"_id": &bson.M{
@@ -470,10 +459,6 @@ func Register(channel string, callback func(*EventPublish)) {
 func subscribe(channels []string) {
 	Subscribe(channels, 10*time.Second,
 		func(msg *EventPublish, err error) bool {
-			if constants.Shutdown {
-				return true
-			}
-
 			if msg == nil || err != nil {
 				return true
 			}

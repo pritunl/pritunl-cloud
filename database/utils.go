@@ -10,28 +10,30 @@ import (
 	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 )
 
-func FindProject(fields ...string) *options.FindOptions {
-	prcj := bson.M{}
+func FindProject(fields ...string) *options.FindOptionsBuilder {
+	prcj := []bson.D{}
 
 	for _, field := range fields {
-		prcj[field] = 1
+		prcj = append(prcj, bson.D{{field, 1}})
 	}
 
-	return &options.FindOptions{
-		Projection: prcj,
-	}
+	opts := options.Find()
+	opts.SetProjection(prcj)
+
+	return opts
 }
 
-func FindOneProject(fields ...string) *options.FindOneOptions {
-	prcj := bson.M{}
+func FindOneProject(fields ...string) *options.FindOneOptionsBuilder {
+	prcj := []bson.D{}
 
 	for _, field := range fields {
-		prcj[field] = 1
+		prcj = append(prcj, bson.D{{field, 1}})
 	}
 
-	return &options.FindOneOptions{
-		Projection: prcj,
-	}
+	opts := options.FindOne()
+	opts.SetProjection(prcj)
+
+	return opts
 }
 
 func GetErrorCodes(err error) (errCodes []int) {

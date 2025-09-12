@@ -110,12 +110,12 @@ func NewSpec(db *database.Database,
 
 	coll := db.Units()
 
-	updateOpts := options.FindOneAndUpdate()
-	updateOpts.Projection = &bson.M{
-		"spec_index":     1,
-		"spec_timestamp": 1,
-	}
-	updateOpts.SetReturnDocument(options.After)
+	updateOpts := options.FindOneAndUpdate().
+		SetProjection(&bson.M{
+			"spec_index":     1,
+			"spec_timestamp": 1,
+		}).
+		SetReturnDocument(options.After)
 
 	unit := &Unit{}
 

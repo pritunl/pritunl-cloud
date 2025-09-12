@@ -349,13 +349,10 @@ func Connect() (err error) {
 	opts := options.Client().ApplyURI(config.Config.MongoUri)
 	opts.SetRetryReads(true)
 	opts.SetRetryWrites(true)
-	opts.WriteConcern = writeconcern.New(
-		writeconcern.WMajority(),
-		writeconcern.WTimeout(15*time.Second),
-	)
-	opts.ReadConcern = readconcern.Local()
+	opts.SetWriteConcern(writeconcern.Majority())
+	opts.SetReadConcern(readconcern.Local())
 
-	client, err := mongo.Connect(context.Background(), opts)
+	client, err := mongo.Connect(opts)
 	if err != nil {
 		err = &ConnectionError{
 			errors.Wrap(err, "database: Connection error"),

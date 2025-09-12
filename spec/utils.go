@@ -112,19 +112,16 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	cursor, err := coll.Find(
 		db,
 		query,
-		&options.FindOptions{
-			Projection: &bson.M{
+		options.Find().
+			SetProjection(bson.M{
 				"_id":       1,
 				"unit":      1,
 				"index":     1,
 				"timestamp": 1,
-			},
-			Sort: &bson.D{
-				{"timestamp", -1},
-			},
-			Skip:  &skip,
-			Limit: &pageCount,
-		},
+			}).
+			SetSort(bson.D{{"timestamp", -1}}).
+			SetSkip(skip).
+			SetLimit(pageCount),
 	)
 	if err != nil {
 		err = database.ParseError(err)
@@ -194,17 +191,14 @@ func GetAllIndexes(db *database.Database, query *bson.M) (
 	cursor, err := coll.Find(
 		db,
 		query,
-		&options.FindOptions{
-			Projection: &bson.M{
+		options.Find().
+			SetProjection(bson.M{
 				"_id":       1,
 				"unit":      1,
 				"index":     1,
 				"timestamp": 1,
-			},
-			Sort: &bson.D{
-				{"timestamp", 1},
-			},
-		},
+			}).
+			SetSort(bson.D{{"timestamp", 1}}),
 	)
 	if err != nil {
 		err = database.ParseError(err)
@@ -241,19 +235,16 @@ func GetAllProjectSorted(db *database.Database, query *bson.M) (
 	cursor, err := coll.Find(
 		db,
 		query,
-		&options.FindOptions{
-			Projection: &bson.M{
+		options.Find().
+			SetProjection(bson.M{
 				"_id":       1,
 				"unit":      1,
 				"index":     1,
 				"timestamp": 1,
 				"hash":      1,
 				"data":      1,
-			},
-			Sort: &bson.D{
-				{"timestamp", -1},
-			},
-		},
+			}).
+			SetSort(bson.D{{"timestamp", -1}}),
 	)
 	if err != nil {
 		err = database.ParseError(err)
@@ -288,11 +279,10 @@ func GetAllIds(db *database.Database) (specIds set.Set, err error) {
 	cursor, err := coll.Find(
 		db,
 		bson.M{},
-		&options.FindOptions{
-			Projection: bson.M{
+		options.Find().
+			SetProjection(bson.M{
 				"_id": 1,
-			},
-		},
+			}),
 	)
 	if err != nil {
 		err = database.ParseError(err)

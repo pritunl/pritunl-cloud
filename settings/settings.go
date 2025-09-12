@@ -25,16 +25,13 @@ func Commit(db *database.Database, group interface{}, fields set.Set) (
 
 	selector := database.SelectFields(group, set.NewSet("_id"))
 	updated := database.SelectFields(group, fields)
-	opts := &options.UpdateOptions{}
-	opts.SetUpsert(true)
-
 	_, err = coll.UpdateOne(
 		db,
 		selector,
 		&bson.M{
 			"$set": updated,
 		},
-		opts,
+		options.UpdateOne().SetUpsert(true),
 	)
 	if err != nil {
 		err = database.ParseError(err)
@@ -56,11 +53,9 @@ func Get(db *database.Database, group string, key string) (
 		&bson.M{
 			"_id": group,
 		},
-		&options.FindOneOptions{
-			Projection: &bson.D{
+		options.FindOne().SetProjection(&bson.D{
 				{key, 1},
-			},
-		},
+			}),
 	).Decode(grp)
 	if err != nil {
 		err = database.ParseError(err)
@@ -85,9 +80,6 @@ func Set(db *database.Database, group string, key string, val interface{}) (
 	err error) {
 
 	coll := db.Settings()
-	opts := &options.UpdateOptions{}
-	opts.SetUpsert(true)
-
 	_, err = coll.UpdateOne(
 		db,
 		&bson.M{
@@ -98,7 +90,7 @@ func Set(db *database.Database, group string, key string, val interface{}) (
 				key: val,
 			},
 		},
-		opts,
+		options.UpdateOne().SetUpsert(true),
 	)
 	if err != nil {
 		err = database.ParseError(err)
@@ -112,9 +104,6 @@ func Unset(db *database.Database, group string, key string) (
 	err error) {
 
 	coll := db.Settings()
-	opts := &options.UpdateOptions{}
-	opts.SetUpsert(true)
-
 	_, err = coll.UpdateOne(
 		db,
 		&bson.M{
@@ -125,7 +114,7 @@ func Unset(db *database.Database, group string, key string) (
 				key: 1,
 			},
 		},
-		opts,
+		options.UpdateOne().SetUpsert(true),
 	)
 	if err != nil {
 		err = database.ParseError(err)

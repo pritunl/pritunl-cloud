@@ -83,11 +83,9 @@ func GetRoles(db *database.Database, roles []string) (
 		"roles": &bson.M{
 			"$in": roles,
 		},
-	}, &options.FindOptions{
-		Sort: &bson.D{
+	}, options.Find().SetSort(&bson.D{
 			{"_id", 1},
-		},
-	})
+		}))
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -205,11 +203,9 @@ func GetOrgRoles(db *database.Database, orgId bson.ObjectID,
 		"roles": &bson.M{
 			"$in": roles,
 		},
-	}, &options.FindOptions{
-		Sort: &bson.D{
+	}, options.Find().SetSort(&bson.D{
 			{"_id", 1},
-		},
-	})
+		}))
 	defer cursor.Close(db)
 
 	for cursor.Next(db) {
@@ -241,14 +237,13 @@ func GetAllNames(db *database.Database, query *bson.M) (
 	cursor, err := coll.Find(
 		db,
 		query,
-		&options.FindOptions{
-			Sort: &bson.D{
+		options.Find().
+			SetSort(&bson.D{
 				{"name", 1},
-			},
-			Projection: &bson.D{
+			}).
+			SetProjection(&bson.D{
 				{"name", 1},
-			},
-		},
+			}),
 	)
 	if err != nil {
 		err = database.ParseError(err)
@@ -306,13 +301,12 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	cursor, err := coll.Find(
 		db,
 		query,
-		&options.FindOptions{
-			Sort: &bson.D{
+		options.Find().
+			SetSort(&bson.D{
 				{"name", 1},
-			},
-			Skip:  &skip,
-			Limit: &pageCount,
-		},
+			}).
+			SetSkip(skip).
+			SetLimit(pageCount),
 	)
 	if err != nil {
 		err = database.ParseError(err)

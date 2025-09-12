@@ -67,11 +67,10 @@ func get(db *database.Database, coll *database.Collection,
 	query bson.M, projection *bson.M, sort *bson.D, new func() interface{},
 	add func(interface{})) (err error) {
 
-	opts := &options.FindOptions{
-		Projection: projection,
-	}
+	opts := options.Find().
+		SetProjection(projection)
 	if sort != nil {
-		opts.Sort = sort
+		opts.SetSort(sort)
 	}
 
 	cursor, err := coll.Find(db, query, opts)

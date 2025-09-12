@@ -159,11 +159,9 @@ func GetLoadedAllIds(db *database.Database, domnIds []bson.ObjectID) (
 		"domain": &bson.M{
 			"$in": domnIds,
 		},
-	}, &options.FindOptions{
-		Sort: &bson.D{
-			{"sub_domain", 1},
-		},
-	})
+	}, options.Find().
+		SetSort(bson.D{{"sub_domain", 1}}),
+	)
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -239,12 +237,11 @@ func GetAllName(db *database.Database, query *bson.M) (
 	cursor, err := coll.Find(
 		db,
 		query,
-		&options.FindOptions{
-			Projection: &bson.D{
+		options.Find().
+			SetProjection(bson.D{
 				{"name", 1},
 				{"organization", 1},
-			},
-		},
+			}),
 	)
 	if err != nil {
 		err = database.ParseError(err)

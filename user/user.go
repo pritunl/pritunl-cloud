@@ -171,9 +171,9 @@ func (u *User) Insert(db *database.Database) (err error) {
 func (u *User) Upsert(db *database.Database) (err error) {
 	coll := db.Users()
 
-	opts := &options.FindOneAndUpdateOptions{}
-	opts.SetUpsert(true)
-	opts.SetReturnDocument(options.After)
+	opts := options.FindOneAndUpdate().
+		SetUpsert(true).
+		SetReturnDocument(options.After)
 
 	err = coll.FindOneAndUpdate(
 		db,

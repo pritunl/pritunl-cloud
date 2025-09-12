@@ -23,13 +23,12 @@ func GetOutput(c context.Context, db *database.Database,
 			"r": resource,
 			"k": kind,
 		},
-		&options.FindOptions{
-			Limit: &limit,
-			Sort: &bson.D{
+		options.Find().
+			SetLimit(limit).
+			SetSort(&bson.D{
 				{"t", -1},
 				{"c", -1},
-			},
-		},
+			}),
 	)
 	if err != nil {
 		err = database.ParseError(err)

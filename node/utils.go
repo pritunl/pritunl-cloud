@@ -75,11 +75,9 @@ func GetAllNamesMap(db *database.Database, query *bson.M) (
 	cursor, err := coll.Find(
 		db,
 		query,
-		&options.FindOptions{
-			Projection: &bson.D{
+		options.Find().SetProjection(&bson.D{
 				{"name", 1},
-			},
-		},
+			}),
 	)
 	if err != nil {
 		err = database.ParseError(err)
@@ -116,11 +114,11 @@ func GetAllHypervisors(db *database.Database, query *bson.M) (
 	cursor, err := coll.Find(
 		db,
 		query,
-		&options.FindOptions{
-			Sort: &bson.D{
+		options.Find().
+			SetSort(&bson.D{
 				{"name", 1},
-			},
-			Projection: &bson.D{
+			}).
+			SetProjection(&bson.D{
 				{"name", 1},
 				{"types", 1},
 				{"gui", 1},
@@ -129,8 +127,7 @@ func GetAllHypervisors(db *database.Database, query *bson.M) (
 				{"cloud_subnets", 1},
 				{"default_no_public_address", 1},
 				{"default_no_public_address6", 1},
-			},
-		},
+			}),
 	)
 	if err != nil {
 		err = database.ParseError(err)
@@ -174,11 +171,9 @@ func GetAllPool(db *database.Database, poolId bson.ObjectID) (
 		&bson.M{
 			"pools": poolId,
 		},
-		&options.FindOptions{
-			Projection: &bson.D{
+		options.Find().SetProjection(&bson.D{
 				{"name", 1},
-			},
-		},
+			}),
 	)
 	if err != nil {
 		err = database.ParseError(err)
@@ -236,13 +231,12 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	cursor, err := coll.Find(
 		db,
 		query,
-		&options.FindOptions{
-			Sort: &bson.D{
+		options.Find().
+			SetSort(&bson.D{
 				{"name", 1},
-			},
-			Skip:  &skip,
-			Limit: &pageCount,
-		},
+			}).
+			SetSkip(skip).
+			SetLimit(pageCount),
 	)
 	if err != nil {
 		err = database.ParseError(err)
@@ -289,11 +283,7 @@ func GetAllShape(db *database.Database, zones []bson.ObjectID,
 	cursor, err := coll.Find(
 		db,
 		query,
-		&options.FindOptions{
-			//Sort: &bson.D{
-			//	{"name", 1},
-			//},
-		},
+		options.Find(),
 	)
 	if err != nil {
 		err = database.ParseError(err)
@@ -329,15 +319,11 @@ func GetAllNet(db *database.Database) (nodes []*Node, err error) {
 	coll := db.Nodes()
 	nodes = []*Node{}
 
-	opts := &options.FindOptions{
-		Projection: &bson.D{
+	cursor, err := coll.Find(db, bson.M{}, options.Find().SetProjection(&bson.D{
 			{"datacenter", 1},
 			{"zone", 1},
 			{"private_ips", 1},
-		},
-	}
-
-	cursor, err := coll.Find(db, bson.M{}, opts)
+		}))
 	if err != nil {
 		err = database.ParseError(err)
 		return

@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
-	"github.com/pritunl/mongo-go-driver/mongo"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo"
 	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/constants"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -45,13 +45,10 @@ func (l *Listener) sub(cursorId bson.ObjectID) {
 		}
 	}
 
-	queryOpts := &options.FindOptions{
-		Sort: &bson.D{
-			{"$natural", 1},
-		},
-	}
-	queryOpts.SetMaxAwaitTime(10 * time.Second)
-	queryOpts.SetCursorType(options.TailableAwait)
+	queryOpts := options.Find().
+		SetSort(bson.D{{"$natural", 1}}).
+		SetMaxAwaitTime(10 * time.Second).
+		SetCursorType(options.TailableAwait)
 
 	query := &bson.M{
 		"_id": &bson.M{

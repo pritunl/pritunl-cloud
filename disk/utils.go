@@ -151,13 +151,10 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	cursor, err := coll.Find(
 		db,
 		query,
-		&options.FindOptions{
-			Sort: &bson.D{
-				{"name", 1},
-			},
-			Skip:  &skip,
-			Limit: &pageCount,
-		},
+		options.Find().
+			SetSort(bson.D{{"name", 1}}).
+			SetSkip(skip).
+			SetLimit(pageCount),
 	)
 	if err != nil {
 		err = database.ParseError(err)
@@ -196,11 +193,8 @@ func GetInstance(db *database.Database, instId bson.ObjectID) (
 		&bson.M{
 			"instance": instId,
 		},
-		&options.FindOptions{
-			Sort: &bson.D{
-				{"index", 1},
-			},
-		},
+		options.Find().
+			SetSort(bson.D{{"index", 1}}),
 	)
 	if err != nil {
 		err = database.ParseError(err)
@@ -481,12 +475,12 @@ func GetAllKeys(db *database.Database, ndeId bson.ObjectID) (
 
 	cursor, err := coll.Find(db, &bson.M{
 		"node": ndeId,
-	}, &options.FindOptions{
-		Projection: &bson.D{
+	}, options.Find().
+		SetProjection(bson.D{
 			{"node", 1},
 			{"backing_image", 1},
-		},
-	})
+		}),
+	)
 	if err != nil {
 		err = database.ParseError(err)
 		return

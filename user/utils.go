@@ -126,11 +126,8 @@ func GetAll(db *database.Database, query *bson.M, page, pageCount int64) (
 		}
 	}
 
-	opts := options.FindOptions{
-		Sort: &bson.D{
-			{"username", 1},
-		},
-	}
+	opts := options.Find().
+		SetSort(bson.D{{"username", 1}})
 
 	if pageCount != 0 {
 		maxPage := count / pageCount
@@ -139,14 +136,13 @@ func GetAll(db *database.Database, query *bson.M, page, pageCount int64) (
 		}
 		page = utils.Min64(page, maxPage)
 		skip := utils.Min64(page*pageCount, count)
-		opts.Skip = &skip
-		opts.Limit = &pageCount
+		opts.SetSkip(skip).SetLimit(pageCount)
 	}
 
 	cursor, err := coll.Find(
 		db,
 		query,
-		&opts,
+		opts,
 	)
 	if err != nil {
 		err = database.ParseError(err)
@@ -178,8 +174,8 @@ func Remove(db *database.Database, userIds []bson.ObjectID) (
 	errData *errortypes.ErrorData, err error) {
 
 	coll := db.Users()
-	opts := &options.CountOptions{}
-	opts.SetLimit(1)
+	opts := options.Count().
+		SetLimit(1)
 
 	count, err := coll.CountDocuments(
 		db,
@@ -247,8 +243,8 @@ func hasSuperSkip(db *database.Database, skipId bson.ObjectID) (
 	exists bool, err error) {
 
 	coll := db.Users()
-	opts := &options.CountOptions{}
-	opts.SetLimit(1)
+	opts := options.Count().
+		SetLimit(1)
 
 	count, err := coll.CountDocuments(
 		db,

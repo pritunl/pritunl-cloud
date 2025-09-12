@@ -1262,9 +1262,6 @@ func (n *Node) update(db *database.Database) (err error) {
 	coll := db.Nodes()
 
 	nde := &Node{}
-	opts := &options.FindOneAndUpdateOptions{}
-	opts.SetReturnDocument(options.After)
-
 	err = coll.FindOneAndUpdate(
 		db,
 		&bson.M{
@@ -1299,7 +1296,7 @@ func (n *Node) update(db *database.Database) (err error) {
 				"available_drives":     n.AvailableDrives,
 			},
 		},
-		opts,
+		options.FindOneAndUpdate().SetReturnDocument(options.After),
 	).Decode(nde)
 	if err != nil {
 		err = database.ParseError(err)
@@ -1607,9 +1604,6 @@ func (n *Node) Init() (err error) {
 		bsonSet["oracle_private_key"] = strings.TrimSpace(string(privKey))
 	}
 
-	opts := &options.UpdateOptions{}
-	opts.SetUpsert(true)
-
 	_, err = coll.UpdateOne(
 		db,
 		&bson.M{
@@ -1618,7 +1612,7 @@ func (n *Node) Init() (err error) {
 		&bson.M{
 			"$set": bsonSet,
 		},
-		opts,
+		options.UpdateOne().SetUpsert(true),
 	)
 	if err != nil {
 		err = database.ParseError(err)

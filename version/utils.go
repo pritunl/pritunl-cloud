@@ -38,8 +38,8 @@ func Check(db *database.Database, module string, ver int) (
 func Set(db *database.Database, module string, ver int) (err error) {
 	coll := db.Versions()
 
-	opts := &options.UpdateOptions{}
-	opts.SetUpsert(true)
+	opts := options.UpdateOne().
+		SetUpsert(true)
 
 	_, err = coll.UpdateOne(
 		db,

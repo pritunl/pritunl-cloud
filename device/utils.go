@@ -83,12 +83,12 @@ func GetAllSorted(db *database.Database, userId bson.ObjectID) (
 
 	cursor, err := coll.Find(db, &bson.M{
 		"user": userId,
-	}, &options.FindOptions{
-		Sort: &bson.D{
+	}, options.Find().
+		SetSort(bson.D{
 			{"mode", 1},
 			{"name", 1},
-		},
-	})
+		}),
+	)
 	if err != nil {
 		err = database.ParseError(err)
 		return

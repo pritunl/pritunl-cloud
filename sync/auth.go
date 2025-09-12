@@ -17,15 +17,12 @@ func authSync() (err error) {
 	defer db.Close()
 
 	coll := db.Users()
-	opts := &options.CountOptions{}
-	opts.SetLimit(1)
-
 	count, err := coll.CountDocuments(
 		db,
 		&bson.M{
 			"type": user.Local,
 		},
-		opts,
+		options.Count().SetLimit(1),
 	)
 	if err != nil {
 		err = database.ParseError(err)

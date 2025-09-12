@@ -122,11 +122,10 @@ func GetAllSorted(db *database.Database, query *bson.M) (
 	cursor, err := coll.Find(
 		db,
 		query,
-		&options.FindOptions{
-			Sort: &bson.D{
+		options.Find().
+			SetSort(&bson.D{
 				{"timestamp", -1},
-			},
-		},
+			}),
 	)
 	if err != nil {
 		err = database.ParseError(err)
@@ -168,11 +167,10 @@ func GetAllActiveIds(db *database.Database) (deplyIds set.Set, err error) {
 				},
 			},
 		},
-		&options.FindOptions{
-			Projection: bson.M{
+		options.Find().
+			SetProjection(bson.M{
 				"_id": 1,
-			},
-		},
+			}),
 	)
 	if err != nil {
 		err = database.ParseError(err)
@@ -209,13 +207,12 @@ func GetAllStates(db *database.Database) (
 	cursor, err := coll.Find(
 		db,
 		bson.M{},
-		&options.FindOptions{
-			Projection: bson.M{
+		options.Find().
+			SetProjection(bson.M{
 				"_id":    1,
 				"state":  1,
 				"action": 1,
-			},
-		},
+			}),
 	)
 	if err != nil {
 		err = database.ParseError(err)

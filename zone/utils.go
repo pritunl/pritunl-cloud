@@ -41,11 +41,10 @@ func GetAll(db *database.Database) (zones []*Zone, err error) {
 	cursor, err := coll.Find(
 		db,
 		&bson.M{},
-		&options.FindOptions{
-			Sort: &bson.D{
+		options.Find().
+			SetSort(&bson.D{
 				{"name", 1},
-			},
-		},
+			}),
 	)
 	if err != nil {
 		err = database.ParseError(err)
@@ -82,15 +81,14 @@ func GetAllNames(db *database.Database, query *bson.M) (
 	cursor, err := coll.Find(
 		db,
 		query,
-		&options.FindOptions{
-			Sort: &bson.D{
+		options.Find().
+			SetSort(&bson.D{
 				{"name", 1},
-			},
-			Projection: &bson.D{
+			}).
+			SetProjection(&bson.D{
 				{"name", 1},
 				{"datacenter", 1},
-			},
-		},
+			}),
 	)
 	if err != nil {
 		err = database.ParseError(err)
@@ -148,13 +146,12 @@ func GetAllPaged(db *database.Database, query *bson.M,
 	cursor, err := coll.Find(
 		db,
 		query,
-		&options.FindOptions{
-			Sort: &bson.D{
+		options.Find().
+			SetSort(&bson.D{
 				{"name", 1},
-			},
-			Skip:  &skip,
-			Limit: &pageCount,
-		},
+			}).
+			SetSkip(skip).
+			SetLimit(pageCount),
 	)
 	if err != nil {
 		err = database.ParseError(err)
@@ -193,11 +190,10 @@ func GetAllDatacenter(db *database.Database, dcId bson.ObjectID) (
 		&bson.M{
 			"datacenter": dcId,
 		},
-		&options.FindOptions{
-			Sort: &bson.D{
+		options.Find().
+			SetSort(&bson.D{
 				{"name", 1},
-			},
-		},
+			}),
 	)
 	if err != nil {
 		err = database.ParseError(err)
@@ -238,15 +234,14 @@ func GetAllNamedDc(db *database.Database, dcIds []bson.ObjectID) (
 				"$in": dcIds,
 			},
 		},
-		&options.FindOptions{
-			Sort: &bson.D{
+		options.Find().
+			SetSort(&bson.D{
 				{"name", 1},
-			},
-			Projection: &bson.D{
+			}).
+			SetProjection(&bson.D{
 				{"name", 1},
 				{"datacenter", 1},
-			},
-		},
+			}),
 	)
 	if err != nil {
 		err = database.ParseError(err)

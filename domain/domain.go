@@ -575,11 +575,9 @@ func (d *Domain) LoadRecords(db *database.Database,
 
 	cursor, err := coll.Find(db, &bson.M{
 		"domain": d.Id,
-	}, &options.FindOptions{
-		Sort: &bson.D{
-			{"sub_domain", 1},
-		},
-	})
+	}, options.Find().
+		SetSort(bson.D{{"sub_domain", 1}}),
+	)
 	if err != nil {
 		err = database.ParseError(err)
 		return

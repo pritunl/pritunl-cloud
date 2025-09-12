@@ -37,15 +37,14 @@ func ResolverRefresh(db *database.Database) (err error) {
 	cursor, err := coll.Find(
 		db,
 		&bson.M{},
-		&options.FindOptions{
-			Projection: &bson.M{
+		options.Find().
+			SetProjection(&bson.M{
 				"public_ips":        1,
 				"public_ips6":       1,
 				"cloud_private_ips": 1,
 				"cloud_public_ips":  1,
 				"cloud_public_ips6": 1,
-			},
-		},
+			}),
 	)
 	if err != nil {
 		err = database.ParseError(err)

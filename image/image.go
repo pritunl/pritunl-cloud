@@ -164,8 +164,6 @@ func (i *Image) Upsert(db *database.Database) (err error) {
 		"etag":          i.Etag,
 	}
 
-	opts := &options.UpdateOptions{}
-	opts.SetUpsert(true)
 	resp, err := coll.UpdateOne(
 		db,
 		&bson.M{
@@ -175,7 +173,7 @@ func (i *Image) Upsert(db *database.Database) (err error) {
 		&bson.M{
 			"$set": fields,
 		},
-		opts,
+		options.UpdateOne().SetUpsert(true),
 	)
 	if err != nil {
 		err = database.ParseError(err)
@@ -238,8 +236,6 @@ func (i *Image) Sync(db *database.Database) (err error) {
 			i.Id = resp.UpsertedID.(bson.ObjectID)
 		}
 	} else {
-		opts := &options.UpdateOptions{}
-		opts.SetUpsert(true)
 		resp, e := coll.UpdateOne(
 			db,
 			&bson.M{
@@ -265,7 +261,7 @@ func (i *Image) Sync(db *database.Database) (err error) {
 					"deployment": bson.NilObjectID,
 				},
 			},
-			opts,
+			options.UpdateOne().SetUpsert(true),
 		)
 		if e != nil {
 			err = database.ParseError(e)
