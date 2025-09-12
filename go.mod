@@ -20,13 +20,14 @@ require (
 	github.com/minio/minio-go/v7 v7.0.76
 	github.com/oracle/oci-go-sdk/v65 v65.74.0
 	github.com/pritunl/mongo-go-driver v1.16.1
+	github.com/pritunl/mongo-go-driver/v2 v2.3.0
 	github.com/pritunl/tools v1.2.5
 	github.com/sirupsen/logrus v1.9.3
 	github.com/twilio/twilio-go v1.23.0
 	github.com/ua-parser/uap-go v0.0.0-20250213224047-9c035f085b90
-	golang.org/x/crypto v0.40.0
+	golang.org/x/crypto v0.41.0
 	golang.org/x/oauth2 v0.30.0
-	golang.org/x/sys v0.34.0
+	golang.org/x/sys v0.35.0
 	google.golang.org/api v0.197.0
 	gopkg.in/yaml.v2 v2.4.0
 )
@@ -56,7 +57,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/mock v1.6.0 // indirect
-	github.com/golang/snappy v0.0.4 // indirect
+	github.com/golang/snappy v1.0.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/go-tpm v0.9.3 // indirect
 	github.com/google/s2a-go v0.1.8 // indirect
@@ -96,9 +97,9 @@ require (
 	go.opentelemetry.io/otel/metric v1.30.0 // indirect
 	go.opentelemetry.io/otel/trace v1.30.0 // indirect
 	golang.org/x/arch v0.10.0 // indirect
-	golang.org/x/net v0.41.0 // indirect
+	golang.org/x/net v0.42.0 // indirect
 	golang.org/x/sync v0.16.0 // indirect
-	golang.org/x/text v0.27.0 // indirect
+	golang.org/x/text v0.28.0 // indirect
 	golang.org/x/time v0.6.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240722135656-d784300faade // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240903143218-8af14fe29dc1 // indirect
