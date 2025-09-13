@@ -19,6 +19,7 @@ type Datacenter struct {
 	Organizations       []bson.ObjectID `bson:"organizations" json:"organizations"`
 	NetworkMode         string          `bson:"network_mode" json:"network_mode"`
 	WgMode              string          `bson:"wg_mode" json:"wg_mode"`
+	JumboMtu            int             `bson:"jumbo_mtu" json:"jumbo_mtu"`
 	PublicStorages      []bson.ObjectID `bson:"public_storages" json:"public_storages"`
 	PrivateStorage      bson.ObjectID   `bson:"private_storage,omitempty" json:"private_storage"`
 	PrivateStorageClass string          `bson:"private_storage_class" json:"private_storage_class"`
