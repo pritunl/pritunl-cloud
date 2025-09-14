@@ -84,6 +84,14 @@ func (d *Datacenter) Validate(db *database.Database) (
 		d.WgMode = ""
 	}
 
+	if d.JumboMtu != 0 && (d.JumboMtu < 600 || d.JumboMtu > 65535) {
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_jumbo_mtu",
+			Message: "Jumbo MTU invalid",
+		}
+		return
+	}
+
 	return
 }
 
