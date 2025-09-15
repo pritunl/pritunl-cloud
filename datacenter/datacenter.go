@@ -101,7 +101,11 @@ func (d *Datacenter) Vxlan() bool {
 
 func (d *Datacenter) GetBaseInternalMtu() (mtuSize int) {
 	if node.Self.JumboFrames || node.Self.JumboFramesInternal {
-		mtuSize = settings.Hypervisor.JumboMtu
+		if d.JumboMtu != 0 {
+			mtuSize = d.JumboMtu
+		} else {
+			mtuSize = settings.Hypervisor.JumboMtu
+		}
 	} else {
 		mtuSize = settings.Hypervisor.NormalMtu
 	}
@@ -110,7 +114,11 @@ func (d *Datacenter) GetBaseInternalMtu() (mtuSize int) {
 
 func (d *Datacenter) GetBaseExternalMtu() (mtuSize int) {
 	if node.Self.JumboFrames {
-		mtuSize = settings.Hypervisor.JumboMtu
+		if d.JumboMtu != 0 {
+			mtuSize = d.JumboMtu
+		} else {
+			mtuSize = settings.Hypervisor.JumboMtu
+		}
 	} else {
 		mtuSize = settings.Hypervisor.NormalMtu
 	}
@@ -120,7 +128,11 @@ func (d *Datacenter) GetBaseExternalMtu() (mtuSize int) {
 func (d *Datacenter) GetOverlayMtu() (mtuSize int) {
 	if d.NetworkMode == WgVxlanVlan {
 		if node.Self.JumboFrames {
-			mtuSize = settings.Hypervisor.JumboMtu
+			if d.JumboMtu != 0 {
+				mtuSize = d.JumboMtu
+			} else {
+				mtuSize = settings.Hypervisor.JumboMtu
+			}
 		} else {
 			mtuSize = settings.Hypervisor.NormalMtu
 		}
@@ -132,7 +144,11 @@ func (d *Datacenter) GetOverlayMtu() (mtuSize int) {
 		}
 	} else {
 		if node.Self.JumboFrames || node.Self.JumboFramesInternal {
-			mtuSize = settings.Hypervisor.JumboMtu
+			if d.JumboMtu != 0 {
+				mtuSize = d.JumboMtu
+			} else {
+				mtuSize = settings.Hypervisor.JumboMtu
+			}
 		} else {
 			mtuSize = settings.Hypervisor.NormalMtu
 		}
@@ -148,7 +164,11 @@ func (d *Datacenter) GetOverlayMtu() (mtuSize int) {
 func (d *Datacenter) GetInstanceMtu() (mtuSize int) {
 	if d.NetworkMode == WgVxlanVlan {
 		if node.Self.JumboFrames {
-			mtuSize = settings.Hypervisor.JumboMtu
+			if d.JumboMtu != 0 {
+				mtuSize = d.JumboMtu
+			} else {
+				mtuSize = settings.Hypervisor.JumboMtu
+			}
 		} else {
 			mtuSize = settings.Hypervisor.NormalMtu
 		}
@@ -160,7 +180,11 @@ func (d *Datacenter) GetInstanceMtu() (mtuSize int) {
 		}
 	} else {
 		if node.Self.JumboFrames || node.Self.JumboFramesInternal {
-			mtuSize = settings.Hypervisor.JumboMtu
+			if d.JumboMtu != 0 {
+				mtuSize = d.JumboMtu
+			} else {
+				mtuSize = settings.Hypervisor.JumboMtu
+			}
 		} else {
 			mtuSize = settings.Hypervisor.NormalMtu
 		}
