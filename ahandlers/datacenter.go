@@ -26,6 +26,7 @@ type datacenterData struct {
 	NetworkMode         string          `json:"network_mode"`
 	MatchOrganizations  bool            `json:"match_organizations"`
 	Organizations       []bson.ObjectID `json:"organizations"`
+	JumboMtu            int             `json:"jumbo_mtu"`
 	PublicStorages      []bson.ObjectID `json:"public_storages"`
 	PrivateStorage      bson.ObjectID   `json:"private_storage"`
 	PrivateStorageClass string          `json:"private_storage_class"`
@@ -72,6 +73,7 @@ func datacenterPut(c *gin.Context) {
 	dc.NetworkMode = data.NetworkMode
 	dc.MatchOrganizations = data.MatchOrganizations
 	dc.Organizations = data.Organizations
+	dc.JumboMtu = data.JumboMtu
 	dc.PublicStorages = data.PublicStorages
 	dc.PrivateStorage = data.PrivateStorage
 	dc.PrivateStorageClass = data.PrivateStorageClass
@@ -84,6 +86,7 @@ func datacenterPut(c *gin.Context) {
 		"network_mode",
 		"match_organizations",
 		"organizations",
+		"jumbo_mtu",
 		"public_storages",
 		"private_storage",
 		"private_storage_class",
@@ -138,6 +141,7 @@ func datacenterPost(c *gin.Context) {
 		NetworkMode:         data.NetworkMode,
 		MatchOrganizations:  data.MatchOrganizations,
 		Organizations:       data.Organizations,
+		JumboMtu:            data.JumboMtu,
 		PublicStorages:      data.PublicStorages,
 		PrivateStorage:      data.PrivateStorage,
 		PrivateStorageClass: data.PrivateStorageClass,
