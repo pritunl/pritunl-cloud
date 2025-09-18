@@ -53,6 +53,8 @@ func (u *InstanceUnit) Schedule(db *database.Database, count int) (err error) {
 
 	schd := &Scheduler{
 		Id:            u.unit.Id,
+		Organization:  u.unit.Organization,
+		Pod:           u.unit.Pod,
 		Kind:          InstanceUnitKind,
 		Spec:          u.spec.Id,
 		Count:         u.count,
