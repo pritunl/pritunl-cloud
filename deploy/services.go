@@ -63,11 +63,33 @@ func (s *Pods) deploySchedule(schd *scheduler.Scheduler) (err error) {
 
 	unt, err := unit.Get(db, schd.Id)
 	if err != nil {
+		if _, ok := err.(*database.NotFoundError); ok {
+			logrus.WithFields(logrus.Fields{
+				"unit": schd.Id.Hex(),
+			}).Warn("deploy: Canceling deployment on unit not found")
+
+			err = schd.ClearTickets(db)
+			if err != nil {
+				return
+			}
+			return
+		}
 		return
 	}
 
 	spc, err := spec.Get(db, schd.Spec)
 	if err != nil {
+		if _, ok := err.(*database.NotFoundError); ok {
+			logrus.WithFields(logrus.Fields{
+				"unit": schd.Id.Hex(),
+			}).Warn("deploy: Canceling deployment on spec not found")
+
+			err = schd.ClearTickets(db)
+			if err != nil {
+				return
+			}
+			return
+		}
 		return
 	}
 
