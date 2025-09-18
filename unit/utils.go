@@ -142,8 +142,21 @@ func NewSpec(db *database.Database,
 }
 
 func Remove(db *database.Database, untId bson.ObjectID) (err error) {
-	coll := db.Units()
+	coll := db.Schedulers()
+	_, err = coll.DeleteOne(db, &bson.M{
+		"_id": untId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		switch err.(type) {
+		case *database.NotFoundError:
+			err = nil
+		default:
+			return
+		}
+	}
 
+	coll = db.Units()
 	_, err = coll.DeleteOne(db, &bson.M{
 		"_id": untId,
 	})
@@ -163,8 +176,22 @@ func Remove(db *database.Database, untId bson.ObjectID) (err error) {
 func RemoveOrg(db *database.Database, orgId, untId bson.ObjectID) (
 	err error) {
 
-	coll := db.Units()
+	coll := db.Schedulers()
+	_, err = coll.DeleteOne(db, &bson.M{
+		"_id":          untId,
+		"organization": orgId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		switch err.(type) {
+		case *database.NotFoundError:
+			err = nil
+		default:
+			return
+		}
+	}
 
+	coll = db.Units()
 	_, err = coll.DeleteOne(db, &bson.M{
 		"_id":          untId,
 		"organization": orgId,
@@ -183,8 +210,19 @@ func RemoveOrg(db *database.Database, orgId, untId bson.ObjectID) (
 }
 
 func RemoveAll(db *database.Database, query *bson.M) (err error) {
-	coll := db.Units()
+	coll := db.Schedulers()
+	_, err = coll.DeleteMany(db, query)
+	if err != nil {
+		err = database.ParseError(err)
+		switch err.(type) {
+		case *database.NotFoundError:
+			err = nil
+		default:
+			return
+		}
+	}
 
+	coll = db.Units()
 	_, err = coll.DeleteMany(db, query)
 	if err != nil {
 		err = database.ParseError(err)
@@ -197,8 +235,23 @@ func RemoveAll(db *database.Database, query *bson.M) (err error) {
 func RemoveMulti(db *database.Database,
 	untIds []bson.ObjectID) (err error) {
 
-	coll := db.Units()
+	coll := db.Schedulers()
+	_, err = coll.DeleteMany(db, &bson.M{
+		"_id": &bson.M{
+			"$in": untIds,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		switch err.(type) {
+		case *database.NotFoundError:
+			err = nil
+		default:
+			return
+		}
+	}
 
+	coll = db.Units()
 	_, err = coll.DeleteMany(db, &bson.M{
 		"_id": &bson.M{
 			"$in": untIds,
@@ -215,8 +268,24 @@ func RemoveMulti(db *database.Database,
 func RemoveMultiOrg(db *database.Database, orgId bson.ObjectID,
 	untIds []bson.ObjectID) (err error) {
 
-	coll := db.Units()
+	coll := db.Schedulers()
+	_, err = coll.DeleteMany(db, &bson.M{
+		"_id": &bson.M{
+			"$in": untIds,
+		},
+		"organization": orgId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		switch err.(type) {
+		case *database.NotFoundError:
+			err = nil
+		default:
+			return
+		}
+	}
 
+	coll = db.Units()
 	_, err = coll.DeleteMany(db, &bson.M{
 		"_id": &bson.M{
 			"$in": untIds,
