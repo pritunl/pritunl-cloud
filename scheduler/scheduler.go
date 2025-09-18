@@ -14,6 +14,8 @@ import (
 
 type Scheduler struct {
 	Id            bson.ObjectID         `bson:"_id" json:"id"`
+	Organization  bson.ObjectID         `bson:"organization" json:"organization"`
+	Pod           bson.ObjectID         `bson:"pod" json:"pod"`
 	Kind          string                `bson:"kind" json:"kind"`
 	Created       time.Time             `bson:"created" json:"created"`
 	Modified      time.Time             `bson:"modified" json:"modified"`
