@@ -149,6 +149,12 @@ func GetEnv(username, driPath string, driPrime bool) (
 		if waylandDisplayEnv != "" {
 			envData += fmt.Sprintf(
 				"\nEnvironment=\"WAYLAND_DISPLAY=%s\"", waylandDisplayEnv)
+
+			envData += "\nEnvironment=\"GDK_BACKEND=wayland\""
+			envData += "\nEnvironment=\"XDG_SESSION_TYPE=wayland\""
+			envData += fmt.Sprintf(
+				"\nEnvironment=\"XDG_RUNTIME_DIR=/run/user/%s\"", unixUser.Uid)
+			envData += "\nEnvironment=\"XDG_SESSION_CLASS=user\""
 		}
 
 		envData += fmt.Sprintf("\nEnvironment=\"XAUTHORITY=%s\"", xauthEnv)
