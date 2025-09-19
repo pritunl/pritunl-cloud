@@ -23,6 +23,8 @@ const (
 	VirtioPci = "virtio_pci"
 	// virtio-vga-gl
 	VirtioVgaGl = "virtio_vga_gl"
+	// virtio-vga-gl,venus=true
+	VirtioVgaGlVulkan = "virtio_vga_gl_vulkan"
 	// virtio-gpu-gl
 	VirtioGl = "virtio_gl"
 	// virtio-gpu-gl,venus=true
@@ -37,6 +39,8 @@ const (
 	VirtioPciPrime = "virtio_pci_prime"
 	// virtio-vga-gl prime=1
 	VirtioVgaGlPrime = "virtio_vga_gl_prime"
+	// virtio-vga-gl,venus=true prime=1
+	VirtioVgaGlVulkanPrime = "virtio_vga_gl_vulkan_prime"
 	// virtio-gpu-gl prime=1
 	VirtioGlPrime = "virtio_gl_prime"
 	// virtio-gpu-gl,venus=true prime=1
