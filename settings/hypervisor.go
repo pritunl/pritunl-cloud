@@ -21,6 +21,7 @@ type hypervisor struct {
 	NbdPath               string `bson:"nbd_path" default:"/dev/nbd6"`
 	DiskAio               string `bson:"disk_aio"`
 	NoSandbox             bool   `bson:"no_sandbox"`
+	GlHostMem             int    `bson:"gl_host_mem" default:"2048"`
 	BridgeIfaceName       string `bson:"bridge_iface_name" default:"br0"`
 	ImdsIfaceName         string `bson:"imds_iface_name" default:"imds0"`
 	NormalMtu             int    `bson:"normal_mtu" default:"1500"`
