@@ -296,12 +296,18 @@ func (q *Qemu) Marshal() (output string, err error) {
 			vgaPrime = true
 		case node.VirtioGlVulkan:
 			cmd = append(cmd, "-device")
-			cmd = append(cmd, "virtio-gpu-gl,venus=true")
+			cmd = append(cmd, fmt.Sprintf(
+				"virtio-gpu-gl,blob=true,hostmem=%dM,venus=true",
+				settings.Hypervisor.GlHostMem,
+			))
 			cmd = append(cmd, "-vga")
 			cmd = append(cmd, "none")
 		case node.VirtioGlVulkanPrime:
 			cmd = append(cmd, "-device")
-			cmd = append(cmd, "virtio-gpu-gl,venus=true")
+			cmd = append(cmd, fmt.Sprintf(
+				"virtio-gpu-gl,blob=true,hostmem=%dM,venus=true",
+				settings.Hypervisor.GlHostMem,
+			))
 			cmd = append(cmd, "-vga")
 			cmd = append(cmd, "none")
 			vgaPrime = true
@@ -318,12 +324,18 @@ func (q *Qemu) Marshal() (output string, err error) {
 			vgaPrime = true
 		case node.VirtioPciGlVulkan:
 			cmd = append(cmd, "-device")
-			cmd = append(cmd, "virtio-gpu-gl-pci,venus=true")
+			cmd = append(cmd, fmt.Sprintf(
+				"virtio-gpu-gl-pci,blob=true,hostmem=%dM,venus=true",
+				settings.Hypervisor.GlHostMem,
+			))
 			cmd = append(cmd, "-vga")
 			cmd = append(cmd, "none")
 		case node.VirtioPciGlVulkanPrime:
 			cmd = append(cmd, "-device")
-			cmd = append(cmd, "virtio-gpu-gl-pci,venus=true")
+			cmd = append(cmd, fmt.Sprintf(
+				"virtio-gpu-gl-pci,blob=true,hostmem=%dM,venus=true",
+				settings.Hypervisor.GlHostMem,
+			))
 			cmd = append(cmd, "-vga")
 			cmd = append(cmd, "none")
 			vgaPrime = true
