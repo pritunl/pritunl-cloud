@@ -729,7 +729,14 @@ func (q *Qemu) Marshal() (output string, err error) {
 		}
 	}
 
-	if node.Self.UsbPassthrough || q.Vnc || q.Spice {
+	if q.Gui && !settings.Hypervisor.NoVirtioHid {
+		cmd = append(cmd, "-device")
+		cmd = append(cmd, "virtio-tablet-pci")
+		cmd = append(cmd, "-device")
+		cmd = append(cmd, "virtio-keyboard-pci")
+	}
+
+	if node.Self.UsbPassthrough || q.Vnc || q.Spice || q.Gui {
 		slot += 1
 		cmd = append(cmd, "-device")
 		cmd = append(cmd,
@@ -741,18 +748,11 @@ func (q *Qemu) Marshal() (output string, err error) {
 			settings.Hypervisor.UsbSsPorts,
 		))
 
-		if q.Vnc || q.Spice {
-			if settings.Hypervisor.VirtioHid {
-				cmd = append(cmd, "-device")
-				cmd = append(cmd, "virtio-mouse-pci")
-				cmd = append(cmd, "-device")
-				cmd = append(cmd, "virtio-keyboard-pci")
-			} else {
-				cmd = append(cmd, "-device")
-				cmd = append(cmd, "usb-tablet")
-				cmd = append(cmd, "-device")
-				cmd = append(cmd, "usb-kbd")
-			}
+		if (q.Vnc || q.Spice || q.Gui) && settings.Hypervisor.NoVirtioHid {
+			cmd = append(cmd, "-device")
+			cmd = append(cmd, "usb-tablet")
+			cmd = append(cmd, "-device")
+			cmd = append(cmd, "usb-kbd")
 		}
 
 		for _, device := range q.UsbDevices {
