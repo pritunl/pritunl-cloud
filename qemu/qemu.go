@@ -266,6 +266,23 @@ func (q *Qemu) Marshal() (output string, err error) {
 			cmd = append(cmd, "-vga")
 			cmd = append(cmd, "none")
 			vgaPrime = true
+		case node.VirtioVgaGlVulkan:
+			cmd = append(cmd, "-device")
+			cmd = append(cmd, fmt.Sprintf(
+				"virtio-vga-gl,blob=true,hostmem=%dM,venus=true",
+				settings.Hypervisor.GlHostMem,
+			))
+			cmd = append(cmd, "-vga")
+			cmd = append(cmd, "none")
+		case node.VirtioVgaGlVulkanPrime:
+			cmd = append(cmd, "-device")
+			cmd = append(cmd, fmt.Sprintf(
+				"virtio-vga-gl,blob=true,hostmem=%dM,venus=true",
+				settings.Hypervisor.GlHostMem,
+			))
+			cmd = append(cmd, "-vga")
+			cmd = append(cmd, "none")
+			vgaPrime = true
 		case node.VirtioGl:
 			cmd = append(cmd, "-device")
 			cmd = append(cmd, "virtio-gpu-gl")
