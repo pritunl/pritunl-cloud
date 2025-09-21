@@ -223,8 +223,13 @@ func (q *Qemu) Marshal() (output string, err error) {
 	if !gpuPassthrough && (q.Vnc || q.Spice || q.Gui) {
 		if q.Gui {
 			cmd = append(cmd, "-display")
-			cmd = append(cmd, fmt.Sprintf(
-				"%s,gl=on,window-close=off", q.GuiMode))
+			if q.GuiMode == node.Gtk && !settings.Hypervisor.NoGuiFullscreen {
+				cmd = append(cmd, fmt.Sprintf(
+					"%s,gl=on,window-close=off,full-screen=on", q.GuiMode))
+			} else {
+				cmd = append(cmd, fmt.Sprintf(
+					"%s,gl=on,window-close=off", q.GuiMode))
+			}
 		} else if node.VgaRenderModes.Contains(nodeVga) {
 			cmd = append(cmd, "-display")
 			options := "egl-headless"
