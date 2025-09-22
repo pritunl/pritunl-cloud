@@ -37,22 +37,45 @@ func Mongo() (err error) {
 	return
 }
 
-func ResetId() (err error) {
+func ResetNodeWeb() (err error) {
+	db := database.GetDatabase()
+	defer db.Close()
+
 	err = config.Load()
 	if err != nil {
 		return
 	}
 
-	config.Config.NodeId = bson.NewObjectID().Hex()
+	ndeId, err := bson.ObjectIDFromHex(config.Config.NodeId)
+	if err != nil || ndeId.IsZero() {
+		err = nil
+		logrus.Info("cmd: Node not initialized")
+		return
+	}
 
-	err = config.Save()
+	coll := db.Nodes()
+
+	_, err = coll.UpdateOne(db, &bson.M{
+		"_id": ndeId,
+	}, &bson.M{
+		"$set": &bson.M{
+			"types":              []string{"admin", "hypervisor"},
+			"port":               443,
+			"protocol":           "https",
+			"no_redirect_server": false,
+			"admin_domain":       "",
+			"user_domain":        "",
+			"webauthn_domain":    "",
+		},
+	})
 	if err != nil {
+		err = database.ParseError(err)
 		return
 	}
 
 	logrus.WithFields(logrus.Fields{
 		"node_id": config.Config.NodeId,
-	}).Info("cmd: Reset node ID")
+	}).Info("cmd: Node web server reset")
 
 	return
 }
