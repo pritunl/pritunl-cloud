@@ -12,7 +12,7 @@
     "@popperjs/core": "2.11.8",
     "@types/chart.js": "2.9.41",
     "@types/jquery": "3.5.30",
-    "@types/node": "18.11.9",
+    "@types/node": "22.13.14",
     "@types/react": "18.3.2",
     "@types/react-dom": "18.3.0",
     "@types/superagent": "8.1.7",
