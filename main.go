@@ -23,7 +23,7 @@ Commands:
   unset             Unset a setting
   start             Start node
   clear-logs        Clear logs
-  reset-id          Reset node id with default configuration
+  reset-node-web    Reset node web server settings
   optimize          Optimize system configuration
   default-password  Get default administrator password
   reset-password    Reset administrator password
@@ -98,9 +98,9 @@ func main() {
 			panic(err)
 		}
 		return
-	case "reset-id":
+	case "reset-node-web":
 		logger.Init()
-		err := cmd.ResetId()
+		err := cmd.ResetNodeWeb()
 		if err != nil {
 			panic(err)
 		}
