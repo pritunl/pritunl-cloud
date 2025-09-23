@@ -162,11 +162,8 @@ func DisablePolicies() (err error) {
 		},
 	})
 	if err != nil {
-		if _, ok := err.(*database.NotFoundError); ok {
-			err = nil
-		} else {
-			return
-		}
+		err = database.ParseError(err)
+		return
 	}
 
 	logrus.Info("cmd: Policies disabled")
@@ -192,7 +189,7 @@ func DisableFirewall() (err error) {
 
 	coll := db.Nodes()
 
-	_, err = coll.UpdateMany(db, &bson.M{
+	_, err = coll.UpdateOne(db, &bson.M{
 		"_id": ndeId,
 	}, &bson.M{
 		"$set": &bson.M{
@@ -200,14 +197,13 @@ func DisableFirewall() (err error) {
 		},
 	})
 	if err != nil {
-		if _, ok := err.(*database.NotFoundError); ok {
-			err = nil
-		} else {
-			return
-		}
+		err = database.ParseError(err)
+		return
 	}
 
-	logrus.Info("cmd: Firewall disabled")
+	logrus.WithFields(logrus.Fields{
+		"node_id": config.Config.NodeId,
+	}).Info("cmd: Firewall disabled")
 
 	return
 }
