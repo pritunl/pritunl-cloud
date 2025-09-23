@@ -8,12 +8,7 @@ import (
 
 var (
 	randElm = []string{
-		"iron",
-		"gold",
-		"silver",
 		"copper",
-		"zinc",
-		"neon",
 		"argon",
 		"xenon",
 		"radon",
@@ -21,6 +16,8 @@ var (
 		"nickel",
 		"carbon",
 		"helium",
+		"nitrogen",
+		"radium",
 		"lithium",
 		"silicon",
 	}
