@@ -50,7 +50,7 @@ type hypervisor struct {
 	DhcpRenewTtl          int    `bson:"dhcp_renew_ttl" default:"60"`
 	NoIpv6PingInit        bool   `bson:"no_ipv6_ping_init"`
 	Ipv6PingHost          string `bson:"ipv6_ping_host" default:"2001:4860:4860::8888"`
-	ImdsAddress           string `bson:"imds_address" default:"169.254.169.254/16"`
+	ImdsAddress           string `bson:"imds_address" default:"169.254.169.254/32"`
 	ImdsPort              int    `bson:"imds_port" default:"80"`
 	ImdsSyncLogTimeout    int    `bson:"imds_sync_log_timeout" default:"20"`
 	InfoTtl               int    `bson:"info_ttl" default:"10"`
