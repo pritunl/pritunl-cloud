@@ -3,6 +3,7 @@ pritunl-cloud changelog
 
 <%= version %>
 
+Add pod system
 Add imds service
 Add secrets storage
 Add LVM storage pools
