@@ -246,6 +246,12 @@ func datacentersDelete(c *gin.Context) {
 }
 
 func datacenterGet(c *gin.Context) {
+	if demo.IsDemo() {
+		dc := demo.Datacenters[0]
+		c.JSON(200, dc)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 
 	dcId, ok := utils.ParseObjectId(c.Param("dc_id"))
@@ -264,6 +270,16 @@ func datacenterGet(c *gin.Context) {
 }
 
 func datacentersGet(c *gin.Context) {
+	if demo.IsDemo() {
+		data := &datacentersData{
+			Datacenters: demo.Datacenters,
+			Count:       int64(len(demo.Datacenters)),
+		}
+
+		c.JSON(200, data)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 
 	if c.Query("names") == "true" {
