@@ -99,7 +99,7 @@ func main() {
 		}
 		return
 	case "reset-node-web":
-		logger.Init()
+		InitLimited()
 		err := cmd.ResetNodeWeb()
 		if err != nil {
 			panic(err)
