@@ -2,8 +2,8 @@ targets=(
     "oraclelinux-10"
 )
 pkgname="pritunl-cloud"
-pkgver="1.2.2933.86"
-pkgrel="4"
+pkgver="2.0.3592.49"
+pkgrel="2"
 pkgdesc="Pritunl Cloud"
 pkgdesclong=(
     "Pritunl Cloud"
@@ -49,7 +49,7 @@ sources=(
     "pritunl-cloud-master.tar.gz"
 )
 hashsums=(
-    "e55db02c26f7f0a8ce383d8727f82f34e319ac6c5909ee4128059f891b5675b4"
+    "690c2aab9a0ea6a940b4390b6e95ec55c10951e3634e51115a36051402d686bc"
 )
 backup=(
     "etc/${pkgname}.json"
