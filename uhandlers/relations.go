@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/demo"
 	"github.com/pritunl/pritunl-cloud/relations"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
@@ -15,6 +16,23 @@ type relationsData struct {
 }
 
 func relationsGet(c *gin.Context) {
+	if demo.Blocked(c) {
+		kind := c.Param("kind")
+		resourceId, ok := utils.ParseObjectId(c.Param("id"))
+		if !ok {
+			utils.AbortWithStatus(c, 400)
+			return
+		}
+
+		data := &relationsData{
+			Id:   resourceId,
+			Kind: kind,
+			Data: "demo",
+		}
+		c.JSON(200, data)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(bson.ObjectID)
 
