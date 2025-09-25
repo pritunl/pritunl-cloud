@@ -206,6 +206,12 @@ func zonesDelete(c *gin.Context) {
 }
 
 func zoneGet(c *gin.Context) {
+	if demo.IsDemo() {
+		zne := demo.Zones[0]
+		c.JSON(200, zne)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 
 	zoneId, ok := utils.ParseObjectId(c.Param("zone_id"))
@@ -224,6 +230,16 @@ func zoneGet(c *gin.Context) {
 }
 
 func zonesGet(c *gin.Context) {
+	if demo.IsDemo() {
+		data := &zonesData{
+			Zones: demo.Zones,
+			Count: int64(len(demo.Zones)),
+		}
+
+		c.JSON(200, data)
+		return
+	}
+
 	db := c.MustGet("db").(*database.Database)
 
 	if c.Query("names") == "true" {
