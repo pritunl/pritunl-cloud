@@ -16,14 +16,8 @@ import Page from './Page';
 import PageHeader from './PageHeader';
 import NonState from './NonState';
 import ConfirmButton from './ConfirmButton';
-import ZonesStore from "../stores/ZonesStore";
-import DatacentersStore from "../stores/DatacentersStore";
 import * as ZoneTypes from "../types/ZoneTypes";
 import * as DatacenterTypes from "../types/DatacenterTypes";
-import InstancesStore from "../stores/InstancesStore";
-import * as InstanceActions from "../actions/InstanceActions";
-import * as DatacenterActions from "../actions/DatacenterActions";
-import * as ZoneActions from "../actions/ZoneActions";
 import * as PoolTypes from "../types/PoolTypes";
 
 interface Selected {
