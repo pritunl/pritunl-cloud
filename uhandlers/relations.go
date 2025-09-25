@@ -16,7 +16,7 @@ type relationsData struct {
 }
 
 func relationsGet(c *gin.Context) {
-	if demo.Blocked(c) {
+	if demo.IsDemo() {
 		kind := c.Param("kind")
 		resourceId, ok := utils.ParseObjectId(c.Param("id"))
 		if !ok {
