@@ -5,13 +5,9 @@ import * as DiskTypes from '../types/DiskTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import * as NodeTypes from '../types/NodeTypes';
 import DisksStore from '../stores/DisksStore';
-import OrganizationsStore from '../stores/OrganizationsStore';
-import NodesStore from '../stores/NodesStore';
-import PoolsStore from '../stores/PoolsStore';
+import CompletionStore from '../stores/CompletionStore';
 import * as DiskActions from '../actions/DiskActions';
-import * as OrganizationActions from '../actions/OrganizationActions';
-import * as NodeActions from '../actions/NodeActions';
-import * as PoolActions from '../actions/PoolActions';
+import * as CompletionActions from '../actions/CompletionActions';
 import Disk from './Disk';
 import DisksFilter from './DisksFilter';
 import DisksPage from './DisksPage';
@@ -97,11 +93,11 @@ export default class Disks extends React.Component<{}, State> {
 			disks: DisksStore.disks,
 			filter: DisksStore.filter,
 			debug: false,
-			organizations: OrganizationsStore.organizations,
-			datacenters: DatacentersStore.datacenters,
-			zones: ZonesStore.zones,
-			nodes: NodesStore.nodes,
-			pools: PoolsStore.pools,
+			organizations: CompletionStore.organizations,
+			datacenters: CompletionStore.datacenters,
+			zones: CompletionStore.zones,
+			nodes: CompletionStore.nodes,
+			pools: CompletionStore.pools,
 			selected: {},
 			opened: {},
 			newOpened: false,
@@ -119,30 +115,15 @@ export default class Disks extends React.Component<{}, State> {
 	}
 
 	componentDidMount(): void {
-		InstancesStore.addChangeListener(this.onChange);
 		DisksStore.addChangeListener(this.onChange);
-		OrganizationsStore.addChangeListener(this.onChange);
-		DatacentersStore.addChangeListener(this.onChange);
-		ZonesStore.addChangeListener(this.onChange);
-		NodesStore.addChangeListener(this.onChange);
-		PoolsStore.addChangeListener(this.onChange);
-		InstanceActions.sync();
+		CompletionStore.addChangeListener(this.onChange);
 		DiskActions.sync();
-		OrganizationActions.sync();
-		DatacenterActions.sync();
-		ZoneActions.sync();
-		NodeActions.sync();
-		PoolActions.sync();
+		CompletionActions.sync();
 	}
 
 	componentWillUnmount(): void {
-		InstancesStore.removeChangeListener(this.onChange);
 		DisksStore.removeChangeListener(this.onChange);
-		OrganizationsStore.removeChangeListener(this.onChange);
-		DatacentersStore.removeChangeListener(this.onChange);
-		ZonesStore.removeChangeListener(this.onChange);
-		NodesStore.removeChangeListener(this.onChange);
-		PoolsStore.removeChangeListener(this.onChange);
+		CompletionStore.removeChangeListener(this.onChange);
 	}
 
 	onChange = (): void => {
@@ -165,11 +146,11 @@ export default class Disks extends React.Component<{}, State> {
 			...this.state,
 			disks: disks,
 			filter: DisksStore.filter,
-			organizations: OrganizationsStore.organizations,
-			datacenters: DatacentersStore.datacenters,
-			zones: ZonesStore.zones,
-			nodes: NodesStore.nodes,
-			pools: PoolsStore.pools,
+			organizations: CompletionStore.organizations,
+			datacenters: CompletionStore.datacenters,
+			zones: CompletionStore.zones,
+			nodes: CompletionStore.nodes,
+			pools: CompletionStore.pools,
 			selected: selected,
 			opened: opened,
 		});
