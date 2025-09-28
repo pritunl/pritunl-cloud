@@ -16,9 +16,6 @@ var Datacenter = relations.Query{
 	Project: []relations.Project{{
 		Key:   "name",
 		Label: "Name",
-	}, {
-		Key:   "roles",
-		Label: "Roles",
 	}},
 	Relations: []relations.Relation{{
 		Key:          "zones",
