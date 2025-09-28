@@ -162,8 +162,15 @@ func (r *Query) convertToRelated(relation Relation,
 	}
 
 	for _, docInf := range docs {
-		doc, ok := docInf.(bson.M)
-		if !ok {
+		var doc bson.M
+		if bsonDoc, ok := docInf.(bson.D); ok {
+			doc = make(bson.M)
+			for _, elem := range bsonDoc {
+				doc[elem.Key] = elem.Value
+			}
+		} else if mapDoc, ok := docInf.(bson.M); ok {
+			doc = mapDoc
+		} else {
 			continue
 		}
 
