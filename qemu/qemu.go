@@ -388,8 +388,20 @@ func (q *Qemu) Marshal() (output string, err error) {
 	cmd = append(cmd, fmt.Sprintf("pritunl_%s", q.Id.Hex()))
 
 	if !pciPassthrough {
-		cmd = append(cmd, "-runas")
-		cmd = append(cmd, permission.GetUserName(q.Id))
+		supported, e := features.GetRunWithSupport()
+		if e != nil {
+			err = e
+			return
+		}
+
+		if supported {
+			cmd = append(cmd, "-run-with")
+			cmd = append(cmd, fmt.Sprintf(
+				"user=%s", permission.GetUserName(q.Id)))
+		} else {
+			cmd = append(cmd, "-runas")
+			cmd = append(cmd, permission.GetUserName(q.Id))
+		}
 	}
 
 	for i := 0; i < 10; i++ {
