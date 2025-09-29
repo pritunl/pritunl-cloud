@@ -4,17 +4,31 @@ import (
 	"io/ioutil"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
+	"time"
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
+var (
+	verCache     = version{}
+	verCacheLock = sync.Mutex{}
+	verCacheTime = time.Time{}
+)
+
 const (
 	Libexec = "/usr/libexec/qemu-kvm"
 	System  = "/usr/bin/qemu-system-x86_64"
 )
+
+type version struct {
+	Major int
+	Minor int
+	Patch int
+}
 
 func GetQemuPath() (path string, err error) {
 	exists, err := utils.Exists(System)
@@ -31,6 +45,16 @@ func GetQemuPath() (path string, err error) {
 }
 
 func GetQemuVersion() (major, minor, patch int, err error) {
+	verCacheLock.Lock()
+	if time.Since(verCacheTime) < 1*time.Minute {
+		major = verCache.Major
+		minor = verCache.Minor
+		patch = verCache.Patch
+		verCacheLock.Unlock()
+		return
+	}
+	verCacheLock.Unlock()
+
 	qemuPath, err := GetQemuPath()
 	if err != nil {
 		return
@@ -66,7 +90,7 @@ func GetQemuVersion() (major, minor, patch int, err error) {
 			continue
 		}
 
-		patch, e = strconv.Atoi(versions[1])
+		patch, e = strconv.Atoi(versions[2])
 		if e != nil {
 			major = 0
 			minor = 0
@@ -82,6 +106,13 @@ func GetQemuVersion() (major, minor, patch int, err error) {
 		}
 		return
 	}
+
+	verCacheLock.Lock()
+	verCache.Major = major
+	verCache.Minor = minor
+	verCache.Patch = patch
+	verCacheTime = time.Now()
+	verCacheLock.Unlock()
 
 	return
 }
