@@ -11,6 +11,7 @@ const (
 	Unknown = "unknown"
 
 	Linux         = "linux"
+	LinuxLegacy   = "linux_legacy"
 	LinuxUnsigned = "linux_unsigned"
 	Bsd           = "bsd"
 
