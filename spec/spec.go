@@ -562,6 +562,9 @@ func (s *Spec) parseInstance(db *database.Database,
 	case instance.Linux:
 		data.CloudType = instance.Linux
 		break
+	case instance.LinuxLegacy:
+		data.CloudType = instance.LinuxLegacy
+		break
 	case instance.BSD:
 		data.CloudType = instance.BSD
 		break
