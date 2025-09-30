@@ -59,6 +59,25 @@ config:
         gateway: {{.Gateway6}}
 `
 
+const netConfigLegacyTmpl = `version: 1
+config:
+  - type: physical
+    name: {{.Iface}}
+    mac_address: {{.Mac}}{{.Mtu}}
+    subnets:
+      - type: static
+        address: {{.Address}}
+        netmask: {{.Netmask}}
+        network: {{.Network}}
+        gateway: {{.Gateway}}
+        dns_nameservers:
+          - {{.Dns1}}
+          - {{.Dns2}}
+      - type: static
+        address: {{.AddressCidr6}}
+        gateway: {{.Gateway6}}
+`
+
 const netConfig2Tmpl = `version: 2
 ethernets:
   {{.Iface}}:
@@ -180,11 +199,16 @@ rm -- "$0"%s
 `
 
 var (
-	cloudConfig    = template.Must(template.New("cloud").Parse(cloudConfigTmpl))
-	cloudBsdConfig = template.Must(template.New("cloud_bsd").Parse(
-		cloudBsdConfigTmpl))
-	netConfig  = template.Must(template.New("net").Parse(netConfigTmpl))
-	netConfig2 = template.Must(template.New("net2").Parse(netConfig2Tmpl))
+	cloudConfig = template.Must(template.New(
+		"cloud").Parse(cloudConfigTmpl))
+	cloudBsdConfig = template.Must(template.New(
+		"cloud_bsd").Parse(cloudBsdConfigTmpl))
+	netConfig = template.Must(template.New(
+		"net").Parse(netConfigTmpl))
+	netConfigLegacy = template.Must(template.New(
+		"net").Parse(netConfigLegacyTmpl))
+	netConfig2 = template.Must(template.New(
+		"net2").Parse(netConfig2Tmpl))
 )
 
 type netConfigData struct {
@@ -674,7 +698,11 @@ func getNetData(db *database.Database, inst *instance.Instance,
 	if settings.Hypervisor.CloudInitNetVer == 2 {
 		err = netConfig2.Execute(output, data)
 	} else {
-		err = netConfig.Execute(output, data)
+		if virt.CloudType == instance.LinuxLegacy {
+			err = netConfigLegacy.Execute(output, data)
+		} else {
+			err = netConfig.Execute(output, data)
+		}
 	}
 	if err != nil {
 		err = &errortypes.ParseError{
