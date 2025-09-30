@@ -14,13 +14,14 @@ const (
 	Bridge       = "bridge"
 	Vxlan        = "vxlan"
 
-	Start   = "start"
-	Stop    = "stop"
-	Cleanup = "cleanup"
-	Restart = "restart"
-	Destroy = "destroy"
-	Linux   = "linux"
-	BSD     = "bsd"
+	Start       = "start"
+	Stop        = "stop"
+	Cleanup     = "cleanup"
+	Restart     = "restart"
+	Destroy     = "destroy"
+	Linux       = "linux"
+	LinuxLegacy = "linux_legacy"
+	BSD         = "bsd"
 
 	HostPath = "host_path"
 )
@@ -45,6 +46,7 @@ var (
 	)
 	ValidCloudTypes = set.NewSet(
 		Linux,
+		LinuxLegacy,
 		BSD,
 	)
 )
