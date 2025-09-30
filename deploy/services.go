@@ -282,6 +282,9 @@ func (s *Pods) DeploySpec(db *database.Database,
 	} else if img.GetSystemType() == image.LinuxUnsigned {
 		inst.CloudType = instance.Linux
 		inst.SecureBoot = false
+	} else if img.GetSystemType() == image.LinuxLegacy {
+		inst.CloudType = instance.LinuxLegacy
+		inst.SecureBoot = true
 	} else {
 		inst.CloudType = instance.Linux
 		inst.SecureBoot = true
