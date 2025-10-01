@@ -194,6 +194,13 @@ func Sync(db *database.Database, namespace string,
 		}
 
 		for _, entry := range ste.Output {
+			if entry.Level < 1 || entry.Level > 9 {
+				continue
+			}
+			if len(entry.Message) > 100000 {
+				entry.Message = entry.Message[:100000]
+			}
+
 			jrnl := &journal.Journal{
 				Resource:  resource,
 				Kind:      kind,
