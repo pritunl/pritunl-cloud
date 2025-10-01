@@ -23,7 +23,7 @@ var (
 )
 
 func BuildConfig(inst *instance.Instance, virt *vm.VirtualMachine,
-	spc *spec.Spec, vc *vpc.Vpc, subnet *vpc.Subnet,
+	unt *unit.Unit, spc *spec.Spec, vc *vpc.Vpc, subnet *vpc.Subnet,
 	pods []*pod.Pod, podUnitsMap map[bson.ObjectID][]*unit.Unit,
 	deployments map[bson.ObjectID]*deployment.Deployment,
 	secrs []*secret.Secret, certs []*certificate.Certificate) (
@@ -39,6 +39,7 @@ func BuildConfig(inst *instance.Instance, virt *vm.VirtualMachine,
 		Pods:           types.NewPods(pods, podUnitsMap, deployments),
 		Secrets:        types.NewSecrets(secrs),
 		Certificates:   types.NewCertificates(certs),
+		Journals:       types.NewJournals(unt),
 	}
 
 	if spc != nil {
