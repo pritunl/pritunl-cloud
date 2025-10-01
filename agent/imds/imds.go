@@ -18,6 +18,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/agent/logging"
 	"github.com/pritunl/pritunl-cloud/engine"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/telemetry"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/tools/logger"
@@ -134,8 +135,9 @@ func (m *Imds) Get(query string) (val string, err error) {
 }
 
 type SyncResp struct {
-	Spec string `json:"spec"`
-	Hash uint32 `json:"hash"`
+	Spec     string           `json:"spec"`
+	Hash     uint32           `json:"hash"`
+	Journals []*types.Journal `json:"journals"`
 }
 
 func (m *Imds) SyncReady(timeout time.Duration) (err error) {
