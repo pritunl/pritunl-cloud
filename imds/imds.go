@@ -216,6 +216,43 @@ func Sync(db *database.Database, namespace string,
 			}
 		}
 
+		if ste.Journals != nil {
+			indexes := map[string]int32{}
+			for _, jrnl := range conf.Journals {
+				indexes[jrnl.Key] = jrnl.Index
+			}
+
+			for key, output := range ste.Journals {
+				index := indexes[key]
+				if index == 0 {
+					continue
+				}
+
+				for _, entry := range output {
+					if entry.Level < 1 || entry.Level > 9 {
+						continue
+					}
+					if len(entry.Message) > 100000 {
+						entry.Message = entry.Message[:100000]
+					}
+
+					jrnl := &journal.Journal{
+						Resource:  resource,
+						Kind:      index,
+						Level:     entry.Level,
+						Timestamp: entry.Timestamp,
+						Count:     int32(counter.Add(1) % counterMax),
+						Message:   entry.Message,
+					}
+
+					err = jrnl.Insert(db)
+					if err != nil {
+						return
+					}
+				}
+			}
+		}
+
 		curIp := ""
 		curIp6 := ""
 		curIpPrefix := ""
@@ -399,7 +436,7 @@ func Sync(db *database.Database, namespace string,
 }
 
 func Pull(db *database.Database, instId, deplyId bson.ObjectID,
-	imdsHostSecret string) (err error) {
+	imdsHostSecret string, journals []*types.Journal) (err error) {
 
 	sockPath := paths.GetImdsSockPath(instId)
 
@@ -525,6 +562,13 @@ func Pull(db *database.Database, instId, deplyId bson.ObjectID,
 		}
 
 		for _, entry := range ste.Output {
+			if entry.Level < 1 || entry.Level > 9 {
+				continue
+			}
+			if len(entry.Message) > 100000 {
+				entry.Message = entry.Message[:100000]
+			}
+
 			jrnl := &journal.Journal{
 				Resource:  resource,
 				Kind:      kind,
@@ -537,6 +581,43 @@ func Pull(db *database.Database, instId, deplyId bson.ObjectID,
 			err = jrnl.Insert(db)
 			if err != nil {
 				return
+			}
+		}
+
+		if ste.Journals != nil {
+			indexes := map[string]int32{}
+			for _, jrnl := range journals {
+				indexes[jrnl.Key] = jrnl.Index
+			}
+
+			for key, output := range ste.Journals {
+				index := indexes[key]
+				if index == 0 {
+					continue
+				}
+
+				for _, entry := range output {
+					if entry.Level < 1 || entry.Level > 9 {
+						continue
+					}
+					if len(entry.Message) > 100000 {
+						entry.Message = entry.Message[:100000]
+					}
+
+					jrnl := &journal.Journal{
+						Resource:  resource,
+						Kind:      index,
+						Level:     entry.Level,
+						Timestamp: entry.Timestamp,
+						Count:     int32(counter.Add(1) % counterMax),
+						Message:   entry.Message,
+					}
+
+					err = jrnl.Insert(db)
+					if err != nil {
+						return
+					}
+				}
 			}
 		}
 	}
