@@ -36,7 +36,7 @@ func (s *Imds) buildInstance(db *database.Database,
 	}
 
 	conf, err = imds.BuildConfig(
-		inst, virt, nil,
+		inst, virt, nil, nil,
 		vc, subnet,
 		[]*pod.Pod{},
 		map[bson.ObjectID][]*unit.Unit{},
@@ -131,7 +131,7 @@ func (s *Imds) buildDeployInstance(db *database.Database,
 	}
 
 	conf, err = imds.BuildConfig(
-		inst, virt, spc,
+		inst, virt, instUnt, spc,
 		vc, subnet,
 		pods,
 		podUnitsMap,
