@@ -20,8 +20,9 @@ var (
 )
 
 type syncRespData struct {
-	Spec string `json:"spec"`
-	Hash uint32 `json:"hash"`
+	Spec     string           `json:"spec"`
+	Hash     uint32           `json:"hash"`
+	Journals []*types.Journal `json:"journals"`
 }
 
 func syncPut(c *gin.Context) {
@@ -56,14 +57,24 @@ func syncPut(c *gin.Context) {
 		}
 	}
 
+	if data.Journals != nil {
+		for key, output := range data.Journals {
+			for _, entry := range output {
+				state.Global.AppendJournalOutput(key, entry)
+			}
+		}
+	}
+
 	if data.Hash != config.Config.Hash {
 		c.JSON(200, &syncRespData{
-			Spec: config.Config.SpecData,
-			Hash: config.Config.Hash,
+			Spec:     config.Config.SpecData,
+			Hash:     config.Config.Hash,
+			Journals: config.Config.Journals,
 		})
 	} else {
 		c.JSON(200, &syncRespData{
-			Hash: config.Config.Hash,
+			Hash:     config.Config.Hash,
+			Journals: config.Config.Journals,
 		})
 	}
 }
@@ -86,6 +97,7 @@ func hostSyncPut(c *gin.Context) {
 
 	ste := state.Global.State.Copy()
 	ste.Output = state.Global.GetOutput()
+	ste.Journals = state.Global.GetJournals()
 	ste.Updates = telemetry.Updates.Get()
 
 	c.JSON(200, ste)
@@ -94,6 +106,7 @@ func hostSyncPut(c *gin.Context) {
 func hostSyncGet(c *gin.Context) {
 	ste := state.Global.State.Copy()
 	ste.Output = state.Global.GetOutput()
+	ste.Journals = state.Global.GetJournals()
 	ste.Updates = telemetry.Updates.Get()
 
 	c.JSON(200, ste)
