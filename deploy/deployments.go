@@ -21,6 +21,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/shape"
 	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/state"
+	"github.com/pritunl/pritunl-cloud/unit"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/sirupsen/logrus"
@@ -700,15 +701,18 @@ func (d *Deployments) restore(deply *deployment.Deployment) (err error) {
 }
 
 func (d *Deployments) imageShutdown(db *database.Database,
-	deply *deployment.Deployment, virt *vm.VirtualMachine) {
+	unt *unit.Unit, deply *deployment.Deployment, virt *vm.VirtualMachine) {
 
 	logrus.WithFields(logrus.Fields{
 		"instance_id": virt.Id.Hex(),
 	}).Info("deploy: Stopping instance for deployment image")
 
+	journals := types.NewJournals(unt)
+
 	time.Sleep(3 * time.Second)
 
-	err := imds.Pull(db, virt.Id, virt.Deployment, virt.ImdsHostSecret)
+	err := imds.Pull(db, virt.Id, virt.Deployment,
+		virt.ImdsHostSecret, journals)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"instance_id": virt.Id.Hex(),
@@ -767,6 +771,7 @@ func (d *Deployments) image(deply *deployment.Deployment) (err error) {
 		}
 
 		virt := d.stat.GetVirt(inst.Id)
+		unt := d.stat.Unit(deply.Unit)
 
 		if inst.Guest == nil {
 			return
@@ -775,7 +780,7 @@ func (d *Deployments) image(deply *deployment.Deployment) (err error) {
 		if inst.IsActive() && inst.Guest.Status == types.Imaged &&
 			inst.Action != instance.Stop {
 
-			d.imageShutdown(db, deply, virt)
+			d.imageShutdown(db, unt, deply, virt)
 			return
 		}
 
