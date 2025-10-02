@@ -775,17 +775,6 @@ func podUnitDeploymentLogGet(c *gin.Context) {
 		return
 	}
 
-	kind := 0
-	resource := c.Query("resource")
-	switch resource {
-	case "agent":
-		kind = journal.DeploymentAgent
-		break
-	default:
-		utils.AbortWithStatus(c, 404)
-		return
-	}
-
 	deply, err := deployment.GetUnit(db, unitId, deplyId)
 	if err != nil {
 		if _, ok := err.(*database.NotFoundError); ok {
@@ -793,6 +782,23 @@ func podUnitDeploymentLogGet(c *gin.Context) {
 		} else {
 			utils.AbortWithError(c, 500, err)
 		}
+		return
+	}
+
+	kind := int32(0)
+	resource := c.Query("resource")
+	if resource == "agent" {
+		kind = journal.DeploymentAgent
+	}
+
+	for _, jrnl := range deply.Journals {
+		if jrnl.Key == resource {
+			kind = jrnl.Index
+		}
+	}
+
+	if kind == 0 {
+		utils.AbortWithStatus(c, 404)
 		return
 	}
 
