@@ -53,12 +53,13 @@ func (r *Redirect) handleOutput(reader *os.File, level int32) {
 			line,
 		)
 
-		if len(r.output) < 9000 {
-			r.output <- &types.Entry{
-				Timestamp: timestamp,
-				Level:     level,
-				Message:   line,
-			}
+		select {
+		case r.output <- &types.Entry{
+			Timestamp: timestamp,
+			Level:     level,
+			Message:   line,
+		}:
+		default:
 		}
 	}
 }
