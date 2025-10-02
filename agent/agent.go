@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime/debug"
 	"strings"
 	"syscall"
 	"time"
@@ -33,6 +34,18 @@ var (
 )
 
 func main() {
+	defer func() {
+		panc := recover()
+		if panc != nil {
+			logger.WithFields(logger.Fields{
+				"trace": string(debug.Stack()),
+				"panic": panc,
+			}).Error("agent: Panic in main")
+			time.Sleep(3 * time.Second)
+			os.Exit(1)
+		}
+	}()
+
 	flag.Usage = func() {
 		fmt.Printf(help)
 	}
