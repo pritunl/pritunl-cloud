@@ -9,6 +9,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
+	"runtime/debug"
 	"strings"
 	"sync"
 	"time"
@@ -22,6 +24,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/telemetry"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/tools/logger"
+	"github.com/pritunl/tools/set"
 )
 
 var (
@@ -32,15 +35,16 @@ var (
 )
 
 type Imds struct {
-	Address     string            `json:"address"`
-	Port        int               `json:"port"`
-	Secret      string            `json:"secret"`
-	State       string            `json:"state"`
-	engine      *engine.Engine    `json:"-"`
-	initialized bool              `json:"-"`
-	waiter      sync.WaitGroup    `json:"-"`
-	syncLock    sync.Mutex        `json:"-"`
-	logger      *logging.Redirect `json:"-"`
+	Address     string              `json:"address"`
+	Port        int                 `json:"port"`
+	Secret      string              `json:"secret"`
+	State       string              `json:"state"`
+	engine      *engine.Engine      `json:"-"`
+	initialized bool                `json:"-"`
+	waiter      sync.WaitGroup      `json:"-"`
+	journals    map[string]*Journal `json:"-"`
+	syncLock    sync.Mutex          `json:"-"`
+	logger      *logging.Redirect   `json:"-"`
 }
 
 func (m *Imds) NewRequest(method, pth string, data interface{}) (
@@ -186,6 +190,18 @@ func (m *Imds) Sync() (ready bool, err error) {
 		data.Output = m.logger.GetOutput()
 	}
 
+	if m.journals != nil {
+		journals := map[string][]*types.Entry{}
+		for _, jrnl := range m.journals {
+			journals[jrnl.Key] = jrnl.Handler.GetOutput()
+		}
+		if len(journals) > 0 {
+			data.Journals = journals
+		}
+	} else {
+		m.journals = map[string]*Journal{}
+	}
+
 	req, err := m.NewRequest("PUT", "/sync", data)
 	if err != nil {
 		return
@@ -249,6 +265,55 @@ func (m *Imds) Sync() (ready bool, err error) {
 		}).Info("agent: Queuing engine reload")
 
 		m.engine.Queue(respData.Spec)
+	}
+
+	activeJournals := set.NewSet()
+	for unit := range m.journals {
+		activeJournals.Add(unit)
+	}
+
+	for _, jrnlConf := range respData.Journals {
+		if activeJournals.Contains(jrnlConf.Key) {
+			activeJournals.Remove(jrnlConf.Key)
+			jrnl := m.journals[jrnlConf.Key]
+			if jrnl != nil {
+				if jrnl.Index != jrnlConf.Index ||
+					jrnl.Key != jrnlConf.Key ||
+					jrnl.Type != jrnlConf.Type ||
+					jrnl.Unit != jrnlConf.Unit ||
+					jrnl.Path != jrnlConf.Path {
+
+					jrnl.Close()
+					delete(m.journals, jrnlConf.Key)
+				} else {
+					continue
+				}
+			}
+		}
+
+		jrnl := &Journal{
+			Index:   jrnlConf.Index,
+			Key:     jrnlConf.Key,
+			Type:    jrnlConf.Type,
+			Unit:    jrnlConf.Unit,
+			Path:    jrnlConf.Path,
+			Handler: logging.NewSystemd(jrnlConf.Unit),
+		}
+		err = jrnl.Open()
+		if err != nil {
+			return
+		}
+
+		m.journals[jrnlConf.Key] = jrnl
+	}
+
+	for jrnlKeyInf := range activeJournals.Iter() {
+		jrnlKey := jrnlKeyInf.(string)
+		jrnl := m.journals[jrnlKey]
+		if jrnl != nil {
+			jrnl.Close()
+			delete(m.journals, jrnlKey)
+		}
 	}
 
 	return
