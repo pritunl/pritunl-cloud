@@ -180,6 +180,17 @@ func (s *Pods) DeploySpec(db *database.Database,
 		return
 	}
 
+	jrnls := []*deployment.Journal{}
+	if spc.Journal != nil {
+		for _, input := range spc.Journal.Inputs {
+			jrnls = append(jrnls, &deployment.Journal{
+				Index: input.Index,
+				Key:   input.Key,
+				Type:  input.Type,
+			})
+		}
+	}
+
 	deply := &deployment.Deployment{
 		Pod:          unt.Pod,
 		Unit:         unt.Id,
@@ -191,6 +202,7 @@ func (s *Pods) DeploySpec(db *database.Database,
 		Node:         node.Self.Id,
 		Kind:         unt.Kind,
 		State:        deployment.Reserved,
+		Journals:     jrnls,
 	}
 
 	errData, err := spc.Refresh(db)
