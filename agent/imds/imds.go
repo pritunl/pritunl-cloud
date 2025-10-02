@@ -350,12 +350,26 @@ func (m *Imds) RunSync(fast bool) {
 		defer m.waiter.Done()
 
 		for {
-			_, err := m.Sync()
-			if err != nil {
-				logger.WithFields(logger.Fields{
-					"error": err,
-				}).Error("agent: Failed to sync")
-			}
+			func() {
+				defer func() {
+					panc := recover()
+					if panc != nil {
+						logger.WithFields(logger.Fields{
+							"trace": string(debug.Stack()),
+							"panic": panc,
+						}).Error("agent: Panic in sync")
+						time.Sleep(3 * time.Second)
+						os.Exit(1)
+					}
+				}()
+
+				_, err := m.Sync()
+				if err != nil {
+					logger.WithFields(logger.Fields{
+						"error": err,
+					}).Error("agent: Failed to sync")
+				}
+			}()
 
 			if fast {
 				time.Sleep(500 * time.Millisecond)
