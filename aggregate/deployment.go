@@ -42,6 +42,7 @@ type Deployment struct {
 	Instance            bson.ObjectID            `bson:"instance" json:"instance"`
 	InstanceData        *deployment.InstanceData `bson:"instance_data" json:"instance_data"`
 	DomainData          *deployment.DomainData   `bson:"domain_data" json:"domain_data"`
+	Journals            []*deployment.Journal    `bson:"journals" json:"journals"`
 	ImageId             bson.ObjectID            `bson:"image_id" json:"image_id"`
 	ImageName           string                   `bson:"image_name" json:"image_name"`
 	ZoneName            string                   `bson:"-" json:"zone_name"`
@@ -137,6 +138,7 @@ func GetDeployments(db *database.Database, unt *unit.Unit) (
 				{"instance", 1},
 				{"instance_data", 1},
 				{"domain_data", 1},
+				{"journals", 1},
 				{"spec_docs.index", 1},
 				{"spec_docs.timestamp", 1},
 				{"instance_docs.name", 1},
