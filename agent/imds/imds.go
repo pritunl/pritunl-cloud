@@ -330,7 +330,15 @@ func (m *Imds) RunSync(fast bool) {
 	m.waiter.Add(1)
 
 	go func() {
-		defer utils.RecoverLog("imds: Panic in telemetry")
+		defer func() {
+			panc := recover()
+			if panc != nil {
+				logger.WithFields(logger.Fields{
+					"trace": string(debug.Stack()),
+					"panic": panc,
+				}).Error("sync: Panic in telemetry")
+			}
+		}()
 
 		for {
 			telemetry.Refresh()
