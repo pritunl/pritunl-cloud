@@ -7,7 +7,6 @@ toolchain go1.23.1
 require (
 	github.com/aws/aws-sdk-go v1.55.5
 	github.com/cloudflare/cloudflare-go v0.104.0
-	github.com/coreos/go-systemd/v22 v22.6.0
 	github.com/dropbox/godropbox v0.0.0-20230623171840-436d2007a9fd
 	github.com/duosecurity/duo_api_golang v0.0.0-20240408132100-cb1770897e66
 	github.com/gin-gonic/gin v1.10.0
