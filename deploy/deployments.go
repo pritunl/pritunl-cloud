@@ -21,7 +21,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/shape"
 	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/state"
-	"github.com/pritunl/pritunl-cloud/unit"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/sirupsen/logrus"
@@ -323,10 +322,23 @@ func (d *Deployments) migrate(deply *deployment.Deployment) {
 			}
 		}
 
+		jrnls := []*deployment.Journal{}
+		if newSpec.Journal != nil {
+			for _, input := range newSpec.Journal.Inputs {
+				jrnls = append(jrnls, &deployment.Journal{
+					Index: input.Index,
+					Key:   input.Key,
+					Type:  input.Type,
+				})
+			}
+		}
+		deply.Journals = jrnls
+
 		deply.Action = ""
 		deply.Spec = newSpec.Id
 		deply.NewSpec = bson.NilObjectID
-		err = deply.CommitFields(db, set.NewSet("action", "spec", "new_spec"))
+		err = deply.CommitFields(db, set.NewSet(
+			"action", "spec", "new_spec", "journals"))
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"deployment_id": deply.Id.Hex(),
@@ -701,13 +713,13 @@ func (d *Deployments) restore(deply *deployment.Deployment) (err error) {
 }
 
 func (d *Deployments) imageShutdown(db *database.Database,
-	unt *unit.Unit, deply *deployment.Deployment, virt *vm.VirtualMachine) {
+	spc *spec.Spec, deply *deployment.Deployment, virt *vm.VirtualMachine) {
 
 	logrus.WithFields(logrus.Fields{
 		"instance_id": virt.Id.Hex(),
 	}).Info("deploy: Stopping instance for deployment image")
 
-	journals := types.NewJournals(unt)
+	journals := types.NewJournals(spc)
 
 	time.Sleep(3 * time.Second)
 
@@ -771,7 +783,7 @@ func (d *Deployments) image(deply *deployment.Deployment) (err error) {
 		}
 
 		virt := d.stat.GetVirt(inst.Id)
-		unt := d.stat.Unit(deply.Unit)
+		spc := d.stat.Spec(deply.Spec)
 
 		if inst.Guest == nil {
 			return
@@ -780,7 +792,7 @@ func (d *Deployments) image(deply *deployment.Deployment) (err error) {
 		if inst.IsActive() && inst.Guest.Status == types.Imaged &&
 			inst.Action != instance.Stop {
 
-			d.imageShutdown(db, unt, deply, virt)
+			d.imageShutdown(db, spc, deply, virt)
 			return
 		}
 
