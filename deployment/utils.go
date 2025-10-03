@@ -304,7 +304,7 @@ func RemoveDomains(db *database.Database, deplyId bson.ObjectID) (
 func Remove(db *database.Database, deplyId bson.ObjectID) (err error) {
 	coll := db.Deployments()
 
-	err = journal.Remove(db, deplyId, journal.DeploymentAgent)
+	err = journal.RemoveAll(db, deplyId)
 	if err != nil {
 		return
 	}
