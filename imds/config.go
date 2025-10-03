@@ -39,12 +39,12 @@ func BuildConfig(inst *instance.Instance, virt *vm.VirtualMachine,
 		Pods:           types.NewPods(pods, podUnitsMap, deployments),
 		Secrets:        types.NewSecrets(secrs),
 		Certificates:   types.NewCertificates(certs),
-		Journals:       types.NewJournals(unt),
 	}
 
 	if spc != nil {
 		conf.Spec = spc.Id
 		conf.SpecData = spc.Data
+		conf.Journals = types.NewJournals(spc)
 	}
 
 	return
