@@ -19,4 +19,5 @@ const (
 	SecretKind      = "secret"
 	PodKind         = "pod"
 	UnitKind        = "unit"
+	JournalKind     = "journal"
 )
