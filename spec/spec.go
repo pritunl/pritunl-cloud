@@ -16,6 +16,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/finder"
 	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/pritunl/pritunl-cloud/journal"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/organization"
 	"github.com/pritunl/pritunl-cloud/settings"
@@ -40,6 +41,7 @@ type Spec struct {
 	Instance     *Instance     `bson:"instance,omitempty" json:"-"`
 	Firewall     *Firewall     `bson:"firewall,omitempty" json:"-"`
 	Domain       *Domain       `bson:"domain,omitempty" json:"-"`
+	Journal      *Journal      `bson:"journal,omitempty" json:"-"`
 }
 
 func (s *Spec) GetAllNodes(db *database.Database) (ndes Nodes,
@@ -661,10 +663,73 @@ func (s *Spec) parseDomain(db *database.Database,
 	return
 }
 
+func (s *Spec) parseJournal(db *database.Database,
+	jrnlKindGen journal.KindGenerator, dataYaml *JournalYaml) (
+	errData *errortypes.ErrorData, err error) {
+
+	data := &Journal{
+		Inputs: []*Input{},
+	}
+
+	if dataYaml.Kind != finder.JournalKind {
+		errData = &errortypes.ErrorData{
+			Error:   "unit_kind_mismatch",
+			Message: "Unit kind unexpected",
+		}
+		return
+	}
+
+	curIndexes := map[string]int32{}
+	if s.Journal != nil {
+		for _, jrnl := range s.Journal.Inputs {
+			curIndexes[jrnl.Key] = jrnl.Index
+		}
+	}
+
+	for _, input := range dataYaml.Inputs {
+		data.Inputs = append(data.Inputs, &Input{
+			Key:  input.Key,
+			Type: input.Type,
+			Unit: input.Unit,
+			Path: input.Path,
+		})
+	}
+
+	errData, err = data.Validate()
+	if err != nil || errData != nil {
+		return
+	}
+
+	for _, input := range data.Inputs {
+		input.Index = curIndexes[input.Key]
+		if input.Index == 0 {
+			if jrnlKindGen == nil {
+				errData = &errortypes.ErrorData{
+					Error:   "journal_missing_index",
+					Message: "Journal missing index",
+				}
+				return
+			}
+
+			index, e := jrnlKindGen.GetKind(db, input.Key)
+			if e != nil {
+				err = e
+				return
+			}
+
+			input.Index = index
+		}
+	}
+
+	s.Journal = data
+
+	return
+}
+
 func (s *Spec) Refresh(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
-	errData, err = s.Parse(db)
+	errData, err = s.Parse(db, nil)
 	if err != nil || errData != nil {
 		return
 	}
@@ -677,7 +742,8 @@ func (s *Spec) Refresh(db *database.Database) (
 	return
 }
 
-func (s *Spec) Parse(db *database.Database) (
+func (s *Spec) Parse(db *database.Database,
+	jrnlKindGen journal.KindGenerator) (
 	errData *errortypes.ErrorData, err error) {
 
 	hash := sha1.New()
@@ -765,6 +831,22 @@ func (s *Spec) Parse(db *database.Database) (
 			if err != nil || errData != nil {
 				return
 			}
+		case finder.JournalKind:
+			jrnlYaml := &JournalYaml{}
+
+			err = decoder.Decode(jrnlYaml)
+			if err != nil {
+				err = &errortypes.ParseError{
+					errors.Wrap(err,
+						"spec: Failed to decode domain yaml doc"),
+				}
+				return
+			}
+
+			errData, err = s.parseJournal(db, jrnlKindGen, jrnlYaml)
+			if err != nil || errData != nil {
+				return
+			}
 		default:
 			errData = &errortypes.ErrorData{
 				Error:   "unit_kind_invalid",
@@ -790,13 +872,13 @@ func (s *Spec) CanMigrate(db *database.Database,
 	}
 
 	if !settings.System.NoMigrateRefresh {
-		errData, err = s.Parse(db)
+		errData, err = s.Parse(db, nil)
 		if err != nil || errData != nil {
 			return
 		}
 	}
 
-	errData, err = spc.Parse(db)
+	errData, err = spc.Parse(db, nil)
 	if err != nil || errData != nil {
 		return
 	}
