@@ -11,7 +11,7 @@ import (
 )
 
 func GetOutput(c context.Context, db *database.Database,
-	resource bson.ObjectID, kind int) (output []string, err error) {
+	resource bson.ObjectID, kind int32) (output []string, err error) {
 
 	coll := db.Journal()
 
@@ -73,6 +73,25 @@ func Remove(db *database.Database, resource bson.ObjectID,
 	_, err = coll.DeleteMany(db, &bson.M{
 		"r": resource,
 		"k": kind,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		switch err.(type) {
+		case *database.NotFoundError:
+			err = nil
+		default:
+			return
+		}
+	}
+
+	return
+}
+
+func RemoveAll(db *database.Database, resource bson.ObjectID) (err error) {
+	coll := db.Journal()
+
+	_, err = coll.DeleteMany(db, &bson.M{
+		"r": resource,
 	})
 	if err != nil {
 		err = database.ParseError(err)
