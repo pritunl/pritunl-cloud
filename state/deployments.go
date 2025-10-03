@@ -72,8 +72,8 @@ func (p *DeploymentsState) PodsMap() map[bson.ObjectID]*pod.Pod {
 	return p.podsMap
 }
 
-func (p *DeploymentsState) Unit(pdId bson.ObjectID) *unit.Unit {
-	return p.unitsMap[pdId]
+func (p *DeploymentsState) Unit(untId bson.ObjectID) *unit.Unit {
+	return p.unitsMap[untId]
 }
 
 func (p *DeploymentsState) UnitsMap() map[bson.ObjectID]*unit.Unit {
