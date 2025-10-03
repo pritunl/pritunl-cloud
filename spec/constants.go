@@ -25,6 +25,9 @@ const (
 	CloudPublic6 = "cloud_public6"
 	CloudPrivate = "cloud_private"
 
+	Systemd = "systemd"
+	File    = "file"
+
 	TokenPrefix = "+/"
 
 	Disk     = "disk"
