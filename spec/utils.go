@@ -44,6 +44,7 @@ func filterSpecHash(input string) string {
 
 func New(podId, unitId, orgId bson.ObjectID, data string) (spc *Spec) {
 	spc = &Spec{
+		Id:           bson.NewObjectID(),
 		Unit:         unitId,
 		Pod:          podId,
 		Organization: orgId,
