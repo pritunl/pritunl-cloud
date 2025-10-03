@@ -23,6 +23,7 @@ type State struct {
 	Updates     []*telemetry.Update `json:"updates"`
 	Timestamp   time.Time           `json:"timestamp"`
 	Output      []*Entry            `json:"output,omitempty"`
+	Journals    map[string][]*Entry `json:"journals,omitempty"`
 }
 
 func (s *State) Final() bool {
