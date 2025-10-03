@@ -30,6 +30,7 @@ type Deployment struct {
 	Instance     bson.ObjectID             `bson:"instance" json:"instance"`
 	Image        bson.ObjectID             `bson:"image" json:"image"`
 	Mounts       []*Mount                  `bson:"mounts" json:"mounts"`
+	Journals     []*Journal                `bson:"journals" json:"journals"`
 	InstanceData *InstanceData             `bson:"instance_data,omitempty" json:"instance_data"`
 	ImageData    *ImageData                `bson:"image_data,omitempty" json:"image_data"`
 	DomainData   *DomainData               `bson:"domain_data,omitempty" json:"domain_data"`
@@ -64,6 +65,12 @@ type Mount struct {
 	Disk bson.ObjectID `bson:"disk" json:"disk"`
 	Path string        `bson:"path" json:"path"`
 	Uuid string        `bson:"uuid" json:"uuid"`
+}
+
+type Journal struct {
+	Index int32  `bson:"index" json:"index"`
+	Key   string `bson:"key" json:"key"`
+	Type  string `bson:"type" json:"type"`
 }
 
 type Action struct {
