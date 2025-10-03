@@ -463,7 +463,7 @@ func Remove(db *database.Database, instId bson.ObjectID) (err error) {
 		return
 	}
 
-	err = journal.Remove(db, instId, journal.InstanceAgent)
+	err = journal.RemoveAll(db, instId)
 	if err != nil {
 		return
 	}
