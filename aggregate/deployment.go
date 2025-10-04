@@ -9,6 +9,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/image"
 	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/pritunl/pritunl-cloud/journal"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/unit"
@@ -184,6 +185,14 @@ func GetDeployments(db *database.Database, unt *unit.Unit) (
 				deply.Tags = append([]string{"latest"}, deply.Tags...)
 			}
 		}
+
+		deply.Journals = append([]*deployment.Journal{
+			{
+				Index: journal.DeploymentAgent,
+				Key:   "agent",
+				Type:  "agent",
+			},
+		}, deply.Journals...)
 
 		if len(doc.ZoneDocs) > 0 {
 			zne := doc.ZoneDocs[0]
