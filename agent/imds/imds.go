@@ -292,13 +292,21 @@ func (m *Imds) Sync() (ready bool, err error) {
 		}
 
 		jrnl := &Journal{
-			Index:   jrnlConf.Index,
-			Key:     jrnlConf.Key,
-			Type:    jrnlConf.Type,
-			Unit:    jrnlConf.Unit,
-			Path:    jrnlConf.Path,
-			Handler: logging.NewSystemd(jrnlConf.Unit),
+			Index: jrnlConf.Index,
+			Key:   jrnlConf.Key,
+			Type:  jrnlConf.Type,
+			Unit:  jrnlConf.Unit,
+			Path:  jrnlConf.Path,
 		}
+
+		if jrnl.Type == "file" {
+			jrnl.Handler = logging.NewFile(jrnlConf.Path)
+		} else if jrnl.Type == "systemd" {
+			jrnl.Handler = logging.NewSystemd(jrnlConf.Unit)
+		} else {
+			continue
+		}
+
 		err = jrnl.Open()
 		if err != nil {
 			return
