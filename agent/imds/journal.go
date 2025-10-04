@@ -6,12 +6,12 @@ import (
 )
 
 type Journal struct {
-	Index   int32            `json:"-"`
-	Key     string           `json:"-"`
-	Type    string           `json:"-"`
-	Unit    string           `json:"-"`
-	Path    string           `json:"-"`
-	Handler *logging.Systemd `json:"-"`
+	Index   int32           `json:"-"`
+	Key     string          `json:"-"`
+	Type    string          `json:"-"`
+	Unit    string          `json:"-"`
+	Path    string          `json:"-"`
+	Handler logging.Handler `json:"-"`
 }
 
 func (j *Journal) Open() (err error) {
