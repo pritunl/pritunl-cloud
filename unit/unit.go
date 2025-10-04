@@ -1,6 +1,7 @@
 package unit
 
 import (
+	"sync"
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
@@ -13,19 +14,22 @@ import (
 )
 
 type Unit struct {
-	Id            bson.ObjectID   `bson:"_id,omitempty" json:"id"`
-	Pod           bson.ObjectID   `bson:"pod" json:"pod"`
-	Organization  bson.ObjectID   `bson:"organization" json:"organization"`
-	Name          string          `bson:"name" json:"name"`
-	Kind          string          `bson:"kind" json:"kind"`
-	Count         int             `bson:"count" json:"count"`
-	Deployments   []bson.ObjectID `bson:"deployments" json:"deployments"`
-	Spec          string          `bson:"spec" json:"spec"`
-	SpecIndex     int             `bson:"spec_index" json:"spec_index"`
-	SpecTimestamp time.Time       `bson:"spec_timestamp" json:"-"`
-	LastSpec      bson.ObjectID   `bson:"last_spec" json:"last_spec"`
-	DeploySpec    bson.ObjectID   `bson:"deploy_spec" json:"deploy_spec"`
-	Hash          string          `bson:"hash" json:"hash"`
+	Id            bson.ObjectID    `bson:"_id,omitempty" json:"id"`
+	Pod           bson.ObjectID    `bson:"pod" json:"pod"`
+	Organization  bson.ObjectID    `bson:"organization" json:"organization"`
+	Name          string           `bson:"name" json:"name"`
+	Kind          string           `bson:"kind" json:"kind"`
+	Count         int              `bson:"count" json:"count"`
+	Deployments   []bson.ObjectID  `bson:"deployments" json:"deployments"`
+	Spec          string           `bson:"spec" json:"spec"`
+	SpecIndex     int              `bson:"spec_index" json:"spec_index"`
+	SpecTimestamp time.Time        `bson:"spec_timestamp" json:"-"`
+	LastSpec      bson.ObjectID    `bson:"last_spec" json:"last_spec"`
+	DeploySpec    bson.ObjectID    `bson:"deploy_spec" json:"deploy_spec"`
+	Hash          string           `bson:"hash" json:"hash"`
+	Journals      map[string]int32 `bson:"journals" json:"-"`
+	JournalsIndex int32            `bson:"journals_index" json:"-"`
+	journalsLock  sync.Mutex       `bson:"-" json:"-"`
 }
 
 type Completion struct {
@@ -56,7 +60,41 @@ func (u *Unit) Refresh(db *database.Database) (err error) {
 		return
 	}
 
-	*u = *unt
+	u.Id = unt.Id
+	u.Pod = unt.Pod
+	u.Organization = unt.Organization
+	u.Name = unt.Name
+	u.Kind = unt.Kind
+	u.Count = unt.Count
+	u.Deployments = unt.Deployments
+	u.Spec = unt.Spec
+	u.SpecIndex = unt.SpecIndex
+	u.SpecTimestamp = unt.SpecTimestamp
+	u.LastSpec = unt.LastSpec
+	u.DeploySpec = unt.DeploySpec
+	u.Hash = unt.Hash
+	u.Journals = unt.Journals
+	u.JournalsIndex = unt.JournalsIndex
+	return
+}
+
+func (u *Unit) RefreshJournals(db *database.Database) (err error) {
+	coll := db.Units()
+
+	unt := &Unit{}
+	err = coll.FindOne(db, &bson.M{
+		"_id": u.Id,
+	}).Decode(unt)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	u.journalsLock.Lock()
+	u.Journals = unt.Journals
+	u.JournalsIndex = unt.JournalsIndex
+	u.journalsLock.Unlock()
+
 	return
 }
 
@@ -299,13 +337,105 @@ func (u *Unit) updateSpec(db *database.Database, spc *spec.Spec) (
 	return
 }
 
+func (u *Unit) getKind(db *database.Database, key string) (
+	kind int32, err error) {
+
+	u.journalsLock.Lock()
+	defer u.journalsLock.Unlock()
+
+	if u.Journals == nil {
+		u.Journals = map[string]int32{}
+	}
+
+	kind, ok := u.Journals[key]
+	if ok && kind != 0 {
+		return
+	}
+
+	jrnls := map[string]int32{}
+	for key, index := range u.Journals {
+		jrnls[key] = index
+	}
+	index := u.JournalsIndex
+	if index == 0 {
+		index = 248000
+	}
+	index += 1
+	jrnls[key] = index
+
+	coll := db.Units()
+
+	query := bson.M{
+		"_id": u.Id,
+	}
+	if u.JournalsIndex == 0 {
+		query["$or"] = []bson.M{
+			{"journals_index": bson.M{"$exists": false}},
+			{"journals_index": 0},
+		}
+	} else {
+		query["journals_index"] = u.JournalsIndex
+	}
+
+	resp, err := coll.UpdateOne(db, query, bson.M{
+		"$set": bson.M{
+			"journals_index": index,
+			"journals":       jrnls,
+		},
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	if resp.ModifiedCount < 1 {
+		kind = 0
+		return
+	}
+
+	u.Journals = jrnls
+	u.JournalsIndex = index
+	kind = index
+
+	return
+}
+
+func (u *Unit) GetKind(db *database.Database, key string) (
+	kind int32, err error) {
+
+	for i := 0; i < 3; i++ {
+		kind, err = u.getKind(db, key)
+		if err != nil {
+			return
+		}
+
+		if kind != 0 {
+			break
+		}
+
+		err = u.RefreshJournals(db)
+		if err != nil {
+			return
+		}
+	}
+
+	if kind == 0 {
+		err = &errortypes.ParseError{
+			errors.New("unit: Failed to get journal kind index"),
+		}
+		return
+	}
+
+	return
+}
+
 func (u *Unit) Parse(db *database.Database, newUnit bool) (
 	newSpec *spec.Spec, updateSpec *spec.Spec,
 	errData *errortypes.ErrorData, err error) {
 
 	spc := spec.New(u.Pod, u.Id, u.Organization, u.Spec)
 
-	errData, err = spc.Parse(db)
+	errData, err = spc.Parse(db, u)
 	if err != nil {
 		return
 	}
