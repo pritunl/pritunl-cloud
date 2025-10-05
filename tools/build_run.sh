@@ -33,7 +33,7 @@ build_pritunl_agent() {
 
 if [ "$NO_AGENT" = false ]; then
     cd agent
-    output=$(go install -v 2>&1)
+    output=$(go install -v 2>&1 | tee /dev/tty) || exit 1
     if [ -n "$output" ]; then
         build_pritunl_agent
     fi
