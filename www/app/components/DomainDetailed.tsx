@@ -3,7 +3,7 @@ import * as React from 'react';
 import * as DomainTypes from '../types/DomainTypes';
 import * as DomainActions from '../actions/DomainActions';
 import * as OrganizationTypes from "../types/OrganizationTypes";
-import OrganizationsStore from "../stores/OrganizationsStore";
+import CompletionStore from "../stores/CompletionStore";
 import PageInput from './PageInput';
 import PageInfo from './PageInfo';
 import PageSave from './PageSave';
