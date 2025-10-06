@@ -313,11 +313,11 @@ export default class DomainDetailed extends React.Component<Props, State> {
 
 			for (let secret of this.props.secrets) {
 				if (Constants.user) {
-					if (domain.organization !== OrganizationsStore.current) {
+					if (domain.organization !== CompletionStore.userOrganization) {
 						continue;
 					}
 				} else {
-					if (domain.organization !== secret.organization) {
+					if (domain.organization != secret.organization) {
 						continue;
 					}
 				}
