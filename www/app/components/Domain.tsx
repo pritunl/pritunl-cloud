@@ -2,7 +2,7 @@
 import * as React from 'react';
 import * as DomainTypes from '../types/DomainTypes';
 import * as OrganizationTypes from "../types/OrganizationTypes";
-import OrganizationsStore from '../stores/OrganizationsStore';
+import CompletionStore from '../stores/CompletionStore';
 import DomainDetailed from './DomainDetailed';
 import * as SecretTypes from "../types/SecretTypes";
 
@@ -105,7 +105,7 @@ export default class Domain extends React.Component<Props, {}> {
 
 		let orgName = '';
 		if (domain.organization) {
-			let org = OrganizationsStore.organization(domain.organization);
+			let org = CompletionStore.organization(domain.organization);
 			orgName = org ? org.name : domain.organization;
 		} else {
 			orgName = 'Node Domain';
