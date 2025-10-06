@@ -8,7 +8,7 @@ import PageSelect from './PageSelect';
 import * as SecretTypes from "../types/SecretTypes";
 import * as DomainTypes from "../types/DomainTypes";
 import * as Constants from "../Constants";
-import OrganizationsStore from "../stores/OrganizationsStore";
+import CompletionStore from "../stores/CompletionStore";
 import PageTextArea from "./PageTextArea";
 
 interface Props {
