@@ -4,9 +4,9 @@ import * as Constants from "../Constants";
 import * as DomainTypes from '../types/DomainTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import DomainsStore from '../stores/DomainsStore';
-import OrganizationsStore from '../stores/OrganizationsStore';
+import CompletionStore from '../stores/CompletionStore';
 import * as DomainActions from '../actions/DomainActions';
-import * as OrganizationActions from '../actions/OrganizationActions';
+import * as CompletionActions from '../actions/CompletionActions';
 import Domain from './Domain';
 import DomainsFilter from './DomainsFilter';
 import DomainsPage from './DomainsPage';
@@ -95,8 +95,8 @@ export default class Domains extends React.Component<{}, State> {
 		this.state = {
 			domains: DomainsStore.domains,
 			filter: DomainsStore.filter,
-			organizations: OrganizationsStore.organizations,
-			secrets: SecretsStore.secrets,
+			organizations: CompletionStore.organizations,
+			secrets: CompletionStore.secrets,
 			organization: '',
 			selected: {},
 			opened: {},
@@ -116,17 +116,14 @@ export default class Domains extends React.Component<{}, State> {
 
 	componentDidMount(): void {
 		DomainsStore.addChangeListener(this.onChange);
-		OrganizationsStore.addChangeListener(this.onChange);
-		SecretsStore.addChangeListener(this.onChange);
+		CompletionStore.addChangeListener(this.onChange);
 		DomainActions.sync();
-		OrganizationActions.sync();
-		SecretActions.sync();
+		CompletionActions.sync();
 	}
 
 	componentWillUnmount(): void {
 		DomainsStore.removeChangeListener(this.onChange);
-		OrganizationsStore.removeChangeListener(this.onChange);
-		SecretsStore.removeChangeListener(this.onChange);
+		CompletionStore.removeChangeListener(this.onChange);
 	}
 
 	onChange = (): void => {
@@ -149,8 +146,8 @@ export default class Domains extends React.Component<{}, State> {
 			...this.state,
 			domains: domains,
 			filter: DomainsStore.filter,
-			organizations: OrganizationsStore.organizations,
-			secrets: SecretsStore.secrets,
+			organizations: CompletionStore.organizations,
+			secrets: CompletionStore.secrets,
 			selected: selected,
 			opened: opened,
 		});
