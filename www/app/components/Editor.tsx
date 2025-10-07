@@ -27,7 +27,6 @@ const css = {
 	editor: {
 		margin: "0",
 		borderRadius: "3px",
-		overflow: "hidden",
 		width: "100%",
 	} as React.CSSProperties,
 }
