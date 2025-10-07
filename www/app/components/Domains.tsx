@@ -379,7 +379,7 @@ export default class Domains extends React.Component<{}, State> {
 					{newDiskDom}
 					{domainsDom}
 					<tr className="bp5-card bp5-row" style={css.placeholder}>
-						<td colSpan={5} style={css.placeholder}/>
+						<td colSpan={2} style={css.placeholder}/>
 					</tr>
 				</div>
 			</div>
