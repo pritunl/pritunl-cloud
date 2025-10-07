@@ -50,6 +50,7 @@ export default class DomainRecord extends React.Component<Props, {}> {
 				>
 					<option value="A">A</option>
 					<option value="AAAA">AAAA</option>
+					<option value="CNAME">CNAME</option>
 				</select>
 			</div>
 			<div style={css.domainBox}>
