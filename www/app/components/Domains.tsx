@@ -16,8 +16,6 @@ import PageHeader from './PageHeader';
 import NonState from './NonState';
 import ConfirmButton from './ConfirmButton';
 import * as SecretTypes from "../types/SecretTypes";
-import SecretsStore from "../stores/SecretsStore";
-import * as SecretActions from "../actions/SecretActions";
 import DiskNew from "./DiskNew";
 
 interface Selected {
