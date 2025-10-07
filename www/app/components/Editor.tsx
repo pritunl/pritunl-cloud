@@ -1,5 +1,6 @@
 /// <reference path="../References.d.ts"/>
 import * as React from "react"
+import * as MiscUtils from '../utils/MiscUtils';
 import * as Theme from "../Theme"
 import * as MonacoEditor from "@monaco-editor/react"
 import * as Monaco from "monaco-editor"
@@ -35,7 +36,7 @@ export default class Editor extends React.Component<Props, State> {
 	editor: Monaco.editor.IStandaloneCodeEditor
 	monaco: MonacoEditor.Monaco
 	value: string
-	interval: NodeJS.Timer;
+	sync: MiscUtils.SyncInterval;
 
 	constructor(props: any, context: any) {
 		super(props, context)
