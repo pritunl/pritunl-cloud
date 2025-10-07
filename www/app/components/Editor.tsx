@@ -46,11 +46,12 @@ export default class Editor extends React.Component<Props, State> {
 
 	componentDidMount(): void {
 		if (this.props.interval) {
-			this.interval = setInterval(() => {
-				this.props.refresh(false).then((val) => {
+			this.sync = new MiscUtils.SyncInterval(
+				() => this.props.refresh(false).then((val) => {
 					this.update(val)
-				})
-			}, this.props.interval);
+				}),
+				this.props.interval,
+			)
 		}
 		if (!this.props.value && this.props.refresh) {
 			this.props.refresh(true).then((val) => {
@@ -60,9 +61,7 @@ export default class Editor extends React.Component<Props, State> {
 	}
 
 	componentWillUnmount(): void {
-		if (this.interval) {
-			clearInterval(this.interval)
-		}
+		this.sync?.stop()
 	}
 
 	update(val: string): void {
