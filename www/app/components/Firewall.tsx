@@ -102,7 +102,7 @@ export default class Firewall extends React.Component<Props, {}> {
 		};
 
 		let networkRoles: JSX.Element[] = [];
-		for (let networkRole of (firewall.network_roles || [])) {
+		for (let networkRole of (firewall.roles || [])) {
 			networkRoles.push(
 				<div
 					className="bp5-tag bp5-intent-primary"
