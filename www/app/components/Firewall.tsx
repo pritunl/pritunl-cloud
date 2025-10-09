@@ -3,7 +3,7 @@ import * as React from 'react';
 import * as MiscUtils from '../utils/MiscUtils';
 import * as FirewallTypes from '../types/FirewallTypes';
 import * as OrganizationTypes from "../types/OrganizationTypes";
-import OrganizationsStore from '../stores/OrganizationsStore';
+import CompletionStore from '../stores/CompletionStore';
 import FirewallDetailed from './FirewallDetailed';
 
 interface Props {
@@ -116,7 +116,7 @@ export default class Firewall extends React.Component<Props, {}> {
 
 		let orgName = '';
 		if (!MiscUtils.objectIdNil(firewall.organization)) {
-			let org = OrganizationsStore.organization(firewall.organization);
+			let org = CompletionStore.organization(firewall.organization);
 			orgName = org ? org.name : firewall.organization;
 		} else {
 			orgName = 'Node Firewall';
