@@ -152,17 +152,17 @@ export default class FirewallDetailed extends React.Component<Props, State> {
 			};
 		}
 
-		let networkRoles = [
-			...(firewall.network_roles || []),
+		let roles = [
+			...(firewall.roles || []),
 		];
 
 
-		if (networkRoles.indexOf(this.state.addNetworkRole) === -1) {
-			networkRoles.push(this.state.addNetworkRole);
+		if (roles.indexOf(this.state.addNetworkRole) === -1) {
+			roles.push(this.state.addNetworkRole);
 		}
 
-		networkRoles.sort();
-		firewall.network_roles = networkRoles;
+		roles.sort();
+		firewall.roles = roles;
 
 		this.setState({
 			...this.state,
@@ -186,17 +186,17 @@ export default class FirewallDetailed extends React.Component<Props, State> {
 			};
 		}
 
-		let networkRoles = [
-			...(firewall.network_roles || []),
+		let roles = [
+			...(firewall.roles || []),
 		];
 
-		let i = networkRoles.indexOf(networkRole);
+		let i = roles.indexOf(networkRole);
 		if (i === -1) {
 			return;
 		}
 
-		networkRoles.splice(i, 1);
-		firewall.network_roles = networkRoles;
+		roles.splice(i, 1);
+		firewall.roles = roles;
 
 		this.setState({
 			...this.state,
@@ -385,9 +385,9 @@ export default class FirewallDetailed extends React.Component<Props, State> {
 			);
 		});
 
-		let networkRoles: JSX.Element[] = [];
-		(firewall.network_roles || []).forEach((role, index) => {
-			networkRoles.push(
+		let roles: JSX.Element[] = [];
+		(firewall.roles || []).forEach((role, index) => {
+			roles.push(
 				<div
 					className="bp5-tag bp5-tag-removable bp5-intent-primary"
 					style={css.role}
