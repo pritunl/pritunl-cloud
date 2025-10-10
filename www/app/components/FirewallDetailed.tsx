@@ -536,7 +536,7 @@ export default class FirewallDetailed extends React.Component<Props, State> {
 							content="Network roles that will be matched with firewall rules. Network roles are case-sensitive."
 						/>
 						<div>
-							{networkRoles}
+							{roles}
 						</div>
 					</label>
 					<PageInputButton
