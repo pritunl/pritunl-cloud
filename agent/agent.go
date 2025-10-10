@@ -45,7 +45,6 @@ func main() {
 			os.Exit(1)
 		}
 	}()
-
 	flag.Usage = func() {
 		fmt.Printf(help)
 	}
