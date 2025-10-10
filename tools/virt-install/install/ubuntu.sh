@@ -1,8 +1,8 @@
 #!/bin/bash
 set -ev
 NAME="ubuntu2404"
-ISO_URL="https://sjc.mirror.rackspace.com/ubuntu-releases/24.04/ubuntu-24.04.2-live-server-amd64.iso"
-ISO_HASH="d6dab0c3a657988501b4bd76f1297c053df710e06e0c3aece60dead24f270b4d"
+ISO_URL="https://sjc.mirror.rackspace.com/ubuntu-releases/24.04/ubuntu-24.04.3-live-server-amd64.iso"
+ISO_HASH="c3514bf0056180d09376462a7a1b4f213c1d6e8ea67fae5c25099c6fd3d8274b"
 
 sudo mkdir -p /var/lib/virt/iso
 sudo mkdir -p /var/lib/virt/ks
