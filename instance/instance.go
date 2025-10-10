@@ -1006,6 +1006,9 @@ func (i *Instance) PostCommit(db *database.Database) (
 	if (!i.curVpc.IsZero() && i.curVpc != i.Vpc) ||
 		(!i.curSubnet.IsZero() && i.curSubnet != i.Subnet) {
 
+		i.DhcpIp = ""
+		i.DhcpIp6 = ""
+
 		err = vpc.RemoveInstanceIp(db, i.Id, i.curVpc)
 		if err != nil {
 			return
