@@ -171,6 +171,8 @@ func instancePut(c *gin.Context) {
 		"datacenter",
 		"vpc",
 		"subnet",
+		"dhcp_ip",
+		"dhcp_ip6",
 		"cloud_subnet",
 		"state",
 		"restart",
