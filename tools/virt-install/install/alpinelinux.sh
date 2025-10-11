@@ -1,8 +1,8 @@
 #!/bin/bash
 set -ev
 NAME="alpinelinux"
-ISO_URL="https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/x86_64/alpine-standard-3.22.2-x86_64.iso"
-ISO_HASH="f6a265f0696d328c8f87814a0d6bfa362d1434e500cb80a48796b1c9d204cee0"
+ISO_URL="https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/x86_64/alpine-virt-3.22.2-x86_64.iso"
+ISO_HASH="b6c45d69829b1b0416ada798353805099d57b8bef9093b85a8319fe5373595d5"
 
 sudo mkdir -p /var/lib/virt/iso
 sudo mkdir -p /var/lib/virt/ks
