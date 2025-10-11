@@ -84,6 +84,7 @@ while ! sudo virsh domstate ${NAME} 2>/dev/null | grep -q "shut off"; do
 done
 
 sudo rm -rf /var/lib/virt/init/${NAME}
+sudo rm -f /var/lib/virt/init/${NAME}.iso
 echo "Compressing image..."
 
 sudo rm -f /var/lib/virt/images/${NAME}_$(date +%y%m%d).qcow2
