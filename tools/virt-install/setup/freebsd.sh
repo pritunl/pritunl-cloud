@@ -12,6 +12,7 @@ echo '#############################################################'
 
 env PAGER=/bin/cat freebsd-update fetch
 freebsd-update install || true
+pkg update
 pkg upgrade -y
 
 sysrc -f /boot/loader.conf autoboot_delay=0
