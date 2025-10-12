@@ -53,7 +53,7 @@ func (n *NetConf) ipExternal(db *database.Database) (err error) {
 				continue
 			}
 
-			if stat.DhcpIp != nil {
+			if stat.DhcpIp != nil && stat.DhcpGateway != nil {
 				_, err = utils.ExecCombinedOutputLogged(
 					[]string{"File exists", "already assigned"},
 					"ip", "netns", "exec", n.Namespace,
