@@ -40,6 +40,20 @@ func Start(unit string) (err error) {
 	return
 }
 
+func Restart(unit string) (err error) {
+	systemdLock.Lock()
+	defer systemdLock.Unlock()
+
+	_, err = utils.ExecCombinedOutputLogged(nil, "systemctl", "restart", unit)
+	if err != nil {
+		return
+	}
+
+	time.Sleep(300 * time.Millisecond)
+
+	return
+}
+
 func Stop(unit string) (err error) {
 	systemdLock.Lock()
 	defer systemdLock.Unlock()
