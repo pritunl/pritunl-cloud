@@ -142,6 +142,14 @@ func Start(db *database.Database, virt *vm.VirtualMachine) (err error) {
 	return
 }
 
+func Restart(instId bson.ObjectID) (err error) {
+	unit := paths.GetUnitNameImds(instId)
+
+	_ = systemd.Restart(unit)
+
+	return
+}
+
 func Stop(virt *vm.VirtualMachine) (err error) {
 	unit := paths.GetUnitNameImds(virt.Id)
 
