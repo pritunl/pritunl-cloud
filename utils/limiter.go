@@ -1,6 +1,9 @@
 package utils
 
-import "sync"
+import (
+	"sync"
+	"time"
+)
 
 type Limiter struct {
 	counter int
@@ -25,7 +28,6 @@ func (l *Limiter) Release() {
 		panic("limiter: Counter below zero")
 	}
 	l.lock.Unlock()
-	return
 }
 
 func NewLimiter(limit int) *Limiter {
@@ -33,5 +35,55 @@ func NewLimiter(limit int) *Limiter {
 		counter: 0,
 		limit:   limit,
 		lock:    sync.Mutex{},
+	}
+}
+
+type TimeLimiter struct {
+	lastRelease time.Time
+	duration    time.Duration
+	acquired    bool
+	lock        sync.Mutex
+}
+
+func (l *TimeLimiter) SetDuration(duration time.Duration) {
+	l.lock.Lock()
+	l.duration = duration
+	l.lock.Unlock()
+}
+
+func (l *TimeLimiter) Acquire() (acquired bool) {
+	l.lock.Lock()
+	defer l.lock.Unlock()
+
+	if l.acquired {
+		return false
+	}
+
+	if time.Since(l.lastRelease) >= l.duration {
+		l.acquired = true
+		acquired = true
+	}
+
+	return
+}
+
+func (l *TimeLimiter) Release() {
+	l.lock.Lock()
+	defer l.lock.Unlock()
+
+	if !l.acquired {
+		panic("limiter: Release called without acquire")
+	}
+
+	l.lastRelease = time.Now()
+	l.acquired = false
+}
+
+func NewTimeLimiter(duration time.Duration) *TimeLimiter {
+	return &TimeLimiter{
+		lastRelease: time.Time{},
+		duration:    duration,
+		acquired:    false,
+		lock:        sync.Mutex{},
 	}
 }
