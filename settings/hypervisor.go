@@ -39,6 +39,7 @@ type hypervisor struct {
 	VxlanDestPort          int    `bson:"vxlan_dest_port" default:"4789"`
 	IpTimeout              int    `bson:"ip_timeout" default:"30"`
 	IpTimeout6             int    `bson:"ip_timeout6" default:"15"`
+	ActionRate             int    `bson:"action_rate" default:"3"`
 	NodePortNetwork        string `bson:"node_port_network" default:"198.19.96.0/23"`
 	NodePortRanges         string `bson:"node_port_ranges" default:"30000-32767"`
 	NodePortNetworkName    string `bson:"node_port_network_name" default:"pritunlport0"`
