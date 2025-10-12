@@ -1,12 +1,14 @@
 package task
 
 import (
+	"math/rand"
 	"sync"
 	"time"
 
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/imds"
+	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/sirupsen/logrus"
 )
@@ -26,15 +28,33 @@ var imdsSync = &Task{
 }
 
 var (
-	failTime = map[bson.ObjectID]time.Time{}
+	failTime = map[bson.ObjectID]failTimeData{}
 )
+
+type failTimeData struct {
+	timestamp time.Time
+	logged    bool
+}
+
+func test() {
+	test := []int{1, 2, 3, 4, 5, 6, 7, 8, 9}
+
+	for _, val := range test {
+		go func() {
+			time.Sleep(time.Duration(rand.Intn(100)) * time.Millisecond)
+			print(val)
+		}()
+	}
+}
 
 func imdsSyncHandler(db *database.Database) (err error) {
 	confs := imds.GetConfigs()
-	timeout := time.Duration(
+	logTtl := time.Duration(
 		settings.Hypervisor.ImdsSyncLogTimeout) * time.Second
+	restartTtl := time.Duration(
+		settings.Hypervisor.ImdsSyncRestartTimeout) * time.Second
 
-	newFailTime := map[bson.ObjectID]time.Time{}
+	newFailTime := map[bson.ObjectID]failTimeData{}
 	newFailTimeLock := sync.Mutex{}
 	waiter := &sync.WaitGroup{}
 	for _, conf := range confs {
@@ -43,27 +63,53 @@ func imdsSyncHandler(db *database.Database) (err error) {
 		}
 
 		waiter.Add(1)
-		go func() {
+		go func(conf *types.Config) {
 			defer waiter.Done()
 
-			err := imds.Sync(db, conf.Instance.NetworkNamespace, conf.Instance.Id,
-				conf.Instance.Deployment, conf)
+			err := imds.Sync(db, conf.Instance.NetworkNamespace,
+				conf.Instance.Id, conf.Instance.Deployment, conf)
 			if err != nil {
 				newFailTimeLock.Lock()
-				if failTime[conf.Instance.Id].IsZero() {
-					newFailTime[conf.Instance.Id] = time.Now()
-				} else if time.Since(failTime[conf.Instance.Id]) > timeout {
+				ttlData := failTime[conf.Instance.Id]
+
+				if ttlData.timestamp.IsZero() {
+					newFailTime[conf.Instance.Id] = failTimeData{
+						timestamp: time.Now(),
+					}
+				} else if time.Since(ttlData.timestamp) > logTtl &&
+					!ttlData.logged {
+
 					logrus.WithFields(logrus.Fields{
 						"action":   conf.Instance.Action,
 						"instance": conf.Instance.Id.Hex(),
 						"error":    err,
-					}).Error("agent: Failed to sync imds")
+					}).Error("task: Failed to sync imds")
+
+					newFailTime[conf.Instance.Id] = failTimeData{
+						timestamp: ttlData.timestamp,
+						logged:    true,
+					}
+				} else if time.Since(ttlData.timestamp) > restartTtl {
+					logrus.WithFields(logrus.Fields{
+						"action":   conf.Instance.Action,
+						"instance": conf.Instance.Id.Hex(),
+						"error":    err,
+					}).Error("task: Failed to sync imds, restarting...")
+
+					e := imds.Restart(conf.Instance.Id)
+					if e != nil {
+						logrus.WithFields(logrus.Fields{
+							"action":   conf.Instance.Action,
+							"instance": conf.Instance.Id.Hex(),
+							"error":    e,
+						}).Error("task: Failed to restart imds")
+					}
 				} else {
 					newFailTime[conf.Instance.Id] = failTime[conf.Instance.Id]
 				}
 				newFailTimeLock.Unlock()
 			}
-		}()
+		}(conf)
 	}
 
 	waiter.Wait()
