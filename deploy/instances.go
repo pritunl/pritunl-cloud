@@ -31,7 +31,7 @@ import (
 
 var (
 	instancesLock = utils.NewMultiTimeoutLock(5 * time.Minute)
-	limiter       = utils.NewLimiter(5)
+	limiter       = utils.NewTimeLimiter(10 * time.Second)
 )
 
 type Instances struct {
@@ -866,6 +866,9 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 
 	cpuUnits := 0
 	memoryUnits := 0.0
+
+	limiter.SetDuration(time.Duration(
+		settings.Hypervisor.ActionRate) * time.Second)
 
 	now := time.Now()
 	infoTtl := time.Duration(settings.Hypervisor.InfoTtl) * time.Second
