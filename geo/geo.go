@@ -10,6 +10,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/settings"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 var (
@@ -78,11 +79,8 @@ func get(addr string) (ge *Geo, err error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
-		err = &errortypes.ParseError{
-			errors.Newf(
-				"geo: Request failed with status %d", resp.StatusCode),
-		}
+	err = utils.CheckRequest(resp, "geo: Geo request error")
+	if err != nil {
 		return
 	}
 
