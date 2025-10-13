@@ -7,6 +7,7 @@ import (
 	"runtime/debug"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/sirupsen/logrus"
@@ -243,4 +244,15 @@ func CopyList(src *list.List) *list.List {
 		dst.PushBack(x.Value)
 	}
 	return dst
+}
+
+func ToSnakeCase(s string) string {
+	var result []rune
+	for i, r := range s {
+		if i > 0 && unicode.IsUpper(r) {
+			result = append(result, '_')
+		}
+		result = append(result, unicode.ToLower(r))
+	}
+	return string(result)
 }
