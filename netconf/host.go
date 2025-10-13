@@ -114,6 +114,9 @@ func (n *NetConf) hostSpaceUp(db *database.Database) (err error) {
 }
 
 func (n *NetConf) Host(db *database.Database) (err error) {
+	lockId := lock.Lock("host")
+	defer lock.Unlock("host", lockId)
+
 	err = n.hostNet(db)
 	if err != nil {
 		return
