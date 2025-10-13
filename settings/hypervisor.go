@@ -54,7 +54,7 @@ type hypervisor struct {
 	ImdsAddress            string `bson:"imds_address" default:"169.254.169.254/32"`
 	ImdsPort               int    `bson:"imds_port" default:"80"`
 	ImdsSyncLogTimeout     int    `bson:"imds_sync_log_timeout" default:"20"`
-	ImdsSyncRestartTimeout int    `bson:"imds_sync_log_timeout" default:"40"`
+	ImdsSyncRestartTimeout int    `bson:"imds_sync_log_timeout" default:"30"`
 	InfoTtl                int    `bson:"info_ttl" default:"10"`
 	NoGuiFullscreen        bool   `bson:"no_gui_fullscreen"`
 	UsbHsPorts             int    `bson:"usb_hs_ports" default:"4"`
