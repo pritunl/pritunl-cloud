@@ -3,6 +3,7 @@ pritunl-cloud changelog
 
 <%= version %>
 
+Add journal kind to pods
 Add support for QEMU 10
 Improve QEMU tuning
 Fix relations query
