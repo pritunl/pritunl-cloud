@@ -2,10 +2,16 @@ package netconf
 
 import (
 	"net"
+	"time"
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/pritunl-cloud/vm"
+)
+
+var (
+	lock = utils.NewMultiTimeoutLock(2 * time.Minute)
 )
 
 type NetConf struct {
