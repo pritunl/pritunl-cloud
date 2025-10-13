@@ -123,6 +123,9 @@ func (n *NetConf) internalSpaceUp(db *database.Database) (err error) {
 }
 
 func (n *NetConf) Internal(db *database.Database) (err error) {
+	lockId := lock.Lock("internal")
+	defer lock.Unlock("internal", lockId)
+
 	err = n.internalNet(db)
 	if err != nil {
 		return
