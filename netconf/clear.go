@@ -66,6 +66,16 @@ func clearIface(namespace, iface string) {
 			Name: "ip",
 			Args: []string{
 				"netns", "exec", namespace,
+				"ip", "link", "set", iface, "nomaster",
+			},
+			PipeOut: true,
+			PipeErr: true,
+		})
+		time.Sleep(200 * time.Millisecond)
+		commander.Exec(&commander.Opt{
+			Name: "ip",
+			Args: []string{
+				"netns", "exec", namespace,
 				"ip", "link", "set", iface, "down",
 			},
 			PipeOut: true,
@@ -81,6 +91,15 @@ func clearIface(namespace, iface string) {
 			PipeErr: true,
 		})
 	} else {
+		commander.Exec(&commander.Opt{
+			Name: "ip",
+			Args: []string{
+				"link", "set", iface, "nomaster",
+			},
+			PipeOut: true,
+			PipeErr: true,
+		})
+		time.Sleep(200 * time.Millisecond)
 		commander.Exec(&commander.Opt{
 			Name: "ip",
 			Args: []string{
