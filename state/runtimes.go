@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -49,6 +50,7 @@ func (r *Runtimes) Log() {
 	}
 
 	for key, dur := range r.State {
+		key = utils.ToSnakeCase(key)
 		fields[key] = fmt.Sprintf("%v", dur)
 	}
 
