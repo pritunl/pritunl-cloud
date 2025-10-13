@@ -1,6 +1,8 @@
 package netconf
 
 import (
+	"time"
+
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
@@ -10,10 +12,13 @@ import (
 )
 
 func (n *NetConf) Clear(db *database.Database) (err error) {
-	clearIface("", n.SystemExternalIface)
-	clearIface("", n.SystemInternalIface)
-	clearIface("", n.SystemHostIface)
-	clearIface("", n.SystemNodePortIface)
+	lockId := lock.Lock("clear")
+	defer lock.Unlock("clear", lockId)
+
+	clearIface("", n.SystemExternalIface) // bridged
+	clearIface("", n.SystemInternalIface) // bridged
+	clearIface("", n.SystemHostIface)     // bridged
+	clearIface("", n.SystemNodePortIface) // bridged
 	clearIface("", n.SpaceExternalIface)
 	clearIface("", n.SpaceExternalIfaceMod)
 	clearIface("", n.SpaceExternalIfaceMod6)
