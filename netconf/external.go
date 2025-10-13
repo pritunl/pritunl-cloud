@@ -376,6 +376,9 @@ func (n *NetConf) externalSpaceUp(db *database.Database) (err error) {
 }
 
 func (n *NetConf) External(db *database.Database) (err error) {
+	lockId := lock.Lock("external")
+	defer lock.Unlock("external", lockId)
+
 	err = n.externalNet(db)
 	if err != nil {
 		return
