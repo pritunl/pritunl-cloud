@@ -14,6 +14,8 @@ func BridgeAdd(namespace, name string) (err error) {
 			"ip", "link",
 			"add", name,
 			"type", "bridge",
+			"stp_state", "0",
+			"forward_delay", "0",
 		)
 	} else {
 		_, err = utils.ExecCombinedOutputLogged(
@@ -23,6 +25,8 @@ func BridgeAdd(namespace, name string) (err error) {
 			"ip", "link",
 			"add", name,
 			"type", "bridge",
+			"stp_state", "0",
+			"forward_delay", "0",
 		)
 	}
 	if err != nil {
