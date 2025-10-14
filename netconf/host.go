@@ -1,7 +1,10 @@
 package netconf
 
 import (
+	"time"
+
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -114,8 +117,9 @@ func (n *NetConf) hostSpaceUp(db *database.Database) (err error) {
 }
 
 func (n *NetConf) Host(db *database.Database) (err error) {
+	delay := time.Duration(settings.Hypervisor.ActionRate) * time.Second
 	lockId := lock.Lock("host")
-	defer lock.Unlock("host", lockId)
+	defer lock.DelayUnlock("host", lockId, delay)
 
 	err = n.hostNet(db)
 	if err != nil {

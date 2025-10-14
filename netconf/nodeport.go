@@ -1,7 +1,10 @@
 package netconf
 
 import (
+	"time"
+
 	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -114,8 +117,9 @@ func (n *NetConf) nodePortSpaceUp(db *database.Database) (err error) {
 }
 
 func (n *NetConf) NodePort(db *database.Database) (err error) {
+	delay := time.Duration(settings.Hypervisor.ActionRate) * time.Second
 	lockId := lock.Lock("nodeport")
-	defer lock.Unlock("nodeport", lockId)
+	defer lock.DelayUnlock("nodeport", lockId, delay)
 
 	err = n.nodePortNet(db)
 	if err != nil {
