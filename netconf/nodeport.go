@@ -114,6 +114,9 @@ func (n *NetConf) nodePortSpaceUp(db *database.Database) (err error) {
 }
 
 func (n *NetConf) NodePort(db *database.Database) (err error) {
+	lockId := lock.Lock("nodeport")
+	defer lock.Unlock("nodeport", lockId)
+
 	err = n.nodePortNet(db)
 	if err != nil {
 		return
