@@ -104,7 +104,7 @@ func initIfaces(stat *state.State, internaIfaces []string) (err error) {
 			vxIface := vm.GetHostVxlanIface(parentIface)
 			if ifaces.Contains(vxIface) {
 				_, err = utils.ExecCombinedOutputLogged(
-					nil,
+					[]string{"does not exist"},
 					"ip", "link", "set",
 					vxIface, "master", iface,
 				)
@@ -448,7 +448,9 @@ func syncIfaces(stat *state.State, internaIfaces []string,
 		}
 	}
 
-	for ifaceInf := range cIfaces.Iter() {
+	existIfaces := cIfaces.Copy()
+	existIfaces.Subtract(remIfaces)
+	for ifaceInf := range existIfaces.Iter() {
 		iface := ifaceInf.(string)
 
 		if strings.HasPrefix(iface, "k") {
@@ -462,7 +464,7 @@ func syncIfaces(stat *state.State, internaIfaces []string,
 				}).Warn("vxlan: Correct vxlan master")
 
 				_, err = utils.ExecCombinedOutputLogged(
-					nil,
+					[]string{"does not exist"},
 					"ip", "link", "set",
 					iface, "master", brIface,
 				)
