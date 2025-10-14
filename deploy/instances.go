@@ -31,7 +31,8 @@ import (
 
 var (
 	instancesLock = utils.NewMultiTimeoutLock(5 * time.Minute)
-	limiter       = utils.NewTimeLimiter(10 * time.Second)
+	createLimiter = utils.NewTimeLimiter(10 * time.Second)
+	limiter       = utils.NewLimiter(3)
 )
 
 type Instances struct {
@@ -39,14 +40,14 @@ type Instances struct {
 }
 
 func (s *Instances) create(inst *instance.Instance) {
-	if !limiter.Acquire() {
+	if !createLimiter.Acquire() {
 		return
 	}
 
 	acquired, lockId := instancesLock.LockOpenTimeout(
 		inst.Id.Hex(), 10*time.Minute)
 	if !acquired {
-		limiter.Release()
+		createLimiter.Release()
 		return
 	}
 
@@ -55,7 +56,7 @@ func (s *Instances) create(inst *instance.Instance) {
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
-			limiter.Release()
+			createLimiter.Release()
 		}()
 
 		db := database.GetDatabase()
@@ -88,13 +89,13 @@ func (s *Instances) create(inst *instance.Instance) {
 }
 
 func (s *Instances) start(inst *instance.Instance) {
-	if !limiter.Acquire() {
+	if !createLimiter.Acquire() {
 		return
 	}
 
 	acquired, lockId := instancesLock.LockOpen(inst.Id.Hex())
 	if !acquired {
-		limiter.Release()
+		createLimiter.Release()
 		return
 	}
 
@@ -103,7 +104,7 @@ func (s *Instances) start(inst *instance.Instance) {
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
-			limiter.Release()
+			createLimiter.Release()
 		}()
 
 		db := database.GetDatabase()
@@ -867,7 +868,7 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 	cpuUnits := 0
 	memoryUnits := 0.0
 
-	limiter.SetDuration(time.Duration(
+	createLimiter.SetDuration(time.Duration(
 		settings.Hypervisor.ActionRate) * time.Second)
 
 	now := time.Now()
