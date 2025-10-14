@@ -254,6 +254,15 @@ func (m *MultiTimeoutLock) Unlock(id string, lockId bson.ObjectID) {
 	m.stateLock.Unlock()
 }
 
+func (m *MultiTimeoutLock) DelayUnlock(id string, lockId bson.ObjectID,
+	dur time.Duration) {
+
+	go func() {
+		time.Sleep(dur)
+		m.Unlock(id, lockId)
+	}()
+}
+
 func (m *MultiTimeoutLock) Locked(id string) bool {
 	m.lock.Lock()
 	_, ok := m.locks[id]
