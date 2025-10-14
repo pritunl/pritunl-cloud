@@ -159,3 +159,10 @@ func GetIfacesCached(namespace string) (ifacesMap map[string]*Iface, err error) 
 
 	return
 }
+
+func ClearIfacesCache(namespace string) {
+	cacheLock.Lock()
+	cache[namespace] = map[string]*Iface{}
+	cacheTime[namespace] = time.Time{}
+	cacheLock.Unlock()
+}
