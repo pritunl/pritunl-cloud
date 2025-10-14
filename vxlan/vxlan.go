@@ -8,6 +8,7 @@ import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/ip"
 	"github.com/pritunl/pritunl-cloud/iproute"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
@@ -90,7 +91,6 @@ func initIfaces(stat *state.State, internaIfaces []string) (err error) {
 
 	time.Sleep(200 * time.Millisecond)
 
-	// TODO vxIface losing master iface
 	newCurIfaces.Intersect(newIfaces)
 	for ifaceInf := range newCurIfaces.Iter() {
 		iface := ifaceInf.(string)
@@ -155,6 +155,8 @@ func initIfaces(stat *state.State, internaIfaces []string) (err error) {
 			}
 		}
 	}
+
+	ip.ClearIfacesCache("")
 
 	curIfaces = newCurIfaces
 
@@ -278,13 +280,15 @@ func initDatabase(stat *state.State, internaIfaces []string) (err error) {
 }
 
 func syncIfaces(stat *state.State, internaIfaces []string,
-	retry bool) (err error) {
+	ifacesData map[string]*ip.Iface, retry bool) (err error) {
 
 	cIfaces := curIfaces
 	nodeSelf := stat.Node()
+	clearCache := false
 
 	parentVxIfaces := map[string]string{}
 	parentBrIfaces := map[string]string{}
+	vxBrIfaces := map[string]string{}
 	newIfaces := set.NewSet()
 	if internaIfaces != nil && stat.VxLan() {
 		for _, iface := range internaIfaces {
@@ -293,6 +297,7 @@ func syncIfaces(stat *state.State, internaIfaces []string,
 
 			parentVxIfaces[vxIface] = iface
 			parentBrIfaces[brIface] = iface
+			vxBrIfaces[vxIface] = brIface
 
 			newIfaces.Add(vxIface)
 			newIfaces.Add(brIface)
@@ -318,6 +323,8 @@ func syncIfaces(stat *state.State, internaIfaces []string,
 				iface, "down",
 			)
 			_ = iproute.BridgeDelete("", iface)
+
+			clearCache = true
 		}
 	}
 	for ifaceInf := range remIfaces.Iter() {
@@ -335,6 +342,8 @@ func syncIfaces(stat *state.State, internaIfaces []string,
 				"ip", "link",
 				"del", iface,
 			)
+
+			clearCache = true
 		}
 	}
 
@@ -356,7 +365,7 @@ func syncIfaces(stat *state.State, internaIfaces []string,
 			if localIp == "" {
 				if !retry {
 					nodeSelf.SyncNetwork(true)
-					err = syncIfaces(stat, internaIfaces, true)
+					err = syncIfaces(stat, internaIfaces, ifacesData, true)
 					return
 				}
 
@@ -396,6 +405,8 @@ func syncIfaces(stat *state.State, internaIfaces []string,
 			if err != nil {
 				return
 			}
+
+			clearCache = true
 		}
 	}
 
@@ -432,7 +443,40 @@ func syncIfaces(stat *state.State, internaIfaces []string,
 			if err != nil {
 				return
 			}
+
+			clearCache = true
 		}
+	}
+
+	for ifaceInf := range cIfaces.Iter() {
+		iface := ifaceInf.(string)
+
+		if strings.HasPrefix(iface, "k") {
+			brIface := vxBrIfaces[iface]
+
+			ifaceData := ifacesData[iface]
+			if ifaceData != nil && ifaceData.Master != brIface {
+				logrus.WithFields(logrus.Fields{
+					"vxlan":  iface,
+					"bridge": brIface,
+				}).Warn("vxlan: Correct vxlan master")
+
+				_, err = utils.ExecCombinedOutputLogged(
+					nil,
+					"ip", "link", "set",
+					iface, "master", brIface,
+				)
+				if err != nil {
+					return
+				}
+
+				clearCache = true
+			}
+		}
+	}
+
+	if clearCache {
+		ip.ClearIfacesCache("")
 	}
 
 	curIfaces = newIfaces
@@ -575,7 +619,12 @@ func ApplyState(stat *state.State) (err error) {
 		}
 	}
 
-	err = syncIfaces(stat, internaIfaces, false)
+	ifacesData, err := ip.GetIfacesCached("")
+	if err != nil {
+		return
+	}
+
+	err = syncIfaces(stat, internaIfaces, ifacesData, false)
 	if err != nil {
 		return
 	}
