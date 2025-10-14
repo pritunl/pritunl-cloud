@@ -31,8 +31,11 @@ import (
 
 var (
 	instancesLock = utils.NewMultiTimeoutLock(5 * time.Minute)
-	createLimiter = utils.NewTimeLimiter(10 * time.Second)
-	limiter       = utils.NewLimiter(3)
+	createLimiter = utils.NewLimiter(3)
+	startLimiter  = utils.NewLimiter(3)
+	stopLimiter   = utils.NewLimiter(3)
+	diskLimiter   = utils.NewLimiter(3)
+	usbLimiter    = utils.NewLimiter(1)
 )
 
 type Instances struct {
@@ -89,13 +92,13 @@ func (s *Instances) create(inst *instance.Instance) {
 }
 
 func (s *Instances) start(inst *instance.Instance) {
-	if !createLimiter.Acquire() {
+	if !startLimiter.Acquire() {
 		return
 	}
 
 	acquired, lockId := instancesLock.LockOpen(inst.Id.Hex())
 	if !acquired {
-		createLimiter.Release()
+		startLimiter.Release()
 		return
 	}
 
@@ -104,7 +107,7 @@ func (s *Instances) start(inst *instance.Instance) {
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
-			createLimiter.Release()
+			startLimiter.Release()
 		}()
 
 		db := database.GetDatabase()
@@ -151,13 +154,13 @@ func (s *Instances) start(inst *instance.Instance) {
 }
 
 func (s *Instances) cleanup(inst *instance.Instance) {
-	if !limiter.Acquire() {
+	if !stopLimiter.Acquire() {
 		return
 	}
 
 	acquired, lockId := instancesLock.LockOpen(inst.Id.Hex())
 	if !acquired {
-		limiter.Release()
+		stopLimiter.Release()
 		return
 	}
 
@@ -166,7 +169,7 @@ func (s *Instances) cleanup(inst *instance.Instance) {
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
-			limiter.Release()
+			stopLimiter.Release()
 		}()
 
 		db := database.GetDatabase()
@@ -188,13 +191,13 @@ func (s *Instances) cleanup(inst *instance.Instance) {
 }
 
 func (s *Instances) stop(inst *instance.Instance) {
-	if !limiter.Acquire() {
+	if !stopLimiter.Acquire() {
 		return
 	}
 
 	acquired, lockId := instancesLock.LockOpen(inst.Id.Hex())
 	if !acquired {
-		limiter.Release()
+		stopLimiter.Release()
 		return
 	}
 
@@ -203,7 +206,7 @@ func (s *Instances) stop(inst *instance.Instance) {
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
-			limiter.Release()
+			stopLimiter.Release()
 		}()
 
 		db := database.GetDatabase()
@@ -223,13 +226,13 @@ func (s *Instances) stop(inst *instance.Instance) {
 }
 
 func (s *Instances) restart(inst *instance.Instance) {
-	if !limiter.Acquire() {
+	if !stopLimiter.Acquire() {
 		return
 	}
 
 	acquired, lockId := instancesLock.LockOpen(inst.Id.Hex())
 	if !acquired {
-		limiter.Release()
+		stopLimiter.Release()
 		return
 	}
 
@@ -238,7 +241,7 @@ func (s *Instances) restart(inst *instance.Instance) {
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
-			limiter.Release()
+			stopLimiter.Release()
 		}()
 
 		db := database.GetDatabase()
@@ -306,13 +309,13 @@ func (s *Instances) restart(inst *instance.Instance) {
 }
 
 func (s *Instances) destroy(inst *instance.Instance) {
-	if !limiter.Acquire() {
+	if !stopLimiter.Acquire() {
 		return
 	}
 
 	acquired, lockId := instancesLock.LockOpen(inst.Id.Hex())
 	if !acquired {
-		limiter.Release()
+		stopLimiter.Release()
 		return
 	}
 
@@ -321,7 +324,7 @@ func (s *Instances) destroy(inst *instance.Instance) {
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
-			limiter.Release()
+			stopLimiter.Release()
 		}()
 
 		db := database.GetDatabase()
@@ -374,8 +377,13 @@ func (s *Instances) destroy(inst *instance.Instance) {
 func (s *Instances) diskAdd(inst *instance.Instance,
 	virt *vm.VirtualMachine, addDisks vm.SortDisks) {
 
+	if !diskLimiter.Acquire() {
+		return
+	}
+
 	acquired, lockId := instancesLock.LockOpen(inst.Id.Hex())
 	if !acquired {
+		diskLimiter.Release()
 		return
 	}
 
@@ -384,6 +392,7 @@ func (s *Instances) diskAdd(inst *instance.Instance,
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
+			diskLimiter.Release()
 		}()
 
 		db := database.GetDatabase()
@@ -426,8 +435,13 @@ func (s *Instances) diskAdd(inst *instance.Instance,
 func (s *Instances) diskRemove(inst *instance.Instance,
 	virt *vm.VirtualMachine, remDisks vm.SortDisks) {
 
+	if !diskLimiter.Acquire() {
+		return
+	}
+
 	acquired, lockId := instancesLock.LockOpen(inst.Id.Hex())
 	if !acquired {
+		diskLimiter.Release()
 		return
 	}
 
@@ -436,6 +450,7 @@ func (s *Instances) diskRemove(inst *instance.Instance,
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
+			diskLimiter.Release()
 		}()
 
 		db := database.GetDatabase()
@@ -473,8 +488,13 @@ func (s *Instances) diskRemove(inst *instance.Instance,
 func (s *Instances) usbAdd(inst *instance.Instance, virt *vm.VirtualMachine,
 	addUsbs []*vm.UsbDevice) {
 
+	if !usbLimiter.Acquire() {
+		return
+	}
+
 	acquired, lockId := instancesLock.LockOpen(inst.Id.Hex())
 	if !acquired {
+		usbLimiter.Release()
 		return
 	}
 
@@ -483,6 +503,7 @@ func (s *Instances) usbAdd(inst *instance.Instance, virt *vm.VirtualMachine,
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
+			usbLimiter.Release()
 		}()
 
 		db := database.GetDatabase()
@@ -520,8 +541,13 @@ func (s *Instances) usbAdd(inst *instance.Instance, virt *vm.VirtualMachine,
 func (s *Instances) usbRemove(inst *instance.Instance,
 	virt *vm.VirtualMachine, remUsbs []*vm.UsbDevice) {
 
+	if !usbLimiter.Acquire() {
+		return
+	}
+
 	acquired, lockId := instancesLock.LockOpen(inst.Id.Hex())
 	if !acquired {
+		usbLimiter.Release()
 		return
 	}
 
@@ -530,6 +556,7 @@ func (s *Instances) usbRemove(inst *instance.Instance,
 		defer func() {
 			time.Sleep(3 * time.Second)
 			instancesLock.Unlock(inst.Id.Hex(), lockId)
+			usbLimiter.Release()
 		}()
 
 		db := database.GetDatabase()
@@ -867,9 +894,6 @@ func (s *Instances) Deploy(db *database.Database) (err error) {
 
 	cpuUnits := 0
 	memoryUnits := 0.0
-
-	createLimiter.SetDuration(time.Duration(
-		settings.Hypervisor.ActionRate) * time.Second)
 
 	now := time.Now()
 	infoTtl := time.Duration(settings.Hypervisor.InfoTtl) * time.Second
