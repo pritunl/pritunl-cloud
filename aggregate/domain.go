@@ -77,6 +77,14 @@ func GetDomainPaged(db *database.Database, query *bson.M, page,
 			return
 		}
 
+		records := []*domain.Record{}
+		for _, rec := range domn.Records {
+			if !rec.IsDeleted() {
+				records = append(records, rec)
+			}
+		}
+		domn.Records = records
+
 		domains = append(domains, domn)
 	}
 
