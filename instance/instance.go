@@ -819,6 +819,7 @@ func (i *Instance) Json(short bool) {
 		i.Guest.Load1 = 0
 		i.Guest.Load5 = 0
 		i.Guest.Load15 = 0
+		i.Guest.Updates = []*telemetry.Update{}
 	}
 
 	i.PublicMac = vm.GetMacAddrExternal(i.Id, i.Vpc)
