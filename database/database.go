@@ -945,6 +945,18 @@ func addIndexes() (err error) {
 	}
 
 	index = &Index{
+		Collection: db.Journal(),
+		Keys: &bson.D{
+			{"t", 1},
+		},
+		Expire: 2160 * time.Hour,
+	}
+	err = index.Create()
+	if err != nil {
+		return
+	}
+
+	index = &Index{
 		Collection: db.Vpcs(),
 		Keys: &bson.D{
 			{"name", 1},
