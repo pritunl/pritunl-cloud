@@ -8,6 +8,7 @@ Add support for QEMU 10
 Improve QEMU tuning
 Fix relations query
 Fix RHEL 7 IPv6 network configuration
+Add imds service recovery
 
 Version 2.0.3592.49 2025-09-24
 ------------------------------
