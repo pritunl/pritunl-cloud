@@ -31,19 +31,35 @@ func updatesRefresh() (updates []*Update, err error) {
 		return
 	}
 
-	resp, err := commander.Exec(&commander.Opt{
-		Name: "dnf",
-		Args: []string{
-			"updateinfo",
-			"list",
-			"--sec-severity=Moderate",
-			"--sec-severity=Important",
-			"--sec-severity=Critical",
-		},
-		Timeout: 30 * time.Second,
-		PipeOut: true,
-		PipeErr: true,
-	})
+	var resp *commander.Return
+	if HasSevs() {
+		resp, err = commander.Exec(&commander.Opt{
+			Name: "dnf",
+			Args: []string{
+				"updateinfo",
+				"list",
+				"--advisory-severities=Moderate,Important,Critical",
+			},
+			Timeout: 30 * time.Second,
+			PipeOut: true,
+			PipeErr: true,
+		})
+	} else {
+		resp, err = commander.Exec(&commander.Opt{
+			Name: "dnf",
+			Args: []string{
+				"updateinfo",
+				"list",
+				"--sec-severity=Moderate",
+				"--sec-severity=Important",
+				"--sec-severity=Critical",
+			},
+			Timeout: 30 * time.Second,
+			PipeOut: true,
+			PipeErr: true,
+		})
+	}
+
 	if err != nil {
 		logrus.WithFields(
 			resp.Map(),
@@ -64,34 +80,50 @@ func updatesRefresh() (updates []*Update, err error) {
 		}
 
 		parts := strings.Fields(line)
-		if len(parts) == 3 {
+		if len(parts) >= 3 {
 			advisory := parts[0]
 			severity := parts[1]
-			pkg := parts[2]
+			part2 := parts[2]
+			part3 := ""
+			if len(parts) >= 4 {
+				part3 = parts[3]
+			}
 
-			if strings.Contains(
-				strings.ToLower(severity), "moderate") {
-
+			if strings.Contains(strings.ToLower(severity), Moderate) {
 				moderateUpdates = append(moderateUpdates, &Update{
 					Advisory: advisory,
-					Severity: "moderate",
-					Package:  pkg,
+					Severity: Moderate,
+					Package:  part2,
 				})
-			} else if strings.Contains(
-				strings.ToLower(severity), "important") {
-
+			} else if strings.Contains(strings.ToLower(severity), Important) {
 				importantUpdates = append(importantUpdates, &Update{
 					Advisory: advisory,
-					Severity: "important",
-					Package:  pkg,
+					Severity: Important,
+					Package:  part2,
 				})
-			} else if strings.Contains(
-				strings.ToLower(severity), "critical") {
-
+			} else if strings.Contains(strings.ToLower(severity), Critical) {
 				criticalUpdates = append(criticalUpdates, &Update{
 					Advisory: advisory,
-					Severity: "critical",
-					Package:  pkg,
+					Severity: Critical,
+					Package:  part2,
+				})
+			} else if strings.Contains(strings.ToLower(part2), Moderate) {
+				moderateUpdates = append(moderateUpdates, &Update{
+					Advisory: advisory,
+					Severity: Moderate,
+					Package:  part3,
+				})
+			} else if strings.Contains(strings.ToLower(part2), Important) {
+				importantUpdates = append(importantUpdates, &Update{
+					Advisory: advisory,
+					Severity: Important,
+					Package:  part3,
+				})
+			} else if strings.Contains(strings.ToLower(part2), Critical) {
+				criticalUpdates = append(criticalUpdates, &Update{
+					Advisory: advisory,
+					Severity: Critical,
+					Package:  part3,
 				})
 			} else {
 				continue
