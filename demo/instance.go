@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/pritunl/pritunl-cloud/telemetry"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -353,6 +354,28 @@ var Instances = []*instance.Instance{
 			Load1:     22.14,
 			Load5:     24.45,
 			Load15:    28.28,
+			Updates: []*telemetry.Update{
+				{
+					Advisory: "ALSA-2025:10371",
+					Severity: "important",
+					Package:  "kernel-6.12.0-55.20.1.el10_0.x86_64",
+				},
+				{
+					Advisory: "ALSA-2025:10854",
+					Severity: "important",
+					Package:  "kernel-6.12.0-55.21.1.el10_0.x86_64",
+				},
+				{
+					Advisory: "ALSA-2025:11428",
+					Severity: "important",
+					Package:  "kernel-6.12.0-55.22.1.el10_0.x86_64",
+				},
+				{
+					Advisory: "ALSA-2025:12662",
+					Severity: "important",
+					Package:  "kernel-6.12.0-55.25.1.el10_0.x86_64",
+				},
+			},
 		},
 	},
 	{
@@ -390,6 +413,28 @@ var Instances = []*instance.Instance{
 			Load1:     54.78,
 			Load5:     63.5,
 			Load15:    69.05,
+			Updates: []*telemetry.Update{
+				{
+					Advisory: "ALSA-2025:10371",
+					Severity: "important",
+					Package:  "kernel-6.12.0-55.20.1.el10_0.x86_64",
+				},
+				{
+					Advisory: "ALSA-2025:10854",
+					Severity: "important",
+					Package:  "kernel-6.12.0-55.21.1.el10_0.x86_64",
+				},
+				{
+					Advisory: "ALSA-2025:11428",
+					Severity: "important",
+					Package:  "kernel-6.12.0-55.22.1.el10_0.x86_64",
+				},
+				{
+					Advisory: "ALSA-2025:12662",
+					Severity: "important",
+					Package:  "kernel-6.12.0-55.25.1.el10_0.x86_64",
+				},
+			},
 		},
 	},
 	{
@@ -649,6 +694,28 @@ var Instances = []*instance.Instance{
 			Load1:     54.95,
 			Load5:     61.88,
 			Load15:    66.2,
+			Updates: []*telemetry.Update{
+				{
+					Advisory: "ALSA-2025:10371",
+					Severity: "important",
+					Package:  "kernel-6.12.0-55.20.1.el10_0.x86_64",
+				},
+				{
+					Advisory: "ALSA-2025:10854",
+					Severity: "important",
+					Package:  "kernel-6.12.0-55.21.1.el10_0.x86_64",
+				},
+				{
+					Advisory: "ALSA-2025:11428",
+					Severity: "important",
+					Package:  "kernel-6.12.0-55.22.1.el10_0.x86_64",
+				},
+				{
+					Advisory: "ALSA-2025:12662",
+					Severity: "important",
+					Package:  "kernel-6.12.0-55.25.1.el10_0.x86_64",
+				},
+			},
 		},
 	},
 	{
@@ -686,6 +753,28 @@ var Instances = []*instance.Instance{
 			Load1:     32.94,
 			Load5:     38.11,
 			Load15:    40.68,
+			Updates: []*telemetry.Update{
+				{
+					Advisory: "ALSA-2025:10371",
+					Severity: "important",
+					Package:  "kernel-6.12.0-55.20.1.el10_0.x86_64",
+				},
+				{
+					Advisory: "ALSA-2025:10854",
+					Severity: "important",
+					Package:  "kernel-6.12.0-55.21.1.el10_0.x86_64",
+				},
+				{
+					Advisory: "ALSA-2025:11428",
+					Severity: "important",
+					Package:  "kernel-6.12.0-55.22.1.el10_0.x86_64",
+				},
+				{
+					Advisory: "ALSA-2025:12662",
+					Severity: "important",
+					Package:  "kernel-6.12.0-55.25.1.el10_0.x86_64",
+				},
+			},
 		},
 	},
 	{
