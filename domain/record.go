@@ -16,10 +16,10 @@ import (
 type Record struct {
 	Id              bson.ObjectID `bson:"_id,omitempty" json:"id"`
 	Domain          bson.ObjectID `bson:"domain" json:"domain"`
-	Resource        bson.ObjectID `bson:"resource,omitempty" json:"resource"`
-	Deployment      bson.ObjectID `bson:"deployment,omitempty" json:"deployment"`
+	Resource        bson.ObjectID `bson:"resource" json:"resource"`
+	Deployment      bson.ObjectID `bson:"deployment" json:"deployment"`
 	Timestamp       time.Time     `bson:"timestamp" json:"timestamp"`
-	DeleteTimestamp time.Time     `bson:"delete_timestamp,omitempty" json:"delete_timestamp"`
+	DeleteTimestamp time.Time     `bson:"delete_timestamp" json:"delete_timestamp"`
 	SubDomain       string        `bson:"sub_domain" json:"sub_domain"`
 	Type            string        `bson:"type" json:"type"`
 	Value           string        `bson:"value" json:"value"`
