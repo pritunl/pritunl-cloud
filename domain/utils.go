@@ -47,6 +47,25 @@ func Refresh(db *database.Database, domnId bson.ObjectID) {
 		return
 	}
 
+	deleteTtl := time.Duration(settings.System.DomainDeleteTtl) * time.Second
+	now := time.Now()
+	for _, rec := range domn.Records {
+		if rec.IsDeleted() && now.Sub(rec.DeleteTimestamp) > deleteTtl {
+			_, err = coll.DeleteOne(db, &bson.M{
+				"_id":              rec.Id,
+				"delete_timestamp": rec.DeleteTimestamp,
+			})
+			if err != nil {
+				err = database.ParseError(err)
+				if _, ok := err.(*database.NotFoundError); ok {
+					err = nil
+				} else {
+					return
+				}
+			}
+		}
+	}
+
 	return
 }
 
