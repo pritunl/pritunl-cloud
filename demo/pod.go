@@ -6,6 +6,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/aggregate"
 	"github.com/pritunl/pritunl-cloud/deployment"
+	"github.com/pritunl/pritunl-cloud/journal"
 	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/spec"
 	"github.com/pritunl/pritunl-cloud/unit"
@@ -498,6 +499,13 @@ var Deployments = []*aggregate.Deployment{
 			PrivateIps:  []string{"10.196.3.18"},
 			PrivateIps6: []string{"fd97:30bf:d456:a3bc:58d5:f529:66f2:36ef"},
 		},
+		Journals: []*deployment.Journal{
+			{
+				Index: journal.DeploymentAgent,
+				Key:   "agent",
+				Type:  "agent",
+			},
+		},
 		ZoneName:            "us-west-1a",
 		NodeName:            "pritunl-east0",
 		InstanceName:        "web-app",
@@ -539,6 +547,13 @@ var Deployments = []*aggregate.Deployment{
 			PublicIps6:  []string{"2001:db8:85a3:4d2f:5e1b:773a:2463:da58"},
 			PrivateIps:  []string{"10.196.6.231"},
 			PrivateIps6: []string{"fd97:30bf:d456:a3bc:bf1a:d5e4:56a2:4b27"},
+		},
+		Journals: []*deployment.Journal{
+			{
+				Index: journal.DeploymentAgent,
+				Key:   "agent",
+				Type:  "agent",
+			},
 		},
 		ZoneName:            "us-west-1a",
 		NodeName:            "pritunl-east1",
@@ -582,6 +597,13 @@ var Deployments = []*aggregate.Deployment{
 			PrivateIps:  []string{"10.196.3.251"},
 			PrivateIps6: []string{"fd97:30bf:d456:a3bc:3d61:c9f7:d2d7:8b9b"},
 		},
+		Journals: []*deployment.Journal{
+			{
+				Index: journal.DeploymentAgent,
+				Key:   "agent",
+				Type:  "agent",
+			},
+		},
 		ZoneName:            "us-west-1a",
 		NodeName:            "pritunl-east2",
 		InstanceName:        "web-app",
@@ -623,6 +645,13 @@ var Deployments = []*aggregate.Deployment{
 			PublicIps6:  []string{"2001:db8:85a3:4d2f:41b2:61e2:ad56:6cdc"},
 			PrivateIps:  []string{"10.196.2.12"},
 			PrivateIps6: []string{"fd97:30bf:d456:a3bc:c166:fabc:4223:a974"},
+		},
+		Journals: []*deployment.Journal{
+			{
+				Index: journal.DeploymentAgent,
+				Key:   "agent",
+				Type:  "agent",
+			},
 		},
 		ZoneName:            "us-west-1a",
 		NodeName:            "pritunl-east3",
@@ -666,6 +695,13 @@ var Deployments = []*aggregate.Deployment{
 			PrivateIps:  []string{"10.196.6.229"},
 			PrivateIps6: []string{"fd97:30bf:d456:a3bc:b2f4:9b35:700e:0b9a"},
 		},
+		Journals: []*deployment.Journal{
+			{
+				Index: journal.DeploymentAgent,
+				Key:   "agent",
+				Type:  "agent",
+			},
+		},
 		ZoneName:            "us-west-1a",
 		NodeName:            "pritunl-east4",
 		InstanceName:        "web-app",
@@ -707,6 +743,13 @@ var Deployments = []*aggregate.Deployment{
 			PublicIps6:  []string{"2001:db8:85a3:4d2f:126f:552b:77d0:010e"},
 			PrivateIps:  []string{"10.196.7.148"},
 			PrivateIps6: []string{"fd97:30bf:d456:a3bc:c057:f8fa:ff43:a21a"},
+		},
+		Journals: []*deployment.Journal{
+			{
+				Index: journal.DeploymentAgent,
+				Key:   "agent",
+				Type:  "agent",
+			},
 		},
 		ZoneName:            "us-west-1a",
 		NodeName:            "pritunl-east5",
@@ -750,6 +793,13 @@ var Deployments = []*aggregate.Deployment{
 			PrivateIps:  []string{"10.196.4.215"},
 			PrivateIps6: []string{"fd97:30bf:d456:a3bc:9797:d44a:0c7e:cb9e"},
 		},
+		Journals: []*deployment.Journal{
+			{
+				Index: journal.DeploymentAgent,
+				Key:   "agent",
+				Type:  "agent",
+			},
+		},
 		ZoneName:            "us-west-1a",
 		NodeName:            "pritunl-east0",
 		InstanceName:        "web-app",
@@ -791,6 +841,13 @@ var Deployments = []*aggregate.Deployment{
 			PublicIps6:  []string{"2001:db8:85a3:4d2f:bf64:91d6:4050:eac0"},
 			PrivateIps:  []string{"10.196.5.97"},
 			PrivateIps6: []string{"fd97:30bf:d456:a3bc:0dd4:8931:8c28:5465"},
+		},
+		Journals: []*deployment.Journal{
+			{
+				Index: journal.DeploymentAgent,
+				Key:   "agent",
+				Type:  "agent",
+			},
 		},
 		ZoneName:            "us-west-1a",
 		NodeName:            "pritunl-east1",
@@ -834,6 +891,13 @@ var Deployments = []*aggregate.Deployment{
 			PrivateIps:  []string{"10.196.3.34"},
 			PrivateIps6: []string{"fd97:30bf:d456:a3bc:8d49:241d:4dd1:4663"},
 		},
+		Journals: []*deployment.Journal{
+			{
+				Index: journal.DeploymentAgent,
+				Key:   "agent",
+				Type:  "agent",
+			},
+		},
 		ZoneName:            "us-west-1a",
 		NodeName:            "pritunl-east2",
 		InstanceName:        "web-app",
@@ -875,6 +939,13 @@ var Deployments = []*aggregate.Deployment{
 			PublicIps6:  []string{"2001:db8:85a3:4d2f:6e3a:29b0:639f:49d4"},
 			PrivateIps:  []string{"10.196.2.187"},
 			PrivateIps6: []string{"fd97:30bf:d456:a3bc:ddb4:e207:cc09:d1e6"},
+		},
+		Journals: []*deployment.Journal{
+			{
+				Index: journal.DeploymentAgent,
+				Key:   "agent",
+				Type:  "agent",
+			},
 		},
 		ZoneName:            "us-west-1a",
 		NodeName:            "pritunl-east3",
@@ -918,6 +989,13 @@ var Deployments = []*aggregate.Deployment{
 			PrivateIps:  []string{"10.196.3.219"},
 			PrivateIps6: []string{"fd97:30bf:d456:a3bc:7ba9:bca3:5217:b534"},
 		},
+		Journals: []*deployment.Journal{
+			{
+				Index: journal.DeploymentAgent,
+				Key:   "agent",
+				Type:  "agent",
+			},
+		},
 		ZoneName:            "us-west-1a",
 		NodeName:            "pritunl-east4",
 		InstanceName:        "database",
@@ -959,6 +1037,13 @@ var Deployments = []*aggregate.Deployment{
 			PublicIps6:  []string{"2001:db8:85a3:4d2f:3e3e:0d9d:8669:2c89"},
 			PrivateIps:  []string{"10.196.8.253"},
 			PrivateIps6: []string{"fd97:30bf:d456:a3bc:d0ff:8b42:1d9b:92fd"},
+		},
+		Journals: []*deployment.Journal{
+			{
+				Index: journal.DeploymentAgent,
+				Key:   "agent",
+				Type:  "agent",
+			},
 		},
 		ZoneName:            "us-west-1a",
 		NodeName:            "pritunl-east5",
@@ -1002,6 +1087,13 @@ var Deployments = []*aggregate.Deployment{
 			PrivateIps:  []string{"10.196.2.110"},
 			PrivateIps6: []string{"fd97:30bf:d456:a3bc:e7b4:670b:acf5:dfb4"},
 		},
+		Journals: []*deployment.Journal{
+			{
+				Index: journal.DeploymentAgent,
+				Key:   "agent",
+				Type:  "agent",
+			},
+		},
 		ZoneName:            "us-west-1a",
 		NodeName:            "pritunl-east0",
 		InstanceName:        "database",
@@ -1043,6 +1135,13 @@ var Deployments = []*aggregate.Deployment{
 			PublicIps6:  []string{"2001:db8:85a3:4d2f:4b40:60d1:ed30:0b06"},
 			PrivateIps:  []string{"10.196.6.194"},
 			PrivateIps6: []string{"fd97:30bf:d456:a3bc:5220:ac62:3c7c:7291"},
+		},
+		Journals: []*deployment.Journal{
+			{
+				Index: journal.DeploymentAgent,
+				Key:   "agent",
+				Type:  "agent",
+			},
 		},
 		ZoneName:            "us-west-1a",
 		NodeName:            "pritunl-east1",
@@ -1086,6 +1185,13 @@ var Deployments = []*aggregate.Deployment{
 			PrivateIps:  []string{"10.196.6.223"},
 			PrivateIps6: []string{"fd97:30bf:d456:a3bc:c924:41b8:22f3:5b3f"},
 		},
+		Journals: []*deployment.Journal{
+			{
+				Index: journal.DeploymentAgent,
+				Key:   "agent",
+				Type:  "agent",
+			},
+		},
 		ZoneName:            "us-west-1a",
 		NodeName:            "pritunl-east2",
 		InstanceName:        "database",
@@ -1127,6 +1233,13 @@ var Deployments = []*aggregate.Deployment{
 			PublicIps6:  []string{"2001:db8:85a3:4d2f:fff2:877d:227c:1c4a"},
 			PrivateIps:  []string{"10.196.7.165"},
 			PrivateIps6: []string{"fd97:30bf:d456:a3bc:ae17:b804:32c5:956c"},
+		},
+		Journals: []*deployment.Journal{
+			{
+				Index: journal.DeploymentAgent,
+				Key:   "agent",
+				Type:  "agent",
+			},
 		},
 		ZoneName:            "us-west-1a",
 		NodeName:            "pritunl-east3",
