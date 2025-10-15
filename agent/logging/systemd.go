@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"runtime/debug"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
@@ -124,7 +125,7 @@ func (s *Systemd) followJournal() (err error) {
 		case s.output <- &types.Entry{
 			Timestamp: timestamp,
 			Level:     level,
-			Message:   entry.Message,
+			Message:   strings.TrimSuffix(entry.Message, "\n"),
 		}:
 		default:
 		}
