@@ -40,7 +40,7 @@ func updatesRefresh() (updates []*Update, err error) {
 				"list",
 				"--advisory-severities=Moderate,Important,Critical",
 			},
-			Timeout: 30 * time.Second,
+			Timeout: 90 * time.Second,
 			PipeOut: true,
 			PipeErr: true,
 		})
@@ -54,7 +54,7 @@ func updatesRefresh() (updates []*Update, err error) {
 				"--sec-severity=Important",
 				"--sec-severity=Critical",
 			},
-			Timeout: 30 * time.Second,
+			Timeout: 90 * time.Second,
 			PipeOut: true,
 			PipeErr: true,
 		})
