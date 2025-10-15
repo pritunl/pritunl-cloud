@@ -435,7 +435,7 @@ func (d *Domain) MergeRecords(deployId bson.ObjectID,
 	recMap := map[string]map[string]map[string]*Record{}
 
 	for _, rec := range d.Records {
-		if rec.Deployment != deployId {
+		if rec.Deployment != deployId || rec.IsDeleted() {
 			continue
 		}
 
