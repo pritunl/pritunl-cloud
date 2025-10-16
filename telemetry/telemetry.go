@@ -65,23 +65,23 @@ func (r *Telemetry[Data]) Set(data Data) {
 	r.lock.Unlock()
 }
 
-func (r *Telemetry[Data]) Get() Data {
+func (r *Telemetry[Data]) Get() (Data, bool) {
 	r.lock.Lock()
 	lastRefresh := r.lastRefresh
 	lastTransmit := r.lastTransmit
 	r.lock.Unlock()
 	if lastRefresh.IsZero() || time.Since(lastTransmit) < r.TransmitRate {
 		var x Data
-		return x
+		return x, false
 	}
 	r.lock.Lock()
 	r.lastTransmit = time.Now()
 	r.lock.Unlock()
 
 	if r.Validate != nil {
-		return r.Validate(r.data)
+		return r.Validate(r.data), true
 	} else {
-		return r.data
+		return r.data, true
 	}
 }
 
