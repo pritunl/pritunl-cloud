@@ -39,6 +39,7 @@ var (
 	client = &http.Client{
 		Timeout: 10 * time.Second,
 	}
+	lastAlertLog = time.Time{}
 )
 
 type Router struct {
@@ -696,6 +697,11 @@ func (r *Router) watchNode() {
 	for {
 		time.Sleep(1 * time.Second)
 
+		if settings.Local.DisableWeb {
+			r.Restart()
+			continue
+		}
+
 		hash := r.hashNode()
 		if bytes.Compare(r.nodeHash, hash) != 0 {
 			r.nodeHash = hash
@@ -789,6 +795,17 @@ func (r *Router) Run() (err error) {
 	go r.watchResolver()
 
 	for {
+		if settings.Local.DisableWeb {
+			if time.Since(lastAlertLog) > 3*time.Minute {
+				lastAlertLog = time.Now()
+				logrus.WithFields(logrus.Fields{
+					"message": settings.Local.DisableMsg,
+				}).Error("router: Web server disabled from vulnerability alert")
+			}
+			time.Sleep(1 * time.Second)
+			continue
+		}
+
 		if !node.Self.IsAdmin() && !node.Self.IsUser() &&
 			!node.Self.IsBalancer() {
 
