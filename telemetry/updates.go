@@ -69,6 +69,7 @@ func updatesRefresh() (updates []*Update, err error) {
 
 	lines := strings.Split(string(resp.Output), "\n")
 
+	updates = []*Update{}
 	moderateUpdates := []*Update{}
 	importantUpdates := []*Update{}
 	criticalUpdates := []*Update{}
