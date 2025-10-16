@@ -98,7 +98,13 @@ func hostSyncPut(c *gin.Context) {
 	ste := state.Global.State.Copy()
 	ste.Output = state.Global.GetOutput()
 	ste.Journals = state.Global.GetJournals()
-	ste.Updates = telemetry.Updates.Get()
+
+	updates, ok := telemetry.Updates.Get()
+	if ok {
+		ste.Updates = updates
+	} else {
+		ste.Updates = nil
+	}
 
 	c.JSON(200, ste)
 }
@@ -107,7 +113,13 @@ func hostSyncGet(c *gin.Context) {
 	ste := state.Global.State.Copy()
 	ste.Output = state.Global.GetOutput()
 	ste.Journals = state.Global.GetJournals()
-	ste.Updates = telemetry.Updates.Get()
+
+	updates, ok := telemetry.Updates.Get()
+	if ok {
+		ste.Updates = updates
+	} else {
+		ste.Updates = nil
+	}
 
 	c.JSON(200, ste)
 }
