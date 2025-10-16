@@ -41,7 +41,7 @@ func Check() (err error) {
 		Scheme: "https",
 		Host:   "app.pritunl.com",
 		Path: fmt.Sprintf(
-			"/notification/zero/%d",
+			"/notification/cloud/%d",
 			utils.GetIntVer(constants.Version),
 		),
 	}
@@ -59,7 +59,7 @@ func Check() (err error) {
 		return
 	}
 
-	req.Header.Set("User-Agent", "pritunl-zero")
+	req.Header.Set("User-Agent", "pritunl-cloud")
 
 	res, err := client.Do(req)
 	if err != nil {
