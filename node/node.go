@@ -1648,5 +1648,22 @@ func (n *Node) Init() (err error) {
 		}
 	}()
 
+	go func() {
+		defer func() {
+			panc := recover()
+			if panc != nil {
+				logrus.WithFields(logrus.Fields{
+					"trace": string(debug.Stack()),
+					"panic": panc,
+				}).Error("node: Panic in telemetry")
+			}
+		}()
+
+		for {
+			telemetry.Refresh()
+			time.Sleep(1 * time.Minute)
+		}
+	}()
+
 	return
 }
