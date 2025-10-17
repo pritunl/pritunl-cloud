@@ -70,6 +70,14 @@ func (d *Disk) Validate(db *database.Database) (
 
 	d.Name = utils.FilterName(d.Name)
 
+	if d.Organization.IsZero() {
+		errData = &errortypes.ErrorData{
+			Error:   "organization_required",
+			Message: "Missing required organization",
+		}
+		return
+	}
+
 	if !d.Instance.IsZero() && d.Index != "" {
 		index, e := strconv.Atoi(d.Index)
 		if e != nil {
@@ -103,6 +111,14 @@ func (d *Disk) Validate(db *database.Database) (
 		errData = &errortypes.ErrorData{
 			Error:   "invalid_zone",
 			Message: "Missing required zone",
+		}
+		return
+	}
+
+	if d.Node.IsZero() {
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_node",
+			Message: "Missing required node",
 		}
 		return
 	}
