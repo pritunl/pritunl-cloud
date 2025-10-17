@@ -46,7 +46,7 @@ conflicts=(
     "${pkgname}"
 )
 sources=(
-    "pritunl-cloud-master.tar.gz"
+    "pritunl-cloud.tar"
 )
 hashsums=(
     "690c2aab9a0ea6a940b4390b6e95ec55c10951e3634e51115a36051402d686bc"
@@ -58,8 +58,8 @@ backup=(
 )
 
 build() {
-    mkdir -p /go/src/github.com/pritunl
-    mv "${srcdir}/${pkgname}-master" /go/src/github.com/pritunl/${pkgname}
+    mkdir -p /go/src/github.com/pritunl/${pkgname}/
+    mv "${srcdir}"/* /go/src/github.com/pritunl/${pkgname}/
     cd /go/src/github.com/pritunl/${pkgname}
     go get
     go install
