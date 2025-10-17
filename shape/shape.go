@@ -56,6 +56,10 @@ func (s *Shape) Validate(db *database.Database) (
 		return
 	}
 
+	if s.Roles == nil {
+		s.Roles = []string{}
+	}
+
 	switch s.DiskType {
 	case "", Qcow2:
 		s.DiskType = Qcow2
