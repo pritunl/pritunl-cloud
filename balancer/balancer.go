@@ -124,23 +124,23 @@ func (b *Balancer) Validate(db *database.Database) (
 		}
 	}
 
+	if b.Organization.IsZero() {
+		errData = &errortypes.ErrorData{
+			Error:   "organization_required",
+			Message: "Missing required organization",
+		}
+		return
+	}
+
+	if b.Datacenter.IsZero() {
+		errData = &errortypes.ErrorData{
+			Error:   "datacenter_required",
+			Message: "Missing required datacenter",
+		}
+		return
+	}
+
 	if b.State {
-		if b.Organization.IsZero() {
-			errData = &errortypes.ErrorData{
-				Error:   "organization_required",
-				Message: "Missing required organization",
-			}
-			return
-		}
-
-		if b.Datacenter.IsZero() {
-			errData = &errortypes.ErrorData{
-				Error:   "datacenter_required",
-				Message: "Missing required datacenter",
-			}
-			return
-		}
-
 		if b.Domains == nil || len(b.Domains) == 0 {
 			errData = &errortypes.ErrorData{
 				Error:   "domain_required",
