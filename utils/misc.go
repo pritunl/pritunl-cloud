@@ -4,7 +4,9 @@ import (
 	"container/list"
 	"io/ioutil"
 	"os/exec"
+	"regexp"
 	"runtime/debug"
+	"strconv"
 	"strings"
 	"time"
 	"unicode"
@@ -255,4 +257,36 @@ func ToSnakeCase(s string) string {
 		result = append(result, unicode.ToLower(r))
 	}
 	return string(result)
+}
+
+func GetIntVer(version string) int {
+	re := regexp.MustCompile(`\d+`)
+	ver := re.FindAllString(version, -1)
+
+	if len(ver) == 0 {
+		return 0
+	}
+
+	lastNum, err := strconv.Atoi(ver[len(ver)-1])
+	if err != nil {
+		return 0
+	}
+	ver[len(ver)-1] = strconv.Itoa(lastNum + 4000)
+
+	var builder strings.Builder
+	for _, v := range ver {
+		num, err := strconv.Atoi(v)
+		if err != nil {
+			return 0
+		}
+		builder.WriteString(strings.Repeat(
+			"0", 4-len(strconv.Itoa(num))) + strconv.Itoa(num))
+	}
+
+	result, err := strconv.Atoi(builder.String())
+	if err != nil {
+		return 0
+	}
+
+	return result
 }
