@@ -33,6 +33,22 @@ func (p *Pool) Validate(db *database.Database) (
 
 	p.Name = utils.FilterName(p.Name)
 
+	if p.Datacenter.IsZero() {
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_datacenter",
+			Message: "Missing required datacenter",
+		}
+		return
+	}
+
+	if p.Zone.IsZero() {
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_zone",
+			Message: "Missing required zone",
+		}
+		return
+	}
+
 	return
 }
 
