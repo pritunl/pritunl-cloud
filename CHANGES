@@ -1,7 +1,8 @@
 pritunl-cloud changelog
 =======================
 
-<%= version %>
+Version 2.0.3615.44 2025-10-17
+------------------------------
 
 Add journal kind to pods
 Add support for QEMU 10
