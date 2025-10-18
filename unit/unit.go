@@ -30,6 +30,7 @@ type Unit struct {
 	Journals      map[string]int32 `bson:"journals" json:"-"`
 	JournalsIndex int32            `bson:"journals_index" json:"-"`
 	journalsLock  sync.Mutex       `bson:"-" json:"-"`
+	newUnit       bool             `bson:"-" json:"-"`
 }
 
 type Completion struct {
@@ -377,20 +378,22 @@ func (u *Unit) getKind(db *database.Database, key string) (
 		query["journals_index"] = u.JournalsIndex
 	}
 
-	resp, err := coll.UpdateOne(db, query, bson.M{
-		"$set": bson.M{
-			"journals_index": index,
-			"journals":       jrnls,
-		},
-	})
-	if err != nil {
-		err = database.ParseError(err)
-		return
-	}
+	if !u.newUnit {
+		resp, e := coll.UpdateOne(db, query, bson.M{
+			"$set": bson.M{
+				"journals_index": index,
+				"journals":       jrnls,
+			},
+		})
+		if e != nil {
+			err = database.ParseError(e)
+			return
+		}
 
-	if resp.ModifiedCount < 1 {
-		kind = 0
-		return
+		if resp.ModifiedCount < 1 {
+			kind = 0
+			return
+		}
 	}
 
 	u.Journals = jrnls
@@ -432,6 +435,10 @@ func (u *Unit) GetKind(db *database.Database, key string) (
 func (u *Unit) Parse(db *database.Database, newUnit bool) (
 	newSpec *spec.Spec, updateSpec *spec.Spec,
 	errData *errortypes.ErrorData, err error) {
+
+	if newUnit {
+		u.newUnit = true
+	}
 
 	spc := spec.New(u.Pod, u.Id, u.Organization, u.Spec)
 
