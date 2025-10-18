@@ -28,9 +28,9 @@ type Record struct {
 
 func (r *Record) Priority() int {
 	switch r.Operation {
-	case "INSERT":
+	case INSERT:
 		return 3
-	case "UPDATE":
+	case UPDATE:
 		return 2
 	case DELETE:
 		return 1
