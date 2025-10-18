@@ -13,6 +13,7 @@ import (
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/imds/types"
+	"github.com/pritunl/tools/commander"
 	"github.com/pritunl/tools/logger"
 )
 
@@ -51,6 +52,31 @@ func (s *Systemd) followJournal() (err error) {
 			}).Error("agent: Journal follower panic")
 		}
 	}()
+
+	existsTime := time.Time{}
+	for {
+		resp, _ := commander.Exec(&commander.Opt{
+			Name: "systemctl",
+			Args: []string{
+				"status",
+				s.unit,
+			},
+			PipeOut: true,
+			PipeErr: true,
+		})
+
+		if resp.ExitCode != 4 {
+			if existsTime.IsZero() {
+				existsTime = time.Now()
+			}
+
+			if resp.ExitCode == 0 || time.Since(existsTime) > 10*time.Second {
+				break
+			}
+		}
+
+		time.Sleep(800 * time.Millisecond)
+	}
 
 	s.cmd = exec.CommandContext(s.ctx, "journalctl",
 		"-f",
