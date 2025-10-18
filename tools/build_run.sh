@@ -25,10 +25,11 @@ done
 build_pritunl_agent() {
     CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -ldflags '-extldflags "-static"' -v -o agent-static
     sudo cp -f ./agent-static /usr/bin/pritunl-cloud-agent
+    rm -f ./agent-static
 
     CGO_ENABLED=0 GOOS=freebsd GOARCH=amd64 go build -v -o agent-bsd
     sudo cp -f ./agent-bsd /usr/bin/pritunl-cloud-agent-bsd
-    rm ./agent-bsd
+    rm -f ./agent-bsd
 }
 
 if [ "$NO_AGENT" = false ]; then
