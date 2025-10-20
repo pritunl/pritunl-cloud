@@ -113,7 +113,7 @@ func authorityPost(c *gin.Context) {
 
 	db := c.MustGet("db").(*database.Database)
 	data := &authorityData{
-		Name: "New Authority",
+		Name: "new-authority",
 	}
 
 	err := c.Bind(data)
