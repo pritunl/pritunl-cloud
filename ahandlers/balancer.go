@@ -124,7 +124,7 @@ func balancerPost(c *gin.Context) {
 
 	db := c.MustGet("db").(*database.Database)
 	data := &balancerData{
-		Name: "New Balancer",
+		Name: "new-balancer",
 	}
 
 	err := c.Bind(data)
