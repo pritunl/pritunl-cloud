@@ -178,7 +178,7 @@ func diskPost(c *gin.Context) {
 
 	db := c.MustGet("db").(*database.Database)
 	dta := &diskData{
-		Name: "New Disk",
+		Name: "new-disk",
 	}
 
 	err := c.Bind(dta)
