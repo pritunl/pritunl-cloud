@@ -129,7 +129,7 @@ func certificatePost(c *gin.Context) {
 
 	db := c.MustGet("db").(*database.Database)
 	data := &certificateData{
-		Name: "New Certificate",
+		Name: "new-certificate",
 	}
 
 	err := c.Bind(data)
