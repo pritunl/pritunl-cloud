@@ -123,7 +123,7 @@ func datacenterPost(c *gin.Context) {
 
 	db := c.MustGet("db").(*database.Database)
 	data := &datacenterData{
-		Name: "New Datacenter",
+		Name: "new-datacenter",
 	}
 
 	err := c.Bind(data)
