@@ -119,7 +119,7 @@ func blockPost(c *gin.Context) {
 
 	db := c.MustGet("db").(*database.Database)
 	dta := &blockData{
-		Name: "New IP Block",
+		Name: "new-block",
 	}
 
 	err := c.Bind(dta)
