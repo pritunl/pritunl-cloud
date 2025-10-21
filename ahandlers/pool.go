@@ -101,7 +101,7 @@ func poolPost(c *gin.Context) {
 
 	db := c.MustGet("db").(*database.Database)
 	data := &poolData{
-		Name: "New Pool",
+		Name: "new-pool",
 	}
 
 	err := c.Bind(data)
