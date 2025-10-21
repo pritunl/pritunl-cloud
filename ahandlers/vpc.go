@@ -126,7 +126,7 @@ func vpcPost(c *gin.Context) {
 
 	db := c.MustGet("db").(*database.Database)
 	data := &vpcData{
-		Name: "New VPC",
+		Name: "new-vpc",
 	}
 
 	err := c.Bind(data)
