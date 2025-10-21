@@ -119,7 +119,7 @@ func shapePost(c *gin.Context) {
 
 	db := c.MustGet("db").(*database.Database)
 	data := &shapeData{
-		Name: "New Shape",
+		Name: "new-shape",
 	}
 
 	err := c.Bind(data)
