@@ -126,7 +126,7 @@ func storagePost(c *gin.Context) {
 
 	db := c.MustGet("db").(*database.Database)
 	dta := &storageData{
-		Name: "New Storage",
+		Name: "new-storage",
 	}
 
 	err := c.Bind(dta)
