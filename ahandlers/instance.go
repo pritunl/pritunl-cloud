@@ -239,7 +239,7 @@ func instancePost(c *gin.Context) {
 
 	db := c.MustGet("db").(*database.Database)
 	dta := &instanceData{
-		Name: "New Instance",
+		Name: "new-instance",
 	}
 
 	err := c.Bind(dta)
