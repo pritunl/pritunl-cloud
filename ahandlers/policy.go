@@ -117,7 +117,7 @@ func policyPost(c *gin.Context) {
 
 	db := c.MustGet("db").(*database.Database)
 	data := &policyData{
-		Name: "New Policy",
+		Name: "new-policy",
 	}
 
 	err := c.Bind(data)
