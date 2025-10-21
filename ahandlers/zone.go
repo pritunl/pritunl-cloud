@@ -94,7 +94,7 @@ func zonePost(c *gin.Context) {
 
 	db := c.MustGet("db").(*database.Database)
 	data := &zoneData{
-		Name: "New Zone",
+		Name: "new-zone",
 	}
 
 	err := c.Bind(data)
