@@ -96,7 +96,7 @@ func organizationPost(c *gin.Context) {
 
 	db := c.MustGet("db").(*database.Database)
 	data := &organizationData{
-		Name: "New Organization",
+		Name: "new-organization",
 	}
 
 	err := c.Bind(data)
