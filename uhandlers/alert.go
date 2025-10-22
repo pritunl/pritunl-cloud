@@ -118,7 +118,7 @@ func alertPost(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(bson.ObjectID)
 	data := &alertData{
-		Name:     "New Alert",
+		Name:     "new-alert",
 		Resource: alert.InstanceOffline,
 		Level:    alert.Medium,
 	}
