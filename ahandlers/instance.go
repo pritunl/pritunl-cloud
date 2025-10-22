@@ -730,25 +730,6 @@ func instancesGet(c *gin.Context) {
 
 		for _, inst := range instances {
 			inst.Json(false)
-
-			if demo.IsDemo() {
-				inst.State = vm.Running
-				inst.Action = instance.Start
-				inst.Status = "Running"
-				inst.PublicIps = []string{
-					demo.RandIp(inst.Id),
-				}
-				inst.PublicIps6 = []string{
-					demo.RandIp6(inst.Id),
-				}
-				inst.PrivateIps = []string{
-					demo.RandPrivateIp(inst.Id),
-				}
-				inst.PrivateIps6 = []string{
-					demo.RandPrivateIp6(inst.Id),
-				}
-				inst.NetworkNamespace = vm.GetNamespace(inst.Id, 0)
-			}
 		}
 
 		dta := &instancesData{
