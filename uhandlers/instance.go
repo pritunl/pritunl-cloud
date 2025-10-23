@@ -256,7 +256,7 @@ func instancePost(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(bson.ObjectID)
 	dta := &instanceData{
-		Name: "New Instance",
+		Name: "new-instance",
 	}
 
 	err := c.Bind(dta)
