@@ -104,7 +104,7 @@ func firewallPost(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(bson.ObjectID)
 	data := &firewallData{
-		Name: "New Firewall",
+		Name: "new-firewall",
 	}
 
 	err := c.Bind(data)
