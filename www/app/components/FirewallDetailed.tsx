@@ -11,7 +11,7 @@ import PageInfo from './PageInfo';
 import PageInputButton from './PageInputButton';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
-import Overview from './Overview';
+import Relations from './Relations';
 import Help from './Help';
 import PageTextArea from "./PageTextArea";
 
@@ -462,7 +462,7 @@ export default class FirewallDetailed extends React.Component<Props, State> {
               </label>
             </div>
 						<div className="flex tab-close"/>
-						<Overview resource={"TODO"}/>
+						<Relations kind="firewall" id={this.props.firewall.id}/>
 						<ConfirmButton
 							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
 							style={css.button}
