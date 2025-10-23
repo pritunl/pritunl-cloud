@@ -100,7 +100,7 @@ func planPost(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(bson.ObjectID)
 	data := &planData{
-		Name: "New Plan",
+		Name: "new-plan",
 	}
 
 	err := c.Bind(data)
