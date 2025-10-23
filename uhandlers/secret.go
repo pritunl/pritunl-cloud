@@ -112,7 +112,7 @@ func secretPost(c *gin.Context) {
 	db := c.MustGet("db").(*database.Database)
 	userOrg := c.MustGet("organization").(bson.ObjectID)
 	data := &secretData{
-		Name: "New Secret",
+		Name: "new-secret",
 	}
 
 	err := c.Bind(data)
