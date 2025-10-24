@@ -4,7 +4,7 @@ import * as Blueprint from '@blueprintjs/core';
 
 interface Props {
 	title: string;
-	content: string;
+	content: string | JSX.Element;
 	examples?: string[];
 }
 
