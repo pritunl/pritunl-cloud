@@ -3,9 +3,9 @@ import * as React from 'react';
 import * as FirewallTypes from '../types/FirewallTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import FirewallsStore from '../stores/FirewallsStore';
-import OrganizationsStore from '../stores/OrganizationsStore';
+import CompletionStore from '../stores/CompletionStore';
 import * as FirewallActions from '../actions/FirewallActions';
-import * as OrganizationActions from '../actions/OrganizationActions';
+import * as CompletionActions from '../actions/CompletionActions';
 import Firewall from './Firewall';
 import FirewallNew from './FirewallNew';
 import FirewallsFilter from './FirewallsFilter';
@@ -70,7 +70,7 @@ export default class Firewalls extends React.Component<{}, State> {
 		this.state = {
 			firewalls: FirewallsStore.firewalls,
 			filter: FirewallsStore.filter,
-			organizations: OrganizationsStore.organizations,
+			organizations: CompletionStore.organizations,
 			selected: {},
 			opened: {},
 			newOpened: false,
@@ -89,14 +89,14 @@ export default class Firewalls extends React.Component<{}, State> {
 
 	componentDidMount(): void {
 		FirewallsStore.addChangeListener(this.onChange);
-		OrganizationsStore.addChangeListener(this.onChange);
+		CompletionStore.addChangeListener(this.onChange);
 		FirewallActions.sync();
-		OrganizationActions.sync();
+		CompletionActions.sync();
 	}
 
 	componentWillUnmount(): void {
 		FirewallsStore.removeChangeListener(this.onChange);
-		OrganizationsStore.removeChangeListener(this.onChange);
+		CompletionStore.removeChangeListener(this.onChange);
 	}
 
 	onChange = (): void => {
@@ -119,7 +119,7 @@ export default class Firewalls extends React.Component<{}, State> {
 			...this.state,
 			firewalls: firewalls,
 			filter: FirewallsStore.filter,
-			organizations: OrganizationsStore.organizations,
+			organizations: CompletionStore.organizations,
 			selected: selected,
 			opened: opened,
 		});
