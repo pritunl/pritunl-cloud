@@ -3,7 +3,7 @@ import * as React from 'react';
 import * as MiscUtils from '../utils/MiscUtils';
 import * as ImageTypes from '../types/ImageTypes';
 import ImageDetailed from './ImageDetailed';
-import OrganizationsStore from "../stores/OrganizationsStore";
+import CompletionStore from "../stores/CompletionStore";
 
 interface Props {
 	image: ImageTypes.ImageRo;
@@ -93,7 +93,7 @@ export default class Image extends React.Component<Props, {}> {
 		let orgIcon = '';
 		let orgName = '';
 		if (image.organization) {
-			let org = OrganizationsStore.organization(image.organization);
+			let org = CompletionStore.organization(image.organization);
 			orgIcon = 'bp5-text-muted bp5-icon-people';
 			orgName = org ? org.name : image.organization;
 		} else {
