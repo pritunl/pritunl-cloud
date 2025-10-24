@@ -3,8 +3,7 @@ import * as React from 'react';
 import * as ImageTypes from '../types/ImageTypes';
 import * as ImageActions from '../actions/ImageActions';
 import * as MiscUtils from '../utils/MiscUtils';
-import OrganizationsStore from "../stores/OrganizationsStore";
-import StoragesStore from "../stores/StoragesStore";
+import CompletionStore from "../stores/CompletionStore";
 import PageInput from './PageInput';
 import PageInfo from './PageInfo';
 import PageSave from './PageSave';
@@ -182,8 +181,8 @@ export default class ImageDetailed extends React.Component<Props, State> {
 		let image: ImageTypes.Image = this.state.image ||
 			this.props.image;
 
-		let org = OrganizationsStore.organization(this.props.image.organization);
-		let store = StoragesStore.storage(this.props.image.storage);
+		let org = CompletionStore.organization(this.props.image.organization);
+		let store = CompletionStore.storage(this.props.image.storage);
 
 		let imgType = image.type;
 		if (imgType) {
