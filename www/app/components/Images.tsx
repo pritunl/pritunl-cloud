@@ -3,9 +3,9 @@ import * as React from 'react';
 import * as ImageTypes from '../types/ImageTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import ImagesStore from '../stores/ImagesStore';
-import OrganizationsStore from '../stores/OrganizationsStore';
+import CompletionStore from '../stores/CompletionStore';
 import * as ImageActions from '../actions/ImageActions';
-import * as OrganizationActions from '../actions/OrganizationActions';
+import * as CompletionActions from '../actions/CompletionActions';
 import Image from './Image';
 import ImagesFilter from './ImagesFilter';
 import ImagesPage from './ImagesPage';
@@ -68,7 +68,7 @@ export default class Images extends React.Component<{}, State> {
 		this.state = {
 			images: ImagesStore.images,
 			filter: ImagesStore.filter,
-			organizations: OrganizationsStore.organizations,
+			organizations: CompletionStore.organizations,
 			selected: {},
 			opened: {},
 			newOpened: false,
@@ -87,14 +87,14 @@ export default class Images extends React.Component<{}, State> {
 
 	componentDidMount(): void {
 		ImagesStore.addChangeListener(this.onChange);
-		OrganizationsStore.addChangeListener(this.onChange);
+		CompletionStore.addChangeListener(this.onChange);
 		ImageActions.sync();
-		OrganizationActions.sync();
+		CompletionActions.sync();
 	}
 
 	componentWillUnmount(): void {
 		ImagesStore.removeChangeListener(this.onChange);
-		OrganizationsStore.removeChangeListener(this.onChange);
+		CompletionStore.removeChangeListener(this.onChange);
 	}
 
 	onChange = (): void => {
@@ -117,7 +117,7 @@ export default class Images extends React.Component<{}, State> {
 			...this.state,
 			images: images,
 			filter: ImagesStore.filter,
-			organizations: OrganizationsStore.organizations,
+			organizations: CompletionStore.organizations,
 			selected: selected,
 			opened: opened,
 		});
