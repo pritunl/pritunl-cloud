@@ -116,9 +116,6 @@ export default class Instance extends React.Component<Props, {}> {
 			case 'Running':
 				statusClass += ' bp5-text-intent-success';
 				break;
-			case 'Restart Required':
-				statusClass += ' bp5-text-intent-warning';
-				break;
 			case 'Stopped':
 			case 'Failed':
 			case 'Destroying':
