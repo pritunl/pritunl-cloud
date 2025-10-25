@@ -111,6 +111,17 @@ export default class Instance extends React.Component<Props, {}> {
 			privateIp = instance.private_ips[0];
 		}
 
+		let memoryStyle: React.CSSProperties = {
+			width: (instance.guest?.memory || 0) + '%',
+		};
+		let load1Style: React.CSSProperties = {
+			width: (instance.guest?.load1 || 0) + '%',
+		};
+		let load5Style: React.CSSProperties = {
+			width: (instance.guest?.load5 || 0) + '%',
+		};
+
+		let statusText = instance.status
 		let statusClass = 'bp5-cell';
 		switch (instance.status) {
 			case 'Running':
@@ -198,6 +209,26 @@ export default class Instance extends React.Component<Props, {}> {
 					className="bp5-icon-standard bp5-text-muted bp5-icon-ip-address"
 				/>
 				{privateIp}
+			</div>
+			<div className="bp5-cell" style={css.bars}>
+				<div
+					className="bp5-progress-bar bp5-no-stripes bp5-intent-success"
+					style={css.bar}
+				>
+					<div className="bp5-progress-meter" style={load1Style}/>
+				</div>
+				<div
+					className="bp5-progress-bar bp5-no-stripes bp5-intent-warning"
+					style={css.bar}
+				>
+					<div className="bp5-progress-meter" style={load5Style}/>
+				</div>
+				<div
+					className="bp5-progress-bar bp5-no-stripes bp5-intent-primary"
+					style={css.barLast}
+				>
+					<div className="bp5-progress-meter" style={memoryStyle}/>
+				</div>
 			</div>
 		</div>;
 	}
