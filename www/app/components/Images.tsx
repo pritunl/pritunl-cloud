@@ -299,7 +299,7 @@ export default class Images extends React.Component<{}, State> {
 				<div style={css.items}>
 					{imagesDom}
 					<tr className="bp5-card bp5-row" style={css.placeholder}>
-						<td colSpan={5} style={css.placeholder}/>
+						<td colSpan={3} style={css.placeholder}/>
 					</tr>
 				</div>
 			</div>
