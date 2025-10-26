@@ -1255,17 +1255,17 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			hostIps = 'None';
 		}
 
-		let oraclePrivateIps: any = this.props.instance.oracle_private_ips;
-		if (!oraclePrivateIps || !oraclePrivateIps.length) {
-			oraclePrivateIps = null;
+		let cloudPrivateIps: any = this.props.instance.cloud_private_ips;
+		if (!cloudPrivateIps || !cloudPrivateIps.length) {
+			cloudPrivateIps = null;
 		}
-		let oraclePublicIps: any = this.props.instance.oracle_public_ips;
-		if (!oraclePublicIps || !oraclePublicIps.length) {
-			oraclePublicIps = null;
+		let cloudPublicIps: any = this.props.instance.cloud_public_ips;
+		if (!cloudPublicIps || !cloudPublicIps.length) {
+			cloudPublicIps = null;
 		}
-		let oraclePublicIps6: any = this.props.instance.oracle_public_ips6;
-		if (!oraclePublicIps6 || !oraclePublicIps6.length) {
-			oraclePublicIps6 = null;
+		let cloudPublicIps6: any = this.props.instance.cloud_public_ips6;
+		if (!cloudPublicIps6 || !cloudPublicIps6.length) {
+			cloudPublicIps6 = null;
 		}
 
 		let statusClass = 'no-select tab-close';
@@ -1359,11 +1359,11 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			subnetSelect = [<option key="null" value="">No Subnets</option>];
 		}
 
-		let oracleSubnetsSelect: JSX.Element[] = [
+		let cloudSubnetsSelect: JSX.Element[] = [
 			<option key="null" value="">Disabled</option>,
 		];
-		for (let subnet of (info.oracle_subnets || [])) {
-			oracleSubnetsSelect.push(
+		for (let subnet of (info.cloud_subnets || [])) {
+			cloudSubnetsSelect.push(
 				<option key={subnet.id} value={subnet.id}>
 					{subnet.name}
 				</option>,
@@ -1663,7 +1663,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			},
 		);
 
-		if (!oraclePublicIps) {
+		if (!cloudPublicIps) {
 			fields.push(
 				{
 					label: 'Public IPv4',
@@ -1672,7 +1672,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				},
 			);
 		}
-		if (!oraclePublicIps6) {
+		if (!cloudPublicIps6) {
 			fields.push(
 				{
 					label: 'Public IPv6',
@@ -1682,29 +1682,29 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			)
 		}
 
-		if (oraclePrivateIps || oraclePublicIps || oraclePublicIps6) {
+		if (cloudPrivateIps || cloudPublicIps || cloudPublicIps6) {
 			fields.push(
 				{
-					label: 'Oracle Private IPv4',
-					value: oraclePrivateIps || 'None',
+					label: 'Cloud Private IPv4',
+					value: cloudPrivateIps || 'None',
 					copy: true,
 				},
 			);
 		}
-		if (oraclePrivateIps || oraclePublicIps || oraclePublicIps6) {
+		if (cloudPrivateIps || cloudPublicIps || cloudPublicIps6) {
 			fields.push(
 				{
-					label: 'Oracle Public IPv4',
-					value: oraclePublicIps || 'None',
+					label: 'Cloud Public IPv4',
+					value: cloudPublicIps || 'None',
 					copy: true,
 				},
 			);
 		}
-		if (oraclePrivateIps || oraclePublicIps || oraclePublicIps6) {
+		if (cloudPrivateIps || cloudPublicIps || cloudPublicIps6) {
 			fields.push(
 				{
-					label: 'Oracle Public IPv6',
-					value: oraclePublicIps6 || 'None',
+					label: 'Cloud Public IPv6',
+					value: cloudPublicIps6 || 'None',
 					copy: true,
 				},
 			);
@@ -1712,7 +1712,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 
 		let networkFields: PageInfos.Field[] = []
 
-		if (oraclePublicIps && publicIps) {
+		if (cloudPublicIps && publicIps) {
 			networkFields.push(
 				{
 					label: 'Public IPv4',
@@ -1721,7 +1721,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				},
 			);
 		}
-		if (oraclePublicIps6 && publicIps6) {
+		if (cloudPublicIps6 && publicIps6) {
 			networkFields.push(
 				{
 					label: 'Public IPv6',
@@ -1967,7 +1967,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			})
 
 			if (this.props.instance.guest.hugepages) {
-				showMore = !(oraclePrivateIps || oraclePublicIps || oraclePublicIps6)
+				showMore = !(cloudPrivateIps || cloudPublicIps || cloudPublicIps6)
 				resourceBars.push({
 					progressClass: 'bp5-no-stripes bp5-intent-primary',
 					label: 'HugePages',
@@ -2095,7 +2095,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 							content="Network roles that will be matched with firewall rules. Network roles are case-sensitive."
 						/>
 						<div>
-							{networkRoles}
+							{roles}
 						</div>
 					</label>
 					<PageInputButton
@@ -2137,15 +2137,15 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					</PageSelect>
 					<PageSelect
 						disabled={this.state.disabled}
-						hidden={oracleSubnetsSelect.length <= 1}
+						hidden={cloudSubnetsSelect.length <= 1}
 						label="Oracle Cloud Subnet"
 						help="Oracle Cloud subnet for instance."
-						value={instance.oracle_subnet}
+						value={instance.cloud_subnet}
 						onChange={(val): void => {
-							this.set('oracle_subnet', val);
+							this.set('cloud_subnet', val);
 						}}
 					>
-						{oracleSubnetsSelect}
+						{cloudSubnetsSelect}
 					</PageSelect>
 					<label
 						className="bp5-label"
