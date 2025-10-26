@@ -1801,12 +1801,6 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				label: 'Agent Heartbeat',
 				value: MiscUtils.formatDateLocal(this.props.instance.guest.heartbeat),
 			})
-			instanceFields.push({
-				label: 'Agent Load',
-				value: `${this.props.instance.guest.load1} ` +
-					`${this.props.instance.guest.load5} ` +
-					`${this.props.instance.guest.load15}`,
-			})
 		}
 
 		fields.push(
