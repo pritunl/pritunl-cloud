@@ -134,6 +134,11 @@ export default class Instance extends React.Component<Props, {}> {
 				break;
 		}
 
+		if (instance.status?.includes("Restart Required")) {
+			statusText = "Restart Required"
+			statusClass += ' bp5-text-intent-warning';
+		}
+
 		return <div
 			className="bp5-card bp5-row"
 			style={cardStyle}
@@ -176,7 +181,7 @@ export default class Instance extends React.Component<Props, {}> {
 					hidden={!instance.status}
 					className="bp5-icon-standard bp5-icon-power"
 				/>
-				{instance.status}
+				{statusText}
 			</div>
 			<div className="bp5-cell" style={css.item}>
 				<span
