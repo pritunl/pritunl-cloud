@@ -1769,7 +1769,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 
 			networkFields.push({
 				label: 'Node Ports',
-				value: fields,
+				value: fields.length ? fields : "-",
 			})
 		}
 
