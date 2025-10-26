@@ -1639,7 +1639,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			{
 				label: 'State',
 				value: (this.props.instance.action || 'None') + ':' + (
-					this.props.instance.virt_state || 'None'),
+					this.props.instance.state || 'None'),
 			},
 			{
 				label: 'Uptime',
