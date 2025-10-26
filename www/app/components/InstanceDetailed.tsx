@@ -1975,7 +1975,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 
 		return <td
 			className="bp5-cell"
-			colSpan={6}
+			colSpan={7}
 			style={css.card}
 		>
 			<div className="layout horizontal wrap">
