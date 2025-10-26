@@ -381,16 +381,16 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			};
 		}
 
-		let networkRoles = [
-			...(instance.network_roles || []),
+		let roles = [
+			...(instance.roles || []),
 		];
 
-		if (networkRoles.indexOf(this.state.addNetworkRole) === -1) {
-			networkRoles.push(this.state.addNetworkRole);
+		if (roles.indexOf(this.state.addNetworkRole) === -1) {
+			roles.push(this.state.addNetworkRole);
 		}
 
-		networkRoles.sort();
-		instance.network_roles = networkRoles;
+		roles.sort();
+		instance.roles = roles;
 
 		this.setState({
 			...this.state,
@@ -414,17 +414,17 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			};
 		}
 
-		let networkRoles = [
-			...(instance.network_roles || []),
+		let roles = [
+			...(instance.roles || []),
 		];
 
-		let i = networkRoles.indexOf(networkRole);
+		let i = roles.indexOf(networkRole);
 		if (i === -1) {
 			return;
 		}
 
-		networkRoles.splice(i, 1);
-		instance.network_roles = networkRoles;
+		roles.splice(i, 1);
+		instance.roles = roles;
 
 		this.setState({
 			...this.state,
@@ -1283,9 +1283,13 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				break;
 		}
 
-		let networkRoles: JSX.Element[] = [];
-		for (let networkRole of (instance.network_roles || [])) {
-			networkRoles.push(
+		if (instance.status?.includes("Restart Required")) {
+			statusClass += ' bp5-text-intent-warning';
+		}
+
+		let roles: JSX.Element[] = [];
+		for (let networkRole of (instance.roles || [])) {
+			roles.push(
 				<div
 					className="bp5-tag bp5-tag-removable bp5-intent-primary"
 					style={css.role}
