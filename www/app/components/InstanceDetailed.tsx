@@ -8,8 +8,7 @@ import * as DomainTypes from '../types/DomainTypes';
 import * as PageInfos from './PageInfo';
 import * as Csrf from '../Csrf';
 import * as MiscUtils from '../utils/MiscUtils';
-import OrganizationsStore from '../stores/OrganizationsStore';
-import ZonesStore from '../stores/ZonesStore';
+import CompletionStore from '../stores/CompletionStore';
 import InstanceIscsiDevice from './InstanceIscsiDevice';
 import InstanceNodePort from './InstanceNodePort';
 import InstanceMount from './InstanceMount';
@@ -1217,9 +1216,9 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			this.props.instance;
 		let info: InstanceTypes.Info = this.props.instance.info || {};
 
-		let org = OrganizationsStore.organization(
+		let org = CompletionStore.organization(
 			this.props.instance.organization);
-		let zone = ZonesStore.zone(this.props.instance.zone);
+		let zone = CompletionStore.zone(this.props.instance.zone);
 
 		let privateIps: any = this.props.instance.private_ips;
 		if (!privateIps || !privateIps.length) {
