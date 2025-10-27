@@ -337,7 +337,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 		};
 
 		let networkRoles = [
-			...(instance.network_roles || []),
+			...(instance.roles || []),
 		];
 
 		if (networkRoles.indexOf(this.state.addNetworkRole) === -1) {
@@ -345,7 +345,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 		}
 
 		networkRoles.sort();
-		instance.network_roles = networkRoles;
+		instance.roles = networkRoles;
 
 		this.setState({
 			...this.state,
@@ -362,7 +362,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 		};
 
 		let networkRoles = [
-			...(instance.network_roles || []),
+			...(instance.roles || []),
 		];
 
 		let i = networkRoles.indexOf(networkRole);
@@ -371,7 +371,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 		}
 
 		networkRoles.splice(i, 1);
-		instance.network_roles = networkRoles;
+		instance.roles = networkRoles;
 
 		this.setState({
 			...this.state,
@@ -899,7 +899,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 		}
 
 		let networkRoles: JSX.Element[] = [];
-		for (let networkRole of (instance.network_roles || [])) {
+		for (let networkRole of (instance.roles || [])) {
 			networkRoles.push(
 				<div
 					className="bp5-tag bp5-tag-removable bp5-intent-primary"
