@@ -17,8 +17,10 @@ import * as ImageActions from '../actions/ImageActions';
 import * as NodeActions from '../actions/NodeActions';
 import ImagesDatacenterStore from '../stores/ImagesDatacenterStore';
 import NodesZoneStore from '../stores/NodesZoneStore';
+import InstanceImages from './InstanceImages';
 import InstanceLicense from './InstanceLicense';
 import InstanceNodePort from './InstanceNodePort';
+import InstanceMount from './InstanceMount';
 import PageInput from './PageInput';
 import PageInputButton from './PageInputButton';
 import PageCreate from './PageCreate';
@@ -49,6 +51,7 @@ interface State {
 	licenseOpen: boolean;
 	instance: InstanceTypes.Instance;
 	datacenter: string;
+	image: ImageTypes.Image;
 	images: ImageTypes.ImagesRo;
 	nodes: NodeTypes.NodesRo;
 	addNetworkRole: string;
@@ -114,8 +117,6 @@ const css = {
 };
 
 export default class InstanceNew extends React.Component<Props, State> {
-	imagesMap: Map<string, string>;
-
 	constructor(props: any, context: any) {
 		super(props, context);
 		this.state = {
@@ -126,6 +127,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 			licenseOpen: false,
 			instance: this.default,
 			datacenter: '',
+			image: null,
 			images: [],
 			nodes: [],
 			addNetworkRole: '',
@@ -233,8 +235,9 @@ export default class InstanceNew extends React.Component<Props, State> {
 			...this.state.instance,
 		};
 
+		let img = this.state.image
 		if (instance.uefi !== uefi) {
-			instance.image = '';
+			img = null
 		}
 		instance.uefi = uefi;
 
@@ -242,6 +245,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 			...this.state,
 			changed: true,
 			instance: instance,
+			image: img,
 		});
 	}
 
@@ -250,8 +254,9 @@ export default class InstanceNew extends React.Component<Props, State> {
 			...this.state.instance,
 		};
 
+		let img = this.state.image
 		if (instance.secure_boot !== secureBoot) {
-			instance.image = '';
+			img = null
 		}
 		instance.secure_boot = secureBoot;
 
@@ -259,6 +264,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 			...this.state,
 			changed: true,
 			instance: instance,
+			image: img,
 			secureBootChanged: true,
 		});
 	}
@@ -446,16 +452,95 @@ export default class InstanceNew extends React.Component<Props, State> {
 		});
 	}
 
-	onImageselect = (val: string): void => {
+	onAddMount = (i: number): void => {
+		let instance = {
+			...this.state.instance,
+		};
+
+		let mounts = [
+			...(instance.mounts || []),
+		];
+		if (!mounts.length) {
+			mounts.push({})
+		}
+
+		mounts.splice(i + 1, 0, {});
+		instance.mounts = mounts;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			instance: instance,
+		});
+	}
+
+	onChangeMount(i: number, block: InstanceTypes.Mount): void {
+		let instance = {
+			...this.state.instance,
+		};
+
+		let mounts = [
+			...(instance.mounts || []),
+		];
+		if (!mounts.length) {
+			mounts.push({})
+		}
+
+		mounts[i] = block;
+
+		instance.mounts = mounts;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			instance: instance,
+		});
+	}
+
+	onRemoveMount(i: number): void {
+		let instance = {
+			...this.state.instance,
+		};
+
+		let mounts = [
+			...(instance.mounts || []),
+		];
+		if (!mounts.length) {
+			mounts.push({})
+		}
+
+		mounts.splice(i, 1);
+
+		if (!mounts.length) {
+			mounts = [
+				{},
+			];
+		}
+
+		instance.mounts = mounts;
+
+		this.setState({
+			...this.state,
+			changed: true,
+			message: '',
+			instance: instance,
+		});
+	}
+
+	onImageselect = (img: ImageTypes.Image): void => {
 		let instance: any = {
 			...this.state.instance,
 		};
-		let imageName = this.imagesMap.get(val);
 
-		instance.image = val;
-		if (imageName && imageName.toLowerCase().indexOf('bsd') !== -1) {
+		instance.image = img.id;
+		if (img.name.toLowerCase().indexOf('bsd') !== -1) {
 			instance.secure_boot = false;
 			instance.cloud_type = 'bsd';
+		} else if (img.name.toLowerCase().indexOf('alpinelinux') !== -1) {
+			instance.secure_boot = false;
+			instance.cloud_type = 'linux';
 		} else {
 			if (!this.state.secureBootChanged) {
 				instance.secure_boot = true;
@@ -466,6 +551,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 		this.setState({
 			...this.state,
 			changed: true,
+			image: img,
 			instance: instance,
 		});
 	}
@@ -573,6 +659,32 @@ export default class InstanceNew extends React.Component<Props, State> {
 
 		if (!hasShapes) {
 			shapesSelect = [<option key="null" value="">No Shapes</option>];
+		}
+
+		let instanceMounts = instance.mounts || [];
+		let mounts: JSX.Element[] = [];
+		if (instanceMounts.length === 0) {
+			instanceMounts.push({});
+		}
+		for (let i = 0; i < instanceMounts.length; i++) {
+			let index = i;
+
+			mounts.push(
+				<InstanceMount
+					key={index}
+					disabled={this.state.disabled}
+					mount={instanceMounts[index]}
+					onChange={(state: InstanceTypes.Mount): void => {
+						this.onChangeMount(index, state);
+					}}
+					onAdd={(): void => {
+						this.onAddMount(index);
+					}}
+					onRemove={(): void => {
+						this.onRemoveMount(index);
+					}}
+				/>,
+			);
 		}
 
 		let hasNodes = false;
@@ -827,10 +939,6 @@ export default class InstanceNew extends React.Component<Props, State> {
 			);
 		})
 
-		if (!hasImages) {
-			imagesSelect = [<option key="null" value="">No Images</option>];
-		}
-
 		return <div
 			className="bp5-card bp5-row"
 			style={css.row}
@@ -901,6 +1009,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 										zone: '',
 										image: '',
 									},
+									image: null,
 								});
 								ImageActions.syncDatacenter(val);
 								NodeActions.syncZone('');
@@ -1145,15 +1254,14 @@ export default class InstanceNew extends React.Component<Props, State> {
 						>
 							{poolsSelect}
 						</PageSelect>
-						<PageSelect
-							disabled={this.state.disabled || !hasImages}
-							label="Image"
-							help="Starting image for node."
-							value={instance.image}
+						<InstanceImages
+							images={this.state.images || []}
+							image={this.state.image}
+							uefi={instance.uefi}
+							showHidden={this.state.hiddenImages}
+							disabled={this.state.disabled}
 							onChange={this.onImageselect}
-						>
-							{imagesSelect}
-						</PageSelect>
+						/>
 						<PageSwitch
 							label="Show hidden images"
 							help="Show previous versions of images."
