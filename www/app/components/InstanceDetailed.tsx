@@ -1984,9 +1984,8 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						className="layout horizontal tab-close bp5-card-header"
 						style={css.buttons}
 						onClick={(evt): void => {
-							let target = evt.target as HTMLElement;
-
-							if (target.className.indexOf('tab-close') !== -1) {
+							if (evt.target instanceof HTMLElement &&
+									evt.target.className.indexOf('tab-close') !== -1) {
 								this.props.onClose();
 							}
 						}}
