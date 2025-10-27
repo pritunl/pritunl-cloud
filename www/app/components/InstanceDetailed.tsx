@@ -2054,9 +2054,9 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						label="Memory Size"
 						help="Instance memory size in megabytes."
 						min={256}
-						minorStepSize={256}
-						stepSize={512}
-						majorStepSize={1024}
+						minorStepSize={512}
+						stepSize={1024}
+						majorStepSize={2048}
 						disabled={this.state.disabled}
 						selectAllOnFocus={true}
 						onChange={(val: number): void => {
