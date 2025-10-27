@@ -161,7 +161,7 @@ export default class InstanceImages extends React.Component<Props, {}> {
 				imagesSelect.push(this.parseImage(img));
 			}
 
-			if (imagesSelect.length) {
+			if (imagesSelect.length && otherImages.length) {
 				imagesSelect.push(<Blueprint.MenuDivider
 					key="menu-spec-divider"
 				/>)
