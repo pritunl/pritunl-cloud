@@ -28,9 +28,8 @@ import PageSelect from './PageSelect';
 import PageSwitch from "./PageSwitch";
 import PageNumInput from './PageNumInput';
 import Help from './Help';
-import OrganizationsStore from "../stores/OrganizationsStore";
+import CompletionStore from "../stores/CompletionStore";
 import PageTextArea from "./PageTextArea";
-import ShapesStore from "../stores/ShapesStore";
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -313,7 +312,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 		instance.node = "";
 		instance.shape = shapeId;
 
-		let shape = ShapesStore.shape(shapeId);
+		let shape = CompletionStore.shape(shapeId);
 		if (shape) {
 			instance.disk_type = shape.disk_type;
 			instance.disk_pool = shape.disk_pool;
@@ -560,8 +559,8 @@ export default class InstanceNew extends React.Component<Props, State> {
 		let instance = this.state.instance;
 		let lockResources = false;
 		if (instance.shape) {
-			let shape = ShapesStore.shape(instance.shape);
-			lockResources = !shape.flexible;
+			let shape = CompletionStore.shape(instance.shape);
+			lockResources = !shape?.flexible;
 		}
 
 		let node: NodeTypes.Node;
@@ -714,7 +713,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 
 			for (let vpc of this.props.vpcs) {
 				if (Constants.user) {
-					if (vpc.organization !== OrganizationsStore.current) {
+					if (vpc.organization !== CompletionStore.userOrganization) {
 						continue;
 					}
 				} else {
@@ -748,7 +747,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 
 			for (let vpc of this.props.vpcs) {
 				if (Constants.user) {
-					if (vpc.organization !== OrganizationsStore.current) {
+					if (vpc.organization !== CompletionStore.userOrganization) {
 						continue;
 					}
 				} else {
