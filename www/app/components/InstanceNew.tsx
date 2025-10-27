@@ -842,62 +842,6 @@ export default class InstanceNew extends React.Component<Props, State> {
 			poolsSelect = [<option key="null" value="">No Pools</option>];
 		}
 
-		let hasImages = false;
-		let imagesSelect: JSX.Element[] = [];
-		this.imagesMap = new Map();
-		let imagesVer = new Map();
-		if (this.state.images.length) {
-			imagesSelect.push(<option key="null" value="">Select Image</option>);
-
-			hasImages = true;
-			for (let image of this.state.images) {
-				if (instance.uefi && image.firmware === 'bios') {
-					continue;
-				} else if (!instance.uefi && image.firmware === 'uefi') {
-					continue;
-				}
-
-				if (!this.state.hiddenImages && image.signed) {
-					let imgSpl = image.key.split('_');
-
-					if (imgSpl.length >= 2 && imgSpl[imgSpl.length - 1].length >= 4) {
-						let imgKey = imgSpl[0] + '_' + image.firmware
-
-						let imgVer = parseInt(
-							imgSpl[imgSpl.length - 1].substring(0, 4), 10);
-						if (imgVer) {
-							let curImg = imagesVer.get(imgKey);
-							if (!curImg || imgVer > curImg[0]) {
-								imagesVer.set(imgKey, [imgVer, image.id, image.name]);
-							}
-							continue;
-						}
-					}
-				}
-
-				this.imagesMap.set(image.id, image.name);
-			}
-
-			for (let item of this.imagesMap.entries()) {
-				imagesSelect.push(
-					<option
-						key={item[0]}
-						value={item[0]}
-					>{item[1]}</option>,
-				);
-			}
-
-			for (let item of imagesVer.entries()) {
-				this.imagesMap.set(item[1][1], item[1][2]);
-				imagesSelect.push(
-					<option
-						key={item[1][1]}
-						value={item[1][1]}
-					>{item[1][2]}</option>,
-				);
-			}
-		}
-
 		let networkRoles: JSX.Element[] = [];
 		for (let networkRole of (instance.roles || [])) {
 			networkRoles.push(
@@ -1121,6 +1065,19 @@ export default class InstanceNew extends React.Component<Props, State> {
 							<option key="linux" value="linux">Linux</option>,
 							<option key="bsd" value="bsd">BSD</option>,
 						</PageSelect>
+						<label
+							className="bp5-label"
+							style={css.label}
+						>
+							Host Paths
+							<Help
+								title="Host Paths"
+								content="Local paths on the host that are available for instances to access through VirtIO-FS sharing. The path must be match or be a subdirectory of a configured host share path in the node settings. The instance's organization must also have a matching role to access the host share."
+							/>
+						</label>
+						<div>
+							{mounts}
+						</div>
 						<PageTextArea
 							label="Startup Script"
 							help="Script to run on instance startup. These commands will run on every startup. File must start with #! such as `#!/bin/bash` to specify code interpreter."
