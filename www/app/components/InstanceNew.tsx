@@ -778,10 +778,10 @@ export default class InstanceNew extends React.Component<Props, State> {
 			subnetSelect = [<option key="null" value="">No Subnets</option>];
 		}
 
-		let oracleSubnetsSelect: JSX.Element[] = [
+		let cloudSubnetsSelect: JSX.Element[] = [
 			<option key="null" value="">Disabled</option>,
 		];
-		if (node && node.oracle_subnets && node.oracle_subnets.length) {
+		if (node && node.cloud_subnets && node.cloud_subnets.length) {
 			let subnets: Map<string, string> = new Map();
 
 			for (let vpc of (node.available_vpcs || [])) {
@@ -790,8 +790,8 @@ export default class InstanceNew extends React.Component<Props, State> {
 				}
 			}
 
-			for (let subnetId of (node.oracle_subnets || [])) {
-				oracleSubnetsSelect.push(
+			for (let subnetId of (node.cloud_subnets || [])) {
+				cloudSubnetsSelect.push(
 					<option key={subnetId} value={subnetId}>
 						{subnets.get(subnetId) || subnetId}
 					</option>,
@@ -1093,21 +1093,21 @@ export default class InstanceNew extends React.Component<Props, State> {
 						</PageSelect>
 						<PageSelect
 							disabled={this.state.disabled}
-							hidden={oracleSubnetsSelect.length <= 1}
+							hidden={cloudSubnetsSelect.length <= 1}
 							label="Oracle Cloud Subnet"
 							help="Oracle Cloud subnet for instance."
-							value={instance.oracle_subnet}
+							value={instance.cloud_subnet}
 							onChange={(val): void => {
 								this.setState({
 									...this.state,
 									instance: {
 										...this.state.instance,
-										oracle_subnet: val,
+										cloud_subnet: val,
 									},
 								});
 							}}
 						>
-							{oracleSubnetsSelect}
+							{cloudSubnetsSelect}
 						</PageSelect>
 						<PageSelect
 							disabled={this.state.disabled}
