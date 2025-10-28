@@ -5,7 +5,7 @@ import * as BlockTypes from '../types/BlockTypes';
 
 interface Props {
 	ipv6?: boolean;
-	interfaces?: string[];
+	interfaces?: NodeTypes.Interface[];
 	blocks: BlockTypes.BlocksRo;
 	block: NodeTypes.BlockAttachment;
 	onChange: (state: NodeTypes.BlockAttachment) => void;
@@ -61,8 +61,8 @@ export default class NodeBlock extends React.Component<Props, {}> {
 			}
 
 			ifacesSelect.push(
-				<option key={iface} value={iface}>
-					{iface}
+				<option key={iface.name} value={iface.name}>
+					{iface.name + (iface.address ? (" (" + iface.address + ")") : "")}
 				</option>,
 			);
 		}
