@@ -58,7 +58,7 @@ const css = {
 		verticalAlign: 'top',
 		display: 'table-cell',
 		padding: '8px',
-		width: '30px',
+		width: '85px',
 	} as React.CSSProperties,
 	bar: {
 		height: '6px',
