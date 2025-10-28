@@ -4,7 +4,7 @@ import * as Theme from '../Theme';
 import * as Constants from '../Constants';
 import * as SubscriptionTypes from '../types/SubscriptionTypes';
 import SubscriptionStore from '../stores/SubscriptionStore';
-import OrganizationsStore from '../stores/OrganizationsStore';
+import CompletionStore from "../stores/CompletionStore";
 import LoadingBar from './LoadingBar';
 import Subscription from './Subscription';
 import Users from './Users';
@@ -34,38 +34,12 @@ import Authorities from './Authorities';
 import Logs from './Logs';
 import Settings from './Settings';
 import OrganizationSelect from './OrganizationSelect';
+import * as Router from '../Router';
 import RouterRoute from './RouterRoute';
 import RouterRoutes from './RouterRoutes';
 import RouterLink from './RouterLink';
 import RouterRedirect from './RouterRedirect';
-import * as RouterTypes from '../types/RouterTypes';
-import * as UserActions from '../actions/UserActions';
-import * as SessionActions from '../actions/SessionActions';
-import * as AuditActions from '../actions/AuditActions';
-import * as NodeActions from '../actions/NodeActions';
-import * as PolicyActions from '../actions/PolicyActions';
-import * as CertificateActions from '../actions/CertificateActions';
-import * as SecretActions from '../actions/SecretActions';
-import * as OrganizationActions from '../actions/OrganizationActions';
-import * as DatacenterActions from '../actions/DatacenterActions';
-import * as AlertActions from '../actions/AlertActions';
-import * as ZoneActions from '../actions/ZoneActions';
-import * as ShapeActions from '../actions/ShapeActions';
-import * as BlockActions from '../actions/BlockActions';
-import * as VpcActions from '../actions/VpcActions';
-import * as DomainActions from '../actions/DomainActions';
-import * as PlanActions from '../actions/PlanActions';
-import * as BalancerActions from '../actions/BalancerActions';
-import * as StorageActions from '../actions/StorageActions';
-import * as ImageActions from '../actions/ImageActions';
-import * as PoolActions from '../actions/PoolActions';
-import * as DiskActions from '../actions/DiskActions';
-import * as InstanceActions from '../actions/InstanceActions';
-import * as PodActions from '../actions/PodActions';
-import * as FirewallActions from '../actions/FirewallActions';
-import * as AuthorityActions from '../actions/AuthorityActions';
-import * as LogActions from '../actions/LogActions';
-import * as SettingsActions from '../actions/SettingsActions';
+import * as CompletionActions from '../actions/CompletionActions';
 import * as SubscriptionActions from '../actions/SubscriptionActions';
 
 interface State {
@@ -117,7 +91,7 @@ export default class Main extends React.Component<{}, State> {
 		super(props, context);
 		this.state = {
 			subscription: SubscriptionStore.subscription,
-			current: OrganizationsStore.current,
+			organization: CompletionStore.userOrganization,
 			disabled: false,
 		};
 	}
@@ -127,8 +101,8 @@ export default class Main extends React.Component<{}, State> {
 			SubscriptionStore.addChangeListener(this.onChange);
 			SubscriptionActions.sync(false);
 		} else {
-			OrganizationsStore.addChangeListener(this.onChange);
-			OrganizationActions.sync();
+			CompletionStore.addChangeListener(this.onChange);
+			CompletionActions.sync();
 		}
 	}
 
@@ -136,7 +110,7 @@ export default class Main extends React.Component<{}, State> {
 		if (!Constants.user) {
 			SubscriptionStore.removeChangeListener(this.onChange);
 		} else {
-			OrganizationsStore.removeChangeListener(this.onChange);
+			CompletionStore.removeChangeListener(this.onChange);
 		}
 	}
 
@@ -144,17 +118,17 @@ export default class Main extends React.Component<{}, State> {
 		this.setState({
 			...this.state,
 			subscription: SubscriptionStore.subscription,
-			current: OrganizationsStore.current,
+			organization: CompletionStore.userOrganization,
 		});
 	}
 
 	render(): JSX.Element {
 		if ((!Constants.user && !this.state.subscription) ||
-				(Constants.user && this.state.current === undefined)) {
+				(Constants.user && this.state.organization === undefined)) {
 			return <div/>;
 		}
 
-		if (Constants.user && !this.state.current) {
+		if (Constants.user && !this.state.organization) {
 			return <div>
 				<div
 					className="bp5-callout bp5-intent-danger bp5-icon-error"
