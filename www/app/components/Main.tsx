@@ -301,7 +301,7 @@ export default class Main extends React.Component<{}, State> {
 						Instances
 					</RouterLink>
 					<RouterLink
-						className="bp5-button bp5-minimal bp5-icon-cube"
+						className="bp5-button bp5-minimal bp5-icon-server"
 						style={css.link}
 						to="/pods"
 					>
