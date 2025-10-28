@@ -12,23 +12,9 @@ import * as PoolTypes from '../types/PoolTypes';
 import * as ZoneTypes from '../types/ZoneTypes';
 import * as ShapeTypes from '../types/ShapeTypes';
 import InstancesStore from '../stores/InstancesStore';
-import OrganizationsStore from '../stores/OrganizationsStore';
-import DomainsNameStore from '../stores/DomainsNameStore';
-import VpcsNameStore from '../stores/VpcsNameStore';
-import DatacentersStore from '../stores/DatacentersStore';
-import NodesStore from '../stores/NodesStore';
-import PoolsStore from '../stores/PoolsStore';
-import ZonesStore from '../stores/ZonesStore';
-import ShapesStore from '../stores/ShapesStore';
+import CompletionStore from '../stores/CompletionStore';
 import * as InstanceActions from '../actions/InstanceActions';
-import * as OrganizationActions from '../actions/OrganizationActions';
-import * as DomainActions from '../actions/DomainActions';
-import * as VpcActions from '../actions/VpcActions';
-import * as DatacenterActions from '../actions/DatacenterActions';
-import * as NodeActions from '../actions/NodeActions';
-import * as PoolActions from '../actions/PoolActions';
-import * as ZoneActions from '../actions/ZoneActions';
-import * as ShapeActions from '../actions/ShapeActions';
+import * as CompletionActions from '../actions/CompletionActions';
 import Instance from './Instance';
 import InstanceNew from './InstanceNew';
 import InstancesFilter from './InstancesFilter';
@@ -110,14 +96,14 @@ export default class Instances extends React.Component<{}, State> {
 			instances: InstancesStore.instances,
 			filter: InstancesStore.filter,
 			debug: false,
-			organizations: OrganizationsStore.organizations,
-			domains: DomainsNameStore.domains,
-			vpcs: VpcsNameStore.vpcs,
-			datacenters: DatacentersStore.datacenters,
-			nodes: NodesStore.nodes,
-			pools: PoolsStore.pools,
-			zones: ZonesStore.zones,
-			shapes: ShapesStore.shapes,
+			organizations: CompletionStore.organizations,
+			domains: CompletionStore.domains,
+			vpcs: CompletionStore.vpcs,
+			datacenters: CompletionStore.datacenters,
+			nodes: CompletionStore.nodes,
+			pools: CompletionStore.pools,
+			zones: CompletionStore.zones,
+			shapes: CompletionStore.shapes,
 			selected: {},
 			opened: {},
 			newOpened: false,
@@ -136,23 +122,9 @@ export default class Instances extends React.Component<{}, State> {
 
 	componentDidMount(): void {
 		InstancesStore.addChangeListener(this.onChange);
-		OrganizationsStore.addChangeListener(this.onChange);
-		DomainsNameStore.addChangeListener(this.onChange);
-		VpcsNameStore.addChangeListener(this.onChange);
-		DatacentersStore.addChangeListener(this.onChange);
-		NodesStore.addChangeListener(this.onChange);
-		PoolsStore.addChangeListener(this.onChange);
-		ZonesStore.addChangeListener(this.onChange);
-		ShapesStore.addChangeListener(this.onChange);
+		CompletionStore.addChangeListener(this.onChange);
 		InstanceActions.sync();
-		OrganizationActions.sync();
-		DomainActions.syncName();
-		VpcActions.syncNames();
-		DatacenterActions.sync();
-		NodeActions.sync();
-		PoolActions.sync();
-		ZoneActions.sync();
-		ShapeActions.sync();
+		CompletionActions.sync();
 
 		this.sync = new MiscUtils.SyncInterval(
 			() => InstanceActions.sync(true),
@@ -162,14 +134,7 @@ export default class Instances extends React.Component<{}, State> {
 
 	componentWillUnmount(): void {
 		InstancesStore.removeChangeListener(this.onChange);
-		OrganizationsStore.removeChangeListener(this.onChange);
-		DomainsNameStore.removeChangeListener(this.onChange);
-		VpcsNameStore.removeChangeListener(this.onChange);
-		DatacentersStore.removeChangeListener(this.onChange);
-		NodesStore.removeChangeListener(this.onChange);
-		PoolsStore.removeChangeListener(this.onChange);
-		ZonesStore.removeChangeListener(this.onChange);
-		ShapesStore.removeChangeListener(this.onChange);
+		CompletionStore.removeChangeListener(this.onChange);
 
 		this.sync?.stop()
 	}
@@ -194,14 +159,14 @@ export default class Instances extends React.Component<{}, State> {
 			...this.state,
 			instances: instances,
 			filter: InstancesStore.filter,
-			organizations: OrganizationsStore.organizations,
-			domains: DomainsNameStore.domains,
-			vpcs: VpcsNameStore.vpcs,
-			datacenters: DatacentersStore.datacenters,
-			nodes: NodesStore.nodes,
-			pools: PoolsStore.pools,
-			zones: ZonesStore.zones,
-			shapes: ShapesStore.shapes,
+			organizations: CompletionStore.organizations,
+			domains: CompletionStore.domains,
+			vpcs: CompletionStore.vpcs,
+			datacenters: CompletionStore.datacenters,
+			nodes: CompletionStore.nodes,
+			pools: CompletionStore.pools,
+			zones: CompletionStore.zones,
+			shapes: CompletionStore.shapes,
 			selected: selected,
 			opened: opened,
 		});
