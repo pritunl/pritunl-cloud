@@ -85,6 +85,8 @@ export default class MarkdownMemo extends React.Component<Props, {}> {
 	}
 
 	render() {
-		return <MarkdownWrap value={this.props.value}/>
+		return <MarkdownWrap
+			value={this.props.value}
+		/>
 	}
 }
