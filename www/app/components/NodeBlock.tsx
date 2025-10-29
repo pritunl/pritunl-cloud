@@ -25,9 +25,10 @@ const css = {
 		marginTop: '5px',
 	} as React.CSSProperties,
 	control: {
-		marginTop: '5px',
+		marginTop: '0px',
 	} as React.CSSProperties,
 	protocol: {
+		marginTop: '0px',
 		flex: '0 1 auto',
 	} as React.CSSProperties,
 	port: {
