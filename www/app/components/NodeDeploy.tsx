@@ -96,7 +96,7 @@ export default class NodeDeploy extends React.Component<Props, State> {
 		};
 	}
 
-	ifaces(): string[] {
+	ifaces(): NodeTypes.Interface[] {
 		let node = this.props.node;
 
 		let dcId = node.datacenter;
@@ -115,9 +115,9 @@ export default class NodeDeploy extends React.Component<Props, State> {
 		}
 
 		if (vxlan) {
-			return node.available_bridges.concat(node.available_interfaces);
+			return NodeTypes.GetAllIfaces(node);
 		} else {
-			return node.available_bridges.concat(node.available_interfaces);
+			return NodeTypes.GetAllIfaces(node);
 		}
 	}
 
@@ -126,7 +126,7 @@ export default class NodeDeploy extends React.Component<Props, State> {
 		if (!internalIface) {
 			let ifaces = this.ifaces();
 			if (ifaces.length) {
-				internalIface = ifaces[0];
+				internalIface = ifaces[0]?.name;
 			}
 		}
 
@@ -134,7 +134,7 @@ export default class NodeDeploy extends React.Component<Props, State> {
 		if (!externalIface) {
 			let ifaces = this.ifaces();
 			if (ifaces.length) {
-				externalIface = ifaces[0];
+				externalIface = ifaces[0]?.name;
 			}
 		}
 
@@ -275,8 +275,8 @@ export default class NodeDeploy extends React.Component<Props, State> {
 			let ifacesSelect: JSX.Element[] = [];
 			for (let iface of (availableIfaces || [])) {
 				ifacesSelect.push(
-					<option key={iface} value={iface}>
-						{iface}
+					<option key={iface.name} value={iface.name}>
+						{iface.name + (iface.address ? (" (" + iface.address + ")") : "")}
 					</option>,
 				);
 			}
