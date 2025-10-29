@@ -47,7 +47,7 @@ interface State {
 	node: NodeTypes.Node;
 	addExternalIface: string;
 	addInternalIface: string;
-	addOracleSubnet: string;
+	addCloudSubnet: string;
 	addCert: string;
 	addNetworkRole: string;
 	addDrive: string;
@@ -148,7 +148,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			node: null,
 			addExternalIface: null,
 			addInternalIface: null,
-			addOracleSubnet: null,
+			addCloudSubnet: null,
 			addCert: null,
 			addNetworkRole: null,
 			addDrive: null,
@@ -732,18 +732,18 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		});
 	}
 
-	onAddOracleSubnet = (): void => {
+	onAddCloudSubnet = (): void => {
 		let node: NodeTypes.Node;
 		let availabeVpcs = this.props.node.available_vpcs || [];
 
-		if (!this.state.addOracleSubnet && !availabeVpcs.length &&
+		if (!this.state.addCloudSubnet && !availabeVpcs.length &&
 				!availabeVpcs[0].subnets.length) {
 			return;
 		}
 
-		let addOracleSubnet = this.state.addOracleSubnet;
-		if (!addOracleSubnet) {
-			addOracleSubnet = availabeVpcs[0].subnets[0].id;
+		let addCloudSubnet = this.state.addCloudSubnet;
+		if (!addCloudSubnet) {
+			addCloudSubnet = availabeVpcs[0].subnets[0].id;
 		}
 
 		if (this.state.changed) {
@@ -756,23 +756,23 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			};
 		}
 
-		let nodeOracleSubnets = [
-			...(node.oracle_subnets || []),
+		let nodeCloudSubnets = [
+			...(node.cloud_subnets || []),
 		];
 
 		let index = -1;
-		for (let i = 0; i < nodeOracleSubnets.length; i++) {
-			if (nodeOracleSubnets[i] === addOracleSubnet) {
+		for (let i = 0; i < nodeCloudSubnets.length; i++) {
+			if (nodeCloudSubnets[i] === addCloudSubnet) {
 				index = i;
 				break
 			}
 		}
 
 		if (index === -1) {
-			nodeOracleSubnets.push(addOracleSubnet);
+			nodeCloudSubnets.push(addCloudSubnet);
 		}
 
-		node.oracle_subnets = nodeOracleSubnets;
+		node.cloud_subnets = nodeCloudSubnets;
 
 		this.setState({
 			...this.state,
@@ -782,7 +782,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		});
 	}
 
-	onRemoveOracleSubnet = (device: string): void => {
+	onRemoveCloudSubnet = (device: string): void => {
 		let node: NodeTypes.Node;
 
 		if (this.state.changed) {
@@ -795,13 +795,13 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			};
 		}
 
-		let nodeOracleSubnets = [
-			...(node.oracle_subnets || []),
+		let nodeCloudSubnets = [
+			...(node.cloud_subnets || []),
 		];
 
 		let index = -1;
-		for (let i = 0; i < nodeOracleSubnets.length; i++) {
-			if (nodeOracleSubnets[i] === device) {
+		for (let i = 0; i < nodeCloudSubnets.length; i++) {
+			if (nodeCloudSubnets[i] === device) {
 				index = i;
 				break
 			}
@@ -810,8 +810,8 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			return;
 		}
 
-		nodeOracleSubnets.splice(index, 1);
-		node.oracle_subnets = nodeOracleSubnets;
+		nodeCloudSubnets.splice(index, 1);
+		node.cloud_subnets = nodeCloudSubnets;
 
 		this.setState({
 			...this.state,
@@ -1303,15 +1303,15 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		let internalIfacesSelect: JSX.Element[] = [];
 		for (let iface of (availableIfaces || [])) {
 			internalIfacesSelect.push(
-				<option key={iface} value={iface}>
-					{iface}
+				<option key={iface.name} value={iface.name}>
+					{iface.name + (iface.address ? (" (" + iface.address + ")") : "")}
 				</option>,
 			);
 		}
 
-		let oracleSubnets: JSX.Element[] = [];
-		for (let subnetId of (node.oracle_subnets || [])) {
-			oracleSubnets.push(
+		let cloudSubnets: JSX.Element[] = [];
+		for (let subnetId of (node.cloud_subnets || [])) {
+			cloudSubnets.push(
 				<div
 					className="bp5-tag bp5-tag-removable bp5-intent-primary"
 					style={css.item}
@@ -1322,7 +1322,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						disabled={this.state.disabled}
 						className="bp5-tag-remove"
 						onMouseUp={(): void => {
-							this.onRemoveOracleSubnet(subnetId);
+							this.onRemoveCloudSubnet(subnetId);
 						}}
 					/>
 				</div>,
@@ -1828,7 +1828,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					>
 						<option value="dhcp">DHCP</option>
 						<option value="static">Static</option>
-						<option value="oracle">Oracle Cloud</option>
+						<option value="cloud">Oracle Cloud</option>
 						<option value="disabled">Disabled</option>
 					</PageSelect>
 					<PageSelect
@@ -1931,7 +1931,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					</label>
 					<label
 						className="bp5-label"
-						hidden={node.network_mode !== 'oracle'}
+						hidden={node.network_mode !== 'cloud'}
 						style={css.label}
 					>
 						Oracle Cloud Subnets
@@ -1940,22 +1940,22 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							content="Oracle Cloud VCN subnets available to attach to instances."
 						/>
 						<div>
-							{oracleSubnets}
+							{cloudSubnets}
 						</div>
 					</label>
 					<PageSelectButton
 						label="Add Subnet"
-						hidden={node.network_mode !== 'oracle'}
-						value={this.state.addOracleSubnet}
+						hidden={node.network_mode !== 'cloud'}
+						value={this.state.addCloudSubnet}
 						disabled={!availableSubnetsSelect.length || this.state.disabled}
 						buttonClass="bp5-intent-success"
 						onChange={(val: string): void => {
 							this.setState({
 								...this.state,
-								addOracleSubnet: val,
+								addCloudSubnet: val,
 							});
 						}}
-						onSubmit={this.onAddOracleSubnet}
+						onSubmit={this.onAddCloudSubnet}
 					>
 						{availableSubnetsSelect}
 					</PageSelectButton>
@@ -1989,8 +1989,8 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					/>
 					<PageInput
 						disabled={this.state.disabled}
-						hidden={node.network_mode !== 'oracle' &&
-							node.network_mode6 !== 'oracle'}
+						hidden={node.network_mode !== 'cloud' &&
+							node.network_mode6 !== 'cloud'}
 						label="Oracle Cloud User OCID"
 						help="User OCID for Oracle Cloud API authentication."
 						type="text"
@@ -2002,8 +2002,8 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					/>
 					<PageInput
 						disabled={this.state.disabled}
-						hidden={node.network_mode !== 'oracle' &&
-							node.network_mode6 !== 'oracle'}
+						hidden={node.network_mode !== 'cloud' &&
+							node.network_mode6 !== 'cloud'}
 						label="Oracle Cloud User Tenancy"
 						help="Tenancy OCID for Oracle Cloud API authentication."
 						type="text"
@@ -2015,8 +2015,8 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					/>
 					<PageTextArea
 						disabled={this.state.disabled}
-						hidden={node.network_mode !== 'oracle' &&
-							node.network_mode6 !== 'oracle'}
+						hidden={node.network_mode !== 'cloud' &&
+							node.network_mode6 !== 'cloud'}
 						label="Oracle Cloud Public Key"
 						help="Public key for Oracle Cloud API authentication."
 						placeholder="Oracle Cloud public key"
