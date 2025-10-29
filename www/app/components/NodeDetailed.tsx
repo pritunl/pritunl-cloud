@@ -24,6 +24,7 @@ import PageSave from './PageSave';
 import NodeBlock from './NodeBlock';
 import NodeShare from './NodeShare';
 import ConfirmButton from './ConfirmButton';
+import Relations from './Relations';
 import Help from './Help';
 
 interface Props {
@@ -1607,6 +1608,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						}}
 					>
 						<div className="flex tab-close"/>
+						<Relations kind="node" id={this.props.node.id}/>
 						<ConfirmButton
 							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
 							style={css.button}
