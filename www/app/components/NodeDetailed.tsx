@@ -9,7 +9,7 @@ import * as NodeActions from '../actions/NodeActions';
 import * as BlockTypes from '../types/BlockTypes';
 import * as MiscUtils from '../utils/MiscUtils';
 import * as PageInfos from './PageInfo';
-import CertificatesStore from '../stores/CertificatesStore';
+import CompletionStore from '../stores/CompletionStore';
 import NodeDeploy from './NodeDeploy';
 import PageInput from './PageInput';
 import PageSwitch from './PageSwitch';
@@ -1370,7 +1370,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 
 		let certificates: JSX.Element[] = [];
 		for (let certId of (node.certificates || [])) {
-			let cert = CertificatesStore.certificate(certId);
+			let cert = CompletionStore.certificate(certId);
 			if (!cert) {
 				continue;
 			}
