@@ -59,7 +59,6 @@ func updatesRefresh() (updates []*Update, err error) {
 			PipeErr: true,
 		})
 	}
-
 	if err != nil {
 		logrus.WithFields(
 			resp.Map(),
