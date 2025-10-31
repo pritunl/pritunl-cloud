@@ -76,8 +76,8 @@ func GetAllNamesMap(db *database.Database, query *bson.M) (
 		db,
 		query,
 		options.Find().SetProjection(&bson.D{
-				{"name", 1},
-			}),
+			{"name", 1},
+		}),
 	)
 	if err != nil {
 		err = database.ParseError(err)
@@ -172,8 +172,8 @@ func GetAllPool(db *database.Database, poolId bson.ObjectID) (
 			"pools": poolId,
 		},
 		options.Find().SetProjection(&bson.D{
-				{"name", 1},
-			}),
+			{"name", 1},
+		}),
 	)
 	if err != nil {
 		err = database.ParseError(err)
@@ -320,10 +320,10 @@ func GetAllNet(db *database.Database) (nodes []*Node, err error) {
 	nodes = []*Node{}
 
 	cursor, err := coll.Find(db, bson.M{}, options.Find().SetProjection(&bson.D{
-			{"datacenter", 1},
-			{"zone", 1},
-			{"private_ips", 1},
-		}))
+		{"datacenter", 1},
+		{"zone", 1},
+		{"private_ips", 1},
+	}))
 	if err != nil {
 		err = database.ParseError(err)
 		return
