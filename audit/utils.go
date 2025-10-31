@@ -40,6 +40,9 @@ func GetAll(db *database.Database, userId bson.ObjectID,
 		return
 	}
 
+	if pageCount == 0 {
+		pageCount = 20
+	}
 	maxPage := count / pageCount
 	if count == pageCount {
 		maxPage = 0
