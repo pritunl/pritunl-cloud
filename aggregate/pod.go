@@ -94,6 +94,9 @@ func GetPodsPaged(db *database.Database, usrId bson.ObjectID,
 		}
 	}
 
+	if pageCount == 0 {
+		pageCount = 20
+	}
 	maxPage := count / pageCount
 	if count == pageCount {
 		maxPage = 0
