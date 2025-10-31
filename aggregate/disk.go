@@ -43,6 +43,9 @@ func GetDiskPaged(db *database.Database, query *bson.M, page,
 		}
 	}
 
+	if pageCount == 0 {
+		pageCount = 20
+	}
 	maxPage := count / pageCount
 	if count == pageCount {
 		maxPage = 0
