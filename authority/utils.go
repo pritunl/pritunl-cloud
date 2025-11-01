@@ -84,8 +84,8 @@ func GetRoles(db *database.Database, roles []string) (
 			"$in": roles,
 		},
 	}, options.Find().SetSort(&bson.D{
-			{"_id", 1},
-		}))
+		{"_id", 1},
+	}))
 	if err != nil {
 		err = database.ParseError(err)
 		return
@@ -204,8 +204,8 @@ func GetOrgRoles(db *database.Database, orgId bson.ObjectID,
 			"$in": roles,
 		},
 	}, options.Find().SetSort(&bson.D{
-			{"_id", 1},
-		}))
+		{"_id", 1},
+	}))
 	defer cursor.Close(db)
 
 	for cursor.Next(db) {
