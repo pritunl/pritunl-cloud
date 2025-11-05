@@ -72,7 +72,6 @@ const css = {
 		right: 0,
 		padding: '4px',
 		height: '39px',
-		backgroundColor: 'rgba(0, 0, 0, 0.13)',
 	} as React.CSSProperties,
 	item: {
 		margin: '9px 5px 0 5px',
