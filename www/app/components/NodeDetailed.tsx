@@ -224,7 +224,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		this.set('types', vals);
 	}
 
-	ifaces(): string[] {
+	ifaces(): NodeTypes.Interface[] {
 		let node: NodeTypes.Node;
 
 		if (this.state.changed) {
@@ -442,7 +442,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			return;
 		}
 
-		let index = this.state.addExternalIface || availableIfaces[0];
+		let index = this.state.addExternalIface || availableIfaces[0]?.name;
 
 		if (this.state.changed) {
 			node = {
@@ -514,7 +514,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			return;
 		}
 
-		let index = this.state.addInternalIface || availableIfaces[0];
+		let index = this.state.addInternalIface || availableIfaces[0]?.name;
 
 		if (this.state.changed) {
 			node = {
@@ -1293,8 +1293,8 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		let externalIfacesSelect: JSX.Element[] = [];
 		for (let iface of (availableIfaces || [])) {
 			externalIfacesSelect.push(
-				<option key={iface} value={iface}>
-					{iface}
+				<option key={iface.name} value={iface.name}>
+					{iface.name + (iface.address ? (" (" + iface.address + ")") : "")}
 				</option>,
 			);
 		}
@@ -1514,8 +1514,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			blocks.push(
 				<NodeBlock
 					key={index}
-					interfaces={node.available_bridges.concat(
-						node.available_interfaces)}
+					interfaces={NodeTypes.GetAllIfaces(node)}
 					blocks={this.props.blocks}
 					block={nodeBlocks[index]}
 					ipv6={false}
