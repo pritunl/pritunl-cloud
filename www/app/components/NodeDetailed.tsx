@@ -193,7 +193,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 
 		node.firewall = !node.firewall;
 		if (!node.firewall) {
-			node.network_roles = [];
+			node.roles = [];
 		}
 
 		this.setState({
@@ -287,16 +287,16 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			};
 		}
 
-		let networkRoles = [
-			...(node.network_roles || []),
+		let roles = [
+			...(node.roles || []),
 		];
 
-		if (networkRoles.indexOf(this.state.addNetworkRole) === -1) {
-			networkRoles.push(this.state.addNetworkRole);
+		if (roles.indexOf(this.state.addNetworkRole) === -1) {
+			roles.push(this.state.addNetworkRole);
 		}
 
-		networkRoles.sort();
-		node.network_roles = networkRoles;
+		roles.sort();
+		node.roles = roles;
 
 		this.setState({
 			...this.state,
@@ -320,17 +320,17 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			};
 		}
 
-		let networkRoles = [
-			...(node.network_roles || []),
+		let roles = [
+			...(node.roles || []),
 		];
 
-		let i = networkRoles.indexOf(networkRole);
+		let i = roles.indexOf(networkRole);
 		if (i === -1) {
 			return;
 		}
 
-		networkRoles.splice(i, 1);
-		node.network_roles = networkRoles;
+		roles.splice(i, 1);
+		node.roles = roles;
 
 		this.setState({
 			...this.state,
@@ -1486,9 +1486,9 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			rendersSelect = [<option key="null" value="">No Renders</option>];
 		}
 
-		let networkRoles: JSX.Element[] = [];
-		for (let networkRole of (node.network_roles || [])) {
-			networkRoles.push(
+		let roles: JSX.Element[] = [];
+		for (let networkRole of (node.roles || [])) {
+			roles.push(
 				<div
 					className="bp5-tag bp5-tag-removable bp5-intent-primary"
 					style={css.role}
@@ -1841,7 +1841,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					>
 						<option value="dhcp">DHCP</option>
 						<option value="static">Static</option>
-						<option value="oracle">Oracle Cloud</option>
+						<option value="cloud">Oracle Cloud</option>
 						<option value="disabled">Disabled</option>
 					</PageSelect>
 					<label
@@ -2343,7 +2343,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							content="Roles that will be matched with firewall rules and instance shapes. Roles are case-sensitive. Only node firewall roles without an organization will match."
 						/>
 						<div>
-							{networkRoles}
+							{roles}
 						</div>
 					</label>
 					<PageInputButton
