@@ -98,16 +98,16 @@ export default class NodesFilter extends React.Component<Props, {}> {
 			<SearchInput
 				style={css.role}
 				placeholder="Network Role"
-				value={this.props.filter.network_role}
+				value={this.props.filter.role}
 				onChange={(val: string): void => {
 					let filter = {
 						...this.props.filter,
 					};
 
 					if (val) {
-						filter.network_role = val;
+						filter.role = val;
 					} else {
-						delete filter.network_role;
+						delete filter.role;
 					}
 
 					this.props.onFilter(filter);
