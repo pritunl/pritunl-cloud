@@ -7,6 +7,7 @@ import PageInfo from './PageInfo';
 import PageSave from './PageSave';
 import PageInputButton from './PageInputButton';
 import ConfirmButton from './ConfirmButton';
+import Relations from './Relations';
 import Help from './Help';
 import PageTextArea from "./PageTextArea";
 
@@ -284,6 +285,7 @@ export default class Organization extends React.Component<Props, State> {
 							</label>
 						</div>
 						<div className="flex tab-close"/>
+						<Relations kind="organization" id={this.props.organization.id}/>
 						<ConfirmButton
 							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
 							style={css.button}
