@@ -2074,7 +2074,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
-						label="PCI Passthough"
+						label="PCI Passthrough"
 						help="Enable PCI passthrough support for instances."
 						checked={node.pci_passthrough}
 						onToggle={(): void => {
@@ -2083,7 +2083,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
-						label="USB Passthough"
+						label="USB Passthrough"
 						help="Enable USB passthrough support for instances."
 						checked={node.usb_passthrough}
 						onToggle={(): void => {
