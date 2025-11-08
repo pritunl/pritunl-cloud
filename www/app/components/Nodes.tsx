@@ -7,15 +7,9 @@ import * as DatacenterTypes from "../types/DatacenterTypes";
 import * as ZoneTypes from '../types/ZoneTypes';
 import * as BlockTypes from '../types/BlockTypes';
 import NodesStore from '../stores/NodesStore';
-import CertificatesStore from '../stores/CertificatesStore';
-import DatacentersStore from '../stores/DatacentersStore';
-import ZonesStore from '../stores/ZonesStore';
-import BlocksStore from '../stores/BlocksStore';
+import CompletionStore from '../stores/CompletionStore';
 import * as NodeActions from '../actions/NodeActions';
-import * as CertificateActions from '../actions/CertificateActions';
-import * as DatacenterActions from '../actions/DatacenterActions';
-import * as ZoneActions from '../actions/ZoneActions';
-import * as BlockActions from '../actions/BlockActions';
+import * as CompletionActions from '../actions/CompletionActions';
 import Node from './Node';
 import NodesFilter from './NodesFilter';
 import NodesPage from './NodesPage';
@@ -80,10 +74,10 @@ export default class Nodes extends React.Component<{}, State> {
 		this.state = {
 			nodes: NodesStore.nodes,
 			filter: NodesStore.filter,
-			certificates: CertificatesStore.certificates,
-			datacenters: DatacentersStore.datacenters,
-			zones: ZonesStore.zones,
-			blocks: BlocksStore.blocks,
+			certificates: CompletionStore.certificates,
+			datacenters: CompletionStore.datacenters,
+			zones: CompletionStore.zones,
+			blocks: CompletionStore.blocks,
 			selected: {},
 			opened: {},
 			lastSelected: null,
@@ -101,15 +95,9 @@ export default class Nodes extends React.Component<{}, State> {
 
 	componentDidMount(): void {
 		NodesStore.addChangeListener(this.onChange);
-		CertificatesStore.addChangeListener(this.onChange);
-		DatacentersStore.addChangeListener(this.onChange);
-		ZonesStore.addChangeListener(this.onChange);
-		BlocksStore.addChangeListener(this.onChange);
+		CompletionStore.addChangeListener(this.onChange);;
 		NodeActions.sync();
-		CertificateActions.sync();
-		DatacenterActions.sync();
-		ZoneActions.sync();
-		BlockActions.sync();
+		CompletionActions.sync();
 
 		this.sync = new MiscUtils.SyncInterval(
 			() => NodeActions.sync(true),
@@ -119,10 +107,7 @@ export default class Nodes extends React.Component<{}, State> {
 
 	componentWillUnmount(): void {
 		NodesStore.removeChangeListener(this.onChange);
-		CertificatesStore.removeChangeListener(this.onChange);
-		DatacentersStore.removeChangeListener(this.onChange);
-		ZonesStore.removeChangeListener(this.onChange);
-		BlocksStore.removeChangeListener(this.onChange);
+		CompletionStore.removeChangeListener(this.onChange);
 
 		this.sync?.stop()
 	}
@@ -147,10 +132,10 @@ export default class Nodes extends React.Component<{}, State> {
 			...this.state,
 			nodes: nodes,
 			filter: NodesStore.filter,
-			certificates: CertificatesStore.certificates,
-			datacenters: DatacentersStore.datacenters,
-			zones: ZonesStore.zones,
-			blocks: BlocksStore.blocks,
+			certificates: CompletionStore.certificates,
+			datacenters: CompletionStore.datacenters,
+			zones: CompletionStore.zones,
+			blocks: CompletionStore.blocks,
 			selected: selected,
 			opened: opened,
 		});
