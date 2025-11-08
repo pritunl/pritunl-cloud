@@ -2263,6 +2263,12 @@ export default class NodeDetailed extends React.Component<Props, State> {
 								<li>Virtio GPU Vulkan = --display=virtio-gpu-gl,venus=true</li>
 								<li>Virtio GPU PCI OpenGL = --display=virtio-gpu-gl-pci</li>
 								<li>Virtio GPU PCI Vulkan = --display=virtio-gpu-gl-pci,venus=true</li>
+								<li>Virtio GPU PCI Prime = --display=virtio-gpu-pci DRI_PRIME=1</li>
+								<li>Virtio VGA OpenGL Prime = --display=virtio-vga-gl DRI_PRIME=1</li>
+								<li>Virtio GPU OpenGL Prime = --display=virtio-gpu-gl DRI_PRIME=1</li>
+								<li>Virtio GPU Vulkan Prime = --display=virtio-gpu-gl,venus=true DRI_PRIME=1</li>
+								<li>Virtio GPU PCI OpenGL Prime = --display=virtio-gpu-gl-pci DRI_PRIME=1</li>
+								<li>Virtio GPU PCI Vulkan Prime = --display=virtio-gpu-gl-pci,venus=true DRI_PRIME=1</li>
 							</ul>
 						</div>}
 						value={node.vga}
@@ -2279,6 +2285,12 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						<option value="virtio_gl_vulkan">Virtio GPU Vulkan</option>
 						<option value="virtio_pci_gl">Virtio GPU PCI OpenGL</option>
 						<option value="virtio_pci_gl_vulkan">Virtio GPU PCI Vulkan</option>
+						<option value="virtio_pci_prime">Virtio GPU PCI Prime</option>
+						<option value="virtio_vga_gl_prime">Virtio VGA OpenGL Prime</option>
+						<option value="virtio_gl_prime">Virtio GPU OpenGL Prime</option>
+						<option value="virtio_gl_vulkan_prime">Virtio GPU Vulkan Prime</option>
+						<option value="virtio_pci_gl_prime">Virtio GPU PCI OpenGL Prime</option>
+						<option value="virtio_pci_gl_vulkan_prime">Virtio GPU PCI Vulkan Prime</option>
 					</PageSelect>
 					<PageSelect
 						hidden={types.indexOf('hypervisor') === -1 ||
