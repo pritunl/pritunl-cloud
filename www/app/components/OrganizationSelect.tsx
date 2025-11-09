@@ -1,8 +1,8 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
 import * as OrganizationTypes from '../types/OrganizationTypes';
-import * as OrganizationActions from '../actions/OrganizationActions';
-import OrganizationsStore from '../stores/OrganizationsStore';
+import * as CompletionActions from '../actions/CompletionActions';
+import CompletionStore from '../stores/CompletionStore';
 
 interface Props {
 	hidden: boolean;
@@ -10,7 +10,7 @@ interface Props {
 
 interface State {
 	organizations: OrganizationTypes.OrganizationsRo;
-	current: string;
+	organization: string;
 }
 
 const css = {
@@ -23,24 +23,24 @@ export default class Organization extends React.Component<Props, State> {
 	constructor(props: any, context: any) {
 		super(props, context);
 		this.state = {
-			organizations: OrganizationsStore.organizations,
-			current: null,
+			organizations: CompletionStore.organizations,
+			organization: null,
 		};
 	}
 
 	componentDidMount(): void {
-		OrganizationsStore.addChangeListener(this.onChange);
+		CompletionStore.addChangeListener(this.onChange);
 	}
 
 	componentWillUnmount(): void {
-		OrganizationsStore.removeChangeListener(this.onChange);
+		CompletionStore.removeChangeListener(this.onChange);
 	}
 
 	onChange = (): void => {
 		this.setState({
 			...this.state,
-			organizations: OrganizationsStore.organizations,
-			current: OrganizationsStore.current,
+			organizations: CompletionStore.organizations,
+			organization: CompletionStore.userOrganization,
 		});
 	}
 
@@ -63,9 +63,9 @@ export default class Organization extends React.Component<Props, State> {
 				hidden={this.props.hidden}
 			>
 				<select
-					value={this.state.current || ''}
+					value={this.state.organization || ''}
 					onChange={(evt): void => {
-						OrganizationActions.setCurrent(evt.target.value);
+						CompletionActions.setUserOrganization(evt.target.value);
 					}}
 				>
 					{orgsSelect}
