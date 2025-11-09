@@ -57,10 +57,6 @@ export default class PageDateTime extends React.Component<Props, {}> {
 						timePickerProps={{
 							showArrowButtons: true,
 						}}
-						// dayPickerProps={{
-						// 	fromDate: minDate,
-						// 	toDate: maxDate,
-						// }}
 						onChange={(newDate: Date): void => {
 							if (this.props.disabled) {
 								return;
