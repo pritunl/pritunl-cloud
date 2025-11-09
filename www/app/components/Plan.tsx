@@ -2,7 +2,7 @@
 import * as React from 'react';
 import * as PlanTypes from '../types/PlanTypes';
 import * as OrganizationTypes from "../types/OrganizationTypes";
-import OrganizationsStore from '../stores/OrganizationsStore';
+import CompletionStore from '../stores/CompletionStore';
 import PlanDetailed from './PlanDetailed';
 import * as SecretTypes from "../types/SecretTypes";
 
@@ -105,7 +105,7 @@ export default class Plan extends React.Component<Props, {}> {
 
 		let orgName = '';
 		if (plan.organization) {
-			let org = OrganizationsStore.organization(plan.organization);
+			let org = CompletionStore.organization(plan.organization);
 			orgName = org ? org.name : plan.organization;
 		} else {
 			orgName = 'Unknown Organization';
