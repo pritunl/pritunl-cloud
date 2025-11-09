@@ -7,7 +7,7 @@ interface Props {
 	hidden?: boolean;
 	disabled?: boolean;
 	label: string;
-	help: string;
+	help: string | JSX.Element;
 	value: string;
 	onChange: (val: string) => void;
 }
