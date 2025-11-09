@@ -102,7 +102,7 @@ export default class Organization extends React.Component<Props, State> {
 		};
 
 		let roles = [
-			...organization.roles,
+			...(organization.roles || []),
 		];
 
 		if (!this.state.addRole) {
@@ -134,7 +134,7 @@ export default class Organization extends React.Component<Props, State> {
 		};
 
 		let roles = [
-			...organization.roles,
+			...(organization.roles || []),
 		];
 
 		let i = roles.indexOf(role);
