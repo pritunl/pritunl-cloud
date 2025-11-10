@@ -163,7 +163,7 @@ export default class PodDeploy extends React.Component<Props, State> {
 							deployCommit: commit,
 						})
 					}}
-					text={commit.id.substring(0, 12)}
+					text={commit.id.substring(12)}
 					textClassName={className}
 					labelElement={<span
 						className={className}
@@ -187,7 +187,7 @@ export default class PodDeploy extends React.Component<Props, State> {
 					style={css.commitButton}
 					textClassName={selectButtonClass}
 				>
-					<span>{deployCommit?.id.substring(0, 12)}</span>
+					<span>{deployCommit?.id.substring(12)}</span>
 					<span
 						className={selectLabelClass}
 						style={selectLabelStyle}
@@ -315,7 +315,7 @@ export default class PodDeploy extends React.Component<Props, State> {
 							deployCommit: commit,
 						})
 					}}
-					text={commit.id.substring(0, 12)}
+					text={commit.id.substring(12)}
 					textClassName={className}
 					labelElement={<span
 						className={className}
@@ -339,7 +339,7 @@ export default class PodDeploy extends React.Component<Props, State> {
 					style={css.commitButton}
 					textClassName={selectButtonClass}
 				>
-					<span>{deployCommit?.id.substring(0, 12)}</span>
+					<span>{deployCommit?.id.substring(12)}</span>
 					<span
 						className={selectLabelClass}
 						style={selectLabelStyle}
