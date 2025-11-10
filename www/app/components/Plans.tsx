@@ -375,7 +375,7 @@ export default class Plans extends React.Component<{}, State> {
 					{newDiskDom}
 					{plansDom}
 					<tr className="bp5-card bp5-row" style={css.placeholder}>
-						<td colSpan={5} style={css.placeholder}/>
+						<td colSpan={2} style={css.placeholder}/>
 					</tr>
 				</div>
 			</div>
