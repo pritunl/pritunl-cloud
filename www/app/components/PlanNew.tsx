@@ -174,7 +174,7 @@ export default class PlanNew extends React.Component<Props, State> {
 		>
 			<td
 				className="bp5-cell"
-				colSpan={5}
+				colSpan={2}
 				style={css.card}
 			>
 				<div className="layout horizontal wrap">
