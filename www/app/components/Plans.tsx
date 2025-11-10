@@ -4,9 +4,9 @@ import * as Constants from "../Constants";
 import * as PlanTypes from '../types/PlanTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import PlansStore from '../stores/PlansStore';
-import OrganizationsStore from '../stores/OrganizationsStore';
+import CompletionStore from '../stores/CompletionStore';
 import * as PlanActions from '../actions/PlanActions';
-import * as OrganizationActions from '../actions/OrganizationActions';
+import * as CompletionActions from '../actions/CompletionActions';
 import Plan from './Plan';
 import PlansFilter from './PlansFilter';
 import PlansPage from './PlansPage';
@@ -95,8 +95,8 @@ export default class Plans extends React.Component<{}, State> {
 		this.state = {
 			plans: PlansStore.plans,
 			filter: PlansStore.filter,
-			organizations: OrganizationsStore.organizations,
-			secrets: SecretsStore.secrets,
+			organizations: CompletionStore.organizations,
+			secrets: CompletionStore.secrets,
 			organization: '',
 			selected: {},
 			opened: {},
@@ -116,17 +116,14 @@ export default class Plans extends React.Component<{}, State> {
 
 	componentDidMount(): void {
 		PlansStore.addChangeListener(this.onChange);
-		OrganizationsStore.addChangeListener(this.onChange);
-		SecretsStore.addChangeListener(this.onChange);
+		CompletionStore.addChangeListener(this.onChange);
 		PlanActions.sync();
-		OrganizationActions.sync();
-		SecretActions.sync();
+		CompletionActions.sync();
 	}
 
 	componentWillUnmount(): void {
 		PlansStore.removeChangeListener(this.onChange);
-		OrganizationsStore.removeChangeListener(this.onChange);
-		SecretsStore.removeChangeListener(this.onChange);
+		CompletionStore.removeChangeListener(this.onChange);
 	}
 
 	onChange = (): void => {
@@ -149,8 +146,8 @@ export default class Plans extends React.Component<{}, State> {
 			...this.state,
 			plans: plans,
 			filter: PlansStore.filter,
-			organizations: OrganizationsStore.organizations,
-			secrets: SecretsStore.secrets,
+			organizations: CompletionStore.organizations,
+			secrets: CompletionStore.secrets,
 			selected: selected,
 			opened: opened,
 		});
