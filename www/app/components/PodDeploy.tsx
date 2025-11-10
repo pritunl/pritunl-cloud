@@ -221,7 +221,7 @@ export default class PodDeploy extends React.Component<Props, State> {
 					{commitSelect}
 				</div>
 				<label
-					className="bp5-label"
+					className="bp5-label no-select"
 					style={css.label}
 				>
 					Deployment Count
