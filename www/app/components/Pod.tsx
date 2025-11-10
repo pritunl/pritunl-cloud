@@ -3,7 +3,7 @@ import * as React from 'react';
 import * as MiscUtils from '../utils/MiscUtils';
 import * as PodTypes from '../types/PodTypes';
 import * as OrganizationTypes from "../types/OrganizationTypes";
-import OrganizationsStore from '../stores/OrganizationsStore';
+import CompletionStore from '../stores/CompletionStore';
 
 interface Props {
 	organizations: OrganizationTypes.OrganizationsRo;
@@ -83,7 +83,7 @@ export default class Pod extends React.Component<Props, {}> {
 
 		let orgName = '';
 		if (!MiscUtils.objectIdNil(pod.organization)) {
-			let org = OrganizationsStore.organization(pod.organization);
+			let org = CompletionStore.organization(pod.organization);
 			orgName = org ? org.name : pod.organization;
 		} else {
 			orgName = 'Node Pod';
