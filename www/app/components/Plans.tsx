@@ -1,6 +1,5 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
-import * as Constants from "../Constants";
 import * as PlanTypes from '../types/PlanTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import PlansStore from '../stores/PlansStore';
@@ -16,9 +15,6 @@ import PageHeader from './PageHeader';
 import NonState from './NonState';
 import ConfirmButton from './ConfirmButton';
 import * as SecretTypes from "../types/SecretTypes";
-import SecretsStore from "../stores/SecretsStore";
-import * as SecretActions from "../actions/SecretActions";
-import DiskNew from "./DiskNew";
 
 interface Selected {
 	[key: string]: boolean;
