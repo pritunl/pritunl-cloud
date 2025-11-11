@@ -5,7 +5,7 @@ import * as Styles from '../Styles';
 import * as PodTypes from '../types/PodTypes';
 import * as PodActions from '../actions/PodActions';
 import * as OrganizationTypes from "../types/OrganizationTypes";
-import OrganizationsStore from '../stores/OrganizationsStore';
+import CompletionStore from '../stores/CompletionStore';
 import PodsStore from '../stores/PodsStore';
 import PageInput from './PageInput';
 import PageSelect from './PageSelect';
@@ -331,7 +331,7 @@ export default class PodDetailed extends React.Component<Props, State> {
 
 		let orgName = '';
 		if (pod.organization) {
-			let org = OrganizationsStore.organization(pod.organization);
+			let org = CompletionStore.organization(pod.organization);
 			orgName = org ? org.name : pod.organization;
 		}
 
