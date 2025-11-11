@@ -11,7 +11,6 @@ import Help from "./Help"
 
 interface Props {
 	disabled: boolean
-	commitMap: Record<string, number>
 	deployment: PodTypes.Deployment
 	open: boolean
 	onClose: () => void
