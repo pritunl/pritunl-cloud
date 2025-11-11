@@ -637,27 +637,32 @@ func writeFsQcow(db *database.Database, dsk *disk.Disk) (err error) {
 		return
 	}
 
-	err = utils.Exec("", "modprobe", "nbd")
+	_, err = utils.ExecCombinedOutputLogged(
+		nil, "modprobe", "nbd")
 	if err != nil {
 		return
 	}
 
-	err = utils.Exec("", "qemu-nbd", "--disconnect", ndbPath)
+	_, err = utils.ExecCombinedOutputLogged(
+		nil, "qemu-nbd", "--disconnect", ndbPath)
 	if err != nil {
 		return
 	}
 
-	err = utils.Exec("", "qemu-nbd", "--connect", ndbPath, diskPath)
+	_, err = utils.ExecCombinedOutputLogged(
+		nil, "qemu-nbd", "--connect", ndbPath, diskPath)
 	if err != nil {
 		return
 	}
 
-	err = utils.Exec("", "parted", "--script", ndbPath, "mklabel", "gpt")
+	_, err = utils.ExecCombinedOutputLogged(
+		nil, "parted", "--script", ndbPath, "mklabel", "gpt")
 	if err != nil {
 		return
 	}
 
-	err = utils.Exec("", "parted", "--script", ndbPath, "mkpart",
+	_, err = utils.ExecCombinedOutputLogged(
+		nil, "parted", "--script", ndbPath, "mkpart",
 		"primary", "1MiB", "100%")
 	if err != nil {
 		return
