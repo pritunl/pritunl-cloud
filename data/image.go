@@ -649,17 +649,23 @@ func writeFsQcow(db *database.Database, dsk *disk.Disk) (err error) {
 		return
 	}
 
+	time.Sleep(300 * time.Millisecond)
+
 	_, err = utils.ExecCombinedOutputLogged(
 		nil, "qemu-nbd", "--connect", ndbPath, diskPath)
 	if err != nil {
 		return
 	}
 
+	time.Sleep(1 * time.Second)
+
 	_, err = utils.ExecCombinedOutputLogged(
 		nil, "parted", "--script", ndbPath, "mklabel", "gpt")
 	if err != nil {
 		return
 	}
+
+	time.Sleep(300 * time.Millisecond)
 
 	_, err = utils.ExecCombinedOutputLogged(
 		nil, "parted", "--script", ndbPath, "mkpart",
