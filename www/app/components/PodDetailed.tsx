@@ -75,7 +75,6 @@ const css = {
 		margin: '3px',
 	} as React.CSSProperties,
 	save: {
-		marginTop: '10px',
 		marginBottom: '10px',
 	} as React.CSSProperties,
 	label: {
