@@ -152,7 +152,7 @@ func (a *Aws) DnsCommit(db *database.Database,
 		"operations": operations,
 	}).Info("domain: AWS dns batch operation")
 
-	if len(deleteResourceRecs) > 0 {
+	if len(updateResourceRecs) == 0 && len(deleteResourceRecs) > 0 {
 		input := &route53.ChangeResourceRecordSetsInput{
 			ChangeBatch: &route53.ChangeBatch{
 				Changes: []*route53.Change{
