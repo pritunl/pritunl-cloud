@@ -423,6 +423,16 @@ export default class PodDetailed extends React.Component<Props, State> {
 							},
 						]}
 					/>
+					<PageSwitch
+						disabled={this.state.disabled}
+						hidden={!this.props.settings}
+						label="Delete protection"
+						help="Block pod and any attached disks from being deleted."
+						checked={pod.delete_protection}
+						onToggle={(): void => {
+							this.set('delete_protection', !pod.delete_protection);
+						}}
+					/>
 				</div>
 			</div>
 			<PodWorkspace
