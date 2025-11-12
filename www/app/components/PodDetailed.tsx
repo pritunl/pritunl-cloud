@@ -9,8 +9,9 @@ import CompletionStore from '../stores/CompletionStore';
 import PodsStore from '../stores/PodsStore';
 import PageInput from './PageInput';
 import PageSelect from './PageSelect';
+import PageSwitch from './PageSwitch';
 import PageInfo from './PageInfo';
-import PageInputButton from './PageInputButton';
+import Relations from './Relations';
 import PodWorkspace from './PodWorkspace';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
@@ -368,6 +369,7 @@ export default class PodDetailed extends React.Component<Props, State> {
 							<b>Organization:</b>&nbsp;{orgName}
 						</div>
 						<div className="flex"/>
+						<Relations kind="pod" id={this.props.pod.id}/>
 						<button
 							className={"bp5-button bp5-minimal bp5-icon-cog" + (
 								this.props.settings ? " bp5-intent-danger" : " bp5-intent-primary")}
