@@ -201,6 +201,12 @@ func main() {
 			panic(err)
 		}
 		return
+	case "dns-server":
+		err := cmd.DnsServer()
+		if err != nil {
+			panic(err)
+		}
+		return
 	case "start-instance":
 		flag.Parse()
 		InitLimited()
