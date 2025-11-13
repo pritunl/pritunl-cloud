@@ -22,7 +22,7 @@ func NewInstance(stat *state.State, inst *instance.Instance) (
 		Disks:         []string{},
 		FirewallRules: map[string]string{},
 		Authorities:   []string{},
-		CloudSubnets: []*node.CloudSubnet{},
+		CloudSubnets:  []*node.CloudSubnet{},
 	}
 
 	nde := stat.Node()
