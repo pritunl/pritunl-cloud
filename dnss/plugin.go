@@ -2,7 +2,6 @@ package dnss
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/coredns/coredns/plugin"
 	"github.com/miekg/dns"
@@ -22,13 +21,104 @@ func (p *Plugin) ServeDNS(ctx context.Context,
 	q := r.Question[0]
 	name := q.Name
 	qtype := q.Qtype
-
+	db := database.Load()
+	found := false
 	var answers []dns.RR
-	var found bool
+
+	target, ok := db.CNAME[name]
+	if ok {
+		answers = append(answers, &dns.CNAME{
+			Hdr: dns.RR_Header{
+				Name:   name,
+				Rrtype: dns.TypeCNAME,
+				Class:  dns.ClassINET,
+				Ttl:    10,
+			},
+			Target: target,
+		})
+		found = true
+
+		if qtype == dns.TypeA || qtype == dns.TypeAAAA {
+			switch qtype {
+			case dns.TypeA:
+				if ips, ok := db.A[target]; ok {
+					for _, ip := range ips {
+						answers = append(answers, &dns.A{
+							Hdr: dns.RR_Header{
+								Name:   target,
+								Rrtype: dns.TypeA,
+								Class:  dns.ClassINET,
+								Ttl:    10,
+							},
+							A: ip,
+						})
+					}
+				} else {
+					targetQuery := new(dns.Msg)
+					targetQuery.SetQuestion(target, dns.TypeA)
+
+					rw := &Response{
+						ResponseWriter: w,
+					}
+					code, err := p.Next.ServeDNS(ctx, rw, targetQuery)
+
+					if err == nil && rw.msg != nil {
+						answers = append(answers, rw.msg.Answer...)
+					}
+
+					m := new(dns.Msg)
+					m.SetReply(r)
+					m.Authoritative = false
+					m.Answer = answers
+					w.WriteMsg(m)
+					return code, err
+				}
+			case dns.TypeAAAA:
+				if ips, ok := db.AAAA[target]; ok {
+					for _, ip := range ips {
+						answers = append(answers, &dns.AAAA{
+							Hdr: dns.RR_Header{
+								Name:   target,
+								Rrtype: dns.TypeAAAA,
+								Class:  dns.ClassINET,
+								Ttl:    10,
+							},
+							AAAA: ip,
+						})
+					}
+				} else {
+					targetQuery := new(dns.Msg)
+					targetQuery.SetQuestion(target, dns.TypeAAAA)
+
+					rw := &Response{
+						ResponseWriter: w,
+					}
+					code, err := p.Next.ServeDNS(ctx, rw, targetQuery)
+
+					if err == nil && rw.msg != nil {
+						answers = append(answers, rw.msg.Answer...)
+					}
+
+					msg := new(dns.Msg)
+					msg.SetReply(r)
+					msg.Authoritative = false
+					msg.Answer = answers
+					w.WriteMsg(msg)
+					return code, err
+				}
+			}
+		}
+
+		msg := new(dns.Msg)
+		msg.SetReply(r)
+		msg.Authoritative = true
+		msg.Answer = answers
+		w.WriteMsg(msg)
+		return dns.RcodeSuccess, nil
+	}
 
 	switch qtype {
 	case dns.TypeA:
-		db := database.Load()
 		ips, ok := db.A[name]
 		if ok {
 			for _, ip := range ips {
@@ -45,7 +135,6 @@ func (p *Plugin) ServeDNS(ctx context.Context,
 			found = true
 		}
 	case dns.TypeAAAA:
-		db := database.Load()
 		ips, ok := db.AAAA[name]
 		if ok {
 			for _, ip := range ips {
@@ -61,31 +150,14 @@ func (p *Plugin) ServeDNS(ctx context.Context,
 			}
 			found = true
 		}
-	case dns.TypeCNAME:
-		db := database.Load()
-		target, ok := db.CNAME[name]
-		if ok {
-			answers = append(answers, &dns.CNAME{
-				Hdr: dns.RR_Header{
-					Name:   name,
-					Rrtype: dns.TypeCNAME,
-					Class:  dns.ClassINET,
-					Ttl:    10,
-				},
-				Target: target,
-			})
-			found = true
-		}
 	}
 
-	fmt.Println(answers)
-
 	if found {
-		m := new(dns.Msg)
-		m.SetReply(r)
-		m.Authoritative = true
-		m.Answer = answers
-		w.WriteMsg(m)
+		msg := new(dns.Msg)
+		msg.SetReply(r)
+		msg.Authoritative = true
+		msg.Answer = answers
+		w.WriteMsg(msg)
 		return dns.RcodeSuccess, nil
 	}
 
