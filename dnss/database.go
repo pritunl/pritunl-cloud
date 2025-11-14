@@ -10,16 +10,16 @@ var (
 )
 
 type Database struct {
-	A    map[string]net.IP   `json:"a"`
-	AAAA map[string]net.IP   `json:"aaaa"`
-	TXT  map[string][]string `json:"txt"`
+	A     map[string][]net.IP `json:"a"`
+	AAAA  map[string][]net.IP `json:"aaaa"`
+	CNAME map[string]string   `json:"cname"`
 }
 
 func init() {
 	database.Store(&Database{
-		A:    map[string]net.IP{},
-		AAAA: map[string]net.IP{},
-		TXT:  map[string][]string{},
+		A:     map[string][]net.IP{},
+		AAAA:  map[string][]net.IP{},
+		CNAME: map[string]string{},
 	})
 }
 
