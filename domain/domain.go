@@ -90,8 +90,11 @@ func (d *Domain) Validate(db *database.Database) (
 	}
 
 	switch d.Type {
-	case AWS, "":
-		d.Type = AWS
+	case Local, "":
+		d.Type = Local
+		d.Secret = bson.NilObjectID
+		break
+	case AWS:
 		break
 	case Cloudflare:
 		break
@@ -105,7 +108,7 @@ func (d *Domain) Validate(db *database.Database) (
 		return
 	}
 
-	if d.Secret.IsZero() {
+	if d.Type != Local && d.Secret.IsZero() {
 		errData = &errortypes.ErrorData{
 			Error:   "secret_invalid",
 			Message: "Secret invalid",
