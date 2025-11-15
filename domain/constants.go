@@ -3,6 +3,7 @@ package domain
 import "github.com/pritunl/mongo-go-driver/v2/bson"
 
 const (
+	Local       = "local"
 	AWS         = "aws"
 	Cloudflare  = "cloudflare"
 	OracleCloud = "oracle_cloud"
