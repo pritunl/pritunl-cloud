@@ -42,9 +42,18 @@ func (s *Server) ListenTcp() (err error) {
 	return
 }
 
-func (s *Server) Shutdown() {
-	s.tcp.Shutdown()
-	s.udp.Shutdown()
+func (s *Server) Shutdown() (err error) {
+	e := s.tcp.Shutdown()
+	if e != nil {
+		err = e
+	}
+
+	e = s.udp.Shutdown()
+	if e != nil {
+		err = e
+	}
+
+	return
 }
 
 func NewServer() (server *Server) {
