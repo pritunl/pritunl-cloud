@@ -2,7 +2,6 @@ package domain
 
 import (
 	"context"
-	"strings"
 	"sync"
 	"time"
 
@@ -80,7 +79,7 @@ func (d *Domain) Validate(db *database.Database) (
 
 	d.Name = utils.FilterName(d.Name)
 
-	d.RootDomain = strings.ToLower(d.RootDomain)
+	d.RootDomain = utils.FilterDomain(d.RootDomain)
 
 	if d.Organization.IsZero() {
 		errData = &errortypes.ErrorData{
