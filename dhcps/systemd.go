@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
@@ -405,6 +406,7 @@ func Start(db *database.Database, virt *vm.VirtualMachine,
 		GatewayIp: gatewayAddr.String(),
 		PrefixLen: cidr,
 		DnsServers: []string{
+			strings.Split(settings.Hypervisor.ImdsAddress, "/")[0],
 			zne.GetDnsServerPrimary(),
 			zne.GetDnsServerSecondary(),
 		},
@@ -412,29 +414,23 @@ func Start(db *database.Database, virt *vm.VirtualMachine,
 		Lifetime: settings.Hypervisor.DhcpLifetime,
 	}
 	server6 := &Server6{
-		Iface:     settings.Hypervisor.BridgeIfaceName,
-		ClientIp:  addr6.String(),
-		GatewayIp: gatewayAddr6.String(),
-		PrefixLen: 64,
-		DnsServers: []string{
-			zne.GetDnsServerPrimary6(),
-			zne.GetDnsServerSecondary6(),
-		},
-		Mtu:      mtu,
-		Lifetime: settings.Hypervisor.DhcpLifetime,
+		Iface:      settings.Hypervisor.BridgeIfaceName,
+		ClientIp:   addr6.String(),
+		GatewayIp:  gatewayAddr6.String(),
+		PrefixLen:  64,
+		DnsServers: []string{},
+		Mtu:        mtu,
+		Lifetime:   settings.Hypervisor.DhcpLifetime,
 	}
 	serverNdp := &ServerNdp{
-		Iface:     settings.Hypervisor.BridgeIfaceName,
-		ClientIp:  addr6.String(),
-		GatewayIp: gatewayAddr6.String(),
-		PrefixLen: 64,
-		DnsServers: []string{
-			zne.GetDnsServerPrimary6(),
-			zne.GetDnsServerSecondary6(),
-		},
-		Mtu:      mtu,
-		Lifetime: settings.Hypervisor.DhcpLifetime,
-		Delay:    settings.Hypervisor.NdpRaInterval,
+		Iface:      settings.Hypervisor.BridgeIfaceName,
+		ClientIp:   addr6.String(),
+		GatewayIp:  gatewayAddr6.String(),
+		PrefixLen:  64,
+		DnsServers: []string{},
+		Mtu:        mtu,
+		Lifetime:   settings.Hypervisor.DhcpLifetime,
+		Delay:      settings.Hypervisor.NdpRaInterval,
 	}
 
 	err = UpdateEbtables(virt.Id, namespace)
