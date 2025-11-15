@@ -54,6 +54,7 @@ config:
         dns_nameservers:
           - {{.Dns1}}
           - {{.Dns2}}
+          - {{.Dns3}}
       - type: static6
         address: {{.AddressCidr6}}
         gateway: {{.Gateway6}}
@@ -73,6 +74,7 @@ config:
         dns_nameservers:
           - {{.Dns1}}
           - {{.Dns2}}
+          - {{.Dns3}}
       - type: static
         address: {{.AddressCidr6}}
         gateway: {{.Gateway6}}
@@ -92,6 +94,7 @@ ethernets:
       addresses:
         - {{.Dns1}}
         - {{.Dns2}}
+        - {{.Dns3}}
 `
 
 const netMtu = `
@@ -225,6 +228,7 @@ type netConfigData struct {
 	Gateway6     string
 	Dns1         string
 	Dns2         string
+	Dns3         string
 }
 
 type cloudConfigData struct {
@@ -681,8 +685,9 @@ func getNetData(db *database.Database, inst *instance.Instance,
 		Address6:     addr6.String(),
 		AddressCidr6: addr6.String() + "/64",
 		Gateway6:     gateway6.String(),
-		Dns1:         dns1,
-		Dns2:         dns2,
+		Dns1:         strings.Split(settings.Hypervisor.ImdsAddress, "/")[0],
+		Dns2:         dns1,
+		Dns3:         dns2,
 	}
 
 	if virt.CloudType == instance.BSD {
