@@ -43,6 +43,7 @@ func (s *Imds) buildInstance(db *database.Database,
 		map[bson.ObjectID]*deployment.Deployment{},
 		[]*secret.Secret{},
 		[]*certificate.Certificate{},
+		[]*types.Domain{},
 	)
 	if err != nil {
 		return
@@ -138,6 +139,7 @@ func (s *Imds) buildDeployInstance(db *database.Database,
 		s.stat.DeploymentsDeployed(),
 		secrs,
 		certs,
+		s.stat.GetDomains(inst.Organization),
 	)
 	if err != nil {
 		return
