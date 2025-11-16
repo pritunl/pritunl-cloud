@@ -6,6 +6,7 @@ import (
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/pritunl-cloud/dnss"
 	"github.com/pritunl/pritunl-cloud/imds/server/config"
 	"github.com/pritunl/pritunl-cloud/imds/server/errortypes"
 	"github.com/pritunl/pritunl-cloud/imds/server/state"
@@ -93,6 +94,7 @@ func hostSyncPut(c *gin.Context) {
 
 	if data.Hash != 0 {
 		config.Config = data
+		dnss.LoadConfig(data.Domains)
 	}
 
 	ste := state.Global.State.Copy()
