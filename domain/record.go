@@ -1,10 +1,13 @@
 package domain
 
 import (
+	"net"
+	"strings"
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/dropbox/godropbox/errors"
+	"github.com/miekg/dns"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
@@ -70,11 +73,38 @@ func (r *Record) Validate(db *database.Database) (
 
 	switch r.Type {
 	case A:
-		break
+		ip := net.ParseIP(r.Value)
+		if ip == nil || ip.To4() == nil {
+			errData = &errortypes.ErrorData{
+				Error:   "invalid_value",
+				Message: "Domain value is invalid",
+			}
+			return
+		}
+		r.Value = ip.String()
 	case AAAA:
-		break
+		ip := net.ParseIP(r.Value)
+		if ip == nil || ip.To4() != nil {
+			errData = &errortypes.ErrorData{
+				Error:   "invalid_value",
+				Message: "Domain value is invalid",
+			}
+			return
+		}
+		r.Value = ip.String()
 	case CNAME:
-		break
+		if !strings.HasSuffix(r.Value, ".") {
+			r.Value += "."
+		}
+
+		if !dns.IsFqdn(r.Value) {
+			errData = &errortypes.ErrorData{
+				Error:   "invalid_value",
+				Message: "Domain value is invalid",
+			}
+			return
+		}
+		r.Value = strings.TrimSuffix(r.Value, ".")
 	default:
 		err = &errortypes.UnknownError{
 			errors.New("domain: Unknown record type"),
