@@ -11,6 +11,7 @@ import (
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/gin-gonic/gin"
+	"github.com/pritunl/pritunl-cloud/dnss"
 	"github.com/pritunl/pritunl-cloud/imds/server/constants"
 	"github.com/pritunl/pritunl-cloud/imds/server/errortypes"
 	"github.com/pritunl/pritunl-cloud/imds/server/handlers"
@@ -20,6 +21,7 @@ import (
 type Router struct {
 	virtServer *http.Server
 	hostServer *http.Server
+	dnsServer  *dnss.Server
 }
 
 func (r *Router) Run() (err error) {
@@ -31,8 +33,8 @@ func (r *Router) Run() (err error) {
 	}).Info("main: Starting imds server")
 
 	waiters := &sync.WaitGroup{}
-	waiters.Add(2)
 
+	waiters.Add(1)
 	go func() {
 		defer waiters.Done()
 
@@ -49,6 +51,7 @@ func (r *Router) Run() (err error) {
 		}
 	}()
 
+	waiters.Add(1)
 	go func() {
 		defer waiters.Done()
 
@@ -71,6 +74,34 @@ func (r *Router) Run() (err error) {
 			e = &errortypes.WriteError{
 				errors.Wrap(e, "main: Server listen error"),
 			}
+			if err == nil {
+				err = e
+			}
+			r.Shutdown()
+			return
+		}
+	}()
+
+	waiters.Add(1)
+	go func() {
+		defer waiters.Done()
+
+		e := r.dnsServer.ListenUdp()
+		if e != nil {
+			if err == nil {
+				err = e
+			}
+			r.Shutdown()
+			return
+		}
+	}()
+
+	waiters.Add(1)
+	go func() {
+		defer waiters.Done()
+
+		e := r.dnsServer.ListenTcp()
+		if e != nil {
 			if err == nil {
 				err = e
 			}
@@ -103,6 +134,8 @@ func (r *Router) Shutdown() {
 
 	_ = r.hostServer.Shutdown(webCtx)
 	_ = r.hostServer.Close()
+
+	_ = r.dnsServer.Shutdown()
 }
 
 func (r *Router) Init() {
@@ -135,6 +168,8 @@ func (r *Router) Init() {
 		IdleTimeout:    60 * time.Second,
 		MaxHeaderBytes: 4096,
 	}
+
+	r.dnsServer = dnss.NewServer()
 
 	return
 }
