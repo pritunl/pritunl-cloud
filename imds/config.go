@@ -26,8 +26,8 @@ func BuildConfig(inst *instance.Instance, virt *vm.VirtualMachine,
 	unt *unit.Unit, spc *spec.Spec, vc *vpc.Vpc, subnet *vpc.Subnet,
 	pods []*pod.Pod, podUnitsMap map[bson.ObjectID][]*unit.Unit,
 	deployments map[bson.ObjectID]*deployment.Deployment,
-	secrs []*secret.Secret, certs []*certificate.Certificate) (
-	conf *types.Config, err error) {
+	secrs []*secret.Secret, certs []*certificate.Certificate,
+	domains []*types.Domain) (conf *types.Config, err error) {
 
 	conf = &types.Config{
 		ImdsHostSecret: virt.ImdsHostSecret,
@@ -39,6 +39,7 @@ func BuildConfig(inst *instance.Instance, virt *vm.VirtualMachine,
 		Pods:           types.NewPods(pods, podUnitsMap, deployments),
 		Secrets:        types.NewSecrets(secrs),
 		Certificates:   types.NewCertificates(certs),
+		Domains:        domains,
 	}
 
 	if spc != nil {
