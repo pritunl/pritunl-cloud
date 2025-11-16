@@ -52,6 +52,13 @@ func (r *Record) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
 	r.SubDomain = utils.FilterDomain(r.SubDomain)
+	if r.SubDomain == "" {
+		errData = &errortypes.ErrorData{
+			Error:   "subdomain_required",
+			Message: "Missing required sub-domain",
+		}
+		return
+	}
 
 	if r.Domain.IsZero() {
 		errData = &errortypes.ErrorData{
