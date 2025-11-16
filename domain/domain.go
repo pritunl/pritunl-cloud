@@ -221,9 +221,12 @@ func (d *Domain) commitRecords(db *database.Database,
 		}
 	}()
 
-	secr, err := secret.GetOrg(db, d.Organization, d.Secret)
-	if err != nil {
-		return
+	var secr *secret.Secret
+	if d.Type != Local {
+		secr, err = secret.GetOrg(db, d.Organization, d.Secret)
+		if err != nil {
+			return
+		}
 	}
 
 	newRecords := []*Record{}
@@ -389,19 +392,22 @@ func (d *Domain) UpdateRecords(db *database.Database, secr *secret.Secret,
 
 	domain := subDomain + "." + d.RootDomain
 
-	svc, err := d.GetDnsService(db)
-	if err != nil {
-		return
-	}
+	if d.Type != Local {
+		svc, e := d.GetDnsService(db)
+		if e != nil {
+			err = e
+			return
+		}
 
-	err = svc.Connect(db, secr)
-	if err != nil {
-		return
-	}
+		err = svc.Connect(db, secr)
+		if err != nil {
+			return
+		}
 
-	err = svc.DnsCommit(db, domain, dnsType, ops)
-	if err != nil {
-		return
+		err = svc.DnsCommit(db, domain, dnsType, ops)
+		if err != nil {
+			return
+		}
 	}
 
 	for _, rec := range records {
