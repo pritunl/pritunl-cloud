@@ -13,6 +13,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/disk"
 	"github.com/pritunl/pritunl-cloud/domain"
 	"github.com/pritunl/pritunl-cloud/firewall"
+	"github.com/pritunl/pritunl-cloud/imds/types"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/nodeport"
@@ -45,6 +46,9 @@ type State struct {
 	Namespaces    func() []string
 	Interfaces    func() []string
 	HasInterfaces func(iface string) bool
+
+	// Domains
+	GetDomains func(orgId bson.ObjectID) []*types.Domain
 
 	// Pools
 	NodePools func() []*pool.Pool
