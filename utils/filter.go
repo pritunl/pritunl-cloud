@@ -101,5 +101,8 @@ func FilterUnit(s string) string {
 }
 
 func FilterDomain(s string) string {
-	return FilterName(strings.ToLower(s))
+	s = FilterName(strings.ToLower(s))
+	s = strings.TrimPrefix(s, ".")
+	s = strings.TrimSuffix(s, ".")
+	return s
 }
