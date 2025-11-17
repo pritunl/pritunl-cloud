@@ -44,7 +44,7 @@ func LoadConfig(domains []*types.Domain) {
 		case domain.AAAA:
 			db.AAAA[domn.Domain] = append(db.AAAA[domn.Domain], domn.Ip)
 		case domain.CNAME:
-			db.CNAME[domn.Domain] = db.CNAME[domn.Domain]
+			db.CNAME[domn.Domain] = domn.Target
 		}
 	}
 
