@@ -43,7 +43,7 @@ func (s *Imds) buildInstance(db *database.Database,
 		map[bson.ObjectID]*deployment.Deployment{},
 		[]*secret.Secret{},
 		[]*certificate.Certificate{},
-		[]*types.Domain{},
+		s.stat.GetDomains(inst.Organization),
 	)
 	if err != nil {
 		return
