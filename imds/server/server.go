@@ -2,12 +2,14 @@ package server
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"strings"
 
 	"github.com/pritunl/pritunl-cloud/imds/server/constants"
 	"github.com/pritunl/pritunl-cloud/imds/server/router"
 	"github.com/pritunl/pritunl-cloud/imds/server/state"
+	"github.com/pritunl/tools/logger"
 )
 
 func Main() (err error) {
@@ -17,6 +19,14 @@ func Main() (err error) {
 	os.Unsetenv("CLIENT_SECRET")
 	os.Unsetenv("DHCP_SECRET")
 	os.Unsetenv("HOST_SECRET")
+
+	logger.Init(
+		logger.SetTimeFormat(""),
+	)
+
+	logger.AddHandler(func(record *logger.Record) {
+		fmt.Print(record.String())
+	})
 
 	host := ""
 	flag.StringVar(&host, "host", "127.0.0.1", "Server bind address")
