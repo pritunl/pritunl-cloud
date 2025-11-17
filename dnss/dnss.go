@@ -56,7 +56,7 @@ func (s *Server) Shutdown() (err error) {
 	return
 }
 
-func NewServer() (server *Server) {
+func NewServer(host string) (server *Server) {
 	mux := dns.NewServeMux()
 
 	prxy := proxy.NewProxy("google", "8.8.8.8:53", transport.DNS)
@@ -77,12 +77,12 @@ func NewServer() (server *Server) {
 	return &Server{
 		mux: mux,
 		udp: &dns.Server{
-			Addr:    "169.254.169.254:53",
+			Addr:    host,
 			Net:     "udp",
 			Handler: mux,
 		},
 		tcp: &dns.Server{
-			Addr:    "169.254.169.254:53",
+			Addr:    host,
 			Net:     "tcp",
 			Handler: mux,
 		},
