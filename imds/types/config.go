@@ -19,6 +19,7 @@ type Config struct {
 	Secrets        []*Secret      `json:"secrets"`
 	Pods           []*Pod         `json:"pods"`
 	Journals       []*Journal     `json:"journals"`
+	Domains        []*Domain      `json:"domains"`
 	Hash           uint32         `json:"hash"`
 }
 
