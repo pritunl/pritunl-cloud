@@ -1605,13 +1605,26 @@ func (i *Instance) VncConnect(db *database.Database,
 	vncHost := ""
 	if nde.Id == node.Self.Id {
 		vncHost = "127.0.0.1"
-	} else if nde.PublicIps == nil || len(nde.PublicIps) == 0 {
+	}
+	if vncHost == "" && len(nde.PrivateIps) > 0 {
+		vncHost = nde.PrivateIps[nde.DefaultInterface]
+		if vncHost == "" {
+			for _, privIp := range nde.PrivateIps {
+				if privIp != "" {
+					vncHost = privIp
+					break
+				}
+			}
+		}
+	}
+	if vncHost == "" && len(nde.PublicIps) > 0 {
+		vncHost = nde.PublicIps[0]
+	}
+	if vncHost == "" {
 		err = &errortypes.NotFoundError{
-			errors.New("instance: Node missing public IP for VNC"),
+			errors.New("instance: Node missing IP for VNC"),
 		}
 		return
-	} else {
-		vncHost = nde.PublicIps[0]
 	}
 
 	wsUrl := fmt.Sprintf(
