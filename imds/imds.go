@@ -68,11 +68,8 @@ func Sync(db *database.Database, namespace string,
 	hashesLock.Lock()
 	curHash := hashes[instId]
 	hashesLock.Unlock()
-	var newHash uint32
 
 	if conf != nil && curHash != conf.Hash {
-		newHash = conf.Hash
-
 		reqDataBuf := &bytes.Buffer{}
 		err = json.NewEncoder(reqDataBuf).Encode(conf)
 		if err != nil {
@@ -142,11 +139,9 @@ func Sync(db *database.Database, namespace string,
 		return
 	}
 
-	if newHash != 0 && ste.Status != "" {
-		hashesLock.Lock()
-		hashes[instId] = newHash
-		hashesLock.Unlock()
-	}
+	hashesLock.Lock()
+	hashes[instId] = ste.Hash
+	hashesLock.Unlock()
 
 	if ste.Status != "" {
 		coll := db.Instances()
