@@ -98,6 +98,7 @@ func hostSyncPut(c *gin.Context) {
 	}
 
 	ste := state.Global.State.Copy()
+	ste.Hash = config.Config.Hash
 	ste.Output = state.Global.GetOutput()
 	ste.Journals = state.Global.GetJournals()
 
