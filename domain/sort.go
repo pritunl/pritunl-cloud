@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -18,8 +17,6 @@ func (r Records) Swap(i, j int) {
 func (r Records) Less(i, j int) bool {
 	partsI := strings.Split(r[i].SubDomain, ".")
 	partsJ := strings.Split(r[j].SubDomain, ".")
-
-	fmt.Println(partsI)
 
 	for idx := 0; idx < len(partsI)/2; idx++ {
 		partsI[idx], partsI[len(partsI)-1-idx] = partsI[len(
