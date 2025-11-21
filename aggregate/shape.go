@@ -43,6 +43,18 @@ func GetShapePaged(db *database.Database, query *bson.M, page,
 	page = utils.Min64(page, maxPage)
 	skip := utils.Min64(page*pageCount, count)
 
+	sizeQuery := &bson.M{
+		"$ifNull": bson.A{
+			&bson.M{
+				"$setIntersection": bson.A{
+					&bson.M{"$ifNull": bson.A{"$roles", bson.A{}}},
+					&bson.M{"$ifNull": bson.A{"$$shape_roles", bson.A{}}},
+				},
+			},
+			bson.A{},
+		},
+	}
+
 	cursor, err := coll.Aggregate(db, []*bson.M{
 		&bson.M{
 			"$match": query,
@@ -70,12 +82,7 @@ func GetShapePaged(db *database.Database, query *bson.M, page,
 							"$expr": &bson.M{
 								"$gt": bson.A{
 									&bson.M{
-										"$size": &bson.M{
-											"$setIntersection": []interface{}{
-												"$roles",
-												"$$shape_roles",
-											},
-										},
+										"$size": sizeQuery,
 									},
 									0,
 								},
