@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"sort"
 	"sync"
 	"time"
 
@@ -70,6 +71,8 @@ func (d *Domain) Json() {
 			newRecords = append(newRecords, rec)
 		}
 	}
+
+	sort.Sort(Records(newRecords))
 
 	d.Records = newRecords
 }
