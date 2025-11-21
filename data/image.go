@@ -914,7 +914,7 @@ func writeImageQcow(db *database.Database, dsk *disk.Disk) (
 				newSize = 16
 			}
 
-			if (largeBase && size > 16) || (!largeBase && size > 10) {
+			if size > 8 {
 				_, err = utils.ExecCombinedOutputLogged(nil, "qemu-img",
 					"resize", diskTempPath, fmt.Sprintf("%dG", size))
 				if err != nil {
@@ -996,7 +996,7 @@ func writeImageQcow(db *database.Database, dsk *disk.Disk) (
 				newSize = 16
 			}
 
-			if (largeBase && size > 16) || (!largeBase && size > 10) {
+			if size > 8 {
 				_, err = utils.ExecCombinedOutputLogged(nil, "qemu-img",
 					"resize", diskTempPath, fmt.Sprintf("%dG", size))
 				if err != nil {
