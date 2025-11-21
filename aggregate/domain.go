@@ -1,6 +1,8 @@
 package aggregate
 
 import (
+	"sort"
+
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/domain"
@@ -80,12 +82,13 @@ func GetDomainPaged(db *database.Database, query *bson.M, page,
 			return
 		}
 
-		records := []*domain.Record{}
+		records := domain.Records{}
 		for _, rec := range domn.Records {
 			if !rec.IsDeleted() {
 				records = append(records, rec)
 			}
 		}
+		sort.Sort(records)
 		domn.Records = records
 
 		domains = append(domains, domn)
