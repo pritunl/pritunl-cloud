@@ -524,6 +524,16 @@ func Create(db *database.Database, inst *instance.Instance,
 			DeleteProtection: inst.DeleteProtection,
 		}
 
+		errData, e := dsk.Validate(db)
+		if e != nil {
+			err = e
+			return
+		}
+		if errData != nil {
+			err = errData.GetError()
+			return
+		}
+
 		backingImage := ""
 
 		newSize := 0
