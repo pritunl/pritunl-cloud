@@ -49,7 +49,6 @@ config:
       - type: static
         address: {{.Address}}
         netmask: {{.Netmask}}
-        network: {{.Network}}
         gateway: {{.Gateway}}
         dns_nameservers:
           - {{.Dns1}}
