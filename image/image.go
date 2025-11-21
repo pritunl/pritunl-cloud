@@ -103,6 +103,10 @@ func (i *Image) GetSystemType() string {
 		return LinuxUnsigned
 	}
 
+	if strings.Contains(name, "archlinux") {
+		return LinuxUnsigned
+	}
+
 	if strings.Contains(name, "oraclelinux7") {
 		return LinuxLegacy
 	}
