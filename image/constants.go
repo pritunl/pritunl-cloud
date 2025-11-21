@@ -19,6 +19,7 @@ const (
 	AlmaLinux9    = "almalinux9"
 	AlmaLinux10   = "almalinux10"
 	AlpineLinux   = "alpinelinux"
+	ArchLinux     = "archlinux"
 	Fedora42      = "fedora42"
 	FreeBSD       = "freebsd"
 	OracleLinux7  = "oraclelinux7"
@@ -38,6 +39,7 @@ var (
 		AlmaLinux9,
 		AlmaLinux10,
 		AlpineLinux,
+		ArchLinux,
 		Fedora42,
 		FreeBSD,
 		OracleLinux7,
