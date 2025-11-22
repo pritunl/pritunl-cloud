@@ -57,7 +57,8 @@ hostname: cloud
 EOF
 
 sudo rm -f /var/lib/virt/init/${NAME}.iso
-sudo genisoimage -output /var/lib/virt/init/${NAME}.iso \
+sudo xorriso -as mkisofs \
+  -output /var/lib/virt/init/${NAME}.iso \
   -volid cidata \
   -joliet \
   -rock \
