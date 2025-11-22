@@ -3,14 +3,6 @@
 Scripts used to build base images for pritunl-cloud
 
 ```bash
-sudo /usr/libexec/oci-growfs
-
-sudo nano /etc/fstab
-sudo umount /var/oled
-sudo lvremove /dev/ocivolume/oled
-sudo lvextend -l +100%FREE /dev/ocivolume/root
-sudo xfs_growfs /dev/ocivolume/root
-
 sudo tee /etc/security/limits.conf << EOF
 * soft memlock 2048000000
 * hard memlock 2048000000
@@ -41,7 +33,7 @@ sudo systemctl enable disable-thp
 sudo sed -i 's/^SELINUX=.*/SELINUX=permissive/g' /etc/selinux/config
 sudo setenforce 0
 
-sudo dnf -y install qemu-kvm qemu-img libguestfs-tools genisoimage edk2-ovmf libvirt virt-install
+sudo dnf -y install qemu-kvm qemu-img libguestfs-tools xorriso edk2-ovmf libvirt virt-install
 sudo systemctl enable --now libvirtd
 
 cd ./setup
