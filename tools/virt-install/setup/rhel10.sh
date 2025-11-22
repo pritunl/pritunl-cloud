@@ -6,9 +6,9 @@ if [ $(whoami) != "root" ]; then
   exit 1
 fi
 
-echo '#############################################################'
-echo 'starting rhel10 setup'
-echo '#############################################################'
+#############################################################
+# starting rhel10 setup
+#############################################################
 
 tee /etc/modprobe.d/floppy-blacklist.conf << EOF
 blacklist floppy
@@ -50,7 +50,7 @@ touch /etc/ssh/principals
 restorecon -v /etc/ssh/trusted
 restorecon -v /etc/ssh/principals
 
-useradd -G adm,video,wheel,systemd-journal cloud || true
+useradd -m -G adm,video,wheel,systemd-journal cloud || true
 passwd -d root
 passwd -l root
 passwd -d cloud
@@ -114,7 +114,7 @@ sync
 fstrim -av
 sync
 
-echo '#############################################################'
-echo 'finished rhel10 setup, clear history and shutdown:'
-echo 'unset HISTFILE && history -c && poweroff'
-echo '#############################################################'
+#############################################################
+# finished rhel10 setup, clear history and shutdown:
+# unset HISTFILE && history -c && poweroff
+#############################################################
