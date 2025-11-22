@@ -6,9 +6,9 @@ if [ $(whoami) != "root" ]; then
   exit 1
 fi
 
-echo '#############################################################'
-echo 'starting alpine setup'
-echo '#############################################################'
+#############################################################
+# starting alpine setup
+#############################################################
 
 tee /etc/motd << EOF
 Welcome to Alpine!
@@ -131,7 +131,7 @@ sync
 fstrim -v /
 sync
 
-echo '#############################################################'
-echo 'finished alpine setup, clear history and shutdown:'
-echo 'unset HISTFILE && poweroff'
-echo '#############################################################'
+#############################################################
+# finished alpine setup, clear history and shutdown:
+# unset HISTFILE && poweroff
+#############################################################
