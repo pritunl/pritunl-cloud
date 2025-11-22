@@ -45,6 +45,20 @@ setup-alpine
 curl -o /root/setup.sh http://192.168.122.1:8000/alpine.sh
 echo "f39b6192f43c6e62fafe7b9521bc1170bdf19726b71fb6dbb71b77b77dbbee13 /root/setup.sh" | sha256sum -c && sudo sh /root/setup.sh
 
+# arch linux
+mkdir /mnt/config
+mount /dev/sr1 /mnt/config
+cp /mnt/config/archinstall.json /root
+umount /mnt/config
+rmdir /mnt/config
+pacman-key --init
+pacman-key --populate archlinux
+pacman -Sy --noconfirm archinstall
+archinstall --silent --config /root/archinstall.json
+reboot
+curl -o /root/setup.sh http://192.168.122.1:8000/arch.sh
+echo "412aacb35f882d09ad7390124f2e3f52a7ae8deb6aaf2825a8775912dfb058fd /root/setup.sh" | sha256sum -c && bash /root/setup.sh
+
 # debian
 sudo curl -o /root/setup.sh http://192.168.122.1:8000/debian.sh
 echo "e950965dcdc2f7a9c415800a2b6fd07877d2b6b4f04ad74f7e5d78bedd6141c2 /root/setup.sh" | sudo sha256sum -c && sudo bash /root/setup.sh
@@ -97,6 +111,8 @@ s3c cp almalinux10_$(date +%y%m%d).qcow2 pritunl-images:/unstable/almalinux10_$(
 s3c cp almalinux10_$(date +%y%m%d).qcow2.sig pritunl-images:/unstable/almalinux10_$(date +%y%m%d).qcow2.sig
 s3c cp alpinelinux_$(date +%y%m%d).qcow2 pritunl-images:/unstable/alpinelinux_$(date +%y%m%d).qcow2
 s3c cp alpinelinux_$(date +%y%m%d).qcow2.sig pritunl-images:/unstable/alpinelinux_$(date +%y%m%d).qcow2.sig
+s3c cp archlinux_$(date +%y%m%d).qcow2 pritunl-images:/unstable/archlinux_$(date +%y%m%d).qcow2
+s3c cp archlinux_$(date +%y%m%d).qcow2.sig pritunl-images:/unstable/archlinux_$(date +%y%m%d).qcow2.sig
 s3c cp fedora42_$(date +%y%m%d).qcow2 pritunl-images:/unstable/fedora42_$(date +%y%m%d).qcow2
 s3c cp fedora42_$(date +%y%m%d).qcow2.sig pritunl-images:/unstable/fedora42_$(date +%y%m%d).qcow2.sig
 s3c cp freebsd_$(date +%y%m%d).qcow2 pritunl-images:/unstable/freebsd_$(date +%y%m%d).qcow2
@@ -133,6 +149,8 @@ s3c cp almalinux10_$(date +%y%m%d).qcow2 pritunl-images:/stable/almalinux10_$(da
 s3c cp almalinux10_$(date +%y%m%d).qcow2.sig pritunl-images:/stable/almalinux10_$(date +%y%m%d).qcow2.sig
 s3c cp alpinelinux_$(date +%y%m%d).qcow2 pritunl-images:/stable/alpinelinux_$(date +%y%m%d).qcow2
 s3c cp alpinelinux_$(date +%y%m%d).qcow2.sig pritunl-images:/stable/alpinelinux_$(date +%y%m%d).qcow2.sig
+s3c cp archlinux_$(date +%y%m%d).qcow2 pritunl-images:/stable/archlinux_$(date +%y%m%d).qcow2
+s3c cp archlinux_$(date +%y%m%d).qcow2.sig pritunl-images:/stable/archlinux_$(date +%y%m%d).qcow2.sig
 s3c cp fedora42_$(date +%y%m%d).qcow2 pritunl-images:/stable/fedora42_$(date +%y%m%d).qcow2
 s3c cp fedora42_$(date +%y%m%d).qcow2.sig pritunl-images:/stable/fedora42_$(date +%y%m%d).qcow2.sig
 s3c cp freebsd_$(date +%y%m%d).qcow2 pritunl-images:/stable/freebsd_$(date +%y%m%d).qcow2
