@@ -6,9 +6,9 @@ if [ $(whoami) != "root" ]; then
   exit 1
 fi
 
-echo '#############################################################'
-echo 'starting debian setup'
-echo '#############################################################'
+#############################################################
+# starting debian setup
+#############################################################
 
 tee /etc/modprobe.d/floppy-blacklist.conf << EOF
 blacklist floppy
@@ -99,7 +99,7 @@ sync
 fstrim -av
 sync
 
-echo '#############################################################'
-echo 'finished debian setup, clear history and shutdown:'
-echo 'unset HISTFILE && history -c && sudo poweroff'
-echo '#############################################################'
+#############################################################
+# finished debian setup, clear history and shutdown:
+# unset HISTFILE && history -c && sudo poweroff
+#############################################################
