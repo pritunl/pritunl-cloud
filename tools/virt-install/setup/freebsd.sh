@@ -6,9 +6,9 @@ if [ $(whoami) != "root" ]; then
   exit 1
 fi
 
-echo '#############################################################'
-echo 'starting freebsd setup'
-echo '#############################################################'
+#############################################################
+# starting freebsd setup
+#############################################################
 
 env PAGER=/bin/cat freebsd-update fetch
 freebsd-update install || true
@@ -114,7 +114,7 @@ rm -f /home/cloud/.bash_history
 find /var/log -mtime -1 -type f -exec truncate -s 0 {} \;
 sync
 
-echo '#############################################################'
-echo 'finished freebsd setup, clear history and shutdown:'
-echo 'unset history && unset HISTFILE && poweroff'
-echo '#############################################################'
+#############################################################
+# finished freebsd setup, clear history and shutdown:
+# unset history && unset HISTFILE && poweroff
+#############################################################
