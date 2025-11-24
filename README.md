@@ -31,17 +31,40 @@ EOF
 source ~/.bashrc
 
 # Install MongoDB
-sudo tee /etc/yum.repos.d/mongodb-org.repo << EOF
-[mongodb-org]
-name=MongoDB Repository
-baseurl=https://repo.mongodb.org/yum/redhat/9/mongodb-org/8.0/x86_64/
-gpgcheck=1
-enabled=1
-gpgkey=https://pgp.mongodb.com/server-8.0.asc
-EOF
+sudo dnf -y install podman
 
-sudo dnf -y install mongodb-org
-sudo systemctl enable --now mongod
+git clone https://github.com/pritunl/toolbox.git
+cd toolbox/mongodb-container
+sudo podman build --rm -t mongo .
+cd
+
+sudo mkdir /var/lib/mongo
+sudo chown 277:277 /var/lib/mongo
+sudo tee /etc/containers/systemd/mongodb-podman.container << EOF
+[Unit]
+Description=MongoDB Podman Service
+
+[Container]
+Image=localhost/mongo
+ContainerName=mongodb
+Environment=DB_NAME=pritunl-cloud
+Environment=CACHE_SIZE=1
+User=mongodb
+Volume=/var/lib/mongo:/data/db:Z
+PublishPort=127.0.0.1:27017:27017
+PodmanArgs=--cpus=1 --memory=2g
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF
+sudo systemctl daemon-reload
+sudo systemctl start mongodb-podman.service
+
+sleep 3
+sudo cat /var/lib/mongo/credentials.txt
 
 # Build Pritunl Cloud
 go install -v github.com/pritunl/pritunl-cloud@latest
