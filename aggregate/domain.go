@@ -13,10 +13,10 @@ type Domain struct {
 }
 
 func GetDomainPaged(db *database.Database, query *bson.M, page,
-	pageCount int64) (domains []*Domain, count int64, err error) {
+	pageCount int64) (domains []*domain.Domain, count int64, err error) {
 
 	coll := db.Domains()
-	domains = []*Domain{}
+	domains = []*domain.Domain{}
 
 	if len(*query) == 0 {
 		count, err = coll.EstimatedDocumentCount(db)
@@ -80,9 +80,11 @@ func GetDomainPaged(db *database.Database, query *bson.M, page,
 			return
 		}
 
+		domn.Domain.Records = domn.Records
+
 		domn.Json()
 
-		domains = append(domains, domn)
+		domains = append(domains, &domn.Domain)
 	}
 
 	err = cursor.Err()
