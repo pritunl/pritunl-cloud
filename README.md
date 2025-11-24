@@ -15,7 +15,7 @@ and more information can be found at
 ## Install from Source
 
 ```bash
-# Install Go
+# Install Required Tools
 sudo dnf -y install git-core iptables net-tools ipset ipvsadm xorriso qemu-kvm qemu-img swtpm-tools
 
 sudo rm -rf /usr/local/go
@@ -66,13 +66,13 @@ sudo systemctl start mongodb-podman.service
 sleep 3
 sudo cat /var/lib/mongo/credentials.txt
 
-# Build Pritunl Cloud
-go install -v github.com/pritunl/pritunl-cloud@latest
-go install -v github.com/pritunl/pritunl-cloud/redirect@latest
-go install -v github.com/pritunl/pritunl-cloud/agent@latest
-GOOS=freebsd GOARCH=amd64 go install -v github.com/pritunl/pritunl-cloud/agent@latest
+# Build Pritunl Cloud (update with latest version from releases)
+go install -v github.com/pritunl/pritunl-cloud@2.0.3616.97
+go install -v github.com/pritunl/pritunl-cloud/redirect@2.0.3616.97
+go install -v github.com/pritunl/pritunl-cloud/agent@2.0.3616.97
+GOOS=freebsd GOARCH=amd64 go install -v github.com/pritunl/pritunl-cloud/agent@2.0.3616.97
 
-# Setup systemd units
+# Install Systemd Units
 sudo cp $(ls -d ~/go/pkg/mod/github.com/pritunl/pritunl-cloud@v* | sort -V | tail -n 1)/tools/pritunl-cloud.service /etc/systemd/system/
 sudo cp $(ls -d ~/go/pkg/mod/github.com/pritunl/pritunl-cloud@v* | sort -V | tail -n 1)/tools/pritunl-cloud-redirect.socket /etc/systemd/system/
 sudo cp $(ls -d ~/go/pkg/mod/github.com/pritunl/pritunl-cloud@v* | sort -V | tail -n 1)/tools/pritunl-cloud-redirect.service /etc/systemd/system/
