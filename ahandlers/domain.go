@@ -29,8 +29,8 @@ type domainData struct {
 }
 
 type domainsData struct {
-	Domains []*aggregate.Domain `json:"domains"`
-	Count   int64               `json:"count"`
+	Domains []*domain.Domain `json:"domains"`
+	Count   int64            `json:"count"`
 }
 
 func domainPut(c *gin.Context) {
