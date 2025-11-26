@@ -4,25 +4,22 @@ import (
 	"time"
 
 	"github.com/pritunl/mongo-go-driver/v2/bson"
-	"github.com/pritunl/pritunl-cloud/aggregate"
 	"github.com/pritunl/pritunl-cloud/domain"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
-var Domains = []*aggregate.Domain{
-	{
-		Domain: domain.Domain{
-			Id:            utils.ObjectIdHex("67b8a1d24866ba90e6c45b5b"),
-			Name:          "pritunl-com",
-			Comment:       "",
-			Organization:  utils.ObjectIdHex("5a3245a50accad1a8a53bc82"),
-			Type:          "cloudflare",
-			Secret:        utils.ObjectIdHex("67b89e8d4866ba90e6c459ba"),
-			RootDomain:    "pritunl.com",
-			LockId:        bson.ObjectID{},
-			LockTimestamp: time.Time{},
-			LastUpdate:    time.Now(),
-		},
+var Domains = []*domain.Domain{
+	&domain.Domain{
+		Id:            utils.ObjectIdHex("67b8a1d24866ba90e6c45b5b"),
+		Name:          "pritunl-com",
+		Comment:       "",
+		Organization:  utils.ObjectIdHex("5a3245a50accad1a8a53bc82"),
+		Type:          "cloudflare",
+		Secret:        utils.ObjectIdHex("67b89e8d4866ba90e6c459ba"),
+		RootDomain:    "pritunl.com",
+		LockId:        bson.ObjectID{},
+		LockTimestamp: time.Time{},
+		LastUpdate:    time.Now(),
 		Records: []*domain.Record{
 			{
 				Id:              utils.ObjectIdHex("68076c9f06fd0087c078dfdc"),
