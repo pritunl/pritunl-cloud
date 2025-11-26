@@ -1,8 +1,8 @@
 #!/bin/bash
 set -ev
-NAME="fedora42"
-ISO_URL="https://sjc.mirror.rackspace.com/fedora/releases/42/Server/x86_64/iso/Fedora-Server-dvd-x86_64-42-1.1.iso"
-ISO_HASH="7fee9ac23b932c6a8be36fc1e830e8bba5f83447b0f4c81fe2425620666a7043"
+NAME="fedora43"
+ISO_URL="https://sjc.mirror.rackspace.com/fedora/releases/43/Server/x86_64/iso/Fedora-Server-dvd-x86_64-43-1.6.iso"
+ISO_HASH="aca06983bef83da9b43144c1a2ff4c8483e4745167c17f53725c16a16742e643"
 
 sudo mkdir -p /var/lib/virt/iso
 sudo mkdir -p /var/lib/virt/ks
