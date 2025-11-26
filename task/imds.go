@@ -58,7 +58,7 @@ func imdsSyncHandler(db *database.Database) (err error) {
 	newFailTimeLock := sync.Mutex{}
 	waiter := &sync.WaitGroup{}
 	for _, conf := range confs {
-		if conf.Instance == nil {
+		if conf.Instance == nil || conf.Instance.NetworkNamespace == "" {
 			continue
 		}
 
