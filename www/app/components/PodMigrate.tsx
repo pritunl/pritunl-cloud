@@ -172,13 +172,14 @@ export default class PodMigrate extends React.Component<Props, State> {
 				evt.stopPropagation()
 				handleClick(evt)
 			}}
-			text={MiscUtils.highlightMatch(commit.id.substring(0, 12), query)}
+			text={MiscUtils.highlightMatch(commit.id.substring(12), query)}
 			textClassName={className}
 			labelElement={<span
 				className={className}
 			>{MiscUtils.formatDateLocal(commit.timestamp)}</span>}
 		/>
 	}
+
 	renderCommitSelect = () => {
 		let commitSelect: JSX.Element
 		if (this.props.commits) {
@@ -229,7 +230,7 @@ export default class PodMigrate extends React.Component<Props, State> {
 					rightIcon={<Icons.CaretDown/>}
 					style={css.commitButton}
 					textClassName={deployClass}
-					text={migrateCommit?.id.substring(0, 12) + " " +
+					text={migrateCommit?.id.substring(12) + " " +
 						MiscUtils.formatDateLocal(migrateCommit?.timestamp)}
 				/>
 			</BpSelect.Select>
@@ -307,7 +308,7 @@ export default class PodMigrate extends React.Component<Props, State> {
 					onClick={(): void => {
 						this.onSelectCommit(commit)
 					}}
-					text={commit.id.substring(0, 12)}
+					text={commit.id.substring(12)}
 					textClassName={className}
 					labelElement={<span
 						className={className}
@@ -331,7 +332,7 @@ export default class PodMigrate extends React.Component<Props, State> {
 					style={css.commitButton}
 					textClassName={selectButtonClass}
 				>
-					<span>{migrateCommit?.id.substring(0, 12)}</span>
+					<span>{migrateCommit?.id.substring(12)}</span>
 					<span
 						className={selectLabelClass}
 						style={selectLabelStyle}
