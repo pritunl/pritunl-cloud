@@ -209,6 +209,10 @@ export default class PodEditor extends React.Component<Props, State> {
 		let editor = this.editor
 		let kinds = new Set(kindsAll)
 
+		if (!monaco?.editor) {
+			return
+		}
+
 		let markdownModel = monaco.editor.getModel(markdownUri)
 		if (markdownModel) {
 			markdownModel.setValue(val)
