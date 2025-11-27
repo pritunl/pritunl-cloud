@@ -3,9 +3,7 @@ import * as React from 'react';
 import * as PodTypes from '../types/PodTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import PodsStore from '../stores/PodsStore';
-import OrganizationsStore from '../stores/OrganizationsStore';
 import * as PodActions from '../actions/PodActions';
-import * as OrganizationActions from '../actions/OrganizationActions';
 import Pod from './Pod';
 import PodDetailed from './PodDetailed';
 import PodNew from './PodNew';
@@ -93,7 +91,7 @@ export default class Pods extends React.Component<{}, State> {
 			podId: null,
 			pods: PodsStore.pods,
 			filter: PodsStore.filter,
-			organizations: OrganizationsStore.organizations,
+			organizations: CompletionStore.organizations,
 			completion: CompletionStore.completion,
 			selected: {},
 			newOpened: false,
@@ -112,17 +110,14 @@ export default class Pods extends React.Component<{}, State> {
 
 	componentDidMount(): void {
 		PodsStore.addChangeListener(this.onChange);
-		OrganizationsStore.addChangeListener(this.onChange);
 		CompletionStore.addChangeListener(this.onChange);
 		PodActions.sync();
-		OrganizationActions.sync();
 		CompletionActions.sync();
 		document.addEventListener('keydown', this.handleKeyDown);
 	}
 
 	componentWillUnmount(): void {
 		PodsStore.removeChangeListener(this.onChange);
-		OrganizationsStore.removeChangeListener(this.onChange);
 		CompletionStore.removeChangeListener(this.onChange);
 		document.removeEventListener('keydown', this.handleKeyDown);
 	}
@@ -154,7 +149,7 @@ export default class Pods extends React.Component<{}, State> {
 			...this.state,
 			pods: PodsStore.pods,
 			filter: PodsStore.filter,
-			organizations: OrganizationsStore.organizations,
+			organizations: CompletionStore.organizations,
 			selected: selected,
 		});
 	}
