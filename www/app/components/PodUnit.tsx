@@ -31,7 +31,6 @@ const css = {
 	container: {
 		height: "100%",
 		overflowY: "auto",
-		marginBottom: "10px",
 	} as React.CSSProperties,
 	box: {
 		flex: 1,
