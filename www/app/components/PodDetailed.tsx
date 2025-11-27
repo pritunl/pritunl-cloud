@@ -501,6 +501,7 @@ export default class PodDetailed extends React.Component<Props, State> {
 				disabled={this.state.disabled}
 				light={true}
 				onCancel={(): void => {
+					PodsStore.setDrafts(this.props.pod.id, [])
 					PodActions.commitDrafts({
 						...this.props.pod,
 						drafts: [],
