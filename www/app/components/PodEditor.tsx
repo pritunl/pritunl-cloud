@@ -476,6 +476,7 @@ export default class PodEditor extends React.Component<Props, State> {
 					fontSize: 12,
 					fontFamily: Theme.monospaceFont,
 					fontWeight: Theme.monospaceWeight,
+					renderSideBySide: true,
 					automaticLayout: true,
 					formatOnPaste: true,
 					formatOnType: true,
