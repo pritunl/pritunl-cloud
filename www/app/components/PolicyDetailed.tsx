@@ -1,5 +1,6 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
+import * as Styles from "../Styles";
 import * as PolicyTypes from '../types/PolicyTypes';
 import * as SettingsTypes from '../types/SettingsTypes';
 import * as PolicyActions from '../actions/PolicyActions';
@@ -11,6 +12,7 @@ import PageInputButton from './PageInputButton';
 import PageInfo from './PageInfo';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
+import Relations from './Relations';
 import Help from './Help';
 import * as Alert from '../Alert';
 import PageTextArea from "./PageTextArea";
@@ -387,6 +389,7 @@ export default class PolicyDetailed extends React.Component<Props, State> {
 							</label>
 						</div>
 						<div className="flex tab-close"/>
+						<Relations kind="policy" id={this.props.policy.id}/>
 						<ConfirmButton
 							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
 							style={css.button}
