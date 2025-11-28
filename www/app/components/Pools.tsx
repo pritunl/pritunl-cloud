@@ -13,10 +13,8 @@ import NonState from './NonState';
 import ConfirmButton from './ConfirmButton';
 import * as DatacenterTypes from "../types/DatacenterTypes";
 import * as ZoneTypes from "../types/ZoneTypes";
-import DatacentersStore from "../stores/DatacentersStore";
-import ZonesStore from "../stores/ZonesStore";
-import * as DatacenterActions from "../actions/DatacenterActions";
-import * as ZoneActions from "../actions/ZoneActions";
+import CompletionStore from "../stores/CompletionStore";
+import * as CompletionActions from "../actions/CompletionActions";
 
 interface Selected {
 	[key: string]: boolean;
@@ -74,8 +72,8 @@ export default class Pools extends React.Component<{}, State> {
 		this.state = {
 			pools: PoolsStore.pools,
 			filter: PoolsStore.filter,
-			datacenters: DatacentersStore.datacenters,
-			zones: ZonesStore.zones,
+			datacenters: CompletionStore.datacenters,
+			zones: CompletionStore.zones,
 			selected: {},
 			opened: {},
 			newOpened: false,
@@ -94,17 +92,14 @@ export default class Pools extends React.Component<{}, State> {
 
 	componentDidMount(): void {
 		PoolsStore.addChangeListener(this.onChange);
-		DatacentersStore.addChangeListener(this.onChange);
-		ZonesStore.addChangeListener(this.onChange);
+		CompletionStore.addChangeListener(this.onChange);
 		PoolActions.sync();
-		DatacenterActions.sync();
-		ZoneActions.sync();
+		CompletionActions.sync();
 	}
 
 	componentWillUnmount(): void {
 		PoolsStore.removeChangeListener(this.onChange);
-		DatacentersStore.removeChangeListener(this.onChange);
-		ZonesStore.removeChangeListener(this.onChange);
+		CompletionStore.removeChangeListener(this.onChange);
 	}
 
 	onChange = (): void => {
@@ -127,8 +122,8 @@ export default class Pools extends React.Component<{}, State> {
 			...this.state,
 			pools: pools,
 			filter: PoolsStore.filter,
-			datacenters: DatacentersStore.datacenters,
-			zones: ZonesStore.zones,
+			datacenters: CompletionStore.datacenters,
+			zones: CompletionStore.zones,
 			selected: selected,
 			opened: opened,
 		});
