@@ -56,7 +56,6 @@ fi
 # Shell: tcsh
 # Home directory: Enter
 # Home directory permissions: Enter
-# Enable ZFS encryption: Enter
 # Use password-based authentication: no
 # Lock out the account after creation: Enter
 # OK: yes
