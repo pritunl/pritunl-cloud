@@ -12,7 +12,7 @@ fi
 
 env PAGER=/bin/cat freebsd-update fetch
 freebsd-update install || true
-pkg update -y
+env ASSUME_ALWAYS_YES=yes pkg update
 pkg upgrade -y
 
 sysrc -f /boot/loader.conf autoboot_delay=0
