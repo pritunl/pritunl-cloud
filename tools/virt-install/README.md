@@ -69,7 +69,7 @@ echo "535569e2b3cc22116be328625b0a03a1f3f1495e1ca9fda8f7fb9576539f110b /root/set
 
 # freebsd
 fetch -o /root/setup.sh http://192.168.122.1:8000/freebsd.sh
-[ "$(sha256sum /root/setup.sh)" = "378f2e9287caf2c9f24bc22bf7dcf2c4dea528c40c38d865fb9d94c29e31b7fa  /root/setup.sh" ] && sh /root/setup.sh
+[ "$(sha256sum /root/setup.sh)" = "aa430641df6bffd455c06258a10ce0757775ad4ab722bc4ceae3b9a773ca0827  /root/setup.sh" ] && sh /root/setup.sh
 
 # rhel7
 curl -o /root/setup.sh http://192.168.122.1:8000/rhel7.sh
