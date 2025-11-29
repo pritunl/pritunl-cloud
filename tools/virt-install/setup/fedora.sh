@@ -23,12 +23,17 @@ dnf -y remove cockpit-ws
 sed -i 's/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=0/g' /etc/default/grub
 grub2-mkconfig -o /boot/grub2/grub.cfg
 
+# cloud-init fix
+wget https://dl.fedoraproject.org/pub/fedora/linux/development/rawhide/Everything/x86_64/os/Packages/c/cloud-init-25.3-1.fc44.noarch.rpm
+echo "51c33d2b8780480fa1aa482824e7850e21363e2713a8197e2ed97a8d28c14adb  cloud-init-25.3-1.fc44.noarch.rpm" | dnf -y install cloud-init-25.3-1.fc44.noarch.rpm
+rm -f cloud-init-25.3-1.fc44.noarch.rpm
+
 systemctl daemon-reload
 systemctl enable qemu-guest-agent.service
-systemctl enable cloud-config.service
-systemctl enable cloud-final.service
 systemctl enable cloud-init-local.service
 systemctl enable cloud-init-main.service
+systemctl enable cloud-config.service
+systemctl enable cloud-final.service
 
 sed -i 's/^installonly_limit=.*/installonly_limit=2/g' /etc/dnf/dnf.conf
 sed -i 's/^SELINUX=.*/SELINUX=enforcing/g' /etc/selinux/config || true
