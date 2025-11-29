@@ -28,7 +28,7 @@ systemctl enable qemu-guest-agent.service
 systemctl enable cloud-config.service
 systemctl enable cloud-final.service
 systemctl enable cloud-init-local.service
-systemctl enable cloud-init.service
+systemctl enable cloud-init-main.service
 
 sed -i 's/^installonly_limit=.*/installonly_limit=2/g' /etc/dnf/dnf.conf
 sed -i 's/^SELINUX=.*/SELINUX=enforcing/g' /etc/selinux/config || true
