@@ -47,7 +47,7 @@ type Resources struct {
 }
 
 var tokenRe = regexp.MustCompile(
-	`\+\/([a-zA-Z0-9-]*)\/([a-zA-Z0-9-]*)(?:(?:\/|\:)([a-zA-Z0-9-_.]*)(?:\/([a-zA-Z0-9-_.]*))?)?`)
+	`\+\/([a-zA-Z0-9-]*)\/([a-zA-Z0-9-_.]*)(?:(?:\/|\:)([a-zA-Z0-9-_.]*)(?:\/([a-zA-Z0-9-_.]*))?)?`)
 
 func (r *Resources) Find(db *database.Database, token string) (
 	kind string, err error) {
@@ -221,10 +221,12 @@ func (r *Resources) Find(db *database.Database, token string) (
 				}
 			}
 
-			if tag == "" || tag == "latest" {
+			if latestImg != nil && (tag == "" || tag == "latest") {
 				r.Image = latestImg
 			}
-		} else {
+		}
+
+		if r.Image == nil {
 			r.Image, err = image.GetOne(db, &bson.M{
 				"name": resource,
 				"organization": &bson.M{
