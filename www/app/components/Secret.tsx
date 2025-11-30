@@ -157,7 +157,7 @@ export default class Secret extends React.Component<Props, {}> {
 			<div className="bp5-cell" style={css.item}>
 				<span
 					style={css.icon}
-					className="bp5-icon-standard bp5-text-muted bp5-icon-cloud"
+					className="bp5-icon-standard bp5-text-muted bp5-icon-key"
 				/>
 				{secType}
 			</div>
