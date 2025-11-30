@@ -13,6 +13,7 @@ import PageInfo from './PageInfo';
 import PageTextArea from './PageTextArea';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
+import Relations from './Relations';
 import Help from './Help';
 import * as Constants from "../Constants";
 
@@ -287,6 +288,7 @@ export default class SecretDetailed extends React.Component<Props, State> {
 							</label>
 						</div>
 						<div className="flex tab-close"/>
+						<Relations kind="secret" id={this.props.secret.id}/>
 						<ConfirmButton
 							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
 							style={css.button}
