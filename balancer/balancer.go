@@ -68,6 +68,19 @@ func (b *Balancer) Validate(db *database.Database) (
 		b.Domains = []*Domain{}
 	}
 
+	domains := []*Domain{}
+	for _, domain := range b.Domains {
+		domain.Domain = utils.FilterDomain(domain.Domain)
+		domain.Host = utils.FilterDomain(domain.Host)
+
+		if domain.Domain == "" {
+			continue
+		}
+
+		domains = append(domains, domain)
+	}
+	b.Domains = domains
+
 	if b.Backends == nil {
 		b.Backends = []*Backend{}
 	}
