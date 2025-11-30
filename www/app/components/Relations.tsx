@@ -58,19 +58,15 @@ const css = {
 	value: {
 	} as React.CSSProperties,
 	dialog: {
-		height: '500px',
+		height: '610px',
 		width: '90%',
-		maxWidth: '700px',
+		maxWidth: '600px',
 	} as React.CSSProperties,
 	dialogBody: {
 		height: '100%',
 	} as React.CSSProperties,
 	textarea: {
-		resize: 'none',
-		fontSize: Theme.monospaceSize,
-		fontFamily: Theme.monospaceFont,
-		fontWeight: Theme.monospaceWeight,
-		marginBottom: 0,
+		padding: '10px 10px 0 10px',
 	} as React.CSSProperties,
 }
 
