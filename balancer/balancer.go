@@ -162,7 +162,7 @@ func (b *Balancer) Validate(db *database.Database) (
 	}
 
 	if b.State {
-		if b.Domains == nil || len(b.Domains) == 0 {
+		if len(b.Domains) == 0 {
 			errData = &errortypes.ErrorData{
 				Error:   "domain_required",
 				Message: "Missing required domain",
@@ -178,7 +178,7 @@ func (b *Balancer) Validate(db *database.Database) (
 			return
 		}
 
-		if b.Backends == nil || len(b.Backends) == 0 {
+		if len(b.Backends) == 0 {
 			errData = &errortypes.ErrorData{
 				Error:   "backend_required",
 				Message: "Missing required backend",
