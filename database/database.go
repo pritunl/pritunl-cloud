@@ -255,7 +255,7 @@ func (d *Database) LvmLock() (coll *Collection) {
 }
 
 func (d *Database) Journal() (coll *Collection) {
-	coll = d.GetCollection("journal")
+	coll = d.getCollectionWeak("journal")
 	return
 }
 
@@ -315,7 +315,7 @@ func (d *Database) AcmeChallenges() (coll *Collection) {
 }
 
 func (d *Database) Logs() (coll *Collection) {
-	coll = d.GetCollection("logs")
+	coll = d.getCollectionWeak("logs")
 	return
 }
 
@@ -325,7 +325,7 @@ func (d *Database) Audits() (coll *Collection) {
 }
 
 func (d *Database) Geo() (coll *Collection) {
-	coll = d.GetCollection("geo")
+	coll = d.getCollectionWeak("geo")
 	return
 }
 
