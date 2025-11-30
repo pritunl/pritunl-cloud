@@ -106,21 +106,29 @@ func (b *Balancer) Validate(db *database.Database) (
 		}
 
 		ip := net.ParseIP(backend.Hostname)
-		if ip != nil {
-			exists, e := instance.ExistsIp(db, backend.Hostname)
-			if e != nil {
-				err = e
-				return
+		if ip == nil {
+			errData = &errortypes.ErrorData{
+				Error: "balancer_hostname_invalid",
+				Message: fmt.Sprintf("Balancer hostname '%s' must "+
+					"match existing instance address", backend.Hostname),
 			}
+			return
+		}
+		backend.Hostname = ip.String()
 
-			if !exists {
-				errData = &errortypes.ErrorData{
-					Error: "balancer_hostname_not_found",
-					Message: fmt.Sprintf("Balancer hostname '%s' must "+
-						"match existing instance address", backend.Hostname),
-				}
-				return
+		exists, e := instance.ExistsIp(db, backend.Hostname)
+		if e != nil {
+			err = e
+			return
+		}
+
+		if !exists {
+			errData = &errortypes.ErrorData{
+				Error: "balancer_hostname_not_found",
+				Message: fmt.Sprintf("Balancer hostname '%s' must "+
+					"match existing instance address", backend.Hostname),
 			}
+			return
 		}
 	}
 
