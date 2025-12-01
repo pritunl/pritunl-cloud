@@ -1,8 +1,8 @@
 #!/bin/bash
 set -ev
 NAME="archlinux"
-ISO_URL="https://geo.mirror.pkgbuild.com/iso/latest/archlinux-2025.11.01-x86_64.iso"
-ISO_HASH="3fde01031127fb49d3fb489dd92f8d1fc0a7fc4fdfff220936031a00a7673a2e"
+ISO_URL="https://geo.mirror.pkgbuild.com/iso/latest/archlinux-2025.12.01-x86_64.iso"
+ISO_HASH="c2b1f13a68482db3aad008f14bb75cb15a44cd38fa8a1aa15e6675a50d4c4374"
 
 sudo mkdir -p /var/lib/virt/iso
 sudo mkdir -p /var/lib/virt/images
