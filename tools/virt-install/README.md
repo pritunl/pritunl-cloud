@@ -51,9 +51,6 @@ mount /dev/sr1 /mnt/config
 cp /mnt/config/archinstall.json /root
 umount /mnt/config
 rmdir /mnt/config
-pacman-key --init
-pacman-key --populate archlinux
-pacman -Sy --noconfirm archinstall
 archinstall --silent --config /root/archinstall.json
 reboot
 curl -o /root/setup.sh http://192.168.122.1:8000/arch.sh
