@@ -277,7 +277,12 @@ func UserOrg(c *gin.Context) {
 		return
 	}
 
-	orgIdStr := c.GetHeader("Organization")
+	orgIdStr := ""
+	if strings.ToLower(c.Request.Header.Get("Upgrade")) == "websocket" {
+		orgIdStr = c.Query("organization")
+	} else {
+		orgIdStr = c.GetHeader("Organization")
+	}
 	if orgIdStr == "" {
 		utils.AbortWithStatus(c, 401)
 		return
