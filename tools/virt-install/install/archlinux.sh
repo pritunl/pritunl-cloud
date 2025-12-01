@@ -200,10 +200,6 @@ cp /mnt/config/archinstall.json /root/
 umount /mnt/config
 rmdir /mnt/config
 
-pacman-key --init
-pacman-key --populate archlinux
-pacman -Sy --noconfirm archinstall
-
 archinstall --silent --config /root/archinstall.json
 
 reboot
