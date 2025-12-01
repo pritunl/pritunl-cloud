@@ -372,7 +372,7 @@ export default class SecretDetailed extends React.Component<Props, State> {
 					<PageSelect
 						label="Type"
 						disabled={this.state.disabled}
-						help="Secret provider."
+						help="Secret data type. Select provider specific type or JSON. The JSON type must be a flat object containing only string, boolean, number, or null values. The data.keyname selector is used to select data from the JSON."
 						value={secr.type}
 						onChange={(val): void => {
 							this.set('type', val);
