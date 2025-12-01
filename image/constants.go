@@ -147,4 +147,10 @@ var (
 		Ubuntu4204,
 		Ubuntu4404,
 	)
+	ValidSystemTypes = set.NewSet(
+		Linux,
+		LinuxLegacy,
+		LinuxUnsigned,
+		Bsd,
+	)
 )
