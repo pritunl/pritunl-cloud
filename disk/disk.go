@@ -176,6 +176,14 @@ func (d *Disk) Validate(db *database.Database) (
 		return
 	}
 
+	if d.SystemKind != "" && !ValidSystemKinds.Contains(d.SystemKind) {
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_system_kind",
+			Message: "Disk system kind invalid",
+		}
+		return
+	}
+
 	switch d.FileSystem {
 	case Xfs, Ext4, "":
 		d.LvSize = 0
