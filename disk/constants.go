@@ -21,10 +21,33 @@ const (
 	LvmXfs  = "lvm_xfs"
 	LvmExt4 = "lvm_ext4"
 
-	Linux = "linux"
-	Bsd   = "bsd"
+	Linux         = "linux"
+	LinuxLegacy   = "linux_legacy"
+	LinuxUnsigned = "linux_unsigned"
+	Bsd           = "bsd"
+
+	AlpineLinux = "alpinelinux"
+	ArchLinux   = "archlinux"
+	RedHat      = "redhat"
+	Fedora      = "fedora"
+	Ubuntu      = "ubuntu"
+	FreeBSD     = "freebsd"
 )
 
 var (
-	Vacant = bson.NilObjectID
+	Vacant           = bson.NilObjectID
+	ValidSystemTypes = set.NewSet(
+		Linux,
+		LinuxLegacy,
+		LinuxUnsigned,
+		Bsd,
+	)
+	ValidSystemKinds = set.NewSet(
+		AlpineLinux,
+		ArchLinux,
+		RedHat,
+		Fedora,
+		Ubuntu,
+		FreeBSD,
+	)
 )
