@@ -69,6 +69,7 @@ func (p *Plugin) ServeDNS(ctx context.Context,
 					m := new(dns.Msg)
 					m.SetReply(r)
 					m.Authoritative = false
+					m.RecursionAvailable = true
 					m.Answer = answers
 					w.WriteMsg(m)
 					return code, err
@@ -102,6 +103,7 @@ func (p *Plugin) ServeDNS(ctx context.Context,
 					msg := new(dns.Msg)
 					msg.SetReply(r)
 					msg.Authoritative = false
+					msg.RecursionAvailable = true
 					msg.Answer = answers
 					w.WriteMsg(msg)
 					return code, err
@@ -112,6 +114,7 @@ func (p *Plugin) ServeDNS(ctx context.Context,
 		msg := new(dns.Msg)
 		msg.SetReply(r)
 		msg.Authoritative = true
+		msg.RecursionAvailable = true
 		msg.Answer = answers
 		w.WriteMsg(msg)
 		return dns.RcodeSuccess, nil
@@ -156,6 +159,7 @@ func (p *Plugin) ServeDNS(ctx context.Context,
 		msg := new(dns.Msg)
 		msg.SetReply(r)
 		msg.Authoritative = true
+		msg.RecursionAvailable = true
 		msg.Answer = answers
 		w.WriteMsg(msg)
 		return dns.RcodeSuccess, nil
