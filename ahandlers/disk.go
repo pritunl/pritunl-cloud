@@ -197,6 +197,7 @@ func diskPost(c *gin.Context) {
 	}
 
 	imgSystemType := ""
+	imgSystemKind := ""
 	if !dta.Image.IsZero() {
 		img, err := image.GetOrgPublic(db, dta.Organization, dta.Image)
 		if err != nil {
@@ -205,6 +206,7 @@ func diskPost(c *gin.Context) {
 		}
 
 		imgSystemType = img.GetSystemType()
+		imgSystemKind = img.GetSystemKind()
 
 		store, err := storage.Get(db, img.Storage)
 		if err != nil {
@@ -246,6 +248,7 @@ func diskPost(c *gin.Context) {
 		Index:            dta.Index,
 		Type:             dta.Type,
 		SystemType:       imgSystemType,
+		SystemKind:       imgSystemKind,
 		Node:             dta.Node,
 		Pool:             dta.Pool,
 		Image:            dta.Image,
