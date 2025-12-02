@@ -29,6 +29,7 @@ type Disk struct {
 	Action           string        `bson:"action" json:"action"`
 	Type             string        `bson:"type" json:"type"`
 	SystemType       string        `bson:"system_type" json:"system_type"`
+	SystemKind       string        `bson:"system_kind" json:"system_kind"`
 	Uuid             string        `bson:"uuid" json:"uuid"`
 	Datacenter       bson.ObjectID `bson:"datacenter" json:"datacenter"`
 	Zone             bson.ObjectID `bson:"zone" json:"zone"`
