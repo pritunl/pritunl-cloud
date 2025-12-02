@@ -278,6 +278,7 @@ func getUserData(db *database.Database, inst *instance.Instance,
 	writeFiles := []*fileData{}
 	initGuestPath := utils.FilterPath(settings.Hypervisor.InitGuestPath)
 	agentGuestPath := utils.FilterPath(settings.Hypervisor.AgentGuestPath)
+	dnsCloud := strings.Split(settings.Hypervisor.ImdsAddress, "/")[0]
 
 	data := cloudConfigData{
 		Keys:      []string{},
@@ -309,7 +310,7 @@ func getUserData(db *database.Database, inst *instance.Instance,
 	}
 
 	if virt.CloudType == instance.BSD {
-		resolvConf := ""
+		resolvConf := fmt.Sprintf("nameserver %s\n", dnsCloud)
 
 		if inst.IsIpv6Only() {
 			resolvConf += fmt.Sprintf("nameserver %s\n",
@@ -666,6 +667,7 @@ func getNetData(db *database.Database, inst *instance.Instance,
 
 	dns1 := ""
 	dns2 := ""
+	dnsCloud := strings.Split(settings.Hypervisor.ImdsAddress, "/")[0]
 	if inst.IsIpv6Only() {
 		dns1 = utils.FilterIp(zne.GetDnsServerPrimary6())
 		dns2 = utils.FilterIp(zne.GetDnsServerSecondary6())
@@ -684,7 +686,7 @@ func getNetData(db *database.Database, inst *instance.Instance,
 		Address6:     addr6.String(),
 		AddressCidr6: addr6.String() + "/64",
 		Gateway6:     gateway6.String(),
-		Dns1:         strings.Split(settings.Hypervisor.ImdsAddress, "/")[0],
+		Dns1:         dnsCloud,
 		Dns2:         dns1,
 		Dns3:         dns2,
 	}
