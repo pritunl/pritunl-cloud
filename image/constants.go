@@ -15,6 +15,10 @@ const (
 	LinuxUnsigned = "linux_unsigned"
 	Bsd           = "bsd"
 
+	RedHat = "redhat"
+	Fedora = "fedora"
+	Ubuntu = "ubuntu"
+
 	AlmaLinux8    = "almalinux8"
 	AlmaLinux9    = "almalinux9"
 	AlmaLinux10   = "almalinux10"
@@ -152,5 +156,13 @@ var (
 		LinuxLegacy,
 		LinuxUnsigned,
 		Bsd,
+	)
+	ValidSystemKinds = set.NewSet(
+		AlpineLinux,
+		ArchLinux,
+		RedHat,
+		Fedora,
+		Ubuntu,
+		FreeBSD,
 	)
 )
