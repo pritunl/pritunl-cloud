@@ -309,7 +309,9 @@ func getUserData(db *database.Database, inst *instance.Instance,
 		owner = "root:root"
 	}
 
-	if virt.CloudType == instance.BSD {
+	if virt.CloudType == instance.BSD ||
+		virt.SystemKind == instance.AlpineLinux {
+
 		resolvConf := fmt.Sprintf("nameserver %s\n", dnsCloud)
 
 		if inst.IsIpv6Only() {
