@@ -25,8 +25,15 @@ func (p *Plugin) ServeDNS(ctx context.Context,
 	found := false
 	var answers []dns.RR
 
-	target, ok := db.CNAME[name]
-	if ok {
+	targetCname, okCname := db.CNAME[name]
+	ipsA, okA := db.A[name]
+	ipsAAAA, okAAAA := db.AAAA[name]
+	internalDomain := false
+	if okCname || okA || okAAAA {
+		internalDomain = true
+	}
+
+	if okCname {
 		answers = append(answers, &dns.CNAME{
 			Hdr: dns.RR_Header{
 				Name:   name,
@@ -34,18 +41,18 @@ func (p *Plugin) ServeDNS(ctx context.Context,
 				Class:  dns.ClassINET,
 				Ttl:    Ttl,
 			},
-			Target: target,
+			Target: targetCname,
 		})
 		found = true
 
 		if qtype == dns.TypeA || qtype == dns.TypeAAAA {
 			switch qtype {
 			case dns.TypeA:
-				if ips, ok := db.A[target]; ok {
+				if ips, ok := db.A[targetCname]; ok {
 					for _, ip := range ips {
 						answers = append(answers, &dns.A{
 							Hdr: dns.RR_Header{
-								Name:   target,
+								Name:   targetCname,
 								Rrtype: dns.TypeA,
 								Class:  dns.ClassINET,
 								Ttl:    Ttl,
@@ -55,7 +62,7 @@ func (p *Plugin) ServeDNS(ctx context.Context,
 					}
 				} else {
 					targetQuery := new(dns.Msg)
-					targetQuery.SetQuestion(target, dns.TypeA)
+					targetQuery.SetQuestion(targetCname, dns.TypeA)
 
 					rw := &Response{
 						ResponseWriter: w,
@@ -75,11 +82,11 @@ func (p *Plugin) ServeDNS(ctx context.Context,
 					return code, err
 				}
 			case dns.TypeAAAA:
-				if ips, ok := db.AAAA[target]; ok {
+				if ips, ok := db.AAAA[targetCname]; ok {
 					for _, ip := range ips {
 						answers = append(answers, &dns.AAAA{
 							Hdr: dns.RR_Header{
-								Name:   target,
+								Name:   targetCname,
 								Rrtype: dns.TypeAAAA,
 								Class:  dns.ClassINET,
 								Ttl:    Ttl,
@@ -89,7 +96,7 @@ func (p *Plugin) ServeDNS(ctx context.Context,
 					}
 				} else {
 					targetQuery := new(dns.Msg)
-					targetQuery.SetQuestion(target, dns.TypeAAAA)
+					targetQuery.SetQuestion(targetCname, dns.TypeAAAA)
 
 					rw := &Response{
 						ResponseWriter: w,
@@ -122,9 +129,8 @@ func (p *Plugin) ServeDNS(ctx context.Context,
 
 	switch qtype {
 	case dns.TypeA:
-		ips, ok := db.A[name]
-		if ok {
-			for _, ip := range ips {
+		if okA {
+			for _, ip := range ipsA {
 				answers = append(answers, &dns.A{
 					Hdr: dns.RR_Header{
 						Name:   name,
@@ -138,9 +144,8 @@ func (p *Plugin) ServeDNS(ctx context.Context,
 			found = true
 		}
 	case dns.TypeAAAA:
-		ips, ok := db.AAAA[name]
-		if ok {
-			for _, ip := range ips {
+		if okAAAA {
+			for _, ip := range ipsAAAA {
 				answers = append(answers, &dns.AAAA{
 					Hdr: dns.RR_Header{
 						Name:   name,
@@ -161,6 +166,13 @@ func (p *Plugin) ServeDNS(ctx context.Context,
 		msg.Authoritative = true
 		msg.RecursionAvailable = true
 		msg.Answer = answers
+		w.WriteMsg(msg)
+		return dns.RcodeSuccess, nil
+	} else if internalDomain {
+		msg := new(dns.Msg)
+		msg.SetReply(r)
+		msg.Authoritative = true
+		msg.RecursionAvailable = true
 		w.WriteMsg(msg)
 		return dns.RcodeSuccess, nil
 	}
