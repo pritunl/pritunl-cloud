@@ -165,13 +165,10 @@ func (d *Disk) Validate(db *database.Database) (
 		return
 	}
 
-	switch d.SystemType {
-	case Linux, "":
+	if d.SystemType == "" {
 		d.SystemType = Linux
-		break
-	case Bsd:
-		break
-	default:
+	}
+	if !ValidSystemTypes.Contains(d.SystemType) {
 		errData = &errortypes.ErrorData{
 			Error:   "invalid_system_type",
 			Message: "Disk system type invalid",
