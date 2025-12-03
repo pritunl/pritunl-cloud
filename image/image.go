@@ -209,6 +209,7 @@ func (i *Image) Upsert(db *database.Database) (err error) {
 		"signed":        i.Signed,
 		"type":          i.Type,
 		"system_type":   i.SystemType,
+		"system_kind":   i.SystemKind,
 		"firmware":      i.Firmware,
 		"storage":       i.Storage,
 		"key":           i.Key,
@@ -245,6 +246,8 @@ func (i *Image) Sync(db *database.Database) (err error) {
 	coll := db.Images()
 
 	i.Parse()
+	i.SystemType = i.GetSystemType()
+	i.SystemKind = i.GetSystemKind()
 
 	if strings.HasPrefix(i.Key, "backup/") ||
 		strings.HasPrefix(i.Key, "snapshot/") {
@@ -264,6 +267,8 @@ func (i *Image) Sync(db *database.Database) (err error) {
 					"key":           i.Key,
 					"signed":        i.Signed,
 					"type":          i.Type,
+					"system_type":   i.SystemType,
+					"system_kind":   i.SystemKind,
 					"firmware":      i.Firmware,
 					"etag":          i.Etag,
 					"last_modified": i.LastModified,
@@ -306,6 +311,8 @@ func (i *Image) Sync(db *database.Database) (err error) {
 					"key":           i.Key,
 					"signed":        i.Signed,
 					"type":          i.Type,
+					"system_type":   i.SystemType,
+					"system_kind":   i.SystemKind,
 					"firmware":      i.Firmware,
 					"etag":          i.Etag,
 					"last_modified": i.LastModified,
