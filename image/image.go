@@ -121,6 +121,43 @@ func (i *Image) GetSystemType() string {
 	return Linux
 }
 
+func (i *Image) GetSystemKind() string {
+	if i.SystemKind != "" {
+		return i.SystemKind
+	}
+
+	name := strings.ToLower(i.Name)
+	if strings.Contains(name, "freebsd") {
+		return FreeBSD
+	}
+
+	if strings.Contains(name, "alpinelinux") {
+		return AlpineLinux
+	}
+
+	if strings.Contains(name, "archlinux") {
+		return ArchLinux
+	}
+
+	if strings.Contains(name, "ubuntu") {
+		return Ubuntu
+	}
+
+	if strings.Contains(name, "fedora") {
+		return Fedora
+	}
+
+	if strings.Contains(name, "redhat") ||
+		strings.Contains(name, "almalinux") ||
+		strings.Contains(name, "oraclelinux") ||
+		strings.Contains(name, "rockylinux") {
+
+		return RedHat
+	}
+
+	return ""
+}
+
 func (i *Image) Json() {
 	i.Parse()
 }
