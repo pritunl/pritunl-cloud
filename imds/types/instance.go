@@ -24,6 +24,7 @@ type Instance struct {
 	Tpm                 bool          `json:"tpm"`
 	DhcpServer          bool          `json:"dhcp_server"`
 	CloudType           string        `json:"cloud_type"`
+	SystemKind          string        `json:"system_kind"`
 	DeleteProtection    bool          `json:"delete_protection"`
 	SkipSourceDestCheck bool          `json:"skip_source_dest_check"`
 	QemuVersion         string        `json:"qemu_version"`
@@ -77,6 +78,7 @@ func NewInstance(inst *instance.Instance) *Instance {
 		Tpm:                 inst.Tpm,
 		DhcpServer:          inst.DhcpServer,
 		CloudType:           inst.CloudType,
+		SystemKind:          inst.SystemKind,
 		DeleteProtection:    inst.DeleteProtection,
 		SkipSourceDestCheck: inst.SkipSourceDestCheck,
 		QemuVersion:         inst.QemuVersion,
