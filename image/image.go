@@ -26,6 +26,7 @@ type Image struct {
 	Signed       bool          `bson:"signed" json:"signed"`
 	Type         string        `bson:"type" json:"type"`
 	SystemType   string        `bson:"system_type" json:"system_type"`
+	SystemKind   string        `bson:"system_kind" json:"system_kind"`
 	Firmware     string        `bson:"firmware" json:"firmware"`
 	Storage      bson.ObjectID `bson:"storage" json:"storage"`
 	Key          string        `bson:"key" json:"key"`
