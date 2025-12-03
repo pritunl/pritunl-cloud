@@ -71,6 +71,14 @@ func (i *Image) Validate(db *database.Database) (
 		return
 	}
 
+	if i.SystemKind != "" && !ValidSystemKinds.Contains(i.SystemKind) {
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_system_kind",
+			Message: "Image system kind invalid",
+		}
+		return
+	}
+
 	return
 }
 
