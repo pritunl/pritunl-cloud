@@ -60,16 +60,10 @@ func (i *Image) Validate(db *database.Database) (
 		i.Firmware = Uefi
 	}
 
-	switch i.SystemType {
-	case Linux:
-		break
-	case LinuxLegacy:
-		break
-	case LinuxUnsigned:
-		break
-	case Bsd:
-		break
-	default:
+	if i.SystemType == "" {
+		i.SystemType = Linux
+	}
+	if !ValidSystemTypes.Contains(i.SystemType) {
 		errData = &errortypes.ErrorData{
 			Error:   "invalid_system_type",
 			Message: "Image system type invalid",
