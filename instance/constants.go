@@ -23,6 +23,13 @@ const (
 	LinuxLegacy = "linux_legacy"
 	BSD         = "bsd"
 
+	AlpineLinux = "alpinelinux"
+	ArchLinux   = "archlinux"
+	RedHat      = "redhat"
+	Fedora      = "fedora"
+	Ubuntu      = "ubuntu"
+	FreeBSD     = "freebsd"
+
 	HostPath = "host_path"
 )
 
@@ -48,5 +55,13 @@ var (
 		Linux,
 		LinuxLegacy,
 		BSD,
+	)
+	ValidSystemKinds = set.NewSet(
+		AlpineLinux,
+		ArchLinux,
+		RedHat,
+		Fedora,
+		Ubuntu,
+		FreeBSD,
 	)
 )
