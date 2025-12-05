@@ -370,6 +370,14 @@ func (i *Instance) Validate(db *database.Database) (
 		return
 	}
 
+	if i.SystemKind != "" && !ValidSystemKinds.Contains(i.SystemKind) {
+		errData = &errortypes.ErrorData{
+			Error:   "invalid_system_kind",
+			Message: "Instance system kind invalid",
+		}
+		return
+	}
+
 	if i.CloudScript != "" && !scriptReg.MatchString(i.CloudScript) {
 		errData = &errortypes.ErrorData{
 			Error:   "invalid_cloud_script",
