@@ -47,6 +47,7 @@ type VirtualMachine struct {
 	DhcpServer          bool              `json:"dhcp_server"`
 	Deployment          bson.ObjectID     `json:"deployment"`
 	CloudType           string            `json:"cloud_type"`
+	SystemKind          string            `json:"system_kind"`
 	NoPublicAddress     bool              `json:"no_public_address"`
 	NoPublicAddress6    bool              `json:"no_public_address6"`
 	NoHostAddress       bool              `json:"no_host_address"`
