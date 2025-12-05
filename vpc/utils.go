@@ -20,7 +20,7 @@ func GetIp6(vpcId, instId bson.ObjectID) net.IP {
 
 	instHash := md5.New()
 	instHash.Write(instId[:])
-	instHashSum := fmt.Sprintf("%x", instHash.Sum(nil))[:16]
+	instHashSum := "0" + fmt.Sprintf("%x", instHash.Sum(nil))[:15]
 
 	ip := fmt.Sprintf("fd97%s%s", netHashSum, instHashSum)
 	ipBuf := bytes.Buffer{}
@@ -43,7 +43,7 @@ func GetGatewayIp6(vpcId, instId bson.ObjectID) net.IP {
 	instHash := md5.New()
 	instHash.Write([]byte("gateway"))
 	instHash.Write(instId[:])
-	instHashSum := fmt.Sprintf("%x", instHash.Sum(nil))[:16]
+	instHashSum := "0" + fmt.Sprintf("%x", instHash.Sum(nil))[:15]
 
 	ip := fmt.Sprintf("fd97%s%s", netHashSum, instHashSum)
 	ipBuf := bytes.Buffer{}
@@ -65,7 +65,7 @@ func GetLinkIp6(vpcId, instId bson.ObjectID) net.IP {
 
 	instHash := md5.New()
 	instHash.Write(instId[:])
-	instHashSum := fmt.Sprintf("%x", instHash.Sum(nil))[:16]
+	instHashSum := "0" + fmt.Sprintf("%x", instHash.Sum(nil))[:15]
 
 	ip := fmt.Sprintf("fd97%s%s", netHashSum, instHashSum)
 	ipBuf := bytes.Buffer{}
@@ -88,7 +88,7 @@ func GetGatewayLinkIp6(vpcId, instId bson.ObjectID) net.IP {
 	instHash := md5.New()
 	instHash.Write([]byte("gateway"))
 	instHash.Write(instId[:])
-	instHashSum := fmt.Sprintf("%x", instHash.Sum(nil))[:16]
+	instHashSum := "0" + fmt.Sprintf("%x", instHash.Sum(nil))[:15]
 
 	ip := fmt.Sprintf("fd97%s%s", netHashSum, instHashSum)
 	ipBuf := bytes.Buffer{}
