@@ -553,6 +553,7 @@ func Create(db *database.Database, inst *instance.Instance,
 			}
 
 			dsk.SystemType = img.GetSystemType()
+			dsk.SystemKind = img.GetSystemKind()
 
 			newSize, backingImage, err = data.WriteImage(db, dsk)
 			if err != nil {
