@@ -1,6 +1,9 @@
 package disk
 
-import "github.com/pritunl/mongo-go-driver/v2/bson"
+import (
+	"github.com/dropbox/godropbox/container/set"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+)
 
 const (
 	Provision = "provision"
