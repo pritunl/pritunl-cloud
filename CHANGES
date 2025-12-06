@@ -3,6 +3,7 @@ pritunl-cloud changelog
 
 <%= version %>
 
+Add internal DNS system
 Add arch linux support
 Improve Route53 DNS management
 Improve instance layout in web console
