@@ -6,6 +6,7 @@ pritunl-cloud changelog
 Add arch linux support
 Improve Route53 DNS management
 Improve instance layout in web console
+Improve instance web console VNC
 
 Version 2.0.3616.97 2025-10-18
 ------------------------------
