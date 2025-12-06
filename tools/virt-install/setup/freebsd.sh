@@ -16,6 +16,8 @@ env ASSUME_ALWAYS_YES=yes pkg update
 pkg upgrade -y
 
 sysrc -f /boot/loader.conf autoboot_delay=0
+sysrc ifconfig_vtnet0=""
+sysrc ifconfig_vtnet0_ipv6=""
 
 pkg search cloud-init
 pkg install -y dual-dhclient py311-cloud-init
