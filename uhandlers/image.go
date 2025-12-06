@@ -192,6 +192,11 @@ func imagesGet(c *gin.Context) {
 				"$in": dc.PublicStorages,
 			},
 		}
+		if demo.IsDemo() {
+			query = &bson.M{
+				"organization": image.Global,
+			}
+		}
 
 		images, err := image.GetAllNames(db, query)
 		if err != nil {
