@@ -33,7 +33,11 @@ fi
 systemctl daemon-reload
 systemctl enable qemu-guest-agent.service
 systemctl enable cloud-init-local.service
-systemctl enable cloud-init-main.service
+if [[ "$(cloud-init --version 2>&1)" == *"24."* ]]; then
+  systemctl enable cloud-init.service
+else
+  systemctl enable cloud-init-main.service
+fi
 systemctl enable cloud-config.service
 systemctl enable cloud-final.service
 
