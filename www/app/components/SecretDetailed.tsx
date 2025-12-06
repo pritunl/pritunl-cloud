@@ -417,6 +417,9 @@ export default class SecretDetailed extends React.Component<Props, State> {
 				disabled={this.state.disabled}
 				light={true}
 				onCancel={(): void => {
+					if (this.editor) {
+						this.editor.setValue(this.props.secret.data)
+					}
 					this.setState({
 						...this.state,
 						changed: false,
