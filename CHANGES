@@ -1,7 +1,8 @@
 pritunl-cloud changelog
 =======================
 
-<%= version %>
+Version 2.0.3665.99 2025-12-06
+------------------------------
 
 Add internal DNS system
 Add arch linux support
