@@ -251,6 +251,49 @@ export default class SecretDetailed extends React.Component<Props, State> {
 				publicKeyHelp = "Public key for Oracle Cloud API authentication.";
 				publicKeyPlaceholder = "Oracle Cloud Public Key";
 				break;
+			case "json":
+				keyLabel = "";
+				keyHelp = "";
+				keyPlaceholder = "";
+				valLabel = "";
+				valHelp = "";
+				valPlaceholder = "";
+				regionLabel = "";
+				regionHelp = "";
+				regionPlaceholder = "";
+				publicKeyLabel = "";
+				publicKeyHelp = "";
+				publicKeyPlaceholder = "";
+				editor = <MonacoEditor.Editor
+					height="400px"
+					width="100%"
+					defaultLanguage="json"
+					theme={Theme.getEditorTheme()}
+					defaultValue={secr.data}
+					onMount={(editor: Monaco.editor.IStandaloneCodeEditor,
+							monaco: MonacoEditor.Monaco): void => {
+						this.monaco = monaco
+						this.editor = editor
+					}}
+					options={{
+						folding: false,
+						fontSize: 12,
+						fontFamily: Theme.monospaceFont,
+						fontWeight: Theme.monospaceWeight,
+						tabSize: 4,
+						detectIndentation: false,
+						scrollBeyondLastLine: false,
+						minimap: {
+							enabled: false,
+						},
+						suggestOnTriggerCharacters: false,
+						wordWrap: "on",
+						automaticLayout: true,
+					}}
+					onChange={(val): void => {
+						this.set("data", val)
+					}}
+				/>
 		}
 
 		return <td
@@ -381,6 +424,7 @@ export default class SecretDetailed extends React.Component<Props, State> {
 						<option value="aws">AWS</option>
 						<option value="cloudflare">Cloudflare</option>
 						<option value="oracle_cloud">Oracle Cloud</option>
+						<option value="json">JSON</option>
 					</PageSelect>
 					<PageSelect
 						disabled={this.state.disabled}
