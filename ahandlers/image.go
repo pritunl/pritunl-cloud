@@ -184,6 +184,9 @@ func imagesGet(c *gin.Context) {
 				"$in": storages,
 			},
 		}
+		if demo.IsDemo() {
+			query = &bson.M{}
+		}
 
 		images, err := image.GetAllNames(db, query)
 		if err != nil {
