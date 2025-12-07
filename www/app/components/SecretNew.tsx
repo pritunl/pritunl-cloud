@@ -346,6 +346,7 @@ export default class SecretNew extends React.Component<Props, State> {
 							<option value="aws">AWS</option>
 							<option value="cloudflare">Cloudflare</option>
 							<option value="oracle_cloud">Oracle Cloud</option>
+							<option value="json">JSON</option>
 						</PageSelect>
 						<PageSelect
 							disabled={this.state.disabled}
