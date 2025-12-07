@@ -180,9 +180,8 @@ export default class SecretNew extends React.Component<Props, State> {
 		let publicKeyPlaceholder = "";
 		let editor: JSX.Element;
 
-		switch (secr.type) {
+		switch (secr.type || "aws") {
 			case "aws":
-			case "":
 				keyLabel = "AWS Key ID";
 				keyHelp = "Key for AWS API authentication.";
 				keyPlaceholder = "Key ID";
