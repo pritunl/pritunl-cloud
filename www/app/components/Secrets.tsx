@@ -3,9 +3,9 @@ import * as React from 'react';
 import * as SecretTypes from '../types/SecretTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import SecretsStore from '../stores/SecretsStore';
-import OrganizationsStore from '../stores/OrganizationsStore';
+import CompletionStore from '../stores/CompletionStore';
 import * as SecretActions from '../actions/SecretActions';
-import * as OrganizationActions from '../actions/OrganizationActions';
+import * as CompletionActions from '../actions/CompletionActions';
 import Secret from './Secret';
 import SecretNew from './SecretNew';
 import SecretsFilter from './SecretsFilter';
@@ -69,7 +69,7 @@ export default class Secrets extends React.Component<{}, State> {
 		super(props, context);
 		this.state = {
 			secrets: SecretsStore.secrets,
-			organizations: OrganizationsStore.organizations,
+			organizations: CompletionStore.organizations,
 			filter: SecretsStore.filter,
 			selected: {},
 			opened: {},
@@ -89,14 +89,14 @@ export default class Secrets extends React.Component<{}, State> {
 
 	componentDidMount(): void {
 		SecretsStore.addChangeListener(this.onChange);
-		OrganizationsStore.addChangeListener(this.onChange);
+		CompletionStore.addChangeListener(this.onChange);
 		SecretActions.sync();
-		OrganizationActions.sync();
+		CompletionActions.sync();
 	}
 
 	componentWillUnmount(): void {
 		SecretsStore.removeChangeListener(this.onChange);
-		OrganizationsStore.removeChangeListener(this.onChange);
+		CompletionStore.removeChangeListener(this.onChange);
 	}
 
 	onChange = (): void => {
@@ -118,7 +118,7 @@ export default class Secrets extends React.Component<{}, State> {
 		this.setState({
 			...this.state,
 			secrets: secrets,
-			organizations: OrganizationsStore.organizations,
+			organizations: CompletionStore.organizations,
 			filter: SecretsStore.filter,
 			selected: selected,
 			opened: opened,
