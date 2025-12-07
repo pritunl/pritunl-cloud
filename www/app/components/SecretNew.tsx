@@ -329,6 +329,9 @@ export default class SecretNew extends React.Component<Props, State> {
 								this.set('region', val);
 							}}
 						/>
+						<div>
+							{editor}
+						</div>
 					</div>
 					<div style={css.group}>
 						<PageSelect
