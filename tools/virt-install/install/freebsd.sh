@@ -26,6 +26,7 @@ fi
 # Welcome: Enter
 # Keymap Selection: Enter
 # Set Hostname: cloud
+# Select Installation Type: Distribution Sets
 # Distribution Select: Enter
 # Partitioning: Auto (UFS)
 # Partition: Enter
@@ -34,6 +35,7 @@ fi
 # Partition Editor: Enter
 # New Password: cloud
 # Retype New Password: cloud
+# Network Configuration: Manual
 # Network Configuration: Enter
 # Network Configuration: Enter
 # Network Configuration: Enter
@@ -80,8 +82,9 @@ while ! sudo virsh domstate ${NAME} 2>/dev/null | grep -q "shut off"; do
   sleep 1
 done
 
-echo "Compressing image..."
+sudo rm -rf /var/lib/virt/init/${NAME}
 
+echo "Compressing image..."
 sudo rm -f /var/lib/virt/images/${NAME}_$(date +%y%m%d).qcow2
 sudo qemu-img convert -f qcow2 -O qcow2 -c /var/lib/virt/${NAME}.qcow2 /var/lib/virt/images/${NAME}_$(date +%y%m%d).qcow2
 sha256sum /var/lib/virt/images/${NAME}_$(date +%y%m%d).qcow2
