@@ -86,8 +86,8 @@ done
 
 sudo rm -rf /var/lib/virt/init/${NAME}
 sudo rm -f /var/lib/virt/init/${NAME}.iso
-echo "Compressing image..."
 
+echo "Compressing image..."
 sudo rm -f /var/lib/virt/images/${NAME}_$(date +%y%m%d).qcow2
 sudo qemu-img convert -f qcow2 -O qcow2 -c /var/lib/virt/${NAME}.qcow2 /var/lib/virt/images/${NAME}_$(date +%y%m%d).qcow2
 sha256sum /var/lib/virt/images/${NAME}_$(date +%y%m%d).qcow2
