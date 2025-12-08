@@ -224,6 +224,8 @@ while ! sudo virsh domstate ${NAME} 2>/dev/null | grep -q "shut off"; do
   sleep 1
 done
 
+sudo rm -rf /var/lib/virt/init/${NAME}
+
 echo "Compressing image..."
 sudo rm -f /var/lib/virt/images/${NAME}_$(date +%y%m%d).qcow2
 sudo qemu-img convert -f qcow2 -O qcow2 -c /var/lib/virt/${NAME}.qcow2 /var/lib/virt/images/${NAME}_$(date +%y%m%d).qcow2
