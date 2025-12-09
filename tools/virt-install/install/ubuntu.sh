@@ -86,8 +86,6 @@ sudo xorriso -as mkisofs \
   /var/lib/virt/init/${NAME}/user-data \
   /var/lib/virt/init/${NAME}/meta-data
 
-sudo rm -rf /var/lib/virt/init/${NAME}
-
 sudo virt-install \
   --name ${NAME} \
   --vcpus 8 \
@@ -105,6 +103,9 @@ sudo virt-install \
 while ! sudo virsh domstate ${NAME} 2>/dev/null | grep -q "shut off"; do
   sleep 1
 done
+
+sudo rm -rf /var/lib/virt/init/${NAME}
+sudo rm -rf /var/lib/virt/init/${NAME}.iso
 
 echo "Compressing image..."
 
