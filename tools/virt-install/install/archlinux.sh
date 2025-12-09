@@ -116,7 +116,8 @@ sudo tee /var/lib/virt/init/${NAME}/archinstall.json << EOF
         "linux-firmware",
         "networkmanager",
         "openssh",
-        "efibootmgr"
+        "efibootmgr",
+        "vi"
     ],
     "parallel downloads": 0,
     "profile_config": {
