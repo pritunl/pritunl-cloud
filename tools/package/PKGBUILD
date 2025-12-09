@@ -2,7 +2,7 @@ targets=(
     "oraclelinux-10"
 )
 pkgname="pritunl-cloud"
-pkgver="2.0.3592.49"
+pkgver="2.0.3665.99"
 pkgrel="2"
 pkgdesc="Pritunl Cloud"
 pkgdesclong=(
