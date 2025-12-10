@@ -4,8 +4,7 @@ import * as VpcTypes from '../types/VpcTypes';
 import * as VpcActions from '../actions/VpcActions';
 import * as OrganizationTypes from "../types/OrganizationTypes";
 import * as PageInfos from './PageInfo';
-import DatacentersStore from "../stores/DatacentersStore";
-import OrganizationsStore from "../stores/OrganizationsStore";
+import CompletionStore from "../stores/CompletionStore";
 import VpcRoute from './VpcRoute';
 import VpcMap from './VpcMap';
 import VpcArp from './VpcArp';
@@ -587,9 +586,9 @@ export default class VpcDetailed extends React.Component<Props, State> {
 		let vpc: VpcTypes.Vpc = this.state.vpc ||
 			this.props.vpc;
 
-		let datacenter = DatacentersStore.datacenter(vpc.datacenter);
+		let datacenter = CompletionStore.datacenter(vpc.datacenter);
 		let datacenterName = datacenter ? datacenter.name : vpc.datacenter;
-		let org = OrganizationsStore.organization(this.props.vpc.organization);
+		let org = CompletionStore.organization(this.props.vpc.organization);
 
 		let subnets = (vpc.subnets || []);
 		if (subnets.length === 0) {
