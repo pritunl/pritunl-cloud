@@ -14,6 +14,7 @@ import PageSwitch from './PageSwitch';
 import PageInfo from './PageInfo';
 import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
+import Relations from './Relations';
 import Help from './Help';
 import PageTextArea from "./PageTextArea";
 
@@ -761,6 +762,7 @@ export default class VpcDetailed extends React.Component<Props, State> {
 							</label>
 						</div>
 						<div className="flex tab-close"/>
+						<Relations kind="vpc" id={this.props.vpc.id}/>
 						<ConfirmButton
 							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
 							style={css.button}
