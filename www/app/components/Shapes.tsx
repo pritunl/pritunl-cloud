@@ -14,12 +14,8 @@ import ConfirmButton from './ConfirmButton';
 import * as DatacenterTypes from "../types/DatacenterTypes";
 import * as ZoneTypes from "../types/ZoneTypes";
 import * as PoolTypes from "../types/PoolTypes";
-import DatacentersStore from "../stores/DatacentersStore";
-import ZonesStore from "../stores/ZonesStore";
-import PoolsStore from "../stores/PoolsStore";
-import * as DatacenterActions from "../actions/DatacenterActions";
-import * as ZoneActions from "../actions/ZoneActions";
-import * as PoolActions from "../actions/PoolActions";
+import CompletionStore from "../stores/CompletionStore";
+import * as CompletionActions from "../actions/CompletionActions";
 
 interface Selected {
 	[key: string]: boolean;
@@ -78,9 +74,9 @@ export default class Shapes extends React.Component<{}, State> {
 		this.state = {
 			shapes: ShapesStore.shapes,
 			filter: ShapesStore.filter,
-			datacenters: DatacentersStore.datacenters,
-			zones: ZonesStore.zones,
-			pools: PoolsStore.pools,
+			datacenters: CompletionStore.datacenters,
+			zones: CompletionStore.zones,
+			pools: CompletionStore.pools,
 			selected: {},
 			opened: {},
 			newOpened: false,
@@ -99,20 +95,14 @@ export default class Shapes extends React.Component<{}, State> {
 
 	componentDidMount(): void {
 		ShapesStore.addChangeListener(this.onChange);
-		DatacentersStore.addChangeListener(this.onChange);
-		ZonesStore.addChangeListener(this.onChange);
-		PoolsStore.addChangeListener(this.onChange);
+		CompletionStore.addChangeListener(this.onChange);
 		ShapeActions.sync();
-		DatacenterActions.sync();
-		ZoneActions.sync();
-		PoolActions.sync();
+		CompletionActions.sync();
 	}
 
 	componentWillUnmount(): void {
 		ShapesStore.removeChangeListener(this.onChange);
-		DatacentersStore.removeChangeListener(this.onChange);
-		ZonesStore.removeChangeListener(this.onChange);
-		PoolsStore.removeChangeListener(this.onChange);
+		CompletionStore.removeChangeListener(this.onChange);
 	}
 
 	onChange = (): void => {
@@ -135,9 +125,9 @@ export default class Shapes extends React.Component<{}, State> {
 			...this.state,
 			shapes: shapes,
 			filter: ShapesStore.filter,
-			datacenters: DatacentersStore.datacenters,
-			zones: ZonesStore.zones,
-			pools: PoolsStore.pools,
+			datacenters: CompletionStore.datacenters,
+			zones: CompletionStore.zones,
+			pools: CompletionStore.pools,
 			selected: selected,
 			opened: opened,
 		});
