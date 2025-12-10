@@ -2,8 +2,7 @@
 import * as React from 'react';
 import * as VpcTypes from '../types/VpcTypes';
 import * as OrganizationTypes from "../types/OrganizationTypes";
-import OrganizationsStore from '../stores/OrganizationsStore';
-import DatacentersStore from '../stores/DatacentersStore';
+import CompletionStore from '../stores/CompletionStore';
 import VpcDetailed from './VpcDetailed';
 
 interface Props {
@@ -103,13 +102,13 @@ export default class Vpc extends React.Component<Props, {}> {
 
 		let orgName = '';
 		if (vpc.organization) {
-			let org = OrganizationsStore.organization(vpc.organization);
+			let org = CompletionStore.organization(vpc.organization);
 			orgName = org ? org.name : vpc.organization;
 		} else {
 			orgName = 'Unknown';
 		}
 
-		let datacenter = DatacentersStore.datacenter(vpc.datacenter);
+		let datacenter = CompletionStore.datacenter(vpc.datacenter);
 		let datacenterName = datacenter ? datacenter.name : vpc.datacenter;
 
 		return <div
