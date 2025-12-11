@@ -15,6 +15,18 @@ class AuthoritiesStore extends EventEmitter {
 	_mapName: {[key: string]: number} = {};
 	_token = Dispatcher.register((this._callback).bind(this));
 
+	_reset(): void {
+		this._authorities = Object.freeze([]);
+		this._authoritiesName = Object.freeze([]);
+		this._page = undefined;
+		this._pageCount = undefined;
+		this._filter = null;
+		this._count = undefined;
+		this._map = {};
+		this._mapName = {};
+		this.emitChange();
+	}
+
 	get authorities(): AuthorityTypes.AuthoritiesRo {
 		return this._authorities;
 	}
@@ -120,6 +132,17 @@ class AuthoritiesStore extends EventEmitter {
 		this._authorities = Object.freeze(authorities);
 		this._page = Math.min(this.pages, this.page);
 
+		this.emitChange();
+	}
+
+	_syncNames(authorities: AuthorityTypes.Authority[]): void {
+		this._mapName = {};
+		for (let i = 0; i < authorities.length; i++) {
+			authorities[i] = Object.freeze(authorities[i]);
+			this._mapName[authorities[i].id] = i;
+		}
+
+		this._authoritiesName = Object.freeze(authorities);
 		this.emitChange();
 	}
 
