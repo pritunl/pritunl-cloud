@@ -6,22 +6,14 @@ import * as GlobalTypes from '../types/GlobalTypes';
 
 class AuthoritiesStore extends EventEmitter {
 	_authorities: AuthorityTypes.AuthoritiesRo = Object.freeze([]);
+	_authoritiesName: AuthorityTypes.AuthoritiesRo = Object.freeze([]);
 	_page: number;
 	_pageCount: number;
 	_filter: AuthorityTypes.Filter = null;
 	_count: number;
 	_map: {[key: string]: number} = {};
+	_mapName: {[key: string]: number} = {};
 	_token = Dispatcher.register((this._callback).bind(this));
-
-	_reset(): void {
-		this._authorities = Object.freeze([]);
-		this._page = undefined;
-		this._pageCount = undefined;
-		this._filter = null;
-		this._count = undefined;
-		this._map = {};
-		this.emitChange();
-	}
 
 	get authorities(): AuthorityTypes.AuthoritiesRo {
 		return this._authorities;
@@ -29,8 +21,23 @@ class AuthoritiesStore extends EventEmitter {
 
 	get authoritiesM(): AuthorityTypes.Authorities {
 		let authorities: AuthorityTypes.Authorities = [];
-		this._authorities.forEach((
-				authority: AuthorityTypes.AuthorityRo): void => {
+		this._authorities.forEach((authority: AuthorityTypes.AuthorityRo): void => {
+			authorities.push({
+				...authority,
+			});
+		});
+		return authorities;
+	}
+
+	get authoritiesName(): AuthorityTypes.AuthoritiesRo {
+		return this._authoritiesName || [];
+	}
+
+	get authoritiesNameM(): AuthorityTypes.Authorities {
+		let authorities: AuthorityTypes.Authorities = [];
+		this._authoritiesName.forEach((
+			authority: AuthorityTypes.AuthorityRo): void => {
+
 			authorities.push({
 				...authority,
 			});
@@ -64,6 +71,14 @@ class AuthoritiesStore extends EventEmitter {
 			return null;
 		}
 		return this._authorities[i];
+	}
+
+	authorityName(id: string): AuthorityTypes.AuthorityRo {
+		let i = this._mapName[id];
+		if (i === undefined) {
+			return null;
+		}
+		return this._authoritiesName[i];
 	}
 
 	emitChange(): void {
@@ -124,6 +139,10 @@ class AuthoritiesStore extends EventEmitter {
 
 			case AuthorityTypes.SYNC:
 				this._sync(action.data.authorities, action.data.count);
+				break;
+
+			case AuthorityTypes.SYNC_NAMES:
+				this._syncNames(action.data.authorities);
 				break;
 		}
 	}
