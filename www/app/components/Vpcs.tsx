@@ -1,12 +1,10 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
-import * as Constants from '../Constants';
 import * as VpcTypes from '../types/VpcTypes';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import VpcsStore from '../stores/VpcsStore';
 import OrganizationsStore from '../stores/OrganizationsStore';
 import * as VpcActions from '../actions/VpcActions';
-import * as OrganizationActions from '../actions/OrganizationActions';
 import Vpc from './Vpc';
 import VpcNew from './VpcNew';
 import VpcsFilter from './VpcsFilter';
@@ -15,8 +13,8 @@ import Page from './Page';
 import PageHeader from './PageHeader';
 import NonState from './NonState';
 import ConfirmButton from './ConfirmButton';
-import DatacentersStore from "../stores/DatacentersStore";
-import * as DatacenterActions from "../actions/DatacenterActions";
+import CompletionStore from "../stores/CompletionStore";
+import * as CompletionActions from "../actions/CompletionActions";
 import * as DatacenterTypes from "../types/DatacenterTypes";
 
 interface Selected {
@@ -107,8 +105,8 @@ export default class Vpcs extends React.Component<{}, State> {
 		this.state = {
 			vpcs: VpcsStore.vpcs,
 			filter: VpcsStore.filter,
-			datacenters: DatacentersStore.datacenters,
-			organizations: OrganizationsStore.organizations,
+			datacenters: CompletionStore.datacenters,
+			organizations: CompletionStore.organizations,
 			network: '',
 			organization: '',
 			datacenter: '',
@@ -130,17 +128,15 @@ export default class Vpcs extends React.Component<{}, State> {
 
 	componentDidMount(): void {
 		VpcsStore.addChangeListener(this.onChange);
-		DatacentersStore.addChangeListener(this.onChange);
+		CompletionStore.addChangeListener(this.onChange);
 		OrganizationsStore.addChangeListener(this.onChange);
 		VpcActions.sync();
-		DatacenterActions.sync();
-		OrganizationActions.sync();
+		CompletionActions.sync();
 	}
 
 	componentWillUnmount(): void {
 		VpcsStore.removeChangeListener(this.onChange);
-		DatacentersStore.removeChangeListener(this.onChange);
-		OrganizationsStore.removeChangeListener(this.onChange);
+		CompletionStore.removeChangeListener(this.onChange);
 	}
 
 	onChange = (): void => {
@@ -163,8 +159,8 @@ export default class Vpcs extends React.Component<{}, State> {
 			...this.state,
 			vpcs: vpcs,
 			filter: VpcsStore.filter,
-			datacenters: DatacentersStore.datacenters,
-			organizations: OrganizationsStore.organizations,
+			datacenters: CompletionStore.datacenters,
+			organizations: CompletionStore.organizations,
 			selected: selected,
 			opened: opened,
 		});
