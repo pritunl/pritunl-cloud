@@ -413,7 +413,7 @@ export default class Vpcs extends React.Component<{}, State> {
 					{newVpcDom}
 					{vpcsDom}
 					<tr className="bp5-card bp5-row" style={css.placeholder}>
-						<td colSpan={6} style={css.placeholder}/>
+						<td colSpan={4} style={css.placeholder}/>
 					</tr>
 				</div>
 			</div>
