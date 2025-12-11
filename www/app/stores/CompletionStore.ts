@@ -1,6 +1,8 @@
 /// <reference path="../References.d.ts"/>
 import Dispatcher from "../dispatcher/Dispatcher"
 import EventEmitter from "../EventEmitter"
+import * as Router from '../Router';
+import * as Constants from '../Constants';
 import * as CompletionTypes from "../types/CompletionTypes"
 import * as OrganizationTypes from "../types/OrganizationTypes"
 import * as AuthorityTypes from "../types/AuthorityTypes"
@@ -16,6 +18,7 @@ import * as PoolTypes from "../types/PoolTypes"
 import * as ZoneTypes from "../types/ZoneTypes"
 import * as ShapeTypes from "../types/ShapeTypes"
 import * as ImageTypes from "../types/ImageTypes"
+import * as StorageTypes from "../types/StorageTypes"
 import * as InstanceTypes from "../types/InstanceTypes"
 import * as FirewallTypes from "../types/FirewallTypes"
 import * as PlanTypes from "../types/PlanTypes"
@@ -25,15 +28,22 @@ import * as PodTypes from "../types/PodTypes"
 import * as GlobalTypes from "../types/GlobalTypes"
 
 class CompletionStore extends EventEmitter {
+	_userOrg: string;
 	_data: CompletionTypes.Completion = Object.freeze({})
 	_map: CompletionTypes.CompletionMap = Object.freeze({})
 	_filter: CompletionTypes.Filter = null;
 	_token = Dispatcher.register((this._callback).bind(this))
 
-	_reset(): void {
+	_reset(userOrg: string): void {
+		this._userOrg = userOrg;
 		this._data = Object.freeze({})
+		this._map = Object.freeze({})
 		this._filter = null
 		this.emitChange()
+	}
+
+	get userOrganization(): string {
+		return this._userOrg;
 	}
 
 	get completion(): CompletionTypes.Completion {
@@ -224,6 +234,18 @@ class CompletionStore extends EventEmitter {
 		return this._data.images[index];
 	}
 
+	get storages(): StorageTypes.StoragesRo {
+		return this._data.storages || [];
+	}
+
+	storage(id: string): StorageTypes.StorageRo {
+		let index = this._map?.storages?.[id];
+		if (index === undefined) {
+			return null;
+		}
+		return this._data.storages[index];
+	}
+
 	get builds(): CompletionTypes.Build[] {
 		return this._data.builds || [];
 	}
@@ -338,7 +360,6 @@ class CompletionStore extends EventEmitter {
 	}
 
 	_sync(completion: CompletionTypes.Completion): void {
-		this._data = Object.freeze(completion)
 		let dataMap: {[key: string]: any} = {}
 		let subnets: VpcTypes.Subnet[] = []
 
@@ -363,17 +384,23 @@ class CompletionStore extends EventEmitter {
 		for (let i = 0; i < subnets.length; i++) {
 			subnetsMap[subnets[i].id] = i
 		}
-		this._data.subnets = subnets
+		completion.subnets = subnets
 		dataMap["subnets"] = subnetsMap
 
+		this._data = Object.freeze(completion)
 		this._map = dataMap as CompletionTypes.CompletionMap
+
+		if (Constants.user && !this._userOrg) {
+			this._userOrg = this._data?.organizations?.[0]?.id
+		}
+
 		this.emitChange()
 	}
 
 	_callback(action: CompletionTypes.CompletionDispatch): void {
 		switch (action.type) {
 			case GlobalTypes.RESET:
-				this._reset()
+				this._reset(action.data.organization)
 				break
 
 			case CompletionTypes.FILTER:
