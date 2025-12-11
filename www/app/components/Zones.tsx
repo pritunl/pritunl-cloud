@@ -2,11 +2,10 @@
 import * as React from 'react';
 import * as ZoneTypes from '../types/ZoneTypes';
 import * as DatacenterTypes from '../types/DatacenterTypes';
-import * as OrganizationTypes from '../types/OrganizationTypes';
 import ZonesStore from '../stores/ZonesStore';
-import DatacentersStore from "../stores/DatacentersStore";
+import CompletionStore from "../stores/CompletionStore";
 import * as ZoneActions from '../actions/ZoneActions';
-import * as DatacenterActions from '../actions/DatacenterActions';
+import * as CompletionActions from '../actions/CompletionActions';
 import Zone from './Zone';
 import ZoneNew from './ZoneNew';
 import ZonesFilter from './ZonesFilter';
@@ -70,7 +69,7 @@ export default class Zones extends React.Component<{}, State> {
 		super(props, context);
 		this.state = {
 			zones: ZonesStore.zones,
-			datacenters: DatacentersStore.datacenters,
+			datacenters: CompletionStore.datacenters,
 			filter: ZonesStore.filter,
 			selected: {},
 			opened: {},
@@ -90,14 +89,14 @@ export default class Zones extends React.Component<{}, State> {
 
 	componentDidMount(): void {
 		ZonesStore.addChangeListener(this.onChange);
-		DatacentersStore.addChangeListener(this.onChange);
+		CompletionStore.addChangeListener(this.onChange);
 		ZoneActions.sync();
-		DatacenterActions.sync();
+		CompletionActions.sync();
 	}
 
 	componentWillUnmount(): void {
 		ZonesStore.removeChangeListener(this.onChange);
-		DatacentersStore.removeChangeListener(this.onChange);
+		CompletionStore.removeChangeListener(this.onChange);
 	}
 
 	onChange = (): void => {
@@ -119,7 +118,7 @@ export default class Zones extends React.Component<{}, State> {
 		this.setState({
 			...this.state,
 			zones: zones,
-			datacenters: DatacentersStore.datacenters,
+			datacenters: CompletionStore.datacenters,
 			filter: ZonesStore.filter,
 			selected: selected,
 			opened: opened,
