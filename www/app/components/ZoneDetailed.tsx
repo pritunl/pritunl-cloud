@@ -8,6 +8,7 @@ import PageInfo from './PageInfo';
 import PageSave from './PageSave';
 import PageSelect from './PageSelect';
 import ConfirmButton from './ConfirmButton';
+import Relations from './Relations';
 import PageTextArea from "./PageTextArea";
 
 interface Props {
@@ -213,6 +214,7 @@ export default class ZoneDetailed extends React.Component<Props, State> {
 							</label>
 						</div>
 						<div className="flex tab-close"/>
+						<Relations kind="zone" id={this.props.zone.id}/>
 						<ConfirmButton
 							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
 							style={css.button}
