@@ -403,6 +403,10 @@ class CompletionStore extends EventEmitter {
 				this._reset(action.data.organization)
 				break
 
+			case GlobalTypes.RELOAD:
+				Router.refresh()
+				break;
+
 			case CompletionTypes.FILTER:
 				this._filterCallback(action.data.filter)
 				break
