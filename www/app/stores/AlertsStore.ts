@@ -13,6 +13,15 @@ class AlertsStore extends EventEmitter {
 	_map: {[key: string]: number} = {};
 	_token = Dispatcher.register((this._callback).bind(this));
 
+	_reset(): void {
+		this._alerts = Object.freeze([]);
+		this._page = undefined;
+		this._pageCount = undefined;
+		this._count = undefined;
+		this._map = {};
+		this.emitChange();
+	}
+
 	get alerts(): AlertTypes.AlertsRo {
 		return this._alerts;
 	}
@@ -99,6 +108,10 @@ class AlertsStore extends EventEmitter {
 
 	_callback(action: AlertTypes.AlertDispatch): void {
 		switch (action.type) {
+			case GlobalTypes.RESET:
+				this._reset();
+				break;
+
 			case AlertTypes.TRAVERSE:
 				this._traverse(action.data.page);
 				break;
