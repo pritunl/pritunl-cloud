@@ -11,6 +11,7 @@ class PodsStore extends EventEmitter {
 	_filter: PodTypes.Filter = null;
 	_count: number;
 	_map: {[key: string]: number} = {};
+	_drafts: {[key: string]: PodTypes.Unit[]} = {};
 	_token = Dispatcher.register((this._callback).bind(this));
 
 	_reset(): void {
@@ -65,6 +66,18 @@ class PodsStore extends EventEmitter {
 		return this._pods[i];
 	}
 
+	getDrafts(id: string): PodTypes.Unit[] {
+		let drafts = this._drafts[id];
+		if (!drafts) {
+			drafts = this.pod(id)?.drafts
+		}
+		return drafts
+	}
+
+	setDrafts(id: string, drafts: PodTypes.Unit[]) {
+		this._drafts[id] = drafts;
+	}
+
 	emitChange(): void {
 		this.emitDefer(GlobalTypes.CHANGE);
 	}
@@ -99,6 +112,7 @@ class PodsStore extends EventEmitter {
 
 	_sync(pods: PodTypes.Pod[], count: number): void {
 		this._map = {};
+		this._drafts = {};
 		for (let i = 0; i < pods.length; i++) {
 			pods[i] = Object.freeze(pods[i]);
 			this._map[pods[i].id] = i;
