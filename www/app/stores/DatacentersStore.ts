@@ -6,11 +6,13 @@ import * as GlobalTypes from '../types/GlobalTypes';
 
 class DatacentersStore extends EventEmitter {
 	_datacenters: DatacenterTypes.DatacentersRo = Object.freeze([]);
+	_datacentersName: DatacenterTypes.DatacentersRo = Object.freeze([]);
 	_page: number;
 	_pageCount: number;
 	_filter: DatacenterTypes.Filter = null;
 	_count: number;
 	_map: {[key: string]: number} = {};
+	_mapName: {[key: string]: number} = {};
 	_token = Dispatcher.register((this._callback).bind(this));
 
 	_reset(): void {
@@ -30,6 +32,22 @@ class DatacentersStore extends EventEmitter {
 	get datacentersM(): DatacenterTypes.Datacenters {
 		let datacenters: DatacenterTypes.Datacenters = [];
 		this._datacenters.forEach((
+			datacenter: DatacenterTypes.DatacenterRo): void => {
+
+			datacenters.push({
+				...datacenter,
+			});
+		});
+		return datacenters;
+	}
+
+	get datacentersName(): DatacenterTypes.DatacentersRo {
+		return this._datacentersName || [];
+	}
+
+	get datacentersNameM(): DatacenterTypes.Datacenters {
+		let datacenters: DatacenterTypes.Datacenters = [];
+		this._datacentersName.forEach((
 			datacenter: DatacenterTypes.DatacenterRo): void => {
 
 			datacenters.push({
@@ -65,6 +83,14 @@ class DatacentersStore extends EventEmitter {
 			return null;
 		}
 		return this._datacenters[i];
+	}
+
+	datacenterName(id: string): DatacenterTypes.DatacenterRo {
+		let i = this._mapName[id];
+		if (i === undefined) {
+			return null;
+		}
+		return this._datacentersName[i];
 	}
 
 	emitChange(): void {
@@ -109,6 +135,17 @@ class DatacentersStore extends EventEmitter {
 		this.emitChange();
 	}
 
+	_syncNames(datacenters: DatacenterTypes.Datacenter[]): void {
+		this._mapName = {};
+		for (let i = 0; i < datacenters.length; i++) {
+			datacenters[i] = Object.freeze(datacenters[i]);
+			this._mapName[datacenters[i].id] = i;
+		}
+
+		this._datacentersName = Object.freeze(datacenters);
+		this.emitChange();
+	}
+
 	_callback(action: DatacenterTypes.DatacenterDispatch): void {
 		switch (action.type) {
 			case GlobalTypes.RESET:
@@ -125,6 +162,10 @@ class DatacentersStore extends EventEmitter {
 
 			case DatacenterTypes.SYNC:
 				this._sync(action.data.datacenters, action.data.count);
+				break;
+
+			case DatacenterTypes.SYNC_NAMES:
+				this._syncNames(action.data.datacenters);
 				break;
 		}
 	}
