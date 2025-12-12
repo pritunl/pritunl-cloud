@@ -6,7 +6,6 @@ import * as OrganizationTypes from '../types/OrganizationTypes';
 import * as GlobalTypes from '../types/GlobalTypes';
 
 class OrganizationsStore extends EventEmitter {
-	_current: string;
 	_organizations: OrganizationTypes.OrganizationsRo = Object.freeze([]);
 	_page: number;
 	_pageCount: number;
@@ -15,8 +14,7 @@ class OrganizationsStore extends EventEmitter {
 	_map: {[key: string]: number} = {};
 	_token = Dispatcher.register((this._callback).bind(this));
 
-	_reset(current: string): void {
-		this._current = current;
+	_reset(): void {
 		this._organizations = Object.freeze([]);
 		this._page = undefined;
 		this._pageCount = undefined;
@@ -24,10 +22,6 @@ class OrganizationsStore extends EventEmitter {
 		this._count = undefined;
 		this._map = {};
 		this.emitChange();
-	}
-
-	get current(): string {
-		return this._current;
 	}
 
 	get organizations(): OrganizationTypes.OrganizationsRo {
@@ -101,14 +95,6 @@ class OrganizationsStore extends EventEmitter {
 	}
 
 	_sync(organizations: OrganizationTypes.Organization[], count: number): void {
-		if (Constants.user && !this._current) {
-			if (organizations.length) {
-				this._current = organizations[0].id;
-			} else {
-				this._current = null;
-			}
-		}
-
 		this._map = {};
 		for (let i = 0; i < organizations.length; i++) {
 			organizations[i] = Object.freeze(organizations[i]);
@@ -125,11 +111,7 @@ class OrganizationsStore extends EventEmitter {
 	_callback(action: OrganizationTypes.OrganizationDispatch): void {
 		switch (action.type) {
 			case GlobalTypes.RESET:
-				this._reset(action.data.current);
-				break;
-
-			case GlobalTypes.RELOAD:
-				window.location.hash = '#/reload';
+				this._reset();
 				break;
 
 			case OrganizationTypes.TRAVERSE:
