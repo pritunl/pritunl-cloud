@@ -21,6 +21,7 @@ class PodsStore extends EventEmitter {
 		this._filter = null;
 		this._count = undefined;
 		this._map = {};
+		this._drafts = {};
 		this.emitChange();
 	}
 
