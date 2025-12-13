@@ -1,5 +1,6 @@
 /// <reference path="../References.d.ts"/>
 export const SYNC = 'authority.sync';
+export const SYNC_NAMES = 'authority.sync_names';
 export const TRAVERSE = 'authority.traverse';
 export const FILTER = 'authority.filter';
 export const CHANGE = 'authority.change';
