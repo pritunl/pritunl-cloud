@@ -99,6 +99,7 @@ export interface Filter {
 export interface CompletionDispatch {
 	type: string
 	data?: {
+		organization?: string
 		completion?: Completion
 		filter?: Filter
 	}
