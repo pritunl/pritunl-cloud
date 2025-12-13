@@ -14,6 +14,7 @@ import * as PoolTypes from "./PoolTypes"
 import * as ZoneTypes from "./ZoneTypes"
 import * as ShapeTypes from "./ShapeTypes"
 import * as ImageTypes from "./ImageTypes"
+import * as StorageTypes from "./StorageTypes"
 import * as InstanceTypes from "./InstanceTypes"
 import * as FirewallTypes from "./FirewallTypes"
 import * as PlanTypes from "./PlanTypes"
@@ -41,6 +42,7 @@ export interface Completion {
 	zones?: ZoneTypes.Zone[]
 	shapes?: ShapeTypes.Shape[]
 	images?: ImageTypes.Image[]
+	storages?: StorageTypes.Storage[]
 	builds?: Build[];
 	instances?: InstanceTypes.Instance[]
 	firewalls?: FirewallTypes.Firewall[]
@@ -67,6 +69,7 @@ export interface CompletionMap {
 	zones?: {[key: string]: number}
 	shapes?: {[key: string]: number}
 	images?: {[key: string]: number}
+	storages?: {[key: string]: number}
 	builds?: {[key: string]: number}
 	instances?: {[key: string]: number}
 	firewalls?: {[key: string]: number}
