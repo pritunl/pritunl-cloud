@@ -17,11 +17,13 @@ class ZonesStore extends EventEmitter {
 
 	_reset(): void {
 		this._zones = Object.freeze([]);
+		this._zonesName = Object.freeze([]);
 		this._page = undefined;
 		this._pageCount = undefined;
 		this._filter = null;
 		this._count = undefined;
 		this._map = {};
+		this._mapName = {};
 		this.emitChange();
 	}
 
