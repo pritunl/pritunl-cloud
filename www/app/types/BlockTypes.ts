@@ -16,6 +16,8 @@ export interface Block {
 	netmask?: string;
 	gateway?: string;
 	gateway6?: string;
+	available?: number;
+	capacity?: number;
 }
 
 export type Blocks = Block[];
