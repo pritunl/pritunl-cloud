@@ -6,11 +6,13 @@ import * as GlobalTypes from '../types/GlobalTypes';
 
 class ZonesStore extends EventEmitter {
 	_zones: ZoneTypes.ZonesRo = Object.freeze([]);
+	_zonesName: ZoneTypes.ZonesRo = Object.freeze([]);
 	_page: number;
 	_pageCount: number;
 	_filter: ZoneTypes.Filter = null;
 	_count: number;
 	_map: {[key: string]: number} = {};
+	_mapName: {[key: string]: number} = {};
 	_token = Dispatcher.register((this._callback).bind(this));
 
 	_reset(): void {
@@ -30,6 +32,22 @@ class ZonesStore extends EventEmitter {
 	get zonesM(): ZoneTypes.Zones {
 		let zones: ZoneTypes.Zones = [];
 		this._zones.forEach((zone: ZoneTypes.ZoneRo): void => {
+			zones.push({
+				...zone,
+			});
+		});
+		return zones;
+	}
+
+	get zonesName(): ZoneTypes.ZonesRo {
+		return this._zonesName || [];
+	}
+
+	get zonesNameM(): ZoneTypes.Zones {
+		let zones: ZoneTypes.Zones = [];
+		this._zonesName.forEach((
+			zone: ZoneTypes.ZoneRo): void => {
+
 			zones.push({
 				...zone,
 			});
@@ -63,6 +81,14 @@ class ZonesStore extends EventEmitter {
 			return null;
 		}
 		return this._zones[i];
+	}
+
+	zoneName(id: string): ZoneTypes.ZoneRo {
+		let i = this._mapName[id];
+		if (i === undefined) {
+			return null;
+		}
+		return this._zonesName[i];
 	}
 
 	emitChange(): void {
@@ -107,6 +133,17 @@ class ZonesStore extends EventEmitter {
 		this.emitChange();
 	}
 
+	_syncNames(zones: ZoneTypes.Zone[]): void {
+		this._mapName = {};
+		for (let i = 0; i < zones.length; i++) {
+			zones[i] = Object.freeze(zones[i]);
+			this._mapName[zones[i].id] = i;
+		}
+
+		this._zonesName = Object.freeze(zones);
+		this.emitChange();
+	}
+
 	_callback(action: ZoneTypes.ZoneDispatch): void {
 		switch (action.type) {
 			case GlobalTypes.RESET:
@@ -123,6 +160,10 @@ class ZonesStore extends EventEmitter {
 
 			case ZoneTypes.SYNC:
 				this._sync(action.data.zones, action.data.count);
+				break;
+
+			case ZoneTypes.SYNC_NAMES:
+				this._syncNames(action.data.zones);
 				break;
 		}
 	}
