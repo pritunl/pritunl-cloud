@@ -1,5 +1,6 @@
 /// <reference path="../References.d.ts"/>
 export const SYNC = 'datacenter.sync';
+export const SYNC_NAMES = 'datacenter.sync_names';
 export const TRAVERSE = 'datacenter.traverse';
 export const FILTER = 'datacenter.filter';
 export const CHANGE = 'datacenter.change';
