@@ -1,5 +1,7 @@
 /// <reference path="../References.d.ts"/>
 export const SYNC = 'certificate.sync';
+export const TRAVERSE = 'certificate.traverse';
+export const FILTER = 'certificate.filter';
 export const CHANGE = 'certificate.change';
 
 export interface Info {
@@ -26,6 +28,12 @@ export interface Certificate {
 	acme_domains?: string[];
 }
 
+export interface Filter {
+	id?: string;
+	name?: string;
+	comment?: string;
+}
+
 export type Certificates = Certificate[];
 
 export type CertificateRo = Readonly<Certificate>;
@@ -37,5 +45,9 @@ export interface CertificateDispatch {
 		id?: string;
 		certificate?: Certificate;
 		certificates?: Certificates;
+		page?: number;
+		pageCount?: number;
+		filter?: Filter;
+		count?: number;
 	};
 }
