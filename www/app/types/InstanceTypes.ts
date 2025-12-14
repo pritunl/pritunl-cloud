@@ -44,6 +44,7 @@ export interface Instance {
 	network_namespace?: string;
 	host_ips?: string[];
 	node_port_ips?: string[];
+	node_ports?: NodePort[];
 	public_mac?: string;
 	name?: string;
 	comment?: string;
@@ -139,6 +140,14 @@ export interface DriveDevice {
 export interface CloudSubnet {
 	id?: string;
 	name?: string;
+}
+
+export interface NodePort {
+	node_port?: string;
+	protocol?: string;
+	external_port?: number;
+	internal_port?: number;
+	delete?: boolean;
 }
 
 export interface Guest {
