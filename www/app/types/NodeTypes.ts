@@ -58,7 +58,7 @@ export interface Node {
 	hugepages?: boolean;
 	hugepages_size?: number;
 	firewall?: boolean;
-	network_roles?: string[];
+	roles?: string[];
 	requests_min?: number;
 	cpu_units?: number;
 	memory_units?: number;
@@ -120,7 +120,7 @@ export interface Filter {
 	id?: string;
 	name?: string;
 	zone?: string;
-	network_role?: string;
+	role?: string;
 	admin?: boolean;
 	user?: boolean;
 	hypervisor?: boolean;
