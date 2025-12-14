@@ -34,10 +34,10 @@ export interface Node {
 	external_interfaces?: string[];
 	internal_interfaces?: string[];
 	external_interfaces6?: string[];
-	available_interfaces?: string[];
+	available_interfaces?: Interface[];
 	available_vpcs?: Vpc[];
-	oracle_subnets?: string[];
-	available_bridges?: string[];
+	cloud_subnets?: string[];
+	available_bridges?: Interface[];
 	default_interface?: string;
 	blocks?: BlockAttachment[];
 	blocks6?: BlockAttachment[];
@@ -129,6 +129,11 @@ export interface Filter {
 export interface BlockAttachment {
 	interface?: string;
 	block?: string;
+}
+
+export interface Interface {
+	name?: string;
+	address?: string;
 }
 
 export type Nodes = Node[];
