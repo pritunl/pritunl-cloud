@@ -50,7 +50,7 @@ export interface Instance {
 	init_disk_size?: number;
 	memory?: number;
 	processors?: number;
-	network_roles?: string[];
+	roles?: string[];
 	isos?: Iso[];
 	usb_devices?: UsbDevice[];
 	pci_devices?: PciDevice[];
@@ -71,7 +71,7 @@ export interface Instance {
 	no_host_address?: boolean;
 	vpc?: string;
 	subnet?: string;
-	oracle_subnet?: string;
+	cloud_subnet?: string;
 	count?: number;
 	guest?: Guest;
 	info?: Info;
@@ -82,7 +82,7 @@ export interface Filter {
 	name?: string;
 	comment?: string;
 	state?: string;
-	network_role?: string;
+	role?: string;
 	network_namespace?: string;
 	organization?: string;
 	node?: string;
@@ -135,7 +135,7 @@ export interface DriveDevice {
 	id?: string;
 }
 
-export interface OracleSubnet {
+export interface CloudSubnet {
 	id?: string;
 	name?: string;
 }
