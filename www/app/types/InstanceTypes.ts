@@ -128,6 +128,7 @@ export interface IscsiDevice {
 export interface Mount {
 	name?: string;
 	type?: string;
+	path?: string;
 	host_path?: string;
 }
 
