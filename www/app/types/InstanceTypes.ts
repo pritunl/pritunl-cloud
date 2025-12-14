@@ -162,7 +162,7 @@ export interface Info {
 	usb_devices?: UsbDevice[];
 	pci_devices?: PciDevice[];
 	drive_devices?: DriveDevice[];
-	oracle_subnets?: OracleSubnet[];
+	cloud_subnets?: CloudSubnet[];
 }
 
 export function FirewallFields(info: Info): PageInfos.Field[] {
