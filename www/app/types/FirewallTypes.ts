@@ -15,7 +15,7 @@ export interface Firewall {
 	name?: string;
 	comment?: string;
 	organization?: string;
-	network_roles?: string[];
+	roles?: string[];
 	ingress?: Rule[];
 }
 
@@ -23,7 +23,7 @@ export interface Filter {
 	id?: string;
 	name?: string;
 	comment?: string;
-	network_role?: string;
+	role?: string;
 	organization?: string;
 }
 
