@@ -100,8 +100,8 @@ export interface InstanceData {
 	public_ips6?: string[];
 	private_ips?: string[];
 	private_ips6?: string[];
-	oracle_private_ips?: string[];
-	oracle_public_ips?: string[];
+	cloud_private_ips?: string[];
+	cloud_public_ips?: string[];
 }
 
 export interface DomainData {
