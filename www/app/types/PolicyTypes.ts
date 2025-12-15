@@ -1,5 +1,7 @@
 /// <reference path="../References.d.ts"/>
 export const SYNC = 'policy.sync';
+export const TRAVERSE = 'policy.traverse';
+export const FILTER = 'policy.filter';
 export const CHANGE = 'policy.change';
 
 export interface Rule {
@@ -21,6 +23,12 @@ export interface Policy {
 	user_device_secondary?: boolean;
 }
 
+export interface Filter {
+	id?: string;
+	name?: string;
+	comment?: string;
+}
+
 export type Policies = Policy[];
 
 export type PolicyRo = Readonly<Policy>;
@@ -32,5 +40,9 @@ export interface PolicyDispatch {
 		id?: string;
 		policy?: Policy;
 		policies?: Policies;
+		page?: number;
+		pageCount?: number;
+		filter?: Filter;
+		count?: number;
 	};
 }
