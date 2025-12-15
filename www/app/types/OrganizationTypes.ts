@@ -1,6 +1,8 @@
 /// <reference path="../References.d.ts"/>
 export const SYNC = 'organization.sync';
 export const CHANGE = 'organization.change';
+export const TRAVERSE = 'organization.traverse';
+export const FILTER = 'organization.filter';
 export const CURRENT = 'organization.current';
 
 export interface Organization {
@@ -8,6 +10,12 @@ export interface Organization {
 	name?: string;
 	comment?: string;
 	roles?: string[];
+}
+
+export interface Filter {
+	id?: string;
+	name?: string;
+	comment?: string;
 }
 
 export type Organizations = Organization[];
@@ -21,6 +29,9 @@ export interface OrganizationDispatch {
 		id?: string;
 		organization?: Organization;
 		organizations?: Organizations;
-		current?: string;
+		page?: number;
+		pageCount?: number;
+		filter?: Filter;
+		count?: number;
 	};
 }
