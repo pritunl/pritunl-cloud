@@ -81,6 +81,26 @@ export interface Node {
 	oracle_public_key?: string;
 }
 
+export function GetAllIfaces(node: Node): Interface[] {
+	const bridges = node.available_bridges ?? [];
+	const interfaces = node.available_interfaces ?? [];
+
+	const bridgeNames = new Set(
+		bridges
+			.map(bridge => bridge.name)
+			.filter(name => name !== undefined)
+	);
+
+	const nonConflictingInterfaces = interfaces.filter(iface => {
+		return iface.name === undefined || !bridgeNames.has(iface.name);
+	});
+
+	return [
+		...bridges,
+		...nonConflictingInterfaces
+	];
+}
+
 export interface Vpc {
 	id?: string;
 	name?: string;
