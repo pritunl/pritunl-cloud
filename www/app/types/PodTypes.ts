@@ -83,7 +83,6 @@ export interface Deployment {
 	instance_status?: string;
 	instance_uptime?: string;
 	instance_state?: string;
-	instance_virt_state?: string;
 	instance_guest_status?: string;
 	instance_timestamp?: string;
 	instance_heartbeat?: string;
