@@ -77,6 +77,7 @@ export interface Node {
 	software_version?: string;
 	hostname?: string;
 	oracle_user?: string;
+	oracle_tenancy?: string;
 	oracle_public_key?: string;
 }
 
