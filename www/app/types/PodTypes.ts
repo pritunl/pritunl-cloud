@@ -21,8 +21,8 @@ export interface Unit {
 	kind?: string;
 	spec?: string;
 	spec_index?: number
-	last_commit?: string;
-	deploy_commit?: string;
+	last_spec?: string;
+	deploy_spec?: string;
 	delete?: boolean;
 	new?: boolean;
 }
