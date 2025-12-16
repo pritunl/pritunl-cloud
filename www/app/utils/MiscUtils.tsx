@@ -423,6 +423,30 @@ export function formatDateShortTime(dateStr: string): string {
 	return str;
 }
 
+export function naturalSort(a: string, b: string): number {
+	const regex = /(\d+)|(\D+)/g;
+	const aParts = a.match(regex) || [];
+	const bParts = b.match(regex) || [];
+
+	for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
+		if (!aParts[i]) return -1;
+		if (!bParts[i]) return 1;
+
+		const aIsNum = /^\d+$/.test(aParts[i]);
+		const bIsNum = /^\d+$/.test(bParts[i]);
+
+		if (aIsNum && bIsNum) {
+			const diff = parseInt(aParts[i], 10) - parseInt(bParts[i], 10);
+			if (diff !== 0) return diff;
+		} else {
+			const diff = aParts[i].localeCompare(bParts[i]);
+			if (diff !== 0) return diff;
+		}
+	}
+
+	return 0;
+};
+
 export function humanReadableSpeedMb(speedMb: number): string {
   if (!speedMb || speedMb <= 0) {
     return '';
