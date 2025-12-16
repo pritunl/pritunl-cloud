@@ -210,13 +210,13 @@ export function formatSinceLocal(dateStr: string): string {
 	const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
 	if (seconds < 60) {
-		return `${seconds} seconds ago`;
+		return `${seconds} secs ago`;
 	} else if (seconds < 3600) {
 		const minutes = Math.floor(seconds / 60);
-		return `${minutes} minutes ago`;
+		return `${minutes} mins ago`;
 	} else if (seconds < 86400) {
 		const hours = Math.floor(seconds / 3600);
-		return `${hours} hours ago`;
+		return `${hours} hrs ago`;
 	} else {
 		const days = Math.floor(seconds / 86400);
 		return `${days} days ago`;
