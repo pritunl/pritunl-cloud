@@ -3,7 +3,7 @@ import * as SuperAgent from 'superagent';
 import * as Alert from '../Alert';
 import * as Csrf from '../Csrf';
 import * as RelationTypes from '../types/RelationTypes';
-import OrganizationsStore from '../stores/OrganizationsStore';
+import CompletionStore from "../stores/CompletionStore";
 
 export function load(kind: string,
 	id: string): Promise<RelationTypes.Relation> {
@@ -13,7 +13,7 @@ export function load(kind: string,
 			.get("/relations/" + kind + "/" + id)
 			.set('Accept', 'application/json')
 			.set('Csrf-Token', Csrf.token)
-			.set('Organization', OrganizationsStore.current)
+			.set('Organization', CompletionStore.userOrganization)
 			.end((err: any, res: SuperAgent.Response): void => {
 				if (res && res.status === 401) {
 					window.location.href = '/login';
