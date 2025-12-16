@@ -1,5 +1,6 @@
 /// <reference path="../References.d.ts"/>
 export const SYNC = 'zone.sync';
+export const SYNC_NAMES = 'zone.sync_names';
 export const TRAVERSE = 'zone.traverse';
 export const FILTER = 'zone.filter';
 export const CHANGE = 'zone.change';
