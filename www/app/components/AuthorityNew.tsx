@@ -416,8 +416,8 @@ export default class AuthorityNew extends React.Component<Props, State> {
 						>
 							Principals
 							<Help
-								title="Roles"
-								content="Roles that will be matched with authority principles. Roles are case-sensitive."
+								title="Principals"
+								content="Principals that will be matched with SSH certificate authority principles. Principal are case-sensitive."
 							/>
 							<div>
 								{roles}
@@ -456,8 +456,8 @@ export default class AuthorityNew extends React.Component<Props, State> {
 						<label className="bp5-label">
 							Roles
 							<Help
-								title="Network Roles"
-								content="Network roles that will be matched with authorities. Network roles are case-sensitive."
+								title="Roles"
+								content="Roles that will be matched with authorities. Roles are case-sensitive."
 							/>
 							<div>
 								{networkRoles}
