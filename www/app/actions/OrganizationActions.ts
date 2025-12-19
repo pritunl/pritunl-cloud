@@ -51,7 +51,7 @@ export function sync(): Promise<void> {
 				Dispatcher.dispatch({
 					type: OrganizationTypes.SYNC,
 					data: {
-						organizations: res.body,
+						organizations: res.body.organizations,
 						count: res.body.count,
 					},
 				});
