@@ -151,7 +151,7 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
 		}
 
 		let roles = [
-			...(authority.roles || []),
+			...(authority.principals || []),
 		];
 
 
@@ -160,7 +160,7 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
 		}
 
 		roles.sort();
-		authority.roles = roles;
+		authority.principals = roles;
 
 		this.setState({
 			...this.state,
@@ -185,7 +185,7 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
 		}
 
 		let roles = [
-			...(authority.roles || []),
+			...(authority.principals || []),
 		];
 
 		let i = roles.indexOf(role);
@@ -194,7 +194,7 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
 		}
 
 		roles.splice(i, 1);
-		authority.roles = roles;
+		authority.principals = roles;
 
 		this.setState({
 			...this.state,
@@ -223,7 +223,7 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
 		}
 
 		let networkRoles = [
-			...(authority.network_roles || []),
+			...(authority.roles || []),
 		];
 
 
@@ -232,7 +232,7 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
 		}
 
 		networkRoles.sort();
-		authority.network_roles = networkRoles;
+		authority.roles = networkRoles;
 
 		this.setState({
 			...this.state,
@@ -257,7 +257,7 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
 		}
 
 		let networkRoles = [
-			...(authority.network_roles || []),
+			...(authority.roles || []),
 		];
 
 		let i = networkRoles.indexOf(networkRole);
@@ -266,7 +266,7 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
 		}
 
 		networkRoles.splice(i, 1);
-		authority.network_roles = networkRoles;
+		authority.roles = networkRoles;
 
 		this.setState({
 			...this.state,
@@ -366,7 +366,7 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
 		}
 
 		let roles: JSX.Element[] = [];
-		(authority.roles || []).forEach((role) => {
+		(authority.principals || []).forEach((role) => {
 			roles.push(
 				<div
 					className="bp5-tag bp5-tag-removable bp5-intent-primary"
@@ -386,7 +386,7 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
 		})
 
 		let networkRoles: JSX.Element[] = [];
-		(authority.network_roles || []).forEach((role) => {
+		(authority.roles || []).forEach((role) => {
 			networkRoles.push(
 				<div
 					className="bp5-tag bp5-tag-removable bp5-intent-primary"
@@ -511,7 +511,7 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
 						className="bp5-label"
 						hidden={authority.type !== 'ssh_certificate'}
 					>
-						Roles
+						Principals
 						<Help
 							title="Roles"
 							content="Roles that will be matched with authority principles. Roles are case-sensitive."
@@ -526,7 +526,7 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
 						hidden={authority.type !== 'ssh_certificate'}
 						label="Add"
 						type="text"
-						placeholder="Add role"
+						placeholder="Add principal"
 						value={this.state.addRole}
 						onChange={(val): void => {
 							this.setState({
@@ -559,7 +559,7 @@ export default class AuthorityDetailed extends React.Component<Props, State> {
 						{organizationsSelect}
 					</PageSelect>
 					<label className="bp5-label">
-						Network Roles
+						Roles
 						<Help
 							title="Network Roles"
 							content="Network roles that will be matched with authorities. Network roles are case-sensitive."
