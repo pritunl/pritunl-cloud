@@ -115,17 +115,17 @@ export default class AuthoritiesFilter extends React.Component<Props, {}> {
 			/>
 			<SearchInput
 				style={css.role}
-				placeholder="Network Role"
-				value={this.props.filter.network_role}
+				placeholder="Principal"
+				value={this.props.filter.principal}
 				onChange={(val: string): void => {
 					let filter = {
 						...this.props.filter,
 					};
 
 					if (val) {
-						filter.network_role = val;
+						filter.principal = val;
 					} else {
-						delete filter.network_role;
+						delete filter.principal;
 					}
 
 					this.props.onFilter(filter);
