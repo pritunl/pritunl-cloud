@@ -138,7 +138,7 @@ export default class Block extends React.Component<Props, {}> {
 					style={css.icon}
 					className="bp5-icon-standard bp5-text-muted bp5-icon-cloud"
 				/>
-				{block.gateway}
+				{block.gateway || block.gateway6}
 			</div>
 		</div>;
 	}
