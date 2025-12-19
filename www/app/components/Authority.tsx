@@ -101,7 +101,7 @@ export default class Authority extends React.Component<Props, {}> {
 		};
 
 		let networkRoles: JSX.Element[] = [];
-		for (let networkRole of (authority.network_roles || [])) {
+		for (let networkRole of (authority.roles || [])) {
 			networkRoles.push(
 				<div
 					className="bp5-tag bp5-intent-primary"
