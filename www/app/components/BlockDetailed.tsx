@@ -674,7 +674,7 @@ export default class BlockDetailed extends React.Component<Props, State> {
 						disabled={this.state.disabled}
 						hidden={block.type !== 'ipv6'}
 						label="IPv6 Gateway"
-						help="Gateway address of IPv6 block"
+						help="Gateway address of IPv6 block. Can be left blank to get gateway from router advertisement."
 						type="text"
 						placeholder="Enter IPv6 gateway"
 						value={block.gateway6}
