@@ -9,6 +9,7 @@ import PageInput from './PageInput';
 import PageInfo from './PageInfo';
 import PageSelect from './PageSelect';
 import PageSelectButton from './PageSelectButton';
+import PageNumInput from './PageNumInput';
 import PageSwitch from './PageSwitch';
 import PageCreate from './PageCreate';
 import ConfirmButton from './ConfirmButton';
@@ -440,18 +441,6 @@ export default class DatacenterDetailed extends React.Component<Props, State> {
 						/>
 						<PageSelect
 							disabled={this.state.disabled}
-							label="Network Mode"
-							help="Network mode for internal VPC networking. If layer 2 networking with VLAN support isn't available VXLan must be used. A network bridge is required for the node internal interfaces when using default."
-							value={datacenter.network_mode}
-							onChange={(val): void => {
-								this.set('network_mode', val);
-							}}
-						>
-							<option value="default">Default</option>
-							<option value="vxlan_vlan">VXLAN</option>
-						</PageSelect>
-						<PageSelect
-							disabled={this.state.disabled}
 							label="Private Storage"
 							help="Private storage that will store instance snapshots and pod images."
 							value={datacenter.private_storage}
@@ -568,6 +557,33 @@ export default class DatacenterDetailed extends React.Component<Props, State> {
 						>
 							{organizationsSelect}
 						</PageSelectButton>
+						<PageSelect
+							disabled={this.state.disabled}
+							label="Network Mode"
+							help="Network mode for internal VPC networking. If layer 2 networking with VLAN support isn't available VXLan must be used. A network bridge is required for the node internal interfaces when using default."
+							value={datacenter.network_mode}
+							onChange={(val): void => {
+								this.set('network_mode', val);
+							}}
+						>
+							<option value="default">Default</option>
+							<option value="vxlan_vlan">VXLAN</option>
+						</PageSelect>
+						<PageNumInput
+							label="Jumbo Frames MTU"
+							help="Custom MTU size for jumbo frames. The node must have the jumbo frame option enabled to use this option. Defaults to 9000."
+							placeholder="9000"
+							min={0}
+							minorStepSize={1}
+							stepSize={1}
+							majorStepSize={1}
+							disabled={this.state.disabled}
+							selectAllOnFocus={true}
+							onChange={(val: number): void => {
+								this.set('jumbo_mtu', val);
+							}}
+							value={datacenter.jumbo_mtu || undefined}
+						/>
 					</div>
 				</div>
 				<PageCreate
