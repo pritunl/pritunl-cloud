@@ -21,6 +21,15 @@ func (n *NetConf) hostNet(db *database.Database) (err error) {
 		if err != nil {
 			return
 		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"tc", "qdisc", "replace", "dev", n.SystemHostIface,
+			"root", "fq_codel",
+		)
+		if err != nil {
+			return err
+		}
 	}
 
 	return
@@ -94,6 +103,16 @@ func (n *NetConf) hostSpace(db *database.Database) (err error) {
 		)
 		if err != nil {
 			return
+		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", n.Namespace,
+			"tc", "qdisc", "replace", "dev", n.SpaceHostIface,
+			"root", "fq_codel",
+		)
+		if err != nil {
+			return err
 		}
 	}
 
