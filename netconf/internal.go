@@ -21,6 +21,15 @@ func (n *NetConf) internalNet(db *database.Database) (err error) {
 		if err != nil {
 			return
 		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"tc", "qdisc", "replace", "dev", n.SystemInternalIface,
+			"root", "fq_codel",
+		)
+		if err != nil {
+			return err
+		}
 	} else {
 		_, err = utils.ExecCombinedOutputLogged(
 			nil,
@@ -106,6 +115,18 @@ func (n *NetConf) internalSpace(db *database.Database) (err error) {
 	)
 	if err != nil {
 		return
+	}
+
+	if n.PhysicalInternalIfaceBridge {
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", n.Namespace,
+			"tc", "qdisc", "replace", "dev", n.SpaceInternalIface,
+			"root", "fq_codel",
+		)
+		if err != nil {
+			return err
+		}
 	}
 
 	return
