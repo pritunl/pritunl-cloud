@@ -4,8 +4,7 @@ import * as InstanceTypes from '../types/InstanceTypes';
 import * as VpcTypes from '../types/VpcTypes';
 import * as DomainTypes from '../types/DomainTypes'
 import InstanceDetailed from './InstanceDetailed';
-import ZonesStore from "../stores/ZonesStore";
-import NodesStore from "../stores/NodesStore";
+import CompletionStore from "../stores/CompletionStore";
 
 interface Props {
 	vpcs: VpcTypes.VpcsRo;
@@ -91,9 +90,9 @@ export default class Instance extends React.Component<Props, {}> {
 			</div>;
 		}
 
-		let node = NodesStore.node(this.props.instance.node);
+		let node = CompletionStore.node(this.props.instance.node);
 		let nodeName = node ? node.name : null;
-		let zone = ZonesStore.zone(this.props.instance.zone);
+		let zone = CompletionStore.zone(this.props.instance.zone);
 		let zoneName = zone ? zone.name : null;
 
 		let cardStyle = {
