@@ -530,10 +530,10 @@ export default class FirewallDetailed extends React.Component<Props, State> {
 						{organizationsSelect}
 					</PageSelect>
 					<label className="bp5-label">
-						Network Roles
+						Roles
 						<Help
-							title="Network Roles"
-							content="Network roles that will be matched with firewall rules. Network roles are case-sensitive."
+							title="Roles"
+							content="Roles that will be matched with firewall rules. Roles are case-sensitive."
 						/>
 						<div>
 							{roles}
