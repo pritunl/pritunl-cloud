@@ -28,6 +28,15 @@ func (n *NetConf) externalNet(db *database.Database) (err error) {
 			if err != nil {
 				return
 			}
+
+			_, err = utils.ExecCombinedOutputLogged(
+				nil,
+				"tc", "qdisc", "replace", "dev", n.SystemExternalIface,
+				"root", "fq_codel",
+			)
+			if err != nil {
+				return err
+			}
 		} else {
 			_, err = utils.ExecCombinedOutputLogged(
 				nil,
@@ -165,6 +174,18 @@ func (n *NetConf) externalSpace(db *database.Database) (err error) {
 		)
 		if err != nil {
 			return
+		}
+
+		if n.PhysicalExternalIfaceBridge {
+			_, err = utils.ExecCombinedOutputLogged(
+				nil,
+				"ip", "netns", "exec", n.Namespace,
+				"tc", "qdisc", "replace", "dev", n.SpaceExternalIface,
+				"root", "fq_codel",
+			)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
