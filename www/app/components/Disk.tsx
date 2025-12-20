@@ -5,7 +5,6 @@ import * as DiskTypes from '../types/DiskTypes';
 import * as OrganizationTypes from "../types/OrganizationTypes";
 import CompletionStore from '../stores/CompletionStore';
 import DiskDetailed from './DiskDetailed';
-import NodesStore from "../stores/NodesStore";
 import * as PoolTypes from "../types/PoolTypes";
 
 interface Props {
@@ -168,7 +167,7 @@ export default class Disk extends React.Component<Props, {}> {
 				}
 			}
 		} else {
-			let node = NodesStore.node(disk.node);
+			let node = CompletionStore.node(disk.node);
 			resourceIcon = "bp5-icon-layers";
 			resourceValue = node ? node.name : disk.node;
 		}
