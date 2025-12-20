@@ -21,6 +21,15 @@ func (n *NetConf) nodePortNet(db *database.Database) (err error) {
 		if err != nil {
 			return
 		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"tc", "qdisc", "replace", "dev", n.SystemNodePortIface,
+			"root", "fq_codel",
+		)
+		if err != nil {
+			return err
+		}
 	}
 
 	return
@@ -94,6 +103,16 @@ func (n *NetConf) nodePortSpace(db *database.Database) (err error) {
 		)
 		if err != nil {
 			return
+		}
+
+		_, err = utils.ExecCombinedOutputLogged(
+			nil,
+			"ip", "netns", "exec", n.Namespace,
+			"tc", "qdisc", "replace", "dev", n.SpaceNodePortIface,
+			"root", "fq_codel",
+		)
+		if err != nil {
+			return err
 		}
 	}
 
