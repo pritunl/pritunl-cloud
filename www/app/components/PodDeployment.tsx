@@ -369,7 +369,7 @@ export default class PodDeployment extends React.Component<Props, State> {
 		if (this.state.logsOpen) {
 			editor = <Editor
 				height="500px"
-				interval={1000}
+				interval={2000}
 				style={css.editor}
 				autoScroll={true}
 				readOnly={true}
