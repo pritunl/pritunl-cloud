@@ -57,13 +57,13 @@ export default class NodeBlock extends React.Component<Props, {}> {
 		let ifaceMatch = false;
 		let ifacesSelect: JSX.Element[] = [];
 		for (let iface of (this.props.interfaces || [])) {
-			if (block.interface === iface) {
+			if (block.interface === iface.name) {
 				ifaceMatch = true;
 			}
 
 			ifacesSelect.push(
 				<option key={iface.name} value={iface.name}>
-					{iface.name + (iface.address ? (" (" + iface.address + ")") : "")}
+					{iface.name + (iface.address ? (` (${iface.address})`) : "")}
 				</option>,
 			);
 		}
