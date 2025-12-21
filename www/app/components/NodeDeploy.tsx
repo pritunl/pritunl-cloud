@@ -529,6 +529,7 @@ export default class NodeDeploy extends React.Component<Props, State> {
 			<button
 				className="bp5-button bp5-icon-cloud-upload bp5-intent-primary"
 				style={css.button}
+				hidden={true}
 				type="button"
 				disabled={this.props.disabled}
 				onClick={(): void => {
