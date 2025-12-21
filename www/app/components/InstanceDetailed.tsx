@@ -2261,7 +2261,10 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					<label
 						className="bp5-label"
 						style={css.label}
-						hidden={!this.state.showSettings || infoUsbDevices === null}
+						hidden={
+							!this.state.showSettings || infoUsbDevices === null ||
+							(!instance.usb_devices && !infoUsbDevices)
+						}
 					>
 						USB Devices
 						<Help
@@ -2273,7 +2276,10 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						</div>
 					</label>
 					<PageSelectButton
-						hidden={!this.state.showSettings || infoUsbDevices === null}
+						hidden={
+							!this.state.showSettings || infoUsbDevices === null ||
+							(!instance.usb_devices && !infoUsbDevices)
+						}
 						label="Add Device"
 						value={this.state.addUsbDevice}
 						disabled={!usbDevicesSelect.length || this.state.disabled}
