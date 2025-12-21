@@ -2274,8 +2274,8 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							this.set('vga', val);
 						}}
 					>
-						<option value="Std">Standard</option>
-						<option value="VMware">Virtio</option>
+						<option value="std">Standard</option>
+						<option value="vmware">VMware</option>
 						<option value="virtio">Virtio</option>
 						<option value="virtio_pci">Virtio GPU PCI</option>
 						<option value="virtio_vga_gl">Virtio VGA OpenGL</option>
