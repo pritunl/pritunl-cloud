@@ -12,6 +12,7 @@ interface Props {
 	stepSize?: number;
 	majorStepSize?: number;
 	selectAllOnFocus?: true;
+	placeholder?: string;
 	label: string;
 	help: string;
 	value: number;
@@ -42,6 +43,7 @@ export default class PageNumInput extends React.Component<Props, {}> {
 					majorStepSize={this.props.majorStepSize}
 					disabled={this.props.disabled}
 					selectAllOnFocus={this.props.selectAllOnFocus}
+					placeholder={this.props.placeholder}
 					onValueChange={(val: number): void => {
 						if (this.props.max && val > this.props.max) {
 							val = this.props.max;
