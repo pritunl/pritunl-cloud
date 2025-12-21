@@ -23,7 +23,7 @@ import ConfirmButton from './ConfirmButton';
 import Help from './Help';
 import PageSelectButton from "./PageSelectButton";
 import PageTextArea from "./PageTextArea";
-import NodesStore from "../stores/NodesStore";
+import Relations from './Relations';
 
 interface Props {
 	vpcs: VpcTypes.VpcsRo;
@@ -2016,6 +2016,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 							{instance.status}
 						</div>
 						<div className="flex tab-close"/>
+						<Relations kind="instance" id={this.props.instance.id}/>
 						<ConfirmButton
 							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
 							style={css.button}
