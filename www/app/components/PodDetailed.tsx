@@ -42,7 +42,7 @@ const css = {
 		position: 'relative',
 		padding: '48px 10px 0 10px',
 		width: '100%',
-		height: 'calc(100dvh - 231px)',
+		height: 'calc(100dvh - 261px)',
 	} as React.CSSProperties,
 	button: {
 		height: '30px',
@@ -52,7 +52,7 @@ const css = {
 		top: 0,
 		left: 0,
 		right: 0,
-		padding: '4px',
+		padding: '5px 4px 4px 4px',
 		height: '39px',
 	} as React.CSSProperties,
 	item: {
