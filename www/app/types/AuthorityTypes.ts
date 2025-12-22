@@ -11,9 +11,9 @@ export interface Authority {
 	comment?: string;
 	type?: string;
 	organization?: string;
-	network_roles?: string[];
-	key?: string;
 	roles?: string[];
+	key?: string;
+	principals?: string[];
 	certificate?: string;
 }
 
@@ -21,7 +21,7 @@ export interface Filter {
 	id?: string;
 	name?: string;
 	role?: string;
-	network_role?: string;
+	principal?: string;
 	organization?: string;
 }
 
