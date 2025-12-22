@@ -407,7 +407,8 @@ export default class CertificateDetailed extends React.Component<Props, State> {
 						<PageSelect
 							label="LetsEncrypt Verification Provider"
 							disabled={this.state.disabled}
-							hidden={cert.acme_type != "acme_dns"}
+							hidden={cert.type != "lets_encrypt" ||
+								cert.acme_type != "acme_dns"}
 							help="API provider for LetsEncrypt verification."
 							value={cert.acme_auth}
 							onChange={(val): void => {
@@ -420,7 +421,8 @@ export default class CertificateDetailed extends React.Component<Props, State> {
 						</PageSelect>
 						<PageSelect
 							disabled={this.state.disabled}
-							hidden={cert.acme_type != "acme_dns"}
+							hidden={cert.type != "lets_encrypt" ||
+								cert.acme_type != "acme_dns"}
 							label="LetsEncrypt Verification Secret"
 							help="Secret containing API keys to use for LetsEncrypt verification."
 							value={cert.acme_secret}
