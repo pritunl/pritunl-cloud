@@ -13,6 +13,8 @@ import Main from './components/Main';
 import * as Alert from './Alert';
 import * as Event from './Event';
 import * as Csrf from './Csrf';
+import * as MiscUtils from './utils/MiscUtils';
+import * as CompletionActions from './actions/CompletionActions';
 
 import hljs from 'highlight.js/lib/core';
 import plaintext from 'highlight.js/lib/languages/plaintext';
@@ -24,6 +26,16 @@ Csrf.load().then((): void => {
 	Blueprint.FocusStyleManager.onlyShowFocusOnTabs();
 	Alert.init();
 	Event.init();
+
+	new MiscUtils.SyncInterval(
+		async () => {
+			let lastSync = CompletionActions.lastSync()
+			if (lastSync && (Date.now() - lastSync) > 5000) {
+				CompletionActions.sync();
+			}
+		},
+		1000,
+	)
 
 	hljs.registerLanguage('plaintext', plaintext)
 	hljs.registerLanguage('shell', bash)
