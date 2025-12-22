@@ -39,8 +39,8 @@ interface State {
 
 const css = {
 	layout: {
-		height: 'calc(100dvh - 230px)',
-		maxHeight: 'calc(100dvh - 230px)',
+		height: 'calc(100dvh - 260px)',
+		maxHeight: 'calc(100dvh - 260px)',
 	} as React.CSSProperties,
 	items: {
 		width: '200px',
