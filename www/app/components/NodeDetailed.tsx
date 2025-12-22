@@ -2279,12 +2279,14 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						<option value="virtio">Virtio</option>
 						<option value="virtio_pci">Virtio GPU PCI</option>
 						<option value="virtio_vga_gl">Virtio VGA OpenGL</option>
+						<option value="virtio_vga_gl_vulkan">Virtio VGA Vulkan</option>
 						<option value="virtio_gl">Virtio GPU OpenGL</option>
 						<option value="virtio_gl_vulkan">Virtio GPU Vulkan</option>
 						<option value="virtio_pci_gl">Virtio GPU PCI OpenGL</option>
 						<option value="virtio_pci_gl_vulkan">Virtio GPU PCI Vulkan</option>
 						<option value="virtio_pci_prime">Virtio GPU PCI Prime</option>
 						<option value="virtio_vga_gl_prime">Virtio VGA OpenGL Prime</option>
+						<option value="virtio_vga_gl_vulkan_prime">Virtio VGA Vulkan Prime</option>
 						<option value="virtio_gl_prime">Virtio GPU OpenGL Prime</option>
 						<option value="virtio_gl_vulkan_prime">Virtio GPU Vulkan Prime</option>
 						<option value="virtio_pci_gl_prime">Virtio GPU PCI OpenGL Prime</option>
