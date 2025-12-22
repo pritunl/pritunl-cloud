@@ -11,6 +11,7 @@ export interface Datacenter {
 	comment?: string;
 	match_organizations?: boolean;
 	organizations?: string[];
+	jumbo_mtu?: number;
 	public_storages?: string[];
 	private_storage?: string;
 	private_storage_class?: string;
