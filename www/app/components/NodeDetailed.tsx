@@ -2248,9 +2248,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						disabled={this.state.disabled}
 						label="Hypervisor VGA Type"
 						help={<div>
-							Type of VGA card to emulate. Virtio provides the best performance.
-							VMware provides better performance then standard. Virtio is
-							required for UEFI guests.
+							Type of VGA card to emulate. Generally [Virtio VGA OpenGL] for desktops or [Virtio VGA OpenGL Prime] for Nvidia laptops is the best option. The GPU based renders are very unstable and do not add any meaningful performance increase.
 							<ul>
 								<li>Standard = --vga=std</li>
 								<li>VMware = --vga=vmware</li>
