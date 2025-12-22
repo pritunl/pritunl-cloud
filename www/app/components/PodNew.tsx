@@ -38,7 +38,7 @@ const css = {
 		position: 'relative',
 		padding: '48px 10px 0 10px',
 		width: '100%',
-		height: 'calc(100dvh - 231px)',
+		height: 'calc(100dvh - 261px)',
 	} as React.CSSProperties,
 	card: {
 		position: 'relative',
