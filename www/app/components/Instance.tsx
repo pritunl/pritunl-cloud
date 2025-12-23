@@ -50,6 +50,13 @@ const css = {
 		padding: '9px',
 		whiteSpace: 'nowrap',
 	} as React.CSSProperties,
+	status: {
+		verticalAlign: 'top',
+		display: 'table-cell',
+		padding: '9px',
+		whiteSpace: 'nowrap',
+		width: '110px',
+	} as React.CSSProperties,
 	icon: {
 		marginRight: '3px',
 	} as React.CSSProperties,
@@ -174,7 +181,7 @@ export default class Instance extends React.Component<Props, {}> {
 					</div>
 				</div>
 			</div>
-			<div className={statusClass} style={css.item}>
+			<div className={statusClass} style={css.status}>
 				<span
 					style={css.icon}
 					hidden={!instance.status}
