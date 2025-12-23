@@ -23,6 +23,7 @@ interface Props {
 
 interface State {
 	logsOpen: boolean
+	logsResource: string
 	editOpen: boolean
 }
 
@@ -119,6 +120,7 @@ export default class PodDeployment extends React.Component<Props, State> {
 		super(props, context)
 		this.state = {
 			logsOpen: false,
+			logsResource: "",
 			editOpen: false,
 		}
 	}
@@ -127,6 +129,15 @@ export default class PodDeployment extends React.Component<Props, State> {
 		this.setState({
 			...this.state,
 			logsOpen: !this.state.logsOpen,
+			logsResource: "agent",
+		})
+	}
+
+	onLogsToggle2 = (): void => {
+		this.setState({
+			...this.state,
+			logsOpen: !this.state.logsOpen,
+			logsResource: "test-unit",
 		})
 	}
 
@@ -377,7 +388,7 @@ export default class PodDeployment extends React.Component<Props, State> {
 				refresh={async (first: boolean): Promise<string> => {
 					try {
 						let logs = await PodActions.log(
-							this.props.deployment, "agent", !first)
+							this.props.deployment, this.state.logsResource, !first)
 						return logs.join("")
 					} catch (error) {
 						return ""
@@ -541,6 +552,12 @@ export default class PodDeployment extends React.Component<Props, State> {
 								hidden={this.state.logsOpen}
 								onClick={this.onLogsToggle}
 							>Logs</button>
+							<button
+								className="bp5-button bp5-small"
+								style={css.cardButton}
+								hidden={this.state.logsOpen}
+								onClick={this.onLogsToggle2}
+							>Logs2</button>
 							<button
 								className="bp5-button bp5-small bp5-active bp5-intent-danger"
 								style={css.cardButton}
