@@ -312,6 +312,7 @@ export default class StorageDetailed extends React.Component<Props, State> {
 					</PageSelect>
 					<PageInput
 						disabled={this.state.disabled}
+						hidden={storage.type == "web"}
 						label="Access Key"
 						help="Storage access key"
 						type="text"
@@ -323,6 +324,7 @@ export default class StorageDetailed extends React.Component<Props, State> {
 					/>
 					<PageInput
 						disabled={this.state.disabled}
+						hidden={storage.type == "web"}
 						label="Secret Key"
 						help="Storage secret key"
 						type="text"
