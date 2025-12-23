@@ -12,6 +12,7 @@ import CompletionStore from '../stores/CompletionStore';
 import * as MiscUtils from '../utils/MiscUtils';
 
 let syncId: string;
+let lastSyncTime: number | null = null;
 
 export function sync(): Promise<void> {
 	let curSyncId = MiscUtils.uuid();
@@ -51,9 +52,14 @@ export function sync(): Promise<void> {
 					},
 				});
 
+				lastSyncTime = Date.now();
 				resolve();
 			});
 	});
+}
+
+export function lastSync(): number | null {
+	return lastSyncTime;
 }
 
 export function filter(filt: CompletionTypes.Filter): Promise<void> {
