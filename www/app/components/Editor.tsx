@@ -1,5 +1,6 @@
 /// <reference path="../References.d.ts"/>
 import * as React from "react"
+import * as Blueprint from "@blueprintjs/core"
 import * as MiscUtils from '../utils/MiscUtils';
 import * as Theme from "../Theme"
 import * as MonacoEditor from "@monaco-editor/react"
@@ -21,6 +22,7 @@ interface Props {
 }
 
 interface State {
+	paused: boolean
 }
 
 const css = {
@@ -28,6 +30,16 @@ const css = {
 		margin: "0",
 		borderRadius: "3px",
 		width: "100%",
+	} as React.CSSProperties,
+	card: {
+		position: "absolute",
+		top: "10px",
+		right: "24px",
+		zIndex: 100,
+		opacity: 0.8,
+	} as React.CSSProperties,
+	cardBox: {
+		position: "relative",
 	} as React.CSSProperties,
 }
 
@@ -40,15 +52,33 @@ export default class Editor extends React.Component<Props, State> {
 	constructor(props: any, context: any) {
 		super(props, context)
 		this.state = {
+			paused: false,
 		}
 	}
 
 	componentDidMount(): void {
 		if (this.props.interval) {
 			this.sync = new MiscUtils.SyncInterval(
-				() => this.props.refresh(false).then((val) => {
-					this.update(val)
-				}),
+				() => {
+					if (!this.isScrolledToBottom()) {
+						if (!this.state.paused) {
+							this.setState({
+								...this.state,
+								paused: true,
+							})
+						}
+						return Promise.resolve()
+					}
+					if (this.state.paused) {
+						this.setState({
+							...this.state,
+							paused: false,
+						})
+					}
+					return this.props.refresh(false).then((val) => {
+						this.update(val)
+					})
+				},
 				this.props.interval,
 			)
 		}
@@ -61,6 +91,20 @@ export default class Editor extends React.Component<Props, State> {
 
 	componentWillUnmount(): void {
 		this.sync?.stop()
+	}
+
+	isScrolledToBottom(): boolean {
+		if (!this.editor) {
+			return false
+		}
+
+		const scrollTop = this.editor.getScrollTop()
+		const scrollHeight = this.editor.getScrollHeight()
+		const layoutInfo = this.editor.getLayoutInfo()
+		const visibleHeight = layoutInfo.height
+
+		const threshold = 10
+		return scrollTop + visibleHeight >= scrollHeight - threshold
 	}
 
 	update(val: string): void {
@@ -97,6 +141,11 @@ export default class Editor extends React.Component<Props, State> {
 		}
 
 		return <div style={style}>
+			{this.state.paused && <div style={css.cardBox}>
+				<Blueprint.Tag style={css.card}>
+					Refresh Paused While Scrolling
+				</Blueprint.Tag>
+			</div>}
 			<MonacoEditor.Editor
 				height={this.props.height}
 				width={this.props.width}
