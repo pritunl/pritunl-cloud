@@ -2306,6 +2306,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					>
 						<option key="linux" value="linux">Linux</option>,
 						<option key="bsd" value="bsd">BSD</option>,
+						<option key="linux_legacy" value="linux_legacy">Linux Legacy</option>,
 					</PageSelect>
 					<label
 						className="bp5-label"
