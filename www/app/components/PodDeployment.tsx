@@ -1,6 +1,8 @@
 /// <reference path="../References.d.ts"/>
 import * as React from "react"
 import * as Blueprint from "@blueprintjs/core"
+import * as BpSelect from '@blueprintjs/select';
+import * as Icons from '@blueprintjs/icons';
 import * as Theme from '../Theme';
 import * as PodTypes from "../types/PodTypes"
 import * as PodActions from "../actions/PodActions"
@@ -22,7 +24,7 @@ interface Props {
 }
 
 interface State {
-	logsOpen: boolean
+	disabled: boolean
 	logsResource: string
 	editOpen: boolean
 }
@@ -55,6 +57,9 @@ const css = {
 	checkBox: {
 		display: "flex",
 		paddingBottom: "2px",
+	} as React.CSSProperties,
+	select: {
+		display: "inline",
 	} as React.CSSProperties,
 	info: {
 		marginBottom: "0px",
@@ -116,28 +121,21 @@ const css = {
 }
 
 export default class PodDeployment extends React.Component<Props, State> {
+	editorRef = React.createRef<Editor>()
+
 	constructor(props: any, context: any) {
 		super(props, context)
 		this.state = {
-			logsOpen: false,
+			disabled: false,
 			logsResource: "",
 			editOpen: false,
 		}
 	}
 
-	onLogsToggle = (): void => {
+	onLogsClose = (): void => {
 		this.setState({
 			...this.state,
-			logsOpen: !this.state.logsOpen,
-			logsResource: "agent",
-		})
-	}
-
-	onLogsToggle2 = (): void => {
-		this.setState({
-			...this.state,
-			logsOpen: !this.state.logsOpen,
-			logsResource: "test-unit",
+			logsResource: "",
 		})
 	}
 
@@ -153,6 +151,36 @@ export default class PodDeployment extends React.Component<Props, State> {
 			...this.state,
 			editOpen: false,
 		})
+	}
+
+	renderJournal: BpSelect.ItemRenderer<PodTypes.Journal> = (jrnl,
+		{handleClick, handleFocus, modifiers, query, index}): JSX.Element => {
+
+		let className = ""
+		let selected = false
+		if (this.state.logsResource === jrnl.key) {
+			className = "bp5-text-intent-primary bp5-intent-primary"
+			selected = true
+		} else if (index === 0) {
+			className = ""
+		}
+		return <Blueprint.MenuItem
+			key={`journal-${jrnl.index}`}
+			selected={selected}
+			disabled={this.state.disabled}
+			roleStructure="listoption"
+			icon={<Icons.Document
+				className={className}
+			/>}
+			onFocus={handleFocus}
+			onClick={(evt): void => {
+				evt.preventDefault()
+				evt.stopPropagation()
+				handleClick(evt)
+			}}
+			text={jrnl.key}
+			textClassName={className}
+		/>
 	}
 
 	render(): JSX.Element {
@@ -377,8 +405,9 @@ export default class PodDeployment extends React.Component<Props, State> {
 		})
 
 		let editor: JSX.Element
-		if (this.state.logsOpen) {
+		if (this.state.logsResource) {
 			editor = <Editor
+				ref={this.editorRef}
 				height="500px"
 				interval={2000}
 				style={css.editor}
@@ -396,6 +425,50 @@ export default class PodDeployment extends React.Component<Props, State> {
 				}}
 			/>
 		}
+
+		let logsSelect = <BpSelect.Select<PodTypes.Journal>
+			items={this.props.deployment.journals || []}
+			itemRenderer={this.renderJournal}
+			popoverTargetProps={{
+				style: css.select,
+			}}
+			filterable={false}
+			itemListRenderer={({items, itemsParentRef,
+					query, renderItem, menuProps}) => {
+
+				const renderedItems = items.map(renderItem).filter(
+					item => item != null)
+				return <Blueprint.Menu
+					role="listbox"
+					ulRef={itemsParentRef}
+					{...menuProps}
+				>
+					{renderedItems}
+				</Blueprint.Menu>
+			}}
+			onItemSelect={(jrnl) => {
+				if (this.state.logsResource === jrnl.key) {
+					this.setState({
+						...this.state,
+						logsResource: "",
+					})
+				} else {
+					this.setState({
+						...this.state,
+						logsResource: jrnl.key,
+					}, () => {
+						this.editorRef?.current?.refresh()
+					})
+				}
+			}}
+		>
+			<Blueprint.Button
+				style={css.cardButton}
+				alignText="left"
+				small={true}
+				rightIcon={<Icons.CaretDown/>}
+			>Logs</Blueprint.Button>
+		</BpSelect.Select>
 
 		if (deployment.kind === "image" && deployment.image_id) {
 			return <Blueprint.Card
@@ -425,18 +498,7 @@ export default class PodDeployment extends React.Component<Props, State> {
 									},
 								]}
 							/>
-							<button
-								className="bp5-button bp5-small"
-								style={css.cardButton}
-								hidden={this.state.logsOpen}
-								onClick={this.onLogsToggle}
-							>Logs</button>
-							<button
-								className="bp5-button bp5-small bp5-active bp5-intent-danger"
-								style={css.cardButton}
-								hidden={!this.state.logsOpen}
-								onClick={this.onLogsToggle}
-							>Logs</button>
+							{logsSelect}
 							<button
 								className="bp5-button bp5-small"
 								style={css.cardButton}
@@ -546,24 +608,7 @@ export default class PodDeployment extends React.Component<Props, State> {
 									},
 								]}
 							/>
-							<button
-								className="bp5-button bp5-small"
-								style={css.cardButton}
-								hidden={this.state.logsOpen}
-								onClick={this.onLogsToggle}
-							>Logs</button>
-							<button
-								className="bp5-button bp5-small"
-								style={css.cardButton}
-								hidden={this.state.logsOpen}
-								onClick={this.onLogsToggle2}
-							>Logs2</button>
-							<button
-								className="bp5-button bp5-small bp5-active bp5-intent-danger"
-								style={css.cardButton}
-								hidden={!this.state.logsOpen}
-								onClick={this.onLogsToggle}
-							>Logs</button>
+							{logsSelect}
 							<button
 								className="bp5-button bp5-small"
 								style={css.cardButton}
