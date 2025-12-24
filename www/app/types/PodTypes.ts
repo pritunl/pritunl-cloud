@@ -71,6 +71,7 @@ export interface Deployment {
 	instance?: string;
 	instance_data?: InstanceData;
 	domain_data?: DomainData;
+	journals?: Journal[];
 	zone_name?: string;
 	node_name?: string;
 	spec_offset?: number;
@@ -111,6 +112,12 @@ export interface DomainData {
 export interface RecordData {
 	domain?: string;
 	value?: string;
+}
+
+export interface Journal {
+	index?: number;
+	key?: string;
+	type?: string;
 }
 
 export interface Filter {
