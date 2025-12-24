@@ -55,7 +55,7 @@ const css = {
 		display: 'table-cell',
 		padding: '9px',
 		whiteSpace: 'nowrap',
-		width: '110px',
+		width: '35px',
 	} as React.CSSProperties,
 	icon: {
 		marginRight: '3px',
@@ -127,7 +127,6 @@ export default class Instance extends React.Component<Props, {}> {
 			width: (instance.guest?.load5 || 0) + '%',
 		};
 
-		let statusText = instance.status
 		let statusClass = 'bp5-cell';
 		switch (instance.status) {
 			case 'Running':
@@ -141,7 +140,6 @@ export default class Instance extends React.Component<Props, {}> {
 		}
 
 		if (instance.status?.includes("Restart Required")) {
-			statusText = "Restart Required"
 			statusClass += ' bp5-text-intent-warning';
 		}
 
@@ -187,7 +185,6 @@ export default class Instance extends React.Component<Props, {}> {
 					hidden={!instance.status}
 					className="bp5-icon-standard bp5-icon-power"
 				/>
-				{statusText}
 			</div>
 			<div className="bp5-cell" style={css.item}>
 				<span
