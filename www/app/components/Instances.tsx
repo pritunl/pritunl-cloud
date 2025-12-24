@@ -462,6 +462,7 @@ export default class Instances extends React.Component<{}, State> {
 						label="Force Delete Selected"
 						className="bp5-intent-danger bp5-icon-warning-sign"
 						progressClassName="bp5-intent-danger"
+						safe={true}
 						style={css.button}
 						confirmMsg="Permanently force delete the selected instances"
 						items={selectedNames}
