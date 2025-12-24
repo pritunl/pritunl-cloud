@@ -93,6 +93,12 @@ export default class Editor extends React.Component<Props, State> {
 		this.sync?.stop()
 	}
 
+	refresh(): void {
+		this.props.refresh(true).then((val) => {
+			this.update(val)
+		})
+	}
+
 	isScrolledToBottom(): boolean {
 		if (!this.editor) {
 			return false
