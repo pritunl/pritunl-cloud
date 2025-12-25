@@ -158,6 +158,13 @@ export interface Guest {
 	load1?: number;
 	load5?: number;
 	load15?: number;
+	updates?: Update[];
+}
+
+export interface Update {
+	advisory?: string;
+	severity?: string;
+	package?: string;
 }
 
 export interface Info {
