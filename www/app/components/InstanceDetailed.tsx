@@ -1917,6 +1917,17 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			},
 		);
 
+		if (instance.guest?.updates?.length > 0) {
+			fields.push({
+				label: 'System Updates',
+				value: 'Hover to Expand',
+				valueClass: 'bp5-text-intent-warning',
+				embedded: {
+					fields: InstanceTypes.UpdateFields(instance),
+				},
+			});
+		}
+
 		let resourceBars: PageInfos.Bar[] = []
 		if (this.props.instance.status === "Provisioning" &&
 			this.props.instance.status_info?.download_progress) {
