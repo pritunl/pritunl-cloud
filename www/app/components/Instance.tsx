@@ -176,7 +176,7 @@ export default class Instance extends React.Component<Props, {}> {
 				content="Updates available"
 				openOnTargetFocus={false}
 				compact={true}
-				renderTarget={({isOpen, ref, ...tooltipProps}) => (
+				renderTarget={({isOpen, ...tooltipProps}) => (
 					<span
 						{...tooltipProps}
 						style={css.updateIcon}
