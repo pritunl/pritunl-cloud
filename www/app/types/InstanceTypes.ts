@@ -226,6 +226,7 @@ export function UpdateFields(instance: Instance): PageInfos.Field[] {
 		}
 
 		fields.push({
+			key: update.advisory + update.package,
 			label: `${update.advisory} - ${MiscUtils.capitalize(update.severity)}`,
 			value: update.package,
 			valueClass: className,
