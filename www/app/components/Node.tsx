@@ -1,5 +1,6 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
+import * as Blueprint from '@blueprintjs/core';
 import * as MiscUtils from '../utils/MiscUtils';
 import * as NodeTypes from '../types/NodeTypes';
 import * as CertificateTypes from '../types/CertificateTypes';
@@ -54,6 +55,9 @@ const css = {
 		padding: '9px',
 		whiteSpace: 'nowrap',
 	} as React.CSSProperties,
+	updateIcon: {
+		marginRight: '5px',
+	} as React.CSSProperties,
 	bars: {
 		verticalAlign: 'top',
 		display: 'table-cell',
@@ -103,6 +107,45 @@ export default class Node extends React.Component<Props, {}> {
 			cardStyle.opacity = 0.6;
 		}
 
+		let updateElm: JSX.Element
+		let updateSev = 0
+		let updateClass = ""
+		node.updates?.forEach((update) => {
+			switch (update.severity) {
+				case "moderate":
+					if (updateSev < 1) {
+						updateSev = 1
+						updateClass = "bp5-icon-issue bp5-intent-primary"
+					}
+					break
+				case "important":
+					if (updateSev < 2) {
+						updateSev = 2
+						updateClass = "bp5-icon-issue bp5-intent-warning"
+					}
+					break
+				case "critical":
+					updateSev = 3
+					updateClass = "bp5-icon-issue bp5-intent-danger"
+					break
+			}
+		})
+
+		if (updateClass) {
+			updateElm = <Blueprint.Tooltip
+				content="Updates available"
+				openOnTargetFocus={false}
+				compact={true}
+				renderTarget={({isOpen, ...tooltipProps}) => (
+					<span
+						{...tooltipProps}
+						style={css.updateIcon}
+						className={"bp5-icon-standard " + updateClass}
+					/>
+				)}
+			/>
+		}
+
 		let memoryStyle: React.CSSProperties = {
 			width: (node.memory || 0) + '%',
 		};
@@ -149,6 +192,7 @@ export default class Node extends React.Component<Props, {}> {
 						<span className="bp5-control-indicator open-ignore"/>
 					</label>
 					<div style={css.nameSpan}>
+						{updateElm}
 						{node.name}
 					</div>
 				</div>
