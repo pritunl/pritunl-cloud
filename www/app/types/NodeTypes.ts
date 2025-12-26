@@ -69,6 +69,7 @@ export interface Node {
 	load1?: number;
 	load5?: number;
 	load15?: number;
+	updates?: Update[];
 	public_ips?: string[];
 	public_ips6?: string[];
 	private_ips?: string[];
@@ -79,6 +80,12 @@ export interface Node {
 	oracle_user?: string;
 	oracle_tenancy?: string;
 	oracle_public_key?: string;
+}
+
+export interface Update {
+	advisory?: string;
+	severity?: string;
+	package?: string;
 }
 
 export function GetAllIfaces(node: Node): Interface[] {
