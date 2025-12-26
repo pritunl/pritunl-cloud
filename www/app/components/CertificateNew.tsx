@@ -98,7 +98,7 @@ export default class CertificateDetailed extends React.Component<Props, State> {
 			message: '',
 			addDomain: null,
 			certificate: {
-				name: 'New Certificate',
+				name: 'new-certificate',
 			},
 		};
 	}
