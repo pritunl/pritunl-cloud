@@ -59,7 +59,6 @@ const css = {
 		verticalAlign: 'top',
 		display: 'table-cell',
 		padding: '9px',
-		whiteSpace: 'nowrap',
 	} as React.CSSProperties,
 	icon: {
 		marginRight: '3px',
