@@ -105,7 +105,7 @@ export default class BlockDetailed extends React.Component<Props, State> {
 			addSubnet6: '',
 			addExclude: '',
 			block: {
-				name: 'New Block',
+				name: 'new-block',
 			},
 		};
 	}
