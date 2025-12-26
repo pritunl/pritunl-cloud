@@ -387,7 +387,7 @@ export default class PodMigrate extends React.Component<Props, State> {
 				<Blueprint.Callout
 					intent="primary"
 				>Selected deployments have mismatched current
-				commits, diff available</Blueprint.Callout>
+				commits, diff unavailable</Blueprint.Callout>
 			</div>
 		} else {
 			editor = <div style={css.editorBox}>
