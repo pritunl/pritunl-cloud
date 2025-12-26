@@ -1585,6 +1585,79 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			}
 		}
 
+		let fields: PageInfos.Field[] = [
+			{
+				label: 'ID',
+				value: this.props.node.id || 'None',
+			},
+			{
+				label: 'Version',
+				value: node.software_version || 'Unknown',
+			},
+			{
+				valueClass: active ? '' : 'bp5-text-intent-danger',
+				label: 'Timestamp',
+				value: MiscUtils.formatDate(
+					this.props.node.timestamp) || 'Inactive',
+			},
+			{
+				label: 'CPU Units',
+				value: (this.props.node.cpu_units ||
+					'Unknown').toString(),
+			},
+			{
+				label: 'CPU Units Reserved',
+				value: (this.props.node.cpu_units_res || 0).toString(),
+			},
+			{
+				label: 'Memory Units',
+				value: (this.props.node.memory_units ||
+					'Unknown').toString(),
+			},
+			{
+				label: 'Memory Units Reserved',
+				value: (this.props.node.memory_units_res || 0).toString(),
+			},
+			{
+				label: 'Default Interface',
+				value: this.props.node.default_interface || 'Unknown',
+			},
+			{
+				label: 'Hostname',
+				value: node.hostname || 'Unknown',
+			},
+			{
+				label: 'Private IPv4',
+				value: privateIps,
+				copy: true,
+			},
+			{
+				label: 'Public IPv4',
+				value: publicIps,
+				copy: true,
+			},
+			{
+				label: 'Public IPv6',
+				value: publicIps6,
+				copy: true,
+			},
+			{
+				label: 'Requests',
+				value: this.props.node.requests_min + '/min',
+			},
+		]
+
+		if (node.updates?.length > 0) {
+			fields.push({
+				label: 'System Updates',
+				value: 'Hover to Expand',
+				valueClass: 'bp5-text-intent-warning',
+				embedded: {
+					fields: NodeTypes.UpdateFields(node),
+				},
+			});
+		}
+
 		return <td
 			className="bp5-cell"
 			colSpan={4}
@@ -2167,67 +2240,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 				</div>
 				<div style={css.group}>
 					<PageInfo
-						fields={[
-							{
-								label: 'ID',
-								value: this.props.node.id || 'None',
-							},
-							{
-								label: 'Version',
-								value: node.software_version || 'Unknown',
-							},
-							{
-								valueClass: active ? '' : 'bp5-text-intent-danger',
-								label: 'Timestamp',
-								value: MiscUtils.formatDate(
-									this.props.node.timestamp) || 'Inactive',
-							},
-							{
-								label: 'CPU Units',
-								value: (this.props.node.cpu_units ||
-									'Unknown').toString(),
-							},
-							{
-								label: 'CPU Units Reserved',
-								value: (this.props.node.cpu_units_res || 0).toString(),
-							},
-							{
-								label: 'Memory Units',
-								value: (this.props.node.memory_units ||
-									'Unknown').toString(),
-							},
-							{
-								label: 'Memory Units Reserved',
-								value: (this.props.node.memory_units_res || 0).toString(),
-							},
-							{
-								label: 'Default Interface',
-								value: this.props.node.default_interface || 'Unknown',
-							},
-							{
-								label: 'Hostname',
-								value: node.hostname || 'Unknown',
-							},
-							{
-								label: 'Private IPv4',
-								value: privateIps,
-								copy: true,
-							},
-							{
-								label: 'Public IPv4',
-								value: publicIps,
-								copy: true,
-							},
-							{
-								label: 'Public IPv6',
-								value: publicIps6,
-								copy: true,
-							},
-							{
-								label: 'Requests',
-								value: this.props.node.requests_min + '/min',
-							},
-						]}
+						fields={fields}
 						bars={resourceBars}
 					/>
 					<PageSelect
