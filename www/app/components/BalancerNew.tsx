@@ -116,7 +116,7 @@ export default class BalancerNew extends React.Component<Props, State> {
 			message: '',
 			addCert: null,
 			balancer: {
-				name: 'New Balancer',
+				name: 'new-balancer',
 			},
 		};
 	}
