@@ -111,6 +111,21 @@ export default class Domain extends React.Component<Props, {}> {
 			orgName = 'Node Domain';
 		}
 
+		let providerName: string
+		switch (domain.type) {
+			case "aws":
+				providerName = "AWS"
+				break
+			case "cloudflare":
+				providerName = "Cloudflare"
+					break
+			case "oracle_cloud":
+				providerName = "Oracle Cloud"
+				break
+			default:
+				providerName = "-"
+		}
+
 		return <div
 			className="bp5-card bp5-row"
 			style={cardStyle}
@@ -154,6 +169,13 @@ export default class Domain extends React.Component<Props, {}> {
 						domain.organization ? 'bp5-icon-people' : 'bp5-icon-layers')}
 				/>
 				{orgName}
+			</div>
+			<div className="bp5-cell" style={css.item}>
+				<span
+					style={css.icon}
+					className={'bp5-icon-standard bp5-text-muted bp5-icon-database'}
+				/>
+				{providerName}
 			</div>
 		</div>;
 	}
