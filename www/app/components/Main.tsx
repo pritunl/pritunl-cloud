@@ -158,12 +158,84 @@ export default class Main extends React.Component<{}, State> {
 				</div>
 				<div className="bp5-navbar-group bp5-align-right" style={css.navGroup}>
 					<RouterLink
-						className="bp5-button bp5-minimal bp5-icon-people"
+						className="bp5-button bp5-minimal bp5-icon-dashboard"
+						style={css.link}
+						to="/instances"
+					>
+						Instances
+					</RouterLink>
+					<RouterLink
+						className="bp5-button bp5-minimal bp5-icon-server"
+						style={css.link}
+						to="/pods"
+					>
+						Pods
+					</RouterLink>
+					<RouterLink
+						className="bp5-button bp5-minimal bp5-icon-floppy-disk"
+						style={css.link}
+						to="/disks"
+					>
+						Disks
+					</RouterLink>
+					<RouterLink
+						className="bp5-button bp5-minimal bp5-icon-database"
 						style={css.link}
 						hidden={Constants.user}
-						to="/users"
+						to="/storages"
 					>
-						Users
+						Storages
+					</RouterLink>
+					<RouterLink
+						className="bp5-button bp5-minimal bp5-icon-compressed"
+						style={css.link}
+						to="/images"
+					>
+						Images
+					</RouterLink>
+					<RouterLink
+						className="bp5-button bp5-minimal bp5-icon-shield"
+						style={css.link}
+						to="/firewalls"
+					>
+						Firewalls
+					</RouterLink>
+					<RouterLink
+						className="bp5-button bp5-minimal bp5-icon-layout-auto"
+						style={css.link}
+						to="/vpcs"
+					>
+						VPCs
+					</RouterLink>
+					<RouterLink
+						className="bp5-button bp5-minimal bp5-icon-map-marker"
+						style={css.link}
+						to="/domains"
+					>
+						Domains
+					</RouterLink>
+					<RouterLink
+						className="bp5-button bp5-minimal bp5-icon-random"
+						style={css.link}
+						to="/balancers"
+					>
+						Load Balancers
+					</RouterLink>
+					<RouterLink
+						className="bp5-button bp5-minimal bp5-icon-control"
+						style={css.link}
+						hidden={Constants.user}
+						to="/pools"
+					>
+						Disk Pools
+					</RouterLink>
+					<RouterLink
+						className="bp5-button bp5-minimal bp5-icon-ip-address"
+						style={css.link}
+						hidden={Constants.user}
+						to="/blocks"
+					>
+						IP Blocks
 					</RouterLink>
 					<RouterLink
 						className="bp5-button bp5-minimal bp5-icon-layers"
@@ -172,6 +244,37 @@ export default class Main extends React.Component<{}, State> {
 						to="/nodes"
 					>
 						Nodes
+					</RouterLink>
+					<RouterLink
+						className="bp5-button bp5-minimal bp5-icon-zoom-to-fit"
+						style={css.link}
+						hidden={Constants.user}
+						to="/shapes"
+					>
+						Shapes
+					</RouterLink>
+					<RouterLink
+						className="bp5-button bp5-minimal bp5-icon-map-marker"
+						style={css.link}
+						to="/plans"
+					>
+						Plans
+					</RouterLink>
+					<RouterLink
+						className="bp5-button bp5-minimal bp5-icon-people"
+						style={css.link}
+						hidden={Constants.user}
+						to="/organizations"
+					>
+						Organizations
+					</RouterLink>
+					<RouterLink
+						className="bp5-button bp5-minimal bp5-icon-people"
+						style={css.link}
+						hidden={Constants.user}
+						to="/users"
+					>
+						Users
 					</RouterLink>
 					<RouterLink
 						className="bp5-button bp5-minimal bp5-icon-filter"
@@ -196,12 +299,11 @@ export default class Main extends React.Component<{}, State> {
 						Secrets
 					</RouterLink>
 					<RouterLink
-						className="bp5-button bp5-minimal bp5-icon-people"
+						className="bp5-button bp5-minimal bp5-icon-office"
 						style={css.link}
-						hidden={Constants.user}
-						to="/organizations"
+						to="/authorities"
 					>
-						Organizations
+						Authorities
 					</RouterLink>
 					<RouterLink
 						className="bp5-button bp5-minimal bp5-icon-cloud"
@@ -218,108 +320,6 @@ export default class Main extends React.Component<{}, State> {
 						to="/zones"
 					>
 						Zones
-					</RouterLink>
-					<RouterLink
-						className="bp5-button bp5-minimal bp5-icon-zoom-to-fit"
-						style={css.link}
-						hidden={Constants.user}
-						to="/shapes"
-					>
-						Shapes
-					</RouterLink>
-					<RouterLink
-						className="bp5-button bp5-minimal bp5-icon-ip-address"
-						style={css.link}
-						hidden={Constants.user}
-						to="/blocks"
-					>
-						IP Blocks
-					</RouterLink>
-					<RouterLink
-						className="bp5-button bp5-minimal bp5-icon-layout-auto"
-						style={css.link}
-						to="/vpcs"
-					>
-						VPCs
-					</RouterLink>
-					<RouterLink
-						className="bp5-button bp5-minimal bp5-icon-map-marker"
-						style={css.link}
-						to="/domains"
-					>
-						Domains
-					</RouterLink>
-					<RouterLink
-						className="bp5-button bp5-minimal bp5-icon-random"
-						style={css.link}
-						to="/balancers"
-					>
-						Load Balancers
-					</RouterLink>
-					<RouterLink
-						className="bp5-button bp5-minimal bp5-icon-database"
-						style={css.link}
-						hidden={Constants.user}
-						to="/storages"
-					>
-						Storages
-					</RouterLink>
-					<RouterLink
-						className="bp5-button bp5-minimal bp5-icon-compressed"
-						style={css.link}
-						to="/images"
-					>
-						Images
-					</RouterLink>
-					<RouterLink
-						className="bp5-button bp5-minimal bp5-icon-map-marker"
-						style={css.link}
-						to="/plans"
-					>
-						Plans
-					</RouterLink>
-					<RouterLink
-						className="bp5-button bp5-minimal bp5-icon-control"
-						style={css.link}
-						hidden={Constants.user}
-						to="/pools"
-					>
-						Disk Pools
-					</RouterLink>
-					<RouterLink
-						className="bp5-button bp5-minimal bp5-icon-floppy-disk"
-						style={css.link}
-						to="/disks"
-					>
-						Disks
-					</RouterLink>
-					<RouterLink
-						className="bp5-button bp5-minimal bp5-icon-dashboard"
-						style={css.link}
-						to="/instances"
-					>
-						Instances
-					</RouterLink>
-					<RouterLink
-						className="bp5-button bp5-minimal bp5-icon-server"
-						style={css.link}
-						to="/pods"
-					>
-						Pods
-					</RouterLink>
-					<RouterLink
-						className="bp5-button bp5-minimal bp5-icon-shield"
-						style={css.link}
-						to="/firewalls"
-					>
-						Firewalls
-					</RouterLink>
-					<RouterLink
-						className="bp5-button bp5-minimal bp5-icon-office"
-						style={css.link}
-						to="/authorities"
-					>
-						Authorities
 					</RouterLink>
 					<RouterLink
 						className="bp5-button bp5-minimal bp5-icon-notifications"
