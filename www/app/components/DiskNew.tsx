@@ -109,7 +109,7 @@ export default class DiskNew extends React.Component<Props, State> {
 			changed: false,
 			message: '',
 			disk: {
-				name: 'New Disk',
+				name: 'new-disk',
 				index: "1",
 				size: 10,
 			},
