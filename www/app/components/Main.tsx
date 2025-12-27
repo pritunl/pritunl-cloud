@@ -402,6 +402,51 @@ export default class Main extends React.Component<{}, State> {
 				<RouterRoute path="/reload" render={() => (
 					<RouterRedirect to="/"/>
 				)}/>
+				<RouterRoute path="/instances" render={() => (
+					<Instances/>
+				)}/>
+				<RouterRoute path="/pods" render={() => (
+					<Pods/>
+				)}/>
+				<RouterRoute path="/disks" render={() => (
+					<Disks/>
+				)}/>
+				<RouterRoute path="/storages" render={() => (
+					<Storages/>
+				)}/>
+				<RouterRoute path="/images" render={() => (
+					<Images/>
+				)}/>
+				<RouterRoute path="/firewalls" render={() => (
+					<Firewalls/>
+				)}/>
+				<RouterRoute path="/vpcs" render={() => (
+					<Vpcs/>
+				)}/>
+				<RouterRoute path="/domains" render={() => (
+					<Domains/>
+				)}/>
+				<RouterRoute path="/balancers" render={() => (
+					<Balancers/>
+				)}/>
+				<RouterRoute path="/pools" render={() => (
+					<Pools/>
+				)}/>
+				<RouterRoute path="/blocks" render={() => (
+					<Blocks/>
+				)}/>
+				<RouterRoute path="/nodes" render={() => (
+					<Nodes/>
+				)}/>
+				<RouterRoute path="/shapes" render={() => (
+					<Shapes/>
+				)}/>
+				<RouterRoute path="/plans" render={() => (
+					<Plans/>
+				)}/>
+				<RouterRoute path="/organizations" render={() => (
+					<Organizations/>
+				)}/>
 				<RouterRoute path="/users" render={() => (
 					<Users/>
 				)}/>
@@ -410,9 +455,6 @@ export default class Main extends React.Component<{}, State> {
 				)}/>
 				<RouterRoute path="/user/:userId" render={(data) => (
 					<UserDetailed userId={data.params.userId}/>
-				)}/>
-				<RouterRoute path="/nodes" render={() => (
-					<Nodes/>
 				)}/>
 				<RouterRoute path="/policies" render={() => (
 					<Policies/>
@@ -423,56 +465,14 @@ export default class Main extends React.Component<{}, State> {
 				<RouterRoute path="/secrets" render={() => (
 					<Secrets/>
 				)}/>
-				<RouterRoute path="/organizations" render={() => (
-					<Organizations/>
+				<RouterRoute path="/authorities" render={() => (
+					<Authorities/>
 				)}/>
 				<RouterRoute path="/datacenters" render={() => (
 					<Datacenters/>
 				)}/>
 				<RouterRoute path="/zones" render={() => (
 					<Zones/>
-				)}/>
-				<RouterRoute path="/shapes" render={() => (
-					<Shapes/>
-				)}/>
-				<RouterRoute path="/blocks" render={() => (
-					<Blocks/>
-				)}/>
-				<RouterRoute path="/vpcs" render={() => (
-					<Vpcs/>
-				)}/>
-				<RouterRoute path="/domains" render={() => (
-					<Domains/>
-				)}/>
-				<RouterRoute path="/plans" render={() => (
-					<Plans/>
-				)}/>
-				<RouterRoute path="/balancers" render={() => (
-					<Balancers/>
-				)}/>
-				<RouterRoute path="/storages" render={() => (
-					<Storages/>
-				)}/>
-				<RouterRoute path="/images" render={() => (
-					<Images/>
-				)}/>
-				<RouterRoute path="/pools" render={() => (
-					<Pools/>
-				)}/>
-				<RouterRoute path="/disks" render={() => (
-					<Disks/>
-				)}/>
-				<RouterRoute path="/instances" render={() => (
-					<Instances/>
-				)}/>
-				<RouterRoute path="/pods" render={() => (
-					<Pods/>
-				)}/>
-				<RouterRoute path="/firewalls" render={() => (
-					<Firewalls/>
-				)}/>
-				<RouterRoute path="/authorities" render={() => (
-					<Authorities/>
 				)}/>
 				<RouterRoute path="/alerts" render={() => (
 					<Alerts/>
