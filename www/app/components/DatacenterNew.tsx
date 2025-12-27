@@ -106,7 +106,7 @@ export default class DatacenterDetailed extends React.Component<Props, State> {
 			addStorage: '',
 			addOrganization: null,
 			datacenter: {
-				name: 'New Datacenter',
+				name: 'new-datacenter',
 			},
 		};
 	}
