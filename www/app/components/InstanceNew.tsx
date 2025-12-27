@@ -158,7 +158,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 	get default(): InstanceTypes.Instance {
 		return {
 			id: null,
-			name: 'New instance',
+			name: 'new-instance',
 			uefi: true,
 			secure_boot: true,
 			init_disk_size: 10,
