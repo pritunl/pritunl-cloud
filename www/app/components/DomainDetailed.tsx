@@ -360,7 +360,7 @@ export default class DomainDetailed extends React.Component<Props, State> {
 
 		return <td
 			className="bp5-cell"
-			colSpan={2}
+			colSpan={3}
 			style={css.card}
 		>
 			<div className="layout horizontal wrap">
