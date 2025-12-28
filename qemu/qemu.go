@@ -482,7 +482,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 			cmd = append(cmd, "-object")
 			cmd = append(cmd, fmt.Sprintf(
 				"memory-backend-file,id=pc.ram,"+
-					"size=%dM,mem-path=%s,prealloc=on,share=%s,merge=on",
+					"size=%dM,mem-path=%s,prealloc=on,share=%s,merge=off",
 				q.Memory,
 				paths.GetHugepagePath(q.Id),
 				memShare,
