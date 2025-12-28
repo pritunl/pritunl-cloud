@@ -1,6 +1,8 @@
 package types
 
-import "github.com/pritunl/pritunl-cloud/spec"
+import (
+	"github.com/pritunl/pritunl-cloud/spec"
+)
 
 type Journal struct {
 	Index int32  `json:"index"`
