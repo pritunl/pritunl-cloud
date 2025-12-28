@@ -4,4 +4,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/imds/types"
 )
 
-var Config = &types.Config{}
+var (
+	Config = &types.Config{}
+)
