@@ -137,11 +137,6 @@ export default class Policy extends React.Component<Props, {}> {
 				</div>
 			</div>
 			<div className="bp5-cell" style={css.item}>
-				<span
-					style={css.icon}
-					className="bp5-icon-standard bp5-text-muted bp5-icon-code"
-				/>
-				{policy.id}
 			</div>
 		</div>;
 	}
