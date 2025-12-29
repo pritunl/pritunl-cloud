@@ -118,7 +118,7 @@ export default class PodNew extends React.Component<Props, State> {
 
 	get default(): PodTypes.Pod {
 		return {
-			name: 'New pod',
+			name: 'new-pod',
 			units: [],
 		};
 	}
