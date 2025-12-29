@@ -75,7 +75,7 @@ export default class Organization extends React.Component<Props, State> {
 			message: '',
 			addRole: '',
 			organization: {
-				name: 'New Organization',
+				name: 'new-organization',
 			},
 		};
 	}
