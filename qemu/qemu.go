@@ -510,7 +510,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 		if supported {
 			diskAio = "io_uring"
 		} else {
-			diskAio = "threads"
+			diskAio = "native"
 		}
 	}
 
