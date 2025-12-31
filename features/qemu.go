@@ -2,6 +2,7 @@ package features
 
 import (
 	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -223,6 +224,36 @@ func GetUringSupport() (supported bool, err error) {
 	if major < 6 {
 		return
 	} else if major == 6 && minor < 2 {
+		return
+	}
+
+	sysctlData, err := ioutil.ReadFile("/proc/sys/kernel/io_uring_disabled")
+	if err != nil {
+		if os.IsNotExist(err) {
+			err = nil
+			supported = true
+			return
+		}
+		err = &errortypes.ReadError{
+			errors.Wrapf(err, "features: Failed to read io_uring_disabled"),
+		}
+		return
+	}
+
+	disabledStr := strings.TrimSpace(string(sysctlData))
+	disabled, parseErr := strconv.Atoi(disabledStr)
+	if parseErr != nil {
+		err = &errortypes.ParseError{
+			errors.Wrapf(
+				parseErr,
+				"features: Failed to parse io_uring_disabled value '%s'",
+				disabledStr,
+			),
+		}
+		return
+	}
+
+	if disabled == 2 {
 		return
 	}
 
