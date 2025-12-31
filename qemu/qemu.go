@@ -558,6 +558,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 		dskHashId := drive.GetDriveHashId(device.Id)
 		dskId := fmt.Sprintf("pd_%s", dskHashId)
+		dskFileId := fmt.Sprintf("pdf_%s", dskHashId)
 		dskDevId := fmt.Sprintf("pdd_%s", dskHashId)
 		dskBusId := fmt.Sprintf("pdb_%s", dskHashId)
 		slot += 1
@@ -568,12 +569,21 @@ func (q *Qemu) Marshal() (output string, err error) {
 			dskBusId, slot,
 		))
 
-		cmd = append(cmd, "-drive")
+		cmd = append(cmd, "-blockdev")
 		cmd = append(cmd, fmt.Sprintf(
-			"file=%s,media=disk,format=raw,cache=none,"+
-				"discard=on,if=none,id=%s",
+			"driver=file,node-name=%s,filename=%s,aio=%s,"+
+				"discard=unmap,cache.direct=on,cache.no-flush=off",
+			dskFileId,
 			drivePth,
+			diskAio,
+		))
+
+		cmd = append(cmd, "-blockdev")
+		cmd = append(cmd, fmt.Sprintf(
+			"driver=raw,node-name=%s,file=%s,"+
+				"cache.direct=on,cache.no-flush=off",
 			dskId,
+			dskFileId,
 		))
 
 		cmd = append(cmd, "-device")
@@ -603,6 +613,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 			iscsiId := fmt.Sprintf("%x", iscsiHash.Sum(nil))
 
 			dskId := fmt.Sprintf("id_%s", iscsiId)
+			dskFileId := fmt.Sprintf("idf_%s", iscsiId)
 			dskDevId := fmt.Sprintf("idd_%s", iscsiId)
 			dskBusId := fmt.Sprintf("idb_%s", iscsiId)
 			slot += 1
@@ -613,12 +624,20 @@ func (q *Qemu) Marshal() (output string, err error) {
 				dskBusId, slot,
 			))
 
-			cmd = append(cmd, "-drive")
+			cmd = append(cmd, "-blockdev")
 			cmd = append(cmd, fmt.Sprintf(
-				"file=%s,media=disk,format=raw,cache=none,"+
-					"discard=on,if=none,id=%s",
+				"driver=iscsi,node-name=%s,transport=tcp,"+
+					"url=%s,cache.direct=on",
+				dskFileId,
 				device.Uri,
+			))
+
+			cmd = append(cmd, "-blockdev")
+			cmd = append(cmd, fmt.Sprintf(
+				"driver=raw,node-name=%s,file=%s,"+
+					"cache.direct=on,cache.no-flush=off",
 				dskId,
+				dskFileId,
 			))
 
 			cmd = append(cmd, "-device")
@@ -716,9 +735,10 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 	if q.Tpm {
 		cmd = append(cmd, "-chardev")
-		cmd = append(cmd,
-			fmt.Sprintf("socket,id=tpmsock0,path=%s",
-				paths.GetTpmSockPath(q.Id)))
+		cmd = append(cmd, fmt.Sprintf(
+			"socket,id=tpmsock0,path=%s",
+			paths.GetTpmSockPath(q.Id),
+		))
 		cmd = append(cmd, "-tpmdev")
 		cmd = append(cmd, "emulator,id=tpmdev0,chardev=tpmsock0")
 		cmd = append(cmd, "-device")
@@ -728,7 +748,9 @@ func (q *Qemu) Marshal() (output string, err error) {
 	guestPath := paths.GetGuestPath(q.Id)
 	cmd = append(cmd, "-chardev")
 	cmd = append(cmd, fmt.Sprintf(
-		"socket,path=%s,server=on,wait=off,id=guest", guestPath))
+		"socket,path=%s,server=on,wait=off,id=guest",
+		guestPath,
+	))
 	cmd = append(cmd, "-device")
 	cmd = append(cmd, "virtio-serial")
 	cmd = append(cmd, "-device")
