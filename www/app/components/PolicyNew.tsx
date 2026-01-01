@@ -100,7 +100,7 @@ export default class PolicyDetailed extends React.Component<Props, State> {
 			message: '',
 			addRole: null,
 			policy: {
-				name: "New Policy",
+				name: "new-policy",
 			},
 		};
 	}
