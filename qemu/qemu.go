@@ -683,7 +683,8 @@ func (q *Qemu) Marshal() (output string, err error) {
 	for i, network := range q.Networks {
 		cmd = append(cmd, "-device")
 		cmd = append(cmd, fmt.Sprintf(
-			"virtio-net-pci,netdev=net%d,mac=%s,mq=on,vectors=%d",
+			"virtio-net-pci,netdev=net%d,mac=%s,mq=on,"+
+				"packed=on,rss=on,vectors=%d",
 			i,
 			network.MacAddress,
 			q.GetNetworkVectors(),
