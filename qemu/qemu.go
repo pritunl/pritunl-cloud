@@ -539,7 +539,8 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 		cmd = append(cmd, "-device")
 		cmd = append(cmd, fmt.Sprintf(
-			"virtio-blk-pci,drive=%s,num-queues=%d,id=%s,bus=diskbus%d",
+			"virtio-blk-pci,drive=%s,num-queues=%d,id=%s,"+
+				"bus=diskbus%d,write-cache=on,packed=on",
 			dskId,
 			q.GetDiskQueues(),
 			dskDevId,
@@ -588,7 +589,8 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 		cmd = append(cmd, "-device")
 		cmd = append(cmd, fmt.Sprintf(
-			"virtio-blk-pci,drive=%s,num-queues=%d,id=%s,bus=%s",
+			"virtio-blk-pci,drive=%s,num-queues=%d,id=%s,"+
+				"bus=%s,write-cache=on,packed=on",
 			dskId,
 			q.GetDiskQueues(),
 			dskDevId,
@@ -642,7 +644,8 @@ func (q *Qemu) Marshal() (output string, err error) {
 
 			cmd = append(cmd, "-device")
 			cmd = append(cmd, fmt.Sprintf(
-				"virtio-blk-pci,drive=%s,num-queues=%d,id=%s,bus=%s",
+				"virtio-blk-pci,drive=%s,num-queues=%d,id=%s,"+
+					"bus=%s,write-cache=on,packed=on",
 				dskId,
 				q.GetDiskQueues(),
 				dskDevId,
