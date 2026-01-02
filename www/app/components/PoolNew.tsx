@@ -102,7 +102,7 @@ export default class PoolNew extends React.Component<Props, State> {
 			changed: false,
 			message: '',
 			pool: {
-				name: 'New Pool',
+				name: 'new-pool',
 			},
 			datacenter: '',
 			zone: '',
