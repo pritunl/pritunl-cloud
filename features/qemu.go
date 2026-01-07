@@ -261,6 +261,23 @@ func GetUringSupport() (supported bool, err error) {
 	return
 }
 
+func GetExtUringSupport() (supported bool, err error) {
+	major, minor, _, err := GetQemuVersion()
+	if err != nil {
+		return
+	}
+
+	if major > 10 {
+		supported = true
+	}
+
+	if major == 10 && minor >= 2 {
+		supported = true
+	}
+
+	return
+}
+
 func GetMemoryBackendSupport() (supported bool, err error) {
 	major, _, _, err := GetQemuVersion()
 	if err != nil {
