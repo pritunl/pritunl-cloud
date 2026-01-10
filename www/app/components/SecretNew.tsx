@@ -94,7 +94,7 @@ export default class SecretNew extends React.Component<Props, State> {
 			changed: false,
 			message: '',
 			secret: {
-				name: 'New Secret'
+				name: 'new-secret'
 			},
 		};
 	}
