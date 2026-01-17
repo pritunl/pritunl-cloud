@@ -499,6 +499,10 @@ func (q *Qemu) Marshal() (output string, err error) {
 		cmd = append(cmd, "-device", "virtio-rng-pci,rng=rng0")
 	}
 
+	if pciPassthrough {
+		cmd = append(cmd, "-device", "intel-iommu,intremap=on,caching-mode=on")
+	}
+
 	diskAio := settings.Hypervisor.DiskAio
 	if diskAio == "" {
 		supported, e := features.GetUringSupport()
