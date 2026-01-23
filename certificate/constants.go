@@ -12,6 +12,7 @@ const (
 	AcmeAWS         = "acme_aws"
 	AcmeCloudflare  = "acme_cloudflare"
 	AcmeOracleCloud = "acme_oracle_cloud"
+	AcmeGoogleCloud = "acme_google_cloud"
 )
 
 var (
