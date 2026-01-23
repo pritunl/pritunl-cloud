@@ -76,7 +76,7 @@ func Generate(db *database.Database, cert *certificate.Certificate) (
 		} else if acmeAuth == certificate.AcmeOracleCloud {
 			dnsSvc = &dns.Oracle{}
 		} else if acmeAuth == certificate.AcmeGoogleCloud {
-			dnsSvc = &dns.GoogleCloud{}
+			dnsSvc = &dns.Google{}
 		} else {
 			err = &errortypes.UnknownError{
 				errors.Wrapf(err,
