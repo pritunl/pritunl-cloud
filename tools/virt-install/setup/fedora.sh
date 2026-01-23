@@ -26,8 +26,8 @@ grub2-mkconfig -o /boot/grub2/grub.cfg
 # cloud-init fix
 if [[ "$(cloud-init --version 2>&1)" == *"25.2"* ]]; then
   wget https://dl.fedoraproject.org/pub/fedora/linux/development/rawhide/Everything/x86_64/os/Packages/c/cloud-init-25.3-3.fc44.noarch.rpm
-  echo "877c3b272f2202d46a7c1d06185eea262feb5bda637fa49575ae8c9a96e62652  cloud-init-25.3-1.fc44.noarch.rpm" | dnf -y install cloud-init-25.3-1.fc44.noarch.rpm
-  rm -f cloud-init-25.3-1.fc44.noarch.rpm
+  echo "877c3b272f2202d46a7c1d06185eea262feb5bda637fa49575ae8c9a96e62652  cloud-init-25.3-3.fc44.noarch.rpm" | dnf -y install cloud-init-25.3-3.fc44.noarch.rpm
+  rm -f cloud-init-25.3-3.fc44.noarch.rpm
 fi
 
 systemctl daemon-reload
