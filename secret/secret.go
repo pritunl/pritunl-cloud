@@ -53,6 +53,11 @@ func (c *Secret) Validate(db *database.Database) (
 		break
 	case OracleCloud:
 		break
+	case GoogleCloud:
+		c.Value = ""
+		c.Region = ""
+
+		break
 	case Json:
 		c.Key = ""
 		c.Value = ""
