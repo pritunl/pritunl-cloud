@@ -9,7 +9,7 @@ require (
 	github.com/cloudflare/cloudflare-go v0.104.0
 	github.com/coredns/coredns v1.13.1
 	github.com/dropbox/godropbox v0.0.0-20230623171840-436d2007a9fd
-	github.com/duosecurity/duo_api_golang v0.0.0-20240408132100-cb1770897e66
+	github.com/duosecurity/duo_api_golang v0.0.0-20250430191550-ac36954387e7
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-webauthn/webauthn v0.12.3
 	github.com/google/uuid v1.6.0
