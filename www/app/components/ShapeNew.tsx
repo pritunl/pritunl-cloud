@@ -106,7 +106,7 @@ export default class ShapeNew extends React.Component<Props, State> {
 			changed: false,
 			message: '',
 			shape: {
-				name: 'New Shape',
+				name: 'new-shape',
 				memory: 1024,
 				processors: 1,
 				flexible: true,
