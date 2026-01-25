@@ -98,7 +98,7 @@ export default class StorageDetailed extends React.Component<Props, State> {
 			changed: false,
 			message: '',
 			storage: {
-				name: "New Storage",
+				name: "new-storage",
 			},
 		};
 	}
