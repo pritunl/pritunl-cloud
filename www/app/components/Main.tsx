@@ -1,5 +1,7 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
+import * as Blueprint from "@blueprintjs/core"
+import * as Icons from '@blueprintjs/icons';
 import * as Theme from '../Theme';
 import * as Constants from '../Constants';
 import * as SubscriptionTypes from '../types/SubscriptionTypes';
@@ -49,6 +51,12 @@ interface State {
 }
 
 const css = {
+	app: {
+		display: 'grid',
+		gridTemplateRows: 'auto 1fr',
+		height: '100vh',
+		overflow: 'hidden',
+	} as React.CSSProperties,
 	card: {
 		minWidth: '310px',
 		maxWidth: '380px',
@@ -56,14 +64,15 @@ const css = {
 		margin: '60px auto',
 	} as React.CSSProperties,
 	nav: {
-		overflowX: 'auto',
-		overflowY: 'auto',
-		userSelect: 'none',
 		height: 'auto',
+		userSelect: 'none',
+		gap: '5px',
 	} as React.CSSProperties,
 	navTitle: {
-		flexWrap: 'wrap',
 		height: 'auto',
+		flexWrap: 'wrap',
+		gap: '5px',
+		padding: '8px 0',
 	} as React.CSSProperties,
 	navGroup: {
 		flexWrap: 'wrap',
@@ -83,6 +92,10 @@ const css = {
 		fontSize: '18px',
 		fontWeight: 'bold',
 		width: '100px',
+	} as React.CSSProperties,
+	content: {
+		overflowY: 'auto',
+		minHeight: 0,
 	} as React.CSSProperties,
 };
 
@@ -129,24 +142,24 @@ export default class Main extends React.Component<{}, State> {
 		}
 
 		if (Constants.user && !this.state.organization) {
-			return <div>
-				<div
-					className="bp5-callout bp5-intent-danger bp5-icon-error"
-					style={css.card}
+			return <div style={css.card}>
+				<Blueprint.Callout
+					intent="danger"
+					title="No Organization"
+					icon={<Icons.Error/>}
 				>
-					<h4 className="bp5-callout-title">No Organization</h4>
 					Account does not have access to any organizations
 					<button
-						className="bp5-button bp5-minimal bp5-icon-log-out"
+						className="bp5-button bp5-minimal bp5-intent-danger bp5-icon-log-out"
 						onClick={() => {
 							window.location.href = '/logout';
 						}}
 					>Logout</button>
-				</div>
+				</Blueprint.Callout>
 			</div>;
 		}
 
-		return <div>
+		return <div style={css.app}>
 			<nav className="bp5-navbar layout horizontal" style={css.nav}>
 				<div
 					className="bp5-navbar-group bp5-align-left flex"
@@ -393,100 +406,102 @@ export default class Main extends React.Component<{}, State> {
 						}}
 					/>
 				</div>
+				<LoadingBar intent="primary"/>
 			</nav>
-			<LoadingBar intent="primary"/>
-			<RouterRoutes>
-				<RouterRoute path="/" render={() => (
-					<Instances/>
-				)}/>
-				<RouterRoute path="/reload" render={() => (
-					<RouterRedirect to="/"/>
-				)}/>
-				<RouterRoute path="/instances" render={() => (
-					<Instances/>
-				)}/>
-				<RouterRoute path="/pods" render={() => (
-					<Pods/>
-				)}/>
-				<RouterRoute path="/disks" render={() => (
-					<Disks/>
-				)}/>
-				<RouterRoute path="/storages" render={() => (
-					<Storages/>
-				)}/>
-				<RouterRoute path="/images" render={() => (
-					<Images/>
-				)}/>
-				<RouterRoute path="/firewalls" render={() => (
-					<Firewalls/>
-				)}/>
-				<RouterRoute path="/vpcs" render={() => (
-					<Vpcs/>
-				)}/>
-				<RouterRoute path="/domains" render={() => (
-					<Domains/>
-				)}/>
-				<RouterRoute path="/balancers" render={() => (
-					<Balancers/>
-				)}/>
-				<RouterRoute path="/pools" render={() => (
-					<Pools/>
-				)}/>
-				<RouterRoute path="/blocks" render={() => (
-					<Blocks/>
-				)}/>
-				<RouterRoute path="/nodes" render={() => (
-					<Nodes/>
-				)}/>
-				<RouterRoute path="/shapes" render={() => (
-					<Shapes/>
-				)}/>
-				<RouterRoute path="/plans" render={() => (
-					<Plans/>
-				)}/>
-				<RouterRoute path="/organizations" render={() => (
-					<Organizations/>
-				)}/>
-				<RouterRoute path="/users" render={() => (
-					<Users/>
-				)}/>
-				<RouterRoute path="/user" render={() => (
-					<UserDetailed/>
-				)}/>
-				<RouterRoute path="/user/:userId" render={(data) => (
-					<UserDetailed userId={data.params.userId}/>
-				)}/>
-				<RouterRoute path="/policies" render={() => (
-					<Policies/>
-				)}/>
-				<RouterRoute path="/certificates" render={() => (
-					<Certificates/>
-				)}/>
-				<RouterRoute path="/secrets" render={() => (
-					<Secrets/>
-				)}/>
-				<RouterRoute path="/authorities" render={() => (
-					<Authorities/>
-				)}/>
-				<RouterRoute path="/datacenters" render={() => (
-					<Datacenters/>
-				)}/>
-				<RouterRoute path="/zones" render={() => (
-					<Zones/>
-				)}/>
-				<RouterRoute path="/alerts" render={() => (
-					<Alerts/>
-				)}/>
-				<RouterRoute path="/logs" render={() => (
-					<Logs/>
-				)}/>
-				<RouterRoute path="/settings" render={() => (
-					<Settings/>
-				)}/>
-				<RouterRoute path="/subscription" render={() => (
-					<Subscription/>
-				)}/>
-			</RouterRoutes>
+			<div style={css.content}>
+				<RouterRoutes>
+					<RouterRoute path="/" render={() => (
+						<Instances/>
+					)}/>
+					<RouterRoute path="/reload" render={() => (
+						<RouterRedirect to="/"/>
+					)}/>
+					<RouterRoute path="/instances" render={() => (
+						<Instances/>
+					)}/>
+					<RouterRoute path="/pods" render={() => (
+						<Pods/>
+					)}/>
+					<RouterRoute path="/disks" render={() => (
+						<Disks/>
+					)}/>
+					<RouterRoute path="/storages" render={() => (
+						<Storages/>
+					)}/>
+					<RouterRoute path="/images" render={() => (
+						<Images/>
+					)}/>
+					<RouterRoute path="/firewalls" render={() => (
+						<Firewalls/>
+					)}/>
+					<RouterRoute path="/vpcs" render={() => (
+						<Vpcs/>
+					)}/>
+					<RouterRoute path="/domains" render={() => (
+						<Domains/>
+					)}/>
+					<RouterRoute path="/balancers" render={() => (
+						<Balancers/>
+					)}/>
+					<RouterRoute path="/pools" render={() => (
+						<Pools/>
+					)}/>
+					<RouterRoute path="/blocks" render={() => (
+						<Blocks/>
+					)}/>
+					<RouterRoute path="/nodes" render={() => (
+						<Nodes/>
+					)}/>
+					<RouterRoute path="/shapes" render={() => (
+						<Shapes/>
+					)}/>
+					<RouterRoute path="/plans" render={() => (
+						<Plans/>
+					)}/>
+					<RouterRoute path="/organizations" render={() => (
+						<Organizations/>
+					)}/>
+					<RouterRoute path="/users" render={() => (
+						<Users/>
+					)}/>
+					<RouterRoute path="/user" render={() => (
+						<UserDetailed/>
+					)}/>
+					<RouterRoute path="/user/:userId" render={(data) => (
+						<UserDetailed userId={data.params.userId}/>
+					)}/>
+					<RouterRoute path="/policies" render={() => (
+						<Policies/>
+					)}/>
+					<RouterRoute path="/certificates" render={() => (
+						<Certificates/>
+					)}/>
+					<RouterRoute path="/secrets" render={() => (
+						<Secrets/>
+					)}/>
+					<RouterRoute path="/authorities" render={() => (
+						<Authorities/>
+					)}/>
+					<RouterRoute path="/datacenters" render={() => (
+						<Datacenters/>
+					)}/>
+					<RouterRoute path="/zones" render={() => (
+						<Zones/>
+					)}/>
+					<RouterRoute path="/alerts" render={() => (
+						<Alerts/>
+					)}/>
+					<RouterRoute path="/logs" render={() => (
+						<Logs/>
+					)}/>
+					<RouterRoute path="/settings" render={() => (
+						<Settings/>
+					)}/>
+					<RouterRoute path="/subscription" render={() => (
+						<Subscription/>
+					)}/>
+				</RouterRoutes>
+			</div>
 		</div>;
 	}
 }
