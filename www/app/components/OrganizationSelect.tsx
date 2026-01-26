@@ -1,5 +1,8 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
+import * as Blueprint from "@blueprintjs/core"
+import * as BpSelect from '@blueprintjs/select';
+import * as Icons from '@blueprintjs/icons';
 import * as OrganizationTypes from '../types/OrganizationTypes';
 import * as CompletionActions from '../actions/CompletionActions';
 import CompletionStore from '../stores/CompletionStore';
@@ -9,13 +12,15 @@ interface Props {
 }
 
 interface State {
-	organizations: OrganizationTypes.OrganizationsRo;
+	organizations: OrganizationTypes.Organizations;
 	organization: string;
 }
 
 const css = {
+	cardButton: {
+	} as React.CSSProperties,
 	select: {
-		marginRight: '11px',
+		display: "inline",
 	} as React.CSSProperties,
 };
 
@@ -23,7 +28,7 @@ export default class Organization extends React.Component<Props, State> {
 	constructor(props: any, context: any) {
 		super(props, context);
 		this.state = {
-			organizations: CompletionStore.organizations,
+			organizations: [...CompletionStore.organizations],
 			organization: null,
 		};
 	}
@@ -39,38 +44,75 @@ export default class Organization extends React.Component<Props, State> {
 	onChange = (): void => {
 		this.setState({
 			...this.state,
-			organizations: CompletionStore.organizations,
+			organizations: [...CompletionStore.organizations],
 			organization: CompletionStore.userOrganization,
 		});
 	}
 
+	renderOrg: BpSelect.ItemRenderer<OrganizationTypes.Organization> = (org,
+		{handleClick, handleFocus, modifiers, query, index}): JSX.Element => {
+
+		let className = ""
+		let selected = false
+		if (this.state.organization === org.id) {
+			className = "bp5-text-intent-primary bp5-intent-primary"
+			selected = true
+		} else if (index === 0) {
+			className = ""
+		}
+		return <Blueprint.MenuItem
+			key={`org-${org.id}`}
+			selected={selected}
+			roleStructure="listoption"
+			icon={<Icons.People
+				className={className}
+			/>}
+			onFocus={handleFocus}
+			onClick={(evt): void => {
+				evt.preventDefault()
+				evt.stopPropagation()
+				handleClick(evt)
+			}}
+			text={org.name}
+			textClassName={className}
+		/>
+	}
+
 	render(): JSX.Element {
-		let orgsSelect: JSX.Element[] = [];
+		if (this.props.hidden) {
+			return <div/>
+		}
 
-		this.state.organizations.forEach((
-				org: OrganizationTypes.OrganizationRo): void => {
-			orgsSelect.push(
-				<option
-					key={org.id}
-					value={org.id}
-				>{org.name}</option>,
-			);
-		});
+		return <BpSelect.Select<OrganizationTypes.OrganizationRo>
+			items={this.state.organizations || []}
+			itemRenderer={this.renderOrg}
+			popoverTargetProps={{
+				style: css.select,
+			}}
+			filterable={false}
+			itemListRenderer={({items, itemsParentRef,
+					query, renderItem, menuProps}) => {
 
-		return <div style={css.select}>
-			<div
-				className="bp5-select"
-				hidden={this.props.hidden}
-			>
-				<select
-					value={this.state.organization || ''}
-					onChange={(evt): void => {
-						CompletionActions.setUserOrganization(evt.target.value);
-					}}
+				const renderedItems = items.map(renderItem).filter(
+					item => item != null)
+				return <Blueprint.Menu
+					role="listbox"
+					ulRef={itemsParentRef}
+					{...menuProps}
 				>
-					{orgsSelect}
-				</select>
-			</div>
-		</div>;
+					{renderedItems}
+				</Blueprint.Menu>
+			}}
+			onItemSelect={(org) => {
+				CompletionActions.setUserOrganization(org.id);
+			}}
+		>
+			<Blueprint.Button
+				style={css.cardButton}
+				alignText="left"
+				small={true}
+				rightIcon={<Icons.CaretDown/>}
+			>Organization</Blueprint.Button>
+		</BpSelect.Select>
 	}
 }
