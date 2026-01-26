@@ -100,7 +100,7 @@ export default class ZoneNew extends React.Component<Props, State> {
 			addCert: null,
 			forwardedChecked: false,
 			zone: {
-				name: "New Zone",
+				name: "new-zone",
 			},
 		};
 	}
