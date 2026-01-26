@@ -119,7 +119,7 @@ export default class VpcNew extends React.Component<Props, State> {
 			addNetworkRole: null,
 			addVpc: null,
 			vpc: {
-				name: "New VPC",
+				name: "new-vpc",
 			},
 		};
 	}
