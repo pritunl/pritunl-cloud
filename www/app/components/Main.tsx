@@ -73,6 +73,7 @@ const css = {
 		flexWrap: 'wrap',
 		gap: '5px',
 		padding: '8px 0',
+		alignContent: 'center',
 	} as React.CSSProperties,
 	navGroup: {
 		flexWrap: 'wrap',
