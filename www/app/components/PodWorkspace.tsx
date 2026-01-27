@@ -1227,7 +1227,7 @@ export default class PodWorkspace extends React.Component<Props, State> {
 					{commitMenu}
 					<Blueprint.Popover
 						content={settingsMenu}
-						placement="bottom"
+						placement="bottom-start"
 					>
 						<Blueprint.Button
 							alignText="left"
