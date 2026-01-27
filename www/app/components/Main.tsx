@@ -88,7 +88,6 @@ const css = {
 	} as React.CSSProperties,
 	heading: {
 		marginRight: '11px',
-		marginBottom: '2px',
 		fontSize: '18px',
 		fontWeight: 'bold',
 		width: '100px',
