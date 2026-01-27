@@ -47,7 +47,7 @@ const css = {
 		width: '35%',
 	} as React.CSSProperties,
 	pathInput: {
-		width: '65%',
+		width: '64%',
 	} as React.CSSProperties,
 	inputBox: {
 		flex: '1',
