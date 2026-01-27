@@ -346,16 +346,6 @@ export default class Pods extends React.Component<{}, State> {
 					<div className="flex"/>
 					<div style={css.buttons}>
 						<button
-							className="bp5-button bp5-icon-help"
-							style={css.button}
-							type="button"
-							onClick={(): void => {
-								console.log("TODO")
-							}}
-						>
-							Help
-						</button>
-						<button
 							className={filterClass}
 							style={css.button}
 							type="button"
