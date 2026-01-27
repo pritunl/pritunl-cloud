@@ -35,10 +35,10 @@ interface State {
 
 const css = {
 	row: {
+		width: '100%',
+		height: '100%',
 		position: 'relative',
 		padding: '48px 10px 0 10px',
-		width: '100%',
-		height: 'calc(100dvh - 261px)',
 	} as React.CSSProperties,
 	card: {
 		position: 'relative',
@@ -196,8 +196,8 @@ export default class PodNew extends React.Component<Props, State> {
 		}
 
 		return <div
-			className="bp5-card"
 			style={css.row}
+			className="bp5-card layout vertical flex"
 		>
 				<div className="layout horizontal wrap">
 					<div style={css.group}>
