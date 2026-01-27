@@ -39,10 +39,10 @@ interface State {
 
 const css = {
 	card: {
+		width: '100%',
+		height: '100%',
 		position: 'relative',
 		padding: '48px 10px 0 10px',
-		width: '100%',
-		height: 'calc(100dvh - 261px)',
 	} as React.CSSProperties,
 	button: {
 		height: '30px',
@@ -337,7 +337,7 @@ export default class PodDetailed extends React.Component<Props, State> {
 
 		return <div
 			style={css.card}
-			className="bp5-card layout vertical"
+			className="bp5-card layout vertical flex"
 		>
 			<div className="layout horizontal wrap">
 				<div style={css.group}>
