@@ -21,6 +21,10 @@ const css = {
 		maxWidth: '1400px',
 	} as React.CSSProperties,
 	pageFull: {
+		height: '100%',
+		display: 'flex',
+		flexDirection: 'column',
+		overflow: 'hidden',
 		margin: '0 auto',
 		padding: '30px 20px 0 20px',
 		minWidth: '200px',
