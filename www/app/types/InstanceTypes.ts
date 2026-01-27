@@ -184,8 +184,10 @@ export interface Info {
 }
 
 export function FirewallFields(info: Info): PageInfos.Field[] {
-	if (!info.firewall_rules) {
-		return [];
+	if (!info?.firewall_rules?.length) {
+		return [{
+			label: '-',
+		}];
 	}
 
 	return Object.entries(info.firewall_rules).map(([key, value]) => ({
