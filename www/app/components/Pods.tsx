@@ -39,8 +39,8 @@ interface State {
 
 const css = {
 	layout: {
-		height: 'calc(100dvh - 260px)',
-		maxHeight: 'calc(100dvh - 260px)',
+		minHeight: 0,
+		paddingBottom: '20px'
 	} as React.CSSProperties,
 	items: {
 		width: '200px',
@@ -53,7 +53,6 @@ const css = {
 		overflowY: 'auto',
 	} as React.CSSProperties,
 	pods: {
-		flexGrow: 1,
 		minWidth: 0,
 		maxWidth: '100%',
 	} as React.CSSProperties,
@@ -283,7 +282,7 @@ export default class Pods extends React.Component<{}, State> {
 				}}
 			/>;
 		} else if (!podsDom.length) {
-			podElem = <div className="layout vertical" style={css.nonState}>
+			podElem = <div className="layout vertical flex" style={css.nonState}>
 				<NonState
 					hidden={false}
 					iconClass="bp5-icon-cube"
@@ -404,7 +403,7 @@ export default class Pods extends React.Component<{}, State> {
 				}}
 				organizations={this.state.organizations}
 			/>
-			<div className="layout horizontal" style={css.layout}>
+			<div className="layout horizontal flex" style={css.layout}>
 				<div
 					className="bp5-menu"
 					style={css.items}
@@ -422,7 +421,7 @@ export default class Pods extends React.Component<{}, State> {
 						}}
 					/>
 				</div>
-				<div style={css.pods}>
+				<div className="layout vertical flex" style={css.pods}>
 					{podElem}
 				</div>
 			</div>
