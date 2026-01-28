@@ -353,6 +353,14 @@ export default class Disks extends React.Component<{}, State> {
 			}
 		}
 
+		let sizeRow = <div style={{"display": "table-row"}}>
+			<div style={{display: "table-cell", width: "auto"}}></div>
+			<div style={{display: "table-cell", width: "auto"}}></div>
+			<div style={{display: "table-cell", width: "auto"}}></div>
+			<div style={{display: "table-cell", width: "auto"}}></div>
+			<div style={{display: "table-cell", width: "120px"}}></div>
+		</div>
+
 		return <Page>
 			<PageHeader>
 				<div className="layout horizontal wrap" style={css.header}>
@@ -477,11 +485,9 @@ export default class Disks extends React.Component<{}, State> {
 			/>
 			<div style={css.itemsBox}>
 				<div style={css.items}>
+					{sizeRow}
 					{newDiskDom}
 					{disksDom}
-					<tr className="bp5-card bp5-row" style={css.placeholder}>
-						<td colSpan={5} style={css.placeholder}/>
-					</tr>
 				</div>
 			</div>
 			<NonState
