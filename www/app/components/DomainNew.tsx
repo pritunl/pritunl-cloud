@@ -263,6 +263,7 @@ export default class DomainNew extends React.Component<Props, State> {
 								this.set('type', val);
 							}}
 						>
+							<option value="local">Local</option>
 							<option value="aws">AWS</option>
 							<option value="cloudflare">Cloudflare</option>
 							<option value="oracle_cloud">Oracle Cloud</option>
