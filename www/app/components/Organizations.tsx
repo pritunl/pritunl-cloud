@@ -321,7 +321,7 @@ export default class Organizations extends React.Component<{}, State> {
 			</div>
 			<NonState
 				hidden={!!organizationsDom.length}
-				iconClass="bp5-icon-ip-address"
+				iconClass="bp5-icon-people"
 				title="No organizations"
 				description="Add a new organization to get started."
 			/>
