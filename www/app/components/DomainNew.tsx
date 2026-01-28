@@ -272,6 +272,7 @@ export default class DomainNew extends React.Component<Props, State> {
 							disabled={this.state.disabled}
 							label="Provider API Secret"
 							help="Secret containing API keys to use for provider."
+							hidden={!domain.type || domain.type === "local"}
 							value={domain.secret}
 							onChange={(val): void => {
 								this.set('secret', val);
