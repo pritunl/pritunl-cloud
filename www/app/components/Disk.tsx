@@ -172,6 +172,10 @@ export default class Disk extends React.Component<Props, {}> {
 			resourceValue = node ? node.name : disk.node;
 		}
 
+		if (disk.deployment) {
+			resourceIcon = "bp5-icon-server";
+		}
+
 		return <div
 			className="bp5-card bp5-row"
 			style={css.card}
