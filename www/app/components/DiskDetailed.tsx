@@ -458,6 +458,13 @@ export default class DiskDetailed extends React.Component<Props, State> {
 			});
 		}
 
+		if (this.props.disk.deployment) {
+			fields.push({
+				label: 'Deployment',
+				value: this.props.disk.deployment,
+			})
+		}
+
 		let backingImage = this.props.disk.backing_image;
 		if (backingImage) {
 			backingImage = backingImage.replace('-', '\n');
