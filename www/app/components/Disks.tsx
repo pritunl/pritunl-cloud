@@ -74,9 +74,13 @@ const css = {
 	} as React.CSSProperties,
 	debug: {
 		margin: '0 0 4px 0',
+		justifyContent: 'flex-end',
 	} as React.CSSProperties,
 	debugButton: {
-		opacity: 0.5,
+		margin: '0 0 0 8px',
+	} as React.CSSProperties,
+	debugToggle: {
+		opacity: 0.3,
 		margin: '8px 0 0 8px',
 	} as React.CSSProperties,
 };
@@ -357,7 +361,7 @@ export default class Disks extends React.Component<{}, State> {
 					<div style={css.buttons}>
 						<button
 							className={debugClass}
-							style={css.debugButton}
+							style={css.debugToggle}
 							hidden={Constants.user}
 							type="button"
 							onClick={(): void => {
@@ -455,7 +459,7 @@ export default class Disks extends React.Component<{}, State> {
 						className="bp5-intent-danger bp5-icon-warning-sign"
 						progressClassName="bp5-intent-danger"
 						safe={true}
-						style={css.button}
+						style={css.debugButton}
 						confirmMsg="Permanently force delete the selected disks"
 						items={selectedNames}
 						disabled={!this.selected || this.state.disabled}
