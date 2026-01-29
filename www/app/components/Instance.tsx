@@ -11,6 +11,7 @@ interface Props {
 	vpcs: VpcTypes.VpcsRo;
 	domains: DomainTypes.DomainsRo;
 	instance: InstanceTypes.InstanceRo;
+	sizeData: InstanceTypes.SizeData;
 	selected: boolean;
 	onSelect: (shift: boolean) => void;
 	open: boolean;
@@ -187,6 +188,21 @@ export default class Instance extends React.Component<Props, {}> {
 			/>
 		}
 
+		let zoneCss = {
+			verticalAlign: 'top',
+			display: 'table-cell',
+			padding: '9px',
+			whiteSpace: 'nowrap',
+			width: this.props.sizeData.zone + 'px',
+		} as React.CSSProperties
+		let nodeCss = {
+			verticalAlign: 'top',
+			display: 'table-cell',
+			padding: '9px',
+			whiteSpace: 'nowrap',
+			width: this.props.sizeData.node + 'px',
+		} as React.CSSProperties
+
 		return <div
 			className="bp5-card bp5-row"
 			style={cardStyle}
@@ -224,22 +240,21 @@ export default class Instance extends React.Component<Props, {}> {
 					</div>
 				</div>
 			</div>
-			<div className={statusClass} style={css.status}>
-				<span
-					style={css.icon}
-					hidden={!instance.status}
-					className="bp5-icon-standard bp5-icon-power"
-				/>
-			</div>
-			<div className="bp5-cell" style={css.item}>
+			<div className="bp5-cell" style={nodeCss}>
 				<span
 					style={css.icon}
 					hidden={!nodeName}
-					className="bp5-icon-standard bp5-text-muted bp5-icon-layers"
+					className={
+						"bp5-icon-standard bp5-text-muted " +
+						(!!instance.deployment ?
+							"bp5-icon-server" :
+							"bp5-icon-layers"
+						)
+					}
 				/>
 				{nodeName}
 			</div>
-			<div className="bp5-cell" style={css.item}>
+			<div className="bp5-cell" style={zoneCss}>
 				<span
 					style={css.icon}
 					hidden={!zoneName}
