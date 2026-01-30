@@ -270,7 +270,7 @@ export default class Instance extends React.Component<Props, {}> {
 				/>
 				{zoneName}
 			</div>
-			<div className="bp5-cell" style={css.item}>
+			<div className="bp5-cell" style={css.ip}>
 				<span
 					style={css.icon}
 					hidden={!publicIp}
@@ -278,7 +278,7 @@ export default class Instance extends React.Component<Props, {}> {
 				/>
 				{publicIp}
 			</div>
-			<div className="bp5-cell" style={css.item}>
+			<div className="bp5-cell" style={css.ip}>
 				<span
 					style={css.icon}
 					hidden={!privateIp}
