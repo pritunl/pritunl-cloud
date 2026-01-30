@@ -52,18 +52,21 @@ const css = {
 		padding: '9px',
 		whiteSpace: 'nowrap',
 	} as React.CSSProperties,
-	status: {
-		verticalAlign: 'top',
-		display: 'table-cell',
-		padding: '9px',
-		whiteSpace: 'nowrap',
-		width: '35px',
-	} as React.CSSProperties,
 	icon: {
 		marginRight: '3px',
 	} as React.CSSProperties,
+	statusIcon: {
+		margin: '1px 8px 0 -2px',
+	} as React.CSSProperties,
 	updateIcon: {
+		marginTop: '1px',
 		marginRight: '5px',
+	} as React.CSSProperties,
+	ip: {
+		verticalAlign: 'top',
+		display: 'table-cell',
+		padding: '8px',
+		width: '150px',
 	} as React.CSSProperties,
 	bars: {
 		verticalAlign: 'top',
@@ -132,7 +135,7 @@ export default class Instance extends React.Component<Props, {}> {
 			width: (instance.guest?.load5 || 0) + '%',
 		};
 
-		let statusClass = 'bp5-cell';
+		let statusClass = '';
 		switch (instance.status) {
 			case 'Running':
 				statusClass += ' bp5-text-intent-success';
@@ -235,6 +238,11 @@ export default class Instance extends React.Component<Props, {}> {
 						<span className="bp5-control-indicator open-ignore"/>
 					</label>
 					<div style={css.nameSpan}>
+						<span
+							style={css.statusIcon}
+							hidden={!instance.status}
+							className={"bp5-icon-standard bp5-icon-power" + statusClass}
+						/>
 						{updateElm}
 						{instance.name}
 					</div>
