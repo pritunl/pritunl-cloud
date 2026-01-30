@@ -2335,6 +2335,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					<label
 						className="bp5-label"
 						style={css.label}
+						hidden={!this.state.showSettings}
 					>
 						Host Paths
 						<Help
@@ -2342,7 +2343,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 							content="Local paths on the host that are available for instances to access through VirtIO-FS sharing. The path must be match or be a subdirectory of a configured host share path in the node settings. The instance's organization must also have a matching role to access the host share."
 						/>
 					</label>
-					<div>
+					<div hidden={!this.state.showSettings}>
 						{mounts}
 					</div>
 					<PageTextArea
