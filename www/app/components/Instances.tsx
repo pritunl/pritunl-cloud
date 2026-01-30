@@ -83,7 +83,10 @@ const css = {
 		margin: '0 0 4px 0',
 	} as React.CSSProperties,
 	debugButton: {
-		opacity: 0.5,
+		margin: '0 0 0 8px',
+	} as React.CSSProperties,
+	debugToggle: {
+		opacity: 0.3,
 		margin: '8px 0 0 8px',
 	} as React.CSSProperties,
 };
@@ -235,13 +238,47 @@ export default class Instances extends React.Component<{}, State> {
 	render(): JSX.Element {
 		let instancesDom: JSX.Element[] = [];
 
+		let size: InstanceTypes.SizeData = {
+			zone: 100,
+			node: 100,
+		}
+
+		let zoneParsed: Set<string> = new Set();
+		let nodeParsed: Set<string> = new Set();
+
 		this.state.instances.forEach((
 				instance: InstanceTypes.InstanceRo): void => {
+
+			if (!zoneParsed.has(instance.zone)) {
+				let zone = CompletionStore.zone(instance.zone);
+				let zoneName = zone ? zone.name : null;
+
+				size.zone = Math.max(
+					size.zone,
+					MiscUtils.getTextWidth(zoneName) + 40,
+				)
+
+				zoneParsed.add(instance.zone)
+			}
+
+			if (!nodeParsed.has(instance.node)) {
+				let node = CompletionStore.node(instance.node);
+				let nodeName = node ? node.name : null;
+
+				size.node = Math.max(
+					size.node,
+					MiscUtils.getTextWidth(nodeName) + 40,
+				)
+
+				nodeParsed.add(instance.node)
+			}
+
 			instancesDom.push(<Instance
 				key={instance.id}
 				instance={instance}
 				domains={this.state.domains}
 				vpcs={this.state.vpcs}
+				sizeData={size}
 				selected={!!this.state.selected[instance.id]}
 				open={!!this.state.opened[instance.id]}
 				onSelect={(shift: boolean): void => {
@@ -352,6 +389,15 @@ export default class Instances extends React.Component<{}, State> {
 				selectedNames.push(instId);
 			}
 		}
+
+		let sizeRow = <div style={{"display": "table-row"}}>
+			<div style={{display: "table-cell", width: "auto"}}></div>
+			<div style={{display: "table-cell", width: size.node + "px"}}></div>
+			<div style={{display: "table-cell", width: size.zone + "px"}}></div>
+			<div style={{display: "table-cell", width: "150px"}}></div>
+			<div style={{display: "table-cell", width: "150px"}}></div>
+			<div style={{display: "table-cell", width: "85px"}}></div>
+		</div>
 
 		return <Page>
 			<PageHeader>
