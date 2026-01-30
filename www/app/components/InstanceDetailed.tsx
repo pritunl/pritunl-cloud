@@ -1809,6 +1809,13 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			})
 		}
 
+		if (this.props.instance.deployment) {
+			instanceFields.push({
+				label: 'Deployment',
+				value: this.props.instance.deployment,
+			})
+		}
+
 		fields.push(
 			{
 				label: 'Instance Details',
