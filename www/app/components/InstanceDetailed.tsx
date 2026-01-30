@@ -154,7 +154,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			vncCtrl: false,
 			vncAlt: false,
 			vncSuper: false,
-			vncScale: false,
+			vncScale: true,
 			vncHeight: null,
 		};
 
