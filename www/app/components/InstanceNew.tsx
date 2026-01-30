@@ -888,7 +888,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 		>
 			<td
 				className="bp5-cell"
-				colSpan={7}
+				colSpan={6}
 				style={css.card}
 			>
 				<div className="layout horizontal wrap">
