@@ -221,18 +221,24 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 				credentials: {
 					password: this.props.instance.vnc_password,
 				},
+				scaleViewport: this.state.vncScale,
 			},
 		);
+		this.vncRfb.addEventListener('connect', function() {
+			if (this.state.vncScale) {
+				this.vncRfb.scaleViewport = true;
+			} else {
+				this.vncRfb.scaleViewport = false;
+			}
+		}.bind(this));
 		this.vncRfb.addEventListener('disconnect', function() {
+			this.vncRfb.scaleViewport = false;
 			setTimeout(function() {
 				if (this.state.vnc && this.vncState) {
 					this.connectVnc();
 				}
 			}.bind(this), 250);
 		}.bind(this));
-		if (this.state.vncScale) {
-			this.vncRfb.scaleViewport = 'scale';
-		}
 	}
 
 	onToggleVncCtrl = (): void => {
@@ -317,7 +323,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		let vncScale = this.state.vncScale;
 
 		if (vncScale) {
-			this.vncRfb.scaleViewport = '';
+			this.vncRfb.scaleViewport = false;
 		} else {
 			let ratio = this.vncRfb._canvas.height / this.vncRfb._canvas.width;
 			vncHeight = Math.floor(this.vncRef.current.offsetWidth * ratio);
@@ -330,30 +336,30 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		});
 
 		if (!vncScale) {
-			this.vncRfb.scaleViewport = 'scale';
+			this.vncRfb.scaleViewport = true;
 			setTimeout((): void => {
 				if (this.state.vncScale) {
-					this.vncRfb.scaleViewport = 'scale';
+					this.vncRfb.scaleViewport = true;
 				}
 				setTimeout((): void => {
 					if (this.state.vncScale) {
-						this.vncRfb.scaleViewport = 'scale';
+						this.vncRfb.scaleViewport = true;
 					}
 					setTimeout((): void => {
 						if (this.state.vncScale) {
-							this.vncRfb.scaleViewport = 'scale';
+							this.vncRfb.scaleViewport = true;
 						}
 						setTimeout((): void => {
 							if (this.state.vncScale) {
-								this.vncRfb.scaleViewport = 'scale';
+								this.vncRfb.scaleViewport = true;
 							}
 							setTimeout((): void => {
 								if (this.state.vncScale) {
-									this.vncRfb.scaleViewport = 'scale';
+									this.vncRfb.scaleViewport = true;
 								}
 								setTimeout((): void => {
 									if (this.state.vncScale) {
-										this.vncRfb.scaleViewport = 'scale';
+										this.vncRfb.scaleViewport = true;
 									}
 								}, 50);
 							}, 50);
