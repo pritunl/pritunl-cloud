@@ -2145,6 +2145,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
+						hidden={!node.pci_passthrough}
 						label="PCI Passthrough"
 						help="Enable PCI passthrough support for instances."
 						checked={node.pci_passthrough}
