@@ -1894,10 +1894,10 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							this.onNetworkMode(val);
 						}}
 					>
+						<option value="disabled">Disabled</option>
 						<option value="dhcp">DHCP</option>
 						<option value="static">Static</option>
 						<option value="cloud">Oracle Cloud</option>
-						<option value="disabled">Disabled</option>
 					</PageSelect>
 					<PageSelect
 						disabled={this.state.disabled}
@@ -1908,10 +1908,10 @@ export default class NodeDetailed extends React.Component<Props, State> {
 							this.onNetworkMode6(val);
 						}}
 					>
+						<option value="disabled">Disabled</option>
 						<option value="dhcp">DHCP</option>
 						<option value="static">Static</option>
 						<option value="cloud">Oracle Cloud</option>
-						<option value="disabled">Disabled</option>
 					</PageSelect>
 					<label
 						className="bp5-label"
