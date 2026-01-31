@@ -192,14 +192,6 @@ export default class Main extends React.Component<{}, State> {
 						Disks
 					</RouterLink>
 					<RouterLink
-						className="bp5-button bp5-minimal bp5-icon-database"
-						style={css.link}
-						hidden={Constants.user}
-						to="/storages"
-					>
-						Storages
-					</RouterLink>
-					<RouterLink
 						className="bp5-button bp5-minimal bp5-icon-compressed"
 						style={css.link}
 						to="/images"
@@ -319,6 +311,14 @@ export default class Main extends React.Component<{}, State> {
 						Authorities
 					</RouterLink>
 					<RouterLink
+						className="bp5-button bp5-minimal bp5-icon-database"
+						style={css.link}
+						hidden={Constants.user}
+						to="/storages"
+					>
+						Storages
+					</RouterLink>
+					<RouterLink
 						className="bp5-button bp5-minimal bp5-icon-cloud"
 						style={css.link}
 						hidden={Constants.user}
@@ -425,9 +425,6 @@ export default class Main extends React.Component<{}, State> {
 					<RouterRoute path="/disks" render={() => (
 						<Disks/>
 					)}/>
-					<RouterRoute path="/storages" render={() => (
-						<Storages/>
-					)}/>
 					<RouterRoute path="/images" render={() => (
 						<Images/>
 					)}/>
@@ -481,6 +478,9 @@ export default class Main extends React.Component<{}, State> {
 					)}/>
 					<RouterRoute path="/authorities" render={() => (
 						<Authorities/>
+					)}/>
+					<RouterRoute path="/storages" render={() => (
+						<Storages/>
 					)}/>
 					<RouterRoute path="/datacenters" render={() => (
 						<Datacenters/>
