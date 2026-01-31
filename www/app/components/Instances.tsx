@@ -407,7 +407,7 @@ export default class Instances extends React.Component<{}, State> {
 					<div style={css.buttons}>
 						<button
 							className={debugClass}
-							style={css.debugButton}
+							style={css.debugToggle}
 							hidden={Constants.user}
 							type="button"
 							onClick={(): void => {
@@ -509,7 +509,7 @@ export default class Instances extends React.Component<{}, State> {
 						className="bp5-intent-danger bp5-icon-warning-sign"
 						progressClassName="bp5-intent-danger"
 						safe={true}
-						style={css.button}
+						style={css.debugButton}
 						confirmMsg="Permanently force delete the selected instances"
 						items={selectedNames}
 						disabled={!this.selected || this.state.disabled}
