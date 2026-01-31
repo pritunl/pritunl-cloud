@@ -334,7 +334,7 @@ export default class Policies extends React.Component<{}, State> {
 			</div>
 			<NonState
 				hidden={!!policiesDom.length}
-				iconClass="bp5-icon-ip-address"
+				iconClass="bp5-icon-filter"
 				title="No policies"
 				description="Add a new policy to get started."
 			/>
