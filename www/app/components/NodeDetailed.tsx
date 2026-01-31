@@ -1601,22 +1601,22 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					this.props.node.timestamp) || 'Inactive',
 			},
 			{
+				label: 'CPU Units Reserved',
+				value: (this.props.node.cpu_units_res || 0).toString(),
+			},
+			{
 				label: 'CPU Units',
 				value: (this.props.node.cpu_units ||
 					'Unknown').toString(),
 			},
 			{
-				label: 'CPU Units Reserved',
-				value: (this.props.node.cpu_units_res || 0).toString(),
+				label: 'Memory Units Reserved',
+				value: (this.props.node.memory_units_res || 0).toString(),
 			},
 			{
 				label: 'Memory Units',
-				value: (this.props.node.memory_units ||
-					'Unknown').toString(),
-			},
-			{
-				label: 'Memory Units Reserved',
-				value: (this.props.node.memory_units_res || 0).toString(),
+				value: (this.props.node.memory_units ?
+					Math.floor(this.props.node.memory_units).toString() : 'Unkown'),
 			},
 			{
 				label: 'Default Interface',
