@@ -230,6 +230,13 @@ export default class Nodes extends React.Component<{}, State> {
 			filterClass += 'bp5-active';
 		}
 
+		let sizeRow = <div style={{"display": "table-row"}}>
+			<div style={{display: "table-cell", width: "auto"}}></div>
+			<div style={{display: "table-cell", width: "auto"}}></div>
+			<div style={{display: "table-cell", width: "auto"}}></div>
+			<div style={{display: "table-cell", width: "85px"}}></div>
+		</div>
+
 		return <Page>
 			<PageHeader>
 				<div className="layout horizontal wrap" style={css.header}>
@@ -276,10 +283,8 @@ export default class Nodes extends React.Component<{}, State> {
 			/>
 			<div style={css.itemsBox}>
 				<div style={css.items}>
+					{sizeRow}
 					{nodesDom}
-					<tr className="bp5-card bp5-row" style={css.placeholder}>
-						<td colSpan={4} style={css.placeholder}/>
-					</tr>
 				</div>
 			</div>
 			<NodesPage
