@@ -529,11 +529,9 @@ export default class Instances extends React.Component<{}, State> {
 			/>
 			<div style={css.itemsBox}>
 				<div style={css.items}>
+					{sizeRow}
 					{newInstanceDom}
 					{instancesDom}
-					<tr className="bp5-card bp5-row" style={css.placeholder}>
-						<td colSpan={6} style={css.placeholder}/>
-					</tr>
 				</div>
 			</div>
 			<NonState
