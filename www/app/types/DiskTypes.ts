@@ -16,6 +16,7 @@ export interface Disk {
 	state?: string;
 	action?: string;
 	instance?: string;
+	deployment?: string;
 	delete_protection?: boolean;
 	file_system?: string;
 	image?: string;
