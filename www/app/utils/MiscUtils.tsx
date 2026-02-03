@@ -106,6 +106,20 @@ export function formatAmount(amount: number): string {
 	return '$' + (amount / 100).toFixed(2);
 }
 
+export function getTextWidth(text: string) {
+	const temp = document.createElement("span");
+	temp.style.visibility = "hidden";
+	temp.style.position = "absolute";
+	temp.style.whiteSpace = "nowrap";
+	temp.textContent = text;
+
+	document.body.appendChild(temp);
+	const width = temp.offsetWidth;
+	document.body.removeChild(temp);
+
+	return width;
+}
+
 export function formatDate(dateStr: string): string {
 	if (!dateStr || dateStr === '0001-01-01T00:00:00Z') {
 		return '';
