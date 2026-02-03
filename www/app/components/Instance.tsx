@@ -11,7 +11,6 @@ interface Props {
 	vpcs: VpcTypes.VpcsRo;
 	domains: DomainTypes.DomainsRo;
 	instance: InstanceTypes.InstanceRo;
-	sizeData: InstanceTypes.SizeData;
 	selected: boolean;
 	onSelect: (shift: boolean) => void;
 	open: boolean;
@@ -191,21 +190,6 @@ export default class Instance extends React.Component<Props, {}> {
 			/>
 		}
 
-		let zoneCss = {
-			verticalAlign: 'top',
-			display: 'table-cell',
-			padding: '9px',
-			whiteSpace: 'nowrap',
-			width: this.props.sizeData.zone + 'px',
-		} as React.CSSProperties
-		let nodeCss = {
-			verticalAlign: 'top',
-			display: 'table-cell',
-			padding: '9px',
-			whiteSpace: 'nowrap',
-			width: this.props.sizeData.node + 'px',
-		} as React.CSSProperties
-
 		return <div
 			className="bp5-card bp5-row"
 			style={cardStyle}
@@ -248,7 +232,7 @@ export default class Instance extends React.Component<Props, {}> {
 					</div>
 				</div>
 			</div>
-			<div className="bp5-cell" style={nodeCss}>
+			<div className="bp5-cell" style={css.item}>
 				<span
 					style={css.icon}
 					hidden={!nodeName}
@@ -262,7 +246,7 @@ export default class Instance extends React.Component<Props, {}> {
 				/>
 				{nodeName}
 			</div>
-			<div className="bp5-cell" style={zoneCss}>
+			<div className="bp5-cell" style={css.item}>
 				<span
 					style={css.icon}
 					hidden={!zoneName}
