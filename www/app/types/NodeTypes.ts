@@ -78,7 +78,7 @@ export interface Node {
 	updates?: Update[];
 	public_ips?: string[];
 	public_ips6?: string[];
-	private_ips?: string[];
+	private_ips?: Record<string, string>;
 	forwarded_for_header?: string;
 	forwarded_proto_header?: string;
 	software_version?: string;
