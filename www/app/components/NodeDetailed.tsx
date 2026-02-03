@@ -1212,9 +1212,13 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			publicIps6 = 'None';
 		}
 
-		let privateIps: any = this.props.node.private_ips;
-		if (!privateIps || !privateIps.length) {
-			privateIps = 'None';
+		let privateIps: string[] = [];
+		Object.values(this.props.node?.private_ips).forEach((val: string) => {
+			privateIps.push(val)
+		})
+
+		if (!privateIps.length) {
+			privateIps = ['None'];
 		}
 
 		let resourceBars: PageInfos.Bar[] = [
