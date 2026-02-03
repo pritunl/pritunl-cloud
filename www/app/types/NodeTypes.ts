@@ -64,7 +64,10 @@ export interface Node {
 	roles?: string[];
 	requests_min?: number;
 	cpu_units?: number;
+	memory_units_used?: number;
 	memory_units?: number;
+	hugepages_units_used?: number;
+	hugepages_units?: number;
 	cpu_units_res?: number;
 	memory_units_res?: number;
 	memory?: number;
