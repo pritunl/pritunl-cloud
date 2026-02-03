@@ -190,7 +190,7 @@ export interface SizeData {
 }
 
 export function FirewallFields(info: Info): PageInfos.Field[] {
-	if (!info?.firewall_rules?.length) {
+	if (!info?.firewall_rules || Object.keys(info.firewall_rules).length === 0) {
 		return [{
 			label: '-',
 		}];
