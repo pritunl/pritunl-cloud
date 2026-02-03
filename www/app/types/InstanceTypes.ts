@@ -184,6 +184,11 @@ export interface Info {
 	cloud_subnets?: CloudSubnet[];
 }
 
+export interface SizeData {
+	zone: number;
+	node: number;
+}
+
 export function FirewallFields(info: Info): PageInfos.Field[] {
 	if (!info?.firewall_rules?.length) {
 		return [{
