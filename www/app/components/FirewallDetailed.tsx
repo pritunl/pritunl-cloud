@@ -207,7 +207,7 @@ export default class FirewallDetailed extends React.Component<Props, State> {
 		});
 	}
 
-	onAddIngress = (i: number): void => {
+	onAddIngress = (i: number, prepend: boolean): void => {
 		let firewall: FirewallTypes.Firewall;
 
 		if (this.state.changed) {
@@ -224,7 +224,7 @@ export default class FirewallDetailed extends React.Component<Props, State> {
 			...firewall.ingress,
 		];
 
-		ingress.splice(i + 1, 0, {
+		ingress.splice(prepend ? i : i + 1, 0, {
 			protocol: 'all',
 			source_ips: [
 				'0.0.0.0/0',
@@ -414,8 +414,8 @@ export default class FirewallDetailed extends React.Component<Props, State> {
 					onChange={(state: FirewallTypes.Rule): void => {
 						this.onChangeIngress(index, state);
 					}}
-					onAdd={(): void => {
-						this.onAddIngress(index);
+					onAdd={(prepend: boolean): void => {
+						this.onAddIngress(index, prepend);
 					}}
 					onRemove={(): void => {
 						this.onRemoveIngress(index);
