@@ -5,7 +5,7 @@ import * as FirewallTypes from '../types/FirewallTypes';
 interface Props {
 	rule: FirewallTypes.Rule;
 	onChange: (state: FirewallTypes.Rule) => void;
-	onAdd: () => void;
+	onAdd: (prepend: boolean) => void;
 	onRemove: () => void;
 }
 
@@ -43,14 +43,14 @@ export default class FirewallRule extends React.Component<Props, {}> {
 		};
 	}
 
-	onAddSourceIp = (i: number): void => {
+	onAddSourceIp = (i: number, prepend: boolean): void => {
 		let state = this.clone();
 
 		let sourceIps = [
 			...(state.source_ips || []),
 		];
 
-		sourceIps.splice(i + 1, 0, '');
+		sourceIps.splice(prepend ? i : i + 1, 0, '');
 		state.source_ips = sourceIps;
 
 		this.props.onChange(state);
@@ -133,8 +133,8 @@ export default class FirewallRule extends React.Component<Props, {}> {
 					/>
 					<button
 						className="bp5-button bp5-minimal bp5-intent-success bp5-icon-add"
-						onClick={(): void => {
-							this.onAddSourceIp(i);
+						onClick={(evt): void => {
+							this.onAddSourceIp(i, evt.shiftKey);
 						}}
 					/>
 				</div>
@@ -190,8 +190,8 @@ export default class FirewallRule extends React.Component<Props, {}> {
 				/>
 				<button
 					className="bp5-button bp5-minimal bp5-intent-success bp5-icon-add"
-					onClick={(): void => {
-						this.props.onAdd();
+					onClick={(evt): void => {
+						this.props.onAdd(evt.shiftKey);
 					}}
 				/>
 			</div>
