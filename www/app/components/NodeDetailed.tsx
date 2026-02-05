@@ -819,7 +819,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		});
 	}
 
-	onAddBlock = (i: number): void => {
+	onAddBlock = (i: number, prepend: boolean): void => {
 		let node: NodeTypes.Node;
 
 		if (this.state.changed) {
@@ -836,7 +836,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			...node.blocks,
 		];
 
-		blocks.splice(i + 1, 0, this.newBlock(false));
+		blocks.splice(prepend ? i : i + 1, 0, this.newBlock(false));
 		node.blocks = blocks;
 
 		this.setState({
@@ -911,7 +911,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		});
 	}
 
-	onAddBlock6 = (i: number): void => {
+	onAddBlock6 = (i: number, prepend: boolean): void => {
 		let node: NodeTypes.Node;
 
 		if (this.state.changed) {
@@ -928,7 +928,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			...node.blocks6,
 		];
 
-		blocks.splice(i + 1, 0, this.newBlock(true));
+		blocks.splice(prepend ? i : i + 1, 0, this.newBlock(true));
 		node.blocks6 = blocks;
 
 		this.setState({
@@ -1003,7 +1003,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 		});
 	}
 
-	onAddShare = (i: number): void => {
+	onAddShare = (i: number, prepend: boolean): void => {
 		let node: NodeTypes.Node;
 
 		if (this.state.changed) {
@@ -1023,7 +1023,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 			shares.push({})
 		}
 
-		shares.splice(i + 1, 0, {});
+		shares.splice(prepend ? i : i + 1, 0, {});
 		node.shares = shares;
 
 		this.setState({
@@ -1524,8 +1524,8 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					onChange={(state: NodeTypes.BlockAttachment): void => {
 						this.onChangeBlock(index, state);
 					}}
-					onAdd={(): void => {
-						this.onAddBlock(index);
+					onAdd={(prepend: boolean): void => {
+						this.onAddBlock(index, prepend);
 					}}
 					onRemove={(): void => {
 						this.onRemoveBlock(index);
@@ -1549,8 +1549,8 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					onChange={(state: NodeTypes.BlockAttachment): void => {
 						this.onChangeBlock6(index, state);
 					}}
-					onAdd={(): void => {
-						this.onAddBlock6(index);
+					onAdd={(prepend: boolean): void => {
+						this.onAddBlock6(index, prepend);
 					}}
 					onRemove={(): void => {
 						this.onRemoveBlock6(index);
@@ -1575,8 +1575,8 @@ export default class NodeDetailed extends React.Component<Props, State> {
 					onChange={(state: NodeTypes.Share): void => {
 						this.onChangeShare(index, state);
 					}}
-					onAdd={(): void => {
-						this.onAddShare(index);
+					onAdd={(prepend: boolean): void => {
+						this.onAddShare(index, prepend);
 					}}
 					onRemove={(): void => {
 						this.onRemoveShare(index);
