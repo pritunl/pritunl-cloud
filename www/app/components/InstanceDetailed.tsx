@@ -1313,7 +1313,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		let hasVpcs = false;
 		let vpcsSelect: JSX.Element[] = [];
 		if (this.props.vpcs && this.props.vpcs.length) {
-			vpcsSelect.push(<option key="null" value="">Select Vpc</option>);
+			vpcsSelect.push(<option key="null" value="">Select VPC</option>);
 
 			for (let vpc of this.props.vpcs) {
 				if (vpc.organization != instance.organization) {
@@ -1331,7 +1331,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		}
 
 		if (!hasVpcs) {
-			vpcsSelect = [<option key="null" value="">No Vpcs</option>];
+			vpcsSelect = [<option key="null" value="">No VPCs</option>];
 		}
 
 		let hasSubnets = false;
