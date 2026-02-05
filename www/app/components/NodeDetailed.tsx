@@ -1930,7 +1930,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						External Interfaces
 						<Help
 							title="External Interfaces"
-							content="External interfaces for instance public interface, must be a bridge interface. Leave blank for automatic configuration."
+							content="External interfaces for instance public interface. If this is not a bridge interface the host will not be able to reach the external IP of instances running on the same host."
 						/>
 						<div>
 							{externalIfaces}
