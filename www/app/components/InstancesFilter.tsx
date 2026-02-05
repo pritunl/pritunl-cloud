@@ -183,6 +183,7 @@ export default class InstancesFilter extends React.Component<Props, {}> {
 				style={css.shortInput}
 				placeholder="Network Role"
 				value={this.props.filter.role}
+				dynamic={true}
 				onChange={(val: string): void => {
 					let filter = {
 						...this.props.filter,
