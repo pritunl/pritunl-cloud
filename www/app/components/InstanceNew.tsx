@@ -540,6 +540,9 @@ export default class InstanceNew extends React.Component<Props, State> {
 		} else if (img.name.toLowerCase().indexOf('alpinelinux') !== -1) {
 			instance.secure_boot = false;
 			instance.cloud_type = 'linux';
+		} else if (img.name.toLowerCase().indexOf('archlinux') !== -1) {
+			instance.secure_boot = false;
+			instance.cloud_type = 'linux';
 		} else {
 			if (!this.state.secureBootChanged) {
 				instance.secure_boot = true;
