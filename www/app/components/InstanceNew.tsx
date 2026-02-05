@@ -1107,42 +1107,6 @@ export default class InstanceNew extends React.Component<Props, State> {
 						/>
 						<PageSwitch
 							disabled={this.state.disabled}
-							label="VNC server"
-							help="Enable VNC server for remote control of instance."
-							checked={instance.vnc}
-							onToggle={(): void => {
-								this.set('vnc', !instance.vnc);
-							}}
-						/>
-						<PageSwitch
-							disabled={this.state.disabled}
-							label="Spice server"
-							help="Enable Spice server for remote control of instance."
-							checked={instance.spice}
-							onToggle={(): void => {
-								this.set('spice', !instance.spice);
-							}}
-						/>
-						<PageSwitch
-							disabled={this.state.disabled}
-							label="Desktop GUI"
-							help="Enable desktop GUI window for instance display."
-							checked={instance.gui}
-							onToggle={(): void => {
-								this.set('gui', !instance.gui);
-							}}
-						/>
-						<PageSwitch
-							disabled={this.state.disabled}
-							label="Root enabled"
-							help="Enable root unix account for VNC/Spice access. Random password will be generated."
-							checked={instance.root_enabled}
-							onToggle={(): void => {
-								this.set('root_enabled', !instance.root_enabled);
-							}}
-						/>
-						<PageSwitch
-							disabled={this.state.disabled}
 							label="UEFI"
 							help="Enable UEFI boot, requires OVMF package for UEFI image."
 							checked={instance.uefi}
@@ -1168,24 +1132,6 @@ export default class InstanceNew extends React.Component<Props, State> {
 							checked={instance.tpm}
 							onToggle={(): void => {
 								this.set('tpm', !instance.tpm);
-							}}
-						/>
-						<PageSwitch
-							disabled={this.state.disabled}
-							label="DHCP server"
-							help="Enable instance DHCP server, use for instances without cloud init network configuration support."
-							checked={instance.dhcp_server}
-							onToggle={(): void => {
-								this.onDhcpServer(!instance.dhcp_server);
-							}}
-						/>
-						<PageSwitch
-							disabled={this.state.disabled}
-							label="Delete protection"
-							help="Block instance and any attached disks from being deleted."
-							checked={instance.delete_protection}
-							onToggle={(): void => {
-								this.set('delete_protection', !instance.delete_protection);
 							}}
 						/>
 					</div>
@@ -1373,6 +1319,60 @@ export default class InstanceNew extends React.Component<Props, State> {
 							onToggle={(): void => {
 								this.set('skip_source_dest_check',
 									!instance.skip_source_dest_check);
+							}}
+						/>
+						<PageSwitch
+							disabled={this.state.disabled}
+							label="VNC server"
+							help="Enable VNC server for remote control of instance."
+							checked={instance.vnc}
+							onToggle={(): void => {
+								this.set('vnc', !instance.vnc);
+							}}
+						/>
+						<PageSwitch
+							disabled={this.state.disabled}
+							label="Spice server"
+							help="Enable Spice server for remote control of instance."
+							checked={instance.spice}
+							onToggle={(): void => {
+								this.set('spice', !instance.spice);
+							}}
+						/>
+						<PageSwitch
+							disabled={this.state.disabled}
+							label="Desktop GUI"
+							help="Enable desktop GUI window for instance display."
+							checked={instance.gui}
+							onToggle={(): void => {
+								this.set('gui', !instance.gui);
+							}}
+						/>
+						<PageSwitch
+							disabled={this.state.disabled}
+							label="Root enabled"
+							help="Enable root unix account for VNC/Spice access. Random password will be generated."
+							checked={instance.root_enabled}
+							onToggle={(): void => {
+								this.set('root_enabled', !instance.root_enabled);
+							}}
+						/>
+						<PageSwitch
+							disabled={this.state.disabled}
+							label="DHCP server"
+							help="Enable instance DHCP server, use for instances without cloud init network configuration support."
+							checked={instance.dhcp_server}
+							onToggle={(): void => {
+								this.onDhcpServer(!instance.dhcp_server);
+							}}
+						/>
+						<PageSwitch
+							disabled={this.state.disabled}
+							label="Delete protection"
+							help="Block instance and any attached disks from being deleted."
+							checked={instance.delete_protection}
+							onToggle={(): void => {
+								this.set('delete_protection', !instance.delete_protection);
 							}}
 						/>
 					</div>
