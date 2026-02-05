@@ -26,7 +26,7 @@ const css = {
 	imagesOpen: {
 	} as React.CSSProperties,
 	imagesMenu: {
-		maxHeight: '430px',
+		maxHeight: '460px',
 		overflowY: "auto",
 	} as React.CSSProperties,
 };
@@ -52,6 +52,10 @@ export default class InstanceImages extends React.Component<Props, {}> {
 				case "alpinelinux":
 					name = `Alpine Linux`
 					icon = <div style={css.logo} className="alpinelinux-logo"/>
+					break
+				case "archlinux":
+					name = `Arch Linux`
+					icon = <div style={css.logo} className="archlinux-logo"/>
 					break
 				case "fedora":
 					name = `Fedora ${version}`
