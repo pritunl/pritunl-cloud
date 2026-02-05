@@ -9,7 +9,7 @@ interface Props {
 	blocks: BlockTypes.BlocksRo;
 	block: NodeTypes.BlockAttachment;
 	onChange: (state: NodeTypes.BlockAttachment) => void;
-	onAdd: () => void;
+	onAdd: (prepend: boolean) => void;
 	onRemove: () => void;
 }
 
@@ -132,8 +132,8 @@ export default class NodeBlock extends React.Component<Props, {}> {
 				<button
 					className="bp5-button bp5-minimal bp5-intent-success bp5-icon-add"
 					style={css.control}
-					onClick={(): void => {
-						this.props.onAdd();
+					onClick={(evt): void => {
+						this.props.onAdd(evt.shiftKey);
 					}}
 				/>
 			</div>
