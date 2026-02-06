@@ -7,7 +7,7 @@ interface Props {
 	disabled?: boolean;
 	arp: VpcTypes.Arp;
 	onChange?: (state: VpcTypes.Arp) => void;
-	onAdd: () => void;
+	onAdd: (prepend: boolean) => void;
 	onRemove?: () => void;
 }
 
@@ -80,8 +80,8 @@ export default class VpcArp extends React.Component<Props, {}> {
 				/>
 				<button
 					className="bp5-button bp5-minimal bp5-intent-success bp5-icon-add"
-					onClick={(): void => {
-						this.props.onAdd();
+					onClick={(evt): void => {
+						this.props.onAdd(evt.shiftKey);
 					}}
 				/>
 			</div>
