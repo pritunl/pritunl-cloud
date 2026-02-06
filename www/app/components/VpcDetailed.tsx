@@ -138,7 +138,7 @@ export default class VpcDetailed extends React.Component<Props, State> {
 		});
 	}
 
-	onAddSubnet = (i: number): void => {
+	onAddSubnet = (i: number, prepend: boolean): void => {
 		let vpc: VpcTypes.Vpc;
 
 		if (this.state.changed) {
@@ -159,7 +159,7 @@ export default class VpcDetailed extends React.Component<Props, State> {
 			subnets = [{}];
 		}
 
-		subnets.splice(i + 1, 0, {} as VpcTypes.Subnet);
+		subnets.splice(prepend ? i : i + 1, 0, {} as VpcTypes.Subnet);
 		vpc.subnets = subnets;
 
 		this.setState({
@@ -238,7 +238,7 @@ export default class VpcDetailed extends React.Component<Props, State> {
 		});
 	}
 
-	onAddRoute = (i: number): void => {
+	onAddRoute = (i: number, prepend: boolean): void => {
 		let vpc: VpcTypes.Vpc;
 
 		if (this.state.changed) {
@@ -255,7 +255,7 @@ export default class VpcDetailed extends React.Component<Props, State> {
 			...(vpc.routes || []),
 		];
 
-		routes.splice(i + 1, 0, {} as VpcTypes.Route);
+		routes.splice(prepend ? i : i + 1, 0, {} as VpcTypes.Route);
 		vpc.routes = routes;
 
 		this.setState({
@@ -324,7 +324,7 @@ export default class VpcDetailed extends React.Component<Props, State> {
 		});
 	}
 
-	onAddMap = (i: number): void => {
+	onAddMap = (i: number, prepend: boolean): void => {
 		let vpc: VpcTypes.Vpc;
 
 		if (this.state.changed) {
@@ -345,7 +345,7 @@ export default class VpcDetailed extends React.Component<Props, State> {
 			maps = [{}];
 		}
 
-		maps.splice(i + 1, 0, {} as VpcTypes.Map);
+		maps.splice(prepend ? i : i + 1, 0, {} as VpcTypes.Map);
 		vpc.maps = maps;
 
 		this.setState({
@@ -424,7 +424,7 @@ export default class VpcDetailed extends React.Component<Props, State> {
 		});
 	}
 
-	onAddArp = (i: number): void => {
+	onAddArp = (i: number, prepend: boolean): void => {
 		let vpc: VpcTypes.Vpc;
 
 		if (this.state.changed) {
@@ -445,7 +445,7 @@ export default class VpcDetailed extends React.Component<Props, State> {
 			arps = [{}];
 		}
 
-		arps.splice(i + 1, 0, {} as VpcTypes.Arp);
+		arps.splice(prepend ? i : i + 1, 0, {} as VpcTypes.Arp);
 		vpc.arps = arps;
 
 		this.setState({
@@ -606,8 +606,8 @@ export default class VpcDetailed extends React.Component<Props, State> {
 					onChange={(state: VpcTypes.Subnet): void => {
 						this.onChangeSubnet(index, state);
 					}}
-					onAdd={(): void => {
-						this.onAddSubnet(index);
+					onAdd={(prepend: boolean): void => {
+						this.onAddSubnet(index, prepend);
 					}}
 					onRemove={(): void => {
 						this.onRemoveSubnet(index);
@@ -624,8 +624,8 @@ export default class VpcDetailed extends React.Component<Props, State> {
 					destination: '0.0.0.0/0',
 					target: '0.0.0.0',
 				} as VpcTypes.Route}
-				onAdd={(): void => {
-					this.onAddRoute(-1);
+				onAdd={(prepend: boolean): void => {
+					this.onAddRoute(-1, prepend);
 				}}
 			/>,
 		];
@@ -640,8 +640,8 @@ export default class VpcDetailed extends React.Component<Props, State> {
 						onChange={(state: VpcTypes.Route): void => {
 							this.onChangeRoute(index, state);
 						}}
-						onAdd={(): void => {
-							this.onAddRoute(index);
+						onAdd={(prepend: boolean): void => {
+							this.onAddRoute(index, prepend);
 						}}
 						onRemove={(): void => {
 							this.onRemoveRoute(index);
@@ -667,8 +667,8 @@ export default class VpcDetailed extends React.Component<Props, State> {
 					onChange={(state: VpcTypes.Map): void => {
 						this.onChangeMap(index, state);
 					}}
-					onAdd={(): void => {
-						this.onAddMap(index);
+					onAdd={(prepend: boolean): void => {
+						this.onAddMap(index, prepend);
 					}}
 					onRemove={(): void => {
 						this.onRemoveMap(index);
@@ -693,8 +693,8 @@ export default class VpcDetailed extends React.Component<Props, State> {
 					onChange={(state: VpcTypes.Arp): void => {
 						this.onChangeArp(index, state);
 					}}
-					onAdd={(): void => {
-						this.onAddArp(index);
+					onAdd={(prepend: boolean): void => {
+						this.onAddArp(index, prepend);
 					}}
 					onRemove={(): void => {
 						this.onRemoveArp(index);
