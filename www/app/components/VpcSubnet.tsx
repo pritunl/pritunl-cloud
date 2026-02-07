@@ -6,7 +6,7 @@ interface Props {
 	disabled?: boolean;
 	subnet: VpcTypes.Subnet;
 	onChange?: (state: VpcTypes.Subnet) => void;
-	onAdd: () => void;
+	onAdd: (prepend: boolean) => void;
 	onRemove?: () => void;
 }
 
@@ -79,8 +79,8 @@ export default class VpcSubnet extends React.Component<Props, {}> {
 				/>
 				<button
 					className="bp5-button bp5-minimal bp5-intent-success bp5-icon-add"
-					onClick={(): void => {
-						this.props.onAdd();
+					onClick={(evt): void => {
+						this.props.onAdd(evt.shiftKey);
 					}}
 				/>
 			</div>
