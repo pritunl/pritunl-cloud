@@ -58,6 +58,7 @@ interface State {
 	dhcpChanged: boolean;
 	secureBootChanged: boolean;
 	hiddenImages: boolean;
+	startupScript: boolean;
 }
 
 const css = {
@@ -137,6 +138,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 			dhcpChanged: false,
 			secureBootChanged: false,
 			hiddenImages: false,
+			startupScript: false,
 		};
 	}
 
@@ -207,6 +209,10 @@ export default class InstanceNew extends React.Component<Props, State> {
 
 		if (this.props.organizations.length && !instance.organization) {
 			instance.organization = this.props.organizations[0].id;
+		}
+
+		if (this.state.startupScript === false) {
+			instance.cloud_script = ""
 		}
 
 		InstanceActions.create(instance).then((): void => {
@@ -1074,11 +1080,37 @@ export default class InstanceNew extends React.Component<Props, State> {
 							<option key="bsd" value="bsd">BSD</option>,
 							<option key="linux_legacy" value="linux_legacy">Linux Legacy</option>,
 						</PageSelect>
+						<PageSwitch
+							disabled={this.state.disabled}
+							label="Startup Script"
+							help="Script to run on instance startup. These commands will run on every startup. File must start with #! such as `#!/bin/bash` to specify code interpreter."
+							checked={this.state.startupScript === true || (
+								this.state.startupScript === null && !!instance.cloud_script)}
+							onToggle={(): void => {
+								if (this.state.changed) {
+									instance = {
+										...this.state.instance,
+									};
+								}
+
+								this.setState({
+									...this.state,
+									changed: true,
+									message: '',
+									instance: instance,
+									startupScript: !(this.state.startupScript === true || (
+										this.state.startupScript === null &&
+										!!instance.cloud_script)),
+								});
+							}}
+						/>
 						<PageTextArea
 							label="Startup Script"
 							help="Script to run on instance startup. These commands will run on every startup. File must start with #! such as `#!/bin/bash` to specify code interpreter."
 							placeholder="Startup script"
 							rows={3}
+							hidden={!(this.state.startupScript === true || (
+								this.state.startupScript === null && !!instance.cloud_script))}
 							value={instance.cloud_script}
 							onChange={(val: string): void => {
 								this.set('cloud_script', val);
