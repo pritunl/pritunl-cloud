@@ -26,7 +26,7 @@ const css = {
 	imagesOpen: {
 	} as React.CSSProperties,
 	imagesMenu: {
-		maxHeight: '460px',
+		maxHeight: '490px',
 		overflowY: "auto",
 	} as React.CSSProperties,
 };
