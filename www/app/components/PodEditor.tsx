@@ -379,6 +379,11 @@ export default class PodEditor extends React.Component<Props, State> {
 					this.editor = editor
 					this.monaco = monaco
 
+					editor.addCommand(
+						monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
+						() => {},
+					)
+
 					if (this.markerListener) {
 						this.markerListener.dispose()
 					}
@@ -463,6 +468,11 @@ export default class PodEditor extends React.Component<Props, State> {
 						this.diffEditor = undefined
 						this.diffMonaco = undefined
 					})
+
+					editor.addCommand(
+						monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
+						() => {},
+					)
 
 					let modifiedEditor = editor.getModifiedEditor()
 					modifiedEditor.onDidChangeModelContent((): void => {
