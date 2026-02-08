@@ -154,6 +154,30 @@ export default class InstanceImages extends React.Component<Props, {}> {
 				otherImages.push(image)
 			}
 
+			if (!this.props.showHidden) {
+				let fedoraReleases: [string, [number, ImageTypes.Image]][] = []
+				let nonFedoraImages: [string, [number, ImageTypes.Image]][] = []
+
+				for (let entry of imagesVer.entries()) {
+					if (entry[0].startsWith('fedora')) {
+						fedoraReleases.push(entry)
+					} else {
+						nonFedoraImages.push(entry)
+					}
+				}
+
+				if (fedoraReleases.length > 2) {
+					fedoraReleases.sort((a, b) => {
+						let aNum = parseInt(a[0].replace('fedora', ''), 10) || 0
+						let bNum = parseInt(b[0].replace('fedora', ''), 10) || 0
+						return bNum - aNum
+					})
+					fedoraReleases = fedoraReleases.slice(0, 2)
+				}
+
+				imagesVer = new Map([...nonFedoraImages, ...fedoraReleases])
+			}
+
 			const sortedVersionedImages = Array.from(imagesVer.entries())
 				.sort((a, b) => MiscUtils.naturalSort(a[1][1].name, b[1][1].name));
 			for (let [key, [ver, img]] of sortedVersionedImages) {
