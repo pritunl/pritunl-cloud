@@ -46,6 +46,7 @@ interface State {
 	addIso: string;
 	addUsbDevice: string;
 	addPciDevice: string;
+	startupScript: boolean;
 	forwardedChecked: boolean;
 	showSettings: boolean;
 	vnc: boolean;
@@ -151,6 +152,7 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			addIso: '',
 			addUsbDevice: '',
 			addPciDevice: '',
+			startupScript: null,
 			forwardedChecked: false,
 			showSettings: false,
 			vnc: false,
@@ -1044,12 +1046,18 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 	}
 
 	onSave = (): void => {
+		let cloudScript = this.state.instance.cloud_script
+		if (this.state.startupScript === false) {
+			cloudScript = ""
+		}
+
 		this.setState({
 			...this.state,
 			disabled: true,
 		});
 		InstanceActions.commit({
 			...this.state.instance,
+			cloud_script: cloudScript,
 			action: null,
 		}).then((): void => {
 			this.setState({
@@ -2337,12 +2345,43 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						<option key="bsd" value="bsd">BSD</option>,
 						<option key="linux_legacy" value="linux_legacy">Linux Legacy</option>,
 					</PageSelect>
+					<PageSwitch
+						disabled={this.state.disabled}
+						label="Startup Script"
+						help="Script to run on instance startup. These commands will run on every startup. File must start with #! such as `#!/bin/bash` to specify code interpreter."
+						hidden={!this.state.showSettings}
+						checked={this.state.startupScript === true || (
+							this.state.startupScript === null && !!instance.cloud_script)}
+						onToggle={(): void => {
+							if (this.state.changed) {
+								instance = {
+									...this.state.instance,
+								};
+							} else {
+								instance = {
+									...this.props.instance,
+								};
+							}
+
+							this.setState({
+								...this.state,
+								changed: true,
+								message: '',
+								instance: instance,
+								startupScript: !(this.state.startupScript === true || (
+									this.state.startupScript === null &&
+									!!instance.cloud_script)),
+							});
+						}}
+					/>
 					<PageTextArea
 						label="Startup Script"
 						help="Script to run on instance startup. These commands will run on every startup. File must start with #! such as `#!/bin/bash` to specify code interpreter."
 						placeholder="Startup script"
 						rows={3}
-						hidden={!this.state.showSettings}
+						hidden={!this.state.showSettings ||
+							!(this.state.startupScript === true || (
+							this.state.startupScript === null && !!instance.cloud_script))}
 						value={instance.cloud_script}
 						onChange={(val: string): void => {
 							this.set('cloud_script', val);
