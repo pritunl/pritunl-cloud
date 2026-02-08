@@ -1636,7 +1636,6 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			);
 		})
 
-		let showMore = false
 		let fields: PageInfos.Field[] = [
 			{
 				label: 'ID',
@@ -1995,7 +1994,6 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			})
 
 			if (this.props.instance.guest.hugepages) {
-				showMore = !(cloudPrivateIps || cloudPublicIps || cloudPublicIps6)
 				resourceBars.push({
 					progressClass: 'bp5-no-stripes bp5-intent-primary',
 					label: 'HugePages',
