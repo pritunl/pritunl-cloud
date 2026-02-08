@@ -1082,7 +1082,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 						</PageSelect>
 						<PageSwitch
 							disabled={this.state.disabled}
-							label="Startup Script"
+							label="Startup script"
 							help="Script to run on instance startup. These commands will run on every startup. File must start with #! such as `#!/bin/bash` to specify code interpreter."
 							checked={this.state.startupScript === true || (
 								this.state.startupScript === null && !!instance.cloud_script)}
@@ -1365,7 +1365,7 @@ export default class InstanceNew extends React.Component<Props, State> {
 						</div>
 						<PageSwitch
 							disabled={this.state.disabled}
-							label="Node Ports"
+							label="Node ports"
 							help="Node port mappings from node public IP to internal instance. Acceptable external port range is 30000-32767, leave external port empty to automatically assign a port."
 							checked={false}
 							hidden={!!nodePorts.length}
