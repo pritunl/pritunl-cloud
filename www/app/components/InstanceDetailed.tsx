@@ -2389,11 +2389,32 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
-						label="Delete protection"
-						help="Block instance and any attached disks from being deleted."
-						checked={instance.delete_protection}
+						hidden={!this.state.showSettings}
+						label="UEFI"
+						help="Enable UEFI boot, requires OVMF package for UEFI image."
+						checked={instance.uefi}
 						onToggle={(): void => {
-							this.set('delete_protection', !instance.delete_protection);
+							this.set('uefi', !instance.uefi);
+						}}
+					/>
+					<PageSwitch
+						disabled={this.state.disabled}
+						hidden={!this.state.showSettings || !instance.uefi}
+						label="SecureBoot"
+						help="Enable secure boot, requires OVMF package for UEFI image."
+						checked={instance.secure_boot}
+						onToggle={(): void => {
+							this.set('secure_boot', !instance.secure_boot);
+						}}
+					/>
+					<PageSwitch
+						disabled={this.state.disabled}
+						hidden={!this.state.showSettings || !instance.uefi}
+						label="TPM"
+						help="Enable TPM, requires swtpm and OVMF package."
+						checked={instance.tpm}
+						onToggle={(): void => {
+							this.set('tpm', !instance.tpm);
 						}}
 					/>
 					<PageSwitch
@@ -2413,42 +2434,41 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 						}}
 					/>
 					<PageSwitch
-						disabled={this.state.disabled}
-						label="VNC server"
-						help="Enable VNC server for remote control of instance."
-						checked={instance.vnc}
+						label="Host address"
+						help="Enable or disable host address for instance. Node must have host networking configured to assign host address."
+						hidden={!this.state.showSettings}
+						checked={!instance.no_host_address}
 						onToggle={(): void => {
-							this.set('vnc', !instance.vnc);
+							this.set('no_host_address', !instance.no_host_address);
 						}}
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
-						hidden={!this.state.showSettings}
-						label="Spice server"
-						help="Enable Spice server for remote control of instance."
-						checked={instance.spice}
+						label="Skip source/destination check"
+						help="Allow network traffic from non-instance addresses."
+						checked={instance.skip_source_dest_check}
 						onToggle={(): void => {
-							this.set('spice', !instance.spice);
+							this.set('skip_source_dest_check',
+								!instance.skip_source_dest_check);
 						}}
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
+						label="DHCP server"
+						help="Enable instance DHCP server, use for instances without cloud init network configuration support."
 						hidden={!this.state.showSettings}
-						label="Desktop GUI"
-						help="Enable desktop GUI window for instance display."
-						checked={instance.gui}
+						checked={instance.dhcp_server}
 						onToggle={(): void => {
-							this.set('gui', !instance.gui);
+							this.set('dhcp_server', !instance.dhcp_server);
 						}}
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
-						hidden={!this.state.showSettings}
-						label="Root enabled"
-						help="Enable root unix account for VNC/Spice access. Random password will be generated."
-						checked={instance.root_enabled}
+						label="Delete protection"
+						help="Block instance and any attached disks from being deleted."
+						checked={instance.delete_protection}
 						onToggle={(): void => {
-							this.set('root_enabled', !instance.root_enabled);
+							this.set('delete_protection', !instance.delete_protection);
 						}}
 					/>
 				</div>
@@ -2512,61 +2532,41 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					<PageSwitch
 						disabled={this.state.disabled}
 						hidden={!this.state.showSettings}
-						label="UEFI"
-						help="Enable UEFI boot, requires OVMF package for UEFI image."
-						checked={instance.uefi}
+						label="VNC server"
+						help="Enable VNC server for remote control of instance."
+						checked={instance.vnc}
 						onToggle={(): void => {
-							this.set('uefi', !instance.uefi);
+							this.set('vnc', !instance.vnc);
 						}}
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
-						hidden={!this.state.showSettings || !instance.uefi}
-						label="SecureBoot"
-						help="Enable secure boot, requires OVMF package for UEFI image."
-						checked={instance.secure_boot}
-						onToggle={(): void => {
-							this.set('secure_boot', !instance.secure_boot);
-						}}
-					/>
-					<PageSwitch
-						disabled={this.state.disabled}
-						hidden={!this.state.showSettings || !instance.uefi}
-						label="TPM"
-						help="Enable TPM, requires swtpm and OVMF package."
-						checked={instance.tpm}
-						onToggle={(): void => {
-							this.set('tpm', !instance.tpm);
-						}}
-					/>
-					<PageSwitch
-						disabled={this.state.disabled}
-						label="DHCP server"
-						help="Enable instance DHCP server, use for instances without cloud init network configuration support."
 						hidden={!this.state.showSettings}
-						checked={instance.dhcp_server}
+						label="Spice server"
+						help="Enable Spice server for remote control of instance."
+						checked={instance.spice}
 						onToggle={(): void => {
-							this.set('dhcp_server', !instance.dhcp_server);
-						}}
-					/>
-					<PageSwitch
-						label="Host address"
-						help="Enable or disable host address for instance. Node must have host networking configured to assign host address."
-						hidden={!this.state.showSettings}
-						checked={!instance.no_host_address}
-						onToggle={(): void => {
-							this.set('no_host_address', !instance.no_host_address);
+							this.set('spice', !instance.spice);
 						}}
 					/>
 					<PageSwitch
 						disabled={this.state.disabled}
-						label="Skip source/destination check"
-						help="Allow network traffic from non-instance addresses."
-						hidden={!this.state.showSettings && !showMore}
-						checked={instance.skip_source_dest_check}
+						hidden={!this.state.showSettings}
+						label="Desktop GUI"
+						help="Enable desktop GUI window for instance display."
+						checked={instance.gui}
 						onToggle={(): void => {
-							this.set('skip_source_dest_check',
-								!instance.skip_source_dest_check);
+							this.set('gui', !instance.gui);
+						}}
+					/>
+					<PageSwitch
+						disabled={this.state.disabled}
+						hidden={!this.state.showSettings}
+						label="Root enabled"
+						help="Enable root unix account for VNC/Spice access. Random password will be generated."
+						checked={instance.root_enabled}
+						onToggle={(): void => {
+							this.set('root_enabled', !instance.root_enabled);
 						}}
 					/>
 				</div>
