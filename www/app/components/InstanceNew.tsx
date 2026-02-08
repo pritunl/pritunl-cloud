@@ -1195,6 +1195,24 @@ export default class InstanceNew extends React.Component<Props, State> {
 									!instance.skip_source_dest_check);
 							}}
 						/>
+						<PageSwitch
+							disabled={this.state.disabled}
+							label="DHCP server"
+							help="Enable instance DHCP server, use for instances without cloud init network configuration support."
+							checked={instance.dhcp_server}
+							onToggle={(): void => {
+								this.onDhcpServer(!instance.dhcp_server);
+							}}
+						/>
+						<PageSwitch
+							disabled={this.state.disabled}
+							label="Delete protection"
+							help="Block instance and any attached disks from being deleted."
+							checked={instance.delete_protection}
+							onToggle={(): void => {
+								this.set('delete_protection', !instance.delete_protection);
+							}}
+						/>
 					</div>
 					<div style={css.group}>
 						<PageSelect
@@ -1415,24 +1433,6 @@ export default class InstanceNew extends React.Component<Props, State> {
 							checked={instance.root_enabled}
 							onToggle={(): void => {
 								this.set('root_enabled', !instance.root_enabled);
-							}}
-						/>
-						<PageSwitch
-							disabled={this.state.disabled}
-							label="DHCP server"
-							help="Enable instance DHCP server, use for instances without cloud init network configuration support."
-							checked={instance.dhcp_server}
-							onToggle={(): void => {
-								this.onDhcpServer(!instance.dhcp_server);
-							}}
-						/>
-						<PageSwitch
-							disabled={this.state.disabled}
-							label="Delete protection"
-							help="Block instance and any attached disks from being deleted."
-							checked={instance.delete_protection}
-							onToggle={(): void => {
-								this.set('delete_protection', !instance.delete_protection);
 							}}
 						/>
 					</div>
