@@ -420,7 +420,7 @@ export default class Vpcs extends React.Component<{}, State> {
 			<NonState
 				hidden={!!vpcsDom.length}
 				iconClass="bp5-icon-layout-auto"
-				title="No vpcs"
+				title="No VPCs"
 				description="Add a new vpc to get started."
 			/>
 			<VpcsPage
