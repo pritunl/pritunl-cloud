@@ -82,6 +82,9 @@ const css = {
 		margin: '9px 5px 0 5px',
 		minHeight: '20px',
 	} as React.CSSProperties,
+	items: {
+		marginBottom: "10px",
+	} as React.CSSProperties,
 	itemsLabel: {
 		display: 'block',
 	} as React.CSSProperties,
@@ -382,20 +385,26 @@ export default class InstanceNew extends React.Component<Props, State> {
 		});
 	}
 
-	onAddNodePort = (): void => {
+	onAddNodePort = (i: number, prepend?: boolean): void => {
 		let instance = {
 			...this.state.instance,
 		};
 
 		let nodePorts = [
 			...(instance.node_ports || []),
-			{
-				protocol: "tcp",
-				external_port: 0,
-				internal_port: 0,
-			},
 		];
 
+		let nodePort = {
+			protocol: "tcp",
+			external_port: 0,
+			internal_port: 0,
+		} as InstanceTypes.NodePort;
+
+		if (i === -1) {
+			nodePorts.push(nodePort);
+		} else {
+			nodePorts.splice(prepend ? i : i + 1, 0, nodePort);
+		}
 		instance.node_ports = nodePorts;
 
 		this.setState({
@@ -451,27 +460,28 @@ export default class InstanceNew extends React.Component<Props, State> {
 		});
 	}
 
-	onAddMount = (i: number): void => {
+	onAddMount = (i: number, prepend?: boolean): void => {
 		let instance = {
 			...this.state.instance,
-		};
+		}
 
 		let mounts = [
 			...(instance.mounts || []),
-		];
-		if (!mounts.length) {
-			mounts.push({})
-		}
+		]
 
-		mounts.splice(i + 1, 0, {});
-		instance.mounts = mounts;
+		if (i === -1) {
+			mounts.push({})
+		} else {
+			mounts.splice(prepend ? i : i + 1, 0, {});
+		}
+		instance.mounts = mounts
 
 		this.setState({
 			...this.state,
 			changed: true,
 			message: '',
 			instance: instance,
-		});
+		})
 	}
 
 	onChangeMount(i: number, block: InstanceTypes.Mount): void {
@@ -506,16 +516,11 @@ export default class InstanceNew extends React.Component<Props, State> {
 		let mounts = [
 			...(instance.mounts || []),
 		];
-		if (!mounts.length) {
-			mounts.push({})
-		}
 
 		mounts.splice(i, 1);
 
 		if (!mounts.length) {
-			mounts = [
-				{},
-			];
+			mounts = [];
 		}
 
 		instance.mounts = mounts;
@@ -665,9 +670,6 @@ export default class InstanceNew extends React.Component<Props, State> {
 
 		let instanceMounts = instance.mounts || [];
 		let mounts: JSX.Element[] = [];
-		if (instanceMounts.length === 0) {
-			instanceMounts.push({});
-		}
 		for (let i = 0; i < instanceMounts.length; i++) {
 			let index = i;
 
@@ -679,8 +681,8 @@ export default class InstanceNew extends React.Component<Props, State> {
 					onChange={(state: InstanceTypes.Mount): void => {
 						this.onChangeMount(index, state);
 					}}
-					onAdd={(): void => {
-						this.onAddMount(index);
+					onAdd={(prepend: boolean): void => {
+						this.onAddMount(index, prepend);
 					}}
 					onRemove={(): void => {
 						this.onRemoveMount(index);
@@ -878,6 +880,9 @@ export default class InstanceNew extends React.Component<Props, State> {
 					onChange={(state: InstanceTypes.NodePort): void => {
 						this.onChangeNodePort(index, state);
 					}}
+					onAdd={(prepend: boolean): void => {
+						this.onAddNodePort(index, prepend);
+					}}
 					onRemove={(): void => {
 						this.onRemoveNodePort(index);
 					}}
@@ -1069,19 +1074,6 @@ export default class InstanceNew extends React.Component<Props, State> {
 							<option key="bsd" value="bsd">BSD</option>,
 							<option key="linux_legacy" value="linux_legacy">Linux Legacy</option>,
 						</PageSelect>
-						<label
-							className="bp5-label"
-							style={css.label}
-						>
-							Host Paths
-							<Help
-								title="Host Paths"
-								content="Local paths on the host that are available for instances to access through VirtIO-FS sharing. The path must be match or be a subdirectory of a configured host share path in the node settings. The instance's organization must also have a matching role to access the host share."
-							/>
-						</label>
-						<div>
-							{mounts}
-						</div>
 						<PageTextArea
 							label="Startup Script"
 							help="Script to run on instance startup. These commands will run on every startup. File must start with #! such as `#!/bin/bash` to specify code interpreter."
@@ -1132,6 +1124,43 @@ export default class InstanceNew extends React.Component<Props, State> {
 							checked={instance.tpm}
 							onToggle={(): void => {
 								this.set('tpm', !instance.tpm);
+							}}
+						/>
+						<PageSwitch
+							disabled={this.state.disabled}
+							label="Public IPv4 address"
+							help="Enable or disable public IPv4 address for instance. Node must have network mode configured to assign public address."
+							checked={!instance.no_public_address}
+							onToggle={(): void => {
+								this.set('no_public_address', !instance.no_public_address);
+							}}
+						/>
+						<PageSwitch
+							disabled={this.state.disabled}
+							label="Public IPv6 address"
+							help="Enable or disable public IPv6 address for instance. Node must have network mode configured to assign public address."
+							checked={!instance.no_public_address6}
+							onToggle={(): void => {
+								this.set('no_public_address6', !instance.no_public_address6);
+							}}
+						/>
+						<PageSwitch
+							disabled={this.state.disabled}
+							label="Host address"
+							help="Enable or disable host address for instance. Node must have host networking configured to assign host address."
+							checked={!instance.no_host_address}
+							onToggle={(): void => {
+								this.set('no_host_address', !instance.no_host_address);
+							}}
+						/>
+						<PageSwitch
+							disabled={this.state.disabled}
+							label="Skip source/destination check"
+							help="Allow network traffic from non-instance addresses."
+							checked={instance.skip_source_dest_check}
+							onToggle={(): void => {
+								this.set('skip_source_dest_check',
+									!instance.skip_source_dest_check);
 							}}
 						/>
 					</div>
@@ -1268,57 +1297,56 @@ export default class InstanceNew extends React.Component<Props, State> {
 							}}
 							value={instance.count}
 						/>
-						<label style={css.itemsLabel}>
+						<label
+							style={css.itemsLabel}
+							hidden={!nodePorts.length}
+						>
 							Node Ports
 							<Help
 								title="Node Ports"
 								content="Node port mappings from node public IP to internal instance. Acceptable external port range is 30000-32767, leave external port empty to automatically assign a port."
 							/>
 						</label>
-						{nodePorts}
-						<button
-							className="bp5-button bp5-intent-success bp5-icon-add"
-							style={css.itemsAdd}
-							type="button"
-							onClick={this.onAddNodePort}
+						<div
+							style={css.items}
+							hidden={!nodePorts.length}
 						>
-							Add Node Port
-						</button>
+							{nodePorts}
+						</div>
 						<PageSwitch
 							disabled={this.state.disabled}
-							label="Public IPv4 address"
-							help="Enable or disable public IPv4 address for instance. Node must have network mode configured to assign public address."
-							checked={!instance.no_public_address}
+							label="Node Ports"
+							help="Node port mappings from node public IP to internal instance. Acceptable external port range is 30000-32767, leave external port empty to automatically assign a port."
+							checked={false}
+							hidden={!!nodePorts.length}
 							onToggle={(): void => {
-								this.set('no_public_address', !instance.no_public_address);
+								this.onAddNodePort(-1)
 							}}
 						/>
+						<label
+							style={css.itemsLabel}
+							hidden={!instance.mounts?.length}
+						>
+							Host Paths
+							<Help
+								title="Host Paths"
+								content="Local paths on the host that are available for instances to access through VirtIO-FS sharing. The path must be match or be a subdirectory of a configured host share path in the node settings. The instance's organization must also have a matching role to access the host share."
+							/>
+						</label>
+						<div
+							style={css.items}
+							hidden={!instance.mounts?.length}
+						>
+							{mounts}
+						</div>
 						<PageSwitch
 							disabled={this.state.disabled}
-							label="Public IPv6 address"
-							help="Enable or disable public IPv6 address for instance. Node must have network mode configured to assign public address."
-							checked={!instance.no_public_address6}
+							label="Host paths"
+							help="Local paths on the host that are available for instances to access through VirtIO-FS sharing. The path must be match or be a subdirectory of a configured host share path in the node settings. The instance's organization must also have a matching role to access the host share."
+							checked={false}
+							hidden={!!instance.mounts?.length}
 							onToggle={(): void => {
-								this.set('no_public_address6', !instance.no_public_address6);
-							}}
-						/>
-						<PageSwitch
-							disabled={this.state.disabled}
-							label="Host address"
-							help="Enable or disable host address for instance. Node must have host networking configured to assign host address."
-							checked={!instance.no_host_address}
-							onToggle={(): void => {
-								this.set('no_host_address', !instance.no_host_address);
-							}}
-						/>
-						<PageSwitch
-							disabled={this.state.disabled}
-							label="Skip source/destination check"
-							help="Allow network traffic from non-instance addresses."
-							checked={instance.skip_source_dest_check}
-							onToggle={(): void => {
-								this.set('skip_source_dest_check',
-									!instance.skip_source_dest_check);
+								this.onAddMount(-1)
 							}}
 						/>
 						<PageSwitch
