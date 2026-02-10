@@ -30,6 +30,7 @@ type certificateData struct {
 	AcmeDomains []string      `json:"acme_domains"`
 	AcmeAuth    string        `json:"acme_auth"`
 	AcmeSecret  bson.ObjectID `json:"acme_secret"`
+	Refresh     bool          `json:"refresh"`
 }
 
 type certificatesData struct {
@@ -136,7 +137,7 @@ func certificatePut(c *gin.Context) {
 	}
 
 	if cert.Type == certificate.LetsEncrypt {
-		acme.RenewBackground(cert)
+		acme.RenewBackground(cert, data.Refresh)
 	}
 
 	event.PublishDispatch(db, "certificate.change")
@@ -205,7 +206,7 @@ func certificatePost(c *gin.Context) {
 	}
 
 	if cert.Type == certificate.LetsEncrypt {
-		acme.RenewBackground(cert)
+		acme.RenewBackground(cert, false)
 	}
 
 	event.PublishDispatch(db, "certificate.change")
