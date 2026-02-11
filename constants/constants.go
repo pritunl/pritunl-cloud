@@ -22,7 +22,7 @@ var (
 	Shutdown     = false
 	ConfPath     = "/etc/pritunl-cloud.json"
 	DefaultRoot  = "/var/lib/pritunl-cloud"
-	DefaultCache = "/var/cache/pritunl-cloud"
+	DefaultCache = "/var/lib/pritunl-cloud/cache"
 	DefaultTemp  = "/tmp/pritunl-cloud"
 	StaticRoot   = []string{
 		"www/dist",
