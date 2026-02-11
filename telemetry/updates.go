@@ -1,6 +1,7 @@
 package telemetry
 
 import (
+	"sort"
 	"strings"
 	"time"
 
@@ -9,9 +10,9 @@ import (
 )
 
 type Update struct {
-	Advisory string `bson:"advisory" json:"advisory"`
-	Severity string `bson:"severity" json:"severity"`
-	Package  string `bson:"package" json:"package"`
+	Advisories []string `bson:"advisories" json:"advisories"`
+	Severity   string   `bson:"severity" json:"severity"`
+	Package    string   `bson:"package" json:"package"`
 }
 
 var Updates = &Telemetry[[]*Update]{
@@ -24,6 +25,19 @@ var Updates = &Telemetry[[]*Update]{
 		}
 		return data
 	},
+}
+
+func severityRank(severity string) int {
+	switch severity {
+	case Critical:
+		return 0
+	case Important:
+		return 1
+	case Moderate:
+		return 2
+	default:
+		return 3
+	}
 }
 
 func updatesRefresh() (updates []*Update, err error) {
@@ -68,72 +82,93 @@ func updatesRefresh() (updates []*Update, err error) {
 
 	lines := strings.Split(string(resp.Output), "\n")
 
-	updates = []*Update{}
-	moderateUpdates := []*Update{}
-	importantUpdates := []*Update{}
-	criticalUpdates := []*Update{}
+	packages := map[string]*Update{}
 
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
-		if line == "" || strings.HasPrefix(line, "Last metadata") {
+		if line == "" || strings.HasPrefix(line, "Last metadata") ||
+			strings.HasPrefix(line, "Updating") ||
+			strings.HasPrefix(line, "Repositories") {
+
 			continue
 		}
 
 		parts := strings.Fields(line)
-		if len(parts) >= 3 {
-			advisory := parts[0]
-			severity := parts[1]
-			part2 := parts[2]
-			part3 := ""
-			if len(parts) >= 4 {
-				part3 = parts[3]
-			}
+		if len(parts) < 3 {
+			continue
+		}
 
-			if strings.Contains(strings.ToLower(severity), Moderate) {
-				moderateUpdates = append(moderateUpdates, &Update{
-					Advisory: advisory,
-					Severity: Moderate,
-					Package:  part2,
-				})
-			} else if strings.Contains(strings.ToLower(severity), Important) {
-				importantUpdates = append(importantUpdates, &Update{
-					Advisory: advisory,
-					Severity: Important,
-					Package:  part2,
-				})
-			} else if strings.Contains(strings.ToLower(severity), Critical) {
-				criticalUpdates = append(criticalUpdates, &Update{
-					Advisory: advisory,
-					Severity: Critical,
-					Package:  part2,
-				})
-			} else if strings.Contains(strings.ToLower(part2), Moderate) {
-				moderateUpdates = append(moderateUpdates, &Update{
-					Advisory: advisory,
-					Severity: Moderate,
-					Package:  part3,
-				})
-			} else if strings.Contains(strings.ToLower(part2), Important) {
-				importantUpdates = append(importantUpdates, &Update{
-					Advisory: advisory,
-					Severity: Important,
-					Package:  part3,
-				})
-			} else if strings.Contains(strings.ToLower(part2), Critical) {
-				criticalUpdates = append(criticalUpdates, &Update{
-					Advisory: advisory,
-					Severity: Critical,
-					Package:  part3,
-				})
-			} else {
-				continue
+		advisory := parts[0]
+		severity := ""
+		pkg := ""
+		part1 := parts[1]
+		part2 := parts[2]
+		part3 := ""
+		if len(parts) >= 4 {
+			part3 = parts[3]
+		}
+
+		if strings.Contains(strings.ToLower(part1), Moderate) {
+			severity = Moderate
+			pkg = part2
+		} else if strings.Contains(strings.ToLower(part1), Important) {
+			severity = Important
+			pkg = part2
+		} else if strings.Contains(strings.ToLower(part1), Critical) {
+			severity = Critical
+			pkg = part2
+		} else if strings.Contains(strings.ToLower(part2), Moderate) {
+			severity = Moderate
+			pkg = part3
+		} else if strings.Contains(strings.ToLower(part2), Important) {
+			severity = Important
+			pkg = part3
+		} else if strings.Contains(strings.ToLower(part2), Critical) {
+			severity = Critical
+			pkg = part3
+		} else {
+			continue
+		}
+
+		upd, ok := packages[pkg]
+		if !ok {
+			upd = &Update{
+				Severity: severity,
+				Package:  pkg,
 			}
+			packages[pkg] = upd
+		}
+
+		found := false
+		for _, a := range upd.Advisories {
+			if a == advisory {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			upd.Advisories = append(upd.Advisories, advisory)
+		}
+
+		if severityRank(severity) < severityRank(upd.Severity) {
+			upd.Severity = severity
 		}
 	}
 
-	updates = append(updates, criticalUpdates...)
-	updates = append(updates, importantUpdates...)
-	updates = append(updates, moderateUpdates...)
+	updates = []*Update{}
+	for _, upd := range packages {
+		updates = append(updates, upd)
+	}
+
+	sort.Slice(updates, func(i, j int) bool {
+		ri := severityRank(updates[i].Severity)
+		rj := severityRank(updates[j].Severity)
+		if ri != rj {
+			return ri < rj
+		}
+		return updates[i].Package < updates[j].Package
+	})
 
 	return
 }
