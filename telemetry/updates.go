@@ -202,6 +202,10 @@ func updatesRefresh() (updates []*Update, err error) {
 		}
 
 		cve := parts[0]
+		if !strings.HasPrefix(cve, "CVE-") {
+			continue
+		}
+
 		pkg := ""
 		part1 := parts[1]
 		part2 := parts[2]
