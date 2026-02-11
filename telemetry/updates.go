@@ -11,6 +11,7 @@ import (
 
 type Update struct {
 	Advisories []string `bson:"advisories" json:"advisories"`
+	Cves       []string `bson:"cves" json:"cves"`
 	Severity   string   `bson:"severity" json:"severity"`
 	Package    string   `bson:"package" json:"package"`
 }
@@ -153,6 +154,84 @@ func updatesRefresh() (updates []*Update, err error) {
 
 		if severityRank(severity) < severityRank(upd.Severity) {
 			upd.Severity = severity
+		}
+	}
+
+	cveLines := []string{}
+	resp, err = commander.Exec(&commander.Opt{
+		Name: "dnf",
+		Args: []string{
+			"updateinfo",
+			"list",
+			"--with-cve",
+		},
+		Timeout: 60 * time.Second,
+		PipeOut: true,
+		PipeErr: true,
+	})
+	if err != nil {
+		logrus.WithFields(
+			resp.Map(),
+		).Error("security: Failed to get dnf security cve report")
+		err = nil
+	} else {
+		cveLines = strings.Split(string(resp.Output), "\n")
+	}
+
+	for _, line := range cveLines {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "Last metadata") ||
+			strings.HasPrefix(line, "Updating") ||
+			strings.HasPrefix(line, "Repositories") {
+
+			continue
+		}
+
+		parts := strings.Fields(line)
+		if len(parts) < 3 {
+			continue
+		}
+
+		cve := parts[0]
+		pkg := ""
+		part1 := parts[1]
+		part2 := parts[2]
+		part3 := ""
+		if len(parts) >= 4 {
+			part3 = parts[3]
+		}
+
+		if strings.Contains(strings.ToLower(part1), Moderate) ||
+			strings.Contains(strings.ToLower(part1), Important) ||
+			strings.Contains(strings.ToLower(part1), Critical) {
+
+			pkg = part2
+		} else if strings.Contains(strings.ToLower(part2), Moderate) ||
+			strings.Contains(strings.ToLower(part2), Important) ||
+			strings.Contains(strings.ToLower(part2), Critical) {
+
+			pkg = part3
+		}
+
+		if pkg == "" {
+			continue
+		}
+
+		upd, ok := packages[pkg]
+		if !ok {
+			continue
+		}
+
+		found := false
+		for _, c := range upd.Cves {
+			if c == cve {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			upd.Cves = append(upd.Cves, cve)
 		}
 	}
 
