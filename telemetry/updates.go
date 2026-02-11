@@ -10,6 +10,7 @@ import (
 )
 
 type Update struct {
+	Advisory   string   `bson:"advisory" json:"advisory"`
 	Advisories []string `bson:"advisories" json:"advisories"`
 	Cves       []string `bson:"cves" json:"cves"`
 	Severity   string   `bson:"severity" json:"severity"`
