@@ -109,6 +109,15 @@ func updatesRefresh() (updates []*Update, err error) {
 			part3 = parts[3]
 		}
 
+		if !strings.HasPrefix(advisory, "RHSA-") &&
+			!strings.HasPrefix(advisory, "ALSA-") &&
+			!strings.HasPrefix(advisory, "RLSA-") &&
+			!strings.HasPrefix(advisory, "ELSA-") &&
+			!strings.HasPrefix(advisory, "FEDORA-") {
+
+			continue
+		}
+
 		if strings.Contains(strings.ToLower(part1), Moderate) {
 			severity = Moderate
 			pkg = part2
