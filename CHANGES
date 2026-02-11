@@ -4,6 +4,7 @@ pritunl-cloud changelog
 <%= version %>
 
 Add Google Cloud DNS support
+Add support to manual renew certificates
 
 Version 2.0.3665.99 2025-12-06
 ------------------------------
