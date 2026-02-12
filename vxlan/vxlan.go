@@ -286,6 +286,18 @@ func syncIfaces(stat *state.State, internaIfaces []string,
 	nodeSelf := stat.Node()
 	clearCache := false
 
+	lostIfaces := set.NewSet()
+	for ifaceInf := range cIfaces.Iter() {
+		iface := ifaceInf.(string)
+		if ifacesData[iface] == nil {
+			logrus.WithFields(logrus.Fields{
+				"iface": iface,
+			}).Error("vxlan: Lost vxlan interface")
+			lostIfaces.Add(iface)
+		}
+	}
+	cIfaces.Subtract(lostIfaces)
+
 	parentVxIfaces := map[string]string{}
 	parentBrIfaces := map[string]string{}
 	vxBrIfaces := map[string]string{}
