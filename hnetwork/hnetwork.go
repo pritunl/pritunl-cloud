@@ -222,6 +222,7 @@ func ApplyState(stat *state.State) (err error) {
 			return
 		}
 
+		curGateway = ""
 		initializeInst = true
 	}
 
