@@ -11,6 +11,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/pritunl/pritunl-cloud/vxlan"
 	"github.com/sirupsen/logrus"
 )
@@ -154,6 +155,9 @@ func nodePortRemoveNetwork(stat *state.State) (err error) {
 }
 
 func NodePortApplyState(stat *state.State) (err error) {
+	initializeInst := false
+	nodeNetName := settings.Hypervisor.NodePortNetworkName
+
 	if !nodePortInitialized {
 		addr, e := nodePortGetAddr()
 		if e != nil {
@@ -161,13 +165,14 @@ func NodePortApplyState(stat *state.State) (err error) {
 			return
 		}
 
+		initializeInst = true
 		nodePortInitialized = true
 		nodePortCurGateway = addr
 	}
 
-	if !stat.HasInterfaces(settings.Hypervisor.NodePortNetworkName) {
+	if !stat.HasInterfaces(nodeNetName) {
 		logrus.WithFields(logrus.Fields{
-			"iface": settings.Hypervisor.NodePortNetworkName,
+			"iface": nodeNetName,
 		}).Info("nodeport: Creating node port interface")
 
 		err = nodePortCreate()
@@ -207,6 +212,24 @@ func NodePortApplyState(stat *state.State) (err error) {
 		}
 
 		nodePortCurGateway = gatewayCidr
+		initializeInst = true
+	}
+
+	if initializeInst {
+		logrus.WithFields(logrus.Fields{
+			"node_port_block": nodePortBlock.Id.Hex(),
+		}).Info("nodeport: Updating instance nodeport network")
+
+		instances := stat.Instances()
+		for _, inst := range instances {
+			utils.ExecCombinedOutputLogged(
+				[]string{
+					"Cannot find device",
+				},
+				"ip", "link", "set",
+				vm.GetIfaceHost(inst.Id, 0), "master", nodeNetName,
+			)
+		}
 	}
 
 	return
