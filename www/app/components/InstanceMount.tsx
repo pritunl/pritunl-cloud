@@ -24,9 +24,9 @@ const css = {
 	} as React.CSSProperties,
 	groupBottom: {
 		width: '100%',
-		maxWidth: '278px',
+		maxWidth: '279px',
 		marginTop: '2px',
-		marginBottom: '15px',
+		marginBottom: '5px',
 	} as React.CSSProperties,
 	sourceGroup: {
 		width: '100%',
