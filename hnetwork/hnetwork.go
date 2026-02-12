@@ -9,6 +9,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/pritunl-cloud/vm"
 	"github.com/sirupsen/logrus"
 )
 
@@ -179,6 +180,9 @@ func removeNetwork(stat *state.State) (err error) {
 }
 
 func ApplyState(stat *state.State) (err error) {
+	initializeInst := false
+	hostNetName := settings.Hypervisor.HostNetworkName
+
 	if !initialized {
 		addr, e := getAddr()
 		if e != nil {
@@ -203,19 +207,22 @@ func ApplyState(stat *state.State) (err error) {
 			curRule = rules[0]
 		}
 
+		initializeInst = true
 		initialized = true
 		curGateway = addr
 	}
 
-	if !stat.HasInterfaces(settings.Hypervisor.HostNetworkName) {
+	if !stat.HasInterfaces(hostNetName) {
 		logrus.WithFields(logrus.Fields{
-			"iface": settings.Hypervisor.HostNetworkName,
+			"iface": hostNetName,
 		}).Info("hnetwork: Creating host interface")
 
 		err = create()
 		if err != nil {
 			return
 		}
+
+		initializeInst = true
 	}
 
 	hostBlock, err := block.GetNodeBlock(stat.Node().Id)
@@ -249,6 +256,7 @@ func ApplyState(stat *state.State) (err error) {
 		}
 
 		curGateway = gatewayCidr
+		initializeInst = true
 	}
 
 	if stat.Node().HostNat {
@@ -293,6 +301,8 @@ func ApplyState(stat *state.State) (err error) {
 				} else {
 					curRule = newRule
 				}
+
+				initializeInst = true
 			}
 		}
 	} else if curRule != nil {
@@ -307,6 +317,23 @@ func ApplyState(stat *state.State) (err error) {
 			return
 		}
 		curRule = nil
+	}
+
+	if initializeInst {
+		logrus.WithFields(logrus.Fields{
+			"host_block": hostBlock.Id.Hex(),
+		}).Info("hnetwork: Updating instance host network")
+
+		instances := stat.Instances()
+		for _, inst := range instances {
+			utils.ExecCombinedOutputLogged(
+				[]string{
+					"Cannot find device",
+				},
+				"ip", "link", "set",
+				vm.GetIfaceHost(inst.Id, 0), "master", hostNetName,
+			)
+		}
 	}
 
 	return
