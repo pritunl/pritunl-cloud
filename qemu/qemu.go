@@ -795,7 +795,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 			settings.Hypervisor.UsbSsPorts,
 		))
 
-		if (q.Vnc || q.Spice || q.Gui) && settings.Hypervisor.NoVirtioHid {
+		if (q.Vnc || q.Spice) || (q.Gui && settings.Hypervisor.NoVirtioHid) {
 			cmd = append(cmd, "-device")
 			cmd = append(cmd, "usb-tablet")
 			cmd = append(cmd, "-device")
