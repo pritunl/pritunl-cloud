@@ -227,7 +227,7 @@ func NodePortApplyState(stat *state.State) (err error) {
 					"Cannot find device",
 				},
 				"ip", "link", "set",
-				vm.GetIfaceHost(inst.Id, 0), "master", nodeNetName,
+				vm.GetIfaceNodePort(inst.Id, 0), "master", nodeNetName,
 			)
 		}
 	}
