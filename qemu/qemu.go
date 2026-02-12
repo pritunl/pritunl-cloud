@@ -776,7 +776,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 		}
 	}
 
-	if (q.Vnc || q.Spice || q.Gui) && !settings.Hypervisor.NoVirtioHid {
+	if q.Gui && !settings.Hypervisor.NoVirtioHid {
 		cmd = append(cmd, "-device")
 		cmd = append(cmd, "virtio-tablet-pci")
 		cmd = append(cmd, "-device")
