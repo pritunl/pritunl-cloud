@@ -712,7 +712,7 @@ func (q *Qemu) Marshal() (output string, err error) {
 		paths.GetInitPath(q.Id),
 	))
 
-	if q.Isos != nil && len(q.Isos) > 0 {
+	if len(q.Isos) > 0 {
 		for i, iso := range q.Isos {
 			cmd = append(cmd, "-drive")
 			cmd = append(cmd, fmt.Sprintf(
