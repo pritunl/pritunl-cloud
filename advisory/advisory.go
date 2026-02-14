@@ -26,6 +26,9 @@ const (
 	Analyzed         = "analyzed"
 	AwaitingAnalysis = "awaiting_analysis"
 	Rejected         = "rejected"
+	Undergoing       = "undergoing_analysis"
+	Modified         = "modified"
+	Deferred         = "deferred"
 
 	nvdApi = "https://services.nvd.nist.gov/rest/json/cves/2.0"
 )
@@ -89,6 +92,12 @@ func normalizeStatus(status string) string {
 		return AwaitingAnalysis
 	case "Rejected":
 		return Rejected
+	case "Undergoing Analysis":
+		return Undergoing
+	case "Modified":
+		return Modified
+	case "Deferred":
+		return Deferred
 	default:
 		return strings.ToLower(strings.ReplaceAll(status, " ", "_"))
 	}
