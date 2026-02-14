@@ -14,6 +14,7 @@ var client = &http.Client{
 }
 
 type Advisory struct {
+	Id              string  `bson:"id" json:"id"`
 	Status          string  `bson:"status" json:"status"`
 	Description     string  `bson:"description" json:"description"`
 	Score           float64 `bson:"score" json:"score"`
@@ -147,6 +148,7 @@ func Fetch(cveId string) (adv *Advisory, err error) {
 			cvss = &metrics[0]
 		}
 
+		adv.Id = cve.ID
 		adv.Score = cvss.CvssData.BaseScore
 		adv.Severity = normalizeValue(cvss.CvssData.BaseSeverity)
 		adv.Vector = normalizeValue(cvss.CvssData.AttackVector)
