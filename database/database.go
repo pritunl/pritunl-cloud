@@ -224,6 +224,11 @@ func (d *Database) Balancers() (coll *Collection) {
 	return
 }
 
+func (d *Database) Advisories() (coll *Collection) {
+	coll = d.GetCollection("advisories")
+	return
+}
+
 func (d *Database) Instances() (coll *Collection) {
 	coll = d.GetCollection("instances")
 	return
