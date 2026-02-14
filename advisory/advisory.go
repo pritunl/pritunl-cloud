@@ -154,7 +154,8 @@ func Fetch(cveId string) (adv *Advisory, err error) {
 		adv.Privileges = normalizeValue(cvss.CvssData.PrivilegesRequired)
 		adv.Interaction = normalizeValue(cvss.CvssData.UserInteraction)
 		adv.Scope = normalizeValue(cvss.CvssData.Scope)
-		adv.Confidentiality = normalizeValue(cvss.CvssData.ConfidentialityImpact)
+		adv.Confidentiality = normalizeValue(
+			cvss.CvssData.ConfidentialityImpact)
 		adv.Integrity = normalizeValue(cvss.CvssData.IntegrityImpact)
 		adv.Availability = normalizeValue(cvss.CvssData.AvailabilityImpact)
 	}
