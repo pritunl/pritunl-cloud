@@ -137,7 +137,9 @@ func normalizeValue(val string) string {
 func Fetch(cveId string) (adv *Advisory, err error) {
 	req, err := http.NewRequest("GET", nvdApi, nil)
 	if err != nil {
-		err = fmt.Errorf("advisory: Failed to create request %w", err)
+		err = &errortypes.RequestError{
+			errors.Wrap(err, "advisory: Failed to create request"),
+		}
 		return
 	}
 
@@ -147,25 +149,33 @@ func Fetch(cveId string) (adv *Advisory, err error) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		err = fmt.Errorf("advisory: Request failed %w", err)
+		err = &errortypes.RequestError{
+			errors.Wrap(err, "advisory: Request failed"),
+		}
 		return
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		err = fmt.Errorf("advisory: NVD API returned status %d", resp.StatusCode)
+		err = &errortypes.RequestError{
+			errors.Newf("advisory: Bad status status %d", resp.StatusCode),
+		}
 		return
 	}
 
 	nvdResp := &nvdResponse{}
 	err = json.NewDecoder(resp.Body).Decode(nvdResp)
 	if err != nil {
-		err = fmt.Errorf("advisory: Failed to decode response %w", err)
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "advisory: Failed to decode response"),
+		}
 		return
 	}
 
 	if nvdResp.TotalResults == 0 || len(nvdResp.Vulnerabilities) == 0 {
-		err = fmt.Errorf("advisory: CVE %s not found", cveId)
+		err = &errortypes.NotFoundError{
+			errors.New("advisory: Not found"),
+		}
 		return
 	}
 
