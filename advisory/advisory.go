@@ -3,6 +3,7 @@ package advisory
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/dropbox/godropbox/errors"
@@ -148,7 +149,7 @@ func Fetch(cveId string) (adv *Advisory, err error) {
 			cvss = &metrics[0]
 		}
 
-		adv.Id = cve.ID
+		adv.Id = strings.ToUpper(cve.ID)
 		adv.Score = cvss.CvssData.BaseScore
 		adv.Severity = normalizeValue(cvss.CvssData.BaseSeverity)
 		adv.Vector = normalizeValue(cvss.CvssData.AttackVector)
