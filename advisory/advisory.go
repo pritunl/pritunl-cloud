@@ -2,35 +2,11 @@ package advisory
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"strings"
 	"time"
-)
 
-const (
-	None     = "none"
-	Low      = "low"
-	Medium   = "medium"
-	High     = "high"
-	Critical = "critical"
-	Network  = "network"
-	Adjacent = "adjacent"
-	Local    = "local"
-	Physical = "physical"
-	Required = "required"
-
-	Unchanged = "unchanged"
-	Changed   = "changed"
-
-	Analyzed         = "analyzed"
-	AwaitingAnalysis = "awaiting_analysis"
-	Rejected         = "rejected"
-	Undergoing       = "undergoing_analysis"
-	Modified         = "modified"
-	Deferred         = "deferred"
-
-	nvdApi = "https://services.nvd.nist.gov/rest/json/cves/2.0"
+	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/pritunl-cloud/errortypes"
 )
 
 var client = &http.Client{
@@ -82,56 +58,6 @@ type nvdResponse struct {
 			} `json:"metrics"`
 		} `json:"cve"`
 	} `json:"vulnerabilities"`
-}
-
-func normalizeStatus(status string) string {
-	switch status {
-	case "Analyzed":
-		return Analyzed
-	case "Awaiting Analysis":
-		return AwaitingAnalysis
-	case "Rejected":
-		return Rejected
-	case "Undergoing Analysis":
-		return Undergoing
-	case "Modified":
-		return Modified
-	case "Deferred":
-		return Deferred
-	default:
-		return strings.ToLower(strings.ReplaceAll(status, " ", "_"))
-	}
-}
-
-func normalizeValue(val string) string {
-	switch strings.ToUpper(val) {
-	case "NONE":
-		return None
-	case "LOW":
-		return Low
-	case "MEDIUM":
-		return Medium
-	case "HIGH":
-		return High
-	case "CRITICAL":
-		return Critical
-	case "NETWORK":
-		return Network
-	case "ADJACENT_NETWORK", "ADJACENT":
-		return Adjacent
-	case "LOCAL":
-		return Local
-	case "PHYSICAL":
-		return Physical
-	case "REQUIRED":
-		return Required
-	case "UNCHANGED":
-		return Unchanged
-	case "CHANGED":
-		return Changed
-	default:
-		return strings.ToLower(val)
-	}
 }
 
 func Fetch(cveId string) (adv *Advisory, err error) {
