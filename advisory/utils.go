@@ -210,6 +210,7 @@ func Fetch(db *database.Database, cveId string) (adv *Advisory, err error) {
 		}
 
 		adv.Id = strings.ToUpper(cve.ID)
+		adv.Timestamp = time.Now()
 		adv.Score = cvss.CvssData.BaseScore
 		adv.Severity = normalizeValue(cvss.CvssData.BaseSeverity)
 		adv.Vector = normalizeValue(cvss.CvssData.AttackVector)
