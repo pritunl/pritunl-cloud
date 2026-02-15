@@ -42,6 +42,10 @@ func (a *Advisory) Validate(db *database.Database) (
 		return
 	}
 
+	if a.Timestamp.IsZero() {
+		a.Timestamp = time.Now()
+	}
+
 	if !cveIdReg.MatchString(a.Id) {
 		errData = &errortypes.ErrorData{
 			Error:   "id_invalid",
