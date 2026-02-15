@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 )
@@ -135,6 +137,40 @@ func (a *Advisory) Validate(db *database.Database) (
 			Error:   "invalid_availability",
 			Message: "Invalid advisory availability impact",
 		}
+		return
+	}
+
+	return
+}
+
+func (a *Advisory) Commit(db *database.Database) (err error) {
+	coll := db.Advisories()
+
+	_, err = coll.UpdateOne(
+		db,
+		&bson.M{
+			"_id": a.Id,
+		},
+		&bson.M{
+			"$set": &bson.M{
+				"status":          a.Status,
+				"description":     a.Description,
+				"score":           a.Score,
+				"severity":        a.Severity,
+				"vector":          a.Vector,
+				"complexity":      a.Complexity,
+				"privileges":      a.Privileges,
+				"interaction":     a.Interaction,
+				"scope":           a.Scope,
+				"confidentiality": a.Confidentiality,
+				"integrity":       a.Integrity,
+				"availability":    a.Availability,
+			},
+		},
+		options.UpdateOne().SetUpsert(true),
+	)
+	if err != nil {
+		err = database.ParseError(err)
 		return
 	}
 
