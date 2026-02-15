@@ -207,5 +207,10 @@ func Fetch(cveId string) (adv *Advisory, err error) {
 		adv.Availability = normalizeValue(cvss.CvssData.AvailabilityImpact)
 	}
 
+	err = adv.Commit(db)
+	if err != nil {
+		return
+	}
+
 	return
 }
