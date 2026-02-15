@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/dropbox/godropbox/errors"
+	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 )
 
@@ -89,6 +91,19 @@ func normalizeValue(val string) string {
 	default:
 		return strings.ToLower(val)
 	}
+}
+
+func GetOne(db *database.Database, query *bson.M) (adv *Advisory, err error) {
+	coll := db.Advisories()
+	adv = &Advisory{}
+
+	err = coll.FindOne(db, query).Decode(adv)
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	return
 }
 
 func Fetch(cveId string) (adv *Advisory, err error) {
