@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
@@ -106,7 +107,22 @@ func GetOne(db *database.Database, query *bson.M) (adv *Advisory, err error) {
 	return
 }
 
-func Fetch(cveId string) (adv *Advisory, err error) {
+func Fetch(db *database.Database, cveId string) (adv *Advisory, err error) {
+	adv, err = GetOne(db, &bson.M{
+		"_id": cveId,
+	})
+	if err != nil {
+		if _, ok := err.(*database.NotFoundError); ok {
+			adv = nil
+		} else {
+			return
+		}
+	}
+
+	if adv != nil && time.Since(adv.Timestamp) < 24*time.Hour {
+		return
+	}
+
 	req, err := http.NewRequest("GET", nvdApi, nil)
 	if err != nil {
 		err = &errortypes.RequestError{
