@@ -147,6 +147,24 @@ func (a *Advisory) Validate(db *database.Database) (
 	return
 }
 
+func (a *Advisory) IsFresh() bool {
+	if a == nil {
+		return false
+	}
+
+	if (a.Status == Analyzed || a.Status == Deferred) &&
+		time.Since(a.Timestamp) > 168*time.Hour {
+
+		return true
+	}
+
+	if time.Since(a.Timestamp) > 6*time.Hour {
+		return true
+	}
+
+	return false
+}
+
 func (a *Advisory) Commit(db *database.Database) (err error) {
 	coll := db.Advisories()
 
