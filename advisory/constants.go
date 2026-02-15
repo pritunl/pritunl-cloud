@@ -7,17 +7,16 @@ import (
 )
 
 const (
-	None     = "none"
-	Low      = "low"
-	Medium   = "medium"
-	High     = "high"
-	Critical = "critical"
-	Network  = "network"
-	Adjacent = "adjacent"
-	Local    = "local"
-	Physical = "physical"
-	Required = "required"
-
+	None      = "none"
+	Low       = "low"
+	Medium    = "medium"
+	High      = "high"
+	Critical  = "critical"
+	Network   = "network"
+	Adjacent  = "adjacent"
+	Local     = "local"
+	Physical  = "physical"
+	Required  = "required"
 	Unchanged = "unchanged"
 	Changed   = "changed"
 
