@@ -153,6 +153,7 @@ func (a *Advisory) Commit(db *database.Database) (err error) {
 		},
 		&bson.M{
 			"$set": &bson.M{
+				"timestamp":       a.Timestamp,
 				"status":          a.Status,
 				"description":     a.Description,
 				"score":           a.Score,
