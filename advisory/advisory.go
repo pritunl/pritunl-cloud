@@ -8,6 +8,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/settings"
 )
 
 var client = &http.Client{
@@ -158,7 +159,9 @@ func (a *Advisory) IsFresh() bool {
 		return true
 	}
 
-	if time.Since(a.Timestamp) > 6*time.Hour {
+	if time.Since(a.Timestamp) > time.Duration(
+		settings.System.NvdTtl)*time.Second {
+
 		return true
 	}
 
