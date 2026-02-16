@@ -119,9 +119,7 @@ func Fetch(db *database.Database, cveId string) (adv *Advisory, err error) {
 		}
 	}
 
-	if adv != nil && ((adv.Status == Analyzed || adv.Status == Deferred) ||
-		time.Since(adv.Timestamp) < 24*time.Hour) {
-
+	if adv.IsFresh() {
 		return
 	}
 
