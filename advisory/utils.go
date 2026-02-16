@@ -241,11 +241,11 @@ func GetOne(db *database.Database, cveId string) (adv *Advisory, err error) {
 	return
 }
 
-func Remove(db *database.Database, imgId bson.ObjectID) (err error) {
+func Remove(db *database.Database, advId bson.ObjectID) (err error) {
 	coll := db.Advisories()
 
 	_, err = coll.DeleteOne(db, &bson.M{
-		"_id": imgId,
+		"_id": advId,
 	})
 	if err != nil {
 		err = database.ParseError(err)
