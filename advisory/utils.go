@@ -240,3 +240,22 @@ func GetOne(db *database.Database, cveId string) (adv *Advisory, err error) {
 
 	return
 }
+
+func Remove(db *database.Database, imgId bson.ObjectID) (err error) {
+	coll := db.Advisories()
+
+	_, err = coll.DeleteOne(db, &bson.M{
+		"_id": imgId,
+	})
+	if err != nil {
+		err = database.ParseError(err)
+		switch err.(type) {
+		case *database.NotFoundError:
+			err = nil
+		default:
+			return
+		}
+	}
+
+	return
+}
