@@ -94,7 +94,7 @@ func normalizeValue(val string) string {
 	}
 }
 
-func GetOne(db *database.Database, query *bson.M) (adv *Advisory, err error) {
+func getOne(db *database.Database, query *bson.M) (adv *Advisory, err error) {
 	coll := db.Advisories()
 	adv = &Advisory{}
 
@@ -107,8 +107,8 @@ func GetOne(db *database.Database, query *bson.M) (adv *Advisory, err error) {
 	return
 }
 
-func Fetch(db *database.Database, cveId string) (adv *Advisory, err error) {
-	adv, err = GetOne(db, &bson.M{
+func GetOne(db *database.Database, cveId string) (adv *Advisory, err error) {
+	adv, err = getOne(db, &bson.M{
 		"_id": cveId,
 	})
 	if err != nil {
