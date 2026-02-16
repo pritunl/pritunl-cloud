@@ -435,10 +435,9 @@ func Remove(db *database.Database, imgId bson.ObjectID) (err error) {
 	})
 	if err != nil {
 		err = database.ParseError(err)
-		switch err.(type) {
-		case *database.NotFoundError:
+		if _, ok := err.(*database.NotFoundError); ok {
 			err = nil
-		default:
+		} else {
 			return
 		}
 	}
