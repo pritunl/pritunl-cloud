@@ -28,6 +28,7 @@ type system struct {
 	TwilioSecret         string `bson:"twilio_secret"`
 	TwilioNumber         string `bson:"twilio_number"`
 	NvdTtl               int    `bson:"nvd_ttl" default:"21600"`
+	NvdFinalTtl          int    `bson:"nvd_final_ttl" default:"604800"`
 }
 
 func newSystem() interface{} {
