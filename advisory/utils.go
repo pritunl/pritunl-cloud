@@ -12,36 +12,48 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 )
 
+type nvdCvssData struct {
+	VectorString          string  `json:"vectorString"`
+	BaseScore             float64 `json:"baseScore"`
+	BaseSeverity          string  `json:"baseSeverity"`
+	AttackVector          string  `json:"attackVector"`
+	AttackComplexity      string  `json:"attackComplexity"`
+	PrivilegesRequired    string  `json:"privilegesRequired"`
+	UserInteraction       string  `json:"userInteraction"`
+	Scope                 string  `json:"scope"`
+	ConfidentialityImpact string  `json:"confidentialityImpact"`
+	IntegrityImpact       string  `json:"integrityImpact"`
+	AvailabilityImpact    string  `json:"availabilityImpact"`
+}
+
+type nvdCvssMetric struct {
+	Type     string      `json:"type"`
+	CvssData nvdCvssData `json:"cvssData"`
+}
+
+type nvdMetrics struct {
+	CvssMetricV31 []nvdCvssMetric `json:"cvssMetricV31"`
+}
+
+type nvdDescription struct {
+	Lang  string `json:"lang"`
+	Value string `json:"value"`
+}
+
+type nvdCve struct {
+	ID           string           `json:"id"`
+	VulnStatus   string           `json:"vulnStatus"`
+	Descriptions []nvdDescription `json:"descriptions"`
+	Metrics      nvdMetrics       `json:"metrics"`
+}
+
+type nvdVulnerability struct {
+	Cve nvdCve `json:"cve"`
+}
+
 type nvdResponse struct {
-	TotalResults    int `json:"totalResults"`
-	Vulnerabilities []struct {
-		Cve struct {
-			ID           string `json:"id"`
-			VulnStatus   string `json:"vulnStatus"`
-			Descriptions []struct {
-				Lang  string `json:"lang"`
-				Value string `json:"value"`
-			} `json:"descriptions"`
-			Metrics struct {
-				CvssMetricV31 []struct {
-					Type     string `json:"type"`
-					CvssData struct {
-						VectorString          string  `json:"vectorString"`
-						BaseScore             float64 `json:"baseScore"`
-						BaseSeverity          string  `json:"baseSeverity"`
-						AttackVector          string  `json:"attackVector"`
-						AttackComplexity      string  `json:"attackComplexity"`
-						PrivilegesRequired    string  `json:"privilegesRequired"`
-						UserInteraction       string  `json:"userInteraction"`
-						Scope                 string  `json:"scope"`
-						ConfidentialityImpact string  `json:"confidentialityImpact"`
-						IntegrityImpact       string  `json:"integrityImpact"`
-						AvailabilityImpact    string  `json:"availabilityImpact"`
-					} `json:"cvssData"`
-				} `json:"cvssMetricV31"`
-			} `json:"metrics"`
-		} `json:"cve"`
-	} `json:"vulnerabilities"`
+	TotalResults    int                `json:"totalResults"`
+	Vulnerabilities []nvdVulnerability `json:"vulnerabilities"`
 }
 
 func normalizeStatus(status string) string {
