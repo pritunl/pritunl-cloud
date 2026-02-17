@@ -154,7 +154,8 @@ func (a *Advisory) IsFresh() bool {
 	}
 
 	if (a.Status == Analyzed || a.Status == Deferred) &&
-		time.Since(a.Timestamp) > 168*time.Hour {
+		time.Since(a.Timestamp) > time.Duration(
+			settings.System.NvdFinalTtl)*time.Second {
 
 		return true
 	}
