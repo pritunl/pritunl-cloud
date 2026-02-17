@@ -9,11 +9,12 @@ import (
 )
 
 var instanceData = &Task{
-	Name:    "instance_data",
-	Version: 1,
-	Hours:   []int{0, 3, 6, 9, 12, 15, 18, 21},
-	Minutes: []int{20},
-	Handler: instanceDataHandler,
+	Name:       "instance_data",
+	Version:    1,
+	Hours:      []int{0, 3, 6, 9, 12, 15, 18, 21},
+	Minutes:    []int{20},
+	Handler:    instanceDataHandler,
+	RunOnStart: true,
 }
 
 func instanceDataHandler(db *database.Database) (err error) {
