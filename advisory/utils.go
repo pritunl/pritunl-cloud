@@ -119,21 +119,8 @@ func getOne(db *database.Database, query *bson.M) (adv *Advisory, err error) {
 	return
 }
 
-func GetOne(db *database.Database, cveId string) (adv *Advisory, err error) {
-	adv, err = getOne(db, &bson.M{
-		"_id": cveId,
-	})
-	if err != nil {
-		if _, ok := err.(*database.NotFoundError); ok {
-			adv = nil
-		} else {
-			return
-		}
-	}
-
-	if adv.IsFresh() {
-		return
-	}
+func getOneNvd(db *database.Database, cveId string) (
+	adv *Advisory, err error) {
 
 	req, err := http.NewRequest("GET", nvdApi, nil)
 	if err != nil {
@@ -231,6 +218,30 @@ func GetOne(db *database.Database, cveId string) (adv *Advisory, err error) {
 	}
 
 	err = adv.Commit(db)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func GetOne(db *database.Database, cveId string) (adv *Advisory, err error) {
+	adv, err = getOne(db, &bson.M{
+		"_id": cveId,
+	})
+	if err != nil {
+		if _, ok := err.(*database.NotFoundError); ok {
+			adv = nil
+		} else {
+			return
+		}
+	}
+
+	if adv.IsFresh() {
+		return
+	}
+
+	adv, err = getOneNvd(db, cveId)
 	if err != nil {
 		return
 	}
