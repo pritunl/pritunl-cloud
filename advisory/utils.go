@@ -194,22 +194,7 @@ func GetOne(db *database.Database, cveId string) (adv *Advisory, err error) {
 
 	metrics := cve.Metrics.CvssMetricV31
 	if len(metrics) > 0 {
-		var cvss *struct {
-			Type     string `json:"type"`
-			CvssData struct {
-				VectorString          string  `json:"vectorString"`
-				BaseScore             float64 `json:"baseScore"`
-				BaseSeverity          string  `json:"baseSeverity"`
-				AttackVector          string  `json:"attackVector"`
-				AttackComplexity      string  `json:"attackComplexity"`
-				PrivilegesRequired    string  `json:"privilegesRequired"`
-				UserInteraction       string  `json:"userInteraction"`
-				Scope                 string  `json:"scope"`
-				ConfidentialityImpact string  `json:"confidentialityImpact"`
-				IntegrityImpact       string  `json:"integrityImpact"`
-				AvailabilityImpact    string  `json:"availabilityImpact"`
-			} `json:"cvssData"`
-		}
+		var cvss *nvdCvssMetric
 
 		for i := range metrics {
 			if metrics[i].Type == "Primary" {
