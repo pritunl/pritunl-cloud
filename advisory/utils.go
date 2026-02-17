@@ -10,6 +10,7 @@ import (
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/settings"
 )
 
 var (
@@ -248,8 +249,9 @@ func GetOneLimit(db *database.Database, cveId string) (
 	}
 
 	since := time.Since(lastCall)
-	if since < 8*time.Second {
-		time.Sleep(8*time.Second - since)
+	limit := time.Duration(settings.System.NvdApiLimit) * time.Second
+	if since < limit {
+		time.Sleep(limit - since)
 	}
 	lastCall = time.Now()
 
