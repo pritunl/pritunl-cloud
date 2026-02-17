@@ -36,9 +36,11 @@ func instanceDataHandler(db *database.Database) (err error) {
 			for _, cve := range updt.Cves {
 				adv := advisories[cve]
 				if adv == nil {
-					adv, err = advisory.GetOne(db, cve)
-					if err != nil {
-						return
+					for i := 0; i < 3; i++ {
+						adv, err = advisory.GetOne(db, cve)
+						if err != nil {
+							return
+						}
 					}
 				}
 
