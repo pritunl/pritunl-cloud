@@ -46,6 +46,7 @@ func instanceDataHandler(db *database.Database) (err error) {
 
 				if adv != nil {
 					details = append(details, adv)
+					advisories[adv.Id] = adv
 				}
 			}
 
