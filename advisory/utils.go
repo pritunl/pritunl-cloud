@@ -174,7 +174,9 @@ func getOneNvd(db *database.Database, cveId string) (
 	cve := nvdResp.Vulnerabilities[0].Cve
 
 	adv = &Advisory{
-		Status: normalizeStatus(cve.VulnStatus),
+		Id:        strings.ToUpper(cve.ID),
+		Timestamp: time.Now(),
+		Status:    normalizeStatus(cve.VulnStatus),
 	}
 
 	for _, desc := range cve.Descriptions {
@@ -198,8 +200,6 @@ func getOneNvd(db *database.Database, cveId string) (
 			cvss = &metrics[0]
 		}
 
-		adv.Id = strings.ToUpper(cve.ID)
-		adv.Timestamp = time.Now()
 		adv.Score = cvss.CvssData.BaseScore
 		adv.Severity = normalizeValue(cvss.CvssData.BaseSeverity)
 		adv.Vector = normalizeValue(cvss.CvssData.AttackVector)
