@@ -27,10 +27,6 @@ type system struct {
 	TwilioAccount        string `bson:"twilio_account"`
 	TwilioSecret         string `bson:"twilio_secret"`
 	TwilioNumber         string `bson:"twilio_number"`
-	NvdTtl               int    `bson:"nvd_ttl" default:"21600"`
-	NvdFinalTtl          int    `bson:"nvd_final_ttl" default:"604800"`
-	NvdApiLimit          int    `bson:"nvd_api_limit" default:"8"`
-	NvdApiAuthLimit      int    `bson:"nvd_api_auth_limit" default:"1"`
 }
 
 func newSystem() interface{} {
