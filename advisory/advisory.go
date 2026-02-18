@@ -154,13 +154,13 @@ func (a *Advisory) IsFresh() bool {
 	}
 
 	if (a.Status == Analyzed || a.Status == Deferred) &&
-		time.Since(a.Timestamp) > time.Duration(
+		time.Since(a.Timestamp) < time.Duration(
 			settings.Telemetry.NvdFinalTtl)*time.Second {
 
 		return true
 	}
 
-	if time.Since(a.Timestamp) > time.Duration(
+	if time.Since(a.Timestamp) < time.Duration(
 		settings.Telemetry.NvdTtl)*time.Second {
 
 		return true
