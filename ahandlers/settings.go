@@ -41,6 +41,7 @@ func getSettingsData() *settingsData {
 		TwilioAccount:          settings.System.TwilioAccount,
 		TwilioSecret:           settings.System.TwilioSecret,
 		TwilioNumber:           settings.System.TwilioNumber,
+		NvdApiKey:              settings.Telemetry.NvdApiKey,
 	}
 
 	return data
