@@ -25,6 +25,7 @@ type settingsData struct {
 	TwilioAccount             string                        `json:"twilio_account"`
 	TwilioSecret              string                        `json:"twilio_secret"`
 	TwilioNumber              string                        `json:"twilio_number"`
+	NvdApiKey                 string                        `json:"nvd_api_key"`
 }
 
 func getSettingsData() *settingsData {
@@ -83,6 +84,20 @@ func settingsPut(c *gin.Context) {
 
 	if fields.Len() != 0 {
 		err = settings.Commit(db, settings.System, fields)
+		if err != nil {
+			utils.AbortWithError(c, 500, err)
+			return
+		}
+	}
+
+	if settings.Telemetry.NvdApiKey != data.NvdApiKey {
+		settings.Telemetry.NvdApiKey = data.NvdApiKey
+
+		err = settings.Commit(
+			db,
+			settings.Telemetry,
+			set.NewSet("nvd_api_key"),
+		)
 		if err != nil {
 			utils.AbortWithError(c, 500, err)
 			return
