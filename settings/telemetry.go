@@ -8,6 +8,7 @@ type telemetry struct {
 	NvdFinalTtl     int    `bson:"nvd_final_ttl" default:"604800"`
 	NvdApiLimit     int    `bson:"nvd_api_limit" default:"8"`
 	NvdApiAuthLimit int    `bson:"nvd_api_auth_limit" default:"1"`
+	NvdApiKey       string `bson:"nvd_api_key"`
 }
 
 func newTelemetry() interface{} {
