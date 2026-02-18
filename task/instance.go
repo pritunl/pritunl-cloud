@@ -37,7 +37,7 @@ func instanceDataHandler(db *database.Database) (err error) {
 				adv := advisories[cve]
 				if adv == nil {
 					for i := 0; i < 3; i++ {
-						adv, err = advisory.GetOne(db, cve)
+						adv, err = advisory.GetOneLimit(db, cve)
 						if err != nil {
 							return
 						}
