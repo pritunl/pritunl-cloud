@@ -6,6 +6,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/advisory"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/sirupsen/logrus"
 )
 
 var instanceData = &Task{
@@ -39,8 +40,15 @@ func instanceDataHandler(db *database.Database) (err error) {
 					for i := 0; i < 3; i++ {
 						adv, err = advisory.GetOneLimit(db, cve)
 						if err != nil {
+							if i < 2 {
+								logrus.WithFields(logrus.Fields{
+									"cve_id": cve,
+								}).Error("task: Failed to query CVE")
+								continue
+							}
 							return
 						}
+						break
 					}
 				}
 
