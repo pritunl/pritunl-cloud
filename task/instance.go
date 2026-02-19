@@ -21,12 +21,23 @@ var instanceData = &Task{
 func instanceDataHandler(db *database.Database) (err error) {
 	advisories := map[string]*advisory.Advisory{}
 
-	instances, err := instance.GetAll(db, &bson.M{})
+	coll := db.Instances()
+
+	cursor, err := coll.Find(db, &bson.M{})
 	if err != nil {
+		err = database.ParseError(err)
 		return
 	}
+	defer cursor.Close(db)
 
-	for _, inst := range instances {
+	for cursor.Next(db) {
+		inst := &instance.Instance{}
+		err = cursor.Decode(inst)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
 		if inst.Guest == nil {
 			continue
 		}
@@ -65,6 +76,12 @@ func instanceDataHandler(db *database.Database) (err error) {
 		if err != nil {
 			return
 		}
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
 	}
 
 	return
