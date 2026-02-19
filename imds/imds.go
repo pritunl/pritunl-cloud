@@ -537,9 +537,7 @@ func Pull(db *database.Database, instId, deplyId bson.ObjectID,
 		_, err = coll.UpdateOne(db, &bson.M{
 			"_id": instId,
 		}, bson.M{
-			"$set": &bson.M{
-				"guest": data,
-			},
+			"$set": data,
 		})
 		if err != nil {
 			err = database.ParseError(err)
