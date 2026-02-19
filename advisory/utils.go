@@ -139,6 +139,10 @@ func getOneNvd(db *database.Database, cveId string) (
 	query.Set("cveId", cveId)
 	req.URL.RawQuery = query.Encode()
 
+	if settings.Telemetry.NvdApiKey != "" {
+		req.Header.Set("apiKey", settings.Telemetry.NvdApiKey)
+	}
+
 	resp, err := client.Do(req)
 	if err != nil {
 		err = &errortypes.RequestError{
