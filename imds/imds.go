@@ -531,7 +531,7 @@ func Pull(db *database.Database, instId, deplyId bson.ObjectID,
 		}
 
 		if ste.Updates != nil {
-			data["guest.security"] = ste.Updates
+			data["guest.updates"] = ste.Updates
 		}
 
 		_, err = coll.UpdateOne(db, &bson.M{
