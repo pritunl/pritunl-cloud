@@ -253,7 +253,12 @@ func GetOneLimit(db *database.Database, cveId string) (
 	}
 
 	since := time.Since(lastCall)
-	limit := time.Duration(settings.Telemetry.NvdApiLimit) * time.Second
+	var limit time.Duration
+	if settings.Telemetry.NvdApiKey != "" {
+		limit = time.Duration(settings.Telemetry.NvdApiAuthLimit) * time.Second
+	} else {
+		limit = time.Duration(settings.Telemetry.NvdApiLimit) * time.Second
+	}
 	if since < limit {
 		time.Sleep(limit - since)
 	}
