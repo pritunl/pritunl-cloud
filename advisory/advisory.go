@@ -30,6 +30,7 @@ type Advisory struct {
 	Confidentiality string    `bson:"confidentiality" json:"confidentiality"`
 	Integrity       string    `bson:"integrity" json:"integrity"`
 	Availability    string    `bson:"availability" json:"availability"`
+	Dismissed       bool      `bson:"dismissed" json:"dismissed"`
 }
 
 func (a *Advisory) Validate(db *database.Database) (
