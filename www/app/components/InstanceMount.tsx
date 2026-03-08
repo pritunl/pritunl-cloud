@@ -7,7 +7,7 @@ interface Props {
 	disabled: boolean;
 	mount: InstanceTypes.Mount;
 	onChange: (state: InstanceTypes.Mount) => void;
-	onAdd: () => void;
+	onAdd: (prepend: boolean) => void;
 	onRemove: () => void;
 }
 
@@ -145,8 +145,8 @@ export default class InstanceMount extends React.Component<Props, State> {
 				<button
 					className="bp5-button bp5-minimal bp5-intent-success bp5-icon-add"
 					style={css.control}
-					onClick={(): void => {
-						this.props.onAdd();
+					onClick={(evt): void => {
+						this.props.onAdd(evt.shiftKey);
 					}}
 				/>
 			</div>
