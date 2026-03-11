@@ -12,8 +12,9 @@ interface Props {
 const css = {
 	group: {
 		width: '100%',
-		maxWidth: '310px',
+		maxWidth: '342px',
 		marginTop: '5px',
+		marginBottom: '5px',
 	} as React.CSSProperties,
 	protocol: {
 		flex: '0 1 auto',
@@ -24,6 +25,9 @@ const css = {
 	} as React.CSSProperties,
 	nodePortBox: {
 		flex: '1',
+	} as React.CSSProperties,
+	control: {
+		marginTop: '0px',
 	} as React.CSSProperties,
 };
 
@@ -90,6 +94,7 @@ export default class InstanceNodePort extends React.Component<Props, {}> {
 			</div>
 			<button
 				className="bp5-button bp5-minimal bp5-intent-danger bp5-icon-remove"
+				style={css.control}
 				onClick={(): void => {
 					this.props.onRemove();
 				}}
