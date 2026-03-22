@@ -34,6 +34,7 @@ type nodeData struct {
 	Comment                 string                  `json:"comment"`
 	Types                   []string                `json:"types"`
 	Port                    int                     `json:"port"`
+	Http2                   bool                    `json:"http2"`
 	NoRedirectServer        bool                    `json:"no_redirect_server"`
 	Protocol                string                  `json:"protocol"`
 	Hypervisor              string                  `json:"hypervisor"`
@@ -140,6 +141,7 @@ func nodePut(c *gin.Context) {
 	nde.Comment = data.Comment
 	nde.Types = data.Types
 	nde.Port = data.Port
+	nde.Http2 = data.Http2
 	nde.NoRedirectServer = data.NoRedirectServer
 	nde.Protocol = data.Protocol
 	nde.Hypervisor = data.Hypervisor
@@ -187,6 +189,7 @@ func nodePut(c *gin.Context) {
 		"zone",
 		"types",
 		"port",
+		"http2",
 		"no_redirect_server",
 		"protocol",
 		"hypervisor",
