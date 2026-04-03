@@ -1392,7 +1392,7 @@ func addCollections() (err error) {
 			"collection": "events",
 		}).Warning("database: Correcting events capped collection")
 
-		err = db.database.Collection("events").Drop(context.Background())
+		err = db.database.Collection("events").Drop(db)
 		if err != nil {
 			err = ParseError(err)
 			return
@@ -1402,7 +1402,7 @@ func addCollections() (err error) {
 
 	if !eventsExists {
 		err = db.database.RunCommand(
-			context.Background(),
+			db,
 			bson.D{
 				{"create", "events"},
 				{"capped", true},
