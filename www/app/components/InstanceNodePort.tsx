@@ -6,6 +6,7 @@ interface Props {
 	nodePort: InstanceTypes.NodePort;
 	hidden?: boolean;
 	onChange: (state: InstanceTypes.NodePort) => void;
+	onAdd: (prepend: boolean) => void;
 	onRemove: () => void;
 }
 
@@ -97,6 +98,13 @@ export default class InstanceNodePort extends React.Component<Props, {}> {
 				style={css.control}
 				onClick={(): void => {
 					this.props.onRemove();
+				}}
+			/>
+			<button
+				className="bp5-button bp5-minimal bp5-intent-success bp5-icon-add"
+				style={css.control}
+				onClick={(evt): void => {
+					this.props.onAdd(evt.shiftKey);
 				}}
 			/>
 		</div>;
