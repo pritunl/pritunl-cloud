@@ -1185,34 +1185,6 @@ export default class InstanceNew extends React.Component<Props, State> {
 								this.set('no_host_address', !instance.no_host_address);
 							}}
 						/>
-						<PageSwitch
-							disabled={this.state.disabled}
-							label="Skip source/destination check"
-							help="Allow network traffic from non-instance addresses."
-							checked={instance.skip_source_dest_check}
-							onToggle={(): void => {
-								this.set('skip_source_dest_check',
-									!instance.skip_source_dest_check);
-							}}
-						/>
-						<PageSwitch
-							disabled={this.state.disabled}
-							label="DHCP server"
-							help="Enable instance DHCP server, use for instances without cloud init network configuration support."
-							checked={instance.dhcp_server}
-							onToggle={(): void => {
-								this.onDhcpServer(!instance.dhcp_server);
-							}}
-						/>
-						<PageSwitch
-							disabled={this.state.disabled}
-							label="Delete protection"
-							help="Block instance and any attached disks from being deleted."
-							checked={instance.delete_protection}
-							onToggle={(): void => {
-								this.set('delete_protection', !instance.delete_protection);
-							}}
-						/>
 					</div>
 					<div style={css.group}>
 						<PageSelect
@@ -1397,6 +1369,34 @@ export default class InstanceNew extends React.Component<Props, State> {
 							hidden={!!instance.mounts?.length}
 							onToggle={(): void => {
 								this.onAddMount(-1)
+							}}
+						/>
+						<PageSwitch
+							disabled={this.state.disabled}
+							label="Skip source/destination check"
+							help="Allow network traffic from non-instance addresses."
+							checked={instance.skip_source_dest_check}
+							onToggle={(): void => {
+								this.set('skip_source_dest_check',
+									!instance.skip_source_dest_check);
+							}}
+						/>
+						<PageSwitch
+							disabled={this.state.disabled}
+							label="DHCP server"
+							help="Enable instance DHCP server, use for instances without cloud init network configuration support."
+							checked={instance.dhcp_server}
+							onToggle={(): void => {
+								this.onDhcpServer(!instance.dhcp_server);
+							}}
+						/>
+						<PageSwitch
+							disabled={this.state.disabled}
+							label="Delete protection"
+							help="Block instance and any attached disks from being deleted."
+							checked={instance.delete_protection}
+							onToggle={(): void => {
+								this.set('delete_protection', !instance.delete_protection);
 							}}
 						/>
 						<PageSwitch
