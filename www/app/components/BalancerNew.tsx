@@ -593,7 +593,7 @@ export default class BalancerNew extends React.Component<Props, State> {
 							Internal Backends
 							<Help
 								title="Internal Backends"
-								content="After a node receives a request it will be forwarded to the internal servers and the response will be sent back to the user. Multiple internal servers can be added to balance the requests between the servers. If a domain is used with HTTPS the internal server must have a valid certificate. When an IP address is used with HTTPS the internal servers certificate will not be validated."
+								content="After a node receives a request it will be forwarded to the internal servers and the response will be sent back to the user. Multiple internal servers can be added to balance the requests between the servers. Hostname must be an IP address of an existing instance."
 							/>
 						</label>
 						{backends}
