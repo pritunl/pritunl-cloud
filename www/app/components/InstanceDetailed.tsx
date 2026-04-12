@@ -8,6 +8,7 @@ import * as DomainTypes from '../types/DomainTypes';
 import * as PageInfos from './PageInfo';
 import * as Csrf from '../Csrf';
 import * as MiscUtils from '../utils/MiscUtils';
+import * as Constants from "../Constants";
 import CompletionStore from '../stores/CompletionStore';
 import InstanceIscsiDevice from './InstanceIscsiDevice';
 import InstanceNodePort from './InstanceNodePort';
@@ -215,11 +216,17 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 	}
 
 	connectVnc = (): void => {
+		let path = '/instance/' + this.props.instance.id +
+			'/vnc?csrf_token=' + Csrf.token
+
+		if (Constants.user) {
+			path += '&organization=' + CompletionStore.userOrganization
+		}
+
 		this.vncRfb = new RFB(
 			this.vncRef.current,
 			'wss://' + location.hostname + (
-				location.port ? ':' + location.port : '') + '/instance/' +
-				this.props.instance.id + '/vnc?csrf_token=' + Csrf.token,
+				location.port ? ':' + location.port : '') + path,
 			{
 				shared: true,
 				wsProtocols: ['binary'],
