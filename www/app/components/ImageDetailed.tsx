@@ -7,6 +7,7 @@ import CompletionStore from "../stores/CompletionStore";
 import PageInput from './PageInput';
 import PageInfo from './PageInfo';
 import PageSave from './PageSave';
+import * as PageInfos from './PageInfo';
 import ConfirmButton from './ConfirmButton';
 import PageTextArea from "./PageTextArea";
 
@@ -218,6 +219,53 @@ export default class ImageDetailed extends React.Component<Props, State> {
 				break;
 		}
 
+		let fields: PageInfos.Field[] = [
+			{
+				label: 'ID',
+				value: this.props.image.id || 'Unknown',
+			},
+			{
+				label: 'Storage',
+				value: store ? store.name :
+					this.props.image.storage || 'Unknown',
+			},
+			{
+				label: 'Organization',
+				value: orgName,
+			},
+			{
+				label: 'Type',
+				value: imgType || 'Unknown',
+			},
+			{
+				label: 'Key',
+				value: this.props.image.key || 'Unknown',
+			},
+			{
+				label: 'Storage Class',
+				value: storageClass,
+			},
+			{
+				label: 'Last Modified',
+				value: MiscUtils.formatDate(
+					this.props.image.last_modified) || 'Unknown',
+			},
+			{
+				label: 'ETag',
+				value: this.props.image.etag || 'Unknown',
+			},
+		];
+
+		if (this.props.image.system_type || this.props.image.system_kind) {
+			fields.push({
+				label: 'System Type',
+				value: this.props.image.system_type &&
+					this.props.image.system_kind ?
+					`${this.props.image.system_type}/${this.props.image.system_kind}` :
+					this.props.image.system_type || this.props.image.system_kind,
+			});
+		}
+
 		return <td
 			className="bp5-cell"
 			colSpan={3}
@@ -291,42 +339,7 @@ export default class ImageDetailed extends React.Component<Props, State> {
 				</div>
 				<div style={css.group}>
 					<PageInfo
-						fields={[
-							{
-								label: 'ID',
-								value: this.props.image.id || 'Unknown',
-							},
-							{
-								label: 'Storage',
-								value: store ? store.name :
-									this.props.image.storage || 'Unknown',
-							},
-							{
-								label: 'Organization',
-								value: orgName,
-							},
-							{
-								label: 'Type',
-								value: imgType || 'Unknown',
-							},
-							{
-								label: 'Key',
-								value: this.props.image.key || 'Unknown',
-							},
-							{
-								label: 'Storage Class',
-								value: storageClass,
-							},
-							{
-								label: 'Last Modified',
-								value: MiscUtils.formatDate(
-									this.props.image.last_modified) || 'Unknown',
-							},
-							{
-								label: 'ETag',
-								value: this.props.image.etag || 'Unknown',
-							},
-						]}
+						fields={fields}
 					/>
 				</div>
 			</div>
