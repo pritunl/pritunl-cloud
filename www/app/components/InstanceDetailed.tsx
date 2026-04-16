@@ -1064,6 +1064,8 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 		});
 		InstanceActions.commit({
 			...this.state.instance,
+			node_ports: InstanceTypes.FilterNodePorts(
+				this.state.instance.node_ports),
 			cloud_script: cloudScript,
 			action: null,
 		}).then((): void => {
