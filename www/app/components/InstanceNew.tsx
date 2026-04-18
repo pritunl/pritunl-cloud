@@ -215,6 +215,8 @@ export default class InstanceNew extends React.Component<Props, State> {
 			instance.cloud_script = ""
 		}
 
+		instance.node_ports = InstanceTypes.FilterNodePorts(instance.node_ports)
+
 		InstanceActions.create(instance).then((): void => {
 			this.setState({
 				...this.state,
