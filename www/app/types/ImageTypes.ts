@@ -17,6 +17,8 @@ export interface Image {
 	signed?: boolean;
 	key?: string;
 	type?: string;
+	system_type?: string;
+	system_kind?: string;
 	firmware?: string;
 	etag?: string;
 	last_modified?: string;
