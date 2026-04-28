@@ -16,6 +16,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/event"
+	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/user"
 	"github.com/pritunl/pritunl-cloud/utils"
@@ -61,10 +62,26 @@ func Local(db *database.Database, username, password string) (
 	return
 }
 
-func Request(c *gin.Context) {
+func Request(c *gin.Context, typ string) {
 	db := c.MustGet("db").(*database.Database)
 
-	loc := utils.GetLocation(c.Request)
+	domains := []string{}
+
+	switch typ {
+	case Admin:
+		domains = append(domains, node.Self.AdminDomain)
+	case User:
+		domains = append(domains, node.Self.UserDomain)
+	}
+
+	loc := utils.GetLocation(c.Request, domains)
+	if loc == "" {
+		err := &errortypes.ParseError{
+			errors.New("auth: Missing domains in node settings"),
+		}
+		utils.AbortWithError(c, 500, err)
+		return
+	}
 
 	id := c.Query("id")
 
