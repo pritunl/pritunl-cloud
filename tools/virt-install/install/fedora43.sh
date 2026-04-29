@@ -1,7 +1,7 @@
 #!/bin/bash
 set -ev
 NAME="fedora43"
-ISO_URL="https://sjc.mirror.rackspace.com/fedora/releases/43/Server/x86_64/iso/Fedora-Server-dvd-x86_64-43-1.6.iso"
+ISO_URL="https://cofractal-sea.mm.fcix.net/fedora/linux/releases/43/Server/x86_64/iso/Fedora-Server-dvd-x86_64-43-1.6.iso"
 ISO_HASH="aca06983bef83da9b43144c1a2ff4c8483e4745167c17f53725c16a16742e643"
 
 sudo mkdir -p /var/lib/virt/iso
