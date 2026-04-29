@@ -1,7 +1,7 @@
 #!/bin/bash
 set -ev
 NAME="ubuntu2604"
-ISO_URL="https://cofractal-sea.mm.fcix.net/ubuntu-releases/24.04/ubuntu-24.04.3-live-server-amd64.iso"
+ISO_URL="https://cofractal-sea.mm.fcix.net/ubuntu-releases/26.04/ubuntu-26.04-live-server-amd64.iso"
 ISO_HASH="dec49008a71f6098d0bcfc822021f4d042d5f2db279e4d75bdd981304f1ca5d9"
 
 sudo mkdir -p /var/lib/virt/iso
