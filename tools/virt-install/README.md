@@ -62,7 +62,7 @@ echo "f477fade6fb40d1767314c446ba4229111a2aba2d3db9eaea7ba86e5a8c18737 /root/set
 
 # fedora
 curl -o /root/setup.sh http://192.168.122.1:8000/fedora.sh
-echo "fc9d75ce03a833583ecd07e9cdd6521b5c250f4bb7895b2b1c6b87a279d182a5 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
+echo "18032b049b0410f6c78ad5cfcd5f9b65fa3955e58268dc86ca41d7dbfb66a465 /root/setup.sh" | sha256sum -c && bash /root/setup.sh
 
 # freebsd
 fetch -o /root/setup.sh http://192.168.122.1:8000/freebsd.sh
