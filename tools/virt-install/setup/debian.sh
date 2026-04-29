@@ -28,7 +28,6 @@ if systemctl list-unit-files cloud-init-main.service >/dev/null 2>&1; then
 else
   systemctl enable cloud-init.service
 fi
-systemctl enable cloud-init.service
 systemctl enable cloud-config.service
 systemctl enable cloud-final.service
 
