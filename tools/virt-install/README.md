@@ -174,6 +174,8 @@ s3c cp rockylinux10_$(date +%y%m%d).qcow2 pritunl-images:/stable/rockylinux10_$(
 s3c cp rockylinux10_$(date +%y%m%d).qcow2.sig pritunl-images:/stable/rockylinux10_$(date +%y%m%d).qcow2.sig
 s3c cp ubuntu2404_$(date +%y%m%d).qcow2 pritunl-images:/stable/ubuntu2404_$(date +%y%m%d).qcow2
 s3c cp ubuntu2404_$(date +%y%m%d).qcow2.sig pritunl-images:/stable/ubuntu2404_$(date +%y%m%d).qcow2.sig
+s3c cp ubuntu2604_$(date +%y%m%d).qcow2 pritunl-images:/stable/ubuntu2604_$(date +%y%m%d).qcow2
+s3c cp ubuntu2604_$(date +%y%m%d).qcow2.sig pritunl-images:/stable/ubuntu2604_$(date +%y%m%d).qcow2.sig
 s3c cp files.json pritunl-images:/stable/files.json
 s3c cp index.html pritunl-images:/stable/index.html
 ```
