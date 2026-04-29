@@ -58,7 +58,7 @@ echo "412aacb35f882d09ad7390124f2e3f52a7ae8deb6aaf2825a8775912dfb058fd /root/set
 
 # debian
 sudo curl -o /root/setup.sh http://192.168.122.1:8000/debian.sh
-echo "c55d803ef610fea115464d21c4accf77c778e33100718f0b11a518367212c02d /root/setup.sh" | sudo sha256sum -c && sudo bash /root/setup.sh
+echo "5fe9beb585bc434a8ebc8a32fbca347d8180ebc2cf6aef014b06b8c82a1f802a /root/setup.sh" | sudo sha256sum -c && sudo bash /root/setup.sh
 
 # fedora
 curl -o /root/setup.sh http://192.168.122.1:8000/fedora.sh
