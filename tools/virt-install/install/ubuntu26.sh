@@ -97,7 +97,7 @@ sudo virt-install \
   --network network=default \
   --graphics=none \
   --console pty,target_type=serial \
-  --location=/var/lib/virt/iso/$(basename ${ISO_URL}),kernel=casper/hwe-vmlinuz,initrd=casper/hwe-initrd \
+  --location=/var/lib/virt/iso/$(basename ${ISO_URL}),kernel=casper/vmlinuz,initrd=casper/initrd \
   --extra-args="console=ttyS0 serial autoinstall"
 
 while ! sudo virsh domstate ${NAME} 2>/dev/null | grep -q "shut off"; do
