@@ -240,6 +240,29 @@ export function UpdateFields(instance: Instance): PageInfos.Field[] {
 	return fields
 }
 
+export function FilterNodePorts(nodePorts: NodePort[]): NodePort[] {
+	let newNodePorts: NodePort[] = []
+	let portsSet = new Set<number>()
+
+	nodePorts.forEach((ndePort) => {
+		if (ndePort.delete) {
+			return
+		}
+		portsSet.add(ndePort.external_port)
+		newNodePorts.push(ndePort)
+	})
+
+	nodePorts.forEach((ndePort) => {
+		if (!ndePort.delete || portsSet.has(ndePort.external_port)) {
+			return
+		}
+		portsSet.add(ndePort.external_port)
+		newNodePorts.push(ndePort)
+	})
+
+	return newNodePorts
+}
+
 export type Instances = Instance[];
 export type InstancesNode = Map<string, Instances>;
 
