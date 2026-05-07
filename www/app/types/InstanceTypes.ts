@@ -241,6 +241,10 @@ export function UpdateFields(instance: Instance): PageInfos.Field[] {
 }
 
 export function FilterNodePorts(nodePorts: NodePort[]): NodePort[] {
+	if (!nodePorts) {
+		return []
+	}
+
 	let newNodePorts: NodePort[] = []
 	let portsSet = new Set<number>()
 
