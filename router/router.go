@@ -33,6 +33,8 @@ import (
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/tools/commander"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 )
 
 var (
@@ -48,6 +50,7 @@ type Router struct {
 	adminType            bool
 	userType             bool
 	balancerType         bool
+	http2                bool
 	port                 int
 	noRedirectServer     bool
 	redirectSystemd      bool
@@ -428,6 +431,7 @@ func (r *Router) initWeb() (err error) {
 	r.balancerType = node.Self.IsBalancer()
 	r.adminDomain = node.Self.AdminDomain
 	r.userDomain = node.Self.UserDomain
+	r.http2 = node.Self.Http2
 	r.noRedirectServer = node.Self.NoRedirectServer
 	r.redirectSystemd = utils.IsSystemd() ||
 		settings.Router.ForceRedirectSystemd
