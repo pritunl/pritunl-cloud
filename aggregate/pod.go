@@ -1,17 +1,28 @@
 package aggregate
 
 import (
+	"sync"
+
 	"github.com/dropbox/godropbox/errors"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/mongo-go-driver/v2/mongo"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/unit"
-	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 type PodPipe struct {
 	pod.Pod  `bson:",inline"`
 	UnitDocs []*unit.Unit `bson:"unit_docs"`
+}
+
+type Metadata struct {
+	Count int64 `bson:"count"`
+}
+
+type PodsPipe struct {
+	Metadata []*Metadata `bson:"meta"`
+	Pods     []*PodPipe  `bson:"pods"`
 }
 
 type PodAggregate struct {
@@ -80,76 +91,150 @@ func GetPodsPaged(db *database.Database, usrId bson.ObjectID,
 	coll := db.Pods()
 	pods = []*PodAggregate{}
 
-	if len(*query) == 0 {
-		count, err = coll.EstimatedDocumentCount(db)
-		if err != nil {
-			err = database.ParseError(err)
-			return
-		}
-	} else {
-		count, err = coll.CountDocuments(db, query)
-		if err != nil {
-			err = database.ParseError(err)
-			return
-		}
-	}
-
 	if pageCount == 0 {
 		pageCount = 20
 	}
-	maxPage := count / pageCount
-	if count == pageCount {
-		maxPage = 0
-	}
-	page = utils.Min64(page, maxPage)
-	skip := utils.Min64(page*pageCount, count)
+	skip := page * pageCount
 
-	cursor, err := coll.Aggregate(db, []*bson.M{
-		&bson.M{
-			"$match": query,
-		},
-		&bson.M{
-			"$sort": &bson.M{
-				"name": 1,
-			},
-		},
-		&bson.M{
-			"$skip": skip,
-		},
-		&bson.M{
-			"$limit": pageCount,
-		},
-		&bson.M{
-			"$lookup": &bson.M{
-				"from":         "units",
-				"localField":   "_id",
-				"foreignField": "pod",
-				"as":           "unit_docs",
-			},
-		},
-	})
-	if err != nil {
-		err = database.ParseError(err)
-		return
-	}
-	defer cursor.Close(db)
+	var cursor *mongo.Cursor
+	if len(*query) == 0 {
+		waiter := &sync.WaitGroup{}
+		var countErr error
 
-	for cursor.Next(db) {
-		doc := &PodPipe{}
+		waiter.Add(1)
+		go func() {
+			defer waiter.Done()
+
+			count, countErr = coll.EstimatedDocumentCount(db)
+			if countErr != nil {
+				countErr = database.ParseError(countErr)
+				return
+			}
+		}()
+
+		cursor, err = coll.Aggregate(db, []*bson.M{
+			&bson.M{
+				"$match": query,
+			},
+			&bson.M{
+				"$sort": &bson.M{
+					"name": 1,
+				},
+			},
+			&bson.M{
+				"$skip": skip,
+			},
+			&bson.M{
+				"$limit": pageCount,
+			},
+			&bson.M{
+				"$lookup": &bson.M{
+					"from":         "units",
+					"localField":   "_id",
+					"foreignField": "pod",
+					"as":           "unit_docs",
+				},
+			},
+		})
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+		defer cursor.Close(db)
+
+		for cursor.Next(db) {
+			doc := &PodPipe{}
+			err = cursor.Decode(doc)
+			if err != nil {
+				err = database.ParseError(err)
+				return
+			}
+
+			pd := &PodAggregate{
+				Pod:   doc.Pod,
+				Units: doc.UnitDocs,
+			}
+
+			pd.Json(usrId)
+
+			pods = append(pods, pd)
+		}
+
+		waiter.Wait()
+		if countErr != nil {
+			err = countErr
+			return
+		}
+	} else {
+		cursor, err = coll.Aggregate(db, []*bson.M{
+			&bson.M{
+				"$match": query,
+			},
+			&bson.M{
+				"$sort": &bson.M{
+					"name": 1,
+				},
+			},
+			&bson.M{
+				"$facet": &bson.M{
+					"meta": []*bson.M{
+						&bson.M{
+							"$count": "count",
+						},
+					},
+					"pods": []*bson.M{
+						&bson.M{
+							"$skip": skip,
+						},
+						&bson.M{
+							"$limit": pageCount,
+						},
+						&bson.M{
+							"$lookup": &bson.M{
+								"from":         "units",
+								"localField":   "_id",
+								"foreignField": "pod",
+								"as":           "unit_docs",
+							},
+						},
+					},
+				},
+			},
+		})
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+		defer cursor.Close(db)
+
+		if !cursor.Next(db) {
+			err = &database.NotFoundError{
+				errors.New("aggregate: Not found"),
+			}
+			return
+		}
+
+		doc := &PodsPipe{}
 		err = cursor.Decode(doc)
 		if err != nil {
 			err = database.ParseError(err)
 			return
 		}
 
-		pd := &PodAggregate{
-			Pod:   doc.Pod,
-			Units: doc.UnitDocs,
+		if len(doc.Metadata) > 0 {
+			count = doc.Metadata[0].Count
 		}
 
-		pd.Json(usrId)
+		for _, podDoc := range doc.Pods {
+			pd := &PodAggregate{
+				Pod:   podDoc.Pod,
+				Units: podDoc.UnitDocs,
+			}
 
-		pods = append(pods, pd)
+			pd.Json(usrId)
+
+			pods = append(pods, pd)
+		}
 	}
 
 	err = cursor.Err()
