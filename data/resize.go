@@ -23,11 +23,9 @@ type diskInfo struct {
 	VirtualSize int    `json:"virtual-size"`
 }
 
-func getDiskSizeQcow(dsk *disk.Disk) (size int, err error) {
-	dskPth := paths.GetDiskPath(dsk.Id)
-
+func getQcowSize(pth string) (size int, err error) {
 	output, err := utils.ExecOutput("",
-		"qemu-img", "info", "--output=json", dskPth)
+		"qemu-img", "info", "--output=json", pth)
 	if err != nil {
 		return
 	}
