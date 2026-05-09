@@ -493,6 +493,20 @@ func (r *Router) initWeb() (err error) {
 		MaxHeaderBytes:    settings.Router.MaxHeaderBytes,
 	}
 
+	if !r.http2 {
+		r.webServer.TLSNextProto = make(map[string]func(
+			*http.Server, *tls.Conn, http.Handler))
+	}
+
+	if r.http2 && r.protocol == "http" {
+		h2s := &http2.Server{
+			IdleTimeout:     idleTimeout,
+			ReadIdleTimeout: readTimeout,
+		}
+
+		r.webServer.Handler = h2c.NewHandler(r, h2s)
+	}
+
 	return
 }
 
