@@ -45,6 +45,10 @@ func getQcowSize(pth string) (size int, err error) {
 	return
 }
 
+func getDiskSizeQcow(dsk *disk.Disk) (size int, err error) {
+	return getQcowSize(paths.GetDiskPath(dsk.Id))
+}
+
 func expandDiskQcow(db *database.Database, dsk *disk.Disk) (err error) {
 	dskPth := paths.GetDiskPath(dsk.Id)
 
