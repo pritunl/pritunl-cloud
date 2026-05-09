@@ -517,6 +517,7 @@ func (r *Router) startWeb() {
 		"production":          constants.Production,
 		"protocol":            r.protocol,
 		"port":                r.port,
+		"http2":               r.http2,
 		"read_timeout":        settings.Router.ReadTimeout,
 		"write_timeout":       settings.Router.WriteTimeout,
 		"idle_timeout":        settings.Router.IdleTimeout,
