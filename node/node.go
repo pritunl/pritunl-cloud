@@ -54,6 +54,7 @@ type Node struct {
 	Types                   []string            `bson:"types" json:"types"`
 	Timestamp               time.Time           `bson:"timestamp" json:"timestamp"`
 	Port                    int                 `bson:"port" json:"port"`
+	Http2                   bool                `bson:"http2" json:"http2"`
 	NoRedirectServer        bool                `bson:"no_redirect_server" json:"no_redirect_server"`
 	Protocol                string              `bson:"protocol" json:"protocol"`
 	Hypervisor              string              `bson:"hypervisor" json:"hypervisor"`
@@ -200,6 +201,7 @@ func (n *Node) Copy() *Node {
 		Types:                   n.Types,
 		Timestamp:               n.Timestamp,
 		Port:                    n.Port,
+		Http2:                   n.Http2,
 		NoRedirectServer:        n.NoRedirectServer,
 		Protocol:                n.Protocol,
 		Hypervisor:              n.Hypervisor,
