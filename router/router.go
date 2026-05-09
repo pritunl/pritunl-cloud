@@ -700,6 +700,7 @@ func (r *Router) hashNode() []byte {
 	io.WriteString(hash, node.Self.UserDomain)
 	io.WriteString(hash, strconv.Itoa(node.Self.Port))
 	io.WriteString(hash, fmt.Sprintf("%t", node.Self.NoRedirectServer))
+	io.WriteString(hash, fmt.Sprintf("%t", node.Self.Http2))
 	io.WriteString(hash, node.Self.Protocol)
 
 	io.WriteString(hash, strconv.Itoa(settings.Router.ReadTimeout))
