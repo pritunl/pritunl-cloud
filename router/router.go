@@ -555,6 +555,9 @@ func (r *Router) startWeb() {
 			},
 			GetCertificate: r.certificates.GetCertificate,
 		}
+		if r.http2 {
+			tlsConfig.NextProtos = []string{"h2"}
+		}
 
 		listener, err := tls.Listen("tcp", r.webServer.Addr, tlsConfig)
 		if err != nil {
