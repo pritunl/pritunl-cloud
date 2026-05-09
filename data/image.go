@@ -915,10 +915,24 @@ func writeImageQcow(db *database.Database, dsk *disk.Disk) (
 			}
 
 			if size > 8 {
-				_, err = utils.ExecCombinedOutputLogged(nil, "qemu-img",
-					"resize", diskTempPath, fmt.Sprintf("%dG", size))
-				if err != nil {
+				curSize, e := getQcowSize(diskTempPath)
+				if e != nil {
+					err = e
 					return
+				}
+
+				if curSize > size {
+					size = curSize
+					newSize = curSize
+				}
+
+				if size > curSize {
+					_, err = utils.ExecCombinedOutputLogged(nil,
+						"qemu-img", "resize", diskTempPath,
+						fmt.Sprintf("%dG", size))
+					if err != nil {
+						return
+					}
 				}
 			}
 		}
@@ -997,10 +1011,24 @@ func writeImageQcow(db *database.Database, dsk *disk.Disk) (
 			}
 
 			if size > 8 {
-				_, err = utils.ExecCombinedOutputLogged(nil, "qemu-img",
-					"resize", diskTempPath, fmt.Sprintf("%dG", size))
-				if err != nil {
+				curSize, e := getQcowSize(diskTempPath)
+				if e != nil {
+					err = e
 					return
+				}
+
+				if curSize > size {
+					size = curSize
+					newSize = curSize
+				}
+
+				if size > curSize {
+					_, err = utils.ExecCombinedOutputLogged(nil,
+						"qemu-img", "resize", diskTempPath,
+						fmt.Sprintf("%dG", size))
+					if err != nil {
+						return
+					}
 				}
 			}
 		}
