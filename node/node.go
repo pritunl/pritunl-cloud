@@ -1324,6 +1324,7 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.Comment = nde.Comment
 	n.Types = nde.Types
 	n.Port = nde.Port
+	n.Http2 = nde.Http2
 	n.NoRedirectServer = nde.NoRedirectServer
 	n.Protocol = nde.Protocol
 	n.Hypervisor = nde.Hypervisor
