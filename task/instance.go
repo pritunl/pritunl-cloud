@@ -53,6 +53,7 @@ func instanceDataHandler(db *database.Database) (err error) {
 							if i < 2 {
 								logrus.WithFields(logrus.Fields{
 									"cve_id": cve,
+									"error":  err,
 								}).Error("task: Failed to query CVE")
 								continue
 							}
