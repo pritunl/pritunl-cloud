@@ -1,6 +1,7 @@
 package aggregate
 
 import (
+	"sort"
 	"sync"
 
 	"github.com/dropbox/godropbox/errors"
@@ -10,6 +11,12 @@ import (
 	"github.com/pritunl/pritunl-cloud/pod"
 	"github.com/pritunl/pritunl-cloud/unit"
 )
+
+func sortUnits(units []*unit.Unit) {
+	sort.SliceStable(units, func(i, j int) bool {
+		return units[i].Name < units[j].Name
+	})
+}
 
 type PodPipe struct {
 	pod.Pod  `bson:",inline"`
@@ -67,6 +74,8 @@ func GetPod(db *database.Database, usrId bson.ObjectID, query *bson.M) (
 		err = database.ParseError(err)
 		return
 	}
+
+	sortUnits(doc.UnitDocs)
 
 	pd = &PodAggregate{
 		Pod:   doc.Pod,
@@ -150,6 +159,8 @@ func GetPodsPaged(db *database.Database, usrId bson.ObjectID,
 				return
 			}
 
+			sortUnits(doc.UnitDocs)
+
 			pd := &PodAggregate{
 				Pod:   doc.Pod,
 				Units: doc.UnitDocs,
@@ -226,6 +237,8 @@ func GetPodsPaged(db *database.Database, usrId bson.ObjectID,
 		}
 
 		for _, podDoc := range doc.Pods {
+			sortUnits(podDoc.UnitDocs)
+
 			pd := &PodAggregate{
 				Pod:   podDoc.Pod,
 				Units: podDoc.UnitDocs,
