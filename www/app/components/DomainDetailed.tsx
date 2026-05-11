@@ -487,6 +487,7 @@ export default class DomainDetailed extends React.Component<Props, State> {
 						<option value="aws">AWS</option>
 						<option value="cloudflare">Cloudflare</option>
 						<option value="oracle_cloud">Oracle Cloud</option>
+						<option value="google_cloud">Google Cloud</option>
 					</PageSelect>
 					<PageSelect
 						disabled={this.state.disabled}
