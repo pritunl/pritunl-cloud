@@ -163,9 +163,7 @@ export default class Image extends React.Component<Props, {}> {
 			if (matched && imgVer) {
 				name += ` (${MiscUtils.parseImageDate(imgVer)})`
 			}
-		}
 
-		if (image.signed) {
 			orgClass = 'bp5-text-intent-success';
 			orgIcon = 'bp5-icon-endorsed';
 			orgName = 'Signed Public Image';
