@@ -196,6 +196,7 @@ export default class SecretDetailed extends React.Component<Props, State> {
 		let keyLabel = "";
 		let keyHelp = "";
 		let keyPlaceholder = "";
+		let keyArea = false;
 		let valLabel = "";
 		let valHelp = "";
 		let valPlaceholder = "";
@@ -213,6 +214,7 @@ export default class SecretDetailed extends React.Component<Props, State> {
 				keyLabel = "AWS Key ID";
 				keyHelp = "Key for AWS API authentication.";
 				keyPlaceholder = "Key ID";
+				keyArea = false;
 				valLabel = "AWS Secret ID";
 				valHelp = "Key secret for AWS API authentication.";
 				valPlaceholder = "Key ID";
@@ -227,6 +229,7 @@ export default class SecretDetailed extends React.Component<Props, State> {
 				keyLabel = "Cloudflare Token";
 				keyHelp = "Cloudflare API token.";
 				keyPlaceholder = "Token";
+				keyArea = false;
 				valLabel = "";
 				valHelp = "";
 				valPlaceholder = "";
@@ -241,6 +244,7 @@ export default class SecretDetailed extends React.Component<Props, State> {
 				keyLabel = "Oracle Cloud Tenancy OCID";
 				keyHelp = "Tenancy OCID for Oracle Cloud API authentication.";
 				keyPlaceholder = "Tenancy OCID";
+				keyArea = false;
 				valLabel = "Oracle Cloud User OCID";
 				valHelp = "User OCID for Oracle Cloud API authentication.";
 				valPlaceholder = "User OCID";
@@ -251,10 +255,26 @@ export default class SecretDetailed extends React.Component<Props, State> {
 				publicKeyHelp = "Public key for Oracle Cloud API authentication.";
 				publicKeyPlaceholder = "Oracle Cloud Public Key";
 				break;
+			case "google_cloud":
+				keyLabel = "Google Cloud Service Account JSON";
+				keyHelp = "Google Cloud service account JSON authentication key.";
+				keyPlaceholder = "Service Account";
+				keyArea = true;
+				valLabel = "";
+				valHelp = "";
+				valPlaceholder = "";
+				regionLabel = "";
+				regionHelp = "";
+				regionPlaceholder = "";
+				publicKeyLabel = "";
+				publicKeyHelp = "";
+				publicKeyPlaceholder = "";
+				break;
 			case "json":
 				keyLabel = "";
 				keyHelp = "";
 				keyPlaceholder = "";
+				keyArea = false;
 				valLabel = "";
 				valHelp = "";
 				valPlaceholder = "";
@@ -369,9 +389,20 @@ export default class SecretDetailed extends React.Component<Props, State> {
 					<PageInput
 						label={keyLabel}
 						help={keyHelp}
-						hidden={keyLabel === ""}
+						hidden={keyLabel === "" || keyArea}
 						type="text"
 						placeholder={keyPlaceholder}
+						value={secr.key}
+						onChange={(val: string): void => {
+							this.set('key', val);
+						}}
+					/>
+					<PageTextArea
+						label={keyLabel}
+						help={keyHelp}
+						hidden={keyLabel === "" || !keyArea}
+						placeholder={keyPlaceholder}
+						rows={6}
 						value={secr.key}
 						onChange={(val: string): void => {
 							this.set('key', val);
@@ -424,6 +455,7 @@ export default class SecretDetailed extends React.Component<Props, State> {
 						<option value="aws">AWS</option>
 						<option value="cloudflare">Cloudflare</option>
 						<option value="oracle_cloud">Oracle Cloud</option>
+						<option value="google_cloud">Google Cloud</option>
 						<option value="json">JSON</option>
 					</PageSelect>
 					<PageSelect
