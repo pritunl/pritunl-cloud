@@ -1,5 +1,7 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
+import * as Blueprint from '@blueprintjs/core';
+import * as Icons from '@blueprintjs/icons';
 import * as MiscUtils from '../utils/MiscUtils';
 import * as ImageTypes from '../types/ImageTypes';
 import ImageDetailed from './ImageDetailed';
@@ -63,6 +65,15 @@ const css = {
 	barLast: {
 		height: '6px',
 	} as React.CSSProperties,
+	logo: {
+		display: "inline-block",
+		backgroundRepeat: "no-repeat",
+		backgroundSize: "contain",
+		backgroundPosition: "center",
+		height: '19px',
+		width: '19px',
+		marginRight: '5px',
+	} as React.CSSProperties,
 };
 
 export default class Image extends React.Component<Props, {}> {
@@ -99,6 +110,59 @@ export default class Image extends React.Component<Props, {}> {
 		} else {
 			orgIcon = 'bp5-text-muted bp5-icon-globe';
 			orgName = 'Public Image';
+		}
+
+		let name = image.name
+		let icon: Blueprint.MaybeElement
+
+		if (image.signed) {
+			let imgSpl = image.key.split('_');
+			let imgVer = imgSpl?.[1]?.split(".")[0] || ""
+			let imgNameSpl = imgSpl[0].match(/^(.+?)(\d+)$/);
+			let distro = imgNameSpl?.[1] || imgSpl[0]
+			let version = imgNameSpl?.[2] || ""
+			let matched = true
+
+			switch (distro) {
+				case "almalinux":
+					name = `AlmaLinux ${version}`
+					icon = <span style={css.logo} className="almalinux-logo"/>
+					break
+				case "alpinelinux":
+					name = `Alpine Linux`
+					icon = <span style={css.logo} className="alpinelinux-logo"/>
+					break
+				case "archlinux":
+					name = `Arch Linux`
+					icon = <span style={css.logo} className="archlinux-logo"/>
+					break
+				case "fedora":
+					name = `Fedora ${version}`
+					icon = <span style={css.logo} className="fedora-logo"/>
+					break
+				case "freebsd":
+					name = `FreeBSD`
+					icon = <span style={css.logo} className="freebsd-logo"/>
+					break
+				case "oraclelinux":
+					name = `Oracle Linux ${version}`
+					icon = <span style={css.logo} className="oraclelinux-logo"/>
+					break
+				case "rockylinux":
+					name = `Rocky Linux ${version}`
+					icon = <span style={css.logo} className="rockylinux-logo"/>
+					break
+				case "ubuntu":
+					name = `Ubuntu ${version.slice(0, 2) + "." + version.slice(2)}`
+					icon = <span style={css.logo} className="ubuntu-logo"/>
+					break
+				default:
+					matched = false
+			}
+
+			if (matched && imgVer) {
+				name += ` (${MiscUtils.parseImageDate(imgVer)})`
+			}
 		}
 
 		if (image.signed) {
@@ -158,7 +222,7 @@ export default class Image extends React.Component<Props, {}> {
 						<span className="bp5-control-indicator open-ignore"/>
 					</label>
 					<div style={css.nameSpan}>
-						{image.name}
+						{icon}{name}
 					</div>
 				</div>
 			</div>
