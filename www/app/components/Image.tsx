@@ -100,6 +100,8 @@ export default class Image extends React.Component<Props, {}> {
 			...css.card,
 		};
 
+		let name = image.name
+		let icon: Blueprint.MaybeElement
 		let orgClass = '';
 		let orgIcon = '';
 		let orgName = '';
@@ -111,9 +113,6 @@ export default class Image extends React.Component<Props, {}> {
 			orgIcon = 'bp5-text-muted bp5-icon-globe';
 			orgName = 'Public Image';
 		}
-
-		let name = image.name
-		let icon: Blueprint.MaybeElement
 
 		if (image.signed) {
 			let imgSpl = image.key.split('_');
