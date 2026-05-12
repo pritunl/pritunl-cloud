@@ -70,6 +70,9 @@ const css = {
 	inputGroup: {
 		width: '100%',
 	} as React.CSSProperties,
+	controlButton: {
+		marginRight: '10px',
+	} as React.CSSProperties,
 	button: {
 		height: '30px',
 	} as React.CSSProperties,
@@ -257,6 +260,27 @@ export default class CertificateDetailed extends React.Component<Props, State> {
 			message: '',
 			addDomain: '',
 			certificate: cert,
+		});
+	}
+
+	onRefresh = (): void => {
+		this.setState({
+			...this.state,
+			disabled: true,
+		});
+		CertificateActions.commit({
+				...this.props.certificate,
+				refresh: true,
+		}).then((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
+		}).catch((): void => {
+			this.setState({
+				...this.state,
+				disabled: false,
+			});
 		});
 	}
 
@@ -563,7 +587,19 @@ export default class CertificateDetailed extends React.Component<Props, State> {
 					});
 				}}
 				onSave={this.onSave}
-			/>
+			>
+				<ConfirmButton
+					label="Refresh"
+					className="bp5-intent-success bp5-icon-refresh"
+					progressClassName="bp5-intent-success"
+					style={css.controlButton}
+					hidden={cert.type !== "lets_encrypt"}
+					disabled={this.state.disabled}
+					onConfirm={(): void => {
+						this.onRefresh();
+					}}
+				/>
+			</PageSave>
 		</td>;
 	}
 }
