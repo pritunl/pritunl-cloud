@@ -1,7 +1,6 @@
 /// <reference path="../References.d.ts"/>
 import * as React from 'react';
 import RFB from '@novnc/novnc';
-import * as Blueprint from '@blueprintjs/core';
 import * as InstanceTypes from '../types/InstanceTypes';
 import * as InstanceActions from '../actions/InstanceActions';
 import * as VpcTypes from '../types/VpcTypes';
@@ -26,6 +25,7 @@ import Help from './Help';
 import PageSelectButton from "./PageSelectButton";
 import PageTextArea from "./PageTextArea";
 import Relations from './Relations';
+import InstanceAdvDialog from './InstanceAdvDialog';
 
 interface Props {
 	vpcs: VpcTypes.VpcsRo;
@@ -34,13 +34,6 @@ interface Props {
 	selected: boolean;
 	onSelect: (shift: boolean) => void;
 	onClose: () => void;
-}
-
-interface CveEntry {
-	cve: string;
-	detail: InstanceTypes.Advisory;
-	packages: string[];
-	advisories: string[];
 }
 
 interface State {
@@ -58,8 +51,6 @@ interface State {
 	startupScript: boolean;
 	forwardedChecked: boolean;
 	showSettings: boolean;
-	tab: 'control' | 'status';
-	showLowSeverity: boolean;
 	vnc: boolean;
 	vncCtrl: boolean;
 	vncAlt: boolean;
@@ -119,9 +110,6 @@ const css = {
 	status: {
 		margin: '6px 0 0 1px',
 	} as React.CSSProperties,
-	tabs: {
-		marginLeft: '10px',
-	} as React.CSSProperties,
 	icon: {
 		marginRight: '3px',
 	} as React.CSSProperties,
@@ -144,69 +132,6 @@ const css = {
 	} as React.CSSProperties,
 	vncBox: {
 		position: 'relative',
-	} as React.CSSProperties,
-	statusPanel: {
-		flex: 1,
-		minWidth: '280px',
-		margin: '0 10px',
-		paddingBottom: '20px',
-	} as React.CSSProperties,
-	statusHeader: {
-		margin: '6px 0 10px 0',
-		fontWeight: 600,
-	} as React.CSSProperties,
-	cveCard: {
-		padding: '12px',
-		marginBottom: '10px',
-	} as React.CSSProperties,
-	cveHeaderRow: {
-		alignItems: 'center',
-		marginBottom: '8px',
-		gap: '8px',
-	} as React.CSSProperties,
-	cveTitle: {
-		fontFamily: 'monospace',
-		fontSize: '14px',
-		fontWeight: 600,
-	} as React.CSSProperties,
-	cveTagRow: {
-		marginBottom: '8px',
-		gap: '6px',
-	} as React.CSSProperties,
-	cveTag: {
-		marginRight: '6px',
-		marginBottom: '4px',
-	} as React.CSSProperties,
-	cvePackages: {
-		fontSize: '11px',
-		color: 'var(--bp5-text-color-muted, #5f6b7c)',
-		marginBottom: '6px',
-		wordBreak: 'break-all',
-	} as React.CSSProperties,
-	cveDescription: {
-		fontSize: '12px',
-		whiteSpace: 'pre-wrap',
-		wordBreak: 'break-word',
-		maxHeight: '160px',
-		overflow: 'auto',
-		padding: '6px 8px',
-		background: 'rgba(138, 155, 168, 0.1)',
-		borderRadius: '3px',
-	} as React.CSSProperties,
-	cveCount: {
-		marginLeft: '6px',
-		opacity: 0.7,
-	} as React.CSSProperties,
-	statusEmpty: {
-		padding: '20px',
-		textAlign: 'center',
-		opacity: 0.7,
-	} as React.CSSProperties,
-	statusSection: {
-		display: 'flex',
-		alignItems: 'center',
-		margin: '14px 0 8px 0',
-		fontWeight: 600,
 	} as React.CSSProperties,
 };
 
@@ -232,8 +157,6 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 			startupScript: null,
 			forwardedChecked: false,
 			showSettings: false,
-			tab: 'control',
-			showLowSeverity: false,
 			vnc: false,
 			vncCtrl: false,
 			vncAlt: false,
@@ -2137,21 +2060,8 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 							/>
 							{instance.status}
 						</div>
-						<div style={css.tabs}>
-							<Blueprint.Tabs
-								selectedTabId={this.state.tab}
-								onChange={(tabId): void => {
-									this.setState({
-										...this.state,
-										tab: tabId.valueOf() as 'control' | 'status',
-									});
-								}}
-							>
-								<Blueprint.Tab id="control" title="Control"/>
-								<Blueprint.Tab id="status" title="Status"/>
-							</Blueprint.Tabs>
-						</div>
 						<div className="flex tab-close"/>
+						<InstanceAdvDialog instance={this.props.instance}/>
 						<Relations kind="instance" id={this.props.instance.id}/>
 						<ConfirmButton
 							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
@@ -2167,7 +2077,6 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 							onConfirm={this.onDelete}
 						/>
 					</div>
-					{this.state.tab === 'control' ? <>
 					<PageInput
 						label="Name"
 						help="Name of instance"
@@ -2571,9 +2480,8 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 							this.set('delete_protection', !instance.delete_protection);
 						}}
 					/>
-					</> : null}
 				</div>
-				{this.state.tab === 'control' ? <div style={css.group}>
+				<div style={css.group}>
 					<PageInfo
 						fields={fields}
 						bars={resourceBars}
@@ -2670,10 +2578,8 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 							this.set('root_enabled', !instance.root_enabled);
 						}}
 					/>
-				</div> : null}
+				</div>
 			</div>
-			{this.state.tab === 'status' ? this.renderStatusPanel() : null}
-			{this.state.tab === 'control' ? <>
 			<PageSave
 				hidden={!this.state.instance && !this.state.message}
 				message={this.state.message}
@@ -2861,242 +2767,6 @@ export default class InstanceDetailed extends React.Component<Props, State> {
 					hidden={!this.state.vnc}
 				/>
 			</div>
-			</> : null}
 		</td>;
-	}
-
-	severityIntent(sev: string): string {
-		switch (sev) {
-			case 'critical':
-				return 'danger';
-			case 'high':
-				return 'warning';
-			case 'medium':
-				return 'primary';
-			default:
-				return 'none';
-		}
-	}
-
-	aggregateCves(): CveEntry[] {
-		let updates = this.props.instance.guest?.updates;
-
-		if (!updates) {
-			return [];
-		}
-
-		let map = new Map<string, CveEntry>();
-		for (let update of updates) {
-			let cves = update.cves || [];
-			let details = update.details || [];
-			for (let i = 0; i < cves.length; i++) {
-				let cve = cves[i];
-				let detail = details[i];
-				if (!cve || !detail) {
-					continue;
-				}
-				let entry = map.get(cve);
-				if (!entry) {
-					entry = {
-						cve: cve,
-						detail: detail,
-						packages: [],
-						advisories: [],
-					};
-					map.set(cve, entry);
-				}
-				if (update.package &&
-						entry.packages.indexOf(update.package) === -1) {
-					entry.packages.push(update.package);
-				}
-				for (let adv of (update.advisories || [])) {
-					if (entry.advisories.indexOf(adv) === -1) {
-						entry.advisories.push(adv);
-					}
-				}
-			}
-		}
-
-		return Array.from(map.values());
-	}
-
-	isImportantCve(entry: CveEntry): boolean {
-		let d = entry.detail;
-		if (!d) {
-			return false;
-		}
-		if (d.severity === 'critical') {
-			return true;
-		}
-		if (d.vector === 'network' &&
-				(d.severity === 'high' || (d.score || 0) >= 7)) {
-			return true;
-		}
-		return false;
-	}
-
-	cveSortScore(entry: CveEntry): number {
-		let d = entry.detail;
-		let s = d?.score || 0;
-		if (d?.vector === 'network') s += 100;
-		if (d?.severity === 'critical') s += 50;
-		if (d?.privileges === 'none') s += 10;
-		if (d?.interaction === 'none') s += 5;
-		return s;
-	}
-
-	renderCveCard(entry: CveEntry): JSX.Element {
-		let d = entry.detail;
-		let nvdUrl = `https://nvd.nist.gov/vuln/detail/${entry.cve}`;
-
-		let tags: JSX.Element[] = [];
-		if (d.vector === 'network') {
-			tags.push(<span key="vec"
-				className="bp5-tag bp5-intent-danger bp5-icon-globe-network"
-				style={css.cveTag}>Network</span>);
-		} else if (d.vector === 'adjacent') {
-			tags.push(<span key="vec"
-				className="bp5-tag bp5-intent-warning"
-				style={css.cveTag}>Adjacent</span>);
-		} else if (d.vector === 'local') {
-			tags.push(<span key="vec"
-				className="bp5-tag"
-				style={css.cveTag}>Local</span>);
-		} else if (d.vector === 'physical') {
-			tags.push(<span key="vec"
-				className="bp5-tag"
-				style={css.cveTag}>Physical</span>);
-		}
-		if (d.privileges === 'none') {
-			tags.push(<span key="priv"
-				className="bp5-tag bp5-intent-danger"
-				style={css.cveTag}>No auth</span>);
-		} else if (d.privileges === 'low') {
-			tags.push(<span key="priv"
-				className="bp5-tag"
-				style={css.cveTag}>Low privileges</span>);
-		} else if (d.privileges === 'high') {
-			tags.push(<span key="priv"
-				className="bp5-tag bp5-intent-success"
-				style={css.cveTag}>High privileges</span>);
-		}
-		if (d.interaction === 'required') {
-			tags.push(<span key="int"
-				className="bp5-tag bp5-intent-success"
-				style={css.cveTag}>User interaction</span>);
-		}
-		if (d.complexity === 'low' && d.vector === 'network') {
-			tags.push(<span key="cplx"
-				className="bp5-tag bp5-intent-warning"
-				style={css.cveTag}>Easy to exploit</span>);
-		}
-		if (d.scope === 'changed') {
-			tags.push(<span key="scope"
-				className="bp5-tag bp5-intent-warning"
-				style={css.cveTag}>Scope changed</span>);
-		}
-
-		let sevIntent = this.severityIntent(d.severity || '');
-		let sevLabel = MiscUtils.capitalize(d.severity || 'Unknown');
-		let scoreLabel = d.score ? ` ${d.score.toFixed(1)}` : '';
-
-		return <div key={entry.cve}
-			className="bp5-card bp5-elevation-0"
-			style={css.cveCard}>
-			<div className="layout horizontal" style={css.cveHeaderRow}>
-				<span
-					className={`bp5-tag bp5-intent-${sevIntent} bp5-large`}
-					style={css.cveTag}
-				>{sevLabel}{scoreLabel}</span>
-				<a
-					href={nvdUrl}
-					target="_blank"
-					rel="noopener noreferrer"
-					style={css.cveTitle}
-				>{entry.cve}</a>
-			</div>
-			{tags.length > 0 && <div className="layout horizontal wrap"
-				style={css.cveTagRow}>
-				{tags}
-			</div>}
-			{entry.packages.length > 0 && <div style={css.cvePackages}>
-				{entry.packages.length === 1 ? 'Package: ' :
-					`Packages (${entry.packages.length}): `}
-				{entry.packages.join(', ')}
-			</div>}
-			{d.description && <div style={css.cveDescription}>
-				{d.description}
-			</div>}
-		</div>;
-	}
-
-	renderStatusPanel(): JSX.Element {
-		let entries = this.aggregateCves();
-
-		if (entries.length === 0) {
-			return <div style={css.statusPanel}>
-				<div className="bp5-callout bp5-intent-success"
-					style={{padding: '12px'}}>
-					<h5 className="bp5-heading">No security advisories</h5>
-					No outstanding CVE advisories reported by the guest agent.
-				</div>
-			</div>;
-		}
-
-		entries.sort((a, b) =>
-			this.cveSortScore(b) - this.cveSortScore(a));
-
-		let important: CveEntry[] = [];
-		let other: CveEntry[] = [];
-		for (let entry of entries) {
-			if (this.isImportantCve(entry)) {
-				important.push(entry);
-			} else {
-				other.push(entry);
-			}
-		}
-
-		return <div style={css.statusPanel}>
-			<div style={css.statusHeader}>
-				Security Advisories
-				<span style={css.cveCount}>
-					({entries.length} CVE{entries.length === 1 ? '' : 's'})
-				</span>
-			</div>
-			{important.length > 0 ? <>
-				<div style={css.statusSection}>
-					<span
-						className="bp5-icon-standard bp5-icon-warning-sign bp5-text-intent-danger"
-						style={{marginRight: '6px'}}
-					/>
-					High Risk ({important.length})
-				</div>
-				{important.map((e): JSX.Element => this.renderCveCard(e))}
-			</> : <div className="bp5-callout bp5-intent-success"
-				style={{padding: '10px', marginBottom: '10px'}}>
-				No remotely exploitable or critical advisories.
-			</div>}
-			{other.length > 0 ? <>
-				<button
-					className={"bp5-button bp5-minimal " +
-						(this.state.showLowSeverity ?
-							"bp5-icon-chevron-down" :
-							"bp5-icon-chevron-right")}
-					type="button"
-					style={{margin: '8px 0'}}
-					onClick={(): void => {
-						this.setState({
-							...this.state,
-							showLowSeverity: !this.state.showLowSeverity,
-						});
-					}}
-				>
-					Lower Risk ({other.length})
-				</button>
-				{this.state.showLowSeverity ? <div>
-					{other.map((e): JSX.Element => this.renderCveCard(e))}
-				</div> : null}
-			</> : null}
-		</div>;
 	}
 }
