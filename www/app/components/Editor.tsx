@@ -36,7 +36,7 @@ const css = {
 		bottom: "10px",
 		right: "24px",
 		zIndex: 100,
-		opacity: 0.8,
+		opacity: 0.7,
 	} as React.CSSProperties,
 	cardBox: {
 		position: "relative",
