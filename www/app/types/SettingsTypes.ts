@@ -89,6 +89,7 @@ export interface Settings {
 	auth_force_fast_user_login: boolean;
 	twilio_account: string;
 	twilio_secret: string;
+	nvd_api_key: string;
 }
 
 export type SettingsRo = Readonly<Settings>;
