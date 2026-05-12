@@ -15,6 +15,7 @@ import PageSave from './PageSave';
 import ConfirmButton from './ConfirmButton';
 import Relations from './Relations';
 import Help from './Help';
+import * as Alert from "../Alert";
 import * as Constants from "../Constants";
 
 interface Props {
@@ -276,6 +277,8 @@ export default class CertificateDetailed extends React.Component<Props, State> {
 				...this.state,
 				disabled: false,
 			});
+
+			Alert.success('Certificate renew started');
 		}).catch((): void => {
 			this.setState({
 				...this.state,
