@@ -297,6 +297,16 @@ export default class Settings extends React.Component<{}, State> {
 							this.set('twilio_secret', val);
 						}}
 					/>
+					<PageInput
+						label="NIST NVD API Key"
+						help="API key to use NIST National Vulnerability Database for faster CVE queries. Without an API key CVE information queries are limited to one every 8 seconds."
+						type="text"
+						placeholder="NIST API key"
+						value={this.state.settings.nvd_api_key}
+						onChange={(val): void => {
+							this.set('nvd_api_key', val);
+						}}
+					/>
 					<PageSwitch
 						label="Fast single sign-on login"
 						help="When only one single sign-on provider is configured and no local user accounts exists the login page will immediately redirect to the single sign-on provider."
