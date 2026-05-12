@@ -147,11 +147,6 @@ export default class Editor extends React.Component<Props, State> {
 		}
 
 		return <div style={style}>
-			{this.state.paused && <div style={css.cardBox}>
-				<Blueprint.Tag style={css.card}>
-					Refresh Paused While Scrolling
-				</Blueprint.Tag>
-			</div>}
 			<MonacoEditor.Editor
 				height={this.props.height}
 				width={this.props.width}
@@ -184,6 +179,11 @@ export default class Editor extends React.Component<Props, State> {
 					}
 				}}
 			/>
+			{this.state.paused && <div style={css.cardBox}>
+				<Blueprint.Tag style={css.card}>
+					Refresh Paused While Scrolling
+				</Blueprint.Tag>
+			</div>}
 		</div>
 	}
 }
