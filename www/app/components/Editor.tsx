@@ -33,7 +33,7 @@ const css = {
 	} as React.CSSProperties,
 	card: {
 		position: "absolute",
-		top: "10px",
+		bottom: "10px",
 		right: "24px",
 		zIndex: 100,
 		opacity: 0.8,
