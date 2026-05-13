@@ -169,6 +169,24 @@ export interface Update {
 	cves?: string[];
 	severity?: string;
 	package?: string;
+	details?: Advisory[];
+}
+
+export interface Advisory {
+	id?: string;
+	timestamp?: string;
+	status?: string;
+	description?: string;
+	score?: number;
+	severity?: string;
+	vector?: string;
+	complexity?: string;
+	privileges?: string;
+	interaction?: string;
+	scope?: string;
+	confidentiality?: string;
+	integrity?: string;
+	availability?: string;
 }
 
 export interface Info {
