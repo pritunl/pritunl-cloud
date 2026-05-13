@@ -219,15 +219,15 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 		if (d.privileges === 'none') {
 			tags.push(<span key="priv"
 				className="bp5-tag bp5-intent-danger"
-				style={css.tag}>No auth</span>);
+				style={css.tag}>Unauthenticated</span>);
 		} else if (d.privileges === 'low') {
 			tags.push(<span key="priv"
 				className="bp5-tag"
-				style={css.tag}>Low privileges</span>);
+				style={css.tag}>Low Privileged</span>);
 		} else if (d.privileges === 'high') {
 			tags.push(<span key="priv"
 				className="bp5-tag bp5-intent-success"
-				style={css.tag}>High privileges</span>);
+				style={css.tag}>High Privileged</span>);
 		}
 		if (d.interaction === 'required') {
 			tags.push(<span key="int"
