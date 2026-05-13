@@ -229,10 +229,14 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 				className="bp5-tag bp5-intent-success"
 				style={css.tag}>High Privileged</span>);
 		}
-		if (d.interaction === 'required') {
+		if (d.interaction === 'none') {
+			tags.push(<span key="int"
+				className="bp5-tag bp5-intent-danger"
+				style={css.tag}>No Interaction</span>);
+		} else if (d.interaction === 'required') {
 			tags.push(<span key="int"
 				className="bp5-tag bp5-intent-success"
-				style={css.tag}>User interaction</span>);
+				style={css.tag}>User Interaction</span>);
 		}
 		if (d.complexity === 'low' && d.vector === 'network') {
 			tags.push(<span key="cplx"
