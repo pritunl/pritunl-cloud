@@ -255,7 +255,7 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 			tags.push(<Blueprint.Tag key="scope"
 				intent="warning"
 				icon="route"
-				style={css.tag}>Scope changed</Blueprint.Tag>);
+				style={css.tag}>Scope Changed</Blueprint.Tag>);
 		}
 
 		let sevIntent = this.severityIntent(d.severity || '');
