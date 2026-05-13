@@ -93,6 +93,26 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 		}
 	}
 
+	buttonIntent(): string {
+		let entries = this.aggregateCves();
+		if (entries.length === 0) {
+			return '';
+		}
+
+		let hasHigh = false;
+		for (let entry of entries) {
+			let sev = (entry.detail?.severity || '').toLowerCase();
+			if (sev === 'critical') {
+				return 'bp5-intent-danger';
+			}
+			if (sev === 'high') {
+				hasHigh = true;
+			}
+		}
+
+		return hasHigh ? 'bp5-intent-warning' : 'bp5-intent-primary';
+	}
+
 	severityIntent(severity: string): string {
 		switch ((severity || '').toLowerCase()) {
 			case 'critical':
@@ -258,9 +278,7 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 		</div>;
 	}
 
-	renderBody(): JSX.Element {
-		let entries = this.aggregateCves();
-
+	renderBody(entries: CveEntry[]): JSX.Element {
 		if (entries.length === 0) {
 			return <div style={css.body}>
 				<div className="bp5-callout bp5-intent-success"
@@ -285,12 +303,6 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 		}
 
 		return <div style={css.body}>
-			<div style={css.header}>
-				Security Advisories
-				<span style={css.count}>
-					({entries.length} CVE{entries.length === 1 ? '' : 's'})
-				</span>
-			</div>
 			{important.length > 0 ? <>
 				<div style={css.section}>
 					<span
@@ -331,8 +343,17 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 	render(): JSX.Element {
 		let dialog: JSX.Element
 		if (this.state.open) {
+			let entries = this.aggregateCves();
+
 			dialog = <Blueprint.Dialog
-				title="Security Advisories"
+				title={
+					<div>
+						Security Advisories
+						<span style={css.count}>
+							({entries.length} CVE{entries.length === 1 ? '' : 's'})
+						</span>
+					</div>
+				}
 				style={css.dialog}
 				isOpen={this.state.open}
 				usePortal={true}
@@ -344,7 +365,7 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 					})
 				}}
 			>
-				{this.renderBody()}
+				{this.renderBody(entries)}
 				<div className="bp5-dialog-footer">
 					<div className="bp5-dialog-footer-actions">
 						<button
@@ -364,7 +385,8 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 
 		return <div>
 			<button
-				className="bp5-button bp5-minimal bp5-icon-shield bp5-intent-primary"
+				className={"bp5-button bp5-minimal bp5-icon-shield " +
+					this.buttonIntent()}
 				type="button"
 				onClick={(): void => {
 					this.setState({
