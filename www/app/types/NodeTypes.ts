@@ -16,6 +16,7 @@ export interface Node {
 	name?: string;
 	comment?: string;
 	port?: number;
+	http2?: boolean;
 	no_redirect_server?: boolean;
 	protocol?: string;
 	hypervisor?: string;
