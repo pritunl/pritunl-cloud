@@ -206,33 +206,44 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 		} else if (d.vector === 'adjacent') {
 			tags.push(<Blueprint.Tag key="vec"
 				intent="warning"
+				icon="globe-network"
 				style={css.tag}>Adjacent</Blueprint.Tag>);
 		} else if (d.vector === 'local') {
 			tags.push(<Blueprint.Tag key="vec"
+				intent="success"
+				icon="globe-network"
 				style={css.tag}>Local</Blueprint.Tag>);
 		} else if (d.vector === 'physical') {
 			tags.push(<Blueprint.Tag key="vec"
+				intent="success"
+				icon="globe-network"
 				style={css.tag}>Physical</Blueprint.Tag>);
 		}
 		if (d.privileges === 'none') {
 			tags.push(<Blueprint.Tag key="priv"
 				intent="danger"
+				icon="shield"
 				style={css.tag}>Unauthenticated</Blueprint.Tag>);
 		} else if (d.privileges === 'low') {
 			tags.push(<Blueprint.Tag key="priv"
+				intent="warning"
+				icon="shield"
 				style={css.tag}>Low Privileged</Blueprint.Tag>);
 		} else if (d.privileges === 'high') {
 			tags.push(<Blueprint.Tag key="priv"
 				intent="success"
+				icon="shield"
 				style={css.tag}>High Privileged</Blueprint.Tag>);
 		}
 		if (d.interaction === 'none') {
 			tags.push(<Blueprint.Tag key="int"
 				intent="danger"
+				icon="console"
 				style={css.tag}>No Interaction</Blueprint.Tag>);
 		} else if (d.interaction === 'required') {
 			tags.push(<Blueprint.Tag key="int"
 				intent="success"
+				icon="console"
 				style={css.tag}>User Interaction</Blueprint.Tag>);
 		}
 		if (d.complexity === 'low' && d.vector === 'network') {
@@ -243,6 +254,7 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 		if (d.scope === 'changed') {
 			tags.push(<Blueprint.Tag key="scope"
 				intent="warning"
+				icon="route"
 				style={css.tag}>Scope changed</Blueprint.Tag>);
 		}
 
