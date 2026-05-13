@@ -204,49 +204,46 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 				icon="globe-network"
 				style={css.tag}>Network</Blueprint.Tag>);
 		} else if (d.vector === 'adjacent') {
-			tags.push(<span key="vec"
-				className="bp5-tag bp5-intent-warning"
-				style={css.tag}>Adjacent</span>);
+			tags.push(<Blueprint.Tag key="vec"
+				intent="warning"
+				style={css.tag}>Adjacent</Blueprint.Tag>);
 		} else if (d.vector === 'local') {
-			tags.push(<span key="vec"
-				className="bp5-tag"
-				style={css.tag}>Local</span>);
+			tags.push(<Blueprint.Tag key="vec"
+				style={css.tag}>Local</Blueprint.Tag>);
 		} else if (d.vector === 'physical') {
-			tags.push(<span key="vec"
-				className="bp5-tag"
-				style={css.tag}>Physical</span>);
+			tags.push(<Blueprint.Tag key="vec"
+				style={css.tag}>Physical</Blueprint.Tag>);
 		}
 		if (d.privileges === 'none') {
-			tags.push(<span key="priv"
-				className="bp5-tag bp5-intent-danger"
-				style={css.tag}>Unauthenticated</span>);
+			tags.push(<Blueprint.Tag key="priv"
+				intent="danger"
+				style={css.tag}>Unauthenticated</Blueprint.Tag>);
 		} else if (d.privileges === 'low') {
-			tags.push(<span key="priv"
-				className="bp5-tag"
-				style={css.tag}>Low Privileged</span>);
+			tags.push(<Blueprint.Tag key="priv"
+				style={css.tag}>Low Privileged</Blueprint.Tag>);
 		} else if (d.privileges === 'high') {
-			tags.push(<span key="priv"
-				className="bp5-tag bp5-intent-success"
-				style={css.tag}>High Privileged</span>);
+			tags.push(<Blueprint.Tag key="priv"
+				intent="success"
+				style={css.tag}>High Privileged</Blueprint.Tag>);
 		}
 		if (d.interaction === 'none') {
-			tags.push(<span key="int"
-				className="bp5-tag bp5-intent-danger"
-				style={css.tag}>No Interaction</span>);
+			tags.push(<Blueprint.Tag key="int"
+				intent="danger"
+				style={css.tag}>No Interaction</Blueprint.Tag>);
 		} else if (d.interaction === 'required') {
-			tags.push(<span key="int"
-				className="bp5-tag bp5-intent-success"
-				style={css.tag}>User Interaction</span>);
+			tags.push(<Blueprint.Tag key="int"
+				intent="success"
+				style={css.tag}>User Interaction</Blueprint.Tag>);
 		}
 		if (d.complexity === 'low' && d.vector === 'network') {
-			tags.push(<span key="cplx"
-				className="bp5-tag bp5-intent-warning"
-				style={css.tag}>Easy to exploit</span>);
+			tags.push(<Blueprint.Tag key="cplx"
+				intent="warning"
+				style={css.tag}>Easy to exploit</Blueprint.Tag>);
 		}
 		if (d.scope === 'changed') {
-			tags.push(<span key="scope"
-				className="bp5-tag bp5-intent-warning"
-				style={css.tag}>Scope changed</span>);
+			tags.push(<Blueprint.Tag key="scope"
+				intent="warning"
+				style={css.tag}>Scope changed</Blueprint.Tag>);
 		}
 
 		let sevIntent = this.severityIntent(d.severity || '');
