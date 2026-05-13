@@ -199,9 +199,10 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 
 		let tags: JSX.Element[] = [];
 		if (d.vector === 'network') {
-			tags.push(<span key="vec"
-				className="bp5-tag bp5-intent-danger bp5-icon-globe-network"
-				style={css.tag}>Network</span>);
+			tags.push(<Blueprint.Tag key="vec"
+				intent="danger"
+				icon="globe-network"
+				style={css.tag}>Network</Blueprint.Tag>);
 		} else if (d.vector === 'adjacent') {
 			tags.push(<span key="vec"
 				className="bp5-tag bp5-intent-warning"
