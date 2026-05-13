@@ -601,10 +601,8 @@ export default class PodDeployment extends React.Component<Props, State> {
 										value: deployment.id,
 									},
 									{
-										label: "Commit ID",
-										value: deployment.spec.substring(12),
-										hover: specHover,
-										valueClass: commitClass,
+										label: "Instance",
+										value: deployment.instance_name || "-",
 									},
 								]}
 							/>
@@ -628,16 +626,18 @@ export default class PodDeployment extends React.Component<Props, State> {
 								style={css.info}
 								fields={[
 									{
+										label: "Commit ID",
+										value: deployment.spec.substring(12),
+										hover: specHover,
+										valueClass: commitClass,
+									},
+									{
 										label: "Zone",
 										value: deployment.zone_name || "-",
 									},
 									{
 										label: "Node",
 										value: deployment.node_name || "-",
-									},
-									{
-										label: "Instance",
-										value: deployment.instance_name || "-",
 									},
 								]}
 							/>
