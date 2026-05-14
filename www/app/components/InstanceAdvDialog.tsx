@@ -63,6 +63,8 @@ const css = {
 		gap: '6px',
 	} as React.CSSProperties,
 	tag: {
+		paddingTop: '3px',
+		paddingBottom: '3px',
 		marginRight: '6px',
 		marginBottom: '4px',
 	} as React.CSSProperties,
