@@ -248,11 +248,6 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 				icon="console"
 				style={css.tag}>User Interaction</Blueprint.Tag>);
 		}
-		if (d.complexity === 'low' && d.vector === 'network') {
-			tags.push(<Blueprint.Tag key="cplx"
-				intent="warning"
-				style={css.tag}>Easy to exploit</Blueprint.Tag>);
-		}
 		if (d.scope === 'changed') {
 			tags.push(<Blueprint.Tag key="scope"
 				intent="warning"
