@@ -45,8 +45,8 @@ func instanceDataHandler(db *database.Database) (err error) {
 			details := []*advisory.Advisory{}
 
 			for _, cve := range updt.Cves {
-				adv := advisories[cve]
-				if adv == nil {
+				adv, ok := advisories[cve]
+				if !ok {
 					adv, err = advisory.GetOneLimit(db, cve)
 					if err != nil {
 						logrus.WithFields(logrus.Fields{
@@ -54,12 +54,13 @@ func instanceDataHandler(db *database.Database) (err error) {
 							"error":  err,
 						}).Error("task: Failed to query CVE")
 						err = nil
+						adv = nil
 					}
+					advisories[cve] = adv
 				}
 
 				if adv != nil {
 					details = append(details, adv)
-					advisories[adv.Id] = adv
 				}
 			}
 
