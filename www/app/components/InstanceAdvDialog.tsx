@@ -263,10 +263,11 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 			className="bp5-card bp5-elevation-0"
 			style={css.card}>
 			<div className="layout horizontal" style={css.headerRow}>
-				<span
-					className={`bp5-tag bp5-intent-${sevIntent} bp5-large`}
-					style={css.tag}
-				>{sevLabel}{scoreLabel}</span>
+				<Blueprint.Tag
+				large={true}
+				intent={sevIntent}
+				icon="shield"
+				style={css.tag}>{sevLabel}{scoreLabel}</Blueprint.Tag>
 				<a
 					href={nvdUrl}
 					target="_blank"
