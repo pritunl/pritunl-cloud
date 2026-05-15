@@ -1,8 +1,8 @@
 /// <reference path="../References.d.ts"/>
-import * as React from 'react';
-import * as Blueprint from '@blueprintjs/core';
-import * as InstanceTypes from '../types/InstanceTypes';
-import * as MiscUtils from '../utils/MiscUtils';
+import * as React from "react";
+import * as Blueprint from "@blueprintjs/core";
+import * as InstanceTypes from "../types/InstanceTypes";
+import * as MiscUtils from "../utils/MiscUtils";
 
 interface CveEntry {
 	cve: string;
@@ -22,67 +22,67 @@ interface Props {
 
 const css = {
 	dialog: {
-		width: '90%',
-		maxWidth: '720px',
+		width: "90%",
+		maxWidth: "720px",
 	} as React.CSSProperties,
 	body: {
-		padding: '12px 16px',
-		maxHeight: '70vh',
-		overflow: 'auto',
+		padding: "12px 16px",
+		maxHeight: "70vh",
+		overflow: "auto",
 	} as React.CSSProperties,
 	header: {
-		margin: '0 0 10px 0',
+		margin: "0 0 10px 0",
 		fontWeight: 600,
 	} as React.CSSProperties,
 	count: {
-		marginLeft: '6px',
+		marginLeft: "6px",
 		opacity: 0.7,
 	} as React.CSSProperties,
 	section: {
-		display: 'flex',
-		alignItems: 'center',
-		margin: '14px 0 8px 0',
+		display: "flex",
+		alignItems: "center",
+		margin: "14px 0 8px 0",
 		fontWeight: 600,
 	} as React.CSSProperties,
 	card: {
-		padding: '12px',
-		marginBottom: '10px',
+		padding: "12px",
+		marginBottom: "10px",
 	} as React.CSSProperties,
 	headerRow: {
-		alignItems: 'center',
-		marginBottom: '8px',
-		gap: '8px',
+		alignItems: "center",
+		marginBottom: "8px",
+		gap: "8px",
 	} as React.CSSProperties,
 	title: {
-		fontFamily: 'monospace',
-		fontSize: '14px',
+		fontFamily: "monospace",
+		fontSize: "14px",
 		fontWeight: 600,
 	} as React.CSSProperties,
 	tagRow: {
-		marginBottom: '8px',
-		gap: '6px',
+		marginBottom: "8px",
+		gap: "6px",
 	} as React.CSSProperties,
 	tag: {
-		paddingTop: '3px',
-		paddingBottom: '3px',
-		marginRight: '6px',
-		marginBottom: '4px',
+		paddingTop: "3px",
+		paddingBottom: "3px",
+		marginRight: "6px",
+		marginBottom: "4px",
 	} as React.CSSProperties,
 	packages: {
-		fontSize: '11px',
-		color: 'var(--bp5-text-color-muted, #5f6b7c)',
-		marginBottom: '6px',
-		wordBreak: 'break-all',
+		fontSize: "11px",
+		color: "var(--bp5-text-color-muted, #5f6b7c)",
+		marginBottom: "6px",
+		wordBreak: "break-all",
 	} as React.CSSProperties,
 	description: {
-		fontSize: '12px',
-		whiteSpace: 'pre-wrap',
-		wordBreak: 'break-word',
-		maxHeight: '160px',
-		overflow: 'auto',
-		padding: '6px 8px',
-		background: 'rgba(138, 155, 168, 0.1)',
-		borderRadius: '3px',
+		fontSize: "12px",
+		whiteSpace: "pre-wrap",
+		wordBreak: "break-word",
+		maxHeight: "160px",
+		overflow: "auto",
+		padding: "6px 8px",
+		background: "rgba(138, 155, 168, 0.1)",
+		borderRadius: "3px",
 	} as React.CSSProperties,
 }
 
@@ -98,33 +98,33 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 	buttonIntent(): string {
 		let entries = this.aggregateCves();
 		if (entries.length === 0) {
-			return '';
+			return "";
 		}
 
 		let hasHigh = false;
 		for (let entry of entries) {
-			let sev = (entry.detail?.severity || '').toLowerCase();
-			if (sev === 'critical') {
-				return 'bp5-intent-danger';
+			let sev = (entry.detail?.severity || "").toLowerCase();
+			if (sev === "critical") {
+				return "bp5-intent-danger";
 			}
-			if (sev === 'high') {
+			if (sev === "high") {
 				hasHigh = true;
 			}
 		}
 
-		return hasHigh ? 'bp5-intent-warning' : 'bp5-intent-primary';
+		return hasHigh ? "bp5-intent-warning" : "bp5-intent-primary";
 	}
 
 	severityIntent(severity: string): Blueprint.Intent {
-		switch ((severity || '').toLowerCase()) {
-			case 'critical':
-				return 'danger';
-			case 'high':
-				return 'warning';
-			case 'medium':
-				return 'primary';
+		switch ((severity || "").toLowerCase()) {
+			case "critical":
+				return "danger";
+			case "high":
+				return "warning";
+			case "medium":
+				return "primary";
 			default:
-				return 'none';
+				return "none";
 		}
 	}
 
@@ -175,11 +175,11 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 		if (!d) {
 			return false;
 		}
-		if (d.severity === 'critical') {
+		if (d.severity === "critical") {
 			return true;
 		}
-		if (d.vector === 'network' &&
-				(d.severity === 'high' || (d.score || 0) >= 7)) {
+		if (d.vector === "network" &&
+				(d.severity === "high" || (d.score || 0) >= 7)) {
 			return true;
 		}
 		return false;
@@ -188,10 +188,10 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 	cveSortScore(entry: CveEntry): number {
 		let d = entry.detail;
 		let s = d?.score || 0;
-		if (d?.vector === 'network') s += 100;
-		if (d?.severity === 'critical') s += 50;
-		if (d?.privileges === 'none') s += 10;
-		if (d?.interaction === 'none') s += 5;
+		if (d?.vector === "network") s += 100;
+		if (d?.severity === "critical") s += 50;
+		if (d?.privileges === "none") s += 10;
+		if (d?.interaction === "none") s += 5;
 		return s;
 	}
 
@@ -200,64 +200,64 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 		let nvdUrl = `https://nvd.nist.gov/vuln/detail/${entry.cve}`;
 
 		let tags: JSX.Element[] = [];
-		if (d.vector === 'network') {
+		if (d.vector === "network") {
 			tags.push(<Blueprint.Tag key="vec"
 				intent="danger"
 				icon="globe-network"
 				style={css.tag}>Network</Blueprint.Tag>);
-		} else if (d.vector === 'adjacent') {
+		} else if (d.vector === "adjacent") {
 			tags.push(<Blueprint.Tag key="vec"
 				intent="warning"
 				icon="globe-network"
 				style={css.tag}>Adjacent</Blueprint.Tag>);
-		} else if (d.vector === 'local') {
+		} else if (d.vector === "local") {
 			tags.push(<Blueprint.Tag key="vec"
 				intent="success"
 				icon="globe-network"
 				style={css.tag}>Local</Blueprint.Tag>);
-		} else if (d.vector === 'physical') {
+		} else if (d.vector === "physical") {
 			tags.push(<Blueprint.Tag key="vec"
 				intent="success"
 				icon="globe-network"
 				style={css.tag}>Physical</Blueprint.Tag>);
 		}
-		if (d.privileges === 'none') {
+		if (d.privileges === "none") {
 			tags.push(<Blueprint.Tag key="priv"
 				intent="danger"
 				icon="shield"
 				style={css.tag}>Unauthenticated</Blueprint.Tag>);
-		} else if (d.privileges === 'low') {
+		} else if (d.privileges === "low") {
 			tags.push(<Blueprint.Tag key="priv"
 				intent="warning"
 				icon="shield"
 				style={css.tag}>Low Privileged</Blueprint.Tag>);
-		} else if (d.privileges === 'high') {
+		} else if (d.privileges === "high") {
 			tags.push(<Blueprint.Tag key="priv"
 				intent="success"
 				icon="shield"
 				style={css.tag}>High Privileged</Blueprint.Tag>);
 		}
-		if (d.interaction === 'none') {
+		if (d.interaction === "none") {
 			tags.push(<Blueprint.Tag key="int"
 				intent="danger"
 				icon="console"
 				style={css.tag}>No Interaction</Blueprint.Tag>);
-		} else if (d.interaction === 'required') {
+		} else if (d.interaction === "required") {
 			tags.push(<Blueprint.Tag key="int"
 				intent="success"
 				icon="console"
 				style={css.tag}>User Interaction</Blueprint.Tag>);
 		}
-		if (d.scope === 'changed') {
+		if (d.scope === "changed") {
 			tags.push(<Blueprint.Tag key="scope"
 				intent="warning"
 				icon="route"
 				style={css.tag}>Scope Changed</Blueprint.Tag>);
 		}
 
-		let sevIntent = this.severityIntent(d.severity || '');
-		let sevLabel = MiscUtils.capitalize(d.severity || 'Unknown');
-		let scoreLabel = d.score ? ` ${d.score.toFixed(1)}` : '';
+		let sevIntent = this.severityIntent(d.severity || "");
+		let sevLabel = MiscUtils.capitalize(d.severity || "Unknown");
+		let scoreLabel = d.score ? ` ${d.score.toFixed(1)}` : "";
 
 		return <div key={entry.cve}
 			className="bp5-card bp5-elevation-0"
@@ -280,9 +280,9 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 				{tags}
 			</div>}
 			{entry.packages.length > 0 && <div style={css.packages}>
-				{entry.packages.length === 1 ? 'Package: ' :
+				{entry.packages.length === 1 ? "Package: " :
 					`Packages (${entry.packages.length}): `}
-				{entry.packages.join(', ')}
+				{entry.packages.join(", ")}
 			</div>}
 			{d.description && <div style={css.description}>
 				{d.description}
@@ -294,7 +294,7 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 		if (entries.length === 0) {
 			return <div style={css.body}>
 				<div className="bp5-callout bp5-intent-success"
-					style={{padding: '12px'}}>
+					style={{padding: "12px"}}>
 					<h5 className="bp5-heading">No security advisories</h5>
 					No outstanding security advisories reported by the guest agent.
 				</div>
@@ -319,13 +319,13 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 				<div style={css.section}>
 					<span
 						className="bp5-icon-standard bp5-icon-warning-sign bp5-text-intent-danger"
-						style={{marginRight: '6px'}}
+						style={{marginRight: "6px"}}
 					/>
 					High Risk ({important.length})
 				</div>
 				{important.map((e): JSX.Element => this.renderCveCard(e))}
 			</> : <div className="bp5-callout bp5-intent-success"
-				style={{padding: '10px', marginBottom: '10px'}}>
+				style={{padding: "10px", marginBottom: "10px"}}>
 				No remotely exploitable or critical advisories.
 			</div>}
 			{other.length > 0 ? <>
@@ -335,7 +335,7 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 							"bp5-icon-chevron-down" :
 							"bp5-icon-chevron-right")}
 					type="button"
-					style={{margin: '8px 0'}}
+					style={{margin: "8px 0"}}
 					onClick={(): void => {
 						this.setState({
 							...this.state,
@@ -362,7 +362,7 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 					<div>
 						Security Advisories
 						<span style={css.count}>
-							({entries.length} CVE{entries.length === 1 ? '' : 's'})
+							({entries.length} CVE{entries.length === 1 ? "" : "s"})
 						</span>
 					</div>
 				}
