@@ -115,7 +115,7 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 		return hasHigh ? 'bp5-intent-warning' : 'bp5-intent-primary';
 	}
 
-	severityIntent(severity: string): string {
+	severityIntent(severity: string): Blueprint.Intent {
 		switch ((severity || '').toLowerCase()) {
 			case 'critical':
 				return 'danger';
