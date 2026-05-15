@@ -209,7 +209,7 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 
 	renderCveCard(entry: CveEntry): JSX.Element {
 		let d = entry.detail;
-		let nvdUrl = `https://nvd.nist.gov/vuln/detail/${entry.cve}`;
+		let nvdUrl = `https://access.redhat.com/security/cve/${entry.cve}`;
 
 		let tags: JSX.Element[] = [];
 		if (d.vector === "network") {
