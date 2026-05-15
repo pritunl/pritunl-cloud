@@ -118,13 +118,13 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 	severityIntent(severity: string): Blueprint.Intent {
 		switch ((severity || "").toLowerCase()) {
 			case "critical":
-				return "danger";
+				return Blueprint.Intent.DANGER;
 			case "high":
-				return "warning";
+				return Blueprint.Intent.WARNING;
 			case "medium":
-				return "primary";
+				return Blueprint.Intent.PRIMARY;
 			default:
-				return "none";
+				return Blueprint.Intent.NONE;
 		}
 	}
 
