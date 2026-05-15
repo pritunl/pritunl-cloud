@@ -14,6 +14,7 @@ interface CveEntry {
 interface State {
 	open: boolean;
 	showLowSeverity: boolean;
+	expanded: {[cve: string]: boolean};
 }
 
 interface Props {
@@ -78,11 +79,21 @@ const css = {
 		fontSize: "12px",
 		whiteSpace: "pre-wrap",
 		wordBreak: "break-word",
-		maxHeight: "160px",
-		overflow: "auto",
 		padding: "6px 8px",
 		background: "rgba(138, 155, 168, 0.1)",
 		borderRadius: "3px",
+	} as React.CSSProperties,
+	descriptionLimited: {
+		display: "-webkit-box",
+		WebkitLineClamp: 6,
+		WebkitBoxOrient: "vertical",
+		overflow: "hidden",
+	} as React.CSSProperties,
+	descriptionToggle: {
+		marginTop: "4px",
+		padding: "0",
+		minHeight: "0",
+		fontSize: "11px",
 	} as React.CSSProperties,
 }
 
@@ -92,6 +103,7 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 		this.state = {
 			open: false,
 			showLowSeverity: false,
+			expanded: {},
 		}
 	}
 
@@ -284,10 +296,36 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 					`Packages (${entry.packages.length}): `}
 				{entry.packages.join(", ")}
 			</div>}
-			{d.description && <div style={css.description}>
-				{d.description}
-			</div>}
+			{d.description && this.renderDescription(entry)}
 		</div>;
+	}
+
+	renderDescription(entry: CveEntry): JSX.Element {
+		let expanded = !!this.state.expanded[entry.cve];
+		let style = expanded ? css.description : {
+			...css.description,
+			...css.descriptionLimited,
+		};
+
+		return <>
+			<div style={style}>
+				{entry.detail.description}
+			</div>
+			<button
+				className="bp5-button bp5-minimal bp5-small"
+				type="button"
+				style={css.descriptionToggle}
+				onClick={(): void => {
+					this.setState({
+						...this.state,
+						expanded: {
+							...this.state.expanded,
+							[entry.cve]: !expanded,
+						},
+					});
+				}}
+			>{expanded ? "Show less" : "Show more"}</button>
+		</>;
 	}
 
 	renderBody(entries: CveEntry[]): JSX.Element {
