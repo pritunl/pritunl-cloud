@@ -56,3 +56,15 @@ func matchAdvisory(id string) bool {
 		strings.HasPrefix(id, "ELSA-") ||
 		strings.HasPrefix(id, "FEDORA-")
 }
+
+func parseSeverity(value string) string {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "critical":
+		return Critical
+	case "important":
+		return Important
+	case "moderate":
+		return Moderate
+	}
+	return ""
+}
