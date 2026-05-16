@@ -61,14 +61,6 @@ func parseSeverity(value string) string {
 	return ""
 }
 
-func isAllowedAdvisory(id string) bool {
-	return strings.HasPrefix(id, "RHSA-") ||
-		strings.HasPrefix(id, "ALSA-") ||
-		strings.HasPrefix(id, "RLSA-") ||
-		strings.HasPrefix(id, "ELSA-") ||
-		strings.HasPrefix(id, "FEDORA-")
-}
-
 func isSeparatorLine(line string) bool {
 	trimmed := strings.TrimSpace(line)
 	if len(trimmed) == 0 {
@@ -171,7 +163,7 @@ func parseRecord(lines []string) *Update {
 		}
 	}
 
-	if !isAllowedAdvisory(upd.Advisory) {
+	if !matchAdvisory(upd.Advisory) {
 		return nil
 	}
 	if upd.Severity == "" {
@@ -264,7 +256,7 @@ func updatesList() (advisories map[string][]string, err error) {
 		}
 
 		adv := parts[0]
-		if !isAllowedAdvisory(adv) {
+		if !matchAdvisory(adv) {
 			continue
 		}
 
