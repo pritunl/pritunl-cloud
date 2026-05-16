@@ -68,3 +68,16 @@ func parseSeverity(value string) string {
 	}
 	return ""
 }
+
+func rankSeverity(severity string) int {
+	switch severity {
+	case Critical:
+		return 0
+	case Important:
+		return 1
+	case Moderate:
+		return 2
+	default:
+		return 3
+	}
+}

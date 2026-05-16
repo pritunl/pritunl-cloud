@@ -36,19 +36,6 @@ var (
 	cveReg = regexp.MustCompile(`CVE-\d{4}-\d+`)
 )
 
-func severityRank(severity string) int {
-	switch severity {
-	case Critical:
-		return 0
-	case Important:
-		return 1
-	case Moderate:
-		return 2
-	default:
-		return 3
-	}
-}
-
 func isSeparatorLine(line string) bool {
 	trimmed := strings.TrimSpace(line)
 	if len(trimmed) == 0 {
@@ -337,8 +324,8 @@ func UpdatesRefresh() (updates []*Update, err error) {
 	}
 
 	sort.Slice(updates, func(i, j int) bool {
-		ri := severityRank(updates[i].Severity)
-		rj := severityRank(updates[j].Severity)
+		ri := rankSeverity(updates[i].Severity)
+		rj := rankSeverity(updates[j].Severity)
 		if ri != rj {
 			return ri < rj
 		}
