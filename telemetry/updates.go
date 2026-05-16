@@ -69,6 +69,11 @@ func isAllowedAdvisory(id string) bool {
 		strings.HasPrefix(id, "FEDORA-")
 }
 
+func isAllowedArch(pkg string) bool {
+	return strings.HasSuffix(pkg, ".x86_64") ||
+		strings.HasSuffix(pkg, ".noarch")
+}
+
 func isSeparatorLine(line string) bool {
 	trimmed := strings.TrimSpace(line)
 	if len(trimmed) == 0 {
@@ -286,7 +291,7 @@ func updatesList() (advisories map[string][]string, err error) {
 			continue
 		}
 
-		if pkg == "" {
+		if pkg == "" || !isAllowedArch(pkg) {
 			continue
 		}
 
