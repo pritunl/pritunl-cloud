@@ -26,6 +26,7 @@ const (
 	Undergoing       = "undergoing_analysis"
 	Modified         = "modified"
 	Deferred         = "deferred"
+	Pending          = "pending"
 
 	nvdApi = "https://services.nvd.nist.gov/rest/json/cves/2.0"
 )
