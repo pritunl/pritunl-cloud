@@ -305,15 +305,6 @@ func UpdatesRefresh() (updates []*Update, err error) {
 		updates = append(updates, upd)
 	}
 
-	sort.Slice(updates, func(i, j int) bool {
-		ri := rankSeverity(updates[i].Severity)
-		rj := rankSeverity(updates[j].Severity)
-		if ri != rj {
-			return ri < rj
-		}
-		return updates[i].Advisory < updates[j].Advisory
-	})
-
 	return
 }
 
