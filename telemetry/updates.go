@@ -176,34 +176,16 @@ func updatesList() (advisories map[string][]string, err error) {
 		return
 	}
 
-	var resp *commander.Return
-	if HasSevs() {
-		resp, err = commander.Exec(&commander.Opt{
-			Name: "dnf",
-			Args: []string{
-				"updateinfo",
-				"list",
-				"--advisory-severities=Moderate,Important,Critical",
-			},
-			Timeout: 90 * time.Second,
-			PipeOut: true,
-			PipeErr: true,
-		})
-	} else {
-		resp, err = commander.Exec(&commander.Opt{
-			Name: "dnf",
-			Args: []string{
-				"updateinfo",
-				"list",
-				"--sec-severity=Moderate",
-				"--sec-severity=Important",
-				"--sec-severity=Critical",
-			},
-			Timeout: 90 * time.Second,
-			PipeOut: true,
-			PipeErr: true,
-		})
-	}
+	resp, err := commander.Exec(&commander.Opt{
+		Name: "dnf",
+		Args: []string{
+			"updateinfo",
+			"list",
+		},
+		Timeout: 90 * time.Second,
+		PipeOut: true,
+		PipeErr: true,
+	})
 	if err != nil {
 		if resp != nil {
 			logrus.WithFields(
