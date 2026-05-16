@@ -278,7 +278,7 @@ func updatesList() (advisories map[string][]string, err error) {
 			continue
 		}
 
-		if pkg == "" || !matchAdvisory(pkg) {
+		if pkg == "" {
 			continue
 		}
 
