@@ -204,8 +204,117 @@ func parseRecord(lines []string) *Update {
 	return upd
 }
 
+func updatesList() (advisories map[string][]string, err error) {
+	if !IsDnf() {
+		return
+	}
+
+	var resp *commander.Return
+	if HasSevs() {
+		resp, err = commander.Exec(&commander.Opt{
+			Name: "dnf",
+			Args: []string{
+				"updateinfo",
+				"list",
+				"--advisory-severities=Moderate,Important,Critical",
+			},
+			Timeout: 90 * time.Second,
+			PipeOut: true,
+			PipeErr: true,
+		})
+	} else {
+		resp, err = commander.Exec(&commander.Opt{
+			Name: "dnf",
+			Args: []string{
+				"updateinfo",
+				"list",
+				"--sec-severity=Moderate",
+				"--sec-severity=Important",
+				"--sec-severity=Critical",
+			},
+			Timeout: 90 * time.Second,
+			PipeOut: true,
+			PipeErr: true,
+		})
+	}
+	if err != nil {
+		if resp != nil {
+			logrus.WithFields(
+				resp.Map(),
+			).Error("telemetry: Failed to get dnf security update list")
+		}
+		return
+	}
+
+	advisories = map[string][]string{}
+	seen := map[string]map[string]bool{}
+
+	for _, line := range strings.Split(string(resp.Output), "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "Last metadata") ||
+			strings.HasPrefix(line, "Updating") ||
+			strings.HasPrefix(line, "Repositories") {
+
+			continue
+		}
+
+		parts := strings.Fields(line)
+		if len(parts) < 3 {
+			continue
+		}
+
+		adv := parts[0]
+		if !isAllowedAdvisory(adv) {
+			continue
+		}
+
+		pkg := ""
+		part1 := strings.ToLower(parts[1])
+		part2 := strings.ToLower(parts[2])
+
+		if strings.Contains(part1, Moderate) ||
+			strings.Contains(part1, Important) ||
+			strings.Contains(part1, Critical) {
+
+			pkg = parts[2]
+		} else if len(parts) >= 4 && (strings.Contains(part2, Moderate) ||
+			strings.Contains(part2, Important) ||
+			strings.Contains(part2, Critical)) {
+
+			pkg = parts[3]
+		} else {
+			continue
+		}
+
+		if pkg == "" {
+			continue
+		}
+
+		pkgSet, ok := seen[adv]
+		if !ok {
+			pkgSet = map[string]bool{}
+			seen[adv] = pkgSet
+		}
+		if !pkgSet[pkg] {
+			pkgSet[pkg] = true
+			advisories[adv] = append(advisories[adv], pkg)
+		}
+	}
+
+	for adv := range advisories {
+		sort.Strings(advisories[adv])
+	}
+
+	return
+}
+
 func UpdatesRefresh() (updates []*Update, err error) {
 	if !IsDnf() {
+		return
+	}
+
+	pkgMap, err := updatesList()
+	if err != nil {
 		return
 	}
 
@@ -238,7 +347,12 @@ func UpdatesRefresh() (updates []*Update, err error) {
 		if seen[upd.Advisory] {
 			continue
 		}
+		pkgs, ok := pkgMap[upd.Advisory]
+		if !ok {
+			continue
+		}
 		seen[upd.Advisory] = true
+		upd.Packages = pkgs
 		updates = append(updates, upd)
 	}
 
