@@ -1,6 +1,6 @@
 module github.com/pritunl/pritunl-cloud
 
-go 1.26.0
+go 1.25.9
 
 require (
 	github.com/aws/aws-sdk-go v1.55.5
