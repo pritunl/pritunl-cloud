@@ -3,6 +3,7 @@ package telemetry
 import (
 	"bytes"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/pritunl/tools/commander"
@@ -46,4 +47,12 @@ func HasSevs() bool {
 	}
 
 	return false
+}
+
+func matchAdvisory(id string) bool {
+	return strings.HasPrefix(id, "RHSA-") ||
+		strings.HasPrefix(id, "ALSA-") ||
+		strings.HasPrefix(id, "RLSA-") ||
+		strings.HasPrefix(id, "ELSA-") ||
+		strings.HasPrefix(id, "FEDORA-")
 }
