@@ -17,7 +17,6 @@ type Update struct {
 	Severity   string               `bson:"severity" json:"severity"`
 	Package    string               `bson:"package" json:"package"`
 	Details    []*advisory.Advisory `bson:"details" json:"details"`
-	Dismissed  bool                 `bson:"dismissed" json:"dismissed"`
 }
 
 var Updates = &Telemetry[[]*Update]{
