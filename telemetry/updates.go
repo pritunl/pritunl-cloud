@@ -11,14 +11,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type Update struct {
-	Advisory    string               `bson:"advisory" json:"advisory"`
-	Cves        []string             `bson:"cves" json:"cves"`
-	Severity    string               `bson:"severity" json:"severity"`
-	Description string               `bson:"description" json:"description"`
-	Packages    []string             `bson:"packages" json:"packages"`
-	Details     []*advisory.Advisory `bson:"details" json:"details"`
-}
+var (
+	cveReg = regexp.MustCompile(`CVE-\d{4}-\d+`)
+)
 
 var Updates = &Telemetry[[]*Update]{
 	TransmitRate: 6 * time.Minute,
@@ -32,9 +27,14 @@ var Updates = &Telemetry[[]*Update]{
 	},
 }
 
-var (
-	cveReg = regexp.MustCompile(`CVE-\d{4}-\d+`)
-)
+type Update struct {
+	Advisory    string               `bson:"advisory" json:"advisory"`
+	Cves        []string             `bson:"cves" json:"cves"`
+	Severity    string               `bson:"severity" json:"severity"`
+	Description string               `bson:"description" json:"description"`
+	Packages    []string             `bson:"packages" json:"packages"`
+	Details     []*advisory.Advisory `bson:"details" json:"details"`
+}
 
 func isSeparatorLine(line string) bool {
 	trimmed := strings.TrimSpace(line)
