@@ -36,19 +36,6 @@ type Update struct {
 	Details     []*advisory.Advisory `bson:"details" json:"details"`
 }
 
-func isSeparatorLine(line string) bool {
-	trimmed := strings.TrimSpace(line)
-	if len(trimmed) == 0 {
-		return false
-	}
-	for _, r := range trimmed {
-		if r != '=' {
-			return false
-		}
-	}
-	return true
-}
-
 func parseRecord(lines []string) (update *Update) {
 	updt := &Update{}
 	descLines := []string{}
