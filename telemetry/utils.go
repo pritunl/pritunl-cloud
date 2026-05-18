@@ -81,3 +81,16 @@ func rankSeverity(severity string) int {
 		return 3
 	}
 }
+
+func isSeparatorLine(line string) bool {
+	trimmed := strings.TrimSpace(line)
+	if len(trimmed) == 0 {
+		return false
+	}
+	for _, r := range trimmed {
+		if r != '=' {
+			return false
+		}
+	}
+	return true
+}
