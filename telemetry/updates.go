@@ -49,50 +49,6 @@ func isSeparatorLine(line string) bool {
 	return true
 }
 
-func splitRecords(output string) [][]string {
-	lines := strings.Split(output, "\n")
-	var records [][]string
-	var current []string
-	inRecord := false
-
-	flush := func() {
-		if len(current) > 0 {
-			records = append(records, current)
-			current = nil
-		}
-	}
-
-	for i := 0; i < len(lines); i++ {
-		line := lines[i]
-
-		if isSeparatorLine(line) {
-			flush()
-			for i+1 < len(lines) && !isSeparatorLine(lines[i+1]) {
-				i++
-			}
-			if i+1 < len(lines) && isSeparatorLine(lines[i+1]) {
-				i++
-			}
-			inRecord = true
-			continue
-		}
-
-		if strings.HasPrefix(
-			strings.ReplaceAll(line, " ", ""), "Name:") {
-
-			flush()
-			inRecord = true
-		}
-
-		if inRecord {
-			current = append(current, line)
-		}
-	}
-
-	flush()
-	return records
-}
-
 func parseRecord(lines []string) (update *Update) {
 	updt := &Update{}
 	descLines := []string{}
@@ -291,22 +247,44 @@ func UpdatesRefresh() (updates []*Update, err error) {
 
 	updates = []*Update{}
 	seen := map[string]bool{}
-	for _, record := range splitRecords(string(resp.Output)) {
+	var current []string
+
+	flush := func() {
+		if len(current) == 0 {
+			return
+		}
+		record := current
+		current = nil
+
 		upd := parseRecord(record)
 		if upd == nil {
-			continue
+			return
 		}
 		if seen[upd.Advisory] {
-			continue
+			return
 		}
 		pkgs, ok := pkgMap[upd.Advisory]
 		if !ok {
-			continue
+			return
 		}
 		seen[upd.Advisory] = true
 		upd.Packages = pkgs
 		updates = append(updates, upd)
 	}
+
+	for _, line := range strings.Split(string(resp.Output), "\n") {
+		if isSeparatorLine(line) {
+			flush()
+			continue
+		}
+		if strings.HasPrefix(
+			strings.ReplaceAll(line, " ", ""), "Name:") {
+
+			flush()
+		}
+		current = append(current, line)
+	}
+	flush()
 
 	return
 }
