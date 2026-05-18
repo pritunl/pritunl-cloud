@@ -15,14 +15,17 @@ import (
 	"time"
 
 	"github.com/pritunl/mongo-go-driver/v2/bson"
+	"github.com/pritunl/pritunl-cloud/advisory"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/imds/server/utils"
 	"github.com/pritunl/pritunl-cloud/imds/types"
+	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/iproute"
 	"github.com/pritunl/pritunl-cloud/journal"
 	"github.com/pritunl/pritunl-cloud/paths"
 	"github.com/pritunl/pritunl-cloud/store"
+	"github.com/pritunl/pritunl-cloud/telemetry"
 	pritunlutils "github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/tools/errors"
 	"github.com/sirupsen/logrus"
@@ -37,6 +40,45 @@ var (
 const (
 	counterMax = 2000000000
 )
+
+func mergeUpdateDetails(db *database.Database, instId bson.ObjectID,
+	updates []*telemetry.Update) (err error) {
+
+	if len(updates) == 0 {
+		return
+	}
+
+	coll := db.Instances()
+	inst := &instance.Instance{}
+
+	err = coll.FindOne(db, &bson.M{
+		"_id": instId,
+	}, database.FindOneProject("guest.updates")).Decode(inst)
+	if err != nil {
+		err = database.ParseError(err)
+		err = database.IgnoreNotFoundError(err)
+		return
+	}
+
+	if inst.Guest == nil {
+		return
+	}
+
+	detailsMap := map[string][]*advisory.Advisory{}
+	for _, upd := range inst.Guest.Updates {
+		if upd.Advisory != "" && len(upd.Details) > 0 {
+			detailsMap[upd.Advisory] = upd.Details
+		}
+	}
+
+	for _, upd := range updates {
+		if details, ok := detailsMap[upd.Advisory]; ok {
+			upd.Details = details
+		}
+	}
+
+	return
+}
 
 func Sync(db *database.Database, namespace string,
 	instId, deplyId bson.ObjectID, conf *types.Config) (err error) {
@@ -165,6 +207,10 @@ func Sync(db *database.Database, namespace string,
 		}
 
 		if ste.Updates != nil {
+			err = mergeUpdateDetails(db, instId, ste.Updates)
+			if err != nil {
+				return
+			}
 			data["guest.updates"] = ste.Updates
 		}
 
@@ -531,6 +577,10 @@ func Pull(db *database.Database, instId, deplyId bson.ObjectID,
 		}
 
 		if ste.Updates != nil {
+			err = mergeUpdateDetails(db, instId, ste.Updates)
+			if err != nil {
+				return
+			}
 			data["guest.updates"] = ste.Updates
 		}
 
