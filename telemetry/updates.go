@@ -77,7 +77,9 @@ func splitRecords(output string) [][]string {
 			continue
 		}
 
-		if strings.HasPrefix(line, "Name        :") {
+		if strings.HasPrefix(
+			strings.ReplaceAll(line, " ", ""), "Name:") {
+
 			flush()
 			inRecord = true
 		}
