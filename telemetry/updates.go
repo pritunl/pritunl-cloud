@@ -91,8 +91,8 @@ func splitRecords(output string) [][]string {
 	return records
 }
 
-func parseRecord(lines []string) *Update {
-	upd := &Update{}
+func parseRecord(lines []string) (update *Update) {
+	updt := &Update{}
 	descLines := []string{}
 	currentField := ""
 
@@ -111,7 +111,7 @@ func parseRecord(lines []string) *Update {
 				descLines = append(descLines, value)
 			case "CVEs":
 				if value != "" {
-					upd.Cves = append(upd.Cves,
+					updt.Cves = append(updt.Cves,
 						cveReg.FindAllString(value, -1)...)
 				}
 			}
@@ -123,37 +123,37 @@ func parseRecord(lines []string) *Update {
 
 		switch field {
 		case "Update ID", "Name":
-			upd.Advisory = value
+			updt.Advisory = value
 		case "Severity":
-			upd.Severity = parseSeverity(value)
+			updt.Severity = parseSeverity(value)
 		case "Description":
 			if value != "" {
 				descLines = append(descLines, value)
 			}
 		case "CVEs":
 			if value != "" {
-				upd.Cves = append(upd.Cves,
+				updt.Cves = append(updt.Cves,
 					cveReg.FindAllString(value, -1)...)
 			}
 		}
 	}
 
-	if !matchAdvisory(upd.Advisory) {
-		return nil
+	if !matchAdvisory(updt.Advisory) {
+		return
 	}
-	if upd.Severity == "" {
-		return nil
+	if updt.Severity == "" {
+		return
 	}
 
 	for len(descLines) > 0 && descLines[len(descLines)-1] == "" {
 		descLines = descLines[:len(descLines)-1]
 	}
-	upd.Description = strings.Join(descLines, "\n")
+	updt.Description = strings.Join(descLines, "\n")
 
 	fullText := strings.Join(lines, "\n")
 	cveSet := map[string]bool{}
 	deduped := []string{}
-	for _, c := range upd.Cves {
+	for _, c := range updt.Cves {
 		if !cveSet[c] {
 			cveSet[c] = true
 			deduped = append(deduped, c)
@@ -166,9 +166,10 @@ func parseRecord(lines []string) *Update {
 		}
 	}
 	sort.Strings(deduped)
-	upd.Cves = deduped
+	updt.Cves = deduped
 
-	return upd
+	update = updt
+	return
 }
 
 func updatesList() (advisories map[string][]string, err error) {
