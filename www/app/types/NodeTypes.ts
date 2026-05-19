@@ -7,6 +7,7 @@ export const CHANGE = 'node.change';
 
 import * as PageInfos from '../components/PageInfo';
 import * as MiscUtils from '../utils/MiscUtils';
+import * as InstanceTypes from './InstanceTypes';
 
 export interface Node {
 	id?: string;
@@ -91,8 +92,11 @@ export interface Node {
 
 export interface Update {
 	advisory?: string;
+	cves?: string[];
 	severity?: string;
-	package?: string;
+	description?: string;
+	packages?: string[];
+	details?: InstanceTypes.Advisory[];
 }
 
 export function GetAllIfaces(node: Node): Interface[] {
