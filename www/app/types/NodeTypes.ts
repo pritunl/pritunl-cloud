@@ -127,7 +127,7 @@ export function UpdateFields(node: Node): PageInfos.Field[] {
 	let fields: PageInfos.Field[] = []
 	node.updates.forEach((update) => {
 		let link;
-		let advisory = update.advisory.replace(/[^a-zA-Z0-9:-]/g, '')
+		let advisory = (update.advisory || "").replace(/[^a-zA-Z0-9:-]/g, '')
 		if (advisory.startsWith('ALSA') || advisory.startsWith('RLSA') ||
 				advisory.startsWith('RHSA')) {
 			link = `https://access.redhat.com/errata/RH${advisory.slice(2)}`
@@ -151,9 +151,9 @@ export function UpdateFields(node: Node): PageInfos.Field[] {
 		}
 
 		fields.push({
-			key: update.advisory + update.package,
+			key: update.advisory,
 			label: `${update.advisory} - ${MiscUtils.capitalize(update.severity)}`,
-			value: update.package,
+			value: update.packages || [],
 			valueClass: className,
 			link: link,
 		})
