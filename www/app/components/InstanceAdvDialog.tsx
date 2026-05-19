@@ -23,6 +23,7 @@ interface State {
 	showLowSeverity: boolean;
 	expanded: {[key: string]: boolean};
 	expandedCves: {[advisory: string]: boolean};
+	expandedPackages: {[advisory: string]: boolean};
 }
 
 interface Props {
@@ -94,6 +95,37 @@ const css = {
 		marginBottom: "6px",
 		wordBreak: "break-all",
 	} as React.CSSProperties,
+	packageHeader: {
+		alignItems: "center",
+		marginBottom: "8px",
+		gap: "8px",
+		flexWrap: "wrap",
+	} as React.CSSProperties,
+	packageName: {
+		fontFamily: "monospace",
+		fontSize: "14px",
+		fontWeight: 600,
+		padding: "3px 8px",
+		background: "rgba(138, 155, 168, 0.15)",
+		borderRadius: "3px",
+		wordBreak: "break-all",
+	} as React.CSSProperties,
+	packageToggle: {
+		padding: "2px 6px",
+		minHeight: "0",
+		fontSize: "11px",
+	} as React.CSSProperties,
+	packageList: {
+		fontSize: "11px",
+		fontFamily: "monospace",
+		color: "var(--bp5-text-color-muted, #5f6b7c)",
+		marginBottom: "8px",
+		padding: "6px 8px",
+		background: "rgba(138, 155, 168, 0.08)",
+		borderRadius: "3px",
+		wordBreak: "break-all",
+		whiteSpace: "pre-wrap",
+	} as React.CSSProperties,
 	description: {
 		fontSize: "12px",
 		whiteSpace: "pre-wrap",
@@ -130,7 +162,28 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 			showLowSeverity: false,
 			expanded: {},
 			expandedCves: {},
+			expandedPackages: {},
 		}
+	}
+
+	rpmName(pkg: string): string {
+		if (!pkg) {
+			return pkg
+		}
+		let s = pkg
+		let lastDot = s.lastIndexOf('.')
+		if (lastDot > 0) {
+			s = s.slice(0, lastDot)
+		}
+		let lastDash = s.lastIndexOf('-')
+		if (lastDash > 0) {
+			s = s.slice(0, lastDash)
+		}
+		lastDash = s.lastIndexOf('-')
+		if (lastDash > 0) {
+			s = s.slice(0, lastDash)
+		}
+		return s
 	}
 
 	advisoryLink(advisoryRaw: string): string {
@@ -388,6 +441,12 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 		let cvesToShow = cvesExpanded ? entry.cves : entry.importantCves;
 		let hiddenCount = entry.cves.length - entry.importantCves.length;
 
+		let packages = update.packages || [];
+		let primaryName = packages.length > 0 ? this.rpmName(packages[0]) : "";
+		let packagesExpanded = !!this.state.expandedPackages[advisoryKey];
+		let hasFullVersionInfo = packages.length > 1 ||
+			(packages.length === 1 && packages[0] !== primaryName);
+
 		return <div key={update.advisory}
 			className="bp5-card bp5-elevation-0"
 			style={css.updateCard}>
@@ -406,11 +465,34 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 					{update.advisory}
 				</span>}
 			</div>
-			{update.packages && update.packages.length > 0 &&
-				<div style={css.packages}>
-					{update.packages.length === 1 ? "Package: " :
-						`Packages (${update.packages.length}): `}
-					{update.packages.join(", ")}
+			{packages.length > 0 && <div className="layout horizontal"
+				style={css.packageHeader}>
+				<span style={css.packageName}>{primaryName}</span>
+				{hasFullVersionInfo && <button
+					className={"bp5-button bp5-minimal bp5-small " +
+						(packagesExpanded ?
+							"bp5-icon-chevron-up" :
+							"bp5-icon-chevron-down")}
+					type="button"
+					style={css.packageToggle}
+					onClick={(): void => {
+						this.setState({
+							...this.state,
+							expandedPackages: {
+								...this.state.expandedPackages,
+								[advisoryKey]: !packagesExpanded,
+							},
+						});
+					}}
+				>{packagesExpanded ?
+					"Hide full versions" :
+					(packages.length === 1 ?
+						"Show full version" :
+						`Show ${packages.length} full version${packages.length === 1 ? "" : "s"}`)}</button>}
+			</div>}
+			{packagesExpanded && packages.length > 0 &&
+				<div style={css.packageList}>
+					{packages.join("\n")}
 				</div>}
 			{cvesToShow.map((p): JSX.Element =>
 				this.renderCveCard(entry, p))}
