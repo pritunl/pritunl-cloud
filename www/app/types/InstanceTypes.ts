@@ -165,10 +165,10 @@ export interface Guest {
 
 export interface Update {
 	advisory?: string;
-	advisories?: string[];
 	cves?: string[];
 	severity?: string;
-	package?: string;
+	description?: string;
+	packages?: string[];
 	details?: Advisory[];
 }
 
