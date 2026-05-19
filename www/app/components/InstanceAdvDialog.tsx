@@ -22,6 +22,7 @@ interface State {
 	open: boolean;
 	showLowSeverity: boolean;
 	expanded: {[key: string]: boolean};
+	expandedCves: {[advisory: string]: boolean};
 }
 
 interface Props {
@@ -113,10 +114,11 @@ const css = {
 		minHeight: "0",
 		fontSize: "11px",
 	} as React.CSSProperties,
-	hiddenNote: {
+	hiddenToggle: {
+		marginTop: "8px",
+		padding: "2px 6px",
+		minHeight: "0",
 		fontSize: "11px",
-		color: "var(--bp5-text-color-muted, #5f6b7c)",
-		marginTop: "6px",
 	} as React.CSSProperties,
 }
 
@@ -127,6 +129,7 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 			open: false,
 			showLowSeverity: false,
 			expanded: {},
+			expandedCves: {},
 		}
 	}
 
@@ -380,8 +383,10 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 		let sevLabel = entry.worstSeverity ?
 			MiscUtils.capitalize(entry.worstSeverity) : "Unknown";
 
-		let cvesToShow = entry.importantCves;
-		let hiddenCount = entry.cves.length - cvesToShow.length;
+		let advisoryKey = update.advisory || "";
+		let cvesExpanded = !!this.state.expandedCves[advisoryKey];
+		let cvesToShow = cvesExpanded ? entry.cves : entry.importantCves;
+		let hiddenCount = entry.cves.length - entry.importantCves.length;
 
 		return <div key={update.advisory}
 			className="bp5-card bp5-elevation-0"
@@ -409,11 +414,27 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 				</div>}
 			{cvesToShow.map((p): JSX.Element =>
 				this.renderCveCard(entry, p))}
-			{hiddenCount > 0 && <div style={css.hiddenNote}>
-				{cvesToShow.length === 0 ?
-					`${hiddenCount} CVE${hiddenCount === 1 ? "" : "s"} not shown (none rated high risk)` :
-					`${hiddenCount} additional CVE${hiddenCount === 1 ? "" : "s"} not shown`}
-			</div>}
+			{hiddenCount > 0 && <button
+				className={"bp5-button bp5-minimal bp5-small " +
+					(cvesExpanded ?
+						"bp5-icon-chevron-up" :
+						"bp5-icon-chevron-down")}
+				type="button"
+				style={css.hiddenToggle}
+				onClick={(): void => {
+					this.setState({
+						...this.state,
+						expandedCves: {
+							...this.state.expandedCves,
+							[advisoryKey]: !cvesExpanded,
+						},
+					});
+				}}
+			>{cvesExpanded ?
+				`Hide ${hiddenCount} lower risk CVE${hiddenCount === 1 ? "" : "s"}` :
+				(entry.importantCves.length === 0 ?
+					`Show ${hiddenCount} CVE${hiddenCount === 1 ? "" : "s"} (none rated high risk)` :
+					`Show ${hiddenCount} additional CVE${hiddenCount === 1 ? "" : "s"}`)}</button>}
 		</div>;
 	}
 
