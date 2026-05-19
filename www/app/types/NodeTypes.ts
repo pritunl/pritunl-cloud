@@ -126,7 +126,7 @@ export function UpdateFields(node: Node): PageInfos.Field[] {
 
 	let fields: PageInfos.Field[] = []
 	node.updates.forEach((update) => {
-		let link;
+		let link
 		let advisory = (update.advisory || "").replace(/[^a-zA-Z0-9:-]/g, '')
 		if (advisory.startsWith('ALSA') || advisory.startsWith('RLSA') ||
 				advisory.startsWith('RHSA')) {
