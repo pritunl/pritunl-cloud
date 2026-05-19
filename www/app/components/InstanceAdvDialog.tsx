@@ -4,17 +4,24 @@ import * as Blueprint from "@blueprintjs/core";
 import * as InstanceTypes from "../types/InstanceTypes";
 import * as MiscUtils from "../utils/MiscUtils";
 
-interface CveEntry {
+interface CveDetail {
 	cve: string;
 	detail: InstanceTypes.Advisory;
-	packages: string[];
-	advisories: string[];
+}
+
+interface UpdateEntry {
+	update: InstanceTypes.Update;
+	cves: CveDetail[];
+	importantCves: CveDetail[];
+	worstScore: number;
+	worstSeverity: string;
+	link?: string;
 }
 
 interface State {
 	open: boolean;
 	showLowSeverity: boolean;
-	expanded: {[cve: string]: boolean};
+	expanded: {[key: string]: boolean};
 }
 
 interface Props {
@@ -45,9 +52,15 @@ const css = {
 		margin: "14px 0 8px 0",
 		fontWeight: 600,
 	} as React.CSSProperties,
-	card: {
+	updateCard: {
 		padding: "12px",
-		marginBottom: "10px",
+		marginBottom: "12px",
+	} as React.CSSProperties,
+	cveCard: {
+		padding: "10px",
+		marginTop: "8px",
+		background: "rgba(138, 155, 168, 0.06)",
+		borderRadius: "3px",
 	} as React.CSSProperties,
 	headerRow: {
 		alignItems: "center",
@@ -57,6 +70,11 @@ const css = {
 	title: {
 		fontFamily: "monospace",
 		fontSize: "14px",
+		fontWeight: 600,
+	} as React.CSSProperties,
+	cveTitle: {
+		fontFamily: "monospace",
+		fontSize: "13px",
 		fontWeight: 600,
 	} as React.CSSProperties,
 	tagRow: {
@@ -95,6 +113,11 @@ const css = {
 		minHeight: "0",
 		fontSize: "11px",
 	} as React.CSSProperties,
+	hiddenNote: {
+		fontSize: "11px",
+		color: "var(--bp5-text-color-muted, #5f6b7c)",
+		marginTop: "6px",
+	} as React.CSSProperties,
 }
 
 export default class InstanceAdvDialog extends React.Component<Props, State> {
@@ -107,24 +130,17 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 		}
 	}
 
-	buttonIntent(): string {
-		let entries = this.aggregateCves();
-		if (entries.length === 0) {
-			return "";
+	advisoryLink(advisoryRaw: string): string {
+		let advisory = (advisoryRaw || "").replace(/[^a-zA-Z0-9:-]/g, '')
+		if (advisory.startsWith('ALSA') || advisory.startsWith('RLSA') ||
+				advisory.startsWith('RHSA')) {
+			return `https://access.redhat.com/errata/RH${advisory.slice(2)}`
+		} else if (advisory.startsWith('ELSA')) {
+			return `https://linux.oracle.com/errata/${advisory}.html`
+		} else if (advisory.startsWith('FEDORA')) {
+			return `https://bodhi.fedoraproject.org/updates/${advisory}`
 		}
-
-		let hasHigh = false;
-		for (let entry of entries) {
-			let sev = (entry.detail?.severity || "").toLowerCase();
-			if (sev === "critical") {
-				return "bp5-intent-danger";
-			}
-			if (sev === "high") {
-				hasHigh = true;
-			}
-		}
-
-		return hasHigh ? "bp5-intent-warning" : "bp5-intent-primary";
+		return ""
 	}
 
 	severityIntent(severity: string): Blueprint.Intent {
@@ -140,76 +156,114 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 		}
 	}
 
-	aggregateCves(): CveEntry[] {
-		let updates = this.props.instance.guest?.updates;
-
-		if (!updates) {
-			return [];
-		}
-
-		let map = new Map<string, CveEntry>();
-		for (let update of updates) {
-			let cves = update.cves || [];
-			let details = update.details || [];
-			for (let i = 0; i < cves.length; i++) {
-				let cve = cves[i];
-				let detail = details[i];
-				if (!cve || !detail) {
-					continue;
-				}
-				let entry = map.get(cve);
-				if (!entry) {
-					entry = {
-						cve: cve,
-						detail: detail,
-						packages: [],
-						advisories: [],
-					};
-					map.set(cve, entry);
-				}
-				if (update.package &&
-						entry.packages.indexOf(update.package) === -1) {
-					entry.packages.push(update.package);
-				}
-				for (let adv of (update.advisories || [])) {
-					if (entry.advisories.indexOf(adv) === -1) {
-						entry.advisories.push(adv);
-					}
-				}
-			}
-		}
-
-		return Array.from(map.values());
-	}
-
-	isImportantCve(entry: CveEntry): boolean {
-		let d = entry.detail;
-		if (!d) {
+	isImportantCve(detail: InstanceTypes.Advisory): boolean {
+		if (!detail) {
 			return false;
 		}
-		if (d.severity === "critical") {
+		if (detail.severity === "critical") {
 			return true;
 		}
-		if (d.vector === "network" &&
-				(d.severity === "high" || (d.score || 0) >= 7)) {
+		if (detail.vector === "network" &&
+				(detail.severity === "high" || (detail.score || 0) >= 7)) {
 			return true;
 		}
 		return false;
 	}
 
-	cveSortScore(entry: CveEntry): number {
-		let d = entry.detail;
-		let s = d?.score || 0;
-		if (d?.vector === "network") s += 100;
-		if (d?.severity === "critical") s += 50;
-		if (d?.privileges === "none") s += 10;
-		if (d?.interaction === "none") s += 5;
+	cveSortScore(detail: InstanceTypes.Advisory): number {
+		let s = detail?.score || 0;
+		if (detail?.vector === "network") s += 100;
+		if (detail?.severity === "critical") s += 50;
+		if (detail?.privileges === "none") s += 10;
+		if (detail?.interaction === "none") s += 5;
 		return s;
 	}
 
-	renderCveCard(entry: CveEntry): JSX.Element {
-		let d = entry.detail;
-		let nvdUrl = `https://access.redhat.com/security/cve/${entry.cve}`;
+	buildEntries(): UpdateEntry[] {
+		let updates = this.props.instance.guest?.updates;
+		if (!updates) {
+			return [];
+		}
+
+		let entries: UpdateEntry[] = [];
+		for (let update of updates) {
+			let cves = update.cves || [];
+			let details = update.details || [];
+			let pairs: CveDetail[] = [];
+			let seen = new Set<string>();
+			for (let i = 0; i < cves.length; i++) {
+				let cve = cves[i];
+				let detail = details[i];
+				if (!cve || !detail || seen.has(cve)) {
+					continue;
+				}
+				seen.add(cve);
+				pairs.push({cve: cve, detail: detail});
+			}
+
+			pairs.sort((a, b) =>
+				this.cveSortScore(b.detail) - this.cveSortScore(a.detail));
+
+			let importantCves = pairs.filter(
+				(p): boolean => this.isImportantCve(p.detail));
+
+			let worstScore = 0;
+			let worstSeverity = "";
+			let severityRank: {[key: string]: number} = {
+				"critical": 4,
+				"high": 3,
+				"medium": 2,
+				"low": 1,
+			};
+			let worstRank = 0;
+			for (let p of pairs) {
+				let score = this.cveSortScore(p.detail);
+				if (score > worstScore) {
+					worstScore = score;
+				}
+				let sev = (p.detail.severity || "").toLowerCase();
+				let rank = severityRank[sev] || 0;
+				if (rank > worstRank) {
+					worstRank = rank;
+					worstSeverity = sev;
+				}
+			}
+
+			entries.push({
+				update: update,
+				cves: pairs,
+				importantCves: importantCves,
+				worstScore: worstScore,
+				worstSeverity: worstSeverity,
+				link: this.advisoryLink(update.advisory || ""),
+			});
+		}
+
+		return entries;
+	}
+
+	buttonIntent(entries: UpdateEntry[]): string {
+		if (entries.length === 0) {
+			return "";
+		}
+
+		let hasHigh = false;
+		for (let entry of entries) {
+			if (entry.worstSeverity === "critical") {
+				return "bp5-intent-danger";
+			}
+			if (entry.worstSeverity === "high") {
+				hasHigh = true;
+			}
+		}
+
+		return hasHigh ? "bp5-intent-warning" : "bp5-intent-primary";
+	}
+
+	renderCveCard(entry: UpdateEntry, pair: CveDetail): JSX.Element {
+		let d = pair.detail;
+		let key = (entry.update.advisory || "") + "|" + pair.cve;
+		let nvdUrl = `https://access.redhat.com/security/cve/${pair.cve}`;
 
 		let tags: JSX.Element[] = [];
 		if (d.vector === "network") {
@@ -271,37 +325,29 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 		let sevLabel = MiscUtils.capitalize(d.severity || "Unknown");
 		let scoreLabel = d.score ? ` ${d.score.toFixed(1)}` : "";
 
-		return <div key={entry.cve}
-			className="bp5-card bp5-elevation-0"
-			style={css.card}>
+		return <div key={pair.cve} style={css.cveCard}>
 			<div className="layout horizontal" style={css.headerRow}>
 				<Blueprint.Tag
-				large={true}
-				intent={sevIntent}
-				icon="shield"
-				style={css.tag}>{sevLabel}{scoreLabel}</Blueprint.Tag>
+					intent={sevIntent}
+					icon="shield"
+					style={css.tag}>{sevLabel}{scoreLabel}</Blueprint.Tag>
 				<a
 					href={nvdUrl}
 					target="_blank"
 					rel="noopener noreferrer"
-					style={css.title}
-				>{entry.cve}</a>
+					style={css.cveTitle}
+				>{pair.cve}</a>
 			</div>
 			{tags.length > 0 && <div className="layout horizontal wrap"
 				style={css.tagRow}>
 				{tags}
 			</div>}
-			{entry.packages.length > 0 && <div style={css.packages}>
-				{entry.packages.length === 1 ? "Package: " :
-					`Packages (${entry.packages.length}): `}
-				{entry.packages.join(", ")}
-			</div>}
-			{d.description && this.renderDescription(entry)}
+			{d.description && this.renderDescription(key, d.description)}
 		</div>;
 	}
 
-	renderDescription(entry: CveEntry): JSX.Element {
-		let expanded = !!this.state.expanded[entry.cve];
+	renderDescription(key: string, text: string): JSX.Element {
+		let expanded = !!this.state.expanded[key];
 		let style = expanded ? css.description : {
 			...css.description,
 			...css.descriptionLimited,
@@ -309,7 +355,7 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 
 		return <>
 			<div style={style}>
-				{entry.detail.description}
+				{text}
 			</div>
 			<button
 				className="bp5-button bp5-minimal bp5-small"
@@ -320,7 +366,7 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 						...this.state,
 						expanded: {
 							...this.state.expanded,
-							[entry.cve]: !expanded,
+							[key]: !expanded,
 						},
 					});
 				}}
@@ -328,7 +374,50 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 		</>;
 	}
 
-	renderBody(entries: CveEntry[]): JSX.Element {
+	renderUpdateCard(entry: UpdateEntry): JSX.Element {
+		let update = entry.update;
+		let sevIntent = this.severityIntent(entry.worstSeverity);
+		let sevLabel = entry.worstSeverity ?
+			MiscUtils.capitalize(entry.worstSeverity) : "Unknown";
+
+		let cvesToShow = entry.importantCves;
+		let hiddenCount = entry.cves.length - cvesToShow.length;
+
+		return <div key={update.advisory}
+			className="bp5-card bp5-elevation-0"
+			style={css.updateCard}>
+			<div className="layout horizontal" style={css.headerRow}>
+				<Blueprint.Tag
+					large={true}
+					intent={sevIntent}
+					icon="shield"
+					style={css.tag}>{sevLabel}</Blueprint.Tag>
+				{entry.link ? <a
+					href={entry.link}
+					target="_blank"
+					rel="noopener noreferrer"
+					style={css.title}
+				>{update.advisory}</a> : <span style={css.title}>
+					{update.advisory}
+				</span>}
+			</div>
+			{update.packages && update.packages.length > 0 &&
+				<div style={css.packages}>
+					{update.packages.length === 1 ? "Package: " :
+						`Packages (${update.packages.length}): `}
+					{update.packages.join(", ")}
+				</div>}
+			{cvesToShow.map((p): JSX.Element =>
+				this.renderCveCard(entry, p))}
+			{hiddenCount > 0 && <div style={css.hiddenNote}>
+				{cvesToShow.length === 0 ?
+					`${hiddenCount} CVE${hiddenCount === 1 ? "" : "s"} not shown (none rated high risk)` :
+					`${hiddenCount} additional CVE${hiddenCount === 1 ? "" : "s"} not shown`}
+			</div>}
+		</div>;
+	}
+
+	renderBody(entries: UpdateEntry[]): JSX.Element {
 		if (entries.length === 0) {
 			return <div style={css.body}>
 				<div className="bp5-callout bp5-intent-success"
@@ -339,13 +428,12 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 			</div>;
 		}
 
-		entries.sort((a, b) =>
-			this.cveSortScore(b) - this.cveSortScore(a));
+		entries.sort((a, b) => b.worstScore - a.worstScore);
 
-		let important: CveEntry[] = [];
-		let other: CveEntry[] = [];
+		let important: UpdateEntry[] = [];
+		let other: UpdateEntry[] = [];
 		for (let entry of entries) {
-			if (this.isImportantCve(entry)) {
+			if (entry.importantCves.length > 0) {
 				important.push(entry);
 			} else {
 				other.push(entry);
@@ -361,7 +449,7 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 					/>
 					High Risk ({important.length})
 				</div>
-				{important.map((e): JSX.Element => this.renderCveCard(e))}
+				{important.map((e): JSX.Element => this.renderUpdateCard(e))}
 			</> : <div className="bp5-callout bp5-intent-success"
 				style={{padding: "10px", marginBottom: "10px"}}>
 				No remotely exploitable or critical advisories.
@@ -384,23 +472,23 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 					Lower Risk ({other.length})
 				</button>
 				{this.state.showLowSeverity ? <div>
-					{other.map((e): JSX.Element => this.renderCveCard(e))}
+					{other.map((e): JSX.Element => this.renderUpdateCard(e))}
 				</div> : null}
 			</> : null}
 		</div>;
 	}
 
 	render(): JSX.Element {
+		let entries = this.buildEntries();
+
 		let dialog: JSX.Element
 		if (this.state.open) {
-			let entries = this.aggregateCves();
-
 			dialog = <Blueprint.Dialog
 				title={
 					<div>
 						Security Advisories
 						<span style={css.count}>
-							({entries.length} CVE{entries.length === 1 ? "" : "s"})
+							({entries.length} advisor{entries.length === 1 ? "y" : "ies"})
 						</span>
 					</div>
 				}
@@ -436,7 +524,7 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 		return <div>
 			<button
 				className={"bp5-button bp5-minimal bp5-icon-shield " +
-					this.buttonIntent()}
+					this.buttonIntent(entries)}
 				type="button"
 				onClick={(): void => {
 					this.setState({
