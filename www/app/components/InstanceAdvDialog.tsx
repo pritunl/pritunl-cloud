@@ -69,6 +69,11 @@ const css = {
 		marginBottom: "8px",
 		gap: "8px",
 	} as React.CSSProperties,
+	headerTag: {
+		paddingTop: "3px",
+		paddingBottom: "3px",
+		marginRight: "6px",
+	} as React.CSSProperties,
 	title: {
 		fontFamily: "monospace",
 		fontSize: "14px",
@@ -386,7 +391,7 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 				<Blueprint.Tag
 					intent={sevIntent}
 					icon="shield"
-					style={css.tag}>{sevLabel}{scoreLabel}</Blueprint.Tag>
+					style={css.headerTag}>{sevLabel}{scoreLabel}</Blueprint.Tag>
 				<a
 					href={nvdUrl}
 					target="_blank"
@@ -455,7 +460,7 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 					large={true}
 					intent={sevIntent}
 					icon="shield"
-					style={css.tag}>{sevLabel}</Blueprint.Tag>
+					style={css.headerTag}>{sevLabel}</Blueprint.Tag>
 				{primaryName && <span style={css.packageName}>
 					{primaryName}
 				</span>}
