@@ -20,6 +20,7 @@ import (
 	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
 	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
+	"github.com/pritunl/pritunl-cloud/advisory"
 	"github.com/pritunl/pritunl-cloud/block"
 	"github.com/pritunl/pritunl-cloud/bridges"
 	"github.com/pritunl/pritunl-cloud/cloud"
@@ -1264,6 +1265,34 @@ func (n *Node) SyncNetwork(clearCache bool) {
 	}
 }
 
+func (n *Node) getUpdateDetails(db *database.Database) (
+	updates []*telemetry.Update, ok bool) {
+
+	updates, ok = telemetry.Updates.Get()
+	if !ok {
+		return
+	}
+
+	if len(updates) == 0 {
+		return
+	}
+
+	detailsMap := map[string][]*advisory.Advisory{}
+	for _, upd := range n.Updates {
+		if upd.Advisory != "" && len(upd.Details) > 0 {
+			detailsMap[upd.Advisory] = upd.Details
+		}
+	}
+
+	for _, upd := range updates {
+		if details, ok := detailsMap[upd.Advisory]; ok {
+			upd.Details = details
+		}
+	}
+
+	return
+}
+
 func (n *Node) update(db *database.Database) (err error) {
 	coll := db.Nodes()
 
@@ -1296,7 +1325,7 @@ func (n *Node) update(db *database.Database) (err error) {
 		"available_drives":     n.AvailableDrives,
 	}
 
-	updates, ok := telemetry.Updates.Get()
+	updates, ok := n.getUpdateDetails(db)
 	if ok {
 		fields["updates"] = updates
 	}
