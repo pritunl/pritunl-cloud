@@ -23,6 +23,7 @@ import PageInfo from './PageInfo';
 import PageSave from './PageSave';
 import NodeBlock from './NodeBlock';
 import NodeShare from './NodeShare';
+import InstanceAdvDialog from './InstanceAdvDialog';
 import ConfirmButton from './ConfirmButton';
 import Relations from './Relations';
 import Help from './Help';
@@ -1680,6 +1681,7 @@ export default class NodeDetailed extends React.Component<Props, State> {
 						}}
 					>
 						<div className="flex tab-close"/>
+						<InstanceAdvDialog updates={this.props.node.updates}/>
 						<Relations kind="node" id={this.props.node.id}/>
 						<ConfirmButton
 							className="bp5-minimal bp5-intent-danger bp5-icon-trash"
