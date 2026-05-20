@@ -500,6 +500,8 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 				<div style={css.packageList}>
 					{packages.join("\n")}
 				</div>}
+			{update.description && this.renderDescription(
+				advisoryKey + "|desc", update.description)}
 			{cvesToShow.map((p): JSX.Element =>
 				this.renderCveCard(entry, p))}
 			{hiddenCount > 0 && <button
