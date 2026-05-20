@@ -23,7 +23,6 @@ interface State {
 	showLowSeverity: boolean;
 	expanded: {[key: string]: boolean};
 	expandedCves: {[advisory: string]: boolean};
-	expandedPackages: {[advisory: string]: boolean};
 }
 
 interface Props {
@@ -100,12 +99,6 @@ const css = {
 		marginBottom: "6px",
 		wordBreak: "break-all",
 	} as React.CSSProperties,
-	packageHeader: {
-		alignItems: "center",
-		marginBottom: "8px",
-		gap: "8px",
-		flexWrap: "wrap",
-	} as React.CSSProperties,
 	packageName: {
 		fontFamily: "monospace",
 		fontSize: "14px",
@@ -114,11 +107,6 @@ const css = {
 		background: "rgba(138, 155, 168, 0.15)",
 		borderRadius: "3px",
 		wordBreak: "break-all",
-	} as React.CSSProperties,
-	packageToggle: {
-		padding: "2px 6px",
-		minHeight: "0",
-		fontSize: "11px",
 	} as React.CSSProperties,
 	packageList: {
 		fontSize: "11px",
@@ -167,7 +155,6 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 			showLowSeverity: false,
 			expanded: {},
 			expandedCves: {},
-			expandedPackages: {},
 		}
 	}
 
@@ -448,9 +435,17 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 
 		let packages = update.packages || [];
 		let primaryName = packages.length > 0 ? this.rpmName(packages[0]) : "";
-		let packagesExpanded = !!this.state.expandedPackages[advisoryKey];
 		let hasFullVersionInfo = packages.length > 1 ||
 			(packages.length === 1 && packages[0] !== primaryName);
+
+		let detailsKey = advisoryKey + "|details";
+		let detailsExpanded = !!this.state.expanded[detailsKey];
+		let hasDescription = !!update.description;
+		let showDetailsToggle = hasDescription || hasFullVersionInfo;
+		let descriptionStyle = detailsExpanded ? css.description : {
+			...css.description,
+			...css.descriptionLimited,
+		};
 
 		return <div key={update.advisory}
 			className="bp5-card bp5-elevation-0"
@@ -473,35 +468,27 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 					{update.advisory}
 				</span>}
 			</div>
-			{hasFullVersionInfo && <div style={css.packageHeader}>
-				<button
-					className={"bp5-button bp5-minimal bp5-small " +
-						(packagesExpanded ?
-							"bp5-icon-chevron-up" :
-							"bp5-icon-chevron-down")}
-					type="button"
-					style={css.packageToggle}
-					onClick={(): void => {
-						this.setState({
-							...this.state,
-							expandedPackages: {
-								...this.state.expandedPackages,
-								[advisoryKey]: !packagesExpanded,
-							},
-						});
-					}}
-				>{packagesExpanded ?
-					"Hide full versions" :
-					(packages.length === 1 ?
-						"Show full version" :
-						`Show ${packages.length} full version${packages.length === 1 ? "" : "s"}`)}</button>
+			{hasDescription && <div style={descriptionStyle}>
+				{update.description}
 			</div>}
-			{packagesExpanded && packages.length > 0 &&
+			{detailsExpanded && hasFullVersionInfo &&
 				<div style={css.packageList}>
 					{packages.join("\n")}
 				</div>}
-			{update.description && this.renderDescription(
-				advisoryKey + "|desc", update.description)}
+			{showDetailsToggle && <button
+				className="bp5-button bp5-minimal bp5-small"
+				type="button"
+				style={css.descriptionToggle}
+				onClick={(): void => {
+					this.setState({
+						...this.state,
+						expanded: {
+							...this.state.expanded,
+							[detailsKey]: !detailsExpanded,
+						},
+					});
+				}}
+			>{detailsExpanded ? "Show less" : "Show more"}</button>}
 			{cvesToShow.map((p): JSX.Element =>
 				this.renderCveCard(entry, p))}
 			{hiddenCount > 0 && <button
