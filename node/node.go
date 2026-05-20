@@ -1304,7 +1304,6 @@ func (n *Node) update(db *database.Database) (err error) {
 		"load1":                n.Load1,
 		"load5":                n.Load5,
 		"load15":               n.Load15,
-		"updates":              n.Updates,
 		"cpu_units":            n.CpuUnits,
 		"memory_units":         n.MemoryUnits,
 		"cpu_units_res":        n.CpuUnitsRes,
