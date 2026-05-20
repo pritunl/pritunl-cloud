@@ -9,15 +9,16 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var instanceData = &Task{
-	Name:    "instance_data",
-	Version: 1,
-	Hours:   []int{0, 3, 6, 9, 12, 15, 18, 21},
-	Minutes: []int{22},
-	Handler: instanceDataHandler,
+var advisoryData = &Task{
+	Name:       "advisory",
+	Version:    1,
+	Hours:      []int{0, 3, 6, 9, 12, 15, 18, 21},
+	Minutes:    []int{22},
+	Handler:    advisoryDataHandler,
+	RunOnStart: true,
 }
 
-func instanceDataHandler(db *database.Database) (err error) {
+func advisoryDataHandler(db *database.Database) (err error) {
 	advisories := map[string]*advisory.Advisory{}
 
 	coll := db.Instances()
@@ -83,5 +84,5 @@ func instanceDataHandler(db *database.Database) (err error) {
 }
 
 func init() {
-	register(instanceData)
+	register(advisoryData)
 }
