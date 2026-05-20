@@ -26,7 +26,7 @@ interface State {
 }
 
 interface Props {
-	instance: InstanceTypes.InstanceRo;
+	updates: InstanceTypes.Update[];
 }
 
 const css = {
@@ -228,7 +228,7 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 	}
 
 	buildEntries(): UpdateEntry[] {
-		let updates = this.props.instance.guest?.updates;
+		let updates = this.props.updates;
 		if (!updates) {
 			return [];
 		}
