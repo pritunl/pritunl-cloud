@@ -147,7 +147,7 @@ const css = {
 	} as React.CSSProperties,
 }
 
-export default class InstanceAdvDialog extends React.Component<Props, State> {
+export default class AdvisoryDialog extends React.Component<Props, State> {
 	constructor(props: any, context: any) {
 		super(props, context);
 		this.state = {
