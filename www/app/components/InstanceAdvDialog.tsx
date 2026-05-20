@@ -456,6 +456,9 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 					intent={sevIntent}
 					icon="shield"
 					style={css.tag}>{sevLabel}</Blueprint.Tag>
+				{primaryName && <span style={css.packageName}>
+					{primaryName}
+				</span>}
 				{entry.link ? <a
 					href={entry.link}
 					target="_blank"
@@ -465,10 +468,8 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 					{update.advisory}
 				</span>}
 			</div>
-			{packages.length > 0 && <div className="layout horizontal"
-				style={css.packageHeader}>
-				<span style={css.packageName}>{primaryName}</span>
-				{hasFullVersionInfo && <button
+			{hasFullVersionInfo && <div style={css.packageHeader}>
+				<button
 					className={"bp5-button bp5-minimal bp5-small " +
 						(packagesExpanded ?
 							"bp5-icon-chevron-up" :
@@ -488,7 +489,7 @@ export default class InstanceAdvDialog extends React.Component<Props, State> {
 					"Hide full versions" :
 					(packages.length === 1 ?
 						"Show full version" :
-						`Show ${packages.length} full version${packages.length === 1 ? "" : "s"}`)}</button>}
+						`Show ${packages.length} full version${packages.length === 1 ? "" : "s"}`)}</button>
 			</div>}
 			{packagesExpanded && packages.length > 0 &&
 				<div style={css.packageList}>
