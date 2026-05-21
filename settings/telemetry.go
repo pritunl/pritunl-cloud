@@ -10,6 +10,9 @@ type telemetry struct {
 	NvdApiLimit     int    `bson:"nvd_api_limit" default:"8"`
 	NvdApiAuthLimit int    `bson:"nvd_api_auth_limit" default:"1"`
 	NvdApiKey       string `bson:"nvd_api_key"`
+	RedhatTtl       int    `bson:"redhat_ttl" default:"21600"`
+	RedhatFinalTtl  int    `bson:"redhat_final_ttl" default:"604800"`
+	RedhatApiLimit  int    `bson:"redhat_api_limit" default:"1"`
 }
 
 func newTelemetry() interface{} {
