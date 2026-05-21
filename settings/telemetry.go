@@ -4,6 +4,7 @@ var Telemetry *telemetry
 
 type telemetry struct {
 	Id              string `bson:"_id"`
+	CveSource       string `bson:"cve_source" default:"nist"`
 	NvdTtl          int    `bson:"nvd_ttl" default:"21600"`
 	NvdFinalTtl     int    `bson:"nvd_final_ttl" default:"604800"`
 	NvdApiLimit     int    `bson:"nvd_api_limit" default:"8"`
