@@ -28,6 +28,9 @@ const (
 	Deferred         = "deferred"
 	Pending          = "pending"
 
+	Nist   = "nist"
+	RedHat = "redhat"
+
 	nvdApi = "https://services.nvd.nist.gov/rest/json/cves/2.0"
 )
 
