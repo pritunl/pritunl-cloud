@@ -9,6 +9,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/settings"
+	"github.com/pritunl/pritunl-cloud/utils"
 )
 
 var client = &http.Client{
@@ -144,6 +145,8 @@ func (a *Advisory) Validate(db *database.Database) (
 		}
 		return
 	}
+
+	a.Description = utils.FilterStr(a.Description, 10000)
 
 	return
 }
