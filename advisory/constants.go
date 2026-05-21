@@ -35,7 +35,8 @@ const (
 )
 
 var (
-	cveIdReg = regexp.MustCompile(`^CVE-\d{4}-\d{4,}$`)
+	cveIdReg = regexp.MustCompile(
+		`^[A-Z]{1,10}-[a-zA-Z0-9]{1,12}-[a-zA-Z0-9]{1,12}$`)
 
 	ValidStatuses = set.NewSet(
 		Analyzed,
