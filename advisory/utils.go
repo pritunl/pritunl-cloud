@@ -464,8 +464,12 @@ func GetOneLimit(db *database.Database, cveId string) (
 
 	since := time.Since(lastCall)
 	var limit time.Duration
-	if settings.Telemetry.NvdApiKey != "" {
-		limit = time.Duration(settings.Telemetry.NvdApiAuthLimit) * time.Second
+	if settings.Telemetry.CveSource == RedHat {
+		limit = time.Duration(
+			settings.Telemetry.RedhatApiLimit) * time.Second
+	} else if settings.Telemetry.NvdApiKey != "" {
+		limit = time.Duration(
+			settings.Telemetry.NvdApiAuthLimit) * time.Second
 	} else {
 		limit = time.Duration(settings.Telemetry.NvdApiLimit) * time.Second
 	}
