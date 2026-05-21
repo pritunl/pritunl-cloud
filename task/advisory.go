@@ -10,12 +10,11 @@ import (
 )
 
 var advisoryData = &Task{
-	Name:       "advisory",
-	Version:    1,
-	Hours:      []int{0, 3, 6, 9, 12, 15, 18, 21},
-	Minutes:    []int{22},
-	Handler:    advisoryDataHandler,
-	RunOnStart: true,
+	Name:    "advisory",
+	Version: 1,
+	Hours:   []int{0, 3, 6, 9, 12, 15, 18, 21},
+	Minutes: []int{22},
+	Handler: advisoryDataHandler,
 }
 
 func advisoryDataHandler(db *database.Database) (err error) {
