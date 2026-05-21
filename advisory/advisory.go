@@ -156,16 +156,22 @@ func (a *Advisory) IsFresh() bool {
 		return false
 	}
 
+	var ttl, finalTtl int
+	if settings.Telemetry.CveSource == RedHat {
+		ttl = settings.Telemetry.RedhatTtl
+		finalTtl = settings.Telemetry.RedhatFinalTtl
+	} else {
+		ttl = settings.Telemetry.NvdTtl
+		finalTtl = settings.Telemetry.NvdFinalTtl
+	}
+
 	if (a.Status == Analyzed || a.Status == Deferred) &&
-		time.Since(a.Timestamp) < time.Duration(
-			settings.Telemetry.NvdFinalTtl)*time.Second {
+		time.Since(a.Timestamp) < time.Duration(finalTtl)*time.Second {
 
 		return true
 	}
 
-	if time.Since(a.Timestamp) < time.Duration(
-		settings.Telemetry.NvdTtl)*time.Second {
-
+	if time.Since(a.Timestamp) < time.Duration(ttl)*time.Second {
 		return true
 	}
 
