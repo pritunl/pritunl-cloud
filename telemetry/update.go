@@ -9,6 +9,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/advisory"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/tools/commander"
 	"github.com/sirupsen/logrus"
@@ -62,7 +63,10 @@ func (u *Update) Validate(db *database.Database) (
 
 	u.Severity = utils.FilterStr(u.Severity, 64)
 
-	u.Description = utils.FilterStr(u.Description, 10000)
+	u.Description = utils.FilterStr(
+		u.Description,
+		settings.Telemetry.DescriptionLimit,
+	)
 
 	for i, pkg := range u.Packages {
 		u.Packages[i] = utils.FilterStr(pkg, 128)
