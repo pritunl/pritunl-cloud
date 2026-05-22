@@ -6,6 +6,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/advisory"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/instance"
+	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/sirupsen/logrus"
 )
 
@@ -68,6 +69,61 @@ func advisoryDataHandler(db *database.Database) (err error) {
 		}
 
 		err = inst.CommitFields(db, set.NewSet("guest"))
+		if err != nil {
+			return
+		}
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+
+	coll = db.Nodes()
+
+	cursor, err = coll.Find(db, &bson.M{})
+	if err != nil {
+		err = database.ParseError(err)
+		return
+	}
+	defer cursor.Close(db)
+
+	for cursor.Next(db) {
+		nde := &node.Node{}
+		err = cursor.Decode(nde)
+		if err != nil {
+			err = database.ParseError(err)
+			return
+		}
+
+		for _, updt := range nde.Updates {
+			details := []*advisory.Advisory{}
+
+			for _, cve := range updt.Cves {
+				adv, ok := advisories[cve]
+				if !ok {
+					adv, err = advisory.GetOneLimit(db, cve)
+					if err != nil {
+						logrus.WithFields(logrus.Fields{
+							"cve_id": cve,
+							"error":  err,
+						}).Error("task: Failed to query CVE")
+						err = nil
+						adv = nil
+					}
+					advisories[cve] = adv
+				}
+
+				if adv != nil {
+					details = append(details, adv)
+				}
+			}
+
+			updt.Details = details
+		}
+
+		err = nde.CommitFields(db, set.NewSet("updates"))
 		if err != nil {
 			return
 		}
