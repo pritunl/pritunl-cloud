@@ -525,6 +525,21 @@ func GetOne(db *database.Database, cveId string) (adv *Advisory, err error) {
 	return
 }
 
+func GetOneForce(db *database.Database, cveId string) (
+	adv *Advisory, err error) {
+
+	if settings.Telemetry.CveSource == RedHat {
+		adv, err = getOneRedhat(db, cveId)
+	} else {
+		adv, err = getOneNvd(db, cveId)
+	}
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func Remove(db *database.Database, advId bson.ObjectID) (err error) {
 	coll := db.Advisories()
 
