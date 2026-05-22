@@ -7,6 +7,9 @@ import (
 	"time"
 
 	"github.com/pritunl/pritunl-cloud/advisory"
+	"github.com/pritunl/pritunl-cloud/database"
+	"github.com/pritunl/pritunl-cloud/errortypes"
+	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/tools/commander"
 	"github.com/sirupsen/logrus"
 )
@@ -34,6 +37,38 @@ type Update struct {
 	Description string               `bson:"description" json:"description"`
 	Packages    []string             `bson:"packages" json:"packages"`
 	Details     []*advisory.Advisory `bson:"details" json:"details"`
+}
+
+func (u *Update) Validate(db *database.Database) (
+	errData *errortypes.ErrorData, err error) {
+
+	if !idReg.MatchString(u.Advisory) {
+		errData = &errortypes.ErrorData{
+			Error:   "id_invalid",
+			Message: "Invalid advisory ID",
+		}
+		return
+	}
+
+	for _, cve := range u.Cves {
+		if !idReg.MatchString(cve) {
+			errData = &errortypes.ErrorData{
+				Error:   "cve_invalid",
+				Message: "Invalid cve ID",
+			}
+			return
+		}
+	}
+
+	u.Severity = utils.FilterStr(u.Severity, 64)
+
+	u.Description = utils.FilterStr(u.Description, 10000)
+
+	for i, pkg := range u.Packages {
+		u.Packages[i] = utils.FilterStr(pkg, 128)
+	}
+
+	return
 }
 
 func parseRecord(lines []string) (update *Update) {
