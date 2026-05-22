@@ -42,7 +42,7 @@ const (
 )
 
 func mergeUpdateDetails(db *database.Database, instId bson.ObjectID,
-	updates []*telemetry.Update) (err error) {
+	updates []*telemetry.Update) (newUpdates []*telemetry.Update, err error) {
 
 	if len(updates) == 0 {
 		return
@@ -73,6 +73,25 @@ func mergeUpdateDetails(db *database.Database, instId bson.ObjectID,
 
 	for _, upd := range updates {
 		upd.Details = detailsMap[upd.Advisory]
+
+		e, errData := upd.Validate(db)
+		if e != nil {
+			logrus.WithFields(logrus.Fields{
+				"update_id": upd.Advisory,
+				"error":     e,
+			}).Info("imds: Ignoring invalid advisory")
+			continue
+		}
+
+		if errData != nil {
+			logrus.WithFields(logrus.Fields{
+				"update_id": upd.Advisory,
+				"error":     errData.Error(),
+			}).Info("imds: Ignoring invalid advisory")
+			continue
+		}
+
+		newUpdates = append(newUpdates, upd)
 	}
 
 	return
@@ -205,7 +224,7 @@ func Sync(db *database.Database, namespace string,
 		}
 
 		if ste.Updates != nil {
-			err = mergeUpdateDetails(db, instId, ste.Updates)
+			ste.Updates, err = mergeUpdateDetails(db, instId, ste.Updates)
 			if err != nil {
 				return
 			}
@@ -575,7 +594,7 @@ func Pull(db *database.Database, instId, deplyId bson.ObjectID,
 		}
 
 		if ste.Updates != nil {
-			err = mergeUpdateDetails(db, instId, ste.Updates)
+			ste.Updates, err = mergeUpdateDetails(db, instId, ste.Updates)
 			if err != nil {
 				return
 			}
