@@ -72,9 +72,7 @@ func mergeUpdateDetails(db *database.Database, instId bson.ObjectID,
 	}
 
 	for _, upd := range updates {
-		if details, ok := detailsMap[upd.Advisory]; ok {
-			upd.Details = details
-		}
+		upd.Details = detailsMap[upd.Advisory]
 	}
 
 	return
