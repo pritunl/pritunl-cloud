@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -343,11 +344,17 @@ func getOneNvd(db *database.Database, cveId string) (
 func getOneRedhat(db *database.Database, cveId string) (
 	adv *Advisory, err error) {
 
-	url := fmt.Sprintf(redhatApi, strings.ToUpper(cveId)) // TODO dangerous
+	u, err := url.Parse(redhatApi)
+	if err != nil {
+		err = &errortypes.ParseError{
+			errors.Wrap(err, "advisory: Failed to parse redhat url"),
+		}
+		return
+	}
 
-	println(url)
+	u.Path = fmt.Sprintf(redhatApiPath, strings.ToUpper(cveId))
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		err = &errortypes.RequestError{
 			errors.Wrap(err, "advisory: Failed to create request"),
