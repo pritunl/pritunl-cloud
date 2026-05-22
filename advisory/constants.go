@@ -31,8 +31,9 @@ const (
 	Nist   = "nist"
 	RedHat = "redhat"
 
-	nvdApi    = "https://services.nvd.nist.gov/rest/json/cves/2.0"
-	redhatApi = "https://access.redhat.com/hydra/rest/securitydata/cve/%s.json"
+	nvdApi        = "https://services.nvd.nist.gov/rest/json/cves/2.0"
+	redhatApi     = "https://access.redhat.com"
+	redhatApiPath = "/hydra/rest/securitydata/cve/%s.json"
 )
 
 var (
