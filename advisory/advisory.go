@@ -146,7 +146,10 @@ func (a *Advisory) Validate(db *database.Database) (
 		return
 	}
 
-	a.Description = utils.FilterStr(a.Description, 10000)
+	a.Description = utils.FilterStr(
+		a.Description,
+		settings.Telemetry.DescriptionLimit,
+	)
 
 	return
 }
