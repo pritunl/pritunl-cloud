@@ -1268,12 +1268,12 @@ func (n *Node) SyncNetwork(clearCache bool) {
 func (n *Node) getUpdateDetails(db *database.Database) (
 	updates []*telemetry.Update, ok bool) {
 
-	updates, ok = telemetry.Updates.Get()
+	curUpdates, ok := telemetry.Updates.Get()
 	if !ok {
 		return
 	}
 
-	if len(updates) == 0 {
+	if len(curUpdates) == 0 {
 		return
 	}
 
@@ -1284,8 +1284,27 @@ func (n *Node) getUpdateDetails(db *database.Database) (
 		}
 	}
 
-	for _, upd := range updates {
+	for _, upd := range curUpdates {
 		upd.Details = detailsMap[upd.Advisory]
+
+		e, errData := upd.Validate(db)
+		if e != nil {
+			logrus.WithFields(logrus.Fields{
+				"update_id": upd.Advisory,
+				"error":     e,
+			}).Info("imds: Ignoring invalid advisory")
+			continue
+		}
+
+		if errData != nil {
+			logrus.WithFields(logrus.Fields{
+				"update_id": upd.Advisory,
+				"error":     errData.Error(),
+			}).Info("imds: Ignoring invalid advisory")
+			continue
+		}
+
+		curUpdates = append(curUpdates, upd)
 	}
 
 	return
