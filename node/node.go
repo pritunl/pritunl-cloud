@@ -1285,9 +1285,7 @@ func (n *Node) getUpdateDetails(db *database.Database) (
 	}
 
 	for _, upd := range updates {
-		if details, ok := detailsMap[upd.Advisory]; ok {
-			upd.Details = details
-		}
+		upd.Details = detailsMap[upd.Advisory]
 	}
 
 	return
