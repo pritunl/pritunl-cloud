@@ -1292,7 +1292,7 @@ func (n *Node) getUpdateDetails(db *database.Database) (
 			logrus.WithFields(logrus.Fields{
 				"update_id": upd.Advisory,
 				"error":     e,
-			}).Info("imds: Ignoring invalid advisory")
+			}).Error("imds: Ignoring invalid advisory")
 			continue
 		}
 
@@ -1300,7 +1300,7 @@ func (n *Node) getUpdateDetails(db *database.Database) (
 			logrus.WithFields(logrus.Fields{
 				"update_id": upd.Advisory,
 				"error":     errData.GetError(),
-			}).Info("imds: Ignoring invalid advisory")
+			}).Error("imds: Ignoring invalid advisory")
 			continue
 		}
 
