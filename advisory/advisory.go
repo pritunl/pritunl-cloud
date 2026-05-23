@@ -48,13 +48,7 @@ func (a *Advisory) Validate(db *database.Database) (
 		a.Timestamp = time.Now()
 	}
 
-	if !idReg.MatchString(a.Id) {
-		errData = &errortypes.ErrorData{
-			Error:   "id_invalid",
-			Message: "Invalid advisory ID",
-		}
-		return
-	}
+	a.Id = utils.FilterId(a.Id)
 
 	if a.Status != "" && !ValidStatuses.Contains(a.Status) {
 		errData = &errortypes.ErrorData{
