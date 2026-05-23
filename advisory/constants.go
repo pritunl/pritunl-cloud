@@ -37,8 +37,7 @@ const (
 )
 
 var (
-	idReg = regexp.MustCompile(
-		`^[a-zA-Z]{1,10}-[a-zA-Z0-9]{1,12}-[a-zA-Z0-9]{1,12}$`)
+	idReg = regexp.MustCompile(`[^a-zA-Z0-9\-:]`)
 
 	ValidStatuses = set.NewSet(
 		Analyzed,
