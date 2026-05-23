@@ -43,22 +43,10 @@ type Update struct {
 func (u *Update) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
-	if !idReg.MatchString(u.Advisory) {
-		errData = &errortypes.ErrorData{
-			Error:   "id_invalid",
-			Message: "Invalid advisory ID",
-		}
-		return
-	}
+	u.Advisory = utils.FilterId(u.Advisory)
 
-	for _, cve := range u.Cves {
-		if !idReg.MatchString(cve) {
-			errData = &errortypes.ErrorData{
-				Error:   "cve_invalid",
-				Message: "Invalid cve ID",
-			}
-			return
-		}
+	for i, cve := range u.Cves {
+		u.Cves[i] = utils.FilterId(cve)
 	}
 
 	u.Severity = utils.FilterStr(u.Severity, 64)
