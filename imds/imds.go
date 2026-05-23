@@ -74,7 +74,7 @@ func mergeUpdateDetails(db *database.Database, instId bson.ObjectID,
 	for _, upd := range updates {
 		upd.Details = detailsMap[upd.Advisory]
 
-		e, errData := upd.Validate(db)
+		errData, e := upd.Validate(db)
 		if e != nil {
 			logrus.WithFields(logrus.Fields{
 				"update_id": upd.Advisory,
@@ -86,7 +86,7 @@ func mergeUpdateDetails(db *database.Database, instId bson.ObjectID,
 		if errData != nil {
 			logrus.WithFields(logrus.Fields{
 				"update_id": upd.Advisory,
-				"error":     errData.Error(),
+				"error":     errData.GetError(),
 			}).Info("imds: Ignoring invalid advisory")
 			continue
 		}
