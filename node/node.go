@@ -1287,7 +1287,7 @@ func (n *Node) getUpdateDetails(db *database.Database) (
 	for _, upd := range curUpdates {
 		upd.Details = detailsMap[upd.Advisory]
 
-		e, errData := upd.Validate(db)
+		errData, e := upd.Validate(db)
 		if e != nil {
 			logrus.WithFields(logrus.Fields{
 				"update_id": upd.Advisory,
@@ -1299,7 +1299,7 @@ func (n *Node) getUpdateDetails(db *database.Database) (
 		if errData != nil {
 			logrus.WithFields(logrus.Fields{
 				"update_id": upd.Advisory,
-				"error":     errData.Error(),
+				"error":     errData.GetError(),
 			}).Info("imds: Ignoring invalid advisory")
 			continue
 		}
