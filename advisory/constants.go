@@ -1,8 +1,6 @@
 package advisory
 
 import (
-	"regexp"
-
 	"github.com/dropbox/godropbox/container/set"
 )
 
@@ -37,8 +35,6 @@ const (
 )
 
 var (
-	idReg = regexp.MustCompile(`[^a-zA-Z0-9\-:]`)
-
 	ValidStatuses = set.NewSet(
 		Analyzed,
 		AwaitingAnalysis,
