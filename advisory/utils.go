@@ -540,11 +540,11 @@ func GetOneForce(db *database.Database, cveId string) (
 	return
 }
 
-func Remove(db *database.Database, advId bson.ObjectID) (err error) {
+func Remove(db *database.Database, cveId string) (err error) {
 	coll := db.Advisories()
 
 	_, err = coll.DeleteOne(db, &bson.M{
-		"_id": advId,
+		"_id": cveId,
 	})
 	if err != nil {
 		err = database.ParseError(err)
