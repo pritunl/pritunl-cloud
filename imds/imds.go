@@ -79,7 +79,7 @@ func mergeUpdateDetails(db *database.Database, instId bson.ObjectID,
 			logrus.WithFields(logrus.Fields{
 				"update_id": upd.Advisory,
 				"error":     e,
-			}).Info("imds: Ignoring invalid advisory")
+			}).Warn("imds: Ignoring invalid advisory")
 			continue
 		}
 
@@ -87,7 +87,7 @@ func mergeUpdateDetails(db *database.Database, instId bson.ObjectID,
 			logrus.WithFields(logrus.Fields{
 				"update_id": upd.Advisory,
 				"error":     errData.GetError(),
-			}).Info("imds: Ignoring invalid advisory")
+			}).Warn("imds: Ignoring invalid advisory")
 			continue
 		}
 
