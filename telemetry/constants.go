@@ -1,7 +1,7 @@
 package telemetry
 
 const (
-	Moderate  = "moderate"
-	Important = "important"
-	Critical  = "critical"
+	moderate  = "moderate"
+	important = "important"
+	critical  = "critical"
 )
