@@ -51,7 +51,7 @@ func (u *Update) Validate(db *database.Database) (
 
 	u.Severity = utils.FilterStr(u.Severity, 64)
 
-	u.Description = utils.FilterStr(
+	u.Description = utils.FilterStrExt(
 		u.Description,
 		settings.Telemetry.DescriptionLimit,
 	)
