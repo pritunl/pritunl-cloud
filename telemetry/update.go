@@ -194,14 +194,14 @@ func updatesList() (advisories map[string][]string, err error) {
 		part1 := strings.ToLower(parts[1])
 		part2 := strings.ToLower(parts[2])
 
-		if strings.Contains(part1, Moderate) ||
-			strings.Contains(part1, Important) ||
-			strings.Contains(part1, Critical) {
+		if strings.Contains(part1, moderate) ||
+			strings.Contains(part1, important) ||
+			strings.Contains(part1, critical) {
 
 			pkg = parts[2]
-		} else if len(parts) >= 4 && (strings.Contains(part2, Moderate) ||
-			strings.Contains(part2, Important) ||
-			strings.Contains(part2, Critical)) {
+		} else if len(parts) >= 4 && (strings.Contains(part2, moderate) ||
+			strings.Contains(part2, important) ||
+			strings.Contains(part2, critical)) {
 
 			pkg = parts[3]
 		} else {
