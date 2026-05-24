@@ -21,6 +21,7 @@ type Advisory struct {
 	Timestamp       time.Time `bson:"timestamp" json:"timestamp"`
 	Status          string    `bson:"status" json:"status"`
 	Description     string    `bson:"description" json:"description"`
+	Statement       string    `bson:"statement" json:"statement"`
 	Score           float64   `bson:"score" json:"score"`
 	Severity        string    `bson:"severity" json:"severity"`
 	Vector          string    `bson:"vector" json:"vector"`
