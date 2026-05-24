@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/pritunl/mongo-go-driver/v2/bson"
-	"github.com/pritunl/mongo-go-driver/v2/mongo/options"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/settings"
@@ -179,32 +178,8 @@ func (a *Advisory) IsFresh() bool {
 func (a *Advisory) Commit(db *database.Database) (err error) {
 	coll := db.Advisories()
 
-	_, err = coll.UpdateOne(
-		db,
-		&bson.M{
-			"_id": a.Id,
-		},
-		&bson.M{
-			"$set": &bson.M{
-				"timestamp":       a.Timestamp,
-				"status":          a.Status,
-				"description":     a.Description,
-				"score":           a.Score,
-				"severity":        a.Severity,
-				"vector":          a.Vector,
-				"complexity":      a.Complexity,
-				"privileges":      a.Privileges,
-				"interaction":     a.Interaction,
-				"scope":           a.Scope,
-				"confidentiality": a.Confidentiality,
-				"integrity":       a.Integrity,
-				"availability":    a.Availability,
-			},
-		},
-		options.UpdateOne().SetUpsert(true),
-	)
+	err = coll.Upsert(&bson.M{"_id": a.Id}, a)
 	if err != nil {
-		err = database.ParseError(err)
 		return
 	}
 
