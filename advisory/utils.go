@@ -75,6 +75,7 @@ type redhatResponse struct {
 	ThreatSeverity string      `json:"threat_severity"`
 	PublicDate     string      `json:"public_date"`
 	Details        []string    `json:"details"`
+	Statement      string      `json:"statement"`
 	Cvss3          redhatCvss3 `json:"cvss3"`
 }
 
@@ -424,6 +425,8 @@ func getOneRedhat(db *database.Database, cveId string) (
 	if len(rhResp.Details) > 0 {
 		adv.Description = strings.Join(rhResp.Details, "\n\n")
 	}
+
+	adv.Statement = rhResp.Statement
 
 	if rhResp.Cvss3.BaseScore != "" {
 		score, e := strconv.ParseFloat(rhResp.Cvss3.BaseScore, 64)
