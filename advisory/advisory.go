@@ -145,6 +145,11 @@ func (a *Advisory) Validate(db *database.Database) (
 		settings.Telemetry.DescriptionLimit,
 	)
 
+	a.Statement = utils.FilterStrExt(
+		a.Statement,
+		settings.Telemetry.DescriptionLimit,
+	)
+
 	return
 }
 
