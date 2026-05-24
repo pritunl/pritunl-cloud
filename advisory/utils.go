@@ -422,7 +422,7 @@ func getOneRedhat(db *database.Database, cveId string) (
 	}
 
 	if len(rhResp.Details) > 0 {
-		adv.Description = rhResp.Details[0]
+		adv.Description = strings.Join(rhResp.Details, "\n\n")
 	}
 
 	if rhResp.Cvss3.BaseScore != "" {
