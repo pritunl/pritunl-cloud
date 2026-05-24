@@ -217,6 +217,17 @@ func normalizeValue(val string) string {
 	}
 }
 
+func getIdPrefix() string {
+	switch settings.Telemetry.CveSource {
+	case RedHat:
+		return "rh:"
+	case Nist:
+		return "nvd:"
+	}
+
+	return ""
+}
+
 func getOne(db *database.Database, query *bson.M) (adv *Advisory, err error) {
 	coll := db.Advisories()
 	adv = &Advisory{}
@@ -285,7 +296,7 @@ func getOneNvd(db *database.Database, cveId string) (
 	cve := nvdResp.Vulnerabilities[0].Cve
 
 	adv = &Advisory{
-		Id:        strings.ToUpper(cve.ID),
+		Id:        "nvd:" + strings.ToUpper(cve.ID),
 		Timestamp: time.Now(),
 		Status:    normalizeStatus(cve.VulnStatus),
 	}
@@ -404,7 +415,7 @@ func getOneRedhat(db *database.Database, cveId string) (
 	}
 
 	adv = &Advisory{
-		Id:        strings.ToUpper(rhResp.Name),
+		Id:        "rh:" + strings.ToUpper(rhResp.Name),
 		Timestamp: time.Now(),
 		Status:    Analyzed,
 		Severity:  normalizeRedhatSeverity(rhResp.ThreatSeverity),
@@ -455,7 +466,7 @@ func GetOneLimit(db *database.Database, cveId string) (
 	adv *Advisory, err error) {
 
 	adv, err = getOne(db, &bson.M{
-		"_id": cveId,
+		"_id": getIdPrefix() + cveId,
 	})
 	if err != nil {
 		if _, ok := err.(*database.NotFoundError); ok {
@@ -499,7 +510,7 @@ func GetOneLimit(db *database.Database, cveId string) (
 
 func GetOne(db *database.Database, cveId string) (adv *Advisory, err error) {
 	adv, err = getOne(db, &bson.M{
-		"_id": cveId,
+		"_id": getIdPrefix() + cveId,
 	})
 	if err != nil {
 		if _, ok := err.(*database.NotFoundError); ok {
@@ -544,7 +555,7 @@ func Remove(db *database.Database, cveId string) (err error) {
 	coll := db.Advisories()
 
 	_, err = coll.DeleteOne(db, &bson.M{
-		"_id": cveId,
+		"_id": getIdPrefix() + cveId,
 	})
 	if err != nil {
 		err = database.ParseError(err)
