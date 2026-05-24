@@ -60,11 +60,11 @@ func matchAdvisory(id string) bool {
 func parseSeverity(value string) string {
 	switch strings.ToLower(strings.TrimSpace(value)) {
 	case "critical":
-		return Critical
+		return critical
 	case "important":
-		return Important
+		return important
 	case "moderate":
-		return Moderate
+		return moderate
 	}
 	return ""
 }
