@@ -105,6 +105,17 @@ func (u *Update) scoreAdvisory(adv *advisory.Advisory) int {
 	return Low
 }
 
+func (u *Update) UpdateScore() {
+	top := Low
+	for _, adv := range u.Details {
+		score := u.scoreAdvisory(adv)
+		if score > top {
+			top = score
+		}
+	}
+	u.Score = top
+}
+
 func parseRecord(lines []string) (update *Update) {
 	updt := &Update{}
 	descLines := []string{}
