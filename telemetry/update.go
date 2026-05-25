@@ -36,6 +36,7 @@ type Update struct {
 	Cves        []string             `bson:"cves" json:"cves"`
 	Severity    string               `bson:"severity" json:"severity"`
 	Description string               `bson:"description" json:"description"`
+	Score       int                  `bson:"score" json:"score"`
 	Packages    []string             `bson:"packages" json:"packages"`
 	Details     []*advisory.Advisory `bson:"details" json:"details"`
 }
