@@ -66,6 +66,7 @@ func advisoryDataHandler(db *database.Database) (err error) {
 			}
 
 			updt.Details = details
+			updt.UpdateScore()
 		}
 
 		err = inst.CommitFields(db, set.NewSet("guest"))
