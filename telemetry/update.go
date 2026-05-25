@@ -64,6 +64,47 @@ func (u *Update) Validate(db *database.Database) (
 	return
 }
 
+func (u *Update) scoreAdvisory(adv *advisory.Advisory) int {
+	if adv == nil {
+		return Low
+	}
+
+	isNetwork := adv.Vector == advisory.Network
+	isAdjacent := adv.Vector == advisory.Adjacent
+	isUnauth := adv.Privileges == advisory.None
+	isNoInteraction := adv.Interaction == advisory.None
+	isCritical := adv.Severity == advisory.Critical
+	isHigh := adv.Severity == advisory.High
+
+	if isNetwork && isUnauth && isNoInteraction &&
+		(isCritical || adv.Score >= 9.0) {
+
+		return Critical
+	}
+
+	if isNetwork && isUnauth {
+		return High
+	}
+	if isNetwork && isCritical {
+		return High
+	}
+	if (isNetwork || isAdjacent) && adv.Score >= 9.5 {
+		return High
+	}
+
+	if isNetwork && (isHigh || adv.Score >= 7.0) {
+		return Medium
+	}
+	if isAdjacent && isUnauth && (isCritical || isHigh) {
+		return Medium
+	}
+	if isCritical {
+		return Medium
+	}
+
+	return Low
+}
+
 func parseRecord(lines []string) (update *Update) {
 	updt := &Update{}
 	descLines := []string{}
