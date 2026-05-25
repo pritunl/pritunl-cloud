@@ -79,26 +79,47 @@ func (u *Update) scoreAdvisory(adv *advisory.Advisory) int {
 	if isNetwork && isUnauth && isNoInteraction &&
 		(isCritical || adv.Score >= 9.0) {
 
+		if u.Severity == moderate {
+			return High
+		}
 		return Critical
 	}
 
 	if isNetwork && isUnauth {
+		if u.Severity == moderate {
+			return Medium
+		}
 		return High
 	}
 	if isNetwork && isCritical {
+		if u.Severity == moderate {
+			return Medium
+		}
 		return High
 	}
 	if (isNetwork || isAdjacent) && adv.Score >= 9.5 {
+		if u.Severity == moderate {
+			return Medium
+		}
 		return High
 	}
 
 	if isNetwork && (isHigh || adv.Score >= 7.0) {
+		if u.Severity == moderate {
+			return Low
+		}
 		return Medium
 	}
 	if isAdjacent && isUnauth && (isCritical || isHigh) {
+		if u.Severity == moderate {
+			return Low
+		}
 		return Medium
 	}
 	if isCritical {
+		if u.Severity == moderate {
+			return Low
+		}
 		return Medium
 	}
 
