@@ -3,10 +3,11 @@ package task
 import (
 	"github.com/dropbox/godropbox/container/set"
 	"github.com/pritunl/mongo-go-driver/v2/bson"
-	"github.com/pritunl/pritunl-cloud/advisory"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/telemetry"
+	"github.com/pritunl/pritunl-cloud/vulnerability"
 	"github.com/sirupsen/logrus"
 )
 
@@ -19,7 +20,7 @@ var advisoryData = &Task{
 }
 
 func advisoryDataHandler(db *database.Database) (err error) {
-	advisories := map[string]*advisory.Advisory{}
+	vulnerabilities := map[string]*vulnerability.Vulnerability{}
 
 	coll := db.Instances()
 
@@ -42,32 +43,38 @@ func advisoryDataHandler(db *database.Database) (err error) {
 			continue
 		}
 
+		vulns := []*vulnerability.Vulnerability{}
+		updtsData := map[string]*telemetry.UpdateData{}
 		for _, updt := range inst.Guest.Updates {
-			details := []*advisory.Advisory{}
+			updtData := &telemetry.UpdateData{}
+			updtVulns := []*vulnerability.Vulnerability{}
 
-			for _, cve := range updt.Cves {
-				adv, ok := advisories[cve]
+			for _, vulnId := range updt.Vulnerabilities {
+				vuln, ok := vulnerabilities[vulnId]
 				if !ok {
-					adv, err = advisory.GetOneLimit(db, cve)
+					vuln, err = vulnerability.GetOneLimit(db, vulnId)
 					if err != nil {
 						logrus.WithFields(logrus.Fields{
-							"cve_id": cve,
-							"error":  err,
-						}).Error("task: Failed to query CVE")
+							"vulnerability": vulnId,
+							"error":         err,
+						}).Error("task: Failed to query vulnerability")
 						err = nil
-						adv = nil
+						vuln = nil
 					}
-					advisories[cve] = adv
+					vulnerabilities[vulnId] = vuln
 				}
 
-				if adv != nil {
-					details = append(details, adv)
+				if vuln != nil {
+					vulns = append(vulns, vuln)
+					updtVulns = append(updtVulns, vuln)
 				}
 			}
 
-			updt.Details = details
-			updt.UpdateScore()
+			updtData.Score = updt.GetScore(updtVulns)
+			updtsData[updt.Advisory] = updtData
 		}
+		inst.Guest.UpdatesData = updtsData
+		inst.Guest.Vulnerabilities = vulns
 
 		err = inst.CommitFields(db, set.NewSet("guest"))
 		if err != nil {
@@ -98,33 +105,41 @@ func advisoryDataHandler(db *database.Database) (err error) {
 			return
 		}
 
+		vulns := []*vulnerability.Vulnerability{}
+		updtsData := map[string]*telemetry.UpdateData{}
 		for _, updt := range nde.Updates {
-			details := []*advisory.Advisory{}
+			updtData := &telemetry.UpdateData{}
+			updtVulns := []*vulnerability.Vulnerability{}
 
-			for _, cve := range updt.Cves {
-				adv, ok := advisories[cve]
+			for _, vulnId := range updt.Vulnerabilities {
+				vuln, ok := vulnerabilities[vulnId]
 				if !ok {
-					adv, err = advisory.GetOneLimit(db, cve)
+					vuln, err = vulnerability.GetOneLimit(db, vulnId)
 					if err != nil {
 						logrus.WithFields(logrus.Fields{
-							"cve_id": cve,
-							"error":  err,
-						}).Error("task: Failed to query CVE")
+							"vulnerability": vulnId,
+							"error":         err,
+						}).Error("task: Failed to query vulnerability")
 						err = nil
-						adv = nil
+						vuln = nil
 					}
-					advisories[cve] = adv
+					vulnerabilities[vulnId] = vuln
 				}
 
-				if adv != nil {
-					details = append(details, adv)
+				if vuln != nil {
+					vulns = append(vulns, vuln)
+					updtVulns = append(updtVulns, vuln)
 				}
 			}
 
-			updt.Details = details
+			updtData.Score = updt.GetScore(updtVulns)
+			updtsData[updt.Advisory] = updtData
 		}
+		nde.UpdatesData = updtsData
+		nde.Vulnerabilities = vulns
 
-		err = nde.CommitFields(db, set.NewSet("updates"))
+		err = nde.CommitFields(
+			db, set.NewSet("updates_data", "vulnerabilities"))
 		if err != nil {
 			return
 		}
