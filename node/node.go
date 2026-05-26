@@ -859,6 +859,20 @@ func (n *Node) Format() {
 	utils.SortObjectIds(n.Certificates)
 }
 
+func (n *Node) Json() {
+	updsData := n.UpdatesData
+	if updsData == nil {
+		updsData = map[string]*telemetry.UpdateData{}
+	}
+
+	for _, upd := range n.Updates {
+		updData := updsData[upd.Advisory]
+		if updsData[upd.Advisory] != nil {
+			upd.Score = updData.Score
+		}
+	}
+}
+
 func (n *Node) JsonHypervisor() {
 	vpcs := []*cloud.Vpc{}
 
