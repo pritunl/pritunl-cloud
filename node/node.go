@@ -266,6 +266,8 @@ func (n *Node) Copy() *Node {
 		CpuUnitsRes:             n.CpuUnitsRes,
 		MemoryUnitsRes:          n.MemoryUnitsRes,
 		Updates:                 n.Updates,
+		UpdatesData:             n.UpdatesData,
+		Vulnerabilities:         n.Vulnerabilities,
 		PublicIps:               n.PublicIps,
 		PublicIps6:              n.PublicIps6,
 		PrivateIps:              n.PrivateIps,
