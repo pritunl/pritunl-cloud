@@ -6,11 +6,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pritunl/pritunl-cloud/advisory"
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
+	"github.com/pritunl/pritunl-cloud/vulnerability"
 	"github.com/pritunl/tools/commander"
 	"github.com/sirupsen/logrus"
 )
@@ -32,13 +32,16 @@ var Updates = &Telemetry[[]*Update]{
 }
 
 type Update struct {
-	Advisory    string               `bson:"advisory" json:"advisory"`
-	Cves        []string             `bson:"cves" json:"cves"`
-	Severity    string               `bson:"severity" json:"severity"`
-	Description string               `bson:"description" json:"description"`
-	Score       int                  `bson:"score" json:"score"`
-	Packages    []string             `bson:"packages" json:"packages"`
-	Details     []*advisory.Advisory `bson:"details" json:"details"`
+	Advisory        string   `bson:"advisory" json:"advisory"`
+	Vulnerabilities []string `bson:"vulnerabilities" json:"vulnerabilities"`
+	Severity        string   `bson:"severity" json:"severity"`
+	Description     string   `bson:"description" json:"description"`
+	Score           int      `bson:"-" json:"score"`
+	Packages        []string `bson:"packages" json:"packages"`
+}
+
+type UpdateData struct {
+	Score int `bson:"score" json:"score"`
 }
 
 func (u *Update) Validate(db *database.Database) (
