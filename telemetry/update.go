@@ -49,8 +49,8 @@ func (u *Update) Validate(db *database.Database) (
 
 	u.Advisory = utils.FilterId(u.Advisory)
 
-	for i, cve := range u.Cves {
-		u.Cves[i] = utils.FilterId(cve)
+	for i, cve := range u.Vulnerabilities {
+		u.Vulnerabilities[i] = utils.FilterId(cve)
 	}
 
 	u.Severity = utils.FilterStr(u.Severity, 64)
@@ -67,20 +67,20 @@ func (u *Update) Validate(db *database.Database) (
 	return
 }
 
-func (u *Update) scoreAdvisory(adv *advisory.Advisory) int {
-	if adv == nil {
+func (u *Update) scoreAdvisory(vuln *vulnerability.Vulnerability) int {
+	if vuln == nil {
 		return Low
 	}
 
-	isNetwork := adv.Vector == advisory.Network
-	isAdjacent := adv.Vector == advisory.Adjacent
-	isUnauth := adv.Privileges == advisory.None
-	isNoInteraction := adv.Interaction == advisory.None
-	isCritical := adv.Severity == advisory.Critical
-	isHigh := adv.Severity == advisory.High
+	isNetwork := vuln.Vector == vulnerability.Network
+	isAdjacent := vuln.Vector == vulnerability.Adjacent
+	isUnauth := vuln.Privileges == vulnerability.None
+	isNoInteraction := vuln.Interaction == vulnerability.None
+	isCritical := vuln.Severity == vulnerability.Critical
+	isHigh := vuln.Severity == vulnerability.High
 
 	if isNetwork && isUnauth && isNoInteraction &&
-		(isCritical || adv.Score >= 9.0) {
+		(isCritical || vuln.Score >= 9.0) {
 
 		if u.Severity == moderate {
 			return High
@@ -100,14 +100,14 @@ func (u *Update) scoreAdvisory(adv *advisory.Advisory) int {
 		}
 		return High
 	}
-	if (isNetwork || isAdjacent) && adv.Score >= 9.5 {
+	if (isNetwork || isAdjacent) && vuln.Score >= 9.5 {
 		if u.Severity == moderate {
 			return Medium
 		}
 		return High
 	}
 
-	if isNetwork && (isHigh || adv.Score >= 7.0) {
+	if isNetwork && (isHigh || vuln.Score >= 7.0) {
 		if u.Severity == moderate {
 			return Low
 		}
@@ -129,15 +129,15 @@ func (u *Update) scoreAdvisory(adv *advisory.Advisory) int {
 	return Low
 }
 
-func (u *Update) UpdateScore() {
+func (u *Update) GetScore(vulns []*vulnerability.Vulnerability) int {
 	top := Low
-	for _, adv := range u.Details {
-		score := u.scoreAdvisory(adv)
+	for _, vuln := range vulns {
+		score := u.scoreAdvisory(vuln)
 		if score > top {
 			top = score
 		}
 	}
-	u.Score = top
+	return top
 }
 
 func parseRecord(lines []string) (update *Update) {
@@ -160,7 +160,7 @@ func parseRecord(lines []string) (update *Update) {
 				descLines = append(descLines, value)
 			case "CVEs":
 				if value != "" {
-					updt.Cves = append(updt.Cves,
+					updt.Vulnerabilities = append(updt.Vulnerabilities,
 						cveReg.FindAllString(value, -1)...)
 				}
 			}
@@ -181,7 +181,7 @@ func parseRecord(lines []string) (update *Update) {
 			}
 		case "CVEs":
 			if value != "" {
-				updt.Cves = append(updt.Cves,
+				updt.Vulnerabilities = append(updt.Vulnerabilities,
 					cveReg.FindAllString(value, -1)...)
 			}
 		}
@@ -202,7 +202,7 @@ func parseRecord(lines []string) (update *Update) {
 	fullText := strings.Join(lines, "\n")
 	cveSet := map[string]bool{}
 	deduped := []string{}
-	for _, c := range updt.Cves {
+	for _, c := range updt.Vulnerabilities {
 		if !cveSet[c] {
 			cveSet[c] = true
 			deduped = append(deduped, c)
@@ -215,7 +215,7 @@ func parseRecord(lines []string) (update *Update) {
 		}
 	}
 	sort.Strings(deduped)
-	updt.Cves = deduped
+	updt.Vulnerabilities = deduped
 
 	update = updt
 	return
