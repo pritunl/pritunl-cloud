@@ -1400,6 +1400,8 @@ func (n *Node) update(db *database.Database) (err error) {
 	n.Firewall = nde.Firewall
 	n.Roles = nde.Roles
 	n.Updates = nde.Updates
+	n.UpdatesData = nde.UpdatesData
+	n.Vulnerabilities = nde.Vulnerabilities
 	n.VirtPath = nde.VirtPath
 	n.CachePath = nde.CachePath
 	n.TempPath = nde.TempPath
