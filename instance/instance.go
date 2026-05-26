@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/dropbox/godropbox/container/set"
@@ -848,6 +849,39 @@ func (i *Instance) Json(short bool) {
 	if i.IscsiDevices != nil {
 		for _, device := range i.IscsiDevices {
 			device.Json()
+		}
+	}
+
+	if i.Guest != nil {
+		vulns := map[string]*vulnerability.Vulnerability{}
+		for _, vuln := range i.Guest.Vulnerabilities {
+			vulnId := strings.Split(vuln.Id, ":")
+			if len(vulnId) == 2 {
+				vulns[vulnId[1]] = vuln
+			}
+		}
+
+		updsData := i.Guest.UpdatesData
+		if updsData == nil {
+			updsData = map[string]*telemetry.UpdateData{}
+		}
+
+		for _, upd := range i.Guest.Updates {
+			updData := updsData[upd.Advisory]
+			if updsData[upd.Advisory] != nil {
+				upd.Score = updData.Score
+				continue
+			}
+
+			updVulns := []*vulnerability.Vulnerability{}
+			for _, vulnId := range upd.Vulnerabilities {
+				vuln := vulns[vulnId]
+				if vuln != nil {
+					updVulns = append(updVulns, vuln)
+				}
+			}
+
+			upd.Score = upd.GetScore(updVulns)
 		}
 	}
 }
