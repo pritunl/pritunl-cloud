@@ -71,7 +71,7 @@ func advisoryDataHandler(db *database.Database) (err error) {
 			}
 
 			updtData.Score = updt.GetScore(updtVulns)
-			updtsData[updt.Advisory] = updtData
+			updtsData[updt.Id] = updtData
 		}
 		inst.Guest.UpdatesData = updtsData
 		inst.Guest.Vulnerabilities = vulns
@@ -136,7 +136,7 @@ func advisoryDataHandler(db *database.Database) (err error) {
 			}
 
 			updtData.Score = updt.GetScore(updtVulns)
-			updtsData[updt.Advisory] = updtData
+			updtsData[updt.Id] = updtData
 		}
 		nde.UpdatesData = updtsData
 		nde.Vulnerabilities = vulns
