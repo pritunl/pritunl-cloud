@@ -365,22 +365,22 @@ var Instances = []*instance.Instance{
 			Load15:    28.28,
 			Updates: []*telemetry.Update{
 				{
-					Advisory: "ALSA-2025:10371",
+					Id:       "ALSA-2025:10371",
 					Severity: "important",
 					Packages: []string{"kernel-6.12.0-55.20.1.el10_0.x86_64"},
 				},
 				{
-					Advisory: "ALSA-2025:10854",
-				Severity: "important",
+					Id:       "ALSA-2025:10854",
+					Severity: "important",
 					Packages: []string{"kernel-6.12.0-55.21.1.el10_0.x86_64"},
 				},
 				{
-					Advisory: "ALSA-2025:11428",
+					Id:       "ALSA-2025:11428",
 					Severity: "important",
 					Packages: []string{"kernel-6.12.0-55.22.1.el10_0.x86_64"},
 				},
 				{
-					Advisory: "ALSA-2025:12662",
+					Id:       "ALSA-2025:12662",
 					Severity: "important",
 					Packages: []string{"kernel-6.12.0-55.25.1.el10_0.x86_64"},
 				},
@@ -425,22 +425,22 @@ var Instances = []*instance.Instance{
 			Load15:    69.05,
 			Updates: []*telemetry.Update{
 				{
-					Advisory: "ALSA-2025:10371",
+					Id:       "ALSA-2025:10371",
 					Severity: "important",
 					Packages: []string{"kernel-6.12.0-55.20.1.el10_0.x86_64"},
 				},
 				{
-					Advisory: "ALSA-2025:10854",
+					Id:       "ALSA-2025:10854",
 					Severity: "important",
 					Packages: []string{"kernel-6.12.0-55.21.1.el10_0.x86_64"},
 				},
 				{
-					Advisory: "ALSA-2025:11428",
+					Id:       "ALSA-2025:11428",
 					Severity: "important",
 					Packages: []string{"kernel-6.12.0-55.22.1.el10_0.x86_64"},
 				},
 				{
-					Advisory: "ALSA-2025:12662",
+					Id:       "ALSA-2025:12662",
 					Severity: "important",
 					Packages: []string{"kernel-6.12.0-55.25.1.el10_0.x86_64"},
 				},
@@ -713,22 +713,22 @@ var Instances = []*instance.Instance{
 			Load15:    66.2,
 			Updates: []*telemetry.Update{
 				{
-					Advisory: "ALSA-2025:10371",
+					Id:       "ALSA-2025:10371",
 					Severity: "important",
 					Packages: []string{"kernel-6.12.0-55.20.1.el10_0.x86_64"},
 				},
 				{
-					Advisory: "ALSA-2025:10854",
+					Id:       "ALSA-2025:10854",
 					Severity: "important",
 					Packages: []string{"kernel-6.12.0-55.21.1.el10_0.x86_64"},
 				},
 				{
-					Advisory: "ALSA-2025:11428",
+					Id:       "ALSA-2025:11428",
 					Severity: "important",
 					Packages: []string{"kernel-6.12.0-55.22.1.el10_0.x86_64"},
 				},
 				{
-					Advisory: "ALSA-2025:12662",
+					Id:       "ALSA-2025:12662",
 					Severity: "important",
 					Packages: []string{"kernel-6.12.0-55.25.1.el10_0.x86_64"},
 				},
@@ -773,22 +773,22 @@ var Instances = []*instance.Instance{
 			Load15:    40.68,
 			Updates: []*telemetry.Update{
 				{
-					Advisory: "ALSA-2025:10371",
+					Id:       "ALSA-2025:10371",
 					Severity: "important",
 					Packages: []string{"kernel-6.12.0-55.20.1.el10_0.x86_64"},
 				},
 				{
-					Advisory: "ALSA-2025:10854",
+					Id:       "ALSA-2025:10854",
 					Severity: "important",
 					Packages: []string{"kernel-6.12.0-55.21.1.el10_0.x86_64"},
 				},
 				{
-					Advisory: "ALSA-2025:11428",
+					Id:       "ALSA-2025:11428",
 					Severity: "important",
 					Packages: []string{"kernel-6.12.0-55.22.1.el10_0.x86_64"},
 				},
 				{
-					Advisory: "ALSA-2025:12662",
+					Id:       "ALSA-2025:12662",
 					Severity: "important",
 					Packages: []string{"kernel-6.12.0-55.25.1.el10_0.x86_64"},
 				},
