@@ -76,7 +76,10 @@ func advisoryDataHandler(db *database.Database) (err error) {
 		inst.Guest.UpdatesData = updtsData
 		inst.Guest.Vulnerabilities = vulns
 
-		err = inst.CommitFields(db, set.NewSet("guest"))
+		err = inst.CommitFields(db, set.NewSet(
+			"guest.updates_data",
+			"guest.vulnerabilities",
+		))
 		if err != nil {
 			return
 		}
