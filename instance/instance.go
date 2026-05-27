@@ -858,8 +858,8 @@ func (i *Instance) Json(short bool) {
 		}
 
 		for _, upd := range i.Guest.Updates {
-			updData := updsData[upd.Advisory]
-			if updsData[upd.Advisory] != nil {
+			updData := updsData[upd.Id]
+			if updsData[upd.Id] != nil {
 				upd.Score = updData.Score
 			}
 		}
