@@ -32,7 +32,7 @@ var Updates = &Telemetry[[]*Update]{
 }
 
 type Update struct {
-	Advisory        string   `bson:"advisory" json:"advisory"`
+	Id              string   `bson:"id" json:"id"`
 	Vulnerabilities []string `bson:"vulnerabilities" json:"vulnerabilities"`
 	Severity        string   `bson:"severity" json:"severity"`
 	Description     string   `bson:"description" json:"description"`
@@ -47,7 +47,7 @@ type UpdateData struct {
 func (u *Update) Validate(db *database.Database) (
 	errData *errortypes.ErrorData, err error) {
 
-	u.Advisory = utils.FilterId(u.Advisory)
+	u.Id = utils.FilterId(u.Id)
 
 	for i, cve := range u.Vulnerabilities {
 		u.Vulnerabilities[i] = utils.FilterId(cve)
@@ -172,7 +172,7 @@ func parseRecord(lines []string) (update *Update) {
 
 		switch field {
 		case "Update ID", "Name":
-			updt.Advisory = value
+			updt.Id = value
 		case "Severity":
 			updt.Severity = parseSeverity(value)
 		case "Description":
@@ -187,7 +187,7 @@ func parseRecord(lines []string) (update *Update) {
 		}
 	}
 
-	if !matchAdvisory(updt.Advisory) {
+	if !matchAdvisory(updt.Id) {
 		return
 	}
 	if updt.Severity == "" {
@@ -351,14 +351,14 @@ func UpdatesRefresh() (updates []*Update, err error) {
 		if upd == nil {
 			return
 		}
-		if seen[upd.Advisory] {
+		if seen[upd.Id] {
 			return
 		}
-		pkgs, ok := pkgMap[upd.Advisory]
+		pkgs, ok := pkgMap[upd.Id]
 		if !ok {
 			return
 		}
-		seen[upd.Advisory] = true
+		seen[upd.Id] = true
 		upd.Packages = pkgs
 		updates = append(updates, upd)
 	}
