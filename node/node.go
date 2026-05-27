@@ -866,8 +866,8 @@ func (n *Node) Json() {
 	}
 
 	for _, upd := range n.Updates {
-		updData := updsData[upd.Advisory]
-		if updsData[upd.Advisory] != nil {
+		updData := updsData[upd.Id]
+		if updsData[upd.Id] != nil {
 			upd.Score = updData.Score
 		}
 	}
