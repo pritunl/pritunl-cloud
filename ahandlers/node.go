@@ -781,6 +781,10 @@ func nodesGet(c *gin.Context) {
 			return
 		}
 
+		for _, nde := range nodes {
+			nde.Json()
+		}
+
 		data := &nodesData{
 			Nodes: nodes,
 			Count: count,
