@@ -895,8 +895,6 @@ func (n *Node) JsonHypervisor() {
 	}
 
 	n.AvailableVpcs = vpcs
-
-	return
 }
 
 func (n *Node) SetActive() {
