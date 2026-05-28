@@ -20,6 +20,7 @@ type Runtimes struct {
 	Pods        time.Duration
 	Deployments time.Duration
 	Imds        time.Duration
+	Announce    time.Duration
 	Wait        time.Duration
 	Total       time.Duration
 	lock        sync.Mutex
@@ -45,6 +46,7 @@ func (r *Runtimes) Log() {
 		"pods":        fmt.Sprintf("%v", r.Pods),
 		"deployments": fmt.Sprintf("%v", r.Deployments),
 		"imds":        fmt.Sprintf("%v", r.Imds),
+		"announce":    fmt.Sprintf("%v", r.Announce),
 		"wait":        fmt.Sprintf("%v", r.Wait),
 		"total":       fmt.Sprintf("%v", r.Total),
 	}
