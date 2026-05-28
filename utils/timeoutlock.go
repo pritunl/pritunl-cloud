@@ -65,6 +65,13 @@ func (l *TimeoutLock) Unlock(id bson.ObjectID) {
 	l.stateLock.Unlock()
 }
 
+func (l *TimeoutLock) DelayUnlock(id bson.ObjectID, dur time.Duration) {
+	go func() {
+		time.Sleep(dur)
+		l.Unlock(id)
+	}()
+}
+
 func NewTimeoutLock(timeout time.Duration) *TimeoutLock {
 	return &TimeoutLock{
 		lock:      sync.Mutex{},
