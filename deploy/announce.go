@@ -8,6 +8,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/instance"
 	"github.com/pritunl/pritunl-cloud/netconf"
 	"github.com/pritunl/pritunl-cloud/node"
+	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/state"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/tools/commander"
@@ -152,10 +153,11 @@ func (a *Announce) annouce(inst *instance.Instance) (err error) {
 
 func (a *Announce) Deploy() (err error) {
 	instances := a.stat.Instances()
+	rate := time.Duration(settings.Hypervisor.AnnounceRate) * time.Second
 
 	for _, inst := range instances {
 		last, ok := annouceStore.Load(inst.Id)
-		if !ok || time.Since(last.(time.Time)) > 3*time.Minute {
+		if !ok || time.Since(last.(time.Time)) > rate {
 			err = a.annouce(inst)
 			if err != nil {
 				return
