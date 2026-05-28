@@ -49,7 +49,7 @@ func (l *TimeoutLock) Lock() (id bson.ObjectID) {
 
 				logrus.WithFields(logrus.Fields{
 					"error": err,
-				}).Error("utils: Lock timed out")
+				}).Error("utils: Multi lock timed out")
 				return
 			}
 		}
