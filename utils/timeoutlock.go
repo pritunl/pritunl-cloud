@@ -58,6 +58,49 @@ func (l *TimeoutLock) Lock() (id bson.ObjectID) {
 	return
 }
 
+func (l *TimeoutLock) LockOpen() (acquired bool, id bson.ObjectID) {
+	if !l.lock.TryLock() {
+		return
+	}
+	acquired = true
+
+	id = bson.NewObjectID()
+	l.stateLock.Lock()
+	l.state[id] = true
+	l.stateLock.Unlock()
+
+	if !constants.LockDebug {
+		return
+	}
+
+	start := time.Now()
+	go func() {
+		for {
+			time.Sleep(1 * time.Second)
+
+			l.stateLock.Lock()
+			state := l.state[id]
+			l.stateLock.Unlock()
+			if !state {
+				return
+			}
+
+			if time.Since(start) > l.timeout {
+				err := &errortypes.TimeoutError{
+					errors.New("utils: Multi lock timeout"),
+				}
+
+				logrus.WithFields(logrus.Fields{
+					"error": err,
+				}).Error("utils: Multi lock timed out")
+				return
+			}
+		}
+	}()
+
+	return
+}
+
 func (l *TimeoutLock) Unlock(id bson.ObjectID) {
 	l.lock.Unlock()
 	l.stateLock.Lock()
