@@ -89,12 +89,12 @@ func Deploy(stat *state.State, runtimes *state.Runtimes) (err error) {
 	runtimes.Imds = time.Since(start)
 
 	start = time.Now()
-	annouce := NewAnnounce(stat)
-	err = annouce.Deploy()
+	announce := NewAnnounce(stat)
+	err = announce.Deploy()
 	if err != nil {
 		return
 	}
-	runtimes.Annouce = time.Since(start)
+	runtimes.Announce = time.Since(start)
 
 	start = time.Now()
 	stat.Wait()
