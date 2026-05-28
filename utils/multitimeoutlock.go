@@ -82,13 +82,12 @@ func (m *MultiTimeoutLock) LockOpen(id string) (
 	}
 
 	lock = &sync.Mutex{}
+	lock.Lock()
 	m.locks[id] = lock
 	m.counts[id] = val + 1
 	m.lock.Unlock()
 
 	acquired = true
-
-	lock.Lock()
 
 	lockId = bson.NewObjectID()
 	m.stateLock.Lock()
@@ -191,13 +190,12 @@ func (m *MultiTimeoutLock) LockOpenTimeout(id string,
 	}
 
 	lock = &sync.Mutex{}
+	lock.Lock()
 	m.locks[id] = lock
 	m.counts[id] = val + 1
 	m.lock.Unlock()
 
 	acquired = true
-
-	lock.Lock()
 
 	lockId = bson.NewObjectID()
 	m.stateLock.Lock()
@@ -240,12 +238,14 @@ func (m *MultiTimeoutLock) Unlock(id string, lockId bson.ObjectID) {
 	m.lock.Lock()
 	val := m.counts[id]
 	lock := m.locks[id]
+	if lock != nil {
+		lock.Unlock()
+	}
 	if val <= 1 {
 		delete(m.counts, id)
 		delete(m.locks, id)
 	} else {
 		m.counts[id] = val - 1
-		lock.Unlock()
 	}
 	m.lock.Unlock()
 
