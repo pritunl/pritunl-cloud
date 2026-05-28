@@ -11,7 +11,6 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/node"
 	"github.com/pritunl/pritunl-cloud/oracle"
-	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/sirupsen/logrus"
 )
@@ -517,10 +516,6 @@ func (n *NetConf) Oracle(db *database.Database) (err error) {
 	if n.NetworkMode != node.Cloud || n.Virt.CloudSubnet == "" {
 		return
 	}
-
-	delay := time.Duration(settings.Hypervisor.ActionRate) * time.Second
-	lockId := lock.Lock("oracle")
-	defer lock.DelayUnlock("oracle", lockId, delay)
 
 	err = n.oracleInitVnic(db)
 	if err != nil {

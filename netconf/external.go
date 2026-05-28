@@ -4,11 +4,9 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/pritunl/pritunl-cloud/database"
 	"github.com/pritunl/pritunl-cloud/node"
-	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -399,10 +397,6 @@ func (n *NetConf) externalSpaceUp(db *database.Database) (err error) {
 }
 
 func (n *NetConf) External(db *database.Database) (err error) {
-	delay := time.Duration(settings.Hypervisor.ActionRate) * time.Second
-	lockId := lock.Lock("external")
-	defer lock.DelayUnlock("external", lockId, delay)
-
 	err = n.externalNet(db)
 	if err != nil {
 		return

@@ -12,9 +12,6 @@ import (
 )
 
 func (n *NetConf) Clear(db *database.Database) (err error) {
-	lockId := lock.Lock("clear")
-	defer lock.Unlock("clear", lockId)
-
 	clearIface("", n.SystemExternalIface) // bridged
 	clearIface("", n.SystemInternalIface) // bridged
 	clearIface("", n.SystemHostIface)     // bridged

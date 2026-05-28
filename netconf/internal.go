@@ -1,10 +1,7 @@
 package netconf
 
 import (
-	"time"
-
 	"github.com/pritunl/pritunl-cloud/database"
-	"github.com/pritunl/pritunl-cloud/settings"
 	"github.com/pritunl/pritunl-cloud/utils"
 )
 
@@ -147,10 +144,6 @@ func (n *NetConf) internalSpaceUp(db *database.Database) (err error) {
 }
 
 func (n *NetConf) Internal(db *database.Database) (err error) {
-	delay := time.Duration(settings.Hypervisor.ActionRate) * time.Second
-	lockId := lock.Lock("internal")
-	defer lock.DelayUnlock("internal", lockId, delay)
-
 	err = n.internalNet(db)
 	if err != nil {
 		return
