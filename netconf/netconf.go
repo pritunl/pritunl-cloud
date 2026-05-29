@@ -142,8 +142,6 @@ func (n *NetConf) Init(db *database.Database) (err error) {
 		return
 	}
 
-	time.Sleep(200 * time.Millisecond)
-
 	err = n.Base(db)
 	if err != nil {
 		return
