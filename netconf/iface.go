@@ -15,7 +15,7 @@ import (
 	"github.com/pritunl/pritunl-cloud/vm"
 )
 
-func (n *NetConf) Iface1(db *database.Database) (err error) {
+func (n *NetConf) Iface1() (err error) {
 	n.NetworkMode = node.Self.NetworkMode
 	if n.NetworkMode == "" {
 		n.NetworkMode = node.Dhcp

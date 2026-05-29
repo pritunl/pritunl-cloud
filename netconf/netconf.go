@@ -115,7 +115,7 @@ func (n *NetConf) Init(db *database.Database) (err error) {
 		return
 	}
 
-	err = n.Iface1(db)
+	err = n.Iface1()
 	if err != nil {
 		return
 	}
