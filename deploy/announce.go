@@ -140,7 +140,7 @@ func (a *Announce) annouce(inst *instance.Instance) (err error) {
 						"-c", "2", "-i", "0.5", "-w", "6", "-I", iface,
 						gatewayAddr6,
 					},
-					Timeout: 8 * time.Second,
+					Timeout: 6 * time.Second,
 					PipeOut: true,
 					PipeErr: true,
 				})
