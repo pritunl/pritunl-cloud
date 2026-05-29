@@ -218,7 +218,7 @@ func (n *NetConf) Init(db *database.Database) (err error) {
 }
 
 func (n *NetConf) Clean(db *database.Database) (err error) {
-	err = n.Iface1(db)
+	err = n.Iface1()
 	if err != nil {
 		return
 	}
