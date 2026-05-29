@@ -41,6 +41,7 @@ type hypervisor struct {
 	IpTimeout6             int    `bson:"ip_timeout6" default:"15"`
 	AnnounceRate           int    `bson:"announce_rate" default:"180"`
 	ActionRate             int    `bson:"action_rate" default:"3"`
+	NetworkRate            int    `bson:"network_rate" default:"30"`
 	NodePortNetwork        string `bson:"node_port_network" default:"198.19.96.0/23"`
 	NodePortRanges         string `bson:"node_port_ranges" default:"30000-32767"`
 	NodePortNetworkName    string `bson:"node_port_network_name" default:"pritunlport0"`
