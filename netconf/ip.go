@@ -295,7 +295,7 @@ func (n *NetConf) ipNodePort(db *database.Database) (err error) {
 }
 
 func (n *NetConf) ipDetect(db *database.Database) (err error) {
-	time.Sleep(250 * time.Millisecond)
+	time.Sleep(500 * time.Millisecond)
 
 	ipTimeout := settings.Hypervisor.IpTimeout * 4
 	ipTimeout6 := settings.Hypervisor.IpTimeout6 * 4
@@ -523,11 +523,13 @@ func (n *NetConf) ipDatabase(db *database.Database) (err error) {
 }
 
 func (n *NetConf) ipInit6(db *database.Database) (err error) {
+	time.Sleep(500 * time.Millisecond)
+
 	if n.NetworkMode6 != node.Disabled && n.NetworkMode6 != node.Cloud &&
 		n.PublicAddress6 != "" && !settings.Hypervisor.NoIpv6PingInit {
 
 		for i := 0; i < 3; i++ {
-			time.Sleep(200 * time.Millisecond)
+			time.Sleep(300 * time.Millisecond)
 
 			resp, e := commander.Exec(&commander.Opt{
 				Name: "ip",
