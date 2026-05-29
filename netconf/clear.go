@@ -8,10 +8,18 @@ import (
 	"github.com/pritunl/pritunl-cloud/errortypes"
 	"github.com/pritunl/pritunl-cloud/interfaces"
 	"github.com/pritunl/pritunl-cloud/store"
+	"github.com/pritunl/pritunl-cloud/utils"
 	"github.com/pritunl/tools/commander"
 )
 
+var (
+	clearLock = utils.NewTimeoutLock(1 * time.Minute)
+)
+
 func (n *NetConf) Clear(db *database.Database) (err error) {
+	lockId := clearLock.Lock()
+	defer clearLock.Unlock(lockId)
+
 	clearIface("", n.SystemExternalIface) // bridged
 	clearIface("", n.SystemInternalIface) // bridged
 	clearIface("", n.SystemHostIface)     // bridged
@@ -29,6 +37,8 @@ func (n *NetConf) Clear(db *database.Database) (err error) {
 	interfaces.RemoveVirtIface(n.SystemExternalIface)
 	interfaces.RemoveVirtIface(n.SystemInternalIface)
 	interfaces.RemoveVirtIface(n.SystemNodePortIface)
+
+	time.Sleep(300 * time.Millisecond)
 
 	return
 }
